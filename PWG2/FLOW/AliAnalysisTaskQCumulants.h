@@ -15,8 +15,8 @@
  *           (anteb@nikhef.nl)        * 
  * ***********************************/
 
-#ifndef AliAnalysisTaskQCumulants_H
-#define AliAnalysisTaskQCumulants_H
+#ifndef ALIANALYSISTASKQCUMULANTS_H
+#define ALIANALYSISTASKQCUMULANTS_H
 
 #include "AliAnalysisTask.h"
 

@@ -76,19 +76,19 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fImq1n(NULL),
  fReq2n(NULL),
  fImq2n(NULL),
- f2_1n1n(NULL),
- f2_2n2n(NULL),
- f3_2n1n1n(NULL),
- f3_1n1n2n(NULL),
- f4_1n1n1n1n(NULL),
+ f2PerBin1n1n(NULL),
+ f2PerBin2n2n(NULL),
+ f3PerBin2n1n1n(NULL),
+ f3PerBin1n1n2n(NULL),
+ f4PerBin1n1n1n1n(NULL),
  fCommonHists(NULL),
  fCommonHistsResults2nd(NULL),
  fCommonHistsResults4th(NULL),
  fCommonHistsResults6th(NULL),
  fCommonHistsResults8th(NULL),
- f2Distribution(NULL),
- f4Distribution(NULL),
- f6Distribution(NULL),
+ f2pDistribution(NULL),
+ f4pDistribution(NULL),
+ f6pDistribution(NULL),
  fnBinsPt(0),
  fPtMin(0),
  fPtMax(0)
@@ -135,7 +135,7 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  //fIntFlowResults->SetXTitle("");
  //fIntFlowResultsQC->SetYTitle("Integrated Flow");
  fIntFlowResultsQC->SetLabelSize(0.06);
- fIntFlowResultsQC->SetTickLength(1);
+ //fIntFlowResultsQC->SetTickLength(1);
  fIntFlowResultsQC->SetMarkerStyle(25);
  (fIntFlowResultsQC->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
  (fIntFlowResultsQC->GetXaxis())->SetBinLabel(2,"v_{n}{4}");
@@ -244,35 +244,35 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fImq2n->SetYTitle("Im[q_2n]");
  //fHistList->Add(fImq2n);
  
- //f2_1n1n
- f2_1n1n = new TProfile("f2_1n1n","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
- f2_1n1n->SetXTitle("p_{t} [GeV]");
- //f2_1n1n->SetYTitle("<2'>_{n|n}");
- fHistList->Add(f2_1n1n);
+ //f2PerBin1n1n
+ f2PerBin1n1n = new TProfile("f2PerBin1n1n","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f2PerBin1n1n->SetXTitle("p_{t} [GeV]");
+ //f2PerBin1n1n->SetYTitle("<2'>_{n|n}");
+ fHistList->Add(f2PerBin1n1n);
  
- //f2_2n2n
- f2_2n2n = new TProfile("f2_2n2n","<2'>_{2n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
- f2_2n2n->SetXTitle("p_{t} [GeV]");
- //f2_2n2n->SetYTitle("<2'>_{2n|2n}");
- fHistList->Add(f2_2n2n);
+ //f2PerBin2n2n
+ f2PerBin2n2n = new TProfile("f2PerBin2n2n","<2'>_{2n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f2PerBin2n2n->SetXTitle("p_{t} [GeV]");
+ //f2PerBin2n2n->SetYTitle("<2'>_{2n|2n}");
+ fHistList->Add(f2PerBin2n2n);
  
- //f3_2n1n1n
- f3_2n1n1n = new TProfile("f3_2n1n1n","<3'>_{2n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
- f3_2n1n1n->SetXTitle("p_{t} [GeV]");
- //f3_2n1n1n->SetYTitle("<3'>_{2n|n,n}");
- fHistList->Add(f3_2n1n1n);
+ //f3PerBin2n1n1n
+ f3PerBin2n1n1n = new TProfile("f3PerBin2n1n1n","<3'>_{2n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f3PerBin2n1n1n->SetXTitle("p_{t} [GeV]");
+ //f3PerBin2n1n1n->SetYTitle("<3'>_{2n|n,n}");
+ fHistList->Add(f3PerBin2n1n1n);
  
- //f3_1n1n2n
- f3_1n1n2n = new TProfile("f3_1n1n2n","<3'>_{n,n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
- f3_1n1n2n->SetXTitle("p_{t} [GeV]");
- //f3_1n1n2n->SetYTitle("<3'>_{n,n|2n}");
- fHistList->Add(f3_1n1n2n);
+ //f3PerBin1n1n2n
+ f3PerBin1n1n2n = new TProfile("f3PerBin1n1n2n","<3'>_{n,n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f3PerBin1n1n2n->SetXTitle("p_{t} [GeV]");
+ //f3PerBin1n1n2n->SetYTitle("<3'>_{n,n|2n}");
+ fHistList->Add(f3PerBin1n1n2n);
  
- //f4_1n1n1n1n
- f4_1n1n1n1n = new TProfile("f4_1n1n1n1n","<4'>_{n,n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
- f4_1n1n1n1n->SetXTitle("p_{t} [GeV]");
- //f4_1n1n1n1n->SetYTitle("<4'>_{n,n|n,n}");
- fHistList->Add(f4_1n1n1n1n);
+ //f4PerBin1n1n1n1n
+ f4PerBin1n1n1n1n = new TProfile("f4PerBin1n1n1n1n","<4'>_{n,n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f4PerBin1n1n1n1n->SetXTitle("p_{t} [GeV]");
+ //f4PerBin1n1n1n1n->SetYTitle("<4'>_{n,n|n,n}");
+ fHistList->Add(f4PerBin1n1n1n1n);
  
  //common control histograms
  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistQC");
@@ -295,22 +295,22 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fHistList->Add(fCommonHistsResults8th); 
  
  //weighted <2>_{n|n} distribution
- f2Distribution = new TH1D("f2Distribution","<2>_{n|n} distribution",100000,-0.02,0.1);
- f2Distribution->SetXTitle("<2>_{n|n}");
- f2Distribution->SetYTitle("Counts");
- fHistList->Add(f2Distribution);
+ f2pDistribution = new TH1D("f2pDistribution","<2>_{n|n} distribution",100000,-0.02,0.1);
+ f2pDistribution->SetXTitle("<2>_{n|n}");
+ f2pDistribution->SetYTitle("Counts");
+ fHistList->Add(f2pDistribution);
 
  //weighted <4>_{n,n|n,n} distribution
- f4Distribution = new TH1D("f4Distribution","<4>_{n,n|n,n} distribution",100000,-0.00025,0.002);
- f4Distribution->SetXTitle("<4>_{n,n|n,n}");
- f4Distribution->SetYTitle("Counts");
- fHistList->Add(f4Distribution); 
+ f4pDistribution = new TH1D("f4pDistribution","<4>_{n,n|n,n} distribution",100000,-0.00025,0.002);
+ f4pDistribution->SetXTitle("<4>_{n,n|n,n}");
+ f4pDistribution->SetYTitle("Counts");
+ fHistList->Add(f4pDistribution); 
  
  //weighted <6>_{n,n,n|n,n,n} distribution
- f6Distribution = new TH1D("f6Distribution","<6>_{n,n,n|n,n,n} distribution",100000,-0.000005,0.000025);
- f6Distribution->SetXTitle("<6>_{n,n,n|n,n,n}");
- f6Distribution->SetYTitle("Counts");
- fHistList->Add(f6Distribution);
+ f6pDistribution = new TH1D("f6pDistribution","<6>_{n,n,n|n,n,n} distribution",100000,-0.000005,0.000025);
+ f6pDistribution->SetXTitle("<6>_{n,n,n|n,n,n}");
+ f6pDistribution->SetYTitle("Counts");
+ fHistList->Add(f6pDistribution);
  
 }//end of CreateOutputObjects()
 
@@ -323,7 +323,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //get the total multiplicity of event:
  //Int_t nPrim = anEvent->NumberOfTracks();
 
- //if(nPrim>8&&nPrim<24)  
+ //if(nPrim>8&&nPrim<14)  
  //{
 
  //fill the common control histograms:
@@ -336,60 +336,60 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  //---------------------------------------------------------------------------------------------------------
  //Q-vectors of an event evaluated in harmonics n, 2n, 3n and 4n:
- AliFlowVector Qvector1n, Qvector2n, Qvector3n, Qvector4n;
+ AliFlowVector xQvector1n, xQvector2n, xQvector3n, xQvector4n;
  
- Qvector1n.Set(0.,0.);
- Qvector1n.SetMult(0);
- Qvector1n=anEvent->GetQ(1*n); 
+ xQvector1n.Set(0.,0.);
+ xQvector1n.SetMult(0);
+ xQvector1n=anEvent->GetQ(1*n); 
  
- Qvector2n.Set(0.,0.);
- Qvector2n.SetMult(0);
- Qvector2n=anEvent->GetQ(2*n);                          
+ xQvector2n.Set(0.,0.);
+ xQvector2n.SetMult(0);
+ xQvector2n=anEvent->GetQ(2*n);                          
  
- Qvector3n.Set(0.,0.);
- Qvector3n.SetMult(0);
- Qvector3n=anEvent->GetQ(3*n);       
+ xQvector3n.Set(0.,0.);
+ xQvector3n.SetMult(0);
+ xQvector3n=anEvent->GetQ(3*n);       
  
- Qvector4n.Set(0.,0.);
- Qvector4n.SetMult(0);
- Qvector4n=anEvent->GetQ(4*n);       
+ xQvector4n.Set(0.,0.);
+ xQvector4n.SetMult(0);
+ xQvector4n=anEvent->GetQ(4*n);       
  //---------------------------------------------------------------------------------------------------------
  
  //multiplicity (to be improved, because I already have nEventNSelTracksIntFlow and nPrim)
- Double_t M = Qvector1n.GetMult();
+ Double_t xMult = xQvector1n.GetMult();
  
- fAvMultIntFlowQC->Fill(0.,M,1.);
+ fAvMultIntFlowQC->Fill(0.,xMult,1.);
  
  //---------------------------------------------------------------------------------------------------------
  //*************
  //* Q-vectors *
  //*************
- Double_t ReQ2nQ1nstarQ1nstar = pow(Qvector1n.X(),2.)*Qvector2n.X()+2.*Qvector1n.X()*Qvector1n.Y()*Qvector2n.Y()-pow(Qvector1n.Y(),2.)*Qvector2n.X();//Re[Q_{2n} Q_{n}^* Q_{n}^*]
- //Double_t ImQ2nQ1nstarQ1nstar = pow(Qvector1n.X(),2.)*Qvector2n.Y()-2.*Qvector1n.X()*Qvector1n.Y()*Qvector2n.X()-pow(Qvector1n.Y(),2.)*Qvector2n.Y();//Im[Q_{2n} Q_{n}^* Q_{n}^*]
- Double_t ReQ1nQ1nQ2nstar = ReQ2nQ1nstarQ1nstar;//Re[Q_{n} Q_{n} Q_{2n}^*] = Re[Q_{2n} Q_{n}^* Q_{n}^*]
- Double_t ReQ3nQ1nQ2nstarQ2nstar = (pow(Qvector2n.X(),2.)-pow(Qvector2n.Y(),2.))*(Qvector3n.X()*Qvector1n.X()-Qvector3n.Y()*Qvector1n.Y())+2.*Qvector2n.X()*Qvector2n.Y()*(Qvector3n.X()*Qvector1n.Y()+Qvector3n.Y()*Qvector1n.X());
- //Double_t ImQ3nQ1nQ2nstarQ2nstar = calculate and implement this (deleteMe) 
- Double_t ReQ2nQ2nQ3nstarQ1nstar = ReQ3nQ1nQ2nstarQ2nstar;
- Double_t ReQ4nQ2nstarQ2nstar = pow(Qvector2n.X(),2.)*Qvector4n.X()+2.*Qvector2n.X()*Qvector2n.Y()*Qvector4n.Y()-pow(Qvector2n.Y(),2.)*Qvector4n.X();//Re[Q_{4n} Q_{2n}^* Q_{2n}^*]
- //Double_t ImQ4nQ2nstarQ2nstar = calculate and implement this (deleteMe)
- Double_t ReQ2nQ2nQ4nstar = ReQ4nQ2nstarQ2nstar;
- Double_t ReQ4nQ3nstarQ1nstar = Qvector4n.X()*(Qvector3n.X()*Qvector1n.X()-Qvector3n.Y()*Qvector1n.Y())+Qvector4n.Y()*(Qvector3n.X()*Qvector1n.Y()+Qvector3n.Y()*Qvector1n.X());//Re[Q_{4n} Q_{3n}^* Q_{n}^*]
- Double_t ReQ3nQ1nQ4nstar = ReQ4nQ3nstarQ1nstar;//Re[Q_{3n} Q_{n} Q_{4n}^*] = Re[Q_{4n} Q_{3n}^* Q_{n}^*]
- //Double_t ImQ4nQ3nstarQ1nstar = calculate and implement this (deleteMe)
- Double_t ReQ3nQ2nstarQ1nstar = Qvector3n.X()*Qvector2n.X()*Qvector1n.X()-Qvector3n.X()*Qvector2n.Y()*Qvector1n.Y()+Qvector3n.Y()*Qvector2n.X()*Qvector1n.Y()+Qvector3n.Y()*Qvector2n.Y()*Qvector1n.X();//Re[Q_{3n} Q_{2n}^* Q_{n}^*]
- Double_t ReQ2nQ1nQ3nstar = ReQ3nQ2nstarQ1nstar;//Re[Q_{2n} Q_{n} Q_{3n}^*] = Re[Q_{3n} Q_{2n}^* Q_{n}^*]
- //Double_t ImQ3nQ2nstarQ1nstar; //calculate and implement this (deleteMe)
- Double_t ReQ3nQ1nstarQ1nstarQ1nstar = Qvector3n.X()*pow(Qvector1n.X(),3)-3.*Qvector1n.X()*Qvector3n.X()*pow(Qvector1n.Y(),2)+3.*Qvector1n.Y()*Qvector3n.Y()*pow(Qvector1n.X(),2)-Qvector3n.Y()*pow(Qvector1n.Y(),3);//Re[Q_{3n} Q_{n}^* Q_{n}^* Q_{n}^*]
- //Double_t ImQ3nQ1nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
- Double_t Q2nQ1nQ2nstarQ1nstar = pow(Qvector2n.Mod()*Qvector1n.Mod(),2);//|Q_{2n}|^2 |Q_{n}|^2
- Double_t ReQ4nQ2nstarQ1nstarQ1nstar = (Qvector4n.X()*Qvector2n.X()+Qvector4n.Y()*Qvector2n.Y())*(pow(Qvector1n.X(),2)-pow(Qvector1n.Y(),2))+2.*Qvector1n.X()*Qvector1n.Y()*(Qvector4n.Y()*Qvector2n.X()-Qvector4n.X()*Qvector2n.Y());//Re[Q_{4n} Q_{2n}^* Q_{n}^* Q_{n}^*] 
- //Double_t ImQ4nQ2nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
- Double_t ReQ2nQ1nQ1nstarQ1nstarQ1nstar = (Qvector2n.X()*Qvector1n.X()-Qvector2n.Y()*Qvector1n.Y())*(pow(Qvector1n.X(),3)-3.*Qvector1n.X()*pow(Qvector1n.Y(),2))+(Qvector2n.X()*Qvector1n.Y()+Qvector1n.X()*Qvector2n.Y())*(3.*Qvector1n.Y()*pow(Qvector1n.X(),2)-pow(Qvector1n.Y(),3));//Re[Q_{2n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^*]
- //Double_t ImQ2nQ1nQ1nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
- Double_t ReQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(Qvector2n.Mod(),2.)*(Qvector2n.X()*(pow(Qvector1n.X(),2.)-pow(Qvector1n.Y(),2.))+2.*Qvector2n.Y()*Qvector1n.X()*Qvector1n.Y());//Re[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
- //Double_t ImQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(Qvector2n.Mod(),2.)*(Qvector2n.Y()*(pow(Qvector1n.X(),2.)-pow(Qvector1n.Y(),2.))-2.*Qvector2n.X()*Qvector1n.X()*Qvector1n.Y());//Im[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
- Double_t ReQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(Qvector1n.X(),4.)*Qvector4n.X()-6.*pow(Qvector1n.X(),2.)*Qvector4n.X()*pow(Qvector1n.Y(),2.)+pow(Qvector1n.Y(),4.)*Qvector4n.X()+4.*pow(Qvector1n.X(),3.)*Qvector1n.Y()*Qvector4n.Y()-4.*pow(Qvector1n.Y(),3.)*Qvector1n.X()*Qvector4n.Y();
- //Double_t ImQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(Qvector1n.X(),4.)*Qvector4n.Y()-6.*pow(Qvector1n.X(),2.)*Qvector4n.Y()*pow(Qvector1n.Y(),2.)+pow(Qvector1n.Y(),4.)*Qvector4n.Y()+4.*pow(Qvector1n.Y(),3.)*Qvector1n.X()*Qvector4n.X()-4.*pow(Qvector1n.X(),3.)*Qvector1n.Y()*Qvector4n.X();
+ Double_t reQ2nQ1nstarQ1nstar = pow(xQvector1n.X(),2.)*xQvector2n.X()+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y()-pow(xQvector1n.Y(),2.)*xQvector2n.X();//Re[Q_{2n} Q_{n}^* Q_{n}^*]
+ //Double_t imQ2nQ1nstarQ1nstar = pow(Qvector1n.X(),2.)*Qvector2n.Y()-2.*Qvector1n.X()*Qvector1n.Y()*Qvector2n.X()-pow(Qvector1n.Y(),2.)*Qvector2n.Y();//Im[Q_{2n} Q_{n}^* Q_{n}^*]
+ Double_t reQ1nQ1nQ2nstar = reQ2nQ1nstarQ1nstar;//Re[Q_{n} Q_{n} Q_{2n}^*] = Re[Q_{2n} Q_{n}^* Q_{n}^*]
+ Double_t reQ3nQ1nQ2nstarQ2nstar = (pow(xQvector2n.X(),2.)-pow(xQvector2n.Y(),2.))*(xQvector3n.X()*xQvector1n.X()-xQvector3n.Y()*xQvector1n.Y())+2.*xQvector2n.X()*xQvector2n.Y()*(xQvector3n.X()*xQvector1n.Y()+xQvector3n.Y()*xQvector1n.X());
+ //Double_t imQ3nQ1nQ2nstarQ2nstar = calculate and implement this (deleteMe) 
+ Double_t reQ2nQ2nQ3nstarQ1nstar = reQ3nQ1nQ2nstarQ2nstar;
+ Double_t reQ4nQ2nstarQ2nstar = pow(xQvector2n.X(),2.)*xQvector4n.X()+2.*xQvector2n.X()*xQvector2n.Y()*xQvector4n.Y()-pow(xQvector2n.Y(),2.)*xQvector4n.X();//Re[Q_{4n} Q_{2n}^* Q_{2n}^*]
+ //Double_t imQ4nQ2nstarQ2nstar = calculate and implement this (deleteMe)
+ Double_t reQ2nQ2nQ4nstar = reQ4nQ2nstarQ2nstar;
+ Double_t reQ4nQ3nstarQ1nstar = xQvector4n.X()*(xQvector3n.X()*xQvector1n.X()-xQvector3n.Y()*xQvector1n.Y())+xQvector4n.Y()*(xQvector3n.X()*xQvector1n.Y()+xQvector3n.Y()*xQvector1n.X());//Re[Q_{4n} Q_{3n}^* Q_{n}^*]
+ Double_t reQ3nQ1nQ4nstar = reQ4nQ3nstarQ1nstar;//Re[Q_{3n} Q_{n} Q_{4n}^*] = Re[Q_{4n} Q_{3n}^* Q_{n}^*]
+ //Double_t imQ4nQ3nstarQ1nstar = calculate and implement this (deleteMe)
+ Double_t reQ3nQ2nstarQ1nstar = xQvector3n.X()*xQvector2n.X()*xQvector1n.X()-xQvector3n.X()*xQvector2n.Y()*xQvector1n.Y()+xQvector3n.Y()*xQvector2n.X()*xQvector1n.Y()+xQvector3n.Y()*xQvector2n.Y()*xQvector1n.X();//Re[Q_{3n} Q_{2n}^* Q_{n}^*]
+ Double_t reQ2nQ1nQ3nstar = reQ3nQ2nstarQ1nstar;//Re[Q_{2n} Q_{n} Q_{3n}^*] = Re[Q_{3n} Q_{2n}^* Q_{n}^*]
+ //Double_t imQ3nQ2nstarQ1nstar; //calculate and implement this (deleteMe)
+ Double_t reQ3nQ1nstarQ1nstarQ1nstar = xQvector3n.X()*pow(xQvector1n.X(),3)-3.*xQvector1n.X()*xQvector3n.X()*pow(xQvector1n.Y(),2)+3.*xQvector1n.Y()*xQvector3n.Y()*pow(xQvector1n.X(),2)-xQvector3n.Y()*pow(xQvector1n.Y(),3);//Re[Q_{3n} Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ3nQ1nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
+ Double_t xQ2nQ1nQ2nstarQ1nstar = pow(xQvector2n.Mod()*xQvector1n.Mod(),2);//|Q_{2n}|^2 |Q_{n}|^2
+ Double_t reQ4nQ2nstarQ1nstarQ1nstar = (xQvector4n.X()*xQvector2n.X()+xQvector4n.Y()*xQvector2n.Y())*(pow(xQvector1n.X(),2)-pow(xQvector1n.Y(),2))+2.*xQvector1n.X()*xQvector1n.Y()*(xQvector4n.Y()*xQvector2n.X()-xQvector4n.X()*xQvector2n.Y());//Re[Q_{4n} Q_{2n}^* Q_{n}^* Q_{n}^*] 
+ //Double_t imQ4nQ2nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
+ Double_t reQ2nQ1nQ1nstarQ1nstarQ1nstar = (xQvector2n.X()*xQvector1n.X()-xQvector2n.Y()*xQvector1n.Y())*(pow(xQvector1n.X(),3)-3.*xQvector1n.X()*pow(xQvector1n.Y(),2))+(xQvector2n.X()*xQvector1n.Y()+xQvector1n.X()*xQvector2n.Y())*(3.*xQvector1n.Y()*pow(xQvector1n.X(),2)-pow(xQvector1n.Y(),3));//Re[Q_{2n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ2nQ1nQ1nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
+ Double_t reQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(xQvector2n.Mod(),2.)*(xQvector2n.X()*(pow(xQvector1n.X(),2.)-pow(xQvector1n.Y(),2.))+2.*xQvector2n.Y()*xQvector1n.X()*xQvector1n.Y());//Re[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(Qvector2n.Mod(),2.)*(Qvector2n.Y()*(pow(Qvector1n.X(),2.)-pow(Qvector1n.Y(),2.))-2.*Qvector2n.X()*Qvector1n.X()*Qvector1n.Y());//Im[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
+ Double_t reQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.X(),4.)*xQvector4n.X()-6.*pow(xQvector1n.X(),2.)*xQvector4n.X()*pow(xQvector1n.Y(),2.)+pow(xQvector1n.Y(),4.)*xQvector4n.X()+4.*pow(xQvector1n.X(),3.)*xQvector1n.Y()*xQvector4n.Y()-4.*pow(xQvector1n.Y(),3.)*xQvector1n.X()*xQvector4n.Y();
+ //Double_t imQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(Qvector1n.X(),4.)*Qvector4n.Y()-6.*pow(Qvector1n.X(),2.)*Qvector4n.Y()*pow(Qvector1n.Y(),2.)+pow(Qvector1n.Y(),4.)*Qvector4n.Y()+4.*pow(Qvector1n.Y(),3.)*Qvector1n.X()*Qvector4n.X()-4.*pow(Qvector1n.X(),3.)*Qvector1n.Y()*Qvector4n.X();
 
  
  //---------------------------------------------------------------------------------------------------------
@@ -431,97 +431,97 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // 6th bin: <6>*<8>
          
  //2-particle
- Double_t two_1n1n=0., two_2n2n=0., two_3n3n=0., two_4n4n=0.; 
- if(M>1)
+ Double_t two1n1n=0., two2n2n=0., two3n3n=0., two4n4n=0.; 
+ if(xMult>1)
  {
-  two_1n1n = (pow(Qvector1n.Mod(),2.)-M)/(M*(M-1.)); //<2>_{n|n}   = <cos(n*(phi1-phi2))>
-  two_2n2n = (pow(Qvector2n.Mod(),2.)-M)/(M*(M-1.)); //<2>_{2n|2n} = <cos(2n*(phi1-phi2))>
-  two_3n3n = (pow(Qvector3n.Mod(),2.)-M)/(M*(M-1.)); //<2>_{3n|3n} = <cos(3n*(phi1-phi2))>
-  two_4n4n = (pow(Qvector4n.Mod(),2.)-M)/(M*(M-1.)); //<2>_{4n|4n} = <cos(4n*(phi1-phi2))>
+  two1n1n = (pow(xQvector1n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{n|n}   = <cos(n*(phi1-phi2))>
+  two2n2n = (pow(xQvector2n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{2n|2n} = <cos(2n*(phi1-phi2))>
+  two3n3n = (pow(xQvector3n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{3n|3n} = <cos(3n*(phi1-phi2))>
+  two4n4n = (pow(xQvector4n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{4n|4n} = <cos(4n*(phi1-phi2))>
     
-  fQCorrelations->Fill(0.,two_1n1n,M*(M-1.)); 
-  fQCorrelations->Fill(1.,two_2n2n,M*(M-1.)); 
-  fQCorrelations->Fill(2.,two_3n3n,M*(M-1.)); 
-  fQCorrelations->Fill(3.,two_4n4n,M*(M-1.)); 
+  fQCorrelations->Fill(0.,two1n1n,xMult*(xMult-1.)); 
+  fQCorrelations->Fill(1.,two2n2n,xMult*(xMult-1.)); 
+  fQCorrelations->Fill(2.,two3n3n,xMult*(xMult-1.)); 
+  fQCorrelations->Fill(3.,two4n4n,xMult*(xMult-1.)); 
   
-  f2Distribution->Fill(two_1n1n,M*(M-1.)); 
+  f2pDistribution->Fill(two1n1n,xMult*(xMult-1.)); 
  }
  
  //3-particle
- Double_t three_2n1n1n=0., three_3n2n1n=0., three_4n2n2n=0., three_4n3n1n=0.;
- if(M>2)
+ Double_t three2n1n1n=0., three3n2n1n=0., three4n2n2n=0., three4n3n1n=0.;
+ if(xMult>2)
  {
-  three_2n1n1n = (ReQ2nQ1nstarQ1nstar-2.*pow(Qvector1n.Mod(),2.)-pow(Qvector2n.Mod(),2.)+2.*M)/(M*(M-1.)*(M-2.)); //Re[<3>_{2n|n,n}] = Re[<3>_{n,n|2n}] = <cos(n*(2.*phi1-phi2-phi3))>
-  three_3n2n1n = (ReQ3nQ2nstarQ1nstar-pow(Qvector3n.Mod(),2.)-pow(Qvector2n.Mod(),2.)-pow(Qvector1n.Mod(),2.)+2.*M)/(M*(M-1.)*(M-2.)); //Re[<3>_{3n|2n,n}] = Re[<3>_{2n,n|3n}] = <cos(n*(3.*phi1-2.*phi2-phi3))>
-  three_4n2n2n = (ReQ4nQ2nstarQ2nstar-2.*pow(Qvector2n.Mod(),2.)-pow(Qvector4n.Mod(),2.)+2.*M)/(M*(M-1.)*(M-2.)); //Re[<3>_{4n|2n,2n}] = Re[<3>_{2n,2n|4n}] = <cos(n*(4.*phi1-2.*phi2-2.*phi3))>
-  three_4n3n1n = (ReQ4nQ3nstarQ1nstar-pow(Qvector4n.Mod(),2.)-pow(Qvector3n.Mod(),2.)-pow(Qvector1n.Mod(),2.)+2.*M)/(M*(M-1.)*(M-2.)); //Re[<3>_{4n|3n,n}] = Re[<3>_{3n,n|4n}] = <cos(n*(4.*phi1-3.*phi2-phi3))>
+  three2n1n1n = (reQ2nQ1nstarQ1nstar-2.*pow(xQvector1n.Mod(),2.)-pow(xQvector2n.Mod(),2.)+2.*xMult)/(xMult*(xMult-1.)*(xMult-2.)); //Re[<3>_{2n|n,n}] = Re[<3>_{n,n|2n}] = <cos(n*(2.*phi1-phi2-phi3))>
+  three3n2n1n = (reQ3nQ2nstarQ1nstar-pow(xQvector3n.Mod(),2.)-pow(xQvector2n.Mod(),2.)-pow(xQvector1n.Mod(),2.)+2.*xMult)/(xMult*(xMult-1.)*(xMult-2.)); //Re[<3>_{3n|2n,n}] = Re[<3>_{2n,n|3n}] = <cos(n*(3.*phi1-2.*phi2-phi3))>
+  three4n2n2n = (reQ4nQ2nstarQ2nstar-2.*pow(xQvector2n.Mod(),2.)-pow(xQvector4n.Mod(),2.)+2.*xMult)/(xMult*(xMult-1.)*(xMult-2.)); //Re[<3>_{4n|2n,2n}] = Re[<3>_{2n,2n|4n}] = <cos(n*(4.*phi1-2.*phi2-2.*phi3))>
+  three4n3n1n = (reQ4nQ3nstarQ1nstar-pow(xQvector4n.Mod(),2.)-pow(xQvector3n.Mod(),2.)-pow(xQvector1n.Mod(),2.)+2.*xMult)/(xMult*(xMult-1.)*(xMult-2.)); //Re[<3>_{4n|3n,n}] = Re[<3>_{3n,n|4n}] = <cos(n*(4.*phi1-3.*phi2-phi3))>
  
-  fQCorrelations->Fill(5.,three_2n1n1n,M*(M-1.)*(M-2.)); 
-  fQCorrelations->Fill(6.,three_3n2n1n,M*(M-1.)*(M-2.));
-  fQCorrelations->Fill(7.,three_4n2n2n,M*(M-1.)*(M-2.)); 
-  fQCorrelations->Fill(8.,three_4n3n1n,M*(M-1.)*(M-2.));    
+  fQCorrelations->Fill(5.,three2n1n1n,xMult*(xMult-1.)*(xMult-2.)); 
+  fQCorrelations->Fill(6.,three3n2n1n,xMult*(xMult-1.)*(xMult-2.));
+  fQCorrelations->Fill(7.,three4n2n2n,xMult*(xMult-1.)*(xMult-2.)); 
+  fQCorrelations->Fill(8.,three4n3n1n,xMult*(xMult-1.)*(xMult-2.));    
  }
  
  //4-particle
- Double_t four_1n1n1n1n=0., four_2n2n2n2n=0., four_2n1n2n1n=0., four_3n1n1n1n=0., four_4n2n1n1n=0., four_3n1n2n2n=0., four_3n1n3n1n=0.;  
- if(M>3)
+ Double_t four1n1n1n1n=0., four2n2n2n2n=0., four2n1n2n1n=0., four3n1n1n1n=0., four4n2n1n1n=0., four3n1n2n2n=0., four3n1n3n1n=0.;  
+ if(xMult>3)
  {
-  four_1n1n1n1n = (2.*M*(M-3.)+pow(Qvector1n.Mod(),4.)-4.*(M-2.)*pow(Qvector1n.Mod(),2.)-2.*ReQ2nQ1nstarQ1nstar+pow(Qvector2n.Mod(),2.))/(M*(M-1)*(M-2.)*(M-3.));//<4>_{n,n|n,n}
-  four_2n2n2n2n = (2.*M*(M-3.)+pow(Qvector2n.Mod(),4.)-4.*(M-2.)*pow(Qvector2n.Mod(),2.)-2.*ReQ4nQ2nstarQ2nstar+pow(Qvector4n.Mod(),2.))/(M*(M-1)*(M-2.)*(M-3.));//<4>_{2n,2n|2n,2n}
-  four_2n1n2n1n = (Q2nQ1nQ2nstarQ1nstar-2.*ReQ3nQ2nstarQ1nstar-2.*ReQ2nQ1nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.))-((M-5.)*pow(Qvector1n.Mod(),2.)+(M-4.)*pow(Qvector2n.Mod(),2.)-pow(Qvector3n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.))+(M-6.)/((M-1.)*(M-2.)*(M-3.));//Re[<4>_{2n,n|2n,n}]
-  four_3n1n1n1n = (ReQ3nQ1nstarQ1nstarQ1nstar-3.*ReQ3nQ2nstarQ1nstar-3.*ReQ2nQ1nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.))+(2.*pow(Qvector3n.Mod(),2.)+3.*pow(Qvector2n.Mod(),2.)+6.*pow(Qvector1n.Mod(),2.)-6.*M)/(M*(M-1.)*(M-2.)*(M-3.));//Re[<4>_{3n|n,n,n}]
-  four_4n2n1n1n = (ReQ4nQ2nstarQ1nstarQ1nstar-2.*ReQ4nQ3nstarQ1nstar-ReQ4nQ2nstarQ2nstar-2.*ReQ3nQ2nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.))-(ReQ2nQ1nstarQ1nstar-2.*pow(Qvector4n.Mod(),2.)-2.*pow(Qvector3n.Mod(),2.)-3.*pow(Qvector2n.Mod(),2.)-4.*pow(Qvector1n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.))-(6.)/((M-1.)*(M-2.)*(M-3.));//Re[<4>_{4n|2n,n,n}]
-  four_3n1n2n2n = (ReQ3nQ1nQ2nstarQ2nstar-ReQ4nQ2nstarQ2nstar-ReQ3nQ1nQ4nstar-2.*ReQ3nQ2nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.))-(2.*ReQ1nQ1nQ2nstar-pow(Qvector4n.Mod(),2.)-2.*pow(Qvector3n.Mod(),2.)-4.*pow(Qvector2n.Mod(),2.)-4.*pow(Qvector1n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.))-(6.)/((M-1.)*(M-2.)*(M-3.));//Re[<4>_{3n,n|2n,2n}] 
-  four_3n1n3n1n = (pow(Qvector3n.Mod(),2.)*pow(Qvector1n.Mod(),2.)-2.*ReQ4nQ3nstarQ1nstar-2.*ReQ3nQ2nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.))+(pow(Qvector4n.Mod(),2.)-(M-4.)*pow(Qvector3n.Mod(),2.)+pow(Qvector2n.Mod(),2.)-(M-4.)*pow(Qvector1n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.))+(M-6.)/((M-1.)*(M-2.)*(M-3.));//<4>_{3n,n|3n,n}
+  four1n1n1n1n = (2.*xMult*(xMult-3.)+pow(xQvector1n.Mod(),4.)-4.*(xMult-2.)*pow(xQvector1n.Mod(),2.)-2.*reQ2nQ1nstarQ1nstar+pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2.)*(xMult-3.));//<4>_{n,n|n,n}
+  four2n2n2n2n = (2.*xMult*(xMult-3.)+pow(xQvector2n.Mod(),4.)-4.*(xMult-2.)*pow(xQvector2n.Mod(),2.)-2.*reQ4nQ2nstarQ2nstar+pow(xQvector4n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2.)*(xMult-3.));//<4>_{2n,2n|2n,2n}
+  four2n1n2n1n = (xQ2nQ1nQ2nstarQ1nstar-2.*reQ3nQ2nstarQ1nstar-2.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-((xMult-5.)*pow(xQvector1n.Mod(),2.)+(xMult-4.)*pow(xQvector2n.Mod(),2.)-pow(xQvector3n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))+(xMult-6.)/((xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4>_{2n,n|2n,n}]
+  four3n1n1n1n = (reQ3nQ1nstarQ1nstarQ1nstar-3.*reQ3nQ2nstarQ1nstar-3.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))+(2.*pow(xQvector3n.Mod(),2.)+3.*pow(xQvector2n.Mod(),2.)+6.*pow(xQvector1n.Mod(),2.)-6.*xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4>_{3n|n,n,n}]
+  four4n2n1n1n = (reQ4nQ2nstarQ1nstarQ1nstar-2.*reQ4nQ3nstarQ1nstar-reQ4nQ2nstarQ2nstar-2.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-(reQ2nQ1nstarQ1nstar-2.*pow(xQvector4n.Mod(),2.)-2.*pow(xQvector3n.Mod(),2.)-3.*pow(xQvector2n.Mod(),2.)-4.*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-(6.)/((xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4>_{4n|2n,n,n}]
+  four3n1n2n2n = (reQ3nQ1nQ2nstarQ2nstar-reQ4nQ2nstarQ2nstar-reQ3nQ1nQ4nstar-2.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-(2.*reQ1nQ1nQ2nstar-pow(xQvector4n.Mod(),2.)-2.*pow(xQvector3n.Mod(),2.)-4.*pow(xQvector2n.Mod(),2.)-4.*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-(6.)/((xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4>_{3n,n|2n,2n}] 
+  four3n1n3n1n = (pow(xQvector3n.Mod(),2.)*pow(xQvector1n.Mod(),2.)-2.*reQ4nQ3nstarQ1nstar-2.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))+(pow(xQvector4n.Mod(),2.)-(xMult-4.)*pow(xQvector3n.Mod(),2.)+pow(xQvector2n.Mod(),2.)-(xMult-4.)*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))+(xMult-6.)/((xMult-1.)*(xMult-2.)*(xMult-3.));//<4>_{3n,n|3n,n}
   //four_3n1n3n1n = Q3nQ1nQ3nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.))-(2.*three_3n2n1n+2.*three_4n3n1n)/(M-3.)-(two_4n4n+M*two_3n3n+two_2n2n+M*two_1n1n)/((M-2.)*(M-3.))-M/((M-1.)*(M-2.)*(M-3.));//<4>_{3n,n|3n,n}
   
-  fQCorrelations->Fill(10.,four_1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.));
+  fQCorrelations->Fill(10.,four1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
   
-  fQCorrelations->Fill(30.,four_2n2n2n2n,M*(M-1.)*(M-2.)*(M-3.));//to be improved
-  fQCorrelations->Fill(31.,four_3n1n3n1n,M*(M-1.)*(M-2.)*(M-3.));//to be improved 
+  fQCorrelations->Fill(30.,four2n2n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));//to be improved
+  fQCorrelations->Fill(31.,four3n1n3n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));//to be improved 
     
-  fQCorrelations->Fill(11.,four_2n1n2n1n,M*(M-1.)*(M-2.)*(M-3.));
-  fQCorrelations->Fill(12.,four_3n1n1n1n,M*(M-1.)*(M-2.)*(M-3.));
-  fQCorrelations->Fill(13.,four_4n2n1n1n,M*(M-1.)*(M-2.)*(M-3.)); 
-  fQCorrelations->Fill(14.,four_3n1n2n2n,M*(M-1.)*(M-2.)*(M-3.));
+  fQCorrelations->Fill(11.,four2n1n2n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(12.,four3n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(13.,four4n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)); 
+  fQCorrelations->Fill(14.,four3n1n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
   
-  f4Distribution->Fill(four_1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.));  
+  f4pDistribution->Fill(four1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));  
      
-  fQProduct->Fill(0.,two_1n1n*four_1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.));
+  fQProduct->Fill(0.,two1n1n*four1n1n1n1n,xMult*(xMult-1.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
  }
 
  //5-particle
- Double_t five_2n1n1n1n1n=0., five_2n2n2n1n1n=0., five_3n1n2n1n1n=0., five_4n1n1n1n1n=0.;
- if(M>4)
+ Double_t five2n1n1n1n1n=0., five2n2n2n1n1n=0., five3n1n2n1n1n=0., five4n1n1n1n1n=0.;
+ if(xMult>4)
  {
-  five_2n1n1n1n1n = (ReQ2nQ1nQ1nstarQ1nstarQ1nstar-ReQ3nQ1nstarQ1nstarQ1nstar+6.*ReQ3nQ2nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(ReQ2nQ1nQ3nstar+3.*(M-6.)*ReQ2nQ1nstarQ1nstar+3.*ReQ1nQ1nQ2nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(2.*pow(Qvector3n.Mod(),2.)+3.*pow(Qvector2n.Mod()*Qvector1n.Mod(),2.)-3.*(M-4.)*pow(Qvector2n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-3.*(pow(Qvector1n.Mod(),4.)-2.*(2*M-5.)*pow(Qvector1n.Mod(),2.)+2.*M*(M-4.))/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.));//Re[<5>_{2n,n|n,n,n}]
+  five2n1n1n1n1n = (reQ2nQ1nQ1nstarQ1nstarQ1nstar-reQ3nQ1nstarQ1nstarQ1nstar+6.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(reQ2nQ1nQ3nstar+3.*(xMult-6.)*reQ2nQ1nstarQ1nstar+3.*reQ1nQ1nQ2nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(2.*pow(xQvector3n.Mod(),2.)+3.*pow(xQvector2n.Mod()*xQvector1n.Mod(),2.)-3.*(xMult-4.)*pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-3.*(pow(xQvector1n.Mod(),4.)-2.*(2*xMult-5.)*pow(xQvector1n.Mod(),2.)+2.*xMult*(xMult-4.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{2n,n|n,n,n}]
   
-  five_2n2n2n1n1n = (ReQ2nQ2nQ2nstarQ1nstarQ1nstar-ReQ4nQ2nstarQ1nstarQ1nstar-2.*ReQ2nQ2nQ3nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))+2.*(ReQ4nQ2nstarQ2nstar+4.*ReQ3nQ2nstarQ1nstar+ReQ3nQ1nQ4nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))+(ReQ2nQ2nQ4nstar-2.*(M-5.)*ReQ2nQ1nstarQ1nstar+2.*ReQ1nQ1nQ2nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(2.*pow(Qvector4n.Mod(),2.)+4.*pow(Qvector3n.Mod(),2.)+1.*pow(Qvector2n.Mod(),4.)-2.*(3.*M-10.)*pow(Qvector2n.Mod(),2.))/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(4.*pow(Qvector1n.Mod(),2.)*pow(Qvector2n.Mod(),2.)-4.*(M-5.)*pow(Qvector1n.Mod(),2.)+4.*M*(M-6.))/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.));//Re[<5>_{2n,2n|2n,n,n}]  
+  five2n2n2n1n1n = (reQ2nQ2nQ2nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar-2.*reQ2nQ2nQ3nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+2.*(reQ4nQ2nstarQ2nstar+4.*reQ3nQ2nstarQ1nstar+reQ3nQ1nQ4nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+(reQ2nQ2nQ4nstar-2.*(xMult-5.)*reQ2nQ1nstarQ1nstar+2.*reQ1nQ1nQ2nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(2.*pow(xQvector4n.Mod(),2.)+4.*pow(xQvector3n.Mod(),2.)+1.*pow(xQvector2n.Mod(),4.)-2.*(3.*xMult-10.)*pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(4.*pow(xQvector1n.Mod(),2.)*pow(xQvector2n.Mod(),2.)-4.*(xMult-5.)*pow(xQvector1n.Mod(),2.)+4.*xMult*(xMult-6.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{2n,2n|2n,n,n}]  
 
-  //five_2n2n2n1n1n = ReQ2nQ2nQ2nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(4.*four_2n1n2n1n+2.*four_3n1n2n2n+1.*four_2n2n2n2n+four_4n2n1n1n)/(M-4.)-(2.*three_4n3n1n+three_4n2n2n+three_4n2n2n+2.*three_3n2n1n)/((M-3.)*(M-4.))-(4.*three_3n2n1n+(2.*M-1.)*three_2n1n1n+2.*three_2n1n1n)/((M-3.)*(M-4.))-(two_4n4n+2.*two_3n3n+4.*(M-1.)*two_2n2n+2.*(2.*M-1.)*two_1n1n)/((M-2.)*(M-3.)*(M-4.))-(2.*M-1.)/((M-1.)*(M-2.)*(M-3.)*(M-4.));  
+  //five_2n2n2n1n1n = reQ2nQ2nQ2nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(4.*four_2n1n2n1n+2.*four_3n1n2n2n+1.*four_2n2n2n2n+four_4n2n1n1n)/(M-4.)-(2.*three_4n3n1n+three_4n2n2n+three_4n2n2n+2.*three_3n2n1n)/((M-3.)*(M-4.))-(4.*three_3n2n1n+(2.*M-1.)*three_2n1n1n+2.*three_2n1n1n)/((M-3.)*(M-4.))-(two_4n4n+2.*two_3n3n+4.*(M-1.)*two_2n2n+2.*(2.*M-1.)*two_1n1n)/((M-2.)*(M-3.)*(M-4.))-(2.*M-1.)/((M-1.)*(M-2.)*(M-3.)*(M-4.));  
    
-  five_4n1n1n1n1n = (ReQ4nQ1nstarQ1nstarQ1nstarQ1nstar-6.*ReQ4nQ2nstarQ1nstarQ1nstar-4.*ReQ3nQ1nstarQ1nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))+(8.*ReQ4nQ3nstarQ1nstar+3.*ReQ4nQ2nstarQ2nstar+12.*ReQ3nQ2nstarQ1nstar+12.*ReQ2nQ1nstarQ1nstar)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(6.*pow(Qvector4n.Mod(),2.)+8.*pow(Qvector3n.Mod(),2.)+12.*pow(Qvector2n.Mod(),2.)+24.*pow(Qvector1n.Mod(),2.)-24.*M)/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.));//Re[<5>_{4n|n,n,n,n}] 
+  five4n1n1n1n1n = (reQ4nQ1nstarQ1nstarQ1nstarQ1nstar-6.*reQ4nQ2nstarQ1nstarQ1nstar-4.*reQ3nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+(8.*reQ4nQ3nstarQ1nstar+3.*reQ4nQ2nstarQ2nstar+12.*reQ3nQ2nstarQ1nstar+12.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(6.*pow(xQvector4n.Mod(),2.)+8.*pow(xQvector3n.Mod(),2.)+12.*pow(xQvector2n.Mod(),2.)+24.*pow(xQvector1n.Mod(),2.)-24.*xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{4n|n,n,n,n}] 
   
-  //five_4n1n1n1n1n = ReQ4nQ1nstarQ1nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.)) -  (4.*four_3n1n1n1n+6.*four_4n2n1n1n)/(M-4.)  -  (6.*three_2n1n1n  + 12.*three_3n2n1n + 4.*three_4n3n1n + 3.*three_4n2n2n)/((M-3.)*(M-4.))  -  (4.*two_1n1n + 6.*two_2n2n + 4.*two_3n3n + 1.*two_4n4n)/((M-2.)*(M-3.)*(M-4.)) - 1./((M-1.)*(M-2.)*(M-3.)*(M-4.));
+  //five_4n1n1n1n1n = reQ4nQ1nstarQ1nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.)) -  (4.*four_3n1n1n1n+6.*four_4n2n1n1n)/(M-4.)  -  (6.*three_2n1n1n  + 12.*three_3n2n1n + 4.*three_4n3n1n + 3.*three_4n2n2n)/((M-3.)*(M-4.))  -  (4.*two_1n1n + 6.*two_2n2n + 4.*two_3n3n + 1.*two_4n4n)/((M-2.)*(M-3.)*(M-4.)) - 1./((M-1.)*(M-2.)*(M-3.)*(M-4.));
   
-  fQCorrelations->Fill(15.,five_2n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.)); 
-  fQCorrelations->Fill(16.,five_2n2n2n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.));
-  fQCorrelations->Fill(17.,five_3n1n2n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.));
-  fQCorrelations->Fill(18.,five_4n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.));
+  fQCorrelations->Fill(15.,five2n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)); 
+  fQCorrelations->Fill(16.,five2n2n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
+  fQCorrelations->Fill(17.,five3n1n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
+  fQCorrelations->Fill(18.,five4n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
  }
 
  //6-particle
- Double_t six_1n1n1n1n1n1n=0.;
- if(M>5)
+ Double_t six1n1n1n1n1n1n=0.;
+ if(xMult>5)
  {
-  six_1n1n1n1n1n1n = (pow(Qvector1n.Mod(),6.)+9.*Q2nQ1nQ2nstarQ1nstar-6.*ReQ2nQ1nQ1nstarQ1nstarQ1nstar)/(M*(M-1)*(M-2)*(M-3)*(M-4)*(M-5))+4.*(ReQ3nQ1nstarQ1nstarQ1nstar-3.*ReQ3nQ2nstarQ1nstar)/(M*(M-1)*(M-2)*(M-3)*(M-4)*(M-5))+2.*(9.*(M-4.)*ReQ2nQ1nstarQ1nstar+2.*pow(Qvector3n.Mod(),2.))/(M*(M-1)*(M-2)*(M-3)*(M-4)*(M-5))-9.*(pow(Qvector1n.Mod(),4.)+pow(Qvector2n.Mod(),2.))/(M*(M-1)*(M-2)*(M-3)*(M-5))+(18.*pow(Qvector1n.Mod(),2.))/(M*(M-1)*(M-3)*(M-4))-(6.)/((M-1)*(M-2)*(M-3));//<6>_{n,n,n|n,n,n}
+  six1n1n1n1n1n1n = (pow(xQvector1n.Mod(),6.)+9.*xQ2nQ1nQ2nstarQ1nstar-6.*reQ2nQ1nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+4.*(reQ3nQ1nstarQ1nstarQ1nstar-3.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+2.*(9.*(xMult-4.)*reQ2nQ1nstarQ1nstar+2.*pow(xQvector3n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))-9.*(pow(xQvector1n.Mod(),4.)+pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-5))+(18.*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1)*(xMult-3)*(xMult-4))-(6.)/((xMult-1)*(xMult-2)*(xMult-3));//<6>_{n,n,n|n,n,n}
   
-  fQCorrelations->Fill(20.,six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));  
+  fQCorrelations->Fill(20.,six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));  
   
-  f6Distribution->Fill(six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.)); 
+  f6pDistribution->Fill(six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)); 
   
-  fQProduct->Fill(1.,two_1n1n*six_1n1n1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
-  fQProduct->Fill(3.,four_1n1n1n1n*six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
+  fQProduct->Fill(1.,two1n1n*six1n1n1n1n1n1n,xMult*(xMult-1.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));
+  fQProduct->Fill(3.,four1n1n1n1n*six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));
  }
  //---------------------------------------------------------------------------------------------------------
  
@@ -529,14 +529,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //--------------------------------------------------------------------------------------------------------- 
  // DIFFERENTIAL FLOW
  
- Double_t Q_x = Qvector1n.X();
- Double_t Q_y = Qvector1n.Y();
- Double_t Q_2x = Qvector2n.X();
- Double_t Q_2y = Qvector2n.Y();
+ Double_t xQx  = xQvector1n.X();
+ Double_t xQy  = xQvector1n.Y();
+ Double_t xQ2x = xQvector2n.X();
+ Double_t xQ2y = xQvector2n.Y();
 
- Double_t q_x=0.,q_y=0.,q_2x=0.,q_2y=0.,m=0.;
+ Double_t qx=0.,qy=0.,q2x=0.,q2y=0.,m=0.;
  
- for(Int_t i=0;i<M;i++) //check if nPrim == M
+ for(Int_t i=0;i<xMult;i++) //check if nPrim == M
  { 
   fTrack=anEvent->GetTrack(i);
   if(fTrack)
@@ -548,38 +548,38 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  } 
   
- Double_t twoDiff_1n1n=0.,twoDiff_2n2n=0.,threeDiff_2n1n1n=0.,threeDiff_1n1n2n=0.,fourDiff_1n1n1n1n=0.;
+ Double_t twoDiff1n1n=0.,twoDiff2n2n=0.,threeDiff2n1n1n=0.,threeDiff1n1n2n=0.,fourDiff1n1n1n1n=0.;
  
- for(Int_t bin=1;bin<(fnBinsPt+1);bin++) //loop over pt-bins (to be improved upper limit)
+ for(Int_t bin=1;bin<(fnBinsPt+1);bin++)//loop over pt-bins 
  { 
-  q_x = (fReq1n->GetBinContent(bin))*(fReq1n->GetBinEntries(bin));
-  q_y = (fImq1n->GetBinContent(bin))*(fImq1n->GetBinEntries(bin)); 
-  q_2x = (fReq2n->GetBinContent(bin))*(fReq2n->GetBinEntries(bin));  
-  q_2y = (fImq2n->GetBinContent(bin))*(fImq2n->GetBinEntries(bin)); 
-  m = fReq1n->GetBinEntries(bin); 
+  qx = (fReq1n->GetBinContent(bin))*(fReq1n->GetBinEntries(bin));
+  qy = (fImq1n->GetBinContent(bin))*(fImq1n->GetBinEntries(bin)); 
+  q2x = (fReq2n->GetBinContent(bin))*(fReq2n->GetBinEntries(bin));  
+  q2y = (fImq2n->GetBinContent(bin))*(fImq2n->GetBinEntries(bin)); 
+  m = fReq1n->GetBinEntries(bin);          
  
-  if(m>0&&M>1)
+  if(m>0&&xMult>1)
   {
-   twoDiff_1n1n = (q_x*Q_x+q_y*Q_y-m)/(m*(M-1.));
-   f2_1n1n->Fill((bin-1)*0.1,twoDiff_1n1n,m*(M-1.));//<2'>_{n|n}
+   twoDiff1n1n = (qx*xQx+qy*xQy-m)/(m*(xMult-1.));
+   f2PerBin1n1n->Fill((bin-1)*0.1,twoDiff1n1n,m*(xMult-1.));//<2'>_{n|n}
    
-   twoDiff_2n2n = (q_2x*Q_2x+q_2y*Q_2y-m)/(m*(M-1.));
-   f2_2n2n->Fill((bin-1)*0.1,twoDiff_2n2n,m*(M-1.));//<2'>_{2n|2n} 
+   twoDiff2n2n = (q2x*xQ2x+q2y*xQ2y-m)/(m*(xMult-1.));
+   f2PerBin2n2n->Fill((bin-1)*0.1,twoDiff2n2n,m*(xMult-1.));//<2'>_{2n|2n} 
   }
   
-  if(m>0&&M>2)
+  if(m>0&&xMult>2)
   {
-   threeDiff_2n1n1n = (q_2x*(Q_x*Q_x-Q_y*Q_y)+2.*q_2y*Q_x*Q_y-2.*(q_x*Q_x+q_y*Q_y)-(q_2x*Q_2x+q_2y*Q_2y)+2.*m)/(m*(M-1.)*(M-2.));
-   f3_2n1n1n->Fill((bin-1)*0.1,threeDiff_2n1n1n,m*(M-1.)*(M-2.));//Re[<3'>_{2n|n,n}]
+   threeDiff2n1n1n = (q2x*(xQx*xQx-xQy*xQy)+2.*q2y*xQx*xQy-2.*(qx*xQx+qy*xQy)-(q2x*xQ2x+q2y*xQ2y)+2.*m)/(m*(xMult-1.)*(xMult-2.));
+   f3PerBin2n1n1n->Fill((bin-1)*0.1,threeDiff2n1n1n,m*(xMult-1.)*(xMult-2.));//Re[<3'>_{2n|n,n}]
    
-   threeDiff_1n1n2n = (Q_2x*(q_x*Q_x-q_y*Q_y)+Q_2y*(q_x*Q_y+q_y*Q_x)-2.*(q_x*Q_x+q_y*Q_y)-(q_2x*Q_2x+q_2y*Q_2y)+2.*m)/(m*(M-1.)*(M-2.));
-   f3_1n1n2n->Fill((bin-1)*0.1,threeDiff_1n1n2n,m*(M-1.)*(M-2.));//Re[<3'>_{n,n|2n}]
+   threeDiff1n1n2n = (xQ2x*(qx*xQx-qy*xQy)+xQ2y*(qx*xQy+qy*xQx)-2.*(qx*xQx+qy*xQy)-(q2x*xQ2x+q2y*xQ2y)+2.*m)/(m*(xMult-1.)*(xMult-2.));
+   f3PerBin1n1n2n->Fill((bin-1)*0.1,threeDiff1n1n2n,m*(xMult-1.)*(xMult-2.));//Re[<3'>_{n,n|2n}]
   }
   
-  if(m>0&&M>3)
+  if(m>0&&xMult>3)
   {
-   fourDiff_1n1n1n1n = ((Q_x*Q_x+Q_y*Q_y)*(q_x*Q_x+q_y*Q_y)-(q_2x*(Q_x*Q_x-Q_y*Q_y)+2.*q_2y*Q_x*Q_y)-(Q_2x*(q_x*Q_x-q_y*Q_y)+Q_2y*(q_x*Q_y+q_y*Q_x))+(q_2x*Q_2x+q_2y*Q_2y)-2.*(M-3.)*(q_x*Q_x+q_y*Q_y)-2.*m*(Q_x*Q_x+Q_y*Q_y)+2.*(Q_x*q_x+Q_y*q_y)+2.*m*(M-3.))/(m*(M-1.)*(M-2.)*(M-3.));
-   f4_1n1n1n1n->Fill((bin-1)*0.1,fourDiff_1n1n1n1n,m*(M-1.)*(M-2.)*(M-3.)); //Re[<4'>_{n,n|n,n}]
+   fourDiff1n1n1n1n = ((xQx*xQx+xQy*xQy)*(qx*xQx+qy*xQy)-(q2x*(xQx*xQx-xQy*xQy)+2.*q2y*xQx*xQy)-(xQ2x*(qx*xQx-qy*xQy)+xQ2y*(qx*xQy+qy*xQx))+(q2x*xQ2x+q2y*xQ2y)-2.*(xMult-3.)*(qx*xQx+qy*xQy)-2.*m*(xQx*xQx+xQy*xQy)+2.*(xQx*qx+xQy*qy)+2.*m*(xMult-3.))/(m*(xMult-1.)*(xMult-2.)*(xMult-3.));
+   f4PerBin1n1n1n1n->Fill((bin-1)*0.1,fourDiff1n1n1n1n,m*(xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4'>_{n,n|n,n}]
   }
    
  } 
@@ -595,6 +595,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
+  
 
 
 
@@ -750,9 +751,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
+
+
 /*
-
-
 
 
 
@@ -805,11 +806,11 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t phi5=0.,phi6=0.;
 
  //<2>_{kn|kn} (k=1,2,3,4)
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<M;j++)
+  for(Int_t j=0;j<xMult;j++)
   {
    if(j==i)continue;
    fTrack=anEvent->GetTrack(j);
@@ -822,16 +823,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  }  
      
  //<3>_{2n|n,n}, <3>_{3n|2n,n}, <3>_{4n|2n,2n} and <3>_{4n|3n,n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<M;j++)
+  for(Int_t j=0;j<xMult;j++)
   {
    if(j==i)continue;
    fTrack=anEvent->GetTrack(j);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<M;k++)
+   for(Int_t k=0;k<xMult;k++)
    {
     if(k==i||k==j)continue;
     fTrack=anEvent->GetTrack(k);
@@ -845,21 +846,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  }
   
  //<4>_{n,n|n,n}, <4>_{2n,n|2n,n}, <4>_{3n|n,n,n}, <4>_{4n|2n,n,n}, <4>_{2n,2n|2n,2n} and <4>_{3n,n|3n,n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<M;j++)
+  for(Int_t j=0;j<xMult;j++)
   {
    if(j==i)continue;
    fTrack=anEvent->GetTrack(j);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<M;k++)
+   for(Int_t k=0;k<xMult;k++)
    {
     if(k==i||k==j)continue;
     fTrack=anEvent->GetTrack(k);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<M;l++)
+    for(Int_t l=0;l<xMult;l++)
     {
      if(l==i||l==j||l==k)continue;
      fTrack=anEvent->GetTrack(l);
@@ -891,27 +892,27 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  //<5>_{2n,n,n,n,n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   cout<<"i = "<<i<<endl;
   fTrack=anEvent->GetTrack(i);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<M;j++)
+  for(Int_t j=0;j<xMult;j++)
   {
    if(j==i)continue;
    fTrack=anEvent->GetTrack(j);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<M;k++)
+   for(Int_t k=0;k<xMult;k++)
    {
     if(k==i||k==j)continue;
     fTrack=anEvent->GetTrack(k);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<M;l++)
+    for(Int_t l=0;l<xMult;l++)
     {
      if(l==i||l==j||l==k)continue;
      fTrack=anEvent->GetTrack(l);
      phi4=fTrack->Phi();
-     for(Int_t m=0;m<M;m++)
+     for(Int_t m=0;m<xMult;m++)
      {
       if(m==i||m==j||m==k||m==l)continue;
       fTrack=anEvent->GetTrack(m);
@@ -928,39 +929,39 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
 
- */
+
 
 
  
- /*
+
  
  //<6>_{n,n,n,n,n,n}
- for(Int_t i=0;i<nPrim;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   //cout<<"i = "<<i<<endl;
   fTrack=anEvent->GetTrack(i);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<nPrim;j++)
+  for(Int_t j=0;j<xMult;j++)
   {
    if(j==i)continue;
    fTrack=anEvent->GetTrack(j);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<nPrim;k++)
+   for(Int_t k=0;k<xMult;k++)
    {
     if(k==i||k==j)continue;
     fTrack=anEvent->GetTrack(k);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<nPrim;l++)
+    for(Int_t l=0;l<xMult;l++)
     {
      if(l==i||l==j||l==k)continue;
      fTrack=anEvent->GetTrack(l);
      phi4=fTrack->Phi();
-     for(Int_t m=0;m<nPrim;m++)
+     for(Int_t m=0;m<xMult;m++)
      {
       if(m==i||m==j||m==k||m==l)continue;
       fTrack=anEvent->GetTrack(m);
       phi5=fTrack->Phi();
-      for(Int_t nn=0;nn<nPrim;nn++)
+      for(Int_t nn=0;nn<xMult;nn++)
       {
        if(nn==i||nn==j||nn==k||nn==l||nn==m)continue;
        fTrack=anEvent->GetTrack(nn);
@@ -972,7 +973,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    }
   }
  }
- */
+ 
  //-------------------------------------------------------------------------------------------------------------------------------- 
 
 
@@ -987,7 +988,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
-/*
+
 
 
 
@@ -1004,13 +1005,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //51st bin: <4'>_{n,n|n,n}
  
  //<2'>_{n|n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<M;j++)
+   for(Int_t j=0;j<xMult;j++)
    {
     if(j==i)continue;
     fTrack=anEvent->GetTrack(j);
@@ -1022,18 +1023,18 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  }  
 
  //<3'>_{2n|n,n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<M;j++)
+   for(Int_t j=0;j<xMult;j++)
    {
     if(j==i)continue;
     fTrack=anEvent->GetTrack(j);
     phi2=fTrack->Phi();
-    for(Int_t k=0;k<M;k++)
+    for(Int_t k=0;k<xMult;k++)
     {
      if(k==i||k==j)continue;
      fTrack=anEvent->GetTrack(k);
@@ -1045,24 +1046,27 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }  
  }
   
+   
+  
+  
  //<4'>_{n,n|n,n}
- for(Int_t i=0;i<M;i++)
+ for(Int_t i=0;i<xMult;i++)
  {
   fTrack=anEvent->GetTrack(i);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<M;j++)
+   for(Int_t j=0;j<xMult;j++)
    {
     if(j==i)continue;
     fTrack=anEvent->GetTrack(j);
     phi2=fTrack->Phi();
-    for(Int_t k=0;k<M;k++)
+    for(Int_t k=0;k<xMult;k++)
     {
      if(k==i||k==j)continue;
      fTrack=anEvent->GetTrack(k);
      phi3=fTrack->Phi();
-     for(Int_t l=0;l<M;l++)
+     for(Int_t l=0;l<xMult;l++)
      {
       if(l==i||l==j||l==k)continue;
       fTrack=anEvent->GetTrack(l);
@@ -1076,10 +1080,12 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //--------------------------------------------------------------------------------------------------------------------------------  
 
 
-
-
-
+ 
 */
+
+
+
+
 
 
 
@@ -1097,7 +1103,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 void AliFlowAnalysisWithQCumulants::Finish()
 {
  //calculate the final results
- AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations, fQProduct,fDirectCorrelations, f2_1n1n,f2_2n2n,f3_2n1n1n,f3_1n1n2n,f4_1n1n1n1n,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
+ AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations, fQProduct,fDirectCorrelations, f2PerBin1n1n,f2PerBin2n2n,f3PerBin2n1n1n,f3PerBin1n1n2n,f4PerBin1n1n1n1n,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
          
  finalResults.Calculate();  
 }

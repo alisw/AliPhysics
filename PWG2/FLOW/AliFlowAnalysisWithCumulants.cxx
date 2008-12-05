@@ -65,20 +65,27 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fPtMax(0),
  fPtMin(0),
  fBinWidth(0),
+ fgknBins(0),
  fAvQx(0),
  fAvQy(0),
  fAvQ2x(0),
  fAvQ2y(0),
- fAvMultIntFlow(NULL),
- fQVectorComponents(NULL),
- fIntFlowResults(NULL),
- fDiffFlowResults2(NULL),
- fDiffFlowResults4(NULL),
- fDiffFlowResults6(NULL),
- fDiffFlowResults8(NULL),
+ fAvMultIntFlowGFC(NULL),
+ fQVectorComponentsGFC(NULL),
+ fIntFlowResultsGFC(NULL),
+ fDiffFlowResults2ndOrderGFC(NULL),
+ fDiffFlowResults4thOrderGFC(NULL),
+ fDiffFlowResults6thOrderGFC(NULL),
+ fDiffFlowResults8thOrderGFC(NULL),
+ fCommonHistsResults2nd(NULL),
+ fCommonHistsResults4th(NULL),
+ fCommonHistsResults6th(NULL),
+ fCommonHistsResults8th(NULL),
  fIntFlowGenFun(NULL),
  fDiffFlowGenFunRe(NULL),
  fDiffFlowGenFunIm(NULL),
+ fBinNoOfParticles(NULL),
+ /*
  fDiffFlowGenFunRe0(NULL),
  fDiffFlowGenFunRe1(NULL),
  fDiffFlowGenFunRe2(NULL),
@@ -95,15 +102,19 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fDiffFlowGenFunIm5(NULL),
  fDiffFlowGenFunIm6(NULL),
  fDiffFlowGenFunIm7(NULL),
- fCommonHists(NULL),
- fQDist(NULL)//q-distribution
+ */
+ fCommonHists(NULL)
 {
  //constructor 
- fHistList = new TList(); 
+ fHistList = new TList();
  fR0=AliFlowCumuConstants::fgR0;
  fPtMax=AliFlowCommonConstants::GetPtMax(); 
  fPtMin=AliFlowCommonConstants::GetPtMin();
- fBinWidth=(fPtMax-fPtMin)/fgknBins;  
+ fgknBins=AliFlowCommonConstants::GetNbinsPt();
+ if(fgknBins)
+ {
+  fBinWidth=(fPtMax-fPtMin)/fgknBins;  
+ } 
 }
 
 AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants()
@@ -118,47 +129,68 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
 {
  //various output histograms
  
- //avarage multiplicity 
- fAvMultIntFlow = new TProfile("fAvMultIntFlow","Avarage multiplicity of selected particles used for int. flow",1,0,1,0,100000);
- fAvMultIntFlow->SetXTitle("");
- fAvMultIntFlow->SetYTitle("<multiplicity>");
- fHistList->Add(fAvMultIntFlow);
+ //average multiplicity 
+ fAvMultIntFlowGFC = new TProfile("fAvMultIntFlowGFC","Average Multiplicity",1,0,1,"s");
+ fAvMultIntFlowGFC->SetXTitle("");
+ fAvMultIntFlowGFC->SetYTitle("");
+ fAvMultIntFlowGFC->SetLabelSize(0.06);
+ fAvMultIntFlowGFC->SetMarkerStyle(25);
+ fAvMultIntFlowGFC->SetLabelOffset(0.01);
+ (fAvMultIntFlowGFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+ fHistList->Add(fAvMultIntFlowGFC);
  
- //Q-vector stuff
- fQVectorComponents = new TProfile("fQVectorComponents","Avarage of Q-vector components",4,0.,4.);
- fQVectorComponents->SetXTitle("");
- fQVectorComponents->SetYTitle("< >");
- fHistList->Add(fQVectorComponents);
+ //averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>)
+ fQVectorComponentsGFC = new TProfile("fQVectorComponentsGFC","Average of Q-vector components",4,0.,4.);
+ fQVectorComponentsGFC->SetXTitle("");
+ fQVectorComponentsGFC->SetYTitle("");
+ fQVectorComponentsGFC->SetLabelSize(0.06);
+ fQVectorComponentsGFC->SetMarkerStyle(25);
+ (fQVectorComponentsGFC->GetXaxis())->SetBinLabel(1,"<Q_{x}>");
+ (fQVectorComponentsGFC->GetXaxis())->SetBinLabel(2,"<Q_{y}>");
+ (fQVectorComponentsGFC->GetXaxis())->SetBinLabel(3,"<Q_{x}^{2}>");
+ (fQVectorComponentsGFC->GetXaxis())->SetBinLabel(4,"<Q_{y}^{2}>");
+ fHistList->Add(fQVectorComponentsGFC);
  
  //final results for integrated flow (v_n{2}, v_n{4},..., v_n{16}) from cumulants (by default n=2) 
- fIntFlowResults = new TH1D("fIntFlowResults","Integrated Flow From Cumulants",8,0,8);
- fIntFlowResults->SetXTitle("");
- fIntFlowResults->SetYTitle("Integrated Flow [%]");
- fHistList->Add(fIntFlowResults);
+ fIntFlowResultsGFC = new TH1D("fIntFlowResultsGFC","Integrated Flow From Cumulants (Generating Function)",8,0,8);
+ fIntFlowResultsGFC->SetXTitle("");
+ fIntFlowResultsGFC->SetYTitle("");
+ fIntFlowResultsGFC->SetLabelSize(0.06);
+ //fIntFlowResultsGFC->SetTickLength(1);
+ fIntFlowResultsGFC->SetMarkerStyle(25);
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(2,"v_{n}{4}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(3,"v_{n}{6}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(4,"v_{n}{8}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(5,"v_{n}{10}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(6,"v_{n}{12}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(7,"v_{n}{14}");
+ (fIntFlowResultsGFC->GetXaxis())->SetBinLabel(8,"v_{n}{16}");
+ fHistList->Add(fIntFlowResultsGFC);
   
  //final results for differential flow v_p/n{2} (by default p=n=2)
- fDiffFlowResults2 = new TH1D("fDiffFlowResults2","v'_2/2{2}",fgknBins,fPtMin,fPtMax);
- fDiffFlowResults2->SetXTitle("pt [GeV]");
- fDiffFlowResults2->SetYTitle("Differential Flow [%]");
- fHistList->Add(fDiffFlowResults2);
+ fDiffFlowResults2ndOrderGFC = new TH1D("fDiffFlowResults2ndOrderGFC","v'_2/2{2}",fgknBins,fPtMin,fPtMax);
+ fDiffFlowResults2ndOrderGFC->SetXTitle("pt [GeV]");
+ fDiffFlowResults2ndOrderGFC->SetYTitle("");
+ fHistList->Add(fDiffFlowResults2ndOrderGFC);
 
  //final results for differential flow v_p/n{4} (by default p=n=2) 
- fDiffFlowResults4 = new TH1D("fDiffFlowResults4","v'_2/2{4}",fgknBins,fPtMin,fPtMax);
- fDiffFlowResults4->SetXTitle("pt [GeV]");
- fDiffFlowResults4->SetYTitle("Differential Flow [%]");
- fHistList->Add(fDiffFlowResults4);
+ fDiffFlowResults4thOrderGFC = new TH1D("fDiffFlowResults4thOrderGFC","v'_2/2{4}",fgknBins,fPtMin,fPtMax);
+ fDiffFlowResults4thOrderGFC->SetXTitle("pt [GeV]");
+ fDiffFlowResults4thOrderGFC->SetYTitle("");
+ fHistList->Add(fDiffFlowResults4thOrderGFC);
  
  //final results for differential flow v_p/n{6} (by default p=n=2)  
- fDiffFlowResults6 = new TH1D("fDiffFlowResults6","v'_2/2{6}",fgknBins,fPtMin,fPtMax);
- fDiffFlowResults6->SetXTitle("pt [GeV]");
- fDiffFlowResults6->SetYTitle("Differential Flow [%]");
- fHistList->Add(fDiffFlowResults6);
+ fDiffFlowResults6thOrderGFC = new TH1D("fDiffFlowResults6thOrderGFC","v'_2/2{6}",fgknBins,fPtMin,fPtMax);
+ fDiffFlowResults6thOrderGFC->SetXTitle("pt [GeV]");
+ fDiffFlowResults6thOrderGFC->SetYTitle("");
+ fHistList->Add(fDiffFlowResults6thOrderGFC);
  
  //final results for differential flow v_p/n{8} (by default p=n=2)
- fDiffFlowResults8 = new TH1D("fDiffFlowResults8","v'_2/2{8}",fgknBins,fPtMin,fPtMax);
- fDiffFlowResults8->SetXTitle("pt [GeV]");
- fDiffFlowResults8->SetYTitle("Differential Flow [%]");
- fHistList->Add(fDiffFlowResults8);
+ fDiffFlowResults8thOrderGFC = new TH1D("fDiffFlowResults8thOrderGFC","v'_2/2{8}",fgknBins,fPtMin,fPtMax);
+ fDiffFlowResults8thOrderGFC->SetXTitle("pt [GeV]");
+ fDiffFlowResults8thOrderGFC->SetYTitle("");
+ fHistList->Add(fDiffFlowResults8thOrderGFC);
   
  //avarage of the generating function for integrated flow <G[p][q]>
  fIntFlowGenFun = new TProfile2D("fIntFlowGenFun","<G[p][q]>",fgkPmax,0.,(Double_t)fgkPmax,fgkQmax,0.,(Double_t)fgkQmax);
@@ -166,12 +198,13 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
  fIntFlowGenFun->SetYTitle("q");
  fHistList->Add(fIntFlowGenFun);
  
- /*
  //avarage of the real part of generating function for differential flow <Re(D[b][p][q])>
  fDiffFlowGenFunRe = new TProfile3D("fDiffFlowGenFunRe","<Re(D[b][p][q])>",fgknBins,(Double_t)(fPtMin/fBinWidth),(Double_t)(fPtMax/fBinWidth),fgkPmax,0.,(Double_t)fgkPmax,fgkQmax,0.,(Double_t)fgkQmax);
  fDiffFlowGenFunRe->SetXTitle("b");
  fDiffFlowGenFunRe->SetYTitle("p");
  fDiffFlowGenFunRe->SetZTitle("q");
+ fDiffFlowGenFunRe->SetTitleOffset(1.44,"X");
+ fDiffFlowGenFunRe->SetTitleOffset(1.44,"Y");
  fHistList->Add(fDiffFlowGenFunRe);
  
  //avarage of the imaginary part of generating function for differential flow <Im(D[b][p][q])>
@@ -179,9 +212,17 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
  fDiffFlowGenFunIm->SetXTitle("b");
  fDiffFlowGenFunIm->SetYTitle("p");
  fDiffFlowGenFunIm->SetZTitle("q");
+ fDiffFlowGenFunIm->SetTitleOffset(1.44,"X");
+ fDiffFlowGenFunIm->SetTitleOffset(1.44,"Y");
  fHistList->Add(fDiffFlowGenFunIm);
- */
  
+ //number of particles per pt bin
+ fBinNoOfParticles = new TProfile("fBinNoOfParticles","Number of particles per pt bin",fgknBins,fPtMin,fPtMax);
+ fBinNoOfParticles->SetXTitle("pt [GeV]");
+ fBinNoOfParticles->SetYTitle("");
+ fHistList->Add(fBinNoOfParticles);
+ 
+ /*
  fDiffFlowGenFunRe0 = new TProfile2D("fDiffFlowGenFunRe0","Re(<D[b][0][q]>)",fgknBins,(Double_t)(fPtMin/fBinWidth),(Double_t)(fPtMax/fBinWidth),fgkQmax,0.,(Double_t)fgkQmax);
  fDiffFlowGenFunRe0->SetXTitle("b");
  fDiffFlowGenFunRe0->SetYTitle("q");
@@ -261,16 +302,27 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
  fDiffFlowGenFunIm7->SetXTitle("b");
  fDiffFlowGenFunIm7->SetYTitle("q");
  fHistList->Add(fDiffFlowGenFunIm7);
+ */
  
  //common control histograms
- fCommonHists = new AliFlowCommonHist("Cumulants");
- fHistList->Add(fCommonHists->GetHistList());  
+ fCommonHists = new AliFlowCommonHist("AliFlowCommonHistGFC");
+ fHistList->Add(fCommonHists);  
  
- //q-distribution 
- fQDist = new TH1D("fQDist","q-distribution",100,0,10);
- fQDist->SetXTitle("q=Q/#sqrt{M}");
- fQDist->SetYTitle("dN_{event}/dq");
- fHistList->Add(fQDist);
+ //common histograms for final results (2nd order)
+ fCommonHistsResults2nd = new AliFlowCommonHistResults("AliFlowCommonHistResults2ndOrderGFC");
+ fHistList->Add(fCommonHistsResults2nd); 
+ 
+ //common histograms for final results (4th order)
+ fCommonHistsResults4th = new AliFlowCommonHistResults("AliFlowCommonHistResults4thOrderGFC");
+ fHistList->Add(fCommonHistsResults4th);
+ 
+ //common histograms for final results (6th order)
+ fCommonHistsResults6th = new AliFlowCommonHistResults("AliFlowCommonHistResults6thOrderGFC");
+ fHistList->Add(fCommonHistsResults6th); 
+ 
+ //common histograms for final results (8th order)
+ fCommonHistsResults8th = new AliFlowCommonHistResults("AliFlowCommonHistResults8thOrderGFC");
+ fHistList->Add(fCommonHistsResults8th);
   
 }//end of CreateOutputObjects()
 
@@ -279,7 +331,6 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
 void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 {
  //running over data
- 
  Int_t nPrim = anEvent->NumberOfTracks();//total multiplicity
   
  if(nPrim>30)//generating function formalism can be applied only for large multiplicities (to be improved in the future) 
@@ -322,7 +373,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  //storing the selected multiplicity (if fAvMultIntFlow is not filled here then you had wrongly selected the particles used for integrated flow)
  if(nSelTracksIntFlow==nEventNSelTracksIntFlow)
  {
-  fAvMultIntFlow->Fill(0.,nSelTracksIntFlow,1);
+  fAvMultIntFlowGFC->Fill(0.,nSelTracksIntFlow,1);
  }
  
  //calculating Q-vector of event (needed for errors)
@@ -330,19 +381,11 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  fQVector.Set(0.,0.);
  fQVector.SetMult(0);
  fQVector=anEvent->GetQ();                            //get the Q vector for this event
- fQVectorComponents->Fill(0.,fQVector.X(),1);         //in the 1st bin fill Q_x
- fQVectorComponents->Fill(1.,fQVector.Y(),1);         //in the 2nd bin fill Q_y
- fQVectorComponents->Fill(2.,pow(fQVector.X(),2.),1); //in the 3rd bin fill (Q_x)^2
- fQVectorComponents->Fill(3.,pow(fQVector.Y(),2.),1); //in the 4th bin fill (Q_y)^2
+ fQVectorComponentsGFC->Fill(0.,fQVector.X(),1);         //in the 1st bin fill Q_x
+ fQVectorComponentsGFC->Fill(1.,fQVector.Y(),1);         //in the 2nd bin fill Q_y
+ fQVectorComponentsGFC->Fill(2.,pow(fQVector.X(),2.),1); //in the 3rd bin fill (Q_x)^2
+ fQVectorComponentsGFC->Fill(3.,pow(fQVector.Y(),2.),1); //in the 4th bin fill (Q_y)^2
  
- //q-distribution
- if(fQVector.GetMult()!=0)
- {
-  Double_t qDist = fQVector.Mod()/sqrt(fQVector.GetMult());
-  fQDist->Fill(qDist,1); 
- }
- 
- /*
  //two 3D profiles for differential flow
  //second loop over data: evaluating the generating function D[b][p][q] for differential flow 
  //remark 0: D[b][p][q] is a complex number => real and imaginary part are calculated separately
@@ -350,6 +393,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  //remark 2: results are stored in two 3D profiles in order to automatically get <Re(D[b][p][q])> and <Im(D[b][p][q])>
  for(Int_t i=0;i<nPrim;i++){
   fTrack=anEvent->GetTrack(i);
+  fBinNoOfParticles->Fill(fTrack->Pt(),1.,1.);
   if (fTrack && fTrack->UseForDifferentialFlow()){
    for(Int_t p=0;p<fgkPmax;p++){
     for(Int_t q=0;q<fgkQmax;q++){
@@ -361,8 +405,8 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    }
   }  
  }//ending the second loop over data    
- */
  
+ /*
  //sixteen 2D profiles for differential flow          
  for(Int_t i=0;i<nPrim;i++){
   fTrack=anEvent->GetTrack(i);
@@ -412,7 +456,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    //}
   }  
  }//ending the second loop over data            
- 
+ */
       
 }//end of if(nPrim>30)
                       
@@ -424,9 +468,9 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 void AliFlowAnalysisWithCumulants::Finish()
 {
  //calculate the final results
- AliCumulantsFunctions finalResults(fIntFlowGenFun,NULL,NULL, fIntFlowResults,fDiffFlowResults2,fDiffFlowResults4,fDiffFlowResults6,fDiffFlowResults8,fAvMultIntFlow,fQVectorComponents,fQDist,fDiffFlowGenFunRe0,fDiffFlowGenFunRe1,fDiffFlowGenFunRe2,
-fDiffFlowGenFunRe3,fDiffFlowGenFunRe4,fDiffFlowGenFunRe5,fDiffFlowGenFunRe6,fDiffFlowGenFunRe7,fDiffFlowGenFunIm0,fDiffFlowGenFunIm1,
-fDiffFlowGenFunIm2,fDiffFlowGenFunIm3,fDiffFlowGenFunIm4,fDiffFlowGenFunIm5,fDiffFlowGenFunIm6,fDiffFlowGenFunIm7);
+ //AliCumulantsFunctions finalResults(fIntFlowGenFun,NULL,NULL, fIntFlowResults,fDiffFlowResults2,fDiffFlowResults4,fDiffFlowResults6,fDiffFlowResults8,fAvMultIntFlow,fQVectorComponents,  fQDist,fDiffFlowGenFunRe0,fDiffFlowGenFunRe1,fDiffFlowGenFunRe2, fDiffFlowGenFunRe3,fDiffFlowGenFunRe4,fDiffFlowGenFunRe5,fDiffFlowGenFunRe6,fDiffFlowGenFunRe7,fDiffFlowGenFunIm0,fDiffFlowGenFunIm1, fDiffFlowGenFunIm2,fDiffFlowGenFunIm3,fDiffFlowGenFunIm4,fDiffFlowGenFunIm5,fDiffFlowGenFunIm6,fDiffFlowGenFunIm7);
+
+ AliCumulantsFunctions finalResults(fIntFlowGenFun,fDiffFlowGenFunRe,fDiffFlowGenFunIm,fBinNoOfParticles, fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
          
   finalResults.Calculate();  
 }

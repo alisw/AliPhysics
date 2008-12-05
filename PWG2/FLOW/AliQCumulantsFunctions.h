@@ -13,8 +13,8 @@
  *           (anteb@nikhef.nl)    *
  *********************************/ 
 
-#ifndef AliQCumulantsFunctions_H
-#define AliQCumulantsFunctions_H
+#ifndef ALIQCUMULANTSFUNCTIONS_H
+#define ALIQCUMULANTSFUNCTIONS_H
 
 #include "AliFlowCommonConstants.h"
 
@@ -35,7 +35,7 @@ class AliQCumulantsFunctions{
  public:
   AliQCumulantsFunctions();
   virtual ~AliQCumulantsFunctions();
-  AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2_2n2n, TProfile *bin3_2n1n1n, TProfile *bin3_1n1n2n, TProfile *bin4_1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
+  AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2p2n2n, TProfile *bin3p2n1n1n, TProfile *bin3p1n1n2n, TProfile *bin4p1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
  
   void Calculate();
 
@@ -55,11 +55,11 @@ class AliQCumulantsFunctions{
 
   TProfile *fDirect;         //direct correlations (correlations calculated with nested loopps)
   
-  TProfile *fbin2_1n1n;      //<<2'>>_{n|n} per pt-bin
-  TProfile *fbin2_2n2n;      //<<2'>>_{2n|2n} per pt-bin
-  TProfile *fbin3_2n1n1n;    //<<3'>>_{2n,n|n} per pt-bin
-  TProfile *fbin3_1n1n2n;    //<<3'>>_{n,n|2n} per pt-bin
-  TProfile *fbin4_1n1n1n1n;  //<<4'>>_{n,n|n,n} per pt-bin
+  TProfile *fbin2p1n1n;      //<<2'>>_{n|n} per pt-bin
+  TProfile *fbin2p2n2n;      //<<2'>>_{2n|2n} per pt-bin
+  TProfile *fbin3p2n1n1n;    //<<3'>>_{2n,n|n} per pt-bin
+  TProfile *fbin3p1n1n2n;    //<<3'>>_{n,n|2n} per pt-bin
+  TProfile *fbin4p1n1n1n1n;  //<<4'>>_{n,n|n,n} per pt-bin
   
   AliFlowCommonHistResults *fchr2nd; //final results for 2nd order int. and diff. flow stored in the common histograms
   AliFlowCommonHistResults *fchr4th; //final results for 4th order int. and diff. flow stored in the common histograms

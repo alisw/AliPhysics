@@ -25,7 +25,6 @@
 #define AliCumulantsFunctions_cxx
 
 #include "Riostream.h"
-#include "AliFlowCommonConstants.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TList.h"
@@ -34,17 +33,15 @@
 #include "TProfile.h"
 #include "TProfile2D.h" 
 #include "TProfile3D.h"
-#include "TF1.h"//VOLOSHIN
-#include "TAxis.h"//VOLOSHIN
 #include "TH1.h"
 #include "TH1D.h"
-
 
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithCumulants.h"
 #include "AliFlowCumuConstants.h"
 #include "AliFlowCommonConstants.h"
+#include "AliFlowCommonHistResults.h"
 #include "AliCumulantsFunctions.h"
 
 ClassImp(AliCumulantsFunctions)
@@ -55,6 +52,7 @@ AliCumulantsFunctions::AliCumulantsFunctions():
  fIntGenFun(NULL),
  fDiffGenFunRe(NULL),
  fDiffGenFunIm(NULL),
+ fBinNoOfParticles(NULL),
  fifr(NULL),
  fdfr2(NULL), 
  fdfr4(NULL), 
@@ -62,7 +60,11 @@ AliCumulantsFunctions::AliCumulantsFunctions():
  fdfr8(NULL),
  fAvMult(NULL),
  fQVector(NULL),
- fQDistrib(NULL),//q-distribution
+ fchr2nd(NULL),
+ fchr4th(NULL),
+ fchr6th(NULL),
+ fchr8th(NULL) 
+ /*
  fdRe0(NULL),
  fdRe1(NULL),
  fdRe2(NULL),
@@ -79,6 +81,7 @@ AliCumulantsFunctions::AliCumulantsFunctions():
  fdIm5(NULL),
  fdIm6(NULL),
  fdIm7(NULL)
+ */
 {
  //default constructor 
 }
@@ -88,10 +91,15 @@ AliCumulantsFunctions::~AliCumulantsFunctions()
  //destructor
 }
 
-AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, TH1D *QDistrib, TProfile2D *dRe0, TProfile2D *dRe1, TProfile2D *dRe2, TProfile2D *dRe3, TProfile2D *dRe4, TProfile2D *dRe5, TProfile2D *dRe6, TProfile2D *dRe7, TProfile2D *dIm0, TProfile2D *dIm1, TProfile2D *dIm2, TProfile2D *dIm3, TProfile2D *dIm4, TProfile2D *dIm5, TProfile2D *dIm6, TProfile2D *dIm7):
+
+//, TProfile2D *dRe0, TProfile2D *dRe1, TProfile2D *dRe2, TProfile2D *dRe3, TProfile2D *dRe4, TProfile2D *dRe5, TProfile2D *dRe6, TProfile2D *dRe7, TProfile2D *dIm0, TProfile2D *dIm1, TProfile2D *dIm2, TProfile2D *dIm3, TProfile2D *dIm4, TProfile2D *dIm5, TProfile2D *dIm6, TProfile2D *dIm7
+
+
+AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntGenFun(IntGenFun),
  fDiffGenFunRe(DiffGenFunRe),
  fDiffGenFunIm(DiffGenFunIm),
+ fBinNoOfParticles(BinNoOfParticles),
  fifr(ifr),
  fdfr2(dfr2), 
  fdfr4(dfr4), 
@@ -99,7 +107,11 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *
  fdfr8(dfr8),
  fAvMult(AvMult),
  fQVector(QVector),
- fQDistrib(QDistrib),//q-distribution
+ fchr2nd(chr2nd),
+ fchr4th(chr4th),
+ fchr6th(chr6th),
+ fchr8th(chr8th) 
+ /*
  fdRe0(dRe0),
  fdRe1(dRe1),
  fdRe2(dRe2),
@@ -116,6 +128,7 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *
  fdIm5(dIm5),
  fdIm6(dIm6),
  fdIm7(dIm7)
+ */
 {
  //custom constructor 
 }
@@ -130,6 +143,7 @@ void AliCumulantsFunctions::Calculate()
  static const Int_t fgkFlow=AliFlowCumuConstants::kFlow;   //integrated flow coefficient to be calculated
  static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl; //the multiple in p=m*n (diff. flow) 
  static const Int_t fgknBins=100;                          //number of pt bins //to be improved
+ 
  Double_t fR0=AliFlowCumuConstants::fgR0;                  //needed for numerics
  //Double_t fPtMax=AliFlowCommonConstants::GetPtMax();       //maximum pt
  //Double_t fPtMin=AliFlowCommonConstants::GetPtMin();       //minimum pt
@@ -146,7 +160,7 @@ void AliCumulantsFunctions::Calculate()
  //avarage selected multiplicity
  Double_t AvM = fAvMult->GetBinContent(1);
  
- //mumber of events
+ //number of events
  Int_t nEvents = (Int_t)(fAvMult->GetBinEntries(1));
  
  //<Q-vector stuff>
@@ -267,6 +281,9 @@ void AliCumulantsFunctions::Calculate()
     cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<", chi{2} = "<<ChiQ[0]<<endl;
     fifr->SetBinContent(1,V2);
     fifr->SetBinError(1,SdQ[0]);
+    //common histograms
+    fchr2nd->FillIntegratedFlow(V2,SdQ[0]);
+    fchr2nd->FillChi(V2*pow(AvM,0.5));
    } 
    else 
    {
@@ -281,6 +298,9 @@ void AliCumulantsFunctions::Calculate()
     cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<", chi{4} = "<<ChiQ[1]<<endl;
     fifr->SetBinContent(2,V4);
     fifr->SetBinError(2,SdQ[1]);
+    //common histograms
+    fchr4th->FillIntegratedFlow(V4,SdQ[1]);
+    fchr4th->FillChi(V4*pow(AvM,0.5));
    } 
    else 
    {
@@ -295,6 +315,9 @@ void AliCumulantsFunctions::Calculate()
    cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<", chi{6} = "<<ChiQ[2]<<endl;
    fifr->SetBinContent(3,V6);
    fifr->SetBinError(3,SdQ[2]);
+   //common histograms
+   fchr6th->FillIntegratedFlow(V6,SdQ[2]);
+   fchr6th->FillChi(V6*pow(AvM,0.5));
   }
   else
   {
@@ -309,6 +332,9 @@ void AliCumulantsFunctions::Calculate()
    cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<", chi{8} = "<<ChiQ[3]<<endl;
    fifr->SetBinContent(4,V8);
    fifr->SetBinError(4,SdQ[3]);
+   //common histograms
+   fchr8th->FillIntegratedFlow(V8,SdQ[3]);
+   fchr8th->FillChi(V8*pow(AvM,0.5));
   } 
   else 
   {
@@ -357,10 +383,11 @@ void AliCumulantsFunctions::Calculate()
   
   Double_t X[fgknBins][fgkPmax][fgkQmax]={{{0.}}};
   Double_t Y[fgknBins][fgkPmax][fgkQmax]={{{0.}}};
-  
-  /*
+  Double_t BinNoOfParticles[fgknBins]={0.};
+      
   //3D profiles
   for(Int_t b=0;b<fgknBins;b++){
+    BinNoOfParticles[b]=fBinNoOfParticles->GetBinEntries(b);
     for(Int_t p=0;p<fgkPmax;p++){
       for(Int_t q=0;q<fgkQmax;q++){
 	X[b][p][q]=fDiffGenFunRe->GetBinContent(b+1,p+1,q+1)/AvG[p][q];
@@ -368,8 +395,8 @@ void AliCumulantsFunctions::Calculate()
       }
     }   
   } 
-  */
-
+  
+  /*
   if(AvM!=0){
   for(Int_t b=0;b<fgknBins;b++){
     //for(Int_t p=0;p<fgkPmax;p++){
@@ -401,6 +428,7 @@ void AliCumulantsFunctions::Calculate()
     //}   
   }
   }
+  */
   
   Double_t D[fgknBins][fgkPmax]={{0.}};
   
@@ -427,7 +455,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   Double_t v2[fgknBins],v4[fgknBins],v6[fgknBins],v8[fgknBins];
-  //Double_t Sddiff2[fgknBins],Sddiff4[fgknBins];
+  Double_t Sddiff2[fgknBins],Sddiff4[fgknBins];
 
   //cout<<"number of pt bins: "<<fgknBins<<endl;
   //cout<<"****************************************"<<endl;
@@ -438,12 +466,14 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2[b]=DiffCumulant2[b]/pow(cumulant[0],.5);
-      if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.)>0.)
+      if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.)>0.&&BinNoOfParticles[b]>0.)
       {
-       //Sddiff2[b]=pow((1./(2.*fBinNoOfParticles[b]))*((1.+pow(ChiQ[0],2.))/pow(ChiQ[0],2.)),0.5);
+       Sddiff2[b]=pow((1./(2.*BinNoOfParticles[b]))*((1.+pow(ChiQ[0],2.))/pow(ChiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2[b]<<"%, "<<" "<<"sd{2} = "<<100.*Sddiff2[b]<<"%"<<endl;
-       //DiffFlowResults2->SetBinContent(b+1,v2[b],100.*Sddiff2[b]);
        fdfr2->SetBinContent(b+1,v2[b]);
+       fdfr2->SetBinError(b+1,Sddiff2[b]);
+       //common histogram:
+       fchr2nd->FillDifferentialFlow(b+1,v2[b],Sddiff2[b]);
       } else {
          //cout<<"v'_2/2{2} = Im"<<endl;
       }
@@ -455,12 +485,14 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4[b]=-DiffCumulant4[b]/pow(-cumulant[1],.75);
-      if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.)>0.)
+      if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.)>0.&&BinNoOfParticles[b]>0.)
       {
-       //Sddiff4[b]=pow((1./(2.*fBinNoOfParticles[b]))*((2.+6.*pow(ChiQ[1],2.)+pow(ChiQ[1],4.)+pow(ChiQ[1],6.))/pow(ChiQ[1],6.)),0.5);
+       Sddiff4[b]=pow((1./(2.*BinNoOfParticles[b]))*((2.+6.*pow(ChiQ[1],2.)+pow(ChiQ[1],4.)+pow(ChiQ[1],6.))/pow(ChiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4[b]<<"%, "<<" "<<"sd{4} = "<<100.*Sddiff4[b]<<"%"<<endl;
-       //fCommonHistsRes4->FillDifferentialFlow(b+1,v4[b],100.*Sddiff4[b]);
        fdfr4->SetBinContent(b+1,v4[b]);
+       fdfr4->SetBinError(b+1,Sddiff4[b]);
+       //common histogram:
+       fchr4th->FillDifferentialFlow(b+1,v4[b],Sddiff4[b]);
       } else {
          //cout<<"v'_2/2{4} = Im"<<endl;
       } 
@@ -474,6 +506,8 @@ void AliCumulantsFunctions::Calculate()
       v6[b]=DiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)));
       //fCommonHistsRes6->FillDifferentialFlow(b+1,v6[b],0.);
       fdfr6->SetBinContent(b+1,v6[b]);
+      //common histogram:
+      fchr6th->FillDifferentialFlow(b+1,v6[b],0.);
     }else{
       //cout<<"v'_2/2{6} = Im"<<endl;
     }     
@@ -482,8 +516,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[3]<0){
       //cout<<"v'_2/2{8} = "<<-100.*DiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.)))<<"%"<<endl;
       v8[b]=-DiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.))); 
-      //fCommonHistsRes8->FillDifferentialFlow(b+1,v8[b],0.);
       fdfr8->SetBinContent(b+1,v8[b]);
+      //common histogram:
+      fchr8th->FillDifferentialFlow(b+1,v8[b],0.);
     }else{
       //cout<<"v'_2/2{8} = Im"<<endl;
     }       
