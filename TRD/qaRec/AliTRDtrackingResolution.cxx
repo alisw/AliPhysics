@@ -248,53 +248,45 @@ TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  // refit the track 
-  AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE);
-  //AliTRDtrackerV1::FitLine(fTrack);
+  // refit the track
+  AliRieman fRim(fTrack->GetNumberOfClusters());
+  Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+    if(!(tracklet = fTrack->GetTracklet(il))) continue;
+    if(!tracklet->IsOK()) continue;
+    AliTRDcluster *c = 0x0;
+    tracklet->ResetClusterIter(kFALSE);
+    while((c = tracklet->PrevCluster())){
+      Float_t xc = c->GetX();
+      Float_t yc = c->GetY();
+      Float_t zc = c->GetZ();
+      Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
+      yc -= tracklet->GetTilt()*(zc-zt);
+      fRim.AddPoint(xc, yc, zc, 1, 10);
+    }
+    tracklet->Fit(kTRUE);
 
-  Float_t  dydx, dzdx, yref, zref, yfit, zfit, x0, xmean;
-  AliTRDseedV1 *fTracklet = 0x0;  
-  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
-    if(!fTracklet->IsOK()) continue;
+    x[il] = tracklet->GetX0();
+    y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
+    dydx[il] = tracklet->GetYref(1);
+  }
+  fRim.Update();
 
-    AliTRDseedV1 tt(*fTracklet);
-    // tt.SetX0(fTracklet->GetX0()+2.4);
-    if(!tt.Fit(kTRUE)) continue;
+  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+    if(x[il] < 0.) continue;
+    Float_t dy = y[il]-fRim.GetYat(x[il])/*/sigma_track*/;
+    h->Fill(dydx[il], dy);
 
-    x0     = tt.GetX0();
-    xmean  = x0;//tt.GetXref();
-    // printf("xmean[%f]\n", xmean);
-    
-    dydx   = tt.GetYref(1);
-    yfit   = tt.GetYfit(0)/*-tt.GetYfit(1)*xmean*/;
-    yref   = tt.GetYref(0)/*-tt.GetYref(1)*xmean*/;
-
-    dzdx   = tt.GetZref(1);
-    zfit   = -tt.GetZfit(1)*xmean+tt.GetZfit(0);
-    zref   = -tt.GetZref(1)*xmean+tt.GetZref(0);   
-
-    h->Fill(dydx, yref-yfit);
-
-
-/*    AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-    fClResiduals->Add(clInfo);
-    clInfo->SetGlobalPosition(yref, zref, phiref, thetaref);
-    clInfo->SetResolution(yref-yfit);
-
-    (*fDebugStream) << "TrackletResiduals"
-		    <<"clInfo.=" << clInfo
-		    << "\n";*/
     if(fDebugLevel>=1){
+      Float_t yt = fRim.GetYat(x[il]);
       (*fDebugStream) << "TrkltResiduals"
-        << "yref="     << yref
-        << "yfit="     << yfit
-        << "dydx="     << dydx
-        << "zref="     << zref
-        << "zfit="     << zfit
-        << "dzdx="     << dzdx
-        << "xmean="    << xmean
-        << "x0="       << x0
+        << "layer="  << il
+        << "x="      <<x[il]
+        << "y="      <<y[il]
+        << "yt="     <<yt
+        << "dydx="   << dydx[il]
+        << "dy="     << dy
         << "\n";
     }
   }
@@ -314,7 +306,7 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *tra
     AliWarning("No output histogram defined.");
     return 0x0;
   }
-
+  return h;
   // refit the track 
   AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE);
   //AliTRDtrackerV1::FitLine(fTrack);
