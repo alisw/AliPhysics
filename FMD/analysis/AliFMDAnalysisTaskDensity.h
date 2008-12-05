@@ -8,9 +8,10 @@
 
 #include "TObjArray.h"
 #include "AliESDFMD.h"
-#include "AliESDEvent.h"
+#include "AliESDVertex.h"
 #include "TObjString.h"
 #include "TTree.h"
+
 class AliESDEvent;
 class TChain;
 class AliAODEvent;
@@ -21,14 +22,16 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
 {
  public:
     AliFMDAnalysisTaskDensity();
-    AliFMDAnalysisTaskDensity(const char* name);
+    AliFMDAnalysisTaskDensity(const char* name, Bool_t SE = kTRUE);
     virtual ~AliFMDAnalysisTaskDensity() {;}
  AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
       fOutputList(),
       fArray(o.fArray),
       fESD(o.fESD),
-      fVertexString(o.fVertexString) {}
+      fVertexString(o.fVertexString),
+      fVertex(o.fVertex),
+      fStandalone(o.fStandalone) {}
     AliFMDAnalysisTaskDensity& operator=(const AliFMDAnalysisTaskDensity&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option);
@@ -39,12 +42,17 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     virtual void Terminate(Option_t */*option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
+    void SetOutputList(TList* outlist) {fOutputList = outlist;}
+    void SetInputESDFMD(AliESDFMD* esdfmd) {fESD = esdfmd;}
+    void SetInputVertex(AliESDVertex* vertex) {fVertex = vertex;}
  private:
     Int_t         fDebug;        //  Debug flag
-    TList         fOutputList;
+    TList*        fOutputList;
     TObjArray     fArray;
-    AliESDEvent*  fESD;
+    AliESDFMD*    fESD;
     TObjString    fVertexString;
+    AliESDVertex* fVertex;
+    Bool_t        fStandalone;
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };
  

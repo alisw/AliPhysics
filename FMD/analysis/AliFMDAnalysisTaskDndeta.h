@@ -1,5 +1,5 @@
-#ifndef ALIFMDANALYSISTASKBACKGROUNDCORRECTION_H
-#define ALIFMDANALYSISTASKBACKGROUNDCORRECTION_H
+#ifndef ALIFMDANALYSISTASKDNDETA_H
+#define ALIFMDANALYSISTASKDNDETA_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -11,13 +11,13 @@
 #include "TArrayI.h"
 #include "TH1I.h"
 
-class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
+class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 {
  public:
-    AliFMDAnalysisTaskBackgroundCorrection();
-    AliFMDAnalysisTaskBackgroundCorrection(const char* name, Bool_t SE = kTRUE);
-    virtual ~AliFMDAnalysisTaskBackgroundCorrection() {;}
- AliFMDAnalysisTaskBackgroundCorrection(const AliFMDAnalysisTaskBackgroundCorrection& o) : AliAnalysisTask(),
+    AliFMDAnalysisTaskDndeta();
+    AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE = kTRUE);
+    virtual ~AliFMDAnalysisTaskDndeta() {;}
+ AliFMDAnalysisTaskDndeta(const AliFMDAnalysisTaskDndeta& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
       fOutputList(0),
       fInputList(0),
@@ -25,9 +25,8 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
       fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
       fNevents(o.fNevents),
-      fStandalone(o.fStandalone), 
-      fOutputVertexString(o.fOutputVertexString) {}
-    AliFMDAnalysisTaskBackgroundCorrection& operator=(const AliFMDAnalysisTaskBackgroundCorrection&) { return *this; }
+      fStandalone(o.fStandalone) {}
+    AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
     virtual void CreateOutputObjects();
@@ -37,10 +36,9 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     virtual void Terminate(Option_t *option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     void SetInputList(TList* inputList) {fInputList = inputList;}
-    void SetOutputVertex(TObjString* vtxString) {fOutputVertexString = vtxString;}
-    //void SetInputVtx(TObjString* vtxString) {fVertexString = vtxString;}
+    void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
     void SetOutputList(TList* outputList) {fOutputList = outputList;}
-        
+    TList* GetOutputList() {return fOutputList;}
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
@@ -50,8 +48,7 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     TObjString*   fVertexString;
     TH1I          fNevents;
     Bool_t        fStandalone;
-    TObjString*   fOutputVertexString;
-    ClassDef(AliFMDAnalysisTaskBackgroundCorrection, 0); // Analysis task for FMD analysis
+    ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  
 #endif

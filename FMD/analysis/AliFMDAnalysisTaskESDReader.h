@@ -9,6 +9,7 @@
 #include "TObjString.h"
 #include "AliESDFMD.h"
 #include "TTree.h"
+#include "AliESDVertex.h"
 class AliESDEvent;
 class TChain;
 class AliAODEvent;

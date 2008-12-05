@@ -3,6 +3,7 @@ void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
 			 const Char_t* outFile        = "fmd_analysis.root"){
   
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libFMDanalysis");
   
   AliCDBManager* cdb = AliCDBManager::Instance();
@@ -28,19 +29,32 @@ void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
   mgr->AddTask(FMDana1); 
   mgr->AddTask(FMDana2);
   mgr->AddTask(FMDana3);
+
   AliAnalysisDataContainer* cin_esd = mgr->CreateContainer("esdTree",TTree::Class(),AliAnalysisManager::kInputContainer,"AliESDs.root");
-  
+  AliAnalysisDataContainer* cexchangevertex = mgr->CreateContainer("vertex",AliESDVertex::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer* cexchange0 = mgr->CreateContainer("exchangeESDFMD0",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
-  AliAnalysisDataContainer* cexchange1 = mgr->CreateContainer("exchangeESDFMD1",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* cdiag1 = mgr->CreateContainer("diagSharing1",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* cdiag2 = mgr->CreateContainer("diagSharing2",TList::Class(),AliAnalysisManager::kOutputContainer,"edists.root");
+  AliAnalysisDataContainer* cexchange1 = mgr->CreateContainer("exchangeESDFMD1",AliESDFMD::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer* cexchange2 = mgr->CreateContainer("listOfhists",TList::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer* coutput = mgr->CreateContainer("BackgroundCorrected",TList::Class(),AliAnalysisManager::kOutputContainer,outFile);
   
   mgr->ConnectInput(FMDana0, 0 , cin_esd);   
-  mgr->ConnectOutput(FMDana0, 0 , cexchange0); 
+  mgr->ConnectOutput(FMDana0, 0 , cexchange0);
+   
   mgr->ConnectInput(FMDana1, 0 , cexchange0);   
-  mgr->ConnectOutput(FMDana1, 0 , cexchange1);   
+
+  mgr->ConnectOutput(FMDana1, 0 , cexchange1);  
+  mgr->ConnectOutput(FMDana1, 1 , cexchangevertex);   
+  mgr->ConnectOutput(FMDana1, 2 , cdiag1);
+  mgr->ConnectOutput(FMDana1, 3 , cdiag2);
+  
+  
   mgr->ConnectInput(FMDana2, 0 , cexchange1);   
+  mgr->ConnectInput(FMDana2, 1 , cexchangevertex);   
   mgr->ConnectOutput(FMDana2, 0 , cexchange2);
+
+  
   mgr->ConnectInput(FMDana3, 0 , cexchange2);   
   mgr->ConnectOutput(FMDana3, 0 , coutput);
   

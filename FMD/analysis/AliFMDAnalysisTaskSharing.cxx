@@ -21,50 +21,84 @@ ClassImp(AliFMDAnalysisTaskSharing)
 AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
 : fDebug(0),
   fESD(0x0),
-  fOutputESD(),
   foutputESDFMD(),
   fSharedThis(kFALSE),
-  fSharedPrev(kFALSE)
+  fSharedPrev(kFALSE),
+  fDiagList(),
+  fStandalone(kTRUE),
+  fEsdVertex(0)
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
-  DefineOutput(0, AliESDEvent::Class());
+  DefineOutput(0, AliESDFMD::Class());
+  DefineOutput(1, AliESDVertex::Class());
+  DefineOutput(2, AliESDEvent::Class());
+  DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________
-AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name):
+AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE):
     AliAnalysisTask(name, "AnalysisTaskFMD"),
     fDebug(0),
     fESD(0x0),
-    fOutputESD(),
     foutputESDFMD(),
     fSharedThis(kFALSE),
-    fSharedPrev(kFALSE)
-
+    fSharedPrev(kFALSE),
+    fDiagList(),
+    fStandalone(kTRUE),
+    fEsdVertex(0)
 {
-  DefineInput (0, AliESDEvent::Class());
-  DefineOutput(0, AliESDEvent::Class());
+  fStandalone = SE;
+  if(fStandalone) {
+    DefineInput (0, AliESDEvent::Class());
+    DefineOutput(0, AliESDFMD::Class());
+    DefineOutput(1, AliESDVertex::Class());
+    DefineOutput(2, AliESDEvent::Class());
+    DefineOutput(3, TList::Class());
+  }
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 {
-  fOutputESD.CreateStdContent();
+  if(!foutputESDFMD)
+    foutputESDFMD = new AliESDFMD();
+  
+  if(!fEsdVertex)
+    fEsdVertex    = new AliESDVertex();
+  //Diagnostics
+  fDiagList.SetName("Sharing diagnostics");
+  for(Int_t det = 1; det<=3; det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    
+    for(Int_t iring = 0;iring<nRings; iring++) {
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      TH1F* hEdist        = new TH1F(Form("Edist_before_sharing_FMD%d%c", det, ringChar),
+				     Form("Edist_before_sharing_FMD%d%c", det, ringChar),
+				     200,0,5);
+      TH1F* hEdist_after  = new TH1F(Form("Edist_after_sharing_FMD%d%c", det, ringChar),
+				     Form("Edist_after_sharing_FMD%d%c", det, ringChar),
+				     200,0,5);
+      fDiagList.Add(hEdist);
+      fDiagList.Add(hEdist_after);
+
+    }
+  }
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ConnectInputData(Option_t */*option*/)
 {
-  fESD = (AliESDEvent*)GetInputData(0);
+  if(fStandalone)
+    fESD = (AliESDEvent*)GetInputData(0);
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 {
+  
   AliESD* old = fESD->GetAliESDOld();
   if (old) {
     fESD->CopyFromOldESD();
   }
   
-  foutputESDFMD.Clear();
-  
-  fOutputESD.SetPrimaryVertexSPD(fESD->GetPrimaryVertexSPD());
+  foutputESDFMD->Clear();
   
   AliESDFMD* fmd = fESD->GetFMDData();
   
@@ -76,14 +110,19 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
       Char_t   ring = (ir == 0 ? 'I' : 'O');
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
+      
+      TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_before_sharing_FMD%d%c",det,ring));
+      
       for(UShort_t sec =0; sec < nsec;  sec++) {
 	fSharedThis      = kFALSE;
 	fSharedPrev      = kFALSE;
 	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  foutputESDFMD.SetMultiplicity(det,ring,sec,strip,0.);
+	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,0.);
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
+
 	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
-	  	  
+	  
+	  hEdist->Fill(mult);
 	  Float_t Eprev = 0;
 	  Float_t Enext = 0;
 	  if(strip != 0)
@@ -94,17 +133,24 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	    Enext = fmd->Multiplicity(det,ring,sec,strip+1);
 	  
 	  Float_t nParticles = GetMultiplicityOfStrip(mult,Eprev,Enext,det,ring);
-	  foutputESDFMD.SetMultiplicity(det,ring,sec,strip,nParticles);
-	  foutputESDFMD.SetEta(det,ring,sec,strip,fmd->Eta(det,ring,sec,strip));
-	 	  
+	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,nParticles);
+	  foutputESDFMD->SetEta(det,ring,sec,strip,fmd->Eta(det,ring,sec,strip));
+	  
 	}
       }
     }
   }
-  fOutputESD.SetFMDData(&foutputESDFMD);
-    
-  PostData(0, &fOutputESD); 
   
+  Double_t vertex[3];
+  fESD->GetPrimaryVertexSPD()->GetXYZ(vertex);
+  
+  fEsdVertex->SetXYZ(vertex);
+  if(fStandalone) {
+    PostData(0, foutputESDFMD); 
+    PostData(1, fEsdVertex); 
+    PostData(2, fESD); 
+    PostData(3, &fDiagList); 
+  }
 }
 //_____________________________________________________________________
 Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
@@ -145,8 +191,10 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
     Etotal += Enext;
     fSharedThis      = kTRUE;
   }
-  
+  TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
+  hEdist->Fill(Etotal);
   if(Etotal > cutHigh ) {
+    
     nParticles = 1;
     fSharedPrev      = kTRUE;
   }

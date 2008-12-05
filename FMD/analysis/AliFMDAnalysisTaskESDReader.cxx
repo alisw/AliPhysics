@@ -30,6 +30,7 @@ AliFMDAnalysisTaskESDReader::AliFMDAnalysisTaskESDReader()
   // Default constructor
   DefineInput (0, TTree::Class());
   DefineOutput(0, AliESDEvent::Class());
+ 
 }
 //_____________________________________________________________________
 AliFMDAnalysisTaskESDReader::AliFMDAnalysisTaskESDReader(const char* name):
@@ -41,6 +42,7 @@ AliFMDAnalysisTaskESDReader::AliFMDAnalysisTaskESDReader(const char* name):
 {
   DefineInput (0, TTree::Class());
   DefineOutput(0, AliESDEvent::Class());
+ 
 }
 
 //_____________________________________________________________________
@@ -55,8 +57,8 @@ void AliFMDAnalysisTaskESDReader::ConnectInputData(Option_t */*option*/)
 
 void AliFMDAnalysisTaskESDReader::Exec(Option_t */*option*/)
 {
+  //  std::cout<<fOutputESD<<std::endl;
   fOutputESD = fESD;
-    
   PostData(0, fOutputESD); 
   
 }
