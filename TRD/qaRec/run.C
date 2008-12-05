@@ -8,6 +8,7 @@
 //     "RES"  : TRD tracking Resolution
 //     "CLRES": clusters Resolution
 //     "CAL"  : TRD calibration
+//     "ALGN" : TRD alignment
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
 //     "DET"  : Basic TRD Detector checks
@@ -237,6 +238,20 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     // Create containers for input/output
     mgr->ConnectInput(task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+  }
+  
+  //____________________________________________
+  // TRD alignment
+  if(TSTBIT(fSteerTask, kAlignment)){
+    mgr->AddTask(task = new AliTRDalignmentTask());
+    taskPtr[(Int_t)kAlignment] = task;
+    task->SetDebugLevel(0);
+
+    // Create containers for input/output
+    mgr->ConnectInput(task, 0, coutput1);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("h%s", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
+
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(task->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
   
   //____________________________________________
