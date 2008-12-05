@@ -205,13 +205,27 @@ void CompareFlowResults()
  }
  */
  
- TCanvas* intFlowCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
- intFlow->Draw();    
- 
+ //cosmetics: Monte Carlo error bands for integrated flow
+ if(intFlow)
+ {
+  Double_t valueMC = intFlow->GetBinContent(1);
+  Double_t errorMC = intFlow->GetBinError(1);  
+  Int_t nPts       = intFlow->GetNbinsX();     
+     
+  TGraph* pGraphIF = new TGraph(nPts); 
+  
+  pGraphIF->SetPoint(1,0,valueMC+errorMC);
+  pGraphIF->SetPoint(2,nPts+1,valueMC+errorMC);
+  pGraphIF->SetPoint(3,nPts+1,valueMC-errorMC);
+  pGraphIF->SetPoint(4,0,valueMC-errorMC);
+  
+  pGraphIF->SetFillStyle(3044);
+  pGraphIF->SetFillColor(kRed-4);
+ }
+            
+ //cosmetics: legend     
  TString *avM = new TString("AvM = ");//to be improved
  TString *nEvts = new TString("nEvts = ");//to be improved
-   
- //legend     
  TLegend* legendIntFlow = new TLegend(0.15,0.15,0.44,0.35);
  legendIntFlow->SetTextFont(72);
  legendIntFlow->SetTextSize(0.03);
@@ -222,7 +236,13 @@ void CompareFlowResults()
   legendIntFlow->AddEntry(qcCommonHist->GetHistMultInt(),avM->Data(),"");
   legendIntFlow->AddEntry(qcCommonHist->GetHistMultInt(),nEvts->Data(),"");
  }
- legendIntFlow->Draw("");                      
+ 
+ //drawing everything for integrated flow:
+ TCanvas* intFlowCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
+ 
+ intFlow->Draw();      
+ pGraphIF->Draw("LFSAME");                    
+ legendIntFlow->Draw("");  
  
  //==================================================================================   
  
@@ -300,11 +320,13 @@ void CompareFlowResults()
    (mcep->GetHistDiffFlow())->Scale(0.01);//to be improved
    (mcep->GetHistDiffFlow())->SetMarkerColor(2);
    (mcep->GetHistDiffFlow())->SetMarkerStyle(20);
-   (mcep->GetHistDiffFlow())->Draw("E1PSAME"); 
-   legendDiffFlow->AddEntry(mcep->GetHistDiffFlow(),"v_{n}{MC}","p");
+   (mcep->GetHistDiffFlow())->SetFillStyle(3044);
+   (mcep->GetHistDiffFlow())->SetFillColor(kRed-4);
+   //(mcep->GetHistDiffFlow())->Draw("E1PSAME"); 
+   legendDiffFlow->AddEntry(mcep->GetHistDiffFlow(),"v_{n}{MC}","f");
   } 
  } 
- 
+
  /*
  //SP = Scalar Product
  if(file_SP)
@@ -318,10 +340,78 @@ void CompareFlowResults()
   } 
  } 
  */
-      
+ 
+ //cosmetics: Monte Carlo error bands for differential flow
+ if(mcep)
+ {
+  Int_t nPtsDF       = (mcep->GetHistDiffFlow())->GetNbinsX();
+  Double_t binWidth  = (mcep->GetHistDiffFlow())->GetBinWidth(1);//assuming that all bins have the same width
+       
+  TGraph* pGraphDF = new TGraph(2*nPts);
+  
+  for(Int_t i=1;i<nPtsDF+1;i++)
+  {
+   Double_t valueMC = (mcep->GetHistDiffFlow())->GetBinContent(i);
+   Double_t errorMC = (mcep->GetHistDiffFlow())->GetBinError(i);       
+   pGraphDF->SetPoint(i,(i-0.5)*binWidth,valueMC+errorMC);
+  }
+     
+  for(Int_t i=nPtsDF;i<2*nPtsDF;i++)
+  {
+   Double_t valueMC = (mcep->GetHistDiffFlow())->GetBinContent(2*nPtsDF-i);
+   Double_t errorMC = (mcep->GetHistDiffFlow())->GetBinError(2*nPtsDF-i);       
+   pGraphDF->SetPoint(i,(2*nPtsDF-i-0.5)*binWidth,valueMC-errorMC); 
+  }
+
+  pGraphDF->SetFillStyle(3044);
+  pGraphDF->SetFillColor(kRed-4);
+ }            
+                     
  legendDiffFlow->Draw("");   
  legendDiffFlow2->Draw(""); 
-                                                   
+ pGraphDF->Draw("LFSAME");        
+                                                                                            
  //================================================================================== 
  
+ 
+ 
+ //==========================================================
+/*
+ TGraph* fillAreaBetweenFunctions(TF1* fUp, TF1*fDown, double nfmin, 
+				 double nfmax, int npf, int fillStyle, 
+				 int fillColor){
+  
+  fDown->SetLineColor(fillColor);
+  fDown->SetLineWidth(0.3);
+  fUp->SetLineColor(fillColor);
+  fUp->SetLineWidth(0.3);
+  
+  TArrayD xf(2*npf+1), yf(2*npf+1);
+  
+  //make and closed area and fill it
+  Double_t xfmin = nfmin; Double_t xfmax = nfmax;
+  Double_t dxf = (xfmax-xfmin)/(npf-1);
+  for (Int_t i=0;i<npf;i++) {
+    xf[i] = xfmin + dxf*i;
+    yf[i] = fDown->Eval(xf[i]);
+    xf[npf+i] = xfmax - dxf*i;
+    yf[npf+i] = fUp->Eval(xf[npf+i]);
+  }
+  xf[2*npf] = xf[0]; yf[2*npf] = yf[0];
+  TGraph *grf = new TGraph(2*npf+1);
+  for (int i=0; i<2*npf+1; i++) grf->SetPoint(i,xf[i],yf[i]);
+  grf->SetFillStyle(fillStyle);
+  grf->SetFillColor(fillColor);
+  return grf;
+  
+  
+}
+*/
+//=====================================================================================
+ 
+ 
+ 
+ 
+				 
+  
 }
