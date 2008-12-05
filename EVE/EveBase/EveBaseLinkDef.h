@@ -44,14 +44,11 @@
 #pragma link C++ class AliEveJetPlaneEditor::StaticDataWindow+;
 
 
-// Removed. Messy code, tons of violations and incompatible with TEve
-// classes. Author Ludovic Gaudichet left ALICE.
-// Should be thoroughly revised.
-//
 // AliEveCascade
-// #pragma link C++ class AliEveCascade+;
-// #pragma link C++ class CascadeList+;
-// #pragma link C++ class CascadeListEditor+;
+#pragma link C++ class AliEveCascade+;
+#pragma link C++ class AliEveCascadeEditor+;
+#pragma link C++ class AliEveCascadeList+;
+#pragma link C++ class AliEveCascadeListEditor+;
 //
 // AliEveV0
 #pragma link C++ class AliEveV0+;
