@@ -36,7 +36,7 @@ const Float_t  AliITSSimuParam::fgkSPDEccDiffDefault = 0.85;
 const Float_t  AliITSSimuParam::fgkSDDDiffCoeffDefault = 3.23;
 const Float_t  AliITSSimuParam::fgkSDDDiffCoeff1Default = 30.;
 const Float_t  AliITSSimuParam::fgkSDDJitterErrorDefault = 20.; // 20 um from beam test 2001
-const Float_t  AliITSSimuParam::fgkSDDDynamicRangeDefault = 132.;
+const Float_t  AliITSSimuParam::fgkSDDDynamicRangeDefault = 1400./2.5; // mV/MOhm = nA
 const Int_t    AliITSSimuParam::fgkSDDMaxAdcDefault = 1024;
 const Float_t  AliITSSimuParam::fgkSDDChargeLossDefault = 0.;
 const Double_t AliITSSimuParam::fgkSSDCouplingPRDefault = 0.01;

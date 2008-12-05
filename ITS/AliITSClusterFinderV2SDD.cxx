@@ -241,6 +241,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	z=trk[2]; 
 
 	q/=rsdd->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
+	if(cal-> IsAMAt20MHz()) q*=2.; // account for 1/2 sampling freq.
 	Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
 	Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
 	if (digits) {	  
