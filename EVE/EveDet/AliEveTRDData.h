@@ -115,6 +115,7 @@ private:
 
 class AliTrackPoint;
 class AliTRDtrackV1;
+class AliRieman;
 class AliEveTRDTrack : public TEveLine
 {
 public:
@@ -143,8 +144,8 @@ private:
   UChar_t        fTrackState;   // bit map for the track drawing state
   ULong_t        fESDStatus;    // ESD status bit for this track
   Float_t        fAlpha;        // sector angle for this track  
-  AliTrackPoint* fPoints;       // track crossing points
-
+  AliTrackPoint *fPoints;       // track crossing points
+  AliRieman     *fRim;          // rieman fitter
   ClassDef(AliEveTRDTrack, 0);  // TRD track visualisation
 };
 
