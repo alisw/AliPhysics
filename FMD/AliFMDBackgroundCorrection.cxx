@@ -60,7 +60,8 @@ ClassImp(AliFMDBackgroundCorrection)
 //_____________________________________________________________________
 AliFMDBackgroundCorrection::AliFMDBackgroundCorrection() : 
   TNamed(),
-  fCorrectionArray()
+  fCorrectionArray(),
+  fPrimaryList()
 {} 
 
 //_____________________________________________________________________
@@ -85,9 +86,9 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG() :
 
 //_____________________________________________________________________
 
-void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
+void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbins,
 							      Float_t zvtxcut, 
-							      Int_t nBinsEta, 
+							      const Int_t nBinsEta, 
 							      Bool_t storeInAlien, 
 							      Int_t runNo,
 							      Int_t endRunNo, 
@@ -95,11 +96,12 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 							      Bool_t simulate,
 							      Int_t nEvents) {
   
-  TGrid::Connect("alien:",0,0,"t");
+  //TGrid::Connect("alien:",0,0,"t");
   if(simulate)
     Simulate(nEvents);
   else {
-    AliCDBManager::Instance()->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
+    //AliCDBManager::Instance()->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
     AliCDBManager::Instance()->SetRun(runNo);
     
 #if defined(__CINT__)
@@ -109,6 +111,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
     gSystem->Load("libAliPythia6");
     gSystem->Load("libgeant321");
 #endif
+      // 
   }  
   
   //Setting up the geometry
@@ -119,9 +122,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   AliFMDGeometry* geo = AliFMDGeometry::Instance();
   geo->Init();
   geo->InitTransformations();
-  
-  
-  
+    
   AliInfo("Processing hits and primaries ");
   
   AliFMDInputBG input;
@@ -136,9 +137,10 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   TObjArray* primaryArray = input.GetPrimaries();
   fCorrectionArray.SetName("FMD_bg_correction");
   fCorrectionArray.SetOwner();
-  
-  TList* primaryList = new TList();
+   
+  TList* primaryList     = new TList();
   primaryList->SetName("primaries");
+  
   TList* hitList     = new TList();
   hitList->SetName("hits");
   TList* corrList    = new TList();
@@ -169,9 +171,9 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 	TH2F* hPrimary  = (TH2F*)primRingArray->At(vertexBin);
 	primaryList->Add(hPrimary);
 	TH2F* hCorrection = (TH2F*)hHits->Clone(Form("FMD%d%c_vtxbin_%d_correction",det,ringChar,vertexBin));
+	hCorrection->Divide(hPrimary);
 	corrList->Add(hCorrection);
 	hCorrection->SetTitle(hCorrection->GetName());
-	hCorrection->Divide(hPrimary);
 	vtxArrayCorrection->AddAtAndExpand(hCorrection,vertexBin);
 	background->SetBgCorrection(det,ringChar,vertexBin,hCorrection);
       }
@@ -189,16 +191,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   hitList->Write();
   primaryList->Write();
   corrList->Write();
-  //fout->mkdir("Hits");
-  //fout->cd("Hits");
-  //hitArray->Write();
-  //fout->mkdir("Primaries");
-  //fout->cd("Primaries");
-  //primaryArray->Write();
-  //fout->mkdir("Correction");
-  //fout->cd("Correction");
-  //fCorrectionArray.Write();
-  
+   
   TObjArray* container = new TObjArray();
   container->SetOwner();
   container->AddAtAndExpand(&refAxis,0);
@@ -225,7 +218,8 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   fout->Close();
  
   
-}
+  }
+
 //_____________________________________________________________________
 void AliFMDBackgroundCorrection::Simulate(Int_t nEvents) {
   
@@ -244,7 +238,7 @@ void AliFMDBackgroundCorrection::Simulate(Int_t nEvents) {
 }
 
 //_____________________________________________________________________
-Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrack(Int_t i , TParticle* p, AliFMDHit* h) {
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit( AliFMDHit* h, TParticle* p) {
   
   AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
   TArrayF vertex;
@@ -257,14 +251,13 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrack(Int_t i , TPartic
   Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
   Int_t vertexBin = (Int_t)vertexBinDouble;
   
+  Int_t i = h->Track();
+  
   if(h)
     if(h->Q() !=  0 && (i != fPrevTrack || h->Detector() != fPrevDetector || h->Ring() != fPrevRing)) {
       
       Int_t det = h->Detector();
       Char_t ring = h->Ring();
-      //  if(h->Detector() == 3)
-      //	std::cout<<"Detected a hit in " <<"FMD"<<det<<ring<<"    ! "<<std::endl;
-     
       Int_t iring = (ring == 'I' ? 0 : 1);
       
       TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
@@ -278,35 +271,10 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrack(Int_t i , TPartic
       Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
       hHits->Fill(eta,phi);
       fHits++;
-      //fPrevTrack = i;
       fPrevDetector = det;
       fPrevRing     = ring;
     }
-  if(p && i != fPrevTrack) {
-    
-    TDatabasePDG* pdgDB = TDatabasePDG::Instance();
-    TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
-    Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
-    Float_t phi = TMath::ATan2(p->Py(),p->Px());
-
-    if(phi<0)
-      phi = phi+2*TMath::Pi();
-    
-    
-    Bool_t primary = (charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.1)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.1)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.1);
-    if(primary) {
-      fPrim++;
-      TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
-      TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
-      
-      TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
-      TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
-      hPrimaryInner->Fill(p->Eta(),phi);
-      hPrimaryOuter->Fill(p->Eta(),phi);
-    }
-  }
-  
-  
+   
   fPrevTrack = i;
   return kTRUE;
 }
@@ -371,7 +339,57 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init() {
   
   return kTRUE;
 }
-// EOF
+//_____________________________________________________________________
 
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event ) {
+
+  Bool_t retVal = AliFMDInput::Begin(event); 
+  
+  AliStack* partStack=fLoader->Stack();
+  
+  Int_t nTracks=partStack->GetNtrack();
+  AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
+  TArrayF vertex;
+  genHeader->PrimaryVertex(vertex);
+  
+  if(TMath::Abs(vertex.At(2)) > fZvtxCut) 
+    return kTRUE;
+  
+  Double_t delta = 2*fZvtxCut/fNvtxBins;
+  Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
+  Int_t vertexBin = (Int_t)vertexBinDouble;
+  
+  for(Int_t j=0;j<nTracks;j++)
+	{
+	  TParticle* p  = partStack->Particle(j);
+	  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+	  TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
+	  Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
+	  Float_t phi = TMath::ATan2(p->Py(),p->Px());
+	  
+	  if(phi<0)
+	    phi = phi+2*TMath::Pi();
+	  if(p->Theta() == 0) continue;
+	      Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*p->Theta()));
+	  
+	  Bool_t primary = (charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
+	  if(primary) {
+	    fPrim++;
+	    TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
+	    TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
+	    
+	    TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
+	    TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
+	    hPrimaryInner->Fill(eta,phi);
+	    hPrimaryOuter->Fill(eta,phi);
+	  }
+	}
+
+  return retVal;
+}
+//_____________________________________________________________________
+//
+// EOF
+//
 
 

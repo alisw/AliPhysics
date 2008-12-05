@@ -17,7 +17,7 @@
 
 #include "AliFMDInput.h"
 #include "TObjArray.h"
-
+#include "AliRunLoader.h"
 
 class AliFMDBackgroundCorrection : public TNamed {
   
@@ -49,8 +49,10 @@ public:
     void  SetNbinsEta(Int_t nBins) { fNbinsEta = nBins;}
     TObjArray*  GetHits() {return &fHitArray;}
     TObjArray*  GetPrimaries() {return &fPrimaryArray;}
+    AliRunLoader* GetRunLoader() {return fLoader; }
   private:
-    Bool_t ProcessTrack(Int_t i, TParticle* p, AliFMDHit* h );
+    Bool_t ProcessHit(AliFMDHit* h, TParticle* p );
+    Bool_t Begin(Int_t event );
     TObjArray fPrimaryArray;
     TObjArray fHitArray;
     Int_t fPrim;
@@ -67,10 +69,11 @@ private:
   
   void Simulate(Int_t);
   void ProcessPrimaries(AliRunLoader*);
-  void ProcessHits();
   TObjArray fCorrectionArray;
-   
-  
+  TList     fPrimaryList;
+  //Double_t fZvtxCut;
+  // Int_t fNvtxBins;
+  //Int_t fNbinsEta;
   ClassDef(AliFMDBackgroundCorrection,0)
   
 };
