@@ -685,9 +685,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   //
 
   const Int_t kClmin = 8;
-  const Float_t q0 = 100.;
-  const Float_t clSigma0 = 2.E-2;    //[cm]
-  const Float_t clSlopeQ = -1.19E-2; //[1/cm]
+//   const Float_t q0 = 100.;
+//   const Float_t clSigma0 = 2.E-2;    //[cm]
+//   const Float_t clSlopeQ = -1.19E-2; //[1/cm]
 
   // get track direction
   Double_t y0   = fYref[0];
@@ -697,8 +697,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   Double_t yt, zt;
 
   const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
-  AliTRDtrackerV1::AliTRDLeastSquare fitterY, fitterZ;
-
+  AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
+  TLinearFitter  fitterY(1, "pol1");
   // convertion factor from square to gauss distribution for sigma
   Double_t convert = 1./TMath::Sqrt(12.);
   
@@ -734,10 +734,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     if(tilt) yc[fN] -= fTilt*(zc[fN] - zt); 
 
     // elaborate cluster error
-    Float_t qr = c->GetQ() - q0;
-    sy[fN]   = qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
-
-    fitterY.AddPoint(&xc[fN], yc[fN]-yt, sy[fN]);
+    //Float_t qr = c->GetQ() - q0;
+    sy[fN]   = 1.;//qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
+    fitterY.AddPoint(&xc[fN], yc[fN]/*-yt*/, sy[fN]);
 
     sz[fN]   = fPadLength*convert;
     fitterZ.AddPoint(&xc[fN], zc[fN], sz[fN]);
@@ -748,8 +747,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 
   // fit XY plane
   fitterY.Eval();
-  fYfit[0] = y0+fitterY.GetFunctionParameter(0);
-  fYfit[1] = dydx-fitterY.GetFunctionParameter(1);
+  fYfit[0] = /*y0+*/fitterY.GetParameter(0);
+  fYfit[1] = /*dydx-*/-fitterY.GetParameter(1);
 
   // check par row crossing
   Int_t zN[2*AliTRDseed::knTimebins];
