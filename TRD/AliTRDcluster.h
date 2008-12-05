@@ -17,10 +17,7 @@ class AliTRDcluster : public AliCluster {
 
  public:
 
-  enum { kInChamber = BIT(14)
-       , kUsed      = BIT(15)
-       , kShared    = BIT(16)
-  };
+  enum { kInChamber = BIT(16)};
   enum { kMaskedLeft   = 0
        , kMaskedCenter = 1
        , kMaskedRight  = 2
@@ -41,8 +38,8 @@ class AliTRDcluster : public AliCluster {
   Bool_t   IsEqual(const TObject *otherCluster) const;
   Bool_t   IsInChamber() const             { return TestBit(kInChamber);       }
   Bool_t   IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
-  Bool_t   IsShared() const                { return TestBit(kShared);          }
-  Bool_t   IsUsed() const                  { return TestBit(kUsed); }
+  Bool_t   IsShared() const                { return IsClusterShared();}
+  Bool_t   IsUsed() const                  { return IsClusterUsed(); }
 
   UChar_t  GetPadMaskedPosition() const    { return fClusterMasking & 7; }
   UChar_t  GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
@@ -69,8 +66,8 @@ class AliTRDcluster : public AliCluster {
   void     SetDetector(Short_t inDetector){ fDetector = inDetector;}
   void     SetQ(Float_t inQ){ fQ = inQ;}
   void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
-  void     SetShared(Bool_t sh  = kTRUE)   { SetBit(kShared,sh);    }
-  void     Use(Int_t = 0)                  { SetBit(kUsed, kTRUE);              }
+  void     SetShared(Bool_t sh  = kTRUE)   { SetBit(AliCluster::kShared,sh);    }
+  void     Use(Int_t = 0)                  { SetBit(AliCluster::kUsed, kTRUE);              }
 
   protected:
     UChar_t fPadCol;         //  Central pad number in column direction
