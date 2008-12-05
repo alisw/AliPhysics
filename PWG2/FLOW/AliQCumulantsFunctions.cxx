@@ -59,11 +59,11 @@ AliQCumulantsFunctions::AliQCumulantsFunctions():
  fQCorr(NULL),
  fQProd(NULL),
  fDirect(NULL),
- fbin2_1n1n(NULL),
- fbin2_2n2n(NULL),
- fbin3_2n1n1n(NULL),
- fbin3_1n1n2n(NULL),
- fbin4_1n1n1n1n(NULL),
+ fbin2p1n1n(NULL),
+ fbin2p2n2n(NULL),
+ fbin3p2n1n1n(NULL),
+ fbin3p1n1n2n(NULL),
+ fbin4p1n1n1n1n(NULL),
  fchr2nd(NULL),
  fchr4th(NULL),
  fchr6th(NULL),
@@ -77,7 +77,7 @@ AliQCumulantsFunctions::~AliQCumulantsFunctions()
  //destructor
 }
 
-AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2_2n2n, TProfile *bin3_2n1n1n, TProfile *bin3_1n1n2n, TProfile *bin4_1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *bin2p1n1n, TProfile *bin2p2n2n, TProfile *bin3p2n1n1n, TProfile *bin3p1n1n2n, TProfile *bin4p1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntRes(intRes),
  fDiffRes2nd(diffRes2nd),
  fDiffRes4th(diffRes4th),
@@ -87,11 +87,11 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
  fQCorr(QCorr),
  fQProd(QProd),
  fDirect(Direct),
- fbin2_1n1n(bin2_1n1n),
- fbin2_2n2n(bin2_2n2n),
- fbin3_2n1n1n(bin3_2n1n1n),
- fbin3_1n1n2n(bin3_1n1n2n),
- fbin4_1n1n1n1n(bin4_1n1n1n1n),
+ fbin2p1n1n(bin2p1n1n),
+ fbin2p2n2n(bin2p2n2n),
+ fbin3p2n1n1n(bin3p2n1n1n),
+ fbin3p1n1n2n(bin3p1n1n2n),
+ fbin4p1n1n1n1n(bin4p1n1n1n1n),
  fchr2nd(chr2nd),
  fchr4th(chr4th),
  fchr6th(chr6th),
@@ -220,23 +220,23 @@ void AliQCumulantsFunctions::Calculate()
 Double_t secondOrderQCumulantDiffFlow = 0.;
 Double_t fourthOrderQCumulantDiffFlow = 0.;
 
-Int_t nBins = fbin2_1n1n->GetNbinsX();
+Int_t nBins = fbin2p1n1n->GetNbinsX();
 
 for(Int_t bb=1;bb<nBins+1;bb++)
 {
- if(fbin2_1n1n->GetBinEntries(bb)>0.&&vn2!=0)
+ if(fbin2p1n1n->GetBinEntries(bb)>0.&&vn2!=0)
  {
-  secondOrderQCumulantDiffFlow = fbin2_1n1n->GetBinContent(bb);
+  secondOrderQCumulantDiffFlow = fbin2p1n1n->GetBinContent(bb);
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlow/vn2);
   //common histogram:
-  fchr2nd->FillDifferentialFlow(bb,secondOrderQCumulantDiffFlow/vn2,0.);//to be improved (errors)
+  fchr2nd->FillDifferentialFlow(bb,secondOrderQCumulantDiffFlow/vn2, 0.);//to be improved (errors)
  }
- if(fbin4_1n1n1n1n->GetBinEntries(bb)>0.&&vn4!=0.)
+ if(fbin4p1n1n1n1n->GetBinEntries(bb)>0.&&vn4!=0.)
  {
-  fourthOrderQCumulantDiffFlow = fbin4_1n1n1n1n->GetBinContent(bb)-2.*fbin2_1n1n->GetBinContent(bb)*pow(vn2,2.);
+  fourthOrderQCumulantDiffFlow = fbin4p1n1n1n1n->GetBinContent(bb)-2.*fbin2p1n1n->GetBinContent(bb)*pow(vn2,2.);
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlow/pow(vn4,3.));
   //common histogram:
-  fchr4th->FillDifferentialFlow(bb,-1.*fourthOrderQCumulantDiffFlow/pow(vn4,3.),0.);//to be improved (errors)
+  fchr4th->FillDifferentialFlow(bb,-1.*fourthOrderQCumulantDiffFlow/pow(vn4,3.), 0.);//to be improved (errors)
  }
 }      
 //---------------------------------------------------------------------------------------------------------       
@@ -455,34 +455,6 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  
  
  
- //cout<<"Alternative "<<four_2n_n_2n_n<<" "<<four_2n_n_2n_n_Alternative<<" "<<fourDirect_2n_n_2n_n<<endl;
- 
- 
- //<5>_{2n,n,n,n,n}
- Double_t five_2n_n_n_n_n=(HereQ2nQnQnstarQnstarQnstar-AvM*(AvM-1)*(AvM-2)*(AvM-3)*(four_3n_n_n_n+3.*four+3.*four_2n_n_2n_n)-AvM*(AvM-1)*(AvM-2)*(3.*AvM*three_2n_n_n+4.*three_3n_2n_n)-AvM*(AvM-1)*((9.*AvM-11.)*two+(3.*AvM-2)*two_2n+two_3n)-AvM*(3.*AvM-2))/(AvM*(AvM-1)*(AvM-2)*(AvM-3)*(AvM-4));
- 
- 
-*/
- 
- 
-  /*
-  
- //<6>_{n,n,n,n,n,n}
- Double_t six_n_n_n_n_n_n=(AvQ6-6.*AvM*(AvM-1)*(AvM-2+)*(AvM-3)*(AvM-4)*five_2n_n_n_n_n-AvM*(AvM-1)*(AvM-2)*(AvM-3)*(2.*four_3n_n_n_n+9.*(AvM-2.)*four+9.*four_2n_n_2n_n)-6.*AvM*(AvM-1)*(AvM-2)*((3.*AvM-7.)*three_2n_n_n+3.*three_3n_2n_n)-AvM*(AvM-1)*(3.*(2.*AvM*AvM+5.*AvM-13.)*two+3.*(3.*AvM-4.)*two_2n+two_3n)-AvM*(6.*AvM*AvM-9.*AvM+4.))/(AvM*(AvM-1)*(AvM-2)*(AvM-3)*(AvM-4)*(AvM-5));
-  
-  */
-  
-  /* 
-//<6>_{n,n,n,n,n,n}
- Double_t six_n_n_n_n_n_n=(AvQ6-6.*AvM*(AvM-1)*(AvM-2)*(AvM-3)*(AvM-4)*five_2n_n_n_n_n-AvM*(AvM-1)*(AvM-2)*(AvM-3)*(2.*four_3n_n_n_n+9.*(AvM-2.)*four+9.*four_2n_n_2n_n)-6.*AvM*(AvM-1)*(AvM-2)*((3.*AvM-5.)*three_2n_n_n+three_3n_2n_n)-AvM*(AvM-1)*((18.*AvM*AvM-45.*AvM+33.)*two+3.*(3.*AvM-4.)*two_2n+two_3n)-AvM*(6.*AvM*AvM-9.*AvM+4.))/(AvM*(AvM-1)*(AvM-2)*(AvM-3)*(AvM-4)*(AvM-5));
- 
- 
- 
- 
- 
- 
-  
-//cout<<"Alternative "<<six_n_n_n_n_n_n<<" "<<six_n_n_n_n_n_n_Alternative<<" "<<sixDirect_n_n_n_n_n_n<<endl;
  
   
 
@@ -701,8 +673,9 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
 
 
 
-
 /*
+
+
 
 
 
@@ -777,14 +750,10 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  cout<<"<5>_{4n|n,n,n,n} from Q-vectors       = "<<fQCorr->GetBinContent(19)<<endl;
  cout<<"<5>_{4n|n,n,n,n} from nested loops    = "<<fDirect->GetBinContent(19)<<endl;
  cout<<" "<<endl;
- */
-
- /*
- 
- cout<<"<6>_{n,n,n|n,n,n} from Q-vectors    = "<<fQCorr->GetBinContent(21)<<endl;
- cout<<"<6>_{n,n,n|n,n,n} from nested loops = "<<fDirect->GetBinContent(21)<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from Q-vectors      = "<<fQCorr->GetBinContent(21)<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from nested loops   = "<<fDirect->GetBinContent(21)<<endl;
  cout<<" "<<endl; 
- */
+ 
 
 
 
@@ -800,7 +769,7 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
 
 
 
-/*
+
  
  cout<<" "<<endl;
  cout<<" "<<endl;
@@ -811,39 +780,26 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  cout<<"nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
  cout<<"0.5 < Pt < 0.6 GeV"<<endl;                                
  cout<<" "<<endl;                                       
- cout<<"<2'>_{n|n} from Q-vectors        = "<<fbin2_1n1n->GetBinContent(6)<<endl;
+ cout<<"<2'>_{n|n} from Q-vectors        = "<<fbin2p1n1n->GetBinContent(6)<<endl;
  cout<<"<2'>_{n|n} from nested loops     = "<<fDirect->GetBinContent(41)<<endl;
  cout<<" "<<endl;                                       
- cout<<"<2'>_{2n|2n} from Q-vectors      = "<<fbin2_2n2n->GetBinContent(6)<<endl;
+ cout<<"<2'>_{2n|2n} from Q-vectors      = "<<fbin2p2n2n->GetBinContent(6)<<endl;
  cout<<"<2'>_{2n|2n} from nested loops   = "<<fDirect->GetBinContent(42)<<endl;                                        
  cout<<" "<<endl;  
- cout<<"<3'>_{2n|n,n} from Q-vectors     = "<<fbin3_2n1n1n->GetBinContent(6)<<endl;
+ cout<<"<3'>_{2n|n,n} from Q-vectors     = "<<fbin3p2n1n1n->GetBinContent(6)<<endl;
  cout<<"<3'>_{2n|n,n} from nested loops  = "<<fDirect->GetBinContent(46)<<endl;                   
  cout<<" "<<endl;              
- cout<<"<3'>_{n,n|2n} from Q-vectors     = "<<fbin3_1n1n2n->GetBinContent(6)<<endl;
+ cout<<"<3'>_{n,n|2n} from Q-vectors     = "<<fbin3p1n1n2n->GetBinContent(6)<<endl;
  cout<<"<3'>_{n,n|2n} from nested loops  = "<<fDirect->GetBinContent(47)<<endl;                                 
- cout<<" "<<endl;              
- cout<<"<4'>_{n,n|n,n} from Q-vectors    = "<<fbin4_1n1n1n1n->GetBinContent(6)<<endl;
+ cout<<" "<<endl;                                                                   
+ cout<<"<4'>_{n,n|n,n} from Q-vectors    = "<<fbin4p1n1n1n1n->GetBinContent(6)<<endl;
  cout<<"<4'>_{n,n|n,n} from nested loops = "<<fDirect->GetBinContent(51)<<endl;                                                                                   
  cout<<" "<<endl;   
  
- */     
-           
-        
- /*
-                     
-                                                             
-cout<<" "<<endl;      
-cout<<" "<<endl;
-cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
-cout<<" "<<endl;                         
-cout<<"sigma_2 = "<<twoErr<<endl;             
-cout<<"sigma_4 = "<<fourErr<<endl;
-cout<<"sigma_6 = "<<sixErr<<endl;
-
-
-*/
-                                              
+     
+       
+   
+    */                                          
                                                 
 
 }

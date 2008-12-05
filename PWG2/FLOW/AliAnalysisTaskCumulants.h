@@ -60,7 +60,7 @@ class AliAnalysisTaskCumulants : public AliAnalysisTask{
 
   AliESDEvent *fESD;                      //ESD object
   AliAODEvent* fAOD;                      //AOD object
-  AliFlowAnalysisWithCumulants* fCA;      //Cumulant Analysis (CA) object
+  AliFlowAnalysisWithCumulants* fGFC;     //Generating Function Cumulant (GFC) analysis object
   AliFlowEventSimpleMaker* fEventMaker;   //FlowEventSimple maker object
   TString fAnalysisType;                  //string to select which kind of input to analyse (ESD, AOD or MC)
   AliCFManager* fCFManager1;              //correction framework manager

@@ -66,7 +66,7 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
  AliAnalysisTask(name,""), 
  fESD(NULL),
  fAOD(NULL),
- fCA(NULL),//Cumulant Analysis (CA) object
+ fGFC(NULL),//Generating Function Cumulant (GFC) analysis object
  fEventMaker(NULL),
  fAnalysisType("ESD"), 
  fCFManager1(NULL),
@@ -77,7 +77,7 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
  fQA(on)
 {
 //constructor
- cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name)"<<endl;
+ cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name)"<<endl;
  
  // Define input and output slots here
  // Input slot #0 works with a TChain
@@ -95,7 +95,7 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
 AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(): 
  fESD(NULL),
  fAOD(NULL), 
- fCA(NULL),//Cumulant Analysis (CA) object
+ fGFC(NULL),//Generating Function Cumulant (GFC) analysis object
  fEventMaker(NULL),
  fAnalysisType("ESD"),
  fCFManager1(NULL),
@@ -185,12 +185,12 @@ void AliAnalysisTaskCumulants::CreateOutputObjects()
  fEventMaker = new AliFlowEventSimpleMaker();
   
  //analyser
- fCA = new AliFlowAnalysisWithCumulants();
- fCA->CreateOutputObjects();
+ fGFC = new AliFlowAnalysisWithCumulants();
+ fGFC->CreateOutputObjects();
 
- if(fCA->GetHistList()) 
+ if(fGFC->GetHistList()) 
  {
-  fListHistos = fCA->GetHistList();
+  fListHistos = fGFC->GetHistList();
   //fListHistos->Print();
  }
  else 
@@ -228,7 +228,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
     //cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
-    fCA->Make(fEvent);
+    fGFC->Make(fEvent);
     delete fEvent;
   }
   else if (fAnalysisType == "ESD") {
@@ -240,7 +240,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     
     //cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
-    fCA->Make(fEvent);
+    fGFC->Make(fEvent);
     delete fEvent;
   }
   else if (fAnalysisType == "ESDMC0") {
@@ -272,7 +272,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     } else if (fAnalysisType == "ESDMC1") {
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
     }
-    fCA->Make(fEvent);
+    fGFC->Make(fEvent);
     delete fEvent;
     //delete mcEvent;
   }
@@ -287,7 +287,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     // analysis 
     //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
-    fCA->Make(fEvent);
+    fGFC->Make(fEvent);
     delete fEvent;
   }
 
@@ -309,12 +309,35 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
  //fListHistos->Print();
  
  if(fListHistos)
- {	    
-  //profiles with avarage values of generating functions for int. and diff. flow
-  TProfile2D *intFlowGenFun = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun")); 
-  //TProfile3D *diffFlowGenFunRe=dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunRe"));
-  //TProfile3D *diffFlowGenFunIm=dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunIm"));
+ {
+  //histograms to store the final results
+  TH1D *intFlowResults   = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsGFC"));
+  TH1D *diffFlowResults2 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2ndOrderGFC"));
+  TH1D *diffFlowResults4 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults4thOrderGFC"));
+  TH1D *diffFlowResults6 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults6thOrderGFC"));
+  TH1D *diffFlowResults8 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults8thOrderGFC"));
+ 	    	    
+  //common histograms to store the final results  the integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes4th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes6th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes8th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults8thOrderGFC"));
+  
+  //profiles with average values of generating functions for int. and diff. flow
+  TProfile2D *intFlowGenFun    = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun")); 
+  TProfile3D *diffFlowGenFunRe = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunRe"));
+  TProfile3D *diffFlowGenFunIm = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunIm"));
+  
+  //number of particles per pt bin
+  TProfile *BinNoOfParticles = dynamic_cast<TProfile*>(fListHistos->FindObject("fBinNoOfParticles"));
+  
+  //average selected multiplicity (for int. flow) 
+  TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowGFC"));
+  
+  //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
+  TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQVectorComponentsGFC"));
       
+  /*
   TProfile2D *diffFlowGenFunRe0 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunRe0"));
   TProfile2D *diffFlowGenFunRe1 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunRe1")); 
   TProfile2D *diffFlowGenFunRe2 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunRe2")); 
@@ -331,29 +354,52 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   TProfile2D *diffFlowGenFunIm5 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunIm5")); 
   TProfile2D *diffFlowGenFunIm6 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunIm6")); 
   TProfile2D *diffFlowGenFunIm7 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fDiffFlowGenFunIm7")); 
-    
-  //histograms to store the final results
-  TH1D *intFlowResults   = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResults"));
-  TH1D *diffFlowResults2 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2"));
-  TH1D *diffFlowResults4 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults4"));
-  TH1D *diffFlowResults6 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults6"));
-  TH1D *diffFlowResults8 = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults8"));
+  */
 
   //profile with avarage selected multiplicity for int. flow 
-  TProfile *avMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow"));
+  //TProfile *avMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow"));
   
   //profile with avarage values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
-  TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQVectorComponents"));
+  //TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQVectorComponents"));
   
   //q-distribution
-  TH1D *qDist = dynamic_cast<TH1D*>(fListHistos->FindObject("fQDist"));
+  //TH1D *qDist = dynamic_cast<TH1D*>(fListHistos->FindObject("fQDist"));
   
-  AliCumulantsFunctions finalResults(intFlowGenFun,NULL,NULL, intFlowResults,diffFlowResults2,diffFlowResults4,diffFlowResults6,diffFlowResults8,avMult,QVectorComponents,qDist,diffFlowGenFunRe0,diffFlowGenFunRe1,diffFlowGenFunRe2,
-diffFlowGenFunRe3,diffFlowGenFunRe4,diffFlowGenFunRe5,diffFlowGenFunRe6,diffFlowGenFunRe7,diffFlowGenFunIm0,diffFlowGenFunIm1,
-diffFlowGenFunIm2,diffFlowGenFunIm3,diffFlowGenFunIm4,diffFlowGenFunIm5,diffFlowGenFunIm6,diffFlowGenFunIm7);
+  //AliCumulantsFunctions finalResults(intFlowGenFun,NULL,NULL, intFlowResults,diffFlowResults2,diffFlowResults4,diffFlowResults6,diffFlowResults8,avMult,QVectorComponents,qDist,diffFlowGenFunRe0,diffFlowGenFunRe1,diffFlowGenFunRe2, diffFlowGenFunRe3,diffFlowGenFunRe4,diffFlowGenFunRe5,diffFlowGenFunRe6,diffFlowGenFunRe7,diffFlowGenFunIm0,diffFlowGenFunIm1, diffFlowGenFunIm2,diffFlowGenFunIm3,diffFlowGenFunIm4,diffFlowGenFunIm5,diffFlowGenFunIm6,diffFlowGenFunIm7);
+  
+  //AliCumulantsFunctions finalResults(intFlowGenFun,diffFlowGenFunRe,diffFlowGenFunIm, intFlowResults,diffFlowResults2,diffFlowResults4,diffFlowResults6,diffFlowResults8,avMult,QVectorComponents,qDist);
          
-  finalResults.Calculate();  
+  //finalResults.Calculate();  
+  
+  
+  
+  //----------------------------------------------------
  
+  fGFC = new AliFlowAnalysisWithCumulants();  
+ 
+  fGFC->SetIntFlowResults(intFlowResults); 
+  fGFC->SetDiffFlowResults2nd(diffFlowResults2);
+  fGFC->SetDiffFlowResults4th(diffFlowResults4);
+  fGFC->SetDiffFlowResults6th(diffFlowResults6);
+  fGFC->SetDiffFlowResults8th(diffFlowResults8); 
+  
+  fGFC->SetCommonHistsResults2nd(commonHistRes2nd); 
+  fGFC->SetCommonHistsResults4th(commonHistRes4th);
+  fGFC->SetCommonHistsResults6th(commonHistRes6th);
+  fGFC->SetCommonHistsResults8th(commonHistRes8th);
+  
+  fGFC->SetIntFlowGenFun(intFlowGenFun);
+  fGFC->SetDiffFlowGenFunRe(diffFlowGenFunRe);
+  fGFC->SetDiffFlowGenFunIm(diffFlowGenFunIm);
+  
+  fGFC->SetNumberOfParticlesPerPtBin(BinNoOfParticles);
+  
+  fGFC->SetAverageMultiplicity(AvMult);
+  fGFC->SetQVectorComponents(QVectorComponents);
+  
+  fGFC->Finish();
+  
+  //----------------------------------------------------
  }
  else
  {

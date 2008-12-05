@@ -4,7 +4,7 @@
 * Author: The ALICE Off-line Project.                                    *
 * Contributors are mentioned in the code where appropriate.              *
 *                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *f
+* Permission to use, copy, modify and distribute this software and its   *
 * documentation strictly for non-commercial purposes is hereby granted   *
 * without fee, provided that the above copyright notice appears in all   *
 * copies and that both the copyright notice and this permission notice   *
@@ -345,11 +345,11 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   TProfile *QProduct = dynamic_cast<TProfile*>(fListHistos->FindObject("fQProduct"));
   
   //average 2-, 3- and 4-particle correlations per bin 
-  TProfile *binned2p_1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2_1n1n"));
-  TProfile *binned2p_2n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2_2n2n"));
-  TProfile *binned3p_2n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_2n1n1n"));
-  TProfile *binned3p_1n1n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_1n1n2n"));
-  TProfile *binned4p_1n1n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f4_1n1n1n1n"));
+  TProfile *binned2p1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerBin1n1n"));
+  TProfile *binned2p2n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerBin2n2n"));
+  TProfile *binned3p2n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerBin2n1n1n"));
+  TProfile *binned3p1n1n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerBin1n1n2n"));
+  TProfile *binned4p1n1n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerBin1n1n1n1n"));
   
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
@@ -357,6 +357,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //multi-particle correlations calculated with nested loop 
   TProfile *DirectCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelations"));
  
+  //----------------------------------------------------
  
   fQCA = new AliFlowAnalysisWithQCumulants();  
  
@@ -375,15 +376,17 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetQProduct(QProduct);
   fQCA->SetQVectorComponents(QVectorComponents);
  
-  fQCA->SetTwo_1n1nPerBin(binned2p_1n1n);
-  fQCA->SetTwo_2n2nPerBin(binned2p_2n2n);
-  fQCA->SetThree_2n1n1nPerBin(binned3p_2n1n1n);
-  fQCA->SetThree_1n1n2nPerBin(binned3p_1n1n2n);
-  fQCA->SetFour_1n1n1n1nPerBin(binned4p_1n1n1n1n);
+  fQCA->SetTwo1n1nPerBin(binned2p1n1n);
+  fQCA->SetTwo2n2nPerBin(binned2p2n2n);
+  fQCA->SetThree2n1n1nPerBin(binned3p2n1n1n);
+  fQCA->SetThree1n1n2nPerBin(binned3p1n1n2n);
+  fQCA->SetFour1n1n1n1nPerBin(binned4p1n1n1n1n);
  
   fQCA->SetDirectCorrelations(DirectCorrelations);
  
   fQCA->Finish();
+  
+  //----------------------------------------------------
  }
  else
  {
