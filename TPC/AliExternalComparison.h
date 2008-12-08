@@ -38,6 +38,7 @@ public:
   //
   void SetDistCut(Float_t dP0, Float_t dP1,Float_t dP2,Float_t dP3, Float_t dP4);
   void SetPullDistCut(Float_t dnP0, Float_t dnP1,Float_t dnP2,Float_t dnP3, Float_t dnP4);
+  void SetResolRange(Int_t param, Float_t min, Float_t max, Int_t nbins);
 
 protected:
   void    MakeHistos();

@@ -128,8 +128,8 @@ void   AliExternalComparison::Process(const AliExternalTrackParam *param0, const
   //
   if (!fResolHistos) MakeHistos(); 
   //
-  if (TMath::Abs(param0->GetX()-param1->GetX())>kDeltaX) return;
-  if (TMath::Abs(param0->GetAlpha()-param1->GetAlpha())>kDeltaA) return;
+  //if (TMath::Abs(param0->GetX()-param1->GetX())>kDeltaX) return;
+  //if (TMath::Abs(param0->GetAlpha()-param1->GetAlpha())>kDeltaA) return;
   //
   const Double_t *p0 = param0->GetParameter();
   const Double_t *p1 = param1->GetParameter();
@@ -304,6 +304,17 @@ void  AliExternalComparison::SetDefaultCuts(){
   //
 }
 
+void AliExternalComparison::SetResolRange(Int_t param, Float_t min, Float_t max, Int_t nbins){
+  //
+  //
+  //
+  if (!fRangeMatrix) SetDefaultRange();
+  TMatrixD & mat = *fRangeMatrix; 
+  if (param<0) return;
+  if (param>4) return;
+  mat(7+param,0)=min;      mat(7+param,1)=max;   mat(7+param,2)=nbins;
+}
+
 void AliExternalComparison::SetDistCut(Float_t dP0, Float_t dP1,Float_t dP2,Float_t dP3, Float_t dP4){
   //
   // Set diff cuts
@@ -349,6 +360,12 @@ Bool_t   AliExternalComparison::AcceptPair(const AliExternalTrackParam *param0, 
   if (TMath::Abs(p0[2]-p1[2])>mat(2,0)) return kFALSE;
   if (TMath::Abs(p0[3]-p1[3])>mat(3,0)) return kFALSE;
   if (TMath::Abs(p0[4]-p1[4])>mat(4,0)) return kFALSE;
+  if ((c0[0]+c1[0])<0) return kFALSE;
+  if ((c0[2]+c1[2])<0) return kFALSE;
+  if ((c0[5]+c1[5])<0) return kFALSE;
+  if ((c0[9]+c1[9])<0) return kFALSE;
+  if ((c0[14]+c1[14])<0) return kFALSE;
+  
   if (TMath::Abs((p0[0]-p1[0])/TMath::Sqrt(c0[0]+c1[0]))>mat(5,0)) return kFALSE;
   if (TMath::Abs((p0[1]-p1[1])/TMath::Sqrt(c0[2]+c1[2]))>mat(6,0)) return kFALSE;
   if (TMath::Abs((p0[2]-p1[2])/TMath::Sqrt(c0[5]+c1[5]))>mat(7,0)) return kFALSE;
