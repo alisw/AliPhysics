@@ -8,12 +8,13 @@
 //                                                                           //
 // This class represents the CTP bunch-crossing mask                         //
 //                                                                           //
-// The Mask contains name and 3565 bits for each bunch-crossing in an orbit  //
+// The Mask contains name and 3564 bits for each bunch-crossing in an orbit  //
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
+#include <TBits.h>
 
 class AliTriggerBCMask : public TNamed {
 
@@ -27,16 +28,19 @@ public:
 
            const UChar_t* GetFullMask () const {return fBCMask; }
 		  Bool_t  GetMask(UShort_t index) const;
-		    void  Print( const Option_t* ) const;
+		    void  Print( const Option_t* opt) const;
   
-  enum {kNBytesPerBCMask = 446}; // Number of bytes to store the 3565 bits of BC mask
+  enum {kNBytesPerBCMask = 446,  // Number of bytes to store the 3564 bits of BC mask
+	kNBits = 3564            // BC mask contains 3564 bits
+  };
 
 private:
-                void   CreateMask(TString &/*mask*/) {} 
+                Bool_t    CreateMask(TString &mask);
+		Bool_t    Bcm2Bits(TObjArray *tokens, Int_t &index, TBits &bits, Int_t &ibit, Int_t &level) const;
 
-                UChar_t   fBCMask[kNBytesPerBCMask];         // Bunch cross mask (3565 bit)
+                UChar_t   fBCMask[kNBytesPerBCMask];         // Bunch cross mask (3564 bits)
 
-   ClassDef( AliTriggerBCMask, 1 )  // Define a trigger bunch-crossing mask
+   ClassDef( AliTriggerBCMask, 2 )  // Define a trigger bunch-crossing mask
 };
 
 #endif
