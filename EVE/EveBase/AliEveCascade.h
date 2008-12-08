@@ -38,8 +38,7 @@ class AliEveCascade : public TEvePointSet
 
 public:
   AliEveCascade();
-  AliEveCascade(TEveRecTrack* tBac, TEveRecCascade* cascade,
-     TEveTrackPropagator* rs);
+  AliEveCascade(TEveRecTrack* tBac, TEveRecV0* v0, TEveRecCascade* cascade, TEveTrackPropagator* rs);
   virtual ~AliEveCascade();
 
   void MakeCascade();
@@ -47,7 +46,8 @@ public:
   virtual void  SetMainColor(Color_t col)
   {
     TEvePointSet::SetMainColor(col);
-    fPointingLine->SetLineColor(fMarkerColor);
+    fPointingCurve->SetLineColor(fMarkerColor);
+    fV0Path->SetLineColor(fMarkerColor);
   }
 
   void SetRnrStyle(TEveTrackPropagator* rs) { fRnrStyle = rs; }
@@ -68,18 +68,21 @@ public:
 
   TEveTrack* GetBacTrack() { return fBacTrack; }
 
-  TEveLine*  GetPointingLine() { return fPointingLine; }
+  TEveLine*  GetPointingCurve() { return fPointingCurve; }
+  TEveLine*  GetV0Path() { return fV0Path; }
 
 protected:
-  TEveVector fRecBirthV;    // Reconstucted birth point of neutral particle
+  TEveVector fRecBirthV;    // Assumed birth point of cascade
   TEveVector fRecDecayV;    // Point of closest approach
-  TEveVector fRecDecayP;
+  TEveVector fRecDecayP;    // Reconstructed momentum at the decay
+  TEveVector fRecDecayV0;   // Reconstructed birth point of neutral daughter
 
   TEveTrack        *fBacTrack;
 
   TEveTrackPropagator *fRnrStyle;
 
-  TEveLine         *fPointingLine;
+  TEveLine         *fPointingCurve;
+  TEveLine         *fV0Path;
 
   Int_t             fESDIndex;    // Index in ESD V0 array.
   Float_t           fDaughterDCA; // Distance at the point of closest approach. 

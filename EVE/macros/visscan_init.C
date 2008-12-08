@@ -70,6 +70,7 @@ void visscan_init()
   TEveUtil::LoadMacro("esd_V0_points.C");
   TEveUtil::LoadMacro("esd_V0.C");
   TEveUtil::LoadMacro("esd_cascade_points.C");
+  TEveUtil::LoadMacro("esd_cascade.C");
   TEveUtil::LoadMacro("esd_tracks.C");
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
@@ -135,6 +136,7 @@ void on_new_event()
   esd_V0();
 
   esd_cascade_points();
+  esd_cascade();
 
   AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();

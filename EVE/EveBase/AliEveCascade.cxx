@@ -35,9 +35,11 @@ AliEveCascade::AliEveCascade() :
   fRecBirthV(),
   fRecDecayV(),
   fRecDecayP(),
+  fRecDecayV0(),
   fBacTrack(0),
   fRnrStyle(0),
-  fPointingLine(0),
+  fPointingCurve(0),
+  fV0Path(0),
   fESDIndex(-1),
   fDaughterDCA(999),
   fChi2Cascade(-1)
@@ -50,17 +52,18 @@ AliEveCascade::AliEveCascade() :
 }
 
 //______________________________________________________________________________
-AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecCascade* cascade, TEveTrackPropagator* rs) :
+AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecV0* v0, TEveRecCascade* cascade, TEveTrackPropagator* rs) :
   TEvePointSet(),
 
   fRecBirthV(cascade->fCascadeBirth),
   fRecDecayV(cascade->fCascadeVCa),
-  fRecDecayP(cascade->fPBac),  // Bo: Here construction with the v0 daughter needed !!
-
+  fRecDecayP(cascade->fPBac + v0->fPNeg + v0->fPPos),
+  fRecDecayV0(v0->fVCa),
   fBacTrack(new TEveTrack(tBac, rs)),
 
   fRnrStyle(rs),
-  fPointingLine(new TEveLine("Pointing line")),
+  fPointingCurve(new TEveLine("Pointing Curve")),
+  fV0Path(new TEveLine("V0 Path")),
   fESDIndex(-1),
   fDaughterDCA(999),
   fChi2Cascade(-1)
@@ -72,15 +75,21 @@ AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecCascade* cascade, TEveTr
   fMainColorPtr = &fMarkerColor;
 
   fMarkerStyle = 2;
-  fMarkerColor = kSpring + 10; // to be checked
+  fMarkerColor = kViolet;
   fMarkerSize  = 1;
 
-  fPointingLine->SetLineColor(fMarkerColor);
-  fPointingLine->SetLineWidth(2);
-  fPointingLine->IncDenyDestroy();
-  AddElement(fPointingLine);
+  fPointingCurve->SetLineColor(fMarkerColor);
+  fPointingCurve->SetLineWidth(2);
+  fPointingCurve->IncDenyDestroy();
+  AddElement(fPointingCurve);
 
-  fBacTrack->SetLineColor(5);  // yellow
+  fV0Path->SetLineColor(fMarkerColor);
+  fV0Path->SetLineStyle(3);
+  fV0Path->SetLineWidth(2);
+  fV0Path->IncDenyDestroy();
+  AddElement(fV0Path);
+
+  fBacTrack->SetLineColor(6);
   fBacTrack->SetStdTitle();
 
   fBacTrack->IncDenyDestroy();
@@ -93,7 +102,8 @@ AliEveCascade::~AliEveCascade()
   // Destructor. Dereferences bachelor track and pointing-line objects.
 
   fBacTrack->DecDenyDestroy();
-  fPointingLine->DecDenyDestroy();
+  fPointingCurve->DecDenyDestroy();
+  fV0Path->DecDenyDestroy();
 }
 
 //______________________________________________________________________________
@@ -105,8 +115,11 @@ void AliEveCascade::MakeCascade()
 
   fBacTrack->MakeTrack();
 
-  fPointingLine->SetPoint(0, fRecBirthV.fX, fRecBirthV.fY, fRecBirthV.fZ);
-  fPointingLine->SetPoint(1, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
+  fPointingCurve->SetPoint(0, fRecBirthV.fX, fRecBirthV.fY, fRecBirthV.fZ);
+  fPointingCurve->SetPoint(1, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
+
+  fV0Path->SetPoint(0, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
+  fV0Path->SetPoint(1, fRecDecayV0.fX, fRecDecayV0.fY, fRecDecayV0.fZ);
 }
 
 
