@@ -20,7 +20,7 @@
 #include "AliStack.h"
 #include "AliCFContainer.h"
 
-#include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
+#include "AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
 
 // Analysis task creating a the 2d y-p_t spectrum of p and antip

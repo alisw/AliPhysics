@@ -452,6 +452,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
   c12->SetFillColor(10); c12->GetFrame()->SetFillColor(10); c12->Divide(2,1);
   c12->SetHighLightColor(10); c12->cd(1)->SetBottomMargin(0.15);
   c12->cd(1)->SetGridx(); c12->cd(1)->SetGridy();
+  hEmptyY->SetTitle("Protons");
   hEmptyY->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     //if((iParticle == 0)||(iParticle == 2)||(iParticle == 5)||(iParticle == 6)||(iParticle == 8))
@@ -469,6 +470,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 
   c12->SetHighLightColor(10); c12->cd(2)->SetBottomMargin(0.15);
   c12->cd(2)->SetGridx(); c12->cd(2)->SetGridy();
+  hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
@@ -490,20 +492,26 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
   TCanvas *c13 = new TCanvas("c13",
-			    "Composition of accepted secondaries vs pT",
-			    600,600,700,400);
+			     "Composition of accepted secondaries vs pT",
+			     600,600,700,400);
   c13->SetFillColor(10); c13->GetFrame()->SetFillColor(10); c13->Divide(2,1);
   c13->SetHighLightColor(10); c13->cd(1)->SetBottomMargin(0.15);
   c13->cd(1)->SetGridx(); c13->cd(1)->SetGridy();
+  hEmptyPt->GetXaxis()->SetRangeUser(gParticleProtonPt[0]->GetXaxis()->GetXmin()-0.2,gParticleProtonPt[0]->GetXaxis()->GetXmax()+0.2);
+  hEmptyPt->SetTitle("Protons");
   hEmptyPt->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
-      DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,113-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(gParticleProtonPt[0]->GetXaxis()->GetXmin()+0.1, 
+		 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(gParticleProtonPt[0]->GetXaxis()->GetXmin()+0.2,
+		    113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(2.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(2.3,113-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(gParticleProtonPt[0]->GetXaxis()->GetXmax()*0.5, 
+		 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(gParticleProtonPt[0]->GetXaxis()->GetXmax()*0.5+0.1,
+		    113-5*(iParticle-5),fParticleName[iParticle]);
     }
     if((iParticle == 0)||(iParticle == 2)||(iParticle == 6)||(iParticle == 8))
       gParticleProtonPt[iParticle]->Draw("P");
@@ -511,15 +519,20 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 
   c13->SetHighLightColor(10); c13->cd(2)->SetBottomMargin(0.15);
   c13->cd(2)->SetGridx(); c13->cd(2)->SetGridy();
+  hEmptyPt->SetTitle("Antiprotons");
   hEmptyPt->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
-      DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,113-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(gParticleProtonPt[0]->GetXaxis()->GetXmin()+0.1, 
+		 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(gParticleProtonPt[0]->GetXaxis()->GetXmin()+0.2,
+		    113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(2.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(2.3,113-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(gParticleProtonPt[0]->GetXaxis()->GetXmax()*0.5, 
+		 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(gParticleProtonPt[0]->GetXaxis()->GetXmax()*0.5+0.1,
+		    113-5*(iParticle-5),fParticleName[iParticle]);
     }
     if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
       gParticleAntiProtonPt[iParticle]->Draw("P");
@@ -638,7 +651,7 @@ void DrawContamination(TList *inputList) {
   DrawMarker(0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.1,53,"Primaries");
   DrawMarker(0, 45, kOpenCircle, 1.2, 1);
-  t1->DrawLatex(0.1,43,"Secondaries");
+  t1->DrawLatex(0.1,41,"Secondaries");
 
   c7->SaveAs("Contamination-Protons-Rapidity.gif");
 
@@ -716,14 +729,15 @@ void DrawContamination(TList *inputList) {
   c8->cd(1)->SetLeftMargin(0.15); 
   c8->cd(1)->SetGridx(); c8->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
+  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryProtonsPercentage->GetXaxis()->GetXmin()-0.2,gPtPrimaryProtonsPercentage->GetXaxis()->GetXmax()+0.2);
   hEmptyPt->DrawCopy();
   gPtPrimaryProtonsPercentage->DrawCopy("ESAME");
   gPtSecondaryProtonsPercentage->DrawCopy("ESAME");
 
-  DrawMarker(2.0, 55, kFullCircle, 1.2, 1);
-  t1->DrawLatex(2.1,53,"Primaries");
-  DrawMarker(2.0, 45, kOpenCircle, 1.2, 1);
-  t1->DrawLatex(2.1,43,"Secondaries");
+  DrawMarker(0.5, 55, kFullCircle, 1.2, 1);
+  t1->DrawLatex(0.6,53,"Primaries");
+  DrawMarker(0.5, 45, kOpenCircle, 1.2, 1);
+  t1->DrawLatex(0.6,41,"Secondaries");
 
   c8->cd(2)->SetBottomMargin(0.15); 
   c8->cd(2)->SetLeftMargin(0.15); 

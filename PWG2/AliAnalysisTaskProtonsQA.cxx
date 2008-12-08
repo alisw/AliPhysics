@@ -17,7 +17,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
-#include "PWG2spectra/SPECTRA/AliProtonQAAnalysis.h"
+#include "AliProtonQAAnalysis.h"
 #include "AliAnalysisTaskProtonsQA.h"
 
 // Analysis task used for the QA of the (anti)proton analysis
@@ -87,13 +87,14 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   //proton analysis object
   fAnalysis = new AliProtonQAAnalysis();
   fAnalysis->SetRunMCAnalysis();
-  fAnalysis->SetRunEfficiencyAnalysis(kFALSE,kFALSE); //kTRUE,kTRUE for eta-pT efficiencies and if the cuts should be used in the reco and pid efficiencies
+  fAnalysis->SetRunEfficiencyAnalysis(kTRUE,kTRUE); //kTRUE,kTRUE for eta-pT efficiencies and if the cuts should be used in the reco and pid efficiencies
   //fAnalysis->SetMCProcessId(13);//4: weak decay - 13: hadronic interaction
   //fAnalysis->SetMotherParticlePDGCode(3122);//3122: Lambda
 
   //Use of TPConly tracks
   /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
+  fAnalysis->SetTPCpid();
   fAnalysis->SetMinTPCClusters(100);
   fAnalysis->SetMaxChi2PerTPCCluster(2.2);
   fAnalysis->SetMaxCov11(0.5);
@@ -103,12 +104,12 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetMaxCov55(0.5);
   //fAnalysis->SetMaxSigmaToVertexTPC(2.0);
   fAnalysis->SetMaxDCAXYTPC(1.5);
-  fAnalysis->SetMaxDCAZTPC(1.5);
-  fAnalysis->SetTPCpid();*/
+  fAnalysis->SetMaxDCAZTPC(1.5);*/
 
   //Use of HybridTPC tracks
-  fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
+  fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 26, 0.2, 1.5); //HybridTPC
   fAnalysis->UseHybridTPC();
+  fAnalysis->SetTPCpid();
   fAnalysis->SetMinTPCClusters(110);
   fAnalysis->SetMaxChi2PerTPCCluster(2.2);
   fAnalysis->SetMaxCov11(0.5);
@@ -116,16 +117,15 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetMaxCov33(0.5);
   fAnalysis->SetMaxCov44(0.5);
   fAnalysis->SetMaxCov55(0.5);
-  fAnalysis->SetMaxSigmaToVertex(3.0);
-  fAnalysis->SetMaxDCAXY(1.5);
-  fAnalysis->SetMaxDCAZ(1.5);
-  fAnalysis->SetTPCpid();
-  fAnalysis->SetPointOnITSLayer1();
-  fAnalysis->SetPointOnITSLayer2();
-  //fAnalysis->SetPointOnITSLayer3();
-  //fAnalysis->SetPointOnITSLayer4();
-  //fAnalysis->SetPointOnITSLayer5();
+  fAnalysis->SetMaxSigmaToVertex(2.0);
+  //fAnalysis->SetMaxDCAXY(1.5);
+  //fAnalysis->SetMaxDCAZ(1.5);
   //fAnalysis->SetPointOnITSLayer6();
+  //fAnalysis->SetPointOnITSLayer5();
+  //fAnalysis->SetPointOnITSLayer4();
+  //fAnalysis->SetPointOnITSLayer3();
+  fAnalysis->SetPointOnITSLayer2();
+  fAnalysis->SetPointOnITSLayer1();
   fAnalysis->SetMinITSClusters(5);
 
   //Combined tracking
