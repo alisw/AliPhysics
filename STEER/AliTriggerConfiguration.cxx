@@ -550,6 +550,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      }
 
      strLine.ReplaceAll("*",'!');
+     strLine.ReplaceAll("~",'!');
      TObjArray *tokens = strLine.Tokenize(" \t");
      Int_t ntokens = tokens->GetEntriesFast();
      if (ntokens == 0)
