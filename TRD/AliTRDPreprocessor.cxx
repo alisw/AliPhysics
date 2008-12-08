@@ -897,99 +897,119 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   //  5 : could not get the SOR file from the FXS
   //  6 : could not get the EOR file from the FXS
   //  7 : 
-  //  8 : something wrong with the EOR file
-  //  9 : 
-  // 10 : EOR XML is not well-formed
-  // 11 :
-  // 12 : ERROR in XML SAX validation of EOR: something wrong with the content
+  //  8 : something wrong with the SOR file
+  //  9 : something wrong with the EOR file
+  // 10 : SOR XML is not well-formed
+  // 11 : EOR XML is not well-formed
+  // 12 : ERROR in XML SAX validation: something wrong with the content
   // 13 :
   // 14 : ERROR while creating calibration objects in the handler
   // 15 : error while storing data in the CDB
   //
 
-  Log("Processing the DCS config summary file.");
+  Log("Processing the DCS config summary files.");
 
   // get the XML files
   Log("Requesting the 2 summaryfiles from the FXS..");
-  const char * xmlFileS = GetFile(kDCS,"CONFIGSUMMARYSOR","");
-  const char * xmlFile = GetFile(kDCS,"CONFIGSUMMARYEOR","");
+  const char *xmlFileS = GetFile(kDCS,"CONFIGSUMMARYSOR","");
+  const char *xmlFileE = GetFile(kDCS,"CONFIGSUMMARYEOR","");
   // for the time being just request BOTH files from the FXS
   // THEN it can be created online (otherwise the FXS would be messed up)
   // the next step is to actually read BOTH files and store their informations
   if (xmlFileS == NULL) {
     Log(Form("ERROR: SOR File %s not found!",xmlFileS));
     return 5;
-  } else {
-    Log(Form("SOR File %s found.",xmlFileS));
-  }
-  if (xmlFile == NULL) {
-    Log(Form("ERROR: EOR File %s not found!",xmlFile));
+  } else if (xmlFileE == NULL) {
+    Log(Form("ERROR: EOR File %s not found!",xmlFileE));
     return 6;
   } else {
-    Log(Form("EOR File %s found.",xmlFile));
+    Log(Form("Both Files (%s and %s) found.",xmlFileS,xmlFileE));
   }
   
-  // test the file
-  std::ifstream fileTest;
-  fileTest.open(xmlFile, std::ios_base::binary | std::ios_base::in);
-  if (!fileTest.good() || fileTest.eof() || !fileTest.is_open()) {
-    Log(Form("ERROR: File %s not valid!",xmlFile));
+  // test the files
+  std::ifstream fileTestS, fileTestE;
+  fileTestS.open(xmlFileS, std::ios_base::binary | std::ios_base::in);
+  fileTestE.open(xmlFileE, std::ios_base::binary | std::ios_base::in);
+  if (!fileTestS.good() || fileTestS.eof() || !fileTestS.is_open()) {
+    Log(Form("ERROR: File %s not valid!",xmlFileS));
     return 8;
   }
-  fileTest.seekg(0, std::ios_base::end);
-  if (static_cast<int>(fileTest.tellg()) < 2) {
-    Log(Form("ERROR: File %s is empty!",xmlFile));
+  if (!fileTestE.good() || fileTestE.eof() || !fileTestE.is_open()) {
+    Log(Form("ERROR: File %s not valid!",xmlFileE));
+    return 9;
+  }
+  fileTestS.seekg(0, std::ios_base::end);
+  fileTestE.seekg(0, std::ios_base::end);
+  if (static_cast<int>(fileTestS.tellg()) < 2) {
+    Log(Form("ERROR: File %s is empty!",xmlFileS));
     return 8;
   }
-  Log("File is tested valid.");   
+  if (static_cast<int>(fileTestE.tellg()) < 2) {
+    Log(Form("ERROR: File %s is empty!",xmlFileE));
+    return 9;
+  }
+  Log("Files are tested valid.");   
 
   // make a robust XML validation
   TSAXParser testParser;
-  if (testParser.ParseFile(xmlFile) < 0 ) {
-    Log("ERROR: XML content is not well-formed.");
+  if (testParser.ParseFile(xmlFileS) < 0 ) {
+    Log("ERROR: XML content (SOR) is not well-formed.");
     return 10;
-  } else {
-    Log("XML content is well-formed");   
+  } else if (testParser.ParseFile(xmlFileE) < 0 ) {
+    Log("ERROR: XML content (EOR) is not well-formed.");
+    return 11;
   }
-  
+  Log("XML contents are well-formed.");
+      
   // create parser and parse
-  TSAXParser saxParser;
-  AliTRDSaxHandler saxHandler;
-  saxParser.ConnectToHandler("AliTRDSaxHandler", &saxHandler);
-  saxParser.ParseFile(xmlFile);
+  TSAXParser saxParserS, saxParserE;
+  AliTRDSaxHandler saxHandlerS, saxHandlerE;
+  saxParserS.ConnectToHandler("AliTRDSaxHandler", &saxHandlerS);
+  saxParserS.ParseFile(xmlFileS);
+  saxParserE.ConnectToHandler("AliTRDSaxHandler", &saxHandlerE);
+  saxParserE.ParseFile(xmlFileE);
 
   // report errors if present
-  if (saxParser.GetParseCode() == 0) {
-    Log("XML file validation OK");
+  if ((saxParserS.GetParseCode() == 0) && (saxParserE.GetParseCode() == 0)) {
+    Log("XML file validation OK.");
   } else {
-    Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
+    Log(Form("ERROR in XML file validation. Parsecodes: SOR: %s, EOR: %s", saxParserS.GetParseCode(), saxParserE.GetParseCode()));
     return 12;
   }
-  if (saxHandler.GetHandlerStatus() == 0) {
+  if ((saxHandlerS.GetHandlerStatus() == 0) && (saxHandlerE.GetHandlerStatus() == 0)) {
     Log("SAX handler reports no errors.");
   } else  {
-    Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
+    Log(Form("ERROR while creating calibration objects. Error codes: SOR: %s, EOR: %s", saxHandlerS.GetHandlerStatus(), saxHandlerE.GetHandlerStatus()));
     return 14;
   }
 
   // get the calibration object storing the data from the handler
-  AliTRDCalDCS* fCalDCSObj = saxHandler.GetCalDCSObj();
-  fCalDCSObj->EvaluateGlobalParameters();
+  AliTRDCalDCS* fCalDCSObjSOR = saxHandlerS.GetCalDCSObj();
+  AliTRDCalDCS* fCalDCSObjEOR = saxHandlerE.GetCalDCSObj();
+  fCalDCSObjSOR->EvaluateGlobalParameters();
+  fCalDCSObjEOR->EvaluateGlobalParameters();
+  
+  // put both objects in one TObjArray to store them
+  TObjArray* fCalObjArray = new TObjArray(2);
+  fCalObjArray->SetOwner();
+  fCalObjArray->AddAt(fCalDCSObjSOR,0);
+  fCalObjArray->AddAt(fCalDCSObjEOR,1);
   
   // store the DCS calib data in the CDB
   AliCDBMetaData metaData1;
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
-  metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
-  if (!Store("Calib", "DCS", fCalDCSObj, &metaData1, 0, kTRUE)) {
+  metaData1.SetComment("DCS configuration data in two AliTRDCalDCS objects in one TObjArray (0:SOR, 1:EOR).");
+  if (!Store("Calib", "DCS", fCalObjArray, &metaData1, 0, kTRUE)) {
     Log("problems while storing DCS config data object");
     return 15;
   } else {
     Log("DCS config data object stored.");
   }
 
-  Log("Processing of the DCS config summary file DONE.");
+  //delete fCalObjArray;
 
+  Log("Processing of the DCS config summary file DONE.");  
   return 0;
 }
 
