@@ -62,6 +62,8 @@ class AliCaloCalibPedestal : public TObject {
   // Main profiles:
   TProfile2D * GetPedProfileLowGain(int i) const {return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
   TProfile2D * GetPedProfileHighGain(int i) const {return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
+  TProfile2D * GetSampleProfileLowGain(int i) const {return (TProfile2D*)fSampleLowGain[i];};	// Return a pointer to the low-gain profile of all samples
+  TProfile2D * GetSampleProfileHighGain(int i) const {return (TProfile2D*)fSampleHighGain[i];};	// Return a pointer to the high-gain profile of all samples
   TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain pedestal profile
   TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain pedestal profile
   
@@ -86,6 +88,9 @@ class AliCaloCalibPedestal : public TObject {
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
   int GetModules() const {return fModules;}; //The number of modules
+  int GetRowMin() const {return fRowMin;}; //for histo def.
+  int GetRowMax() const {return fRowMax;}; //for histo def.
+  int GetRowMultiplier() const {return fRowMultiplier;}; //for histo filling
 
   // RunNumbers : setters and getters
   void SetRunNumber(int runNo) {fRunNumber = runNo;};
@@ -126,6 +131,8 @@ class AliCaloCalibPedestal : public TObject {
   //since we have only around 12 objects (maximum) in the array anyway.
   TObjArray fPedestalLowGain; // pedestal info for low gain
   TObjArray fPedestalHighGain; // pedestal info for high gain
+  TObjArray fSampleLowGain; // all sample info for low gain
+  TObjArray fSampleHighGain; // all sample info for high gain
   TObjArray fPeakMinusPedLowGain; // (peak-pedestal) info for low gain
   TObjArray fPeakMinusPedHighGain; // (peak-pedestal) info for high gain
   
@@ -158,6 +165,9 @@ class AliCaloCalibPedestal : public TObject {
   int fColumns;	//The number of columns per module
   int fRows;	//The number of rows per module
   int fModules;	//The number of modules
+  int fRowMin; // Mimimum Row number
+  int fRowMax; // Maximum now number
+  int fRowMultiplier; // Multiplication factor to get proper row range between PHOS and EMCAL
   TString fCaloString; // id for which detector type we have 
   AliCaloAltroMapping **fMapping;    //! Altro Mapping object
   int fRunNumber; //The run number. Needs to be set by the user.
@@ -174,7 +184,7 @@ class AliCaloCalibPedestal : public TObject {
   static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
   static const int fgkEmCalModules = 12; // number of modules for EMCAL
   
-  ClassDef(AliCaloCalibPedestal,1)
+  ClassDef(AliCaloCalibPedestal,2)
 
 };
     

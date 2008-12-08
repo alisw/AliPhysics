@@ -54,6 +54,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   TObject(),
   fPedestalLowGain(),
   fPedestalHighGain(),
+  fSampleLowGain(),
+  fSampleHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPedestalLowGainDiff(),
@@ -75,6 +77,9 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fColumns(0),
   fRows(0),
   fModules(0),
+  fRowMin(0),
+  fRowMax(0),
+  fRowMultiplier(0),
   fCaloString(),
   fMapping(NULL),
   fRunNumber(-1)
@@ -85,6 +90,9 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fRows = fgkPhosRows;
     fModules = fgkPhosModules;
     fCaloString = "PHOS";
+    fRowMin = -1*fRows;
+    fRowMax = 0;
+    fRowMultiplier = -1;
   } 
   else {
     //We'll just trust the enum to keep everything in line, so that if detectorType
@@ -94,6 +102,9 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fRows = fgkEmCalRows;
     fModules = fgkEmCalModules;
     fCaloString = "EMCAL";
+    fRowMin = 0;
+    fRowMax = fRows;
+    fRowMultiplier = 1;
   } 
   fDetType = detectorType;
  
@@ -107,7 +118,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     title += i; 
     fPedestalLowGain.Add(new TProfile2D(name, title,
 					fColumns, 0.0, fColumns, 
-					fRows, -fRows, 0.0));
+					fRows, fRowMin, fRowMax,"s"));
   
     //Pedestals, high gain
     name = "hPedhighgain";
@@ -116,7 +127,24 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     title += i; 
     fPedestalHighGain.Add(new TProfile2D(name, title,
 					 fColumns, 0.0, fColumns, 
-					 fRows, -fRows, 0.0));
+					 fRows, fRowMin, fRowMax,"s"));
+    //All Samples, low gain
+    name = "hSamplelowgain";
+    name += i;
+    title = "All Samples, low gain, module ";
+    title += i; 
+    fSampleLowGain.Add(new TProfile2D(name, title,
+					fColumns, 0.0, fColumns, 
+					fRows, fRowMin, fRowMax,"s"));
+  
+    //All Samples, high gain
+    name = "hSamplehighgain";
+    name += i;
+    title = "All Samples, high gain, module ";
+    title += i; 
+    fSampleHighGain.Add(new TProfile2D(name, title,
+					 fColumns, 0.0, fColumns, 
+					 fRows, fRowMin, fRowMax,"s"));
   
     //Peak-Pedestals, low gain
     name = "hPeakMinusPedlowgain";
@@ -125,7 +153,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     title += i; 
     fPeakMinusPedLowGain.Add(new TProfile2D(name, title,
 					    fColumns, 0.0, fColumns, 
-					    fRows, -fRows, 0.0));
+					    fRows, fRowMin, fRowMax,"s"));
   
     //Peak-Pedestals, high gain
     name = "hPeakMinusPedhighgain";
@@ -134,20 +162,22 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     title += i; 
     fPeakMinusPedHighGain.Add(new TProfile2D(name, title,
 					     fColumns, 0.0, fColumns, 
-					     fRows, -fRows, 0.0));
+					     fRows, fRowMin, fRowMax,"s"));
   
     name = "hDeadMap";
     name += i;
     title = "Dead map, module ";
     title += i;
     fDeadMap.Add(new TH2D(name, title, fColumns, 0.0, fColumns, 
-			  fRows, -fRows, 0.0));
+			  fRows, fRowMin, fRowMax));
   
   }//end for nModules create the histograms
  
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
+  fSampleLowGain.Compress();
+  fSampleHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fDeadMap.Compress();
@@ -173,6 +203,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   TObject(ped),
   fPedestalLowGain(),
   fPedestalHighGain(),
+  fSampleLowGain(),
+  fSampleHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPedestalLowGainDiff(),
@@ -194,6 +226,9 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fColumns(ped.GetColumns()),
   fRows(ped.GetRows()),
   fModules(ped.GetModules()),
+  fRowMin(ped.GetRowMin()),
+  fRowMax(ped.GetRowMax()),
+  fRowMultiplier(ped.GetRowMultiplier()),
   fCaloString(ped.GetCaloString()),
   fMapping(NULL), //! note that we are not copying the map info
   fRunNumber(ped.GetRunNumber())
@@ -203,6 +238,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   for (int i = 0; i < fModules; i++) {
     fPedestalLowGain.Add( ped.GetPedProfileLowGain(i) );
     fPedestalHighGain.Add( ped.GetPedProfileHighGain(i) );
+    fSampleLowGain.Add( ped.GetSampleProfileLowGain(i) );
+    fSampleHighGain.Add( ped.GetSampleProfileHighGain(i) );
     fPeakMinusPedLowGain.Add( ped.GetPeakProfileLowGain(i) );
     fPeakMinusPedHighGain.Add( ped.GetPeakProfileHighGain(i) );
 
@@ -212,6 +249,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
+  fSampleLowGain.Compress();
+  fSampleHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fDeadMap.Compress();
@@ -322,12 +361,14 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
       //NOTE: coordinates are (column, row) for the profiles
       if (gain == 0) {
 	//fill the low gain histograms
-	((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, min);
-	((TProfile2D*)fPeakMinusPedLowGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, max - min);
+	((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), min);
+	((TProfile2D*)fPeakMinusPedLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
+	((TProfile2D*)fSampleLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
       } 
       else {//fill the high gain ones
-	((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, min);
-	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, max - min);
+	((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), min);
+	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
+	((TProfile2D*)fSampleHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
       }//end if gain
 
       max = fgkSampleMin; min = fgkSampleMax;
@@ -365,6 +406,12 @@ Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHi
     }
     if( ((TProfile2D *)fPedestalHighGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalHighGain[i]->Write();
+    }
+    if( ((TProfile2D *)fSampleLowGain[i])->GetEntries() || saveEmptyHistos) {
+      fSampleLowGain[i]->Write();
+    }
+    if( ((TProfile2D *)fSampleHighGain[i])->GetEntries() || saveEmptyHistos) {
+      fSampleHighGain[i]->Write();
     }
   } 
   
@@ -423,7 +470,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPedestalLowGainDiff.Add(new TProfile2D(name, title,
 					    fColumns, 0.0, fColumns, 
-					    fRows, -fRows, 0.0));
+					    fRows, fRowMin, fRowMax,"s"));
   
     //Pedestals, high gain
     name = "hPedhighgainDiff";
@@ -432,17 +479,8 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPedestalHighGainDiff.Add(new TProfile2D(name, title,
 					     fColumns, 0.0, fColumns, 
-					     fRows, -fRows, 0.0));
-  
-    //Peak-Pedestals, low gain
-    name = "hPeakMinusPedlowgainDiff";
-    name += i;
-    title = "Peak-Pedestal difference, low gain, module ";
-    title += i; 
-    fPeakMinusPedLowGainDiff.Add(new TProfile2D(name, title,
-						fColumns, 0.0, fColumns, 
-						fRows, -fRows, 0.0));
-  
+					     fRows, fRowMin, fRowMax,"s"));
+
     //Peak-Pedestals, high gain
     name = "hPeakMinusPedhighgainDiff";
     name += i;
@@ -450,7 +488,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPeakMinusPedHighGainDiff.Add(new TProfile2D(name, title,
 						 fColumns, 0.0, fColumns, 
-						 fRows, -fRows, 0.0));
+						 fRows, fRowMin, fRowMax,"s"));
   
     //Pedestals, low gain
     name = "hPedlowgainRatio";
@@ -459,7 +497,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPedestalLowGainRatio.Add(new TProfile2D(name, title,
 					     fColumns, 0.0, fColumns, 
-					     fRows, -fRows, 0.0));
+					     fRows, fRowMin, fRowMax,"s"));
   
     //Pedestals, high gain
     name = "hPedhighgainRatio";
@@ -468,7 +506,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPedestalHighGainRatio.Add(new TProfile2D(name, title,
 					      fColumns, 0.0, fColumns, 
-					      fRows, -fRows, 0.0));
+					      fRows, fRowMin, fRowMax,"s"));
   
     //Peak-Pedestals, low gain
     name = "hPeakMinusPedlowgainRatio";
@@ -477,7 +515,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPeakMinusPedLowGainRatio.Add(new TProfile2D(name, title,
 						 fColumns, 0.0, fColumns, 
-						 fRows, -fRows, 0.0));
+						 fRows, fRowMin, fRowMax,"s"));
   
     //Peak-Pedestals, high gain
     name = "hPeakMinusPedhighgainRatio";
@@ -486,7 +524,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     title += i; 
     fPeakMinusPedHighGainRatio.Add(new TProfile2D(name, title,
 						  fColumns, 0.0, fColumns, 
-						  fRows, -fRows, 0.0));
+						  fRows, fRowMin, fRowMax,"s"));
     
   }//end for nModules create the histograms
 }
