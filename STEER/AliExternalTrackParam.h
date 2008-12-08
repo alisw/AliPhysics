@@ -42,8 +42,14 @@ class AliExternalTrackParam: public AliVTrack {
 			Double_t cv[21],Short_t sign);
   virtual ~AliExternalTrackParam(){}
 
-  void Set(Double_t x,Double_t alpha,
-			const Double_t param[5], const Double_t covar[15]);
+  template <typename T>
+  void Set(T x, T alpha, const T param[5], const T covar[15]) {
+    //  Sets the parameters
+    fX=x; fAlpha=alpha;
+    for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
+    for (Int_t i = 0; i < 15; i++) fC[i] = covar[i];
+  }
+
   void Set(Double_t xyz[3],Double_t pxpypz[3],Double_t cv[21],Short_t sign);
 
   static void SetMostProbablePt(Double_t pt) { fgMostProbablePt=pt; }

@@ -210,18 +210,6 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
 }
 
 //_____________________________________________________________________________
-void AliExternalTrackParam::Set(Double_t x, Double_t alpha,
-				const Double_t p[5], const Double_t cov[15]) {
-  //
-  //  Sets the parameters
-  //
-  fX=x;
-  fAlpha=alpha;
-  for (Int_t i = 0; i < 5; i++)  fP[i] = p[i];
-  for (Int_t i = 0; i < 15; i++) fC[i] = cov[i];
-}
-
-//_____________________________________________________________________________
 void AliExternalTrackParam::Reset() {
   //
   // Resets all the parameters to 0 
