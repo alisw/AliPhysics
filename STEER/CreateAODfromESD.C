@@ -30,6 +30,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
     // Input
     AliESDInputHandler* inpHandler = new AliESDInputHandler();
+    inpHandler->SetReadTags();
     mgr->SetInputEventHandler  (inpHandler);
 
     // Output
@@ -45,20 +46,39 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
     mgr->AddTask(esdmuonfilter);
 
+    // Cuts on primary tracks
     AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
     esdTrackCutsL->SetMinNClustersTPC(50);
     esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
-    esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+    esdTrackCutsL->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);
     esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsL->SetMinNsigmaToVertex(3);
-    esdTrackCutsL->SetDCAToVertexXY(3.);
-    esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
+    esdTrackCutsL->SetDCAToVertex(3.0);
+    esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
     esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
 
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
     trackFilter->AddCuts(esdTrackCutsL);
 
+    // Cuts on V0s
+    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("AliESDv0Cuts", "Standard pp");
+    esdV0Cuts->SetMinRadius(0.2);
+    esdV0Cuts->SetMaxRadius(100);
+    esdV0Cuts->SetMinDcaPosToVertex(0.05);
+    esdV0Cuts->SetMinDcaNegToVertex(0.05);
+    esdV0Cuts->SetMaxDcaV0Daughters(0.5);
+    esdV0Cuts->SetMinCosinePointingAngle(0.99);
+    AliAnalysisFilter* v0Filter = new AliAnalysisFilter("v0Filter");
+    v0Filter->AddCuts(esdV0Cuts);
+
+
+//
     filter->SetTrackFilter(trackFilter);
+    filter->SetV0Filter(v0Filter);
+
+
+//  Create AOD Tags
+    AliAnalysisTaskTagCreator* tagTask = new AliAnalysisTaskTagCreator("AOD Tag Creator");
+    mgr->AddTask(tagTask);
 
     // Pipelining
     AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain", TChain::Class(),
@@ -67,13 +87,17 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               "default");
-  
-
+    AliAnalysisDataContainer *coutputT
+	= mgr->CreateContainer("cTag",  TTree::Class(), AliAnalysisManager::kOutputContainer, "AOD.tag.root");
+    
     mgr->ConnectInput (filter, 0, cinput1 );
     mgr->ConnectOutput(filter, 0, coutput1);
 
     mgr->ConnectInput (esdmuonfilter, 0, cinput1 );
     mgr->ConnectOutput(esdmuonfilter, 0, coutput1);
+
+    mgr->ConnectInput (tagTask, 0, cinput1);
+    mgr->ConnectOutput(tagTask, 1, coutputT);
 
     //
     // Run the analysis
