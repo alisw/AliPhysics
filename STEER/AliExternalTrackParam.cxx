@@ -1479,3 +1479,12 @@ void AliExternalTrackParam::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Flo
     counter++;
   }
 }
+
+Int_t AliExternalTrackParam::GetIndex(Int_t i, Int_t j) const {
+  //
+  Int_t min = TMath::Min(i,j);
+  Int_t max = TMath::Max(i,j);
+
+  return min+(max+1)*max/2;
+}
+

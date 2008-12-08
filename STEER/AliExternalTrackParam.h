@@ -163,7 +163,7 @@ class AliExternalTrackParam: public AliVTrack {
 			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
 
   Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
-  Int_t GetIndex(Int_t i, Int_t j) const {return i+(j+1)*j/2;}
+  Int_t GetIndex(Int_t i, Int_t j) const;
   Int_t GetLabel() const {return -1;} 
   //
   // visualization (M. Ivanov)
