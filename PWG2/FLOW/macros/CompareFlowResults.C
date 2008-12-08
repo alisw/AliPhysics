@@ -14,32 +14,39 @@ void CompareFlowResults()
  gStyle->SetOptTitle(0);
  gStyle->SetOptStat(0);
  
- //open the output files:
- TString inputFileNameMCEP = "outputMCEPanalysisESD.root";
- TFile* file_MCEP = NULL;
- file_MCEP = TFile::Open(inputFileNameMCEP.Data(), "READ"); 
+ //choosing the style and color of mesh for MC error bands:
+ Int_t meshStyle = 3044;//see documentation of TAttFill
+ Int_t meshColor = kRed-4;
  
- TString inputFileNameLYZ1 = "outputLYZ1analysisESD_firstrun.root";
+ //type of analysis was: ESD, AOD, MC, ESDMC0, ESDMC1
+ const TString type = "ESD";
+ 
+ //open the output files:
+ TString inputFileNameMCEP = "outputMCEPanalysis";
+ TFile* file_MCEP = NULL;
+ file_MCEP = TFile::Open(((inputFileNameMCEP.Append(type)).Append(".root")).Data(), "READ"); 
+ 
+ TString inputFileNameLYZ1 = "outputLYZ1analysis";
  TFile* file_LYZ1 = NULL;
- file_LYZ1 = TFile::Open(inputFileNameLYZ1.Data(), "READ"); 
+ file_LYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append("_firstrun.root")).Data(), "READ"); 
  
  /*
- TString inputFileNameSP = "outputSPanalysisESD.root";
+ TString inputFileNameSP = "outputSPanalysis";
  TFile* file_SP = NULL;
- file_SP = TFile::Open(inputFileNameSP.Data(), "READ"); 
+ file_SP = TFile::Open(((inputFileNameSP.Append(type)).Append(".root")).Data(), "READ"); 
  */
  
- TString inputFileNameFQD = "outputFQDanalysisESD.root";
+ TString inputFileNameFQD = "outputFQDanalysis";
  TFile* file_FQD = NULL;
- file_FQD = TFile::Open(inputFileNameFQD.Data(), "READ"); 
+ file_FQD = TFile::Open(((inputFileNameFQD.Append(type)).Append(".root")).Data(), "READ"); 
  
- TString inputFileNameGFC = "outputGFCanalysisESD.root";
+ TString inputFileNameGFC = "outputGFCanalysis";
  TFile* file_GFC = NULL;
- file_GFC = TFile::Open(inputFileNameGFC.Data(), "READ"); 
+ file_GFC = TFile::Open(((inputFileNameGFC.Append(type)).Append(".root")).Data(), "READ"); 
  
- TString inputFileNameQC = "outputQCanalysisESD.root";
+ TString inputFileNameQC = "outputQCanalysis";
  TFile* file_QC = NULL;
- file_QC = TFile::Open(inputFileNameQC.Data(), "READ"); 
+ file_QC = TFile::Open(((inputFileNameQC.Append(type)).Append(".root")).Data(), "READ"); 
 
  //==================================================================================
  //                              INTEGRATED FLOW
@@ -49,7 +56,8 @@ void CompareFlowResults()
  TH1D* intFlow = new TH1D("intFlow","Integrated Flow",11,0,11);  
 
  intFlow->SetLabelSize(0.044);
- intFlow->SetMarkerStyle(25);
+ intFlow->SetMarkerStyle(21);
+ intFlow->SetMarkerColor(kRed-4);
  (intFlow->GetXaxis())->SetBinLabel(1,"v_{n}{MC}");
  (intFlow->GetXaxis())->SetBinLabel(2,"v_{n}{LYZ}");
  (intFlow->GetXaxis())->SetBinLabel(3,"v_{n}{FQD}");
@@ -64,17 +72,18 @@ void CompareFlowResults()
  
  //MCEP = Monte Carlo Event Plane
  TList *pListMCEP = NULL;
- AliFlowCommonHistResults *mcep = NULL; 
+ AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
  if(file_MCEP) 
  {
   file_MCEP->GetObject("cobjMCEP",pListMCEP); 
   if(pListMCEP) 
   {
-   mcep = dynamic_cast<AliFlowCommonHistResults*> (pListMCEP->FindObject("AliFlowCommonHistResultsMCEP"));
-   if(mcep)
+   mcepCommonHist    = dynamic_cast<AliFlowCommonHist*> (pListMCEP->FindObject("AliFlowCommonHistMCEP"));
+   mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListMCEP->FindObject("AliFlowCommonHistResultsMCEP"));
+   if(mcepCommonHistRes)
    {
-    intFlow->SetBinContent(1,(mcep->GetHistIntFlow())->GetBinContent(1));   
-    intFlow->SetBinError(1,(mcep->GetHistIntFlow())->GetBinError(1));
+    intFlow->SetBinContent(1,(mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1));   
+    intFlow->SetBinError(1,(mcepCommonHistRes->GetHistIntFlow())->GetBinError(1));
    }
   }
  }
@@ -153,96 +162,180 @@ void CompareFlowResults()
  
  //QC = Q-cumulants
  TList *pListQC = NULL;
- AliFlowCommonHist *qcCommonHist = NULL;//to be improved
- AliFlowCommonHistResults *qc2 = NULL; 
- AliFlowCommonHistResults *qc4 = NULL; 
- AliFlowCommonHistResults *qc6 = NULL; 
- AliFlowCommonHistResults *qc8 = NULL; 
+ AliFlowCommonHist *qcCommonHist2 = NULL, *qcCommonHist4 = NULL;
+ AliFlowCommonHistResults *qcCommonHistRes2 = NULL; 
+ AliFlowCommonHistResults *qcCommonHistRes4 = NULL; 
+ AliFlowCommonHistResults *qcCommonHistRes6 = NULL; 
+ AliFlowCommonHistResults *qcCommonHistRes8 = NULL; 
  if(file_QC) 
  {
   file_QC->GetObject("cobjQC",pListQC);
   if(pListQC) 
   {
-   qcCommonHist = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHistQC"));//to be improved
-   qc2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
-   if(qc2) 
+   qcCommonHist2 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHistQC"));//to be improved
+   qcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
+   if(qcCommonHistRes2) 
    {
-    intFlow->SetBinContent(8,(qc2->GetHistIntFlow())->GetBinContent(1)); 
-    intFlow->SetBinError(8,(qc2->GetHistIntFlow())->GetBinError(1));
+    intFlow->SetBinContent(8,(qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1)); 
+    intFlow->SetBinError(8,(qcCommonHistRes2->GetHistIntFlow())->GetBinError(1));
    }
-   qc4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
-   if(qc4) 
+   qcCommonHist4 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHistQC"));//to be improved
+   qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
+   if(qcCommonHistRes4) 
    {
-    intFlow->SetBinContent(9,(qc4->GetHistIntFlow())->GetBinContent(1));
-    intFlow->SetBinError(9,(qc4->GetHistIntFlow())->GetBinError(1));
+    intFlow->SetBinContent(9,(qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1));
+    intFlow->SetBinError(9,(qcCommonHistRes4->GetHistIntFlow())->GetBinError(1));
    }
-   qc6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
-   if(qc6) 
+   qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
+   if(qcCommonHistRes6) 
    {
-    intFlow->SetBinContent(10,(qc6->GetHistIntFlow())->GetBinContent(1)); 
-    intFlow->SetBinError(10,(qc6->GetHistIntFlow())->GetBinError(1));
+    intFlow->SetBinContent(10,(qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1)); 
+    intFlow->SetBinError(10,(qcCommonHistRes6->GetHistIntFlow())->GetBinError(1));
    }
-   qc8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
-   if(qc8) 
+   qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
+   if(qcCommonHistRes8) 
    {
-    intFlow->SetBinContent(11,(qc8->GetHistIntFlow())->GetBinContent(1));
-    intFlow->SetBinError(11,(qc8->GetHistIntFlow())->GetBinError(1));
+    intFlow->SetBinContent(11,(qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1));
+    intFlow->SetBinError(11,(qcCommonHistRes8->GetHistIntFlow())->GetBinError(1));
    }
   }
  }
  
- /*
- //SP = Scalar Product
- TList *pListSP = NULL;
- AliFlowCommonHistResults *sp = NULL; 
- if(file_SP) 
- {
-  file_SP->GetObject("cobjSP",pListSP);
-  if(pListSP) 
-  {
-   sp = dynamic_cast<AliFlowCommonHistResults*> (pListSP->FindObject("AliFlowCommonHistResultsSP"));
-  }
- }
- */
- 
- //cosmetics: Monte Carlo error bands for integrated flow
- if(intFlow)
+ //----------------------------------------------------------------------------------
+ //cosmetics: mesh for MC error bands (integrated flow)
+ TGraph* pGraphIF = NULL;
+ if(intFlow && mcepCommonHistRes)
  {
   Double_t valueMC = intFlow->GetBinContent(1);
   Double_t errorMC = intFlow->GetBinError(1);  
   Int_t nPts       = intFlow->GetNbinsX();     
      
-  TGraph* pGraphIF = new TGraph(nPts); 
+  pGraphIF = new TGraph(nPts); 
   
   pGraphIF->SetPoint(1,0,valueMC+errorMC);
   pGraphIF->SetPoint(2,nPts+1,valueMC+errorMC);
   pGraphIF->SetPoint(3,nPts+1,valueMC-errorMC);
   pGraphIF->SetPoint(4,0,valueMC-errorMC);
+  pGraphIF->SetPoint(5,0,valueMC+errorMC);
   
-  pGraphIF->SetFillStyle(3044);
-  pGraphIF->SetFillColor(kRed-4);
+  pGraphIF->SetFillStyle(meshStyle);
+  pGraphIF->SetFillColor(meshColor);
  }
-            
+  
+ /*                     
  //cosmetics: legend     
- TString *avM = new TString("AvM = ");//to be improved
- TString *nEvts = new TString("nEvts = ");//to be improved
- TLegend* legendIntFlow = new TLegend(0.15,0.15,0.44,0.35);
+ TString *avM = new TString("M = ");//to be improved
+ TString *nEvts = new TString("N = ");//to be improved
+ TLegend *legendIntFlow = new TLegend(0.15,0.15,0.44,0.35);
  legendIntFlow->SetTextFont(72);
  legendIntFlow->SetTextSize(0.03);
- if(qcCommonHist)
+ if(qcCommonHist2)
  {
   (*avM)+=(qcCommonHist->GetHistMultInt())->GetMean();//to be improved
-  (*nEvts)+=(qcCommonHist->GetHistMultInt())->GetEntries();//to be improved
+  (*N)+=(Long_t)(qcCommonHist->GetHistMultInt())->GetEntries();//to be improved
   legendIntFlow->AddEntry(qcCommonHist->GetHistMultInt(),avM->Data(),"");
-  legendIntFlow->AddEntry(qcCommonHist->GetHistMultInt(),nEvts->Data(),"");
+  legendIntFlow->AddEntry(qcCommonHist->GetHistMultInt(),N->Data(),"");
  }
+ */
+ 
+ /*
+ //cosmetics: legend (integrated flow)    
+ TString *entryMC  = new TString("MC ......... ");
+ TString *entryQC2 = new TString("QC{2} .... ");
+ TString *entryQC4 = new TString("QC{4} .... ");
+ 
+ TLegend *legendIntFlow = new TLegend(0.15,0.15,0.44,0.35); 
+ legendIntFlow->SetTextFont(72);
+ legendIntFlow->SetTextSize(0.03);
+ 
+ 
+ Double_t avMultMC=0., avMultQC2=0., avMultQC4=0.;
+ Long_t nEvtsMC=0, nEvtsQC2=0, nEvtsQC4=0;
+ if(mcepCommonHist)
+ {
+  avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();
+  nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();
+  entryMC->Append("M = ");
+  (*entryMC)+=(Long_t)avMultMC;
+  entryMC->Append(", N = ");
+  (*entryMC)+=(Long_t)nEvtsMC;
+  legendIntFlow->AddEntry(mcepCommonHist->GetHistMultInt(),entryMC->Data(),"f");
+ }
+ if(qcCommonHist2)
+ {
+  avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();
+  nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();
+  entryQC2->Append("M = ");
+  (*entryQC2)+=(Long_t)avMultQC2;
+  entryQC2->Append(", N = ");
+  (*entryQC2)+=(Long_t)nEvtsQC2;
+  legendIntFlow->AddEntry(qcCommonHist2->GetHistMultInt(),entryQC2->Data(),"f");
+ }
+ if(qcCommonHist4)
+ {
+  avMultQC4 = (qcCommonHist4->GetHistMultInt())->GetMean();
+  nEvtsQC4  = (qcCommonHist4->GetHistMultInt())->GetEntries();
+  entryQC4->Append("M = ");
+  (*entryQC4)+=(Long_t)avMultQC4;
+  entryQC4->Append(", N = ");
+  (*entryQC4)+=(Long_t)nEvtsQC4;
+  legendIntFlow->AddEntry(qcCommonHist4->GetHistMultInt(),entryQC4->Data(),"f");
+ }
+ */ 
+ 
+ 
+ 
+ //cosmetics: text (integrated flow)    
+ TString *entryMC  = new TString("MC ......... ");
+ TString *entryQC2 = new TString("QC{2} .... ");
+ TString *entryQC4 = new TString("QC{4} .... ");
+ 
+ TPaveText *text = new TPaveText(0.15,0.15,0.44,0.35,"NDC");
+ text->SetTextFont(72);
+ text->SetTextSize(0.03);
+ 
+ Double_t avMultMC=0., avMultQC2=0., avMultQC4=0.;
+ Long_t nEvtsMC=0, nEvtsQC2=0, nEvtsQC4=0;
+ if(mcepCommonHist)
+ {
+  avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();
+  nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();
+  entryMC->Append("M = ");
+  (*entryMC)+=(Long_t)avMultMC;
+  entryMC->Append(", N = ");
+  (*entryMC)+=(Long_t)nEvtsMC;
+  text->AddText(entryMC->Data());
+ }
+ if(qcCommonHist2)
+ {
+  avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();
+  nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();
+  entryQC2->Append("M = ");
+  (*entryQC2)+=(Long_t)avMultQC2;
+  entryQC2->Append(", N = ");
+  (*entryQC2)+=(Long_t)nEvtsQC2;
+  text->AddText(entryQC2->Data());
+ }
+ if(qcCommonHist4)
+ {
+  avMultQC4 = (qcCommonHist4->GetHistMultInt())->GetMean();
+  nEvtsQC4  = (qcCommonHist4->GetHistMultInt())->GetEntries();
+  entryQC4->Append("M = ");
+  (*entryQC4)+=(Long_t)avMultQC4;
+  entryQC4->Append(", N = ");
+  (*entryQC4)+=(Long_t)nEvtsQC4;
+  text->AddText(entryQC4->Data());
+ }
+ 
+ //----------------------------------------------------------------------------------
  
  //drawing everything for integrated flow:
  TCanvas* intFlowCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
  
- intFlow->Draw();      
- pGraphIF->Draw("LFSAME");                    
- legendIntFlow->Draw("");  
+ if(intFlow) intFlow->Draw("E1");      
+ if(pGraphIF) pGraphIF->Draw("LFSAME");                    
+ //if(legendIntFlow) legendIntFlow->Draw("");   
+ text->Draw("SAME");
  
  //==================================================================================   
  
@@ -255,19 +348,43 @@ void CompareFlowResults()
 
  TCanvas* diffFlowCanvas = new TCanvas("Differential Flow","Differential Flow",1000,600);
  
- TLegend* legendDiffFlow = new TLegend(0.15,0.15,0.3,0.35);
+ Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
+ Double_t dPtMin = AliFlowCommonConstants::GetPtMin();
+ Double_t dPtMax = AliFlowCommonConstants::GetPtMax();
+ 
+ TH1D *styleHist = new TH1D("styleHist","styleHist",iNbinsPt,dPtMin,dPtMax);
+ styleHist->SetTitle("Differential Flow");
+ styleHist->SetXTitle("p_{t} [GeV]");
+ styleHist->SetYTitle("v_{n}");
+ styleHist->Draw();
+ 
+ TString *entryDiffMC  = new TString("v_{n}{MC} ");
+ TString *entryDiffQC2 = new TString("v_{n}^{Q}{2} ");
+ TString *entryDiffQC4 = new TString("v_{n}^{Q}{4} ");
+ 
+ TLegend* legendDiffFlow = new TLegend(0.15,0.15,0.44,0.35);
  legendDiffFlow->SetTextFont(72);
  legendDiffFlow->SetTextSize(0.03);
  
- //to be improved
- TLegend* legendDiffFlow2 = new TLegend(0.15,0.60,0.40,0.80);
- legendDiffFlow2->SetTextFont(72);
- legendDiffFlow2->SetTextSize(0.03);
- if(qcCommonHist)
+ //MCEP = Monte Carlo Event Plane
+ if(file_MCEP)
  {
-  legendDiffFlow2->AddEntry(qcCommonHist->GetHistMultInt(),avM->Data(),"");
-  legendDiffFlow2->AddEntry(qcCommonHist->GetHistMultInt(),nEvts->Data(),"");
- }
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlow())->Scale(0.01);//to be improved
+   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(2);
+   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(20);
+   (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
+   (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
+   entryDiffMC->Append("(M = ");
+   (*entryDiffMC)+=(Long_t)avMultMC;
+   entryDiffMC->Append(", N = ");
+   (*entryDiffMC)+=(Long_t)nEvtsMC; 
+   entryDiffMC->Append(")");
+   //(mcepCommonHistRes->GetHistDiffFlow())->Draw("E1PSAME"); 
+   legendDiffFlow->AddEntry(mcepCommonHistRes->GetHistDiffFlow(),entryDiffMC->Data(),"f");
+  } 
+ } 
  
  //GFC = Generating Function Cumulants
  if(file_GFC)
@@ -276,10 +393,7 @@ void CompareFlowResults()
   {
    (gfc2->GetHistDiffFlow())->SetMarkerColor(28);
    (gfc2->GetHistDiffFlow())->SetMarkerStyle(20);
-   (gfc2->GetHistDiffFlow())->SetTitle("Differential Flow");
-   (gfc2->GetHistDiffFlow())->SetXTitle("p_{t} [GeV]");
-   (gfc2->GetHistDiffFlow())->SetYTitle("v_{n}");
-   (gfc2->GetHistDiffFlow())->Draw(""); 
+   (gfc2->GetHistDiffFlow())->Draw("E1PSAME"); 
    legendDiffFlow->AddEntry(gfc2->GetHistDiffFlow(),"v_{n}{2}","p");
   }
   if(gfc4)
@@ -296,37 +410,50 @@ void CompareFlowResults()
  //QC = Q-cumulants
  if(file_QC)
  {
-  if(qc2)
+  if(qcCommonHistRes2)
   {
-   (qc2->GetHistDiffFlow())->SetMarkerColor(44);
-   (qc2->GetHistDiffFlow())->SetMarkerStyle(20);
-   (qc2->GetHistDiffFlow())->Draw("E1PSAME");
-   legendDiffFlow->AddEntry(qc2->GetHistDiffFlow(),"v_{n}^{Q}{2}","p"); 
+   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(44);
+   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(20);
+   (qcCommonHistRes2->GetHistDiffFlow())->Draw("E1PSAME");
+   entryDiffQC2->Append("(M = ");
+   (*entryDiffQC2)+=(Long_t)avMultQC2;
+   entryDiffQC2->Append(", N = ");
+   (*entryDiffQC2)+=(Long_t)nEvtsQC2; 
+   entryDiffQC2->Append(")");
+   legendDiffFlow->AddEntry(qcCommonHistRes2->GetHistDiffFlow(),entryDiffQC2->Data(),"p"); 
   }
-  if(qc4)
+  if(qcCommonHistRes4)
   {
-   (qc4->GetHistDiffFlow())->SetMarkerColor(44);
-   (qc4->GetHistDiffFlow())->SetMarkerStyle(21);
-   (qc4->GetHistDiffFlow())->Draw("E1PSAME"); 
-   legendDiffFlow->AddEntry(qc4->GetHistDiffFlow(),"v_{n}^{Q}{4}","p");
+   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(44);
+   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(21);
+   (qcCommonHistRes4->GetHistDiffFlow())->Draw("E1PSAME"); 
+   entryDiffQC4->Append("(M = ");
+   (*entryDiffQC4)+=(Long_t)avMultQC4;
+   entryDiffQC4->Append(", N = ");
+   (*entryDiffQC4)+=(Long_t)nEvtsQC4; 
+   entryDiffQC4->Append(")");
+   legendDiffFlow->AddEntry(qcCommonHistRes4->GetHistDiffFlow(),entryDiffQC4->Data(),"p");
   }
  } 
  
- //MCEP = Monte Carlo Event Plane
- if(file_MCEP)
- {
-  if(mcep)
-  {
-   (mcep->GetHistDiffFlow())->Scale(0.01);//to be improved
-   (mcep->GetHistDiffFlow())->SetMarkerColor(2);
-   (mcep->GetHistDiffFlow())->SetMarkerStyle(20);
-   (mcep->GetHistDiffFlow())->SetFillStyle(3044);
-   (mcep->GetHistDiffFlow())->SetFillColor(kRed-4);
-   //(mcep->GetHistDiffFlow())->Draw("E1PSAME"); 
-   legendDiffFlow->AddEntry(mcep->GetHistDiffFlow(),"v_{n}{MC}","f");
-  } 
- } 
+ 
 
+ 
+ /*
+ //SP = Scalar Product
+ TList *pListSP = NULL;
+ AliFlowCommonHistResults *sp = NULL; 
+ if(file_SP) 
+ {
+  file_SP->GetObject("cobjSP",pListSP);
+  if(pListSP) 
+  {
+   sp = dynamic_cast<AliFlowCommonHistResults*> (pListSP->FindObject("AliFlowCommonHistResultsSP"));
+  }
+ }
+ */
+ 
+ 
  /*
  //SP = Scalar Product
  if(file_SP)
@@ -341,35 +468,71 @@ void CompareFlowResults()
  } 
  */
  
- //cosmetics: Monte Carlo error bands for differential flow
- if(mcep)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ //cosmetics: additional legend (differential flow) 
+ 
+ 
+ /*
+ 
+ //to be improved
+ TLegend* legendDiffFlow2 = new TLegend(0.15,0.60,0.40,0.80);
+ legendDiffFlow2->SetTextFont(72);
+ legendDiffFlow2->SetTextSize(0.03);
+ if(qcCommonHist2)
  {
-  Int_t nPtsDF       = (mcep->GetHistDiffFlow())->GetNbinsX();
-  Double_t binWidth  = (mcep->GetHistDiffFlow())->GetBinWidth(1);//assuming that all bins have the same width
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),avM->Data(),"");
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),nEvts->Data(),"");
+ }
+ if(qcCommonHist2)
+ {
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),avM->Data(),"");
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),nEvts->Data(),"");
+ }
+ if(qcCommonHist2)
+ {
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),avM->Data(),"");
+  legendDiffFlow2->AddEntry(qcCommonHist2->GetHistMultInt(),nEvts->Data(),"");
+ }
+ 
+ */
+ 
+ //cosmetics: Monte Carlo error bands for differential flow
+ TGraph* pGraphDF = NULL;
+ if(mcepCommonHistRes)
+ {
+  Int_t nPtsDF       = (mcepCommonHistRes->GetHistDiffFlow())->GetNbinsX();
+  Double_t binWidth  = (mcepCommonHistRes->GetHistDiffFlow())->GetBinWidth(1);//assuming that all bins have the same width
        
-  TGraph* pGraphDF = new TGraph(2*nPts);
+  pGraphDF = new TGraph(2*nPts);
   
   for(Int_t i=1;i<nPtsDF+1;i++)
   {
-   Double_t valueMC = (mcep->GetHistDiffFlow())->GetBinContent(i);
-   Double_t errorMC = (mcep->GetHistDiffFlow())->GetBinError(i);       
+   Double_t valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(i);
+   Double_t errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(i);       
    pGraphDF->SetPoint(i,(i-0.5)*binWidth,valueMC+errorMC);
   }
      
   for(Int_t i=nPtsDF;i<2*nPtsDF;i++)
   {
-   Double_t valueMC = (mcep->GetHistDiffFlow())->GetBinContent(2*nPtsDF-i);
-   Double_t errorMC = (mcep->GetHistDiffFlow())->GetBinError(2*nPtsDF-i);       
+   Double_t valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(2*nPtsDF-i);
+   Double_t errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(2*nPtsDF-i);       
    pGraphDF->SetPoint(i,(2*nPtsDF-i-0.5)*binWidth,valueMC-errorMC); 
   }
 
-  pGraphDF->SetFillStyle(3044);
-  pGraphDF->SetFillColor(kRed-4);
+  pGraphDF->SetFillStyle(meshStyle);
+  pGraphDF->SetFillColor(meshColor);
  }            
                      
- legendDiffFlow->Draw("");   
- legendDiffFlow2->Draw(""); 
- pGraphDF->Draw("LFSAME");        
+ if(legendDiffFlow) legendDiffFlow->Draw("");   
+ if(pGraphDF) pGraphDF->Draw("LFSAME");        
                                                                                             
  //================================================================================== 
  
@@ -406,6 +569,7 @@ void CompareFlowResults()
   
   
 }
+
 */
 //=====================================================================================
  
