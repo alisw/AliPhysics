@@ -296,12 +296,12 @@ void AliTRDalignment::SetSmRandom(double a[6])
   //
 
   double x[6];
+  double xmax[6]={999, 0.6, 999, 999, 999, 999};
 
   for (int i = 0; i < 18; i++) {
-    fRan.Rannor(x[0],x[1]);
-    fRan.Rannor(x[2],x[3]);
-    fRan.Rannor(x[4],x[5]);
-    for (int j = 0; j < 6; j++) x[j] *= a[j];
+    for (int j = 0; j < 6; j++) {
+      do {x[j] = fRan.Gaus(0,a[j]);} while (TMath::Abs(x[j]) > xmax[j]);
+    }
     SetSm(i,x);
     //PrintSm(i);
   }
@@ -640,11 +640,14 @@ Bool_t AliTRDalignment::DecodeSurveyPointName(TString pna, Int_t &sm, Int_t &iz,
   ir = -1;
   if (pna(9) == 'l') ir=0; // low radius
   if (pna(9) == 'h') ir=1; // high radius
-  iphi = atoi(pna(10,0).Data()); // phi within supermodule
+  iphi = -1;
+  if (pna(10) == '0') iphi = 0; // low phi within supermodule
+  if (pna(10) == '1') iphi = 1; // high phi within supermodule
   if (sm>=0 && sm<18 && iz>=0 && iz<2 && ir>=0 && ir<2 && iphi>=0 && iphi<2) return kTRUE;
   AliError(Form("cannot decode point name: %s",pna.Data()));
   return kFALSE;
 }
+
 //_____________________________________________________________________________
 void AliTRDalignment::ReadSurveyReport(char *filename) 
 {
@@ -742,20 +745,17 @@ void AliTRDalignment::ReadSurveyReport(char *filename)
       fSurveyEZ[i][j][k][l] = precision/10; // "precision" is supposed to be in mm
       // if, at some point, separate precision numbers for x,y,z show up in the 
       // survey reports the function will fail here
-      std::cout << "decoded "<<pna<<" "
-		<<fSurveyX[i][j][k][l]<<" "
-		<<fSurveyY[i][j][k][l]<<" "
-		<<fSurveyZ[i][j][k][l]<<" "
-		<<fSurveyEX[i][j][k][l]<<" "
-		<<fSurveyEY[i][j][k][l]<<" "
-		<<fSurveyEZ[i][j][k][l]<<" "<<std::endl;	
+      printf("decoded %s %02d %d %d %d  %8.2f %8.2f %8.2f %6.2f %6.2f %6.2f\n", 
+	     pna.Data(), i, j, k, l,
+	     fSurveyX[i][j][k][l], fSurveyY[i][j][k][l], fSurveyZ[i][j][k][l],
+	     fSurveyEX[i][j][k][l], fSurveyEY[i][j][k][l], fSurveyEZ[i][j][k][l]);
     } else AliError(Form("cannot decode point name: %s",pna.Data()));
   }
   in.close();
   TString info = "Survey "+title+" "+date+" "+url+" "+version+" "+observations;
   info.ReplaceAll("\r","");
   fComment.SetString(info.Data());
-			 
+ 
 }
 
 //_____________________________________________________________________________
@@ -837,13 +837,10 @@ void AliTRDalignment::ReadSurveyReport(AliSurveyObj *so)
       fSurveyEX[i][j][k][l] = po->GetPrecisionX()/10; // "precision" is supposed to be in mm
       fSurveyEY[i][j][k][l] = po->GetPrecisionY()/10;
       fSurveyEZ[i][j][k][l] = po->GetPrecisionZ()/10;
-      std::cout << "decoded "<<pna<<" "
-		<<fSurveyX[i][j][k][l]<<" "
-		<<fSurveyY[i][j][k][l]<<" "
-		<<fSurveyZ[i][j][k][l]<<" "
-		<<fSurveyEX[i][j][k][l]<<" "
-		<<fSurveyEY[i][j][k][l]<<" "
-		<<fSurveyEZ[i][j][k][l]<<" "<<std::endl;	
+      printf("decoded %s %02d %d %d %d  %8.2f %8.2f %8.2f %6.2f %6.2f %6.2f\n", 
+	     pna.Data(), i, j, k, l,
+	     fSurveyX[i][j][k][l], fSurveyY[i][j][k][l], fSurveyZ[i][j][k][l],
+	     fSurveyEX[i][j][k][l], fSurveyEY[i][j][k][l], fSurveyEZ[i][j][k][l]);
     } else AliError(Form("cannot decode point name: %s",pna.Data()));
   }
 

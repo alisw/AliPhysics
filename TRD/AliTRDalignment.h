@@ -53,7 +53,7 @@ class AliTRDalignment : public TObject {
   // dumping on screen
 
   void PrintSm(int sm, FILE *fp = stdout) const;     // print data of a supermodule
-  void PrintCh(int sm, FILE *fp = stdout) const;     // print data of a chamber
+  void PrintCh(int ch, FILE *fp = stdout) const;     // print data of a chamber
   void PrintSm(FILE *fp = stdout) const              {for (int i = 0; i <  18; i++)  PrintSm(i,fp);}
   void PrintCh(FILE *fp = stdout) const              {for (int i = 0; i < 540; i++)  PrintCh(i,fp);}
   void Print(FILE *fp = stdout) const                {PrintSm(fp); PrintCh(fp);                    }
@@ -113,6 +113,7 @@ class AliTRDalignment : public TObject {
   double SurveyChi2(int i, double *a);               // compare survey with ideal, return chi2
   double SurveyChi2(double *a)                       {return SurveyChi2(fIbuffer[0],a);}
   void   SurveyToAlignment(int i, char *flag);       // determine alignment of supermodule i based on survey
+  void   SurveyToAlignment(char *flag)               {for (int i=0; i<18; i++) SurveyToAlignment(i,flag);}
 
  protected:
 
