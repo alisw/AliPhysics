@@ -25,8 +25,6 @@
 const Double_t kVeryBig=1./kAlmost0;
 const Double_t kMostProbablePt=0.35;
 
-Double_t ApproximateBetheBloch(Double_t);
-
 class AliVVertex;
 class TPolyMarker3D; 
 
@@ -126,7 +124,11 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho, 
         Double_t mass,  Bool_t anglecorr=kFALSE,
-	Double_t (*f)(Double_t)=ApproximateBetheBloch);
+	Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);
+
+  static Double_t BetheBlochSolid(Double_t bg);
+  static Double_t BetheBlochGas(Double_t bg);
+
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
 
   Double_t 
@@ -166,7 +168,7 @@ class AliExternalTrackParam: public AliVTrack {
 
   //Deprecated
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
-			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
+	 Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);
 
   Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
   Int_t GetIndex(Int_t i, Int_t j) const;

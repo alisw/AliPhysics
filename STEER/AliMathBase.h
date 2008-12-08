@@ -50,6 +50,13 @@ class AliMathBase : public TObject
                                   Double_t kp4=1.8631,
                                   Double_t kp5=1.9479
 				  );
+  static Double_t BetheBlochGeant(Double_t bg,
+                                  Double_t kp0=2.33,
+                                  Double_t kp1=0.20,
+                                  Double_t kp2=3.00,
+                                  Double_t kp3=173e-9,
+                                  Double_t kp4=0.49848
+				  );
     
  ClassDef(AliMathBase,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  

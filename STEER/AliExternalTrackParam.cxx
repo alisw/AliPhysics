@@ -26,10 +26,12 @@
 // Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                            //
 ///////////////////////////////////////////////////////////////////////////////
 #include <TMatrixDSym.h>
+#include <TPolyMarker3D.h>
+#include <TVector3.h>
+
 #include "AliExternalTrackParam.h"
+#include "AliMathBase.h"
 #include "AliVVertex.h"
-#include "TPolyMarker3D.h"
-#include "TVector3.h"
 #include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
@@ -359,7 +361,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
 
   //Energy losses************************
   if ((xTimesRho != 0.) && (beta2 < 1.)) {
-     Double_t dE=Bethe(beta2)*xTimesRho;
+     Double_t dE=Bethe(p/mass)*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      fP4*=(1.- e/p2*dE);
@@ -416,7 +418,7 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   //Energy losses************************
   if (x0!=0. && beta2<1) {
      d*=x0;
-     Double_t dE=Bethe(beta2)*d;
+     Double_t dE=Bethe(p/mass)*d;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      fP4*=(1.- e/p2*dE);
@@ -431,18 +433,32 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   return kTRUE;
 }
 
-Double_t ApproximateBetheBloch(Double_t beta2) {
+Double_t AliExternalTrackParam::BetheBlochSolid(Double_t bg) {
   //------------------------------------------------------------------
-  // This is an approximation of the Bethe-Bloch formula with 
-  // the density effect taken into account at beta*gamma > 3.5
-  // (the approximation is reasonable only for solid materials) 
+  // This is an approximation of the Bethe-Bloch formula, 
+  // reasonable for solid materials. 
+  // All the parameters are, in fact, for Si.
+  // The returned value is in [GeV]
   //------------------------------------------------------------------
-  if (beta2 >= 1) return kVeryBig;
 
-  if (beta2/(1-beta2)>3.5*3.5)
-     return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
+  return AliMathBase::BetheBlochGeant(bg);
+}
 
-  return 0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2);
+Double_t AliExternalTrackParam::BetheBlochGas(Double_t bg) {
+  //------------------------------------------------------------------
+  // This is an approximation of the Bethe-Bloch formula, 
+  // reasonable for gas materials.
+  // All the parameters are, in fact, for Ne.
+  // The returned value is in [GeV]
+  //------------------------------------------------------------------
+
+  const Double_t rho = 0.9e-3;
+  const Double_t x0  = 2.;
+  const Double_t x1  = 4.;
+  const Double_t mI  = 140.e-9;
+  const Double_t mZA = 0.49555;
+
+  return AliMathBase::BetheBlochGeant(bg,rho,x0,x1,mI,mZA);
 }
 
 Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
@@ -1475,4 +1491,3 @@ Int_t AliExternalTrackParam::GetIndex(Int_t i, Int_t j) const {
 
   return min+(max+1)*max/2;
 }
-
