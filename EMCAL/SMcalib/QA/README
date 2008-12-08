@@ -1,0 +1,7 @@
+Description of macros at /home/emcaldaq/hamblen on pcemcal002
+
+EMCALPEDda.C: Analyzes a run and makes a file of the form PED_000000476.root containing pedestal histograms. Run it like this, e.g. run 476: aliroot -l 'EMCALPEDda.C(476)' and it will also draw a pedestal plot on the screen.
+
+EMCALLEDda.C: Also analyzes a run and makes a file of the form LED_000000476.root that stores the LED amplitude vs. time information in a tree.  It does not draw the information, though. DrawLED.C is an attempt to draw amplitude vs. time from the saved tree, but it isn't working exactly right at the moment.
+
+The pedestal analysis required changes to AliCaloCalibPedestal.cxx/h on the aliroot version at /home/emcaldaq/alice/pro/AliRoot/, which should be committed if we find them useful.
