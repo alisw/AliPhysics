@@ -1,9 +1,16 @@
 /*
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-.L $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+
+
+gSystem->Load("libXrdClient.so");
+gSystem->Load("libNetx.so");
+if (!gGrid) TGrid::Connect("alien://",0,0,"t");
+
+
+.L CalibEnv.C++
 Init();
-CalibEnv("listenv2.txt");
+CalibEnv("listAll.txt");
 TFile f("dcsTime.root")
+
 
 */
 
@@ -44,10 +51,26 @@ void Init(){
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  
   AliCDBManager::Instance()->SetRun(1);
+}
 
+
+void InitAlien(const char *path="LHC08b"){
+  //
+  //
+  //
+  TString alpath="alien://folder=/alice/data/2008/";
+  alpath+=path;
+  alpath+="/OCDB";
+    
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data",alpath.Data());
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature",alpath.Data());
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie",alpath.Data());
+  AliCDBManager::Instance()->SetRun(1);
 }
 
 
@@ -64,7 +87,7 @@ void CalibEnv(const char * runList){
   while(in.good()) {
     in >> irun;
     if (irun==0) continue;
-    printf("Processing run %d\n",irun);
+    printf("Processing run %d ...\n",irun);
     AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(irun);
     if (!sensorPressure) continue;
     AliTPCSensorTempArray * tempArray = AliTPCcalibDB::Instance()->GetTemperatureSensor(irun);
@@ -76,17 +99,18 @@ void CalibEnv(const char * runList){
     Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
     for (Int_t itime=startTime; itime<endTime; itime+=dtime){
       //
-      TTimeStamp tstamp(itime);
+      TTimeStamp tstamp(itime); 
       Float_t valuePressure  = calibDB->GetPressure(tstamp,irun,0);
       Float_t valuePressure2 = calibDB->GetPressure(tstamp,irun,1);
 
       TLinearFitter * fitter = 0;
       TVectorD vecTemp[10];
       for (Int_t itype=0; itype<5; itype++)
-	for (Int_t iside=0; iside<2; iside++){
-	  fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
+	for (Int_t iside=0; iside<2; iside++){	  
+	  fitter= tempMap->GetLinearFitter(itype,iside,tstamp);	  
 	  if (!fitter) continue;
-	  fitter->Eval(); fitter->GetParameters(vecTemp[itype+iside*5]);
+	  fitter->Eval(); 
+	  fitter->GetParameters(vecTemp[itype+iside*5]);
 	  delete fitter;
 	} 
       
@@ -95,7 +119,7 @@ void CalibEnv(const char * runList){
       if (goofieArray){	
 	vecGoofie.ResizeTo(goofieArray->NumSensors());
 	ProcessGoofie(goofieArray, vecEntries ,vecMedian, vecMean, vecRMS);
-  //
+	//
 	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
 	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
 	  if (gsensor){
@@ -105,11 +129,20 @@ void CalibEnv(const char * runList){
       }
       Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,irun,0);
       Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,irun,1);
+      //
+      Double_t voltagesIROC[36]; 
+      Double_t voltagesOROC[36]; 
+      for(Int_t j=1; j<36; j++) voltagesIROC[j-1] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(startTime, irun, j);
+      for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(startTime, irun, j);
+      Double_t voltIROC = TMath::Median(36, voltagesIROC);
+      Double_t voltOROC = TMath::Median(36, voltagesOROC);
 
-      tempMap->GetLinearFitter(0,0,itime);
+      //tempMap->GetLinearFitter(0,0,itime);
       (*pcstream)<<"dcs"<<
 	"run="<<irun<<
 	"time="<<itime<<
+	"voltageIROC="<<voltIROC<<
+	"voltageOROC="<<voltOROC<<
 	"ptrel0="<<ptrelative0<<
 	"ptrel1="<<ptrelative1<<
 	"goofie.="<<&vecGoofie<<
@@ -192,6 +225,34 @@ void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVect
       }
     }
   }
+}
+
+
+void FilterMag(const char * runList){
+  //
+  //
+  //
+  //  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  ifstream in;
+  in.open(runList);
+  Int_t irun=0;
+  while(in.good()) {
+    in >> irun;
+    if (irun==0) continue;
+    AliGRPObject *grp = AliTPCcalibDB::GetGRP(irun);
+    Float_t current = -1;
+    Float_t bz      = -1;
+    Float_t press   =  0;
+    if (grp){
+      current = grp->GetL3Current((AliGRPObject::Stats)0);
+      bz = 5*current/30000.;
+      printf("Run%d\tL3 current%f\tBz\t%f\n",irun,current,bz);
+    }
+    else{
+      printf("Run%d\tL3 current%f\tBz\t%f\n",irun,current,bz);
+    }
+  }
+
 }
 
 /*
