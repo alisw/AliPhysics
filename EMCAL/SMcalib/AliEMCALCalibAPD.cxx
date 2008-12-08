@@ -25,8 +25,8 @@
 
 const int kMaxLen = 1000; // maximum length of single line (# of characters)
 // an OK line with complete info should have a certain number of characters
-const int kMinLenAPDLine = 145;
-const int kMaxLenAPDLine = 170;
+const int kMinLenAPDLine = 135;
+const int kMaxLenAPDLine = 1000;
 
 ClassImp(AliEMCALCalibAPD)
 
@@ -55,11 +55,18 @@ void AliEMCALCalibAPD::ReadCalibAPDInfo(Int_t nAPD, const TString &txtFileName)
 
   char line[kMaxLen];
 
+  /* DS: header lines skipped when switched to white-spaced separeted dat files instead of csv:
+     conversion from spreadsheet can be done a la
+     sed 's/,/ /g' APD-database-Houston.csv | egrep ^2 | awk '{if (NF==19) {print $0}}' > APD-database-Houston.dat
+     - meaning "replace , with whitespace, only get the columns that start with the number 2 (Houston APDs),
+     and only get rows with the full 19 fields
+
   // get header lines:
   inputFile.getline(line, kMaxLen);
   //  printf(" 1st header line character count %d\n", inputFile.gcount());
   inputFile.getline(line, kMaxLen);
   //  printf(" 2nd header line character count %d\n", inputFile.gcount());
+  */
 
   // variables for reading
   int i1,i2,i3,i4,i5;
@@ -80,14 +87,14 @@ void AliEMCALCalibAPD::ReadCalibAPDInfo(Int_t nAPD, const TString &txtFileName)
     // trying to read all the many fields in a line..
     inputFile.getline(line, kMaxLen);
     int nchar = inputFile.gcount();
-    //    printf(" line %d ok %d - character count %d\n", i, j, nchar);
+    //printf(" line %d ok %d - character count %d\n", i, j, nchar);
 
     if (nchar>kMinLenAPDLine && nchar<kMaxLenAPDLine) {
       // looks like the line has about the right number of characters, let's
       // try to decode it now..
 
       //      printf("input: %s\n",line);
-      sscanf(line, "%d,%u,%8s,%9s,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%f,%f,%f",
+      sscanf(line, "%d %u %s %s %d %d %f %f %f %f %f %f %f %f %f %d %f %f %f",
 	     &i1, &i2, c1, c2, &i3, &i4, // header-type info
 	     &f1, &f2, &f3, &f4, &f5, &f6, &f7, &f8, &f9, // measurements
 	     &i5, &f10, &f11, &f12); // Hamamatsu

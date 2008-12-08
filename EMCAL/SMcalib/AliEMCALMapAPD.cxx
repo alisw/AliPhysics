@@ -316,3 +316,40 @@ void AliEMCALMapAPD::GenerateDummyAPDInfo(Int_t nSM, Int_t * iSM)
   return;
 }
 
+//____________________________________________________________________________
+int AliEMCALMapAPD::CheckForDuplicates()
+{ 
+  // keep it simple: have one big array with place
+  // for all APDs from Catania (10000-19999 max) Houston (20000-29999 max)
+  // - and see how many times each APD occurs
+
+  const int kMaxAPDNum = 30000;
+  int counter[kMaxAPDNum] = {0};
+  for (int k=0; k<kMaxAPDNum; k++) { 
+    counter[k] = 0; 
+  }
+
+  Int_t nAPDPerSM = fgkEmCalCols * fgkEmCalRows;
+
+  // go through all APDs
+  int iCol, iRow;
+  for (Int_t i = 0; i < fNSuperModule; i++) {
+    AliEMCALSuperModuleMapAPD &t = fSuperModuleData[i];
+    
+    for (Int_t j=0; j<nAPDPerSM; j++) {
+      iCol = j / fgkEmCalRows;
+      iRow = j % fgkEmCalRows;
+      counter[t.fAPDNum[iCol][iRow]]++;
+    }
+  } // i, SuperModule
+
+  int nProblems = 0;
+  for (int k=0; k<kMaxAPDNum; k++) { 
+    if (counter[k] > 1) {
+      printf("AliEMCALMapAPD::CheckForDuplicates - APD %d occurs more than once!\n",k);
+      nProblems++;
+    } 
+  }
+
+  return nProblems;
+}

@@ -43,6 +43,7 @@ void SetBiasVoltage(const char * inputDBName, const char * inputMapName,
   AliEMCALMapAPD::AliEMCALSuperModuleMapAPD * fMap = mapAPD->GetSuperModuleData();
 
   int nFound = 0;
+  int nNotFound = 0;
   for (int icol=0; icol<fgkEmCalCols; icol++) {
     for (int irow=0; irow<fgkEmCalRows; irow++) {
 
@@ -55,18 +56,22 @@ void SetBiasVoltage(const char * inputDBName, const char * inputMapName,
       }
 
       if (apdCalib == apdMap) { // found!
-	i--; // go back to what we dound
+	i--; // go back to what we found
 	biasVoltage[icol][irow] = fCalib[i].fV30;
 	nFound++;
       }
       else {
 	biasVoltage[icol][irow] = defaultVoltage;
+	cout << " APD " << apdMap << " could not be found! " << endl;
+	nNotFound++;
       }
 
     }
   }
 
   cout << " found " << nFound << " matches " << endl;
+  cout << " did not find " << nNotFound << " APDs " << endl;
+
   return;
 }
 

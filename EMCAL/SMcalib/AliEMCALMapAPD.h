@@ -30,6 +30,8 @@ public:
 
   void GenerateDummyAPDInfo(Int_t nSM, Int_t * iSM); // for debug purposes 
 
+  int CheckForDuplicates(); // see if the same APD numbers occur more than once
+
   virtual ~AliEMCALMapAPD();
 
   struct AliEMCALSuperModuleMapAPD {

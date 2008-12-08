@@ -19,35 +19,23 @@ how the gains should be modified, for each tower.
 root [0] .L AliEMCALMapAPD.cxx+
 root [1] .L AliEMCALCalibAPD.cxx+
 
-1) Generating an APD map: normal use case in a root macro for your SuperModule
+1) Generating an APD map: example use case in a root macro
 -------------------------
-//a) create a dummy space in memory:
-  gSystem->Load("AliEMCALMapAPD_cxx");
-  AliEMCALMapAPD *mapAPD = new AliEMCALMapAPD();
-
-  Int_t iSM[2] = {0,1}; // allow for two SuperModules
-  mapAPD->GenerateDummyAPDInfo(1, iSM); // space for one SuperModule, with number iSM[0] = 0
-
-//b) overwrite this memory with the actual values for the StripModules; one line for each of the 24 stripmodules (0-23)
-  mapAPD->ReadMapAPDInfoSingleStripBasis(0, 21, "APDStripModXY.txt"); 
-// "XY" should perhaps be F5 for 5th stripmodule from Frascati or something like that. F=Frascati, W=WSU, N=Nantes, C=Catania
-
-//For a "APDStripModXY.txt" file, 48 lines with 3 fields:
-//StripColumn StripRow APDNum
-//is expected..
-
-//c) write out the map for column, row, APD for the whole SM:
-  mapAPD->WriteMapAPDInfo("APDSuperModY1.txt"); // Y=Yale, G=Grenoble
+Note: the contents of this macro has to be strongly modified to adapt to 
+your SuperModule setup..
+root -b GenerateAPDMap.C -q
 
 2) Generating a file of V30 bias values for each tower:
 ------------------------------------------------------- 
 # arguments are:
-1: input APD database csv file
+1: input APD database dat file 
+[ this can be produced from the csv file with a cmd like: 
+sed 's/,/ /g' APD-database-Houston.csv | awk '{if (NF==19) {print $0}}' > APD-database-Houston.dat ]
 2: APD map file - which tower is where in the SuperModule; from step 1) above. 
 3: defaultVoltage - use 390 if no settings can be found for some APDs
 4: outputfile
 
-root -b 'WriteBiasV30.C("APD-database.csv", "DummySuperModAPDMap.txt", 390, "BiasV30.txt")' -q 
+root -b 'WriteBiasV30.C("APD-database-Houston.dat", "APD/APDSuperModW1.txt", 390, "BiasV30.txt")' -q 
 # aliroot also works instead of root; as you prefer
 
 3) Optional - e.g. in case you don't have the whole SuperModule APD map or what not 
@@ -62,7 +50,7 @@ root -b 'WriteBiasFixVoltage.C(390, "Bias390.txt")' -q # aliroot also works..
 by 10% and factor 1.1 would mean an increase by 10% relative to the file used previously,
 in this case BiasV30.txt.
 
-root -b 'WriteNewBias.C("APD-database.csv", "DummySuperModAPDMap.txt", "BiasV30.txt", "GainChange.txt", "NewBias.txt")' -q # aliroot also works..
+root -b 'WriteNewBias.C("APD-database-Houston.dat", "APD/APDSuperModW1.txt", "BiasV30.txt", "GainChange.txt", "NewBias.txt")' -q # aliroot also works..
 
 5) Converting a bias value file to a set of files that can be used by DCS/RCU: 
 -----------------------------------------------------------------------------
