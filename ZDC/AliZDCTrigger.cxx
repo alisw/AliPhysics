@@ -63,10 +63,10 @@ void AliZDCTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast(new AliTriggerInput("ZDC_MB_L1",   "ZDC", 0));
-   fInputs.AddLast(new AliTriggerInput("ZDC_Semi_L1", "ZDC", 0));
-   fInputs.AddLast(new AliTriggerInput("ZDC_Cent_L1", "ZDC", 0));
-   fInputs.AddLast(new AliTriggerInput("ZDC_EMD_L1",  "ZDC", 0));
+   fInputs.AddLast(new AliTriggerInput("ZDC_1_L1",   "ZDC", 1));
+   fInputs.AddLast(new AliTriggerInput("ZDC_2_L1", "ZDC", 1));
+   fInputs.AddLast(new AliTriggerInput("ZDC_3_L1", "ZDC", 1));
+   fInputs.AddLast(new AliTriggerInput("ZDC_EMD_L1",  "ZDC", 1));
 }
 
 //________________________________________________________________
