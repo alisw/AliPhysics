@@ -250,23 +250,35 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
   if (IsStartedTimeIntegral() && GetX()>oldX) AddTimeStep(d);
 
   if (oldX < xk) d = -d;
-  if (!AliExternalTrackParam::CorrectForMaterial(d*rho/x0,x0,GetMass())) 
-     return kFALSE;
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(d*rho/x0,d*rho,GetMass(),
+      kFALSE,AliExternalTrackParam::BetheBlochGas)) return kFALSE;
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t 
-AliTPCtrack::PropagateToVertex(const AliESDVertex *v,Double_t d,Double_t x0) 
+AliTPCtrack::PropagateToVertex(const AliESDVertex *v,Double_t rho,Double_t x0) 
 {
   //-----------------------------------------------------------------
-  // This function propagates tracks to the vertex.
+  // This function propagates tracks to the vertex
+  // rho - density of the crossed matrial (g/cm3)
+  // x0  - radiation length of the crossed material (g/cm2) 
   //-----------------------------------------------------------------
+  Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
+
   Double_t bz=GetBz();
-  if (PropagateToDCA(v,bz,kVeryBig))
-   if (AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kTRUE;
-  return kFALSE;
+  if (!PropagateToDCA(v,bz,kVeryBig)) return kFALSE;
+
+  Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
+                           (GetY()-oldY)*(GetY()-oldY) + 
+                           (GetZ()-oldZ)*(GetZ()-oldZ));
+
+  if (oldX < GetX()) d = -d;
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(d*rho/x0,d*rho,GetMass(),
+      kFALSE,AliExternalTrackParam::BetheBlochGas)) return kFALSE;
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
