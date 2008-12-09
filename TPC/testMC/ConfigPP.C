@@ -273,11 +273,12 @@ void Config()
     printf("\n \n Comment: %s \n \n", comment.Data());
     
     
-// Field
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
-    field->SetL3ConstField(0); //Using const. field in the barrel
+    // Field
+
+    AliMagF* field = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
     rl->CdGAFile();
     gAlice->SetField(field);    
+
 //
     Int_t   iABSO   = 1;
     Int_t   iDIPO   = 1;

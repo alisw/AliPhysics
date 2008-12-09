@@ -54,6 +54,8 @@
 #include "EMCAL/AliEMCALv2.h"
 #include "ACORDE/AliACORDEv1.h"
 #include "VZERO/AliVZEROv7.h"
+#include "EVGEN/AliGenCosmicsParam.h"
+
 #endif
 
 enum PprRun_t 
@@ -470,81 +472,17 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
     switch (srun) {
     case test50:
       {
-// 	comment = comment.Append(":HIJINGparam test 50 particles");
-// 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
-// 	gener->SetMomentumRange(0, 999999.);
-// 	gener->SetPhiRange(0., 360.);
-// 	// Set pseudorapidity range from -8 to 8.
-// 	Float_t thmin = EtaToTheta(1.4);   // theta min. <---> eta max
-// 	Float_t thmax = EtaToTheta(-1.4);  // theta max. <---> eta min 
-// 	gener->SetThetaRange(thmin,thmax);
-// 	gGener=gener;
-	Int_t     nParticles = 100;
-	 AliGenCocktail *gener = new AliGenCocktail();
-	 gener->SetPhiRange(0, 360);
-	 // Set pseudorapidity range from -8 to 8.
-	 Float_t thmin = EtaToTheta(1.4);   // theta min. <---> eta max
-	 Float_t thmax = EtaToTheta(-1.4);  // theta max. <---> eta min 
-	 gener->SetThetaRange(thmin,thmax);
-	 gener->SetOrigin(0, 0, 0);  //vertex position
-	 gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
-	 
-	 AliGenHIJINGpara *hijingparam = new AliGenHIJINGpara(nParticles);
-	 hijingparam->SetMomentumRange(0.2, 999);
-	 gener->AddGenerator(hijingparam,"HIJING PARAM",1);
-	    //
-	 //
-	 //PIONS
-	 Int_t nParticles2 =5;
-	 AliGenBox *genboxPIP = new AliGenBox(nParticles2);
-	 genboxPIP->SetPart(211);
-	 genboxPIP->SetPtRange(0.2, 100.00);
-	 AliGenBox *genboxPIM = new AliGenBox(nParticles2);
-	 genboxPIM->SetPart(-211);
-	 genboxPIM->SetPtRange(0.2, 100.00);
-	 //Electrons
-	 AliGenBox *genboxEP = new AliGenBox(nParticles2);
-	 genboxEP->SetPart(11);
-	 genboxEP->SetPtRange(0.1, 100.00);
-	 AliGenBox *genboxEM = new AliGenBox(nParticles2);
-	 genboxEM->SetPart(-11);
-	 genboxEM->SetPtRange(0.1, 100.00);
-	 //Kaons
-	 AliGenBox *genboxKP = new AliGenBox(nParticles2);
-	 genboxKP->SetPart(321);
-	 genboxKP->SetPtRange(0.2, 100.00);
-	 AliGenBox *genboxKM = new AliGenBox(nParticles2);
-	 genboxKM->SetPart(-321);
-	 genboxKM->SetPtRange(0.2, 100.00);
-	 // mu
-	 AliGenBox *genboxMP = new AliGenBox(nParticles2);
-	 genboxMP->SetPart(13);
-	 genboxMP->SetPtRange(0.2, 100.00);
-	 AliGenBox *genboxMM = new AliGenBox(nParticles2);
-	 genboxMM->SetPart(-13);
-	 genboxMM->SetPtRange(0.2, 100.00);
-	 // Protons
-	 AliGenBox *genboxPP = new AliGenBox(nParticles2);
-	 genboxPP->SetPart(2212);
-	 genboxPP->SetPtRange(0.2, 100.00);
-	 AliGenBox *genboxPM = new AliGenBox(nParticles2);
-	 genboxPM->SetPart(-2212);
-	 genboxPM->SetPtRange(0.2, 100.00);
-	 
-	 
-	 gener->AddGenerator(genboxPIP,"GENBOX",1);
-	 gener->AddGenerator(genboxPIM,"GENBOX",1);
-	 gener->AddGenerator(genboxEM,"GENBOX",1);
-	 gener->AddGenerator(genboxEP,"GENBOX",1);
-	 gener->AddGenerator(genboxKM,"GENBOX",1);
-	 gener->AddGenerator(genboxKP,"GENBOX",1);
-	 gener->AddGenerator(genboxMM,"GENBOX",1);
-	 gener->AddGenerator(genboxMP,"GENBOX",1);
-	 gener->AddGenerator(genboxPM,"GENBOX",1);
-	 gener->AddGenerator(genboxPP,"GENBOX",1);
-	 gGener=gener;
-
-
+	
+	AliGenCosmicsParam *gener = new AliGenCosmicsParam();
+	gener->SetNumberParticles(10);
+	gener->SetParamACORDE();
+	gener->SetYOrigin(260.); // warning: just above TPC, no TOF, no ACORDE
+	gener->SetMomentumRange(0.2,100.);
+	gener->SetMaxAngleWRTVertical(3.1415/4.);
+	gener->SetInTPC(); // "acceptance trigger"
+	gener->SetBkG(0.); // needed for "acceptance trigger"
+	gener->Init();
+	gGener = gener;
       }
       break;
     case kParam_8000:

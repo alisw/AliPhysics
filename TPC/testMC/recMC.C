@@ -23,6 +23,13 @@ void recMC(){
   rec.SetWriteAlignmentData(kTRUE);
   //
   rec.SetEventRange(0,20);
+
+  AliMagWrapCheb* field = 0x0;
+  AliMagF* field = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  Bool_t uniform=kFALSE;
+  AliTracker::SetFieldMap(field,uniform);  // tracking with the real map
+  //
+
   //
   rec.Run();
 }

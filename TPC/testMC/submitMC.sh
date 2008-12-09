@@ -14,11 +14,13 @@
 # 1.
 # $ALICE_ROOT/TPC/testMC/submitMC.sh /u/miranov/.balice64HEAD0108 2 $ALICE_ROOT/TPC/testMC/ConfigHPT.C  0  2 hpt 0 `pwd`
 
-# $ALICE_ROOT/TPC/testMC/submitMC.sh /u/miranov/.balice64HEAD0108 2 $ALICE_ROOT/TPC/testMC/ConfigPP.C  0  2 pp 0 `pwd`
+# $ALICE_ROOT/TPC/testMC/submitMC.sh /u/miranov/.balice64HEAD0108 2 $ALICE_ROOT/TPC/testMC/ConfigPP.C  0  10 pp 0 `pwd`
+
+# $ALICE_ROOT/TPC/testMC/submitMC.sh /u/miranov/.balice64HEAD0108 2 $ALICE_ROOT/TPC/testMC/ConfigCosmic.C  0  10 cosmic 0 `pwd`
 
 
-
-
+# myvar=0
+# while [ $myvar -ne 100 ] ; do bsub  do something ;  myvar=$(( $myvar + 1 )) ; echo $myvar ; done
 
 # 1.b 
 # $ALICE_ROOT/TPC/testMC/submitMC.sh /u/miranov/.balice64HEAD0108 0  $ALICE_ROOT/TPC/testMC/ConfigHPT1.C  0  10 hpt1 0 `pwd`
@@ -41,6 +43,12 @@
 cd $8
 mkdir $6
 cd $6
+cp $3 .
+cp $ALICE_ROOT/TPC/testMC/sim.C .
+cp $ALICE_ROOT/TPC/testMC/rec.C .
+
+
+
 echo PWD `pwd` 
 
 echo HOSTNAME $HOSTNAME
