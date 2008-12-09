@@ -183,7 +183,7 @@ void AliTPCCalPad::Add(const AliTPCCalPad * pad, Double_t c1)
   //  - pad by pad -
   //
     for (Int_t isec = 0; isec < kNsec; isec++) {
-	if (fROC[isec]){
+	if (fROC[isec] && pad->GetCalROC(isec)){
 	    fROC[isec]->Add(pad->GetCalROC(isec),c1);
 	}
     }
