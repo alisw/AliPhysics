@@ -391,7 +391,7 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   //cout << "v[0] " << fVertex->GetXv()  << " v[1] " << fVertex->GetYv()  <<  " v[2] " << fVertex->GetZv()<< endl; 
   if (TMath::Abs(tantheta)<fCutsRC->GetMaxAbsTanTheta())
   {
-    if (infoRC->GetESDtrack()->GetTPCInnerParam()) 
+    if (infoRC->GetESDtrack() && infoRC->GetESDtrack()->GetTPCInnerParam()) 
     {
       if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
       {

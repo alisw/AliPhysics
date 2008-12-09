@@ -75,7 +75,8 @@ AliESDRecInfo::AliESDRecInfo():
   fTrackF(0),      // friend track
   fTPCtrack(0),        // tpc track
   fITStrack(0),        // its track
-  fTRDtrack(0)        // trd track  
+  fTRDtrack(0),        // trd track  
+  fTracks(0)           // array of tracks with the same label
 {
   //
   //  default constructor
@@ -98,13 +99,15 @@ AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
   fTrackF(0),      // friend track
   fTPCtrack(0),        // tpc track
   fITStrack(0),        // its track
-  fTRDtrack(0)        // trd track  
+  fTRDtrack(0),        // trd track  
+  fTracks(0)           // array of tracks with the same label
 {
   //
   //
   //
   memcpy(this,&recinfo, sizeof(recinfo));
   fESDtrack=0; fTrackF=0; fTPCtrack=0;fITStrack=0;fTRDtrack=0;
+  fTracks=0;
   SetESDtrack(recinfo.GetESDtrack());
 }
 
@@ -131,7 +134,7 @@ AliESDRecInfo::~AliESDRecInfo()
   if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
   if (fITStrack) { delete fITStrack; fITStrack=0;}
   if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
-
+  if (fTracks) { delete  fTracks;  fTracks=0;}
 }
 
 
@@ -149,6 +152,7 @@ void AliESDRecInfo::Reset()
   if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
   if (fITStrack) { delete fITStrack; fITStrack=0;}
   if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
+  if (fTracks) { delete  fTracks;  fTracks=0;}
 } 
 
 void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
@@ -177,6 +181,39 @@ void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
   }
   
 }
+
+
+
+void AliESDRecInfo::AddESDtrack(const AliESDtrack *track, AliMCInfo* info){
+  //
+  // Add ESDtrack
+  //
+  AliESDtrack *nctrack = (AliESDtrack*) track;
+  fMultiple++;
+  if (!fESDtrack) {
+    SetESDtrack(track);  
+    Update(info,0,kTRUE);
+    return;
+  }
+  if (!fTracks) fTracks = new TClonesArray("AliESDtrack",10);
+  Int_t ntracks = fTracks->GetEntriesFast();
+  new ((*fTracks)[ntracks]) AliESDtrack(*track);
+  if  (nctrack->GetKinkIndex(0)>0) return; 
+  //
+  //
+  //
+  if (!nctrack->IsOn(AliESDtrack::kTPCrefit) && fStatus[1]==2) return;
+  if (!nctrack->IsOn(AliESDtrack::kITSin) && fStatus[0]>0) return;
+  if ( nctrack->GetParameter()[4]*info->GetCharge()<0) return; //returning track 
+  
+  Float_t dtheta = TMath::ATan(nctrack->GetTgl())-info->GetParticle().Theta()-TMath::Pi()-2;
+  if (TMath::Abs(dtheta)>0.1) return;
+
+  SetESDtrack(track);  
+  Update(info,0,kTRUE);
+}
+
+
 
 void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 {

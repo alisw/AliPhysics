@@ -60,6 +60,8 @@ public:
   ~AliMCInfo();   
   AliMCInfo(const AliMCInfo& info);
   AliMCInfo& operator=(const AliMCInfo& info);
+  void Update(TParticle * part, TClonesArray * arrayTr, Double_t pvertex[4], Int_t label);
+  void Clear(Option_t* = "");
   //
   void Update();
   Int_t     GetEventNr() const   {return fEventNr;}
@@ -122,16 +124,23 @@ private:
   //
   Float_t fPrim;                     // theoretical dedx in tpc according particle momenta and mass
   AliTPCdigitRow fTPCRow;                  // information about digits row pattern
+  //
   Int_t fNTPCRef;                    // tpc references counter
   Int_t fNITSRef;                    // ITS references counter
   Int_t fNTRDRef;                    // TRD references counter
   Int_t fNTOFRef;                    // TOF references counter
+  //
+  Int_t fNTPCRefOut;                    // tpc references counter - out
+  Int_t fNITSRefOut;                    // ITS references counter - out
+  Int_t fNTRDRefOut;                    // TRD references counter - out
+  Int_t fNTOFRefOut;                    // TOF references counter - out
+
   TClonesArray * fTPCReferences;     //containner with all track references -in the TPC
   TClonesArray * fITSReferences;     //container with ITS references
   TClonesArray * fTRDReferences;     //container with TRD references  
   TClonesArray * fTOFReferences;     //container with TRD references  
   //
-  ClassDef(AliMCInfo,1);  // container for 
+  ClassDef(AliMCInfo,2);  // container for 
 };
 
 
