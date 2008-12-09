@@ -535,8 +535,6 @@ void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par,
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-      if (fQAWriteExpert[iDet])
-        qadm->SetWriteExpert() ; 
 			if (!qadm) {
 				AliError(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
 				fDetectorsW.ReplaceAll(AliQA::GetDetName(iDet), "") ; 
@@ -548,6 +546,7 @@ void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par,
 					if (!det || !det->IsActive())  
 						continue ;
 				}
+				if (fQAWriteExpert[iDet]) qadm->SetWriteExpert() ; 
 	      // Set default reco params
 				qadm->SetRecoParam(par.GetDetRecoParam(iDet));
         Bool_t sameCycle = kFALSE ; 
