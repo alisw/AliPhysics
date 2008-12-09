@@ -404,7 +404,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    // Compose the 'find' command arguments
    TString command;
    TString options = "-x collection ";
-   if (TestBit(AliAnalysisGrid::kTest)) options += "-l 10 ";
+   if (TestBit(AliAnalysisGrid::kTest)) options += "-l 100 ";
    TString conditions = "";
    
    TString file;
@@ -1039,18 +1039,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libGeom\");" << endl;
       out << "   gSystem->Load(\"libVMC\");" << endl;
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
-      if (fAdditionalLibs.Length()) {
-         out << "// Add aditional AliRoot libraries" << endl;
-         TObjArray *list = fAdditionalLibs.Tokenize(" ");
-         TIter next(list);
-         TObjString *str;
-         while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so"))
-               out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
-         }
-         if (list) delete list;
-      }
-      out << endl;
       if (!fPackages) {
          out << "// Load analysis framework libraries" << endl;
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;
@@ -1067,6 +1055,18 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          while ((obj=next())) 
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
       }   
+      if (fAdditionalLibs.Length()) {
+         out << "// Add aditional AliRoot libraries" << endl;
+         TObjArray *list = fAdditionalLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            if (str->GetString().Contains(".so"))
+               out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+         }
+         if (list) delete list;
+      }
+      out << endl;
       out << "// analysis source to be compiled at runtime (if any)" << endl;
       if (fAnalysisSource.Length()) {
          TObjArray *list = fAnalysisSource.Tokenize(" ");
