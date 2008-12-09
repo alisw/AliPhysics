@@ -35,8 +35,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "require ITS refit",
  "n clusters TPC",
  "n clusters ITS",
- "#Chi^{2}/clusters TPC",
- "#Chi^{2}/clusters ITS",
+ "#Chi^{2}/cluster TPC",
+ "#Chi^{2}/cluster ITS",
  "cov 11",
  "cov 22",
  "cov 33",
@@ -50,9 +50,9 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "p_{x}",
  "p_{y}",
  "p_{z}",
- "y",
  "eta",
- "trk-to-vtx dca absolute",
+ "y",
+ "trk-to-vtx dca 2D absolute",
  "trk-to-vtx dca xy absolute",
  "trk-to-vtx dca z absolute",
  "SPD cluster requirement",
@@ -76,9 +76,9 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutRequireITSRefit(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
-  fCutDCAToVertex(0),
   fCutDCAToVertexXY(0),
   fCutDCAToVertexZ(0),
+  fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -115,9 +115,9 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireITSRefit();
   SetAcceptKingDaughters();
   SetMaxNsigmaToVertex();
-  SetMaxDCAToVertex();
   SetMaxDCAToVertexXY();
   SetMaxDCAToVertexZ();
+  SetDCAToVertex2D();
   SetPRange();
   SetPtRange();
   SetPxRange();
@@ -148,9 +148,9 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutRequireITSRefit(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
-  fCutDCAToVertex(0),
   fCutDCAToVertexXY(0),
   fCutDCAToVertexZ(0),
+  fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -263,10 +263,10 @@ void AliESDtrackCuts::Init()
 
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
-  fCutDCAToVertex = 0;
   fCutDCAToVertexXY = 0;
   fCutDCAToVertexZ = 0;
-
+  fCutDCAToVertex2D = 0;
+  
   fPMin = 0;
   fPMax = 0;
   fPtMin = 0;
@@ -360,9 +360,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
-  target.fCutDCAToVertex = fCutDCAToVertex;
   target.fCutDCAToVertexXY = fCutDCAToVertexXY;
   target.fCutDCAToVertexZ = fCutDCAToVertexZ;
+  target.fCutDCAToVertex2D = fCutDCAToVertex2D;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -597,7 +597,15 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Float_t dcaToVertexXY = b[0];
   Float_t dcaToVertexZ = b[1];
 
-  Float_t dcaToVertex   = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+  Float_t dcaToVertex = -1;
+  
+  if (fCutDCAToVertex2D)
+  {
+    dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/fCutDCAToVertexXY/fCutDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutDCAToVertexZ/fCutDCAToVertexZ);
+  }
+  else
+    dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+  
 
   // getting the kinematic variables of the track
   // (assuming the mass is known)
@@ -669,11 +677,11 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[19] = kTRUE;
   if((y < fRapMin) || (y > fRapMax)) 
     cuts[20] = kTRUE;
-  if (dcaToVertex > fCutDCAToVertex)
+  if (fCutDCAToVertex2D && dcaToVertex > 1)
     cuts[21] = kTRUE;
-  if (TMath::Abs(dcaToVertexXY) > fCutDCAToVertexXY)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) > fCutDCAToVertexXY)
     cuts[22] = kTRUE;
-  if (TMath::Abs(dcaToVertexZ) > fCutDCAToVertexZ)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutDCAToVertexZ)
     cuts[23] = kTRUE;
   
   for (Int_t i = 0; i < 3; i++)
@@ -934,7 +942,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
 
     fhNSigmaToVertex[i]      = new TH1F("nSigmaToVertex","",500,0,10);
 
-    fhPt[i]                  = new TH1F("pt"     ,"p_{T} distribution;p_{T} (GeV/c)",500,0.0,100.0);
+    fhPt[i]                  = new TH1F("pt"     ,"p_{T} distribution;p_{T} (GeV/c)", 800, 0.0, 10.0);
     fhEta[i]                 = new TH1F("eta"     ,"#eta distribution;#eta",40,-2.0,2.0);
     
     fhNClustersITS[i]->SetTitle("n ITS clusters");
@@ -948,16 +956,16 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhC44[i]->SetTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
     fhC55[i]->SetTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
 
-    fhDXY[i]->SetTitle("transverse impact parameter");
-    fhDZ[i]->SetTitle("longitudinal impact parameter");
-    fhDXYDZ[i]->SetTitle("absolute impact parameter;sqrt(dXY**2 + dZ**2) in cm");
-    fhDXYvsDZ[i]->SetXTitle("longitudinal impact parameter");
-    fhDXYvsDZ[i]->SetYTitle("transverse impact parameter");
+    fhDXY[i]->SetXTitle("transverse impact parameter (cm)");
+    fhDZ[i]->SetXTitle("longitudinal impact parameter (cm)");
+    fhDXYDZ[i]->SetTitle("absolute impact parameter;sqrt(dXY**2 + dZ**2)  (cm)");
+    fhDXYvsDZ[i]->SetXTitle("longitudinal impact parameter (cm)");
+    fhDXYvsDZ[i]->SetYTitle("transverse impact parameter (cm)");
 
-    fhDXYNormalized[i]->SetTitle("normalized trans impact par");
-    fhDZNormalized[i]->SetTitle("normalized long impact par");
-    fhDXYvsDZNormalized[i]->SetTitle("normalized long impact par");
-    fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par");
+    fhDXYNormalized[i]->SetTitle("normalized trans impact par (n#sigma)");
+    fhDZNormalized[i]->SetTitle("normalized long impact par (n#sigma)");
+    fhDXYvsDZNormalized[i]->SetTitle("normalized long impact par (n#sigma)");
+    fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par (n#sigma)");
     fhNSigmaToVertex[i]->SetTitle("n #sigma to vertex");
 
     fhNClustersITS[i]->SetLineColor(color);   fhNClustersITS[i]->SetLineWidth(2);
@@ -1260,11 +1268,20 @@ void AliESDtrackCuts::SetDCAToVertex(Float_t dist)
 {
   // deprecated, will be removed in next release
 
-  Printf("WARNING: AliESDtrackCuts::SetDCAToVertex is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertex instead. Renaming was done to improve code readability.");
-  
   SetMaxDCAToVertex(dist);
 }
   
+void AliESDtrackCuts::SetMaxDCAToVertex(Float_t dist)
+{
+  // deprecated, will be removed in next release
+  
+  Printf("WARNING: AliESDtrackCuts::SetMaxDCAToVertex is DEPRECATED and will be removed in the next release. Please use SetDCAToVertexXY(dist) and SetDCAToVertexZ(dist) and SetDCAToVertex2D(kTRUE)");
+  
+  SetDCAToVertexXY(dist);
+  SetDCAToVertexZ(dist);
+  SetDCAToVertex2D(kTRUE);
+}
+
 void AliESDtrackCuts::SetDCAToVertexXY(Float_t dist)
 {
   // deprecated, will be removed in next release
