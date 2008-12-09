@@ -11,6 +11,7 @@ class TH1F;
 class TList;
 class AliESDEvent;
 class AliESDtrack;
+class AliExternalComparison;
 
 #include "TTreeStream.h"
 
@@ -25,12 +26,16 @@ public:
   virtual Long64_t  Merge(TCollection *li);
   virtual void      Analyze();
   //
+  void ProcessTree(TTree * tree, AliExternalComparison *comp=0);
+  //
   void              FindPairs(AliESDEvent *event);
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   void              SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
   static Double_t   CalculateMIPvalue(TH1F * hist);
   AliExternalTrackParam *Invert(AliExternalTrackParam *input);
+  AliExternalTrackParam *MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
+  void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};

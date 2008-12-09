@@ -64,7 +64,7 @@
 #include "AliLog.h"
 
 #include "AliTPCcalibCosmic.h"
-
+#include "AliExternalComparison.h"
 #include "TTreeStream.h"
 #include "AliTPCTracklet.h"
 
@@ -107,8 +107,6 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
 {  
   SetName(name);
   SetTitle(title);
-  AliMagFMaps * field = new AliMagFMaps("dummy1", "dummy2",0,5,0);
-  AliTracker::SetFieldMap(field, kTRUE);  
 
   fHistNTracks = new TH1F("ntracks","Number of Tracks per Event; number of tracks per event; number of tracks",501,-0.5,500.5);
   fClusters = new TH1F("signal","Number of Clusters per track; number of clusters per track n_{cl}; counts",160,0,160);
@@ -194,7 +192,9 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
    const AliExternalTrackParam * trackOut = track->GetOuterParam();
    if (!trackIn) continue;
    if (!trackOut) continue;
-   
+   if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
+
+
    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
    TObject *calibObject;
    AliTPCseed *seed = 0;
@@ -420,7 +420,7 @@ Long64_t AliTPCcalibCosmic::Merge(TCollection *li) {
 
   while ((cal = (AliTPCcalibCosmic*)iter->Next())) {
     if (!cal->InheritsFrom(AliTPCcalibCosmic::Class())) {
-      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
+      //Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
       return -1;
     }
     
@@ -533,6 +533,179 @@ AliExternalTrackParam *AliTPCcalibCosmic::Invert(AliExternalTrackParam *input)
   return output;
 }
 
+AliExternalTrackParam *AliTPCcalibCosmic::MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1){
+  //
+  // 
+  //
+  AliExternalTrackParam *par1R= new AliExternalTrackParam(*track1);
+  par1R->Rotate(track0->GetAlpha());
+  //
+  //
+  Double_t * param = (Double_t*)par1R->GetParameter();
+  Double_t * covar = (Double_t*)par1R->GetCovariance();
+  param[0]*=1;  //OK
+  param[1]*=1;  //OK
+  param[2]*=1;  //?
+  param[3]*=-1; //OK
+  param[4]*=-1; //OK
+  //
+  covar[6] *=-1.; covar[7] *=-1.; covar[8] *=-1.;
+  //covar[10]*=-1.; covar[11]*=-1.; covar[12]*=-1.;
+  covar[13]*=-1.;
+  par1R->PropagateTo(track0->GetX(),0); // bz shold be set -
+  //if (1){
+  //  printf("Print param\n");
+  //  track1->Print();
+  //  par1R->Print();
+  //}
+  return par1R;
+}
+
+void AliTPCcalibCosmic::UpdateTrack(AliExternalTrackParam &track1, const AliExternalTrackParam &track2){
+  //
+  // Update track 1 with track 2
+  //
+  //
+  //
+  TMatrixD vecXk(5,1);    // X vector
+  TMatrixD covXk(5,5);    // X covariance 
+  TMatrixD matHk(5,5);    // vector to mesurement
+  TMatrixD measR(5,5);    // measurement error 
+  TMatrixD vecZk(5,1);    // measurement
+  //
+  TMatrixD vecYk(5,1);    // Innovation or measurement residual
+  TMatrixD matHkT(5,5);
+  TMatrixD matSk(5,5);    // Innovation (or residual) covariance
+  TMatrixD matKk(5,5);    // Optimal Kalman gain
+  TMatrixD mat1(5,5);     // update covariance matrix
+  TMatrixD covXk2(5,5);   // 
+  TMatrixD covOut(5,5);
+  //
+  Double_t *param1=(Double_t*) track1.GetParameter();
+  Double_t *covar1=(Double_t*) track1.GetCovariance();
+  Double_t *param2=(Double_t*) track2.GetParameter();
+  Double_t *covar2=(Double_t*) track2.GetCovariance();
+  //
+  // copy data to the matrix
+  for (Int_t ipar=0; ipar<5; ipar++){
+    vecXk(ipar,0) = param1[ipar];
+    vecZk(ipar,0) = param2[ipar];
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covXk(ipar,jpar) = covar1[track1.GetIndex(ipar, jpar)];
+      measR(ipar,jpar) = covar2[track2.GetIndex(ipar, jpar)];
+    }
+  }
+  //
+  //
+  //
+  //
+  matHk(0,0)=1; matHk(1,1)= 1; matHk(2,2)= 1;  
+  matHk(3,3)= 1;    matHk(4,4)= 1;           // vector to measurement
+  //
+  vecYk = vecZk-matHk*vecXk;                 // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                      //  updated vector 
+  mat1(0,0)=1; mat1(1,1)=1; mat1(2,2)=1; mat1(3,3)=1; mat1(4,4)=1;
+  covXk2 = (mat1-(matKk*matHk));
+  covOut =  covXk2*covXk; 
+  //
+  //
+  //
+  // copy from matrix to parameters
+  if (0) {
+    vecXk.Print();
+    vecZk.Print();
+    //
+    measR.Print();
+    covXk.Print();
+    covOut.Print();
+    //
+    track1.Print();
+    track2.Print();
+  }
+
+  for (Int_t ipar=0; ipar<5; ipar++){
+    param1[ipar]= vecXk(ipar,0) ;
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covar1[track1.GetIndex(ipar, jpar)]=covOut(ipar,jpar);
+    }
+  }
+}
+
+void AliTPCcalibCosmic::ProcessTree(TTree * chainTracklet, AliExternalComparison *comp){
+  //
+  // Process the debug streamer tree
+  // Possible to modify selection criteria
+  //
+  TTreeSRedirector * cstream = new TTreeSRedirector("cosmicdump.root");
+  //AliTPCcalibCosmic *cosmic = this;
+  //
+  AliExternalTrackParam * tr0 = 0;
+  AliExternalTrackParam * tr1 = 0;  
+  Int_t npoints =0;
+  {
+    Int_t entries=chainTracklet->GetEntries();
+    for (Int_t i=0; i< entries; i++){
+      chainTracklet->GetBranch("Tr0.")->SetAddress(&tr0);
+      chainTracklet->GetBranch("Tr1.")->SetAddress(&tr1);
+      chainTracklet->GetEntry(i);
+      if (!tr0) continue;
+      if (!tr1) continue;
+      if (tr0->GetY()==0) continue;
+      if (tr1->GetY()==0) continue;
+      // make a local copy
+      AliExternalTrackParam par0(*tr0);
+      AliExternalTrackParam par1(*tr1);
+      AliExternalTrackParam par1R(*tr1);
+      par1R.Rotate(par1.GetAlpha()+TMath::Pi());
+      AliExternalTrackParam *par1T = MakeTrack(tr0,tr1);
+      if (0) {
+	printf("%d\t%d\t\n",i, npoints);
+	par1R.Print();
+	par1T->Print();
+      }
+      AliExternalTrackParam par0U=par0;
+      AliExternalTrackParam par1U=*par1T;
+      //
+      UpdateTrack(par0U,*par1T);
+      UpdateTrack(par1U,par0);
+      //
+      //
+      if (i%100==0) printf("%d\t%d\tt\n",i, npoints);
+      Bool_t accept =   comp->AcceptPair(&par0,par1T);  
+
+      if (1||fStreamLevel>0){
+	(*cstream)<<"Tracklet"<<
+	  "accept="<<accept<<
+	  "tr0.="<<&par0<<       //original track  up
+	  "tr1.="<<&par1<<       //original track  down
+	  "tr1R.="<<&par1R<<     //track1 rotated to  0 frame 
+	  "tr1T.="<<par1T<<      //track1 transformed to the track 0 frame 
+	  //
+	  "tr0U.="<<&par0U<<     //track 0 updated with track 1
+	  "tr1U.="<<&par1U<<     //track 1 updated with track 0 
+	  "\n";
+      }
+      //
+      if (accept) {
+	npoints++;
+	if (comp) comp->Process(&par0,par1T);
+      }
+      delete par1T;
+    }
+  }
+  delete cstream;
+}
+
+
+
+
+
+
+
 /*
 
 void Init(){
@@ -553,15 +726,17 @@ TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
 TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
 TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<20");   // OK
 TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
+TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>50");
+TCut cutM("cutM","abs(mag)>0.01");
 TCut cutA=cutT+cutD+cutPt+cutN+cutP1+"trigger!=16";
 
 TCut cuthpt("abs(Tr0.fP[4])+abs(Tr1.fP[4])<0.2");
 TCut cutS("cutS","Orig0.fIp.fP[1]*Orig1.fIp.fP[1]>0");
 
 //
-chainCosmic->Draw(">>listEL",cutA,"entryList");
-TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+chainCosmic->Draw(">>listELP",cutA,"entryList");
+//TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+//TEntryList *elist = (TEntryList*)gProof->GetOutputList()->At(1);
 chainCosmic->SetEntryList(elist);
 //
 chainCosmic->Draw(">>listV40Z100","abs(d0)<40&&abs(v01)<100","entryList");
@@ -635,14 +810,14 @@ hisdzA_2->Draw("same");
 //
 // PICTURE 1/pt
 //
-chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptA(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptA(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0"+cutM);
 hisd1ptA->FitSlicesY();
 hisd1ptA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisd1ptA_2->SetYTitle("#sigma_{z}(cm)");
 hisd1ptA_2->SetTitle("Cosmic - Z matching - A side ");
 hisd1ptA_2->SetMaximum(0.5);
 
-chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptC(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptC(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0"+cutM);
 hisd1ptC->FitSlicesY();
 hisd1ptC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisd1ptC_2->SetYTitle("#sigma_{1/pt}(1/GeV)");
@@ -915,5 +1090,18 @@ chainCosmic->SetAlias("corQT",strqdedx->Data());
 chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)/Seed1.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)>>his(100,0.5,1.5)","min(Orig0.fTPCncls,Orig1.fTPCncls)>130"+cutA,"",50000);
 
 */
+
+
+/*
+chainCosmic->Draw("Tr0.fP[1]-Tr1.fP[1]:sqrt(abs(Tr0.fP[4]))>>hisdzA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0&&abs(mag)>0.1"+cutA); 
+
+TGraph *grdzA = (TGraph*)gProof->GetOutputList()->At(1)->Clone();
+
+
+
+ 
+*/
+
+
 
 
