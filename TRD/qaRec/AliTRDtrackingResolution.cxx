@@ -413,7 +413,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     AliTRDseedV1 tt(*fTracklet);
     tt.SetZref(0, z0);
     tt.SetZref(1, dzdx); 
-    if(!tt.Fit(kFALSE)) continue;
+    if(!tt.Fit(kTRUE)) continue;
     //tt.Update();
 
     dx = 0.;//x0 - tt.GetXref();
