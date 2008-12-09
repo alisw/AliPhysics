@@ -578,7 +578,7 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    
    while ((cal = (AliTPCcalibTracksGain*)iter->Next())) {
       if (!cal->InheritsFrom(AliTPCcalibTracksGain::Class())) {
-         Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
+	//Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
          return -1;
       }
       
