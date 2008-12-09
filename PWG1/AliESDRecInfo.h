@@ -45,6 +45,7 @@ public:
   //
   void Reset();
   //
+  void AddESDtrack(const AliESDtrack *track, AliMCInfo* info);
   void SetESDtrack(const AliESDtrack *track);
   AliESDtrack *GetESDtrack() const { return fESDtrack;}
   AliESDfriendTrack *GetTrackF() const  { return fTrackF;}
@@ -91,6 +92,7 @@ private:
   AliTPCseed *fTPCtrack;        // tpc track
   AliITStrackMI *fITStrack;        // its track
   AliTRDtrackV1   *fTRDtrack;        // trd track
+  TClonesArray   *fTracks;         // esd tracks array
   ClassDef(AliESDRecInfo,2)  // container for 
 };
 
