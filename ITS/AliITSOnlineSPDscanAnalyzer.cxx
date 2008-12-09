@@ -48,9 +48,9 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 //  return 0.5+0.5*TMath::Erf((x[0]-par[0])/par[1]/sqrt(2.));
 //}
 
-
+//_________________________________________________________________________
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler, Bool_t readFromGridFile) :
-  fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fHandler(handler),fTriggers(NULL),
+  fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fHandler(handler),fTriggers(NULL),fTPeff(0),fTPeffHS(NULL),fDeadPixel(0),fDeadPixelHS(NULL),fNoisyPixel(0),fNoisyPixelHS(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(5),fMaxBaseLineLevel(10)
 {
@@ -61,15 +61,21 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName,
       fHitEventEfficiency[hs][chipNr]=NULL;
     }
   }
+  for (UInt_t hs=0; hs<6; hs++) {
+    fTPeffChip[hs]=NULL;
+    fDeadPixelChip[hs]=NULL;
+    fNoisyPixelChip[hs]=NULL;
+  }
+
   for (UInt_t mod=0; mod<240; mod++) {
     fbModuleScanned[mod]=kFALSE;
   }
 
   Init(readFromGridFile);
 }
-
+//_________________________________________________________________________
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle) :
-  fType(99),fDacId(99),fFileName("."),fScanObj(NULL),fHandler(NULL),fTriggers(NULL),
+  fType(99),fDacId(99),fFileName("."),fScanObj(NULL),fHandler(NULL),fTriggers(NULL),fTPeff(0),fTPeffHS(NULL),fDeadPixel(0),fDeadPixelHS(NULL),fNoisyPixel(0),fNoisyPixelHS(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(5),fMaxBaseLineLevel(10)
 {
@@ -89,29 +95,47 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDsc
       fHitEventEfficiency[hs][chipNr]=NULL;
     }
   }
+  for (UInt_t hs=0; hs<6; hs++) {
+    fTPeffChip[hs]=NULL;
+    fDeadPixelChip[hs]=NULL;
+    fNoisyPixelChip[hs]=NULL;
+  }
+
   for (UInt_t mod=0; mod<240; mod++) {
     fbModuleScanned[mod]=kFALSE;
   }
 
   Init();
 }
-
+//_________________________________________________________________________
 AliITSOnlineSPDscanAnalyzer::~AliITSOnlineSPDscanAnalyzer() {
   // destructor
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<11; chipNr++) {
       if (fMeanMultiplicity[hs][chipNr]!=NULL) {
 	delete fMeanMultiplicity[hs][chipNr];
+	fMeanMultiplicity[hs][chipNr]=NULL;
       }
       if (fHitEventEfficiency[hs][chipNr]!=NULL) {
 	delete fHitEventEfficiency[hs][chipNr];
+	fHitEventEfficiency[hs][chipNr]=NULL;
       }
     }
   }
-  if (fTriggers!=NULL) delete fTriggers;
-  if (fScanObj!=NULL) delete fScanObj;
-}
 
+  if (fTriggers!=NULL) {
+    delete fTriggers;
+    fTriggers=NULL;
+  }
+
+  DeleteUniformityHistograms();
+
+  if (fScanObj!=NULL) {
+    delete fScanObj;
+    fScanObj=NULL;
+  }
+}
+//_________________________________________________________________________
 AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITSOnlineSPDscanAnalyzer& handle) {
   // assignment operator, only copies the filename and params (not the processed data)
   if (this!=&handle) {
@@ -125,8 +149,17 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
 	}
       }
     }
-    if (fTriggers!=NULL) delete fTriggers;
-    if (fScanObj!=NULL) delete fScanObj;
+    if (fTriggers!=NULL) {
+      delete fTriggers;
+      fTriggers=NULL;
+    }
+
+    DeleteUniformityHistograms();
+
+    if (fScanObj!=NULL) {
+      delete fScanObj;
+      fScanObj=NULL;
+    }
    
     fFileName=handle.fFileName;
     fOverWrite=handle.fOverWrite;
@@ -146,10 +179,9 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
     for (UInt_t mod=0; mod<240; mod++) {
       fbModuleScanned[mod]=kFALSE;
     }
-    fTriggers=NULL;
+
     fHandler=NULL;
     
-    fScanObj=NULL;
     fType=99;
     fDacId=99;
 
@@ -157,7 +189,7 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
   }
   return *this;
 }
-
+//_________________________________________________________________________
 void AliITSOnlineSPDscanAnalyzer::Init(Bool_t readFromGridFile) {
   // first checks type of container and then initializes container obj
   if (!readFromGridFile) {
@@ -198,7 +230,7 @@ void AliITSOnlineSPDscanAnalyzer::Init(Bool_t readFromGridFile) {
   }
 
 }
-
+//_________________________________________________________________________
 void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pval) {
   // set a parameter
   TString name = pname;
@@ -231,7 +263,7 @@ void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pv
     Error("AliITSOnlineSPDscanAnalyzer::SetParam","Parameter %s in configuration file unknown.",name.Data());
   }
 }
-
+//_________________________________________________________________________
 void AliITSOnlineSPDscanAnalyzer::ReadParamsFromLocation(const Char_t *dirName) {
   // opens file (default name) in dir dirName and reads parameters from it
   TString paramsFileName = Form("%s/standal_params.txt",dirName);
@@ -253,7 +285,7 @@ void AliITSOnlineSPDscanAnalyzer::ReadParamsFromLocation(const Char_t *dirName) 
     paramsFile.close();
   }
 }
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::IsChipPresent(UInt_t hs, UInt_t chipNr) {
   // is the chip present?
   if (fScanObj==NULL) {
@@ -262,7 +294,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::IsChipPresent(UInt_t hs, UInt_t chipNr) {
   }
   return fScanObj->GetChipPresent(hs,chipNr);
 }
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(/*Char_t *oldcalibDir*/) {
   // process dead pixel data, for uniformity scan, 
   // NB: This will not be the general way of finding dead pixels.
@@ -302,9 +334,179 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(/*Char_t *oldcalibDir*/) {
   }
   return kTRUE;
 }
+//_________________________________________________________________________
+Bool_t AliITSOnlineSPDscanAnalyzer::ProcessUniformity() {
+  // process uniformity scan data (thanks to Roberta Ferretti for providing this method)
+  if (fScanObj==NULL) {
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessUniformity","No data!");
+    return kFALSE;
+  }
+  // should be type kUNIMA
+  if (fType!=kUNIMA) {
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessUniformity","Only for scan type %d.",kUNIMA);
+    return kFALSE;
+  }
 
+  CreateUniformityHistograms(); // create all histograms that will be filled here
 
+  //  UInt_t routerNr = fScanObj->GetRouterNr();
+  UInt_t rowStart = fScanObj->GetRowStart();
+  UInt_t rowEnd   = fScanObj->GetRowEnd();
+  UInt_t NrTriggers = fScanObj->GetTriggers(0)/(rowEnd-rowStart+1);
 
+  Float_t pixel100=0;
+  Float_t zeri=0;
+  Float_t pixelN=0;
+  UInt_t numChipsActive=0;
+
+  for (UInt_t hs=0; hs<6; hs++) {
+    Float_t pixel100hs=0;
+    Float_t zerihs=0;
+    Float_t pixelNhs=0;
+    UInt_t numChipsActiveHS=0;
+
+    for (UInt_t chipNr=0; chipNr<10; chipNr++) {
+      Float_t pixel100chip=0;
+      Float_t zerichip=0;
+      Float_t pixelNchip=0;
+
+      if (fScanObj->GetChipPresent(hs,chipNr)) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	numChipsActive++;
+	numChipsActiveHS++;
+
+	for (UInt_t col=0; col<32; col++) {
+	  for (UInt_t row=rowStart; row<=rowEnd; row++) {
+	    if (col!=1 && col!=9 && col!=17 && col!=25) { //exclude test columns!!!
+	    
+	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==NrTriggers) {   
+	      		pixel100++;
+	      		pixel100hs++;
+			pixel100chip++;
+	      }
+	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==0) {
+	      		zeri++;
+	      		zerihs++;
+			zerichip++;
+	      }
+	      if (fScanObj->GetHits(0,hs,chipNr,col,row)>NrTriggers) {    
+	      		pixelN++;
+	      		pixelNhs++;
+			pixelNchip++;
+	      }
+	    }
+	  }
+	}
+      
+	Float_t TPeffChip=(pixel100chip/(28*(rowEnd-rowStart+1)))*100;
+	fTPeffChip[hs]->Fill(chipNr,TPeffChip);
+	
+	Float_t DeadPixelChip=(zerichip/(28*(rowEnd-rowStart+1)))*100;
+	fDeadPixelChip[hs]->Fill(chipNr,DeadPixelChip);
+	
+	Float_t NoisyPixelChip=(pixelNchip/(28*(rowEnd-rowStart+1)))*100;
+	fNoisyPixelChip[hs]->Fill(chipNr,NoisyPixelChip);
+      }
+    }
+    
+    Float_t TPeffHS=(pixel100hs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fTPeffHS->Fill(hs,TPeffHS);
+    
+    Float_t DeadPixelHS=(zerihs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fDeadPixelHS->Fill(hs,DeadPixelHS);
+    
+    Float_t NoisyPixelHS=(pixelNhs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fNoisyPixelHS->Fill(hs,NoisyPixelHS);
+  }
+  
+  fTPeff=(pixel100/(28*numChipsActive*(rowEnd-rowStart+1)))*100;
+  fDeadPixel=(zeri/(28*numChipsActive*(rowEnd-rowStart+1)))*100;
+  fNoisyPixel=(pixelN/(28*numChipsActive*(rowEnd-rowStart+1)))*100;
+
+  return kTRUE;
+}
+//_________________________________________________________________________
+void AliITSOnlineSPDscanAnalyzer::CreateUniformityHistograms() {
+  // create uniformity histograms to be filled by "ProcessUniformity" method
+  DeleteUniformityHistograms(); // make sure no old histograms are lying around...
+  UInt_t eq = GetRouterNr();
+  TString label;
+
+  label = Form("Ratio of 'Good' Pixels Per HS (eq %d)",eq);
+  fTPeffHS = new TH1F(label.Data(),label.Data(),6,-0.5,5.5);
+  fTPeffHS->SetXTitle("hs");
+  fTPeffHS->SetYTitle("ratio [%]");
+  fTPeffHS->SetFillColor(kBlue);
+  fTPeffHS->SetStats(0);
+
+  label = Form("Ratio of 'Dead' Pixels Per HS (eq %d)",eq);
+  fDeadPixelHS = new TH1F(label.Data(),label.Data(),6,-0.5,5.5);
+  fDeadPixelHS->SetXTitle("hs");
+  fDeadPixelHS->SetYTitle("ratio [%]");
+  fDeadPixelHS->SetFillColor(kBlue);
+  fDeadPixelHS->SetStats(0);
+
+  label = Form("Ratio of 'Noisy' Pixels Per HS (eq %d)",eq);
+  fNoisyPixelHS = new TH1F(label.Data(),label.Data(),6,-0.5,5.5);
+  fNoisyPixelHS->SetXTitle("hs");
+  fNoisyPixelHS->SetYTitle("ratio [%]");
+  fNoisyPixelHS->SetFillColor(kBlue);
+  fNoisyPixelHS->SetStats(0);
+
+  for (UInt_t hs=0; hs<6; hs++) {
+    label = Form("Ratio of 'Good' Pixels Per Chip (eq %d, hs %d)",eq,hs);
+    fTPeffChip[hs] = new TH1F(label.Data(),label.Data(),10,-0.5,9.5);
+    fTPeffChip[hs]->SetXTitle("chip");
+    fTPeffChip[hs]->SetYTitle("ratio [%]");
+    fTPeffChip[hs]->SetFillColor(kBlue);
+    fTPeffChip[hs]->SetStats(0);
+
+    label = Form("Ratio of 'Dead' Pixels Per Chip (eq %d, hs %d)",eq,hs);
+    fDeadPixelChip[hs] = new TH1F(label.Data(),label.Data(),10,-0.5,9.5);
+    fDeadPixelChip[hs]->SetXTitle("chip");
+    fDeadPixelChip[hs]->SetYTitle("ratio [%]");
+    fDeadPixelChip[hs]->SetFillColor(kBlue);
+    fDeadPixelChip[hs]->SetStats(0);
+
+    label = Form("Ratio of 'Noisy' Pixels Per Chip (eq %d, hs %d)",eq,hs);
+    fNoisyPixelChip[hs] = new TH1F(label.Data(),label.Data(),10,-0.5,9.5);
+    fNoisyPixelChip[hs]->SetXTitle("chip");
+    fNoisyPixelChip[hs]->SetYTitle("ratio [%]");
+    fNoisyPixelChip[hs]->SetFillColor(kBlue);
+    fNoisyPixelChip[hs]->SetStats(0);
+  }
+
+}
+//_________________________________________________________________________
+void AliITSOnlineSPDscanAnalyzer::DeleteUniformityHistograms() {
+  // remove uniformity histograms if they are created
+  if (fTPeffHS!=NULL) {
+    delete fTPeffHS;
+    fTPeffHS=NULL;
+  }
+  if (fDeadPixelHS!=NULL) {
+    delete fDeadPixelHS;
+    fDeadPixelHS=NULL;
+  }
+  if (fNoisyPixelHS!=NULL) {
+    delete fNoisyPixelHS;
+    fNoisyPixelHS=NULL;
+  }
+  for (UInt_t hs=0; hs<6; hs++) {
+    if (fTPeffChip[hs]!=NULL) {
+      delete fTPeffChip[hs];
+      fTPeffChip[hs]=NULL;
+    }
+    if (fDeadPixelChip[hs]!=NULL) {
+      delete fDeadPixelChip[hs];
+      fDeadPixelChip[hs]=NULL;
+    }
+    if (fNoisyPixelChip[hs]!=NULL) {
+      delete fNoisyPixelChip[hs];
+      fNoisyPixelChip[hs]=NULL;
+    }
+  }
+}
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(/*Char_t *oldcalibDir*/) {
   // process noisy pixel data
   if (fScanObj==NULL) {
@@ -344,7 +546,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(/*Char_t *oldcalibDir*/) 
   }
   return kTRUE;
 }
-
+//_________________________________________________________________________
 Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
   // get delay
   if (hs>=6 || chipNr>10) return -1;
@@ -383,8 +585,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
   }
 
 }
-
-
+//_________________________________________________________________________
 Int_t AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima(UInt_t hs, UInt_t chipNr) {
   // in case of a uniformity scan, returns the nr of noisy pixels, (here > 200 hits)
   if (hs>=6 || chipNr>10) return -1;
@@ -417,7 +618,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima(UInt_t hs, UInt_t chipNr) {
   }
   return nrNoisy;
 }
-
+//_________________________________________________________________________
 Int_t AliITSOnlineSPDscanAnalyzer::FindLastMinThDac(UInt_t hs, UInt_t chipNr) {
   // returns dac value where fMinIncreaseFromBaseLine reached
   if (hs>=6 || chipNr>10) return -1;
@@ -449,7 +650,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::FindClosestLowerStep(Float_t dacValueInput) {
   }
   return step;
 }
-
+//_________________________________________________________________________
 Float_t AliITSOnlineSPDscanAnalyzer::GetCompareLine(UInt_t step, UInt_t hs, UInt_t chipNr, Float_t basePar2) {
   // returns value to compare mean mult with (when finding min th)
   if (hs>=6 || chipNr>10) return -1;
@@ -544,9 +745,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
     return -1;
   }
 }
-
-
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessMeanMultiplicity() {
   // process mean multiplicity data
   if (fScanObj==NULL) {
@@ -576,7 +775,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessMeanMultiplicity() {
   }
   return kTRUE;
 }
-
+//_________________________________________________________________________
 TGraph* AliITSOnlineSPDscanAnalyzer::GetMeanMultiplicityG(UInt_t hs, UInt_t chipNr) {
   // returns mean multiplicity graph
   if (hs>=6 || chipNr>10) return NULL;
@@ -587,7 +786,7 @@ TGraph* AliITSOnlineSPDscanAnalyzer::GetMeanMultiplicityG(UInt_t hs, UInt_t chip
   }
   return fMeanMultiplicity[hs][chipNr];
 }
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessHitEventEfficiency() {
   // process hit event efficiency
   if (fScanObj==NULL) {
@@ -617,7 +816,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessHitEventEfficiency() {
   }
   return kTRUE;
 }
-
+//_________________________________________________________________________
 TGraph* AliITSOnlineSPDscanAnalyzer::GetHitEventEfficiencyG(UInt_t hs, UInt_t chipNr) {
   // returns hit event efficiency graph
   if (hs>=6 || chipNr>10) return NULL;
@@ -628,8 +827,7 @@ TGraph* AliITSOnlineSPDscanAnalyzer::GetHitEventEfficiencyG(UInt_t hs, UInt_t ch
   }
   return fHitEventEfficiency[hs][chipNr];
 }
-
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNrTriggers() {
   // process nr of triggers data
   if (fScanObj==NULL) {
@@ -652,7 +850,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNrTriggers() {
   }
   return kTRUE;
 }
-
+//_________________________________________________________________________
 TGraph* AliITSOnlineSPDscanAnalyzer::GetNrTriggersG() {
   // returns nr of triggers graph
   if (fTriggers==NULL) {
@@ -662,7 +860,7 @@ TGraph* AliITSOnlineSPDscanAnalyzer::GetNrTriggersG() {
   }
   return fTriggers;
 }
-
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::GetHalfStavePresent(UInt_t hs) {
   // returns half stave present info
   if (hs<6 && fScanObj!=NULL) {
@@ -674,13 +872,13 @@ Bool_t AliITSOnlineSPDscanAnalyzer::GetHalfStavePresent(UInt_t hs) {
   }
   return kFALSE;
 }
-
+//_________________________________________________________________________
 UInt_t AliITSOnlineSPDscanAnalyzer::GetRouterNr() {
   // returns the router nr of scan obj
   if (fScanObj!=NULL) return fScanObj->GetRouterNr(); 
   else return 99;
 }
-
+//_________________________________________________________________________
 TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
   // creates and returns a pointer to a hitmap histo (half sector style a la spdmood)
   if (fScanObj==NULL) {
@@ -712,7 +910,7 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
   }
   return fHitMapTot;
 }
-
+//_________________________________________________________________________
 TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip) {
   // creates and returns a pointer to a hitmap histo (chip style a la spdmood)
   if (fScanObj==NULL) {
@@ -735,3 +933,4 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t 
 
   return returnHisto;
 }
+

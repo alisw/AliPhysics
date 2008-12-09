@@ -69,7 +69,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 
     Bool_t GetHalfStavePresent(UInt_t hs);
 
-    // use the methods below to extract the information from the calibration header
+    Int_t  GetHword(UInt_t index);
+    // use the methods below to extract the information from the scan calibration header:
     UInt_t GetHrouterNr() const {return (fCalHeadWord[0] & 0x0000003f);}
     Bool_t GetHhalfStaveScanned(UInt_t hs) const;
     UInt_t GetHtype() const {return (Int_t)((fCalHeadWord[1]) & 0x000000ff);}
@@ -88,15 +89,27 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetHdacLow(UInt_t hs) const;
     UInt_t GetHTPAmp(UInt_t hs) const;
     Bool_t GetHminTHchipPresent(UInt_t chip) const;
+    // use the methods below to extract the information from the fo calibration header:
+    UInt_t GetFOHrouterNr() const {return GetHrouterNr();}
+    UInt_t GetFOHtype() const {return GetHtype();}
+    UInt_t GetFOHtriggers() const {return GetHtriggers();}
+    Bool_t GetFOHchipPresent(UInt_t hs, UInt_t chip) const {return GetHchipPresent(hs,chip);}
+    UInt_t GetFOHglobalDBversion() const {return fCalHeadWord[5];}
+    UInt_t GetFOHpixelCol() const {return fCalHeadWord[6] & 0x0000ffff;}
+    UInt_t GetFOHpixelRow() const {return (fCalHeadWord[6] >> 16) & 0x0000ffff;}
+    UInt_t GetFOHnumDacs() const;
+    UInt_t GetFOHdacIndex(UInt_t index) const;
+    UInt_t GetFOHdacValue(UInt_t index) const;
+    UInt_t GetFOHchipCount(UInt_t hs, UInt_t chip) const;
+
     void   ActivateAdvancedErrorLog(Bool_t activate, AliITSRawStreamSPDErrorLog* advLogger = NULL);
     AliITSRawStreamSPDErrorLog* GetAdvancedErrorLog() {return fAdvLogger;}
 
     static const Char_t* GetErrorName(UInt_t errorCode);
 
-
     enum {kDDLsNumber = 20};      // number of DDLs in SPD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL
-    enum {kCalHeadLenMax = 16};   // maximum number of calib header words
+    enum {kCalHeadLenMax = 64};   // maximum number of calib header words
     enum ESPDRawStreamError {
       kTotal,
       kHeaderMissingErr,
@@ -115,7 +128,10 @@ class AliITSRawStreamSPD: public AliITSRawStream {
       kCalHeaderLengthErr,
       kAdvEventCounterErr,     // used by SPDmood
       kAdvEventCounterOrderErr,// used by SPDmood
-      kTrailerErrorBitErr
+      kTrailerErrorBitErr,
+      kLinkRxDetectorFatalErr,
+      kTSMtriggerErr,
+      kBCdiffErr
     };
 
   private :
@@ -134,7 +150,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t      fCol;                         // chip column nr
     UInt_t      fRow;                         // chip row nr
     UInt_t      fCalHeadWord[kCalHeadLenMax]; // calibration header words
-		
+    UInt_t      fCalHeadLen;                  // calibration header length
+
     UShort_t    fData;            // 16 bit data word read
     UInt_t      fOffset;          // offset for cell column
     UInt_t      fHitCount;        // counter of hits
@@ -165,3 +182,4 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 };
 
 #endif
+

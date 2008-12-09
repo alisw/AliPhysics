@@ -318,7 +318,6 @@ void AliITSRawStreamSPDErrorLog::ProcessEvent(UInt_t eventNum) {
 //________________________________________________________________________________________________
 void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
   // summarize the information for the current event 
-  //  (could be replaced by calls to 'StartEvent' and 'EndEvent')
   ProcessEvent(eventNum);
   ResetEvent();
 }
@@ -484,3 +483,4 @@ UInt_t AliITSRawStreamSPDErrorLog::GetEventErrPos(UInt_t index, UInt_t errorCode
   }
 
 }
+

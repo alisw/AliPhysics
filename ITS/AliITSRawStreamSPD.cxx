@@ -52,7 +52,7 @@ const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 //__________________________________________________________________________
 AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
-  fEventCounter(-1),fChipAddr(0),fHalfStaveNr(0),fCol(0),fRow(0),
+  fEventCounter(-1),fChipAddr(0),fHalfStaveNr(0),fCol(0),fRow(0),fCalHeadLen(0),
   fData(0),fOffset(0),fHitCount(0),
   fDataChar1(0),fDataChar2(0),fDataChar3(0),fDataChar4(0),
   fFirstWord(kTRUE),fPrevEventId(0xffffffff),
@@ -83,7 +83,7 @@ AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
 //__________________________________________________________________________
 AliITSRawStreamSPD::AliITSRawStreamSPD(const AliITSRawStreamSPD& rstream) :
   AliITSRawStream(rstream.fRawReader),
-  fEventCounter(-1),fChipAddr(0),fHalfStaveNr(0),fCol(0),fRow(0),
+  fEventCounter(-1),fChipAddr(0),fHalfStaveNr(0),fCol(0),fRow(0),fCalHeadLen(0),
   fData(0),fOffset(0),fHitCount(0),
   fDataChar1(0),fDataChar2(0),fDataChar3(0),fDataChar4(0),
   fFirstWord(kTRUE),fPrevEventId(0xffffffff),
@@ -184,6 +184,27 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   fHeaderOrTrailerReadLast = kFALSE;
   fFillOutOfSynch = kFALSE;
 
+  // check router error bits:
+  UInt_t statusBits = fRawReader->GetStatusBits();
+  if ((statusBits >> 5) & 1) { // linkrx/detector fatal error bit
+    TString errMess = "LinkRx Error Bit Set";
+    AliError(errMess.Data());
+    fRawReader->AddMajorErrorLog(kLinkRxDetectorFatalErr,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kLinkRxDetectorFatalErr,ddlID,-1,-1,errMess.Data());
+  }
+  if ((statusBits >> 12) & 1) { // trigger sequence monitor error bit
+    TString errMess = "TSM Trigger Error Bit Set";
+    AliError(errMess.Data());
+    fRawReader->AddMajorErrorLog(kTSMtriggerErr,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTSMtriggerErr,ddlID,-1,-1,errMess.Data());
+  }
+  if (fRawReader->TestBlockAttribute(7)) { // bunch crossing difference error bit
+    TString errMess = "BC Difference Error Bit Set";
+    AliError(errMess.Data());
+    fRawReader->AddMajorErrorLog(kBCdiffErr,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kBCdiffErr,ddlID,-1,-1,errMess.Data());
+  }
+
   // set eq active and the participating half-staves (for access from outside this class), 
   // set what number of chip headers/trailers to expect (for the moment not used)
   fActiveEq[ddlID]=kTRUE;
@@ -202,16 +223,16 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   if (fRawReader->TestBlockAttribute(6)) { // is the calib header present?
     if (ReadNextInt()) {
       // length of cal header:
-      UInt_t calLen = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
-      if (calLen>kCalHeadLenMax) {
-	TString errMess = Form("Header length %d > max = %d",calLen,kCalHeadLenMax);
+      fCalHeadLen = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
+      if (fCalHeadLen>kCalHeadLenMax) {
+	TString errMess = Form("Header length %d > max = %d",fCalHeadLen,kCalHeadLenMax);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kCalHeaderLengthErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kCalHeaderLengthErr,ddlID,-1,-1,errMess.Data());
 	return -1;
       }
       else {
-	for (UInt_t iword=0; iword<calLen; iword++) {
+	for (UInt_t iword=0; iword<fCalHeadLen; iword++) {
 	  if (ReadNextInt()) {
 	    fCalHeadWord[iword] = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
 	  }
@@ -223,7 +244,7 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
 	    return -1;
 	  }
 	}
-	return calLen;
+	return fCalHeadLen;
       }
     }
   }
@@ -438,6 +459,9 @@ const Char_t* AliITSRawStreamSPD::GetErrorName(UInt_t errorCode) {
   else if (errorCode==kAdvEventCounterErr)      return "Event Counter Error (Adv)";
   else if (errorCode==kAdvEventCounterOrderErr) return "Event Counter Jump Error (Adv)";
   else if (errorCode==kTrailerErrorBitErr)      return "Trailer Error Bit Set";
+  else if (errorCode==kLinkRxDetectorFatalErr)  return "LinkRx/Detector Fatal Error Bit Set";
+  else if (errorCode==kTSMtriggerErr)           return "TSM Trigger Error Bit Set";
+  else if (errorCode==kBCdiffErr)               return "BC Difference Error Bit Set";
   else return "";
 }
 //__________________________________________________________________________
@@ -582,6 +606,10 @@ Short_t AliITSRawStreamSPD::GetEventCounterFullChip(UInt_t eq, UInt_t hs, UInt_t
   return -1;
 }
 //__________________________________________________________________________
+Int_t AliITSRawStreamSPD::GetHword(UInt_t index) {
+  if (index<kCalHeadLenMax) return fCalHeadWord[index];
+  else return 0;
+}
 Bool_t AliITSRawStreamSPD::GetHhalfStaveScanned(UInt_t hs) const {
   if (hs<6) return (Bool_t)((fCalHeadWord[0]>>(6+hs)) & (0x00000001));
   else return kFALSE;
@@ -605,6 +633,36 @@ UInt_t AliITSRawStreamSPD::GetHTPAmp(UInt_t hs) const {
 Bool_t AliITSRawStreamSPD::GetHminTHchipPresent(UInt_t chip) const {
   if (chip<10) return ((( fCalHeadWord[7]>>(16+chip)) & 0x00000001) == 1);
   else return kFALSE;
+}
+UInt_t AliITSRawStreamSPD::GetFOHnumDacs() const {
+  return (fCalHeadLen-37)/2;
+}
+UInt_t AliITSRawStreamSPD::GetFOHdacIndex(UInt_t index) const {
+  if (index>=GetFOHnumDacs()) {
+    TString errMess = Form("Only %d DACs in this run, returning 0",GetFOHnumDacs());
+    AliError(errMess.Data());
+    return 0;
+  }
+  return fCalHeadWord[7+index*2];
+}
+UInt_t AliITSRawStreamSPD::GetFOHdacValue(UInt_t index) const {
+  if (index>=GetFOHnumDacs()) {
+    TString errMess = Form("Only %d DACs in this run, returning 0",GetFOHnumDacs());
+    AliError(errMess.Data());
+    return 0;
+  }
+  return fCalHeadWord[7+1+index*2];
+}
+UInt_t AliITSRawStreamSPD::GetFOHchipCount(UInt_t hs, UInt_t chip) const {
+  if (hs<6 && chip<10) {
+    if (chip%2==0) {
+      return ((fCalHeadWord[7 + GetFOHnumDacs()*2 + (hs*10 + chip)/2] >> 16) & 0x0000ffff);
+    }
+    else {
+      return (fCalHeadWord[7 + GetFOHnumDacs()*2 + (hs*10 + chip)/2] & 0x0000ffff);
+    }
+  }
+  else return 0;
 }
 //__________________________________________________________________________
 Int_t AliITSRawStreamSPD::GetModuleNumber(UInt_t iDDL, UInt_t iModule) {
@@ -744,3 +802,4 @@ UInt_t AliITSRawStreamSPD::GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_
   if (eqId>=20 || hs>=6 || chip>=10 || row>=256) return 256; // error
   return 255-row;
 }
+

@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <TString.h>
+#include <TH1F.h>
 
 class AliITSOnlineSPDscan;
 class AliITSOnlineCalibrationSPDhandler;
@@ -43,6 +44,7 @@ class AliITSOnlineSPDscanAnalyzer {
   
   Int_t      GetNrNoisyUnima(UInt_t hs, UInt_t chipNr);
 
+  Bool_t     ProcessUniformity();
   Bool_t     ProcessDeadPixels();
   Bool_t     ProcessNoisyPixels();
 
@@ -58,6 +60,15 @@ class AliITSOnlineSPDscanAnalyzer {
   TH2F*      GetHitMapTot(UInt_t step);
   TH2F*      GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip);
 
+  Float_t    GetTPeff() {return fTPeff;}
+  TH1F*      GetTPeffHS() {return fTPeffHS;}
+  TH1F*      GetTPeffChip(UInt_t hs) {return fTPeffChip[hs];}
+  Float_t    GetDeadPixel() {return fDeadPixel;}
+  TH1F*      GetDeadPixelHS() {return fDeadPixelHS;}
+  TH1F*      GetDeadPixelChip(UInt_t hs) {return fDeadPixelChip[hs];}
+  Float_t    GetNoisyPixel() {return fNoisyPixel;}
+  TH1F*      GetNoisyPixelHS() {return fNoisyPixelHS;}
+  TH1F*      GetNoisyPixelChip(UInt_t hs) {return fNoisyPixelChip[hs];}
 
  private:
   UInt_t               fType;           // calib type
@@ -73,7 +84,21 @@ class AliITSOnlineSPDscanAnalyzer {
   TGraph*    fHitEventEfficiency[6][11]; // hit event graphs
   TGraph*    fTriggers;                  // trigger graph
 
+  // uniformity scan analysis:
+  Float_t    fTPeff;                     // number of good pixels [%] (for full router)
+  TH1F*      fTPeffHS;                   // 6 bin histogram, number good pixels [%] (for each hs)
+  TH1F*      fTPeffChip[6];              // 10 bin histograms, number good pixels [%] (for each chip)
+  Float_t    fDeadPixel;                 // number of dead pixels [%] (for full router)
+  TH1F*      fDeadPixelHS;               // 6 bin histogram, number dead pixels [%] (for each hs)
+  TH1F*      fDeadPixelChip[6];          // 10 bin histograms, number dead pixels [%] (for each chip)
+  Float_t    fNoisyPixel;                // number of 'noisy' pixels [%] (for full router)
+  TH1F*      fNoisyPixelHS;              // 6 bin histogram, number 'noisy' pixels [%] (for each hs)
+  TH1F*      fNoisyPixelChip[6];         // 10 bin histograms, number 'noisy' pixels [%] (for each chip)
+  
   void       Init(Bool_t readFromGridFile=kFALSE);                     // init
+
+  void       CreateUniformityHistograms(); // method to create all histograms to be filled by 'ProcessUniformity'
+  void       DeleteUniformityHistograms(); // method to delete all histograms used by uniformity scan analysis
 
   Bool_t     ProcessMeanMultiplicity();  // process mean mult
   Bool_t     ProcessHitEventEfficiency();// process hit event eff
@@ -92,6 +117,8 @@ class AliITSOnlineSPDscanAnalyzer {
   Float_t    fMinIncreaseFromBaseLine;  // min increase of mean mult from base line
   UInt_t     fStepDownDacSafe;          // nr of steps down to put threshold result (to be on the safe side)
   Float_t    fMaxBaseLineLevel;         // maximum value for the base line to compare with
+
+
 
 };
 
