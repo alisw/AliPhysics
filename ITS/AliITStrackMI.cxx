@@ -140,54 +140,6 @@ Double_t AliITStrackMI::GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t ce
 }
 
 //____________________________________________________________________________
-Int_t AliITStrackMI::CorrectForMaterial(Double_t d, Double_t x0) {
-  //------------------------------------------------------------------
-  //This function corrects the track parameters for crossed material
-  //------------------------------------------------------------------
-  //d=x0=0.;
-
-  Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
-  Double_t et   = p2 + GetMass()*GetMass();
-  Double_t beta2=p2/et;
-  et = sqrt(et);  
-  d*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
-
-  //Multiple scattering******************
-  if (d!=0) {
-     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
-     Cov(5) += theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
-     Cov(9) += theta2*(1. + GetTgl()*GetTgl())*(1. + GetTgl()*GetTgl());
-     Cov(13)+= theta2*GetTgl()*GetSigned1Pt()*(1. + GetTgl()*GetTgl());
-     Cov(14)+= theta2*GetTgl()*GetSigned1Pt()*GetTgl()*GetSigned1Pt();
-  }
-
-  //Energy losses************************
-  if (x0!=0.) {
-     d*=x0;
-     //     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
-     //Double_t dE=0; 
-     Double_t dE = 0.265*0.153e-3*(39.2-55.6*beta2+28.7*beta2*beta2+27.41/beta2)*d;
-     //if (beta2/(1-beta2)>3.5*3.5){
-     //  dE=0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2)*d;
-     //}
-     //else{
-     //  dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
-     //  dE+=0.06e-3/(beta2*beta2)*d;
-     //}
-
-     Par(4)*=(1.- et/p2*dE);
-     Double_t delta44 = (dE*GetSigned1Pt()*et/p2);
-     delta44*=delta44;
-     Cov(14)+= delta44/400.;
-  }
-
-  if (!Invariant()) return 0;
-
-  return 1;
-}
-
-//____________________________________________________________________________
 Bool_t AliITStrackMI::UpdateMI(const AliCluster *c, Double_t chi2, Int_t index) {
   //------------------------------------------------------------------
   //This function updates track parameters
