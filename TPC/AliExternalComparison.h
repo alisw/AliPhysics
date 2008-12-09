@@ -18,6 +18,9 @@ class AliExternalComparison:public TNamed {
 public:
   AliExternalComparison(); 
   AliExternalComparison(const Text_t *name, const Text_t *title);
+  AliExternalComparison(const AliExternalComparison&);
+  AliExternalComparison& operator=(const AliExternalComparison&);
+  //
   virtual ~AliExternalComparison();
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Add(AliExternalComparison*comp);
@@ -48,8 +51,6 @@ public:
   TMatrixD  * fRangeMatrix;             // range matrix
   TMatrixD  * fCutMatrix;               // cut matrix
   //
-  AliExternalComparison(const AliExternalComparison&); 
-  AliExternalComparison& operator=(const AliExternalComparison&); 
 
   ClassDef(AliExternalComparison, 1); 
 };
