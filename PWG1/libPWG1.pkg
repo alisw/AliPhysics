@@ -17,7 +17,8 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliComparisonEff.cxx \
 	AliComparisonDEdx.cxx \
 	AliComparisonDCA.cxx \
-	AliComparisonObject.cxx
+	AliComparisonObject.cxx \
+	AliGenInfoTask.cxx
 
  
 HDRS:= $(SRCS:.cxx=.h)

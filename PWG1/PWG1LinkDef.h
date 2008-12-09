@@ -28,5 +28,7 @@
 #pragma link C++ class AliComparisonDCA+;
 #pragma link C++ class AliComparisonObject+;
 
+#pragma link C++ class AliGenInfoTask+;
+
 
 #endif
