@@ -61,6 +61,31 @@ AliExternalComparison::AliExternalComparison(const Text_t *name, const Text_t *t
   //
 }
 
+AliExternalComparison::AliExternalComparison(const AliExternalComparison& comp)
+  :TNamed(comp.fName,comp.fTitle),
+   fResolHistos(new TObjArray(*(comp.fResolHistos))),
+   fPullHistos(new TObjArray(*(comp.fPullHistos))),
+   fRangeMatrix(new TMatrixD(*(comp.fRangeMatrix))),
+   fCutMatrix(new TMatrixD(*(comp.fCutMatrix)))
+{
+  //
+  // copy constructor
+  //
+}
+
+AliExternalComparison& AliExternalComparison::operator=(const AliExternalComparison&comp)
+{
+  //
+  //
+  //
+  SetName(comp.GetName());
+  SetTitle(comp.GetTitle());
+  fResolHistos=new TObjArray(*(comp.fResolHistos));
+  fPullHistos=new TObjArray(*(comp.fPullHistos));
+  fRangeMatrix=new TMatrixD(*(comp.fRangeMatrix));
+  fCutMatrix=new TMatrixD(*(comp.fCutMatrix));
+  return *this;
+}
 
 
 AliExternalComparison::~AliExternalComparison(){
@@ -72,6 +97,7 @@ AliExternalComparison::~AliExternalComparison(){
   delete fResolHistos;             // resolution histogram
   delete fPullHistos;              // pull       histogram
   delete fRangeMatrix;            // range matrix
+  delete fCutMatrix;            // range matrix
 }
  
 
@@ -122,14 +148,10 @@ void   AliExternalComparison::Process(const AliExternalTrackParam *param0, const
   // Process- fill histogram with residuals
   //    Tracks has to be in the same local X 
   //    
-  const Double_t kDeltaX=0.2;
-  const Double_t kDeltaA=0.01;
   if (!AcceptPair(param0,param1)) return;
   //
   if (!fResolHistos) MakeHistos(); 
   //
-  //if (TMath::Abs(param0->GetX()-param1->GetX())>kDeltaX) return;
-  //if (TMath::Abs(param0->GetAlpha()-param1->GetAlpha())>kDeltaA) return;
   //
   const Double_t *p0 = param0->GetParameter();
   const Double_t *p1 = param1->GetParameter();
@@ -272,7 +294,7 @@ void  AliExternalComparison::SetDefaultRange(Float_t scale,Float_t arm, Int_t nb
   mat(4,0)=-3;     mat(4,1)=3;    mat(4,2)=50;   // sqrt(P4) -sqrt(1/pt) range  
   //
   mat(5,0)= 0;     mat(5,1)=250;  mat(5,2)=50;   // R  range  
-  mat(6,0)= TMath::Pi();   mat(6,1)=TMath::Pi();    mat(6,2)=18*4;   // fi range  
+  mat(6,0)= -TMath::Pi();   mat(6,1)=TMath::Pi();    mat(6,2)=18*4;   // fi range  
   //
   // Resolution
   //
