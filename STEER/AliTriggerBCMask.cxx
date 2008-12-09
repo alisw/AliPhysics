@@ -147,7 +147,8 @@ Bool_t AliTriggerBCMask::CreateMask(TString &mask)
   delete tokens;
 
   if (ibit != kNBits) {
-    AliWarning(Form("Incomplete bunch-crossing mask. Only the first %d bits are filled.",ibit));
+    AliError(Form("Incomplete bunch-crossing mask. Only the first %d bits are filled.",ibit));
+    return kFALSE;
   }
 
   bits.Get(fBCMask);
