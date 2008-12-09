@@ -423,16 +423,16 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
          Float_t qmean = GetQ(bin);
          char hname[200];
          sprintf(hname,"ResolY Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, -1,1);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, -1,1);
          fArrayQDY->AddAt(his3D, bin);
          sprintf(hname,"ResolZ Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, -1,1);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, -1,1);
          fArrayQDZ->AddAt(his3D, bin);
          sprintf(hname,"RMSY Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, 0,1);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, 0,0.6);
          fArrayQRMSY->AddAt(his3D, bin);
          sprintf(hname,"RMSZ Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, 0,1);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 100, 0,0.6);
          fArrayQRMSZ->AddAt(his3D, bin);
       }
    }
@@ -2191,7 +2191,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    AliTPCcalibTracks *calibTracks = 0;
    if (GetDebugLevel() > 1) cout << "start to iterate, filling lists" << endl;    
    Int_t counter = 0;
-   while ( (calibTracks = (AliTPCcalibTracks*)listIterator->Next()) ){
+   while ( (calibTracks = dynamic_cast<AliTPCcalibTracks*> (listIterator->Next())) ){
       // loop over all entries in the collectionList and get dataMembers into lists
       if (!calibTracks) continue;
       
@@ -2214,8 +2214,10 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       clusterCutHistoList->Add(calibTracks->GetfClusterCutHisto());
       hclusterPerPadrowList->Add(calibTracks->GetfHclusterPerPadrow());
       hclusterPerPadrowRawList->Add(calibTracks->GetfHclusterPerPadrowRaw());
-      fCalPadClusterPerPad->Add(calibTracks->GetfCalPadClusterPerPad());
-      fCalPadClusterPerPadRaw->Add(calibTracks->GetfCalPadClusterPerPadRaw());
+      //
+      if (fCalPadClusterPerPad && calibTracks->GetfCalPadClusterPerPad())
+	fCalPadClusterPerPad->Add(calibTracks->GetfCalPadClusterPerPad());      
+      //      fCalPadClusterPerPadRaw->Add(calibTracks->GetfCalPadClusterPerPadRaw());
       counter++;
       if (GetDebugLevel() > 5) cout << "filling lists, object " << counter << " added." << endl;
    }
