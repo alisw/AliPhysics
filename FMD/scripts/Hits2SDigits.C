@@ -1,6 +1,9 @@
 void
 Hits2SDigits()
 {
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetRun(0);
+  
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root", "Alice", "read");
   if (!runLoader) {
     AliError("Coulnd't read the file galice.root");
@@ -29,8 +32,7 @@ Hits2SDigits()
   }
   TTree* treeE = runLoader->TreeE();
   
-  AliCDBManager::Instance()->SetRun(0);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  
+  AliLog::SetModuleDebugLevel("FMD", 1);
+
   fmd->Hits2SDigits();
 }

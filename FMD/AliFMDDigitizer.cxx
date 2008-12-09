@@ -365,7 +365,7 @@ AliFMDDigitizer::Exec(Option_t*)
   
   // Fill the tree
   Int_t write = outTree->Fill();
-  AliFMDDebug(1, ("Wrote %d bytes to digit tree", write));
+  AliFMDDebug(5, ("Wrote %d bytes to digit tree", write));
   
   // Store the digits
   StoreDigits(outFMD);
@@ -377,7 +377,7 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 {
   // Sum energy deposited contributions from each sdigits in a cache
   // (fEdep).  
-  AliFMDDebug(1, ("Runnin our version of SumContributions"));
+  AliFMDDebug(3, ("Runnin our version of SumContributions"));
 
   // Get a list of hits from the FMD manager 
   TClonesArray *fmdSDigits = fFMD->SDigits();
@@ -393,7 +393,7 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
     
     // Get the number of sdigits 
     Int_t nsdigits = fmdSDigits->GetEntries ();
-    AliFMDDebug(1, ("Got %5d SDigits", nsdigits));
+    AliFMDDebug(3, ("Got %5d SDigits", nsdigits));
     for (Int_t sdigit = 0; sdigit < nsdigits; sdigit++) {
       // Get the sdigit number `sdigit'
       AliFMDSDigit* fmdSDigit = 
@@ -404,7 +404,8 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 		      fmdSDigit->Ring(),
 		      fmdSDigit->Sector(),
 		      fmdSDigit->Strip(),
-		      fmdSDigit->Edep());
+		      fmdSDigit->Edep(), 
+		      kTRUE);
     }  // sdigit loop
   } // event loop
 

@@ -15,6 +15,9 @@ PatternSDigits()
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
   AliFMDParameters::Instance()->Init();
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libFMDanalysis.so");
   gSystem->Load("libFMDutil.so");
   AliFMDPattern* d = new AliFMDPattern;
   d->SetName("sdigit");

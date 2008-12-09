@@ -32,21 +32,30 @@
 class AliFMDEdepHitPair 
 {
 public:
-  Float_t  fEdep; // summed energy deposition
-  UShort_t fN;    // Number of hits
+  Float_t  fEdep;  // summed energy deposition
+  UShort_t fN;     // Number of hits
+  UShort_t fNPrim; // Number of primaries;
+  
   /** CTOR  */
-  AliFMDEdepHitPair() : fEdep(0), fN(0) {}
+  AliFMDEdepHitPair() : fEdep(0), fN(0), fNPrim(0) {}
   /** DTOR */
   virtual ~AliFMDEdepHitPair() {}
   /** Assignment operator 
       @param o Object to assign from 
       @return Reference to this object */
   AliFMDEdepHitPair& operator=(const AliFMDEdepHitPair& o) 
-  { fEdep = o.fEdep; fN    = o.fN; return *this; }
+  { 
+    fEdep  = o.fEdep; 
+    fN     = o.fN; 
+    fNPrim = o.fNPrim;
+    return *this; 
+  }
   /** Copy CTOR 
       @param o Object to copy from */
-  AliFMDEdepHitPair(const AliFMDEdepHitPair& o) : fEdep(o.fEdep), fN(o.fN) {}
-  ClassDef(AliFMDEdepHitPair, 1)
+  AliFMDEdepHitPair(const AliFMDEdepHitPair& o) 
+    : fEdep(o.fEdep), fN(o.fN), fNPrim(o.fNPrim)
+  {}
+  ClassDef(AliFMDEdepHitPair, 2)
 };
 
 #endif 

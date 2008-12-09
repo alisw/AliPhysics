@@ -956,15 +956,18 @@ AliFMD::AddSDigit(Int_t* digits)
   //    digits[6]  [Short_t]  ADC Count, -1 if not used
   //    digits[7]  [Short_t]  ADC Count, -1 if not used 
   // 
-  AddSDigitByFields(UShort_t(digits[0]),  // Detector #
-		    Char_t(digits[1]),    // Ring ID
-		    UShort_t(digits[2]),  // Sector #
-		    UShort_t(digits[3]),  // Strip #
-		    Float_t(digits[4]),   // Edep
-		    UShort_t(digits[5]),  // ADC Count1 
-		    Short_t(digits[6]),   // ADC Count2 
-		    Short_t(digits[7]),   // ADC Count3 
-		    Short_t(digits[8]));
+  AddSDigitByFields(UShort_t(digits[0]),   // Detector #
+		    Char_t(digits[1]),     // Ring ID
+		    UShort_t(digits[2]),   // Sector #
+		    UShort_t(digits[3]),   // Strip #
+		    Float_t(digits[4]),    // Edep
+		    UShort_t(digits[5]),   // ADC Count1 
+		    Short_t(digits[6]),    // ADC Count2 
+		    Short_t(digits[7]),    // ADC Count3 
+		    Short_t(digits[8]),    // ADC Count4
+		    UShort_t(digits[9]),   // N particles
+		    UShort_t(digits[10])); // N primaries
+   
 }
 
 //____________________________________________________________________
@@ -977,7 +980,9 @@ AliFMD::AddSDigitByFields(UShort_t detector,
 			  UShort_t count1, 
 			  Short_t  count2,
 			  Short_t  count3, 
-			  Short_t  count4)
+			  Short_t  count4, 
+			  UShort_t ntot, 
+			  UShort_t nprim)
 {
   // add a summable digit
   // 
@@ -997,7 +1002,7 @@ AliFMD::AddSDigitByFields(UShort_t detector,
   
   new (a[fNsdigits++]) 
     AliFMDSDigit(detector, ring, sector, strip, edep, 
-		 count1, count2, count3, count4);
+		 count1, count2, count3, count4, ntot, nprim);
 }
 
 //____________________________________________________________________

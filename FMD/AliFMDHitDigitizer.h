@@ -30,6 +30,7 @@ class AliFMD;
 class AliLoader;
 class AliRunLoader;
 class AliFMDDigit;
+class AliStack;
 
 
 
@@ -50,7 +51,8 @@ public:
   /** CTOR */
   AliFMDHitDigitizer() 
     : AliFMDBaseDigitizer(), 
-      fOutput(kDigits) 
+      fOutput(kDigits), 
+      fStack(0)
   {}
   /** CTOR 
       @param name Name */
@@ -64,7 +66,8 @@ protected:
       @param o Object to copy from */
   AliFMDHitDigitizer(const AliFMDHitDigitizer& o) 
     : AliFMDBaseDigitizer(o),
-      fOutput(o.fOutput)
+      fOutput(o.fOutput), 
+      fStack(o.fStack)
   {}
   /** Assignment operator
       @param o Object to assign from 
@@ -111,7 +114,9 @@ protected:
 		UShort_t  count1, 
 		Short_t   count2, 
 		Short_t   count3,
-		Short_t   count4) const;
+		Short_t   count4, 
+		UShort_t  ntot, 
+		UShort_t  nprim) const;
   /** Check that digit data is consistent
       @param digit   Digit
       @param nhits   Number of hits
@@ -125,6 +130,7 @@ protected:
   
 
   Output_t      fOutput;           // Output mode
+  AliStack*     fStack;            // Kinematics
 
   ClassDef(AliFMDHitDigitizer,1) // Make Digits from Hits
 };

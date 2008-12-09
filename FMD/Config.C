@@ -184,8 +184,8 @@ Config()
   // EG_t  eg   = kParam_fmd;
   // EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
   // EG_t  eg   = kFMDFlat;
-  // EG_t  eg   = kPythia6;
-  EG_t  eg   = kFMD2Flat;
+  EG_t  eg   = kPythia6;
+  // EG_t  eg   = kFMD2Flat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
@@ -345,7 +345,7 @@ Config()
   gMC->SetProcess("MUNU",1);
   gMC->SetProcess("CKOV",1);
   gMC->SetProcess("HADR",1);
-  gMC->SetProcess("LOSS",2); // 0:none 1,3:dray 2:nodray 4:nofluct (def:2)
+  gMC->SetProcess("LOSS",1); // 0:none 1,3:dray 2:nodray 4:nofluct (def:2)
   gMC->SetProcess("MULS",1);
   gMC->SetProcess("RAYL",1);
 
@@ -419,12 +419,12 @@ Config()
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
   Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kTRUE;
+  Bool_t useITS   = kFALSE;
   Bool_t useMAG   = kFALSE; 
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
   Bool_t usePIPE  = kTRUE; 
-  Bool_t usePMD   = kTRUE; 
+  Bool_t usePMD   = kFALSE; 
   Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
   Bool_t useT0    = kFALSE; 
@@ -433,7 +433,7 @@ Config()
   Bool_t useTRD   = kFALSE; 
   Bool_t useZDC   = kFALSE; 
   Bool_t useEMCAL = kFALSE; 
-  Bool_t useVZERO = kTRUE;
+  Bool_t useVZERO = kFALSE;
 
   cout << "\t* Creating the detectors ..." << endl;
   // ================= Alice BODY parameters =========================

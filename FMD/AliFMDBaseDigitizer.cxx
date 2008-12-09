@@ -309,7 +309,8 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 				     Char_t   ring, 
 				     UShort_t sector, 
 				     UShort_t strip, 
-				     Float_t  edep)
+				     Float_t  edep, 
+				     Bool_t   isPrimary)
 {
   // Add edep contribution from (detector,ring,sector,strip) to cache
   AliFMDParameters* param = AliFMDParameters::Instance();
@@ -333,8 +334,14 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 		    detector, ring, sector, strip));
       
   // Sum energy deposition
-  fEdep(detector, ring, sector, strip).fEdep  += edep;
-  fEdep(detector, ring, sector, strip).fN     += 1;
+  fEdep(detector, ring, sector, strip).fEdep    += edep;
+  fEdep(detector, ring, sector, strip).fN       += 1;
+  if (isPrimary)
+    fEdep(detector, ring, sector, strip).fNPrim += 1;
+  AliFMDDebug(15, ("Adding contribution %f to FMD%d%c[%2d,%3d] (%f)", 
+		  edep, detector, ring, sector, strip,
+		  fEdep(detector, ring, sector, strip).fEdep));
+  
 }
 
 //____________________________________________________________________
@@ -378,10 +385,16 @@ AliFMDBaseDigitizer::DigitizeHits() const
 	  // VA1_ALICE channel. 
 	  if (strip % 128 == 0) last = 0;
 	  
-	  Float_t edep = fEdep(detector, ring, sector, strip).fEdep;
+	  Float_t  edep  = fEdep(detector, ring, sector, strip).fEdep;
+	  UShort_t ntot  = fEdep(detector, ring, sector, strip).fN;
+	  UShort_t nprim = fEdep(detector, ring, sector, strip).fNPrim;
+	  if (edep > 0)
+	    AliFMDDebug(15, ("Edep = %f for FMD%d%c[%2d,%3d]", 
+			     edep, detector, ring, sector, strip));
 	  ConvertToCount(edep, last, detector, ring, sector, strip, counts);
 	  last = edep;
 	  
+
 	  // The following line was introduced - wrongly - by Peter
 	  // Hristov.  It _will_ break the digitisation and the
 	  // following reconstruction.  The behviour of the
@@ -401,7 +414,8 @@ AliFMDBaseDigitizer::DigitizeHits() const
 	  //   if (edep<=0) continue;
 	  AddDigit(detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
-		   Short_t(counts[2]), Short_t(counts[3]));
+		   Short_t(counts[2]), Short_t(counts[3]), 
+		   ntot, nprim);
 	  AliFMDDebug(15, ("   Adding digit in FMD%d%c[%2d,%3d]=%d", 
 			  detector,ring,sector,strip,counts[0]));
 #if 0
@@ -466,7 +480,8 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   //                  = E + (l - E) * ext(-B * t)
   // 
   AliFMDParameters* param = AliFMDParameters::Instance();
-  Float_t  convF          = (param->GetDACPerMIP()*param->GetPulseGain(detector,ring,sector,strip)) / param->GetEdepMip();
+  Float_t  convF          = (param->GetDACPerMIP() / param->GetEdepMip() *
+			     param->GetPulseGain(detector,ring,sector,strip));
   Int_t    ped            = MakePedestal(detector,ring,sector,strip);
   Int_t    maxAdc         = param->GetAltroChannelSize()-1;
   if (maxAdc < 0) {
@@ -475,7 +490,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   }
   UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
   AliFMDDebug(15, ("Sample rate for FMD%d%c[%2d,%3d] = %d", 
-		  detector, ring, sector, strip, rate));
+		   detector, ring, sector, strip, rate));
   if (rate < 1 || rate > 4) {
     AliWarning(Form("Invalid sample rate for for FMD%d%c[%2d,%3d] = %d", 
 		    detector, ring, sector, strip, rate));
@@ -492,6 +507,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
 		     detector,ring,sector,strip,edep,counts[0],convF,ped));
     return;
   }
+
   
   // Create a pedestal 
   Float_t b = fShapingTime;
@@ -502,6 +518,12 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
     if (a < 0) a = 0;
     counts[i]  = UShort_t(TMath::Min(a, Float_t(maxAdc)));
   }
+  AliFMDDebug(15, ("Converted edep = %f to ADC (%x,%x,%x,%x) "
+		   "[gain: %f=(%f/%f*%f), pedestal: %d, rate: %d]", 
+		   edep, counts[0], counts[1], counts[2], counts[3], 
+		   convF, param->GetDACPerMIP(),param->GetEdepMip(),
+		   param->GetPulseGain(detector,ring,sector,strip), 
+		   ped, rate));
 }
 
 //____________________________________________________________________
@@ -514,7 +536,9 @@ AliFMDBaseDigitizer::AddDigit(UShort_t  detector,
 			      UShort_t  count1, 
 			      Short_t   count2, 
 			      Short_t   count3,
-			      Short_t   count4) const
+			      Short_t   count4,
+			      UShort_t  /* ntot */, 
+			      UShort_t  /* nprim */) const
 {
   // Add a digit or summable digit
   

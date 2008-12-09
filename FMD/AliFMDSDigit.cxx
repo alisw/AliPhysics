@@ -92,13 +92,17 @@ AliFMDSDigit::AliFMDSDigit(UShort_t detector,
 			   UShort_t count1,
 			   Short_t  count2, 
 			   Short_t  count3, 
-			   Short_t  count4)
+			   Short_t  count4,
+			   UShort_t npart,
+			   UShort_t nprim)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fEdep(edep),
     fCount1(count1),
     fCount2(count2),
     fCount3(count3),
-    fCount4(count4)
+    fCount4(count4),
+    fNParticles(npart), 
+    fNPrimaries(nprim)
 {
   //
   // Creates a real data digit object

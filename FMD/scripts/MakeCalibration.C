@@ -24,6 +24,9 @@ MakeCalibration(const char* base="local://$ALICE_ROOT")
   AliCDBManager* cdb   = AliCDBManager::Instance();
   cdb->SetDefaultStorage(base);
 
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libFMDanalysis.so");
   gSystem->Load("libFMDutil.so");
   AliFMDCalibFaker f(AliFMDCalibFaker::kAll, 0);
   f.SetRunRange(0,999999);

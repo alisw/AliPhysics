@@ -224,7 +224,8 @@ protected:
 			       Char_t   ring, 
 			       UShort_t sector, 
 			       UShort_t strip, 
-			       Float_t  edep);
+			       Float_t  edep, 
+			       Bool_t   isPrimary);
   /** Add a digit to output */
   virtual void     AddDigit(UShort_t detector, 
 			    Char_t   ring,
@@ -234,7 +235,9 @@ protected:
 			    UShort_t count1, 
 			    Short_t  count2, 
 			    Short_t  count3,
-			    Short_t  count4) const;
+			    Short_t  count4, 
+			    UShort_t ntot, 
+			    UShort_t nprim) const;
   /** Make the output tree using the passed loader 
       @param loader 
       @return The generated tree. */

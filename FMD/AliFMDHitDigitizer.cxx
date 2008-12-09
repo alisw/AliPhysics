@@ -199,7 +199,9 @@
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
 #include <AliFMDHit.h>
+#include <AliStack.h>
 #include <TFile.h>
+#include <TParticle.h>
 
 //====================================================================
 ClassImp(AliFMDHitDigitizer)    
@@ -212,7 +214,8 @@ AliFMDHitDigitizer::AliFMDHitDigitizer(AliFMD* fmd, Output_t  output)
   : AliFMDBaseDigitizer("FMD", (fOutput == kDigits ? 
 				"FMD Hit->Digit digitizer" :
 				"FMD Hit->SDigit digitizer")),
-    fOutput(output)
+    fOutput(output), 
+    fStack(0)
 {
   fFMD = fmd;
 }
@@ -266,6 +269,17 @@ AliFMDHitDigitizer::Exec(Option_t* /*option*/)
 		    (fOutput == kDigits ? "digits" : "sdigits"), event));
     thisLoader->GetEvent(event);
     
+    // Load kinematics to get primary information for SDigits
+    fStack = 0;
+    if (fOutput == kSDigits) {
+      if (thisLoader->LoadKinematics("READ")) {
+	AliError("Failed to get kinematics from event loader");
+	return;
+      }
+      AliFMDDebug(5, ("Loading stack of kinematics"));
+      fStack = thisLoader->Stack();
+    }
+
     // Check that we have the hits 
     if (!loader->TreeH() && loader->LoadHits()) {
       AliError("Failed to load hits");
@@ -310,7 +324,7 @@ AliFMDHitDigitizer::Exec(Option_t* /*option*/)
     
     // Write digits to tree
     Int_t write = outTree->Fill();
-    AliFMDDebug(1, ("Wrote %d bytes to digit tree", write));
+    AliFMDDebug(5, ("Wrote %d bytes to digit tree", write));
 
     // Store the digits
     StoreDigits(loader);
@@ -363,7 +377,7 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
   for (Int_t track = 0; track < ntracks; track++)  {
     // Read in entry number `track' 
     read += hitsBranch->GetEntry(track);
-    
+
     // Get the number of hits 
     Int_t nhits = fmdHits->GetEntries ();
     for (Int_t hit = 0; hit < nhits; hit++) {
@@ -371,12 +385,42 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
       AliFMDHit* fmdHit = 
 	static_cast<AliFMDHit*>(fmdHits->UncheckedAt(hit));
       
+      // Check if this is a primary particle
+      Bool_t isPrimary = kTRUE;
+      if (fStack) {
+	Int_t      trackno = fmdHit->Track();
+	AliFMDDebug(10, ("Will get track # %d/%d from entry # %d", 
+			trackno, fStack->GetNtrack(), track));
+	if (fStack->GetNtrack() < trackno) {
+	  AliError(Form("Track number %d/%d out of bounds", 
+			trackno, fStack->GetNtrack()));
+	  continue;
+	}
+	
+	TParticle* part    = fStack->Particle(trackno);
+	isPrimary          = part->IsPrimary();
+	if (!isPrimary) { 
+	  // Extended testing of mother status - this is for Pythia6.
+	  Int_t      mother1   = part->GetFirstMother();
+	  TParticle* mother    = fStack->Particle(mother1);
+	  if (!mother || mother->GetStatusCode() > 1)
+	    isPrimary = kTRUE;
+	  AliFMDDebug(15,
+		      ("Track %d secondary, mother: %d - %s - status %d: %s", 
+		       trackno, mother1, 
+		       (mother ? "found"                 : "not found"), 
+		       (mother ? mother->GetStatusCode() : -1),
+		       (isPrimary ? "primary" : "secondary")));
+	}
+      }
+    
       // Extract parameters 
       AddContribution(fmdHit->Detector(),
 		      fmdHit->Ring(),
 		      fmdHit->Sector(),
 		      fmdHit->Strip(),
-		      fmdHit->Edep());
+		      fmdHit->Edep(), 
+		      isPrimary);
     }  // hit loop
   } // track loop
   AliFMDDebug(5, ("Size of cache: %d bytes, read %d bytes", 
@@ -408,18 +452,33 @@ AliFMDHitDigitizer::AddDigit(UShort_t  detector,
 			     UShort_t  count1, 
 			     Short_t   count2, 
 			     Short_t   count3,
-			     Short_t   count4) const
+			     Short_t   count4, 
+			     UShort_t  ntotal,
+			     UShort_t  nprim) const
 {
   // Add a digit or summable digit
   if (fOutput == kDigits) { 
     AliFMDBaseDigitizer::AddDigit(detector, ring, sector, strip, 0,
-				  count1, count2, count3, count4);
+				  count1, count2, count3, count4, 0, 0);
     return;
   }
-  if (edep <= 0) return;
-  if (count1 == 0 && count2 <= 0 && count3 <= 0 && count4 <= 0) return;
+  if (edep <= 0) { 
+    AliFMDDebug(15, ("Digit edep = %f <= 0 for FMD%d%c[%2d,%3d]", 
+		    edep, detector, ring, sector, strip));
+    return;
+  }
+  if (count1 == 0 && count2 <= 0 && count3 <= 0 && count4 <= 0) {
+    AliFMDDebug(15, ("Digit counts = (%x,%x,%x,%x) <= 0 for FMD%d%c[%2d,%3d]", 
+		    count1, count2, count3, count4, 
+		    detector, ring, sector, strip));
+    return;
+  }
+  AliFMDDebug(15, ("Adding digit for FMD%d%c[%2d,%3d] = (%x,%x,%x,%x) [%d/%d]",
+		   detector, ring, sector, strip, 
+		   count1, count2, count3, count4, nprim, ntotal));
   fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
-			  count1, count2, count3, count4);
+			  count1, count2, count3, count4, 
+			  ntotal, nprim);
 }
 
 //____________________________________________________________________

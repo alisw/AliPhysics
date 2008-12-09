@@ -42,7 +42,9 @@ public:
 	       UShort_t count=0, 
 	       Short_t  count2=-1, 
 	       Short_t  count3=-1,
-	       Short_t  count4=-1);
+	       Short_t  count4=-1,
+	       UShort_t npart=0,
+	       UShort_t nprim=0);
   /** DTOR */
   virtual ~AliFMDSDigit() {}
   /** @return ADC count (first sample) */
@@ -57,6 +59,11 @@ public:
   UShort_t Counts()                const;
   /** @return Energy deposited */
   Float_t  Edep()                  const { return fEdep;     }
+  /** @return Number of particles that hit this strip */
+  UShort_t NParticles() const { return fNParticles; }
+  /** @return Number of primary particles that hit this strip */
+  UShort_t NPrimaries() const { return fNPrimaries; }
+     
   /** Print info 
       @param opt Not used */
   void     Print(Option_t* opt="") const;
@@ -66,7 +73,9 @@ protected:
   Short_t  fCount2;     // Digital signal (-1 if not used)
   Short_t  fCount3;     // Digital signal (-1 if not used)
   Short_t  fCount4;     // Digital signal (-1 if not used)
-  ClassDef(AliFMDSDigit,2)     // Summable FMD digit
+  UShort_t fNParticles; // Total number of particles that hit this strip
+  UShort_t fNPrimaries; // Number of primary particles that his this strip
+  ClassDef(AliFMDSDigit,3)     // Summable FMD digit
 };
   
 inline UShort_t 
