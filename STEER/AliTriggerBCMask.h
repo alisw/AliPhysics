@@ -29,6 +29,8 @@ public:
            const UChar_t* GetFullMask () const {return fBCMask; }
 		  Bool_t  GetMask(UShort_t index) const;
 		    void  Print( const Option_t* opt) const;
+
+		  Bool_t  SetMask (const char *mask);
   
   enum {kNBytesPerBCMask = 446,  // Number of bytes to store the 3564 bits of BC mask
 	kNBits = 3564            // BC mask contains 3564 bits

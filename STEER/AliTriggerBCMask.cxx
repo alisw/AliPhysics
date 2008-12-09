@@ -109,6 +109,14 @@ void AliTriggerBCMask::Print( const Option_t* opt) const
   }
 }
 
+Bool_t AliTriggerBCMask::SetMask (const char *mask)
+{
+  // Wrapper used in pileup generators
+  // Call directly CreateMask method.
+  SetTitle(mask);
+  return CreateMask(fTitle);
+}
+
 //_____________________________________________________________________________
 Bool_t AliTriggerBCMask::CreateMask(TString &mask)
 {
