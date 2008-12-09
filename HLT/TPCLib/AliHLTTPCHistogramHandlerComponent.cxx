@@ -427,6 +427,7 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
       PushBack((TObject*)fHistogramData.at(i).fHistogram,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 
 		fHistogramData.at(i).fMinSlice,fHistogramData.at(i).fMaxSlice,fHistogramData.at(i).fMinPartition,fHistogramData.at(i).fMaxPartition));
     }
+    fHistogramData.clear();
   }
   //  TObjArray histos;
    
