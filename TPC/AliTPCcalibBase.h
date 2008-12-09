@@ -29,7 +29,8 @@ public:
   virtual void     Terminate();
   virtual void     UpdateEventInfo(AliESDEvent * event);
   virtual Bool_t   AcceptTrigger();
-  virtual void     SetTriggerMask(Int_t accept, Int_t reject){fTriggerMaskAccept=accept;fTriggerMaskReject=reject;}
+  virtual void     SetTriggerMask(Int_t accept, Int_t reject, Bool_t rejectLaser){fTriggerMaskAccept=accept;fTriggerMaskReject=reject; fRejectLaser = rejectLaser;}
+ 
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
@@ -38,6 +39,8 @@ public:
   Int_t      GetStreamLevel() const {return fStreamLevel;}
   Int_t      GetDebugLevel() const {return fDebugLevel;}
   virtual void RegisterDebugOutput(const char *path);
+  static     Bool_t HasLaser(AliESDEvent *event);
+
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
   Int_t  fStreamLevel;                  //  debug stream level
@@ -48,6 +51,8 @@ protected:
   Float_t fMagF;                        //! current magnetic field 
   Int_t   fTriggerMaskReject;           //trigger mask - non accept trigger
   Int_t   fTriggerMaskAccept;           //trigger mask - accept
+  Bool_t  fHasLaser;                    //flag the laser is overlayed with given event
+  Bool_t  fRejectLaser;                 //flag- reject laser
 private:
   Int_t  fDebugLevel;                   //  debug level
 

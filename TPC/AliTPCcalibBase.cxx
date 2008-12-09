@@ -61,6 +61,8 @@ AliTPCcalibBase::AliTPCcalibBase():
     fMagF(0),                 //! current magnetic field
     fTriggerMaskReject(-1),   //trigger mask - reject trigger
     fTriggerMaskAccept(-1),   //trigger mask - accept trigger
+    fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
+    fRejectLaser(kTRUE),                 //flag- reject laser
     fDebugLevel(0)
 {
   //
@@ -79,6 +81,8 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fMagF(0),                 //! current magnetic field
   fTriggerMaskReject(calib.fTriggerMaskReject),   //trigger mask - reject trigger
   fTriggerMaskAccept(calib.fTriggerMaskAccept),   //trigger mask - accept trigger
+  fHasLaser(calib.fHasLaser),                    //flag the laser is overlayed with given event
+  fRejectLaser(calib.fRejectLaser),                 //flag- reject laser
   fDebugLevel(calib.fDebugLevel)
 {
   //
@@ -142,14 +146,45 @@ void    AliTPCcalibBase::UpdateEventInfo(AliESDEvent * event){
   fTime    = event->GetTimeStamp();
   fTrigger = event->GetTriggerMask();
   fMagF    = event->GetMagneticField();
+  fHasLaser = HasLaser(event); 
 }
+
+
+Bool_t AliTPCcalibBase::HasLaser(AliESDEvent *event){
+  //
+  //
+  //
+  // Thresholds more than 8 tracks with small dip angle
+  
+  const Int_t kMinLaserTracks = 8;
+  const Float_t kThrLaser       = 0.3;
+  const Float_t kLaserTgl       = 0.01;
+
+  Int_t ntracks = event->GetNumberOfTracks();
+  if (ntracks<kMinLaserTracks) return kFALSE;
+  Float_t nlaser=0;
+  Float_t nall=0;
+  for (Int_t i=0;i<ntracks;++i) {
+    AliESDtrack *track=event->GetTrack(i);
+    if (!track) continue;
+    if (track->GetTPCNcls()<=0) continue; 
+    nall++;
+    if (TMath::Abs(track->GetTgl())<kLaserTgl) nlaser++;
+  }
+  if (nlaser>kMinLaserTracks) return kTRUE;
+  if (nall>0 && nlaser/nall>kThrLaser) return kTRUE;
+  return kFALSE;
+}
+
+
 
 Bool_t AliTPCcalibBase::AcceptTrigger(){
   //
   // Apply trigger mask - Don't do calibration for non proper triggers
   // 
-  if (fTriggerMaskReject==fTrigger) return kFALSE;
-  if (fTriggerMaskAccept>0 && fTriggerMaskAccept!=fTrigger) return kFALSE;
+  if (fTriggerMaskReject==(Int_t)fTrigger) return kFALSE;
+  if (fTriggerMaskAccept>0 && fTriggerMaskAccept!=(Int_t)fTrigger) return kFALSE;
+  if (fHasLaser && fRejectLaser) return kFALSE;
   return kTRUE;
 }
 
