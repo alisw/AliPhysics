@@ -1,5 +1,5 @@
-#ifndef ALITOFTRMGLOBALHEADER_H
-#define ALITOFTRMGLOBALHEADER_H
+#ifndef ALITOFTDCPACHEDHIT_H
+#define ALITOFTDCPACKEDHIT_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -14,22 +14,24 @@
 
 #include "TROOT.h"
 
-class AliTOFTRMGlobalHeader
+class AliTOFTDCPackedHit
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventWords() {return fEventWords;};
-  UInt_t GetACQBits() {return fACQBits;};
-  UInt_t GetLBit() {return fLBit;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetHitTime() {return fHitTime;};
+  UInt_t GetTOTWidth() {return fTOTWidth;};
+  UInt_t GetChan() {return fChan;};
+  UInt_t GetTDCID() {return fTDCID;};
+  UInt_t GetEBit() {return fEBit;};
+  UInt_t GetPSBits() {return fPSBits;};
+  UInt_t GetMBO() {return fMBO;};
  private:
-  UInt_t fSlotID:     4;
-  UInt_t fEventWords: 13;
-  UInt_t fACQBits:    2;
-  UInt_t fLBit:       1;
-  UInt_t fMBZ:        8;
-  UInt_t fWordType:   4;
+  UInt_t fHitTime:  13;
+  UInt_t fTOTWidth: 8;
+  UInt_t fChan:     3;
+  UInt_t fTDCID:    4;
+  UInt_t fEBit:     1;
+  UInt_t fPSBits:   2;
+  UInt_t fMBO:      1;
 };
 
-#endif /* ALITOFTRMGLOBALHEADER_H */
+#endif

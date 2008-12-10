@@ -1,5 +1,5 @@
-#ifndef ALITOFTRMGLOBALHEADER_H
-#define ALITOFTRMGLOBALHEADER_H
+#ifndef ALITOFTRMDIAGNOSTICERRORWORD2_H
+#define ALITOFTRMDIAGNOSTICERRORWORD2_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -14,22 +14,22 @@
 
 #include "TROOT.h"
 
-class AliTOFTRMGlobalHeader
+class AliTOFTRMDiagnosticErrorWord2
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventWords() {return fEventWords;};
-  UInt_t GetACQBits() {return fACQBits;};
-  UInt_t GetLBit() {return fLBit;};
+  UInt_t GetJtagErrorCode() {return fJtagErrorCode;};
+  UInt_t GetTDCID() {return fTDCID;};
+  UInt_t GetCBit() {return fCBit;};
   UInt_t GetMBZ() {return fMBZ;};
+  UInt_t GetMBO() {return fMBO;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fSlotID:     4;
-  UInt_t fEventWords: 13;
-  UInt_t fACQBits:    2;
-  UInt_t fLBit:       1;
-  UInt_t fMBZ:        8;
-  UInt_t fWordType:   4;
+  UInt_t fJtagErrorCode: 11;
+  UInt_t fTDCID:         4;
+  UInt_t fCBit:          1;
+  UInt_t fMBZ:           8;
+  UInt_t fMBO:           4;
+  UInt_t fWordType:      4;
 };
 
-#endif /* ALITOFTRMGLOBALHEADER_H */
+#endif
