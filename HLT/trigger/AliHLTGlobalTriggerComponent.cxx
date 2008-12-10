@@ -56,3 +56,12 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   //TODO
   return 0;
 }
+
+
+AliHLTComponent* AliHLTGlobalTriggerComponent::Spawn()
+{
+  // Creates a new object instance.
+  
+  return new AliHLTGlobalTriggerComponent;
+}
+

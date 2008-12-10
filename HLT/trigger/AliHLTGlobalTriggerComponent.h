@@ -50,6 +50,12 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * @param inputMultiplier  <i>[out]</i>: multiplication ratio
    */
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  
+  /**
+   * Spawn function creates a new object.
+   * @return new class instance.
+   */
+  virtual AliHLTComponent* Spawn();
 
  protected:
 
