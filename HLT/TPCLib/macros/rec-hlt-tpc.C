@@ -25,6 +25,8 @@
  *    - TrackHistogram, will run the TrackHistogram component, and give 
  *      root files with histograms.
  *    - TrackDump, dumps the track struct to a text file.
+ *    - ClusterHisto, gives you histograms of the cluster.
+ *    - ClusterDump, dumps the cluster struct to text flie.
  *    - All, gives you all 3 output.
  *
  * In the first section, an analysis chain is defined. The scale of the
@@ -58,7 +60,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   //
   Bool_t bUseClusterFinderDecoder=kTRUE;
   TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=";
-  Bool_t esdout=kFALSE, dumpout=kFALSE, histout=kFALSE;
+  Bool_t esdout=kFALSE, dumpout=kFALSE, histout=kFALSE, chout=kFALSE, cdout=kFALSE;
   TString allArgs=opt;
   TString argument;
   TObjArray* pTokens=allArgs.Tokenize(" ");
@@ -93,12 +95,26 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 	option+="sink1";
 	continue;
       }      
+      if (argument.CompareTo("clusterdump",TString::kIgnoreCase)==0) {
+	cdout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="cdump";
+	continue;
+      }      
+      if (argument.CompareTo("clusterhisto",TString::kIgnoreCase)==0) {
+	chout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="chhisto";
+	continue;
+      }      
       if (argument.CompareTo("all",TString::kIgnoreCase)==0) {
 	histout = kTRUE;
 	dumpout = kTRUE;
 	esdout = kTRUE;
+	chout = kTRUE;
+	cdout = kTRUE;
 	if (option.Length()>0) option+=",";
-	option+="sink1,histFile,dump";
+	option+="sink1,histFile,dump,cdump,chhisto";
 	continue;
       }
       else {
@@ -118,11 +134,13 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   TString writerInput;
   TString mergerInput;
   TString histoInput;
+  TString histogramHandlerInputClusterFinder;
+  TString cdumpInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
     TString trackerInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
       TString arg, publisher, cf;
-
+      TString clusterHistoOutput;
       // raw data publisher components
       int ddlno=768;
       if (part>1) ddlno+=72+4*slice+(part-2);
@@ -144,6 +162,15 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
       writerInput+=cf;
       if (histoInput.Length()>0) histoInput+=" ";
       histoInput+=cf;
+      if (cdumpInput.Length()>0) cdumpInput+=" ";
+      cdumpInput+=cf;
+
+      if(chout){
+	clusterHistoOutput.Form("CH_%02d_%d", slice, part);
+	AliHLTConfiguration cfconf(clusterHistoOutput.Data(), "TPCClusterHisto", cf.Data(), "");
+	if (histogramHandlerInputClusterFinder.Length()>0) histogramHandlerInputClusterFinder+=" ";
+	histogramHandlerInputClusterFinder+=clusterHistoOutput;
+      }
     }
     TString tracker;
     // tracker finder components
@@ -193,7 +220,15 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   if(dumpout){
     AliHLTConfiguration dumpconf("dump","TPCTrackDump","globalmerger","-directory TrackDump");
   }
-  
+  if(chout){
+    AliHLTConfiguration cfconf("HHCF", "TPCHistogramHandler", histogramHandlerInputClusterFinder.Data(), "-use-general");
+    AliHLTConfiguration rootFileWriterClusters("chhisto", "ROOTFileWriter", "HHCF" , "-datafile histogramHandlerClusterFinder");
+  }
+  if(cdout){
+    AliHLTConfiguration cdumpconf("cdump","TPCClusterDump",cdumpInput.Data(),"-directory ClusterDump");
+  }
+
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Init and run the reconstruction
