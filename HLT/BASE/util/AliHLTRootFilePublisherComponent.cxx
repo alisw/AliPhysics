@@ -101,6 +101,7 @@ Int_t AliHLTRootFilePublisherComponent::ScanArgument(Int_t argc, const char** ar
   TString argument = "";
   TString parameter = "";
   Int_t bMissingParam = 0;
+  fObjectName = "";  // Reset this to the default: read all objects in the file.
   
   argument=argv[iResult];
   if (argument.IsNull()) return -EINVAL;
@@ -166,7 +167,7 @@ Int_t AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData
 	  for ( Int_t i = 0; i < pFile->GetListOfKeys()->GetEntries(); i++  ){
 	    TKey * key= dynamic_cast<TKey*>( pFile->GetListOfKeys()->At(i) );
 
-	    if ( fObjectName ) {
+	    if ( fObjectName != "" ) {
 	      if ( !( ((TString) key->GetName()).CompareTo(fObjectName) ) )
 		PushBack( key->ReadObj(), *pFileDesc, *pFileDesc ); 
 	    }

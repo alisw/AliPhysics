@@ -13,6 +13,8 @@
 #include "AliHLTReadoutList.h"
 #include "AliHLTTriggerDomain.h"
 
+class AliHLTTriggerDecision;
+
 /**
  * \class AliHLTTrigger
  * This is the base class from which all HLT trigger components should inherit.
@@ -94,6 +96,21 @@ class AliHLTTrigger : public AliHLTProcessor
    *     for a negative result. (true by default)
    */
   void TriggerEvent(bool value = true);
+  
+  /**
+   * Fills the output with the given trigger decision. This should be called in the
+   * DoTrigger method when a custom trigger decision has been constructed.
+   * @param value  The custom trigger decision object.
+   * @param datatype  The data block type to use (set to
+   *    kAliHLTDataTypeTObject|kAliHLTDataOriginOut by default).
+   * @param spec  The data block specification to use (set to kAliHLTVoidDataSpec
+   *    by default).
+   */
+  void TriggerEvent(
+      AliHLTTriggerDecision* result,
+      const AliHLTComponentDataType& type = kAliHLTDataTypeTObject|kAliHLTDataOriginOut,
+      AliHLTUInt32_t spec = kAliHLTVoidDataSpec
+    );
   
   /**
    * Returns the event data structure for the current event.
@@ -194,7 +211,14 @@ class AliHLTTrigger : public AliHLTProcessor
    * @return kAliHLTMultipleDataType is returned.
    */
   virtual AliHLTComponentDataType GetOutputDataType() { return kAliHLTMultipleDataType; };
-
+ 
+  /**
+   * Inherited from AliHLTComponent. This method is deprecated so we hide it.
+   * Rather use the const version of this method which this method calls anyway.
+   * @param list     list to receive the output data types.
+   */
+  virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
+  
   /**
    * Inherited from AliHLTComponent. This method is replaced with one that is
    * symmetric to GetInputDataTypes that returns void, so we make this method
@@ -203,12 +227,7 @@ class AliHLTTrigger : public AliHLTProcessor
    * @param list     list to receive the output data types.
    * @return the number of elements in the list.
    */
-  virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list)
-  {
-    const AliHLTTrigger* t = this; t->GetOutputDataTypes(list);
-    list.push_back(kAliHLTDataTypeTObject);
-    return list.size();
-  }
+  virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
   
   const AliHLTComponentEventData* fEventData; //! Event data for the current event. Only valid inside DoTrigger.
   AliHLTComponentTriggerData* fTriggerData; //! Trigger data for the current event. Only valid inside DoTrigger.

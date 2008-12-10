@@ -38,19 +38,20 @@ AliHLTTrigger::AliHLTTrigger() :
 	fReadoutList(),
 	fTriggerDomain()
 {
-  /// Default constructor sets pointers to NULL.
+  // Default constructor sets pointers to NULL.
 }
 
 
 AliHLTTrigger::~AliHLTTrigger()
 {
-  /// Default destructor.
+  // Default destructor.
 }
 
 
 void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
-  /// Returns output data size estimate.
+  // Returns output data size estimate.
+  // See header file for more details.
 
   constBase = sizeof(AliHLTTriggerDecision);
   inputMultiplier = 1;
@@ -59,8 +60,8 @@ void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMul
 
 int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
 {
-  /// Sets the pointers to the evtData and trigData, then calls the DoTrigger to
-  /// execute the actual trigger algorithm.
+  // Sets the pointers to the evtData and trigData, then calls the DoTrigger to
+  // execute the actual trigger algorithm.
 
   fEventData = &evtData;
   fTriggerData = &trigData;
@@ -85,10 +86,50 @@ int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTCompon
 
 void AliHLTTrigger::TriggerEvent(bool value)
 {
-  /// Sets the trigger decision for the current event.
+  // Sets the trigger decision for the current event.
+  // See header file for more details.
   
   if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
   AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fReadoutList, fTriggerDomain, fDescription);
   fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  if (fTriggerEventResult == 0) fDecisionMade = true;
+}
+
+
+void AliHLTTrigger::TriggerEvent(
+    AliHLTTriggerDecision* result, const AliHLTComponentDataType& type,
+    AliHLTUInt32_t spec
+  )
+{
+  // Sets a custom trigger decision for the current event.
+  // See header file for more details.
+  
+  if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
+  fTriggerEventResult = PushBack(result, type, spec);
+  if (fTriggerEventResult == 0) fDecisionMade = true;
+}
+
+
+void AliHLTTrigger::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // Calls the const version of this method.
+  
+  // Assign to const temporary variable to make sure we call the constant version
+  // of the GetOutputDataTypes method.
+  const AliHLTTrigger* t = this;
+  t->GetOutputDataTypes(list);
+}
+
+
+int AliHLTTrigger::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // Calls the const version of this method.
+  
+  // Assign to const temporary variable to make sure we call the constant version
+  // of the GetOutputDataTypes method.
+  const AliHLTTrigger* t = this;
+  t->GetOutputDataTypes(list);
+  list.push_back(kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  return list.size();
 }
 

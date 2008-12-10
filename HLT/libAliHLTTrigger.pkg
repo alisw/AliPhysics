@@ -43,7 +43,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # If the default behavior is not enough, you can provide a custom
 # *LinkDef.h to the MODULE_DHDR variable. Leave MODULE_DHDR empty to
 # enable automatic generation. 
-MODULE_DHDR:= 		
+MODULE_DHDR:= 	AliHLTTriggerLinkDef.h
 
 EINCLUDE := HLT/BASE HLT/trigger HLT/TPCLib
 

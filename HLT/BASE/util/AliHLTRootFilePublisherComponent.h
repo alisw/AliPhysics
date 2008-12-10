@@ -21,11 +21,11 @@
  * @class AliHLTRootFilePublisherComponent
  * An HLT data source component which publishes root objects from one 
  * or a sequence of root files. Be aware, one root file can contain 
- * several root objects. Either all objects or one objectcan be selected.<br>
+ * several root objects. Either all objects or just one object can be selected.<br>
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b RootFilePublisher <br>
+ * Component ID: \b ROOTFilePublisher <br>
  * Library: \b libAliHLTUtil.so     <br>
  * Input Data Types: none <br>
  * Output Data Types: according to arguments <br>

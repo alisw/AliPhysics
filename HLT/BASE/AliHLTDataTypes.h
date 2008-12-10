@@ -487,8 +487,8 @@ extern "C" {
   struct AliHLTComponentDataType
   {
     AliHLTUInt32_t fStructSize;
-    char fID[kAliHLTComponentDataTypefIDsize];                      //!
-    char fOrigin[kAliHLTComponentDataTypefOriginSize];              //!
+    char fID[kAliHLTComponentDataTypefIDsize];                      ///
+    char fOrigin[kAliHLTComponentDataTypefOriginSize];              ///
   };
 
   /**

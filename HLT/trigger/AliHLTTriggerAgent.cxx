@@ -28,6 +28,7 @@
 // header files of library components
 #include "AliHLTEventSummaryProducerComponent.h"
 #include "AliHLTRunSummaryProducerComponent.h"
+#include "AliHLTGlobalTriggerComponent.h"
 
 /** global instance for agent registration */
 AliHLTTriggerAgent gAliHLTTriggerAgent;
@@ -56,7 +57,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
-  //pHandler->AddComponent(new );
+  pHandler->AddComponent(new AliHLTGlobalTriggerComponent);
   return 0;
 }
 
