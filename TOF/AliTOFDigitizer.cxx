@@ -97,10 +97,15 @@ AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   AliTOFDigitizer& AliTOFDigitizer::operator=(const AliTOFDigitizer &source)
 {
   // ass. op.
-  this->fDigits=source.fDigits;
-  this->fSDigitsArray=source.fSDigitsArray;
-  this->fhitMap=source.fhitMap;
-  this->fCalib=source.fCalib;
+  
+  if (this == &source)
+    return *this;
+
+  AliDigitizer::operator=(source);
+  fDigits=source.fDigits;
+  fSDigitsArray=source.fSDigitsArray;
+  fhitMap=source.fhitMap;
+  fCalib=source.fCalib;
   return *this;
 
 }

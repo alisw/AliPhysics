@@ -104,42 +104,26 @@ AliTOFDecoder::AliTOFDecoder(AliTOFHitDataBuffer *DataBuffer, AliTOFHitDataBuffe
 //_________________________________________________________________
 
 AliTOFDecoder::AliTOFDecoder(const AliTOFDecoder &source) : 
-  TObject(),
-  fVerbose(0),
-  fV2718Patch(kFALSE),
-  fDataBuffer(0x0),
-  fPackedDataBuffer(0x0),
-  fTRMGlobalHeader(0x0),
-  fTRMGlobalTrailer(0x0),
-  fTRMChainHeader(0x0),
-  fTRMChainTrailer(0x0),
-  fTDCPackedHit(0x0),
-  fTDCUnpackedHit(0x0),
-  fTRMTDCError(0x0),
-  fTRMDiagnosticErrorWord1(0x0),
-  fTRMDiagnosticErrorWord2(0x0),
-  fSpiderCurrentSlotID(-1),
-  fSpiderCurrentChain(-1),
-  fSpiderCurrentTDC(-1)
+  TObject(source),
+  fVerbose(source.fVerbose),
+  fV2718Patch(source.fV2718Patch),
+  fDataBuffer(source.fDataBuffer),
+  fPackedDataBuffer(source.fPackedDataBuffer),
+  fTRMGlobalHeader(source.fTRMGlobalHeader),
+  fTRMGlobalTrailer(source.fTRMGlobalTrailer),
+  fTRMChainHeader(source.fTRMChainHeader),
+  fTRMChainTrailer(source.fTRMChainTrailer),
+  fTDCPackedHit(source.fTDCPackedHit),
+  fTDCUnpackedHit(source.fTDCUnpackedHit),
+  fTRMTDCError(source.fTRMTDCError),
+  fTRMDiagnosticErrorWord1(source.fTRMDiagnosticErrorWord1),
+  fTRMDiagnosticErrorWord2(source.fTRMDiagnosticErrorWord2),
+  fSpiderCurrentSlotID(source.fSpiderCurrentSlotID),
+  fSpiderCurrentChain(source.fSpiderCurrentChain),
+  fSpiderCurrentTDC(source.fSpiderCurrentTDC)
 {
   //copy constructor
   
-  this->fVerbose = source.fVerbose;
-  this->fV2718Patch = source.fV2718Patch;
-  this->fDataBuffer = source.fDataBuffer;
-  this->fPackedDataBuffer = source.fPackedDataBuffer;
-  this->fTRMGlobalHeader = source.fTRMGlobalHeader;
-  this->fTRMGlobalTrailer = source.fTRMGlobalTrailer;
-  this->fTRMChainHeader = source.fTRMChainHeader;
-  this->fTRMChainTrailer = source.fTRMChainTrailer;
-  this->fTDCPackedHit = source.fTDCPackedHit;
-  this->fTDCUnpackedHit = source.fTDCUnpackedHit;
-  this->fTRMTDCError = source.fTRMTDCError;
-  this->fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
-  this->fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
-  this->fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
-  this->fSpiderCurrentChain = source.fSpiderCurrentChain;
-  this->fSpiderCurrentTDC = source.fSpiderCurrentTDC;
 }
 
 //_________________________________________________________________
@@ -149,22 +133,26 @@ AliTOFDecoder::operator = (const AliTOFDecoder &source)
 {
   //operator =
 
-  this->fVerbose = source.fVerbose;
-  this->fV2718Patch = source.fV2718Patch;
-  this->fDataBuffer = source.fDataBuffer;
-  this->fPackedDataBuffer = source.fPackedDataBuffer;
-  this->fTRMGlobalHeader = source.fTRMGlobalHeader;
-  this->fTRMGlobalTrailer = source.fTRMGlobalTrailer;
-  this->fTRMChainHeader = source.fTRMChainHeader;
-  this->fTRMChainTrailer = source.fTRMChainTrailer;
-  this->fTDCPackedHit = source.fTDCPackedHit;
-  this->fTDCUnpackedHit = source.fTDCUnpackedHit;
-  this->fTRMTDCError = source.fTRMTDCError;
-  this->fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
-  this->fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
-  this->fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
-  this->fSpiderCurrentChain = source.fSpiderCurrentChain;
-  this->fSpiderCurrentTDC = source.fSpiderCurrentTDC;
+  if (this == &source)
+    return *this;
+
+  TObject::operator=(source);
+  fVerbose = source.fVerbose;
+  fV2718Patch = source.fV2718Patch;
+  fDataBuffer = source.fDataBuffer;
+  fPackedDataBuffer = source.fPackedDataBuffer;
+  fTRMGlobalHeader = source.fTRMGlobalHeader;
+  fTRMGlobalTrailer = source.fTRMGlobalTrailer;
+  fTRMChainHeader = source.fTRMChainHeader;
+  fTRMChainTrailer = source.fTRMChainTrailer;
+  fTDCPackedHit = source.fTDCPackedHit;
+  fTDCUnpackedHit = source.fTDCUnpackedHit;
+  fTRMTDCError = source.fTRMTDCError;
+  fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
+  fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
+  fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
+  fSpiderCurrentChain = source.fSpiderCurrentChain;
+  fSpiderCurrentTDC = source.fSpiderCurrentTDC;
   return *this;
 }
 

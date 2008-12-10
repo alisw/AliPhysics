@@ -52,21 +52,24 @@ AliTOFChannelOnlineArray::AliTOFChannelOnlineArray(Int_t size):
 }
 //________________________________________________________________
 AliTOFChannelOnlineArray::AliTOFChannelOnlineArray(const AliTOFChannelOnlineArray & source):
-      TObject(),
-      fSize(0),
-      fArray(0x0)
+  TObject(source),
+  fSize(source.fSize),
+  fArray(source.fArray)
 { 
 	// copy constructor
-	this->fSize= source.fSize;
-	this->fArray= source.fArray;
 }
 //________________________________________________________________
 AliTOFChannelOnlineArray &AliTOFChannelOnlineArray::operator=(const AliTOFChannelOnlineArray & source) 
 { 
-	// assignment operator
-	this->fSize= source.fSize;
-	this->fArray= source.fArray;
-	return *this;
+  // assignment operator
+  
+  if (this == &source)
+    return *this;
+  
+  TObject::operator=(source);
+  fSize= source.fSize;
+  fArray= source.fArray;
+  return *this;
 }
 //________________________________________________________________
 void AliTOFChannelOnlineArray::SetDelay(Int_t pos, Float_t parr)

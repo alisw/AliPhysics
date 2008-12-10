@@ -38,8 +38,6 @@ enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 public:
 
  AliTOFtrackerV1(); 
- AliTOFtrackerV1(const AliTOFtrackerV1 &t); //Copy Ctor 
- AliTOFtrackerV1& operator=(const AliTOFtrackerV1 &source); // ass. op.
 
  virtual ~AliTOFtrackerV1();
  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
@@ -56,6 +54,9 @@ public:
  void FillClusterArray(TObjArray* arr) const;
 
 private:
+
+ AliTOFtrackerV1(const AliTOFtrackerV1 &t); //Copy Ctor 
+ AliTOFtrackerV1& operator=(const AliTOFtrackerV1 &source); // ass. op.
 
  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
  void  MatchTracks(); // Matching Algorithm 

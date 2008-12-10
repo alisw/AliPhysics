@@ -76,6 +76,9 @@ AliTOFFEEReader::operator=(const AliTOFFEEReader &source)
    * 
    */
 
+  if (this == &source)
+    return *this;
+
   TObject::operator=(source);
   memcpy(fFEEConfig, source.fFEEConfig, sizeof(AliTOFFEEConfig));
   return *this;

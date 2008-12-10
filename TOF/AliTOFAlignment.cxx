@@ -134,15 +134,13 @@ AliTOFAlignment::AliTOFAlignment():
 }
 //_____________________________________________________________________________
 AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
-  TTask("AliTOFAlignment",""),
-  fNTOFAlignObj(0),
+  TTask(t),
+  fNTOFAlignObj(t.fNTOFAlignObj),
   fTOFmgr(0x0),
-  fTOFAlignObjArray(0x0)
+  fTOFAlignObjArray(t.fTOFAlignObjArray)
 { 
   //AliTOFAlignment copy Ctor
 
-  fNTOFAlignObj=t.fNTOFAlignObj;
-  fTOFAlignObjArray=t.fTOFAlignObjArray;
   //AliTOFalignment main Ctor
   for(Int_t i=0; i<18;i++)
      for(Int_t j=0; j<5; j++)
@@ -155,9 +153,13 @@ AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
 AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){ 
   //AliTOFAlignment assignment operator
 
-  this->fNTOFAlignObj=t.fNTOFAlignObj;
-  this->fTOFmgr=t.fTOFmgr;
-  this->fTOFAlignObjArray=t.fTOFAlignObjArray;
+  if (&t == this)
+    return *this;
+
+  TTask::operator=(t);
+  fNTOFAlignObj=t.fNTOFAlignObj;
+  fTOFmgr=t.fTOFmgr;
+  fTOFAlignObjArray=t.fTOFAlignObjArray;
   return *this;
 
 }

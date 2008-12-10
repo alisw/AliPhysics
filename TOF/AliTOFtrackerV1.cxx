@@ -86,67 +86,6 @@ AliTOFtrackerV1::AliTOFtrackerV1():
 
 }
 //_____________________________________________________________________________
-AliTOFtrackerV1::AliTOFtrackerV1(const AliTOFtrackerV1 &t):
-  AliTracker(),
-  fRecoParam(0x0),
-  fPid(0x0),
-  fN(0),
-  fNseeds(0),
-  fNseedsTOF(0),
-  fngoodmatch(0),
-  fnbadmatch(0),
-  fnunmatch(0),
-  fnmatch(0),
-  fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TClonesArray("AliESDtrack")),
-  fHDigClusMap(0x0),
-  fHDigNClus(0x0),
-  fHDigClusTime(0x0),
-  fHDigClusToT(0x0),
-  fHRecNClus(0x0),
-  fHRecChi2(0x0),
-  fHRecDistZ(0x0),
-  fHRecSigYVsP(0x0),
-  fHRecSigZVsP(0x0),
-  fHRecSigYVsPWin(0x0),
-  fHRecSigZVsPWin(0x0)
- { 
-  //AliTOFtrackerV1 copy Ctor
-
-  fNseeds=t.fNseeds;
-  fNseeds=t.fNseeds;
-  fNseedsTOF=t.fNseedsTOF;
-  fngoodmatch=t.fngoodmatch;
-  fnbadmatch=t.fnbadmatch;
-  fnunmatch=t.fnunmatch;
-  fnmatch=t.fnmatch;
-  fRecoParam=t.fRecoParam;
-  fPid=t.fPid;
-  fSeeds=t.fSeeds;
-  fTracks=t.fTracks;
-  fN=t.fN;
-}
-
-//_____________________________________________________________________________
-AliTOFtrackerV1& AliTOFtrackerV1::operator=(const AliTOFtrackerV1 &t)
-{ 
-  //AliTOFtrackerV1 assignment operator
-
-  this->fNseeds=t.fNseeds;
-  this->fNseedsTOF=t.fNseedsTOF;
-  this->fngoodmatch=t.fngoodmatch;
-  this->fnbadmatch=t.fnbadmatch;
-  this->fnunmatch=t.fnunmatch;
-  this->fnmatch=t.fnmatch;
-  this->fRecoParam = t.fRecoParam;
-  this->fPid = t.fPid;
-  this->fSeeds=t.fSeeds;
-  this->fTracks=t.fTracks;
-  this->fN=t.fN;
-  return *this;
-
-}
-//_____________________________________________________________________________
 AliTOFtrackerV1::~AliTOFtrackerV1() {
   //
   // Dtor

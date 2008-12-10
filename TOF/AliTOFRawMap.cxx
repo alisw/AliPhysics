@@ -37,6 +37,7 @@
 ClassImp(AliTOFRawMap)
 
 AliTOFRawMap::AliTOFRawMap():
+  TObject(),
   fNtrm(-1),
   fNtrmChain(-1),
   fNtdc(-1),
@@ -51,11 +52,12 @@ AliTOFRawMap::AliTOFRawMap():
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFRawMap::AliTOFRawMap(TClonesArray *dig)://, AliTOFGeometry *tofGeom):
-  fNtrm(-1),
-  fNtrmChain(-1),
-  fNtdc(-1),
-  fNtdcChannel(-1),
+AliTOFRawMap::AliTOFRawMap(TClonesArray *dig)://, AliTOFGeometry *tofGeom:
+  TObject(),
+  fNtrm(AliTOFGeometry::NTRM()+2),
+  fNtrmChain(AliTOFGeometry::NChain()),
+  fNtdc(AliTOFGeometry::NTdc()),
+  fNtdcChannel(AliTOFGeometry::NCh()),
   fRawData(dig),
   fMaxIndex(-1),
   fRawMap(0x0)
@@ -67,23 +69,19 @@ AliTOFRawMap::AliTOFRawMap(TClonesArray *dig)://, AliTOFGeometry *tofGeom):
 // of course, these constants must not be hardwired
 // change later
 
-  fNtrm = AliTOFGeometry::NTRM()+2;
-  fNtrmChain = AliTOFGeometry::NChain();
-  fNtdc = AliTOFGeometry::NTdc();
-  fNtdcChannel = AliTOFGeometry::NCh();
   fMaxIndex = fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
   fRawMap = new Int_t[fMaxIndex];
   Clear();
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFRawMap::AliTOFRawMap(const AliTOFRawMap & /*rawMap*/)
-  :TObject(),
-  fNtrm(-1),
-  fNtrmChain(-1),
-  fNtdc(-1),
-  fNtdcChannel(-1),
-  fRawData(0x0),
+AliTOFRawMap::AliTOFRawMap(const AliTOFRawMap & rawMap)
+  :TObject(rawMap),
+  fNtrm(rawMap.fNtrm),
+  fNtrmChain(rawMap.fNtrmChain),
+  fNtdc(rawMap.fNtdc),
+  fNtdcChannel(rawMap.fNtdcChannel),
+  fRawData(rawMap.fRawData),
   fMaxIndex(-1),
   fRawMap(0x0)
 {
@@ -91,6 +89,18 @@ AliTOFRawMap::AliTOFRawMap(const AliTOFRawMap & /*rawMap*/)
 // Dummy copy constructor
 //
 
+  fMaxIndex = fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
+  fRawMap = new Int_t[fMaxIndex];
+}
+
+////////////////////////////////////////////////////////////////////////
+AliTOFRawMap &
+AliTOFRawMap::operator=(const AliTOFRawMap & /*rawMap*/)
+{
+//
+// Dummy copy constructor
+//
+  return *this;
 }
 
  
@@ -100,7 +110,8 @@ AliTOFRawMap::~AliTOFRawMap()
 //
 // Destructor
 //
-  delete[] fRawMap;
+  if (fRawMap)
+    delete[] fRawMap;
 
 }
 
@@ -192,9 +203,3 @@ FlagType AliTOFRawMap::TestHit(Int_t *slot) const
     }
 }
 
-////////////////////////////////////////////////////////////////////////
-AliTOFRawMap & AliTOFRawMap::operator = (const AliTOFRawMap & /*rhs*/) 
-{
-// Dummy assignment operator
-    return *this;
-}

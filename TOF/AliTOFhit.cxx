@@ -81,45 +81,26 @@ ClassImp(AliTOFhit)
 //____________________________________________________________________________
 AliTOFhit::AliTOFhit(const AliTOFhit & hit)
   : AliHit(hit),
-  fSector(-1),
-  fPlate(-1),
-  fStrip(-1),
-  fPadx(-1),
-  fPadz(-1),
-  fPx(0),
-  fPy(0),
-  fPz(0),
-  fPmom(0),
-  fTof(0),
-  fDx(0),
-  fDy(0),
-  fDz(0),
-  fIncA(0),
-  fEdep(0)
+  fSector(hit.fSector),
+  fPlate(hit.fPlate),
+  fStrip(hit.fStrip),
+  fPadx(hit.fPadx),
+  fPadz(hit.fPadz),
+  fPx(hit.fPx),
+  fPy(hit.fPy),
+  fPz(hit.fPz),
+  fPmom(hit.fPmom),
+  fTof(hit.fTof),
+  fDx(hit.fDx),
+  fDy(hit.fDy),
+  fDz(hit.fDz),
+  fIncA(hit.fIncA),
+  fEdep(hit.fEdep)
 {
    //
    // copy ctor for AliTOFhit object
    //
-  fTrack  = hit.fTrack;  
-  fX      = hit.fX;
-  fY      = hit.fY;
-  fZ      = hit.fZ;
-  fSector = hit.fSector;
-  fPlate  = hit.fPlate;
-  fStrip  = hit.fStrip;
-  fPadx   = hit.fPadx;
-  fPadz   = hit.fPadz;
-  fPx     = hit.fPx;
-  fPy     = hit.fPy;
-  fPz     = hit.fPz;
-  fPmom   = hit.fPmom;
-  fTof    = hit.fTof;
-  fDx     = hit.fDx;
-  fDy     = hit.fDy;
-  fDz     = hit.fDz;
-  fIncA   = hit.fIncA;
-  fEdep   = hit.fEdep;
-
+  fTrack = hit.fTrack;
 }
  
 //______________________________________________________________________________

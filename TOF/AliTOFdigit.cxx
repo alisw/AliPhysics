@@ -56,44 +56,33 @@ AliTOFdigit::AliTOFdigit()
 //______________________________________________________________________________
 AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol, Int_t *digit)
   :AliDigit(tracks),
-   fSector(-1),
-   fPlate(-1),
-   fStrip(-1),
-   fPadx(-1),
-   fPadz(-1),
-   fTdc(0),
-   fTdcND(0),
-   fAdc(0),
-   fToT(0)
+   fSector(vol[0]),
+   fPlate(vol[1]),
+   fStrip(vol[2]),
+   fPadx(vol[3]),
+   fPadz(vol[4]),
+   fTdc(digit[0]),
+   fTdcND(digit[3]),
+   fAdc(digit[1]),
+   fToT(digit[2])
 {
 //
 // Constructor of digit object
 //
-
-  fSector = vol[0];
-  fPlate  = vol[1];
-  fStrip  = vol[2];
-  fPadx   = vol[3];
-  fPadz   = vol[4];
-  fTdc    = digit[0];
-  fAdc    = digit[1];
-  fToT    = digit[2];
-  fTdcND  = digit[3];
-
 }
 
 //____________________________________________________________________________
 AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
   :AliDigit(digit),
-   fSector(-1),
-   fPlate(-1),
-   fStrip(-1),
-   fPadx(-1),
-   fPadz(-1),
-   fTdc(0),
-   fTdcND(0),
-   fAdc(0),
-   fToT(0)
+   fSector(digit.fSector),
+   fPlate(digit.fPlate),
+   fStrip(digit.fStrip),
+   fPadx(digit.fPadx),
+   fPadz(digit.fPadz),
+   fTdc(digit.fTdc),
+   fTdcND(digit.fTdcND),
+   fAdc(digit.fAdc),
+   fToT(digit.fToT)
 {
   // 
   // copy ctor for AliTOFdigit object
@@ -102,43 +91,25 @@ AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
   Int_t i ;
   for ( i = 0; i < 3 ; i++)
     fTracks[i]  = digit.fTracks[i] ;
-  fSector = digit.fSector;
-  fPlate  = digit.fPlate;
-  fStrip  = digit.fStrip;
-  fPadx   = digit.fPadx;
-  fPadz   = digit.fPadz;
-  fTdc    = digit.fTdc;
-  fTdcND  = digit.fTdcND;
-  fAdc    = digit.fAdc;
-  fToT    = digit.fToT;
 
 }
 
 //______________________________________________________________________________
 AliTOFdigit::AliTOFdigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx,
 			 Int_t padz, Int_t tdc, Int_t adc):
-   fSector(-1),
-   fPlate(-1),
-   fStrip(-1),
-   fPadx(-1),
-   fPadz(-1),
-   fTdc(0),
+   fSector(sector),
+   fPlate(plate),
+   fStrip(strip),
+   fPadx(padx),
+   fPadz(padz),
+   fTdc(tdc),
    fTdcND(0),
-   fAdc(0),
+   fAdc(adc),
    fToT(0)
 {
 //
 // Constructor for sdigit
 //
-  fSector = sector;
-  fPlate  = plate;
-  fStrip  = strip;
-  fPadx   = padx;
-  fPadz   = padz;  
-  fTdc    = tdc;   
-  fTdcND  = 0;   
-  fAdc    = adc;     
-  fToT    = 0;
 }
    
 //______________________________________________________________________________

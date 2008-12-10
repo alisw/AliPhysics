@@ -103,27 +103,18 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
 //____________________________________________________________________________ 
 
 AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
-  AliTriggerDetector(),
-  fHighMultTh(0),
-  fppMBTh(0),
-  fMultiMuonTh(0),
-  fUPTh(0),
-  fdeltaminpsi(0),
-  fdeltamaxpsi(0),
-  fdeltaminro(0),
-  fdeltamaxro(0),
-  fstripWindow(0)
+  AliTriggerDetector(tr),
+  fHighMultTh(tr.fHighMultTh),
+  fppMBTh(tr.fppMBTh),
+  fMultiMuonTh(tr.fMultiMuonTh),
+  fUPTh(tr.fUPTh),
+  fdeltaminpsi(tr.fdeltaminpsi),
+  fdeltamaxpsi(tr.fdeltamaxpsi),
+  fdeltaminro(tr.fdeltaminro),
+  fdeltamaxro(tr.fdeltamaxro),
+  fstripWindow(tr.fstripWindow)
 {
   //copy ctor
-  fHighMultTh=tr.fHighMultTh;
-  fppMBTh=tr.fppMBTh;
-  fMultiMuonTh=tr.fMultiMuonTh;
-  fUPTh=tr.fUPTh;
-  fdeltaminpsi = tr.fdeltaminpsi;
-  fdeltamaxpsi = tr.fdeltamaxpsi;
-  fdeltaminro = tr.fdeltaminro;
-  fdeltamaxro = tr.fdeltamaxro;
-  fstripWindow = tr.fstripWindow;
   for (Int_t i=0;i<kNLTM;i++){
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=tr.fLTMmatrix[i][j];
@@ -385,7 +376,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
     }
   }
   AliRunLoader *rl;
-  rl = AliRunLoader::GetRunLoader();
+  rl = gAlice->GetRunLoader();
   
   Int_t ncurrevent = rl->GetEventNumber();
   rl->GetEvent(ncurrevent);

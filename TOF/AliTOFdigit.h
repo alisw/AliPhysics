@@ -17,9 +17,9 @@
 #include "AliDigit.h"
 
 class AliTOFdigit : public AliDigit {
-
+  
   //overloading of the streamer << operator
-friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
+  friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
 
  public:
  AliTOFdigit();
@@ -69,6 +69,9 @@ protected:
 		    // AliTOFSDigitizer::GetAdcBin() to have the
 		    // 'charge' measurement
   Int_t   fToT;     // simulated ToT
+
+ private:
+  AliTOFdigit &operator=(const AliTOFdigit& digit);
 
   ClassDef(AliTOFdigit,5)  // Digit for Time Of Flight
 };

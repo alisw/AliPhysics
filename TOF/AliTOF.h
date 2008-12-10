@@ -33,8 +33,6 @@ class AliTOF : public AliDetector {
 public:
   AliTOF(); 
   AliTOF(const char *name, const char *title, Option_t *option="noTimeZero");
-  AliTOF(const AliTOF &source); // copy constructor
-  AliTOF& operator=(const AliTOF &source); // ass. op.
 
   virtual ~AliTOF() ;
 // getters for AliTOF object status
@@ -115,6 +113,8 @@ protected:
   AliTOFGeometry *fTOFGeometry; //The TOF Geometry parameters
  
 private:
+  AliTOF(const AliTOF &source); // copy constructor
+  AliTOF& operator=(const AliTOF &source); // ass. op.
 
   ClassDef(AliTOF,8)  // Time Of Flight base class
 };

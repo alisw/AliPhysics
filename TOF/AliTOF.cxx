@@ -187,40 +187,6 @@ void AliTOF::GetTOFSectors(Int_t *sectors) const
     sectors[isec]=fTOFSectors[isec];
   }
 }
-//_____________________________________________________________________________
-AliTOF::AliTOF(const AliTOF &source)
-  :
-  AliDetector(),
-  fFGeom(0x0),
-  fDTask(0x0),
-  fReTask(0x0),
-  fSDigits(0x0),
-  fNSDigits(0),
-  fReconParticles(0x0),
-  fIdSens(-1),
-  fTZero(kFALSE),
-  fTOFHoles(kTRUE),
-  fTOFGeometry(0x0)
-{
-  // copy constructor
-
-  this->fReconParticles=source.fReconParticles;
-  this->fSDigits=source.fSDigits;
-  this->fTOFGeometry=source.fTOFGeometry;
-
-}
-
-//_____________________________________________________________________________
-AliTOF& AliTOF::operator=(const AliTOF &source)
-{
-  // ass. op.
-
-  this->fReconParticles=source.fReconParticles;
-  this->fSDigits=source.fSDigits;
-  this->fTOFGeometry=source.fTOFGeometry;
-  return *this;
-
-}
 
 //_____________________________________________________________________________
 void AliTOF::CreateTOFFolders()

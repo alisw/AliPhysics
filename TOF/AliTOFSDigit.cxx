@@ -93,13 +93,13 @@ AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Int_t *digit):
 
 ////////////////////////////////////////////////////////////////////////
 AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit):
-  TObject(),
-  fSector(-1),
-  fPlate(-1),
-  fStrip(-1),
-  fPadx(-1),
-  fPadz(-1),
-  fNDigits(0),
+  TObject(digit),
+  fSector(digit.fSector),
+  fPlate(digit.fPlate),
+  fStrip(digit.fStrip),
+  fPadx(digit.fPadx),
+  fPadz(digit.fPadz),
+  fNDigits(digit.fNDigits),
   fTdc(0x0),
   fAdc(0x0),
   fTracks(0x0)
@@ -107,12 +107,6 @@ AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit):
   // 
   // copy ctor for AliTOFSDigit object
   //
-  fSector = digit.fSector;
-  fPlate  = digit.fPlate;
-  fStrip  = digit.fStrip;
-  fPadx   = digit.fPadx;
-  fPadz   = digit.fPadz;
-  fNDigits = digit.fNDigits;
   fTdc = new TArrayI(*digit.fTdc);  
   fAdc = new TArrayI(*digit.fAdc);
   fTracks = new TArrayI(*digit.fTracks);
@@ -124,15 +118,20 @@ AliTOFSDigit& AliTOFSDigit::operator=(const AliTOFSDigit & digit)
   // 
   // copy ctor for AliTOFSDigit object
   //
-  this->fSector = digit.fSector;
-  this->fPlate  = digit.fPlate;
-  this->fStrip  = digit.fStrip;
-  this->fPadx   = digit.fPadx;
-  this->fPadz   = digit.fPadz;
-  this->fNDigits = digit.fNDigits;
-  this->fTdc = digit.fTdc;
-  this->fAdc = digit.fAdc;
-  this->fTracks = digit.fTracks;
+
+  if (this == &digit)
+    return *this;
+
+  TObject::operator=(digit);
+  fSector = digit.fSector;
+  fPlate  = digit.fPlate;
+  fStrip  = digit.fStrip;
+  fPadx   = digit.fPadx;
+  fPadz   = digit.fPadz;
+  fNDigits = digit.fNDigits;
+  fTdc = digit.fTdc;
+  fAdc = digit.fAdc;
+  fTracks = digit.fTracks;
   return *this;
 
 }

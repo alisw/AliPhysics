@@ -286,81 +286,46 @@ AliTOFRawStream::AliTOFRawStream():
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   TObject(stream),
-  fRawReader(0x0),
-  fTOFrawData(0x0),
+  fRawReader(stream.fRawReader),
+  fTOFrawData(stream.fTOFrawData),
   fDecoder(new AliTOFDecoder()),
-  fDDL(-1),
-  fTRM(-1),
-  fTRMchain(-1),
-  fTDC(-1),
-  fTDCchannel(-1),
-  fTime(-1),
-  fToT(-1),
-  fLeadingEdge(-1),
-  fTrailingEdge(-1),
-  fErrorFlag(-1),
-  fSector(-1),
-  fPlate(-1),
-  fStrip(-1),
-  fPadX(-1),
-  fPadZ(-1),
-  fPackedDigits(0),
-  fWordType(-1),
-  fSlotID(-1),
-  fACQ(-1),
-  fPSbit(-1),
-  fTDCerrorFlag(-1),
-  fInsideDRM(kFALSE),
-  fInsideTRM(kFALSE),
-  fInsideLTM(kFALSE),
-  fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE),
-  fLocalEventCounterDRM(-1),
-  fLocalEventCounterLTM(-1),
+  fDDL(stream.fDDL),
+  fTRM(stream.fTRM),
+  fTRMchain(stream.fTRMchain),
+  fTDC(stream.fTDC),
+  fTDCchannel(stream.fTDCchannel),
+  fTime(stream.fTime),
+  fToT(-stream.fToT),
+  fLeadingEdge(stream.fLeadingEdge),
+  fTrailingEdge(stream.fTrailingEdge),
+  fErrorFlag(stream.fErrorFlag),
+  fSector(stream.fSector),
+  fPlate(stream.fPlate),
+  fStrip(stream.fStrip),
+  fPadX(stream.fPadX),
+  fPadZ(stream.fPadZ),
+  fPackedDigits(stream.fPackedDigits),
+  fWordType(stream.fWordType),
+  fSlotID(stream.fSlotID),
+  fACQ(stream.fACQ),
+  fPSbit(stream.fPSbit),
+  fTDCerrorFlag(stream.fTDCerrorFlag),
+  fInsideDRM(stream.fInsideDRM),
+  fInsideTRM(stream.fInsideTRM),
+  fInsideLTM(stream.fInsideLTM),
+  fInsideTRMchain0(stream.fInsideTRMchain0),
+  fInsideTRMchain1(stream.fInsideTRMchain1),
+  fLocalEventCounterDRM(stream.fLocalEventCounterDRM),
+  fLocalEventCounterLTM(stream.fLocalEventCounterLTM),
   fLocalEventCounterTRM(0x0),
   fLocalEventCounterChain(0x0),
   fChainBunchID(0x0),
-  fCableLengthMap(0x0),
-  fEventID(0)
+  fCableLengthMap(stream.fCableLengthMap),
+  fEventID(stream.fEventID)
 {
   //
   // copy constructor
   //
-
-  fRawReader = stream.fRawReader;
-
-  fTOFrawData = stream.fTOFrawData;
-
-  fDDL = stream.fDDL;
-  fTRM = stream.fTRM;
-  fTRMchain = stream.fTRMchain;
-  fTDC = stream.fTDC;
-  fTDCchannel = stream.fTDCchannel;
-  fTime = stream.fTime;
-  fToT = stream.fToT;
-  fLeadingEdge = stream.fLeadingEdge;
-  fTrailingEdge = stream.fTrailingEdge;
-
-  fErrorFlag = stream.fErrorFlag;
-
-  fSector = stream.fSector;
-  fPlate = stream.fPlate;
-  fStrip = stream.fStrip;
-  fPadX = stream.fPadX;
-  fPadZ = stream.fPadZ;
-
-  fPackedDigits = stream.fPackedDigits;
-
-  fWordType = stream.fWordType;
-  fSlotID = stream.fSlotID;
-  fACQ = stream.fACQ;
-  fPSbit = stream.fPSbit;
-  fTDCerrorFlag = stream.fTDCerrorFlag;
-  fInsideDRM = stream.fInsideDRM;
-  fInsideTRM = stream.fInsideTRM;
-  fInsideLTM = stream.fInsideLTM;
-  fInsideTRMchain0 = stream.fInsideTRMchain0;
-  fInsideTRMchain1 = stream.fInsideTRMchain1;
 
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
     fDataBuffer[i]= new AliTOFHitDataBuffer(*stream.fDataBuffer[i]);
@@ -369,8 +334,6 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
 
   fTOFrawData = new TClonesArray(*stream.fTOFrawData);
 
-  fLocalEventCounterDRM = stream.fLocalEventCounterDRM;
-  fLocalEventCounterLTM = stream.fLocalEventCounterLTM;
   for (Int_t j=0;j<13;j++){
     fLocalEventCounterTRM[j] = stream.fLocalEventCounterTRM[j];
     for (Int_t k=0;k<2;k++){
@@ -378,10 +341,6 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
       fChainBunchID[j][k] = stream.fChainBunchID[j][k];
     }
   }
-
-  fCableLengthMap = stream.fCableLengthMap;
-
-  fEventID = stream.fEventID;
 
 }
 
@@ -391,6 +350,11 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   //
   // assignment operator
   //
+
+  if (this == &stream)
+    return *this;
+
+  TObject::operator=(stream);
 
   fRawReader = stream.fRawReader;
 

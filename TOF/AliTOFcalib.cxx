@@ -148,7 +148,7 @@ AliTOFcalib::AliTOFcalib():
 //____________________________________________________________________________ 
 
 AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
-  TTask("AliTOFcalib",""),
+  TTask(calib),
   fNChannels(calib.fNChannels),
   fTOFCalOnline(0x0),
   fTOFCalOnlinePulser(0x0),
@@ -186,27 +186,32 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
 AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
 {
   //TOF Calibration Class assignment operator
-  this->fNChannels = calib.fNChannels;
-  this->fCal = calib.fCal;
-  this->fStatus = calib.fStatus;
-  this->fTOFSimToT = calib.fTOFSimToT;
-  this->fkValidity = calib.fkValidity;
-  this->fTree = calib.fTree;
-  this->fChain = calib.fChain;
-  this->fNruns = calib.fNruns;
-  this->fFirstRun = calib.fFirstRun;
-  this->fLastRun = calib.fLastRun;
+
+  if (this == &calib)
+    return *this;
+  
+  TTask::operator=(calib);
+  fNChannels = calib.fNChannels;
+  fCal = calib.fCal;
+  fStatus = calib.fStatus;
+  fTOFSimToT = calib.fTOFSimToT;
+  fkValidity = calib.fkValidity;
+  fTree = calib.fTree;
+  fChain = calib.fChain;
+  fNruns = calib.fNruns;
+  fFirstRun = calib.fFirstRun;
+  fLastRun = calib.fLastRun;
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
     AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
     AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
     AliTOFChannelOnlineStatus * calChOnlineStPulser = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlinePulser->At(iarray);
     AliTOFChannelOnlineStatus * calChOnlineStNoise = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineNoise->At(iarray);
     AliTOFChannelOnlineStatus * calChOnlineStHW = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineHW->At(iarray);
-    this->fTOFCalOnline->AddAt(calChOnline,iarray);
-    this->fTOFCalOnlinePulser->AddAt(calChOnlineStPulser,iarray);
-    this->fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
-    this->fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
-    this->fTOFCalOffline->AddAt(calChOffline,iarray);
+    fTOFCalOnline->AddAt(calChOnline,iarray);
+    fTOFCalOnlinePulser->AddAt(calChOnlineStPulser,iarray);
+    fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
+    fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
+    fTOFCalOffline->AddAt(calChOffline,iarray);
   }
   return *this;
 }

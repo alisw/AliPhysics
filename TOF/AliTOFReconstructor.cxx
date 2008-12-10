@@ -63,13 +63,12 @@ AliTOFReconstructor::AliTOFReconstructor()
 
 //------------------------------------------------------------------------
 AliTOFReconstructor::AliTOFReconstructor(const AliTOFReconstructor &source)
-  : AliReconstructor(),
-    fTOFcalib(0)
+  : AliReconstructor(source),
+    fTOFcalib(source.fTOFcalib)
 {
 //
 // copy ctor
 //
-  this->fTOFcalib=source.fTOFcalib;
 }
 
 //------------------------------------------------------------------------
@@ -78,7 +77,10 @@ AliTOFReconstructor & AliTOFReconstructor::operator=(const AliTOFReconstructor &
 //
 // assignment op.
 //
-  this->fTOFcalib=source.fTOFcalib;
+  if (this == &source)
+    return *this;
+
+  fTOFcalib=source.fTOFcalib;
   return *this;
 }
 //_____________________________________________________________________________

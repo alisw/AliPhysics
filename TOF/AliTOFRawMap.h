@@ -28,6 +28,7 @@ class AliTOFRawMap : public TObject
     AliTOFRawMap();
     AliTOFRawMap(TClonesArray *sdig);
     AliTOFRawMap(const AliTOFRawMap & rawMap);
+    AliTOFRawMap &operator=(const AliTOFRawMap & rawMap);
     
     virtual ~AliTOFRawMap();
     // Clear the raw map
@@ -41,8 +42,6 @@ class AliTOFRawMap : public TObject
     virtual TObject*  GetHit(Int_t *vol) const;
     // Test hit status
     virtual FlagType TestHit(Int_t *vol) const;
-    // Assignment operator
-    AliTOFRawMap& operator = (const AliTOFRawMap& rhs);
     
  private:
     // Check index

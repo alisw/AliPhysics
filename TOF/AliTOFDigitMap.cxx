@@ -49,11 +49,11 @@ Raw data update: to read the TOF raw data defined in UNPACKED mode
 ClassImp(AliTOFDigitMap)
 
 AliTOFDigitMap::AliTOFDigitMap():
-  fNSector(-1),
-  fNplate(-1),
-  fNstrip(-1),
-  fNpx(-1),
-  fNpz(-1),
+  fNSector(AliTOFGeometry::NSectors()),
+  fNplate(AliTOFGeometry::NPlates()),
+  fNstrip(AliTOFGeometry::NStripC()),
+  fNpx(AliTOFGeometry::NpadX()),
+  fNpz(AliTOFGeometry::NpadZ()),
   fMaxIndex(-1),
   fDigitMap(0x0)
 {
@@ -61,34 +61,42 @@ AliTOFDigitMap::AliTOFDigitMap():
 // Default ctor
 //
 
-  fNSector = AliTOFGeometry::NSectors();
-  fNplate = AliTOFGeometry::NPlates();
-  fNstrip = AliTOFGeometry::NStripC();
-  fNpx  = AliTOFGeometry::NpadX();
-  fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
-
   fDigitMap = new Int_t*[fMaxIndex];
+
   for (Int_t i=0; i<fMaxIndex; i++) fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
   Clear();
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & /*digitMap*/):
-  TObject(),
-  fNSector(-1),
-  fNplate(-1),
-  fNstrip(-1),
-  fNpx(-1),
-  fNpz(-1),
-  fMaxIndex(-1),
+AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & digitMap):
+  TObject(digitMap),
+  fNSector(digitMap.fNSector),
+  fNplate(digitMap.fNplate),
+  fNstrip(digitMap.fNstrip),
+  fNpx(digitMap.fNpx),
+  fNpz(digitMap.fNpz),
+  fMaxIndex(digitMap.fMaxIndex),
   fDigitMap(0x0)
 {
 //
-// Dummy copy constructor
+// dummy copy constructor
 //
-  ;
+  
+  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
+  fDigitMap = new Int_t*[fMaxIndex];
 
+  for (Int_t i=0; i<fMaxIndex; i++) fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
+}
+
+////////////////////////////////////////////////////////////////////////
+AliTOFDigitMap &
+AliTOFDigitMap::operator=(const AliTOFDigitMap & /*digitMap*/)
+{
+//
+// dummy copy const
+//
+    return *this;
 }
 
  
@@ -215,13 +223,6 @@ FlagType AliTOFDigitMap::TestDigit(Int_t *vol) const
     } else {
 	return kUnused;
     }
-}
-
-////////////////////////////////////////////////////////////////////////
-AliTOFDigitMap & AliTOFDigitMap::operator = (const AliTOFDigitMap & /*rhs*/) 
-{
-// Dummy assignment operator
-    return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////

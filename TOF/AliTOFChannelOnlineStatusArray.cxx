@@ -55,20 +55,23 @@ AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(Int_t size):
 //________________________________________________________________
 AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(const AliTOFChannelOnlineStatusArray & source):
       TObject(),
-      fSize(0),
-      fArray(0x0)
+      fSize(source.fSize),
+      fArray(source.fArray)
 { 
 	// copy constructor
-	this->fSize= source.fSize;
-	this->fArray= source.fArray;
 }
 //________________________________________________________________
 AliTOFChannelOnlineStatusArray &AliTOFChannelOnlineStatusArray::operator=(const AliTOFChannelOnlineStatusArray & source) 
 { 
 	// assignment operator
-	this->fSize= source.fSize;
-	this->fArray= source.fArray;
-	return *this;
+
+  if (this == &source)
+    return *this;
+
+  TObject::operator=(source);
+  fSize= source.fSize;
+  fArray= source.fArray;
+  return *this;
 }
 //________________________________________________________________
 void AliTOFChannelOnlineStatusArray::SetStatus(Int_t pos, UChar_t parr)

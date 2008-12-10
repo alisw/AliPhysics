@@ -42,7 +42,7 @@ AliTOFFormatDCS::AliTOFFormatDCS(): TObject(),fShort(0){
 //---------------------------------------------------------------
 
 AliTOFFormatDCS::AliTOFFormatDCS(const AliTOFFormatDCS & format):
-  TObject(),
+  TObject(format),
   fShort(format.fShort)
 { 
   // copy constructor
@@ -59,16 +59,20 @@ AliTOFFormatDCS::AliTOFFormatDCS(const AliTOFFormatDCS & format):
 
 AliTOFFormatDCS& AliTOFFormatDCS:: operator=(const AliTOFFormatDCS & format) { 
 
+  if (this == &format)
+    return *this;
+
   // assignment operator
+  TObject::operator=(format);
   for (Int_t i=0;i<3;i++){
-    this->fFloats[i]=format.GetFloat(i);
-    this->fTimeStampsFloat[i]=format.GetTimeStampFloat(i);
+    fFloats[i]=format.GetFloat(i);
+    fTimeStampsFloat[i]=format.GetTimeStampFloat(i);
   }
   for (Int_t i=0;i<2;i++){
-    this->fDeltas[i]=format.GetDelta(i);
-    this->fTimeStampsDelta[i]=format.GetTimeStampFloat(i);
+    fDeltas[i]=format.GetDelta(i);
+    fTimeStampsDelta[i]=format.GetTimeStampFloat(i);
   }
-  this->fShort=format.GetShort();
+  fShort=format.GetShort();
   return *this;
 }
 //---------------------------------------------------------------

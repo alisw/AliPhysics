@@ -97,37 +97,37 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 //_____________________________________________________________________________
 
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source)
-  :TObject(),
-  fRunLoader(0),
-  fDigits(new TClonesArray("AliTOFdigit", 4000)),
-  fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
+  :TObject(source),
+   fRunLoader(0),
+   fDigits(source.fDigits),
+   fRecPoints(source.fRecPoints),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
   fMaxDeltaTime(10),
   fVerbose(0),
-  fDecoderVersion(0),
-  fTOFcalib(0),
+  fDecoderVersion(source.fDecoderVersion),
+  fTOFcalib(source.fTOFcalib),
   fTOFdigitMap(new AliTOFDigitMap())
 
 {
   // copy constructor
-  this->fDigits=source.fDigits;
-  this->fRecPoints=source.fRecPoints;
-  this->fDecoderVersion=source.fDecoderVersion;
-  this->fTOFcalib=source.fTOFcalib;
-
 }
 //_____________________________________________________________________________
 
 AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinderV1 &source)
 {
   // ass. op.
-  this->fDigits=source.fDigits;
-  this->fRecPoints=source.fRecPoints;
-  this->fVerbose=source.fVerbose;
-  this->fDecoderVersion=source.fDecoderVersion;
-  this->fTOFcalib=source.fTOFcalib;
-  this->fTOFdigitMap=source.fTOFdigitMap;
+
+  if (this == &source)
+    return *this;
+
+  TObject::operator=(source);
+  fDigits=source.fDigits;
+  fRecPoints=source.fRecPoints;
+  fVerbose=source.fVerbose;
+  fDecoderVersion=source.fDecoderVersion;
+  fTOFcalib=source.fTOFcalib;
+  fTOFdigitMap=source.fTOFdigitMap;
   return *this;
 
 }

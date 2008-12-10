@@ -120,26 +120,18 @@ AliTOFDataDCS::AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_
 //---------------------------------------------------------------
 
 AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
-  TObject(), 
-  fRun(0),
-  fStartTime(0),
-  fEndTime(0),
-  fStartTimeDCSQuery(0),
-  fEndTimeDCSQuery(0),
-  fIsProcessed(kFALSE),
-  fFDR(kFALSE)
+  TObject(data), 
+  fRun(data.fRun),
+  fStartTime(data.fStartTime),
+  fEndTime(data.fEndTime),
+  fStartTimeDCSQuery(data.fStartTimeDCSQuery),
+  fEndTimeDCSQuery(data.fEndTimeDCSQuery),
+  fIsProcessed(data.fIsProcessed),
+  fFDR(data.fFDR)
 
 {
 
 // copy constructor
-
-  fRun=data.fRun;
-  fStartTime=data.fStartTime;
-  fEndTime=data.fEndTime;
-  fStartTimeDCSQuery=data.fStartTimeDCSQuery;
-  fEndTimeDCSQuery=data.fEndTimeDCSQuery;
-  fIsProcessed=data.fIsProcessed;
-  fFDR=data.fFDR;
 
   for(int i=0;i<kNAliases;i++) {
     fAliasNames[i]=data.fAliasNames[i];
@@ -160,21 +152,25 @@ AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) {
 
 // assignment operator
 
-  this->fRun=data.GetRun();
-  this->fStartTime=data.GetStartTime();
-  this->fEndTime=data.GetEndTime();
-  this->fStartTimeDCSQuery=data.GetStartTimeDCSQuery();
-  this->fEndTimeDCSQuery=data.GetEndTimeDCSQuery();
+  if (this == &data)
+    return *this;
+
+  TObject::operator=(data);
+  fRun=data.GetRun();
+  fStartTime=data.GetStartTime();
+  fEndTime=data.GetEndTime();
+  fStartTimeDCSQuery=data.GetStartTimeDCSQuery();
+  fEndTimeDCSQuery=data.GetEndTimeDCSQuery();
 
   for(int i=0;i<kNAliases;i++) {
-    this->fAliasNames[i]=data.GetAliasName(i);
+    fAliasNames[i]=data.GetAliasName(i);
   }
 
   for(int i=0;i<kNHV;i++) {
-    this->fHVvp[i]=data.GetHVvp(i);
-    this->fHVvn[i]=data.GetHVvn(i);
-    this->fHVip[i]=data.GetHVip(i);
-    this->fHVin[i]=data.GetHVin(i);
+    fHVvp[i]=data.GetHVvp(i);
+    fHVvn[i]=data.GetHVvn(i);
+    fHVip[i]=data.GetHVip(i);
+    fHVin[i]=data.GetHVin(i);
   }
 
 

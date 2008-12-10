@@ -110,41 +110,37 @@ AliTOFDDLRawData::AliTOFDDLRawData():
 //----------------------------------------------------------------------------
 AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   TObject(source),
-  fVerbose(0),
-  fIndex(-1),
-  fPackedAcquisition(kFALSE),
-  fFakeOrphaneProduction(kFALSE),
-  fMatchingWindow(8192),
-  fTOFdigitMap(new AliTOFDigitMap()),
-  fTOFdigitArray(0x0),
-  fTOFrawStream(new AliTOFRawStream()),
-  fTOFCableLengthMap(new AliTOFCableLengthMap())
+  fVerbose(source.fVerbose),
+  fIndex(source.fIndex),
+  fPackedAcquisition(source.fPackedAcquisition),
+  fFakeOrphaneProduction(source.fFakeOrphaneProduction),
+  fMatchingWindow(source.fMatchingWindow),
+  fTOFdigitMap(source.fTOFdigitMap),
+  fTOFdigitArray(source.fTOFdigitArray),
+  fTOFrawStream(source.fTOFrawStream),
+  fTOFCableLengthMap(source.fTOFCableLengthMap)
  {
   //Copy Constructor
-  this->fIndex=source.fIndex;
-  this->fVerbose=source.fVerbose;
-  this->fPackedAcquisition=source.fPackedAcquisition;
-  this->fFakeOrphaneProduction=source.fFakeOrphaneProduction;
-  this->fMatchingWindow=source.fMatchingWindow;
-  this->fTOFdigitMap=source.fTOFdigitMap;
-  this->fTOFdigitArray=source.fTOFdigitArray;
-  this->fTOFrawStream=source.fTOFrawStream;
-  this->fTOFCableLengthMap=source.fTOFCableLengthMap;
   return;
 }
 
 //----------------------------------------------------------------------------
 AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   //Assigment operator
-  this->fIndex=source.fIndex;
-  this->fVerbose=source.fVerbose;
-  this->fPackedAcquisition=source.fPackedAcquisition;
-  this->fFakeOrphaneProduction=source.fFakeOrphaneProduction;
-  this->fMatchingWindow=source.fMatchingWindow;
-  this->fTOFdigitMap=source.fTOFdigitMap;
-  this->fTOFdigitArray=source.fTOFdigitArray;
-  this->fTOFrawStream=source.fTOFrawStream;
-  this->fTOFCableLengthMap=source.fTOFCableLengthMap;
+
+  if (this == &source)
+    return *this;
+
+  TObject::operator=(source);
+  fIndex=source.fIndex;
+  fVerbose=source.fVerbose;
+  fPackedAcquisition=source.fPackedAcquisition;
+  fFakeOrphaneProduction=source.fFakeOrphaneProduction;
+  fMatchingWindow=source.fMatchingWindow;
+  fTOFdigitMap=source.fTOFdigitMap;
+  fTOFdigitArray=source.fTOFdigitArray;
+  fTOFrawStream=source.fTOFrawStream;
+  fTOFCableLengthMap=source.fTOFCableLengthMap;
   return *this;
 }
 

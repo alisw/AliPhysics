@@ -55,6 +55,11 @@ AliTOFChannelOnlineStatus::AliTOFChannelOnlineStatus(const AliTOFChannelOnlineSt
 AliTOFChannelOnlineStatus &AliTOFChannelOnlineStatus::operator =(const AliTOFChannelOnlineStatus& channel)
 {
 // assignment operator
+
+  if (this == &channel)
+    return *this;
+
+  TObject::operator=(channel);
   fStatus= channel.GetStatus();
   return *this;
 }

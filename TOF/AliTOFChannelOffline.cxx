@@ -70,6 +70,11 @@ AliTOFChannelOffline::AliTOFChannelOffline(const AliTOFChannelOffline& channel) 
 AliTOFChannelOffline &AliTOFChannelOffline::operator =(const AliTOFChannelOffline& channel)
 {
 // assignment operator
+
+  if (this == &channel)
+    return *this;
+
+  TObject::operator=(channel);
   for(Int_t i = 0; i<6;i++) fSlewPar[i]=channel.GetSlewPar(i);
   return *this;
 }
