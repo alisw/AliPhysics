@@ -29,6 +29,7 @@
 #pragma link C++ class AliPHOSEmcBadChannelsMap+;
 #pragma link C++ class AliPHOSSurvey+;
 #pragma link C++ class AliPHOSSurvey1+;
+#pragma link C++ class AliPHOSModuleMisalignment+;
 
 #pragma link C++ class AliPHOSQAChecker+;
 #pragma link C++ class AliPHOSRecParticle+;

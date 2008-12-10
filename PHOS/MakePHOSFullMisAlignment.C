@@ -18,7 +18,10 @@ void MakePHOSFullMisAlignment()
   //Activate CDB storage and load geometry from CDB
   //I need valid gGeoManager to create local transformations.
   
-  //[Part of code, taken from ITS version of MakexxxFullMisalignment
+  //[Part of code, taken from ITS version of MakexxxFullMisalignment.
+  //This code was required only for local delta transformations.
+  //Now, transformations are global, so no gGeoManager and geometry are required.
+  /*
   AliCDBManager * cdb = AliCDBManager::Instance();
   if (!cdb->IsDefaultStorageSet())
     cdb->SetDefaultStorage("local://$ALICE_ROOT");
@@ -48,12 +51,14 @@ void MakePHOSFullMisAlignment()
     AliGeomManager::SetGeometry((TGeoManager*) entry->GetObject());
   }else{
     AliGeomManager::LoadGeometry("geometry.root"); //load geom from default CDB storage
-  }    
+  }  
+  */  
   //end of code taken from ITS version of MakexxxFullMisalignment]
 
   AliPHOSEMCAGeometry * emca = phosGeom->GetEMCAGeometry();
-  TClonesArray alobj("AliAlignObjParams", 16);// + phosGeom->GetNModules() * emca->GetNStripX() * emca->GetNStripZ());
-   
+  TClonesArray alobj("AliAlignObjParams", 16);// + phosGeom->GetNModules() * emca->GetNStripX() *
+                                              //   emca->GetNStripZ());
+  
   const Double_t dpsi = 0., dtheta = 0., dphi = 0.;
   const Double_t displacement = 10.;
   Int_t iIndex = 0; //let all modules have index=0 in a layer with no LUT
@@ -63,25 +68,33 @@ void MakePHOSFullMisAlignment()
 
   // Alignment for 5 PHOS modules
 
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module1",
-	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module2",
-	  volid, 2., 0., 0., 0., 0., 0., kTRUE);
-
-  Double_t rotMatrix[9] = {0.999992695, -0.00295322, -0.0024267, 
-			   0.002955489, 0.999995199, 0.00093165, 
-			   0.002423942, -0.000938811, 0.99999662};
-  TGeoRotation rotation;
-  rotation.SetMatrix(rotMatrix);
-  Double_t dX=1.25474126, dY=-1.4088643, dZ=-12.856;
-  AliAlignObjParams * mod3 = 
-    new(alobj[i++]) AliAlignObjParams("PHOS/Module3", volid, dX, dY, dZ, 0., 0., 0., kFALSE);
-  mod3->SetRotation(rotation);
+  TString surveyFileName;
   
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module4",
-	  volid, 0.,  0., 0., 0., 0., 0., kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module5",
-	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
+  const Char_t * szEnv = gSystem->Getenv("ALICE_ROOT");
+  if (szEnv && szEnv[0]) {
+    surveyFileName += szEnv;
+    if (surveyFileName[surveyFileName.Length() - 1] != '/')
+      surveyFileName += '/';
+  } else {
+    Warning(macroName, "cannot find ALICE_ROOT environment variable\n"
+		       "probably, I wan't be able to find survey file");
+  }
+    
+  surveyFileName += "PHOS/data/phos_mod3_survey_2008.txt";
+
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module1", volid, 0., 0., 0., 0., 0., 0., kTRUE);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module2", volid, 2., 0., 0., 0., 0., 0., kTRUE);
+  //
+  AliSurveyObj survey;
+  survey.FillFromLocalFile(surveyFileName.Data());
+  TGeoHMatrix module3Delta;
+  AliPHOSModuleMisalignment delta(*phosGeom);
+  delta.DeltaTransformation(2, survey.GetData(), "T2_10000", "T2_10027", "T2_24000", 
+        		    &module3Delta);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module3", volid, module3Delta, kTRUE);
+  //
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module4", volid, 0.,  0., 0., 0., 0., 0., kTRUE);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module5", volid, 0., 0., 0., 0., 0., 0., kTRUE);
 
   const Double_t dx = 0., dy = 0., dz = 0. ;
   // Alignment of CPV modules
