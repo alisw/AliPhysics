@@ -32,7 +32,7 @@ void trd_tracks(TEveElement *cont = 0)
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++){
     AliESDtrack* esdTrack = esd->GetTrack(n);
     AliESDfriendTrack *friendTrack = eventESDfriend->GetTrack(n);
-  
+
     TObject *cal = 0x0;
     Int_t ical = 0;
     while(cal = friendTrack->GetCalibObject(ical++)){
@@ -47,17 +47,17 @@ void trd_tracks(TEveElement *cont = 0)
   }
 
   delete reco;
-	
+
   tracks->SetTitle(Form("Tracks %d", tracks->NumChildren()));
   tracks->StampObjProps();
   gEve->AddElement(tracks, cont);
-  
+
   gEve->Redraw3D();
 
-  TGLViewer *v = gEve->GetGLViewer();
+  TGLViewer *v = gEve->GetDefaultGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   ((TGLOrthoCamera&)v->CurrentCamera()).SetEnableRotate(kTRUE);
   v->UpdateScene();
-  
+
   return;
 }

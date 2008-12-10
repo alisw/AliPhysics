@@ -1241,7 +1241,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     TIter next(fSubManagers);
     while ((fgCurrent = dynamic_cast<AliEveEventManager*>(next())) != 0)
     {
-      // gEve->SetCurrentEvent(fgCurrent);
+      gEve->SetCurrentEvent(fgCurrent);
       try
       {
 	fgCurrent->GotoEvent(fEventId);
@@ -1254,7 +1254,7 @@ void AliEveEventManager::AfterNewEventLoaded()
       }
     }
     fgCurrent = fgMaster;
-    // gEve->SetCurrentEvent(fgMaster);
+    gEve->SetCurrentEvent(fgMaster);
   }
 }
 

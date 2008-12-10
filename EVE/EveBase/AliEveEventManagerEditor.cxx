@@ -286,7 +286,6 @@ void AliEveEventManagerWindow::Update()
   fEventId->SetState(evNavOn);
   fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));
 
-  // fAutoLoadTime->SetEnabled(fM->GetAutoLoad());
   fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
   fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
 

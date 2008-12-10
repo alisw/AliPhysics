@@ -181,12 +181,11 @@ void AliEveTPCSectorViz::SetupColor(Int_t val, UChar_t* pixel) const
 {
   // Set pixel color to represent signal val from the current palette.
 
-  using namespace TMath;
-  Float_t div  = Max(1, fMaxVal - fThreshold);
+  Float_t div  = TMath::Max(1, fMaxVal - fThreshold);
   Int_t   nCol = gStyle->GetNumberOfColors();
-  Int_t   cBin = (Int_t) Nint(nCol*(val - fThreshold)/div);
+  Int_t   cBin = TMath::Nint(nCol*(val - fThreshold)/div);
 
-  TEveUtil::ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
+  TEveUtil::ColorFromIdx(gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin)), pixel);
 }
 
 void AliEveTPCSectorViz::ClearColorArray()

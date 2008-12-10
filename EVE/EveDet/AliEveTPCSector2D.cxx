@@ -167,8 +167,8 @@ void AliEveTPCSector2D::Paint(Option_t* )
 
   // Section kCore
   buffer.fID           = this;
-  buffer.fColor        = 1;
-  buffer.fTransparency = 0;
+  buffer.fColor        = GetMainColor();
+  buffer.fTransparency = GetMainTransparency();
   if (HasMainTrans()) RefMainTrans().SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
 

@@ -105,8 +105,8 @@ void AliEveJetPlane::Paint(Option_t* /*option*/)
 
   // Section kCore
   buff.fID           = this;
-  buff.fColor        = fGridColor;
-  buff.fTransparency = 0;
+  buff.fColor        = GetMainColor();
+  buff.fTransparency = GetMainTransparency();
   if (HasMainTrans()) RefMainTrans().SetBuffer3D(buff);
   buff.SetSectionsValid(TBuffer3D::kCore);
 

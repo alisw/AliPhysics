@@ -20,7 +20,6 @@ class TGHSlider;
 
 class TEveGValuator;
 class TEveGDoubleValuator;
-class TEveTransSubEditor;
 
 class AliEveTPCSectorViz;
 
@@ -52,8 +51,6 @@ public:
 
 protected:
   AliEveTPCSectorViz   *fM;          // Model dynamic-casted to AliEveTPCSectorVizEditor
-
-  TEveTransSubEditor   *fHMTrans;    // Widget for transormation.
 
   TEveGValuator        *fSectorID;   // Widget for SectorID.
   TGCheckButton        *fAutoTrans;  // Widget for AutoTrans.

@@ -35,6 +35,7 @@ class AliEveV0List;
 class AliEveV0 : public TEvePointSet
 {
   friend class AliEveV0List;
+  friend class AliEveV0Editor;
 
 public:
   AliEveV0();

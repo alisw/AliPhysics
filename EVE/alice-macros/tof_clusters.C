@@ -74,9 +74,7 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
   clusters->SetTitle(tip);
 
   const TString viz_tag("TOF Clusters");
-  // when going to new root call:
-  // clusters->ApplyVizTag(viz_tag, "Clusters");
-  clusters->ApplyVizTag(viz_tag);
+  clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);
 

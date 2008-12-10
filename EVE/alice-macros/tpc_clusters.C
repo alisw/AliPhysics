@@ -90,9 +90,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   clusters->SetTitle(tip);
 
   const TString viz_tag("TPC Clusters");
-  // when going to new root call:
-  // clusters->ApplyVizTag(viz_tag, "Clusters");
-  clusters->ApplyVizTag(viz_tag);
+  clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);
 

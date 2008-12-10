@@ -38,7 +38,7 @@ private:
   AliEveMacroExecutor(const AliEveMacroExecutor&);            // Not implemented
   AliEveMacroExecutor& operator=(const AliEveMacroExecutor&); // Not implemented
 
-  ClassDef(AliEveMacroExecutor, 0); // Short description.
+  ClassDef(AliEveMacroExecutor, 0); // Container for and executor of AliEveMacros.
 };
 
 #endif

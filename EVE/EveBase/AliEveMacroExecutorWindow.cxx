@@ -198,10 +198,7 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   TString     select = fSelectTags->GetText();
   if ( ! select.IsNull())
   {
-    // "i" does not work (get pcre_exec error = -3 PCRE_ERROR_BADOPTION)
-    // same for 1 (the value of PCRE_CASELESS)
-    // using case-sensitive matching then ... must investigate in root
-    regexp = new TPMERegexp(select);
+    regexp = new TPMERegexp(select, "io");
   }
 
   TIter next(fM->fMacros);

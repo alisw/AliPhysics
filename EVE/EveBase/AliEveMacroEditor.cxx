@@ -110,13 +110,10 @@ void AliEveMacroEditor::SetModel(TObject* obj)
   fM = dynamic_cast<AliEveMacro*>(obj);
 
   fSources->Select  (fM->GetSources(), kFALSE);
-  // TGTextEntry emits a signal no matter what ...
-  TQObject::BlockAllSignals(kTRUE);
-  fTags   ->SetText (fM->GetTags());
-  fMacro  ->SetText (fM->GetMacro());
-  fFunc   ->SetText (fM->GetFunc());
-  fArgs   ->SetText (fM->GetArgs());
-  TQObject::BlockAllSignals(kFALSE);
+  fTags   ->SetText (fM->GetTags(),  kFALSE);
+  fMacro  ->SetText (fM->GetMacro(), kFALSE);
+  fFunc   ->SetText (fM->GetFunc(),  kFALSE);
+  fArgs   ->SetText (fM->GetArgs(),  kFALSE);
   fActive ->SetState(fM->fActive ? kButtonDown : kButtonUp);
 }
 

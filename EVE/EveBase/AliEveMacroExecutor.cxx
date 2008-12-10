@@ -16,8 +16,11 @@
 #include <TROOT.h>
 
 //______________________________________________________________________________
-// Full description of AliEveMacroExecutor
 //
+// Contains a list of AliEveMacros.
+// The macros are added via AddMacro() and are owned by the executor.
+// The macros can be executed via ExecMacros().
+// They are executed in order in which they are registered.
 
 ClassImp(AliEveMacroExecutor)
 
@@ -85,55 +88,69 @@ void AliEveMacroExecutor::ExecMacros()
   {
     // printf ("macro '%s'; func '%s'; args '%s'\n", mac->GetMacro().Data(), mac->GetFunc().Data(), mac->GetArgs().Data());
 
+    mac->ResetExecState();
+    
     if (mac->GetActive() == kFALSE || mac->GetFunc().IsNull())
     {
       continue;
     }
 
-    switch (mac->GetSources())
+    if ((mac->RequiresRunLoader() && ! AliEveEventManager::HasRunLoader()) ||
+        (mac->RequiresESD()       && ! AliEveEventManager::HasESD())       ||
+        (mac->RequiresESDfriend() && ! AliEveEventManager::HasESDfriend()) ||
+        (mac->RequiresRawReader() && ! AliEveEventManager::HasRawReader()))
     {
-      case AliEveMacro::kRunLoader:
-	if ( ! AliEveEventManager::HasRunLoader())
-	  continue;
-	break;
-      case AliEveMacro::kESD:
-	if ( ! AliEveEventManager::HasESD())
-	  continue;
-	break;
-      case AliEveMacro::kESDfriend:
-	if ( ! AliEveEventManager::HasESDfriend())
-	  continue;
-	break;
-      case AliEveMacro::kRawReader:
-	if ( ! AliEveEventManager::HasRawReader())
-	  continue;
-	break;
-      default:
-	break;
+      mac->SetExecNoData();
+      continue;
     }
 
     TString cmd(mac->FormForExec());
     try
     {
-      gInterpreter->ProcessLine(cmd);
+      Long_t                   result = 0;
+      TInterpreter::EErrorCode error  = TInterpreter::kNoError;
+
+      result = gInterpreter->ProcessLine(cmd, &error);
+
       // Try to fix broken cint state? Code taken form pyroot.
-      if ( G__get_return( 0 ) > G__RETURN_NORMAL )
+      if (G__get_return(0) > G__RETURN_NORMAL)
       {
-	printf ("***INFIXING***\n");
-	G__security_recover( 0 );    // 0 ensures silence
+	printf ("*** FIXING CINT STATE AFTER RETURN ***\n");
+	G__security_recover(0);
+      }
+
+      if (error)
+      {
+        mac->SetExecError();
+        Error("ExecMacros", "Executing %s::%s, CINT error ... hopefully recovered.",
+              mac->GetMacro().Data(), cmd.Data());
+      }
+      else
+      {
+        TEveElement *el  = (TEveElement*) result;
+        TObject     *obj = dynamic_cast<TObject*>(el);
+        if (el != 0 && obj == 0)
+        {
+          Warning("ExecMacros", "Executing %s::%s, returned TEveElement seems bad, setting it to 0.",
+                  mac->GetMacro().Data(), cmd.Data());
+          el = 0;
+        }
+        mac->SetExecOK(el);
       }
     }
     catch(TEveException& exc)
     {
+      mac->SetExecException(exc);
+
+      // Try to fix broken cint state? Code taken form pyroot.
+      if (G__get_return(0) > G__RETURN_NORMAL)
+      {
+	printf ("*** FIXING CINT STATE AFTER EXCEPTION ***\n");
+	G__security_recover(0);
+      }
+
       Error("ExecMacros", "Executing %s::%s, caught exception: '%s'.",
 	    mac->GetMacro().Data(), cmd.Data(), exc.Data());
-    }
-
-    // Try to fix broken cint state? Code taken form pyroot.
-    if ( G__get_return( 0 ) > G__RETURN_NORMAL )
-    {
-      printf ("***POSTFIXING****\n");
-      G__security_recover( 0 );    // 0 ensures silence
     }
   }
 }

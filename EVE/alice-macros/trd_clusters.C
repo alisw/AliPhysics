@@ -74,9 +74,7 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
   clusters->SetTitle(tip);
 
   const TString viz_tag("TRD Clusters");
-  // when going to new root call:
-  // clusters->ApplyVizTag(viz_tag, "Clusters");
-  clusters->ApplyVizTag(viz_tag);
+  clusters->ApplyVizTag(viz_tag, "Clusters");
 
   gEve->AddElement(clusters, cont);
 

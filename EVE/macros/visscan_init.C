@@ -33,29 +33,7 @@ void visscan_init()
   AliEveTrackCounter* g_trkcnt = new AliEveTrackCounter("Primary Counter");
   gEve->AddToListTree(g_trkcnt, kFALSE);
 
-
-  gROOT->ProcessLine(".L SplitGLView.C+");
-  TEveBrowser* browser = gEve->GetBrowser();
-  browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
-
-   if (gRPhiMgr) {
-      TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
-      a->SetNumTickMarks(3);
-      a->SetText("R-Phi");
-      a->SetFontFile("comicbd");
-      a->SetFontSize(10);
-      gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
-   }
-   if (gRhoZMgr) {
-      TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
-      a->SetNumTickMarks(3);
-      a->SetText("Rho-Z");
-      a->SetFontFile("comicbd");
-      a->SetFontSize(10);
-      gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
-   }
-
-  // geometry
+  // Geometry
   TEveUtil::LoadMacro("geom_gentle.C");
   gGeomGentle     = geom_gentle();
   gGeomGentleRPhi = geom_gentle_rphi(); gGeomGentleRPhi->IncDenyDestroy();
@@ -65,7 +43,7 @@ void visscan_init()
     gGeomGentleTRD = geom_gentle_trd();
   }
 
-  // event data
+  // Per event data
   TEveUtil::LoadMacro("primary_vertex.C");
   TEveUtil::LoadMacro("esd_V0_points.C");
   TEveUtil::LoadMacro("esd_V0.C");
@@ -80,12 +58,40 @@ void visscan_init()
   // TEveLine::SetDefaultSmooth(1);
 
   TEveBrowser* browser = gEve->GetBrowser();
+  browser->ShowCloseTab(kFALSE);
+
+  gROOT->ProcessLine(".L SplitGLView.C+");
+  browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
+
+  browser->ShowCloseTab(kTRUE);
 
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
 
-  // event
+  // Projections
+  if (gRPhiMgr) {
+    TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
+    a->SetMainColor(kWhite);
+    a->SetTitle("R-Phi");
+    a->SetTitleSize(0.05);
+    a->SetTitleFontName("comicbd");
+    a->SetLabelSize(0.025);
+    a->SetLabelFontName("comicbd");
+    gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
+  }
+  if (gRhoZMgr) {
+    TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
+    a->SetMainColor(kWhite);
+    a->SetTitle("Rho-Z");
+    a->SetTitleSize(0.05);
+    a->SetTitleFontName("comicbd");
+    a->SetLabelSize(0.025);
+    a->SetLabelFontName("comicbd");
+    gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
+  }
+
+  // Event
   AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
   AliEveEventManager::GetMaster()->GotoEvent(0);
 

@@ -11,7 +11,6 @@
 #include <EveDet/AliEveTPCSectorViz.h>
 
 #include <TEveGValuators.h>
-#include <TEveTransEditor.h>
 
 #include <TVirtualPad.h>
 
@@ -32,7 +31,6 @@ AliEveTPCSectorVizEditor::AliEveTPCSectorVizEditor(const TGWindow *p,
                                        UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fHMTrans   (0),
   fSectorID  (0), fAutoTrans (0),
   fRnrInn    (0), fRnrOut1   (0), fRnrOut2(0),
   fThreshold (0), fMaxVal    (0),
@@ -43,13 +41,6 @@ AliEveTPCSectorVizEditor::AliEveTPCSectorVizEditor(const TGWindow *p,
   fPriority = 40;
 
   Int_t labelW = 60;
-
-  MakeTitle("Transformation matrix");
-
-  fHMTrans = new TEveTransSubEditor(this);
-  fHMTrans->Connect("UseTrans()",     "AliEveTPCSectorVizEditor", this, "Update()");
-  fHMTrans->Connect("TransChanged()", "AliEveTPCSectorVizEditor", this, "Update()");
-  AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 
   MakeTitle("AliEveTPCSectorViz");
 
@@ -125,8 +116,6 @@ void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
   // Set model object.
 
   fM = dynamic_cast<AliEveTPCSectorViz*>(obj);
-
-  fHMTrans->SetModel(fM->PtrMainTrans());
 
   fSectorID->SetValue(fM->fSectorID);
   fAutoTrans->SetState(fM->fAutoTrans  ? kButtonDown : kButtonUp);

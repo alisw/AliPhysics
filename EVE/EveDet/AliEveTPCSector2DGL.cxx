@@ -97,42 +97,41 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 
   fSectorData = fSector->GetSectorData();
 
-  if(fRTS < fSector->fRTS && fSectorData != 0) {
+  if (fRTS < fSector->fRTS && fSectorData != 0) {
     CreateTexture();
     fRTS = fSector->fRTS;
   }
 
-  glPushAttrib(GL_CURRENT_BIT      | GL_DEPTH_BUFFER_BIT |
-               GL_COLOR_BUFFER_BIT | GL_ENABLE_BIT       | GL_POLYGON_BIT);
+  glPushAttrib(GL_CURRENT_BIT | GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT | GL_ENABLE_BIT);
 
   glDisable(GL_LIGHTING);
   glDisable(GL_CULL_FACE);
 
   // Display digits
-  if(fSectorData != 0) {
-
+  if (fSectorData != 0)
+  {
     const AliEveTPCSectorData::SegmentInfo&  iSeg = AliEveTPCSectorData::GetInnSeg();
     const AliEveTPCSectorData::SegmentInfo& o1Seg = AliEveTPCSectorData::GetOut1Seg();
     const AliEveTPCSectorData::SegmentInfo& o2Seg = AliEveTPCSectorData::GetOut2Seg();
 
-    if(rnrCtx.SecSelection()) {
+    if (rnrCtx.SecSelection())
+    {
 
       if(fSector->fRnrInn)  DisplayNamedQuads(iSeg, 0, 0);
       if(fSector->fRnrOut1) DisplayNamedQuads(o1Seg, iSeg.GetNMaxPads(), 0);
       if(fSector->fRnrOut2) DisplayNamedQuads(o2Seg, 0, o1Seg.GetNRows());
-
-    } else {
-
-      if(fSector->fUseTexture) {
-	//texture
-	glEnable(GL_BLEND);
-	glDepthMask(GL_FALSE);
+    }
+    else
+    {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      if (fSector->fUseTexture)
+      {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 
-	glPolygonOffset(2,2);
-	glEnable(GL_POLYGON_OFFSET_FILL);
+	glAlphaFunc(GL_GREATER, 0.2);
+	glEnable(GL_ALPHA_TEST);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBindTexture(GL_TEXTURE_2D, fTexture);
 	glEnable(GL_TEXTURE_2D);
 
@@ -141,7 +140,9 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 	if(fSector->fRnrOut2) DisplayTexture(o2Seg, 0, o1Seg.GetNRows());
 
 	glDisable(GL_TEXTURE_2D);
-      } else {
+      }
+      else
+      {
 	if(fSector->fRnrInn)  DisplayQuads(iSeg, 0, 0);
 	if(fSector->fRnrOut1) DisplayQuads(o1Seg, iSeg.GetNMaxPads(), 0);
 	if(fSector->fRnrOut2) DisplayQuads(o2Seg, 0, o1Seg.GetNRows());
@@ -149,7 +150,6 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       DisplayFrame();
     }
-
   }
 
   glPopAttrib();
@@ -194,12 +194,13 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
       }
     }
 
-    if(fSector->fShowMax == kFALSE && fSector->fAverage) {
+    if (fSector->fShowMax == kFALSE && fSector->fAverage) {
       padVal = (Int_t)((Float_t)padVal / (maxTime - minTime));
     }
     padVal = TMath::Min(padVal, fSector->fMaxVal);
-    if(padVal > fSector->fThreshold)
+    if (padVal > fSector->fThreshold) {
       fSector->ColorFromArray(padVal, imgPos);
+    }
     imgPos += 4;
   }
 }
@@ -210,7 +211,8 @@ void AliEveTPCSector2DGL::CreateTexture() const
 {
   // Create texture that holds pad data.
 
-  if (fImage == 0) {
+  if (fImage == 0)
+  {
     fImage = new UChar_t[fgkTextureByteSize];
     glGenTextures(1, &fTexture);
   }

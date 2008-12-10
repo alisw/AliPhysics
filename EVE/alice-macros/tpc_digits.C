@@ -33,7 +33,7 @@ void tpc_digits(Int_t mode=1)
     gEve->AddElement(s);
     gEve->Redraw3D();
 
-    //TGLViewer* cam = gEve->GetGLViewer();
+    //TGLViewer* cam = gEve->GetDefaultGLViewer();
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
     //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom);
     //printf("%f %f %f %f\n", left, right, top, bottom);
@@ -56,7 +56,7 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(x);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gEve->AddElement(s, l);
+	l->AddElement(s);
       }
     }
     {
@@ -72,7 +72,7 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(x);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gEve->AddElement(s, l);
+	l->AddElement(s);
       }
     }
     gEve->EnableRedraw();
@@ -104,7 +104,7 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(x);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gEve->AddElement(s, l);
+	l->AddElement(s);
       }
     }
     {
@@ -120,7 +120,7 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(x);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gEve->AddElement(s, l);
+	l->AddElement(s);
       }
     }
     gEve->EnableRedraw();

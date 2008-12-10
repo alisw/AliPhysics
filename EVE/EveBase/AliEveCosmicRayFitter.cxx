@@ -240,11 +240,11 @@ void AliEveCosmicRayFitter::FitTrack()
 
   TEveTrackPropagator* tp = fTrackList->GetPropagator();
 
-  tp->InitTrack(rc.fV, rc.fP, 1, 0);
+  tp->InitTrack(rc.fV, 0);
   tp->GoToBounds(rc.fP);
 
   rc.fP.Set(-1, -params1(1), -params2(1));
-  tp->InitTrack(rc.fV, rc.fP, 1, 0);
+  tp->InitTrack(rc.fV, 0);
   tp->GoToBounds(rc.fP);
   tp->FillPointSet(track);
   tp->ResetTrack();

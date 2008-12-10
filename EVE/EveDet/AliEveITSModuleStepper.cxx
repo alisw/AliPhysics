@@ -74,14 +74,14 @@ AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   fScaleInfo = new AliEveDigitScaleInfo();
   fScaleInfo->IncRefCount();
 
-  gEve->GetGLViewer()->AddOverlayElement(this);
+  gEve->GetDefaultGLViewer()->AddOverlayElement(this);
 }
 
 AliEveITSModuleStepper::~AliEveITSModuleStepper()
 {
   // Destructor.
 
-  gEve->GetGLViewer()->RemoveOverlayElement(this);
+  gEve->GetDefaultGLViewer()->RemoveOverlayElement(this);
 
   fScaleInfo->DecRefCount();
   fDigitsInfo->DecRefCount();

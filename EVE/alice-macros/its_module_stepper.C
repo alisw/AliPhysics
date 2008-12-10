@@ -30,7 +30,7 @@ void its_module_stepper(Int_t det = 0)
   gEve->Redraw3D(kTRUE); // To enforce camera reset
   gEve->EnableRedraw();
 
-  TGLViewer* v = (TGLViewer *)gEve->GetGLViewer();
+  TGLViewer* v = gEve->GetDefaultGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
   if(mup) mup->SetShow(kFALSE);

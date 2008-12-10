@@ -21,8 +21,6 @@ class TGHSlider;
 
 class TEveGValuator;
 class TEveGDoubleValuator;
-class TEveTransSubEditor;
-
 
 class AliEveTOFSector;
 

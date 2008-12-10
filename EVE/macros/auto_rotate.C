@@ -54,7 +54,7 @@ void auto_rotate_camera()
      hRotateStep = -hRotateStep;
    }
 
-   TGLViewer *v   = gEve->GetGLViewer();
+   TGLViewer *v   = gEve->GetDefaultGLViewer();
    TGLCamera &cam = v->CurrentCamera();
    cam.RotateRad(hRotateStep * g_rotate_speed, vRotateStep * g_rotate_speed);
    v->RequestDraw(TGLRnrCtx::kLODHigh);

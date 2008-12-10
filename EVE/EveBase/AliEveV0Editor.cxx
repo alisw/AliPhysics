@@ -83,7 +83,44 @@ void AliEveV0Editor::SetModel(TObject* obj)
 //    Update();
 // }
 
+#include <TEveManager.h>
+#include <TEveWindow.h>
+#include <TEveViewer.h>
+#include <TEveScene.h>
+
+#include <TGLCamera.h>
+#include <TGLViewer.h>
+
+#include <TLatex.h>
+#include <TRootEmbeddedCanvas.h>
+
 void AliEveV0Editor::DisplayDetailed()
 {
   printf("Hura!\n");
+
+  TEveWindowSlot *slot = TEveWindow::CreateWindowMainFrame();
+  TEveWindowPack *pack = slot->MakePack();
+  pack->SetShowTitleBar(kFALSE);
+  pack->NewSlot()->MakeCurrent();
+
+  TEveViewer *viewer = gEve->SpawnNewViewer("V0 Detailed View");
+  TEveScene  *scene  = gEve->SpawnNewScene("V0 Detail Scene");
+  viewer->AddScene(scene);
+  scene->AddElement(fM);
+
+  viewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
+
+  TGLCamera& cam = viewer->GetGLViewer()->CurrentCamera();
+  cam.SetExternalCenter(kTRUE);
+  cam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+
+  slot = pack->NewSlot();
+  
+  TEveWindowFrame *frame = slot->MakeFrame(new TRootEmbeddedCanvas());
+  frame->SetElementName("Details");
+
+  TLatex* ltx = new TLatex(0.2, 0.2, "#frac{Jacques}{Zoozoo}");
+  ltx->Draw();
+
+  gEve->Redraw3D();
 }

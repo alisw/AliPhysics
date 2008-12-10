@@ -37,18 +37,14 @@ void alieve_online_init()
 
   if (gRPhiMgr) {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
-    a->SetNumTickMarks(3);
-    a->SetText("R-Phi");
-    a->SetFontFile("comicbd");
-    a->SetFontSize(10);
+    a->SetNdiv(3);
+    a->SetTitle("R-Phi");
     gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
   }
   if (gRhoZMgr) {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
-    a->SetNumTickMarks(3);
-    a->SetText("Rho-Z");
-    a->SetFontFile("comicbd");
-    a->SetFontSize(10);
+    a->SetNdiv(3);
+    a->SetTitle("Rho-Z");
     gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
   }
 

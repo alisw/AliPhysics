@@ -1,3 +1,6 @@
+TEveViewer *gSignalView     = 0;
+TEveViewer *gBackgroundView = 0;
+
 void embed_init()
 {
   TEveUtil::LoadMacro("alieve_init.C");
@@ -8,10 +11,8 @@ void embed_init()
   // ------------------------------------------------------------------------
 
   Info("embed_init", "Opening background event ...");
-  // Need strings as CINT can't properly convert "raw-string" to const TString&.
-  TString name("Background Event");
-  TString path("Background");
-  AliEveEventManager* bkg = AliEveEventManager::AddDependentManager(name, path);
+  AliEveEventManager* bkg =
+    AliEveEventManager::AddDependentManager("Background Event", "Background");
   bkg->IncDenyDestroy();
   bkg->AddNewEventCommand("background_event()");
   gEve->AddToListTree(bkg, kTRUE);
@@ -19,17 +20,35 @@ void embed_init()
   TEveScene* bs = gEve->SpawnNewScene("Background");
   bs->AddElement(bkg);
 
-  gEve->GetDefViewer()->AddScene(bs);
-
-  // ------------------------------------------------------------------------
-
-  TEveUtil::LoadMacro("SplitGLView.C+"); // Needed for dependencies.
-  TEveUtil::LoadMacro("its_clusters.C+");
-  TEveUtil::LoadMacro("tpc_clusters.C+");
+  gEve->GetDefaultViewer()->AddScene(bs);
 
   // ------------------------------------------------------------------------
 
   TEveBrowser* browser = gEve->GetBrowser();
+
+  TEveWindowSlot *slot = 0;
+  TEveWindowPack *pack = 0;
+
+  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  pack = slot->MakePack();
+  pack->SetElementName("Parallel View");
+  pack->SetHorizontal();
+  pack->SetShowTitleBar(kFALSE);
+
+  pack->NewSlot()->MakeCurrent();
+  gSignalView = gEve->SpawnNewViewer("Signal View", "");
+  gSignalView->AddScene(gEve->GetEventScene());
+
+  pack->NewSlot()->MakeCurrent();
+  gBackgroundView = gEve->SpawnNewViewer("Background View", "");
+  gBackgroundView->AddScene(bs);
+
+  // ------------------------------------------------------------------------
+
+  TEveUtil::LoadMacro("its_clusters.C+");
+  TEveUtil::LoadMacro("tpc_clusters.C+");
+
+  // ------------------------------------------------------------------------
 
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
