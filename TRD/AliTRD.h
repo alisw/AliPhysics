@@ -52,7 +52,6 @@ class AliTRD : public AliDetector {
   virtual void     SDigits2Digits();
   virtual void     Digits2Raw();
   virtual Bool_t   Raw2SDigits(AliRawReader* rawReader);
-  virtual void     MakeBranch(Option_t *option);
 
   virtual void     AddHit(Int_t, Int_t*, Float_t*)       { }; 
   virtual void     AddHit(Int_t track, Int_t det, Float_t *hits

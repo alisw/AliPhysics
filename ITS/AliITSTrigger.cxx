@@ -76,7 +76,7 @@ void AliITSTrigger::Trigger()
 {
 
   //  ********** Get run loader for the current event **********
-  AliRunLoader* runLoader = gAlice->GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
 
   AliITSLoader* loader = (AliITSLoader* )runLoader->GetLoader( "ITSLoader" );
   AliITSgeom* geom = loader->GetITSgeom();

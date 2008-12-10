@@ -117,19 +117,8 @@ public:
    //
    // End of MC Application
 
-   TTree         *TreeE() {return (fRunLoader)?fRunLoader->TreeE():0x0;}
-   TTree         *TreeK() {return (fRunLoader)?fRunLoader->TreeK():0x0;}
-   AliStack      *Stack() {return (fRunLoader)?fRunLoader->Stack():0x0;}
-   AliHeader*     GetHeader() {return (fRunLoader)?fRunLoader->GetHeader():0x0;}
-
-   TTree         *TreeD() const {MayNotUse("TreeD"); return 0x0;}
-   TTree         *TreeS() const {MayNotUse("TreeS"); return 0x0;}
-   TTree         *TreeR() const {MayNotUse("TreeR"); return 0x0;}
-
-   
    void SetRunLoader(AliRunLoader* rloader);
-   AliRunLoader* GetRunLoader() const {return fRunLoader;}
-//   void SetEventFolderName(const char* eventfoldername);
+
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)

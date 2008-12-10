@@ -1128,7 +1128,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     TClonesArray** modA = new TClonesArray*[size];
     for (Int_t mod = 0; mod < size; mod++) modA[mod] = new TClonesArray("AliITSpListItem", 10000);
     
-    AliLoader* loader =  (gAlice->GetRunLoader())->GetLoader("ITSLoader");
+    AliLoader* loader =  (AliRunLoader::GetRunLoader())->GetLoader("ITSLoader");
     if (!loader)
     {
 	Error("Open","Can not get ITS loader from Run Loader");

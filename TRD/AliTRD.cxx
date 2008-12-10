@@ -859,29 +859,6 @@ void AliTRD::LoadPoints(Int_t )
 }
 
 //_____________________________________________________________________________
-void AliTRD::MakeBranch(Option_t *option)
-{
-  //
-  // Create Tree branches for the TRD digits.
-  //
-
-  Int_t  buffersize = 4000;
-  Char_t branchname[15];
-  sprintf(branchname,"%s",GetName());
-
-  const Char_t *cD = strstr(option,"D");
-
-  AliDetector::MakeBranch(option);
-
-  if (fDigits         && 
-      gAlice->TreeD() && 
-      cD) {
-    MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,buffersize,0);
-  }
-
-}
-
-//_____________________________________________________________________________
 void AliTRD::ResetDigits()
 {
   //

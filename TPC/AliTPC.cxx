@@ -2147,32 +2147,6 @@ void AliTPC::Init()
 }
 
 //_____________________________________________________________________________
-void AliTPC::MakeBranch(Option_t* option)
-{
-  //
-  // Create Tree branches for the TPC.
-  //
-  AliDebug(1,"");
-  Int_t buffersize = 4000;
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
-  
-  const char *h = strstr(option,"H");
-  
-  if ( h && (fHitType<=1) && (fHits == 0x0)) fHits = new TClonesArray("AliTPChit", 176);//skowron 20.06.03
-  
-  AliDetector::MakeBranch(option);
-  
-  const char *d = strstr(option,"D");
-  
-  if (fDigits   && fLoader->TreeD() && d) {
-    MakeBranchInTree(gAlice->TreeD(), branchname, &fDigits, buffersize, 0);
-  }	
-
-  if (fHitType>1) MakeBranch2(option,0); // MI change 14.09.2000
-}
- 
-//_____________________________________________________________________________
 void AliTPC::ResetDigits()
 {
   //

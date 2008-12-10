@@ -2538,7 +2538,7 @@ void AliTRDmcmSim::Tracklet(){
   Int_t u = 0;
 
   AliTRDdigitsManager *digman = new AliTRDdigitsManager();
-  digman->ReadDigits(gAlice->GetRunLoader()->GetLoader("TRDLoader")->TreeD());
+  digman->ReadDigits(AliRunLoader::GetRunLoader()->GetLoader("TRDLoader")->TreeD());
   digman->SetUseDictionaries(kTRUE);
   AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
 
@@ -2583,7 +2583,7 @@ void AliTRDmcmSim::Tracklet(){
       }
   }
 
- AliDataLoader *dl = gAlice->GetRunLoader()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+  AliDataLoader *dl = AliRunLoader::GetRunLoader()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
   if (!dl) {
     AliError("Could not get the tracklets data loader!");
   }

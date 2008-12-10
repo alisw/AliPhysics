@@ -75,9 +75,10 @@ void AliZDCTrigger::Trigger()
 
    // Trigger selection
    //
-   AliRunLoader *runLoader = gAlice->GetRunLoader();
+   AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
 
    AliLoader *aZDCLoader = runLoader->GetLoader("ZDCLoader");
+   
    aZDCLoader->LoadDigits("READ");
    AliZDCDigit digit;
    AliZDCDigit* pdigit = &digit;

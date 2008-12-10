@@ -58,7 +58,6 @@ public:
   virtual void  Digits2Raw();
   virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
   Int_t         GetNsectors() const  {return fNsectors;}
-  virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();
   virtual void  SetSens(Int_t sens);
   virtual void  SetSide(Float_t side);

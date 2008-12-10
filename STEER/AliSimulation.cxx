@@ -449,7 +449,7 @@ Bool_t AliSimulation::SetRunNumberFromData()
     AliRunLoader* runLoader = LoadRun("READ");
     if (!runLoader) return kFALSE;
     else {
-    	runData = runLoader->GetAliRun()->GetHeader()->GetRun();
+    	runData = runLoader->GetHeader()->GetRun();
 	delete runLoader;
     }
   
@@ -850,7 +850,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Set run number in CDBManager
   AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
 
-  AliRunLoader* runLoader = gAlice->GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
   if (!runLoader) {
              AliError(Form("gAlice has no run loader object. "
         		     "Check your config file: %s", fConfigFileName.Data()));
@@ -877,7 +877,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   MisalignGeometry(runLoader);
 #endif
 
-//   AliRunLoader* runLoader = gAlice->GetRunLoader();
+//   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
 //   if (!runLoader) {
 //     AliError(Form("gAlice has no run loader object. "
 //                   "Check your config file: %s", fConfigFileName.Data()));
@@ -1583,7 +1583,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     Int_t iDet;
     //
     // Get the runloader
-    AliRunLoader* runLoader = gAlice->GetRunLoader();
+    AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
     //
     // Open esd file if available
     TFile* esdFile = TFile::Open(esdFileName);
@@ -1806,7 +1806,7 @@ Bool_t AliSimulation::RunQA()
 	// run the QA on summable hits, digits or digits
 	
   if(!gAlice) return kFALSE;
-	fQASteer->SetRunLoader(gAlice->GetRunLoader()) ;
+	fQASteer->SetRunLoader(AliRunLoader::GetRunLoader()) ;
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 

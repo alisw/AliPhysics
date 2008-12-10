@@ -653,7 +653,7 @@ void AliDisplay::DrawTitle(Option_t *option)
       title->SetFillColor(42);
       title->Draw();
       char ptitle[100];
-      sprintf(ptitle,"Alice event: %d, Run:%d",gAlice->GetHeader()->GetEvent(), gAlice->GetHeader()->GetRun());
+      sprintf(ptitle,"Alice event: %d, Run:%d",AliRunLoader::GetRunLoader()->GetHeader()->GetEvent(), AliRunLoader::GetRunLoader()->GetHeader()->GetRun());
       title->AddText(ptitle);
       Int_t nparticles = gAlice->GetMCApp()->Particles()->GetEntriesFast();
       sprintf(ptitle,"Nparticles = %d  Nhits = %d",nparticles, fHitsCuts);
@@ -836,7 +836,7 @@ void AliDisplay::LoadPoints()
    // load only wanted tracks
    if (fNTracksToDisplay>0)
     {
-      Int_t nprim =  gAlice->Stack()->GetNprimary();
+      Int_t nprim =  AliRunLoader::GetRunLoader()->Stack()->GetNprimary();
       for (Int_t track=0; track<fNTracksToDisplay;track++) 
        {
         gAlice->ResetHits();
@@ -955,8 +955,8 @@ void AliDisplay::ShowNextEvent(Int_t delta)
 
   if (delta) {
 //     gAlice->Clear();
-     //Int_t currentEvent = gAlice->GetHeader()->GetEvent();//event number is not filled correctly
-     Int_t currentEvent = gAlice->GetRunLoader()->GetEventNumber();
+     //Int_t currentEvent = AliRunLoader::GetRunLoader()->GetHeader()->GetEvent();//event number is not filled correctly
+     Int_t currentEvent = AliRunLoader::GetRunLoader()->GetEventNumber();
      Int_t newEvent     = currentEvent + delta;
      gAlice->GetEvent(newEvent);
      AliInfo(Form("delta = %d  currentEvent = %d  newEvent = %d",

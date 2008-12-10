@@ -193,7 +193,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 
     // get the impact parameter and the number of spectators in case of hijing
     if(!runLoader->GetAliRun()) runLoader->LoadgAlice();
-    AliHeader* header = runLoader->GetAliRun()->GetHeader();
+    AliHeader* header = runLoader->GetHeader();
     if(!header) continue;
     AliGenEventHeader* genHeader = header->GenEventHeader();
     if(!genHeader) continue;

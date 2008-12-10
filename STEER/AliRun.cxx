@@ -674,7 +674,7 @@ void AliRun::Hits2Digits(const char *selected)
 
    // Convert Hits to sumable digits
    // 
-   for (Int_t nevent=0; nevent<gAlice->TreeE()->GetEntries(); nevent++) {
+   for (Int_t nevent=0; nevent<fRunLoader->TreeE()->GetEntries(); nevent++) {
      GetEvent(nevent);
      Hits2SDigits(selected);
      SDigits2Digits(selected);

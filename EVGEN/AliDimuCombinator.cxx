@@ -37,7 +37,7 @@
 ClassImp(AliDimuCombinator)
 
 AliDimuCombinator::AliDimuCombinator():
-    fNParticle((Int_t) (gAlice->TreeK())->GetEntries()),
+    fNParticle((Int_t) (AliRunLoader::GetRunLoader()->TreeK())->GetEntries()),
     fImuon1(0),
     fImuon2(0),
     fImin1(0),
@@ -53,7 +53,7 @@ AliDimuCombinator::AliDimuCombinator():
     fEtaMax(10.)
 {
 // Constructor
-    fNParticle = (Int_t) (gAlice->TreeK())->GetEntries();
+    fNParticle = (Int_t) (AliRunLoader::GetRunLoader()->TreeK())->GetEntries();
 }
 
 AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)

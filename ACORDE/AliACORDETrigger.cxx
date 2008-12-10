@@ -65,7 +65,7 @@ void AliACORDETrigger::Trigger()
   // 5.- Set the relevant trigger
 
   // 1.- Get loaders and pointers
-  AliRunLoader* runLoader = gAlice->GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
   AliACORDELoader* loader = 
     (AliACORDELoader* )runLoader->GetLoader( "ACORDELoader" );
   loader->LoadDigits("READ");

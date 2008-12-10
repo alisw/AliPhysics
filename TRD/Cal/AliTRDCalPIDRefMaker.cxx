@@ -238,7 +238,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(const Char_t *File, const Char_t 
 				
 				// Load MC info
 				fRunLoader->GetEvent(iEvent);
-				AliStack* stack = gAlice->Stack();
+				AliStack* stack = AliRunLoader::GetRunLoader()->Stack();
 				TArrayF vertex(3);
 				fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vertex);
 							

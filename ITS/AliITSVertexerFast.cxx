@@ -77,7 +77,7 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(TTree *itsClusterTre
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   TArrayF primaryVertex(3);  // true vertex
-  AliHeader* header = rl->GetAliRun()->GetHeader();
+  AliHeader* header = rl->GetHeader();
   AliGenEventHeader* genEventHeader = header->GenEventHeader();   
   genEventHeader->PrimaryVertex(primaryVertex); 
   

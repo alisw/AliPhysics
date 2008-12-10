@@ -204,7 +204,7 @@ void AliGenFLUKAsource::Generate()
 		if (gAlice) printf("AliRun object found on file\n");
 		if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
 	    }
-	    TTree *fAli=gAlice->TreeK();
+	    TTree *fAli=AliRunLoader::GetRunLoader()->TreeK();
 	    if (fAli) pFile =fAli->GetCurrentFile();
 	    pFile->cd();
 	    printf("Generate - I'm out \n");
@@ -295,7 +295,7 @@ void AliGenFLUKAsource::Generate()
 	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
-    TTree *fAli=gAlice->TreeK();
+    TTree *fAli=AliRunLoader::GetRunLoader()->TreeK();
     if (fAli) pFile =fAli->GetCurrentFile();
     pFile->cd();
 }

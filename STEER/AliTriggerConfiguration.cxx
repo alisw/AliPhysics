@@ -863,7 +863,7 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
       gAlice->Init( configfile.Data() );
    ););
 
-   AliRunLoader* runLoader = gAlice->GetRunLoader();
+   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
    if( !runLoader ) {
       AliError( Form( "gAlice has no run loader object. "
                       "Check your config file: %s", configfile.Data() ) );

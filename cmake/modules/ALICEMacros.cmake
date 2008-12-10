@@ -162,7 +162,7 @@ If(ALICE_TARGET STREQUAL macosx64)
 
   Set(CLIBDEFS "-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
   Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m64 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 

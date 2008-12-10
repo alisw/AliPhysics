@@ -216,7 +216,7 @@ AliTOFv6T0::AliTOFv6T0(const char *name, const char *title):
 
   // Save the geometry
   TDirectory* saveDir = gDirectory;
-  gAlice->GetRunLoader()->CdGAFile();
+  AliRunLoader::GetRunLoader()->CdGAFile();
   fTOFGeometry->Write("TOFgeometry");
   saveDir->cd();
 
