@@ -1,6 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
+  TKDTree.cxx 
   TKDInterpolatorBase.cxx 
   TKDNodeInfo.cxx 
   TKDPDF.cxx 
