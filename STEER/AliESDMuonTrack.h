@@ -165,7 +165,7 @@ public:
   Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }  
   Double_t Pt() const { return TMath::Sqrt(Px()*Px() + Py()*Py()); }
   Double_t OneOverPt() const { return (Pt() != 0.) ? 1./Pt() : FLT_MAX; }
-  Double_t Phi() const { return TMath::ATan2(Py(), Px()); }
+  Double_t Phi() const { return TMath::Pi()+TMath::ATan2(Py(), Px()); }
   Double_t Theta() const { return TMath::ATan2(Pt(), Pz()); }
   Double_t E() const { return TMath::Sqrt(M()*M() + P()*P()); }
   Double_t M() const { return TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); }
