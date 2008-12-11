@@ -10,7 +10,7 @@
 //   Origin: F. Prino, Torino, prino@to.infn.it
 //-------------------------------------------------------
 
-
+#include <TString.h>
 #include "AliVVertex.h"
 
 class AliVertex : public AliVVertex {
@@ -44,7 +44,8 @@ class AliVertex : public AliVVertex {
   virtual Int_t    GetNContributors() const { return fNContributors; }
   virtual Int_t    GetNIndices() const { return fNIndices; }
   virtual Bool_t   GetStatus() const {
-    if(fNContributors>0) return 1;
+    TString title = GetTitle();
+    if(fNContributors>0 || (title.Contains("cosmics") && !title.Contains("failed"))) return 1;
     return 0;
   }
 
