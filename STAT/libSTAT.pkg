@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS=  TKDTree.cxx \
+SRCS=  \
   TKDInterpolatorBase.cxx \
   TKDNodeInfo.cxx \
   TKDPDF.cxx \
