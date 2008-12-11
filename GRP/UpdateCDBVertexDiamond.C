@@ -11,7 +11,7 @@
 #include "AliLog.h"
 #endif
 
-void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sigx = 0.005, Double_t sigy = 0.005, Double_t sigz = 5.3) {
+void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sigx = 0.0060, Double_t sigy = 0.0060, Double_t sigz = 3.8) {
   // produce the mean vertex with the current AliRoot and store it in the
   // CDB
   
@@ -37,8 +37,8 @@ void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sig
   Printf(Form("Storing in CDB the default mean vertex produced with root version %s and"
 			  "AliRoot version %s, revision number %d", rootv, av.Data(), revnum));
 
-  Double_t resolx=35./10000.;
-  Double_t resoly=35./10000.;
+  Double_t resolx=5./10000.; // this is error on the weighted mean (5 micron) 
+  Double_t resoly=5./10000.; // this is error on the weighted mean (5 micron)
   Double_t sigma[3],position[3];
   position[0]=xmed;
   position[1]=ymed;
