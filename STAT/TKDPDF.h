@@ -1,12 +1,12 @@
 #ifndef ROOT_TKDPDF
 #define ROOT_TKDPDF
 
-#ifndef ROOT_TKDTree
-#include "TKDTree.h"
-#endif
-
 #ifndef ROOT_TKDInterpolatorBase
 #include "TKDInterpolatorBase.h"
+#endif
+
+#ifndef ROOT_TKDTree
+#include "TKDTree.h"
 #endif
 
 // Non parametric interpolation class based on local polinomial regression.
@@ -42,7 +42,7 @@ private:
 //__________________________________________________________________
 Bool_t	TKDPDF::GetDataPoint(Int_t n, Float_t *p) const
 {
-	if(n < 0 || n >= fNpoints) return kFALSE;
+	if(n < 0 || n >= fNPoints) return kFALSE;
 	if(!fData) return kFALSE;
 		
 	for(int i=0; i<fNDim; i++) p[i] = fData[i][n];
@@ -52,7 +52,7 @@ Bool_t	TKDPDF::GetDataPoint(Int_t n, Float_t *p) const
 //__________________________________________________________________
 Int_t	TKDPDF::GetNodeIndex(const Float_t *p)
 {
-	return FindNode(p) - fNnodes;
+	return FindNode(p) - fNNodes;
 }
 
 #endif
