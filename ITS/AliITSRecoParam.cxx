@@ -179,6 +179,14 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   AliITSRecoParam *param = new AliITSRecoParam();
   param->SetVertexerZ();
 
+  // use of bads from OCDB
+  param->SetUseBadZonesFromOCDB(kTRUE);
+  param->SetUseSingleBadChannelsFromOCDB(kFALSE);
+  // extended eta acceptance
+  param->SetExtendedEtaAcceptance(kFALSE);
+  // allow to skip layer if no cluster and no bad
+  param->SetAllowProlongationWithEmptyRoad(kFALSE);
+
   param->fMaxSnp = 0.95;
 
   param->fNSigmaYLayerForRoadY = 4.;
@@ -269,6 +277,14 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   //
   AliITSRecoParam *param = new AliITSRecoParam();
   param->SetVertexer3DDefaults();
+
+  // full use of bads from OCDB
+  param->SetUseBadZonesFromOCDB(kTRUE);
+  param->SetUseSingleBadChannelsFromOCDB(kTRUE);
+  // extended eta acceptance
+  param->SetExtendedEtaAcceptance(kTRUE);
+  // allow to skip layer if no cluster and no bad
+  param->SetAllowProlongationWithEmptyRoad(kTRUE);
 
   param->fMaxSnp = 0.95;
 
