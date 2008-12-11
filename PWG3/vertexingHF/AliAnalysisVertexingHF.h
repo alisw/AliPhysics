@@ -17,6 +17,7 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
+#include "AliAnalysisFilter.h"
 
 class AliESDtrack;
 class AliVEvent;
@@ -56,13 +57,7 @@ class AliAnalysisVertexingHF : public TNamed {
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
-  void SetITSrefitRequired() { fITSrefit=kTRUE; }
-  void SetITSrefitNotRequired() { fITSrefit=kFALSE; }
-  void SetBothSPDRequired() { fBothSPD=kTRUE; }
-  void SetBothSPDNotRequired() {fBothSPD=kFALSE;}
-  void SetMinITSCls(Int_t n=6) { fMinITSCls=n; }
-  void SetMinPtCut(Double_t pt=0.) { fMinPtCut=pt; }
-  void SetMind0Cut(Double_t d0=0.) { fMind0rphiCut=d0; } 
+  void SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }
   void SetD0toKpiCuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		      Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		      Double_t cut5=100000.,Double_t cut6=100000.,
@@ -120,11 +115,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t f4Prong;
 
   // single-track cuts
-  Bool_t   fITSrefit;   // require kITSrefit
-  Bool_t   fBothSPD;    // require both SPD layers
-  Int_t    fMinITSCls;  // minimum number of ITS clusters
-  Double_t fMinPtCut;   // minimum track pt [GeV/c]
-  Double_t fMind0rphiCut;  // minimum track |rphi impact parameter| [cm] 
+  AliAnalysisFilter *fTrackFilter; //  Track Filter
   // candidates cuts
   Double_t fD0toKpiCuts[9]; // cuts on D0->Kpi candidates
                   // (to be passed to AliAODRecoDecayHF2Prong::SelectD0())
@@ -220,9 +211,9 @@ class AliAnalysisVertexingHF : public TNamed {
 		    TObjArray &trksP,Int_t &nTrksP,
 		    TObjArray &trksN,Int_t &nTrksN);
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
-  Bool_t SingleTrkCuts(AliESDtrack &trk) const;
+  Bool_t SingleTrkCuts(AliESDtrack *trk) const;
   //
-  ClassDef(AliAnalysisVertexingHF,4)  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,5)  // Reconstruction of HF decay candidates
 };
 
 

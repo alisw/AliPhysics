@@ -35,12 +35,14 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
+#include "AliAnalysisFilter.h"
 #include "AliAnalysisVertexingHF.h"
 
 ClassImp(AliAnalysisVertexingHF)
@@ -58,11 +60,7 @@ fD0toKpi(kTRUE),
 fJPSItoEle(kTRUE),
 f3Prong(kTRUE),
 f4Prong(kTRUE),
-fITSrefit(kFALSE),
-fBothSPD(kTRUE),
-fMinITSCls(5),
-fMinPtCut(0.),
-fMind0rphiCut(0.)
+fTrackFilter(0x0)
 {
   // Default constructor
 
@@ -71,6 +69,7 @@ fMind0rphiCut(0.)
   SetDplusCuts();
   SetDsCuts();
   SetLcCuts();
+
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
@@ -86,11 +85,7 @@ fD0toKpi(source.fD0toKpi),
 fJPSItoEle(source.fJPSItoEle),
 f3Prong(source.f3Prong),
 f4Prong(source.f4Prong),
-fITSrefit(source.fITSrefit),
-fBothSPD(source.fBothSPD),
-fMinITSCls(source.fMinITSCls),
-fMinPtCut(source.fMinPtCut),
-fMind0rphiCut(source.fMind0rphiCut)
+fTrackFilter(source.fTrackFilter)
 {
   //
   // Copy constructor
@@ -118,11 +113,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fJPSItoEle = source.fJPSItoEle;
   f3Prong = source.f3Prong;
   f4Prong = source.f4Prong;
-  fITSrefit = source.fITSrefit;
-  fBothSPD = source.fBothSPD;
-  fMinITSCls = source.fMinITSCls;
-  fMinPtCut = source.fMinPtCut;
-  fMind0rphiCut = source.fMind0rphiCut;
+  fTrackFilter = source.fTrackFilter;
 
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
@@ -136,6 +127,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
 AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   // Destructor
   if(fV1) { delete fV1; fV1=0; }
+  if(fTrackFilter) { delete fTrackFilter; fTrackFilter=0; }
 }
 //----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
@@ -863,12 +855,8 @@ AliAODVertex* AliAnalysisVertexingHF::OwnPrimaryVertex(TObjArray *trkArray,
 void AliAnalysisVertexingHF::PrintStatus() const {
   // Print parameters being used
 
-  printf("Preselections:\n");
-  printf("    fITSrefit   = %d\n",(Int_t)fITSrefit);
-  printf("    fBothSPD   = %d\n",(Int_t)fBothSPD);
-  printf("    fMinITSCls   = %d\n",fMinITSCls);
-  printf("    fMinPtCut   = %f GeV/c\n",fMinPtCut);
-  printf("    fMind0rphiCut   = %f cm\n",fMind0rphiCut);
+  //printf("Preselections:\n");
+  //   fTrackFilter->Dump();
   if(fSecVtxWithKF) {
     printf("Secondary vertex with Kalman filter package (AliKFParticle)\n");
   } else {
@@ -1102,7 +1090,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
  
   // transfer ITS tracks from event to arrays
   for(Int_t i=0; i<entries; i++) {
-
     AliVTrack *track = (AliVTrack*)event->GetTrack(i);
 
     if(fInputAOD) {
@@ -1113,26 +1100,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
       fAODMap[(Int_t)aodt->GetID()] = i;
     }
 
-    // require refit in ITS 
-    UInt_t status = track->GetStatus();
-    if(fITSrefit && !(status&AliESDtrack::kITSrefit)) {
-      AliDebug(2,Form("track %d is not kITSrefit",i));
-      continue;
-    }
-
-    Int_t ncls0=0;
-    for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
-
-    // require minimum # of ITS points    
-    if(ncls0<fMinITSCls)  {
-      AliDebug(2,Form("track %d has %d ITS cls",i,ncls0));
-      continue;
-    }
-    // require points on the 2 pixel layers
-    if(fBothSPD) 
-      if(!TESTBIT(track->GetITSClusterMap(),0) || 
-	 !TESTBIT(track->GetITSClusterMap(),1)) continue;
-
     AliESDtrack *esdt = 0;
     if(!fInputAOD) {
       esdt = (AliESDtrack*)track;
@@ -1141,7 +1108,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     }
 
     // single track selection
-    if(!SingleTrkCuts(*esdt)) {
+    if(!SingleTrkCuts(esdt)) {
       if(fInputAOD) delete esdt; 
       esdt = NULL;
       continue;
@@ -1330,20 +1297,21 @@ void AliAnalysisVertexingHF::SetLcCuts(const Double_t cuts[12])
   return;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack& trk) const 
+Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk) const 
 {
   // Check if track passes some kinematical cuts  
 
-  if(trk.Pt() < fMinPtCut) {
-    //printf("pt %f\n",1./trk.GetParameter()[4]);
-    return kFALSE;
+  // this is needed to store the impact parameters
+  trk->RelateToVertex(fV1,fBzkG,kVeryBig);
+
+  UInt_t selectInfo = 0;
+  //
+  // Track selection
+  if(fTrackFilter) {
+    selectInfo = fTrackFilter->IsSelected(trk);
   }
-  Double_t d0z0[2],covd0z0[3];
-  trk.PropagateToDCA(fV1,fBzkG,kVeryBig,d0z0,covd0z0);
-  if(TMath::Abs(d0z0[0]) < fMind0rphiCut) {
-    //printf("d0rphi %f\n",TMath::Abs(d0z0[0]));
-    return kFALSE;
-  }
+
+  if (!selectInfo) return kFALSE;
 
   return kTRUE;
 }

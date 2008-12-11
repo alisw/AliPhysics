@@ -11,11 +11,17 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
   //--- set cuts for single-track selection
-  vHF->SetITSrefitRequired();
-  vHF->SetBothSPDRequired();
-  vHF->SetMinITSCls(5);
-  vHF->SetMinPtCut(0.3);
-  vHF->SetMind0Cut(0.);
+  
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersITS(5);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+   					AliESDtrackCuts::kBoth);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
+  trkFilter->AddCuts(esdTrackCuts);
+  vHF->SetTrackFilter(trkFilter);
   //--- set cuts for candidates selection
   vHF->SetD0toKpiCuts(0.7,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   vHF->SetBtoJPSICuts(0.350);
