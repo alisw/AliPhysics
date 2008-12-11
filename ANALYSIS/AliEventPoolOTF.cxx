@@ -106,7 +106,7 @@ TChain* AliEventPoolOTF::GetNextChain()
     //
     TChain* chain = 0;
     fBinNumber++;
-    Int_t mmax = fMultiplicity + fMultStep;
+    Int_t mmax = fMultiplicity + fMultStep - 1;
     if (mmax > fMultMax) {
 	return 0;
     } else {
