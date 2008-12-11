@@ -17,6 +17,9 @@
 #include <TPolyMarker3D.h>
 #include <TColor.h>
 
+#include <TDatabasePDG.h>
+#include <TParticlePDG.h>
+
 #include <vector>
 
 
@@ -104,6 +107,24 @@ AliEveV0::~AliEveV0()
   fNegTrack->DecDenyDestroy();
   fPosTrack->DecDenyDestroy();
   fPointingLine->DecDenyDestroy();
+}
+
+//______________________________________________________________________________
+Float_t AliEveV0::GetInvMass(Float_t nPdgCode, Float_t pPdgCode) const
+{
+  // Returns Invariant Mass assuming the masses of the daughter particles
+  TEveVector lNegMomentum = fNegTrack->GetMomentum();
+  // Does not work properly because momenta at the primary vertex !!!!!!!
+  TEveVector lPosMomentum = fPosTrack->GetMomentum();
+  Double_t nMass=TDatabasePDG::Instance()->GetParticle(nPdgCode)->Mass();
+  Double_t pMass=TDatabasePDG::Instance()->GetParticle(pPdgCode)->Mass();
+
+  printf("\n check the mass of the particle negative %.5f positive %.5f \n",nMass,pMass);
+
+  Double_t eNeg = TMath::Sqrt(nMass*nMass + lNegMomentum.Mag2());
+  Double_t ePos = TMath::Sqrt(pMass*pMass + lPosMomentum.Mag2());
+
+  return TMath::Sqrt( (eNeg+ePos)*(eNeg+ePos) - fRecDecayP.Mag2() );
 }
 
 //______________________________________________________________________________

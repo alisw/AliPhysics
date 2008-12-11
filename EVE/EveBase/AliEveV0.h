@@ -26,6 +26,8 @@
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 
+#include <TPDGCode.h>
+
 class TH1F;
 class TH2F;
 
@@ -58,6 +60,11 @@ public:
 
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
   Float_t GetPt()     const { return fRecDecayP.Perp(); }
+
+  Float_t GetInvMass(Float_t nPdgCode, Float_t pPdgCode) const;
+  Float_t GetK0sInvMass() const { return GetInvMass(kPiMinus,kPiPlus); }
+  Float_t GetLambdaInvMass() const { return GetInvMass(kPiMinus,kProton); }
+  Float_t GetAntiLambdaInvMass() const { return GetInvMass(kProton,kPiPlus); }
 
   Bool_t GetOnFlyStatus()    const { return fOnFlyStatus; }
   void   SetOnFlyStatus(Bool_t fs) { fOnFlyStatus = fs; }

@@ -78,6 +78,7 @@ void anyscan_init()
 
   gRPhiMgr = new TEveProjectionManager();
   gRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
+  gEve->AddToListTree(gRPhiMgr, kFALSE);
   {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
     a->SetMainColor(kWhite);
@@ -94,6 +95,7 @@ void anyscan_init()
 
   gRhoZMgr = new TEveProjectionManager();
   gRhoZMgr->SetProjection(TEveProjection::kPT_RhoZ);
+  gEve->AddToListTree(gRhoZMgr, kFALSE);
   {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
     a->SetMainColor(kWhite);

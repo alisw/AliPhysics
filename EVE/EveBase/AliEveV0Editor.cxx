@@ -96,7 +96,7 @@ void AliEveV0Editor::SetModel(TObject* obj)
 
 void AliEveV0Editor::DisplayDetailed()
 {
-  printf("Hura!\n");
+  printf("\n Checking invariant mass calculations: K0s %.3f lambda %.3f antilambda %.3f \n",fM->GetK0sInvMass(),fM->GetLambdaInvMass(),fM->GetAntiLambdaInvMass());
 
   TEveWindowSlot *slot = TEveWindow::CreateWindowMainFrame();
   TEveWindowPack *pack = slot->MakePack();
@@ -119,7 +119,8 @@ void AliEveV0Editor::DisplayDetailed()
   TEveWindowFrame *frame = slot->MakeFrame(new TRootEmbeddedCanvas());
   frame->SetElementName("Details");
 
-  TLatex* ltx = new TLatex(0.2, 0.2, "#frac{Jacques}{Zoozoo}");
+  TLatex* ltx = new TLatex(0.2, 0.2, "#eta = #frac{1}{2} #times Ln(#frac{E+p_{z}}{E-p_{z}} )");
+  ltx->SetTextSize(0.08);
   ltx->Draw();
 
   gEve->Redraw3D();
