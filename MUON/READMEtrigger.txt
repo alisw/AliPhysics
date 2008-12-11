@@ -112,6 +112,11 @@ root [1] MUONTriggerEfficiency()
 </pre>
 
 For the CVS default version of the trigger LUT (i.e. lutAptLpt1Hpt1p7.root),
+Two LUTs are stored in the CDB (/Calib/TriggerLut/)
+Run0_999999999_v0_s0.root   with Lpt 1.0 GeV and Hpt 1.7 GeV
+and
+Run0_999999999_v1_s0.root   with Lpt 0.0 GeV and Hpt 1.0 GeV (default)
+
 The reference for J/psi and Upsilon is as below
  For 1000 Jpsi events with:
 <pre>
@@ -129,15 +134,15 @@ The reference for J/psi and Upsilon is as below
 
  the output should be 
 <pre>
-  Efficiency Lpt cut = 0.7362 +/- 0.0391
-  Efficiency Hpt cut = 0.2662 +/- 0.0201
+  Efficiency Lpt cut = 0.9061 +/- 0.0456
+  Efficiency Hpt cut = 0.6943 +/- 0.0376
 </pre>
 
  Similarly, for 1000 Upsilon events, the output should be
 
 <pre>
-  Efficiency Lpt cut = 0.9806 +/- 0.0457
-  Efficiency Hpt cut = 0.9537 +/- 0.0448
+  Efficiency Lpt cut = 0.9872 +/- 0.0458
+  Efficiency Hpt cut = 0.9851 +/- 0.0457
 </pre>
 
 
