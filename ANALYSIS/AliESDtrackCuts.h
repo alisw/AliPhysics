@@ -70,8 +70,10 @@ public:
   // track to vertex cut setters
   void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma; SetRequireSigmaToVertex(kTRUE);}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
-  void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutDCAToVertexXY = dist;}
-  void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutDCAToVertexZ = dist;}
+  void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutMaxDCAToVertexXY = dist;}
+  void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
+  void SetMinDCAToVertexXY(Float_t dist=0.)           {fCutMinDCAToVertexXY = dist;}
+  void SetMinDCAToVertexZ(Float_t dist=0.)            {fCutMinDCAToVertexZ = dist;}
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
   
   // deprecated, will be removed in next release
@@ -95,8 +97,10 @@ public:
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
-  Float_t GetMaxDCAToVertexXY()       const   { return fCutDCAToVertexXY;}
-  Float_t GetMaxDCAToVertexZ()       const   { return fCutDCAToVertexZ;}
+  Float_t GetMaxDCAToVertexXY()      const   { return fCutMaxDCAToVertexXY;}
+  Float_t GetMaxDCAToVertexZ()       const   { return fCutMaxDCAToVertexZ;}
+  Float_t GetMinDCAToVertexXY()      const   { return fCutMinDCAToVertexXY;}
+  Float_t GetMinDCAToVertexZ()       const   { return fCutMinDCAToVertexZ;}
   Bool_t  GetDCAToVertex2D()         const   { return fCutDCAToVertex2D;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
 
@@ -137,7 +141,7 @@ protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   
-  enum { kNCuts = 27 };
+  enum { kNCuts = 30 };
 
   //######################################################
   // esd track quality cuts
@@ -164,9 +168,11 @@ protected:
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
   Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
-  Float_t fCutDCAToVertexXY;          // track-to-vertex cut in absolute distance in xy-plane
-  Float_t fCutDCAToVertexZ;           // track-to-vertex cut in absolute distance in z-plane
-  Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut using fCutDCAToVertexXY and fCutDCAToVertexZ is made. Tracks are accepted if sqrt((DCAXY / fCutDCAToVertexXY)^2 + (DCAZ / fCutDCAToVertexZ)^2) < 1
+  Float_t fCutMaxDCAToVertexXY;       // track-to-vertex cut in max absolute distance in xy-plane
+  Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
+  Float_t fCutMinDCAToVertexXY;       // track-to-vertex cut on min absolute distance in xy-plane
+  Float_t fCutMinDCAToVertexZ;        // track-to-vertex cut on min absolute distance in z-plane
+  Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
 
   // esd kinematics cuts
   Float_t fPMin,   fPMax;             // definition of the range of the P
@@ -211,7 +217,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 4)
+  ClassDef(AliESDtrackCuts, 5)
 };
 
 
