@@ -174,6 +174,8 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
   fInsideTRMchain1(kFALSE),
+  fDataBuffer(),
+  fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
   fLocalEventCounterTRM(0x0),
@@ -187,8 +189,8 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   //
 
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-    fDataBuffer[i]=new AliTOFHitDataBuffer();
-    fPackedDataBuffer[i]=new AliTOFHitDataBuffer();
+    ResetDataBuffer(i);
+    ResetPackedDataBuffer(i);
   }
 
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
@@ -247,6 +249,8 @@ AliTOFRawStream::AliTOFRawStream():
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
   fInsideTRMchain1(kFALSE),
+  fDataBuffer(),
+  fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
   fLocalEventCounterTRM(0x0),
@@ -259,8 +263,8 @@ AliTOFRawStream::AliTOFRawStream():
   // default ctr
   //
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-    fDataBuffer[i]=new AliTOFHitDataBuffer();
-    fPackedDataBuffer[i]=new AliTOFHitDataBuffer();
+    ResetDataBuffer(i);
+    ResetPackedDataBuffer(i);
   }
 
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
@@ -315,6 +319,8 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fInsideLTM(stream.fInsideLTM),
   fInsideTRMchain0(stream.fInsideTRMchain0),
   fInsideTRMchain1(stream.fInsideTRMchain1),
+  fDataBuffer(),
+  fPackedDataBuffer(),
   fLocalEventCounterDRM(stream.fLocalEventCounterDRM),
   fLocalEventCounterLTM(stream.fLocalEventCounterLTM),
   fLocalEventCounterTRM(0x0),
@@ -328,8 +334,8 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   //
 
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-    fDataBuffer[i]= new AliTOFHitDataBuffer(*stream.fDataBuffer[i]);
-    fPackedDataBuffer[i]= new AliTOFHitDataBuffer(*stream.fPackedDataBuffer[i]);
+    fDataBuffer[i] = stream.fDataBuffer[i];
+    fPackedDataBuffer[i] = stream.fPackedDataBuffer[i];
   }
 
   fTOFrawData = new TClonesArray(*stream.fTOFrawData);
@@ -421,11 +427,6 @@ AliTOFRawStream::~AliTOFRawStream()
 // destructor
 
   fPackedDigits = 0;
-
-  for (Int_t i=0;i<72;i++){ 
-    delete fDataBuffer[i];
-    delete fPackedDataBuffer[i];
-  }
 
   delete fDecoder;
 
@@ -1398,8 +1399,8 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     
     //set up the decoder
     fDecoder->SetVerbose(verbose);
-    fDecoder->SetDataBuffer(fDataBuffer[currentDDL]);
-    fDecoder->SetPackedDataBuffer(fPackedDataBuffer[currentDDL]);
+    fDecoder->SetDataBuffer(&fDataBuffer[currentDDL]);
+    fDecoder->SetPackedDataBuffer(&fPackedDataBuffer[currentDDL]);
     
     //start decoding
     if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
@@ -1455,7 +1456,7 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
   }
   
   if (verbose > 0)
-    AliInfo(Form("Done. %d packed %s been found.", fPackedDataBuffer[indexDDL]->GetEntries(), fPackedDataBuffer[indexDDL]->GetEntries() > 1 ? "hits have" : "hit has"));
+    AliInfo(Form("Done. %d packed %s been found.", fPackedDataBuffer[indexDDL].GetEntries(), fPackedDataBuffer[indexDDL].GetEntries() > 1 ? "hits have" : "hit has"));
   
   AliTOFHitData *hitData; //hit data pointer
   
@@ -1469,8 +1470,8 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     }
 
   //loop over DDL packed hits
-  for (Int_t iHit = 0; iHit < fPackedDataBuffer[indexDDL]->GetEntries(); iHit++){
-    hitData = fPackedDataBuffer[indexDDL]->GetHit(iHit); //get hit data
+  for (Int_t iHit = 0; iHit < fPackedDataBuffer[indexDDL].GetEntries(); iHit++){
+    hitData = fPackedDataBuffer[indexDDL].GetHit(iHit); //get hit data
     Int_t   hitACQ = hitData->GetACQ();
     Int_t   hitPS = hitData->GetPS();
     Int_t   hitSlotID = hitData->GetSlotID();
@@ -1501,8 +1502,8 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
   if (verbose > 0)
     AliInfo("Resetting buffers ...");
 
-  fDataBuffer[indexDDL]->Reset();
-  fPackedDataBuffer[indexDDL]->Reset();
+  fDataBuffer[indexDDL].Reset();
+  fPackedDataBuffer[indexDDL].Reset();
 
   if (verbose > 0)
     AliInfo("Done.");

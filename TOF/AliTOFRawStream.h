@@ -457,11 +457,11 @@ class AliTOFRawStream: public TObject {
   void SetV2718Patch(Bool_t V2718Patch = kTRUE) {fDecoder->SetV2718Patch(V2718Patch);};
 
 
-  AliTOFHitDataBuffer *GetDataBuffer(Int_t DDL) {return fDataBuffer[DDL];};
-  AliTOFHitDataBuffer *GetPackedDataBuffer(Int_t DDL) {return fPackedDataBuffer[DDL];};
+  AliTOFHitDataBuffer *GetDataBuffer(Int_t DDL) {return &fDataBuffer[DDL];};
+  AliTOFHitDataBuffer *GetPackedDataBuffer(Int_t DDL) {return &fPackedDataBuffer[DDL];};
 
-  void ResetDataBuffer(Int_t DDL) {fDataBuffer[DDL]->Reset();};
-  void ResetPackedDataBuffer(Int_t DDL) {fPackedDataBuffer[DDL]->Reset();};
+  void ResetDataBuffer(Int_t DDL) {fDataBuffer[DDL].Reset();};
+  void ResetPackedDataBuffer(Int_t DDL) {fPackedDataBuffer[DDL].Reset();};
 
   void ResetBuffers();
 
@@ -525,8 +525,8 @@ class AliTOFRawStream: public TObject {
   Bool_t fInsideTRMchain0;   // inside/outside chain 0
   Bool_t fInsideTRMchain1;   // inside/outside chain 1
 
-  AliTOFHitDataBuffer *fDataBuffer[72]; // pointer to AliTOFHitDataBuffer
-  AliTOFHitDataBuffer *fPackedDataBuffer[72]; // pointer to AliTOFHitDataBuffer
+  AliTOFHitDataBuffer fDataBuffer[72]; // AliTOFHitDataBuffer
+  AliTOFHitDataBuffer fPackedDataBuffer[72]; // AliTOFHitDataBuffer
 
   Int_t   fLocalEventCounterDRM; // event counter recorded in the DRM global trailer
   Int_t   fLocalEventCounterLTM; // event counter recorded in the LTM global trailer
