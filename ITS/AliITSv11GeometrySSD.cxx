@@ -3743,69 +3743,11 @@ TList* AliITSv11GeometrySSD::GetSSDChipSystem(){
 //  const Int_t knedges = 20;
   const Int_t knedges = 5;
   const Int_t kchipsystemnumber = 2;
-  /////////////////////////////////////////////////////////////
-  // Mother Volume containing SSDChipSystem
-  /////////////////////////////////////////////////////////////
-  TGeoXtru* chipsystemothershape[kchipsystemnumber];
-  for(Int_t i=0; i<kchipsystemnumber; i++) chipsystemothershape[i] = new TGeoXtru(2);
-  const Int_t kmothervertexnumber = 12;  
-  Double_t xmothervertex[kchipsystemnumber][kmothervertexnumber];
-  Double_t ymothervertex[kchipsystemnumber][kmothervertexnumber];
-  Double_t ssdchipcablesradius[kchipsystemnumber];
-  Double_t ssdchipseparation = fgkSSDSensorLength
-			     - 2.*fgkSSDModuleStiffenerPosition[1]
-			     - 2.*(fgkSSDStiffenerWidth
-			     - fgkSSDStiffenerToChipDist-0.5*fgkSSDChipWidth);
-  for(Int_t i=0; i<kchipsystemnumber; i++)
-	ssdchipcablesradius[i] = 0.25*(fgkSSDChipCablesHeight[i+2]
-						   -  fgkSSDChipCablesHeight[0]
-						   -  fgkSSDChipCablesHeight[1]);
-  ///////////////////////
-  // Setting the vertices 
-  ///////////////////////
-  xmothervertex[0][0]  = -0.5*fgkSSDChipCablesLength[1];  
-  xmothervertex[0][1]  = xmothervertex[0][0];  
-  xmothervertex[0][2]  = (fgkSSDChipNumber-1)*(fgkSSDChipLength
-					   + fgkSSDChipSeparationLength)+0.5*fgkSSDChipCablesLength[1];  
-  xmothervertex[0][3]  = xmothervertex[0][2];  
-  xmothervertex[0][4]  = 0.5*fgkSSDChipCablesLength[1];  
-  xmothervertex[0][5]  = xmothervertex[0][4];  
-  xmothervertex[0][6]  = xmothervertex[0][2]-0.5*fgkSSDChipCablesLength[1];  
-  xmothervertex[0][7]  = xmothervertex[0][6]; 
-  xmothervertex[0][8]  = 0.0;  
-  xmothervertex[0][9]  = xmothervertex[0][8];  
-  xmothervertex[0][10] = xmothervertex[0][4];  
-  xmothervertex[0][11] = xmothervertex[0][10];  
-  for(Int_t i=0; i<kmothervertexnumber; i++) 
-	xmothervertex[1][i] = xmothervertex[0][i]; 
-  for(Int_t i=0; i<kchipsystemnumber; i++){
-	ymothervertex[i][0]  = -0.5*fgkSSDChipWidth-ssdchipcablesradius[i]
-						 - fgkSSDChipCablesWidth[1]-fgkSSDChipCablesWidth[2];
-	ymothervertex[i][1]  = ssdchipseparation-ymothervertex[i][0];
-	ymothervertex[i][2]  = ymothervertex[i][1];
-	ymothervertex[i][3]  = ymothervertex[i][0];
-	ymothervertex[i][4]  = ymothervertex[i][0];
-	ymothervertex[i][5]  = 0.5*fgkSSDChipWidth;
-	ymothervertex[i][6]  = ymothervertex[i][5];
-	ymothervertex[i][7]  = ssdchipseparation-0.5*fgkSSDChipWidth;
-	ymothervertex[i][8]  = ymothervertex[i][7];
-	ymothervertex[i][9]  = ymothervertex[i][5];
-	ymothervertex[i][10] = ymothervertex[i][5];
-	ymothervertex[i][11] = ymothervertex[i][4];
-  }
-  //////////////////////////////////////////////////////////
-//  TGeoVolume* chipsystemother[kchipsystemnumber];
+
   TGeoVolumeAssembly* chipsystemother[kchipsystemnumber];
   const char* chipsytemothername[kchipsystemnumber] = 
 					{"SSDChipSytemother1","SSDChipSytemother2"};
   for(Int_t i=0; i<kchipsystemnumber; i++){
-    chipsystemothershape[i]->DefinePolygon(kmothervertexnumber,
-									xmothervertex[i],ymothervertex[i]);
-    chipsystemothershape[i]->DefineSection(0,-fgkSSDChipCablesHeight[i+2]
-										  -0.5*fgkSSDChipHeight);
-    chipsystemothershape[i]->DefineSection(1,0.5*fgkSSDChipHeight);
-//    chipsystemother[i] = new TGeoVolume(chipsytemothername[i],
-//							  chipsystemothershape[i],fSSDAir);
     chipsystemother[i] = new TGeoVolumeAssembly(chipsytemothername[i]);
   }
   /////////////////////////////////////////////////////////////
@@ -3855,7 +3797,8 @@ TList* AliITSv11GeometrySSD::GetSSDChipSystem(){
   /////////////////////////////////////////////////////////////
   return ssdchipsystemlist;
 }
-///////////////////////////////////////////////////////////////////////////////
+
+//_____________________________________________________________________________
 TGeoVolume* AliITSv11GeometrySSD::GetSSDChips() const{
   /////////////////////////////////////////////////////////////
   // SSD Chip Assembly Generation    
