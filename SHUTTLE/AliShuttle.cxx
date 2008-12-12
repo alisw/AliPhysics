@@ -2483,7 +2483,12 @@ Bool_t AliShuttle::Connect(Int_t system)
 	//
 
 	// check connection: if already connected return
-	if(fServer[system] && fServer[system]->IsConnected()) return kTRUE;
+	if(fServer[system] && fServer[system]->IsConnected()) {
+		// ping the server --> automatic reconnection should occur if it was broken but the
+		// server is still alive
+	       	fServer[system]->Ping();
+		return kTRUE;
+	}
 
 	TString dbHost, dbUser, dbPass, dbName;
 
@@ -3156,7 +3161,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 
 	if (target == kDCSEMail || target == kFXSEMail) {
 		if (!fFirstProcessing)
-		return kTRUE;
+			return kTRUE;
 	}
 
 	Int_t runMode = (Int_t)fConfig->GetRunMode();
@@ -3333,7 +3338,6 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 
 	return result == 0;
 }
-
 //______________________________________________________________________________________________
 const char* AliShuttle::GetRunType()
 {
@@ -3546,5 +3550,4 @@ UInt_t AliShuttle::GetEndTimeDCSQuery()
 
 	return GetCurrentEndTime()+fConfig->GetDCSQueryOffset();
 }
-
 
