@@ -32,27 +32,38 @@ void alieve_online_init()
   gGeoManager = man;
 
   gROOT->ProcessLine(".L SplitGLView.C++g"); // !!!! debug-mode
+
   TEveBrowser* browser = gEve->GetBrowser();
+  browser->ShowCloseTab(kFALSE);
+
   browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
 
   if (gRPhiMgr) {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
-    a->SetNdiv(3);
+    a->SetMainColor(kWhite);
     a->SetTitle("R-Phi");
+    a->SetTitleSize(0.05);
+    a->SetTitleFontName("comicbd");
+    a->SetLabelSize(0.025);
+    a->SetLabelFontName("comicbd");
     gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
   }
   if (gRhoZMgr) {
     TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
-    a->SetNdiv(3);
-    a->SetTitle("Rho-Z");
+    a->SetMainColor(kWhite);
+    a->SetTitle("Rho-Phi");
+    a->SetTitleSize(0.05);
+    a->SetTitleFontName("comicbd");
+    a->SetLabelSize(0.025);
+    a->SetLabelFontName("comicbd");
     gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
   }
-
-  TEveBrowser* browser = gEve->GetBrowser();
 
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
+
+  browser->ShowCloseTab(kTRUE);
 
   gEve->Redraw3D(kTRUE);
 }

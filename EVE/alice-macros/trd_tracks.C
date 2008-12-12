@@ -35,7 +35,7 @@ void trd_tracks(TEveElement *cont = 0)
 
     TObject *cal = 0x0;
     Int_t ical = 0;
-    while(cal = friendTrack->GetCalibObject(ical++)){
+    while((cal = friendTrack->GetCalibObject(ical++))){
       if(strcmp(cal->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
       AliTRDtrackV1 *trackObj = dynamic_cast<AliTRDtrackV1 *>(cal);
       trackObj->SetReconstructor(reco);

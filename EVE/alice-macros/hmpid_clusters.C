@@ -28,7 +28,7 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
 {
   const Int_t nCh=7;
   TClonesArray *cl[nCh] = {0,0,0,0,0,0,0};
-  Char_t *name[nCh]={
+  const Char_t *name[nCh]={
     "HMPID0",
     "HMPID1",
     "HMPID2",
