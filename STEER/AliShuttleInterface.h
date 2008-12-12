@@ -61,11 +61,10 @@ class AliShuttleInterface : public TObject
 
     static TString GetMainRefStorage() {return fgkMainRefStorage;}
     static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
+    static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
+    static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
 
   protected:
-
-    static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
-    static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
 
     static const char* fkSystemNames[3];  		// names of the systems providing data to the shuttle
     static const char* fgkDetName[kNDetectors]; 	// names of detectors' preprocessors (3-letter code convention)
