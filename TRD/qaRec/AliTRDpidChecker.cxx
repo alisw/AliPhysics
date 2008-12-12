@@ -1,3 +1,4 @@
+#include "TROOT.h"
 #include "TPDGCode.h"
 #include "TCanvas.h"
 #include "TF1.h"
@@ -92,58 +93,73 @@ TObjArray * AliTRDpidChecker::Histos(){
   // histos of the electron probability of all 5 particle species and 11 momenta for the 2-dim LQ method 
   fEfficiency = new TObjArray(); fEfficiency->Expand(3);
   fContainer->AddAt(fEfficiency, kEfficiency);
-  fEfficiency->AddAt(new TH2F("PID_LQ", "", 
-      xBins, -0.5, xBins - 0.5,
-      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
-  ,kLQ);
-
+  
+  TH1 *h = 0x0;
+  if(!(h = (TH2F*)gROOT->FindObject("PID_LQ"))){
+    h = new TH2F("PID_LQ", "", xBins, -0.5, xBins - 0.5,
+      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon);
+  } else h->Reset();
+  fEfficiency->AddAt(h, kLQ);
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the neural network method
-  fEfficiency->AddAt(
-    new TH2F("PID_NN", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("PID_NN"))){
+    h = new TH2F("PID_NN", "", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
-  ,kNN);
+      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon);
+  } else h->Reset();
+  fEfficiency->AddAt(h, kNN);
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the ESD output
-  fEfficiency->AddAt(
-    new TH2F("PID_ESD", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("PID_ESD"))){
+    h = new TH2F("PID_ESD", "", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
-  ,kESD);
+      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon);
+  } else h->Reset();
+  fEfficiency->AddAt(h, kESD);
 
   // histos of the dE/dx distribution for all 5 particle species and 11 momenta 
-  fContainer->AddAt(
-    new TH2F("dEdx", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("dEdx"))){
+    h = new TH2F("dEdx", "", 
       xBins, -0.5, xBins - 0.5,
-      200, 0, 10000)
-    ,kdEdx);
+      200, 0, 10000);
+  } else h->Reset();
+  fContainer->AddAt(h, kdEdx);
 
   // histos of the dE/dx slices for all 5 particle species and 11 momenta 
-  fContainer->AddAt(
-    new TH2F("dEdxSlice", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("dEdxSlice"))){
+    h = new TH2F("dEdxSlice", "", 
       xBins*AliTRDReconstructor::kLQslices, -0.5, xBins*AliTRDReconstructor::kLQslices - 0.5,
-      200, 0, 5000)
-    ,kdEdxSlice);
+      200, 0, 5000);
+  } else h->Reset();
+  fContainer->AddAt(h, kdEdxSlice);
 
   // histos of the pulse height distribution for all 5 particle species and 11 momenta 
-  fContainer->AddAt(
-    new TProfile2D("PH", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("PH"))){
+    h = new TProfile2D("PH", "", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5)
-    ,kPH);
+      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5);
+  } else h->Reset();
+  fContainer->AddAt(h, kPH);
 
   // histos of the number of clusters distribution for all 5 particle species and 11 momenta 
-  fContainer->AddAt(
-    new TH2F("NClus", "", 
+  if(!(h = (TH2F*)gROOT->FindObject("NClus"))){
+    h = new TH2F("NClus", "", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5)
-    ,kNClus);
+      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5);
+  } else h->Reset();
+  fContainer->AddAt(h, kNClus);
 
 
   // momentum distributions - absolute and in momentum bins
-  fContainer->AddAt(new TH1F("hMom", "momentum distribution", 100, 0., 12.),kMomentum);
-  fContainer->AddAt(new TH1F("hMomBin", "momentum distribution in momentum bins", AliTRDCalPID::kNMom, 0.5, 11.5),kMomentumBin);
+  if(!(h = (TH1F*)gROOT->FindObject("hMom"))){
+    h = new TH1F("hMom", "momentum distribution", 100, 0., 12.);
+  } else h->Reset();
+  fContainer->AddAt(h, kMomentum);
+  
+  if(!(h = (TH1F*)gROOT->FindObject("hMomBin"))){
+    h = new TH1F("hMomBin", "momentum distribution in momentum bins", AliTRDCalPID::kNMom, 0.5, 11.5);
+  } else h->Reset();
+  fContainer->AddAt(h, kMomentumBin);
 
 
   return fContainer;

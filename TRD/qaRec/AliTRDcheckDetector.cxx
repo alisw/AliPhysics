@@ -311,21 +311,63 @@ TObjArray *AliTRDcheckDetector::Histos(){
   
   fContainer = new TObjArray(25);
   // Register Histograms
-  fContainer->AddAt(new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100), kNTracksEventHist);
-  fContainer->AddAt(new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 100, 0, 100), kNEventsTriggerTracks);
-  fContainer->AddAt(new TH1F("hNcls", "Nr. of clusters per track", 181, -0.5, 180.5), kNclustersHist);
-  fContainer->AddAt(new TH1F("hNtls", "Nr. tracklets per track", 7, -0.5, 6.5), kNtrackletsHist);
-  fContainer->AddAt(new TH1F("hNtlsFindable", "Ratio of found/findable Tracklets" , 101, -0.005, 1.005), kNTrackletsVsFindable);
-  fContainer->AddAt(new TH1F("hNclTls","Mean Number of clusters per tracklet", 31, -0.5, 30.5), kNclusterTrackletHist);
-  fContainer->AddAt(new TH1F("hChi2", "Chi2", 200, 0, 20), kChi2);
-  fContainer->AddAt(new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5), kChi2Normalized);
-  fContainer->AddAt(new TH1F("hSM", "Track Counts in Supermodule", 18, -0.5, 17.5), kNTracksSectorHist);
-  // Detector signal on Detector-by-Detector basis
-  fContainer->AddAt(new TProfile("hPHdetector", "Average PH", 31, -0.5, 30.5), kPulseHeight);
-  fContainer->AddAt(new TProfile("hPHdistance", "Average PH", 31, -0.08, 4.88), kPulseHeightDistance);
-  fContainer->AddAt(new TH1F("hQclDetector", "Cluster charge", 200, 0, 1200), kClusterCharge);
-  fContainer->AddAt(new TH1F("hQTdetector", "Total Charge Deposit", 6000, 0, 6000), kChargeDeposit);
-  fContainer->AddAt(new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100), kNEventsTrigger);
+  TH1 * histptr = 0x0;
+  if(!(histptr = (TH1F *)gROOT->FindObject("hNtrks")))
+    histptr = new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNTracksEventHist);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTriggerTracks")))
+    histptr = new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 100, 0, 100);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNEventsTriggerTracks);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hNcls")))
+    histptr = new TH1F("hNcls", "Nr. of clusters per track", 181, -0.5, 180.5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNclustersHist);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hNtls")))
+    histptr = new TH1F("hNtls", "Nr. tracklets per track", 7, -0.5, 6.5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNtrackletsHist);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hNtlsFindable")))
+    histptr = new TH1F("hNtlsFindable", "Ratio of found/findable Tracklets" , 101, -0.005, 1.005);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNTrackletsVsFindable);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hNclTls")))
+    histptr = new TH1F("hNclTls","Mean Number of clusters per tracklet", 31, -0.5, 30.5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNclusterTrackletHist);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2")))
+    histptr = new TH1F("hChi2", "Chi2", 200, 0, 20);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kChi2);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2n")))
+    histptr = new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kChi2Normalized);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2n")))
+    histptr = new TH1F("hSM", "Track Counts in Supermodule", 18, -0.5, 17.5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNTracksSectorHist);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hPHdetector")))
+    histptr = new TProfile("hPHdetector", "Average PH", 31, -0.5, 30.5);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kPulseHeight);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hPHdistance")))
+    histptr = new TProfile("hPHdistance", "Average PH", 31, -0.08, 4.88);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kPulseHeightDistance);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hQclDetector")))
+    histptr = new TH1F("hQclDetector", "Cluster charge", 200, 0, 1200);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kClusterCharge);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hQTdetector")))
+    histptr = new TH1F("hQTdetector", "Total Charge Deposit", 6000, 0, 6000);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kChargeDeposit);
+  if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTrigger")))
+    histptr = new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100);
+  else histptr->Reset();
+  fContainer->AddAt(histptr, kNEventsTrigger);
 
   return fContainer;
 }
@@ -693,7 +735,7 @@ TH1 *AliTRDcheckDetector::PlotPHSdistance(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  Int_t offset = AliTRDSimParam::Instance()->GetAnodeWireOffset();
+  Float_t offset = .5*AliTRDgeometry::CamHght();
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   Double_t distance = 0;
