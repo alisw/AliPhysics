@@ -134,7 +134,7 @@ Float_t CalculateTargetHV(Float_t initialHV, Float_t gainChange,
   // check results before returning..
   if (newHV < 0) {
    // conversion failed:  let's just keep the old custom value then
-    newHV = initHV;
+    newHV = initialHV;
   }
   if (newHV>kMaxHV) {
     // we reached a too high voltage: let's keep the max then
