@@ -108,11 +108,14 @@
 #include "AliShuttleTrigger.h"
 
 #include <TSystem.h>
+#include <TObjString.h>
 
 #include "AliLog.h"
 #include "AliShuttleConfig.h"
 #include "AliShuttle.h"
 #include "DATENotifier.h"
+
+#include <fstream>
 
 ClassImp(TerminateSignalHandler)
 ClassImp(AliShuttleTrigger)
@@ -134,7 +137,8 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config):
 	fNotified(kFALSE), fTerminate(kFALSE),
 	fMutex(), fCondition(&fMutex),
 	fQuitSignalHandler(0),
-	fInterruptSignalHandler(0)
+	fInterruptSignalHandler(0),
+	fLastMailDiskSpace(0)
 {
 	//
 	// config - pointer to the AliShuttleConfig object which represents
@@ -277,5 +281,119 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 	// then it checks if the shuttle is still running by checking the monitoring functions of the shuttle
 	//
 
-  return fShuttle->Collect(run);
+	// first checking disk space
+	Long_t id = 0;
+	Long_t bsize = 0;
+	Long_t blocks = 0;
+	Long_t bfree = 0;
+
+	gSystem->GetFsInfo(fConfig->GetShuttleFileSystem(), &id, &bsize, &blocks, &bfree);
+
+	AliInfo(Form("n. of free blocks = %d, total n. of blocks = %d",bfree,blocks));
+	Int_t spaceFree = (Int_t)(((Float_t)bfree/(Float_t)blocks)*100);
+
+	if (spaceFree < fConfig->GetFreeDiskWarningThreshold()) {
+		AliWarning(Form("************** Free space left = %d%%, below the Warning Threshold (%d%%)",spaceFree,fConfig->GetFreeDiskWarningThreshold()));
+		if (TMath::Abs(time(0) - fLastMailDiskSpace) >= 86400){   // 86400 = n. of seconds in 1 d
+			SendMailDiskSpace(fConfig->GetFreeDiskWarningThreshold());
+			fLastMailDiskSpace = time(0);  // resetting fLastMailDiskSpace to time(0) = now
+		}
+		if (spaceFree < fConfig->GetFreeDiskFatalThreshold()){
+			AliError(Form("*************** Free space left = %d%%, below the Fatal Threshold (%d%%), terminating....",spaceFree,fConfig->GetFreeDiskFatalThreshold()));
+			SendMailDiskSpace(fConfig->GetFreeDiskFatalThreshold());
+			fTerminate = kTRUE; // terminating....
+		}
+	}	
+
+	if (fTerminate) {
+		return kFALSE;
+	}
+
+	return fShuttle->Collect(run);
+}
+//______________________________________________________________________________________________
+Bool_t AliShuttleTrigger::SendMailDiskSpace(Short_t percentage)
+{
+	//
+	// sends a mail to the shuttle experts in case of free disk space < theshold
+	//
+	
+		
+	AliInfo("******************* Sending the Mail!! *********************");
+	if (!fConfig->SendMail()) 
+		return kTRUE;
+
+	Int_t runMode = (Int_t)fConfig->GetRunMode();
+	TString tmpStr;
+	if (runMode == 0) tmpStr = " Nightly Test:";
+	else tmpStr = " Data Taking:"; 
+	void* dir = gSystem->OpenDirectory(fShuttle->GetShuttleLogDir());
+	if (dir == NULL)
+	{
+		if (gSystem->mkdir(fShuttle->GetShuttleLogDir(), kTRUE))
+		{
+			AliWarning(Form("SendMail - Can't open directory <%s>", fShuttle->GetShuttleLogDir()));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
+	// SHUTTLE responsibles in to
+	TString to="";
+	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
+	TObjString *anAdmin=0;
+	while ((anAdmin = (TObjString*) iterAdmins.Next()))
+	{
+		to += Form("%s,", anAdmin->GetName());
+	}
+	if (to.Length() > 0)
+	  to.Remove(to.Length()-1);
+	AliDebug(2, Form("to: %s",to.Data()));
+
+	// mail body 
+  	TString bodyFileName;
+  	bodyFileName.Form("%s/mail.body", fShuttle->GetShuttleLogDir());
+  	gSystem->ExpandPathName(bodyFileName);
+
+  	ofstream mailBody;
+  	mailBody.open(bodyFileName, ofstream::out);
+
+  	if (!mailBody.is_open())
+	{
+    		AliWarning(Form("Could not open mail body file %s", bodyFileName.Data()));
+    		return kFALSE;
+  	}
+
+	TString subject;
+	TString body;
+
+	subject = Form("%s CRITICAL Disk Space usage exceeds %d%c!",
+		       tmpStr.Data(),percentage,'%');
+	AliDebug(2, Form("subject: %s", subject.Data()));
+	Int_t percentage_used = 100 - percentage; 	
+
+	body = "Dear SHUTTLE experts, \n\n";
+	body += "The usage of the disk space on the shuttle machine has overcome \n"; 
+	body += Form("the threshold of %d%%. \n \n",percentage_used);
+	body += "Please check! \n \n";
+	body += "Please do not answer this message directly, it is automatically generated.\n\n";
+	body += "Greetings,\n\n \t\t\tthe SHUTTLE\n";
+
+	AliDebug(2, Form("Body : %s", body.Data()));
+
+	mailBody << body.Data();
+  	mailBody.close();
+
+	// send mail!
+	TString mailCommand = Form("mail -s \"%s\" %s < %s",
+						subject.Data(),
+						to.Data(),
+						bodyFileName.Data());
+	AliDebug(2, Form("mail command: %s", mailCommand.Data()));
+
+	Bool_t result = gSystem->Exec(mailCommand.Data());
+
+	return result == 0;
 }

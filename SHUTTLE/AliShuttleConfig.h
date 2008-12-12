@@ -27,8 +27,6 @@ public:
 			const char* binddn = 0, const char* password = 0,
 			const char* basedn = "o=alice,dc=cern,dc=ch");
 	virtual ~AliShuttleConfig();
-	AliShuttleConfig(const AliShuttleConfig & other);
-	AliShuttleConfig& operator= (const AliShuttleConfig& other);
 
 	Bool_t IsValid() const {return fIsValid;};
 
@@ -79,6 +77,9 @@ public:
 	const char* GetMonitorTable() const {return fMonitorTable.Data();}
 
 	Int_t GetTriggerWait() const {return fTriggerWait;}
+	const char* GetShuttleFileSystem() const {return fShuttleFileSystem.Data();}
+	Int_t GetFreeDiskWarningThreshold() const {return fFreeDiskWarningThreshold;}
+	Int_t GetFreeDiskFatalThreshold() const {return fFreeDiskFatalThreshold;}
 	
 	RunMode GetRunMode() const {return fRunMode;}
 	
@@ -183,6 +184,8 @@ private:
 	};
 
 
+	AliShuttleConfig(const AliShuttleConfig& other);
+	AliShuttleConfig& operator= (const AliShuttleConfig& other);
 	UInt_t SetGlobalConfig(TList* globalList);
 	UInt_t SetSysConfig(TList* sysList);
 	UInt_t SetPasswords();
@@ -230,6 +233,9 @@ private:
 	TString fMonitorTable;          // Monalisa's SHUTTLE table name
 	
 	Int_t fTriggerWait;           	// time to wait for DIM trigger before starting new collection 
+	TString fShuttleFileSystem;     // path of the Shuttle file system
+	Int_t fFreeDiskWarningThreshold;   // threshold for free space in the Shuttle file system to send a mail to the responsibles
+	Int_t fFreeDiskFatalThreshold;     // threshold for free space in the Shuttle file system to send a mail to the responsibles and terminate the Shuttle
 	RunMode  fRunMode;          	// Working mode (0=test; 1=prod)
 
 	TMap fDetectorMap; 		// Map of the detector-by-detector configuration

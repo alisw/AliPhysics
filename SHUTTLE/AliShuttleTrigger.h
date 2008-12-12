@@ -62,6 +62,8 @@ private:
 	AliShuttleTrigger(const AliShuttleTrigger& other);
 	AliShuttleTrigger& operator= (const AliShuttleTrigger& other);
 
+	Bool_t SendMailDiskSpace(Short_t percentage);
+
 	const AliShuttleConfig* fConfig;
 
 	AliShuttle* fShuttle; 		// Pointer to the actual Shuttle instance
@@ -74,6 +76,8 @@ private:
 
 	TerminateSignalHandler* fQuitSignalHandler; 		// Quit signal
 	TerminateSignalHandler* fInterruptSignalHandler;  	// Interrupt signal
+
+	time_t fLastMailDiskSpace;       // timestamp when the last mail was sent
 
 
 	ClassDef(AliShuttleTrigger, 0)
