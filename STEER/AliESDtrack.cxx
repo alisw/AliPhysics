@@ -431,6 +431,11 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   // Set ITS cluster map
   fITSClusterMap=track->GetITSClusterMap();
 
+  fITSncls=0;
+  for(i=0; i<6; i++) {
+    if(HasPointOnITSLayer(i)) fITSncls++;
+  }
+
   // Set the combined PID
   const Double_t *pid = track->PID();
   if(pid){
