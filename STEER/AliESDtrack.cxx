@@ -400,8 +400,16 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDslices(0x0)
 {
   //
-  // ESD track from AliVTrack
+  // ESD track from AliVTrack.
+  // This is not a copy constructor !
   //
+
+  if (track->InheritsFrom("AliExternalTrackParam")) {
+     AliError("This is not a copy constructor. Use AliESDtrack(const AliESDtrack &) !");
+     AliWarning("Calling the default constructor...");
+     AliESDtrack();
+     return;
+  }
 
   // Reset all the arrays
   Int_t i;

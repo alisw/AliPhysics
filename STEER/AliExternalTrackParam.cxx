@@ -105,8 +105,17 @@ AliExternalTrackParam::AliExternalTrackParam(const AliVTrack *vTrack) :
   fAlpha(0.)
 {
   //
-  // constructor from virtual track
+  // Constructor from virtual track,
+  // This is not a copy contructor !
   //
+
+  if (vTrack->InheritsFrom("AliExternalTrackParam")) {
+     AliError("This is not a copy constructor. Use AliExternalTrackParam(const AliExternalTrackParam &) !");
+     AliWarning("Calling the default constructor...");
+     AliExternalTrackParam();
+     return;
+  }
+
   Double_t xyz[3],pxpypz[3],cv[21];
   vTrack->GetXYZ(xyz);
   pxpypz[0]=vTrack->Px();
