@@ -1,4 +1,3 @@
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -74,7 +73,6 @@ Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
   0.0474, 0.0408, 0.0335, 0.0335, 0.0335
 };
 Int_t AliTRDtrackerV1::fgNTimeBins = 0;
-TTreeSRedirector *AliTRDtrackerV1::fgDebugStreamer = 0x0;
 AliRieman* AliTRDtrackerV1::fgRieman = 0x0;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRieman = 0x0;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRiemanConstrained = 0x0;
@@ -114,7 +112,6 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   // Destructor
   //
   
-  if(fgDebugStreamer) delete fgDebugStreamer;
   if(fgRieman) delete fgRieman;
   if(fgTiltedRieman) delete fgTiltedRieman;
   if(fgTiltedRiemanConstrained) delete fgTiltedRiemanConstrained;
@@ -570,7 +567,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     }
 
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     cstreamer << "FollowProlongation"
         << "EventNumber="	<< eventNumber
         << "ncl="					<< nClustersExpected
@@ -741,7 +738,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   } // end layers loop
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     //AliTRDtrackV1 *debugTrack = new AliTRDtrackV1(t);
     //debugTrack->SetOwner();
@@ -902,7 +899,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
     Float_t chi2Z = CalculateChi2Z(tracklets, zref, slope, xref);
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
-    TTreeSRedirector &treeStreamer = *fgDebugStreamer;
+    TTreeSRedirector &treeStreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     treeStreamer << "FitTiltedRiemanConstraint"
     << "EventNumber=" 		<< eventNumber
     << "CandidateNumber="	<< candidateNumber
@@ -1067,7 +1064,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   }
   
 /*  if(fReconstructor->GetStreamLevel() >=5){
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     Int_t eventNumber			= AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber	= AliTRDtrackerDebug::GetCandidateNumber();
     Double_t chi2z = CalculateChi2Z(tracklets, offset, slope, xref);
@@ -2068,7 +2065,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t trackNumber = AliTRDtrackerDebug::GetTrackNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     cstreamer << "Clusters2TracksStack"
         << "EventNumber="		<< eventNumber
         << "TrackNumber="		<< trackNumber
@@ -2364,7 +2361,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
           Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
           AliRieman *rim = GetRiemanFitter();
-          TTreeSRedirector &cs0 = *fgDebugStreamer;
+          TTreeSRedirector &cs0 = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
           cs0 << "MakeSeeds0"
               <<"EventNumber="		<< eventNumber
               <<"CandidateNumber="	<< candidateNumber
@@ -2473,7 +2470,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // AliInfo("Extrapolation done.");
         // Debug Stream containing all the 6 tracklets
         if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
-          TTreeSRedirector &cstreamer = *fgDebugStreamer;
+          TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
           TLinearFitter *tiltedRieman = GetTiltedRiemanFitter();
           Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
           Int_t candidateNumber	= AliTRDtrackerDebug::GetCandidateNumber();
@@ -2540,7 +2537,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         }
             
         if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
-          TTreeSRedirector &cstreamer = *fgDebugStreamer;
+          TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
           Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
           Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
           TLinearFitter *fitterTC = GetTiltedRiemanFitterConstraint();
@@ -2636,7 +2633,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
     Double_t p[5]; // Track Params for the Debug Stream
     track.GetExternalParameters(params[0], p);
-    TTreeSRedirector &cs = *fgDebugStreamer;
+    TTreeSRedirector &cs = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     cs << "MakeTrack"
     << "EventNumber="     << eventNumber
     << "CandidateNumber=" << candidateNumber
@@ -2734,7 +2731,7 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
       Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
       Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
       TLinearFitter *tiltedRieman = GetTiltedRiemanFitter();
-      TTreeSRedirector &cstreamer = *fgDebugStreamer;
+      TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
       cstreamer << "ImproveSeedQuality"
     << "EventNumber=" 		<< eventNumber
     << "CandidateNumber="	<< candidateNumber
@@ -2792,7 +2789,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     cstreamer << "CalculateTrackLikelihood0"
         << "EventNumber="			<< eventNumber
         << "CandidateNumber="	<< candidateNumber
@@ -2868,7 +2865,7 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
     }
     if(nTracklets) mean_ncls /= nTracklets;
     // The Debug Stream contains the seed 
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
+    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
     cstreamer << "CookLikelihood"
         << "EventNumber="			<< eventNumber
         << "CandidateNumber=" << candidateNumber
@@ -3250,17 +3247,6 @@ Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
 
 
 //____________________________________________________________________
-void AliTRDtrackerV1::SetReconstructor(const AliTRDReconstructor *rec)
-{
-  fReconstructor = rec;
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
-    if(!fgDebugStreamer){
-      TDirectory *savedir = gDirectory;
-      fgDebugStreamer = new TTreeSRedirector("TRD.TrackerDebug.root");
-      savedir->cd();
-    }
-  }	
-}
 
 //_____________________________________________________________________________
 Float_t AliTRDtrackerV1::GetChi2Y(AliTRDseedV1 *tracklets) const

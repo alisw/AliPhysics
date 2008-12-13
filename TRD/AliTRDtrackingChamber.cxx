@@ -390,7 +390,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
     //for(Int_t i = 0; i < nRows; i++)
     //	for(Int_t j = 0; j < nCols; j++)
     //		hist(i,j) = histogram[i][j];
-    TTreeSRedirector &cstreamer = *AliTRDtrackerV1::DebugStreamer();
+    TTreeSRedirector &cstreamer = *rec->GetDebugStream(AliTRDReconstructor::kTracker);
     cstreamer << "GetSeedingLayer"
     << "layer="      << layer
     << "ymin="       << ymin

@@ -42,6 +42,8 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDrecoParam.h"
 
+#include "TTreeStream.h"
+
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
 
@@ -62,6 +64,7 @@ AliTRDReconstructor::AliTRDReconstructor()
   SETFLG(fSteerParam, kSteerPID);
 
   memset(fStreamLevel, 0, 5*sizeof(UChar_t));
+  memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * 4);
   // Xe tail cancellation parameters
   fTCParams[0] = 1.156; // r1
   fTCParams[1] = 0.130; // r2
@@ -72,6 +75,7 @@ AliTRDReconstructor::AliTRDReconstructor()
   fTCParams[5] = 0.62;  // r2
   fTCParams[6] = 0.0087;// c1
   fTCParams[7] = 0.07;  // c2
+  SetBit(kOwner, kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -81,6 +85,8 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
 {
   memcpy(fStreamLevel, r.fStreamLevel, 5*sizeof(UChar_t));
   memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
+  memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *4);
+  SetBit(kOwner, kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -88,6 +94,10 @@ AliTRDReconstructor::~AliTRDReconstructor()
 {
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
+  }
+  if(TestBit(kOwner)){
+    for(Int_t itask = 0; itask < 4; itask++)
+      if(fDebugStream[itask]) delete fDebugStream[itask];
   }
 }
 
@@ -276,7 +286,8 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       // Set the stream Level
       Int_t level = levelstring.Atoi();
       AliTRDReconstructorTask task = kTracker;
-      if(taskstr.CompareTo("cl") == 0) task = kClusterizer;	
+      if(taskstr.CompareTo("raw") == 0) task = kRawReader;	
+      else if(taskstr.CompareTo("cl") == 0) task = kClusterizer;	
       else if(taskstr.CompareTo("tr") == 0) task = kTracker;
       else if(taskstr.CompareTo("pi") == 0) task = kPID;
       SetStreamLevel(level, task);
@@ -290,18 +301,14 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask ta
   //
   // Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
   //
-  TString taskname;
-  switch(task){
-  case kClusterizer: 
-    taskname = "Clusterizer";
-    break;
-  case kTracker: 
-    taskname = "Tracker";
-    break;
-  case kPID: 
-    taskname = "PID";
-    break;
-  }
+  TString taskname[4] = {"RawReader", "Clusterizer", "Tracker", "PID"};
+  const Int_t minLevel[4] = {1, 1, 2, 1}; // the minimum debug level upon which a debug stream is created for different tasks
   //AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
   fStreamLevel[(Int_t)task] = level;
+  // Initialize DebugStreamer if not yet done
+  if(level >= minLevel[task] && !fDebugStream[task]){
+    TDirectory *savedir = gDirectory;
+    fDebugStream[task] = new TTreeSRedirector(Form("TRD.%sDebug.root", taskname[task].Data()));
+    savedir->cd();
+  }
 }

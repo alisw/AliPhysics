@@ -16,6 +16,7 @@
 #include "AliTRDrecoParam.h"
 
 class TClonesArray;
+class TTreeSRedirector;
 class AliRawReader;
 class AliTRDReconstructor: public AliReconstructor 
 {
@@ -32,9 +33,10 @@ public:
     ,kCosmic         = BIT(8)
   };
   enum AliTRDReconstructorTask {
-    kClusterizer = 0
-    ,kTracker    = 1
-    ,kPID        = 2
+    kRawReader    = 0
+    ,kClusterizer = 1
+    ,kTracker     = 2
+    ,kPID         = 3
   };
   enum AliTRDpidMethod {
     kLQPID = 0,
@@ -48,6 +50,9 @@ public:
     kNNslices = 8
    ,kLQslices = 3
   };
+  enum{
+    kOwner = BIT(14)
+  };
 
   AliTRDReconstructor();
   AliTRDReconstructor(const AliTRDReconstructor &r);
@@ -58,6 +63,7 @@ public:
 
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
   virtual AliTracker* CreateTracker() const;
+  TTreeSRedirector*   GetDebugStream(AliTRDReconstructorTask task) const { return task < 4 ? fDebugStream[task] : 0x0; }
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
@@ -85,9 +91,10 @@ public:
   void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker);
 
 private:
-  UChar_t       fStreamLevel[5];      // stream level for each reconstruction task         
-  UInt_t        fSteerParam;          // steering flags
-  Double_t      fTCParams[8];         // Tail Cancellation parameters for drift gases 
+  UChar_t           fStreamLevel[5];      // stream level for each reconstruction task         
+  UInt_t            fSteerParam;          // steering flags
+  Double_t          fTCParams[8];         // Tail Cancellation parameters for drift gases 
+  TTreeSRedirector *fDebugStream[4];      // Debug Streamer container;
  
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
 

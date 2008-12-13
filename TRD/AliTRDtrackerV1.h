@@ -70,7 +70,6 @@ public:
   AliTRDtrackingSector* GetTrackingSector(Int_t sec) {return &fTrSec[sec];}
   
   Int_t           Clusters2Tracks(AliESDEvent *esd);
-  static TTreeSRedirector* DebugStreamer() {return fgDebugStreamer;}
   AliCluster*     GetCluster(Int_t index) const;
   AliTRDseedV1*   GetTracklet(Int_t index) const;
   AliKalmanTrack* GetTrack(Int_t index) const;
@@ -103,7 +102,7 @@ public:
   Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
-  void            SetReconstructor(const AliTRDReconstructor *rec); 
+  void            SetReconstructor(const AliTRDReconstructor *rec){ fReconstructor = rec; }
   void            UnloadClusters();
   
   static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
@@ -181,8 +180,6 @@ private:
 	static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant
 	static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
 	static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
-  
-	static TTreeSRedirector *fgDebugStreamer;             //!Debug streamer
 	
 	ClassDef(AliTRDtrackerV1, 2)                          //  TRD tracker development class
 

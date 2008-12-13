@@ -43,8 +43,6 @@
 #include "AliTRDchamberTimeBin.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDReconstructor.h"
-#include "AliTRDtrackerV1.h"
-
 
 ClassImp(AliTRDchamberTimeBin)
 
@@ -320,7 +318,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     
     // Debug Streaming
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
-      TTreeSRedirector &cstream = *AliTRDtrackerV1::DebugStreamer();
+      TTreeSRedirector &cstream = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
       cstream << "BuildIndices"
       << "Plane="    << fPlane
       << "Stack="    << fStack

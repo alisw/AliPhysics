@@ -51,6 +51,8 @@
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDfeeParam.h"
 
+#include "TTreeStream.h"
+
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
@@ -90,7 +92,7 @@ AliTRDclusterizer::AliTRDclusterizer(AliTRDReconstructor *rec)
   if(fReconstructor){
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 1){
       TDirectory *savedir = gDirectory; 
-      //fgDebugStreamer    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
+      //fgGetDebugStream    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
       savedir->cd();
     }
   }
@@ -122,15 +124,6 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, Al
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
     AliFatal("Could not get calibration object");
-  }
-
-  // Initialize debug stream
-  if (fReconstructor){
-    if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 1){
-      TDirectory *savedir = gDirectory; 
-      //fgDebugStreamer    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
-      savedir->cd();
-    }
   }
 
   fDigitsManager->CreateArrays();
@@ -765,6 +758,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
+  TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
+
   // Threshold value for the maximum
   Float_t maxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   // Threshold value for the digit signal
@@ -848,6 +843,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     
   UChar_t status[3]={0, 0, 0}, ipos = 0;
   fIndexesOut->ResetCounters();
+  Int_t nMaximas = 0, nCorrupted = 0;
   while (fIndexesOut->NextRCTbinIndex(row, col, time)) {
     // reset pad status
     ipos = 0; for(Int_t is=3; is--;) status[is] = 0;
@@ -1103,6 +1099,15 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   }
 
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 2){
+    (*fDebugStream) << "MakeClusters"
+		    << "Detector="   << det
+		    << "NMaxima="    << nMaximas
+		    << "NClusters="  << nClusterROC
+		    << "NCorrupted=" << nCorrupted
+		    << "\n";
+  }
+
   delete digitsOut;
 
   if (fAddLabels) {
@@ -1285,6 +1290,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDarrayADC *digitsIn
   Double_t *inADC  = new Double_t[nTimeTotal];  // ADC data before tail cancellation
   Double_t *outADC = new Double_t[nTimeTotal];  // ADC data after tail cancellation
   indexesIn->ResetCounters();
+  TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
   while (indexesIn->NextRCIndex(iRow, iCol))
     {
       Float_t  calGainFactorROCValue = calGainFactorROC->GetValue(iCol,iRow);
@@ -1299,6 +1305,17 @@ void AliTRDclusterizer::TailCancelation(AliTRDarrayADC *digitsIn
           if (digitsIn->GetPadStatus(iRow, iCol, iTime)) corrupted = kTRUE;
           inADC[iTime]  /= gain;
           outADC[iTime]  = inADC[iTime];
+      	  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 7){
+      	    (*fDebugStream) << "TailCancellation"
+  			      << "col="  << iCol
+  			      << "row="  << iRow
+  			      << "time=" << iTime
+  			      << "inADC=" << inADC[iTime]
+  			      << "gain=" << gain
+  			      << "outADC=" << outADC[iTime]
+  			      << "corrupted=" << corrupted
+  			      << "\n";
+      	  }
         }
       if (!corrupted)
         {
