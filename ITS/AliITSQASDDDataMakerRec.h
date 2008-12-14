@@ -57,7 +57,6 @@ private:
   Int_t   fLDC;                               // LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSDDhRawsTask;                      // number of histo booked for each the Raws Task SDD
   Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
-  //Int_t   fGenOffset;                       // QAchecking offset       
   Int_t   fGenRawsOffset;                     // QAchecking Raws offset       
   Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			      // time bin width in number of clocks

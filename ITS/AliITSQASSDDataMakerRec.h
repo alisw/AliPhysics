@@ -37,8 +37,9 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASSDDataMakerRec(); // dtor
-  Int_t GetOffset() { return fGenOffset; }
-  Int_t GetTaskHisto() { return fSSDhTask; }
+
+  Int_t GetOffset(AliQA::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
 
  private:
 
@@ -68,16 +69,16 @@ public:
   Int_t   fSSDRawsOffset;                       //SSD raw data plot offset
   Int_t   fSSDRawsDAOffset;                     //SSD DA plot offset
   Int_t   fSSDRawsCommonLevelOffset;            //Raw data QA - top level offset - histos used both online and offline 
-  Int_t   fSSDhTask;                            //number of histo booked for each SSD task
-  Int_t   fGenOffset;                           //qachecking offset
-  Int_t   fGenRawsOffset;                           //qachecking offset
-  Int_t   fGenRecPointsOffset;                           //qachecking offset
+  Int_t   fSSDhRawsTask;                        //number of histo booked for the raws SSD task 
+  Int_t   fSSDhRecPointsTask;                   //number of histo booked for the recpoints SSD task
+  Int_t   fGenRawsOffset;                       //qachecking raws       offset
+  Int_t   fGenRecPointsOffset;                  //qachecking recpoints  offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
   AliCDBManager *fCDBManager; //CDB manager
 
-  ClassDef(AliITSQASSDDataMakerRec,4)           // description 
+  ClassDef(AliITSQASSDDataMakerRec,5)           // description 
 };
 
 #endif

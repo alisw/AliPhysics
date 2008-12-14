@@ -51,7 +51,10 @@ ClassImp(AliITSQASSDDataMakerSim)
 AliITSQASSDDataMakerSim::AliITSQASSDDataMakerSim(AliITSQADataMakerSim *aliITSQADataMakerSim) :
 TObject(),
 fAliITSQADataMakerSim(aliITSQADataMakerSim),
-fSSDhTask(0),
+//fSSDhTask(0),
+fSSDhHTask(0),
+fSSDhSTask(0),
+fSSDhDTask(0),
 fGenOffsetH(0),
 fGenOffsetS(0), 
 fGenOffsetD(0) 
@@ -63,7 +66,10 @@ fGenOffsetD(0)
 AliITSQASSDDataMakerSim::AliITSQASSDDataMakerSim(const AliITSQASSDDataMakerSim& qadm) :
 TObject(),
 fAliITSQADataMakerSim(qadm.fAliITSQADataMakerSim),
-fSSDhTask(qadm.fSSDhTask),
+//fSSDhTask(qadm.fSSDhTask),
+fSSDhHTask(qadm.fSSDhHTask),
+fSSDhSTask(qadm.fSSDhSTask),
+fSSDhDTask(qadm.fSSDhDTask),
 fGenOffsetH(qadm.fGenOffsetH), 
 fGenOffsetS(qadm.fGenOffsetS), 
 fGenOffsetD(qadm.fGenOffsetD) 
@@ -106,15 +112,15 @@ void AliITSQASSDDataMakerSim::InitDigits() {
 				  1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2DigitsList(fHistSSDModule,
 					fGenOffsetD + 0);
-  fSSDhTask += 1;
+  fSSDhDTask += 1;
   TH2F *fHistSSDModuleStrip = new TH2F("fHistSSDDigitsModuleStrip",
 				       ";N_{Strip};N_{Module}",
 				       1540,0,1540,1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2DigitsList(fHistSSDModuleStrip,
 					fGenOffsetD + 1);
-  fSSDhTask += 1;
+  fSSDhDTask += 1;
 
-  AliDebug(1,Form("%d SSD Digits histograms booked\n",fSSDhTask));
+  AliDebug(1,Form("%d SSD Digits histograms booked\n",fSSDhDTask));
 
 }
 
@@ -151,9 +157,9 @@ void AliITSQASSDDataMakerSim::InitSDigits() {
 				  1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2SDigitsList(fHistSSDModule,
 					 fGenOffsetS + 0);
-  fSSDhTask += 1;  
+  fSSDhSTask += 1;  
 
-  AliDebug(1,Form("%d SSD SDigits histograms booked\n",fSSDhTask));
+  AliDebug(1,Form("%d SSD SDigits histograms booked\n",fSSDhSTask));
 }
 
 //____________________________________________________________________________
@@ -193,58 +199,58 @@ void AliITSQASSDDataMakerSim::InitHits() {
 				  1698,499.5,2197.5); 
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDModule,
 				      fGenOffsetH + 0);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDGlobalX = new TH1F("fHistSSDHitsGlobalX",
 				   ";x [cm];Entries",
 				   1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalX,
 				      fGenOffsetH + 1);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDGlobalY = new TH1F("fHistSSDHitsGlobalY",
 				   ";y [cm];Entries",
 				   1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalY,
 				      fGenOffsetH + 2);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDGlobalZ = new TH1F("fHistSSDHitsGlobalZ",
 				   ";z [cm];Entries",
 				   1000,-60.,60.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalZ,
 				      fGenOffsetH + 3);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDLocalX = new TH1F("fHistSSDHitsLocalX",
 				  ";x [cm];Entries",
 				  1000,-4.,4.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalX,
 				      fGenOffsetH + 4);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDLocalY = new TH1F("fHistSSDHitsLocalY",
 				  ";y [cm];Entries",
 				  1000,-0.1,0.1);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalY,
 				      fGenOffsetH + 5);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDLocalZ = new TH1F("fHistSSDHitsLocalZ",
 				  ";z [cm];Entries",
 				  1000,-4.,4.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalZ,
 				      fGenOffsetH + 6);
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH1F *fHistSSDIonization = new TH1F("fHistSSDHitsIonization",
 				      ";log(dE/dx) [KeV];N_{Hits}",
 				      100,-7,-2);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDIonization,
 				      fGenOffsetH + 7 );
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
   TH2F *fHistSSDGlobalXY = new TH2F("fHistSSDHitsGlobalXY",
 				    ";x [cm];y [cm]",
 				    1000,-50.,50.,
 				    1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalXY,
 				      fGenOffsetH + 8 );
-  fSSDhTask += 1;
+  fSSDhHTask += 1;
  
-  AliDebug(1,Form("%d SSD Hits histograms booked\n",fSSDhTask));
+  AliDebug(1,Form("%d SSD Hits histograms booked\n",fSSDhHTask));
 }
 
 
@@ -277,4 +283,48 @@ void AliITSQASSDDataMakerSim::MakeHits(TTree *hits) {
       fAliITSQADataMakerSim->GetHitsData(fGenOffsetH + 8)->Fill(hit->GetXG(),hit->GetYG());
     }//hit loop
   }//module loop  
+}
+
+
+
+
+//____________________________________________________________________________ 
+Int_t AliITSQASSDDataMakerSim::GetOffset(AliQA::TASKINDEX_t task){
+  // Returns histogram offset according to the specified task
+  Int_t offset=0;
+  if( task == AliQA::kHITS){
+    offset=fGenOffsetH;  
+  }
+  else if( task == AliQA::kSDIGITS) {
+    offset=fGenOffsetS;   
+  }
+  else if( task == AliQA::kDIGITS) {
+    offset=fGenOffsetD;   
+  }
+  else {
+    AliInfo("No task has been selected. TaskHisto set to zero.\n");
+  }
+
+  return offset;
+}
+
+
+//____________________________________________________________________________ 
+Int_t AliITSQASSDDataMakerSim::GetTaskHisto(AliQA::TASKINDEX_t task) {
+  // Returns the number of booked histograms for the selected task
+  Int_t histotot=0;
+  if( task == AliQA::kHITS) {
+    histotot=fSSDhHTask ;  
+  }
+  else if( task == AliQA::kSDIGITS) {
+    histotot=fSSDhSTask;   
+  }
+  else if( task == AliQA::kDIGITS) {
+    histotot=fSSDhDTask ;   
+  }
+  else {
+    AliInfo("No task has been selected. TaskHisto set to zero.\n");
+  }
+  return histotot;
+
 }

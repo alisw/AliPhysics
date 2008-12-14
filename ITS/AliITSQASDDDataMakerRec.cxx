@@ -64,7 +64,6 @@ fkOnline(kMode),
 fLDC(ldc),
 fSDDhRawsTask(0),
 fSDDhRecPointsTask(0),
-//fGenOffset(0),
 fGenRawsOffset(0),
 fGenRecPointsOffset(0),
 fTimeBinSize(1),
@@ -93,7 +92,6 @@ fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSDDhRawsTask(qadm.fSDDhRawsTask),
 fSDDhRecPointsTask(qadm.fSDDhRecPointsTask),
-//fGenOffset(qadm.fGenOffset),
 fGenRawsOffset(qadm.fGenRawsOffset),
 fGenRecPointsOffset(qadm.fGenRecPointsOffset),
 fTimeBinSize(1),
@@ -115,7 +113,7 @@ AliITSQASDDDataMakerRec::~AliITSQASDDDataMakerRec(){
 //__________________________________________________________________
 AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDDataMakerRec& qac )
 {
-  // Assignment operator.
+  // Equal operator.
   this->~AliITSQASDDDataMakerRec();
   new(this) AliITSQASDDDataMakerRec(qac);
   return *this;
@@ -139,7 +137,6 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASDDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SDD -
-  //  fGenOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
   fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
@@ -156,7 +153,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
     {
       delete ddlMapSDD;
     }
-
+  
   if(fkOnline==kFALSE){
     AliInfo("Offline mode: HLTforSDDobject used \n");
     AliCDBEntry *hltforSDD = AliCDBManager::Instance()->Get("ITS/Calib/HLTforSDD");
@@ -174,137 +171,93 @@ void AliITSQASDDDataMakerRec::InitRaws()
       }
   }
   Int_t lay, lad, det;
-  Int_t LAY = -1;  //, LAD = -1;
-  char hname0[50];
   Int_t indexlast = 0;
   Int_t index1 = 0;
 
-  if(fLDC == 1 || fLDC == 2) LAY = 2;
-  if(fLDC == 3 || fLDC == 4) LAY = 3;
-  
-  if(fkOnline) {
-    AliInfo("Book Online Histograms for SDD\n");
-  }
-  else {
-    AliInfo("Book Offline Histograms for SDD\n ");
-  }
-  TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5);
+  if(fkOnline) 
+    {
+      AliInfo("Book Online Histograms for SDD\n");
+    }
+  else 
+    {
+      AliInfo("Book Offline Histograms for SDD\n ");
+    }
+  TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5); //0
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
   fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fGenRawsOffset,kTRUE,kFALSE);
   delete h0;
   fSDDhRawsTask++;
-  if(fLDC==0 || fLDC==1 || fLDC==2){
-    TH1D *h1 = new TH1D("SDDLadPatternL3","Ladder pattern L3",14,0.5,14.5);  
-    h1->GetXaxis()->SetTitle("Ladder Number on Lay3");
-    h1->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h1)),1+fGenRawsOffset, kTRUE,kFALSE);
-	delete h1;
-    fSDDhRawsTask++;
-  }	
-  if(fLDC==0 || fLDC==3 || fLDC==4){
-    TH1D *h2 = new TH1D("SDDLadPatternL4","Ladder pattern L4",22,0.5,22.5);  
-    h2->GetXaxis()->SetTitle("Ladder Number on Lay4");
-    h2->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h2)),2+fGenRawsOffset, kTRUE,kFALSE);
-	delete h2;
-    fSDDhRawsTask++;
-  }
-  if(fLDC==0 || fLDC==1 || fLDC==2){
-	for(Int_t i=1; i<=fgkLADDonLAY3; i++) {
-      sprintf(hname0,"SDDModPattern_L3_%d",i);
-      TH1D *h3 = new TH1D(hname0,hname0,6,0.5,6.5);
-      h3->GetXaxis()->SetTitle("Module Number");
-      h3->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h3)),i-1+3+fGenRawsOffset, kTRUE, kFALSE);
-	  delete h3;
-      fSDDhRawsTask++;
-    }
-  }
-  if(fLDC==0 || fLDC==3 || fLDC==4){
-    for(Int_t i=1; i<=fgkLADDonLAY4; i++) {
-      sprintf(hname0,"SDDModPattern_L4_%d",i);
-      TH1D *h4 = new TH1D(hname0,hname0,8,0.5,8.5);
-      h4->GetXaxis()->SetTitle("Module Number");
-      h4->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h4)),i-1+17+fGenRawsOffset, kTRUE,kFALSE);
-	  delete h4;
-      fSDDhRawsTask++;
-    }
-  }
+  
+  //zPhi distribution using ladder and modules numbers
+  TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",6,0.5,6.5,14,0.5,14.5);
+  hphil3->GetXaxis()->SetTitle("z[#Module L3 ]");
+  hphil3->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
+  fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil3)),1+fGenRawsOffset, kFALSE,kTRUE); 
+  delete hphil3;
+  fSDDhRawsTask++;
+  
+  TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",8,0.5,8.5,22,0.5,22.5); 
+  hphil4->GetXaxis()->SetTitle("z[#Module L4]");
+  hphil4->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
+  fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil4)),2+fGenRawsOffset, kFALSE,kTRUE); 
+  delete hphil4;
+  fSDDhRawsTask++;
+  
 
-  //DDL Pattern 
-      TH2D *hddl = new TH2D("SDDDDLPattern","SDD DDL Pattern ",24,-0.5,23.5,24,-0.5,23.5);
+  if(fkOnline) 
+    {
+
+      //DDL Pattern 
+      TH2D *hddl = new TH2D("SDDDDLPattern","SDD DDL Pattern ",24,-0.5,23.5,24,-0.5,23.5); 
       hddl->GetXaxis()->SetTitle("Channel");
       hddl->GetYaxis()->SetTitle("#DDL");
-      fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hddl)),39+fGenRawsOffset, kTRUE,kFALSE);
+      fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hddl)),3+fGenRawsOffset, kTRUE,kFALSE);
       delete hddl;
       fSDDhRawsTask++;
-
-  //zPhi distribution using ladder and modules numbers
-      TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",6,0.5,6.5,14,0.5,14.5);
-      hphil3->GetXaxis()->SetTitle("z[#Module L3 ]");
-      hphil3->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
-      fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil3)),40+fGenRawsOffset, kFALSE,kTRUE); 
-      delete hphil3;
-      fSDDhRawsTask++;
-
-      TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",8,0.5,8.5,22,0.5,22.5);
-      hphil4->GetXaxis()->SetTitle("z[#Module L4]");
-      hphil4->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
-      fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil4)),41+fGenRawsOffset, kFALSE,kTRUE); 
-      delete hphil4;
-      fSDDhRawsTask++;
-
-
-  Int_t indexlast1 = 0;
-  Int_t indexlast2 = 0;
-
-  if(fkOnline) {
-	fTimeBinSize = 4;
-    indexlast = 0;
-    index1 = 0;
-    indexlast1 = fSDDhRawsTask;
-    indexlast2 = 0;
-    char *hname[3];
-    for(Int_t i=0; i<3; i++) hname[i]= new char[50];
-    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		for(Int_t iside=0;iside<fgknSide;iside++){
-			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			sprintf(hname[0],"SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
-			sprintf(hname[1],"SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
-			sprintf(hname[2],"SDDhmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
-			fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
-			fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
-			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fGenRawsOffset,kTRUE,kFALSE);
-			delete fModuleChargeMapFSE;
-			
-			fSDDhRawsTask++;
-			index1++;	 
-			indexlast2 = indexlast1 + index1;
-		}
-	}
-
-    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		for(Int_t iside=0;iside<fgknSide;iside++){
-			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			sprintf(hname[0],"SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			sprintf(hname[1],"SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
-			fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
-			fModuleChargeMap->GetYaxis()->SetTitle("Anode");
-			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fGenRawsOffset,kTRUE,kFALSE);
-			delete fModuleChargeMap;
-
-			fSDDhRawsTask++;
-			index1++;	 
-			indexlast2 = indexlast1 + index1;
-		}
-	}
+      Int_t indexlast1 = 0;
   
-}  // kONLINE
-
+      fTimeBinSize = 4;
+      indexlast = 0;
+      index1 = 0;
+      indexlast1 = fSDDhRawsTask;
+      char *hname[3];
+      for(Int_t i=0; i<3; i++) hname[i]= new char[50];
+      for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+	for(Int_t iside=0;iside<fgknSide;iside++){
+	  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	  sprintf(hname[0],"SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
+	  sprintf(hname[1],"SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
+	  sprintf(hname[2],"SDDhmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
+	  TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+	  fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
+	  fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
+	  fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fGenRawsOffset,kTRUE,kFALSE);
+	  delete fModuleChargeMapFSE;
+	  
+	  fSDDhRawsTask++;
+	  index1++;	 
+	}
+      }
+      
+      for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+	for(Int_t iside=0;iside<fgknSide;iside++){
+	  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	  sprintf(hname[0],"SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
+	  sprintf(hname[1],"SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
+	  TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+	  fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
+	  fModuleChargeMap->GetYaxis()->SetTitle("Anode");
+	  fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fGenRawsOffset,kTRUE,kFALSE);
+	  delete fModuleChargeMap;
+	  
+	  fSDDhRawsTask++;
+	  index1++;	 
+	}
+      }
+      
+    }  // kONLINE
+  
   AliDebug(1,Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
 }
 
@@ -313,14 +266,14 @@ void AliITSQASDDDataMakerRec::InitRaws()
 void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SDD -
-
+  
   if(!fDDLModuleMap){
     AliError("SDD DDL module map not available - skipping SDD QA");
     return;
   }
   if(rawReader->GetType() != 7) return;  // skips non physical triggers
   AliDebug(1,"entering MakeRaws\n");                 
-
+  
   rawReader->Reset();       
   AliITSRawStream *stream;
   
@@ -342,26 +295,25 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       }else 
 	{
 	  //AliInfo("Offline  mode: HLT A mode used for SDD\n");
-	stream = new AliITSRawStreamSDD(rawReader);
-      }
+	  stream = new AliITSRawStreamSDD(rawReader);
+	}
     }
   
   //ckeck on HLT mode
-                  
-
-  
+ 
   //  AliITSRawStreamSDD s(rawReader); 
   stream->SetDDLModuleMap(fDDLModuleMap);
   
   Int_t lay, lad, det; 
-
+  
   Int_t index=0;
   if(fkOnline) {
     for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-        for(Int_t iside=0;iside<fgknSide;iside++) {
-          if(fSDDhRawsTask > 42 + index) fAliITSQADataMakerRec->GetRawsData(42 + index +fGenRawsOffset)->Reset(); 
-          index++;
-        }
+      for(Int_t iside=0;iside<fgknSide;iside++) {
+	if(fSDDhRawsTask > 4 + index) fAliITSQADataMakerRec->GetRawsData(4 + index +fGenRawsOffset)->Reset();   
+	// 4  because the 2D histos for single events start after the fourth position
+	index++;
+      }
     }
   }
   
@@ -369,12 +321,12 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t ildcID = -1;
   Int_t iddl = -1;
   Int_t isddmod = -1;
-  Int_t coord1, coord2, signal, moduleSDD, ioffset, iorder, activeModule, index1;
+  Int_t coord1, coord2, signal, moduleSDD, activeModule, index1; 
   
   while(stream->Next()) {
     ildcID = rawReader->GetLDCId();
     iddl = rawReader->GetDDLID() - fgkDDLIDshift;
-
+    
     isddmod = fDDLModuleMap->GetModuleNumber(iddl,stream->GetCarlosId());
     if(isddmod==-1){
       AliDebug(1,Form("Found module with iddl: %d, stream->GetCarlosId: %d \n",iddl,stream->GetCarlosId()));
@@ -393,65 +345,55 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     coord2 = stream->GetCoord2();
     signal = stream->GetSignal();
     
-     moduleSDD = isddmod - fgkmodoffset;
-
+    moduleSDD = isddmod - fgkmodoffset;
+    
     if(isddmod <fgkmodoffset|| isddmod>fgknSDDmodules+fgkmodoffset-1) {
       AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",isddmod));
       isddmod = 1;
     }
-
-    AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
-    ioffset = 3;
-    iorder = 1;
-    if(lay==4) { 
-      ioffset += 14;
-      iorder = 2;   
-    } 
-
-    fAliITSQADataMakerRec->GetRawsData( 0 + fGenRawsOffset )->Fill(isddmod);   
-
-    fAliITSQADataMakerRec->GetRawsData( iorder + fGenRawsOffset )->Fill(lad);
-
-    fAliITSQADataMakerRec->GetRawsData( ioffset+lad-1 +fGenRawsOffset )->Fill(det); //-1 because ladder# starts from 1    
-
-
-   
-    if(lay==3)    fAliITSQADataMakerRec->GetRawsData(40+fGenRawsOffset)->Fill(det,lad); 
-    if(lay==4) { 
-      fAliITSQADataMakerRec->GetRawsData(41+fGenRawsOffset)->Fill(det,lad);}  
-
-    Short_t iside = stream->GetChannel();
-
-    fAliITSQADataMakerRec->GetRawsData(39+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
-
-    activeModule = moduleSDD;
-    index1 = activeModule * 2 + iside;
     
-    if(index1<0){
-      AliDebug(1,Form("Wrong index number %d - patched to 0\n",index1));
-      index1 = 0;
-    }
+    AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
+
+    
+    fAliITSQADataMakerRec->GetRawsData( 0 + fGenRawsOffset )->Fill(isddmod);   
+    
+    if(lay==3)    fAliITSQADataMakerRec->GetRawsData(1+fGenRawsOffset)->Fill(det,lad); 
+    if(lay==4) { 
+      fAliITSQADataMakerRec->GetRawsData(2+fGenRawsOffset)->Fill(det,lad);}  
+    
+    Short_t iside = stream->GetChannel();
+    
+    fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
+    
 
     if(fkOnline) {
-      if(fSDDhRawsTask > 42 + index1) {                                  
-        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(42 + index1 +fGenRawsOffset)))->Fill(coord2, coord1, signal);     
-        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(42 + index1 + 260*2 +fGenRawsOffset)))->Fill(coord2, coord1, signal); 
+
+      activeModule = moduleSDD;
+      index1 = activeModule * 2 + iside;
+      
+      if(index1<0){
+	AliDebug(1,Form("Wrong index number %d - patched to 0\n",index1));
+	index1 = 0;
+      }      
+      fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
+      if(fSDDhRawsTask > 4 + index1) {                                  
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(4 + index1 +fGenRawsOffset)))->Fill(coord2, coord1, signal);     
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(4 + index1 + 260*2 +fGenRawsOffset)))->Fill(coord2, coord1, signal); 
       }
     }
-       cnt++;
-       if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
+    cnt++;
+    if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
   }
   AliDebug(1,Form("Event completed, %d raw digits read",cnt)); 
   delete stream;
   stream = NULL; 
- }
+}
 
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SDD -
 
-  // fGenOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
   fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
 
   Int_t nOnline=1;
@@ -460,7 +402,6 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
   Int_t  nOnline4=1;
   if(fkOnline)
     {
-      //      cout<<"konline"<<endl;
       nOnline=4;
       nOnline2=28;
       nOnline3=64;
@@ -591,7 +532,10 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree) {
+void AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
+{
+
+
  // Fill QA for RecPoints - SDD -
   Int_t lay, lad, det; 
   TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
@@ -653,58 +597,59 @@ void AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree) {
 
 //_______________________________________________________________
 
-void AliITSQASDDDataMakerRec::SetHLTModeFromEnvironment() {
-  // test an environment variable to set HLT mode
+void AliITSQASDDDataMakerRec::SetHLTModeFromEnvironment()
+{
 
    Int_t  hltmode= ::atoi(gSystem->Getenv("HLT_MODE"));
 
-   if(hltmode==1) {
-     AliInfo("Online mode: HLT mode A selected from environment for SDD\n");
-     SetHLTMode(kFALSE);
-   }
-   else if(hltmode==2){
-     AliInfo("Online mode: HLT mode C compressed selected from environment for SDD\n");
-     SetHLTMode(kTRUE);
-   }
-   else {
-     AliError(Form("Illegal value for env. var. HLT_MODE: %d . Nothing done",hltmode));
-   }
+   if(hltmode==1)
+     {
+       AliInfo("Online mode: HLT mode A selected from environment for SDD\n");
+       SetHLTMode(kFALSE);
+     }
+   else
+     if(hltmode==2)
+       {
+       AliInfo("Online mode: HLT mode C compressed selected from environment for SDD\n");
+       SetHLTMode(kTRUE);
+       }
 }
 
 
 //_______________________________________________________________
 
-Int_t AliITSQASDDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task) {
-  // Returns offset number according to the specified task 
+Int_t AliITSQASDDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task)
+{
   Int_t offset=0;
-  if( task == AliQA::kRAWS ) {
-    offset=fGenRawsOffset;  
-  }
-  else if( task == AliQA::kRECPOINTS ) {
-    offset=fGenRecPointsOffset;   
-  }
-  else {
-    AliInfo("No task has been selected. Offset set to zero.\n");
-  }
-
+  if( task == AliQA::kRAWS )
+    {
+      offset=fGenRawsOffset;  
+    }
+  else
+    if( task == AliQA::kRECPOINTS )
+      {
+	offset=fGenRecPointsOffset;   
+      }
+    else AliInfo("No task has been selected. Offset set to zero.\n");
   return offset;
 }
 
 //_______________________________________________________________
 
-Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQA::TASKINDEX_t task) {
-  // Returns the number of histograms associated to the specified task
+Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQA::TASKINDEX_t task)
+{
+
   Int_t histotot=0;
 
-  if( task == AliQA::kRAWS ) {
-    histotot=fSDDhRawsTask;  
-  }
-  else if( task == AliQA::kRECPOINTS ){
-    histotot=fSDDhRecPointsTask;   
-  }
-  else { 
-    AliInfo("No task has been selected. TaskHisto set to zero.\n");
-  }
-
+  if( task == AliQA::kRAWS )
+    {
+      histotot=fSDDhRawsTask ;  
+    }
+  else
+    if( task == AliQA::kRECPOINTS )
+      {
+	histotot=fSDDhRecPointsTask;   
+      }
+    else AliInfo("No task has been selected. TaskHisto set to zero.\n");
   return histotot;
 }

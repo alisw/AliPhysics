@@ -40,19 +40,24 @@ public:
   virtual void MakeDigits(TTree * digits);
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
-  Int_t GetOffsetH() { return fGenOffsetH; }
-  Int_t GetOffsetS() { return fGenOffsetS; }
-  Int_t GetOffsetD() { return fGenOffsetD; }
-  Int_t GetTaskHisto() { return fSPDhTask; }
+  Int_t GetOffset(AliQA::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
+  //Int_t GetOffsetH() { return fGenOffsetH; }
+  //Int_t GetOffsetS() { return fGenOffsetS; }
+  //Int_t GetOffsetD() { return fGenOffsetD; }
+  //Int_t GetTaskHisto() { return fSPDhTask; }
 
 private:
 
   AliITSQADataMakerSim *fAliITSQADataMakerSim;//pointer to the main ctor
-  Int_t   fSPDhTask;                        //number of booked SPD histograms for each task;
+  //  Int_t   fSPDhTask;                        //number of booked SPD histograms for each task;
+  Int_t   fSPDhHTask;                          // number of booked SPD histograms for each task;
+  Int_t   fSPDhSTask;                          // number of booked SPD histograms for each task;
+  Int_t   fSPDhDTask;                          // number of booked SPD histograms for each task;
   Int_t   fGenOffsetH;                         // qachecking offset       
   Int_t   fGenOffsetS;                         // qachecking offset       
   Int_t   fGenOffsetD;                         // qachecking offset       
-  ClassDef(AliITSQASPDDataMakerSim,2)      // description 
+  ClassDef(AliITSQASPDDataMakerSim,3)      // description 
 
 };
 

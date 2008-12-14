@@ -49,7 +49,9 @@ ClassImp(AliITSQASPDDataMakerSim)
 AliITSQASPDDataMakerSim::AliITSQASPDDataMakerSim(AliITSQADataMakerSim *aliITSQADataMakerSim) :
 TObject(),
 fAliITSQADataMakerSim(aliITSQADataMakerSim),
-fSPDhTask(0),
+fSPDhHTask(0),
+fSPDhSTask(0),
+fSPDhDTask(0),
 fGenOffsetH(0),
 fGenOffsetS(0),
 fGenOffsetD(0)
@@ -61,7 +63,9 @@ fGenOffsetD(0)
 AliITSQASPDDataMakerSim::AliITSQASPDDataMakerSim(const AliITSQASPDDataMakerSim& qadm) :
 TObject(),
 fAliITSQADataMakerSim(qadm.fAliITSQADataMakerSim),
-fSPDhTask(qadm.fSPDhTask),
+fSPDhHTask(qadm.fSPDhHTask),
+fSPDhSTask(qadm.fSPDhSTask),
+fSPDhDTask(qadm.fSPDhDTask),
 fGenOffsetH(qadm.fGenOffsetH),
 fGenOffsetS(qadm.fGenOffsetS),
 fGenOffsetD(qadm.fGenOffsetD)
@@ -101,7 +105,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SPD -
   fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
-  //fSPDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSPDhDTask must be incremented by one unit every time a histogram is ADDED to the QA List
 
   Char_t name[50];
   Char_t title[50];
@@ -110,7 +114,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
   fAliITSQADataMakerSim->Add2DigitsList(hlayer,fGenOffsetD,kTRUE);
-  fSPDhTask++;
+  fSPDhDTask++;
   
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; iLay++) {
@@ -120,20 +124,20 @@ void AliITSQASPDDataMakerSim::InitDigits()
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerSim->Add2DigitsList(hmod[iLay],1+iLay+fGenOffsetD);
-    fSPDhTask++;
+    fSPDhDTask++;
   }
   
   TH1F *hcolumns = new TH1F("SPDColumns_SPD","Columns - SPD",160,0.,160.);
   hcolumns->GetXaxis()->SetTitle("Column number");
   hcolumns->GetYaxis()->SetTitle("Entries");
   fAliITSQADataMakerSim->Add2DigitsList(hcolumns,3+fGenOffsetD,kTRUE);
-  fSPDhTask++;
+  fSPDhDTask++;
 
   TH1F *hrows = new TH1F("SPDRows_SPD","Rows - SPD",256,0.,256.);
   hrows->GetXaxis()->SetTitle("Row number");
   hrows->GetYaxis()->SetTitle("Entries");
   fAliITSQADataMakerSim->Add2DigitsList(hrows,4+fGenOffsetD,kTRUE);
-  fSPDhTask++;
+  fSPDhDTask++;
 
   TH1F** hMultSPDdigits = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
@@ -143,7 +147,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
     hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
     hMultSPDdigits[iLay]->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenOffsetD);
-    fSPDhTask++;
+    fSPDhDTask++;
   }
 
   TH2F *hMultSPDdig2MultSPDdig1 
@@ -151,9 +155,9 @@ void AliITSQASPDDataMakerSim::InitDigits()
   hMultSPDdig2MultSPDdig1->GetXaxis()->SetTitle("Digit multiplicity (Layer 1)");
   hMultSPDdig2MultSPDdig1->GetYaxis()->SetTitle("Digit multiplicity (Layer 2)");
   fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenOffsetD);
-  fSPDhTask++;
+  fSPDhDTask++;
 
-  AliDebug(1,Form("%d SPD Digits histograms booked\n",fSPDhTask));
+  AliDebug(1,Form("%d SPD Digits histograms booked\n",fSPDhDTask));
 
 }
 
@@ -200,7 +204,7 @@ void AliITSQASPDDataMakerSim::InitSDigits()
   // Initialization for SDIGIT data - SPD -
   fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitSDigits()  fGenOffset= %d \n",fGenOffset);
-  //fSPDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSPDhSTask must be incremented by one unit every time a histogram is ADDED to the QA List
   
   Char_t name[50];
   Char_t title[50];
@@ -209,7 +213,7 @@ void AliITSQASPDDataMakerSim::InitSDigits()
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
   fAliITSQADataMakerSim->Add2SDigitsList(hlayer,fGenOffsetS,kTRUE);
-  fSPDhTask++;
+  fSPDhSTask++;
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
@@ -219,10 +223,10 @@ void AliITSQASPDDataMakerSim::InitSDigits()
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerSim->Add2SDigitsList(hmod[iLay],1+iLay+fGenOffsetS);
-    fSPDhTask++;
+    fSPDhSTask++;
   }
 
-  AliDebug(1,Form("%d SPD SDigits histograms booked\n",fSPDhTask));
+  AliDebug(1,Form("%d SPD SDigits histograms booked\n",fSPDhSTask));
 
 }
 
@@ -255,7 +259,7 @@ void AliITSQASPDDataMakerSim::InitHits()
   // Initialization for HITS data - SPD -
   fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitHits()  fGenOffset= %d \n",fGenOffset);
-  //fSPDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSPDhHTask must be incremented by one unit every time a histogram is ADDED to the QA List
   Char_t name[50];
   Char_t title[50];
 
@@ -263,7 +267,7 @@ void AliITSQASPDDataMakerSim::InitHits()
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
   fAliITSQADataMakerSim->Add2HitsList(hlayer,fGenOffsetH,kTRUE);
-  fSPDhTask++;
+  fSPDhHTask++;
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
@@ -273,22 +277,22 @@ void AliITSQASPDDataMakerSim::InitHits()
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerSim->Add2HitsList(hmod[iLay],1+iLay+fGenOffsetH);
-    fSPDhTask++;
+    fSPDhHTask++;
   }
 
   TH1F *hhitlenght = new TH1F("SPDLenght_SPD","Hit lenght along y_{loc} coord",210,0.,210.);
   hhitlenght->GetXaxis()->SetTitle("Hit lenght [#mum]");
   hhitlenght->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hhitlenght,3+fGenOffsetH);
-  fSPDhTask++;
+  fSPDhHTask++;
 
   TH1F *hEdepos = new TH1F("SPDEnergyDeposit_SPD","Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
   hEdepos->GetXaxis()->SetTitle("Deposited energy [keV]"); 
   hEdepos->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH);
-  fSPDhTask++;
+  fSPDhHTask++;
 
-  AliDebug(1,Form("%d SPD Hits histograms booked\n",fSPDhTask));
+  AliDebug(1,Form("%d SPD Hits histograms booked\n",fSPDhHTask));
 
 }
 
@@ -329,4 +333,48 @@ void AliITSQASPDDataMakerSim::MakeHits(TTree *hits)
       }
     }
   }
+}
+
+
+//_______________________________________________________________
+
+Int_t AliITSQASPDDataMakerSim::GetOffset(AliQA::TASKINDEX_t task){
+  // Returns histogram offset according to the specified task
+  Int_t offset=0;
+  if( task == AliQA::kHITS){
+    offset=fGenOffsetH;
+  }
+  else if( task == AliQA::kSDIGITS) {
+    offset=fGenOffsetS;
+  }
+  else if( task == AliQA::kDIGITS) {
+    offset=fGenOffsetD;
+  }
+  else {
+    AliInfo("No task has been selected. TaskHisto set to zero.\n");
+  }
+
+  return offset;
+}
+
+
+//_______________________________________________________________
+
+Int_t AliITSQASPDDataMakerSim::GetTaskHisto(AliQA::TASKINDEX_t task) {
+  // Returns the number of booked histograms for the selected task
+  Int_t histotot=0;
+  if( task == AliQA::kHITS) {
+    histotot=fSPDhHTask ;
+  }
+  else if( task == AliQA::kSDIGITS) {
+    histotot=fSPDhSTask;
+  }
+  else if( task == AliQA::kDIGITS) {
+    histotot=fSPDhDTask ;
+  }
+  else {
+    AliInfo("No task has been selected. TaskHisto set to zero.\n");
+  }
+  return histotot;
+
 }

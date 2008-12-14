@@ -35,8 +35,8 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
-  Int_t GetOffset() { return fGenOffset; }
-  Int_t GetTaskHisto() { return fSPDhTask; }
+  Int_t GetOffset(AliQA::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
 
 private: 
 
@@ -47,12 +47,13 @@ private:
   AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
   Bool_t  fkOnline;                           //online (1) or offline (0) use
   Int_t   fLDC;                               //LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSPDhTask;                          //number of booked SPD histograms for each task;
-  Int_t   fGenOffset;                         // qachecking offset
-
+  Int_t   fSPDhRawsTask;                      // number of booked SPD histograms for the Raws Task
+  Int_t   fSPDhRecPointsTask;                 // number of booked SPD histograms for the RecPoints Task
+  Int_t   fGenRawsOffset;                     // QAchecking Raws offset
+  Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
-  ClassDef(AliITSQASPDDataMakerRec,2)      // description 
+  ClassDef(AliITSQASPDDataMakerRec,3)      // description 
 
 };
 
