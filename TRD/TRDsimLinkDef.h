@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliTRDpoints+;
 #pragma link C++ class  AliTRDsimTR+;
 #pragma link C++ class  AliTRD+;
 #pragma link C++ class  AliTRDv1+;

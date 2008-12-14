@@ -45,7 +45,6 @@ class AliTRD : public AliDetector {
   virtual void     CreateGeometry();
   virtual void     CreateMaterials();
   virtual void     DrawModule() const;
-  virtual void     LoadPoints(Int_t track);    
 
   virtual void     Hits2Digits();
   virtual void     Hits2SDigits();
