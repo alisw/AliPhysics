@@ -248,51 +248,56 @@ TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  // refit the track
-  AliRieman fRim(fTrack->GetNumberOfClusters());
-  Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(tracklet = fTrack->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
-    AliTRDcluster *c = 0x0;
-    tracklet->ResetClusterIter(kFALSE);
-    while((c = tracklet->PrevCluster())){
-      Float_t xc = c->GetX();
-      Float_t yc = c->GetY();
-      Float_t zc = c->GetZ();
-      Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
-      yc -= tracklet->GetTilt()*(zc-zt);
-      fRim.AddPoint(xc, yc, zc, 1, 10);
-    }
-    tracklet->Fit(kTRUE);
-
-    x[il] = tracklet->GetX0();
-    y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
-    dydx[il] = tracklet->GetYref(1);
-  }
-  fRim.Update();
-
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(x[il] < 0.) continue;
-    Float_t dy = y[il]-fRim.GetYat(x[il])/*/sigma_track*/;
-    h->Fill(dydx[il], dy);
-
-    if(fDebugLevel>=1){
-      Double_t sigmay = fRim.GetErrY(x[il]);
-      Float_t yt = fRim.GetYat(x[il]);
-      (*fDebugStream) << "TrkltResiduals"
-        << "layer="  << il
-        << "x="      << x[il]
-        << "y="      << y[il]
-        << "yt="     << yt
-        << "dydx="   << dydx[il]
-        << "dy="     << dy
-        << "sigmay=" << sigmay
-        << "\n";
-    }
+    h->Fill(tracklet->GetYref(1), tracklet->GetYref(0)-tracklet->GetYfit(0));
   }
   return h;
+
+  // refit the track
+//   AliRieman fRim(fTrack->GetNumberOfClusters());
+//   Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
+
+//     AliTRDcluster *c = 0x0;
+//     tracklet->ResetClusterIter(kFALSE);
+//     while((c = tracklet->PrevCluster())){
+//       Float_t xc = c->GetX();
+//       Float_t yc = c->GetY();
+//       Float_t zc = c->GetZ();
+//       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
+//       yc -= tracklet->GetTilt()*(zc-zt);
+//       fRim.AddPoint(xc, yc, zc, 1, 10);
+//     }
+//     tracklet->Fit(kTRUE);
+// 
+//     x[il] = tracklet->GetX0();
+//     y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
+//     dydx[il] = tracklet->GetYref(1);
+
+
+//   fRim.Update();
+
+//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+//     if(x[il] < 0.) continue;
+//     Float_t dy = y[il]-fRim.GetYat(x[il])/*/sigma_track*/;
+//     h->Fill(dydx[il], dy);
+// 
+//     if(fDebugLevel>=1){
+//       Double_t sigmay = fRim.GetErrY(x[il]);
+//       Float_t yt = fRim.GetYat(x[il]);
+//       (*fDebugStream) << "TrkltResiduals"
+//         << "layer="  << il
+//         << "x="      << x[il]
+//         << "y="      << y[il]
+//         << "yt="     << yt
+//         << "dydx="   << dydx[il]
+//         << "dy="     << dy
+//         << "sigmay=" << sigmay
+//         << "\n";
+//     }
+//   }
 }
 
 //________________________________________________________
@@ -308,60 +313,68 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *tra
     AliWarning("No output histogram defined.");
     return 0x0;
   }
-  // refit the track
-  AliRieman fRim(fTrack->GetNumberOfClusters());
-  Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
-  Float_t dydx_ref=0, dydx_fit=0, phiref=0, phifit=0, phidiff=0;
+
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(tracklet = fTrack->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
-    AliTRDcluster *c = 0x0;
-    tracklet->ResetClusterIter(kFALSE);
-    while((c = tracklet->PrevCluster())){
-      Float_t xc = c->GetX();
-      Float_t yc = c->GetY();
-      Float_t zc = c->GetZ();
-      Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
-      yc -= tracklet->GetTilt()*(zc-zt);
-      fRim.AddPoint(xc, yc, zc, 1, 10);
-    }
-    tracklet->Fit(kTRUE);
-
-    x[il] = tracklet->GetX0();
-    y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
-    dydx[il] = tracklet->GetYref(1);
-  }
-  fRim.Update();
-
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(x[il] < 0.) continue;
-    if(!(tracklet = fTrack->GetTracklet(il))) continue;
-    if(!tracklet->IsOK()) continue;
-
-    dydx_ref = fRim.GetDYat(x[il]); 
-    dydx_fit = tracklet->GetYfit(1);
-
-    phiref = TMath::ATan(dydx_ref);//*TMath::RadToDeg();
-    phifit = TMath::ATan(dydx_fit);//*TMath::RadToDeg();
-    
-    phidiff = phiref-phifit; /*/sigma_phi*/;
-
-    h->Fill(dydx_ref, phidiff);
-
-
-    if(fDebugLevel>=1){
-      (*fDebugStream) << "TrkltPhiResiduals"
-        << "layer="  << il
-        << "dydx_fit="   << dydx_fit
-        << "dydx_ref="   << dydx_ref
-        << "phiref="     << phiref
-        << "phifit="     << phifit
-        << "phidiff="     << phidiff
-        << "\n";
-    }
+    h->Fill(tracklet->GetYref(1), TMath::ATan(tracklet->GetYref(1))-TMath::ATan(tracklet->GetYfit(1)));
   }
   return h;
+
+//   // refit the track
+//   AliRieman fRim(fTrack->GetNumberOfClusters());
+//   Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
+//   Float_t dydx_ref=0, dydx_fit=0, phiref=0, phifit=0, phidiff=0;
+//   AliTRDseedV1 *tracklet = 0x0;
+//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+//     if(!(tracklet = fTrack->GetTracklet(il))) continue;
+//     if(!tracklet->IsOK()) continue;
+//     AliTRDcluster *c = 0x0;
+//     tracklet->ResetClusterIter(kFALSE);
+//     while((c = tracklet->PrevCluster())){
+//       Float_t xc = c->GetX();
+//       Float_t yc = c->GetY();
+//       Float_t zc = c->GetZ();
+//       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
+//       yc -= tracklet->GetTilt()*(zc-zt);
+//       fRim.AddPoint(xc, yc, zc, 1, 10);
+//     }
+//     tracklet->Fit(kTRUE);
+// 
+//     x[il] = tracklet->GetX0();
+//     y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
+//     dydx[il] = tracklet->GetYref(1);
+//   }
+//   fRim.Update();
+// 
+//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+//     if(x[il] < 0.) continue;
+//     if(!(tracklet = fTrack->GetTracklet(il))) continue;
+//     if(!tracklet->IsOK()) continue;
+// 
+//     dydx_ref = fRim.GetDYat(x[il]); 
+//     dydx_fit = tracklet->GetYfit(1);
+// 
+//     phiref = TMath::ATan(dydx_ref);//*TMath::RadToDeg();
+//     phifit = TMath::ATan(dydx_fit);//*TMath::RadToDeg();
+//     
+//     phidiff = phiref-phifit; /*/sigma_phi*/;
+// 
+//     h->Fill(dydx_ref, phidiff);
+// 
+// 
+//     if(fDebugLevel>=1){
+//       (*fDebugStream) << "TrkltPhiResiduals"
+//         << "layer="  << il
+//         << "dydx_fit="   << dydx_fit
+//         << "dydx_ref="   << dydx_ref
+//         << "phiref="     << phiref
+//         << "phifit="     << phifit
+//         << "phidiff="     << phidiff
+//         << "\n";
+//     }
+//   }
 }
 
 
