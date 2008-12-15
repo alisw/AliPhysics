@@ -40,7 +40,11 @@
  */
 void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 {
-  //.! rm galice.root
+  
+  if(!gSystem->AccessPathName("galice.root")){
+    cerr << "please delete the galice.root or run at different place." << endl;
+    return;
+  }
 
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
@@ -214,7 +218,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   //Chain with Track Histogram
   if(histout){
     AliHLTConfiguration histoconf("histo","TPCTrackHisto",histoInput.Data(),"-plot-All");  
-    AliHLTConfiguration fwconf("histFile", "ROOTFileWriter"   , "histo", "-directory TrackHisto -idfmt=_0x%08x");
+    AliHLTConfiguration fwconf("histFile", "ROOTFileWriter"   , "histo", "-datafile TrackHisto -concatenate-events -overwrite");
   }
   //Chain with Track Dump
   if(dumpout){
@@ -222,7 +226,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   }
   if(chout){
     AliHLTConfiguration cfconf("HHCF", "TPCHistogramHandler", histogramHandlerInputClusterFinder.Data(), "-use-general");
-    AliHLTConfiguration rootFileWriterClusters("chhisto", "ROOTFileWriter", "HHCF" , "-datafile histogramHandlerClusterFinder");
+    AliHLTConfiguration rootFileWriterClusters("chhisto", "ROOTFileWriter", "HHCF" , "-datafile histogramHandlerClusterFinder -concatenate-events -overwrite");
   }
   if(cdout){
     AliHLTConfiguration cdumpconf("cdump","TPCClusterDump",cdumpInput.Data(),"-directory ClusterDump");

@@ -53,8 +53,7 @@ class AliHLTTPCClusterDumpComponent : public AliHLTFileWriter {
   int InitWriter();
   int CloseWriter();
   int DumpEvent( const AliHLTComponentEventData& evtData,
-  		 const AliHLTComponentBlockData* blocks, 
-  		 AliHLTComponentTriggerData& trigData );
+		 AliHLTComponentTriggerData& trigData );
   using AliHLTDataSink::DumpEvent;
 
   int ScanArgument(int argc, const char** argv);
@@ -65,13 +64,10 @@ class AliHLTTPCClusterDumpComponent : public AliHLTFileWriter {
   /** assignment operator prohibited */
   AliHLTTPCClusterDumpComponent& operator=(const AliHLTTPCClusterDumpComponent&);
 
-  /** target directory */
-  TString    fDirectory;                                           // see above
-
   /** slice */
-  Int_t fSlice;                                                    //! transient
+  //Int_t fSlice;                                                    //! transient
 
-  ClassDef(AliHLTTPCClusterDumpComponent, 0);
+  ClassDef(AliHLTTPCClusterDumpComponent, 1);
 };
 
 #endif

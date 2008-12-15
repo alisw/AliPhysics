@@ -34,9 +34,8 @@ ClassImp(AliHLTTPCClusterDumpComponent)
 
   AliHLTTPCClusterDumpComponent::AliHLTTPCClusterDumpComponent()
     :
-    AliHLTFileWriter(),
-    fDirectory(""),
-    fSlice(-1)
+    AliHLTFileWriter()
+//fSlice(-1)
 {
   // see header file for class documentation
   // or
@@ -78,30 +77,15 @@ int AliHLTTPCClusterDumpComponent::InitWriter()
 int AliHLTTPCClusterDumpComponent::ScanArgument(int argc, const char** argv)
 {
   // see header file for class documentation
-
+  int iResult=0;
   TString argument="";
   bool bMissingParam=0;
   int i=0;
-  do {
-    if (i>=argc || (argument=argv[i]).IsNull()) continue;
-    
-    // -directory
-    if (argument.CompareTo("-directory-clusterdump")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      fDirectory=argv[i];
-      break;
-    }
-    //-slice
-    if (argument.CompareTo("-slice")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString str= argv[i];
-      fSlice=str.Atoi();
-      break;
-    }
-  }while(0);
-
-  HLTWarning("AliHLTTPCClusterDumpComponent does not have any arguments at this time");
-  return 0;
+  
+  if (bMissingParam) iResult=-EPROTO;
+  else if (iResult>=0) iResult=i;
+  
+  return iResult;
 }
 
 int AliHLTTPCClusterDumpComponent::CloseWriter()
@@ -110,8 +94,7 @@ int AliHLTTPCClusterDumpComponent::CloseWriter()
   return 0;
 }
 
-int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& /*evtData*/,
-					      const AliHLTComponentBlockData* /*blocks*/, 
+int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 					      AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
@@ -122,55 +105,57 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& /*
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
 
+  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
+    return 0;
+
   Int_t spacePointCounter=0;
-
-  //building the filename
-  fCurrentFileName="";
-  if (!fDirectory.IsNull()) {
-    fCurrentFileName+=fDirectory;
-  }
-  fCurrentFileName+="ClusterDump";
-  fCurrentFileName+=Form("_RunNo-%d",GetRunNo());
-  if(fSlice!=-1){
-    fCurrentFileName+=Form("_Slice-%d", fSlice);
-  }
-  fCurrentFileName+=Form("_Event-%d", GetEventCount());
-
-  ofstream dump;
-  dump.open(fCurrentFileName.Data());
-
+  
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
-    HLTDebug("event %Lu block %d: %s 0x%08x size %d", GetEventId(), blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
-
-    if(pDesc->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
- 
-    if (dump.good() || 1) {//the || 1 is there since dump.good() will return false( EOF )
-       iResult=1;
-       const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) pDesc->fPtr;
-       Int_t nSpacepoints = (Int_t) clusterData->fSpacePointCnt;
-       AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*) &clusterData->fSpacePoints;
-       
-       for(int i=0;i<nSpacepoints;i++){
-	 dump << "" << endl;
-	 dump << "ClusterNumber: " << spacePointCounter << endl;
-	 dump << "Slice:         " << (Int_t)(clusters[i].fID/10) << endl;//quick fix to get the partiion and slice numbers to the clusterdump
-	 dump << "Partition:     " << (Int_t)(clusters[i].fID%10) << endl;//quick fix to get the partiion and slice numbers to the clusterdump
-	 dump << "[X,Y,Z]:       [" << clusters[i].fX<<" , "<<clusters[i].fY<<" , "<<clusters[i].fZ <<"]"<< endl;
-	 Float_t xyz[3]={clusters[i].fX,clusters[i].fY,clusters[i].fZ};
-	 AliHLTTPCTransform::LocHLT2Raw(xyz,(Int_t)(clusters[i].fID/10),(Int_t)(clusters[i].fID%10));
-	 dump << "[R,P,T]:       [" << xyz[0]<<" , "<<xyz[1]<<" , "<<xyz[2] <<"]"<< endl;
-	 dump << "Total Charge:  " << clusters[i].fCharge         << endl;
-	 dump << "Q Max:         " << clusters[i].fQMax           << endl;
-	 spacePointCounter++;
-       }
-       
-     }
-     else {
-       HLTError("can not open file %s for writing", fCurrentFileName.Data());
-       iResult=-EBADF;
-     }
-
+    TString filename;
+    iResult=BuildFileName(evtData.fEventID, 0, pDesc->fDataType, 0, filename);
+    ios::openmode filemode=(ios::openmode)0;
+    if (fCurrentFileName.CompareTo(filename)==0) {
+      filemode=ios::app;
+    } else {
+      fCurrentFileName=filename;
+    }
+    
+    if (iResult>=0) {
+      ofstream dump(fCurrentFileName.Data(), filemode);
+      if (dump.good()) {
+	
+	if(pDesc->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
+	
+	//if (dump.good() || 1) {//the || 1 is there since dump.good() will return false( EOF )
+	iResult=1;
+	const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) pDesc->fPtr;
+	Int_t nSpacepoints = (Int_t) clusterData->fSpacePointCnt;
+	AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*) &clusterData->fSpacePoints;
+	
+	for(int i=0;i<nSpacepoints;i++){
+	  UInt_t idCluster = clusters[i].fID;
+	  Int_t slice = (idCluster>>25) & 0x7f;
+	  Int_t patch = (idCluster>>22) & 0x7;
+	  
+	  dump << "" << endl;
+	  dump << "ClusterNumber: " << spacePointCounter << endl;
+	  dump << "Slice:         " << slice << endl;
+	  dump << "Partition:     " << patch << endl;
+	  dump << "[X,Y,Z]:       [" << clusters[i].fX<<" , "<<clusters[i].fY<<" , "<<clusters[i].fZ <<"]"<< endl;
+	  Float_t xyz[3]={clusters[i].fX,clusters[i].fY,clusters[i].fZ};
+	  AliHLTTPCTransform::LocHLT2Raw(xyz,(Int_t)(clusters[i].fID/10),(Int_t)(clusters[i].fID%10));
+	  dump << "[R,P,T]:       [" << xyz[0]<<" , "<<xyz[1]<<" , "<<xyz[2] <<"]"<< endl;
+	  dump << "Total Charge:  " << clusters[i].fCharge         << endl;
+	  dump << "Q Max:         " << clusters[i].fQMax           << endl;
+	  spacePointCounter++;
+	}
+      }
+      else {
+	HLTError("can not open file %s for writing", fCurrentFileName.Data());
+	iResult=-EBADF;
+      }
+      dump.close();
+    }
   }
-  dump.close();
   return iResult;
 }
