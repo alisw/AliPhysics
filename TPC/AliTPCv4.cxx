@@ -41,6 +41,7 @@ TPC version for the krypton runs (Marek)
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
+#include "AliMathBase.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv4.h"
@@ -1391,7 +1392,7 @@ void AliTPCv4::StepManager()
     {
 
       betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-      pp=kprim*BetheBloch(betaGamma); 
+      pp=kprim*AliMathBase::BetheBlochAleph(betaGamma); 
    
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
@@ -1402,29 +1403,4 @@ void AliTPCv4::StepManager()
   
   
 }
-
-//_____________________________________________________________________________
-Float_t AliTPCv4::BetheBloch(Float_t bg)
-{
-  //
-  // Bethe-Bloch energy loss formula
-  //
-  const Double_t kp1=0.76176e-1;
-  const Double_t kp2=10.632;
-  const Double_t kp3=0.13279e-4;
-  const Double_t kp4=1.8631;
-  const Double_t kp5=1.9479;
-
-  Double_t dbg = (Double_t) bg;
-
-  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
-
-  Double_t aa = TMath::Power(beta,kp4);
-  Double_t bb = TMath::Power(1./dbg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  
-  return ((Float_t)((kp2-aa-bb)*kp1/aa));
-}
-
 

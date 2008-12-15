@@ -27,6 +27,7 @@
 #include "AliESDtrack.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h" 
+#include "AliMathBase.h" 
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 
@@ -422,9 +423,9 @@ void AliTPCcalibV0::MakeV0s(){
 //     Float_t betaGammaP  = trackN->GetP()/fPdg->GetParticle(-2212)->Mass(); 
 //     Float_t betaGammaPi = trackN->GetP()/fPdg->GetParticle(-211)->Mass();
 //     Float_t betaGammaEl = trackN->GetP()/fPdg->GetParticle(11)->Mass();
-//     Float_t dedxTeorP = TPCBetheBloch(betaGammaP);
-//     Float_t dedxTeorPi = TPCBetheBloch(betaGammaPi);;
-//     Float_t dedxTeorEl = TPCBetheBloch(betaGammaEl);;
+//     Float_t dedxTeorP = BetheBlochAleph(betaGammaP);
+//     Float_t dedxTeorPi = BetheBlochAleph(betaGammaPi);;
+//     Float_t dedxTeorEl = BetheBlochAleph(betaGammaEl);;
 //     //
 //     //
 //     if (minChi2>50) continue;
@@ -748,32 +749,6 @@ AliKFParticle * AliTPCcalibV0::Fit(AliKFVertex & /*primVtx*/, AliESDv0 *v0, Int_
   *(V0)+=p2;
   return V0;  
 }
-
-
-
-Float_t AliTPCcalibV0::TPCBetheBloch(Float_t bg)
-{
- //
- // Bethe-Bloch energy loss formula
- //
- const Double_t kp1=0.76176e-1;
- const Double_t kp2=10.632;
- const Double_t kp3=0.13279e-4;
- const Double_t kp4=1.8631;
- const Double_t kp5=1.9479;
- Double_t dbg = (Double_t) bg;
- Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
- Double_t aa = TMath::Power(beta,kp4);
- Double_t bb = TMath::Power(1./dbg,kp5);
- bb=TMath::Log(kp3+bb);
- return ((Float_t)((kp2-aa-bb)*kp1/aa));
-}
-
-
-
-
-
-
 
 TH2F * AliTPCcalibV0::GetHistograms() {
   //

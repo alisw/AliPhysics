@@ -29,10 +29,6 @@ protected:
 
   Int_t fIdSens; // sensitive volume (entire drift gas)   
 
-private:
-
-  Float_t BetheBloch(Float_t bg);
-  
   ClassDef(AliTPCv3,1)  // Time Projection Chamber version 3
 };
 

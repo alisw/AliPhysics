@@ -46,10 +46,6 @@ protected:
   Int_t fIDrift;    // drift gas
   Int_t fSecOld;    // indicate the previous sector - for reference points    
 
-private:
-
-  Float_t BetheBloch(Float_t bg);
-  
   ClassDef(AliTPCv4,1)  // Time Projection Chamber version 1
 };
 

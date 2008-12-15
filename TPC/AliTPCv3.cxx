@@ -41,6 +41,7 @@
 
 #include "AliConst.h"
 #include "AliRun.h"
+#include "AliMathBase.h"
 #include "AliTPCDigitsArray.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
@@ -1161,7 +1162,7 @@ void AliTPCv3::StepManager()
   else
     {
       betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); 
-      pp=kprim*BetheBloch(betaGamma);    
+      pp=kprim*AliMathBase::BetheBlochAleph(betaGamma);    
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
@@ -1169,28 +1170,4 @@ void AliTPCv3::StepManager()
   
   gMC->SetMaxStep(-TMath::Log(rnd)/pp);
   
-}
-
-//_____________________________________________________________________________
-Float_t AliTPCv3::BetheBloch(Float_t bg)
-{
-  //
-  // Bethe-Bloch energy loss formula
-  //
-  const Double_t kp1=0.76176e-1;
-  const Double_t kp2=10.632;
-  const Double_t kp3=0.13279e-4;
-  const Double_t kp4=1.8631;
-  const Double_t kp5=1.9479;
-
-  Double_t dbg = (Double_t) bg;
-
-  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
-
-  Double_t aa = TMath::Power(beta,kp4);
-  Double_t bb = TMath::Power(1./dbg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  
-  return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }

@@ -39,7 +39,6 @@ public :
   void MakeV0s();
   void ProcessV0(Int_t ftype);
   void ProcessPI0();
-  Float_t TPCBetheBloch(Float_t bg);  
   TH2F * GetHistograms();
   void BinLogX(TH2F * h);
   //
