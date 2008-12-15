@@ -381,7 +381,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());
   Double_t alpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
 
-  trklt->Fit(kTRUE);
+  //trklt->Fit(kTRUE);
   y0   = trklt->GetYfit(0);
   dydx = trklt->GetYfit(1);
   Double_t xg =  x0 * TMath::Cos(alpha) - y0 * TMath::Sin(alpha); 
