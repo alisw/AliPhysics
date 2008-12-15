@@ -46,19 +46,19 @@ void     AliKFVertex::Print(Option_t* ) const
 }
   */
 
-void AliKFVertex::SetBeamConstraint( Double_t X, Double_t Y, Double_t Z, 
-				      Double_t ErrX, Double_t ErrY, Double_t ErrZ )
+void AliKFVertex::SetBeamConstraint( Double_t x, Double_t y, Double_t z, 
+				      Double_t errX, Double_t errY, Double_t errZ )
 {
   // Set beam constraint to the vertex
-  fP[0] = X;
-  fP[1] = Y;
-  fP[2] = Z;
-  fC[0] = ErrX*ErrX;
+  fP[0] = x;
+  fP[1] = y;
+  fP[2] = z;
+  fC[0] = errX*errX;
   fC[1] = 0;
-  fC[2] = ErrY*ErrY;
+  fC[2] = errY*errY;
   fC[3] = 0;
   fC[4] = 0;
-  fC[5] = ErrZ*ErrZ;
+  fC[5] = errZ*errZ;
   fIsConstrained = 1;
 }
 

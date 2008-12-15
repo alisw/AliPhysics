@@ -103,7 +103,7 @@ void AliKFParticleBase::SetVtxGuess( Double_t x, Double_t y, Double_t z )
 }
 
 
-Int_t AliKFParticleBase::GetMomentum( Double_t &P, Double_t &Error )  const 
+Int_t AliKFParticleBase::GetMomentum( Double_t &p, Double_t &error )  const 
 {
   //* Calculate particle momentum
 
@@ -114,16 +114,16 @@ Int_t AliKFParticleBase::GetMomentum( Double_t &P, Double_t &Error )  const
   Double_t y2 = y*y;
   Double_t z2 = z*z;
   Double_t p2 = x2+y2+z2;
-  P = TMath::Sqrt(p2);
-  Error = (x2*fC[9]+y2*fC[14]+z2*fC[20] + 2*(x*y*fC[13]+x*z*fC[18]+y*z*fC[19]) );
-  if( Error>0 && P>1.e-4 ){
-    Error = TMath::Sqrt(Error)/P;
+  p = TMath::Sqrt(p2);
+  error = (x2*fC[9]+y2*fC[14]+z2*fC[20] + 2*(x*y*fC[13]+x*z*fC[18]+y*z*fC[19]) );
+  if( error>0 && p>1.e-4 ){
+    error = TMath::Sqrt(error)/p;
     return 0;
   }
   return 1;
 }
 
-Int_t AliKFParticleBase::GetPt( Double_t &Pt, Double_t &Error )  const 
+Int_t AliKFParticleBase::GetPt( Double_t &pt, Double_t &error )  const 
 {
   //* Calculate particle transverse momentum
 
@@ -132,17 +132,17 @@ Int_t AliKFParticleBase::GetPt( Double_t &Pt, Double_t &Error )  const
   Double_t px2 = px*px;
   Double_t py2 = py*py;
   Double_t pt2 = px2+py2;
-  Pt = TMath::Sqrt(pt2);
-  Error = (px2*fC[9] + py2*fC[14] + 2*px*py*fC[13] );
-  if( Error>0 && Pt>1.e-4 ){
-    Error = TMath::Sqrt(Error)/Pt;
+  pt = TMath::Sqrt(pt2);
+  error = (px2*fC[9] + py2*fC[14] + 2*px*py*fC[13] );
+  if( error>0 && pt>1.e-4 ){
+    error = TMath::Sqrt(error)/pt;
     return 0;
   }
-  Error = 1.e10;
+  error = 1.e10;
   return 1;
 }
 
-Int_t AliKFParticleBase::GetEta( Double_t &Eta, Double_t &Error )  const 
+Int_t AliKFParticleBase::GetEta( Double_t &eta, Double_t &error )  const 
 {
   //* Calculate particle pseudorapidity
 
@@ -154,28 +154,28 @@ Int_t AliKFParticleBase::GetEta( Double_t &Eta, Double_t &Error )  const
   Double_t p = TMath::Sqrt(p2);
   Double_t a = p + pz;
   Double_t b = p - pz;
-  Eta = 1.e10;
+  eta = 1.e10;
   if( b > 1.e-8 ){
     Double_t c = a/b;
-    if( c>1.e-8 ) Eta = 0.5*TMath::Log(a/b);
+    if( c>1.e-8 ) eta = 0.5*TMath::Log(a/b);
   }
   Double_t h3 = -px*pz;
   Double_t h4 = -py*pz;
   Double_t p2pt2 = p2*pt2;
 
-  Error = (h3*h3*fC[9] + h4*h4*fC[14] + pt2*fC[20] + 
+  error = (h3*h3*fC[9] + h4*h4*fC[14] + pt2*fC[20] + 
 	   2*( h3*(h4*fC[13] + fC[18]) + h4*fC[19] )
 	   );
 
-  if( Error>0 && p2pt2>1.e-4 ){
-    Error = TMath::Sqrt(Error/p2pt2);
+  if( error>0 && p2pt2>1.e-4 ){
+    error = TMath::Sqrt(error/p2pt2);
     return 0;
   }
-  Error = 1.e10;
+  error = 1.e10;
   return 1;
 }
 
-Int_t AliKFParticleBase::GetPhi( Double_t &Phi, Double_t &Error )  const 
+Int_t AliKFParticleBase::GetPhi( Double_t &phi, Double_t &error )  const 
 {
   //* Calculate particle polar angle
 
@@ -184,17 +184,17 @@ Int_t AliKFParticleBase::GetPhi( Double_t &Phi, Double_t &Error )  const
   Double_t px2 = px*px;
   Double_t py2 = py*py;
   Double_t pt2 = px2 + py2;
-  Phi = TMath::ATan2(py,px);
-  Error = (py2*fC[9] + px2*fC[14] - 2*px*py*fC[13] );
-  if( Error>0 && pt2>1.e-4 ){
-    Error = TMath::Sqrt(Error)/pt2;
+  phi = TMath::ATan2(py,px);
+  error = (py2*fC[9] + px2*fC[14] - 2*px*py*fC[13] );
+  if( error>0 && pt2>1.e-4 ){
+    error = TMath::Sqrt(error)/pt2;
     return 0;
   }
-  Error = 1.e10;
+  error = 1.e10;
   return 1;
 }
 
-Int_t AliKFParticleBase::GetR( Double_t &R, Double_t &Error )  const 
+Int_t AliKFParticleBase::GetR( Double_t &r, Double_t &error )  const 
 {
   //* Calculate distance to the origin
 
@@ -202,17 +202,17 @@ Int_t AliKFParticleBase::GetR( Double_t &R, Double_t &Error )  const
   Double_t y = fP[1];
   Double_t x2 = x*x;
   Double_t y2 = y*y;
-  R = TMath::Sqrt(x2 + y2);
-  Error = (x2*fC[0] + y2*fC[2] - 2*x*y*fC[1] );
-  if( Error>0 && R>1.e-4 ){
-    Error = TMath::Sqrt(Error)/R;
+  r = TMath::Sqrt(x2 + y2);
+  error = (x2*fC[0] + y2*fC[2] - 2*x*y*fC[1] );
+  if( error>0 && r>1.e-4 ){
+    error = TMath::Sqrt(error)/r;
     return 0;
   }
-  Error = 1.e10;
+  error = 1.e10;
   return 1;
 }
 
-Int_t AliKFParticleBase::GetMass( Double_t &M, Double_t &Error ) const 
+Int_t AliKFParticleBase::GetMass( Double_t &m, Double_t &error ) const 
 {
   //* Calculate particle mass
   
@@ -224,19 +224,19 @@ Int_t AliKFParticleBase::GetMass( Double_t &M, Double_t &Error ) const
 		     - fP[6]*( fP[3]*fC[24] + fP[4]*fC[25] + fP[5]*fC[26] )   )
 		 ); 
   Double_t m2 = TMath::Abs(fP[6]*fP[6] - fP[3]*fP[3] - fP[4]*fP[4] - fP[5]*fP[5]);
-  M  = TMath::Sqrt(m2);
-  if( M>1.e-10 ){
+  m  = TMath::Sqrt(m2);
+  if( m>1.e-10 ){
     if( s>=0 ){
-      Error = TMath::Sqrt(s)/M;
+      error = TMath::Sqrt(s)/m;
       return 0;
     }
   }
-  Error = 1.e20;
+  error = 1.e20;
   return 1;
 }
 
 
-Int_t AliKFParticleBase::GetDecayLength( Double_t &L, Double_t &Error ) const 
+Int_t AliKFParticleBase::GetDecayLength( Double_t &l, Double_t &error ) const 
 {
   //* Calculate particle decay length [cm]
 
@@ -248,32 +248,32 @@ Int_t AliKFParticleBase::GetDecayLength( Double_t &L, Double_t &Error ) const
   Double_t y2 = y*y;
   Double_t z2 = z*z;
   Double_t p2 = x2+y2+z2;
-  L = t*TMath::Sqrt(p2);
+  l = t*TMath::Sqrt(p2);
   if( p2>1.e-4){
-    Error = p2*fC[35] + t*t/p2*(x2*fC[9]+y2*fC[14]+z2*fC[20]
+    error = p2*fC[35] + t*t/p2*(x2*fC[9]+y2*fC[14]+z2*fC[20]
 				+ 2*(x*y*fC[13]+x*z*fC[18]+y*z*fC[19]) )
       + 2*t*(x*fC[31]+y*fC[32]+z*fC[33]);
-    Error = TMath::Sqrt(TMath::Abs(Error));
+    error = TMath::Sqrt(TMath::Abs(error));
     return 0;
   }
-  Error = 1.e20;
+  error = 1.e20;
   return 1;
 }
 
-Int_t AliKFParticleBase::GetLifeTime( Double_t &TauC, Double_t &Error ) const 
+Int_t AliKFParticleBase::GetLifeTime( Double_t &tauC, Double_t &error ) const 
 {
   //* Calculate particle decay time [s]
 
   Double_t m, dm;
   GetMass( m, dm );
   Double_t cTM = (-fP[3]*fC[31] - fP[4]*fC[32] - fP[5]*fC[33] + fP[6]*fC[34]);
-  TauC = fP[7]*m;
-  Error = m*m*fC[35] + 2*fP[7]*cTM + fP[7]*fP[7]*dm*dm;
-  if( Error > 0 ){
-    Error = TMath::Sqrt( Error );
+  tauC = fP[7]*m;
+  error = m*m*fC[35] + 2*fP[7]*cTM + fP[7]*fP[7]*dm*dm;
+  if( error > 0 ){
+    error = TMath::Sqrt( error );
     return 0;
   }
-  Error = 1.e20;
+  error = 1.e20;
   return 1;
 }
 
@@ -982,10 +982,10 @@ Double_t AliKFParticleBase::GetDStoPointBz( Double_t B, const Double_t xyz[] )
     dS = ss[i];
 
     Double_t x= g[i][0], y= g[i][1], z= g[i][2], ppx= g[i][3], ppy= g[i][4];      
-    Double_t dx = x-xyz[0];
-    Double_t dy = y-xyz[1];
-    Double_t dz = z-xyz[2];
-    Double_t c = dx*ppx  + dy*ppy  + dz*pz ;
+    Double_t ddx = x-xyz[0];
+    Double_t ddy = y-xyz[1];
+    Double_t ddz = z-xyz[2];
+    Double_t c = ddx*ppx  + ddy*ppy  + ddz*pz ;
     Double_t pp2 = ppx*ppx + ppy*ppy + pz*pz;    
     if( TMath::Abs(pp2)>1.e-8 ){
       dS+=c/pp2;
@@ -1071,11 +1071,11 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
   ss1[1] = s1 - ds1;
   for( Int_t i=0; i<2; i++){
     Double_t bs = bq*ss[i];
-    Double_t c = TMath::Cos(bs), s = TMath::Sin(bs);
+    Double_t c = TMath::Cos(bs), sss = TMath::Sin(bs);
     Double_t cB,sB;
     if( TMath::Abs(bq)>1.e-8){
       cB= (1-c)/bq;     
-      sB= s/bq;  
+      sB= sss/bq;  
     }else{
       sB = (1. - bs*bs/6.)*ss[i];
       cB = .5*sB*bs;
@@ -1083,14 +1083,14 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
     g[i][0] = fP[0] + sB*px + cB*py;
     g[i][1] = fP[1] - cB*px + sB*py;
     g[i][2] = fP[2] + ss[i]*pz;
-    g[i][3] =       + c*px + s*py;
-    g[i][4] =       - s*px + c*py;
+    g[i][3] =       + c*px + sss*py;
+    g[i][4] =       - sss*px + c*py;
 
     bs = bq1*ss1[i];  
-    c =  TMath::Cos(bs); s = TMath::Sin(bs);
+    c =  TMath::Cos(bs); sss = TMath::Sin(bs);
     if( TMath::Abs(bq1)>1.e-8){
       cB= (1-c)/bq1;   
-      sB= s/bq1;  
+      sB= sss/bq1;  
     }else{
       sB = (1. - bs*bs/6.)*ss1[i];
       cB = .5*sB*bs;
@@ -1099,8 +1099,8 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
     g1[i][0] = p.fP[0] + sB*px1 + cB*py1;
     g1[i][1] = p.fP[1] - cB*px1 + sB*py1;
     g1[i][2] = p.fP[2] + ss[i]*pz1;
-    g1[i][3] =         + c*px1 + s*py1;
-    g1[i][4] =         - s*px1 + c*py1;
+    g1[i][3] =         + c*px1 + sss*py1;
+    g1[i][4] =         - sss*px1 + c*py1;
   }
 
   Int_t i=0, i1=0;
@@ -1270,21 +1270,21 @@ void AliKFParticleBase::TransportCBM( Double_t dS,
 }
 
 
-void AliKFParticleBase::TransportBz( Double_t B, Double_t S,
-				     Double_t P[], Double_t C[] ) const 
+void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
+				     Double_t p[], Double_t cc[] ) const 
 { 
   //* Transport the particle on dS, output to P[],C[], for Bz field
  
   const Double_t kCLight = 0.000299792458;
-  B = B*fQ*kCLight;
-  Double_t bs= B*S;
+  b = b*fQ*kCLight;
+  Double_t bs= b*ss;
   Double_t s = TMath::Sin(bs), c = TMath::Cos(bs);
   Double_t sB, cB;
   if( TMath::Abs(bs)>1.e-10){
-    sB= s/B;
-    cB= (1-c)/B;
+    sB= s/b;
+    cB= (1-c)/b;
   }else{
-    sB = (1. - bs*bs/6.)*S;
+    sB = (1. - bs*bs/6.)*ss;
     cB = .5*sB*bs;
   }
   
@@ -1292,18 +1292,18 @@ void AliKFParticleBase::TransportBz( Double_t B, Double_t S,
   Double_t py = fP[4];
   Double_t pz = fP[5];
   
-  P[0] = fP[0] + sB*px + cB*py;
-  P[1] = fP[1] - cB*px + sB*py;
-  P[2] = fP[2] +  S*pz;
-  P[3] =          c*px + s*py;
-  P[4] =         -s*px + c*py;
-  P[5] = fP[5];
-  P[6] = fP[6];
-  P[7] = fP[7];
+  p[0] = fP[0] + sB*px + cB*py;
+  p[1] = fP[1] - cB*px + sB*py;
+  p[2] = fP[2] +  ss*pz;
+  p[3] =          c*px + s*py;
+  p[4] =         -s*px + c*py;
+  p[5] = fP[5];
+  p[6] = fP[6];
+  p[7] = fP[7];
  
   Double_t mJ[8][8] = { {1,0,0,   sB, cB,  0, 0, 0 },
 			{0,1,0,  -cB, sB,  0, 0, 0 },
-			{0,0,1,    0,  0,  S, 0, 0 },
+			{0,0,1,    0,  0, ss, 0, 0 },
 			{0,0,0,    c,  s,  0, 0, 0 },
 			{0,0,0,   -s,  c,  0, 0, 0 },
 			{0,0,0,    0,  0,  1, 0, 0 },
@@ -1322,8 +1322,8 @@ void AliKFParticleBase::TransportBz( Double_t B, Double_t S,
   
   for( Int_t k=0,i=0; i<8; i++)
     for( Int_t j=0; j<=i; j++, k++ ){
-      C[k] = 0;
-      for( Int_t l=0; l<8; l++ ) C[k]+=mJC[i][l]*mJ[j][l];
+      cc[k] = 0;
+      for( Int_t l=0; l<8; l++ ) cc[k]+=mJC[i][l]*mJ[j][l];
     }
   
   return;
