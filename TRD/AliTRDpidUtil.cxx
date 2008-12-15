@@ -1,4 +1,5 @@
 #include "TObject.h"
+#include "TObjArray.h"
 #include "TMath.h"
 #include "TF1.h"
 #include "TH1F.h"
@@ -7,6 +8,10 @@
 
 #include "AliLog.h"
 #include "Cal/AliTRDCalPID.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliESDtrack.h"
+#include "AliPID.h"
 #include "AliTRDpidUtil.h"
 
 ClassImp(AliTRDpidUtil)
@@ -137,3 +142,41 @@ Int_t AliTRDpidUtil::GetMomentumBin(Double_t p)
   return -1;
 }
 
+
+//__________________________________________________________________________
+Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, PIDmethod_t method){
+  //
+  // Do PID decision for the TRD based on 90% Electron efficiency threshold
+  //
+  // Author: Markus Fasel (M.Fasel@gsi.de)
+  //
+  if(method == kESD) method = kNN;
+  TString histname[2] = {"fHistThreshLQ", "fHistThreshNN"};
+  AliCDBManager *cdb = AliCDBManager::Instance(); 
+  AliCDBEntry *cdb_thresholds = cdb->Get("TRD/Calib/PIDThresholds");
+  TObjArray *histos = dynamic_cast<TObjArray *>(cdb_thresholds->GetObject());
+  TH1 * threshold_hist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  Double_t threshold = threshold_hist->GetBinContent(GetMomentumBin(track->P()) + 1);
+  
+  // Do Decision
+  Double_t pid_probs[5];
+  track->GetTRDpid(pid_probs);
+  if(pid_probs[AliPID::kElectron] >= threshold) return kTRUE;
+  return kFALSE; 
+}
+
+//__________________________________________________________________________
+Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, PIDmethod_t method){
+  //
+  // Returns the pion efficiency at 90% electron efficiency from the OCDB
+  //
+  // Author: Markus Fasel (M.Fasel@gsi.de)
+  //
+  if(method == kESD) method = kNN;
+  TString histname[2] = {"fHistPionEffLQ", "fHistPionEffNN"};
+  AliCDBManager *cdb = AliCDBManager::Instance(); 
+  AliCDBEntry *cdb_thresholds = cdb->Get("TRD/Calib/PIDThresholds");
+  TObjArray *histos = dynamic_cast<TObjArray *>(cdb_thresholds->GetObject());
+  TH1 * threshold_hist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
+  return threshold_hist->GetBinContent(GetMomentumBin(track->P()) + 1);
+}
