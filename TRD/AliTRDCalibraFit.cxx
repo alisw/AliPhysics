@@ -28,13 +28,13 @@
 // previous calibration procedure.
 // The function SetDebug enables the user to see:                                     
 // _fDebug = 0: nothing, only the values are written in the tree if wanted
-// _fDebug = 1: a comparaison of the coefficients found and the default values 
+// _fDebug = 1: only the fit of the choosen calibration group fFitVoir (SetFitVoir)
+// _fDebug = 2: a comparaison of the coefficients found and the default values 
 //              in the choosen database.
 //              fCoef , histogram of the coefs as function of the calibration group number
 //              fDelta , histogram of the relative difference of the coef with the default
 //                        value in the database as function of the calibration group number
 //              fError , dirstribution of this relative difference
-// _fDebug = 2: only the fit of the choosen calibration group fFitVoir (SetFitVoir)
 // _fDebug = 3: The coefficients in the choosen detector fDet (SetDet) as function of the
 //              pad row and col number
 // _fDebug = 4; The coeffcicients in the choosen detector fDet (SetDet) like in the 3 but with
@@ -104,7 +104,6 @@ AliTRDCalibraFit *AliTRDCalibraFit::Instance()
   return fgInstance;
 
 }
-
 //______________________________________________________________________________________
 void AliTRDCalibraFit::Terminate()
 {
@@ -121,7 +120,6 @@ void AliTRDCalibraFit::Terminate()
   }
 
 }
-
 //______________________________________________________________________________________
 AliTRDCalibraFit::AliTRDCalibraFit()
   :TObject()
@@ -154,6 +152,7 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fEntriesCurrent(0)
   ,fCountDet(0)
   ,fCount(0)
+  ,fNbDet(0)
   ,fCalDet(0x0)
   ,fCalROC(0x0)
   ,fCalDet2(0x0)
@@ -212,6 +211,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fEntriesCurrent(c.fEntriesCurrent)
 ,fCountDet(c.fCountDet)
 ,fCount(c.fCount)
+,fNbDet(c.fNbDet)
 ,fCalDet(0x0)
 ,fCalROC(0x0)
 ,fCalDet2(0x0)
@@ -238,7 +238,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
   }
   if(c.fCalDet) fCalDet   = new AliTRDCalDet(*c.fCalDet);
   if(c.fCalDet2) fCalDet2 = new AliTRDCalDet(*c.fCalDet2);
-
+  
   if(c.fCalROC) fCalROC   = new AliTRDCalROC(*c.fCalROC);
   if(c.fCalROC2) fCalROC  = new AliTRDCalROC(*c.fCalROC2);
 
@@ -319,6 +319,17 @@ void AliTRDCalibraFit::Destroy()
   }
 
 }
+//_____________________________________________________________________________
+void AliTRDCalibraFit::DestroyDebugStreamer() 
+{
+  //
+  // Delete DebugStreamer
+  //
+
+  if ( fDebugStreamer ) delete fDebugStreamer;
+  fDebugStreamer = 0x0;
+ 
+}
 //__________________________________________________________________________________
 void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end)
 {
@@ -351,7 +362,7 @@ Bool_t AliTRDCalibraFit::AnalyseCH(TH2I *ch)
 
   // Set the calibration mode
   const char *name = ch->GetTitle();
-  SetModeCalibration(name,0);
+  if(!SetModeCalibration(name,0)) return kFALSE;
 
   // Number of Ybins (detectors or groups of pads)
   Int_t    nbins   = ch->GetNbinsX();// charge
@@ -449,7 +460,7 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
 
   // Set the calibraMode
   const char *name = calvect->GetNameCH();
-  SetModeCalibration(name,0);  
+  if(!SetModeCalibration(name,0)) return kFALSE;  
 
   // Number of Xbins (detectors or groups of pads)
   if (!InitFit((432*calvect->GetDetCha0(0)+108*calvect->GetDetCha2(0)),0)) {
@@ -549,7 +560,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(TProfile2D *ph)
 
   // Set the calibration mode
   const char *name = ph->GetTitle();
-  SetModeCalibration(name,1);
+  if(!SetModeCalibration(name,1)) return kFALSE;
   
   // Number of Xbins (detectors or groups of pads)
   Int_t    nbins   = ph->GetNbinsX();// time
@@ -587,7 +598,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(TProfile2D *ph)
     // This detector has not enough statistics or was off
     if (nentries  <= fMinEntries) {
       //printf("Not enough statistic!\n");
-      NotEnoughStatisticPH(idect);     
+      NotEnoughStatisticPH(idect,nentries);     
       if (fDebugLevel != 1) {
 	delete projph;
       }
@@ -608,7 +619,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(TProfile2D *ph)
       default: return kFALSE;
       }
     // Fill the tree if end of a detector or only the pointer to the branch!!!
-    FillInfosFitPH(idect);
+    FillInfosFitPH(idect,nentries);
     // Memory!!!
     if (fDebugLevel != 1) {
       delete projph;
@@ -638,7 +649,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
 
   // Set the calibration mode
   const char *name = calvect->GetNamePH();
-  SetModeCalibration(name,1);
+  if(!SetModeCalibration(name,1)) return kFALSE;
 
   // Number of Xbins (detectors or groups of pads)
   if (!InitFit((432*calvect->GetDetCha0(1)+108*calvect->GetDetCha2(1)),1)) {
@@ -673,7 +684,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
     // This detector has not enough statistics or was off
     if (fEntriesCurrent <=  fMinEntries) {
       //printf("Not enough stat!\n");
-      NotEnoughStatisticPH(idect);
+      NotEnoughStatisticPH(idect,fEntriesCurrent);
       if (fDebugLevel != 1) {
 	if(projph) delete projph;
       }
@@ -694,7 +705,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
       default: return kFALSE;
       }
     // Fill the tree if end of a detector or only the pointer to the branch!!!
-    FillInfosFitPH(idect);
+    FillInfosFitPH(idect,fEntriesCurrent);
     // Memory!!!
     if (fDebugLevel != 1) {
       delete projph;
@@ -724,7 +735,7 @@ Bool_t AliTRDCalibraFit::AnalysePRF(TProfile2D *prf)
 
   // Set the calibration mode
   const char *name = prf->GetTitle();
-  SetModeCalibration(name,2);
+  if(!SetModeCalibration(name,2)) return kFALSE;
 
   // Number of Ybins (detectors or groups of pads)
   Int_t    nybins  = prf->GetNbinsY();// calibration groups
@@ -811,7 +822,7 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(TProfile2D *prf)
 
   // Set the calibration mode
   const char *name = prf->GetTitle();
-  SetModeCalibration(name,2);
+  if(!SetModeCalibration(name,2)) return kFALSE;
 
   // Number of Ybins (detectors or groups of pads)
   TAxis   *xprf    = prf->GetXaxis();
@@ -906,7 +917,7 @@ Bool_t AliTRDCalibraFit::AnalysePRF(AliTRDCalibraVector *calvect)
 
   // Set the calibra mode
   const char *name = calvect->GetNamePRF();
-  SetModeCalibration(name,2);
+  if(!SetModeCalibration(name,2)) return kFALSE;
   //printf("test0 %s\n",name);
 
   // Number of Xbins (detectors or groups of pads)
@@ -989,10 +1000,10 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(AliTRDCalibraVector *calvect)
 
   // Set the calibra mode
   const char *name = calvect->GetNamePRF();
-  SetModeCalibration(name,2);
+  if(!SetModeCalibration(name,2)) return kFALSE;
   //printf("test0 %s\n",name);
   Int_t    nbg     = GetNumberOfGroupsPRF((const char *)name);
-  printf("test1 %d\n",nbg);
+  //printf("test1 %d\n",nbg);
   if(nbg == -1) return kFALSE;
   if(nbg > 0) fMethod = 1;
   else fMethod = 0;
@@ -1242,39 +1253,86 @@ Bool_t AliTRDCalibraFit::SetNrphiFromTObject(const char *name, Int_t i)
   const Char_t *patternrphi5 = "Nrphi5";
   const Char_t *patternrphi6 = "Nrphi6";
 
+  
+  const Char_t *patternrphi10 = "Nrphi10";
+  const Char_t *patternrphi100 = "Nrphi100";
+  const Char_t *patternz10 = "Nz10";
+  const Char_t *patternz100 = "Nz100";
+
   // Nrphi mode
+  if ((strstr(name,patternrphi100)) && (strstr(name,patternz100))) {
+    fCalibraMode->SetAllTogether(i);
+    fNbDet = 540;
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 100",fNbDet));
+    }
+    return kTRUE;
+  }
+  if ((strstr(name,patternrphi10)) && (strstr(name,patternz10))) {
+    fCalibraMode->SetPerSuperModule(i);
+    fNbDet = 30;
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNDet %d and 100",fNbDet));
+    }
+    return kTRUE;
+  }
+  
   if (strstr(name,patternrphi0)) {
     fCalibraMode->SetNrphi(i ,0);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 0",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternrphi1)) {
     fCalibraMode->SetNrphi(i, 1);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 1",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternrphi2)) {
     fCalibraMode->SetNrphi(i, 2);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 2",fNbDet));
+    }    
     return kTRUE;
   }
   if (strstr(name,patternrphi3)) {
     fCalibraMode->SetNrphi(i, 3);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 3",fNbDet));
+    }   
     return kTRUE;
   }
   if (strstr(name,patternrphi4)) {
     fCalibraMode->SetNrphi(i, 4);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 4",fNbDet));
+    }   
     return kTRUE;
   }
   if (strstr(name,patternrphi5)) {
     fCalibraMode->SetNrphi(i, 5);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 5",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternrphi6)) {
     fCalibraMode->SetNrphi(i, 6);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 6",fNbDet));
+    }
     return kTRUE;
   }
   
+  if (fDebugLevel > 1) {
+    AliInfo(Form("fNbDet %d and rest",fNbDet));
+  }
   fCalibraMode->SetNrphi(i ,0);
   return kFALSE;
-    
+  
 }
 //_____________________________________________________________________________
 Bool_t AliTRDCalibraFit::SetNzFromTObject(const char *name, Int_t i)
@@ -1290,30 +1348,315 @@ Bool_t AliTRDCalibraFit::SetNzFromTObject(const char *name, Int_t i)
   const Char_t *patternz2    = "Nz2";
   const Char_t *patternz3    = "Nz3";
   const Char_t *patternz4    = "Nz4";
-  
+
+  const Char_t *patternrphi10 = "Nrphi10";
+  const Char_t *patternrphi100 = "Nrphi100";
+  const Char_t *patternz10 = "Nz10";
+  const Char_t *patternz100 = "Nz100";
+
+  if ((strstr(name,patternrphi100)) && (strstr(name,patternz100))) {
+    fCalibraMode->SetAllTogether(i);
+    fNbDet = 540;
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 100",fNbDet));
+    }
+    return kTRUE;
+  }
+  if ((strstr(name,patternrphi10)) && (strstr(name,patternz10))) {
+    fCalibraMode->SetPerSuperModule(i);
+    fNbDet = 30;
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 10",fNbDet));
+    }
+    return kTRUE;
+  }
   if (strstr(name,patternz0)) {
     fCalibraMode->SetNz(i, 0);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 0",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternz1)) {
     fCalibraMode->SetNz(i ,1);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 1",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternz2)) {
     fCalibraMode->SetNz(i ,2);
+    if (fDebugLevel > 1) {    
+      AliInfo(Form("fNbDet %d and 2",fNbDet));
+    }
     return kTRUE;
   }
   if (strstr(name,patternz3)) {
     fCalibraMode->SetNz(i ,3);
+    if (fDebugLevel > 1) {
+      AliInfo(Form("fNbDet %d and 3",fNbDet));
+    }
     return kTRUE;  
   }
   if (strstr(name,patternz4)) {
     fCalibraMode->SetNz(i ,4);
+    if (fDebugLevel > 1) {    
+      AliInfo(Form("fNbDet %d and 4",fNbDet));
+    }
     return kTRUE;
   }
-
+ 
+  if (fDebugLevel > 1) {
+    AliInfo(Form("fNbDet %d and rest",fNbDet));
+  }
   fCalibraMode->SetNz(i ,0);
   return kFALSE;
+}
+//______________________________________________________________________
+void AliTRDCalibraFit::PutMeanValueOtherVectorFit(Int_t ofwhat, Bool_t perdetector){
+  //
+  // ofwhat is equaled to 0: mean value of all passing detectors
+  // ofwhat is equaled to 1: mean value of the detector, otherwise supermodule, otherwise all
+  //
+
+  Int_t loop = (Int_t) fVectorFit.GetEntriesFast();
+  if(loop != 540) {
+    AliInfo("The Vector Fit is not complete!");
+    return;
+  }
+  Int_t detector = -1;
+  Int_t sector = -1;
+  Float_t value  = 0.0;
+
+  /////////////////////////////////
+  // Calculate the mean values
+  ////////////////////////////////
+  // Initialisation
+  ////////////////////////
+  Double_t meanAll = 0.0;
+  Double_t meanSupermodule[18];
+  Double_t meanDetector[540];
+  Int_t countAll = 0;
+  Int_t countSupermodule[18];
+  Int_t countDetector[540];
+  for(Int_t sm = 0; sm < 18; sm++){
+    meanSupermodule[sm] = 0.0;
+    countSupermodule[sm] = 0;
+  }
+  for(Int_t det = 0; det < 540; det++){
+    meanDetector[det] = 0.0;
+    countDetector[det] = 0;
+  }
+  // compute
+  ////////////
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
+    sector = GetSector(detector);
+    if(perdetector){
+      value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[0];
+      if(value > 0.0) {
+	meanDetector[detector] += value;
+	countDetector[detector]++;
+	meanSupermodule[sector] += value;
+	countSupermodule[sector]++;
+	meanAll += value;
+	countAll++;
+      }
+    }
+    else {
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+      for (Int_t row = 0; row < rowMax; row++) {
+	for (Int_t col = 0; col < colMax; col++) {
+	  value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  if(value > 0.0) {
+	    meanDetector[detector] += value;
+	    countDetector[detector]++;
+	    meanSupermodule[sector] += value;
+	    countSupermodule[sector]++;
+	    meanAll += value;
+	    countAll++;
+	  }
+	  
+	} // Col
+      } // Row
+    }
+  }  
+  if(countAll > 0) meanAll = meanAll/countAll;
+  for(Int_t sm = 0; sm < 18; sm++){
+    if(countSupermodule[sm] > 0) meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+  }
+  for(Int_t det = 0; det < 540; det++){
+    if(countDetector[det] > 0) meanDetector[det] = meanDetector[det]/countDetector[det];
+  }
+  // Put the mean value for the no-fitted
+  /////////////////////////////////////////////  
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
+    sector = GetSector(detector);
+    Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+    Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+    Float_t *coef = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef();
+
+    for (Int_t row = 0; row < rowMax; row++) {
+      for (Int_t col = 0; col < colMax; col++) {
+	value = coef[(Int_t)(col*rowMax+row)];
+	if(value < 0.0) {
+	  if((ofwhat == 0) && (meanAll > 0.0)) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
+	  if(ofwhat == 1){
+	    if(meanDetector[detector] > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanDetector[detector]);
+	    else if(meanSupermodule[sector] > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanSupermodule[sector]);
+	    else if(meanAll > 0.0) coef[(Int_t)(col*rowMax+row)] = -TMath::Abs(meanAll);
+	  }  
+	}
+	// Debug
+	if(fDebugLevel > 1){
+	  
+	  if ( !fDebugStreamer ) {
+	    //debug stream
+	    TDirectory *backup = gDirectory;
+	    fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	  } 
+	  
+	  Float_t coefnow      = coef[(Int_t)(col*rowMax+row)]; 
+	  
+	  (* fDebugStreamer) << "PutMeanValueOtherVectorFit"<<
+	    "detector="<<detector<<
+	    "sector="<<sector<<
+	    "row="<<row<<
+	    "col="<<col<<
+	    "before="<<value<<
+	    "after="<<coefnow<<
+	    "\n";  
+	}
+      } // Col
+    } // Row
+  }
+  
+}
+//______________________________________________________________________
+void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetector){
+  //
+  // ofwhat is equaled to 0: mean value of all passing detectors
+  // ofwhat is equaled to 1: mean value of the detector, otherwise supermodule, otherwise all
+  //
+
+  Int_t loop = (Int_t) fVectorFit2.GetEntriesFast();
+  if(loop != 540) {
+    AliInfo("The Vector Fit is not complete!");
+    return;
+  }
+  Int_t detector = -1;
+  Int_t sector = -1;
+  Float_t value  = 0.0;
+
+  /////////////////////////////////
+  // Calculate the mean values
+  ////////////////////////////////
+  // Initialisation
+  ////////////////////////
+  Double_t meanAll = 0.0;
+  Double_t meanSupermodule[18];
+  Double_t meanDetector[540];
+  Int_t countAll = 0;
+  Int_t countSupermodule[18];
+  Int_t countDetector[540];
+  for(Int_t sm = 0; sm < 18; sm++){
+    meanSupermodule[sm] = 0.0;
+    countSupermodule[sm] = 0;
+  }
+  for(Int_t det = 0; det < 540; det++){
+    meanDetector[det] = 0.0;
+    countDetector[det] = 0;
+  }
+  // compute
+  ////////////
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
+    sector = GetSector(detector);
+    if(perdetector){
+      value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[0];
+      if(value < 70.0) {
+	meanDetector[detector] += value;
+	countDetector[detector]++;
+	meanSupermodule[sector] += value;
+	countSupermodule[sector]++;
+	meanAll += value;
+	countAll++;
+      }
+    }
+    else {
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+      for (Int_t row = 0; row < rowMax; row++) {
+	for (Int_t col = 0; col < colMax; col++) {
+	  value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  if(value < 70.0) {
+	    meanDetector[detector] += value;
+	    countDetector[detector]++;
+	    meanSupermodule[sector] += value;
+	    countSupermodule[sector]++;
+	    meanAll += value;
+	    countAll++;
+	  }
+	  
+	} // Col
+      } // Row
+    }
+  }  
+  if(countAll > 0) meanAll = meanAll/countAll;
+  for(Int_t sm = 0; sm < 18; sm++){
+    if(countSupermodule[sm] > 0) meanSupermodule[sm] = meanSupermodule[sm]/countSupermodule[sm];
+  }
+  for(Int_t det = 0; det < 540; det++){
+    if(countDetector[det] > 0) meanDetector[det] = meanDetector[det]/countDetector[det];
+  }
+  // Put the mean value for the no-fitted
+  /////////////////////////////////////////////  
+  for (Int_t k = 0; k < loop; k++) {
+    detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
+    sector = GetSector(detector);
+    Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+    Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
+    Float_t *coef = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef();
+
+    for (Int_t row = 0; row < rowMax; row++) {
+      for (Int_t col = 0; col < colMax; col++) {
+	value = coef[(Int_t)(col*rowMax+row)];
+	if(value > 70.0) {
+	  if((ofwhat == 0) && (meanAll > 0.0)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	  if(ofwhat == 1){
+	    if(meanDetector[detector] > 0.0) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
+	    else if(meanSupermodule[sector] > 0.0) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
+	    else if(meanAll > 0.0) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	  }  
+	}
+	// Debug
+	if(fDebugLevel > 1){
+	  
+	  if ( !fDebugStreamer ) {
+	    //debug stream
+	    TDirectory *backup = gDirectory;
+	    fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	  } 
+	  
+	  Float_t coefnow      = coef[(Int_t)(col*rowMax+row)]; 
+	  
+	  (* fDebugStreamer) << "PutMeanValueOtherVectorFit2"<<
+	    "detector="<<detector<<
+	    "sector="<<sector<<
+	    "row="<<row<<
+	    "col="<<col<<
+	    "before="<<value<<
+	    "after="<<coefnow<<
+	    "\n";  
+	}
+      } // Col
+    } // Row
+  }
+  
 }
 //_____________________________________________________________________________
 AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool_t perdetector)
@@ -1331,7 +1674,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool
   if(loop != 540) AliInfo("The Vector Fit is not complete!");
   Int_t detector = -1;
   Float_t value  = 0.0;
-
+  
+  //
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) vectorFit->At(k))->GetDetector();
     Float_t mean  = 0.0;
@@ -1357,7 +1701,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool
   return object;
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Double_t scaleFitFactor, Bool_t perdetector)
+AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Bool_t meanOtherBefore, Double_t scaleFitFactor, Bool_t perdetector)
 {
   //
   // It creates the AliTRDCalDet object from the AliTRDFitInfo
@@ -1379,7 +1723,10 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Double
     Float_t mean  = 0.0;
     if(perdetector){
       value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[0];
-      if(value > 0) value = value*scaleFitFactor;
+      if(!meanOtherBefore){
+	if(value > 0) value = value*scaleFitFactor;
+      }
+      else value = value*scaleFitFactor;
       mean = TMath::Abs(value);
     }
     else{
@@ -1389,7 +1736,10 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Double
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
-	  if(value > 0) value = value*scaleFitFactor;
+	  if(!meanOtherBefore) {
+	    if(value > 0) value = value*scaleFitFactor;
+	  }
+	  else value = value*scaleFitFactor;
 	  mean += TMath::Abs(value);
 	  count++;       
 	} // Col
@@ -1422,7 +1772,11 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(TObjArray *vectorFit, Bool_t p
     detector  = ((AliTRDFitInfo *) vectorFit->At(k))->GetDetector();   
     Float_t min  = 100.0;
     if(perdetector){
-      min = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[0];
+      value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[0];
+      // check successful
+      if(value > 70.0) value = value-100.0;
+      //
+      min = value;
     }
     else{
       Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
@@ -1430,6 +1784,9 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(TObjArray *vectorFit, Bool_t p
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  // check successful
+	  if(value > 70.0) value = value-100.0;
+	  //
 	  if(min > value) min = value;
 	} // Col
       } // Row
@@ -1613,6 +1970,9 @@ TObject *AliTRDCalibraFit::CreatePadObjectT0(TObjArray *vectorFit, AliTRDCalDet 
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
+	  // check successful
+	  if(value > 70.0) value = value - 100.0;
+	  //
 	  calROC->SetValue(col,row,value-min);
 	} // Col
       } // Row
@@ -1937,7 +2297,7 @@ Bool_t AliTRDCalibraFit::InitFit(Int_t nbins, Int_t i)
   
   // Quick verification that we have the good pad calibration mode!
   if (fNumberOfBinsExpected != nbins) {
-    AliInfo("It doesn't correspond to the mode of pad group calibration!");
+    AliInfo(Form("It doesn't correspond to the mode of pad group calibration: expected %d and seen %d!",fNumberOfBinsExpected,nbins));
     return kFALSE;
   }
   
@@ -2175,6 +2535,17 @@ void AliTRDCalibraFit::CalculNumberOfBinsExpected(Int_t i)
   //
   
   fNumberOfBinsExpected = 0;
+  // All
+  if((fCalibraMode->GetNz(i) == 100) && (fCalibraMode->GetNrphi(i) == 100)){
+    fNumberOfBinsExpected = 1;
+    return;
+  }
+  // Per supermodule
+  if((fCalibraMode->GetNz(i) == 10) && (fCalibraMode->GetNrphi(i) == 10)){
+    fNumberOfBinsExpected = 18;
+    return;
+  }
+  // More
   fCalibraMode->ModePadCalibration(2,i);
   fCalibraMode->ModePadFragmentation(0,2,0,i);
   fCalibraMode->SetDetChamb2(i);
@@ -2247,18 +2618,19 @@ void AliTRDCalibraFit::UpdatefCountDetAndfCount(Int_t idect, Int_t i)
   // Doesn't matter for 2
   //
   if (fCount == idect) {
-     // On en est au detector
-     fCountDet += 1;
-     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
-     fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),i);
-     fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+    // On en est au detector (or first detector in the group)
+    fCountDet += 1;
+    AliDebug(2,Form("We are at the detector %d\n",fCountDet));
+    // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+    fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),i);
+    fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
 			     	       ,(Int_t) GetStack(fCountDet)
                                        ,(Int_t) GetSector(fCountDet),i);
-     // Set for the next detector
-     fCount += fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i);
-     // calib objects
-     SetCalROC(i);
-    }
+    // Set for the next detector
+    fCount += fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i);
+    // calib objects
+    SetCalROC(i);
+  }
 }
 //____________Functions for initialising the AliTRDCalibraFit in the code_________
 void AliTRDCalibraFit::ReconstructFitRowMinRowMax(Int_t idect, Int_t i)
@@ -2266,10 +2638,13 @@ void AliTRDCalibraFit::ReconstructFitRowMinRowMax(Int_t idect, Int_t i)
   //
   // Reconstruct the min pad row, max pad row, min pad col and
   // max pad col of the calibration group for the Fit functions
+  // idect is the calibration group inside the detector
   //
   if (fDebugLevel !=  1) {
     fCalibraMode->ReconstructionRowPadGroup((Int_t) (idect-(fCount-(fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i)))),i);
   }
+  AliDebug(2,Form("AliTRDCalibraFit::ReconstructFitRowMinRowMax: the local calibration group is %d",idect-(fCount-(fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i)))));
+  AliDebug(2,Form("AliTRDCalibraFit::ReconstructFitRowMinRowMax: the number of group per detector is %d",fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i)));
 }
 //____________Functions for initialising the AliTRDCalibraFit in the code_________
 Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
@@ -2283,7 +2658,89 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
   if (fDebugLevel == 1) {
     AliInfo("The element has not enough statistic to be fitted");
   }
-  
+  else if (fNbDet > 0){
+    Int_t firstdetector = fCountDet;
+    Int_t lastdetector  = fCountDet+fNbDet;
+    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
+		 ,idect,firstdetector,lastdetector));
+    // loop over detectors
+    for(Int_t det = firstdetector; det < lastdetector; det++){
+
+      //Set the calibration object again
+      fCountDet = det;
+      SetCalROC(0);   
+
+      // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+      // Put them at 1
+      fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),0);
+      fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					 ,(Int_t) GetStack(fCountDet)
+					 ,(Int_t) GetSector(fCountDet),0);
+      // Reconstruct row min row max
+      ReconstructFitRowMinRowMax(idect,0);      
+
+      // Calcul the coef from the database choosen for the detector
+      CalculChargeCoefMean(kFALSE);
+      
+      //stack 2, not stack 2
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16;
+      
+      // Fill the fCurrentCoefDetector with negative value to say: not fitted
+      for (Int_t k = fCalibraMode->GetRowMin(0); k < fCalibraMode->GetRowMax(0); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(0); j < fCalibraMode->GetColMax(0); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)] = -TMath::Abs(fCurrentCoef[1]);
+	}
+      }
+      
+      //Put default value negative
+      fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
+      fCurrentCoefE   = 0.0;
+      
+      // Fill the stuff
+      FillVectorFit();
+      // Debug
+      if(fDebugLevel > 1){ 
+	
+	if ( !fDebugStreamer ) {
+	  //debug stream
+	  TDirectory *backup = gDirectory;
+	  fDebugStreamer = new TTreeSRedirector("TRDDebugFitCH.root");
+	  if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	} 
+	
+	Int_t   detector   = fCountDet;
+	Int_t   caligroup  = idect;
+	Short_t rowmin     = fCalibraMode->GetRowMin(0);
+	Short_t rowmax     = fCalibraMode->GetRowMax(0);
+	Short_t colmin     = fCalibraMode->GetColMin(0);
+	Short_t colmax     = fCalibraMode->GetColMax(0);
+	Float_t gf         = fCurrentCoef[0]; 
+	Float_t gfs        = fCurrentCoef[1]; 
+	Float_t gfE        = fCurrentCoefE;
+	
+	(*fDebugStreamer) << "FillFillCH" <<
+	  "detector=" << detector <<
+	  "caligroup=" << caligroup <<
+	  "rowmin=" << rowmin <<
+	  "rowmax=" << rowmax <<
+	  "colmin=" << colmin <<
+	  "colmax=" << colmax <<
+	  "gf=" << gf <<
+	  "gfs=" << gfs <<
+	  "gfE=" << gfE <<
+	  "\n"; 
+	
+      }
+      // Reset
+      for (Int_t k = 0; k < 2304; k++) {
+	fCurrentCoefDetector[k] = 0.0;
+      }
+      
+    }// loop detector
+    AliDebug(2,Form("Check the count now: fCountDet %d",fCountDet));
+  }
   else {
 
     AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted"
@@ -2316,7 +2773,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
 
 
 //____________Functions for initialising the AliTRDCalibraFit in the code_________
-Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect)
+Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect,Double_t nentries)
 {
   //
   // For the case where there are not enough entries in the histograms
@@ -2326,6 +2783,105 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect)
   if (fDebugLevel == 1) {
     AliInfo("The element has not enough statistic to be fitted");
   }
+  else if (fNbDet > 0) {
+
+    Int_t firstdetector = fCountDet;
+    Int_t lastdetector  = fCountDet+fNbDet;
+    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
+		 ,idect,firstdetector,lastdetector));
+    // loop over detectors
+    for(Int_t det = firstdetector; det < lastdetector; det++){
+
+      //Set the calibration object again
+      fCountDet = det;
+      SetCalROC(1);   
+
+      // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+      // Put them at 1
+      fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),1);
+      fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					 ,(Int_t) GetStack(fCountDet)
+					 ,(Int_t) GetSector(fCountDet),1);
+      // Reconstruct row min row max
+      ReconstructFitRowMinRowMax(idect,1);      
+
+      // Calcul the coef from the database choosen for the detector
+      CalculVdriftCoefMean();
+      CalculT0CoefMean();
+      
+      //stack 2, not stack 2
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16;
+      
+      // Fill the fCurrentCoefDetector with negative value to say: not fitted
+      for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(1); j < fCalibraMode->GetColMax(1); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)] = -TMath::Abs(fCurrentCoef[1]);
+	  fCurrentCoefDetector2[(Int_t)(j*factor+k)] = fCurrentCoef2[1] + 100.0;
+      	}
+      }
+      
+      //Put default value negative
+      fCurrentCoef[0]  = -TMath::Abs(fCurrentCoef[1]);
+      fCurrentCoefE    = 0.0;
+      fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
+      fCurrentCoefE2   = 0.0;
+            
+      // Fill the stuff
+      FillVectorFit();
+      FillVectorFit2();
+      // Debug
+      if(fDebugLevel > 1){ 
+
+	if ( !fDebugStreamer ) {
+	  //debug stream
+	  TDirectory *backup = gDirectory;
+	  fDebugStreamer = new TTreeSRedirector("TRDDebugFitPH.root");
+	  if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	} 
+	
+	
+	Int_t   detector     = fCountDet;
+	Int_t   caligroup    = idect;
+	Short_t rowmin       = fCalibraMode->GetRowMin(1);
+	Short_t rowmax       = fCalibraMode->GetRowMax(1);
+	Short_t colmin       = fCalibraMode->GetColMin(1);
+	Short_t colmax       = fCalibraMode->GetColMax(1);
+	Float_t vf           = fCurrentCoef[0]; 
+	Float_t vs           = fCurrentCoef[1]; 
+	Float_t vfE          = fCurrentCoefE;
+	Float_t t0f          = fCurrentCoef2[0]; 
+	Float_t t0s          = fCurrentCoef2[1]; 
+	Float_t t0E          = fCurrentCoefE2;
+	
+	
+	
+	(* fDebugStreamer) << "FillFillPH"<<
+	"detector="<<detector<<
+	  "nentries="<<nentries<<
+	  "caligroup="<<caligroup<<
+	  "rowmin="<<rowmin<<
+	  "rowmax="<<rowmax<<
+	  "colmin="<<colmin<<
+	  "colmax="<<colmax<<
+	  "vf="<<vf<<
+	  "vs="<<vs<<
+	  "vfE="<<vfE<<
+	  "t0f="<<t0f<<
+	  "t0s="<<t0s<<
+	  "t0E="<<t0E<<
+	  "\n";  
+      }
+      // Reset
+      for (Int_t k = 0; k < 2304; k++) {
+	fCurrentCoefDetector[k] = 0.0;
+	fCurrentCoefDetector2[k] = 0.0;
+      }
+      
+    }// loop detector
+    AliDebug(2,Form("Check the count now: fCountDet %d",fCountDet));
+  }    
   else {
 
     AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted"
@@ -2344,22 +2900,22 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect)
     for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
       for (Int_t j = fCalibraMode->GetColMin(1); j < fCalibraMode->GetColMax(1); j++) {
 	fCurrentCoefDetector[(Int_t)(j*factor+k)] = -TMath::Abs(fCurrentCoef[1]);
-	fCurrentCoefDetector2[(Int_t)(j*factor+k)] = fCurrentCoef2[1];
+	fCurrentCoefDetector2[(Int_t)(j*factor+k)] = fCurrentCoef2[1] + 100.0;
       }
     }
 
     // Put the default value
     fCurrentCoef[0]  = -TMath::Abs(fCurrentCoef[1]);
     fCurrentCoefE    = 0.0;
-    fCurrentCoef2[0] = fCurrentCoef2[1];
+    fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
     fCurrentCoefE2   = 0.0;
      
-    FillFillPH(idect);
+    FillFillPH(idect,nentries);
     
   }
   
   return kTRUE;
-
+  
 }
 
 
@@ -2374,6 +2930,92 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPRF(Int_t idect)
   
   if (fDebugLevel == 1) {
     AliInfo("The element has not enough statistic to be fitted");
+  }
+  else if (fNbDet > 0){
+  
+    Int_t firstdetector = fCountDet;
+    Int_t lastdetector  = fCountDet+fNbDet;
+    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
+		 ,idect,firstdetector,lastdetector));
+    
+    // loop over detectors
+    for(Int_t det = firstdetector; det < lastdetector; det++){
+
+      //Set the calibration object again
+      fCountDet = det;
+      SetCalROC(2);   
+
+      // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+      // Put them at 1
+      fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),2);
+      fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					 ,(Int_t) GetStack(fCountDet)
+					 ,(Int_t) GetSector(fCountDet),2);
+      // Reconstruct row min row max
+      ReconstructFitRowMinRowMax(idect,2);      
+
+      // Calcul the coef from the database choosen for the detector
+      CalculPRFCoefMean();
+      
+      //stack 2, not stack 2
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16;
+      
+      // Fill the fCurrentCoefDetector with negative value to say: not fitted
+      for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)] = -TMath::Abs(fCurrentCoef[1]);
+	}
+      }
+      
+      //Put default value negative
+      fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
+      fCurrentCoefE   = 0.0;
+      
+      // Fill the stuff
+      FillVectorFit();
+      // Debug
+      if(fDebugLevel > 1){
+	
+	if ( !fDebugStreamer ) {
+	  //debug stream
+	  TDirectory *backup = gDirectory;
+	  fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
+	  if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	} 
+	
+	Int_t   detector     = fCountDet;
+	Int_t   layer        = GetLayer(fCountDet);
+	Int_t   caligroup    = idect;
+	Short_t rowmin       = fCalibraMode->GetRowMin(2);
+	Short_t rowmax       = fCalibraMode->GetRowMax(2);
+	Short_t colmin       = fCalibraMode->GetColMin(2);
+	Short_t colmax       = fCalibraMode->GetColMax(2);
+	Float_t widf         = fCurrentCoef[0]; 
+	Float_t wids         = fCurrentCoef[1]; 
+	Float_t widfE        = fCurrentCoefE;
+	
+	(* fDebugStreamer) << "FillFillPRF"<<
+	  "detector="<<detector<<
+	  "layer="<<layer<<
+	  "caligroup="<<caligroup<<
+	  "rowmin="<<rowmin<<
+	  "rowmax="<<rowmax<<
+	  "colmin="<<colmin<<
+	  "colmax="<<colmax<<
+	  "widf="<<widf<<
+	  "wids="<<wids<<
+	  "widfE="<<widfE<<
+	  "\n";  
+      }
+      // Reset
+      for (Int_t k = 0; k < 2304; k++) {
+	fCurrentCoefDetector[k] = 0.0;
+      }
+      
+    }// loop detector
+    AliDebug(2,Form("Check the count now: fCountDet %d",fCountDet));
   }
   else {
     
@@ -2391,12 +3033,12 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPRF(Int_t idect)
     // Fill the fCurrentCoefDetector
     for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
       for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
-	fCurrentCoefDetector[(Int_t)(j*factor+k)] = -fCurrentCoef[1];
+	fCurrentCoefDetector[(Int_t)(j*factor+k)] = -TMath::Abs(fCurrentCoef[1]);
       }
     }
 
     // Put the default value
-    fCurrentCoef[0] = -fCurrentCoef[1];
+    fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
     fCurrentCoefE   = 0.0;
     
     FillFillPRF(idect);
@@ -2450,26 +3092,110 @@ Bool_t AliTRDCalibraFit::FillInfosFitCH(Int_t idect)
   //
 
   if (fDebugLevel != 1) {
-    
-    Int_t factor = 0;
-    if(GetStack(fCountDet) == 2) factor = 12;
-    else factor = 16; 
-    
-    for (Int_t k = fCalibraMode->GetRowMin(0); k < fCalibraMode->GetRowMax(0); k++) {
-      for (Int_t j = fCalibraMode->GetColMin(0); j < fCalibraMode->GetColMax(0); j++) {
-	fCurrentCoefDetector[(Int_t)(j*factor+k)] = fCurrentCoef[0];
-      }
+    if (fNbDet > 0){
+      Int_t firstdetector = fCountDet;
+      Int_t lastdetector  = fCountDet+fNbDet;
+      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
+		   ,idect,firstdetector,lastdetector));
+      // loop over detectors
+      for(Int_t det = firstdetector; det < lastdetector; det++){
+	
+	//Set the calibration object again
+	fCountDet = det;
+	SetCalROC(0);   
+	
+	// Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+	// Put them at 1
+	fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),0);
+	fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					   ,(Int_t) GetStack(fCountDet)
+					   ,(Int_t) GetSector(fCountDet),0);
+	// Reconstruct row min row max
+	ReconstructFitRowMinRowMax(idect,0);      
+	
+	// Calcul the coef from the database choosen for the detector
+	if(fCurrentCoef[0] < 0.0) CalculChargeCoefMean(kFALSE);
+	else CalculChargeCoefMean(kTRUE);
+	
+	//stack 2, not stack 2
+	Int_t factor = 0;
+	if(GetStack(fCountDet) == 2) factor = 12;
+	else factor = 16;
+	
+	// Fill the fCurrentCoefDetector with negative value to say: not fitted
+	Double_t coeftoput = 1.0;
+	if(fCurrentCoef[0] < 0.0) coeftoput = - TMath::Abs(fCurrentCoef[1]);
+	else coeftoput = fCurrentCoef[0];
+	for (Int_t k = fCalibraMode->GetRowMin(0); k < fCalibraMode->GetRowMax(0); k++) {
+	  for (Int_t j = fCalibraMode->GetColMin(0); j < fCalibraMode->GetColMax(0); j++) {
+	    fCurrentCoefDetector[(Int_t)(j*factor+k)] = coeftoput;
+	  }
+	}
+	
+	// Fill the stuff
+	FillVectorFit();
+	// Debug
+	if(fDebugLevel > 1){ 
+	  
+	  if ( !fDebugStreamer ) {
+	    //debug stream
+	    TDirectory *backup = gDirectory;
+	    fDebugStreamer = new TTreeSRedirector("TRDDebugFitCH.root");
+	    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	  } 
+	  
+	  Int_t   detector   = fCountDet;
+	  Int_t   caligroup  = idect;
+	  Short_t rowmin     = fCalibraMode->GetRowMin(0);
+	  Short_t rowmax     = fCalibraMode->GetRowMax(0);
+	  Short_t colmin     = fCalibraMode->GetColMin(0);
+	  Short_t colmax     = fCalibraMode->GetColMax(0);
+	  Float_t gf         = fCurrentCoef[0]; 
+	  Float_t gfs        = fCurrentCoef[1]; 
+	  Float_t gfE        = fCurrentCoefE;
+	  
+	  (*fDebugStreamer) << "FillFillCH" <<
+	    "detector=" << detector <<
+	    "caligroup=" << caligroup <<
+	    "rowmin=" << rowmin <<
+	    "rowmax=" << rowmax <<
+	    "colmin=" << colmin <<
+	    "colmax=" << colmax <<
+	    "gf=" << gf <<
+	    "gfs=" << gfs <<
+	    "gfE=" << gfE <<
+	    "\n"; 
+	  
+	}
+	// Reset
+	for (Int_t k = 0; k < 2304; k++) {
+	  fCurrentCoefDetector[k] = 0.0;
+	}
+	
+      }// loop detector
+      //printf("Check the count now: fCountDet %d\n",fCountDet);
     }
-    
-    FillFillCH(idect);
-    
+    else{
+      
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16; 
+      
+      for (Int_t k = fCalibraMode->GetRowMin(0); k < fCalibraMode->GetRowMax(0); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(0); j < fCalibraMode->GetColMax(0); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)] = fCurrentCoef[0];
+	}
+      }
+      
+      FillFillCH(idect);
+    }
   }
 
   return kTRUE;
 
 }
 //____________Functions for initialising the AliTRDCalibraFit in the code_________
-Bool_t AliTRDCalibraFit::FillInfosFitPH(Int_t idect)
+Bool_t AliTRDCalibraFit::FillInfosFitPH(Int_t idect,Double_t nentries)
 {
   //
   // Fill the coefficients found with the fits or other
@@ -2477,18 +3203,124 @@ Bool_t AliTRDCalibraFit::FillInfosFitPH(Int_t idect)
   //
 
   if (fDebugLevel != 1) {
+    if (fNbDet > 0){
+      
+      Int_t firstdetector = fCountDet;
+      Int_t lastdetector  = fCountDet+fNbDet;
+      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
+		   ,idect,firstdetector,lastdetector));
+      
+      // loop over detectors
+      for(Int_t det = firstdetector; det < lastdetector; det++){
+	
+	//Set the calibration object again
+	fCountDet = det;
+	SetCalROC(1);   
+	
+	// Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+	// Put them at 1
+	fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),1);
+	fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					   ,(Int_t) GetStack(fCountDet)
+					   ,(Int_t) GetSector(fCountDet),1);
+	// Reconstruct row min row max
+	ReconstructFitRowMinRowMax(idect,1);      
+	
+	// Calcul the coef from the database choosen for the detector
+	CalculVdriftCoefMean();
+	CalculT0CoefMean();
+	 	
+	//stack 2, not stack 2
+	Int_t factor = 0;
+	if(GetStack(fCountDet) == 2) factor = 12;
+	else factor = 16;
+	
+	// Fill the fCurrentCoefDetector with negative value to say: not fitted
+	Double_t coeftoput  = 1.5;
+	Double_t coeftoput2 = 0.0; 
 
-    Int_t factor = 0;
-    if(GetStack(fCountDet) == 2) factor = 12;
-    else factor = 16; 
-    
-    for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
-      for (Int_t j = fCalibraMode->GetColMin(1); j < fCalibraMode->GetColMax(1); j++) {
-	fCurrentCoefDetector[(Int_t)(j*factor+k)]  = fCurrentCoef[0];
-	fCurrentCoefDetector2[(Int_t)(j*factor+k)] = fCurrentCoef2[0];
-      }
-    }                
-    FillFillPH(idect);
+	if(fCurrentCoef[0] < 0.0) coeftoput = - TMath::Abs(fCurrentCoef[1]);
+	else coeftoput = fCurrentCoef[0];
+
+	if(fCurrentCoef2[0] > 70.0) coeftoput2 = fCurrentCoef2[1] + 100.0;
+	else coeftoput2 = fCurrentCoef2[0];
+
+	for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
+	  for (Int_t j = fCalibraMode->GetColMin(1); j < fCalibraMode->GetColMax(1); j++) {
+	    fCurrentCoefDetector[(Int_t)(j*factor+k)]  = coeftoput;
+	    fCurrentCoefDetector2[(Int_t)(j*factor+k)] = coeftoput2;
+	  }
+	}
+	
+	// Fill the stuff
+	FillVectorFit();
+	FillVectorFit2();
+	// Debug
+	if(fDebugLevel > 1){ 
+	  
+	  if ( !fDebugStreamer ) {
+	    //debug stream
+	    TDirectory *backup = gDirectory;
+	    fDebugStreamer = new TTreeSRedirector("TRDDebugFitPH.root");
+	    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	  } 
+	  
+	  
+	  Int_t   detector     = fCountDet;
+	  Int_t   caligroup    = idect;
+	  Short_t rowmin       = fCalibraMode->GetRowMin(1);
+	  Short_t rowmax       = fCalibraMode->GetRowMax(1);
+	  Short_t colmin       = fCalibraMode->GetColMin(1);
+	  Short_t colmax       = fCalibraMode->GetColMax(1);
+	  Float_t vf           = fCurrentCoef[0]; 
+	  Float_t vs           = fCurrentCoef[1]; 
+	  Float_t vfE          = fCurrentCoefE;
+	  Float_t t0f          = fCurrentCoef2[0]; 
+	  Float_t t0s          = fCurrentCoef2[1]; 
+	  Float_t t0E          = fCurrentCoefE2;
+	  
+	  
+	  
+	  (* fDebugStreamer) << "FillFillPH"<<
+	    "detector="<<detector<<
+	    "nentries="<<nentries<<
+	    "caligroup="<<caligroup<<
+	    "rowmin="<<rowmin<<
+	    "rowmax="<<rowmax<<
+	    "colmin="<<colmin<<
+	    "colmax="<<colmax<<
+	    "vf="<<vf<<
+	    "vs="<<vs<<
+	    "vfE="<<vfE<<
+	    "t0f="<<t0f<<
+	    "t0s="<<t0s<<
+	    "t0E="<<t0E<<
+	    "\n";  
+	}
+	// Reset
+	for (Int_t k = 0; k < 2304; k++) {
+	  fCurrentCoefDetector[k] = 0.0;
+	  fCurrentCoefDetector2[k] = 0.0;
+	}
+	
+      }// loop detector
+      //printf("Check the count now: fCountDet %d\n",fCountDet);
+    }
+    else {
+      
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16; 
+      
+      for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(1); j < fCalibraMode->GetColMax(1); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)]  = fCurrentCoef[0];
+	  fCurrentCoefDetector2[(Int_t)(j*factor+k)] = fCurrentCoef2[0];
+	}
+      }  
+      
+      FillFillPH(idect,nentries);
+    }
   }
   return kTRUE;
 }
@@ -2501,20 +3333,107 @@ Bool_t AliTRDCalibraFit::FillInfosFitPRF(Int_t idect)
   //
   
   if (fDebugLevel != 1) {
-
-    Int_t factor = 0;
-    if(GetStack(fCountDet) == 2) factor = 12;
-    else factor = 16; 
+    if (fNbDet > 0){
     
-    // Pointer to the branch
-    for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
-      for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
-	fCurrentCoefDetector[(Int_t)(j*factor+k)] = fCurrentCoef[0];
-      }
+      Int_t firstdetector = fCountDet;
+      Int_t lastdetector  = fCountDet+fNbDet;
+      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
+		   ,idect,firstdetector,lastdetector));
+      
+      // loop over detectors
+      for(Int_t det = firstdetector; det < lastdetector; det++){
+	
+	//Set the calibration object again
+	fCountDet = det;
+	SetCalROC(2);   
+	
+	// Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
+	// Put them at 1
+	fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),2);
+	fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+					   ,(Int_t) GetStack(fCountDet)
+					   ,(Int_t) GetSector(fCountDet),2);
+	// Reconstruct row min row max
+	ReconstructFitRowMinRowMax(idect,2);      
+	
+	// Calcul the coef from the database choosen for the detector
+	CalculPRFCoefMean();
+	
+	//stack 2, not stack 2
+	Int_t factor = 0;
+	if(GetStack(fCountDet) == 2) factor = 12;
+	else factor = 16;
+	
+	// Fill the fCurrentCoefDetector with negative value to say: not fitted
+	Double_t coeftoput = 1.0;
+	if(fCurrentCoef[0] < 0.0) coeftoput = - TMath::Abs(fCurrentCoef[1]);
+	else coeftoput = fCurrentCoef[0];
+	for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
+	  for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
+	    fCurrentCoefDetector[(Int_t)(j*factor+k)] = coeftoput;
+	  }
+	}
+	
+	// Fill the stuff
+	FillVectorFit();
+	// Debug
+	if(fDebugLevel > 1){
+	  
+	  if ( !fDebugStreamer ) {
+	    //debug stream
+	    TDirectory *backup = gDirectory;
+	    fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
+	    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	  } 
+	  
+	  Int_t   detector     = fCountDet;
+	  Int_t   layer        = GetLayer(fCountDet);
+	  Int_t   caligroup    = idect;
+	  Short_t rowmin       = fCalibraMode->GetRowMin(2);
+	  Short_t rowmax       = fCalibraMode->GetRowMax(2);
+	  Short_t colmin       = fCalibraMode->GetColMin(2);
+	  Short_t colmax       = fCalibraMode->GetColMax(2);
+	  Float_t widf         = fCurrentCoef[0]; 
+	  Float_t wids         = fCurrentCoef[1]; 
+	  Float_t widfE        = fCurrentCoefE;
+	  
+	  (* fDebugStreamer) << "FillFillPRF"<<
+	    "detector="<<detector<<
+	    "layer="<<layer<<
+	    "caligroup="<<caligroup<<
+	    "rowmin="<<rowmin<<
+	    "rowmax="<<rowmax<<
+	    "colmin="<<colmin<<
+	    "colmax="<<colmax<<
+	    "widf="<<widf<<
+	    "wids="<<wids<<
+	    "widfE="<<widfE<<
+	    "\n";  
+	}
+	// Reset
+	for (Int_t k = 0; k < 2304; k++) {
+	  fCurrentCoefDetector[k] = 0.0;
+	}
+	
+      }// loop detector
+      //printf("Check the count now: fCountDet %d\n",fCountDet);
     }
-    FillFillPRF(idect);   
+    else {
+      
+      Int_t factor = 0;
+      if(GetStack(fCountDet) == 2) factor = 12;
+      else factor = 16; 
+      
+      // Pointer to the branch
+      for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
+	for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
+	  fCurrentCoefDetector[(Int_t)(j*factor+k)] = fCurrentCoef[0];
+	}
+      }
+      FillFillPRF(idect);   
+    }
   }
-
+  
   return kTRUE;
 
 }
@@ -2591,7 +3510,7 @@ void AliTRDCalibraFit::FillFillCH(Int_t idect)
   }
 }
 //________________________________________________________________________________
-void AliTRDCalibraFit::FillFillPH(Int_t idect)
+void AliTRDCalibraFit::FillFillPH(Int_t idect,Double_t nentries)
 {
   //
   // DebugStream and fVectorFit and fVectorFit2
@@ -2635,6 +3554,7 @@ void AliTRDCalibraFit::FillFillPH(Int_t idect)
 
       (* fDebugStreamer) << "FillFillPH"<<
 	"detector="<<detector<<
+	"nentries="<<nentries<<
 	"caligroup="<<caligroup<<
 	"rowmin="<<rowmin<<
 	"rowmax="<<rowmax<<
@@ -2775,26 +3695,32 @@ Bool_t AliTRDCalibraFit::CalculT0CoefMean()
 
   fCurrentCoef2[1] = 0.0;
   if(fDebugLevel != 1){
-    if((fCalibraMode->GetNz(1) > 0) ||
-       (fCalibraMode->GetNrphi(1) > 0)) {
+    if(((fCalibraMode->GetNz(1) > 0) ||
+       (fCalibraMode->GetNrphi(1) > 0)) && ((fCalibraMode->GetNz(1)    != 10) && (fCalibraMode->GetNz(1)    != 100))) {
+
       for (Int_t row = fCalibraMode->GetRowMin(1); row < fCalibraMode->GetRowMax(1); row++) {
 	for (Int_t col = fCalibraMode->GetColMin(1); col < fCalibraMode->GetColMax(1); col++) {
 	  fCurrentCoef2[1] += (Float_t) (fCalROC2->GetValue(col,row)+fCalDet2->GetValue(fCountDet));
 	}
       }
+      
       fCurrentCoef2[1] = fCurrentCoef2[1] / ((fCalibraMode->GetColMax(1)-fCalibraMode->GetColMin(1))*(fCalibraMode->GetRowMax(1)-fCalibraMode->GetRowMin(1)));
+    
     }
     else {
+     
       if(!fAccCDB){
 	fCurrentCoef2[1] = fCalDet2->GetValue(fCountDet);
       }
       else{
+	
 	for(Int_t row = 0; row < fGeo->GetRowMax(GetLayer(fCountDet),GetStack(fCountDet),GetSector(fCountDet)); row++){
 	  for(Int_t col = 0; col < fGeo->GetColMax(GetLayer(fCountDet)); col++){
 	    fCurrentCoef2[1] += (Float_t) (fCalROC2->GetValue(col,row)+fCalDet2->GetValue(fCountDet));
 	  }
 	}
 	fCurrentCoef2[1] = fCurrentCoef2[1] / ((fGeo->GetRowMax(GetLayer(fCountDet),GetStack(fCountDet),GetSector(fCountDet)))*(fGeo->GetColMax(GetLayer(fCountDet))));
+      
       }
     }
   }
@@ -2811,8 +3737,8 @@ Bool_t AliTRDCalibraFit::CalculChargeCoefMean(Bool_t vrai)
 
   fCurrentCoef[1] = 0.0;
   if(fDebugLevel != 1){
-    if ((fCalibraMode->GetNz(0)    > 0) || 
-	(fCalibraMode->GetNrphi(0) > 0)) {
+    if (((fCalibraMode->GetNz(0)    > 0) || 
+	(fCalibraMode->GetNrphi(0) > 0)) && ((fCalibraMode->GetNz(0)    != 10) && (fCalibraMode->GetNz(0)    != 100))) {
       for (Int_t row = fCalibraMode->GetRowMin(0); row < fCalibraMode->GetRowMax(0); row++) {
 	for (Int_t col = fCalibraMode->GetColMin(0); col < fCalibraMode->GetColMax(0); col++) {
 	  fCurrentCoef[1] += (Float_t) (fCalROC->GetValue(col,row)*fCalDet->GetValue(fCountDet));
@@ -2858,14 +3784,17 @@ Bool_t AliTRDCalibraFit::CalculVdriftCoefMean()
 
   fCurrentCoef[1] = 0.0;
   if(fDebugLevel != 1){
-    if ((fCalibraMode->GetNz(1)    > 0) || 
-	(fCalibraMode->GetNrphi(1) > 0)) {
+    if (((fCalibraMode->GetNz(1)    > 0) || 
+	(fCalibraMode->GetNrphi(1) > 0)) && ((fCalibraMode->GetNz(1)    != 10) && (fCalibraMode->GetNz(1)    != 100))) {
+      
       for (Int_t row = fCalibraMode->GetRowMin(1); row < fCalibraMode->GetRowMax(1); row++) {
 	for (Int_t col = fCalibraMode->GetColMin(1); col < fCalibraMode->GetColMax(1); col++) {
 	  fCurrentCoef[1] += (Float_t) (fCalROC->GetValue(col,row)*fCalDet->GetValue(fCountDet));
 	}
       }
+      
       fCurrentCoef[1] = fCurrentCoef[1] / ((fCalibraMode->GetColMax(1)-fCalibraMode->GetColMin(1))*(fCalibraMode->GetRowMax(1)-fCalibraMode->GetRowMin(1)));
+    
     }
     else {
       //per detectors
@@ -2932,18 +3861,27 @@ void AliTRDCalibraFit::SetCalROC(Int_t i)
     switch (i)
       {
       case 0: 
-	if(fCalROC) delete fCalROC;
-	fCalROC = new AliTRDCalROC(*(cal->GetGainFactorROC(fCountDet))); 
+	if( fCalROC ){ 
+	  fCalROC->~AliTRDCalROC();
+	  new(fCalROC) AliTRDCalROC(*(cal->GetGainFactorROC(fCountDet)));
+	}else fCalROC = new AliTRDCalROC(*(cal->GetGainFactorROC(fCountDet)));
 	break;
       case 1:
-	if(fCalROC)  delete fCalROC;
-	if(fCalROC2) delete fCalROC2;
-	fCalROC  = new AliTRDCalROC(*(cal->GetVdriftROC(fCountDet))); 
-	fCalROC2 = new AliTRDCalROC(*(cal->GetT0ROC(fCountDet))); 
+	if( fCalROC ){ 
+	  fCalROC->~AliTRDCalROC();
+	  new(fCalROC) AliTRDCalROC(*(cal->GetVdriftROC(fCountDet)));
+	}else fCalROC = new AliTRDCalROC(*(cal->GetVdriftROC(fCountDet)));
+	if( fCalROC2 ){ 
+	  fCalROC2->~AliTRDCalROC();
+	  new(fCalROC2) AliTRDCalROC(*(cal->GetT0ROC(fCountDet)));
+	}else fCalROC2 = new AliTRDCalROC(*(cal->GetT0ROC(fCountDet)));
 	break;
       case 2:
-	if(fCalROC) delete fCalROC; 
-	fCalROC = new AliTRDCalROC(*(cal->GetPRFROC(fCountDet))); break; 
+	if( fCalROC ){ 
+	  fCalROC->~AliTRDCalROC();
+	  new(fCalROC) AliTRDCalROC(*(cal->GetPRFROC(fCountDet)));
+	}else fCalROC = new AliTRDCalROC(*(cal->GetPRFROC(fCountDet)));
+	break; 
       default: return;
       }
   }
@@ -3124,17 +4062,17 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
     if (fPhdt0 >= 0.0) {
       fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       if (fCurrentCoef2[0] < -1.0) {
-        fCurrentCoef2[0] = fCurrentCoef2[1];
+        fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
       }
     }
     else {
-      fCurrentCoef2[0] = fCurrentCoef2[1];
+      fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
     }
 
   }
   else {
     fCurrentCoef[0]  = -TMath::Abs(fCurrentCoef[1]);
-    fCurrentCoef2[0] = fCurrentCoef2[1];
+    fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
   }
 
   if (fDebugLevel == 1) {
@@ -3459,8 +4397,20 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   }
   
   //check
-  if((projPH->GetBinContent(binmin)-projPH->GetBinError(binmin)) < (projPH->GetBinContent(binmin+1))) put = kFALSE;
-  if((projPH->GetBinContent(binmin)+projPH->GetBinError(binmin)) > (projPH->GetBinContent(binmin-1))) put = kFALSE;
+  if((projPH->GetBinContent(binmin)-projPH->GetBinError(binmin)) < (projPH->GetBinContent(binmin+1))) {
+    AliInfo("Too many fluctuations at the end!");
+    put = kFALSE;
+  }
+  if((projPH->GetBinContent(binmin)+projPH->GetBinError(binmin)) > (projPH->GetBinContent(binmin-1))) {
+    AliInfo("Too many fluctuations at the end!");
+    put = kFALSE;
+  }
+  if(pente->GetBinContent(binmin+1)==0){
+    AliInfo("No entries for the next bin!");
+    pente->SetBinContent(binmin,0);
+    if(pente->GetEntries() > 0) binmin = (Int_t) pente->GetMinimumBin();
+  }
+
   
   x[0] = 0.0;
   x[1] = 0.0;
@@ -3498,15 +4448,29 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     c = CalculPolynomeLagrange4(x,y);
     //richtung +/-
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1)) &&
-       (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) put = kFALSE;
+       (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
+      //AliInfo("polynome 4 false 1");
+      put = kFALSE;
+    }
     if(((binmin+3) <= (nbins-1)) &&
        (pente->GetBinContent(binmin+3) <= pente->GetBinContent(binmin+2)) &&
        ((binmin-3) >= TMath::Min(binmax+4, projPH->GetNbinsX())) &&
-       (pente->GetBinContent(binmin-3) <= pente->GetBinContent(binmin-2))) put = kFALSE;
+       (pente->GetBinContent(binmin-3) <= pente->GetBinContent(binmin-2))) {
+      AliInfo("polynome 4 false 2");
+      put = kFALSE;
+    }
+    // poly 3
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1)) &&
-       (pente->GetBinContent(binmin-2) > pente->GetBinContent(binmin-1))) case1 = kTRUE;
+       (pente->GetBinContent(binmin-2) > pente->GetBinContent(binmin-1))) {
+      //AliInfo("polynome 4 case 1");
+      case1 = kTRUE;
+    }
     if((pente->GetBinContent(binmin+2) > pente->GetBinContent(binmin+1)) &&
-       (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) case4 = kTRUE;
+       (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
+      //AliInfo("polynome 4 case 4");
+      case4 = kTRUE;
+    }
+    
   }
   //case binmin = nbins-2
   //pol3 case 1
@@ -3526,7 +4490,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     c = CalculPolynomeLagrange3(x,y);
     //richtung +: nothing
     //richtung -
-    if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) case2 = kTRUE;
+    if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
+      //AliInfo("polynome 3- case 2");
+      case2 = kTRUE;
+    }
   }
   //pol3 case 4
   if(((binmin <= (nbins-3)) && ((binmin-1) == TMath::Min(binmax+4, projPH->GetNbinsX()))) ||
@@ -3544,7 +4511,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     //Calcul the polynome de Lagrange
     c = CalculPolynomeLagrange3(x,y);
     //richtung +
-    if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) case2 = kTRUE;
+    if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) {
+      //AliInfo("polynome 3+ case 2");      
+      case2 = kTRUE;
+    }
   }
   //pol2 case 5
   if((binmin <= (nbins-3)) && (binmin == TMath::Min(binmax+4, projPH->GetNbinsX()))){
@@ -3559,7 +4529,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     //Calcul the polynome de Lagrange
     c = CalculPolynomeLagrange2(x,y);
     //richtung +
-    if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) put = kFALSE;
+    if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) {
+      //AliInfo("polynome 2+ false");
+      put = kFALSE;
+    }
   }
   //pol2 case 2
   if(((binmin == (nbins-2)) && ((binmin-1) == TMath::Min(binmax+4, projPH->GetNbinsX()))) ||
@@ -3594,7 +4567,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     //fluctuation too big!
     //richtung +: nothing
     //richtung -
-    if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) put = kFALSE;
+    if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
+      //AliInfo("polynome 2- false ");
+      put = kFALSE;
+    }
   }
   if((binmin == (nbins-1)) && ((binmin-2) < TMath::Min(binmax+4, projPH->GetNbinsX()))) {
     put = kFALSE;
@@ -3607,7 +4583,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     AliInfo("For the drift...problem!");
   }
   //pass but should not happen
-  if((binmin <= (nbins-3)) && (binmin < TMath::Min(binmax+4, projPH->GetNbinsX()))){
+  if((binmin <= (nbins-3)) && (binmin < TMath::Min(binmax+6, projPH->GetNbinsX()))){
     put = kFALSE;
     AliInfo("For the drift...problem!");
   }
@@ -3630,6 +4606,9 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     }
     fPhd[2] = placeminimum;
   }
+  //printf("La fin %d\n",((Int_t)(fPhd[2]*10.0))+2);
+  if((((Int_t)(fPhd[2]*10.0))+2) >= projPH->GetNbinsX()) fPhd[2] = 0.0;
+  if(((((Int_t)(fPhd[2]*10.0))+2) < projPH->GetNbinsX()) && (projPH->GetBinContent(((Int_t)(fPhd[2]*10.0))+2)==0)) fPhd[2] = 0.0;
   
   Float_t fPhdt0  = 0.0;
   Float_t t0Shift = 0.0;
@@ -3651,17 +4630,31 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if (fPhdt0 >= 0.0) {
       fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       if (fCurrentCoef2[0] < -1.0) {
-        fCurrentCoef2[0] = fCurrentCoef2[1];
+        fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
       }
     }
     else {
-      fCurrentCoef2[0] = fCurrentCoef2[1];
+      fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
     }
   }
   else {
-    fCurrentCoef[0]      = -TMath::Abs(fCurrentCoef[1]);
-    fCurrentCoef2[0]     = fCurrentCoef2[1];
-    //printf("Fit failed!\n");
+    if((fPhd[1] > fPhd[0]) &&
+       (put)) {
+      if (fPhdt0 >= 0.0) {
+	fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
+	if (fCurrentCoef2[0] < -1.0) {
+	  fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
+	}
+      }
+      else {
+	fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
+      }
+    }
+    else{
+      fCurrentCoef[0]      = -TMath::Abs(fCurrentCoef[1]);
+      fCurrentCoef2[0]     = fCurrentCoef2[1] + 100.0;
+      //printf("Fit failed!\n");
+    }
   }
   
   if (fDebugLevel == 1) {
@@ -3695,6 +4688,10 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if(line) delete line;
 
   }
+
+  //Provisoire
+  //if(fCurrentCoef[0] > 1.7) fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
+  //if((fCurrentCoef2[0] > 2.6) || (fCurrentCoef2[0] < 2.1)) fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
   
   projPH->SetDirectory(0);
 
@@ -3771,7 +4768,7 @@ void AliTRDCalibraFit::FitPH(TH1* projPH, Int_t idect)
     } 
     else {
       fCurrentCoef[0]     = -TMath::Abs(fCurrentCoef[1]);
-      fCurrentCoef2[0]    = fCurrentCoef2[1];
+      fCurrentCoef2[0]    = fCurrentCoef2[1] + 100.0;
     }
  
   }
@@ -3779,7 +4776,7 @@ void AliTRDCalibraFit::FitPH(TH1* projPH, Int_t idect)
 
     // Put the default value
     fCurrentCoef[0]  = -TMath::Abs(fCurrentCoef[1]);
-    fCurrentCoef2[0] = fCurrentCoef2[1];
+    fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
   }
 
   if (fDebugLevel != 1) {

@@ -91,11 +91,16 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Double_t *StatH(TH2 *ch, Int_t i);
 	  Double_t *GetMeanMedianRMSNumberCH();
 	  Double_t *GetMeanMedianRMSNumberLinearFitter() const;
+ // LinearFitter
+	  void     AnalyseLinearFitter();
        
      	 
   //
   // Set of Get the variables
   //
+
+	  void     SetIsHLT(Bool_t isHLT = kTRUE)                            { fIsHLT = isHLT;                       }  
+	  Bool_t   IsHLT() const                                             { return fIsHLT;                        }  
 
   // Choice to fill or not the 2D
           void     SetMcmCorrectAngle(Bool_t mcmcorrectangle = kTRUE)        { fMcmCorrectAngle = mcmcorrectangle;   }
@@ -132,11 +137,16 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetThresholdClusterPRF2(Float_t thresholdClusterPRF2)     { fThresholdClusterPRF2 = thresholdClusterPRF2; }
 	  void     SetLimitChargeIntegration(Bool_t limitChargeIntegration)  { fLimitChargeIntegration = limitChargeIntegration; }
 	  void     SetFillWithZero(Bool_t fillWithZero)                      { fFillWithZero = fillWithZero;   }
+	  void     SetNormalizeNbOfCluster(Bool_t normalizeNbOfCluster)      { fNormalizeNbOfCluster = normalizeNbOfCluster; }
+	  void     SetMaxCluster(Float_t maxCluster)                         { fMaxCluster = maxCluster; }
+	  void     SetNbMaxCluster(Short_t nbMaxCluster)                     { fNbMaxCluster = nbMaxCluster; }
 	  void     SetNz(Int_t i, Short_t nz);
           void     SetNrphi(Int_t i, Short_t nrphi);
-          void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
+          void     SetAllTogether(Int_t i);
+	  void     SetPerSuperModule(Int_t i);
+	  void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
           void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
-          void     SetNumberClusters(Short_t numberClusters)                 { fNumberClusters       = numberClusters;       }
+          void     SetNumberClusters(Short_t numberClusters)                 { if(numberClusters > 0) fNumberClusters       = numberClusters;       }
 	  void     SetNumberClustersf(Short_t numberClustersf)               { fNumberClustersf      = numberClustersf;      }
           void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
@@ -146,6 +156,9 @@ class AliTRDCalibraFillHisto : public TObject {
           Float_t  GetThresholdClusterPRF2() const                           { return fThresholdClusterPRF2;   }
 	  Bool_t   GetLimitChargeIntegration() const                         { return fLimitChargeIntegration; }
 	  Bool_t   GetFillWithZero() const                                   { return fFillWithZero;           }
+	  Bool_t   GetNormalizeNbOfCluster() const                           { return fNormalizeNbOfCluster;   }
+	  Float_t  GetMaxCluster() const                                     { return fMaxCluster;             }
+	  Short_t  GetNbMaxCluster() const                                   { return fNbMaxCluster;           }
 	  Float_t  GetProcent() const                                        { return fProcent;                }
           Short_t  GetDifference() const                                     { return fDifference;             }
           Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
@@ -166,6 +179,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Geometry
   AliTRDgeometry  *fGeo;                    //! The TRD geometry
 
+  // Is HLT
+          Bool_t   fIsHLT;                  // Now if HLT, the per detector
+
   // Choice to fill or not the 2D
           Bool_t   fMcmCorrectAngle;        // Apply correction due to the mcmtrackletangle in the z direction (only) assuming  from vertex
           Bool_t   fCH2dOn;                 // Chose to fill the 2D histos or vectors for the relative gain calibration 
@@ -181,6 +197,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Float_t  fThresholdClusterPRF2;   // Threshold on cluster pad signals
           Bool_t   fLimitChargeIntegration; // Integration range for the gain calibration
 	  Bool_t   fFillWithZero;           // Fill with zero or not the average pulse height
+	  Bool_t   fNormalizeNbOfCluster;   // Normalize with the number of cluster for the gain
+	  Float_t  fMaxCluster;             // Max amplitude of one cluster
+	  Short_t  fNbMaxCluster;           // Number of tb at the end
   // Calibration mode
 	  AliTRDCalibraMode *fCalibraMode;  // Calibration mode
 
@@ -270,9 +289,6 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  void     CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col);
 	  void     CheckGoodTrackletV1(AliTRDcluster *cl);
 	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t row, Int_t col) const;
- 
-  // LinearFitter
-	  void     AnalyseLinearFitter();
 	  
   // Clear
           void     ClearHistos();

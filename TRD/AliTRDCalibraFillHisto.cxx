@@ -1,17 +1,17 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+// * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+// *                                                                        *
+// * Author: The ALICE Off-line Project.                                    *
+// * Contributors are mentioned in the code where appropriate.              *
+//   *                                                                        *
+//   * Permission to use, copy, modify and distribute this software and its   *
+//  * documentation strictly for non-commercial purposes is hereby granted   *
+//    * without fee, provided that the above copyright notice appears in all   *
+//    * copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************/
 
 /* $Id$ */
 
@@ -121,6 +121,7 @@ void AliTRDCalibraFillHisto::Terminate()
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   :TObject()
   ,fGeo(0)
+  ,fIsHLT(kFALSE)
   ,fMcmCorrectAngle(kFALSE)
   ,fCH2dOn(kFALSE)
   ,fPH2dOn(kFALSE)
@@ -133,13 +134,16 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fThresholdClusterPRF2(15.0)
   ,fLimitChargeIntegration(kFALSE)
   ,fFillWithZero(kFALSE)
+  ,fNormalizeNbOfCluster(kFALSE)
+  ,fMaxCluster(0)
+  ,fNbMaxCluster(0)
   ,fCalibraMode(new AliTRDCalibraMode())
   ,fDebugStreamer(0)
   ,fDebugLevel(0)
   ,fDetectorPreviousTrack(-1)
   ,fMCMPrevious(-1)
   ,fROBPrevious(-1)
-  ,fNumberClusters(0)
+  ,fNumberClusters(1)
   ,fNumberClustersf(30)
   ,fProcent(6.0)
   ,fDifference(17)
@@ -186,6 +190,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   :TObject(c)
   ,fGeo(0)
+  ,fIsHLT(c.fIsHLT)
   ,fMcmCorrectAngle(c.fMcmCorrectAngle)
   ,fCH2dOn(c.fCH2dOn)
   ,fPH2dOn(c.fPH2dOn)
@@ -198,6 +203,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
   ,fLimitChargeIntegration(c.fLimitChargeIntegration)
   ,fFillWithZero(c.fFillWithZero)
+  ,fNormalizeNbOfCluster(c.fNormalizeNbOfCluster)
+  ,fMaxCluster(c.fMaxCluster)
+  ,fNbMaxCluster(c.fNbMaxCluster)
   ,fCalibraMode(0x0)
   ,fDebugStreamer(0)
   ,fDebugLevel(c.fDebugLevel)
@@ -310,6 +318,7 @@ void AliTRDCalibraFillHisto::DestroyDebugStreamer()
   //
 
   if ( fDebugStreamer ) delete fDebugStreamer;
+  fDebugStreamer = 0x0;
  
 }
 //_____________________________________________________________________________
@@ -359,14 +368,15 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
   // Some parameters
   fTimeMax            = cal->GetNumberOfTimeBins();
   fSf                 = parCom->GetSamplingFrequency();
-  fRelativeScale      = 20;
+  if(!fNormalizeNbOfCluster) fRelativeScale = 20.0;
+  else fRelativeScale = 1.18;
   fNumberClustersf    = fTimeMax;
   fNumberClusters     = (Int_t)(0.5*fTimeMax);
  
   // Init linear fitter
   if(!fLinearFitterTracklet) {
     fLinearFitterTracklet = new TLinearFitter(2,"pol1");
-    fLinearFitterTracklet->StoreData(kFALSE);
+    fLinearFitterTracklet->StoreData(kTRUE);
   }
 
   //calib object from database used for reconstruction
@@ -560,8 +570,10 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
       
       // Get calib objects
       if( fCalROCGain ){ 
-        fCalROCGain->~AliTRDCalROC();
-        new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+	if(!fIsHLT){
+	  fCalROCGain->~AliTRDCalROC();
+	  new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+	}
       }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
       
     }
@@ -667,8 +679,10 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       LocalisationDetectorXbins(detector);
       // Get calib objects
       if( fCalROCGain ){ 
-        fCalROCGain->~AliTRDCalROC();
-        new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+	if(!fIsHLT){	
+	  fCalROCGain->~AliTRDCalROC();
+	  new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+	}
       }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
       
       // reset
@@ -946,6 +960,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   pointError  =  TMath::Sqrt(fLinearFitterTracklet->GetChisquare()/(nbli-2));
   errorpar    =  fLinearFitterTracklet->GetParError(1)*pointError;
   dydt        = pars[1]; 
+  //printf("chis %f, nbli %d, pointError %f, parError %f, errorpar %f\n",fLinearFitterTracklet->GetChisquare(),nbli,pointError,fLinearFitterTracklet->GetParError(1),errorpar);
   fLinearFitterTracklet->ClearPoints();  
  
   ////////////////////////////////
@@ -963,9 +978,10 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     
 
     Int_t layer = GetLayer(fDetectorPreviousTrack);
-        
+           
     (* fDebugStreamer) << "FindP1TrackPHtrackletV1"<<
       //"snpright="<<snpright<<
+      "nbli="<<nbli<<
       "nbclusters="<<nbclusters<<
       "detector="<<fDetectorPreviousTrack<<
       "layer="<<layer<<
@@ -988,7 +1004,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
 
   if(nbclusters < fNumberClusters) return kFALSE;
   if(nbclusters > fNumberClustersf) return kFALSE;
-  if(pointError >= 0.1) return kFALSE;
+  if(pointError >= 0.3) return kFALSE;
   if(crossrow == 1) return kFALSE;
   
   ///////////////////////
@@ -1751,6 +1767,22 @@ Int_t AliTRDCalibraFillHisto::CalculateTotalNumberOfBins(Int_t i)
   //
   
   Int_t ntotal = 0;
+
+  // All together
+  if((fCalibraMode->GetNz(i)==100) && (fCalibraMode->GetNrphi(i)==100)){
+    ntotal = 1;
+    AliInfo(Form("Total number of Xbins: %d for i %d",ntotal,i));
+    return ntotal;
+  }
+
+  // Per Supermodule
+  if((fCalibraMode->GetNz(i)==10) && (fCalibraMode->GetNrphi(i)==10)){
+    ntotal = 18;
+    AliInfo(Form("Total number of Xbins: %d for i %d",ntotal,i));
+    return ntotal;
+  }
+
+  // More
   fCalibraMode->ModePadCalibration(2,i);
   fCalibraMode->ModePadFragmentation(0,2,0,i);
   fCalibraMode->SetDetChamb2(i);
@@ -1795,6 +1827,35 @@ void AliTRDCalibraFillHisto::SetNrphi(Int_t i, Short_t Nrphi)
   }
 
 }
+
+//_____________________________________________________________________________
+void AliTRDCalibraFillHisto::SetAllTogether(Int_t i)
+{
+  //
+  // Set the mode of calibration group all together
+  //
+  if(fVector2d == kTRUE) {
+    AliInfo("Can not work with the vector method");
+    return;
+  }
+  fCalibraMode->SetAllTogether(i);
+  
+}
+
+//_____________________________________________________________________________
+void AliTRDCalibraFillHisto::SetPerSuperModule(Int_t i)
+{
+  //
+  // Set the mode of calibration group per supermodule
+  //
+  if(fVector2d == kTRUE) {
+    AliInfo("Can not work with the vector method");
+    return;
+  }
+  fCalibraMode->SetPerSuperModule(i);
+  
+}
+
 //____________Set the pad calibration variables for the detector_______________
 Bool_t AliTRDCalibraFillHisto::LocalisationDetectorXbins(Int_t detector)
 {
@@ -1856,7 +1917,9 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl
   Int_t    time     = cl->GetPadTime();
    
   //Correct for the gain coefficient used in the database for reconstruction
-  Float_t correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack)*fCalROCGain->GetValue(col,row);
+  Float_t correctthegain = 1.0;
+  if(fIsHLT) correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack);
+  else correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack)*fCalROCGain->GetValue(col,row);
   Float_t correction    = 1.0;
   Float_t normalisation = 6.67;
   // we divide with gain in AliTRDclusterizer::Transform...
@@ -1920,7 +1983,11 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
 
   if(nbclusters < fNumberClusters) return;
   if(nbclusters > fNumberClustersf) return;
-  
+
+
+  // Normalize with the number of clusters
+  Double_t normalizeCst = fRelativeScale;
+  if(fNormalizeNbOfCluster) normalizeCst = normalizeCst*nbclusters;
   
   // See if the track goes through different zones
   for (Int_t k = 0; k < fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0); k++) {
@@ -1940,11 +2007,11 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
       fNumberUsedCh[0]++;
       fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
       if (fHisto2d) {
-	FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
-	//fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
+	FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/normalizeCst);
+	//fCH2d->Fill(fAmpTotal[fd]/normalizeCst,fCalibraMode->GetXbins(0)+fd+0.5);
       }
       if (fVector2d) {
-	fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
+	fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/normalizeCst);
       }
       break;
     case 2:
@@ -1953,22 +2020,22 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
 	// One of the two very big
 	if (fAmpTotal[fd] > fProcent*fAmpTotal[fd+1]) {
 	  if (fHisto2d) {
-	    FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
-	    //fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
+	    FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/normalizeCst);
+	    //fCH2d->Fill(fAmpTotal[fd]/normalizeCst,fCalibraMode->GetXbins(0)+fd+0.5);
 	  }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
+	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/normalizeCst);
 	  }
 	  fNumberUsedCh[1]++;
 	  fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
 	}
 	if (fAmpTotal[fd+1] > fProcent*fAmpTotal[fd]) {
 	  if (fHisto2d) {
-	    FillCH2d(fCalibraMode->GetXbins(0)+fd+1,fAmpTotal[fd+1]/fRelativeScale);
-	    //fCH2d->Fill(fAmpTotal[fd+1]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+1.5);
+	    FillCH2d(fCalibraMode->GetXbins(0)+fd+1,fAmpTotal[fd+1]/normalizeCst);
+	    //fCH2d->Fill(fAmpTotal[fd+1]/normalizeCst,fCalibraMode->GetXbins(0)+fd+1.5);
 	  }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+1,fAmpTotal[fd+1]/fRelativeScale);
+	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+1,fAmpTotal[fd+1]/normalizeCst);
 	  }
 	  fNumberUsedCh[1]++;
 	  fEntriesCH[fCalibraMode->GetXbins(0)+fd+1]++;
@@ -1981,24 +2048,24 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
 	      // One of the two very big
 	      if (fAmpTotal[fd] > fProcent*fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]) {
 		if (fHisto2d) {
-		  FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
-		  //fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
+		  FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/normalizeCst);
+		  //fCH2d->Fill(fAmpTotal[fd]/normalizeCst,fCalibraMode->GetXbins(0)+fd+0.5);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
+		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/normalizeCst);
 		}
 		fNumberUsedCh[1]++;
 		fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
 	      }
 	      if (fAmpTotal[fd+fCalibraMode->GetNfragZ(0)] > fProcent*fAmpTotal[fd]) {
 		if (fHisto2d) {
-		  FillCH2d(fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/fRelativeScale);
-		  //fCH2d->Fill(fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0)+0.5);
+		  FillCH2d(fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/normalizeCst);
+		  //fCH2d->Fill(fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/normalizeCst,fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0)+0.5);
 		}
 		fNumberUsedCh[1]++;
 		fEntriesCH[fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0)]++;
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/fRelativeScale);
+		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/normalizeCst);
 		}
 	      }
 	    }
@@ -2044,6 +2111,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	if (fPHPlace[k] != fd2) {
           nb = 3;
 	}
+      }
+    }
+  }
+
+  // See if noise before and after
+  if(fMaxCluster > 0) {
+    if(fPHValue[0] > fMaxCluster) return;
+    if(fTimeMax > fNbMaxCluster) {
+      for(Int_t k = (fTimeMax-fNbMaxCluster); k < fTimeMax; k++){
+	if(fPHValue[k] > fMaxCluster) return;
       }
     }
   }

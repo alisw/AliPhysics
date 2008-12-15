@@ -121,6 +121,64 @@ AliTRDCalibraVdriftLinearFit::~AliTRDCalibraVdriftLinearFit() /*FOLD00*/
   fLinearFitterEArray.Delete();
 
 }
+//_____________________________________________________________________________
+void AliTRDCalibraVdriftLinearFit::Copy(TObject &c) const
+{
+  //
+  // Copy function
+  //
+
+  AliTRDCalibraVdriftLinearFit& target = (AliTRDCalibraVdriftLinearFit &) c;
+
+  // Copy only the histos
+  for (Int_t idet = 0; idet < 540; idet++){
+    if(fLinearFitterHistoArray.UncheckedAt(idet)){
+      TH2F *hped1 = target.GetLinearFitterHisto(idet,kTRUE);
+      hped1->SetDirectory(0);
+      hped1->Add((const TH1F *)fLinearFitterHistoArray.UncheckedAt(idet));
+    }
+  
+  }
+
+  TObject::Copy(c);
+
+}
+//_____________________________________________________________________________
+Long64_t AliTRDCalibraVdriftLinearFit::Merge(TCollection* list) 
+{
+  // Merge list of objects (needed by PROOF)
+
+  if (!list)
+    return 0;
+  
+  if (list->IsEmpty())
+    return 1;
+  
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+  
+  // collection of generated histograms
+  Int_t count=0;
+  while((obj = iter->Next()) != 0) 
+  {
+    AliTRDCalibraVdriftLinearFit* entry = dynamic_cast<AliTRDCalibraVdriftLinearFit*>(obj);
+    if (entry == 0) continue; 
+
+    // Copy only the histos
+    for (Int_t idet = 0; idet < 540; idet++){
+      if(entry->GetLinearFitterHisto(idet)){
+	TH2F *hped1 = GetLinearFitterHisto(idet,kTRUE);
+	hped1->SetDirectory(0);
+	hped1->Add(entry->GetLinearFitterHisto(idet));
+      }
+      
+    }
+    
+    count++;
+  }
+  
+  return count;
+}
 //_____________________________________________________________________
 void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)
 {

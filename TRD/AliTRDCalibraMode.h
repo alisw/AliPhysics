@@ -47,6 +47,10 @@ class AliTRDCalibraMode : public TObject {
 	  void     SetColMax(Int_t i, Short_t colmax)                        { fColMax[i] = colmax;            } 
 	  void     SetDetChamb0(Int_t i);
 	  void     SetDetChamb2(Int_t i);
+	  
+	  void     SetPerSuperModule(Int_t i);
+	  void     SetAllTogether(Int_t i);
+
 
   //Get
 	  Short_t  GetNz(Int_t i) const                                      { return fNz[i];                  }

@@ -44,6 +44,7 @@ class AliTRDCalibraFit : public TObject {
   static AliTRDCalibraFit *Instance();
   static void Terminate();
   static void Destroy();
+  void DestroyDebugStreamer();
 
   AliTRDCalibraFit(const AliTRDCalibraFit &c);
   AliTRDCalibraFit &operator=(const AliTRDCalibraFit &) { return *this; }
@@ -81,8 +82,10 @@ class AliTRDCalibraFit : public TObject {
        Double_t *CalculPolynomeLagrange4(Double_t *x, Double_t *y) const;
        
        // Fill the database
+       void         PutMeanValueOtherVectorFit(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
+       void         PutMeanValueOtherVectorFit2(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
        AliTRDCalDet *CreateDetObjectVdrift(TObjArray *vectorFit, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectGain(TObjArray *vectorFit, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
+       AliTRDCalDet *CreateDetObjectGain(TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
        AliTRDCalDet *CreateDetObjectT0(TObjArray *vectorFit, Bool_t perdetector = kFALSE);
        AliTRDCalDet *CreateDetObjectLorentzAngle(TObjArray *vectorFit);
        
@@ -153,7 +156,7 @@ class AliTRDCalibraFit : public TObject {
  protected:
        
        // Geometry
-       AliTRDgeometry  *fGeo;                    //! The TRD geometry
+       AliTRDgeometry  *fGeo;               //! The TRD geometry
        
        
        Int_t        fNumberOfBinsExpected;  // Number of bins expected  
@@ -200,8 +203,9 @@ class AliTRDCalibraFit : public TObject {
        Int_t    fDect2;                  // Last calibration group that will be called to be maybe fitted
        Double_t fScaleFitFactor;         // Scale factor of the fit results for the gain
        Int_t    fEntriesCurrent;         // Entries in the current histo
-       Int_t    fCountDet;               // Current detector
+       Int_t    fCountDet;               // Current detector (or first in the group)
        Int_t    fCount;                  // When the next detector comes
+       Int_t    fNbDet;                  // Number of detector in the group
        
        // Current calib object
        AliTRDCalDet *fCalDet;            // Current calib object
@@ -232,7 +236,7 @@ class AliTRDCalibraFit : public TObject {
 	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
 	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
 	 
-	 Float_t  *GetCoef() const                          { return fCoef;            }
+	 Float_t  *GetCoef()                                { return fCoef;            }
 	 Int_t     GetDetector() const                      { return fDetector;        }
 	 
        protected:
@@ -258,18 +262,18 @@ class AliTRDCalibraFit : public TObject {
        
        // Not enough Statistics
        Bool_t   NotEnoughStatisticCH(Int_t idect);
-       Bool_t   NotEnoughStatisticPH(Int_t idect);
+       Bool_t   NotEnoughStatisticPH(Int_t idect,Double_t nentries);
        Bool_t   NotEnoughStatisticPRF(Int_t idect);
        Bool_t   NotEnoughStatisticLinearFitter();
        
        // Fill Infos Fit
        Bool_t   FillInfosFitCH(Int_t idect);
-       Bool_t   FillInfosFitPH(Int_t idect);
+       Bool_t   FillInfosFitPH(Int_t idect,Double_t nentries);
        Bool_t   FillInfosFitPRF(Int_t idect);
        Bool_t   FillInfosFitLinearFitter();
        
        void     FillFillCH(Int_t idect);
-       void     FillFillPH(Int_t idect);
+       void     FillFillPH(Int_t idect,Double_t nentries);
        void     FillFillPRF(Int_t idect);
        void     FillFillLinearFitter();
        

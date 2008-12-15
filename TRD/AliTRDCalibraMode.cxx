@@ -51,6 +51,11 @@
 */
 //End_Html 
 //
+//
+// Moreover two other more general granularities:
+// It can not work with AliTRDCalibraVector
+// 10 corresponds to per supermodule
+// 100 all together
 //                            
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -142,6 +147,28 @@ AliTRDCalibraMode::~AliTRDCalibraMode()
 }
 
 //_____________________________________________________________________________
+void AliTRDCalibraMode::SetPerSuperModule(Int_t i)
+{
+  //
+  // Set the mode of calibration group per supermodule
+  // 
+
+  fNz[i] = 10;
+  fNrphi[i] = 10; 
+}
+
+//_____________________________________________________________________________
+void AliTRDCalibraMode::SetAllTogether(Int_t i)
+{
+  //
+  // Set the mode of calibration group all together
+  // 
+
+  fNz[i] = 100;
+  fNrphi[i] = 100; 
+}
+
+//_____________________________________________________________________________
 void AliTRDCalibraMode::SetNz(Int_t i, Short_t Nz)
 {
   //
@@ -152,8 +179,8 @@ void AliTRDCalibraMode::SetNz(Int_t i, Short_t Nz)
       (Nz <  5)) {
     fNz[i] = Nz; 
   }
-  else { 
-    AliInfo("You have to choose between 0 and 4");
+  else {
+    AliInfo("You have to choose between 0 and 4.");
   }
 
 }
@@ -170,7 +197,7 @@ void AliTRDCalibraMode::SetNrphi(Int_t i, Short_t Nrphi)
     fNrphi[i] = Nrphi; 
   }
   else {
-    AliInfo("You have to choose between 0 and 6");
+    AliInfo("You have to choose between 0 and 6 or 10/100.");
   }
 
 }
@@ -187,10 +214,10 @@ void AliTRDCalibraMode::ModePadCalibration(Int_t iChamb, Int_t i)
   fNnZ[i]    = 0;
   fNnRphi[i] = 0;
   
-  if ((fNz[i] == 0) && (iChamb == 2)) {
+  if (((fNz[i] == 0) || (fNz[i] == 10) || (fNz[i] == 100)) && (iChamb == 2)) {
     fNnZ[i] = 12;
   }
-  if ((fNz[i] == 0) && (iChamb != 2)) {
+  if (((fNz[i] == 0) || (fNz[i] == 10) || (fNz[i] == 100)) && (iChamb != 2)) {
     fNnZ[i] = 16;
   }  
   if ((fNz[i] == 1) && (iChamb == 2)) {
@@ -212,7 +239,7 @@ void AliTRDCalibraMode::ModePadCalibration(Int_t iChamb, Int_t i)
     fNnZ[i] = 1;
   }
    
-  if (fNrphi[i] == 0) {
+  if ((fNrphi[i] == 0) || (fNrphi[i] == 10) || (fNrphi[i] == 100)) {
     fNnRphi[i] = 144;
   }
   if (fNrphi[i] == 1) {
@@ -304,10 +331,24 @@ void AliTRDCalibraMode::CalculXBins(Int_t idect, Int_t i)
   fXbins[i] = 0;
   AliDebug(2, Form("detector: %d", idect));
 
+  // Total
+  if((fNz[i] == 100) && (fNrphi[i] == 100)) {
+    fXbins[i] = 0;
+    return; 
+  }
+
   // In which sector?
   Int_t sector = GetSector(idect);
-  fXbins[i] += sector*(6*fDetChamb2[i]+6*4*fDetChamb0[i]);
  
+ 
+  // First per supermodule
+  if((fNz[i] == 10) && (fNrphi[i] == 10)) {
+    fXbins[i] = sector;
+    return;
+  }
+  
+  fXbins[i] += sector*(6*fDetChamb2[i]+6*4*fDetChamb0[i]);
+
   // In which stack?
   Int_t stack = GetStack(idect);
   Int_t kc      = 0;
