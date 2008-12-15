@@ -186,7 +186,7 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
 	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,coeff);
 	  }
 	  else
-	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005);
 
 	}
       }
@@ -546,13 +546,13 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
 	    h1->GetXaxis()->SetRange(10,1000); //to cut off saturation peak and noise
 	    coeff = h1->GetMean()/refMean;
 	    if(coeff>0)
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005/coeff);
 	    else 
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005);
 	    AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	  }
 	  else
-	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.); 
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005); 
 	}
       }
     }
