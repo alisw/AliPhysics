@@ -104,10 +104,14 @@ class AliKFParticleBase :public TObject {
   //* Accessors with calculations( &value, &estimated sigma )
   //* error flag returned (0 means no error during calculations) 
 
-  Int_t GetMomentum    ( Double_t &pmom, Double_t &sigmap ) const ;
-  Int_t GetMass        ( Double_t &mass, Double_t &sigmam ) const ;
-  Int_t GetDecayLength ( Double_t &dlen, Double_t &sigmal ) const ;
-  Int_t GetLifeTime    ( Double_t &tauc, Double_t &sigmat ) const ;
+  Int_t GetMomentum    ( Double_t &P, Double_t &SigmaP ) const ;
+  Int_t GetPt          ( Double_t &Pt, Double_t &SigmaPt ) const ;
+  Int_t GetEta         ( Double_t &Eta, Double_t &SigmaEta ) const ;
+  Int_t GetPhi         ( Double_t &Phi, Double_t &SigmaPhi ) const ;
+  Int_t GetMass        ( Double_t &M, Double_t &SigmaM ) const ;
+  Int_t GetDecayLength ( Double_t &L, Double_t &SigmaL ) const ;
+  Int_t GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;
+  Int_t GetR           ( Double_t &R, Double_t &SigmaR ) const ;
 
   //*
   //*  MODIFIERS
@@ -160,7 +164,7 @@ class AliKFParticleBase :public TObject {
   //* Everything in one go  
 
   void Construct( const AliKFParticleBase *vDaughters[], Int_t NDaughters, 
-		  const AliKFParticleBase *ProdVtx=0,   Double_t Mass=-1  );
+		  const AliKFParticleBase *ProdVtx=0,   Double_t Mass=-1, Bool_t IsConstrained=0  );
 
 
   //*
@@ -233,6 +237,8 @@ class AliKFParticleBase :public TObject {
 
   static void MultQSQt( const Double_t Q[], const Double_t S[], 
 			Double_t SOut[] );
+
+  static Double_t GetSCorrection( const Double_t Part[], const Double_t XYZ[] );
 
   void GetMeasurement( const Double_t XYZ[], Double_t m[], Double_t V[] ) const ;
 

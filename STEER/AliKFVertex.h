@@ -19,10 +19,10 @@
 #define ALIKFVERTEX_H
 
 #include "AliKFParticle.h"
+#include "AliVVertex.h"
 #include "AliESDVertex.h"
 
-
-class AliKFVertex :public AliKFParticle
+class AliKFVertex : public AliKFParticle
 {
   
  public:
@@ -33,19 +33,20 @@ class AliKFVertex :public AliKFParticle
 
   //* Constructor (empty)
 
-  AliKFVertex():AliKFParticle(){} 
+  AliKFVertex():AliKFParticle(),fIsConstrained(0){ } 
 
   //* Destructor (empty)
 
   ~AliKFVertex(){}
 
-  //* Initialisation from ESD vertex 
+  //* Initialisation from VVertex 
 
-  AliKFVertex( const AliESDVertex &vertex );
+  AliKFVertex( const AliVVertex &vertex );
 
   //* Copy vertex part to ESD vertex 
 
   void CopyToESDVertex( AliESDVertex &Vtx ) const ;
+
 
   //*
   //*  ACCESSORS
@@ -71,15 +72,27 @@ class AliKFVertex :public AliKFParticle
 
   void operator -=( const AliKFParticle &Daughter );  
 
+  //* Set beam constraint to the primary vertex
+
+  void SetBeamConstraint( Double_t X, Double_t Y, Double_t Z, 
+			  Double_t ErrX, Double_t ErrY, Double_t ErrZ );
+
+  //* Set beam constraint off
+
+  void SetBeamConstraintOff();
+
   //* Construct vertex with selection of tracks (primary vertex)
 
   void ConstructPrimaryVertex( const AliKFParticle *vDaughters[], int NDaughters,
 			       Bool_t vtxFlag[], Double_t ChiCut=3.5  );
 
+ protected:
+
+  Bool_t fIsConstrained; // Is the beam constraint set
+
   ClassDef( AliKFVertex, 1 );
 
 };
-
 
 
 //---------------------------------------------------------------------
@@ -87,6 +100,7 @@ class AliKFVertex :public AliKFParticle
 //     Inline implementation of the AliKFVertex methods
 //
 //---------------------------------------------------------------------
+
 
 inline void AliKFVertex::CopyToESDVertex( AliESDVertex &v ) const 
 {

@@ -19,8 +19,7 @@
 #include "AliKFParticle.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
-#include "AliExternalTrackParam.h"
-//#include "TMath.h"
+#include "AliVTrack.h"
 
 ClassImp(AliKFParticle)
 
@@ -39,32 +38,33 @@ void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t 
   //                (  6  7  8  9  .  . )
   //                ( 10 11 12 13 14  . )
   //                ( 15 16 17 18 19 20 )
-
-
+  Double_t C[21];
+  for( int i=0; i<21; i++ ) C[i] = Cov[i];
+  
   TParticlePDG* particlePDG = TDatabasePDG::Instance()->GetParticle(PID);
   Double_t mass = (particlePDG) ? particlePDG->Mass() :0.13957;
   
-  AliKFParticleBase::Initialize( Param, Cov, Charge, mass );
+  AliKFParticleBase::Initialize( Param, C, Charge, mass );
 }
 
 
-AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Int_t PID )
+AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
 {
   // Constructor from ALICE track, PID hypothesis should be provided
 
-  track.GetXYZ(fP);
-  track.GetPxPyPz(fP+3);
-  fQ = (track.GetSigned1Pt() >0 ) ?1 :-1;
+  track.XvYvZv(fP);
+  track.PxPyPz(fP+3);
+  fQ = track.Charge();
   track.GetCovarianceXYZPxPyPz( fC );
   Create(fP,fC,fQ,PID);
 }
 
-AliKFParticle::AliKFParticle( const AliESDVertex &vertex )
+AliKFParticle::AliKFParticle( const AliVVertex &vertex )
 {
   // Constructor from ALICE vertex
 
   vertex.GetXYZ( fP );
-  vertex.GetCovMatrix( fC );
+  vertex.GetCovarianceMatrix( fC );  
   fChi2 = vertex.GetChi2();
   fNDF = 2*vertex.GetNContributors() - 3;
   fQ = 0;
@@ -119,7 +119,7 @@ Double_t AliKFParticle::GetDistanceFromVertexXY( const AliKFParticle &Vtx ) cons
   return GetDistanceFromVertexXY( Vtx.fP );
 }
 
-Double_t AliKFParticle::GetDistanceFromVertexXY( const AliESDVertex &Vtx ) const 
+Double_t AliKFParticle::GetDistanceFromVertexXY( const AliVVertex &Vtx ) const 
 {
   //* Calculate distance from vertex [cm] in XY-plane
 
@@ -200,7 +200,7 @@ Double_t AliKFParticle::GetDeviationFromVertexXY( const Double_t v[], const Doub
 }
 
 
-Double_t AliKFParticle::GetDeviationFromVertexXY( const AliKFParticle &Vtx ) const 
+Double_t AliKFParticle::GetDeviationFromVertexXY( const AliKFParticle &Vtx ) const  
 {
   //* Calculate sqrt(Chi2/ndf) deviation from vertex
   //* v = [xyz], Cv=[Cxx,Cxy,Cyy,Cxz,Cyz,Czz]-covariance matrix
@@ -208,7 +208,7 @@ Double_t AliKFParticle::GetDeviationFromVertexXY( const AliKFParticle &Vtx ) con
   return GetDeviationFromVertexXY( Vtx.fP, Vtx.fC );
 }
 
-Double_t AliKFParticle::GetDeviationFromVertexXY( const AliESDVertex &Vtx ) const 
+Double_t AliKFParticle::GetDeviationFromVertexXY( const AliVVertex &Vtx ) const 
 {
   //* Calculate sqrt(Chi2/ndf) deviation from vertex
   //* v = [xyz], Cv=[Cxx,Cxy,Cyy,Cxz,Cyz,Czz]-covariance matrix
@@ -276,3 +276,40 @@ Double_t AliKFParticle::GetAngleRZ( const AliKFParticle &p ) const
   else a = (a>=0) ?0 :TMath::Pi();
   return a;
 }
+
+
+/*
+
+#include "AliExternalTrackParam.h"
+
+void AliKFParticle::GetDStoParticleALICE( const AliKFParticleBase &p, 
+					   Double_t &DS, Double_t &DS1 ) 
+  const
+{ 
+  DS = DS1 = 0;   
+  Double_t x1, a1, x2, a2;
+  Double_t par1[5], par2[5], cov[15];
+  for(int i=0; i<15; i++) cov[i] = 0;
+  cov[0] = cov[2] = cov[5] = cov[9] = cov[14] = .001;
+
+  GetExternalTrackParam( *this, x1, a1, par1 );
+  GetExternalTrackParam( p, x2, a2, par2 );
+
+  AliExternalTrackParam t1(x1,a1, par1, cov);
+  AliExternalTrackParam t2(x2,a2, par2, cov);
+
+  Double_t xe1=0, xe2=0;
+  t1.GetDCA( &t2, -GetFieldAlice(), xe1, xe2 );
+  t1.PropagateTo( xe1, -GetFieldAlice() );
+  t2.PropagateTo( xe2, -GetFieldAlice() );
+
+  Double_t xyz1[3], xyz2[3];
+  t1.GetXYZ( xyz1 );
+  t2.GetXYZ( xyz2 );
+  
+  DS = GetDStoPoint( xyz1 );
+  DS1 = p.GetDStoPoint( xyz2 );
+
+  return;
+}
+*/
