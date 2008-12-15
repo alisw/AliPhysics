@@ -468,7 +468,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       // update x reference positions (calibration/alignment aware)
       for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
         if(!fClusters[iTime]) continue;
-        fX[iTime] = fClusters[iTime]->GetX() - fX0;
+        fX[iTime] = fX0 - fClusters[iTime]->GetX();
       } 
       
       AliTRDseed::Update();

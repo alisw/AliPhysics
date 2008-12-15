@@ -748,9 +748,17 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
   SetChi2(GetChi2() + chisq);
   
   // update tracklet
+  Float_t snp = GetSnp();
+  Float_t tgl = GetTgl();
   trklt->SetMomentum(GetP());
-  trklt->SetSnp(GetSnp());
-  trklt->SetTgl(GetTgl());
+  trklt->SetYref(0, GetY());
+  trklt->SetYref(1, snp/(1. - snp*snp));
+  trklt->SetZref(0,  GetZ());
+  trklt->SetZref(1, tgl);
+  const Double_t *cc = GetCovariance();
+  trklt->SetCovRef(cc);
+  trklt->SetSnp(snp);
+  trklt->SetTgl(tgl);
   return kTRUE;
 }
 

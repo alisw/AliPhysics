@@ -88,14 +88,15 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t  GetSnp() const           { return fSnp;}
   Double_t  GetTgl() const           { return fTgl;}
   Float_t   GetXref() const          { return fXref;}
-  Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (x-fX0);}
-  Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (x-fX0);}
+  Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (fX0-x);}
+  Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (fX0-x);}
   
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
   void      Print(Option_t *o = "") const;
   inline void ResetClusterIter(Bool_t forward = kTRUE);
 
+  void      SetCovRef(const Double_t *cov) { memcpy(&fRefCov[0], cov, 3*sizeof(Double_t));}
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
   void      SetDetector(Int_t d)     { fDet = d;  }

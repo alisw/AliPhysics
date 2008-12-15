@@ -303,7 +303,7 @@ void AliTRDseed::Update()
   Int_t    zouts[2*knTimebins];       
   Float_t  allowedz[knTimebins];         // Allowed z for given time bin
   Float_t  yres[knTimebins];             // Residuals from reference
-  Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
+  //Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
   
   
   fN  = 0; 
@@ -312,7 +312,9 @@ void AliTRDseed::Update()
     yres[i] = 10000.0;
     if (!fClusters[i]) continue;
     if(!fClusters[i]->IsInChamber()) continue;
-    yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] + fTilt*(fZ[i] - fZref[0]);   // Residual y
+    // Residual y
+    //yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] + fTilt*(fZ[i] - fZref[0]);
+    yres[i] = fY[i] - fTilt*(fZ[i] - (fZref[0] - fX[i]*fZref[1]));
     zints[fN] = Int_t(fZ[i]);
     fN++;    
   }
@@ -396,11 +398,13 @@ void AliTRDseed::Update()
       if (!fClusters[i]) continue; 
       if(!fClusters[i]->IsInChamber()) continue;
       if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
-      yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] /*+ fTilt*(fZ[i] - fZref[0])*/;   // Residual y
-      if (TMath::Abs(fZ[i] - fZProb) > 2) {
-	if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
-	if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
-      }
+      // Residual y
+      //yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] /*+ fTilt*(fZ[i] - fZref[0])*/;   
+      yres[i] = fY[i] - fTilt*(fZ[i] - (fZref[0] - fX[i]*fZref[1]));
+/*      if (TMath::Abs(fZ[i] - fZProb) > 2) {
+        if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
+        if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
+      }*/
     }
   }
   
@@ -497,10 +501,10 @@ void AliTRDseed::Update()
   fZfitR[1]  = (sumw   * sumwxz - sumwx * sumwz)  / det;
   fZfit[0]   = (sumwx2 * sumwz  - sumwx * sumwxz) / det;
   fZfit[1]   = (sumw   * sumwxz - sumwx * sumwz)  / det;
-  fYfitR[0] += fYref[0] + correction;
-  fYfitR[1] += fYref[1];
+//   fYfitR[0] += fYref[0] + correction;
+//   fYfitR[1] += fYref[1];
   fYfit[0]   = fYfitR[0];
-  fYfit[1]   = fYfitR[1];
+  fYfit[1]   = -fYfitR[1];
 
 	//printf("y0 = %7.3f tgy = %7.3f z0 = %7.3f tgz = %7.3f \n", fYfitR[0], fYfitR[1], fZfitR[0], fZfitR[1]);
 
