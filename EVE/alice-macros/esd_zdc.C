@@ -12,10 +12,13 @@ TEveGeoShape* zdc_make_shape(const Text_t* name, Double_t signal,
   UChar_t rgb[3];
   g_zdc_palette->ColorFromValue(TMath::Nint(signal), rgb, kFALSE);
 
+  TGeoShape *gs = gGeoManager->GetCurrentVolume()->GetShape();
+  gs->SetUniqueID(gs->GetUniqueID() + 1);
+
   TEveGeoShape *s = new TEveGeoShape(name);
   s->SetPickable(kTRUE);
   s->SetMainColorRGB(rgb[0], rgb[1], rgb[2]);
-  s->SetShape(gGeoManager->GetCurrentVolume()->GetShape());
+  s->SetShape(gs);
   s->RefMainTrans().SetFrom(*gGeoManager->GetCurrentMatrix());
 
   // Scale z-dictance by 0.1
