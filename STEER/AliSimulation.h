@@ -27,8 +27,6 @@ public:
   AliSimulation(const char* configFileName = "Config.C",
 		const char* name = "AliSimulation", 
 		const char* title = "generation, simulation and digitization");
-  AliSimulation(const AliSimulation& sim);
-  AliSimulation& operator = (const AliSimulation& sim);
   virtual ~AliSimulation();
 
   static AliSimulation *GetInstance() {return fgInstance;}
@@ -114,6 +112,10 @@ public:
   void WriteGRPEntry();
 
 private:
+
+  AliSimulation(const AliSimulation&); // Not implemented
+  AliSimulation& operator = (const AliSimulation&); // Not implemented
+
   void 		 InitCDB();
   void 		 InitRunNumber();
   void 		 SetCDBLock();
@@ -163,7 +165,7 @@ private:
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
-	AliQADataMakerSteer * fQASteer ;                      // steering object to run QA
+  AliQADataMakerSteer * fQASteer ;                      // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
 
   //HLT

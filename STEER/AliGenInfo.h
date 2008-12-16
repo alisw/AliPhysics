@@ -256,24 +256,6 @@ public:
 ClassImp(AliComparisonDraw)
 
 
-class AliPointsMI: public TObject{
- public:
-  AliPointsMI();
-  AliPointsMI(Int_t n, Float_t *x,Float_t *y, Float_t *z);
-  void Reset();
-  void Reset(AliDetector * det, Int_t particle);  //load points for given particle
-  ~AliPointsMI();
-  Int_t   fN;  //number of points;
-  Float_t *fX; //[fN] pointer to x
-  Float_t *fY; //[fN] pointer to y
-  Float_t *fZ; //[fN] pointer to Z  
-  Int_t   fCapacity; //!allocated size of the x,y,x
-  Int_t   fLabel0; //label
-  Int_t   fLabel1; //label
-  ClassDef(AliPointsMI,1)
-};
-ClassImp(AliPointsMI)
-
 
 AliTPCParam * GetTPCParam();
 

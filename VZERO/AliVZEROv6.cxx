@@ -128,13 +128,6 @@ AliVZEROv6::AliVZEROv6(const char *name, const char *title):
 }
      
 //_____________________________________________________________________________
-
-void AliVZEROv6::BuildGeometry()
-{ 
-          
-}
-            
-//_____________________________________________________________________________
 void AliVZEROv6::CreateGeometry()
 {
   

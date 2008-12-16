@@ -41,7 +41,6 @@
 #include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliHit.h"
-#include "AliPoints.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -61,7 +60,6 @@ AliDetector::AliDetector():
   fCurIterHit(0),
   fHits(0),
   fDigits(0),
-  fPoints(0),
   fLoader(0x0)
 {
   //
@@ -81,7 +79,6 @@ AliDetector::AliDetector(const char* name,const char *title):
   fCurIterHit(0),
   fHits(0),
   fDigits(0),
-  fPoints(0),
   fLoader(0x0)
 {
   //
@@ -102,12 +99,6 @@ AliDetector::~AliDetector()
   // Destructor
   //
 
-  // Delete space point structure
-  if (fPoints) {
-    fPoints->Delete();
-    delete fPoints;
-    fPoints     = 0;
-  }
   // Delete digits structure
   if (fDigits) {
     fDigits->Delete();
@@ -249,91 +240,6 @@ AliHit* AliDetector::NextHit()
 }
 
 //_______________________________________________________________________
-void AliDetector::LoadPoints(Int_t)
-{
-  //
-  // Store x, y, z of all hits in memory
-  //
-  if (fHits == 0) 
-   {
-    AliError(Form("fHits == 0. Name is %s",GetName()));
-    return;
-   }
-  //
-  Int_t nhits = fHits->GetEntriesFast();
-  if (nhits == 0) 
-   {
-//    Error("LoadPoints","nhits == 0. Name is %s",GetName());
-    return;
-   }
-  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
-  if (fPoints == 0) fPoints = new TObjArray(tracks);
-  AliHit *ahit;
-  //
-  Int_t *ntrk=new Int_t[tracks];
-  Int_t *limi=new Int_t[tracks];
-  Float_t **coor=new Float_t*[tracks];
-  for(Int_t i=0;i<tracks;i++) {
-    ntrk[i]=0;
-    coor[i]=0;
-    limi[i]=0;
-  }
-  //
-  AliPoints *points = 0;
-  Float_t *fp=0;
-  Int_t trk;
-  Int_t chunk=nhits/4+1;
-  //
-  // Loop over all the hits and store their position
-  for (Int_t hit=0;hit<nhits;hit++) {
-    ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
-    trk=ahit->GetTrack();
-    if(trk>tracks) {
-      AliError(Form("Found track number %d, max track %d",trk, tracks));
-      continue;
-    }
-    if(ntrk[trk]==limi[trk])
-     {
-      //
-      // Initialise a new track
-      fp=new Float_t[3*(limi[trk]+chunk)];
-      if(coor[trk]) 
-       {
-          memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
-          delete [] coor[trk];
-       }
-      limi[trk]+=chunk;
-      coor[trk] = fp;
-     } 
-    else 
-     {
-      fp = coor[trk];
-     }
-    fp[3*ntrk[trk]  ] = ahit->X();
-    fp[3*ntrk[trk]+1] = ahit->Y();
-    fp[3*ntrk[trk]+2] = ahit->Z();
-    ntrk[trk]++;
-  }
-  //
-  for(trk=0; trk<tracks; ++trk) {
-    if(ntrk[trk]) {
-      points = new AliPoints();
-      points->SetMarkerColor(3); //PH color=3 was set in AliModule
-      points->SetMarkerSize(1);  //PH size-1 is the default value
-      points->SetDetector(this);
-      points->SetParticle(trk);
-      points->SetPolyMarker(ntrk[trk],coor[trk],1);//PH style=1 is the default value
-      fPoints->AddAt(points,trk);
-      delete [] coor[trk];
-      coor[trk]=0;
-    }
-  }
-  delete [] coor;
-  delete [] ntrk;
-  delete [] limi;
-}
-
-//_______________________________________________________________________
 void AliDetector::MakeBranch(Option_t *option)
 {
   //
@@ -367,19 +273,6 @@ void AliDetector::ResetHits()
   //
   fNhits   = 0;
   if (fHits) fHits->Clear();
-}
-
-//_______________________________________________________________________
-void AliDetector::ResetPoints()
-{
-  //
-  // Reset array of points
-  //
-  if (fPoints) {
-    fPoints->Delete();
-    delete fPoints;
-    fPoints = 0;
-  }
 }
 
 //_______________________________________________________________________

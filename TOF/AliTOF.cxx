@@ -447,15 +447,6 @@ void AliTOF::DrawModule() const
   gMC->Gdopt("hide","off");
 }
 
-//_____________________________________________________________________________
-Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t )
-{
-  //
-  // Returns distance from mouse pointer to detector, default version
-  //
-  return 9999;
-}
-
 //___________________________________________
 void AliTOF::ResetHits ()
 {

@@ -26,8 +26,6 @@ include(CMake_libANALYSISalice.txt)
 
 include(CMake_libANALYSIS.txt)
 
-include(CMake_libAnalysisOld.txt)
-
 include(CMake_libANALYSISRL.txt)
 
 include(CMake_libAliengui.txt)

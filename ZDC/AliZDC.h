@@ -26,7 +26,6 @@ public:
   AliZDC(const AliZDC&);
   //
   virtual void  AddHit(Int_t track, Int_t *vol, Float_t *hits);
-  virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
   virtual Int_t IsVersion() const =0;

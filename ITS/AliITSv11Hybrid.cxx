@@ -72,16 +72,13 @@
 
 
 #include <TClonesArray.h>
-#include <TGeometry.h>
-#include <TLorentzVector.h>
+#include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
-#include <TString.h>
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoXtru.h>
+#include <TLorentzVector.h>
+#include <TString.h>
 #include <TVirtualMC.h>
 
 #include "AliITS.h"
@@ -110,9 +107,6 @@ ClassImp(AliITSv11Hybrid)
 
 //______________________________________________________________________
 AliITSv11Hybrid::AliITSv11Hybrid():
-  AliITS(),
-  fGeomDetOut(kFALSE),
-  fGeomDetIn(kFALSE),
   fByThick(kTRUE),
   fMajorVersion(IsVersion()),
   fMinorVersion(-1),
@@ -141,8 +135,6 @@ AliITSv11Hybrid::AliITSv11Hybrid():
 //______________________________________________________________________
 AliITSv11Hybrid::AliITSv11Hybrid(const char *title) 
   : AliITS("ITS", title),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
     fByThick(kTRUE),
     fMajorVersion(IsVersion()),
     fMinorVersion(1),
@@ -208,18 +200,11 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *title)
   SetThicknessChip2();
   SetDensityServicesByThickness();
   
-  fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
-  strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
-  strncpy(fRead,fEuclidGeomDet,60);
-  strncpy(fWrite,fEuclidGeomDet,60);
-  strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
 
 //______________________________________________________________________
 AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title) 
   : AliITS("ITS", title),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
     fByThick(kTRUE),
     fMajorVersion(IsVersion()),
     fMinorVersion(1),
@@ -288,11 +273,6 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
   SetThicknessChip2();
   SetDensityServicesByThickness();
   
-  fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
-  strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
-  strncpy(fRead,fEuclidGeomDet,60);
-  strncpy(fWrite,fEuclidGeomDet,60);
-  strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
 
 //______________________________________________________________________
@@ -991,63 +971,6 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
       }
     }
   } // end SSD geometry 
-}
-
-//______________________________________________________________________
-void AliITSv11Hybrid::BuildGeometry(){
-    //    Geometry builder for the ITS version 10. Event Display geometry.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-
-    TNode *node, *top;
-    
-    const Int_t kColorITS=kYellow;
-    //
-    top = gAlice->GetGeometry()->GetNode("alice");
-
-
-    new TTUBE("S_layer1","Layer1 of ITS","void",
-	      3.8095,3.8095+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.94*9.36/100.,25.1);
-    top->cd();
-    node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer4","Layer4 of ITS","void",24.1,24.1+0.95*9.36/100.,32.1);
-    top->cd();
-    node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer5","Layer5 of ITS","void",
-	      38.5,38.5+0.91*9.36/100.,49.405);
-    top->cd();
-    node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer6","Layer6 of ITS","void",
-	      43.5765,43.5765+0.87*9.36/100.,55.27);
-    top->cd();
-    node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
 }
 
 //______________________________________________________________________
@@ -4937,14 +4860,6 @@ void AliITSv11Hybrid::CreateOldGeometry(){
 
   }
 
-
-  // --- Outputs the geometry tree in the EUCLID/CAD format 
-  
-  if (fEuclidOut) {
-    gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
-  }
-
-
   {
     if (!gGeoManager) {
       AliError("TGeoManager doesn't exist !");
@@ -5820,7 +5735,6 @@ void AliITSv11Hybrid::Init(){
 		 fMinorVersion));
     UpdateInternalGeometry();
     AliITS::Init();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }

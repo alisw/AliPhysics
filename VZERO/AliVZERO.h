@@ -36,11 +36,9 @@ public:
   virtual       ~AliVZERO();
 //  virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits)=0; 
 //  virtual void   AddDigits(Int_t* tracks, Int_t* digits)=0;
-  virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   AddAlignableVolumes() const {}
-  virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
   virtual Int_t  IsVersion() const = 0;
   virtual void   Init();
   virtual AliLoader* MakeLoader(const char* topfoldername);

@@ -38,7 +38,6 @@ public:
   
   virtual      ~AliTPC();
   virtual void  AddHit(Int_t a1, Int_t *a2, Float_t *a3);
-  virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
   virtual void  AddAlignableVolumes() const {}
@@ -81,9 +80,6 @@ public:
    virtual AliHit* NextHit();
    virtual AliHit* FirstHit2(Int_t track);
    virtual AliHit* NextHit2();
-   virtual void LoadPoints(Int_t dummy);
-   virtual void LoadPoints2(Int_t dummy);
-   virtual void LoadPoints3(Int_t dumy);
    virtual void FinishPrimary();
    virtual void RemapTrackHitIDs(Int_t *map);
    void SetHitType(Int_t type){fHitType =type;} //set type of hit container

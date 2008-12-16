@@ -71,11 +71,6 @@ public:
       @param px    where the event happened in pixels along X
       @param py    where the event happened in pixels along Y */
   virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  /** Calculate distance from point @f$ (p_x,p_y)@f$ to this object. 
-      @param px Pixel X coordinate 
-      @param py Pixel Y coordinate 
-      @return distance. */
-  virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);
   /** Paint into canvas 
       @param option Not used */
   virtual void  Paint(Option_t* option="") { (void)option; }

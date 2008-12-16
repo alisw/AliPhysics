@@ -52,7 +52,6 @@ class AliITSv11Hybrid : public AliITS {
     AliITSv11Hybrid(const char *title);
     AliITSv11Hybrid(const char *name, const char *title);
     virtual       ~AliITSv11Hybrid() ;
-    virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
@@ -62,16 +61,6 @@ class AliITSv11Hybrid : public AliITS {
     virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   AddAlignableVolumes() const;
-    virtual void   SetWriteDet(Bool_t det=kFALSE){ // set .det write
-	                                         fGeomDetOut = det;}
-    virtual void   SetWriteDet(const char *f){ // set write file
-	                             strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
-    virtual void   SetReadDet(Bool_t det=kFALSE){ //set .det read
-	                                        fGeomDetIn = det;}
-    virtual void   SetReadDet(const char *f){ // set read file
-	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLIDFileName(const char *f){ // set write file
-	                     fEuclidGeometry=f; SetEUCLID();}
     virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions
 	fMinorVersion = v;}
     virtual void   SetThicknessDet1(Float_t v=200.){ 
@@ -98,16 +87,6 @@ class AliITSv11Hybrid : public AliITS {
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual const char  *GetEULIIDFileName() const{ // return .euc file name
-	                               return fEuclidGeometry.Data();}
-    virtual Bool_t GetWriteDet() const { // returns value GeomDetOut flag.
-	                          return fGeomDetOut;}
-    virtual Bool_t GetReadDet() const { // returns value GeomDetIn flag.
-	                         return fGeomDetIn;}
-    virtual char  *GetReadDetFileName(){ // return .det read file name
-	          if(fRead[0]!='\0') return fRead; else return fEuclidGeomDet;}
-    virtual char  *GetWriteDetFileName(){ // return .det write file name
-	        if(fWrite[0]!='\0') return fWrite; else return fEuclidGeomDet;}
     virtual Int_t GetMajorVersion() const {// return Major Version Number
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion() const {// return Major Version Number
@@ -155,15 +134,10 @@ class AliITSv11Hybrid : public AliITS {
     AliITSv11Hybrid& operator=(const AliITSv11Hybrid &source); // assignment operator
     void InitAliITSgeom() const;
 
-    Bool_t fGeomDetOut;       // Flag to write .det file out
-    Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Bool_t fByThick;          // Flag to use services materials by thickness
                               // ture, or mass false.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number
-    char   fEuclidGeomDet[60];// file where detector transormation are define.
-    char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file
     Float_t  fDet1;	      // thickness of detector in SPD layer 1
     Float_t  fDet2;	      // thickness of detector in SPD layer 2
     Float_t  fChip1;	      // thickness of chip in SPD layer 1   

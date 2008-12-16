@@ -48,10 +48,6 @@ class AliPHOSv0 : public AliPHOS {
     // useless since there are no hits
     Fatal("AddHit", "not to be used with v0") ;
   }
-  virtual void   BuildGeometry(void) ;             // creates the geometry for the ROOT display
-  void           BuildGeometryforEMC(void) ;      // creates the PHOS geometry for the ROOT display
-  //  void           BuildGeometryforPPSD(void) ;      // creates the PPSD geometry for the ROOT display
-  void           BuildGeometryforCPV(void) ;       // creates the CPV  geometry for the ROOT display
   virtual void   CreateGeometry(void) ;            // creates the geometry for GEANT
   void           CreateGeometryforEMC(void) ;     // creates the PHOS geometry for GEANT
   //  void           CreateGeometryforPPSD(void) ;     // creates the PPSD geometry for GEANT

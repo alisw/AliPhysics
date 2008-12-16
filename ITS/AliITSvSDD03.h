@@ -24,7 +24,6 @@ class AliITSvSDD03 : public AliITS{
     AliITSvSDD03(); // default constructor
     AliITSvSDD03(const char *title,Int_t year); // standard constructor
     virtual ~AliITSvSDD03(); // destructor
-    virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
@@ -37,16 +36,6 @@ class AliITSvSDD03 : public AliITS{
                                                  fTarg=tt;}    
     virtual void   SetTargThick(Float_t th=1){ // set target thickness 
                                                  fTargThick=th;}    
-    virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
-                                                 fGeomDetOut = det;}
-    virtual void   SetWriteDet(const char *f){ // set write file
-                                     strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
-    virtual void   SetReadDet(Bool_t det=kTRUE){ //set .det read
-                                                fGeomDetIn = det;}
-    virtual void   SetReadDet(const char *f){ // set read file
-                                       strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLIDFileName(const char *f){ // set write file
-                             fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
         fMinorVersion = v;}
     // Replacement default simulation initilization.
@@ -60,19 +49,14 @@ class AliITSvSDD03 : public AliITS{
  private:  
     AliITSvSDD03(const AliITSvSDD03 &source); // Copy constructor
     AliITSvSDD03& operator=(const AliITSvSDD03 &source); // = operator
-    Bool_t fGeomDetOut;       // Flag to write .det file out
-    Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number 
-    char   fEuclidGeomDet[60];// file where detector transormation are define.
-    char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file
     Int_t fIDMother;          //! ITS Mother Volume id.
     Int_t fYear;              // Year flag to select different geometries.
     TargTyp_t fTarg;          // Target material
     Float_t fTargThick;       // TargetThickness in mm
     AliITSInitGeometry fIgm;  //! Get Access to decoding an dAliITSgeom init functions
 
-    ClassDef(AliITSvSDD03,3) // Hits manager and geometry for SDD testbeam
+    ClassDef(AliITSvSDD03,4) // Hits manager and geometry for SDD testbeam
 };
 #endif

@@ -22,10 +22,7 @@
 //                                                             //
 /////////////////////////////////////////////////////////////////
 
-#include <TGeometry.h>
 #include <TGeoManager.h>
-#include <TNode.h>
-#include <TBRIK.h>
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
@@ -56,13 +53,8 @@ ClassImp(AliITSvSDD03)
 //______________________________________________________________________
 AliITSvSDD03::AliITSvSDD03() :
 AliITS(),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
 fMajorVersion(IsVersion()),
 fMinorVersion(2),
-fEuclidGeomDet(),
-fRead(),
-fWrite(),
 fIDMother(0),
 fYear(2003),
 fTarg(kNoTarg),
@@ -77,26 +69,16 @@ fIgm(kvSDD03){
     // Return:
     //    A default created class.
     ////////////////////////////////////////////////////////////////////////
-    Int_t i;
 
     fIdN          = 0;
     fIdName       = 0;
     fIdSens       = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
-    for(i=0;i<60;i++) fRead[i] = '\0';
-    for(i=0;i<60;i++) fWrite[i] = '\0';
-    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
 AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year):
 AliITS("ITS", title),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
 fMajorVersion(IsVersion()),
 fMinorVersion(2),
-fEuclidGeomDet(),
-fRead(),
-fWrite(),
 fIDMother(0),
 fYear(year),
 fTarg(kNoTarg),
@@ -120,12 +102,7 @@ fIgm(kvSDD03){
     fIdName[2] = "ISNT";
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vSDD032.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vSDD032.det",60);
-    strncpy(fRead,fEuclidGeomDet,60);
-    strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
 AliITSvSDD03::~AliITSvSDD03() {
@@ -138,127 +115,6 @@ AliITSvSDD03::~AliITSvSDD03() {
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-}
-//______________________________________________________________________
-void AliITSvSDD03::BuildGeometry(){
-    ////////////////////////////////////////////////////////////////////////
-    //    Geometry builder for the ITS SDD test beam 2002 version 1.
-    //    ALIC    ALICE Mother Volume
-    //     |- ITSV     ITS Mother Volume
-    //         |- IDET       Detector under Test
-    //         |   |- ITS0       SDD Si Chip
-    //         |   |  |- ITST      SDD Sensitivve Volume
-    //         |   |- IPC0 *5    Readout chip
-    //         |- ITEL *4    SDD Telescope
-    //             |- IMB0       SDD Si Chip
-    //             |   |- IMBS     SDD Sensitive volume
-    //             |- ICMB       Chip MiniBus.
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-    // Get the top alice volume.
-    TNode *nALIC = gAlice->GetGeometry()->GetNode("alice");
-    nALIC->cd();
-
-    // Define ITS Mother Volume
-    Float_t data[3];
-    Float_t ddettest=200.0E-4,ddettelescope=300.0E-4;
-    //Float_t yposition= 0.0;
-    TRotMatrix *r0 = new TRotMatrix("ITSidrotm0","ITSidrotm0",
-				    90.0,0,0.0,0,90.0,270.0);
-    data[0] = 10.0;
-    data[1] = 10.0;
-    data[2] = 100.0;
-    TBRIK *sITSVshape =new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
-				 data[0],data[1],data[2]);
-    TNode *sITSV = new TNode("ITSV","ITS Mother Volume",sITSVshape,
-			    0.0,0.0,0.0,0,0);
-    sITSV->cd(); // set ourselve into ITSV subvolume of ALIC
-
-    // SSD part of telescope (MiniBuS)
-    data[0] = 1.06;
-    data[1] = 0.5*ddettelescope;
-    data[2] = 1.1;
-    TBRIK *sIMB0shape = new TBRIK("IMB0shape","SDD wafer","Si",
-				 data[0],data[1],data[2]);
-    Float_t detMiniBusX,detMiniBusY,detMiniBusZ;
-    data[0] = detMiniBusX = 0.5*384*50.0E-4;
-    data[1] = detMiniBusY = 0.5*ddettelescope;
-    data[2] = detMiniBusZ = 1.0;
-    TBRIK *sIMBSshape = new TBRIK("IMBSshape","SDD Sensitive volume","Si",
-				 data[0],data[1],data[2]);
-
-    data[0] = 1.36;
-    data[1] = 0.47;
-    data[2] = 1.36;
-    TBRIK *sITELshape = new TBRIK("ITELshape","ITELshape","Air",
-				 data[0],data[1],data[2]);
-
-
-    // SDD under test
-    Float_t spdX,spdY,spdZ;
-    data[0] = 3.62500;
-    data[1] = 0.5*ddettest;
-    data[2] = 4.37940;
-    TBRIK *sITS0shape = new TBRIK("ITS0shape","SDD wafer","Si",
-				 data[0],data[1],data[2]); // contains detector
-    data[0] = spdX = 3.50860;
-    data[1] = spdY = 0.5*ddettest;
-    data[2] = spdZ = 3.76320;
-    TBRIK *sITSTshape = new TBRIK("ITSTshape","SDD sensitive volume","Si",
-				 data[0],data[1],data[2]);
-
-    data[0] = 4.2;
-    data[1] = 0.52;
-    data[2] = 5.2;
-    TBRIK *sIDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
-				 data[0],data[1],data[2]);
-
-
-    // Place volumes in geometry
-    char name[20],title[50];
-
-    //place SDD under test
-    Double_t px=0.0,py=0.0;
-    Double_t pz[2]={0.0,5.2};
-    TNode *nIDET[2],*nITS0[2],*nITST[2];
-    for(Int_t i=0;i<2;i++){
-	sITSV->cd();
-	sprintf(name,"IDET%d",i);
-	sprintf(title,"SDD #%d under test",i+1);
-	nIDET[i] = new TNode(name,title,sIDETshape,px,py,pz[i],r0,0);
-        nIDET[i]->cd();
-	nITS0[i] = new TNode("ITS0","SDD wafer",sITS0shape,0.0,0.0,0.0,0,0);
-        nITS0[i]->cd();
-	nITST[i] = new TNode("ITST","SDD sensitive volume",sITSTshape,
-			    0.0,0.0,0.0,0,0);
-        nITST[i]->SetLineColor(kYellow);
-        fNodes->Add(nITST[i]);
-    } // end for i
-
-    //place SSD telescope planes
-    Double_t qx=0.0,qy=0.0;
-    Double_t qz[10]={-58.4,-57.4,-50.4,-49.4,60.1,61.1,68.4,69.4,87.7,88.7};
-    TNode *nITEL[10],*nIMB0[10],*nIMBS[10];
-    for(Int_t i=0;i<10;i++){
-	sITSV->cd();
-	sprintf(name,"ITEL%d",i);
-	sprintf(title,"Test beam telescope element #%d",i+1);
-	nITEL[i] = new TNode(name,title,sITELshape,qx,qy,qz[i],r0,0);
-	nITEL[i]->cd();
-	nIMB0[i] = new TNode("IMB0","Chip MiniBus",sIMB0shape,
-			    0.0, 0.0,0.0,0,0);
-	nIMB0[i]->cd();
-	nIMBS[i] = new TNode("IMBS","IMBS",sIMBSshape,0.0,0.0,0.0,0,0);
-	nIMBS[i]->SetLineColor(kGreen);
-	fNodes->Add(nIMBS[i]);
-    } // end for i
-    nALIC->cd();
-    sITSV->Draw();
 }
 /*
 //______________________________________________________________________
@@ -771,8 +627,6 @@ void AliITSvSDD03::Init(){
     //
     UpdateInternalGeometry();
     AliITS::Init();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
-
     //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 

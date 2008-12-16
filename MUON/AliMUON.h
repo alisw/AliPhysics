@@ -49,7 +49,6 @@ class AliMUON : public  AliDetector
     void AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
     void ResetGeometryBuilder();
     
-    virtual void   BuildGeometry();
     
                    /// Return geometry builder
     AliMUONGeometryBuilder*            GetGeometryBuilder() const {return fGeometryBuilder;}

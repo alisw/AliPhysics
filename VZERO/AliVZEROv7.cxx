@@ -237,12 +237,7 @@ AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title)
 //   fV0AnMeters            = fV0AR6*0.01; // Tentative value, in meters
 //   fV0AFibToPhot          =    0.3;      // Attenuation at fiber-photocathode interface
 }
-//_____________________________________________________________________________
 
-void AliVZEROv7::BuildGeometry()
-{ 
-}
-            
 //_____________________________________________________________________________
 void AliVZEROv7::CreateGeometry()
 {

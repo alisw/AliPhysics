@@ -77,13 +77,6 @@ AliACORDEv0::~AliACORDEv0()
   // Default destructor
   //
 }
-//_____________________________________________________________________________
-void AliACORDEv0::BuildGeometry()
-{
-
-  // not needed anymore
-
-}
 
 //_____________________________________________________________________________
 void AliACORDEv0::CreateGeometry()

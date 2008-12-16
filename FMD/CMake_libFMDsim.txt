@@ -4,7 +4,6 @@ set(SRCS
 AliFMD.cxx
 AliFMDv0.cxx
 AliFMDv1.cxx
-AliFMDPoints.cxx
 AliFMDHit.cxx
 AliFMDBaseDigitizer.cxx
 AliFMDDigitizer.cxx

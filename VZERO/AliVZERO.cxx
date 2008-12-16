@@ -126,14 +126,6 @@ AliVZERO::~AliVZERO()
 }
 
 //_____________________________________________________________________________
-void AliVZERO::BuildGeometry()
-{
-  //
-  // Builds simple ROOT TNode geometry for event display
-  //
-}
- 
-//_____________________________________________________________________________
 void AliVZERO::CreateGeometry()
 {
   //
@@ -148,17 +140,6 @@ void AliVZERO::CreateMaterials()
   //
 }
 
-//_____________________________________________________________________________
-Int_t AliVZERO::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
-{
-  //
-  // Calculates the distance from the mouse to the VZERO on the screen
-  // Dummy routine
-  //
-  
-  return 9999;
-}
- 
 //_____________________________________________________________________________
 void AliVZERO::Init()
 {

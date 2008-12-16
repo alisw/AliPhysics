@@ -39,8 +39,6 @@ class AliEMCALv0 : public AliEMCAL {
   virtual void  AddAlignableVolumesInALICE() const;
   virtual void  AddAlignableVolumesInWSUC() const;
 
-  virtual void BuildGeometry();// creates the geometry for the ROOT display
-  TNode *BuildGeometryOfWSUC();  // WSUC - test environment
   virtual void CreateGeometry() ;// creates the geometry for GEANT
   virtual void   Init(void) ;                                       // does nothing
   virtual Int_t  IsVersion(void) const { 

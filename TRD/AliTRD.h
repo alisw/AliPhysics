@@ -41,7 +41,6 @@ class AliTRD : public AliDetector {
   virtual Int_t    IsVersion() const          = 0;
   virtual void     ResetDigits();     
 
-  virtual void     BuildGeometry();
   virtual void     CreateGeometry();
   virtual void     CreateMaterials();
   virtual void     DrawModule() const;

@@ -22,7 +22,6 @@ public:
   AliTOFv2FHoles();
   AliTOFv2FHoles(const char *name, const char *title);
   virtual ~AliTOFv2FHoles() {}
-  virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();

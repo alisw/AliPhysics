@@ -893,21 +893,6 @@ AliRun* AliRunLoader::GetAliRun() const
 }
 /**************************************************************************/
 
-Int_t AliRunLoader::WriteGeometry(Option_t* /*opt*/)
-{
-//writes geometry to the file
-  fGAFile->cd();
-  TGeometry* geo = GetAliRun()->GetGeometry();
-  if (geo == 0x0)
-   {
-     AliError("Can not get geometry from gAlice");
-     return 1;
-   }
-  geo->Write();
-  return 0;
-}
-/**************************************************************************/
-
 Int_t AliRunLoader::WriteHeader(Option_t* opt)
 {
 //writes treeE

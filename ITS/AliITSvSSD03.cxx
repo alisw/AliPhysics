@@ -16,11 +16,8 @@
 // Enrico Fragiacomo - 15/03/2004
 // Geometry for the June 2003 SSD beam test
 
-#include <TGeometry.h>
-#include <TNode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
-#include <TBRIK.h>
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 #include <TGeoManager.h>
@@ -53,14 +50,9 @@ ClassImp(AliITSvSSD03)
 //______________________________________________________________________
 AliITSvSSD03::AliITSvSSD03():
 AliITS(),                  // Base Class
-fGeomDetOut(kFALSE),       // Flag to write .det file out
-fGeomDetIn(kFALSE),        // Flag to read .det file or directly from Geat.
 fMajorVersion(IsVersion()),// Major version number == IsVersion
 fMinorVersion(-1),         // Minor version number 
 fGeomNumber(2003),         // Geometry version number (year)
-fEuclidGeomDet(),          // file where detector transormation are define.
-fRead(),                   //! file name to read .det file
-fWrite(),                  //! file name to write .det file 
 fIDMother(0),              //! ITS Mother Volume id.
 fIgm(kvSSD03){             //! AliITSInitGeometry object {
     ////////////////////////////////////////////////////////////////////////
@@ -72,26 +64,17 @@ fIgm(kvSSD03){             //! AliITSInitGeometry object {
     // Return:
     //    A default created class.
     ////////////////////////////////////////////////////////////////////////
-    Int_t i;
 
     fIdN          = 0;
     fIdName       = 0;
     fIdSens       = 0;
-    for(i=0;i<60;i++) fRead[i] = '\0';
-    for(i=0;i<60;i++) fWrite[i] = '\0';
-    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
 AliITSvSSD03::AliITSvSSD03(const char *title,Int_t gn) :
 AliITS("ITS",title),       // Base Class
-fGeomDetOut(kFALSE),       // Flag to write .det file out
-fGeomDetIn(kFALSE),        // Flag to read .det file or directly from Geat.
 fMajorVersion(IsVersion()),// Major version number == IsVersion
 fMinorVersion(2),         // Minor version number 
 fGeomNumber(gn),         // Geometry version number (year)
-fEuclidGeomDet(),          // file where detector transormation are define.
-fRead(),                   //! file name to read .det file
-fWrite(),                  //! file name to write .det file 
 fIDMother(0),              //! ITS Mother Volume id.
 fIgm(kvSSD03){             //! AliITSInitGeometry object {
     ////////////////////////////////////////////////////////////////////////
@@ -113,10 +96,6 @@ fIgm(kvSSD03){             //! AliITSInitGeometry object {
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;	 	 	 
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vSSD03.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vSSD03.det",60);
-    strncpy(fRead,fEuclidGeomDet,60);
-    strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
 AliITSvSSD03::~AliITSvSSD03() {
@@ -130,82 +109,7 @@ AliITSvSSD03::~AliITSvSSD03() {
     //    none.
     ////////////////////////////////////////////////////////////////////////
 }
-//______________________________________________________________________
-void AliITSvSSD03::BuildGeometry(){
-    ////////////////////////////////////////////////////////////////////////
-    //    Geometry builder for the ITS SSD test beam 2003 version 1.
-    //    ALIC    ALICE Mother Volume
-    //     |- ITSV     ITS Mother Volume
-    //         |- ITST       Detector under Test
-    //
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-    // Get the top alice volume.
 
-    switch (fGeomNumber){
-    case 2003:
-        BuildGeometry2003();
-        break;
-    default:
-        BuildGeometry2003();
-        break;
-    } // end switch
-}
-//______________________________________________________________________
-void AliITSvSSD03::BuildGeometry2003(){
-    ////////////////////////////////////////////////////////////////////////
-    //    Geometry builder for the ITS SSD test beam 2003 version 1.
-    //    ALIC    ALICE Mother Volume
-    //     |- ITSV     ITS Mother Volume
-    //         |- ITST       Detector under Test
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-
-    // Get the top alice volume.
-    TNode *aALIC = gAlice->GetGeometry()->GetNode("alice");
-    aALIC->cd();
-
-    // Define ITS Mother Volume
-    Float_t data[3];
-    Float_t ddettest=300.0E-4;
-    //Float_t yposition= 0.0;
-    TRotMatrix *r0 = new TRotMatrix("ITSidrotm0","ITSidrotm0",
-				    90.0,0,0.0,0,90.0,270.0);
-
-    // Mother volume (beam along z)
-    data[0] = 10.0;   // in centimeter
-    data[1] = 50.0;
-    data[2] = 100.0;
-    TBRIK *iITSVshape = new TBRIK("ITSVshape",
-                                  "ITS Logical Mother Volume","Air",
-                                  data[0],data[1],data[2]);
-    TNode *iITSV = new TNode("ITSV","ITS Mother Volume",iITSVshape,
-			    0.0,0.0,0.0,0,0);
-    iITSV->cd(); // set ourselve into ITSV subvolume of aALIC
-
-    // SSD part of telescope  (Note. strips in local xz plan)
-    data[0] = 3.5;   // half-length of the SSD module
-    data[1] = 0.5*ddettest;    // half-width of the SSD module 
-    data[2] = 2.0;   // half-heigth of the SSD module
-    TBRIK *iITSTshape = new TBRIK("ITSTshape","SSD sensitive volume","Si",
-				 data[0],data[1],data[2]);
-    TNode *iITST = new TNode("ITST","SSD sensitive volume",iITSTshape,
-			    0.0,0.0,0.0,r0,0);
-
-    aALIC->cd();
-    iITST->SetLineColor(kYellow);
-    fNodes->Add(iITST);
-}
 //______________________________________________________________________
 void AliITSvSSD03::CreateGeometry(){
     ////////////////////////////////////////////////////////////////////////
@@ -526,9 +430,7 @@ void AliITSvSSD03::Init(){
     //
     UpdateInternalGeometry();
     AliITS::Init();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
-    //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 
 }/*

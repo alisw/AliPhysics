@@ -86,7 +86,6 @@
     class  AliDigit {};
     class  AliHit {};
     class  AliDisplay {};
-    class  AliPoints {};
     class  AliMagFC {};
     class  AliMagFCM {};
     class  AliMagFMaps {};

@@ -46,8 +46,6 @@ public:
   virtual  Int_t         GetNdigits() const {return 0;}
   virtual  Int_t         GetNhits()  const {return 0;}
   virtual  TArrayI      *GetIdtmed()   const {return fIdtmed;}
-  virtual  TList        *Histograms() const {return fHistograms;}
-  virtual  TList        *Nodes()  const {return fNodes;}
   virtual  TClonesArray *Digits() const {return 0;}
   virtual  TClonesArray *Hits()   const {return 0;}
   virtual  TObjArray    *Points() const {return 0;}
@@ -57,6 +55,8 @@ public:
   virtual  Bool_t        IsFolder() const {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
+  virtual  Bool_t        IsModule() const {return kTRUE;}
+  virtual  Bool_t        IsDetector() const {return kFALSE;}
 
   // Module composition
   virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 
@@ -104,8 +104,6 @@ public:
   virtual void        CreateMaterials() {}
   virtual void        DefineOpticalProperties() {}
   virtual void        AddAlignableVolumes() const;
-  virtual void        Disable();
-  virtual void        Enable();
   virtual void        PreTrack(){}
   virtual void        PostTrack(){}
   virtual void        FinishEvent() {}
@@ -128,7 +126,6 @@ public:
   virtual void        ResetDigits() {}
   virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
-  virtual void        ResetPoints() {}
   virtual void        SetTimeGate(Float_t) {}
   virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
@@ -137,9 +134,6 @@ public:
   virtual void        SetBufferSize(Int_t) {}  
   virtual Float_t     ZMin() const;
   virtual Float_t     ZMax() const;
-  virtual void        SetEuclidFile(char *material,char *geometry=0);
-  virtual void        ReadEuclid(const char *filnam, char *topvol);
-  virtual void        ReadEuclidMedia(const char *filnam);
 // Track reference related
   virtual  AliTrackReference * AddTrackReference(Int_t label, Int_t id = -999);
   TTree* TreeTR();  //shorcut method for accessing treeTR from folder
@@ -156,17 +150,12 @@ protected:
 
   // Data members
   
-  TString       fEuclidMaterial;  //!Name of the Euclid file for materials (if any)
-  TString       fEuclidGeometry;  //!Name of the Euclid file for geometry (if any)
-  
   TArrayI      *fIdtmed;      //!List of tracking medium numbers
   TArrayI      *fIdmate;      //!List of material numbers
   Int_t         fLoMedium;   //!Minimum tracking medium ID for this Module
   Int_t         fHiMedium;   //!Maximum tracking medium ID for this Module
 
   Bool_t        fActive;      //Detector activity flag
-  TList        *fHistograms;  //List of histograms
-  TList        *fNodes;       //List of geometry nodes
   Bool_t        fEnable;      //StepManager enabling flag
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
@@ -176,8 +165,8 @@ protected:
   static Float_t fgDensityFactor; //! factor that is multiplied to all material densities (ONLY for systematic studies)
 
  private:
-  AliModule(const AliModule &mod);
-  AliModule& operator=(const AliModule &mod);
+  AliModule(const AliModule&);
+  AliModule& operator=(const AliModule&);
 
   ClassDef(AliModule,8)  //Base class for ALICE Modules
 };

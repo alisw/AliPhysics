@@ -158,44 +158,6 @@ void AliT0::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime,
   fDigits->SetRefPoint(refpoint);
 }
 
-
-//_____________________________________________________________________________
-void AliT0::BuildGeometry()
-{
-  //
-  // Build simple ROOT TNode geometry for event display
-  //
-  TNode *node, *top;
-  const int kColorT0  = 19;
-
-  top=gAlice->GetGeometry()->GetNode("alice");
-
-  // T0 define the different volumes
-  new TRotMatrix("rotx999","rot999",  90,0,90,90,180,0);
-
-  new TTUBE("S_0ST1","T0  volume 1","void",5.,10.7,5.3);
-  top->cd();
-  node = new TNode("0ST1","0ST01","S_0ST1",0,0,-69.7,"");
-  node->SetLineColor(kColorT0);
-  fNodes->Add(node);
-
-  new TTUBE("S_0ST2","T0 volume 2","void",5.,10.7,5.3);
-  top->cd();
-  node = new TNode("0ST2","0ST2","S_0ST2",0,0,350,"rotx999");
-  node->SetLineColor(kColorT0);
-  fNodes->Add(node);
-}
- 
-//_____________________________________________________________________________
-Int_t AliT0::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
-{
-  //
-  // Calculate the distance from the mouse to the T0 on the screen
-  // Dummy routine
-  //
-  return 9999;
-}
- 
 //-------------------------------------------------------------------------
 void AliT0::Init()
 {

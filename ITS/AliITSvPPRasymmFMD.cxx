@@ -30,15 +30,12 @@
 // See AliITSvPPRasymmFMD::StepManager().
 
 #include <TClonesArray.h>
-#include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <TArrayD.h>
 #include <TArrayF.h>
 #include <TString.h>
-#include <TNode.h>
-#include <TTUBE.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TVirtualMC.h>
@@ -73,15 +70,10 @@ ClassImp(AliITSvPPRasymmFMD)
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD():
 AliITS(),                    // Default AliITS Constructor
-fGeomDetOut(kFALSE),         // Flag to write .det file out
-fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
 fByThick(kTRUE),             // Flag to use services materials by thickness
                              // ture, or mass false.
 fMajorVersion(IsVersion()),  // Major version number == IsVersion
 fMinorVersion(2),           // Minor version number
-fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
-fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
-fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
 fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
 fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
 fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
@@ -105,15 +97,10 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const Char_t *title):
 AliITS(title),               // Standard AliITS Constructor
-fGeomDetOut(kFALSE),         // Flag to write .det file out
-fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
 fByThick(kTRUE),             // Flag to use services materials by thickness
                              // ture, or mass false.
 fMajorVersion(IsVersion()),  // Major version number == IsVersion
 fMinorVersion(2),            // Minor version number
-fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
-fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
-fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
 fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
 fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
 fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
@@ -155,15 +142,10 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title):
 AliITS(name,title),          // Extended AliITS Constructor
-fGeomDetOut(kFALSE),         // Flag to write .det file out
-fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
 fByThick(kTRUE),             // Flag to use services materials by thickness
                              // ture, or mass false.
 fMajorVersion(IsVersion()),  // Major version number == IsVersion
 fMinorVersion(2),            // Minor version number
-fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
-fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
-fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
 fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
 fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
 fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
@@ -213,18 +195,13 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source):
 AliITS(source.GetName(),source.GetTitle()),// Extended AliITS Constructor
-fGeomDetOut(source.GetWriteDet()),// Flag to write .det file out
-fGeomDetIn(source.GetReadDet()),  // Flag to read .det file or directly 
                                   // from Geat.
 fByThick(source.IsDensityServicesByThickness()),// Flag to use services 
                                                 // materials by thickness
                                                 // ture, or mass false.
 fMajorVersion(source.IsVersion()),  // Major version number == IsVersion
 fMinorVersion(source.GetMinorVersion()),// Minor version number
-fEuclidGeomDet(source.GetEuclidFile()),// file where detector transormation 
                                        // are define.
-fRead(source.GetReadDetFileName()),  //! file name to read .det file
-fWrite(source.GetWriteDetFileName()),//! file name to write .det file
 fDet1(source.GetThicknessDet1()),//thickness of detector in SPD layer 1[micron]
 fDet2(source.GetThicknessDet2()),//thickness of detector in SPD layer 2[micron]
 fChip1(source.GetThicknessChip1()),//thickness of chip in SPD layer 1 [microns]
@@ -730,63 +707,6 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
       }
     }
   }
-}
-
-//______________________________________________________________________
-void AliITSvPPRasymmFMD::BuildGeometry(){
-    //    Geometry builder for the ITS version 10. Event Display geometry.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-
-    TNode *node, *top;
-    
-    const Int_t kColorITS=kYellow;
-    //
-    top = gAlice->GetGeometry()->GetNode("alice");
-
-
-    new TTUBE("S_layer1","Layer1 of ITS","void",
-	      3.8095,3.8095+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.94*9.36/100.,25.1);
-    top->cd();
-    node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer4","Layer4 of ITS","void",24.1,24.1+0.95*9.36/100.,32.1);
-    top->cd();
-    node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer5","Layer5 of ITS","void",
-	      38.5,38.5+0.91*9.36/100.,49.405);
-    top->cd();
-    node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer6","Layer6 of ITS","void",
-	      43.5765,43.5765+0.87*9.36/100.,55.27);
-    top->cd();
-    node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
 }
 
 //______________________________________________________________________
@@ -5130,11 +5050,6 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
-  if (fEuclidOut) {
-    gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
-  }
-
-
   {
     if (!gGeoManager) {
       AliError("TGeoManager doesn't exist !");
@@ -6000,16 +5915,12 @@ void AliITSvPPRasymmFMD::Init(){
 		 fMinorVersion));
     //
     /*  obsolete initialization of AliITSgeom from external "det" file
-    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
-    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     AliITSgeom* geom = new AliITSgeom();
     SetITSgeom(geom);
-    if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
     else this->InitAliITSgeom();
     */
     UpdateInternalGeometry();
     AliITS::Init();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
     //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
@@ -6417,11 +6328,8 @@ void AliITSvPPRasymmFMD::PrintAscii(ostream *os)const{
 #endif
 #endif
 
-    *os << fGeomDetOut << " " << fGeomDetIn << " " << fByThick << " ";
+    *os << fByThick << " ";
     *os << fMajorVersion << " " << fMinorVersion << " ";
-    *os << "\"" << fEuclidGeomDet.Data() << "\"" << " ";
-    *os << "\"" << fRead.Data() << "\"" << " ";
-    *os << "\"" << fWrite.Data() << "\"" << " ";
     fmt = os->setf(ios::scientific); // set scientific floating point output
     *os << fDet1 << " "  << fDet2 << " " << fChip1 << " " << fChip2 << " ";
     *os << fRails << " " << fFluid << " " << fIDMother;
@@ -6438,16 +6346,9 @@ void AliITSvPPRasymmFMD::ReadAscii(istream *is){
     //   none.
     // Return:
     //   none.
-    Char_t name[120];
 
-    *is >> fGeomDetOut >> fGeomDetIn >> fByThick;
+    *is >> fByThick;
     *is >> fMajorVersion >> fMinorVersion;
-    *is >> name;
-    fEuclidGeomDet = name;
-    *is >> name;
-    fRead = name;
-    *is >> name;
-    fWrite = name;
     *is >> fDet1 >> fDet2 >> fChip1 >> fChip2;
     *is >> fRails >> fFluid >> fIDMother;
     fIgm.SetVersion((AliITSVersion_t)fMajorVersion,fMinorVersion);

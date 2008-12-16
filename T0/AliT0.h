@@ -36,10 +36,8 @@ public:
    virtual void   AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
 			   Int_t timediff, Int_t sumMult, Int_t refpoint,
 			   TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp);
-   virtual void   BuildGeometry();
    virtual void   CreateGeometry(){}
    virtual void   CreateMaterials(){} 
-   virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
    virtual void   DrawDetector(){}
    virtual Int_t  IsVersion()const {return 0;}
    virtual void   Init();

@@ -120,63 +120,6 @@ void AliPHOSvFast::AddRecParticle(const AliPHOSFastRecParticle & rp)
 }
 
 //____________________________________________________________________________
-void AliPHOSvFast::BuildGeometry()
-{
-  // Build the PHOS geometry for the ROOT display
-   //BEGIN_HTML
-  /*
-    <H2>
-     PHOS FAST in ALICE displayed by root
-    </H2>
-    <H4> All Views </H4>
-    <P>
-    <CENTER>
-    <IMG Align=BOTTOM ALT="Fast All Views" SRC="../images/AliPHOSvFastAllViews.gif"> 
-    </CENTER></P>
-    <H4> Front View </H4>
-    <P>
-    <CENTER>
-    <IMG Align=BOTTOM ALT="Fast Front View" SRC="../images/AliPHOSvFastFrontView.gif"> 
-    </CENTER></P>
-  */
-  //END_HTML  
- 
-  const Int_t kColorPHOS = kRed ;
-  
-  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
-  
-  new TBRIK( "BigBox", "PHOS box", "void", GetBigBox(0)/2, 
-	     GetBigBox(1)/2, 
-	     GetBigBox(2)/2 );
-  
-  // position PHOS into ALICE
-
-  Float_t r = GetGeometry()->GetIPtoCrystalSurface() + GetBigBox(1) / 2.0 ;
-  Int_t number = 988 ; 
-  Float_t pphi =  TMath::ATan( GetBigBox(0)  / ( 2.0 * GetGeometry()->GetIPtoCrystalSurface() ) ) ;
-  pphi *= kRADDEG ;
-  TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
- 
-  char * nodename = new char[20] ;  
-  char * rotname  = new char[20] ; 
-
-  for( Int_t i = 1; i <= GetGeometry()->GetNModules(); i++ ) { 
-   Float_t angle = pphi * 2 * ( i - GetGeometry()->GetNModules() / 2.0 - 0.5 ) ;
-   sprintf(rotname, "%s%d", "rot", number++) ;
-   new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
-   top->cd();
-   sprintf(nodename,"%s%d", "Module", i) ;    
-   Float_t x =  r * TMath::Sin( angle / kRADDEG ) ;
-   Float_t y = -r * TMath::Cos( angle / kRADDEG ) ;
-   TNode * bigboxnode = new TNode(nodename, nodename, "BigBox", x, y, 0, rotname ) ;
-   bigboxnode->SetLineColor(kColorPHOS) ;
-   fNodes->Add(bigboxnode) ;
-  }
-  delete[] nodename ; 
-  delete[] rotname ; 
-}
-
-//____________________________________________________________________________
 void AliPHOSvFast::CreateGeometry()
 {
   // Create the geometry for GEANT

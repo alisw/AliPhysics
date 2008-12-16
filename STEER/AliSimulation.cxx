@@ -166,7 +166,6 @@ AliSimulation::AliSimulation(const char* configFileName,
   fDeleteIntermediateFiles(kFALSE),
   fWriteSelRawData(kFALSE),
   fStopOnError(kFALSE),
-
   fNEvents(1),
   fConfigFileName(configFileName),
   fGAliceFileName("galice.root"),
@@ -199,76 +198,6 @@ AliSimulation::AliSimulation(const char* configFileName,
 	fQASteer->SetActiveDetectors(fQADetectors) ; 
 	fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
 	fQASteer->SetTasks(fQATasks) ; 	
-}
-
-//_____________________________________________________________________________
-AliSimulation::AliSimulation(const AliSimulation& sim) :
-  TNamed(sim),
-
-  fRunGeneration(sim.fRunGeneration),
-  fRunSimulation(sim.fRunSimulation),
-  fLoadAlignFromCDB(sim.fLoadAlignFromCDB),
-  fLoadAlObjsListOfDets(sim.fLoadAlObjsListOfDets),
-  fMakeSDigits(sim.fMakeSDigits),
-  fMakeDigits(sim.fMakeDigits),
-  fMakeTrigger(sim.fMakeTrigger),
-  fMakeDigitsFromHits(sim.fMakeDigitsFromHits),
-  fWriteRawData(sim.fWriteRawData),
-  fRawDataFileName(""),
-  fDeleteIntermediateFiles(kFALSE),
-  fWriteSelRawData(kFALSE),
-  fStopOnError(sim.fStopOnError),
-
-  fNEvents(sim.fNEvents),
-  fConfigFileName(sim.fConfigFileName),
-  fGAliceFileName(sim.fGAliceFileName),
-  fEventsPerFile(),
-  fBkgrdFileNames(NULL),
-  fAlignObjArray(NULL),
-  fUseBkgrdVertex(sim.fUseBkgrdVertex),
-  fRegionOfInterest(sim.fRegionOfInterest),
-  fCDBUri(sim.fCDBUri),
-  fSpecCDBUri(),
-  fRun(-1),
-  fSeed(0),
-  fInitCDBCalled(sim.fInitCDBCalled),
-  fInitRunNumberCalled(sim.fInitRunNumberCalled),
-  fSetRunNumberFromDataCalled(sim.fSetRunNumberFromDataCalled),
-  fEmbeddingFlag(sim.fEmbeddingFlag),
-  fQADetectors(sim.fQADetectors),                  
-	fQATasks(sim.fQATasks),	
-	fQASteer(sim.fQASteer),	
-  fRunQA(sim.fRunQA), 
-  fRunHLT(sim.fRunHLT),
-  fWriteGRPEntry(sim.fWriteGRPEntry)
-{
-// copy constructor
-
-  for (Int_t i = 0; i < sim.fEventsPerFile.GetEntriesFast(); i++) {
-    if (!sim.fEventsPerFile[i]) continue;
-    fEventsPerFile.Add(sim.fEventsPerFile[i]->Clone());
-  }
-
-  fBkgrdFileNames = new TObjArray;
-  for (Int_t i = 0; i < sim.fBkgrdFileNames->GetEntriesFast(); i++) {
-    if (!sim.fBkgrdFileNames->At(i)) continue;
-    fBkgrdFileNames->Add(sim.fBkgrdFileNames->At(i)->Clone());
-  }
-
-  for (Int_t i = 0; i < sim.fSpecCDBUri.GetEntriesFast(); i++) {
-    if (sim.fSpecCDBUri[i]) fSpecCDBUri.Add(sim.fSpecCDBUri[i]->Clone());
-  }
-  fgInstance = this;
-}
-
-//_____________________________________________________________________________
-AliSimulation& AliSimulation::operator = (const AliSimulation& sim)
-{
-// assignment operator
-
-  this->~AliSimulation();
-  new(this) AliSimulation(sim);
-  return *this;
 }
 
 //_____________________________________________________________________________
@@ -944,7 +873,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   AliInfo("running gAlice");
   AliSysInfo::AddStamp("Start_simulation");
   StdoutToAliInfo(StderrToAliError(
-    gAlice->Run(nEvents);
+    gAlice->RunMC(nEvents);
   ););
   AliSysInfo::AddStamp("Stop_simulation");
   delete runLoader;

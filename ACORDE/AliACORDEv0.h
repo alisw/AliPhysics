@@ -20,7 +20,6 @@ public:
   virtual Int_t IsVersion() const { return 1; }
   virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
 
-  virtual void BuildGeometry();
   virtual void CreateGeometry();
 
   virtual void Init();

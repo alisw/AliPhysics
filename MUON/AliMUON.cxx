@@ -236,18 +236,6 @@ void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 }
 
 //____________________________________________________________________
-void AliMUON::BuildGeometry()
-{
-/// Geometry for event display
-
-
-//     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)     
-//       this->Chamber(i).SegmentationModel2(1)->Draw("eventdisplay");// to be check !
-     
-  
-}
-
-//____________________________________________________________________
 const AliMUONGeometry*  AliMUON::GetGeometry() const
 {
 /// Return geometry parametrisation

@@ -44,7 +44,6 @@
 #include <TCint.h> 
 #include <TDatabasePDG.h>
 #include <TGeometry.h>
-#include <TNode.h>
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -53,7 +52,6 @@
 // 
 #include "AliLog.h"
 #include "AliDetector.h"
-#include "AliDisplay.h"
 #include "AliHeader.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
@@ -78,9 +76,7 @@ AliRun::AliRun():
   fEventNrInRun(0),
   fEventsPerRun(0),
   fModules(0),
-  fGeometry(0),
   fMCApp(0),
-  fDisplay(0),
   fField(0),
   fNdets(0),
   fInitDone(kFALSE),
@@ -103,37 +99,6 @@ AliRun::AliRun():
 
 }
 
-//_______________________________________________________________________
-AliRun::AliRun(const AliRun& arun):
-  TNamed(arun),
-  fRun(-1),
-  fEvent(0),
-  fEventNrInRun(0),
-  fEventsPerRun(0),
-  fModules(0),
-  fGeometry(0),
-  fMCApp(0),
-  fDisplay(0),
-  fField(0),
-  fNdets(0),
-  fInitDone(kFALSE),
-  fLego(0),
-  fPDGDB(0),  //Particle factory object
-  fConfigFunction("\0"),
-  fRandom(0),
-  fBaseFileName(""),
-  fIsRootGeometry(kFALSE),
-  fGeometryFromCDB(kFALSE),
-  fGeometryFileName(""),
-  fTriggerDescriptor(""),
-  fRunLoader(0x0)
-{
-  //
-  // Copy constructor for AliRun
-  //
-  arun.Copy(*this);
-}
-
 //_____________________________________________________________________________
 AliRun::AliRun(const char *name, const char *title):
   TNamed(name,title),
@@ -142,9 +107,7 @@ AliRun::AliRun(const char *name, const char *title):
   fEventNrInRun(0),
   fEventsPerRun(0),
   fModules(new TObjArray(77)), // Support list for the Detectors
-  fGeometry(0),
   fMCApp(0),
-  fDisplay(0),
   fField(0),
   fNdets(0),
   fInitDone(kFALSE),
@@ -211,8 +174,6 @@ AliRun::~AliRun()
   delete fField;
   delete fMCApp;
   delete gMC; gMC=0;
-  delete fGeometry;
-  delete fDisplay;
   delete fLego;
   if (fModules) {
     fModules->Delete();
@@ -220,45 +181,6 @@ AliRun::~AliRun()
   }
   
   delete fPDGDB;
-}
-
-//_______________________________________________________________________
-void AliRun::Copy(TObject &) const
-{
-  AliFatal("Not implemented!");
-}
-
-//_______________________________________________________________________
-void AliRun::Build()
-{
-  //
-  // Initialize Alice geometry
-  // Dummy routine
-  //
-}
- 
-//_______________________________________________________________________
-void AliRun::BuildSimpleGeometry()
-{
-  //
-  // Create a simple TNode geometry used by Root display engine
-  //
-  // Initialise geometry
-  //
-  fGeometry = new TGeometry("AliceGeom","Galice Geometry for Hits");
-  new TMaterial("void","Vacuum",0,0,0);  //Everything is void
-  TBRIK *brik = new TBRIK("S_alice","alice volume","void",2000,2000,3000);
-  brik->SetVisibility(0);
-  new TNode("alice","alice","S_alice");
-}
-
-//_______________________________________________________________________
-void AliRun::CleanDetectors()
-{
-  //
-  // Clean Detectors at the end of event
-  //
-   fRunLoader->CleanDetectors();
 }
 
 //_______________________________________________________________________
@@ -365,7 +287,7 @@ void AliRun::FinishRun()
   if(fLego) 
    {
     AliDebug(1, "Finish Lego");
-    fRunLoader->CdGAFile();
+    AliRunLoader::GetRunLoader()->CdGAFile();
     fLego->FinishRun();
    }
   
@@ -377,16 +299,16 @@ void AliRun::FinishRun()
     detector->FinishRun();
   }
   
-  AliDebug(1, "fRunLoader->WriteHeader(OVERWRITE)");
-  fRunLoader->WriteHeader("OVERWRITE");
+  AliDebug(1, "AliRunLoader::GetRunLoader()->WriteHeader(OVERWRITE)");
+  AliRunLoader::GetRunLoader()->WriteHeader("OVERWRITE");
 
   // Write AliRun info and all detectors parameters
-  fRunLoader->CdGAFile();
+  AliRunLoader::GetRunLoader()->CdGAFile();
   Write(0,TObject::kOverwrite);//write AliRun
-  fRunLoader->Write(0,TObject::kOverwrite);//write RunLoader itself
+  AliRunLoader::GetRunLoader()->Write(0,TObject::kOverwrite);//write RunLoader itself
   
   if(fMCApp) fMCApp->FinishRun();  
-  fRunLoader->Synchronize();
+  AliRunLoader::GetRunLoader()->Synchronize();
 }
 
 //_______________________________________________________________________
@@ -465,7 +387,7 @@ Int_t AliRun::GetEvent(Int_t event)
 /****       R  E  L  O  A  D          ****/
 /*****************************************/
 
-  fRunLoader->GetEvent(event);
+  AliRunLoader::GetRunLoader()->GetEvent(event);
 
 /*****************************************/ 
 /****  P O S T    R E L O A D I N G   ****/
@@ -479,37 +401,7 @@ Int_t AliRun::GetEvent(Int_t event)
      detector->SetTreeAddress();
    }
  
-  return fRunLoader->GetHeader()->GetNtrack();
-}
-
-//_______________________________________________________________________
-TGeometry *AliRun::GetGeometry()
-{
-
-  // Create the TNode geometry for the event display
-  if (!fGeometry) { 
-    BuildSimpleGeometry();
-    //
-    // Unlink and relink nodes in detectors
-    // This is bad and there must be a better way...
-    //
-  
-    TIter next(fModules);
-    AliModule *detector;
-    while((detector = dynamic_cast<AliModule*>(next()))) {
-      detector->BuildGeometry();
-      TList *dnodes=detector->Nodes();
-      Int_t j;
-      TNode *node, *node1;
-      for ( j=0; j<dnodes->GetSize(); j++) {
-	node = dynamic_cast<TNode*>(dnodes->At(j));
-	node1 = fGeometry->GetNode(node->GetName());
-	dnodes->Remove(node);
-	dnodes->AddAt(node1,j);
-      }
-    }
-  }
-  return fGeometry;
+  return AliRunLoader::GetRunLoader()->GetHeader()->GetNtrack();
 }
 
 //_______________________________________________________________________
@@ -547,19 +439,6 @@ void AliRun::ResetSDigits()
 
 //_______________________________________________________________________
 
-void AliRun::ResetPoints()
-{
-  //
-  // Reset all Detectors points
-  //
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-     detector->ResetPoints();
-  }
-}
-//_______________________________________________________________________
-
 void AliRun::InitMC(const char *setup)
 {
   //
@@ -584,43 +463,25 @@ void AliRun::InitMC(const char *setup)
   	AliWarning("Run number not initialized!!");
   }
   
-  fRunLoader->CdGAFile();
+   AliRunLoader::GetRunLoader()->CdGAFile();
     
-  AliPDG::AddParticlesToPdgDataBase();  
+   AliPDG::AddParticlesToPdgDataBase();  
 
-  fNdets = fModules->GetLast()+1;
-  TIter next(fModules);
-  for(Int_t i=0; i<fNdets; ++i)
-   {
-     TObject *objfirst, *objlast;
-     AliModule *detector=dynamic_cast<AliModule*>(fModules->At(i));
-     objlast = gDirectory->GetList()->Last();
-      
-     // Add Detector histograms in Detector list of histograms
-     if (objlast) objfirst = gDirectory->GetList()->After(objlast);
-     else         objfirst = gDirectory->GetList()->First();
-     while (objfirst) 
-      {
-        detector->Histograms()->Add(objfirst);
-        objfirst = gDirectory->GetList()->After(objfirst);
-      }
-   }
-   
    fMCApp->Init();
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    InitLoaders();
-   fRunLoader->MakeTree("E");
+   AliRunLoader::GetRunLoader()->MakeTree("E");
    if (fLego == 0x0)
     {
-      fRunLoader->LoadKinematics("RECREATE");
-      fRunLoader->LoadTrackRefs("RECREATE");
-      fRunLoader->LoadHits("all","RECREATE");
+      AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
+      AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
+      AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
     }
    fInitDone = kTRUE;
    //
    // Save stuff at the beginning of the file to avoid file corruption
-   fRunLoader->CdGAFile();
+   AliRunLoader::GetRunLoader()->CdGAFile();
    Write();
    fEventNrInRun = -1; //important - we start Begin event from increasing current number in run
 }
@@ -650,31 +511,13 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
 }
 
 //_______________________________________________________________________
-void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
-{
-  //
-  // Main function to be called to reconstruct Alice event
-  // 
-   Int_t nev = fRunLoader->GetNumberOfEvents();
-   AliDebug(1, Form("Found %d events", nev));
-   Int_t nFirst = first;
-   Int_t nLast  = (last < 0)? nev : last;
-   
-   for (Int_t nevent = nFirst; nevent <= nLast; nevent++) {
-     AliDebug(1, Form("Processing event %d", nevent));
-     GetEvent(nevent);
-     Digits2Reco(selected);
-   }
-}
-
-//_______________________________________________________________________
 
 void AliRun::Hits2Digits(const char *selected)
 {
 
    // Convert Hits to sumable digits
    // 
-   for (Int_t nevent=0; nevent<fRunLoader->TreeE()->GetEntries(); nevent++) {
+   for (Int_t nevent=0; nevent<AliRunLoader::GetRunLoader()->TreeE()->GetEntries(); nevent++) {
      GetEvent(nevent);
      Hits2SDigits(selected);
      SDigits2Digits(selected);
@@ -900,8 +743,10 @@ void AliRun::Streamer(TBuffer &R__b)
 
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
-  fRunLoader->GetHeader()->SetGenEventHeader(header);
+  AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
 }
+
+
 //_______________________________________________________________________
 
 Int_t AliRun::GetEvNumber() const

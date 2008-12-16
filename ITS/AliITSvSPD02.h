@@ -23,7 +23,6 @@ class AliITSvSPD02 : public AliITS{
     AliITSvSPD02(); // default constructor
     AliITSvSPD02(const char *title,Int_t geomnum=2002); // standard constructor
     virtual ~AliITSvSPD02(); // destructor
-    virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
@@ -32,16 +31,6 @@ class AliITSvSPD02 : public AliITS{
     //virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager(); 
-    virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
-                                                 fGeomDetOut = det;}
-    virtual void   SetWriteDet(const char *f){ // set write file
-                                     strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
-    virtual void   SetReadDet(Bool_t det=kTRUE){ //set .det read
-                                                fGeomDetIn = det;}
-    virtual void   SetReadDet(const char *f){ // set read file
-                                       strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLIDFileName(const char *f){ // set write file
-                             fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
         fMinorVersion = v;} 
     virtual void   SetThicknessDet1(Float_t v=300.){
@@ -67,14 +56,9 @@ class AliITSvSPD02 : public AliITS{
  private:  
     AliITSvSPD02(const AliITSvSPD02 &source); // Copy constructor
     AliITSvSPD02& operator=(const AliITSvSPD02 &source); // = operator
-    Bool_t fGeomDetOut;       // Flag to write .det file out
-    Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number 
     Int_t  fGeomNumber;       // Geometry version number (year)
-    char   fEuclidGeomDet[60];// file where detector transormation are define.
-    char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file 
     Float_t  fDet1;           // thickness of detector in SPD layer 1
     Float_t  fDet2;           // thickness of detector in SPD layer 2
     Float_t  fChip1;          // thickness of chip in SPD layer 1
@@ -82,6 +66,6 @@ class AliITSvSPD02 : public AliITS{
     Int_t fIDMother;          //! ITS Mother Volume id.
     AliITSInitGeometry fIgm;//! Get access to decoding and AliITSgeom init functins
 
-    ClassDef(AliITSvSPD02,3) // Hits manager and geometry for SPD testbeam
+    ClassDef(AliITSvSPD02,5) // Hits manager and geometry for SPD testbeam
 };
 #endif

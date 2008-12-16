@@ -30,15 +30,8 @@ class AliMC : public TVirtualMCApplication {
 public:
     AliMC();
     AliMC(const char *name, const char *title);
-    AliMC(const AliMC &mc);
     virtual ~AliMC();
     
-    AliMC& operator= (const AliMC &mc) {
-      // Assignment operator
-      mc.Copy(*this);
-      return *this;
-    }
-
 //
 //  MC Application
 //
@@ -116,10 +109,11 @@ public:
    virtual void       ResetTrackReferences();
    virtual void       FixParticleDecaytime();
  private:
+   AliMC(const AliMC&); // Not implemented
+   AliMC& operator= (const AliMC&); // Not implemented
    void MakeTmpTrackRefsTree();
    void ReorderAndExpandTreeTR();
  private:
-   void Copy (TObject &mc) const;
    void RemapHits();
    AliGenerator  *fGenerator;         //  Generator used in the MC
    TArrayF        fEventEnergy;       //! Energy deposit for current event

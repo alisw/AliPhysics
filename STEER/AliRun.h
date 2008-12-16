@@ -11,16 +11,11 @@
 // Containing pointers to data elements for AliRoot
 //
 
-#include <TError.h>
 #include <TSystem.h>
 
-class TGeometry;
-class TParticle;
 class TRandom;
-class TTree;
 
 #include "AliRunLoader.h"
-class AliDisplay;
 class AliGenEventHeader;
 class AliGenerator;
 class AliHeader;
@@ -37,17 +32,10 @@ public:
    // Creators - distructors
    AliRun();
    AliRun(const char *name, const char *title);
-   AliRun(const AliRun &arun);
    virtual ~AliRun();
 
-   AliRun& operator = (const AliRun &arun) 
-     {arun.Copy(*this); return (*this);}
-   virtual  void  Build();
-   virtual  void  BuildSimpleGeometry();
-   virtual  void  CleanDetectors();
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
-   AliDisplay    *Display() const { return fDisplay;}
    virtual AliMagF *Field() const {return fField;}
    virtual  void  FinishRun();
    void           AddModule(AliModule* mod);
@@ -67,7 +55,6 @@ public:
    virtual  void  SetConfigFunction(const char * config="Config();");
    virtual  const char *GetConfigFunction() const 
     {return fConfigFunction.Data();}
-   TGeometry     *GetGeometry();
    virtual  void  SetGenEventHeader(AliGenEventHeader* header);
    AliMC*         GetMCApp() const {return fMCApp;}
    virtual  void  Hits2Digits(const char *detector=0); 
@@ -91,16 +78,12 @@ public:
    void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
-   virtual  void  ResetPoints();
    virtual  void  SetBaseFile(const char *filename="galice.root");
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
-   virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") {RunMC(nevent,setup);}
    virtual  void  RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
                           Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
                           Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL, Int_t nev = -1);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
-   virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
-   virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, const char* filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
    virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
@@ -122,12 +105,6 @@ public:
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
-  static void Deprecated(TObject *obj, const char *method, const char *replace)
-    {// Indicates deprecated method
-      if (obj) ::Warning(Form("%s::%s", obj->ClassName(), method),
-		  "method is depricated\nPlease use: %s", replace);
-      else ::Warning(method, "method is depricated\nPlease use: %s", replace);
-    }
 
 protected:
   void           SetRunNumber(Int_t run) {fRun=run;}
@@ -137,9 +114,7 @@ protected:
   Int_t          fEventNrInRun;      //! Current unique event number in run
   Int_t          fEventsPerRun;      //  Number of events per run
   TObjArray     *fModules;           //  List of Detectors
-  TGeometry     *fGeometry;          //  Pointer to geometry
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
-  AliDisplay    *fDisplay;           //! Pointer to event display
   AliMagF       *fField;             //  Magnetic Field Map
   Int_t          fNdets;             //  Number of detectors
   Bool_t         fInitDone;          //! True when initialisation done
@@ -154,9 +129,10 @@ protected:
   TString        fTriggerDescriptor; //  Trigger descriptor identifier
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:
-  void Copy(TObject &arun) const;
+  AliRun(const AliRun&); // Not implemented
+  AliRun& operator = (const AliRun&); // Not implemented
 
-  ClassDef(AliRun,11)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,12)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

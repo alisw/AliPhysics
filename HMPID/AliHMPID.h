@@ -19,7 +19,6 @@ public:
             AliHMPID(                              ):AliDetector(    ),fDoFeed(kTRUE),fSdi(0),fDig(0),fClu(0) {}  //default ctor          
   virtual  ~AliHMPID();                                            
 //framework part  
-          void  BuildGeometry   (                ) {}          //from AliModule invoked from AliMC::InitGeometry() to build geometry for old event display
   virtual void  CreateMaterials (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to define detector materials
   virtual void  CreateGeometry  (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to build detector for simulation
 

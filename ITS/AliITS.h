@@ -40,7 +40,6 @@ class AliITS : public AliDetector {
     AliITS(const char *name, const char *title); // extended standard Creator
     virtual ~AliITS(); // destructor
     virtual Int_t IsVersion() const {return 1;}
-    virtual Int_t DistancetoPrimitive(Int_t , Int_t )  {return 999;}
 
     //===================== Simulation Geometry ========================
     // get geometry version - detailed (major) or coarse (minor)

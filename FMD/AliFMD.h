@@ -333,22 +333,9 @@ public:
   
   /** @{*/
   /** @name Graphics and event display */
-  /** Build simple ROOT TNode geometry for event display. With the new
-      geometry modeller, TGeoManager, this seems rather redundant. */
-  virtual        void   BuildGeometry();
   /** Draw a shaded view of the Forward multiplicity detector.  This 
       isn't really useful anymore. */
-  virtual        void   DrawDetector();
-  /** Calculate the distance from the mouse to the FMD on the screen
-      Dummy routine */
-  virtual        Int_t  DistancetoPrimitive(Int_t px, Int_t py);
-  /** Store x, y, z of all hits in memory for display. 
-      Normally, the hits are drawn using TPolyMarker3D - however, that
-      is not very useful for the FMD.  Therefor, this member function
-      is overloaded to make TMarker3D, via the class AliFMDPoints.
-      AliFMDPoints is a local class. 
-      @param track the track number to load the hits for */
-  virtual        void   LoadPoints(Int_t track);
+  virtual        void   DrawDetector() {}
   /** @}*/
   
   /** @{ */

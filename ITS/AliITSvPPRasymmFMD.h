@@ -20,7 +20,6 @@ class AliITSvPPRasymmFMD : public AliITS {
     // Extended Standard constructor
     AliITSvPPRasymmFMD(const char *name, const char *title);
     virtual       ~AliITSvPPRasymmFMD() ;
-    virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
@@ -30,17 +29,6 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   AddAlignableVolumes() const;
-    //set .det write
-    virtual void  SetWriteDet(Bool_t det=kFALSE){fGeomDetOut=det;}
-    // set write file
-    virtual void   SetWriteDet(const Char_t *f){fWrite=f;fGeomDetOut=kTRUE;}
-    //set .det read
-    virtual void   SetReadDet(Bool_t det=kFALSE){fGeomDetIn = det;}
-    // set read file
-    virtual void   SetReadDet(const Char_t *f){fRead=f;fGeomDetIn=kTRUE;}
-    // set write file
-    virtual void   SetEUCLIDFileName(const Char_t *f){fEuclidGeometry=f;
-                                                          SetEUCLID();}
     virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions
 	fMinorVersion = v;}
     virtual void   SetThicknessDet1(Float_t v=200.){ 
@@ -67,18 +55,6 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual const Char_t *GetEULIIDFileName() const{ // return .euc file name
-        return fEuclidGeometry.Data();}
-    // returns value GeomDetOut flag.
-    virtual Bool_t GetWriteDet() const {return fGeomDetOut;}
-    // returns value GeomDetIn flag.
-    virtual Bool_t GetReadDet() const{return fGeomDetIn;} 
-    virtual const Char_t *GetReadDetFileName()const{//return .det read file name
-        if(fRead.IsNull()) return fRead.Data();
-        else return GetEULIIDFileName();}
-    virtual const Char_t *GetWriteDetFileName()const{//return .det write file name
-        if(fWrite.IsNull()) return fWrite.Data();
-        else return GetEULIIDFileName();}
     virtual Int_t GetMajorVersion() const {// return Major Version Number
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion() const {// return Major Version Number
@@ -114,23 +90,15 @@ class AliITSvPPRasymmFMD : public AliITS {
     AliITSvPPRasymmFMD& operator=(const AliITSvPPRasymmFMD &source);
     void InitAliITSgeom();
     Bool_t IsDensityServicesByThickness()const {return fByThick;}
-    // returns Euclid file name with where Euclid geometry is kept.
-    const TString & GetEuclidFile()const{return fEuclidGeomDet;}
     // Return Mother volume ID
     Int_t GetMotherID()const {return fIDMother;}
     // Return AliITSInitGeometry object
     const AliITSInitGeometry & GetGeomInit()const{return fIgm;}
 
-    // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
-    Bool_t  fGeomDetOut;    // Flag to write .det file out
-    Bool_t  fGeomDetIn;     // Flag to read .det file or directly from Geat.
     Bool_t  fByThick;       // Flag to use services materials by thickness
                             // ture, or mass false.
     Int_t   fMajorVersion;  // Major version number == IsVersion
     Int_t   fMinorVersion;  // Minor version number
-    TString fEuclidGeomDet; // file where detector transormation are define.
-    TString fRead;          //! file name to read .det file
-    TString fWrite;         //! file name to write .det file
     Float_t fDet1;	    // thickness of detector in SPD layer 1
     Float_t fDet2;          // thickness of detector in SPD layer 2
     Float_t fChip1;         // thickness of chip in SPD layer 1   
@@ -140,7 +108,7 @@ class AliITSvPPRasymmFMD : public AliITS {
     Int_t   fIDMother;      //! ITS Mother Volume id.
     AliITSInitGeometry fIgm;//! Get access to decoding and AliITSgeom init functins
 
-    ClassDef(AliITSvPPRasymmFMD,4) //Hits manager for set:ITS version 10
+    ClassDef(AliITSvPPRasymmFMD,5) //Hits manager for set:ITS version 10
                                    // PPR detailed Geometry asymmetric
 };
 // Input and output function for standard C++ input/output.

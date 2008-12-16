@@ -210,30 +210,6 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     delete newquad;
 }
 
-//_____________________________________________________________________________
-void AliZDC::BuildGeometry()
-{
-  //
-  // Build the ROOT TNode geometry for event display 
-  // in the Zero Degree Calorimeter
-  // This routine is dummy for the moment
-  //
-
-  TNode *node, *top;
-  TBRIK *brik;
-  const int kColorZDC  = kBlue;
-  
-  //
-  top=gAlice->GetGeometry()->GetNode("alice");
-  
-  // ZDC
-  brik = new TBRIK("S_ZDC","ZDC box","void",300,300,5);
-  top->cd();
-  node = new TNode("ZDC","ZDC","S_ZDC",0,0,600,"");
-  node->SetLineColor(kColorZDC);
-  fNodes->Add(node);
-}
-
 //____________________________________________________________________________
 Float_t AliZDC::ZMin(void) const
 {

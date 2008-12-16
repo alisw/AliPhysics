@@ -103,7 +103,6 @@ class AliRunLoader: public TNamed
     
     AliRun*     GetAliRun()const;
         
-    Int_t       WriteGeometry(Option_t* opt="");
     Int_t       WriteHeader(Option_t* opt="");
     Int_t       WriteTrigger(Option_t* opt="");
     Int_t       WriteAliRun(Option_t* opt="");

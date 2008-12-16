@@ -17,7 +17,6 @@ class AliITSvPPRcoarseasymm : public AliITS {
     AliITSvPPRcoarseasymm();
     AliITSvPPRcoarseasymm(const char *name, const char *title);
     virtual       ~AliITSvPPRcoarseasymm() ;
-    virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual void   Init(); 

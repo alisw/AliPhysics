@@ -96,52 +96,6 @@ AliITSvPPRcoarseasymm::~AliITSvPPRcoarseasymm() {
 ////////////////////////////////////////////////////////////////////////
 }
 
-//__________________________________________________________________________
-void AliITSvPPRcoarseasymm::BuildGeometry(){
-////////////////////////////////////////////////////////////////////////
-//    Geometry builder for the ITS version 6.
-////////////////////////////////////////////////////////////////////////
-    TNode *node, *top;
-    const Int_t kColorITS=kYellow;
-    //
-    top = gAlice->GetGeometry()->GetNode("alice");
-
-    new TTUBE("S_layer1","Layer1 of ITS","void",3.8095,3.8095+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+1.03*9.36/100.,14.35);
-    top->cd();
-    node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.94*9.36/100.,25.1);
-    top->cd();
-    node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer4","Layer4 of ITS","void",24.1,24.1+0.95*9.36/100.,32.1);
-    top->cd();
-    node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer5","Layer5 of ITS","void",38.5,38.5+0.91*9.36/100.,49.405);
-    top->cd();
-    node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-
-    new TTUBE("S_layer6","Layer6 of ITS","void",43.5765,43.5765+0.87*9.36/100.,55.27);
-    top->cd();
-    node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
-    node->SetLineColor(kColorITS);
-    fNodes->Add(node);
-}
 //_____________________________________________________________________________
 void AliITSvPPRcoarseasymm::CreateGeometry(){
     ////////////////////////////////////////////////////////////////////////

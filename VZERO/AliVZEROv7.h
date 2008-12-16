@@ -26,7 +26,6 @@ public:
   virtual void   AddDigits(Int_t *tracks, Int_t *digits);
   virtual void   CreateGeometry();
   virtual void   AddAlignableVolumes() const;
-  virtual void   BuildGeometry();
   virtual void   CreateMaterials();
   virtual void   DrawModule() const;
   virtual void   DrawGeometry();

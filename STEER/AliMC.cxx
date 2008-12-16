@@ -108,33 +108,6 @@ AliMC::AliMC(const char *name, const char *title) :
 }
 
 //_______________________________________________________________________
-AliMC::AliMC(const AliMC &mc) :
-  TVirtualMCApplication(mc),
-  fGenerator(0),
-  fEventEnergy(0),
-  fSummEnergy(0),
-  fSum2Energy(0),
-  fTrRmax(1.e10),
-  fTrZmax(1.e10),
-  fRDecayMax(1.e10),
-  fRDecayMin(-1.),
-  fDecayPdg(0),
-  fImedia(0),
-  fTransParName("\0"),
-  fMCQA(0),
-  fHitLists(0),
-  fTmpTreeTR(0),
-  fTmpFileTR(0),
-  fTrackReferences(),
-  fTmpTrackReferences()
-{
-  //
-  // Copy constructor for AliMC
-  //
-  mc.Copy(*this);
-}
-
-//_______________________________________________________________________
 AliMC::~AliMC()
 {
   //destructor
@@ -143,13 +116,6 @@ AliMC::~AliMC()
   delete fMCQA;
   delete fHitLists;
   // Delete track references
-}
-
-//_______________________________________________________________________
-void AliMC::Copy(TObject &) const
-{
-  //dummy Copy function
-  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________

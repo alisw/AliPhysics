@@ -21,7 +21,6 @@ public:
   AliTOFv2();
   AliTOFv2(const char *name, const char *title);
   virtual ~AliTOFv2() {}
-  virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();

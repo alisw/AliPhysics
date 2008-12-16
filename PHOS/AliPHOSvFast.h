@@ -47,7 +47,6 @@ public:
   virtual ~AliPHOSvFast(void) ;
 
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
-  virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
   Float_t        GetBigBox(Int_t index) const;                             
   virtual void   Init(void) ;                                        // does nothing

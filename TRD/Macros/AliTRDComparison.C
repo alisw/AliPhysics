@@ -81,7 +81,6 @@ comptof->fTree =treetof;
 #include "AliTracker.h"
 #include "AliMagF.h"
 #include "AliHelix.h"
-#include "AliPoints.h"
 #include "AliESDtrack.h"
 #include "AliTRDtrack.h"
 #include "AliITStrackMI.h"

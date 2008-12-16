@@ -66,7 +66,6 @@ t->Exec();
 #include "AliTracker.h"
 #include "AliMagF.h"
 #include "AliHelix.h"
-#include "AliPoints.h"
 #include "AliMathBase.h"
 
 #endif

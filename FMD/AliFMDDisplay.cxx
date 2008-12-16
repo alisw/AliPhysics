@@ -355,21 +355,6 @@ AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________
-Int_t          
-AliFMDDisplay::DistancetoPrimitive(Int_t px, Int_t) 
-{
-  // Calculate the distance from point to 
-  // something in the canvas. 
-  // Depends on the zoom mode. 
-  fPad->SetCursor(kCross);
-  Float_t xmin = fPad->GetX1();
-  Float_t xmax = fPad->GetX2();
-  Float_t dx   = .02 * (xmax - xmin);
-  Float_t x    = fPad->AbsPixeltoX(px);
-  if (x < xmin + dx || x > xmax - dx) return 9999;
-  return (fZoomMode ? 0 : 7);
-}
-//____________________________________________________________________
 Bool_t 
 AliFMDDisplay::Init()
 {

@@ -53,14 +53,9 @@ ClassImp(AliITSvSPD02)
 //______________________________________________________________________
 AliITSvSPD02::AliITSvSPD02():
 AliITS(),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
 fMajorVersion((Int_t)kvSPD02),
 fMinorVersion(2),
 fGeomNumber(2002),
-fEuclidGeomDet(),
-fRead(),
-fWrite(),
 fDet1(300.0),
 fDet2(300.0),
 fChip1(300.0),
@@ -76,22 +71,12 @@ fIgm(kvSPD02){
     // Return:
     //    A default created class.
     ////////////////////////////////////////////////////////////////////////
-    Int_t i;
-
-    for(i=0;i<60;i++) fRead[i] = '\0';
-    for(i=0;i<60;i++) fWrite[i] = '\0';
-    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
 AliITSvSPD02::AliITSvSPD02(const char *title,Int_t gn) : AliITS("ITS", title),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
 fMajorVersion(1),
 fMinorVersion(2),
 fGeomNumber(2002),
-fEuclidGeomDet(),
-fRead(),
-fWrite(),
 fDet1(300.0),
 fDet2(300.0),
 fChip1(300.0),
@@ -122,10 +107,6 @@ fIgm(kvSPD02){
     SetThicknessChip1();
     SetThicknessChip2();	 	 	 
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vSPD022.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vSPD022.det",60);
-    strncpy(fRead,fEuclidGeomDet,60);
-    strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
 AliITSvSPD02::~AliITSvSPD02() {
@@ -138,174 +119,6 @@ AliITSvSPD02::~AliITSvSPD02() {
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-}
-//______________________________________________________________________
-void AliITSvSPD02::BuildGeometry(){
-    ////////////////////////////////////////////////////////////////////////
-    //    Geometry builder for the ITS SPD test beam 2002 version 1.
-    //    ALIC    ALICE Mother Volume
-    //     |- ITSV     ITS Mother Volume
-    //         |- IDET       Detector under Test
-    //         |   |- ITS0       SPD Si Chip
-    //         |   |  |- ITST      SPD Sensitivve Volume
-    //         |   |- IPC0 *5    Readout chip
-    //         |- ITEL *4    SPD Telescope
-    //             |- IMB0       SPD Si Chip
-    //             |   |- IMBS     SPD Sensitive volume
-    //             |- ICMB       Chip MiniBus.
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-    // Get the top alice volume.
-
-    switch (fGeomNumber){
-    case 2002:
-        BuildGeometry2002();
-        break;
-    default:
-        BuildGeometry2002();
-        break;
-    } // end switch
-}
-//______________________________________________________________________
-void AliITSvSPD02::BuildGeometry2002(){
-    ////////////////////////////////////////////////////////////////////////
-    //    Geometry builder for the ITS SPD test beam 2002 version 1.
-    //    ALIC    ALICE Mother Volume
-    //     |- ITSV     ITS Mother Volume
-    //         |- IDET       Detector under Test
-    //         |   |- ITS0       SPD Si Chip
-    //         |   |  |- ITST      SPD Sensitivve Volume
-    //         |   |- IPC0 *5    Readout chip
-    //         |- ITEL *4    SPD Telescope
-    //             |- IMB0       SPD Si Chip
-    //             |   |- IMBS     SPD Sensitive volume
-    //             |- ICMB       Chip MiniBus.
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-    // Get the top alice volume.
-    TNode *aALIC = gAlice->GetGeometry()->GetNode("alice");
-    aALIC->cd();
-
-    // Define ITS Mother Volume
-    Float_t data[3];
-    Float_t ddettest=200.0E-4,ddettelescope=300.0E-4;
-    Float_t dchipMiniBus=750.0E-4,dchiptest=300.0E-4;
-    //Float_t yposition= 0.0;
-    TRotMatrix *r0 = new TRotMatrix("ITSidrotm0","ITSidrotm0",
-                                    90.0,0,0.0,0,90.0,270.0);
-    data[0] = 10.0;
-    data[1] = 50.0;
-    data[2] = 100.0;
-    TBRIK *iITSVshape = new TBRIK("ITSVshape",
-                                  "ITS Logical Mother Volume","Air",
-                                  data[0],data[1],data[2]);
-    TNode *iITSV = new TNode("ITSV","ITS Mother Volume",iITSVshape,
-                             0.0,0.0,0.0,0,0);
-    iITSV->cd(); // set ourselve into ITSV subvolume of aALIC
-
-    // SPD part of telescope (MiniBuS)
-    data[0] = 0.705;
-    data[1] = 0.5*ddettelescope;
-    data[2] = 3.536;
-    TBRIK *iIMB0shape = new TBRIK("IMB0shape","SPD wafer","Si",
-				 data[0],data[1],data[2]);
-    Float_t detMiniBusX,detMiniBusY,detMiniBusZ;
-    data[0] = detMiniBusX = 0.64;
-    data[1] = detMiniBusY = 0.5*ddettelescope;
-    data[2] = detMiniBusZ = 3.48;
-    TBRIK *iIMBSshape = new TBRIK("IMBSshape","SPD Sensitive volume","Si",
-				 data[0],data[1],data[2]);
-    Float_t chipMiniBusX,chipMiniBusY,chipMiniBusZ;
-    data[0] = chipMiniBusX = 0.793;
-    data[1] = chipMiniBusY = 0.5*dchipMiniBus;
-    data[2] = chipMiniBusZ = 0.68;
-    TBRIK *iICMBshape = new TBRIK("ICMBshape","chip Minibus","Si",
-				 data[0],data[1],data[2]);
-    data[0] = TMath::Max(detMiniBusX,chipMiniBusX);
-    data[1] = detMiniBusY+chipMiniBusY;
-    data[2] = TMath::Max(detMiniBusZ,chipMiniBusZ);
-    TBRIK *iITELshape = new TBRIK("ITELshape","ITELshape","Air",
-				 data[0],data[1],data[2]);
-
-    // SPD under test
-    Float_t spdX,spdY,spdZ,spdchipX,spdchipY,spdchipZ;
-    data[0] = 0.705;
-    data[1] = ddettest;
-    data[2] = 3.536;
-    TBRIK *iITS0shape = new TBRIK("ITS0shape","SPD wafer","Si",
-				 data[0],data[1],data[2]); // contains detector
-    data[0] = spdX = 0.64;
-    data[1] = spdY = ddettest;
-    data[2] = spdZ = 3.48;
-    TBRIK *iITSTshape = new TBRIK("ITSTshape","SPD sensitive volume","Si",
-				 data[0],data[1],data[2]);
-    // ITS0 with no translation and unit rotation matrix.
-    data[0] = spdchipX = 0.793;
-    data[1] = spdchipY = dchiptest;
-    data[2] = spdchipZ = 0.68;
-    TBRIK *iIPC0shape = new TBRIK("IPC0shape","Readout Chips","Si",
-				 data[0],data[1],data[2]); // chip under test
-    data[0] = TMath::Max(spdchipX,spdX);
-    data[1] = spdY+spdchipY;
-    data[2] = TMath::Max(spdchipZ,spdZ);
-    TBRIK *iIDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
-				 data[0],data[1],data[2]);
-    // Place volumes in geometry
-    Int_t i,j;
-    char name[20],title[50];
-    Double_t px=0.0,py=0.0,pz[4]={-38.0,0.0,0.0,0.0};
-    pz[1] = pz[0]+2.0;
-    pz[2] = pz[1]+38.0+spdY+spdchipY+34.5;
-    pz[3] = pz[2]+2.0;
-    TNode *iITEL[4],*iICMB[4],*iIMB0[4],*iIMBS[4];
-    TNode *iIDET = new TNode("IDET","Detector Under Test",iIDETshape,
-			    0.0,0.0,pz[1]+38.0,r0,0);
-    iIDET->cd();
-    TNode *iITS0 = new TNode("ITS0","SPD Chip",iITS0shape,
-			    0.0,iIDETshape->GetDy()-spdY,0.0,0,0);
-    TNode *iIPC0[5];
-    for(i=0;i<5;i++) { //place readout chips on the back of SPD chip under test
-        sprintf(name,"IPC0%d",i);
-        sprintf(title,"Readout chip #%d",i+1);
-        j = i-2;
-        iIPC0[i] = new TNode(name,title,iIPC0shape,
-                             0.0,spdchipY-iIDETshape->GetDy(),
-                             j*2.0*spdchipZ+j*0.25*(spdZ-5.*spdchipZ),0,0);
-    } // end for i
-    iITS0->cd();
-    TNode *iITST = new TNode("ITST","SPD sensitive volume",iITSTshape,
-                             0.0,0.0,0.0,0,0);
-    for(i=0;i<4;i++){
-        iITSV->cd();
-        sprintf(name,"ITEL%d",i);
-        sprintf(title,"Test beam telescope element #%d",i+1);
-        iITEL[i] = new TNode(name,title,iITELshape,px,py,pz[i],r0,0);
-        iITEL[i]->cd();
-        iICMB[i] = new TNode("ICMB","Chip MiniBus",iICMBshape,
-                             0.0,-iITELshape->GetDy()+detMiniBusY,0.0,0,0);
-        iIMB0[i] = new TNode("IMB0","Chip MiniBus",iIMB0shape,
-                             0.0, iITELshape->GetDy()-detMiniBusY,0.0,0,0);
-        iIMB0[i]->cd();
-        iIMBS[i] = new TNode("IMBS","IMBS",iIMBSshape,0.0,0.0,0.0,0,0);
-        // place IMBS inside IMB0 with no translation and unit rotation matrix.
-    } // end for i
-    aALIC->cd();
-    iITST->SetLineColor(kYellow);
-    fNodes->Add(iITST);
-    for(i=0;i<4;i++){
-        iIMBS[i]->SetLineColor(kGreen);
-        fNodes->Add(iIMBS[i]);
-    } // end for i
 }
 //______________________________________________________________________
 void AliITSvSPD02::CreateGeometry(){
@@ -567,7 +380,6 @@ void AliITSvSPD02::Init(){
     //
     UpdateInternalGeometry();
     AliITS::Init();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
     //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.

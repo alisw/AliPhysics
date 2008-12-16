@@ -33,8 +33,9 @@ public:
   virtual int   GetNhits()   const {return fNhits;}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits()   const {return fHits;}
+  virtual  Bool_t        IsModule() const {return kFALSE;}
+  virtual  Bool_t        IsDetector() const {return kTRUE;}
 
-  TObjArray    *Points() const {return fPoints;}
   Int_t         GetIshunt() const {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
   
@@ -42,13 +43,11 @@ public:
   virtual void        Publish(const char *dir, void *c, const char *name=0) const;
   virtual void        Browse(TBrowser *b);
   virtual void        FinishRun();
-  virtual void        LoadPoints(Int_t track);
   virtual void        MakeBranch(Option_t *opt=" ");
   virtual void        ResetDigits();
   virtual void        ResetHits();
   virtual void        AddAlignableVolumes() const;
 
-  virtual void        ResetPoints();
   virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t gate) {fTimeGate=gate;}
   virtual Float_t     GetTimeGate() const {return fTimeGate;}
@@ -80,7 +79,6 @@ protected:
   Int_t         fCurIterHit;  //!Counter for the hit iterator
   TClonesArray *fHits;        //!List of hits for one track only
   TClonesArray *fDigits;      //!List of digits for this detector
-  TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
 
   AliLoader*  fLoader;//! pointer to getter for this module skowron
 
