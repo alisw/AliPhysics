@@ -1,4 +1,7 @@
 TEveRGBAPalette *g_zdc_palette = 0;
+Float_t          g_zdc_scale   = 0.1;
+Float_t          g_zdc_dist    = 11695;
+Float_t          g_zdc_cross   = 20;
 
 TEveGeoShape* zdc_make_shape(const Text_t* name, const Text_t* title_base,
 			     Double_t signal,    const Text_t* path)
@@ -22,9 +25,24 @@ TEveGeoShape* zdc_make_shape(const Text_t* name, const Text_t* title_base,
 
   // Scale z-dictance by 0.1
   Double_t* t = s->RefMainTrans().ArrT();
-  t[2] *= 0.1;
+  t[2] *= g_zdc_scale;
 
   return s;
+}
+
+TEveStraightLineSet*
+zdc_make_cross(const Text_t* name, const Text_t* title_base,
+               Float_t x, Float_t y, Float_t z, Float_t dx, Float_t dy, Float_t dz)
+{
+  TEveStraightLineSet* ls = new TEveStraightLineSet(name, Form("%s, x=%.3f, y=%.3f", title_base, x, y));
+  ls->SetMainColor(kYellow);
+  ls->SetLineWidth(2);
+  ls->RefMainTrans().SetPos(x, y, z);
+  ls->AddLine(dx, 0,  0, -dx, 0,  0);
+  ls->AddLine(0,  dy, 0,  0, -dy, 0);
+  ls->AddLine(0,  0,  dz, 0,  0, -dz);
+
+  return ls;
 }
 
 // ???? There are 5 towers in ESD, 4 in geom.
@@ -129,6 +147,22 @@ void esd_zdc()
 
   c->AddElement(zdc_make_shape("Tower 4", tb, te[4],
 			       "ALIC_1/ZDCA_1/ZPRO_2/ZPTX_4/ZP1_1"));
+
+
+  // Centroids
+  TEveStraightLineSet *ls = 0;
+
+  Double32_t *cNA = esd->GetZNACentroid();
+  ls = zdc_make_cross("ZNA Centroid", "ZNA",
+                      cNA[0], cNA[1],  g_zdc_dist * g_zdc_scale,
+                      g_zdc_cross, g_zdc_cross, g_zdc_cross);
+  l->AddElement(ls);
+
+  Double32_t *cNC = esd->GetZNCCentroid();
+  ls = zdc_make_cross("ZNA Centroid", "ZNA",
+                      cNC[0], cNC[1], -g_zdc_dist * g_zdc_scale,
+                      g_zdc_cross, g_zdc_cross, g_zdc_cross);
+  l->AddElement(ls);
 
   // End - refresh screen
   gEve->Redraw3D();
