@@ -10,6 +10,7 @@
 #include <TInterpreter.h>
 #include <TRint.h>
 #include <TROOT.h>
+#include <TPRegexp.h>
 #include <TSystem.h>
 #include <TError.h>
 
@@ -48,6 +49,11 @@ int main(int argc, char **argv)
     gInterpreter->AddIncludePath(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
+  }
+  {
+    // TabCom fails on double-colon in macro-path.
+    TPMERegexp doubleColon(":{2,}", "og");
+    doubleColon.Substitute(macPath, ":");
   }
   gROOT->SetMacroPath(macPath);
 

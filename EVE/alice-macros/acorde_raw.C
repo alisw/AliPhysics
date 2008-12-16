@@ -32,8 +32,6 @@ void acorde_raw()
 
   gEve->AddElement(acorde);
 
-  Int_t shape_offset = TEveGeoShape::Class()->GetDataMemberOffset("fShape");
-
   for (Int_t module=0; module < 60; ++module)
   {
     TString path = acorde_module_path(module);
@@ -45,30 +43,25 @@ void acorde_raw()
       continue;
     }
 
-    TEveGeoShape* eg_shape = new TEveGeoShape(Form("Module %d", module));
-
-    eg_shape->RefMainTrans().SetFrom(* gGeoManager->GetCurrentMatrix());
-
-    // @@NEWROOT@@ Temporary hack.
-    // Hack to set shape pointer, no interface available in TEveGeoShape.
-    * (TGeoShape**) (((char*)eg_shape) + shape_offset) = gGeoManager->GetCurrentVolume()->GetShape();
-
     // From Matevz:
-    // Here check ctate and assign color, I do it partially for now.
+    // Here check state and assign color, I do it partially for now.
     Int_t  word_idx = module / 30;
     Int_t  bit_idx  = module % 30;
     Bool_t val      = (dy[word_idx] & (1 << bit_idx)) != 0;
     //printf("Module %2d: word_idx = %d, bit_idx = %2d => val = %d\n",
     //       module, word_idx, bit_idx, val);
-    if (val)
-      eg_shape->SetMainColor(2);
-    else
-      eg_shape->SetMainColor(4);
-    eg_shape->StampColorSelection();
+
+    TEveGeoShape* eg_shape = new TEveGeoShape(TString::Format("Module %d", module),
+                                              TString::Format("Module %d, %s", module, val ? "ON" : "OFF"));
+    eg_shape->SetPickable(kTRUE);
+    eg_shape->SetMainColor(val ? kRed : kBlue);
+    eg_shape->RefMainTrans().SetFrom(*gGeoManager->GetCurrentMatrix());
+    eg_shape->SetShape((TGeoShape*) gGeoManager->GetCurrentVolume()->GetShape()->Clone());
 
     acorde->AddElement(eg_shape);
   }
 
+  delete stream;
   gEve->Redraw3D();
 }
 
