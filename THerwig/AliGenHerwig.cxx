@@ -54,13 +54,22 @@ ClassImp(AliGenHerwig)
     fHerwig(0x0),
     fProcess(0),
     fPtHardMin(0.),
+    fPtHardMax(9999.),
     fPtRMS(0.),
     fMaxPr(10),
     fMaxErrors(1000),
     fEnSoft(1),
     fEv1Pr(0),
     fEv2Pr(0),
-    fFileName(0)
+    fFileName(0),
+    fEtaMinParton(-20.),     
+    fEtaMaxParton(20.),     
+    fPhiMinParton(0.),     
+    fPhiMaxParton(2.* TMath::Pi()),     
+    fEtaMinGamma(-20.),      
+    fEtaMaxGamma(20.),      
+    fPhiMinGamma(0.),      
+    fPhiMaxGamma(2. * TMath::Pi())  
 {
 // Constructor
   fEnergyCMS = 14000;
@@ -84,13 +93,22 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fHerwig(0x0),
     fProcess(0),
     fPtHardMin(0.),
+    fPtHardMax(9999.),
     fPtRMS(0.),
     fMaxPr(10),
     fMaxErrors(1000),
     fEnSoft(1),
     fEv1Pr(0),
     fEv2Pr(0),
-    fFileName(0)
+    fFileName(0),
+    fEtaMinParton(-20.),     
+    fEtaMaxParton(20.),     
+    fPhiMinParton(0.),     
+    fPhiMaxParton(2.* TMath::Pi()),     
+    fEtaMinGamma(-20.),      
+    fEtaMaxGamma(20.),      
+    fPhiMinGamma(0.),      
+    fPhiMaxGamma(2. * TMath::Pi())  
 {
     fEnergyCMS = 14000;
     SetTarget();
@@ -145,7 +163,7 @@ void AliGenHerwig::Init()
 
   if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
 
-  fHerwig->Hwusta("PI0     ");
+  //fHerwig->Hwusta("PI0     ");
 
   // compute parameter dependent constants
   fHerwig->PrepareRun();
@@ -185,7 +203,7 @@ void AliGenHerwig::InitJimmy()
 
   if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
 
-  fHerwig->Hwusta("PI0     ");
+  //  fHerwig->Hwusta("PI0     ");
 
   // compute parameter dependent constants
   fHerwig->PrepareRunJimmy();
@@ -289,6 +307,14 @@ void AliGenHerwig::Generate()
 	Int_t np = particles->GetEntriesFast()-1;
 	if (np == 0 ) continue;
 
+	//Check hard partons or direct gamma in kine range
+
+	if (fProcess == kHeJets || fProcess == kHeDirectGamma) {
+	  TParticle* parton1 = (TParticle *) particles->At(6);
+	  TParticle* parton2 = (TParticle *) particles->At(7);
+	  if (!CheckParton(parton1, parton2))  continue ;
+	} 
+
 	Int_t nc=0;
 
 	Int_t * newPos = new Int_t[np];
@@ -338,6 +364,53 @@ void AliGenHerwig::Generate()
   AdjustWeights();
 //  get cross-section
   fXsection=fHerwig->GetAVWGT();
+  //printf(">> trials << %d\n",fTrials);
+}
+
+Bool_t AliGenHerwig::CheckParton(TParticle* parton1, TParticle* parton2)
+{
+// Check the kinematic trigger condition
+//
+//Select events with parton max energy
+    if(fPtHardMax < parton1->Pt()) return kFALSE;
+
+// Select events within angular window
+    Double_t eta[2];
+    eta[0] = parton1->Eta();
+    eta[1] = parton2->Eta();
+    Double_t phi[2];
+    phi[0] = parton1->Phi();
+    phi[1] = parton2->Phi();
+    Int_t    pdg[2]; 
+    pdg[0] = parton1->GetPdgCode();
+    pdg[1] = parton2->GetPdgCode();   
+    printf("min %f, max %f\n",fPtHardMin, fPtHardMax);
+    printf("Parton 1: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton1->GetName(),parton1->Pt(), eta[0],phi[0]*TMath::RadToDeg());
+    printf("Parton 2: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton2->GetName(),parton2->Pt(), eta[1],phi[1]*TMath::RadToDeg());
+    
+    if (fProcess == kHeJets) {
+      //Check if one of the 2 outgoing partons are in the eta-phi window
+      for(Int_t i = 0; i < 2; i++)
+	if ((eta[i] < fEtaMaxParton  && eta[i] > fEtaMinParton) &&
+	    (phi[i] < fPhiMaxParton  && phi[i] > fPhiMinParton)) return  kTRUE ;
+    }
+    
+    else {
+      //Check if the gamma and the jet  are in the eta-phi window
+      Int_t igj = 0;
+      Int_t ijj = 0;
+      if(pdg[0] == 22) ijj=1;
+      else igj=1;
+      if ((eta[ijj] < fEtaMaxParton   && eta[ijj] > fEtaMinParton) &&
+	  (phi[ijj] < fPhiMaxParton   && phi[ijj] > fPhiMinParton)) {
+	
+	if ((eta[igj] < fEtaMaxGamma   && eta[igj] > fEtaMinGamma) &&
+	    (phi[igj] < fPhiMaxGamma   && phi[igj] > fPhiMinGamma)) return  kTRUE;
+	
+      }
+    }
+
+    return kFALSE ;
 }
 
 void AliGenHerwig::AdjustWeights()

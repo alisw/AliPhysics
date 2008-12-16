@@ -26,7 +26,7 @@ class AliGenHerwig : public AliGenMC
 
 {
     enum {kNoTrigger, kHardProcesses, kDirectPhotons};
-
+    enum {kHeJets = 1500, kHeDirectGamma = 1800};
  public:
     AliGenHerwig();
     AliGenHerwig(Int_t npart);
@@ -46,6 +46,7 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetStrucFunc(StrucFunc_t func = kCTEQ5L)
       {fStrucFunc = func;}
     virtual void    SetPtHardMin(Double_t pt) {fPtHardMin=pt;}
+    virtual void    SetPtHardMax(Double_t pt) {fPtHardMax=pt;}
     virtual void    SetPtRMS(Double_t pt) {fPtRMS=pt;}
     virtual void    SetMaxPr(Int_t i) {fMaxPr=i;}
     virtual void    SetMaxErrors(Int_t i) {fMaxErrors=i;}
@@ -55,6 +56,29 @@ class AliGenHerwig : public AliGenMC
 
     virtual void    SetHardProcessFile(TString filename) {fFileName=TString(filename);};
     virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
+
+    virtual Bool_t CheckParton(TParticle* parton1, TParticle* parton2);
+
+    virtual void         GetPartonEtaRange(Float_t& etamin, Float_t& etamax) const
+	{etamin = fEtaMinParton; etamax = fEtaMaxParton;}
+    virtual void         GetPartonPhiRange(Float_t& phimin, Float_t& phimax) const
+	{phimin = fPhiMinParton*180./TMath::Pi(); phimax = fPhiMaxParton*180/TMath::Pi();}
+    virtual void         GetGammaEtaRange(Float_t& etamin, Float_t& etamax) const
+	{etamin = fEtaMinGamma; etamax = fEtaMaxGamma;}
+    virtual void         GetGammaPhiRange(Float_t& phimin, Float_t& phimax) const
+	{phimin = fPhiMinGamma*180./TMath::Pi(); phimax = fPhiMaxGamma*180./TMath::Pi();}
+
+    virtual void    SetPartonEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
+	{fEtaMinParton = etamin; fEtaMaxParton = etamax;}
+    // Phi range for jet trigger
+    virtual void    SetPartonPhiRange(Float_t phimin = 0., Float_t phimax = 360.)
+	{fPhiMinParton = TMath::Pi()*phimin/180.; fPhiMaxParton = TMath::Pi()*phimax/180.;}
+    // Eta range for gamma trigger 
+    virtual void    SetGammaEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
+	{fEtaMinGamma = etamin; fEtaMaxGamma = etamax;}
+    // Phi range for gamma trigger
+    virtual void    SetGammaPhiRange(Float_t phimin = 0., Float_t phimax = 360.)
+	{fPhiMinGamma = TMath::Pi()*phimin/180.; fPhiMaxGamma = TMath::Pi()*phimax/180.;}
 
  protected:
     Bool_t SelectFlavor(Int_t pid);
@@ -75,7 +99,8 @@ class AliGenHerwig : public AliGenMC
     Float_t     fXsection;       // Cross-section
     THerwig6    *fHerwig;        // Herwig
     Int_t       fProcess;        // Process number
-    Double_t    fPtHardMin;      // lower pT-hard cut
+    Double_t    fPtHardMin;      // higher pT-hard cut
+    Double_t    fPtHardMax;      // lower pT-hard cut
     Double_t    fPtRMS;          // intrinsic pt of incoming hadrons
     Int_t       fMaxPr;          // maximum number of events to print out
     Int_t       fMaxErrors;      // maximum number of errors allowed
@@ -83,6 +108,14 @@ class AliGenHerwig : public AliGenMC
     Int_t       fEv1Pr;          // first event to be printed
     Int_t       fEv2Pr;          // last event to be printed
     TString     fFileName;       //!Name of file to read from hard scattering
+    Float_t     fEtaMinParton;         //Minimum eta of parton shower
+    Float_t     fEtaMaxParton;         //Maximum eta of parton shower
+    Float_t     fPhiMinParton;         //Minimum phi of parton shower
+    Float_t     fPhiMaxParton;         //Maximum phi of parton shower
+    Float_t     fEtaMinGamma;       // Minimum eta of triggered gamma
+    Float_t     fEtaMaxGamma;       // Maximum eta of triggered gamma
+    Float_t     fPhiMinGamma;       // Minimum phi of triggered gamma
+    Float_t     fPhiMaxGamma;       // Maximum phi of triggered gamma
 
  private:
     AliGenHerwig(const AliGenHerwig &Herwig);
