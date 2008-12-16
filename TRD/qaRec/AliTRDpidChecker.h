@@ -53,7 +53,7 @@ public:
   TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
 
-
+  TObjArray *GetGraphs() { return fGraph; };
   virtual TObjArray *Histos();
 
 private:
