@@ -18,7 +18,7 @@ void EMCALLEDda(const int runno = 476){
   // Assume we are just interested in the 1st segment, _0.root below for fname*
   Char_t fname[256];
   sprintf(fname, "/local/data/Run_%09d.Seq_1A.Stream_0.root",runno);
-    
+
   AliRawReader *rawReader = NULL;
   rawReader = new AliRawReaderRoot(fname);
   AliCaloRawStream *in = NULL; 
