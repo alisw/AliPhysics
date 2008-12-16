@@ -344,8 +344,14 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
     i++;
     if ( i >= in->GetTimeLength()) {
       //If we're here then we're done with this tower
-      gain = 1 - in->IsLowGain();
-      
+      gain = -1; // init to not valid value
+      if ( in->IsLowGain() ) {
+	gain = 0;
+      }
+      else if ( in->IsHighGain() ) {
+	gain = 1;
+      }
+
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
       if (arrayPos >= fModules) {
 	//TODO: return an error message, if appopriate (perhaps if debug>0?)
@@ -365,7 +371,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	((TProfile2D*)fPeakMinusPedLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
 	((TProfile2D*)fSampleLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
       } 
-      else {//fill the high gain ones
+      else if (gain == 1) {//fill the high gain ones
 	((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), min);
 	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
 	((TProfile2D*)fSampleHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
