@@ -14,8 +14,8 @@
  **************************************************************************/
 
 #include <cstdlib>
-#include "AliCheb3DCalc.h"
 #include <TSystem.h>
+#include "AliCheb3DCalc.h"
 
 ClassImp(AliCheb3DCalc)
 
@@ -158,36 +158,10 @@ void AliCheb3DCalc::Print(const Option_t* ) const
 }
 
 //__________________________________________________________________________________________
-Float_t  AliCheb3DCalc::Eval(const Float_t  *par) const
-{
-  // evaluate Chebyshev parameterization for 3D function.
-  // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
-  const Float_t  &z = par[2];
-  const Float_t  &y = par[1];
-  const Float_t  &x = par[0];
-  //
-  int ncfRC;
-  for (int id0=fNRows;id0--;) {
-    int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
-    int col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
-    for (int id1=nCLoc;id1--;) {
-      int id = id1+col0;
-      fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
-    }
-    fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(y,fTmpCf1,nCLoc):0.0;
-  }
-  return ChebEval1D(x,fTmpCf0,fNRows);
-  //
-}
-
-//__________________________________________________________________________________________
 Float_t  AliCheb3DCalc::EvalDeriv(int dim, const Float_t  *par) const
 {
   // evaluate Chebyshev parameterization derivative in given dimension  for 3D function.
   // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
-  const Float_t  &z = par[2];
-  const Float_t  &y = par[1];
-  const Float_t  &x = par[0];
   //
   int ncfRC;
   for (int id0=fNRows;id0--;) {
@@ -198,13 +172,13 @@ Float_t  AliCheb3DCalc::EvalDeriv(int dim, const Float_t  *par) const
     for (int id1=nCLoc;id1--;) {
       int id = id1+col0;
       if (!(ncfRC=fCoefBound2D0[id])) { fTmpCf1[id1]=0; continue;}
-      if (dim==2) fTmpCf1[id1] = ChebEval1Deriv(z,fCoefs + fCoefBound2D1[id], ncfRC);
-      else        fTmpCf1[id1] = ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC);
+      if (dim==2) fTmpCf1[id1] = ChebEval1Deriv(par[2],fCoefs + fCoefBound2D1[id], ncfRC);
+      else        fTmpCf1[id1] = ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC);
     }
-    if (dim==1)   fTmpCf0[id0] = ChebEval1Deriv(y,fTmpCf1,nCLoc);
-    else          fTmpCf0[id0] = ChebEval1D(y,fTmpCf1,nCLoc);
+    if (dim==1)   fTmpCf0[id0] = ChebEval1Deriv(par[1],fTmpCf1,nCLoc);
+    else          fTmpCf0[id0] = ChebEval1D(par[1],fTmpCf1,nCLoc);
   }
-  return (dim==0) ? ChebEval1Deriv(x,fTmpCf0,fNRows) : ChebEval1D(x,fTmpCf0,fNRows);
+  return (dim==0) ? ChebEval1Deriv(par[0],fTmpCf0,fNRows) : ChebEval1D(par[0],fTmpCf0,fNRows);
   //
 }
 
@@ -213,9 +187,6 @@ Float_t  AliCheb3DCalc::EvalDeriv2(int dim1,int dim2, const Float_t  *par) const
 {
   // evaluate Chebyshev parameterization 2n derivative in given dimensions  for 3D function.
   // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
-  const Float_t  &z = par[2];
-  const Float_t  &y = par[1];
-  const Float_t  &x = par[0];
   //
   Bool_t same = dim1==dim2;
   int ncfRC;
@@ -227,14 +198,15 @@ Float_t  AliCheb3DCalc::EvalDeriv2(int dim1,int dim2, const Float_t  *par) const
     for (int id1=nCLoc;id1--;) {
       int id = id1+col0;
       if (!(ncfRC=fCoefBound2D0[id])) { fTmpCf1[id1]=0; continue;}
-      if (dim1==2||dim2==2) fTmpCf1[id1] = same ? ChebEval1Deriv2(z,fCoefs + fCoefBound2D1[id], ncfRC) 
-			      :                   ChebEval1Deriv(z,fCoefs + fCoefBound2D1[id], ncfRC);
-      else        fTmpCf1[id1] = ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC);
+      if (dim1==2||dim2==2) fTmpCf1[id1] = same ? ChebEval1Deriv2(par[2],fCoefs + fCoefBound2D1[id], ncfRC) 
+			      :                   ChebEval1Deriv(par[2],fCoefs + fCoefBound2D1[id], ncfRC);
+      else        fTmpCf1[id1] = ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC);
     }
-    if (dim1==1||dim2==1) fTmpCf0[id0] = same ? ChebEval1Deriv2(y,fTmpCf1,nCLoc):ChebEval1Deriv(y,fTmpCf1,nCLoc);
-    else                  fTmpCf0[id0] = ChebEval1D(y,fTmpCf1,nCLoc);
+    if (dim1==1||dim2==1) fTmpCf0[id0] = same ? ChebEval1Deriv2(par[1],fTmpCf1,nCLoc):ChebEval1Deriv(par[1],fTmpCf1,nCLoc);
+    else                  fTmpCf0[id0] = ChebEval1D(par[1],fTmpCf1,nCLoc);
   }
-  return (dim1==0||dim2==0) ? (same ? ChebEval1Deriv2(x,fTmpCf0,fNRows):ChebEval1Deriv(x,fTmpCf0,fNRows)) : ChebEval1D(x,fTmpCf0,fNRows);
+  return (dim1==0||dim2==0) ? (same ? ChebEval1Deriv2(par[0],fTmpCf0,fNRows):ChebEval1Deriv(par[0],fTmpCf0,fNRows)) : 
+    ChebEval1D(par[0],fTmpCf0,fNRows);
   //
 }
 
@@ -445,4 +417,3 @@ Float_t AliCheb3DCalc::ChebEval1Deriv2(Float_t  x, const Float_t * array, int nc
   //
   return b0 - x*b1 - ddcf0/2;
 }
-

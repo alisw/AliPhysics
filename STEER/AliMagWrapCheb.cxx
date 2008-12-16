@@ -108,7 +108,23 @@ void AliMagWrapCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
 }
 
 //_______________________________________________________________________
-void AliMagWrapCheb::Field(Float_t *xyz, Float_t *b) const
+void AliMagWrapCheb::Field(float *xyz, float *b) const
+{
+  // Method to calculate the field at point  xyz
+  //
+  b[0]=b[1]=b[2]=0.0;
+    if (xyz[2] > 919. || xyz[2] < -1972.) {
+	ZDCField(xyz, b);
+    } else {
+	if (fMeasuredMap && fFactor !=0.) {
+	    fMeasuredMap->Field(xyz,b);
+	    for (int i=3;i--;) b[i] *= fFactor;
+	}
+    }
+}
+
+//_______________________________________________________________________
+void AliMagWrapCheb::Field(double *xyz, double *b) const
 {
   // Method to calculate the field at point  xyz
   //

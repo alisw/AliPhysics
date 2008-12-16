@@ -94,18 +94,49 @@ AliMagFMapsV1::~AliMagFMapsV1()
 }
 
 //_______________________________________________________________________
-void AliMagFMapsV1::Field(Float_t *x, Float_t *b) const
+void AliMagFMapsV1::Field(float *x, float *b) const
 {
   //
   // Method to calculate the magnetic field at position x
   //
-    const Float_t kRmax2 = 500. * 500.;
-    const Float_t kZmax  = 550.; 
-    const Float_t kTeslaTokG = 10.;
-    const Float_t kScale = 0.98838; // matching factor
+    const float kRmax2 = 500. * 500.;
+    const float kZmax  = 550.; 
+    const float kTeslaTokG = 10.;
+    const float kScale = 0.98838; // matching factor
     
     // Check if position inside measured map
-    Float_t r2 = x[0] * x[0] + x[1] * x[1];
+    float r2 = x[0] * x[0] + x[1] * x[1];
+    if (fMeasuredMap              &&
+	r2 < kRmax2               && 
+	TMath::Abs(x[2]) < kZmax
+	) 
+    {
+	fMeasuredMap->Field(x, b);
+	b[0] *= kTeslaTokG;
+	b[1] *= kTeslaTokG;
+	b[2] *= kTeslaTokG;
+    } else {
+	AliMagFMaps::Field(x, b);
+	// Match to measure map
+	b[0] = - b[0] * kScale;
+	b[2] = - b[2] * kScale;
+	b[1] = - b[1] * kScale;
+    }
+}
+
+//_______________________________________________________________________
+void AliMagFMapsV1::Field(double *x, double *b) const
+{
+  //
+  // Method to calculate the magnetic field at position x
+  //
+    const double kRmax2 = 500. * 500.;
+    const double kZmax  = 550.; 
+    const double kTeslaTokG = 10.;
+    const double kScale = 0.98838; // matching factor
+    
+    // Check if position inside measured map
+    double r2 = x[0] * x[0] + x[1] * x[1];
     if (fMeasuredMap              &&
 	r2 < kRmax2               && 
 	TMath::Abs(x[2]) < kZmax

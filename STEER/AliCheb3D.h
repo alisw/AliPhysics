@@ -97,8 +97,10 @@ class AliCheb3D: public TNamed
   ~AliCheb3D()                                                                 {Clear();}
   //
   AliCheb3D&   operator=(const AliCheb3D& rhs);
-  void         Eval(const Float_t  *par,Float_t  *res);
-  Float_t      Eval(const Float_t  *par,int idim);
+  template <class T>
+    void       Eval(const T  *par, T *res);
+  template <class T>
+    T          Eval(const T  *par,int idim);
   //
   void         EvalDeriv(int dimd, const Float_t  *par, Float_t  *res);
   void         EvalDeriv2(int dimd1, int dimd2, const Float_t  *par,Float_t  *res);
@@ -107,8 +109,9 @@ class AliCheb3D: public TNamed
   void         EvalDeriv3D(const Float_t *par, Float_t dbdr[3][3]); 
   void         EvalDeriv3D2(const Float_t *par, Float_t dbdrdr[3][3][3]); 
   void         Print(const Option_t* opt="")                             const;
-  Bool_t       IsInside(const Float_t  *par)                             const;
-  Bool_t       IsInside(const Double_t *par)                             const;
+  template <class T>
+    Bool_t       IsInside(const T  *par)                                 const;
+  //
   AliCheb3DCalc*  GetChebCalc(int i)                                     const {return (AliCheb3DCalc*)fChebCalc.UncheckedAt(i);}
   Float_t      GetBoundMin(int i)                                        const {return fBMin[i];}
   Float_t      GetBoundMax(int i)                                        const {return fBMax[i];}
@@ -145,8 +148,10 @@ class AliCheb3D: public TNamed
   Int_t        ChebFit(int dmOut);
 #endif
   //
-  Float_t      MapToInternal(Float_t  x,Int_t d) const; // map x to [-1:1]
-  Float_t      MapToExternal(Float_t  x,Int_t d) const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
+  template <class T>
+    T          MapToInternal(T  x,Int_t d)       const; // map x to [-1:1]
+  template <class T>
+    T          MapToExternal(T  x,Int_t d)       const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
   //  
  protected:
   Int_t        fDimOut;            // dimension of the ouput array
@@ -171,7 +176,8 @@ class AliCheb3D: public TNamed
 };
 
 //__________________________________________________________________________________________
-inline Bool_t  AliCheb3D::IsInside(const Float_t  *par) const 
+template <class T>
+inline Bool_t  AliCheb3D::IsInside(const T  *par) const 
 {
   // check if the point is inside of the fitted box
   const float kTol = 1.e-4; 
@@ -181,17 +187,8 @@ inline Bool_t  AliCheb3D::IsInside(const Float_t  *par) const
 }
 
 //__________________________________________________________________________________________
-inline Bool_t  AliCheb3D::IsInside(const Double_t  *par) const 
-{
-  // check if the point is inside of the fitted box
-  const float kTol = 1.e-4; 
-  for (int i=3;i--;) if (fBMin[i]-par[i]>kTol || par[i]-fBMax[i]>kTol) return kFALSE;
-  //if(par[i]<fBMin[i]||par[i]>fBMax[i]) return kFALSE;
-  return kTRUE;
-}
-
-//__________________________________________________________________________________________
-inline void AliCheb3D::Eval(const Float_t  *par, Float_t  *res)
+template <class T>
+inline void AliCheb3D::Eval(const T  *par, T  *res)
 {
   // evaluate Chebyshev parameterization for 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -200,7 +197,8 @@ inline void AliCheb3D::Eval(const Float_t  *par, Float_t  *res)
 }
 
 //__________________________________________________________________________________________
-inline Float_t AliCheb3D::Eval(const Float_t  *par, int idim)
+template <class T>
+inline T AliCheb3D::Eval(const T  *par, int idim)
 {
   // evaluate Chebyshev parameterization for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -262,11 +260,12 @@ inline Float_t AliCheb3D::EvalDeriv2(int dimd1,int dimd2, const Float_t  *par, i
 }
 
 //__________________________________________________________________________________________
-inline Float_t AliCheb3D::MapToInternal(Float_t  x,Int_t d) const
+template <class T>
+inline T AliCheb3D::MapToInternal(T  x,Int_t d) const
 {
   // map x to [-1:1]
 #ifdef _BRING_TO_BOUNDARY_
-  float res = (x-fBOffset[d])*fBScale[d];
+  T res = (x-fBOffset[d])*fBScale[d];
   if (res<-1) return -1;
   if (res> 1) return 1;
   return res;

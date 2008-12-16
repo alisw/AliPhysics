@@ -76,25 +76,36 @@ class AliMagFCheb: public TNamed
   Float_t    GetMaxZTPCInt()                              const {return fMaxZTPCInt;}
   Float_t    GetMaxRTPCInt()                              const {return fMaxRTPCInt;}
   //
-  Int_t      FindDipSegment(const float *xyz)             const;
   AliCheb3D* GetParamSol(Int_t ipar)                      const {return (AliCheb3D*)fParamsSol->UncheckedAt(ipar);}
   AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPCInt->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
   virtual void Print(Option_t * = "")                     const;
   //
-  virtual void Field(Float_t *xyz, Float_t *b)            const;
-  virtual void FieldCyl(const Float_t *rphiz, Float_t *b) const;
+  virtual void Field(float *xyz, float *b)                const;
+  virtual void Field(double *xyz, double *b)              const;
+  //
+  virtual void FieldCyl(const float *rphiz, float *b)     const;
+  virtual void FieldCyl(const double *rphiz, double *b)   const;
   //
   virtual void GetTPCInt(Float_t *xyz, Float_t *b)        const;
   virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
   //
-  static void CylToCartCylB(const float *rphiz, const float *brphiz,float *bxyz);
-  static void CylToCartCartB(const float *xyz,  const float *brphiz,float *bxyz);
-  static void CartToCylCartB(const float *xyz,  const float *bxyz,  float *brphiz);
-  static void CartToCylCylB(const float *rphiz, const float *bxyz,  float *brphiz);
-  static void CartToCyl(const float *xyz,  float *rphiz);
-  static void CylToCart(const float *rphiz,float *xyz);
+  template <class T>
+    Int_t      FindDipSegment(const T *xyz)               const; 
+  //
+  template <class T>
+    static void CylToCartCylB(const T *rphiz, const T *brphiz,T *bxyz);
+  template <class T>
+    static void CylToCartCartB(const T *xyz,  const T *brphiz,T *bxyz);
+  template <class T>
+    static void CartToCylCartB(const T *xyz,  const T *bxyz,  T *brphiz);
+  template <class T>  
+    static void CartToCylCylB(const T *rphiz, const T *bxyz,  T *brphiz);
+  template <class T>
+    static void CartToCyl(const T *xyz,  T *rphiz);
+  template <class T>
+    static void CylToCart(const T *rphiz,T *xyz);
   //
 #ifdef  _INC_CREATION_ALICHEB3D_                          // see AliCheb3D.h for explanation
   void         LoadData(const char* inpfile);
@@ -111,11 +122,13 @@ class AliMagFCheb: public TNamed
   void       BuildTableSol();
   void       BuildTableTPCInt();
   void       ResetTPCInt();
-
+  //
+  //
 #endif
   //
  protected:
-  virtual void FieldCylSol(const Float_t *rphiz, Float_t *b)    const;
+    virtual void FieldCylSol(const float *rphiz, float *b)      const;
+    virtual void FieldCylSol(const double *rphiz, double *b)    const;
   //
  protected:
   //
@@ -173,7 +186,16 @@ class AliMagFCheb: public TNamed
 
 
 //__________________________________________________________________________________________
-inline void AliMagFCheb::FieldCyl(const Float_t *rphiz, Float_t *b) const
+inline void AliMagFCheb::FieldCyl(const float *rphiz, float *b) const
+{
+  // compute field in Cylindircal coordinates
+  //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
+  FieldCylSol(rphiz,b);
+}
+
+
+//__________________________________________________________________________________________
+inline void AliMagFCheb::FieldCyl(const double *rphiz, double *b) const
 {
   // compute field in Cylindircal coordinates
   //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
@@ -181,11 +203,12 @@ inline void AliMagFCheb::FieldCyl(const Float_t *rphiz, Float_t *b) const
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CylToCartCylB(const float *rphiz, const float *brphiz,float *bxyz)
+template <class T>
+inline void AliMagFCheb::CylToCartCylB(const T *rphiz, const T *brphiz,T *bxyz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
-  float btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  float psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
+  T btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  T psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
   bxyz[0] = btr*TMath::Cos(psiPLUSphi);
   bxyz[1] = btr*TMath::Sin(psiPLUSphi);
   bxyz[2] = brphiz[2];
@@ -193,11 +216,12 @@ inline void AliMagFCheb::CylToCartCylB(const float *rphiz, const float *brphiz,f
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CylToCartCartB(const float *xyz, const float *brphiz,float *bxyz)
+template <class T>
+inline void AliMagFCheb::CylToCartCartB(const T *xyz, const T *brphiz, T *bxyz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cart.system
-  float btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  float phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
+  T btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  T phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
   bxyz[0] = btr*TMath::Cos(phiPLUSpsi);
   bxyz[1] = btr*TMath::Sin(phiPLUSpsi);
   bxyz[2] = brphiz[2];
@@ -205,11 +229,12 @@ inline void AliMagFCheb::CylToCartCartB(const float *xyz, const float *brphiz,fl
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CartToCylCartB(const float *xyz, const float *bxyz, float *brphiz)
+template <class T>
+inline void AliMagFCheb::CartToCylCartB(const T *xyz, const T *bxyz, T *brphiz)
 {
   // convert field in cylindrical coordinates to cartesian system, poin is in cart.system
-  float btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  float psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
+  T btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  T psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
   //
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
@@ -218,11 +243,12 @@ inline void AliMagFCheb::CartToCylCartB(const float *xyz, const float *bxyz, flo
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CartToCylCylB(const float *rphiz, const float *bxyz, float *brphiz)
+template <class T>
+inline void AliMagFCheb::CartToCylCylB(const T *rphiz, const T *bxyz, T *brphiz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
-  float btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  float psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
+  T btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  T psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
   brphiz[2] = bxyz[2];
@@ -230,7 +256,8 @@ inline void AliMagFCheb::CartToCylCylB(const float *rphiz, const float *bxyz, fl
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CartToCyl(const float *xyz,float *rphiz)
+template <class T>
+inline void AliMagFCheb::CartToCyl(const T *xyz,T *rphiz)
 {
   rphiz[0] = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
   rphiz[1] = TMath::ATan2(xyz[1],xyz[0]);
@@ -238,11 +265,32 @@ inline void AliMagFCheb::CartToCyl(const float *xyz,float *rphiz)
 }
 
 //__________________________________________________________________________________________________
-inline void AliMagFCheb::CylToCart(const float *rphiz, float *xyz)
+template <class T>
+inline void AliMagFCheb::CylToCart(const T *rphiz, T *xyz)
 {
   xyz[0] = rphiz[0]*TMath::Cos(rphiz[1]);
   xyz[1] = rphiz[0]*TMath::Sin(rphiz[1]);
   xyz[2] = rphiz[2];
+}
+
+//__________________________________________________________________________________________________
+template <class T>
+Int_t    AliMagFCheb::FindDipSegment(const T *xyz) const 
+{
+  // find the segment containing point xyz. If it is outside find the closest segment 
+  int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(float)xyz[2]); // find zsegment
+  int ysegBeg = fBegSegYDip[zid];
+  //
+  for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
+  if ( --yid < 0 ) yid = 0;
+  yid +=  ysegBeg;
+  //
+  int xsegBeg = fBegSegXDip[yid];
+  for (xid=0;xid<fNSegXDip[yid];xid++) if (xyz[0]<fSegXDip[xsegBeg+xid]) break;
+  if ( --xid < 0) xid = 0;
+  xid +=  xsegBeg;
+  //
+  return fSegIDDip[xid];
 }
 
 #endif

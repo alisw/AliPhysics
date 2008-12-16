@@ -211,7 +211,67 @@ void AliFieldMap::ReadField()
 }
 
 //_______________________________________________________________________
-void AliFieldMap::Field(Float_t *x, Float_t *b) const
+void AliFieldMap::Field(float *x, float *b) const
+{
+  //
+  // Use simple interpolation to obtain field at point x
+  //
+    float ratx, raty, ratz, hix, hiy, hiz, ratx1, raty1, ratz1, 
+      bhyhz, bhylz, blyhz, blylz, bhz, blz, xl[3];
+    const float kone=1;
+    Int_t ix, iy, iz;
+    b[0]=b[1]=b[2]=0;
+    //
+    
+    xl[0] = x[0] - fXbeg;
+    xl[1] = x[1] - fYbeg;
+    xl[2] = x[2] - fZbeg;
+    
+    hix=TMath::Max(0.,TMath::Min(xl[0]*fXdeli,fXn-1.0001));
+    ratx=hix-int(hix);
+    ix=int(hix);
+    
+    hiy=TMath::Max(0.,TMath::Min(xl[1]*fYdeli,fYn-1.0001));
+    raty=hiy-int(hiy);
+    iy=int(hiy);
+    
+    hiz=TMath::Max(0.,TMath::Min(xl[2]*fZdeli,fZn-1.0001));
+    ratz=hiz-int(hiz);
+    iz=int(hiz);
+
+    ratx1=kone-ratx;
+    raty1=kone-raty;
+    ratz1=kone-ratz;
+
+    if (!fB) return;
+
+    bhyhz = Bx(ix  ,iy+1,iz+1)*ratx1+Bx(ix+1,iy+1,iz+1)*ratx;
+    bhylz = Bx(ix  ,iy+1,iz  )*ratx1+Bx(ix+1,iy+1,iz  )*ratx;
+    blyhz = Bx(ix  ,iy  ,iz+1)*ratx1+Bx(ix+1,iy  ,iz+1)*ratx;
+    blylz = Bx(ix  ,iy  ,iz  )*ratx1+Bx(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[0]  = blz               *ratz1+bhz               *ratz;
+    //
+    bhyhz = By(ix  ,iy+1,iz+1)*ratx1+By(ix+1,iy+1,iz+1)*ratx;
+    bhylz = By(ix  ,iy+1,iz  )*ratx1+By(ix+1,iy+1,iz  )*ratx;
+    blyhz = By(ix  ,iy  ,iz+1)*ratx1+By(ix+1,iy  ,iz+1)*ratx;
+    blylz = By(ix  ,iy  ,iz  )*ratx1+By(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[1]  = blz               *ratz1+bhz               *ratz;
+    //
+    bhyhz = Bz(ix  ,iy+1,iz+1)*ratx1+Bz(ix+1,iy+1,iz+1)*ratx;
+    bhylz = Bz(ix  ,iy+1,iz  )*ratx1+Bz(ix+1,iy+1,iz  )*ratx;
+    blyhz = Bz(ix  ,iy  ,iz+1)*ratx1+Bz(ix+1,iy  ,iz+1)*ratx;
+    blylz = Bz(ix  ,iy  ,iz  )*ratx1+Bz(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[2]  = blz               *ratz1+bhz               *ratz;
+}
+
+//_______________________________________________________________________
+void AliFieldMap::Field(double *x, double *b) const
 {
   //
   // Use simple interpolation to obtain field at point x

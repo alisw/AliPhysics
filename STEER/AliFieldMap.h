@@ -25,8 +25,8 @@ public:
     virtual ~AliFieldMap();
     void Copy(TObject &map) const;
     virtual AliFieldMap & operator=(const AliFieldMap &map);
-
-    virtual void Field(Float_t *x, Float_t *b) const;
+    virtual void Field(float *x, float *b) const;
+    virtual void Field(double *x, double *b) const;
     Float_t Bx(Int_t ix, Int_t iy, Int_t iz) const{
 	return (*fB)(3*((ix*fYn+iy)*fZn+iz));
     }

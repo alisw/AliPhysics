@@ -32,7 +32,6 @@ class AliCheb3DCalc: public TNamed
   AliCheb3DCalc& operator=(const AliCheb3DCalc& rhs);
   void       Print(const Option_t* opt="")                              const;
   void       LoadData(FILE* stream);
-  Float_t    Eval(const Float_t  *par)                                  const;
   Float_t    EvalDeriv(int dim, const Float_t  *par)                    const;
   Float_t    EvalDeriv2(int dim1,int dim2, const Float_t  *par)         const;
   //
@@ -56,6 +55,23 @@ class AliCheb3DCalc: public TNamed
   Float_t *  GetCoefs()                                                 const {return fCoefs;}
   //
   static void ReadLine(TString& str,FILE* stream);
+  //
+  template <class T>
+    T        Eval(const T  *par)                                        const {
+    // evaluate Chebyshev parameterization for 3D function.
+    // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
+    int ncfRC;
+    for (int id0=fNRows;id0--;) {
+      int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
+      int col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
+      for (int id1=nCLoc;id1--;) {
+	int id = id1+col0;
+	fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
+      }
+      fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(par[1],fTmpCf1,nCLoc):0.0;
+    }
+    return ChebEval1D(par[0],fTmpCf0,fNRows);
+    }
   //
  protected:
   Int_t      fNCoefs;            // total number of coeeficients

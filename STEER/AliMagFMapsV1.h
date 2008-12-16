@@ -25,7 +25,8 @@ public:
     AliMagFMapsV1(const AliMagFMapsV1& maps);             
     AliMagFMapsV1& operator=(const AliMagFMapsV1& maps) {maps.Copy(*this); return *this;}
     virtual ~AliMagFMapsV1();
-    virtual void    Field(Float_t *x, Float_t *b) const;
+    virtual void    Field(float *x, float *b) const;
+    virtual void    Field(double *x, double *b) const;
     virtual Float_t SolenoidField() const;
     AliMagFCheb* GetMeasuredMap()                   const {return fMeasuredMap;}
     void SetMeasuredMap(AliMagFCheb* parm)               {if (parm) delete parm; fMeasuredMap = parm;}

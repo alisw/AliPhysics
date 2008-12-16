@@ -187,7 +187,7 @@ Float_t AliMagFMaps::SolenoidField() const
 }
 
 //_______________________________________________________________________
-void AliMagFMaps::Field(Float_t *x, Float_t *b) const
+void AliMagFMaps::Field(float *x, float *b) const
 {
   //
   // Method to calculate the magnetic field
@@ -206,6 +206,62 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b) const
   
   b[0]=b[1]=b[2]=0;
   Float_t xm[3];
+  xm[0] = - x[0];
+  xm[1] =   x[1];
+  xm[2] = - x[2];
+  
+  AliFieldMap* map = 0;
+  if (fFieldMap[0]->Inside(xm[0], xm[1], xm[2])) {
+      map = fFieldMap[0];
+      Float_t r = TMath::Sqrt(xm[0] * xm[0] + xm[1] * xm[1]);
+      
+      if (!fL3Option && TMath::Abs(xm[2]) < 370. && r < 550.) {
+      //
+      //     Constant L3 field , if this option was selected
+      //
+	b[2] = (- fSolenoid)*fFactor;
+	  return;
+      } 
+  } else if (fFieldMap[1]->Inside(xm[0], xm[1], xm[2])) {
+    map = fFieldMap[1];
+  } else if (fFieldMap[2]->Inside(xm[0], xm[1], xm[2])) {
+    map = fFieldMap[2];
+  }
+  
+  if(map){
+      map->Field(xm,b);
+      b[0] = - b[0];
+      b[2] = - b[2];
+      
+      if(fFactor!=1) {
+	  b[0]*=fFactor;
+	  b[1]*=fFactor;
+	  b[2]*=fFactor;
+      }
+  } else {
+      //This is the ZDC part
+      ZDCField(x, b);
+  }
+}
+
+//_______________________________________________________________________
+void AliMagFMaps::Field(double *x, double *b) const
+{
+  //
+  // Method to calculate the magnetic field
+  //
+  // --- find the position in the grid ---
+  
+ //    if (!fFieldRead) ReadField();
+
+  //
+  // Field Maps have been calculated for the coordinate system in which 
+  // the Muon Spectrometer is placed at z > 0
+  // Transform coordinates corresponingly 
+  //
+  
+  b[0]=b[1]=b[2]=0;
+  double xm[3];
   xm[0] = - x[0];
   xm[1] =   x[1];
   xm[2] = - x[2];

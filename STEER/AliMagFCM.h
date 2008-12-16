@@ -24,7 +24,8 @@ public:
 	   Float_t factor, Float_t fmax);
   AliMagFCM(const AliMagFCM &mag);
   virtual ~AliMagFCM() {delete fB;}
-  virtual void Field(Float_t *x, Float_t *b) const;
+  virtual void Field(float *x, float *b) const;
+  virtual void Field(double *x, double *b) const;
   virtual void ReadField();
   virtual void    SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
   virtual Float_t SolenoidField() const {

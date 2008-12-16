@@ -86,7 +86,17 @@ AliMagF::AliMagF(const AliMagF &src):
 }
 
 //_______________________________________________________________________
-void AliMagF::Field(Float_t*, Float_t *b) const
+void AliMagF::Field(float*, float *b) const
+{
+  //
+  // Method to return the field in one point -- dummy in this case
+  //
+  AliWarning("Undefined MagF Field called, returning 0");
+  b[0]=b[1]=b[2]=0;
+}
+
+//_______________________________________________________________________
+void AliMagF::Field(double*, double *b) const
 {
   //
   // Method to return the field in one point -- dummy in this case

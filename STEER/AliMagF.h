@@ -24,7 +24,8 @@ public:
   AliMagF(const AliMagF& maps);
   virtual ~AliMagF() {}
   AliMagF& operator=(const AliMagF& rhs);
-  virtual void    Field(Float_t *x, Float_t *b) const;
+  virtual void    Field(float *x, float *b)                  const;
+  virtual void    Field(double *x, double *b)                const;
   virtual void    GetTPCInt(Float_t *xyz, Float_t *b)        const;
   virtual void    GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
   virtual Int_t   Type() const {return fType;}
