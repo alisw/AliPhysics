@@ -456,8 +456,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
     for(int j=0; j<fLEDRefs; j++){
       for (gain=0; gain<2; gain++) {
 	fRefNum = GetRefNum(i, j, gain); 
-	if (LEDAmpVal[RefNum]) {
-	  fAmp = LEDAmpVal[RefNum];
+	if (LEDAmpVal[fRefNum]) {
+	  fAmp = LEDAmpVal[fRefNum];
 	  fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
 	  fNRef[fRefNum]++;
 	}
@@ -484,9 +484,11 @@ Bool_t AliCaloCalibSignal::Save(TString fileName)
 
   // save the trees
   fTreeAmpVsTime->Write();
+  fTreeLEDAmpVsTime->Write();
   if (fUseAverage) { 
     Analyze(); // get the latest and greatest averages
     fTreeAvgAmpVsTime->Write();
+    fTreeLEDAvgAmpVsTime->Write();
   }
 
   destFile.Close();
