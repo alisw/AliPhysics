@@ -112,8 +112,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   if(TSTBIT(fSteerTask, kClusterErrorParam)) SETBIT(fSteerTask, kTrackingResolution);
 
   // define task list pointers;
-  AliTRDrecoTask *taskPtr[NTRDTASKS], *task = 0x0;
-  memset(taskPtr, 0, NTRDTASKS*sizeof(AliAnalysisTask*));
+  AliTRDrecoTask *taskPtr[2*NTRDTASKS], *task = 0x0;
+  memset(taskPtr, 0, 2*NTRDTASKS*sizeof(AliAnalysisTask*));
 
   //____________________________________________//
   //gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
@@ -220,6 +220,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   
       mgr->AddTask(task = new AliTRDclusterResolution());
+      taskPtr[(Int_t)kClusterErrorParam+1] = task;
       mgr->ConnectInput(task, 0, co[1]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("%sMC", task->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sMC.root", task->GetName())));
     }
@@ -315,7 +316,9 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   cal->Terminate();
   delete field;
   delete cdbManager;
-  for(Int_t it=NTRDTASKS-1; it>=0; it--) if(taskPtr[it]) delete taskPtr[it];
+  for(Int_t it=2*NTRDTASKS; it--; ){ 
+    if(taskPtr[it]) delete taskPtr[it];
+  }
   if(mcH) delete mcH;
   delete esdH;
   delete mgr;

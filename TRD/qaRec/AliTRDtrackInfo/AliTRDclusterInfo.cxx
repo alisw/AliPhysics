@@ -26,6 +26,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fZt(0.)
   ,fdy(0.)
   ,fD(0.)
+  ,fTilt(0.)
 {
   fCov[0] = 1.; fCov[1] = 0.;
   fCov[2] = 1.;

@@ -123,7 +123,10 @@ AliTRDtrackingResolution::~AliTRDtrackingResolution()
   if(fClResiduals){fClResiduals->Delete(); delete fClResiduals;}
   if(fTrkltResiduals){fTrkltResiduals->Delete(); delete fTrkltResiduals;}
   if(fTrkltPhiResiduals){fTrkltPhiResiduals->Delete(); delete fTrkltPhiResiduals;}
-  if(fClResolution){fClResolution->Delete(); delete fClResolution;}
+  if(fClResolution){
+    fClResolution->Delete(); 
+    delete fClResolution;
+  }
   if(fTrkltResolution){fTrkltResolution->Delete(); delete fTrkltResolution;}
 }
 
@@ -217,7 +220,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
 
-        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
+/*        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fClResiduals->Add(clInfo);
         clInfo->SetCluster(c);
         clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
@@ -226,7 +229,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
         clInfo->SetDriftLength(dx);
         (*fDebugStream) << "ClusterResiduals"
           <<"clInfo.=" << clInfo
-          << "\n";
+          << "\n";*/
       }
     }
   }
@@ -431,7 +434,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
     dx = 0.;//x0 - tt.GetXref();
     Float_t yt = y0 - dx*dydx;
-    Float_t yf = tt.GetYfit(0) - dx*tt.GetYfit(1);
+    Float_t yf = tt.GetYfit(0) - (fTracklet->GetX0() - x0)*tt.GetYfit(1);
     dy = yf-yt;
     Float_t dphi   = TMath::ATan(tt.GetYfit(1)) - TMath::ATan(dydx);
     Float_t dz = 100.;
@@ -482,7 +485,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       dy = yt - (yc - tilt*(zc-zt));
 
       // Fill Histograms
-      if(q>100.) ((TH2I*)fContainer->At(kClusterResolution))->Fill(dydx, dy);
+      if(q>20. && q<250.) ((TH2I*)fContainer->At(kClusterResolution))->Fill(dydx, dy);
       
       // Fill Debug Tree
       if(fDebugLevel>=1){
@@ -497,7 +500,8 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
         clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
-        clInfo->SetDriftLength(x0-xc);
+        clInfo->SetDriftLength(dx);
+        clInfo->SetTilt(tilt);
         //clInfo->Print();
         (*fDebugStream) << "ClusterResolution"
           <<"clInfo.=" << clInfo
@@ -798,18 +802,18 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
       h = h2->ProjectionY("py", iphi, iphi);
       if(h->GetEntries()<100) continue;
-      AdjustF1(h, &fb);
+      AdjustF1(h, &f);
 
       if(IsVisual()){c->cd(); c->SetLogy();}
-      h->Fit(&fb, opt, "", -0.5, 0.5);
+      h->Fit(&f, opt, "", -0.5, 0.5);
       if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
 
       Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
       Int_t ip = gm->GetN();
-      gm->SetPoint(ip, phi, 10.*fb.GetParameter(1));
-      gm->SetPointError(ip, 0., 10.*fb.GetParError(1));
-      gs->SetPoint(ip, phi, 10.*fb.GetParameter(2));
-      gs->SetPointError(ip, 0., 10.*fb.GetParError(2));
+      gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
+      gm->SetPointError(ip, 0., 10.*f.GetParError(1));
+      gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
+      gs->SetPointError(ip, 0., 10.*f.GetParError(2));
     }
   
     // tracklet z resolution
@@ -843,7 +847,7 @@ Bool_t AliTRDtrackingResolution::PostProcess()
       gs->SetPointError(ip, 0., 10.*fb.GetParError(2));
     }
   
-    // tracklet phi resolution
+    //tracklet phi resolution
     h2 = (TH2I*)fContainer->At(kTrackletAngleResolution);
     gm = new TGraphErrors();
     gm->SetLineColor(kBlue);
@@ -926,6 +930,7 @@ TObjArray* AliTRDtrackingResolution::Histos()
   if(fContainer) return fContainer;
 
   fContainer  = new TObjArray(7);
+  //fContainer->SetOwner(kTRUE);
 
   TH1 *h = 0x0;
   // cluster to tracklet residuals [2]

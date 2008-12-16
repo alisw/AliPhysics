@@ -16,19 +16,20 @@ public:
   AliTRDclusterInfo();
 
   Float_t   GetAnisochronity() const {return fD;}
-  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t, Float_t *cov) const;
+  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t, Float_t *cov=0x0) const;
   void      GetMC(Int_t &pdg, Int_t &label) const{
       pdg  = fPdg;
       label= fLbl; }
-  void      GetGlobalPosition(Float_t &yt, Float_t &zt, Float_t &dydx, Float_t &dzdx, Float_t *cov) const {
+  void      GetGlobalPosition(Float_t &yt, Float_t &zt, Float_t &dydx, Float_t &dzdx, Float_t *cov=0x0) const {
       dydx = fdydx;
       dzdx = fdzdx;
       yt   = fYt;
       zt   = fZt;
-      memcpy(cov, fCov, 3*sizeof(Float_t));}
+      if(cov) memcpy(cov, fCov, 3*sizeof(Float_t));}
   Float_t   GetResolution() const {return fdy;}
   Float_t   GetDriftLength() const {return fXd;}
   Float_t   GetYDisplacement() const {return fYd;}
+  Float_t   GetTilt() const { return fTilt;}
 
   void      Print(Option_t *opt="") const;
 
@@ -45,6 +46,7 @@ public:
       if(cov) memcpy(fCov, cov, 3*sizeof(Float_t));}
   void      SetResolution(Float_t dy) {fdy = dy;}
   void      SetDriftLength(Float_t d) {fXd = d;}
+  void      SetTilt(Float_t t) {fTilt = t;}
 
 private:
   UShort_t fDet;   // detector
@@ -65,6 +67,7 @@ private:
   Float_t  fCovCl[3];// covariance matrix in the yz plane (cluster)
   Float_t  fdy;    // difference in y after tilt correction
   Float_t  fD;     // distance to the anode wire
+  Float_t  fTilt;  // pad tilt;
 
   ClassDef(AliTRDclusterInfo, 1) // extracted cluster2MC information
 };
@@ -79,7 +82,7 @@ inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Fl
   z   = fZ;
   q   = fQ;
   t   = fLocalTime;
-  memcpy(cov, fCovCl, 3*sizeof(Float_t));
+  if(cov) memcpy(cov, fCovCl, 3*sizeof(Float_t));
 }
 
 #endif

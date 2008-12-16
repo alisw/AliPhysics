@@ -49,7 +49,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
   }
   
   if(fContainer){
-    //fContainer->Delete();
+    if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
     fContainer = 0x0;
   }

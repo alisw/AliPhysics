@@ -73,7 +73,6 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
   //
   // Destructor
   // 
-  if(fEventInfo) delete fEventInfo;
   if(fTriggerNames) delete fTriggerNames;
   delete fReconstructor;
   delete fGeo;
@@ -310,6 +309,8 @@ TObjArray *AliTRDcheckDetector::Histos(){
   if(fContainer) return fContainer;
   
   fContainer = new TObjArray(25);
+  //fContainer->SetOwner(kTRUE);
+
   // Register Histograms
   TH1 * histptr = 0x0;
   if(!(histptr = (TH1F *)gROOT->FindObject("hNtrks")))

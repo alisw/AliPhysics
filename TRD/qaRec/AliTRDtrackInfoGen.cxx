@@ -88,9 +88,12 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
 //____________________________________________________________________
 AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 {
-  if(fTrackInfo) delete fTrackInfo;
-  //if(fEventInfo) delete fEventInfo;
-  //fTrackInfo = 0x0; fEventInfo = 0x0;
+  if(fTrackInfo) delete fTrackInfo; fTrackInfo = 0x0;
+  if(fEventInfo) delete fEventInfo; fEventInfo = 0x0;
+  if(fContainer){ 
+    fContainer->Delete(); delete fContainer;
+    fContainer = 0x0;
+  }
 }
 
 //____________________________________________________________________
@@ -138,6 +141,7 @@ void AliTRDtrackInfoGen::CreateOutputObjects()
   fTrackInfo = new AliTRDtrackInfo();
   fEventInfo = new AliTRDeventInfo();
   fContainer = new TObjArray(1000);
+  fContainer->SetOwner(kTRUE);
 
 /*  OpenFile(1, "RECREATE");
   fTree = new TTree("trd", "extract of the TRD detector");
