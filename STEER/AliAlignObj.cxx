@@ -727,34 +727,34 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
   }
 
   const char* symname = GetSymName();
-  TGeoPhysicalNode* node;
+  TGeoHMatrix gprime,gprimeinv;
+  TGeoPhysicalNode* pn = 0;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
-  if(pne){
-    if(!pne->GetPhysicalNode()){
-      node = gGeoManager->MakeAlignablePN(pne);
+  if(pne)
+  {
+    pn = pne->GetPhysicalNode();
+    if(pn){
+      if (pn->IsAligned())
+	AliWarning(Form("Volume %s has been already misaligned!",symname));
+      gprime = *pn->GetMatrix();
     }else{
-      node = pne->GetPhysicalNode();
+      gprime = pne->GetGlobalOrig();
     }
   }else{
     AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as volume path!",symname));
-    node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(symname);
+    if(!gGeoManager->cd(symname)) {
+      AliError(Form("Volume name or path %s not valid!",symname));
+      return kFALSE;
+    }
+    gprime = *gGeoManager->GetCurrentMatrix();
   }
 
-  if (!node) {
-    AliError(Form("Volume name or path %s not valid!",symname));
-    return kFALSE;
-  }
-  if (node->IsAligned())
-    AliWarning(Form("Volume %s has been already misaligned!",symname));
-
-  TGeoHMatrix m1;
+  TGeoHMatrix m1; // the TGeoHMatrix copy of the local delta "m"
   const Double_t *tr = m.GetTranslation();
   m1.SetTranslation(tr);
   const Double_t* rot = m.GetRotationMatrix();
   m1.SetRotation(rot);
 
-  TGeoHMatrix align,gprime,gprimeinv;
-  gprime = *node->GetMatrix();
   gprimeinv = gprime.Inverse();
   m1.Multiply(&gprimeinv);
   m1.MultiplyLeft(&gprime);
