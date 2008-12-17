@@ -52,6 +52,9 @@ void runInteractive(const char *collectionfile) {
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
+  taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
@@ -136,6 +139,9 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
+  taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
