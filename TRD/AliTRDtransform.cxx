@@ -234,8 +234,9 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
   Int_t row = i[0];
   Int_t col = i[1];
 
-  // Parameter to adjust the X position
-  const Double_t kX0shift = 2.52;
+  // Parameters to adjust the X position
+  const Double_t kX0shift = 2.52 + 0.04273; //[cm]
+  const Double_t kT0shift = 3.19e-3;        //[us]
 
   if (!fMatrix) {
 
@@ -259,7 +260,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // T0 correction
     Double_t timeT0Cal   = time - t0;
     // Calculate the X-position,
-    Double_t xLocal      = (timeT0Cal + 0.5) / fSamplingFrequency * vdrift; 
+    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency + kT0shift) * vdrift; 
 
     // Length of the amplification region
     Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
