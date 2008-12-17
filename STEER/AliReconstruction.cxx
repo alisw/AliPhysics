@@ -183,7 +183,7 @@
 #include "AliSysInfo.h" // memory snapshots
 #include "AliRawHLTManager.h"
 
-#include "AliMagWrapCheb.h"
+#include "AliMagFCheb.h"
 
 #include "AliDetectorRecoParam.h"
 #include "AliGRPRecoParam.h"
@@ -820,15 +820,15 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
 
   l3Current = TMath::Abs(l3Current);
   if (TMath::Abs(l3Current-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
-    map=AliMagWrapCheb::k5kG;
+    map=AliMagFCheb::k5kG;
     s+="0.5 T;  ";
   } else
   if (TMath::Abs(l3Current-l3NominalCurrent2)/l3NominalCurrent2 < tolerance) {
-    map=AliMagWrapCheb::k2kG;
+    map=AliMagFCheb::k2kG;
     s+="0.2 T;  ";
   } else
   if (l3Current < zero) {
-    map=AliMagWrapCheb::k2kG;
+    map=AliMagFCheb::k2kG;
     s+="0.0 T;  ";
     factor=0.;                  // in fact, this is a global factor...
     fUniformField=kTRUE;        // track with the uniform (zero) B field
@@ -853,7 +853,7 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
 
   delete fForcedFieldMap;
   fForcedFieldMap=
-    new AliMagWrapCheb("B field map  ",s,2,factor,10.,map,dipoleON,path);
+    new AliMagFCheb("B field map  ",s,2,factor,10.,map,dipoleON,path);
 
   fForcedFieldMap->Print();
 
