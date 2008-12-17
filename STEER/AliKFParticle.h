@@ -166,6 +166,8 @@ class AliKFParticle :public AliKFParticleBase
   Double_t & Parameter ( int i ) ;
   Double_t & Covariance( int i ) ;
   Double_t & Covariance( int i, int j ) ;
+  Double_t * Parameters () ;
+  Double_t * CovarianceMatrix() ;
 
   //* 
   //* CONSTRUCTION OF THE PARTICLE BY ITS DAUGHTERS AND MOTHER
@@ -727,6 +729,16 @@ inline Double_t & AliKFParticle::Covariance( int i )
 inline Double_t & AliKFParticle::Covariance( int i, int j ) 
 { 
   return AliKFParticleBase::Covariance(i,j); 
+}
+
+inline Double_t * AliKFParticle::Parameters ()
+{
+  return fP;
+}
+
+inline Double_t * AliKFParticle::CovarianceMatrix()
+{
+  return fC;
 }
 
 
