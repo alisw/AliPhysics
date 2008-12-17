@@ -308,7 +308,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   Float_t fZ1pitchSPD=0.0425; Float_t fZ2pitchSPD=0.0625;
   Float_t fHlSPD=3.48;
 
-  fSPDZCoord[0]=fZ1pitchSPD -fHlSPD;
+  fSPDZCoord[0] = fZ1pitchSPD - fHlSPD;
   for (m=1; m<fNzSPD; m++) {
     Double_t dz=fZ1pitchSPD;
     if (m==31 || m==32 || m==63  || m==64  || m==95 || m==96 ||

@@ -23,7 +23,7 @@ public:
   AliEveVSDCreator(const Text_t* name="AliEveVSDCreator", const Text_t* title="");
   virtual ~AliEveVSDCreator() {}
 
-  void CreateVSD(const Text_t* dataDir, Int_t event, const Text_t* vsdFile);
+  void CreateVSD(const Text_t* vsdFile);
 
   void CreateTrees();
 
@@ -48,10 +48,6 @@ public:
 protected:
   void               MakeItsDigitsInfo();
   TEveMCRecCrossRef* GetGeninfo(Int_t label);
-  AliTPCParam*       GetTpcParam(const TEveException& eh);
-
-  TString       fDataDir;    // Source data directory.
-  Int_t         fEvent;      // Source event number.
 
   Float_t       fTPCHitRes;  // Resolution for storing TPC hits.
   Float_t       fTRDHitRes;  // Resolution for storing TRD hits.

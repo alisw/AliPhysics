@@ -6,24 +6,14 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 void alieve_create_vsd()
 {
-  // Invoke as: aliroot alieve_create_vsd.C
+  // Invoke from a running alieve, current event will be dumped.
 
-  gSystem->Load("libPhysics");
-  gSystem->Load("libEG");
-  gSystem->Load("libTreePlayer");
-  gSystem->Load("libGed");
-  gSystem->Load("libRGL");
-
-  gSystem->Load("libReve");
-  gSystem->Load("libAlieve");
-
-  DisablePODTObjectStreamers();
-
-  TGeoManager::Import("geometry.root");
+  TEveVSD::DisableTObjectStreamersForVSDStruct();
 
   AliEveVSDCreator vc;
   vc.SetDebugLevel(2);
-  vc.CreateVSD(".", 0, "AliVSD.root");
+  vc.CreateVSD("AliVSD.root");
 }
