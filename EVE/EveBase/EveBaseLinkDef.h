@@ -49,9 +49,14 @@
 #pragma link C++ class AliEveCascadeEditor+;
 #pragma link C++ class AliEveCascadeList+;
 #pragma link C++ class AliEveCascadeListEditor+;
-//
+
 // AliEveV0
 #pragma link C++ class AliEveV0+;
 #pragma link C++ class AliEveV0List+;
 #pragma link C++ class AliEveV0Editor+;
 #pragma link C++ class AliEveV0ListEditor+;
+
+// TEveJetCone
+#pragma link C++ class TEveJetCone+;
+#pragma link C++ class TEveJetConeEditor+;
+#pragma link C++ class TEveJetConeGL+;
