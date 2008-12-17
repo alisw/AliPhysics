@@ -168,6 +168,6 @@ protected:
   AliModule(const AliModule&);
   AliModule& operator=(const AliModule&);
 
-  ClassDef(AliModule,8)  //Base class for ALICE Modules
+  ClassDef(AliModule, 9)  //Base class for ALICE Modules
 };
 #endif
