@@ -131,7 +131,7 @@ class AliCheb3D: public TNamed
   //
   void         SetUsrFunction(const char* name);
   void         SetUsrFunction(void (*ptr)(float*,float*));
-  void         EvalUsrFunction(const Float_t  *x, const Float_t  *res);
+  void         EvalUsrFunction(const Float_t  *x, Float_t  *res);
   TH1*         TestRMS(int idim,int npoints = 1000,TH1* histo=0);
   static Int_t CalcChebCoefs(const Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec=-1);
 #endif

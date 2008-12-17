@@ -357,7 +357,7 @@ void AliCheb3D::SetUsrFunction(void (*ptr)(float*,float*))
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-void AliCheb3D::EvalUsrFunction(const Float_t  *x, const Float_t  *res) 
+void AliCheb3D::EvalUsrFunction(const Float_t  *x, Float_t  *res) 
 {
   // evaluate user function value
   //
