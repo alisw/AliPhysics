@@ -23,7 +23,6 @@ class TFile;
 class TTree;
 
 class AliGenerator;
-class AliMCQA;
 class AliTrackReference;
 
 class AliMC : public TVirtualMCApplication {
@@ -73,8 +72,6 @@ public:
    
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
-   virtual  void  Browse(TBrowser *b);
-   AliMCQA       *GetMCQA() const {return fMCQA;}
    //PH
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
    virtual  void  AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const;
@@ -126,7 +123,6 @@ public:
    Int_t          fDecayPdg;          //  PDG code of particle with forced decay length
    TArrayI       *fImedia;            //! Array of correspondence between media and detectors
    TString        fTransParName;      //  Name of the transport parameters file
-   AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
    TList         *fHitLists;          //! Lists of hits to be remapped by PurifyKine
    //Temporary Track Reference tree related
    TTree         *fTmpTreeTR;            //! Temporary track reference tree

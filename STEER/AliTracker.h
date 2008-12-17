@@ -54,7 +54,7 @@ public:
   Double_t GetSigmaZ() const {return fSigmaZ;}
 
   static 
-  Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, const Double_t *mparam);
+  Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, Double_t *mparam);
   static
   Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
 	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  

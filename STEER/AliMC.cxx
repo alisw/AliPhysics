@@ -38,7 +38,6 @@
 #include "AliHeader.h"
 #include "AliLego.h"
 #include "AliMC.h"
-#include "AliMCQA.h"
 #include "AliRun.h"
 #include "AliHit.h"
 #include "AliStack.h"
@@ -66,7 +65,6 @@ AliMC::AliMC() :
   fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
-  fMCQA(0),
   fHitLists(0),
   fTmpTreeTR(0),
   fTmpFileTR(0),
@@ -92,7 +90,6 @@ AliMC::AliMC(const char *name, const char *title) :
   fDecayPdg(0),
   fImedia(new TArrayI(1000)),
   fTransParName("\0"),
-  fMCQA(0),
   fHitLists(new TList()),
   fTmpTreeTR(0),
   fTmpFileTR(0),
@@ -113,7 +110,6 @@ AliMC::~AliMC()
   //destructor
   delete fGenerator;
   delete fImedia;
-  delete fMCQA;
   delete fHitLists;
   // Delete track references
 }
@@ -310,7 +306,6 @@ void AliMC::PreTrack()
        if((module = dynamic_cast<AliModule*>(dets[i])))
 	 module->PreTrack();
 
-     fMCQA->PreTrack();
 }
 
 //_______________________________________________________________________
@@ -355,7 +350,6 @@ void AliMC::Stepping()
     //Call the appropriate stepping routine;
     AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
     if(det && det->StepManagerIsEnabled()) {
-      if(AliLog::GetGlobalDebugLevel()>0) fMCQA->StepManager(id);
       det->StepManager();
     }
   }
@@ -704,9 +698,6 @@ void AliMC::Init()
    fSummEnergy.Set(gMC->NofVolumes()+1);
    fSum2Energy.Set(gMC->NofVolumes()+1);
 
-   //
-   fMCQA = new AliMCQA(gAlice->GetNdets());
-
    // Register MC in configuration 
    AliConfig::Instance()->Add(gMC);
 
@@ -880,18 +871,6 @@ void AliMC::SetTransPar(const char *filename)
   // Sets the file name for transport parameters
   //
   fTransParName = filename;
-}
-
-//_______________________________________________________________________
-void AliMC::Browse(TBrowser *b)
-{
-  //
-  // Called when the item "Run" is clicked on the left pane
-  // of the Root browser.
-  // It displays the Root Trees and all detectors.
-  //
-  //detectors are in folders anyway
-  b->Add(fMCQA,"AliMCQA");
 }
 
 //_______________________________________________________________________

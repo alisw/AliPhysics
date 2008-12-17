@@ -209,7 +209,7 @@ void AliTRDtrigger::Init()
   fTracks->Clear();
 
   // The magnetic field strength
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  const Double_t x[3] = { 0.0, 0.0, 0.0 };
   Double_t b[3];
   gAlice->Field(x,b);  // b[] is in kilo Gauss
   fField = b[2] * 0.1; // Tesla

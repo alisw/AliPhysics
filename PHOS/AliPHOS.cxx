@@ -288,8 +288,8 @@ void AliPHOS::CreateMaterials()
   // DEFINITION OF THE TRACKING MEDIA
 
   // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
-  Int_t   isxfld = AliSimulation::Instance()->GetMCApp()->Field()->Integ() ;
-  Float_t sxmgmx = AliSimulation::Instance()->GetMCApp()->Field()->Max() ;
+  Int_t   isxfld = gAlice->Field()->Integ() ;
+  Float_t sxmgmx = gAlice->Field()->Max() ;
 
   // The scintillator of the calorimeter made of PBW04                              -> idtmed[699]
   AliMedium(0, "PHOS Xtal    $", 0, 1,

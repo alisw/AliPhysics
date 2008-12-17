@@ -172,8 +172,8 @@ void AliPHOSvImpacts::MakeBranch(Option_t *opt)
   
   Int_t bufferSize = 32000 ;
   Int_t splitlevel = 0 ;
-  TreeH()->Branch("PHOSEmcImpacts" , "TList", &fEMCImpacts , bufferSize, splitlevel);
-  TreeH()->Branch("PHOSCpvImpacts" , "TList", &fCPVImpacts , bufferSize, splitlevel);
+  fLoader->TreeH()->Branch("PHOSEmcImpacts" , "TList", &fEMCImpacts , bufferSize, splitlevel);
+  fLoader->TreeH()->Branch("PHOSCpvImpacts" , "TList", &fCPVImpacts , bufferSize, splitlevel);
   
 }
 

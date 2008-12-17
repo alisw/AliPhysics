@@ -86,7 +86,7 @@ AliMagF::AliMagF(const AliMagF &src):
 }
 
 //_______________________________________________________________________
-void AliMagF::Field(const float*, float *b) const
+void AliMagF::Field(const Float_t*, Float_t *b) const
 {
   //
   // Method to return the field in one point -- dummy in this case
@@ -106,7 +106,7 @@ void AliMagF::Field(const double*, double *b) const
 }
 
 //_______________________________________________________________________
-void AliMagF::GetTPCInt(Float_t *, Float_t *b) const
+void AliMagF::GetTPCInt(const Float_t *, Float_t *b) const
 {
 //
 // Obtain the integral of the field components in the TPC from given point
@@ -117,7 +117,7 @@ void AliMagF::GetTPCInt(Float_t *, Float_t *b) const
 }
 
 //_______________________________________________________________________
-void AliMagF::GetTPCIntCyl(Float_t *, Float_t *b) const
+void AliMagF::GetTPCIntCyl(const Float_t *, Float_t *b) const
 {
 //    
 // Obtain the integral of the field components in the TPC from given point
