@@ -88,7 +88,7 @@ AliMagWrapCheb::~AliMagWrapCheb()
 }
 
 //_______________________________________________________________________
-void AliMagWrapCheb::GetTPCInt(Float_t *xyz, Float_t *b) const
+void AliMagWrapCheb::GetTPCInt(const Float_t *xyz, Float_t *b) const
 {
   // Method to calculate the integral of magnetic integral from xyz to nearest cathode plane
   //
@@ -98,7 +98,7 @@ void AliMagWrapCheb::GetTPCInt(Float_t *xyz, Float_t *b) const
 }
 
 //_______________________________________________________________________
-void AliMagWrapCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
+void AliMagWrapCheb::GetTPCIntCyl(const Float_t *rphiz, Float_t *b) const
 {
   // Method to calculate the integral of magnetic integral from point to nearest cathode plane
   // in cylindrical coordiates ( -pi<phi<pi convention )
@@ -108,7 +108,7 @@ void AliMagWrapCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
 }
 
 //_______________________________________________________________________
-void AliMagWrapCheb::Field(float *xyz, float *b) const
+void AliMagWrapCheb::Field(const Float_t *xyz, Float_t *b) const
 {
   // Method to calculate the field at point  xyz
   //
@@ -124,7 +124,7 @@ void AliMagWrapCheb::Field(float *xyz, float *b) const
 }
 
 //_______________________________________________________________________
-void AliMagWrapCheb::Field(double *xyz, double *b) const
+void AliMagWrapCheb::Field(const Double_t *xyz, Double_t *b) const
 {
   // Method to calculate the field at point  xyz
   //

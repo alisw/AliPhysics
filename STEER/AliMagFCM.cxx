@@ -111,7 +111,7 @@ AliMagFCM::AliMagFCM(const AliMagFCM &magf):
 }
 
 //_______________________________________________________________________
-void AliMagFCM::Field(float *x, float *b) const
+void AliMagFCM::Field(const float *x, float *b) const
 {
   //
   // Method to calculate the magnetic field
@@ -211,7 +211,7 @@ void AliMagFCM::Field(float *x, float *b) const
 }
 
 //_______________________________________________________________________
-void AliMagFCM::Field(double *x, double *b) const
+void AliMagFCM::Field(const double *x, double *b) const
 {
   //
   // Method to calculate the magnetic field

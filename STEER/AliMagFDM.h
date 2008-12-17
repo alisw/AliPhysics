@@ -22,8 +22,8 @@ public:
   AliMagFDM(const char *name, const char *title, Int_t integ,
 	    Float_t factor, Float_t fmax);
   virtual ~AliMagFDM(){} 
-  virtual void Field(float *x, float *b) const;
-  virtual void Field(double *x, double *b) const;
+  virtual void Field(const float *x, float *b) const;
+  virtual void Field(const double *x, double *b) const;
   virtual void ReadField(); 
   virtual void SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
   virtual Float_t SolenoidField() const {

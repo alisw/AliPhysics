@@ -86,7 +86,7 @@ AliMagF::AliMagF(const AliMagF &src):
 }
 
 //_______________________________________________________________________
-void AliMagF::Field(float*, float *b) const
+void AliMagF::Field(const float*, float *b) const
 {
   //
   // Method to return the field in one point -- dummy in this case
@@ -96,7 +96,7 @@ void AliMagF::Field(float*, float *b) const
 }
 
 //_______________________________________________________________________
-void AliMagF::Field(double*, double *b) const
+void AliMagF::Field(const double*, double *b) const
 {
   //
   // Method to return the field in one point -- dummy in this case

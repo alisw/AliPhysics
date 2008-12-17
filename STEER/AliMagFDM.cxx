@@ -108,7 +108,7 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, Int_t integ,
 }
 
 //_______________________________________________________________________
-void AliMagFDM::Field(float *xfi, float *b) const
+void AliMagFDM::Field(const float *xfi, float *b) const
 {
   //
   // Main routine to compute the field in a point
@@ -336,7 +336,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 }
 
 //_______________________________________________________________________
-void AliMagFDM::Field(double *xfi, double *b) const
+void AliMagFDM::Field(const double *xfi, double *b) const
 {
   //
   // Main routine to compute the field in a point

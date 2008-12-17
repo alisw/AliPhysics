@@ -237,7 +237,7 @@ void AliMagFCheb::Clear(const Option_t *)
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::Field(float *xyz, float *b) const
+void AliMagFCheb::Field(const float *xyz, float *b) const
 {
   // compute field in cartesian coordinates. If point is outside of the parameterized region
   // get it at closest valid point
@@ -272,7 +272,7 @@ void AliMagFCheb::Field(float *xyz, float *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::Field(double *xyz, double *b) const
+void AliMagFCheb::Field(const double *xyz, double *b) const
 {
   // compute field in cartesian coordinates. If point is outside of the parameterized region
   // get it at closest valid point
@@ -307,7 +307,7 @@ void AliMagFCheb::Field(double *xyz, double *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::GetTPCInt(Float_t *xyz, Float_t *b) const
+void AliMagFCheb::GetTPCInt(const Float_t *xyz, Float_t *b) const
 {
   // compute TPC region field integral in cartesian coordinates.
   // If point is outside of the parameterized region get it at closeset valid point

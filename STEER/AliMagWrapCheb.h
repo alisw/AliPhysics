@@ -26,10 +26,10 @@ public:
   AliMagWrapCheb& operator=(const AliMagWrapCheb& maps);
   virtual ~AliMagWrapCheb();
   //
-  virtual void Field(float *x, float *b)                        const;
-  virtual void Field(double *x, double *b)                      const;
-  virtual void GetTPCInt(Float_t *xyz, Float_t *b)              const;
-  virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)         const;
+  virtual void Field(const Float_t *x, Float_t *b)                        const;
+  virtual void Field(const Double_t *x, Double_t *b)                      const;
+  virtual void GetTPCInt(const Float_t *xyz, Float_t *b)              const;
+  virtual void GetTPCIntCyl(const Float_t *rphiz, Float_t *b)         const;
   //
   AliMagFCheb* GetMeasuredMap()                                 const {return fMeasuredMap;}
   void SetMeasuredMap(AliMagFCheb* parm)                        {if (fMeasuredMap) delete fMeasuredMap; fMeasuredMap = parm;}

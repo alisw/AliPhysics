@@ -94,7 +94,7 @@ AliMagFMapsV1::~AliMagFMapsV1()
 }
 
 //_______________________________________________________________________
-void AliMagFMapsV1::Field(float *x, float *b) const
+void AliMagFMapsV1::Field(const float *x, float *b) const
 {
   //
   // Method to calculate the magnetic field at position x
@@ -125,7 +125,7 @@ void AliMagFMapsV1::Field(float *x, float *b) const
 }
 
 //_______________________________________________________________________
-void AliMagFMapsV1::Field(double *x, double *b) const
+void AliMagFMapsV1::Field(const double *x, double *b) const
 {
   //
   // Method to calculate the magnetic field at position x

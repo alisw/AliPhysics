@@ -23,11 +23,11 @@ public:
   AliMagFC(const char *name, const char *title, Int_t integ, 
 	   Float_t factor, Float_t fmax);
   virtual ~AliMagFC(){}
-  virtual void Field(float *x, float *b)      const;
-  virtual void Field(double *x, double *b)    const;
+  virtual void Field(const float *x, float *b)      const;
+  virtual void Field(const double *x, double *b)    const;
   virtual void ReadField() {}
-  virtual void ZDCField(float *x, float *b)   const;
-  virtual void ZDCField(double *x, double *b) const;
+  virtual void ZDCField(const float *x, float *b)   const;
+  virtual void ZDCField(const double *x, double *b) const;
   virtual void SetBeamType(BeamType_t type)      {fBeamType    = type;}
   virtual void SetBeamEnergy(Float_t energy)     {fBeamEnergy  = energy;}
   virtual void SetCompensatorMagnet(Bool_t flag) {fCompensator = flag;}

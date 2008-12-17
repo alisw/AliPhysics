@@ -26,8 +26,8 @@ public:
 		Int_t l3 = 1);
     AliMagFMaps(const AliMagFMaps &mag);
     virtual ~AliMagFMaps();
-    virtual void    Field(float  *x, float  *b) const;
-    virtual void    Field(double *x, double *b) const;
+    virtual void    Field(const float  *x, float  *b) const;
+    virtual void    Field(const double *x, double *b) const;
     AliFieldMap* FieldMap(Int_t i) {return fFieldMap[i];}
     virtual void ReadField();
     virtual Float_t SolenoidField() const;

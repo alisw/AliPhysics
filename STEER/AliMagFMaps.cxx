@@ -187,7 +187,7 @@ Float_t AliMagFMaps::SolenoidField() const
 }
 
 //_______________________________________________________________________
-void AliMagFMaps::Field(float *x, float *b) const
+void AliMagFMaps::Field(const float *x, float *b) const
 {
   //
   // Method to calculate the magnetic field
@@ -245,7 +245,7 @@ void AliMagFMaps::Field(float *x, float *b) const
 }
 
 //_______________________________________________________________________
-void AliMagFMaps::Field(double *x, double *b) const
+void AliMagFMaps::Field(const double *x, double *b) const
 {
   //
   // Method to calculate the magnetic field

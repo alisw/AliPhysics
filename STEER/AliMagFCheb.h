@@ -56,7 +56,7 @@ class AliMagFCheb: public TNamed
   //
   Int_t      GetNParamsSol()                              const {return fNParamsSol;}
   Int_t      GetNSegZSol()                                const {return fNSegZSol;}
-  float*     GetSegZSol() const {return fSegZSol;}
+  Float_t*     GetSegZSol() const {return fSegZSol;}
   //
   Int_t      GetNParamsTPCInt()                           const {return fNParamsTPCInt;}
   Int_t      GetNSegZTPCInt()                             const {return fNSegZTPCInt;}
@@ -82,14 +82,14 @@ class AliMagFCheb: public TNamed
   //
   virtual void Print(Option_t * = "")                     const;
   //
-  virtual void Field(float *xyz, float *b)                const;
-  virtual void Field(double *xyz, double *b)              const;
+  virtual void Field(const Float_t *xyz, Float_t *b)                const;
+  virtual void Field(const Double_t *xyz, Double_t *b)              const;
   //
-  virtual void FieldCyl(const float *rphiz, float *b)     const;
-  virtual void FieldCyl(const double *rphiz, double *b)   const;
+  virtual void FieldCyl(const Float_t *rphiz, Float_t *b)     const;
+  virtual void FieldCyl(const Double_t *rphiz, Double_t *b)   const;
   //
-  virtual void GetTPCInt(Float_t *xyz, Float_t *b)        const;
-  virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
+  virtual void GetTPCInt(const Float_t *xyz, Float_t *b)        const;
+  virtual void GetTPCIntCyl(const Float_t *rphiz, Float_t *b)   const;
   //
   template <class T>
     Int_t      FindDipSegment(const T *xyz)               const; 
@@ -112,8 +112,8 @@ class AliMagFCheb: public TNamed
   //
   AliMagFCheb(const char* inputFile);
   void       SaveData(const char* outfile)              const;
-  Int_t      SegmentDipDimension(float** seg,const TObjArray* par,int npar, int dim, 
-				 float xmn,float xmx,float ymn,float ymx,float zmn,float zmx);
+  Int_t      SegmentDipDimension(Float_t** seg,const TObjArray* par,int npar, int dim, 
+				 Float_t xmn,Float_t xmx,Float_t ymn,Float_t ymx,Float_t zmn,Float_t zmx);
   //
   void       AddParamSol(const AliCheb3D* param);
   void       AddParamTPCInt(const AliCheb3D* param);
@@ -127,8 +127,8 @@ class AliMagFCheb: public TNamed
 #endif
   //
  protected:
-    virtual void FieldCylSol(const float *rphiz, float *b)      const;
-    virtual void FieldCylSol(const double *rphiz, double *b)    const;
+    virtual void FieldCylSol(const Float_t *rphiz, Float_t *b)      const;
+    virtual void FieldCylSol(const Double_t *rphiz, Double_t *b)    const;
   //
  protected:
   //
@@ -186,7 +186,7 @@ class AliMagFCheb: public TNamed
 
 
 //__________________________________________________________________________________________
-inline void AliMagFCheb::FieldCyl(const float *rphiz, float *b) const
+inline void AliMagFCheb::FieldCyl(const Float_t *rphiz, Float_t *b) const
 {
   // compute field in Cylindircal coordinates
   //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
@@ -195,7 +195,7 @@ inline void AliMagFCheb::FieldCyl(const float *rphiz, float *b) const
 
 
 //__________________________________________________________________________________________
-inline void AliMagFCheb::FieldCyl(const double *rphiz, double *b) const
+inline void AliMagFCheb::FieldCyl(const Double_t *rphiz, Double_t *b) const
 {
   // compute field in Cylindircal coordinates
   //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
@@ -278,7 +278,7 @@ template <class T>
 Int_t    AliMagFCheb::FindDipSegment(const T *xyz) const 
 {
   // find the segment containing point xyz. If it is outside find the closest segment 
-  int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(float)xyz[2]); // find zsegment
+  int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(Float_t)xyz[2]); // find zsegment
   int ysegBeg = fBegSegYDip[zid];
   //
   for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
