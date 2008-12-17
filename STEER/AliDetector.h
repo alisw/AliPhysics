@@ -65,7 +65,6 @@ public:
   virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
   void    SetLoader(AliLoader* loader){fLoader = loader;}
   AliLoader* GetLoader() const {return fLoader;} //skowron
-  TTree* TreeH() const;  //shorcut method for accessing treeH from folder
     // Data members
 protected:      
   

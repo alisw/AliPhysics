@@ -244,8 +244,7 @@ void AliT0::ResetDigits()
 void AliT0::SetTreeAddress()
 {
 
-  TTree    *treeH;
-  treeH = TreeH();
+  TTree    *treeH = fLoader->TreeH();
   
   if (treeH)
     {

@@ -402,7 +402,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
   LoadRecPointsFile();
   TObjArray *module = new TObjArray(); 
 
-  int nEvents = gAlice->GetEventsPerRun();
+  int nEvents = AliRunLoader::GetRunLoader()->GetNumberOfEvents();
   
   for(int ev=startEvent; ev<nEvents && ev < stopEvent; ev++) {
     

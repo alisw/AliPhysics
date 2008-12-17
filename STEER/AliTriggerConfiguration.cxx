@@ -860,7 +860,7 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
    AliInfo( Form( "initializing gAlice with config file %s",
             configfile.Data() ) );
    StdoutToAliInfo( StderrToAliError(
-      gAlice->Init( configfile.Data() );
+      gAlice->InitMC( configfile.Data() );
    ););
 
    AliRunLoader* runLoader = AliRunLoader::GetRunLoader();

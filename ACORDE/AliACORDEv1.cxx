@@ -1237,8 +1237,8 @@ void AliACORDEv1::MakeBranch(Option_t *option)
   sprintf(branchname,"%s",GetName());
   AliDebug(2,Form("fBufferSize = %d",fBufferSize));
   const char *cH = strstr(option,"H");
-  if (fHits   && TreeH() && cH) {
-    TreeH()->Branch(branchname,&fHits, fBufferSize);
+  if (fHits   && fLoader->TreeH() && cH) {
+    fLoader->TreeH()->Branch(branchname,&fHits, fBufferSize);
     AliDebug(2,Form("Making Branch %s for hits",branchname));
   }     
   const char *cD = strstr(option,"D");

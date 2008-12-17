@@ -66,7 +66,7 @@ void AliHMPID::MakeBranch(Option_t* option)
   const char *cR = strstr(option,"R");
   const char *cS = strstr(option,"S");
 
-  if(cH&&         TreeH()){HitCreate();                       MakeBranchInTree(         TreeH(),     "HMPID"     ,&fHits       ,kBufSize,0);}
+  if(cH&&fLoader->TreeH()){HitCreate();                       MakeBranchInTree(fLoader->TreeH(),     "HMPID"     ,&fHits       ,kBufSize,0);}
   if(cS&&fLoader->TreeS()){SdiCreate();                       MakeBranchInTree(fLoader->TreeS(),     "HMPID"     ,&fSdi        ,kBufSize,0);}
   if(cD&&fLoader->TreeD()){DigCreate();for(Int_t i=0;i<7;i++) MakeBranchInTree(fLoader->TreeD(),Form("HMPID%d",i),&((*fDig)[i]),kBufSize,0);}
   if(cR&&fLoader->TreeR()){CluCreate();for(Int_t i=0;i<7;i++) MakeBranchInTree(fLoader->TreeR(),Form("HMPID%d",i),&((*fClu)[i]),kBufSize,0);}   

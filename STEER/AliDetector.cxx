@@ -213,7 +213,7 @@ AliHit* AliDetector::FirstHit(Int_t track)
   // 
   if(track>=0) {
     gAlice->ResetHits(); //stupid = if N detector this method is called N times
-    TreeH()->GetEvent(track); //skowron
+    fLoader->TreeH()->GetEvent(track); //skowron
   }
   //
   fMaxIterHit=fHits->GetEntriesFast();
@@ -249,9 +249,9 @@ void AliDetector::MakeBranch(Option_t *option)
   AliDebug(2,Form(" for %s",GetName()));
   const char *cH = strstr(option,"H");
 
-  if (fHits && TreeH() && cH) 
+  if (fHits && fLoader->TreeH() && cH) 
    {
-     MakeBranchInTree(TreeH(), GetName(), &fHits, fBufferSize, 0);
+     MakeBranchInTree(fLoader->TreeH(), GetName(), &fHits, fBufferSize, 0);
    }	
 }
 
@@ -285,7 +285,7 @@ void AliDetector::SetTreeAddress()
   //
   // Branch address for hit tree
   
-  TTree *tree = TreeH();
+  TTree* tree = fLoader->TreeH();
   if (tree && fHits) {
     branch = tree->GetBranch(GetName());
     if (branch) 
@@ -339,18 +339,4 @@ AliLoader* AliDetector::MakeLoader(const char* topfoldername)
  return fLoader;
 }
 
-//_______________________________________________________________________
-TTree* AliDetector::TreeH() const
-{
-//Get the hits container from the folder
-  if (GetLoader() == 0x0) 
-    {
-    //sunstitude this with make getter when we can obtain the event folder name 
-     AliError("Can not get the getter");
-     return 0x0;
-    }
- 
-  TTree* tree = (TTree*)GetLoader()->TreeH();
-  return tree;
-}
 

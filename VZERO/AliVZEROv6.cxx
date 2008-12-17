@@ -687,8 +687,8 @@ void AliVZEROv6::MakeBranch(Option_t *option)
   
   const char *cH = strstr(option,"H");
   
-  if (fHits   && TreeH() && cH) {
-    TreeH()->Branch(branchname,&fHits, fBufferSize);
+  if (fHits   && fLoader->TreeH() && cH) {
+    fLoader->TreeH()->Branch(branchname,&fHits, fBufferSize);
     AliDebug(2,Form("Making Branch %s for hits",branchname));
   }     
 

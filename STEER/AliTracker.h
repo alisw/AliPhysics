@@ -54,15 +54,15 @@ public:
   Double_t GetSigmaZ() const {return fSigmaZ;}
 
   static 
-  Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
+  Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, const Double_t *mparam);
   static
   Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
 	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  
 
   static void SetFieldMap(const AliMagF* map, Bool_t uni);
   static const AliMagF *GetFieldMap() {return fgkFieldMap;}
-  static Double_t GetBz(Float_t *r); 
-  static Double_t GetBz(Double_t *r) {
+  static Double_t GetBz(const Float_t *r); 
+  static Double_t GetBz(const Double_t *r) {
     Float_t rr[]={r[0],r[1],r[2]};
     return GetBz(rr);
   }

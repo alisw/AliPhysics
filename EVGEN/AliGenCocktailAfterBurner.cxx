@@ -175,7 +175,7 @@ void AliGenCocktailAfterBurner::Generate()
     else
     { //Here we are in the first call of the method
       fCurrentEvent=0;
-      Int_t numberOfEvents = gAlice->GetEventsPerRun();
+      Int_t numberOfEvents = AliRunLoader::GetRunLoader()->GetNumberOfEvents();
       //Create stacks
       fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
       fCollisionGeometries = new AliCollisionGeometry*[numberOfEvents + fNBgEvents]; //Create array of collision geometries

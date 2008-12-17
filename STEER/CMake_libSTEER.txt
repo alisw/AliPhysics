@@ -12,7 +12,7 @@ AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx
 AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx
 AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx AliLegoGeneratorEtaR.cxx 
 AliRndm.cxx 
-AliMCQA.cxx AliDebugVolume.cxx 
+AliDebugVolume.cxx 
 AliConfig.cxx 
 AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx 
 AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx 

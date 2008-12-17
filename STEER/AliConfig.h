@@ -33,8 +33,6 @@ class AliConfig : public TNamed {
   
 public:
   
-  AliConfig();
-  
   virtual ~ AliConfig (); 
 
   void       Add(TDatabasePDG *pdg);
@@ -78,6 +76,11 @@ public:
   const TString&        GetDataFolderName() const;//returns name of data folder
 
 private:  
+  AliConfig(const AliConfig&); // Not implemented
+  AliConfig& operator=(const AliConfig&); // Not implemented
+  AliConfig(); // Not implemented
+  AliConfig(const char * name, const char * title );
+  
   static const TString  fgkTopFolderName; //name of top AliRoot folder
  
   static const TString  fgkDefaultEventFolderName; //name of event folder
@@ -104,10 +107,6 @@ private:
   static const TString  fgkFieldFolderName;        //name of magn.field folder
   static const TString  fgkGeneratorsFolderName;   //name of generator folder
   static const TString  fgkVirtualMCFolderName;    //name of virtual MC folder
-
-  AliConfig(const char * name, const char * title );
-  AliConfig(const AliConfig&);
-  AliConfig& operator=(const AliConfig&);
 
   void          AddInFolder (const char * dir, TObject *obj);
   Int_t         AddSubTask(const char *taskname, const char* name, const char* title);

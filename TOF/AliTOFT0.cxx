@@ -276,7 +276,7 @@ void AliTOFT0::Exec(Option_t *option)
 
   for (Int_t ievent = 0; ievent < fNevents; ievent++) {
     gAlice->GetEvent(ievent);
-    TTree *hitTree = detTOF->TreeH ();
+    TTree *hitTree = detTOF->GetLoader()->TreeH ();
     if (!hitTree)
       return;
     TParticle*    particle;

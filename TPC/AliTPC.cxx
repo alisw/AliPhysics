@@ -724,14 +724,14 @@ void    AliTPC::SetActiveSectors(Int_t flag)
   }
   for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
   TBranch * branch=0;
-  if (TreeH() == 0x0)
+  if (fLoader->TreeH() == 0x0)
    {
      AliFatal("Can not find TreeH in folder");
      return;
    }
-  if (fHitType>1) branch = TreeH()->GetBranch("TPC2");
-  else branch = TreeH()->GetBranch("TPC");
-  Stat_t ntracks = TreeH()->GetEntries();
+  if (fHitType>1) branch = fLoader->TreeH()->GetBranch("TPC2");
+  else branch = fLoader->TreeH()->GetBranch("TPC");
+  Stat_t ntracks = fLoader->TreeH()->GetEntries();
   // loop over all hits
   AliDebug(1,Form("Got %d tracks",ntracks));
   
@@ -739,8 +739,8 @@ void    AliTPC::SetActiveSectors(Int_t flag)
     ResetHits();
     //
     if (fTrackHits && fHitType&4) {
-      TBranch * br1 = TreeH()->GetBranch("fVolumes");
-      TBranch * br2 = TreeH()->GetBranch("fNVolumes");
+      TBranch * br1 = fLoader->TreeH()->GetBranch("fVolumes");
+      TBranch * br2 = fLoader->TreeH()->GetBranch("fNVolumes");
       br1->GetEvent(track);
       br2->GetEvent(track);
       Int_t *volumes = fTrackHits->GetVolumes();
@@ -759,7 +759,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
     
     //
 //     if (fTrackHitsOld && fHitType&2) {
-//       TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
+//       TBranch * br = fLoader->TreeH()->GetBranch("fTrackHitsInfo");
 //       br->GetEvent(track);
 //       AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
 //       for (UInt_t j=0;j<ar->GetSize();j++){
@@ -1407,7 +1407,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
   if(fDefaults == 0) SetDefaults();
 
-  TTree *tH = TreeH(); // pointer to the hits tree
+  TTree *tH = fLoader->TreeH(); // pointer to the hits tree
   if (tH == 0x0) {
     AliFatal("Can not find TreeH in folder");
     return;
@@ -2183,16 +2183,16 @@ void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
   // Get the pointer to the header
   const char *cH = strstr(option,"H");
   //
-  if (fTrackHits   && TreeH() && cH && fHitType&4) {
+  if (fTrackHits   && fLoader->TreeH() && cH && fHitType&4) {
     AliDebug(1,"Making branch for Type 4 Hits");
-    TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits,fBufferSize,99);
+    fLoader->TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits,fBufferSize,99);
   }
 
-//   if (fTrackHitsOld   && TreeH() && cH && fHitType&2) {    
+//   if (fTrackHitsOld   && fLoader->TreeH() && cH && fHitType&2) {    
 //     AliDebug(1,"Making branch for Type 2 Hits");
 //     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHitsOld, 
-//                                                    TreeH(),fBufferSize,99);
-//     TreeH()->GetListOfBranches()->Add(branch);
+//                                                    fLoader->TreeH(),fBufferSize,99);
+//     fLoader->TreeH()->GetListOfBranches()->Add(branch);
 //   }	
 }
 
@@ -2218,7 +2218,7 @@ void AliTPC::SetTreeAddress2()
   sprintf(branchname,"%s2",GetName());
   //
   // Branch address for hit tree
-  TTree *treeH = TreeH();
+  TTree *treeH = fLoader->TreeH();
   if ((treeH)&&(fHitType&4)) {
     branch = treeH->GetBranch(branchname);
     if (branch) {
@@ -2310,7 +2310,7 @@ AliHit* AliTPC::FirstHit2(Int_t track)
   // 
   if(track>=0) {
     gAlice->ResetHits();
-    TreeH()->GetEvent(track);
+    fLoader->TreeH()->GetEvent(track);
   }
   //
   if (fTrackHits && fHitType&4) {
@@ -2375,7 +2375,7 @@ Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
   //
   //  return kTRUE;
  //  if (fTrackHitsOld && fHitType&2) {
-//     TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
+//     TBranch * br = fLoader->TreeH()->GetBranch("fTrackHitsInfo");
 //     br->GetEvent(track);
 //     AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
 //     for (UInt_t j=0;j<ar->GetSize();j++){
@@ -2384,8 +2384,8 @@ Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
 //   }
 
   if (fTrackHits && fHitType&4) {
-    TBranch * br1 = TreeH()->GetBranch("fVolumes");
-    TBranch * br2 = TreeH()->GetBranch("fNVolumes");    
+    TBranch * br1 = fLoader->TreeH()->GetBranch("fVolumes");
+    TBranch * br2 = fLoader->TreeH()->GetBranch("fNVolumes");    
     br2->GetEvent(track);
     br1->GetEvent(track);    
     Int_t *volumes = fTrackHits->GetVolumes();
@@ -2399,7 +2399,7 @@ Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
   }
 
   if (fHitType&1) {
-    TBranch * br = TreeH()->GetBranch("fSector");
+    TBranch * br = fLoader->TreeH()->GetBranch("fSector");
     br->GetEvent(track);
     for (Int_t j=0;j<fHits->GetEntriesFast();j++){
       if (  ((AliTPChit*)fHits->At(j))->fSector==id) return kTRUE;

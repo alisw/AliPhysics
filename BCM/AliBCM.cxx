@@ -210,10 +210,10 @@ void AliBCM::MakeBranch(Option_t* option)
 //  const char *cR = strstr(option,"R");
 //  const char *cS = strstr(option,"S");
 
-  if(cH && TreeH() && (fHits == 0x0)){
+  if(cH && fLoader->TreeH() && (fHits == 0x0)){
       fHits  = new TClonesArray("AliBCMHit");
       fNhits = 0;    
-      MakeBranchInTree(TreeH(), "BCM" ,&fHits ,kBufSize, 0);
+      MakeBranchInTree(fLoader->TreeH(), "BCM" ,&fHits ,kBufSize, 0);
   }
   AliDetector::MakeBranch(option);
 }
@@ -222,7 +222,7 @@ void AliBCM::SetTreeAddress()
 {
   // Set branch address
 
-    if (TreeH() && fHits==0x0)
+    if (fLoader->TreeH() && fHits==0x0)
 	fHits   = new TClonesArray("AliBCMHit",  4000);
     AliDetector::SetTreeAddress();
 }

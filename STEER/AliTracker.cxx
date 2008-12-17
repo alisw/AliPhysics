@@ -168,7 +168,7 @@ void AliTracker::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   }
 }
 
-Double_t AliTracker::GetBz(Float_t *r) {
+Double_t AliTracker::GetBz(const Float_t *r) {
   //------------------------------------------------------------------
   // Returns Bz (kG) at the point "r" .
   //------------------------------------------------------------------
@@ -178,7 +178,7 @@ Double_t AliTracker::GetBz(Float_t *r) {
 }
 
 Double_t 
-AliTracker::MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam)
+AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *end, const Double_t *mparam)
 {
   // 
   // Calculate mean material budget and material properties between 

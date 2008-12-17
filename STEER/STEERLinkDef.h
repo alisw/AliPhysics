@@ -41,7 +41,6 @@
 #pragma link C++ class  AliRecPoint+;
 #pragma link C++ class  AliHitMap+;
 #pragma link C++ class  AliRndm+;
-#pragma link C++ class  AliMCQA+;
 #pragma link C++ class  AliDebugVolume+;
 #pragma link C++ class  AliConfig+;
 #pragma link C++ class  AliDigitizer+;

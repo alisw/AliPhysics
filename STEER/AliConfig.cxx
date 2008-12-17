@@ -118,50 +118,6 @@ AliConfig* AliConfig::Instance ()
     }
    return fgInstance;
 }
-
-//____________________________________________________________________________
-AliConfig::AliConfig():
-  fTopFolder(0x0),
-  fTaskFolder(0x0),
-  fConstFolder(0x0),
-  fDetectorTask(0x0),
-  fDetectorFolder(0x0)
-{
-  //
-  // Default constructor, mainly to keep coding conventions
-  //
-  fgInstance=0;//never mind, its going to exit in next step
-  AliFatal("Constructor should not be called for a singleton");
-}
-//____________________________________________________________________________
-
-AliConfig::AliConfig(const AliConfig& conf):
-  TNamed(conf),
-  fTopFolder(0x0),
-  fTaskFolder(0x0),
-  fConstFolder(0x0),
-  fDetectorTask(0x0),
-  fDetectorFolder(0x0)
-{
-  //
-  // Copy constructor, mainly to keep coding conventions
-  //
-  fgInstance=0;
-    
-  AliFatal("Copy constructor should not be called for a singleton");
-}
-//____________________________________________________________________________
-
-AliConfig& AliConfig::operator=(const AliConfig& /*conf*/)
-{
-  //
-  // Assignment, mainly to keep coding conventions
-  //
-  fgInstance=0;
-    
-  AliFatal("Assignment operator should not be called for a singleton");
-  return *this;
-}
 //____________________________________________________________________________
 
 AliConfig::AliConfig(const char *name, const char *title): 
