@@ -253,7 +253,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     runLoader->GetEvent(iEvent);
 
     // select simulated primary particles, V0s and cascades
-    AliStack* stack = gAlice->Stack();
+    AliStack* stack = runLoader->Stack();
     Int_t nParticles = stack->GetNtrack();
     TArrayF vertex(3);
     runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vertex);
