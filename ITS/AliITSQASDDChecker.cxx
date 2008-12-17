@@ -58,7 +58,7 @@ Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   Double_t test = 0.0;
   Int_t offset = 0;
 
-  if(index==0){  //analizing RAWS
+  if(index==AliQA::kRAW){  //analizing RAWS
     TH1F *ModPattern = (TH1F*)QARefObj->GetObject();
     if (list->GetEntries() == 0){
       test = 1. ; // nothing to check
@@ -94,7 +94,7 @@ Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   } // if(index==0)
 
   
-  if( index==2){ //analizing RECP
+  if( index==AliQA::kREC){ //analizing RECP
     //printf("analizing recp, offset %d \n",fSubDetOffset);
     if (list->GetEntries() == 0){
       test = 1. ; // nothing to check

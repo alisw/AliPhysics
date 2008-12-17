@@ -48,6 +48,9 @@ public:
   void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
   Bool_t GetHLTMode(){return fHLTMode;};
   virtual ~AliITSQADataMakerRec(); // dtor
+ Short_t GetSubDet(){return fSubDetector;};
+ Int_t GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task);
+
 
 private:
 

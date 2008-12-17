@@ -45,8 +45,14 @@ public:
   Short_t GetSubDet() { return fDet; }
   Short_t GetLDC() { return fLDC; }
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
+  virtual void SetDetTaskOffset(Int_t subdet=0,Int_t offset=0);
 
 protected:
+
+  virtual void SetSPDTaskOffset(Int_t SPDOffset){fSPDOffset = SPDOffset;} ;
+  virtual void SetSDDTaskOffset(Int_t SDDOffset){fSDDOffset = SDDOffset;} ;
+  virtual void SetSSDTaskOffset(Int_t SSDOffset){fSSDOffset = SSDOffset;} ;
+
   virtual Double_t Check(AliQA::ALITASK_t /*index*/){return 0.5;}
   virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
   Double_t Check(AliQA::ALITASK_t, TNtupleD*) {AliFatal("Not implemented\n"); return 0;}

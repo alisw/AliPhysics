@@ -121,12 +121,17 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   
   AliQAChecker *qac = AliQAChecker::Instance();
   AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-  if(fSubDetector == 0 ) {
-                Int_t offsetSPD = fSPDDataMaker->GetOffset(task); //+ fSPDDataMaker->GetOffsetS() + fSPDDataMaker->GetOffsetD() ;  
-		Int_t offsetSDD = fSDDDataMaker->GetOffset(task); 
-		Int_t offsetSSD = fSSDDataMaker->GetOffset(task);// + fSSDDataMaker->GetOffsetS() + fSSDDataMaker->GetOffsetD() ; 
-    qacb->SetTaskOffset(offsetSPD, offsetSDD, offsetSSD); //Setting the offset for the QAChecker list		
-	}
+  Int_t subdet=GetSubDet();
+  qacb->SetSubDet(subdet);
+
+  if(subdet== 0 ){
+    qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task),fSDDDataMaker->GetOffset(task),fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list		
+    }
+  else
+    if(subdet!=0){
+      Int_t offset=GetDetTaskOffset(subdet, task);
+      qacb->SetDetTaskOffset(subdet,offset);
+    }
 	qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
 }
 
@@ -236,4 +241,33 @@ void AliITSQADataMakerSim::MakeHits(TTree * hits)
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeHits(hits);
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeHits(hits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits(hits);
+}
+
+//_________________________________________________________________
+
+Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task)
+{
+  switch(subdet)
+    {
+
+      Int_t offset;
+    case 1:
+      offset=fSPDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    case 2:
+      offset=fSDDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    case 3:
+      offset=fSSDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    default:
+      AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
+      offset=0;
+      return offset;
+      break;
+    }
+  //return offset;
 }

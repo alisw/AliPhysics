@@ -131,9 +131,18 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   
   AliQAChecker *qac = AliQAChecker::Instance();
   AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-  if(fSubDetector == 0 ){
+  Int_t subdet=GetSubDet();
+  qacb->SetSubDet(subdet);
+ 
+  if(subdet== 0 ){
     qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task), fSDDDataMaker->GetOffset(task), fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list
   }
+ else
+    if(subdet!=0){
+      Int_t offset=GetDetTaskOffset(subdet, task);
+      qacb->SetDetTaskOffset(subdet,offset);
+    }
+
   qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
 }
 
@@ -442,4 +451,32 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   } // end loop on tracklets
 
   return;
+}
+
+//_________________________________________________________________
+Int_t AliITSQADataMakerRec::GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task)
+{
+  switch(subdet)
+    {
+
+      Int_t offset;
+    case 1:
+      offset=fSPDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    case 2:
+      offset=fSDDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    case 3:
+      offset=fSSDDataMaker->GetOffset(task);
+      return offset;
+      break;
+    default:
+      AliWarning("No specific subdetector (SPD, SDD, SSD) selected!! Offset set to zero \n");
+      offset=0;
+      return offset;
+      break;
+    }
+  //return offset;
 }

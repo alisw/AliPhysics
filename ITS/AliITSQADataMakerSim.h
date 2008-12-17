@@ -42,6 +42,8 @@ public:
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
   virtual ~AliITSQADataMakerSim(); // dtor
+  Short_t GetSubDet(){return fSubDetector;};
+  Int_t GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task);
 
 private:
 

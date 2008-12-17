@@ -223,8 +223,11 @@ Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     return rv;
   }  // end of ESD QA
 
+  //____________________________________________________________________________
+
   Double_t spdCheck, sddCheck, ssdCheck;
   Double_t retval = 1.;
+  //pixel
   if(fDet == 0 || fDet == 1) {
     AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
     if(!fSPDChecker) {
@@ -234,6 +237,7 @@ Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     spdCheck = fSPDChecker->Check(index, list);
     if(spdCheck<retval)retval = spdCheck;
   }
+  //drift
   if(fDet == 0 || fDet == 2) {
     AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
     if(!fSDDChecker) {
@@ -243,6 +247,7 @@ Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     sddCheck = fSDDChecker->Check(index, list);
     if(sddCheck<retval)retval = sddCheck;
   }
+  //strip
   if(fDet == 0 || fDet == 3) {
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
     if(!fSSDChecker) {
@@ -268,3 +273,23 @@ void AliITSQAChecker::SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDO
   fSDDOffset = SDDOffset;
   fSSDOffset = SSDOffset;
 }
+
+ //____________________________________________________________________________
+ void AliITSQAChecker::SetDetTaskOffset(Int_t subdet,Int_t offset)
+ {
+   switch(subdet){
+   case 1:
+     SetSPDTaskOffset(offset);
+     break;
+   case 2:
+     SetSDDTaskOffset(offset);
+     break;
+   case 3:
+     SetSSDTaskOffset(offset);
+     break;
+   default:
+     AliWarning("No specific (SPD,SDD or SSD) subdetector correspond to to this number!!! all offsets set to zero for all the detectors\n");
+     SetTaskOffset(0, 0, 0);
+     break;
+   }
+ }
