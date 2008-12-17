@@ -835,7 +835,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   detxy[1] = det.GetR()*TMath::Sin(det.GetPhi());
   Double_t alpha = t->GetAlpha();
   Double_t xdetintrackframe = detxy[0]*TMath::Cos(alpha)+detxy[1]*TMath::Sin(alpha);
-  Float_t phi = TMath::ASin(t->GetSnpAt(xdetintrackframe,AliTracker::GetBz()));
+  Float_t phi = TMath::ASin(t->GetSnpAt(xdetintrackframe,GetBz()));
   phi += alpha-det.GetPhi();
   Float_t tgphi = TMath::Tan(phi);
 
@@ -990,7 +990,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	// propagate to the layer radius
 	Double_t xToGo; if (!vtrack->GetLocalXat(r,xToGo)) continue;
-	if(!vtrack->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) continue;
+	if(!vtrack->Propagate(xToGo)) continue;
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
@@ -1113,7 +1113,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	if (currenttrack->GetDetectorIndex()==idetc) { // track already on the cluster's detector
 	  // take into account misalignment (bring track to real detector plane)
 	  Double_t xTrOrig = currenttrack->GetX();
-	  if (!currenttrack->PropagateTo(xTrOrig+cl->GetX(),0.,0.)) continue;
+	  if (!currenttrack->Propagate(xTrOrig+cl->GetX())) continue;
 	  // a first cut on track-cluster distance
 	  if ( (currenttrack->GetZ()-cl->GetZ())*(currenttrack->GetZ()-cl->GetZ())*msz + 
 	       (currenttrack->GetY()-cl->GetY())*(currenttrack->GetY()-cl->GetY())*msy > 1. ) 
@@ -1122,7 +1122,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	      continue;
 	    }
 	  // bring track back to ideal detector plane
-	  if (!currenttrack->PropagateTo(xTrOrig,0.,0.)) continue;
+	  if (!currenttrack->Propagate(xTrOrig)) continue;
 	} else {                                      // have to move track to cluster's detector
 	  const AliITSdetector &detc=layer.GetDetector(idetc);
 	  // a first cut on track-cluster distance
@@ -2211,6 +2211,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
      Double_t oldGlobXYZ[3];
      if (!track->GetXYZ(oldGlobXYZ)) return kFALSE;
+     //TMath::Sqrt(track->GetSigmaY2());
 
      Double_t phi,z;
      if (!track->GetPhiZat(r,phi,z)) return kFALSE;
@@ -2222,7 +2223,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      if (skip==2) {
        // propagate to the layer radius
        Double_t xToGo; if (!track->GetLocalXat(r,xToGo)) return kFALSE;
-       if (!track->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return kFALSE;
+       if (!track->Propagate(xToGo)) return kFALSE;
        // apply correction for material of the current layer
        CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir);
        modstatus = 4; // out in z
@@ -2347,7 +2348,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
   } // end loop on layers
 
-  if (!track->PropagateTo(xx,0.,0.)) return kFALSE;
+  if (!track->Propagate(xx)) return kFALSE;
 
   return kTRUE;
 }
@@ -3548,6 +3549,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
      for (Int_t ind=0;ind<3;ind++){
        if (tpcLabel>0)
 	 if (cl->GetLabel(ind)==tpcLabel) isWrong=0;
+       AliDebug(2,Form("icl %d  ilab %d lab %d",i,ind,cl->GetLabel(ind)));
      }
      track->SetChi2MIP(9,track->GetChi2MIP(9)+isWrong*(2<<l));
      nwrong+=isWrong;
@@ -3560,6 +3562,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
      else
        track->SetLabel(tpcLabel);
    }
+   AliDebug(2,Form(" nls %d wrong %d  label %d  tpcLabel %d\n",nclusters,nwrong,track->GetLabel(),tpcLabel));
    
 }
 //------------------------------------------------------------------------
@@ -3633,12 +3636,12 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   // Take into account the mis-alignment (bring track to cluster plane)
   Double_t xTrOrig=track->GetX();
-  if (!track->PropagateTo(xTrOrig+cluster->GetX(),0.,0.)) return 1000.;
+  if (!track->Propagate(xTrOrig+cluster->GetX())) return 1000.;
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz);
   // Bring the track back to detector plane in ideal geometry
   // [mis-alignment will be accounted for in UpdateMI()]
-  if (!track->PropagateTo(xTrOrig,0.,0.)) return 1000.;
+  if (!track->Propagate(xTrOrig)) return 1000.;
   Float_t ny,nz;
   AliITSClusterParam::GetNTeor(layer,cluster,theta,phi,ny,nz);  
   Double_t delta = cluster->GetNy()+cluster->GetNz()-nz-ny;
@@ -3681,7 +3684,7 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
   AliDebug(2,Form("gcl %f %f %f",clxyz[0],clxyz[1],clxyz[2]));
   AliDebug(2,Form(" xtr %f  xcl %f",track->GetX(),cl->GetX()));
 
-  if (!track->PropagateTo(xTrOrig+cl->GetX(),0.,0.)) return 0;
+  if (!track->Propagate(xTrOrig+cl->GetX())) return 0;
 
   
   AliCluster c(*cl);
@@ -3692,7 +3695,7 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
   Int_t updated = track->UpdateMI(&c,chi2,index);
 
   // Bring the track back to detector plane in ideal geometry
-  if (!track->PropagateTo(xTrOrig,0.,0.)) return 0;
+  if (!track->Propagate(xTrOrig)) return 0;
 
   if(!updated) AliDebug(2,"update failed");
   return updated;
@@ -4710,9 +4713,9 @@ Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
 
   // Define budget mode:
   // 0: material from AliITSRecoParam (hard coded)
-  // 1: material from TGeo (on the fly)
+  // 1: material from TGeo in one step (on the fly)
   // 2: material from lut
-  // 3: material from TGeo (same for all hypotheses)
+  // 3: material from TGeo in one step (same for all hypotheses)
   Int_t mode;
   switch(fUseTGeo) {
   case 0:
@@ -4753,15 +4756,20 @@ Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
     xOverX0 = AliITSRecoParam::GetdPipe();
     x0 = AliITSRecoParam::GetX0Be();
     lengthTimesMeanDensity = xOverX0*x0;
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 1:
     if (!t->PropagateToTGeo(xToGo,1)) return 0;
-    return 1;
     break;
   case 2:
     if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");  
     xOverX0 = fxOverX0Pipe;
     lengthTimesMeanDensity = fxTimesRhoPipe;
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 3:
     if(!fxOverX0PipeTrks || index<0 || index>=fNtracks) Error("CorrectForPipeMaterial","Incorrect usage of UseTGeo option!\n");
@@ -4775,13 +4783,11 @@ Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
     }
     xOverX0 = fxOverX0PipeTrks[index];
     lengthTimesMeanDensity = fxTimesRhoPipeTrks[index];
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   }
-
-  lengthTimesMeanDensity *= dir;
-
-  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
-  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
 
   return 1;
 }
@@ -4796,9 +4802,10 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
 
   // Define budget mode:
   // 0: material from AliITSRecoParam (hard coded)
-  // 1: material from TGeo (on the fly)
+  // 1: material from TGeo in steps of X cm (on the fly)
+  //    X = AliITSRecoParam::GetStepSizeTGeo()
   // 2: material from lut
-  // 3: material from TGeo (same for all hypotheses)
+  // 3: material from TGeo in one step (same for all hypotheses)
   Int_t mode;
   switch(fUseTGeo) {
   case 0:
@@ -4844,21 +4851,28 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
 
   Double_t xOverX0,x0,lengthTimesMeanDensity;
   Bool_t anglecorr=kTRUE;
+  Int_t nsteps=1;
 
   switch(mode) {
   case 0:
     xOverX0 = AliITSRecoParam::Getdshield(shieldindex);
     x0 = AliITSRecoParam::GetX0shield(shieldindex);
     lengthTimesMeanDensity = xOverX0*x0;
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 1:
-    if (!t->PropagateToTGeo(xToGo,1)) return 0;
-    return 1;
+    nsteps= (Int_t)(TMath::Abs(t->GetX()-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
+    if (!t->PropagateToTGeo(xToGo,nsteps)) return 0; // cross the material and apply correction
     break;
   case 2:
     if(fxOverX0Shield[shieldindex]<0) BuildMaterialLUT("Shields");  
     xOverX0 = fxOverX0Shield[shieldindex];
     lengthTimesMeanDensity = fxTimesRhoShield[shieldindex];
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 3:
     if(!fxOverX0ShieldTrks || index<0 || index>=2*fNtracks) Error("CorrectForShieldMaterial","Incorrect usage of UseTGeo option!\n");
@@ -4872,13 +4886,11 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
     }
     xOverX0 = fxOverX0ShieldTrks[index];
     lengthTimesMeanDensity = fxTimesRhoShieldTrks[index];
+    lengthTimesMeanDensity *= dir;
+    if (!t->Propagate(xToGo)) return 0;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   }
-
-  lengthTimesMeanDensity *= dir;
-
-  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
-  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
 
   return 1;
 }
@@ -4894,9 +4906,10 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
 
   // Define budget mode:
   // 0: material from AliITSRecoParam (hard coded)
-  // 1: material from TGeo (on the fly)
+  // 1: material from TGeo in stepsof X cm (on the fly)
+  //    X = AliITSRecoParam::GetStepSizeTGeo()
   // 2: material from lut
-  // 3: material from TGeo (same for all hypotheses)
+  // 3: material from TGeo in one step (same for all hypotheses)
   Int_t mode;
   switch(fUseTGeo) {
   case 0:
@@ -4933,35 +4946,45 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
 
   Int_t index=6*fCurrentEsdTrack+layerindex;
 
-  // Bring the track beyond the material
-  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
-  Double_t globXYZ[3];
-  if (!t->GetXYZ(globXYZ)) return 0;
 
   Double_t xOverX0=0.0,x0=0.0,lengthTimesMeanDensity=0.0;
   Double_t mparam[7];
   Bool_t anglecorr=kTRUE;
+  Int_t nsteps=1;
 
   switch(mode) {
   case 0:
     xOverX0 = fgLayers[layerindex].GetThickness(t->GetY(),t->GetZ(),x0);
     lengthTimesMeanDensity = xOverX0*x0;
+    // Bring the track beyond the material
+    if (!t->Propagate(xToGo)) return 0;
+    lengthTimesMeanDensity *= dir;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 1:
-    AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
-    if(mparam[1]>900000) return 0;
-    xOverX0=mparam[1];
-    lengthTimesMeanDensity=mparam[0]*mparam[4];
-    anglecorr=kFALSE;
+    Double_t rOld=TMath::Sqrt(oldGlobXYZ[0]*oldGlobXYZ[0]+oldGlobXYZ[1]*oldGlobXYZ[1]);
+    Double_t xOld;
+    if (!t->GetLocalXat(rOld,xOld)) return 0;
+    if (!t->Propagate(xOld)) return 0; // back before material (no correction)
+    nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
+    if (!t->PropagateToTGeo(xToGo,nsteps)) return 0; // cross the material and apply correction
     break;
   case 2:
     if(fxOverX0Layer[layerindex]<0) BuildMaterialLUT("Layers");  
     xOverX0 = fxOverX0Layer[layerindex];
     lengthTimesMeanDensity = fxTimesRhoLayer[layerindex];
+    // Bring the track beyond the material
+    if (!t->Propagate(xToGo)) return 0;
+    lengthTimesMeanDensity *= dir;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 3:
     if(!fxOverX0LayerTrks || index<0 || index>=6*fNtracks) Error("CorrectForLayerMaterial","Incorrect usage of UseTGeo option!\n");
-    if(fxOverX0LayerTrks[index]<0) {
+    // Bring the track beyond the material
+    if (!t->Propagate(xToGo)) return 0;
+    Double_t globXYZ[3];
+    if (!t->GetXYZ(globXYZ)) return 0;
+    if (fxOverX0LayerTrks[index]<0) {
       AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
       if(mparam[1]>900000) return 0;
       Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
@@ -4973,12 +4996,10 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
     }
     xOverX0 = fxOverX0LayerTrks[index];
     lengthTimesMeanDensity = fxTimesRhoLayerTrks[index];
+    lengthTimesMeanDensity *= dir;
+    if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   }
-
-  lengthTimesMeanDensity *= dir;
-
-  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
 
   return 1;
 }

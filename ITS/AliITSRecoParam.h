@@ -176,6 +176,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   void   SetUseTGeoInTracker(Int_t use=1) { fUseTGeoInTracker=use; return; }
   Int_t  GetUseTGeoInTracker() const { return fUseTGeoInTracker; }
+  void   SetStepSizeTGeo(Double_t size=0.1) { fStepSizeTGeo=size; return; }
+  Double_t GetStepSizeTGeo() const { return fStepSizeTGeo; }
   
   void   SetAllowSharedClusters(Bool_t allow=kTRUE) { fAllowSharedClusters=allow; return; }
   Bool_t GetAllowSharedClusters() const { return fAllowSharedClusters; }
@@ -404,6 +406,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
 
   Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
+  Double_t fStepSizeTGeo; // step size (cm)
+                     // in AliITStrackerMI::CorrectFor*Material methods
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
   Float_t fClusterMisalErrorY[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Y pos. due to misalignment (MI,SA)
@@ -457,7 +461,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
-  ClassDef(AliITSRecoParam,12) // ITS reco parameters
+  ClassDef(AliITSRecoParam,13) // ITS reco parameters
 };
 
 #endif

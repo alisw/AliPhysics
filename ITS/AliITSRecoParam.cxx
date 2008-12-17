@@ -108,6 +108,7 @@ fSigmaXDeadZoneHit2(0),
 fSigmaZDeadZoneHit2(0),
 fXPassDeadZoneHits(0),
 fUseTGeoInTracker(3),
+fStepSizeTGeo(0.1),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
 fComputePlaneEff(kFALSE),
@@ -155,6 +156,7 @@ fUseCosmicRunShiftsSSD(kFALSE)
   SetLayersParameters();
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fLayersToSkip[i]=0;
   SetUseTGeoInTracker(3);
+  SetStepSizeTGeo(0.1);
   SetAllowSharedClusters(kTRUE);
   SetFindV0s(kTRUE);
   SetAddVirtualClustersInDeadZone(kFALSE);
@@ -186,6 +188,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->SetExtendedEtaAcceptance(kFALSE);
   // allow to skip layer if no cluster and no bad
   param->SetAllowProlongationWithEmptyRoad(kFALSE);
+
 
   param->fMaxSnp = 0.95;
 
@@ -285,6 +288,7 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->SetExtendedEtaAcceptance(kTRUE);
   // allow to skip layer if no cluster and no bad
   param->SetAllowProlongationWithEmptyRoad(kTRUE);
+
 
   param->fMaxSnp = 0.95;
 

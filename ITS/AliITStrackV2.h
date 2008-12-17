@@ -45,6 +45,7 @@ public:
 
   Bool_t PropagateToVertex(const AliESDVertex *v,Double_t d=0.,Double_t x0=0.);
   Bool_t Propagate(Double_t alpha, Double_t xr);
+  Bool_t Propagate(Double_t xr) { return Propagate(GetAlpha(),xr); }
   Bool_t MeanBudgetToPrimVertex(Double_t xyz[3], Double_t step, Double_t &d) const;
   Bool_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
 
