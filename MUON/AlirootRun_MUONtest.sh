@@ -6,6 +6,7 @@
 SIMULATION=1 # will perform simulation
 RECONSTRUCTION=1 # will perform reconstruction
 CHECKS=1 # will perform checks
+SLASHTMP=1 #will use /tmp to put the temporary raw data 
 NEVENTS=100 # will simulate 100 events
 
 #RECOPTIONS="SAVEDIGITS NOFASTDECODERS" # reconstruction options with non-high performance decoders
@@ -24,7 +25,7 @@ DUMPEVENT=5 # event to be dump on files
  
 EXIT=0
 
-while getopts "SRX:srxn:p:d:c:" option
+while getopts "SRX:srxn:tg:p:d:c:" option
 do
   case $option in
     R ) RECONSTRUCTION=1;;
@@ -36,9 +37,11 @@ do
     r ) RECONSTRUCTION=0;;
     s ) SIMULATION=0;;
     x ) CHECKS=0;;
+    t ) SLASHTMP=0;;
     c ) SIMCONFIG=$OPTARG;;
     d ) OUTDIR=$OPTARG;;
     n ) NEVENTS=$OPTARG;;
+    g ) SEED=$OPTARG;;
     p ) RECOPTIONS=$OPTARG;; 
     *     ) echo "Unimplemented option chosen."
     EXIT=1
@@ -55,11 +58,13 @@ shift $(($OPTIND - 1))
 
 if [ $# -gt 0 ] || [ "$EXIT" -eq 1 ]; then
   echo "ERROR : extra option not recognized"
-  echo "Usage: `basename $0` options (-SRXsrxn:p:d:c:)"
+  echo "Usage: `basename $0` options (-SRXsrxn:tg:p:d:c:)"
   echo "       -S (-s) perform (or not) simulation (default is do it, i.e -S)"
   echo "       -R (-r) perform (or not) reconstruction (default is do it, i.e. -R)"
   echo "       -X event (-x) perform (or not) checks and dumps (default is do it for event $DUMPEVENT, i.e. -X $DUMPEVENT)"
   echo "       -n nevents (int) number of events to simulate (default $NEVENTS)"
+  echo "       -t will use OUTDIR as a tmp directory to generate raw data  "
+  echo "       -g seed (uint) seed to be used in simulation (default $SEED)"
   echo "       -p recoptions (quotified string) reconstruction options to use (default \"$RECOPTIONS\")"
   echo "       -d full path to output directory (default $OUTDIR)"
   echo "       -c full path to configuration file for simulation (default $SIMCONFIG)"
@@ -87,6 +92,22 @@ cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C \
   $ALICE_ROOT/MUON/runReconstruction.C $ALICE_ROOT/MUON/runSimulation.C $OUTDIR
 
 cd $OUTDIR
+
+if [ "$SLASHTMP" -eq 0 ]; then
+  mkdir ./tmp
+  mkdir ./tmp/mdc1
+  mkdir ./tmp/mdc2
+  mkdir ./tmp/mdc1/tags
+
+  chmod 777 ./tmp
+  chmod 777 ./tmp/mdc1
+  chmod 777 ./tmp/mdc2
+  chmod 777 ./tmp/mdc1/tags
+
+  export ALIMDC_RAWDB1=./tmp/mdc1
+  export ALIMDC_RAWDB2=./tmp/mdc2
+  export ALIMDC_TAGDB=./tmp/mdc1/tags
+fi
 
 ###############################################################################
 # 
