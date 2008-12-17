@@ -84,7 +84,7 @@
 #include <AliCDBEntry.h>
 #include <AliLog.h>
 #include <AliMagF.h>
-#include <AliMagWrapCheb.h>
+#include <AliMagFCheb.h>
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCAltroMapping.h"
@@ -688,7 +688,7 @@ void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
 
   Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
   
-  AliMagF*   bmap = new AliMagWrapCheb("MapsExB","MapsExB", 2, factor, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliMagF*   bmap = new AliMagFCheb("MapsExB","MapsExB", 2, factor, 10., AliMagFCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   
   AliTPCExBFirst *exb  = new  AliTPCExBFirst(bmap,0.88*2.6400e+04,50,50,50);
   AliTPCExB::SetInstance(exb);
