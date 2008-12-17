@@ -272,11 +272,11 @@ void AliMagFCheb::Field(const float *xyz, float *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::Field(const double *xyz, double *b) const
+void AliMagFCheb::Field(const Double_t *xyz, Double_t *b) const
 {
   // compute field in cartesian coordinates. If point is outside of the parameterized region
   // get it at closest valid point
-  static double rphiz[3];
+  static Double_t rphiz[3];
   //
 #ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
   if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
@@ -343,7 +343,7 @@ void AliMagFCheb::FieldCylSol(const float *rphiz, float *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::FieldCylSol(const double *rphiz, double *b) const
+void AliMagFCheb::FieldCylSol(const Double_t *rphiz, Double_t *b) const
 {
   // compute Solenoid field in Cylindircal coordinates
   // note: if the point is outside the volume get the field in closest parameterized point
@@ -357,7 +357,7 @@ void AliMagFCheb::FieldCylSol(const double *rphiz, double *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
+void AliMagFCheb::GetTPCIntCyl(const Float_t *rphiz, Float_t *b) const
 {
   // compute field integral in TPC region in Cylindircal coordinates
   // note: the check for the point being inside the parameterized region is done outside
