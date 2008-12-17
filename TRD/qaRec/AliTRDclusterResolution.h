@@ -22,19 +22,23 @@ public:
     ,kSXRes    = 2
     ,kSYRes    = 3
   };
+  enum { // force setting the ExB
+    kExB       = BIT(23)
+  };
   AliTRDclusterResolution();
   virtual ~AliTRDclusterResolution();
 
   void    ConnectInputData(Option_t *);
   void    CreateOutputObjects();
   void    Exec(Option_t *);
-  Float_t GetExB() const { return fExB;}
+  Int_t   GetDetector() const { return fDet; }
+  inline Float_t GetExB() const;
   Bool_t  GetRefFigure(Int_t ifig);
-
+  Bool_t  HasExB() const { return TestBit(kExB);}
   TObjArray*  Histos(); 
   
   Bool_t  PostProcess();
-  void    SetExB(Float_t exb) {fExB = exb;}
+  Bool_t  SetExB(Int_t det=-1);
   void    Terminate(Option_t *){};
 
 private:
@@ -46,9 +50,17 @@ private:
   TAxis      *fAt;     // binning in the x(radial) direction (time)
   TAxis      *fAd;     // binning in the z direction (drift cell)
   Float_t    fExB;     // tg of the Lorentz angle
+  Short_t    fDet;     // detector (-1 for all)
 
   ClassDef(AliTRDclusterResolution, 0)  // cluster resolution
 };
 
+inline Float_t AliTRDclusterResolution::GetExB() const
+{ 
+  if(!HasExB()){
+    printf("WARNING :: ExB was not set. Use B=0.\n");
+  }
+  return fExB;
+}
 #endif
 

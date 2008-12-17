@@ -92,6 +92,20 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libTRDqaRec.so")<0) return;
   
+  // DB INITIALIZATION
+  // initialize OCDB manager
+  AliCDBManager *cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  cdbManager->SetRun(0);
+  cdbManager->SetCacheFlag(kFALSE);
+  // initialize magnetic field. We should use the GRP !
+  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kTRUE);
+  // initialize TRD settings
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
+  AliGeomManager::LoadGeometry();
+
   Bool_t fHasMCdata = kTRUE;
   Bool_t fHasFriends = kTRUE;
   TObjArray *tasksArray = TString(tasks).Tokenize(" ");
@@ -235,11 +249,13 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
     if(TSTBIT(fSteerTask, kClErrParam)){
       mgr->AddTask(task = new AliTRDclusterResolution());
       taskPtr[(Int_t)kClErrParam] = task;
+      ((AliTRDclusterResolution*)task)->SetExB();
       mgr->ConnectInput(task, 0, co[0]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   
       mgr->AddTask(task = new AliTRDclusterResolution());
       taskPtr[(Int_t)kClErrParam+1] = task;
+      ((AliTRDclusterResolution*)task)->SetExB();
       mgr->ConnectInput(task, 0, co[3]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("%sMC", task->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sMC.root", task->GetName())));
     }
@@ -310,20 +326,6 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   }
   printf("\n\n");
   //mgr->PrintStatus();
-
-
-  AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
-  cdbManager->SetRun(0);
-  cdbManager->SetCacheFlag(kFALSE);
- 
-  // initialize TRD settings
-  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kTRUE);
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
-  AliGeomManager::LoadGeometry();
-
 
   mgr->StartAnalysis("local",chain);
 

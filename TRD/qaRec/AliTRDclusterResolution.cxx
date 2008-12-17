@@ -1,9 +1,13 @@
 #include "AliTRDclusterResolution.h"
 #include "AliTRDtrackInfo/AliTRDclusterInfo.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDpadPlane.h"
+#include "AliTRDcalibDB.h"
+#include "Cal/AliTRDCalROC.h"
+#include "Cal/AliTRDCalDet.h"
 
 #include "AliLog.h"
+#include "AliTracker.h"
+#include "AliCDBManager.h"
 
 #include "TObjArray.h"
 #include "TAxis.h"
@@ -23,6 +27,7 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fAt(0x0)
   ,fAd(0x0)
   ,fExB(0.)
+  ,fDet(-1)
 {
   fAt = new TAxis(kNTB, -0.075, (kNTB-.5)*.15);
   fAd = new TAxis(kND, 0., .25);
@@ -107,12 +112,9 @@ TObjArray* AliTRDclusterResolution::Histos()
   h2->SetYTitle("#Delta y[cm]");
   h2->SetZTitle("entries");
 
-  Double_t w = 0.;
-  AliTRDgeometry geo;
   fContainer->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer), kYRes);
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    w = .5*geo.GetPadPlane(ily, 2)->GetWidthIPad();
-    arr->AddAt(h2 = new TH2I(Form("h_y%d", ily), Form("Ly[%d]", ily), 50, -w, w, 100, -.5, .5), ily);
+    arr->AddAt(h2 = new TH2I(Form("h_y%d", ily), Form("Ly[%d]", ily), 51, -.51, .51, 100, -.5, .5), ily);
     h2->SetXTitle("y_{w} [w]");
     h2->SetYTitle("#Delta y[cm]");
     h2->SetZTitle("entries");
@@ -134,6 +136,8 @@ TObjArray* AliTRDclusterResolution::Histos()
 //_______________________________________________________
 void AliTRDclusterResolution::Exec(Option_t *)
 {
+  if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the task.");
+
   Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3], covcl[3];
   TH2I *h2 = 0x0;
@@ -144,7 +148,9 @@ void AliTRDclusterResolution::Exec(Option_t *)
   const AliTRDclusterInfo *cli = 0x0;
   TIterator *iter=fInfo->MakeIterator();
   while((cli=dynamic_cast<AliTRDclusterInfo*>((*iter)()))){
-    dy = cli->GetResolution();
+    cli->GetCluster(det, x, y, z, q, t, covcl);
+    if(fDet>=0 && fDet!=det) continue;
+
     Int_t it = fAt->FindBin(cli->GetDriftLength());
     if(it==0 || it == fAt->GetNbins()+1){
       AliWarning(Form("Drift length %f outside allowed range", cli->GetDriftLength()));
@@ -160,15 +166,15 @@ void AliTRDclusterResolution::Exec(Option_t *)
       continue;
     }
 
+    dy = cli->GetResolution();
     cli->GetGlobalPosition(y, z, dydx, dzdx, &cov[0]);
-    h2->Fill(dydx, cov[0]!=0. ? dy/TMath::Sqrt(cov[0]) : dy);
+    h2->Fill(dydx, dy);
 
     // resolution as a function of:
     //   - cluster charge and
     //   - y displacement
-    // only for phi equal exB 
-    if(TMath::Abs(dydx-fExB)<.01){
-      cli->GetCluster(det, x, y, z, q, t, covcl);
+    // only for phi equal exB (+- 2 deg)
+    if(TMath::Abs(dydx-fExB)<3.5e-2){
       h2 = (TH2I*)fContainer->At(kQRes);
       h2->Fill(TMath::Log(q), dy);
       
@@ -184,6 +190,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
 Bool_t AliTRDclusterResolution::PostProcess()
 {
   if(!fContainer) return kFALSE;
+  if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the post processing.");
   
   TObjArray *arr = 0x0;
   TH2 *h2 = 0x0; 
@@ -297,17 +304,19 @@ Bool_t AliTRDclusterResolution::PostProcess()
         Int_t ip = 0;
         ax = h2->GetXaxis();
         for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
-          Float_t dydx = ax->GetBinCenter(ix) - fExB;
-          if(dydx<0.) continue;
+          Float_t dydx = ax->GetBinCenter(ix);
+          Double_t tgg = (dydx-fExB)/(1.+dydx*fExB);
+          if(tgg*fExB > 0.) continue;
+
           h1 = h2->ProjectionY("py", ix, ix);
           if(h1->GetEntries() < 50) continue;
           Adjust(&f, h1);
           h1->Fit(&f, "Q", "", -.2, .2);
   
           // Fill sy^2 = f(tg_phi^2)
-          gm->SetPoint(ip, dydx, 10.*f.GetParameter(1));
+          gm->SetPoint(ip, tgg, 10.*f.GetParameter(1));
           gm->SetPointError(ip, 0., 10.*f.GetParError(1));
-          gs->SetPoint(ip, dydx*dydx, 1.e2*f.GetParameter(2)*f.GetParameter(2));
+          gs->SetPoint(ip, tgg*tgg, 1.e2*f.GetParameter(2)*f.GetParameter(2));
           gs->SetPointError(ip, 0., 2.e2*f.GetParameter(2)*f.GetParError(2));
           ip++;
         }
@@ -318,8 +327,11 @@ Bool_t AliTRDclusterResolution::PostProcess()
         gs->Fit(&sig, "Q");
         hsx->SetBinContent(id, it, sig.GetParameter(1));
         hsx->SetBinError(id, it, sig.GetParError(1));
-        hsy->SetBinContent(id, it, sig.GetParameter(0));
-        hsy->SetBinError(id, it, sig.GetParError(0));
+
+        // s^2_y = s0^2_y + tg^2(a_L) * s^2_x 
+        Double_t exb2 = fExB*fExB; 
+        hsy->SetBinContent(id, it, sig.GetParameter(0) - exb2*sig.GetParameter(1));
+        hsy->SetBinError(id, it, sig.GetParError(0)+exb2*exb2*sig.GetParError(1));
       }
     }
   } else AliWarning("Missing dy=f(x_d, d_wire) container");
@@ -328,4 +340,32 @@ Bool_t AliTRDclusterResolution::PostProcess()
   return kTRUE;
 }
 
+//_______________________________________________________
+Bool_t AliTRDclusterResolution::SetExB(Int_t det)
+{
+  // check OCDB
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  if(cdb->GetRun() < 0){
+    AliError("OCDB manager not properly initialized");
+    return kFALSE;
+  }
+
+  // check magnetic field
+  if(TMath::Abs(AliTracker::GetBz()) < 1.e-10){
+    AliWarning("B=0. Magnetic field may not be initialized. Continue if you know what you are doing !");
+  }
+
+  // set reference detector if any
+  if(det>=0 && det<AliTRDgeometry::kNdet) fDet = det;
+  else det = 0;
+
+  AliTRDcalibDB *fCalibration  = AliTRDcalibDB::Instance();
+  AliTRDCalROC  *fCalVdriftROC = fCalibration->GetVdriftROC(det);
+  const AliTRDCalDet  *fCalVdriftDet = fCalibration->GetVdriftDet();
+
+  Double_t vdrift      = fCalVdriftDet->GetValue(det) * fCalVdriftROC->GetValue(70, 7);
+  fExB  = fCalibration->GetOmegaTau(vdrift, -0.1*AliTracker::GetBz());
+  SetBit(kExB);
+  return kTRUE;
+}
 

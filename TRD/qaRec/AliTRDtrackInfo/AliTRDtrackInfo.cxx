@@ -386,7 +386,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
 
   dydx = (tr[1]->LocalY() - tr[0]->LocalY()) / dx;
   dzdx = (tr[1]->Z() - tr[0]->Z()) / dx;
-  Float_t dx0 = tr[1]->LocalX() - x0;
+  //Float_t dx0 = tr[1]->LocalX() - x0;
   y0   =  tr[1]->LocalY()/* - dydx*dx0*/;
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
