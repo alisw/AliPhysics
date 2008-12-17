@@ -31,7 +31,7 @@
 #include "AliVVertex.h"
 #include "AliVTrack.h"
 #include "AliVertexerTracks.h"
-#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
@@ -963,7 +963,7 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
 
     AliKFParticle::SetField(fBzkG);
 
-    AliKFParticle vertexKF;
+    AliKFVertex vertexKF;
 
     Int_t nTrks = trkArray->GetEntriesFast();
     for(Int_t i=0; i<nTrks; i++) {
@@ -971,8 +971,10 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
       AliKFParticle daughterKF(*esdTrack,211);
       vertexKF.AddDaughter(daughterKF);
     }
-    vertexESD = new AliESDVertex();
-    vertexKF.CopyToESDVertex(*vertexESD);
+    vertexESD = new AliESDVertex(vertexKF.Parameters(),
+				 vertexKF.CovarianceMatrix(),
+				 vertexKF.GetChi2(),
+				 vertexKF.GetNContributors());
 
   }
 
