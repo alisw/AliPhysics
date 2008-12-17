@@ -39,7 +39,6 @@
 #include <TGraph.h>
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <TPython.h>
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
@@ -51,9 +50,9 @@
 
 #include "run.h"
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libPyROOT"};
+Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
 
-void makeResults(Char_t *args = "ALL")
+void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
 {
 	// Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
@@ -68,34 +67,16 @@ void makeResults(Char_t *args = "ALL")
   Bool_t mc      = kTRUE;
   Bool_t friends = kTRUE;
 
-  const Char_t *dir = 0x0;
-  TString tasks;
-  TObjArray *argsArray = TString(args).Tokenize("?");
-  switch(argsArray->GetEntriesFast()){
-  case 1:
-    tasks = ((TObjString*)(*argsArray)[0])->String();
-    dir=0x0;
-    break;
-  case 2:
-    tasks = ((TObjString*)(*argsArray)[0])->String();
-    dir = ((TObjString*)(*argsArray)[1])->GetName();
-    break;
-  default:
-    printf("Macro accepts 2 arguments separated by a '?'.\n");
-    printf("arg #1 : list of tasks/options\n");
-    printf("arg #2 : list of files to be processed\n");
-    return;
-  }
-
   // select tasks to process; we should move it to an 
   // individual function and move the task identifiers 
   // outside the const space
+  TString tasks(opt);
   TObjArray *tasksArray = tasks.Tokenize(" ");
   Int_t fSteerTask = 0;
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask < NTRDTASKS; itask++) SETBIT(fSteerTask, itask - 1);
+      for(Int_t itask = 1; itask < NQATASKS; itask++) SETBIT(fSteerTask, itask);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       friends = kFALSE;
@@ -105,24 +86,27 @@ void makeResults(Char_t *args = "ALL")
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 1; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask - 1);
+        SETBIT(fSteerTask, itask);
         foundOpt = kTRUE;
         break;
       }
       if(!foundOpt) Info("makeResults.C", Form("Task %s not implemented (yet).", s.Data()));
     }
   }
+  // extra rules for calibration tasks
+  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kPIDChecker);
+  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
 
   // file merger object
-  TFileMerger *fFM = new TFileMerger();
+  TFileMerger *fFM = 0x0;
   TClass *ctask = 0x0;
   AliTRDrecoTask *task = 0x0;
   Int_t nFiles;
 
   if(gSystem->AccessPathName(Form("%s/merge",  gSystem->ExpandPathName("$PWD")))) gSystem->Exec(Form("mkdir -v %s/merge",  gSystem->ExpandPathName("$PWD")));
 
-  printf("\n\tPROCESSING DATA FOR TASKS [%b]:\n", fSteerTask);
-  for(Int_t itask = 0; itask <NTRDTASKS; itask++){
+  for(Int_t itask = 1; itask<NTRDTASKS; itask++){
     if(!TSTBIT(fSteerTask, itask)) continue;
 
     ctask = new TClass(fgkTRDtaskClassName[itask]);
@@ -132,44 +116,48 @@ void makeResults(Char_t *args = "ALL")
     task->SetFriends(friends);
 
      // setup filelist
-    string filename;
     nFiles = 0;
-    ifstream filestream(dir);
-    while(getline(filestream, filename)){
-      if(Int_t(filename.find(task->GetName())) < 0) continue;
-      if(Int_t(filename.find("merge")) >= 0) continue;
-      nFiles++;
+    string filename;
+    if(files){
+      ifstream filestream(files);
+      while(getline(filestream, filename)){
+        if(Int_t(filename.find(task->GetName())) < 0) continue;
+        if(Int_t(filename.find("merge")) >= 0) continue;
+        nFiles++;
+      }
+    } else {
+      nFiles = !gSystem->AccessPathName(Form("TRD.Task%s.root", task->GetName()));
     }
+
     if(!nFiles){
-      printf("No Files found for Task %s\n", task->GetName());
+      Info("makeResults.C", Form("No Files found for Task %s", task->GetName()));
       delete task;
       delete ctask;
       continue;
     }
-    printf("Processing %d files for task %s ...\n", nFiles, task->GetName());
+    Info("makeResults.C", Form("  Processing %d files for task %s ...", nFiles, task->GetName()));
 
-    ifstream file(dir);
-    if(nFiles>1){
-      fFM = new(fFM) TFileMerger(kTRUE);
+    if(files){
+      fFM = new TFileMerger(kTRUE);
       fFM->OutputFile(Form("%s/merge/TRD.Task%s.root",  gSystem->ExpandPathName("$PWD"), task->GetName()));
 
+      ifstream file(files);
       while(getline(file, filename)){
         if(Int_t(filename.find(task->GetName())) < 0) continue;
         if(Int_t(filename.find("merge")) >= 0) continue;
         fFM->AddFile(filename.c_str());
       }
       fFM->Merge();
-      fFM->~TFileMerger();
+      delete fFM;
       task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
     } else{
-      getline(file, filename);
-      task->Load(filename.c_str());
+      task->Load(Form("%s/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
     }
 
     task->PostProcess();
     TCanvas *c=new TCanvas();
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
-      task->GetRefFigure(ipic);
+      if(!task->GetRefFigure(ipic)) return;
       c->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
       c->Clear();
     }

@@ -20,13 +20,13 @@ public:
   AliTRDtrackingEfficiencyCombined();
   virtual ~AliTRDtrackingEfficiencyCombined(){;}
   
-  virtual void CreateOutputObjects();
-  virtual void Exec(Option_t *);
-  virtual void Terminate(Option_t *);
+  void        CreateOutputObjects();
+  void        Exec(Option_t *);
+  void        Terminate(Option_t *);
   
-  virtual Bool_t PostProcess();
-  virtual TObjArray *Histos();
-  void GetRefFigure(Int_t ifig);
+  Bool_t      PostProcess();
+  TObjArray*  Histos();
+  Bool_t      GetRefFigure(Int_t ifig);
     
 private:
   enum{

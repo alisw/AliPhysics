@@ -892,7 +892,7 @@ TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-void AliTRDpidChecker::GetRefFigure(Int_t ifig)
+Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
   TLegend *leg = new TLegend(.7, .7, .98, .98);
@@ -926,7 +926,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
-    return;
+    return kTRUE;
   case kdEdx:
     // save 2.0 GeV projection as reference
     FIRST = kTRUE;
@@ -948,7 +948,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
-    return;
+    return kTRUE;
   case kdEdxSlice:
     break;
   case kPH:
@@ -977,7 +977,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
-    return;
+    return kTRUE;
   case kNClus:
     // save 2.0 GeV projection as reference
     FIRST = kTRUE;
@@ -1001,7 +1001,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
-    return;
+    return kTRUE;
   case kMomentum:
   case kMomentumBin:
     break; 
@@ -1028,9 +1028,10 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
-    return;
+    return kTRUE;
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
+  return kFALSE;
 }
 
 //________________________________________________________________________

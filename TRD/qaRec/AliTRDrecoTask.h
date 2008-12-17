@@ -38,7 +38,7 @@ public:
   Int_t          GetDebugLevel() const { return fDebugLevel;}
   Int_t          GetNRefFigures() const { return fNRefFigures; } 
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
-  virtual void   GetRefFigure(Int_t ifig);
+  virtual Bool_t GetRefFigure(Int_t ifig);
 
   Bool_t         HasFriends() const {return TestBit(kFriends);};
   Bool_t         HasMCdata() const {return TestBit(kMCdata);};

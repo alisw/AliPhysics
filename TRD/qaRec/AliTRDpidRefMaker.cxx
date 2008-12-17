@@ -240,13 +240,6 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 }
 
 
-//________________________________________________________
-void AliTRDpidRefMaker::GetRefFigure(Int_t /*ifig*/)
-{
-  
-}
-
-
 //________________________________________________________________________
 Bool_t AliTRDpidRefMaker::PostProcess()
 {

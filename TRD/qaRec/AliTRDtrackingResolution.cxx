@@ -514,7 +514,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
+Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
 {
   TBox *b = 0x0;
   TAxis *ax = 0x0;
@@ -533,7 +533,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     b = new TBox(-.15, -.5, .15, 1.);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
-    return;
+    return kTRUE;
   case kTrackletYResidual:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
@@ -547,7 +547,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     b = new TBox(-.15, -.5, .15, 1.);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
-    return;
+    return kTRUE;
   case kTrackletPhiResidual:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
@@ -561,7 +561,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     b = new TBox(-.15, -.5, .15, 1.);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
-    return;
+    return kTRUE;
   case kClusterResolution:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
@@ -575,7 +575,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     b = new TBox(-.15, -.5, .15, 1.);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
-    return;
+    return kTRUE;
   case kTrackletYResolution:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
@@ -586,7 +586,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    return;
+    return kTRUE;
   case kTrackletZResolution:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
@@ -597,7 +597,7 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    return;
+    return kTRUE;
   case kTrackletAngleResolution:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
@@ -608,12 +608,13 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    return;
+    return kTRUE;
   default:
     AliInfo(Form("Reference plot [%d] not implemented yet", ifig));
-    return;
+    return kFALSE;
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
+  return kFALSE;
 }
 
 

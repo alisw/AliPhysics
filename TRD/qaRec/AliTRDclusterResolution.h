@@ -29,7 +29,7 @@ public:
   void    CreateOutputObjects();
   void    Exec(Option_t *);
   Float_t GetExB() const { return fExB;}
-  void    GetRefFigure(Int_t ifig);
+  Bool_t  GetRefFigure(Int_t ifig);
 
   TObjArray*  Histos(); 
   

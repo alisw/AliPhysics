@@ -39,7 +39,7 @@ public:
   virtual ~AliTRDpidChecker();
   
   virtual void    CreateOutputObjects();
-  virtual void    GetRefFigure(Int_t ifig);
+  virtual Bool_t  GetRefFigure(Int_t ifig);
   virtual Bool_t  PostProcess();
   virtual void    Terminate(Option_t *);
 

@@ -228,33 +228,34 @@ Bool_t AliTRDtrackingEfficiencyCombined::PostProcess()
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::GetRefFigure(Int_t ifig){
+Bool_t AliTRDtrackingEfficiencyCombined::GetRefFigure(Int_t ifig){
   //
   // Plot the histograms
   //
-  if(ifig >= fNRefFigures) return;
+  if(ifig >= fNRefFigures) return kFALSE;
   if(ifig < 2){
     (dynamic_cast<TH1 *>(fContainer->At(ifig)))->Draw("e1");
-    return;
+    return kTRUE;
   }
   switch(ifig){
-    case 2:
-      (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram)))->Draw("e1");
-      for(Int_t ispec = 1; ispec < AliPID::kSPECIES; ispec++)
-        (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram + ispec)))->Draw("e1same");
-      break;
-    case 3:
-      (dynamic_cast<TH1 *>(fContainer->At(kContaminationSpeciesHistogram)))->Draw("e1");
-      for(Int_t ispec = 1; ispec < AliPID::kSPECIES; ispec++)
-        (dynamic_cast<TH1 *>(fContainer->At(kContaminationSpeciesHistogram + ispec)))->Draw("e1same");
-      break;
-    case 4:
-      (dynamic_cast<TH1 *>(fContainer->At(kEfficiencyNoPID)))->Draw("e1");
-      break;
-    case 5:
-      (dynamic_cast<TH1 *>(fContainer->At(kContaminationNoPID)))->Draw("e1");
-      break;
+  case 2:
+    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram)))->Draw("e1");
+    for(Int_t ispec = 1; ispec < AliPID::kSPECIES; ispec++)
+      (dynamic_cast<TH1 *>(fContainer->At(kEfficiencySpeciesHistogram + ispec)))->Draw("e1same");
+    break;
+  case 3:
+    (dynamic_cast<TH1 *>(fContainer->At(kContaminationSpeciesHistogram)))->Draw("e1");
+    for(Int_t ispec = 1; ispec < AliPID::kSPECIES; ispec++)
+      (dynamic_cast<TH1 *>(fContainer->At(kContaminationSpeciesHistogram + ispec)))->Draw("e1same");
+    break;
+  case 4:
+    (dynamic_cast<TH1 *>(fContainer->At(kEfficiencyNoPID)))->Draw("e1");
+    break;
+  case 5:
+    (dynamic_cast<TH1 *>(fContainer->At(kContaminationNoPID)))->Draw("e1");
+    break;
   }
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

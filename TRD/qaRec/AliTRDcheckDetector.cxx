@@ -206,7 +206,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
+Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
@@ -299,6 +299,7 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
     ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
     break;
   }
+  return kTRUE;
 }
 
 //_______________________________________________________

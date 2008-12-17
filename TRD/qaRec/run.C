@@ -1,7 +1,7 @@
 // Steer TRD QA train for Reconstruction (Clusterizer, Tracking and PID).
 // 
 // Usage:
-//   run.C(tasks, files, entries)
+//   run.C(tasks, files)
 //   tasks : "ALL" or one/more of the following:
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
@@ -22,6 +22,8 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libTRDqaRec.so")
+// gSystem->Load("libNetx.so") ;
+// gSystem->Load("libRAliEn.so");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
@@ -38,11 +40,16 @@
 #include "TSystem.h"
 #include "TError.h"
 #include "TChain.h"
+#include "TGrid.h"
+#include "TAlienCollection.h"
+#include "TGridCollection.h"
+#include "TGridResult.h"
 
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliMCEventHandler.h"
@@ -56,6 +63,7 @@
 #include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
 #include "TRD/qaRec/AliTRDtrackingResolution.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
+#include "TRD/qaRec/AliTRDalignmentTask.h"
 #include "TRD/qaRec/AliTRDpidChecker.h"
 #include "TRD/qaRec/AliTRDpidRefMaker.h"
 #include "TRD/qaRec/AliTRDcheckDetector.h"
@@ -66,8 +74,9 @@
 
 Bool_t MEM = kFALSE;
 
-TChain* CreateESDChain(const char* filename = 0x0, Int_t nfiles=-1 );
-void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
+TChain* MakeChainLST(const char* filename = 0x0);
+TChain* MakeChainXML(const char* filename = 0x0);
+void run(Char_t *tasks="ALL", const Char_t *files=0x0)
 {
   TMemStat *mem = 0x0;
   if(MEM){ 
@@ -91,7 +100,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask <= NTRDTASKS; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 1; itask < NQATASKS; itask++) SETBIT(fSteerTask, itask);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       fHasFriends = kFALSE;
@@ -99,7 +108,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
       fHasMCdata = kFALSE;
     } else { 
       Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 1; itask <= NTRDTASKS; itask++){
+      for(Int_t itask = 1; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
         SETBIT(fSteerTask, itask);
         foundOpt = kTRUE;
@@ -109,15 +118,25 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     }
   }
   // extra rules for calibration tasks
-  if(TSTBIT(fSteerTask, kClusterErrorParam)) SETBIT(fSteerTask, kTrackingResolution);
+  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kPIDChecker);
+  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
 
   // define task list pointers;
-  AliTRDrecoTask *taskPtr[2*NTRDTASKS], *task = 0x0;
-  memset(taskPtr, 0, 2*NTRDTASKS*sizeof(AliAnalysisTask*));
+  AliTRDrecoTask *taskPtr[NTRDTASKS], *task = 0x0;
+  memset(taskPtr, 0, NTRDTASKS*sizeof(AliAnalysisTask*));
 
   //____________________________________________//
-  //gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
-  TChain *chain = CreateESDChain(files, nmax);
+  // DEFINE DATA CHAIN
+  TChain *chain = 0x0;
+  if(!files) chain = MakeChainLST();
+  else{
+    TString fn(files);
+    if(fn.EndsWith("xml")) chain = MakeChainXML(files);
+    else chain = MakeChainLST(files);
+  }
+  if(!chain) return;
+
   //chain->SetBranchStatus("*", 0);
   chain->SetBranchStatus("*FMD*",0);
   chain->SetBranchStatus("*Calo*",0);
@@ -168,9 +187,9 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   //____________________________________________
   // TRD barrel tracking efficiency
-  if(fHasMCdata && TSTBIT(fSteerTask, kTrackingEfficiency)){
+  if(fHasMCdata && TSTBIT(fSteerTask, kTrackingEff)){
     mgr->AddTask(task = new AliTRDtrackingEfficiency());
-    taskPtr[(Int_t)kTrackingEfficiency] = task;
+    taskPtr[(Int_t)kTrackingEff] = task;
     task->SetDebugLevel(0);
 
     //Create containers for input/output
@@ -180,9 +199,9 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   //____________________________________________
   // TRD combined tracking efficiency
-  if(fHasMCdata && TSTBIT(fSteerTask, kTrackingCombinedEfficiency)){
+  if(fHasMCdata && TSTBIT(fSteerTask, kTrackingEffMC)){
     mgr->AddTask(task = new AliTRDtrackingEfficiencyCombined());
-    taskPtr[(Int_t)kTrackingCombinedEfficiency] = task;
+    taskPtr[(Int_t)kTrackingEffMC] = task;
     task->SetDebugLevel(0);
 
     // Create containers for input/output
@@ -192,9 +211,9 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   //____________________________________________
   // TRD tracking resolution
-  if(TSTBIT(fSteerTask, kTrackingResolution)){
+  if(TSTBIT(fSteerTask, kResolution)){
     mgr->AddTask(task = new AliTRDtrackingResolution());
-    taskPtr[(Int_t)kTrackingResolution] = task;
+    taskPtr[(Int_t)kResolution] = task;
     task->SetMCdata(fHasMCdata);
     task->SetPostProcess(kFALSE);
     task->SetDebugLevel(1);
@@ -205,7 +224,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
     // Create output containers for calibration tasks
     const Int_t nc = 5;
-    const Char_t *cn[nc] = {"ClRez", "TrkltRez", "TrkltPhiRez", "ClRes", "TrkltRes"}; 
+    const Char_t *cn[nc] = {"Cl", "TrkltY", "TrkltPhi", "ClMC", "TrkltYMC"}; 
     AliAnalysisDataContainer *co[nc]; 
     for(Int_t ic = 0; ic<nc; ic++){
       co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
@@ -213,15 +232,15 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     }
     
     // test reconstruction calibration plugin
-    if(TSTBIT(fSteerTask, kClusterErrorParam)){
+    if(TSTBIT(fSteerTask, kClErrParam)){
       mgr->AddTask(task = new AliTRDclusterResolution());
-      taskPtr[(Int_t)kClusterErrorParam] = task;
+      taskPtr[(Int_t)kClErrParam] = task;
       mgr->ConnectInput(task, 0, co[0]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   
       mgr->AddTask(task = new AliTRDclusterResolution());
-      taskPtr[(Int_t)kClusterErrorParam+1] = task;
-      mgr->ConnectInput(task, 0, co[1]);
+      taskPtr[(Int_t)kClErrParam+1] = task;
+      mgr->ConnectInput(task, 0, co[3]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("%sMC", task->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sMC.root", task->GetName())));
     }
   }
@@ -256,7 +275,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   }
   
   //____________________________________________
-  // TRD pid checker
+  // TRD PID
   if(TSTBIT(fSteerTask, kPIDChecker)){
     mgr->AddTask(task = new AliTRDpidChecker());
     taskPtr[(Int_t)kPIDChecker] = task;
@@ -266,29 +285,28 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-  }
 
-
-  //____________________________________________
-  // TRD pid reference 
-  if(TSTBIT(fSteerTask, kPIDRefMaker)){
-    mgr->AddTask(task = new AliTRDpidRefMaker());
-    taskPtr[(Int_t)kPIDRefMaker] = task;
-    task->SetDebugLevel(0);
-    task->SetMCdata(fHasMCdata);
-    
-    // Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("%sNN", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sNN.root", task->GetName())));
-    mgr->ConnectOutput(task, 2, mgr->CreateContainer(Form("%sLQ", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sLQ.root", task->GetName())));
+    //____________________________________________
+    // TRD pid reference 
+    if(TSTBIT(fSteerTask, kPIDRefMaker)){
+      mgr->AddTask(task = new AliTRDpidRefMaker());
+      taskPtr[(Int_t)kPIDRefMaker] = task;
+      task->SetDebugLevel(0);
+      task->SetMCdata(fHasMCdata);
+      
+      // Create containers for input/output
+      mgr->ConnectInput( task, 0, coutput1);
+      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+      mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("%sNN", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sNN.root", task->GetName())));
+      mgr->ConnectOutput(task, 2, mgr->CreateContainer(Form("%sLQ", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sLQ.root", task->GetName())));
+    }
   }
 
 
   if (!mgr->InitAnalysis()) return;
   printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  for(Int_t itask = 1; itask <= NTRDTASKS; itask++){
-    if(TSTBIT(fSteerTask, itask)) printf("\t   %s [%s]\n", taskPtr[itask]->GetTitle(), taskPtr[itask]->GetName());
+  for(Int_t itask = 1; itask < NTRDTASKS; itask++){
+    if(TSTBIT(fSteerTask, itask)) printf("\t   %s [%s]\n",  taskPtr[itask]->GetName(), taskPtr[itask]->GetTitle());
   }
   printf("\n\n");
   //mgr->PrintStatus();
@@ -296,7 +314,6 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   AliCDBManager *cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
-  //cdbManager->SetSpecificStorage("TRD/Calib/FEE","local:///u/bailhach/aliroot/database30head/database");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
  
@@ -316,8 +333,11 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   cal->Terminate();
   delete field;
   delete cdbManager;
-  for(Int_t it=2*NTRDTASKS; it--; ){ 
-    if(taskPtr[it]) delete taskPtr[it];
+  for(Int_t it=NTRDTASKS; it--; ){ 
+    if(taskPtr[it]){ 
+      printf("Cleaning %s [%s] ...\n", fgkTRDtaskClassName[it], taskPtr[it]->GetTitle());
+      delete taskPtr[it];
+    }
   }
   if(mcH) delete mcH;
   delete esdH;
@@ -327,8 +347,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   if(MEM) TMemStatViewerGUI::ShowGUI();
 }
 
-
-TChain* CreateESDChain(const char* filename, Int_t nfiles)
+//____________________________________________
+TChain* MakeChainLST(const char* filename)
 {
   // Create the chain
   TChain* chain = new TChain("esdTree");
@@ -343,7 +363,7 @@ TChain* CreateESDChain(const char* filename, Int_t nfiles)
   ifstream in;
   in.open(filename);
   TString esdfile;
-  while(in.good() && (nfiles--) ) {
+  while(in.good()) {
     in >> esdfile;
     if (!esdfile.Contains("root")) continue; // protection
     chain->Add(esdfile.Data());
@@ -351,5 +371,37 @@ TChain* CreateESDChain(const char* filename, Int_t nfiles)
 
   in.close();
 
+  return chain;
+}
+
+//____________________________________________
+TChain* MakeChainXML(const char* xmlfile)
+{
+  if (!TFile::Open(xmlfile)) {
+    Error("MakeChainXML", Form("No file %s was found", xmlfile));
+    return 0x0;
+  }
+
+  if(gSystem->Load("libNetx.so")<0) return 0x0;
+  if(gSystem->Load("libRAliEn.so")<0) return 0x0;
+  TGrid::Connect("alien://") ;
+
+  TGridCollection *collection = (TGridCollection*) TAlienCollection::Open(xmlfile);
+  if (!collection) {
+    Error("MakeChainXML", Form("No collection found in %s", xmlfile)) ; 
+    return 0x0; 
+  }
+  //collection->CheckIfOnline();
+
+  TGridResult* result = collection->GetGridResult("",0 ,0);
+  if(!result->GetEntries()){
+    Error("MakeChainXML", Form("No entries found in %s", xmlfile)) ; 
+    return 0x0; 
+  }
+  // Makes the ESD chain 
+  TChain* chain = new TChain("esdTree");
+  for (Int_t idx = 0; idx < result->GetEntries(); idx++) {
+    chain->Add(result->GetKey(idx, "turl")); 
+  }
   return chain;
 }

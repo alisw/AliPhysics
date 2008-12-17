@@ -28,7 +28,6 @@ public:
   
   void    CreateOutputObjects();
   void    Exec(Option_t *opt);
-  void    GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   TH1*    PlotTrackPoints(const AliTRDtrackV1 *track=0x0);
   Bool_t  PostProcess(){return kTRUE;}

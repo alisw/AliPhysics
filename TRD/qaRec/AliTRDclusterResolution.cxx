@@ -53,9 +53,9 @@ void AliTRDclusterResolution::CreateOutputObjects()
 }
 
 //_______________________________________________________
-void AliTRDclusterResolution::GetRefFigure(Int_t ifig)
+Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 {
-  if(!fResults) return /*kFALSE*/;
+  if(!fResults) return kFALSE;
   
   TObjArray *arr = 0x0;
   TH2 *h2 = 0x0;
@@ -68,7 +68,7 @@ void AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     gs->Draw("apl");
     gs->GetHistogram()->SetXTitle("Log(Q) [a.u.]");
     gs->GetHistogram()->SetYTitle("#sigma_{y}^{2} [mm^{2}] [a.u.]");
-    return /*kTRUE*/;
+    return kTRUE;
   case kYRes:
     if(!(arr = (TObjArray*)fResults->At(kYRes))) break;
     if(!(gm = (TGraphErrors*)arr->At(0))) break;
@@ -76,20 +76,20 @@ void AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     gs->Draw("apl");
     gs->GetHistogram()->SetXTitle("y [w]");
     gs->GetHistogram()->SetYTitle("#sigma_{y}^{2} [mm^{2}] [a.u.]");
-    return /*kTRUE*/;
+    return kTRUE;
   case kSXRes:
     if(!(h2 = (TH2F*)fResults->At(kSXRes))) break;
     h2->Draw("lego2");
-    return /*kTRUE*/;
+    return kTRUE;
   case kSYRes:
     if(!(h2 = (TH2F*)fResults->At(kSYRes))) break;
     h2->Draw("lego2");
-    return /*kTRUE*/;
+    return kTRUE;
   default:
     break;
   }
   
-  return /*kFALSE*/;
+  return kFALSE;
 }
 
 //_______________________________________________________
@@ -284,10 +284,10 @@ Bool_t AliTRDclusterResolution::PostProcess()
   if((arr = (TObjArray*)fContainer->At(kSXRes))) {
     for(Int_t id=1; id<=fAd->GetNbins(); id++){
       d = fAd->GetBinCenter(id); //[mm]
-      printf("Doing d=%f[mm]\n", d);
+      printf(" Doing d = %f[mm]\n", d);
       for(Int_t it=1; it<=fAt->GetNbins(); it++){
         x = fAt->GetBinCenter(it); //[mm]
-        printf("Doing x=%f[mm]\n", x);
+        printf("    Doing xd = %f[mm]\n", x);
         Int_t idx = (id-1)*kNTB+it-1;
         if(!(h2 = (TH2I*)arr->At(idx))) {
           AliWarning(Form("Missing histo at index idx[%3d] [id[%2d] it[%2d]] xd[%f] d[%f]\n", idx, id, it, x, d));
@@ -311,6 +311,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
           gs->SetPointError(ip, 0., 2.e2*f.GetParameter(2)*f.GetParError(2));
           ip++;
         }
+        if(ip<4) continue;
         for(;ip<gm->GetN(); ip++){
           gm->RemovePoint(ip);gs->RemovePoint(ip);
         }

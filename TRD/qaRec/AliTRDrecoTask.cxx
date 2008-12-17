@@ -93,9 +93,10 @@ void AliTRDrecoTask::Exec(Option_t *)
 }
 
 //_______________________________________________________
-void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
+Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 {
   AliWarning("Retrieving reference figures not implemented.");
+  return kFALSE;
 }
 
 //_______________________________________________________

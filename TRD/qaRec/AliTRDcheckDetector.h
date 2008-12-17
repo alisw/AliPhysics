@@ -60,7 +60,7 @@ public:
   TH1 *PlotChargeDeposit(const AliTRDtrackV1 *t = 0x0);
 
   virtual Bool_t PostProcess();
-  virtual void  GetRefFigure(Int_t ifig);
+  virtual Bool_t GetRefFigure(Int_t ifig);
   
   void SetRecoParam(AliTRDrecoParam *r);
 

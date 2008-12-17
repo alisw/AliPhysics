@@ -276,7 +276,7 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
 
 
 //____________________________________________________________________
-void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
+Bool_t AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
   TProfile *h = 0x0;
@@ -303,6 +303,7 @@ void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
     }
     break;
   }
+  return kTRUE;
 }
 
 

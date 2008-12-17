@@ -52,7 +52,7 @@ public:
   virtual ~AliTRDtrackingResolution();
   
   void    CreateOutputObjects();
-  void    GetRefFigure(Int_t ifig);
+  Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   void    Exec(Option_t *);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}

@@ -111,14 +111,6 @@ TH1* AliTRDalignmentTask::PlotTrackPoints(const AliTRDtrackV1 *track)
 }
 
 
-
-//________________________________________________________
-void AliTRDalignmentTask::GetRefFigure(Int_t ifig)
-{
-  AliInfo(Form("Reference plot [%d] missing result", ifig));
-}
-
-
 //________________________________________________________
 void AliTRDalignmentTask::Terminate(Option_t *)
 {
