@@ -171,31 +171,46 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fHistList->Add(fCovariances);
   
  //multi-particle correlations calculated from Q-vectors
- fQCorrelations = new TProfile("fQCorrelations","multi-particle correlations from Q-vectors",35,0,35,"s");
+ fQCorrelations = new TProfile("fQCorrelations","multi-particle correlations from Q-vectors",32,0,32,"s");
  //fQCorrelations->SetXTitle("correlations");
  //fQCorrelations->SetYTitle("");
  fQCorrelations->SetTickLength(-0.01,"Y");
  fQCorrelations->SetMarkerStyle(25);
  fQCorrelations->SetLabelSize(0.03);
  fQCorrelations->SetLabelOffset(0.01,"Y");
+ 
  (fQCorrelations->GetXaxis())->SetBinLabel(1,"<<2>>_{n|n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(2,"<<2>>_{2n|2n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(3,"<<2>>_{3n|3n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(4,"<<2>>_{4n|4n}");
+ 
  (fQCorrelations->GetXaxis())->SetBinLabel(6,"<<3>>_{2n|n,n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(7,"<<3>>_{3n|2n,n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(8,"<<3>>_{4n|2n,2n}");
  (fQCorrelations->GetXaxis())->SetBinLabel(9,"<<3>>_{4n|3n,n}");
+ 
  (fQCorrelations->GetXaxis())->SetBinLabel(11,"<<4>>_{n,n|n,n}"); 
  (fQCorrelations->GetXaxis())->SetBinLabel(12,"<<4>>_{2n,n|2n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(13,"<<4>>_{3n|n,n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(14,"<<4>>_{4n|2n,n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(15,"<<4>>_{3n,n|2n,2n}"); 
- (fQCorrelations->GetXaxis())->SetBinLabel(16,"<<5>>_{2n|n,n,n,n}"); 
- (fQCorrelations->GetXaxis())->SetBinLabel(17,"<<5>>_{2n,2n|2n,n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(18,"<<5>>_{3n,n|2n,n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(19,"<<5>>_{4n|n,n,n,n}");
- (fQCorrelations->GetXaxis())->SetBinLabel(21,"<<6>>_{n,n,n|n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(13,"<<4>>_{2n,2n|2n,2n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(14,"<<4>>_{3n|n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(15,"<<4>>_{3n,n|3n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(16,"<<4>>_{3n,n|2n,2n}"); 
+ (fQCorrelations->GetXaxis())->SetBinLabel(17,"<<4>>_{4n|2n,n,n}");
+ 
+ (fQCorrelations->GetXaxis())->SetBinLabel(19,"<<5>>_{2n|n,n,n,n}"); 
+ (fQCorrelations->GetXaxis())->SetBinLabel(20,"<<5>>_{2n,2n|2n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(21,"<<5>>_{3n,n|2n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(22,"<<5>>_{4n|n,n,n,n}");
+ 
+ (fQCorrelations->GetXaxis())->SetBinLabel(24,"<<6>>_{n,n,n|n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(25,"<<6>>_{2n,n,n|2n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(26,"<<6>>_{2n,2n|n,n,n,n}");
+ (fQCorrelations->GetXaxis())->SetBinLabel(27,"<<6>>_{3n,n|n,n,n,n}");
+ 
+ (fQCorrelations->GetXaxis())->SetBinLabel(29,"<<7>>_{2n,n,n|n,n,n,n}");
+
+ (fQCorrelations->GetXaxis())->SetBinLabel(31,"<<8>>_{n,n,n,n|n,n,n,n}");
+ 
  fHistList->Add(fQCorrelations);
  
  //average products
@@ -321,10 +336,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //running over data     
           
  //get the total multiplicity of event:
- //Int_t nPrim = anEvent->NumberOfTracks();
+ //Int_t nPrim = anEvent->NumberOfTracks();//line needed only for nested loops
 
- //if(nPrim>8&&nPrim<14)  
- //{
+ //if(nPrim>8&&nPrim<12)//line needed only for nested loops  
+ //{                    //line needed only for nested loops
 
  //fill the common control histograms:
  fCommonHists->FillControlHistograms(anEvent); 
@@ -361,9 +376,11 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  fAvMultIntFlowQC->Fill(0.,xMult,1.);
  
  //---------------------------------------------------------------------------------------------------------
- //*************
- //* Q-vectors *
- //*************
+ //
+ //                                          *******************
+ //                                          **** Q-vectors ****
+ //                                          *******************
+ //
  Double_t reQ2nQ1nstarQ1nstar = pow(xQvector1n.X(),2.)*xQvector2n.X()+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y()-pow(xQvector1n.Y(),2.)*xQvector2n.X();//Re[Q_{2n} Q_{n}^* Q_{n}^*]
  //Double_t imQ2nQ1nstarQ1nstar = pow(Qvector1n.X(),2.)*Qvector2n.Y()-2.*Qvector1n.X()*Qvector1n.Y()*Qvector2n.X()-pow(Qvector1n.Y(),2.)*Qvector2n.Y();//Im[Q_{2n} Q_{n}^* Q_{n}^*]
  Double_t reQ1nQ1nQ2nstar = reQ2nQ1nstarQ1nstar;//Re[Q_{n} Q_{n} Q_{2n}^*] = Re[Q_{2n} Q_{n}^* Q_{n}^*]
@@ -388,39 +405,60 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //Double_t imQ2nQ1nQ1nstarQ1nstarQ1nstar; //calculate and implement this (deleteMe)
  Double_t reQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(xQvector2n.Mod(),2.)*(xQvector2n.X()*(pow(xQvector1n.X(),2.)-pow(xQvector1n.Y(),2.))+2.*xQvector2n.Y()*xQvector1n.X()*xQvector1n.Y());//Re[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
  //Double_t imQ2nQ2nQ2nstarQ1nstarQ1nstar = pow(Qvector2n.Mod(),2.)*(Qvector2n.Y()*(pow(Qvector1n.X(),2.)-pow(Qvector1n.Y(),2.))-2.*Qvector2n.X()*Qvector1n.X()*Qvector1n.Y());//Im[Q_{2n} Q_{2n} Q_{2n}^* Q_{n}^* Q_{n}^*]
- Double_t reQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.X(),4.)*xQvector4n.X()-6.*pow(xQvector1n.X(),2.)*xQvector4n.X()*pow(xQvector1n.Y(),2.)+pow(xQvector1n.Y(),4.)*xQvector4n.X()+4.*pow(xQvector1n.X(),3.)*xQvector1n.Y()*xQvector4n.Y()-4.*pow(xQvector1n.Y(),3.)*xQvector1n.X()*xQvector4n.Y();
- //Double_t imQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(Qvector1n.X(),4.)*Qvector4n.Y()-6.*pow(Qvector1n.X(),2.)*Qvector4n.Y()*pow(Qvector1n.Y(),2.)+pow(Qvector1n.Y(),4.)*Qvector4n.Y()+4.*pow(Qvector1n.Y(),3.)*Qvector1n.X()*Qvector4n.X()-4.*pow(Qvector1n.X(),3.)*Qvector1n.Y()*Qvector4n.X();
-
- 
+ Double_t reQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.X(),4.)*xQvector4n.X()-6.*pow(xQvector1n.X(),2.)*xQvector4n.X()*pow(xQvector1n.Y(),2.)+pow(xQvector1n.Y(),4.)*xQvector4n.X()+4.*pow(xQvector1n.X(),3.)*xQvector1n.Y()*xQvector4n.Y()-4.*pow(xQvector1n.Y(),3.)*xQvector1n.X()*xQvector4n.Y();//Re[Q_{4n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(Qvector1n.X(),4.)*Qvector4n.Y()-6.*pow(Qvector1n.X(),2.)*Qvector4n.Y()*pow(Qvector1n.Y(),2.)+pow(Qvector1n.Y(),4.)*Qvector4n.Y()+4.*pow(Qvector1n.Y(),3.)*Qvector1n.X()*Qvector4n.X()-4.*pow(Qvector1n.X(),3.)*Qvector1n.Y()*Qvector4n.X();//Im[Q_{4n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ Double_t reQ3nQ1nQ2nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),2.)*(xQvector1n.X()*xQvector2n.X()*xQvector3n.X()-xQvector3n.X()*xQvector1n.Y()*xQvector2n.Y()+xQvector2n.X()*xQvector1n.Y()*xQvector3n.Y()+xQvector1n.X()*xQvector2n.Y()*xQvector3n.Y());//Re[Q_{3n} Q_{n} Q_{2n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ3nQ1nQ2nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),2.)*(-xQvector2n.X()*xQvector3n.X()*xQvector1n.Y()-xQvector1n.X()*xQvector3n.X()*xQvector2n.Y()+xQvector1n.X()*xQvector2n.X()*xQvector3n.Y()-xQvector1n.Y()*xQvector2n.Y()*xQvector3n.Y());//Im[Q_{3n} Q_{n} Q_{2n}^* Q_{n}^* Q_{n}^*]
+ Double_t reQ2nQ2nQ1nstarQ1nstarQ1nstarQ1nstar = (pow(xQvector1n.X(),2.)*xQvector2n.X()-2.*xQvector1n.X()*xQvector2n.X()*xQvector1n.Y()-xQvector2n.X()*pow(xQvector1n.Y(),2.)+xQvector2n.Y()*pow(xQvector1n.X(),2.)+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y()-pow(xQvector1n.Y(),2.)*xQvector2n.Y())*(pow(xQvector1n.X(),2.)*xQvector2n.X()+2.*xQvector1n.X()*xQvector2n.X()*xQvector1n.Y()-xQvector2n.X()*pow(xQvector1n.Y(),2.)-xQvector2n.Y()*pow(xQvector1n.X(),2.)+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y()+pow(xQvector1n.Y(),2.)*xQvector2n.Y());//Re[Q_{2n} Q_{2n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ2nQ2nQ1nstarQ1nstarQ1nstarQ1nstar = 2.*(pow(xQvector1n.X(),2.)*xQvector2n.X()-xQvector2n.X()*pow(xQvector1n.Y(),2.)+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y())*(pow(xQvector1n.X(),2.)*xQvector2n.Y()-2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.X()-pow(xQvector1n.Y(),2.)*xQvector2n.Y());//Im[Q_{2n} Q_{2n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ Double_t reQ3nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),2.)*(pow(xQvector1n.X(),3.)*xQvector3n.X()-3.*xQvector1n.X()*xQvector3n.X()*pow(xQvector1n.Y(),2.)+3.*pow(xQvector1n.X(),2.)*xQvector1n.Y()*xQvector3n.Y()-pow(xQvector1n.Y(),3.)*xQvector3n.Y());//Re[Q_{3n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ3nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),2.)*(pow(xQvector1n.Y(),3.)*xQvector3n.X()-3.*xQvector1n.Y()*xQvector3n.X()*pow(xQvector1n.X(),2.)-3.*pow(xQvector1n.Y(),2.)*xQvector1n.X()*xQvector3n.Y()+pow(xQvector1n.X(),3.)*xQvector3n.Y());//Im[Q_{3n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ Double_t xQ2nQ1nQ1nQ2nstarQ1nstarQ1nstar = pow(xQvector2n.Mod(),2.)*pow(xQvector1n.Mod(),4.);//|Q_{2n}|^2 |Q_{n}|^4
+ Double_t reQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),4.)*(pow(xQvector1n.X(),2.)*xQvector2n.X()-xQvector2n.X()*pow(xQvector1n.Y(),2.)+2.*xQvector1n.X()*xQvector1n.Y()*xQvector2n.Y());//Re[Q_{2n} Q_{n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
+ //Double_t imQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow(xQvector1n.Mod(),4.)*(pow(xQvector1n.X(),2.)*xQvector2n.Y()-xQvector2n.Y()*pow(xQvector1n.Y(),2.)-2.*xQvector1n.X()*xQvector2n.X()*xQvector1n.Y());//Re[Q_{2n} Q_{n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^* Q_{n}^*]
  //---------------------------------------------------------------------------------------------------------
  
  //---------------------------------------------------------------------------------------------------------
- //********************************
- //* multi-particle correlations: *
- //********************************
+ //
+ //                                        **************************************
+ //                                        **** multi-particle correlations: ****
+ //                                        **************************************
+ //
+ // Remark 1: multi-particle correlations calculated with Q-vectors are stored in fQCorrelations.
+ // Remark 2: binning of fQCorrelations is organized as follows: 
+ //
+ // 1st bin: <2>_{n|n} = two1n1n
+ // 2nd bin: <2>_{2n|2n} = two2n2n
+ // 3rd bin: <2>_{3n|3n} = two3n3n
+ // 4th bin: <2>_{4n|4n} = two4n4n
+ // 5th bin: --  EMPTY --
+ // 6th bin: <3>_{2n|n,n} = three2n1n1n
+ // 7th bin: <3>_{3n|2n,n} = three3n2n1n
+ // 8th bin: <3>_{4n|2n,2n} = three4n2n2n
+ // 9th bin: <3>_{4n|3n,n} = three4n3n1n
+ //10th bin: --  EMPTY --
+ //11th bin: <4>_{n,n|n,n} = four1n1n1n1n
+ //12th bin: <4>_{2n,n|2n,n} = four2n1n2n1n
+ //13th bin: <4>_{2n,2n|2n,2n} = four2n2n2n2n
+ //14th bin: <4>_{3n|n,n,n} = four3n1n1n1n
+ //15th bin: <4>_{3n,n|3n,n} = four3n1n3n1n 
+ //16th bin: <4>_{3n,n|2n,2n} = four3n1n2n2n
+ //17th bin: <4>_{4n|2n,n,n} = four4n2n1n1n
+ //18th bin: --  EMPTY --
+ //19th bin: <5>_{2n|n,n,n,n} = five2n1n1n1n1n
+ //20th bin: <5>_{2n,2n|2n,n,n} = five2n2n2n1n1n
+ //21st bin: <5>_{3n,n|2n,n,n} = five3n1n2n1n1n
+ //22nd bin: <5>_{4n|n,n,n,n} = five4n1n1n1n1n  
+ //23rd bin: --  EMPTY --
+ //24th bin: <6>_{n,n,n|n,n,n} = six1n1n1n1n1n1n
+ //25th bin: <6>_{2n,n,n|2n,n,n} = six2n1n1n2n1n1n
+ //26th bin: <6>_{2n,2n|n,n,n,n} = six2n2n1n1n1n1n
+ //27th bin: <6>_{3n,n|n,n,n,n} = six3n1n1n1n1n1n
+ //28th bin: --  EMPTY --
+ //29th bin: <7>_{2n,n,n|n,n,n,n} = seven2n1n1n1n1n1n1n
+ //30th bin: --  EMPTY --
+ //31st bin: <8>_{n,n,n,n|n,n,n,n} = eight1n1n1n1n1n1n1n1n
 
- // binning of fQCorrelations: 
- // 1st bin: <2>_{n|n} = two_1n1n
- // 2nd bin: <2>_{2n|2n} = two_2n2n
- // 3rd bin: <2>_{3n|3n} = two_3n3n
- // 4th bin: <2>_{4n|4n} = two_4n4n
- // 6th bin: <3>_{2n|n,n} = three_2n1n1n
- // 7th bin: <3>_{3n|2n,n} = three_3n2n1n
- // 8th bin: <3>_{4n|2n,2n} = three_4n2n2n
- // 9th bin: <3>_{4n|3n,n} = three_4n3n1n
- //11th bin: <4>_{n,n|n,n} = four_1n1n1n1n
- //12th bin: <4>_{2n,n|2n,n} = four_2n1n2n1n
- //13th bin: <4>_{3n|n,n,n} = four_3n1n1n1n
- //14th bin: <4>_{4n|2n,n,n} = four_4n2n1n1n
- //15th bin: <4>_{3n,n|2n,2n} = four_3n1n2n2n
- //16th bin: <5>_{2n|n,n,n,n} = five_2n1n1n1n1n
- //17th bin: <5>_{2n,2n|2n,n,n} = five_2n2n2n1n1n
- //18th bin: <5>_{3n,n|2n,n,n} = five_3n1n2n1n1n
- //19th bin: <5>_{4n|n,n,n,n} = five_4n1n1n1n1n  
- //21th bin: <6>_{n,n,n|n,n,n} = six_1n1n1n1n1n1n
- 
- //31th bin: <4>_{2n,2n|2n,2n} = four_2n2n2n2n //to be improved
- //32nd bin: <4>_{3n,n|3n,n} = four_3n1n3n1n   //to be improved
  
  // binning of fQProduct (all correlations are evaluated in harmonic n): 
  // 1st bin: <2>*<4>
@@ -476,17 +514,15 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   //four_3n1n3n1n = Q3nQ1nQ3nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.))-(2.*three_3n2n1n+2.*three_4n3n1n)/(M-3.)-(two_4n4n+M*two_3n3n+two_2n2n+M*two_1n1n)/((M-2.)*(M-3.))-M/((M-1.)*(M-2.)*(M-3.));//<4>_{3n,n|3n,n}
   
   fQCorrelations->Fill(10.,four1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
-  
-  fQCorrelations->Fill(30.,four2n2n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));//to be improved
-  fQCorrelations->Fill(31.,four3n1n3n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));//to be improved 
-    
   fQCorrelations->Fill(11.,four2n1n2n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
-  fQCorrelations->Fill(12.,four3n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
-  fQCorrelations->Fill(13.,four4n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)); 
-  fQCorrelations->Fill(14.,four3n1n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(12.,four2n2n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(13.,four3n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(14.,four3n1n3n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  fQCorrelations->Fill(15.,four3n1n2n2n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));  
+  fQCorrelations->Fill(16.,four4n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)); 
   
-  f4pDistribution->Fill(four1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));  
-     
+  f4pDistribution->Fill(four1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
+  
   fQProduct->Fill(0.,two1n1n*four1n1n1n1n,xMult*(xMult-1.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.));
  }
 
@@ -498,31 +534,64 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   
   five2n2n2n1n1n = (reQ2nQ2nQ2nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar-2.*reQ2nQ2nQ3nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+2.*(reQ4nQ2nstarQ2nstar+4.*reQ3nQ2nstarQ1nstar+reQ3nQ1nQ4nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+(reQ2nQ2nQ4nstar-2.*(xMult-5.)*reQ2nQ1nstarQ1nstar+2.*reQ1nQ1nQ2nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(2.*pow(xQvector4n.Mod(),2.)+4.*pow(xQvector3n.Mod(),2.)+1.*pow(xQvector2n.Mod(),4.)-2.*(3.*xMult-10.)*pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(4.*pow(xQvector1n.Mod(),2.)*pow(xQvector2n.Mod(),2.)-4.*(xMult-5.)*pow(xQvector1n.Mod(),2.)+4.*xMult*(xMult-6.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{2n,2n|2n,n,n}]  
 
-  //five_2n2n2n1n1n = reQ2nQ2nQ2nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(4.*four_2n1n2n1n+2.*four_3n1n2n2n+1.*four_2n2n2n2n+four_4n2n1n1n)/(M-4.)-(2.*three_4n3n1n+three_4n2n2n+three_4n2n2n+2.*three_3n2n1n)/((M-3.)*(M-4.))-(4.*three_3n2n1n+(2.*M-1.)*three_2n1n1n+2.*three_2n1n1n)/((M-3.)*(M-4.))-(two_4n4n+2.*two_3n3n+4.*(M-1.)*two_2n2n+2.*(2.*M-1.)*two_1n1n)/((M-2.)*(M-3.)*(M-4.))-(2.*M-1.)/((M-1.)*(M-2.)*(M-3.)*(M-4.));  
+  //five_2n2n2n1n1n = reQ2nQ2nQ2nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.))-(4.*four_2n1n2n1n+2.*four_3n1n2n2n+1.*four_2n2n2n2n+four_4n2n1n1n)/(M-4.)-(2.*three_4n3n1n+three_4n2n2n+three_4n2n2n+2.*three_3n2n1n)/((M-3.)*(M-4.))-(4.*three_3n2n1n+(2.*M-1.)*three_2n1n1n+2.*three_2n1n1n)/((M-3.)*(M-4.))-(two_4n4n+2.*two_3n3n+4.*(M-1.)*two_2n2n+2.*(2.*M-1.)*two_1n1n)/((M-2.)*(M-3.)*(M-4.))-(2.*M-1.)/((M-1.)*(M-2.)*(M-3.)*(M-4.)); //OK! 
    
   five4n1n1n1n1n = (reQ4nQ1nstarQ1nstarQ1nstarQ1nstar-6.*reQ4nQ2nstarQ1nstarQ1nstar-4.*reQ3nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+(8.*reQ4nQ3nstarQ1nstar+3.*reQ4nQ2nstarQ2nstar+12.*reQ3nQ2nstarQ1nstar+12.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(6.*pow(xQvector4n.Mod(),2.)+8.*pow(xQvector3n.Mod(),2.)+12.*pow(xQvector2n.Mod(),2.)+24.*pow(xQvector1n.Mod(),2.)-24.*xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{4n|n,n,n,n}] 
   
-  //five_4n1n1n1n1n = reQ4nQ1nstarQ1nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.)) -  (4.*four_3n1n1n1n+6.*four_4n2n1n1n)/(M-4.)  -  (6.*three_2n1n1n  + 12.*three_3n2n1n + 4.*three_4n3n1n + 3.*three_4n2n2n)/((M-3.)*(M-4.))  -  (4.*two_1n1n + 6.*two_2n2n + 4.*two_3n3n + 1.*two_4n4n)/((M-2.)*(M-3.)*(M-4.)) - 1./((M-1.)*(M-2.)*(M-3.)*(M-4.));
+  //five_4n1n1n1n1n = reQ4nQ1nstarQ1nstarQ1nstarQ1nstar/(M*(M-1.)*(M-2.)*(M-3.)*(M-4.)) -  (4.*four_3n1n1n1n+6.*four_4n2n1n1n)/(M-4.)  -  (6.*three_2n1n1n  + 12.*three_3n2n1n + 4.*three_4n3n1n + 3.*three_4n2n2n)/((M-3.)*(M-4.))  -  (4.*two_1n1n + 6.*two_2n2n + 4.*two_3n3n + 1.*two_4n4n)/((M-2.)*(M-3.)*(M-4.)) - 1./((M-1.)*(M-2.)*(M-3.)*(M-4.)); //OK!
   
-  fQCorrelations->Fill(15.,five2n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)); 
-  fQCorrelations->Fill(16.,five2n2n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
-  fQCorrelations->Fill(17.,five3n1n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
-  fQCorrelations->Fill(18.,five4n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
+  five3n1n2n1n1n = (reQ3nQ1nQ2nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ3nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(reQ3nQ1nQ2nstarQ2nstar-3.*reQ4nQ3nstarQ1nstar-reQ4nQ2nstarQ2nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-((2.*xMult-13.)*reQ3nQ2nstarQ1nstar-reQ3nQ1nQ4nstar-9.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-(2.*reQ1nQ1nQ2nstar+2.*pow(xQvector4n.Mod(),2.)-2.*(xMult-5.)*pow(xQvector3n.Mod(),2.)+2.*pow(xQvector3n.Mod(),2.)*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))+(2.*(xMult-6.)*pow(xQvector2n.Mod(),2.)-2.*pow(xQvector2n.Mod(),2.)*pow(xQvector1n.Mod(),2.)-pow(xQvector1n.Mod(),4.)+2.*(3.*xMult-11.)*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.))-4.*(xMult-6.)/((xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));//Re[<5>_{3n,n|2n,n,n}] 
+  
+  //five3n1n2n1n1n = reQ3nQ1nQ2nstarQ1nstarQ1nstar/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)) -  (four4n2n1n1n+four1n1n1n1n+four3n1n1n1n+2.*four2n1n2n1n+2.*three3n2n1n+2.*four3n1n3n1n+four3n1n2n2n)/(xMult-4.)  -   (2.*three4n3n1n+three4n2n2n+6.*three3n2n1n+three4n3n1n+2.*three3n2n1n+3.*three2n1n1n+2.*three2n1n1n+4.*two1n1n+2.*two2n2n+2.*two3n3n)/((xMult-3.)*(xMult-4.))  -  (5.*two1n1n + 4.*two2n2n + 3.*two3n3n + 1.*two4n4n + 2.)/((xMult-2.)*(xMult-3.)*(xMult-4.))  - 1./((xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)) ;//Re[<5>_{3n,n|2n,n,n}] //OK!
+  
+  //five3n1n2n1n1n = reQ3nQ1nQ2nstarQ1nstarQ1nstar/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)) -  (four4n2n1n1n+four1n1n1n1n+four3n1n1n1n+2.*four2n1n2n1n+2.*four3n1n3n1n+four3n1n2n2n)/(xMult-4.)  -      (2.*three4n3n1n+three4n2n2n+2.*xMult*three3n2n1n+three4n3n1n+2.*three3n2n1n+3.*three2n1n1n+2.*three2n1n1n)/((xMult-3.)*(xMult-4.))  -  ((4.*xMult-3.)*two1n1n + 2.*xMult*two2n2n + (2.*xMult-1.)*two3n3n + two4n4n)/((xMult-2.)*(xMult-3.)*(xMult-4.))  - (2.*xMult-1.)/((xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)) ;//Re[<5>_{3n,n|2n,n,n}] //OK!
+   
+  fQCorrelations->Fill(18.,five2n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)); 
+  fQCorrelations->Fill(19.,five2n2n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
+  fQCorrelations->Fill(20.,five3n1n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
+  fQCorrelations->Fill(21.,five4n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.));
  }
 
  //6-particle
- Double_t six1n1n1n1n1n1n=0.;
+ Double_t six1n1n1n1n1n1n=0., six2n2n1n1n1n1n=0., six3n1n1n1n1n1n=0., six2n1n1n2n1n1n=0.;
  if(xMult>5)
  {
   six1n1n1n1n1n1n = (pow(xQvector1n.Mod(),6.)+9.*xQ2nQ1nQ2nstarQ1nstar-6.*reQ2nQ1nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+4.*(reQ3nQ1nstarQ1nstarQ1nstar-3.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+2.*(9.*(xMult-4.)*reQ2nQ1nstarQ1nstar+2.*pow(xQvector3n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))-9.*(pow(xQvector1n.Mod(),4.)+pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-5))+(18.*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1)*(xMult-3)*(xMult-4))-(6.)/((xMult-1)*(xMult-2)*(xMult-3));//<6>_{n,n,n|n,n,n}
   
-  fQCorrelations->Fill(20.,six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));  
-  
+  six2n1n1n2n1n1n = (xQ2nQ1nQ1nQ2nstarQ1nstarQ1nstar-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(2.*five2n2n2n1n1n+4.*five2n1n1n1n1n+4.*five3n1n2n1n1n+4.*four2n1n2n1n+1.*four1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(4.*four1n1n1n1n+4.*two1n1n+2.*three2n1n1n+2.*three2n1n1n+4.*four3n1n1n1n+8.*three2n1n1n+2.*four4n2n1n1n+4.*four2n1n2n1n+2.*two2n2n+8.*four2n1n2n1n+4.*four3n1n3n1n+8.*three3n2n1n+4.*four3n1n2n2n+4.*four1n1n1n1n+4.*four2n1n2n1n+1.*four2n2n2n2n)-xMult*(xMult-1.)*(xMult-2.)*(2.*three2n1n1n+8.*two1n1n+4.*two1n1n+2.+4.*two1n1n+4.*three2n1n1n+2.*two2n2n+4.*three2n1n1n+8.*three3n2n1n+8.*two2n2n+4.*three4n3n1n+4.*two3n3n+4.*three3n2n1n+4.*two1n1n+8.*three2n1n1n+4.*two1n1n+4.*three3n2n1n+4.*three2n1n1n+2.*two2n2n+4.*three3n2n1n+2.*three4n2n2n)-xMult*(xMult-1.)*(4.*two1n1n+4.+4.*two1n1n+2.*two2n2n+1.+4.*two1n1n+4.*two2n2n+4.*two3n3n+   1.+2.*two2n2n+1.*two4n4n)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));//<6>_{2n,n,n|2n,n,n}
+ 
+  six2n2n1n1n1n1n = (reQ2nQ2nQ1nstarQ1nstarQ1nstarQ1nstar-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(five4n1n1n1n1n+8.*five2n1n1n1n1n+6.*five2n2n2n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(4.*four3n1n1n1n+6.*four4n2n1n1n+12.*three2n1n1n+12.*four1n1n1n1n+24.*four2n1n2n1n+4.*four3n1n2n2n+3.*four2n2n2n2n)-xMult*(xMult-1.)*(xMult-2.)*(6.*three2n1n1n+12.*three3n2n1n+4.*three4n3n1n+3.*three4n2n2n+8.*three2n1n1n+24.*two1n1n+12.*two2n2n+12.*three2n1n1n+8.*three3n2n1n+1.*three4n2n2n)-xMult*(xMult-1.)*(4.*two1n1n+6.*two2n2n+4.*two3n3n+1.*two4n4n+2.*two2n2n+8.*two1n1n+6.)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));//<6>_{2n,2n,n|n,n,n}
+   
+  six3n1n1n1n1n1n = (reQ3nQ1nQ1nstarQ1nstarQ1nstarQ1nstar-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(five4n1n1n1n1n+4.*five2n1n1n1n1n+6.*five3n1n2n1n1n+4.*four3n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(4.*four3n1n1n1n+6.*four4n2n1n1n+6.*four1n1n1n1n+12.*three2n1n1n+12.*four2n1n2n1n+6.*four3n1n1n1n+12.*three3n2n1n+4.*four3n1n3n1n+3.*four3n1n2n2n)-xMult*(xMult-1.)*(xMult-2.)*(6.*three2n1n1n+12.*three3n2n1n+4.*three4n3n1n+3.*three4n2n2n+4.*two1n1n+12.*two1n1n+6.*three2n1n1n+12.*three2n1n1n+4.*three3n2n1n+12.*two2n2n+4.*three3n2n1n+4.*two3n3n+1.*three4n3n1n+6.*three3n2n1n)-xMult*(xMult-1.)*(4.*two1n1n+6.*two2n2n+4.*two3n3n+1.*two4n4n+1.*two1n1n+4.+6.*two1n1n+4.*two2n2n+1.*two3n3n)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));//<6>_{3n,n|n,n,n,n}
+   
+  fQCorrelations->Fill(23.,six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)); 
+  fQCorrelations->Fill(24.,six2n1n1n2n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)); 
+  fQCorrelations->Fill(25.,six2n2n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));
+  fQCorrelations->Fill(26.,six3n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)); 
+
   f6pDistribution->Fill(six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)); 
   
   fQProduct->Fill(1.,two1n1n*six1n1n1n1n1n1n,xMult*(xMult-1.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));
   fQProduct->Fill(3.,four1n1n1n1n*six1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));
  }
+ 
+ //7-particle
+ Double_t seven2n1n1n1n1n1n1n=0.;
+ if(xMult>6)
+ {
+  seven2n1n1n1n1n1n1n = (reQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(2.*six3n1n1n1n1n1n+4.*six1n1n1n1n1n1n+1.*six2n2n1n1n1n1n+6.*six2n1n1n2n1n1n+8.*five2n1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(1.*five4n1n1n1n1n +8.*five2n1n1n1n1n+8.*four3n1n1n1n+12.*five3n1n2n1n1n+4.*five2n1n1n1n1n+3.*five2n2n2n1n1n+6.*five2n2n2n1n1n+6.*four1n1n1n1n+24.*four1n1n1n1n+12.*five2n1n1n1n1n+12.*five2n1n1n1n1n+12.*three2n1n1n+24.*four2n1n2n1n+4.*five3n1n2n1n1n+4.*five2n1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(4.*four3n1n1n1n+6.*four4n2n1n1n+12.*four1n1n1n1n+24.*three2n1n1n+24.*four2n1n2n1n+12.*four3n1n1n1n+24.*three3n2n1n+8.*four3n1n3n1n+6.*four3n1n2n2n+6.*three2n1n1n+12.*four1n1n1n1n+12.*four2n1n2n1n+6.*three2n1n1n+12.*four2n1n2n1n+4.*four3n1n2n2n+3.*four2n2n2n2n+4.*four1n1n1n1n+6.*three2n1n1n+24.*two1n1n+24.*four1n1n1n1n+4.*four3n1n1n1n+24.*two1n1n+24.*three2n1n1n+12.*two2n2n+24.*three2n1n1n+12.*four2n1n2n1n+8.*three3n2n1n+8.*four2n1n2n1n+1.*four4n2n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(6.*three2n1n1n+1.*three2n1n1n+8.*two1n1n+12.*three3n2n1n+24.*two1n1n+12.*three2n1n1n+4.*three2n1n1n+8.*two1n1n+4.*three4n3n1n+24.*three2n1n1n+8.*three3n2n1n+12.*two1n1n+12.*two1n1n+3.*three4n2n2n+24.*two2n2n+6.*two2n2n+12.+12.*three3n2n1n+8.*two3n3n+12.*three2n1n1n+24.*two1n1n+4.*three3n2n1n+8.*three3n2n1n+2.*three4n3n1n+12.*two1n1n+8.*three2n1n1n+4.*three2n1n1n+2.*three3n2n1n+6.*two2n2n+8.*two2n2n+1.*three4n2n2n+4.*three3n2n1n+6.*three2n1n1n)-xMult*(xMult-1.)*(4.*two1n1n+2.*two1n1n+6.*two2n2n+8.+1.*two2n2n+4.*two3n3n+12.*two1n1n+4.*two1n1n+1.*two4n4n+8.*two2n2n+6.+2.*two3n3n+4.*two1n1n+1.*two2n2n)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.));
+        
+  fQCorrelations->Fill(28.,seven2n1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.));
+ }
+ 
+ //8-particle
+ Double_t eight1n1n1n1n1n1n1n1n=0.;
+ if(xMult>7)
+ {
+  eight1n1n1n1n1n1n1n1n = (pow(xQvector1n.Mod(),8)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(12.*seven2n1n1n1n1n1n1n+16.*six1n1n1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(8.*six3n1n1n1n1n1n+48.*six1n1n1n1n1n1n+6.*six2n2n1n1n1n1n+96.*five2n1n1n1n1n+72.*four1n1n1n1n+36.*six2n1n1n2n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(2.*five4n1n1n1n1n+32.*five2n1n1n1n1n+36.*four1n1n1n1n+32.*four3n1n1n1n+48.*five2n1n1n1n1n+48.*five3n1n2n1n1n+144.*five2n1n1n1n1n+288.*four1n1n1n1n+36.*five2n2n2n1n1n+144.*three2n1n1n+96.*two1n1n+144.*four2n1n2n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(8.*four3n1n1n1n+48.*four1n1n1n1n+12.*four4n2n1n1n+96.*four2n1n2n1n+96.*three2n1n1n+72.*three2n1n1n+144.*two1n1n+16.*four3n1n3n1n+48.*four3n1n1n1n+144.*four1n1n1n1n+72.*four1n1n1n1n+96.*three3n2n1n+24.*four3n1n2n2n+144.*four2n1n2n1n+288.*two1n1n+288.*three2n1n1n+9.*four2n2n2n2n+72.*two2n2n+24.)-xMult*(xMult-1.)*(xMult-2.)*(12.*three2n1n1n+16.*two1n1n+24.*three3n2n1n+48.*three2n1n1n+96.*two1n1n+8.*three4n3n1n+32.*three3n2n1n+96.*three2n1n1n+144.*two1n1n+6.*three4n2n2n+96.*two2n2n+36.*two2n2n+72.+48.*three3n2n1n+16.*two3n3n+72.*three2n1n1n+144.*two1n1n)-xMult*(xMult-1.)*(8.*two1n1n+12.*two2n2n+16.+8.*two3n3n+48.*two1n1n+1.*two4n4n+16.*two2n2n+18.)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
+  
+  fQCorrelations->Fill(30.,eight1n1n1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
+ } 
  //---------------------------------------------------------------------------------------------------------
  
  
@@ -534,7 +603,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t xQ2x = xQvector2n.X();
  Double_t xQ2y = xQvector2n.Y();
 
- Double_t qx=0.,qy=0.,q2x=0.,q2y=0.,m=0.;
+ Double_t qx=0.,qy=0.,q2x=0.,q2y=0.,m=0.;//add comments for these variables (deleteMe)
  
  for(Int_t i=0;i<xMult;i++) //check if nPrim == M
  { 
@@ -595,151 +664,26 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
-  
 
 
 
 
 
 
- /*
- 
- Int_t nSelTracksIntFlow = 0;//cross-checking the selected multiplicity 
 
 
 
- 
 
 
- //calculating Q-vector of event (needed for errors) in n-th harmonic
- AliFlowVector fQvector;
- fQvector.Set(0.,0.);
- fQvector.SetMult(0);
- fQvector=anEvent->GetQ(n);                             //get the Q vector for this event
-   
- nPrim = fQvector.GetMult();        
- nEventNSelTracksIntFlow = fQvector.GetMult();
- nEventNSelTracksIntFlow=nPrim; 
- 
- 
- */
- 
- 
- /*
- //calculating Q-vector of event (needed for errors)
- AliFlowVector fQvector;
- fQvector.Set(0.,0.);
- fQvector.SetMult(0);
- fQvector=anEvent->GetQ();                             //get the Q vector for this event
- 
- */
- 
- //cout<<" multiplicity = "<<fQvector.GetMult()<<endl;
- 
- 
- //binning is organized as follows:
- //1st bin fill Q_x
- //2nd bin fill Q_y
- //3rd bin fill (Q_x)^2the selected multiplicity
- //4th bin fill (Q_y)^2
- //5th bin fill |Q_n|^2
- //6th bin fill |Q_n|^4
- //7th bin fill |Q_2n|^2
- //8th bin fill Q_2n (Q_n)* (Q_n)*// Remark: * here denotes complex conjugate!!! //Re[Q_n^2 * Q_2n^*] 
- //9th bin fill Q_2n (Q_n)* (Q_n)*// Remark: * here denotes complex conjugate!!! //Im[Q_n^2 * Q_2n^*] 
- //10th bin fill |Q_3n|^2
- //11th bin fill |Q_4n|^2
- //12th bin fill |Q_5n|^2
- //13th bin fill Re<Q_{3n} Q_{2n}^* Q_{n}^*>
- //14th bin fill Re<Q_{3n} Q_{n}^* Q_{n}^* Q_{n}^*>
- //15th bin fill <|Q_{2n}|^2 |Q_{n}|^2>
- //16th bin fill Re<Q_{2n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^*>
- //17th bin fill |Q_n|^6
- 
- /*
- 
- fQvectorComponents->Fill(0.,fQvector.X(),1);          //in the 1st bin fill Q_x
- fQvectorComponents->Fill(1.,fQvector.Y(),1);          //in the 2nd bin fill Q_y
- fQvectorComponents->Fill(2.,pow(fQvector.X(),2.),1);  //in the 3rd bin fill (Q_x)^2
- fQvectorComponents->Fill(3.,pow(fQvector.Y(),2.),1);  //in the 4th bin fill (Q_y)^2
- fQvectorComponents->Fill(4.,pow(fQvector.Mod(),2.),1);//in the 5th bin fill |Q|^2
- fQvectorComponents->Fill(5.,pow(fQvector.Mod(),4.),1);//in the 6th bin fill |Q|^4
 
- //flow vector in 2n-th harmonic
- AliFlowVector fQvector2n;
- fQvector2n.Set(0.,0.);
- fQvector2n.SetMult(0);
- fQvector2n=anEvent->GetQ(2*n);      //get the Q vector in 2n-th harmonic for this event
- 
- fQvectorComponents->Fill(6.,pow(fQvector2n.Mod(),2.),1);//in the 7th bin fill |Q_2n|^2
 
- Double_t
- Q2nQnstarQnstar=pow(fQvector.X(),2.)*fQvector2n.X()+2.*fQvector.X()*fQvector.Y()*fQvector2n.Y()-pow(fQvector.Y(),2.)*fQvector2n.X();
- 
- Double_t
- Q2nQnstarQnstarTemp=-2.*fQvector.X()*fQvector2n.X()*fQvector.Y()+fQvector2n.Y()*pow(fQvector.X(),2.)-fQvector2n.Y()*pow(fQvector.Y(),2.);
- 
- 
- fQvectorComponents->Fill(7.,Q2nQnstarQnstar,1); //in the 8th bin fill Re[Q_n^2 * Q_2n^*]       
- fQvectorComponents->Fill(8.,Q2nQnstarQnstarTemp,1); //in the 9th bin fill Im[Q_n^2 * Q_2n^*]       
- 
 
- //flow vector in 3n-th harmonic
- AliFlowVector fQvector3n;
- fQvector3n.Set(0.,0.);
- fQvector3n.SetMult(0);
- fQvector3n=anEvent->GetQ(3*n);      //get the Q vector in 3n-th harmonic for this event
- fQvectorComponents->Fill(9.,pow(fQvector3n.Mod(),2.),1);//in the 10th bin fill |Q_3n|^2
 
- //flow vector in 4n-th harmonic
- AliFlowVector fQvector4n;
- fQvector4n.Set(0.,0.);
- fQvector4n.SetMult(0);
- fQvector4n=anEvent->GetQ(4*n);      //get the Q vector in 4n-th harmonic for this event
- fQvectorComponents->Fill(10.,pow(fQvector4n.Mod(),2.),1);//in the 11th bin fill |Q_4n|^2
- 
- //flow vector in 5n-th harmonic
- AliFlowVector fQvector5n;
- fQvector5n.Set(0.,0.);
- fQvector5n.SetMult(0);
- fQvector5n=anEvent->GetQ(5*n);      //get the Q vector in 5n-th harmonic for this event
- fQvectorComponents->Fill(11.,pow(fQvector5n.Mod(),2.),1);//in the 12th bin fill |Q_5n|^2
-  
- 
- 
- Double_t
- Q3nQ2nstarQnstar=fQvector3n.X()*fQvector2n.X()*fQvector.X()-fQvector3n.X()*fQvector2n.Y()*fQvector.Y()+fQvector3n.Y()*fQvector2n.X()*fQvector.Y()+fQvector3n.Y()*fQvector2n.Y()*fQvector.X();
- fQvectorComponents->Fill(12.,Q3nQ2nstarQnstar,1); //in the 13th bin fill Re<Q_{3n} Q_{2n}^* Q_{n}^*>
- 
- //fDirectCorrelations->Fill(2.,16,1);
- 
- 
- Double_t
- Q3nQnstarQnstarQnstar=fQvector3n.X()*pow(fQvector.X(),3)-3.*fQvector.X()*fQvector3n.X()*pow(fQvector.Y(),2)+3.*fQvector.Y()*fQvector3n.Y()*pow(fQvector.X(),2)-fQvector3n.Y()*pow(fQvector.Y(),3); 
- fQvectorComponents->Fill(13.,Q3nQnstarQnstarQnstar,1); //in the 14th bin fill Re<Q_{3n} Q_{n}^* Q_{n}^* Q_{n}^*>
- 
- 
- 
- Double_t
- Q2nQnQ2nstarQnstar=pow(fQvector2n.Mod()*fQvector.Mod(),2); 
- fQvectorComponents->Fill(14.,Q2nQnQ2nstarQnstar,1); //in the 15th bin fill <|Q_{2n}|^2 |Q_{n}|^2>
- 
- 
- 
- Double_t
- Q2nQnQnstarQnstarQnstar=(fQvector2n.X()*fQvector.X()-fQvector2n.Y()*fQvector.Y())*(pow(fQvector.X(),3)-3.*fQvector.X()*pow(fQvector.Y(),2))+(fQvector2n.X()*fQvector.Y()+fQvector.X()*fQvector2n.Y())*(3.*fQvector.Y()*pow(fQvector.X(),2)-pow(fQvector.Y(),3));
- fQvectorComponents->Fill(15.,Q2nQnQnstarQnstarQnstar,1); //in the 16th bin fill Re<Q_{2n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^*>
- 
- 
- fQvectorComponents->Fill(16.,pow(fQvector.Mod(),6),1); //in the 17th bin fill |Q|^6
- */
- 
- /*
- Double_t
- Q2nQnQnstarQnstarQnstar22222=(pow(fQvector.X(),2)+pow(fQvector.Y(),2))*(pow(fQvector.X(),2)*fQvector2n.X()-fQvector2n.X()*pow(fQvector.Y(),2)+2.*fQvector.X()*fQvector.Y()*fQvector2n.Y()); 
- fQvectorComponents->Fill(16.,Q2nQnQnstarQnstarQnstar22222,1); //in the 16th bin fill Re<Q_{2n} Q_{n} Q_{n}^* Q_{n}^* Q_{n}^*>
- */
- 
+
+
+
+
+
 
 
 
@@ -759,61 +703,63 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
+
+
+
  //-------------------------------------------------------------------------------------------------------------------------------- 
- // multi-particle correlations calculated with nested loops (for integrated flow)
+ //
+ //                                          **********************
+ //                                          **** NESTED LOOPS ****
+ //                                          ********************** 
+ //
+ // Remark 1: multi-particle correlations calculated with nested loops are stored in fDirectCorrelations.
+ // Remark 2: binning of fDirectCorrelations: bins 0..40 - correlations needed for integrated flow; bins 40..80 - correlations needed for differential flow (taking as an example bin 0.5 < pt < 0.6)
+ //
+ // binning details of fDirectCorrelations (integrated flow):
+ //
+ // 1st bin: <2>_{n|n} = two1n1n
+ // 2nd bin: <2>_{2n|2n} = two2n2n
+ // 3rd bin: <2>_{3n|3n} = two3n3n
+ // 4th bin: <2>_{4n|4n} = two4n4n
+ // 5th bin: --  EMPTY --
+ // 6th bin: <3>_{2n|n,n} = three2n1n1n
+ // 7th bin: <3>_{3n|2n,n} = three3n2n1n
+ // 8th bin: <3>_{4n|2n,2n} = three4n2n2n
+ // 9th bin: <3>_{4n|3n,n} = three4n3n1n
+ //10th bin: --  EMPTY --
+ //11th bin: <4>_{n,n|n,n} = four1n1n1n1n
+ //12th bin: <4>_{2n,n|2n,n} = four2n1n2n1n
+ //13th bin: <4>_{2n,2n|2n,2n} = four2n2n2n2n
+ //14th bin: <4>_{3n|n,n,n} = four3n1n1n1n
+ //15th bin: <4>_{3n,n|3n,n} = four3n1n3n1n 
+ //16th bin: <4>_{3n,n|2n,2n} = four3n1n2n2n
+ //17th bin: <4>_{4n|2n,n,n} = four4n2n1n1n
+ //18th bin: --  EMPTY --
+ //19th bin: <5>_{2n|n,n,n,n} = five2n1n1n1n1n
+ //20th bin: <5>_{2n,2n|2n,n,n} = five2n2n2n1n1n
+ //21st bin: <5>_{3n,n|2n,n,n} = five3n1n2n1n1n
+ //22nd bin: <5>_{4n|n,n,n,n} = five4n1n1n1n1n  
+ //23rd bin: --  EMPTY --
+ //24th bin: <6>_{n,n,n|n,n,n} = six1n1n1n1n1n1n
+ //25th bin: <6>_{2n,n,n|2n,n,n} = six2n1n1n2n1n1n
+ //26th bin: <6>_{2n,2n|n,n,n,n} = six2n2n1n1n1n1n
+ //27th bin: <6>_{3n,n|n,n,n,n} = six3n1n1n1n1n1n
+ //28th bin: --  EMPTY --
+ //29th bin: <7>_{2n,n,n|n,n,n,n} = seven2n1n1n1n1n1n1n
+ //30th bin: --  EMPTY --
+ //31st bin: <8>_{n,n,n,n|n,n,n,n} = eight1n1n1n1n1n1n1n1n
  
- // fDirectCorrelations was declared as TProfile:
- // fDirectCorrelations = new TProfile("fDirectCorrelations","multi-particle correlations with nested loops",80,0,80);
- 
- // phik is the azimuth of the kth particle in laboratory frame
+ Double_t phi1=0., phi2=0., phi3=0., phi4=0., phi5=0., phi6=0., phi7=0., phi8=0.;
 
- // binning in fDirectCorrelations: 0..40 correlations needed for integrated flow; 40..80 0..40 correlations needed for differential flow 
-
- // integrated flow
- // 1st bin: <2>_{n|n}
- // 2nd bin: <2>_{2n|2n}
- // 3rd bin: <2>_{3n|3n}
- // 4th bin: <2>_{4n|4n}
- // 6th bin: <3>_{2n|n,n}
- // 7th bin: <3>_{3n|2n,n}
- // 8th bin: <3>_{4n|2n,2n}
- // 9th bin: <3>_{4n|3n,n}
- //11th bin: <4>_{n,n|n,n}
- //12th bin: <4>_{2n,n|2n,n}
- //13th bin: <4>_{3n|n,n,n}
- //14th bin: <4>_{4n|2n,n,n}
- //15th bin: <4>_{3n,n|2n,2n}
- //16th bin: <5>_{2n,n|n,n,n}
- //17th bin: <5>_{2n,2n|2n,n,n}
- //18th bin: <5>_{3n,n|2n,n,n}
- //19th bin: <5>_{4n|n,n,n,n}
- //21th bin: <6>_{n,n,n|n,n,n}
- 
- 
- //31th bin: <4>_{2n,2n|2n,2n} //to be improved
- //32nd bin: <4>_{3n,n|3n,n}   //to be improved
- 
- 
- //differential flow
- //41st bin: <2'>_{n|n}
- //42nd bin: <2'>_{2n|2n}
- //46th bin: <3'>_{2n|n,n}
- //47th bin: <3'>_{n,n|2n}
- //51st bin: <4'>_{n,n|n,n}
-
- Double_t phi1=0.,phi2=0.;
- Double_t phi3=0.,phi4=0.;
- Double_t phi5=0.,phi6=0.;
-
- //<2>_{kn|kn} (k=1,2,3,4)
- for(Int_t i=0;i<xMult;i++)
+ //<2>_{k*n|k*n} (k=1,2,3 and 4)
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<xMult;j++)
+  for(Int_t i2=0;i2<xMult;i2++)
   {
-   if(j==i)continue;
-   fTrack=anEvent->GetTrack(j);
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
    fDirectCorrelations->Fill(0.,cos(n*(phi1-phi2)),1);    //<2>_{n|n}
    fDirectCorrelations->Fill(1.,cos(2.*n*(phi1-phi2)),1); //<2>_{2n|2n}
@@ -823,19 +769,19 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  }  
      
  //<3>_{2n|n,n}, <3>_{3n|2n,n}, <3>_{4n|2n,2n} and <3>_{4n|3n,n}
- for(Int_t i=0;i<xMult;i++)
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<xMult;j++)
+  for(Int_t i2=0;i2<xMult;i2++)
   {
-   if(j==i)continue;
-   fTrack=anEvent->GetTrack(j);
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<xMult;k++)
+   for(Int_t i3=0;i3<xMult;i3++)
    {
-    if(k==i||k==j)continue;
-    fTrack=anEvent->GetTrack(k);
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
     fDirectCorrelations->Fill(5.,cos(2*n*phi1-n*(phi2+phi3)),1);        //<3>_{2n|n,n}
     fDirectCorrelations->Fill(6.,cos(3.*n*phi1-2.*n*phi2-n*phi3),1);    //<3>_{3n|2n,n}
@@ -845,128 +791,154 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  }
   
- //<4>_{n,n|n,n}, <4>_{2n,n|2n,n}, <4>_{3n|n,n,n}, <4>_{4n|2n,n,n}, <4>_{2n,2n|2n,2n} and <4>_{3n,n|3n,n}
- for(Int_t i=0;i<xMult;i++)
+ //<4>_{n,n|n,n}, <4>_{2n,n|2n,n}, <4>_{2n,2n|2n,2n}, <4>_{3n|n,n,n}, <4>_{3n,n|3n,n}, <4>_{3n,n|2n,2n} and <4>_{4n|2n,n,n} 
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<xMult;j++)
+  for(Int_t i2=0;i2<xMult;i2++)
   {
-   if(j==i)continue;
-   fTrack=anEvent->GetTrack(j);
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<xMult;k++)
+   for(Int_t i3=0;i3<xMult;i3++)
    {
-    if(k==i||k==j)continue;
-    fTrack=anEvent->GetTrack(k);
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<xMult;l++)
+    for(Int_t i4=0;i4<xMult;i4++)
     {
-     if(l==i||l==j||l==k)continue;
-     fTrack=anEvent->GetTrack(l);
+     if(i4==i1||i4==i2||i4==i3)continue;
+     fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
-     fDirectCorrelations->Fill(10.,cos(n*phi1+n*phi2-n*phi3-n*phi4),1);          //<4>_{n,n|n,n}
-     fDirectCorrelations->Fill(11.,cos(2.*n*phi1+n*phi2-2.*n*phi3-n*phi4),1);    //<4>_{2n,n|2n,n}
-     fDirectCorrelations->Fill(12.,cos(3.*n*phi1-n*phi2-n*phi3-n*phi4),1);       //<4>_{3n|n,n,n}
-     fDirectCorrelations->Fill(13.,cos(4.*n*phi1-2.*n*phi2-n*phi3-n*phi4),1);    //<4>_{4n|2n,n,n}
-     fDirectCorrelations->Fill(14.,cos(3.*n*phi1+n*phi2-2.*n*phi3-2.*n*phi4),1); //<4>_{3n,n|2n,2n}
-     fDirectCorrelations->Fill(30.,cos(2.*n*phi1+2*n*phi2-2.*n*phi3-2.*n*phi4),1); //<4>_{2n,2n|2n,2n}//to be improved
-     fDirectCorrelations->Fill(31.,cos(3.*n*phi1+n*phi2-3.*n*phi3-n*phi4),1);      //<4>_{3n,n|3n,n}//to be improved
+     fDirectCorrelations->Fill(10.,cos(n*phi1+n*phi2-n*phi3-n*phi4),1);            //<4>_{n,n|n,n}
+     fDirectCorrelations->Fill(11.,cos(2.*n*phi1+n*phi2-2.*n*phi3-n*phi4),1);      //<4>_{2n,n|2n,n}
+     fDirectCorrelations->Fill(12.,cos(2.*n*phi1+2*n*phi2-2.*n*phi3-2.*n*phi4),1); //<4>_{2n,2n|2n,2n}
+     fDirectCorrelations->Fill(13.,cos(3.*n*phi1-n*phi2-n*phi3-n*phi4),1);         //<4>_{3n|n,n,n}
+     fDirectCorrelations->Fill(14.,cos(3.*n*phi1+n*phi2-3.*n*phi3-n*phi4),1);      //<4>_{3n,n|3n,n}   
+     fDirectCorrelations->Fill(15.,cos(3.*n*phi1+n*phi2-2.*n*phi3-2.*n*phi4),1);   //<4>_{3n,n|2n,2n}
+     fDirectCorrelations->Fill(16.,cos(4.*n*phi1-2.*n*phi2-n*phi3-n*phi4),1);      //<4>_{4n|2n,n,n}
     }  
    }
   }
  }
  
- 
- 
- 
- 
-
- 
- 
- 
- 
- 
- 
- 
- 
- 
- //<5>_{2n,n,n,n,n}
- for(Int_t i=0;i<xMult;i++)
+ //<5>_{2n,n,n,n,n}, //<5>_{2n,2n|2n,n,n}, <5>_{3n,n|2n,n,n} and <5>_{4n|n,n,n,n}
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  cout<<"i = "<<i<<endl;
-  fTrack=anEvent->GetTrack(i);
+  //cout<<"i1 = "<<i1<<endl;
+  fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<xMult;j++)
+  for(Int_t i2=0;i2<xMult;i2++)
   {
-   if(j==i)continue;
-   fTrack=anEvent->GetTrack(j);
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<xMult;k++)
+   for(Int_t i3=0;i3<xMult;i3++)
    {
-    if(k==i||k==j)continue;
-    fTrack=anEvent->GetTrack(k);
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<xMult;l++)
+    for(Int_t i4=0;i4<xMult;i4++)
     {
-     if(l==i||l==j||l==k)continue;
-     fTrack=anEvent->GetTrack(l);
+     if(i4==i1||i4==i2||i4==i3)continue;
+     fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
-     for(Int_t m=0;m<xMult;m++)
+     for(Int_t i5=0;i5<xMult;i5++)
      {
-      if(m==i||m==j||m==k||m==l)continue;
-      fTrack=anEvent->GetTrack(m);
+      if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+      fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
-      fDirectCorrelations->Fill(15.,cos(2.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5),1);      //<5>_{2n,n|n,n,n}
-      fDirectCorrelations->Fill(16.,cos(2.*n*phi1+2.*n*phi2-2.*n*phi3-n*phi4-n*phi5),1);//<5>_{2n,2n|2n,n,n}
-      fDirectCorrelations->Fill(17.,cos(3.*n*phi1+n*phi2-2.*n*phi3-n*phi4-n*phi5),1);   //<5>_{3n,n|2n,n,n}
-      fDirectCorrelations->Fill(18.,cos(4.*n*phi1-n*phi2-n*phi3-n*phi4-n*phi5),1);      //<5>_{4n|n,n,n,n}
+      fDirectCorrelations->Fill(18.,cos(2.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5),1);       //<5>_{2n,n|n,n,n}
+      fDirectCorrelations->Fill(19.,cos(2.*n*phi1+2.*n*phi2-2.*n*phi3-n*phi4-n*phi5),1); //<5>_{2n,2n|2n,n,n}
+      fDirectCorrelations->Fill(20.,cos(3.*n*phi1+n*phi2-2.*n*phi3-n*phi4-n*phi5),1);    //<5>_{3n,n|2n,n,n}
+      fDirectCorrelations->Fill(21.,cos(4.*n*phi1-n*phi2-n*phi3-n*phi4-n*phi5),1);       //<5>_{4n|n,n,n,n}
      }
     }  
    }
   }
  }
  
- 
-
-
-
-
- 
-
- 
- //<6>_{n,n,n,n,n,n}
- for(Int_t i=0;i<xMult;i++)
+ //<6>_{n,n,n,n,n,n}, <6>_{2n,n,n|2n,n,n}, <6>_{2n,2n|n,n,n,n} and <6>_{3n,n|n,n,n,n}
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  //cout<<"i = "<<i<<endl;
-  fTrack=anEvent->GetTrack(i);
+  //cout<<"i1 = "<<i1<<endl;
+  fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
-  for(Int_t j=0;j<xMult;j++)
+  for(Int_t i2=0;i2<xMult;i2++)
   {
-   if(j==i)continue;
-   fTrack=anEvent->GetTrack(j);
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
-   for(Int_t k=0;k<xMult;k++)
+   for(Int_t i3=0;i3<xMult;i3++)
    {
-    if(k==i||k==j)continue;
-    fTrack=anEvent->GetTrack(k);
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
-    for(Int_t l=0;l<xMult;l++)
+    for(Int_t i4=0;i4<xMult;i4++)
     {
-     if(l==i||l==j||l==k)continue;
-     fTrack=anEvent->GetTrack(l);
+     if(i4==i1||i4==i2||i4==i3)continue;
+     fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
-     for(Int_t m=0;m<xMult;m++)
+     for(Int_t i5=0;i5<xMult;i5++)
      {
-      if(m==i||m==j||m==k||m==l)continue;
-      fTrack=anEvent->GetTrack(m);
+      if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+      fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
-      for(Int_t nn=0;nn<xMult;nn++)
+      for(Int_t i6=0;i6<xMult;i6++)
       {
-       if(nn==i||nn==j||nn==k||nn==l||nn==m)continue;
-       fTrack=anEvent->GetTrack(nn);
+       if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
+       fTrack=anEvent->GetTrack(i6);
        phi6=fTrack->Phi(); 
-       fDirectCorrelations->Fill(20.,cos(n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6),1); //<6>_{n,n,n,n,n,n}
+       fDirectCorrelations->Fill(23.,cos(n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6),1);       //<6>_{n,n,n|n,n,n}
+       fDirectCorrelations->Fill(24.,cos(2.*n*phi1+n*phi2+n*phi3-2.*n*phi4-n*phi5-n*phi6),1); //<6>_{2n,n,n|2n,n,n}
+       fDirectCorrelations->Fill(25.,cos(2.*n*phi1+2.*n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),1); //<6>_{2n,2n|n,n,n,n}
+       fDirectCorrelations->Fill(26.,cos(3.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),1);    //<6>_{3n,n|n,n,n,n}     
+      } 
+     }
+    }  
+   }
+  }
+ }
+
+ //<7>_{2n,n,n|n,n,n,n}
+ for(Int_t i1=0;i1<xMult;i1++)
+ {
+  //cout<<"i1 = "<<i1<<endl;
+  fTrack=anEvent->GetTrack(i1);
+  phi1=fTrack->Phi();
+  for(Int_t i2=0;i2<xMult;i2++)
+  {
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
+   phi2=fTrack->Phi();
+   for(Int_t i3=0;i3<xMult;i3++)
+   {
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
+    phi3=fTrack->Phi();
+    for(Int_t i4=0;i4<xMult;i4++)
+    {
+     if(i4==i1||i4==i2||i4==i3)continue;
+     fTrack=anEvent->GetTrack(i4);
+     phi4=fTrack->Phi();
+     for(Int_t i5=0;i5<xMult;i5++)
+     {
+      if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+      fTrack=anEvent->GetTrack(i5);
+      phi5=fTrack->Phi();
+      for(Int_t i6=0;i6<xMult;i6++)
+      {
+       if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
+       fTrack=anEvent->GetTrack(i6);
+       phi6=fTrack->Phi(); 
+       for(Int_t i7=0;i7<xMult;i7++)
+       {
+        if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
+        fTrack=anEvent->GetTrack(i7);
+        phi7=fTrack->Phi(); 
+        fDirectCorrelations->Fill(28.,cos(2.*n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6-n*phi7),1);//<7>_{2n,n,n|n,n,n,n}
+       } 
       } 
      }
     }  
@@ -974,30 +946,59 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  }
  
- //-------------------------------------------------------------------------------------------------------------------------------- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- //-------------------------------------------------------------------------------------------------------------------------------- 
- // multi-particle correlations calculated with nested loops (for differential flow)
+ //<8>_{n,n,n,n|n,n,n,n}
+ for(Int_t i1=0;i1<xMult;i1++)
+ {
+  cout<<"i1 = "<<i1<<endl;
+  fTrack=anEvent->GetTrack(i1);
+  phi1=fTrack->Phi();
+  for(Int_t i2=0;i2<xMult;i2++)
+  {
+   if(i2==i1)continue;
+   fTrack=anEvent->GetTrack(i2);
+   phi2=fTrack->Phi();
+   for(Int_t i3=0;i3<xMult;i3++)
+   {
+    if(i3==i1||i3==i2)continue;
+    fTrack=anEvent->GetTrack(i3);
+    phi3=fTrack->Phi();
+    for(Int_t i4=0;i4<xMult;i4++)
+    {
+     if(i4==i1||i4==i2||i4==i3)continue;
+     fTrack=anEvent->GetTrack(i4);
+     phi4=fTrack->Phi();
+     for(Int_t i5=0;i5<xMult;i5++)
+     {
+      if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+      fTrack=anEvent->GetTrack(i5);
+      phi5=fTrack->Phi();
+      for(Int_t i6=0;i6<xMult;i6++)
+      {
+       if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
+       fTrack=anEvent->GetTrack(i6);
+       phi6=fTrack->Phi(); 
+       for(Int_t i7=0;i7<xMult;i7++)
+       {
+        if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
+        fTrack=anEvent->GetTrack(i7);
+        phi7=fTrack->Phi(); 
+        for(Int_t i8=0;i8<xMult;i8++)
+        {
+         if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7)continue;
+         fTrack=anEvent->GetTrack(i8);
+         phi8=fTrack->Phi();  
+         fDirectCorrelations->Fill(30.,cos(n*phi1+n*phi2+n*phi3+n*phi4-n*phi5-n*phi6-n*phi7-n*phi8),1);//<8>_{n,n,n,n|n,n,n,n}
+        } 
+       } 
+      } 
+     }
+    }  
+   }
+  }
+ }
  
- //differential flow (see above how the binning in fDirectCorrelations is organized)
+ // binning details of fDirectCorrelations (differential flow):
+ //
  //41st bin: <2'>_{n|n}
  //42nd bin: <2'>_{2n|2n}
  //46th bin: <3'>_{2n|n,n}
@@ -1005,16 +1006,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //51st bin: <4'>_{n,n|n,n}
  
  //<2'>_{n|n}
- for(Int_t i=0;i<xMult;i++)
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<xMult;j++)
+   for(Int_t i2=0;i2<xMult;i2++)
    {
-    if(j==i)continue;
-    fTrack=anEvent->GetTrack(j);
+    if(i2==i1)continue;
+    fTrack=anEvent->GetTrack(i2);
     phi2=fTrack->Phi(); 
     fDirectCorrelations->Fill(40.,cos(1.*n*(phi1-phi2)),1); //<2'>_{n,n}
     fDirectCorrelations->Fill(41.,cos(2.*n*(phi1-phi2)),1); //<2'>_{2n,2n}  
@@ -1023,21 +1024,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  }  
 
  //<3'>_{2n|n,n}
- for(Int_t i=0;i<xMult;i++)
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<xMult;j++)
+   for(Int_t i2=0;i2<xMult;i2++)
    {
-    if(j==i)continue;
-    fTrack=anEvent->GetTrack(j);
+    if(i2==i1)continue;
+    fTrack=anEvent->GetTrack(i2);
     phi2=fTrack->Phi();
-    for(Int_t k=0;k<xMult;k++)
+    for(Int_t i3=0;i3<xMult;i3++)
     {
-     if(k==i||k==j)continue;
-     fTrack=anEvent->GetTrack(k);
+     if(i3==i1||i3==i2)continue;
+     fTrack=anEvent->GetTrack(i3);
      phi3=fTrack->Phi();           
      fDirectCorrelations->Fill(45.,cos(n*(2.*phi1-phi2-phi3)),1); //<3'>_{2n|n,n}
      fDirectCorrelations->Fill(46.,cos(n*(phi1+phi2-2.*phi3)),1); //<3'>_{n,n|2n}    
@@ -1046,30 +1047,27 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }  
  }
   
-   
-  
-  
  //<4'>_{n,n|n,n}
- for(Int_t i=0;i<xMult;i++)
+ for(Int_t i1=0;i1<xMult;i1++)
  {
-  fTrack=anEvent->GetTrack(i);
+  fTrack=anEvent->GetTrack(i1);
   if(fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)
   {
    phi1=fTrack->Phi();
-   for(Int_t j=0;j<xMult;j++)
+   for(Int_t i2=0;i2<xMult;i2++)
    {
-    if(j==i)continue;
-    fTrack=anEvent->GetTrack(j);
+    if(i2==i1)continue;
+    fTrack=anEvent->GetTrack(i2);
     phi2=fTrack->Phi();
-    for(Int_t k=0;k<xMult;k++)
+    for(Int_t i3=0;i3<xMult;i3++)
     {
-     if(k==i||k==j)continue;
-     fTrack=anEvent->GetTrack(k);
+     if(i3==i1||i3==i2)continue;
+     fTrack=anEvent->GetTrack(i3);
      phi3=fTrack->Phi();
-     for(Int_t l=0;l<xMult;l++)
+     for(Int_t i4=0;i4<xMult;i4++)
      {
-      if(l==i||l==j||l==k)continue;
-      fTrack=anEvent->GetTrack(l);
+      if(i4==i1||i4==i2||i4==i3)continue;
+      fTrack=anEvent->GetTrack(i4);
       phi4=fTrack->Phi();
       fDirectCorrelations->Fill(50.,cos(n*(phi1+phi2-phi3-phi4)),1); //<4'>_{n,n|n,n}   
      } 
@@ -1080,21 +1078,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //--------------------------------------------------------------------------------------------------------------------------------  
 
 
- 
+
+
 */
 
 
 
 
-
-
-
-
-
-
-
-//}//end of if
-
+//}//line needed only for nested loops - end of if(nPrim>8&&nPrim<14) 
 
 }//end of Make()
 
@@ -1114,8 +1105,11 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+ output->mkdir("cobjQC","cobjQC");
+ output->cd("cobjQC");
  fHistList->Write(); 
  delete output;
 }
 
 //================================================================================================================
+
