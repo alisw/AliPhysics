@@ -86,7 +86,6 @@ public:
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, const char* filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
-   virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
    
    virtual  void Field(const Double_t* x, Double_t* b) const;
    
@@ -119,7 +118,6 @@ protected:
   Int_t          fNdets;             //  Number of detectors
   Bool_t         fInitDone;          //! True when initialisation done
   AliLego       *fLego;              //! Pointer to aliLego object if it exists
-  TDatabasePDG  *fPDGDB;             //  Particle factory object
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file

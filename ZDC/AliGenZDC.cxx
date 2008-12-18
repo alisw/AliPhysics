@@ -143,7 +143,7 @@ void AliGenZDC::Generate()
   if(fFermiflag==1){
     if((fIpart==kProton) || (fIpart==kNeutron))
       ExtractFermi(fIpart, ddp);
-    mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
+    mass=TDatabasePDG::Instance()->GetParticle(fIpart)->Mass();
     fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+mass*mass);
     for(i=0; i<=2; i++) dddp[i] = ddp[i];
     dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+mass*mass);

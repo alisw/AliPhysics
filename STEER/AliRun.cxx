@@ -42,7 +42,6 @@
 
 #include <TBRIK.h> 
 #include <TCint.h> 
-#include <TDatabasePDG.h>
 #include <TGeometry.h>
 #include <TROOT.h>
 #include <TRandom3.h>
@@ -81,7 +80,6 @@ AliRun::AliRun():
   fNdets(0),
   fInitDone(kFALSE),
   fLego(0),
-  fPDGDB(0),  //Particle factory object
   fConfigFunction(""),
   fRandom(0),
   fBaseFileName(""),
@@ -112,7 +110,6 @@ AliRun::AliRun(const char *name, const char *title):
   fNdets(0),
   fInitDone(kFALSE),
   fLego(0),
-  fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
   fBaseFileName(""),
@@ -143,9 +140,6 @@ AliRun::AliRun(const char *name, const char *title):
   
   // Create default mag field
   SetField();
-
-  // Add particle list to configuration
-  AliConfig::Instance()->Add(fPDGDB); 
 
 }
 
@@ -180,7 +174,6 @@ AliRun::~AliRun()
     delete fModules;
   }
   
-  delete fPDGDB;
 }
 
 //_______________________________________________________________________
