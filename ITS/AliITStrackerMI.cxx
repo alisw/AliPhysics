@@ -4951,6 +4951,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
   Double_t mparam[7];
   Bool_t anglecorr=kTRUE;
   Int_t nsteps=1;
+  Double_t rOld,xOld;
 
   switch(mode) {
   case 0:
@@ -4962,8 +4963,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
     if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
     break;
   case 1:
-    Double_t rOld=TMath::Sqrt(oldGlobXYZ[0]*oldGlobXYZ[0]+oldGlobXYZ[1]*oldGlobXYZ[1]);
-    Double_t xOld;
+    rOld=TMath::Sqrt(oldGlobXYZ[0]*oldGlobXYZ[0]+oldGlobXYZ[1]*oldGlobXYZ[1]);
     if (!t->GetLocalXat(rOld,xOld)) return 0;
     if (!t->Propagate(xOld)) return 0; // back before material (no correction)
     nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
