@@ -20,7 +20,6 @@
 
 #include "AliKFParticle.h"
 #include "AliVVertex.h"
-#include "AliESDVertex.h"
 
 class AliKFVertex : public AliKFParticle
 {
@@ -42,10 +41,6 @@ class AliKFVertex : public AliKFParticle
   //* Initialisation from VVertex 
 
   AliKFVertex( const AliVVertex &vertex );
-
-  //* Copy vertex part to ESD vertex 
-
-  void CopyToESDVertex( AliESDVertex &Vtx ) const ;
 
 
   //*
@@ -101,12 +96,6 @@ class AliKFVertex : public AliKFParticle
 //
 //---------------------------------------------------------------------
 
-
-inline void AliKFVertex::CopyToESDVertex( AliESDVertex &v ) const 
-{
-  AliKFVertex vTmp=*this;
-  v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2 );
-}
 
 inline void AliKFVertex::operator +=( const AliKFParticle &Daughter )
 {

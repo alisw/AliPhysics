@@ -20,6 +20,7 @@
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
 #include "AliVTrack.h"
+#include "AliVVertex.h"
 
 ClassImp(AliKFParticle)
 

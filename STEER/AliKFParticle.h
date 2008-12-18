@@ -19,9 +19,10 @@
 #define ALIKFPARTICLE_H
 
 #include "AliKFParticleBase.h"
-#include "AliESDVertex.h"
+#include "TMath.h"
 
 class AliVTrack;
+class AliVVertex;
 
 class AliKFParticle :public AliKFParticleBase
 {
@@ -66,10 +67,6 @@ class AliKFParticle :public AliKFParticleBase
   //* Initialisation from VVertex 
 
   AliKFParticle( const AliVVertex &vertex );
-
-  //* Copy position part to ESD vertex 
-
-  void CopyToESDVertex( AliESDVertex &Vtx ) const ;
 
   //* Initialise covariance matrix and set current parameters to 0.0 
 
@@ -289,7 +286,6 @@ class AliKFParticle :public AliKFParticleBase
   //* Subtract the particle from the vertex  
 
   void SubtractFromVertex( AliKFParticle &v ) const ;
-  void SubtractFromVertex( AliESDVertex &v ) const ;
 
  protected: 
   
@@ -864,19 +860,6 @@ inline Double_t AliKFParticle::GetDeviationFromParticle( const AliKFParticle &p 
 inline void AliKFParticle::SubtractFromVertex( AliKFParticle &v ) const 
 {
   AliKFParticleBase::SubtractFromVertex( v.fP, v.fC, v.fChi2, v.fNDF);
-}
-
-inline void AliKFParticle::SubtractFromVertex( AliESDVertex &v ) const 
-{
-  AliKFParticle vTmp(v);
-  SubtractFromVertex( vTmp );
-  v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2, v.GetName() );
-}
- 
-inline void AliKFParticle::CopyToESDVertex( AliESDVertex &v ) const 
-{
-  AliKFParticle vTmp=*this;
-  v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2 );
 }
 
 inline Double_t AliKFParticle::GetFieldAlice()
