@@ -143,7 +143,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D*                      f2pDistribution;            //distribution of <2>_{n|n}
   TH1D*                      f4pDistribution;            //distribution of <4>_{n,n|n,n}
   TH1D*                      f6pDistribution;            //distribution of <6>_{n,n,n|n,n,n} 
-  
+ 
   Int_t                      fnBinsPt;                  //number of pt bins
   Double_t                   fPtMin;                    //minimum pt   
   Double_t                   fPtMax;                    //maximum pt           

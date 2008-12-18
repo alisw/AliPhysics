@@ -119,8 +119,8 @@ void AliQCumulantsFunctions::Calculate()
  //2-, 4- and 6-particle azimuthal correlation:
  Double_t two   = fQCorr->GetBinContent(1);  //<<2>>_{n|n}
  Double_t four  = fQCorr->GetBinContent(11); //<<4>>_{n,n|n,n}
- Double_t six   = fQCorr->GetBinContent(21); //<<6>>_{n,n,n|n,n,n}
- //Double_t eight = fQCorr->GetBinContent(); //<<8>>_{n,n,n,n|n,n,n,n}
+ Double_t six   = fQCorr->GetBinContent(24); //<<6>>_{n,n,n|n,n,n}
+ Double_t eight = fQCorr->GetBinContent(31);   //<<8>>_{n,n,n,n|n,n,n,n}
   
  //errors of 2-, 4- and 6-particle azimuthal correlation:
  Double_t twoErr   = fQCorr->GetBinError(1);  //sigma_{<<2>>_{n|n}} 
@@ -162,7 +162,9 @@ void AliQCumulantsFunctions::Calculate()
  {
   sixthOrderQCumulantError = pow(81.*pow(4.*two*two-four,2.)*pow(twoErr,2.)+81.*pow(two,2.)*pow(fourErr,2.)+pow(sixErr,2.)-162.*(4.*two*two-four)*two*cov24+18.*(4.*two*two-four)*cov26-18.*two*cov46,0.5);//sigma_{c_n{6}}
  }
-      
+  
+ Double_t eightOrderQCumulant = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.);    
+              
  //integrated flow estimates from Q-cumulants:
  cout<<" "<<endl;
  cout<<"*********************************"<<endl;
@@ -170,8 +172,8 @@ void AliQCumulantsFunctions::Calculate()
  cout<<"flow estimates from Q-cumulants:"<<endl;
  cout<<" "<<endl;
  
- Double_t vn2=0.,vn4=0.,vn6=0.;
- Double_t sd2=0.,sd4=0.,sd6=0.; 
+ Double_t vn2=0.,vn4=0.,vn6=0.,vn8=0.;
+ Double_t sd2=0.,sd4=0.,sd6=0.,sd8=0.; 
  if(secondOrderQCumulant>0.){
   vn2 = pow(secondOrderQCumulant,0.5);//v_n{2}
   sd2 = 0.5*pow(secondOrderQCumulant,-0.5)*secondOrderQCumulantError;//sigma_{v_n{2}}
@@ -207,6 +209,15 @@ void AliQCumulantsFunctions::Calculate()
   fchr6th->FillChi(vn6*pow(AvM,0.5));
  }else{
   cout<<" v_"<<n<<"{6} = Im"<<endl;
+ }
+ if(eight!=0. && eightOrderQCumulant<0.){
+  vn8 = pow((-1./33.)*eightOrderQCumulant,1./8.); //v_n{8}
+  cout<<" v_"<<n<<"{8} = "<<vn8<<" +/- "<<sd8<<endl;
+  fIntRes->SetBinContent(4,vn8);
+  fIntRes->SetBinError(4,sd8);
+  //common histograms:
+  fchr8th->FillIntegratedFlow(vn8,sd8);
+  fchr8th->FillChi(vn8*pow(AvM,0.5));
  }
  cout<<" "<<endl;
  cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
@@ -673,13 +684,14 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
 
 
 
+
+
+
 /*
 
 
-
-
-
-
+ 
+ 
 
 
 //needed for direct correlations
@@ -689,74 +701,87 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  cout<<" "<<endl;
  cout<<"   **** cross-checking the formulas ****"<<endl;
  cout<<"   ****     for integrated flow     ****"<<endl;
- cout<<"(selected only events for which 8 < M < 24):"<<endl;
+ cout<<"(selected only events for which 8 < M < 14 "<<endl;
+ cout<<"  from dataset in /data/alice2/ante/AOD)   "<<endl;
+
  cout<<" "<<endl;
  cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
  cout<<" "<<endl;
- cout<<"<2>_{n|n} from Q-vectors              = "<<fQCorr->GetBinContent(1)<<endl;
- cout<<"<2>_{n|n} from nested loops           = "<<fDirect->GetBinContent(1)<<endl;
+ cout<<"<2>_{n|n} from Q-vectors                = "<<fQCorr->GetBinContent(1)<<endl;
+ cout<<"<2>_{n|n} from nested loops             = "<<fDirect->GetBinContent(1)<<endl;
  cout<<" "<<endl;
- cout<<"<2>_{2n|2n} from Q-vectors            = "<<fQCorr->GetBinContent(2)<<endl;
- cout<<"<2>_{2n|2n} from nested loops         = "<<fDirect->GetBinContent(2)<<endl;
+ cout<<"<2>_{2n|2n} from Q-vectors              = "<<fQCorr->GetBinContent(2)<<endl;
+ cout<<"<2>_{2n|2n} from nested loops           = "<<fDirect->GetBinContent(2)<<endl;
  cout<<" "<<endl;
- cout<<"<2>_{3n|3n} from Q-vectors            = "<<fQCorr->GetBinContent(3)<<endl;
- cout<<"<2>_{3n|3n} from nested loops         = "<<fDirect->GetBinContent(3)<<endl;
+ cout<<"<2>_{3n|3n} from Q-vectors              = "<<fQCorr->GetBinContent(3)<<endl;
+ cout<<"<2>_{3n|3n} from nested loops           = "<<fDirect->GetBinContent(3)<<endl;
  cout<<" "<<endl;
- cout<<"<2>_{4n|4n} from Q-vectors            = "<<fQCorr->GetBinContent(4)<<endl;
- cout<<"<2>_{4n|4n} from nested loops         = "<<fDirect->GetBinContent(4)<<endl;
+ cout<<"<2>_{4n|4n} from Q-vectors              = "<<fQCorr->GetBinContent(4)<<endl;
+ cout<<"<2>_{4n|4n} from nested loops           = "<<fDirect->GetBinContent(4)<<endl;
  cout<<" "<<endl;
- cout<<"<3>_{2n,n,n} from Q-vectors           = "<<fQCorr->GetBinContent(6)<<endl;
- cout<<"<3>_{2n,n,n} from nested loops        = "<<fDirect->GetBinContent(6)<<endl;
+ cout<<"<3>_{2n,n,n} from Q-vectors             = "<<fQCorr->GetBinContent(6)<<endl;
+ cout<<"<3>_{2n,n,n} from nested loops          = "<<fDirect->GetBinContent(6)<<endl;
  cout<<" "<<endl;
- cout<<"<3>_{3n,2n,n} from Q-vectors          = "<<fQCorr->GetBinContent(7)<<endl;
- cout<<"<3>_{3n,2n,n} from nested loops       = "<<fDirect->GetBinContent(7)<<endl;
+ cout<<"<3>_{3n,2n,n} from Q-vectors            = "<<fQCorr->GetBinContent(7)<<endl;
+ cout<<"<3>_{3n,2n,n} from nested loops         = "<<fDirect->GetBinContent(7)<<endl;
  cout<<" "<<endl; 
- cout<<"<3>_{4n,2n,2n} from Q-vectors         = "<<fQCorr->GetBinContent(8)<<endl;
- cout<<"<3>_{4n,2n,2n} from nested loops      = "<<fDirect->GetBinContent(8)<<endl;
+ cout<<"<3>_{4n,2n,2n} from Q-vectors           = "<<fQCorr->GetBinContent(8)<<endl;
+ cout<<"<3>_{4n,2n,2n} from nested loops        = "<<fDirect->GetBinContent(8)<<endl;
  cout<<" "<<endl;
- cout<<"<3>_{4n,3n,n} from Q-vectors          = "<<fQCorr->GetBinContent(9)<<endl;
- cout<<"<3>_{4n,3n,n} from nested loops       = "<<fDirect->GetBinContent(9)<<endl;
+ cout<<"<3>_{4n,3n,n} from Q-vectors            = "<<fQCorr->GetBinContent(9)<<endl;
+ cout<<"<3>_{4n,3n,n} from nested loops         = "<<fDirect->GetBinContent(9)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{n,n|n,n} from Q-vectors          = "<<fQCorr->GetBinContent(11)<<endl;
- cout<<"<4>_{n,n|n,n} from nested loops       = "<<fDirect->GetBinContent(11)<<endl;
+ cout<<"<4>_{n,n|n,n} from Q-vectors            = "<<fQCorr->GetBinContent(11)<<endl;
+ cout<<"<4>_{n,n|n,n} from nested loops         = "<<fDirect->GetBinContent(11)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{2n,2n|2n,2n} from Q-vectors      = "<<fQCorr->GetBinContent(31)<<endl;//to be improved
- cout<<"<4>_{2n,2n|2n,2n} from nested loops   = "<<fDirect->GetBinContent(31)<<endl;//to be improved 
+ cout<<"<4>_{2n,n|2n,n} from Q-vectors          = "<<fQCorr->GetBinContent(12)<<endl;
+ cout<<"<4>_{2n,n|2n,n} from nested loops       = "<<fDirect->GetBinContent(12)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{3n,n|3n,n} from Q-vectors        = "<<fQCorr->GetBinContent(32)<<endl;//to be improved
- cout<<"<4>_{3n,n|3n,n} from nested loops     = "<<fDirect->GetBinContent(32)<<endl;//to be improved 
+ cout<<"<4>_{2n,2n|2n,2n} from Q-vectors        = "<<fQCorr->GetBinContent(13)<<endl;
+ cout<<"<4>_{2n,2n|2n,2n} from nested loops     = "<<fDirect->GetBinContent(13)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{2n,n|2n,n} from Q-vectors        = "<<fQCorr->GetBinContent(12)<<endl;
- cout<<"<4>_{2n,n|2n,n} from nested loops     = "<<fDirect->GetBinContent(12)<<endl;
+ cout<<"<4>_{3n|n,n,n} from Q-vectors           = "<<fQCorr->GetBinContent(14)<<endl;
+ cout<<"<4>_{3n|n,n,n} from nested loops        = "<<fDirect->GetBinContent(14)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{3n|n,n,n} from Q-vectors         = "<<fQCorr->GetBinContent(13)<<endl;
- cout<<"<4>_{3n|n,n,n} from nested loops      = "<<fDirect->GetBinContent(13)<<endl;
+ cout<<"<4>_{3n,n|3n,n} from Q-vectors          = "<<fQCorr->GetBinContent(15)<<endl;
+ cout<<"<4>_{3n,n|3n,n} from nested loops       = "<<fDirect->GetBinContent(15)<<endl;
  cout<<" "<<endl;
- cout<<"<4>_{4n|2n,n,n} from Q-vectors        = "<<fQCorr->GetBinContent(14)<<endl;
- cout<<"<4>_{4n|2n,n,n} from nested loops     = "<<fDirect->GetBinContent(14)<<endl;
- cout<<" "<<endl;
- cout<<"<4>_{3n,n|2n,2n} from Q-vectors       = "<<fQCorr->GetBinContent(15)<<endl;
- cout<<"<4>_{3n,n|2n,2n} from nested loops    = "<<fDirect->GetBinContent(15)<<endl;
- cout<<" "<<endl;
- cout<<"<5>_{2n,n|n,n,n} from Q-vectors       = "<<fQCorr->GetBinContent(16)<<endl;
- cout<<"<5>_{2n,n|n,n,n} from nested loops    = "<<fDirect->GetBinContent(16)<<endl;
- cout<<" "<<endl;
- cout<<"<5>_{2n,2n|2n,n,n} from Q-vectors     = "<<fQCorr->GetBinContent(17)<<endl;
- cout<<"<5>_{2n,2n|2n,n,n} from nested loops  = "<<fDirect->GetBinContent(17)<<endl;
- cout<<" "<<endl;
- cout<<"<5>_{3n,n|2n,n,n} from Q-vectors      = "<<fQCorr->GetBinContent(18)<<endl;
- cout<<"<5>_{3n,n|2n,n,n} from nested loops   = "<<fDirect->GetBinContent(18)<<endl;
- cout<<" "<<endl;
- cout<<"<5>_{4n|n,n,n,n} from Q-vectors       = "<<fQCorr->GetBinContent(19)<<endl;
- cout<<"<5>_{4n|n,n,n,n} from nested loops    = "<<fDirect->GetBinContent(19)<<endl;
- cout<<" "<<endl;
- cout<<"<6>_{n,n,n|n,n,n} from Q-vectors      = "<<fQCorr->GetBinContent(21)<<endl;
- cout<<"<6>_{n,n,n|n,n,n} from nested loops   = "<<fDirect->GetBinContent(21)<<endl;
+ cout<<"<4>_{3n,n|2n,2n} from Q-vectors         = "<<fQCorr->GetBinContent(16)<<endl;
+ cout<<"<4>_{3n,n|2n,2n} from nested loops      = "<<fDirect->GetBinContent(16)<<endl;
  cout<<" "<<endl; 
- 
-
-
-
+ cout<<"<4>_{4n|2n,n,n} from Q-vectors          = "<<fQCorr->GetBinContent(17)<<endl;
+ cout<<"<4>_{4n|2n,n,n} from nested loops       = "<<fDirect->GetBinContent(17)<<endl;
+ cout<<" "<<endl;
+ cout<<"<5>_{2n,n|n,n,n} from Q-vectors         = "<<fQCorr->GetBinContent(19)<<endl;
+ cout<<"<5>_{2n,n|n,n,n} from nested loops      = "<<fDirect->GetBinContent(19)<<endl;
+ cout<<" "<<endl;
+ cout<<"<5>_{2n,2n|2n,n,n} from Q-vectors       = "<<fQCorr->GetBinContent(20)<<endl;
+ cout<<"<5>_{2n,2n|2n,n,n} from nested loops    = "<<fDirect->GetBinContent(20)<<endl;
+ cout<<" "<<endl;
+ cout<<"<5>_{3n,n|2n,n,n} from Q-vectors        = "<<fQCorr->GetBinContent(21)<<endl;
+ cout<<"<5>_{3n,n|2n,n,n} from nested loops     = "<<fDirect->GetBinContent(21)<<endl;
+ cout<<" "<<endl;
+ cout<<"<5>_{4n|n,n,n,n} from Q-vectors         = "<<fQCorr->GetBinContent(22)<<endl;
+ cout<<"<5>_{4n|n,n,n,n} from nested loops      = "<<fDirect->GetBinContent(22)<<endl;
+ cout<<" "<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from Q-vectors        = "<<fQCorr->GetBinContent(24)<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from nested loops     = "<<fDirect->GetBinContent(24)<<endl;
+ cout<<" "<<endl; 
+ cout<<"<6>_{2n,n,n|2n,n,n} from Q-vectors      = "<<fQCorr->GetBinContent(25)<<endl;
+ cout<<"<6>_{2n,n,n|2n,n,n} from nested loops   = "<<fDirect->GetBinContent(25)<<endl;
+ cout<<" "<<endl;
+ cout<<"<6>_{2n,2n|n,n,n,n} from Q-vectors      = "<<fQCorr->GetBinContent(26)<<endl;
+ cout<<"<6>_{2n,2n|n,n,n,n} from nested loops   = "<<fDirect->GetBinContent(26)<<endl;
+ cout<<" "<<endl; 
+ cout<<"<6>_{3n,n|n,n,n,n} from Q-vectors       = "<<fQCorr->GetBinContent(27)<<endl;
+ cout<<"<6>_{3n,n|n,n,n,n} from nested loops    = "<<fDirect->GetBinContent(27)<<endl;
+ cout<<" "<<endl; 
+ cout<<"<7>_{2n,n,n|n,n,n,n} from Q-vectors     = "<<fQCorr->GetBinContent(29)<<endl;
+ cout<<"<7>_{2n,n,n|n,n,n,n} from nested loops  = "<<fDirect->GetBinContent(29)<<endl;
+ cout<<" "<<endl; 
+ cout<<"<8>_{n,n,n,n|n,n,n,n} from Q-vectors    = "<<fQCorr->GetBinContent(31)<<endl;
+ cout<<"<8>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirect->GetBinContent(31)<<endl;
+ cout<<" "<<endl; 
 
 //DIFFERENTIAL FLOW
 
@@ -775,12 +800,14 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  cout<<" "<<endl;
  cout<<"   **** cross-checking the formulas ****"<<endl;
  cout<<"   ****    for differential flow    ****"<<endl;
- cout<<"(selected only events for which 8 < M < 24):"<<endl;
+ cout<<"(selected only events for which 8 < M < 14 "<<endl;
+ cout<<"  from dataset in /data/alice2/ante/AOD)   "<<endl;
+
  cout<<" "<<endl; 
  cout<<"nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
  cout<<"0.5 < Pt < 0.6 GeV"<<endl;                                
  cout<<" "<<endl;                                       
- cout<<"<2'>_{n|n} from Q-vectors        = "<<fbin2p1n1n->GetBinContent(6)<<endl;
+ cout<<"<2'>_{n|n} from Q-vectors        = "<<fbin2p1n1n->GetBinContent(6)<<endl;kTRUE
  cout<<"<2'>_{n|n} from nested loops     = "<<fDirect->GetBinContent(41)<<endl;
  cout<<" "<<endl;                                       
  cout<<"<2'>_{2n|2n} from Q-vectors      = "<<fbin2p2n2n->GetBinContent(6)<<endl;
@@ -798,8 +825,8 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  
      
        
-   
-    */                                          
+
+     */                                   
                                                 
 
 }
