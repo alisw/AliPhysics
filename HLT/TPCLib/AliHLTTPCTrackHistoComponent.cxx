@@ -35,9 +35,11 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include <TFile.h>
 #include <TString.h>
-#include "TH1F.h"
+#include "TNtuple.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "AliHLTTPCTrackArray.h"
+#include "AliHLTTPCTrack.h"
 
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
@@ -50,32 +52,9 @@ ClassImp(AliHLTTPCTrackHistoComponent)
 
 AliHLTTPCTrackHistoComponent::AliHLTTPCTrackHistoComponent()
 :
-fHistoNClustersOnTracks(NULL),                                  
-  fHistoChargeAllClusters(NULL),                                                                         
-  fHistoChargeUsedClusters(NULL),                                                                        
-  fHistoPT(NULL),                                                                                  
-  fHistoResidual(NULL),                                                                            
-  fHistoTgl(NULL),                                                                                 
-  fHistoNClusters(NULL),
-  fHistoNUsedClusters(NULL),
-  fHistoNTracks(NULL),
-  fHistoQMaxAllClusters(NULL),
-  fHistoQMaxUsedClusters(NULL),
-  fPlotAll(kFALSE),                                                
-  fPlotNClustersOnTracks(kFALSE),                                                
-  fPlotChargeClusters(kFALSE),                                                                                     
-  fPlotChargeUsedClusters(kFALSE),                                                                                 
-  fPlotPT(kFALSE),                                                                                                 
-  fPlotResidual(kFALSE),                                                                                           
-  fPlotTgl(kFALSE),
-  fPlotNClusters(kFALSE),  
-  fPlotNUsedClusters(kFALSE), 
-  fPlotNTracks(kFALSE),
-  fPlotQMaxClusters(kFALSE),
-  fPlotQMaxUsedClusters(kFALSE),
-  fResetPlots(kFALSE),
-  fClusters(),
-  fTracks()
+fClusters(NULL),
+  fTracks(NULL),
+  fTracksArray(NULL)
 {
   
   // see header file for class documentation
@@ -113,7 +92,7 @@ void AliHLTTPCTrackHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList
 AliHLTComponentDataType AliHLTTPCTrackHistoComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeHistogram;
+  return kAliHLTDataTypeTNtuple;
 
 }
 
@@ -133,30 +112,10 @@ AliHLTComponent* AliHLTTPCTrackHistoComponent::Spawn()
 
 int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv )
 {
-  fHistoNClustersOnTracks = new TH1F("fHistoNClustersOnTracks","Number of Clusters on Tracks",160,0,160);                                   
-  fHistoChargeAllClusters = new TH1F("fHistoChargeAllClusters","Charge of All Clusters",4000,0,4000);                                                  
-  fHistoChargeUsedClusters = new TH1F("fHistoChargeUsedClusters","Charge of Clusters used on Tracks",4000,0,4000);                                 
-  fHistoPT = new TH1F("fHistoPT","pT of Tracks",100,0,10);                                                                    
-  fHistoResidual = new TH1F("fHistoResidual","Residuals",360,0,360);    //change. Testing                                                               
-  fHistoTgl = new TH1F("fHistoTgl","Tgl of Tracks",900,0,90);  
-  fHistoNClusters = new TH1F("fHistoNClusters","Total number of Clusters in Event",3000,0,3000);  
-  fHistoNUsedClusters = new TH1F("fHistoNUsedClusters","Number of Used Cluster in event",3000,0,3000);  
-  fHistoNTracks = new TH1F("fHistoNTracks","Number of Tracks in Event",10,0,10);  
-  fHistoQMaxAllClusters = new TH1F("fHistoQMaxAllClusters","Charge of All Clusters",4000,0,4000);
-  fHistoQMaxUsedClusters = new TH1F("fHistoQMaxUsedClusters","Charge of Clusters used on Tracks",4000,0,4000);
-  fPlotAll=kFALSE;                                                
-  fPlotNClustersOnTracks=kFALSE;                                                
-  fPlotChargeClusters=kFALSE;                                                                                     
-  fPlotChargeUsedClusters=kFALSE;                                                                                 
-  fPlotPT=kFALSE;                                                                                                 
-  fPlotResidual=kFALSE;                                                                                           
-  fPlotTgl=kFALSE;                 
-  fPlotNClusters=kFALSE;    
-  fPlotNUsedClusters=kFALSE;
-  fPlotNTracks=kFALSE;        
-  fPlotQMaxClusters=kFALSE;
-  fPlotQMaxUsedClusters=kFALSE;
-  fResetPlots=kFALSE;
+ 
+  fClusters = new TNtuple("fCluster", "fCluster", "charge:qmax:residualY:residualZ:used:event"); 
+  fTracks = new TNtuple("fTracks", "fTracks", "pt:eta:psi:nclusters:event"); 
+  fTracksArray=new AliHLTTPCTrackArray();
 
   int iResult=0;
   TString configuration="";
@@ -177,23 +136,17 @@ int AliHLTTPCTrackHistoComponent::DoDeinit()
 {
   // see header file for class documentation
   
-  delete fHistoNClustersOnTracks;                                 
-  delete fHistoChargeAllClusters;                                                                         
-  delete fHistoChargeUsedClusters;                                                                        
-  delete fHistoPT;                                                                                
-  delete fHistoResidual;                                                                            
-  delete fHistoTgl;        
-  delete fHistoNClusters;
-  delete fHistoNUsedClusters;
-  delete fHistoNTracks;
-  delete fHistoQMaxAllClusters;
-  delete fHistoQMaxUsedClusters;
-  
+  delete fClusters;
+  delete fTracks;
+  delete fTracksArray;
+
   return 0;
 }
 
 int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
+  if(!fTracksArray){fTracksArray=new AliHLTTPCTrackArray();}
+
   const AliHLTComponentBlockData* iter = NULL;
 
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
@@ -220,8 +173,8 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
     
     if(iter->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
 
-    //AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-    //AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
+    AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+    AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 
     //HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
     const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) iter->fPtr;
@@ -229,37 +182,53 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
     TotalSpacePoint += nSpacepoint;
     //HLTInfo("TrackHisto found %d Spacepoints in slice %d patch %d", nSpacepoint, slice, patch);
     AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*) clusterData->fSpacePoints;
+    
+    if (fClustersArray[slice][patch]!=NULL) {
+      delete(fClustersArray[slice][patch]);
+      fClustersArray[slice][patch]=NULL;
+    }
+    Int_t arraysize=nSpacepoint*sizeof(AliHLTTPCSpacePointData);
+    fClustersArray[slice][patch] = (AliHLTTPCSpacePointData*)new Byte_t[arraysize];
+    if (fClustersArray[slice][patch]) {
+      memcpy(fClustersArray[slice][patch], clusters, arraysize);
+      fNcl[slice][patch]=nSpacepoint;
+    } else {
+      fNcl[slice][patch]=nSpacepoint;
+      HLTError ( "Memory allocation failed!" );
+    }
 
     for(int i=0;i<nSpacepoint;i++){
       UInt_t idCluster = clusters[i].fID;
       Int_t sliceCl = (idCluster>>25) & 0x7f;
       Int_t patchCl = (idCluster>>22) & 0x7;
       UInt_t pos = idCluster&0x3fffff;
-      if(fPlotChargeClusters || fPlotAll){fHistoChargeAllClusters->Fill(clusters[i].fCharge);}
-      if(fPlotQMaxClusters || fPlotAll){fHistoQMaxAllClusters->Fill(clusters[i].fQMax);}
+      Int_t used = 0;
+      Float_t resy = 0, resz = 0;
       for(UInt_t id=0;id<fTrackClusterID[sliceCl][patchCl].size();id++){
 	if(fTrackClusterID[sliceCl][patchCl][id]==pos){
 	  clusters[i].fUsed=kTRUE;
 	  nClustersUsed++;
-	  if(fPlotChargeUsedClusters || fPlotAll){fHistoChargeUsedClusters->Fill(clusters[i].fCharge);}
-	  if(fPlotQMaxUsedClusters || fPlotAll){fHistoQMaxUsedClusters->Fill(clusters[i].fQMax);}
+	  used=1;
+	  FillResidual(pos,sliceCl,patchCl,resy,resz);
 	}
-      } 
-      fClusters.push_back(clusters[i]);
+      }
+      if(used==1){
+	fClusters->Fill(clusters[i].fCharge,clusters[i].fQMax,resy,resz,used,GetEventId()); 
+      }
+      else{
+	fClusters->Fill(clusters[i].fCharge,clusters[i].fQMax,-100,-100,used,GetEventId()); 
+      }
     }
   } 
   
-  fHistoNClusters->Fill(TotalSpacePoint);
-  if(TotalTrack>0){fHistoNUsedClusters->Fill(nClustersUsed);}
-  fHistoNTracks->Fill(TotalTrack);
-
   HLTInfo("TrackHisto found %d Spacepoints",TotalSpacePoint);
   HLTInfo("TrackHisto found %d Tracks",TotalTrack);
   
   PushHisto();
 
-  fClusters.clear();
-  fTracks.clear();
+  delete fTracksArray;
+  fTracksArray=NULL;
+
   for(UInt_t i=0;i<36;i++){
     for(UInt_t j=0;j<6;j++){ 
       fTrackClusterID[i][j].clear();
@@ -284,88 +253,9 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
        argument=((TObjString*)pTokens->At(i))->GetString();
        if (argument.IsNull()) continue;
 
-       if (argument.CompareTo("-plot-All")==0) {
-	HLTInfo("Ploting All Histograms for Tracks");
-	fPlotAll = kTRUE;
-	fPlotNClustersOnTracks=kTRUE;                                                
-	fPlotChargeClusters=kTRUE;                                                                                     
-	fPlotChargeUsedClusters=kTRUE;                                                                                 
-	fPlotPT=kTRUE;                                                                                                 
-	fPlotResidual=kTRUE;                                                                                           
-	fPlotTgl=kTRUE;
-	fPlotNClusters=kTRUE;
-	fPlotNUsedClusters=kTRUE;
-	fPlotNTracks=kTRUE;
-	fPlotQMaxClusters=kTRUE;
-	fPlotQMaxUsedClusters=kTRUE;
-            
-	continue;
-       }
-       else if (argument.CompareTo("-plot-nClusters")==0) {	
-	 HLTInfo("Ploting Number of clusters Used on Tracks");
-	 fPlotNClustersOnTracks = kTRUE;
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-ChargeClusters")==0) {
-	 HLTInfo("Ploting Charge of All Clusters");
-	 fPlotChargeClusters = kTRUE;
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-ChargeUsedClusters")==0) {
-	 HLTInfo("Ploting Charge of Clusters Used on Tracks");
-	 fPlotChargeUsedClusters = kTRUE; 
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-pT")==0) {
-	 HLTInfo("Ploting pT of Tracks");
-	 fPlotPT=kTRUE;
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-Residuals")==0) {
-	 HLTInfo("Ploting Residuals");
-	 fPlotResidual=kTRUE; 
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-Tgl")==0) {
-	 HLTInfo("Ploting Tgl of Tracks");
-	 fPlotTgl=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-NClusters")==0) {
-	 HLTInfo("Ploting Number of Clusters");
-	 fPlotNClusters=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-NUsedClusters")==0) {
-	 HLTInfo("Ploting Number Of Used Clusters");
-	 fPlotNUsedClusters=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-NTracks")==0) {
-	 HLTInfo("Ploting Number Of Tracks");
-	 fPlotNTracks=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-QMaxAll")==0) {
-	 HLTInfo("Ploting QMax for All Clusters");
-	 fPlotQMaxClusters=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-plot-QMaxUsed")==0) {
-	 HLTInfo("Ploting QMax for Used Clusters");
-	 fPlotQMaxUsedClusters=kTRUE;  
-	 continue;
-       }
-       else if (argument.CompareTo("-reset-plots")==0) {
-	 HLTInfo("Reseting plots");
-	 fResetPlots=kTRUE;  
-	 continue;
-       }
-       else {
-	 HLTError("unknown argument %s", argument.Data());
-	 iResult=-EINVAL;
-	 break;
-       }
+       HLTError("unknown argument %s", argument.Data());
+       iResult=-EINVAL;
+       break;
      }
      delete pTokens;
    }
@@ -375,22 +265,22 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
  
 void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt){
 
-  //AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
   //AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
   
   //HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
-  const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*) iter->fPtr;
+  AliHLTTPCTrackletData* trackData = (AliHLTTPCTrackletData*) iter->fPtr;
   AliHLTUInt32_t nTracks = trackData->fTrackletCnt;
+  fTracksArray->FillTracksChecked(trackData->fTracklets,trackData->fTrackletCnt,iter->fSize,slice,true);
   tt += nTracks;
   //HLTInfo("TrackHisto found %d Tracks in slice %d patch %d", nTracks, slice, patch);
   AliHLTTPCTrackSegmentData *tracks = (AliHLTTPCTrackSegmentData*) trackData->fTracklets;
   
   for(AliHLTUInt32_t i=0;i<nTracks;i++){
-    fTracks.push_back(tracks[i]);
     UInt_t nHits = tracks->fNPoints;
-    if(fPlotNClustersOnTracks || fPlotAll){fHistoNClustersOnTracks->Fill(nHits);}
-    if(fPlotPT || fPlotAll){fHistoPT->Fill(tracks[i].fPt);}
-    if(fPlotTgl || fPlotAll){fHistoTgl->Fill(tracks[i].fTgl);}
+    
+    fTracks->Fill(tracks->fPt,tracks->fPsi,tracks->fTgl,nHits,GetEventId()); 
+
     const UInt_t *hitnum = tracks->fPointIDs;
     for(UInt_t h=0; h<nHits; h++){
       UInt_t idTrack = hitnum[h];
@@ -407,65 +297,101 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
 
 void AliHLTTPCTrackHistoComponent::PushHisto(){
 
-  if(fPlotNClustersOnTracks || fPlotAll){
     AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoNClustersOnTracks,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotChargeClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoChargeAllClusters,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotChargeUsedClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoChargeUsedClusters,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotPT || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoPT,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotResidual || fPlotAll){
-    for(unsigned int i=0;i<fTracks.size();i++){
-      fHistoResidual->Fill(fTracks[i].fPsi); //Not rigth. Change here and x in Histo. Just for test.
+    PushBack( (TObject*) fTracks,kAliHLTDataTypeTNtuple, fSpecification);   
+    PushBack( (TObject*) fClusters,kAliHLTDataTypeTNtuple, fSpecification);   
+  
+}
+void AliHLTTPCTrackHistoComponent::FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz){
+
+  AliHLTTPCSpacePointData *cl =  &fClustersArray[slice][patch][pos];
+  if(!cl){return;}
+
+  AliHLTTPCTrack *gtrack = NULL;
+
+  for(int i;i<fTracksArray->GetNTracks();i++){
+    AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
+    UInt_t *hitnum =tt->GetHitNumbers();
+    Int_t nHits = tt->GetNHits();
+    for(Int_t h=0; h<nHits; h++){
+      UInt_t id=hitnum[h];
+      Int_t Tslice = (id>>25) & 0x7f;
+      Int_t Tpatch = (id>>22) & 0x7;
+      UInt_t Tpos = id&0x3fffff; 
+      if(Tslice==slice && Tpatch==patch && Tpos==pos) {
+	gtrack = tt; 
+	break;
+      }
     }
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoResidual,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotTgl || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoTgl,kAliHLTDataTypeHistogram, fSpecification);   
-  }
-  if(fPlotNClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoNClusters,kAliHLTDataTypeHistogram, fSpecification);
-  }
-  if(fPlotNUsedClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoNUsedClusters,kAliHLTDataTypeHistogram, fSpecification);
-  }
-  if(fPlotNTracks || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoNTracks,kAliHLTDataTypeHistogram, fSpecification);
-  }
-  if(fPlotQMaxUsedClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoQMaxAllClusters,kAliHLTDataTypeHistogram, fSpecification);
-  }
-  if(fPlotQMaxUsedClusters || fPlotAll){
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoQMaxUsedClusters,kAliHLTDataTypeHistogram, fSpecification);
   }
   
-  if(fResetPlots){
-    fHistoNClustersOnTracks->Reset();                                 
-    fHistoChargeAllClusters->Reset();                                                                         
-    fHistoChargeUsedClusters->Reset();                                                                        
-    fHistoPT->Reset();                                                                                
-    fHistoResidual->Reset();                                                                            
-    fHistoTgl->Reset();        
-    fHistoNClusters->Reset();     
-    fHistoNUsedClusters->Reset();
-    fHistoNTracks->Reset();
-    fHistoQMaxAllClusters->Reset();
-    fHistoQMaxUsedClusters->Reset();
+  if(!gtrack){return;}
+
+  Int_t tslice = gtrack->GetSector();
+  Double_t radius = gtrack->GetRadius();      // radius
+  Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed
+  Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda
+
+  // ------------------------------------
+  // ++ Get first/last point of the track
+  
+  Double_t xyzL[3];      // lastpoint of track
+  Double_t xyzF[3];      // firstpoint of track
+  
+  xyzF[0] = gtrack->GetFirstPointX();
+  xyzF[1] = gtrack->GetFirstPointY();
+  xyzF[2] = gtrack->GetFirstPointZ();
+  
+  xyzL[0] = gtrack->GetLastPointX();
+  xyzL[1] = gtrack->GetLastPointY();
+  xyzL[2] = gtrack->GetLastPointZ();
+
+  // --------------------------
+  // ++ Calculate length of the track
+  
+  Double_t s = 0.;       // length of the track
+  if (  AliHLTTPCTransform::GetBFieldValue() == 0. || kappa == 0 ) 
+    s = sqrt ( (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]) ); 
+  else {
+    // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz
+    if (fabs(lambda) > 0.05){
+      // length of track calculated out of z
+      s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z
+    }
+    else {
+      Double_t d = (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]); 
+      // length of track calculated out of xy
+      s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) / ( kappa * cos(lambda) ) ); 		
+    }
+  }
+  
+  gtrack->Rotate(tslice,kTRUE);
+  
+  Double_t padrows = 0;                   
+    
+  Float_t xyzC[3];       // cluster tmp
+  Float_t xyzTtmp[3];    // track tmp
+
+  xyzC[0] = cl->fX;
+  xyzC[1] = cl->fY;
+  xyzC[2] = cl->fZ;
+ 
+  Int_t padrow = AliHLTTPCTransform::GetPadRow(cl->fX);
+
+  xyzTtmp[0] = gtrack->GetFirstPointX();
+
+  if(gtrack->GetCrossingPoint(padrow,xyzTtmp)) {
+    // ----------------------
+       // ++ Calculate Residuals
+       
+       Float_t deltaY = ( xyzC[1] - xyzTtmp[1] );
+       Float_t deltaZ = ( xyzC[2] - xyzTtmp[2] );
+       
+       resy = deltaY;
+       resz = deltaZ;
+  }
+  else{
+    resy = -1000;
+    resz = -1000;
   }
 }

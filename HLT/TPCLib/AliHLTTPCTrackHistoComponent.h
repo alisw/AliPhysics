@@ -10,7 +10,7 @@
 /** @file   AliHLTTPCTrackHistoComponent.h
     @author Gaute Ovrebekk
     @date   
-    @brief  Component for ploting charge in clusters
+    @brief  Component for track histo
 */
 
 #include "AliHLTProcessor.h"
@@ -18,12 +18,13 @@
 #include "AliHLTTPCTrackSegmentData.h"
 
 class AliHLTTPCConfMapper;
-class TH1F;
+class TNtuple;
+class AliHLTTPCTrackArray;
 
 /**
  * @class AliHLTTPCTrackHistoComponent
  * Component for ploting proparties of Tracks. 
- * There has to be uesd one argument, or the component will not plot anything.
+ * The component gives out two NTuples. One for cluster- and one for track proprties
  * 
  * <h2>General properties:</h2> 
  *
@@ -32,40 +33,13 @@ class TH1F;
  * Input Data Types: AliHLTTPCDefinitions::fgkClustersDataType,
  *                   AliHLTTPCDefinitions::fgkTrackSegmentsDataType or
  *                   AliHLTTPCDefinitions::fgkTracksDataType <br>
- * Output Data Types: @ref kAliHLTDataTypeHistogram <br> 
+ * Output Data Types: @ref kAliHLTDataTypeNtuple <br> 
  *
  * <h2> Mandatory arguments: </h2>
- * \li One of the Optional arguments.
+ * \li No mandaroty arguments. 
  * 
  * <h2> Optional arguments: </h2>
  * 
- * \li -plot-All <br>
- *      Plots all the Histograms (default kFALSE) 
- * \li -plot-nClusters <br>
- *      Plots Number of Clusters on Tracks (default kFALSE)
- * \li -plot-ChargeClusters <br>
- *      Plots Charge on all Clusters (default kFALSE)
- * \li -plot-ChargeUsedClusters <br>
- *      Plots Charge on Clusters used for Tracks (default kFALSE)
- * \li -plot-pT <br>
- *      Plots pT for Tracks (default kFALSE)
- * \li -plot-Residuals <br>
- *      Plots Residual of Tracks (default kFALSE)
- * \li -plot-Tgl <br>
- *      Plots Tgl for tracks (default kFALSE)
- * \li -plot-NClusters <br>
- *      Plots the number of clusters in the event (default kFALSE)
- * \li -plot-NUsedClusters <br>
- *      Plots th number of Used clusters in the event (default kFALSE)
- * \li -plot-NTracks <br>
- *      Plots the number of Tracks in the event (default kFALSE)
- * \li -plot-QMaxAll <br>
- *      Plots the Q Max for all clusters in the event (default kFALSE)
- * \li -plot-QMaxUsed <br>
- *      Plots the Q Max for clusters used on tracks (default kFALSE)
- * \li -reset-plots <br>
- *      Will reset the plots for every event (default kFALSE)
- *
  * <h2>Configuration:</h2>
  * 
  *
@@ -79,7 +53,7 @@ class TH1F;
  * Not Tested
  *
  * <h2>Output size:</h2>
- * The size of an histogram (588 bit) * the number of histograms you plot
+ * Size varibles in Ntuple
  *
  * 
  *
@@ -137,39 +111,18 @@ private:
   void ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt);
 
   void PushHisto();
+  void FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz);
  
-  TH1F * fHistoNClustersOnTracks;                                  //! transient
-  TH1F * fHistoChargeAllClusters;                                  //! transient
-  TH1F * fHistoChargeUsedClusters;                                 //! transient
-  TH1F * fHistoPT;                                                 //! transient
-  TH1F * fHistoResidual;                                           //! transient
-  TH1F * fHistoTgl;                                                //! transient
-  TH1F * fHistoNClusters;                                          //! transient
-  TH1F * fHistoNUsedClusters;                                      //! transient
-  TH1F * fHistoNTracks;                                            //! transient 
-  TH1F * fHistoQMaxAllClusters;                                    //! transient
-  TH1F * fHistoQMaxUsedClusters;                                   //! transient
-  
-  Bool_t fPlotAll;                                                 //! transient 
-  Bool_t fPlotNClustersOnTracks;                                   //! transient 
-  Bool_t fPlotChargeClusters;                                      //! transient 
-  Bool_t fPlotChargeUsedClusters;                                  //! transient 
-  Bool_t fPlotPT;                                                  //! transient 
-  Bool_t fPlotResidual;                                            //! transient 
-  Bool_t fPlotTgl;                                                 //! transient 
-  Bool_t fPlotNClusters;                                           //! transient
-  Bool_t fPlotNUsedClusters;                                       //! transient
-  Bool_t fPlotNTracks;                                             //! transient
-  Bool_t fPlotQMaxClusters;                                        //! transient
-  Bool_t fPlotQMaxUsedClusters;                                    //! transient
-  Bool_t fResetPlots;                                              //! transient
+  TNtuple *fClusters;                                              //! transient  
+  TNtuple *fTracks;                                                //! transient
 
-  vector<AliHLTTPCSpacePointData> fClusters;                       //! transient
-  vector<AliHLTTPCTrackSegmentData> fTracks;                       //! transient
-  
   vector<UInt_t> fTrackClusterID[36][6];                           //! transient
 
-  ClassDef(AliHLTTPCTrackHistoComponent, 0);
+  AliHLTTPCTrackArray *fTracksArray;                               //! transient
+  AliHLTTPCSpacePointData *fClustersArray[36][6];                  //! transient
+  UInt_t fNcl[36][6];                                              //! transient
+  
+  ClassDef(AliHLTTPCTrackHistoComponent, 1);
 
 };
 #endif
