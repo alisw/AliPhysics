@@ -30,9 +30,9 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
 
   Double_t pNeg[3], pPos[3], pV0[3];
   cascade->GetNPxPyPz(pNeg[0], pNeg[1], pNeg[2]);
-  rcV0.fPPos.Set(pNeg);
+  rcV0.fPPos.Set(pPos);
   cascade->GetPPxPyPz(pPos[0], pPos[1], pPos[2]);
-  rcV0.fPNeg.Set(pPos);
+  rcV0.fPNeg.Set(pNeg);
 
   Double_t v[3];
   cascade->GetXYZ(v[0], v[1], v[2]);
@@ -43,7 +43,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
 
   rcV0.fV0Birth.Set(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
 
-  Double_t pBac[3], pCascade[3], cv[21];
+  Double_t pBac[3], pCascade[3], cv[21]={0.};
   cascade->GetBPxPyPz(pBac[0], pBac[1], pBac[2]);
   rcCascade.fPBac.Set(pBac);
   cascade->GetPxPyPz(pCascade[0], pCascade[1], pCascade[2]);
@@ -57,7 +57,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
   // rcCascade.fDLabel = cascade->GetBindex();
 
   // Problem: two following lines are not possible: no GetParamB !!
-  // cascade->GetParamN()->GetXYZ(v);  rcCascade.fVBac.Set(v); 
+  // cascade->GetParamB()->GetXYZ(v);  rcCascade.fVBac.Set(v); 
   // esd_cascade_init_rectrack(rcBac, cascade->GetParamB());
   // Solution: create an AliExternalTrackParam with null cv...
   AliExternalTrackParam *bParam = new AliExternalTrackParam(v,pBac,cv,cascade->Charge());
