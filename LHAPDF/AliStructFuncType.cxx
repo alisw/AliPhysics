@@ -86,7 +86,7 @@ TString AliStructFuncType::PDFsetName(StrucFunc_t pdf)
 	"cteq4m.LHgrid",   
 	"cteq5l.LHgrid",
 	"cteq5m.LHgrid",
-	"GRV98lo.LHgris",   
+	"GRV98lo.LHgrid",   
 	"cteq6.LHpdf",
 	"cteq61.LHpdf",
 	"cteq6m.LHpdf",
