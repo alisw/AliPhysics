@@ -1005,7 +1005,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param pBlock     pointer to input block
    * @return data specification, kAliHLTVoidDataSpec if failed
    */
-  AliHLTUInt32_t GetSpecification(const AliHLTComponentBlockData* pBlock=NULL);
+  AliHLTUInt32_t GetSpecification(const AliHLTComponentBlockData* pBlock);
 
   /**
    * Forward an input object to the output.
