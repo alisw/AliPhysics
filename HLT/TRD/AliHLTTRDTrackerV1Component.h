@@ -11,6 +11,8 @@
 #include "AliHLTProcessor.h"
 
 class TFile;
+class TTree;
+
 class TGeoManager;
 class AliCDBManager;
 class AliMagFMaps;
@@ -41,6 +43,11 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 	AliHLTComponent* Spawn();
 	
     protected:
+	AliHLTUInt32_t AddToOutput (TClonesArray* inTrackArray, AliHLTUInt8_t* output);
+	Int_t ReadClusters (TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size);
+	void ReadAndLoadClusters(TTree *inClusterTree, TClonesArray *inClusterArray, const AliHLTComponentBlockData *inBlock);
+	AliHLTUInt32_t TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
+				       vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec);
 	
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
@@ -48,9 +55,12 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 
 	int DoInit( int argc, const char** argv );
 	int DoDeinit();
-	int DoEvent( const AliHLTComponentEventData & evtData,
-		     AliHLTComponentTriggerData & trigData );
-
+	int DoEvent( const AliHLTComponentEventData& evtData, 
+		     const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponent_TriggerData& /*trigData*/, 
+		     AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, 
+		     vector<AliHLTComponent_BlockData>& outputBlocks );
 	using AliHLTProcessor::DoEvent;
 	
     private:
@@ -69,8 +79,8 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 	AliMagFMaps* fField; //! magn. field settings
 
 	string fGeometryFileName; // Path to geometry file 
-	TFile *fGeometryFile; //! // Pointer to the geom root file
-	TGeoManager *fGeoManager; //! Pointer to geometry manager 
+	Bool_t   fUseHLTClusters;
+	Bool_t   fUseHLTTracks;
 
 	AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
 	AliTRDrecoParam *fRecoParam; //! Offline reco params

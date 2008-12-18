@@ -54,13 +54,18 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 		     AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 
+	void PrintObject( TClonesArray* inClustersArray);
 	using AliHLTProcessor::DoEvent;
+	
+
 	
     private:
 	/** copy constructor prohibited */
 	AliHLTTRDClusterizerComponent(const AliHLTTRDClusterizerComponent&);
 	/** assignment operator prohibited */
 	AliHLTTRDClusterizerComponent& operator=(const AliHLTTRDClusterizerComponent&);
+
+	UInt_t AddToOutput(TClonesArray* inClusterArray, AliHLTUInt8_t* outBlockPtr);
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
@@ -77,7 +82,7 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 	
 
 	string fGeometryFileName; // Path to geometry file 
-	TFile *fGeometryFile; //! // Pointer to the geom root file
+	Bool_t fUseHLTClusters; // Use or not AliHLTCluster interface
 	
 	ClassDef(AliHLTTRDClusterizerComponent, 0)
 

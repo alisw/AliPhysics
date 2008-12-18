@@ -17,8 +17,6 @@ class AliTRDCalibraFillHisto;
  * @class AliHLTTRDCalibrationComponent
  * @brief A TRDCalibration HLT processing component. 
  *
- * An implementiation of a TRDCalibration component that just copies its input data
- * as a test, demonstration, and example of the HLT component scheme.
  * - @ref InitCalibration (optional)
  * - @ref ScanArgument (optional)
  * - @ref DeinitCalibration (optional)
@@ -57,23 +55,26 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 	virtual Int_t InitCalibration();
 	virtual Int_t ScanArgument(int argc, const char** argv);
 	virtual Int_t DeinitCalibration();
-/* 	virtual Int_t ProcessCalibration(const AliHLTComponent_EventData& evtData, */
-/* 					 const AliHLTComponent_BlockData* blocks, */
-/* 					 AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, */
-/* 					 AliHLTUInt32_t& size, */
-/* 					 vector<AliHLTComponent_BlockData>& outputBlocks); */
-	virtual Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+	virtual Int_t ProcessCalibration(const AliHLTComponent_EventData& evtData,
+					 const AliHLTComponent_BlockData* blocks,
+					 AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr,
+					 AliHLTUInt32_t& size,
+					 vector<AliHLTComponent_BlockData>& outputBlocks);
+/* 	virtual Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData); */
 	virtual Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
-
+	
 	using AliHLTCalibrationProcessor::ProcessCalibration;
 	using AliHLTCalibrationProcessor::ShipDataToFXS;
+
+	Bool_t fUseHLTTracks;
+	Int_t ReadTracks(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size);
 	
     private:
 	/** copy constructor prohibited */
 	AliHLTTRDCalibrationComponent(const AliHLTTRDCalibrationComponent&);
 	/** assignment operator prohibited */
 	AliHLTTRDCalibrationComponent& operator=(const AliHLTTRDCalibrationComponent&);
-
+	TObjArray* FormOutput();
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
 	

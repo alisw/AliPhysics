@@ -31,6 +31,7 @@ using namespace std;
 
 #include "AliHLTTRDCalibrationComponent.h"
 #include "AliHLTTRDDefinitions.h"
+#include "AliHLTTRDTrack.h"
 
 #include "AliCDBManager.h"
 #include "AliTRDclusterizerHLT.h"
@@ -46,12 +47,13 @@ AliHLTTRDCalibrationComponent gAliHLTTRDCalibrationComponent;
 
 ClassImp(AliHLTTRDCalibrationComponent);
    
-AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
-  : AliHLTCalibrationProcessor()
-  , fTRDCalibraFillHisto(NULL)
-  , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
-  , fStrorageDBpath("local://$ALICE_ROOT")
-  , fCDB(NULL)
+AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent():
+  AliHLTCalibrationProcessor(),
+  fTRDCalibraFillHisto(NULL),
+  fUseHLTTracks(kFALSE),
+  fOutputPercentage(100), // By default we copy to the output exactly what we got as input  
+  fStrorageDBpath("local://$ALICE_ROOT"),
+  fCDB(NULL)
 {
   // Default constructor
 }
@@ -102,41 +104,46 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
   char* cpErr;
   while ( i < argc )
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::ScanArgument", "Arguments", "argv[%d] == %s", i, argv[i] );
+      HLTDebug("argv[%d] == %s", i, argv[i] );
       if ( !strcmp( argv[i], "output_percentage" ) )
 	{
 	  if ( i+1>=argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDCalibration::ScanArgument", "Missing Argument", "Missing output_percentage parameter");
+	      HLTError("Missing output_percentage parameter");
 	      return ENOTSUP;
 	    }
-	  Logging( kHLTLogDebug, "HLT::TRDCalibration::ScanArgument", "Arguments", "argv[%d+1] == %s", i, argv[i+1] );
+	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
 	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
 	  if ( *cpErr )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDCalibration::ScanArgument", "Wrong Argument", "Cannot convert output_percentage parameter '%s'", argv[i+1] );
+	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }
-	  Logging( kHLTLogInfo, "HLT::TRDCalibration::ScanArgument", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	  i += 2;
 	  continue;
 	}
-
-      if ( strcmp( argv[i], "-cdb" ) == 0)
+      else if ( strcmp( argv[i], "-cdb" ) == 0)
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDCalibration::ScanArgument", "Missing Argument", "Missing -cdb argument");
+	      HLTError("Missing -cdb argument");
 	      return ENOTSUP;	      
 	    }
 	  fStrorageDBpath = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::TRDCalibration::ScanArgument", "DB storage set", "DB storage is %s", fStrorageDBpath.c_str() );	  
+	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
 	  continue;
-	}      
-
-      Logging(kHLTLogError, "HLT::TRDCalibration::ScanArgument", "Unknown Option", "Unknown option '%s'", argv[i] );
-      return EINVAL;
+	}  
+      else if ( strcmp( argv[i], "-useHLTTracks" ) == 0){
+	fUseHLTTracks = kTRUE;
+	i++;
+	HLTInfo("Expecting block of AliHLTTracks as input. Using low-level interface");
+      }
+      else{
+	HLTError("Unknown option '%s'", argv[i] );
+	return EINVAL;
+      }
     }
   return 0;
 }
@@ -147,13 +154,13 @@ Int_t AliHLTTRDCalibrationComponent::InitCalibration()
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::InitCalibration", "Could not get CDB instance", "fCDB 0x%x", fCDB);
+      HLTError("Could not get CDB instance, fCDB 0x%x", fCDB);
     }
   else
     {
       fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
       fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::InitCalibration", "CDB instance", "fCDB 0x%x", fCDB);
+      HLTDebug("fCDB 0x%x", fCDB);
     }
   fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
   fTRDCalibraFillHisto->SetHisto2d(); // choose to use histograms
@@ -169,68 +176,185 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
   HLTDebug("DeinitCalibration");
   
   // Deinitialization of the component
-  // gain histo
-  //TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d(); 
-  // drift velocity histo
-  //TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d(); 
-  // PRF histo
-  //TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d(); 
 
   if (fCDB)
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::DeinitCalibration", "destroy", "fCDB");
+      HLTDebug("destroy fCDB");
       fCDB->Destroy();
       fCDB = 0;
     }
   return 0;
 }
 
-Int_t AliHLTTRDCalibrationComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_EventData& evtData,
+							const AliHLTComponent_BlockData* blocks,
+							AliHLTComponent_TriggerData& /*trigData*/,
+							AliHLTUInt8_t* /*outputPtr*/,
+							AliHLTUInt32_t& /*size*/,
+							vector<AliHLTComponent_BlockData>& /*outputBlocks*/)
 {
   // Process an event
-//   Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogDebug, "HLT::TRDCalibration::ProcessCalibration", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+  //   Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
-  //unsigned long totalSize = 0;
-
-  //implement a usage of the following
-//   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
-//   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
-//   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::TRDCalibration::ProcessCalibration", "Trigger data received", 
-	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
   // Loop over all input blocks in the event
-  int ibForce = 0;
-  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkTRDSATracksDataType, "AliTRDtrack", ibForce);
-  Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "1stBLOCK", "Pointer = 0x%x", tobjin);
-  while (tobjin)
+  vector<AliHLTComponent_DataType> expectedDataTypes;
+  GetInputDataTypes(expectedDataTypes);
+  for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ )
     {
-      tobjin = (TObject *)GetNextInputObject( ibForce );
-      Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "nextBLOCK", "Pointer = 0x%x", tobjin);
-      TClonesArray* trdTracks = (TClonesArray* )tobjin;
-      if (trdTracks)
+      const AliHLTComponentBlockData &block = blocks[iBlock];
+      AliHLTComponentDataType inputDataType = block.fDataType;
+      Bool_t correctDataType = kFALSE;
+      
+      for(UInt_t i = 0; i < expectedDataTypes.size(); i++)
+	if( expectedDataTypes.at(i) == inputDataType)
+	  correctDataType = kTRUE;
+      if (!correctDataType)
 	{
-	  Int_t nbEntries = trdTracks->GetEntries();
+	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) Wrong received datatype: %s - Skipping",
+		    iBlock, evtData.fBlockCnt,
+		    evtData.fEventID, evtData.fEventID, 
+		    DataType2Text(inputDataType).c_str());
+	  continue;
+	}
+      else 
+	HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
+		    iBlock, evtData.fBlockCnt-1,
+		    evtData.fEventID, evtData.fEventID, 
+		    DataType2Text(inputDataType).c_str());
+
+      TClonesArray* tracksArray = NULL;
+      int ibForce = 0;
+      if (fUseHLTTracks)
+	{
+	  tracksArray = new TClonesArray("AliTRDtrackV1");
+	  HLTDebug("BLOCK fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x, fDataType %s", block.fPtr, block.fOffset, block.fSize, block.fSpecification, DataType2Text(block.fDataType).c_str());
+	  ReadTracks(tracksArray, block.fPtr, block.fSize);
+	}
+      else
+	{
+	  TObject *objIn = NULL;
+	  if (iBlock == 0)
+	    objIn = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkTRDSATracksDataType, "TClonesArray", ibForce);
+	  else
+	    objIn = (TObject *)GetNextInputObject( ibForce );
+	  HLTDebug("1stBLOCK, Pointer = 0x%x", objIn);
+	  if (objIn){
+	    tracksArray = (TClonesArray* )objIn;
+	  }
+	}
+
+      if (tracksArray)
+	{
+	  Int_t nbEntries = tracksArray->GetEntries();
+	  HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
 	  AliTRDtrackV1* trdTrack = 0x0;
 	  for (Int_t i = 0; i < nbEntries; i++){
-	    trdTrack = (AliTRDtrackV1*)trdTracks->At(i);
+	    HLTDebug("%i/%i: ", i+1, nbEntries);
+	    trdTrack = (AliTRDtrackV1*)tracksArray->At(i);
+	    trdTrack->Print();
 	    fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
 	  }
-	  
 	}
       
+
+      TObjArray *outArray = FormOutput();
+      if (outArray){
+	PushBack(outArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+	delete outArray;
+      }
+      
+    }
+  return 0;
+  
+}
+
+/**
+ * Read track to the TClonesArray from the memory 
+ */
+//============================================================================
+Int_t AliHLTTRDCalibrationComponent::ReadTracks(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size)
+{
+  AliHLTUInt8_t* iterPtr = (AliHLTUInt8_t* )inputPtr;
+  
+  cout << "\nReading tracks from the Memory\n ============= \n";
+  AliHLTTRDTrack * hltTrack;
+  AliHLTUInt32_t trackSize = 0, curSize = 0;
+  Int_t counter=0;
+  
+  while (curSize < size)
+    {
+      hltTrack = (AliHLTTRDTrack*) iterPtr;
+      HLTDebug("curSize %i, size %i",curSize, size);
+      
+      trackSize = hltTrack->GetSize();
+      HLTDebug("GetSize() %i", trackSize);
+
+      hltTrack->ReadTrackletsFromMemory(iterPtr + sizeof(AliHLTTRDTrack));
+
+      AliTRDtrackV1* curTRDTrack = new((*outArray)[counter]) AliTRDtrackV1();
+      hltTrack->ExportTRDTrack(curTRDTrack);
+      
+      curSize += trackSize; 
+      iterPtr += trackSize;
+      counter++;
     }
 
-  return 0;
+  //CheckTrackArray(outArray);
+  return counter;
 }
+
 
 Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
-  //Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
-  //ireturn = PushToFXS(object, "TRD ", "TRDCalib", "1024 ");
-  Logging( kHLTLogDebug, "HLT::TRDCalibration::ProcessCalibration", "Shipping data", 
-	   "Nothing serious");
-  Int_t ireturn = 0;
+//   //Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
+//   //ireturn = PushToFXS(object, "TRD ", "TRDCalib", "1024 ");
+
+  TObjArray *outArray = FormOutput();
+  HLTDebug("Shipping data. Dummy. outputArray: pointer = 0x%x; NEntries = %i;", outArray, outArray->GetEntries());
+  Int_t ireturn = PushToFXS(outArray, "TRD ", "TRDCalib");
+  
+  if (outArray){
+    outArray->Delete();
+    delete outArray;
+  }
+  
   return ireturn;
 }
+
+
+/**
+ * Form output array of histrograms 
+ */
+//============================================================================
+TObjArray* AliHLTTRDCalibrationComponent::FormOutput()
+{
+  TObjArray *outArray=new TObjArray(3);
+
+  // gain histo
+  TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d();
+  outArray->Add(hCH2d);
+
+  // drift velocity histo
+  TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d();
+  outArray->Add(hPH2d);
+       
+  // PRF histo
+  TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d(); 
+  outArray->Add(hPRF2d);
+
+  HLTDebug("GetCH2d = 0x%x; NEntries = %i; size = %i", hCH2d, hCH2d->GetEntries(), sizeof(hCH2d));
+  hCH2d->Print();
+  HLTDebug("GetPH2d = 0x%x; NEntries = %i; size = %i", hPH2d, hPH2d->GetEntries(), sizeof(hPH2d));
+  hPH2d->Print();
+  HLTDebug("GetPRF2d = 0x%x; NEntries = %i; size = %i", hPRF2d, hPRF2d->GetEntries(), sizeof(hPRF2d));
+  hPRF2d->Print();
+  HLTDebug("output Array: pointer = 0x%x; NEntries = %i; size = %i", outArray, outArray->GetEntries(), sizeof(outArray));
+    
+  
+  
+  return outArray;
+  
+}
+

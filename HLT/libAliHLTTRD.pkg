@@ -11,7 +11,11 @@ CLASS_HDRS:= \
         AliHLTTRDTrackerV1Component.h \
         AliTRDclusterizerHLT.h \
 	AliHLTTRDEsdWriterComponent.h \
-	AliHLTTRDCalibrationComponent.h
+	AliHLTTRDCalibrationComponent.h \
+	AliHLTTRDCluster.h \
+	AliHLTTRDTracklet.h \
+	AliHLTTRDTrack.h \
+	AliHLTTRDAgent.h
 
 # library sources
 MODULE_SRCS= \
