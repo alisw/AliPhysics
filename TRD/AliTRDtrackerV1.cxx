@@ -112,9 +112,9 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   // Destructor
   //
   
-  if(fgRieman) delete fgRieman;
-  if(fgTiltedRieman) delete fgTiltedRieman;
-  if(fgTiltedRiemanConstrained) delete fgTiltedRiemanConstrained;
+  if(fgRieman) delete fgRieman; fgRieman = 0x0;
+  if(fgTiltedRieman) delete fgTiltedRieman; fgTiltedRieman = 0x0;
+  if(fgTiltedRiemanConstrained) delete fgTiltedRiemanConstrained; fgTiltedRiemanConstrained = 0x0;
   for(Int_t isl =0; isl<kNSeedPlanes; isl++) if(fSeedTB[isl]) delete fSeedTB[isl];
   if(fTracks) {fTracks->Delete(); delete fTracks;}
   if(fTracklets) {fTracklets->Delete(); delete fTracklets;}
