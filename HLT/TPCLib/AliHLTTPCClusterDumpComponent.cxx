@@ -74,7 +74,7 @@ int AliHLTTPCClusterDumpComponent::InitWriter()
   return 0;
 }
 
-int AliHLTTPCClusterDumpComponent::ScanArgument(int argc, const char** argv)
+int AliHLTTPCClusterDumpComponent::ScanArgument(int /*argc*/, const char** /*argv*/)
 {
   // see header file for class documentation
   int iResult=0;

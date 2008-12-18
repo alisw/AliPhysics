@@ -309,7 +309,7 @@ void AliHLTTPCTrackHistoComponent::FillResidual( UInt_t pos,AliHLTUInt8_t slice,
 
   AliHLTTPCTrack *gtrack = NULL;
 
-  for(int i;i<fTracksArray->GetNTracks();i++){
+  for(int i=0;i<fTracksArray->GetNTracks();i++){
     AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
     UInt_t *hitnum =tt->GetHitNumbers();
     Int_t nHits = tt->GetNHits();
@@ -367,7 +367,7 @@ void AliHLTTPCTrackHistoComponent::FillResidual( UInt_t pos,AliHLTUInt8_t slice,
   
   gtrack->Rotate(tslice,kTRUE);
   
-  Double_t padrows = 0;                   
+  //Double_t padrows = 0;                   
     
   Float_t xyzC[3];       // cluster tmp
   Float_t xyzTtmp[3];    // track tmp

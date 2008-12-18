@@ -348,6 +348,7 @@ int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
 	  fCurrSize-=fDecrement;
 	}
 	HLTDebug("manipulated output size from %d to %d", backup, fCurrSize);
+	backup=0; // just to avoid warning 'unused variable' in the release version
       }
     }
 
