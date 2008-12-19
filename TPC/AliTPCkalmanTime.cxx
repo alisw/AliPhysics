@@ -49,6 +49,8 @@ Kalman filter implent following functions:
 */
 
 #include "AliTPCkalmanTime.h"
+#include "TTreeStream.h"
+#include "TRandom.h"
 
 
 AliTPCkalmanTime::AliTPCkalmanTime():
@@ -79,7 +81,7 @@ void AliTPCkalmanTime::Init(Double_t time, Double_t xoff, Double_t k, Double_t s
   //
   // Default constructor
   //
-  fState = new TMatrixD(3,1);
+  fState = new TMatrixD(2,1);
   fCovariance = new TMatrixD(2,2);
   (*fState)(0,0)= xoff;  // offset
   (*fState)(1,0)= k;     // slope of the taylor
@@ -91,19 +93,27 @@ void AliTPCkalmanTime::Init(Double_t time, Double_t xoff, Double_t k, Double_t s
 }
 
 
-void AliTPCkalmanTime::Propagate(Double_t time, Double_t sigma){
+void AliTPCkalmanTime::Propagate(Double_t time, Double_t sigma, TTreeSRedirector *debug){
   //
   // Propagate the Kalman
   //
   if (!fCovariance) return;
   if (!fState) return;
-  Double_t deltaT  =time-(*fState)(2,0);  //delta time - param2 is the current time
+  Double_t deltaT  =time-fTime;  //delta time - param2 is the current time
   Double_t sigmaT2 =(deltaT*deltaT)*sigma*sigma; 
+  if (debug){
+    (*debug)<<"matP"<<
+      "time="<<time<<
+      "fTime="<<fTime<<
+      "sigmaT2="<<sigmaT2<<
+      "cov.="<<fCovariance<<
+      "\n";
+  }
   (*fCovariance)(0,0)+=sigmaT2;
   fTime=time;  
 }
 
-void  AliTPCkalmanTime::Update(Double_t x, Double_t xerr, Double_t ptratio){
+void  AliTPCkalmanTime::Update(Double_t x, Double_t xerr, Double_t ptratio,TTreeSRedirector *debug){
   //
   //
   //
@@ -134,10 +144,88 @@ void  AliTPCkalmanTime::Update(Double_t x, Double_t xerr, Double_t ptratio){
   matSk.Invert();
   matKk = (covXk*matHkT)*matSk;            //  Optimal Kalman gain
   vecXk += matKk*vecYk;                    //  updated vector 
-  mat1(0,0)=1; mat1(1,1)=1; mat1(2,2)=1;
+  mat1(0,0)=1; mat1(1,1)=1; 
+  mat1(1,0)=0; mat1(0,1)=0;
   covXk2= (mat1-(matKk*matHk));
-  covXk =  covXk2*covXk;  
   //
+  //
+  //
+  covXk =  covXk2*covXk;    
+  //
+  if (debug){
+    (*debug)<<"matU"<<
+      "time="<<fTime<<
+      "x="<<x<<
+      "xerr="<<xerr<<
+      "pt="<<ptratio<<
+      "matHk.="<<&matHk<<
+      "matHkT.="<<&matHkT<<
+      "matSk.="<<&matSk<<
+      "matKk.="<<&matKk<<
+      "covXk2.="<<&covXk2<<
+      "covXk.="<<&covXk<<
+      "cov.="<<fCovariance<<
+      "vecYk.="<<&vecYk<<
+      "vecXk.="<<&vecXk<<
+      "vec.="<<fState<<
+      "\n";
+  }
   (*fCovariance)=covXk;
   (*fState)=vecXk;
 }
+
+void AliTPCkalmanTime::TestMC(const char * fname){
+  //
+  // Test of the class
+  /*
+    Usage:
+    AliTPCkalmanTime::TestMC("testKalman.root");
+    TFile f("testKalman.root");
+    
+   */
+  //
+  TTreeSRedirector *pcstream = new TTreeSRedirector(fname);
+  //
+  const Double_t kp0=0;
+  const Double_t kp1=1;
+  const Int_t    klength=10*24*60*60;       // 10 days mesurement
+  const Double_t ksigmap0=0.001/(24*60*60.); // 0.005 change in one day
+  const Int_t    deltat=5*60.;               // 5 minutes step
+  const Double_t kmessError=0.0005;
+  AliTPCkalmanTime testKalman;
+
+  for (Int_t iter=0; iter<100;iter++){
+    Double_t sp0      = kp0+gRandom->Gaus(0,0.01);    // variable to estimate -offset 
+    Double_t sp1      = kp1+gRandom->Gaus(0,0.2);    // variable to estimate slope
+    Double_t cp0      = sp0;    // variable to estimate 
+    Double_t cp1      = sp1;
+    
+    //
+    testKalman.Init(0,cp0+gRandom->Gaus(0,0.05),cp1+gRandom->Gaus(0,0.2),0.05,0.2);
+    Double_t dptratio= 0;
+    for (Int_t itime=0; itime<klength; itime+=deltat){
+      dptratio+=gRandom->Gaus(0,0.0005);
+      cp0     +=gRandom->Gaus(0,ksigmap0*deltat);
+      //
+      Double_t vdrift  = cp0+dptratio*cp1+gRandom->Gaus(0,kmessError);
+      testKalman.Propagate(itime,ksigmap0,pcstream);
+      Double_t fdrift = (*(testKalman.fState))(0,0) + dptratio*(*(testKalman.fState))(1,0);
+      (*pcstream)<<"drift"<<
+	"iter="<<iter<<
+	"time="<<itime<<
+	"vdrift="<<vdrift<<
+	"fdrift="<<fdrift<<
+	"pt="<<dptratio<<
+	"sp0="<<sp0<<
+	"sp1="<<sp1<<
+	"cp0="<<cp0<<
+	"cp1="<<cp1<<
+	"vecXk.="<<testKalman.fState<<
+	"covXk.="<<testKalman.fCovariance<<
+	"\n";
+      testKalman.Update(vdrift,kmessError,dptratio,pcstream);
+    }
+  }
+  delete pcstream;
+}
+
