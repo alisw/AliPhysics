@@ -21,7 +21,7 @@ extern AliRun *gAlice;
 Int_t AliTPCFindClusters(Int_t nev=5) {
 
    if (gAlice) {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;//if everything was OK here it is already NULL
       gAlice = 0x0;
    }

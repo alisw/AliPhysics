@@ -173,7 +173,7 @@ void GenerateGDML()
 */
 void Quit()
 {
-  delete gAlice->GetRunLoader();
+  delete AliRunLoader::GetRunLoader();
   delete gAlice;
   
   exit(0);

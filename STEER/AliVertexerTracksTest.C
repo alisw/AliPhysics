@@ -15,7 +15,7 @@ void AliVertexerTracksTest(TString outname="AliVertexerTracksTest.root",
   AliGeomManager::LoadGeometry("geometry.root");
 
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice; 
     gAlice=0;
   }
@@ -287,7 +287,7 @@ void VertexForOneEvent(Int_t iev=0,
 //------------------------------------------------------------------------
 
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice; 
     gAlice=0;
   }
@@ -1410,7 +1410,7 @@ void SaveFigures(TString name="dummy") {
 void TestRmTracks(Int_t iev=0) {
 
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice; 
     gAlice=0;
   }

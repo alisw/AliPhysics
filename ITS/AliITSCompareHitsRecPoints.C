@@ -17,7 +17,7 @@ Bool_t AliITSCompareHitsRecPoints(Char_t *rfn="galice.root"){
         loadlibs();
     } else {
         if(gAlice){
-            delete gAlice->GetRunLoader();
+            delete AliRunLoader::GetRunLoader();
             delete gAlice;
             gAlice=0;
         } // end if gAlice
@@ -75,7 +75,7 @@ Bool_t AliITSCompareHitsRecPoints(Char_t *rfn="galice.root"){
         } // end if
     } // end if !AliITSgeom
     //
-    Int_t nMods= gm->GetIndexMax(),nEvents=gAlice->GetEventsPerRun();
+    Int_t nMods= gm->GetIndexMax(),nEvents=AliRunLoader::GetNumberOfEvents();
     Int_t mod=0,evnt=0,size=-1,irp=0,ih=0,trkindexOld=-1;
     Double_t xmod,nHitPerTrack;
     TTree            *rpt = 0;

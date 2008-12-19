@@ -39,7 +39,7 @@ Int_t AliTOFtestDigitizer(const char* fileNameSignal = "galice.root",
 // delete the current gAlice object, the one from input file will be used
   if(gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0x0;
     }
@@ -63,7 +63,7 @@ Int_t AliTOFtestDigitizer(const char* fileNameSignal = "galice.root",
   
   if(gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0x0;
     }

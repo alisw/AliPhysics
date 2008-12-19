@@ -27,7 +27,7 @@
   // get runloader
 
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice;
     gAlice=0;
   }

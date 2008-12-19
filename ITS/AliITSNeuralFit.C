@@ -20,7 +20,7 @@ void AliITSNeuralFit (Int_t field_factor = 1, Bool_t exact_pid = kTRUE,
 	
 	// Remove an already existing Run Loader
 	if (gAlice) {
-		delete gAlice->GetRunLoader();
+		delete AliRunLoader::GetRunLoader();
 		delete gAlice; 
 		gAlice=0;
 	}

@@ -431,7 +431,7 @@ Int_t AliCascadeComparison(Int_t code=3312, const Char_t *dir=".") {
 
 Int_t GoodCascades(const Char_t *dir) {
    if (gAlice) {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice; 
       gAlice=0;
    }   

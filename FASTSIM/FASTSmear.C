@@ -62,7 +62,7 @@ void FASTSmear(char *finname="galice_upsi.root",char *foutname="FAST_upsi.root",
 
   // loop over the events
 
-  Int_t nev=gAlice->GetEventsPerRun();
+  Int_t nev=AliRunLoader::GetNumberOfEvents();
   TParticle *mup, *mum;
 
   if (nev>nevmax) nev = nevmax;

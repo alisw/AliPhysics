@@ -62,7 +62,7 @@ Int_t TPCParamTracks(const Int_t coll,Int_t firstEvent,Int_t lastEvent) {
    /**** Initialization of the NewIO *******/
 
    if (gAlice) {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice; 
       gAlice=0;
    }

@@ -34,7 +34,7 @@ AliITSClusterErrAnal::AliITSClusterErrAnal(Char_t *chloader )
   //
   //SET Input loaders
   if (gAlice){
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice;
     gAlice = 0x0;
   }    

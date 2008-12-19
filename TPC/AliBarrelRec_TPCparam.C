@@ -20,7 +20,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   AliGeomManager::LoadGeometry("geometry.root");
   
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice; 
     gAlice=0;
   }

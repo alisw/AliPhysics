@@ -4,7 +4,7 @@ ReadTrigger( TString inFile = "galice.root" )
    if( gClassTable->GetID( "AliRun" ) < 0 ) {
       gROOT->ProcessLine( ".x $(ALICE_ROOT)/macros/loadlibs.C" );
    } else if( gAlice ) {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0;
    }

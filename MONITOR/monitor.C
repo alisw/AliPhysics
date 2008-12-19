@@ -25,9 +25,9 @@ void monitor(Bool_t batchMode = kFALSE,
 
   // make sure galice.root is there
   if (!gSystem->Which(".", "galice.root")) {
-    gAlice->Init("$ALICE_ROOT/MONITOR/galice.C");
-    gAlice->GetRunLoader()->Write();
-    delete gAlice->GetRunLoader();
+    gAlice->InitMC("$ALICE_ROOT/MONITOR/galice.C");
+    AliRunLoader::GetRunLoader()->Write();
+    delete AliRunLoader::GetRunLoader();
   }
 
   // start the monitoring

@@ -35,7 +35,7 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
   }
   else {
     if(gAlice){
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0;
     }
@@ -90,7 +90,7 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
   gm = ITSloader->GetITSgeom();
 
   Int_t evNumber1 = 0;
-  Int_t evNumber2 = gAlice->GetEventsPerRun();
+  Int_t evNumber2 = AliRunLoader::GetNumberOfEvents();
   if(evnt>=0){
     evNumber1 = evnt;
     evNumber2 = evnt+1;

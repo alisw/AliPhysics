@@ -16,7 +16,7 @@ void AliITSPrintGeom(TString hfn="galice.root",Int_t mod=-1){
         loadlibs();
     }else {
 	if(gAlice){
-	    delete gAlice->GetRunLoader();
+	    delete AliRunLoader::GetRunLoader();
 	    delete gAlice;
 	    gAlice=0;
 	} // end if gAlice

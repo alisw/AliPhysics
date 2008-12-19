@@ -36,7 +36,7 @@ void AliTOFhits2sdigits(Int_t evNumber1=-1, Int_t numberOfEvents=0)
   
   if (gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -65,7 +65,7 @@ void AliTOFhits2sdigits(Int_t evNumber1=-1, Int_t numberOfEvents=0)
 
   if (gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice = 0x0;
     }

@@ -688,7 +688,7 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice;
     gAlice = 0x0;
   }

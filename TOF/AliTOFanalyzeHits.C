@@ -67,7 +67,7 @@ Int_t AliTOFanalyzeHits(Int_t numberOfEvents=0, Bool_t drawing=kFALSE)
 
   if (gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -337,7 +337,7 @@ Int_t AliTOFanalyzeHits(Int_t numberOfEvents=0, Bool_t drawing=kFALSE)
 
   if (gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice = 0x0;
     }

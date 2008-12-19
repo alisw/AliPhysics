@@ -1,8 +1,8 @@
 // In order to create galice.root follow the steps shown below
 //
 //  gAlice->Init("galice.C");
-//  gAlice->GetRunLoader()->Write();
-//  delete gAlice->GetRunLoader();
+//  AliRunLoader::GetRunLoader()->Write();
+//  delete AliRunLoader::GetRunLoader();
 //
 
 

@@ -28,7 +28,7 @@ Int_t AliITSFindTracksANN
 
 	// Remove an already existing Run Loader
 	if (gAlice) {
-		delete gAlice->GetRunLoader();
+		delete AliRunLoader::GetRunLoader();
 		delete gAlice; 
 		gAlice=0;
 	}

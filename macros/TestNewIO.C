@@ -61,7 +61,7 @@ Int_t TestNewIO(Int_t n = 5,Char_t SlowOrFast='s')
 
    if (gAlice)
     {
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;//if everything was OK here it is already NULL
       gAlice = 0x0;
     }

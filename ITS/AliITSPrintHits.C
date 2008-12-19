@@ -9,7 +9,7 @@ void AliITSPrintHits(TString hfn="galice.root",Int_t mod=-1,
   } 
   else {
     if(gAlice){
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0;
     }
@@ -38,7 +38,7 @@ void AliITSPrintHits(TString hfn="galice.root",Int_t mod=-1,
   } // end if !ITS
 
   Int_t evNumber1 = 0;
-  Int_t evNumber2 = gAlice->GetEventsPerRun();
+  Int_t evNumber2 = AliRunLoader::GetNumberOfEvents();
   if(evnt>=0){
     evNumber1 = evnt;
     evNumber2 = evnt+1;

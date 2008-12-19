@@ -36,7 +36,7 @@ Int_t AliITSFindClustersV2(char *inputRawData = NULL,TString filename="galice.ro
   // set opt equal to "SPD" or to "SDD" or to "SSD" do build
   // rec points for individual subdetectors 
   if (gAlice) {
-    delete gAlice->GetRunLoader();
+    delete AliRunLoader::GetRunLoader();
     delete gAlice;
     gAlice = NULL;
   }

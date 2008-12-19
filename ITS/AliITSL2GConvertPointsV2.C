@@ -15,7 +15,7 @@ Int_t AliITSL2GConvertPointsV2
 	
 	// Load event files
 	if (gAlice) {
-		delete gAlice->GetRunLoader();
+		delete AliRunLoader::GetRunLoader();
 		delete gAlice;
 		gAlice=0;
 	} 

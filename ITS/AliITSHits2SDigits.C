@@ -22,7 +22,7 @@ Int_t AliITSHits2SDigits(TString  filename = "galice.root")
     if (gClassTable->GetID("AliRun") < 0) {
       gROOT->ProcessLine(".x $(ALICE_ROOT)/macros/loadlibs.C");
     }else if (gAlice){
-      delete gAlice->GetRunLoader();
+      delete AliRunLoader::GetRunLoader();
       delete gAlice;
       gAlice=0;
      } 
@@ -64,7 +64,7 @@ Int_t AliITSHits2SDigits(TString  filename = "galice.root")
 
     TStopwatch timer;
     Int_t evNumber1 = 0;
-    Int_t evNumber2 = gAlice->GetEventsPerRun();
+    Int_t evNumber2 = AliRunLoader::GetNumberOfEvents();
     timer.Start();
     retval = gime->LoadHits();
     if (retval)
