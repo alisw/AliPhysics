@@ -5,6 +5,7 @@ void AliAnalysisTaskSECompareHFTest()
   // association with MC truth (using MC info in AOD)
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
+  TString mode="local"; // otherwise, "grid"
 
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
@@ -19,32 +20,31 @@ void AliAnalysisTaskSECompareHFTest()
   gSystem->Load("libPWG3vertexingHF.so");
 
 
-  // Local files 
-  TChain *chain = new TChain("aodTree");
-  chain->Add("./AliAOD.root");
+  TChain *chainAOD = 0;
+  TChain *chainAODfriend = 0;
 
-  // or:
-  /*
-  //Fetch files with AliEn :
-  const char *collectionfile = "CollectionTags.xml";
-  TGrid::Connect("alien://") ;
-  //Create an AliRunTagCuts and an AliEventTagCuts Object and impose some selection criteria
-  AliRunTagCuts      *runCuts   = new AliRunTagCuts();
-  AliEventTagCuts    *eventCuts = new AliEventTagCuts();
-  AliLHCTagCuts      *lhcCuts   = new AliLHCTagCuts();
-  AliDetectorTagCuts *detCuts   = new AliDetectorTagCuts();
-  eventCuts->SetMultiplicityRange(0,20000);
-  //Create an AliTagAnalysis Object and chain the tags
-  AliTagAnalysis   *tagAna = new AliTagAnalysis();
-  tagAna->SetType("AOD");
-  TAlienCollection *coll   = TAlienCollection::Open(collectionfile);
-  TGridResult      *tagResult = coll->GetGridResult("",0,0);
-  tagResult->Print();
-  tagAna->ChainGridTags(tagResult);
-  //Create a new aod chain and assign the chain that is returned by querying the tags
-  TChain* chain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts);
-  */
+  chainAOD = new TChain("aodTree");
+  chainAODfriend = new TChain("aodTree");
 
+  if(mode=="local") {
+    // Local files 
+    chainAOD->Add("./AliAOD.root");
+    chainAODfriend->Add("./AliAOD.VertexingHF.root");
+    // ... add more if needed
+  } else { // grid (NOT TESTED YET)
+    //Fetch files with AliEn
+    // xml: need to check the 1-to-1 correspondence
+    const char *collectionfileAOD = "CollectionAOD.xml";
+    const char *collectionfileAODfriend = "CollectionAODfriend.xml";
+    TGrid::Connect("alien://");
+    //Create an AliTagAnalysis Object and chain the tags
+    AliTagAnalysis   *tagAna = new AliTagAnalysis();
+    chainAOD = tagAna->GetChainFromCollection(collectionfileAOD,"aodTree");
+    chainAODfriend = tagAna->GetChainFromCollection(collectionfileAODfriend,"aodTree");
+  }
+
+  // attach the friend chain
+  chainAOD->AddFriend(chainAODfriend);
 
   // Create the analysis manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("My Manager","My Manager");
@@ -53,7 +53,7 @@ void AliAnalysisTaskSECompareHFTest()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  inputHandler->AddFriend("AliAOD.VertexingHF.root");
+  //inputHandler->AddFriend("AliAOD.VertexingHF.root");//should not be needed
   mgr->SetInputEventHandler(inputHandler);
 
   
@@ -96,11 +96,10 @@ void AliAnalysisTaskSECompareHFTest()
   //
   // Run the analysis
   //    
-  printf("CHAIN HAS %d ENTRIES\n",(Int_t)chain->GetEntries());
+  printf("CHAIN HAS %d ENTRIES\n",(Int_t)chainAOD->GetEntries());
   if(mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
-    //mgr->StartAnalysis("grid",chain);
+    mgr->StartAnalysis(mode.Data(),chainAOD);
   }
 
   return;
