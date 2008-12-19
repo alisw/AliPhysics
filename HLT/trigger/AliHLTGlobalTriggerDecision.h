@@ -10,7 +10,7 @@
 /// @brief  Declaration of the AliHLTGlobalTriggerDecision class storing the global HLT decision.
 
 #include "AliHLTTriggerDecision.h"
-#include "TArrayL.h"
+#include "TArrayL64.h"
 
 class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
 {
@@ -75,12 +75,12 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   /**
    * Returns the event trigger counters associated with the global trigger classes.
    */
-  const TArrayL& Counters() const { return fCounters; }
+  const TArrayL64& Counters() const { return fCounters; }
   
  private:
   
   TClonesArray fContributingTriggers;  /// The list of contributing trigger decisions from all AliHLTTrigger components that were considered.
-  TArrayL fCounters;  /// Event trigger counters. One counter for each trigger class in the global trigger.
+  TArrayL64 fCounters;  /// Event trigger counters. One counter for each trigger class in the global trigger.
   
   ClassDef(AliHLTGlobalTriggerDecision, 1) // Contains the HLT global trigger decision and information contributing to the decision.
 };

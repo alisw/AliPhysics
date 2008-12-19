@@ -10,6 +10,7 @@
 #pragma link C++ struct AliHLTEventDDL+;
 #pragma link C++ class AliHLTReadoutList+;
 #pragma link C++ class AliHLTGlobalTriggerDecision+;
+#pragma link C++ class AliHLTGlobalTrigger+;
 #pragma link C++ class AliHLTGlobalTriggerComponent+;
 #pragma link C++ class AliHLTTriggerAgent+;
 #pragma link C++ class AliHLTEventSummary+;
@@ -18,4 +19,6 @@
 #pragma link C++ class AliHLTRunSummaryProducerComponent+;
 #pragma link C++ class AliHLTTriggerSelectiveReadoutComponent+;
 #pragma link C++ class AliHLTTriggerMonitoringComponent+;
+#pragma link C++ class AliHLTTriggerMenu+;
+#pragma link C++ class AliHLTTriggerMenuItem+;
 #endif

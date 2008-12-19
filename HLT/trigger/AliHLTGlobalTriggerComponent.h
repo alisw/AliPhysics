@@ -11,6 +11,9 @@
 
 #include "AliHLTTrigger.h"
 
+class AliHLTTriggerMenu;
+class AliHLTGlobalTrigger;
+
 /**
  * \class AliHLTGlobalTriggerComponent
  * This class applies the global HLT trigger to all trigger information produced
@@ -30,17 +33,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * @return string containing the global trigger name.
    */
   virtual const char* GetTriggerName() const { return "HLTGlobalTrigger"; };
-
-  /**
-   * Returns extra output data types this trigger generates.
-   * This returns an kAliHLTDataTypeTObject in <i>list</i>.
-   * @param list <i>[out]</i>: The list of data types to be filled.
-   */
-  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const
-  {
-    list.push_back(kAliHLTDataTypeTObject);
-  }
-
+  
   /**
    * Get a ratio by how much the data volume is shrunk or enhanced.
    * The method returns a size proportional to the trigger name string length
@@ -50,6 +43,20 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * @param inputMultiplier  <i>[out]</i>: multiplication ratio
    */
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  
+  /**
+   * Initialise the component.
+   * \param argc  The number of arguments in argv.
+   * \param argv  Array of component argument strings.
+   * \returns  Zero on success and negative number on failure.
+   */
+  virtual Int_t DoInit(int argc, const char** argv);
+  
+  /**
+   * Cleanup the component.
+   * \returns  Zero on success and negative number on failure.
+   */
+  virtual Int_t DoDeinit();
   
   /**
    * Spawn function creates a new object.
@@ -71,6 +78,22 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   virtual int DoTrigger();
   
  private:
+  
+  /**
+   * Generates the code for the global trigger to apply the given trigger menu.
+   * The code will then be compiled on the fly and loaded. The name of the new
+   * class is returned so that a new instance of the class can be created via:
+   * \code
+   *  AliHLTGlobalTrigger::CreateNew(name)
+   * \endcode
+   * where name is the name of the generated class as returned by this method.
+   * \param  menu  The trigger menu to create the global trigger class from.
+   * \param  name  The name of the generated class.
+   * \returns  The error code suitable to return in DoInit. Zero on success.
+   */
+  int GenerateTrigger(const AliHLTTriggerMenu* menu, TString& name);
+  
+  AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   
   ClassDef(AliHLTGlobalTriggerComponent, 0) // Global HLT trigger component class which produces the final trigger decision and readout list.
 };

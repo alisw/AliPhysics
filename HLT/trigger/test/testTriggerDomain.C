@@ -15,6 +15,10 @@
  **************************************************************************/
 
 /**
+ * @file   testGlobalTriggerComponent.C
+ * @author Artur Szostak <artursz@iafrica.com>
+ * @date   4 Dec 2008
+ *
  * This macro is used to test the behaviour of the AliHLTTriggerDomain class.
  * We specifically check that the AliHLTTriggerDomain operators behave correctly
  * as set operations.
