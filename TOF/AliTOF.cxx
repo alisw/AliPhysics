@@ -483,7 +483,7 @@ void AliTOF::Init()
   /*
   // Save the geometry
   TDirectory* saveDir = gDirectory;
-  gAlice->GetRunLoader()->CdGAFile();
+  AliRunLoader::GetRunLoader()->CdGAFile();
   fTOFGeometry->Write("TOFGeometry");
   saveDir->cd();
   */
