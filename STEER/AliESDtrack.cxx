@@ -189,6 +189,7 @@ AliESDtrack::AliESDtrack() :
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
+  fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
@@ -276,6 +277,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDchi2(track.fTRDchi2),
   fTOFchi2(track.fTOFchi2),
   fHMPIDchi2(track.fHMPIDchi2),
+  fGlobalChi2(track.fGlobalChi2),
   fITSsignal(track.fITSsignal),
   fTPCsignal(track.fTPCsignal),
   fTPCsignalS(track.fTPCsignalS),
@@ -374,6 +376,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
+  fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
@@ -491,6 +494,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDchi2(0),
   fTOFchi2(0),
   fHMPIDchi2(0),
+  fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
@@ -772,6 +776,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTOFchi2   = source.fTOFchi2;      
   fHMPIDchi2 = source.fHMPIDchi2;      
 
+  fGlobalChi2 = source.fGlobalChi2;      
 
   fITSsignal  = source.fITSsignal;     
   fTPCsignal  = source.fTPCsignal;     
@@ -1021,6 +1026,9 @@ void AliESDtrack::MakeMiniESDtrack(){
   fHMPIDmipX = 0;
   fHMPIDmipY = 0;
   fEMCALindex = kEMCALNoMatch;
+
+  // reset global track chi2
+  fGlobalChi2 = 0;
 
   delete fFriendTrack; fFriendTrack = 0;
 } 

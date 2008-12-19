@@ -51,7 +51,8 @@ public:
     kTRDbackup=0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
-    kTIME=0x80000000
+    kTIME=0x80000000,
+    kGlobalMerge=0x08000000
   }; 
   enum {
     kTRDnPlanes = 6,
@@ -112,7 +113,9 @@ public:
   Double_t GetConstrainedChi2() const {return fCchi2;}
   //
   
-
+  // global track chi2
+  void SetGlobalChi2(Double_t chi2) {fGlobalChi2 = chi2;}
+  Double_t GetGlobalChi2() const {return fGlobalChi2;}
 
   Bool_t GetInnerPxPyPz(Double_t *p) const {
     if (!fIp) return kFALSE;
@@ -373,6 +376,7 @@ protected:
   Double32_t   fTOFchi2;        // [0.,0.,8] chi2 in the TOF
   Double32_t fHMPIDchi2;        // [0.,0.,8] chi2 in the HMPID
 
+  Double32_t fGlobalChi2;       // [0.,0.,8] chi2 of the global track
 
   Double32_t  fITSsignal;     // [0.,0.,10] detector's PID signal
   Double32_t  fTPCsignal;     // [0.,0.,10] detector's PID signal
@@ -413,8 +417,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-
-  ClassDef(AliESDtrack,46)  //ESDtrack 
+  ClassDef(AliESDtrack,47)  //ESDtrack 
 };
 
 #endif 
