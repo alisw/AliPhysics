@@ -35,7 +35,7 @@ class AliFlowEventSimple: public TObject {
   Int_t                fNumberOfTracks;          // number of tracks
   Int_t                fEventNSelTracksIntFlow;  // number of tracks selected for integrated flow calculation
   
-  ClassDef(AliFlowEventSimple,0)                 // macro for rootcint
+  ClassDef(AliFlowEventSimple,1)                 // macro for rootcint
 };
 
 #endif

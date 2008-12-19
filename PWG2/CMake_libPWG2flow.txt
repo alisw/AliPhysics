@@ -3,6 +3,7 @@
 set(SRCS
       FLOW/AliFlowEventSimple.cxx 
       FLOW/AliFlowTrackSimple.cxx 
+      FLOW/AliFlowTrackSimpleCuts.cxx 
       FLOW/AliFlowCommonConstants.cxx 
       FLOW/AliFlowLYZConstants.cxx 
       FLOW/AliFlowCumuConstants.cxx 
