@@ -44,7 +44,7 @@ public:
 	};
 	
 	
-	enum mcTypes {kMCPrompt, kMCFragmentation, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown};
+	enum mcTypes {kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown};
 	
 	void InitParameters();
 	Int_t CheckOrigin(const Int_t label, AliStack *  stack) const ;
@@ -101,6 +101,9 @@ public:
 	void SetDebug(Int_t deb) {fDebug=deb;}
 	Int_t GetDebug() const {return fDebug;}	
 	
+	void SetMCGenerator(TString mcgen) {fMCGenerator=mcgen;}
+	TString GetMCGenerator() const {return fMCGenerator;}	
+
 private:
 	
 	Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
@@ -122,8 +125,9 @@ private:
 	Float_t fTOFCut;     //Cut on TOF, used in PID evaluation
 	
 	Int_t	 fDebug; //Debug level
-	
-	ClassDef(AliCaloPID,2)
+	TString fMCGenerator; // MC geneator used to generate data in simulation
+
+	ClassDef(AliCaloPID,3)
 } ;
 
 

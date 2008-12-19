@@ -37,9 +37,9 @@ ClassImp(AliAnaPhoton)
 //____________________________________________________________________________
   AliAnaPhoton::AliAnaPhoton() : 
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
-	fMinDist(0.),fMinDist2(0.),fMinDist3(0.),
-	fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
-	//MC
+    fMinDist(0.),fMinDist2(0.),fMinDist3(0.),
+    fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
+    //MC
     fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0), 
     fhPtFragmentation(0),fhPhiFragmentation(0),fhEtaFragmentation(0), 
     fhPtPi0Decay(0),fhPhiPi0Decay(0),fhEtaPi0Decay(0), 
@@ -143,13 +143,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 	outputContainer->Add(fhPtPhoton) ; 
 	
 	fhPhiPhoton  = new TH2F
-    ("hPhiPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	  ("hPhiPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
 	fhPhiPhoton->SetYTitle("#phi");
 	fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
 	outputContainer->Add(fhPhiPhoton) ; 
 	
 	fhEtaPhoton  = new TH2F
-    ("hEtaPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	  ("hEtaPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
 	fhEtaPhoton->SetYTitle("#eta");
 	fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
 	outputContainer->Add(fhEtaPhoton) ;
@@ -281,7 +281,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 	parList += GetCaloPID()->GetPIDParametersList() ;
 	
  	//Get parameters set in FidutialCut class (not available yet)
-	//parlist += GetCaloPID()->GetFidCutParametersList() 
+	//parlist += GetFidCut()->GetFidCutParametersList() 
 	
  	TObjString *oString= new TObjString(parList) ;
 	outputContainer->Add(oString);
@@ -344,7 +344,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 		//Set the indeces of the original caloclusters  
 		aodph.SetCaloLabel(calo->GetID(),-1);
 		aodph.SetDetector(fCalorimeter);
-		if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
+		if(GetDebug() > 1) 
+		  printf("AliAnaPhoton::FillAOD: Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
 			
 		//Check Distance to Bad channel, set bit.
 		Double_t distBad=calo->GetDistToBadChannel() ; //Distance to bad channel
@@ -363,7 +364,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 		if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
 			//Get most probable PID, check PID weights (in MC this option is mandatory)
 			aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->PID(),mom.E()));//PID with weights
-			if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: PDG of identified particle %d\n",aodph.GetPdg());
+			if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: PDG of identified particle %d\n",aodph.GetPdg());	 
 			//If primary is not photon, skip it.
 			if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;
 		}					
@@ -415,9 +416,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	//Do analysis and fill histograms
 
 	//Get vertex for photon momentum calculation
-	Double_t v[]={0,0,0} ; //vertex ;
+	//Double_t v[]={0,0,0} ; //vertex ;
 	//if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
-	GetReader()->GetVertex(v);
+                //GetReader()->GetVertex(v);
 
 	//Loop on stored AOD photons
 	Int_t naod = GetOutputAODBranch()->GetEntriesFast();
@@ -427,14 +428,16 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 		AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
 		Int_t pdg = ph->GetPdg();
 
-		if(GetDebug() > 3) printf("AliAnaPhoton::FillHistos: PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetPdg(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+		if(GetDebug() > 3) 
+		  printf("AliAnaPhoton::FillHistos: PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetPdg(),ph->GetTag(), (ph->GetDetector()).Data()) ;
 		
 		//If PID used, fill histos with photons in Calorimeter fCalorimeter
 		if(IsCaloPIDOn())  
 			if(pdg != AliCaloPID::kPhoton) continue; 
 		if(ph->GetDetector() != fCalorimeter) continue;
 		
-		if(GetDebug() > 1) printf("AliAnaPhoton::FillHistos: ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
+		if(GetDebug() > 1) 
+		  printf("AliAnaPhoton::FillHistos: ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
 		
 		//Fill photon histograms 
 		Float_t ptcluster = ph->Pt();
@@ -477,7 +480,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 				fhEtaConversion ->Fill(ptcluster,etacluster);
 			}
 			else{
-				
 				fhPtUnknown   ->Fill(ptcluster);
 				fhPhiUnknown ->Fill(ptcluster,phicluster);
 				fhEtaUnknown ->Fill(ptcluster,etacluster);

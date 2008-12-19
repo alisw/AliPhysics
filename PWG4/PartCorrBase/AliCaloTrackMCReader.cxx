@@ -138,7 +138,6 @@ void AliCaloTrackMCReader::InitParameters()
 void  AliCaloTrackMCReader::FillCalorimeters(const Int_t iParticle, TParticle* particle, TLorentzVector momentum,
 					     Int_t &indexPHOS, Int_t &indexEMCAL) {
 	//Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
-	
 	//In PHOS
 	if(fFillPHOS && fFidutialCut->IsInFidutialCut(momentum,"PHOS") && momentum.Pt() > fPHOSPtMin){
 		
@@ -209,7 +208,7 @@ void AliCaloTrackMCReader::FillInputEvent()
 		if(KeepParticleWithStatus(particle->GetStatusCode()) && (particle->Pt() > 0) ){
 		
 		    //Skip bizarre particles, they crash when charge is calculated
-			if(TMath::Abs(pdg) == 3124 || TMath::Abs(pdg) > 10000000) continue ;
+		  //	if(TMath::Abs(pdg) == 3124 || TMath::Abs(pdg) > 10000000) continue ;
 			
 			charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
 			particle->Momentum(momentum);

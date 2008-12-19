@@ -44,6 +44,7 @@
 #include "AliAODHandler.h"
 #include "AliStack.h"
 #include "AliLog.h"
+#include "AliPDG.h"
 
 ClassImp(AliAnalysisTaskParticleCorrelation)
 
@@ -130,6 +131,10 @@ void AliAnalysisTaskParticleCorrelation::Init()
   if(!fAna)
     AliFatal("Analysis pointer not initialized, abort analysis!");
   
+  // Add different generator particles to PDG Data Base 
+  // to avoid problems when reading MC generator particles
+  AliPDG::AddParticlesToPdgDataBase();
+
   // Initialise analysis
   fAna->Init();
   
