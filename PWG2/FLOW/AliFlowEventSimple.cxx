@@ -32,7 +32,7 @@ ClassImp(AliFlowEventSimple)
 //-----------------------------------------------------------------------
 
   AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
-    fTrackCollection(0),
+    fTrackCollection(NULL),
     fNumberOfTracks(0),
     fEventNSelTracksIntFlow(0)
 {
