@@ -167,7 +167,7 @@ AC_MSG_RESULT([$have_aliroot])
 if test ! "x$have_aliroot" = "xno" ; then
   ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
   ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
-  ALIROOT_LIBS="-lESD $ADD_ROOTLIBS"
+  ALIROOT_LIBS="$ADD_ROOTLIBS"
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
@@ -184,13 +184,18 @@ if test ! "x$have_aliroot" = "xno" ; then
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
+  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=CDB
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=RAWDatabase
   AC_CHECK_LIB([$CHECKLIB],[_init],
 	[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"
-	 LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+	 LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lESD -lSTEER"
 	 CHECKLIB=RAWDatarec
 	 AC_CHECK_LIB([$CHECKLIB],[_init],
                [ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"
@@ -213,9 +218,8 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
   AC_MSG_RESULT([$have_alirawdata])
 
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER"
-  CHECKLIB=CDB
+  CHECKLIB=ESD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -751,12 +755,13 @@ else
     # changed to AliTRDrecoParam::SetSeedingOn() due to revision 26327, Mon Jun 2 2008
     # changed to AliTRDReconstructor::SetStreamLevel() due to revision 27797, Tue Aug 5 2008
     # changed to AliTRDReconstructor::SetClusters() according to revision 28069, Mon Aug 18 2008
-    AC_MSG_CHECKING([for required functions in AliTRDReconstructor])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDReconstructor.h>], 
-                                       [AliTRDReconstructor r;
-				       r.SetClusters(0)])],
+    # changed to AliTRDCluster according to revision 30461, Thu Dec 18 2008
+    AC_MSG_CHECKING([for required functions in AliTRDCluster])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDcluster.h>], 
+                                       [AliTRDcluster c;
+				       c.SetDetector(0)])],
                                        [], 
-  				       [enable_trd="no...requires.AliRoot>v4-14-Release"])
+  				       [enable_trd="no...requires.AliRoot>v4-16-Release"])
     AC_MSG_RESULT([$enable_trd])       
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
