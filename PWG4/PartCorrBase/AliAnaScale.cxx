@@ -29,6 +29,7 @@
 
 #include "AliAnaScale.h" 
 #include "AliAnalysisManager.h"
+#include "Riostream.h"
 
 //______________________________________________________________________________
 AliAnaScale::AliAnaScale() : 
@@ -100,11 +101,10 @@ void AliAnaScale::Exec(Option_t *)
   TObject * h ; 
   while ( (h = next()) ) { 
     if(h){
-      if ( strcmp(h->ClassName(),"TNtuple") ) {
+      if ( !strncmp(h->ClassName(),"TH",2) ) {
       char name[128] ; 
       sprintf(name, "%sScaled", h->GetName()) ; 
       TH1 * hout = dynamic_cast<TH1*> (h->Clone(name)) ; 
-     
       if(fSumw2) hout->Sumw2();
       hout->Scale(fScale) ;  
       fOutputList->Add(hout) ; 
