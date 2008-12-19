@@ -31,7 +31,7 @@
 #include "EVGEN/AliGenGeVSim.h"
 #include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFMaps.h"
+#include "STEER/AliMagWrapCheb.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -274,8 +274,7 @@ void Config()
     
     
 // Field
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
-    field->SetL3ConstField(0); //Using const. field in the barrel
+    AliMagWrapCheb* field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., smag);
     rl->CdGAFile();
     gAlice->SetField(field);    
 //

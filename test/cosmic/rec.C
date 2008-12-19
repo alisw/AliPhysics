@@ -93,11 +93,11 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
   rec.SetRecoParam("MUON",muonRecoParam);
  
   // Tracking settings
-  AliMagFMaps* field;
+  AliMagWrapCheb* field;
   if (mfield)
-     field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+     field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG);
    else
-     field = new AliMagFMaps("Maps","Maps", 2, 0., 10., 2);
+     field = new AliMagWrapCheb("Maps","Maps", 2, 0., 10., AliMagWrapCheb::k2kG);
   AliTracker::SetFieldMap(field,1);
   Double_t mostProbPt=0.35;
   AliExternalTrackParam::SetMostProbablePt(mostProbPt);
