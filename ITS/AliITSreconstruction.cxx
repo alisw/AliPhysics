@@ -167,7 +167,6 @@ Bool_t AliITSreconstruction::Init(){
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
 
-    //fEnt  = gAlice->GetEventsPerRun();
     fEnt = Int_t(fRunLoader->GetNumberOfEvents());
 
     fLoader->LoadDigits("read");
