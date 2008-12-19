@@ -2,7 +2,7 @@
 
 SRCS = AliPHOSQATask.cxx \
        AliEMCALQATask.cxx \
-       AliPMDQATask.cxx AliPMDUtility.cxx \
+       AliPMDQATask.cxx \
        AliAnalysisTaskPt.cxx \
        AliHMPIDQATask.cxx \
        AliT0QATask.cxx \
@@ -18,6 +18,8 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR:= AnalysisCheckLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
+
+EINCLUDE:=PMD
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

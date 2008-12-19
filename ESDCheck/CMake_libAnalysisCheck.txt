@@ -4,7 +4,6 @@ set(SRCS
 AliPHOSQATask.cxx
 AliEMCALQATask.cxx
 AliPMDQATask.cxx
-AliPMDUtility.cxx
 AliAnalysisTaskPt.cxx
 AliHMPIDQATask.cxx
 AliT0QATask.cxx

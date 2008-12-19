@@ -9,7 +9,6 @@
 #pragma link C++ class AliEMCALQATask+;
 
 #pragma link C++ class AliPMDQATask+;
-#pragma link C++ class AliPMDUtility+;
 
 #pragma link C++ class AliAnalysisTaskPt+;
 
