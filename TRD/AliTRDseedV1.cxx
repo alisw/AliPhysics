@@ -686,10 +686,32 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   //
 
   const Int_t kClmin = 8;
-//   const Float_t q0 = 100.;
-//   const Float_t clSigma0 = 2.E-2;    //[cm]
-//   const Float_t clSlopeQ = -1.19E-2; //[1/cm]
+  // drift velocity correction TODO to be moved to the clusterizer
+  const Float_t cx[] = { 
+0.044168, 0.130812, -0.017411, -0.099284, -0.120416, -0.095457,
+-0.050021, -0.016758, 0.003570, 0.018618, 0.026380, 0.033786, 0.034889, 0.035264,
+0.035284, 0.036028, 0.035250, 0.034368, 0.032823, 0.031937, 0.032064, 0.022542,
+-0.025167, -0.120645, 0.};
 
+  // cluster error parametrization parameters 
+  // 1. total charge
+  const Float_t sq0inv = 0.019962; // [1/q0]
+  const Float_t sqb    = 1.0281564;    //[cm]
+  // 2. sy parallel to the track
+  const Float_t sy0 = 2.60967e-01;  // [mm] !!
+  const Float_t sya =-7.68941e+00; //
+  const Float_t syb =-3.41160e-01; //
+  // 3. sx parallel to the track
+  const Float_t sxgc = 5.49018e-01;
+  const Float_t sxgm = 7.82999e-01;
+  const Float_t sxgs = 2.74451e-01;
+  const Float_t sxe0 = 2.53596e-01;
+  const Float_t sxe1 =-2.40078e-02;
+  // 4. sx perpendicular to the track
+//   const Float_t sxd0 = 0.190676;
+//   const Float_t sxd1 =-3.9269;
+//   const Float_t sxd2 =14.7851;
+  
   // get track direction
   Double_t y0   = fYref[0];
   Double_t dydx = fYref[1]; 
@@ -704,9 +726,12 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   Double_t convert = 1./TMath::Sqrt(12.);
   
   // book cluster information
-  Double_t xc[knTimebins], yc[knTimebins], zc[knTimebins], sy[knTimebins], sz[knTimebins];
+  Double_t q, xc[knTimebins], yc[knTimebins], zc[knTimebins], sy[knTimebins], sz[knTimebins];
   Int_t zRow[knTimebins];
-
+  
+  // TODO move as data member of the tracklet
+  // TODO calculate for the exact position of the tracklet (det, col, row)
+  Double_t exb = -.16;
 
   fN = 0;
   AliTRDcluster *c=0x0, **jc = &fClusters[0];
@@ -719,11 +744,12 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     sz[ic]  = 0.;
     if(!(c = (*jc))) continue;
     if(!c->IsInChamber()) continue;
+
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
     zRow[fN] = c->GetPadRow();
-    xc[fN]   = fX0 - c->GetX();
+    xc[fN]   = fX0 - c->GetX() + cx[c->GetLocalTimeBin()];
     yc[fN]   = c->GetY();
     zc[fN]   = c->GetZ();
 
@@ -735,8 +761,21 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     if(tilt) yc[fN] -= fTilt*(zc[fN] - zt); 
 
     // elaborate cluster error
-    //Float_t qr = c->GetQ() - q0;
-    sy[fN]   = 1.;//qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
+    q = TMath::Abs(c->GetQ());
+    Double_t tgg = (dydx-exb)/(1.+dydx*exb);
+    // error of drift length parallel to the track
+    Double_t sx = sxgc*TMath::Gaus(xc[fN], sxgm, sxgs) + sxe0*TMath::Exp(sxe1*xc[fN]); // [cm]
+    // error of drift length perpendicular to the track
+    //sx += sxd0 + sxd1*d + sxd2*d*d;
+    // global radial error due to misalignment/miscalibration
+    Double_t sx0  = 0.;  // [cm]
+    sy[fN]  = sy0 + TMath::Exp(sya*(xc[fN]+syb)) + sqb*(1./q - sq0inv);
+    sy[fN] *= sy[fN];
+    // add error on x
+    sy[fN] += tgg*tgg*(sx*sx+sx0*sx0);
+    // add error from ExB 
+    sy[fN] += exb*exb*sx*sx;
+    sy[fN]  = TMath::Sqrt(sy[fN]);
     fitterY.AddPoint(&xc[fN], yc[fN]/*-yt*/, sy[fN]);
 
     sz[fN]   = fPadLength*convert;
