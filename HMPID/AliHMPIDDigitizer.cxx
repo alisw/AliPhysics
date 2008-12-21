@@ -28,8 +28,6 @@
 #include "AliHMPIDParam.h"
 #include <TRandom.h>
 
-extern TRandom *gRandom;
-
 ClassImp(AliHMPIDDigitizer)
 
 Bool_t AliHMPIDDigitizer::fgDoNoise=kFALSE;
