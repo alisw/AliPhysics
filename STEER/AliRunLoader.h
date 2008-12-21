@@ -258,7 +258,6 @@ protected:
     static AliRunLoader* fgRunLoader; //pointer to the AliRunLoader instance
 
 private:
-    void Copy(TObject &arun) const;
 
     static const TString   fgkRunLoaderName;          //default name of the run loader
     static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE

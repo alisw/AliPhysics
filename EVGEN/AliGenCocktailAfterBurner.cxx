@@ -27,7 +27,7 @@
 //
 // 24.09.2001  Piotr Skowronski
 //             debug -> gDebug,
-//             fNEvents replaced with gAlice->GetEventsPerRun()
+//             fNEvents replaced with AliRunLoader::GetNumberOfEvents()
 //
 
 

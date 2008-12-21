@@ -189,12 +189,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  fEventFolder->Add(this);//put myself to the folder to accessible for all
   
 }
-/**************************************************************************/
 
-void AliRunLoader::Copy(TObject &) const 
-{
-  AliFatal("Not implemented");
-}
 /**************************************************************************/
 
 Int_t AliRunLoader::GetEvent(Int_t evno)

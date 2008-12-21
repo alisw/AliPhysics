@@ -73,12 +73,10 @@ AliRun::AliRun():
   fRun(-1),
   fEvent(0),
   fEventNrInRun(0),
-  fEventsPerRun(0),
   fModules(0),
   fMCApp(0),
   fField(0),
   fNdets(0),
-  fInitDone(kFALSE),
   fLego(0),
   fConfigFunction(""),
   fRandom(0),
@@ -103,12 +101,10 @@ AliRun::AliRun(const char *name, const char *title):
   fRun(-1),
   fEvent(0),
   fEventNrInRun(0),
-  fEventsPerRun(0),
   fModules(new TObjArray(77)), // Support list for the Detectors
   fMCApp(0),
   fField(0),
   fNdets(0),
-  fInitDone(kFALSE),
   fLego(0),
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
@@ -431,18 +427,20 @@ void AliRun::ResetSDigits()
 
 
 //_______________________________________________________________________
-
 void AliRun::InitMC(const char *setup)
 {
   //
   // Initialize ALICE Simulation run
   //
+
+  static Bool_t initDone=kFALSE;
+
   Announce();
 
-  if(fInitDone) {
-    AliWarning("Cannot initialise AliRun twice!");
+  if(initDone) {
+    AliError("AliRun already initialised! Check your logic!");
     return;
-  }
+  } else initDone=kTRUE;
     
   if (!fMCApp)  
     fMCApp=new AliMC(GetName(),GetTitle());
@@ -471,7 +469,6 @@ void AliRun::InitMC(const char *setup)
       AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
       AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
     }
-   fInitDone = kTRUE;
    //
    // Save stuff at the beginning of the file to avoid file corruption
    AliRunLoader::GetRunLoader()->CdGAFile();
@@ -480,31 +477,6 @@ void AliRun::InitMC(const char *setup)
 }
 
 //_______________________________________________________________________
-
-void AliRun::RunMC(Int_t nevent, const char *setup)
-{
-  //
-  // Main function to be called to process a galice run
-  // example
-  //    Root > gAlice.Run(); 
-  // a positive number of events will cause the finish routine
-  // to be called
-  //
-  fEventsPerRun = nevent;
-  // check if initialisation has been done
-  if (!fInitDone) InitMC(setup);
-  
-  // Create the Root Tree with one branch per detector
-  //Hits moved to begin event -> now we are crating separate tree for each event
-
-  gMC->ProcessRun(nevent);
-
-  // End of this run, close files
-  if(nevent>0) FinishRun();
-}
-
-//_______________________________________________________________________
-
 void AliRun::Hits2Digits(const char *selected)
 {
 
@@ -653,7 +625,7 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   //Create Lego object  
   fLego = new AliLego("lego",gener);
 
-  if (!fInitDone) InitMC(setup);
+  InitMC(setup);
   //Save current generator
   
   AliGenerator *gen=fMCApp->Generator();

@@ -43,7 +43,6 @@ public:
    Int_t          GetRunNumber() const {return fRun;}
    void           SetEventNrInRun(Int_t event) {fEventNrInRun=event;}
    Int_t          GetEventNrInRun() const {return fEventNrInRun;}
-   Int_t          GetEventsPerRun() const {return fEventsPerRun;}
    Int_t          GetNdets() const {return fNdets;}
    AliModule     *GetModule(const char *name) const;
    AliDetector   *GetDetector(const char *name) const;
@@ -79,7 +78,6 @@ public:
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  SetBaseFile(const char *filename="galice.root");
-   virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
                           Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
                           Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL, Int_t nev = -1);
@@ -111,12 +109,10 @@ protected:
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
-  Int_t          fEventsPerRun;      //  Number of events per run
   TObjArray     *fModules;           //  List of Detectors
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   AliMagF       *fField;             //  Magnetic Field Map
   Int_t          fNdets;             //  Number of detectors
-  Bool_t         fInitDone;          //! True when initialisation done
   AliLego       *fLego;              //! Pointer to aliLego object if it exists
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator

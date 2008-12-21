@@ -106,6 +106,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TVirtualMCApplication.h>
+#include <TVirtualMC.h>
 #include <TGeoManager.h>
 #include <TObjString.h>
 #include <TSystem.h>
@@ -872,9 +873,17 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliInfo("running gAlice");
   AliSysInfo::AddStamp("Start_simulation");
-  StdoutToAliInfo(StderrToAliError(
-    gAlice->RunMC(nEvents);
-  ););
+
+  gAlice->InitMC("Config.C");
+  
+  // Create the Root Tree with one branch per detector
+  //Hits moved to begin event -> now we are crating separate tree for each event
+
+  gMC->ProcessRun(nEvents);
+
+  // End of this run, close files
+  if(nEvents>0) gAlice->FinishRun();
+
   AliSysInfo::AddStamp("Stop_simulation");
   delete runLoader;
 
@@ -934,8 +943,8 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
   SetCDBLock();
   
-  while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
-  if (gAlice) delete gAlice;
+  delete AliRunLoader::GetRunLoader();
+  delete gAlice;
   gAlice = NULL;
 
   Int_t nStreams = 1;
@@ -1378,7 +1387,7 @@ AliRunLoader* AliSimulation::LoadRun(const char* mode) const
 {
 // delete existing run loaders, open a new one and load gAlice
 
-  while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
+  delete AliRunLoader::GetRunLoader();
   AliRunLoader* runLoader = 
     AliRunLoader::Open(fGAliceFileName.Data(), 
 		       AliConfig::GetDefaultEventFolderName(), mode);
