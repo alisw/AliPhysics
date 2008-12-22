@@ -26,6 +26,7 @@
 
 #include "AliTRDarraySignal.h"
 //#include "AliLog.h"
+#include "TArray.h" //for memset
 
 ClassImp(AliTRDarraySignal)
 
@@ -79,10 +80,7 @@ AliTRDarraySignal::AliTRDarraySignal(const AliTRDarraySignal &d)
   //
 
   fSignal = new Float_t[fNdim];
-  for(Int_t i=0; i<fNdim; i++)
-    {
-      fSignal[i]=d.fSignal[i];
-    }
+  memcpy(fSignal, d.fSignal, fNdim*sizeof(Float_t));
 
 }
 
@@ -123,11 +121,7 @@ AliTRDarraySignal &AliTRDarraySignal::operator=(const AliTRDarraySignal &d)
   fNtime=d.fNtime;
   fNdim=d.fNdim;
   fSignal = new Float_t[fNdim];
-
-  for(Int_t i=0; i<fNdim; i++)
-    {
-      fSignal[i]=d.fSignal[i];
-    }
+  memcpy(fSignal,d.fSignal, fNdim*sizeof(Float_t));
 
   return *this;
 
@@ -150,10 +144,7 @@ void AliTRDarraySignal::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
       delete [] fSignal;
     }
   fSignal = new Float_t[fNdim];
-  for(Int_t i=0; i<fNdim; i++)
-    {
-      fSignal[i]=0;
-    }
+  memset(fSignal,0,sizeof(Float_t)*fNdim);
 
 }
 
@@ -193,10 +184,7 @@ void AliTRDarraySignal::Compress(Float_t minval)
   Int_t k=0;
 
   //Initialize the array
-  for(Int_t i=0; i<fNdim;i++)
-    {
-      longArr[i]=0;
-    }
+  memset(longArr,0,sizeof(Int_t)*fNdim);
 
   for(Int_t i=0;i<fNdim; i++)
     {
@@ -305,10 +293,7 @@ void AliTRDarraySignal::Expand()
   Int_t *longArr; 
   longArr = new Int_t[fNdim];
   Int_t dimexp=0;
-  for(Int_t i=0; i<fNdim;i++)
-    {
-      longArr[i]=0;
-    }
+  memset(longArr,0,sizeof(Int_t)*fNdim);
 
   Int_t r2=0;
   for(Int_t i=0; i<fNdim;i++)

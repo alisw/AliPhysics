@@ -18,8 +18,6 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "TArrayI.h"
-
 class AliTRDSignalIndex : public TObject
 {
 
@@ -31,16 +29,19 @@ class AliTRDSignalIndex : public TObject
   virtual ~AliTRDSignalIndex();
   AliTRDSignalIndex &operator=(const AliTRDSignalIndex &d); 
 
-  virtual void     Copy(TObject &d) const; 
-  virtual void     Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
+  virtual void     Copy(TObject &d) const;
+  virtual void     Allocate(const Int_t nrow, const Int_t ncol, const Int_t ntime);
 
   virtual void     Reset();
-  virtual void     ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime);
+  virtual void     ResetContentConditional(const Int_t nrow, const Int_t ncol, const Int_t ntime);
   virtual void     ResetContent();
   virtual void     ResetCounters();
-  virtual void     ResetTbinCounter() { fPositionTbin  = 1; }
+  virtual void     ResetTbinCounter() { }
+
+          void     ResetArrays();
 
   virtual void     AddIndexTBin(Int_t row, Int_t col, Int_t tbin);
+          void     AddIndexRC(const Int_t row, const Int_t col);
 
           // Get the next pad (row and column) and return kTRUE on success
           Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
@@ -49,27 +50,30 @@ class AliTRDSignalIndex : public TObject
           // Get the next active timebin and return kTRUE on success
           Bool_t   NextTbinIndex(Int_t &tbin); 
 
-          Int_t    GetCurrentRow() const  { return (*fIndex)[fPositionRow];                 }
-          Int_t    GetCurrentCol() const  { return (*fIndex)[fPositionCol];                 }
-          Int_t    GetCurrentTbin() const { return (*fIndex)[fPositionCol + fPositionTbin]; }
-  
-          // Clear the array, actually destroy and recreate w/o allocating
+          Int_t    GetCurrentRow() const  { return fCurrRow; }
+          Int_t    GetCurrentCol() const  { return fCurrCol; }
+          Int_t    GetCurrentTbin() const { return fCurrTbin; }
+
+	  Bool_t   IsBoolIndex(Int_t row, Int_t col) const {return fBoolIndex[row*fNcols+col];};
+          void     InitSortedIndex();
+
+	  // Clear the array, actually destroy and recreate w/o allocating
           void     ClearAll(); 
           // Return kTRUE if array allocated and there is no need to call allocate
-          Bool_t   IsAllocated() const    { if (!fIndex)                return kFALSE; 
-                                            if (fIndex->GetSize() <= 0) return kFALSE; 
-                                            else                        return kTRUE;       }
+          Bool_t   IsAllocated() const    { if (!fBoolIndex)    return kFALSE; 
+                                            if (fMaxLimit <= 0) return kFALSE; 
+                                            else                return kTRUE;}
 
-          void     SetSM(Int_t ix)        { fSM      =    ix; }
-          void     SetStack(Int_t ix)     { fStack   =    ix; }
-          void     SetLayer(Int_t ix)     { fLayer   =    ix; }
-          void     SetDetNumber(Int_t ix) { fDet     =    ix; }
+          void     SetSM(const Int_t ix)        { fSM      =    ix; }
+          void     SetStack(const Int_t ix)     { fStack   =    ix; }
+          void     SetLayer(const Int_t ix)     { fLayer   =    ix; }
+          void     SetDetNumber(const Int_t ix) { fDet     =    ix; }
   
   virtual Int_t    GetDetNumber() const   { return fDet;      } // Get Det number
   virtual Int_t    GetLayer() const       { return fLayer;    } // Layer position of the chamber in TRD
   virtual Int_t    GetStack() const       { return fStack;    } // Stack position of the chamber in TRD
   virtual Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
-          TArrayI *GetArray() const       { return fIndex;    } // Get the tarrayi pointer for god knows what reason
+          Short_t *GetArray() const       { return fSortedIndex; } // Get the array pointer for god knows what reason
 
   virtual Bool_t   HasEntry() const       { return fHasEntry; } // Return status if has an entry
 
@@ -84,25 +88,91 @@ class AliTRDSignalIndex : public TObject
   Int_t     fStack;              //  Stack position in the full TRD
   Int_t     fSM;                 //  Super module - position in the full TRD
 
-  TArrayI  *fIndex;              //! Monitor active pads and tbins
+  Bool_t   *fBoolIndex;          //  
+  Short_t  *fSortedIndex;        //  
+  Int_t     fMaxLimit;           //  Max number of things in the array
+  Int_t     fPositionRC;         //  Position in the SortedIndex
+  Bool_t    fSortedWasInit;      //  Was SortedIndex initialized?
 
-  Int_t     fPositionRow;        //  Position in the index - jumps by 1 + 1 + fNtbins
-  Int_t     fPositionCol;        //  Position in the index - jumps by 1 + 1 + fNtbins
-  Int_t     fPositionTbin;       //  Position in the tbin - goes from 0 to fNtbins
-
-  Int_t     fLastRow;            //  To keep track what is the RC combination
-  Int_t     fLastCol;            //  To keep track what is the RC combination
-  Int_t     fLastTbin;           //  To keep track what is the Tbin - will catch if raw data bogus
-
+  Int_t     fCurrRow;            //  Last Row read out of SortedIndex
+  Int_t     fCurrCol;            //  Last Col read out of SortedIndex
+  Int_t     fCurrTbin;           //  Last outgiven Tbin
+  
   Int_t     fNrows;              //  Number of rows in the chamber
   Int_t     fNcols;              //  Number of cols in the chamber
   Int_t     fNtbins;             //  Number of tbins in the chamber
 
-  Int_t     fMaxLimit;           //  Max number of things in the array  = nrow*ncol*ntime + nrow*ncol*2
-  Bool_t    fResetCounters;      //  Reset counter status
   Bool_t    fHasEntry;           //  kTRUE flag if we have an entry 
 
   ClassDef(AliTRDSignalIndex,2)  //  Data container for one TRD detector segment
 
 };
 #endif
+
+/*
+Comment from 22 Dec 2008
+
+The structure of the Index was changed. Now no Tbin is saved anymore,
+only RC combination are saved! (reasons see below)
+
+For the readout, all tbins for a RC combination must be read out to find 
+the time bin of signal > 0.
+
+THE WRITING PROCEDURE:
+AddIndexTBin is now obsolate, use AddIndexRC instead as AddIndexTBin will
+be deleted in future.
+
+example that gives exactely the same output as before:
+as it was: 
+           AliTRDSignalIndexes *indexes;
+           AliTRDarrayADC *Signal; //or AliTRDarraySignal *Signal;
+	   if(Signal->GetDataB(row, col, time)>0)
+               indexes->AddIndexTBin(row, col, time);
+
+as it should be from no on: 
+           AliTRDSignalIndexes *indexes;
+           AliTRDarrayADC *Signal; //or AliTRDarraySignal *Signal;
+	   if(Signal->GetDataB(row, col, time)>0)
+               indexes->AddIndexRC(row, col);
+
+
+
+THE READING PROCEDURE:
+In most cases you can leave anything as it is.
+See more in the example.
+
+example:
+as it was: 
+           AliTRDSignalIndexes *indexes;
+           AliTRDarraySignal *Signal;
+           while(indexes->NextRCTbinIndex(row, col, time)) 
+           {...}
+
+as it should be from no on to get the exactely the same output as before: 
+           AliTRDSignalIndexes *indexes;
+           AliTRDarraySignal *Signal;
+           while(indexes->NextRCTbinIndex(row, col, time)) 
+              if(Signal->GetData(row, col, time)>0)
+                 {...}
+
+as it should be idealy:
+           AliTRDSignalIndexes *indexes;
+           AliTRDarraySignal *Signal;
+           for(time = 0; time < Ntime; time++)
+              while(indexes->NextRCIndex(row, col, time)) 
+                 if(Signal->GetData(row, col, time)>0)
+                    {...}
+
+
+REASON OF THE CHANGES:
+
+The array saved the information nicely, but it turned out that sorting 
+the array by column would have many benefits.
+I.e. it is crucial for fivePadClusters and it if much faster to allocate.
+But the sorting is not fast if the tbin is also saved.
+Moreover the tbin information was alsmost useless because, 
+whenever an RC index existed, many of the possible tbins where used.
+
+Theodor Rascanu
+
+*/

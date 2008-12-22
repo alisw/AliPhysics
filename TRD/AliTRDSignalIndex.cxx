@@ -25,7 +25,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TArrayI.h"
+#include "TObject.h"
 
 #include "AliLog.h"
 
@@ -40,18 +40,17 @@ AliTRDSignalIndex::AliTRDSignalIndex()
   ,fLayer(-1)
   ,fStack(-1)
   ,fSM(-1)
-  ,fIndex(NULL)
-  ,fPositionRow(0)
-  ,fPositionCol(0)
-  ,fPositionTbin(0)
-  ,fLastRow(0)
-  ,fLastCol(0)
-  ,fLastTbin(0)
+  ,fBoolIndex(NULL)
+  ,fSortedIndex(NULL)
+  ,fMaxLimit(0)
+  ,fPositionRC(0)
+  ,fSortedWasInit(kFALSE)
+  ,fCurrRow(0)
+  ,fCurrCol(0)
+  ,fCurrTbin(0)
   ,fNrows(0)
   ,fNcols(0)
   ,fNtbins(0)
-  ,fMaxLimit(0)
-  ,fResetCounters(kTRUE)
   ,fHasEntry(kFALSE)
 {
   //
@@ -69,18 +68,17 @@ AliTRDSignalIndex::AliTRDSignalIndex(Int_t nrow, Int_t ncol,Int_t ntime)
   ,fLayer(-1)
   ,fStack(-1)
   ,fSM(-1)
-  ,fIndex(NULL)
-  ,fPositionRow(0)
-  ,fPositionCol(0)
-  ,fPositionTbin(0)
-  ,fLastRow(0)
-  ,fLastCol(0)
-  ,fLastTbin(0)
+  ,fBoolIndex(NULL)
+  ,fSortedIndex(NULL)
+  ,fMaxLimit(0)
+  ,fPositionRC(0)
+  ,fSortedWasInit(kFALSE)
+  ,fCurrRow(0)
+  ,fCurrCol(0)
+  ,fCurrTbin(0)
   ,fNrows(0)
   ,fNcols(0)
   ,fNtbins(0)
-  ,fMaxLimit(0)
-  ,fResetCounters(kTRUE)
   ,fHasEntry(kFALSE)
 {
   //
@@ -98,24 +96,28 @@ AliTRDSignalIndex::AliTRDSignalIndex(const AliTRDSignalIndex &a)
   ,fLayer(a.fLayer)
   ,fStack(a.fStack)
   ,fSM(a.fSM)
-  ,fIndex(a.fIndex)
-  ,fPositionRow(a.fPositionRow)
-  ,fPositionCol(a.fPositionCol)
-  ,fPositionTbin(a.fPositionTbin)
-  ,fLastRow(a.fLastRow)
-  ,fLastCol(a.fLastCol)
-  ,fLastTbin(a.fLastTbin)
+  ,fBoolIndex(NULL)
+  ,fSortedIndex(NULL)
+  ,fMaxLimit(a.fMaxLimit)
+  ,fPositionRC(a.fPositionRC)
+  ,fSortedWasInit(a.fSortedWasInit)
+  ,fCurrRow(a.fCurrRow)
+  ,fCurrCol(a.fCurrCol)
+  ,fCurrTbin(a.fCurrTbin)
   ,fNrows(a.fNrows)
   ,fNcols(a.fNcols)
   ,fNtbins(a.fNtbins)
-  ,fMaxLimit(a.fMaxLimit)
-  ,fResetCounters(a.fResetCounters)
   ,fHasEntry(a.fHasEntry)
 {
   //
   // Copy constructor
   //
 
+  fBoolIndex = new Bool_t[fMaxLimit];
+  memcpy(fBoolIndex, a.fBoolIndex, fMaxLimit*sizeof(Bool_t));
+
+  fSortedIndex = new Short_t[2*fMaxLimit];
+  memcpy(fSortedIndex, a.fSortedIndex, 2*fMaxLimit*sizeof(Short_t));
 }
 
 //_____________________________________________________________________________
@@ -125,9 +127,14 @@ AliTRDSignalIndex::~AliTRDSignalIndex()
   // Destructor
   //
 
-  if (fIndex) {
-    delete fIndex;
-    fIndex = NULL;
+  if (fBoolIndex) {
+    delete [] fBoolIndex;
+    fBoolIndex = NULL;
+  }
+
+if (fSortedIndex) {
+    delete [] fSortedIndex;
+    fSortedIndex = NULL;
   }
 
 }
@@ -143,18 +150,30 @@ void AliTRDSignalIndex::Copy(TObject &a) const
   ((AliTRDSignalIndex &)a).fLayer         = fLayer;
   ((AliTRDSignalIndex &)a).fStack         = fStack;
   ((AliTRDSignalIndex &)a).fSM            = fSM;
-  ((AliTRDSignalIndex &)a).fIndex         = fIndex;
-  ((AliTRDSignalIndex &)a).fPositionRow   = fPositionRow;
-  ((AliTRDSignalIndex &)a).fPositionTbin  = fPositionTbin;
-  ((AliTRDSignalIndex &)a).fLastRow       = fLastRow;
-  ((AliTRDSignalIndex &)a).fLastCol       = fLastCol;
-  ((AliTRDSignalIndex &)a).fLastTbin      = fLastTbin;
+  ((AliTRDSignalIndex &)a).fMaxLimit    = fMaxLimit;
+  ((AliTRDSignalIndex &)a).fPositionRC    = fPositionRC;
+  ((AliTRDSignalIndex &)a).fSortedWasInit = fSortedWasInit;
+  ((AliTRDSignalIndex &)a).fCurrRow       = fCurrRow;
+  ((AliTRDSignalIndex &)a).fCurrCol       = fCurrCol;
+  ((AliTRDSignalIndex &)a).fCurrTbin      = fCurrTbin;
   ((AliTRDSignalIndex &)a).fNrows         = fNrows;
   ((AliTRDSignalIndex &)a).fNcols         = fNcols;
   ((AliTRDSignalIndex &)a).fNtbins        = fNtbins;
-  ((AliTRDSignalIndex &)a).fMaxLimit      = fMaxLimit;
-  ((AliTRDSignalIndex &)a).fResetCounters = fResetCounters;
   ((AliTRDSignalIndex &)a).fHasEntry      = fHasEntry;
+
+  if(((AliTRDSignalIndex &)a).fBoolIndex)
+    {
+      delete [] ((AliTRDSignalIndex &)a).fBoolIndex;
+    }
+  ((AliTRDSignalIndex &)a).fBoolIndex = new Bool_t[fMaxLimit];
+  memcpy(((AliTRDSignalIndex &)a).fBoolIndex, fBoolIndex, fMaxLimit*sizeof(Bool_t));
+
+  if(((AliTRDSignalIndex &)a).fSortedIndex)
+    {
+      delete [] ((AliTRDSignalIndex &)a).fSortedIndex;
+    }
+  ((AliTRDSignalIndex &)a).fSortedIndex = new Short_t[2*fMaxLimit];
+  memcpy(((AliTRDSignalIndex &)a).fSortedIndex, fSortedIndex, 2*fMaxLimit*sizeof(Short_t));
 
 }
 
@@ -171,7 +190,7 @@ AliTRDSignalIndex& AliTRDSignalIndex::operator = (const AliTRDSignalIndex& a)
 }
 
 //_____________________________________________________________________________
-void AliTRDSignalIndex::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
+void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t ntime)
 {
   //
   // Create the arrays
@@ -181,19 +200,33 @@ void AliTRDSignalIndex::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
   fNcols = ncol;
   fNtbins = ntime;
 
-  fMaxLimit = nrow * ncol * ntime + nrow * ncol * 2;
-  if (fIndex) {
-    delete fIndex;
-    fIndex = NULL;
+  fMaxLimit = nrow * ncol + 1;
+
+  if (fBoolIndex) {
+    delete [] fBoolIndex;
+    fBoolIndex = NULL;
+  }
+  if (fSortedIndex) {
+    delete [] fSortedIndex;
+    fSortedIndex = NULL;
   }
 
-  fIndex = new TArrayI(fMaxLimit);
-  fIndex->Reset(-1);
+  fBoolIndex = new Bool_t[fMaxLimit];
+  fSortedIndex = new Short_t[2*fMaxLimit];
 
+  ResetArrays();
+ 
   ResetCounters();
 
   fHasEntry = kFALSE;
 
+}
+
+//_____________________________________________________________________________
+void AliTRDSignalIndex::ResetArrays()
+{
+  memset(fBoolIndex,0x00,sizeof(Bool_t)*fMaxLimit);
+  memset(fSortedIndex,0xFF,2*sizeof(Short_t)*fMaxLimit);
 }
 
 //_____________________________________________________________________________
@@ -220,7 +253,7 @@ void AliTRDSignalIndex::ResetContent()
   // Reset the array but keep the size - no realloc
   //
 
-  fIndex->Reset(-1);
+  ResetArrays();
   ResetCounters();
 
   fHasEntry = kFALSE;
@@ -228,7 +261,7 @@ void AliTRDSignalIndex::ResetContent()
 }
 
 //_____________________________________________________________________________
-void AliTRDSignalIndex::ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime)
+void AliTRDSignalIndex::ResetContentConditional(const Int_t nrow, const Int_t ncol, const Int_t ntime)
 {
   //
   // Reset the array but keep the size if no need to enlarge - no realloc
@@ -245,7 +278,7 @@ void AliTRDSignalIndex::ResetContentConditional(Int_t nrow, Int_t ncol,Int_t nti
     Allocate(nrow, ncol, ntime);
   }
   else {
-    fIndex->Reset(-1);
+    ResetArrays();
     ResetCounters();
     fHasEntry = kFALSE;
   }
@@ -268,11 +301,16 @@ void AliTRDSignalIndex::ClearAll()
   fNcols  = -1;
   fNtbins = -1;
 
-  if (fIndex) {
-    delete fIndex;
-    fIndex = NULL;
+  if (fBoolIndex) {
+    delete [] fBoolIndex;
+    fBoolIndex = NULL;
   }
-  fIndex = new TArrayI();
+
+  if (fSortedIndex) {
+    delete [] fSortedIndex;
+    fSortedIndex = NULL;
+  }
+  
   ResetCounters();
 
   fHasEntry = kFALSE;
@@ -280,55 +318,37 @@ void AliTRDSignalIndex::ClearAll()
 }
 
 //_____________________________________________________________________________
-void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t tbin)
+void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t /*tbin*/)
 {
+  //
+  // This function is now obsolate, it will be deleted in future. 
   //
   // Store the index row-column-tbin as an interesting one
   // The RC index is updated to!!!
   // This is to be used in the TRD clusterizer!
   //
+ 
+  AddIndexRC(row, col);
 
-  if (row * col * tbin + row * col * 2 >= fMaxLimit) {
-    AliError(Form("Out-of-limits fPositionCol + fNtbins %d. Limit is: %d"
-                 ,fPositionCol + fNtbins
+}
+
+//_____________________________________________________________________________
+void AliTRDSignalIndex::AddIndexRC(const Int_t row, const Int_t col)
+{
+  //
+  // Store the index row-column as an interesting one
+  // The RC index is updated to!!!
+  // This is to be used in the TRD clusterizer!
+  //
+
+  if (row * col + 1 >= fMaxLimit) {
+    AliError(Form("Out-of-limits row * col %d. Limit is: %d"
+                 ,row * col
                  ,fMaxLimit));
     return;
   }
-
-  if ((row != fLastRow) || 
-      (col != fLastCol)) {
-
-    // New RC combination
-    if (fResetCounters == kTRUE) {
-      fPositionRow    = 0;
-      fPositionCol   = 1;  
-      fResetCounters = kFALSE;
-    }
-    else {
-      fPositionRow += fNtbins + 2;
-      fPositionCol += fNtbins + 2;
-    }
-
-    fPositionTbin = 1;
-
-    (*fIndex)[fPositionRow] = row;
-    (*fIndex)[fPositionCol] = col;
-    (*fIndex)[fPositionCol + fPositionTbin] = tbin;
-    ++fPositionTbin;
-
-  }
-  else {
-
-    // Same RCT combination ?
-      
-    (*fIndex)[fPositionCol + fPositionTbin] = tbin;
-    ++fPositionTbin;      
-  
-  }
-  
-  fLastRow  = row;
-  fLastCol  = col;
-  fLastTbin = tbin;
+ 
+  fBoolIndex[row*fNcols+col]=kTRUE;
 
   fHasEntry = kTRUE;
 
@@ -338,34 +358,30 @@ void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t tbin)
 Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
 {
   //
-  // Return the position (index in the data array) of the next available pad
+  // Returns next used RC combination
   //
 
-  if (fResetCounters == kTRUE) {
-    fPositionRow   = 0;
-    fPositionCol   = 1;
-    fResetCounters = kFALSE;
-  }
-  else {
-    fPositionRow  += fNtbins + 2;
-    fPositionCol  += fNtbins + 2;
-  }
-
-  if (fPositionRow >= fMaxLimit) {
-    return kFALSE;
-  }
-
-  fPositionTbin = 1;
-
-  row = (*fIndex)[fPositionRow];
-  col = (*fIndex)[fPositionCol];
-
-  if ((row > -1) && 
-      (col > -1)) { 
+  if(fSortedIndex[fPositionRC]>-1){
+    row = fCurrRow = fSortedIndex[fPositionRC];
+    fPositionRC++;
+    col = fCurrCol = fSortedIndex[fPositionRC];
+    fPositionRC++;
     return kTRUE;
   }
-  
-  return kFALSE;
+  else {
+    if(fSortedWasInit || !fHasEntry)
+      {
+        ResetCounters();
+	row = fCurrRow;
+	col = fCurrCol;
+	return kFALSE;
+      }
+    else
+      {
+	InitSortedIndex();
+	return NextRCIndex(row, col);
+      }
+  }
 
 }
 
@@ -373,18 +389,13 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
 Bool_t AliTRDSignalIndex::NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin)
 {
   //
-  // Return the position (index in the data array) of the next available tbin 
-  // within the current pad
-  //
-
-  if (fPositionRow >= fMaxLimit) {
-    return kFALSE;
-  }
+  // Returns the next tbin, or if there is no next time bin, it returns the
+  // next used RC combination.
+  //  
 
   if (NextTbinIndex(tbin)) {
-    row  = (*fIndex)[fPositionRow];
-    col  = (*fIndex)[fPositionCol];
-    fResetCounters = kFALSE;
+    row = fCurrRow;
+    col = fCurrCol;
     return kTRUE;
   }
   else {
@@ -401,24 +412,36 @@ Bool_t AliTRDSignalIndex::NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin)
 Bool_t AliTRDSignalIndex::NextTbinIndex(Int_t &tbin)
 {
   //
-  // Return the position (index in the data array) of the next available tbin 
-  // within the current pad
+  // Returns the next tbin of the current RC combination
   //
-
-  if ((fPositionCol + fPositionTbin >= fMaxLimit) || 
-      (fPositionTbin                >  fNtbins  )) {
-    return kFALSE;
-  }
-
-  tbin = (*fIndex)[fPositionCol + fPositionTbin];
-
-  if (tbin > -1) {
-    ++fPositionTbin;
-    return kTRUE;
-  }
+  
+  if(fCurrTbin<fNtbins)
+    {
+      tbin = fCurrTbin++;
+      return kTRUE;
+    }
 
   return kFALSE;
 
+}
+
+//_____________________________________________________________________________
+void AliTRDSignalIndex::InitSortedIndex()
+{
+  //
+  // Creates the SortedIndex
+  //
+
+  fSortedWasInit = kTRUE;
+  int pos=0;
+  for(int row = 0; row < fNrows; row++)
+    for(int col = 0; col < fNcols; col++)
+      if(IsBoolIndex(row, col)){
+	fSortedIndex[pos] = row;
+	pos++;
+	fSortedIndex[pos] = col;
+	pos++;
+      }
 }
 
 //_____________________________________________________________________________
@@ -428,12 +451,8 @@ void AliTRDSignalIndex::ResetCounters()
   // Reset the counters/iterators
   //
 
-  fPositionRow   =  0;
-  fPositionCol   =  fPositionRow + 1;
-  fPositionTbin  =  1;
-  fLastRow       = -1;
-  fLastCol       = -1;
-  fLastTbin      = -1;
-  fResetCounters = kTRUE; 
-
+  fCurrRow    = -1;
+  fCurrCol    = -1;
+  fCurrTbin   = -1;
+  fPositionRC =  0;
 }

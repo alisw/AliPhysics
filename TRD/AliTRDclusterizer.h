@@ -69,10 +69,9 @@ class AliTRDclusterizer : public TNamed
   virtual Bool_t   MakeClusters();
   virtual Bool_t   MakeClusters(Int_t det);
 
-  virtual Bool_t   AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nClusterROC);
-  virtual Bool_t   SetAddLabels(Bool_t kset) { fAddLabels = kset; 
-            return fAddLabels;  } // should we assign labels to clusters
-  virtual void     SetRawVersion(Int_t iver) { fRawVersion = iver; } // set the expected raw data version
+  virtual Bool_t   AddLabels(const Int_t idet, const Int_t firstClusterROC, const Int_t nClusterROC);
+  virtual Bool_t   SetAddLabels(const Bool_t kset) { fAddLabels = kset; return fAddLabels;  } // should we assign labels to clusters
+  virtual void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
 
@@ -81,25 +80,25 @@ class AliTRDclusterizer : public TNamed
 
  protected:
 
-  void             DeConvExp(Double_t *source, Double_t *target
-                           , Int_t nTimeTotal, Int_t nexp);
-  void             TailCancelation(AliTRDarrayADC *digitsIn
-			         , AliTRDarraySignal *digitsOut 
-			         , AliTRDSignalIndex *indexesIn
-			         , AliTRDSignalIndex *indexesOut
-			         , Int_t nTimeTotal
-			         , Float_t ADCthreshold
-			         , AliTRDCalROC *calGainFactorROC
-			         , Float_t calGainFactorDetValue);
-  virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal);
+  void             DeConvExp (const Double_t *const source, Double_t *const target
+			     ,const Int_t nTimeTotal, const Int_t nexp);
+  void             TailCancelation();
+
+  virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
           Double_t GetCOG(Double_t signal[5]) const; 
   void             FillLUT();
           Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
-  virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
   
-  void              SetPadStatus(UChar_t status, UChar_t &encoding);
-  UChar_t           GetPadStatus(UChar_t encoding);
-  Int_t             GetCorruption(UChar_t encoding);
+  void             SetPadStatus(const UChar_t status, UChar_t &encoding);
+  UChar_t          GetPadStatus(UChar_t encoding) const;
+  Int_t            GetCorruption(UChar_t encoding) const;
+
+  Bool_t           IsMaximum(const Int_t row, const Int_t col, const Int_t time, 
+			     UChar_t &pasStatus, Double_t *const Signals);
+  Bool_t           IsFivePadCluster(const Int_t row, const Int_t col, const Int_t time, 
+				    Double_t *SignalsThisMax, Double_t *SignalsNeighbourMax, Double_t &ratio);
+  void             CreateCluster(const Int_t row, const Int_t col, const Int_t time, 
+				 const Double_t *const clusterSignal, const UChar_t padStatus);
 
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
@@ -115,13 +114,44 @@ class AliTRDclusterizer : public TNamed
   Bool_t               fAddLabels;           //  Should clusters have MC labels?
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2
 
-  AliTRDSignalIndex   *fIndexesOut;          //! Helper indexes for clusterization
-  AliTRDSignalIndex   *fIndexesMaxima;       //! Helper indexes for clusterization
-
   AliTRDtransform     *fTransform;           //! Transforms the reconstructed space points
 
   Int_t                fLUTbin;              //  Number of bins of the LUT
   Double_t            *fLUT;                 //! The lookup table
+
+  AliTRDarrayADC      *fDigitsIn;
+  AliTRDSignalIndex   *fIndexes;
+  Float_t              fADCthresh;            // ADC thresholds: There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
+  Float_t              fMaxThresh;            // Threshold value for the maximum
+  Float_t              fSigThresh;            // Threshold value for the digit signal
+  Float_t              fMinMaxCutSigma;       // Threshold value for the maximum (cut noise)
+  Float_t              fMinLeftRightCutSigma; // Threshold value for the sum pad (cut noise)
+  Int_t                fLayer;                // Current layer of the detector
+  Int_t                fDet;                  // Current detecor
+  UShort_t             fVolid;                // Volume ID
+  Int_t                fColMax;               // Number of Colums in one detector
+  Int_t                fTimeTotal;            // Number of time bins
+  AliTRDCalROC        *fCalGainFactorROC;     // Calibration object with pad wise values for the gain factors
+  Float_t              fCalGainFactorDetValue;// Calibration value for chamber wise noise
+  AliTRDCalROC        *fCalNoiseROC;          // Calibration object with pad wise values for the noise
+  Float_t              fCalNoiseDetValue;     // Calibration value for chamber wise noise
+  AliTRDarraySignal   *fDigitsOut;
+  Int_t                fClusterROC;           // The index to the first cluster of a given ROC
+  Int_t                firstClusterROC;       // The number of cluster in a given ROC
+
+  struct ClusterizerStruct
+  {
+    Int_t       Row;
+    Int_t       Col;
+    Int_t       Time;
+    UChar_t     padStatus;
+    Double_t    Signals[3];
+    ClusterizerStruct():Row(0),Col(0),Time(0),padStatus(0)
+      {}
+    ClusterizerStruct &operator=(const ClusterizerStruct &a)
+      {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus;
+       memcpy(Signals, a.Signals, 3*sizeof(Double_t)); return *this;}
+  };
 
   ClassDef(AliTRDclusterizer,6)              //  TRD clusterfinder
 

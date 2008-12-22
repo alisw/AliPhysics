@@ -78,10 +78,7 @@ AliTRDarrayADC::AliTRDarrayADC(const AliTRDarrayADC &b)
   //
 
   fADC =  new Short_t[fNAdim];
-  for(Int_t i=0; i<fNAdim; i++)
-    {
-      fADC[i]=b.fADC[i];
-    }
+  memcpy(fADC,b.fADC, fNAdim*sizeof(Short_t));
 
 }
 
@@ -122,10 +119,8 @@ AliTRDarrayADC &AliTRDarrayADC::operator=(const AliTRDarrayADC &b)
   fNtime=b.fNtime;
   fNAdim=b.fNAdim;
   fADC = new Short_t[fNAdim];
-  for(Int_t i=0;i<fNAdim;i++)
-    {
-      fADC[i]=b.fADC[i];
-    }
+  memcpy(fADC,b.fADC, fNAdim*sizeof(Short_t));
+  
   return *this;
 
 }
@@ -149,10 +144,7 @@ void AliTRDarrayADC::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
     }
   
   fADC = new Short_t[fNAdim];
-  for(Int_t a=0; a<fNAdim; a++)
-    {
-      fADC[a]=0;
-    }
+  memset(fADC,0,sizeof(Short_t)*fNAdim);
 
 }
 
@@ -301,11 +293,8 @@ void AliTRDarrayADC::Compress()
   Int_t *longz;            
   longz = new Int_t[fNAdim];
   Int_t k=0;
-  for(Int_t i=0; i<fNAdim;i++)
-    {
-      longz[i]=0;
-      longm[i]=0;
-    }
+  memset(longz,0,sizeof(Int_t)*fNAdim);
+  memset(longm,0,sizeof(Int_t)*fNAdim);
 
   for(Int_t i=0;i<fNAdim; i++)
     {
@@ -455,11 +444,8 @@ void AliTRDarrayADC::Expand()
   longm = new Int_t[fNAdim];
   Int_t dimexp=0;
   //Initialize arrays
-  for(Int_t i=0; i<fNAdim;i++)
-    {
-      longz[i]=0;
-      longm[i]=0;
-    }
+  memset(longz,0,sizeof(Int_t)*fNAdim);
+  memset(longm,0,sizeof(Int_t)*fNAdim);
   Int_t r2=0; 
   Int_t r3=0; 
   for(Int_t i=0; i<fNAdim;i++)
