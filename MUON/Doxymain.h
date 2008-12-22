@@ -55,14 +55,16 @@ the script with whatever non valid option, .eg. h:
 <pre>
 ./AlirootRun_MUONtest.sh h
 ERROR : extra option not recognized
-Usage: AlirootRun_MUONtest.sh options (-SRXsrxn:p:d:c:)
+Usage: AlirootRun_MUONtest.sh options (-SRXsrxn:tg:p:d:c:)
        -S (-s) perform (or not) simulation (default is do it, i.e -S)
        -R (-r) perform (or not) reconstruction (default is do it, i.e. -R)
        -X event (-x) perform (or not) checks and dumps (default is do it for event 5, i.e. -X 5)
        -n nevents (int) number of events to simulate (default 100)
+       -t will use OUTDIR as a tmp directory to generate raw data  
+       -g seed (uint) seed to be used in simulation (default 1234567)
        -p recoptions (quotified string) reconstruction options to use (default "SAVEDIGITS")
-       -d full path to output directory (default /work/projects/alice/dev/AliRoot/MUON/test_out.100)
-       -c full path to configuration file for simulation (default /work/projects/alice/dev/AliRoot/MUON/Config.C)
+       -d full path to output directory (default /work/projects/alice/trunk/AliRoot/MUON/test_out.100)
+       -c full path to configuration file for simulation (default /work/projects/alice/trunk/AliRoot/MUON/Config.C)
 </pre>
 
 The results of this test are saved in test_out.nevent directory.
