@@ -126,6 +126,24 @@ class AliExternalTrackParam: public AliVTrack {
         Double_t mass,  Bool_t anglecorr=kFALSE,
 	Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);
 
+  //
+  // Bethe-Bloch formula parameterizations
+  //
+  static Double_t BetheBlochAleph(Double_t bg,
+                                  Double_t kp1=0.76176e-1,
+                                  Double_t kp2=10.632,
+                                  Double_t kp3=0.13279e-4,
+                                  Double_t kp4=1.8631,
+                                  Double_t kp5=1.9479
+				  );
+  static Double_t BetheBlochGeant(Double_t bg,
+                                  Double_t kp0=2.33,
+                                  Double_t kp1=0.20,
+                                  Double_t kp2=3.00,
+                                  Double_t kp3=173e-9,
+                                  Double_t kp4=0.49848
+				  );
+    
   static Double_t BetheBlochSolid(Double_t bg);
   static Double_t BetheBlochGas(Double_t bg);
 

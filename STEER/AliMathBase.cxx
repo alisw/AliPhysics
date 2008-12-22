@@ -29,6 +29,8 @@
 #include "TF1.h"
 #include "TLinearFitter.h"
 
+#include "AliExternalTrackParam.h"
+
 //
 // includes neccessary for test functions
 //
@@ -768,57 +770,5 @@ Double_t AliMathBase::BetheBlochAleph(Double_t bg,
   // The returned value is in MIP units
   //
 
-  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
-
-  Double_t aa = TMath::Power(beta,kp4);
-  Double_t bb = TMath::Power(1./bg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  
-  return (kp2-aa-bb)*kp1/aa;
-}
-
-Double_t AliMathBase::BetheBlochGeant(Double_t bg,
-         Double_t kp0,
-         Double_t kp1,
-         Double_t kp2,
-         Double_t kp3,
-         Double_t kp4) {
-  //
-  // This is the parameterization of the Bethe-Bloch formula inspired by Geant.
-  //
-  // bg  - beta*gamma
-  // kp0 - density [g/cm^3]
-  // kp1 - density effect first junction point
-  // kp2 - density effect second junction point
-  // kp3 - mean excitation energy [GeV]
-  // kp4 - mean Z/A
-  //
-  // The default values for the kp* parameters are for silicon. 
-  // The returned value is in [GeV/(g/cm^2)].
-  // 
-
-  const Double_t mK  = 0.307075e-3; // [GeV*cm^2/g]
-  const Double_t me  = 0.511e-3;    // [GeV/c^2]
-  const Double_t rho = kp0;
-  const Double_t x0  = kp1*2.303;
-  const Double_t x1  = kp2*2.303;
-  const Double_t mI  = kp3;
-  const Double_t mZA = kp4;
-  const Double_t bg2 = bg*bg;
-  const Double_t maxT= 2*me*bg2;    // neglecting the electron mass
-  
-  //*** Density effect
-  Double_t d2=0.; 
-  const Double_t x=TMath::Log(bg);
-  const Double_t lhwI=TMath::Log(28.816*1e-9*TMath::Sqrt(rho*mZA)/mI);
-  if (x > x1) {
-    d2 = lhwI + x - 0.5;
-  } else if (x > x0) {
-    const Double_t r=(x1-x)/(x1-x0);
-    d2 = lhwI + x - 0.5 + (0.5 - lhwI - x0)*r*r*r;
-  }
-
-  return mK*mZA*(1+bg2)/bg2*
-         (0.5*TMath::Log(2*me*bg2*maxT/(mI*mI)) - bg2/(1+bg2) - d2);
+  return AliExternalTrackParam::BetheBlochAleph(bg,kp1,kp2,kp3,kp4,kp5);
 }
