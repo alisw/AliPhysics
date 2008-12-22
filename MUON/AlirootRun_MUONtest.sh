@@ -111,6 +111,25 @@ fi
 
 ###############################################################################
 # 
+# Update CTP in OCDB for MUON Trigger
+#
+###############################################################################
+
+if [ ! -f $ALICE_ROOT/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
+
+  echo "Updating GRP CTP config  ..."
+
+  aliroot -b >& $OUTDIR/updateCDBCTPConfig.out << EOF
+  .L $ALICE_ROOT/MUON/UpdateCDBCTPConfig.C+
+  UpdateCDBCTPConfig();
+  .q
+EOF
+  
+fi
+
+
+###############################################################################
+# 
 # Performing SIMULATION
 #
 ###############################################################################
