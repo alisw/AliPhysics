@@ -315,21 +315,12 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
    
   fListHistos = (TList*)GetOutputData(0);
   cout << "histogram list in Terminate" << endl;
+
   if (fListHistos) {
-    //Get the common histograms from the output list
-    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
-      (fListHistos->FindObject("AliFlowCommonHistLYZ"));
-
-    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
-      (fListHistos->FindObject("AliFlowCommonHistResultsLYZ"));
-
-    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
-
-    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
-      (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
 
     //define histograms for first and second run
+    AliFlowCommonHist *pCommonHist = NULL;
+    AliFlowCommonHistResults *pCommonHistResults = NULL;
     TProfile* pHistProVtheta = NULL;
     TProfile* pHistProReDenom = NULL;
     TProfile* pHistProImDenom = NULL;
@@ -337,10 +328,31 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
     TProfile* pHistProImDtheta = NULL;
     TProfile* pHistProVeta = NULL;
     TProfile* pHistProVPt  = NULL;
-
     AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
     AliFlowLYZHist2 *pLYZHist2[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist2
 
+    if (GetFirstRunLYZ()) { //first run
+      //Get the common histograms from the output list
+      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	(fListHistos->FindObject("AliFlowCommonHistLYZ1"));
+      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	(fListHistos->FindObject("AliFlowCommonHistResultsLYZ1"));
+    }
+    else { //second run
+      //Get the common histograms from the output list
+      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	(fListHistos->FindObject("AliFlowCommonHistLYZ2"));
+      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	(fListHistos->FindObject("AliFlowCommonHistResultsLYZ2"));
+    }
+
+    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+
+    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
+      (fListHistos->FindObject("Flow_QsumforChi_LYZ"));
+
+    
     if (GetFirstRunLYZ()) { //for firstrun
       //Get the histograms from the output list
       for(Int_t theta = 0;theta<iNtheta;theta++){

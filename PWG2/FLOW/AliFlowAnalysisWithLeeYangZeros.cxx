@@ -104,7 +104,25 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
    
  }
  
- //-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
+{
+ //store the final results in output .root file
+ TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+ if (GetFirstRun()) {
+   output->mkdir("cobjLYZ1","cobjLYZ1");
+   output->cd("cobjLYZ1"); 
+ }
+ else {
+   output->mkdir("cobjLYZ2","cobjLYZ2");
+   output->cd("cobjLYZ2"); 
+ }
+ fHistList->Write(); 
+ delete output;
+}
+
+//-----------------------------------------------------------------------
 
 Bool_t AliFlowAnalysisWithLeeYangZeros::Init() 
 {
@@ -122,13 +140,18 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
     
   //for control histograms
-  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ");
+  if (fFirstRun){ fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ1");
   fHistList->Add(fCommonHists);
-  
-  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ");
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ1");
+  fHistList->Add(fCommonHistsRes);
+  }
+  else { fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ2");
+  fHistList->Add(fCommonHists);
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ2");
   fHistList->Add(fCommonHistsRes); 
-  
-  fHistQsumforChi = new TH1F("Flow_QsumforChi_LYZEP","Flow_QsumforChi_LYZEP",3,-1.,2.);
+  }
+    
+  fHistQsumforChi = new TH1F("Flow_QsumforChi_LYZ","Flow_QsumforChi_LYZ",3,-1.,2.);
   fHistQsumforChi->SetXTitle("Qsum.X , Qsum.Y, Q2sum");
   fHistQsumforChi->SetYTitle("value");
   fHistList->Add(fHistQsumforChi);
