@@ -81,10 +81,10 @@ TObject *CreatePRFWidthObject()
 {
 
   AliTRDCalPad *calPad = new AliTRDCalPad("PRFWidth","PRFWidth");
-  for (Int_t plane = 0; plane < AliTRDgeometry::kNplan; ++plane) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNlayer; ++iLayer) {
 
     Float_t value = 0.0;
-    switch (plane) {
+    switch (iLayer) {
       case 0: 
         value = 0.515; 
         break;
@@ -108,11 +108,11 @@ TObject *CreatePRFWidthObject()
         return 0;
     }
 
-    for (Int_t chamber = 0; chamber < AliTRDgeometry::kNcham; ++chamber) {
-      for (Int_t sector = 0; sector < AliTRDgeometry::kNsect; ++sector) {
-        AliTRDCalROC *calROC = calPad->GetCalROC(plane,chamber,sector);
-        for (Int_t channel = 0; channel < calROC->GetNchannels(); ++channel) {
-          calROC->SetValue(channel, value);
+    for (Int_t iStack = 0; iStack < AliTRDgeometry::kNstack; ++iStack) {
+      for (Int_t iSector = 0; iSector < AliTRDgeometry::kNsector; ++iSector) {
+        AliTRDCalROC *calROC = calPad->GetCalROC(iLayer,iStack,iSector);
+        for (Int_t iChannel = 0; iChannel < calROC->GetNchannels(); ++iChannel) {
+          calROC->SetValue(iChannel, value);
 	}
       }
     }
