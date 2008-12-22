@@ -39,21 +39,21 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 //Flow analysis methods can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kTRUE;
-Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
+Bool_t GFC   = kFALSE;
+Bool_t QC    = kFALSE;
+Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kFALSE;
 
 
 //Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
-const TString type = "MC";
+const TString type = "ESD";
 
 //Bolean to fill/not fill the QA histograms
-Bool_t QA = kFALSE;    
+Bool_t QA = kTRUE;    
 
 //SETTING THE CUTS
 
@@ -84,19 +84,8 @@ const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
 
-//void runAliAnalysisTaskFlow(Int_t nRuns = 44, const Char_t* dataDir="/data/alice2/ante/ab2", Int_t offset = 0) 
-void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
-//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
-
-
-//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice2/LHyquid3_rot", Int_t offset = 0) 
-
-//void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/ante/AOD", Int_t offset = 0) 
-  //void runAliAnalysisTaskFlowMore(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/TherminatorNov08", Int_t offset = 0) 
-  //void runAliAnalysisTaskFlowMore(Int_t nRuns = 1, const Char_t* dataDir="/data/alice1/kolk/AOD", Int_t offset = 0)
-  //void runAliAnalysisTaskFlowMore(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/testCrashIfNoKine", Int_t offset = 0)
-  //void runAliAnalysisTaskFlowMore(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/testCrashIfMissingKine", Int_t offset = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -453,7 +442,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     // read the input file from the first run 
     TString inputFileNameLYZ2 = "outputLYZ1analysis" ;
     inputFileNameLYZ2 += type;
-    inputFileNameLYZ2 += "_firstrun.root";
+    inputFileNameLYZ2 += ".root";
     cout<<"The input file is "<<inputFileNameLYZ2.Data()<<endl;
     TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
     if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
@@ -469,7 +458,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     // read the input file from the second LYZ run
     TString inputFileNameLYZEP = "outputLYZ2analysis" ;
     inputFileNameLYZEP += type;
-    inputFileNameLYZEP += "_secondrun.root";
+    inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
@@ -626,7 +615,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   if(LYZ1) {
     TString outputLYZ1 = "outputLYZ1analysis";
     outputLYZ1+= type;
-    outputLYZ1+= "_firstrun.root";
+    outputLYZ1+= ".root";
     AliAnalysisDataContainer *coutputLYZ1 = 
       mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
   }
@@ -634,7 +623,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   if(LYZ2) {
     TString outputLYZ2 = "outputLYZ2analysis";
     outputLYZ2+= type;
-    outputLYZ2+= "_secondrun.root";
+    outputLYZ2+= ".root";
     AliAnalysisDataContainer *coutputLYZ2 = 
       mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
   }

@@ -43,6 +43,7 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t    Init();                               //defines variables and histograms
    Bool_t    Make(AliFlowEventSimple* anEvent);    //calculates variables and fills histograms
    Bool_t    Finish();                             //saves histograms
+   void      WriteHistograms(TString*);            //writes histograms
    
    Double_t  GetQtheta(AliFlowVector aQ, Double_t aTheta);
 

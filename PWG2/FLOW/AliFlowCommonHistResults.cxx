@@ -68,21 +68,21 @@ ClassImp(AliFlowCommonHistResults)
   name += anInput;
   fHistIntFlow = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
   fHistIntFlow ->SetXTitle("");
-  fHistIntFlow ->SetYTitle("Integrated Flow value (%)");
+  fHistIntFlow ->SetYTitle("V_{2}");
 
   //differential flow
   name = "Flow_Differential_Pt_";
   name += anInput;
   fHistDiffFlow = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
-  fHistDiffFlow ->SetXTitle("Pt");
-  fHistDiffFlow ->SetYTitle("v (%)");
+  fHistDiffFlow ->SetXTitle("P_{t}");
+  fHistDiffFlow ->SetYTitle("v_{2}");
   
   //Chi (needed for rebinning later on)
   name = "Flow_Chi_";
   name += anInput;
   fHistChi = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
   fHistChi ->SetXTitle("");
-  fHistChi ->SetYTitle("Chi");
+  fHistChi ->SetYTitle("#Chi");
 
   //list of histograms
   fHistList = new TList();

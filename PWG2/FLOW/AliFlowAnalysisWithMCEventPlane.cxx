@@ -72,6 +72,15 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    delete fQsum;
  }
  
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString* outputFileName)
+{
+ //store the final results in output .root file
+ TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+ fHistList->Write(); 
+ delete output;
+}
 
 //-----------------------------------------------------------------------
 void AliFlowAnalysisWithMCEventPlane::Init() {
@@ -138,7 +147,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
 	    Double_t dv2 = TMath::Cos(2*(dPhi-aRP));
 	    Double_t dPt = pTrack->Pt();
 	    //fill histogram
-	    fHistProFlow->Fill(dPt,100*dv2);  
+	    fHistProFlow->Fill(dPt,dv2);  
 	  }  
 	}//track selected
       }//loop over tracks
@@ -172,10 +181,10 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
       if (fHistPtDiff){
 	//integrated flow
 	Double_t dYield = fHistPtDiff->GetBinContent(b);
-	dV += dv2pro/100*dYield ;
+	dV += dv2pro*dYield ;
 	dSum += dYield;
 	//error on integrated flow
-	dErrV += dYield*dYield*(dErrdifcomb/100)*(dErrdifcomb/100);
+	dErrV += dYield*dYield*dErrdifcomb*dErrdifcomb;
       }
     } else { cout<<"fHistProFlow is NULL"<<endl; }
   }

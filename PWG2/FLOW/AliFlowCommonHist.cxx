@@ -177,54 +177,54 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   sName = "Control_Flow_PtInt_";
   sName +=anInput;
   fHistPtInt = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
-  fHistPtInt ->SetXTitle("Pt (GeV/c) for integrated flow");
+  fHistPtInt ->SetXTitle("P_{t} (GeV/c) for integrated flow");
   fHistPtInt ->SetYTitle("Counts");
 
   sName = "Control_Flow_PtDiff_";
   sName +=anInput;
   fHistPtDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   //binning has to be the same as for fHistProVPt! use to get Nprime!
-  fHistPtDiff ->SetXTitle("Pt (GeV/c) for differential flow");
+  fHistPtDiff ->SetXTitle("P_{t} (GeV/c) for differential flow");
   fHistPtDiff ->SetYTitle("Counts");
 
   //Phi
   sName = "Control_Flow_PhiInt_";
   sName +=anInput;
   fHistPhiInt = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
-  fHistPhiInt ->SetXTitle("Phi for integrated flow");
+  fHistPhiInt ->SetXTitle("#phi for integrated flow");
   fHistPhiInt ->SetYTitle("Counts");
 
   sName = "Control_Flow_PhiDiff_";
   sName +=anInput;
   fHistPhiDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
-  fHistPhiDiff ->SetXTitle("Phi for differential flow");
+  fHistPhiDiff ->SetXTitle("#phi for differential flow");
   fHistPhiDiff ->SetYTitle("Counts");
 
   //Eta
   sName = "Control_Flow_EtaInt_";
   sName +=anInput;
   fHistEtaInt = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
-  fHistEtaInt ->SetXTitle("Eta for integrated flow");
+  fHistEtaInt ->SetXTitle("#eta for integrated flow");
   fHistEtaInt ->SetYTitle("Counts");
 
   sName = "Control_Flow_EtaDiff_";
   sName +=anInput;
   fHistEtaDiff = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
-  fHistEtaDiff ->SetXTitle("Eta for differential flow");
+  fHistEtaDiff ->SetXTitle("#eta for differential flow");
   fHistEtaDiff ->SetYTitle("Counts");
 
   //Mean Pt per pt bin 
   sName = "Control_FlowPro_MeanPtperBin_";
   sName +=anInput;
   fHistProMeanPtperBin = new TProfile(sName.Data(), sName.Data(),iNbinsPt,dPtMin,dPtMax);
-  fHistProMeanPtperBin ->SetXTitle("Pt");
-  fHistProMeanPtperBin ->SetYTitle("<Pt>");
+  fHistProMeanPtperBin ->SetXTitle("P_{t} (GeV/c) ");
+  fHistProMeanPtperBin ->SetYTitle("<P_{t}> (GeV/c) ");
 
   //Q vector
   sName = "Control_Flow_Q_";
   sName +=anInput;
   fHistQ = new TH1F(sName.Data(), sName.Data(),iNbinsQ, dQMin, dQMax);
-  fHistQ ->SetXTitle("Qvector/Mult");
+  fHistQ ->SetXTitle("Q_{vector}/Mult");
   fHistQ ->SetYTitle("Counts");  
 
   //list of histograms if added here also add in copy constructor
