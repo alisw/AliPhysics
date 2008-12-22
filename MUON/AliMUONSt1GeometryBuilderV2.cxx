@@ -2105,7 +2105,6 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
       }// end of special motif case
     }
   }
-/// \endcond
 } 
 
 //______________________________________________________________________________
