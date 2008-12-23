@@ -58,7 +58,7 @@
 // we suppose the chamber is well calibrated for t_{0} and aligned in
 // radial direction. 
 //
-// Clusters can be radially shifted due to two causes:
+// Clusters can be radially shifted due to three causes:
 //   - globally shifted - due to residual misalignment/miscalibration(t0)
 //   - locally shifted - due to different local drift velocity from the mean
 //   - randomly shifted - due to neighboring (radial direction) clusters 
@@ -82,6 +82,13 @@
 // END_LATEX
 //
 //
+// Clusters can also be r-phi shifted due to:
+//   - wrong PRF or wrong cuts at digits level
+//The following correction is applied :
+// BEGIN_LATEX
+// <#Delta y> = a + b * sin(c*y_{pw})
+// END_LATEX
+
 // The Models
 //
 //   Parameterization against total charge
@@ -426,7 +433,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
     g->SetLineColor(kGreen); g->SetMarkerColor(kGreen);
     g->SetMarkerStyle(7); 
 
-    fResults->AddAt(arr = new TObjArray(2), kCenter);
+    fResults->AddAt(arr = new TObjArray(3), kCenter);
     arr->SetOwner();
     arr->AddAt(h2 = new TH2F("hYM", "", 
       AliTRDgeometry::kNlayer, -.5, AliTRDgeometry::kNlayer-.5, 51, -.51, .51), 0);
@@ -435,6 +442,8 @@ Bool_t AliTRDclusterResolution::PostProcess()
     h2->SetZTitle("#mu_{x} [mm]");
     arr->AddAt(h2 = (TH2F*)h2->Clone("hYS"), 1);
     h2->SetZTitle("#sigma_{x} [mm]");
+    arr->AddAt(h2 = (TH2F*)h2->Clone("hYP"), 2);
+    h2->SetZTitle("entries");
 
     fResults->AddAt(arr = new TObjArray(2), kSigm);
     arr->SetOwner();
@@ -468,16 +477,16 @@ Bool_t AliTRDclusterResolution::PostProcess()
   printf("ExB[%e] ExB2[%e]\n", fExB, exb2);
 
   // process resolution dependency on charge
-  // ProcessCharge();
+  ProcessCharge();
   
   // process resolution dependency on y displacement
-  // ProcessCenterPad();
+  ProcessCenterPad();
 
   // process resolution dependency on drift legth and drift cell width
   ProcessSigma();
 
   // process systematic shift on drift legth and drift cell width
-  //ProcessMean();
+  ProcessMean();
 
   return kTRUE;
 }
@@ -586,23 +595,48 @@ void AliTRDclusterResolution::ProcessCenterPad()
   TObjArray *arrg = (TObjArray*)fResults->At(kCenter);
   TH2F *hym = (TH2F*)arrg->At(0);
   TH2F *hys = (TH2F*)arrg->At(1);
+  TH2F *hyp = (TH2F*)arrg->At(2);
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(h2 = (TH2I*)arr->At(ily))) continue;
     ax = h2->GetXaxis();
     for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
       Float_t yd = ax->GetBinCenter(ix);
       h1 = h2->ProjectionY("py", ix, ix);
-      if(h1->GetEntries() < 50) continue;
-      Adjust(&f, h1);
+      Int_t entries = (Int_t)h1->GetEntries();
+      if(entries < 50) continue;
+      //Adjust(&f, h1);
       h1->Fit(&f, "Q");
   
       // Fill sy = f(y_w)
+      hyp->Fill(ily, yd, entries);
       hym->Fill(ily, yd, f.GetParameter(1));
-      //gym->SetPointError(ip, 0., 10.*f.GetParError(1));
+      //hym->SetPointError(ip, 0., f.GetParError(1));
       hys->Fill(ily, yd, f.GetParameter(2));
-      //gys->SetPointError(ip, 0., 2.e2*f.GetParameter(2)*f.GetParError(2));
+      //hys->SetPointError(ip, 0., f.GetParError(2));
     } 
   }
+
+  // postprocess spectra
+  TCanvas *c = new TCanvas;
+  TF1 fgaus("fgaus", "gaus", -.5, .5);
+  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    h1 = hys->ProjectionY("pyy", ily+1, ily+1);
+
+    c->cd(); 
+    h1->Fit(&fgaus, "Q");
+    c->Modified(); c->Update(); gSystem->Sleep(500);
+    printf("  {%5.3e, %5.3e, %5.3e, ", fgaus.GetParameter(0), fgaus.GetParameter(1), fgaus.GetParameter(2));
+
+    Float_t sy = 0.;
+    h1 = hyp->ProjectionY("pyy", ily+1, ily+1);
+    for(Int_t ix=1; ix<=h1->GetNbinsX(); ix++){
+      sy += fgaus.Eval(h1->GetBinCenter(ix))*h1->GetBinContent(ix);
+//       printf("ix[%d] gaus[%e] p[%d]\n", ix,  fgaus.Eval(h1->GetBinCenter(ix)), (Int_t)h1->GetBinContent(ix));
+    }
+    sy /= h1->GetEntries();
+    printf("%5.3e},\n", sy);
+  }
+
 }
 
 //_______________________________________________________
