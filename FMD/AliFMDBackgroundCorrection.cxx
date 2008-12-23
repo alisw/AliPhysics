@@ -94,7 +94,9 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbi
 							      Int_t endRunNo, 
 							      const Char_t* filename, 
 							      Bool_t simulate,
-							      Int_t nEvents) {
+							      Int_t nEvents,
+							      Bool_t inFile,
+							      const Char_t* infilename) {
   
   //TGrid::Connect("alien:",0,0,"t");
   if(simulate)
@@ -126,15 +128,67 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbi
   AliInfo("Processing hits and primaries ");
   
   AliFMDInputBG input;
-  input.SetVtxCutZ(zvtxcut);
-  input.SetNvtxBins(nvtxbins);
-  input.SetNbinsEta(nBinsEta);
-  input.Run();
+  
+  if(!inFile) {
+  
+    input.SetVtxCutZ(zvtxcut);
+    input.SetNvtxBins(nvtxbins);
+    input.SetNbinsEta(nBinsEta);
+    input.Run();
+  }
   
   AliInfo(Form("Found %d primaries and %d hits.", input.GetNprim(),input.GetNhits()));
-  
-  TObjArray* hitArray = input.GetHits();
-  TObjArray* primaryArray = input.GetPrimaries();
+  TObjArray* hitArray ;
+  TObjArray* primaryArray;
+  if(inFile) {
+    TFile* infile = TFile::Open(infilename);
+    hitArray     = new TObjArray();
+    primaryArray = new TObjArray();
+    
+    for(Int_t det =1; det<=3;det++)
+      {
+	TObjArray* detArrayHits = new TObjArray();
+	detArrayHits->SetName(Form("FMD%d",det));
+	hitArray->AddAtAndExpand(detArrayHits,det);
+	Int_t nRings = (det==1 ? 1 : 2);
+	for(Int_t ring = 0;ring<nRings;ring++)
+	  {
+	    
+	    Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	    TObjArray* vtxArrayHits = new TObjArray();
+	    vtxArrayHits->SetName(Form("FMD%d%c",det,ringChar));
+	    detArrayHits->AddAtAndExpand(vtxArrayHits,ring);
+	    for(Int_t v=0; v<nvtxbins;v++)
+	      {
+	      
+		TH2F* hHits          = (TH2F*)infile->Get(Form("hHits_FMD%d%c_vtx%d",det,ringChar,v));
+		
+		
+	      vtxArrayHits->AddAtAndExpand(hHits,v);
+	      	      
+	    } 
+	}
+      
+    }
+    
+    for(Int_t iring = 0; iring<2;iring++) {
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      TObjArray* ringArray = new TObjArray();
+      ringArray->SetName(Form("FMD_%c",ringChar));
+      primaryArray->AddAtAndExpand(ringArray,iring);
+      for(Int_t v=0; v<nvtxbins;v++) {
+	
+	TH2F* hPrimary       = (TH2F*)infile->Get(Form("hPrimary_FMD_%c_vtx%d",ringChar,v));
+	ringArray->AddAtAndExpand(hPrimary,v);
+      }
+    }
+    
+    
+  }
+  else {
+    hitArray     = input.GetHits();
+    primaryArray = input.GetPrimaries();
+  }
   fCorrectionArray.SetName("FMD_bg_correction");
   fCorrectionArray.SetOwner();
    
@@ -145,7 +199,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbi
   hitList->SetName("hits");
   TList* corrList    = new TList();
   corrList->SetName("corrections");
-
+  
   AliFMDAnaCalibBackgroundCorrection* background = new AliFMDAnaCalibBackgroundCorrection();
   
   for(Int_t det= 1; det <=3; det++) {
@@ -182,8 +236,13 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbi
   }
   
   TAxis refAxis(nvtxbins,-1*zvtxcut,zvtxcut);
-  
-  background->SetRefAxis(&refAxis);
+  if(inFile) {
+    TFile* infile = TFile::Open(infilename);
+    TAxis* refaxis = (TAxis*)infile->Get("vertexbins");
+    background->SetRefAxis(refaxis);
+      
+  }
+  else background->SetRefAxis(&refAxis);
   
   TFile*  fout = new TFile(filename,"RECREATE");
   refAxis.Write("vertexbins");
@@ -264,7 +323,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit( AliFMDHit* h, TPar
       TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
       TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
       
-      Float_t phi   = TMath::ATan2(h->Py(),h->Px());
+      Float_t phi   = TMath::ATan2(h->Y(),h->X());
       if(phi<0)
 	phi = phi+2*TMath::Pi();
       Float_t theta = TMath::ATan2(TMath::Sqrt(TMath::Power(h->X(),2)+TMath::Power(h->Y(),2)),h->Z()+vertex.At(2));
@@ -362,9 +421,9 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event ) {
   for(Int_t j=0;j<nTracks;j++)
 	{
 	  TParticle* p  = partStack->Particle(j);
-	  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
-	  TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
-	  Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
+	  //TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+	  //TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
+	  //Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
 	  Float_t phi = TMath::ATan2(p->Py(),p->Px());
 	  
 	  if(phi<0)
@@ -372,19 +431,20 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event ) {
 	  if(p->Theta() == 0) continue;
 	      Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*p->Theta()));
 	  
-	  Bool_t primary = (charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
-	  if(primary) {
-	    fPrim++;
-	    TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
-	    TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
-	    
-	    TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
-	    TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
-	    hPrimaryInner->Fill(eta,phi);
-	    hPrimaryOuter->Fill(eta,phi);
-	  }
+	      Bool_t primary = partStack->IsPhysicalPrimary(j);
+	      //(charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
+	      if(primary) {
+		fPrim++;
+		TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
+		TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
+		
+		TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
+		TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
+		hPrimaryInner->Fill(eta,phi);
+		hPrimaryOuter->Fill(eta,phi);
+	      }
 	}
-
+  
   return retVal;
 }
 //_____________________________________________________________________

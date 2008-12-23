@@ -33,7 +33,9 @@ public:
 				    Int_t endRunNo=999999999, 
 				    const Char_t* filename="background.root", 
 				    Bool_t simulate = kFALSE, 
-				    Int_t nEvents=10);
+				    Int_t nEvents=10,
+				    Bool_t inFile = kFALSE,
+				    const Char_t* infilename="");
   
   class AliFMDInputBG : public AliFMDInput {
     
