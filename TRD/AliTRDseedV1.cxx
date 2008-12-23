@@ -692,22 +692,42 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 -0.050021, -0.016758, 0.003570, 0.018618, 0.026380, 0.033786, 0.034889, 0.035264,
 0.035284, 0.036028, 0.035250, 0.034368, 0.032823, 0.031937, 0.032064, 0.022542,
 -0.025167, -0.120645, 0.};
+  // PRF correction TODO to be replaced by the gaussian 
+  // approximation with full error parametrization and // moved to the clusterizer
+  const Float_t cy[AliTRDgeometry::kNlayer][3] = {
+    {0.000413, -0.008896, 6.858256},
+    {-0.000324, -0.009979, 6.649032},
+    {0.000886, -0.011371, 6.952959},
+    {-0.001558, -0.012692, 6.790299},
+    {0.002195, -0.014308, 6.855086},
+    {-0.001229, -0.015282, 6.612536}
+  }; 
+
 
   // cluster error parametrization parameters 
-  // 1. total charge
+  // 1. sy total charge
   const Float_t sq0inv = 0.019962; // [1/q0]
   const Float_t sqb    = 1.0281564;    //[cm]
-  // 2. sy parallel to the track
+  // 2. sy for the PRF
+  const Float_t scy[AliTRDgeometry::kNlayer][4] = {
+    {2.813e-02, 1.879e-03, 4.331e-01, 2.267e-02},
+    {2.937e-02, 7.207e-04, 4.184e-01, 2.337e-02},
+    {3.076e-02, 1.890e-03, 4.050e-01, 2.399e-02},
+    {3.240e-02, -1.409e-05, 3.994e-01, 2.508e-02},
+    {3.417e-02, -5.888e-04, 3.924e-01, 2.621e-02},
+    {3.493e-02, 2.044e-03, 3.675e-01, 2.585e-02},
+  };
+  // 3. sy parallel to the track
   const Float_t sy0 = 2.60967e-01;  // [mm] !!
   const Float_t sya =-7.68941e+00; //
   const Float_t syb =-3.41160e-01; //
-  // 3. sx parallel to the track
+  // 4. sx parallel to the track
   const Float_t sxgc = 5.49018e-01;
   const Float_t sxgm = 7.82999e-01;
   const Float_t sxgs = 2.74451e-01;
   const Float_t sxe0 = 2.53596e-01;
   const Float_t sxe1 =-2.40078e-02;
-  // 4. sx perpendicular to the track
+  // 5. sx perpendicular to the track
 //   const Float_t sxd0 = 0.190676;
 //   const Float_t sxd1 =-3.9269;
 //   const Float_t sxd2 =14.7851;
@@ -732,7 +752,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   // TODO move as data member of the tracklet
   // TODO calculate for the exact position of the tracklet (det, col, row)
   Double_t exb = -.16;
-
+  
+  Int_t ily = AliTRDgeometry::GetLayer(fDet);
   fN = 0;
   AliTRDcluster *c=0x0, **jc = &fClusters[0];
   for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
@@ -748,8 +769,13 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
+
+    // correct cluster position for PRF and v drift
+    c->SetX(c->GetX() - cx[c->GetLocalTimeBin()]);
+    c->SetY(c->GetY() + cy[ily][0] + cy[ily][1] * TMath::Sin(cy[ily][2] * c->GetCenter()));
+
     zRow[fN] = c->GetPadRow();
-    xc[fN]   = fX0 - c->GetX() + cx[c->GetLocalTimeBin()];
+    xc[fN]   = fX0 - c->GetX();
     yc[fN]   = c->GetY();
     zc[fN]   = c->GetZ();
 
@@ -760,18 +786,25 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     // tilt correction
     if(tilt) yc[fN] -= fTilt*(zc[fN] - zt); 
 
-    // elaborate cluster error
+    // ELABORATE CLUSTER ERROR
+    // TODO to be moved to AliTRDcluster
     q = TMath::Abs(c->GetQ());
     Double_t tgg = (dydx-exb)/(1.+dydx*exb);
+    // basic y error (|| to track).
+    sy[fN]  = sy0 + TMath::Exp(sya*(xc[fN]+syb));
+    // y error due to total charge
+    sy[fN] += sqb*(1./q - sq0inv);
+    // y error due to PRF
+    sy[fN] += scy[ily][0]*TMath::Gaus(c->GetCenter(), scy[ily][1], scy[ily][2]) - scy[ily][3];
+    sy[fN] *= sy[fN];
+
+    // ADD ERROR ON x
     // error of drift length parallel to the track
     Double_t sx = sxgc*TMath::Gaus(xc[fN], sxgm, sxgs) + sxe0*TMath::Exp(sxe1*xc[fN]); // [cm]
     // error of drift length perpendicular to the track
     //sx += sxd0 + sxd1*d + sxd2*d*d;
     // global radial error due to misalignment/miscalibration
     Double_t sx0  = 0.;  // [cm]
-    sy[fN]  = sy0 + TMath::Exp(sya*(xc[fN]+syb)) + sqb*(1./q - sq0inv);
-    sy[fN] *= sy[fN];
-    // add error on x
     sy[fN] += tgg*tgg*(sx*sx+sx0*sx0);
     // add error from ExB 
     sy[fN] += exb*exb*sx*sx;
