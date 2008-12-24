@@ -11,6 +11,7 @@
 
 #include "../../CORRFW/AliCFManager.h"
 //class AliCFManager;
+#include "AliFlowTrackSimpleCuts.h"
 
 class TTree;
 class AliMCEvent;
@@ -30,7 +31,7 @@ class AliFlowEventSimpleMaker {
   virtual  ~AliFlowEventSimpleMaker();   //destructor
   
   //TTree
-  AliFlowEventSimple* FillTracks(TTree* anInput);   //use own cuts
+  AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts);   //use own cut class
   //AliMCEvent
   AliFlowEventSimple* FillTracks(AliMCEvent* anInput);   //use own cuts
   AliFlowEventSimple* FillTracks(AliMCEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager ); //use CF(2x)
