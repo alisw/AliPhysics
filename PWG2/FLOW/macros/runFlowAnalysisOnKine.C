@@ -5,31 +5,57 @@
 //RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kTRUE;
-Bool_t LYZ2  = kFALSE;
-Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kTRUE;
-Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kFALSE;
+Bool_t LYZ1  = kFALSE;
+Bool_t LYZ2  = kTRUE;  //does not work yet 24/12/08
+Bool_t LYZEP = kFALSE; //does not work yet 24/12/08
+Bool_t GFC   = kFALSE;
+Bool_t QC    = kFALSE;
+Bool_t FQD   = kFALSE;
+Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 
 Int_t offset = 0;
 
-int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char* 
-			  // dir="/data/alice1/kolk/KineOnly3/")
-			  dir="/Users/snelling/alice_data/KineOnly3/")
+//CUT SETTINGS
+//integrated selection
+Double_t ptMaxInt  = 10.;
+Double_t ptMinInt  = 0.;
+Double_t etaMaxInt = 1.;
+Double_t etaMinInt = -1.;
+Double_t phiMaxInt = 7.5;
+Double_t phiMinInt = 0.;
+Int_t PIDInt       = 211;
+
+//differential selection
+Double_t ptMaxDiff  = 10.;
+Double_t ptMinDiff  = 0.;
+Double_t etaMaxDiff = 1.;
+Double_t etaMinDiff = -1.;
+Double_t phiMaxDiff = 7.5;
+Double_t phiMinDiff = 0.;
+Int_t PIDDiff       = 211;
+
+int runFlowAnalysisOnKine(Int_t aRuns = 2, const char* 
+			  dir="/data/alice1/kolk/KineOnly3/")
+			  
 
 {
   TStopwatch timer;
   timer.Start();
   
+  if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
+  
+  if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+  
+  if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+
+
   cout<<endl;
   cout<<" ---- BEGIN ANALYSIS ---- "<<endl;
   cout<<endl;
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->AddIncludePath("-I$ROOTSYS/include");
-  
+    
   /* 
      gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
      gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
@@ -72,6 +98,26 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
   cout<<endl; 
 
   //------------------------------------------------------------------------
+  //cuts
+  AliFlowTrackSimpleCuts* cutsInt = new AliFlowTrackSimpleCuts();
+  cutsInt->SetPtMax(ptMaxInt);
+  cutsInt->SetPtMin(ptMinInt);
+  cutsInt->SetEtaMax(etaMaxInt);
+  cutsInt->SetEtaMin(etaMinInt);
+  cutsInt->SetPhiMax(phiMaxInt);
+  cutsInt->SetPhiMin(phiMinInt);
+  cutsInt->SetPID(PIDInt);
+
+  AliFlowTrackSimpleCuts* cutsDiff = new AliFlowTrackSimpleCuts();
+  cutsDiff->SetPtMax(ptMaxDiff);
+  cutsDiff->SetPtMin(ptMinDiff);
+  cutsDiff->SetEtaMax(etaMaxDiff);
+  cutsDiff->SetEtaMin(etaMinDiff);
+  cutsDiff->SetPhiMax(phiMaxDiff);
+  cutsDiff->SetPhiMin(phiMinDiff);
+  cutsDiff->SetPID(PIDDiff);
+
+  //------------------------------------------------------------------------
   //flow event
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker(); 
   
@@ -79,8 +125,17 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
   AliFlowAnalysisWithCumulants    *gfc  = NULL;
   AliFittingQDistribution         *fqd  = NULL;
   AliFlowAnalysisWithLeeYangZeros *lyz1 = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz2 = NULL;
+  AliFlowAnalysisWithMCEventPlane *mcep = NULL;
   
   //flow methods:
+  //MCEP = monte carlo event plane
+  AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
+  if (MCEP)
+    {
+      mcep->Init();
+    }
+
   //QC = Q-cumulants  
   if(QC)
     { 
@@ -89,9 +144,9 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
     }
   
   //GFC = Generating Function Cumulants 
-  AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
   if(GFC)
     {
+      AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
       gfc->CreateOutputObjects();
     }
   
@@ -106,9 +161,33 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
   AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
   if(LYZ1)
     {
+      lyz1->SetFirstRun(kTRUE);
+      lyz1->SetUseSum(kTRUE);
       lyz1->Init();
     }
-  
+
+  //LYZ2 = Lee-Yang Zeroes second run
+  AliFlowAnalysisWithLeeYangZeros* lyz2 = new AliFlowAnalysisWithLeeYangZeros();
+  if(LYZ2)
+    {
+      // read the input file from the first run 
+      TString inputFileNameLYZ2 = "outputLYZ1analysis.root" ;
+      TFile* inputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
+      if(!inputFileLYZ2 || inputFileLYZ2->IsZombie()) { 
+	cerr << " ERROR: NO First Run file... " << endl ; }
+      else { 
+	TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
+	if (!inputListLYZ2) {cout<<"list is NULL pointer!"<<endl;
+	}
+	else {
+	  cout<<"LYZ2 input file/list read..."<<endl;
+	  lyz2->SetFirstRunList(inputListLYZ2);
+	  lyz2->SetFirstRun(kFALSE);
+	  lyz2->SetUseSum(kTRUE);
+	  lyz2->Init();
+	}
+      }
+    }
   
   //------------------------------------------------------------------------
   
@@ -210,10 +289,16 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
 	      //-----------------------------------------------------------
 	      //fill and save the flow event
 	      
-	      AliFlowEventSimple* fEvent = fEventMaker->FillTracks(kTree);
+	      AliFlowEventSimple* fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff);
 	      
-	      //pass the flow event to flow methods for analysis  
-	      //QC
+	      //pass the flow event to flow methods for analysis 
+	      //MCEP
+	      if (MCEP)
+		{
+		  //mcep->Make(fEvent,fEP);  //fix fEP
+		  cout<<"  --> MCEP analysis..."<<endl;
+		}
+ 	      //QC
 	      if(QC)
 		{  
 		  qc->Make(fEvent);
@@ -237,6 +322,13 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
 		  lyz1->Make(fEvent);
 		  cout<<"  --> LYZ1 analysis..."<<endl;
 		}
+	      //LYZ2
+	      if(LYZ2)
+		{
+		  lyz2->Make(fEvent);
+		  cout<<"  --> LYZ2 analysis..."<<endl;
+		}
+
 	      //-----------------------------------------------------------
 	      
 	      fCount++;
@@ -249,6 +341,14 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
   
   //--------------------------------------------------------------
   //calculating and storing the final results of flow analysis
+  //MCEP
+  if (MCEP)
+    {
+      mcep->Finish();
+      TString *outputFileNameMCEP = new TString("outputMCEPanalysis.root");
+      //mcep->WriteHistograms(outputFileNameMCEP); //add this method
+      delete outputFileNameMCEP;
+    }
   //QC
   if(QC)
     {
@@ -277,10 +377,20 @@ int runFlowAnalysisOnKine(Int_t aRuns = 1000, const char*
   if(LYZ1)
     {
       lyz1->Finish();
-      //TString *outputFileNameFQD = new TString("outputFQDanalysis.root");
-      //fqd->WriteHistograms(outputFileNameFQD);
-      //delete outputFileNameFQD;
+      TString *outputFileNameLYZ1 = new TString("outputLYZ1analysis.root");
+      lyz1->WriteHistograms(outputFileNameLYZ1);
+      delete outputFileNameLYZ1;
     }
+  //LYZ2
+  if(LYZ2)
+    {
+      lyz2->Finish();
+      TString *outputFileNameLYZ2 = new TString("outputLYZ2analysis.root");
+      lyz2->WriteHistograms(outputFileNameLYZ2);
+      delete outputFileNameLYZ2;
+    }
+
+
   //--------------------------------------------------------------
   
   cout << endl;
