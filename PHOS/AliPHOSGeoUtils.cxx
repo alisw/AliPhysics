@@ -535,10 +535,8 @@ Bool_t AliPHOSGeoUtils::ImpactOnEmc(const Double_t * vtx, const TVector3 &p,
  
     char path[100] ;
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",imod) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
-      return kFALSE ;
+    if (!gGeoManager->cd(path)){ //Module does not present
+      continue ;
     }
     TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
     Double_t posG[3]={0.,0.,0.} ;
