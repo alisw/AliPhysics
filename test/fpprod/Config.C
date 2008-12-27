@@ -21,7 +21,7 @@
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "TDPMjet/AliGenDPMjet.h"
-#include "STEER/AliMagWrapCheb.h"
+#include "STEER/AliMagFCheb.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -219,13 +219,13 @@ void Config()
 
   // FIELD
   //
-  AliMagWrapCheb* field = 0x0;
+  AliMagFCheb* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagWrapCheb("Maps","Maps", 2, 0., 10., AliMagWrapCheb::k2kG);
+    field = new AliMagFCheb("Maps","Maps", 2, 0., 10., AliMagFCheb::k2kG);
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG);
+    field = new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
     

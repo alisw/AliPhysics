@@ -31,7 +31,7 @@
 #include "EVGEN/AliGenGeVSim.h"
 #include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagWrapCheb.h"
+#include "STEER/AliMagFCheb.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -274,7 +274,7 @@ void Config()
     
     
 // Field
-    AliMagWrapCheb* field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., smag);
+    AliMagFCheb* field = new AliMagFCheb("Maps","Maps", 2, 1., 10., smag);
     rl->CdGAFile();
     gAlice->SetField(field);    
 //

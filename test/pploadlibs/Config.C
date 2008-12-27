@@ -23,7 +23,7 @@
 #include "STEER/AliConfig.h"
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagWrapCheb.h"
+#include "STEER/AliMagFCheb.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -342,7 +342,7 @@ void Config()
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
     
-  AliMagWrapCheb* field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., mag);
+  AliMagFCheb* field = new AliMagFCheb("Maps","Maps", 2, 1., 10., mag);
   rl->CdGAFile();
   gAlice->SetField(field);    
 
