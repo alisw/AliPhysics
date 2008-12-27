@@ -61,19 +61,19 @@ AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) :
 }   
 
 //______________________________________________________________________________
-Double_t 
+Double_t *
 AliMUONQAChecker::Check(AliQA::ALITASK_t /*index*/)
 {
   /// Check data
   
   AliError(Form("This method is not implemented. Should it be ? fDataSubDir = %p (%s)",
                 fDataSubDir, ( fDataSubDir ? fDataSubDir->GetPath() : "")));
-  return 0.0;
+  return NULL;
 }
 
 //______________________________________________________________________________
-Double_t 
-AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
+Double_t *
+AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
 {
   /// Check objects in list
   
@@ -93,7 +93,7 @@ AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   }
   
   AliWarning(Form("Checker for task %d not implement for the moment",index));
-  return 0.0;
+  return NULL;
 }
 
 //______________________________________________________________________________
@@ -110,19 +110,24 @@ AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname) const
 }
 
 //______________________________________________________________________________
-Double_t 
-AliMUONQAChecker::CheckRecPoints(TObjArray * list)
+Double_t *
+AliMUONQAChecker::CheckRecPoints(TObjArray ** list)
 {
   /// Check rec points
   /// Very binary check for the moment. 
   
-  TH1* h = GetHisto(list,"hTrackerNumberOfClustersPerDE");
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 1.0 ; 
   
-  if ( !h ) return 0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    TH1* h = GetHisto(list[specie],"hTrackerNumberOfClustersPerDE");
   
-  if ( h->GetMean() == 0.0 ) return MarkHisto(*h,0.0);
+    if ( !h ) rv[specie] =  0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
   
-  return 1.0;
+    else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,0.0);
+  }
+  return rv;
 }
 
 //______________________________________________________________________________
@@ -140,115 +145,142 @@ AliMUONQAChecker::MarkHisto(TH1& histo, Double_t value) const
 }
 
 //______________________________________________________________________________
-Double_t 
-AliMUONQAChecker::CheckESD(TObjArray * list)
+Double_t *
+AliMUONQAChecker::CheckESD(TObjArray ** list)
 {
   /// Check ESD
   
-  TH1* h = GetHisto(list,"hESDnTracks");
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 1.0 ; 
   
-  if (!h) return 0.75;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    
+    TH1* h = GetHisto(list[specie],"hESDnTracks");
   
-  if ( h->GetMean() == 0.0 ) return MarkHisto(*h,0.0); // no track -> fatal
+    if (!h) rv[specie] = 0.75;
   
-  h = GetHisto(list,"hESDMatchTrig");
+    else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,0.0); // no track -> fatal
   
-  if (!h) return 0.75;
+    h = GetHisto(list[specie],"hESDMatchTrig");
   
-  if (h->GetMean() == 0.0 ) return MarkHisto(*h,0.25); // no trigger matching -> error
+    if (!h) rv[specie] =  0.75;
   
-  return 1.0;
+    else if (h->GetMean() == 0.0 ) rv[specie] = MarkHisto(*h,0.25); // no trigger matching -> error
+  }
+  return rv;
 }
 
 //______________________________________________________________________________
-Double_t 
-AliMUONQAChecker::CheckRaws(TObjArray * list)
+Double_t *
+AliMUONQAChecker::CheckRaws(TObjArray ** list)
 {
   /// Check raws
 
-	TIter next(list);
-	TObject* object;
-	AliMUONVTrackerData* data(0x0);
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 1.0 ; 
+ 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    TIter next(list[specie]);
+    TObject* object;
+    AliMUONVTrackerData* data(0x0);
   
-	while ( (object=next()) && !data )
-	{
-		if (object->InheritsFrom("AliMUONVTrackerData"))
-		{
-			data = static_cast<AliMUONVTrackerData*>(object);
-		}
-	}
+    while ( (object=next()) && !data )
+      {
+        if (object->InheritsFrom("AliMUONVTrackerData"))
+          {
+            data = static_cast<AliMUONVTrackerData*>(object);
+          }
+      }
 
-  if ( !data ) 
-  {
-    AliError("Did not find TrackerData in the list !");
-    return 0.0;
-  }
+    if ( !data ) 
+      {
+        AliError("Did not find TrackerData in the list !");
+        return NULL;
+      }
   
-  AliMpManuIterator it;
-  Int_t detElemId;
-  Int_t manuId;
-  Int_t n50(0); // number of manus with occupancy above 0.5
-  Int_t n75(0); // number of manus with occupancy above 0.75
-  Int_t n(0); // number of manus with some occupancy
+    AliMpManuIterator it;
+    Int_t detElemId;
+    Int_t manuId;
+    Int_t n50(0); // number of manus with occupancy above 0.5
+    Int_t n75(0); // number of manus with occupancy above 0.75
+    Int_t n(0); // number of manus with some occupancy
   
-  while ( it.Next(detElemId,manuId) )
-  {
-    Float_t occ = data->Manu(detElemId,manuId,2);
-    if (occ > 0 ) ++n;
-    if (occ >= 0.5 ) ++n50;
-    if (occ >= 0.75 ) ++n75;    
-  }
+    while ( it.Next(detElemId,manuId) )
+      {
+        Float_t occ = data->Manu(detElemId,manuId,2);
+        if (occ > 0 ) ++n;
+        if (occ >= 0.5 ) ++n50;
+        if (occ >= 0.75 ) ++n75;    
+      }
 
-  AliInfo(Form("n %d n50 %d n75 %d",n,n50,n75));
+    AliInfo(Form("n %d n50 %d n75 %d",n,n50,n75));
   
-  if ( n == 0 ) 
-  {
-    AliError("Oups. Got zero occupancy in all manus ?!");
-    return 0.0;
-  }
+    if ( n == 0 ) 
+      {
+        AliError("Oups. Got zero occupancy in all manus ?!");
+        rv[specie] =  0.0;
+      }
 
-  if ( n75 ) 
-  {
-    AliError(Form("Got %d manus with occupancy above 0.75",n75));
-    return 0.1;
-  }
+    if ( n75 ) 
+      {
+        AliError(Form("Got %d manus with occupancy above 0.75",n75));
+        rv[specie] =  0.1;
+      }
     
-  if ( n50 ) 
-  {
-    AliWarning(Form("Got %d manus with occupancy above 0.5",n50));
-    return 0.9;
+    if ( n50 ) 
+      {
+        AliWarning(Form("Got %d manus with occupancy above 0.5",n50));
+        rv[specie] =  0.9;
+      }
   }
+  return rv;
+}
 
-	return 1.0;
+//______________________________________________________________________________
+void AliMUONQAChecker::Init(const AliQA::DETECTORINDEX_t det) 
+{
+  // intialises QA and QA checker settings
+  AliQA::Instance(det) ; 
+  Float_t * hiValue  = new Float_t[AliQA::kNBIT] ; 
+  Float_t * lowValue = new Float_t[AliQA::kNBIT] ;
+  lowValue[AliQA::kINFO]      = 0.999   ; 
+  hiValue[AliQA::kINFO]       = 1.0 ; 
+  hiValue[AliQA::kWARNING]    = 0.99 ; 
+  lowValue[AliQA::kWARNING]   = 0.5 ; 
+  lowValue[AliQA::kERROR]     = 0.0   ; 
+  hiValue[AliQA::kERROR]      = 0.5 ; 
+  lowValue[AliQA::kFATAL]     = -1.0   ; 
+  hiValue[AliQA::kFATAL]      = 0.0 ; 
+  SetHiLo(hiValue, lowValue) ; 
 }
 
 //______________________________________________________________________________
 void 
-AliMUONQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) const
+AliMUONQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t * value) const
 {
   /// sets the QA according the return value of the Check
 
   AliQA * qa = AliQA::Instance(index);
   
-  qa->UnSet(AliQA::kFATAL);
-  qa->UnSet(AliQA::kWARNING);
-  qa->UnSet(AliQA::kERROR);
-  qa->UnSet(AliQA::kINFO);
-  
-  if ( value == 1.0 ) 
-  {
-    qa->Set(AliQA::kINFO);
-  }
-  else if ( value == 0.0 )
-  {
-    qa->Set(AliQA::kFATAL);
-  }
-  else if ( value > 0.5 ) 
-  {
-    qa->Set(AliQA::kWARNING);
-  }
-  else
-  {
-    qa->Set(AliQA::kERROR);
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    qa->UnSet(AliQA::kFATAL, specie);
+    qa->UnSet(AliQA::kWARNING, specie);
+    qa->UnSet(AliQA::kERROR, specie);
+    qa->UnSet(AliQA::kINFO, specie);
+
+    if ( ! value ) { // No checker is implemented, set all QA to Fatal
+      qa->Set(AliQA::kFATAL, specie) ; 
+    } else {
+      if ( value[specie] >= fLowTestValue[AliQA::kFATAL] && value[specie] < fUpTestValue[AliQA::kFATAL] ) 
+        qa->Set(AliQA::kFATAL, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kERROR] && value[specie] <= fUpTestValue[AliQA::kERROR]  )
+        qa->Set(AliQA::kERROR, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kWARNING] && value[specie] <= fUpTestValue[AliQA::kWARNING]  )
+        qa->Set(AliQA::kWARNING, specie) ;
+      else if ( value[specie] > fLowTestValue[AliQA::kINFO] && value[specie] <= fUpTestValue[AliQA::kINFO] ) 
+        qa->Set(AliQA::kINFO, specie) ; 	
+    }
   }
 }

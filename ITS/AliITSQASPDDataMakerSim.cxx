@@ -104,7 +104,7 @@ void AliITSQASPDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASPDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SPD -
-  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
+  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSPDhDTask must be incremented by one unit every time a histogram is ADDED to the QA List
 
   Char_t name[50];
@@ -202,7 +202,7 @@ void AliITSQASPDDataMakerSim::MakeDigits(TTree *digits)
 void AliITSQASPDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SPD -
-  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
+  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitSDigits()  fGenOffset= %d \n",fGenOffset);
   //fSPDhSTask must be incremented by one unit every time a histogram is ADDED to the QA List
   
@@ -257,7 +257,7 @@ void AliITSQASPDDataMakerSim::MakeSDigits(TTree *sdigits)
 void AliITSQASPDDataMakerSim::InitHits()
 { 
   // Initialization for HITS data - SPD -
-  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
+  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList[AliRecoParam::kDefault])->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitHits()  fGenOffset= %d \n",fGenOffset);
   //fSPDhHTask must be incremented by one unit every time a histogram is ADDED to the QA List
   Char_t name[50];

@@ -925,7 +925,7 @@ Bool_t AliReconstruction::InitGRP() {
   }
 
   fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
-
+  printf("qqqqqqqqqqqqqqqqqqqqqqq %s %s %f %s %d\n", lhcState.Data(), beamType.Data(), beamEnergy, runType.Data(), activeDetectors);
   fRunInfo->Dump();
 
 
@@ -1404,14 +1404,12 @@ void AliReconstruction::SlaveBegin(TTree*)
     fQASteer->SetActiveDetectors(fQADetectors) ; 
     for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
       fQASteer->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
-      if (fQAWriteExpert[det])
-        fQASteer->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+      fQASteer->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
     }
-    
     if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
       fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
     fQASteer->SetTasks(fQATasks) ; 
-    fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun(), fRecoParam) ; 
+    fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
   }
   
   if (fRunGlobalQA) {
@@ -1421,7 +1419,7 @@ void AliReconstruction::SlaveBegin(TTree*)
     AliInfo(Form("Initializing the global QA data maker"));
     if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
       qadm->StartOfCycle(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
-      TObjArray *arr=qadm->Init(AliQA::kRECPOINTS);
+      TObjArray **arr=qadm->Init(AliQA::kRECPOINTS);
       AliTracker::SetResidualsArray(arr);
       sameCycle = kTRUE ; 
     }
@@ -1510,16 +1508,20 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
       AliReconstructor *reconstructor = GetReconstructor(iDet);
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
-	const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
-	reconstructor->SetRecoParam(par);
+        const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
+        reconstructor->SetRecoParam(par);
+        if (fRunQA) {
+          fQASteer->SetRecoParam(iDet, par) ; 
+        }
       }
     }
   }
 
     // QA on single raw 
-    if (fRunQA) 
-			fQASteer->RunOneEvent(fRawReader) ;  
-
+  if (fRunQA) {
+    fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+    fQASteer->RunOneEvent(fRawReader) ;  
+  }
     // local single event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
       TString detectors=fRunLocalReconstruction;
@@ -1734,11 +1736,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
-  if (fRunQA) 
+  if (fRunQA) {
+    fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     fQASteer->RunOneEvent(fesd) ; 
-
+  }
   if (fRunGlobalQA) {
       AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+      qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
       if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
         qadm->Exec(AliQA::kESDS, fesd);
     }
@@ -1844,9 +1848,9 @@ void AliReconstruction::SlaveTerminate()
   }
 
   // End of cycle for the in-loop  
-  if (fRunQA) {
+  if (fRunQA) 
     fQASteer->EndOfCycle() ;
-  }
+  
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
     if (qadm) {
@@ -1940,9 +1944,10 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
 
 		TString detQAStr(fQADetectors) ; 
-		if (fRunQA) 
+		if (fRunQA) {
+      fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
 			fQASteer->RunOneEventInOneDetector(iDet, clustersTree) ; 
-    
+    }
 	loader->WriteRecPoints("OVERWRITE");
 	loader->UnloadRecPoints();
 	AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
@@ -2187,7 +2192,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
     // run tracking
     if (iDet>1) // start filling residuals for the "outer" detectors
-    if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
+    if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
 
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
@@ -2207,7 +2212,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
   }
   //stop filling residuals for the "outer" detectors
-  if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
+  if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kFALSE);     
 
   // pass 3: TRD + TPC + ITS refit inwards
 
@@ -2217,7 +2222,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
     // run tracking
     if (iDet<2) // start filling residuals for TPC and ITS
-    if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
+    if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
 
     if (fTracker[iDet]->RefitInward(esd) != 0) {
       AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
@@ -2245,7 +2250,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
   // stop filling residuals for TPC and ITS
-  if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
+  if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kFALSE);     
 
   eventNr++;
   return kTRUE;
@@ -2753,36 +2758,37 @@ void AliReconstruction::CheckQA()
 // check the QA of SIM for this run and remove the detectors 
 // with status Fatal
   
-	TString newRunLocalReconstruction ; 
-	TString newRunTracking ;
-	TString newFillESD ;
-	 
-	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
-		TString detName(AliQA::GetDetName(iDet)) ;
-		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX_t(iDet)) ; 
-		if ( qa->IsSet(AliQA::DETECTORINDEX_t(iDet), AliQA::kSIM, AliQA::kFATAL)) {
-				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", detName.Data())) ;
-		} else {
-			if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
-					fRunLocalReconstruction.Contains("ALL") )  {
-				newRunLocalReconstruction += detName ; 
-				newRunLocalReconstruction += " " ; 			
-			}
-			if ( fRunTracking.Contains(AliQA::GetDetName(iDet)) || 
-					fRunTracking.Contains("ALL") )  {
-				newRunTracking += detName ; 
-				newRunTracking += " " ; 			
-			}
-			if ( fFillESD.Contains(AliQA::GetDetName(iDet)) || 
-					fFillESD.Contains("ALL") )  {
-				newFillESD += detName ; 
-				newFillESD += " " ; 			
-			}
-		}
-	}
-	fRunLocalReconstruction = newRunLocalReconstruction ; 
-	fRunTracking            = newRunTracking ; 
-	fFillESD                = newFillESD ; 
+//	TString newRunLocalReconstruction ; 
+//	TString newRunTracking ;
+//	TString newFillESD ;
+//	 
+//	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
+//		TString detName(AliQA::GetDetName(iDet)) ;
+//		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX_t(iDet)) ;       
+//      if ( qa->IsSet(AliQA::DETECTORINDEX_t(iDet), AliQA::kSIM, specie, AliQA::kFATAL)) {
+//        AliInfo(Form("QA status for %s %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", 
+//                   detName.Data(), AliRecoParam::GetEventSpecieName(es))) ;
+//			} else {
+//			if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
+//					fRunLocalReconstruction.Contains("ALL") )  {
+//				newRunLocalReconstruction += detName ; 
+//				newRunLocalReconstruction += " " ; 			
+//			}
+//			if ( fRunTracking.Contains(AliQA::GetDetName(iDet)) || 
+//					fRunTracking.Contains("ALL") )  {
+//				newRunTracking += detName ; 
+//				newRunTracking += " " ; 			
+//			}
+//			if ( fFillESD.Contains(AliQA::GetDetName(iDet)) || 
+//					fFillESD.Contains("ALL") )  {
+//				newFillESD += detName ; 
+//				newFillESD += " " ; 			
+//			}
+//		}
+//	}
+//	fRunLocalReconstruction = newRunLocalReconstruction ; 
+//	fRunTracking            = newRunTracking ; 
+//	fFillESD                = newFillESD ; 
 }
 
 //_____________________________________________________________________________

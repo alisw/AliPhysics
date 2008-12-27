@@ -33,10 +33,10 @@ public:
   AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliTRDQAChecker() {;} // dtor
 
-  virtual Double_t Check(AliQA::ALITASK_t /*index*/) {return 1.0;}
-  virtual Double_t Check(TList * /*list*/) {return 1.0;}
-  virtual Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/) {return 1.0;}
-  virtual Double_t Check(AliQA::ALITASK_t /*index*/, TNtupleD* /*nt*/)     {return 1.0;}
+  virtual Double_t * Check(AliQA::ALITASK_t /*index*/) {return NULL;}
+  virtual Double_t * Check(TList * /*list*/) {return NULL;}
+  virtual Double_t * Check(AliQA::ALITASK_t /*index*/, TObjArray ** /*list*/) {return NULL;}
+  virtual Double_t * Check(AliQA::ALITASK_t /*index*/, TNtupleD** /*nt*/)     {return NULL;}
 
 private:
   

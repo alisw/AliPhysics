@@ -30,14 +30,15 @@ public:
   AliVZEROQAChecker(const AliVZEROQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliVZEROQAChecker() {;} // destructor
   
+  virtual void   Init(const AliQA::DETECTORINDEX_t det) ; 
+
 protected:  
-  virtual  Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
-  Double_t Check(AliQA::ALITASK_t ) {AliFatal("Not implemented\n"); return 0;}
-  Double_t Check(AliQA::ALITASK_t, TNtupleD*) {AliFatal("Not implemented\n"); return 0;}
+  virtual  Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list);
+  virtual  Double_t * Check(AliQA::ALITASK_t ) ; 
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckEsds(TObjArray * list) const;
   
-  virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;
+  virtual void SetQA(AliQA::ALITASK_t index, Double_t * value) const ;
   
 private:
   

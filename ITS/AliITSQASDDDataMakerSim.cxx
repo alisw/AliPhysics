@@ -105,7 +105,7 @@ void AliITSQASDDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASDDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SDD -  
-  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
+  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
@@ -159,7 +159,7 @@ void AliITSQASDDDataMakerSim::MakeDigits(TTree * digits)
 void AliITSQASDDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SDD -
-  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
+  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD SDIGITS Module Pattern","SDIGITS SDD Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
@@ -231,7 +231,7 @@ void AliITSQASDDDataMakerSim::InitHits()
 { 
 
   // Initialization for HITS data - SDD -
-  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
+  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   //printf("AliITSQASDDDataMakerSim::InitHits called \n");
   TH1F *h0=new TH1F("SDD HITS Module Pattern","SDD HITS Module Pattern",260,239.5,499.5);  

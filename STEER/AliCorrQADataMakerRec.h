@@ -29,11 +29,11 @@ public:
   AliCorrQADataMakerRec(AliQADataMaker **) ;          // ctor
   AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) ;   
   AliCorrQADataMakerRec& operator = (const AliCorrQADataMakerRec& qadm) ;
-  virtual ~AliCorrQADataMakerRec() {;} // dtor
+  virtual ~AliCorrQADataMakerRec() ; // dtor
   
 private:
 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 

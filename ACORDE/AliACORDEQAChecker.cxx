@@ -39,52 +39,60 @@
 
 ClassImp(AliACORDEQAChecker)
 
-//__________________________________________________________________
+//____________________________________________________________________________
+Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/)
+{
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 0.0 ; 
+  return rv ;  
+}
 
-Double_t AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list)
+//__________________________________________________________________
+Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list)
 {
 
 
 // Super-basic check on the QA histograms on the input list: 
   // look whether they are empty!
-  Double_t test = 0.0  ;
-  Int_t count = 0 ; 
+  Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
+  Int_t * count   = new Int_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    test[specie]    = 0.0 ; 
+    count[specie] = 0 ; 
+  }
   
-  if (list->GetEntries() == 0){  
-    test = 1. ; // nothing to check
-  }
-  else {
-    TIter next(list) ; 
-    TH1 * hdata ;
-    count = 0 ; 
-    while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-      if (hdata) { 
-	Double_t rv = 0.;
-	if(hdata->GetEntries()>0)rv=1; 
-	AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ; 
-	count++ ; 
-	test += rv ; 
-      }
-      else{
-	AliError("Data type cannot be processed") ;
-      }
-      
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (list[specie]->GetEntries() == 0){  
+      test[specie] = 1. ; // nothing to check
     }
-    if (count != 0) { 
-      if (test==0) {
-	AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
-	test = 0.5;  //upper limit value to set kWARNING flag for a task
+    else {
+      TIter next(list[specie]) ; 
+      TH1 * hdata ;
+      while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+        if (hdata) { 
+          Double_t rv = 0.0 ; 
+          if(hdata->GetEntries()>0)rv=1; 
+          AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ; 
+          count[specie]++ ; 
+          test[specie] += rv ; 
+        }
+        else{
+          AliError("Data type cannot be processed") ;
+        }
       }
-      else {
-	test /= count ;
+      if (count[specie] != 0) { 
+        if (test[specie]==0) {
+          AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
+          test[specie] = 0.5;  //upper limit value to set kWARNING flag for a task
+        }
+        else {
+          test[specie] /= count[specie] ;
+        }
       }
     }
+    AliInfo(Form("Test Result = %f", test[specie])) ; 
   }
-
-  AliInfo(Form("Test Result = %f", test)) ; 
   return test ; 
-
-
-
 }
 

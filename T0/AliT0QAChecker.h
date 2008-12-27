@@ -30,13 +30,9 @@ public:
  // dtor
  virtual ~AliT0QAChecker() {;}
 private:
-  virtual Double_t Check(AliQA::ALITASK_t,TObjArray * list) ;
-  virtual Double_t Check(TObjArray*) {return 0.;}
-  virtual Double_t Check(AliQA::ALITASK_t,  TNtupleD*) {return 0.;}
-  virtual Double_t Check(AliQA::ALITASK_t) {return 0.;}
-  virtual Double_t Check() {return 0.;} ;
+  virtual Double_t * Check(AliQA::ALITASK_t) ; 
+  virtual Double_t * Check(AliQA::ALITASK_t, TObjArray ** list) ;
   
-
   ClassDef(AliT0QAChecker,1)  // description 
 
 };

@@ -84,7 +84,7 @@ AliTRDQADataMakerRec& AliTRDQADataMakerRec::operator=(const AliTRDQADataMakerRec
 }
 
 //____________________________________________________________________________ 
-void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //
   // Detector specific actions at end of cycle
@@ -95,118 +95,107 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   AliInfo("End of TRD cycle");
   
   if (task == AliQA::kRECPOINTS) {
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      TH1D * hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
+      //list[specie]->Print();
     
-    TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
-    //list->Print();
-    
-    // fill detector map;
-    for(int i=0; i<540; i++) {
-      Double_t v = ((TH1D*)list->At(0))->GetBinContent(i+1);
-      Int_t sm = i/30;
-      Int_t det = i%30;
-
-      TH2D *detMap = (TH2D*)list->At(87);
-      Int_t bin = detMap->FindBin(sm, det);
-      detMap->SetBinContent(bin, v);
-    }
-
-
-    // Rec points full chambers
-    for (Int_t i=0; i<540; i++) {
+      // fill detector map;
+      for(Int_t i = 0 ; i < 540 ; i++) {
+        Double_t v = ((TH1D*)list[specie]->At(0))->GetBinContent(i+1);
+        Int_t sm = i/30;
+        Int_t det = i%30;
+        TH2D *detMap = (TH2D*)list[specie]->At(87);
+        Int_t bin = detMap->FindBin(sm, det);
+        detMap->SetBinContent(bin, v);
+     }
+      // Rec points full chambers
+      for (Int_t i = 0 ; i < 540 ; i++) {
+        //AliInfo(Form("I = %d", i));
+        //TH1D *h = ((TH2D*)list[specie]->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
+        hist->Reset();
+        for(Int_t b = 1 ; b < hist->GetXaxis()->GetNbins()-1 ; b++) {
+          Double_t xvalue = hist->GetBinCenter(b);
+          Int_t bin = ((TH2D*)list[specie]->At(1))->FindBin(i,xvalue);
+          Double_t value =  ((TH2D*)list[specie]->At(1))->GetBinContent(bin);
+          hist->SetBinContent(b, value);
+        }
+        //AliInfo(Form("Sum = %d %f\n", i, hist->GetSum()));
+        if (hist->GetSum() < 100) 
+            continue; // chamber not present
       
-      //AliInfo(Form("I = %d", i));
-
-      //TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
-      hist->Reset();
-      for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
-	Double_t xvalue = hist->GetBinCenter(b);
-	Int_t bin = ((TH2D*)list->At(1))->FindBin(i,xvalue);
-	Double_t value =  ((TH2D*)list->At(1))->GetBinContent(bin);
-	hist->SetBinContent(b, value);
+        hist->Fit("landau", "q0", "goff", 10, 180);
+        TF1 *fit = hist->GetFunction("landau");
+        ((TH1D*)list[specie]->At(12))->Fill(fit->GetParameter(1));
+        ((TH1D*)list[specie]->At(13))->Fill(fit->GetParameter(2));
       }
-      
-      //printf("Sum = %d %f\n", i, hist->GetSum());
-      if (hist->GetSum() < 100) continue; // chamber not present
-      
-      hist->Fit("landau", "q0", "goff", 10, 180);
-      TF1 *fit = hist->GetFunction("landau");
-      ((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
-      ((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
-    }
-    
-    // time-bin by time-bin sm by sm
-    for(Int_t i=0; i<18; i++) { // loop over super-modules
-      
-      for(Int_t j=0; j<35; j++) { // loop over time bins
+      // time-bin by time-bin sm by sm
+      for(Int_t i = 0 ; i < 18 ; i++) { // loop over super-modules
+        for(Int_t j = 0 ; j < 35 ; j++) { // loop over time bins
+          //TH1D *h =  ((TH3D*)list[specie]->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+          hist->Reset();
+          for(Int_t b = 1 ; b < hist->GetXaxis()->GetNbins()-1 ; b++) {
+            Double_t xvalue = hist->GetBinCenter(b);
+            Double_t svalue = 0.0;
+            for(Int_t det = i*30 ; det < (i+1)*30 ; det++) { // loop over detectors
+              Int_t bin = ((TH3D*)list[specie]->At(10))->FindBin(det,j,xvalue);
+              Double_t value =  ((TH3D*)list[specie]->At(10))->GetBinContent(bin);
+              svalue += value;
+            }
+            //AliInfo(Form("v = %f\n", value));
+            hist->SetBinContent(b, svalue);
+          }
 	
-	//TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
-	hist->Reset();
-	for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
-	  Double_t xvalue = hist->GetBinCenter(b);
-	  Double_t svalue = 0;
-	  
-	  for(Int_t det=i*30; det<(i+1)*30; det++) { // loop over detectors
-	    Int_t bin = ((TH3D*)list->At(10))->FindBin(det,j,xvalue);
-	    Double_t value =  ((TH3D*)list->At(10))->GetBinContent(bin);
-	    svalue += value;
-	  }
-	  //printf("v = %f\n", value);
-	  hist->SetBinContent(b, svalue);
-	}
+          if (hist->GetSum() < 100) 
+            continue;
+          //AliInfo(Form("fitting %d %d %f\n", i, j, hist->GetSum()));
 	
-	if (hist->GetSum() < 100) continue;
-	//printf("fitting %d %d %f\n", i, j, hist->GetSum());
+          hist->Fit("landau", "q0", "goff", 10, 180);
+          TF1 *fit = hist->GetFunction("landau");
 	
-	hist->Fit("landau", "q0", "goff", 10, 180);
-	TF1 *fit = hist->GetFunction("landau");
-	
-	TH1D *h1 = (TH1D*)list->At(14+18+i);
-	Int_t bin = h1->FindBin(j);
-	// printf("%d %d %d\n", det, j, bin);
-	h1->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
+          TH1D *h1 = (TH1D*)list[specie]->At(14+18+i);
+          Int_t bin = h1->FindBin(j);
+          // AliInfo(Form("%d %d %d\n", det, j, bin));
+          h1->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
+        }
       }
-    }
-      
 
-    // time-bin by time-bin chamber by chamber
-    for (Int_t i=0; i<540; i++) {
+      // time-bin by time-bin chamber by chamber
+      for(Int_t i = 0 ; i < 540 ; i++) {
+        //TH1D *test = ((TH3D*)list[specie]->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
+        //if (test->GetSum() < 100) continue;
       
-      //TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
-      //if (test->GetSum() < 100) continue;
+        //AliInfo(Form("fitting det = %d", i));
       
-      //AliInfo(Form("fitting det = %d", i));
-      
-      for(Int_t j=0; j<35; j++) {
+        for(Int_t j = 0 ; j < 35 ; j++) {
+          //TH1D *h =  ((TH3D*)list[specie]->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+          hist->Reset();
+          for(Int_t b = 1 ; b < hist->GetXaxis()->GetNbins()-1 ; b++) {
+            Double_t xvalue = hist->GetBinCenter(b);
+            Int_t bin = ((TH3D*)list[specie]->At(10))->FindBin(i,j,xvalue);
+            Double_t value =  ((TH3D*)list[specie]->At(10))->GetBinContent(bin);
+            //AliInfo(Form("v = %f\n", value));
+            hist->SetBinContent(b, value);
+          }
 	
-	//TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
-	hist->Reset();
-	for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
-	  Double_t xvalue = hist->GetBinCenter(b);
-	  Int_t bin = ((TH3D*)list->At(10))->FindBin(i,j,xvalue);
-	  Double_t value =  ((TH3D*)list->At(10))->GetBinContent(bin);
-	  //printf("v = %f\n", value);
-	  hist->SetBinContent(b, value);
-	}
+          if (hist->GetSum() < 100) continue;
+          //AliInfo(Form("fitting %d %d %f\n", i, j, hist->GetSum()));
 	
-	if (hist->GetSum() < 100) continue;
-	//printf("fitting %d %d %f\n", i, j, hist->GetSum());
+          hist->Fit("landau", "q0", "goff", 10, 180);
+          TF1 *fit = hist->GetFunction("landau");
 	
-	hist->Fit("landau", "q0", "goff", 10, 180);
-	TF1 *fit = hist->GetFunction("landau");
-	
-	Int_t sm = i/30;
-	Int_t det = i%30;
-	TH2D *h2 = (TH2D*)list->At(14+sm);
-	Int_t bin = h2->FindBin(det,j);
-	// printf("%d %d %d\n", det, j, bin);
-	h2->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
-	h2->SetBinError(bin,fit->GetParError(1));
+          Int_t sm = i/30;
+          Int_t det = i%30;
+          TH2D *h2 = (TH2D*)list[specie]->At(14+sm);
+          Int_t bin = h2->FindBin(det,j);
+          // AliInfo(Form("%d %d %d\n", det, j, bin));
+          h2->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
+          h2->SetBinError(bin,fit->GetParError(1));
+        }
       }
+      if (hist) 
+        delete hist;
     }
-    
-    if (hist) delete hist;
   }
-  
   //////////////////////////
   // const Int_t knbits = 6;
   // const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
@@ -219,28 +208,25 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
     const Int_t kD[knRatio] = {3,1,1,3}; 
     
     // create ratios
-    for(Int_t type=0; type<2; type++) {
-      for(Int_t i=0; i<knRatio; i++) {
-
-	TH1D *ratio = (TH1D*)list->At(19 + 2*i + type);
-	TH1D *histN = (TH1D*)list->At(3 + 2*kN[i] + type);
-	TH1D *histD = (TH1D*)list->At(3 + 2*kD[i] + type);
-
-	BuildRatio(ratio, histN, histD);
-	//ratio->Reset();
-	//ratio->Add(histN);
-	//ratio->Divide(histD);
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      for(Int_t type = 0 ; type < 2 ; type++) {
+        for(Int_t i = 0 ; i < knRatio ; i++) {
+          TH1D *ratio = (TH1D*)list[specie]->At(19 + 2*i + type);
+          TH1D *histN = (TH1D*)list[specie]->At(3 + 2*kN[i] + type);
+          TH1D *histD = (TH1D*)list[specie]->At(3 + 2*kD[i] + type);
+          BuildRatio(ratio, histN, histD);
+          //ratio->Reset();
+          //ratio->Add(histN);
+          //ratio->Divide(histD);
+        }
       }
+      // ratio for the fraction of electrons per stack
+      TH1D *histN = (TH1D*)list[specie]->At(33);
+      TH1D *histD = (TH1D*)list[specie]->At(32);
+      TH1D *ratio = (TH1D*)list[specie]->At(34);
+      BuildRatio(ratio, histN, histD);
     }
-
-    // ratio for the fraction of electrons per stack
-    TH1D *histN = (TH1D*)list->At(33);
-    TH1D *histD = (TH1D*)list->At(32);
-    TH1D *ratio = (TH1D*)list->At(34);
-    BuildRatio(ratio, histN, histD);
   }
-
-  
   // call the checker
   AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
 }

@@ -29,6 +29,10 @@
 class AliTPCQADataMakerRec: public AliQADataMakerRec {
 
 public:
+  enum HRawsType_t         {kTPCdataQA=0, kOccupancy, kOccupancyVsSector, kNClustersPerEventVsSector, kQVsSector, kQmaxVsSector} ; 
+  enum HRECPOINTsType_t    {KClusters=0, kRatio, kPt} ; 
+  enum HESDsType_t         {kQmaxShort=0, kQmaxMedium, kQmaxLong, kQShort, kQMedium, kQLong, kRow} ; 
+
   AliTPCQADataMakerRec() ;          // ctor
   AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) ;   
   AliTPCQADataMakerRec& operator = (const AliTPCQADataMakerRec& qadm) ;
@@ -36,7 +40,7 @@ public:
   
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray* list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray** list) ;
 
   // ESD QA
   virtual void   InitESDs() ; 
@@ -54,25 +58,7 @@ private:
 
   
   AliTPCAltroMapping *fMapping[6]; //! Pointers to ALTRO mapping
-  AliTPCdataQA* fTPCdataQA;//! TPC calibration object for making raw data QA
-
-  TH1F* fHistESDclusters;  //! Clusters per ESD track
-  TH1F* fHistESDratio;     //! Ratio of clusters to findables
-  TH1F* fHistESDpt;        //! Pt spectrum
-  
-  TH1F* fHistRawsOccupancy;      //! Pad occupancy (1 entry per pad)
-  TH1F* fHistRawsOccupancyVsSector; //! Pad occupancy vs sector
-  TH1F* fHistRawsNClustersPerEventVsSector; //! Nclusters vs sector
-  TH1F* fHistRawsQVsSector;      //! <Q> vs sector
-  TH1F* fHistRawsQmaxVsSector;   //! <Qmax> vs sector
-
-  TH1F* fHistRecPointsQmaxShort; //! Qmax (short pads)
-  TH1F* fHistRecPointsQmaxMedium;//! Qmax (medium pads)
-  TH1F* fHistRecPointsQmaxLong;  //! Qmax (long pads)
-  TH1F* fHistRecPointsQShort;    //! Q (short pads)
-  TH1F* fHistRecPointsQMedium;   //! Q (medium pads)
-  TH1F* fHistRecPointsQLong;     //! Q (long pads)
-  TH1F* fHistRecPointsRow;       //! Row distribution
+  AliTPCdataQA** fTPCdataQA;//! TPC calibration object for making raw data QA
 
   ClassDef(AliTPCQADataMakerRec,1)  // TPC Rec Quality Assurance Data Maker 
 };

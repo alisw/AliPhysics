@@ -115,39 +115,41 @@ AliVZEROCalibData* AliVZEROQADataMakerRec::GetCalibData() const
 }
  
 //____________________________________________________________________________ 
-void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   // Detector specific actions at end of cycle
   // Does the QA checking
   
   AliQAChecker::Instance()->Run(AliQA::kVZERO, task, list) ;
-  
-  if(task == AliQA::kRAWS){
-  	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
-	  if(fCurrentCycle%nMaxBin==0) {
-  		GetRawsData(kPedestalTimeInt0)->Reset();
-  		GetRawsData(kPedestalTimeInt1)->Reset();
-  		GetRawsData(kChargeEoITimeInt0)->Reset();
-  		GetRawsData(kChargeEoITimeInt1)->Reset();
-	  }
-	  TH1D* hProj;
-	  char name[50];
-	  for(Int_t iChannel=0; iChannel<64; iChannel++) {
-  		for(Int_t integrator=0;integrator<2;integrator++){
-			sprintf(name,"Ped_%d_%d",iChannel,integrator);
-  			hProj = ((TH2I*)GetRawsData((integrator == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
-			((TH2D*)GetRawsData((integrator == 0 ? kPedestalTimeInt0 : kPedestalTimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),(double)hProj->GetMean());
-			delete hProj;
 
- 			sprintf(name,"Charge_%d_%d",iChannel,integrator);
- 			hProj = ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
-			((TH2D*)GetRawsData((integrator == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),hProj->GetMean());
-			delete hProj;
-  		}
-	  }
-  } else if (task == AliQA::kESDS) {
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    SetEventSpecie(specie) ; 
+    if(task == AliQA::kRAWS){
+  	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
+      if(fCurrentCycle%nMaxBin==0) {
+        GetRawsData(kPedestalTimeInt0)->Reset();
+        GetRawsData(kPedestalTimeInt1)->Reset();
+        GetRawsData(kChargeEoITimeInt0)->Reset();
+        GetRawsData(kChargeEoITimeInt1)->Reset();
+      }
+      TH1D* hProj;
+      char name[50];
+      for(Int_t iChannel=0; iChannel<64; iChannel++) {
+        for(Int_t integrator=0;integrator<2;integrator++){
+          sprintf(name,"Ped_%d_%d",iChannel,integrator);
+          hProj = ((TH2I*)GetRawsData((integrator == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
+          ((TH2D*)GetRawsData((integrator == 0 ? kPedestalTimeInt0 : kPedestalTimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),(double)hProj->GetMean());
+          delete hProj;
+
+          sprintf(name,"Charge_%d_%d",iChannel,integrator);
+          hProj = ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
+          ((TH2D*)GetRawsData((integrator == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),hProj->GetMean());
+          delete hProj;
+        }
+      }
+    } else if (task == AliQA::kESDS) {
+    }
   }
-  
 }
 
 //____________________________________________________________________________ 
@@ -162,20 +164,20 @@ void AliVZEROQADataMakerRec::InitESDs()
   TH1D * h1d;
 		
   h1i = new TH1I("H1I_Cell_Multiplicity_V0A", "Cell Multiplicity in V0A", 35, 0, 35) ;  
-  Add2ESDsList(h1i, kCellMultiV0A, !expert)  ;  
   h1i->GetXaxis()->SetTitle("Multiplicity (Nb of Cell)");
+  Add2ESDsList(h1i, kCellMultiV0A, !expert)  ;  
                                                                                                         
   h1i = new TH1I("H1I_Cell_Multiplicity_V0C", "Cell Multiplicity in V0C", 35, 0, 35) ;  
-  Add2ESDsList(h1i, kCellMultiV0C, !expert)  ;  
   h1i->GetXaxis()->SetTitle("Multiplicity (Nb of Cell)");
+  Add2ESDsList(h1i, kCellMultiV0C, !expert)  ;  
    
   h1d = new TH1D("H1D_MIP_Multiplicity_V0A", "MIP Multiplicity in V0A", 1000, 0, 1000) ;  
-  Add2ESDsList(h1d, kMIPMultiV0A, !expert)  ;  
   h1d->GetXaxis()->SetTitle("Multiplicity (Nb of MIP)");
+  Add2ESDsList(h1d, kMIPMultiV0A, !expert)  ;  
   
   h1d = new TH1D("H1D_MIP_Multiplicity_V0C", "MIP Multiplicity in V0C", 1000, 0, 1000) ;  
-  Add2ESDsList(h1d, kMIPMultiV0C, !expert)  ;  
   h1d->GetXaxis()->SetTitle("Multiplicity (Nb of MIP)");
+  Add2ESDsList(h1d, kMIPMultiV0C, !expert)  ;  
 
   h2d = new TH2D("H2D_MIP_Multiplicity_Channel", "MIP Multiplicity per Channel",64, 0, 64, 100, 0, 100) ;  
   h2d->GetXaxis()->SetTitle("Channel");

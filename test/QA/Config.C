@@ -43,7 +43,7 @@
 #include "STEER/AliConfig.h"
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagWrapCheb.h"
+#include "STEER/AliMagFCheb.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -183,14 +183,23 @@ void Config()
 	// Get settings from environment variables
   ProcessEnvironmentVars();
 
+  // Random Number seed
+  if (gSystem->Getenv("CONFIG_SEED")) {
+    seed = atoi(gSystem->Getenv("CONFIG_SEED"));
+  }
+  else if(gSystem->Getenv("DC_EVENT") && gSystem->Getenv("DC_RUN")){
+    seed = runNumber * 100000 + eventNumber;
+  }
+  gRandom->SetSeed(seed);
+  cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
+
   // libraries required by geant321
 #if defined(__CINT__)
-	gSystem->Load("liblhapdf.so");      // Parton density functions
-	gSystem->Load("libpythia6.so");     // Pythia
+	gSystem->Load("liblhapdf");      // Parton density functions
+	gSystem->Load("libEGPythia6");   // TGenerator interface
+	gSystem->Load("libpythia6");     // Pythia
+	gSystem->Load("libAliPythia6");  // ALICE specific implementations
 	gSystem->Load("libgeant321");
-	gSystem->Load("libEG");
-	gSystem->Load("libEGPythia6.so");   // TGenerator interface
-	gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
 #endif
   new TGeant3TGeo("C++ Interface to Geant3");
 
@@ -200,6 +209,9 @@ void Config()
   //=======================================================================
   // Run loader
   AliRunLoader* rl=0x0;
+
+  AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()"," ConfigPPR.C", __LINE__);
+
   rl = AliRunLoader::Open("galice.root",
 			  AliConfig::GetDefaultEventFolderName(),
 			  "recreate");
@@ -209,15 +221,37 @@ void Config()
       return;
     }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(1000);
+  rl->SetNumberOfEventsPerFile(100);
   gAlice->SetRunLoader(rl);
-
-  // Run number
-  //gAlice->SetRunNumber(runNumber);
 
   // Set the trigger configuration
   gAlice->SetTriggerDescriptor(TrigConfName[trig]);
   cout<<"Trigger configuration is set to  "<<TrigConfName[trig]<<endl;
+
+  //======================//
+  // Set External decayer //
+  //======================//
+  TVirtualMCDecayer* decayer = new AliDecayerPythia();
+  // DECAYS
+  //
+  switch(decHvFl) {
+    case kNature:
+      decayer->SetForceDecay(kAll);
+      break;
+    case kHadr:
+      decayer->SetForceDecay(kHadronicD);
+      break;
+    case kSemiEl:
+      decayer->SetForceDecay(kSemiElectronic);
+      break;
+    case kSemiMu:
+      decayer->SetForceDecay(kSemiMuonic);
+      break;
+  }
+  decayer->Init();
+  gMC->SetExternalDecayer(decayer);
+  if(proc == kPyJetJetPHOSv2) // in this case we decay the pi0
+    decayer->SetForceDecay(kNeutralPion);
 
   //
   //=======================================================================
@@ -256,30 +290,6 @@ void Config()
     gMC->SetCut("PPCUTM", cut);
     gMC->SetCut("TOFMAX", tofmax);
 
-  //======================//
-  // Set External decayer //
-  //======================//
-  TVirtualMCDecayer* decayer = new AliDecayerPythia();
-  // DECAYS
-  //
-  switch(decHvFl) {
-  case kNature:
-    decayer->SetForceDecay(kAll);
-    break;
-  case kHadr:
-    decayer->SetForceDecay(kHadronicD);
-    break;
-  case kSemiEl:
-    decayer->SetForceDecay(kSemiElectronic);
-    break;
-  case kSemiMu:
-    decayer->SetForceDecay(kSemiMuonic);
-    break;
-  }
-  decayer->Init();
-  gMC->SetExternalDecayer(decayer);
-  if(proc == kPyJetJetPHOSv2) // in this case we decay the pi0
-    decayer->SetForceDecay(kNeutralPion);
 
   //=========================//
   // Generator Configuration //
@@ -400,10 +410,10 @@ void Config()
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
 
-  AliMagWrapCheb* field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., mag);
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
+  field->SetL3ConstField(0); //Using const. field in the barrel
   rl->CdGAFile();
-  gAlice->SetField(field);
-
+  gAlice->SetField(field);    
 
 
   Int_t iABSO  = 1;
@@ -917,15 +927,7 @@ void ProcessEnvironmentVars()
     }
     //cout<<"Event number "<<eventNumber<<endl;
 
-   // Random Number seed
-    if (gSystem->Getenv("CONFIG_SEED")) {
-      seed = atoi(gSystem->Getenv("CONFIG_SEED"));
-    }
-    else if(gSystem->Getenv("DC_EVENT") && gSystem->Getenv("DC_RUN")){
-      seed = runNumber * 100000 + eventNumber;
-    }
 
-    gRandom->SetSeed(seed);
 
     cout<<"////////////////////////////////////////////////////////////////////////////////////"<<endl;
     cout<<"Seed for random number generation= "<< seed<<"  "<< gRandom->GetSeed()<<endl;

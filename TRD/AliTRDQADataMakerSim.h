@@ -35,7 +35,7 @@ class AliTRDQADataMakerSim: public AliQADataMakerSim {
 
  private:
 
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list) ;
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list) ;
   virtual void InitHits() ; 
   virtual void InitDigits() ; 
   virtual void InitSDigits() ;

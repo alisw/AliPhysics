@@ -274,15 +274,17 @@ void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray *histos)
+void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray **histos)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
   
   if(task==AliQA::kRAWS) {
-    for(Int_t iddl=0;iddl<14;iddl++) {
-     TH1F *h = (TH1F*)histos->At(14+iddl); //ddl histos scaled by the number of events 
-     h->Scale(1./(Float_t)fEvtRaw);
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      for(Int_t iddl=0;iddl<14;iddl++) {
+        TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
+        h->Scale(1./(Float_t)fEvtRaw);
+      }
     }
   }
   

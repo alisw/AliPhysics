@@ -51,16 +51,26 @@
 ClassImp(AliT0QAChecker)
 
 
+//____________________________________________________________________________
+Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t /*index*/)
+{
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 0.0 ; 
+  return rv ;  
+}
+
 //__________________________________________________________________
-Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
+Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray ** list)
 {
 
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
 
+  Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    test[specie]    = 10.0 ; 
 
-  Double_t test = 10.0  ;
-  
   Double_t nent[250];
   TString hname[250];
   const char *cname;
@@ -69,160 +79,141 @@ Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   memset(w,1,250*sizeof(Double_t));
   TH2 *fhRecDiff[3];  
   TH2 *fhRawEff[250];
-   TH1 *fhESD[2];
-
-  //  TString dataType = AliQA::GetAliTaskName(index);
-
-  if (list->GetEntries() == 0){
-    test = 1. ; // nothing to check
-  }
-  else {
-    
-    TIter next(list) ;
-    TH1 * hdata ;
-    
-    TH2 * h ;
-    //  printf(" data type %i %s nentries %i\n",
-    //	   index,dataType.Data(),list->GetEntries());
-    
-    for (Int_t ir=0; ir<list->GetEntries(); ir++) 
-      {
-	//raw
-	if(index==0 ){
-	  /*
-	  if(ir < 205) {
-	    hdata = (TH1*) list->UncheckedAt(ir);
-	    if(hdata) {
-	      cname = hdata->GetName();
-	      hname[ir] = cname;
-	      AliDebug(10,Form("count %i %s \n",ir, hname[ir].Data())) ;
-	      fhRaw[ir] = hdata;
-	    }
-	    }*/
-	  if(ir > 204) {
-	    //	  else{
-	    h = (TH2*) list->UncheckedAt(ir);
-	    printf(" index %i ir %i \n", index,ir);
-	    if(h) {
-	      cname = h->GetName();
-	      hname[ir] = cname;
-	      AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
-	      fhRawEff[ir] = h;
-	    }
-	  }
-	}
-     
-	//rec
-	if(index==2){
-	  h = (TH2*) list->UncheckedAt(ir);
-	  
-	  if(h) {
-	    cname = h->GetName();
-	    hname[ir] = cname;
-	    AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
-	    fhRecDiff[ir] = h;
-	  }
-	}
-	//esd
-	if(index==3){
-	  cout<<" ir "<<ir<<endl;
-	  hdata = (TH1*) list->UncheckedAt(ir);
-	  if(hdata){
-	    fhESD[ir] = hdata;
-	    AliDebug(1,Form("count %i %s ",ir, hname[ir].Data()) );
-	  }
-	}
-      }
-      
-    if (index == 0)
-      {
-	//raw data
-	
-	for (Int_t icase=205; icase<207; icase++) {
-	  for (Int_t idet=0; idet<24; idet++) {
-	    Double_t mean = fhRawEff[icase]->
-	      ProjectionY(Form("%s_py_%i_%i",
-			       fhRawEff[icase]->GetName(), idet,icase),
-			  idet,idet+1)->GetMean();
-	    Double_t rms= fhRawEff[icase]->
-	      ProjectionY(Form("%s_py%i_%i", 
-			       fhRawEff[icase]->GetName(), idet,icase),
-			  idet,idet+1)->GetRMS();
-	    printf("name %s icase %i idet %i mean %f, rms %f\n",
-		   fhRawEff[icase]->GetName(), icase, idet, mean,rms);
-	    
-	    if (mean<1.2 && mean> 0.8 ) {
-	      test = 1;
-	      AliDebug(1,Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, test)) ; 
-	    }
-	    if (mean<=0.8 && mean>= 0.5 ){
-	      test = 0.5;
-	      AliDebug(1,Form("%s problem in channel %i  efficieny %f test %f",
-			      fhRawEff[icase]->GetName(), idet,  mean, test)) ; 
-	    }
-	    if (mean<0.5 ) { 
-	      test = 0.25;
-	      AliDebug(1,Form("%s big problem in channel %i  efficieny %f test %f",
-			      fhRawEff[icase]->GetName(), idet,  mean, test)) ; 
-	    }
-	     
-	  }
-	  
-	}
-      }
-    
-    if(index == 2){
-      //rec points
-      for (Int_t icase=0; icase<2; icase++) {
-	for (Int_t idet=0; idet<24; idet++) {
-	  Double_t mean = fhRecDiff[icase]->
-	    ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
-			idet,idet+1)->GetMean();
-	  Double_t rms= fhRecDiff[icase]->
-	    ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
-			idet,idet+1)->GetRMS();
-	  printf("name %s icase %i idet %i mean %f, rms %f\n",
-		 fhRecDiff[icase]->GetName(), icase, idet, mean,rms); 
-	  	  
-	  if(TMath::Abs(mean) >1.5 || rms >1){
-	    AliDebug(1,Form(" calibration is nor perfect; test=%f", test)) ;
-	    test=0.25;
-	  }
-	  if(mean>3 || rms >5) {
-	    test = 0.1;
-	    AliDebug(1,Form(" wrong calibration test=%f", test)) ;
-	    } 
-	 }
-	  	
-      }	 
-    }
-       
-    if (index == 3) {
-      //ESD
-      for (Int_t icase=0; icase<2; icase++) {
-	Double_t rmsVertex = fhESD[icase]->GetRMS();
-	Double_t meanVertex = fhESD[icase]->GetMean();
-
-	test=1;
-	cout<<"numentries "<< fhESD[icase]->GetEntries()<<" meanVertex "<<meanVertex<<" rmsVertex "<<rmsVertex<<endl;
-	if (TMath::Abs(rmsVertex)>3) {
-	  test=0.25;
-	  AliDebug(1,Form("Vertex position resolution not good  , rms= %f test=%f",
-			    rmsVertex, test)) ; 
-	}
-	if (TMath::Abs(meanVertex)>3) {
-	  test=0.25;
-	  AliDebug(1,Form("Vertex position bad calibrated  , Mean= %f test=%f",
-			  meanVertex, test)) ; 
-	}
-      }
-      
-    }
-       
-  } //  if (list->GetEntries() != 0
-    
-  AliInfo(Form("Test Result = %f", test)) ;
+  TH1 *fhESD[2];
   
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    //  TString dataType = AliQA::GetAliTaskName(index);
+    if (list[specie]->GetEntries() == 0){
+      test[specie] = 1. ; // nothing to check
+    }
+    else {
+    TIter next(list[specie]) ;
+    TH1 * hdata ;
+    TH2 * h ;
+    //  AliInfo(Form(" data type %i %s nentries %i\n",
+    //	   index,dataType.Data(),list->GetEntries()));
+    for (Int_t ir=0; ir<list[specie]->GetEntries(); ir++) {
+      //raw
+      if(index==0 ){
+        /*
+         if(ir < 205) {
+         hdata = (TH1*) list[specie]->UncheckedAt(ir);
+         if(hdata) {
+         cname = hdata->GetName();
+         hname[ir] = cname;
+         AliDebug(10,Form("count %i %s \n",ir, hname[ir].Data())) ;
+         fhRaw[ir] = hdata;
+         }
+         }*/
+        if(ir > 204) {
+          //	  else{
+          h = (TH2*) list[specie]->UncheckedAt(ir);
+          AliInfo(Form(" index %i ir %i \n", index,ir));
+          if(h) {
+            cname = h->GetName();
+            hname[ir] = cname;
+            AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+            fhRawEff[ir] = h;
+          }
+        }
+      }
+     
+      //rec
+      if(index==2){
+        h = (TH2*) list[specie]->UncheckedAt(ir);
+        if(h) {
+          cname = h->GetName();
+          hname[ir] = cname;
+          AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+          fhRecDiff[ir] = h;
+        }
+      }
+      //esd
+      if(index==3){
+        cout<<" ir "<<ir<<endl;
+        hdata = (TH1*) list[specie]->UncheckedAt(ir);
+        if(hdata){
+          fhESD[ir] = hdata;
+          AliDebug(1,Form("count %i %s ",ir, hname[ir].Data()) );
+        }
+      }
+    }
+      if (index == 0) {
+        //raw data
+	
+        for (Int_t icase=205; icase<207; icase++) {
+          for (Int_t idet=0; idet<24; idet++) {
+            Double_t mean = fhRawEff[icase]->ProjectionY(Form("%s_py_%i_%i",
+                                                              fhRawEff[icase]->GetName(), idet,icase),
+                                                              idet,idet+1)->GetMean();
+            Double_t rms= fhRawEff[icase]->ProjectionY(Form("%s_py%i_%i", 
+                                                            fhRawEff[icase]->GetName(), idet,icase),
+                                                            idet,idet+1)->GetRMS();
+            AliInfo(Form("name %s icase %i idet %i mean %f, rms %f\n",
+                    fhRawEff[icase]->GetName(), icase, idet, mean,rms));
+            if (mean<1.2 && mean> 0.8 ) {
+              test[specie] = 1;
+              AliDebug(1,Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, test[specie])) ; 
+            }
+            if (mean<=0.8 && mean>= 0.5 ){
+              test[specie] = 0.5;
+              AliDebug(1,Form("%s problem in channel %i  efficieny %f test %f",
+                              fhRawEff[icase]->GetName(), idet,  mean, test[specie])) ; 
+            }
+            if (mean<0.5 ) { 
+              test[specie] = 0.25;
+              AliDebug(1,Form("%s big problem in channel %i  efficieny %f test %f",
+                              fhRawEff[icase]->GetName(), idet,  mean, test[specie])) ; 
+            }
+          }
+        }
+      }
+      if(index == 2){
+        //rec points
+        for (Int_t icase=0; icase<2; icase++) {
+          for (Int_t idet=0; idet<24; idet++) {
+            Double_t mean = fhRecDiff[icase]->
+            ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
+                        idet,idet+1)->GetMean();
+            Double_t rms= fhRecDiff[icase]->
+            ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
+                        idet,idet+1)->GetRMS();
+            AliInfo(Form("name %s icase %i idet %i mean %f, rms %f\n",
+                         fhRecDiff[icase]->GetName(), icase, idet, mean,rms)); 
+	  	  
+            if(TMath::Abs(mean) >1.5 || rms >1){
+              AliDebug(1,Form(" calibration is nor perfect; test=%f", test)) ;
+              test[specie]=0.25;
+            }
+            if(mean>3 || rms >5) {
+              test[specie] = 0.1;
+              AliDebug(1,Form(" wrong calibration test=%f", test[specie])) ;
+            } 
+          }
+        }	 
+      }
+      if (index == 3) {
+        //ESD
+        for (Int_t icase=0; icase<2; icase++) {
+          Double_t rmsVertex = fhESD[icase]->GetRMS();
+          Double_t meanVertex = fhESD[icase]->GetMean();
+          test[specie]=1;
+          AliInfo(Form("numentries %d meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
+          if (TMath::Abs(rmsVertex)>3) {
+            test[specie]=0.25;
+            AliDebug(1,Form("Vertex position resolution not good  , rms= %f test=%f",
+                            rmsVertex, test[specie])) ; 
+          }
+          if (TMath::Abs(meanVertex)>3) {
+            test[specie]=0.25;
+            AliDebug(1,Form("Vertex position bad calibrated  , Mean= %f test=%f",
+                            meanVertex, test[specie])) ; 
+          }
+        }
+      }
+    } //  if (list->GetEntries() != 0
+    AliInfo(Form("Test Result = %f", test[specie])) ;
+  } 
   return test ;
 }
 

@@ -146,19 +146,19 @@ private:
   TObjArray      fEventsPerFile;      // number of events per file for given detectors and data types
 
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
-  TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
+  TObjArray* 	   fAlignObjArray;      // array with the alignment objects to be applied to the geometry
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
-  TString 	 fCDBUri;	      //! Uri of the default CDB storage
-  TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
-  Int_t 	 fRun; 		      //! Run number, will be passed to CDB and gAlice!!
-  Int_t 	 fSeed;               //! Seed for random number generator 
-  Bool_t 	 fInitCDBCalled;      //! flag to check if CDB storages are already initialized
-  Bool_t 	 fInitRunNumberCalled;  //! flag to check if run number is already initialized
-  Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
+  TString 	 fCDBUri;	                     //! Uri of the default CDB storage
+  TObjArray  fSpecCDBUri;                  //! Array with detector specific CDB storages
+  Int_t 	   fRun; 		                     //! Run number, will be passed to CDB and gAlice!!
+  Int_t 	   fSeed;                        //! Seed for random number generator 
+  Bool_t 	   fInitCDBCalled;               //! flag to check if CDB storages are already initialized
+  Bool_t 	   fInitRunNumberCalled;         //! flag to check if run number is already initialized
+  Bool_t 	   fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
   
-  Bool_t         fEmbeddingFlag;      // Flag for embedding
+  Bool_t     fEmbeddingFlag;      // Flag for embedding
   
   //QA stuff
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
@@ -167,6 +167,7 @@ private:
   TString              fQATasks ;                       // list of QA tasks to be performed	
   AliQADataMakerSteer * fQASteer ;                      // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
+  AliRecoParam::EventSpecie_t fEventSpecie ;                   // type of event (see AliRecoParam::EventSpecie_t)
 
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'

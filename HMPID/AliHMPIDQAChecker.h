@@ -30,11 +30,8 @@ public:
   AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliHMPIDQAChecker() {;} // dtor
 
-  virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
-  virtual Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
-  virtual Double_t Check()                           {return 0.;} ;
-  virtual Double_t Check(TObjArray*)                 {return 0.;} ; 
-  virtual Double_t Check(AliQA::ALITASK_t, TNtupleD *) { return 0. ;}
+  virtual Double_t * Check(AliQA::ALITASK_t /*index*/) ;
+  virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
   
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckRecPoints(TObjArray *listrec, TObjArray *listref) const ;

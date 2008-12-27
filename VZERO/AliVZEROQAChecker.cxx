@@ -41,8 +41,17 @@
 
 ClassImp(AliVZEROQAChecker)
 
+//____________________________________________________________________________
+Double_t * AliVZEROQAChecker::Check(AliQA::ALITASK_t /*index*/)
+{
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 0.0 ; 
+  return rv ;  
+}
+
 //__________________________________________________________________
-Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
+Double_t * AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list) 
 {
 
 // Main check function: Depending on the TASK, different checks will be applied
@@ -56,17 +65,22 @@ Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 //   }
 
 //   Check that histos are filled - (FATAL) set if empty
-     if(CheckEntries(list) == 0.0){
-        return CheckEntries(list);
-     }
-
-//   Check for one disk missing (FATAL) or one ring missing (ERROR) in ESDs     
-     if(index == AliQA::kESD) {
-        return CheckEsds(list);
-     } 
-
-      return 1.0; 
+  Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    check[specie]    = 1.0 ; 
+    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
+    if(CheckEntries(list[specie]) == 0.0){
+        check[specie] =  CheckEntries(list[specie]);
+    } else {
+      //   Check for one disk missing (FATAL) or one ring missing (ERROR) in ESDs     
+      if(index == AliQA::kESD) 
+          check[specie] =  CheckEsds(list[specie]);
+    } 
+  }
+  return check; 
 }
+
 //_________________________________________________________________
 Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 {
@@ -174,19 +188,45 @@ Double_t AliVZEROQAChecker::CheckEsds(TObjArray * list) const
 } 
 
 //______________________________________________________________________________
-void AliVZEROQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) const
+void AliVZEROQAChecker::Init(const AliQA::DETECTORINDEX_t det) 
+{
+  // intialises QA and QA checker settings
+  AliQA::Instance(det) ; 
+  Float_t * hiValue = new Float_t[AliQA::kNBIT] ; 
+  Float_t * lowValue = new Float_t[AliQA::kNBIT] ;
+  lowValue[AliQA::kINFO]      = 0.5   ; 
+  hiValue[AliQA::kINFO]       = 1.0 ; 
+  lowValue[AliQA::kWARNING]   = 0.2 ; 
+  hiValue[AliQA::kWARNING]    = 0.5 ; 
+  lowValue[AliQA::kERROR]     = 0.0   ; 
+  hiValue[AliQA::kERROR]      = 0.2 ; 
+  lowValue[AliQA::kFATAL]     = -1.0   ; 
+  hiValue[AliQA::kFATAL]      = 0.0 ; 
+  SetHiLo(hiValue, lowValue) ; 
+}
+
+//______________________________________________________________________________
+void AliVZEROQAChecker::SetQA(AliQA::ALITASK_t index, Double_t * value) const
 {
 // sets the QA word according to return value of the Check
   AliQA * qa = AliQA::Instance(index);
-  
-  qa->UnSet(AliQA::kFATAL);
-  qa->UnSet(AliQA::kWARNING);
-  qa->UnSet(AliQA::kERROR);
-  qa->UnSet(AliQA::kINFO);
-   	
-  if ( value <= 0.0 ) qa->Set(AliQA::kFATAL) ; 
-  else if ( value > 0.0 && value <= 0.2 ) qa->Set(AliQA::kERROR) ; 
-  else if ( value > 0.2 && value <= 0.5 ) qa->Set(AliQA::kWARNING) ;
-  else if ( value > 0.5 && value < 1.0 ) qa->Set(AliQA::kINFO) ; 		
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    qa->UnSet(AliQA::kFATAL, specie);
+    qa->UnSet(AliQA::kWARNING, specie);
+    qa->UnSet(AliQA::kERROR, specie);
+    qa->UnSet(AliQA::kINFO, specie);
+    if ( ! value ) { // No checker is implemented, set all QA to Fatal
+      qa->Set(AliQA::kFATAL, specie) ; 
+    } else {
+      if ( value[specie] >= fLowTestValue[AliQA::kFATAL] && value[specie] < fUpTestValue[AliQA::kFATAL] ) 
+        qa->Set(AliQA::kFATAL, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kERROR] && value[specie] <= fUpTestValue[AliQA::kERROR]  )
+        qa->Set(AliQA::kERROR, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kWARNING] && value[specie] <= fUpTestValue[AliQA::kWARNING]  )
+        qa->Set(AliQA::kWARNING, specie) ;
+      else if ( value[specie] > fLowTestValue[AliQA::kINFO] && value[specie] <= fUpTestValue[AliQA::kINFO] ) 
+        qa->Set(AliQA::kINFO, specie) ; 	
+    }
+  }
 }
   

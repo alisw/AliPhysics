@@ -26,13 +26,17 @@ class TObjArray ;
 class AliPHOSQADataMakerSim: public AliQADataMakerSim {
 
 public:
+  enum HHitType_t    {kHits=0, kHitsMul} ; 
+  enum HDigitType_t  {kDigits=0, kDigitsMul} ; 
+  enum HSDigitType_t {kSDigits=0, kSDigitsMul} ; 
+
   AliPHOSQADataMakerSim() ;          // ctor
   AliPHOSQADataMakerSim(const AliPHOSQADataMakerSim& qadm) ;   
   AliPHOSQADataMakerSim& operator = (const AliPHOSQADataMakerSim& qadm) ;
   virtual ~AliPHOSQADataMakerSim() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 

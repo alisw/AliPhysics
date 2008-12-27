@@ -37,7 +37,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
 
   Int_t fNumTriggers[6];  //number of trigger signals;

@@ -170,7 +170,7 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 }
 
 //____________________________________________________________________________ 
-void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
+void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list)
 {
   ///Detector specific actions at end of cycle
   
@@ -179,84 +179,85 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
   // Display trigger histos in a more user friendly way
   DisplayTriggerInfo(task);
   
-  if ( task == AliQA::kRAWS && fTrackerDataMaker ) 
-  {
-    TIter next(list);
-    TObject* o;
-    Bool_t alreadyThere(kFALSE);
-    while ( ( o = next() ) && !alreadyThere )
-    {
-      TString classname(o->ClassName());
-      if ( classname.Contains("TrackerData") ) alreadyThere = kTRUE;
-    }
-    if (!alreadyThere && fTrackerDataMaker) 
-    {
-      AliInfo("Adding fTrackerDataMaker to the list of qa objects");
-      list->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
-    }
-    if ( fTrackerDataMaker ) 
-    {
-      TH1* hbp = GetRawsData(kTrackerBusPatchOccupancy);
-      hbp->Reset();
-      TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
-      AliMpBusPatch* bp(0x0);
-      AliMUONVTrackerData* data = fTrackerDataMaker->Data();
-      Int_t occDim = 2;
-      
-      while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    SetEventSpecie(specie) ; 
+    if ( task == AliQA::kRAWS && fTrackerDataMaker ) 
       {
-        Int_t busPatchId = bp->GetId();
-        Int_t bin = hbp->FindBin(busPatchId);
-        hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim));
-      }
-    }
-  }
-  
-  if ( task == AliQA::kESDS ) {
-  // Normalize ESD histos
-    TH1* h;
-    Int_t bin;
-    AliMpDEIterator it;
-    it.First();
-    while ( !it.IsDone()) {
-    
-      Int_t detElemId = it.CurrentDEId();
-    
-      if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger ) {
+        TIter next(list[specie]);
+        TObject* o;
+        Bool_t alreadyThere(kFALSE);
+        while ( ( o = next() ) && !alreadyThere )
+          {
+            TString classname(o->ClassName());
+            if ( classname.Contains("TrackerData") ) alreadyThere = kTRUE;
+          }
+        if (!alreadyThere && fTrackerDataMaker) 
+          {
+            AliInfo("Adding fTrackerDataMaker to the list of qa objects");
+            list[specie]->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
+          }
+          if ( fTrackerDataMaker ) 
+            {
+              TH1* hbp = GetRawsData(kTrackerBusPatchOccupancy);
+              hbp->Reset();
+              TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+              AliMpBusPatch* bp(0x0);
+              AliMUONVTrackerData* data = fTrackerDataMaker->Data();
+              Int_t occDim = 2;
       
-        h = GetESDsData(kESDnClustersPerDE);
-        Double_t nClusters = h->GetBinContent(h->GetXaxis()->FindFixBin((Double_t)detElemId));
+              while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
+                {
+                  Int_t busPatchId = bp->GetId();
+                  Int_t bin = hbp->FindBin(busPatchId);
+                  hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim));
+                }
+            }
+      }
+  
+    if ( task == AliQA::kESDS ) {
+      // Normalize ESD histos
+      TH1* h;
+      Int_t bin;
+      AliMpDEIterator it;
+      it.First();
+      while ( !it.IsDone()) {
+    
+        Int_t detElemId = it.CurrentDEId();
+    
+        if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger ) {
+      
+          h = GetESDsData(kESDnClustersPerDE);
+          Double_t nClusters = h->GetBinContent(h->GetXaxis()->FindFixBin((Double_t)detElemId));
       
         if (nClusters > 0) {
 	
-	  h = GetESDsData(kESDClusterChargePerDE);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          h = GetESDsData(kESDClusterChargePerDE);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
           h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
 	
-	  h = GetESDsData(kESDClusterMultPerDE);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          h = GetESDsData(kESDClusterMultPerDE);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
           h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
 	
-	  h = GetESDsData(kESDResidualXPerDEMean);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	  Double_t meanResX = h->GetBinContent(bin)/nClusters;
+          h = GetESDsData(kESDResidualXPerDEMean);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          Double_t meanResX = h->GetBinContent(bin)/nClusters;
           h->SetBinContent(bin, meanResX);
 	
-	  h = GetESDsData(kESDResidualYPerDEMean);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	  Double_t meanResY = h->GetBinContent(bin)/nClusters;
+          h = GetESDsData(kESDResidualYPerDEMean);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          Double_t meanResY = h->GetBinContent(bin)/nClusters;
           h->SetBinContent(bin, meanResY);
 	
-	  h = GetESDsData(kESDResidualXPerDESigma);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	  if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResX*meanResX));
-	  else h->SetBinContent(bin, 0.);
+          h = GetESDsData(kESDResidualXPerDESigma);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResX*meanResX));
+          else h->SetBinContent(bin, 0.);
 	
-	  h = GetESDsData(kESDResidualYPerDESigma);
-	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	  if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResY*meanResY));
-	  else h->SetBinContent(bin, 0.);
-	
+          h = GetESDsData(kESDResidualYPerDESigma);
+          bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResY*meanResY));
+          else h->SetBinContent(bin, 0.);
         }
       
       }
@@ -270,7 +271,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
       GetESDsData(kESDnClustersPerDE)->Scale(1./nTracks);
     }
   }
-  
+  }
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kMUON, task, list) ;
 }

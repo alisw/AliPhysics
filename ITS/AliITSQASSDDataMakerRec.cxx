@@ -281,14 +281,13 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
 
   fSSDEventPerCycle = 0;
   
-  AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+ // AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerRec::InitRaws() {  
   // Initialization for RAW data - SSD -
-  //  fGenOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
-  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
+  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
 
   if(fkOnline) {
     AliInfo("Book Online Histograms for SSD\n");
@@ -883,10 +882,8 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
 void AliITSQASSDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SSD -
-  //printf("*-*-*-*-*-*-*---*-*-*-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::InitRecpoints called \n");
-  //  fGenOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
-  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
-  //printf("**-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints offset %d \t %d \n",fGenOffset,fGenRecPointsOffset);
+  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
+  //AliInfo(Form("**-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints offset %d \t %d \n",fGenOffset,fGenRecPointsOffset));
   Int_t nModuleOffset = 500;
   Int_t nITSTotalModules = AliITSgeomTGeo::GetNModules();
 

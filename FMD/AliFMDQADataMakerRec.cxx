@@ -90,7 +90,7 @@ AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
 
 void 
 AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, 
-					 TObjArray * list)
+					 TObjArray ** list)
 {
   // Detector specific actions at end of cycle
   // do the QA checking

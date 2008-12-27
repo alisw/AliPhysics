@@ -239,7 +239,7 @@ void AliHMPIDQADataMakerSim::StartOfDetectorCycle()
   
 }
 
-void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray *obj)
+void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray **obj)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

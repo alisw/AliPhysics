@@ -187,6 +187,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fQATasks("ALL"),	
   fQASteer(NULL), 
   fRunQA(kTRUE), 
+  fEventSpecie(AliRecoParam::kDefault),
   fRunHLT("default"),
   fWriteGRPEntry(kTRUE)
 {
@@ -1748,11 +1749,10 @@ Bool_t AliSimulation::RunQA()
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 
+  fQASteer->SetEventSpecie(fEventSpecie) ;
 	detectorsw = fQASteer->Run(fQADetectors.Data()) ; 
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
-  else 
-    fQASteer->EndOfCycle(detectorsw) ; 
 	return rv ; 
 }
 
@@ -1799,6 +1799,9 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
 	fRunQA = kTRUE ;
 	fQASteer->SetActiveDetectors(fQADetectors) ; 
 	fQASteer->SetTasks(fQATasks) ; 
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
+    fQASteer->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+  
 	return kTRUE; 
 } 
 
@@ -1842,7 +1845,6 @@ void AliSimulation::ProcessEnvironmentVars()
 }
 
 //---------------------------------------------------------------------
-
 void AliSimulation::WriteGRPEntry()
 {
   // Get the necessary information from galice (generator, trigger etc) and
@@ -1869,14 +1871,23 @@ void AliSimulation::WriteGRPEntry()
     TString beamType = projectile + "-" + target;
     beamType.ReplaceAll(" ","");
     if (!beamType.CompareTo("-")) {
-
-	grpObj->SetBeamType("UNKNOWN");
+      grpObj->SetBeamType("UNKNOWN");
     }
     else {
-	grpObj->SetBeamType(beamType);
+      grpObj->SetBeamType(beamType);
+      // Heavy ion run, the event specie is set to kHighMult
+      fEventSpecie = AliRecoParam::kHighMult;
+      if ((strcmp(beamType,"p-p") == 0) ||
+          (strcmp(beamType,"p-")  == 0) ||
+          (strcmp(beamType,"-p")  == 0) ||
+          (strcmp(beamType,"P-P") == 0) ||
+          (strcmp(beamType,"P-")  == 0) ||
+          (strcmp(beamType,"-P")  == 0)) {
+        // Proton run, the event specie is set to kLowMult
+        fEventSpecie = AliRecoParam::kLowMult;
+      } 
     }
-  }
-  else {
+  } else {
     AliWarning("Unknown beam type and energy! Setting energy to 0");
     grpObj->SetBeamEnergy(0);
     grpObj->SetBeamType("UNKNOWN");

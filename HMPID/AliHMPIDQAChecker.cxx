@@ -43,34 +43,49 @@
 
 ClassImp(AliHMPIDQAChecker)
 
+//____________________________________________________________________________
+Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t /*index*/)
+{
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 0.0 ; 
+  return rv ;  
+}
+
 //_________________________________________________________________
-Double_t AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
+Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list) 
 {
 //
 // Main check function: Depending on the TASK, different checks are applied
 // At the moment:       check for empty histograms and checks for RecPoints
 
-  AliDebug(1,Form("AliHMPIDChecker"));
+  Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
+  
+//YS THIS IS NOT CORRECT
+  AliInfo(Form("Fix needed ....."));
   AliCDBEntry *QARefRec = AliCDBManager::Instance()->Get("HMPID/QARef/Rec");
   if( !QARefRec){
-    AliInfo("QA reference data NOT retrieved for Recostruction check. No HMPIDChecker  ...exiting");
-    return 1.;
+    AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker  ...exiting");
+    return check;
   }
+//YS THIS IS NOT CORRECT
 
 // checking for empy histograms
-  Double_t check =0;
-  if(CheckEntries(list) == 0)  {
-  AliWarning("histograms are empty");
-  check = 0.4;//-> Corresponds to kWARNING see AliQACheckerBase::Run
-  return check;
- }
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    check[specie] = 1.0;
+    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
+    if(CheckEntries(list[specie]) == 0)  {
+      AliWarning("histograms are empty");
+      check[specie] = 0.4;//-> Corresponds to kWARNING see AliQACheckerBase::Run
+    }
+  
+    // checking rec points
+    if(index == AliQA::kREC) check[specie] = CheckRecPoints(list[specie],(TObjArray *)QARefRec->GetObject());
 
-// checking rec points
-  if(index == AliQA::kREC) check = CheckRecPoints(list,(TObjArray *)QARefRec->GetObject());
-
-//default check response. It will be changed when reasonable checks will be considered
-  else check = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 
-
+    //default check response. It will be changed when reasonable checks will be considered
+    else check[specie] = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 
+  }
   return check;
 
 }

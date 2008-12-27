@@ -63,19 +63,25 @@ AliQADataMakerSim::~AliQADataMakerSim()
 {
 	//dtor: delete the TObjArray and thei content
 	if ( fDigitsQAList ) { 
-		if ( fDigitsQAList->IsOwner() )
-			fDigitsQAList->Delete() ;     
-		delete fDigitsQAList ;     
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fDigitsQAList[specie]->IsOwner() )
+			fDigitsQAList[specie]->Delete() ;
+    }
+		delete[] fDigitsQAList ;     
 	}
 	if ( fHitsQAList ) {
-		if ( fHitsQAList->IsOwner() ) 
-			fHitsQAList->Delete() ;
-		delete fHitsQAList ;
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fHitsQAList[specie]->IsOwner() ) 
+			fHitsQAList[specie]->Delete() ;
+    }
+		delete[] fHitsQAList ;
 	}
 	if ( fSDigitsQAList ) { 
-		if ( fSDigitsQAList->IsOwner() ) 
-			fSDigitsQAList->Delete() ; 
-		delete fSDigitsQAList ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fSDigitsQAList[specie]->IsOwner() ) 
+			fSDigitsQAList[specie]->Delete() ; 
+    }
+		delete[] fSDigitsQAList ; 
 	}
 }
 
@@ -102,7 +108,7 @@ void AliQADataMakerSim::EndOfCycle()
 void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task) 
 { 
   // Finishes a cycle of QA data acquistion
-	TObjArray * list = 0x0 ; 
+	TObjArray ** list = NULL ; 
 	
 	if ( task == AliQA::kHITS ) 
 		list = fHitsQAList ; 
@@ -119,26 +125,32 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
     subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if (subDir) { 
 		subDir->cd() ; 
-    TIter next(list) ; 
-    TH1 * obj ; 
-    while ( (obj = dynamic_cast<TH1 *>(next())) ) {
-      if (!obj->TestBit(AliQA::GetExpertBit()))
-        obj->Write() ;
-    }
-    if (WriteExpert()) {
-      TDirectory * expertDir = subDir->GetDirectory(AliQA::GetExpert()) ; 
-      if ( expertDir ) {
-        expertDir->cd() ;
-        next.Reset() ; 
-        while ( (obj = dynamic_cast<TH1 *>(next())) ) {
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
+      if (eventSpecieDir) {
+        eventSpecieDir->cd() ; 
+        TIter next(list[specie]) ; 
+        TObject * obj ; 
+        while ( (obj = next()) )  {
           if (!obj->TestBit(AliQA::GetExpertBit()))
-            continue ; 
-          obj->Write() ;
-        }      
+            obj->Write() ;
+        }
+        if (WriteExpert()) {
+          TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+          if ( expertDir ) {
+            expertDir->cd() ;
+            next.Reset() ; 
+            while ( (obj = next()) ) {
+              if (!obj->TestBit(AliQA::GetExpertBit()))
+                continue ; 
+            obj->Write() ;
+            }      
+          }
+        }
       }
     }
+    fOutput->Save() ; 
   }
-  fOutput->Save() ; 
   ResetCycle() ; 
 }
  
@@ -190,31 +202,40 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
+TObjArray **  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
 	
 	if (cycles > 0)
 		SetCycle(cycles) ;  
-	TObjArray * rv = NULL ; 
+	TObjArray ** rv = NULL ; 
 	if ( task == AliQA::kHITS ) {
 		if ( ! fHitsQAList ) {
-			fHitsQAList = new TObjArray(100) ;	 
-   fHitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
+      fHitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fHitsQAList[specie] = new TObjArray(100) ;	 
+        fHitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
+      }
 			InitHits() ;
 		}
 		rv = fHitsQAList ;
 	} else if ( task == AliQA::kSDIGITS ) {
 		if ( ! fSDigitsQAList ) {
-			fSDigitsQAList = new TObjArray(100) ; 
-   fSDigitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
-			InitSDigits() ;
+      fSDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fSDigitsQAList[specie] = new TObjArray(100) ; 
+        fSDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+      }
+      InitSDigits() ;
 		}
 		rv = fSDigitsQAList ;
    } else if ( task == AliQA::kDIGITS ) {
 	   if ( ! fDigitsQAList ) {
-		   fDigitsQAList = new TObjArray(100) ;
-     fDigitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
+       fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {    
+         fDigitsQAList[specie] = new TObjArray(100) ;
+         fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
+       }
 		   InitDigits() ;
 	   }
 	   rv =  fDigitsQAList ;
@@ -224,7 +245,7 @@ TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 }
 
 //____________________________________________________________________________ 
-void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles)
+void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -276,11 +297,13 @@ void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const B
 	if (!subDir)
 		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
   
-  TDirectory * expertDir = subDir->GetDirectory(AliQA::GetExpert()) ; 
-  if (!expertDir)
-    expertDir = subDir->mkdir(AliQA::GetExpert()) ; 
-
-	subDir->cd() ; 
-	  
+  for ( Int_t index = AliRecoParam::kDefault ; index < AliRecoParam::kNSpecies ; index++ ) {
+    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(index)) ; 
+    if (!eventSpecieDir) 
+      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(index)) ; 
+    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+    if (!expertDir) 
+      expertDir = eventSpecieDir->mkdir(AliQA::GetExpert()) ; 
+   }   
 	StartOfDetectorCycle() ; 
 }

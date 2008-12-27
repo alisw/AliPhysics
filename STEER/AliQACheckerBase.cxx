@@ -49,9 +49,28 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   TNamed(name, title), 
   fDataSubDir(0x0),
   fRefSubDir(0x0), 
-  fRefOCDBSubDir(0x0)
+  fRefOCDBSubDir(0x0), 
+  fLowTestValue(0x0),
+  fUpTestValue(0x0)
 {
   // ctor
+  fLowTestValue = new Float_t[AliQA::kNBIT] ; 
+  fUpTestValue  = new Float_t[AliQA::kNBIT] ; 
+  fLowTestValue[AliQA::kINFO]    =  0.5   ; 
+  fUpTestValue[AliQA::kINFO]     = 1.0 ; 
+  fLowTestValue[AliQA::kWARNING] =  0.002 ; 
+  fUpTestValue[AliQA::kWARNING]  = 0.5 ; 
+  fLowTestValue[AliQA::kERROR]   =  0.0   ; 
+  fUpTestValue[AliQA::kERROR]    = 0.002 ; 
+  fLowTestValue[AliQA::kFATAL]   = -1.0   ; 
+  fUpTestValue[AliQA::kFATAL]    = 0.0 ; 
+  
+  AliInfo("Default setting is:") ;
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+  
 }
 
 //____________________________________________________________________________ 
@@ -59,9 +78,15 @@ AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
   TNamed(qac.GetName(), qac.GetTitle()),
   fDataSubDir(qac.fDataSubDir), 
   fRefSubDir(qac.fRefSubDir), 
-  fRefOCDBSubDir(qac.fRefOCDBSubDir)
+  fRefOCDBSubDir(qac.fRefOCDBSubDir), 
+  fLowTestValue(qac.fLowTestValue),
+  fUpTestValue(qac.fLowTestValue)
 {
   //copy ctor
+  for (Int_t index = 0 ; index < AliQA::kNBIT ; index++) {
+    fLowTestValue[index]  = qac.fLowTestValue[index] ; 
+    fUpTestValue[index] = qac.fUpTestValue[index] ; 
+  }
     
 }
 
@@ -74,98 +99,115 @@ AliQACheckerBase& AliQACheckerBase::operator = (const AliQACheckerBase& qadm )
   return *this;
 }
 
+//____________________________________________________________________________ 
+AliQACheckerBase::~AliQACheckerBase()
+{
+  delete [] fLowTestValue ; 
+  delete [] fUpTestValue ; 
+}
+
 //____________________________________________________________________________
-Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
+Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
   // With reference histograms either in a file of in OCDB  
 
-	Double_t test = 0.0  ;
-	Int_t count = 0 ; 
+	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ;
+	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
 
-	if (!fDataSubDir)  
-		test = 1. ; // nothing to check
-	else 
-		if (!fRefSubDir && !fRefOCDBSubDir)
-			test = -1 ; // no reference data
-		else {
-			TList * keyList = fDataSubDir->GetListOfKeys() ; 
-			TIter next(keyList) ; 
-			TKey * key ;
-			count = 0 ; 
-			while ( (key = static_cast<TKey *>(next())) ) {
-				TObject * odata = fRefSubDir->Get(key->GetName()) ; 
-				if ( odata->IsA()->InheritsFrom("TH1") ) {
-					TH1 * hdata = static_cast<TH1*>(odata) ;
-					TH1 * href = NULL ; 
-					if (fRefSubDir) 
-						href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
-					else if (fRefOCDBSubDir) {
-						href  = static_cast<TH1*>(fRefOCDBSubDir->FindObject(key->GetName())) ;
-					}
-					if (!href) 
-						test = -1 ; // no reference data ; 
-					else {
-						Double_t rv =  DiffK(hdata, href) ;
-						AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-						test += rv ; 
-						count++ ; 
-					}
-				} else
-					AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
-			}
-		} 
-	
-	if (count != 0) 
-		test /= count ;
-   
-	return test ;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    test[specie] = 1.0 ; 
+    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
+    if (!fDataSubDir) {
+      test[specie] = 0. ; // nothing to check
+    } else if (!fRefSubDir && !fRefOCDBSubDir) {
+        test[specie] = -1 ; // no reference data
+    } else {
+      TList * keyList = fDataSubDir->GetListOfKeys() ; 
+      TIter next(keyList) ; 
+      TKey * key ;
+      count[specie] = 0 ; 
+      while ( (key = static_cast<TKey *>(next())) ) {
+        TObject * odata = fRefSubDir->Get(key->GetName()) ; 
+        if ( odata->IsA()->InheritsFrom("TH1") ) {
+          TH1 * hdata = static_cast<TH1*>(odata) ;
+          TH1 * href = NULL ; 
+          if (fRefSubDir) 
+            href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
+          else if (fRefOCDBSubDir[specie]) {  
+            href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(key->GetName())) ;
+          }
+          if (!href) 
+            test[specie] = -1 ; // no reference data ; 
+          else {
+            Double_t rv =  DiffK(hdata, href) ;
+            AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+            test[specie] += rv ; 
+            count[specie]++ ; 
+          }
+        } else
+          AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
+      }
+      if (count[specie] != 0) 
+        test[specie] /= count[specie] ;
+    }
+  }
+ 	return test ;
 }  
 
 //____________________________________________________________________________
-Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
+Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
 
-	Double_t test = 0.0  ;
-	Int_t count = 0 ; 
+	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ;
+	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
 
-	if (list->GetEntries() == 0)  
-		test = 1. ; // nothing to check
-	else {
-		if (!fRefSubDir)
-			test = -1 ; // no reference data
-		else {
-			TIter next(list) ; 
-			TH1 * hdata ;
-			count = 0 ; 
-			while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-				if ( hdata) { 
-					TH1 * href = NULL ; 
-					if (fRefSubDir) 
-						href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
-					else if (fRefOCDBSubDir)
-						href  = static_cast<TH1*>(fRefOCDBSubDir->FindObject(hdata->GetName())) ;
-					if (!href) 
-						test = -1 ; // no reference data ; 
-					else {
-						Double_t rv =  DiffK(hdata, href) ;
-						AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-						test += rv ; 
-						count++ ; 
-					}
-				} 
-				else
-					AliError("Data type cannot be processed") ;
-			}
-		}
-	}
-	if (count != 0) 
-		test /= count ;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    test[specie] = 1.0 ; 
+    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
+    if (list[specie]->GetEntries() == 0)  
+      test[specie] = 0. ; // nothing to check
+    else {
+      if (!fRefSubDir && !fRefOCDBSubDir)
+        test[specie] = -1 ; // no reference data
+      else {
+        TIter next(list[specie]) ; 
+        TH1 * hdata ;
+        count[specie] = 0 ; 
+        while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+          if ( hdata) { 
+            if ( hdata->TestBit(AliQA::GetExpertBit()) )  // does not perform the test for expert data
+              continue ; 
+            TH1 * href = NULL ; 
+            if (fRefSubDir) 
+              href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
+            else if (fRefOCDBSubDir[specie])
+              href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
+            if (!href) 
+              test[specie] = -1 ; // no reference data ; 
+            else {
+              Double_t rv =  DiffK(hdata, href) ;
+              AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+              test[specie] += rv ; 
+              count[specie]++ ; 
+            }
+          } 
+          else
+            AliError("Data type cannot be processed") ;
+        }
+        if (count[specie] != 0) 
+          test[specie] /= count[specie] ;
+      }
+    }
+  }
 	return test ;
 }  
+
 
 //____________________________________________________________________________ 
 Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
@@ -191,36 +233,22 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
   return hin->KolmogorovTest(href) ;  
 }
 
-//____________________________________________________________________________ 
-void AliQACheckerBase::Init(const AliQA::DETECTORINDEX_t det)
-{
-  AliQA::Instance(det) ; 
-}
- 
-
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObject * obj) 
+void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray ** list) 
 { 
 	AliDebug(1, Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
   
-	Double_t rv = -1 ;	
-  if ( !obj ) {
+	Double_t * rv = NULL ;
+  if ( !list) 
     rv = Check(index) ;
-  } else { 
-    TString className(obj->IsA()->GetName()) ; 
-    if (className.Contains("TObjArray")) {
-      rv = Check(index, static_cast<TObjArray *>(obj)) ;
-    } else if (className.Contains("TNtupleD")) { 
-      rv = Check(index, static_cast<TNtupleD *>(obj)) ;
-    }  else {
-      AliError(Form("%s class not implemented", className.Data())) ; 
-    }
-  }
-  
+  else 
+    rv = Check(index, list) ;
 	SetQA(index, rv) ; 	
 	
   AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
 	
+  if (rv) 
+    delete [] rv ; 
   Finish() ; 
 }
 
@@ -236,18 +264,43 @@ void AliQACheckerBase::Finish() const
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, Double_t value) const
+void AliQACheckerBase::SetHiLo(Float_t * hiValue, Float_t * lowValue) 
+{
+  AliInfo("Previous setting was:") ;
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+  
+  for (Int_t index = 0 ; index < AliQA::kNBIT ; index++) {
+    fLowTestValue[index]  = lowValue[index] ; 
+    fUpTestValue[index] = hiValue[index] ; 
+  }
+  AliInfo("Current setting is:") ;
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+}
+
+//____________________________________________________________________________
+void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, Double_t * value) const
 {
 	// sets the QA according the return value of the Check
 
-	AliQA * qa = AliQA::Instance(index) ; 
-
-	if ( value <= 0.) 
-		qa->Set(AliQA::kFATAL) ; 
-	else if ( value > 0 && value <= 0.0002 )
-		qa->Set(AliQA::kERROR) ; 
-	else if ( value > 0.0002 && value <= 0.5 )
-		qa->Set(AliQA::kWARNING) ;
-	else if ( value > 0.5 && value < 1 ) 
-		qa->Set(AliQA::kINFO) ; 		
+  AliQA * qa = AliQA::Instance(index) ;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (  value == NULL ) { // No checker is implemented, set all QA to Fatal
+      qa->Set(AliQA::kFATAL, specie) ; 
+    } else {
+      if ( value[specie] >= fLowTestValue[AliQA::kFATAL] && value[specie] < fUpTestValue[AliQA::kFATAL] ) 
+        qa->Set(AliQA::kFATAL, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kERROR] && value[specie] <= fUpTestValue[AliQA::kERROR]  )
+        qa->Set(AliQA::kERROR, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQA::kWARNING] && value[specie] <= fUpTestValue[AliQA::kWARNING]  )
+        qa->Set(AliQA::kWARNING, specie) ;
+      else if ( value[specie] > fLowTestValue[AliQA::kINFO] && value[specie] <= fUpTestValue[AliQA::kINFO] ) 
+        qa->Set(AliQA::kINFO, specie) ; 	
+    }
+  }
 }

@@ -43,7 +43,7 @@ private:
   virtual void   MakeHits(TClonesArray *) {}       //Dummy for the moment
   virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
   virtual void   MakeDigits(TClonesArray *) {}       //Dummy for the moment
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
   ClassDef(AliACORDEQADataMakerSim,1)  // description 
 

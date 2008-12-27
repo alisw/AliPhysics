@@ -32,24 +32,28 @@ public:
   AliQACheckerBase(const char * name = "", const char * title = "") ;          // ctor
   AliQACheckerBase(const AliQACheckerBase& qac) ;   
   AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
-  virtual ~AliQACheckerBase() {;} // dtor
+  virtual ~AliQACheckerBase() ; // dtor
 
-  void   Init(const AliQA::DETECTORINDEX_t det) ; 
-  void   Run(AliQA::ALITASK_t tsk, TObject * obj = NULL); 
-  void   SetRefandData(TDirectory * ref, TObjArray * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
+  virtual void   Init(const AliQA::DETECTORINDEX_t det)   { AliQA::Instance(det) ; }
+  void           Run(AliQA::ALITASK_t tsk, TObjArray ** list = NULL); 
+  void           Run(AliQA::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/) {;} 
+  void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
+  void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
-  virtual Double_t Check(AliQA::ALITASK_t index) ;
-  virtual Double_t Check(AliQA::ALITASK_t, TObjArray *) ; 
-  virtual Double_t Check(AliQA::ALITASK_t, TNtupleD *) { return -1.0 ;} 
-  Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
-  Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
-  void           Finish() const ; 
-  virtual void   SetQA(AliQA::ALITASK_t index, Double_t value) const ;	
+  virtual      Double_t * Check(AliQA::ALITASK_t index) ;
+  virtual      Double_t * Check(AliQA::ALITASK_t, TObjArray **) ; 
 
-  TDirectory  * fDataSubDir    ; //! directory for the current task directory in the current detector directory in the data file
-  TDirectory  * fRefSubDir     ; //! directory for the current task directory in the current detector directory in the reference file
-  TObjArray   * fRefOCDBSubDir ; //! Entry in OCDB for the current detector 
+  Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
+  Double_t     DiffK(const TH1 * href, const TH1 * hin) const ;   
+  void         Finish() const ; 
+  virtual void SetQA(AliQA::ALITASK_t index, Double_t * value) const ;	
+
+  TDirectory  * fDataSubDir     ; //! directory for the current task directory in the current detector directory in the data file
+  TDirectory  * fRefSubDir      ; //! directory for the current task directory in the current detector directory in the reference file
+  TObjArray   ** fRefOCDBSubDir ; //! Entry in OCDB for the current detector 
+  Float_t     * fLowTestValue   ; // array of lower bounds for INFO, WARNING, ERROR, FATAL   
+  Float_t     * fUpTestValue    ; // array of upper bounds for INFO, WARNING, ERROR, FATAL   
 
   ClassDef(AliQACheckerBase,1)  // description 
 

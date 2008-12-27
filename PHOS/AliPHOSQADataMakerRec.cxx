@@ -75,19 +75,24 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
-  if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
-    GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
-  if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
-    GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
-  if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
-    GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
-  if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
-    GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
-  if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
-    GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
+    SetEventSpecie(specie) ; 
+    if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
+      GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
+    if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
+      GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
+    if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
+      GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
+    if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
+      GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
+    if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
+      GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
+  }
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kPHOS, task, list) ;  
 }
@@ -121,8 +126,7 @@ void AliPHOSQADataMakerRec::InitESDs()
 void AliPHOSQADataMakerRec::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
-  Bool_t expert   = kTRUE ; 
-  
+  Bool_t expert   = kTRUE ;   
   TH2I * h0 = new TH2I("hRpPHOSxyMod1","RecPoints Rows x Columns for PHOS module 1", 64, -72., 72., 56, -63., 63.) ;                             
   Add2RecPointsList(h0,kRPmod1, expert) ;
   TH2I * h1 = new TH2I("hRpPHOSxyMod2","RecPoints Rows x Columns for PHOS module 2", 64, -72., 72., 56, -63., 63.) ;                             
@@ -327,6 +331,7 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
    }                 
   }                    
   delete decoder;
+  
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
   TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
   p->SetVal(lgEtot) ; 

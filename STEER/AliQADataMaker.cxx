@@ -30,6 +30,16 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 #include <TParameter.h>
+#include <TH1K.h>
+#include <TH2C.h>
+#include <TH2D.h>
+#include <TH2F.h>
+#include <TH2I.h>
+#include <TH3C.h>
+#include <TH3D.h>
+#include <TH3F.h>
+#include <TH3I.h>
+#include <TH3S.h>
 
 // --- Standard library ---
 
@@ -52,11 +62,14 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fCycle(9999999), 
   fCycleCounter(0), 
   fWriteExpert(kFALSE),
-  fParameterList(0x0), 
-  fRun(0)
+  fParameterList(new TList*[AliRecoParam::kNSpecies]), 
+  fRun(0), 
+  fEventSpecie(AliRecoParam::kDefault)
 {
   // ctor
   fDetectorDirName = GetName() ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    fParameterList[specie] = NULL ; 
 }
 
 //____________________________________________________________________________ 
@@ -70,41 +83,54 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fCycleCounter(qadm.fCycleCounter), 
   fWriteExpert(qadm.fWriteExpert),
   fParameterList(qadm.fParameterList),  
-  fRun(qadm.fRun)
+  fRun(qadm.fRun), 
+  fEventSpecie(qadm.fEventSpecie)
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
 }
 
 //____________________________________________________________________________
-Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t expert, const Bool_t saveForCorr) 
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert, const Bool_t saveForCorr) 
 { 
 	// Set histograms memory resident and add to the list
 	// Maximm allowed is 10000
-        TString className(hist->ClassName()) ;
-        if( ! className.BeginsWith("T") ) {
-	        AliError(Form("QA data Object must be a generic ROOT object and not %s", className.Data())) ; 
-//	        return -1 ;
-	}
-	if ( index > 10000 ) {
+  
+  Int_t rv = -1 ; 
+  TClass * classType = hist->Class() ;
+  TString className(classType->GetName()) ; 
+  if( ! className.BeginsWith("T") && ! classType->InheritsFrom("TH1") ) {
+    AliError(Form("QA data Object must be a generic ROOT object and derive fom TH1 and not %s", className.Data())) ; 
+	} else if ( index > 10000 ) {
 		AliError("Max number of authorized QA objects is 10000") ; 
-		return -1 ; 
-	} else {
-		hist->SetDirectory(0) ; 
-    
+  } else {    
     if (expert) 
       hist->SetBit(AliQA::GetExpertBit()) ; 
-		
-    list->AddAtAndExpand(hist, index) ; 
-    char * name = Form("%s_%s", list->GetName(), hist->GetName()) ;  
-    TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
-    if(saveForCorr) {  
-      if ( ! fParameterList )
-        fParameterList = new TList() ; 
-      fParameterList->Add(p) ;
+		TH1 * histClone[AliRecoParam::kNSpecies] ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      histClone[specie] = CloneMe(hist, specie) ; 
+      histClone[specie]->SetDirectory(0) ; 
+      list[specie]->AddAtAndExpand(histClone[specie], index) ; 
+      if(saveForCorr) {  
+        char * name = Form("%s_%s", list[AliRecoParam::kDefault]->GetName(), hist->GetName()) ;  
+        TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
+        if ( fParameterList[specie] == NULL )
+          fParameterList[specie] = new TList() ; 
+        fParameterList[specie]->Add(p) ;
+      }
     }
-    return list->GetLast() ;
+    rv = list[AliRecoParam::kDefault]->GetLast() ;
   }
+  delete hist ; 
+  return rv ; 
+}
+
+//____________________________________________________________________________
+TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const  
+{
+  // clones a histogram 
+  char * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
+  return dynamic_cast<TH1 *>(hist->Clone(name)) ; 
 }
 
 //____________________________________________________________________________
@@ -114,7 +140,8 @@ void AliQADataMaker::DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task)
 	// sets the QA result to Fatal
 	AliQA::Instance(AliQA::GetDetIndex(GetName())) ;
 	AliQA * qa = AliQA::Instance(task) ;
-	qa->Set(AliQA::kFATAL) ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    qa->Set(AliQA::kFATAL, specie) ; 
 	AliQA::GetQAResultFile()->cd() ; 
 	qa->Write(AliQA::GetQAName(), kWriteDelete) ;   
 	AliQA::GetQAResultFile()->Close() ; 
@@ -129,17 +156,18 @@ void AliQADataMaker::Finish() const
 } 
 
 //____________________________________________________________________________ 
-TObject * AliQADataMaker::GetData(TObjArray * list, const Int_t index)  
+TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)  
 { 
 	// Returns the QA object at index. Limit is 100. 
-	if (list) {
+	if (list[AliRecoParam::AConvert(fEventSpecie)]) {
 		if ( index > 10000 ) {
 			AliError("Max number of authorized QA objects is 10000") ; 
 			return NULL ; 
 		} else {
-			return list->At(index) ; 
+      Int_t esindex = AliRecoParam::AConvert(fEventSpecie) ; 
+      return list[esindex]->At(index) ; 
 		} 	
-	} else {
+  } else {
 		AliError("Data list is NULL !!") ; 
 		return NULL ; 		
 	}

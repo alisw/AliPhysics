@@ -68,7 +68,7 @@ AliVZEROQADataMakerSim& AliVZEROQADataMakerSim::operator = (const AliVZEROQAData
   return *this;
 }
 //____________________________________________________________________________
-void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

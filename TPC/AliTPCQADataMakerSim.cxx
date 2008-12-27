@@ -49,26 +49,14 @@ ClassImp(AliTPCQADataMakerSim)
 //____________________________________________________________________________ 
 AliTPCQADataMakerSim::AliTPCQADataMakerSim() : 
   AliQADataMakerSim(AliQA::GetDetName(AliQA::kTPC), 
-		    "TPC Sim Quality Assurance Data Maker"),
-  fHistDigitsADC(0),
-  fHistHitsNhits(0), 
-  fHistHitsElectrons(0), 
-  fHistHitsRadius(0),
-  fHistHitsPrimPerCm(0), 
-  fHistHitsElectronsPerCm(0) 
+		    "TPC Sim Quality Assurance Data Maker")
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerSim::AliTPCQADataMakerSim(const AliTPCQADataMakerSim& qadm) :
-  AliQADataMakerSim(),
-  fHistDigitsADC(0),
-  fHistHitsNhits(0), 
-  fHistHitsElectrons(0), 
-  fHistHitsRadius(0),
-  fHistHitsPrimPerCm(0), 
-  fHistHitsElectronsPerCm(0) 
+  AliQADataMakerSim()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -78,14 +66,7 @@ AliTPCQADataMakerSim::AliTPCQADataMakerSim(const AliTPCQADataMakerSim& qadm) :
   // Associate class histogram objects to the copies in the list
   // Could also be done with the indexes
   //
-  fHistDigitsADC     = (TH1F*)fDigitsQAList->FindObject("hDigitsADC");
-
-  fHistHitsNhits     = (TH1F*)fHitsQAList->FindObject("hHitsNhits");
-  fHistHitsElectrons = (TH1F*)fHitsQAList->FindObject("hHitsElectrons");
-  fHistHitsRadius    = (TH1F*)fHitsQAList->FindObject("hHitsRadius");
-  fHistHitsPrimPerCm = (TH1F*)fHitsQAList->FindObject("hHitsPrimPerCm");
-  fHistHitsElectronsPerCm    = (TH1F*)fHitsQAList->FindObject("hHitsElectronsPerCm");
-}
+ }
 
 //__________________________________________________________________
 AliTPCQADataMakerSim& AliTPCQADataMakerSim::operator = (const AliTPCQADataMakerSim& qadm )
@@ -97,7 +78,7 @@ AliTPCQADataMakerSim& AliTPCQADataMakerSim::operator = (const AliTPCQADataMakerS
 }
  
 //____________________________________________________________________________ 
-void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
@@ -107,45 +88,45 @@ void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
 //____________________________________________________________________________ 
 void AliTPCQADataMakerSim::InitDigits()
 {
-  fHistDigitsADC = 
+  TH1F * histDigitsADC = 
     new TH1F("hDigitsADC", "Digit ADC distribution; ADC; Counts",
 	     1000, 0, 1000);
-  fHistDigitsADC->Sumw2();
-  Add2DigitsList(fHistDigitsADC, 0);
+  histDigitsADC->Sumw2();
+  Add2DigitsList(histDigitsADC, kDigitsADC);
 }
 
 //____________________________________________________________________________ 
 void AliTPCQADataMakerSim::InitHits()
 {
-  fHistHitsNhits = 
+  TH1F * histHitsNhits = 
     new TH1F("hHitsNhits", "Interactions per primary track in the TPC volume; Number of primary interactions; Counts",
 	     100, 0, 10000);
-  fHistHitsNhits->Sumw2();
-  Add2HitsList(fHistHitsNhits, 0);
+  histHitsNhits->Sumw2();
+  Add2HitsList(histHitsNhits, kNhits);
 
-  fHistHitsElectrons = 
+  TH1F * histHitsElectrons = 
     new TH1F("hHitsElectrons", "Electrons per interaction (primaries); Electrons; Counts",
 	     300, 0, 300);
-  fHistHitsElectrons->Sumw2();
-  Add2HitsList(fHistHitsElectrons, 1);  
+  histHitsElectrons->Sumw2();
+  Add2HitsList(histHitsElectrons, kElectrons);  
 
-  fHistHitsRadius = 
+  TH1F * histHitsRadius = 
     new TH1F("hHitsRadius", "Position of interaction (Primary tracks only); Radius; Counts",
 	     300, 0., 300.);  
-  fHistHitsRadius->Sumw2();
-  Add2HitsList(fHistHitsRadius, 2);  
+  histHitsRadius->Sumw2();
+  Add2HitsList(histHitsRadius, kRadius);  
 
-  fHistHitsPrimPerCm = 
+  TH1F * histHitsPrimPerCm = 
     new TH1F("hHitsPrimPerCm", "Primaries per cm (Primary tracks only); Primaries; Counts",
 	     100, 0., 100.);  
-  fHistHitsPrimPerCm->Sumw2();
-  Add2HitsList(fHistHitsPrimPerCm, 3);  
+  histHitsPrimPerCm->Sumw2();
+  Add2HitsList(histHitsPrimPerCm, kPrimPerCm);  
 
-  fHistHitsElectronsPerCm = 
+  TH1F * histHitsElectronsPerCm = 
     new TH1F("hHitsElectronsPerCm", "Electrons per cm (Primary tracks only); Electrons; Counts",
 	     300, 0., 300.);  
-  fHistHitsElectronsPerCm->Sumw2();
-  Add2HitsList(fHistHitsElectronsPerCm, 4);  
+  histHitsElectronsPerCm->Sumw2();
+  Add2HitsList(histHitsElectronsPerCm, kElectronsPerCm);  
 }
 
 //____________________________________________________________________________
@@ -163,10 +144,9 @@ void AliTPCQADataMakerSim::MakeDigits(TTree* digitTree)
     
     if (digArray->First())
       do {
+        Float_t dig = digArray->CurrentDigit();
 	
-	Float_t dig = digArray->CurrentDigit();
-	
-	fHistDigitsADC->Fill(dig);
+        GetDigitsData(kDigitsADC)->Fill(dig);
       } while (digArray->Next());    
   }
 }
@@ -197,55 +177,55 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
       Float_t radiusOld = TMath::Sqrt(xold*xold + yold*yold);
       Float_t q     = 0.;
       while(tpcHit) {
-	Float_t x = tpcHit->X();
-	Float_t y = tpcHit->Y();
-	Float_t z = tpcHit->Z(); 
-	Float_t radius = TMath::Sqrt(x*x + y*y);
+        Float_t x = tpcHit->X();
+        Float_t y = tpcHit->Y();
+        Float_t z = tpcHit->Z(); 
+        Float_t radius = TMath::Sqrt(x*x + y*y);
 	
-	if(radius>50) { // Skip hits at interaction point
+        if(radius>50) { // Skip hits at interaction point
 	  
-	  nHits++;
+          nHits++;
 	  
-	  Int_t trackNo = tpcHit->GetTrack();
+          Int_t trackNo = tpcHit->GetTrack();
 	  
-	  if(trackNo==n) { // primary track
+          if(trackNo==n) { // primary track
 	    
-	    fHistHitsElectrons->Fill(tpcHit->fQ);
-	    fHistHitsRadius->Fill(radius);
+            GetDigitsData(kElectrons)->Fill(tpcHit->fQ);
+            GetDigitsData(kRadius)->Fill(radius);
 	    
-	    // find the new distance
-	    dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
-				(z-zold)*(z-zold));
-	    if(dist<1.){  
-	      // add data to this 1 cm step
-	      nprim++;  
-	      q += tpcHit->fQ;
+            // find the new distance
+            dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
+                                (z-zold)*(z-zold));
+            if(dist<1.){  
+              // add data to this 1 cm step
+              nprim++;  
+              q += tpcHit->fQ;
 	      
-	    } else{
-	      // Fill the histograms normalized to per cm 
+            } else{
+              // Fill the histograms normalized to per cm 
 	      
-	      if(nprim==1)
-		cout << radius << ", " << radiusOld << ", " << dist << endl; 
+              if(nprim==1)
+                cout << radius << ", " << radiusOld << ", " << dist << endl; 
 	      
-	      fHistHitsPrimPerCm->Fill((Float_t)nprim);
-	      fHistHitsElectronsPerCm->Fill(q);
+              GetDigitsData(kPrimPerCm)->Fill((Float_t)nprim);
+              GetDigitsData(kElectronsPerCm)->Fill(q);
 	      
-	      dist  = 0;
-	      q     = 0;
-	      nprim = 0;
-	    }
-	  }
-	}
+              dist  = 0;
+              q     = 0;
+              nprim = 0;
+            }
+          }
+        }
 	
-	radiusOld = radius;
-	xold = x;
-	yold = y;
-	zold = z;
+        radiusOld = radius;
+        xold = x;
+        yold = y;
+        zold = z;
 	
-	tpcHit = (AliTPChit*) tpc->NextHit();
+        tpcHit = (AliTPChit*) tpc->NextHit();
+        }
       }
+      GetDigitsData(kNhits)->Fill(nHits);
     }
-    fHistHitsNhits->Fill(nHits);
   }
-}
 

@@ -580,7 +580,7 @@ void AliPMDQADataMakerRec::StartOfDetectorCycle()
   
 }
 //____________________________________________________________________________ 
-void AliPMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliPMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

@@ -94,7 +94,6 @@ using namespace std;
 ClassImp(AliTPCdataQA)
 
 AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/  
-  TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
   fAdcMin(1),
@@ -126,6 +125,38 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   //
 }
 
+//_____________________________________________________________________
+AliTPCdataQA::AliTPCdataQA(AliRecoParam::EventSpecie_t es) :
+fFirstTimeBin(60),
+fLastTimeBin(1000),
+fAdcMin(1),
+fAdcMax(100),
+fMapping(NULL),
+fPedestal(0),
+fNoise(0),
+fNLocalMaxima(0),
+fMaxCharge(0),
+fMeanCharge(0),
+fNoThreshold(0),
+fNTimeBins(0),
+fNPads(0),
+fTimePosition(0),
+fOverThreshold10(0),
+fOverThreshold20(0),
+fOverThreshold30(0),
+fEventCounter(0),
+fIsAnalysed(kFALSE),
+fAllBins(0),
+fAllSigBins(0),
+fAllNSigBins(0),
+fRowsMax(0),
+fPadsMax(0),
+fTimeBinsMax(0)
+{
+// ctor creating the histogram
+  char *  name = Form("TPCRAW_%s", AliRecoParam::GetEventSpecieName(es)) ; 
+  TH1F(name, name,100,0,100) ; 
+}
 
 //_____________________________________________________________________
 AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/

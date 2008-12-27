@@ -24,17 +24,19 @@ public:
   AliMUONQAChecker(const AliMUONQAChecker& qac);
   virtual ~AliMUONQAChecker();
 
+  virtual void   Init(const AliQA::DETECTORINDEX_t det) ; 
+
 protected:
 
   using AliQACheckerBase::Check;
   
-  virtual Double_t Check(AliQA::ALITASK_t index) ;
-  virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
-  virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;	
+  virtual Double_t * Check(AliQA::ALITASK_t index) ;
+  virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
+  virtual void SetQA(AliQA::ALITASK_t index, const Double_t * value) const ;	
 	
-  Double_t CheckRaws(TObjArray* list);
-  Double_t CheckRecPoints(TObjArray* list);
-  Double_t CheckESD(TObjArray* list);
+  Double_t * CheckRaws(TObjArray** list);
+  Double_t * CheckRecPoints(TObjArray** list);
+  Double_t * CheckESD(TObjArray** list);
   TH1* GetHisto(TObjArray* list, const char* hname) const;
   Double_t MarkHisto(TH1& histo, Double_t value) const;
   

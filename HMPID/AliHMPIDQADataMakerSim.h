@@ -35,7 +35,7 @@ public:
 
 private:
 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * obj) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** obj) ;
   virtual void   InitHits() ;      //book hit QA histo 
   virtual void   InitDigits() ;    //book Digit QA histo
   virtual void   InitSDigits() ;   //book SDigits QA histo

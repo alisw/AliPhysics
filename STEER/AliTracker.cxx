@@ -37,7 +37,8 @@ Bool_t AliTracker::fgUniformField=kTRUE;
 Double_t AliTracker::fgBz=kAlmost0Field;
 const AliMagF *AliTracker::fgkFieldMap=0;
 Bool_t AliTracker::fFillResiduals=kFALSE;
-TObjArray *AliTracker::fResiduals=0;
+TObjArray **AliTracker::fResiduals=NULL;
+AliRecoParam::EventSpecie_t AliTracker::fEventSpecie=AliRecoParam::kDefault;
 
 ClassImp(AliTracker)
 
@@ -48,7 +49,7 @@ AliTracker::AliTracker():
   fZ(0),
   fSigmaX(0.005),
   fSigmaY(0.005),
-  fSigmaZ(0.010)
+  fSigmaZ(0.010) 
 {
   //--------------------------------------------------------------------
   // The default constructor.
@@ -399,27 +400,27 @@ void AliTracker::FillResiduals(const AliExternalTrackParam *t,
 
   TH1F *h=0;
   AliGeomManager::ELayerID layer=AliGeomManager::VolUIDToLayer(id);
-  h=(TH1F*)fResiduals->At(2*layer-2);
+  h=(TH1F*)fResiduals[fEventSpecie]->At(2*layer-2);
   h->Fill(residuals[0]);
-  h=(TH1F*)fResiduals->At(2*layer-1);
+  h=(TH1F*)fResiduals[fEventSpecie]->At(2*layer-1);
   h->Fill(residuals[1]);
 
   if (layer==5) {
     if (p[1]<0) {  // SSD1 absolute residuals
-       ((TH1F*)fResiduals->At(40))->Fill(t->GetY()-p[0]); //C side
-       ((TH1F*)fResiduals->At(41))->Fill(t->GetZ()-p[1]);
+       ((TH1F*)fResiduals[fEventSpecie]->At(40))->Fill(t->GetY()-p[0]); //C side
+       ((TH1F*)fResiduals[fEventSpecie]->At(41))->Fill(t->GetZ()-p[1]);
     } else {             
-       ((TH1F*)fResiduals->At(42))->Fill(t->GetY()-p[0]); //A side
-       ((TH1F*)fResiduals->At(43))->Fill(t->GetZ()-p[1]);
+       ((TH1F*)fResiduals[fEventSpecie]->At(42))->Fill(t->GetY()-p[0]); //A side
+       ((TH1F*)fResiduals[fEventSpecie]->At(43))->Fill(t->GetZ()-p[1]);
     }           
   }
   if (layer==6) {  // SSD2 absolute residuals
     if (p[1]<0) {
-       ((TH1F*)fResiduals->At(44))->Fill(t->GetY()-p[0]); //C side
-       ((TH1F*)fResiduals->At(45))->Fill(t->GetZ()-p[1]);
+       ((TH1F*)fResiduals[fEventSpecie]->At(44))->Fill(t->GetY()-p[0]); //C side
+       ((TH1F*)fResiduals[fEventSpecie]->At(45))->Fill(t->GetZ()-p[1]);
     } else {
-       ((TH1F*)fResiduals->At(46))->Fill(t->GetY()-p[0]); //A side
-       ((TH1F*)fResiduals->At(47))->Fill(t->GetZ()-p[1]);
+       ((TH1F*)fResiduals[fEventSpecie]->At(46))->Fill(t->GetY()-p[0]); //A side
+       ((TH1F*)fResiduals[fEventSpecie]->At(47))->Fill(t->GetZ()-p[1]);
     }
   }
 

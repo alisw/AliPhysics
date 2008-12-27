@@ -37,7 +37,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader);
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   StartOfDetectorCycle() ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * obj) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** obj) ;
   Int_t   fEvtRaw;    //internal event counter for raw 
 
   ClassDef(AliHMPIDQADataMakerRec,1)  // description 

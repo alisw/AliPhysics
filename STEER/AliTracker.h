@@ -12,6 +12,8 @@
 //-------------------------------------------------------------------------
 #include <TObject.h>
 #include <AliPlaneEff.h>
+#include "AliRecoParam.h"
+
 
 class TTree;
 class AliMagF;
@@ -72,8 +74,8 @@ public:
   static void FillResiduals(const AliExternalTrackParam *t,
 			   Double_t *p, Double_t *cov, 
                            UShort_t id, Bool_t updated=kTRUE);
-  static void SetFillResiduals(Bool_t flag=kTRUE) { fFillResiduals=flag; }
-  static void SetResidualsArray(TObjArray *arr) { fResiduals=arr; }
+  static void SetFillResiduals(AliRecoParam::EventSpecie_t es, Bool_t flag=kTRUE) { fFillResiduals=flag; fEventSpecie = es ;}
+  static void SetResidualsArray(TObjArray **arr) { fResiduals=arr; }
 
 protected:
   AliTracker(const AliTracker &atr);
@@ -85,7 +87,7 @@ private:
   static Double_t fgBz;               // Nominal Bz (kG)
 
   static Bool_t fFillResiduals;       // Fill residuals flag
-  static TObjArray *fResiduals;    //! Array of histograms with residuals
+  static TObjArray **fResiduals;    //! Array of histograms with residuals
 
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
@@ -94,7 +96,9 @@ private:
   Double_t fSigmaX; // error of the primary vertex position in X
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z
-
+  
+  static AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
+  
   ClassDef(AliTracker,4) //abstract tracker
 };
 

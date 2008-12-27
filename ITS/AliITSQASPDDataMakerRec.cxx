@@ -110,7 +110,7 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASPDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SPD -
-  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
+  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
   AliInfo("Book Offline Histograms for SPD\n ");
 
   Char_t name[50];
@@ -234,7 +234,7 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 void AliITSQASPDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SPD -
-  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
+  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
   TH1F* hlayer= new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");

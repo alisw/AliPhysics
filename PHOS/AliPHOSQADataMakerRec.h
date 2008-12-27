@@ -51,7 +51,7 @@ public:
 private:
   const AliPHOSRecoParam* GetRecoParam() const { return dynamic_cast<const AliPHOSRecoParam *>(fRecoParam); }
 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 

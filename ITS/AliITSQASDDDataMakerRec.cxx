@@ -137,7 +137,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASDDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SDD -
-  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
+  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
   if(!ddlMapSDD)
@@ -394,7 +394,7 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SDD -
 
-  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
+  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
 
   Int_t nOnline=1;
   Int_t  nOnline2=1;

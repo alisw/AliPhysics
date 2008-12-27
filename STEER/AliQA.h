@@ -10,9 +10,11 @@
 //
 
 #include <TNamed.h> 
+#include <TMath.h> 
 class TFile ; 
 
 #include "AliLog.h"
+#include "AliRecoParam.h"
 
 class AliQA : public TNamed {
 public:
@@ -24,14 +26,6 @@ public:
     kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK };
 	enum QABIT_t {
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
-    enum RUNTYPE_t {
-      kNULLTYPE=-1, kUNKOWN, kAUTO_TEST, kCALIBRATION, kCALIBRATION_PULSER, kCHANNEL_DELAY_TUNING, kCOSMIC, kCOSMICS, kDAQ_FO_UNIF_SCAN, 
-			kDAQ_GEN_DAC_SCAN, kDAQ_MEAN_TH_SCAN, kDAQ_MIN_TH_SCAN, kDAQ_NOISY_PIX_SCAN, kDAQ_PIX_DELAY_SCAN, kDAQ_UNIFORMITY_SCAN, 
-			kDCS_FO_UNIF_SCAN, kDCS_MEAN_TH_SCAN, kDCS_MIN_TH_SCAN, kDCS_PIX_DELAY_SCAN, kDCS_UNIFORMITY_SCAN, kDDL_TEST, kGAIN, 
-			kPEDESTAL, kINJECTOR,  kLASER, kMONTECARLO, kNOISE, kNOISY_PIX_SCAN,  kPHYSICS, kPULSER, kSTANDALONE, kSTANDALONE_BC, 
-			kSTANDALONE_CENTRAL, kSTANDALONE_COSMIC, kSTANDALONE_EMD, kSTANDALONE_LASER, kSTANDALONE_MB, kSTANDALONE_PEDESTAL, 
-			kSTANDALONE_SEMICENTRAL, kSTANDALONE_PULSER, kNTYPE};
-	
 	enum TASKINDEX_t {
     kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
   
@@ -47,7 +41,7 @@ public:
 	static  AliQA *        Instance(const DETECTORINDEX_t det) ;
 	static  AliQA *        Instance(const ALITASK_t tsk) ;
 	static  AliQA *        Instance(const TASKINDEX_t tsk) ;
-	Bool_t           CheckFatal() const ;
+	Bool_t                 CheckFatal() const ;
 	static void            Close() ; 
 	static const char *    GetAliTaskName(ALITASK_t tsk) ;
   static const TString   GetExpert() { return fkgExpert ; }
@@ -55,7 +49,7 @@ public:
 	static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
 	static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
 	static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
-	static       DETECTORINDEX_t GetDetIndex(const char * name) ; 
+	static DETECTORINDEX_t GetDetIndex(const char * name) ; 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const TString   GetGRPPath() { return fgGRPPath ; }  
@@ -74,46 +68,54 @@ public:
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
-	static const TString   GetRunTypeName(RUNTYPE_t rt = kNULLTYPE) ;
-	static       TASKINDEX_t GetTaskIndex(const char * name) ; 
+	static     TASKINDEX_t GetTaskIndex(const char * name) ; 
 	static       TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
-	      Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
-	      Bool_t           IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const ;
-	      Bool_t           IsSetAny(DETECTORINDEX_t det) const ;
+  Bool_t                 IsEventSpecieSet(AliRecoParam::EventSpecie_t es) const { return fEventSpecies[(Int_t)TMath::Log2(es)] ; }
+  Bool_t                 IsEventSpecieSet(Int_t es) const { return fEventSpecies[es] ; }
+  Bool_t                 IsSet(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) const ;
+  Bool_t                 IsSet(DETECTORINDEX_t det, ALITASK_t tsk, Int_t es, QABIT_t bit) const ;
+  Bool_t                 IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const ;
+  Bool_t                 IsSetAny(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const ;
 	void                   Merge(TCollection * list) ; 
-	void                   Set(QABIT_t bit) ;
+	void                   Set(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
+	void                   Set(QABIT_t bit, Int_t es) ;
+  void                   SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecies[(Int_t)TMath::Log2(es)] = kTRUE ; }
 	static void			       SetQAResultDirName(const char * name) ; 
 	static void            SetQARefStorage(const char * name) ; 
-	static void            SetQARefDataDirName(RUNTYPE_t rt) { fkgRefDataDirName = GetRunTypeName(rt) ; }
-	static void            SetQARefDataDirName(const char * name) ;
-	void                   Show() const { ShowStatus(fDet, fTask) ; }
-	void                   Show(DETECTORINDEX_t det) const { ShowStatus(det) ; }
+	static void            SetQARefDataDirName(AliRecoParam::EventSpecie_t es) { fkgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
+	static void            SetQARefDataDirName(Int_t es) { fkgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
+	void                   Show() const ; 
+	void                   Show(DETECTORINDEX_t det) const ;
 	void                   ShowAll() const ;
-	void                   ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk=kNULLTASK) const ;
-	void                   UnSet(QABIT_t bit) ;
+	void                   ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk=kNULLTASK, AliRecoParam::EventSpecie_t es=AliRecoParam::kDefault) const ;
+	void                   UnSet(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
+	void                   UnSet(QABIT_t bit, Int_t es) ;
 
 private:      
 
 	      Bool_t         CheckRange(DETECTORINDEX_t det) const ;
 	      Bool_t         CheckRange(ALITASK_t tsk) const ;
 	      Bool_t         CheckRange(QABIT_t bit) const ;
+        Bool_t         CheckRange(AliRecoParam::EventSpecie_t es) const ;
 	const char *         GetBitName(QABIT_t bit) const ;
-	      ULong_t        GetStatus(DETECTORINDEX_t det) const  { return fQA[det] ;}
+        ULong_t        GetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const  { return fQA[det][(Int_t)TMath::Log2(es)] ;}
 	void                 Finish() const ;  
 	      ULong_t        Offset(ALITASK_t tsk) const ;
-	void                 ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
-	void                 ResetStatus(DETECTORINDEX_t det) { fQA[det] = 0 ; }
+	void                 ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
+	void                 ResetStatus(DETECTORINDEX_t det) ; 
 	void                 Set(DETECTORINDEX_t det) { fDet = det ;}
 	void                 Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
-	void                 SetStatus(DETECTORINDEX_t det, ULong_t status) { fQA[det] = status ; }
-	void                 SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
-	void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
+	void                 SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det][(Int_t)TMath::Log2(es)] = status ; }
+	void                 SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
+	void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
 
 	static AliQA *       fgQA		                ; // pointer to the instance of the singleton
 	Int_t                fNdet     	            ; // number of detectors
-	ULong_t    *         fQA		                ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
-	DETECTORINDEX_t      fDet		                ; //!  the current detector (ITS, TPC, ....)
-	ALITASK_t            fTask	                ; //!  the current environment (SIM, REC, ESD, ANA)
+  Int_t                fNEventSpecie          ; // number of Event Specie (see AliRecoParam)
+	ULong_t    **        fQA		                ; //[fNdet][fNEventSpecie] the status word 4 bits for SIM, REC, ESD, ANA each
+	DETECTORINDEX_t      fDet		                ; //! the current detector (ITS, TPC, ....)
+	ALITASK_t            fTask	                ; //! the current environment (SIM, REC, ESD, ANA)
+  AliRecoParam::EventSpecie_t fEventSpecie    ; //! the current event specie
 	static TString       fgDetNames[]	          ; //! list of detector names   
 	static TString       fgGRPPath              ; //! path of the GRP object in OCDB
 	static TFile *       fgQADataFile	          ; //! the output file where the quality assurance maker store their results
@@ -138,6 +140,7 @@ private:
 	static const TString fkgRefOCDBDirName      ; //! name of Reference directory name in OCDB  	
 	static       TString fkgRefDataDirName      ; //! name of Reference directory name in OCDB for data  	
 	static const TString fkgQARefOCDBDefault    ; //! default storage for QA in OCDB 
+  Bool_t *             fEventSpecies          ; //[fNEventSpecie] list of event species encountered in a run
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object
 };

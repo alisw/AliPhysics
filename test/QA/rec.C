@@ -21,7 +21,7 @@
   
   TStopwatch timer;
   timer.Start();
-  reco.Run();
+  reco.Run("raw.root");
   timer.Stop();
   timer.Print();
 }

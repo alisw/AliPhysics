@@ -30,6 +30,7 @@
 #include <TH2F.h> 
 #include <TNtupleD.h>
 #include <TParameter.h>
+#include <TMath.h> 
 
 // --- Standard library ---
 
@@ -47,7 +48,9 @@ AliQADataMakerRec(AliQA::GetDetName(AliQA::kCORR), "Corr Quality Assurance Data 
   fqadm(qadm)
 {
   // ctor
-
+  fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    fCorrNt[specie] = NULL ; 
 }
 
 //____________________________________________________________________________ 
@@ -64,19 +67,32 @@ AliCorrQADataMakerRec::AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) 
 //__________________________________________________________________
 AliCorrQADataMakerRec& AliCorrQADataMakerRec::operator = (const AliCorrQADataMakerRec& qadm )
 {
-  // Equal operator.
+  // assign operator.
   this->~AliCorrQADataMakerRec();
   new(this) AliCorrQADataMakerRec(qadm);
   return *this;
 }
- 
+   
 //____________________________________________________________________________ 
-void AliCorrQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * /*list*/)
+AliCorrQADataMakerRec::~AliCorrQADataMakerRec()  
+{
+  // dtor only destroy the ntuple 
+  if ( fCorrNt ) {
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fCorrNt[specie] != NULL ) 
+        delete fCorrNt[specie] ; 
+    }
+		delete[] fCorrNt ; 
+	}  
+}
+  
+//____________________________________________________________________________ 
+void AliCorrQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** /*list*/)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
   if (task == AliQA::kRAWS) {
-     AliQAChecker::Instance()->Run(AliQA::kCORR, task, fObject) ; 
+     AliQAChecker::Instance()->Run(AliQA::kCORR, task, fCorrNt) ; 
   }
 }
 
@@ -100,7 +116,7 @@ void AliCorrQADataMakerRec::InitRecPoints()
 void AliCorrQADataMakerRec::InitRaws()
 {
   // createa ntuple taking all the parameters declared by detectors
-  if (fObject) 
+  if (fCorrNt) 
     return ; 
   delete fRawsQAList ; // not needed for the time being 
   fRawsQAList = NULL ; 
@@ -124,7 +140,10 @@ void AliCorrQADataMakerRec::InitRaws()
   if (fMaxRawVar == 0) { 
     AliWarning("NTUPLE not created") ; 
   } else {
-    fObject = new TNtupleD(AliQA::GetQACorrName(), "Raws data correlation among detectors", varlist.Data()) ;  
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      char * name = Form("%s_%s", AliQA::GetQACorrName(), AliRecoParam::GetEventSpecieName(specie)) ; 
+      fCorrNt[specie] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
+    }
   }  
 }
 
@@ -156,7 +175,7 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
         varvalue[index++] = p->GetVal() ; 
       }
     }
-    (dynamic_cast<TNtupleD*>(fObject))->Fill(varvalue);
+    (dynamic_cast<TNtupleD*>(fCorrNt[(Int_t)TMath::Log2(fEventSpecie)]))->Fill(varvalue);
     delete [] varvalue;
   }
 }

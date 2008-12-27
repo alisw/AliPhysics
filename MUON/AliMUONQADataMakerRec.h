@@ -99,7 +99,7 @@ protected:
   
   virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
 
-	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
+	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
 
 private:
 	

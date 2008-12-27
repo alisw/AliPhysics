@@ -63,12 +63,9 @@ AliCorrQAChecker.cxx
 AliGlobalQAChecker.cxx 
 AliQACheckerBase.cxx 
 AliMillepede.cxx 
-AliRecoParam.cxx 
-AliDetectorRecoParam.cxx 
 AliPlaneEff.cxx 
 AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx 
 AliGRPRecoParam.cxx 
-AliRunInfo.cxx AliEventInfo.cxx 
 AliRelAlignerKalman.cxx 
 AliESDTagCreator.cxx 
 AliGRPObject.cxx

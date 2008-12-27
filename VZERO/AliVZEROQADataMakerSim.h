@@ -30,7 +30,7 @@ class AliVZEROQADataMakerSim: public AliQADataMakerSim {
   virtual ~AliVZEROQADataMakerSim() {} // dtor
   
  private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list);
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list);
   virtual void   InitHits(); 
   virtual void   InitDigits();  
   virtual void   MakeHits(TClonesArray* hits) ;

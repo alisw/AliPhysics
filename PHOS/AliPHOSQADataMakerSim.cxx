@@ -72,7 +72,7 @@ AliPHOSQADataMakerSim& AliPHOSQADataMakerSim::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
@@ -86,10 +86,11 @@ void AliPHOSQADataMakerSim::InitHits()
   Bool_t expert   = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
   h0->Sumw2() ;
-  Add2HitsList(h0, 0, !expert) ;
+  Add2HitsList(h0, kHits, !expert) ;
   TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
   h1->Sumw2() ;
-  Add2HitsList(h1, 1, !expert) ;
+  Add2HitsList(h1, kHitsMul, !expert) ;
+  
 }
 
 //____________________________________________________________________________ 
@@ -99,10 +100,10 @@ void AliPHOSQADataMakerSim::InitDigits()
   Bool_t expert   = kTRUE ; 
   TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 1000) ; 
   h0->Sumw2() ;
-  Add2DigitsList(h0, 0, !expert) ;
+  Add2DigitsList(h0, kDigits, !expert) ;
   TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 2000, 0, 10000) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, 1, !expert) ;
+  Add2DigitsList(h1, kDigitsMul, !expert) ;
 }
 
 //____________________________________________________________________________ 
@@ -112,10 +113,10 @@ void AliPHOSQADataMakerSim::InitSDigits()
   Bool_t expert   = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       500, 0., 1000.) ; 
   h0->Sumw2() ;
-  Add2SDigitsList(h0, 0, !expert) ;
+  Add2SDigitsList(h0, kSDigits, !expert) ;
   TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  1000) ; 
   h1->Sumw2() ;
-  Add2SDigitsList(h1, 1, !expert) ;
+  Add2SDigitsList(h1, kSDigitsMul, !expert) ;
 }
 
 //____________________________________________________________________________
@@ -126,7 +127,7 @@ void AliPHOSQADataMakerSim::MakeHits()
   TIter next(fHits) ; 
   AliPHOSHit * hit ; 
   while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
-    GetHitsData(0)->Fill( hit->GetEnergy()) ;
+    GetHitsData(kHits)->Fill( hit->GetEnergy()) ;
   }
 }
 
@@ -160,7 +161,7 @@ void AliPHOSQADataMakerSim::MakeDigits(TClonesArray * digits)
     TIter next(digits) ; 
     AliPHOSDigit * digit ; 
     while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      GetDigitsData(0)->Fill( digit->GetEnergy()) ;
+      GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
     }  
 }
 
@@ -189,7 +190,7 @@ void AliPHOSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
     TIter next(sdigits) ; 
     AliPHOSDigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      GetSDigitsData(0)->Fill( sdigit->GetEnergy()) ;
+      GetSDigitsData(kSDigits)->Fill( sdigit->GetEnergy()) ;
     } 
 }
 

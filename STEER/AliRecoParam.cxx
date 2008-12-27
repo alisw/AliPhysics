@@ -26,6 +26,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TObjArray.h"
+#include "TMath.h"
 #include "AliDetectorRecoParam.h"
 
 #include "AliLog.h"
@@ -34,6 +35,8 @@
 #include "AliEventInfo.h"
 
 ClassImp(AliRecoParam)
+
+TString AliRecoParam::fkgEventSpecieName[] = {"Default", "LowMultiplicity", "HighMultiplicity", "Cosmic", "Calibration", "Unknown"} ; 
 
 AliRecoParam::AliRecoParam(): 
   TObject(),
@@ -92,6 +95,32 @@ AliRecoParam::~AliRecoParam(){
   }
 }
 
+Int_t AliRecoParam::AConvert(EventSpecie_t es)
+{
+  //Converts EventSpecie_t  into int
+  return static_cast<Int_t>(TMath::Log2(es)) ; 
+  
+}
+
+AliRecoParam::EventSpecie_t AliRecoParam::Convert(Int_t ies)
+{
+  //Converts int into EventSpecie_t
+  AliRecoParam::EventSpecie_t es = AliRecoParam::kDefault ; 
+  
+  Int_t i = (Int_t)TMath::Power(2, ies) ; 
+  
+  if ( i == AliRecoParam::kLowMult) 
+    es = kLowMult ; 
+  else if ( i == AliRecoParam::kHighMult) 
+    es = kHighMult ;   
+  else if ( i == AliRecoParam::kCosmic) 
+    es = kCosmic ;   
+  else if ( i == AliRecoParam::kCalib) 
+    es = kCalib ;   
+  
+  return es ;   
+}
+
 void  AliRecoParam::Print(Option_t *option) const {
   //
   // Print reconstruction setup
@@ -127,13 +156,14 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
   if (strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) {
     // In case of stable beams
-    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
-	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
-	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
-      // Heavy ion run, the event specie is set to kHighMult
+//    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
+//	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
+//	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
+      // Heavy ion run (any beam tha is not pp, the event specie is set to kHighMult
       fEventSpecie = kHighMult;
-    }
-    else if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
+//    }
+//    else 
+    if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
@@ -280,22 +310,54 @@ const char*  AliRecoParam::PrintEventSpecie() const
   // event specie
   switch (fEventSpecie) {
   case kDefault:
-    return "Default";
+    return fkgEventSpecieName[0].Data() ;
     break;
   case kLowMult:
-    return "Low-multiplicity";
+    return fkgEventSpecieName[1].Data() ;
     break;
   case kHighMult:
-    return "High-multiplicity";
+    return fkgEventSpecieName[2].Data() ;
     break;
   case kCosmic:
-    return "Cosmic";
+    return fkgEventSpecieName[3].Data() ;
     break;
   case kCalib:
-    return "Calibration";
+    return fkgEventSpecieName[4].Data() ;
     break;
   default:
-    return "Unknown";
+    return fkgEventSpecieName[5].Data() ;
     break;
   }
+}
+
+const char * AliRecoParam::GetEventSpecieName(EventSpecie_t es)
+{
+  switch (es) {
+    case kDefault:
+      return fkgEventSpecieName[0].Data() ;
+      break;
+    case kLowMult:
+      return fkgEventSpecieName[1].Data() ;
+      break;
+    case kHighMult:
+      return fkgEventSpecieName[2].Data() ;
+      break;
+    case kCosmic:
+      return fkgEventSpecieName[3].Data() ;
+      break;
+    case kCalib:
+      return fkgEventSpecieName[4].Data() ;
+      break;
+    default:
+      return fkgEventSpecieName[5].Data() ;
+      break;
+  }
+}
+
+const char * AliRecoParam::GetEventSpecieName(Int_t esIndex)
+{
+  if ( esIndex >= 0 && esIndex < kNSpecies) 
+    return fkgEventSpecieName[esIndex].Data() ;
+  else 
+    return fkgEventSpecieName[kNSpecies].Data() ;
 }

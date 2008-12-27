@@ -86,7 +86,7 @@ AliFMDQADataMakerSim::~AliFMDQADataMakerSim()
 
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, 
-					      TObjArray * list)
+					      TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

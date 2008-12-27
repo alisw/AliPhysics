@@ -18,7 +18,7 @@
 ClassImp(AliGlobalQADataMaker)
  
 //____________________________________________________________________________ 
-void AliGlobalQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliGlobalQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

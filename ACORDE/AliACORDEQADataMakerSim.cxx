@@ -68,11 +68,11 @@ AliACORDEQADataMakerSim& AliACORDEQADataMakerSim::operator = (const AliACORDEQAD
   return *this;
 }
 //____________________________________________________________________________
-void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-   printf("ACORDE---->Detector specific actions at END of cycle\n................\n");
+   AliInfo("ACORDE---->Detector specific actions at END of cycle\n................\n");
 
   AliQAChecker::Instance()->Run(AliQA::kACORDE, task, list) ;
 }
@@ -80,7 +80,7 @@ void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
 void AliACORDEQADataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  printf("ACORDE---->Detector specific actions at START of cycle\n................\n");
+  AliInfo("ACORDE---->Detector specific actions at START of cycle\n................\n");
 }
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerSim::InitHits()

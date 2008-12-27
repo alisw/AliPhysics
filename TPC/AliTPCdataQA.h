@@ -7,6 +7,7 @@
 
 #include <TH1F.h>
 #include <TObjArray.h>
+#include "AliRecoParam.h"
 
 class TArrayF;
 class TH2F;
@@ -25,6 +26,7 @@ class AliTPCdataQA : public TH1F {
 
 public:
   AliTPCdataQA();
+  AliTPCdataQA(AliRecoParam::EventSpecie_t es);
   AliTPCdataQA(const AliTPCdataQA &ped);
   AliTPCdataQA(const TMap *config);
   virtual ~AliTPCdataQA();

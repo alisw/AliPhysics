@@ -42,23 +42,31 @@
 ClassImp(AliCorrQAChecker)
 
 //__________________________________________________________________
-Double_t AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD * nData) 
+Double_t * AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD ** nData) 
 {
  // check the QA of correlated data stored in a ntuple
+  
+  Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    test[specie] = 0. ; 
+    
   if ( index != AliQA::kRAW ) {
     AliWarning("Checker not implemented") ; 
-    return 1.0 ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+      test[specie] = 1. ; 
+    return test ; 
   }
-  Double_t test = 0.0  ;
 //	if (!fRefSubDir) {
 //		test = 1. ; // no reference data
 //	} else {
     if ( ! nData ) {
       AliError(Form("nRawCorr not found in %s", fDataSubDir->GetName())) ; 
     } else {
-      TObjArray * bList = nData->GetListOfBranches() ; 
-      for (Int_t b = 0 ; b < bList->GetEntries() ; b++) {
-        AliInfo(Form("Ntuple parameter name %d : %s", b, bList->At(b)->GetName())) ;  
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        TObjArray * bList = nData[specie]->GetListOfBranches() ; 
+        for (Int_t b = 0 ; b < bList->GetEntries() ; b++) {
+          AliInfo(Form("Ntuple %s parameter name %d : %s", nData[specie]->GetName(), b, bList->At(b)->GetName())) ;  
+        }
       }
     }
  // }

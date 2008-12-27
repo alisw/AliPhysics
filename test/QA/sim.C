@@ -1,5 +1,4 @@
-void sim(Int_t nev=4) {
-  const char * kYear = "08" ; 
+void sim(Int_t nev=1) {
   AliSimulation simu;
   simu.SetMakeSDigits("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
   simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");

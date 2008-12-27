@@ -310,7 +310,7 @@ void AliZDCQADataMakerSim::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliZDCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliZDCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   // Detector specific actions at end of cycle
   // do the QA checking

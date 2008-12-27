@@ -66,7 +66,7 @@ AliACORDEQADataMakerRec& AliACORDEQADataMakerRec::operator = (const AliACORDEQAD
   return *this;
 }
 //____________________________________________________________________________
-void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

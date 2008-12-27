@@ -29,7 +29,7 @@ private:
   virtual void   MakeRecPoints(TTree * recTree) ; 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list) ;
   virtual void   GetMapIndeces(Int_t *in, Int_t *out) ; 
 
   ClassDef(AliTOFQADataMakerRec,1)  // description 

@@ -52,7 +52,7 @@ protected:
   AliVZEROCalibData *fCalibData;        //! calibration data
    
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitRaws() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;

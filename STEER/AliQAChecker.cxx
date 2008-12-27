@@ -55,7 +55,8 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
   fRunInfo(0x0), 
   fRunInfoOwner(kFALSE), 
   fRefFile(0x0), 
-  fFoundDetectors(".")
+  fFoundDetectors("."), 
+  fEventSpecie(AliRecoParam::kDefault) 
 {
   // ctor: initialise checkers and open the data file   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
@@ -69,7 +70,8 @@ AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   fRunInfo(qac.fRunInfo), 
   fRunInfoOwner(kFALSE),   
   fRefFile(qac.fRefFile), 
-  fFoundDetectors(qac.fFoundDetectors)
+  fFoundDetectors(qac.fFoundDetectors),
+  fEventSpecie(qac.fEventSpecie)
 {
   // copy constructor
   
@@ -144,16 +146,15 @@ AliQAChecker::~AliQAChecker()
 }
  
 //_____________________________________________________________________________
-void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray *& dirOCDB)     
+void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB)     
 { 
   // Opens and returns the file with the reference data 
 	
   dirFile = NULL ; 
-  dirOCDB = NULL ; 
   TString refStorage(AliQA::GetQARefStorage()) ; 
-  //refStorage += AliQA::GetQARefFileName() ;
   if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
     refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
+    refStorage += AliQA::GetQARefFileName() ;
     if ( fRefFile ) 
       if ( fRefFile->IsOpen() ) 
 					fRefFile->Close() ; 
@@ -172,23 +173,30 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     }  
   } else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
     AliCDBManager* man = AliCDBManager::Instance() ;
-    if ( strcmp(AliQA::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (RUNTYPE)
-      // Get it from RunInfo
-      if (!fRunInfo)  // not yet set, get the info from GRP
-				LoadRunInfoFromGRP() ; 
-      AliQA::SetQARefDataDirName(fRunInfo->GetRunType()) ;
-    }
-    if ( ! man->GetLock() ) { 
-      man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-      man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-    }
-    char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
-    AliInfo(Form("Reference QA data are taken from %s", detOCDBDir)) ;
-    AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
-    if (entry) {
-      TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
-      if ( listDetQAD ) 
-				dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+        continue ; 
+      //if ( strcmp(AliQA::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (EventSpecie)
+        // Get it from RunInfo
+        //if (!fRunInfo)  // not yet set, get the info from GRP
+        //  LoadRunInfoFromGRP() ; 
+      AliQA::SetQARefDataDirName(specie) ;
+      //}
+      if ( ! man->GetLock() ) { 
+        man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+        man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+      }
+      char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+      AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
+      if (entry) {
+        dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
+        TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+        TIter next(listDetQAD) ;
+        TObjArray * ar ; 
+        while ( ar = (TObjArray*)next() )
+          if ( listDetQAD ) 
+          dirOCDB[specie] = dynamic_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ; 
+      }
     }
   }
 }
@@ -265,16 +273,42 @@ void AliQAChecker::LoadRunInfoFromGRP()
   fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
 
   fRunInfoOwner = kTRUE ; 
+
+  // set the event specie
+  fEventSpecie = AliRecoParam::kDefault ;
+  if (strcmp(runType,"PHYSICS")) {
+    // Not a physics run, the event specie is set to kCalib
+    fEventSpecie = AliRecoParam::kCalib ;
+    return;
+  }
+  if (strcmp(lhcState,"STABLE_BEAMS") == 0) {
+    // Heavy ion run (any beam tha is not pp, the event specie is set to kHighMult
+    fEventSpecie = AliRecoParam::kHighMult ;
+    if ((strcmp(beamType,"p-p") == 0) ||
+        (strcmp(beamType,"p-")  == 0) ||
+        (strcmp(beamType,"-p")  == 0) ||
+        (strcmp(beamType,"P-P") == 0) ||
+        (strcmp(beamType,"P-")  == 0) ||
+        (strcmp(beamType,"-P")  == 0)) {
+      // Proton run, the event specie is set to kLowMult
+      fEventSpecie = AliRecoParam::kLowMult ;
+    }
+    else if (strcmp(beamType,"-") == 0) {
+      // No beams, we assume cosmic data
+      fEventSpecie = AliRecoParam::kCosmic ;
+    }
+    else if (strcmp(beamType,"UNKNOWN") == 0) {
+      // No LHC beam information is available, we use the default event specie
+      fEventSpecie = AliRecoParam::kDefault ;
+    }
+  }
 }
 
 //_____________________________________________________________________________
 Bool_t AliQAChecker::Run(const char * fileName)
 {
   // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
-  // starting from data in file
-
-  Bool_t rv = kFALSE ; 
-  
+  // starting from data in file  
   TStopwatch stopwatch;
   stopwatch.Start();
 
@@ -291,9 +325,9 @@ Bool_t AliQAChecker::Run(const char * fileName)
     for ( det = 0; det < AliQA::kNDET ; det++) {
       detName = AliQA::GetDetName(det) ; 
       if (detNameQA.Contains(detName)) {
-	fFoundDetectors+=detName ; 
-	fFoundDetectors+="." ;		
-	break ; 
+        fFoundDetectors+=detName ; 
+        fFoundDetectors+="." ;		
+        break ; 
       }
     } 
     TDirectory * detDir = AliQA::GetQADataFile(fileName)->GetDirectory(detKey->GetName()) ; 
@@ -308,34 +342,32 @@ Bool_t AliQAChecker::Run(const char * fileName)
       taskDir->cd() ; 
       AliQACheckerBase * qac = GetDetQAChecker(det) ; 
       if (qac)
-		AliInfo(Form("QA checker found for %s", detName.Data())) ; 
+        AliInfo(Form("QA checker found for %s", detName.Data())) ; 
       if (!qac)
-		AliFatal(Form("QA checker not found for %s", detName.Data())) ; 
+        AliFatal(Form("QA checker not found for %s", detName.Data())) ; 
       AliQA::ALITASK_t index = AliQA::kNULLTASK ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kHITS) ) 
-		index = AliQA::kSIM ; 
+        index = AliQA::kSIM ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kSDIGITS) ) 
-		index = AliQA::kSIM ; 
+        index = AliQA::kSIM ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kDIGITS) ) 
-		index = AliQA::kSIM ; 
+        index = AliQA::kSIM ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kRECPOINTS) ) 
-		index = AliQA::kREC ; 
+        index = AliQA::kREC ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kTRACKSEGMENTS) ) 
-		index = AliQA::kREC ; 
+        index = AliQA::kREC ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kRECPARTICLES) ) 
-		index = AliQA::kREC ; 
+        index = AliQA::kREC ; 
       if ( taskName == AliQA::GetTaskName(AliQA::kESDS) ) 
-		index = AliQA::kESD ; 
+        index = AliQA::kESD ; 
       qac->Init(AliQA::DETECTORINDEX_t(det)) ; 
-
-	  TDirectory * refDir    = NULL ; 
-	  TObjArray * refOCDBDir = NULL ;	
-	  GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
-	  if ( refDir || refOCDBDir) {
+      
+      TDirectory * refDir     = NULL ; 
+      TObjArray ** refOCDBDir = NULL ;	
+      GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
 		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
 		  qac->Run(index) ; 
-	  }
-	}
+    }
   }
   AliInfo("QA performed for following detectors:") ; 
   for ( Int_t det = 0; det < AliQA::kNDET; det++) {
@@ -345,14 +377,11 @@ Bool_t AliQAChecker::Run(const char * fileName)
     }	
   }
   printf("\n") ; 
-  rv = kTRUE ; 
-
-  return rv ; 
-  
+  return kTRUE ; 
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObject * obj)
+Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObjArray ** list)
 {
 	// run the Quality Assurance Checker for detector det, for task task starting from data in list
 
@@ -380,21 +409,49 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TO
 	else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
 
-	TDirectory * refDir    = NULL ; 
-	TObjArray * refOCDBDir = NULL ;	
-	qac->Init(det) ; 
-	GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
-	if ( refDir || refOCDBDir)  // references found
-	  qac->SetRefandData(refDir, refOCDBDir) ; 
-	
-  TString className(obj->ClassName()) ; 
-  if (className.Contains(TObjArray::Class()->GetName())) {
-    qac->Run(index, static_cast<TObjArray *>(obj)) ; 
-  } else if (className.Contains(TNtupleD::Class()->GetName())) {
-    qac->Run(index, static_cast<TNtupleD *>(obj)) ; 
-  } else {
-    AliError(Form("%s class not implemented", className.Data())) ; 
-    return kFALSE ; 
-  }
+	TDirectory * refDir     = NULL ; 
+	TObjArray ** refOCDBDir = NULL  ;	
+  qac->Init(det) ; 
+  GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
+  qac->SetRefandData(refDir, refOCDBDir) ; 
+  qac->Run(index, list) ; 
 	return kTRUE ; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TNtupleD ** list)
+{
+	// run the Quality Assurance Checker for detector det, for task task starting from data in list
+  
+	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
+	if (qac)
+		AliDebug(1, Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
+	if (!qac)
+		AliError(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
+  
+	AliQA::ALITASK_t index = AliQA::kNULLTASK ; 
+	if ( task == AliQA::kRAWS ) 
+		index = AliQA::kRAW ; 
+	else if ( task == AliQA::kHITS ) 
+		index = AliQA::kSIM ; 
+	else if ( task == AliQA::kSDIGITS ) 
+		index = AliQA::kSIM ; 
+	else if ( task == AliQA::kDIGITS ) 
+		index = AliQA::kSIM ; 
+	else if ( task == AliQA::kRECPOINTS ) 
+		index = AliQA::kREC ; 
+	else if ( task == AliQA::kTRACKSEGMENTS ) 
+		index = AliQA::kREC ; 
+	else if ( task == AliQA::kRECPARTICLES ) 
+		index = AliQA::kREC ; 
+	else if ( task == AliQA::kESDS ) 
+		index = AliQA::kESD ; 
+  
+	TDirectory * refDir     = NULL ; 
+	TObjArray ** refOCDBDir = NULL ;	
+  qac->Init(det) ; 
+  GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
+  qac->SetRefandData(refDir, refOCDBDir) ; 
+  qac->Run(index, list) ; 
+  return kTRUE ; 
 }

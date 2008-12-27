@@ -26,6 +26,7 @@
 // --- ROOT system ---
 #include <TFile.h>
 #include <TTree.h>
+#include <TNtupleD.h>
 
 // --- Standard library ---
 
@@ -43,7 +44,7 @@ AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) :
   fESDsQAList(NULL), 
   fRawsQAList(NULL), 
   fRecPointsQAList(NULL),
-  fObject(NULL), 
+  fCorrNt(NULL), 
   fRecoParam(NULL) 
 {
   // ctor
@@ -56,7 +57,7 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
   fESDsQAList(qadm.fESDsQAList),
   fRawsQAList(qadm.fRawsQAList),
   fRecPointsQAList(qadm.fRecPointsQAList),
-  fObject(qadm.fObject),  
+  fCorrNt(qadm.fCorrNt),  
   fRecoParam(qadm.fRecoParam) 
 {
   //copy ctor
@@ -70,19 +71,31 @@ AliQADataMakerRec::~AliQADataMakerRec()
 {
 	//dtor: delete the TObjArray and thei content
 	if ( fESDsQAList ) {
-		if ( fESDsQAList->IsOwner() ) 
-			fESDsQAList->Delete() ;     
-		delete fESDsQAList ;     
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fESDsQAList[specie] ) {
+        if ( fESDsQAList[specie]->IsOwner() ) 
+          fESDsQAList[specie]->Delete() ;     
+      }
+    }
+    delete[] fESDsQAList ;
 	}
 	if ( fRawsQAList ) {
-		if ( fRawsQAList->IsOwner() ) 
-			fRawsQAList->Delete() ;
-		delete fRawsQAList ;
-	}
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fRawsQAList[specie] ) {
+        if ( fRawsQAList[specie]->IsOwner() ) 
+          fRawsQAList[specie]->Delete() ;
+      }
+    }
+    delete[] fRawsQAList ;
+  }
 	if ( fRecPointsQAList ) {
-		if ( fRecPointsQAList->IsOwner() ) 
-			fRecPointsQAList->Delete() ; 
-		delete fRecPointsQAList ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fRecPointsQAList[specie] ) {
+        if ( fRecPointsQAList[specie]->IsOwner() ) 
+          fRecPointsQAList[specie]->Delete() ;
+      }
+    }
+		delete[] fRecPointsQAList ; 
 	}
 }
 
@@ -110,7 +123,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 {
 	// Finishes a cycle of QA 
 	
-	TObjArray * list = NULL ; 
+	TObjArray ** list = NULL ; 
 	
 	if ( task == AliQA::kRAWS )     
 		list = fRawsQAList ; 
@@ -120,7 +133,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		list = fESDsQAList ; 
 
  
-	if ( ! list && ! fObject ) 
+	if ( ! list && ! fCorrNt ) 
     return ; 
   //DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
@@ -129,29 +142,37 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if ( subDir ) {
 		subDir->cd() ; 
-		if (list) {
-      TIter next(list) ; 
-      TObject * obj ; 
-      while( (obj = next()) ) {
-        if (!obj->TestBit(AliQA::GetExpertBit()))
-          obj->Write() ;
-      }
-      if (WriteExpert()) {
-        TDirectory * expertDir = subDir->GetDirectory(AliQA::GetExpert()) ; 
-        if ( expertDir ) { // Write only if requested
-          expertDir->cd() ;
-          next.Reset() ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
+      if (eventSpecieDir) {
+        eventSpecieDir->cd() ;    
+        if (list[specie]) {
+          TIter next(list[specie]) ; 
+          TObject * obj ; 
           while( (obj = next()) ) {
             if (!obj->TestBit(AliQA::GetExpertBit()))
-              continue ; 
-            obj->Write() ;
-          }      
+              obj->Write() ;
+          }
+          if (WriteExpert()) {
+            TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+            if ( expertDir ) { // Write only if requested
+              expertDir->cd() ;
+              next.Reset() ; 
+              while( (obj = next()) ) {
+                if (!obj->TestBit(AliQA::GetExpertBit()))
+                  continue ; 
+                obj->Write() ;
+              }      
+            }
+          }
+        }
+        if ( !fCorrNt )
+          continue ; 
+        if (fCorrNt[specie] && AliQA::GetDetIndex(GetName()) == AliQA::kCORR) {
+          eventSpecieDir->cd() ; 
+          fCorrNt[specie]->Write() ; 
         }
       }
-    }
-    if (fObject && AliQA::GetDetIndex(GetName()) == AliQA::kCORR) {
-      subDir->cd() ; 
-      fObject->Write() ; 
     }
     fOutput->Save() ; 
 	}
@@ -188,43 +209,51 @@ void AliQADataMakerRec::Exec(AliQA::TASKINDEX_t task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t cycles)
+TObjArray **  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
-	
-	TObjArray * rv = NULL ; 
+
+	TObjArray ** rv = NULL ; 
   
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	
 	if ( task == AliQA::kRAWS ) {
 		if (! fRawsQAList ) { 
-			fRawsQAList = new TObjArray(100) ;	 
-      fRawsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
+      fRawsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fRawsQAList[specie] = new TObjArray(100) ;	 
+        fRawsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
+      }
 			InitRaws() ;
 		}
 		rv = fRawsQAList ;
 	} else if ( task == AliQA::kRECPOINTS ) {
 		if ( ! fRecPointsQAList ) {
-			fRecPointsQAList = new TObjArray(100) ; 
-      fRecPointsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
-			InitRecPoints() ;
+      fRecPointsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fRecPointsQAList[specie] = new TObjArray(100) ; 
+        fRecPointsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+      }
+      InitRecPoints() ;
 		}
 		rv = fRecPointsQAList ;
 	} else if ( task == AliQA::kESDS ) {
 		if ( ! fESDsQAList ) {
-			fESDsQAList = new TObjArray(100) ;
-      fESDsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
+      fESDsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fESDsQAList[specie] = new TObjArray(100) ;
+        fESDsQAList[specie]->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+      }
 			InitESDs() ;
 		}
 		rv = fESDsQAList ;
 	}
-	
 	return rv ; 
 }
 
 //____________________________________________________________________________ 
-void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles)
+void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -274,13 +303,14 @@ void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const B
 	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if (!subDir)
 		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
- 
-  TDirectory * expertDir = subDir->GetDirectory(AliQA::GetExpert()) ; 
-  if (!expertDir)
-    expertDir = subDir->mkdir(AliQA::GetExpert()) ; 
   
-	subDir->cd() ; 
-  
-
+  for ( Int_t specie = AliRecoParam::kDefault ; specie < AliRecoParam::kNSpecies ; specie++ ) {
+    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ; 
+    if (!eventSpecieDir) 
+      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
+    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+    if (!expertDir)
+      expertDir = eventSpecieDir->mkdir(AliQA::GetExpert()) ; 
+  } 
 	StartOfDetectorCycle() ; 
 }

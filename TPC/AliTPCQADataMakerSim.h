@@ -29,6 +29,9 @@
 class AliTPCQADataMakerSim: public AliQADataMakerSim {
 
 public:
+  
+  enum HHitType_t   {kNhits=0, kElectrons, kRadius, kPrimPerCm, kElectronsPerCm} ; 
+  enum HDigitType_t {kDigitsADC=0} ; 
   AliTPCQADataMakerSim() ;          // ctor
   AliTPCQADataMakerSim(const AliTPCQADataMakerSim& qadm) ;   
   AliTPCQADataMakerSim& operator = (const AliTPCQADataMakerSim& qadm) ;
@@ -36,7 +39,7 @@ public:
   
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray* list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray** list) ;
 
   // Digits QA
   virtual void   InitDigits();
@@ -52,14 +55,6 @@ private:
   virtual void   InitSDigits() {}
   virtual void   MakeSDigits(TTree* ) {AliWarning("Method not implemented\n");}
   virtual void   MakeSDigits(TClonesArray* ) {AliWarning("Method not implemented\n");}
-
-  TH1F* fHistDigitsADC;    //! Digit ADC distribution
-
-  TH1F* fHistHitsNhits;    //! Number of primary interactions
-  TH1F* fHistHitsElectrons;//! Electrons per interaction
-  TH1F* fHistHitsRadius;   //! Radius of interactions
-  TH1F* fHistHitsPrimPerCm;//! Primaries per cm
-  TH1F* fHistHitsElectronsPerCm;//! Electrons per cm
 
   ClassDef(AliTPCQADataMakerSim,1)  // TPC Sim Quality Assurance Data Maker 
 };

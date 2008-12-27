@@ -90,7 +90,7 @@ AliT0QADataMakerSim& AliT0QADataMakerSim::operator = (const AliT0QADataMakerSim&
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliT0QADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

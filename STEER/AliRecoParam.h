@@ -36,10 +36,14 @@ class AliRecoParam : public TObject
 		      kCosmic = 8,
 		      kCalib = 16};
 
+  static Int_t                  AConvert(EventSpecie_t es) ; 
+  static EventSpecie_t          Convert(Int_t es) ; 
   virtual void                  Print(Option_t *option="") const;
   const TObjArray              *GetDetRecoParamArray(Int_t iDet) const { return fDetRecoParams[iDet]; }
   void                          SetEventSpecie(const AliRunInfo*runInfo, const AliEventInfo &evInfo);
   EventSpecie_t                 GetEventSpecie() const { return fEventSpecie; }
+  static const char*            GetEventSpecieName(EventSpecie_t es);
+  static const char*            GetEventSpecieName(Int_t esIndex);
   const char*                   PrintEventSpecie() const;
   const AliDetectorRecoParam   *GetDetRecoParam(Int_t iDet) const;
   void                          AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param);
@@ -48,13 +52,14 @@ class AliRecoParam : public TObject
   AliRecoParam(const AliRecoParam&);
   AliRecoParam& operator=(const AliRecoParam&);
 
+
 private:
 
   Int_t      fDetRecoParamsIndex[kNSpecies][kNDetectors]; // index to fDetRecoParams arrays
   TObjArray *fDetRecoParams[kNDetectors];   // array with reconstruction-parameter objects for all detectors
   EventSpecie_t fEventSpecie;               // current event specie
-
-  ClassDef(AliRecoParam, 5)
+  static TString fkgEventSpecieName[] ; // the names of the event species
+  ClassDef(AliRecoParam, 6)
 };
 
 

@@ -42,7 +42,7 @@ private:
   virtual void   InitESDs() ;      //book ESD QA histo 
   virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
   ClassDef(AliACORDEQADataMakerRec,1)  // description 
 

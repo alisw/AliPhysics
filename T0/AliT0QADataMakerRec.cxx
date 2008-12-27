@@ -81,35 +81,38 @@ AliT0QADataMakerRec& AliT0QADataMakerRec::operator = (const AliT0QADataMakerRec&
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
- if ( task == AliQA::kRAWS ) {
-  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
- for (Int_t itr=0; itr<6; itr++) {
-    GetRawsData(197)->Fill(triggers[itr], fNumTriggersCal[itr]);
-    GetRawsData(197)->SetBinContent(itr+1, fNumTriggersCal[itr]);
-  }  
-    GetRawsData(205)->SetOption("COLZ");
-    GetRawsData(206)->SetOption("COLZ");
-    GetRawsData(207)->SetOption("COLZ");
-    GetRawsData(205)->GetXaxis()->SetTitle("#PMT");
-    GetRawsData(206)->GetXaxis()->SetTitle("#PMT");
-    GetRawsData(205)->GetYaxis()->SetTitle("NeventsReg/Nevents");
-    GetRawsData(206)->GetYaxis()->SetTitle("NeventsReg/Nevents");
-    GetRawsData(207)->GetXaxis()->SetTitle("#PMT");
-    GetRawsData(207)->GetYaxis()->SetTitle("Charge, #channels");
- }
- if ( task == AliQA::kRECPOINTS) {
-   GetRecPointsData(0)->SetOption("COLZ");
-  GetRecPointsData(1)->SetOption("COLZ");
-  GetRecPointsData(0)->GetXaxis()->SetTitle("#PMT");
-  GetRecPointsData(1)->GetXaxis()->SetTitle("#PMT");
-  GetRecPointsData(0)->GetYaxis()->SetTitle("CFD time");
-  GetRecPointsData(1)->GetYaxis()->SetTitle("Charge, #channels");
- }
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    SetEventSpecie(specie) ; 
+    if ( task == AliQA::kRAWS ) {
+      const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
+      for (Int_t itr=0; itr<6; itr++) {
+        GetRawsData(197)->Fill(triggers[itr], fNumTriggersCal[itr]);
+        GetRawsData(197)->SetBinContent(itr+1, fNumTriggersCal[itr]);
+      }  
+      GetRawsData(205)->SetOption("COLZ");
+      GetRawsData(206)->SetOption("COLZ");
+      GetRawsData(207)->SetOption("COLZ");
+      GetRawsData(205)->GetXaxis()->SetTitle("#PMT");
+      GetRawsData(206)->GetXaxis()->SetTitle("#PMT");
+      GetRawsData(205)->GetYaxis()->SetTitle("NeventsReg/Nevents");
+      GetRawsData(206)->GetYaxis()->SetTitle("NeventsReg/Nevents");
+      GetRawsData(207)->GetXaxis()->SetTitle("#PMT");
+      GetRawsData(207)->GetYaxis()->SetTitle("Charge, #channels");
+    }
+    if ( task == AliQA::kRECPOINTS) {
+      GetRecPointsData(0)->SetOption("COLZ");
+      GetRecPointsData(1)->SetOption("COLZ");
+      GetRecPointsData(0)->GetXaxis()->SetTitle("#PMT");
+      GetRecPointsData(1)->GetXaxis()->SetTitle("#PMT");
+      GetRecPointsData(0)->GetYaxis()->SetTitle("CFD time");
+      GetRecPointsData(1)->GetYaxis()->SetTitle("Charge, #channels");
+    }
+  }
 }
 
 //____________________________________________________________________________

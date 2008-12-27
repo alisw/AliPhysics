@@ -139,16 +139,11 @@
 #pragma link C++ class AliQACheckerBase+;
 #pragma link C++ class AliMillepede+;
 
-#pragma link C++ class AliDetectorRecoParam+;
-#pragma link C++ class AliRecoParam+;
 #pragma link C++ class AliPlaneEff+;
 
 #pragma link C++ class AliTriggerRunScalers+;
 #pragma link C++ class AliGRPPreprocessor+;
 #pragma link C++ class AliGRPRecoParam+;
-
-#pragma link C++ class AliRunInfo+;
-#pragma link C++ class AliEventInfo+;
 
 #pragma link C++ class AliRelAlignerKalman+;
 

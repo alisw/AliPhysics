@@ -195,7 +195,7 @@ void AliMUONQADataMakerSim::MakeDigits(TTree* digitsTree)
 }
       
 //____________________________________________________________________________ 
-void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
+void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list)
 {
     ///Detector specific actions at end of cycle
     // do the QA checking

@@ -94,17 +94,17 @@ void AliITSQASSDDataMakerSim::StartOfDetectorCycle() {
 }
 
 //____________________________________________________________________________ 
-void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list) {
+void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/) {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
   
-  AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+//  AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerSim::InitDigits() { 
   // Initialization for DIGIT data - SSD -
-  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
+  fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDDigitsModule",
@@ -149,7 +149,7 @@ void AliITSQASSDDataMakerSim::MakeDigits(TTree *digits) {
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerSim::InitSDigits() { 
   // Initialization for SDIGIT data - SSD -
-  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
+  fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList[AliRecoParam::kDefault])->GetEntries();
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDSDigitsModule",
@@ -191,7 +191,7 @@ void AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) {
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerSim::InitHits() { 
   // Initialization for HITS data - SSD -
-  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
+  fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList[AliRecoParam::kDefault])->GetEntries();
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDHitsModule",
