@@ -43,7 +43,8 @@ fVerticesHFTClArr(0),
 fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
-fCharm4ProngTClArr(0)
+fCharm4ProngTClArr(0),
+fDstarTClArr(0)
 {
   // Default constructor
 }
@@ -56,7 +57,8 @@ fVerticesHFTClArr(0),
 fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
-fCharm4ProngTClArr(0)
+fCharm4ProngTClArr(0),
+fDstarTClArr(0)
 {
   // Default constructor
 }
@@ -123,6 +125,12 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
     AddAODBranch("TClonesArray", &fCharm4ProngTClArr);
   }
 
+  if(fVHF->GetDstar()) {
+    fDstarTClArr = new TClonesArray("AliAODRecoCascadeHF", 0);
+    fDstarTClArr->SetName("Dstar");
+    AddAODBranch("TClonesArray", &fDstarTClArr);
+  }
+
   return;
 }
 
@@ -140,7 +148,8 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
 		       fD0toKpiTClArr,
 		       fJPSItoEleTClArr,
 		       fCharm3ProngTClArr,
-		       fCharm4ProngTClArr);
+		       fCharm4ProngTClArr,
+		       fDstarTClArr);
   
   return;
 }
