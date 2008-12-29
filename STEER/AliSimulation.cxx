@@ -765,7 +765,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));
   StdoutToAliInfo(StderrToAliError(
-    gAlice->Init(fConfigFileName.Data());
+    gAlice->InitMC(fConfigFileName.Data());
   ););
   
   // Get the trigger descriptor string
@@ -875,8 +875,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   AliInfo("running gAlice");
   AliSysInfo::AddStamp("Start_simulation");
 
-  gAlice->InitMC("Config.C");
-  
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
 
@@ -1512,7 +1510,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     }
     
     AliInfo(Form("initializing gAlice with config file %s",fConfigFileName.Data()));
-    StdoutToAliInfo(StderrToAliError(gAlice->Init(fConfigFileName.Data());););
+    StdoutToAliInfo(StderrToAliError(gAlice->InitMC(fConfigFileName.Data());););
 //
 //  Initialize CDB     
     InitCDB();

@@ -7,6 +7,7 @@
  *  Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr  *
  ****************************************************************************/
 
+#include <TPDGCode.h>
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include <TMath.h>
   #include <TError.h>
@@ -29,11 +30,6 @@
   #include "AliRun.h"
   #include "AliESDEvent.h"
   #include "AliESDcascade.h"
-#else
-  const Int_t kXiMinus    = 3312;
-  const Int_t kXiPlusBar  = -3312;
-  const Int_t kOmegaMinus = 3334;
-  const Int_t kOmegaPlusBar = -3334;
 #endif
 
 Int_t GoodCascades(const Char_t *dir=".");

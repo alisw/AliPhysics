@@ -23,9 +23,6 @@
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
 #endif
-const Int_t kXiMinus = 3312;
-const Int_t kOmegaMinus = 3334;
-
 
 TH1F* CreateHisto(const char* name, const char* title, 
 		  Int_t nBins, Double_t xMin, Double_t xMax,

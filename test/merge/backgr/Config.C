@@ -1385,7 +1385,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	AliGenSTRANGElib *lib = new AliGenSTRANGElib();
 	Int_t particle;
 	// Xi
-	particle = AliGenSTRANGElib::kXiMinus;
+	particle = kXiMinus;
 	AliGenParam *genXi = new AliGenParam(16,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));
 	genXi->SetPtRange(0., 12.);
 	genXi->SetYRange(-1.1, 1.1);
@@ -1393,7 +1393,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
  
 	//
 	// Omega
-	particle = AliGenSTRANGElib::kOmegaMinus;
+	particle = kOmegaMinus;
 	AliGenParam *genOmega = new AliGenParam(10,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));     
 	genOmega->SetPtRange(0, 12.);
 	genOmega->SetYRange(-1.1, 1.1);

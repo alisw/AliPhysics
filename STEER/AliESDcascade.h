@@ -14,17 +14,13 @@
 //            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
 //-------------------------------------------------------------------------
 
+#include <TPDGCode.h>
 #include "AliESDv0.h"
 
 class AliLog;
 class AliExternalTrackParam;
 
 class AliESDcascade : public AliESDv0 {
-
-  enum  { kOmegaPlusBar =  -3334,
-	  kXiPlusBar    =  -3312,
-	  kXiMinus      =   3312,
-	  kOmegaMinus   =   3334};
 
 public:
   AliESDcascade();

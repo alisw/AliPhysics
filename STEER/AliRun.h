@@ -61,7 +61,6 @@ public:
    virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}
    virtual  void  Digits2Reco(const char *detector=0)    {Tree2Tree("R",detector);}
    virtual  void  InitMC(const char *setup="Config.C");
-   virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
    Bool_t         IsRootGeometry() const {return fIsRootGeometry;}
