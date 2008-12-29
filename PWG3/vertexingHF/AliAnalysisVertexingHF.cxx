@@ -328,8 +328,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    io2Prong->SetSecondaryVtx(vertexp1n1);
 	  }
 	  // create a track from the D0
-	  //AliESDtrack *trackD0 = new AliESDtrack(io2Prong); // to be uncommented after commit of AliAODRecoDecay : public AliVTrack
-	  AliESDtrack *trackD0 = new AliESDtrack(); // temporary, just to allow compilation
+	  AliESDtrack *trackD0 = new AliESDtrack(io2Prong);
 	  // LOOP ON TRACKS THAT PASSED THE SOFT PION CUTS
 	  for(iTrkSoftPi=0; iTrkSoftPi<nSeleTrks; iTrkSoftPi++) {
 	    if(iTrkSoftPi==iTrkP1 || iTrkSoftPi==iTrkN1) continue;
