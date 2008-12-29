@@ -19,6 +19,8 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliCFContainer.h"
+#include "AliVertexerTracks.h"
+#include "AliESDVertex.h"
 
 #include "AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
@@ -31,7 +33,7 @@ ClassImp(AliAnalysisTaskProtons)
 //________________________________________________________________________ 
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0), fAnalysisType("ESD"),
-    fList(0), fAnalysis(0),
+    fList(0), fProtonAnalysis(0),
     fElectronFunction(0), fMuonFunction(0),
     fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
     fFunctionUsed(kFALSE) {
@@ -42,10 +44,12 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
 : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0), fAnalysisType("ESD"),
-  fList(0), fAnalysis(0), 
+  fList(0), fProtonAnalysis(0), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fFunctionUsed(kFALSE) { 
+  fFunctionUsed(kFALSE),
+  fTriggerMode(kMB2), fProtonAnalysisMode(kTPC),
+  fVxMax(0), fVyMax(0), fVzMax(0) { 
   // Constructor
 
   // Define input and output slots here
@@ -65,9 +69,6 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
     if(fAnalysisType == "ESD") {
-      tree->SetBranchStatus("*", kFALSE);
-      tree->SetBranchStatus("Tracks.*", kTRUE);
-      
       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
      
       if (!esdH) {
@@ -104,44 +105,89 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   Double_t partFrac[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
   
   //proton analysis object
-  fAnalysis = new AliProtonAnalysis();
-  fAnalysis->InitAnalysisHistograms(10,-1.0,1.0,26,0.5,3.1);
+  fProtonAnalysis = new AliProtonAnalysis();
 
   if(fAnalysisType == "ESD") {
     //Use of TPConly tracks
-    fAnalysis->UseTPCOnly();
+    if(fProtonAnalysisMode == kTPC) {
+      fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
+      fProtonAnalysis->UseTPCOnly();
+      fProtonAnalysis->SetTPCpid();
+      fProtonAnalysis->SetMinTPCClusters(100);
+      fProtonAnalysis->SetMaxChi2PerTPCCluster(2.2);
+      fProtonAnalysis->SetMaxCov11(0.5);
+      fProtonAnalysis->SetMaxCov22(0.5);
+      fProtonAnalysis->SetMaxCov33(0.5);
+      fProtonAnalysis->SetMaxCov44(0.5);
+      fProtonAnalysis->SetMaxCov55(0.5);
+      fProtonAnalysis->SetMaxSigmaToVertexTPC(2.0);
+      //fProtonAnalysis->SetMaxDCAXYTPC(1.5);
+      //fProtonAnalysis->SetMaxDCAZTPC(1.5);
+    }
+    //Use of HybridTPC tracks
+    else if(fProtonAnalysisMode == kHybrid) {
+      fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
+      fProtonAnalysis->UseHybridTPC();
+      fProtonAnalysis->SetTPCpid();
+      fProtonAnalysis->SetMinTPCClusters(110);
+      fProtonAnalysis->SetMaxChi2PerTPCCluster(2.2);
+      fProtonAnalysis->SetMaxCov11(0.5);
+      fProtonAnalysis->SetMaxCov22(0.5);
+      fProtonAnalysis->SetMaxCov33(0.5);
+      fProtonAnalysis->SetMaxCov44(0.5);
+      fProtonAnalysis->SetMaxCov55(0.5);
+      fProtonAnalysis->SetMaxSigmaToVertex(2.0);
+      /*fProtonAnalysis->SetMaxDCAXY(1.5);
+	fProtonAnalysis->SetMaxDCAZ(1.5);*/
+      fProtonAnalysis->SetPointOnITSLayer6();
+      fProtonAnalysis->SetPointOnITSLayer5();
+      //fProtonAnalysis->SetPointOnITSLayer4();
+      //fProtonAnalysis->SetPointOnITSLayer3();
+      fProtonAnalysis->SetPointOnITSLayer2();
+      fProtonAnalysis->SetPointOnITSLayer1();
+      fProtonAnalysis->SetMinITSClusters(5);
+    }
+    //Combined tracking
+    else if(fProtonAnalysisMode == kGlobal) {
+      fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
+      fProtonAnalysis->SetMinTPCClusters(110);
+      fProtonAnalysis->SetMaxChi2PerTPCCluster(2.2);
+      fProtonAnalysis->SetMaxCov11(0.5);
+      fProtonAnalysis->SetMaxCov22(0.5);
+      fProtonAnalysis->SetMaxCov33(0.5);
+      fProtonAnalysis->SetMaxCov44(0.5);
+      fProtonAnalysis->SetMaxCov55(0.5);
+      fProtonAnalysis->SetMaxSigmaToVertex(2.0);
+      //fProtonAnalysis->SetMaxDCAXY(2.0);
+      //fProtonAnalysis->SetMaxDCAZ(2.0);
+      fProtonAnalysis->SetTPCRefit();
+      fProtonAnalysis->SetPointOnITSLayer1();
+      fProtonAnalysis->SetPointOnITSLayer2();
+      //fProtonAnalysis->SetPointOnITSLayer3();
+      //fProtonAnalysis->SetPointOnITSLayer4();
+      fProtonAnalysis->SetPointOnITSLayer5();
+      fProtonAnalysis->SetPointOnITSLayer6();
+      fProtonAnalysis->SetMinITSClusters(5);
+      fProtonAnalysis->SetITSRefit();
+      fProtonAnalysis->SetESDpid();
+    }
 
-    //TPC related cuts       
-    fAnalysis->SetMinTPCClusters(50);
-    fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-    fAnalysis->SetMaxCov11(2.0);
-    fAnalysis->SetMaxCov22(2.0);
-    fAnalysis->SetMaxCov33(0.5);
-    fAnalysis->SetMaxCov44(0.5);
-    fAnalysis->SetMaxCov55(2.0);
-    fAnalysis->SetMaxSigmaToVertex(2.5);
-    fAnalysis->SetTPCRefit();
-
-    //ITS related cuts - to be used for the analysis of global tracking 
-    //fAnalysis->SetMinITSClusters(5);
-    //fAnalysis->SetITSRefit();
-  }
-
-  if(fFunctionUsed)
-    fAnalysis->SetPriorProbabilityFunctions(fElectronFunction,
-					    fMuonFunction,
-					    fPionFunction,
-					    fKaonFunction,
-					    fProtonFunction);
-  else
-    fAnalysis->SetPriorProbabilities(partFrac);
+    if(fFunctionUsed)
+      fProtonAnalysis->SetPriorProbabilityFunctions(fElectronFunction,
+					      fMuonFunction,
+					      fPionFunction,
+					      fKaonFunction,
+					      fProtonFunction);
+    else
+      fProtonAnalysis->SetPriorProbabilities(partFrac);
+  }//ESD analysis
 
   fList = new TList();
-  fList->Add(fAnalysis->GetProtonYPtHistogram());
-  fList->Add(fAnalysis->GetAntiProtonYPtHistogram());
-  fList->Add(fAnalysis->GetEventHistogram());
-  fList->Add(fAnalysis->GetProtonContainer());
-  fList->Add(fAnalysis->GetAntiProtonContainer());
+  fList->Add(fProtonAnalysis->GetProtonYPtHistogram());
+  fList->Add(fProtonAnalysis->GetAntiProtonYPtHistogram());
+  fList->Add(fProtonAnalysis->GetEventHistogram());
+  fList->Add(fProtonAnalysis->GetProtonContainer());
+  fList->Add(fProtonAnalysis->GetAntiProtonContainer());
 }
 
 //________________________________________________________________________
@@ -155,8 +201,14 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       return;
     }
 
-    Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
-    fAnalysis->Analyze(fESD);
+    if(IsEventTriggered(fESD,fTriggerMode)) {
+      const AliESDVertex *vertex = GetVertex(fESD,fProtonAnalysisMode,
+					     fVxMax,fVyMax,fVzMax);
+      if(vertex) {
+	Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
+	fProtonAnalysis->Analyze(fESD,vertex);
+      }//reconstructed vertex
+    }//triggered event
   }//ESD analysis              
   
   else if(fAnalysisType == "AOD") {
@@ -166,7 +218,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
     }
     
     Printf("Proton AOD analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
-    fAnalysis->Analyze(fAOD);
+    fProtonAnalysis->Analyze(fAOD);
   }//AOD analysis                                                                                                                                                                
   
   else if(fAnalysisType == "MC") {
@@ -181,7 +233,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       return;
     }
     Printf("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary());
-    fAnalysis->Analyze(stack);
+    fProtonAnalysis->Analyze(stack);
   }//MC analysis                      
 
   // Post output data.
@@ -209,6 +261,85 @@ void AliAnalysisTaskProtons::Terminate(Option_t *) {
   if (fHistYPtProtons) fHistYPtProtons->DrawCopy("colz");
   c1->cd(2)->SetLeftMargin(0.15); c1->cd(2)->SetBottomMargin(0.15);  
   if (fHistYPtAntiProtons) fHistYPtAntiProtons->DrawCopy("colz");
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskProtons::IsEventTriggered(const AliESDEvent *esd, 
+						TriggerMode trigger) {
+  // check if the event was triggered
+  ULong64_t triggerMask = esd->GetTriggerMask();
+  
+  // definitions from p-p.cfg
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 11);
+  ULong64_t v0right = (1 << 12);
+
+  switch (trigger) {
+  case kMB1: {
+    if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+      return kTRUE;
+    break;
+  }
+  case kMB2: {
+    if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+      return kTRUE;
+    break;
+  }
+  case kSPDFASTOR: {
+    if (triggerMask & spdFO)
+      return kTRUE;
+    break;
+  }
+  }//switch
+
+  return kFALSE;
+}
+
+//________________________________________________________________________
+const AliESDVertex* AliAnalysisTaskProtons::GetVertex(AliESDEvent* esd, 
+						      AnalysisMode mode,
+						      Double_t gVxMax,
+						      Double_t gVyMax,
+						      Double_t gVzMax) {
+  // Get the vertex from the ESD and returns it if the vertex is valid
+  // Second argument decides which vertex is used (this selects
+  // also the quality criteria that are applied)
+  const AliESDVertex* vertex = 0;
+  if(mode == kHybrid)
+    vertex = esd->GetPrimaryVertexSPD();
+  else if(mode == kTPC){
+    Double_t kBz = esd->GetMagneticField();
+    AliVertexerTracks vertexer(kBz);
+    vertexer.SetTPCMode();
+    AliESDVertex *vTPC = vertexer.FindPrimaryVertex(esd);
+    esd->SetPrimaryVertexTPC(vTPC);
+    for (Int_t i=0; i<esd->GetNumberOfTracks(); i++) {
+      AliESDtrack *t = esd->GetTrack(i);
+      t->RelateToVertexTPC(vTPC, kBz, kVeryBig);
+    }
+    delete vTPC;
+    vertex = esd->GetPrimaryVertexTPC();
+  }
+  else if(mode == kGlobal)
+    vertex = esd->GetPrimaryVertex();
+  else
+    Printf("GetVertex: ERROR: Invalid second argument %d", mode);
+  
+  if(!vertex) return 0;
+  
+  // check Ncontributors
+  if(vertex->GetNContributors() <= 0) return 0;
+  
+  // check resolution
+  Double_t zRes = vertex->GetZRes();
+  if(zRes == 0) return 0;
+  
+  //check position
+  if(TMath::Abs(vertex->GetXv()) > gVxMax) return 0;
+  if(TMath::Abs(vertex->GetYv()) > gVyMax) return 0;
+  if(TMath::Abs(vertex->GetZv()) > gVzMax) return 0;
+  
+  return vertex;
 }
 
 

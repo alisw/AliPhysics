@@ -38,6 +38,7 @@
 #include <AliCFContainer.h>
 #include <AliCFEffGrid.h>
 #include <AliCFDataGrid.h>
+#include <AliESDVertex.h>
 
 ClassImp(AliProtonAnalysis)
 
@@ -514,14 +515,15 @@ Double_t AliProtonAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 }
 
 //____________________________________________________________________//
-void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
+void AliProtonAnalysis::Analyze(AliESDEvent* esd,
+				const AliESDVertex *vertex) {
   //Main analysis part - ESD
   fHistEvents->Fill(0); //number of analyzed events
   Double_t containerInput[2] ;
   Double_t Pt = 0.0, P = 0.0;
-  Int_t nGoodTracks = fESD->GetNumberOfTracks();
+  Int_t nGoodTracks = esd->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    AliESDtrack* track = esd->GetTrack(iTracks);
     Double_t probability[5];
     AliESDtrack trackTPC;
 
@@ -530,14 +532,14 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
       Float_t p[2],cov[3];
       track->GetImpactParametersTPC(p,cov);
       if (p[0]==0 && p[1]==0)  
-	track->RelateToVertexTPC(((AliESDEvent*)fESD)->GetPrimaryVertexTPC(),fESD->GetMagneticField(),kVeryBig);
+	track->RelateToVertexTPC(((AliESDEvent*)esd)->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
       if (!track->FillTPCOnlyTrack(trackTPC)) {
 	continue;
       }
       track = &trackTPC ;
     }
 
-    if(IsAccepted(track)) {	
+    if(IsAccepted(esd,vertex,track)) {	
       if(fUseTPCOnly) {
 	AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
 	if(!tpcTrack) continue;
@@ -680,23 +682,45 @@ void AliProtonAnalysis::Analyze(AliStack* stack) {
 }
 
 //____________________________________________________________________//
-Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
+Bool_t AliProtonAnalysis::IsAccepted(AliESDEvent *esd,
+				     const AliESDVertex *vertex, 
+				     AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
-  Float_t dcaXY = 0.0, dcaZ = 0.0;
-
-  if(fUseHybridTPC) {
-     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  
+  if((fUseTPCOnly)&&(!fUseHybridTPC)) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-      dcaXY = -100.0, dcaZ = -100.0;
+      dca[0] = -100.; dca[1] = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
     }
     else {
       Pt = tpcTrack->Pt();
       Px = tpcTrack->Px();
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
-      track->GetImpactParameters(dcaXY,dcaZ);
+      tpcTrack->PropagateToDCA(vertex,
+			       esd->GetMagneticField(),
+			       100.,dca,cov);
+    }
+  }
+  else if(fUseHybridTPC) {
+     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      dca[0] = -100.; dca[1] = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+      tpcTrack->PropagateToDCA(vertex,
+			       esd->GetMagneticField(),
+			       100.,dca,cov);
     }
   }
   else{
@@ -704,7 +728,9 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
     Px = track->Px();
     Py = track->Py();
     Pz = track->Pz();
-    track->GetImpactParameters(dcaXY,dcaZ);
+    track->PropagateToDCA(vertex,
+			  esd->GetMagneticField(),
+			  100.,dca,cov);
   }
      
   Int_t  fIdxInt[200];
@@ -756,15 +782,13 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   if(fMaxSigmaToVertexTPCFlag)
     if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) return kFALSE;
   if(fMaxDCAXYFlag) 
-    if(dcaXY > fMaxDCAXY) return kFALSE;
+    if(TMath::Abs(dca[0]) > fMaxDCAXY) return kFALSE;
   if(fMaxDCAXYTPCFlag) 
-    if(dcaXY > fMaxDCAXYTPC) return kFALSE;
+    if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) return kFALSE;
     if(fMaxDCAZFlag) 
-    if(dcaZ > fMaxDCAZ) return kFALSE;
+    if(TMath::Abs(dca[1]) > fMaxDCAZ) return kFALSE;
   if(fMaxDCAZTPCFlag) 
-    if(dcaZ > fMaxDCAZTPC) return kFALSE;
-  if(fMaxDCAXYFlag) 
-    if(dcaXY > fMaxDCAXY) return kFALSE;
+    if(TMath::Abs(dca[1]) > fMaxDCAZTPC) return kFALSE;
   if(fMaxConstrainChi2Flag) {
     if(track->GetConstrainedChi2() > 0) 
       if(TMath::Log(track->GetConstrainedChi2()) > fMaxConstrainChi2) return kFALSE;
