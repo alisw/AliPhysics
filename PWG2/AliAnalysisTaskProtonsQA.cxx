@@ -99,7 +99,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   //Use of TPConly tracks
   if(fProtonAnalysisMode == kTPC) {
-    fProtonQAAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
+    fProtonQAAnalysis->SetQAYPtBins(10, -0.5, 0.5, 16, 0.5, 0.9); //TPC only
     fProtonQAAnalysis->UseTPCOnly();
     //fProtonQAAnalysis->SetTPCpid();
     fProtonQAAnalysis->SetMinTPCClusters(100);
@@ -115,7 +115,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   }
   //Use of HybridTPC tracks
   else if(fProtonAnalysisMode == kHybrid) {
-    fProtonQAAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
+    fProtonQAAnalysis->SetQAYPtBins(10, -0.5, 0.5, 16, 0.5, 0.9); //HybridTPC
     fProtonQAAnalysis->UseHybridTPC();
     fProtonQAAnalysis->SetTPCpid();
     fProtonQAAnalysis->SetMinTPCClusters(110);
@@ -207,9 +207,9 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
     const AliESDVertex *vertex = GetVertex(fESD,fProtonAnalysisMode,
 					   fVxMax,fVyMax,fVzMax);
     if(vertex) {
-      fProtonQAAnalysis->RunQAAnalysis(stack, fESD);
+      fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
       fProtonQAAnalysis->RunMCAnalysis(stack);
-      fProtonQAAnalysis->RunEfficiencyAnalysis(stack, fESD);
+      fProtonQAAnalysis->RunEfficiencyAnalysis(stack, fESD, vertex);
     }//accepted vertex
   }//triggered event
   

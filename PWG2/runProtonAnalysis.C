@@ -2,9 +2,9 @@ void runProtonAnalysis() {
   TStopwatch timer;
   timer.Start();
   
-  //runLocal();
-  //runInteractive();
-  //runBatch();
+  //runLocal("ESD");
+  //runInteractive("ESD");
+  //runBatch("ESD");
   
   runProof("ESD",200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T"); //use data sets
   //runProof("ESD",200); //use ascii files
@@ -14,7 +14,7 @@ void runProtonAnalysis() {
 }
 
 //_________________________________________________//
-void runLocal() {
+void runLocal(const char* mode = "ESD") {
   TStopwatch timer;
   timer.Start();
   gSystem->Load("libTree.so");
@@ -81,9 +81,19 @@ void runLocal() {
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
+  if(smode == "MC") {
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc);
+  }
+
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  taskProtons->SetType(mode);
+  taskProtons->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtons->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
+  //Momentum dependent priors
   /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
@@ -118,7 +128,7 @@ void runLocal() {
 }
 
 //_________________________________________________//
-void runInteractive() {
+void runInteractive(const char* mode = "ESD") {
   TStopwatch timer;
   timer.Start();
   gSystem->Load("libProofPlayer.so");
@@ -192,9 +202,19 @@ void runInteractive() {
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
+  if(smode == "MC") {
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc);
+  }
+
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  taskProtons->SetType(mode);
+  taskProtons->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtons->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
+  //Momentum dependent priors
   /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
@@ -229,7 +249,7 @@ void runInteractive() {
 }
 
 //_________________________________________________//
-void runBatch() {
+void runBatch(const char* mode = "ESD") {
   TStopwatch timer;
   timer.Start();
 
@@ -296,9 +316,19 @@ void runBatch() {
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
+  if(smode == "MC") {
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc);
+  }
+  
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  taskProtons->SetType(mode);
+  taskProtons->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtons->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
+  //Momentum dependent priors
   /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
@@ -376,6 +406,10 @@ void runProof(const char* mode = "ESD",
   // 1st Proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
   taskProtons->SetType(mode);
+  taskProtons->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  taskProtons->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
+  //Momentum dependent priors
   /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");

@@ -31,6 +31,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliExternalTrackParam;
 class AliStack;
+class AliESDVertex;
 
 class AliProtonAnalysis : public TObject {
  public:
@@ -45,7 +46,8 @@ class AliProtonAnalysis : public TObject {
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   Bool_t ReadFromFile(const char* filename);
-  void Analyze(AliESDEvent *fESD);
+  void Analyze(AliESDEvent *fESD, 
+	       const AliESDVertex *vertex);
   void Analyze(AliAODEvent *fAOD);
   void Analyze(AliStack *stack);
   
@@ -173,7 +175,9 @@ class AliProtonAnalysis : public TObject {
   AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented
   AliProtonAnalysis& operator=(const AliProtonAnalysis&); // Not implemented
 
-  Bool_t   IsAccepted(AliESDtrack *track);
+  Bool_t   IsAccepted(AliESDEvent *esd,
+		      const AliESDVertex *vertex, 
+		      AliESDtrack *track);
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   

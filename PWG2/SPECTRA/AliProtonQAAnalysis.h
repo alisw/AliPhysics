@@ -27,6 +27,7 @@ class TH3F;
 class AliESDEvent;
 class AliESDtrack;
 class AliStack;
+class AliESDVertex;
 
 class AliProtonQAAnalysis : public TObject {
  public:
@@ -35,7 +36,7 @@ class AliProtonQAAnalysis : public TObject {
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   void UseHybridTPC() {fUseTPCOnly = kTRUE; fUseHybridTPC = kTRUE;}
-  
+
   //Cut functions
   void    SetPointOnITSLayer1() {fPointOnITSLayer1Flag = kTRUE;}
   void    SetPointOnITSLayer2() {fPointOnITSLayer2Flag = kTRUE;}
@@ -118,24 +119,22 @@ class AliProtonQAAnalysis : public TObject {
   //QA histograms
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
-  void RunQAAnalysis(AliStack *stack, AliESDEvent *esd);
+  void RunQAAnalysis(AliStack *stack, 
+		     AliESDEvent *esd,
+		     const AliESDVertex *vertex);
   void SetRunQAAnalysis();
   TList *GetGlobalQAList() {return fGlobalQAList;}
 
   //Efficiency plots (reconstruction & PID)
-  void RunEfficiencyAnalysis(AliStack *stack, AliESDEvent *esd);
+  void RunEfficiencyAnalysis(AliStack *stack, 
+			     AliESDEvent *esd,
+			     const AliESDVertex *vertex);
   void SetRunEfficiencyAnalysis(Bool_t gEtaMode, Bool_t gUseCuts) {
     fRunEfficiencyAnalysis = kTRUE;
     fRunEfficiencyAnalysisEtaMode = gEtaMode;
     fUseCutsInEfficiency = gUseCuts;
   }
   TList *GetEfficiencyQAList() {return fEfficiencyList;}
-  /*TH1F *GetReconstructionEfficiency(const char *variable, 
-				    const char *particle);
-  TH1F *GetPIDEfficiencyY();
-  TH1F *GetPIDEfficiencyPt();
-  TH1F *GetPIDContaminationY();
-  TH1F *GetPIDContaminationPt();*/
 
   //MC analysis
   void RunMCAnalysis(AliStack* stack);
@@ -160,7 +159,9 @@ class AliProtonQAAnalysis : public TObject {
   AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
   AliProtonQAAnalysis& operator=(const AliProtonQAAnalysis&);// Not implemented
 
-  Bool_t   IsAccepted(AliESDtrack *track);
+  Bool_t   IsAccepted(AliESDEvent *esd,
+		      const AliESDVertex *vertex, 
+		      AliESDtrack *track);
 
   void     FillQA(AliESDtrack *track, AliStack *stack);
 
