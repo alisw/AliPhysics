@@ -76,116 +76,102 @@ const UInt_t  AliQA::fkgQABit            = 17 ;
 AliQA::AliQA() : 
   TNamed("", ""), 
   fNdet(kNDET), 
-  fNEventSpecie(AliRecoParam::kNSpecies), 
-  fQA(new ULong_t*[fNdet]), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(kNULLDET),
   fTask(kNULLTASK), 
   fEventSpecie(AliRecoParam::kDefault), 
-  fEventSpecies(new Bool_t[fNEventSpecie])
+  fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // default constructor
-  Int_t det ; 
-  for (det = 0 ; det < fNdet ; det++) {
-    fQA[det] = new ULong_t[fNEventSpecie] ; 
-    for (Int_t es = 0 ; es < fNEventSpecie ; es++) 
-      fQA[det][es] = 0 ; 
-  }
-  for (Int_t es = 0 ; es < fNEventSpecie ; es++)
-    fEventSpecies[es] = kFALSE ; 
+  memset(fQA,0,fLengthQA);
+  memset(fEventSpecies,kFALSE,fNEventSpecies);
 }
 
 //____________________________________________________________________________
 AliQA::AliQA(const AliQA& qa) :
   TNamed(qa),
   fNdet(qa.fNdet), 
-  fNEventSpecie(qa.fNEventSpecie), 
-  fQA(qa.fQA), 
+  fNEventSpecies(qa.fNEventSpecies), 
+  fLengthQA(qa.fLengthQA),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(qa.fDet),
   fTask(qa.fTask), 
   fEventSpecie(qa.fEventSpecie), 
-  fEventSpecies(qa.fEventSpecies)
+  fEventSpecies(new Bool_t[fNEventSpecies])
 { 
   // cpy ctor
+  memcpy(fQA,qa.fQA,fLengthQA*sizeof(ULong_t));
+  memcpy(fEventSpecies,qa.fEventSpecies,fNEventSpecies*sizeof(Bool_t));
 }
 
 //_____________________________________________________________________________
 AliQA& AliQA::operator = (const AliQA& qa)
 {
   // assignment operator
-  if(&qa == this) return *this;
-    
-  fNdet         = qa.fNdet;
-  fNEventSpecie = qa.fNEventSpecie; 
-  for (Int_t det = 0 ; det < fNdet ; det++) 
-    for (Int_t es = 0 ; es < fNEventSpecie ; es++) 
-        fQA[det][es] = qa.fQA[det][es]; 
-  
-  fNEventSpecie = qa.fNEventSpecie ; 
-  for (Int_t es = 0 ; es < fNEventSpecie ; es++)
-    fEventSpecies[es] = qa. fEventSpecies[es] ; 
-  
+  if(&qa != this) {
+    TNamed::operator=(qa);
+    fNdet          = qa.fNdet;
+    fNEventSpecies = qa.fNEventSpecies; 
+    fLengthQA      = qa.fLengthQA;
+
+    if(fQA) delete [] fQA;
+    fQA = new ULong_t[fLengthQA];
+    memcpy(fQA,qa.fQA,fLengthQA*sizeof(ULong_t));
+
+    fDet = qa.fDet;
+    fTask = qa.fTask;
+    fEventSpecie = qa.fEventSpecie; 
+    if(fEventSpecies) delete [] fEventSpecies;
+    fEventSpecies = new Bool_t[fNEventSpecies];
+    memcpy(fEventSpecies,qa.fEventSpecies,fNEventSpecies*sizeof(Bool_t));
+  }  
   return *this;
 }
 
 //_______________________________________________________________
 AliQA::AliQA(const DETECTORINDEX_t det) :
   TNamed("QA", "Quality Assurance status"),
-  fNdet(kNDET),  
-  fNEventSpecie(AliRecoParam::kNSpecies), 
-  fQA(new ULong_t*[fNdet]), 
+  fNdet(kNDET), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(det),
   fTask(kNULLTASK), 
   fEventSpecie(AliRecoParam::kDefault), 
-  fEventSpecies(new Bool_t[fNEventSpecie]) 
+  fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // constructor to be used
-  if (! CheckRange(det) ) {
-    fDet = kNULLDET ; 
-    return ;
-  } 
-  Int_t idet ; 
-  for (idet = 0; idet < fNdet; idet++) {
-    fQA[det] = new ULong_t[fNEventSpecie] ; 
-    for (Int_t es = 0 ; es < fNEventSpecie ; es++) 
-      fQA[idet][es] = 0 ; 
-  }
-  for (Int_t es = 0 ; es < fNEventSpecie ; es++)
-    fEventSpecies[es] = kFALSE ; 
+  if (! CheckRange(det) ) fDet = kNULLDET ; 
+  memset(fQA,0,fLengthQA);
+  memset(fEventSpecies,kFALSE,fNEventSpecies);
 }
   
 //_______________________________________________________________
 AliQA::AliQA(const ALITASK_t tsk) :
-  TNamed("QA", "Quality Assurance status"), 
-  fNdet(kNDET),
-  fNEventSpecie(AliRecoParam::kNSpecies), 
-  fQA(new ULong_t*[fNdet]), 
+  TNamed("QA", "Quality Assurance status"),
+  fNdet(kNDET), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(kNULLDET),
   fTask(tsk), 
   fEventSpecie(AliRecoParam::kDefault), 
-  fEventSpecies(new Bool_t[fNEventSpecie])
+  fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // constructor to be used in the AliRoot module (SIM, REC, ESD or ANA)
-  if (! CheckRange(tsk) ) {
-    fTask = kNULLTASK ; 
-    return ;
-  } 
-  Int_t det ; 
-  for (det = 0; det < fNdet; det++) {
-    fQA[det] = new ULong_t[fNEventSpecie] ; 
-    for (Int_t es = 0 ; es < fNEventSpecie ; es++) 
-      fQA[det][es] = 0 ; 
-  }
-  for (Int_t es = 0 ; es < fNEventSpecie ; es++)
-    fEventSpecies[es] = kFALSE ; 
+  if (! CheckRange(tsk) ) fTask = kNULLTASK ; 
+  memset(fQA,0,fLengthQA);
+  memset(fEventSpecies,kFALSE,fNEventSpecies);
 }
 
 //____________________________________________________________________________
 AliQA::~AliQA() 
 {
   // dtor  
-  for (Int_t idet = 0; idet < fNdet; idet++) 
-    delete fQA[idet] ;
-  delete[] fQA ;
+  delete [] fQA;
+  delete [] fEventSpecies;
 }
 
 //_______________________________________________________________
@@ -357,7 +343,7 @@ const char * AliQA::GetDetName(Int_t det)
 }
 
 //_______________________________________________________________
-TFile * AliQA::GetQADataFile(const char * name, const Int_t run) 
+TFile * AliQA::GetQADataFile(const char * name, Int_t run) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
 	const char * temp = Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run) ; 
@@ -604,7 +590,7 @@ void AliQA::Merge(TCollection * list) {
 				TIter next(list) ;
 				AliQA * qa ; 
 				while ( (qa = (AliQA*)next() ) ) {
-          for (Int_t es = 0 ; es < fNEventSpecie ; es++) {
+          for (Int_t es = 0 ; es < fNEventSpecies ; es++) {
             if (qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), es, QABIT_t(bit)))
               Set(QABIT_t(bit), es) ; 
           }
@@ -651,8 +637,8 @@ ULong_t AliQA::Offset(ALITASK_t tsk) const
 void AliQA::ResetStatus(DETECTORINDEX_t det) 
 { 
   // reset the status of det for all event specie
-  for (Int_t es = 0 ; es < fNEventSpecie ; es++)
-    fQA[det][es] = 0 ; 
+  for (Int_t es = 0 ; es < fNEventSpecies ; es++)
+    fQA[det*fNdet+es] = 0 ; 
 }
 
 //_______________________________________________________________
@@ -726,7 +712,7 @@ void AliQA::Show() const
 { 
   // dispplay the QA status word
 
-  for (Int_t ies = 0 ; ies < fNEventSpecie ; ies++) {
+  for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
     const Bool_t what = IsEventSpecieSet(ies) ;
     if ( what )
       ShowStatus(fDet, fTask, AliRecoParam::Convert(ies)) ; 
@@ -738,7 +724,7 @@ void AliQA::Show(DETECTORINDEX_t det) const
 { 
   // dispplay the QA status word
   
-  for (Int_t ies = 0 ; ies < fNEventSpecie ; ies++) {
+  for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
     const Bool_t what = IsEventSpecieSet(ies) ;
     if ( what )
       ShowStatus(fDet, kNULLTASK, AliRecoParam::Convert(ies)) ; 
@@ -752,7 +738,7 @@ void AliQA::ShowAll() const
   Int_t index ;
   for (index = 0 ; index < kNDET ; index++) {
 		for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
-      for (Int_t ies = 0 ; ies < fNEventSpecie ; ies++) {
+      for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
         const Bool_t what = IsEventSpecieSet(ies) ;
         if ( what )
           ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk), AliRecoParam::Convert(ies)) ;
