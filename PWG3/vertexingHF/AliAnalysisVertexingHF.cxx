@@ -34,6 +34,8 @@
 #include "AliKFVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliExternalTrackParam.h"
+//#include "AliNeutralTrackParam.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
@@ -328,8 +330,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    io2Prong->SetSecondaryVtx(vertexp1n1);
 	  }
 	  // create a track from the D0
-	  //AliESDtrack *trackD0 = new AliESDtrack(io2Prong); // to be uncommented after commit of AliAODRecoDecay : public AliVTrack
+	  //AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(io2Prong); // to be uncommented after commit of AliAODRecoDecay : public AliVTrack
 	  AliESDtrack *trackD0 = new AliESDtrack(); // temporary, just to allow compilation
+
 	  // LOOP ON TRACKS THAT PASSED THE SOFT PION CUTS
 	  for(iTrkSoftPi=0; iTrkSoftPi<nSeleTrks; iTrkSoftPi++) {
 	    if(iTrkSoftPi==iTrkP1 || iTrkSoftPi==iTrkN1) continue;
@@ -569,15 +572,15 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,AliVEvent *event,
 
   Int_t nTrks = trkArray->GetEntriesFast();
 
-  AliESDtrack *esdTrack = 0;
+  AliExternalTrackParam *track = 0;
   AliAODTrack *aodTrack = 0;
   Int_t id;
 
   for(Int_t i=0; i<nTrks; i++) {
-    esdTrack = (AliESDtrack*)trkArray->UncheckedAt(i);
-    id = (Int_t)esdTrack->GetID();
+    track = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
+    id = (Int_t)track->GetID();
     //printf("---> %d\n",id);
-    if(id<0) continue; // this track is a D0
+    if(id<0) continue; // this track is a AliAODRecoDecay
     aodTrack = (AliAODTrack*)event->GetTrack(fAODMap[id]);
     v->AddDaughter(aodTrack);
   }
@@ -962,12 +965,15 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(TObjArray *trkArray,
 	  vertexer->SetOnlyFitter();
       }
       Int_t skipped[10];
-      AliESDtrack *t = 0;
+      Int_t nTrksToSkip=0,id;
+      AliExternalTrackParam *t = 0;
       for(Int_t i=0; i<nTrks; i++) {
-	t = (AliESDtrack*)trkArray->UncheckedAt(i);
-	skipped[i] = (Int_t)t->GetID();
+	t = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
+	id = (Int_t)t->GetID();
+	if(id<0) continue;
+	skipped[nTrksToSkip++] = id;
       }
-      vertexer->SetSkipTracks(nTrks,skipped);
+      vertexer->SetSkipTracks(nTrksToSkip,skipped);
       vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
       
     } else if(fRmTrksFromPrimVtx) { 
