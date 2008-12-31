@@ -61,6 +61,59 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
   myV0->SetOnFlyStatus(v0->GetOnFlyStatus());
   myV0->SetDaughterDCA(v0->GetDcaV0Daughters());
 
+  Double_t negProbability[10], posProbability[10];
+  Double_t negP = 0.0, posP = 0.0;
+  neg->GetESDpid(negProbability);
+  pos->GetESDpid(posProbability);
+  negP = neg->P();
+  posP = pos->P();
+
+  // ****** Tentative particle type "concentrations"
+  Double_t c[5]={0.01, 0.01, 0.85, 0.10, 0.05};
+  AliPID::SetPriors(c);
+
+  AliPID negPid(negProbability);
+  AliPID posPid(posProbability);
+
+  Int_t   negMostProbPdg =  0;
+  Int_t   posMostProbPdg =  0;
+
+  switch (negPid.GetMostProbable()){
+  case 0:
+    negMostProbPdg =   11; break;
+  case 1:
+    negMostProbPdg =   13; break;
+  case 2:
+    negMostProbPdg =  211; break;
+  case 3:
+    negMostProbPdg =  321; break;
+  case 4:
+    negMostProbPdg = 2212; break;
+  default :
+    negMostProbPdg =  211; break;
+  }
+
+  switch (posPid.GetMostProbable()){
+  case 0:
+    posMostProbPdg =   11; break;
+  case 1:
+    posMostProbPdg =   13; break;
+  case 2:
+    posMostProbPdg =  211; break;
+  case 3:
+    posMostProbPdg =  321; break;
+  case 4:
+    posMostProbPdg = 2212; break;
+  default :
+    posMostProbPdg =  211; break;
+  }
+
+  Float_t negMaxProbPid  = negPid.GetProbability(negPid.GetMostProbable());
+  Float_t posMaxProbPid  = posPid.GetProbability(posPid.GetMostProbable());
+
+  myV0->SetMaxProbPdgPid(0,negMostProbPdg,negMaxProbPid);
+  myV0->SetMaxProbPdgPid(1,posMostProbPdg,posMaxProbPid);
+
   return myV0;
 }
 

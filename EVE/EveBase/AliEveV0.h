@@ -61,13 +61,19 @@ public:
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
   Float_t GetPt()     const { return fRecDecayP.Perp(); }
 
-  Float_t GetInvMass(Float_t nPdgCode, Float_t pPdgCode) const;
+  Float_t GetInvMass(Int_t nPdgCode, Int_t pPdgCode) const;
   Float_t GetK0sInvMass() const { return GetInvMass(kPiMinus,kPiPlus); }
   Float_t GetLambdaInvMass() const { return GetInvMass(kPiMinus,kProton); }
   Float_t GetAntiLambdaInvMass() const { return GetInvMass(kProton,kPiPlus); }
 
   Bool_t GetOnFlyStatus()    const { return fOnFlyStatus; }
   void   SetOnFlyStatus(Bool_t fs) { fOnFlyStatus = fs; }
+
+  void    SetMaxProbPdgPid(Int_t iDaughter, Int_t rPdg, Float_t rPid);
+  Int_t   GetNegMaxProbPdg() const { return fNegMaxProbPdg; }
+  Int_t   GetPosMaxProbPdg() const { return fPosMaxProbPdg; }
+  Float_t GetNegMaxProbPid() const { return fNegMaxProbPid; }
+  Float_t GetPosMaxProbPid() const { return fPosMaxProbPid; }
 
   Int_t GetESDIndex() const { return fESDIndex; }
   void  SetESDIndex(Int_t ind) { fESDIndex = ind;}
@@ -98,6 +104,11 @@ protected:
   Bool_t            fOnFlyStatus; // Reconstructed during tracking.
   Float_t           fDaughterDCA; // Distance at the point of closest approach. 
   Float_t           fChi2V0;      // Some Chi-square.
+
+  Int_t             fNegMaxProbPdg; // Maximum PDG probability for the negative daughter
+  Int_t             fPosMaxProbPdg; // Maximum PDG probability for the positive daughter
+  Float_t           fNegMaxProbPid; // Maximum PID probability for the negative daughter
+  Float_t           fPosMaxProbPid; // Maximum PID probability for the positive daughter
 
 private:
   AliEveV0(const AliEveV0&);            // Not implemented
@@ -140,6 +151,18 @@ public:
   void   FilterByRadius(Float_t minR, Float_t maxR);
   void   FilterByDaughterDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA);
   void   FilterByPt(Float_t minPt, Float_t maxPt);
+  void   FilterByCheckedPidMinProb(Int_t rFlag, Int_t rDaughter, Int_t rPid, Float_t rProb);
+  void   SetNegCheckedPid(Int_t rNegCheckedPid) {fNegCheckedPid = rNegCheckedPid;}
+  void   SetPosCheckedPid(Int_t rPosCheckedPid) {fPosCheckedPid = rPosCheckedPid;}
+  Int_t  GetNegCheckedPid() {return fNegCheckedPid;}
+  Int_t  GetPosCheckedPid() {return fPosCheckedPid;}
+
+  void   SetNegCheckedProb(Float_t rNegCheckedProb) {fNegCheckedProb = rNegCheckedProb;}
+  void   SetPosCheckedProb(Float_t rPosCheckedProb) {fPosCheckedProb = rPosCheckedProb;}
+  Float_t  GetNegCheckedProb() {return fNegCheckedProb;}
+  Float_t  GetPosCheckedProb() {return fPosCheckedProb;}
+
+  void   FilterByInvariantMass(Float_t minPt, Float_t maxPt, Int_t nPdgCode, Int_t pPdgCode);
 
 protected:
   TString              fTitle;
@@ -161,6 +184,15 @@ protected:
 
   Float_t              fMinPt;
   Float_t              fMaxPt;
+
+  Int_t                fNegCheckedPid;
+  Int_t                fPosCheckedPid;
+
+  Float_t              fNegCheckedProb;
+  Float_t              fPosCheckedProb;
+
+  Float_t              fMinInvariantMass;
+  Float_t              fMaxInvariantMass;
 
 private:
   void Init();

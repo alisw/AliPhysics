@@ -34,6 +34,8 @@ AliEveV0Editor::AliEveV0Editor(const TGWindow *p, Int_t width, Int_t height,
   fM(0),
   fInfoLabel0(0),
   fInfoLabel1(0),
+  fInfoLabelNegDaughter(0),
+  fInfoLabelPosDaughter(0),
   fXButton(0)
   // Initialize widget pointers to 0
 {
@@ -50,6 +52,16 @@ AliEveV0Editor::AliEveV0Editor(const TGWindow *p, Int_t width, Int_t height,
   fInfoLabel1->SetTextJustify(kTextLeft);
   AddFrame(fInfoLabel1, new TGLayoutHints(kLHintsLeft|kLHintsExpandX,
                                           8, 0, 2, 0));
+
+  fInfoLabelNegDaughter = new TGLabel(this);
+  fInfoLabelNegDaughter->SetTextJustify(kTextLeft);
+  AddFrame(fInfoLabelNegDaughter, new TGLayoutHints(kLHintsLeft|kLHintsExpandX,
+						    8, 0, 2, 0));
+
+  fInfoLabelPosDaughter = new TGLabel(this);
+  fInfoLabelPosDaughter->SetTextJustify(kTextLeft);
+  AddFrame(fInfoLabelPosDaughter, new TGLayoutHints(kLHintsLeft|kLHintsExpandX,
+						    8, 0, 2, 0));
 
   fXButton = new TGTextButton(this, "Detailed View");
   AddFrame(fXButton, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
@@ -68,6 +80,9 @@ void AliEveV0Editor::SetModel(TObject* obj)
   // Set values of widgets
   fInfoLabel0->SetText(Form("Radius = %f, DCA = %f", fM->GetRadius(), fM->GetDaughterDCA()));
   fInfoLabel1->SetText(Form("Pt = %f", fM->GetPt()));
+  fInfoLabelNegDaughter->SetText(Form("Neg. Daughter Prob= %.2f for Pdg= %d", fM->GetNegMaxProbPid(), fM->GetNegMaxProbPdg()));
+  fInfoLabelPosDaughter->SetText(Form("Pos. Daughter Prob= %.2f for Pdg= %d", fM->GetPosMaxProbPid(), fM->GetPosMaxProbPdg()));
+
 }
 
 /******************************************************************************/

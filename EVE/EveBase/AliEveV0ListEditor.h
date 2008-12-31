@@ -17,6 +17,7 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 class TEveGDoubleValuator;
+class TGComboBox;
 
 class AliEveV0List;
 
@@ -37,6 +38,13 @@ public:
   void DoMinMaxRCut();
   void DoMinMaxDaughterDCA();
   void DoMinMaxPt();
+  void DoSelectNegPid(Int_t rNegPid);
+  void DoCheckNegPid();
+  void DoSelectNegProb();
+  void DoSelectPosPid(Int_t rPosPid);
+  void DoCheckPosPid();
+  void DoSelectPosProb();
+  void DoMinMaxInvariantMass();
 
 protected:
   AliEveV0List            *fM; // Model object.
@@ -46,6 +54,13 @@ protected:
   TEveGDoubleValuator* fMinMaxRCut;
   TEveGDoubleValuator* fMinMaxDaughterDCA;
   TEveGDoubleValuator* fMinMaxPt;
+  TGComboBox*          fNegativeSpecies;
+  TGComboBox*          fPositiveSpecies;
+  TGCheckButton*       fNegativeCheckMaxPidProbability;
+  TGCheckButton*       fPositiveCheckMaxPidProbability;
+  TGNumberEntry*       fNegativeLevelPidProbability;
+  TGNumberEntry*       fPositiveLevelPidProbability;
+  TEveGDoubleValuator* fMinMaxInvariantMass;
 
 private:
   AliEveV0ListEditor(const AliEveV0ListEditor&);            // Not implemented

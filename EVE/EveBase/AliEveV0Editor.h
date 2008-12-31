@@ -41,6 +41,8 @@ protected:
 
   TGLabel   *fInfoLabel0; // label
   TGLabel   *fInfoLabel1; // label
+  TGLabel   *fInfoLabelNegDaughter; // label
+  TGLabel   *fInfoLabelPosDaughter; // label
 
   TGButton  *fXButton;
 

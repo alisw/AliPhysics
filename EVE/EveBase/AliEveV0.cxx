@@ -45,7 +45,11 @@ AliEveV0::AliEveV0() :
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
-  fChi2V0(-1)
+  fChi2V0(-1),
+  fNegMaxProbPdg(0),
+  fPosMaxProbPdg(0),
+  fNegMaxProbPid(0),
+  fPosMaxProbPid(0)
 {
   // Default constructor.
 
@@ -71,7 +75,11 @@ AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
-  fChi2V0(-1)
+  fChi2V0(-1),
+  fNegMaxProbPdg(0),
+  fPosMaxProbPdg(0),
+  fNegMaxProbPid(0),
+  fPosMaxProbPid(0)
 {
   // Constructor with full V0 specification.
 
@@ -110,7 +118,23 @@ AliEveV0::~AliEveV0()
 }
 
 //______________________________________________________________________________
-Float_t AliEveV0::GetInvMass(Float_t nPdgCode, Float_t pPdgCode) const
+void AliEveV0::SetMaxProbPdgPid(Int_t iDaughter, Int_t rPdg, Float_t rPid)
+{
+  // Sets the maximum probability Pdg value and Pid for one daughter
+  // Should be moved to TEveTrack property eventually (or AliEveTrack creation)
+
+  if(iDaughter==0){
+    fNegMaxProbPdg = rPdg;
+    fNegMaxProbPid = rPid;
+  }
+  else if (iDaughter==1){
+    fPosMaxProbPdg = rPdg;
+    fPosMaxProbPid = rPid;
+  }
+
+}
+//______________________________________________________________________________
+Float_t AliEveV0::GetInvMass(Int_t nPdgCode, Int_t pPdgCode) const
 {
   // Returns Invariant Mass assuming the masses of the daughter particles
   TEveVector lNegMomentum = fNegTrack->GetMomentum();
@@ -165,7 +189,13 @@ AliEveV0List::AliEveV0List() :
   fMinDaughterDCA(0),
   fMaxDaughterDCA(1),
   fMinPt(0),
-  fMaxPt(20)
+  fMaxPt(20),
+  fNegCheckedPid(211),
+  fPosCheckedPid(211),
+  fNegCheckedProb(0.5),
+  fPosCheckedProb(0.5),
+  fMinInvariantMass(0),
+  fMaxInvariantMass(1.2)
 {
   // Default constructor.
 
@@ -187,7 +217,13 @@ AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
   fMinDaughterDCA(0),
   fMaxDaughterDCA(1),
   fMinPt(0),
-  fMaxPt(20)
+  fMaxPt(20),
+  fNegCheckedPid(211),
+  fPosCheckedPid(211),
+  fNegCheckedProb(0.5),
+  fPosCheckedProb(0.5),
+  fMinInvariantMass(0),
+  fMaxInvariantMass(1.2)
 {
   // Constructor with given track-propagator..
 
@@ -211,7 +247,13 @@ AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
   fMinDaughterDCA(0),
   fMaxDaughterDCA(1),
   fMinPt(0),
-  fMaxPt(20)
+  fMaxPt(20),
+  fNegCheckedPid(211),
+  fPosCheckedPid(211),
+  fNegCheckedProb(0.5),
+  fPosCheckedProb(0.5),
+  fMinInvariantMass(0),
+  fMaxInvariantMass(1.2)
 {
   // Standard constructor.
 
@@ -299,6 +341,61 @@ void AliEveV0List::FilterByPt(Float_t minPt, Float_t maxPt)
     AliEveV0* v0 = (AliEveV0*) *i;
     Float_t  pt = v0->GetPt();
     Bool_t  show = pt >= fMinPt && pt <= fMaxPt;
+    v0->SetRnrState(show);
+  }
+  ElementChanged();
+  gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void AliEveV0List::FilterByCheckedPidMinProb(Int_t rFlag,Int_t rDaughter, Int_t rPid, Float_t rProb)
+{
+
+  if (!rDaughter){
+    fNegCheckedPid  = rPid;
+    fNegCheckedProb = rProb;
+  }
+  else {
+    fPosCheckedPid  = rPid;
+    fPosCheckedProb = rProb;
+  }
+
+  // Select visibility of elements based on one of the V0 daughters PID
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
+  {
+    AliEveV0* v0 = (AliEveV0*) *i;
+    Int_t   pid = 0;
+    Float_t prob = 0.0;
+    Bool_t  show = 0;
+    if     (!rDaughter) {// Negative daughter checked
+      pid  = v0->GetNegMaxProbPdg();
+      prob = v0->GetNegMaxProbPid();
+      show = (pid == fNegCheckedPid && prob > fNegCheckedProb) || !rFlag ; 
+    }
+    else if (rDaughter) {// Positive daughter checked
+      pid = v0->GetPosMaxProbPdg();
+      prob = v0->GetPosMaxProbPid();
+      show = (pid == fPosCheckedPid && prob > fPosCheckedProb) || !rFlag ; 
+    }
+    v0->SetRnrState(show);
+  }
+  ElementChanged();
+  gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void AliEveV0List::FilterByInvariantMass(Float_t minInvariantMass, Float_t maxInvariantMass, Int_t nPdgCode, Int_t pPdgCode)
+{
+  // Select visibility of elements based on the V0 invariant mass.
+
+  fMinInvariantMass = minInvariantMass;
+  fMaxInvariantMass = maxInvariantMass;
+
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
+  {
+    AliEveV0* v0 = (AliEveV0*) *i;
+    Float_t  invMass = v0->GetInvMass(nPdgCode, pPdgCode);
+    Bool_t  show = invMass >= fMinInvariantMass && invMass <= fMaxInvariantMass;
     v0->SetRnrState(show);
   }
   ElementChanged();
