@@ -58,7 +58,7 @@ class AliHLTTPCEVE : public AliHLTLogging {
   /**
    * Create EVE point collection from HLTOUT instance.
    * Base method to create EVE point list from HLTOUT.
-   * @param pRawReader  the RawReader
+   * @param pHLTOUT     the HLTOUT instance
    * @param cont        EVE element collection
    * @param maxR        geometrical cut, maximum radius of clusters
    */

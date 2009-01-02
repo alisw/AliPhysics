@@ -33,7 +33,7 @@ class AliHLTTPCTrackArray;
  * Input Data Types: AliHLTTPCDefinitions::fgkClustersDataType,
  *                   AliHLTTPCDefinitions::fgkTrackSegmentsDataType or
  *                   AliHLTTPCDefinitions::fgkTracksDataType <br>
- * Output Data Types: @ref kAliHLTDataTypeNtuple <br> 
+ * Output Data Types: ::kAliHLTDataTypeTNtuple <br> 
  *
  * <h2> Mandatory arguments: </h2>
  * \li No mandaroty arguments. 

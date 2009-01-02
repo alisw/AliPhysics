@@ -47,8 +47,8 @@ class TFile;
  *
  * Component ID: \b StatisticsCollector                                 <br>
  * Library: \b libAliHLTUtil.so					        <br>
- * Input Data Types: kAliHLTDataTypeComponentStatistics                 <br>
- * Output Data Types: kAliHLTDataTypeHistogram, kAliHLTDataTypeTNtuple  <br>
+ * Input Data Types: ::kAliHLTDataTypeComponentStatistics                 <br>
+ * Output Data Types: ::kAliHLTDataTypeHistogram, ::kAliHLTDataTypeTNtuple  <br>
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
