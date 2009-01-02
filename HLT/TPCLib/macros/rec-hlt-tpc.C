@@ -217,7 +217,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   }
   //Chain with Track Histogram
   if(histout){
-    AliHLTConfiguration histoconf("histo","TPCTrackHisto",histoInput.Data(),"-plot-All");  
+    AliHLTConfiguration histoconf("histo","TPCTrackHisto",histoInput.Data(),"");  
     AliHLTConfiguration fwconf("histFile", "ROOTFileWriter"   , "histo", "-datafile TrackHisto -concatenate-events -overwrite");
   }
   //Chain with Track Dump
