@@ -22,33 +22,32 @@
 //         Federico.Carminati@cern.ch
 
 #include <RVersion.h>
-#include <TBrowser.h>
+#include <TArrayI.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 #include <TGeoManager.h>
+#include <TParticle.h>
+#include <TROOT.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TParticle.h>
-#include <TROOT.h>
-#include <TFile.h>
  
-#include "AliLog.h"
-#include "AliDetector.h"
-#include "AliGenerator.h"
-#include "AliHeader.h"
-#include "AliLego.h"
-#include "AliMC.h"
-#include "AliRun.h"
-#include "AliHit.h"
-#include "AliStack.h"
-#include "AliMagF.h"
-#include "AliTrackReference.h"
-#include "AliSimulation.h"
-#include "AliGeomManager.h"
+#include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
-
+#include "AliDetector.h"
+#include "AliGenerator.h"
+#include "AliGeomManager.h"
+#include "AliHeader.h"
+#include "AliHit.h"
+#include "AliLego.h"
+#include "AliLog.h"
+#include "AliMC.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliSimulation.h"
+#include "AliStack.h"
+#include "AliTrackReference.h"
 
 ClassImp(AliMC)
 
@@ -172,12 +171,12 @@ Bool_t  AliMC::MisalignGeometry()
      SetAllAlignableVolumes();
    }
    // Misalign geometry via AliSimulation instance
-   if (!AliSimulation::GetInstance()) return kFALSE;
+   if (!AliSimulation::Instance()) return kFALSE;
    AliGeomManager::SetGeometry(gGeoManager);
    if(!AliGeomManager::CheckSymNamesLUT("ALL"))
     AliFatal("Current loaded geometry differs in the definition of symbolic names!");
 
-   return AliSimulation::GetInstance()->MisalignGeometry(AliRunLoader::GetRunLoader());
+   return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::GetRunLoader());
 }   
 
 //_______________________________________________________________________
@@ -331,8 +330,8 @@ void AliMC::Stepping()
   
   //
   // --- If lego option, do it and leave 
-  if (gAlice->Lego())
-    gAlice->Lego()->StepManager();
+  if (AliSimulation::Instance()->Lego())
+    AliSimulation::Instance()->Lego()->StepManager();
   else {
     Int_t copy;
     //Update energy deposition tables
@@ -457,7 +456,7 @@ void AliMC::BeginEvent()
       runloader->MakeStack();//or make a new one
   
   
-  if(gAlice->Lego() == 0x0)
+  if(AliSimulation::Instance()->Lego() == 0x0)
   { 
       AliDebug(1, "fRunLoader->MakeTree(K)");
       runloader->MakeTree("K");
@@ -476,9 +475,9 @@ void AliMC::BeginEvent()
 				gAlice->GetEventNrInRun());
 //  fRunLoader->WriteKinematics("OVERWRITE");  is there any reason to rewrite here since MakeTree does so
 
-  if(gAlice->Lego()) 
+  if(AliSimulation::Instance()->Lego()) 
   {
-      gAlice->Lego()->BeginEvent();
+      AliSimulation::Instance()->Lego()->BeginEvent();
       return;
   }
   
@@ -512,6 +511,32 @@ void AliMC::ResetHits()
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetHits();
+  }
+}
+
+//_______________________________________________________________________
+void AliMC::ResetDigits()
+{
+  //
+  //  Reset all Detectors digits
+  //
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  while((detector = dynamic_cast<AliModule*>(next()))) {
+     detector->ResetDigits();
+  }
+}
+
+//_______________________________________________________________________
+void AliMC::ResetSDigits()
+{
+  //
+  //  Reset all Detectors digits
+  //
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  while((detector = dynamic_cast<AliModule*>(next()))) {
+     detector->ResetSDigits();
   }
 }
 
@@ -604,7 +629,7 @@ void AliMC::FinishEvent()
   
   //
     
-  if(gAlice->Lego()) gAlice->Lego()->FinishEvent();
+  if(AliSimulation::Instance()->Lego()) AliSimulation::Instance()->Lego()->FinishEvent();
 
   TIter next(gAlice->Modules());
   AliModule *detector;
@@ -634,7 +659,7 @@ void AliMC::FinishEvent()
   header->SetNtrack(stack->GetNtrack());  
 
   // Write out the kinematics
-  if (!gAlice->Lego()) stack->FinishEvent();
+  if (!AliSimulation::Instance()->Lego()) stack->FinishEvent();
 
   // Synchronize the TreeTR with TreeK
   if (fTmpTreeTR) ReorderAndExpandTreeTR();
@@ -651,7 +676,7 @@ void AliMC::FinishEvent()
     AliError("Can not get TreeE from RL");
    }
   
-  if(gAlice->Lego() == 0x0)
+  if(AliSimulation::Instance()->Lego() == 0x0)
    {
      runloader->WriteKinematics("OVERWRITE");
      runloader->WriteTrackRefs("OVERWRITE");
@@ -973,8 +998,8 @@ const TObjArray* AliMC::Particles() const {
 }
 
 //_______________________________________________________________________
-void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
-                      Float_t *vpos, Float_t *polar, Float_t tof,
+void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmom,
+                      const Float_t *vpos, const Float_t *polar, Float_t tof,
                       TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is) const
 { 
 // Delegate to stack

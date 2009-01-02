@@ -26,12 +26,6 @@
 // --- ROOT system ---
 #include <cassert>
 
-#include <TNode.h>
-#include <TBRIK.h>
-#include <TTRD1.h>
-#include <TTRAP.h>
-#include <TPGON.h>
-#include <TTUBS.h>
 #include <TGeometry.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoManager.h>

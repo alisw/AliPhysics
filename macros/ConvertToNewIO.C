@@ -790,9 +790,7 @@ void ConvertToNewIO(const char* name)
   rl->WriteHeader("OVERWRITE");
 
   infile->cd();
-  TGeometry* geo = inAliRun->GetGeometry();
   rl->CdGAFile();
-  geo->Write();
   
   rl->WriteAliRun();
   rl->WriteRunLoader();

@@ -15,12 +15,9 @@
 
 /* $Id$ */
 
-#include <TGeometry.h>
 #include <TGeoManager.h>
-#include <TNode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
-#include <TBRIK.h>
 #include <TGeoMatrix.h>
 #include <TVirtualMC.h>
 

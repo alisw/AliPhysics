@@ -32,13 +32,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <Riostream.h> 
 #include <TMath.h>
-#include <TNode.h>
 #include <TObjArray.h>
 #include <TRandom.h>
-#include <TTUBE.h>
 #include <TVector.h>
 #include <TVirtualMC.h>
-#include <TGeometry.h>
 #include <TGeoManager.h>
 
 #include "AliMagF.h"

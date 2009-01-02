@@ -37,10 +37,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TBRIK.h"
-#include "TGeometry.h"
 #include "TLorentzVector.h"
-#include "TNode.h"
 #include "TVirtualMC.h"
 
 #include "AliConst.h"

@@ -25,13 +25,10 @@
 #include "Riostream.h"
 
 #include <AliPDG.h>
-#include <TBRIK.h>
 #include <TCanvas.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TGeometry.h>
 #include <TMinuit.h>
-#include <TNode.h> 
 #include <TNtuple.h>
 #include <TObjArray.h>
 #include <TObject.h>
@@ -41,8 +38,6 @@
 #include <TROOT.h>
 #include <TRandom.h> 
 #include <TRotMatrix.h>
-#include <TTUBE.h>
-#include <TTUBE.h>
 #include <TTree.h> 
 #include <TVector.h>
 #include <TVirtualMC.h>

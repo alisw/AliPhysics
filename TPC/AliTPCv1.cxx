@@ -31,12 +31,8 @@
 
 #include <Riostream.h>
 #include <stdlib.h>
-#include <TBRIK.h>
-#include <TGeometry.h>
 #include <TInterpreter.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 #include <TString.h>
 #include <TSystem.h>

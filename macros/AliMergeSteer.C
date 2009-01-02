@@ -24,7 +24,6 @@
 #include "TStopwatch.h"
 #include "TArrayF.h"
 #include "TSystem.h"
-#include "TGeometry.h"
 #include "TInterpreter.h"
 
 // --- AliRoot header files ---
@@ -605,16 +604,6 @@ Bool_t AliMergeSteer::AliCopy(TFile *inputFile, TFile *outputFile)
   treeE->SetBranchStatus("*",1);
   TTree *treeENew =  treeE->CloneTree();
   treeENew->Write();
-  if (fDEBUG) cout<<"done"<<endl;
-
-// copy AliceGeom
-  if (fDEBUG) cout<<"Copy AliceGeom: ";
-  TGeometry *AliceGeom = static_cast<TGeometry*>(inputFile->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr<<"AliceGeom was not found in the input file "<<endl;
-    return kFALSE;
-  }
-  AliceGeom->Write();
   if (fDEBUG) cout<<"done"<<endl;
 
   delete gAlice;

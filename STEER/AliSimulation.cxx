@@ -105,44 +105,48 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TVirtualMCApplication.h>
-#include <TVirtualMC.h>
+#include <TCint.h>
+#include <TFile.h>
 #include <TGeoManager.h>
 #include <TObjString.h>
-#include <TSystem.h>
-#include <TFile.h>
 #include <TROOT.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TVirtualMCApplication.h>
 
-#include "AliCodeTimer.h"
-#include "AliCDBStorage.h"
+#include "AliAlignObj.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliGeomManager.h"
-#include "AliAlignObj.h"
+#include "AliCDBStorage.h"
+#include "AliCTPRawData.h"
 #include "AliCentralTrigger.h"
+#include "AliCentralTrigger.h"
+#include "AliCodeTimer.h"
 #include "AliDAQ.h"
 #include "AliDigitizer.h"
+#include "AliESD.h"
+#include "AliGRPObject.h"
+#include "AliGenEventHeader.h"
 #include "AliGenerator.h"
+#include "AliGeomManager.h"
+#include "AliHLTSimulation.h"
+#include "AliHeader.h"
 #include "AliLog.h"
+#include "AliMC.h"
+#include "AliMagF.h"
 #include "AliModule.h"
+#include "AliPDG.h"
+#include "AliRawReaderDate.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderRoot.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliSimulation.h"
-#include "AliVertexGenFile.h"
-#include "AliCentralTrigger.h"
-#include "AliCTPRawData.h"
-#include "AliRawReaderFile.h"
-#include "AliRawReaderRoot.h"
-#include "AliRawReaderDate.h"
-#include "AliESD.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliMC.h"
-#include "AliHLTSimulation.h"
 #include "AliSysInfo.h"
-#include "AliMagF.h"
-#include "AliGRPObject.h"
+#include "AliVertexGenFile.h"
+#include "AliLegoGenerator.h"
+#include "AliLego.h"
 
 ClassImp(AliSimulation)
 
@@ -183,6 +187,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fInitRunNumberCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fEmbeddingFlag(kFALSE),
+  fLego(NULL),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
   fQASteer(NULL), 
@@ -677,6 +682,141 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   return kTRUE;
 }
 
+//_______________________________________________________________________
+Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
+		     Float_t c1max,Int_t nc2,Float_t c2min,Float_t c2max,
+		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener, Int_t nev)
+{
+  //
+  // Generates lego plots of:
+  //    - radiation length map phi vs theta
+  //    - radiation length map phi vs eta
+  //    - interaction length map
+  //    - g/cm2 length map
+  //
+  //  ntheta    bins in theta, eta
+  //  themin    minimum angle in theta (degrees)
+  //  themax    maximum angle in theta (degrees)
+  //  nphi      bins in phi
+  //  phimin    minimum angle in phi (degrees)
+  //  phimax    maximum angle in phi (degrees)
+  //  rmin      minimum radius
+  //  rmax      maximum radius
+  //  
+  //
+  //  The number of events generated = ntheta*nphi
+  //  run input parameters in macro setup (default="Config.C")
+  //
+  //  Use macro "lego.C" to visualize the 3 lego plots in spherical coordinates
+  //Begin_Html
+  /*
+    <img src="picts/AliRunLego1.gif">
+  */
+  //End_Html
+  //Begin_Html
+  /*
+    <img src="picts/AliRunLego2.gif">
+  */
+  //End_Html
+  //Begin_Html
+  /*
+    <img src="picts/AliRunLego3.gif">
+  */
+  //End_Html
+  //
+
+// run the generation and simulation
+
+  AliCodeTimerAuto("")
+
+  // initialize CDB storage and run number from external environment
+  // (either CDB manager or AliSimulation setters)
+  InitCDB();
+  InitRunNumber();
+  SetCDBLock();
+  
+  if (!gAlice) {
+    AliError("no gAlice object. Restart aliroot and try again.");
+    return kFALSE;
+  }
+  if (gAlice->Modules()->GetEntries() > 0) {
+    AliError("gAlice was already run. Restart aliroot and try again.");
+    return kFALSE;
+  }
+
+  AliInfo(Form("initializing gAlice with config file %s",
+          fConfigFileName.Data()));
+
+  // Number of events 
+    if (nev == -1) nev  = nc1 * nc2;
+    
+  // check if initialisation has been done
+  // If runloader has been initialized, set the number of events per file to nc1 * nc2
+    
+  // Set new generator
+  if (!gener) gener  = new AliLegoGenerator();
+  //
+  // Configure Generator
+
+  gener->SetRadiusRange(rmin, rmax);
+  gener->SetZMax(zmax);
+  gener->SetCoor1Range(nc1, c1min, c1max);
+  gener->SetCoor2Range(nc2, c2min, c2max);
+  
+  
+  //Create Lego object  
+  fLego = new AliLego("lego",gener);
+
+  //__________________________________________________________________________
+
+  gAlice->Announce();
+
+  gROOT->LoadMacro(setup);
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+
+  if(AliCDBManager::Instance()->GetRun() >= 0) { 
+    SetRunNumber(AliCDBManager::Instance()->GetRun());
+  } else {
+    AliWarning("Run number not initialized!!");
+  }
+  
+  AliRunLoader::GetRunLoader()->CdGAFile();
+  
+  AliPDG::AddParticlesToPdgDataBase();  
+  
+  gAlice->GetMCApp()->Init();
+  
+  //Must be here because some MCs (G4) adds detectors here and not in Config.C
+  gAlice->InitLoaders();
+  AliRunLoader::GetRunLoader()->MakeTree("E");
+  
+  //
+  // Save stuff at the beginning of the file to avoid file corruption
+  AliRunLoader::GetRunLoader()->CdGAFile();
+  gAlice->Write();
+
+  //Save current generator
+  AliGenerator *gen=gAlice->GetMCApp()->Generator();
+  gAlice->GetMCApp()->ResetGenerator(gener);
+  //Prepare MC for Lego Run
+  gMC->InitLego();
+  
+  //Run Lego Object
+  
+  
+  AliRunLoader::GetRunLoader()->SetNumberOfEventsPerFile(nev);
+  gMC->ProcessRun(nev);
+  
+  // End of this run, close files
+  FinishRun();
+  // Restore current generator
+  gAlice->GetMCApp()->ResetGenerator(gen);
+  // Delete Lego Object
+  delete fLego;
+
+  return kTRUE;
+}
+
 //_____________________________________________________________________________
 Bool_t AliSimulation::RunTrigger(const char* config, const char* detectors)
 {
@@ -764,9 +904,40 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));
-  StdoutToAliInfo(StderrToAliError(
-    gAlice->InitMC(fConfigFileName.Data());
-  ););
+
+  //
+  // Initialize ALICE Simulation run
+  //
+
+  gAlice->Announce();
+
+  gROOT->LoadMacro(fConfigFileName.Data());
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+
+  if(AliCDBManager::Instance()->GetRun() >= 0) { 
+  	gAlice->SetRunNumber(AliCDBManager::Instance()->GetRun());
+  } else {
+  	AliWarning("Run number not initialized!!");
+  }
+  
+   AliRunLoader::GetRunLoader()->CdGAFile();
+    
+   AliPDG::AddParticlesToPdgDataBase();  
+
+   gAlice->GetMCApp()->Init();
+   
+   //Must be here because some MCs (G4) adds detectors here and not in Config.C
+   gAlice->InitLoaders();
+   AliRunLoader::GetRunLoader()->MakeTree("E");
+   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   //
+   // Save stuff at the beginning of the file to avoid file corruption
+   AliRunLoader::GetRunLoader()->CdGAFile();
+   gAlice->Write();
+   gAlice->SetEventNrInRun(-1); //important - we start Begin event from increasing current number in run
+  //___________________________________________________________________________________________
   
   // Get the trigger descriptor string
   // Either from AliSimulation or from
@@ -816,7 +987,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 //   }
 //   SetGAliceFile(runLoader->GetFileName());
 
-  if (!gAlice->Generator()) {
+  if (!gAlice->GetMCApp()->Generator()) {
     AliError(Form("gAlice has no generator object. "
                   "Check your config file: %s", fConfigFileName.Data()));
     return kFALSE;
@@ -838,11 +1009,11 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
                  "file %s with nSignalPerBackground = %d", 
                  fileName, signalPerBkgrd));
     AliVertexGenFile* vtxGen = new AliVertexGenFile(fileName, signalPerBkgrd);
-    gAlice->Generator()->SetVertexGenerator(vtxGen);
+    gAlice->GetMCApp()->Generator()->SetVertexGenerator(vtxGen);
   }
 
   if (!fRunSimulation) {
-    gAlice->Generator()->SetTrackingFlag(0);
+    gAlice->GetMCApp()->Generator()->SetTrackingFlag(0);
   }
 
   // set the number of events per file for given detectors and data types
@@ -881,7 +1052,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   gMC->ProcessRun(nEvents);
 
   // End of this run, close files
-  if(nEvents>0) gAlice->FinishRun();
+  if(nEvents>0) FinishRun();
 
   AliSysInfo::AddStamp("Stop_simulation");
   delete runLoader;
@@ -1500,17 +1671,44 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 //
 // If an ESD file is given the reconstructed vertex is taken from it and stored in the event header.
 //
-    if (!gAlice) {
-	AliError("no gAlice object. Restart aliroot and try again.");
-	return kFALSE;
-    }
-    if (gAlice->Modules()->GetEntries() > 0) {
-	AliError("gAlice was already run. Restart aliroot and try again.");
-	return kFALSE;
-    }
+  if (!gAlice) {
+    AliError("no gAlice object. Restart aliroot and try again.");
+    return kFALSE;
+  }
+  if (gAlice->Modules()->GetEntries() > 0) {
+    AliError("gAlice was already run. Restart aliroot and try again.");
+    return kFALSE;
+  }
+  
+  AliInfo(Form("initializing gAlice with config file %s",fConfigFileName.Data()));
+  
+  gAlice->Announce();
+  
+  gROOT->LoadMacro(fConfigFileName.Data());
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  
+  if(AliCDBManager::Instance()->GetRun() >= 0) { 
+  	SetRunNumber(AliCDBManager::Instance()->GetRun());
+  } else {
+  	AliWarning("Run number not initialized!!");
+  }
+  
+   AliRunLoader::GetRunLoader()->CdGAFile();
     
-    AliInfo(Form("initializing gAlice with config file %s",fConfigFileName.Data()));
-    StdoutToAliInfo(StderrToAliError(gAlice->InitMC(fConfigFileName.Data());););
+   AliPDG::AddParticlesToPdgDataBase();  
+
+   gAlice->GetMCApp()->Init();
+   
+   //Must be here because some MCs (G4) adds detectors here and not in Config.C
+   gAlice->InitLoaders();
+   AliRunLoader::GetRunLoader()->MakeTree("E");
+   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   //
+   // Save stuff at the beginning of the file to avoid file corruption
+   AliRunLoader::GetRunLoader()->CdGAFile();
+   gAlice->Write();
 //
 //  Initialize CDB     
     InitCDB();
@@ -1605,6 +1803,40 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     runLoader->WriteRunLoader();
 
     return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliSimulation::FinishRun()
+{
+  //
+  // Called at the end of the run.
+  //
+
+  if(IsLegoRun()) 
+   {
+    AliDebug(1, "Finish Lego");
+    AliRunLoader::GetRunLoader()->CdGAFile();
+    fLego->FinishRun();
+   }
+  
+  // Clean detector information
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  while((detector = dynamic_cast<AliModule*>(next()))) {
+    AliDebug(2, Form("%s->FinishRun()", detector->GetName()));
+    detector->FinishRun();
+  }
+  
+  AliDebug(1, "AliRunLoader::GetRunLoader()->WriteHeader(OVERWRITE)");
+  AliRunLoader::GetRunLoader()->WriteHeader("OVERWRITE");
+
+  // Write AliRun info and all detectors parameters
+  AliRunLoader::GetRunLoader()->CdGAFile();
+  gAlice->Write(0,TObject::kOverwrite);//write AliRun
+  AliRunLoader::GetRunLoader()->Write(0,TObject::kOverwrite);//write RunLoader itself
+  
+  if(gAlice->GetMCApp()) gAlice->GetMCApp()->FinishRun();  
+  AliRunLoader::GetRunLoader()->Synchronize();
 }
 
 //_____________________________________________________________________________
@@ -1858,7 +2090,7 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetTimeStart(0);
   grpObj->SetTimeEnd(9999);
 
-  const AliGenerator *gen = gAlice->Generator();
+  const AliGenerator *gen = gAlice->GetMCApp()->Generator();
   if (gen) {
     grpObj->SetBeamEnergy(gen->GetEnergyCMS());
     TString projectile;

@@ -47,10 +47,7 @@
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include <TBRIK.h>
-#include <TGeometry.h>
 #include <TLorentzVector.h>
-#include <TNode.h>
 #include <TObject.h>
 #include <TVirtualMC.h>
 

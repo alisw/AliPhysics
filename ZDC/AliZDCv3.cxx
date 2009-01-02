@@ -25,9 +25,7 @@
 #include "stdio.h"
 
 // --- ROOT system
-#include <TBRIK.h>
 #include <TMath.h>
-#include <TNode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TTree.h>
@@ -477,7 +475,6 @@ void AliZDCv3::CreateBeamLine()
   // VOLUMES DEFINITION
   // Volume: ZDCC
   TGeoVolume *pZDCC = gGeoManager->GetVolume("ZDCC");
-  //pZDCC->PrintNodes();
   
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
@@ -1305,7 +1302,6 @@ void AliZDCv3::CreateBeamLine()
   // VOLUMES DEFINITION
   // Volume: ZDCA
   TGeoVolume *pZDCA = gGeoManager->GetVolume("ZDCA");
-  //pZDCA->PrintNodes();
   
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;

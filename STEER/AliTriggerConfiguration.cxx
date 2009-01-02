@@ -58,30 +58,32 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
-//#include <cstdlib>
 
-#include <TObject.h>
-#include <TString.h>
-#include <TObjString.h>
-#include <TObjArray.h>
-#include <TSystem.h>
-#include <TKey.h>
+#include <TCint.h>
 #include <TFile.h>
+#include <TKey.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TObject.h>
+#include <TROOT.h>
+#include <TString.h>
+#include <TSystem.h>
 
+#include "AliCDBManager.h"
 #include "AliLog.h"
+#include "AliMC.h"
+#include "AliModule.h"
+#include "AliPDG.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliModule.h"
-
-#include "AliTriggerInput.h"
-//#include "AliTriggerDetector.h"
-#include "AliTriggerInteraction.h"
 #include "AliTriggerBCMask.h"
-#include "AliTriggerCluster.h"
-#include "AliTriggerPFProtection.h"
-#include "AliTriggerDescriptor.h"
 #include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #include "AliTriggerConfiguration.h"
+#include "AliTriggerDescriptor.h"
+#include "AliTriggerInput.h"
+#include "AliTriggerInteraction.h"
+#include "AliTriggerPFProtection.h"
 
 ClassImp(AliTriggerConfiguration)
 
@@ -859,9 +861,34 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
 
    AliInfo( Form( "initializing gAlice with config file %s",
             configfile.Data() ) );
-   StdoutToAliInfo( StderrToAliError(
-      gAlice->InitMC( configfile.Data() );
-   ););
+//_______________________________________________________________________
+   gAlice->Announce();
+   
+   gROOT->LoadMacro(configfile.Data());
+   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+   
+   if(AliCDBManager::Instance()->GetRun() >= 0) { 
+     gAlice->SetRunNumber(AliCDBManager::Instance()->GetRun());
+   } else {
+     AliWarning("Run number not initialized!!");
+   }
+  
+   AliRunLoader::GetRunLoader()->CdGAFile();
+    
+   AliPDG::AddParticlesToPdgDataBase();  
+
+   gAlice->GetMCApp()->Init();
+   
+   //Must be here because some MCs (G4) adds detectors here and not in Config.C
+   gAlice->InitLoaders();
+   AliRunLoader::GetRunLoader()->MakeTree("E");
+   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
+   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   //
+   // Save stuff at the beginning of the file to avoid file corruption
+   AliRunLoader::GetRunLoader()->CdGAFile();
+   gAlice->Write();
 
    AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
    if( !runLoader ) {

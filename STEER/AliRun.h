@@ -19,8 +19,6 @@ class TRandom;
 class AliGenEventHeader;
 class AliGenerator;
 class AliHeader;
-class AliLego;
-class AliLegoGenerator;
 class AliMC;
 class AliMagF;
 class AliStack;
@@ -37,7 +35,6 @@ public:
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
    virtual AliMagF *Field() const {return fField;}
-   virtual  void  FinishRun();
    void           AddModule(AliModule* mod);
    Int_t          GetEvNumber() const;
    Int_t          GetRunNumber() const {return fRun;}
@@ -51,18 +48,17 @@ public:
     {return fBaseFileName.Data();}
    virtual  Int_t GetEvent(Int_t event);
    virtual  void  SetEvent(Int_t event) {fEvent=event;}
-   virtual  void  SetConfigFunction(const char * config="Config();");
+   virtual  void  SetConfigFunction(const char * config="Config();")
+   {fConfigFunction=config;}
    virtual  const char *GetConfigFunction() const 
-    {return fConfigFunction.Data();}
+   {return fConfigFunction.Data();}
    virtual  void  SetGenEventHeader(AliGenEventHeader* header);
    AliMC*         GetMCApp() const {return fMCApp;}
    virtual  void  Hits2Digits(const char *detector=0); 
    virtual  void  Hits2SDigits(const char *detector=0)   {Tree2Tree("S",detector);}
    virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}
    virtual  void  Digits2Reco(const char *detector=0)    {Tree2Tree("R",detector);}
-   virtual  void  InitMC(const char *setup="Config.C");
    Bool_t         IsFolder() const {return kTRUE;}
-   virtual AliLego* Lego() const {return fLego;}
    Bool_t         IsRootGeometry() const {return fIsRootGeometry;}
    void           SetRootGeometry(Bool_t flag=kTRUE);
    const char*    GetGeometryFileName() const {return fGeometryFileName.Data();}
@@ -74,24 +70,10 @@ public:
    Bool_t         IsGeomFromCDB() const {return fGeometryFromCDB;}
    const char*    GetTriggerDescriptor() const {return fTriggerDescriptor.Data();}
    void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
-   virtual  void  ResetDigits();
-   virtual  void  ResetSDigits();
    virtual  void  SetBaseFile(const char *filename="galice.root");
-   virtual  void  RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
-                          Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
-                          Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL, Int_t nev = -1);
-   virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
-   virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, const char* filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
    
    virtual  void Field(const Double_t* x, Double_t* b) const;
-   
-   // Delegations
-   virtual  void  ResetHits();
-   virtual  AliGenerator* Generator() const;
-   
-   Bool_t         IsFileAccessible(Char_t* name, EAccessMode mode = kFileExists);
-   static   Bool_t   IsFileAccessible(const char* fnam, EAccessMode mode = kFileExists);
    
    //
    // End of MC Application
@@ -101,9 +83,9 @@ public:
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
+  void           SetRunNumber(Int_t run) {fRun=run;}
 
 protected:
-  void           SetRunNumber(Int_t run) {fRun=run;}
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
@@ -112,7 +94,6 @@ protected:
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   AliMagF       *fField;             //  Magnetic Field Map
   Int_t          fNdets;             //  Number of detectors
-  AliLego       *fLego;              //! Pointer to aliLego object if it exists
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file

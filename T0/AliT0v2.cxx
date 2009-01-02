@@ -34,11 +34,8 @@
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 
 #include "AliMagF.h"
@@ -46,8 +43,6 @@
 #include "AliT0hit.h"
 #include "AliT0v2.h"
 #include "AliMC.h"
-//#include "AliT0hitPhoton.h"
-//#include "TGeant3.h"
 
 ClassImp(AliT0v2)
 

@@ -47,6 +47,7 @@
 #include <TTask.h>
 #include <TGeoManager.h>
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliConfig.h"
@@ -828,7 +829,7 @@ Bool_t AliTRDdigitizer::SortHits(Float_t **hits, Int_t *nhit)
   // Loop through all the tracks in the tree
   for (Int_t iTrk = 0; iTrk < nTrk; iTrk++) {
 
-    gAlice->ResetHits();
+    gAlice->GetMCApp()->ResetHits();
     hitTree->GetEvent(iTrk);
 
     if (!fTRD->Hits()) {

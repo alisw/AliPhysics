@@ -35,7 +35,6 @@
 #include "AliRun.h"
 #include "TParticle.h"
 #include "AliHeader.h"
-#include "TGeometry.h"
 #include "TObjArray.h"
 #include "TString.h"
 #endif
@@ -83,17 +82,6 @@ void CopyAli(TString fnOrig="rfio:galice.root", TString fnNew="galice_new.root",
     TTree *treeENew =  treeE->CloneTree();
     treeENew->Write();
     cout<<"done"<<endl;
-
-    cout<<"Copy AliceGeom: ";
-    TGeometry *AliceGeom = static_cast<TGeometry*>(fileOrig->Get("AliceGeom"));
-    if (!AliceGeom) {
-      cerr<<"AliceGeom was not found in the input file "<<fnNew.Data()<<endl;
-      return;
-    }
-    AliceGeom->Write();
-    cout<<"done"<<endl;
-  }
-      
 
   if (copyTreeK) {
     cout<<"Copy TreeK: ";

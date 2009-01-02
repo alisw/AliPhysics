@@ -86,11 +86,7 @@
 // files by including them with `#include "..."' 
 #include <cmath>                // __CMATH__
 #include <TClonesArray.h>	// ROOT_TClonesArray
-#include <TGeometry.h>		// ROOT_TGeomtry
-#include <TNode.h>		// ROOT_TNode
-#include <TXTRU.h>		// ROOT_TXTRU
 #include <TRotMatrix.h>		// ROOT_TRotMatrix
-#include <TTUBE.h>		// ROOT_TTUBE
 #include <TTree.h>		// ROOT_TTree
 #include <TBrowser.h>		// ROOT_TBrowser
 #include <TVirtualMC.h>	        // ROOT_TVirtualMC

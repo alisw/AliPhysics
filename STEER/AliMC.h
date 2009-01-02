@@ -13,8 +13,8 @@
 
 #include <TArrayF.h>
 #include <TArrayI.h>
-#include <TList.h>
 #include <TClonesArray.h>
+#include <TList.h>
 #include <TMCProcess.h>
 #include <TVirtualMCApplication.h>
 
@@ -65,6 +65,8 @@ public:
    void          AddEnergyDeposit(Int_t id, Float_t edep) 
                                        {fEventEnergy[id]+=edep;}
    virtual  void  ResetHits();
+   virtual  void  ResetDigits();
+   virtual  void  ResetSDigits();
    virtual  void  TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10)
        {fTrRmax=rmax; fTrZmax=zmax;}
    virtual  void  DecayLimits( Float_t rmin = -1., Float_t rmax = -1., Int_t pdg = 0)
@@ -85,7 +87,7 @@ public:
    const TObjArray* Particles() const;
    TParticle     *Particle(Int_t i) const;
    virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
-			   Float_t *pmom, Float_t *vpos, Float_t *polar, 
+			   const Float_t *pmom, const Float_t *vpos, const Float_t *polar, 
 			   Float_t tof, TMCProcess mech, Int_t &ntr,
 			   Float_t weight = 1, Int_t is = 0) const;
    virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,

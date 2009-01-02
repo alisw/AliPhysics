@@ -28,9 +28,7 @@
 #include "stdio.h"
 
 // --- ROOT system
-#include <TBRIK.h>
 #include <TMath.h>
-#include <TNode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TTree.h>

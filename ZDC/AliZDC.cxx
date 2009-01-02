@@ -25,10 +25,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system
-#include <TBRIK.h>
 #include <TClonesArray.h>
-#include <TGeometry.h>
-#include <TNode.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TSystem.h>

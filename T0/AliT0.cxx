@@ -37,31 +37,19 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include <Riostream.h>
+#include "TClonesArray.h"
 
-//#include <TFile.h>
-#include <TGeometry.h>
-//#include <TMath.h>
-#include <TNode.h>
-//#include <TParticle.h>
-//#include <TRandom.h>
-#include <TTUBE.h>
-//#include <TVirtualMC.h>
-
+#include "AliLoader.h"
+#include "AliLog.h"
 #include "AliLog.h"
 #include "AliMC.h"
-#include "AliLoader.h"
 #include "AliRun.h"
-#include "TClonesArray.h"
 #include "AliT0.h"
-//#include "AliT0Loader.h"
-#include "AliT0digit.h"
-#include "AliT0hit.h"
 #include "AliT0Digitizer.h"
 #include "AliT0RawData.h"
 #include "AliT0RecPoint.h"
-//#include "AliT0Parameters.h"
-#include "AliLog.h"
+#include "AliT0digit.h"
+#include "AliT0hit.h"
 
 ClassImp(AliT0)
 

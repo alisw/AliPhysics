@@ -37,6 +37,7 @@
 #include "TLorentzVector.h"
 #include "AliStack.h"
 #include "AliGenAfterBurnerFlow.h"
+#include "AliMC.h"
 #include "AliGenCocktailAfterBurner.h"
 
 // emanuele ---------------------------------------------------------------(
@@ -338,7 +339,7 @@ void AliGenAfterBurnerFlow::Generate() {
   Float_t pt, y;
 
   // Get Stack of the first Generator
-  gen = (AliGenCocktailAfterBurner *)gAlice->Generator();
+  gen = (AliGenCocktailAfterBurner *)gAlice->GetMCApp()->Generator();
 
 // emanuele ---------------------------------------------------------------(
 

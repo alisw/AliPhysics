@@ -35,13 +35,9 @@
 
 // --- ROOT libraries ---
 #include <TClonesArray.h>
-#include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TNode.h>
 #include <TObjectTable.h>
-#include <TTUBE.h>
-#include <TTUBS.h>
 #include <TVirtualMC.h>
 #include <TParticle.h>
 

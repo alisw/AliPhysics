@@ -24,10 +24,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
-#include <TBRIK.h>
-#include <TNode.h>
 #include <TTree.h>
-#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TFile.h>

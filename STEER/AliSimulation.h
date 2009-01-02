@@ -21,6 +21,8 @@
 class AliCDBId;
 class AliCDBParam;
 class AliRunLoader;
+class AliLegoGenerator;
+class AliLego;
 
 class AliSimulation: public TNamed {
 public:
@@ -29,7 +31,7 @@ public:
 		const char* title = "generation, simulation and digitization");
   virtual ~AliSimulation();
 
-  static AliSimulation *GetInstance() {return fgInstance;}
+  static AliSimulation *Instance() {return fgInstance;}
 
   void           SetNumberOfEvents(Int_t nEvents);
   void           SetConfigFile(const char* fileName);
@@ -78,6 +80,9 @@ public:
   void SetSpecificStorage(const char* calibType, const char* uri);
 
   virtual Bool_t Run(Int_t nEvents = 0);
+  virtual Bool_t RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
+			 Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
+			 Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL, Int_t nev = -1);
 
   virtual Bool_t RunSimulation(Int_t nEvents = 0);
   virtual Bool_t RunSDigitization(const char* detectors = "ALL");
@@ -100,6 +105,9 @@ public:
   // HLT
   void SetRunHLT(const char* options) {fRunHLT=options;}
   virtual Bool_t RunHLT();
+  virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
+  AliLego* Lego() const {return fLego;}
+  virtual  void  FinishRun();
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
@@ -159,6 +167,7 @@ private:
   Bool_t 	   fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
   
   Bool_t     fEmbeddingFlag;      // Flag for embedding
+  AliLego       *fLego;              //! Pointer to aliLego object if it exists
   
   //QA stuff
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors

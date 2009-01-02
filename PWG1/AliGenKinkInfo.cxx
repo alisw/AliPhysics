@@ -37,7 +37,6 @@ Container classes with MC infomation
 #include "TParticle.h"
 #include "TSystem.h"
 #include "TCanvas.h"
-#include "TGeometry.h"
 #include "TPolyLine3D.h"
 
 //ALIROOT includes

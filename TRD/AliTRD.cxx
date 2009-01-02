@@ -28,11 +28,8 @@
 
 #include <TClonesArray.h>
 #include <TFile.h>
-#include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TPGON.h> 
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TTree.h>

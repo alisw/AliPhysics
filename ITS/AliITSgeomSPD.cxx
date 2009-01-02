@@ -23,7 +23,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <TGeometry.h>
 #include <TShape.h>
 #include <TMath.h>
 

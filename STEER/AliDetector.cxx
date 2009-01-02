@@ -212,7 +212,7 @@ AliHit* AliDetector::FirstHit(Int_t track)
   // track is returned
   // 
   if(track>=0) {
-    gAlice->ResetHits(); //stupid = if N detector this method is called N times
+    gAlice->GetMCApp()->ResetHits(); //stupid = if N detector this method is called N times
     fLoader->TreeH()->GetEvent(track); //skowron
   }
   //

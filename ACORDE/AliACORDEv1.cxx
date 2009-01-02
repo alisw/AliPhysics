@@ -38,9 +38,7 @@
 
 #include <Riostream.h>
 #include <TGeoMatrix.h>
-#include <TGeometry.h>
 #include <TMath.h>
-#include <TTUBE.h>
 #include <TString.h>
 #include <TSystem.h>
 
@@ -60,9 +58,6 @@
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
-#include <TBRIK.h>
-#include <TNode.h>
- 
 
 #include "AliRun.h"
 #include "AliConst.h"

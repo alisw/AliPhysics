@@ -31,10 +31,7 @@
 
 #include <Riostream.h>
 
-#include <TGeometry.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 #include <TString.h>
 #include <TSystem.h>

@@ -31,11 +31,8 @@
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 
 #include "AliLog.h"

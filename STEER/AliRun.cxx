@@ -40,9 +40,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TBRIK.h> 
 #include <TCint.h> 
-#include <TGeometry.h>
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -52,8 +50,6 @@
 #include "AliLog.h"
 #include "AliDetector.h"
 #include "AliHeader.h"
-#include "AliLego.h"
-#include "AliLegoGenerator.h"
 #include "AliMC.h"
 #include "AliMagFC.h"
 #include "AliMagFCM.h"
@@ -63,6 +59,8 @@
 #include "AliStack.h"
 #include "AliCDBManager.h"
 #include "AliAlignObj.h"
+#include "AliSimulation.h"
+#include "AliLego.h"
 
 AliRun *gAlice;
 
@@ -72,12 +70,11 @@ ClassImp(AliRun)
 AliRun::AliRun():
   fRun(-1),
   fEvent(0),
-  fEventNrInRun(0),
+  fEventNrInRun(-1),
   fModules(0),
   fMCApp(0),
   fField(0),
   fNdets(0),
-  fLego(0),
   fConfigFunction(""),
   fRandom(0),
   fBaseFileName(""),
@@ -100,12 +97,11 @@ AliRun::AliRun(const char *name, const char *title):
   TNamed(name,title),
   fRun(-1),
   fEvent(0),
-  fEventNrInRun(0),
+  fEventNrInRun(-1),
   fModules(new TObjArray(77)), // Support list for the Detectors
-  fMCApp(0),
+  fMCApp(new AliMC(GetName(),GetTitle())),
   fField(0),
   fNdets(0),
-  fLego(0),
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
   fBaseFileName(""),
@@ -135,7 +131,7 @@ AliRun::AliRun(const char *name, const char *title):
   gROOT->GetListOfBrowsables()->Add(this,name);
   
   // Create default mag field
-  SetField();
+  fField = new AliMagFC("Map1"," ",2.,1.,10.);
 
 }
 
@@ -159,29 +155,15 @@ AliRun::~AliRun()
        modfold->Remove(mod);
      }
    }
-  
-  
+    
   delete fField;
   delete fMCApp;
   delete gMC; gMC=0;
-  delete fLego;
   if (fModules) {
     fModules->Delete();
     delete fModules;
   }
   
-}
-
-//_______________________________________________________________________
-void AliRun::ResetHits() 
-{
-  fMCApp->ResetHits();
-}
-
-//_______________________________________________________________________
-AliGenerator* AliRun::Generator() const 
-{
-  return fMCApp->Generator();
 }
 
 //_______________________________________________________________________
@@ -218,33 +200,6 @@ void AliRun::SetGeometryFromCDB()
   }
 }
 
-//_______________________________________________________________________
-void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
-		      Float_t maxField, const char* filename)
-{
-  //
-  //  Set magnetic field parameters
-  //  type      Magnetic field transport flag 0=no field, 2=helix, 3=Runge Kutta
-  //  version   Magnetic field map version (only 1 active now)
-  //  scale     Scale factor for the magnetic field
-  //  maxField  Maximum value for the magnetic field
-
-  //
-  // --- Sanity check on mag field flags
-  if(fField) delete fField;
-  if(version==1) {
-    fField = new AliMagFC("Map1"," ",type,scale,maxField);
-  } else if(version<=2) {
-    fField = new AliMagFCM("Map2-3",filename,type,scale,maxField);
-    fField->ReadField();
-  } else if(version==3) {
-    fField = new AliMagFDM("Map4",filename,type,scale,maxField);
-    fField->ReadField();
-  } else {
-    AliWarning(Form("Invalid map %d",version));
-  }
-}
-
 //_____________________________________________________________________________
 
 void AliRun::InitLoaders()
@@ -264,40 +219,6 @@ void AliRun::InitLoaders()
       }
    }
   AliDebug(1, "Done");
-}
-//_____________________________________________________________________________
-
-void AliRun::FinishRun()
-{
-  //
-  // Called at the end of the run.
-  //
-
-  if(fLego) 
-   {
-    AliDebug(1, "Finish Lego");
-    AliRunLoader::GetRunLoader()->CdGAFile();
-    fLego->FinishRun();
-   }
-  
-  // Clean detector information
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-    AliDebug(2, Form("%s->FinishRun()", detector->GetName()));
-    detector->FinishRun();
-  }
-  
-  AliDebug(1, "AliRunLoader::GetRunLoader()->WriteHeader(OVERWRITE)");
-  AliRunLoader::GetRunLoader()->WriteHeader("OVERWRITE");
-
-  // Write AliRun info and all detectors parameters
-  AliRunLoader::GetRunLoader()->CdGAFile();
-  Write(0,TObject::kOverwrite);//write AliRun
-  AliRunLoader::GetRunLoader()->Write(0,TObject::kOverwrite);//write RunLoader itself
-  
-  if(fMCApp) fMCApp->FinishRun();  
-  AliRunLoader::GetRunLoader()->Synchronize();
 }
 
 //_______________________________________________________________________
@@ -369,8 +290,8 @@ Int_t AliRun::GetEvent(Int_t event)
 // Reset existing structures
   fMCApp->ResetHits();
   fMCApp->ResetTrackReferences();
-  ResetDigits();
-  ResetSDigits();
+  fMCApp->ResetDigits();
+  fMCApp->ResetSDigits();
 
 /*****************************************/ 
 /****       R  E  L  O  A  D          ****/
@@ -399,82 +320,6 @@ void AliRun::SetBaseFile(const char *filename)
   fBaseFileName = filename;
 }
 
-//_______________________________________________________________________
-void AliRun::ResetDigits()
-{
-  //
-  //  Reset all Detectors digits
-  //
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-     detector->ResetDigits();
-  }
-}
-
-//_______________________________________________________________________
-void AliRun::ResetSDigits()
-{
-  //
-  //  Reset all Detectors digits
-  //
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-     detector->ResetSDigits();
-  }
-}
-
-
-//_______________________________________________________________________
-void AliRun::InitMC(const char *setup)
-{
-  //
-  // Initialize ALICE Simulation run
-  //
-
-  static Bool_t initDone=kFALSE;
-
-  Announce();
-
-  if(initDone) {
-    AliError("AliRun already initialised! Check your logic!");
-    return;
-  } else initDone=kTRUE;
-    
-  if (!fMCApp)  
-    fMCApp=new AliMC(GetName(),GetTitle());
-    
-  gROOT->LoadMacro(setup);
-  gInterpreter->ProcessLine(fConfigFunction.Data());
-
-  if(AliCDBManager::Instance()->GetRun() >= 0) { 
-  	SetRunNumber(AliCDBManager::Instance()->GetRun());
-  } else {
-  	AliWarning("Run number not initialized!!");
-  }
-  
-   AliRunLoader::GetRunLoader()->CdGAFile();
-    
-   AliPDG::AddParticlesToPdgDataBase();  
-
-   fMCApp->Init();
-   
-   //Must be here because some MCs (G4) adds detectors here and not in Config.C
-   InitLoaders();
-   AliRunLoader::GetRunLoader()->MakeTree("E");
-   if (fLego == 0x0)
-    {
-      AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
-      AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
-      AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
-    }
-   //
-   // Save stuff at the beginning of the file to avoid file corruption
-   AliRunLoader::GetRunLoader()->CdGAFile();
-   Write();
-   fEventNrInRun = -1; //important - we start Begin event from increasing current number in run
-}
 
 //_______________________________________________________________________
 void AliRun::Hits2Digits(const char *selected)
@@ -563,100 +408,6 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
    }
 }
 
-//_______________________________________________________________________
-void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
-		     Float_t c1max,Int_t nc2,Float_t c2min,Float_t c2max,
-		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener, Int_t nev)
-{
-  //
-  // Generates lego plots of:
-  //    - radiation length map phi vs theta
-  //    - radiation length map phi vs eta
-  //    - interaction length map
-  //    - g/cm2 length map
-  //
-  //  ntheta    bins in theta, eta
-  //  themin    minimum angle in theta (degrees)
-  //  themax    maximum angle in theta (degrees)
-  //  nphi      bins in phi
-  //  phimin    minimum angle in phi (degrees)
-  //  phimax    maximum angle in phi (degrees)
-  //  rmin      minimum radius
-  //  rmax      maximum radius
-  //  
-  //
-  //  The number of events generated = ntheta*nphi
-  //  run input parameters in macro setup (default="Config.C")
-  //
-  //  Use macro "lego.C" to visualize the 3 lego plots in spherical coordinates
-  //Begin_Html
-  /*
-    <img src="picts/AliRunLego1.gif">
-  */
-  //End_Html
-  //Begin_Html
-  /*
-    <img src="picts/AliRunLego2.gif">
-  */
-  //End_Html
-  //Begin_Html
-  /*
-    <img src="picts/AliRunLego3.gif">
-  */
-  //End_Html
-  //
-  // Number of events 
-    if (nev == -1) nev  = nc1 * nc2;
-    
-  // check if initialisation has been done
-  // If runloader has been initialized, set the number of events per file to nc1 * nc2
-    
-  // Set new generator
-  if (!gener) gener  = new AliLegoGenerator();
-  //
-  // Configure Generator
-  
-  gener->SetRadiusRange(rmin, rmax);
-  gener->SetZMax(zmax);
-  gener->SetCoor1Range(nc1, c1min, c1max);
-  gener->SetCoor2Range(nc2, c2min, c2max);
-  
-  
-  //Create Lego object  
-  fLego = new AliLego("lego",gener);
-
-  InitMC(setup);
-  //Save current generator
-  
-  AliGenerator *gen=fMCApp->Generator();
-  fMCApp->ResetGenerator(gener);
-  //Prepare MC for Lego Run
-  gMC->InitLego();
-  
-  //Run Lego Object
-
-
-  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nev);
-  gMC->ProcessRun(nev);
-  
-  // End of this run, close files
-  FinishRun();
-  // Restore current generator
-  fMCApp->ResetGenerator(gen);
-  // Delete Lego Object
-  delete fLego; fLego=0;
-}
-
-//_______________________________________________________________________
-void AliRun::SetConfigFunction(const char * config) 
-{
-  //
-  // Set the signature of the function contained in Config.C to configure
-  // the run
-  //
-  fConfigFunction=config;
-}
-
 // 
 // MC Application
 // 
@@ -668,15 +419,8 @@ void AliRun::Field(const Double_t* x, Double_t *b) const
   // Return the value of the magnetic field
   //
     
-  Float_t xfloat[3];
-  for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
-  
-  if (Field()) {
+  if (Field()) Field()->Field(x,b);
 
-    Float_t bfloat[3];
-    Field()->Field(xfloat,bfloat);
-    for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
-  } 
   else {
     AliError("No mag field defined!");
     b[0]=b[1]=b[2]=0.;
@@ -794,13 +538,3 @@ void AliRun::AddModule(AliModule* mod)
   fNdets++;
 }
 
-//_____________________________________________________________________________
-/*inline*/ Bool_t AliRun::IsFileAccessible(const char* fnam, EAccessMode mode)
-{ return !gSystem->AccessPathName(fnam,mode);}
-
-//______________________________________________________
-/*inline*/ Bool_t AliRun::IsFileAccessible(Char_t* name,EAccessMode mode)
-{
-  TString str = name; gSystem->ExpandPathName(str);
-  return !gSystem->AccessPathName(str.Data(),mode);
-}

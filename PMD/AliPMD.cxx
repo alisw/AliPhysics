@@ -38,10 +38,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TBRIK.h>
 #include <TClonesArray.h>
-#include <TGeometry.h>
-#include <TNode.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 

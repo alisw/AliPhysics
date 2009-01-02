@@ -4,9 +4,6 @@
 #include <TRandom.h>
 #include <TVector.h>
 #include <TMatrix.h>
-#include <TGeometry.h>
-#include <TNode.h>
-#include <TTUBS.h>
 #include <TObjectTable.h>
 #include <Riostream.h>
 #include <TFile.h>

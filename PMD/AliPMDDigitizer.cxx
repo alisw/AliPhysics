@@ -21,10 +21,7 @@
 //-----------------------------------------------------//
 
 #include <Riostream.h>
-#include <TBRIK.h>
-#include <TNode.h>
 #include <TTree.h>
-#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TFile.h>
@@ -301,7 +298,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       treeH->GetEvent(track);
       if (fPMD)
 	{
@@ -525,7 +522,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       treeH->GetEvent(track);
       
       if (fPMD)

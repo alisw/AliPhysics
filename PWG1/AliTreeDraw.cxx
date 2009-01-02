@@ -46,7 +46,6 @@ marian.ivanov@cern.ch
 #include "TF1.h"
 #include "TView.h"
 #include "TView3D.h"
-#include "TGeometry.h"
 #include "TPolyLine3D.h"
 #include "TPolyMarker3D.h"
 #include "TObjString.h"

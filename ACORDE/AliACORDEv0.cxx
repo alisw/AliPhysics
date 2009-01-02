@@ -35,9 +35,6 @@
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
-#include <TGeometry.h>
-#include <TBRIK.h>
-#include <TNode.h>
 
 
 #include "AliRun.h"

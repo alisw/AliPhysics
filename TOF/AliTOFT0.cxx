@@ -296,7 +296,7 @@ void AliTOFT0::Exec(Option_t *option)
     {
       if(nset>=5) break; // check on the number of set analyzed
       
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       hitTree->GetEvent(track);
 
       AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();

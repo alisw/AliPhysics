@@ -37,9 +37,7 @@
 
 // --- ROOT system ---
  
-#include <TBRIK.h>
 #include <TGeometry.h>
-#include <TNode.h>
 #include <TParticle.h>
 #include "TClonesArray.h" 
 #include <TVirtualMC.h>

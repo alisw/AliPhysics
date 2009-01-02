@@ -16,7 +16,6 @@
 
 class TFile;
 class TList;
-class TNode;
 class AliEMCALShishKebabTrd1Module;
 class AliEMCALSpaceFrame;
 

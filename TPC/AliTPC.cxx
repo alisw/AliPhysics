@@ -37,18 +37,15 @@
 #include <stdlib.h>
 
 #include <TFile.h>  
-#include <TGeometry.h>
 #include <TInterpreter.h>
 #include <TMath.h>
 #include <TMatrixF.h>
 #include <TVector.h>
-#include <TNode.h>
 #include <TObjectTable.h>
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TRandom.h>
 #include <TSystem.h>     
-#include <TTUBS.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TString.h>
@@ -2309,7 +2306,7 @@ AliHit* AliTPC::FirstHit2(Int_t track)
   // track is returned
   // 
   if(track>=0) {
-    gAlice->ResetHits();
+    gAlice->GetMCApp()->ResetHits();
     fLoader->TreeH()->GetEvent(track);
   }
   //

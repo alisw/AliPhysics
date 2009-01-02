@@ -123,8 +123,8 @@ AliStack::~AliStack()
 //
 
 //_____________________________________________________________________________
-void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
-                        Float_t *vpos, Float_t *polar, Float_t tof,
+void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmom,
+                        const Float_t *vpos, const Float_t *polar, Float_t tof,
                         TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
   //
@@ -482,7 +482,7 @@ Bool_t AliStack::ReorderKine()
   return kTRUE;
 }
 
-Bool_t AliStack::KeepPhysics(TParticle* part)
+Bool_t AliStack::KeepPhysics(const TParticle* part)
 {
     //
     // Some particles have to kept on the stack for reasons motivated
@@ -861,13 +861,6 @@ TParticle* AliStack::GetNextParticle()
  
   
   return particle;  
-}
-//__________________________________________________________________________________________
-
-TTree* AliStack::TreeK()
-{
-//returns TreeK
-    return fTreeK;
 }
 //__________________________________________________________________________________________
 

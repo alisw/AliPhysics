@@ -407,7 +407,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     Int_t ntracks = static_cast<Int_t>(hitTree->GetEntries());
     for (Int_t track = 0; track < ntracks; track++)
     {
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       tofHitsBranch->GetEvent(track);
 
       AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();

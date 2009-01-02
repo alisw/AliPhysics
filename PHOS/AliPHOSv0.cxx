@@ -78,13 +78,10 @@
 
 // --- ROOT system ---
 
-#include <TBRIK.h>
 #include <TFolder.h>
 #include <TGeometry.h>
-#include <TNode.h>
 #include <TROOT.h>
 #include <TRandom.h>
-#include <TTRD1.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TGeoPhysicalNode.h>

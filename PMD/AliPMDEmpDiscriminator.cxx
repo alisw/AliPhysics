@@ -23,10 +23,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
-#include <TBRIK.h>
-#include <TNode.h>
 #include <TTree.h>
-#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TFile.h>
@@ -34,7 +31,6 @@
 #include <TParticle.h>
 
 #include "AliLog.h"
-//#include "AliPMDcluster.h"
 #include "AliPMDrecpoint1.h"
 #include "AliPMDclupid.h"
 #include "AliPMDDiscriminator.h"

@@ -49,7 +49,6 @@
 #include <TBranch.h>
 #include <TFile.h>
 #include <TFolder.h>
-#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TString.h>
 class TTask;

@@ -76,6 +76,7 @@
 #include "THBTprocessor.h"
 
 #include "AliStack.h"
+#include "AliMC.h"
 #include "AliGenCocktailAfterBurner.h"
 #include "AliLog.h"
 
@@ -908,7 +909,7 @@ void AliGenHBTprocessor::SetPrintFull(Int_t flag)
 Int_t  AliGenHBTprocessor::GetNumberOfEvents()
 {
 //returns number of available events
-  AliGenerator* g = gAlice->Generator();
+  AliGenerator* g = gAlice->GetMCApp()->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
    {
@@ -931,7 +932,7 @@ void AliGenHBTprocessor::SetActiveEventNumber(Int_t n)
 Int_t  AliGenHBTprocessor::GetNumberOfTracks()
 {
 //returns number of tracks in active event
-  AliGenerator* g = gAlice->Generator();
+  AliGenerator* g = gAlice->GetMCApp()->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
    {
@@ -963,7 +964,7 @@ TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 { 
 //returns track that hbtp thinks is n in active event
   AliDebug(5,Form("n = %d",n));
-  AliGenerator* g = gAlice->Generator();
+  AliGenerator* g = gAlice->GetMCApp()->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
    {
@@ -987,7 +988,7 @@ TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 void AliGenHBTprocessor::GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) const
 {
  //returns event(stack) number and particle index
-  AliGenerator* g = gAlice->Generator();
+  AliGenerator* g = gAlice->GetMCApp()->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
    {
@@ -1154,7 +1155,7 @@ AliGenCocktailAfterBurner*  GetGenerator()
               "Running HBT Processor without gAlice... Exiting \n");
       return 0x0;//pro forma
     }
-   AliGenerator * gen = gAlice->Generator();
+   AliGenerator * gen = gAlice->GetMCApp()->Generator();
    
    if (!gen) 
     {

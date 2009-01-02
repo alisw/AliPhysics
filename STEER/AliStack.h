@@ -37,7 +37,7 @@ class AliStack : public TVirtualMCStack
     // methods
 
     virtual void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
-                           Float_t *pmom, Float_t *vpos, Float_t *polar, 
+                           const Float_t *pmom, const Float_t *vpos, const Float_t *polar, 
                            Float_t tof, TMCProcess mech, Int_t &ntr,
                            Float_t weight, Int_t is);
 
@@ -76,11 +76,11 @@ class AliStack : public TVirtualMCStack
     virtual Int_t GetCurrentParentTrackNumber() const;
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);
-    TTree*      TreeK();
+    TTree*      TreeK() const {return fTreeK;}
     TParticle*  ParticleFromTreeK(Int_t id) const;
     Int_t       TreeKEntry(Int_t id) const;
     Bool_t      IsPhysicalPrimary(Int_t i);
-    Int_t       TrackLabel(Int_t label) {return fTrackLabelMap[label];}
+    Int_t       TrackLabel(Int_t label) const {return fTrackLabelMap[label];}
     Int_t*      TrackLabelMap() {return fTrackLabelMap.GetArray();}
     const TObjArray*  Particles() const;
     
@@ -89,7 +89,7 @@ class AliStack : public TVirtualMCStack
     void  CleanParents();
     void  ResetArrays(Int_t size);
     TParticle* GetNextParticle();
-    Bool_t KeepPhysics(TParticle* part);
+    Bool_t KeepPhysics(const TParticle* part);
     Bool_t IsStable(Int_t pdg) const;
   private:
     void Copy(TObject &st) const;
