@@ -39,6 +39,7 @@ ${CMAKE_SOURCE_DIR}/RAW
 ${CMAKE_SOURCE_DIR}/STEER
 ${CMAKE_SOURCE_DIR}/TPC
 ${CMAKE_SOURCE_DIR}/TRD
+${CMAKE_SOURCE_DIR}/global
 ${ROOT_INCLUDE_DIR}
 )
 
@@ -73,6 +74,8 @@ Include(CMake_libAliHLTMUON.txt)
 Include(CMake_libHLTrec.txt)
 
 Include(CMake_libHLTbase.txt)
+
+Include(CMake_libAliHLTGlobal.txt)
 
 Include(CMake_libAliHLTTPC.txt)
 

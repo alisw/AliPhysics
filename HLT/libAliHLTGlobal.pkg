@@ -1,0 +1,51 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+CLASS_HDRS:=	AliHLTGlobalTrackMerger.h \
+		AliHLTGlobalTrackMergerComponent.h \
+		AliHLTGlobalAgent.h
+
+# 		
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 
+
+EINCLUDE 	:= HLT/global \
+		   HLT/TPCLib \
+		   HLT/TPCLib/tracking \
+		   HLT/TPCLib/comp \
+		   HLT/TPCLib/tracking-ca \
+		   HLT/TPCLib/offline \
+		   HLT/BASE \
+		   HLT/BASE/util \
+		   HLT/RCU \
+		   HLT/TRD \
+		   TPC \
+		   RAW \
+		   TRD \
+		   STEER
+
+LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil -lAliHLTTRD \
+               -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
+               -lRAWDatarec -lRAWDatabase -lTRDbase \
+               -L$(shell root-config --libdir) -lEG
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,global/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,global/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,global/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,global/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

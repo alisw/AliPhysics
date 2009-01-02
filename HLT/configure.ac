@@ -892,6 +892,50 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITRIGGER_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_GLOBAL],[hlt global library])
+
+ALIGLOBAL_LIBS=
+CHECK_HLTMODULE([global],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_global=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_global="yes"
+else
+  enable_global=$enable_module
+  if test "x$enable_global" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    AC_MSG_CHECKING([for required functions in AliESDtrack])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliESDtrack.h>], 
+                                       [AliESDtrack t;
+				       t.SetGlobalChi2(0)])],
+                                       [], 
+  				       [enable_global="no...requires.AliRoot>v4-17-Release"])
+    AC_MSG_RESULT([$enable_global])       
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+fi
+
+if test "x$enable_global" = "xyes" ; then 
+  AC_DEFINE(HLT_GLOBAL)
+  ALIGLOBAL_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_global
+fi
+AM_CONDITIONAL(EN_HLT_GLOBAL, test x$enable_global = xyes)
+AC_MSG_CHECKING([whether to compile Global library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIGLOBAL_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_ITS],[hlt its library])
 
 ALIITS_LIBS=
@@ -1195,6 +1239,11 @@ AC_MSG_NOTICE([compile trigger library: $enable_trigger])
 if test "x$enable_trigger" = "xyes"; then 
   AC_CONFIG_FILES([trigger/Makefile
                    trigger/test/Makefile])
+fi
+
+AC_MSG_NOTICE([compile global library: $enable_global])
+if test "x$enable_global" = "xyes"; then 
+  AC_CONFIG_FILES([global/Makefile])
 fi
 
 AC_MSG_NOTICE([compile comp library: $enable_comp])

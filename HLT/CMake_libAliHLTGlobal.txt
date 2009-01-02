@@ -1,0 +1,14 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+global/AliHLTGlobalTrackMergerComponent.cxx
+global/AliHLTGlobalTrackMerger.cxx
+global/AliHLTGlobalAgent.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+
+AddLibrary(AliHLTGlobal "${SRCS}" "${HDRS}")
