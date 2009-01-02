@@ -209,7 +209,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( Bool_t doPP, Bool_t doPbPb
       //tracker->SetClusterFinderParam(xyerror,zerror,kTRUE); // ??
       
       SetTrackerParam( 50, 100, 3, 60,
-		       2, 2,
+		       6, 6,
 		       0, 0.1745, 5, 100,
 		       5, 50, 50, 0.1, 0.1);
     }
