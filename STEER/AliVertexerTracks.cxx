@@ -35,6 +35,7 @@
 #include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliExternalTrackParam.h"
+#include "AliNeutralTrackParam.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliESDEvent.h"
@@ -573,7 +574,12 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
 
   // loop on tracks
   for(Int_t i=0; i<nTrksOrig; i++) {
-    track = new AliExternalTrackParam(*(AliExternalTrackParam*)trkArrayOrig.At(i));
+    AliExternalTrackParam *trackOrig=(AliExternalTrackParam*)trkArrayOrig.At(i);
+    if(trackOrig->Charge()!=0) { // normal tracks
+      track = new AliExternalTrackParam(*(AliExternalTrackParam*)trkArrayOrig.At(i));
+    } else { // neutral tracks (from a V0)
+      track = new AliNeutralTrackParam(*(AliNeutralTrackParam*)trkArrayOrig.At(i));
+    }
     // tgl cut
     if(TMath::Abs(track->GetTgl())>fMaxTgl) {
       AliDebug(1,Form(" rejecting track with tgl = %f",track->GetTgl()));

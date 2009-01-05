@@ -681,7 +681,7 @@ Double_t p[3], Double_t bz) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   GetXYZ(x);
     
-  if (OneOverPt() < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
+  if (OneOverPt() < kAlmost0 || TMath::Abs(bz) < kAlmost0Field || GetC(bz) < kAlmost0){ //straight-line tracks
      Double_t unit[3]; GetDirection(unit);
      x[0]+=unit[0]*len;   
      x[1]+=unit[1]*len;   
@@ -1143,7 +1143,7 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
-  Double_t crv=kB2C*b*GetParameter()[4];
+  Double_t crv=GetC(b);
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
 
   Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
@@ -1429,7 +1429,7 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
 
-  Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
+  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;

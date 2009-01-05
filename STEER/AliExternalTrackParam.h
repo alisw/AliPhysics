@@ -104,7 +104,7 @@ class AliExternalTrackParam: public AliVTrack {
   virtual Double_t M() const;
   Double_t Eta() const;
   virtual Double_t Y() const;
-  Short_t  Charge() const { return (Short_t)GetSign(); }
+  virtual Short_t  Charge() const { return (Short_t)GetSign(); }
   virtual const Double_t *PID() const { return 0x0; }
 
   // additional functions from AliVTrack
@@ -118,7 +118,7 @@ class AliExternalTrackParam: public AliVTrack {
     return (TMath::Abs(fP[4])>kAlmost0) ? 1./fP[4]:TMath::Sign(kVeryBig,fP[4]);
   }
   Double_t Get1P() const;
-  Double_t GetC(Double_t b) const {return fP[4]*b*kB2C;}
+  virtual Double_t GetC(Double_t b) const {return fP[4]*b*kB2C;}
   void GetDZ(Double_t x,Double_t y,Double_t z,Double_t b,Float_t dz[2]) const; 
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
