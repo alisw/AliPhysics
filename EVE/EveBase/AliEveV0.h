@@ -58,6 +58,8 @@ public:
   Float_t GetDaughterDCA() const { return fDaughterDCA; }
   void SetDaughterDCA(Float_t dca) { fDaughterDCA = dca; }
 
+  Float_t GetPhi()    const { return fRecDecayP.Phi(); }
+  Float_t GetEta()    const { return fRecDecayP.Eta(); }
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
   Float_t GetPt()     const { return fRecDecayP.Perp(); }
 

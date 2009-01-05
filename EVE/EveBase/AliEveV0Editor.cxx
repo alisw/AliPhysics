@@ -111,32 +111,88 @@ void AliEveV0Editor::SetModel(TObject* obj)
 
 void AliEveV0Editor::DisplayDetailed()
 {
-  printf("\n Checking invariant mass calculations: K0s %.3f lambda %.3f antilambda %.3f \n",fM->GetK0sInvMass(),fM->GetLambdaInvMass(),fM->GetAntiLambdaInvMass());
-
   TEveWindowSlot *slot = TEveWindow::CreateWindowMainFrame();
   TEveWindowPack *pack = slot->MakePack();
   pack->SetShowTitleBar(kFALSE);
+  pack->SetHorizontal();
+
+  //
+  // This part is for the bending plane view
+  //
   pack->NewSlot()->MakeCurrent();
+  TEveViewer *bpViewer = gEve->SpawnNewViewer("V0 bending plane View");
+  TEveScene  *bpScene  = gEve->SpawnNewScene("V0 bending plane Scene");
+  bpViewer->AddScene(bpScene);
+  bpScene->AddElement(fM);
+  // This is the to-do list for the bending plane:
+  // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) --tbu 
+  // 2. show axis and tickles along X and Y
+  // 3. show the center, the main vertex and the detectors for this view;
+  // 4. show V0 direction in the bending plane with arrow length proportional to pT;
+  // 5. show angles with respect to axis (phi angle).
+  bpViewer->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+  //  bpViewer->GetGLViewer()->GetOrthoXOYCamera()->SetEnableRotate(kFALSE);
+  bpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
+  //  bpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
+  TGLCamera& bpCam = bpViewer->GetGLViewer()->CurrentCamera();
+  bpCam.SetExternalCenter(kTRUE);
+  //  bpCam.SetEnableRotate(kFALSE);
+  bpCam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+  // end of the bending plane part
 
-  TEveViewer *viewer = gEve->SpawnNewViewer("V0 Detailed View");
-  TEveScene  *scene  = gEve->SpawnNewScene("V0 Detail Scene");
-  viewer->AddScene(scene);
-  scene->AddElement(fM);
+  //
+  // This part is for the decay plane view
+  //
+  pack->NewSlot()->MakeCurrent();
+  TEveViewer *dpViewer = gEve->SpawnNewViewer("V0 decay plane View");
+  TEveScene  *dpScene  = gEve->SpawnNewScene("V0 decay plane Scene");
+  dpViewer->AddScene(dpScene);
+  dpScene->AddElement(fM);
+  // This is the to-do list for the decay plane:
+  // 1. fix the view to decay plane (no rotation allowed but moving the center ok)
+  // 2. show V0 direction with a vertical arrow length proportional to pT;
+  // 3. show the center, the main vertex and the detectors for this view;
+  // 4. show the x,y and z axis and the different angles;
+  // 5. draw the dca between daughters and the extrapolation to the main vertex.
+  dpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
+  TGLCamera& dpCam = dpViewer->GetGLViewer()->CurrentCamera();
+  dpCam.SetExternalCenter(kTRUE);
+  dpCam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+  // end of the decay plane part
 
-  viewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
 
-  TGLCamera& cam = viewer->GetGLViewer()->CurrentCamera();
-  cam.SetExternalCenter(kTRUE);
-  cam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
-
+  // This part is for displaying the information
   slot = pack->NewSlot();
   
   TEveWindowFrame *frame = slot->MakeFrame(new TRootEmbeddedCanvas());
   frame->SetElementName("Details");
 
-  TLatex* ltx = new TLatex(0.2, 0.2, "#eta = #frac{1}{2} #times Ln(#frac{E+p_{z}}{E-p_{z}} )");
+  // Print and show detailed information about the V0
+  // Calculation of the invariant mass with the max prob PID hypothesis first
+  // pseudorapidity, phi angle, pt, radius, dcas
+  char info[100] = {0};
+  sprintf(info,"#phi = %.3f",fM->GetPhi());
+  TLatex* ltx = new TLatex(0.1, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->Draw();
+
+  sprintf(info,"radius = %.3f [cm]",fM->GetRadius());
+  ltx->DrawLatex(0.1, 0.8, info);
+
+  sprintf(info,"daughters dca = %.3f [cm]",fM->GetDaughterDCA());
+  ltx->DrawLatex(0.1, 0.7, info);
+
+  sprintf(info,"#eta = #frac{1}{2} #times Ln(#frac{E+p_{z}}{E-p_{z}} ) = %.3f",fM->GetEta());
+  ltx->DrawLatex(0.1, 0.6, info);
+
+  sprintf(info,"mass_{K^{0}_{s}} = %.3f [GeV/c^{2}]",fM->GetK0sInvMass());
+  ltx->DrawLatex(0.1, 0.3, info);
+
+  sprintf(info,"mass_{#Lambda} = %.3f [GeV/c^{2}]",fM->GetLambdaInvMass());
+  ltx->DrawLatex(0.1, 0.2, info);
+
+  sprintf(info,"mass_{#bar{#Lambda}} = %.3f [GeV/c^{2}]",fM->GetAntiLambdaInvMass());
+  ltx->DrawLatex(0.1, 0.1, info);
 
   gEve->Redraw3D();
 }
