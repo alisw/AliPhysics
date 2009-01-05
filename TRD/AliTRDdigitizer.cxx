@@ -46,6 +46,7 @@
 #include <TList.h>
 #include <TTask.h>
 #include <TGeoManager.h>
+
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliRunLoader.h"
@@ -504,9 +505,10 @@ void AliTRDdigitizer::Exec(Option_t *option)
   // Write parameters
   orl->CdGAFile();
 
-  AliDebug(1,"Done");
-
+  // Clean up
   DeleteSDigitsManager();
+
+  AliDebug(1,"Done");
 
 }
 
@@ -1065,7 +1067,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
       // locR and locC are identical to the coordinates of the corresponding
       // volumina of the drift or amplification region.
       // locT is defined relative to the wire plane (i.e. middle of amplification
-      // region), meaming locT = 0, and is negative for hits coming from the
+      // region), meaning locT = 0, and is negative for hits coming from the
       // drift region. 
       Double_t locC = loc[0];
       Double_t locR = loc[1];
@@ -1125,7 +1127,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
       } 
       else {
 	// Use constant drift velocity
-        drifttime = -1.0 * locT / driftvelocity
+        drifttime = TMath::Abs(locT) / driftvelocity
                   + hittime;
       }
 
@@ -1855,10 +1857,6 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
                       ? fTimeStruct1[r2+38*kz1] 
                       : fTimeStruct1[37+38*kz1];
 
-  // 2D Interpolation, lower drift time map
-  const Float_t ky11  = (ky211-ky111)*10*dist + ky111 - (ky211-ky111)*r1;
-  const Float_t ky21  = (ky221-ky121)*10*dist + ky121 - (ky221-ky121)*r1;
-
   const Float_t ky112 = fTimeStruct2[r1+38*kz1];
   const Float_t ky222 = ((r2 <= 37) && (kz2 <= 10)) 
                       ? fTimeStruct2[r2+38*kz2] 
@@ -1870,7 +1868,11 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
                       ? fTimeStruct2[r2+38*kz1] 
                       : fTimeStruct2[37+38*kz1];
 
-  // 2D Interpolation, larger drift time map
+  // Interpolation in dist-directions, lower drift time map
+  const Float_t ky11  = (ky211-ky111)*10*dist + ky111 - (ky211-ky111)*r1;
+  const Float_t ky21  = (ky221-ky121)*10*dist + ky121 - (ky221-ky121)*r1;
+
+  // Interpolation in dist-direction, larger drift time map
   const Float_t ky12  = (ky212-ky112)*10*dist + ky112 - (ky212-ky112)*r1;
   const Float_t ky22  = (ky222-ky122)*10*dist + ky122 - (ky222-ky122)*r1;
 
@@ -1878,20 +1880,21 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
   // between anode wire plane and cathode pad plane)
   dist -= AliTRDgeometry::AmThick() / 2.0;
 
-  // Get the drift times for the drift velocities fVDlo and fVDhi
+  // Interpolation in z-directions, lower drift time map
   const Float_t ktdrift1 = ((TMath::Abs(dist) > 0.005) || (z > 0.005)) 
                          ? (ky21 - ky11) * 100 * z / 2.5 + ky11 - (ky21 - ky11) * kz1 
                          : 0.0;
+  // Interpolation in z-directions, larger drift time map
   const Float_t ktdrift2 = ((TMath::Abs(dist) > 0.005) || (z > 0.005)) 
                          ? (ky22 - ky12) * 100 * z / 2.5 + ky12 - (ky22 - ky12) * kz1 
                          : 0.0;
 
-  // 1D Interpolation between the values at fVDlo and fVDhi
-  Float_t a = (ktdrift2 - ktdrift1) 
-            / (fVDhi - fVDlo);
+  // Interpolation between the values at fVDlo and fVDhi
+  Float_t a = (ktdrift2 - ktdrift1) / (fVDhi - fVDlo);
   Float_t b = ktdrift2 - a * fVDhi;
+  Float_t t = a * vdrift + b;
 
-  return a * vdrift + b;
+  return t;
 
 }
 
