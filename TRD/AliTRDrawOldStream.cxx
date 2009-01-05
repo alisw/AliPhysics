@@ -712,7 +712,7 @@ Int_t AliTRDrawOldStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*track
 			  if (GetSignals()[it] > 0)
 			    {
 			      digits->SetData(fROW, fCOL, fTB + it, fSig[it]);
-			      indexes->AddIndexTBin(fROW, fCOL, fTB + it);
+			      indexes->AddIndexRC(fROW, fCOL);
 			      if (man->UsesDictionaries())
 				{
 				  track0->SetData(fROW, fCOL, fTB + it, 0);

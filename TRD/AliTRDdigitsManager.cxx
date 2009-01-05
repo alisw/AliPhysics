@@ -745,7 +745,7 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
 		  Int_t isig = digits->GetDataB(ir,ic,it);
 		  if (isig > 0) 
 		    {
-		      indexes->AddIndexTBin(ir,ic,it);	    
+		      indexes->AddIndexRC(ir,ic);	    
 		    }
 		} // tbins
 	    } // cols

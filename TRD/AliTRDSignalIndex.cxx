@@ -227,6 +227,7 @@ void AliTRDSignalIndex::ResetArrays()
 {
   memset(fBoolIndex,0x00,sizeof(Bool_t)*fMaxLimit);
   memset(fSortedIndex,0xFF,2*sizeof(Short_t)*fMaxLimit);
+  fSortedWasInit = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -314,6 +315,8 @@ void AliTRDSignalIndex::ClearAll()
   ResetCounters();
 
   fHasEntry = kFALSE;
+  fSortedWasInit = kFALSE;
+  fMaxLimit = 0;
 
 }
 

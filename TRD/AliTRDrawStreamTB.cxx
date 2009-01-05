@@ -866,7 +866,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
         if(padStatus)
 	  digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
 	
-        indexes->AddIndexTBin(GetRow(), GetCol(), it);
+        indexes->AddIndexRC(GetRow(), GetCol());
               if (digitsManager->UsesDictionaries()) 
                 {
             track0->SetData(GetRow(), GetCol(), it, 0);

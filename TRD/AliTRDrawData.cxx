@@ -1047,8 +1047,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
 		{
 		  digits->SetData(input.GetRow(), input.GetCol(),input.GetTimeBin() + it, input.GetSignals()[it]);
 
-		  indexes->AddIndexTBin(input.GetRow(), input.GetCol(),
-					input.GetTimeBin() + it);
+		  indexes->AddIndexRC(input.GetRow(), input.GetCol());
 		  track0->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
 		  track1->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
 		  track2->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);

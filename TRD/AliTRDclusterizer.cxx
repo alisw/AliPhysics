@@ -1031,9 +1031,9 @@ void AliTRDclusterizer::CreateCluster(const Int_t row, const Int_t col, const In
   // Store the amplitudes of the pads in the cluster for later analysis
   // and check whether one of these pads is masked in the database
   Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
-  for(Int_t i = 0; i++; i<3)
+  for(Int_t i = 0; i<3; i++)
     signals[i+2] = TMath::Nint(clusterSignal[i]);
-  for(Int_t i = 0; i++; i<2)
+  for(Int_t i = 0; i<2; i++)
     {
       if(col+i >= 3)
 	signals[i] = TMath::Nint(fDigitsOut->GetData(row,col-3+i,time));
