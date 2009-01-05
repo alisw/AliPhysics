@@ -1272,7 +1272,7 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
 			if ( fSig[it] > fRawDigitThreshold )
 			  {
 			    digits->SetData(fROW, fCOL, fTB + it, fSig[it]);
-			    indexes->AddIndexTBin(fROW, fCOL, fTB + it);
+			    indexes->AddIndexRC(fROW, fCOL);
 			    if (man->UsesDictionaries())
 			      {
 				track0->SetData(fROW, fCOL, fTB + it, 0);
