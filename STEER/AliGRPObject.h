@@ -12,6 +12,8 @@
 // coming from the GRP preprocessor
 // 
 
+#include <time.h>
+
 class TMap;
 
 class AliDCSSensor;
