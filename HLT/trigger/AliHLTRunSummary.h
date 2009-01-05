@@ -63,7 +63,7 @@ public:
   /** Get number of events
    *  @return number of events
    */
-  ULong_t GetNEvents()                   { return fNEvents; }
+  ULong_t GetNEvents() const             { return fNEvents; }
  
   /** Set number of rejected events 
    *  @param i number of events rejected
@@ -76,7 +76,7 @@ public:
   /** Get number of reejcted events 
    *  @return number of events rejected
    */
-  ULong_t GetNEventsRejected()           { return fNEventsRejected; }
+  ULong_t GetNEventsRejected() const     { return fNEventsRejected; }
 
   // -- run parameters ------------------------
 
@@ -88,7 +88,7 @@ public:
   /** Get Run Number 
    *  @return run number
    */
-  AliHLTUInt32_t GetRunNumber()                   { return  fRunNumber;}
+  AliHLTUInt32_t GetRunNumber() const             { return  fRunNumber;}
 
   /** Set Run Type 
    *  @param i run type
@@ -98,7 +98,7 @@ public:
   /** Get Run Type s
    *  @return run type
    */
-  AliHLTUInt32_t GetRunType()                     { return fRunType; }
+  AliHLTUInt32_t GetRunType() const               { return fRunType; }
 
   // -- trigger parameters ------------------------
 
@@ -111,7 +111,8 @@ public:
   /** Get ocurrance of trigger classes 
    *  @return ptr to array of trigger classes
    */
-  ULong_t* GetTriggerClasses()           { return fTriggerClasses; }
+  const ULong_t* GetTriggerClasses() const { return fTriggerClasses; }
+  ULong_t* GetTriggerClasses()             { return fTriggerClasses; }
   
   // -- detector parameters ------------------------
 

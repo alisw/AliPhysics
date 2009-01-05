@@ -14,6 +14,7 @@
 #include "AliHLTDataTypes.h"
 
 class AliHLTDomainEntry;
+class AliHLTReadoutList;
 
 /**
  * \class AliHLTTriggerDomain
@@ -56,6 +57,26 @@ class AliHLTTriggerDomain : public TObject
   AliHLTTriggerDomain();
   
   /**
+   * Constructs the trigger domain from a list of domain entries.
+   * \param list  Comma separated list of domain entries of the form xxx:yyy:zzz
+   *    Can optionaly have a '+' or '-' character just in front of the block
+   *    type string, xxx in this case, to indicate inclusive or exclusive entries.
+   * \note If inclusive and exclusive entries are specified then they are applied
+   *    in the order found in the list, from left to right. This means that subsequent
+   *    includes can override previous excludes and visa versa.
+   */
+  AliHLTTriggerDomain(const char* list);
+  
+  /**
+   * Constructor to create a trigger domain from a DDL readout list.
+   * The trigger domain will contain entries of the form "DAQRDOUT:xxxx:yyyy"
+   * where xxxx is the appropriate detector name given by AliDAQ::OnlineName()
+   * and yyyy is the DDL equipment ID number.
+   * \param list  The read out list object
+   */
+  AliHLTTriggerDomain(const AliHLTReadoutList& list);
+  
+  /**
    * Copy constructor performs a deep copy.
    * \param domain  The domain entry to copy from.
    */
@@ -65,6 +86,15 @@ class AliHLTTriggerDomain : public TObject
    * Default destructor.
    */
   virtual ~AliHLTTriggerDomain();
+  
+  /**
+   * Adds entries to the trigger domain to correspond to the DDL readout list.
+   * The trigger domain will contain entries of the form "DAQRDOUT:xxxx:yyyy"
+   * where xxxx is the appropriate detector name given by AliDAQ::OnlineName()
+   * and yyyy is the DDL equipment ID number.
+   * \param list  The readout list object
+   */
+  void Add(const AliHLTReadoutList& list);
   
   /**
    * Adds the given entry to this trigger domain as an inclusive entry.
@@ -115,6 +145,16 @@ class AliHLTTriggerDomain : public TObject
    * \param spec  The specification bits that must match.
    */
   void Add(const char* blocktype, const char* origin, UInt_t spec);
+  
+  /**
+   * Removes entries from the trigger domain that correspond to the DDL readout list.
+   * All entries of the form "DAQRDOUT:xxxx:yyyy" are removed, where xxxx is the
+   * appropriate detector name given by AliDAQ::OnlineName() and yyyy is the DDL
+   * equipment ID number, as long as the corresponding bit is set in the readout
+   * list.
+   * \param list  The readout list object
+   */
+  void Remove(const AliHLTReadoutList& list);
   
   /**
    * Removes or modifies all entries from the trigger domain, such that data blocks
@@ -353,6 +393,11 @@ class AliHLTTriggerDomain : public TObject
     AliHLTTriggerDomain result = *this;
     return result.operator -= (domain);
   }
+  
+  /**
+   * Typecase operator to create a DDL readout list object from the trigger domain.
+   */
+  operator AliHLTReadoutList () const;
   
  private:
   

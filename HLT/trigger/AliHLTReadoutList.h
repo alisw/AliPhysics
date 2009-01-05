@@ -172,6 +172,14 @@ class AliHLTReadoutList : public TObject
   void Disable(Int_t detector);
   
   /**
+   * Checks if a particular detector's DDLs are enabled for readout.
+   * \param detector  A bitmap of detectors to check. Should be any values from
+   *    EDetectorId that can be or'ed together for multiple detector selection.
+   * \return true if all DDLs for the specified detectors are enabled for readout.
+   */
+  bool DetectorEnabled(Int_t ddlId) const;
+  
+  /**
    * Inherited from TObject. Prints the DDLs that will be readout according to
    * this readout list.
    * \param option  This is not used by this method.

@@ -31,7 +31,6 @@ AliHLTTriggerDecision::AliHLTTriggerDecision() :
   TObject(),
   fName(),
   fDescription(),
-  fReadoutList(),
   fTriggerDomain()
 {
   // Default constructor.
@@ -42,7 +41,6 @@ AliHLTTriggerDecision::AliHLTTriggerDecision(bool result, const char* name) :
   TObject(),
   fName(name),
   fDescription(),
-  fReadoutList(),
   fTriggerDomain()
 {
   // Constructor specifying the name and result of the trigger decision.
@@ -52,13 +50,13 @@ AliHLTTriggerDecision::AliHLTTriggerDecision(bool result, const char* name) :
 
 
 AliHLTTriggerDecision::AliHLTTriggerDecision(
-    bool result, const char* name, const AliHLTReadoutList& readoutList,
-    const AliHLTTriggerDomain& triggerDomain, const char* description
+    bool result, const char* name,
+    const AliHLTTriggerDomain& triggerDomain,
+    const char* description
   ) :
   TObject(),
   fName(name),
   fDescription(description),
-  fReadoutList(readoutList),
   fTriggerDomain(triggerDomain)
 {
   // Constructor specifying all information fields.
@@ -81,7 +79,6 @@ void AliHLTTriggerDecision::Print(Option_t* option) const
   TString opt(option);
   if (opt.Contains("short")) return;
   cout << "Description = \"" << fDescription.Data() << "\"" << endl;
-  fReadoutList.Print();
   fTriggerDomain.Print();
 }
 

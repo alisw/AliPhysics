@@ -58,7 +58,7 @@ public:
   /** Check event is accepted
    *  @return kTRUE if accepted, kFALSE if rejected
    */
-  Bool_t IsAccepted()                             { return fRejected;} 
+  Bool_t IsAccepted() const                       { return fRejected;} 
 
   // -- run parameters ------------------------
 
@@ -70,7 +70,7 @@ public:
   /** Get Run Number 
    *  @return run number
    */
-  AliHLTUInt32_t GetRunNumber()                   { return  fRunNumber;}
+  AliHLTUInt32_t GetRunNumber() const             { return  fRunNumber;}
 
   /** Set Run Type 
    *  @param i run type
@@ -80,7 +80,7 @@ public:
   /** Get Run Type s
    *  @return run type
    */
-  AliHLTUInt32_t GetRunType()                     { return fRunType; }
+  AliHLTUInt32_t GetRunType() const               { return fRunType; }
 
   // -- trigger parameters ------------------------
 
@@ -93,13 +93,14 @@ public:
   /** Get ocurrance of trigger classes 
    *  @return ptr to array of trigger classes
    */
-  AliHLTUInt64_t GetTriggerClasses()              { return fTriggerClass; }
+  AliHLTUInt64_t GetTriggerClasses() const        { return fTriggerClass; }
   
   // -- detector parameters ------------------------
 
   /** Detector run statistics classes 
    *  @return ptr to Detector arry
    */
+  const TObjArray* GetDetectorArray () const      { return fDetectorArray; }
   TObjArray* GetDetectorArray ()                  { return fDetectorArray; }
 
   /** Rest the Detector array, all elements are removed */

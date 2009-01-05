@@ -30,6 +30,7 @@ ClassImp(AliHLTGlobalTriggerDecision)
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
   AliHLTTriggerDecision(),
   fContributingTriggers(AliHLTTriggerDecision::Class()),
+  fInputObjects(),
   fCounters()
 {
   // Default constructor.
@@ -37,16 +38,17 @@ AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
 
 
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision(
-    bool result, const AliHLTReadoutList& readoutList,
-    const AliHLTTriggerDomain& triggerDomain, const char* description
+    bool result, const AliHLTTriggerDomain& triggerDomain, const char* description
   ) :
-  AliHLTTriggerDecision(result, "HLTGlobalTrigger", readoutList, triggerDomain, description),
+  AliHLTTriggerDecision(result, "HLTGlobalTrigger", triggerDomain, description),
   fContributingTriggers(AliHLTTriggerDecision::Class()),
+  fInputObjects(),
   fCounters()
 {
   // Constructor specifying multiple information fields.
   
   Result(result);
+  fInputObjects.SetOwner(kTRUE);
 }
 
 
@@ -61,31 +63,70 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
   // Prints the contents of the trigger decision.
   
   TString opt(option);
-  if (opt.Contains("short"))
+  if (opt.Contains("compact"))
+  {
+    cout << "Global ";
+    AliHLTTriggerDecision::Print("");
+  }
+  else if (opt.Contains("short"))
   {
     cout << "Global ";
     AliHLTTriggerDecision::Print(option);
-    cout << "==================== Input trigger decisions ====================";
+    cout << "#################### Input trigger decisions ####################" << endl;
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
       TriggerInput(i)->Print(option);
+    }
+    if (NumberOfTriggerInputs() == 0)
+    {
+      cout << "(none)" << endl;
+    }
+  }
+  else if (opt.Contains("counters"))
+  {
+    cout << "Counter\tValue" << endl;
+    for (Int_t i = 0; i < fCounters.GetSize(); i++)
+    {
+      cout << i << "\t" << fCounters[i] << endl;
+    }
+    if (fCounters.GetSize() == 0)
+    {
+      cout << "(none)" << endl;
     }
   }
   else
   {
     cout << "Global ";
     AliHLTTriggerDecision::Print(option);
-    cout << "#################### Input trigger decisions ####################";
+    cout << "#################### Input trigger decisions ####################" << endl;
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
-      cout << "-------------------- Input trigger decision " << i << " --------------------";
+      cout << "-------------------- Input trigger decision " << i << " --------------------" << endl;
       TriggerInput(i)->Print(option);
     }
-    cout << "#################### Event class counters ####################";
+    if (NumberOfTriggerInputs() == 0)
+    {
+      cout << "(none)" << endl;
+    }
+    cout << "###################### Other input objects ######################" << endl;
+    for (Int_t i = 0; i < NumberOfInputObjects(); i++)
+    {
+      cout << "------------------------ Input object " << i << " ------------------------" << endl;
+      InputObject(i)->Print(option);
+    }
+    if (NumberOfInputObjects() == 0)
+    {
+      cout << "(none)" << endl;
+    }
+    cout << "#################### Event class counters ####################" << endl;
     cout << "Counter\tValue" << endl;
     for (Int_t i = 0; i < fCounters.GetSize(); i++)
     {
       cout << i << "\t" << fCounters[i] << endl;
+    }
+    if (fCounters.GetSize() == 0)
+    {
+      cout << "(none)" << endl;
     }
   }
 }

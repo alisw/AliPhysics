@@ -297,6 +297,52 @@ void AliHLTReadoutList::Disable(Int_t detector)
 }
 
 
+bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
+{
+  // Checks if a particular detector's DDLs are enabled.
+  // See header file for more details.
+  
+  bool result = true;
+  if ((detector & kITSSPD) != 0) result &= fReadoutList.fList[0] == 0x000FFFFF;
+  if ((detector & kITSSDD) != 0) result &= fReadoutList.fList[1] == 0x00FFFFFF;
+  if ((detector & kITSSSD) != 0) result &= fReadoutList.fList[2] == 0x0000FFFF;
+  if ((detector & kTPC) != 0)
+  {
+    result &= fReadoutList.fList[3] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[4] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[5] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[6] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[7] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[8] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[9] == 0x00FFFFFF;
+  }
+  if ((detector & kTRD) != 0) result &= fReadoutList.fList[11] == 0x0003FFFF;
+  if ((detector & kTOF) != 0)
+  {
+    result &= fReadoutList.fList[12] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[13] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[14] == 0x000000FF;
+  }
+  if ((detector & kHMPID) != 0) result &= fReadoutList.fList[15] == 0x00003FFF;
+  if ((detector & kPHOS) != 0) result &= fReadoutList.fList[16] == 0x000FFFFF;
+  if ((detector & kCPV) != 0) result &= fReadoutList.fList[17] == 0x000003FF;
+  if ((detector & kPMD) != 0) result &= fReadoutList.fList[18] == 0x0000003F;
+  if ((detector & kMUONTRK) != 0) result &= fReadoutList.fList[19] == 0x000FFFFF;
+  if ((detector & kMUONTRG) != 0) result &= fReadoutList.fList[20] == 0x00000003;
+  if ((detector & kFMD) != 0) result &= fReadoutList.fList[21] == 0x00000007;
+  if ((detector & kT0) != 0) result &= fReadoutList.fList[22] == 0x00000001;
+  if ((detector & kV0) != 0) result &= fReadoutList.fList[23] == 0x00000001;
+  if ((detector & kZDC) != 0) result &= fReadoutList.fList[24] == 0x00000001;
+  if ((detector & kACORDE) != 0) result &= fReadoutList.fList[25] == 0x00000001;
+  if ((detector & kTRG) != 0) result &= fReadoutList.fList[26] == 0x00000001;
+  if ((detector & kEMCAL) != 0) result &= fReadoutList.fList[27] == 0x00FFFFFF;
+  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000001;
+  if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x000003FF;
+  
+  return result;
+}
+
+
 void AliHLTReadoutList::Print(Option_t* /*option*/) const
 {
   // Prints the DDLs that will be readout according to this readout list.

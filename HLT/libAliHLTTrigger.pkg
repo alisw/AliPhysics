@@ -16,8 +16,10 @@ CLASS_HDRS:= \
                 AliHLTReadoutList.h                         \
                 AliHLTTriggerMenu.h                         \
                 AliHLTTriggerMenuItem.h                     \
+                AliHLTTriggerMenuSymbol.h                   \
                 AliHLTGlobalTriggerDecision.h               \
                 AliHLTGlobalTrigger.h                       \
+                AliHLTGlobalTriggerConfig.h                 \
                 AliHLTGlobalTriggerComponent.h              \
                 AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \

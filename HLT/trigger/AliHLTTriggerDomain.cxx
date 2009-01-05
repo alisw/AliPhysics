@@ -24,7 +24,11 @@
 
 #include "AliHLTTriggerDomain.h"
 #include "AliHLTDomainEntry.h"
+#include "AliHLTReadoutList.h"
 #include "Riostream.h"
+#include "TObjArray.h"
+#include "TObjString.h"
+#include "AliDAQ.h"
 
 ClassImp(AliHLTTriggerDomain)
 
@@ -33,6 +37,101 @@ AliHLTTriggerDomain::AliHLTTriggerDomain() :
   TObject(), fEntries(AliHLTDomainEntry::Class(), 10)
 {
   // Default constructor.
+}
+
+
+AliHLTTriggerDomain::AliHLTTriggerDomain(const char* list) :
+  TObject(), fEntries(AliHLTDomainEntry::Class(), 10)
+{
+  // Constructs the domain from a list of entries.
+  
+  TString lst = list;
+  TObjArray* entries = lst.Tokenize(",");
+  for (Int_t i = 0; i < entries->GetEntriesFast(); i++)
+  {
+    TString entry = static_cast<TObjString*>(entries->UncheckedAt(i))->GetString();
+    TObjArray* domainStrings = entry.Tokenize(":");
+    if (domainStrings->GetEntriesFast() <= 0 or domainStrings->GetEntriesFast() > 3)
+    {
+      Error("AliHLTTriggerDomain",
+            "The domain string must contain 1, 2 or 3 fields separated by a ':'."
+           );
+      delete domainStrings;
+      continue;
+    }
+    
+    bool inclusiveEntry = true;
+    TString typeString = "*******";
+    if (domainStrings->GetEntriesFast() >= 1)
+    {
+      typeString = static_cast<TObjString*>(domainStrings->UncheckedAt(0))->GetString();
+      if (typeString.Length() > 0)
+      {
+        if (typeString[0] == '+')
+        {
+          inclusiveEntry = true;
+          typeString.Remove(0, 1);
+        }
+        if (typeString[0] == '-')
+        {
+          inclusiveEntry = false;
+          typeString.Remove(0, 1);
+        }
+      }
+    }
+    TString originString = "***";
+    if (domainStrings->GetEntriesFast() >= 2)
+    {
+      originString = static_cast<TObjString*>(domainStrings->UncheckedAt(1))->GetString();
+    }
+    bool usespec = false;
+    UInt_t spec = 0;
+    if (domainStrings->GetEntriesFast() == 3)
+    {
+      TString specString = static_cast<TObjString*>(domainStrings->UncheckedAt(2))->GetString();
+      char* error = NULL;
+      spec = UInt_t( strtoul(specString.Data(), &error, 0) );
+      if (error == NULL or *error != '\0')
+      {
+        Error("AliHLTTriggerDomain",
+              "The last field of the domain string must be a number, but we received '%s'.",
+              specString.Data()
+             );
+      }
+      else
+      {
+        usespec = true;
+      }
+    }
+    
+    if (usespec)
+    {
+      if (inclusiveEntry)
+        Add(typeString.Data(), originString.Data(), spec);
+      else
+        Remove(typeString.Data(), originString.Data(), spec);
+    }
+    else
+    {
+      if (inclusiveEntry)
+        Add(typeString.Data(), originString.Data());
+      else
+        Remove(typeString.Data(), originString.Data());
+    }
+    
+    delete domainStrings;
+  }
+  delete entries;
+}
+
+
+AliHLTTriggerDomain::AliHLTTriggerDomain(const AliHLTReadoutList& list) :
+  TObject(), fEntries(AliHLTDomainEntry::Class(), 10)
+{
+  // Constructor creates a trigger domain from a readout list.
+  // See header file for more details.
+  
+  Add(list);
 }
 
 
@@ -56,6 +155,38 @@ AliHLTTriggerDomain::~AliHLTTriggerDomain()
   // Default destructor.
 }
 
+
+void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
+{
+  // Adds the readout list to the trigger domain.
+  // See header file for more details.
+  
+  Int_t detId[AliDAQ::kNDetectors] = {
+      AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
+      AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
+      AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
+      AliHLTReadoutList::kPMD, AliHLTReadoutList::kMUONTRK, AliHLTReadoutList::kMUONTRG,
+      AliHLTReadoutList::kFMD, AliHLTReadoutList::kT0, AliHLTReadoutList::kV0,
+      AliHLTReadoutList::kZDC, AliHLTReadoutList::kACORDE, AliHLTReadoutList::kTRG,
+      AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
+    };
+  
+  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  {
+    if (list.DetectorEnabled(detId[deti]))
+    {
+      Add("DAQRDOUT", AliDAQ::OnlineName(deti));
+    }
+    else
+    {
+      for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+      {
+        Int_t ddlId = AliDAQ::DdlID(deti, i);
+        if (list.IsDDLEnabled(ddlId)) Add("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId);
+      }
+    }
+  }
+}
 
 void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
 {
@@ -152,6 +283,39 @@ void AliHLTTriggerDomain::Add(const char* blocktype, const char* origin, UInt_t 
   // See header file for more details.
   
   Add(AliHLTDomainEntry(blocktype, origin, spec));
+}
+
+
+void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
+{
+  // Removes the entries in the readout list from the trigger domain that are enabled.
+  // See header file for more details.
+  
+  Int_t detId[AliDAQ::kNDetectors] = {
+      AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
+      AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
+      AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
+      AliHLTReadoutList::kPMD, AliHLTReadoutList::kMUONTRK, AliHLTReadoutList::kMUONTRG,
+      AliHLTReadoutList::kFMD, AliHLTReadoutList::kT0, AliHLTReadoutList::kV0,
+      AliHLTReadoutList::kZDC, AliHLTReadoutList::kACORDE, AliHLTReadoutList::kTRG,
+      AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
+    };
+  
+  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  {
+    if (list.DetectorEnabled(detId[deti]))
+    {
+      Remove("DAQRDOUT", AliDAQ::OnlineName(deti));
+    }
+    else
+    {
+      for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+      {
+        Int_t ddlId = AliDAQ::DdlID(deti, i);
+        if (list.IsDDLEnabled(ddlId)) Remove("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId);
+      }
+    }
+  }
 }
 
 
@@ -660,6 +824,26 @@ AliHLTTriggerDomain AliHLTTriggerDomain::operator & (const AliHLTTriggerDomain& 
 
   result.RemoveMarkedEntries();
   result.Optimise();
+  return result;
+}
+
+
+AliHLTTriggerDomain::operator AliHLTReadoutList () const
+{
+  // Typecast operator which constructs a readout list from the trigger domain.
+  
+  AliHLTReadoutList result;
+  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  {
+    for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+    {
+      Int_t ddlId = AliDAQ::DdlID(deti, i);
+      if (Contains(AliHLTDomainEntry("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId)))
+      {
+        result.EnableDDLBit(ddlId);
+      }
+    }
+  }
   return result;
 }
 

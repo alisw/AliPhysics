@@ -38,6 +38,16 @@ class AliHLTTriggerMenuItem : public TObject
   virtual void Print(Option_t* option = "") const;
   
   /**
+   * Returns the optional comment string.
+   */
+  const char* Description() const { return fDescription.Data(); }
+  
+  /**
+   * Set the optional comment string.
+   */
+  void Description(const char* value) { fDescription = value; }
+  
+  /**
    * Returns the trigger condition expression.
    */
   const char* TriggerCondision() const { return fConditionExpr.Data(); }
@@ -69,11 +79,12 @@ class AliHLTTriggerMenuItem : public TObject
 
  private:
   
+  TString fDescription;  /// Optional description or comment string.
   TString fConditionExpr;  /// The trigger condition expression.
   TString fDomainExpr;  /// Trigger domain merging expression.
   UInt_t fPrescalar;  /// Pre-scalar value used to optionally reduce the trigger rate. Every modulus n'th event is triggered, where n equals the pre-scalar value.
   
-  ClassDef(AliHLTTriggerMenuItem, 1) // Trigger menu item for global HLT trigger.
+  ClassDef(AliHLTTriggerMenuItem, 2) // Trigger menu item for global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENUITEM_H

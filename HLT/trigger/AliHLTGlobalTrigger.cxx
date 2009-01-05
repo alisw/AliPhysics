@@ -36,6 +36,7 @@ AliHLTGlobalTrigger::Factory::fFactory[AliHLTGlobalTrigger::Factory::kMaxFactori
 
 
 AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
+  AliHLTLogging(),
   fCounters()
 {
   // Default constructor.
@@ -66,7 +67,7 @@ AliHLTGlobalTrigger* AliHLTGlobalTrigger::Factory::CreateNew(const char* name)
 }
 
 
-AliHLTGlobalTrigger::Factory::Factory()
+AliHLTGlobalTrigger::Factory::Factory() : AliHLTLogging()
 {
   // Default constructor resisters the class factory.
   
@@ -97,5 +98,17 @@ AliHLTGlobalTrigger::Factory::~Factory()
   }
   
   HLTFatal("Could not find factory to deregister.");
+}
+
+
+void AliHLTGlobalTrigger::ResetCounters(UInt_t number)
+{
+  // Resets the trigger counters.
+  
+  fCounters.Set(number);
+  for (UInt_t i = 0; i < number; i++)
+  {
+    fCounters[i] = 0;
+  }
 }
 

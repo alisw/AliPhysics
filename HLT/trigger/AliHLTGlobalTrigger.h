@@ -14,8 +14,11 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 
+class AliHLTTriggerDomain;
 class AliHLTTriggerDecision;
 class AliHLTGlobalTriggerDecision;
+class AliHLTTriggerMenu;
+class TClonesArray;
 
 /**
  * \class AliHLTGlobalTrigger
@@ -24,7 +27,7 @@ class AliHLTGlobalTriggerDecision;
  * creates a class deriving from AliHLTGlobalTrigger on the fly to implement the
  * trigger logic for that particular trigger menu.
  */
-class AliHLTGlobalTrigger
+class AliHLTGlobalTrigger : public AliHLTLogging
 {
  public:
   
@@ -39,17 +42,17 @@ class AliHLTGlobalTrigger
   virtual ~AliHLTGlobalTrigger();
   
   /**
+   * Abstract method to fill values from a trigger menu. Specifically, the description
+   * strings and domain entry values will be copied over.
+   * \param  menu  The trigger menu to fill from.
+   */
+  virtual void FillFromMenu(const AliHLTTriggerMenu& menu) = 0;
+  
+  /**
    * Abstract method to indicate that a new event is being processed and the
    * internal buffers should be cleared or reset.
    */
   virtual void NewEvent() = 0;
-  
-  /**
-   * Abstract method which should fill in the internal attributes from the given
-   * trigger decision.
-   * \param  decision  The trigger decision to fill from.
-   */
-  virtual void Add(const AliHLTTriggerDecision* decision) = 0;
   
   /**
    * Abstract method which should fill in the internal attributes from the given
@@ -66,9 +69,11 @@ class AliHLTGlobalTrigger
   
   /**
    * Abstract method that calculates the trigger decision
+   * \param  domain  The resultant trigger domain for the global HLT result.
+   * \param  description  The resultant description for the global HLT result.
    * \returns The global HLT trigger decision result.
    */
-  virtual AliHLTGlobalTriggerDecision* CalculateTriggerDecision() = 0;
+  virtual bool CalculateTriggerDecision(AliHLTTriggerDomain& domain, TString& description) = 0;
   
   /**
    * Creates a new instance of a particular trigger class.
@@ -77,6 +82,17 @@ class AliHLTGlobalTrigger
    *    caller with the delete operator.
    */
   static AliHLTGlobalTrigger* CreateNew(const char* name) { return Factory::CreateNew(name); }
+  
+  /**
+   * Sets the number of trigger counters and resets them all to zero.
+   * \param number  The number of counters to use.
+   */
+  void ResetCounters(UInt_t number = 0);
+  
+  /**
+   * Returns the array of trigger counters.
+   */
+  const TArrayL64& Counters() const { return fCounters; }
   
  protected:
   
@@ -132,6 +148,18 @@ class AliHLTGlobalTrigger
   AliHLTGlobalTrigger(const AliHLTGlobalTrigger& obj);
   /// Not implemented. Do not allow copying of this object.
   AliHLTGlobalTrigger& operator = (const AliHLTGlobalTrigger& obj);
+  
+  /**
+   * Increments a trigger counter by one.
+   * \param i  The counter to increment.
+   */
+  void IncrementCounter(UInt_t i) { ++fCounters[i]; };
+  
+  /**
+   * Returns a trigger counter's value.
+   * \param i  The counter number to return.
+   */
+  Long64_t GetCounter(UInt_t i) const { return fCounters[i]; };
   
  private:
   

@@ -42,13 +42,12 @@ class AliHLTTriggerDecision : public TObject
    * \param result  The result of the trigger decision.
    * \param name  The name of the trigger decision. Should be the name of the
    *     AliHLTTrigger component.
-   * \param readoutList  The DDL readout list for the trigger decision.
    * \param triggerDomain  The trigger domain for the trigger decision.
    * \param description  The description of (reason for) the trigger decision.
    */
   AliHLTTriggerDecision(
-      bool result, const char* name, const AliHLTReadoutList& readoutList,
-      const AliHLTTriggerDomain& triggerDomain, const char* description = ""
+      bool result, const char* name, const AliHLTTriggerDomain& triggerDomain,
+      const char* description = ""
     );
   
   /**
@@ -111,23 +110,25 @@ class AliHLTTriggerDecision : public TObject
   /**
    * Returns the DDL readout list associated with this trigger decision.
    */
-  const AliHLTReadoutList& ReadoutList() const { return fReadoutList; }
-  
-  /**
-   * Returns the DDL readout list associated with this trigger decision for
-   * modification.
-   */
-  AliHLTReadoutList& ReadoutList() { return fReadoutList; }
+  AliHLTReadoutList ReadoutList() const { return AliHLTReadoutList(fTriggerDomain); }
   
   /**
    * Sets the DDL readout list associated with this trigger decision.
    */
-  void ReadoutList(const AliHLTReadoutList& value) { fReadoutList = value; }
+  void ReadoutList(const AliHLTReadoutList& value)
+  {
+    fTriggerDomain += AliHLTTriggerDomain(value);
+  }
   
   /**
    * Returns the trigger domain associated with this trigger decision.
    */
   const AliHLTTriggerDomain& TriggerDomain() const { return fTriggerDomain; }
+  
+  /**
+   * Returns the trigger domain associated with this trigger decision for editing.
+   */
+  AliHLTTriggerDomain& TriggerDomain() { return fTriggerDomain; }
   
   /**
    * Sets the trigger domain associated with this trigger decision.
@@ -138,7 +139,6 @@ class AliHLTTriggerDecision : public TObject
   
   TString fName; /// The name of the trigger decision. Should be the name of the trigger component that generated it.
   TString fDescription; /// Optional descriptive text giving the reason for the trigger.
-  AliHLTReadoutList fReadoutList; /// The readout DDL list.
   AliHLTTriggerDomain fTriggerDomain;  /// The trigger domain associated with this trigger. i.e. the HLT data blocks to read out.
   
   ClassDef(AliHLTTriggerDecision, 1) // HLT trigger decision object storing information about the readout list, trigger domain and result.

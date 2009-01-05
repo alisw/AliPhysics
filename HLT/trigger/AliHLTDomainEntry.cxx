@@ -291,52 +291,59 @@ void AliHLTDomainEntry::Print(Option_t* option) const
   // Inherited from TObject. Prints the domain entry contents.
   // See header file for more information.
   
+  cout << AsString().Data();
+  TString opt(option);
+  if (opt.Contains("noendl")) return;
+  cout << endl;
+}
+
+
+TString AliHLTDomainEntry::AsString() const
+{
+  // Returns a string representation of the domain entry.
+  // See header file for more information.
+  
+  TString str;
   if (strncmp(&fType.fID[0], kAliHLTAnyDataTypeID, kAliHLTComponentDataTypefIDsize) == 0)
   {
-    for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++) cout << "*";
+    for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++) str += "*";
   }
   else
   {
     for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
     {
       if (fType.fID[i] != '\0')
-        cout << fType.fID[i];
+        str += fType.fID[i];
       else
-        cout << "\\0";
+        str += "\\0";
     }
   }
-  cout << ":";
+  str += ":";
   if (strncmp(&fType.fOrigin[0], kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize) == 0)
   {
-    for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++) cout << "*";
+    for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++) str += "*";
   }
   else
   {
     for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
     {
       if (fType.fOrigin[i] != '\0')
-        cout << fType.fOrigin[i];
+        str += fType.fOrigin[i];
       else
-        cout << "\\0";
+        str += "\\0";
     }
   }
-  cout << ":";
+  str += ":";
   if (fUseSpec)
   {
-    ios_base::fmtflags oldflags = cout.flags();
-    char oldfill = cout.fill();
-    streamsize oldwidth = cout.width();
-    cout << "0x" << hex << setw(8) << setfill('0') << fSpecification;
-    cout.flags(oldflags);
-    cout.fill(oldfill);
-    cout.width(oldwidth);
+    char num[16];
+    sprintf(num, "0x%8.8X", fSpecification);
+    str += num;
   }
   else
   {
-    cout << "**********";
+    str += "**********";
   }
-  TString opt(option);
-  if (opt.Contains("noendl")) return;
-  cout << endl;
+  return str;
 }
 

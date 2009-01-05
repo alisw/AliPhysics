@@ -90,7 +90,8 @@ void AliHLTTrigger::TriggerEvent(bool value)
   // See header file for more details.
   
   if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
-  AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fReadoutList, fTriggerDomain, fDescription);
+  AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fTriggerDomain, fDescription);
+  triggerResult.ReadoutList(fReadoutList);  // Append the readout list if it contains anything.
   fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
   if (fTriggerEventResult == 0) fDecisionMade = true;
 }

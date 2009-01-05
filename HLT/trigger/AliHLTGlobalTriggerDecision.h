@@ -11,6 +11,7 @@
 
 #include "AliHLTTriggerDecision.h"
 #include "TArrayL64.h"
+#include "TObjArray.h"
 
 class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
 {
@@ -24,13 +25,12 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   /**
    * Constructor specifying multiple information fields.
    * \param result  The result of the global trigger decision.
-   * \param readoutList  The DDL readout list for the global trigger decision.
    * \param triggerDomain  The trigger domain for the global trigger decision.
    * \param description  The description of (reason for) the global trigger decision.
    */
   AliHLTGlobalTriggerDecision(
-      bool result, const AliHLTReadoutList& readoutList,
-      const AliHLTTriggerDomain& triggerDomain, const char* description = ""
+      bool result, const AliHLTTriggerDomain& triggerDomain,
+      const char* description = ""
     );
   
   /**
@@ -40,7 +40,9 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   
   /**
    * Inherited from TObject, this prints the contents of the trigger decision.
-   * \param option  Can be "short" which will print the short format.
+   * \param option  Can be "short" which will print the short format or "counters"
+   *    which will print only the counters or "compact" which will print only the
+   *    global information but not the lists of input objects.
    */
   virtual void Print(Option_t* option = "") const;
   
@@ -73,6 +75,37 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   }
   
   /**
+   * Returns the number of other input objects that contributed to this global trigger decision.
+   */
+  Int_t NumberOfInputObjects() const { return fInputObjects.GetEntriesFast(); }
+  
+  /**
+   * Returns the i'th input object in fInputObjects.
+   */
+  const TObject* InputObject(Int_t i) const { return fInputObjects[i]; }
+  
+  /**
+   * Returns the list of other input objects used when making the global HLT trigger decision.
+   */
+  const TObjArray& InputObjects() const { return fInputObjects; }
+  
+  /**
+   * Adds a input object to the list of input objects that were considered when
+   * making this global trigger decision.
+   * \param object  The input object to add.
+   * \note  A copy of the object is made with TObject::Clone() and added.
+   */
+  void AddInputObject(const TObject* object)
+  {
+    fInputObjects.Add(object->Clone());
+  }
+  
+  /**
+   * Sets the counter array.
+   */
+  void SetCounters(const TArrayL64& counters) { fCounters = counters; }
+  
+  /**
    * Returns the event trigger counters associated with the global trigger classes.
    */
   const TArrayL64& Counters() const { return fCounters; }
@@ -80,6 +113,7 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
  private:
   
   TClonesArray fContributingTriggers;  /// The list of contributing trigger decisions from all AliHLTTrigger components that were considered.
+  TObjArray fInputObjects;  /// The list of other input objects.
   TArrayL64 fCounters;  /// Event trigger counters. One counter for each trigger class in the global trigger.
   
   ClassDef(AliHLTGlobalTriggerDecision, 1) // Contains the HLT global trigger decision and information contributing to the decision.

@@ -12,6 +12,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TClonesArray.h"
+#include "AliHLTTriggerMenuSymbol.h"
 #include "AliHLTTriggerMenuItem.h"
 
 /**
@@ -70,6 +71,42 @@ class AliHLTTriggerMenu : public TObject
   void Name(const char* name) { fName = name; }
   
   /**
+   * Returns the number of symbols in the trigger menu.
+   */
+  UInt_t NumberOfSymbols() const { return UInt_t(fSymbols.GetEntriesFast()); }
+  
+  /**
+   * Fetches the i'th trigger menu symbol.
+   */
+  const AliHLTTriggerMenuSymbol* Symbol(UInt_t i) const
+  {
+    if (i >= UInt_t(fSymbols.GetEntriesFast())) return NULL;
+    return static_cast<const AliHLTTriggerMenuSymbol*>( fSymbols.UncheckedAt(Int_t(i)) );
+  }
+  
+  /**
+   * Fetches the i'th trigger menu symbol for editing.
+   */
+  AliHLTTriggerMenuSymbol* Symbol(UInt_t i)
+  {
+    if (i >= UInt_t(fSymbols.GetEntriesFast())) return NULL;
+    return static_cast<AliHLTTriggerMenuSymbol*>( fSymbols.UncheckedAt(Int_t(i)) );
+  }
+  
+  /**
+   * Adds a new symbol to the trigger menu.
+   */
+  void AddSymbol(const AliHLTTriggerMenuSymbol& entry)
+  {
+    new (fSymbols[fSymbols.GetEntriesFast()]) AliHLTTriggerMenuSymbol(entry);
+  }
+  
+  /**
+   * Returns the array of symbols.
+   */
+  const TClonesArray& SymbolArray() const { return fSymbols; }
+  
+  /**
    * Returns the number of items in the trigger menu.
    */
   UInt_t NumberOfItems() const { return UInt_t(fItems.GetEntriesFast()); }
@@ -100,12 +137,18 @@ class AliHLTTriggerMenu : public TObject
     new (fItems[fItems.GetEntriesFast()]) AliHLTTriggerMenuItem(entry);
   }
   
+  /**
+   * Returns the array of menu items.
+   */
+  const TClonesArray& ItemsArray() const { return fItems; }
+  
  private:
   
   TString fName;  /// Name of the trigger menu.
+  TClonesArray fSymbols;  /// List of symbols used in trigger expressions.
   TClonesArray fItems;  /// List of trigger menu items.
   
-  ClassDef(AliHLTTriggerMenu, 1) // Trigger menu for the global HLT trigger.
+  ClassDef(AliHLTTriggerMenu, 2) // Trigger menu for the global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENU_H

@@ -12,6 +12,8 @@
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
 
+class TString;
+
 /**
  * \class AliHLTDomainEntry
  * The AliHLTDomainEntry class is used to store information identifying a particular
@@ -313,6 +315,13 @@ class AliHLTDomainEntry : public TObject
    * \param option  If set to "noendl" then no end of line is printed.
    */
   virtual void Print(Option_t* option = "") const;
+  
+  /**
+   * Converts the domain entry type, origin and specification into a string
+   * representation.
+   * \returns  A string in the format \<type\>:\<origin\>:\<specification\>
+   */
+  TString AsString() const;
   
  private:
   

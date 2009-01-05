@@ -31,6 +31,7 @@ ClassImp(AliHLTTriggerMenu)
 AliHLTTriggerMenu::AliHLTTriggerMenu() :
   TObject(),
   fName("Unknown"),
+  fSymbols(AliHLTTriggerMenuSymbol::Class(), 100),
   fItems(AliHLTTriggerMenuItem::Class(), 100)
 {
   // Default constructor.
@@ -46,10 +47,15 @@ AliHLTTriggerMenu::~AliHLTTriggerMenu()
 AliHLTTriggerMenu::AliHLTTriggerMenu(const AliHLTTriggerMenu& obj) :
   TObject(obj),
   fName(obj.fName),
+  fSymbols(AliHLTTriggerMenuSymbol::Class(), obj.fSymbols.GetEntriesFast()),
   fItems(AliHLTTriggerMenuItem::Class(), obj.fItems.GetEntriesFast())
 {
   // Copy constructor performs a deep copy.
   
+  for (UInt_t i = 0; i < obj.NumberOfSymbols(); i++)
+  {
+    AddSymbol(*obj.Symbol(i));
+  }
   for (UInt_t i = 0; i < obj.NumberOfItems(); i++)
   {
     AddItem(*obj.Item(i));
@@ -66,6 +72,10 @@ AliHLTTriggerMenu& AliHLTTriggerMenu::operator = (const AliHLTTriggerMenu& obj)
     TObject::operator = (obj);
     fName = obj.fName;
     fItems.Clear();
+    for (UInt_t i = 0; i < obj.NumberOfSymbols(); i++)
+    {
+      AddSymbol(*obj.Symbol(i));
+    }
     for (UInt_t i = 0; i < obj.NumberOfItems(); i++)
     {
       AddItem(*obj.Item(i));
@@ -88,14 +98,35 @@ void AliHLTTriggerMenu::Print(Option_t* option) const
   }
   cout << endl;
   cout << setw(10) << "Prescalar" <<  " | "
-       << setw(30) << "Trigger condision" << " | "
-       << setw(30) << "Domain merge expression" << setw(0) << endl;
+       << setw(60) << "Trigger condition" << " | "
+       << setw(60) << "Domain merge expression" << setw(0) << endl;
   cout << setfill('-') << setw(10) << "-" <<  "-+-"
-       << setw(30) << "-" << "-+-"
-       << setw(30) << "-" << setw(0) << endl;
+       << setw(60) << "-" << "-+-"
+       << setw(60) << "-" << setw(0) << setfill(' ') << endl;
   for (UInt_t i = 0; i < NumberOfItems(); i++)
   {
     Item(i)->Print("compact");
   }
+  if (NumberOfItems() == 0) cout << "(none)" << endl;
+  cout << "Symbol list:" << endl;
+  cout << setw(15) << "Name"
+       << " | " << setw(20) << "Data type"
+       << " | " << setw(24) << "Block type & spec"
+       << " | " << setw(20) << "Class name"
+       << " | " << setw(25) << "Assigned value"
+       << " | " << setw(25) << "Default value"
+       << setw(0) << endl;
+  cout << setw(15) << setfill('-') << "-"
+       << "-+-" << setw(20) << "-"
+       << "-+-" << setw(24) << "-"
+       << "-+-" << setw(20) << "-"
+       << "-+-" << setw(25) << "-"
+       << "-+-" << setw(25) << "-"
+       << setw(0) << setfill(' ') << endl;
+  for (UInt_t i = 0; i < NumberOfSymbols(); i++)
+  {
+    Symbol(i)->Print("compact");
+  }
+  if (NumberOfSymbols() == 0) cout << "(none)" << endl;
 }
 

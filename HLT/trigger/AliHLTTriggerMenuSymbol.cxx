@@ -14,54 +14,62 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/// @file   AliHLTTriggerMenuItem.cxx
+/// @file   AliHLTTriggerMenuSymbol.cxx
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   19 Dec 2008
-/// @brief  Implementation of the AliHLTTriggerMenuItem class.
+/// @date   28 Dec 2008
+/// @brief  Implementation of the AliHLTTriggerMenuSymbol class.
 ///
-/// The AliHLTTriggerMenuItem contains information about a entry in the global
-/// HLT trigger menu.
+/// The AliHLTTriggerMenuSymbol contains information about a symbol used in the
+/// global HLT trigger menu.
 
-#include "AliHLTTriggerMenuItem.h"
+#include "AliHLTTriggerMenuSymbol.h"
 #include "Riostream.h"
 
-ClassImp(AliHLTTriggerMenuItem)
+ClassImp(AliHLTTriggerMenuSymbol)
 
 
-AliHLTTriggerMenuItem::AliHLTTriggerMenuItem() :
+AliHLTTriggerMenuSymbol::AliHLTTriggerMenuSymbol() :
   TObject(),
-  fDescription(),
-  fConditionExpr(),
-  fDomainExpr(),
-  fPrescalar(0)
+  fName(),
+  fType(),
+  fBlockType(kAliHLTAnyDataType),
+  fClass(),
+  fAssignExpr(),
+  fDefaultValue()
 {
   // Default constructor.
 }
 
 
-AliHLTTriggerMenuItem::~AliHLTTriggerMenuItem()
+AliHLTTriggerMenuSymbol::~AliHLTTriggerMenuSymbol()
 {
   // Default destructor.
 }
 
 
-void AliHLTTriggerMenuItem::Print(Option_t* option) const
+void AliHLTTriggerMenuSymbol::Print(Option_t* option) const
 {
   // Prints the contents of the trigger menu item.
   
   TString opt = option;
   if (opt.Contains("compact"))
   {
-    cout << setw(10) << fPrescalar << " | "
-         << setw(60) << fConditionExpr.Data() << " | "
-         << setw(60) << fDomainExpr.Data() << setw(0) << endl;
+    cout << setw(15) << fName << " | "
+         << setw(20) << fType << " | ";
+    fBlockType.Print("noendl");
+    cout << " | " << setw(20) << fClass.Data()
+         << " | " << setw(25) << fAssignExpr.Data()
+         << " | " << setw(25) << fDefaultValue.Data()
+         << setw(0) << endl;
   }
   else
   {
-    cout << "                    Description = " << fDescription.Data() << endl;
-    cout << "   Trigger condition expression = " << fConditionExpr.Data() << endl;
-    cout << "Trigger domain merge expression = " << fDomainExpr.Data() << endl;
-    cout << "                     Pre-scalar = " << fPrescalar << endl;
+    cout << "                    Name = " << fName.Data() << endl;
+    cout << "               Data type = " << fType.Data() << endl;
+    cout << "              Block type = "; fBlockType.Print();
+    cout << "              Class type = " << fClass.Data() << endl;
+    cout << "   Assignment expression = " << fAssignExpr.Data() << endl;
+    cout << "Default value expression = " << fDefaultValue.Data() << endl;
   }
 }
 
