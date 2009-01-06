@@ -74,6 +74,8 @@ public:
   static void FillResiduals(const AliExternalTrackParam *t,
 			   Double_t *p, Double_t *cov, 
                            UShort_t id, Bool_t updated=kTRUE);
+  static void FillResiduals(const AliExternalTrackParam *t,
+                            const AliCluster *c, Bool_t updated=kTRUE);
   static void SetFillResiduals(AliRecoParam::EventSpecie_t es, Bool_t flag=kTRUE) { fFillResiduals=flag; fEventSpecie = es ;}
   static void SetResidualsArray(TObjArray **arr) { fResiduals=arr; }
 

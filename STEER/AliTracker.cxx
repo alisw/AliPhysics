@@ -24,6 +24,7 @@
 #include <TMath.h>
 #include <TH1F.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 
 #include "AliMagF.h"
 #include "AliTracker.h"
@@ -426,3 +427,42 @@ void AliTracker::FillResiduals(const AliExternalTrackParam *t,
 
 }
 
+void AliTracker::FillResiduals(const AliExternalTrackParam *t,
+                               const AliCluster *c, Bool_t /*updated*/) {
+  //
+  // This function fills the histograms of residuals 
+  // The array of these histos is external for this AliTracker class.
+  // Normally, this array belong to AliGlobalQADataMaker class.  
+  // 
+  // For the moment, the residuals are absolute !
+  //
+
+  if (!fFillResiduals) return; 
+  if (!fResiduals) return; 
+
+  UShort_t id=c->GetVolumeId();
+  const TGeoHMatrix *matrixT2L=AliGeomManager::GetTracking2LocalMatrix(id);
+
+  // Position of the cluster in the tracking c.s.
+  Double_t clsTrk[3]={c->GetX(), c->GetY(), c->GetZ()};
+  // Position of the cluster in the local module c.s.
+  Double_t clsLoc[3]={0.,0.,0.};
+  matrixT2L->LocalToMaster(clsTrk,clsLoc);
+
+
+  // Position of the intersection point in the tracking c.s.
+  Double_t trkTrk[3]={t->GetX(),t->GetY(),t->GetZ()};
+  // Position of the intersection point in the local module c.s.
+  Double_t trkLoc[3]={0.,0.,0.};
+  matrixT2L->LocalToMaster(trkTrk,trkLoc);
+
+  Double_t residuals[2]={trkLoc[0]-clsLoc[0], trkLoc[2]-clsLoc[2]};
+
+  TH1F *h=0;
+  AliGeomManager::ELayerID layer=AliGeomManager::VolUIDToLayer(id);
+  h=(TH1F*)fResiduals[fEventSpecie]->At(2*layer-2);
+  h->Fill(residuals[0]);
+  h=(TH1F*)fResiduals[fEventSpecie]->At(2*layer-1);
+  h->Fill(residuals[1]);
+
+}
