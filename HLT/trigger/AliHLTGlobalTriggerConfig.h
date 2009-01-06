@@ -34,6 +34,13 @@ class AliHLTGlobalTriggerConfig
   virtual ~AliHLTGlobalTriggerConfig();
   
   /**
+   * Inherited from TObject, this prints the contents of the current trigger menu
+   * being manipulated. Specifically fgMenu.
+   * \param option  This is passed on to the printing routine of the trigger menu.
+   */
+  virtual void Print(Option_t* option = "") const;
+  
+  /**
    * Creates a new trigger menu. If a trigger menu is already active then the existing
    * one is replaced with the new menu.
    * \param name  The name of the new trigger menu.

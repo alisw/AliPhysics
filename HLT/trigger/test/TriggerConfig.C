@@ -6,6 +6,6 @@ void TriggerConfig()
 	config.AddItem("true", "domainAll", 5, "Trigger Type: pass through");
 	config.AddItem("Trigger1", "Trigger1 | Trigger2", 3, "Trigger Type: 1");
 	config.AddItem("Trigger2", "Trigger2", 0, "Trigger Type: 2");
-	config.Menu()->Print();
+	config.Print();
 }
 

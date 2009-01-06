@@ -24,6 +24,7 @@
 
 #include "AliHLTGlobalTriggerConfig.h"
 #include "AliHLTTriggerMenu.h"
+#include "Riostream.h"
 
 ClassImp(AliHLTGlobalTriggerConfig)
 
@@ -204,5 +205,20 @@ void AliHLTGlobalTriggerConfig::AddItem(
   entry.MergeExpression(domainExpr);
   if (description != NULL) entry.Description(description);
   fgMenu->AddItem(entry);
+}
+
+
+void AliHLTGlobalTriggerConfig::Print(Option_t* option) const
+{
+  // Prints the contents of the current trigger menu being manipulated.
+  
+  if (fgMenu != NULL)
+  {
+    fgMenu->Print(option);
+  }
+  else
+  {
+    cout << "No trigger menu currently being configured, it is empty." << endl;
+  }
 }
 
