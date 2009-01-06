@@ -22,6 +22,8 @@
 /// The trigger domain class is the set of HLT raw data block types that should
 /// be readout and sent to HLTOUT.
 
+#include <stdlib.h>
+
 #include "AliHLTTriggerDomain.h"
 #include "AliHLTDomainEntry.h"
 #include "AliHLTReadoutList.h"
