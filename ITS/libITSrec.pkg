@@ -19,6 +19,8 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexerIons.cxx \
 		AliITSVertexerCosmics.cxx \
 		AliITSVertexer3D.cxx \
+		AliITSTracklPairs.cxx \
+		AliITSSortTrkl.cxx \
 		AliITSVertexerZ.cxx \
 		AliITSVertexerFast.cxx \
 		AliITSVertexerFixed.cxx \
