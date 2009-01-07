@@ -17,7 +17,7 @@
 //
 // Class for AOD reconstructed heavy-flavour cascades
 //
-// Author: X-M. Zhang, zhangxm@ccnu.iop.edu.cn
+// Author: X-M. Zhang, zhangxm@iop.ccnu.edu.cn
 /////////////////////////////////////////////////////////////
 
 #include <TVector3.h>
