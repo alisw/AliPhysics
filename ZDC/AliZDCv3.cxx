@@ -476,14 +476,14 @@ void AliZDCv3::CreateBeamLine()
   // Volume: ZDCC
   TGeoVolume *pZDCC = gGeoManager->GetVolume("ZDCC");
   
-  conpar[0] = (90.1-0.95-0.26)/2.;
+  conpar[0] = (90.1-0.95-0.26-0.0085)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.6/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.8/2.;
   new TGeoCone("QCLext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
   
-  conpar[0] = (90.1-0.95-0.26)/2.;
+  conpar[0] = (90.1-0.95-0.26-0.0085)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.2/2.;
   conpar[3] = 0.0/2.;
@@ -500,7 +500,7 @@ void AliZDCv3::CreateBeamLine()
   pQCLext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) -conpar[0]-0.95-zd1);
-  printf("	Trousers from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.95-zd1);
+  printf("	Recombination chamber from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.95-zd1);
   //
   pZDCC->AddNode(pQCLext, 1, tr1c);
   // Inner trousers
