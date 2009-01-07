@@ -34,6 +34,7 @@ class AliTrackPoint : public TObject {
   void     SetVolumeID(UShort_t volid) { fVolumeID = volid; }
   void     SetCharge(Float_t charge) { fCharge = charge; }
   void     SetDriftTime(Float_t time) { fDriftTime = time; }
+  void     SetExtra(Bool_t flag=kTRUE) { fIsExtra = flag; }
 
   Float_t  GetX() const { return fX; }
   Float_t  GetY() const { return fY; }
@@ -43,6 +44,7 @@ class AliTrackPoint : public TObject {
   UShort_t GetVolumeID() const { return fVolumeID; }
   Float_t  GetCharge() const { return fCharge; }
   Float_t  GetDriftTime() const { return fDriftTime;}
+  Bool_t   IsExtra() const { return fIsExtra;}
 
   Float_t  GetResidual(const AliTrackPoint &p, Bool_t weighted = kFALSE) const;
   Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
@@ -64,9 +66,10 @@ class AliTrackPoint : public TObject {
   Float_t  fCharge;   // Cluster charge in arbitrary units
   Float_t  fDriftTime;// Drift time in SDD (in ns)
   Float_t  fCov[6];   // Cov matrix
+  Bool_t   fIsExtra;  // attached by tracker but not used in fit
   UShort_t fVolumeID; // Volume ID
 
-  ClassDef(AliTrackPoint,4)
+  ClassDef(AliTrackPoint,5)
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,6 +103,7 @@ class AliTrackPointArray : public TObject {
   const Float_t*  GetZ() const { return &fZ[0]; }
   const Float_t*  GetCharge() const { return &fCharge[0]; }
   const Float_t*  GetDriftTime() const { return &fDriftTime[0]; }
+  const Bool_t*   GetExtra() const { return &fIsExtra[0]; }
   const Float_t*  GetCov() const { return &fCov[0]; }
   const UShort_t* GetVolumeID() const { return &fVolumeID[0]; }
 
@@ -116,11 +120,13 @@ class AliTrackPointArray : public TObject {
   Float_t   *fZ;         //[fNPoints] Array with space point Z coordinates
   Float_t   *fCharge;    //[fNPoints] Array with clusters charge
   Float_t   *fDriftTime; //[fNPoints] Array with drift times
+  Bool_t    *fIsExtra;   //[fNPoints] Array with extra flags
   Int_t     fSize;       // Size of array with cov matrices = 6*N of points
   Float_t   *fCov;       //[fSize] Array with space point coordinates cov matrix
   UShort_t  *fVolumeID;  //[fNPoints] Array of space point volume IDs
 
-  ClassDef(AliTrackPointArray,4)
+  ClassDef(AliTrackPointArray,5)
 };
 
 #endif
+

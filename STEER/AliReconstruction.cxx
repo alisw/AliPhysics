@@ -2723,6 +2723,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	    } 
 	    isp2++;
 	    if (!isvalid) continue;
+	    if (iDet==0 && (isp-1)>=6) p.SetExtra();
 	    sp->AddPoint(isptrack,&p); isptrack++;
 	  }
 	}	
