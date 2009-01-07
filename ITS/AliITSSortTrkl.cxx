@@ -190,15 +190,19 @@ Int_t AliITSSortTrkl::FindClusters(){
 void AliITSSortTrkl::Cleanup(){
   // empty arrays are eliminated, the others are sorted according
   // to cluster multiplicity
-  Int_t siz[fIndex-1];
-  Int_t index[fIndex-1];
+  Int_t *siz = new Int_t[fIndex-1];
+  Int_t *index = new Int_t[fIndex-1];
   fNoClus=0;
   for(Int_t i=0; i<fIndex-1;i++){
     Int_t *v=fClustersTmp[i];
     if(v[0]>0)fNoClus++;
     siz[i]=v[0];
   }
-  if(fNoClus == 0)return;
+  if(fNoClus == 0){
+    delete []siz;
+    delete [] index;
+    return;
+  }
   TMath::Sort(fIndex-1,siz,index);
   fClusters = new Int_t* [fNoClus];
   fSize = new Int_t [fNoClus];
@@ -211,6 +215,8 @@ void AliITSSortTrkl::Cleanup(){
     vext[0]=curind;
     for(Int_t j=1;j<fSize[i];j++)vext[j]=v[j];
   }
+  delete []siz;
+  delete [] index;
 }
 
 //______________________________________________________________________
@@ -252,9 +258,9 @@ void AliITSSortTrkl::SortAndClean(Int_t numb, Int_t *arr, Int_t& numb2){
   // of elements are eliminated. numb2 is the number of remaining elements
   // after cleanup.
   if(numb<=0)return;
-  Int_t index[numb];
+  Int_t* index = new Int_t[numb];
   TMath::Sort(numb,arr,index,kFALSE);
-  Int_t tmp[numb];
+  Int_t* tmp = new Int_t[numb];
   numb2 = 0;
   tmp[0] = arr[index[0]];
   for(Int_t i=1;i<numb;i++){
@@ -272,6 +278,8 @@ void AliITSSortTrkl::SortAndClean(Int_t numb, Int_t *arr, Int_t& numb2){
       arr[i]=0;
     }
   }
+  delete [] index;
+  delete [] tmp;
 }
 
 //______________________________________________________________________

@@ -51,7 +51,7 @@ class AliITSSortTrkl : public TObject {
   void DeleteClustersTmp();
   void PrepareClustersTmp();
   void Clustering(Int_t i, Int_t *v);
-  Int_t* AliITSSortTrkl::FindLabels(Int_t *v, Int_t dimmax, Int_t& dim) const;
+  Int_t* FindLabels(Int_t *v, Int_t dimmax, Int_t& dim) const;
 
   const Int_t fkSize;         // Maximum number of tracklet pairs
   Int_t fIndex;               // Total number of tracklet pairs (<=fkSize)
