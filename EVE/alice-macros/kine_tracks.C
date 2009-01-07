@@ -30,8 +30,17 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   TEveTrackList* cont = new TEveTrackList("Kine Tracks");
   cont->SetMainColor(3);
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  // !!! Watch the '-', apparently different sign convention then for ESD.
-  rnrStyle->SetMagField( -0.1*gAlice->Field()->SolenoidField() );
+  Float_t mag_field = 0;
+  if (gAlice && gAlice->Field())
+  {
+    // !!! Watch the '-', apparently different sign convention then for ESD.
+    mag_field = -0.1*gAlice->Field()->SolenoidField();
+  }
+  else
+  {
+    Warning("kine_tracks.C", "Could not determine magnetic field from gAlice - using zero.");
+  }
+  rnrStyle->SetMagField(mag_field);
 
   gEve->AddElement(cont);
   Int_t count = 0;
