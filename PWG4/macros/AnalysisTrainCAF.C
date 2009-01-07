@@ -20,7 +20,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
     Int_t iESDfilter     = 1;  // Only active if iAODanalysis=0
     Int_t iJETAN         = 1;
     Int_t iJETANAOD      = 0;
-    Int_t iJETANMC       = 0;
+    Int_t iJETANMC       = 1;
     Int_t iDIJETAN       = 0;
     Int_t iPWG4SPECTRUM  = 1;
     Int_t iPWG4UE        = 0;
@@ -35,10 +35,11 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
     if (iESDfilter) iAODhandler=1;
 
     // Dataset from CAF
-    TString dataset = "/PWG4/arian/jetjet15-50";
-    // CKB quick hack
+    //    TString dataset = "/PWG4/kleinb/LHC08v_jetjet15-50";
+    TString dataset = "/PWG4/kleinb/LHC08r_jetjet50";
+    // CKB quick hack for local analysis
     gROOT->LoadMacro("CreateESDChain.C");
-    TChain *chain = CreateESDChain("jetjet15-50.txt",10);
+    TChain *chain = CreateESDChain("jetjet15-50.txt",1000);
 
 
     printf("==================================================================\n");
@@ -69,11 +70,11 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
 
 
     // Reset user processes if CAF if not responding anymore
-    //TProof::Reset("lxb6046"); 
+    // TProof::Reset("alicecaf"); 
     // One may enable a different ROOT version on CAF
 
-    const char* proofNode = "lxb6046";
-    //    const char* proofNode = "kleinb@localhost";
+    //    const char* proofNode = "alicecaf";
+    const char* proofNode = "localhost";
 
 
 
@@ -81,7 +82,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
     // Connect to proof
     if(bPROOF){
       TProof::Mgr(proofNode)->ShowROOTVersions();
-      TProof::Mgr(proofNode)->SetROOTVersion("v5-21-01-alice_dbg");
+      //      TProof::Mgr(proofNode)->SetROOTVersion("v5-21-01-alice_dbg");
       TProof::Open(proofNode); 
 
       // Clear packages if changing ROOT version on CAF or local
@@ -162,10 +163,9 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
     if (iAODhandler) {
        // AOD output handler
        AliAODHandler* aodHandler   = new AliAODHandler();
-       mgr->SetOutputEventHandler(aodHandler);
+       aodHandler->SetFillAOD(kFALSE);
+       mgr->SetOutputEventHandler(aodHandler);       
        aodHandler->SetOutputFileName(Form("AliAODs_CKB_%07d-%07d.root",nOffset,nOffset+nEvents));
-       //       aodHandler->SetSelectAll(kFALSE);
-       //       aodHandler->SetCreateNonStandardAOD();
        cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
 				       AliAnalysisManager::kOutputContainer, "default");
        cout_aod->SetSpecialOutput();
@@ -211,7 +211,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
        mgr->AddTask(jetana);
        // Output histograms list for jet analysis                       
        AliAnalysisDataContainer *cout_jet = mgr->CreateContainer("jethist", TList::Class(),
-							      AliAnalysisManager::kOutputContainer, "jethist.root");
+							      AliAnalysisManager::kOutputContainer,"jethist.root");
        // Dummy AOD output container for jet analysis (no client yet)
        c_aodjet = mgr->CreateContainer("cAODjet", TTree::Class(),
                            AliAnalysisManager::kExchangeContainer);
@@ -285,7 +285,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
       //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
       pwg4spec->SetDebugLevel(11); 
       //      pwg4spec->SetBranchRec("jetsMC"); 
-      //      pwg4spec->SetBranchGen("jetsAOD"); 
+      //      pwg4spec->SetBranchGen("jetsMC"); 
       mgr->AddTask(pwg4spec);
 
       AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer, "histos_pwg4spec.root");
@@ -296,8 +296,6 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
       mgr->ConnectInput  (pwg4spec,  0, cinput);    
       // mgr->ConnectInput  (pwg4spec,  0, c_aodjet);    
       mgr->ConnectOutput (pwg4spec,  0, c_aodSpec );
-      //       mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
-       
       mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
     }   
 

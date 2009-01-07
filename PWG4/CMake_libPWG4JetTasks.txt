@@ -1,7 +1,11 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-       JetTasks/AliAnalysisTaskUE.cxx JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnaESDSpectraQA.cxx
+       JetTasks/AliAnalysisTaskUE.cxx
+       JetTasks/AliAnalysisTaskJetSpectrum.cxx
+       JetTasks/AliAnalysisHelperJetTasks.cxx
+       JetTasks/AliAnaESDSpectraQA.cxx
+       JetTasks/AliJetSpectrumUnfolding.cxx
 )
 
 # fill list of header files from list of source files
