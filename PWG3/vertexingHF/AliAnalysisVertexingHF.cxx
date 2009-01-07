@@ -163,7 +163,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     printf("ERROR: no aodVerticesHFTClArr");
     return;
   }
-  if(fD0toKpi && !aodD0toKpiTClArr) {
+  if((fD0toKpi || fDstar) && !aodD0toKpiTClArr) {
     printf("ERROR: no aodD0toKpiTClArr");
     return;
   }
@@ -189,7 +189,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   aodVerticesHFTClArr->Delete();
   iVerticesHF = aodVerticesHFTClArr->GetEntriesFast();
   TClonesArray &verticesHFRef = *aodVerticesHFTClArr;
-  if(fD0toKpi)   {
+  if(fD0toKpi || fDstar)   {
     aodD0toKpiTClArr->Delete();
     iD0toKpi = aodD0toKpiTClArr->GetEntriesFast();
   }

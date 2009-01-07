@@ -101,7 +101,7 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
   fVerticesHFTClArr->SetName("VerticesHF");
   AddAODBranch("TClonesArray", &fVerticesHFTClArr);
 
-  if(fVHF->GetD0toKpi()) {
+  if(fVHF->GetD0toKpi() || fVHF->GetDstar()) {
     fD0toKpiTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fD0toKpiTClArr->SetName("D0toKpi");
     AddAODBranch("TClonesArray", &fD0toKpiTClArr);
