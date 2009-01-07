@@ -9,7 +9,7 @@
 // (D*->D0pi, ...)
 // The convention is: prong 0 is the bachelor, prong 1 is the "V0"
 //
-// Author: X-M. Zhang, zhangxm@ccnu.iop.edu.cn
+// Author: X-M. Zhang, zhangxm@iop.ccnu.edu.cn
 //***********************************************************
 
 #include <TRef.h>
