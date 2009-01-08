@@ -72,8 +72,8 @@ AliTRDrecoParam::AliTRDrecoParam()
   SetVertexConstrained();
   SetImproveTracklets(kFALSE);
 
-  fSysCovMatrix[0] = 1.; // y direction (1 cm)
-  fSysCovMatrix[1] = 1.; // z direction (1 cm)
+  fSysCovMatrix[0] = 0.; // y direction (1 cm)
+  fSysCovMatrix[1] = 0.; // z direction (1 cm)
   fSysCovMatrix[2] = 0.; // snp
   fSysCovMatrix[3] = 0.; // tgl
   fSysCovMatrix[4] = 0.; // 1/pt
@@ -164,6 +164,8 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
 
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
+  par->fSysCovMatrix[0] = 1.; // y direction (1 cm)
+  par->fSysCovMatrix[1] = 1.; // z direction (1 cm)
   par->SetVertexConstrained(kFALSE);
   par->fkChi2YSlope       = 0.11853;
   par->fkChi2ZSlope       = 0.04527;

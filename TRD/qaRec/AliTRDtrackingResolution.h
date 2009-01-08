@@ -36,8 +36,8 @@ public:
     ,kTrackletYResolution    = 4/*6*/
     ,kTrackletZResolution    = 5/*6*/
     ,kTrackletAngleResolution= 6/*7*/
-//     ,kTrackRYResolution       = 8 // Riemann track model
-//     ,kTrackRZResolution       = 9
+    ,kTrackYResolution       = 7 // Kalman Y resolution
+    ,kTrackZResolution       = 8 // Kalman Z resolution
 //     ,kTrackRAngleResolution   = 10
 //     ,kTrackKYResolution       = 11 // Kalman track model
 //     ,kTrackKZResolution       = 12

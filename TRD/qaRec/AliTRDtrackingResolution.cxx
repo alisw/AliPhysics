@@ -423,7 +423,18 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     // retrive the track position and direction within the chamber
     det = fTracklet->GetDetector();
     x0  = fTracklet->GetX0();
+    dx = 0.;//radial shift with respect to the MC reference (radial position of the pad plane)
     if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, s)) continue; 
+    Float_t yt = y0 - dx*dydx;
+    Float_t zt = z0 - dx*dzdx;
+
+    // calculate position of Kalman fit at reference radial position
+    Float_t yr = fTracklet->GetYref(0) - (fTracklet->GetX0() - x0 + dx)*dydx;
+    Float_t zr = fTracklet->GetZref(0) - (fTracklet->GetX0() - x0 + dx)*dzdx;
+    // Fill Histograms
+    ((TH2I*)fContainer->At(kTrackYResolution))->Fill(dydx, yt-yr);
+    ((TH2I*)fContainer->At(kTrackZResolution))->Fill(dzdx, zt-zr);
+
 
     // recalculate tracklet based on the MC info
     AliTRDseedV1 tt(*fTracklet);
@@ -432,9 +443,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     if(!tt.Fit(kTRUE)) continue;
     //tt.Update();
 
-    dx = 0.;//x0 - tt.GetXref();
-    Float_t yt = y0 - dx*dydx;
-    Float_t yf = tt.GetYfit(0) - (fTracklet->GetX0() - x0)*tt.GetYfit(1);
+    Float_t yf = tt.GetYfit(0) - (fTracklet->GetX0() - x0 + dx)*dydx;
     dy = yf-yt;
     Float_t dphi   = TMath::ATan(tt.GetYfit(1)) - TMath::ATan(dydx);
     Float_t dz = 100.;
@@ -472,12 +481,14 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     Float_t zr0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
     Float_t tilt = fTracklet->GetTilt();
 
+    Double_t x,y;
     AliTRDcluster *c = 0x0;
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
-      Float_t xc = c->GetX();
-      Float_t yc = c->GetY();
+      AliTRDseedV1::GetClusterXY(c,x,y);
+      Float_t xc = x;
+      Float_t yc = y;
       Float_t zc = c->GetZ();
       dx = x0 - xc; 
       Float_t yt = y0 - dx*dydx;
@@ -608,6 +619,10 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
+    return kTRUE;
+  case kTrackYResolution:
+    return kTRUE;
+  case kTrackZResolution:
     return kTRUE;
   default:
     AliInfo(Form("Reference plot [%d] not implemented yet", ifig));
@@ -930,7 +945,7 @@ TObjArray* AliTRDtrackingResolution::Histos()
 {
   if(fContainer) return fContainer;
 
-  fContainer  = new TObjArray(7);
+  fContainer  = new TObjArray(9);
   //fContainer->SetOwner(kTRUE);
 
   TH1 *h = 0x0;
@@ -963,43 +978,62 @@ TObjArray* AliTRDtrackingResolution::Histos()
 
 
   // Resolution histos
-  if(HasMCdata()){
-    // cluster y resolution [0]
-    if(!(h = (TH2I*)gROOT->FindObject("fYClMC"))){
-      h = new TH2I("fYClMC", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5);
-      h->GetXaxis()->SetTitle("tg(#phi)");
-      h->GetYaxis()->SetTitle("#Delta y [cm]");
-      h->GetZaxis()->SetTitle("entries");
-    } else h->Reset();
-    fContainer->AddAt(h, kClusterResolution);
+  if(!HasMCdata()) return fContainer;
 
-    // tracklet y resolution [0]
-    if(!(h = (TH2I*)gROOT->FindObject("fYTrkltMC"))){
-      h = new TH2I("fYTrkltMC", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
-      h->GetXaxis()->SetTitle("tg(#phi)");
-      h->GetYaxis()->SetTitle("#Delta y [cm]");
-      h->GetZaxis()->SetTitle("entries");
-    } else h->Reset();
-    fContainer->AddAt(h, kTrackletYResolution);
+  // cluster y resolution [0]
+  if(!(h = (TH2I*)gROOT->FindObject("fYClMC"))){
+    h = new TH2I("fYClMC", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kClusterResolution);
 
-    // tracklet y resolution [0]
-    if(!(h = (TH2I*)gROOT->FindObject("fZTrkltMC"))){
-      h = new TH2I("fZTrkltMC", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
-      h->GetXaxis()->SetTitle("tg(#theta)");
-      h->GetYaxis()->SetTitle("#Delta z [cm]");
-      h->GetZaxis()->SetTitle("entries");
-    } else h->Reset();
-    fContainer->AddAt(h, kTrackletZResolution);
+  // tracklet y resolution [0]
+  if(!(h = (TH2I*)gROOT->FindObject("fYTrkltMC"))){
+    h = new TH2I("fYTrkltMC", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackletYResolution);
 
-    // tracklet angular resolution [1]
-    if(!(h = (TH2I*)gROOT->FindObject("fPhiTrkltMC"))){
-      h = new TH2I("fPhiTrkltMC", "Tracklet Resolution (Angular)", 31, -.48, .48, 100, -10., 10.);
-      h->GetXaxis()->SetTitle("tg(#phi)");
-      h->GetYaxis()->SetTitle("#Delta #phi [deg]");
-      h->GetZaxis()->SetTitle("entries");
-    } else h->Reset();
-    fContainer->AddAt(h, kTrackletAngleResolution);
-  }
+  // tracklet y resolution [0]
+  if(!(h = (TH2I*)gROOT->FindObject("fZTrkltMC"))){
+    h = new TH2I("fZTrkltMC", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackletZResolution);
+
+  // tracklet angular resolution [1]
+  if(!(h = (TH2I*)gROOT->FindObject("fPhiTrkltMC"))){
+    h = new TH2I("fPhiTrkltMC", "Tracklet Resolution (Angular)", 31, -.48, .48, 100, -10., 10.);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta #phi [deg]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackletAngleResolution);
+
+  // Kalman track y resolution
+  if(!(h = (TH2I*)gROOT->FindObject("fYTrkMC"))){
+    h = new TH2I("fYTrkMC", "Kalman Track Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackYResolution);
+
+  // Kalman track Z resolution
+  if(!(h = (TH2I*)gROOT->FindObject("fZTrkMC"))){
+    h = new TH2I("fZTrkMC", "Kalman Track Resolution (Z)", 20, -1., 1., 100, -1.5, 1.5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackZResolution);
+
   return fContainer;
 }
 

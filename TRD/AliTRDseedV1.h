@@ -61,7 +61,7 @@ class AliTRDseedV1 : public AliTRDseed
               AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      CookdEdx(Int_t nslices);
-  Bool_t    Fit(Bool_t tilt=kTRUE);
+  Bool_t    Fit(Bool_t tilt=kTRUE, Int_t errors = 2);
 
   Bool_t    Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
@@ -71,7 +71,9 @@ class AliTRDseedV1 : public AliTRDseed
 
   inline Float_t   GetChi2Z(const Float_t z = 999.) const;
   inline Float_t   GetChi2Y(const Float_t y = 999.) const;
+  static void      GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y);
   void      GetCovAt(Double_t x, Double_t *cov) const;
+  void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
   void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov[0], 3*sizeof(Double_t));}
   Double_t* GetCrossXYZ()            { return &fCross[0];}
   Double_t  GetCrossSz2() const      { return fCross[3];}
@@ -79,6 +81,7 @@ class AliTRDseedV1 : public AliTRDseed
   Float_t*  GetdEdx()                { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic) const;
   Int_t     GetDetector() const      { return fDet;}
+  Float_t   GetExB() const           { return fExB;}
   Double_t  GetMomentum() const      { return fMom;}
   Int_t     GetN() const             { return fN2;}
   Float_t   GetQuality(Bool_t kZcorr) const;
@@ -104,9 +107,10 @@ class AliTRDseedV1 : public AliTRDseed
   void      SetSnp(Double_t snp)     { fSnp = snp;}
   void      SetTgl(Double_t tgl)     { fTgl = tgl;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
-protected:
 
+protected:
   void Copy(TObject &ref) const;
+  void SetExB();
 
 private:
   const AliTRDReconstructor *fReconstructor;//! local reconstructor
@@ -118,12 +122,14 @@ private:
   Float_t          fTgl;                    // tg of track with respect to x direction in XZ plane 	
   Float_t          fdX;                     // length of time bin
   Float_t          fXref;                   // average radial position of clusters
+  Float_t          fExB;                    // tg(a_L) for the tracklet reagion
   Float_t          fdEdx[knSlices];         // dE/dx measurements for tracklet
   Double_t         fCross[4];               // spatial parameters of the pad row crossing
   Double_t         fRefCov[3];              // covariance matrix of the track in the yz plane
+  Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
   Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
 
-  ClassDef(AliTRDseedV1, 3)                 //  New TRD seed 
+  ClassDef(AliTRDseedV1, 4)                 //  New TRD seed 
 
 };
 
