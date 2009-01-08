@@ -326,6 +326,17 @@ void  AliExternalComparison::SetDefaultCuts(){
   //
 }
 
+void AliExternalComparison::SetParameterRange(Int_t param, Float_t min, Float_t max, Int_t nbins){
+  //
+  //
+  // 
+  if (!fRangeMatrix) SetDefaultRange();
+  TMatrixD & mat = *fRangeMatrix; 
+  if (param<0) return;
+  if (param>6) return;
+  mat(param,0)=min;      mat(param,1)=max;   mat(param,2)=nbins; 
+}
+
 void AliExternalComparison::SetResolRange(Int_t param, Float_t min, Float_t max, Int_t nbins){
   //
   //
