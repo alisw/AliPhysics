@@ -53,7 +53,8 @@ AliFlowEventSimpleMaker::~AliFlowEventSimpleMaker()
 AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts)
 {
   //fills the event from a TTree of kinematic.root files
-  Bool_t  bDoubleLoop = kFALSE; 
+  Bool_t  bMultipleLoop = kFALSE; 
+  Int_t iLoops = 2;
 
   //track cut values
   Double_t dPtMaxInt  = intCuts->GetPtMax();
@@ -80,7 +81,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
   //cerr<<pEvent<<" pEvent "<<endl;
   
-  Int_t iN = iNumberOfInputTracks;
+  Int_t iN = iNumberOfInputTracks; // additional variable to artificially fix the number of tracks
   //  Int_t iN = 576; //multiplicity for chi=1.5
   //  Int_t iN = 256; //multiplicity for chi=1
   //  Int_t iN = 164; //multiplicity for chi=0.8
@@ -89,87 +90,101 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   Int_t iSelParticlesDiff = 0;
   Int_t iSelParticlesInt = 0;
   
-  if (bDoubleLoop)
-    {                   //double loop
-      while (iGoodTracks < iN*2 && itrkN < iNumberOfInputTracks) 
+  if (bMultipleLoop)
+    {                   //multiple loop
+      while (iGoodTracks < iN*iLoops && itrkN < iNumberOfInputTracks) 
 	{
 	  anInput->GetEntry(itrkN);   //get input particle
 	  //cut on tracks
-	  if (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
+	  if(
+	     (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
 	      pParticle->Eta() > dEtaMinInt && pParticle->Eta() < dEtaMaxInt &&
 	      pParticle->Phi() > dPhiMinInt && pParticle->Phi() < dPhiMaxInt &&
-	      TMath::Abs(pParticle->GetPdgCode()) == iPIDInt)
+	      TMath::Abs(pParticle->GetPdgCode()) == iPIDInt) 
+	     ||
+	     (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
+	      pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
+	      pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
+	      TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)	  
+	     )
 	    {
-	      for(Int_t d=0;d<2;d++) 
+	      for(Int_t d=0;d<iLoops;d++) 
 		{
 		  AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 		  pTrack->SetPt(pParticle->Pt() );
 		  pTrack->SetEta(pParticle->Eta() );
 		  pTrack->SetPhi(pParticle->Phi() );
-		  pTrack->SetForIntegratedFlow(kTRUE);
-		  iSelParticlesInt++;
+		  if (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
+		      pParticle->Eta() > dEtaMinInt && pParticle->Eta() < dEtaMaxInt &&
+		      pParticle->Phi() > dPhiMinInt && pParticle->Phi() < dPhiMaxInt &&
+		      TMath::Abs(pParticle->GetPdgCode()) == iPIDInt)
+		    {
+		      pTrack->SetForIntegratedFlow(kTRUE);
+		      iSelParticlesInt++;
+		      pEvent->TrackCollection()->Add(pTrack);
+		    }
+		  if (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
+		      pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
+		      pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
+		      TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)
+		    {
+		      pTrack->SetForDifferentialFlow(kTRUE);
+		      iSelParticlesDiff++;
+		      pEvent->TrackCollection()->Add(pTrack);
+		    }
 		  iGoodTracks++;
-		  pEvent->TrackCollection()->Add(pTrack);
-		}
-	    }
-	  else if (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
-		   pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
-		   pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
-		   TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)
-	    {
-	      for(Int_t d=0;d<2;d++) 
-		{
-		  AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-		  pTrack->SetPt(pParticle->Pt() );
-		  pTrack->SetEta(pParticle->Eta() );
-		  pTrack->SetPhi(pParticle->Phi() );
-		  pTrack->SetForDifferentialFlow(kTRUE);
-		  iSelParticlesDiff++;
-		  iGoodTracks++;
-		  pEvent->TrackCollection()->Add(pTrack);
 		}
 	    }
 	  itrkN++; 
 	}
     }
-
+  
   else {                                  //normal loop
     while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
       anInput->GetEntry(itrkN);   //get input particle
       //cut on tracks
-      if (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
+      if(
+	 (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
 	  pParticle->Eta() > dEtaMinInt && pParticle->Eta() < dEtaMaxInt &&
 	  pParticle->Phi() > dPhiMinInt && pParticle->Phi() < dPhiMaxInt &&
-	  TMath::Abs(pParticle->GetPdgCode()) == iPIDInt)
+	  TMath::Abs(pParticle->GetPdgCode()) == iPIDInt) 
+	 ||
+	 (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
+	  pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
+	  pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
+	  TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)	  
+	 )
 	{
 	  AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-	  pTrack->SetPt(pParticle->Pt() );
-	  pTrack->SetEta(pParticle->Eta() );
-	  pTrack->SetPhi(pParticle->Phi() );
-	  pTrack->SetForIntegratedFlow(kTRUE);
-	  iSelParticlesInt++;
+	  pTrack->SetPt(pParticle->Pt());
+	  pTrack->SetEta(pParticle->Eta());
+	  pTrack->SetPhi(pParticle->Phi());
+	  //checking the cuts for particles used for int. flow:
+	  if(pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
+	     pParticle->Eta() > dEtaMinInt && pParticle->Eta() < dEtaMaxInt &&
+	     pParticle->Phi() > dPhiMinInt && pParticle->Phi() < dPhiMaxInt &&
+	     TMath::Abs(pParticle->GetPdgCode()) == iPIDInt)
+	    {  
+	      pTrack->SetForIntegratedFlow(kTRUE);
+	      iSelParticlesInt++;
+	      pEvent->TrackCollection()->Add(pTrack);
+	    }
+	  //checking the cuts for particles used for diff. flow:
+	  if(pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
+	     pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
+	     pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
+	     TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)
+	    {
+	      pTrack->SetForDifferentialFlow(kTRUE);
+	      iSelParticlesDiff++;
+	      pEvent->TrackCollection()->Add(pTrack);  
+	    }
 	  iGoodTracks++;
-	  pEvent->TrackCollection()->Add(pTrack);
-	}
-      else if (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
-	       pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
-	       pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
-	       TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff)
-	{
-	  AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-	  pTrack->SetPt(pParticle->Pt() );
-	  pTrack->SetEta(pParticle->Eta() );
-	  pTrack->SetPhi(pParticle->Phi() );
-	  pTrack->SetForDifferentialFlow(kTRUE);
-	  iSelParticlesDiff++;
-	  iGoodTracks++;
-	  pEvent->TrackCollection()->Add(pTrack);
-	  
-	}
+	} 
       itrkN++; 
-    }
-  }
-
+    }//end of while
+  }//end of else
+  
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
@@ -339,13 +354,17 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   Int_t iSelParticlesDiff = 0;
   Int_t iSelParticlesInt = 0;
 
-
+ 
+  
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
     AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
     //cut on tracks
     if (TMath::Abs(pParticle->Eta()) < 0.9)
-      {
+    
+   
+    
+    {
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt() );
 	pTrack->SetEta(pParticle->Eta() );
