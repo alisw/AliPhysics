@@ -15,9 +15,11 @@
 #include "TH1.h"
 
 class AliExternalTrackParam;
+class AliExternalComparison;
 class AliTPCseed;
 class TGraphErrors;
 class TTree;
+class THnSparse;
 
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
@@ -56,7 +58,7 @@ public:
   Bool_t GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
-  Bool_t AcceptTracklet(const AliExternalTrackParam &tp1,
+  Int_t  AcceptTracklet(const AliExternalTrackParam &tp1,
 			const AliExternalTrackParam &tp2);
 
   void ProcessDiff(const AliExternalTrackParam &t1,
@@ -79,7 +81,12 @@ public:
 		 TLinearFitter *fitter);
   void Process9(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
   void Process6(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
-  void ProcessTree(TTree * tree);
+  void ProcessTree(TTree * tree, AliExternalComparison *comp=0);
+  void GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t niter);
+  //
+  // Cluster comparison Part
+  //
+  void MakeClusterHistos();
   //
   // For visualization and test purposes
   //
@@ -87,6 +94,8 @@ public:
   static Double_t SCorrect(Int_t type, Int_t value, Int_t s1, Int_t s2, Double_t x, Double_t y, Double_t z, Double_t phi,Double_t theta){return Instance()->Correct(type,value,s1,s2,x,y,z,phi,theta);}
   static AliTPCcalibAlign* Instance();
   void SetInstance(AliTPCcalibAlign*param){fgInstance = param;}
+  static void Constrain1Pt(AliExternalTrackParam &t1, const AliExternalTrackParam &t2, Bool_t noField);
+  void SetNoField(Bool_t noField){ fNoField=noField;}
 private:
   
   void FillHisto(const AliExternalTrackParam &t1,
@@ -113,11 +122,17 @@ private:
   //
   TObjArray fMatrixArray12;    // array of transnformtation matrix
   TObjArray fMatrixArray9;     // array of transnformtation matrix
-  TObjArray fMatrixArray6;     // array of transnformtation matrix  
+  TObjArray fMatrixArray6;     // array of transnformtation matrix 
+  //
+  //
+  TObjArray fCombinedMatrixArray6;      // array  combeined transformation matrix
+  //
+  AliExternalComparison  *fCompTracklet;  //tracklet comparison
   //
   Int_t fPoints[72*72];        // number of points in the fitter 
+  Bool_t fNoField;            // flag - no field data
   static AliTPCcalibAlign*   fgInstance; //! Instance of this class (singleton implementation)
-  ClassDef(AliTPCcalibAlign,1)
+  ClassDef(AliTPCcalibAlign,2)
 };
 
 
@@ -135,6 +150,7 @@ const TMatrixD * AliTPCcalibAlign::GetTransformation(Int_t s1,Int_t s2, Int_t fi
   if (fitType==0) return static_cast<TMatrixD*>(fMatrixArray6[GetIndex(s1,s2)]);
   if (fitType==1) return static_cast<TMatrixD*>(fMatrixArray9[GetIndex(s1,s2)]);
   if (fitType==2) return static_cast<TMatrixD*>(fMatrixArray12[GetIndex(s1,s2)]);
+  return 0;
 }
 
 

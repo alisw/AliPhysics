@@ -119,6 +119,7 @@
 #include "AliTPCseed.h"
 #include "AliTracker.h"
 #include "TClonesArray.h"
+#include "AliExternalComparison.h"
 
 
 #include "TTreeStream.h"
@@ -165,7 +166,10 @@ AliTPCcalibAlign::AliTPCcalibAlign()
      fFitterArray6(72*72),
      fMatrixArray12(72*72),
      fMatrixArray9(72*72),
-     fMatrixArray6(72*72)
+     fMatrixArray6(72*72),
+     fCombinedMatrixArray6(72),
+     fCompTracklet(0),             // tracklet comparison
+     fNoField(kFALSE)
 {
   //
   // Constructor
@@ -192,8 +196,10 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
    fFitterArray6(72*72),
    fMatrixArray12(72*72),
    fMatrixArray9(72*72),
-   fMatrixArray6(72*72)
-
+   fMatrixArray6(72*72),
+   fCombinedMatrixArray6(72),
+   fCompTracklet(0),             // tracklet comparison
+   fNoField(kFALSE)
 {
   //
   // Constructor
@@ -225,8 +231,10 @@ AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
    
    fMatrixArray12(align.fMatrixArray12),
    fMatrixArray9(align.fMatrixArray9),
-   fMatrixArray6(align.fMatrixArray6)
-   
+   fMatrixArray6(align.fMatrixArray6),
+   fCombinedMatrixArray6(align.fCombinedMatrixArray6),
+   fCompTracklet(align.fCompTracklet),             // tracklet comparison
+   fNoField(align.fNoField)   
 {
   //
   // copy constructor - copy also the content
@@ -365,7 +373,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   // Process function to fill fitters
   //
-  Double_t t1[5],t2[5];
+  Double_t t1[10],t2[10];
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   Double_t &x2=t2[0], &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
   x1   =tp1.GetX();
@@ -383,11 +391,11 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   dydx2=snp2/TMath::Sqrt(1.-snp2*snp2);
   Double_t tgl2=tp2.GetTgl();
   dzdx2=tgl2/TMath::Sqrt(1.-snp2*snp2);
-  Bool_t accept =   AcceptTracklet(tp1,tp2);  
+  Int_t accept =   AcceptTracklet(tp1,tp2);  
   //
   //
   //
-  if (fStreamLevel>1){
+  if (fStreamLevel>1 && seed){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       static TVectorD vec1(5);
@@ -397,6 +405,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
       AliExternalTrackParam *p1 = &((AliExternalTrackParam&)tp1);
       AliExternalTrackParam *p2 = &((AliExternalTrackParam&)tp2);
       (*cstream)<<"Tracklet"<<
+	"accept="<<accept<<
 	"run="<<fRun<<              //  run number
 	"event="<<fEvent<<          //  event number
 	"time="<<fTime<<            //  time stamp of event
@@ -412,13 +421,20 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
 	"\n";
     }
   }
-  if (!accept) return;
+  if (accept>0) return;
+  t1[0]-=134.;
+  t2[0]-=134.;
+  t1[5]=0; t2[5]=0;
+  t1[6]=TMath::Sqrt(tp1.GetSigmaY2()+tp2.GetSigmaY2()); t2[6]=t1[6];
+  t1[7]=TMath::Sqrt(tp1.GetSigmaZ2()+tp2.GetSigmaZ2()); t2[7]=t1[7];
+  t1[8]=TMath::Sqrt(tp1.GetSigmaSnp2()+tp2.GetSigmaSnp2()); t2[8]=t1[8];
+  t1[9]=TMath::Sqrt(tp1.GetSigmaTgl2()+tp2.GetSigmaTgl2()); t2[9]=t1[9];
 
   if (GetDebugLevel()>50) printf("Process track\n");
   if (GetDebugLevel()>50) printf("Filling track\n");
   //
   // fill resolution histograms - previous cut included
-  ProcessDiff(tp1,tp2, seed,s1,s2);
+  if (seed) ProcessDiff(tp1,tp2, seed,s1,s2);
   FillHisto(tp1,tp2,s1,s2);  
   ProcessAlign(t1,t2,s1,s2);
 }
@@ -435,7 +451,7 @@ void AliTPCcalibAlign::ProcessAlign(Double_t * t1,
   ++fPoints[GetIndex(s1,s2)];
 }
 
-void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet){
+void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet, AliExternalComparison *comp){
   //
   // Process the debug streamer tree
   // Possible to modify selection criteria
@@ -447,10 +463,11 @@ void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet){
   //
   TVectorD * vec1 = 0;
   TVectorD * vec2 = 0;
-  AliExternalTrackParam * tp1 = new  AliExternalTrackParam;
-  AliExternalTrackParam * tp2 = new  AliExternalTrackParam;  
+  AliExternalTrackParam * tp1 = 0;
+  AliExternalTrackParam * tp2 = 0;  
   Int_t      s1 = 0;
-  Int_t      s2 = 0;
+  Int_t      s2 = 0;				
+  Int_t npoints =0;
   {
     Int_t entries=chainTracklet->GetEntries();
     for (Int_t i=0; i< entries; i++){
@@ -461,41 +478,76 @@ void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet){
       chainTracklet->GetBranch("s1")->SetAddress(&s1);
       chainTracklet->GetBranch("s2")->SetAddress(&s2);      
       chainTracklet->GetEntry(i);
+      if (!vec1) continue;
+      if (!vec2) continue;
+      if (!tp1) continue;
+      if (!tp2) continue;
+      if (!vec1->GetMatrixArray()) continue;
+      if (!vec2->GetMatrixArray()) continue;
+      // make a local copy
+      AliExternalTrackParam par1(*tp1);
+      AliExternalTrackParam par2(*tp2);
+      TVectorD svec1(*vec1);
+      TVectorD svec2(*vec2);
+      //
       if (s1==s2) continue;
-      if (i%100==0) printf("%d\t%d\t%d\t\n",i, s1,s2);
-      Bool_t accept =   AcceptTracklet(tp1,tp2);  
-      if (!accept) continue;
-      if (vec1->GetMatrixArray()){
-	align->FillHisto(*tp1,*tp2,s1,s2);
-	align->ProcessAlign(vec1->GetMatrixArray(),vec2->GetMatrixArray(),s1,s2);
+      if (i%100==0) printf("%d\t%d\t%d\t%d\t\n",i, npoints,s1,s2);
+      AliExternalTrackParam  cpar1(par1);
+      AliExternalTrackParam  cpar2(par2);      
+      Constrain1Pt(cpar1,par2,fNoField);
+      Constrain1Pt(cpar2,par1,fNoField);
+      Bool_t acceptComp = kFALSE;
+      if (comp) acceptComp=comp->AcceptPair(&par1,&par2);
+      if (comp) acceptComp&=comp->AcceptPair(&cpar1,&cpar2);
+      //
+      Int_t reject =   align->AcceptTracklet(par1,par2);
+      Int_t rejectC =align->AcceptTracklet(cpar1,cpar2); 
+
+      if (1||fStreamLevel>0){
 	(*cstream)<<"Tracklet"<<
-	  "tp1.="<<tp1<<
-	  "tp2.="<<tp2<<
-	  "v1.="<<vec1<<
-	  "v2.="<<vec2<<
 	  "s1="<<s1<<
 	  "s2="<<s2<<
+	  "reject="<<reject<<
+	  "rejectC="<<rejectC<<
+	  "acceptComp="<<acceptComp<<
+	  "tp1.="<<&par1<<
+	  "tp2.="<<&par2<<	
+	  "ctp1.="<<&cpar1<<
+	  "ctp2.="<<&cpar2<<
+	  "v1.="<<&svec1<<
+	  "v2.="<<&svec2<<
 	  "\n";
       }
+      //
+      if (fNoField){
+	//
+	//
+      }
+      if (acceptComp) comp->Process(&cpar1,&cpar2);
+      //
+      if (reject>0 || rejectC>0) continue;
+      npoints++;
+      align->ProcessTracklets(cpar1,cpar2,0,s1,s2);
+      align->ProcessTracklets(cpar2,cpar1,0,s2,s1); 
     }
   }
   delete cstream;
 }
 
 
-Bool_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
-					const AliExternalTrackParam &p2){
+Int_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
+				       const AliExternalTrackParam &p2){
 
   //
   // Accept pair of tracklets?
   //
   /*
   // resolution cuts
-  TCut cutS0("sqrt(tp2.fC[0]+tp2.fC[0])<0.2");
-  TCut cutS1("sqrt(tp2.fC[2]+tp2.fC[2])<0.2");
-  TCut cutS2("sqrt(tp2.fC[5]+tp2.fC[5])<0.01");
-  TCut cutS3("sqrt(tp2.fC[9]+tp2.fC[9])<0.01");
-  TCut cutS4("sqrt(tp2.fC[14]+tp2.fC[14])<0.5");
+  TCut cutS0("sqrt(tp2.fC[0]+tp1.fC[0])<0.2");
+  TCut cutS1("sqrt(tp2.fC[2]+tp1.fC[2])<0.2");
+  TCut cutS2("sqrt(tp2.fC[5]+tp1.fC[5])<0.01");
+  TCut cutS3("sqrt(tp2.fC[9]+tp1.fC[9])<0.01");
+  TCut cutS4("sqrt(tp2.fC[14]+tp1.fC[14])<0.25");
   TCut cutS=cutS0+cutS1+cutS2+cutS3+cutS4;
   //
   // parameters matching cuts
@@ -503,28 +555,39 @@ Bool_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
   TCut cutP1("abs(tp1.fP[1]-tp2.fP[1])<0.6");
   TCut cutP2("abs(tp1.fP[2]-tp2.fP[2])<0.03");
   TCut cutP3("abs(tp1.fP[3]-tp2.fP[3])<0.03");
-  TCut cutP=cutP0+cutP1+cutP2+cutP3;    
+  TCut cutP4("abs(tp1.fP[4]-tp2.fP[4])<0.5");
+  TCut cutPP4("abs(tp1.fP[4]-tp2.fP[4])/sqrt(tp2.fC[14]+tp1.fC[14])<3");
+  TCut cutP=cutP0+cutP1+cutP2+cutP3+cutP4+cutPP4;
   */  
   //
   // resolution cuts
+  Int_t reject=0;
   const Double_t *cp1 = p1.GetCovariance();
   const Double_t *cp2 = p2.GetCovariance();
-  if (TMath::Abs(cp1[0]+cp2[0])>0.2) return kFALSE;
-  if (TMath::Abs(cp1[2]+cp2[2])>0.2) return kFALSE;
-  if (TMath::Abs(cp1[5]+cp2[5])>0.01) return kFALSE;
-  if (TMath::Abs(cp1[9]+cp2[9])>0.01) return kFALSE;
-  if (TMath::Abs(cp1[14]+cp2[14])>0.5) return kFALSE;
+  if (TMath::Sqrt(cp1[0]+cp2[0])>0.2)  reject|=1;;
+  if (TMath::Sqrt(cp1[2]+cp2[2])>0.2)  reject|=2;
+  if (TMath::Sqrt(cp1[5]+cp2[5])>0.01) reject|=4;
+  if (TMath::Sqrt(cp1[9]+cp2[9])>0.01) reject|=8;
+  if (TMath::Sqrt(cp1[14]+cp2[14])>0.2) reject|=16;
 
   //parameters difference
   const Double_t *tp1 = p1.GetParameter();
   const Double_t *tp2 = p2.GetParameter();
-  if (TMath::Abs(tp1[0]-tp2[0])>0.6) return kFALSE;
-  if (TMath::Abs(tp1[1]-tp2[1])>0.6) return kFALSE;
-  if (TMath::Abs(tp1[2]-tp2[2])>0.03) return kFALSE;
-  if (TMath::Abs(tp1[3]-tp2[3])>0.03) return kFALSE;
+  if (TMath::Abs(tp1[0]-tp2[0])>0.6) reject|=32;
+  if (TMath::Abs(tp1[1]-tp2[1])>0.6) reject|=64;
+  if (TMath::Abs(tp1[2]-tp2[2])>0.03) reject|=128;
+  if (TMath::Abs(tp1[3]-tp2[3])>0.03) reject|=526;
+  if (TMath::Abs(tp1[4]-tp2[4])>0.4) reject|=1024;
+  if (TMath::Abs(tp1[4]-tp2[4])/TMath::Sqrt(cp1[14]+cp2[14])>4) reject|=2048;
+  
   //
-  if (TMath::Abs(tp2[1])>235) return kFALSE;
-  return kTRUE;
+  if (TMath::Abs(tp2[1])>235) reject|=2*4096;
+  
+  if (fNoField){
+    
+  }
+
+  return reject;
 }
 
 
@@ -545,6 +608,7 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
   TClonesArray arrCl("AliTPCclusterMI",160);
   arrCl.ExpandCreateFast(160);
   Int_t count1=0, count2=0;
+  
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=seed->GetClusterPointer(i);
     vecX[i]=0;
@@ -575,8 +639,6 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
     // huge output - cluster residuals to be investigated
     //
     TTreeSRedirector *cstream = GetDebugStreamer();
-    //AliTPCseed * t = (AliTPCseed*) seed;
-    //AliExternalTrackParam *p0 = &((AliExternalTrackParam&)seed);
     AliExternalTrackParam *p1 = &((AliExternalTrackParam&)t1);
     AliExternalTrackParam *p2 = &((AliExternalTrackParam&)t2);
     /*
@@ -631,11 +693,11 @@ void AliTPCcalibAlign::Process12(const Double_t *t1,
   const Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   const Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
-  // TODO:
-  Double_t sy    = 0.1;
-  Double_t sz    = 0.1;
-  Double_t sdydx = 0.001;
-  Double_t sdzdx = 0.001;
+  //
+  Double_t sy    = t1[6];
+  Double_t sz    = t1[7];
+  Double_t sdydx = t1[8];
+  Double_t sdzdx = t1[9];
 
   Double_t p[12];
   Double_t value;
@@ -709,12 +771,11 @@ void AliTPCcalibAlign::Process9(Double_t *t1,
 
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
-
-  // TODO:
-  Double_t sy    = 0.1;
-  Double_t sz    = 0.1;
-  Double_t sdydx = 0.001;
-  Double_t sdzdx = 0.001;
+  //
+  Double_t sy    = t1[6];
+  Double_t sz    = t1[7];
+  Double_t sdydx = t1[8];
+  Double_t sdzdx = t1[9];
   //
   Double_t p[12];
   Double_t value;
@@ -788,11 +849,11 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
-  // TODO:
-  Double_t sy    = 0.1;
-  Double_t sz    = 0.1;
-  Double_t sdydx = 0.001;
-  Double_t sdzdx = 0.001;
+  //
+  Double_t sy    = t1[6];
+  Double_t sz    = t1[7];
+  Double_t sdydx = t1[8];
+  Double_t sdzdx = t1[9];
 
   Double_t p[12];
   Double_t value;
@@ -828,10 +889,10 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   // (a10 + a11*dydx1 + a12*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dydx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
   p[0]   += 1.;           // a10
-  //p[]  += dydx1;      // a11
+  //p[]  += dydx1;      // a11       
   //p[]   += dzdx1;        // a12
   //p[]  += -dydx2;       // a00
-  p[0]   +=  dydx1*dydx2; // a01
+  //p[0]   +=  dydx1*dydx2; // a01         FIXME- 0912 MI
   //p[]   += -dzdx1*dydx2; // a02
   value  = -dydx1+dydx2;  // -a11 + a00
   fitter->AddPoint(p,value,sdydx);
@@ -840,10 +901,10 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   // (a20 + a21*dydx1 + a22*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dzdx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
   p[1]   += 1;            // a20
-  p[2]   += dydx1;        // a21
+  //  p[2]   += dydx1;        // a21   FIXME- 0912 MI
   //p[]  += dzdx1;        // a22
   //p[]  += -dzdx2;       // a00
-  p[0]   +=  dydx1*dzdx2; // a01
+  //p[0]   +=  dydx1*dzdx2; // a01     FIXME- 0912 MI
   //p[]  += -dzdx1*dzdx2; // a02
   value  = -dzdx1+dzdx2;  // -a22 + a00
   fitter->AddPoint(p,value,sdzdx);
@@ -1199,6 +1260,7 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
   for (Int_t s1=0;s1<72;++s1)
     for (Int_t s2=0;s2<72;++s2){
       TMatrixD m6;
+      TMatrixD m6FX;
       TMatrixD m9;
       TMatrixD m12;
       Double_t dy=0, dz=0, dphi=0,dtheta=0;
@@ -1206,11 +1268,11 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
       Double_t ny=0, nz=0, nphi=0,ntheta=0;
       Double_t chi2v12=0, chi2v9=0, chi2v6=0;
       Int_t npoints=0;
+      TLinearFitter * fitter = 0;      
       if (fPoints[GetIndex(s1,s2)]>kMinPoints){
 	//
 	//
 	//
-	TLinearFitter * fitter = 0;
 	fitter = GetFitter12(s1,s2);
 	npoints = fitter->GetNpoints();
 	chi2v12 = TMath::Sqrt(fitter->GetChisquare()/npoints);
@@ -1222,10 +1284,17 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
 	fitter = GetFitter6(s1,s2);
 	npoints = fitter->GetNpoints();
 	chi2v6 = TMath::Sqrt(fitter->GetChisquare()/npoints);
-	
+
+	//
 	GetTransformation6(s1,s2,m6);
 	GetTransformation9(s1,s2,m9);
 	GetTransformation12(s1,s2,m12);
+	//
+	fitter = GetFitter6(s1,s2);
+	fitter->FixParameter(3,0);
+	fitter->Eval();
+	GetTransformation6(s1,s2,m6FX);
+	//
 	TH1 * his=0;
 	his = GetHisto(kY,s1,s2);
 	if (his) { dy = his->GetMean(); sy = his->GetRMS(); ny = his->GetEntries();}
@@ -1236,6 +1305,7 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
 	his = GetHisto(kTheta,s1,s2);
 	if (his) { dtheta = his->GetMean(); stheta = his->GetRMS(); ntheta = his->GetEntries();}
 	//
+
       }
 
       // x2    =  a00*x1 + a01*y1 + a02*z1 + a03
@@ -1261,6 +1331,7 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
       cstream<<"Align"<<
 	"s1="<<s1<<     // reference sector
 	"s2="<<s2<<     // sector to align
+	"m6FX.="<<&m6FX<<   // tranformation matrix
 	"m6.="<<&m6<<   // tranformation matrix
 	"m9.="<<&m9<<   // 
 	"m12.="<<&m12<<
@@ -1441,6 +1512,188 @@ Double_t AliTPCcalibAlign::Correct(Int_t type, Int_t value, Int_t s1, Int_t s2, 
   return valT;
 }
 
+
+void  AliTPCcalibAlign::Constrain1Pt(AliExternalTrackParam &track1, const AliExternalTrackParam &track2, Bool_t noField){
+  //
+  // Update track parameters t1
+  //
+  TMatrixD vecXk(5,1);    // X vector
+  TMatrixD covXk(5,5);    // X covariance 
+  TMatrixD matHk(1,5);    // vector to mesurement
+  TMatrixD measR(1,1);    // measurement error 
+  //TMatrixD matQk(5,5);    // prediction noise vector
+  TMatrixD vecZk(1,1);    // measurement
+  //
+  TMatrixD vecYk(1,1);    // Innovation or measurement residual
+  TMatrixD matHkT(5,1);
+  TMatrixD matSk(1,1);    // Innovation (or residual) covariance
+  TMatrixD matKk(5,1);    // Optimal Kalman gain
+  TMatrixD mat1(5,5);     // update covariance matrix
+  TMatrixD covXk2(5,5);   // 
+  TMatrixD covOut(5,5);
+  //
+  Double_t *param1=(Double_t*) track1.GetParameter();
+  Double_t *covar1=(Double_t*) track1.GetCovariance();
+
+  //
+  // copy data to the matrix
+  for (Int_t ipar=0; ipar<5; ipar++){
+    vecXk(ipar,0) = param1[ipar];
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covXk(ipar,jpar) = covar1[track1.GetIndex(ipar, jpar)];
+    }
+  }
+  //
+  //
+  //
+  vecZk(0,0) = track2.GetParameter()[4];   // 1/pt measurement from track 2
+  measR(0,0) = track2.GetCovariance()[14];  // 1/pt measurement error
+  if (noField) {
+    measR(0,0)*=0.000000001;
+    vecZk(0,0)=0.;
+  }
+  //
+  matHk(0,0)=0; matHk(0,1)= 0; matHk(0,2)= 0;  
+  matHk(0,3)= 0;    matHk(0,4)= 1;           // vector to measurement
+  //
+  //
+  //
+  vecYk = vecZk-matHk*vecXk;                 // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                      //  updated vector 
+  mat1(0,0)=1; mat1(1,1)=1; mat1(2,2)=1; mat1(3,3)=1; mat1(4,4)=1;
+  covXk2 = (mat1-(matKk*matHk));
+  covOut =  covXk2*covXk; 
+  //
+  //
+  //
+  // copy from matrix to parameters
+  if (0) {
+    covOut.Print();
+    vecXk.Print();
+    covXk.Print();
+    track1.Print();
+    track2.Print();
+  }
+
+  for (Int_t ipar=0; ipar<5; ipar++){
+    param1[ipar]= vecXk(ipar,0) ;
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covar1[track1.GetIndex(ipar, jpar)]=covOut(ipar,jpar);
+    }
+  }
+
+}
+
+void AliTPCcalibAlign::GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t niter){
+  //
+  //  Global Align -combine the partial alignment of pair of sectors
+  //  minPoints - minimal number of points - don't use sector alignment wit smaller number
+  //  sysError  - error added to the alignemnt error
+  //
+  AliTPCcalibAlign * align = this;
+  TMatrixD * arrayAlign[72];
+  TMatrixD * arrayAlignDiff[72];
+  //
+  for (Int_t i=0;i<72; i++) {
+    TMatrixD * mat = new TMatrixD(4,4);
+    mat->UnitMatrix();
+    arrayAlign[i]=mat;
+    arrayAlignDiff[i]=(TMatrixD*)(mat->Clone());
+  }
+
+  TTreeSRedirector *cstream = new TTreeSRedirector("galign6.root");
+  for (Int_t iter=0; iter<niter;iter++){
+    printf("Iter=\t%d\n",iter);
+    for (Int_t is0=0;is0<72; is0++) {
+      //
+      //TMatrixD  *mati0 = arrayAlign[is0];
+      TMatrixD matDiff(4,4);
+      Double_t sumw=0;      
+      for (Int_t is1=0;is1<72; is1++) {
+	Bool_t invers=kFALSE;
+	Int_t npoints=0;
+	TMatrixD covar;
+	TVectorD errors;
+	const TMatrixD *mat = align->GetTransformation(is0,is1,0); 
+	if (mat){
+	  npoints = align->GetFitter6(is0,is1)->GetNpoints();
+	  if (npoints>minPoints){
+	    align->GetFitter6(is0,is1)->GetCovarianceMatrix(covar);
+	    align->GetFitter6(is0,is1)->GetErrors(errors);
+	  }
+	}
+	else{
+	  invers=kTRUE;
+	  mat = align->GetTransformation(is1,is0,0); 
+	  if (mat) {
+	    npoints = align->GetFitter6(is1,is0)->GetNpoints();
+	    if (npoints>minPoints){
+	      align->GetFitter6(is1,is0)->GetCovarianceMatrix(covar);
+	      align->GetFitter6(is1,is0)->GetErrors(errors);
+	    }
+	  }
+	}
+	if (!mat) continue;
+	if (npoints<minPoints) continue;
+	//
+	Double_t weight=1;
+ 	if (is1/36>is0/36) weight*=2./3.; //IROC-OROC
+ 	if (is1/36<is0/36) weight*=1./3.; //OROC-IROC
+ 	if (is1/36==is0/36) weight*=1/3.; //OROC-OROC
+ 	if (is1%36!=is0%36) weight*=1/2.; //Not up-down
+	weight/=(errors[4]*errors[4]+sysError*sysError);
+	//
+	//
+	TMatrixD matT = *mat;	
+	if (invers)  matT.Invert();
+	TMatrixD diffMat= (*(arrayAlign[is1]))*matT;
+	diffMat-=(*arrayAlign[is0]);
+	matDiff+=weight*diffMat;
+	sumw+=weight;
+
+	(*cstream)<<"LAlign"<<
+	  "iter="<<iter<<
+	  "s0="<<is0<<
+	  "s1="<<is1<<
+	  "npoints="<<npoints<<
+	  "m60.="<<arrayAlign[is0]<<
+	  "m61.="<<arrayAlign[is1]<<
+	  "m01.="<<&matT<<
+	  "diff.="<<&diffMat<<
+	  "cov.="<<&covar<<
+	  "err.="<<&errors<<
+	  "\n";
+      }
+      if (sumw>0){
+	matDiff*=1/sumw;
+	matDiff(0,0)=0;
+	matDiff(1,1)=0;
+	matDiff(1,1)=0;
+	matDiff(1,1)=0;	
+	(*arrayAlignDiff[is0]) = matDiff;       
+      }
+    }
+    for (Int_t is0=0;is0<72; is0++) {
+      if (is0<36) (*arrayAlign[is0]) += 0.4*(*arrayAlignDiff[is0]);
+      if (is0>=36) (*arrayAlign[is0]) += 0.2*(*arrayAlignDiff[is0]);
+       //
+      (*cstream)<<"GAlign"<<
+	"iter="<<iter<<
+	"s0="<<is0<<
+	"m6.="<<arrayAlign[is0]<<
+	"\n";
+    }    
+  }
+  delete cstream;
+  for (Int_t isec=0;isec<72;isec++){
+    fCombinedMatrixArray6.AddAt(arrayAlign[isec],isec);
+    delete arrayAlignDiff[isec];
+  }
+}
 
 
 /*
