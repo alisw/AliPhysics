@@ -70,6 +70,26 @@ AliTPCcalibBase::AliTPCcalibBase():
   //
 }
 
+AliTPCcalibBase::AliTPCcalibBase(const char * name, const char * title):
+  TNamed(name,title),
+  fDebugStreamer(0),
+  fStreamLevel(0),   
+  fRun(0),                  //!  current Run number
+  fEvent(0),                //!  current Event number
+  fTime(0),                 //!  current Time
+  fTrigger(0),              //! current trigger type
+  fMagF(0),                 //! current magnetic field
+  fTriggerMaskReject(-1),   //trigger mask - reject trigger
+  fTriggerMaskAccept(-1),   //trigger mask - accept trigger
+  fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
+  fRejectLaser(kTRUE),                 //flag- reject laser
+  fDebugLevel(0)
+{
+  //
+  // Constructor
+  //
+}
+
 AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   TNamed(calib),
   fDebugStreamer(0),

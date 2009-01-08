@@ -18,6 +18,7 @@ class TTreeSRedirector;
 class AliTPCcalibBase:public TNamed {
 public:
   AliTPCcalibBase(); 
+  AliTPCcalibBase(const char * name, const char * title); 
   AliTPCcalibBase(const AliTPCcalibBase&calib);
   AliTPCcalibBase &operator=(const AliTPCcalibBase&calib);
   virtual ~AliTPCcalibBase();
