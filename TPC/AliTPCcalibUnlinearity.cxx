@@ -15,8 +15,24 @@
 
 /*  
   Class for histogramming of cluster residuals
-  Only Linear and parabolic fit used
-  To be used for laser or for data without field
+  and fitting of the unlinearities. To be used only for data without
+  magnetic field. The laser tracks should be also rejected.
+  //
+
+  Track fitting:
+  The track is fitted using linear and parabolic model 
+  The edge clusters are removed from the fit.
+  Edge pad-row - first and last 15 padrows removed from the fit
+
+  Unlinearities fitting:
+  Unlinearities at the edge aproximated using two exponential decays.
+
+  Model:
+  dz = dz0(r,z) +dr(r,z)*tan(theta) 
+  dy =          +dr(r,z)*tan(phi)
+
+   
+
   //  
 */
 
@@ -39,6 +55,8 @@
 #include "TProfile.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
+#include "TCut.h"
+
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
@@ -62,10 +80,13 @@
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
 #include "TLinearFitter.h"
+#include "AliTPCClusterParam.h"
+#include "TStatToolkit.h"
 
 
 #include "AliTPCcalibUnlinearity.h"
 
+AliTPCcalibUnlinearity* AliTPCcalibUnlinearity::fgInstance = 0;
 
 ClassImp(AliTPCcalibUnlinearity)
 
@@ -74,7 +95,11 @@ AliTPCcalibUnlinearity::AliTPCcalibUnlinearity():
   fDiffHistoLine(0),
   fDiffHistoPar(0),
   fFittersOutR(38),
-  fFittersOutZ(38)
+  fFittersOutZ(38),
+  fParamsOutR(38),
+  fParamsOutZ(38),
+  fErrorsOutR(38),
+  fErrorsOutZ(38)
 {
   //
   // Defualt constructor
@@ -86,7 +111,11 @@ AliTPCcalibUnlinearity::AliTPCcalibUnlinearity(const Text_t *name, const Text_t 
   fDiffHistoLine(0),
   fDiffHistoPar(0),  
   fFittersOutR(38),
-  fFittersOutZ(38)
+  fFittersOutZ(38),
+  fParamsOutR(38),
+  fParamsOutZ(38),
+  fErrorsOutR(38),
+  fErrorsOutZ(38)
 {
   //
   // Non default constructor
@@ -103,6 +132,21 @@ AliTPCcalibUnlinearity::~AliTPCcalibUnlinearity(){
 }
 
 
+AliTPCcalibUnlinearity* AliTPCcalibUnlinearity::Instance()
+{
+  //
+  // Singleton implementation
+  // Returns an instance of this class, it is created if neccessary
+  //
+  if (fgInstance == 0){
+    fgInstance = new AliTPCcalibUnlinearity();
+  }
+  return fgInstance;
+}
+
+
+
+
 void AliTPCcalibUnlinearity::Process(AliTPCseed *seed) {
   //
   // 
@@ -111,6 +155,7 @@ void AliTPCcalibUnlinearity::Process(AliTPCseed *seed) {
   const Int_t kMinCluster=35;
   if (!fDiffHistoLine) MakeHisto();    
   if (!seed) return;
+  if (TMath::Abs(fMagF)>0.01) return;   // use only data without field
   Int_t counter[72];
   for (Int_t i=0;i<72;i++) counter[i]=0;
   for (Int_t irow=kdrow;irow<159-kdrow;irow++) {
@@ -152,7 +197,7 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
     if (!c) continue;
     if (c->GetDetector()!=isec) continue;
     if (c->GetType()<0) continue;
-    Float_t dx = c->GetX()-kXmean;
+    Double_t dx = c->GetX()-kXmean;
     Double_t x[2]={dx, dx*dx};
     fy1.AddPoint(x,c->GetY());
     fy2.AddPoint(x,c->GetY());
@@ -170,12 +215,12 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
     if (!c) continue;
     if (c->GetDetector()!=isec) continue;
     if (c->GetType()<0) continue;
-    Float_t dx = c->GetX()-kXmean;
-    Float_t y1 = py1[0]+py1[1]*dx;
-    Float_t y2 = py2[0]+py2[1]*dx+py2[2]*dx*dx;
+    Double_t dx = c->GetX()-kXmean;
+    Double_t y1 = py1[0]+py1[1]*dx;
+    Double_t y2 = py2[0]+py2[1]*dx+py2[2]*dx*dx;
     //
-    Float_t z1 = pz1[0]+pz1[1]*dx;
-    Float_t z2 = pz2[0]+pz2[1]*dx+pz2[2]*dx*dx;
+    Double_t z1 = pz1[0]+pz1[1]*dx;
+    Double_t z2 = pz2[0]+pz2[1]*dx+pz2[2]*dx*dx;
     //
     //
     Double_t x[10];
@@ -194,7 +239,7 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
     x[8]=c->GetZ()-z2;
     fDiffHistoPar->Fill(x);   
 
-    if (TMath::Abs(py2[2]*150*150/4)<1 && TMath::Abs(py2[2]*150*150/4)<1){
+    if (TMath::Abs(py2[2]*150*150/4)<1 && TMath::Abs(pz2[2]*150*150/4)<1){
       // Apply sagita cut
       AddPoint(isec,irow,c->GetZ()-z1, c->GetY()-y1,
 	       py1[1],pz1[1],1-TMath::Abs(c->GetZ()/250.),1);
@@ -204,6 +249,11 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
 	(*cstream)<<"Diff"<<
+	  "run="<<fRun<<              //  run number
+	  "event="<<fEvent<<          //  event number
+	  "time="<<fTime<<            //  time stamp of event
+	  "trigger="<<fTrigger<<      //  trigger
+	  "mag="<<fMagF<<             //  magnetic field	  
 	  "isec="<<isec<<
 	  "Cl.="<<c<<
 	  "y1="<<y1<<
@@ -317,13 +367,13 @@ void AliTPCcalibUnlinearity::DumpTree(){
 }
 
 
-void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Float_t dz, Float_t dy, Float_t p2, Float_t p3, Float_t dr, Int_t npoints){
+void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Double_t dz, Double_t dy, Double_t p2, Double_t p3, Double_t dr, Int_t npoints){
   //
   //
   // Simple distortion fit in outer sectors
   //
   // Model - 2 exponential decay toward the center of chamber
-  //       - Decay length 10 and 20 cm
+  //       - Decay length 10 and 5 cm
   //       - Decay amplitude - Z dependent 
   //
   /*
@@ -335,59 +385,68 @@ void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Float_t dz, Float
   chainUnlin->SetAlias("dout","(159-row)*1.5");
   chainUnlin->SetAlias("din","row*0.75");
   chainUnlin->SetAlias("eout10","exp(-(dout)/10.)");
-  chainUnlin->SetAlias("eout20","exp(-(dout)/20.)");  
+  chainUnlin->SetAlias("eout5","exp(-(dout)/5.)");  
   */
-  Float_t side   = (-1+((sector%36)<18)*2); // A side +1   C side -1
-  Float_t dzt    = dz*side;
-  Float_t dout   = (159-row)*1.5;  // distance to the last pad row - (valid only for long pads)
-  Float_t eout10 = TMath::Exp(-dout/10.);
-  Float_t eout20 = TMath::Exp(-dout/20.);
+
+  Double_t side   = (-1+((sector%36)<18)*2); // A side +1   C side -1
+  Double_t dzt    = dz*side;
+  Double_t dout   = (159-row)*1.5;  // distance to the last pad row - (valid only for long pads)
+  if (dout>30) return; // use only edge pad rows
+  dr-=0.5;             // dr shifted to the middle - reduce numerical instabilities
+
+  Double_t eout10 = TMath::Exp(-dout/10.);
+  Double_t eout5 = TMath::Exp(-dout/5.);
+  //
+  Double_t eoutp  = (eout10+eout5)*0.5;
+  Double_t eoutm  = (eout10-eout5)*0.5;
+
   //
   Double_t xxxR[6], xxxZ[6], xxxRZ[6];
   //TString fstring="";
-  xxxZ[0]=eout20;                //fstring+="eout20++";  
-  xxxZ[1]=eout10;               //fstring+="eout10++";  
-  xxxZ[1]=dr*eout20;            //fstring+="dr*eout20++";  
-  xxxZ[1]=dr*eout10;            //fstring+="dr*eout10++";  
-  xxxZ[1]=dr*dr*eout20;         //fstring+="dr*dr*eout20++";  
-  xxxZ[1]=dr*dr*eout10;         //fstring+="dr*dr*eout10++";    
+  xxxZ[0]=eoutp;                //fstring+="eoutp++";  
+  xxxZ[1]=eoutm;               //fstring+="eoutm++";  
+  xxxZ[2]=dr*eoutp;            //fstring+="dr*eoutp++";  
+  xxxZ[3]=dr*eoutm;            //fstring+="dr*eoutm++";  
+  xxxZ[4]=dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
+  xxxZ[5]=dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
-  xxxR[0]=p2*eout20;                //fstring+="eout20++";  
-  xxxR[1]=p2*eout10;               //fstring+="eout10++";  
-  xxxR[1]=p2*dr*eout20;            //fstring+="dr*eout20++";  
-  xxxR[1]=p2*dr*eout10;            //fstring+="dr*eout10++";  
-  xxxR[1]=p2*dr*dr*eout20;         //fstring+="dr*dr*eout20++";  
-  xxxR[1]=p2*dr*dr*eout10;         //fstring+="dr*dr*eout10++";    
+  xxxR[0]=p2*eoutp;                //fstring+="eoutp++";  
+  xxxR[1]=p2*eoutm;               //fstring+="eoutm++";  
+  xxxR[2]=p2*dr*eoutp;            //fstring+="dr*eoutp++";  
+  xxxR[3]=p2*dr*eoutm;            //fstring+="dr*eoutm++";  
+  xxxR[4]=p2*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
+  xxxR[5]=p2*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
-  xxxRZ[0]=p3*eout20;                //fstring+="eout20++";  
-  xxxRZ[1]=p3*eout10;               //fstring+="eout10++";  
-  xxxRZ[1]=p3*dr*eout20;            //fstring+="dr*eout20++";  
-  xxxRZ[1]=p3*dr*eout10;            //fstring+="dr*eout10++";  
-  xxxRZ[1]=p3*dr*dr*eout20;         //fstring+="dr*dr*eout20++";  
-  xxxRZ[1]=p3*dr*dr*eout10;         //fstring+="dr*dr*eout10++";    
+  xxxRZ[0]=p3*eoutp;                //fstring+="eoutp++";  
+  xxxRZ[1]=p3*eoutm;               //fstring+="eoutm++";  
+  xxxRZ[2]=p3*dr*eoutp;            //fstring+="dr*eoutp++";  
+  xxxRZ[3]=p3*dr*eoutm;            //fstring+="dr*eoutm++";  
+  xxxRZ[4]=p3*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
+  xxxRZ[5]=p3*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
   TLinearFitter * fitter=0;
+  Double_t err=0.1;
   for (Int_t ip=0; ip<npoints; ip++){
     //
     fitter = (TLinearFitter*)fFittersOutR.At(sector%36);
-    fitter->AddPoint(xxxR,dy);
-    fitter->AddPoint(xxxRZ,dz);
+    fitter->AddPoint(xxxR,dy,err);
+    //fitter->AddPoint(xxxRZ,dz);
     fitter = (TLinearFitter*)fFittersOutZ.At(sector%36);
-    fitter->AddPoint(xxxZ,dzt);
+    fitter->AddPoint(xxxZ,dzt,err);
     //
     if (side>0){
       fitter = (TLinearFitter*)fFittersOutR.At(36);
-      fitter->AddPoint(xxxR,dy);
-      fitter->AddPoint(xxxRZ,dz);
+      fitter->AddPoint(xxxR,dy,err);
+      //fitter->AddPoint(xxxRZ,dz);
       fitter = (TLinearFitter*)fFittersOutZ.At(36);
-      fitter->AddPoint(xxxZ,dzt);
+      fitter->AddPoint(xxxZ,dzt,err);
     }
     if (side<0){
-      fitter = (TLinearFitter*)fFittersOutR.At(36);
-      fitter->AddPoint(xxxR,dy);
-      fitter->AddPoint(xxxRZ,dz);
-      fitter = (TLinearFitter*)fFittersOutZ.At(36);
-      fitter->AddPoint(xxxZ,dzt);
+      fitter = (TLinearFitter*)fFittersOutR.At(37);
+      fitter->AddPoint(xxxR,dy,err);
+      //fitter->AddPoint(xxxRZ,dz);
+      fitter = (TLinearFitter*)fFittersOutZ.At(37);
+      fitter->AddPoint(xxxZ,dzt,err);
     }
   }
 }
@@ -415,16 +474,123 @@ void AliTPCcalibUnlinearity::EvalFitters(){
   // Evaluate fitters
   // 
   TLinearFitter * fitter = 0;
+  TVectorD vec;
   for (Int_t ifit=0; ifit<38; ifit++){
     fitter=(TLinearFitter*)fFittersOutR.At(ifit);
-    if (fitter) fitter->Eval();
+    if (fitter) {
+      fitter->Eval();
+      fitter->GetParameters(vec);
+      fParamsOutR.AddAt(vec.Clone(),ifit);
+      fitter->GetErrors(vec);
+      fErrorsOutR.AddAt(vec.Clone(),ifit);
+    }
     fitter=(TLinearFitter*)fFittersOutZ.At(ifit);
-    if (fitter) fitter->Eval();
+    if (fitter) {
+      fitter->Eval();
+      fitter->GetParameters(vec);
+      fParamsOutZ.AddAt(vec.Clone(),ifit);
+      fitter->GetErrors(vec);
+      fErrorsOutZ.AddAt(vec.Clone(),ifit);
+    }
   }
 }
 
+Double_t AliTPCcalibUnlinearity::GetDr(Int_t sector, Double_t dout, Double_t dr){
+  //
+  //
+  //
+  TVectorD * vec = GetParamOutR(sector);
+  if (!vec) return 0;
+  dr-=0.5;        // dr=0 at the middle drift length
+  Double_t eout10 = TMath::Exp(-dout/10.);
+  Double_t eout5 = TMath::Exp(-dout/5.);		    
+  Double_t eoutp  = (eout10+eout5)*0.5;
+  Double_t eoutm  = (eout10-eout5)*0.5;
 
-void AliTPCcalibUnlinearity::ProcessTree(TTree * tree, Int_t nmaxPoints){
+  Double_t result=0;
+  result+=(*vec)[1]*eoutp;
+  result+=(*vec)[2]*eoutm;
+  result+=(*vec)[3]*eoutp*dr;
+  result+=(*vec)[4]*eoutm*dr;
+  result+=(*vec)[5]*eoutp*dr*dr;
+  result+=(*vec)[6]*eoutm*dr*dr;
+  return result;
+}
+
+
+Double_t AliTPCcalibUnlinearity::GetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz){
+  //
+  //
+  //
+  Double_t alpha    = TMath::ATan2(gy,gx);
+  if (alpha<0)  alpha+=TMath::Pi()*2;
+  Int_t lsector = Int_t(18*alpha/(TMath::Pi()*2));
+  alpha = (lsector+0.5)*TMath::Pi()/9.;
+  //
+  Double_t r[3];
+  r[0]=gx; r[1]=gy;
+  Double_t cs=TMath::Cos(-alpha), sn=TMath::Sin(-alpha), x=r[0];
+  r[0]=x*cs - r[1]*sn; r[1]=x*sn + r[1]*cs;
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Double_t xout = roc->GetPadRowRadiiUp(roc->GetNRows(37)-1);
+  Double_t dout = xout-r[0];
+  if (dout<0) return 0;
+  Double_t dr   = 1-TMath::Abs(gz/250.);
+  if (gz<0) lsector+=18;
+  if (stype==0) lsector = (gz>0) ? 36:37;
+  if (stype<0) return lsector;  // 
+  return GetDr(lsector,dout,dr);
+}
+
+
+Double_t AliTPCcalibUnlinearity::GetDz(Int_t sector, Double_t dout, Double_t dr){
+  //
+  //
+  //
+  TVectorD * vec = GetParamOutZ(sector);
+  if (!vec) return 0;
+  dr-=0.5; // 0 at the middle
+  Double_t eout10 = TMath::Exp(-dout/10.);
+  Double_t eout5 = TMath::Exp(-dout/5.);
+  Double_t eoutp  = (eout10+eout5)*0.5;
+  Double_t eoutm  = (eout10-eout5)*0.5;
+
+  
+  Double_t result=0;
+  result+=(*vec)[1]*eoutp;
+  result+=(*vec)[2]*eoutm;
+  result+=(*vec)[3]*eoutp*dr;
+  result+=(*vec)[4]*eoutm*dr;
+  result+=(*vec)[5]*eoutp*dr*dr;
+  result+=(*vec)[6]*eoutm*dr*dr;
+  return result;
+}
+
+
+Double_t      AliTPCcalibUnlinearity::SGetDr(Int_t sector, Double_t dout, Double_t dr){
+  //
+  //
+  //
+  return fgInstance->GetDr(sector,dout,dr);
+}
+Double_t      AliTPCcalibUnlinearity::SGetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz){
+  //
+  //
+  //
+  return fgInstance->GetGDr(stype,gx,gy,gz);
+}
+Double_t      AliTPCcalibUnlinearity::SGetDz(Int_t sector, Double_t dout, Double_t dr){
+  //
+  //
+  //
+  return fgInstance->GetDz(sector,dout,dr);
+}
+
+
+
+
+void AliTPCcalibUnlinearity::ProcessTree(TTree * tree, Long64_t nmaxPoints){
   //
   //
   //
@@ -432,22 +598,184 @@ void AliTPCcalibUnlinearity::ProcessTree(TTree * tree, Int_t nmaxPoints){
   AliTPCcalibUnlinearity *calib = this;
   //
   AliTPCclusterMI * cl=0;
-  Float_t ty,tz;
+  Double_t ty,tz;
   TVectorD *vy=0, *vz=0;
-  Int_t nentries = TMath::Min(Int_t(tree->GetEntries()), nmaxPoints);
+  TVectorD *vy2=0, *vz2=0;
+  Long64_t nentries = tree->GetEntries();
+  if (nmaxPoints>0) nentries = TMath::Min(nentries,nmaxPoints);
   //
   {
-  for (Int_t i=0; i<nentries; i++){
+  for (Long64_t i=0; i<nentries; i++){
     tree->SetBranchAddress("Cl.",&cl);
     tree->SetBranchAddress("y1",&ty);
     tree->SetBranchAddress("z1",&tz);
     tree->SetBranchAddress("py1.",&vy);
     tree->SetBranchAddress("pz1.",&vz);
+    tree->SetBranchAddress("py2.",&vy2);
+    tree->SetBranchAddress("pz2.",&vz2);
     //
     tree->GetEntry(i);
     if (!cl) continue;
-    calib->AddPoint(cl->GetDetector(), cl->GetRow(), cl->GetZ()-tz, cl->GetY()-ty,
-		    (*vy)(1),(*vz)(1), 1-TMath::Abs(cl->GetZ()/250),1);
+    if (i%10000==0) printf("%d\n",(Int_t)i);
+    Int_t row= cl->GetRow();
+    if (cl->GetDetector()>36) row+=64;
+    if (cl->GetType()<0) continue; 
+    Double_t dy = cl->GetY()-ty;
+    Double_t dz = cl->GetZ()-tz;
+    Double_t dr = 1-TMath::Abs(cl->GetZ()/250);
+    //
+    //
+    if (TMath::Abs(dy)>0.25) continue;
+    if (TMath::Abs(dz)>0.25) continue;
+    
+    if (TMath::Abs((*vy2)[2]*150*150/4)>1) continue;
+    if (TMath::Abs((*vz2)[2]*150*150/4)>1) continue;
+      // Apply sagita cut
+    calib->AddPoint(cl->GetDetector(), row, dz, dy,
+		    (*vy)[1],(*vz)[1], dr, 1);
   }
   }
 }
+
+
+void  AliTPCcalibUnlinearity::MakeQPosNormAll(TTree * chainUnlinD, AliTPCClusterParam * param, Int_t maxPoints){
+  //
+  // Make position corrections
+  // for the moment Only using debug streamer 
+  // chainUnlinD  - debug tree
+  // param     - parameters to be updated
+  // maxPoints - maximal number of points using for fit
+  // verbose   - print info flag
+  //
+  // Current implementation - only using debug streamers
+  // 
+  
+  /*    
+  //Defaults
+  Int_t maxPoints=100000;
+  */
+  /*
+    Usage: 
+    //0. Load libraries
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libSTAT");
+    gSystem->Load("libTPCcalib");
+    
+
+    //1. Load Parameters to be modified:
+    //e.g:
+    
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetRun(0) 
+    AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
+    //
+    //2. Load the debug streamer
+    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+    AliXRDPROOFtoolkit tool;  
+    TChain * chainUnlin = tool.MakeChain("unlin.txt","Resol",0,10200);
+    chainUnlin->Lookup();
+    TChain * chainUnlinD = tool.MakeChain("unlin.txt","Diff",0,10200);
+    chainUnlinD->Lookup();
+
+    //3. Do fits and store results
+    // 
+    AliTPCcalibUnlinearity::MakeQPosNormAll(chainUnlinD,param,200000,0) ;
+    TFile f("paramout.root","recreate");
+    param->Write("clusterParam");
+    f.Close();
+    //4. Verification
+    TFile f2("paramout.root");
+    AliTPCClusterParam *param2 = (AliTPCClusterParam*)f2.Get("clusterParam");
+    param2->SetInstance(param2);
+    chainUnlinD->Draw("fitZ0:AliTPCClusterParam::SPosCorrection(1,0,Cl.fPad,Cl.fTimeBin,Cl.fZ,Cl.fSigmaY2,Cl.fSigmaZ2,Cl.fMax)","Cl.fDetector<36","",10000); // should be line 
+    
+   */
+
+
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParamY0;
+  TVectorD fitParamY1;
+  TVectorD fitParamZ0;
+  TVectorD fitParamZ1;
+  TMatrixD covMatrix;
+  Int_t npoints;
+  
+  chainUnlinD->SetAlias("dp","(-1+(Cl.fZ>0)*2)*((Cl.fPad-int(Cl.fPad))-0.5)");
+  chainUnlinD->SetAlias("dt","(-1+(Cl.fZ>0)*2)*((Cl.fTimeBin-0.66-int(Cl.fTimeBin-0.66))-0.5)");
+  chainUnlinD->SetAlias("sp","(sin(dp*pi)-dp*pi)");
+  chainUnlinD->SetAlias("st","(sin(dt)-dt)");
+  chainUnlinD->SetAlias("dq","(-1+(Cl.fZ>0)*2)/Cl.fMax");
+  //
+  chainUnlinD->SetAlias("di","sqrt(1.-abs(Cl.fZ/250.))");
+  //
+  //
+  //
+  TCut cutE("Cl.fType>=0");
+  TCut cutDy("abs(Cl.fY-y1)<0.4");
+  TCut cutDz("abs(Cl.fZ-z1)<0.4");
+  TCut cutY2("abs(py2.fElements[2])*150^2/4<1");
+  TCut cutZ2("abs(pz2.fElements[2])*150^2/4<1");
+  TCut cutAll = cutE+cutDy+cutDz+cutY2+cutZ2;
+  //
+  TCut cutA("Cl.fZ>0");
+  TCut cutC("Cl.fZ<0");
+
+  TString fstringY="";  
+  //
+  fstringY+="(dp)++";            //1
+  fstringY+="(dp)*di++";         //2
+  fstringY+="(sp)++";            //3
+  fstringY+="(sp)*di++";         //4
+  fstringY+="(dq)++";            //5
+  TString fstringZ="";  
+  fstringZ+="(dt)++";            //1
+  fstringZ+="(dt)*di++";         //2
+  fstringZ+="(st)++";            //3
+  fstringZ+="(st)*di++";         //4
+  fstringZ+="(dq)++";            //5
+  //
+  // Z corrections
+  //
+  TString *strZ0 = toolkit.FitPlane(chainUnlinD,"(Cl.fZ-z2):1",fstringZ.Data(), "Cl.fDetector<36"+cutAll, chi2,npoints,fitParamZ0,covMatrix,-1,0,maxPoints);
+  printf("Z0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  strZ0->Tokenize("++")->Print();
+  param->fPosZcor[0] = (TVectorD*) fitParamZ0.Clone();
+  //
+  TString *strZ1 = toolkit.FitPlane(chainUnlinD,"(Cl.fZ-z2):1",fstringZ.Data(), "Cl.fDetector>36"+cutAll, chi2,npoints,fitParamZ1,covMatrix,-1,0,maxPoints);
+  //
+  printf("Z1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  strZ1->Tokenize("++")->Print();
+  param->fPosZcor[1] = (TVectorD*) fitParamZ1.Clone();
+  param->fPosZcor[2] = (TVectorD*) fitParamZ1.Clone();
+  //
+  // Y corrections
+  //   
+  TString *strY0 = toolkit.FitPlane(chainUnlinD,"(Cl.fY-y2):1",fstringY.Data(), "Cl.fDetector<36"+cutAll, chi2,npoints,fitParamY0,covMatrix,-1,0,maxPoints);
+  printf("Y0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints)); 
+  strY0->Tokenize("++")->Print();
+  param->fPosYcor[0] = (TVectorD*) fitParamY0.Clone();
+  
+
+  TString *strY1 = toolkit.FitPlane(chainUnlinD,"(Cl.fY-y2):1",fstringY.Data(), "Cl.fDetector>36"+cutAll, chi2,npoints,fitParamY1,covMatrix,-1,0,maxPoints);
+  //
+  printf("Y1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));  
+  strY1->Tokenize("++")->Print();
+  param->fPosYcor[1] = (TVectorD*) fitParamY1.Clone();
+  param->fPosYcor[2] = (TVectorD*) fitParamY1.Clone();
+  //
+  //
+  //
+  chainUnlinD->SetAlias("fitZ0",strZ0->Data());
+  chainUnlinD->SetAlias("fitZ1",strZ1->Data());
+  chainUnlinD->SetAlias("fitY0",strY0->Data());
+  chainUnlinD->SetAlias("fitY1",strY1->Data());
+}
+
+
+
+
+
+
+
