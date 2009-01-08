@@ -289,7 +289,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     // Make backup and mark entrance in the TRD
     seed->UpdateTrackParams(&track, AliESDtrack::kTRDin);
     seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
-    Float_t p4          = track.GetC();
+    Float_t p4  = track.GetC(track.GetBz());
     expectedClr = FollowBackProlongation(track);
 
     if (expectedClr<0) continue; // Back prolongation failed
@@ -313,7 +313,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       }
     }
 
-    if ((TMath::Abs(track.GetC() - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
+    if ((TMath::Abs(track.GetC(track.GetBz()) - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
       //
       // Make backup for back propagation
       //
@@ -366,13 +366,13 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       Double_t xtof  = 371.0;
       Double_t xTOF0 = 370.0;
     
-      Double_t c2    = track.GetSnp() + track.GetC() * (xtof - track.GetX());
+      Double_t c2    = track.GetSnp() + track.GetC(track.GetBz()) * (xtof - track.GetX());
       if (TMath::Abs(c2) >= 0.99) continue;
       
       if (!PropagateToX(track, xTOF0, fgkMaxStep)) continue;
   
       // Energy losses taken to the account - check one more time
-      c2 = track.GetSnp() + track.GetC() * (xtof - track.GetX());
+      c2 = track.GetSnp() + track.GetC(track.GetBz()) * (xtof - track.GetX());
       if (TMath::Abs(c2) >= 0.99) continue;
       
       //if (!PropagateToX(*track,xTOF0,fgkMaxStep)) {
