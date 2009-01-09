@@ -95,6 +95,7 @@ ClassImp(AliTOFDDLRawData)
 
 //---------------------------------------------------------------------------
 AliTOFDDLRawData::AliTOFDDLRawData():
+  TObject(),
   fVerbose(0),
   fIndex(-1),
   fPackedAcquisition(kFALSE),
@@ -158,16 +159,19 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   // This method creates the Raw data files for TOF detector
   //
 
-  const Int_t kSize = 5000; //max number of digits per DDL file times 2
+  const Int_t kSize = 5000; // max number of digits per DDL file times 2
 
   UInt_t buf[kSize];
+
+  // To clear the digit indices map for each event
+  fTOFdigitMap->Clear();
 
   fIndex = -1;
 
   fTOFdigitArray = * (TClonesArray**) branch->GetAddress();
 
   char fileName[15];
-  AliFstream* outfile;         // logical name of the output file 
+  AliFstream* outfile;      // logical name of the output file 
 
   //AliRawDataHeader header;
   AliRawDataHeaderSim header;
@@ -1049,7 +1053,13 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    digs->GetPlate() !=volume[1] ||
 	    digs->GetStrip() !=volume[2] ||
 	    digs->GetPadx()  !=volume[3] ||
-	    digs->GetPadz()  !=volume[4]) AliWarning(" --- ERROR --- ");
+	    digs->GetPadz()  !=volume[4]) AliWarning(Form(" --- ERROR --- %2i (%2i)  %1i (%1i)  %2i (%2i)  %2i (%2i)  %1i (%1i)",
+							  digs->GetSector(), volume[0],
+							  digs->GetPlate(), volume[1],
+							  digs->GetStrip(), volume[2],
+							  digs->GetPadx(), volume[3],
+							  digs->GetPadz(), volume[4])
+						     );
 
 	timeOfFlight = (Int_t)(digs->GetTdc())
 	  /*+
