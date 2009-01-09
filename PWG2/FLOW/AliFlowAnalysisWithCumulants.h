@@ -11,8 +11,8 @@
  *          (anteb@nikhef.nl)   *
  *******************************/ 
 
-#ifndef AliFlowAnalysisWithCumulants_H
-#define AliFlowAnalysisWithCumulants_H
+#ifndef ALIFLOWANALYSISWITHCUMULANTS_H
+#define ALIFLOWANALYSISWITHCUMULANTS_H
 
 #include "AliFlowCommonConstants.h"
 #include "AliFlowCumuConstants.h"
@@ -77,8 +77,20 @@ class AliFlowAnalysisWithCumulants{
   AliFlowCommonHistResults* GetCommonHistsResults8th() const       {return this->fCommonHistsResults8th;};
   
   void SetIntFlowGenFun(TProfile2D* ifgf)  {this->fIntFlowGenFun = ifgf;};
-  TProfile2D* GetIntFlowGenFun() const       {return this->fIntFlowGenFun;};
+  TProfile2D* GetIntFlowGenFun() const     {return this->fIntFlowGenFun;};
+
+  void SetIntFlowGenFun4(TProfile2D* ifgf4)  {this->fIntFlowGenFun4 = ifgf4;};
+  TProfile2D* GetIntFlowGenFun4() const      {return this->fIntFlowGenFun4;};
   
+  void SetIntFlowGenFun6(TProfile2D* ifgf6)  {this->fIntFlowGenFun6 = ifgf6;};
+  TProfile2D* GetIntFlowGenFun6() const      {return this->fIntFlowGenFun6;};
+  
+  void SetIntFlowGenFun8(TProfile2D* ifgf8)  {this->fIntFlowGenFun8 = ifgf8;};
+  TProfile2D* GetIntFlowGenFun8() const      {return this->fIntFlowGenFun8;};
+  
+  void SetIntFlowGenFun16(TProfile2D* ifgf16)  {this->fIntFlowGenFun16 = ifgf16;};
+  TProfile2D* GetIntFlowGenFun16() const       {return this->fIntFlowGenFun16;};
+ 
   void SetDiffFlowGenFunRe(TProfile3D* dfgfRe)  {this->fDiffFlowGenFunRe = dfgfRe;};
   TProfile3D* GetDiffFlowGenFunRe() const         {return this->fDiffFlowGenFunRe;};
   
@@ -98,12 +110,20 @@ class AliFlowAnalysisWithCumulants{
  private:
   AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants& afawc);
   AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants& afawc);
-  AliFlowTrackSimple* fTrack;                               //track
-  static const Int_t fgkQmax  = AliFlowCumuConstants::kQmax;   //needed for numerics
-  static const Int_t fgkPmax  = AliFlowCumuConstants::kPmax;   //needed for numerics  
-  static const Int_t fgkFlow  = AliFlowCumuConstants::kFlow;   //integrated flow coefficient to be calculated
-  static const Int_t fgkMltpl = AliFlowCumuConstants::kMltpl; //the multiple in p=m*n (diff. flow) 
-  TList* fHistList;                                         //list to hold all output histograms
+  AliFlowTrackSimple* fTrack;                                   //track
+  static const Int_t fgkQmax = AliFlowCumuConstants::kQmax;     //needed for numerics
+  static const Int_t fgkPmax = AliFlowCumuConstants::kPmax;     //needed for numerics  
+  static const Int_t fgkQmax4 = AliFlowCumuConstants::kQmax4;   //needed for numerics
+  static const Int_t fgkPmax4 = AliFlowCumuConstants::kPmax4;   //needed for numerics  
+  static const Int_t fgkQmax6 = AliFlowCumuConstants::kQmax6;   //needed for numerics
+  static const Int_t fgkPmax6 = AliFlowCumuConstants::kPmax6;   //needed for numerics  
+  static const Int_t fgkQmax8 = AliFlowCumuConstants::kQmax8;   //needed for numerics
+  static const Int_t fgkPmax8 = AliFlowCumuConstants::kPmax8;   //needed for numerics   
+  static const Int_t fgkQmax16 = AliFlowCumuConstants::kQmax16; //needed for numerics
+  static const Int_t fgkPmax16 = AliFlowCumuConstants::kPmax16; //needed for numerics 
+  static const Int_t fgkFlow = AliFlowCumuConstants::kFlow;     //integrated flow coefficient to be calculated
+  static const Int_t fgkMltpl = AliFlowCumuConstants::kMltpl;   //the multiple in p=m*n (diff. flow) 
+  TList* fHistList;                                             //list to hold all output histograms
 
   Double_t fR0;       //needed for numerics
   Double_t fPtMax;    //maximum pt
@@ -116,23 +136,28 @@ class AliFlowAnalysisWithCumulants{
   Double_t fAvQ2x; //<(Q_x)^2>
   Double_t fAvQ2y; //<(Q_y)^2>
 
-  TProfile*          fAvMultIntFlowGFC;     //average selected multiplicity
+  TProfile*          fAvMultIntFlowGFC; //average selected multiplicity
  
   TProfile*          fQVectorComponentsGFC; //averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>)
     
-  TH1D*              fIntFlowResultsGFC;   //integrated flow final results
+  TH1D*              fIntFlowResultsGFC; //integrated flow final results
   
   TH1D*              fDiffFlowResults2ndOrderGFC; //differential flow final results (2nd order estimate) 
   TH1D*              fDiffFlowResults4thOrderGFC; //differential flow final results (4th order estimate)
   TH1D*              fDiffFlowResults6thOrderGFC; //differential flow final results (6th order estimate)
   TH1D*              fDiffFlowResults8thOrderGFC; //differential flow final results (8th order estimate)
   
-  AliFlowCommonHistResults*  fCommonHistsResults2nd;    //final results for 2nd order int. and diff. flow stored in the common histograms 
-  AliFlowCommonHistResults*  fCommonHistsResults4th;    //final results for 4th order int. and diff. flow stored in the common histograms 
-  AliFlowCommonHistResults*  fCommonHistsResults6th;    //final results for 6th order int. and diff. flow stored in the common histograms
-  AliFlowCommonHistResults*  fCommonHistsResults8th;    //final results for 8th order int. and diff. flow stored in the common histograms
+  AliFlowCommonHistResults*  fCommonHistsResults2nd; //final results for 2nd order int. and diff. flow stored in the common histograms 
+  AliFlowCommonHistResults*  fCommonHistsResults4th; //final results for 4th order int. and diff. flow stored in the common histograms 
+  AliFlowCommonHistResults*  fCommonHistsResults6th; //final results for 6th order int. and diff. flow stored in the common histograms
+  AliFlowCommonHistResults*  fCommonHistsResults8th; //final results for 8th order int. and diff. flow stored in the common histograms
   
-  TProfile2D*        fIntFlowGenFun;    //avarage of the generating function for integrated flow 
+  TProfile2D*        fIntFlowGenFun;   //avarage of the generating function for integrated flow 
+  TProfile2D*        fIntFlowGenFun4;  //avarage of the generating function for integrated flow 
+  TProfile2D*        fIntFlowGenFun6;  //avarage of the generating function for integrated flow
+  TProfile2D*        fIntFlowGenFun8;  //avarage of the generating function for integrated flow
+  TProfile2D*        fIntFlowGenFun16; //avarage of the generating function for integrated flow 
+     
   TProfile3D*        fDiffFlowGenFunRe; //avarage of the generating function for differential flow (real part)
   TProfile3D*        fDiffFlowGenFunIm; //avarage of the generating function for differential flow (imaginary part)
   TProfile*          fBinNoOfParticles; //number of particles per pt bin
@@ -145,6 +170,8 @@ class AliFlowAnalysisWithCumulants{
   */
  
   AliFlowCommonHist* fCommonHists;      //common control histograms
+  
+  Bool_t fOtherEquations; //numerical equations for cumulants solved up to different highest order 
       
   ClassDef(AliFlowAnalysisWithCumulants, 0);
 };
