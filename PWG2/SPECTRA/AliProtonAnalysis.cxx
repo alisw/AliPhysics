@@ -265,10 +265,10 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     status = kFALSE;
   }
   else {
-    fHistYPtProtons = fProtonContainer->ShowProjection(0,1,0);
-    fHistYPtAntiProtons = fAntiProtonContainer->ShowProjection(0,1,0);
-    //fHistYPtProtons->Sumw2();
-    //fHistYPtAntiProtons->Sumw2();
+    //fHistYPtProtons = fProtonContainer->ShowProjection(0,1,0);
+    //fHistYPtAntiProtons = fAntiProtonContainer->ShowProjection(0,1,0);
+    fHistYPtProtons->Sumw2();
+    fHistYPtAntiProtons->Sumw2();
   }
 
   return status;
@@ -278,8 +278,8 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
 TH1D *AliProtonAnalysis::GetProtonYHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  //TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *fYProtons = fProtonContainer->ShowProjection(0,0); //variable-step
+  TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"");
+  //TH1D *fYProtons = fProtonContainer->ShowProjection(0,0); //variable-step
    
   fYProtons->SetStats(kFALSE);
   fYProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -295,8 +295,9 @@ TH1D *AliProtonAnalysis::GetProtonYHistogram() {
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetAntiProtonYHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
-  //TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,0);//variable-step 
+  
+  TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"");
+  //TH1D *fYAntiProtons = fAntiProtonContainer->ShowProjection(0,0);//variable-step 
  
   fYAntiProtons->SetStats(kFALSE);
   fYAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
@@ -312,8 +313,9 @@ TH1D *AliProtonAnalysis::GetAntiProtonYHistogram() {
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetProtonPtHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
-  //TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),"e"); 
-  TH1D *fPtProtons = fProtonContainer->ShowProjection(1,0); //variable-step
+  
+  TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
+  //TH1D *fPtProtons = fProtonContainer->ShowProjection(1,0); //variable-step
 
   fPtProtons->SetStats(kFALSE);
   fPtProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -329,8 +331,9 @@ TH1D *AliProtonAnalysis::GetProtonPtHistogram() {
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetAntiProtonPtHistogram() {
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
-  //TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),"e"); 
-  TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,0); //variable-step
+  
+  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),""); 
+  //TH1D *fPtAntiProtons = fAntiProtonContainer->ShowProjection(1,0); //variable-step
 
   fPtAntiProtons->SetStats(kFALSE);
   fPtAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
@@ -417,6 +420,7 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedPtHistogram() {
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetYRatioHistogram() {
+  //Returns the rapidity dependence of the ratio (uncorrected)
   TH1D *fYProtons = GetProtonYHistogram();
   TH1D *fYAntiProtons = GetAntiProtonYHistogram();
   
@@ -434,7 +438,30 @@ TH1D *AliProtonAnalysis::GetYRatioHistogram() {
 }
 
 //____________________________________________________________________//
+TH1D *AliProtonAnalysis::GetYRatioCorrectedHistogram(TH2D *gCorrectionProtons, 
+						     TH2D *gCorrectionAntiProtons) {
+  //Returns the rapidity dependence of the ratio (corrected)
+  fHistYPtProtons->Multiply(gCorrectionProtons);
+  TH1D *fYProtons = GetProtonYHistogram();
+  fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
+  TH1D *fYAntiProtons = GetAntiProtonYHistogram();
+  
+  TH1D *hRatioY = new TH1D("hRatioY","",fYProtons->GetNbinsX(),fYProtons->GetXaxis()->GetXmin(),fYProtons->GetXaxis()->GetXmax());
+  hRatioY->Divide(fYAntiProtons,fYProtons,1.0,1.0);
+  hRatioY->SetMarkerStyle(kFullCircle);
+  hRatioY->SetMarkerColor(4);
+  hRatioY->GetYaxis()->SetTitle("#bar{p}/p");
+  hRatioY->GetYaxis()->SetTitleOffset(1.4);
+  hRatioY->GetXaxis()->SetTitle("y");
+  hRatioY->GetXaxis()->SetTitleColor(1);
+  hRatioY->SetStats(kFALSE);
+
+  return hRatioY;
+}
+
+//____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetPtRatioHistogram() {
+  //Returns the pT dependence of the ratio (uncorrected)
   TH1D *fPtProtons = GetProtonPtHistogram();
   TH1D *fPtAntiProtons = GetAntiProtonPtHistogram();
   
@@ -452,7 +479,30 @@ TH1D *AliProtonAnalysis::GetPtRatioHistogram() {
 }
 
 //____________________________________________________________________//
+TH1D *AliProtonAnalysis::GetPtRatioCorrectedHistogram(TH2D *gCorrectionProtons, 
+						      TH2D *gCorrectionAntiProtons) {
+  //Returns the Pt dependence of the ratio (corrected)
+  fHistYPtProtons->Multiply(gCorrectionProtons);
+  TH1D *fPtProtons = GetProtonPtHistogram();
+  fHistYPtAntiProtons->Multiply(gCorrectionAntiProtons);
+  TH1D *fPtAntiProtons = GetAntiProtonPtHistogram();
+  
+  TH1D *hRatioPt = new TH1D("hRatioPt","",fPtProtons->GetNbinsX(),fPtProtons->GetXaxis()->GetXmin(),fPtProtons->GetXaxis()->GetXmax());
+  hRatioPt->Divide(fPtAntiProtons,fPtProtons,1.0,1.0);
+  hRatioPt->SetMarkerStyle(kFullCircle);
+  hRatioPt->SetMarkerColor(4);
+  hRatioPt->GetYaxis()->SetTitle("#bar{p}/p");
+  hRatioPt->GetYaxis()->SetTitleOffset(1.4);
+  hRatioPt->GetXaxis()->SetTitle("y");
+  hRatioPt->GetXaxis()->SetTitleColor(1);
+  hRatioPt->SetStats(kFALSE);
+
+  return hRatioPt;
+}
+
+//____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetYAsymmetryHistogram() {
+  //Returns the rapidity dependence of the asymmetry (uncorrected)
   TH1D *fYProtons = GetProtonYHistogram();
   TH1D *fYAntiProtons = GetAntiProtonYHistogram();
   
@@ -477,6 +527,7 @@ TH1D *AliProtonAnalysis::GetYAsymmetryHistogram() {
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetPtAsymmetryHistogram() {
+  //Returns the pT dependence of the asymmetry (uncorrected)
   TH1D *fPtProtons = GetProtonPtHistogram();
   TH1D *fPtAntiProtons = GetAntiProtonPtHistogram();
   
@@ -658,10 +709,16 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
 }
 
 //____________________________________________________________________//
-void AliProtonAnalysis::Analyze(AliStack* stack) {
+void AliProtonAnalysis::Analyze(AliStack* stack, Bool_t iInclusive) {
   //Main analysis part - MC
   fHistEvents->Fill(0); //number of analyzed events
-  for(Int_t i = 0; i < stack->GetNprimary(); i++) {
+
+  Int_t nParticles = 0;
+  //inclusive protons - 
+  if(iInclusive) nParticles = stack->GetNtrack();
+  else nParticles = stack->GetNprimary();
+
+  for(Int_t i = 0; i < nParticles; i++) {
     TParticle *particle = stack->Particle(i);
     if(!particle) continue;
 
@@ -679,6 +736,37 @@ void AliProtonAnalysis::Analyze(AliStack* stack) {
 							    particle->Pz()),
 						   particle->Pt());
   }//particle loop
+}
+
+//____________________________________________________________________//
+Bool_t AliProtonAnalysis::IsInPhaseSpace(AliESDtrack* track) {
+  // Checks if the track is outside the analyzed y-Pt phase space
+  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  
+  if(fUseTPCOnly) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+    }
+  }
+  else {
+    Pt = track->Pt();
+    Px = track->Px();
+    Py = track->Py();
+    Pz = track->Pz();
+  }
+  
+  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
+  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
+    return kFALSE;
+
+  return kTRUE;
 }
 
 //____________________________________________________________________//
@@ -801,10 +889,6 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDEvent *esd,
     if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) return kFALSE;
   if(fTPCpidFlag)
     if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) return kFALSE;
-
-  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
-  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
-    return kFALSE;
 
   return kTRUE;
 }

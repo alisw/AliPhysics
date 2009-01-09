@@ -162,8 +162,12 @@ class AliProtonQAAnalysis : public TObject {
   Bool_t   IsAccepted(AliESDEvent *esd,
 		      const AliESDVertex *vertex, 
 		      AliESDtrack *track);
+  Bool_t   IsInPhaseSpace(AliESDtrack *track);
 
-  void     FillQA(AliESDtrack *track, AliStack *stack);
+  void     FillQA(AliStack *stack,
+		  AliESDEvent *esd,
+		  const AliESDVertex *vertex,
+		  AliESDtrack *track);
 
   void     InitQA();
   void     InitMCAnalysis();
