@@ -13,9 +13,9 @@
 #include <TRef.h>
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
-#include "AliVParticle.h"
+#include "AliVTrack.h"
 
-class AliAODRecoDecay : public AliVParticle {
+class AliAODRecoDecay : public AliVTrack {
 
  public:
 
@@ -63,6 +63,13 @@ class AliAODRecoDecay : public AliVParticle {
   Int_t GetEventNumber() const { return fEventNumber; }
   Int_t GetRunNumber() const { return fRunNumber; }
 
+  // methods of AliVTrack
+  virtual Int_t    GetID() const { return -1; }
+  virtual UChar_t  GetITSClusterMap() const;
+  virtual ULong_t  GetStatus() const;
+  virtual Bool_t   GetXYZ(Double_t *p) const { return XvYvZv(p); }
+  virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
+
   // kinematics & topology
   Double_t Px() const; 
   Double_t Py() const;
@@ -106,11 +113,11 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t ImpParXY(AliAODVertex *vtx1) const;
 
   // prongs
-  //Int_t   GetNProngs() const {return GetSecondaryVtx()->GetNDaughters();}
-  Int_t   GetNProngs() const {return fNProngs;}
-  TObject *GetDaughter(Int_t i) const {return GetSecondaryVtx()->GetDaughter(i);}
+  Int_t    GetNProngs() const {return fNProngs;}
+  Int_t    GetNDaughters() const {return GetSecondaryVtx()->GetNDaughters();}
+  TObject *GetDaughter(Int_t i) const {return (GetNDaughters()>i ? GetSecondaryVtx()->GetDaughter(i) : 0x0);}
 
-  Short_t ChargeProng(Int_t ip) const;
+  Short_t  ChargeProng(Int_t ip) const;
   Double_t Getd0Prong(Int_t ip) const {return fd0[ip];}
   Double_t Prodd0d0(Int_t ip1=0,Int_t ip2=0) const {return fd0[ip1]*fd0[ip2];} 
   Double_t PxProng(Int_t ip) const {return fPx[ip];}
@@ -190,7 +197,7 @@ class AliAODRecoDecay : public AliVParticle {
 
   //
 
-  ClassDef(AliAODRecoDecay,3)  // base class for AOD reconstructed decays
+  ClassDef(AliAODRecoDecay,4)  // base class for AOD reconstructed decays
 };
 
 

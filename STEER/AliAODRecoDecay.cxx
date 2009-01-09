@@ -22,14 +22,15 @@
 
 #include <TDatabasePDG.h>
 #include <TVector3.h>
-#include "AliVParticle.h"
+#include "AliLog.h"
+#include "AliVTrack.h"
 #include "AliAODRecoDecay.h"
 
 ClassImp(AliAODRecoDecay)
 
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay() :
-  AliVParticle(),
+  AliVTrack(),
   fSecondaryVtx(0x0),
   fOwnSecondaryVtx(0x0),
   fCharge(0),
@@ -49,7 +50,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Short_t charge,
 				 Double_t *px,Double_t *py,Double_t *pz,
 				 Double_t *d0) :
-  AliVParticle(),
+  AliVTrack(),
   fSecondaryVtx(vtx2),
   fOwnSecondaryVtx(0x0),
   fCharge(charge),
@@ -79,7 +80,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Short_t charge,
 				 Double_t *d0) :
-  AliVParticle(),
+  AliVTrack(),
   fSecondaryVtx(vtx2),
   fOwnSecondaryVtx(0x0),
   fCharge(charge),
@@ -99,7 +100,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
-  AliVParticle(source),
+  AliVTrack(source),
   fSecondaryVtx(source.fSecondaryVtx),
   fOwnSecondaryVtx(source.fOwnSecondaryVtx),
   fCharge(source.fCharge),
@@ -311,17 +312,113 @@ Double_t AliAODRecoDecay::EProng(Int_t ip,UInt_t pdg) const
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return TMath::Sqrt(mass*mass+PProng(ip)*PProng(ip));
 }
-//---------------------------------------------------------------------------
-/*Int_t AliAODRecoDecay::GetIndexProng(Int_t ip) const
-{ 
+//--------------------------------------------------------------------------
+Bool_t AliAODRecoDecay::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
   //
-  // Index of prong ip
+  // This function returns the global covariance matrix of the track params
+  // 
+  // Cov(x,x) ... :   cv[0]
+  // Cov(y,x) ... :   cv[1]  cv[2]
+  // Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
+  // Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
+  // Cov(py,x)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // Cov(pz,x)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
   //
-  if(!GetNProngs()) return 999999;
-UShort_t *indices = GetSecondaryVtx()->GetIndices();
-  return indices[ip];
-}*/
+  // For XYZ we take the cov of the vertex, for PxPyPz we take the 
+  // sum of the covs of PxPyPz from the daughters, for the moment 
+  // we set the cov between position and momentum as the sum of 
+  // the same cov from the daughters.
+  //
+
+  Int_t j;
+  for(j=0;j<21;j++) cv[j]=0.;
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return kFALSE;
+  }
+
+  Double_t v[6];
+  AliAODVertex *secv=GetSecondaryVtx();
+  if(!secv) {
+    AliError("Vertex covariance matrix not available");
+    return kFALSE;
+  }
+  if(!secv->GetCovMatrix(v)) {
+    AliError("Vertex covariance matrix not available");
+    return kFALSE;
+  }
+
+  Double_t p[21]; for(j=0;j<21;j++) p[j]=0.;
+  Bool_t error=kFALSE;
+  for(Int_t i=1; i<GetNDaughters(); i++) {
+    AliVTrack *daugh = (AliVTrack*)GetDaughter(i);
+    Double_t dcov[21];
+    if(!daugh->GetCovarianceXYZPxPyPz(dcov)) error=kTRUE;
+    for(j=0;j<21;j++) p[j] += dcov[j];
+  }
+  if(error) {
+    AliError("No covariance for at least one daughter")
+    return kFALSE;
+  }
+
+  for(j=0; j<21; j++) {
+    if(j<6) {
+      cv[j] = v[j];
+    } else {
+      cv[j] = p[j];
+    }
+  }
+
+  return kTRUE;
+}
 //----------------------------------------------------------------------------
+UChar_t  AliAODRecoDecay::GetITSClusterMap() const {
+  //
+  // We take the logical AND of the daughters cluster maps 
+  // (only if all daughters have the bit for given layer, we set the bit)
+  //
+  UChar_t map=0;
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return map;
+  }
+
+  for(Int_t l=0; l<12; l++) { // loop on ITS layers (from here we cannot know how many they are; let's put 12 to be conservative)
+    Int_t bit = 1;
+    for(Int_t i=0; i<GetNDaughters(); i++) {
+      AliVTrack *daugh = (AliVTrack*)GetDaughter(i);
+      if(!TESTBIT(daugh->GetITSClusterMap(),l)) bit=0; 
+    }
+    if(bit) SETBIT(map,l);
+  }
+
+  return map;
+}
+//--------------------------------------------------------------------------
+ULong_t AliAODRecoDecay::GetStatus() const {
+  // 
+  // Same as for ITSClusterMap
+  //
+  ULong_t status=0;
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return status;
+  }
+
+  AliVTrack *daugh0 = (AliVTrack*)GetDaughter(0);
+  status = status&(daugh0->GetStatus());
+
+  for(Int_t i=1; i<GetNDaughters(); i++) {
+    AliVTrack *daugh = (AliVTrack*)GetDaughter(i);
+    status = status&(daugh->GetStatus());
+  }
+
+  return status;
+}
+//--------------------------------------------------------------------------
 Double_t AliAODRecoDecay::ImpParXY(Double_t point[3]) const 
 {
   //
