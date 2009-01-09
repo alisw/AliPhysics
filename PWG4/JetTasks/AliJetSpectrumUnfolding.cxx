@@ -260,6 +260,8 @@ void AliJetSpectrumUnfolding::SetupCurrentHists(Bool_t createBigBin)
   fCurrentCorrelation = (THnSparseF*)fCorrelation->Clone("fCurrentCorrelation");  
   fCurrentCorrelation->Sumw2();
 
+  Printf("Correlation Matrix has %.0E filled bins", fCurrentCorrelation->GetNbins());
+
   if (createBigBin)
   {
     Int_t maxBinE = 0, maxBinZ = 0;

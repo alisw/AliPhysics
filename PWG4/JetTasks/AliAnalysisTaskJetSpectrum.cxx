@@ -53,6 +53,8 @@
 
 ClassImp(AliAnalysisTaskJetSpectrum)
 
+const Float_t AliAnalysisTaskJetSpectrum::fgkJetNpartCut[AliAnalysisTaskJetSpectrum::kMaxCorrelation] = {5,10,1E+09};
+
 AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fJetHeaderRec(0x0),
   fJetHeaderGen(0x0),
@@ -71,14 +73,24 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fh1PtHard_Trials(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
-  fHistList(0x0)
+  fHistList(0x0) , 
+  ////////////////
+  fh1JetMultiplicity(0x0) ,     
+  fh2ERecZRec(0x0) ,
+  fh2EGenZGen(0x0) ,
+  fh2Efficiency(0x0) ,
+  fh3EGenERecN(0x0) 
+  //////////////// 
 {
   // Default constructor
     for(int ij  = 0;ij<kMaxJets;++ij){
-    fh1E[ij] =  fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-    fh2PtFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] = 0;
-    fh3PtRecGenHard[ij] =  fh3PtRecGenHard_NoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPt_NoGen[ij] =fh3GenEtaPhiPt_NoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
-  }
+      fh1E[ij] =  fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
+      fh2PtFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] = 0;
+      fh3PtRecGenHard[ij] =  fh3PtRecGenHard_NoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPt_NoGen[ij] =fh3GenEtaPhiPt_NoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
+    }
+    for(int ic = 0;ic < kMaxCorrelation;ic++){
+      fhnCorrelation[ic] = 0;
+    }
   
 }
 
@@ -101,7 +113,14 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   fh1PtHard_Trials(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
-  fHistList(0x0)
+  fHistList(0x0) ,
+  ////////////////
+  fh1JetMultiplicity(0x0) ,     
+  fh2ERecZRec(0x0) ,
+  fh2EGenZGen(0x0) ,
+  fh2Efficiency(0x0) ,
+  fh3EGenERecN(0x0)
+  //////////////// 
 {
   // Default constructor
   for(int ij  = 0;ij<kMaxJets;++ij){
@@ -110,6 +129,10 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
 
     fh3PtRecGenHard[ij] =  fh3PtRecGenHard_NoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPt_NoGen[ij] =fh3GenEtaPhiPt_NoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
   }
+
+    for(int ic = 0;ic < kMaxCorrelation;ic++){
+      fhnCorrelation[ic] = 0;
+    }
 
   DefineOutput(1, TList::Class());  
 }
@@ -261,15 +284,45 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 				 nBinEta,binLimitsEta,nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   }
+  
+  /////////////////////////////////////////////////////////////////
+  fh1JetMultiplicity = new TH1F("fh1JetMultiplicity", "Jet Multiplicity", 51, 0., 50.);
 
-  const Int_t saveLevel = 2; // large save level more histos
+  fh2ERecZRec   = new TH2F("fh2ERecZRec", " ; E^{jet}_{rec} [GeV]; z^{lp}_{rec}", 100, 0., 250., 100, 0., 2.);
+  fh2EGenZGen   = new TH2F("fh2EGenZGen", " ; E^{jet}_{gen} [GeV]; z^{lp}_{gen}", 100, 0., 250., 100, 0., 2.);
+  fh2Efficiency = new TH2F("fh2Efficiency", "ERec/EGen;E^{jet}_{gen} [GeV];E^{jet}_{rec}/E^{jet}_{gen}", 100, 0., 250., 100, 0., 1.5);  
 
+  fh3EGenERecN  = new TH3F("fh3EGenERecN", "Efficiency vs. Jet Multiplicity", 100., 0., 250., 100, 0., 250., 51, 0., 50.);
+
+  // Response map  
+  //arrays for bin limits
+  const Int_t nbin[4] = {100, 100, 100, 100}; 
+  Double_t LowEdge[4] = {0.,0.,0.,0.};
+  Double_t UpEdge[4] = {250., 250., 1., 1.};
+
+  for(int ic = 0;ic < kMaxCorrelation;ic++){
+    fhnCorrelation[ic]  = new THnSparseF(Form("fhnCorrelation_%d",ic),  "Response Map", 4, nbin, LowEdge, UpEdge);
+    if(ic==0) fhnCorrelation[ic]->SetTitle(Form("ResponseMap 0 <= npart <= %.0E",fgkJetNpartCut[ic]));
+    else fhnCorrelation[ic]->SetTitle(Form("ResponseMap %.0E < npart <= %.0E",fgkJetNpartCut[ic-1],fgkJetNpartCut[ic]));
+  }
+  const Int_t saveLevel = 1; // large save level more histos
   if(saveLevel>0){
     fHistList->Add(fh1PtHard);
     fHistList->Add(fh1PtHard_NoW);
     fHistList->Add(fh1PtHard_Trials);
     fHistList->Add(fh1NGenJets);
     fHistList->Add(fh1NRecJets);
+    ////////////////////////
+    fHistList->Add(fh1JetMultiplicity);     
+    fHistList->Add(fh2ERecZRec);
+    fHistList->Add(fh2EGenZGen);
+    fHistList->Add(fh2Efficiency);
+    fHistList->Add(fh3EGenERecN);
+
+    for(int ic = 0;ic < kMaxCorrelation;++ic){
+      fHistList->Add(fhnCorrelation[ic]);
+    }
+    //////////////////////// 
     for(int ij  = 0;ij<kMaxJets;++ij){
       fHistList->Add(fh1E[ij]);
       fHistList->Add(fh1PtRecIn[ij]);
@@ -356,6 +409,9 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
   Int_t nGenJets = 0;
   AliAODJet recJets[kMaxJets];
   Int_t nRecJets = 0;
+  ///////////////////////////
+  Int_t nTracks = 0;
+  //////////////////////////  
 
   Double_t eventW = 1;
   Double_t ptHard = 0; 
@@ -455,6 +511,9 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
   nRecJets = aodRecJets->GetEntries();
   fh1NRecJets->Fill(nRecJets);
   nRecJets = TMath::Min(nRecJets,kMaxJets);
+  //////////////////////////////////////////
+  nTracks  = fAOD->GetNumberOfTracks();
+  ///////////////////////////////////////////  
 
   for(int ir = 0;ir < nRecJets;++ir){
     AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ir));
@@ -496,13 +555,55 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
     fh3RecEtaPhiPt[ir]->Fill(etaRec,phiRec,ptRec,eventW);
     // Fill Correlation
     Int_t ig = iGenIndex[ir];
-    if(ig>=0&&ig<nGenJets){
+    if(ig>=0 && ig<nGenJets){
       fh1PtRecOut[ir]->Fill(ptRec,eventW);
-      Double_t ptGen = genJets[ig].Pt();
+      Double_t ptGen  = genJets[ig].Pt();
+      Double_t phiGen = genJets[ig].Phi();
+      if(phiGen<0)phiGen+=TMath::Pi()*2.; 
+      Double_t etaGen = genJets[ig].Eta();
       fh2PtFGen[ir]->Fill(ptRec,ptGen,eventW);
       fh3PtRecGenHard[ir]->Fill(ptRec,ptGen,ptHard,eventW);
       fh3PtRecGenHard_NoW[ir]->Fill(ptRec,ptGen,ptHard,1);
-    }
+      /////////////////////////////////////////////////////
+      Double_t ERec = recJets[ir].E();
+      Double_t EGen = genJets[ig].E();
+      fh2Efficiency->Fill(EGen, ERec/EGen);
+      if (EGen>=0. && EGen<=250.){
+        Double_t Eleading = -1;
+        Double_t ptleading = -1;
+        Int_t nPart=0;
+        // loop over tracks
+        for (Int_t it = 0; it< nTracks; it++){
+          if (fAOD->GetTrack(it)->E() > EGen) continue;
+          Double_t phiTrack = fAOD->GetTrack(it)->Phi();
+          if (phiTrack<0) phiTrack+=TMath::Pi()*2.;            
+          Double_t etaTrack = fAOD->GetTrack(it)->Eta();
+          Float_t deta  = etaRec - etaTrack;
+          Float_t dphi  = TMath::Abs(phiRec - phiTrack);
+          Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);        
+          // find leading particle
+          if (R<0.4 && fAOD->GetTrack(it)->E()>Eleading){
+            Eleading  = fAOD->GetTrack(it)->E();
+            ptleading = fAOD->GetTrack(it)->Pt();            
+          }
+          if (fAOD->GetTrack(it)->Pt()>0.03*EGen && fAOD->GetTrack(it)->E()<=EGen && R<0.7)
+            nPart++;
+        }
+        // fill Response Map (4D histogram) and Energy vs z distributions
+        Double_t var[4] = {EGen, ERec, ptleading/EGen, ptleading/ERec};                       
+        fh2ERecZRec->Fill(var[1],var[3]); // this has to be filled always in the real case...
+        fh2EGenZGen->Fill(var[0],var[2]);
+        fh1JetMultiplicity->Fill(nPart);
+        fh3EGenERecN->Fill(EGen, ERec, nPart); 
+	for(int ic = 0;ic <kMaxCorrelation;ic++){
+        if (nPart<=fgkJetNpartCut[ic]){
+	  fhnCorrelation[ic]->Fill(var);
+	  break;
+	}
+	}
+      }
+    }  
+    ////////////////////////////////////////////////////  
     else{
       fh3RecEtaPhiPt_NoGen[ir]->Fill(etaRec,phiRec,ptRec,eventW);
     }
