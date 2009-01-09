@@ -686,8 +686,11 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   //
   // calculate effective mass
   //
-  const Float_t kpmass[5] = {5.10000000000000037e-04,1.05660000000000004e-01,1.39570000000000000e-01,
-		      4.93599999999999983e-01, 9.38270000000000048e-01};
+  const Float_t kpmass[5] = {TDatabasePDG::Instance()->GetParticle(kElectron)->Mass(),
+			     TDatabasePDG::Instance()->GetParticle(kMuonMinus)->Mass(),
+			     TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass(),
+			     TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass(),
+			     TDatabasePDG::Instance()->GetParticle(kProton)->Mass()};
   if (p1>4) return -1;
   if (p2>4) return -1;
   Float_t mass1 = kpmass[p1]; 
