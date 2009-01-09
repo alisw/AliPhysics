@@ -237,7 +237,7 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     static const Int_t fgkFetNofRegisters;     ///< Number of registers for Fet
     static const Int_t fgkJtagNofLines;        ///< Number of lines for Jtag
 
-  ClassDef(AliMUONGlobalCrateConfig,2)  
+  ClassDef(AliMUONGlobalCrateConfig,3)  
 };
 
 #endif 
