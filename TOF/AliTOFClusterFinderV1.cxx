@@ -101,13 +101,13 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source
    fRunLoader(0),
    fDigits(source.fDigits),
    fRecPoints(source.fRecPoints),
-  fNumberOfTofClusters(0),
-  fNumberOfTofDigits(0),
-  fMaxDeltaTime(10),
-  fVerbose(0),
-  fDecoderVersion(source.fDecoderVersion),
-  fTOFcalib(source.fTOFcalib),
-  fTOFdigitMap(new AliTOFDigitMap())
+   fNumberOfTofClusters(0),
+   fNumberOfTofDigits(0),
+   fMaxDeltaTime(10),
+   fVerbose(0),
+   fDecoderVersion(source.fDecoderVersion),
+   fTOFcalib(source.fTOFcalib),
+   fTOFdigitMap(new AliTOFDigitMap())
 
 {
   // copy constructor

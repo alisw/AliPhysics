@@ -1188,9 +1188,9 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   // -----------------------------------------------------   |
   // x <-----------------------------------------------------
 
-  Float_t localX=(ind[4]-23.5)*2.5; 
-  Float_t localY=0; 
-  Float_t localZ=(ind[3]-0.5)*3.5; 
+  Float_t localX=(ind[4]-23.5)*AliTOFGeometry::XPad();
+  Float_t localY=0;
+  Float_t localZ=(ind[3]- 0.5)*AliTOFGeometry::ZPad();
 
   //move to the tracking ref system
 
@@ -1215,7 +1215,7 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   // 0     0   0
   // 0     0   sz2
 
-  lcov[0]=2.5*2.5/12.;
+  lcov[0]=AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
   lcov[1]=0;
   lcov[2]=0;
   lcov[3]=0;
@@ -1223,7 +1223,7 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   lcov[5]=0;
   lcov[6]=0;
   lcov[7]=0;
-  lcov[8]=3.5*3.5/12.;
+  lcov[8]=AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad()/12.;
 
   //cluster covariance in the tracking system:
   TGeoHMatrix m;
