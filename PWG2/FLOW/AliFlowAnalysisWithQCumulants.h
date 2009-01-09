@@ -140,9 +140,10 @@ class AliFlowAnalysisWithQCumulants{
   AliFlowCommonHistResults*  fCommonHistsResults6th;    //final results for 6th order int. and diff. flow stored in the common histograms
   AliFlowCommonHistResults*  fCommonHistsResults8th;    //final results for 8th order int. and diff. flow stored in the common histograms
       
-  TH1D*                      f2pDistribution;            //distribution of <2>_{n|n}
-  TH1D*                      f4pDistribution;            //distribution of <4>_{n,n|n,n}
-  TH1D*                      f6pDistribution;            //distribution of <6>_{n,n,n|n,n,n} 
+  TH1D*                      f2pDistribution;           //distribution of <2>_{n|n}
+  TH1D*                      f4pDistribution;           //distribution of <4>_{n,n|n,n}
+  TH1D*                      f6pDistribution;           //distribution of <6>_{n,n,n|n,n,n} 
+  TH1D*                      f8pDistribution;           //distribution of <8>_{n,n,n,n|n,n,n,n}
  
   Int_t                      fnBinsPt;                  //number of pt bins
   Double_t                   fPtMin;                    //minimum pt   

@@ -89,6 +89,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f2pDistribution(NULL),
  f4pDistribution(NULL),
  f6pDistribution(NULL),
+ f8pDistribution(NULL),
  fnBinsPt(0),
  fPtMin(0),
  fPtMax(0)
@@ -326,6 +327,12 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  f6pDistribution->SetXTitle("<6>_{n,n,n|n,n,n}");
  f6pDistribution->SetYTitle("Counts");
  fHistList->Add(f6pDistribution);
+ 
+ //weighted <8>_{n,n,n,n|n,n,n,n} distribution
+ f8pDistribution = new TH1D("f8pDistribution","<8>_{n,n,n,n|n,n,n,n} distribution",100000,-0.000000001,0.00000001);
+ f8pDistribution->SetXTitle("<8>_{n,n,n,n|n,n,n,n}");
+ f8pDistribution->SetYTitle("Counts");
+ fHistList->Add(f8pDistribution);
  
 }//end of CreateOutputObjects()
 
@@ -591,6 +598,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   eight1n1n1n1n1n1n1n1n = (pow(xQvector1n.Mod(),8)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(12.*seven2n1n1n1n1n1n1n+16.*six1n1n1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(8.*six3n1n1n1n1n1n+48.*six1n1n1n1n1n1n+6.*six2n2n1n1n1n1n+96.*five2n1n1n1n1n+72.*four1n1n1n1n+36.*six2n1n1n2n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(2.*five4n1n1n1n1n+32.*five2n1n1n1n1n+36.*four1n1n1n1n+32.*four3n1n1n1n+48.*five2n1n1n1n1n+48.*five3n1n2n1n1n+144.*five2n1n1n1n1n+288.*four1n1n1n1n+36.*five2n2n2n1n1n+144.*three2n1n1n+96.*two1n1n+144.*four2n1n2n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(8.*four3n1n1n1n+48.*four1n1n1n1n+12.*four4n2n1n1n+96.*four2n1n2n1n+96.*three2n1n1n+72.*three2n1n1n+144.*two1n1n+16.*four3n1n3n1n+48.*four3n1n1n1n+144.*four1n1n1n1n+72.*four1n1n1n1n+96.*three3n2n1n+24.*four3n1n2n2n+144.*four2n1n2n1n+288.*two1n1n+288.*three2n1n1n+9.*four2n2n2n2n+72.*two2n2n+24.)-xMult*(xMult-1.)*(xMult-2.)*(12.*three2n1n1n+16.*two1n1n+24.*three3n2n1n+48.*three2n1n1n+96.*two1n1n+8.*three4n3n1n+32.*three3n2n1n+96.*three2n1n1n+144.*two1n1n+6.*three4n2n2n+96.*two2n2n+36.*two2n2n+72.+48.*three3n2n1n+16.*two3n3n+72.*three2n1n1n+144.*two1n1n)-xMult*(xMult-1.)*(8.*two1n1n+12.*two2n2n+16.+8.*two3n3n+48.*two1n1n+1.*two4n4n+16.*two2n2n+18.)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
   
   fQCorrelations->Fill(30.,eight1n1n1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
+ 
+  f8pDistribution->Fill(eight1n1n1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
  } 
  //---------------------------------------------------------------------------------------------------------
  
