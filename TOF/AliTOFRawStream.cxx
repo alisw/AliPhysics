@@ -178,9 +178,9 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
-  fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0),
-  fChainBunchID(0x0),
+  fLocalEventCounterTRM(),
+  fLocalEventCounterChain(),
+  fChainBunchID(),
   fCableLengthMap(0x0),
   fEventID(0)
 {
@@ -199,16 +199,11 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader->Reset();
   fRawReader->Select("TOF");
 
-  fLocalEventCounterTRM = new Int_t[13];
-  fLocalEventCounterChain = new Int_t*[13];
-  fChainBunchID = new Int_t*[13];
-  for (Int_t j=0;j<13;j++){
-    fLocalEventCounterTRM[j] = -1;
-    fLocalEventCounterChain[j] = new Int_t[2];
-    fChainBunchID[j] = new Int_t[2];
-    for (Int_t k=0;k<2;k++){
-      fLocalEventCounterChain[j][k] = -1;
-      fChainBunchID[j][k] = -1;
+  for (Int_t jj=0;jj<13;jj++) {
+    fLocalEventCounterTRM[jj] = -1;
+    for (Int_t ii=0;ii<2;ii++) {
+      fLocalEventCounterChain[jj][ii] = -1;
+      fChainBunchID[jj][ii] = -1;
     }
   }
 
@@ -253,9 +248,9 @@ AliTOFRawStream::AliTOFRawStream():
   fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
-  fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0),
-  fChainBunchID(0x0),
+  fLocalEventCounterTRM(),
+  fLocalEventCounterChain(),
+  fChainBunchID(),
   fCableLengthMap(0x0),
   fEventID(0)
 {
@@ -270,13 +265,8 @@ AliTOFRawStream::AliTOFRawStream():
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
   fTOFrawData->SetOwner();
 
-  fLocalEventCounterTRM = new Int_t[13];
-  fLocalEventCounterChain = new Int_t*[13];
-  fChainBunchID = new Int_t*[13];
   for (Int_t j=0;j<13;j++){
     fLocalEventCounterTRM[j] = -1;
-    fLocalEventCounterChain[j] = new Int_t[2];
-    fChainBunchID[j] = new Int_t[2];
     for (Int_t k=0;k<2;k++){
       fLocalEventCounterChain[j][k] = -1;
       fChainBunchID[j][k] = -1;
@@ -323,9 +313,9 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fPackedDataBuffer(),
   fLocalEventCounterDRM(stream.fLocalEventCounterDRM),
   fLocalEventCounterLTM(stream.fLocalEventCounterLTM),
-  fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0),
-  fChainBunchID(0x0),
+  fLocalEventCounterTRM(),
+  fLocalEventCounterChain(),
+  fChainBunchID(),
   fCableLengthMap(stream.fCableLengthMap),
   fEventID(stream.fEventID)
 {
@@ -433,11 +423,6 @@ AliTOFRawStream::~AliTOFRawStream()
   fTOFrawData->Clear();
   delete fTOFrawData;
 
-  delete [] fLocalEventCounterTRM;
-  for (Int_t ii=0; ii<2; ii++) {
-    delete [] fLocalEventCounterChain[ii];
-    delete [] fChainBunchID[ii];
-  }
   delete fCableLengthMap;
 
 }
@@ -1522,11 +1507,11 @@ void AliTOFRawStream::Geant2EquipmentId(Int_t vol[], Int_t eqId[])
   //      nPadZ   number -vol[3]- (variable in [0, 1])
   //      nPadX   number -vol[4]- (variable in [0,47])
   // in:
-  //      nDDL     -eqId[0]- (variable in [0;71]) -> number of the DDL file 
-  //      nTRM     -eqId[1]- (variable in [3;12]) -> number of the TRM file 
-  //      nTDC     -eqId[2]- (variable in [0;14]) -> number of the TDC file 
-  //      nChain   -eqId[3]- (variable in [0; 1]) -> number of the chain file 
-  //      nChannel -eqId[4]- (variable in [0; 8]) -> number of the channel file 
+  //      nDDL     -eqId[0]- (variable in [0;71]) -> number of the DDL
+  //      nTRM     -eqId[1]- (variable in [3;12]) -> number of the TRM
+  //      nTDC     -eqId[2]- (variable in [0;14]) -> number of the TDC
+  //      nChain   -eqId[3]- (variable in [0; 1]) -> number of the chain
+  //      nChannel -eqId[4]- (variable in [0; 8]) -> number of the channel
   //
 
   eqId[0] = Geant2DDL(vol);
@@ -1548,7 +1533,7 @@ Int_t AliTOFRawStream::Geant2DDL(Int_t vol[])
   //      nPadZ   number -vol[3]- (variable in [0, 1])
   //      nPadX   number -vol[4]- (variable in [0,47])
   // in:
-  //      nDDL   (variable in [0;71]) -> number of the DDL file 
+  //      nDDL   (variable in [0;71]) -> number of the DDL
   //
 
 

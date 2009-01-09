@@ -456,9 +456,10 @@ class AliTOFRawStream: public TObject {
   AliTOFDecoder *GetDecoder() {return fDecoder;};
   void SetV2718Patch(Bool_t V2718Patch = kTRUE) {fDecoder->SetV2718Patch(V2718Patch);};
 
+  void SetRawReader(AliRawReader *rawReader) {fRawReader=rawReader;};
 
-  AliTOFHitDataBuffer *GetDataBuffer(Int_t DDL) {return &fDataBuffer[DDL];};
-  AliTOFHitDataBuffer *GetPackedDataBuffer(Int_t DDL) {return &fPackedDataBuffer[DDL];};
+  AliTOFHitDataBuffer GetDataBuffer(Int_t DDL) {return fDataBuffer[DDL];};
+  AliTOFHitDataBuffer GetPackedDataBuffer(Int_t DDL) {return fPackedDataBuffer[DDL];};
 
   void ResetDataBuffer(Int_t DDL) {fDataBuffer[DDL].Reset();};
   void ResetPackedDataBuffer(Int_t DDL) {fPackedDataBuffer[DDL].Reset();};
@@ -528,11 +529,11 @@ class AliTOFRawStream: public TObject {
   AliTOFHitDataBuffer fDataBuffer[72]; // AliTOFHitDataBuffer
   AliTOFHitDataBuffer fPackedDataBuffer[72]; // AliTOFHitDataBuffer
 
-  Int_t   fLocalEventCounterDRM; // event counter recorded in the DRM global trailer
-  Int_t   fLocalEventCounterLTM; // event counter recorded in the LTM global trailer
-  Int_t  *fLocalEventCounterTRM; // event counter recorded in the TRMs global trailer
-  Int_t **fLocalEventCounterChain; // event counter recorded in the chains trailer
-  Int_t **fChainBunchID; // BC ID recorded in the chains header
+  Int_t fLocalEventCounterDRM;          // event counter recorded in the DRM global trailer
+  Int_t fLocalEventCounterLTM;          // event counter recorded in the LTM global trailer
+  Int_t fLocalEventCounterTRM[13];      // event counter recorded in the TRMs global trailer
+  Int_t fLocalEventCounterChain[13][2]; // event counter recorded in the chains trailer
+  Int_t fChainBunchID[13][2];           // BC ID recorded in the chains header
 
   AliTOFCableLengthMap * fCableLengthMap;
 
