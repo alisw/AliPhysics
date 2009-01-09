@@ -17,6 +17,7 @@
 
 #include "AliVVertex.h"
 #include "AliAODRedCov.h"
+#include "AliLog.h"
 
 class AliAODVertex : public AliVVertex {
 
@@ -30,19 +31,23 @@ class AliAODVertex : public AliVVertex {
 	       Double_t chi2perNDF = -999.,
 	       TObject *parent = 0x0,
 	       Short_t id=-1,
-	       Char_t vtype=kUndef);
+	       Char_t vtype=kUndef,
+	       Int_t nprong = 0);
   AliAODVertex(const Float_t *position, 
 	       const Float_t *covMatrix=0x0,
 	       Double_t chi2perNDF = -999.,
 	       TObject *parent = 0x0,
 	       Short_t id=-1,
-	       Char_t vtype=kUndef);
+	       Char_t vtype=kUndef,
+	       Int_t nprong = 0);
     AliAODVertex(const Double_t *position, 
 		 Double_t chi2perNDF,
-		 Char_t vtype=kUndef);
+		 Char_t vtype=kUndef,
+		 Int_t nprong = 0);
     AliAODVertex(const Float_t *position, 
 		 Double_t chi2perNDF,
-		 Char_t vtype=kUndef);
+		 Char_t vtype=kUndef,
+		 Int_t nprong = 0);
 
   virtual ~AliAODVertex();
   AliAODVertex(const AliAODVertex& vtx); 
@@ -97,9 +102,9 @@ class AliAODVertex : public AliVVertex {
   void     AddDaughter(TObject *daughter);
   void     RemoveDaughter(TObject *daughter) { fDaughters.Remove(daughter); }
   void     RemoveDaughters() { fDaughters.Clear(); }
-  TObject* GetDaughter(Int_t i) { return fDaughters.At(i); }
+  TObject* GetDaughter(Int_t i); 
   Bool_t   HasDaughter(TObject *daughter) const;
-  Int_t    GetNDaughters() const { return fDaughters.GetEntriesFast(); }
+  Int_t    GetNDaughters() const;
   Int_t    GetNContributors() const;
 
   // covariance matrix elements after rotation by phi around z-axis 
@@ -119,19 +124,46 @@ class AliAODVertex : public AliVVertex {
 
   void     PrintIndices() const;
   void     Print(Option_t* option = "") const;
-
- private :
+  private:
+  void     MakeProngs() {if (fNprong > 0) fProngs = new TRef[fNprong];}
+	  
+ private:
 
   Double32_t      fPosition[3]; // vertex position
   Double32_t      fChi2perNDF;  // chi2/NDF of vertex fit
   Short_t         fID;          // vertex ID; corresponds to the array index of the appropriate ESD container
   Char_t          fType;        // vertex type
-
+  Int_t           fNprong;      // number of prongs
+  Int_t           fIprong;      //!index  of prong
   AliAODRedCov<3> *fCovMatrix;  // vertex covariance matrix; values of and below the diagonal
   TRef            fParent;      // reference to the parent particle
   TRefArray       fDaughters;   // references to the daughter particles
-
-  ClassDef(AliAODVertex,4);
+  TRef            *fProngs;     //[fNprong] alternative daughters for n-prong vertex
+  
+  ClassDef(AliAODVertex, 5);
 };
+
+inline  Int_t AliAODVertex::GetNDaughters() const
+{
+    if (!fProngs) {
+	return fDaughters.GetEntriesFast();
+    } else {
+	return fNprong;
+    }
+}
+
+inline TObject* AliAODVertex::GetDaughter(Int_t i)
+{
+    if (!fProngs) {
+	return fDaughters.At(i);
+    } else {
+	if (i < fNprong) {
+	    return fProngs[i].GetObject();
+	} else {
+	    AliWarning("Daughter index out of range !\n");
+	    return 0;
+	}
+    }
+}
 
 #endif

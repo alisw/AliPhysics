@@ -34,9 +34,12 @@ AliAODVertex::AliAODVertex() :
   fChi2perNDF(-999.),
   fID(-1),
   fType(kUndef),
+  fNprong(0),
+  fIprong(0),
   fCovMatrix(NULL),
   fParent(),
-  fDaughters()
+  fDaughters(),
+  fProngs(NULL)
   {
   // default constructor
 
@@ -49,19 +52,24 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   Double_t  chi2perNDF,
 			   TObject  *parent,
 			   Short_t id,
-			   Char_t vtype) :
+			   Char_t vtype, 
+			   Int_t  nprong) :
   AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(id),
   fType(vtype),
+  fNprong(nprong),
+  fIprong(0),
   fCovMatrix(NULL),
   fParent(parent),
-  fDaughters()
+  fDaughters(),
+  fProngs(0)
 {
   // constructor
 
   SetPosition(position);
   if (covMatrix) SetCovMatrix(covMatrix);
+  MakeProngs();
 }
 
 //______________________________________________________________________________
@@ -70,54 +78,68 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   Double_t  chi2perNDF,
 			   TObject  *parent,
 			   Short_t id,
-			   Char_t vtype) :
+			   Char_t vtype,
+			   Int_t nprong) :
 
   AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(id),
   fType(vtype),
+  fNprong(nprong),
+  fIprong(0),
   fCovMatrix(NULL),
   fParent(parent),
-  fDaughters()
+  fDaughters(),
+  fProngs(0)
 {
   // constructor
 
   SetPosition(position);
   if (covMatrix) SetCovMatrix(covMatrix);
+  MakeProngs();
 }
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Double_t position[3], 
 			   Double_t  chi2perNDF,
-			   Char_t vtype) :
+			   Char_t vtype, 
+			   Int_t nprong) :
   AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(-1),
   fType(vtype),
+  fNprong(nprong),
+  fIprong(0),
   fCovMatrix(NULL),
   fParent(),
-  fDaughters()
+  fDaughters(),
+  fProngs(0)
 {
   // constructor without covariance matrix
 
   SetPosition(position);  
+  MakeProngs();
 }
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Float_t position[3], 
 			   Double_t  chi2perNDF,
-			   Char_t vtype) :
+			   Char_t vtype, Int_t nprong) :
   AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(-1),
   fType(vtype),
+  fNprong(nprong),
+  fIprong(0),
   fCovMatrix(NULL),
   fParent(),
-  fDaughters()
+  fDaughters(),
+  fProngs(0)
 {
   // constructor without covariance matrix
 
   SetPosition(position);  
+  MakeProngs();
 }
 
 //______________________________________________________________________________
@@ -126,6 +148,7 @@ AliAODVertex::~AliAODVertex()
   // Destructor
 
   delete fCovMatrix;
+  if (fNprong > 0) delete[] fProngs;
 }
 
 //______________________________________________________________________________
@@ -134,9 +157,12 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   fChi2perNDF(vtx.fChi2perNDF),
   fID(vtx.fID),
   fType(vtx.fType),
+  fNprong(vtx.fNprong),
+  fIprong(vtx.fIprong),
   fCovMatrix(NULL),
   fParent(vtx.fParent),
-  fDaughters(vtx.fDaughters)
+  fDaughters(vtx.fDaughters),
+  fProngs(0)
 {
   // Copy constructor.
   
@@ -144,6 +170,10 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
     fPosition[i] = vtx.fPosition[i];
 
   if (vtx.fCovMatrix) fCovMatrix=new AliAODRedCov<3>(*vtx.fCovMatrix);
+  MakeProngs();
+  for (int i = 0; i < fNprong; i++) {
+      fProngs[i] = vtx.fProngs[i];
+  }
 }
 
 //______________________________________________________________________________
@@ -171,6 +201,13 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
     //other stuff
     fParent = vtx.fParent;
     fDaughters = vtx.fDaughters;
+    fNprong    = vtx.fNprong;
+    fIprong    = vtx.fIprong;  
+
+    MakeProngs();
+    for (int i = 0; i < fNprong; i++) {
+	fProngs[i] = vtx.fProngs[i];
+    }
   }
   
   return *this;
@@ -180,15 +217,22 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
 void AliAODVertex::AddDaughter(TObject *daughter)
 {
   // Add reference to daughter track
-
-  if (fDaughters.GetEntries()==0) {
-    TRefArray* arr = &fDaughters;
-    new(arr)TRefArray(TProcessID::GetProcessWithUID(daughter));  	
-  }
-  fDaughters.Add(daughter);	
-
+    if (!fProngs) {
+	if (fDaughters.GetEntries()==0) {
+	    TRefArray* arr = &fDaughters;
+	    new(arr)TRefArray(TProcessID::GetProcessWithUID(daughter));  	
+	}
+	fDaughters.Add(daughter);	
+    } else {
+	if (fIprong < fNprong) {
+	    fProngs[fIprong++] = daughter;
+	} else {
+	    AliWarning("Number of daughters out of range !\n");
+	}
+    }
   return;
 }
+
 
 //______________________________________________________________________________
 template <class T> void AliAODVertex::GetSigmaXYZ(T sigma[3]) const
@@ -228,12 +272,19 @@ Int_t AliAODVertex::GetNContributors() const
 Bool_t AliAODVertex::HasDaughter(TObject *daughter) const 
 {
   // Checks if the given daughter (particle) is part of this vertex.
-
-  TRefArrayIter iter(&fDaughters);
-  while (TObject *daugh = iter.Next()) {
-    if (daugh == daughter) return kTRUE;
-  }
-  return kFALSE;
+    if (!fProngs) {
+	TRefArrayIter iter(&fDaughters);
+	while (TObject *daugh = iter.Next()) {
+	    if (daugh == daughter) return kTRUE;
+	}
+	return kFALSE;
+    } else {
+	Bool_t has = kFALSE;
+	for (int i; i < fNprong; i++) {
+	    if (fProngs[i].GetObject() == daughter) has = kTRUE;
+	}
+	return has;
+    }
 }
 
 //______________________________________________________________________________
