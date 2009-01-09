@@ -50,6 +50,7 @@ TOF Raw Data decoder
 #include "AliTOFDecoder.h"
 #include "AliTOFGeometry.h"
 #include "AliRawDataHeader.h"
+#include "AliTOFRawDataFormat.h"
 
 ClassImp(AliTOFDecoder)
 
@@ -61,15 +62,15 @@ AliTOFDecoder::AliTOFDecoder() :
   fV2718Patch(kFALSE),
   fDataBuffer(0x0),
   fPackedDataBuffer(0x0),
-  fTRMGlobalHeader(0x0),
-  fTRMGlobalTrailer(0x0),
-  fTRMChainHeader(0x0),
-  fTRMChainTrailer(0x0),
-  fTDCPackedHit(0x0),
-  fTDCUnpackedHit(0x0),
-  fTRMTDCError(0x0),
-  fTRMDiagnosticErrorWord1(0x0),
-  fTRMDiagnosticErrorWord2(0x0),
+  //fTRMGlobalHeader(0x0),
+  //fTRMGlobalTrailer(0x0),
+  //fTRMChainHeader(0x0),
+  //fTRMChainTrailer(0x0),
+  //fTDCPackedHit(0x0),
+  //fTDCUnpackedHit(0x0),
+  //fTRMTDCError(0x0),
+  //fTRMDiagnosticErrorWord1(0x0),
+  //fTRMDiagnosticErrorWord2(0x0),
   fSpiderCurrentSlotID(-1),
   fSpiderCurrentChain(-1),
   fSpiderCurrentTDC(-1)
@@ -85,15 +86,15 @@ AliTOFDecoder::AliTOFDecoder(AliTOFHitDataBuffer *DataBuffer, AliTOFHitDataBuffe
   fV2718Patch(kFALSE),
   fDataBuffer(DataBuffer),
   fPackedDataBuffer(PackedDataBuffer),
-  fTRMGlobalHeader(0x0),
-  fTRMGlobalTrailer(0x0),
-  fTRMChainHeader(0x0),
-  fTRMChainTrailer(0x0),
-  fTDCPackedHit(0x0),
-  fTDCUnpackedHit(0x0),
-  fTRMTDCError(0x0),
-  fTRMDiagnosticErrorWord1(0x0),
-  fTRMDiagnosticErrorWord2(0x0),
+  //fTRMGlobalHeader(0x0),
+  //fTRMGlobalTrailer(0x0),
+  //fTRMChainHeader(0x0),
+  //fTRMChainTrailer(0x0),
+  //fTDCPackedHit(0x0),
+  //fTDCUnpackedHit(0x0),
+  //fTRMTDCError(0x0),
+  //fTRMDiagnosticErrorWord1(0x0),
+  //fTRMDiagnosticErrorWord2(0x0),
   fSpiderCurrentSlotID(-1),
   fSpiderCurrentChain(-1),
   fSpiderCurrentTDC(-1)
@@ -109,15 +110,15 @@ AliTOFDecoder::AliTOFDecoder(const AliTOFDecoder &source) :
   fV2718Patch(source.fV2718Patch),
   fDataBuffer(source.fDataBuffer),
   fPackedDataBuffer(source.fPackedDataBuffer),
-  fTRMGlobalHeader(source.fTRMGlobalHeader),
-  fTRMGlobalTrailer(source.fTRMGlobalTrailer),
-  fTRMChainHeader(source.fTRMChainHeader),
-  fTRMChainTrailer(source.fTRMChainTrailer),
-  fTDCPackedHit(source.fTDCPackedHit),
-  fTDCUnpackedHit(source.fTDCUnpackedHit),
-  fTRMTDCError(source.fTRMTDCError),
-  fTRMDiagnosticErrorWord1(source.fTRMDiagnosticErrorWord1),
-  fTRMDiagnosticErrorWord2(source.fTRMDiagnosticErrorWord2),
+  //fTRMGlobalHeader(source.fTRMGlobalHeader),
+  //fTRMGlobalTrailer(source.fTRMGlobalTrailer),
+  //fTRMChainHeader(source.fTRMChainHeader),
+  //fTRMChainTrailer(source.fTRMChainTrailer),
+  //fTDCPackedHit(source.fTDCPackedHit),
+  //fTDCUnpackedHit(source.fTDCUnpackedHit),
+  //fTRMTDCError(source.fTRMTDCError),
+  //fTRMDiagnosticErrorWord1(source.fTRMDiagnosticErrorWord1),
+  //fTRMDiagnosticErrorWord2(source.fTRMDiagnosticErrorWord2),
   fSpiderCurrentSlotID(source.fSpiderCurrentSlotID),
   fSpiderCurrentChain(source.fSpiderCurrentChain),
   fSpiderCurrentTDC(source.fSpiderCurrentTDC)
@@ -141,15 +142,15 @@ AliTOFDecoder::operator = (const AliTOFDecoder &source)
   fV2718Patch = source.fV2718Patch;
   fDataBuffer = source.fDataBuffer;
   fPackedDataBuffer = source.fPackedDataBuffer;
-  fTRMGlobalHeader = source.fTRMGlobalHeader;
-  fTRMGlobalTrailer = source.fTRMGlobalTrailer;
-  fTRMChainHeader = source.fTRMChainHeader;
-  fTRMChainTrailer = source.fTRMChainTrailer;
-  fTDCPackedHit = source.fTDCPackedHit;
-  fTDCUnpackedHit = source.fTDCUnpackedHit;
-  fTRMTDCError = source.fTRMTDCError;
-  fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
-  fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
+  //fTRMGlobalHeader = source.fTRMGlobalHeader;
+  //fTRMGlobalTrailer = source.fTRMGlobalTrailer;
+  //fTRMChainHeader = source.fTRMChainHeader;
+  //fTRMChainTrailer = source.fTRMChainTrailer;
+  //fTDCPackedHit = source.fTDCPackedHit;
+  //fTDCUnpackedHit = source.fTDCUnpackedHit;
+  //fTRMTDCError = source.fTRMTDCError;
+  //fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
+  //fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
   fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
   fSpiderCurrentChain = source.fSpiderCurrentChain;
   fSpiderCurrentTDC = source.fSpiderCurrentTDC;
@@ -171,6 +172,17 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
    * have the decoded data available for other
    * classes.
    */
+
+  AliTOFTRMGlobalHeader          *lTRMGlobalHeader; //TRM global header
+  AliTOFTRMGlobalTrailer         *lTRMGlobalTrailer; //TRM global trailer
+  AliTOFTRMChainHeader           *lTRMChainHeader; //TRM chain header
+  //AliTOFTRMChainTrailer          *lTRMChainTrailer; //TRM chain trailer
+  AliTOFTDCPackedHit             *lTDCPackedHit; //TDC packed hit
+  AliTOFTDCUnpackedHit           *lTDCUnpackedHit; //TDC unpacked hit
+  //AliTOFTRMTDCError              *lTRMTDCError; //TRM TDC error
+  //AliTOFTRMDiagnosticErrorWord1  *lTRMDiagnosticErrorWord1; //TRM diagnostic error word 1
+  //AliTOFTRMDiagnosticErrorWord2  *lTRMDiagnosticErrorWord2; //TRM diagnostica error word 2
+
 
   AliTOFHitData hitData;
   
@@ -274,12 +286,12 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	}
 	//decode status ok
 	//set TRM global header
-	fTRMGlobalHeader = (AliTOFTRMGlobalHeader *)rawData;	
+	lTRMGlobalHeader = (AliTOFTRMGlobalHeader*)rawData;	
 	//set current TRM
-	currentSlotID = fTRMGlobalHeader->GetSlotID();
-	currentACQ = fTRMGlobalHeader->GetACQBits();
+	currentSlotID = lTRMGlobalHeader->GetSlotID();
+	currentACQ = lTRMGlobalHeader->GetACQBits();
 	if (fVerbose)
-	  AliInfo(Form("  %02x - 0x%08x \t  TRM global header \t slotID=%02d ACQ=%01d L=%01d",decodeStatus,*rawData,fTRMGlobalHeader->GetSlotID(),fTRMGlobalHeader->GetACQBits(),fTRMGlobalHeader->GetLBit()));
+	  AliInfo(Form("  %02x - 0x%08x \t  TRM global header \t slotID=%02d ACQ=%01d L=%01d",decodeStatus,*rawData,lTRMGlobalHeader->GetSlotID(),lTRMGlobalHeader->GetACQBits(),lTRMGlobalHeader->GetLBit()));
 	//change decode status
 	decodeStatus = decodeStatus | TRM_BIT;
 	break;
@@ -335,9 +347,9 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	}
 	//decode status ok
 	//set TRM global trailer
-	fTRMGlobalTrailer = (AliTOFTRMGlobalTrailer *)rawData;	
+	lTRMGlobalTrailer = (AliTOFTRMGlobalTrailer *)rawData;	
 	if (fVerbose)
-	  AliInfo(Form("  %02x - 0x%08x \t  TRM global trailer \t CRC=%04d eventCounter=%04d",decodeStatus,*rawData,fTRMGlobalTrailer->GetEventCRC(),fTRMGlobalTrailer->GetEventCounter()));
+	  AliInfo(Form("  %02x - 0x%08x \t  TRM global trailer \t CRC=%04d eventCounter=%04d",decodeStatus,*rawData,lTRMGlobalTrailer->GetEventCRC(),lTRMGlobalTrailer->GetEventCounter()));
 	//change decode status
 	decodeStatus = decodeStatus & ~TRM_BIT;
 	break; 
@@ -356,9 +368,9 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	return kTRUE;
       }
       //decode status ok
-      fTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
+      lTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
       currentChain = 0;
-      currentBunchID = fTRMChainHeader->GetBunchID();
+      currentBunchID = lTRMChainHeader->GetBunchID();
       if (fVerbose)
 	AliInfo(Form("  %02x - 0x%08x \t  TRM chain A header \t chain=%01d bunchID=%04d",decodeStatus,*rawData,currentChain,currentBunchID));
       //change decode status
@@ -385,9 +397,9 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	return kTRUE;
       }
       //decode status ok
-      fTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
+      lTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
       currentChain = 1;
-      currentBunchID = fTRMChainHeader->GetBunchID();
+      currentBunchID = lTRMChainHeader->GetBunchID();
       if (fVerbose)
 	AliInfo(Form("  %02x - 0x%08x \t  TRM chain B header \t chain=%01d bunchID=%04d",decodeStatus,*rawData,currentChain,currentBunchID));
       //change decode status
@@ -431,25 +443,25 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	
       case PACKING_ENABLED_ACQ:
 	//decode TDC packed hit
-	fTDCPackedHit = (AliTOFTDCPackedHit *)rawData;
-	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	lTDCPackedHit = (AliTOFTDCPackedHit *)rawData;
+	lTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
 	//set hit in the equipment data
 	hitData.SetDDLID(currentDDL);
 	hitData.SetSlotID(currentSlotID);
 	hitData.SetACQ(currentACQ);
 	hitData.SetChain(currentChain);
-	hitData.SetPS(fTDCPackedHit->GetPSBits());
-	hitData.SetTDC(fTDCPackedHit->GetTDCID());
-	hitData.SetChan(fTDCPackedHit->GetChan());
-	hitData.SetTime((float)fTDCPackedHit->GetHitTime() * TIME_BIN_WIDTH);
-	hitData.SetTimeBin(fTDCPackedHit->GetHitTime());
-	hitData.SetTOT((float)fTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
-	hitData.SetTOTBin(fTDCPackedHit->GetTOTWidth());
+	hitData.SetPS(lTDCPackedHit->GetPSBits());
+	hitData.SetTDC(lTDCPackedHit->GetTDCID());
+	hitData.SetChan(lTDCPackedHit->GetChan());
+	hitData.SetTime((float)lTDCPackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(lTDCPackedHit->GetHitTime());
+	hitData.SetTOT((float)lTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
+	hitData.SetTOTBin(lTDCPackedHit->GetTOTWidth());
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
 	//orphane leading hit
 	if (hitData.GetPS()==LEADING_HIT_PS){
-	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
-	  hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	  hitData.SetTime((float)lTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	  hitData.SetTimeBin(lTDCUnpackedHit->GetHitTime());
 	  //set TOT to zero
 	  hitData.SetTOT(0);
 	  hitData.SetTOTBin(0);
@@ -465,8 +477,8 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	}
 	//orphane trailing hit
 	else if (hitData.GetPS()==TRAILING_HIT_PS){
-	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
-	  hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	  hitData.SetTime((float)lTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	  hitData.SetTimeBin(lTDCUnpackedHit->GetHitTime());
 	  //set TOT to not measured
 	  hitData.SetTOT(-1);
 	  hitData.SetTOTBin(-1);
@@ -526,17 +538,17 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	
       case LEADING_ONLY_ACQ: case TRAILING_ONLY_ACQ:
 	//decode TDC unpacked hit
-	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	lTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
 	//set hit in the equipment data
 	hitData.SetDDLID(currentDDL);
 	hitData.SetSlotID(currentSlotID);
 	hitData.SetACQ(currentACQ);
 	hitData.SetChain(currentChain);
-	hitData.SetPS(fTDCUnpackedHit->GetPSBits());
-	hitData.SetTDC(fTDCUnpackedHit->GetTDCID());
-	hitData.SetChan(fTDCUnpackedHit->GetChan());
-	hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
-	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	hitData.SetPS(lTDCUnpackedHit->GetPSBits());
+	hitData.SetTDC(lTDCUnpackedHit->GetTDCID());
+	hitData.SetChan(lTDCUnpackedHit->GetChan());
+	hitData.SetTime((float)lTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(lTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
@@ -563,17 +575,17 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	
       case PACKING_DISABLED_ACQ:
 	//decode TDC unpacked hit
-	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	lTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
 	//set hit in the equipment data
 	hitData.SetDDLID(currentDDL);
 	hitData.SetSlotID(currentSlotID);
 	hitData.SetACQ(currentACQ);
 	hitData.SetChain(currentChain);
-	hitData.SetPS(fTDCUnpackedHit->GetPSBits());
-	hitData.SetTDC(fTDCUnpackedHit->GetTDCID());
-	hitData.SetChan(fTDCUnpackedHit->GetChan());
-	hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
-	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	hitData.SetPS(lTDCUnpackedHit->GetPSBits());
+	hitData.SetTDC(lTDCUnpackedHit->GetTDCID());
+	hitData.SetChan(lTDCUnpackedHit->GetChan());
+	hitData.SetTime((float)lTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(lTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
 	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);

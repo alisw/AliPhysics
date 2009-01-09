@@ -151,15 +151,15 @@ enum {
   AliTOFHitDataBuffer *fPackedDataBuffer; //packed data buffe pointer
 
   //decoding objects
-  AliTOFTRMGlobalHeader          *fTRMGlobalHeader; //TRM global header
-  AliTOFTRMGlobalTrailer         *fTRMGlobalTrailer; //TRM global trailer
-  AliTOFTRMChainHeader           *fTRMChainHeader; //TRM chain header
-  AliTOFTRMChainTrailer          *fTRMChainTrailer; //TRM chain trailer
-  AliTOFTDCPackedHit             *fTDCPackedHit; //TDC packed hit
-  AliTOFTDCUnpackedHit           *fTDCUnpackedHit; //TDC unpacked hit
-  AliTOFTRMTDCError              *fTRMTDCError; //TRM TDC error
-  AliTOFTRMDiagnosticErrorWord1  *fTRMDiagnosticErrorWord1; //TRM diagnostic error word 1
-  AliTOFTRMDiagnosticErrorWord2  *fTRMDiagnosticErrorWord2; //TRM diagnostica error word 2
+  //AliTOFTRMGlobalHeader          *fTRMGlobalHeader; //TRM global header
+  //AliTOFTRMGlobalTrailer         *fTRMGlobalTrailer; //TRM global trailer
+  //AliTOFTRMChainHeader           *fTRMChainHeader; //TRM chain header
+  //AliTOFTRMChainTrailer          *fTRMChainTrailer; //TRM chain trailer
+  //AliTOFTDCPackedHit             *fTDCPackedHit; //TDC packed hit
+  //AliTOFTDCUnpackedHit           *fTDCUnpackedHit; //TDC unpacked hit
+  //AliTOFTRMTDCError              *fTRMTDCError; //TRM TDC error
+  //AliTOFTRMDiagnosticErrorWord1  *fTRMDiagnosticErrorWord1; //TRM diagnostic error word 1
+  //AliTOFTRMDiagnosticErrorWord2  *fTRMDiagnosticErrorWord2; //TRM diagnostica error word 2
 
   //SPIDER variables
   Int_t         fSpiderCurrentSlotID; //SPIDER current slot ID
