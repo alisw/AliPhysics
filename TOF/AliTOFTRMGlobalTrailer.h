@@ -22,10 +22,10 @@ class AliTOFTRMGlobalTrailer
   UInt_t GetEventCounter() {return fEventCounter;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fSlotID:       4;
-  UInt_t fEventCRC:     12;
-  UInt_t fEventCounter: 12;
-  UInt_t fWordType:     4;
+  UInt_t fSlotID:        4; // TRM number
+  UInt_t fEventCRC:     12; // event CRC
+  UInt_t fEventCounter: 12; // event couter
+  UInt_t fWordType:      4; // word type
 };
 
 #endif /* ALITOFTRMGLOBALTRAILER_H */

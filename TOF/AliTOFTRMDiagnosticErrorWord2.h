@@ -24,12 +24,12 @@ class AliTOFTRMDiagnosticErrorWord2
   UInt_t GetMBO() {return fMBO;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fJtagErrorCode: 11;
-  UInt_t fTDCID:         4;
-  UInt_t fCBit:          1;
-  UInt_t fMBZ:           8;
-  UInt_t fMBO:           4;
-  UInt_t fWordType:      4;
+  UInt_t fJtagErrorCode: 11; // Jtag error code
+  UInt_t fTDCID:          4; // TDC ID
+  UInt_t fCBit:           1; // C bit
+  UInt_t fMBZ:            8; // must-be-zero bits
+  UInt_t fMBO:            4; // must-be-zero bits
+  UInt_t fWordType:       4; // word type
 };
 
 #endif

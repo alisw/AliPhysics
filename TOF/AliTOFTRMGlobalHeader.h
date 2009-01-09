@@ -24,12 +24,12 @@ class AliTOFTRMGlobalHeader
   UInt_t GetMBZ() {return fMBZ;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fSlotID:     4;
-  UInt_t fEventWords: 13;
-  UInt_t fACQBits:    2;
-  UInt_t fLBit:       1;
-  UInt_t fMBZ:        8;
-  UInt_t fWordType:   4;
+  UInt_t fSlotID:      4; // TRM number
+  UInt_t fEventWords: 13; // event word
+  UInt_t fACQBits:     2; // ACQ bits
+  UInt_t fLBit:        1; // L bit
+  UInt_t fMBZ:         8; // must-be-zero bits
+  UInt_t fWordType:    4; // word type
 };
 
 #endif /* ALITOFTRMGLOBALHEADER_H */

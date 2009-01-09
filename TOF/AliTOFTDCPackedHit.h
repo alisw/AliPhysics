@@ -25,13 +25,13 @@ class AliTOFTDCPackedHit
   UInt_t GetPSBits() {return fPSBits;};
   UInt_t GetMBO() {return fMBO;};
  private:
-  UInt_t fHitTime:  13;
-  UInt_t fTOTWidth: 8;
-  UInt_t fChan:     3;
-  UInt_t fTDCID:    4;
-  UInt_t fEBit:     1;
-  UInt_t fPSBits:   2;
-  UInt_t fMBO:      1;
+  UInt_t fHitTime:  13; // time-of-flight measurement
+  UInt_t fTOTWidth:  8; // time-over-threshold measurement
+  UInt_t fChan:      3; // TDC channel number
+  UInt_t fTDCID:     4; // TDC ID
+  UInt_t fEBit:      1; // E bit
+  UInt_t fPSBits:    2; // PS bits
+  UInt_t fMBO:       1; // must-be-zero bits
 };
 
 #endif

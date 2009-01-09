@@ -22,10 +22,10 @@ class AliTOFTRMChainTrailer
   UInt_t GetEventCounter() {return fEventCounter;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fStatus:       4;
-  UInt_t fMBZ:          12;
-  UInt_t fEventCounter: 12;
-  UInt_t fWordType:     4;
+  UInt_t fStatus:        4; // status
+  UInt_t fMBZ:          12; // must-be-zero bits
+  UInt_t fEventCounter: 12; // event counter
+  UInt_t fWordType:      4; // word type
 };
 
 #endif

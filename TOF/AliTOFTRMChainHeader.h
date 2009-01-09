@@ -24,12 +24,12 @@ class AliTOFTRMChainHeader
   UInt_t GetTSBit() {return fTSBit;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fSlotID:   4;
-  UInt_t fBunchID:  12;
-  UInt_t fPB24Temp: 8;
-  UInt_t fPB24ID:   3;
-  UInt_t fTSBit:    1;
-  UInt_t fWordType: 4;
+  UInt_t fSlotID:    4; // TRM number
+  UInt_t fBunchID:  12; // bunch ID
+  UInt_t fPB24Temp:  8; // PB24 temperature
+  UInt_t fPB24ID:    3; // PB24 ID
+  UInt_t fTSBit:     1; // TS bit
+  UInt_t fWordType:  4; // word type
 };
 
 #endif

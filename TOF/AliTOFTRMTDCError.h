@@ -22,10 +22,10 @@ class AliTOFTRMTDCError
   UInt_t GetTDCID () {return fTDCID;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fErrorFlags: 15;
-  UInt_t fMBZ:        9;
-  UInt_t fTDCID:      4;
-  UInt_t fWordType:   4;
+  UInt_t fErrorFlags: 15; // error flags
+  UInt_t fMBZ:         9; // must-be-zero bits
+  UInt_t fTDCID:       4; // TDC number
+  UInt_t fWordType:    4; // word type
 };
 
 #endif

@@ -24,12 +24,12 @@ class AliTOFTDCUnpackedHit
   UInt_t GetPSBits() {return fPSBits;};
   UInt_t GetMBO() {return fMBO;};
  private:
-  UInt_t fHitTime:  21;
-  UInt_t fChan:     3;
-  UInt_t fTDCID:    4;
-  UInt_t fEBit:     1;
-  UInt_t fPSBits:   2;
-  UInt_t fMBO:      1;
+  UInt_t fHitTime:  21; // leading or trailing edge measurement
+  UInt_t fChan:      3; // TDC channel number
+  UInt_t fTDCID:     4; // TDC ID
+  UInt_t fEBit:      1; // E bit
+  UInt_t fPSBits:    2; // PS bits
+  UInt_t fMBO:       1; // must-be-zero bits
 };
 
 #endif

@@ -23,11 +23,11 @@ class AliTOFTRMDiagnosticErrorWord1
   UInt_t GetMBO() {return fMBO;};
   UInt_t GetWordType() {return fWordType;};
  private:
-  UInt_t fFaultChipFlagID: 15;
-  UInt_t fCBit:            1;
-  UInt_t fMBZ:             8;
-  UInt_t fMBO:             4;
-  UInt_t fWordType:        4;
+  UInt_t fFaultChipFlagID: 15; // fault chip flag ID
+  UInt_t fCBit:             1; // C bit
+  UInt_t fMBZ:              8; // must-be-zero bits
+  UInt_t fMBO:              4; // must-be-zero bits
+  UInt_t fWordType:         4; // word type
 };
 
 #endif
