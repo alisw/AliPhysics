@@ -243,8 +243,8 @@ void AliMUONQAChecker::Init(const AliQA::DETECTORINDEX_t det)
 {
   // intialises QA and QA checker settings
   AliQA::Instance(det) ; 
-  Float_t * hiValue  = new Float_t[AliQA::kNBIT] ; 
-  Float_t * lowValue = new Float_t[AliQA::kNBIT] ;
+  Float_t hiValue[AliQA::kNBIT] ; 
+  Float_t lowValue[AliQA::kNBIT] ;
   lowValue[AliQA::kINFO]      = 0.999   ; 
   hiValue[AliQA::kINFO]       = 1.0 ; 
   hiValue[AliQA::kWARNING]    = 0.99 ; 
@@ -253,7 +253,7 @@ void AliMUONQAChecker::Init(const AliQA::DETECTORINDEX_t det)
   hiValue[AliQA::kERROR]      = 0.5 ; 
   lowValue[AliQA::kFATAL]     = -1.0   ; 
   hiValue[AliQA::kFATAL]      = 0.0 ; 
-  SetHiLo(hiValue, lowValue) ; 
+  SetHiLo(&hiValue[0], &lowValue[0]) ; 
 }
 
 //______________________________________________________________________________
