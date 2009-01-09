@@ -135,6 +135,37 @@ Double_t AliProtonQAAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 }
 
 //____________________________________________________________________//
+Bool_t AliProtonQAAnalysis::IsInPhaseSpace(AliESDtrack* track) {
+  // Checks if the track is outside the analyzed y-Pt phase space
+  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  
+  if(fUseTPCOnly) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+    }
+  }
+  else {
+    Pt = track->Pt();
+    Px = track->Px();
+    Py = track->Py();
+    Pz = track->Pz();
+  }
+  
+  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
+  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
+    return kFALSE;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________//
 Bool_t AliProtonQAAnalysis::IsAccepted(AliESDEvent *esd,
 				       const AliESDVertex *vertex, 
 				       AliESDtrack* track) {
@@ -255,47 +286,53 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDEvent *esd,
   if(fTPCpidFlag)
     if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) return kFALSE;
 
-  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
-  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
-    return kFALSE;
-
   return kTRUE;
 }
 
 //____________________________________________________________________//
-void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
+void AliProtonQAAnalysis::FillQA(AliStack *stack,
+				 AliESDEvent *esd,
+				 const AliESDVertex *vertex, 
+				 AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
   Int_t nPrimaries = stack->GetNprimary();
   Int_t label = TMath::Abs(track->GetLabel());
 
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
-  Float_t dcaXY = 0.0, dcaZ = 0.0;
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+
   if((fUseTPCOnly)&&(!fUseHybridTPC)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-      dcaXY = -100.0, dcaZ = -100.0;
+      dca[0] = -100.; dca[1] = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
     }
     else {
       Pt = tpcTrack->Pt();
       Px = tpcTrack->Px();
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
-      track->GetImpactParametersTPC(dcaXY,dcaZ);
+      tpcTrack->PropagateToDCA(vertex,
+			       esd->GetMagneticField(),
+			       100.,dca,cov);
     }
   }
   else if(fUseHybridTPC) {
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-      dcaXY = -100.0, dcaZ = -100.0;
+      dca[0] = -100.; dca[1] = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
     }
     else {
       Pt = tpcTrack->Pt();
       Px = tpcTrack->Px();
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
-      track->GetImpactParameters(dcaXY,dcaZ);
+      tpcTrack->PropagateToDCA(vertex,
+			       esd->GetMagneticField(),
+			       100.,dca,cov);
     }
   }
   else{
@@ -303,9 +340,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
     Px = track->Px();
     Py = track->Py();
     Pz = track->Pz();
-    track->GetImpactParameters(dcaXY,dcaZ);
+    track->PropagateToDCA(vertex,
+			  esd->GetMagneticField(),
+			  100.,dca,cov);
   }
-     
+
   Int_t  fIdxInt[200];
   Int_t nClustersITS = track->GetITSclusters(fIdxInt);
   Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
@@ -419,36 +458,36 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
       }//sigma to vertex TPC
       if(fMaxDCAXYFlag) {
-	if(dcaXY > fMaxDCAXY) {
-	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(11)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXY) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(11)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
-	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(11)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXY)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(11)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXYTPC) {
-	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(12)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(12)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXYTPC)
-	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(12)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXYTPC)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(12)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
-	if(dcaZ > fMaxDCAZ) {
-	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(13)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZ) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(13)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
-	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(13)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZ)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(13)))->Fill(TMath::Abs(dca[1]));
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZTPC) {
-	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(14)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZTPC) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(14)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZTPC)
-	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(14)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZTPC)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(14)))->Fill(TMath::Abs(dca[1]));
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
 	if(track->GetConstrainedChi2() > 0) {
@@ -630,36 +669,36 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
       }//sigma to vertex TPC
       if(fMaxDCAXYFlag) {
-	if(dcaXY > fMaxDCAXY) {
-	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(11)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXY) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(11)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
-	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(11)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXY)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(11)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXYTPC) {
-	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(12)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(12)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXYTPC)
-	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(12)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXYTPC)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(12)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
-	if(dcaZ > fMaxDCAZ) {
-	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(13)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZ) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(13)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
-	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(13)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZ)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(13)))->Fill(TMath::Abs(dca[1]));
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZTPC) {
-	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(14)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZTPC) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(14)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZTPC)
-	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(14)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZTPC)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(14)))->Fill(TMath::Abs(dca[1]));
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
 	if(track->GetConstrainedChi2() > 0) {
@@ -844,36 +883,36 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
       }//sigma to vertex TPC
       if(fMaxDCAXYFlag) {
-	if(dcaXY > fMaxDCAXY) {
-	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(11)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXY) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(11)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
-	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(11)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXY)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(11)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXYTPC) {
-	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(12)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(12)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXYTPC)
-	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(12)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXYTPC)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(12)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
-	if(dcaZ > fMaxDCAZ) {
-	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(13)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZ) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(13)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
-	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(13)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZ)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(13)))->Fill(TMath::Abs(dca[1]));
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZTPC) {
-	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(14)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZTPC) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(14)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZTPC)
-	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(14)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZTPC)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(14)))->Fill(TMath::Abs(dca[1]));
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
 	if(track->GetConstrainedChi2() > 0) {
@@ -1055,36 +1094,36 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
       }//sigma to vertex TPC
       if(fMaxDCAXYFlag) {
-	if(dcaXY > fMaxDCAXY) {
-	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(11)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXY) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(11)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
-	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(11)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXY)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(11)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXYTPC) {
-	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(12)))->Fill(dcaXY);
+	if(TMath::Abs(dca[0]) > fMaxDCAXYTPC) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(12)))->Fill(TMath::Abs(dca[0]));
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXYTPC)
-	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(12)))->Fill(dcaXY);
+	else if(TMath::Abs(dca[0]) <= fMaxDCAXYTPC)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(12)))->Fill(TMath::Abs(dca[0]));
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
-	if(dcaZ > fMaxDCAZ) {
-	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(13)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZ) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(13)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
-	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(13)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZ)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(13)))->Fill(TMath::Abs(dca[1]));
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZTPC) {
-	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(14)))->Fill(dcaZ);
+	if(TMath::Abs(dca[1]) > fMaxDCAZTPC) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(14)))->Fill(TMath::Abs(dca[1]));
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZTPC)
-	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(14)))->Fill(dcaZ);
+	else if(TMath::Abs(dca[1]) <= fMaxDCAZTPC)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(14)))->Fill(TMath::Abs(dca[1]));
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
 	if(track->GetConstrainedChi2() > 0) {
@@ -3182,7 +3221,9 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
       Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
       if(fParticleType == 4) {
-	FillQA(track, stack);
+	if(!IsInPhaseSpace(track)) continue; //track outside the analyzed y-Pt
+
+	FillQA(stack,esd,vertex,track);
 	if(IsAccepted(esd,vertex,track)) {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0) {
@@ -3208,7 +3249,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							  tpcTrack->Py(),
 							  tpcTrack->Pz()),
 						 Pt);
-	    }
+	    }//accepted primary protons
 	    else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
 		if(track->HasPointOnITSLayer(iLayer))
@@ -3232,8 +3273,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							  tpcTrack->Py(),
 							  tpcTrack->Pz()),
 						 Pt);
-	    }
-	  }//primary particles
+	    }//accepted primary antiprotons
+	  }//accepted primary particles
 	  else if(label > stack->GetNprimary()) {
 	    Int_t lPartMother = -1;
 	    Int_t motherPDGCode = -1;
@@ -3276,7 +3317,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   tpcTrack->Pz()),
 						  Pt,
 						  ConvertPDGToInt(motherPDGCode));
-	    }
+	    }//accepted secondary protons
 	    else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
 		if(track->HasPointOnITSLayer(iLayer))
@@ -3305,10 +3346,10 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							   tpcTrack->Pz()),
 						  Pt,
 						  ConvertPDGToInt(motherPDGCode));
-	    }
-	  }//secondary particles
+	    }//accepted secondary antiprotons
+	  }//accepted secondary particles
 	}//accepted - track cuts
-	else if(!IsAccepted(esd,vertex,track)) {
+	else {// if(!IsAccepted(esd,vertex,track)) {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0)
 	      ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(tpcTrack->Px(),
@@ -3320,7 +3361,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							  tpcTrack->Py(),
 							  tpcTrack->Pz()),
 						 Pt);
-	  }//primary particles
+	  }//rejected primary particles
 	  else if(label > stack->GetNprimary()) {
 	    if(track->Charge() > 0)
 	      ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(tpcTrack->Px(),
@@ -3332,7 +3373,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							  tpcTrack->Py(),
 							  tpcTrack->Pz()),
 						 Pt);
-	  }//secondary particles
+	  }//rejected secondary particles
 	}//rejected - track cuts
       }//proton check
     }//TPC only tracks
@@ -3353,7 +3394,9 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
       Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
       if(fParticleType == 4) {
-	FillQA(track, stack);
+	if(!IsInPhaseSpace(track)) continue; //track outside the analyzed y-Pt
+
+	FillQA(stack,esd,vertex,track);
 	if(IsAccepted(esd,vertex,track)) {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0) {

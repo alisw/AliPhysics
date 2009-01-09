@@ -2,7 +2,7 @@ void drawProtonQAResults(const char* filename1 = "Protons.QA.root",
 			 const char* filename2 = "Protons.MC.QA.root",
 			 const char* filename3 = "Protons.Efficiency.root") {
   //Macro to visualize the results of the proton QA task
-  //TCanvas objects: 15
+  //TCanvas objects: 16
   gStyle->SetPalette(1,0);
  
   TFile *fQA = TFile::Open(filename1);
@@ -448,7 +448,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 
   TCanvas *c12 = new TCanvas("c12",
 			     "Composition of accepted secondaries vs y",
-			    550,550,700,400);
+			     350,350,700,400);
   c12->SetFillColor(10); c12->GetFrame()->SetFillColor(10); c12->Divide(2,1);
   c12->SetHighLightColor(10); c12->cd(1)->SetBottomMargin(0.15);
   c12->cd(1)->SetGridx(); c12->cd(1)->SetGridy();
@@ -493,7 +493,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 
   TCanvas *c13 = new TCanvas("c13",
 			     "Composition of accepted secondaries vs pT",
-			     600,600,700,400);
+			     400,400,700,400);
   c13->SetFillColor(10); c13->GetFrame()->SetFillColor(10); c13->Divide(2,1);
   c13->SetHighLightColor(10); c13->cd(1)->SetBottomMargin(0.15);
   c13->cd(1)->SetGridx(); c13->cd(1)->SetGridy();
@@ -982,7 +982,7 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   hEmptyY->GetXaxis()->SetTitle("y");
 
   TCanvas *c3 = new TCanvas("c3","MC secondary composition vs y - Protons",
-			    350,350,700,400);
+			    450,450,700,400);
   c3->SetFillColor(10); c3->GetFrame()->SetFillColor(10);
   c3->SetHighLightColor(10); c3->SetBottomMargin(0.15);
   c3->SetGridx(); c3->SetGridy();
@@ -1002,7 +1002,7 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   }
 
   TCanvas *c5 = new TCanvas("c5","MC secondary composition vs y - antiProtons",
-			    400,400,700,400);
+			    500,500,700,400);
   c5->SetFillColor(10); c5->GetFrame()->SetFillColor(10);
   c5->SetHighLightColor(10); c5->SetBottomMargin(0.15);
   c5->SetGridx(); c5->SetGridy();
@@ -1026,7 +1026,7 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
   TCanvas *c4 = new TCanvas("c4","MC secondary composition vs pT - Protons",
-			    450,450,700,400);
+			    550,550,700,400);
   c4->SetFillColor(10); c4->GetFrame()->SetFillColor(10);
   c4->SetHighLightColor(10); c4->SetBottomMargin(0.15);
   c4->SetGridx(); c4->SetGridy();
@@ -1046,7 +1046,7 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
 
   TCanvas *c6 = new TCanvas("c6",
 			    "MC secondary composition vs pT - AntiProtons",
-			    500,500,700,400);
+			    600,600,700,400);
   c6->SetFillColor(10); c6->GetFrame()->SetFillColor(10);
   c6->SetHighLightColor(10); c6->SetBottomMargin(0.15);
   c6->SetGridx(); c6->SetGridy();
@@ -1210,7 +1210,7 @@ void drawEfficiency(TList *list) {
   //rapidity dependence
   TCanvas *c14 = new TCanvas("c14",
 			     "(Anti)Proton reconstruction efficiency vs y",
-			     600,600,700,400);
+			     650,650,700,400);
   c14->SetFillColor(10); c14->GetFrame()->SetFillColor(10); 
   c14->SetHighLightColor(10); c14->Divide(2,1);
 
@@ -1257,7 +1257,7 @@ void drawEfficiency(TList *list) {
   gYESDProtonsFromHadronic->SetMarkerStyle(22);
   gYESDProtonsFromHadronic->SetMarkerColor(3);
 
-  //AntiProtons from weak decays
+  //AntiProtons from hadronic interactions
   TH1D *gYESDAntiProtonsFromHadronic = (TH1D *)gHistESDYPtAntiProtonsFromHadronic->ProjectionX("gYESDAntiProtonsFromHadronic",0,gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
   TH1D *gYMCAntiProtonsFromHadronic = (TH1D *)gHistMCYPtAntiProtonsFromHadronic->ProjectionX("gYMCAntiProtonsFromHadronic",0,gHistMCYPtProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
   gYESDAntiProtonsFromHadronic->Divide(gYMCAntiProtonsFromHadronic);
@@ -1291,7 +1291,7 @@ void drawEfficiency(TList *list) {
   //pT dependence
   TCanvas *c15 = new TCanvas("c15",
 			     "(Anti)Proton reconstruction efficiency vs pT",
-			     650,650,700,400);
+			     700,700,700,400);
   c15->SetFillColor(10); c15->GetFrame()->SetFillColor(10); 
   c15->SetHighLightColor(10); c15->Divide(2,1);
 
@@ -1380,7 +1380,7 @@ void drawEfficiency(TList *list) {
 
   TCanvas *c16 = new TCanvas("c16",
 			     "(Anti)Proton PID efficiency vs y and pT",
-			     700,700,700,400);
+			     750,750,700,400);
   c16->SetFillColor(10); c16->GetFrame()->SetFillColor(10); 
   c16->SetHighLightColor(10); c16->Divide(2,1);
 

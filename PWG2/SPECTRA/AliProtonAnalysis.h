@@ -49,7 +49,7 @@ class AliProtonAnalysis : public TObject {
   void Analyze(AliESDEvent *fESD, 
 	       const AliESDVertex *vertex);
   void Analyze(AliAODEvent *fAOD);
-  void Analyze(AliStack *stack);
+  void Analyze(AliStack *stack, Bool_t iInclusive);
   
   AliCFContainer *GetProtonContainer() {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() {return fAntiProtonContainer;}
@@ -66,7 +66,11 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetAntiProtonCorrectedPtHistogram();
   
   TH1D *GetYRatioHistogram();
+  TH1D *GetYRatioCorrectedHistogram(TH2D *gCorrectionMapProtons,
+				    TH2D *gCorrectionMapAntiProtons);
   TH1D *GetPtRatioHistogram();
+  TH1D *GetPtRatioCorrectedHistogram(TH2D *gCorrectionMapProtons,
+				     TH2D *gCorrectionMapAntiProtons);
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
 
@@ -178,6 +182,8 @@ class AliProtonAnalysis : public TObject {
   Bool_t   IsAccepted(AliESDEvent *esd,
 		      const AliESDVertex *vertex, 
 		      AliESDtrack *track);
+  Bool_t   IsInPhaseSpace(AliESDtrack *track);
+
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   

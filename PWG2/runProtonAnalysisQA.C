@@ -53,7 +53,7 @@ void runInteractive(const char *collectionfile) {
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
   taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
-  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
   taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
@@ -140,7 +140,7 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
   taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
-  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
   taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
@@ -207,7 +207,7 @@ Int_t setupPar(const char* pararchivename) {
   if (pararchivename) {
     char processline[1024];
     sprintf(processline,".! tar xvzf %s.par",pararchivename);
-    gROOT->ProcessLine(processline);
+    //gROOT->ProcessLine(processline);
     const char* ocwd = gSystem->WorkingDirectory();
     gSystem->ChangeDirectory(pararchivename);
     

@@ -99,6 +99,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   //Use of TPConly tracks
   if(fProtonAnalysisMode == kTPC) {
+    //fProtonQAAnalysis->SetQAYPtBins(20, -1.0, 1.0, 28, 0.1, 1.5); //TPC only
     fProtonQAAnalysis->SetQAYPtBins(10, -0.5, 0.5, 16, 0.5, 0.9); //TPC only
     fProtonQAAnalysis->UseTPCOnly();
     //fProtonQAAnalysis->SetTPCpid();
@@ -128,17 +129,17 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
     fProtonQAAnalysis->SetMaxSigmaToVertex(2.0);
     /*fProtonQAAnalysis->SetMaxDCAXY(1.5);
       fProtonQAAnalysis->SetMaxDCAZ(1.5);*/
-    fProtonQAAnalysis->SetPointOnITSLayer6();
-    fProtonQAAnalysis->SetPointOnITSLayer5();
-  //fProtonQAAnalysis->SetPointOnITSLayer4();
-  //fProtonQAAnalysis->SetPointOnITSLayer3();
-    fProtonQAAnalysis->SetPointOnITSLayer2();
-    fProtonQAAnalysis->SetPointOnITSLayer1();
-    fProtonQAAnalysis->SetMinITSClusters(5);
+    //fProtonQAAnalysis->SetPointOnITSLayer6();
+    //fProtonQAAnalysis->SetPointOnITSLayer5();
+    //fProtonQAAnalysis->SetPointOnITSLayer4();
+    //fProtonQAAnalysis->SetPointOnITSLayer3();
+    //fProtonQAAnalysis->SetPointOnITSLayer2();
+    //fProtonQAAnalysis->SetPointOnITSLayer1();
+    //fProtonQAAnalysis->SetMinITSClusters(5);
   }
   //Combined tracking
   else if(fProtonAnalysisMode == kGlobal) {
-    fProtonQAAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
+    fProtonQAAnalysis->SetQAYPtBins(20, -1.0, 1.0, 28, 0.1, 1.5); //combined tracking
     fProtonQAAnalysis->SetMinTPCClusters(110);
     fProtonQAAnalysis->SetMaxChi2PerTPCCluster(2.2);
     fProtonQAAnalysis->SetMaxCov11(0.5);
