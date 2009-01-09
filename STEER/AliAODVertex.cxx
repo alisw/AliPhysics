@@ -280,7 +280,7 @@ Bool_t AliAODVertex::HasDaughter(TObject *daughter) const
 	return kFALSE;
     } else {
 	Bool_t has = kFALSE;
-	for (int i; i < fNprong; i++) {
+	for (int i = 0; i < fNprong; i++) {
 	    if (fProngs[i].GetObject() == daughter) has = kTRUE;
 	}
 	return has;
