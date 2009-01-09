@@ -1,5 +1,5 @@
 //______________________________________________________________________________
-void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
+void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG4/kleinb/LHC08v_jetjet15-50")
 {
 // Example of running analysis train in CAF. To run in debug mode:
 //  - export ROOTSYS=debug  on your local client
@@ -35,12 +35,11 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
     if (iESDfilter) iAODhandler=1;
 
     // Dataset from CAF
-    //    TString dataset = "/PWG4/kleinb/LHC08v_jetjet15-50";
-    TString dataset = "/PWG4/kleinb/LHC08r_jetjet50";
+    TString dataset(ds);
     // CKB quick hack for local analysis
-    gROOT->LoadMacro("CreateESDChain.C");
-    TChain *chain = CreateESDChain("jetjet15-50.txt",1000);
-
+    //    gROOT->LoadMacro("CreateESDChain.C");
+    // TChain *chain = CreateESDChain("jetjet15-50.txt",1000);
+    TChain *chain = 0;
 
     printf("==================================================================\n");
     printf("===========    RUNNING ANALYSIS TRAIN IN CAF MODE    =============\n");
@@ -86,7 +85,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
       TProof::Open(proofNode); 
 
       // Clear packages if changing ROOT version on CAF or local
-      //    gProof->ClearPackages();
+      //      gProof->ClearPackages();
       // Enable proof debugging if needed
       //    gProof->SetLogLevel(5);
       // To debug the train in PROOF mode, type in a root session:
@@ -165,7 +164,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
        AliAODHandler* aodHandler   = new AliAODHandler();
        aodHandler->SetFillAOD(kFALSE);
        mgr->SetOutputEventHandler(aodHandler);       
-       aodHandler->SetOutputFileName(Form("AliAODs_CKB_%07d-%07d.root",nOffset,nOffset+nEvents));
+       aodHandler->SetOutputFileName(Form("AliAODs_pwg4_%07d-%07d.root",nOffset,nOffset+nEvents));
        cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
 				       AliAnalysisManager::kOutputContainer, "default");
        cout_aod->SetSpecialOutput();
@@ -211,7 +210,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
        mgr->AddTask(jetana);
        // Output histograms list for jet analysis                       
        AliAnalysisDataContainer *cout_jet = mgr->CreateContainer("jethist", TList::Class(),
-							      AliAnalysisManager::kOutputContainer,"jethist.root");
+								 AliAnalysisManager::kOutputContainer,Form("jethist_%07d-%07d.root",nOffset,nOffset+nEvents));
        // Dummy AOD output container for jet analysis (no client yet)
        c_aodjet = mgr->CreateContainer("cAODjet", TTree::Class(),
                            AliAnalysisManager::kExchangeContainer);
@@ -230,7 +229,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
        mgr->AddTask(jetanaAOD);
        // Output histograms list for jet analysis                       
        AliAnalysisDataContainer *cout_jetAOD = mgr->CreateContainer("jethistAOD", TList::Class(),
-							      AliAnalysisManager::kOutputContainer, "jethistAOD.root");
+								    AliAnalysisManager::kOutputContainer, Form("jethistAOD_%07d-%07d.root",nOffset,nOffset+nEvents));
        // Dummy AOD output container for jet analysis (no client yet)
        c_aodjet0 = mgr->CreateContainer("cAODjet0", TTree::Class(),
                            AliAnalysisManager::kExchangeContainer);
@@ -250,7 +249,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
        mgr->AddTask(jetanaMC);
        // Output histograms list for jet analysis                       
        AliAnalysisDataContainer *cout_jetMC = mgr->CreateContainer("jethistMC", TList::Class(),
-							      AliAnalysisManager::kOutputContainer, "jethistMC.root");
+								   AliAnalysisManager::kOutputContainer,Form("jethistMC_%07d-%07d.root",nOffset,nOffset+nEvents));
        // Dummy AOD output container for jet analysis (no client yet)
        c_aodjetMC = mgr->CreateContainer("cAODjetMC", TTree::Class(),
                            AliAnalysisManager::kExchangeContainer);
@@ -288,7 +287,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
       //      pwg4spec->SetBranchGen("jetsMC"); 
       mgr->AddTask(pwg4spec);
 
-      AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer, "histos_pwg4spec.root");
+      AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer,Form( "pwg4spec_%07d-%07d.root",nOffset,nOffset+nEvents));
       // coutput1_Spec->SetSpecialOutput();
       // Dummy AOD output container for jet analysis (no client yet)
       c_aodSpec = mgr->CreateContainer("cAODjetSpec", TTree::Class(),
@@ -328,7 +327,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
       mgr->AddTask(ueana);
 
 
-      AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer, "histosUE.root");
+      AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer, Form("pwg4UE_%07d-%07d.root",nOffset,nOffset+nEvents));
 
       mgr->ConnectInput  (ueana,  0, cinput);    
       //      mgr->ConnectInput  (ueana,  0, c_aodjet);    

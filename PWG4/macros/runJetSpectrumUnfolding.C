@@ -80,12 +80,12 @@ void unfold(const char* fileNameGen = "gen_pwg4spec.root", const char* folder = 
 
   AliJetSpectrumUnfolding* jetSpec = new AliJetSpectrumUnfolding(folder, folder);
 
-  TFile::Open(fileNameRec);
+  TFile::Open(fileNameGen);
   jetSpec->LoadHistograms();
 
-  TFile::Open(fileNameGen);
-  TH2F* hist = (TH2F*) gFile->Get("unfolding/fGenSpectrum");
-  jetSpec->SetGenSpectrum(hist);
+  TFile::Open(fileNameRec);
+  TH2F* hist = (TH2F*) gFile->Get("unfolding/fRecSpectrum");
+  jetSpec->SetRecSpectrum(hist);
 
   jetSpec->ApplyBayesianMethod(0.3, 20, 0, 0);
   // last parameter = calculateErrors  <- this method to calculate the errors takes a lot of time
@@ -301,7 +301,7 @@ void StatisticalUncertainties(const char* fileNameGen = "gen_pwg4spec.root", con
 }
 
 //_______________________________________________________________________________________________________________
-void FillSpecFromFile(const char* fileNameSpec = "histos_pwg4spec.root")
+void FillSpecFromFiles(const char* fileNameReal = "histos_pwg4spec.root",const char* fileNameSim = "histos_pwg4spec.root")
 {
   // This functions avoids problems when the number of bins or the bin limits
   // in the histograms of the AliJetSpectrumUnfolding and AliAnalysisTaskJetSpectrum classes
@@ -312,19 +312,16 @@ void FillSpecFromFile(const char* fileNameSpec = "histos_pwg4spec.root")
   gSystem->Load("libJETAN");
   gSystem->Load("libPWG4JetTasks");
 
-  file = new TFile(fileNameSpec,"read");
+  file = new TFile(fileNameSim,"read");
   tlist = dynamic_cast<TList*> (file->Get("pwg4spec"));
-  THnSparseF *fhCorrelation  = (THnSparseF*)(tlist->FindObject("fhCorrelation_less5tracks"));
-  THnSparseF *fhCorrelation2 = (THnSparseF*)(tlist->FindObject("fhCorrelation_5to10tracks"));
-  THnSparseF *fhCorrelation3 = (THnSparseF*)(tlist->FindObject("fhCorrelation_more10tracks"));
-  TH2F *fhEGenZGen = (TH2F*)(tlist->FindObject("fhEGenZGen"));
-  TH2F *fhERecZRec = (TH2F*)(tlist->FindObject("fhERecZRec"));  
 
-  fhCorrelation->Add(fhCorrelation2, 1);
-  fhCorrelation->Add(fhCorrelation3, 1);
-
-  delete fhCorrelation2;
-  delete fhCorrelation3;
+  THnSparseF *fhCorrelation  = 0;
+  for(int ic = 0;ic<3;++ic){
+    THnSparseF *hTmp = (THnSparseF*)(tlist->FindObject(Form("fhnCorrelation_%d",ic)));    
+    if(fhCorrelation==0)fhCorrelation =  (THnSparseF*)hTmp->Clone("fhnCorrelation");
+    else fhCorrelation->Add(hTmp);
+  }
+  TH2F *fhEGenZGen = (TH2F*)(tlist->FindObject("fh2EGenZGen"));
 
   AliJetSpectrumUnfolding *jetSpec = new AliJetSpectrumUnfolding("unfolding","unfolding");
 
@@ -341,30 +338,9 @@ void FillSpecFromFile(const char* fileNameSpec = "histos_pwg4spec.root")
        jetSpec->GetGenSpectrum()->SetBinContent(bine, binz, cont + fhEGenZGen->GetBinContent(te, tz));
        jetSpec->GetGenSpectrum()->SetBinError(bine, binz, err + fhEGenZGen->GetBinError(te, tz));
     }
-  file = TFile::Open("gen_pwg4spec.root", "RECREATE");
-  jetSpec->SaveHistograms();
-  file->Close();
-  jetSpec->GetGenSpectrum()->Reset();
-  printf("true distribution has been set\n");
 
-  // reconstructed jets (measured distribution)
-  for (Int_t me=1; me<=fhERecZRec->GetNbinsX(); me++)
-    for (Int_t mz=1; mz<=fhERecZRec->GetNbinsY(); mz++)
-    {
-       Float_t erec = fhERecZRec->GetXaxis()->GetBinCenter(me);
-       Float_t   zm = fhERecZRec->GetYaxis()->GetBinCenter(mz);
-       Int_t bine   = jetSpec->GetRecSpectrum()->GetXaxis()->FindBin(erec);
-       Int_t binz   = jetSpec->GetRecSpectrum()->GetYaxis()->FindBin(zm);
-       Float_t cont = jetSpec->GetRecSpectrum()->GetBinContent(bine, binz);
-       Float_t err  = jetSpec->GetRecSpectrum()->GetBinError(bine, binz);
-       jetSpec->GetRecSpectrum()->SetBinContent(bine, binz, cont + fhERecZRec->GetBinContent(me, mz));
-       jetSpec->GetRecSpectrum()->SetBinError(bine, binz, err + fhERecZRec->GetBinError(me, mz));
-    }
 
-  // Response function
-  jetSpec->GetCorrelation()->Reset();
-  jetSpec->GetCorrelation()->Sumw2();
-        
+  Printf("Bins %.0E",jetSpec->GetCorrelation()->GetNbins());
   for (Int_t idx=1; idx<=fhCorrelation->GetNbins(); idx++)
   {
     //printf("idx: %d\n",idx);
@@ -384,6 +360,45 @@ void FillSpecFromFile(const char* fileNameSpec = "histos_pwg4spec.root")
     jetSpec->GetCorrelation()->SetBinContent(bin, cont + fhCorrelation->GetBinContent(idx));
     jetSpec->GetCorrelation()->SetBinError(bin, err + fhCorrelation->GetBinError(idx));
   }
+  // need number of entries for correct drawing
+  jetSpec->GetCorrelation()->SetEntries(fhCorrelation->GetEntries());
+
+
+  file = TFile::Open("gen_pwg4spec.root", "RECREATE");
+  jetSpec->SaveHistograms();
+  Printf("Bins %.0E",jetSpec->GetCorrelation()->GetNbins());
+  file->Close();
+  jetSpec->GetGenSpectrum()->Reset();
+  printf("true distribution has been set\n");
+
+  // reconstructed jets (measured distribution)
+
+
+  // Response function
+  jetSpec->GetCorrelation()->Reset();
+  jetSpec->GetCorrelation()->Sumw2();
+  jetSpec->GetGenSpectrum()->Reset();
+  jetSpec->GetRecSpectrum()->Reset();
+
+
+  file = new TFile(fileNameReal,"read");
+  tlist = dynamic_cast<TList*> (file->Get("pwg4spec"));
+
+  
+  TH2F *fhERecZRec = (TH2F*)(tlist->FindObject("fh2ERecZRec"));  
+
+  for (Int_t me=1; me<=fhERecZRec->GetNbinsX(); me++)
+    for (Int_t mz=1; mz<=fhERecZRec->GetNbinsY(); mz++)
+    {
+       Float_t erec = fhERecZRec->GetXaxis()->GetBinCenter(me);
+       Float_t   zm = fhERecZRec->GetYaxis()->GetBinCenter(mz);
+       Int_t bine   = jetSpec->GetRecSpectrum()->GetXaxis()->FindBin(erec);
+       Int_t binz   = jetSpec->GetRecSpectrum()->GetYaxis()->FindBin(zm);
+       Float_t cont = jetSpec->GetRecSpectrum()->GetBinContent(bine, binz);
+       Float_t err  = jetSpec->GetRecSpectrum()->GetBinError(bine, binz);
+       jetSpec->GetRecSpectrum()->SetBinContent(bine, binz, cont + fhERecZRec->GetBinContent(me, mz));
+       jetSpec->GetRecSpectrum()->SetBinError(bine, binz, err + fhERecZRec->GetBinError(me, mz));
+    }
 
   file = TFile::Open("rec_pwg4spec.root", "RECREATE");
   jetSpec->SaveHistograms();
@@ -400,7 +415,7 @@ void FillSpecFromFile(const char* fileNameSpec = "histos_pwg4spec.root")
 void correct(){
   // simple steering to correct a given distribution;
   loadlibs();
-  FillSpecFromFile("/home/ydelgado/pcalice014.cern.ch/macros/jets/CAFdata/histos_pwg4spec.root");
+  FillSpecFromFiles("pwg4spec_0000000-0010000.root","pwg4spec_15-50.root");
 
   char name[100];
   sprintf(name, "unfolded_pwg4spec.root");

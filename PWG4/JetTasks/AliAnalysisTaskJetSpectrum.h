@@ -5,6 +5,9 @@
  * See cxx source for full Copyright notice                               */
  
 #include "AliAnalysisTaskSE.h"
+////////////////
+#include <THnSparse.h>
+////////////////
 class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
@@ -45,14 +48,16 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
   //
 
     enum {kAnaMC =  0x1};
+    enum {kMaxJets =  5};
+    enum {kMaxCorrelation =  3};
 
  private:
 
     AliAnalysisTaskJetSpectrum(const AliAnalysisTaskJetSpectrum&);
     AliAnalysisTaskJetSpectrum& operator=(const AliAnalysisTaskJetSpectrum&);
     
+    static const Float_t fgkJetNpartCut[kMaxCorrelation];
 
-    enum {kMaxJets =  5};
 
     AliJetHeader *fJetHeaderRec;
     AliJetHeader *fJetHeaderGen;
@@ -102,6 +107,15 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     // ============================================                            
   
     TList *fHistList; // Output list
+    
+    ///////// For 2 dimensional unfolding //////////////////
+    TH1F*         fh1JetMultiplicity;   
+    TH2F*         fh2ERecZRec;
+    TH2F*         fh2EGenZGen;
+    TH2F*         fh2Efficiency;
+    TH3F*         fh3EGenERecN;
+    THnSparseF*   fhnCorrelation[kMaxCorrelation];
+    ///////////////////////////////////////////////////////
 
 
     ClassDef(AliAnalysisTaskJetSpectrum, 1) // Analysis task for standard jet analysis
