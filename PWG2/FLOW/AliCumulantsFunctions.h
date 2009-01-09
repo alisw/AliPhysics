@@ -13,8 +13,8 @@
  *          (anteb@nikhef.nl)     *
  *********************************/ 
 
-#ifndef AliCumulantsFunctions_H
-#define AliCumulantsFunctions_H
+#ifndef ALICUMULANTSFUNCTIONS_H
+#define ALICUMULANTSFUNCTIONS_H
 
 #include "AliFlowCommonConstants.h"
 #include "AliFlowCumuConstants.h"
@@ -38,7 +38,7 @@ class AliCumulantsFunctions{
   virtual ~AliCumulantsFunctions();
   //AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *fQVector, TH1D *fQDistrib, TProfile2D *fdRe0, TProfile2D *fdRe1, TProfile2D *fdRe2, TProfile2D *fdRe3, TProfile2D *fdRe4, TProfile2D *fdRe5, TProfile2D *fdRe6, TProfile2D *fdRe7, TProfile2D *fdIm0, TProfile2D *fdIm1, TProfile2D *fdIm2, TProfile2D *fdIm3, TProfile2D *fdIm4, TProfile2D *fdIm5, TProfile2D *fdIm6, TProfile2D *fdIm7);
   
-  AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
+  AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile2D *IntGenFun4, TProfile2D *IntGenFun6, TProfile2D *IntGenFun8, TProfile2D *IntGenFun16, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
  
   void Calculate();
 
@@ -47,6 +47,11 @@ class AliCumulantsFunctions{
   AliCumulantsFunctions& operator=(const AliCumulantsFunctions& fun);
   
   TProfile2D *fIntGenFun;    //average value of generating function for int. flow
+  TProfile2D *fIntGenFun4;   //average value of generating function for int. flow
+  TProfile2D *fIntGenFun6;   //average value of generating function for int. flow
+  TProfile2D *fIntGenFun8;   //average value of generating function for int. flow
+  TProfile2D *fIntGenFun16;  //average value of generating function for int. flow
+
   TProfile3D *fDiffGenFunRe; //average value of generating function for diff. flow (real part)
   TProfile3D *fDiffGenFunIm; //average value of generating function for diff. flow (imaginary part)
   

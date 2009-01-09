@@ -239,7 +239,9 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //cumulant analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);//cuts
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    
     fGFC->Make(fEvent);
     delete fEvent;
   }
@@ -325,6 +327,12 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   
   //profiles with average values of generating functions for int. and diff. flow
   TProfile2D *intFlowGenFun    = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun")); 
+  TProfile2D *intFlowGenFun4   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun4"));
+  
+  TProfile2D *intFlowGenFun6   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun6")); 
+  TProfile2D *intFlowGenFun8   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun8"));
+  TProfile2D *intFlowGenFun16  = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun16"));  
+  
   TProfile3D *diffFlowGenFunRe = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunRe"));
   TProfile3D *diffFlowGenFunIm = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunIm"));
   
@@ -389,6 +397,11 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   fGFC->SetCommonHistsResults8th(commonHistRes8th);
   
   fGFC->SetIntFlowGenFun(intFlowGenFun);
+  fGFC->SetIntFlowGenFun4(intFlowGenFun4);
+  fGFC->SetIntFlowGenFun6(intFlowGenFun6);
+  fGFC->SetIntFlowGenFun8(intFlowGenFun8);  
+  fGFC->SetIntFlowGenFun16(intFlowGenFun16);      
+  
   fGFC->SetDiffFlowGenFunRe(diffFlowGenFunRe);
   fGFC->SetDiffFlowGenFunIm(diffFlowGenFunIm);
   

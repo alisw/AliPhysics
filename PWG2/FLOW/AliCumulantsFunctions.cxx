@@ -50,6 +50,10 @@ ClassImp(AliCumulantsFunctions)
 
 AliCumulantsFunctions::AliCumulantsFunctions():  
  fIntGenFun(NULL),
+ fIntGenFun4(NULL),
+ fIntGenFun6(NULL),
+ fIntGenFun8(NULL),
+ fIntGenFun16(NULL),
  fDiffGenFunRe(NULL),
  fDiffGenFunIm(NULL),
  fBinNoOfParticles(NULL),
@@ -91,12 +95,12 @@ AliCumulantsFunctions::~AliCumulantsFunctions()
  //destructor
 }
 
-
-//, TProfile2D *dRe0, TProfile2D *dRe1, TProfile2D *dRe2, TProfile2D *dRe3, TProfile2D *dRe4, TProfile2D *dRe5, TProfile2D *dRe6, TProfile2D *dRe7, TProfile2D *dIm0, TProfile2D *dIm1, TProfile2D *dIm2, TProfile2D *dIm3, TProfile2D *dIm4, TProfile2D *dIm5, TProfile2D *dIm6, TProfile2D *dIm7
-
-
-AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile2D *IntGenFun4, TProfile2D *IntGenFun6, TProfile2D *IntGenFun8, TProfile2D *IntGenFun16, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntGenFun(IntGenFun),
+ fIntGenFun4(IntGenFun4),
+ fIntGenFun6(IntGenFun6),
+ fIntGenFun8(IntGenFun8),
+ fIntGenFun16(IntGenFun16),
  fDiffGenFunRe(DiffGenFunRe),
  fDiffGenFunIm(DiffGenFunIm),
  fBinNoOfParticles(BinNoOfParticles),
@@ -138,57 +142,91 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile3D *
 void AliCumulantsFunctions::Calculate()
 {
  //calculate cumulants and final integrated and differential flow estimates and store the results into output histograms
- static const Int_t fgkQmax=AliFlowCumuConstants::kQmax;   //needed for numerics
- static const Int_t fgkPmax=AliFlowCumuConstants::kPmax;   //needed for numerics  
+ static const Int_t fgkQmax=AliFlowCumuConstants::kQmax;     //needed for numerics
+ static const Int_t fgkPmax=AliFlowCumuConstants::kPmax;     //needed for numerics  
+ static const Int_t fgkQmax4=AliFlowCumuConstants::kQmax4;   //needed for numerics
+ static const Int_t fgkPmax4=AliFlowCumuConstants::kPmax4;   //needed for numerics
+ static const Int_t fgkQmax6=AliFlowCumuConstants::kQmax6;   //needed for numerics
+ static const Int_t fgkPmax6=AliFlowCumuConstants::kPmax6;   //needed for numerics
+ static const Int_t fgkQmax8=AliFlowCumuConstants::kQmax8;   //needed for numerics
+ static const Int_t fgkPmax8=AliFlowCumuConstants::kPmax8;   //needed for numerics
+ static const Int_t fgkQmax16=AliFlowCumuConstants::kQmax16; //needed for numerics
+ static const Int_t fgkPmax16=AliFlowCumuConstants::kPmax16; //needed for numerics
+ 
  static const Int_t fgkFlow=AliFlowCumuConstants::kFlow;   //integrated flow coefficient to be calculated
  static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl; //the multiple in p=m*n (diff. flow) 
  static const Int_t fgknBins=100;                          //number of pt bins //to be improved
  
- Double_t fR0=AliFlowCumuConstants::fgR0;                  //needed for numerics
- //Double_t fPtMax=AliFlowCommonConstants::GetPtMax();       //maximum pt
- //Double_t fPtMin=AliFlowCommonConstants::GetPtMin();       //minimum pt
- //Double_t fBinWidth=(fPtMax-fPtMin)/fgknBins;              //width of pt bin (in GeV)   
-     
- //<G[p][q]>
- Double_t AvG[fgkPmax][fgkQmax]={{0.}};                                  
- for(Int_t p=0;p<fgkPmax;p++){
-  for(Int_t q=0;q<fgkQmax;q++){ 
-   AvG[p][q]=fIntGenFun->GetBinContent(p+1,q+1);
-  }
- } 
-
- //avarage selected multiplicity
- Double_t AvM = fAvMult->GetBinContent(1);
+ Double_t fR0=AliFlowCumuConstants::fgR0;            //needed for numerics
+ Double_t fPtMax=AliFlowCommonConstants::GetPtMax(); //maximum pt
+ Double_t fPtMin=AliFlowCommonConstants::GetPtMin(); //minimum pt
+ Double_t fBinWidth=(fPtMax-fPtMin)/fgknBins;        //width of pt bin (in GeV)   
  
+ Bool_t fOtherEquations=AliFlowCumuConstants::fgOtherEquations;     //numerical equations for cumulants solved up to different highest order 
+ 
+ //avarage selected multiplicity
+ Double_t AvM=0.;
+ if(fAvMult)
+ {
+  AvM=fAvMult->GetBinContent(1);
+ }
+
  //number of events
- Int_t nEvents = (Int_t)(fAvMult->GetBinEntries(1));
+ Int_t nEvents=0;
+ if(fAvMult)
+ {
+  nEvents=(Int_t)(fAvMult->GetBinEntries(1));
+ }
  
  //<Q-vector stuff>
- Double_t AvQx  = fQVector->GetBinContent(1); //<Q_x>
- Double_t AvQy  = fQVector->GetBinContent(2); //<Q_y>
- Double_t AvQ2x = fQVector->GetBinContent(3); //<(Q_x)^2>
- Double_t AvQ2y = fQVector->GetBinContent(4); //<(Q_y)^2>
+ Double_t AvQx=0.,AvQy=0.,AvQ2x=0.,AvQ2y=0.;
+ if(fQVector)
+ {
+  AvQx  = fQVector->GetBinContent(1); //<Q_x>
+  AvQy  = fQVector->GetBinContent(2); //<Q_y>
+  AvQ2x = fQVector->GetBinContent(3); //<(Q_x)^2>
+  AvQ2y = fQVector->GetBinContent(4); //<(Q_y)^2>
+ }
+ 
+ //<G[p][q]>
+ Double_t AvG[fgkPmax][fgkQmax]={{0.}}; 
+ if(fIntGenFun)
+ {   
+  for(Int_t p=0;p<fgkPmax;p++)
+  {
+   for(Int_t q=0;q<fgkQmax;q++)
+   {
+    AvG[p][q]=fIntGenFun->GetBinContent(p+1,q+1);
+   }
+  }  
+ }
   
  /////////////////////////////////////////////////////////////////////////////      
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C[fgkPmax][fgkQmax]={{0.}};//C[p][q]
- if(AvM!=0){
-  for (Int_t p=0;p<fgkPmax;p++){
-   for (Int_t q=0;q<fgkQmax;q++){
+ if(AvM)
+ {
+  for(Int_t p=0;p<fgkPmax;p++)
+  {
+   for(Int_t q=0;q<fgkQmax;q++)
+   {
     C[p][q]=1.*AvM*(pow(AvG[p][q],(1./AvM))-1.); 
    }
   }
  }
+ 
  /////////////////////////////////////////////////////////////////////////////
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t AvC[fgkPmax]={0.};//<C[p][q]>
- for (Int_t p=0;p<fgkPmax;p++){
+ for(Int_t p=0;p<fgkPmax;p++)
+ {
   Double_t tempHere=0.; 
-  for (Int_t q=0;q<fgkQmax;q++){
+  for(Int_t q=0;q<fgkQmax;q++)
+  {
    tempHere+=1.*C[p][q];
   } 
   AvC[p]=1.*tempHere/fgkQmax;
@@ -199,184 +237,151 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
  
  Double_t cumulant[fgkPmax];//array to store various order cumulants
-  
- cumulant[0] = (1./(fR0*fR0)) * (8.*AvC[0] - 14.*AvC[1] + (56./3.)*AvC[2] - (35./2.)*AvC[3] + 
-			      (56./5.)*AvC[4] - (14./3.)*AvC[5] + (8./7.)*AvC[6] - (1./8.)*AvC[7]);
-
- cumulant[1] = (1./pow(fR0,4.)) * ((-1924./35.)*AvC[0] + (621./5.)*AvC[1] - (8012./45.)*AvC[2] + 
-				 (691./4.)*AvC[3] - (564./5.)*AvC[4] + (2143./45.)*AvC[5] - 
-				 (412./35.)*AvC[6] + (363./280.)*AvC[7]);
-
- cumulant[2] = (1./pow(fR0,6.)) * (349.*AvC[0] - (18353./20.)*AvC[1] + (7173./5.)*AvC[2] - 
-				 1457.*AvC[3] + (4891./5.)*AvC[4] - (1683./4.)*AvC[5] + 
-				 (527./5.)*AvC[6] - (469./40.)*AvC[7]);
-
- cumulant[3] = (1./pow(fR0,8.)) * ((-10528./5.)*AvC[0] + (30578./5.)*AvC[1] - (51456./5.)*AvC[2] + 
-				 10993.*AvC[3] - (38176./5.)*AvC[4] + (16818./5.)*AvC[5] - 
-				 (4288./5.)*AvC[6] + (967./10.)*AvC[7]);
-
- cumulant[4] = (1./pow(fR0,10.)) * (11500.*AvC[0] - 35800.*AvC[1] + 63900.*AvC[2] - 71600.*AvC[3] + 
-				  51620.*AvC[4] - 23400.*AvC[5] + 6100.*AvC[6] - 700.*AvC[7]);
-
- cumulant[5] = (1./pow(fR0,12.)) * (-52560.*AvC[0] + 172080.*AvC[1] - 321840.*AvC[2] + 376200.*AvC[3] - 
-				  281520.*AvC[4] + 131760.*AvC[5] - 35280.*AvC[6] + 4140.*AvC[7]);
-
- cumulant[6] = (1./pow(fR0,14.)) * (176400.*AvC[0] - 599760.*AvC[1] + 1164240.*AvC[2] - 1411200.*AvC[3] + 
-				  1093680.*AvC[4] - 529200.*AvC[5] + 146160.*AvC[6] - 17640.*AvC[7]);
-
- cumulant[7] = (1./pow(fR0,16.)) * (-322560*AvC[0] + 1128960.*AvC[1] - 2257920.*AvC[2] + 2822400.*AvC[3] - 
-				  2257920.*AvC[4] + 1128960.*AvC[5] - 322560.*AvC[6] + 40320.*AvC[7]);
+ 
+ //system of eq. for the cumulants  
+ cumulant[0] = (-1./(60*fR0*fR0))*((-300.)*AvC[0]+300.*AvC[1]-200.*AvC[2]+75.*AvC[3]-12.*AvC[4]);
+ cumulant[1] = (-1./(6.*pow(fR0,4.)))*(154.*AvC[0]-214.*AvC[1]+156.*AvC[2]-61.*AvC[3]+10.*AvC[4]);
+ cumulant[2] = (3./(2.*pow(fR0,6.)))*(71.*AvC[0]-118.*AvC[1]+98.*AvC[2]-41.*AvC[3]+7.*AvC[4]);
+ cumulant[3] = (-24./pow(fR0,8.))*(14.*AvC[0]-26.*AvC[1]+24.*AvC[2]-11.*AvC[3]+2.*AvC[4]);
+ cumulant[4] = (120./pow(fR0,10.))*(5.*AvC[0]-10.*AvC[1]+10.*AvC[2]-5.*AvC[3]+1.*AvC[4]);
     
- cout<<""<<endl;
+ /*
+ cout<<endl;
  cout<<"*********************************"<<endl;
- cout<<"cumulants:"<<endl;
-  
+ cout<<"cumulants:"<<endl; 
  cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant[0]<<endl; 
  cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant[1]<<endl;
  cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant[2]<<endl;
  cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant[3]<<endl; 
- cout<<"c_"<<fgkFlow<<"{10} = "<<cumulant[4]<<endl; 
- cout<<"c_"<<fgkFlow<<"{12} = "<<cumulant[5]<<endl;
- cout<<"c_"<<fgkFlow<<"{14} = "<<cumulant[6]<<endl; 
- cout<<"c_"<<fgkFlow<<"{16} = "<<cumulant[7]<<endl; 
-  
- cout<<""<<endl;
- cout<<"integrated flow: "<<endl;
+ cout<<"c_"<<fgkFlow<<"{10} = "<<cumulant[4]<<endl;  
+ cout<<endl;
+ */
  
- Double_t V2=0.,V4=0.,V6=0.,V8=0.,V10=0.,V12=0.,V14=0.,V16=0.;
+ Double_t V2=0.,V4=0.,V6=0.,V8=0.,V10=0.;//integrated flow estimates
  
- if(cumulant[0]>=0.){
-  V2 = pow(cumulant[0],(1./2.));
+ if(cumulant[0]>=0.)
+ {
+  V2=pow(cumulant[0],(1./2.));
  }
- if(cumulant[1]<=0.){
-  V4 = pow(-cumulant[1],(1./4.));
+ if(cumulant[1]<=0.)
+ {
+  V4=pow(-cumulant[1],(1./4.));
  }
- if(cumulant[2]>=0.){
-  V6 = pow((1./4.)*cumulant[2],(1./6.));
+ if(cumulant[2]>=0.)
+ {
+  V6=pow((1./4.)*cumulant[2],(1./6.));
  }
- if(cumulant[3]<=0.){
-  V8 = pow(-(1./33.)*cumulant[3],(1./8.));
+ if(cumulant[3]<=0.)
+ {
+  V8=pow(-(1./33.)*cumulant[3],(1./8.));
  }
- if(cumulant[4]>=0.){
-  V10 = pow((1./456.)*cumulant[4],(1./10.));
+ if(cumulant[4]>=0.)
+ {
+  V10=pow((1./456.)*cumulant[4],(1./10.));
  }
- if(cumulant[5]<=0.){
-  V12 = pow(-(1./9460.)*cumulant[5],(1./12.));
- }
- if(cumulant[6]>=0.){
-  V14 = pow((1./274800.)*cumulant[6],(1./14.));
- }
- if(cumulant[7]<=0.){
-  V16 = pow(-(1./10643745.)*cumulant[7],(1./16.));
- }
-    
+
+ cout<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"flow estimates from GF-cumulants:"<<endl;
+ cout<<endl;          
+                
  Double_t SdQ[4]={0.};
  Double_t ChiQ[4]={0.};
-          
-   //v_2{2}
-   if(AvM!=0 && (cumulant[0]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
-   {        
-    ChiQ[0]=AvM*V2/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.),0.5);
-    SdQ[0]=pow(((1./(2.*AvM*nEvents))*((1.+1.*pow(ChiQ[0],2))/(1.*pow(ChiQ[0],2)))),0.5);
-    cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<", chi{2} = "<<ChiQ[0]<<endl;
-    fifr->SetBinContent(1,V2);
-    fifr->SetBinError(1,SdQ[0]);
-    //common histograms
-    fchr2nd->FillIntegratedFlow(V2,SdQ[0]);
-    fchr2nd->FillChi(V2*pow(AvM,0.5));
-   } 
-   else 
-   {
-    cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
-   }
+                            
+ //v_2{2}
+ if(AvM && cumulant[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
+ {        
+  ChiQ[0]=AvM*V2/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.),0.5);
+  SdQ[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQ[0],2))/(2.*pow(ChiQ[0],2)))),0.5);
+  cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<", chi{2} = "<<ChiQ[0]<<endl;//printing also the chi
+  fifr->SetBinContent(1,V2);
+  fifr->SetBinError(1,SdQ[0]);
+  //filling common histograms:
+  fchr2nd->FillIntegratedFlow(V2,SdQ[0]);
+  fchr2nd->FillChi(ChiQ[0]);
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+ }
    
-   //v_2{4}   
-   if(AvM!=0 && (cumulant[1]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
-   {
-    ChiQ[1]=AvM*V4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.),0.5);
-    SdQ[1]=(1./(pow(2.*AvM*nEvents,.5)))*pow((1.+2.*pow(ChiQ[1],2)+(1./4.)*pow(ChiQ[1],4.)+(1./4.)*pow(ChiQ[1],6.))/((1./4.)*pow(ChiQ[1],6.)),.5);
-    cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<", chi{4} = "<<ChiQ[1]<<endl;
-    fifr->SetBinContent(2,V4);
-    fifr->SetBinError(2,SdQ[1]);
-    //common histograms
-    fchr4th->FillIntegratedFlow(V4,SdQ[1]);
-    fchr4th->FillChi(V4*pow(AvM,0.5));
-   } 
-   else 
-   {
-    cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
-   } 
+ //v_2{4}   
+ if(AvM && cumulant[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
+ {
+  ChiQ[1]=AvM*V4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.),0.5);
+  SdQ[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQ[1],2)+1.*pow(ChiQ[1],4.)+2.*pow(ChiQ[1],6.))/(2.*pow(ChiQ[1],6.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<", chi{4} = "<<ChiQ[1]<<endl;//printing also the chi
+  fifr->SetBinContent(2,V4);
+  fifr->SetBinError(2,SdQ[1]);
+  //filling common histograms:
+  fchr4th->FillIntegratedFlow(V4,SdQ[1]);
+  fchr4th->FillChi(ChiQ[1]);
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+ } 
   
-  //v_2{6}
-  if(AvM!=0 && (cumulant[2]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
-  {
-   ChiQ[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6*AvM,2.),0.5);
-   SdQ[2]=(1./(pow(2.*AvM*nEvents,.5)))*pow((3.+18.*pow(ChiQ[2],2)+9.*pow(ChiQ[2],4.)+28.*pow(ChiQ[2],6.)+12.*pow(ChiQ[2],8.)+24.*pow(ChiQ[2],10.))/(24.*pow(ChiQ[2],10.)),.5);
-   cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<", chi{6} = "<<ChiQ[2]<<endl;
-   fifr->SetBinContent(3,V6);
-   fifr->SetBinError(3,SdQ[2]);
-   //common histograms
-   fchr6th->FillIntegratedFlow(V6,SdQ[2]);
-   fchr6th->FillChi(V6*pow(AvM,0.5));
-  }
-  else
-  {
-   cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
-  }
+ //v_2{6}
+ if(AvM && cumulant[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
+ {
+  ChiQ[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6*AvM,2.),0.5);
+  SdQ[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQ[2],2)+9.*pow(ChiQ[2],4.)+28.*pow(ChiQ[2],6.)+12.*pow(ChiQ[2],8.)+24.*pow(ChiQ[2],10.))/(24.*pow(ChiQ[2],10.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<", chi{6} = "<<ChiQ[2]<<endl;//printing also the chi
+  fifr->SetBinContent(3,V6);
+  fifr->SetBinError(3,SdQ[2]);
+  //filling common histograms:
+  fchr6th->FillIntegratedFlow(V6,SdQ[2]);
+  fchr6th->FillChi(ChiQ[2]);
+ }
+ else
+ {
+  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+ }
   
-  //v_2{8}
-  if(AvM!=0 && (cumulant[3]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
-  {  
-   ChiQ[3]=AvM*V8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8*AvM,2.),0.5);
-   SdQ[3]=(1./(pow(2.*AvM*nEvents,.5)))*pow((12.+96.*pow(ChiQ[3],2)+72.*pow(ChiQ[3],4.)+304.*pow(ChiQ[3],6.)+257.*pow(ChiQ[3],8.)+804.*pow(ChiQ[3],10.)+363.*pow(ChiQ[3],12.)+726.*pow(ChiQ[3],14.))/(726.*pow(ChiQ[3],14.)),.5);
-   cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<", chi{8} = "<<ChiQ[3]<<endl;
-   fifr->SetBinContent(4,V8);
-   fifr->SetBinError(4,SdQ[3]);
-   //common histograms
-   fchr8th->FillIntegratedFlow(V8,SdQ[3]);
-   fchr8th->FillChi(V8*pow(AvM,0.5));
-  } 
-  else 
-  {
-   cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
-  }
+ //v_2{8}
+ if(AvM && cumulant[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
+ {  
+  ChiQ[3]=AvM*V8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8*AvM,2.),0.5);
+  SdQ[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQ[3],2.)+72.*pow(ChiQ[3],4.)+304.*pow(ChiQ[3],6.)+257.*pow(ChiQ[3],8.)+804.*pow(ChiQ[3],10.)+363.*pow(ChiQ[3],12.)+726.*pow(ChiQ[3],14.))/(726.*pow(ChiQ[3],14.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<", chi{8} = "<<ChiQ[3]<<endl;//printing also the chi
+  fifr->SetBinContent(4,V8);
+  fifr->SetBinError(4,SdQ[3]);
+  //filling common histograms:
+  fchr8th->FillIntegratedFlow(V8,SdQ[3]);
+  fchr8th->FillChi(ChiQ[3]);
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
+ }
   
-  //v_2{10}
-  if (AvM!=0 && cumulant[4]>=0.){
-    cout<<"v_"<<fgkFlow<<"{10} = "<<V10<<endl;
-    fifr->SetBinContent(5,pow((1./456.)*cumulant[4],(1./10.)));
-  } else {
-      cout<<"v_"<<fgkFlow<<"{10} = Im"<<endl; 
-  }
+ /*
+ //v_2{10}
+ if (AvM && cumulant[4]>=0.)
+ {
+  cout<<"v_"<<fgkFlow<<"{10} = "<<V10<<endl;
+ }
+ else 
+ {
+  cout<<"v_"<<fgkFlow<<"{10} = Im"<<endl; 
+ }
+ */
+ 
+ cout<<endl;
+ cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"***********************************"<<endl;    
+ cout<<"***********************************"<<endl;   
   
-  //v_2{12}
-  if (AvM!=0 && AvM!=0 && cumulant[5]<=0.){
-    cout<<"v_"<<fgkFlow<<"{12} = "<<V12<<endl;
-    fifr->SetBinContent(6,pow(-(1./9460.)*cumulant[5],(1./12.)));
-  } else {
-    cout<<"v_"<<fgkFlow<<"{12} = Im"<<endl; 
-  }
-  
-  //v_2{14}
-  if (AvM!=0 && cumulant[6]>=0.){
-    cout<<"v_"<<fgkFlow<<"{14} = "<<V14<<endl;
-    fifr->SetBinContent(7,pow((1./274800.)*cumulant[6],(1./14.)));
-  } else {
-    cout<<"v_"<<fgkFlow<<"{14} = Im"<<endl;  
-  }
-  
-  //v_2{16}
-  if (AvM!=0 && cumulant[7]<=0.){
-    cout<<"v_"<<fgkFlow<<"{16} = "<<V16<<endl;
-    fifr->SetBinContent(8,pow(-(1./10643745.)*cumulant[7],(1./16.)));
-  } else {
-    cout<<"v_"<<fgkFlow<<"{16} = Im"<<endl;  
-  }
-  cout<<" "<<endl;
-  cout<<"nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
-  cout<<"*********************************"<<endl;    
-  
-  
+ 
+ 
+ 
+ 
  /////////////////////////////////////////////////////////////////////////////
  ///////////////////////DIFFERENTIAL FLOW CALCULATIONS////////////////////////
  /////////////////////////////////////////////////////////////////////////////
@@ -386,18 +391,24 @@ void AliCumulantsFunctions::Calculate()
   Double_t BinNoOfParticles[fgknBins]={0.};
       
   //3D profiles
-  for(Int_t b=0;b<fgknBins;b++){
-    BinNoOfParticles[b]=fBinNoOfParticles->GetBinEntries(b);
-    for(Int_t p=0;p<fgkPmax;p++){
-      for(Int_t q=0;q<fgkQmax;q++){
-	X[b][p][q]=fDiffGenFunRe->GetBinContent(b+1,p+1,q+1)/AvG[p][q];
-	Y[b][p][q]=fDiffGenFunIm->GetBinContent(b+1,p+1,q+1)/AvG[p][q];
-      }
-    }   
+  for(Int_t b=0;b<fgknBins;b++)
+  {
+   BinNoOfParticles[b]=fBinNoOfParticles->GetBinEntries(b);
+   for(Int_t p=0;p<fgkPmax;p++)
+   {
+    for(Int_t q=0;q<fgkQmax;q++)
+    {
+     if(AvG[p][q])
+     {   
+      X[b][p][q]=fDiffGenFunRe->GetBinContent(b+1,p+1,q+1)/AvG[p][q];
+      Y[b][p][q]=fDiffGenFunIm->GetBinContent(b+1,p+1,q+1)/AvG[p][q];
+     } 
+    }
+   }   
   } 
   
   /*
-  if(AvM!=0){
+  if(AvM){
   for(Int_t b=0;b<fgknBins;b++){
     //for(Int_t p=0;p<fgkPmax;p++){
       for(Int_t q=0;q<fgkQmax;q++){
@@ -504,7 +515,6 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[2]>0){
       //cout<<"v'_2/2{6} = "<<100.*DiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)))<<"%"<<endl;
       v6[b]=DiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)));
-      //fCommonHistsRes6->FillDifferentialFlow(b+1,v6[b],0.);
       fdfr6->SetBinContent(b+1,v6[b]);
       //common histogram:
       fchr6th->FillDifferentialFlow(b+1,v6[b],0.);
@@ -525,6 +535,641 @@ void AliCumulantsFunctions::Calculate()
     //cout<<"****************************************"<<endl;
   }  
   
+  
+ 
+ if(fOtherEquations)
+ {
+ 
+ //==============================================================================================================================================
+ 
+ //up to 4th order
+ Double_t AvG4[fgkPmax4][fgkQmax4]={{0.}};    
+ for(Int_t p=0;p<fgkPmax4;p++)
+ {
+  for(Int_t q=0;q<fgkQmax4;q++)
+  {
+   AvG4[p][q]=fIntGenFun4->GetBinContent(p+1,q+1);
+  }
+ }  
+ /////////////////////////////////////////////////////////////////////////////      
+ //////////////////gen. function for the cumulants////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t C4[fgkPmax4][fgkQmax4]={{0.}};//C[p][q]
+ if(AvM)
+ {
+  for (Int_t p=0;p<fgkPmax4;p++)
+  {
+   for (Int_t q=0;q<fgkQmax4;q++)
+   {
+    C4[p][q]=1.*AvM*(pow(AvG4[p][q],(1./AvM))-1.); 
+   }
+  }
+ }
+ /////////////////////////////////////////////////////////////////////////////
+ ///////avaraging the gen. function for the cumulants over azimuth////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t AvC4[fgkPmax4]={0.};//<C[p][q]>
+ for (Int_t p=0;p<fgkPmax4;p++)
+ {
+  Double_t tempHere4=0.; 
+  for (Int_t q=0;q<fgkQmax4;q++)
+  {
+   tempHere4+=1.*C4[p][q];
+  } 
+  AvC4[p]=1.*tempHere4/fgkQmax4;
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////final results//////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+ 
+ Double_t cumulant4[fgkPmax4];//array to store various order cumulants
+  
+ cumulant4[0]=(1./(fR0*fR0))*(2.*AvC[0]-(1./2.)*AvC[1]);
+ cumulant4[1]=(2./pow(fR0,4.))*((-2.)*AvC[0]+1.*AvC[1]);
+ 
+ /*      
+ cout<<endl;
+ cout<<"*********************************"<<endl;
+ cout<<"cumulants:"<<endl;
+ cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant4[0]<<endl; 
+ cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant4[1]<<endl;
+ cout<<endl;
+ */ 
+   
+ Double_t V2o4=0.,V4o4=0.;
+ 
+ if(cumulant4[0]>=0.)
+ {
+  V2o4 = pow(cumulant4[0],(1./2.));
+ }
+ if(cumulant4[1]<=0.)
+ {
+  V4o4 = pow(-cumulant4[1],(1./4.));
+ }
+
+ cout<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"flow estimates from GF-cumulants:"<<endl;
+ cout<<"  (calculated up to 4th order)   "<<endl;
+ cout<<endl;
+ 
+ Double_t SdQo4[2]={0.};
+ Double_t ChiQo4[2]={0.};
+          
+ //v_2{2}
+ if(AvM && cumulant4[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant4[0],(1./2.))*AvM,2.)>0.))
+ {        
+  ChiQo4[0]=AvM*V2o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o4*AvM,2.),0.5);
+  SdQo4[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo4[0],2))/(2.*pow(ChiQo4[0],2)))),0.5);
+  cout<<" v_"<<fgkFlow<<"{2} = "<<V2o4<<" +/- "<<SdQo4[0]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o4<<" +/- "<<SdQo4[0]<<", chi{2} = "<<ChiQo4[0]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+ }
+   
+ //v_2{4}   
+ if(AvM && cumulant4[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant4[1],(1./4.))*AvM,2.)>0.))
+ {
+  ChiQo4[1]=AvM*V4o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o4*AvM,2.),0.5);
+  SdQo4[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo4[1],2)+1.*pow(ChiQo4[1],4.)+2.*pow(ChiQo4[1],6.))/(2.*pow(ChiQo4[1],6.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{4} = "<<V4o4<<" +/- "<<SdQo4[1]<<endl;   
+  //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o4<<" +/- "<<SdQo4[1]<<", chi{4} = "<<ChiQo4[1]<<endl;//printing also the chi 
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+ } 
+  
+ cout<<endl;
+ cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"***********************************"<<endl;    
+ cout<<"***********************************"<<endl;   
+ 
+ //============================================================================================================================================== 
+ 
+ //up to 6th order
+ Double_t AvG6[fgkPmax6][fgkQmax6]={{0.}};    
+ for(Int_t p=0;p<fgkPmax6;p++)
+ {
+  for(Int_t q=0;q<fgkQmax6;q++)
+  {
+   AvG6[p][q]=fIntGenFun6->GetBinContent(p+1,q+1);
+  }
+ }  
+ /////////////////////////////////////////////////////////////////////////////      
+ //////////////////gen. function for the cumulants////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t C6[fgkPmax6][fgkQmax6]={{0.}};//C[p][q]
+ if(AvM){
+  for (Int_t p=0;p<fgkPmax6;p++){
+   for (Int_t q=0;q<fgkQmax6;q++){
+    C6[p][q]=1.*AvM*(pow(AvG6[p][q],(1./AvM))-1.); 
+   }
+  }
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ ///////avaraging the gen. function for the cumulants over azimuth////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t AvC6[fgkPmax6]={0.};//<C[p][q]>
+ for (Int_t p=0;p<fgkPmax6;p++){
+  Double_t tempHere6=0.; 
+  for (Int_t q=0;q<fgkQmax6;q++){
+   tempHere6+=1.*C6[p][q];
+  } 
+  AvC6[p]=1.*tempHere6/fgkQmax6;
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////final results//////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+ 
+ Double_t cumulant6[fgkPmax6];//array to store various order cumulants
+ cumulant6[0] = (1./(fR0*fR0))*(3.*AvC[0]-(3./2.)*AvC[1]+(1./3.)*AvC[2]);
+ cumulant6[1] = (2./pow(fR0,4.))*((-5.)*AvC[0]+4.*AvC[1]-1.*AvC[2]);
+ cumulant6[2] = (6./pow(fR0,6.))*(3.*AvC[0]-3.*AvC[1]+1.*AvC[2]);
+    
+ /*
+ cout<<endl;
+ cout<<"*********************************"<<endl;
+ cout<<"cumulants:"<<endl; 
+ cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant6[0]<<endl; 
+ cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant6[1]<<endl;
+ cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant6[2]<<endl;
+ cout<<endl;
+ */
+ 
+ Double_t V2o6=0.,V4o6=0.,V6o6=0.;
+ 
+ if(cumulant6[0]>=0.)
+ {
+  V2o6 = pow(cumulant6[0],(1./2.));
+ }
+ if(cumulant6[1]<=0.)
+ {
+  V4o6 = pow(-cumulant6[1],(1./4.));
+ }
+ if(cumulant6[2]>=0.)
+ {
+  V6o6 = pow((1./4.)*cumulant6[2],(1./6.));
+ }
+ 
+ cout<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"flow estimates from GF-cumulants:"<<endl;
+ cout<<"  (calculated up to 6th order)   "<<endl;
+ cout<<endl;
+ 
+ Double_t SdQo6[3]={0.};
+ Double_t ChiQo6[3]={0.};
+          
+ //v_2{2}
+ if(AvM && cumulant6[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant6[0],(1./2.))*AvM,2.)>0.))
+ {        
+  ChiQo6[0]=AvM*V2o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o6*AvM,2.),0.5);
+  SdQo6[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo6[0],2))/(2.*pow(ChiQo6[0],2)))),0.5);
+  cout<<" v_"<<fgkFlow<<"{2} = "<<V2o6<<" +/- "<<SdQo6[0]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o6<<" +/- "<<SdQo6[0]<<", chi{2} = "<<ChiQo6[0]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+ }
+   
+ //v_2{4}   
+ if(AvM && cumulant6[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant6[1],(1./4.))*AvM,2.)>0.))
+ {
+  ChiQo6[1]=AvM*V4o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o6*AvM,2.),0.5);
+  SdQo6[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo6[1],2)+1.*pow(ChiQo6[1],4.)+2.*pow(ChiQo6[1],6.))/(2.*pow(ChiQo6[1],6.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{4} = "<<V4o6<<" +/- "<<SdQo6[1]<<endl;    
+  //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o6<<" +/- "<<SdQo6[1]<<", chi{4} = "<<ChiQo6[1]<<endl;//printing also the chi 
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+ }   
+  
+ //v_2{6}
+ if(AvM && cumulant6[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant6[2],(1./6.))*AvM,2.)>0.))
+ {
+  ChiQo6[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o6*AvM,2.),0.5);
+  SdQo6[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo6[2],2.)+9.*pow(ChiQo6[2],4.)+28.*pow(ChiQo6[2],6.)+12.*pow(ChiQo6[2],8.)+24.*pow(ChiQo6[2],10.))/(24.*pow(ChiQo6[2],10.)),0.5);
+   cout<<" v_"<<fgkFlow<<"{6} = "<<V6o6<<" +/- "<<SdQo6[2]<<endl;   
+   //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o6<<" +/- "<<SdQo6[2]<<", chi{6} = "<<ChiQo6[2]<<endl;//printing also the chi
+ }
+ else
+ {
+  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+ }
+ 
+ cout<<endl;
+ cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"***********************************"<<endl;    
+ cout<<"***********************************"<<endl;   
+ 
+ //============================================================================================================================================== 
+    
+ //up to 8th order
+ Double_t AvG8[fgkPmax8][fgkQmax8]={{0.}};    
+ for(Int_t p=0;p<fgkPmax8;p++)
+ {
+  for(Int_t q=0;q<fgkQmax8;q++)
+  {
+   AvG8[p][q]=fIntGenFun8->GetBinContent(p+1,q+1);
+  }
+ }  
+ /////////////////////////////////////////////////////////////////////////////      
+ //////////////////gen. function for the cumulants////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t C8[fgkPmax8][fgkQmax8]={{0.}};//C[p][q]
+ if(AvM){
+  for (Int_t p=0;p<fgkPmax8;p++){
+   for (Int_t q=0;q<fgkQmax8;q++){
+    C8[p][q]=1.*AvM*(pow(AvG8[p][q],(1./AvM))-1.); 
+   }
+  }
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ ///////avaraging the gen. function for the cumulants over azimuth////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t AvC8[fgkPmax8]={0.};//<C[p][q]>
+ for (Int_t p=0;p<fgkPmax8;p++)
+ {
+  Double_t tempHere8=0.; 
+  for (Int_t q=0;q<fgkQmax8;q++)
+  {
+   tempHere8+=1.*C8[p][q];
+  } 
+  AvC8[p]=1.*tempHere8/fgkQmax8;
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////final results//////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+ 
+ Double_t cumulant8[fgkPmax8];//array to store various order cumulants
+ cumulant8[0] = (1./(fR0*fR0))*(4.*AvC[0]-3.*AvC[1]+(4./3.)*AvC[2]-(1./4.)*AvC[3]);
+ cumulant8[1] = (1./pow(fR0,4.))*((-52./3.)*AvC[0]+19.*AvC[1]-(28./3.)*AvC[2]+(11./6.)*AvC[3]);
+ cumulant8[2] = (3./pow(fR0,6.))*(18.*AvC[0]-24.*AvC[1]+14.*AvC[2]-3.*AvC[3]);
+ cumulant8[3] = (24./pow(fR0,8.))*((-4.)*AvC[0]+6.*AvC[1]-4.*AvC[2]+1.*AvC[3]);
+  
+ /* x0,y0 ~ 1/sqrt(p) (setting another complex mesh, doesn't work correctly)
+ cumulant8[0] = (-1./(6.*fR0*fR0)) * (1.*AvC[0] - 48.*AvC[1] + 243.*AvC[2] - 256.*AvC[3]);
+ cumulant8[1] = (2./pow(fR0,4.)) * (3.*AvC[0] - 128.*AvC[1] + 567.*AvC[2] - 512.*AvC[3]);
+ cumulant8[2] = (-12./pow(fR0,6.)) * (13.*AvC[0] - 456.*AvC[1] + 1701.*AvC[2] - 1408.*AvC[3]);
+ cumulant8[3] = (2304./pow(fR0,8.)) * (1.*AvC[0] - 24.*AvC[1] + 81.*AvC[2] - 64.*AvC[3]);       
+ */
+ 
+ /* x0,y0 ~ p (setting another complex mesh, doesn't work correctly)
+ cumulant8[0] = (-1./(5040.*fR0*fR0)) * ((-8064.)*AvC[0] + 1008.*AvC[1] - 128.*AvC[2] + 9.*AvC[3]);
+ cumulant8[1] = (1./(720.*pow(fR0,4.))) * (1952.*AvC[0] - 676.*AvC[1] + 96.*AvC[2] - 7.*AvC[3]);
+ cumulant8[2] = (-1./(40.*pow(fR0,6.))) * ((-116.)*AvC[0] + 52.*AvC[1] - 12.*AvC[2] + 1.*AvC[3]);
+ cumulant8[3] = (1./(35.*pow(fR0,8.))) * (56.*AvC[0] - 28.*AvC[1] + 8.*AvC[2] - 1.*AvC[3]);       
+ */ 
+                                           
+ /*                                          
+ cout<<endl;
+ cout<<"*********************************"<<endl;
+ cout<<"cumulants8:"<<endl; 
+ cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant8[0]<<endl; 
+ cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant8[1]<<endl;
+ cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant8[2]<<endl;
+ cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant8[3]<<endl; 
+ cout<<endl;
+ */
+ 
+ Double_t V2o8=0.,V4o8=0.,V6o8=0.,V8o8=0.;
+ 
+ if(cumulant8[0]>=0.)
+ {
+  V2o8 = pow(cumulant8[0],(1./2.));
+ }
+ if(cumulant8[1]<=0.)
+ {
+  V4o8 = pow(-cumulant8[1],(1./4.));
+ }
+ if(cumulant8[2]>=0.)
+ {
+  V6o8 = pow((1./4.)*cumulant8[2],(1./6.));
+ }
+ if(cumulant8[3]<=0.)
+ {
+  V8o8 = pow(-(1./33.)*cumulant8[3],(1./8.));
+ }
+ 
+ cout<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"flow estimates from GF-cumulants:"<<endl;
+ cout<<"  (calculated up to 8th order)   "<<endl;
+ cout<<endl;   
+             
+ Double_t SdQo8[4]={0.};
+ Double_t ChiQo8[4]={0.};
+          
+ //v_2{2}
+ if(AvM && cumulant8[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant8[0],(1./2.))*AvM,2.)>0.))
+ {        
+  ChiQo8[0]=AvM*V2o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o8*AvM,2.),0.5);
+  SdQo8[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo8[0],2.))/(2.*pow(ChiQo8[0],2)))),0.5);
+  cout<<" v_"<<fgkFlow<<"{2} = "<<V2o8<<" +/- "<<SdQo8[0]<<endl;    
+  //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o8<<" +/- "<<SdQo8[0]<<", chi{2} = "<<ChiQo8[0]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+ }
+   
+ //v_2{4}   
+ if(AvM && cumulant8[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant8[1],(1./4.))*AvM,2.)>0.))
+ {
+  ChiQo8[1]=AvM*V4o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o8*AvM,2.),0.5);
+  SdQo8[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo8[1],2)+1.*pow(ChiQo8[1],4.)+2.*pow(ChiQo8[1],6.))/(2.*pow(ChiQo8[1],6.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{4} = "<<V4o8<<" +/- "<<SdQo8[1]<<endl;    
+  //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o8<<" +/- "<<SdQo8[1]<<", chi{4} = "<<ChiQo8[1]<<endl;//printing also the chi 
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+ } 
+  
+ //v_2{6}
+ if(AvM && cumulant8[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant8[2],(1./6.))*AvM,2.)>0.))
+ {
+  ChiQo8[2]=AvM*V6o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o8*AvM,2.),0.5);
+  SdQo8[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo8[2],2)+9.*pow(ChiQo8[2],4.)+28.*pow(ChiQo8[2],6.)+12.*pow(ChiQo8[2],8.)+24.*pow(ChiQo8[2],10.))/(24.*pow(ChiQo8[2],10.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{6} = "<<V6o8<<" +/- "<<SdQo8[2]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o8<<" +/- "<<SdQo8[2]<<", chi{6} = "<<ChiQo8[2]<<endl;//printing also the chi 
+ }
+ else
+ {
+  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+ }
+  
+ //v_2{8}
+ if(AvM && cumulant8[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant8[3],(1./8.))*AvM,2.)>0.))
+ {  
+  ChiQo8[3]=AvM*V8o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o8*AvM,2.),0.5);
+  SdQo8[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQo8[3],2)+72.*pow(ChiQo8[3],4.)+304.*pow(ChiQo8[3],6.)+257.*pow(ChiQo8[3],8.)+804.*pow(ChiQo8[3],10.)+363.*pow(ChiQo8[3],12.)+726.*pow(ChiQo8[3],14.))/(726.*pow(ChiQo8[3],14.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{8} = "<<V8o8<<" +/- "<<SdQo8[3]<<endl;  
+  //cout<<" v_"<<fgkFlow<<"{8} = "<<V8o8<<" +/- "<<SdQo8[3]<<", chi{8} = "<<ChiQo8[3]<<endl;//printing also the chi 
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
+ }
+  
+ cout<<endl;
+ cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"*********************************"<<endl; 
+
+ //============================================================================================================================================== 
+   
+ //up to 16-th order: 
+ Double_t AvG16[fgkPmax16][fgkQmax16]={{0.}};  
+ for(Int_t p=0;p<fgkPmax16;p++)
+ {
+  for(Int_t q=0;q<fgkQmax16;q++)
+  {
+   AvG16[p][q]=fIntGenFun16->GetBinContent(p+1,q+1);
+  }
+ }  
+ 
+ /////////////////////////////////////////////////////////////////////////////      
+ //////////////////gen. function for the cumulants////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t C16[fgkPmax16][fgkQmax16]={{0.}};//C16[p][q]
+ if(AvM)
+ {
+  for(Int_t p=0;p<fgkPmax16;p++)
+  {
+   for(Int_t q=0;q<fgkQmax16;q++)
+   {
+    C16[p][q]=1.*AvM*(pow(AvG16[p][q],(1./AvM))-1.); 
+   }
+  }
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ ///////avaraging the gen. function for the cumulants over azimuth////////////
+ /////////////////////////////////////////////////////////////////////////////
+  
+ Double_t AvC16[fgkPmax16]={0.};//<C16[p][q]>
+ for (Int_t p=0;p<fgkPmax16;p++)
+ {
+  Double_t tempHere16=0.; 
+  for (Int_t q=0;q<fgkQmax16;q++)
+  {
+   tempHere16+=1.*C16[p][q];
+  } 
+  AvC16[p]=1.*tempHere16/fgkQmax16;
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////final results//////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
+ 
+ Double_t cumulant16[fgkPmax16];//array to store various order cumulants
+  
+ cumulant16[0] = (1./(fR0*fR0)) * (8.*AvC16[0] - 14.*AvC16[1] + (56./3.)*AvC16[2] - (35./2.)*AvC16[3] + 
+			      (56./5.)*AvC16[4] - (14./3.)*AvC16[5] + (8./7.)*AvC16[6] - (1./8.)*AvC16[7]);
+
+ cumulant16[1] = (1./pow(fR0,4.)) * ((-1924./35.)*AvC16[0] + (621./5.)*AvC16[1] - (8012./45.)*AvC16[2] + 
+				 (691./4.)*AvC16[3] - (564./5.)*AvC16[4] + (2143./45.)*AvC16[5] - 
+				 (412./35.)*AvC16[6] + (363./280.)*AvC16[7]);
+
+ cumulant16[2] = (1./pow(fR0,6.)) * (349.*AvC16[0] - (18353./20.)*AvC16[1] + (7173./5.)*AvC16[2] - 
+				 1457.*AvC16[3] + (4891./5.)*AvC16[4] - (1683./4.)*AvC16[5] + 
+				 (527./5.)*AvC16[6] - (469./40.)*AvC16[7]);
+
+ cumulant16[3] = (1./pow(fR0,8.)) * ((-10528./5.)*AvC16[0] + (30578./5.)*AvC16[1] - (51456./5.)*AvC16[2] + 
+				 10993.*AvC16[3] - (38176./5.)*AvC16[4] + (16818./5.)*AvC16[5] - 
+				 (4288./5.)*AvC16[6] + (967./10.)*AvC16[7]);
+
+ cumulant16[4] = (1./pow(fR0,10.)) * (11500.*AvC16[0] - 35800.*AvC16[1] + 63900.*AvC16[2] - 71600.*AvC16[3] + 
+				  51620.*AvC16[4] - 23400.*AvC16[5] + 6100.*AvC16[6] - 700.*AvC16[7]);
+
+ cumulant16[5] = (1./pow(fR0,12.)) * (-52560.*AvC16[0] + 172080.*AvC16[1] - 321840.*AvC16[2] + 376200.*AvC16[3] - 
+				  281520.*AvC16[4] + 131760.*AvC16[5] - 35280.*AvC16[6] + 4140.*AvC16[7]);
+
+ cumulant16[6] = (1./pow(fR0,14.)) * (176400.*AvC16[0] - 599760.*AvC16[1] + 1164240.*AvC16[2] - 1411200.*AvC16[3] + 
+				  1093680.*AvC16[4] - 529200.*AvC16[5] + 146160.*AvC16[6] - 17640.*AvC16[7]);
+
+ cumulant16[7] = (1./pow(fR0,16.)) * (-322560*AvC16[0] + 1128960.*AvC16[1] - 2257920.*AvC16[2] + 2822400.*AvC16[3] - 
+				  2257920.*AvC16[4] + 1128960.*AvC16[5] - 322560.*AvC16[6] + 40320.*AvC16[7]);
+    
+ /*
+ cout<<endl;
+ cout<<"*********************************"<<endl;
+ cout<<"cumulants:"<<endl;
+ cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant16[0]<<endl; 
+ cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant16[1]<<endl;
+ cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant16[2]<<endl;
+ cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant16[3]<<endl; 
+ cout<<"c_"<<fgkFlow<<"{10} = "<<cumulant16[4]<<endl; 
+ cout<<"c_"<<fgkFlow<<"{12} = "<<cumulant16[5]<<endl;
+ cout<<"c_"<<fgkFlow<<"{14} = "<<cumulant16[6]<<endl; 
+ cout<<"c_"<<fgkFlow<<"{16} = "<<cumulant16[7]<<endl; 
+ cout<<endl;
+ */
+ 
+ Double_t V2o16=0.,V4o16=0.,V6o16=0.,V8o16=0.,V10o16=0.,V12o16=0.,V14o16=0.,V16o16=0.;
+ 
+ if(cumulant16[0]>=0.)
+ {
+  V2o16 = pow(cumulant16[0],(1./2.));
+ }
+ if(cumulant16[1]<=0.)
+ {
+  V4o16 = pow(-cumulant16[1],(1./4.));
+ }
+ if(cumulant16[2]>=0.)
+ {
+  V6o16 = pow((1./4.)*cumulant16[2],(1./6.));
+ }
+ if(cumulant16[3]<=0.)
+ {
+  V8o16 = pow(-(1./33.)*cumulant16[3],(1./8.));
+ }
+ if(cumulant16[4]>=0.)
+ {
+  V10o16 = pow((1./456.)*cumulant16[4],(1./10.));
+ }
+ if(cumulant16[5]<=0.)
+ {
+  V12o16 = pow(-(1./9460.)*cumulant16[5],(1./12.));
+ }
+ if(cumulant16[6]>=0.)
+ {
+  V14o16 = pow((1./274800.)*cumulant16[6],(1./14.));
+ }
+ if(cumulant16[7]<=0.)
+ {
+  V16o16 = pow(-(1./10643745.)*cumulant16[7],(1./16.));
+ }
+ 
+ cout<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"flow estimates from GF-cumulants:"<<endl;
+ cout<<"  (calculated up to 16th order)   "<<endl;
+ cout<<endl;     
+          
+ Double_t SdQo16[8]={0.};
+ Double_t ChiQo16[8]={0.};
+          
+ //v_2{2}
+ if(AvM && cumulant16[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant16[0],(1./2.))*AvM,2.)>0.))
+ {        
+  ChiQo16[0]=AvM*V2o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o16*AvM,2.),0.5);
+  SdQo16[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo16[0],2))/(2.*pow(ChiQo16[0],2)))),0.5);
+  cout<<" v_"<<fgkFlow<<"{2} = "<<V2o16<<" +/- "<<SdQo16[0]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o16<<" +/- "<<SdQo16[0]<<", chi{2} = "<<ChiQo16[0]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+ }
+   
+ //v_2{4}   
+ if(AvM && cumulant16[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant16[1],(1./4.))*AvM,2.)>0.))
+ {
+  ChiQo16[1]=AvM*V4o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o16*AvM,2.),0.5);
+  SdQo16[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo16[1],2.)+1.*pow(ChiQo16[1],4.)+2.*pow(ChiQo16[1],6.))/(2.*pow(ChiQo16[1],6.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{4} = "<<V4o16<<" +/- "<<SdQo16[1]<<endl; 
+  //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o16<<" +/- "<<SdQo16[1]<<", chi{4} = "<<ChiQo16[1]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+ } 
+  
+ //v_2{6}
+ if(AvM && cumulant16[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant16[2],(1./6.))*AvM,2.)>0.))
+ {
+  ChiQo16[2]=AvM*V6o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o16*AvM,2.),0.5);
+  SdQo16[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo16[2],2)+9.*pow(ChiQo16[2],4.)+28.*pow(ChiQo16[2],6.)+12.*pow(ChiQo16[2],8.)+24.*pow(ChiQo16[2],10.))/(24.*pow(ChiQo16[2],10.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{6} = "<<V6o16<<" +/- "<<SdQo16[2]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o16<<" +/- "<<SdQo16[2]<<", chi{6} = "<<ChiQo16[2]<<endl;//printing also the chi
+ }
+ else
+ {
+  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+ }
+  
+ //v_2{8}
+ if(AvM && cumulant16[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant16[3],(1./8.))*AvM,2.)>0.))
+ {  
+  ChiQo16[3]=AvM*V8o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o16*AvM,2.),0.5);
+  SdQo16[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQo16[3],2)+72.*pow(ChiQo16[3],4.)+304.*pow(ChiQo16[3],6.)+257.*pow(ChiQo16[3],8.)+804.*pow(ChiQo16[3],10.)+363.*pow(ChiQo16[3],12.)+726.*pow(ChiQo16[3],14.))/(726.*pow(ChiQo16[3],14.)),0.5);
+  cout<<" v_"<<fgkFlow<<"{8} = "<<V8o16<<" +/- "<<SdQo16[3]<<endl;
+  //cout<<" v_"<<fgkFlow<<"{8} = "<<V8o16<<" +/- "<<SdQo16[3]<<", chi{8} = "<<ChiQo16[3]<<endl;//printing also the chi
+ } 
+ else 
+ {
+  cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
+ }
+  
+ //v_2{10}
+ if(AvM && cumulant16[4]>=0.)
+ {
+  cout<<"v_"<<fgkFlow<<"{10} = "<<V10o16<<endl;
+ } 
+ else 
+ {
+  cout<<"v_"<<fgkFlow<<"{10} = Im"<<endl; 
+ }
+  
+ //v_2{12}
+ if(AvM && AvM && cumulant16[5]<=0.)
+ {
+  cout<<"v_"<<fgkFlow<<"{12} = "<<V12o16<<endl;
+ } 
+ else 
+ {
+  cout<<"v_"<<fgkFlow<<"{12} = Im"<<endl; 
+ }
+  
+ //v_2{14}
+ if(AvM && cumulant16[6]>=0.)
+ {
+  cout<<"v_"<<fgkFlow<<"{14} = "<<V14o16<<endl;
+ } 
+ else 
+ {
+  cout<<"v_"<<fgkFlow<<"{14} = Im"<<endl;  
+ }
+  
+ //v_2{16}
+ if(AvM && cumulant16[7]<=0.)
+ {
+  cout<<"v_"<<fgkFlow<<"{16} = "<<V16o16<<endl;
+ } 
+ else 
+ {
+  cout<<"v_"<<fgkFlow<<"{16} = Im"<<endl;  
+ }
+  
+ cout<<endl;
+ cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"*********************************"<<endl;    
+ 
+ //==============================================================================================================================================
+ 
+ }//end of if(otherEquations) 
 }
 
   

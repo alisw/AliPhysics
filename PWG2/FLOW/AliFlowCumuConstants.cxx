@@ -24,3 +24,5 @@ Double_t AliFlowCumuConstants::fgR0       =  2.2 ;
 Double_t AliFlowCumuConstants::fgPtMax    =  3.1 ;
 Double_t AliFlowCumuConstants::fgPtMin    =  0.0 ;
 
+Bool_t AliFlowCumuConstants::fgOtherEquations  =  kFALSE ;
+
