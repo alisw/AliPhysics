@@ -125,7 +125,7 @@ class AliAODVertex : public AliVVertex {
   void     PrintIndices() const;
   void     Print(Option_t* option = "") const;
   private:
-  void     MakeProngs() {if (fNprong > 0) fProngs = new TRef[fNprong];}
+  void     MakeProngs() {if (fNprong > 0) {fProngs = new TRef[fNprong]; fIprong=0;}}
 	  
  private:
 
