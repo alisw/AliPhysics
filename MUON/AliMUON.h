@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-// Revision of includes 07/05/2004
+// Revision of includes 12/01/2009
 
 /// \ingroup sim
 /// \class AliMUON
@@ -12,31 +12,25 @@
 /// simulation data management 
  
 
-#include <TObjArray.h>
-
 #include "AliDetector.h"
 #include "AliMUONChamber.h"
 #include "AliMUONTrigger.h"
 
-#include <TVectorfwd.h>
 #include <TString.h>
 
-class TFile;
-class TTree;
-
-class AliLoader;
 class AliMUONResponse;
-class AliMUONSegmentation;
-class AliMUONHit;
 class AliMUONGeometry;
 class AliMUONGeometryTransformer;
 class AliMUONGeometryBuilder;
 class AliMUONRawWriter;
 class AliMUONVGeometryBuilder;
-class AliESD;
 class AliMUONDigitMaker;
 class AliMUONVHitStore;
 class AliMUONCalibrationData;
+
+class AliLoader;
+
+class TObjArray;
 
 class AliMUON : public  AliDetector 
 {

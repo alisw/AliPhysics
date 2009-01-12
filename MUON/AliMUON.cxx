@@ -22,58 +22,40 @@
 // providing simulation data management 
 //-----------------------------------------------------------------------------
 
-#include "Riostream.h"
-
-#include <AliPDG.h>
-#include <TCanvas.h>
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TMinuit.h>
-#include <TNtuple.h>
-#include <TObjArray.h>
-#include <TObject.h>
-#include <TObjectTable.h>
-#include <TPad.h>
-#include <TParticle.h>
-#include <TROOT.h>
-#include <TRandom.h> 
-#include <TRotMatrix.h>
-#include <TTree.h> 
-#include <TVector.h>
-#include <TVirtualMC.h>
-
-//#include "AliHeader.h"
-#include "AliLoader.h"
-#include "AliCDBManager.h"
-#include "AliRunDigitizer.h"
-#include "AliMC.h"
-#include "AliRun.h"
-#include "AliRawDataHeaderSim.h"
 #include "AliMUON.h"
-#include "AliMUONChamberTrigger.h"
-#include "AliMUONConstants.h"
-#include "AliMUONHit.h"	
-#include "AliMUONGeometry.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryBuilder.h"
-#include "AliMUONCommonGeometryBuilder.h"
-#include "AliMUONVGeometryBuilder.h"	
-#include "AliMUONRawWriter.h"
-#include "AliLog.h"
 
 #include "AliMUONSDigitizerV2.h"
 #include "AliMUONDigitizerV3.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONCalibrationData.h"
 
+#include "AliMUONDigitStoreV1.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONHitStoreV1.h"
+
+#include "AliMUONChamberTrigger.h"
+#include "AliMUONConstants.h"
+#include "AliMUONGeometry.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryBuilder.h"
+#include "AliMUONVGeometryBuilder.h"	
+#include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt2GeometryBuilderV2.h"
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUONTriggerGeometryBuilder.h"
 
-#include "AliMUONDigitStoreV1.h"
-#include "AliMUONVTriggerStore.h"
-#include "AliMUONHitStoreV1.h"
+#include "AliMUONRawWriter.h"
+
+#include "AliLoader.h"
+#include "AliCDBManager.h"
+#include "AliRunDigitizer.h"
+#include "AliMC.h"
+#include "AliRun.h"
+#include "AliRawDataHeaderSim.h"
+#include "AliLog.h"
+
+#include <TObjArray.h>
 
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
