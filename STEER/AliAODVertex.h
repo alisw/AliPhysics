@@ -101,7 +101,7 @@ class AliAODVertex : public AliVVertex {
 
   void     AddDaughter(TObject *daughter);
   void     RemoveDaughter(TObject *daughter) { fDaughters.Remove(daughter); }
-  void     RemoveDaughters() { fDaughters.Clear(); }
+  void     RemoveDaughters() { fDaughters.Clear(); if(fProngs) {delete [] fProngs; fProngs=0; MakeProngs(); fIprong=0;} }
   TObject* GetDaughter(Int_t i); 
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const;
