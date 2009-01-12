@@ -20,6 +20,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCodeTimer.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
@@ -303,18 +304,31 @@ AliMUONTrackerCalibratedDataMaker::ProcessEvent()
     stream = new AliMUONRawStreamTracker(fRawReader);
   }
   
+  stream->EnabbleErrorLogger();
+  
   stream->First();
   
   Int_t buspatchId;
   UShort_t manuId;
   UChar_t manuChannel;
 	UShort_t adc;
+  const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
+  TArrayI nevents(nddls);
+
+  for ( Int_t i = 0; i < nddls; ++i ) 
+  {
+    nevents[i] = 0;
+  }
   
   fOneEventData->Clear();
   
   while ( stream->Next(buspatchId,manuId,manuChannel,adc) )
   {    
     Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(buspatchId);
+    
+    Int_t ddl = AliMpDDLStore::Instance()->GetDDLfromBus(buspatchId);
+
+    nevents[ddl] = 1;
     
     AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fOneEventData->FindObject(detElemId,manuId));
     if (!param)
@@ -342,7 +356,7 @@ AliMUONTrackerCalibratedDataMaker::ProcessEvent()
   if ( !stream->IsErrorMessage() )
   {
     good = kTRUE;
-    fAccumulatedData->Add(*fOneEventData);
+    fAccumulatedData->Add(*fOneEventData,&nevents);    
   }
   
   delete stream;
