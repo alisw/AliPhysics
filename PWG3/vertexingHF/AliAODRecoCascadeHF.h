@@ -33,12 +33,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   AliAODRecoCascadeHF& operator=(const AliAODRecoCascadeHF& source);
 
   // 2prong (D0 for Dstar)
-  void Set2Prong(TObject *the2Prong) { f2Prong = the2Prong; }
-  void Check2Prong() const { if(!f2Prong.GetObject()) printf("f2Prong not set\n"); return; }
-  // GetDaughter(1) doesn't work because the V0 and the bachelor have different 
-  // process id and they can't go to the same TRefArray
-  AliAODRecoDecayHF2Prong* Get2Prong() const { if(GetDaughter(1)) { return (AliAODRecoDecayHF2Prong*)GetDaughter(1); } else { return (AliAODRecoDecayHF2Prong*)f2Prong.GetObject(); } }
-  void Unset2Prong () { f2Prong=0; return; }
+  AliAODRecoDecayHF2Prong* Get2Prong() const {return (AliAODRecoDecayHF2Prong*)GetDaughter(1);}
 
   // Bachelor (soft pion for Dstar)
   AliAODTrack* GetBachelor() const {return (AliAODTrack*)GetDaughter(0);}
@@ -53,10 +48,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
 
  protected:
 
-
-  TRef f2Prong; // the "V0" (e.g. D0->Kpi)
-
-  ClassDef(AliAODRecoCascadeHF, 1); // heavy-flavour cascade class
+  ClassDef(AliAODRecoCascadeHF, 2); // heavy-flavour cascade class
 };
 
 #endif

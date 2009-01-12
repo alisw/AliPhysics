@@ -35,7 +35,7 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
-//#include "AliNeutralTrackParam.h"
+#include "AliNeutralTrackParam.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
@@ -330,9 +330,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    io2Prong->SetSecondaryVtx(vertexp1n1);
 	  }
 	  // create a track from the D0
-	  //AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(io2Prong); // to be uncommented after commit of AliAODRecoDecay : public AliVTrack
-	  AliESDtrack *trackD0 = new AliESDtrack(); // temporary, just to allow compilation
-
+	  AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(io2Prong);
 	  // LOOP ON TRACKS THAT PASSED THE SOFT PION CUTS
 	  for(iTrkSoftPi=0; iTrkSoftPi<nSeleTrks; iTrkSoftPi++) {
 	    if(iTrkSoftPi==iTrkP1 || iTrkSoftPi==iTrkN1) continue;
@@ -348,7 +346,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    // Vertexing
 	    twoTrackArrayCasc->AddAt(trackPi,0);
 	    twoTrackArrayCasc->AddAt(trackD0,1);
-	    AliAODVertex *vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion);
+	    AliAODVertex *vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
 	    if(!vertexCasc) { 
 	      twoTrackArrayCasc->Clear();
 	      trackPi=0; 
@@ -367,10 +365,13 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      }
 	      // add the vertex and the cascade to the AOD
 	      AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc); 
-	      if(fInputAOD) AddDaughterRefs(vCasc,event,twoTrackArrayCasc); // add the pion
-	      //vCasc->AddDaughter(rd); // doesn't work, because the D0 and the bachelor have different ROOT process ID
+	      if(fInputAOD) {
+		AddDaughterRefs(vCasc,event,twoTrackArrayCasc); // add the pion
+	      } else {
+		vCasc->AddDaughter(rd); // just to fill ref #0 
+	      }
+	      vCasc->AddDaughter(rd); // add the D0 (in ref #1)
 	      rc = new(aodDstarRef[iDstar++])AliAODRecoCascadeHF(*ioCascade);
-	      rc->Set2Prong(rd); // add the D0
 	      rc->SetSecondaryVtx(vCasc);
 	      vCasc->SetParent(rc);
 	    }
@@ -616,7 +617,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   //--- selection cuts
   //
   AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);
-  tmpCascade->Set2Prong(rd2Prong); // this is needed for the selection
+  tmpCascade->GetSecondaryVtx()->AddDaughter(trackPi);
+  tmpCascade->GetSecondaryVtx()->AddDaughter(rd2Prong);
   AliAODVertex *primVertexAOD=0;
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     // take event primary vertex
@@ -629,8 +631,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
     Bool_t testD0=kTRUE;
     okDstar = tmpCascade->SelectDstar(fDstarCuts,fD0fromDstarCuts,testD0);
   }
+  tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
-  tmpCascade->Unset2Prong(); 
   delete tmpCascade; tmpCascade=NULL;
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     rd2Prong->UnsetOwnPrimaryVtx();
@@ -1126,7 +1128,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
 }
 //-----------------------------------------------------------------------------
 AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkArray,
-								 Double_t &dispersion) const
+								 Double_t &dispersion,Bool_t useTRefArray) const
 {
   // Secondary vertex reconstruction with AliVertexerTracks or AliKFParticle
 
@@ -1175,8 +1177,8 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
   dispersion = vertexESD->GetDispersion();
   delete vertexESD; vertexESD=NULL;
 
-  vertexAOD = new AliAODVertex(pos,cov,chi2perNDF);
-  vertexAOD->SetType(AliAODVertex::kUndef); // to be changed
+  Int_t nprongs= (useTRefArray ? 0 : trkArray->GetEntriesFast());
+  vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
 
   return vertexAOD;
 }

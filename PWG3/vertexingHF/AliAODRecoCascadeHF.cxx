@@ -31,8 +31,7 @@ ClassImp(AliAODRecoCascadeHF)
 //-----------------------------------------------------------------------------
 
 AliAODRecoCascadeHF::AliAODRecoCascadeHF() :
-  AliAODRecoDecayHF2Prong(),
-  f2Prong()
+  AliAODRecoDecayHF2Prong()
 {
   //
   // Default Constructor
@@ -42,8 +41,7 @@ AliAODRecoCascadeHF::AliAODRecoCascadeHF() :
 AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 					 Double_t *px, Double_t *py, Double_t *pz,
 					 Double_t *d0, Double_t *d0err, Double_t dca) :
-  AliAODRecoDecayHF2Prong(vtx2, px, py, pz, d0, d0err, dca),
-  f2Prong()
+  AliAODRecoDecayHF2Prong(vtx2, px, py, pz, d0, d0err, dca)
 {
   //
   //  Constructor with AliAODVertex for decay vertex
@@ -53,8 +51,7 @@ AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 					 Double_t *d0, Double_t *d0err, Double_t dca) :
-  AliAODRecoDecayHF2Prong(vtx2, d0, d0err, dca),
-  f2Prong()
+  AliAODRecoDecayHF2Prong(vtx2, d0, d0err, dca)
 {
   //
   //  Constructor with decay vertex and without prongs momenta
@@ -63,8 +60,7 @@ AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 }
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF::AliAODRecoCascadeHF(const AliAODRecoCascadeHF &source) :
-  AliAODRecoDecayHF2Prong(source),
-  f2Prong()
+  AliAODRecoDecayHF2Prong(source)
 {
   //
   // Copy constructor
@@ -79,8 +75,6 @@ AliAODRecoCascadeHF &AliAODRecoCascadeHF::operator=(const AliAODRecoCascadeHF &s
   if(&source == this) return *this;
 
   AliAODRecoDecayHF2Prong::operator=(source);
-
-  f2Prong = source.f2Prong;
 
   return *this;
 }
