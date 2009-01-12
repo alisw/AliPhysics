@@ -4060,7 +4060,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
     Double_t xx,yy,zz,alpha; 
     if (!bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz)) continue;
     alpha = TMath::ATan2(yy,xx);    
-    trackat0.Propagate(alpha,0);      
+    if (!trackat0.Propagate(alpha,0)) continue;      
     // calculate normalized distances to the vertex 
     //
     Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.GetC()));
