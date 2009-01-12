@@ -247,7 +247,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   Bool_t &okDstar) const;
 
   AliAODVertex* PrimaryVertex(TObjArray *trkArray=0x0,AliVEvent *event=0x0) const;
-  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion) const;
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
 		       Double_t *px,Double_t *py,Double_t *pz) const;
   void   SelectTracksAndCopyVertex(AliVEvent *event,
