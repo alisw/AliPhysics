@@ -145,9 +145,9 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
 	}
 	cout<<"pt of positive track: "<<trk0->Pt()<<endl;
 
-	// make a AliExternalTrackParam from the D0 
+	// make a AliNeutralTrackParam from the D0 
 	// and calculate impact parameters to primary vertex
-	AliExternalTrackParam trackD0(d);
+	AliNeutralTrackParam trackD0(d);
 	cout<<"pt of D0: "<<d->Pt()<<" (AliAODRecoDecay); "<<trackD0.Pt()<<" (track)"<<endl;
 	//trackD0.Print();
 	Double_t dz[2],covdz[3];
