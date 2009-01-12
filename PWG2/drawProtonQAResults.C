@@ -1,22 +1,26 @@
-void drawProtonQAResults(const char* filename1 = "Protons.QA.root",
-			 const char* filename2 = "Protons.MC.QA.root",
-			 const char* filename3 = "Protons.Efficiency.root") {
+void drawProtonQAResults(const char *analysisType = "TPC") {
   //Macro to visualize the results of the proton QA task
   //TCanvas objects: 16
   gStyle->SetPalette(1,0);
+  TString filename1 = "Protons.QA.";
+  filename1 += analysisType; filename1 += ".root";
+  TString filename2 = "Protons.MC.QA.";
+  filename2 += analysisType; filename2 += ".root";
+  TString filename3 = "Protons.Efficiency.";
+  filename3 += analysisType; filename3 += ".root",
  
-  TFile *fQA = TFile::Open(filename1);
+  TFile *fQA = TFile::Open(filename1.Data());
   TList *listGlobalQA = (TList *)fQA->Get("globalQAList");
-  drawCutStatistics(listGlobalQA);
+  drawCutStatistics(listGlobalQA,analysisType);
  
-  TFile *fMC = TFile::Open(filename2);
+  TFile *fMC = TFile::Open(filename2.Data());
   TList *listPDG = (TList *)fMC->Get("pdgCodeList");  
   TList *listMCProcesses = (TList *)fMC->Get("mcProcessList");  
   drawMCQA(listPDG,listMCProcesses);
   
-  TFile *fEfficiency = TFile::Open(filename3);
+  TFile *fEfficiency = TFile::Open(filename3.Data());
   TList *listEfficiency = (TList *)fEfficiency->Get("efficiencyList");
-  drawEfficiency(listEfficiency);
+  drawEfficiency(listEfficiency,analysisType);
 
   fQA->Close();
   fMC->Close();
@@ -24,7 +28,8 @@ void drawProtonQAResults(const char* filename1 = "Protons.QA.root",
 }
 
 //________________________________________//
-void drawCutStatistics(TList *list) {
+void drawCutStatistics(TList *list,
+		       const char* analysisType) {
   //Function to display the statistics from the cuts
   //The histogram shows the influence of each cut on the primary
   //and secondary (anti)protons
@@ -378,8 +383,8 @@ void drawCutStatistics(TList *list) {
   c9->SaveAs("CutInfluence-ITS.gif");
   
   //Efficiency - Contamination plots
-  DrawContamination(fQA2DList);
-  DrawCutEfficiency(fQA2DList);
+  DrawContamination(fQA2DList,analysisType);
+  DrawCutEfficiency(fQA2DList,analysisType);
   DrawComposition(gHistYPtPDGProtonsPass,gHistYPtPDGAntiProtonsPass);
 }
 
@@ -541,7 +546,8 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 }
 
 //________________________________________________//
-void DrawContamination(TList *inputList) {
+void DrawContamination(TList *inputList,
+		       const char* analysisType) {
   //loops over the list entries and
   //draws the rapidity and pT dependence
   //of the percentage of primary and secondary
@@ -754,7 +760,9 @@ void DrawContamination(TList *inputList) {
 
   c8->SaveAs("Contamination-Protons-Pt.gif");
 
-  TFile *fout = TFile::Open("Contamination.root","recreate");
+  TString outputFileName = "Contamination."; 
+  outputFileName += analysisType; outputFileName += ".root";
+  TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
   gYPrimaryProtonsPercentage->Write();
   gYSecondaryProtonsPercentage->Write();
   gPtPrimaryProtonsPercentage->Write();
@@ -767,7 +775,8 @@ void DrawContamination(TList *inputList) {
 }
 
 //________________________________________________//
-void DrawCutEfficiency(TList *inputList) {
+void DrawCutEfficiency(TList *inputList,
+		       const char* analysisType) {
   //loops over the list entries and
   //draws the rapidity and pT dependence
   //of the percentage of primary and secondary
@@ -875,7 +884,9 @@ void DrawCutEfficiency(TList *inputList) {
 
   c11->SaveAs("CutEfficiency-Protons-Pt.gif");
 
-  TFile *fout = TFile::Open("CutEfficiency.root","recreate");
+  TString outputFileName = "CutEfficiency.";
+  outputFileName += analysisType; outputFileName += ".root";
+  TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
   gYPrimaryESDProtons->Write();
   gYPrimaryESDAntiProtons->Write();
   gPtPrimaryESDProtons->Write();
@@ -1183,7 +1194,8 @@ void SetError(TH1D *hEff, TH1D *hGen) {
 }
 
 //________________________________________//
-void drawEfficiency(TList *list) {
+void drawEfficiency(TList *list,
+		    const char* analysisType) {
   //Function to display the reconstruction and PID efficiencies
   //for protons and antiprotons vs y and pT
 
@@ -1438,7 +1450,9 @@ void drawEfficiency(TList *list) {
 
   c16->SaveAs("PIDEfficiency-Protons.gif");
 
-  TFile *fout = TFile::Open("Reconstruction-PID-Efficiency.root","recreate");
+  TString outputFileName = "Reconstruction-PID-Efficiency.";
+  outputFileName += analysisType; outputFileName += ".root";
+  TFile *fout = TFile::Open(outputFileName.Data(),"recreate");
   gYPrimariesESDProtons->Write();
   gYESDProtonsFromWeak->Write();
   gYESDProtonsFromHadronic->Write();
