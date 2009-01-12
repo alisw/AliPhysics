@@ -709,7 +709,8 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
 }
 
 //____________________________________________________________________//
-void AliProtonAnalysis::Analyze(AliStack* stack, Bool_t iInclusive) {
+void AliProtonAnalysis::Analyze(AliStack* stack, 
+				Bool_t iInclusive) {
   //Main analysis part - MC
   fHistEvents->Fill(0); //number of analyzed events
 
@@ -721,6 +722,9 @@ void AliProtonAnalysis::Analyze(AliStack* stack, Bool_t iInclusive) {
   for(Int_t i = 0; i < nParticles; i++) {
     TParticle *particle = stack->Particle(i);
     if(!particle) continue;
+
+    //in case of inclusive protons reject the secondaries from hadronic inter.
+    if(particle->GetUniqueID() == 13) continue;
 
     if(TMath::Abs(particle->Eta()) > 1.0) continue;
     if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
