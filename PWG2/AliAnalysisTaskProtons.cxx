@@ -112,7 +112,7 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
     if(fProtonAnalysisMode == kTPC) {
       fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
       fProtonAnalysis->UseTPCOnly();
-      fProtonAnalysis->SetTPCpid();
+      //fProtonAnalysis->SetTPCpid();
       fProtonAnalysis->SetMinTPCClusters(100);
       fProtonAnalysis->SetMaxChi2PerTPCCluster(2.2);
       fProtonAnalysis->SetMaxCov11(0.5);
@@ -149,7 +149,7 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
     }
     //Combined tracking
     else if(fProtonAnalysisMode == kGlobal) {
-      fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
+      fProtonAnalysis->InitAnalysisHistograms(20, -1.0, 1.0, 48, 0.3, 1.5);
       fProtonAnalysis->SetMinTPCClusters(110);
       fProtonAnalysis->SetMaxChi2PerTPCCluster(2.2);
       fProtonAnalysis->SetMaxCov11(0.5);
@@ -181,7 +181,9 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
     else
       fProtonAnalysis->SetPriorProbabilities(partFrac);
   }//ESD analysis
-
+  else if(fAnalysisType == "MC") 
+    fProtonAnalysis->InitAnalysisHistograms(10, -0.5, 0.5, 16, 0.5, 0.9);
+  
   fList = new TList();
   fList->Add(fProtonAnalysis->GetProtonYPtHistogram());
   fList->Add(fProtonAnalysis->GetAntiProtonYPtHistogram());
@@ -233,7 +235,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       return;
     }
     Printf("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary());
-    fProtonAnalysis->Analyze(stack);
+    fProtonAnalysis->Analyze(stack,kFALSE);//kTRUE in case of inclusive measurement
   }//MC analysis                      
 
   // Post output data.
