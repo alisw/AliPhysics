@@ -1,20 +1,33 @@
-void runProtonAnalysisQA() {
+void runProtonAnalysisQA(const char *analysisType = "TPC") {
+  //Macro to run the proton QA analysis tested for local, proof & GRID.
+  //Proof: Takes three arguments, the number of events, the dataset name 
+  //       and the analysis type
+  //Interactive: Takes two arguments, the name of the collection file with 
+  //             the event list for each file and the analysis type
+  //Analysis type can be one of the three: "TPC", "Hybrid", "Global"
   TStopwatch timer;
   timer.Start();
   
-  runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T"); //use data sets
-  //runInteractive("wn.xml");
+  runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",analysisType);
+  //runInteractive("wn.xml",analysisType);
   
   timer.Stop();
   timer.Print();
 }
 
 //_________________________________________________//
-void runInteractive(const char *collectionfile) {
-  TString outputFilename1 = "Protons.QA.root"; 
-  TString outputFilename2 = "Protons.MC.QA.root"; 
-  TString outputFilename3 = "Protons.QA.Histograms.root"; 
-  TString outputFilename4 = "Protons.Efficiency.root"; 
+void runInteractive(const char *collectionfile,
+		    const char *analysisType) {
+  TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += ".root"; //main QA file
+  TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += ".root"; //MC process QA
+  TString outputFilename3 = "Protons.QA.Histograms."; 
+  outputFilename3 += analysisType;
+  outputFilename3 += ".root"; //Accepted cut distributions
+  TString outputFilename4 = "Protons.Efficiency."; 
+  outputFilename4 += analysisType;
+  outputFilename4 += ".root"; //Reco and PID efficiency
 
   TGrid::Connect("alien://");
 
@@ -53,7 +66,19 @@ void runInteractive(const char *collectionfile) {
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
   taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
-  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
+  switch(analysisType) {
+  case "TPC":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+    break;
+  case "Hybrid":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
+    break;
+  case "Global":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kGlobal);
+    break;
+  default:
+    break;
+  }
   taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
@@ -100,11 +125,19 @@ void runInteractive(const char *collectionfile) {
 }
  
 //_________________________________________________//
-void runProof(Int_t stats = 0, const char* dataset = 0x0) {
-  TString outputFilename1 = "Protons.QA.root"; 
-  TString outputFilename2 = "Protons.MC.QA.root"; 
-  TString outputFilename3 = "Protons.QA.Histograms.root"; 
-  TString outputFilename4 = "Protons.Efficiency.root"; 
+void runProof(Int_t stats = 0, 
+	      const char* dataset = 0x0,
+	      const char *analysisType) {
+  TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += ".root"; //main QA file
+  TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += ".root"; //MC process QA
+  TString outputFilename3 = "Protons.QA.Histograms."; 
+  outputFilename3 += analysisType;
+  outputFilename3 += ".root"; //Accepted cut distributions
+  TString outputFilename4 = "Protons.Efficiency."; 
+  outputFilename4 += analysisType;
+  outputFilename4 += ".root"; //Reco and PID efficiency
 
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
@@ -140,7 +173,19 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   // 1st Proton task
   AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
   taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
-  taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
+  switch(analysisType) {
+  case "TPC":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+    break;
+  case "Hybrid":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
+    break;
+  case "Global":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kGlobal);
+    break;
+  default:
+    break;
+  }
   taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
   mgr->AddTask(taskProtonsQA);
 
