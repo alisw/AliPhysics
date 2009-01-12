@@ -133,12 +133,12 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
-
-  if (!IsDataEvent()) return 0;
-  
   int iResult=0;
   AliHLTUInt32_t capacity=size;
   size=0;
+
+  if (!IsDataEvent()) return 0;
+
   const AliHLTComponentBlockData* iter = NULL;
   const AliHLTComponentBlockData* lastVertexBlock = NULL;
   unsigned long ndx;
