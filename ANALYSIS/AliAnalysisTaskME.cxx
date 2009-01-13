@@ -142,13 +142,18 @@ void AliAnalysisTaskME::Exec(Option_t* option)
        fEntry = fInputHandler->GetReadEntry();
     if ( !((Entry()-1)%100) && fDebug > 0) 
          AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
-         
+
+    AliAODHandler* outputHandler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());         
 // Call the user analysis    
     if (fInputHandler->IsBufferReady()) {
 	if ((fFreshBufferOnly && fInputHandler->IsFreshBuffer()) || !fFreshBufferOnly)
 	{
+	    outputHandler->SetFillAOD(kTRUE);
 	    UserExec(option);
 	    PostData(0, fTreeA);
+	} else {
+	    outputHandler->SetFillAOD(kFALSE);
 	}
     } else {
 	AliInfo(Form("Waiting for buffer to be ready !\n"));
