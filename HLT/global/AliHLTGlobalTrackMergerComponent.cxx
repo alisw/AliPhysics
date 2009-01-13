@@ -180,6 +180,8 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
   Int_t slice;
 
   unsigned long ndx;
+  Int_t nTRDDataBlocks = 0;
+  Int_t nTPCDataBlocks = 0;
   for ( ndx = 0; ndx < evtData.fBlockCnt && iResult>=0; ndx++ )
   {
       iter = blocks+ndx;
@@ -196,15 +198,17 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
       // one TClonesArray of tracks per SM
       if(bIsTRDTrackDataBlock) 
       {
+        nTRDDataBlocks++;
+	if(nTRDDataBlocks>1) continue;
         for (TObject *pObj = (TObject *)GetFirstInputObject(AliHLTTRDDefinitions::fgkTRDSATracksDataType,"TClonesArray",0);
 	  pObj !=0 && iResult>=0;
 	  pObj = (TObject *)GetNextInputObject(0)) {
           aTRDTracks = dynamic_cast<TClonesArray*>(pObj);
           if (!aTRDTracks) continue;
 
-          HLTDebug("reading block %d, trdTracks %d", ndx, aTRDTracks->GetEntriesFast());
+          HLTInfo("reading block %d, trdTracks %d", ndx, aTRDTracks->GetEntriesFast());
 
-	  // load TRD tracks by global track merger 
+	  // load TRD tracks
 	  if (fGlobalTrackMerger->LoadTracks(aTRDTracks,fESD) == kFALSE) {
              HLTError("Cannot load TRD tracks");
              iResult=-ENOMEM;
@@ -217,6 +221,9 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
       // collect TPC tracks from whole TPC
       if (bIsTPCTrackDataBlock) 
       {
+        nTPCDataBlocks++;
+	if(nTPCDataBlocks>1) continue;
+
         slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	if(slice<minSlice) minSlice = slice;
 	if(slice>maxSlice) maxSlice = slice;
@@ -227,19 +234,19 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
         AliHLTTPCTrackArray tracks;
         inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
 
-        HLTDebug("reading block %d (slice %d): %d tracklets", ndx, slice, inPtr->fTrackletCnt);
+        HLTInfo("reading block %d (slice %d): %d tracklets", ndx, slice, inPtr->fTrackletCnt);
 
         // read TPC track segments from memory
-        if((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, -1/*global track*/, 0/*don't rotate*/))>=0) {
-
-          // load TPC tracks by  global track merger
+        if((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, -1/*global track*/, 0/*don't rotate*/))>=0) 
+	{
+          // load TPC tracks
           if (fGlobalTrackMerger->LoadTracks(&tracks,fESD) == kFALSE) {
              HLTError("Cannot load TPC tracks");
              iResult=-ENOMEM;
              return iResult;
 	  }
-       }
-     }
+        }
+      }
    }
 
    // set magnetic field 
@@ -248,7 +255,7 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
    // merge tracks
    Bool_t isMerged = fGlobalTrackMerger->Merge(fESD);
    if(!isMerged) {
-     HLTWarning("No merged tracks");
+     HLTInfo("No merged tracks");
    }
 
    // try to propagate all tracks to DCA to primary vertex
@@ -262,7 +269,7 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
    //PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
    PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC);
 
-   // reset fESD
+   // clean ESD event content
    fESD->Reset();
   
 return iResult;

@@ -28,10 +28,13 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCTrackArray.h"
 
+#include "AliTPCReconstructor.h"
+
 #include "AliTRDtrackV1.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
+#include "TTreeStream.h"
 
 #include <TClonesArray.h>
 
@@ -50,13 +53,19 @@ AliHLTGlobalTrackMerger::AliHLTGlobalTrackMerger()
   fMaxSnp(0.0),
   fMaxTgl(0.0),
   fMaxSigned1Pt(0.0),
-  fVertex(0)
+  fVertex(0),
+  fDebugStreamer(0)
 {
   //Default constructor
 
   // standard vertex settings at the moment
   // V(0.,0.,0.), sigmaVx=sigmaVy=5.e-3 [cm], sigmaVz=5.3 [cm]    
   fVertex = new AliESDVertex;
+
+  if (AliTPCReconstructor::StreamLevel()>0) {
+    fDebugStreamer = new TTreeSRedirector("debugGlobalMerger.root");
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -64,6 +73,7 @@ AliHLTGlobalTrackMerger::~AliHLTGlobalTrackMerger()
 {
   //Destructor
   if(fVertex) delete fVertex; fVertex =0;
+  if(fDebugStreamer) delete fDebugStreamer; fDebugStreamer =0;
 }
 
 //_____________________________________________________________________________
@@ -89,7 +99,7 @@ Bool_t AliHLTGlobalTrackMerger::LoadTracks(AliHLTTPCTrackArray *aTPCTracks, AliE
   // load TPC tracks
   if(!aTPCTracks) return kFALSE;
 
-  for (int i=0; i<aTPCTracks->GetNTracks();++i) {
+  for (Int_t i=0; i<aTPCTracks->GetNTracks();++i) {
     AliHLTTPCTrack* track=(*aTPCTracks)[i];
     if(!track) continue;
 
@@ -162,56 +172,59 @@ Bool_t AliHLTGlobalTrackMerger::Merge(AliESDEvent* esdEvent)
   Double_t kMergeRadius = 0.0;
   Bool_t isOk = kFALSE;
   Bool_t isMatched = kFALSE;
+  AliESDtrack *track=0;
 
   Int_t nTracks = esdEvent->GetNumberOfTracks(); 
-  //HLTDebug("nTracks %d",nTracks);
   HLTWarning("nTracks %d",nTracks);
 
+  Int_t nTracksTPC =0;
   for(Int_t iTrack = 0; iTrack<nTracks; ++iTrack) 
   {
-    AliESDtrack *track = esdEvent->GetTrack(iTrack); 
+    track = esdEvent->GetTrack(iTrack); 
     if(!track) continue;
 
     // TPC tracks
     if((track->GetStatus()&AliESDtrack::kTPCin)==0) continue;
     AliESDtrack *tpcTrack = track;
 
+    nTracksTPC++;
+
     kMergeRadius = tpcTrack->GetTPCPoints(0); // [cm] merging at first measured TPC point
 
-    //HLTWarning("-------------------------------------------------------------------------------------");
-    //HLTWarning("-------------------------------------------------------------------------------------");
-
-    //HLTWarning("1-----tpc before matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
+    HLTInfo("-------------------------------------------------------------------------------------");
+    HLTInfo("-----tpc track before matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
 
     // propagate tracks to the matching radius 
     isOk = AliTracker::PropagateTrackTo(tpcTrack,kMatchRadius,tpcTrack->GetMass(),kMaxStep,kFALSE);
     if(!isOk) continue;
 
-    //HLTWarning("2-----tpc before matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
+    HLTInfo("-----tpc track at matching radius: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
 
+    Int_t nTracksTRD =0;
     for(Int_t jTrack = 0; jTrack<nTracks; ++jTrack) 
     {
-      AliESDtrack *track = esdEvent->GetTrack(jTrack); 
+      track = esdEvent->GetTrack(jTrack); 
       if(!track) continue;
 
       // TRD tracks
       if((track->GetStatus()&AliESDtrack::kTRDin)==0) continue;
       AliESDtrack *trdTrack = track;
 
-      //HLTWarning("1-----trd before matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
+      nTracksTRD++;
+
+      HLTInfo("1-----trd track before matching: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
 
       isOk = AliTracker::PropagateTrackTo(trdTrack,kMatchRadius,trdTrack->GetMass(),kMaxStep,kFALSE);
       if(!isOk) continue;
 
-      //HLTWarning("2-----trd before matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
+      HLTInfo("1-----trd track at matching radius: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
 
       // match TPC and TRD tracks
       isMatched = MatchTracks(tpcTrack,trdTrack);
       if(!isMatched) continue;
 
-      //HLTWarning("2-----tpc after matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
-
-      //HLTWarning("2-----trd after matching: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
+      HLTInfo("2-----tpc track after matching: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
+      HLTInfo("2-----trd track after matching: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
 
       // propagate tracks to the merging radius 
       isOk = AliTracker::PropagateTrackTo(tpcTrack,kMergeRadius,tpcTrack->GetMass(),kMaxStep,kFALSE);
@@ -220,17 +233,19 @@ Bool_t AliHLTGlobalTrackMerger::Merge(AliESDEvent* esdEvent)
       isOk = AliTracker::PropagateTrackTo(trdTrack,kMergeRadius,trdTrack->GetMass(),kMaxStep,kFALSE);
       if(!isOk) continue;
 
-      //HLTWarning("3-----tpc before merging: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
-
-      //HLTWarning("3-----trd before merging: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
+      HLTInfo("3-----tpc before merging: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
+      HLTInfo("3-----trd before merging: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",trdTrack->GetAlpha(),trdTrack->GetX(),trdTrack->GetY(),trdTrack->GetZ(),trdTrack->GetSnp(),trdTrack->GetTgl(),trdTrack->GetSigned1Pt());
 
       // merge TPC and TRD tracks
       // create AliESDtrack and add it to AliESDevent
       Bool_t isMerged = MergeTracks(tpcTrack,trdTrack,esdEvent);
-      if(!isMerged) HLTWarning("No merged tracks");
+      if(!isMerged) 
+        HLTInfo("No merged tracks");
 
     }
+    HLTInfo("nTracksTRD %d",nTracksTRD);
   }
+  HLTInfo("nTracksTPC %d",nTracksTPC);
 
 return kTRUE;
 }
@@ -327,11 +342,44 @@ Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliESDtrack *trackTPC, AliESDtrack *
   if(!trackTPC) return kFALSE;
   if(!trackTRD) return kFALSE;
 
-  if (TMath::Abs(trackTPC->GetY()-trackTRD->GetY()) > fMaxY) return kFALSE;
-  if (TMath::Abs(trackTPC->GetZ()-trackTRD->GetZ()) > fMaxZ) return kFALSE;
-  if (TMath::Abs(trackTPC->GetSnp()-trackTRD->GetSnp()) > fMaxSnp) return kFALSE;
-  if (TMath::Abs(trackTPC->GetTgl()-trackTRD->GetTgl()) > fMaxTgl) return kFALSE;
-  if (TMath::Abs(trackTPC->GetSigned1Pt()-trackTRD->GetSigned1Pt()) > fMaxSigned1Pt) return kFALSE;
+  Double_t x_tpc=trackTPC->GetX();
+  Double_t y_tpc=trackTPC->GetY();
+  Double_t z_tpc=trackTPC->GetZ();
+  Double_t snp_tpc=trackTPC->GetSnp();
+  Double_t tgl_tpc=trackTPC->GetTgl();
+  Double_t signed1Pt_tpc=trackTPC->GetSigned1Pt();
+
+  Double_t x_trd=trackTRD->GetX();
+  Double_t y_trd=trackTRD->GetY();
+  Double_t z_trd=trackTRD->GetZ();
+  Double_t snp_trd=trackTRD->GetSnp();
+  Double_t tgl_trd=trackTRD->GetTgl();
+  Double_t signed1Pt_trd=trackTRD->GetSigned1Pt();
+
+  // debug stream
+  if (AliTPCReconstructor::StreamLevel()>0) {
+  //TTreeSRedirector &cstream = *fDebugStreamer;
+  *fDebugStreamer<<"match"<<
+  "x_tpc="<<x_tpc<<
+  "y_tpc="<<y_tpc<<
+  "z_tpc="<<z_tpc<<
+  "snp_tpc="<<snp_tpc<<
+  "tgl_tpc="<<tgl_tpc<<
+  "signed1Pt_tpc="<<signed1Pt_tpc<<
+  "x_trd="<<x_trd<<
+  "y_trd="<<y_trd<<
+  "z_trd="<<z_trd<<
+  "snp_trd="<<snp_trd<<
+  "tgl_trd="<<tgl_trd<<
+  "signed1Pt_trd="<<signed1Pt_trd<<
+  "\n";
+  }
+
+  if (TMath::Abs(y_tpc-y_trd) > fMaxY) return kFALSE;
+  if (TMath::Abs(z_tpc-z_trd) > fMaxZ) return kFALSE;
+  if (TMath::Abs(snp_tpc-snp_trd) > fMaxSnp) return kFALSE;
+  if (TMath::Abs(tgl_tpc-tgl_trd) > fMaxTgl) return kFALSE;
+  if (TMath::Abs(signed1Pt_tpc-signed1Pt_trd) > fMaxSigned1Pt) return kFALSE;
 
 return kTRUE;
 }
@@ -438,7 +486,7 @@ Bool_t AliHLTGlobalTrackMerger::InvertS( Double_t A[], Int_t N )
 	x = 1 / x;
 	for( Int_t step=1; step<=N-j; ik+=++step ){ // ik==Ai1
 	  Double_t sum = 0;
-	  for( Double_t *jk=j1; jk!=jj; sum += *(jk++) * *(ik++) );
+	  for( Double_t *jk=j1; jk!=jj; sum += (*(jk++)) * (*(ik++)) );
 	  *ik = (*ik - sum) * x; // ik == Aij
 	}
       }else{
@@ -513,18 +561,31 @@ void  AliHLTGlobalTrackMerger::PropagateTracksToDCA(AliESDEvent *esdEvent)
     AliESDtrack *track = esdEvent->GetTrack(iTrack); 
     if(!track) continue;
 
-    //HLTWarning("1-------: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",track->GetAlpha(),track->GetX(),track->GetY(),track->GetZ(),track->GetSnp(),track->GetTgl(),track->GetSigned1Pt());
-
     // propagate to small radius (material budget included)
     isOK = AliTracker::PropagateTrackTo(track,kSmallRadius,track->GetMass(),kMaxStep,kFALSE);
 
-    //HLTWarning("2-------: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",track->GetAlpha(),track->GetX(),track->GetY(),track->GetZ(),track->GetSnp(),track->GetTgl(),track->GetSigned1Pt());
-     
     // relate tracks to DCA to primary vertex
     if(isOK) 
     {
       track->RelateToVertex(fVertex, kBz, kVeryBig);
-     // HLTWarning("3-------: alpha %f, x %f, y, %f, z %f, snp %f, tgl %f, 1pt %f",track->GetAlpha(),track->GetX(),track->GetY(),track->GetZ(),track->GetSnp(),track->GetTgl(),track->GetSigned1Pt());
+      HLTInfo("1-------: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",track->GetAlpha(),track->GetX(),track->GetY(),track->GetZ(),track->GetSnp(),track->GetTgl(),track->GetSigned1Pt());
+    }
+
+    //
+    // the same procedure must be repeated for TPCinner (TPC only) tracks
+    //
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) continue;
+
+    // propagate tpcTracks to small radius (material budget included)
+    isOK = AliTracker::PropagateTrackTo(tpcTrack,kSmallRadius,track->GetMass(),kMaxStep,kFALSE);
+
+    // relate tracks to DCA to primary vertex
+    if(isOK) 
+    {
+      Double_t par[2], cov[3];
+      tpcTrack->PropagateToDCA(fVertex, kBz, kVeryBig,par,cov);
+      HLTInfo("2-------: alpha %f, x %f, y %f, z %f, snp %f, tgl %f, 1pt %f",tpcTrack->GetAlpha(),tpcTrack->GetX(),tpcTrack->GetY(),tpcTrack->GetZ(),tpcTrack->GetSnp(),tpcTrack->GetTgl(),tpcTrack->GetSigned1Pt());
     }
   }
 }

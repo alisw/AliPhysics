@@ -22,6 +22,8 @@ class AliESDVertex;
 class AliExternalTrackParam;
 
 class TClonesArray;
+class TTreeStream;
+class TTreeSRedirector;
 
 #include "AliHLTLogging.h"
 #include "AliESDtrack.h"
@@ -90,6 +92,8 @@ private:
 
   // primary vertex
   AliESDVertex *fVertex; //! event vertex (needed to propagate all tracks to DCA) 
+
+  TTreeSRedirector *fDebugStreamer; //!
   
   /** copy constructor prohibited */
   AliHLTGlobalTrackMerger(const AliHLTGlobalTrackMerger&);

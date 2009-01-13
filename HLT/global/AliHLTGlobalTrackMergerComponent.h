@@ -54,8 +54,10 @@ class AliHLTGlobalTrackMergerComponent : public AliHLTProcessor
        /**
        * Set the parameters
        */
-	void SetMergerParameters(Double_t maxy=2.0,Double_t maxz=3.0,
-	                         Double_t maxsnp=0.1,Double_t maxtgl=0.05, Double_t signed1Pt=0.003);
+	//void SetMergerParameters(Double_t maxy=2.0,Double_t maxz=3.0,
+	//                         Double_t maxsnp=0.1,Double_t maxtgl=0.05, Double_t signed1Pt=0.003);
+	void SetMergerParameters(Double_t maxy=1.e10,Double_t maxz=1.e10,
+	                         Double_t maxsnp=1.e10,Double_t maxtgl=1.e10, Double_t signed1Pt=0.05);
 
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing

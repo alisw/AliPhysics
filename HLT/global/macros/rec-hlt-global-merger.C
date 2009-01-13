@@ -45,7 +45,7 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
   //
   gSystem->Load("libHLTrec.so");
   AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
-  //gHLT->SetGlobalLoggingLevel(0x0); 
+  gHLT->SetGlobalLoggingLevel(0x4); 
   /*  enum AliHLTComponentLogSeverity {       
       kHLTLogNone      = 0,
       kHLTLogBenchmark = 0x1,
@@ -64,6 +64,9 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
       useful           = 0x45
   */
 
+  // set TPC debug stream level
+  AliTPCReconstructor::SetStreamLevel(1);
+
   //gHLT->LoadComponentLibraries("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTRD.so libAliHLTTPC.so libAliHLTGlobal.so");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,8 +79,8 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
 
   // TPC
   int iMinSlice=0;
-  //int iMaxSlice=35;
-  int iMaxSlice=17;
+  int iMaxSlice=35;
+  //int iMaxSlice=17;
   int iMinPart=0;
   int iMaxPart=5;
 
@@ -124,8 +127,8 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
   // TRD
   //
   int iMinSlice=0;
-  //int iMaxSlice=17;
-  int iMaxSlice=8;
+  int iMaxSlice=17;
+  //int iMaxSlice=8;
 
   TString writerInput1;
   TString mergerInput1;
