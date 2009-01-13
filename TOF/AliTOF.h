@@ -20,7 +20,6 @@
 #include "AliDetector.h"
 
 #include "AliTOFTrigger.h"
-//#include "AliTOFDDLRawData.h"
 
 class TDirectory;
 class TFile;
@@ -29,7 +28,6 @@ class TString ;
 class TTask ;
 
 class AliTOFGeometry;
-class AliTOFDDLRawData;
 
 class AliTOF : public AliDetector {
 public:
@@ -112,13 +110,12 @@ protected:
   Int_t fTOFSectors[18]; // Selecting TOF Sectors to be simulated
   Bool_t fTOFHoles; // Selecting geometry with and w/o holes
   AliTOFGeometry *fTOFGeometry; //The TOF Geometry parameters
-  static AliTOFDDLRawData fgTOFRawWriter; // AliTOFDDLRawStream static variable
  
 private:
   AliTOF(const AliTOF &source); // copy constructor
   AliTOF& operator=(const AliTOF &source); // ass. op.
 
-  ClassDef(AliTOF,9)  // Time Of Flight base class
+  ClassDef(AliTOF,10)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

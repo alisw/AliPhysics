@@ -71,13 +71,8 @@ extern TVirtualMC *gMC;
 
 extern AliRun *gAlice;
 
-
 ClassImp(AliTOF)
 
-
-AliTOFDDLRawData AliTOF::fgTOFRawWriter = AliTOFDDLRawData();
-
- 
 //_____________________________________________________________________________
 AliTOF::AliTOF():
   fFGeom(0x0),
@@ -682,18 +677,17 @@ void AliTOF::Digits2Raw()
     return;
   }
   
-  fgTOFRawWriter.Clear();
-  fgTOFRawWriter.SetVerbose(0);
-  if (fgTOFRawWriter.GetPackedAcquisitionMode()) {
-    if(fgTOFRawWriter.GetMatchingWindow()>8192)
+  AliTOFDDLRawData rawWriter;
+  rawWriter.SetVerbose(0);
+  if (rawWriter.GetPackedAcquisitionMode()) {
+    if(rawWriter.GetMatchingWindow()>8192)
       AliWarning(Form("You are running in packing mode and the matching window is %.2f ns, i.e. greater than 199.8848 ns",
-		      fgTOFRawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
+		      rawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
   }
-  fgTOFRawWriter.Clear();
   
   AliDebug(1,"Formatting raw data for TOF");
   digits->GetEvent(0);
-  fgTOFRawWriter.RawDataTOF(digits->GetBranch("TOF"));  
+  rawWriter.RawDataTOF(digits->GetBranch("TOF"));  
 
   fLoader->UnloadDigits();
   

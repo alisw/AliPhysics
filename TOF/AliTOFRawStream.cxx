@@ -174,13 +174,13 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
   fInsideTRMchain1(kFALSE),
-  fDataBuffer(),
-  fPackedDataBuffer(),
+  //fDataBuffer(),
+  //fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
-  fLocalEventCounterTRM(),
-  fLocalEventCounterChain(),
-  fChainBunchID(),
+  //fLocalEventCounterTRM(),
+  //fLocalEventCounterChain(),
+  //fChainBunchID(),
   fCableLengthMap(0x0),
   fEventID(0)
 {
@@ -244,13 +244,13 @@ AliTOFRawStream::AliTOFRawStream():
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
   fInsideTRMchain1(kFALSE),
-  fDataBuffer(),
-  fPackedDataBuffer(),
+  //fDataBuffer(),
+  //fPackedDataBuffer(),
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
-  fLocalEventCounterTRM(),
-  fLocalEventCounterChain(),
-  fChainBunchID(),
+  //fLocalEventCounterTRM(),
+  //fLocalEventCounterChain(),
+  //fChainBunchID(),
   fCableLengthMap(0x0),
   fEventID(0)
 {
@@ -309,13 +309,13 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fInsideLTM(stream.fInsideLTM),
   fInsideTRMchain0(stream.fInsideTRMchain0),
   fInsideTRMchain1(stream.fInsideTRMchain1),
-  fDataBuffer(),
-  fPackedDataBuffer(),
+  //fDataBuffer(),
+  //fPackedDataBuffer(),
   fLocalEventCounterDRM(stream.fLocalEventCounterDRM),
   fLocalEventCounterLTM(stream.fLocalEventCounterLTM),
-  fLocalEventCounterTRM(),
-  fLocalEventCounterChain(),
-  fChainBunchID(),
+  //fLocalEventCounterTRM(),
+  //fLocalEventCounterChain(),
+  //fChainBunchID(),
   fCableLengthMap(stream.fCableLengthMap),
   fEventID(stream.fEventID)
 {
@@ -453,8 +453,10 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
   for (Int_t ii=0; ii<13; ii++)
     fLocalEventCounterTRM[ii] = -1;
   for (Int_t ii=0; ii<13; ii++)
-    for (Int_t jj=0; jj<2; jj++)
+    for (Int_t jj=0; jj<2; jj++) {
       fLocalEventCounterChain[ii][jj] = -1;
+      fChainBunchID[ii][jj] = -1;
+    }
 
   fRawReader->Reset();
   fRawReader->Select("TOF", indexDDL, indexDDL);
