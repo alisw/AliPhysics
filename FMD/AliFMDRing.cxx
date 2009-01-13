@@ -310,8 +310,57 @@ AliFMDRing::XYZ2Detector(Double_t  x,
   sector = sec;
   return kTRUE;
 }
-
-
+//____________________________________________________________________
+Float_t 
+AliFMDRing::GetStripLength(UShort_t strip) const 
+{
+  if(strip >= GetNStrips())
+    Error("GetStripLength", "Invalid strip number %d (>=%d)", 
+	  strip, GetNStrips(), fId);
+  
+  Float_t rad        = GetMaxR()-GetMinR();
+  
+  Float_t segment    = rad / GetNStrips();
+  
+  TVector2* corner1  = GetVertex(2);  
+  TVector2* corner2  = GetVertex(3);
+  
+  Float_t slope      = (corner1->Y() - corner2->Y()) / (corner1->X() - corner2->X());
+  Float_t constant   = (corner2->Y()*corner1->X()-(corner2->X()*corner1->Y())) / (corner1->X() - corner2->X());
+  Float_t radius     = GetMinR() + strip*segment;
+  
+  Float_t d          = TMath::Power(TMath::Abs(radius*slope),2) + TMath::Power(radius,2) - TMath::Power(constant,2);
+  
+  Float_t arclength  = GetBaseStripLength(strip);
+  if(d>0) {
+    
+    Float_t x        = (-1*TMath::Sqrt(d) -slope*constant) / (1+TMath::Power(slope,2));
+    Float_t y        = slope*x + constant;
+    Float_t theta    = TMath::ATan2(x,y);
+    
+    if(x < corner1->X() && y > corner1->Y()) {
+      arclength = radius*theta;                        //One sector since theta is by definition half-hybrid
+      
+    }
+    
+  }
+  
+  return arclength;
+  
+  
+}
+//____________________________________________________________________
+Float_t 
+AliFMDRing::GetBaseStripLength(UShort_t strip) const 
+{  
+  Float_t rad             = GetMaxR()-GetMinR();
+  Float_t segment         = rad / GetNStrips();
+  Float_t basearc         = 2*TMath::Pi() / (0.5*GetNSectors()); // One hybrid: 36 degrees inner, 18 outer
+  Float_t radius          = GetMinR() + strip*segment;
+  Float_t basearclength   = 0.5*basearc * radius;                // One sector   
+  
+  return basearclength;
+}
 //
 // EOF
 //

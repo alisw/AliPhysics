@@ -376,8 +376,22 @@ public:
    * @return The foot position of stand-off @a i 
    */  
   TVector2* GetFootPosition(Int_t i) const;
-    
-     
+  /** 
+   * Get the real length of a strip
+   * 
+   * @param strip strip number
+   * 
+   * @return length of strip 
+   */ 
+  Float_t GetStripLength(UShort_t strip) const ;
+  /** 
+   * Get the length of a strip assuming the corners are not cut off
+   * 
+   * @param strip strip number
+   * 
+   * @return length of strip w/o corners 
+   */ 
+  Float_t GetBaseStripLength(UShort_t strip) const ;
   /** Not used */
   void Detector2XYZ(UShort_t sector, UShort_t strip, 
 		    Double_t& x, Double_t& y, Double_t& z) const;
