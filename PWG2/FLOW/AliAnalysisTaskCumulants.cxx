@@ -327,11 +327,11 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   
   //profiles with average values of generating functions for int. and diff. flow
   TProfile2D *intFlowGenFun    = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun")); 
-  TProfile2D *intFlowGenFun4   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun4"));
   
-  TProfile2D *intFlowGenFun6   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun6")); 
-  TProfile2D *intFlowGenFun8   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun8"));
-  TProfile2D *intFlowGenFun16  = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun16"));  
+  TProfile2D *intFlowGenFun4   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun4"));  //only for other system of Eq.
+  TProfile2D *intFlowGenFun6   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun6"));  //only for other system of Eq. 
+  TProfile2D *intFlowGenFun8   = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun8"));  //only for other system of Eq.
+  TProfile2D *intFlowGenFun16  = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fIntFlowGenFun16")); //only for other system of Eq.  
   
   TProfile3D *diffFlowGenFunRe = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunRe"));
   TProfile3D *diffFlowGenFunIm = dynamic_cast<TProfile3D*>(fListHistos->FindObject("fDiffFlowGenFunIm"));
@@ -341,6 +341,11 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   
   //average selected multiplicity (for int. flow) 
   TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowGFC"));
+  
+  TProfile *AvMult4  = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow4GFC"));  //only for other system of Eq.
+  TProfile *AvMult6  = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow6GFC"));  //only for other system of Eq.
+  TProfile *AvMult8  = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow8GFC"));  //only for other system of Eq.
+  TProfile *AvMult16 = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow16GFC")); //only for other system of Eq.
   
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQVectorComponentsGFC"));
@@ -397,10 +402,11 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   fGFC->SetCommonHistsResults8th(commonHistRes8th);
   
   fGFC->SetIntFlowGenFun(intFlowGenFun);
-  fGFC->SetIntFlowGenFun4(intFlowGenFun4);
-  fGFC->SetIntFlowGenFun6(intFlowGenFun6);
-  fGFC->SetIntFlowGenFun8(intFlowGenFun8);  
-  fGFC->SetIntFlowGenFun16(intFlowGenFun16);      
+  
+  fGFC->SetIntFlowGenFun4(intFlowGenFun4);   //only for other system of Eq.
+  fGFC->SetIntFlowGenFun6(intFlowGenFun6);   //only for other system of Eq.
+  fGFC->SetIntFlowGenFun8(intFlowGenFun8);   //only for other system of Eq.
+  fGFC->SetIntFlowGenFun16(intFlowGenFun16); //only for other system of Eq.      
   
   fGFC->SetDiffFlowGenFunRe(diffFlowGenFunRe);
   fGFC->SetDiffFlowGenFunIm(diffFlowGenFunIm);
@@ -408,6 +414,12 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   fGFC->SetNumberOfParticlesPerPtBin(BinNoOfParticles);
   
   fGFC->SetAverageMultiplicity(AvMult);
+  
+  fGFC->SetAverageMultiplicity4(AvMult4);   //only for other system of Eq.
+  fGFC->SetAverageMultiplicity6(AvMult6);   //only for other system of Eq.
+  fGFC->SetAverageMultiplicity8(AvMult8);   //only for other system of Eq.
+  fGFC->SetAverageMultiplicity16(AvMult16); //only for other system of Eq.
+  
   fGFC->SetQVectorComponents(QVectorComponents);
   
   fGFC->Finish();

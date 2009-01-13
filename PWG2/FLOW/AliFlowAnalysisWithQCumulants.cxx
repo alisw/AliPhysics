@@ -81,7 +81,10 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f3PerBin2n1n1n(NULL),
  f3PerBin1n1n2n(NULL),
  f4PerBin1n1n1n1n(NULL),
- fCommonHists(NULL),
+ fCommonHists2nd(NULL),
+ fCommonHists4th(NULL),
+ fCommonHists6th(NULL),
+ fCommonHists8th(NULL),
  fCommonHistsResults2nd(NULL),
  fCommonHistsResults4th(NULL),
  fCommonHistsResults6th(NULL),
@@ -290,10 +293,22 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  //f4PerBin1n1n1n1n->SetYTitle("<4'>_{n,n|n,n}");
  fHistList->Add(f4PerBin1n1n1n1n);
  
- //common control histograms
- fCommonHists = new AliFlowCommonHist("AliFlowCommonHistQC");
- fHistList->Add(fCommonHists);  
+ //common control histogram (2nd order)
+ fCommonHists2nd = new AliFlowCommonHist("AliFlowCommonHist2ndOrderQC");
+ fHistList->Add(fCommonHists2nd);  
  
+ //common control histogram (4th order)
+ fCommonHists4th = new AliFlowCommonHist("AliFlowCommonHist4thOrderQC");
+ fHistList->Add(fCommonHists4th);  
+ 
+ //common control histogram (6th order)
+ fCommonHists6th = new AliFlowCommonHist("AliFlowCommonHist6thOrderQC");
+ fHistList->Add(fCommonHists6th);  
+ 
+ //common control histogram (8th order)
+ fCommonHists8th = new AliFlowCommonHist("AliFlowCommonHist8thOrderQC");
+ fHistList->Add(fCommonHists8th);  
+   
  //common histograms for final results (2nd order)
  fCommonHistsResults2nd = new AliFlowCommonHistResults("AliFlowCommonHistResults2ndOrderQC");
  fHistList->Add(fCommonHistsResults2nd); 
@@ -343,13 +358,11 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //running over data     
           
  //get the total multiplicity of event:
- //Int_t nPrim = anEvent->NumberOfTracks();//line needed only for nested loops
+ Int_t nPrim = anEvent->NumberOfTracks();//line needed only for nested loops
+ cout<<"nPrim = "<<nPrim<<endl;
 
  //if(nPrim>8&&nPrim<12)//line needed only for nested loops  
  //{                    //line needed only for nested loops
-
- //fill the common control histograms:
- fCommonHists->FillControlHistograms(anEvent); 
  
  //get the selected multiplicity (i.e. number of particles used for int. flow):
  //Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow();
@@ -479,6 +492,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t two1n1n=0., two2n2n=0., two3n3n=0., two4n4n=0.; 
  if(xMult>1)
  {
+  //fill the common control histogram (2nd order):
+  fCommonHists2nd->FillControlHistograms(anEvent); 
+ 
   two1n1n = (pow(xQvector1n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{n|n}   = <cos(n*(phi1-phi2))>
   two2n2n = (pow(xQvector2n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{2n|2n} = <cos(2n*(phi1-phi2))>
   two3n3n = (pow(xQvector3n.Mod(),2.)-xMult)/(xMult*(xMult-1.)); //<2>_{3n|3n} = <cos(3n*(phi1-phi2))>
@@ -511,6 +527,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t four1n1n1n1n=0., four2n2n2n2n=0., four2n1n2n1n=0., four3n1n1n1n=0., four4n2n1n1n=0., four3n1n2n2n=0., four3n1n3n1n=0.;  
  if(xMult>3)
  {
+  //fill the common control histogram (4th order):
+  fCommonHists4th->FillControlHistograms(anEvent); 
+
   four1n1n1n1n = (2.*xMult*(xMult-3.)+pow(xQvector1n.Mod(),4.)-4.*(xMult-2.)*pow(xQvector1n.Mod(),2.)-2.*reQ2nQ1nstarQ1nstar+pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2.)*(xMult-3.));//<4>_{n,n|n,n}
   four2n2n2n2n = (2.*xMult*(xMult-3.)+pow(xQvector2n.Mod(),4.)-4.*(xMult-2.)*pow(xQvector2n.Mod(),2.)-2.*reQ4nQ2nstarQ2nstar+pow(xQvector4n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2.)*(xMult-3.));//<4>_{2n,2n|2n,2n}
   four2n1n2n1n = (xQ2nQ1nQ2nstarQ1nstar-2.*reQ3nQ2nstarQ1nstar-2.*reQ2nQ1nstarQ1nstar)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))-((xMult-5.)*pow(xQvector1n.Mod(),2.)+(xMult-4.)*pow(xQvector2n.Mod(),2.)-pow(xQvector3n.Mod(),2.))/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.))+(xMult-6.)/((xMult-1.)*(xMult-2.)*(xMult-3.));//Re[<4>_{2n,n|2n,n}]
@@ -563,6 +582,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t six1n1n1n1n1n1n=0., six2n2n1n1n1n1n=0., six3n1n1n1n1n1n=0., six2n1n1n2n1n1n=0.;
  if(xMult>5)
  {
+  //fill the common control histogram (6th order):
+  fCommonHists6th->FillControlHistograms(anEvent); 
+ 
   six1n1n1n1n1n1n = (pow(xQvector1n.Mod(),6.)+9.*xQ2nQ1nQ2nstarQ1nstar-6.*reQ2nQ1nQ1nstarQ1nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+4.*(reQ3nQ1nstarQ1nstarQ1nstar-3.*reQ3nQ2nstarQ1nstar)/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))+2.*(9.*(xMult-4.)*reQ2nQ1nstarQ1nstar+2.*pow(xQvector3n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-4)*(xMult-5))-9.*(pow(xQvector1n.Mod(),4.)+pow(xQvector2n.Mod(),2.))/(xMult*(xMult-1)*(xMult-2)*(xMult-3)*(xMult-5))+(18.*pow(xQvector1n.Mod(),2.))/(xMult*(xMult-1)*(xMult-3)*(xMult-4))-(6.)/((xMult-1)*(xMult-2)*(xMult-3));//<6>_{n,n,n|n,n,n}
   
   six2n1n1n2n1n1n = (xQ2nQ1nQ1nQ2nstarQ1nstarQ1nstar-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(2.*five2n2n2n1n1n+4.*five2n1n1n1n1n+4.*five3n1n2n1n1n+4.*four2n1n2n1n+1.*four1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(4.*four1n1n1n1n+4.*two1n1n+2.*three2n1n1n+2.*three2n1n1n+4.*four3n1n1n1n+8.*three2n1n1n+2.*four4n2n1n1n+4.*four2n1n2n1n+2.*two2n2n+8.*four2n1n2n1n+4.*four3n1n3n1n+8.*three3n2n1n+4.*four3n1n2n2n+4.*four1n1n1n1n+4.*four2n1n2n1n+1.*four2n2n2n2n)-xMult*(xMult-1.)*(xMult-2.)*(2.*three2n1n1n+8.*two1n1n+4.*two1n1n+2.+4.*two1n1n+4.*three2n1n1n+2.*two2n2n+4.*three2n1n1n+8.*three3n2n1n+8.*two2n2n+4.*three4n3n1n+4.*two3n3n+4.*three3n2n1n+4.*two1n1n+8.*three2n1n1n+4.*two1n1n+4.*three3n2n1n+4.*three2n1n1n+2.*two2n2n+4.*three3n2n1n+2.*three4n2n2n)-xMult*(xMult-1.)*(4.*two1n1n+4.+4.*two1n1n+2.*two2n2n+1.+4.*two1n1n+4.*two2n2n+4.*two3n3n+   1.+2.*two2n2n+1.*two4n4n)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.));//<6>_{2n,n,n|2n,n,n}
@@ -595,6 +617,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t eight1n1n1n1n1n1n1n1n=0.;
  if(xMult>7)
  {
+  //fill the common control histogram (8th order):
+  fCommonHists8th->FillControlHistograms(anEvent); 
+  
   eight1n1n1n1n1n1n1n1n = (pow(xQvector1n.Mod(),8)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(12.*seven2n1n1n1n1n1n1n+16.*six1n1n1n1n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(8.*six3n1n1n1n1n1n+48.*six1n1n1n1n1n1n+6.*six2n2n1n1n1n1n+96.*five2n1n1n1n1n+72.*four1n1n1n1n+36.*six2n1n1n2n1n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(2.*five4n1n1n1n1n+32.*five2n1n1n1n1n+36.*four1n1n1n1n+32.*four3n1n1n1n+48.*five2n1n1n1n1n+48.*five3n1n2n1n1n+144.*five2n1n1n1n1n+288.*four1n1n1n1n+36.*five2n2n2n1n1n+144.*three2n1n1n+96.*two1n1n+144.*four2n1n2n1n)-xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(8.*four3n1n1n1n+48.*four1n1n1n1n+12.*four4n2n1n1n+96.*four2n1n2n1n+96.*three2n1n1n+72.*three2n1n1n+144.*two1n1n+16.*four3n1n3n1n+48.*four3n1n1n1n+144.*four1n1n1n1n+72.*four1n1n1n1n+96.*three3n2n1n+24.*four3n1n2n2n+144.*four2n1n2n1n+288.*two1n1n+288.*three2n1n1n+9.*four2n2n2n2n+72.*two2n2n+24.)-xMult*(xMult-1.)*(xMult-2.)*(12.*three2n1n1n+16.*two1n1n+24.*three3n2n1n+48.*three2n1n1n+96.*two1n1n+8.*three4n3n1n+32.*three3n2n1n+96.*three2n1n1n+144.*two1n1n+6.*three4n2n2n+96.*two2n2n+36.*two2n2n+72.+48.*three3n2n1n+16.*two3n3n+72.*three2n1n1n+144.*two1n1n)-xMult*(xMult-1.)*(8.*two1n1n+12.*two2n2n+16.+8.*two3n3n+48.*two1n1n+1.*two4n4n+16.*two2n2n+18.)-xMult)/(xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
   
   fQCorrelations->Fill(30.,eight1n1n1n1n1n1n1n1n,xMult*(xMult-1.)*(xMult-2.)*(xMult-3.)*(xMult-4.)*(xMult-5.)*(xMult-6.)*(xMult-7.));
