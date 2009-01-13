@@ -265,3 +265,11 @@ int AliHLTSimulationGetLibraryVersion()
   // see header file for function documentation
   return LIBHLTSIM_VERSION;
 }
+
+extern "C" void AliHLTSimulationCompileInfo(const char*& date, const char*& time)
+{
+  // the fall back compile info of the HLTsim library
+  // this is not up-to-date if other files have been changed and recompiled
+  date=__DATE__; time=__TIME__;
+  return;
+}
