@@ -62,6 +62,7 @@ public:
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetdEdx() const {return fdEdx;}
   Double_t GetPIDsignal() const {return GetdEdx();}
+  using AliExternalTrackParam::GetC;
   Double_t GetC() const {return AliExternalTrackParam::GetC(GetBz());}
   Double_t GetD(Double_t x, Double_t y) const {
     return AliExternalTrackParam::GetD(x,y,GetBz());
