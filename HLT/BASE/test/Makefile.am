@@ -5,10 +5,14 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE
 
 EXTRA_DIST	= 
 
-check_PROGRAMS	= dtOperators \
+check_PROGRAMS	= testAliHLTBlockDataCollection \
+		  dtOperators \
 		  testDefaultDataTypes
 
 #		  testAliHLT_C_Component_WrapperInterface
+
+testAliHLTBlockDataCollection_SOURCES = testAliHLTBlockDataCollection.cxx
+testAliHLTBlockDataCollection_LDADD = $(top_builddir)/BASE/libHLTbase.la
 
 dtOperators_SOURCES = dtOperators.cxx
 dtOperators_LDADD = $(top_builddir)/BASE/libHLTbase.la

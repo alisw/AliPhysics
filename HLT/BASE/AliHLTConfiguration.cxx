@@ -372,7 +372,7 @@ int AliHLTConfiguration::ExtractArguments()
   return iResult;
 }
 
-int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argList) const
+int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argList)
 {
   // see header file for function documentation
   int iResult=0;

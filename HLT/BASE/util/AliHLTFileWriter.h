@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTFILEWRITER_H
 #define ALIHLTFILEWRITER_H
@@ -14,6 +14,8 @@
 
 #include "AliHLTDataSink.h"
 #include <TString.h>
+
+class AliHLTBlockDataCollection;
 
 /**
  * @class AliHLTFileWriter
@@ -76,6 +78,19 @@
  *      the beginning.
  * \li -write-all <br>
  *      combines both -write-all-events and -write-all-blocks
+ * \li -burst-buffer <size> <br>
+ *      size of burst buffer, blocks are written to buffer until it is filled
+ *      and written in one burst (though to different files according to conf)<br>
+ *      \b Note: burst write is currently only supported for mode
+ *      -concatenate-events AND -concatenate-blocks (both enabled).
+ * \li -datatype     <i> id origin      </i>                            <br>
+ *     data block selection by AliHLTBlockDataCollection
+ * \li -origin  <i> origin  </i>                                        <br>
+ *     data block selection by AliHLTBlockDataCollection
+ * \li -typeid  <i> id      </i>                                        <br>
+ *     data block selection by AliHLTBlockDataCollection
+ * \li -dataspec     <i> specification </i>                             <br>
+ *     data block selection by AliHLTBlockDataCollection
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -259,11 +274,44 @@ class AliHLTFileWriter : public AliHLTDataSink  {
     kSkipDataType = 0x20
   };
 
+  /** argument scan concerning block descriptor selections */
+  AliHLTBlockDataCollection* fpBlockDataCollection;                //!transient
+
  private:
   /** copy constructor prohibited */
   AliHLTFileWriter(const AliHLTFileWriter&);
   /** assignment operator prohibited */
   AliHLTFileWriter& operator=(const AliHLTFileWriter&);
+
+  /**
+   * Set defaults for all internal properties
+   */
+  int SetDefaults();
+
+  /**
+   * Schedule block for writing.
+   * The block is written immediately unless burst mode is activated.
+   * In burst mode, the block is buffered in the burst buffer until it is filled.
+   * Content of the burst buffer is then written in one burst.
+   *
+   * In the first implementation, burst write is only foreseen for the base
+   * file writer.
+   */
+  int ScheduleBlock(int blockno, const AliHLTEventID_t& eventID,
+		    const AliHLTComponentBlockData* pDesc);
+
+  /**
+   * Flush burst buffer.
+   */
+  int BurstWrite();
+
+  /**
+   * Write data block;
+   * Build file name from the block attributes and compare with the
+   * lat file name in order to correctly append data or not.
+   */
+  int WriteBlock(int blockno, const AliHLTEventID_t& eventID,
+		 const AliHLTComponentBlockData* pDesc);
 
   /** the basename of the output file */
   TString    fBaseName;                                            // see above
@@ -287,6 +335,18 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   /** mode specifier, see @ref TWriterMode */
   Short_t    fMode;                                                // see above
 
-  ClassDef(AliHLTFileWriter, 2)
+  /** burst buffer for postponed data write */
+  AliHLTUInt8_t* fpBurstBuffer;                                    //!transient
+
+  /** size of burst buffer */
+  AliHLTUInt32_t fBurstBufferSize;                                 //!transient
+
+  /** block descriptor list for postponed burst write*/
+  AliHLTComponentBlockDataList fBurstBlocks;                       //!transient
+
+  /** event ids for the burst blocks */
+  vector<AliHLTEventID_t> fBurstBlockEvents;                       //!transient
+  
+  ClassDef(AliHLTFileWriter, 3)
 };
 #endif

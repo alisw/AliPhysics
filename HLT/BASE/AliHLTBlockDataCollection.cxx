@@ -16,22 +16,25 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTBlockFilterComponent.cxx
+/** @file   AliHLTBlockDataCollection.cxx
     @author Matthias Richter
     @date   
-    @brief  A simple data block filter and merger, merges block descriptors
+    @brief  A collection of AliHLTComponentBlockData descriptors providing
+            argument parsing and basic selection.
 */
 
 #include <cstdlib>
-#include "AliHLTBlockFilterComponent.h"
+#include "AliHLTBlockDataCollection.h"
+#include "AliHLTComponent.h"
 #include "TString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTBlockFilterComponent)
+ClassImp(AliHLTBlockDataCollection)
 
-AliHLTBlockFilterComponent::AliHLTBlockFilterComponent()
-  :
-  fFilterRules()
+AliHLTBlockDataCollection::AliHLTBlockDataCollection()
+  : TObject()
+  , AliHLTLogging()
+  , fFilterRules()
 {
   // see header file for class documentation
   // or
@@ -40,58 +43,28 @@ AliHLTBlockFilterComponent::AliHLTBlockFilterComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTBlockFilterComponent::~AliHLTBlockFilterComponent()
+AliHLTBlockDataCollection::~AliHLTBlockDataCollection()
 {
   // see header file for class documentation
 }
 
-void AliHLTBlockFilterComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+int AliHLTBlockDataCollection::Add(const AliHLTComponentBlockData& block)
 {
   // see header file for class documentation
-  list.clear();
-  list.push_back(kAliHLTAnyDataType);
+  fFilterRules.push_back(block);
+  return fFilterRules.size();
 }
 
-AliHLTComponentDataType AliHLTBlockFilterComponent::GetOutputDataType()
+int AliHLTBlockDataCollection::ScanArgument( int argc, const char** argv )
 {
   // see header file for class documentation
-  if (fFilterRules.size()==1) return fFilterRules[0].fDataType;
-  if (fFilterRules.size()==0) return kAliHLTVoidDataType;
-  return kAliHLTMultipleDataType;
-}
-
-int AliHLTBlockFilterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
-{
-  // see header file for class documentation
-  tgtList.clear();
-  AliHLTComponentBlockDataList::iterator desc=fFilterRules.begin();
-  while (desc!=fFilterRules.end()) {
-    AliHLTComponentDataTypeList::iterator type=tgtList.begin();
-    while (type!=tgtList.end()) {
-      if (*type==(*desc).fDataType) break;
-      type++;
-    }
-    if (type==tgtList.end()) tgtList.push_back((*desc).fDataType);
-    desc++;
-  }
-  return tgtList.size();
-}
-
-void AliHLTBlockFilterComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // see header file for class documentation
-  constBase=0;
-  inputMultiplier=0.0; // there is no new data, just forwarded descriptors
-}
-
-int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
-{
   int iResult=0;
   TString argument="";
   int bMissingParam=0;
   AliHLTComponentBlockData rule;
-  FillBlockData(rule);
-  for (int i=0; i<argc && iResult>=0; i++) {
+  AliHLTComponent::FillBlockData(rule);
+  int i=0;
+  for (; i<argc && iResult>=0; i++) {
     argument=argv[i];
     if (argument.IsNull()) continue;
 
@@ -103,10 +76,10 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	// the data type has already been set, add to list
 	// and reset
 	fFilterRules.push_back(rule);
-	FillBlockData(rule);
+	AliHLTComponent::FillBlockData(rule);
       }
 
-      SetDataType(rule.fDataType, argv[i+1], argv[i+2]);
+      AliHLTComponent::SetDataType(rule.fDataType, argv[i+1], argv[i+2]);
       i+=2;
 
       // -origin
@@ -117,10 +90,10 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	// the data type has already been set, add to list
 	// and reset
 	fFilterRules.push_back(rule);
-	FillBlockData(rule);
+	AliHLTComponent::FillBlockData(rule);
       }
 
-      SetDataType(rule.fDataType, NULL, argv[i+1]);
+      AliHLTComponent::SetDataType(rule.fDataType, NULL, argv[i+1]);
       i+=1;
 
       // -typeid
@@ -131,10 +104,10 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	// the data type has already been set, add to list
 	// and reset
 	fFilterRules.push_back(rule);
-	FillBlockData(rule);
+	AliHLTComponent::FillBlockData(rule);
       }
 
-      SetDataType(rule.fDataType, argv[i+1], NULL);
+      AliHLTComponent::SetDataType(rule.fDataType, argv[i+1], NULL);
       i+=1;
 
       // -dataspec
@@ -145,7 +118,7 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	// the specification has already been set, add to list
 	// and reset
 	fFilterRules.push_back(rule);
-	FillBlockData(rule);
+	AliHLTComponent::FillBlockData(rule);
       }
 
       TString parameter(argv[i]);
@@ -157,52 +130,28 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	iResult=-EINVAL;
       }
     } else {
-      HLTError("unknown argument %s", argument.Data());
-      iResult=-EINVAL;
+      // terminate at the first unknown argument
       break;
     }
   }
-  if (iResult>=0 && (rule.fSpecification!=kAliHLTVoidDataSpec || !MatchExactly(rule.fDataType,kAliHLTAnyDataType))) {
-    // add the pending rule
-    fFilterRules.push_back(rule);
-    FillBlockData(rule);
+
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EPROTO;
   }
-  return iResult;
-}
-
-int AliHLTBlockFilterComponent::DoDeinit()
-{
-  int iResult=0;
-  fFilterRules.clear();
-  return iResult;
-}
-
-int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
-					 const AliHLTComponentBlockData* /*blocks*/, 
-					 AliHLTComponentTriggerData& /*trigData*/,
-					 AliHLTUInt8_t* /*outputPtr*/, 
-					 AliHLTUInt32_t& size,
-					 AliHLTComponentBlockDataList& /*outputBlocks*/ )
-{
-  // see header file for class documentation
-  int iResult=0;
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
-       pBlock!=NULL; 
-       pBlock=GetNextInputBlock()) {
-    if (IsSelected(*pBlock)) {
-      HLTDebug("block type %s %#x (ptr=%p offset=%d size=%d) selected by filter rules", 
-	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
-	       pBlock->fPtr, pBlock->fOffset, pBlock->fSize);
-      Forward();
-    } else {
-      HLTDebug("block type %s %#x discarded by filter rules", DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
+  if (iResult>=0) {
+    if (rule.fSpecification!=kAliHLTVoidDataSpec || !MatchExactly(rule.fDataType,kAliHLTAnyDataType)) {
+      // add the pending rule
+      fFilterRules.push_back(rule);
+      AliHLTComponent::FillBlockData(rule);
     }
+    iResult=i;
   }
-  size=0;
+
   return iResult;
 }
 
-int AliHLTBlockFilterComponent::IsSelected(const AliHLTComponentBlockData& block)
+int AliHLTBlockDataCollection::IsSelected(const AliHLTComponentBlockData& block)
 {
   // see header file for class documentation
   AliHLTComponentBlockDataList::iterator desc=fFilterRules.begin();
@@ -221,5 +170,12 @@ int AliHLTBlockFilterComponent::IsSelected(const AliHLTComponentBlockData& block
     }
   } while (++desc!=fFilterRules.end());
   
+  return 0;
+}
+
+int AliHLTBlockDataCollection::IsEmpty()
+{
+  // see header file for class documentation
+  if (fFilterRules.size()==0) return 1;
   return 0;
 }

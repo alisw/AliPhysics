@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTBLOCKFILTERCOMPONENT_H
 #define ALIHLTBLOCKFILTERCOMPONENT_H

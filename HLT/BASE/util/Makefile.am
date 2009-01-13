@@ -8,6 +8,8 @@
 #    e.g. for libAliHLTUtil, MODULE=AliHLTUtil
 MODULE				= AliHLTUtil
 
+SUBDIRS 			= . test
+
 EXTRA_DIST			=
 
 # library definition

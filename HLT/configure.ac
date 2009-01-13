@@ -1158,6 +1158,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/setenv.csh
 		 BASE/HOMER/Makefile
 		 BASE/util/Makefile
+		 BASE/util/test/Makefile
 		 BASE/interface/Makefile
 		 BASE/test/Makefile
 		 BASE/interface/test/Makefile

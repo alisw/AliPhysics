@@ -206,6 +206,15 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
     return !(*this==c);
   }
 
+  /**
+   * Helper function to build a vector from an argument string.
+   * The function allocates memory for each token. The caller is responsible
+   * for cleaning the strings recursively.
+   * @param arg       pointer to argument string
+   * @param argList   target to receive the argument list
+   */
+  static int InterpreteString(const char* arg, vector<char*>& argList);
+
  protected:
   
 
@@ -217,13 +226,6 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   /* extract arguments from the argument string
    */
   int ExtractArguments();
-
-  /**
-   * Helper function to build a vector from an argument string
-   * @param arg       pointer to argument string
-   * @param argList   target to receive the argument list
-   */
-  int InterpreteString(const char* arg, vector<char*>& argList) const;
 
   /**
    * Convert buffer size string to number

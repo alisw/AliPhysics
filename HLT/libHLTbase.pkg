@@ -40,6 +40,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h \
 		AliHLTEventStatistics.h \
+		AliHLTBlockDataCollection.h \
                 AliHLTRunStatistics.h
 
 
