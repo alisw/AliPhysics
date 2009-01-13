@@ -1,13 +1,13 @@
 //
-// Macro to be invoked before analysis 
+// Macro to be invoked before Calibration analysis 
 // Setup TPC OCDB entries
-//
-// To be used on the proof
-//
+// 
+// This is just example macro  - some path are hardwired
+//  TO BE MODIFIED BY USERS 
 
 
 
-void ConfigOCDB(){
+void ConfigOCDB(Float_t bfield){
   // 
   //
   // import geometry
@@ -28,18 +28,22 @@ void ConfigOCDB(){
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/ClusterParam","local://$ALICE_ROOT");
+  //  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/PadTime0","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/PadTime0","local:///u/miranov/OCDB0");
+
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
+
 
   AliCDBManager::Instance()->SetRun(1);
 
   AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam(); 
   AliTPCParam   * paramTPC = AliTPCcalibDB::Instance()->GetParameters();
-  AliTPCClusterParam::SetInstance(paramCl);
+  paramCl->SetInstance(paramCl);
   //paramTPC->Dump();
-  
-  AliTPCcalibDB::Instance()->SetExBField(0);
+  printf("\n\nSET EXB FIELD\t%f\n\n", bfield);
+  AliTPCcalibDB::Instance()->SetExBField(bfield);
   //
   //
   //
