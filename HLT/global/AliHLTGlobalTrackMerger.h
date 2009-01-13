@@ -49,11 +49,11 @@ public:
   void SetParameter(Double_t maxy=1., Double_t maxz=1., Double_t maxsnp=0.05, Double_t maxtgl=0.1, Double_t signed1Pt=0.001);
 
   // match tracks
-  Bool_t MatchTracks(AliESDtrack *extTPC=0, AliESDtrack *extTRD=0);
+  Bool_t MatchTracks(AliExternalTrackParam *extTPC=0, AliESDtrack *trackTRD=0);
 
   // merge tracks
   Bool_t Merge(AliESDEvent *esdEvent=0);
-  Bool_t MergeTracks(AliESDtrack *extTPC=0, AliESDtrack *extTRD=0, AliESDEvent *esdEvent=0);
+  Bool_t MergeTracks(AliESDtrack *trackTPC=0, AliESDtrack *trackTRD=0, AliESDEvent *esdEvent=0);
 
   // create AliESDtrack objects
   void FillTPCESD(AliHLTTPCTrack* tpcTrack=0, ULong_t flags=AliESDtrack::kTPCin, AliESDEvent* esdEvent=0); 
