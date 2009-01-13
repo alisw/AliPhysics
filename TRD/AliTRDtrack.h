@@ -64,6 +64,7 @@ class AliTRDtrack : public AliKalmanTrack {
          Int_t           GetNdedx() const                             { return fNdedx;                       }
          Double_t        GetPIDsignal() const                         { return GetdEdx();                    }
          Int_t           GetClusterIndex(Int_t i) const               { return fIndex[i];                    }
+	 using AliExternalTrackParam::GetC;
          Double_t        GetC() const                                 { return AliExternalTrackParam
                                                                              ::GetC(GetBz());                }
          Double_t        GetPredictedChi2(const AliTRDcluster *c
@@ -216,3 +217,4 @@ inline Int_t AliTRDtrack::GetNumberOfTracklets() const
 
 
 #endif   
+
