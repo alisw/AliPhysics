@@ -133,7 +133,10 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  f3PerBin1n1n2n;            //<<3'>>_{n,n|2n} per pt-bin
   TProfile*                  f4PerBin1n1n1n1n;          //<<4'>>_{n,n|n,n} per pt-bin
  
-  AliFlowCommonHist*         fCommonHists;              //common control histograms
+  AliFlowCommonHist*         fCommonHists2nd;           //common control histograms for 2nd order
+  AliFlowCommonHist*         fCommonHists4th;           //common control histograms for 4th order
+  AliFlowCommonHist*         fCommonHists6th;           //common control histograms for 6th order
+  AliFlowCommonHist*         fCommonHists8th;           //common control histograms for 8th order
   
   AliFlowCommonHistResults*  fCommonHistsResults2nd;    //final results for 2nd order int. and diff. flow stored in the common histograms 
   AliFlowCommonHistResults*  fCommonHistsResults4th;    //final results for 4th order int. and diff. flow stored in the common histograms 

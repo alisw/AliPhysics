@@ -50,10 +50,14 @@ ClassImp(AliCumulantsFunctions)
 
 AliCumulantsFunctions::AliCumulantsFunctions():  
  fIntGenFun(NULL),
- fIntGenFun4(NULL),
- fIntGenFun6(NULL),
- fIntGenFun8(NULL),
- fIntGenFun16(NULL),
+ fIntGenFun4(NULL),//only for other system of Eq.
+ fIntGenFun6(NULL),//only for other system of Eq.
+ fIntGenFun8(NULL),//only for other system of Eq.
+ fIntGenFun16(NULL),//only for other system of Eq.
+ fAvMult4(NULL),//only for other system of Eq.
+ fAvMult6(NULL),//only for other system of Eq.
+ fAvMult8(NULL),//only for other system of Eq.
+ fAvMult16(NULL),//only for other system of Eq.
  fDiffGenFunRe(NULL),
  fDiffGenFunIm(NULL),
  fBinNoOfParticles(NULL),
@@ -95,12 +99,16 @@ AliCumulantsFunctions::~AliCumulantsFunctions()
  //destructor
 }
 
-AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile2D *IntGenFun4, TProfile2D *IntGenFun6, TProfile2D *IntGenFun8, TProfile2D *IntGenFun16, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGenFun, TProfile2D *IntGenFun4, TProfile2D *IntGenFun6, TProfile2D *IntGenFun8, TProfile2D *IntGenFun16, TProfile *AvMult4, TProfile *AvMult6, TProfile *AvMult8, TProfile *AvMult16, TProfile3D *DiffGenFunRe, TProfile3D *DiffGenFunIm, TProfile *BinNoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *AvMult, TProfile *QVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntGenFun(IntGenFun),
- fIntGenFun4(IntGenFun4),
- fIntGenFun6(IntGenFun6),
- fIntGenFun8(IntGenFun8),
- fIntGenFun16(IntGenFun16),
+ fIntGenFun4(IntGenFun4),//only for other system of Eq.
+ fIntGenFun6(IntGenFun6),//only for other system of Eq.
+ fIntGenFun8(IntGenFun8),//only for other system of Eq.
+ fIntGenFun16(IntGenFun16),//only for other system of Eq.
+ fAvMult4(AvMult4),//only for other system of Eq.
+ fAvMult6(AvMult6),//only for other system of Eq.
+ fAvMult8(AvMult8),//only for other system of Eq.
+ fAvMult16(AvMult16),//only for other system of Eq.
  fDiffGenFunRe(DiffGenFunRe),
  fDiffGenFunIm(DiffGenFunIm),
  fBinNoOfParticles(BinNoOfParticles),
@@ -158,9 +166,9 @@ void AliCumulantsFunctions::Calculate()
  static const Int_t fgknBins=100;                          //number of pt bins //to be improved
  
  Double_t fR0=AliFlowCumuConstants::fgR0;            //needed for numerics
- Double_t fPtMax=AliFlowCommonConstants::GetPtMax(); //maximum pt
- Double_t fPtMin=AliFlowCommonConstants::GetPtMin(); //minimum pt
- Double_t fBinWidth=(fPtMax-fPtMin)/fgknBins;        //width of pt bin (in GeV)   
+ //Double_t fPtMax=AliFlowCommonConstants::GetPtMax(); //maximum pt
+ //Double_t fPtMin=AliFlowCommonConstants::GetPtMin(); //minimum pt
+ //Double_t fBinWidth=(fPtMax-fPtMin)/fgknBins;        //width of pt bin (in GeV)   
  
  Bool_t fOtherEquations=AliFlowCumuConstants::fgOtherEquations;     //numerical equations for cumulants solved up to different highest order 
  
@@ -190,6 +198,7 @@ void AliCumulantsFunctions::Calculate()
  
  //<G[p][q]>
  Double_t AvG[fgkPmax][fgkQmax]={{0.}}; 
+ Bool_t someAvGEntryIsNegative=kFALSE;
  if(fIntGenFun)
  {   
   for(Int_t p=0;p<fgkPmax;p++)
@@ -197,16 +206,20 @@ void AliCumulantsFunctions::Calculate()
    for(Int_t q=0;q<fgkQmax;q++)
    {
     AvG[p][q]=fIntGenFun->GetBinContent(p+1,q+1);
+    if(AvG[p][q]<0.)
+    {
+     someAvGEntryIsNegative=kTRUE;
+    } 
    }
   }  
- }
-  
+ } 
+   
  /////////////////////////////////////////////////////////////////////////////      
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
-  
+    
  Double_t C[fgkPmax][fgkQmax]={{0.}};//C[p][q]
- if(AvM)
+ if(AvM>0 && someAvGEntryIsNegative==kFALSE)
  {
   for(Int_t p=0;p<fgkPmax;p++)
   {
@@ -216,7 +229,7 @@ void AliCumulantsFunctions::Calculate()
    }
   }
  }
- 
+    
  /////////////////////////////////////////////////////////////////////////////
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
@@ -290,10 +303,13 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQ[4]={0.};
                             
  //v_2{2}
- if(AvM && cumulant[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
+ if(nEvents>0 && AvM>0 && cumulant[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
  {        
   ChiQ[0]=AvM*V2/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.),0.5);
-  SdQ[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQ[0],2))/(2.*pow(ChiQ[0],2)))),0.5);
+  if(ChiQ[0])
+  {  
+   SdQ[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQ[0],2))/(2.*pow(ChiQ[0],2)))),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<endl;
   //cout<<" v_"<<fgkFlow<<"{2} = "<<V2<<" +/- "<<SdQ[0]<<", chi{2} = "<<ChiQ[0]<<endl;//printing also the chi
   fifr->SetBinContent(1,V2);
@@ -308,10 +324,13 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(AvM && cumulant[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
+ if(nEvents>0 && AvM>0 && cumulant[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
  {
   ChiQ[1]=AvM*V4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.),0.5);
-  SdQ[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQ[1],2)+1.*pow(ChiQ[1],4.)+2.*pow(ChiQ[1],6.))/(2.*pow(ChiQ[1],6.)),0.5);
+  if(ChiQ[1])
+  {
+   SdQ[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQ[1],2)+1.*pow(ChiQ[1],4.)+2.*pow(ChiQ[1],6.))/(2.*pow(ChiQ[1],6.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<endl;
   //cout<<" v_"<<fgkFlow<<"{4} = "<<V4<<" +/- "<<SdQ[1]<<", chi{4} = "<<ChiQ[1]<<endl;//printing also the chi
   fifr->SetBinContent(2,V4);
@@ -326,10 +345,13 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- if(AvM && cumulant[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
+ if(nEvents>0 && AvM>0 && cumulant[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
  {
   ChiQ[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6*AvM,2.),0.5);
-  SdQ[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQ[2],2)+9.*pow(ChiQ[2],4.)+28.*pow(ChiQ[2],6.)+12.*pow(ChiQ[2],8.)+24.*pow(ChiQ[2],10.))/(24.*pow(ChiQ[2],10.)),0.5);
+  if(ChiQ[2])
+  {
+   SdQ[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQ[2],2)+9.*pow(ChiQ[2],4.)+28.*pow(ChiQ[2],6.)+12.*pow(ChiQ[2],8.)+24.*pow(ChiQ[2],10.))/(24.*pow(ChiQ[2],10.)),0.5);
+  } 
   cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<endl;
   //cout<<" v_"<<fgkFlow<<"{6} = "<<V6<<" +/- "<<SdQ[2]<<", chi{6} = "<<ChiQ[2]<<endl;//printing also the chi
   fifr->SetBinContent(3,V6);
@@ -344,10 +366,13 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- if(AvM && cumulant[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
+ if(nEvents>0 && AvM>0 && cumulant[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
  {  
   ChiQ[3]=AvM*V8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8*AvM,2.),0.5);
-  SdQ[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQ[3],2.)+72.*pow(ChiQ[3],4.)+304.*pow(ChiQ[3],6.)+257.*pow(ChiQ[3],8.)+804.*pow(ChiQ[3],10.)+363.*pow(ChiQ[3],12.)+726.*pow(ChiQ[3],14.))/(726.*pow(ChiQ[3],14.)),0.5);
+  if(ChiQ[3])
+  {
+   SdQ[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQ[3],2.)+72.*pow(ChiQ[3],4.)+304.*pow(ChiQ[3],6.)+257.*pow(ChiQ[3],8.)+804.*pow(ChiQ[3],10.)+363.*pow(ChiQ[3],12.)+726.*pow(ChiQ[3],14.))/(726.*pow(ChiQ[3],14.)),0.5);
+  } 
   cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<endl;
   //cout<<" v_"<<fgkFlow<<"{8} = "<<V8<<" +/- "<<SdQ[3]<<", chi{8} = "<<ChiQ[3]<<endl;//printing also the chi
   fifr->SetBinContent(4,V8);
@@ -537,18 +562,43 @@ void AliCumulantsFunctions::Calculate()
   
   
  
+ 
+ 
+ 
+ 
+ 
+ //off the record: numerical equations for cumulants solved up to different highest order  
  if(fOtherEquations)
  {
  
  //==============================================================================================================================================
- 
+  
  //up to 4th order
- Double_t AvG4[fgkPmax4][fgkQmax4]={{0.}};    
+ //avarage selected multiplicity
+ Double_t AvM4=0.;
+ if(fAvMult4)
+ {
+  AvM4=fAvMult4->GetBinContent(1);
+ }
+
+ //number of events
+ Int_t nEvents4=0;
+ if(fAvMult4)
+ {
+  nEvents4=(Int_t)(fAvMult4->GetBinEntries(1));
+ }
+ 
+ Double_t AvG4[fgkPmax4][fgkQmax4]={{0.}}; 
+ Bool_t someAvGEntryIsNegative4=kFALSE;   
  for(Int_t p=0;p<fgkPmax4;p++)
  {
   for(Int_t q=0;q<fgkQmax4;q++)
   {
    AvG4[p][q]=fIntGenFun4->GetBinContent(p+1,q+1);
+   if(AvG4[p][q]<0.)
+   {
+    someAvGEntryIsNegative4=kTRUE;
+   } 
   }
  }  
  /////////////////////////////////////////////////////////////////////////////      
@@ -556,13 +606,13 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C4[fgkPmax4][fgkQmax4]={{0.}};//C[p][q]
- if(AvM)
+ if(AvM4>0 && someAvGEntryIsNegative4==kFALSE)
  {
   for (Int_t p=0;p<fgkPmax4;p++)
   {
    for (Int_t q=0;q<fgkQmax4;q++)
    {
-    C4[p][q]=1.*AvM*(pow(AvG4[p][q],(1./AvM))-1.); 
+    C4[p][q]=1.*AvM4*(pow(AvG4[p][q],(1./AvM4))-1.); 
    }
   }
  }
@@ -621,10 +671,13 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQo4[2]={0.};
           
  //v_2{2}
- if(AvM && cumulant4[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant4[0],(1./2.))*AvM,2.)>0.))
+ if(nEvents4 && AvM4 && cumulant4[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant4[0],(1./2.))*AvM4,2.)>0.))
  {        
-  ChiQo4[0]=AvM*V2o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o4*AvM,2.),0.5);
-  SdQo4[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo4[0],2))/(2.*pow(ChiQo4[0],2)))),0.5);
+  ChiQo4[0]=AvM4*V2o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o4*AvM4,2.),0.5);
+  if(ChiQo4[0])
+  {
+   SdQo4[0]=pow(((1./(2.*AvM4*nEvents4))*((1.+2.*pow(ChiQo4[0],2))/(2.*pow(ChiQo4[0],2)))),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{2} = "<<V2o4<<" +/- "<<SdQo4[0]<<endl;
   //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o4<<" +/- "<<SdQo4[0]<<", chi{2} = "<<ChiQo4[0]<<endl;//printing also the chi
  } 
@@ -634,10 +687,13 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(AvM && cumulant4[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant4[1],(1./4.))*AvM,2.)>0.))
+ if(nEvents4 && AvM4 && cumulant4[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant4[1],(1./4.))*AvM4,2.)>0.))
  {
-  ChiQo4[1]=AvM*V4o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o4*AvM,2.),0.5);
-  SdQo4[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo4[1],2)+1.*pow(ChiQo4[1],4.)+2.*pow(ChiQo4[1],6.))/(2.*pow(ChiQo4[1],6.)),0.5);
+  ChiQo4[1]=AvM4*V4o4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o4*AvM4,2.),0.5);
+  if(ChiQo4[1])
+  {
+   SdQo4[1]=(1./(pow(2.*AvM4*nEvents4,0.5)))*pow((1.+4.*pow(ChiQo4[1],2)+1.*pow(ChiQo4[1],4.)+2.*pow(ChiQo4[1],6.))/(2.*pow(ChiQo4[1],6.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{4} = "<<V4o4<<" +/- "<<SdQo4[1]<<endl;   
   //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o4<<" +/- "<<SdQo4[1]<<", chi{4} = "<<ChiQo4[1]<<endl;//printing also the chi 
  } 
@@ -647,19 +703,38 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  cout<<endl;
- cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"   nEvts = "<<nEvents4<<", AvM = "<<AvM4<<endl; 
  cout<<"***********************************"<<endl;    
  cout<<"***********************************"<<endl;   
  
  //============================================================================================================================================== 
  
  //up to 6th order
- Double_t AvG6[fgkPmax6][fgkQmax6]={{0.}};    
+ //avarage selected multiplicity
+ Double_t AvM6=0.;
+ if(fAvMult6)
+ {
+  AvM6=fAvMult6->GetBinContent(1);
+ }
+
+ //number of events
+ Int_t nEvents6=0;
+ if(fAvMult6)
+ {
+  nEvents6=(Int_t)(fAvMult6->GetBinEntries(1));
+ }
+ 
+ Double_t AvG6[fgkPmax6][fgkQmax6]={{0.}};  
+ Bool_t someAvGEntryIsNegative6=kFALSE;   
  for(Int_t p=0;p<fgkPmax6;p++)
  {
   for(Int_t q=0;q<fgkQmax6;q++)
   {
    AvG6[p][q]=fIntGenFun6->GetBinContent(p+1,q+1);
+   if(AvG6[p][q]<0.)
+   {
+    someAvGEntryIsNegative6=kTRUE;
+   } 
   }
  }  
  /////////////////////////////////////////////////////////////////////////////      
@@ -667,10 +742,13 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C6[fgkPmax6][fgkQmax6]={{0.}};//C[p][q]
- if(AvM){
-  for (Int_t p=0;p<fgkPmax6;p++){
-   for (Int_t q=0;q<fgkQmax6;q++){
-    C6[p][q]=1.*AvM*(pow(AvG6[p][q],(1./AvM))-1.); 
+ if(AvM6>0 && someAvGEntryIsNegative6==kFALSE)
+ {
+  for (Int_t p=0;p<fgkPmax6;p++)
+  {
+   for (Int_t q=0;q<fgkQmax6;q++)
+   {
+    C6[p][q]=1.*AvM6*(pow(AvG6[p][q],(1./AvM6))-1.); 
    }
   }
  }
@@ -733,10 +811,13 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQo6[3]={0.};
           
  //v_2{2}
- if(AvM && cumulant6[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant6[0],(1./2.))*AvM,2.)>0.))
+ if(nEvents6 && AvM6 && cumulant6[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant6[0],(1./2.))*AvM6,2.)>0.))
  {        
-  ChiQo6[0]=AvM*V2o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o6*AvM,2.),0.5);
-  SdQo6[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo6[0],2))/(2.*pow(ChiQo6[0],2)))),0.5);
+  ChiQo6[0]=AvM6*V2o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o6*AvM6,2.),0.5);
+  if(ChiQo6[0])
+  {
+   SdQo6[0]=pow(((1./(2.*AvM6*nEvents6))*((1.+2.*pow(ChiQo6[0],2))/(2.*pow(ChiQo6[0],2)))),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{2} = "<<V2o6<<" +/- "<<SdQo6[0]<<endl;
   //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o6<<" +/- "<<SdQo6[0]<<", chi{2} = "<<ChiQo6[0]<<endl;//printing also the chi
  } 
@@ -746,10 +827,13 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(AvM && cumulant6[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant6[1],(1./4.))*AvM,2.)>0.))
+ if(nEvents6 && AvM6 && cumulant6[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant6[1],(1./4.))*AvM6,2.)>0.))
  {
-  ChiQo6[1]=AvM*V4o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o6*AvM,2.),0.5);
-  SdQo6[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo6[1],2)+1.*pow(ChiQo6[1],4.)+2.*pow(ChiQo6[1],6.))/(2.*pow(ChiQo6[1],6.)),0.5);
+  ChiQo6[1]=AvM6*V4o6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o6*AvM6,2.),0.5);
+  if(ChiQo6[1])
+  {
+   SdQo6[1]=(1./(pow(2.*AvM6*nEvents6,0.5)))*pow((1.+4.*pow(ChiQo6[1],2)+1.*pow(ChiQo6[1],4.)+2.*pow(ChiQo6[1],6.))/(2.*pow(ChiQo6[1],6.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{4} = "<<V4o6<<" +/- "<<SdQo6[1]<<endl;    
   //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o6<<" +/- "<<SdQo6[1]<<", chi{4} = "<<ChiQo6[1]<<endl;//printing also the chi 
  } 
@@ -759,10 +843,13 @@ void AliCumulantsFunctions::Calculate()
  }   
   
  //v_2{6}
- if(AvM && cumulant6[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant6[2],(1./6.))*AvM,2.)>0.))
+ if(nEvents6 && AvM6 && cumulant6[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant6[2],(1./6.))*AvM6,2.)>0.))
  {
-  ChiQo6[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o6*AvM,2.),0.5);
-  SdQo6[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo6[2],2.)+9.*pow(ChiQo6[2],4.)+28.*pow(ChiQo6[2],6.)+12.*pow(ChiQo6[2],8.)+24.*pow(ChiQo6[2],10.))/(24.*pow(ChiQo6[2],10.)),0.5);
+  ChiQo6[2]=AvM6*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o6*AvM6,2.),0.5);
+  if(ChiQo6[2])
+  {
+   SdQo6[2]=(1./(pow(2.*AvM6*nEvents6,0.5)))*pow((3.+18.*pow(ChiQo6[2],2.)+9.*pow(ChiQo6[2],4.)+28.*pow(ChiQo6[2],6.)+12.*pow(ChiQo6[2],8.)+24.*pow(ChiQo6[2],10.))/(24.*pow(ChiQo6[2],10.)),0.5);
+  } 
    cout<<" v_"<<fgkFlow<<"{6} = "<<V6o6<<" +/- "<<SdQo6[2]<<endl;   
    //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o6<<" +/- "<<SdQo6[2]<<", chi{6} = "<<ChiQo6[2]<<endl;//printing also the chi
  }
@@ -772,19 +859,38 @@ void AliCumulantsFunctions::Calculate()
  }
  
  cout<<endl;
- cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"   nEvts = "<<nEvents6<<", AvM = "<<AvM6<<endl; 
  cout<<"***********************************"<<endl;    
  cout<<"***********************************"<<endl;   
  
  //============================================================================================================================================== 
     
  //up to 8th order
- Double_t AvG8[fgkPmax8][fgkQmax8]={{0.}};    
+ //avarage selected multiplicity
+ Double_t AvM8=0.;
+ if(fAvMult8)
+ {
+  AvM8=fAvMult8->GetBinContent(1);
+ }
+
+ //number of events
+ Int_t nEvents8=0;
+ if(fAvMult8)
+ {
+  nEvents8=(Int_t)(fAvMult8->GetBinEntries(1));
+ }
+ 
+ Double_t AvG8[fgkPmax8][fgkQmax8]={{0.}}; 
+ Bool_t someAvGEntryIsNegative8=kFALSE;   
  for(Int_t p=0;p<fgkPmax8;p++)
  {
   for(Int_t q=0;q<fgkQmax8;q++)
   {
    AvG8[p][q]=fIntGenFun8->GetBinContent(p+1,q+1);
+   if(AvG8[p][q]<0.)
+   {
+    someAvGEntryIsNegative8=kTRUE;
+   } 
   }
  }  
  /////////////////////////////////////////////////////////////////////////////      
@@ -792,10 +898,13 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C8[fgkPmax8][fgkQmax8]={{0.}};//C[p][q]
- if(AvM){
-  for (Int_t p=0;p<fgkPmax8;p++){
-   for (Int_t q=0;q<fgkQmax8;q++){
-    C8[p][q]=1.*AvM*(pow(AvG8[p][q],(1./AvM))-1.); 
+ if(AvM8>0 && someAvGEntryIsNegative8==kFALSE)
+ {
+  for (Int_t p=0;p<fgkPmax8;p++)
+  {
+   for (Int_t q=0;q<fgkQmax8;q++)
+   {
+    C8[p][q]=1.*AvM8*(pow(AvG8[p][q],(1./AvM8))-1.); 
    }
   }
  }
@@ -880,10 +989,13 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQo8[4]={0.};
           
  //v_2{2}
- if(AvM && cumulant8[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant8[0],(1./2.))*AvM,2.)>0.))
+ if(nEvents8 && AvM8 && cumulant8[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant8[0],(1./2.))*AvM8,2.)>0.))
  {        
-  ChiQo8[0]=AvM*V2o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o8*AvM,2.),0.5);
-  SdQo8[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo8[0],2.))/(2.*pow(ChiQo8[0],2)))),0.5);
+  ChiQo8[0]=AvM8*V2o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o8*AvM8,2.),0.5);
+  if(ChiQo8[0])
+  {
+   SdQo8[0]=pow(((1./(2.*AvM8*nEvents8))*((1.+2.*pow(ChiQo8[0],2.))/(2.*pow(ChiQo8[0],2)))),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{2} = "<<V2o8<<" +/- "<<SdQo8[0]<<endl;    
   //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o8<<" +/- "<<SdQo8[0]<<", chi{2} = "<<ChiQo8[0]<<endl;//printing also the chi
  } 
@@ -893,10 +1005,13 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(AvM && cumulant8[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant8[1],(1./4.))*AvM,2.)>0.))
+ if(nEvents8 && AvM8 && cumulant8[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant8[1],(1./4.))*AvM8,2.)>0.))
  {
-  ChiQo8[1]=AvM*V4o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o8*AvM,2.),0.5);
-  SdQo8[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo8[1],2)+1.*pow(ChiQo8[1],4.)+2.*pow(ChiQo8[1],6.))/(2.*pow(ChiQo8[1],6.)),0.5);
+  ChiQo8[1]=AvM8*V4o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o8*AvM8,2.),0.5);
+  if(ChiQo8[1])
+  {
+   SdQo8[1]=(1./(pow(2.*AvM8*nEvents8,0.5)))*pow((1.+4.*pow(ChiQo8[1],2)+1.*pow(ChiQo8[1],4.)+2.*pow(ChiQo8[1],6.))/(2.*pow(ChiQo8[1],6.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{4} = "<<V4o8<<" +/- "<<SdQo8[1]<<endl;    
   //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o8<<" +/- "<<SdQo8[1]<<", chi{4} = "<<ChiQo8[1]<<endl;//printing also the chi 
  } 
@@ -906,10 +1021,13 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- if(AvM && cumulant8[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant8[2],(1./6.))*AvM,2.)>0.))
+ if(nEvents8 && AvM8 && cumulant8[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant8[2],(1./6.))*AvM8,2.)>0.))
  {
-  ChiQo8[2]=AvM*V6o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o8*AvM,2.),0.5);
-  SdQo8[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo8[2],2)+9.*pow(ChiQo8[2],4.)+28.*pow(ChiQo8[2],6.)+12.*pow(ChiQo8[2],8.)+24.*pow(ChiQo8[2],10.))/(24.*pow(ChiQo8[2],10.)),0.5);
+  ChiQo8[2]=AvM8*V6o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o8*AvM8,2.),0.5);
+  if(ChiQo8[2])
+  {
+   SdQo8[2]=(1./(pow(2.*AvM8*nEvents8,0.5)))*pow((3.+18.*pow(ChiQo8[2],2)+9.*pow(ChiQo8[2],4.)+28.*pow(ChiQo8[2],6.)+12.*pow(ChiQo8[2],8.)+24.*pow(ChiQo8[2],10.))/(24.*pow(ChiQo8[2],10.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{6} = "<<V6o8<<" +/- "<<SdQo8[2]<<endl;
   //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o8<<" +/- "<<SdQo8[2]<<", chi{6} = "<<ChiQo8[2]<<endl;//printing also the chi 
  }
@@ -919,10 +1037,13 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- if(AvM && cumulant8[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant8[3],(1./8.))*AvM,2.)>0.))
+ if(nEvents8 && AvM8 && cumulant8[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant8[3],(1./8.))*AvM8,2.)>0.))
  {  
-  ChiQo8[3]=AvM*V8o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o8*AvM,2.),0.5);
-  SdQo8[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQo8[3],2)+72.*pow(ChiQo8[3],4.)+304.*pow(ChiQo8[3],6.)+257.*pow(ChiQo8[3],8.)+804.*pow(ChiQo8[3],10.)+363.*pow(ChiQo8[3],12.)+726.*pow(ChiQo8[3],14.))/(726.*pow(ChiQo8[3],14.)),0.5);
+  ChiQo8[3]=AvM8*V8o8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o8*AvM8,2.),0.5);
+  if(ChiQo8[3])
+  {
+   SdQo8[3]=(1./(pow(2.*AvM8*nEvents8,0.5)))*pow((12.+96.*pow(ChiQo8[3],2)+72.*pow(ChiQo8[3],4.)+304.*pow(ChiQo8[3],6.)+257.*pow(ChiQo8[3],8.)+804.*pow(ChiQo8[3],10.)+363.*pow(ChiQo8[3],12.)+726.*pow(ChiQo8[3],14.))/(726.*pow(ChiQo8[3],14.)),0.5);
+  } 
   cout<<" v_"<<fgkFlow<<"{8} = "<<V8o8<<" +/- "<<SdQo8[3]<<endl;  
   //cout<<" v_"<<fgkFlow<<"{8} = "<<V8o8<<" +/- "<<SdQo8[3]<<", chi{8} = "<<ChiQo8[3]<<endl;//printing also the chi 
  } 
@@ -932,18 +1053,37 @@ void AliCumulantsFunctions::Calculate()
  }
   
  cout<<endl;
- cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"   nEvts = "<<nEvents8<<", AvM = "<<AvM8<<endl; 
  cout<<"*********************************"<<endl; 
 
  //============================================================================================================================================== 
    
  //up to 16-th order: 
+ //avarage selected multiplicity
+ Double_t AvM16=0.;
+ if(fAvMult16)
+ {
+  AvM16=fAvMult16->GetBinContent(1);
+ }
+
+ //number of events
+ Int_t nEvents16=0;
+ if(fAvMult16)
+ {
+  nEvents16=(Int_t)(fAvMult16->GetBinEntries(1));
+ }
+ 
  Double_t AvG16[fgkPmax16][fgkQmax16]={{0.}};  
+ Bool_t someAvGEntryIsNegative16=kFALSE; 
  for(Int_t p=0;p<fgkPmax16;p++)
  {
   for(Int_t q=0;q<fgkQmax16;q++)
   {
    AvG16[p][q]=fIntGenFun16->GetBinContent(p+1,q+1);
+   if(AvG16[p][q]<0.)
+   {
+    someAvGEntryIsNegative16=kTRUE;
+   } 
   }
  }  
  
@@ -952,13 +1092,13 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C16[fgkPmax16][fgkQmax16]={{0.}};//C16[p][q]
- if(AvM)
+ if(AvM16>0 && someAvGEntryIsNegative16==kFALSE)
  {
   for(Int_t p=0;p<fgkPmax16;p++)
   {
    for(Int_t q=0;q<fgkQmax16;q++)
    {
-    C16[p][q]=1.*AvM*(pow(AvG16[p][q],(1./AvM))-1.); 
+    C16[p][q]=1.*AvM16*(pow(AvG16[p][q],(1./AvM16))-1.); 
    }
   }
  }
@@ -1072,10 +1212,13 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQo16[8]={0.};
           
  //v_2{2}
- if(AvM && cumulant16[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant16[0],(1./2.))*AvM,2.)>0.))
+ if(nEvents16 && AvM16 && cumulant16[0]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant16[0],(1./2.))*AvM16,2.)>0.))
  {        
-  ChiQo16[0]=AvM*V2o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o16*AvM,2.),0.5);
-  SdQo16[0]=pow(((1./(2.*AvM*nEvents))*((1.+2.*pow(ChiQo16[0],2))/(2.*pow(ChiQo16[0],2)))),0.5);
+  ChiQo16[0]=AvM16*V2o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2o16*AvM16,2.),0.5);
+  if(ChiQo16[0])
+  {
+   SdQo16[0]=pow(((1./(2.*AvM16*nEvents16))*((1.+2.*pow(ChiQo16[0],2))/(2.*pow(ChiQo16[0],2)))),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{2} = "<<V2o16<<" +/- "<<SdQo16[0]<<endl;
   //cout<<" v_"<<fgkFlow<<"{2} = "<<V2o16<<" +/- "<<SdQo16[0]<<", chi{2} = "<<ChiQo16[0]<<endl;//printing also the chi
  } 
@@ -1085,10 +1228,13 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(AvM && cumulant16[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant16[1],(1./4.))*AvM,2.)>0.))
+ if(nEvents16 && AvM16 && cumulant16[1]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant16[1],(1./4.))*AvM16,2.)>0.))
  {
-  ChiQo16[1]=AvM*V4o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o16*AvM,2.),0.5);
-  SdQo16[1]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((1.+4.*pow(ChiQo16[1],2.)+1.*pow(ChiQo16[1],4.)+2.*pow(ChiQo16[1],6.))/(2.*pow(ChiQo16[1],6.)),0.5);
+  ChiQo16[1]=AvM16*V4o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4o16*AvM16,2.),0.5);
+  if(ChiQo16[1])
+  {
+   SdQo16[1]=(1./(pow(2.*AvM16*nEvents16,0.5)))*pow((1.+4.*pow(ChiQo16[1],2.)+1.*pow(ChiQo16[1],4.)+2.*pow(ChiQo16[1],6.))/(2.*pow(ChiQo16[1],6.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{4} = "<<V4o16<<" +/- "<<SdQo16[1]<<endl; 
   //cout<<" v_"<<fgkFlow<<"{4} = "<<V4o16<<" +/- "<<SdQo16[1]<<", chi{4} = "<<ChiQo16[1]<<endl;//printing also the chi
  } 
@@ -1098,10 +1244,13 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- if(AvM && cumulant16[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant16[2],(1./6.))*AvM,2.)>0.))
+ if(nEvents16 && AvM16 && cumulant16[2]>=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant16[2],(1./6.))*AvM16,2.)>0.))
  {
-  ChiQo16[2]=AvM*V6o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o16*AvM,2.),0.5);
-  SdQo16[2]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((3.+18.*pow(ChiQo16[2],2)+9.*pow(ChiQo16[2],4.)+28.*pow(ChiQo16[2],6.)+12.*pow(ChiQo16[2],8.)+24.*pow(ChiQo16[2],10.))/(24.*pow(ChiQo16[2],10.)),0.5);
+  ChiQo16[2]=AvM16*V6o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6o16*AvM16,2.),0.5);
+  if(ChiQo16[2])
+  {
+   SdQo16[2]=(1./(pow(2.*AvM16*nEvents16,0.5)))*pow((3.+18.*pow(ChiQo16[2],2)+9.*pow(ChiQo16[2],4.)+28.*pow(ChiQo16[2],6.)+12.*pow(ChiQo16[2],8.)+24.*pow(ChiQo16[2],10.))/(24.*pow(ChiQo16[2],10.)),0.5);
+  }
   cout<<" v_"<<fgkFlow<<"{6} = "<<V6o16<<" +/- "<<SdQo16[2]<<endl;
   //cout<<" v_"<<fgkFlow<<"{6} = "<<V6o16<<" +/- "<<SdQo16[2]<<", chi{6} = "<<ChiQo16[2]<<endl;//printing also the chi
  }
@@ -1111,10 +1260,13 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- if(AvM && cumulant16[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant16[3],(1./8.))*AvM,2.)>0.))
+ if(nEvents16 && AvM16 && cumulant16[3]<=0. && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant16[3],(1./8.))*AvM16,2.)>0.))
  {  
-  ChiQo16[3]=AvM*V8o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o16*AvM,2.),0.5);
-  SdQo16[3]=(1./(pow(2.*AvM*nEvents,0.5)))*pow((12.+96.*pow(ChiQo16[3],2)+72.*pow(ChiQo16[3],4.)+304.*pow(ChiQo16[3],6.)+257.*pow(ChiQo16[3],8.)+804.*pow(ChiQo16[3],10.)+363.*pow(ChiQo16[3],12.)+726.*pow(ChiQo16[3],14.))/(726.*pow(ChiQo16[3],14.)),0.5);
+  ChiQo16[3]=AvM16*V8o16/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8o16*AvM16,2.),0.5);
+  if(ChiQo16[3])
+  {
+   SdQo16[3]=(1./(pow(2.*AvM16*nEvents16,0.5)))*pow((12.+96.*pow(ChiQo16[3],2)+72.*pow(ChiQo16[3],4.)+304.*pow(ChiQo16[3],6.)+257.*pow(ChiQo16[3],8.)+804.*pow(ChiQo16[3],10.)+363.*pow(ChiQo16[3],12.)+726.*pow(ChiQo16[3],14.))/(726.*pow(ChiQo16[3],14.)),0.5);
+  } 
   cout<<" v_"<<fgkFlow<<"{8} = "<<V8o16<<" +/- "<<SdQo16[3]<<endl;
   //cout<<" v_"<<fgkFlow<<"{8} = "<<V8o16<<" +/- "<<SdQo16[3]<<", chi{8} = "<<ChiQo16[3]<<endl;//printing also the chi
  } 
@@ -1124,7 +1276,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{10}
- if(AvM && cumulant16[4]>=0.)
+ if(nEvents16 && AvM16 && cumulant16[4]>=0.)
  {
   cout<<"v_"<<fgkFlow<<"{10} = "<<V10o16<<endl;
  } 
@@ -1134,7 +1286,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{12}
- if(AvM && AvM && cumulant16[5]<=0.)
+ if(nEvents16 && AvM16 && AvM16 && cumulant16[5]<=0.)
  {
   cout<<"v_"<<fgkFlow<<"{12} = "<<V12o16<<endl;
  } 
@@ -1144,7 +1296,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{14}
- if(AvM && cumulant16[6]>=0.)
+ if(nEvents16 && AvM16 && cumulant16[6]>=0.)
  {
   cout<<"v_"<<fgkFlow<<"{14} = "<<V14o16<<endl;
  } 
@@ -1154,7 +1306,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{16}
- if(AvM && cumulant16[7]<=0.)
+ if(nEvents16 && AvM16 && cumulant16[7]<=0.)
  {
   cout<<"v_"<<fgkFlow<<"{16} = "<<V16o16<<endl;
  } 
@@ -1164,7 +1316,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  cout<<endl;
- cout<<"   nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+ cout<<"   nEvts = "<<nEvents16<<", AvM = "<<AvM16<<endl; 
  cout<<"*********************************"<<endl;    
  
  //==============================================================================================================================================

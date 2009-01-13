@@ -82,10 +82,14 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fCommonHistsResults6th(NULL),
  fCommonHistsResults8th(NULL),
  fIntFlowGenFun(NULL),
- fIntFlowGenFun4(NULL),
- fIntFlowGenFun6(NULL),
- fIntFlowGenFun8(NULL),
- fIntFlowGenFun16(NULL),
+ fIntFlowGenFun4(NULL),//(only for other system of Eq.)
+ fIntFlowGenFun6(NULL),//(only for other system of Eq.)
+ fIntFlowGenFun8(NULL),//(only for other system of Eq.)
+ fIntFlowGenFun16(NULL),//(only for other system of Eq.)
+ fAvMultIntFlow4GFC(NULL),//(only for other system of Eq.)
+ fAvMultIntFlow6GFC(NULL),//(only for other system of Eq.)
+ fAvMultIntFlow8GFC(NULL),//(only for other system of Eq.)
+ fAvMultIntFlow16GFC(NULL),//(only for other system of Eq.)
  fDiffFlowGenFunRe(NULL),
  fDiffFlowGenFunIm(NULL),
  fBinNoOfParticles(NULL),
@@ -202,29 +206,69 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
 
  if(fOtherEquations)
  {
-  //avarage of the generating function for integrated flow <G[p][q]> (up to 4th order)
+  //avarage of the generating function for integrated flow <G[p][q]> (only for other system of Eq. - up to 4th order)
   fIntFlowGenFun4 = new TProfile2D("fIntFlowGenFun4","<G4[p4][q4]>",fgkPmax4,0.,(Double_t)fgkPmax4,fgkQmax4,0.,(Double_t)fgkQmax4);
   fIntFlowGenFun4->SetXTitle("p4");
   fIntFlowGenFun4->SetYTitle("q4");
   fHistList->Add(fIntFlowGenFun4);
 
-  //avarage of the generating function for integrated flow <G[p][q]> (up to 6th order) 
+  //avarage of the generating function for integrated flow <G[p][q]> (only for other system of Eq. - up to 6th order) 
   fIntFlowGenFun6 = new TProfile2D("fIntFlowGenFun6","<G6[p6][q6]>",fgkPmax6,0.,(Double_t)fgkPmax6,fgkQmax6,0.,(Double_t)fgkQmax6);
   fIntFlowGenFun6->SetXTitle("p6");
   fIntFlowGenFun6->SetYTitle("q6");
   fHistList->Add(fIntFlowGenFun6);
 
-  //avarage of the generating function for integrated flow <G[p][q]> (up to 8th order)
+  //avarage of the generating function for integrated flow <G[p][q]> (only for other system of Eq. - up to 8th order)
   fIntFlowGenFun8 = new TProfile2D("fIntFlowGenFun8","<G8[p8][q8]>",fgkPmax8,0.,(Double_t)fgkPmax8,fgkQmax8,0.,(Double_t)fgkQmax8);
   fIntFlowGenFun8->SetXTitle("p8");
   fIntFlowGenFun8->SetYTitle("q8");
   fHistList->Add(fIntFlowGenFun8);
 
-  //avarage of the generating function for integrated flow <G[p][q]> (up to 16th order)
+  //avarage of the generating function for integrated flow <G[p][q]> (only for other system of Eq. - up to 16th order)
   fIntFlowGenFun16 = new TProfile2D("fIntFlowGenFun16","<G16[p16][q16]>",fgkPmax16,0.,(Double_t)fgkPmax16,fgkQmax16,0.,(Double_t)fgkQmax16);
   fIntFlowGenFun16->SetXTitle("p16");
   fIntFlowGenFun16->SetYTitle("q16");
   fHistList->Add(fIntFlowGenFun16);
+ 
+  //average multiplicity (only for other system of Eq. - up to 4th order)
+  fAvMultIntFlow4GFC = new TProfile("fAvMultIntFlow4GFC","Average Multiplicity",1,0,1,"s");
+  fAvMultIntFlow4GFC->SetXTitle("");
+  fAvMultIntFlow4GFC->SetYTitle("");
+  fAvMultIntFlow4GFC->SetLabelSize(0.06);
+  fAvMultIntFlow4GFC->SetMarkerStyle(25);
+  fAvMultIntFlow4GFC->SetLabelOffset(0.01);
+  (fAvMultIntFlow4GFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+  fHistList->Add(fAvMultIntFlow4GFC);
+ 
+  //average multiplicity (only for other system of Eq. - up to 6th order)
+  fAvMultIntFlow6GFC = new TProfile("fAvMultIntFlow6GFC","Average Multiplicity",1,0,1,"s");
+  fAvMultIntFlow6GFC->SetXTitle("");
+  fAvMultIntFlow6GFC->SetYTitle("");
+  fAvMultIntFlow6GFC->SetLabelSize(0.06);
+  fAvMultIntFlow6GFC->SetMarkerStyle(25);
+  fAvMultIntFlow6GFC->SetLabelOffset(0.01);
+  (fAvMultIntFlow6GFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+  fHistList->Add(fAvMultIntFlow6GFC);
+ 
+  //average multiplicity (only for other system of Eq. - up to 8th order)
+  fAvMultIntFlow8GFC = new TProfile("fAvMultIntFlow8GFC","Average Multiplicity",1,0,1,"s");
+  fAvMultIntFlow8GFC->SetXTitle("");
+  fAvMultIntFlow8GFC->SetYTitle("");
+  fAvMultIntFlow8GFC->SetLabelSize(0.06);
+  fAvMultIntFlow8GFC->SetMarkerStyle(25);
+  fAvMultIntFlow8GFC->SetLabelOffset(0.01);
+  (fAvMultIntFlow8GFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+  fHistList->Add(fAvMultIntFlow8GFC);
+ 
+  //average multiplicity (only for other system of Eq. - up to 16th order)
+  fAvMultIntFlow16GFC = new TProfile("fAvMultIntFlow16GFC","Average Multiplicity",1,0,1,"s");
+  fAvMultIntFlow16GFC->SetXTitle("");
+  fAvMultIntFlow16GFC->SetYTitle("");
+  fAvMultIntFlow16GFC->SetLabelSize(0.06);
+  fAvMultIntFlow16GFC->SetMarkerStyle(25);
+  fAvMultIntFlow16GFC->SetLabelOffset(0.01);
+  (fAvMultIntFlow16GFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+  fHistList->Add(fAvMultIntFlow16GFC);
  }
  
  //avarage of the real part of generating function for differential flow <Re(D[b][p][q])>
@@ -359,11 +403,13 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
 
 void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 {
- //running over data
- Int_t nPrim = anEvent->NumberOfTracks();//total multiplicity
+ //running over data:
+ Int_t nPrim = anEvent->NumberOfTracks(); //total multiplicity
+ 
+ Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow(); //selected multiplicity (particles used for int. flow)
   
- //if(nPrim>30)//generating function formalism can be applied only for large multiplicities (to be improved in the future) 
- //{ 
+ if(nEventNSelTracksIntFlow>9) //generating function formalism applied here make sense only for selected multiplicity >= 10 
+ { 
  //fill the common control histograms
  fCommonHists->FillControlHistograms(anEvent);   
   
@@ -377,8 +423,6 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
     G[p][q]=1.;
    }   
   }
- 
- Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow(); //selected multiplicity (particles used for int. flow)
 
  Int_t nSelTracksIntFlow = 0; //cross-checking the selected multiplicity
  
@@ -517,21 +561,27 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  }//ending the second loop over data            
  */
       
-//}//end of if(nPrim>30)
-                      
+ }//end of if(nEventNSelTracksIntFlow>9)                   
  
- //numerical equations for cumulants solved up to different highest order  
- 
- 
- 
- 
+
  
   
+   
     
+     
+      
+       
+        
+         
+          
+           
+ //off the record: numerical equations for cumulants solved up to different highest order  
  if(fOtherEquations)
  {
- 
+  //running over data
+  Int_t nPrimOE = anEvent->NumberOfTracks();//total multiplicity 
   
+  Int_t nEventNSelTracksIntFlowOE = anEvent->GetEventNSelTracksIntFlow();
   
   Double_t G4[fgkPmax4][fgkQmax4];
   Double_t G6[fgkPmax6][fgkQmax6];
@@ -556,13 +606,15 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
     } 
    }
   } 
- 
-  
- 
-  //Int_t nEventNSelTracksIntFlowOE = anEvent->GetEventNSelTracksIntFlow();
+   
+  //multiplicities: 
+  if(nEventNSelTracksIntFlowOE>15) fAvMultIntFlow16GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
+  if(nEventNSelTracksIntFlowOE>7) fAvMultIntFlow8GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
+  if(nEventNSelTracksIntFlowOE>5) fAvMultIntFlow6GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
+  if(nEventNSelTracksIntFlowOE>3) fAvMultIntFlow4GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);  
   
   //first loop over data: evaluating the generating function G[p][q] for integrated flow 
-  for(Int_t i=0;i<nPrim;i++)
+  for(Int_t i=0;i<nPrimOE;i++)
   {
    fTrack=anEvent->GetTrack(i);
    if(fTrack && fTrack->UseForIntegratedFlow())
@@ -571,16 +623,28 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
     {
      for(Int_t q=0;q<fgkQmax16;q++)
      {
-      G16[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax16));     
+      if(nEventNSelTracksIntFlowOE>15)
+      {
+       G16[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax16));
+      }       
       if(p<fgkPmax8 && q<fgkQmax8)
       {
-       G8[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax8));
+       if(nEventNSelTracksIntFlowOE>7)
+       { 
+        G8[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax8));
+       }
        if(p<fgkPmax6 && q<fgkQmax6)
        {
-        G6[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax6));
+        if(nEventNSelTracksIntFlowOE>5) 
+        {
+         G6[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax6));
+        }
         if(p<fgkPmax4 && q<fgkQmax4)
         {
-         G4[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax4));
+         if(nEventNSelTracksIntFlowOE>3)
+         {
+          G4[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax4));
+         } 
         }
        }
       }
@@ -594,26 +658,23 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  {
   for(Int_t q=0;q<fgkQmax16;q++)
   {
-   fIntFlowGenFun16->Fill((Double_t)p,(Double_t)q,G16[p][q],1);
+   if(nEventNSelTracksIntFlowOE>15) fIntFlowGenFun16->Fill((Double_t)p,(Double_t)q,G16[p][q],1);
    if(p<fgkPmax8 && q<fgkQmax8)
    {
-    fIntFlowGenFun8->Fill((Double_t)p,(Double_t)q,G8[p][q],1);
+    if(nEventNSelTracksIntFlowOE>7) fIntFlowGenFun8->Fill((Double_t)p,(Double_t)q,G8[p][q],1);
     if(p<fgkPmax6 && q<fgkQmax6)
     {
-     fIntFlowGenFun6->Fill((Double_t)p,(Double_t)q,G6[p][q],1);
+     if(nEventNSelTracksIntFlowOE>5) fIntFlowGenFun6->Fill((Double_t)p,(Double_t)q,G6[p][q],1);
      if(p<fgkPmax4 && q<fgkQmax4)
      {
-      fIntFlowGenFun4->Fill((Double_t)p,(Double_t)q,G4[p][q],1);
+      if(nEventNSelTracksIntFlowOE>3) fIntFlowGenFun4->Fill((Double_t)p,(Double_t)q,G4[p][q],1);
      }
     }
    } 
   }
  }
 }//end of if(fOtherEquations)                  
-                                                                                       
-
-                                                                                                 
-                                                                                                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 }//end of Make()
 
 //================================================================================================================
@@ -623,7 +684,7 @@ void AliFlowAnalysisWithCumulants::Finish()
  //calculate the final results
  //AliCumulantsFunctions finalResults(fIntFlowGenFun,NULL,NULL, fIntFlowResults,fDiffFlowResults2,fDiffFlowResults4,fDiffFlowResults6,fDiffFlowResults8,fAvMultIntFlow,fQVectorComponents,  fQDist,fDiffFlowGenFunRe0,fDiffFlowGenFunRe1,fDiffFlowGenFunRe2, fDiffFlowGenFunRe3,fDiffFlowGenFunRe4,fDiffFlowGenFunRe5,fDiffFlowGenFunRe6,fDiffFlowGenFunRe7,fDiffFlowGenFunIm0,fDiffFlowGenFunIm1, fDiffFlowGenFunIm2,fDiffFlowGenFunIm3,fDiffFlowGenFunIm4,fDiffFlowGenFunIm5,fDiffFlowGenFunIm6,fDiffFlowGenFunIm7);
 
- AliCumulantsFunctions finalResults(fIntFlowGenFun,fIntFlowGenFun4,fIntFlowGenFun6,fIntFlowGenFun8,fIntFlowGenFun16,fDiffFlowGenFunRe,fDiffFlowGenFunIm,fBinNoOfParticles, fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
+ AliCumulantsFunctions finalResults(fIntFlowGenFun,fIntFlowGenFun4,fIntFlowGenFun6,fIntFlowGenFun8,fIntFlowGenFun16,fAvMultIntFlow4GFC, fAvMultIntFlow6GFC,fAvMultIntFlow8GFC,fAvMultIntFlow16GFC,fDiffFlowGenFunRe,fDiffFlowGenFunIm,fBinNoOfParticles, fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
                            
  finalResults.Calculate();  
 }

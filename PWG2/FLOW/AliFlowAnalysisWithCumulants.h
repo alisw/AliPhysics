@@ -79,19 +79,31 @@ class AliFlowAnalysisWithCumulants{
   void SetIntFlowGenFun(TProfile2D* ifgf)  {this->fIntFlowGenFun = ifgf;};
   TProfile2D* GetIntFlowGenFun() const     {return this->fIntFlowGenFun;};
 
-  void SetIntFlowGenFun4(TProfile2D* ifgf4)  {this->fIntFlowGenFun4 = ifgf4;};
-  TProfile2D* GetIntFlowGenFun4() const      {return this->fIntFlowGenFun4;};
+  void SetIntFlowGenFun4(TProfile2D* ifgf4)  {this->fIntFlowGenFun4 = ifgf4;}; //(only for other system of Eq.)
+  TProfile2D* GetIntFlowGenFun4() const      {return this->fIntFlowGenFun4;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun6(TProfile2D* ifgf6)  {this->fIntFlowGenFun6 = ifgf6;};
-  TProfile2D* GetIntFlowGenFun6() const      {return this->fIntFlowGenFun6;};
+  void SetIntFlowGenFun6(TProfile2D* ifgf6)  {this->fIntFlowGenFun6 = ifgf6;}; //(only for other system of Eq.)
+  TProfile2D* GetIntFlowGenFun6() const      {return this->fIntFlowGenFun6;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun8(TProfile2D* ifgf8)  {this->fIntFlowGenFun8 = ifgf8;};
-  TProfile2D* GetIntFlowGenFun8() const      {return this->fIntFlowGenFun8;};
+  void SetIntFlowGenFun8(TProfile2D* ifgf8)  {this->fIntFlowGenFun8 = ifgf8;}; //(only for other system of Eq.)
+  TProfile2D* GetIntFlowGenFun8() const      {return this->fIntFlowGenFun8;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun16(TProfile2D* ifgf16)  {this->fIntFlowGenFun16 = ifgf16;};
-  TProfile2D* GetIntFlowGenFun16() const       {return this->fIntFlowGenFun16;};
+  void SetIntFlowGenFun16(TProfile2D* ifgf16)  {this->fIntFlowGenFun16 = ifgf16;}; //(only for other system of Eq.)
+  TProfile2D* GetIntFlowGenFun16() const       {return this->fIntFlowGenFun16;};   //(only for other system of Eq.)
  
-  void SetDiffFlowGenFunRe(TProfile3D* dfgfRe)  {this->fDiffFlowGenFunRe = dfgfRe;};
+  void SetAverageMultiplicity4(TProfile* am4)     {this->fAvMultIntFlow4GFC = am4;};  //(only for other system of Eq.)
+  TProfile* GetAverageMultiplicity4() const       {return this->fAvMultIntFlow4GFC;}; //(only for other system of Eq.)
+  
+  void SetAverageMultiplicity6(TProfile* am6)     {this->fAvMultIntFlow6GFC = am6;};  //(only for other system of Eq.)
+  TProfile* GetAverageMultiplicity6() const       {return this->fAvMultIntFlow6GFC;}; //(only for other system of Eq.)
+  
+  void SetAverageMultiplicity8(TProfile* am8)     {this->fAvMultIntFlow8GFC = am8;};  //(only for other system of Eq.)
+  TProfile* GetAverageMultiplicity8() const       {return this->fAvMultIntFlow8GFC;}; //(only for other system of Eq.)
+  
+  void SetAverageMultiplicity16(TProfile* am16)    {this->fAvMultIntFlow16GFC = am16;}; //(only for other system of Eq.)
+  TProfile* GetAverageMultiplicity16() const       {return this->fAvMultIntFlow16GFC;}; //(only for other system of Eq.)
+ 
+  void SetDiffFlowGenFunRe(TProfile3D* dfgfRe)    {this->fDiffFlowGenFunRe = dfgfRe;};
   TProfile3D* GetDiffFlowGenFunRe() const         {return this->fDiffFlowGenFunRe;};
   
   void SetDiffFlowGenFunIm(TProfile3D* dfgfIm)  {this->fDiffFlowGenFunIm = dfgfIm;};
@@ -153,11 +165,17 @@ class AliFlowAnalysisWithCumulants{
   AliFlowCommonHistResults*  fCommonHistsResults8th; //final results for 8th order int. and diff. flow stored in the common histograms
   
   TProfile2D*        fIntFlowGenFun;   //avarage of the generating function for integrated flow 
-  TProfile2D*        fIntFlowGenFun4;  //avarage of the generating function for integrated flow 
-  TProfile2D*        fIntFlowGenFun6;  //avarage of the generating function for integrated flow
-  TProfile2D*        fIntFlowGenFun8;  //avarage of the generating function for integrated flow
-  TProfile2D*        fIntFlowGenFun16; //avarage of the generating function for integrated flow 
-     
+  
+  TProfile2D*        fIntFlowGenFun4;  //avarage of the generating function for integrated flow (only for different system of Eq.)
+  TProfile2D*        fIntFlowGenFun6;  //avarage of the generating function for integrated flow (only for different system of Eq.)
+  TProfile2D*        fIntFlowGenFun8;  //avarage of the generating function for integrated flow (only for different system of Eq.)
+  TProfile2D*        fIntFlowGenFun16; //avarage of the generating function for integrated flow (only for different system of Eq.)
+
+  TProfile*          fAvMultIntFlow4GFC;  //average selected multiplicity (only for different system of Eq.)
+  TProfile*          fAvMultIntFlow6GFC;  //average selected multiplicity (only for different system of Eq.) 
+  TProfile*          fAvMultIntFlow8GFC;  //average selected multiplicity (only for different system of Eq.)
+  TProfile*          fAvMultIntFlow16GFC; //average selected multiplicity (only for different system of Eq.)
+                   
   TProfile3D*        fDiffFlowGenFunRe; //avarage of the generating function for differential flow (real part)
   TProfile3D*        fDiffFlowGenFunIm; //avarage of the generating function for differential flow (imaginary part)
   TProfile*          fBinNoOfParticles; //number of particles per pt bin
