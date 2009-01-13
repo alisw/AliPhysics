@@ -734,7 +734,10 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
 	fMultiplicity=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } 
-      else if (argument.CompareTo("-bfield")==0) {
+      else if (argument.CompareTo("-solenoidBz")==0 || argument.CompareTo("-bfield")==0) {
+	if(argument.CompareTo("-bfield")==0){
+	  HLTWarning("-bfield is the old way. The field is set, but please use -solenoidBz.");
+	}
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
