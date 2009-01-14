@@ -265,7 +265,7 @@ Bool_t AliHMPIDtrack::Intersect(AliHMPIDtrack *pTrk,Double_t pnt[3], Double_t no
   }
   //on exit pnt is intersection point,norm is track vector at that point, 
   //Printf("--- 222 --- dist %lf",dist);
-  Printf("");
+//  Printf("");
   for (Int_t i=0; i<3; i++) {pnt[i]=x[i]; norm[i]=p[i];}
   return kTRUE;
 }//Intersect()
