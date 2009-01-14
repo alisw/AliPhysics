@@ -20,6 +20,7 @@
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
 #include "AliFMDGeometry.h"
+#include "AliFMDRing.h"
 
 ClassImp(AliFMDAnalysisTaskDensity)
 
@@ -129,7 +130,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   Double_t vertexBinDouble = (vertex[2] + pars->GetVtxCutZ()) / delta;
   
   Int_t vtxbin = (Int_t)vertexBinDouble;
-  
+
   fVertexString.SetString(Form("%d",vtxbin));
   //Reset everything
   for(UShort_t det=1;det<=3;det++) {
@@ -165,6 +166,8 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  Float_t phi = TMath::ATan2(y,x);
 	  if(phi<0)
 	    phi = phi+2*TMath::Pi();
+	  Float_t correction = GetAcceptanceCorrection(ring,strip);
+	  if(correction) mult = mult / correction;
 	  hMult->Fill(eta,phi,mult);
 	  
 	}
@@ -179,6 +182,27 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
 }
 //_____________________________________________________________________
+Float_t AliFMDAnalysisTaskDensity::GetAcceptanceCorrection(Char_t ring, UShort_t strip)
+{
+  AliFMDRing fmdring(ring);
+  fmdring.Init();
+  Float_t   rad       = fmdring.GetMaxR()-fmdring.GetMinR();
+  Float_t   segment   = rad / fmdring.GetNStrips();
+  Float_t   radius    = fmdring.GetMinR() + segment*strip;
+  
+  Float_t   basearea1 = 0.5*fmdring.GetBaseStripLength(strip)*TMath::Power(radius,2);
+  Float_t   basearea2 = 0.5*fmdring.GetBaseStripLength(strip)*TMath::Power((radius-segment),2);
+  Float_t   basearea  = basearea1 - basearea2;
+  
+  Float_t   area1     = 0.5*fmdring.GetStripLength(strip)*TMath::Power(radius,2);
+  Float_t   area2     = 0.5*fmdring.GetStripLength(strip)*TMath::Power((radius-segment),2);
+  Float_t   area      = area1 - area2;
+  
+  Float_t correction = area/basearea;
+  
+  return correction;
+}
+
 //
 //EOF
 //

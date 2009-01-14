@@ -24,7 +24,7 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
     virtual void Init();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t* /*option*/);
-    
+    void  Terminate(Option_t */*option*/);
  private:
     
     TList* fListOfHistos;

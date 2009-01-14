@@ -136,7 +136,7 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
       
       
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
-      // std::cout<<hMultInput->GetEntries()<<std::endl;
+      
       hMultTotal->Add(hMultInput);
       
       
@@ -150,7 +150,7 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
   
-  /*
+  
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   Int_t nVtxbins = pars->GetNvtxBins();
@@ -160,14 +160,15 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
+      Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t i =0; i<nVtxbins; i++) {
 	TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
-	if(fNevents.At(i))
-	  hMultTotal->Scale(1/(Float_t)fNevents.At(i));
+	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
+	fOutputList->Add(hMultProj);
       }
     }
   }
-  */
+  
 }
 //_____________________________________________________________________
 //

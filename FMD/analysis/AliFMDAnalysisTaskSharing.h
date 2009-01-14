@@ -42,6 +42,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     virtual void Terminate(Option_t* /* option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     Float_t GetMultiplicityOfStrip(Float_t mult, Float_t Eprev, Float_t Enext, Int_t   det, Char_t  ring);
+    void GetVertex(Double_t* vertexXYZ) ;
     void SetFMDData(AliESDFMD* fmd) {foutputESDFMD = fmd;}
     void SetVertex(AliESDVertex* vertex) {fEsdVertex = vertex;}
     void SetInputESD(AliESDEvent* esd) {fESD = esd;}

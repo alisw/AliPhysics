@@ -42,10 +42,13 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     virtual void Terminate(Option_t */*option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
+    Float_t       GetAcceptanceCorrection(Char_t ring, UShort_t strip);
     void SetOutputList(TList* outlist) {fOutputList = outlist;}
     void SetInputESDFMD(AliESDFMD* esdfmd) {fESD = esdfmd;}
     void SetInputVertex(AliESDVertex* vertex) {fVertex = vertex;}
+   
  private:
+    
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
     TObjArray     fArray;
@@ -53,6 +56,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     TObjString    fVertexString;
     AliESDVertex* fVertex;
     Bool_t        fStandalone;
+    
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };
  

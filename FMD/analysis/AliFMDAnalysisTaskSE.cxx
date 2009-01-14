@@ -25,13 +25,13 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE)
 {
-  // Default constructor
+ 
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
 {
-// Create the output container
+// Create the output containers
 //
   fListOfHistos = new TList();
   
@@ -88,7 +88,12 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   
   PostData(1, fListOfHistos);
 }
+//_____________________________________________________________________
+void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
+{
+  fDndeta.Terminate("");
 
+}
 //_____________________________________________________________________
 //
 // EOF

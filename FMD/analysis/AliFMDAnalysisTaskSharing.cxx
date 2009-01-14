@@ -142,8 +142,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   }
   
   Double_t vertex[3];
-  fESD->GetPrimaryVertexSPD()->GetXYZ(vertex);
-  
+  GetVertex(vertex);
   fEsdVertex->SetXYZ(vertex);
   if(fStandalone) {
     PostData(0, foutputESDFMD); 
@@ -205,7 +204,29 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   
   return nParticles;
 }
+//_____________________________________________________________________
+void AliFMDAnalysisTaskSharing::GetVertex(Double_t* vertexXYZ) 
+{
+  const AliESDVertex* vertex = 0;
+  vertex = fESD->GetPrimaryVertex();
+  if (!vertex)        vertex = fESD->GetPrimaryVertexSPD();
+  if (!vertex)        vertex = fESD->GetPrimaryVertexTPC();
+  if (!vertex)        vertex = fESD->GetVertex();
+  
+  if (vertex) {
+    vertex->GetXYZ(vertexXYZ);
+    return;
+  }
+  else if (fESD->GetESDTZERO()) { 
+    vertexXYZ[0] = 0;
+    vertexXYZ[1] = 0;
+    vertexXYZ[2] = fESD->GetT0zVertex();
 
+    return;
+  }
+  
+  return;
+}
 //_____________________________________________________________________
 //
 // EOF
