@@ -478,15 +478,23 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
   if(!fPoints){ 
     fPoints = new AliTrackPoint[nc];
 
-    AliTRDcluster *c = trk->GetCluster(0);
-    Double_t x = c->GetX();
-    Int_t sec = c->GetDetector()/30;
-    fAlpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
+    // define the radial span of the track in the TRD
+    Double_t xmin = -1., xmax = -1.;
+    Int_t det = 0;
+    AliTRDseedV1 *trklt = 0x0;
+    for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+      if(!(trklt = trk->GetTracklet(ily))) continue;
+      if(xmin<0.) xmin = trklt->GetX0() - AliTRDgeometry::CamHght() - AliTRDgeometry::CdrHght();
+      if(xmax<0.) xmax = trklt->GetX0();
+      det = trklt->GetDetector();
+    }
+    Int_t sec = det/AliTRDgeometry::kNdets;
+    fAlpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); //trk->GetAlpha()
 
-    Double_t dx = (trk->GetCluster(trk->GetNumberOfClusters()-1)->GetX()-x)/nc;
+    Double_t dx =(xmax - xmin)/nc;
     for(Int_t ip=0; ip<nc; ip++){
-      fPoints[ip].SetXYZ(x, 0., 0.);
-      x+=dx;
+      fPoints[ip].SetXYZ(xmin, 0., 0.);
+      xmin+=dx;
     }
     BUILD = kTRUE;
   }
