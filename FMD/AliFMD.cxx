@@ -658,7 +658,7 @@ AliFMD::AddHitByFields(Int_t    track,
 
   AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
   
-  AliTrackReference* trackRef = AddTrackReference(mcApplication->GetCurrentTrackNumber(), 12); // should be AliTrackReference::kFMD
+  AliTrackReference* trackRef = AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kFMD); 
   UInt_t stripId = AliFMDStripIndex::Pack(detector,ring,sector,strip);
   trackRef->SetUserId(stripId);
   
