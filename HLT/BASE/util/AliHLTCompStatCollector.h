@@ -124,7 +124,7 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /**
    * Fill the lists from the component statistics block.
    */
-  int FillVariablesSorted(void* ptr, int size);
+  int FillVariablesSorted(void* ptr, int size, AliHLTUInt32_t eventType);
 
   /** delete all internal objects */
   void ClearAll();
@@ -181,6 +181,12 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   UInt_t* fpOutputBlockCountArray; //!transient
   /** branch filling variable */
   UInt_t* fpTotalOutputSizeArray; //!transient
+  /** branch filling variable */
+  UInt_t* fpComponentCycleTimeArray; //!transient
+  /** branch filling variable */
+  UInt_t* fpEventTypeArray; //!transient
+  /** branch filling variable */
+  UInt_t* fpEventCountArray; //!transient
 
   /** const base of GetOutputSize, updated on error in DoEvent */
   int fSizeEstimator; //! transient
@@ -203,6 +209,6 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** event modulo to save/publish onjects */
   unsigned int fEventModulo; //! transient
 
-  ClassDef(AliHLTCompStatCollector, 3)
+  ClassDef(AliHLTCompStatCollector, 4)
 };
 #endif

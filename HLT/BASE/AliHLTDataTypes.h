@@ -49,8 +49,10 @@
  *           kAliHLTMCObjectDataType added
  *           kAliHLTDataOriginOffline added
  *           kAliHLTDataOriginHLT added
+ *  11       extended AliHLTComponentStatistics: one more member to store the
+ *           cycle time between events per component.
  */
-#define ALIHLT_DATA_TYPES_VERSION 10
+#define ALIHLT_DATA_TYPES_VERSION 11
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -562,6 +564,9 @@ extern "C" {
    * fLevel is retrieved from incoming block statistics and incremented. 
    * Incoming block statistics are appended to the newly added one if
    * --enable-compstat=full has been chosen.
+   *
+   * ChangeLog:
+   *   2009-01-14 fComponentCycleTime added
    */
   struct AliHLTComponentStatistics
   {
@@ -574,6 +579,7 @@ extern "C" {
     AliHLTUInt32_t fTotalInputSize;
     AliHLTUInt32_t fOutputBlockCount;
     AliHLTUInt32_t fTotalOutputSize;
+    AliHLTUInt32_t fComponentCycleTime;
   };
 
   /**

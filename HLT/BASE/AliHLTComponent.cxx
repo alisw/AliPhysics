@@ -45,6 +45,7 @@ using namespace std;
  * default compression level for ROOT objects
  */
 #define ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION 5
+#define ALIHLTCOMPONENT_STATTIME_SCALER 1000000
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent);
@@ -240,9 +241,6 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   // benchmarking stopwatch for the component statistics
   fpBenchmark=new TStopwatch;
-  if (fpBenchmark) {
-    fpBenchmark->Start();
-  }
 #endif
 
   return iResult;
@@ -1411,12 +1409,15 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   AliHLTComponentStatistics outputStat;
   memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
+  outputStat.fStructSize=sizeof(AliHLTComponentStatistics);
   outputStat.fId=fChainIdCrc;
-  compStats.push_back(outputStat);
   if (fpBenchmark) {
+    fpBenchmark->Stop();
+    outputStat.fComponentCycleTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
     fpBenchmark->Reset();
     fpBenchmark->Start();
   }
+  compStats.push_back(outputStat);
 #endif
 
   // data processing is skipped
@@ -1670,8 +1671,10 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
   stats[0].fTotalOutputSize=offset;
   stats[0].fOutputBlockCount=blocks.size();
   if (fpBenchmark) {
-    stats[0].fTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*1000000);
-    stats[0].fCTime=(AliHLTUInt32_t)(fpBenchmark->CpuTime()*1000000);
+    fpBenchmark->Stop();
+    stats[0].fTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
+    stats[0].fCTime=(AliHLTUInt32_t)(fpBenchmark->CpuTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
+    fpBenchmark->Continue();
   }
   if (offset+stats.size()*sizeof(AliHLTComponentStatistics)<=bufferSize) {
     AliHLTComponentBlockData bd;

@@ -66,6 +66,9 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   fpTotalInputSizeArray(NULL),
   fpOutputBlockCountArray(NULL),
   fpTotalOutputSizeArray(NULL)
+  , fpComponentCycleTimeArray(NULL)
+  , fpEventTypeArray(NULL)
+  , fpEventCountArray(NULL)
   , fSizeEstimator(1000)
   , fMode(kPublishObjects)
   , fFileName()
@@ -189,6 +192,9 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
     fpTotalInputSizeArray=new UInt_t[fArraySize];
     fpOutputBlockCountArray=new UInt_t[fArraySize];
     fpTotalOutputSizeArray=new UInt_t[fArraySize];
+    fpComponentCycleTimeArray=new UInt_t[fArraySize];
+    fpEventTypeArray=new UInt_t[fArraySize];
+    fpEventCountArray=new UInt_t[fArraySize];
 
     fpStatTree=new TTree("CompStat", "HLT component statistics");
     if (fpStatTree) {
@@ -205,6 +211,9 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
       fpStatTree->Branch("TotalInputSize",   fpTotalInputSizeArray, "TotalInputSize[nofSets]/i");
       fpStatTree->Branch("OutputBlockCount", fpOutputBlockCountArray, "OutputBlockCount[nofSets]/i");
       fpStatTree->Branch("TotalOutputSize",  fpTotalOutputSizeArray, "TotalOutputSize[nofSets]/i");
+      fpStatTree->Branch("ComponentCycleTime",fpComponentCycleTimeArray, "ComponentCycleTime[nofSets]/i");
+      fpStatTree->Branch("EventType",fpEventTypeArray, "EventType[nofSets]/i");
+      fpStatTree->Branch("EventCount",fpEventCountArray, "EventCount[nofSets]/i");
     }
   }
 
@@ -376,7 +385,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
        pBlock && iResult>=0;
        pBlock=GetNextInputBlock(), blockNo++) {
     unsigned int current=fPosition;
-    iResult=FillVariablesSorted(pBlock->fPtr, pBlock->fSize);
+    iResult=FillVariablesSorted(pBlock->fPtr, pBlock->fSize, eventType);
     for (; current<fPosition; current++) {
       fpSpecArray[current]=pBlock->fSpecification;
       fpBlockNoArray[current]=blockNo;
@@ -386,7 +395,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   }
 
   int totalOutputSize=0;
-  if (iResult>0) {
+  if (iResult>0 && eventType) {
     fNofSets=fPosition;
     fpStatTree->Fill();
 
@@ -446,16 +455,21 @@ void AliHLTCompStatCollector::ResetFillingVariables()
   memset(fpTotalInputSizeArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpOutputBlockCountArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpTotalOutputSizeArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpComponentCycleTimeArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpEventTypeArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpEventCountArray, 0, sizeof(UInt_t)*fArraySize);
 }
 
-int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size)
+int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt32_t eventType)
 {
   // see header file for class documentation
   int iResult=0;
   if (size%sizeof(AliHLTComponentStatistics)) {
+    // older or invalid structure
     HLTError("data block is not aligned to the size of the AliHLTComponentStatistics struct");
     return -EINVAL;
   }
+  
   AliHLTComponentStatistics* pStat=reinterpret_cast<AliHLTComponentStatistics*>(ptr);
   UInt_t nofStats=size/sizeof(AliHLTComponentStatistics);
   vector<int> indexList;
@@ -483,6 +497,9 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size)
       fpTotalInputSizeArray[i]=pStat[*element].fTotalInputSize;
       fpOutputBlockCountArray[i]=pStat[*element].fOutputBlockCount;
       fpTotalOutputSizeArray[i]=pStat[*element].fTotalOutputSize;
+      fpComponentCycleTimeArray[i]=pStat[*element].fComponentCycleTime;
+      fpEventTypeArray[i]=eventType;
+      fpEventCountArray[i]=GetEventCount();
     } else {
       // TODO: dynamically grow arrays with placement new
     }
@@ -514,6 +531,9 @@ void AliHLTCompStatCollector::ClearAll()
   if (fpTotalInputSizeArray) delete fpTotalInputSizeArray; fpTotalInputSizeArray=NULL;
   if (fpOutputBlockCountArray) delete fpOutputBlockCountArray; fpOutputBlockCountArray=NULL;
   if (fpTotalOutputSizeArray) delete fpTotalOutputSizeArray; fpTotalOutputSizeArray=NULL;
+  if (fpComponentCycleTimeArray) delete fpComponentCycleTimeArray; fpComponentCycleTimeArray=NULL;
+  if (fpEventTypeArray) delete fpEventTypeArray; fpEventTypeArray=NULL;
+  if (fpEventCountArray) delete fpEventCountArray; fpEventCountArray=NULL;
 }
 
 int AliHLTCompStatCollector::RemoveRecurrence(TFolder* pRoot) const
