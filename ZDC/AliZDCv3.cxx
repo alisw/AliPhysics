@@ -204,13 +204,13 @@ void AliZDCv3::CreateBeamLine()
   // Create the beam line elements
   //
   
-  Double_t zc, zq, zd1, zd2, zql, zd2l;
+  Double_t zd1, zd2, zCorrDip, zInnTrip, zD1, zD2;
   Double_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
 
   //-- rotation matrices for the legs
-  Int_t irotpipe7, irotpipe8;
-  gMC->Matrix(irotpipe7,90.-1.0027,0.,90.,90.,1.0027,180.);      
-  gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
+  Int_t irotpipe1, irotpipe2;
+  gMC->Matrix(irotpipe1,90.-1.0027,0.,90.,90.,1.0027,180.);      
+  gMC->Matrix(irotpipe2,90.+1.0027,0.,90.,90.,1.0027,0.);
 
   //
   Int_t *idtmed = fIdtmed->GetArray();
@@ -282,43 +282,13 @@ void AliZDCv3::CreateBeamLine()
   
   tubpar[0] = 10./2.;
   tubpar[1] = 10.4/2.;
-  tubpar[2] = 50./2.;
+  tubpar[2] = (50.+10.+3.16+190.)/2.;
   gMC->Gsvolu("QT03", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT03", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
   //printf("	QT03 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2]*2.;
-  
-  tubpar[0] = 10./2.;
-  tubpar[1] = 10.4/2.;
-  tubpar[2] = 10./2.;
-  gMC->Gsvolu("QT04", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT04", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  // Ch.debug
-  //printf("	QT04 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-  
-  zd1 += tubpar[2] * 2.;
-  
-  tubpar[0] = 10./2.;
-  tubpar[1] = 10.4/2.;
-  tubpar[2] = 3.16/2.;
-  gMC->Gsvolu("QT05", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT05", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  // Ch.debug
-  //printf("	QT05 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-  
-  zd1 += tubpar[2] * 2.;
-  
-  tubpar[0] = 10.0/2.;
-  tubpar[1] = 10.4/2;
-  tubpar[2] = 190./2.;
-  gMC->Gsvolu("QT06", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT06", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  // Ch.debug
-  //printf("	QT06 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-  
-  zd1 += tubpar[2] * 2.;
   
   conpar[0] = 30./2.;
   conpar[1] = 20.6/2.;
@@ -335,10 +305,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 20.6/2.;
   tubpar[1] = 21./2.;
   tubpar[2] = 450./2.;
-  gMC->Gsvolu("QT07", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT07", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gsvolu("QT04", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QT04", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  //printf("	QT07 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT04 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -357,42 +327,20 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 25.4/2.;
   tubpar[1] = 25.8/2.;
   tubpar[2] = 205.8/2.;
-  gMC->Gsvolu("QT08", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT08", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gsvolu("QT05", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QT05", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  //printf("	QT08 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT05 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
   tubpar[0] = 50./2.;
   tubpar[1] = 50.4/2.;
-  // QT09 is 10 cm longer to accomodate TDI
-  tubpar[2] = 515.4/2.;
-  gMC->Gsvolu("QT09", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT09", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  tubpar[2] = (515.4+690.+778.5)/2.;
+  gMC->Gsvolu("QT06", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QT06", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  //printf("	QT09 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-  
-  zd1 += tubpar[2] * 2.;
-  
-  tubpar[0] = 50./2.;
-  tubpar[1] = 50.4/2.;
-  // QT10 is 10 cm shorter
-  tubpar[2] = 690./2.;
-  gMC->Gsvolu("QT10", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT10", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  // Ch.debug
-  //printf("	QT10 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-  
-  zd1 += tubpar[2] * 2.;
-  
-  tubpar[0] = 50./2.;
-  tubpar[1] = 50.4/2.;
-  tubpar[2] = 778.5/2.;
-  gMC->Gsvolu("QT11", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT11", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  // Ch.debug
-  //printf("	QT11 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT06 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -411,10 +359,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 55./2.;
   tubpar[1] = 55.4/2.;
   tubpar[2] = 730./2.;
-  gMC->Gsvolu("QT12", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT12", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gsvolu("QT07", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QT07", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  //printf("	QT12 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT07 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -433,10 +381,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 68./2.;
   tubpar[1] = 68.4/2.;
   tubpar[2] = 848.6/2.;
-  gMC->Gsvolu("QT13", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT13", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gsvolu("QT08", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QT08", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  //printf("	QT13 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT08 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
 
@@ -450,9 +398,9 @@ void AliZDCv3::CreateBeamLine()
   Double_t dy = 0.000000;
   Double_t dz = 0.0;
   // Rotation: 
-  Double_t thx = 84.989100;   Double_t phx = 0.000000;
+  Double_t thx = 84.989100;   Double_t phx = 180.000000;
   Double_t thy = 90.000000;   Double_t phy = 90.000000;
-  Double_t thz = 5.010900;    Double_t phz = 180.000000;
+  Double_t thz = 185.010900;  Double_t phz = 0.000000;
   TGeoRotation *rotMatrix1c = new TGeoRotation("c",thx,phx,thy,phy,thz,phz);
   // Combi transformation: 
   dx = -3.970000;
@@ -465,9 +413,9 @@ void AliZDCv3::CreateBeamLine()
   dy = 0.000000;
   dz = 0.0;
   // Rotation: 
-  thx = 95.010900;    phx = 0.000000;
-  thy = 90.000000;    phy = 90.000000;
-  thz = 5.010900;    phz = 0.000000;
+  thx = 95.010900;   phx = 180.000000;
+  thy = 90.000000;   phy = 90.000000;
+  thz = 180.-5.010900;    phz = 0.000000;
   TGeoRotation *rotMatrix3c = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
   TGeoCombiTrans *rotMatrix4c = new TGeoCombiTrans("ZDCC_c2", dx,dy,dz,rotMatrix3c);
   rotMatrix4c->RegisterYourself();
@@ -500,7 +448,7 @@ void AliZDCv3::CreateBeamLine()
   pQCLext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) -conpar[0]-0.95-zd1);
-  printf("	Recombination chamber from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.95-zd1);
+  //printf("	Recombination chamber from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.95-zd1);
   //
   pZDCC->AddNode(pQCLext, 1, tr1c);
   // Inner trousers
@@ -524,7 +472,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("QC14", 1, "ZDCC", -15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");
   gMC->Gspos("QC14", 2, "ZDCC",  15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");  
   // Ch.debug
-  printf("	QC14 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QC14 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += 2.*tubpar[2];
   
@@ -535,8 +483,8 @@ void AliZDCv3::CreateBeamLine()
   conpar[3] = 6.3/2.;
   conpar[4] = 7.0/2.;
   gMC->Gsvolu("QC15", "CONE", idtmed[7], conpar, 5); 
-  gMC->Gspos("QC15", 1, "ZDCC", -7.9-0.175, 0., -conpar[0]-0.1-zd1, irotpipe7, "ONLY");
-  gMC->Gspos("QC15", 2, "ZDCC", 7.9+0.175, 0., -conpar[0]-0.1-zd1, irotpipe8, "ONLY");
+  gMC->Gspos("QC15", 1, "ZDCC", -7.9-0.175, 0., -conpar[0]-0.1-zd1, irotpipe1, "ONLY");
+  gMC->Gspos("QC15", 2, "ZDCC", 7.9+0.175, 0., -conpar[0]-0.1-zd1, irotpipe2, "ONLY");
   //printf("	QC15 CONE from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.2-zd1);
 
   zd1 += 2.*conpar[0]+0.2;
@@ -544,11 +492,11 @@ void AliZDCv3::CreateBeamLine()
   // 2 tubes (ID = 63 mm OD=70 mm)      
   tubpar[0] = 6.3/2.;
   tubpar[1] = 7.0/2.;
-  tubpar[2] = 512.9/2.;
+  tubpar[2] = 639.8/2.;
   gMC->Gsvolu("QC16", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QC16", 1, "ZDCC", -16.5/2., 0., -tubpar[2]-zd1, 0, "ONLY");
   gMC->Gspos("QC16", 2, "ZDCC",  16.5/2., 0., -tubpar[2]-zd1, 0, "ONLY");
-  //printf("	QA16 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);  
+  //printf("	QC16 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);  
 
   zd1 += 2.*tubpar[2];
   //printf("\n	END OF SIDE C BEAM PIPE DEFINITION @ z = %f\n",-zd1);
@@ -572,16 +520,13 @@ void AliZDCv3::CreateBeamLine()
   ///////////////////////////////////////////////////////////////
 
   // Rotation Matrices definition
-  Int_t irotpipe1, irotpipe2;
+  Int_t irotpipe3, irotpipe4, irotpipe5;
   //-- rotation matrices for the tilted cone after the TDI to recenter vacuum chamber      
-  gMC->Matrix(irotpipe1,90.-2.2918,0.,90.,90.,2.2918,180.);    
+  gMC->Matrix(irotpipe3,90.-1.8934,0.,90.,90.,1.8934,180.);    
   //-- rotation matrices for the tilted tube before and after the TDI 
-  gMC->Matrix(irotpipe2,90.+6.3025,0.,90.,90.,6.3025,0.);       
-/*  //-- rotation matrices for the legs
-  Int_t irotpipe7, irotpipe8;
-  gMC->Matrix(irotpipe7,90.-1.0027,0.,90.,90.,1.0027,180.);      
-  gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
-*/
+  gMC->Matrix(irotpipe4,90.-3.8,0.,90.,90.,3.8,180.);       
+  //-- rotation matrix for the tilted cone after the TDI
+  gMC->Matrix(irotpipe5,90.+9.8,0.,90.,90.,9.8,0.);     
 
   // -- Mother of the ZDCs (Vacuum PCON)		
   zd2 = 1910.22;// zd2 initial value
@@ -599,8 +544,8 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("ZDCA", 1, "ALIC", 0., 0., 0., 0, "ONLY");
   
   // To avoid overlaps 1 micron are left between certain volumes!
-  Double_t dxNoOverlap = 0.0001;
-  zd2 += dxNoOverlap;  
+  Double_t dxNoOverlap = 0.0;
+  //zd2 += dxNoOverlap;  
   
   // BEAM PIPE from 19.10 m to inner triplet beginning (22.965 m)  
   tubpar[0] = 6.0/2.;
@@ -609,7 +554,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA01", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA01", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA01 TUBE centred in %f from z = %f to z = %f (IT begin)\n",tubpar[2]+zd2,zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA01 TUBE centred in %f from z = %f to z = %f (IT begin)\n",tubpar[2]+zd2,zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2];  
 
@@ -621,7 +566,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA02", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA02", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA02 TUBE from z = %f to z = %f (D1 begin)\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA02 TUBE from z = %f to z = %f (D1 begin)\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2]; 
   
@@ -635,7 +580,7 @@ void AliZDCv3::CreateBeamLine()
   //  2) 2.5 cm conical section from ID = 6.75 to ID = 8.0 cm
   //  3) 43.9 cm straight section (tube) with ID = 8.0 cm
   //
-  //printf("	Beginning of D1 at z= %f\n",zd2);
+  //printf("\n	Beginning of D1 at z = %f\n",zd2);
 
   tubpar[0] = 6.75/2.;
   tubpar[1] = 7.15/2.;
@@ -643,7 +588,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA03", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA03", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA03 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA03 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2];
 
@@ -655,50 +600,17 @@ void AliZDCv3::CreateBeamLine()
   conpar[4] = 8.4/2.;
   gMC->Gsvolu("QA04", "CONE", idtmed[7], conpar, 5);
   gMC->Gspos("QA04", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	QA04 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	QA04 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
   
   tubpar[0] = 8.0/2.;
   tubpar[1] = 8.4/2.;
-  tubpar[2] = 43.9/2.;
+  tubpar[2] = (43.9+20.+28.5+28.5)/2.;
   gMC->Gsvolu("QA05", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA05", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA05 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-  
-  zd2 += 2.*tubpar[2];
-  
-  //  Bellow (ID=80 mm) - length = 0.2 m - VMAA
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.4/2.;
-  tubpar[2] = 20./2.;
-  gMC->Gsvolu("QA06", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA06 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-  
-  zd2 += 2.*tubpar[2];
-  
-  // Beam Position Monitor (ID=80 mm) Cu - BPMSX
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.4/2.;
-  tubpar[2] = 28.5/2.;
-  gMC->Gsvolu("QA07", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA07", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA07 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-  
-  zd2 += 2.*tubpar[2];
-
-  // First section of VAEHI (tube ID=80mm)
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.4/2.;
-  tubpar[2] = 28.5/2.;
-  gMC->Gsvolu("QAV1", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QAV1", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QAV1 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA05 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2];
 
@@ -708,9 +620,9 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 8.4/2.;
   conpar[3] = 9.8/2.;
   conpar[4] = 10.2/2.;
-  gMC->Gsvolu("QAV2", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QAV2", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	QAV2 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gsvolu("QAV1", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QAV1", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  //printf("\n	QAV1 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
   
@@ -720,9 +632,9 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 10.2/2.;
   conpar[3] = 9.0/2.;
   conpar[4] = 9.4/2.;
-  gMC->Gsvolu("QAV3", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QAV3", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	QAV3 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gsvolu("QAV2", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QAV2", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  //printf("\n	QAV2 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
  
@@ -730,10 +642,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 9.0/2.;
   tubpar[1] = 9.4/2.;
   tubpar[2] = 31.0/2.;
-  gMC->Gsvolu("QAV4", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QAV4", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QAV3", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QAV3", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QAV4 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QAV3 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2]; 
 
@@ -747,7 +659,7 @@ void AliZDCv3::CreateBeamLine()
   conpar[4] = 13.0/2.;
   gMC->Gsvolu("Q01T", "CONE", idtmed[7], conpar, 5);
   gMC->Gspos("Q01T", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	Q01T CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	Q01T CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];  
 
@@ -758,7 +670,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("Q02T", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("Q02T", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	Q02T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	Q02T TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2]; 
 
@@ -770,7 +682,7 @@ void AliZDCv3::CreateBeamLine()
   conpar[4] = 14.2/2.;
   gMC->Gsvolu("Q03T", "CONE", idtmed[7], conpar, 5);
   gMC->Gspos("Q03T", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	Q03T CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	Q03T CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];  
 
@@ -781,7 +693,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("Q04T", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("Q04T", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	Q04T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	Q04T TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2]; 
 
@@ -792,7 +704,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("Q05T", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("Q05T", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	Q05T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	Q05T TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2]; 
  
@@ -803,7 +715,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("Q06T", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("Q06T", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	Q06T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	Q06T TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2];
 
@@ -815,148 +727,118 @@ void AliZDCv3::CreateBeamLine()
   conpar[4] = 18.4/2.;
   gMC->Gsvolu("Q07T", "CONE", idtmed[7], conpar, 5);
   gMC->Gspos("Q07T", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	Q07T CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	Q07T CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
 
   // Upper section : one single phi segment of a tube 
   //  5 parameters for tubs: inner radius = 0.,
-  //	outer radius = 7.5 cm, half length = 50 cm
+  //	outer radius = 7. cm, half length = 50 cm
   //	phi1 = 0., phi2 = 180. 
   tubspar[0] = 0.0/2.;
-  tubspar[1] = 15.0/2.;
+  tubspar[1] = 14.0/2.;
   tubspar[2] = 100.0/2.;
   tubspar[3] = 0.;
   tubspar[4] = 180.;  
   gMC->Gsvolu("Q08T", "TUBS", idtmed[7], tubspar, 5);
   // Ch.debug
-  //printf("	upper part : one single phi segment of a tube (Q08T)\n");  
+  //printf("\n	upper part : one single phi segment of a tube (Q08T)\n");  
   
   // rectangular beam pipe inside TCDD upper section (Vacuum)  
   boxpar[0] = 7.0/2.;
-  boxpar[1] = 2.5/2.;
+  boxpar[1] = 2.2/2.;
   boxpar[2] = 100./2.;
   gMC->Gsvolu("Q09T", "BOX ", idtmed[10], boxpar, 3);
   // positioning vacuum box in the upper section of TCDD
-  gMC->Gspos("Q09T", 1, "Q08T", 0., 1.25,  0., 0, "ONLY");
+  gMC->Gspos("Q09T", 1, "Q08T", 0., 1.1,  0., 0, "ONLY");
   
   // lower section : one single phi segment of a tube       
   tubspar[0] = 0.0/2.;
-  tubspar[1] = 15.0/2.;
+  tubspar[1] = 14.0/2.;
   tubspar[2] = 100.0/2.;
   tubspar[3] = 180.;
   tubspar[4] = 360.;  
   gMC->Gsvolu("Q10T", "TUBS", idtmed[7], tubspar, 5);
   // rectangular beam pipe inside TCDD lower section (Vacuum)  
   boxpar[0] = 7.0/2.;
-  boxpar[1] = 2.5/2.;
+  boxpar[1] = 2.2/2.;
   boxpar[2] = 100./2.;
   gMC->Gsvolu("Q11T", "BOX ", idtmed[10], boxpar, 3);
   // positioning vacuum box in the lower section of TCDD
-  gMC->Gspos("Q11T", 1, "Q10T", 0., -1.25,  0., 0, "ONLY");  
+  gMC->Gspos("Q11T", 1, "Q10T", 0., -1.1,  0., 0, "ONLY");  
   
-  // positioning  TCDD elements in ZDC2, (inside TCDD volume)
-  gMC->Gspos("Q08T", 1, "ZDCA", 0., 2.5, -100+zd2, 0, "ONLY");  
-  gMC->Gspos("Q10T", 1, "ZDCA", 0., -2.5, -100+zd2, 0, "ONLY");  
+  // positioning  TCDD elements in ZDCA, (inside TCDD volume)
+  gMC->Gspos("Q08T", 1, "ZDCA", 0., 2., -100.+zd2, 0, "ONLY");  
+  gMC->Gspos("Q10T", 1, "ZDCA", 0., -2., -100.+zd2, 0, "ONLY");  
     
   // RF screen 
   boxpar[0] = 0.2/2.;
-  boxpar[1] = 5.0/2.;
+  boxpar[1] = 4.0/2.;
   boxpar[2] = 100./2.;
   gMC->Gsvolu("Q12T", "BOX ", idtmed[7], boxpar, 3);  
   // positioning RF screen at both sides of TCDD
-  gMC->Gspos("Q12T", 1, "ZDCA", tubspar[1]+boxpar[0], 0., -100+zd2, 0, "ONLY");  
-  gMC->Gspos("Q12T", 2, "ZDCA", -tubspar[1]-boxpar[0], 0., -100+zd2, 0, "ONLY");      
+  gMC->Gspos("Q12T", 1, "ZDCA", tubspar[1]+boxpar[0], 0., -100.+zd2, 0, "ONLY");  
+  gMC->Gspos("Q12T", 2, "ZDCA", -tubspar[1]-boxpar[0], 0., -100.+zd2, 0, "ONLY");      
   //---------------------------- TCDD end ---------------------------------------    
 
-  // Bellow (ID=80 mm) - length = 0.3 m - VMAAB
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.4/2.;
-  tubpar[2] = 30.0/2.;
-  gMC->Gsvolu("QA08", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA08", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA08 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  // The following elliptical tube 180 mm x 70 mm
+  // (obtained positioning the void QA09 in QA08)
+  // represents VMTSA (780 mm) + space reserved to the TCTVB (1480 mm)+ 
+  //            VMTSA (780 mm) + first part of VCTCP (93 mm)
+
+  tubpar[0] = 18.4/2.;
+  tubpar[1] = 7.4/2.;
+  tubpar[2] = 313.3/2.;
+  gMC->Gsvolu("QA06", "ELTU", idtmed[7], tubpar, 3);  
+  //printf("\n	QA06 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
+
+  tubpar[0] = 18.0/2.;
+  tubpar[1] = 7.0/2.;
+  tubpar[2] = 313.3/2.;
+  gMC->Gsvolu("QA07", "ELTU", idtmed[10], tubpar, 3);  
+  //printf("\n	QA07 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
+  gMC->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY"); 
+  gMC->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
 
   zd2 += 2.*tubpar[2];
-  
-  // Flange (ID=80 mm) Cu (first section of VCTCE)
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.4/2.;
-  tubpar[2] = 2.0/2.;
-  gMC->Gsvolu("QA09", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA09", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA09 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
-  
-  // transition cone from ID=80 to ID=212 (second section of VCTCE)
-  conpar[0] = 25.0/2.;
-  conpar[1] = 8.0/2.;
-  conpar[2] = 8.4/2.;
-  conpar[3] = 21.2/2.;
-  conpar[4] = 21.8/2.;
-  gMC->Gsvolu("QA10", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA10", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
-  //printf("	QA10 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+      
+  // VCTCP second part: transition cone from ID=180 to ID=212.7 
+  conpar[0] = 31.5/2.;
+  conpar[1] = 18.0/2.;
+  conpar[2] = 18.6/2.;
+  conpar[3] = 21.27/2.;
+  conpar[4] = 21.87/2.;
+  gMC->Gsvolu("QA08", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA08", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA08 CONE from z = %Third part of VCTCR: tube (ID=196 mm) f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
   
-  // tube (ID=212 mm) Cu (third section of VCTCE)
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 403.54/2.;
-  gMC->Gsvolu("QA11", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA11", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA11 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  // Tube ID 212.7 mm
+  // Represents VCTCP third part (92 mm) + VCDWB (765 mm) + VMBGA (400 mm) +
+  //            VCDWE (300 mm) + VMBGA (400 mm)
+  tubpar[0] = 21.27/2.;
+  tubpar[1] = 21.87/2.;
+  tubpar[2] = 195.7/2.;
+  gMC->Gsvolu("QA09", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA09", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  //printf("\n	QA09 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
-  
-  //   bellow (ID=212 mm) (VMBGA)
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 40.0/2.;
-  gMC->Gsvolu("QA12", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA12", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA12 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
 
-  zd2 += 2.*tubpar[2];
-  
-  //  TDI valve assembly (ID=212 mm) 
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 30.0/2.;
-  gMC->Gsvolu("QA13", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA13", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA13 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  // skewed transition piece (ID=212.7 mm to 332 mm) (before TDI)   
+  conpar[0] = (50.0-0.73-1.13)/2.;
+  conpar[1] = 21.27/2.;
+  conpar[2] = 21.87/2.;
+  conpar[3] = 33.2/2.;
+  conpar[4] = 33.8/2.;
+  gMC->Gsvolu("QA10", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA10", 1, "ZDCA", -1.66, 0., conpar[0]+0.73+zd2, irotpipe4, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA10 skewed CONE from z = %f to z = %f\n",zd2,2*conpar[0]+0.73+1.13+zd2);
 
-  zd2 += 2.*tubpar[2];
-  
-  // bellow (ID=212 mm) (VMBGA)  
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 40.0/2.;
-  gMC->Gsvolu("QA14", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA14", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA14 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
-  
-  // skewed transition piece (ID=212 mm) (before TDI)   
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = (20.0-2.41)/2.;
-  gMC->Gsvolu("QA15", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA15", 1, "ZDCA", 1.10446, 0., tubpar[2]+2.41/2.+zd2, irotpipe2, "ONLY");
-  // Ch.debug
-  //printf("	QA15 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+2.41+zd2);
-
-  zd2 += 2.*tubpar[2]+2.41;    
+  zd2 += 2.*conpar[0]+0.73+1.13;
       
   // Vacuum chamber containing TDI  
   tubpar[0] = 0.;
@@ -970,7 +852,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("Q13T", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("Q13T", 1, "Q13TM", 0., 0., 0., 0, "ONLY");
   // Ch.debug
-  //printf("	Q13T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	Q13T TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
@@ -1010,169 +892,131 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("QTD5", 1, "Q13TM", -3.8+10.6, 0.,  0., 0, "ONLY"); 
   //---------------- END DEFINING TDI INSIDE Q13T -------------------------------
   
-  // skewed transition piece (ID=212 mm) (after TDI)  
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = (20.0-2.41)/2.;
-  gMC->Gsvolu("QA16", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA16", 1, "ZDCA", 1.10446+2.2, 0., tubpar[2]+2.41/2.+zd2, irotpipe2, "ONLY");
-  // Ch.debug
-  //printf("	QA16 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+2.41+zd2);
+  // VCTCG skewed transition piece (ID=332 mm to 212.7 mm) (after TDI)
+  conpar[0] = (50.0-2.92-1.89)/2.;
+  conpar[1] = 33.2/2.;
+  conpar[2] = 33.8/2.;
+  conpar[3] = 21.27/2.;
+  conpar[4] = 21.87/2.;
+  gMC->Gsvolu("QA11", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA11", 1, "ZDCA", 4.32-3.8, 0., conpar[0]+2.92+zd2, irotpipe5, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA11 skewed CONE from z = %f to z =%f\n",zd2,2*conpar[0]+2.92+1.89+zd2);
 
-  zd2 += 2.*tubpar[2]+2.41;
+  zd2 += 2.*conpar[0]+2.92+1.89;
   
-  // bellow (ID=212 mm) (VMBGA)
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 40.0/2.;
-  gMC->Gsvolu("QA17", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA17", 1, "ZDCA", 4.4, 0., tubpar[2]+zd2, 0, "ONLY");
+  // The following tube ID 212.7 mm  --- (volume QA14)
+  // represents VMBGA (400 mm) + VCDWE (300 mm) + VMBGA (400 mm) +
+  //            BTVTS (600 mm) + VMLGB (400 mm)  
+  tubpar[0] = 21.27/2.;
+  tubpar[1] = 21.87/2.;
+  tubpar[2] = 210.0/2.;
+  gMC->Gsvolu("QA12", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA12", 1, "ZDCA", 4., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA17 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
-  
-  //  TDI valve assembly (ID=212 mm)   
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 30.0/2.;
-  gMC->Gsvolu("QA18", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA18", 1, "ZDCA", 4.4, 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA18 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA12 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];  
   
-  // bellow (ID=212 mm) (VMBGA)
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 40.0/2.;
-  gMC->Gsvolu("QA19", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA19", 1, "ZDCA", 4.4, 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA19 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];  
-
-  // vacuum chamber  (ID=212 mm) (BTVST)
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 50.0/2.;
-  gMC->Gsvolu("QA20", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA20", 1, "ZDCA", 4.4, 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA20 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
-
-  // bellow (ID=212 mm) (VMBGA) repeated 3 times
-  tubpar[0] = 21.2/2.;
-  tubpar[1] = 21.8/2.;
-  tubpar[2] = 120.0/2.;
-  gMC->Gsvolu("QA21", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA21", 1, "ZDCA", 4.4, 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA21 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
-
-  // skewed transition cone from ID=212 mm to ID=797 mm SS for the moment
-  conpar[0] = (110.0-0.44-1.63)/2.;
-  conpar[1] = 21.2/2.;
-  conpar[2] = 21.8/2.;
+  // First part of VCTCC
+  // skewed transition cone from ID=212.7 mm to ID=797 mm
+  conpar[0] = (121.0-0.37-1.35)/2.;
+  conpar[1] = 21.27/2.;
+  conpar[2] = 21.87/2.;
   conpar[3] = 79.7/2.;
   conpar[4] = 81.3/2.;
-  gMC->Gsvolu("QA22", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA22", 1, "ZDCA", 4.4-2.201, 0., conpar[0]+0.44+zd2, irotpipe1, "ONLY");
-  //printf("	QA22 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+0.44+1.63+zd2);
+  gMC->Gsvolu("QA13", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA13", 1, "ZDCA", 4.-2., 0., conpar[0]+0.37+zd2, irotpipe3, "ONLY");
+  //printf("\n	QA13 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+0.37+1.35+zd2);
 
-  zd2 += 2.*conpar[0]+0.44+1.63;
+  zd2 += 2.*conpar[0]+0.37+1.35;
   
-  // beam pipe (ID=797 mm) SS
+  // The following tube ID 797 mm  --- (volume QA16)
+  // represents the second part of VCTCC (4272 mm) + 
+  //            4 x VCDGA (4 x 4272 mm) + 
+  //            the first part of VCTCR (850 mm)
   tubpar[0] = 79.7/2.;
   tubpar[1] = 81.3/2.;
-  tubpar[2] = 2393.05/2.;
-  gMC->Gsvolu("QA23", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA23", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA23 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  tubpar[2] = 2221./2.;
+  gMC->Gsvolu("QA14", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA14", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA14 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
-  
-  // Transition from ID=797 mm to ID=196 mm SS for the moment:
-  //
+        
+  // Second part of VCTCR
+  // Transition from ID=797 mm to ID=196 mm:
   // in order to simulate the thin window opened in the transition cone
   // we divide the transition cone in three cones:
-  // the first 8 mm thick
-  // the second 3 mm thick
-  // the third 8 mm thick
-  //
-  // First section
-  conpar[0] = (9.09 - dxNoOverlap)/2.; // 15 degree
+  // (1) 8 mm thick (2) 3 mm thick (3) the third 8 mm thick
+  
+  // (1) 8 mm thick
+  conpar[0] = 9.09/2.; // 15 degree
   conpar[1] = 79.7/2.;
   conpar[2] = 81.3/2.; // thickness 8 mm  
   conpar[3] = 74.82868/2.;
   conpar[4] = 76.42868/2.; // thickness 8 mm 
-  gMC->Gsvolu("Q24A", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("Q24A", 1, "ZDCA", 0., 0., conpar[0]+zd2+dxNoOverlap/2., 0, "ONLY");
-  //printf("	Q24A CONE from z = %f to z= %f\n",zd2+dxNoOverlap/2.,2*conpar[0]+zd2+dxNoOverlap/2.);
+  gMC->Gsvolu("QA15", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA15", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  //printf("\n	QA15 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];  
 
-  // Second section
+  // (2) 3 mm thick
   conpar[0] = 96.2/2.; // 15 degree
   conpar[1] = 74.82868/2.;
   conpar[2] = 75.42868/2.; // thickness 3 mm  
   conpar[3] = 23.19588/2.;
   conpar[4] = 23.79588/2.; // thickness 3 mm 
-  gMC->Gsvolu("QA25", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA25", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");  
-  //printf("	QA25 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gsvolu("QA16", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA16", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");  
+  //printf("\n	QA16 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
   
-  // Third section
+  // (3) 8 mm thick
   conpar[0] = 6.71/2.; // 15 degree
   conpar[1] = 23.19588/2.;
   conpar[2] = 24.79588/2.;// thickness 8 mm 
   conpar[3] = 19.6/2.;
   conpar[4] = 21.2/2.;// thickness 8 mm 
-  gMC->Gsvolu("QA26", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA26", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");  
-  //printf("	QA26 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gsvolu("QA17", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA17", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  //printf("\n	QA19 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
-  
-  // beam pipe (ID=196 mm)  
+ 
+  // Third part of VCTCR: tube (ID=196 mm)  
   tubpar[0] = 19.6/2.;
   tubpar[1] = 21.2/2.;
   tubpar[2] = 9.55/2.;
-  gMC->Gsvolu("QA27", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA27", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA27 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  gMC->Gsvolu("QA18", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA18", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA18 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];  
   
-  // Flange (ID=196 mm)
+  // Flange (ID=196 mm) (last part of VCTCR and first part of VMZAR)
   tubpar[0] = 19.6/2.;
   tubpar[1] = 25.3/2.;
   tubpar[2] = 4.9/2.;
   gMC->Gsvolu("QF01", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QF01", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QF01  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  // Ch.debug  
+  //printf("\n	QF01  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
-  // Special Warm Module (made by 5 volumes)  
+  // VMZAR (5 volumes)  
   tubpar[0] = 20.2/2.;
   tubpar[1] = 20.6/2.;
   tubpar[2] = 2.15/2.;
-  gMC->Gsvolu("QA28", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA28", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QA28  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  gMC->Gsvolu("QA19", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA19", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  // Ch.debug  
+  //printf("\n	QA19  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
@@ -1181,20 +1025,20 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 20.6/2.;
   conpar[3] = 23.9/2.;
   conpar[4] = 24.3/2.;
-  gMC->Gsvolu("QA29", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA29", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA20", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA20", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
   // Ch.debug  
-  //printf("	QA29 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	QA20 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
 
   tubpar[0] = 23.9/2.;
   tubpar[1] = 25.5/2.;
   tubpar[2] = 17.0/2.;
-  gMC->Gsvolu("QA30", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA30", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA21", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA21", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug  
-  //printf("	QA30  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA21  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
@@ -1203,44 +1047,42 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 24.3/2.;
   conpar[3] = 20.2/2.;
   conpar[4] = 20.6/2.;
-  gMC->Gsvolu("QA31", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA31", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA22", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA22", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
   // Ch.debug  
-  //printf("	QA31 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	QA22 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0];
   
   tubpar[0] = 20.2/2.;
   tubpar[1] = 20.6/2.;
   tubpar[2] = 2.15/2.;
-  gMC->Gsvolu("QA32", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA32", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA23", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA23", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug  
-  //printf("	QA32  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA23  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
-  // Flange (ID=196 mm)
+  // Flange (ID=196 mm)(last part of VMZAR and first part of VCTYD)
   tubpar[0] = 19.6/2.;
   tubpar[1] = 25.3/2.;
   tubpar[2] = 4.9/2.;
   gMC->Gsvolu("QF02", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QF02", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  // Ch.debug
-  //printf("	QF02 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  // Ch.debug  
+  //printf("\n	QF02 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
-  // simulation of the trousers (VCTYB)
-  // (last design -mail 3/6/05)     
-  // pipe: a tube (ID = 196. OD = 200.)
+  // simulation of the trousers (VCTYB)     
   tubpar[0] = 19.6/2.;
   tubpar[1] = 20.0/2.;
   tubpar[2] = 3.9/2.;
-  gMC->Gsvolu("QA33", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA33", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA24", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA24", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  //printf("	QA33  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA24  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
 
@@ -1250,10 +1092,10 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 20.0/2.;
   conpar[3] = 21.66/2.;
   conpar[4] = 22.06/2.;
-  gMC->Gsvolu("QA34", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA34", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA25", "CONE", idtmed[7], conpar, 5);
+  gMC->Gspos("QA25", 1, "ZDCA", 0., 0., conpar[0]+zd2, 0, "ONLY");
   // Ch.debug  
-  //printf("	QA34 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  //printf("\n	QA25 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+zd2);
 
   zd2 += 2.*conpar[0]; 
   
@@ -1261,10 +1103,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 21.66/2.;
   tubpar[1] = 22.06/2.;
   tubpar[2] = 28.6/2.;
-  gMC->Gsvolu("QA35", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA35", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gsvolu("QA26", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA26", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug 
-  //printf("	QA35  TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA26  TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
 
@@ -1345,47 +1187,56 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 5.4/2.;
   tubpar[1] = 5.8/2.;
   tubpar[2] = 40.0/2.;
-  gMC->Gsvolu("QA36", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA36", 1, "ZDCA", -15.8/2., 0., tubpar[2]+zd2, 0, "ONLY");
-  gMC->Gspos("QA36", 2, "ZDCA",  15.8/2., 0., tubpar[2]+zd2, 0, "ONLY");  
+  gMC->Gsvolu("QA27", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA27", 1, "ZDCA", -15.8/2., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gspos("QA27", 2, "ZDCA",  15.8/2., 0., tubpar[2]+zd2, 0, "ONLY");  
   // Ch.debug
-  //printf("	QA36 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("\n	QA27 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);
   
   zd2 += 2.*tubpar[2];
-  
+ 
   // transition x2zdc to recombination chamber : skewed cone  
-  conpar[0] = (10.-0.2)/2.;
+  conpar[0] = (10.-1.)/2.;
   conpar[1] = 5.4/2.;
   conpar[2] = 5.8/2.;
   conpar[3] = 6.3/2.;
   conpar[4] = 7.0/2.;
-  gMC->Gsvolu("QA37", "CONE", idtmed[7], conpar, 5); 
-  gMC->Gspos("QA37", 1, "ZDCA", -7.9-0.175, 0., conpar[0]+0.1+zd2, irotpipe7, "ONLY");
-  gMC->Gspos("QA37", 2, "ZDCA", 7.9+0.175, 0., conpar[0]+0.1+zd2, irotpipe8, "ONLY");
-  //printf("	QA37 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+0.2+zd2);
+  gMC->Gsvolu("QA28", "CONE", idtmed[7], conpar, 5); 
+  gMC->Gspos("QA28", 1, "ZDCA", -7.9-0.175, 0., conpar[0]+0.5+zd2, irotpipe3, "ONLY");
+  gMC->Gspos("QA28", 2, "ZDCA", 7.9+0.175, 0., conpar[0]+0.5+zd2, irotpipe4, "ONLY");
+  printf("\n	QA28 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+0.2+zd2);
 
-  zd2 += 2.*conpar[0]+0.2;
+  zd2 += 2.*conpar[0]+1.;
+  
+  // Flange to simulate the support for the trousers
+  tubspar[0] = 7.0/2.;
+  tubspar[1] = 14.0/2.;
+  tubspar[2] = 2.0/2.;
+  tubspar[3] = -90.;
+  tubspar[4] = 90.; 
+  gMC->Gsvolu("QF03", "TUBS", idtmed[7], tubspar, 5);
+  gMC->Gspos("QF03", 1, "ZDCA", 16.5/2., 0.,  tubspar[2]+zd2, 0, "ONLY");  
   
   // 2 tubes (ID = 63 mm OD=70 mm)      
   tubpar[0] = 6.3/2.;
   tubpar[1] = 7.0/2.;
-  tubpar[2] = 512.9/2.;
-  gMC->Gsvolu("QA38", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA38", 1, "ZDCA", -16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
-  gMC->Gspos("QA38", 2, "ZDCA",  16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
-  //printf("	QA38 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);  
+  tubpar[2] = (342.5+498.3)/2.;
+  gMC->Gsvolu("QA29", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QA29", 1, "ZDCA", -16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gspos("QA29", 2, "ZDCA",  16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
+  printf("\n	QA29 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);  
 
   zd2 += 2.*tubpar[2];
-  //printf("\n	END OF SIDE A BEAM PIPE DEFINITION @ z= %f\n",zd2);
 	   
   // -- Luminometer (Cu box) in front of ZN - side A
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
   boxpar[2] = 15./2.;
-  //boxpar[2] = (15.+15.+7.5)/2.;
-  gMC->Gsvolu("QLUA", "BOX ", idtmed[7], boxpar, 3);
+  gMC->Gsvolu("QLUA", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
-  //printf("\n	QLUC LUMINOMETER from z = %f to z= %f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
+  //printf("\n	QLUA LUMINOMETER from z = %f to z = %f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
+
+  //printf("\n	END OF BEAM PIPE VOLUME DEFINITION AT z = %f\n",zd2);
   
 
   // ----------------------------------------------------------------
@@ -1395,7 +1246,7 @@ void AliZDCv3::CreateBeamLine()
   //		SIDE C - RB26  (dimuon side) 
   // ***************************************************************   
   // --  COMPENSATOR DIPOLE (MBXW)
-  zc = 1972.5;   
+  zCorrDip = 1972.5;   
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD)
   tubpar[0] = 0.;
@@ -1409,12 +1260,12 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 153./2.;
   gMC->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
 
-  gMC->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zc, 0, "ONLY");
-  gMC->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zc, 0, "ONLY");
+  gMC->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
+  gMC->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
   
   
   // -- INNER TRIPLET 
-  zq = 2296.5; 
+  zInnTrip = 2296.5; 
 
   // -- DEFINE MQXL AND MQX QUADRUPOLE ELEMENT 
   // --  MQXL 
@@ -1430,11 +1281,11 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 637./2.;
   gMC->Gsvolu("YMQL", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("MQXL", 1, "ZDCC", 0., 0., -tubpar[2]-zq, 0, "ONLY");
-  gMC->Gspos("YMQL", 1, "ZDCC", 0., 0., -tubpar[2]-zq, 0, "ONLY");
+  gMC->Gspos("MQXL", 1, "ZDCC", 0., 0., -tubpar[2]-zInnTrip, 0, "ONLY");
+  gMC->Gspos("YMQL", 1, "ZDCC", 0., 0., -tubpar[2]-zInnTrip, 0, "ONLY");
   
-  gMC->Gspos("MQXL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2400., 0, "ONLY");
-  gMC->Gspos("YMQL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2400., 0, "ONLY");
+  gMC->Gspos("MQXL", 2, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-2400., 0, "ONLY");
+  gMC->Gspos("YMQL", 2, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-2400., 0, "ONLY");
   
   // --  MQX 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -1449,14 +1300,14 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 550./2.;
   gMC->Gsvolu("YMQ ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("MQX ", 1, "ZDCC", 0., 0., -tubpar[2]-zq-908.5,  0, "ONLY");
-  gMC->Gspos("YMQ ", 1, "ZDCC", 0., 0., -tubpar[2]-zq-908.5,  0, "ONLY");
+  gMC->Gspos("MQX ", 1, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-908.5,  0, "ONLY");
+  gMC->Gspos("YMQ ", 1, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-908.5,  0, "ONLY");
   
-  gMC->Gspos("MQX ", 2, "ZDCC", 0., 0., -tubpar[2]-zq-1558.5, 0, "ONLY");
-  gMC->Gspos("YMQ ", 2, "ZDCC", 0., 0., -tubpar[2]-zq-1558.5, 0, "ONLY");
+  gMC->Gspos("MQX ", 2, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-1558.5, 0, "ONLY");
+  gMC->Gspos("YMQ ", 2, "ZDCC", 0., 0., -tubpar[2]-zInnTrip-1558.5, 0, "ONLY");
   
   // -- SEPARATOR DIPOLE D1 
-  zd1 = 5838.3001;
+  zD1 = 5838.3001;
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
@@ -1479,15 +1330,13 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  gMC->Gspos("MD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gspos("YD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zD1, 0, "ONLY");
+  gMC->Gspos("MD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zD1, 0, "ONLY");
   // Ch debug
-  //printf("	MD1 from z = %f to z = %f cm\n",-zd1, -zd1-2*tubpar[2]); 
+  //printf("	MD1 from z = %f to z = %f cm\n",-zD1, -zD1-2*tubpar[2]); 
   
   // -- DIPOLE D2 
-  // --- LHC optics v6.4
-  zd2 = 12167.8;
-  
+  zD2 = 12167.8;
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
   tubpar[1] = 7.5/2.;
@@ -1500,7 +1349,9 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD2 ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD2 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd2, 0, "ONLY");
+  gMC->Gspos("YD2 ", 1, "ZDCC", 0., 0., -tubpar[2]-zD2, 0, "ONLY");
+  // Ch debug
+  //printf("	YD2 from z = %f to z = %f cm\n",-zD2, -zD2-2*tubpar[2]); 
   
   gMC->Gspos("MD2 ", 1, "YD2 ", -9.4, 0., 0., 0, "ONLY");
   gMC->Gspos("MD2 ", 2, "YD2 ",  9.4, 0., 0., 0, "ONLY");
@@ -1515,18 +1366,16 @@ void AliZDCv3::CreateBeamLine()
   tubpar[1] = 3.;  
   tubpar[2] = 153./2.;
   gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);  
-  gMC->Gspos("MCBW", 1, "ZDCA", 0., 0., tubpar[2]+1972.5, 0, "ONLY");
+  gMC->Gspos("MCBW", 1, "ZDCA", 0., 0., tubpar[2]+zCorrDip, 0, "ONLY");
     
    // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
   tubpar[2] = 153./2.;
   gMC->Gsvolu("YMCB", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("YMCB", 1, "ZDCA", 0., 0., tubpar[2]+1972.5, 0, "ONLY");  
+  gMC->Gspos("YMCB", 1, "ZDCA", 0., 0., tubpar[2]+zCorrDip, 0, "ONLY");  
   
    // -- INNER TRIPLET 
-  zql = 2296.5; 
-
   // -- DEFINE MQX1 AND MQX2 QUADRUPOLE ELEMENT 
   // --  MQX1 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -1543,8 +1392,8 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("YMQ1", "TUBE", idtmed[7], tubpar, 3);
 
   // -- Q1
-  gMC->Gspos("MQX1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
-  gMC->Gspos("YMQ1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
+  gMC->Gspos("MQX1", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip, 0, "ONLY");
+  gMC->Gspos("YMQ1", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip, 0, "ONLY");
 
    // -- BEAM SCREEN FOR Q1
    tubpar[0] = 4.78/2.;
@@ -1561,8 +1410,8 @@ void AliZDCv3::CreateBeamLine()
    gMC->Gspos("QBS2", 2, "MQX1", -1.9-boxpar[0], 0., 0., 0, "ONLY");
 
    // -- Q3   
-   gMC->Gspos("MQX4", 1, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");
-   gMC->Gspos("YMQ1", 2, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");
+   gMC->Gspos("MQX4", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip+2400., 0, "ONLY");
+   gMC->Gspos("YMQ1", 2, "ZDCA", 0., 0., tubpar[2]+zInnTrip+2400., 0, "ONLY");
 
    // -- BEAM SCREEN FOR Q3
    tubpar[0] = 5.79/2.;
@@ -1606,23 +1455,21 @@ void AliZDCv3::CreateBeamLine()
    gMC->Gsvolu("QBS6", "BOX ", idtmed[6], boxpar, 3);
 
   // -- Q2A
-  gMC->Gspos("MQX2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "ONLY");
+  gMC->Gspos("MQX2", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip+908.5,  0, "ONLY");
   gMC->Gspos("QBS5", 1, "MQX2", 0., 0., 0., 0, "ONLY");  
   gMC->Gspos("QBS6", 1, "MQX2", 2.405+boxpar[0], 0., 0., 0, "ONLY");
   gMC->Gspos("QBS6", 2, "MQX2", -2.405-boxpar[0], 0., 0., 0, "ONLY");  
-  gMC->Gspos("YMQ2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "ONLY");
+  gMC->Gspos("YMQ2", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip+908.5,  0, "ONLY");
 
   
   // -- Q2B
-  gMC->Gspos("MQX3", 1, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "ONLY");
+  gMC->Gspos("MQX3", 1, "ZDCA", 0., 0., tubpar[2]+zInnTrip+1558.5, 0, "ONLY");
   gMC->Gspos("QBS5", 2, "MQX3", 0., 0., 0., 0, "ONLY");  
   gMC->Gspos("QBS6", 3, "MQX3", 2.405+boxpar[0], 0., 0., 0, "ONLY");
   gMC->Gspos("QBS6", 4, "MQX3", -2.405-boxpar[0], 0., 0., 0, "ONLY");
-  gMC->Gspos("YMQ2", 2, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "ONLY");
+  gMC->Gspos("YMQ2", 2, "ZDCA", 0., 0., tubpar[2]+zInnTrip+1558.5, 0, "ONLY");
 
-    // -- SEPARATOR DIPOLE D1 
-  zd2 = 5838.3;
-  
+  // -- SEPARATOR DIPOLE D1 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
   tubpar[1] = 6.75/2.;//3.375
@@ -1645,13 +1492,10 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1L", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
-  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
+  gMC->Gspos("YD1L", 1, "ZDCA", 0., 0., tubpar[2]+zD1, 0, "ONLY");  
+  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zD1, 0, "ONLY");  
   
   // -- DIPOLE D2 
-  // --- LHC optics v6.5
-  zd2l = 12167.8;
-  
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
   tubpar[1] = 7.5/2.; // this has to be checked
@@ -1664,7 +1508,7 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD2L", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD2L", 1, "ZDCA", 0., 0., tubpar[2]+zd2l, 0, "ONLY");
+  gMC->Gspos("YD2L", 1, "ZDCA", 0., 0., tubpar[2]+zD2, 0, "ONLY");
   
   gMC->Gspos("MD2L", 1, "YD2L", -9.4, 0., 0., 0, "ONLY");
   gMC->Gspos("MD2L", 2, "YD2L",  9.4, 0., 0., 0, "ONLY");
