@@ -47,8 +47,8 @@ public:
   virtual TObjArray *Histos();
 
   // Plotting Functions:
-  TH1 *PlotMeanNClusters(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotNClusters(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotNClustersTracklet(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotNClustersTrack(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotNTracklets(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotTrackletsVsFindable(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotTracksSector(const AliTRDtrackV1 *t = 0x0);

@@ -315,7 +315,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
   // Register Histograms
   TH1 * histptr = 0x0;
   if(!(histptr = (TH1F *)gROOT->FindObject("hNtrks")))
-    histptr = new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100);
+    histptr = new TH1F("hNtrks", "N_{tracks} / event", 100, 0, 100);
   else histptr->Reset();
   fContainer->AddAt(histptr, kNTracksEventHist);
   if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTriggerTracks")))
@@ -323,11 +323,11 @@ TObjArray *AliTRDcheckDetector::Histos(){
   else histptr->Reset();
   fContainer->AddAt(histptr, kNEventsTriggerTracks);
   if(!(histptr = (TH1F *)gROOT->FindObject("hNcls")))
-    histptr = new TH1F("hNcls", "Nr. of clusters per track", 181, -0.5, 180.5);
+    histptr = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
   else histptr->Reset();
   fContainer->AddAt(histptr, kNclustersHist);
   if(!(histptr = (TH1F *)gROOT->FindObject("hNtls")))
-    histptr = new TH1F("hNtls", "Nr. tracklets per track", 7, -0.5, 6.5);
+    histptr = new TH1F("hNtls", "N_{tracklets} / track", 7, -0.5, 6.5);
   else histptr->Reset();
   fContainer->AddAt(histptr, kNtrackletsHist);
   if(!(histptr = (TH1F *)gROOT->FindObject("hNtlsFindable")))
@@ -335,7 +335,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
   else histptr->Reset();
   fContainer->AddAt(histptr, kNTrackletsVsFindable);
   if(!(histptr = (TH1F *)gROOT->FindObject("hNclTls")))
-    histptr = new TH1F("hNclTls","Mean Number of clusters per tracklet", 31, -0.5, 30.5);
+    histptr = new TH1F("hNclTls","N_{clusters} / tracklet", 51, -0.5, 50.5);
   else histptr->Reset();
   fContainer->AddAt(histptr, kNclusterTrackletHist);
   if(!(histptr = (TH1F *)gROOT->FindObject("hChi2")))
@@ -347,23 +347,23 @@ TObjArray *AliTRDcheckDetector::Histos(){
   else histptr->Reset();
   fContainer->AddAt(histptr, kChi2Normalized);
   if(!(histptr = (TH1F *)gROOT->FindObject("hChi2n")))
-    histptr = new TH1F("hSM", "Track Counts in Supermodule", 18, -0.5, 17.5);
+    histptr = new TH1F("hSM", "N_{tracks} / sector", 18, -0.5, 17.5);
   else histptr->Reset();
   fContainer->AddAt(histptr, kNTracksSectorHist);
   if(!(histptr = (TH1F *)gROOT->FindObject("hPHdetector")))
-    histptr = new TProfile("hPHdetector", "Average PH", 31, -0.5, 30.5);
+    histptr = new TProfile("hPHdetector", "<PH>", 31, -0.5, 30.5);
   else histptr->Reset();
   fContainer->AddAt(histptr, kPulseHeight);
   if(!(histptr = (TH1F *)gROOT->FindObject("hPHdistance")))
-    histptr = new TProfile("hPHdistance", "Average PH", 31, -0.08, 4.88);
+    histptr = new TProfile("hPHdistance", "<PH>", 31, -0.08, 4.88);
   else histptr->Reset();
   fContainer->AddAt(histptr, kPulseHeightDistance);
   if(!(histptr = (TH1F *)gROOT->FindObject("hQclDetector")))
-    histptr = new TH1F("hQclDetector", "Cluster charge", 200, 0, 1200);
+    histptr = new TH1F("hQclDetector", "Q_{cluster}", 200, 0, 1200);
   else histptr->Reset();
   fContainer->AddAt(histptr, kClusterCharge);
   if(!(histptr = (TH1F *)gROOT->FindObject("hQTdetector")))
-    histptr = new TH1F("hQTdetector", "Total Charge Deposit", 6000, 0, 6000);
+    histptr = new TH1F("hQTdetector", "#sum Q/chamber", 6000, 0, 6000);
   else histptr->Reset();
   fContainer->AddAt(histptr, kChargeDeposit);
   if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTrigger")))
@@ -379,7 +379,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
 */
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotMeanNClusters(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the mean number of clusters per tracklet
   //
@@ -396,13 +396,13 @@ TH1 *AliTRDcheckDetector::PlotMeanNClusters(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    h->Fill(tracklet->GetN());
+    h->Fill(tracklet->GetN2());
   }
   return h;
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of clusters in one track
   //
@@ -423,16 +423,10 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     nclusters += tracklet->GetN();
     if(fDebugLevel > 2){
-      Int_t crossing = tracklet->GetNChange();
-      AliTRDcluster *c = 0x0;
-      for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
-        if(!(c = tracklet->GetClusters(itime))) continue;
-        break;
-      }
-      Int_t detector = c->GetDetector();
-      Float_t sector = static_cast<Int_t>(detector/AliTRDgeometry::kNdets);
-      Float_t theta = TMath::ATan(tracklet->GetZfit(1));
-      Float_t phi = TMath::ATan(tracklet->GetYfit(1));
+      Int_t crossing = Int_t(tracklet->IsRowCross());
+      Int_t detector = tracklet->GetDetector();
+      Float_t theta = TMath::ATan(tracklet->GetZref(1));
+      Float_t phi = TMath::ATan(tracklet->GetYref(1));
       Float_t momentum = 0.;
       Int_t pdg = 0;
       Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
@@ -443,7 +437,6 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
       }
       (*fDebugStream) << "NClusters"
         << "Detector="  << detector
-        << "Sector="    << sector
         << "crossing="  << crossing
         << "momentum="	<< momentum
         << "pdg="				<< pdg
@@ -678,19 +671,18 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
   AliTRDcluster *c = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
+    Int_t crossing = Int_t(tracklet->IsRowCross());
+    Int_t detector = tracklet->GetDetector();
     for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
       if(!(c = tracklet->GetClusters(itime))) continue;
       Int_t localtime        = c->GetLocalTimeBin();
       Double_t absolute_charge = TMath::Abs(c->GetQ());
       h->Fill(localtime, absolute_charge);
       if(fDebugLevel > 3){
-        Int_t crossing = tracklet->GetNChange();
-        Int_t detector = c->GetDetector();
         Double_t distance[2];
         GetDistanceToTracklet(distance, tracklet, c);
-        Float_t sector = static_cast<Int_t>(detector/AliTRDgeometry::kNdets);
-        Float_t theta = TMath::ATan(tracklet->GetZfit(1));
-        Float_t phi = TMath::ATan(tracklet->GetYfit(1));
+        Float_t theta = TMath::ATan(tracklet->GetZref(1));
+        Float_t phi = TMath::ATan(tracklet->GetYref(1));
         Float_t momentum = 0.;
         Int_t pdg = 0;
         Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
@@ -701,7 +693,6 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
         }
         (*fDebugStream) << "PulseHeight"
           << "Detector="	<< detector
-          << "Sector="		<< sector
           << "crossing="	<< crossing
           << "Timebin="		<< localtime
           << "Charge="		<< absolute_charge
@@ -795,25 +786,20 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
     return 0x0;
   }
   AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0, *c1 = 0x0;	// c1 for the Debug Stream
+  AliTRDcluster *c = 0x0;
   Double_t Qtot = 0;
-  Int_t nTracklets = 0;
-  if(fDebugLevel > 3)
-    nTracklets = GetNTracklets(fTrack); // fill NTracklet to the Debug Stream
+  Int_t nTracklets =GetNTracklets(fTrack);
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    Qtot = 0;
-    c1 = 0x0;
-    for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
-      if(!(c = tracklet->GetClusters(itime))) continue;
-      if(!c1) c1 = c;
+    Qtot = 0.;
+    for(Int_t ic = AliTRDseed::knTimebins; ic--;){
+      if(!(c = tracklet->GetClusters(ic))) continue;
       Qtot += TMath::Abs(c->GetQ());
     }
     h->Fill(Qtot);
     if(fDebugLevel > 3){
-      Int_t crossing = tracklet->GetNChange();
-      Int_t detector = c1->GetDetector();
-      Float_t sector = static_cast<Int_t>(detector/AliTRDgeometry::kNdets);
+      Int_t crossing = (Int_t)tracklet->IsRowCross();
+      Int_t detector = tracklet->GetDetector();
       Float_t theta = TMath::ATan(tracklet->GetZfit(1));
       Float_t phi = TMath::ATan(tracklet->GetYfit(1));
       Float_t momentum = 0.;
@@ -826,7 +812,6 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
       }
       (*fDebugStream) << "ChargeDeposit"
         << "Detector="  << detector
-        << "Sector="    << sector
         << "crossing="  << crossing
         << "momentum="	<< momentum
         << "nTracklets="<< nTracklets
@@ -857,15 +842,15 @@ TH1 *AliTRDcheckDetector::PlotTracksSector(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
+
+  // TODO we should compare with
+  // sector = Int_t(track->GetAlpha() / AliTRDgeometry::GetAlpha());
+
   AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *c = 0x0;
   Int_t sector = -1;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
-      if(!(c = tracklet->GetClusters(itime))) continue;
-      sector = static_cast<Int_t>(c->GetDetector()/AliTRDgeometry::kNdets);
-    }
+    sector = static_cast<Int_t>(tracklet->GetDetector()/AliTRDgeometry::kNdets);
     break;
   }
   h->Fill(sector);

@@ -100,7 +100,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
 
   // file merger object
   TFileMerger *fFM = 0x0;
-  TClass *ctask = 0x0;
+  TClass *ctask = new TClass;
   AliTRDrecoTask *task = 0x0;
   Int_t nFiles;
 
@@ -109,7 +109,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
   for(Int_t itask = 1; itask<NTRDTASKS; itask++){
     if(!TSTBIT(fSteerTask, itask)) continue;
 
-    ctask = new TClass(fgkTRDtaskClassName[itask]);
+    new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliTRDrecoTask*)ctask->New();
     task->SetDebugLevel(0);
     task->SetMCdata(mc);
@@ -117,12 +117,12 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
 
      // setup filelist
     nFiles = 0;
+    TString mark(Form("%s.root", task->GetName()));
     string filename;
     if(files){
       ifstream filestream(files);
       while(getline(filestream, filename)){
-        if(Int_t(filename.find(task->GetName())) < 0) continue;
-        if(Int_t(filename.find("merge")) >= 0) continue;
+        if(Int_t(filename.find(mark.Data())) < 0) continue;
         nFiles++;
       }
     } else {
@@ -132,7 +132,6 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
     if(!nFiles){
       Info("makeResults.C", Form("No Files found for Task %s", task->GetName()));
       delete task;
-      delete ctask;
       continue;
     }
     Info("makeResults.C", Form("  Processing %d files for task %s ...", nFiles, task->GetName()));
@@ -143,17 +142,23 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
 
       ifstream file(files);
       while(getline(file, filename)){
-        if(Int_t(filename.find(task->GetName())) < 0) continue;
-        if(Int_t(filename.find("merge")) >= 0) continue;
+        if(Int_t(filename.find(mark.Data())) < 0) continue;
         fFM->AddFile(filename.c_str());
       }
       fFM->Merge();
       delete fFM;
-      task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
+      if(!task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
+        delete task;
+        break;
+      }
     } else{
-      task->Load(Form("%s/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
+      if(!task->Load(Form("%s/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
+        delete task;
+        break;
+      }
     }
 
+    printf("Processing ...\n");
     task->PostProcess();
     TCanvas *c=new TCanvas();
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
@@ -163,7 +168,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
     }
     delete c;
     delete task;
-    delete ctask;
   }
+  delete ctask;
 }
 
