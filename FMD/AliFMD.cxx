@@ -115,6 +115,8 @@
 //#endif
 // #include "AliFMDGeometryBuilder.h"
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
+#include "AliTrackReference.h" 
+#include "AliFMDStripIndex.h"
 
 //____________________________________________________________________
 ClassImp(AliFMD)
@@ -651,6 +653,17 @@ AliFMD::AddHitByFields(Int_t    track,
 				  strip, x, y, z, px, py, pz, edep, pdg, t, 
 				  l, stop);
   fNhits++;
+  
+  //Reference track
+
+  AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+  
+  AliTrackReference* trackRef = AddTrackReference(mcApplication->GetCurrentTrackNumber(), 12); // should be AliTrackReference::kFMD
+  UInt_t stripId = AliFMDStripIndex::Pack(detector,ring,sector,strip);
+  trackRef->SetUserId(stripId);
+  
+  
+  
   return hit;
 }
 
