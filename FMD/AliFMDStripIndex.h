@@ -1,3 +1,5 @@
+#ifndef ALIFMDSTRIPINDEX_H
+#define ALIFMDSTRIPINDEX_H
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -43,3 +45,4 @@ struct AliFMDStripIndex
 
   ClassDef(AliFMDStripIndex,0)
 };
+#endif
