@@ -130,7 +130,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
     fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
-  if(esd.fOP) fOP = new AliExternalTrackParam(esd.fOP);
+  if(esd.fOP) fOP = new AliExternalTrackParam(*esd.fOP);
 }
 
 
