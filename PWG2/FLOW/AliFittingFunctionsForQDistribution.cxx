@@ -99,24 +99,26 @@ void AliFittingFunctionsForQDistribution::Calculate()
  fittingFun->SetParameters(0.1*pow(AvM,0.5),0.5,norm);
  
  fittingFun->SetParLimits(0,0.,10.);//to be improved (limits)
- fittingFun->SetParLimits(1,0.0,5.5);//to be improved (limits)
- fittingFun->FixParameter(2,norm); 
+ fittingFun->SetParLimits(1,0.,5.5);//to be improved (limits)
+ fittingFun->FixParameter(2,norm);  
 
- fQDistributionFQD->Fit("fittingFun","NQ","",qmin,qmax);
- 
  Double_t v=0.,errorv=0.,sigma2=0.,errorsigma2=0.;
- if(AvM)
- { 
-  v = fittingFun->GetParameter(0)/pow(AvM,0.5);
-  errorv = fittingFun->GetParError(0)/pow(AvM,0.5);
+ 
+ if(fQDistributionFQD->GetEntries()>50)//to be improved (only a pragmatic fix)
+ {
+  fQDistributionFQD->Fit("fittingFun","NQ","",qmin,qmax);
+  if(AvM)
+  { 
+   v = fittingFun->GetParameter(0)/pow(AvM,0.5);
+   errorv = fittingFun->GetParError(0)/pow(AvM,0.5);
+  }
+  sigma2 = fittingFun->GetParameter(1);
+  errorsigma2 = fittingFun->GetParError(1);
  }
  
- sigma2 = fittingFun->GetParameter(1);
- errorsigma2 = fittingFun->GetParError(1);
- 
  cout<<" "<<endl;
- cout<<"************************************"<<endl;
- cout<<"************************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
  cout<<"    integrated flow by fitting "<<endl;
  cout<<"         q-distribution:      "<<endl;
  cout<<""<<endl;
@@ -125,8 +127,8 @@ void AliFittingFunctionsForQDistribution::Calculate()
  //cout<<"vm       = "<<v*pow(AvM,0.5)<<endl;
  cout<<" "<<endl;
  cout<<"    nEvts = "<<nEvts<<", AvM = "<<AvM<<endl; 
- cout<<"************************************"<<endl;
- cout<<"************************************"<<endl;
+ cout<<"***********************************"<<endl;
+ cout<<"***********************************"<<endl;
  fIntFlowResFQD->SetBinContent(1,v);
  fIntFlowResFQD->SetBinError(1,errorv);
  fSigma2->SetBinContent(1,sigma2);
