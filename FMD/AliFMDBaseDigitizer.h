@@ -184,6 +184,10 @@ public:
   void     SetShapingTime(Float_t B=10) { fShapingTime = B;  }  
   /** @return Get the shaping time */
   Float_t  GetShapingTime()      const { return fShapingTime; }
+  
+  void SetStoreTrackRefs(Bool_t store=kTRUE) { fStoreTrackRefs = store; }
+  Bool_t IsStoreTrackRefs() const { return fStoreTrackRefs; }
+    
 protected:
   /** For the stored energy contributions in the cache, convert the
       energy signal to ADC counts, and store the created digit in  
@@ -225,19 +229,21 @@ protected:
 			       UShort_t sector, 
 			       UShort_t strip, 
 			       Float_t  edep, 
-			       Bool_t   isPrimary);
+			       Bool_t   isPrimary,
+			       Int_t    trackno);
   /** Add a digit to output */
-  virtual void     AddDigit(UShort_t detector, 
-			    Char_t   ring,
-			    UShort_t sector, 
-			    UShort_t strip, 
-			    Float_t  edep, 
-			    UShort_t count1, 
-			    Short_t  count2, 
-			    Short_t  count3,
-			    Short_t  count4, 
-			    UShort_t ntot, 
-			    UShort_t nprim) const;
+  virtual void     AddDigit(UShort_t       detector, 
+			    Char_t         ring,
+			    UShort_t       sector, 
+			    UShort_t       strip, 
+			    Float_t        edep, 
+			    UShort_t       count1, 
+			    Short_t        count2, 
+			    Short_t        count3,
+			    Short_t        count4, 
+			    UShort_t       ntot, 
+			    UShort_t       nprim,
+			    const TArrayI& refs) const;
   /** Make the output tree using the passed loader 
       @param loader 
       @return The generated tree. */
@@ -246,10 +252,11 @@ protected:
       @param loader The loader */
   virtual void StoreDigits(AliLoader* loader);
 
-  AliFMD*       fFMD;
-  AliRunLoader* fRunLoader;	   //! Run loader
-  AliFMDEdepMap fEdep;             // Cache of Energy from hits 
-  Float_t       fShapingTime;      // Shaping profile parameter
+  AliFMD*         fFMD;              // Detector object 
+  AliRunLoader*   fRunLoader;	     //! Run loader
+  AliFMDEdepMap   fEdep;             // Cache of Energy from hits 
+  Float_t         fShapingTime;      // Shaping profile parameter
+  Bool_t          fStoreTrackRefs;   // Wether to store track references
   
   /** Copy CTOR 
       @param o object to copy from  */
@@ -258,16 +265,18 @@ protected:
       fFMD(o.fFMD),
       fRunLoader(0),
       fEdep(o.fEdep),
-      fShapingTime(o.fShapingTime)
+      fShapingTime(o.fShapingTime),
+      fStoreTrackRefs(o.fStoreTrackRefs)
   {}
   /** Assignment operator
       @return Reference to this object */
   AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer& o) 
   { 
     AliDigitizer::operator=(o);
-    fRunLoader   = o.fRunLoader;
-    fEdep        = o.fEdep;
-    fShapingTime = o.fShapingTime;
+    fRunLoader      = o.fRunLoader;
+    fEdep           = o.fEdep;
+    fShapingTime    = o.fShapingTime;
+    fStoreTrackRefs = o.fStoreTrackRefs;
     return *this; 
   }
   ClassDef(AliFMDBaseDigitizer,2) // Base class for FMD digitizers

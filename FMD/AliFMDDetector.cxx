@@ -188,6 +188,27 @@ AliFMDDetector::InitTransformations()
   if (fOuter && !fOuterTransforms) 
     fOuterTransforms = new TObjArray(fOuter->GetNModules());
   
+  // Loop over bottom/top 
+  for (size_t ihalf = 0; ihalf < 2; ihalf++) {
+    char  half = (ihalf == 0 ? 'T' : 'B');
+    TString path(Form(HALF_FORMAT, fId, half));
+    TGeoPNEntry* entry = gGeoManager->GetAlignableEntry(path.Data());
+    if (!entry) {
+      AliError(Form("Alignable entry for half-detector \"%s\" not found!", 
+		    path.Data()));
+      continue;
+    }
+    TGeoPhysicalNode* pn = entry->GetPhysicalNode();
+    if (!pn) {
+      AliWarning(Form("Making physical volume for \"%s\"", path.Data()));
+      pn = gGeoManager->MakeAlignablePN(entry);
+      if (!pn) {
+	AliError(Form("No physical node for \"%s\"", path.Data()));
+	continue;
+      }
+    }
+  }
+  
   // Loop over rings 
   for (size_t iring = 0; iring < 2; iring++) {
     char ring = (iring == 0 ? 'I' : 'O');

@@ -22,12 +22,12 @@ SRCS		=  AliFMDIndex.cxx		\
 		   AliFMD3.cxx			\
 		   AliFMDPreprocessor.cxx	\
 		   AliFMDQAChecker.cxx          \
-		   AliFMDGeometryBuilder.cxx  
+		   AliFMDGeometryBuilder.cxx	\
+		   AliFMDSurveyToAlignObjs.cxx	
 
 #		   AliFMDAltroIO.cxx		
 
-HDRS		=  $(SRCS:.cxx=.h)  \
-		   AliFMDStripIndex.h
+HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDbaseLinkDef.h
 
 EINCLUDE        :=  RAW

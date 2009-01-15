@@ -108,6 +108,7 @@ AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val)
     fData[i].fEdep  = val.fEdep; 
     fData[i].fN     = val.fN; 
     fData[i].fNPrim = val.fNPrim;
+    fData[i].fLabels.Set(0);
   };
 }
 

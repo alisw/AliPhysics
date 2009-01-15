@@ -215,6 +215,7 @@ AliFMDHitDigitizer::AliFMDHitDigitizer(AliFMD* fmd, Output_t  output)
 				"FMD Hit->Digit digitizer" :
 				"FMD Hit->SDigit digitizer")),
     fOutput(output), 
+    fHoldTime(2e-6),
     fStack(0)
 {
   fFMD = fmd;
@@ -384,11 +385,16 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
       // Get the hit number `hit'
       AliFMDHit* fmdHit = 
 	static_cast<AliFMDHit*>(fmdHits->UncheckedAt(hit));
+
+      // Ignore hits that arrive too late
+      if (fmdHit->Time() > fHoldTime) continue;
       
+
       // Check if this is a primary particle
       Bool_t isPrimary = kTRUE;
+      Int_t  trackno   = -1;
       if (fStack) {
-	Int_t      trackno = fmdHit->Track();
+	trackno = fmdHit->Track();
 	AliFMDDebug(10, ("Will get track # %d/%d from entry # %d", 
 			trackno, fStack->GetNtrack(), track));
 	if (fStack->GetNtrack() < trackno) {
@@ -396,7 +402,9 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
 			trackno, fStack->GetNtrack()));
 	  continue;
 	}
-	
+#if 1
+	isPrimary = fStack->IsPhysicalPrimary(trackno);
+#else // This is our hand-crafted code.  We use the ALICE definition
 	TParticle* part    = fStack->Particle(trackno);
 	isPrimary          = part->IsPrimary();
 	if (!isPrimary) { 
@@ -412,6 +420,7 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
 		       (mother ? mother->GetStatusCode() : -1),
 		       (isPrimary ? "primary" : "secondary")));
 	}
+#endif
       }
     
       // Extract parameters 
@@ -420,7 +429,8 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
 		      fmdHit->Sector(),
 		      fmdHit->Strip(),
 		      fmdHit->Edep(), 
-		      isPrimary);
+		      isPrimary, 
+		      trackno);
     }  // hit loop
   } // track loop
   AliFMDDebug(5, ("Size of cache: %d bytes, read %d bytes", 
@@ -444,22 +454,23 @@ AliFMDHitDigitizer::MakePedestal(UShort_t  detector,
 
 //____________________________________________________________________
 void
-AliFMDHitDigitizer::AddDigit(UShort_t  detector, 
-			     Char_t    ring,
-			     UShort_t  sector, 
-			     UShort_t  strip, 
-			     Float_t   edep, 
-			     UShort_t  count1, 
-			     Short_t   count2, 
-			     Short_t   count3,
-			     Short_t   count4, 
-			     UShort_t  ntotal,
-			     UShort_t  nprim) const
+AliFMDHitDigitizer::AddDigit(UShort_t        detector, 
+			     Char_t          ring,
+			     UShort_t        sector, 
+			     UShort_t        strip, 
+			     Float_t         edep, 
+			     UShort_t        count1, 
+			     Short_t         count2, 
+			     Short_t         count3,
+			     Short_t         count4, 
+			     UShort_t        ntotal,
+			     UShort_t        nprim, 
+			     const TArrayI&  refs) const
 {
   // Add a digit or summable digit
   if (fOutput == kDigits) { 
     AliFMDBaseDigitizer::AddDigit(detector, ring, sector, strip, 0,
-				  count1, count2, count3, count4, 0, 0);
+				  count1, count2, count3, count4, 0, 0, refs);
     return;
   }
   if (edep <= 0) { 
@@ -478,7 +489,7 @@ AliFMDHitDigitizer::AddDigit(UShort_t  detector,
 		   count1, count2, count3, count4, nprim, ntotal));
   fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
 			  count1, count2, count3, count4, 
-			  ntotal, nprim);
+			  ntotal, nprim, refs);
 }
 
 //____________________________________________________________________

@@ -652,6 +652,7 @@ AliFMD::AddHitByFields(Int_t    track,
   hit = new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, 
 				  strip, x, y, z, px, py, pz, edep, pdg, t, 
 				  l, stop);
+  // gMC->AddTrackReference(track, 12);
   fNhits++;
   
   //Reference track
@@ -754,22 +755,22 @@ AliFMD::AddSDigit(Int_t* digits)
 		    Short_t(digits[8]),    // ADC Count4
 		    UShort_t(digits[9]),   // N particles
 		    UShort_t(digits[10])); // N primaries
-   
 }
 
 //____________________________________________________________________
 void 
-AliFMD::AddSDigitByFields(UShort_t detector, 
-			  Char_t   ring, 
-			  UShort_t sector, 
-			  UShort_t strip, 
-			  Float_t  edep,
-			  UShort_t count1, 
-			  Short_t  count2,
-			  Short_t  count3, 
-			  Short_t  count4, 
-			  UShort_t ntot, 
-			  UShort_t nprim)
+AliFMD::AddSDigitByFields(UShort_t       detector, 
+			  Char_t         ring, 
+			  UShort_t       sector, 
+			  UShort_t       strip, 
+			  Float_t        edep,
+			  UShort_t       count1, 
+			  Short_t        count2,
+			  Short_t        count3, 
+			  Short_t        count4, 
+			  UShort_t       ntot, 
+			  UShort_t       nprim,
+			  const TArrayI& refs)
 {
   // add a summable digit
   // 
@@ -789,7 +790,7 @@ AliFMD::AddSDigitByFields(UShort_t detector,
   
   new (a[fNsdigits++]) 
     AliFMDSDigit(detector, ring, sector, strip, edep, 
-		 count1, count2, count3, count4, ntot, nprim);
+		 count1, count2, count3, count4, ntot, nprim, refs);
 }
 
 //____________________________________________________________________

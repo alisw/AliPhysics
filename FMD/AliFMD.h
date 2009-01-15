@@ -213,10 +213,14 @@
 #ifndef ALIDETECTOR_H  
 # include <AliDetector.h>
 #endif
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
 class TBranch;
 class TClonesArray;
 class TBrowser;
 class TMarker3DBox;
+class TArrayI;
 class AliDigitizer;
 class AliFMDHit;
 
@@ -461,17 +465,18 @@ public:
       @param count1    ADC count (a 10-bit word)
       @param count2    ADC count (a 10-bit word), or -1 if not used 
       @param count3    ADC count (a 10-bit word), or -1 if not used */
-  virtual        void   AddSDigitByFields(UShort_t detector=0, 
-					  Char_t   ring='\0', 
-					  UShort_t sector=0, 
-					  UShort_t strip=0, 
-					  Float_t  edep=0,
-					  UShort_t count1=0, 
-					  Short_t  count2=-1, 
-					  Short_t  count3=-1,
-					  Short_t  count4=-1, 
-					  UShort_t ntot=0, 
-					  UShort_t nprim=0);
+  virtual        void   AddSDigitByFields(UShort_t       detector=0, 
+					  Char_t         ring='\0', 
+					  UShort_t       sector=0, 
+					  UShort_t       strip=0, 
+					  Float_t        edep=0,
+					  UShort_t       count1=0, 
+					  Short_t        count2=-1, 
+					  Short_t        count3=-1,
+					  Short_t        count4=-1, 
+					  UShort_t       ntot=0, 
+					  UShort_t       nprim=0,
+					  const TArrayI& refs=TArrayI());
   /** @}*/
 
   /** @{ */

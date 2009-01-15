@@ -22,6 +22,10 @@
 #ifndef ROOT_Rtypes
 # include <Rtypes.h>
 #endif 
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
+
 //____________________________________________________________________
 /** @brief Cache of Energy deposited, hit information per strip.
     Contains a pair of energy deposited @c fEdep and 
@@ -32,12 +36,13 @@
 class AliFMDEdepHitPair 
 {
 public:
-  Float_t  fEdep;  // summed energy deposition
-  UShort_t fN;     // Number of hits
-  UShort_t fNPrim; // Number of primaries;
+  Float_t  fEdep;   // summed energy deposition
+  UShort_t fN;      // Number of hits
+  UShort_t fNPrim;  // Number of primaries;
+  TArrayI  fLabels; // Track labels.
   
   /** CTOR  */
-  AliFMDEdepHitPair() : fEdep(0), fN(0), fNPrim(0) {}
+  AliFMDEdepHitPair() : fEdep(0), fN(0), fNPrim(0), fLabels(0) {}
   /** DTOR */
   virtual ~AliFMDEdepHitPair() {}
   /** Assignment operator 
@@ -45,17 +50,18 @@ public:
       @return Reference to this object */
   AliFMDEdepHitPair& operator=(const AliFMDEdepHitPair& o) 
   { 
-    fEdep  = o.fEdep; 
-    fN     = o.fN; 
-    fNPrim = o.fNPrim;
+    fEdep   = o.fEdep; 
+    fN      = o.fN; 
+    fNPrim  = o.fNPrim;
+    fLabels = o.fLabels;
     return *this; 
   }
   /** Copy CTOR 
       @param o Object to copy from */
   AliFMDEdepHitPair(const AliFMDEdepHitPair& o) 
-    : fEdep(o.fEdep), fN(o.fN), fNPrim(o.fNPrim)
+    : fEdep(o.fEdep), fN(o.fN), fNPrim(o.fNPrim), fLabels(o.fLabels)
   {}
-  ClassDef(AliFMDEdepHitPair, 2)
+  ClassDef(AliFMDEdepHitPair, 3)
 };
 
 #endif 

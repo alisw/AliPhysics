@@ -755,7 +755,8 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   Double_t    framelr       = 32.01;  // fmd2->GetOuterHoneyHighR()+0.5;
   Double_t    framehr       = 33.611; // fmd2->GetOuterHoneyHighR()+1.8;
   Double_t    framel        = 14.8; // framehz - framelz;
-  Double_t    backth        = 0.3;
+  // Double_t    backth        = 0.3;
+  Double_t    backth        = 0.03;
   Double_t    framelz       = -(2.38 
 				- r->GetModuleDepth() 
 				- r->GetModuleSpacing() / 2);

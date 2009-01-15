@@ -78,23 +78,25 @@ AliFMDSDigit::AliFMDSDigit()
     fCount1(0),
     fCount2(-1),
     fCount3(-1), 
-    fCount4(-1)
+    fCount4(-1), 
+    fLabels(0)
 {
   // cTOR 
 }
 
 //____________________________________________________________________
-AliFMDSDigit::AliFMDSDigit(UShort_t detector, 
-			   Char_t   ring, 
-			   UShort_t sector, 
-			   UShort_t strip, 
-			   Float_t  edep,
-			   UShort_t count1,
-			   Short_t  count2, 
-			   Short_t  count3, 
-			   Short_t  count4,
-			   UShort_t npart,
-			   UShort_t nprim)
+AliFMDSDigit::AliFMDSDigit(UShort_t       detector, 
+			   Char_t         ring, 
+			   UShort_t       sector, 
+			   UShort_t       strip, 
+			   Float_t        edep,
+			   UShort_t       count1,
+			   Short_t        count2, 
+			   Short_t        count3, 
+			   Short_t        count4,
+			   UShort_t       npart,
+			   UShort_t       nprim,
+			   const TArrayI& refs)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fEdep(edep),
     fCount1(count1),
@@ -102,7 +104,8 @@ AliFMDSDigit::AliFMDSDigit(UShort_t detector,
     fCount3(count3),
     fCount4(count4),
     fNParticles(npart), 
-    fNPrimaries(nprim)
+    fNPrimaries(nprim), 
+    fLabels(refs)
 {
   //
   // Creates a real data digit object
@@ -121,13 +124,23 @@ AliFMDSDigit::AliFMDSDigit(UShort_t detector,
 
 //____________________________________________________________________
 void
-AliFMDSDigit::Print(Option_t* /* option*/) const 
+AliFMDSDigit::Print(Option_t* option) const 
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  cout << "\t" << fEdep << " -> "
-       << fCount1 << " (" << fCount2 << "," << fCount3 << "," 
-       << fCount4 << ") = " << Counts() << endl;
+  std::cout << "\t" << fEdep << " -> "
+	    << fCount1 << " (" << fCount2 << "," << fCount3 << "," 
+	    << fCount4 << ") = " << Counts() << std::flush;
+  TString opt(option);
+  if (opt.Contains("p", TString::kIgnoreCase)) 
+    std::cout << " [" << fNPrimaries << "/" << fNParticles << "]"
+	      << std::flush;
+  if (opt.Contains("l", TString::kIgnoreCase)) {
+    std::cout << " ";
+    for (Int_t i = 0; i < fLabels.fN; i++) 
+      std::cout << (i == 0 ? "" : ",") << fLabels.fArray[i];
+  }
+  std::cout << std::endl;
 }
 
 //____________________________________________________________________

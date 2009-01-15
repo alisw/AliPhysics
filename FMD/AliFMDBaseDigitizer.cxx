@@ -230,7 +230,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
-    fShapingTime(6)
+    fShapingTime(6),
+    fStoreTrackRefs(kFALSE)
 {
   AliFMDDebug(1, ("Constructed"));
   // Default ctor - don't use it
@@ -245,7 +246,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips), 
-    fShapingTime(6)
+    fShapingTime(6),
+    fStoreTrackRefs(kFALSE)
 {
   // Normal CTOR
   AliFMDDebug(1, ("Constructed"));
@@ -262,7 +264,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
-    fShapingTime(6)
+    fShapingTime(6),
+    fStoreTrackRefs(kFALSE)
 {
   // Normal CTOR
   AliFMDDebug(1, (" Constructed"));
@@ -310,7 +313,8 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 				     UShort_t sector, 
 				     UShort_t strip, 
 				     Float_t  edep, 
-				     Bool_t   isPrimary)
+				     Bool_t   isPrimary,
+				     Int_t    trackno)
 {
   // Add edep contribution from (detector,ring,sector,strip) to cache
   AliFMDParameters* param = AliFMDParameters::Instance();
@@ -328,19 +332,24 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
   //   continue;
   // }
   
+  AliFMDEdepHitPair& entry = fEdep(detector, ring, sector, strip);
+
   // Give warning in case of double sdigit 
-  if (fEdep(detector, ring, sector, strip).fEdep != 0)
-    AliFMDDebug(5, ("Double digit in %d%c(%d,%d)", 
+  if (entry.fEdep != 0)
+    AliFMDDebug(5, ("Double digit in FMD%d%c[%2d,%3d]", 
 		    detector, ring, sector, strip));
       
   // Sum energy deposition
-  fEdep(detector, ring, sector, strip).fEdep    += edep;
-  fEdep(detector, ring, sector, strip).fN       += 1;
-  if (isPrimary)
-    fEdep(detector, ring, sector, strip).fNPrim += 1;
+  entry.fEdep += edep;
+  entry.fN    += 1;
+  if (isPrimary) entry.fNPrim += 1;
+  if (fStoreTrackRefs) { 
+    entry.fLabels.Set(entry.fN);
+    entry.fLabels[entry.fN-1] = trackno;
+  }
   AliFMDDebug(15, ("Adding contribution %f to FMD%d%c[%2d,%3d] (%f)", 
-		  edep, detector, ring, sector, strip,
-		  fEdep(detector, ring, sector, strip).fEdep));
+		   edep, detector, ring, sector, strip,
+		   entry.fEdep));
   
 }
 
@@ -385,9 +394,11 @@ AliFMDBaseDigitizer::DigitizeHits() const
 	  // VA1_ALICE channel. 
 	  if (strip % 128 == 0) last = 0;
 	  
-	  Float_t  edep  = fEdep(detector, ring, sector, strip).fEdep;
-	  UShort_t ntot  = fEdep(detector, ring, sector, strip).fN;
-	  UShort_t nprim = fEdep(detector, ring, sector, strip).fNPrim;
+	  const AliFMDEdepHitPair& entry  = fEdep(detector,ring,sector,strip);
+	  Float_t                  edep   = entry.fEdep;
+	  UShort_t                 ntot   = entry.fN;
+	  UShort_t                 nprim  = entry.fNPrim;
+	  const TArrayI&           labels = entry.fLabels;
 	  if (edep > 0)
 	    AliFMDDebug(15, ("Edep = %f for FMD%d%c[%2d,%3d]", 
 			     edep, detector, ring, sector, strip));
@@ -415,7 +426,7 @@ AliFMDBaseDigitizer::DigitizeHits() const
 	  AddDigit(detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
 		   Short_t(counts[2]), Short_t(counts[3]), 
-		   ntot, nprim);
+		   ntot, nprim, labels);
 	  AliFMDDebug(15, ("   Adding digit in FMD%d%c[%2d,%3d]=%d", 
 			  detector,ring,sector,strip,counts[0]));
 #if 0
@@ -528,17 +539,18 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
 
 //____________________________________________________________________
 void
-AliFMDBaseDigitizer::AddDigit(UShort_t  detector, 
-			      Char_t    ring,
-			      UShort_t  sector, 
-			      UShort_t  strip, 
-			      Float_t   /* edep */, 
-			      UShort_t  count1, 
-			      Short_t   count2, 
-			      Short_t   count3,
-			      Short_t   count4,
-			      UShort_t  /* ntot */, 
-			      UShort_t  /* nprim */) const
+AliFMDBaseDigitizer::AddDigit(UShort_t        detector, 
+			      Char_t          ring,
+			      UShort_t        sector, 
+			      UShort_t        strip, 
+			      Float_t         /* edep */, 
+			      UShort_t        count1, 
+			      Short_t         count2, 
+			      Short_t         count3,
+			      Short_t         count4,
+			      UShort_t        /* ntot */, 
+			      UShort_t        /* nprim */,
+			      const TArrayI&  /* refs */) const
 {
   // Add a digit or summable digit
   

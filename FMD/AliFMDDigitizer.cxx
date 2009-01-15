@@ -405,7 +405,8 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 		      fmdSDigit->Sector(),
 		      fmdSDigit->Strip(),
 		      fmdSDigit->Edep(), 
-		      kTRUE);
+		      kTRUE,
+		      -1);
     }  // sdigit loop
   } // event loop
 
