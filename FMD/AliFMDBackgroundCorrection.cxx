@@ -55,6 +55,8 @@
 #include "TList.h"
 #include "AliFMDAnaParameters.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
+#include "AliTrackReference.h"
+#include "AliFMDStripIndex.h"
 
 ClassImp(AliFMDBackgroundCorrection)
 //_____________________________________________________________________
@@ -65,7 +67,7 @@ AliFMDBackgroundCorrection::AliFMDBackgroundCorrection() :
 {} 
 
 //_____________________________________________________________________
-AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG() : 
+AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackref) : 
   AliFMDInput(),
   fPrimaryArray(),
   fHitArray(),
@@ -79,14 +81,18 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG() :
   fNbinsEta(100)
 {
   AddLoad(kTracks); 
-  AddLoad(kHits); 
+  if(hits_not_trackref)
+    AddLoad(kHits);
+  else
+    AddLoad(kTrackRefs);
   AddLoad(kKinematics); 
   AddLoad(kHeader);
 }
 
 //_____________________________________________________________________
 
-void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbins,
+void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Bool_t from_hits,
+							      const Int_t nvtxbins,
 							      Float_t zvtxcut, 
 							      const Int_t nBinsEta, 
 							      Bool_t storeInAlien, 
@@ -127,7 +133,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(const Int_t nvtxbi
     
   AliInfo("Processing hits and primaries ");
   
-  AliFMDInputBG input;
+  AliFMDInputBG input(from_hits);
   
   if(!inFile) {
   
@@ -299,6 +305,37 @@ void AliFMDBackgroundCorrection::Simulate(Int_t nEvents) {
 //_____________________________________________________________________
 Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit( AliFMDHit* h, TParticle* p) {
   
+  if(!h)
+    return kTRUE;
+  Bool_t retval = ProcessEvent(h->Detector(),h->Ring(),h->Sector(),h->Strip(),h->Track(),h->Q());
+  
+  return retval;
+}
+//_____________________________________________________________________
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrackRef( AliTrackReference* tr, TParticle* p) {
+  
+  if(!tr)
+    return kTRUE;
+  UShort_t det,sec,strip;
+  Char_t   ring;
+  AliFMDStripIndex::Unpack(tr->UserId(),det,ring,sec,strip);
+  Int_t    nTrack = tr->GetTrack();
+  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+  TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
+  Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
+  Bool_t retval  = ProcessEvent(det,ring,sec,strip,nTrack,charge);
+  return retval;
+  
+}
+//_____________________________________________________________________
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
+							       Char_t   ring, 
+							       UShort_t sec, 
+							       UShort_t strip,
+							       Int_t    nTrack,
+							       Float_t  charge)
+{
+  
   AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
@@ -310,32 +347,32 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit( AliFMDHit* h, TPar
   Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
   Int_t vertexBin = (Int_t)vertexBinDouble;
   
-  Int_t i = h->Track();
+  if(charge !=  0 && (nTrack != fPrevTrack || det != fPrevDetector || ring != fPrevRing)) {
+    
+    Double_t x,y,z;
+    AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
+    fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+    
+    Int_t iring = (ring == 'I' ? 0 : 1);
+    
+    TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
+    TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
+    TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
+    
+    Float_t phi   = TMath::ATan2(y,x);
+    if(phi<0)
+      phi = phi+2*TMath::Pi();
+    Float_t theta = TMath::ATan2(TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2)),z+vertex.At(2));
+    Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+    hHits->Fill(eta,phi);
+    fHits++;
+    fPrevDetector = det;
+    fPrevRing     = ring;
+  }
   
-  if(h)
-    if(h->Q() !=  0 && (i != fPrevTrack || h->Detector() != fPrevDetector || h->Ring() != fPrevRing)) {
-      
-      Int_t det = h->Detector();
-      Char_t ring = h->Ring();
-      Int_t iring = (ring == 'I' ? 0 : 1);
-      
-      TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
-      TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
-      TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
-      
-      Float_t phi   = TMath::ATan2(h->Y(),h->X());
-      if(phi<0)
-	phi = phi+2*TMath::Pi();
-      Float_t theta = TMath::ATan2(TMath::Sqrt(TMath::Power(h->X(),2)+TMath::Power(h->Y(),2)),h->Z()+vertex.At(2));
-      Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
-      hHits->Fill(eta,phi);
-      fHits++;
-      fPrevDetector = det;
-      fPrevRing     = ring;
-    }
-   
-  fPrevTrack = i;
+  fPrevTrack = nTrack;
   return kTRUE;
+
 }
 
 //_____________________________________________________________________
@@ -421,9 +458,9 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event ) {
   for(Int_t j=0;j<nTracks;j++)
 	{
 	  TParticle* p  = partStack->Particle(j);
-	  //TDatabasePDG* pdgDB = TDatabasePDG::Instance();
-	  //TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
-	  //Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
+	  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+	  TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
+	  Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
 	  Float_t phi = TMath::ATan2(p->Py(),p->Px());
 	  
 	  if(phi<0)
@@ -433,7 +470,8 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event ) {
 	  
 	      Bool_t primary = partStack->IsPhysicalPrimary(j);
 	      //(charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
-	      if(primary) {
+	      if(primary && charge !=0) {
+		
 		fPrim++;
 		TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
 		TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);

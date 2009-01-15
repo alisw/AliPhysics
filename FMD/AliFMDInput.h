@@ -33,6 +33,7 @@
 #ifndef ROOT_TArrayF
 # include <TArrayF.h>
 #endif
+class AliTrackReference;
 class AliRunLoader;
 class AliLoader;
 class AliStack;
@@ -113,7 +114,8 @@ public:
     kESD,             // Load ESD's
     kRaw,             // Read raw data 
     kGeometry,        // Not really a tree 
-    kTracks	      // Hits and tracs - for BG study	
+    kTracks,	      // Hits and tracs - for BG study	
+    kTrackRefs        // Track references - also for BG study
   };
   /** CTOR  */
   AliFMDInput();
@@ -161,6 +163,10 @@ public:
       optionally the corresponding kinematics track. 
       @return @c false on error  */
   virtual Bool_t ProcessHits();
+  /** Loop over all track refs, and call ProcessTrackRef with that hit, and
+      optionally the corresponding kinematics track. 
+      @return @c false on error  */
+  virtual Bool_t ProcessTrackRefs();
   /** Loop over all tracks, and call ProcessTrack with each hit for
       that track
       @return @c false on error  */
@@ -190,6 +196,12 @@ public:
       @param p Associated track
       @return  @c false on error   */
   virtual Bool_t ProcessHit(AliFMDHit* h, TParticle* p);
+  /** Process one track reference, and optionally it's corresponding kinematics
+      track.  Users should overload this to process each track reference. 
+      @param trackRef Track Reference 
+      @param track Associated track
+      @return  @c false on error   */
+  virtual Bool_t ProcessTrackRef(AliTrackReference* trackRef, TParticle* track);
   /** Process one hit per track. Users should over this to process
       each hit. 
       @param i Track number 
@@ -256,6 +268,7 @@ protected:
       fESDEvent(0),
       fTreeE(0),
       fTreeH(0),
+      fTreeTR(0),
       fTreeD(0),
       fTreeS(0),
       fTreeR(0),
@@ -263,6 +276,7 @@ protected:
       fChainE(0),
       fArrayE(0),
       fArrayH(0),
+      fArrayTR(0),
       fArrayD(0),
       fArrayS(0),
       fArrayR(0),
@@ -290,6 +304,7 @@ protected:
   AliESDEvent*     fESDEvent;   // ESD Event object. 
   TTree*           fTreeE;      // Header tree 
   TTree*           fTreeH;      // Hits tree
+  TTree*           fTreeTR;     // Track Reference tree
   TTree*           fTreeD;      // Digit tree 
   TTree*           fTreeS;      // SDigit tree 
   TTree*           fTreeR;      // RecPoint tree
@@ -297,6 +312,7 @@ protected:
   TChain*          fChainE;     // Chain of ESD's
   TClonesArray*    fArrayE;     // Event info array
   TClonesArray*    fArrayH;     // Hit info array
+  TClonesArray*    fArrayTR;    // Hit info array
   TClonesArray*    fArrayD;     // Digit info array
   TClonesArray*    fArrayS;     // SDigit info array
   TClonesArray*    fArrayR;     // Rec points info array
@@ -311,6 +327,7 @@ protected:
 };
 
 inline Bool_t AliFMDInput::ProcessHit(AliFMDHit*,TParticle*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessTrackRef(AliTrackReference* trackRef, TParticle* track) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessTrack(Int_t,TParticle*,
 					AliFMDHit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }

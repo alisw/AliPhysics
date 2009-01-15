@@ -49,6 +49,7 @@
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliAlignObjParams.h>
+#include <AliTrackReference.h>
 #include <TTree.h>              // ROOT_TTree
 #include <TChain.h>             // ROOT_TChain
 #include <TParticle.h>          // ROOT_TParticle
@@ -84,6 +85,7 @@ AliFMDInput::AliFMDInput()
     fESDEvent(0),
     fTreeE(0),
     fTreeH(0),
+    fTreeTR(0),
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
@@ -126,6 +128,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fESDEvent(0),
     fTreeE(0),
     fTreeH(0),
+    fTreeTR(0),
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
@@ -173,7 +176,8 @@ AliFMDInput::Init()
     return fIsInit;
   }
   // Get the run 
-  if (!TESTBIT(fTreeMask, kRaw)) { 
+  if (!TESTBIT(fTreeMask, kRaw) && 
+      !TESTBIT(fTreeMask, kESD)) { 
     if (fGAliceFile.IsNull()) fGAliceFile = "galice.root";
     // Get the loader
     fLoader = AliRunLoader::Open(fGAliceFile.Data(), "Alice", "read");
@@ -323,7 +327,16 @@ AliFMDInput::Begin(Int_t event)
     fTreeH = fFMDLoader->TreeH();
     if (!fArrayH) fArrayH = fFMD->Hits(); 
   }
-
+  
+  // Possibly load FMD TrackReference information 
+  if (TESTBIT(fTreeMask, kTrackRefs) || TESTBIT(fTreeMask, kTracks)) {
+    // AliInfo("Getting FMD hits");
+    if (!fLoader || fLoader->LoadTrackRefs("READ")) return kFALSE;
+    fTreeTR = fLoader->TreeTR();
+    if (!fArrayTR) fArrayTR = new TClonesArray("AliTrackReference");
+    fTreeTR->SetBranchAddress("TrackReferences",  &fArrayTR);
+  }
+  
   // Possibly load heaedr information 
   if (TESTBIT(fTreeMask, kHeader)) {
     // AliInfo("Getting FMD hits");
@@ -411,6 +424,8 @@ AliFMDInput::Event()
   // 
   if (TESTBIT(fTreeMask, kHits)) 
     if (!ProcessHits()) return kFALSE; 
+  if (TESTBIT(fTreeMask, kTrackRefs)) 
+    if (!ProcessTrackRefs()) return kFALSE; 
   if (TESTBIT(fTreeMask, kTracks)) 
     if (!ProcessTracks()) return kFALSE; 
   if (TESTBIT(fTreeMask, kDigits)) 
@@ -464,7 +479,40 @@ AliFMDInput::ProcessHits()
   }
   return kTRUE;
 }
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessTrackRefs()
+{
+  // Read the reconstrcted points tree, and pass each reconstruction
+  // object (AliFMDRecPoint) to either ProcessRecPoint.
+  if (!fTreeTR) {
+    AliError("No track reference tree defined");
+    return kFALSE;
+  }
+  if (!fArrayTR) {
+    AliError("No track reference array defined");
+    return kFALSE;
+  }
 
+  Int_t nEv = fTreeTR->GetEntries();
+  for (Int_t i = 0; i < nEv; i++) {
+    Int_t trRead  = fTreeTR->GetEntry(i);
+    if (trRead <= 0) continue;
+    Int_t nTrackRefs = fArrayTR->GetEntries();
+    for (Int_t j = 0; j < nTrackRefs; j++) {
+      AliTrackReference* trackRef = static_cast<AliTrackReference*>(fArrayTR->At(j));
+      if (!trackRef) continue;
+      if (trackRef->DetectorId() != AliTrackReference::kFMD) continue;
+      TParticle* track = 0;
+      if (TESTBIT(fTreeMask, kKinematics) && fStack) {
+	Int_t trackno = trackRef->GetTrack();
+	track = fStack->Particle(trackno);
+      }
+      if (!ProcessTrackRef(trackRef,track)) return kFALSE;
+    }    
+  }
+  return kTRUE;
+}
 //____________________________________________________________________
 Bool_t 
 AliFMDInput::ProcessTracks()

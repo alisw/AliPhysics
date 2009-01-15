@@ -19,13 +19,16 @@
 #include "TObjArray.h"
 #include "AliRunLoader.h"
 
+class AliTrackReference;
+
 class AliFMDBackgroundCorrection : public TNamed {
   
 public:
   
   AliFMDBackgroundCorrection() ;
   ~AliFMDBackgroundCorrection() {};
-  void GenerateBackgroundCorrection(Int_t nvtxbins=10,
+  void GenerateBackgroundCorrection(Bool_t from_hits=kFALSE,
+				    Int_t nvtxbins=10,
 				    Float_t zvtxcut=10,
 				    Int_t nBinsEta=100, 
 				    Bool_t storeInAlien = kFALSE, 
@@ -40,8 +43,8 @@ public:
   class AliFMDInputBG : public AliFMDInput {
     
   public :
-    AliFMDInputBG() ; 
-   
+    //AliFMDInputBG() ; 
+    AliFMDInputBG(Bool_t hits_not_trackrefs);
     Bool_t Init();
     
     Int_t GetNprim() {return fPrim;}
@@ -54,6 +57,14 @@ public:
     AliRunLoader* GetRunLoader() {return fLoader; }
   private:
     Bool_t ProcessHit(AliFMDHit* h, TParticle* p );
+    Bool_t ProcessTrackRef(AliTrackReference* tr, TParticle* p );
+    Bool_t ProcessEvent(UShort_t det,
+			Char_t ring, 
+			UShort_t sector, 
+			UShort_t strip,
+			Int_t nTrack,
+			Float_t charge);
+		
     Bool_t Begin(Int_t event );
     TObjArray fPrimaryArray;
     TObjArray fHitArray;
