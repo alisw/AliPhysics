@@ -4,6 +4,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   // Test macro for the AliAnalysisTaskSE for heavy-flavour vertexing
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
+
   Bool_t inputAOD=kTRUE; // otherwise, ESD
   TString mode="local"; // otherwise, "grid" 
 
@@ -16,6 +17,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   gSystem->Load("libAOD.so"); 
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3vertexingHF.so");
 
