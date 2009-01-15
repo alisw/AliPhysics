@@ -178,9 +178,15 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** branch filling variable */
   UInt_t* fpTotalInputSizeArray; //!transient
   /** branch filling variable */
+  UInt_t* fpNormalizedInputSizeArray; //!transient
+  /** branch filling variable */
   UInt_t* fpOutputBlockCountArray; //!transient
   /** branch filling variable */
   UInt_t* fpTotalOutputSizeArray; //!transient
+  /** branch filling variable */
+  UInt_t* fpInputOutputRatioArray; //!transient
+  /** branch filling variable */
+  UInt_t* fpNormalizedInputOutputRatioArray; //!transient
   /** branch filling variable */
   UInt_t* fpComponentCycleTimeArray; //!transient
   /** branch filling variable */

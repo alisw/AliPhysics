@@ -240,8 +240,10 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
     fpDice=new TRandom;
     if (fpDice) {
       TDatime dt;
-      // just take the pointer value as seed combined with time 
-      unsigned int seed=0;//(int)(this);
+      // take a component specific property together with the time to
+      // create a seed
+      const char* chainId=GetChainId();
+      unsigned int seed=CalculateChecksum((const AliHLTUInt8_t*)chainId, strlen(chainId));
       fpDice->SetSeed(seed^dt.Get());
     } else {
        iResult=-ENOMEM;

@@ -64,8 +64,11 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   fpCTimeArray(NULL),
   fpInputBlockCountArray(NULL),
   fpTotalInputSizeArray(NULL),
+  fpNormalizedInputSizeArray(NULL),
   fpOutputBlockCountArray(NULL),
   fpTotalOutputSizeArray(NULL)
+  , fpInputOutputRatioArray(NULL)
+  , fpNormalizedInputOutputRatioArray(NULL)
   , fpComponentCycleTimeArray(NULL)
   , fpEventTypeArray(NULL)
   , fpEventCountArray(NULL)
@@ -171,6 +174,18 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
 	HLTError("expecting number as parameter for option %s", argument.Data());
 	iResult=-EINVAL;
       }
+
+    // -arraysize
+    } else if (argument.CompareTo("-arraysize")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString param=argv[i];
+      if (param.IsDigit()) {
+	fArraySize=param.Atoi();
+      } else {
+	HLTError("expecting number as parameter for option %s", argument.Data());
+	iResult=-EINVAL;
+      }
+
     } else {
       HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
@@ -190,8 +205,11 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
     fpCTimeArray=new UInt_t[fArraySize];
     fpInputBlockCountArray=new UInt_t[fArraySize];
     fpTotalInputSizeArray=new UInt_t[fArraySize];
+    fpNormalizedInputSizeArray=new UInt_t[fArraySize];
     fpOutputBlockCountArray=new UInt_t[fArraySize];
     fpTotalOutputSizeArray=new UInt_t[fArraySize];
+    fpInputOutputRatioArray=new UInt_t[fArraySize];
+    fpNormalizedInputOutputRatioArray=new UInt_t[fArraySize];
     fpComponentCycleTimeArray=new UInt_t[fArraySize];
     fpEventTypeArray=new UInt_t[fArraySize];
     fpEventCountArray=new UInt_t[fArraySize];
@@ -209,8 +227,11 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
       fpStatTree->Branch("CTime",            fpCTimeArray, "CTime[nofSets]/i");
       fpStatTree->Branch("InputBlockCount",  fpInputBlockCountArray, "InputBlockCount[nofSets]/i");
       fpStatTree->Branch("TotalInputSize",   fpTotalInputSizeArray, "TotalInputSize[nofSets]/i");
+      fpStatTree->Branch("NormalizedInputSize",   fpNormalizedInputSizeArray, "NormalizedInputSize[nofSets]/i");
       fpStatTree->Branch("OutputBlockCount", fpOutputBlockCountArray, "OutputBlockCount[nofSets]/i");
       fpStatTree->Branch("TotalOutputSize",  fpTotalOutputSizeArray, "TotalOutputSize[nofSets]/i");
+      fpStatTree->Branch("InputOutputRatio",  fpInputOutputRatioArray, "InputOutputRatio[nofSets]/i");
+      fpStatTree->Branch("NormalizedInputOutputRatio",  fpNormalizedInputOutputRatioArray, "NormalizedInputOutputRatio[nofSets]/i");
       fpStatTree->Branch("ComponentCycleTime",fpComponentCycleTimeArray, "ComponentCycleTime[nofSets]/i");
       fpStatTree->Branch("EventType",fpEventTypeArray, "EventType[nofSets]/i");
       fpStatTree->Branch("EventCount",fpEventCountArray, "EventCount[nofSets]/i");
@@ -453,8 +474,11 @@ void AliHLTCompStatCollector::ResetFillingVariables()
   memset(fpCTimeArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpInputBlockCountArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpTotalInputSizeArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpNormalizedInputSizeArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpOutputBlockCountArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpTotalOutputSizeArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpInputOutputRatioArray, 0, sizeof(UInt_t)*fArraySize);
+  memset(fpNormalizedInputOutputRatioArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpComponentCycleTimeArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpEventTypeArray, 0, sizeof(UInt_t)*fArraySize);
   memset(fpEventCountArray, 0, sizeof(UInt_t)*fArraySize);
@@ -495,8 +519,15 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt
       fpCTimeArray[i]=pStat[*element].fCTime;
       fpInputBlockCountArray[i]=pStat[*element].fInputBlockCount;
       fpTotalInputSizeArray[i]=pStat[*element].fTotalInputSize;
+      fpNormalizedInputSizeArray[i]=pStat[*element].fTotalInputSize;
+      if (pStat[*element].fInputBlockCount>0) 
+	fpNormalizedInputSizeArray[i]/=pStat[*element].fInputBlockCount;
       fpOutputBlockCountArray[i]=pStat[*element].fOutputBlockCount;
       fpTotalOutputSizeArray[i]=pStat[*element].fTotalOutputSize;
+      if (pStat[*element].fTotalOutputSize>0)
+	fpInputOutputRatioArray[i]=pStat[*element].fTotalInputSize/pStat[*element].fTotalOutputSize;
+      if (pStat[*element].fInputBlockCount>0)
+	fpNormalizedInputOutputRatioArray[i]=fpInputOutputRatioArray[i]*pStat[*element].fOutputBlockCount/pStat[*element].fInputBlockCount;
       fpComponentCycleTimeArray[i]=pStat[*element].fComponentCycleTime;
       fpEventTypeArray[i]=eventType;
       fpEventCountArray[i]=GetEventCount();
@@ -529,8 +560,11 @@ void AliHLTCompStatCollector::ClearAll()
   if (fpCTimeArray) delete fpCTimeArray; fpCTimeArray=NULL;
   if (fpInputBlockCountArray) delete fpInputBlockCountArray; fpInputBlockCountArray=NULL;
   if (fpTotalInputSizeArray) delete fpTotalInputSizeArray; fpTotalInputSizeArray=NULL;
+  if (fpNormalizedInputSizeArray) delete fpNormalizedInputSizeArray; fpNormalizedInputSizeArray=NULL;
   if (fpOutputBlockCountArray) delete fpOutputBlockCountArray; fpOutputBlockCountArray=NULL;
   if (fpTotalOutputSizeArray) delete fpTotalOutputSizeArray; fpTotalOutputSizeArray=NULL;
+  if (fpInputOutputRatioArray) delete fpInputOutputRatioArray; fpInputOutputRatioArray=NULL;
+  if (fpNormalizedInputOutputRatioArray) delete fpNormalizedInputOutputRatioArray; fpNormalizedInputOutputRatioArray=NULL;
   if (fpComponentCycleTimeArray) delete fpComponentCycleTimeArray; fpComponentCycleTimeArray=NULL;
   if (fpEventTypeArray) delete fpEventTypeArray; fpEventTypeArray=NULL;
   if (fpEventCountArray) delete fpEventCountArray; fpEventCountArray=NULL;

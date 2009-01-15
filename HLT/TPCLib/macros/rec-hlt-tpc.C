@@ -72,7 +72,19 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
     for (int i=0; i<pTokens->GetEntries(); i++) {
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
-    
+ 
+      if (argument.Contains("-statistics=")) {
+	argument.ReplaceAll("-statistics=", "");
+	if (argument.Contains("root")) {
+	  if (option.Length()>0) option+=",";
+	  option+="statroot";
+	}
+	if (argument.Contains("raw")) {
+	  if (option.Length()>0) option+=",";
+	  option+="statraw";
+	}
+	continue;
+      }
       if (argument.CompareTo("decoder",TString::kIgnoreCase)==0) {
 	bUseClusterFinderDecoder = kTRUE;
 	continue;
@@ -125,6 +137,13 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 	break;
       }
     }
+  }
+  if (!histout && !dumpout && !esdout && !chout && !cdout) {
+    cout << "you need to specify an output option, on or more out of: ESD, TrackHistogram, TrackDump, ClusterHisto, ClusterDump" << endl;
+    return;
+  }
+  if ((option.Contains("statroot") || option.Contains("statraw")) && !esdout) {
+    cout << "!!!!!!!! Warning: HLT statistics are only collected for output type ESD !!!!!!!!" << endl;
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,6 +232,10 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
       
       // the root file writer configuration
       AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-esd");
+
+      // optional component statistics
+      AliHLTConfiguration statroot("statroot", "StatisticsCollector"   , "esd-converter", "-file HLT.statistics.root -publish 0");
+      AliHLTConfiguration statraw("statraw", "FileWriter"   , "esd-converter", "-datatype COMPSTAT PRIV -datafile HLT.statistics.raw -concatenate-blocks -concatenate-events");
     }
   }
   //Chain with Track Histogram
