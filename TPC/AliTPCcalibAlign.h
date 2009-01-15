@@ -86,7 +86,6 @@ public:
   //
   // Cluster comparison Part
   //
-  void MakeClusterHistos();
   //
   // For visualization and test purposes
   //
