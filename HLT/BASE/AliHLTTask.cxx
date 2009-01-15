@@ -532,6 +532,14 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	// add a small margin to the buffer to allow optional component
 	// statistics
 	iConstBase+=100;
+#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+	for (AliHLTComponentBlockDataList::iterator element=fBlockDataArray.begin();
+	     element!=fBlockDataArray.end(); element++) {
+	  if (element->fDataType==kAliHLTDataTypeComponentStatistics) {
+	    iConstBase+=element->fSize;
+	  }
+	}
+#endif
       }
       if (fInputMultiplier<0) {
 	HLTWarning("ignoring negative input multiplier");

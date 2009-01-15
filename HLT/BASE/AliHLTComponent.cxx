@@ -1668,6 +1668,8 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
   int iResult=0;
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   if (stats.size()==0) return -ENOENT;
+  // check if there is space for at least one entry
+  if (offset+sizeof(AliHLTComponentStatistics)>bufferSize) return 0;
   stats[0].fTotalOutputSize=offset;
   stats[0].fOutputBlockCount=blocks.size();
   if (fpBenchmark) {
@@ -1676,6 +1678,26 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
     stats[0].fCTime=(AliHLTUInt32_t)(fpBenchmark->CpuTime()*ALIHLTCOMPONENT_STATTIME_SCALER);
     fpBenchmark->Continue();
   }
+  if (offset+stats.size()*sizeof(AliHLTComponentStatistics)>bufferSize) {
+    AliHLTUInt32_t removedLevel=0;
+    do {
+      // remove all entries of the level of the last entry
+      removedLevel=stats.back().fLevel;
+      AliHLTComponentStatisticsList::iterator element=stats.begin();
+      element++;
+      while (element!=stats.end()) {
+	if (element->fLevel<=removedLevel) {
+	  element=stats.erase(element);
+	} else {
+	  element++;
+	}
+      }
+    } while (stats.size()>1 && 
+	     (offset+stats.size()*sizeof(AliHLTComponentStatistics)>bufferSize));
+  }
+  assert(stats.size()>0);
+  if (stats.size()==0) return 0;
+
   if (offset+stats.size()*sizeof(AliHLTComponentStatistics)<=bufferSize) {
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
