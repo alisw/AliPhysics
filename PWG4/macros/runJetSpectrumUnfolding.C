@@ -86,6 +86,8 @@ void unfold(const char* fileNameGen = "gen_pwg4spec.root", const char* folder = 
   TFile::Open(fileNameRec);
   TH2F* hist = (TH2F*) gFile->Get("unfolding/fRecSpectrum");
   jetSpec->SetRecSpectrum(hist);
+  hist = (TH2F*) gFile->Get("unfolding/fGenSpectrum");
+  if(hist->GetEntries()>0)jetSpec->SetGenSpectrum(hist);
 
   jetSpec->ApplyBayesianMethod(0.3, 20, 0, 0);
   // last parameter = calculateErrors  <- this method to calculate the errors takes a lot of time
@@ -400,6 +402,24 @@ void FillSpecFromFiles(const char* fileNameReal = "histos_pwg4spec.root",const c
        jetSpec->GetRecSpectrum()->SetBinError(bine, binz, err + fhERecZRec->GetBinError(me, mz));
     }
 
+
+  // for control again, but now from the rec file
+  // generated jets (true distribution)
+  TH2F *fhEGenZGen = (TH2F*)(tlist->FindObject("fh2EGenZGen"));  
+  for (Int_t te=1; te<=fhEGenZGen->GetNbinsX(); te++)
+    for (Int_t tz=1; tz<=fhEGenZGen->GetNbinsY(); tz++)
+    {
+       Float_t ej = fhEGenZGen->GetXaxis()->GetBinCenter(te);
+       Float_t  z = fhEGenZGen->GetYaxis()->GetBinCenter(tz);
+       Int_t bine = jetSpec->GetGenSpectrum()->GetXaxis()->FindBin(ej);
+       Int_t binz = jetSpec->GetGenSpectrum()->GetYaxis()->FindBin(z);
+       Float_t cont = jetSpec->GetGenSpectrum()->GetBinContent(bine,binz);
+       Float_t err  = jetSpec->GetGenSpectrum()->GetBinError(bine,binz);
+       jetSpec->GetGenSpectrum()->SetBinContent(bine, binz, cont + fhEGenZGen->GetBinContent(te, tz));
+       jetSpec->GetGenSpectrum()->SetBinError(bine, binz, err + fhEGenZGen->GetBinError(te, tz));
+    }
+
+
   file = TFile::Open("rec_pwg4spec.root", "RECREATE");
   jetSpec->SaveHistograms();
   file->Close();
@@ -409,18 +429,92 @@ void FillSpecFromFiles(const char* fileNameReal = "histos_pwg4spec.root",const c
   
 }
 
-
-
-
 void correct(){
   // simple steering to correct a given distribution;
   loadlibs();
-  FillSpecFromFiles("pwg4spec_0000000-0010000.root","pwg4spec_15-50.root");
+  // rec and gen
+  //  FillSpecFromFiles("pwg4spec_15-50_all.root","pwg4spec_allpt.root");
+  FillSpecFromFiles("pwg4spec_allpt.root","pwg4spec_allpt.root");
 
   char name[100];
   sprintf(name, "unfolded_pwg4spec.root");
 
   unfold("gen_pwg4spec.root", "unfolding", "rec_pwg4spec.root", name);
   //draw(name, "unfolding", 1); 
+
+}
+
+void mergeJetAnaOutput(){
+  // This is used to merge the analysis-output from different 
+  // data samples/pt_hard bins
+  // in case the eventweigth was set to xsection/ntrials already this
+  // is not needed. Both methods only work in cse we do not mix different 
+  // pt_hard bins, and do not have overlapping bins
+
+  const Int_t nBins = 2;
+  // LHC08q jetjet100: Mean = 1.42483e-03, RMS = 6.642e-05
+  // LHC08r jetjet50: Mean = 2.44068e-02, RMS = 1.144e-03
+  // LHC08v jetjet15-50: Mean = 2.168291 , RMS = 7.119e-02
+  const Float_t xsection[nBins] = {2.168291,2.44068e-02};
+  Float_t nTrials[nBins] = {0,0};
+  Float_t sf[nBins] = {0,0};
+
+  const char *cFile[nBins] = {"pwg4spec_15-50_all.root","pwg4spec_50_all.root"};
+
+
+  TList *lIn[nBins];
+  TFile *fIn[nBins];
+  for(int ib = 0;ib < nBins;++ib){
+    fIn[ib] = TFile::Open(cFile[ib]);
+    lIn[ib] = (TList*)fIn[ib]->Get("pwg4spec");
+    TH1* hTrials = (TH1F*)lIn[ib]->FindObject("fh1PtHard_Trials");
+    nTrials[ib] = hTrials->Integral();
+    sf[ib] = xsection[ib]/ nTrials[ib];
+  }
+
+  TFile *fOut = new TFile("pwg4spec_allpt.root","RECREATE");
+  TList *lOut = new TList();
+  lOut->SetName(lIn[0]->GetName());
+  // for the start scale all...
+  for(int ie = 0; ie < lIn[0]->GetEntries();++ie){
+    TH1 *h1Add = 0;
+    THnSparse *hnAdd = 0;
+    Printf("%d: %s",ie, lIn[0]->At(ie)->GetName());
+    for(int ib = 0;ib < nBins;++ib){
+      // dynamic cast does not work with cint
+      TObject *h = lIn[ib]->At(ie);
+      if(h->InheritsFrom("TH1")){
+	Printf("ib %d",ib);
+	TH1 *h1 = (TH1*)h;
+	if(ib==0){
+	  h1Add = (TH1*)h1->Clone(h1->GetName());
+	  h1Add->Scale(sf[ib]);
+	}
+	else{
+	  h1Add->Add(h1,sf[ib]);
+	}
+      }
+      else if(h->InheritsFrom("THnSparse")){
+	Printf("ib %d",ib);
+	THnSparse *hn = (THnSparse*)h;
+	if(ib==0){
+	  hnAdd = (THnSparse*)hn->Clone(hn->GetName());
+	  hnAdd->Scale(sf[ib]);
+	}
+	else{
+	  hnAdd->Add(hn,sf[ib]);
+	}
+      }
+      
+
+    }// ib
+    if(h1Add)lOut->Add(h1Add);
+    else if(hnAdd)lOut->Add(hnAdd);
+  }
+  fOut->cd();
+  lOut->Write(lOut->GetName(),TObject::kSingleKey);
+  fOut->Close();
+
+
 
 }

@@ -23,6 +23,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
@@ -68,6 +69,8 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fLimitGenJetEta(kFALSE),
   fAnalysisType(0),
   fExternalWeight(1),    
+  fh1Xsec(0x0),
+  fh1Trials(0x0),
   fh1PtHard(0x0),
   fh1PtHard_NoW(0x0),  
   fh1PtHard_Trials(0x0),
@@ -108,6 +111,8 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   fLimitGenJetEta(kFALSE),
   fAnalysisType(0),
   fExternalWeight(1),    
+  fh1Xsec(0x0),
+  fh1Trials(0x0),
   fh1PtHard(0x0),
   fh1PtHard_NoW(0x0),  
   fh1PtHard_Trials(0x0),
@@ -139,6 +144,52 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
 
 
 
+Bool_t AliAnalysisTaskJetSpectrum::Notify()
+{
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  Double_t xsection = 0;
+  UInt_t   ntrials  = 0;
+  if(tree){
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      Error("Notify","No current file");
+      return kFALSE;
+    }
+    if(!fh1Xsec||!fh1Trials){
+      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      return kFALSE;
+    }
+
+    TString fileName(curfile->GetName());
+    if(fileName.Contains("AliESDs.root")){
+        fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("AliAOD.root")){
+        fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("galice.root")){
+        // for running with galice and kinematics alone...                      
+        fileName.ReplaceAll("galice.root", "pyxsec.root");
+    }
+    TFile *fxsec = TFile::Open(fileName.Data());
+    if(!fxsec){
+      Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data());
+      // no a severe condition
+      return kTRUE;
+    }
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
+    }
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fh1Xsec->Fill("<#sigma>",xsection);
+    fh1Trials->Fill("#sum{ntrials}",ntrials);
+  }
+  
+  return kTRUE;
+}
 
 void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 {
@@ -226,6 +277,12 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
   const Int_t nBinFrag = 25;
 
 
+  fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+
+  fh1Trials = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+
   fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",nBinPt,binLimitsPt);
 
   fh1PtHard_NoW = new TH1F("fh1PtHard_NoW","PYTHIA Pt hard no weight;p_{T,hard}",nBinPt,binLimitsPt);
@@ -307,6 +364,8 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
   }
   const Int_t saveLevel = 1; // large save level more histos
   if(saveLevel>0){
+    fHistList->Add(fh1Xsec);
+    fHistList->Add(fh1Trials);
     fHistList->Add(fh1PtHard);
     fHistList->Add(fh1PtHard_NoW);
     fHistList->Add(fh1PtHard_Trials);
@@ -345,7 +404,10 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     if (h1){
       // Printf("%s ",h1->GetName());
       h1->Sumw2();
+      continue;
     }
+    THnSparse *hn = dynamic_cast<THnSparse*>(fHistList->At(i));
+    if(hn)hn->Sumw2();
   }
 
   TH1::AddDirectory(oldStatus);

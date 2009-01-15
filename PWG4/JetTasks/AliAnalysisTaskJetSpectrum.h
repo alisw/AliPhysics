@@ -5,8 +5,7 @@
  * See cxx source for full Copyright notice                               */
  
 #include "AliAnalysisTaskSE.h"
-////////////////
-#include <THnSparse.h>
+#include "THnSparse.h"
 ////////////////
 class AliJetHeader;
 class AliESDEvent;
@@ -18,6 +17,8 @@ class TList;
 class TChain;
 class TH2F;
 class TH3F;
+class TProfile;
+
 
 class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
 {
@@ -31,6 +32,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     virtual void LocalInit() { Init(); }
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
+    virtual Bool_t Notify();
+
 
     virtual void SetExternalWeight(Float_t f){fExternalWeight = f;}
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
@@ -74,6 +77,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     Int_t         fAnalysisType;
     Float_t       fExternalWeight;    
 
+    TProfile*     fh1Xsec;   // pythia cross section and trials
+    TH1F*         fh1Trials; // trials are added
     TH1F*         fh1PtHard;  // Pt har of the event...       
     TH1F*         fh1PtHard_NoW;  // Pt har of the event...       
     TH1F*         fh1PtHard_Trials;  // Number of trials 
