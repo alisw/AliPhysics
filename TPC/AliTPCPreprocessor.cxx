@@ -39,12 +39,10 @@
 const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
-const TString kPulserRunType = "CALIBRATION_PULSER";   // pulser run identifier
+const TString kPulserRunType = "PULSER";     // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
-const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
-const TString kStandAlonePulserRunType = "STANDALONE_PULSER"; // standalone run identifier
-const TString kCosmicRunType = "COSMIC"; // cosmic run identifier
-const TString kLaserRunType = "LASER";   // laser run identifier
+const TString kCosmicRunType = "COSMIC";     // cosmic run identifier
+const TString kLaserRunType = "LASER";       // laser run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
@@ -69,8 +67,6 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType(kPedestalRunType);
   AddRunType(kPulserRunType);
   AddRunType(kPhysicsRunType);
-  AddRunType(kStandAloneRunType);
-  AddRunType(kStandAlonePulserRunType);
   AddRunType(kCosmicRunType);
   AddRunType(kLaserRunType);
   AddRunType(kDaqRunType);
@@ -329,11 +325,22 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     }
   }
 
+  // Altro configuration
+
+
+  TString altroConf = fConfEnv->GetValue("AltroConf","ON");
+  goofieConf.ToUpper();
+  if (altroConf != "OFF" ) { 
+   UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDAQ);
+   result+=altroResult;
+   status = new TParameter<int>("altroResult",altroResult);
+   resultArray->Add(status);
+ }
 
 
   // Central Electrode processing
 
-  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
+  if( runType == kPhysicsRunType || 
       runType == kDaqRunType ) {    
 
 //   if (true) {                 // do CE processing for all run types
@@ -896,3 +903,146 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
   return result;
 }
 
+//______________________________________________________________________________________________
+
+
+UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
+{
+ //
+ //  Read pulser calibration file from file exchage server
+ //  Keep original entry from OCDB in case no new pulser calibration is available
+ //
+ TObjArray    *altroObjects=0;
+ AliTPCCalPad *acqStart=0;
+ AliTPCCalPad *zsThr=0;
+ AliTPCCalPad *acqStop=0;
+ AliTPCCalPad *FPED=0;
+ AliTPCCalPad *masked=0;
+
+ AliCDBEntry* entry = GetFromOCDB("Calib", "Altro");
+ if (entry) altroObjects = (TObjArray*)entry->GetObject();
+ if ( altroObjects==NULL ) {
+     Log("AliTPCPreprocsessor: No previous TPC altro calibration entry available.\n");
+     altroObjects = new TObjArray;    
+ }
+
+ acqStart = (AliTPCCalPad*)altroObjects->FindObject("AcqStart");
+ if ( !acqStart ) {
+    acqStart = new AliTPCCalPad("AcqStart","AcqStart");
+    altroObjects->Add(acqStart);
+ }
+ zsThr = (AliTPCCalPad*)altroObjects->FindObject("ZsThr");
+ if ( !zsThr )  { 
+    zsThr = new AliTPCCalPad("ZsThr","ZsThr");
+    altroObjects->Add(zsThr);
+ }
+ FPED = (AliTPCCalPad*)altroObjects->FindObject("FPED");
+ if ( !FPED )  { 
+    FPED = new AliTPCCalPad("FPED","FPED");
+    altroObjects->Add(FPED);
+ }
+ acqStop = (AliTPCCalPad*)altroObjects->FindObject("AcqStop");
+ if ( !acqStop ) {
+    acqStop = new AliTPCCalPad("AcqStop","AcqStop");
+    altroObjects->Add(acqStop);
+ }
+ masked = (AliTPCCalPad*)altroObjects->FindObject("Masked");
+ if ( !masked )  { 
+    masked = new AliTPCCalPad("Masked","Masked");
+    altroObjects->Add(masked);
+ }
+
+
+
+ UInt_t result=0;
+ TString idFXS[2]={"AltroConfigA","AltroConfigC"};
+
+ Int_t nSectors = fROC->GetNSectors();
+ Bool_t changed=false;
+ for ( Int_t id=0; id<2; id++) {
+   TList* list = GetFileSources(sourceFXS,idFXS[id].Data());
+ 
+   if (list && list->GetEntries()>0) {
+      if (altroObjects == 0 ) altroObjects = new TObjArray;
+
+//  loop through all files from LDCs
+
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+     TObjString* fileNameEntry = (TObjString*) list->At(index);
+     if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, idFXS[id].Data(),
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+          char message[40];
+	  sprintf(message,"Error opening Altro configuration file, id = %d",id);
+	  Log (message);
+	  result =2;
+	  break;
+	}
+        TObjArray *altroFXS;
+	f->GetObject("AltroConfig",altroFXS);
+        if ( !altroFXS ) {
+	  Log ("No Altro configuration object in file.");
+	  result = 2;
+	  break;
+	}
+
+        //  replace entries for the sectors available in the present file
+        AliTPCCalPad *acqStartFXS=(AliTPCCalPad*)altroFXS->FindObject("AcqStart");
+        AliTPCCalPad *zsThrFXS=(AliTPCCalPad*)altroFXS->FindObject("ZsThr");
+        AliTPCCalPad *acqStopFXS=(AliTPCCalPad*)altroFXS->FindObject("AcqStop");
+        AliTPCCalPad *FPEDFXS=(AliTPCCalPad*)altroFXS->FindObject("FPED");
+        AliTPCCalPad *maskedFXS=(AliTPCCalPad*)altroFXS->FindObject("Masked");
+
+        changed=true;
+        for (Int_t sector=0; sector<nSectors; sector++) {
+            
+           if (acqStartFXS) {
+	      AliTPCCalROC *rocAcqStart=acqStartFXS->GetCalROC(sector);
+              if ( rocAcqStart )  acqStart->SetCalROC(rocAcqStart,sector);
+	   }
+	   if (zsThrFXS ) {
+              AliTPCCalROC *rocZsThr=zsThrFXS->GetCalROC(sector);
+              if ( rocZsThr )  zsThr->SetCalROC(rocZsThr,sector);
+	   }
+	   if (acqStopFXS) {
+              AliTPCCalROC *rocAcqStop=acqStopFXS->GetCalROC(sector);
+              if ( rocAcqStop )  acqStop->SetCalROC(rocAcqStop,sector);
+	   }
+	   if (FPEDFXS ) {
+              AliTPCCalROC *rocFPED=FPEDFXS->GetCalROC(sector);
+              if ( FPEDFXS )  FPED->SetCalROC(rocFPED,sector);
+	   }
+	   if (maskedFXS) {
+              AliTPCCalROC *rocMasked=maskedFXS->GetCalROC(sector);
+              if ( rocMasked )  masked->SetCalROC(rocMasked,sector);
+	   }
+        }
+       delete altroFXS;
+       f->Close();
+      }
+     ++index;
+     }  // while(list)
+    } else {
+      Log ("Error: no entries in input file list!");
+      result = 1;
+    }
+
+   }   // for - id
+//
+//  Store updated pedestal entry to OCDB
+//
+    if (changed) {
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Haavard Helstrup");
+     metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+     Bool_t storeOK = Store("Calib", "AltroConfig", altroObjects, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+    }  
+
+  return result;
+}
