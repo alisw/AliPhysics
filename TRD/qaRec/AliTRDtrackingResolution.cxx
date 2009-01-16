@@ -105,11 +105,11 @@ AliTRDtrackingResolution::AliTRDtrackingResolution()
 
   InitFunctorList();
 
-  DefineOutput(1+kClusterResidual, TObjArray::Class());
-  DefineOutput(1+kTrackletYResidual, TObjArray::Class());
-  DefineOutput(1+kTrackletPhiResidual, TObjArray::Class());
-  DefineOutput(1+kClusterResolution, TObjArray::Class());
-  DefineOutput(1+kTrackletYResolution, TObjArray::Class());
+  DefineOutput(1+kCluster, TObjArray::Class());
+  DefineOutput(1+kTrackletY, TObjArray::Class());
+  DefineOutput(1+kTrackletPhi, TObjArray::Class());
+  DefineOutput(1+kMCcluster, TObjArray::Class());
+  DefineOutput(1+kMCtrackletY, TObjArray::Class());
 }
 
 //________________________________________________________
@@ -162,15 +162,15 @@ void AliTRDtrackingResolution::Exec(Option_t *opt)
 
   AliTRDrecoTask::Exec(opt);
 
-  PostData(1+kClusterResidual, fClResiduals);
-  PostData(1+kTrackletYResidual, fTrkltResiduals);
-  PostData(1+kTrackletPhiResidual, fTrkltPhiResiduals);
-  PostData(1+kClusterResolution, fClResolution);
-  PostData(1+kTrackletYResolution, fTrkltResolution);
+  PostData(1+kCluster, fClResiduals);
+  PostData(1+kTrackletY, fTrkltResiduals);
+  PostData(1+kTrackletPhi, fTrkltPhiResiduals);
+  PostData(1+kMCcluster, fClResolution);
+  PostData(1+kMCtrackletY, fTrkltResolution);
 }
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
+TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -178,11 +178,12 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = ((TH2I*)fContainer->At(kClusterResidual)))){
+  if(!(h = ((TH2I*)fContainer->At(kCluster)))){
     AliWarning("No output histogram defined.");
     return 0x0;
   }
 
+  Double_t cov[3];
   Float_t x0, y0, z0, dy, dydx, dzdx;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
@@ -195,6 +196,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     z0   = fTracklet->GetZref(0);
     dydx = fTracklet->GetYref(1);
     dzdx = fTracklet->GetZref(1);
+    fTracklet->GetCovRef(cov);
     Float_t tilt = fTracklet->GetTilt();
     AliTRDcluster *c = 0x0;
     fTracklet->ResetClusterIter(kFALSE);
@@ -205,10 +207,10 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
       Float_t dx = x0 - xc; 
       Float_t yt = y0 - dx*dydx;
       Float_t zt = z0 - dx*dzdx; 
-      dy = yt - (yc - tilt*(zc-zt));
+      yc -= tilt*(zc-zt); // tilt correction
+      dy = yt - yc;
 
-      //dy = trklt.GetYat(c->GetX()) - c->GetY();
-      h->Fill(dydx, dy);
+      h->Fill(dydx, dy/TMath::Sqrt(cov[0] + c->GetSigmaY2()));
   
       if(fDebugLevel>=1){
         // Get z-position with respect to anode wire
@@ -238,7 +240,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
+TH1* AliTRDtrackingResolution::PlotTracklet(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -246,65 +248,31 @@ TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = ((TH2I*)fContainer->At(kTrackletYResidual)))){
+  if(!(h = ((TH2I*)fContainer->At(kTrackletY)))){
     AliWarning("No output histogram defined.");
     return 0x0;
   }
 
-  AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(tracklet = fTrack->GetTracklet(il))) continue;
-    if(!tracklet->IsOK()) continue;
-    h->Fill(tracklet->GetYref(1), tracklet->GetYref(0)-tracklet->GetYfit(0));
+  Double_t cov[3], covR[3];
+  Float_t xref, y0, dx, dy, dydx;
+  AliTRDseedV1 *fTracklet = 0x0;  
+  for(Int_t il=AliTRDgeometry::kNlayer; il--;){
+    if(!(fTracklet = fTrack->GetTracklet(il))) continue;
+    if(!fTracklet->IsOK()) continue;
+    y0   = fTracklet->GetYref(0);
+    dydx = fTracklet->GetYref(1);
+    xref = fTracklet->GetXref();
+    dx   = fTracklet->GetX0() - xref;
+    dy   = y0-dx*dydx - fTracklet->GetYat(xref);
+    fTracklet->GetCovAt(xref, cov);
+    fTracklet->GetCovRef(covR);
+    h->Fill(dydx, dy/TMath::Sqrt(cov[0] + covR[0]));
   }
   return h;
-
-  // refit the track
-//   AliRieman fRim(fTrack->GetNumberOfClusters());
-//   Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
-
-//     AliTRDcluster *c = 0x0;
-//     tracklet->ResetClusterIter(kFALSE);
-//     while((c = tracklet->PrevCluster())){
-//       Float_t xc = c->GetX();
-//       Float_t yc = c->GetY();
-//       Float_t zc = c->GetZ();
-//       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
-//       yc -= tracklet->GetTilt()*(zc-zt);
-//       fRim.AddPoint(xc, yc, zc, 1, 10);
-//     }
-//     tracklet->Fit(kTRUE);
-// 
-//     x[il] = tracklet->GetX0();
-//     y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
-//     dydx[il] = tracklet->GetYref(1);
-
-
-//   fRim.Update();
-
-//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-//     if(x[il] < 0.) continue;
-//     Float_t dy = y[il]-fRim.GetYat(x[il])/*/sigma_track*/;
-//     h->Fill(dydx[il], dy);
-// 
-//     if(fDebugLevel>=1){
-//       Double_t sigmay = fRim.GetErrY(x[il]);
-//       Float_t yt = fRim.GetYat(x[il]);
-//       (*fDebugStream) << "TrkltResiduals"
-//         << "layer="  << il
-//         << "x="      << x[il]
-//         << "y="      << y[il]
-//         << "yt="     << yt
-//         << "dydx="   << dydx[il]
-//         << "dy="     << dy
-//         << "sigmay=" << sigmay
-//         << "\n";
-//     }
-//   }
 }
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *track)
+TH1* AliTRDtrackingResolution::PlotTrackletPhi(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -312,7 +280,7 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *tra
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = ((TH2I*)fContainer->At(kTrackletPhiResidual)))){
+  if(!(h = ((TH2I*)fContainer->At(kTrackletPhi)))){
     AliWarning("No output histogram defined.");
     return 0x0;
   }
@@ -324,60 +292,6 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *tra
     h->Fill(tracklet->GetYref(1), TMath::ATan(tracklet->GetYref(1))-TMath::ATan(tracklet->GetYfit(1)));
   }
   return h;
-
-//   // refit the track
-//   AliRieman fRim(fTrack->GetNumberOfClusters());
-//   Float_t x[AliTRDgeometry::kNlayer] = {-1., -1., -1., -1., -1., -1.}, y[AliTRDgeometry::kNlayer], dydx[AliTRDgeometry::kNlayer];
-//   Float_t dydx_ref=0, dydx_fit=0, phiref=0, phifit=0, phidiff=0;
-//   AliTRDseedV1 *tracklet = 0x0;
-//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-//     if(!(tracklet = fTrack->GetTracklet(il))) continue;
-//     if(!tracklet->IsOK()) continue;
-//     AliTRDcluster *c = 0x0;
-//     tracklet->ResetClusterIter(kFALSE);
-//     while((c = tracklet->PrevCluster())){
-//       Float_t xc = c->GetX();
-//       Float_t yc = c->GetY();
-//       Float_t zc = c->GetZ();
-//       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
-//       yc -= tracklet->GetTilt()*(zc-zt);
-//       fRim.AddPoint(xc, yc, zc, 1, 10);
-//     }
-//     tracklet->Fit(kTRUE);
-// 
-//     x[il] = tracklet->GetX0();
-//     y[il] = tracklet->GetYfit(0)-tracklet->GetYfit(1)*(tracklet->GetX0()-x[il]);
-//     dydx[il] = tracklet->GetYref(1);
-//   }
-//   fRim.Update();
-// 
-//   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-//     if(x[il] < 0.) continue;
-//     if(!(tracklet = fTrack->GetTracklet(il))) continue;
-//     if(!tracklet->IsOK()) continue;
-// 
-//     dydx_ref = fRim.GetDYat(x[il]); 
-//     dydx_fit = tracklet->GetYfit(1);
-// 
-//     phiref = TMath::ATan(dydx_ref);//*TMath::RadToDeg();
-//     phifit = TMath::ATan(dydx_fit);//*TMath::RadToDeg();
-//     
-//     phidiff = phiref-phifit; /*/sigma_phi*/;
-// 
-//     h->Fill(dydx_ref, phidiff);
-// 
-// 
-//     if(fDebugLevel>=1){
-//       (*fDebugStream) << "TrkltPhiResiduals"
-//         << "layer="  << il
-//         << "dydx_fit="   << dydx_fit
-//         << "dydx_ref="   << dydx_ref
-//         << "phiref="     << phiref
-//         << "phifit="     << phifit
-//         << "phidiff="     << phidiff
-//         << "\n";
-//     }
-//   }
 }
 
 
@@ -394,85 +308,92 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = ((TH2I*)fContainer->At(kClusterResolution)))){
-    AliWarning("No output histogram defined.");
-    return 0x0;
-  }
-  if(!(h = ((TH2I*)fContainer->At(kTrackletYResolution)))){
-    AliWarning("No output histogram defined.");
-    return 0x0;
-  }
-  if(!(h = ((TH2I*)fContainer->At(kTrackletZResolution)))){
-    AliWarning("No output histogram defined.");
-    return 0x0;
-  }
-  if(!(h = ((TH2I*)fContainer->At(kTrackletAngleResolution)))){
-    AliWarning("No output histogram defined.");
-    return 0x0;
-  }
-  //printf("called for %d tracklets ... \n", fTrack->GetNumberOfTracklets());
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
-  Float_t x0, y0, z0, dx, dy, dydx, dzdx;
+  Float_t p, x0, y0, z0, dx, dy, dz, dydx, dzdx;
+
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
-    if(!fTracklet->IsOK()) continue;
-    //printf("process layer[%d]\n", ily);
-    // retrive the track position and direction within the chamber
+    if(!(fTracklet = fTrack->GetTracklet(ily)) ||
+       !fTracklet->IsOK()) continue;
+
     det = fTracklet->GetDetector();
     x0  = fTracklet->GetX0();
-    dx = 0.;//radial shift with respect to the MC reference (radial position of the pad plane)
-    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, s)) continue; 
+    //radial shift with respect to the MC reference (radial position of the pad plane)
+    dx  = x0 - fTracklet->GetXref();
+    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, p, s)) continue; 
+    // MC track position at reference radial position
     Float_t yt = y0 - dx*dydx;
     Float_t zt = z0 - dx*dzdx;
+    p *= 1.+dzdx*dzdx; // pt -> p
 
-    // calculate position of Kalman fit at reference radial position
-    Float_t yr = fTracklet->GetYref(0) - (fTracklet->GetX0() - x0 + dx)*dydx;
-    Float_t zr = fTracklet->GetZref(0) - (fTracklet->GetX0() - x0 + dx)*dzdx;
-    // Fill Histograms
-    ((TH2I*)fContainer->At(kTrackYResolution))->Fill(dydx, yt-yr);
-    ((TH2I*)fContainer->At(kTrackZResolution))->Fill(dzdx, zt-zr);
-
+    // add Kalman residuals for y and z
+    Float_t dxr= fTracklet->GetX0() - x0 + dx; 
+    Float_t yr = fTracklet->GetYref(0) - dxr*fTracklet->GetYref(1);
+    dy = yt - yr;
+    Float_t zr = fTracklet->GetZref(0) - dxr*fTracklet->GetZref(1);
+    dz = zt - zr;
+    ((TH2I*)fContainer->At(kMCtrackY))->Fill(dydx, dy);
+    ((TH2I*)fContainer->At(kMCtrackZ))->Fill(dzdx, dz);
+    // Fill Debug stream for Kalman track
+    if(fDebugLevel>=1){
+      Float_t pr    = fTracklet->GetMomentum();
+      Float_t dydxr = fTracklet->GetYref(1);
+      Float_t dzdxr = fTracklet->GetZref(1);
+      (*fDebugStream) << "MCtrack"
+        << "det="     << det
+        << "pdg="     << pdg
+        << "p="       << p
+        << "yt="      << yt
+        << "zt="      << zt
+        << "dydx="    << dydx
+        << "dzdx="    << dzdx
+        << "pr="      << pr
+        << "dy="      << dy
+        << "dz="      << dz
+        << "dydxr="   << dydxr
+        << "dzdxr="   << dzdxr
+        << "\n";
+    }
 
     // recalculate tracklet based on the MC info
     AliTRDseedV1 tt(*fTracklet);
     tt.SetZref(0, z0);
     tt.SetZref(1, dzdx); 
     if(!tt.Fit(kTRUE)) continue;
-    //tt.Update();
 
-    Float_t yf = tt.GetYfit(0) - (fTracklet->GetX0() - x0 + dx)*dydx;
-    dy = yf-yt;
-    Float_t dphi   = TMath::ATan(tt.GetYfit(1)) - TMath::ATan(dydx);
+    // add tracklet residuals for y and dydx
+    Float_t yf = tt.GetYfit(0) - dxr*tt.GetYfit(1);
+    dy = yt - yf;
+    Float_t dphi   = (tt.GetYfit(1) - dydx);
+    dphi /= 1.- tt.GetYfit(1)*dydx;
+    ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx, dy);
+    ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx, dphi*TMath::RadToDeg());
+
     Float_t dz = 100.;
-    Bool_t  cross = fTracklet->GetNChange();
-    if(cross){
+    Bool_t rc = fTracklet->IsRowCross(); 
+    if(rc){
+      // add tracklet residuals for z
       Double_t *xyz = tt.GetCrossXYZ();
       dz = xyz[2] - (z0 - (x0 - xyz[0])*dzdx) ;
-      ((TH2I*)fContainer->At(kTrackletZResolution))->Fill(dzdx, dz);
+      ((TH2I*)fContainer->At(kMCtrackletZ))->Fill(dzdx, dz);
     }
   
-    // Fill Histograms
-    ((TH2I*)fContainer->At(kTrackletYResolution))->Fill(dydx, dy);
-    ((TH2I*)fContainer->At(kTrackletAngleResolution))->Fill(dydx, dphi*TMath::RadToDeg());
-
-    // Fill Debug stream
+    // Fill Debug stream for tracklet
     if(fDebugLevel>=1){
-      Float_t p = fMC->GetTrackRef() ? fMC->GetTrackRef()->P() : -1.;
-      (*fDebugStream) << "TrkltResolution"
-        << "det="	 	  << det
+      (*fDebugStream) << "MCtracklet"
+        << "det="     << det
         << "pdg="     << pdg
         << "p="       << p
-        << "ymc="     << y0
-        << "zmc="     << z0
+        << "yt="      << yt
+        << "zt="      << zt
         << "dydx="    << dydx
         << "dzdx="    << dzdx
-        << "cross="   << cross
-        << "dy="		  << dy
-        << "dz="	 	  << dz
-        << "dphi="		<< dphi
+        << "rowc="    << rc
+        << "dy="      << dy
+        << "dz="      << dz
+        << "dphi="    << dphi
         << "\n";
     }
 
@@ -486,7 +407,8 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
-      AliTRDseedV1::GetClusterXY(c,x,y);
+      //AliTRDseedV1::GetClusterXY(c,x,y);
+      x = c->GetX(); y = c->GetY();
       Float_t xc = x;
       Float_t yc = y;
       Float_t zc = c->GetZ();
@@ -496,25 +418,26 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       dy = yt - (yc - tilt*(zc-zt));
 
       // Fill Histograms
-      if(q>20. && q<250.) ((TH2I*)fContainer->At(kClusterResolution))->Fill(dydx, dy);
-      
-      // Fill Debug Tree
-      if(fDebugLevel>=1){
-        Float_t d = zr0 - zt;
-        d -= ((Int_t)(2 * d)) / 2.0;
-        if (d > 0.25) d  = 0.5 - d;
+      if(q>20. && q<250.) ((TH2I*)fContainer->At(kMCcluster))->Fill(dydx, dy);
 
-        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-        fClResolution->Add(clInfo);
-        clInfo->SetCluster(c);
-        clInfo->SetMC(pdg, label);
-        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
-        clInfo->SetResolution(dy);
-        clInfo->SetAnisochronity(d);
-        clInfo->SetDriftLength(dx);
-        clInfo->SetTilt(tilt);
+      // Fill calibration container
+      Float_t d = zr0 - zt;
+      d -= ((Int_t)(2 * d)) / 2.0;
+      if (d > 0.25) d  = 0.5 - d;
+      AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
+      fClResolution->Add(clInfo);
+      clInfo->SetCluster(c);
+      clInfo->SetMC(pdg, label);
+      clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
+      clInfo->SetResolution(dy);
+      clInfo->SetAnisochronity(d);
+      clInfo->SetDriftLength(dx);
+      clInfo->SetTilt(tilt);
+
+      // Fill Debug Tree
+      if(fDebugLevel>=2){
         //clInfo->Print();
-        (*fDebugStream) << "ClusterResolution"
+        (*fDebugStream) << "MCcluster"
           <<"clInfo.=" << clInfo
           << "\n";
       }
@@ -527,106 +450,133 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 //________________________________________________________
 Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
 {
+  Float_t y[2] = {0., 0.};
   TBox *b = 0x0;
   TAxis *ax = 0x0;
   TGraphErrors *g = 0x0;
   switch(ifig){
-  case kClusterResidual:
+  case kCluster:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 2.5);
-    ax->SetTitle("Clusters Y Residuals #sigma/#mu [mm]");
+    y[0] = -0.5; y[1] = 2.5;
+    ax->SetRangeUser(y[0], y[1]);
+    ax->SetTitle("Cluster-Track Pools #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, -.5, .15, 1.);
+    b = new TBox(-.15, y[0], .15, y[1]);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackletYResidual:
+  case kTrackletY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 3.);
-    ax->SetTitle("Tracklet Y Residuals #sigma/#mu [mm]");
+    ax->SetTitle("Tracklet-Track Y-Pools #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, -.5, .15, 1.);
+    b = new TBox(-.15, y[0], .15, y[1]);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackletPhiResidual:
+  case kTrackletPhi:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 2.);
-    ax->SetTitle("Tracklet Phi Residuals #sigma/#mu [rad]");
+    ax->SetTitle("Tracklet-Track Phi-Residuals #sigma/#mu [rad]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, -.5, .15, 1.);
+    b = new TBox(-.15, y[0], .15, y[1]);
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kClusterResolution:
+  case kMCcluster:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 1.);
-    ax->SetTitle("Cluster Y Resolution #sigma/#mu [mm]");
+    y[0] = -.1; y[1] = 1.5;
+    ax->SetRangeUser(y[0], y[1]);
+    ax->SetTitle("Y_{cluster} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, -.5, .15, 1.);
-    b->SetFillStyle(3002);b->SetFillColor(kGreen);
+    b = new TBox(-.15, y[0], .15, y[1]);
+    b->SetFillStyle(3002);b->SetFillColor(kBlue);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackletYResolution:
+  case kMCtrackletY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 1.);
-    ax->SetTitle("Tracklet Y Resolution #sigma/#mu [mm]");
+    y[0] = -.05; y[1] = 0.3;
+    ax->SetRangeUser(y[0], y[1]);
+    ax->SetTitle("Y_{tracklet} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
+    b = new TBox(-.15, y[0], .15, y[1]);
+    b->SetFillStyle(3002);b->SetFillColor(kBlue);
+    b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackletZResolution:
+  case kMCtrackletZ:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 1.);
-    ax->SetTitle("Tracklet Z Resolution #sigma/#mu [mm]");
+    ax->SetTitle("Z_{tracklet} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#theta)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return kTRUE;
-  case kTrackletAngleResolution:
+  case kMCtrackletPhi:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.05, .2);
-    ax->SetTitle("Tracklet Angular Resolution #sigma/#mu [deg]");
+    y[0] = -.05; y[1] = .2;
+    ax->SetRangeUser(y[0], y[1]);
+    ax->SetTitle("#Phi_{tracklet} #sigma/#mu [deg]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return kTRUE;
-  case kTrackYResolution:
+  case kMCtrackY:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
+    ax = g->GetHistogram()->GetYaxis();
+    y[0] = -.05; y[1] = 0.2;
+    ax->SetRangeUser(y[0], y[1]);
+    ax->SetTitle("Y_{track} #sigma/#mu [mm]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("tg(#phi)");
+    g->Draw("apl");
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
+    g->Draw("pl");
+    b = new TBox(-.15, y[0], .15, y[1]);
+    b->SetFillStyle(3002);b->SetFillColor(kBlue);
+    b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackZResolution:
+  case kMCtrackZ:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.5, 2.);
+    ax->SetTitle("Z_{track} #sigma/#mu [mm]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("tg(#theta)");
+    g->Draw("apl");
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
+    g->Draw("pl");
     return kTRUE;
-  default:
-    AliInfo(Form("Reference plot [%d] not implemented yet", ifig));
-    return kFALSE;
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
   return kFALSE;
@@ -642,18 +592,34 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     return kFALSE;
   }
   fNRefFigures = fContainer->GetEntriesFast();
+  TGraphErrors *gm = 0x0, *gs = 0x0;
   if(!fGraphS){ 
     fGraphS = new TObjArray(fNRefFigures);
     fGraphS->SetOwner();
+    for(Int_t ig=0; ig<fNRefFigures; ig++){
+      gs = new TGraphErrors();
+      gs->SetLineColor(kRed);
+      gs->SetMarkerStyle(23);
+      gs->SetMarkerColor(kRed);
+      gs->SetNameTitle(Form("s_%d", ig), "");
+      fGraphS->AddAt(gs, ig);
+    }
   }
   if(!fGraphM){ 
     fGraphM = new TObjArray(fNRefFigures);
     fGraphM->SetOwner();
+    for(Int_t ig=0; ig<fNRefFigures; ig++){
+      gm = new TGraphErrors();
+      gm->SetLineColor(kBlue);
+      gm->SetMarkerStyle(7);
+      gm->SetMarkerColor(kBlue);
+      gm->SetNameTitle(Form("m_%d", ig), "");
+      fGraphM->AddAt(gm, ig);
+    }
   }
 
   TH2I *h2 = 0x0;
   TH1D *h = 0x0;
-  TGraphErrors *gm = 0x0, *gs = 0x0;
 
   // define models
   TF1 f("f1", "gaus", -.5, .5);  
@@ -671,19 +637,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   //PROCESS RESIDUAL DISTRIBUTIONS
 
   // Clusters residuals
-  h2 = (TH2I *)(fContainer->At(kClusterResidual));
-  gm = new TGraphErrors();
-  gm->SetLineColor(kBlue);
-  gm->SetMarkerStyle(7);
-  gm->SetMarkerColor(kBlue);
-  gm->SetNameTitle("clm", "");
-  fGraphM->AddAt(gm, kClusterResidual);
-  gs = new TGraphErrors();
-  gs->SetLineColor(kRed);
-  gs->SetMarkerStyle(23);
-  gs->SetMarkerColor(kRed);
-  gs->SetNameTitle("cls", "");
-  fGraphS->AddAt(gs, kClusterResidual);
+  h2 = (TH2I *)(fContainer->At(kCluster));
+  gm = (TGraphErrors*)fGraphM->At(kCluster);
+  gs = (TGraphErrors*)fGraphS->At(kCluster);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     h = h2->ProjectionY("py", ibin, ibin);
@@ -702,19 +658,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   }
 
   // Tracklet y residuals
-  h2 = (TH2I *)(fContainer->At(kTrackletYResidual));
-  gm = new TGraphErrors();
-  gm->SetLineColor(kBlue);
-  gm->SetMarkerStyle(7);
-  gm->SetMarkerColor(kBlue);
-  gm->SetNameTitle("tktm", "");
-  fGraphM->AddAt(gm, kTrackletYResidual);
-  gs = new TGraphErrors();
-  gs->SetLineColor(kRed);
-  gs->SetMarkerStyle(23);
-  gs->SetMarkerColor(kRed);
-  gs->SetNameTitle("tkts", "");
-  fGraphS->AddAt(gs, kTrackletYResidual);
+  h2 = (TH2I *)(fContainer->At(kTrackletY));
+  gm = (TGraphErrors*)fGraphM->At(kTrackletY);
+  gs = (TGraphErrors*)fGraphS->At(kTrackletY);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     h = h2->ProjectionY("py", ibin, ibin);
@@ -733,19 +679,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   }
 
   // Tracklet phi residuals
-  h2 = (TH2I *)(fContainer->At(kTrackletPhiResidual));
-  gm = new TGraphErrors();
-  gm->SetLineColor(kBlue);
-  gm->SetMarkerStyle(7);
-  gm->SetMarkerColor(kBlue);
-  gm->SetNameTitle("tktphim", "");
-  fGraphM->AddAt(gm, kTrackletPhiResidual);
-  gs = new TGraphErrors();
-  gs->SetLineColor(kRed);
-  gs->SetMarkerStyle(23);
-  gs->SetMarkerColor(kRed);
-  gs->SetNameTitle("tktphis", "");
-  fGraphS->AddAt(gs, kTrackletPhiResidual);
+  h2 = (TH2I *)(fContainer->At(kTrackletPhi));
+  gm = (TGraphErrors*)fGraphM->At(kTrackletPhi);
+  gs = (TGraphErrors*)fGraphS->At(kTrackletPhi);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     h = h2->ProjectionY("py", ibin, ibin);
@@ -763,138 +699,143 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     gs->SetPointError(ip, 0., 10.*f.GetParError(2));
   }
 
-
-  //PROCESS RESOLUTION DISTRIBUTIONS
-
-  if(HasMCdata()){
-    // cluster y resolution
-    h2 = (TH2I*)fContainer->At(kClusterResolution);
-    gm = new TGraphErrors();
-    gm->SetLineColor(kBlue);
-    gm->SetMarkerStyle(7);
-    gm->SetMarkerColor(kBlue);
-    gm->SetNameTitle("clym", "");
-    fGraphM->AddAt(gm, kClusterResolution);
-    gs = new TGraphErrors();
-    gs->SetLineColor(kRed);
-    gs->SetMarkerStyle(23);
-    gs->SetMarkerColor(kRed);
-    gs->SetNameTitle("clys", "");
-    fGraphS->AddAt(gs, kClusterResolution);
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      h = h2->ProjectionY("py", iphi, iphi);
-      if(h->GetEntries()<100) continue;
-      AdjustF1(h, &f);
-
-      if(IsVisual()){c->cd(); c->SetLogy();}
-      h->Fit(&f, opt, "", -0.5, 0.5);
-      if(IsVerbose()){
-        printf("phi[%d] mean[%e] sigma[%e]\n\n", iphi, 10.*f.GetParameter(1), 10.*f.GetParameter(2));
-      }
-      if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
-
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      Int_t ip = gm->GetN();
-      gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
-      gm->SetPointError(ip, 0., 10.*f.GetParError(1));
-      gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
-      gs->SetPointError(ip, 0., 10.*f.GetParError(2));
-    }
-  
-    // tracklet y resolution
-    h2 = (TH2I*)fContainer->At(kTrackletYResolution);
-    gm = new TGraphErrors();
-    gm->SetLineColor(kBlue);
-    gm->SetMarkerStyle(7);
-    gm->SetMarkerColor(kBlue);
-    gm->SetNameTitle("trkltym", "");
-    fGraphM->AddAt(gm, kTrackletYResolution);
-    gs = new TGraphErrors();
-    gs->SetLineColor(kRed);
-    gs->SetMarkerStyle(23);
-    gs->SetMarkerColor(kRed);
-    gs->SetNameTitle("trkltys", "");
-    fGraphS->AddAt(gs, kTrackletYResolution);
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      h = h2->ProjectionY("py", iphi, iphi);
-      if(h->GetEntries()<100) continue;
-      AdjustF1(h, &f);
-
-      if(IsVisual()){c->cd(); c->SetLogy();}
-      h->Fit(&f, opt, "", -0.5, 0.5);
-      if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
-
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      Int_t ip = gm->GetN();
-      gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
-      gm->SetPointError(ip, 0., 10.*f.GetParError(1));
-      gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
-      gs->SetPointError(ip, 0., 10.*f.GetParError(2));
-    }
-  
-    // tracklet z resolution
-    h2 = (TH2I*)fContainer->At(kTrackletZResolution);
-    gm = new TGraphErrors();
-    gm->SetLineColor(kBlue);
-    gm->SetMarkerStyle(7);
-    gm->SetMarkerColor(kBlue);
-    gm->SetNameTitle("trkltzm", "");
-    fGraphM->AddAt(gm, kTrackletZResolution);
-    gs = new TGraphErrors();
-    gs->SetLineColor(kRed);
-    gs->SetMarkerStyle(23);
-    gs->SetMarkerColor(kRed);
-    gs->SetNameTitle("trkltzs", "");
-    fGraphS->AddAt(gs, kTrackletZResolution);
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      h = h2->ProjectionY("py", iphi, iphi);
-      if(h->GetEntries()<100) continue;
-      AdjustF1(h, &fb);
-
-      if(IsVisual()){c->cd(); c->SetLogy();}
-      h->Fit(&fb, opt, "", -0.5, 0.5);
-      if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
-
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      Int_t ip = gm->GetN();
-      gm->SetPoint(ip, phi, 10.*fb.GetParameter(1));
-      gm->SetPointError(ip, 0., 10.*fb.GetParError(1));
-      gs->SetPoint(ip, phi, 10.*fb.GetParameter(2));
-      gs->SetPointError(ip, 0., 10.*fb.GetParError(2));
-    }
-  
-    //tracklet phi resolution
-    h2 = (TH2I*)fContainer->At(kTrackletAngleResolution);
-    gm = new TGraphErrors();
-    gm->SetLineColor(kBlue);
-    gm->SetMarkerStyle(7);
-    gm->SetMarkerColor(kBlue);
-    gm->SetNameTitle("trkltym", "");
-    fGraphM->AddAt(gm, kTrackletAngleResolution);
-    gs = new TGraphErrors();
-    gs->SetLineColor(kRed);
-    gs->SetMarkerStyle(23);
-    gs->SetMarkerColor(kRed);
-    gs->SetNameTitle("trkltys", "");
-    fGraphS->AddAt(gs, kTrackletAngleResolution);
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      h = h2->ProjectionY("py", iphi, iphi);
-      if(h->GetEntries()<100) continue;
-
-      if(IsVisual()){c->cd(); c->SetLogy();}
-      h->Fit(&f, opt, "", -0.5, 0.5);
-      if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
-
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      Int_t ip = gm->GetN();
-      gm->SetPoint(ip, phi, f.GetParameter(1));
-      gm->SetPointError(ip, 0., f.GetParError(1));
-      gs->SetPoint(ip, phi, f.GetParameter(2));
-      gs->SetPointError(ip, 0., f.GetParError(2));
-    }
+  if(!HasMCdata()){
+    if(c) delete c;
+    return kTRUE;
   }
-  if(c) delete c;
 
+  //PROCESS MC RESIDUAL DISTRIBUTIONS
+
+  // cluster y resolution
+  h2 = (TH2I*)fContainer->At(kMCcluster);
+  gm = (TGraphErrors*)fGraphM->At(kMCcluster);
+  gs = (TGraphErrors*)fGraphS->At(kMCcluster);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("py", iphi, iphi);
+    if(h->GetEntries()<100) continue;
+    AdjustF1(h, &f);
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&f, opt, "", -0.5, 0.5);
+    if(IsVerbose()){
+      printf("phi[%d] mean[%e] sigma[%e]\n\n", iphi, 10.*f.GetParameter(1), 10.*f.GetParameter(2));
+    }
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
+    gm->SetPointError(ip, 0., 10.*f.GetParError(1));
+    gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
+    gs->SetPointError(ip, 0., 10.*f.GetParError(2));
+  }
+
+  // tracklet y resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackletY);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackletY);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackletY);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("py", iphi, iphi);
+    if(h->GetEntries()<100) continue;
+    AdjustF1(h, &f);
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&f, opt, "", -0.5, 0.5);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
+    gm->SetPointError(ip, 0., 10.*f.GetParError(1));
+    gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
+    gs->SetPointError(ip, 0., 10.*f.GetParError(2));
+  }
+
+  // tracklet z resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackletZ);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackletZ);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackletZ);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("py", iphi, iphi);
+    if(h->GetEntries()<100) continue;
+    AdjustF1(h, &fb);
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&fb, opt, "", -0.5, 0.5);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, 10.*fb.GetParameter(1));
+    gm->SetPointError(ip, 0., 10.*fb.GetParError(1));
+    gs->SetPoint(ip, phi, 10.*fb.GetParameter(2));
+    gs->SetPointError(ip, 0., 10.*fb.GetParError(2));
+  }
+
+  //tracklet phi resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackletPhi);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackletPhi);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackletPhi);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("py", iphi, iphi);
+    if(h->GetEntries()<100) continue;
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&f, opt, "", -0.5, 0.5);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, f.GetParameter(1));
+    gm->SetPointError(ip, 0., f.GetParError(1));
+    gs->SetPoint(ip, phi, f.GetParameter(2));
+    gs->SetPointError(ip, 0., f.GetParError(2));
+  }
+
+  // track y resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackY);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackY);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackY);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("py", iphi, iphi);
+    if(h->GetEntries()<100) continue;
+    AdjustF1(h, &f);
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&f, opt, "", -0.5, 0.5);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
+    gm->SetPointError(ip, 0., 10.*f.GetParError(1));
+    gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
+    gs->SetPointError(ip, 0., 10.*f.GetParError(2));
+  }
+
+  // track z resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackZ);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackZ);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackZ);
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    h = h2->ProjectionY("pz", iphi, iphi);
+    if(h->GetEntries()<70) continue;
+    AdjustF1(h, &f);
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&f, opt, "", -0.5, 0.5);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, phi, 10.*f.GetParameter(1));
+    gm->SetPointError(ip, 0., 10.*f.GetParError(1));
+    gs->SetPoint(ip, phi, 10.*f.GetParameter(2));
+    gs->SetPointError(ip, 0., 10.*f.GetParError(2));
+  }
+
+
+  if(c) delete c;
   return kTRUE;
 }
 
@@ -950,89 +891,89 @@ TObjArray* AliTRDtrackingResolution::Histos()
 
   TH1 *h = 0x0;
   // cluster to tracklet residuals [2]
-  if(!(h = (TH2I*)gROOT->FindObject("fYCl"))){
-    h = new TH2I("fYCl", "Clusters Residuals", 21, -.33, .33, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hCl"))){
+    h = new TH2I("hCl", "Clusters-Track Residuals", 21, -.33, .33, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kClusterResidual);
+  fContainer->AddAt(h, kCluster);
 
   // tracklet to track residuals [2]
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltYRez"))){ 
-    h = new TH2I("hTrkltYRez", "Tracklets", 21, -.33, .33, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hTrkltY"))){
+    h = new TH2I("hTrkltY", "Tracklets-Track Residuals (Y)", 21, -.33, .33, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletYResidual);
+  fContainer->AddAt(h, kTrackletY);
 
   // tracklet to track residuals angular [2]
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltPhiRez"))){ 
-    h = new TH2I("hTrkltPhiRez", "Tracklets", 21, -.33, .33, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hTrkltPhi"))){
+    h = new TH2I("hTrkltPhi", "Tracklets-Track Residuals (#Phi)", 21, -.33, .33, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta phi [#circ]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletPhiResidual);
+  fContainer->AddAt(h, kTrackletPhi);
 
 
   // Resolution histos
   if(!HasMCdata()) return fContainer;
 
   // cluster y resolution [0]
-  if(!(h = (TH2I*)gROOT->FindObject("fYClMC"))){
-    h = new TH2I("fYClMC", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCcl"))){
+    h = new TH2I("hMCcl", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kClusterResolution);
+  fContainer->AddAt(h, kMCcluster);
 
   // tracklet y resolution [0]
-  if(!(h = (TH2I*)gROOT->FindObject("fYTrkltMC"))){
-    h = new TH2I("fYTrkltMC", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltY"))){
+    h = new TH2I("hMCtrkltY", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletYResolution);
+  fContainer->AddAt(h, kMCtrackletY);
 
   // tracklet y resolution [0]
-  if(!(h = (TH2I*)gROOT->FindObject("fZTrkltMC"))){
-    h = new TH2I("fZTrkltMC", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltZ"))){
+    h = new TH2I("hMCtrkltZ", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#theta)");
     h->GetYaxis()->SetTitle("#Delta z [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletZResolution);
+  fContainer->AddAt(h, kMCtrackletZ);
 
   // tracklet angular resolution [1]
-  if(!(h = (TH2I*)gROOT->FindObject("fPhiTrkltMC"))){
-    h = new TH2I("fPhiTrkltMC", "Tracklet Resolution (Angular)", 31, -.48, .48, 100, -10., 10.);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltPhi"))){
+    h = new TH2I("hMCtrkltPhi", "Tracklet Resolution (#Phi)", 31, -.48, .48, 100, -10., 10.);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta #phi [deg]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletAngleResolution);
+  fContainer->AddAt(h, kMCtrackletPhi);
 
   // Kalman track y resolution
-  if(!(h = (TH2I*)gROOT->FindObject("fYTrkMC"))){
-    h = new TH2I("fYTrkMC", "Kalman Track Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkY"))){
+    h = new TH2I("hMCtrkY", "Kalman Track Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackYResolution);
+  fContainer->AddAt(h, kMCtrackY);
 
   // Kalman track Z resolution
-  if(!(h = (TH2I*)gROOT->FindObject("fZTrkMC"))){
-    h = new TH2I("fZTrkMC", "Kalman Track Resolution (Z)", 20, -1., 1., 100, -1.5, 1.5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZ"))){
+    h = new TH2I("hMCtrkZ", "Kalman Track Resolution (Z)", 20, -1., 1., 100, -1.5, 1.5);
     h->GetXaxis()->SetTitle("tg(#theta)");
     h->GetYaxis()->SetTitle("#Delta z [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackZResolution);
+  fContainer->AddAt(h, kMCtrackZ);
 
   return fContainer;
 }

@@ -162,7 +162,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
     task->PostProcess();
     TCanvas *c=new TCanvas();
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
-      if(!task->GetRefFigure(ipic)) return;
+      if(!task->GetRefFigure(ipic)) continue;
       c->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
       c->Clear();
     }

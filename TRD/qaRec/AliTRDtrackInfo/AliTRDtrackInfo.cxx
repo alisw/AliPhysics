@@ -348,7 +348,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, UChar_t &status) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &status) const
 {
 // Check for 2 track ref for the tracklet defined bythe radial position x0
 // The "status" is a bit map and gives a more informative output in case of failure:
@@ -390,6 +390,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   y0   =  tr[1]->LocalY()/* - dydx*dx0*/;
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
+  pt   =  tr[1]->Pt();
   return kTRUE;
 }
 

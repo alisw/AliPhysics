@@ -17,25 +17,25 @@ class AliTRDrecoParam;
 class AliTRDeventInfo;
 
 class AliTRDcheckDetector : public AliTRDrecoTask{
-// The Histogram number
-typedef enum{
-  kNTracksEventHist=0,
-  kNEventsTriggerTracks=1,
-  kNclustersHist=2,
-  kNtrackletsHist=3,
-  kNTrackletsVsFindable = 4,
-  kNclusterTrackletHist=5,
-  kChi2=6, 
-  kChi2Normalized=7,
-  kNTracksSectorHist=8,
-  kPulseHeight=9,
-  kPulseHeightDistance=10,
-  kClusterCharge=11,
-  kChargeDeposit=12,
-  kNEventsTrigger=13,
-  kPurity = 14
-}HistType_t;
 public:
+  // The Histogram number
+  enum  HistType_t {
+    kNclustersTrack     = 0,
+    kNclustersTracklet   = 1,
+    kNtrackletsTrack    = 2,
+    kNtrackletsCross    = 3,
+    kNtrackletsFindable = 4,
+    kNtracksEvent       = 5,
+    kNtracksSector      = 6,
+    kPH                 = 7,
+    kChi2               = 8,
+    kChargeCluster      = 9,
+    kChargeTracklet     = 10,
+    kNeventsTrigger     = 11,
+    kNeventsTriggerTracks=12,
+    kTriggerPurity      = 13
+  };
+
   AliTRDcheckDetector();
   virtual ~AliTRDcheckDetector();
 
@@ -49,15 +49,16 @@ public:
   // Plotting Functions:
   TH1 *PlotNClustersTracklet(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotNClustersTrack(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotNTracklets(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotTrackletsVsFindable(const AliTRDtrackV1 *track = 0x0);
-  TH1 *PlotTracksSector(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotPulseHeight(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotPHSdistance(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotNTrackletsTrack(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotNTrackletsRowCross(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotFindableTracklets(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotNTracksSector(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotPHt(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotPHx(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotChi2(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotNormalizedChi2(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotClusterCharge(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotChargeDeposit(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotChi2Norm(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotChargeCluster(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotChargeTracklet(const AliTRDtrackV1 *t = 0x0);
 
   virtual Bool_t PostProcess();
   virtual Bool_t GetRefFigure(Int_t ifig);
@@ -67,7 +68,6 @@ public:
 private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
   AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);
-  Int_t GetNTracklets(const AliTRDtrackV1 *track);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names

@@ -730,35 +730,39 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
   // Update track and tracklet parameters 
   //
   
-  Double_t x      = trklt->GetX0();
+  Double_t x      = GetX();
   Double_t p[2]   = { trklt->GetYat(x)
                     , trklt->GetZat(x) };
-  Double_t cov[3];
-  trklt->GetCovAt(x, cov);
-  
+  Double_t cov[3], covR[3], cov0[3];
+
+//   printf("\tD[%3d] Ly[%d] Trk: x[%f] y[%f] z[%f]\n", trklt->GetDetector(), trklt->GetPlane(), GetX(), GetY(), GetZ());
+// //   
+//   Double_t xref = trklt->GetXref();
+//   trklt->GetCovAt(xref, covR);
+//   printf("xr=%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", xref, trklt->GetYat(xref), TMath::Sqrt(covR[0]), trklt->GetZat(xref), TMath::Sqrt(covR[2]), covR[1]);
+// 
+//   Double_t x0 = trklt->GetX0();
+//   trklt->GetCovAt(x0, cov0);
+//   printf("x0=%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", x0, trklt->GetYat(x0), TMath::Sqrt(cov0[0]), trklt->GetZat(x0), TMath::Sqrt(cov0[2]), cov0[1]);
+// 
+//   trklt->GetCovAt(x, cov);
+//   printf("x =%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", x, p[0], TMath::Sqrt(cov[0]), p[1], TMath::Sqrt(cov[2]), cov[1]);
+// 
+//   const Double_t *cc = GetCovariance();
+//   printf("yklm[0] = %f +- %f\n", GetY(), TMath::Sqrt(cc[0]));
+
+  trklt->GetCovAt(x, cov); 
   if(!AliExternalTrackParam::Update(p, cov)) return kFALSE;
-  
+//   cc = GetCovariance();
+//   printf("yklm[1] = %f +- %f\n", GetY(), TMath::Sqrt(cc[0]));
+
   AliTRDcluster *c = 0x0;
   Int_t ic = 0; while(!(c = trklt->GetClusters(ic))) ic++;
   AliTracker::FillResiduals(this, p, cov, c->GetVolumeId());
   
-  
   // Register info to track
   SetNumberOfClusters();
   SetChi2(GetChi2() + chisq);
-  
-  // update tracklet
-  Float_t snp = GetSnp();
-  Float_t tgl = GetTgl();
-  trklt->SetMomentum(GetP());
-  trklt->SetYref(0, GetY());
-  trklt->SetYref(1, snp/(1. - snp*snp));
-  trklt->SetZref(0,  GetZ());
-  trklt->SetZref(1, tgl);
-  const Double_t *cc = GetCovariance();
-  trklt->SetCovRef(cc);
-  trklt->SetSnp(snp);
-  trklt->SetTgl(tgl);
   return kTRUE;
 }
 

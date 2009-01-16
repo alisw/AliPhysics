@@ -58,7 +58,7 @@ class AliTRDseedV1 : public AliTRDseed
               AliTRDtrackingChamber *chamber, Float_t quality, 
               Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
   Bool_t	  AttachClusters(
-              AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
+              AliTRDtrackingChamber *chamber, Bool_t tilt = kFALSE);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      CookdEdx(Int_t nslices);
   Bool_t    Fit(Bool_t tilt=kTRUE, Int_t errors = 2);
@@ -90,9 +90,9 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t* GetProbability();
   Double_t  GetSnp() const           { return fSnp;}
   Double_t  GetTgl() const           { return fTgl;}
-  Float_t   GetXref() const          { return fXref;}
-  Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (fX0-x);}
-  Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (fX0-x);}
+  Float_t   GetXref() const          { return fX0 - fXref;}
+  Double_t  GetYat(Double_t x) const { return fYfit[0] - fYfit[1] * (fX0-x);}
+  Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
   
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
@@ -107,6 +107,7 @@ class AliTRDseedV1 : public AliTRDseed
   void      SetSnp(Double_t snp)     { fSnp = snp;}
   void      SetTgl(Double_t tgl)     { fTgl = tgl;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
+  void      UpDate(const AliTRDtrackV1* trk);
 
 protected:
   void Copy(TObject &ref) const;

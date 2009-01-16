@@ -18,7 +18,7 @@ class AliTRDcluster;
 class AliTRDseed : public TObject {
 
  public:
-	enum { knTimebins = 35 };
+	enum { knTimebins = 70/*35*/ };
 
   AliTRDseed(); 
   AliTRDseed(const AliTRDseed &s);

@@ -109,7 +109,7 @@ void AliTRDcheckDetector::Exec(Option_t *opt){
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
   TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
   if(fDebugLevel > 6)printf("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data());
-  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
+  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger))->Fill(triggermask);
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     if(!fTracks->UncheckedAt(iti)) continue;
     AliTRDtrackInfo *fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
@@ -117,15 +117,15 @@ void AliTRDcheckDetector::Exec(Option_t *opt){
     nTracks++;
   }
   if(nTracks){
-    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
-    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks))->Fill(triggermask);
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent))->Fill(nTracks);
   }
   if(triggermask <= 20 && !fTriggerNames->FindObject(Form("%d", triggermask))){
     fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
     // also set the label for both histograms
-    TH1 *histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
+    TH1 *histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks));
     histo->GetXaxis()->SetBinLabel(histo->FindBin(triggermask), triggername);
-    histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
+    histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger));
     histo->GetXaxis()->SetBinLabel(histo->FindBin(triggermask), triggername);
   }
   PostData(0, fContainer);
@@ -144,64 +144,41 @@ Bool_t AliTRDcheckDetector::PostProcess(){
   // Do Postprocessing (for the moment set the number of Reference histograms)
   //
   
-  TH1 * histo = 0x0;
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
-  histo->GetXaxis()->SetTitle("Number of Tracks");
-  histo->GetYaxis()->SetTitle("Events");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
-  histo->GetXaxis()->SetTitle("Number of Clusters");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
-  histo->GetXaxis()->SetTitle("Number of Tracklets");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTrackletsVsFindable));
-  histo->GetXaxis()->SetTitle("Ratio Found/Findable Tracklets");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
-  histo->GetXaxis()->SetTitle("Number of Clusters");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
-  histo->GetXaxis()->SetTitle("#chi^2");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
-  histo->GetXaxis()->SetTitle("Sector");
-  histo->GetYaxis()->SetTitle("Number of Tracks");
-  histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
-  histo->GetXaxis()->SetTitle("Time / 100ns");
-  histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
-  histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
-  histo->GetYaxis()->SetTitle("Entries");
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
-  histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
-  histo->GetYaxis()->SetTitle("Entries");
+  TH1 * h = 0x0;
+  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsTrack));
+  if(h->GetEntries()) h->Scale(100./h->Integral());
+
+  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsCross));
+  if(h->GetEntries()) h->Scale(100./h->Integral());
+
+  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksSector));
+  if(h->GetEntries()) h->Scale(100./h->Integral());
   
-  // Calculate the purity of the trigger clusters
-  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
-  TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
-  histoTracks->Divide(histo);
+  // Calculate of the trigger clusters purity
+  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger));
+  TH1F *h1 = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks));
+  h1->Divide(h);
   Float_t purities[20], val = 0;
   TString triggernames[20];
   Int_t nTriggerClasses = 0;
-  for(Int_t ibin = 1; ibin <= histo->GetNbinsX(); ibin++){
-    if((val = histoTracks->GetBinContent(ibin))){
+  for(Int_t ibin = 1; ibin <= h->GetNbinsX(); ibin++){
+    if((val = h1->GetBinContent(ibin))){
       purities[nTriggerClasses] = val;
-      triggernames[nTriggerClasses] = histoTracks->GetXaxis()->GetBinLabel(ibin);
+      triggernames[nTriggerClasses] = h1->GetXaxis()->GetBinLabel(ibin);
       nTriggerClasses++;
     }
   }
-  TH1F *hTriggerInf = new TH1F("fTriggerInf", "Trigger Information", TMath::Max(nTriggerClasses, 1), 0, TMath::Max(nTriggerClasses, 1));
-  for(Int_t ibin = 1; ibin <= nTriggerClasses; ibin++){
-    hTriggerInf->SetBinContent(ibin, purities[ibin-1]);
-    hTriggerInf->GetXaxis()->SetBinLabel(ibin, triggernames[ibin-1].Data());
+  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kTriggerPurity));
+  TAxis *ax = h->GetXaxis();
+  for(Int_t itrg = 0; itrg < nTriggerClasses; itrg++){
+    h->Fill(itrg, purities[itrg]);
+    ax->SetBinLabel(itrg+1, triggernames[itrg].Data());
   }
-  hTriggerInf->GetXaxis()->SetTitle("Trigger Cluster");
-  hTriggerInf->GetYaxis()->SetTitle("Ratio");
-  hTriggerInf->GetYaxis()->SetRangeUser(0,1);
-//	hTriggerInf->SetMarkerColor(kBlue);
-//	hTriggerInf->SetMarkerStyle(22);
-  fContainer->Add(hTriggerInf);
+  ax->SetRangeUser(-0.5, nTriggerClasses+.5);
+  h->GetYaxis()->SetRangeUser(0,1);
+
   fNRefFigures = 11;
+
   return kTRUE;
 }
 
@@ -210,58 +187,64 @@ Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
+  TObjArray *arr = 0x0;
   TH1 *h = 0x0, *h1 = 0x0, *h2 = 0x0;
   TGaxis *axis = 0x0;
   switch(ifig){
-  case 0:	
-    ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
-    break;
-  case 1:
-    ((TH1F*)fContainer->At(kNclustersHist))->Draw("pl");
-    break;
-  case 2:
-    h = (TH1F*)fContainer->At(kNtrackletsHist);
+  case kNclustersTrack:
+    ((TH1F*)fContainer->At(kNclustersTrack))->Draw("pl");
+    return kTRUE;
+  case kNclustersTracklet:
+    ((TH1F*)fContainer->At(kNclustersTracklet))->Draw("pc");
+    return kTRUE;
+  case kNtrackletsTrack:
+    h = (TH1F*)fContainer->At(kNtrackletsTrack);
     if(!h->GetEntries()) break;
-    h->Scale(100./h->Integral());
-    h->GetXaxis()->SetRangeUser(.5, 6.5);
     h->SetFillColor(kGreen);
     h->SetBarOffset(.2);
     h->SetBarWidth(.6);
     h->Draw("bar1");
-    break;
-  case 3:
-    h = (TH1F*)fContainer->At(kNTrackletsVsFindable);
+    return kTRUE;
+  case kNtrackletsCross:
+    h = (TH1F*)fContainer->At(kNtrackletsCross);
     if(!h->GetEntries()) break;
-    h->Scale(100./h->Integral());
-    h->GetXaxis()->SetRangeUser(0.005, 1.005);
-    h->SetFillColor(kGreen);
+    h->SetFillColor(kRed);
     h->SetBarOffset(.2);
     h->SetBarWidth(.6);
     h->Draw("bar1");
-    break;
-  case 4:
-    ((TH1F*)fContainer->At(kNclusterTrackletHist))->Draw("pc");
-    break;
-  case 5:
-    ((TH1F*)fContainer->At(kChi2))->Draw("");
-    break;
-  case 6:
-    h = (TH1F*)fContainer->At(kNTracksSectorHist);
+    return kTRUE;
+  case kNtrackletsFindable:
+    h = (TH1F*)fContainer->At(kNtrackletsFindable);
     if(!h->GetEntries()) break;
     h->Scale(100./h->Integral());
     h->SetFillColor(kGreen);
     h->SetBarOffset(.2);
     h->SetBarWidth(.6);
     h->Draw("bar1");
-    break;
-  case 7:
-    h = (TH1F*)fContainer->At(kPulseHeight);
+    return kTRUE;
+  case kNtracksEvent:
+    ((TH1F*)fContainer->At(kNtracksEvent))->Draw("pl");
+    return kTRUE;
+  case kNtracksSector:
+    h = (TH1F*)fContainer->At(kNtracksSector);
+    if(!h->GetEntries()) break;
+    h->SetFillColor(kGreen);
+    h->SetBarOffset(.2);
+    h->SetBarWidth(.6);
+    h->Draw("bar1");
+    return kTRUE;
+  case kChi2:
+    ((TH1F*)((TObjArray*)fContainer->At(kChi2))->At(0))->Draw("");
+    return kTRUE;
+  case kPH:
+    arr = (TObjArray*)fContainer->At(kPH);
+    h = (TH1F*)arr->At(0);
     h->SetMarkerStyle(24);
     h->SetMarkerColor(kBlack);
     h->SetLineColor(kBlack);
     h->Draw("e1");
     // copy the second histogram in a new one with the same x-dimension as the phs with respect to time
-    h1 = (TH1F *)fContainer->At(kPulseHeightDistance);
+    h1 = (TH1F *)arr->At(1);
     h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
     for(Int_t ibin = h1->GetXaxis()->GetFirst(); ibin < h1->GetNbinsX(); ibin++) 
       h2->SetBinContent(ibin, h1->GetBinContent(ibin));
@@ -279,27 +262,33 @@ Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
     axis->SetLineColor(kBlue);
     axis->SetLabelColor(kBlue);
     axis->SetTextColor(kBlue);
-    axis->SetTitle("x_{c}-x_{0} / cm");
+    axis->SetTitle("x_{0}-x_{c} [cm]");
     axis->Draw();
-    break;
-  case 8:
-    ((TH1F*)fContainer->At(kClusterCharge))->Draw("c");
-    break;
-  case 9:
-    ((TH1F*)fContainer->At(kChargeDeposit))->Draw("c");
-    break;
-  case 10: 
-    h=(TH1F*)fContainer->At(kPurity);
+    return kTRUE;
+  case kChargeCluster:
+    ((TH1F*)fContainer->At(kChargeCluster))->Draw("c");
+    return kTRUE;
+  case kChargeTracklet:
+    ((TH1F*)fContainer->At(kChargeTracklet))->Draw("c");
+    return kTRUE;
+  case kNeventsTrigger:
+    ((TH1F*)fContainer->At(kNeventsTrigger))->Draw("");
+    return kTRUE;
+  case kNeventsTriggerTracks:
+    ((TH1F*)fContainer->At(kNeventsTriggerTracks))->Draw("");
+    return kTRUE;
+  case kTriggerPurity: 
+    h=(TH1F*)fContainer->At(kTriggerPurity);
     h->SetBarOffset(.2);
     h->SetBarWidth(.6);
     h->SetFillColor(kGreen);
     h->Draw("bar1");
     break;
   default:
-    ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
     break;
   }
-  return kTRUE;
+  AliInfo(Form("Reference plot [%d] missing result", ifig));
+  return kFALSE;
 }
 
 //_______________________________________________________
@@ -309,67 +298,121 @@ TObjArray *AliTRDcheckDetector::Histos(){
   //
   if(fContainer) return fContainer;
   
-  fContainer = new TObjArray(25);
+  fContainer = new TObjArray(14);
   //fContainer->SetOwner(kTRUE);
 
   // Register Histograms
-  TH1 * histptr = 0x0;
-  if(!(histptr = (TH1F *)gROOT->FindObject("hNtrks")))
-    histptr = new TH1F("hNtrks", "N_{tracks} / event", 100, 0, 100);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNTracksEventHist);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTriggerTracks")))
-    histptr = new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 100, 0, 100);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNEventsTriggerTracks);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hNcls")))
-    histptr = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNclustersHist);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hNtls")))
-    histptr = new TH1F("hNtls", "N_{tracklets} / track", 7, -0.5, 6.5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNtrackletsHist);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hNtlsFindable")))
-    histptr = new TH1F("hNtlsFindable", "Ratio of found/findable Tracklets" , 101, -0.005, 1.005);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNTrackletsVsFindable);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hNclTls")))
-    histptr = new TH1F("hNclTls","N_{clusters} / tracklet", 51, -0.5, 50.5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNclusterTrackletHist);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2")))
-    histptr = new TH1F("hChi2", "Chi2", 200, 0, 20);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kChi2);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2n")))
-    histptr = new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kChi2Normalized);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hChi2n")))
-    histptr = new TH1F("hSM", "N_{tracks} / sector", 18, -0.5, 17.5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNTracksSectorHist);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hPHdetector")))
-    histptr = new TProfile("hPHdetector", "<PH>", 31, -0.5, 30.5);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kPulseHeight);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hPHdistance")))
-    histptr = new TProfile("hPHdistance", "<PH>", 31, -0.08, 4.88);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kPulseHeightDistance);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hQclDetector")))
-    histptr = new TH1F("hQclDetector", "Q_{cluster}", 200, 0, 1200);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kClusterCharge);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hQTdetector")))
-    histptr = new TH1F("hQTdetector", "#sum Q/chamber", 6000, 0, 6000);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kChargeDeposit);
-  if(!(histptr = (TH1F *)gROOT->FindObject("hEventsTrigger")))
-    histptr = new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100);
-  else histptr->Reset();
-  fContainer->AddAt(histptr, kNEventsTrigger);
+  TH1 * h = 0x0;
+  if(!(h = (TH1F *)gROOT->FindObject("hNcls"))){
+    h = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
+    h->GetXaxis()->SetTitle("N_{clusters}");
+    h->GetYaxis()->SetTitle("Entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kNclustersTrack);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hNclTls"))){
+    h = new TH1F("hNclTls","N_{clusters} / tracklet", 51, -0.5, 50.5);
+    h->GetXaxis()->SetTitle("N_{clusters}");
+    h->GetYaxis()->SetTitle("Entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kNclustersTracklet);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hNtls"))){
+    h = new TH1F("hNtls", "N_{tracklets} / track", AliTRDgeometry::kNlayer, 0.5, 6.5);
+    h->GetXaxis()->SetTitle("N^{tracklet}");
+    h->GetYaxis()->SetTitle("freq. [%]");
+  } else h->Reset();
+  fContainer->AddAt(h, kNtrackletsTrack);
+
+  // 
+  if(!(h = (TH1F *)gROOT->FindObject("hNtlsCross"))){
+    h = new TH1F("hNtlsCross", "N_{tracklets}^{cross} / track", 7, -0.5, 6.5);
+    h->GetXaxis()->SetTitle("n_{row cross}");
+    h->GetYaxis()->SetTitle("freq. [%]");
+  } else h->Reset();
+  fContainer->AddAt(h, kNtrackletsCross);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hNtlsFindable"))){
+    h = new TH1F("hNtlsFindable", "Found/Findable Tracklets" , 101, -0.005, 1.005);
+    h->GetXaxis()->SetTitle("r [a.u]");
+    h->GetYaxis()->SetTitle("Entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kNtrackletsFindable);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hNtrks"))){
+    h = new TH1F("hNtrks", "N_{tracks} / event", 100, 0, 100);
+    h->GetXaxis()->SetTitle("N_{tracks}");
+    h->GetYaxis()->SetTitle("Entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kNtracksEvent);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hNtrksSector"))){
+    h = new TH1F("hNtrksSector", "N_{tracks} / sector", AliTRDgeometry::kNsector, -0.5, 17.5);
+    h->GetXaxis()->SetTitle("sector");
+    h->GetYaxis()->SetTitle("freq. [%]");
+  } else h->Reset();
+  fContainer->AddAt(h, kNtracksSector);
+
+  // <PH> histos
+  TObjArray *arr = new TObjArray(2);
+  arr->SetOwner(kTRUE);  arr->SetName("<PH>");
+  fContainer->AddAt(arr, kPH);
+  if(!(h = (TH1F *)gROOT->FindObject("hPHt"))){
+    h = new TProfile("hPHt", "<PH>", 31, -0.5, 30.5);
+    h->GetXaxis()->SetTitle("Time / 100ns");
+    h->GetYaxis()->SetTitle("<PH> [a.u]");
+  } else h->Reset();
+  arr->AddAt(h, 0);
+  if(!(h = (TH1F *)gROOT->FindObject("hPHx")))
+    h = new TProfile("hPHx", "<PH>", 31, -0.08, 4.88);
+  else h->Reset();
+  arr->AddAt(h, 1);
+
+  // Chi2 histos
+  arr = new TObjArray(2);
+  arr->SetOwner(kTRUE); arr->SetName("Chi2");
+  fContainer->AddAt(arr, kChi2);
+  if(!(h = (TH1F *)gROOT->FindObject("hChi2")))
+    h = new TH1F("hChi2", "#Chi2", 200, 0, 20);
+  else h->Reset();
+  arr->AddAt(h, 0);
+  if(!(h = (TH1F *)gROOT->FindObject("hChi2n")))
+    h = new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5);
+  else h->Reset();
+  arr->AddAt(h, 1);
+
+
+  if(!(h = (TH1F *)gROOT->FindObject("hQcl"))){
+    h = new TH1F("hQcl", "Q_{cluster}", 200, 0, 1200);
+    h->GetXaxis()->SetTitle("Q_{cluster} [a.u.]");
+    h->GetYaxis()->SetTitle("Entries");
+  }else h->Reset();
+  fContainer->AddAt(h, kChargeCluster);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hQtrklt"))){
+    h = new TH1F("hQtrklt", "Q_{tracklet}", 6000, 0, 6000);
+    h->GetXaxis()->SetTitle("Q_{tracklet} [a.u.]");
+    h->GetYaxis()->SetTitle("Entries");
+  }else h->Reset();
+  fContainer->AddAt(h, kChargeTracklet);
+
+
+  if(!(h = (TH1F *)gROOT->FindObject("hEventsTrigger")))
+    h = new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100);
+  else h->Reset();
+  fContainer->AddAt(h, kNeventsTrigger);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hEventsTriggerTracks")))
+    h = new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 100, 0, 100);
+  else h->Reset();
+  fContainer->AddAt(h, kNeventsTriggerTracks);
+
+  if(!(h = (TH1F *)gROOT->FindObject("hTriggerPurity"))){
+    h = new TH1F("hTriggerPurity", "Trigger Purity", 10, -0.5, 9.5);
+    h->GetXaxis()->SetTitle("Trigger Cluster");
+    h->GetYaxis()->SetTitle("freq.");
+  } else h->Reset();
+  fContainer->AddAt(h, kTriggerPurity);
 
   return fContainer;
 }
@@ -389,7 +432,7 @@ TH1 *AliTRDcheckDetector::PlotNClustersTracklet(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclusterTrackletHist)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersTracklet)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -412,7 +455,7 @@ TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersHist)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersTrack)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -435,7 +478,7 @@ TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
         if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
       }
-      (*fDebugStream) << "NClusters"
+      (*fDebugStream) << "NClustersTrack"
         << "Detector="  << detector
         << "crossing="  << crossing
         << "momentum="	<< momentum
@@ -452,53 +495,9 @@ TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
   return h;
 }
 
-//_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChi2(const AliTRDtrackV1 *track){
-  //
-  // Plot the chi2 of the track
-  //
-  if(track) fTrack = track;
-  if(!fTrack){
-    AliWarning("No Track defined.");
-    return 0x0;
-  }
-  TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChi2)))){
-    AliWarning("No Histogram defined.");
-    return 0x0;
-  }
-  h->Fill(fTrack->GetChi2());
-  return h;
-}
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNormalizedChi2(const AliTRDtrackV1 *track){
-  //
-  // Plot the chi2 of the track
-  //
-  if(track) fTrack = track;
-  if(!fTrack){
-    AliWarning("No Track defined.");
-    return 0x0;
-  }
-  TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChi2Normalized)))){
-    AliWarning("No Histogram defined.");
-    return 0x0;
-  }
-  Int_t nTracklets = 0;
-  AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    nTracklets++;
-  }
-  h->Fill(fTrack->GetChi2()/nTracklets);
-  return h;
-}
-
-
-//_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
@@ -508,11 +507,11 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsHist)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsTrack)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  Int_t nTracklets = GetNTracklets(fTrack);
+  Int_t nTracklets = fTrack->GetNumberOfTracklets();
   h->Fill(nTracklets);
   if(fDebugLevel > 3){
     if(nTracklets == 1){
@@ -522,7 +521,7 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
         if((tracklet = fTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
-      (*fDebugStream) << "PlotNTracklets"
+      (*fDebugStream) << "NTrackletsTrack"
         << "Layer=" << layer
         << "\n";
     }
@@ -530,8 +529,36 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
   return h;
 }
 
+
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
+  //
+  // Plot the number of tracklets
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsCross)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+
+  Int_t ncross = 0;
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
+    if(!(tracklet = fTrack->GetTracklet(il)) || !tracklet->IsOK()) continue;
+
+    if(tracklet->IsRowCross()) ncross++;
+  }
+  h->Fill(ncross);
+  return h;
+}
+
+//_______________________________________________________
+TH1 *AliTRDcheckDetector::PlotFindableTracklets(const AliTRDtrackV1 *track){
   //
   // Plots the ratio of number of tracklets vs.
   // number of findable tracklets
@@ -566,7 +593,7 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNTrackletsVsFindable)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsFindable)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -636,7 +663,7 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
       if(fDebugLevel > 3){
         Double_t pos_tracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetMeanz() : 0};
         Int_t hasTracklet = tracklet ? 1 : 0;
-        (*fDebugStream)   << "GetFindableTracklets"
+        (*fDebugStream)   << "FindableTracklets"
           << "layer="     << il
           << "ytracklet=" << pos_tracklet[0]
           << "ytrack="    << y
@@ -652,8 +679,54 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
   return h;
 }
 
+
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotChi2(const AliTRDtrackV1 *track){
+  //
+  // Plot the chi2 of the track
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  if(!(h = dynamic_cast<TH1F *>(((TObjArray*)(fContainer->At(kChi2)))->At(0)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  h->Fill(fTrack->GetChi2());
+  return h;
+}
+
+//_______________________________________________________
+TH1 *AliTRDcheckDetector::PlotChi2Norm(const AliTRDtrackV1 *track){
+  //
+  // Plot the chi2 of the track
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  if(!(h = dynamic_cast<TH1F *>(((TObjArray*)(fContainer->At(kChi2)))->At(1)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  Int_t nTracklets = 0;
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
+    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
+    nTracklets++;
+  }
+  h->Fill(fTrack->GetChi2()/nTracklets);
+  return h;
+}
+
+
+//_______________________________________________________
+TH1 *AliTRDcheckDetector::PlotPHt(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
@@ -663,7 +736,7 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TProfile *h = 0x0;
-  if(!(h = dynamic_cast<TProfile *>(fContainer->At(kPulseHeight)))){
+  if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(0)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -691,7 +764,7 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
           if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
           pdg = fMC->GetPDG();
         }
-        (*fDebugStream) << "PulseHeight"
+        (*fDebugStream) << "PHt"
           << "Detector="	<< detector
           << "crossing="	<< crossing
           << "Timebin="		<< localtime
@@ -713,7 +786,7 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotPHSdistance(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotPHx(const AliTRDtrackV1 *track){
   //
   // Plots the average pulse height vs the distance from the anode wire
   // (plus const anode wire offset)
@@ -724,7 +797,7 @@ TH1 *AliTRDcheckDetector::PlotPHSdistance(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TProfile *h = 0x0;
-  if(!(h = dynamic_cast<TProfile *>(fContainer->At(kPulseHeightDistance)))){
+  if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(1)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -744,7 +817,7 @@ TH1 *AliTRDcheckDetector::PlotPHSdistance(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotClusterCharge(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotChargeCluster(const AliTRDtrackV1 *track){
   //
   // Plot the cluster charge
   //
@@ -754,7 +827,7 @@ TH1 *AliTRDcheckDetector::PlotClusterCharge(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kClusterCharge)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeCluster)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -771,7 +844,7 @@ TH1 *AliTRDcheckDetector::PlotClusterCharge(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotChargeTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the charge deposit per chamber
   //
@@ -781,14 +854,14 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeDeposit)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeTracklet)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   Double_t Qtot = 0;
-  Int_t nTracklets =GetNTracklets(fTrack);
+  Int_t nTracklets =fTrack->GetNumberOfTracklets();
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     Qtot = 0.;
@@ -810,7 +883,7 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
 	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
       }
-      (*fDebugStream) << "ChargeDeposit"
+      (*fDebugStream) << "ChargeTracklet"
         << "Detector="  << detector
         << "crossing="  << crossing
         << "momentum="	<< momentum
@@ -828,7 +901,7 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotTracksSector(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDetector::PlotNTracksSector(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracks per Sector
   //
@@ -838,7 +911,7 @@ TH1 *AliTRDcheckDetector::PlotTracksSector(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNTracksSectorHist)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtracksSector)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -857,22 +930,6 @@ TH1 *AliTRDcheckDetector::PlotTracksSector(const AliTRDtrackV1 *track){
   return h;
 }
 
-//_______________________________________________________
-Int_t AliTRDcheckDetector::GetNTracklets(const AliTRDtrackV1 *track){
-  //
-  // Count the number of tracklets per track
-  //
-  if(!track){
-    AliError("No track");
-    return 0;
-  }
-  Int_t nTracklets = 0;
-  AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t il = AliTRDgeometry::kNlayer; il--;){
-    if((tracklet = track->GetTracklet(il)) && tracklet->IsOK()) nTracklets++;
-  }
-  return nTracklets;
-}
 
 //________________________________________________________
 void AliTRDcheckDetector::SetRecoParam(AliTRDrecoParam *r)
@@ -882,7 +939,9 @@ void AliTRDcheckDetector::SetRecoParam(AliTRDrecoParam *r)
 }
 
 //________________________________________________________
-void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c){
-  dist[0] = c->GetY() - (tracklet->GetYfit(0) + tracklet->GetYfit(1)*(c->GetX() - tracklet->GetX0()));
-  dist[1] = c->GetZ() - tracklet->GetMeanz();
+void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c)
+{
+  Float_t x = c->GetX();
+  dist[0] = c->GetY() - tracklet->GetYat(x);
+  dist[1] = c->GetZ() - tracklet->GetZat(x);
 }

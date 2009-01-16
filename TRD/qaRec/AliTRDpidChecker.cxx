@@ -91,7 +91,8 @@ TObjArray * AliTRDpidChecker::Histos(){
   const Float_t epsilon = 1./(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the 2-dim LQ method 
-  fEfficiency = new TObjArray(); fEfficiency->Expand(3);
+  fEfficiency = new TObjArray(3);
+  fEfficiency->SetOwner(); fEfficiency->SetName("Efficiency");
   fContainer->AddAt(fEfficiency, kEfficiency);
   
   TH1 *h = 0x0;
@@ -1054,32 +1055,33 @@ Bool_t AliTRDpidChecker::PostProcess()
     fGraph = new TObjArray(6);
     fGraph->SetOwner();
 
-    fGraph->AddAt(g = new TGraphErrors(), kLQ);
+    // efficiency graphs
+    TObjArray *arr = new TObjArray(3); arr->SetOwner();
+    fGraph->AddAt(arr, 0);
+    arr->AddAt(g = new TGraphErrors(), kLQ);
     g->SetLineColor(kBlue);
     g->SetMarkerColor(kBlue);
     g->SetMarkerStyle(7);
-  
-    fGraph->AddAt(g = new TGraphErrors(), kNN);
+    arr->AddAt(g = new TGraphErrors(), kNN);
     g->SetLineColor(kGreen);
     g->SetMarkerColor(kGreen);
     g->SetMarkerStyle(7);
-  
-    fGraph -> AddAt(g = new TGraphErrors(), kESD);
+    arr -> AddAt(g = new TGraphErrors(), kESD);
     g->SetLineColor(kRed);
     g->SetMarkerColor(kRed);
     g->SetMarkerStyle(24);
 
-    fGraph->AddAt(g = new TGraphErrors(), 3+kLQ);
+    arr = new TObjArray(3); arr->SetOwner();
+    fGraph->AddAt(arr, 1);
+    arr->AddAt(g = new TGraphErrors(), kLQ);
     g->SetLineColor(kBlue);
     g->SetMarkerColor(kBlue);
     g->SetMarkerStyle(7);
-  
-    fGraph->AddAt(g = new TGraphErrors(), 3+kNN);
+    arr->AddAt(g = new TGraphErrors(), kNN);
     g->SetLineColor(kGreen);
     g->SetMarkerColor(kGreen);
     g->SetMarkerStyle(7);
-  
-    fGraph -> AddAt(g = new TGraphErrors(), 3+kESD);
+    arr -> AddAt(g = new TGraphErrors(), kESD);
     g->SetLineColor(kRed);
     g->SetMarkerColor(kRed);
     g->SetMarkerStyle(24);

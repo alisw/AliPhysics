@@ -27,21 +27,15 @@ class AliTRDtrackingResolution : public AliTRDrecoTask
 {
 public:
   enum{
-    kClusterResidual         = 0
-    ,kTrackletYResidual      = 1 // tracklet - track residuals
-    ,kTrackletPhiResidual    = 2 // tracklet - track angular residuals
-//     ,kTrackletKalmanYResidual = 3 // Kalman track model
-//     ,kTrackletKalmanAngleResidual = 4
-    ,kClusterResolution      = 3/*5*/
-    ,kTrackletYResolution    = 4/*6*/
-    ,kTrackletZResolution    = 5/*6*/
-    ,kTrackletAngleResolution= 6/*7*/
-    ,kTrackYResolution       = 7 // Kalman Y resolution
-    ,kTrackZResolution       = 8 // Kalman Z resolution
-//     ,kTrackRAngleResolution   = 10
-//     ,kTrackKYResolution       = 11 // Kalman track model
-//     ,kTrackKZResolution       = 12
-//     ,kTrackKAngleResolution   = 13
+    kCluster        = 0
+    ,kTrackletY     = 1 // tracklet - track y pools
+    ,kTrackletPhi   = 2 // tracklet - track angular pools residuals
+    ,kMCcluster     = 3/*5*/
+    ,kMCtrackletY   = 4/*6*/
+    ,kMCtrackletZ   = 5/*6*/
+    ,kMCtrackletPhi = 6/*7*/
+    ,kMCtrackY      = 7 // Kalman Y resolution
+    ,kMCtrackZ      = 8 // Kalman Z resolution
   };
   enum{
     kVerbose  = 0
@@ -59,9 +53,9 @@ public:
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
 
-  TH1*    PlotClusterResiduals(const AliTRDtrackV1 *t=0x0);
-  TH1*    PlotTrackletResiduals(const AliTRDtrackV1 *t=0x0);
-  TH1*    PlotTrackletPhiResiduals(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTrackletPhi(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotResolution(const AliTRDtrackV1 *t=0x0);
 
   void    SetRecoParam(AliTRDrecoParam *r);

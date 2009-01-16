@@ -263,7 +263,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       quality[iSeed] = covariance[0] + covariance[2];
     }
     // Sort tracks according to covariance of local Y and Z
-    TMath::Sort(nSeed,quality,index,kFALSE);
+    TMath::Sort(nSeed, quality, index,kFALSE);
   }
   
   // Backpropagate all seeds
@@ -607,7 +607,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   //
 
   Int_t nClustersExpected = 0;
-  Double_t clength = AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
+  Double_t clength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   AliTRDtrackingChamber *chamber = 0x0;
   
   AliTRDseedV1 tracklet, *ptrTracklet = 0x0;
@@ -622,7 +622,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   // Loop through the TRD layers
   for (Int_t ilayer = 0; ilayer < AliTRDgeometry::Nlayer(); ilayer++) {
     // BUILD TRACKLET IF NOT ALREADY BUILT
-    Double_t x = 0., y, z, alpha;
+    Double_t x = 0., x0, y, z, alpha;
     ptrTracklet  = tracklets[ilayer];
     if(!ptrTracklet){
       ptrTracklet = new(&tracklet) AliTRDseedV1(ilayer);
@@ -634,6 +634,12 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
       if((x = fTrSec[sector].GetX(ilayer)) < 1.) continue;
     
+      // Propagate closer to the current layer
+      x0 = x - 1.5*clength;
+      if (x0 > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x0-fgkMaxStep, fgkMaxStep)) return -1/*nClustersExpected*/;
+      if (!AdjustSector(&t)) return -1/*nClustersExpected*/;
+      if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1/*nClustersExpected*/;
+
       if (!t.GetProlongation(x, y, z)) return -1/*nClustersExpected*/;
       Int_t stack = fGeom->GetStack(z, ilayer);
       Int_t nCandidates = stack >= 0 ? 1 : 2;
@@ -653,19 +659,21 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         tracklet.SetPadLength(pp->GetLengthIPad());
         tracklet.SetDetector(chamber->GetDetector());
         tracklet.SetX0(x);
-        if(!tracklet.Init(&t)){
-          t.SetStopped(kTRUE);
-          return nClustersExpected;
-        }
-        if(!tracklet.AttachClustersIter(chamber, 1000./*, kTRUE*/)) continue;
-        tracklet.Init(&t);
+        tracklet.UpDate(&t);
+//         if(!tracklet.Init(&t)){
+//           t.SetStopped(kTRUE);
+//           return nClustersExpected;
+//         }
+        if(!tracklet.AttachClusters(chamber, kTRUE)) continue;
+        //if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
+        //tracklet.Init(&t);
         
         if(tracklet.GetN() < fgNTimeBins*fReconstructor->GetRecoParam() ->GetFindableClusters()) continue;
       
         break;
       }
       //ptrTracklet->UseClusters();
-    } else ptrTracklet->Init(&t);
+    }// else ptrTracklet->Init(&t);
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
       if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1/*nClustersExpected*/;
@@ -681,6 +689,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1/*nClustersExpected*/;
     
     // load tracklet to the tracker and the track
+    ptrTracklet->Fit(kFALSE); // no tilt correction
     ptrTracklet = SetTracklet(ptrTracklet);
     t.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
   
@@ -690,7 +699,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t xyz0[3]; // entry point 
     t.GetXYZ(xyz0);
     alpha = t.GetAlpha();
-    x = ptrTracklet->GetX0();
+    x = ptrTracklet->GetXref(); //GetX0();
     if (!t.GetProlongation(x, y, z)) return -1/*nClustersExpected*/;
     Double_t xyz1[3]; // exit point
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
@@ -707,6 +716,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     if (!AdjustSector(&t)) return -1/*nClustersExpected*/;
     Double_t maxChi2 = t.GetPredictedChi2(ptrTracklet);
     if (!t.Update(ptrTracklet, maxChi2)) return -1/*nClustersExpected*/;
+    ptrTracklet->UpDate(&t);
+
     if (maxChi2<1e+10) { 
       nClustersExpected += ptrTracklet->GetN();
       //t.SetTracklet(&tracklet, index);
@@ -1669,6 +1680,24 @@ void AliTRDtrackerV1::UnloadClusters()
   // Increment the Event Number
   AliTRDtrackerDebug::SetEventNumber(AliTRDtrackerDebug::GetEventNumber()  + 1);
 }
+
+//____________________________________________________________________
+void AliTRDtrackerV1::UseClusters(const AliKalmanTrack *t, Int_t) const
+{
+  const AliTRDtrackV1 *track = dynamic_cast<const AliTRDtrackV1*>(t);
+  if(!track) return;
+
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+    if(!(tracklet = track->GetTracklet(ily))) continue;
+    AliTRDcluster *c = 0x0;
+    for(Int_t ic=AliTRDseed::knTimebins; ic--;){
+      if(!(c=tracklet->GetClusters(ic))) continue;
+      c->Use();
+    }
+  }
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrackerV1::AdjustSector(AliTRDtrackV1 *track) 
