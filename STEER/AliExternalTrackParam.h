@@ -158,11 +158,7 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
   Bool_t PropagateTo(Double_t x, Double_t b);
-  Bool_t Propagate(Double_t alpha, Double_t x, Double_t b) {
-    if (Rotate(alpha))
-      if (PropagateTo(x,b)) return kTRUE;
-    return kFALSE;
-  }
+  Bool_t Propagate(Double_t alpha, Double_t x, Double_t b);
   void   Propagate(Double_t len,Double_t x[3],Double_t p[3],Double_t bz) const;
   Bool_t Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const;
 

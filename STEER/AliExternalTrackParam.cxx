@@ -356,32 +356,44 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
 
-  //Multiple scattering******************
+  //Calculating the multiple scattering corrections******************
+  Double_t cC22 = 0.;
+  Double_t cC33 = 0.;
+  Double_t cC43 = 0.;
+  Double_t cC44 = 0.;
   if (xOverX0 != 0) {
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0);
-     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
-     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
-     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
-     fC44 += theta2*fP3*fP4*fP3*fP4;
+     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
+     cC22 = theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+     cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
+     cC44 = theta2*fP3*fP4*fP3*fP4;
   }
 
-  //Energy losses************************
+  //Calculating the energy loss corrections************************
+  Double_t cP4=1.;
   if ((xTimesRho != 0.) && (beta2 < 1.)) {
      Double_t dE=Bethe(p/mass)*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     fP4*=(1.- e/p2*dE);
-     if (TMath::Abs(fP4)>100.) return kFALSE; // Do not track below 10 MeV/c
+     cP4 = (1.- e/p2*dE);
+     if (TMath::Abs(fP4*cP4)>100.) return kFALSE; //Do not track below 10 MeV/c
 
 
      // Approximate energy loss fluctuation (M.Ivanov)
      const Double_t knst=0.07; // To be tuned.  
      Double_t sigmadE=knst*TMath::Sqrt(TMath::Abs(dE)); 
-     fC44+=((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
+     cC44 += ((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
  
   }
+
+  //Applying the corrections*****************************
+  fC22 += cC22;
+  fC33 += cC33;
+  fC43 += cC43;
+  fC44 += cC44;
+  fP4  *= cP4;
 
   return kTRUE;
 }
@@ -413,30 +425,41 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   d*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
 
   //Multiple scattering******************
+  Double_t cC22 = 0.;
+  Double_t cC33 = 0.;
+  Double_t cC43 = 0.;
+  Double_t cC44 = 0.;
   if (d!=0) {
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
-     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
-     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
-     fC44 += theta2*fP3*fP4*fP3*fP4;
+     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
+     cC22 = theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+     cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
+     cC44 = theta2*fP3*fP4*fP3*fP4;
   }
 
   //Energy losses************************
+  Double_t cP4=1.;
   if (x0!=0. && beta2<1) {
      d*=x0;
      Double_t dE=Bethe(p/mass)*d;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     fP4*=(1.- e/p2*dE);
+     cP4 = (1.- e/p2*dE);
 
      // Approximate energy loss fluctuation (M.Ivanov)
      const Double_t knst=0.07; // To be tuned.  
      Double_t sigmadE=knst*TMath::Sqrt(TMath::Abs(dE)); 
-     fC44+=((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
+     cC44 += ((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
  
   }
+
+  fC22 += cC22;
+  fC33 += cC33;
+  fC43 += cC43;
+  fC44 += cC44;
+  fP4  *= cP4;
 
   return kTRUE;
 }
@@ -668,6 +691,33 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
 
   return kTRUE;
 }
+
+Bool_t 
+AliExternalTrackParam::Propagate(Double_t alpha, Double_t x, Double_t b) {
+  //------------------------------------------------------------------
+  // Transform this track to the local coord. system rotated
+  // by angle "alpha" (rad) with respect to the global coord. system, 
+  // and propagate this track to the plane X=xk (cm) in the field "b" (kG)
+  //------------------------------------------------------------------
+  
+  //Save the parameters
+  Double_t as=fAlpha;
+  Double_t xs=fX;
+  Double_t ps[5], cs[15];
+  for (Int_t i=0; i<5;  i++) ps[i]=fP[i]; 
+  for (Int_t i=0; i<15; i++) cs[i]=fC[i]; 
+
+  if (Rotate(alpha))
+     if (PropagateTo(x,b)) return kTRUE;
+
+  //Restore the parameters, if the operation failed
+  fAlpha=as;
+  fX=xs;
+  for (Int_t i=0; i<5;  i++) fP[i]=ps[i]; 
+  for (Int_t i=0; i<15; i++) fC[i]=cs[i]; 
+  return kFALSE;
+}
+
 
 void AliExternalTrackParam::Propagate(Double_t len, Double_t x[3],
 Double_t p[3], Double_t bz) const {
