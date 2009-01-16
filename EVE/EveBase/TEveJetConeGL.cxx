@@ -62,7 +62,7 @@ void TEveJetConeGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
    // Render with OpenGL.
 
-   printf("TEveJetConeGL::DirectDraw LOD %d\n", rnrCtx.CombiLOD());
+   // printf("TEveJetConeGL::DirectDraw LOD %d\n", rnrCtx.CombiLOD());
 
    glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 
