@@ -17,7 +17,8 @@
 $Log$
 */ 
 
-#include "AliFlowCommonConstants.h"  
+#include "AliFlowCommonConstants.h" 
+#include "TMath.h" 
 
 // AliFlowCommonConstants:
 //
@@ -32,7 +33,7 @@ Double_t AliFlowCommonConstants::fgMultMax = 10000.;
 Double_t AliFlowCommonConstants::fgPtMin   =  0.;	     
 Double_t AliFlowCommonConstants::fgPtMax   = 10.;
 Double_t AliFlowCommonConstants::fgPhiMin  =  0.;	     
-Double_t AliFlowCommonConstants::fgPhiMax  =  7.;
+Double_t AliFlowCommonConstants::fgPhiMax  =  TMath::TwoPi();
 Double_t AliFlowCommonConstants::fgEtaMin  = -2.;	     
 Double_t AliFlowCommonConstants::fgEtaMax  =  2.;	     
 Double_t AliFlowCommonConstants::fgQMin    =  0.;	     

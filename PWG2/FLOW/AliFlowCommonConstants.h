@@ -13,13 +13,12 @@
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 
 namespace AliFlowCommonConstants {
-
-  
+ 
   // Enumerators
   enum {
     kNbinsMult = 10000,
     kNbinsPt   = 100,   
-    kNbinsPhi  = 70,
+    kNbinsPhi  = 72,
     kNbinsEta  = 80,
     kNbinsQ    = 500
   };
@@ -58,7 +57,7 @@ namespace AliFlowCommonConstants {
 
 
   //ClassDef(AliFlowCommonConstants,0)  // macro for rootcint
-  //};
+
 }
 
 #endif
