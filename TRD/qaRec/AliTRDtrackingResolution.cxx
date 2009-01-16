@@ -311,7 +311,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
-  Float_t p, x0, y0, z0, dx, dy, dz, dydx, dzdx;
+  Float_t p, pt, x0, y0, z0, dx, dy, dz, dydx, dzdx;
 
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
@@ -322,38 +322,40 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     x0  = fTracklet->GetX0();
     //radial shift with respect to the MC reference (radial position of the pad plane)
     dx  = x0 - fTracklet->GetXref();
-    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, p, s)) continue; 
+    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, pt, s)) continue; 
     // MC track position at reference radial position
     Float_t yt = y0 - dx*dydx;
     Float_t zt = z0 - dx*dzdx;
-    p *= 1.+dzdx*dzdx; // pt -> p
+    p = pt*(1.+dzdx*dzdx); // pt -> p
 
-    // add Kalman residuals for y and z
+    // add Kalman residuals for y, z and pt
     Float_t dxr= fTracklet->GetX0() - x0 + dx; 
     Float_t yr = fTracklet->GetYref(0) - dxr*fTracklet->GetYref(1);
     dy = yt - yr;
     Float_t zr = fTracklet->GetZref(0) - dxr*fTracklet->GetZref(1);
     dz = zt - zr;
+    Float_t tgl = fTracklet->GetTgl();
+    Float_t ptr = fTracklet->GetMomentum()/(1.+tgl*tgl);
+
     ((TH2I*)fContainer->At(kMCtrackY))->Fill(dydx, dy);
     ((TH2I*)fContainer->At(kMCtrackZ))->Fill(dzdx, dz);
+    ((TH2I*)fContainer->At(kMCtrackPt))->Fill(1./pt, ptr-pt);
     // Fill Debug stream for Kalman track
     if(fDebugLevel>=1){
-      Float_t pr    = fTracklet->GetMomentum();
       Float_t dydxr = fTracklet->GetYref(1);
-      Float_t dzdxr = fTracklet->GetZref(1);
       (*fDebugStream) << "MCtrack"
         << "det="     << det
         << "pdg="     << pdg
-        << "p="       << p
+        << "pt="      << pt
         << "yt="      << yt
         << "zt="      << zt
         << "dydx="    << dydx
         << "dzdx="    << dzdx
-        << "pr="      << pr
+        << "ptr="     << ptr
         << "dy="      << dy
         << "dz="      << dz
         << "dydxr="   << dydxr
-        << "dzdxr="   << dzdxr
+        << "dzdxr="   << tgl
         << "\n";
     }
 
@@ -573,6 +575,17 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     ax->SetTitle("Z_{track} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#theta)");
+    g->Draw("apl");
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
+    g->Draw("pl");
+    return kTRUE;
+  case kMCtrackPt:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.5, 2.);
+    ax->SetTitle("#epsilon_{P_{t}}^{track} / #mu [%]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("1/p_{t}");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
@@ -834,6 +847,41 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     gs->SetPointError(ip, 0., 10.*f.GetParError(2));
   }
 
+  // track Pt resolution
+  h2 = (TH2I*)fContainer->At(kMCtrackPt);
+  TAxis *ax = h2->GetXaxis();
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackPt);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackPt);
+  TF1 fg("fg", "gaus", -1.5, 1.5);
+  TF1 fl("fl", "landau", -4., 15.);
+  TF1 fgl("fgl", "gaus(0)+landau(3)", -5., 20.);
+  for(Int_t ip=1; ip<=ax->GetNbins(); ip++){
+    h = h2->ProjectionY("ppt", ip, ip);
+    if(h->GetEntries()<70) continue;
+
+    h->Fit(&fg, "QN", "", -1.5, 1.5);
+    fgl.SetParameter(0, fg.GetParameter(0));
+    fgl.SetParameter(1, fg.GetParameter(1));
+    fgl.SetParameter(2, fg.GetParameter(2));
+    h->Fit(&fl, "QN", "", -4., 15.);
+    fgl.SetParameter(3, fl.GetParameter(0));
+    fgl.SetParameter(4, fl.GetParameter(1));
+    fgl.SetParameter(5, fl.GetParameter(2));
+
+    if(IsVisual()){c->cd(); c->SetLogy();}
+    h->Fit(&fgl, opt, "", -5., 20.);
+    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
+
+    Float_t invpt = ax->GetBinCenter(ip);
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, invpt, fgl.GetParameter(1));
+    gm->SetPointError(ip, 0., fgl.GetParError(1));
+    gs->SetPoint(ip, invpt, fgl.GetParameter(2)*invpt);
+    gs->SetPointError(ip, 0., fgl.GetParError(2));
+    // fgl.GetParameter(4) // Landau MPV
+    // fgl.GetParameter(5) // Landau Sigma
+  }
+
 
   if(c) delete c;
   return kTRUE;
@@ -886,7 +934,7 @@ TObjArray* AliTRDtrackingResolution::Histos()
 {
   if(fContainer) return fContainer;
 
-  fContainer  = new TObjArray(9);
+  fContainer  = new TObjArray(10);
   //fContainer->SetOwner(kTRUE);
 
   TH1 *h = 0x0;
@@ -974,6 +1022,15 @@ TObjArray* AliTRDtrackingResolution::Histos()
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
   fContainer->AddAt(h, kMCtrackZ);
+
+  // Kalman track Pt resolution
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkPt"))){
+    h = new TH2I("hMCtrkPt", "Kalman Track Resolution (Pt)", 100, 0., 2., 150, -5., 20.);
+    h->GetXaxis()->SetTitle("1/p_{t}");
+    h->GetYaxis()->SetTitle("#Delta p_{t} [GeV/c]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackPt);
 
   return fContainer;
 }

@@ -36,6 +36,7 @@ public:
     ,kMCtrackletPhi = 6/*7*/
     ,kMCtrackY      = 7 // Kalman Y resolution
     ,kMCtrackZ      = 8 // Kalman Z resolution
+    ,kMCtrackPt     = 9 // Kalman Pt resolution
   };
   enum{
     kVerbose  = 0
