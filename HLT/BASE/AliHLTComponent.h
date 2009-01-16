@@ -303,15 +303,15 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Init function to prepare data processing.
    * Initialization of common data structures for a sequence of events.
-   * The call is redirected to the internal method @ref DoInit which can be
-   * overridden by the child class.<br>
+   * The call is redirected to the internal method DoInit which can be
+   * overridden by the child class.
    * During Init also the environment structure is passed to the component.
-   * @param environ        environment pointer with environment dependend function
+   * @param environ        environment pointer with environment dependent function
    *                       calls
-   * @param environParam   additionel parameter for function calls, the pointer
+   * @param environParam   additional parameter for function calls, the pointer
    *                       is passed as it is
    * @param argc           size of the argument array
-   * @param argv           agument array for component initialization
+   * @param argv           augment array for component initialization
    */
   virtual int Init( const AliHLTAnalysisEnvironment* environ, void* environParam, int argc, const char** argv );
 
@@ -464,7 +464,7 @@ class AliHLTComponent : public AliHLTLogging {
   virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /**
-   * Get a ratio by how much the data volume is shrinked or enhanced.
+   * Get a ratio by how much the data volume is shrunken or enhanced.
    * The function is pure virtual and must be implemented by the child class.
    * @param constBase        <i>return</i>: additive part, independent of the
    *                                   input data volume  
@@ -720,7 +720,7 @@ class AliHLTComponent : public AliHLTLogging {
    * part of a normal event, the component configuration is called first.
    *
    * The CDB path parameter specifies the path in the CDB, i.e. without
-   * leading absolute path of the CDB location. The framework might alse
+   * leading absolute path of the CDB location. The framework might also
    * provide the id of the component in the analysis chain.
    *
    * \b Note: The CDB will be initialized by the framework, either already set
@@ -772,7 +772,7 @@ class AliHLTComponent : public AliHLTLogging {
    * The handler is called before the processing function. The processing
    * function is skipped if there are no other data blocks available.
    *
-   * See StartOfRun() for mor ecomments of the sequence of steering events.
+   * See StartOfRun() for more comments of the sequence of steering events.
    *
    * @return neg. error code if failed
    */
@@ -871,14 +871,14 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get the first object of a specific data type from the input data.
-   * The hight-level methods provide functionality to transfer ROOT data
+   * The High-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.
    *
    * The method looks for the first ROOT object of type dt in the input stream.
    * If also the class name is provided, the object is checked for the right
    * class type. The input data block needs a certain structure, namely the 
    * buffer size as first word. If the cross check fails, the retrieval is
-   * silently abondoned, unless the \em bForce parameter is set.<br>
+   * silently abandoned, unless the \em bForce parameter is set.<br>
    * \b Note: THE OBJECT MUST NOT BE DELETED by the caller.
    *
    * If called without parameters, the function tries to create objects from
@@ -898,14 +898,14 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get the first object of a specific data type from the input data.
-   * The hight-level methods provide functionality to transfer ROOT data
+   * The High-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.
    * The method looks for the first ROOT object of type specified by the ID and 
    * Origin strings in the input stream.
    * If also the class name is provided, the object is checked for the right
    * class type. The input data block needs a certain structure, namely the 
    * buffer size as first word. If the cross check fails, the retrieval is
-   * silently abondoned, unless the \em bForce parameter is set.<br>
+   * silently abandoned, unless the \em bForce parameter is set.<br>
    * \em Note: THE OBJECT MUST NOT BE DELETED by the caller.
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
@@ -922,7 +922,7 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get the next object of a specific data type from the input data.
-   * The hight-level methods provide functionality to transfer ROOT data
+   * The High-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.
    * The method looks for the next ROOT object of type and class specified
    * to the previous @ref GetFirstInputObject call.<br>
@@ -999,7 +999,7 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get data specification of an input block.
-   * Get data specification of the input bblock previously fetched via
+   * Get data specification of the input block previously fetched via
    * GetFirstInputObject/NextInputObject or the last one if no block
    * specified.
    * @param pBlock     pointer to input block
