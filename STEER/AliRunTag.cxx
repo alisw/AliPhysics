@@ -47,7 +47,10 @@ ClassImp(AliRunTag)
     fEventTag("AliEventTag", 1000),
     fDetectorTag(),
     fLHCTag(), 
-    fQA()
+    fQALength(0), 
+    fQA(NULL), 
+    fESLength(0), 
+    fEventSpecies(NULL)
 {
   //Default constructor
 }
@@ -56,6 +59,92 @@ ClassImp(AliRunTag)
 AliRunTag::~AliRunTag() {
   //Destructor
   fEventTag.Delete();
+  if ( fQA ) 
+    delete [] fQA ; 
+  if ( fEventSpecies )
+    delete [] fEventSpecies ; 
+}
+
+//___________________________________________________________________________
+AliRunTag::AliRunTag(const AliRunTag& tag):
+TObject(),
+fAliceRunId(tag.fAliceRunId),
+fAliceMagneticField(tag.fAliceMagneticField),
+fAliceRunStartTime(tag.fAliceRunStartTime),
+fAliceRunStopTime(fAliceRunStopTime),
+fAlirootVersion(tag.fAlirootVersion),
+fRootVersion(tag.fRootVersion),
+fGeant3Version(tag.fGeant3Version),
+fAliceRunQuality(tag.fAliceRunQuality),
+fAliceBeamEnergy(tag.fAliceBeamEnergy),
+fAliceBeamType(tag.fAliceBeamType),
+fAliceCalibrationVersion(tag.fAliceCalibrationVersion),
+fAliceDataType(tag.fAliceDataType),
+fNumEvents(tag.fNumEvents),
+fNumDetectors(tag.fNumDetectors),
+fEventTag(tag.fEventTag),
+fDetectorTag(tag.fDetectorTag),
+fLHCTag(tag.fLHCTag), 
+fQALength(tag.fQALength),
+fQA(NULL), 
+fESLength(tag.fESLength),
+fEventSpecies(NULL)
+{
+  //copy constructor
+  if (fQALength == 0 ) 
+    fQA = NULL ; 
+  else {
+    fQA = new ULong_t(fQALength) ; 
+    memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
+  }
+  if (fESLength == 0 ) 
+    fEventSpecies = NULL ; 
+  else {
+    fEventSpecies = new Bool_t(fESLength) ; 
+    memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
+  }
+}
+
+//___________________________________________________________________________
+AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
+//assignment operator
+  if(&tag != this) {
+    fAliceRunId               = tag.fAliceRunId ; 
+    fAliceMagneticField       = tag.fAliceMagneticField ;
+    fAliceRunStartTime        = tag.fAliceRunStartTime ; 
+    fAliceRunStopTime         = tag.fAliceRunStopTime ; 
+    fAlirootVersion           = tag.fAlirootVersion ; 
+    fRootVersion              = tag.fRootVersion ;
+    fGeant3Version            = tag.fGeant3Version ; 
+    fAliceRunQuality          = tag.fAliceRunQuality ; 
+    fAliceBeamEnergy          = tag.fAliceBeamEnergy ;
+    fAliceBeamType            = tag.fAliceBeamType ; 
+    fAliceCalibrationVersion  = tag.fAliceCalibrationVersion ; 
+    fAliceDataType            = tag.fAliceDataType ; 
+    fNumEvents                = tag.fNumEvents ;
+    fNumDetectors             = tag.fNumDetectors ; 
+    fEventTag                 = tag.fEventTag ;
+    fDetectorTag              = tag.fDetectorTag ;
+    fLHCTag                   = tag.fLHCTag ;  
+    fQALength                 = tag.fQALength ; 
+    if (fQA) 
+      delete [] fQA ; 
+    if (fQALength == 0 ) 
+      fQA = NULL ; 
+    else {
+      fQA = new ULong_t(fQALength) ; 
+      memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
+    }
+    fESLength                 = tag.fESLength ; 
+    if (fEventSpecies)
+      delete [] fEventSpecies ; 
+    if (fESLength == 0 ) 
+      fEventSpecies = NULL ; 
+    else {
+      memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
+    }
+  }
+  return *this ; 
 }
 
 //___________________________________________________________________________
@@ -75,8 +164,30 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetDataType(oldtag->GetDataType());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
   SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
-  SetQA(*(oldtag->GetQA())) ;  	
+  SetQA(oldtag->GetQA(), oldtag->GetQALength()) ;  
+	SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
 }
+
+//___________________________________________________________________________
+void AliRunTag::SetQA(ULong_t * qa, Int_t qalength) {
+  //Setter for the qa bits 
+  fQALength = qalength ; 
+  if (fQA) 
+    delete [] fQA ; 
+  fQA = new ULong_t(qalength) ; 
+  memcpy(fQA, qa, qalength*sizeof(ULong_t)) ;
+}
+
+//___________________________________________________________________________
+void AliRunTag::SetEventSpecies(Bool_t * es, Int_t eslength) {
+  //setter for the eventspecices 
+  fESLength = eslength ; 
+  if (fEventSpecies) 
+    delete [] fEventSpecies ; 
+  fEventSpecies = new Bool_t(eslength) ;
+  memcpy(fEventSpecies, es, eslength*sizeof(Bool_t)) ; 
+}
+
 
 //___________________________________________________________________________
 void AliRunTag::SetLHCTag(Float_t lumin, TString type) {

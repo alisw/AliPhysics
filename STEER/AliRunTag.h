@@ -18,7 +18,6 @@
 #include <TClonesArray.h>
 #include "AliLHCTag.h"
 #include "AliDetectorTag.h"
-#include "AliQA.h" 
 
 class AliEventTag;
 //class AliDetectorTag;
@@ -29,7 +28,8 @@ class AliRunTag : public TObject {
  public:
   AliRunTag();
   virtual ~AliRunTag();
-  
+  AliRunTag(const AliRunTag& qa) ;   
+  AliRunTag& operator = (const AliRunTag& tag) ;
   //____________________________________________________//
   void SetRunId(Int_t Pid) {fAliceRunId = Pid;}
   void SetMagneticField(Float_t Pmag) {fAliceMagneticField = Pmag;}
@@ -46,7 +46,8 @@ class AliRunTag : public TObject {
   void SetNEvents(Int_t Pn) { fNumEvents = Pn; }
   void SetLHCTag(Float_t Plumin, TString type);
   void SetDetectorTag(UInt_t mask);
-  void SetQA(const AliQA &qa) { fQA=qa; }  	
+  void SetQA(ULong_t * qa, Int_t qalength) ; 
+  void SetEventSpecies(Bool_t * es, Int_t eslength) ;
   void AddEventTag(const AliEventTag &t);
   void Clear(const char * opt = "");
 
@@ -69,7 +70,10 @@ class AliRunTag : public TObject {
   AliLHCTag  *GetLHCTag() {return &fLHCTag; } 
   AliDetectorTag *GetDetectorTags() {return &fDetectorTag;}
   const TClonesArray *GetEventTags() const {return &fEventTag;}
-  const AliQA *GetQA() const {return &fQA;}	
+  ULong_t *  GetQA() const {return fQA;}	
+  Int_t      GetQALength() const { return fQALength ; }
+  Bool_t *   GetEventSpecies() const {return fEventSpecies;}	
+  Int_t      GetESLength() const { return fESLength ; }
   
   //____________________________________________________//
  private:
@@ -90,7 +94,10 @@ class AliRunTag : public TObject {
   TClonesArray fEventTag;                //array with all event tags
   AliDetectorTag fDetectorTag;           //array with all the detector tags
   AliLHCTag    fLHCTag;                  //LHC tag object
-  AliQA        fQA ;                     //QA	
+  Int_t        fQALength;                // Length of the fQA array  
+  ULong_t *    fQA ;                     //[fQALength] QA objects's data	
+  Int_t        fESLength;                // Length of the Event Specie Length
+  Bool_t *     fEventSpecies;           //[fESLength] EventSpecies in this run	
   
   ClassDef(AliRunTag,4)  //(ClassName, ClassVersion)
 };

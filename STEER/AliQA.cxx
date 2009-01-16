@@ -85,8 +85,8 @@ AliQA::AliQA() :
   fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // default constructor
-  memset(fQA,0,fLengthQA);
-  memset(fEventSpecies,kFALSE,fNEventSpecies);
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
 
 //____________________________________________________________________________
@@ -131,6 +131,23 @@ AliQA& AliQA::operator = (const AliQA& qa)
 }
 
 //_______________________________________________________________
+AliQA::AliQA(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) :
+TNamed("QA", "Quality Assurance status"),
+fNdet(kNDET), 
+fNEventSpecies(eslength), 
+fLengthQA(qalength),
+fQA(new ULong_t[fLengthQA]), 
+fDet(kNULLDET),
+fTask(kNULLTASK), 
+fEventSpecie(AliRecoParam::kDefault), 
+fEventSpecies(new Bool_t[fNEventSpecies])
+{
+  // constructor to be used
+  memcpy(fQA, qa, fLengthQA*sizeof(ULong_t));
+  memcpy(fEventSpecies, es, fNEventSpecies*sizeof(Bool_t));
+}
+
+//_______________________________________________________________
 AliQA::AliQA(const DETECTORINDEX_t det) :
   TNamed("QA", "Quality Assurance status"),
   fNdet(kNDET), 
@@ -144,8 +161,8 @@ AliQA::AliQA(const DETECTORINDEX_t det) :
 {
   // constructor to be used
   if (! CheckRange(det) ) fDet = kNULLDET ; 
-  memset(fQA,0,fLengthQA);
-  memset(fEventSpecies,kFALSE,fNEventSpecies);
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
   
 //_______________________________________________________________
@@ -162,8 +179,8 @@ AliQA::AliQA(const ALITASK_t tsk) :
 {
   // constructor to be used in the AliRoot module (SIM, REC, ESD or ANA)
   if (! CheckRange(tsk) ) fTask = kNULLTASK ; 
-  memset(fQA,0,fLengthQA);
-  memset(fEventSpecies,kFALSE,fNEventSpecies);
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
 
 //____________________________________________________________________________
@@ -509,6 +526,16 @@ AliQA * AliQA::Instance()
     if ( ! fgQA ) 
       fgQA = new AliQA() ;
   }	
+  return fgQA ;
+}
+
+//_______________________________________________________________
+AliQA * AliQA::Instance(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es)
+{
+  // Get an instance of the singleton. The only authorized way to call the ctor
+  
+  if ( ! fgQA) 
+    fgQA = new AliQA(qalength, qa, eslength, es) ;
   return fgQA ;
 }
 

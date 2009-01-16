@@ -1174,7 +1174,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 }
 
 //_____________________________________________________________________________
-void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData) {
+void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData, ULong_t * qa, Bool_t * es, Int_t qalength, Int_t eslength) {
   //GRP
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
@@ -1471,6 +1471,10 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     tag->SetRunStopTime(t2->GetDate());
     tag->SetBeamEnergy(beamenergy);
     tag->SetBeamType(beamtype);
+    
+    //QA setting 
+    tag->SetQA(qa, qalength) ; 
+    tag->SetEventSpecies(es, eslength) ;
 
     tag->AddEventTag(*evTag);
   }

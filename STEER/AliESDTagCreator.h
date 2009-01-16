@@ -43,7 +43,7 @@ class AliESDTagCreator : public AliTagCreator {
   AliESDTagCreator();
   ~AliESDTagCreator(); 
 
-  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData);
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData, ULong_t * qa, Bool_t * es, Int_t qalength, Int_t eslength);
 
   void SetInactiveBranches(const char* branches) {fBranches = branches;}
 

@@ -31,6 +31,7 @@ public:
   
   // Creators - destructors
   AliQA(); // beware singleton, not to be used
+  AliQA(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) ;
   AliQA(const ALITASK_t tsk) ;
   AliQA(const DETECTORINDEX_t det) ;
   AliQA(const AliQA& qa) ;   
@@ -38,12 +39,14 @@ public:
   virtual ~AliQA();
   
   static  AliQA *        Instance() ;
+  static  AliQA *        Instance(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) ;
   static  AliQA *        Instance(const DETECTORINDEX_t det) ;
   static  AliQA *        Instance(const ALITASK_t tsk) ;
   static  AliQA *        Instance(const TASKINDEX_t tsk) ;
   Bool_t                 CheckFatal() const ;
   static void            Close() ; 
   static const char *    GetAliTaskName(ALITASK_t tsk) ;
+  Bool_t *               GetEventSpecies() { return fEventSpecies ; }
   static const TString   GetExpert() { return fgkExpert ; }
   static       UInt_t    GetExpertBit() { return fgkExpertBit ; }
   static const TString   GetLabLocalFile() { return fgkLabLocalFile ; } 
@@ -53,6 +56,7 @@ public:
   static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
   static const char *    GetDetName(Int_t det) ;
   static const TString   GetGRPPath() { return fgGRPPath ; }  
+  ULong_t *              GetQA() { return fQA ; }
   static       UInt_t    GetQABit() { return fgkQABit ; }
   static TFile *         GetQADataFile(const char * name, Int_t run) ; 
   static TFile *	       GetQADataFile(const char * fileName) ;
@@ -82,7 +86,7 @@ public:
   void                   Set(QABIT_t bit, Int_t es) ;
   void                   SetEventSpecie(AliRecoParam::EventSpecie_t es) 
   {Int_t ibit=0; while(es!=1<<ibit) ++ibit; fEventSpecies[ibit] = kTRUE ; }
-  static void		 SetQAResultDirName(const char * name) ; 
+  static void            SetQAResultDirName(const char * name) ; 
   static void            SetQARefStorage(const char * name) ; 
   static void            SetQARefDataDirName(AliRecoParam::EventSpecie_t es) { fgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
   static void            SetQARefDataDirName(Int_t es) { fgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
@@ -95,27 +99,27 @@ public:
   
 private:      
   
-  Bool_t         CheckRange(DETECTORINDEX_t det) const ;
-  Bool_t         CheckRange(ALITASK_t tsk) const ;
-  Bool_t         CheckRange(QABIT_t bit) const ;
-  Bool_t         CheckRange(AliRecoParam::EventSpecie_t es) const ;
-  const char *         GetBitName(QABIT_t bit) const ;
-  ULong_t        GetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const  { return fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] ;}
-  void                 Finish() const ;  
-  ULong_t        Offset(ALITASK_t tsk) const ;
-  void                 ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
-  void                 ResetStatus(DETECTORINDEX_t det) ; 
-  void                 Set(DETECTORINDEX_t det) { fDet = det ;}
-  void                 Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
-  void                 SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] = status ; }
-  void                 SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
-  void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
+  Bool_t                CheckRange(DETECTORINDEX_t det) const ;
+  Bool_t                CheckRange(ALITASK_t tsk) const ;
+  Bool_t                CheckRange(QABIT_t bit) const ;
+  Bool_t                CheckRange(AliRecoParam::EventSpecie_t es) const ;
+  const char *          GetBitName(QABIT_t bit) const ;
+  ULong_t               GetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const  { return fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] ;}
+  void                  Finish() const ;  
+  ULong_t               Offset(ALITASK_t tsk) const ;
+  void                  ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
+  void                  ResetStatus(DETECTORINDEX_t det) ; 
+  void                  Set(DETECTORINDEX_t det) { fDet = det ;}
+  void                  Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
+  void                  SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] = status ; }
+  void                  SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
+  void                  UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
   
   static AliQA *       fgQA		                ; // pointer to the instance of the singleton
   Int_t                fNdet     	            ; // number of detectors
-  Int_t                fNEventSpecies          ; // number of Event Species (see AliRecoParam)
+  Int_t                fNEventSpecies         ; // number of Event Species (see AliRecoParam)
   Int_t                fLengthQA              ; // Auxiliary length of fQA
-  ULong_t    *        fQA		                ; //[fNdet][fNEventSpecie] the status word 4 bits for SIM, REC, ESD, ANA each
+  ULong_t    *         fQA		                ; //[fLengthQA]  the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX_t      fDet		                ; //! the current detector (ITS, TPC, ....)
   ALITASK_t            fTask	                ; //! the current environment (SIM, REC, ESD, ANA)
   AliRecoParam::EventSpecie_t fEventSpecie    ; //! the current event specie

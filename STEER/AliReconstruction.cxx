@@ -1873,7 +1873,7 @@ void AliReconstruction::Terminate()
   AliCodeTimerAuto("");
 
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
-  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData);
+  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQA::Instance()->GetQA(), AliQA::Instance()->GetEventSpecies(), AliQA::kNDET, AliRecoParam::kNSpecies);
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();
