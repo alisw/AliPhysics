@@ -149,29 +149,32 @@ AliQAChecker::~AliQAChecker()
 void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB)     
 { 
   // Opens and returns the file with the reference data 
-	
   dirFile = NULL ; 
-  TString refStorage(AliQA::GetQARefStorage()) ; 
-  if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
-    refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
-    refStorage += AliQA::GetQARefFileName() ;
-    if ( fRefFile ) 
-      if ( fRefFile->IsOpen() ) 
-					fRefFile->Close() ; 
-    fRefFile = TFile::Open(refStorage.Data()) ; 
-    if (!fRefFile) { 
-      AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
-      dirFile = NULL ; 
-    }
-    dirFile = fRefFile->GetDirectory(det) ; 
-    if (!dirFile) {
-      AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
-    } else {
-			dirFile = dirFile->GetDirectory(task) ; 
-      if (!dirFile) 
-				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
-    }  
-  } else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
+  TString refStorage(AliQA::GetQARefStorage()) ;
+//  if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
+//    refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
+//    refStorage += AliQA::GetQARefFileName() ;
+//    if ( fRefFile ) 
+//      if ( fRefFile->IsOpen() ) 
+//					fRefFile->Close() ; 
+//    fRefFile = TFile::Open(refStorage.Data()) ; 
+//    if (!fRefFile) { 
+//      AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
+//      dirFile = NULL ; 
+//    }
+//    dirFile = fRefFile->GetDirectory(det) ; 
+//    if (!dirFile) {
+//      AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
+//    } else {
+//			dirFile = dirFile->GetDirectory(task) ; 
+//      if (!dirFile) 
+//				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
+//    }  
+//  } else 
+  if (!refStorage.Contains(AliQA::GetLabLocalOCDB()) && !refStorage.Contains(AliQA::GetLabAliEnOCDB())) {
+    AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
+    return ; 
+  } else {
     AliCDBManager* man = AliCDBManager::Instance() ;
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
@@ -193,7 +196,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
         TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
         TIter next(listDetQAD) ;
         TObjArray * ar ; 
-        while ( ar = (TObjArray*)next() )
+        while ( (ar = (TObjArray*)next()) )
           if ( listDetQAD ) 
           dirOCDB[specie] = dynamic_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ; 
       }
