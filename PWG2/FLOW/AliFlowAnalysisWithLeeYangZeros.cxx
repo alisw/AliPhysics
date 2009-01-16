@@ -430,7 +430,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	  dReRatio = (cNumer/cDenom).Re();
 	}
 
-	dVeta = dBesselRatio[m-1]*dReRatio*dVtheta*100.; //BP eq. 12
+	dVeta = dBesselRatio[m-1]*dReRatio*dVtheta; //BP eq. 12
 	//if ( j==1 && theta==0) cerr<<"eta = "<<dEta<<" cerr::dReRatio for eta = "<<dReRatio<<" cerr::dVeta for eta = "<<dVeta<<endl;
 	   
 	fHistProVeta->Fill(dEta,dVeta);
@@ -453,7 +453,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	  dReRatio = (cNumer/cDenom).Re();
 	}
    
-	dVPt = dBesselRatio[m-1]*dReRatio*dVtheta*100.; //BP eq. 12
+	dVPt = dBesselRatio[m-1]*dReRatio*dVtheta; //BP eq. 12
 	      
 	fHistProVPt->Fill(dPt,dVPt);
       } //loop over bins bp
@@ -502,7 +502,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       
       if (dErr2difcomb!=0.) {
 	dErr2difcomb /= iNtheta;
-	dErrdifcomb = TMath::Sqrt(dErr2difcomb)*100;
+	dErrdifcomb = TMath::Sqrt(dErr2difcomb);
 	//cerr<<"dErrdifcomb = "<<dErrdifcomb<<endl;
       }
       else {dErrdifcomb = 0.;}

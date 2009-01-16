@@ -671,7 +671,6 @@ void CompareFlowResults()
  {
   if(lyz2CommonHistRes)
   {
-   (lyz2CommonHistRes->GetHistDiffFlow())->Scale(0.01);//to be improved
    (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerColor(kGreen+3);
    (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerStyle(22);
   } 
