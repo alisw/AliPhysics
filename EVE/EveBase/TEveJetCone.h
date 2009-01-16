@@ -25,22 +25,28 @@ private:
    TEveJetCone(const TEveJetCone&);            // Not implemented
    TEveJetCone& operator=(const TEveJetCone&); // Not implemented
 
+   void    FillTEveVectorFromEtaPhi( TEveVector &vec, const Float_t& eta, const Float_t& phi ); 
+   Float_t GetArcCosConeOpeningAngle( const TEveVector& axis, const TEveVector& contour );
+
 protected:
    typedef std::vector<TEveVector>        vTEveVector_t;
    typedef vTEveVector_t::iterator        vTEveVector_i;
    typedef vTEveVector_t::const_iterator  vTEveVector_ci;
 
-   TEveVector      fApex;
-   vTEveVector_t   fBasePoints;
+   TEveVector      fApex;             // Apex of the cone, initialized to ( 0., 0., 0. )
+   vTEveVector_t   fBasePoints;       // List of contour points
+   TEveVector      fCylinderBorder;   // Border of Barrel/Cylinder to cut the cone 
+   Float_t         fThetaC;           // Angle between axis and  the edge of top-side of cylinder
 
 public:
    TEveJetCone(const Text_t* n="TEveJetCone", const Text_t* t="");
    virtual ~TEveJetCone() {}
 
-   void SetApex(const TEveVector& a)      { fApex = a; }
-   void AddBasePoint(const TEveVector& p) { fBasePoints.push_back(p); }
-
-   // void SetBaseFromEtaPhi(radius, eta, phi, deta, dphi);
+   void SetApex(const TEveVector& a)                      { fApex = a; }  // Sets apex of cone
+   void SetCylinder( const Float_t& r, const Float_t& z ) { 
+     fCylinderBorder.Set( r, 0.f, z ); fThetaC = fCylinderBorder.Theta(); } // Set border cylinder
+   
+   Int_t AddCone( const Float_t& eta, const Float_t& phi, const Float_t& coneRadius, const Float_t& height = -1. );
 
    virtual Bool_t  CanEditMainTransparency() const { return kTRUE; }
 
