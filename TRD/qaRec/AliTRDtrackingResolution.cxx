@@ -52,6 +52,7 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TPDGCode.h>
 #include <TObjArray.h>
 #include <TH2.h>
 #include <TH1.h>
@@ -339,7 +340,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
     ((TH2I*)fContainer->At(kMCtrackY))->Fill(dydx, dy);
     ((TH2I*)fContainer->At(kMCtrackZ))->Fill(dzdx, dz);
-    ((TH2I*)fContainer->At(kMCtrackPt))->Fill(1./pt, ptr-pt);
+    if(pdg!=kElectron && pdg!=kPositron) ((TH2I*)fContainer->At(kMCtrackPt))->Fill(1./pt, ptr-pt);
     // Fill Debug stream for Kalman track
     if(fDebugLevel>=1){
       Float_t dydxr = fTracklet->GetYref(1);
