@@ -61,27 +61,6 @@ void AliAnalysisTaskSECompareHFTest()
   // Aanalysis task    
   AliAnalysisTaskSECompareHF *hfTask = new AliAnalysisTaskSECompareHF("CompareHFAnalysis");
   hfTask->SetDebugLevel(2);
-  Double_t cutsD0[9]=
-    // cutsD0[0] = inv. mass half width [GeV]
-    // cutsD0[1] = dca [cm]
-    // cutsD0[2] = cosThetaStar
-    // cutsD0[3] = pTK [GeV/c]
-    // cutsD0[4] = pTPi [GeV/c]
-    // cutsD0[5] = d0K [cm]   upper limit!
-    // cutsD0[6] = d0Pi [cm]  upper limit!
-    // cutsD0[7] = d0d0 [cm^2]
-    // cutsD0[8] = cosThetaPoint
-                     {1,
-		      100000.,
-		      1.1,
-		      0.,
-		      0.,
-		      100000.,
-		      100000.,
-		      100000000.,
-		      -0.9}; 
-  hfTask->SetD0toKpiCuts(cutsD0);
-  
   mgr->AddTask(hfTask);
   
   //

@@ -32,6 +32,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAnalysisvertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSECompareHF.h"
 
@@ -43,10 +44,10 @@ AliAnalysisTaskSECompareHF::AliAnalysisTaskSECompareHF():
 AliAnalysisTaskSE(),
 fOutput(0), 
 fNtupleD0Cmp(0),
-fHistMass(0)
+fHistMass(0),
+fVHF(0)
 {
   // Default constructor
-  SetD0toKpiCuts();
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -57,10 +58,10 @@ AliAnalysisTaskSECompareHF::AliAnalysisTaskSECompareHF(const char *name):
 AliAnalysisTaskSE(name),
 fOutput(0), 
 fNtupleD0Cmp(0),
-fHistMass(0)
+fHistMass(0),
+fVHF(0)
 {
   // Default constructor
-  SetD0toKpiCuts();
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -74,6 +75,10 @@ AliAnalysisTaskSECompareHF::~AliAnalysisTaskSECompareHF()
     delete fOutput;
     fOutput = 0;
   }
+  if (fVHF) {
+    delete fVHF;
+    fVHF = 0;
+  }
 }  
 
 //________________________________________________________________________
@@ -82,6 +87,11 @@ void AliAnalysisTaskSECompareHF::Init()
   // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSECompareHF::Init() \n");
+
+  gROOT->LoadMacro("ConfigVertexingHF.C");
+
+  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
+  fVHF->PrintStatus();
 
   return;
 }
@@ -162,7 +172,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
     Int_t okD0=0,okD0bar=0; 
-    if(d->SelectD0(fD0toKpiCuts,okD0,okD0bar)) {
+    if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
       // get daughter AOD tracks
       AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
@@ -213,14 +223,18 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       if(labD0daugh0>=0 && labD0daugh1>=0 && labD0daugh0==labD0daugh1) {
 
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0daugh0);
-	pdgD0 = partD0->GetPdgCode();
-	Double_t invmass = (pdgD0==421 ? d->InvMassD0() : d->InvMassD0bar());
-	fHistMass->Fill(invmass);
+	// check that the D0 decays in 2 prongs
+	if (TMath::Abs(partD0->GetDaughter(1)-partD0->GetDaughter(0))==1) {
 
-	// Post the data already here
-	PostData(1,fOutput);
+	  pdgD0 = partD0->GetPdgCode();
+	  Double_t invmass = (pdgD0==421 ? d->InvMassD0() : d->InvMassD0bar());
+	  fHistMass->Fill(invmass);
 
-	fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
+	  // Post the data already here
+	  PostData(1,fOutput);
+
+	  fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
+	}
       }
 
 
@@ -251,51 +265,3 @@ void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
   return;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskSECompareHF::SetD0toKpiCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8) 
-{
-  // Set the cuts for D0 selection
-  // cuts[0] = inv. mass half width [GeV]   
-  // cuts[1] = dca [cm]
-  // cuts[2] = cosThetaStar 
-  // cuts[3] = pTK [GeV/c]
-  // cuts[4] = pTPi [GeV/c]
-  // cuts[5] = d0K [cm]   upper limit!
-  // cuts[6] = d0Pi [cm]  upper limit!
-  // cuts[7] = d0d0 [cm^2]
-  // cuts[8] = cosThetaPoint
-
-  fD0toKpiCuts[0] = cut0;
-  fD0toKpiCuts[1] = cut1;
-  fD0toKpiCuts[2] = cut2;
-  fD0toKpiCuts[3] = cut3;
-  fD0toKpiCuts[4] = cut4;
-  fD0toKpiCuts[5] = cut5;
-  fD0toKpiCuts[6] = cut6;
-  fD0toKpiCuts[7] = cut7;
-  fD0toKpiCuts[8] = cut8;
-
-  return;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSECompareHF::SetD0toKpiCuts(const Double_t cuts[9]) 
-{
-  // Set the cuts for D0 selection
-  // cuts[0] = inv. mass half width [GeV]   
-  // cuts[1] = dca [cm]
-  // cuts[2] = cosThetaStar 
-  // cuts[3] = pTK [GeV/c]
-  // cuts[4] = pTPi [GeV/c]
-  // cuts[5] = d0K [cm]   upper limit!
-  // cuts[6] = d0Pi [cm]  upper limit!
-  // cuts[7] = d0d0 [cm^2]
-  // cuts[8] = cosThetaPoint
-
-  for(Int_t i=0; i<9; i++) fD0toKpiCuts[i] = cuts[i];
-
-  return;
-}
