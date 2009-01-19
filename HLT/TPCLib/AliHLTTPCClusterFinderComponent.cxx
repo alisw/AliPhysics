@@ -43,6 +43,11 @@ using namespace std;
 #include <cerrno>
 #include "TString.h"
 #include "TObjString.h"
+#include "TObjArray.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+
 #include <sys/time.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -166,189 +171,19 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
-  Float_t occulimit = 1.0;
-
-  Int_t i = 0;
-  Char_t* cpErr;
-
-  while ( i < argc ) {      
-
-    // -- deconvolute-time option
-    if ( !strcmp( argv[i], "-deconvolute-time" ) ) {
-      fDeconvTime = kTRUE;
-      i++;
-      continue;
-    }
-
-    // -- deconvolute-pad option
-    if ( !strcmp( argv[i], "-deconvolute-pad" ) ) {
-      fDeconvPad = kTRUE;
-      i++;
-      continue;
-    }
-
-    // -- number of timebins (default 1024)
-    if (!strcmp( argv[i], "-timebins") || !strcmp( argv[i], "timebins" )){
-      TString parameter(argv[i+1]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()) {
-	AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
-	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
-	fClusterFinder->UpdateLastTimeBin();
-      } else {
-	HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
-	return EINVAL;
-      }
-      if(!strcmp( argv[i], "timebins")){
-	HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
-      }
-      i+=2;
-      continue;
-    }
-
-    // -first-timebin (default 0)
-    if ( !strcmp( argv[i], "-first-timebin" ) ) {
-      TString parameter(argv[i+1]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()){
-	fFirstTimeBin=parameter.Atoi();
-	HLTDebug("fFirstTimeBin set to %d",fFirstTimeBin);
-      } 
-      else {
-	HLTError("Cannot -first-timebin specifier '%s'. Not a number.", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-
-    // -last-timebin (default 1024)
-    if ( !strcmp( argv[i], "-last-timebin" ) ) {
-      TString parameter(argv[i+1]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()){
-	fLastTimeBin=parameter.Atoi();
-	HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
-      } 
-      else {
-	HLTError("Cannot -last-timebin specifier '%s'. Not a number.", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-
-    // --  unsorted option
-    if ( !strcmp( argv[i], "-sorted" ) ) {
-      fUnsorted=0;
-      i++;
-      continue;
-    }
-
-      
-    // -- checking for active pads, used in 2007 December run
-    if ( !strcmp( argv[i], "-active-pads" ) || !strcmp( argv[i], "activepads" ) ) {
-      if(!strcmp( argv[i], "activepads" )){
-	HLTWarning("Please change to new component argument naming scheme and use '-active-pads' instead of 'active-pads'");
-      }
-      fGetActivePads = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert activepads specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-
-    // -- pad occupancy limit
-    if ( !strcmp( argv[i], "-occupancy-limit" ) || !strcmp( argv[i], "occupancy-limit" ) ) {
-      if(!strcmp( argv[i], "occupancy-limit" )){
-	HLTWarning("Please switch to new component argument naming convention, use '-occupancy-limit' instead of 'occupancy-limit'");
-      }
-      occulimit = strtod( argv[i+1], &cpErr);
-      if ( *cpErr ) {
-	HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
-	return EINVAL;
-      }
-      if(fModeSwitch!=kClusterFinderPacked){
-	HLTWarning("Argument '-occupancy-limit' is only used with -sorted set and with the TPCClusterFinderPacked , argument is deprecated");
-      }
-      i+=2;
-      continue;
-    }
-
-    // -- raw reader mode option
-    if ( !strcmp( argv[i], "rawreadermode" ) ) {
-      if ( argc <= i+1 ) {
-	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified. rawreadermode is no longer a valid argument and will be deprecated even if rawreadermode is specified." );
-	return ENOTSUP;
-      }
-
-      HLTWarning("Argument 'rawreadermode' is deprecated");      
-
-      i += 2;
-      continue;
-    }
-
-    // -- pp-run option
-    if ( !strcmp( argv[i], "pp-run") ) {
-      HLTWarning("Argument 'pp-run' is obsolete, deconvolution is swiched off in both time and pad directions by default.");
-      fClusterDeconv = false;
-      i++;
-      continue;
-    }
-
-    // -- zero suppression threshold
-    if ( !strcmp( argv[i], "adc-threshold" ) ) {
-      strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ) {
-	HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
-	return EINVAL;
-      }
-      HLTWarning("'adc-threshold' is no longer a valid argument, please use TPCZeroSuppression component if you want to zerosuppress data.");
-      i+=2;
-      continue;
-    }
-
-    // -- checking for rcu format
-    if ( !strcmp( argv[i], "oldrcuformat" ) ) {
-      strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      HLTWarning("Argument 'oldrcuformat' is deprecated.");
-      i+=2;
-      continue;
-    }
-      
-    // -- checking for unsorted clusterfinding (default 1)
-    if ( !strcmp( argv[i], "unsorted" ) ) {
-      fUnsorted = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert unsorted specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      HLTWarning("Argument 'unsorted' is old and does not follow the new argument naming convention. A change has been made, and the clusterfinder will read the data unsorted by default. For sorted reading, please use '-sorted' as argument. (unsorted 0 will do the same job, but please change anyway.)");
-      i+=2;
-      continue;
-    }
-
-    // -- checking for nsigma-threshold, used in 2007 December run in ZeroSuppression
-    if ( !strcmp( argv[i], "nsigma-threshold" ) ) {
-      strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert nsigma-threshold specifier '%s'. Must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      HLTWarning("Argument 'nsigma-threshold' argument is obsolete.");
-      continue;
-    }
-
-    Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-    return EINVAL;
-
+  Int_t iResult=0;
+  TString configuration="";
+  TString argument="";
+  for (int i=0; i<argc && iResult>=0; i++) {
+    argument=argv[i];
+    if (!configuration.IsNull()) configuration+=" ";
+    configuration+=argument;
+  }
+  
+  if (!configuration.IsNull()) {
+    iResult=Configure(configuration.Data());
+  } else {
+    iResult=Reconfigure(NULL, NULL);
   }
 
   //Checking for conflicting arguments
@@ -357,7 +192,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       HLTWarning("Conflicting arguments: argument 'pp-run' will be ignored.");
     }
   }
-  if(occulimit!=1.0 && fUnsorted){
+  if(fClusterFinder->GetOccupancyLimit()!=1.0 && fUnsorted){
     HLTWarning("Argument 'occupancy-limit' is deprecated when doing unsorted data reading.");
   }
   if(fGetActivePads==kTRUE && fUnsorted==kFALSE){
@@ -385,12 +220,10 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   else{
     HLTFatal("No mode set for clusterfindercomponent");
   }
-  // if pp-run use occupancy limit else set to 1. ==> use all 
-  if ( !fClusterDeconv )
-    fClusterFinder->SetOccupancyLimit(occulimit);
-  else 
+
+  if(fClusterDeconv){
     fClusterFinder->SetOccupancyLimit(1.0);
-      
+  }
   
   fClusterFinder->SetDeconv(fClusterDeconv);
   fClusterFinder->SetDeconvPad(fDeconvPad);
@@ -563,10 +396,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        AliHLTUInt16_t* outputHWPtr= (AliHLTUInt16_t*)(outputPtr+tSize);
        Int_t nHWAdd = fClusterFinder->FillHWAddressList(outputHWPtr, maxNumberOfHW);
       
-       //cout<<"Number of hardwareaddresses: "<<nHWAdd<<endl;
-       for(AliHLTUInt16_t test=0;test<nHWAdd;test++){
-	 //cout<<"The HW address is: "<<(AliHLTUInt16_t)outputHWPtr[test]<<endl;
-       }
        AliHLTComponentBlockData bdHW;
        FillBlockData( bdHW );
        bdHW.fOffset = tSize ;
@@ -585,10 +414,114 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   return 0;
 }
 
+int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
+  // see header file for class documentation
+  int iResult=0;
+  if (!arguments) return iResult;
+  
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+
+      if (argument.IsNull()) continue;
+      
+
+      // -- deconvolute-time option
+      if (argument.CompareTo("-deconvolute-time")==0){
+	HLTDebug("Switching on deconvolution in time direction.");
+	fDeconvTime = kTRUE;
+      }
+      else if (argument.CompareTo("-deconvolute-pad")==0){
+	HLTDebug("Switching on deconvolution in pad direction.");
+	fDeconvPad = kTRUE;
+      }
+      else if (argument.CompareTo("-timebins")==0 || argument.CompareTo("timebins" )==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	AliHLTTPCTransform::SetNTimeBins(((TObjString*)pTokens->At(i))->GetString().Atoi());
+	fClusterFinder->UpdateLastTimeBin();
+	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+	if(argument.CompareTo("timebins")==0){
+	  HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
+	}
+      }
+      else if (argument.CompareTo("-first-timebin")==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	fFirstTimeBin = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+	HLTDebug("Kenneth fFirstTimeBin set to %d",fFirstTimeBin);
+      }
+      else if (argument.CompareTo("-last-timebin")==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	fLastTimeBin = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+	HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
+      }
+      else if (argument.CompareTo("-sorted")) {
+	fUnsorted=0;
+	HLTDebug("Swithching unsorted off.");
+      }
+      else if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
+	if(argument.CompareTo("activepads" )==0){
+	  HLTWarning("Please change to new component argument naming scheme and use '-active-pads' instead of 'activepads'");
+	}
+	HLTDebug("Switching on ActivePads");
+	fGetActivePads = 1;
+      }
+      else if (argument.CompareTo("-occupancy-limit")==0 ||argument.CompareTo("occupancy-limit")==0){
+	if(argument.CompareTo("occupancy-limit" )==0){
+	  HLTWarning("Please switch to new component argument naming convention, use '-occupancy-limit' instead of 'occupancy-limit'");
+	}
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	fClusterFinder->SetOccupancyLimit(((TObjString*)pTokens->At(i))->GetString().Atof());
+	HLTDebug("Occupancy limit set to occulimit %f", ((TObjString*)pTokens->At(i))->GetString().Atof());
+      }
+      else if (argument.CompareTo("rawreadermode")==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTWarning("Argument 'rawreadermode' is deprecated");      
+      }
+      else if (argument.CompareTo("pp-run")==0){
+	HLTWarning("Argument 'pp-run' is obsolete, deconvolution is swiched off in both time and pad directions by default.");
+	fClusterDeconv = false;
+      }
+      else if (argument.CompareTo("adc-threshold" )==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTWarning("'adc-threshold' is no longer a valid argument, please use TPCZeroSuppression component if you want to zerosuppress data.");
+      }
+      else if (argument.CompareTo("oldrcuformat" )==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTWarning("Argument 'oldrcuformat' is deprecated.");
+      }
+      else if (argument.CompareTo("unsorted" )==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTWarning("Argument 'unsorted' is old and does not follow the new argument naming convention. A change has been made, and the clusterfinder will read the data unsorted by default. For sorted reading, please use '-sorted' as argument.");
+      }
+      else if (argument.CompareTo("nsigma-threshold")==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTWarning("Argument 'nsigma-threshold' argument is obsolete.");
+      }
+      else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    }
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
 int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
-  const char* path="HLT/ConfigTPC";
+  const char* path="HLT/ConfigTPC/ClusterFinderComponent";
   if (cdbEntry) path=cdbEntry;
   if (path) {
     HLTInfo("reconfigure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");

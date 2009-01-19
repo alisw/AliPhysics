@@ -29,19 +29,11 @@ class AliTPCCalPad;
  * the noise map from HCDB by request.
  * 
  * The component implements the interface methods of the @ref AliHLTProcessor.
- * It reads the data pad by pad and fills histograms.
+ * It reads the data pad by pad and fills histograms per partition
  * 
  * The component has the following component arguments:
  * 
- * The histograms are filled on partition level and no argument is foreseen for this.
- * 
- * In the rare case we want to fill them per TPC side, the following 2 arguments can be used.
- * 
- * -plot-side-a   Histograms the TPC side A
- *          
- * -plot-side-c   Histograms the TPC side C
- *
- * -apply-noisemap  Reads the noise map from the HCDB (and plots it in a histogram)
+ * -read-noisemap  Reads the noise map from the HCDB (and plots it in a histogram)
  *
  * It returns an AliTPCCalPad object that can be used 
  * for other plots (e.g. noise subtraction in histograms) 
@@ -101,31 +93,31 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
 
       /** assignment operator prohibited */
       AliHLTTPCNoiseMapComponent& operator=(const AliHLTTPCNoiseMapComponent&);
-
+      
+      void InitializeHistograms(UInt_t minSlice, UInt_t maxSlice, UInt_t minPartition, UInt_t maxPartition);
       void ResetHistograms();
       
       AliHLTUInt32_t fSpecification;  //!transient
 
-      Bool_t fPlotSideA;      //!transient
-      Bool_t fPlotSideC;      //!transient
-      Bool_t fApplyNoiseMap;  //!transient
-      Bool_t fResetHistograms;//!transient
-      Bool_t fIsPacked;       //!transient   
-      Bool_t fIsUnpacked;     //!transient
-            
-      Int_t fCurrentSlice;     //!transient
-      Int_t fCurrentPartition; //!transient
-      Int_t fCurrentRow;       //!transient
+      Bool_t fReadNoiseMap;    //!transient
+      Bool_t fResetHistograms; //!transient      
+      Bool_t fInitHist;        //!transient
+
+      Int_t fCurrentRow; //!transient
       
       TH1 *fHistSignal;     //!transient 
-      TH2 *fHistMaxSignal;  //!transient 
-      TH2 *fHistTotSignal;  //!transient 
-      TH2 *fHistPadRMS;     //!transient 
+     
+      TH2 *fHistSideAMaxSignal;  //!transient 
+      TH2 *fHistSideATotSignal;  //!transient 
+      TH2 *fHistSideAPadRMS;     //!transient 
+     
+      TH2 *fHistSideCMaxSignal;  //!transient 
+      TH2 *fHistSideCTotSignal;  //!transient 
+      TH2 *fHistSideCPadRMS;	 //!transient 
+     
       TH2 *fHistCDBMap;     //!transient 
-      TH2 *fHistSideA;      //!transient    
-      TH2 *fHistSideC;      //!transient  
            
-      ClassDef(AliHLTTPCNoiseMapComponent, 3)
+      ClassDef(AliHLTTPCNoiseMapComponent, 4)
     };
 
 #endif

@@ -1,4 +1,3 @@
-// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        *
@@ -129,8 +128,8 @@ AliHLTComponent* AliHLTTPCHistogramHandlerComponent::Spawn() {
 int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) { 
   // see header file for class documentation
 
-  Int_t i = 0;
-  Char_t* cpErr;
+  //Int_t i = 0;
+  //Char_t* cpErr;
   
   int iResult=0;
   
@@ -149,47 +148,6 @@ int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) {
     iResult=Reconfigure(NULL, NULL);
   }
 
- 
-  while ( i < argc ) {      
-    if (!strcmp( argv[i], "-sum-noise-histograms")) {
-      fNoiseHistograms = strtoul( argv[i+1], &cpErr ,0);
-            
-      if ( *cpErr ) {
-        HLTError("Cannot convert sum-noise-histograms specifier '%s'.", argv[i+1]);
-        return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-    
-    if (!strcmp( argv[i], "-sum-krypton-histograms")) {
-      fKryptonHistograms = strtoul( argv[i+1], &cpErr ,0);
-            
-      if ( *cpErr ) {
-        HLTError("Cannot convert sum-krypton-histograms specifier '%s'.", argv[i+1]);
-        return EINVAL;
-      }
-      i+=2;
-      continue;
-    }    
-
-    if (!strcmp( argv[i], "-use-general")) {
-      fUseGeneral = kTRUE;
-      i++;
-      continue;
-    }
-
-    if (!strcmp( argv[i], "-ignore-specification")) {
-      fIgnoreSpecification = kTRUE;
-      i++;
-      continue;
-    }
-    
-    Logging(kHLTLogError, "HLT::TPCHistogramHandler::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-    return EINVAL;
-    
-  } // end while
-  
   if(fUseGeneral == kFALSE){
     fHistTPCSideAmax = new TH2F("fHistTPCSideAmax","TPC side A (max signal)",250,-250,250,250,-250,250);
     fHistTPCSideAmax->SetXTitle("global X (cm)"); fHistTPCSideAmax->SetYTitle("global Y (cm)");
@@ -227,7 +185,7 @@ int AliHLTTPCHistogramHandlerComponent::DoDeinit() {
 int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/* evtData*/, AliHLTComponentTriggerData& /*trigData*/){
   // see header file for class documentation
 
-  HLTInfo("--- Entering DoEvent() in TPCHistogramHandler ---");
+  //HLTInfo("--- Entering DoEvent() in TPCHistogramHandler ---");
   
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
  
@@ -237,21 +195,11 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
     fQMaxPartitionAll          = new TH1F("fQMaxPartitionAll",         "QMax for All Partitions",             216,0,216);
     fPlotQmaxROCAll            = new TH1F("fQMaxROCAll",               "QMax for All ROC",                    72,0,72);
     fNumberOfClusters          = new TH1F("fNumberOfClusters",         "Total Number of Clusters",            1,0,1);
-    }    
-  //   fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);    
-  //   fHistTPCSideA = new TH2F("fHistTPCSideA","TPC side A (max signal)",250,-250,250,250,-250,250);
-  //   fHistTPCSideA->SetXTitle("global X (cm)"); fHistTPCSideA->SetYTitle("global Y (cm)");
-  //   fHistTPCSideC = new TH2F("fHistTPCSideC","TPC side C (max signal)",250,-250,250,250,-250,250);
-  //   fHistTPCSideC->SetXTitle("global X (cm)"); fHistTPCSideC->SetYTitle("global Y (cm)");
-  
+  }    
 
-  
-
-  const TObject *iter = NULL;  
-        
+  const TObject *iter = NULL;        
   for(iter = GetFirstInputObject(kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputObject()){
   
-
     //      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
     //               evtData.fEventID, evtData.fEventID,
     //               DataType2Text(GetDataType(iter)).c_str(), 
@@ -268,9 +216,8 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
     // Summing the output histograms of the AliHLTTPCNoiseMapComponent (from partition to TPC sides)
 
     if(fUseGeneral == kFALSE){
-      if(fNoiseHistograms){  
+      if(fNoiseHistograms == kTRUE){  
         
-	//fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);        
 	fHistTH2Tmp = (TH2F*)iter;
 	TString histName = fHistTH2Tmp->GetName();
         
@@ -285,21 +232,16 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	
 	// minSlice=maxSlice, when the Noise Map component runs on partition level (as it should)
         
-	if(minSlice<18){ 
-	  if     (histName=="fHistMaxSignal") fHistTPCSideAmax->Add(fHistTPCSideAmax,fHistTH2Tmp,1,1); 
-	  else if(histName=="fHistTotSignal") fHistTPCSideAtot->Add(fHistTPCSideAtot,fHistTH2Tmp,1,1);
-	  else if(histName=="fHistPadRMS")    fHistTPCSideArms->Add(fHistTPCSideArms,fHistTH2Tmp,1,1);
-	  else continue;
-	}
-	else{ 
-	  if     (histName=="fHistMaxSignal") fHistTPCSideCmax->Add(fHistTPCSideCmax,fHistTH2Tmp,1,1);
-	  else if(histName=="fHistTotSignal") fHistTPCSideCtot->Add(fHistTPCSideCtot,fHistTH2Tmp,1,1);
-	  else if(histName=="fHistPadRMS")    fHistTPCSideCrms->Add(fHistTPCSideCrms,fHistTH2Tmp,1,1);
-	  else continue;
-	}
+	if     (histName.Contains("fHistSideAMaxSignal")) fHistTPCSideAmax->Add(fHistTH2Tmp,1);
+	else if(histName.Contains("fHistSideATotSignal")) fHistTPCSideAtot->Add(fHistTH2Tmp,1);
+	else if(histName.Contains("fHistSideAPadRMS"))    fHistTPCSideArms->Add(fHistTH2Tmp,1);
+	else if(histName.Contains("fHistSideCMaxSignal")) fHistTPCSideCmax->Add(fHistTH2Tmp,1);
+	else if(histName.Contains("fHistSideCTotSignal")) fHistTPCSideCtot->Add(fHistTH2Tmp,1);
+	else if(histName.Contains("fHistSideCPadRMS"))    fHistTPCSideCrms->Add(fHistTH2Tmp,1);
+	else continue;
+	
       } // endif fNoiseHistograms==kTRUE   
-      
-      
+            
       // Summing the output of AliHLTTPCClusterHistoComponent
       if(fKryptonHistograms){
 	Int_t thisrow=-1,thissector=-1,row=-1;
@@ -309,9 +251,7 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	row = AliHLTTPCTransform::GetFirstRow(patch); 
 	AliHLTTPCTransform::Slice2Sector(slice,row,thissector,thisrow);
 	
-	fHistTH1Tmp = (TH1F*)iter;   	
-	//cout << fHistTH1Tmp->GetName() << "\t" << fHistTH1Tmp->GetEntries() << endl;
-	
+	fHistTH1Tmp = (TH1F*)iter;   		
 	TString name = fHistTH1Tmp->GetName();
 	
 	if(name=="fTotalClusterChargeIROCAll"){
@@ -343,7 +283,9 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	}     
       } //endif fKryptonHistograms==kTRUE
     }
-    else{ // means fUseGeneral ==kTRUE
+    
+    else { // means fUseGeneral ==kTRUE
+
       TH1 * tmp = (TH1*)iter;
       TString histName = tmp->GetName();
       UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
@@ -354,6 +296,16 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
       Bool_t histogramNotAdded = kTRUE;
 
       for(UInt_t i=0;i<fHistogramData.size();i++){
+        if(fIgnoreSpecification == kTRUE){
+	
+	  /*
+	    if(histName.Contains(Form("_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition))){
+	    cout << "HistogramContains the given string." << endl;	   
+	    } 
+	  */
+          histName.ReplaceAll(Form("_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition),"");
+	} 
+	
 	if(histName.CompareTo(fHistogramData.at(i).fHistogram->GetName())==0){
 	  if((minSlice==fHistogramData.at(i).fMinSlice && maxSlice == fHistogramData.at(i).fMaxSlice) || fIgnoreSpecification == kTRUE){
 	    if((minPartition==fHistogramData.at(i).fMinPartition && maxPartition == fHistogramData.at(i).fMaxPartition) || fIgnoreSpecification == kTRUE){
@@ -370,18 +322,27 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	  }
 	}
       }
+      
+      if(fHistogramData.size()==0){       
+        if(fIgnoreSpecification == kTRUE){
+	   if(histName.Contains(Form("_Slice_%.2d%.2d%_Partition_.2d%.2d", minSlice, maxSlice, minPartition, maxPartition))){
+	      cout << "HistogramContains the given string." << endl;
+	   } 
+           histName.ReplaceAll(Form("_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition),"");	  
+        }
+      }
 
       if(histogramNotAdded == kTRUE){
-	AliHLTHistogramData  histogramData;
-	histogramData.fHistogram = tmp;
-	histogramData.fMinSlice = minSlice;
-	histogramData.fMaxSlice = maxSlice;
-	histogramData.fMinPartition = minPartition;
-	histogramData.fMaxPartition = maxPartition;
-	fHistogramData.push_back(histogramData);
+         tmp->SetName(histName);
+	 AliHLTHistogramData  histogramData;
+	 histogramData.fHistogram = tmp;
+	 histogramData.fMinSlice = minSlice;
+	 histogramData.fMaxSlice = maxSlice;
+	 histogramData.fMinPartition = minPartition;
+	 histogramData.fMaxPartition = maxPartition;
+	 fHistogramData.push_back(histogramData);
       }
-    }
-    
+    }    
   } // end for loop over histogram blocks
   
   MakeHistosPublic();
@@ -425,7 +386,7 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
   else{ // means fUseGeneral == kTRUE
     for(UInt_t i=0;i<fHistogramData.size();i++){
       PushBack((TObject*)fHistogramData.at(i).fHistogram,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 
-		fHistogramData.at(i).fMinSlice,fHistogramData.at(i).fMaxSlice,fHistogramData.at(i).fMinPartition,fHistogramData.at(i).fMaxPartition));
+																fHistogramData.at(i).fMinSlice,fHistogramData.at(i).fMaxSlice,fHistogramData.at(i).fMinPartition,fHistogramData.at(i).fMaxPartition));
     }
     fHistogramData.clear();
   }
@@ -463,6 +424,33 @@ int AliHLTTPCHistogramHandlerComponent::Configure(const char* arguments) {
       if (argument.IsNull()) continue;
      
       if (argument.CompareTo("-sum-noise-histograms")==0) {
+	fNoiseHistograms = kTRUE;
+	HLTInfo("got \'-sum-noise-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } else if (argument.CompareTo("-sum-krypton-histograms")==0) {
+	fKryptonHistograms = kTRUE;
+	HLTInfo("got \'-sum-krypton-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } else if (argument.CompareTo("-use-general")==0) {
+	fUseGeneral = kTRUE;
+	HLTInfo("got \'-use-general\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } else if (argument.CompareTo("-ignore-specification")==0) {
+	fIgnoreSpecification = kTRUE;
+	HLTInfo("got \'-ignore-specification\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+      }
+      else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    } // end for
+    
+    /*for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+     
+      if (argument.CompareTo("-sum-noise-histograms")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("got \'-sum-noise-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	
@@ -470,13 +458,20 @@ int AliHLTTPCHistogramHandlerComponent::Configure(const char* arguments) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("got \'-sum-krypton-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	
-      } 
+      } else if (argument.CompareTo("-use-general")==0) {
+	fUseGeneral = kTRUE;
+	HLTInfo("got \'-use-general\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } else if (argument.CompareTo("-ignore-specification")==0) {
+	fIgnoreSpecification = kTRUE;
+	HLTInfo("got \'-ignore-specification\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+      }
       else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;
       }
-    } // end for
+    } // end for*/
   
     delete pTokens;
   

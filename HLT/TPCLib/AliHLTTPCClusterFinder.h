@@ -156,6 +156,9 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   /** Returns the number of clusters */
   Int_t GetNumberOfClusters() const {return fNClusters;}
 
+  /** Returns the Ocuppancy limit */
+  Float_t GetOccupancyLimit() {return fOccupancyLimit;}
+  
   // setters
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   void SetDeconvPad(Bool_t f) {fDeconvPad=f;}

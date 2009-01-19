@@ -9,7 +9,7 @@
     //* See cxx source for full Copyright notice                               *
 
     /** @file   AliHLTTPCHistogramHandlerComponent.h
-	@author Kalliopi Kanaki
+	@author Kalliopi Kanaki, Kenneth Aamodt
 	@date   
 	@brief  Component for acting upon histograms
     */
@@ -34,10 +34,18 @@ class TH2;
  *  
  * The component has the following component arguments:
  *
- * -sum-noise-histograms Loops over the output of TPCNoiseMap and adds the histograms
+ * -sum-noise-histograms Loops over the output of TPCNoiseMap and sums the partition histograms
+ *  They are sorted per TPC side.
  *
- * It loops over histogram input and sums up the TPC histograms per side (at the moment).
- * 
+ * -sum-krypton-histograms Loops over the output of the krypton CF and sums the histograms
+ * (it will become obsolete, when the next option does all the work)
+ *
+ * -use-general It will become the standard general option for summing histograms
+ *
+ * -ignore-specification It ignores the last part of the histogram name, if it has 
+ * the form "_Slice_%.2d%.2d_Partition_%.2d%.2d, minSlice, maxSlice, minPartition, maxPartition".
+ * It keeps the first part of the hist name and uses it to name the summed histogram.
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCHistogramHandlerComponent : public AliHLTProcessor {
@@ -100,14 +108,11 @@ private:
 
   /** the reader object for data decoding */
   AliHLTUInt32_t fSpecification;  //!transient
-      
-
-  
-      
-  Bool_t fNoiseHistograms;   //!transient
-  Bool_t fKryptonHistograms; //!transient
-  Bool_t fUseGeneral;        //!transient
-  Bool_t fIgnoreSpecification;//!transient 
+            
+  Bool_t fNoiseHistograms;     //!transient
+  Bool_t fKryptonHistograms;   //!transient
+  Bool_t fUseGeneral;          //!transient
+  Bool_t fIgnoreSpecification; //!transient 
       
   Int_t fSlice;  //!transient
       
@@ -118,12 +123,12 @@ private:
   TH1 *fPlotQmaxROCAll;            //!transient
   TH1 *fNumberOfClusters;          //!transient
             
-  TH2 *fHistTH2Tmp;    //!transient
-  TH2 *fHistTPCSideAmax;  //!transient	
+  TH2 *fHistTH2Tmp;       //!transient
+  TH2 *fHistTPCSideAmax;  //!transient 
   TH2 *fHistTPCSideCmax;  //!transient  
-  TH2 *fHistTPCSideAtot;  //!transient	
+  TH2 *fHistTPCSideAtot;  //!transient 
   TH2 *fHistTPCSideCtot;  //!transient  
-  TH2 *fHistTPCSideArms;  //!transient	
+  TH2 *fHistTPCSideArms;  //!transient 
   TH2 *fHistTPCSideCrms;  //!transient  
 
   vector<AliHLTHistogramData> fHistogramData;
