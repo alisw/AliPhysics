@@ -22,6 +22,7 @@ public:
                           AliTriggerBCMask();
                           AliTriggerBCMask( TString & name);
                           AliTriggerBCMask( TString & name, TString & mask );
+                          AliTriggerBCMask( const char* name, const char* mask );
                           AliTriggerBCMask( const AliTriggerBCMask& mask );
                virtual   ~AliTriggerBCMask();
   AliTriggerBCMask&   operator=(const AliTriggerBCMask& mask);

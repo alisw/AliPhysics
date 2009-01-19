@@ -51,6 +51,15 @@ AliTriggerBCMask::AliTriggerBCMask( TString & name, TString & mask ):
   // Constructor
   CreateMask(mask);
 }
+
+//_____________________________________________________________________________
+AliTriggerBCMask::AliTriggerBCMask( const char* name, const char* mask ):
+  TNamed( name, mask )
+{
+  // Constructor
+  SetMask(mask);
+}
+
 //_____________________________________________________________________________
 AliTriggerBCMask::~AliTriggerBCMask() 
 { 
