@@ -168,7 +168,7 @@ void AliGenPileup::Generate()
   // generated within this bc (only in case
   // the user disabled the generation of the trigger
   // interaction)
-  if (fGenTrig) nIntBC[iTrgBC]--;
+  if (!fGenTrig) nIntBC[iTrgBC]--;
 
   // Remove bunch crossings outside pileup
   // time window
