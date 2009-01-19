@@ -71,13 +71,13 @@ DAQDADIR=${DAQDALIB_PATH}
 endif
 DAQDALIB=$(DAQDADIR)/libdaqDA.a
 
-ifneq ($(shell amore-config 2>&1 |grep -i usage),)
-AMOREFLAGS = -DALI_AMORE $(shell amore-config --cflags --includes)
+ifneq ($(shell $(AMORE)/amore-config 2>&1 |grep -i usage),)
+AMOREFLAGS = -DALI_AMORE $(shell $(AMORE)/amore-config --cflags --includes)
 CXXFLAGS  += $(AMOREFLAGS)
 CFLAGS    += $(AMOREFLAGS)
 CINTFLAGS += $(AMOREFLAGS)
 DEPINC    += $(AMOREFLAGS)
-AMOREDALIBS+=-static $(shell amore-config --auxlibs) $(shell date-config --rcproxylibs)
+AMOREDALIBS+=-static $(shell $(AMORE)/amore-config --ldflags-da-static) $(shell date-config --rcproxylibs)
 else
 AMOREDALIBS=
 endif
@@ -183,7 +183,7 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "endif" >> $@
 	@echo "" >> $@
 	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
-	@echo "AMOREDALIBS=-static ""$$""(shell amore-config --auxlibs) ""$$""(shell date-config --rcproxylibs)" >> $@
+	@echo "AMOREDALIBS=-static ""$$""(shell ""$$""(AMORE)/amore-config --ldflags-da-static) ""$$""(shell date-config --rcproxylibs)" >> $@
 	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
 	@echo "" >> $@
 	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe: ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> $@
