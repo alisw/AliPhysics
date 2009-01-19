@@ -32,7 +32,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF2Prong.h"
-#include "AliAnalysisvertexingHF.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSECompareHF.h"
 
