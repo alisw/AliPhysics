@@ -27,6 +27,7 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSESelectHF.h"
 
@@ -37,26 +38,32 @@ ClassImp(AliAnalysisTaskSESelectHF)
 AliAnalysisTaskSESelectHF::AliAnalysisTaskSESelectHF():
 AliAnalysisTaskSE(),
 fVerticesHFTClArr(0),
-fD0toKpiTClArr(0)
+fD0toKpiTClArr(0),
+fVHF(0)
 {
   // Default constructor
-  SetD0toKpiCuts();
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSESelectHF::AliAnalysisTaskSESelectHF(const char *name):
 AliAnalysisTaskSE(name),
 fVerticesHFTClArr(0),
-fD0toKpiTClArr(0)
+fD0toKpiTClArr(0),
+fVHF(0)
 {
   // Default constructor
-  SetD0toKpiCuts();
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSESelectHF::~AliAnalysisTaskSESelectHF()
 {
   // Destructor
+
+  if (fVHF) {
+    delete fVHF;
+    fVHF = 0;
+  }
+
 }  
 
 //________________________________________________________________________
@@ -65,6 +72,11 @@ void AliAnalysisTaskSESelectHF::Init()
   // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSESelectHF::Init() \n");
+
+  gROOT->LoadMacro("ConfigVertexingHF.C");
+
+  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
+  fVHF->PrintStatus();
 
   return;
 }
@@ -138,7 +150,7 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
     Int_t okD0=0,okD0bar=0; 
-    if(dIn->SelectD0(fD0toKpiCuts,okD0,okD0bar)) {
+    if(dIn->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
       // get daughter AOD tracks
       AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);
@@ -176,51 +188,3 @@ void AliAnalysisTaskSESelectHF::Terminate(Option_t */*option*/)
   if(fDebug > 1) printf("AnalysisTaskSESelectHF: Terminate() \n");
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskSESelectHF::SetD0toKpiCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8) 
-{
-  // Set the cuts for D0 selection
-  // cuts[0] = inv. mass half width [GeV]   
-  // cuts[1] = dca [cm]
-  // cuts[2] = cosThetaStar 
-  // cuts[3] = pTK [GeV/c]
-  // cuts[4] = pTPi [GeV/c]
-  // cuts[5] = d0K [cm]   upper limit!
-  // cuts[6] = d0Pi [cm]  upper limit!
-  // cuts[7] = d0d0 [cm^2]
-  // cuts[8] = cosThetaPoint
-
-  fD0toKpiCuts[0] = cut0;
-  fD0toKpiCuts[1] = cut1;
-  fD0toKpiCuts[2] = cut2;
-  fD0toKpiCuts[3] = cut3;
-  fD0toKpiCuts[4] = cut4;
-  fD0toKpiCuts[5] = cut5;
-  fD0toKpiCuts[6] = cut6;
-  fD0toKpiCuts[7] = cut7;
-  fD0toKpiCuts[8] = cut8;
-
-  return;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSESelectHF::SetD0toKpiCuts(const Double_t cuts[9]) 
-{
-  // Set the cuts for D0 selection
-  // cuts[0] = inv. mass half width [GeV]   
-  // cuts[1] = dca [cm]
-  // cuts[2] = cosThetaStar 
-  // cuts[3] = pTK [GeV/c]
-  // cuts[4] = pTPi [GeV/c]
-  // cuts[5] = d0K [cm]   upper limit!
-  // cuts[6] = d0Pi [cm]  upper limit!
-  // cuts[7] = d0d0 [cm^2]
-  // cuts[8] = cosThetaPoint
-
-  for(Int_t i=0; i<9; i++) fD0toKpiCuts[i] = cuts[i];
-
-  return;
-}
