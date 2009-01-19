@@ -21,6 +21,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 		    Double_t *d0,Double_t *d0err);
   AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t charge,
 		    Double_t *d0,Double_t *d0err);
+  AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
+		    Int_t nprongs,Short_t charge,
+		    Double_t *px,Double_t *py,Double_t *pz,Double_t *d0);
   virtual ~AliAODRecoDecayHF();
 
   AliAODRecoDecayHF(const AliAODRecoDecayHF& source);

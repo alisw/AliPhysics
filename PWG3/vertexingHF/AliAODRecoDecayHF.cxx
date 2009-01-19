@@ -68,6 +68,26 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   for(Int_t i=0; i<GetNProngs(); i++) fd0err[i] = d0err[i];
 }
 //--------------------------------------------------------------------------
+AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
+				     Int_t nprongs,Short_t charge,
+				     Double_t *px,Double_t *py,Double_t *pz,
+				     Double_t *d0) :
+  AliAODRecoDecay(0x0,nprongs,charge,px,py,pz,d0),
+  fOwnPrimaryVtx(0x0),
+  fd0err(0x0),
+  fProngID(0x0) 
+{
+  //
+  // Constructor that can used for a "MC" object
+  //
+
+  fOwnPrimaryVtx = new AliAODVertex(vtx1);
+
+  AliAODVertex *vtx = new AliAODVertex(vtx2);
+  SetOwnSecondaryVtx(vtx);
+
+}
+//--------------------------------------------------------------------------
 AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   AliAODRecoDecay(source),
   fOwnPrimaryVtx(source.fOwnPrimaryVtx),
