@@ -7,8 +7,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
+  //vHF->SetLikeSignOn();
   vHF->Set4ProngOff();
-  vHF->SetDstarOff();
+  //vHF->SetDstarOff();
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
   //--- set cuts for single-track selection
@@ -38,7 +39,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- set this if you want to reconstruct primary vertex candidate by
   //    candidate using other tracks in the event (for pp, broad 
   //    interaction region)
-  vHF->SetRecoPrimVtxSkippingTrks();
+  //vHF->SetRecoPrimVtxSkippingTrks();
   //--- OR set this if you want to remove the candidate daughters from 
   //    the primary vertex, without recostructing it from scratch
   //vHF->SetRmTrksFromPrimVtx();
@@ -46,7 +47,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- check the settings
   vHF->PrintStatus();
   //--- verbose
-  AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",0);
+  //AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
 
  
   return vHF;

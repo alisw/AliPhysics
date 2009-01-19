@@ -44,8 +44,9 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   TClonesArray *fCharm3ProngTClArr;    // Array of D+,Ds,Lc
   TClonesArray *fCharm4ProngTClArr;    // Array of D0->Kpipipi
   TClonesArray *fDstarTClArr;          // Array of D*->D0pi
+  TClonesArray *fLikeSignTClArr;       // Array of LikeSignPairs 
   
-  ClassDef(AliAnalysisTaskSEVertexingHF,2); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHF,3); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 
 #endif

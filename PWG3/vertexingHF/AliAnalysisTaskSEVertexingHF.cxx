@@ -44,7 +44,8 @@ fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
-fDstarTClArr(0)
+fDstarTClArr(0),
+fLikeSignTClArr(0)
 {
   // Default constructor
 }
@@ -58,7 +59,8 @@ fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
-fDstarTClArr(0)
+fDstarTClArr(0),
+fLikeSignTClArr(0)
 {
   // Default constructor
 }
@@ -101,7 +103,7 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
   fVerticesHFTClArr->SetName("VerticesHF");
   AddAODBranch("TClonesArray", &fVerticesHFTClArr);
 
-  if(fVHF->GetD0toKpi() || fVHF->GetDstar()) {
+  if(fVHF->GetD0toKpi()) {
     fD0toKpiTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fD0toKpiTClArr->SetName("D0toKpi");
     AddAODBranch("TClonesArray", &fD0toKpiTClArr);
@@ -131,6 +133,12 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
     AddAODBranch("TClonesArray", &fDstarTClArr);
   }
 
+  if(fVHF->GetLikeSign()) {                      
+    fLikeSignTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
+    fLikeSignTClArr->SetName("LikeSign2Prong");
+    AddAODBranch("TClonesArray", &fLikeSignTClArr);
+  }
+
   return;
 }
 
@@ -149,7 +157,8 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
 		       fJPSItoEleTClArr,
 		       fCharm3ProngTClArr,
 		       fCharm4ProngTClArr,
-		       fDstarTClArr);
+		       fDstarTClArr,
+                       fLikeSignTClArr);
   
   return;
 }
