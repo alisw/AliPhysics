@@ -39,7 +39,8 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodJPSItoEleTClArr,
 		      TClonesArray *aodCharm3ProngTClArr,
 		      TClonesArray *aodCharm4ProngTClArr,
-		      TClonesArray *aodDstarTClArr);
+		      TClonesArray *aodDstarTClArr,
+		      TClonesArray *aodLikeSignTClArr);
 
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
@@ -53,17 +54,22 @@ class AliAnalysisVertexingHF : public TNamed {
   void Set4ProngOff() { f4Prong=kFALSE; }
   void SetDstarOn() { fDstar=kTRUE; }
   void SetDstarOff() { fDstar=kFALSE; }
+  void SetLikeSignOn() { fLikeSign=kTRUE; }
+  void SetLikeSignOff() { fLikeSign=kFALSE; }
   Bool_t GetD0toKpi() { return fD0toKpi; }
   Bool_t GetJPSItoEle() { return fJPSItoEle; }
   Bool_t Get3Prong() { return f3Prong; }
   Bool_t Get4Prong() { return f4Prong; }
   Bool_t GetDstar()  { return fDstar; }
+  Bool_t GetLikeSign() { return fLikeSign; }
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
   void SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }
   void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { fTrackFilterSoftPi = trackF; }
+  AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
+  AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
   void SetD0toKpiCuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		      Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		      Double_t cut5=100000.,Double_t cut6=100000.,
@@ -104,6 +110,13 @@ class AliAnalysisVertexingHF : public TNamed {
                       Double_t cut2=-1., Double_t cut3=1000.,
                       Double_t cut4=1.6); 
   void SetDstarCuts(const Double_t cuts[5]); 
+  const Double_t *GetD0toKpiCuts() const {return fD0toKpiCuts;}
+  const Double_t *GetD0fromDstarCuts() const {return fD0fromDstarCuts;}
+  const Double_t *GetBtoJPSICuts() const {return fBtoJPSICuts;}
+  const Double_t *GetDplusCuts() const {return fDplusCuts;}
+  const Double_t *GetDsCuts() const {return fDsCuts;}
+  const Double_t *GetLcCuts() const {return fLcCuts;}
+  const Double_t *GetDstarCuts() const {return fDstarCuts;}
 
   //
  private:
@@ -131,6 +144,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t f3Prong;    // D+,Ds,Lc
   Bool_t f4Prong;    // D0->Kpipipi
   Bool_t fDstar;     // D*->D0pi
+  Bool_t fLikeSign;  // Like-sign pairs
 
   // single-track cuts
   AliAnalysisFilter *fTrackFilter; //  Track Filter for displaced vertices
@@ -256,7 +270,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,6)  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,7)  // Reconstruction of HF decay candidates
 };
 
 
