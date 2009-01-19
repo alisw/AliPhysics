@@ -9,6 +9,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libAOD.so");
+  gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3vertexingHF.so");
 
