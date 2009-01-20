@@ -144,8 +144,19 @@ void PrintSdis()
 void PrintDigs()
 {//prints a list of HMPID digits
   Printf("List of HMPID digits for event %i",fEvt);  
-  fDigLst->Print();
-  Int_t iTot=0;  for(Int_t i=0;i<7;i++) {iTot+=((TClonesArray*)fDigLst->At(i))->GetEntries();}
+//  fDigLst->Print();
+  
+  Int_t iTot=0;  
+  for(Int_t iCh=0;iCh<7;iCh++) {
+    iTot+=((TClonesArray*)fDigLst->At(iCh))->GetEntries();
+
+    TClonesArray *pDigCham=(TClonesArray*)fDigLst->At(iCh);         //get digs list for this chamber
+    for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
+      AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig);
+      pDig->Print();
+    }//Digit loop
+  }//chamber loop 
+    
   Printf("totally %i digits for event %i",iTot,fEvt);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -153,8 +164,16 @@ void PrintClus()
 {//prints a list of HMPID clusters  for a given event
   Printf("List of HMPID clusters for event %i",fEvt);
   
-  fCluLst->Print();
-  Int_t iTot=0; for(Int_t iCh=0;iCh<7;iCh++) iTot+=((TClonesArray*)fCluLst->At(iCh))->GetEntries();
+//  fCluLst->Print();
+  
+  Int_t iTot=0; for(Int_t iCh=0;iCh<7;iCh++) {
+    iTot+=((TClonesArray*)fCluLst->At(iCh))->GetEntries();
+    TClonesArray *pClusCham=(TClonesArray*)fCluLst->At(iCh);         //get clusters list for this chamber
+    for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
+      AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
+      pClu->Print();
+    }
+  }
   
   Printf("totally %i clusters for event %i",iTot,fEvt);
 }

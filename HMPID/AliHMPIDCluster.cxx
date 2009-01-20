@@ -239,7 +239,7 @@ void AliHMPIDCluster::Print(Option_t* opt)const
   }
   Double_t ratio=0;
   if(Q()>0&&QRaw()>0) ratio = Q()/QRaw()*100;
-  Printf("%sCLU: ch=%i                 (%7.3f,%7.3f) Q=%8.3f Qraw=%8.3f(%3.0f%%) Size=%2i DimBox=%i LocMax=%i Chi2=%7.3f   %s",
+  Printf("%sCLU: ch=%i  (%7.3f,%7.3f) Q=%8.3f Qraw=%8.3f(%3.0f%%) Size=%2i DimBox=%i LocMax=%i Chi2=%7.3f   %s",
          opt,Ch(),X(),Y(),Q(),QRaw(),ratio,Size(),fBox,fNlocMax,fChi2,status);
   if(fDigs) fDigs->Print();    
 }//Print()
