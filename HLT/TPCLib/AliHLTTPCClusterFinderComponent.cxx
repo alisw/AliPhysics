@@ -436,10 +436,12 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
       if (argument.CompareTo("-deconvolute-time")==0){
 	HLTDebug("Switching on deconvolution in time direction.");
 	fDeconvTime = kTRUE;
+	fClusterFinder->SetDeconvTime(fDeconvTime);
       }
       else if (argument.CompareTo("-deconvolute-pad")==0){
 	HLTDebug("Switching on deconvolution in pad direction.");
 	fDeconvPad = kTRUE;
+	fClusterFinder->SetDeconvPad(fDeconvPad);
       }
       else if (argument.CompareTo("-timebins")==0 || argument.CompareTo("timebins" )==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
@@ -453,16 +455,28 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
       else if (argument.CompareTo("-first-timebin")==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	fFirstTimeBin = ((TObjString*)pTokens->At(i))->GetString().Atoi();
-	HLTDebug("Kenneth fFirstTimeBin set to %d",fFirstTimeBin);
+	if(fFirstTimeBin>=0){
+	  HLTDebug("fFirstTimeBin set to %d",fFirstTimeBin);
+	  fClusterFinder->SetFirstTimeBin(fFirstTimeBin);
+	}
+	else{
+	  HLTError("-first-timebin specifier is negative: %d",fFirstTimeBin);
+	}
       }
       else if (argument.CompareTo("-last-timebin")==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	fLastTimeBin = ((TObjString*)pTokens->At(i))->GetString().Atoi();
-	HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
+	if(fLastTimeBin<AliHLTTPCTransform::GetNTimeBins()){
+	  HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
+	}
+	else{
+	  HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCTransform::GetNTimeBins());
+	}
       }
       else if (argument.CompareTo("-sorted")) {
 	fUnsorted=0;
 	HLTDebug("Swithching unsorted off.");
+	fClusterFinder->SetUnsorted(0);
       }
       else if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
 	if(argument.CompareTo("activepads" )==0){
@@ -470,6 +484,7 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	}
 	HLTDebug("Switching on ActivePads");
 	fGetActivePads = 1;
+	fClusterFinder->SetDoPadSelection(kTRUE);
       }
       else if (argument.CompareTo("-occupancy-limit")==0 ||argument.CompareTo("occupancy-limit")==0){
 	if(argument.CompareTo("occupancy-limit" )==0){
@@ -497,7 +512,8 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
       }
       else if (argument.CompareTo("unsorted" )==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTWarning("Argument 'unsorted' is old and does not follow the new argument naming convention. A change has been made, and the clusterfinder will read the data unsorted by default. For sorted reading, please use '-sorted' as argument.");
+	HLTDebug("Using unsorted reading.");
+	fClusterFinder->SetUnsorted(1);
       }
       else if (argument.CompareTo("nsigma-threshold")==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
@@ -520,6 +536,8 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 
 int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
+  
+  int iResult=0;
   // see header file for class documentation
   const char* path="HLT/ConfigTPC/ClusterFinderComponent";
   if (cdbEntry) path=cdbEntry;
@@ -530,6 +548,7 @@ int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const cha
       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
       if (pString) {
 	HLTInfo("received configuration object: %s", pString->GetString().Data());
+	iResult = Configure(pString->GetString().Data());
       } else {
 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
       }
@@ -537,5 +556,5 @@ int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const cha
       HLTError("can not fetch object \"%s\" from CDB", path);
     }
   }
-  return 0;
+  return iResult;
 }
