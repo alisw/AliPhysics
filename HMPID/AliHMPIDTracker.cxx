@@ -123,7 +123,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 //  Double_t radClu,radInitTrk;   
   Int_t nMipClusTot=0;
 //  Double_t d3d=0;
-  Double_t qthre = 0;   Double_t nmean=0; Int_t cham=0; Int_t hvsec=0;
+  Double_t qthre = 0;   Double_t nmean=0; Int_t hvsec=0;
   Int_t nClusCh[AliHMPIDParam::kMaxCh+1];
   
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
@@ -173,7 +173,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       } else {                                                                                     // in the past just 1 qthre
         hvsec = pParam->InHVSector(pClu->Y());                                              //  per chamber
         if(hvsec>=0)
-	  qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                      //
+	  qthre=((TF1*)pQthre->At(6*ipCh+hvsec))->Eval(pEsd->GetTimeStamp());                      //
       }                                                                                            //
 //
       if(pClu->Q()<qthre) continue;                                                                      //charge compartible with MIP clusters      
@@ -215,13 +215,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       continue;                                                                     
     }
               
-    Printf(" Track n. %i Chamber intersected %i dist %f index %i",iTrk,ipCh,dmin,index);
+    Printf(" Track n. %i Chamber intersected %i dist %f index %i cluster ch %i",iTrk,ipCh,dmin,index,bestHmpCluster->Ch());
 
     Int_t cluSiz = bestHmpCluster->Size();
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
     pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
     
-    if(dmin < pParam->DistCut()) {
+//    if(dmin < pParam->DistCut()) {
+    if(dmin < 10.) {
       isOkDcut = kTRUE;
     }
 
@@ -234,8 +235,10 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(!isMatched) continue;                                                                    // If matched continue...
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,0.1,0);
+    Printf(" status of thracking update %i",isOk);
     if(!isOk) continue;
     pTrk->SetOuterParam(hmpTrk,AliESDtrack::kHMPIDout);                 
+    Printf("ok for reconstruction...");
     
     /*    
     Int_t indexAll = 0;
@@ -256,14 +259,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 */
     //evaluate nMean
     if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
-      nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
+      nmean=((TF1*)pNmean->At(3*ipCh))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
     } else {
       Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
       if(iRad < 0) {
 	nmean = -1;
       } else {
-      Double_t tLow  = ((TF1*)pNmean->At(6*cham+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
-      Double_t tHigh = ((TF1*)pNmean->At(6*cham+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
+      Double_t tLow  = ((TF1*)pNmean->At(6*ipCh+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
+      Double_t tHigh = ((TF1*)pNmean->At(6*ipCh+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
       Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
       nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
       }
@@ -275,7 +278,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     }
     //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
-    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),index,nmean);                           //search for Cerenkov angle of this track
+    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(ipCh),index,nmean);                           //search for Cerenkov angle of this track
     
     AliHMPIDPid pID;
     Double_t prob[5];
