@@ -36,6 +36,7 @@ class AliRunInfo : public TObject {
 
   const char *GetLHCState() const { return fLHCState.Data(); }
   const char *GetBeamType() const { return fBeamType.Data(); }
+  Float_t     GetBeamEnergy() const { return fBeamEnergy; }
   const char *GetRunType() const { return fRunType.Data(); }
   UInt_t      GetDetectorMask() const { return fActiveDetectors; }
   const char *GetActiveDetectors() const { return AliDAQ::ListOfTriggeredDetectors(fActiveDetectors); }
