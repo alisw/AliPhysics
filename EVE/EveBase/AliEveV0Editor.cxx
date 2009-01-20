@@ -182,7 +182,7 @@ void AliEveV0Editor::DisplayDetailed()
   sprintf(info,"daughters dca = %.3f [cm]",fM->GetDaughterDCA());
   ltx->DrawLatex(0.1, 0.7, info);
 
-  sprintf(info,"#eta = #frac{1}{2} #times Ln(#frac{E+p_{z}}{E-p_{z}} ) = %.3f",fM->GetEta());
+  sprintf(info,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
   ltx->DrawLatex(0.1, 0.6, info);
 
   sprintf(info,"mass_{K^{0}_{s}} = %.3f [GeV/c^{2}]",fM->GetK0sInvMass());
