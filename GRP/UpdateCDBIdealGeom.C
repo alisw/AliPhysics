@@ -43,7 +43,9 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   md->SetAliRootVersion(av.Data());
   md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %d",rootv,av.Data(),revnum));
   
-  gAlice->Init(cfgFile);
+  gROOT->LoadMacro(cfgFile);
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  gAlice->GetMCApp()->Init();
   
   if(!gGeoManager){
     Printf("Unable to produce a valid geometry to be put in the CDB!");
