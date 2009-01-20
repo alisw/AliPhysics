@@ -51,6 +51,9 @@ public:
   /// Create a hv map (which must be deleted) from OCDB for the given run
   static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0);
 
+  /// Create a Trigger HV and current  map (which must be deleted) from OCDB for the given run
+  static TMap* CreateTriggerDCS(Int_t runNumber, Int_t* startOfValidity=0);
+
   /// Create a neighbours store (which must be deleted) from OCDB for the given run
   static AliMUONVStore* CreateNeighbours(Int_t runNumber, Int_t* startOfValidity=0);
   
@@ -79,6 +82,9 @@ public:
     
   /// Get the HV values
   TMap* HV() const;
+
+  /// Get the Trigger HV and current values
+  TMap* TriggerDCS() const;
     
   /// Whether this object is valid or not (might be invalid if fetching from CDB failed).
   Bool_t IsValid() const { return fIsValid; }
@@ -129,6 +135,7 @@ private:
   mutable AliMUONVStore* fGains; //!< Gains
   mutable AliMUONVStore* fPedestals; //!< Pedestals
   mutable TMap* fHV; //!< HV
+  mutable TMap* fTriggerDCS; //!< Trigger HV and Currents
   mutable AliMUONVStore* fLocalTriggerBoardMasks; //!< Local trigger board maska  
   mutable AliMUONRegionalTriggerConfig* fRegionalTriggerConfig; //!< Regional trigger config
   mutable AliMUONGlobalCrateConfig* fGlobalTriggerCrateConfig; //!< Global trigger crate config
@@ -138,7 +145,7 @@ private:
   mutable AliMUONVStore* fCapacitances; //!< Manu capacitances
   mutable AliMUONVStore* fNeighbours; //!< list of neighbours for all channels
   
-  ClassDef(AliMUONCalibrationData,7) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,8) // Storage for all MUON calibration data.
 };
 
 #endif

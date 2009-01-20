@@ -16,21 +16,22 @@
 // $Id$
 
 //-----------------------------------------------------------------------------
-/// \class AliMUONHVSubprocessor
+/// \class AliMUONTriggerDCSSubprocessor
 ///
-/// A subprocessor to read HV values for one run
+/// A subprocessor to read Trigger DCS values for one run
 ///
 /// It simply creates a copy of the dcsAliasMap w/o information
-/// from the MUON TRK, and dumps this copy into the CDB
+/// from the MUON TRG, and dumps this copy into the CDB
 ///
-/// \author Laurent Aphecetche, Subatech
+/// \author Diego Stocco, Subatech
 //-----------------------------------------------------------------------------
 
-#include "AliMUONHVSubprocessor.h"
+#include "AliMUONTriggerDCSSubprocessor.h"
 #include "AliMUONPreprocessor.h"
 
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpConstants.h"
 #include "AliMpDCSNamer.h"
 
 #include "AliCDBMetaData.h"
@@ -41,34 +42,34 @@
 #include "TObjString.h"
 
 /// \cond CLASSIMP
-ClassImp(AliMUONHVSubprocessor)
+ClassImp(AliMUONTriggerDCSSubprocessor)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONHVSubprocessor::AliMUONHVSubprocessor(AliMUONPreprocessor* master)
+AliMUONTriggerDCSSubprocessor::AliMUONTriggerDCSSubprocessor(AliMUONPreprocessor* master)
 : AliMUONVSubprocessor(master,
-                       "HV",
-                       "Get MUON Tracker HV values from DCS")
+                       "TriggerDCS",
+                       "Get MUON Trigger HV and Current values from DCS")
 {
   /// ctor
 }
 
 //_____________________________________________________________________________
-AliMUONHVSubprocessor::~AliMUONHVSubprocessor()
+AliMUONTriggerDCSSubprocessor::~AliMUONTriggerDCSSubprocessor()
 {
   /// dtor
 }
 
 //_____________________________________________________________________________
 UInt_t
-AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
+AliMUONTriggerDCSSubprocessor::Process(TMap* dcsAliasMap)
 {
   /// Make another alias map from dcsAliasMap, considering only MUON TRK aliases.
 
-  TMap hv;
-  hv.SetOwner(kTRUE);
+  TMap dcsMap;
+  dcsMap.SetOwner(kTRUE);
   
-  AliMpDCSNamer hvNamer("TRACKER");
+  AliMpDCSNamer dcsMapNamer("TRIGGER");
 
   AliMpDEIterator deIt;
 
@@ -77,35 +78,19 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   TObjArray aliases;
   aliases.SetOwner(kTRUE);
   
-  // we first generate a list of expected MCH DCS aliases we'll then look for
+  // we first generate a list of expected MTR DCS aliases we'll then look for
   
   while ( !deIt.IsDone() )
   {
     Int_t detElemId = deIt.CurrentDEId();
     
-    switch ( AliMpDEManager::GetStationType(detElemId) )
-    {
-      case AliMp::kStation1:
-      case AliMp::kStation2:
-      {
-        for ( int i = 0; i <3; ++i)
-        {
-          aliases.Add(new TObjString(hvNamer.DCSChannelName(detElemId,i)));
-        }
+    if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStationTrigger) {
+
+      for(Int_t iMeas=0; iMeas<AliMpDCSNamer::kNDCSMeas; iMeas++){
+	aliases.Add(new TObjString(dcsMapNamer.DCSChannelName(detElemId, 0, iMeas)));
       }
-      break;
-      case AliMp::kStation345:
-      {
-        aliases.Add(new TObjString(hvNamer.DCSChannelName(detElemId)));
-        for ( int i = 0; i < hvNamer.NumberOfPCBs(detElemId); ++i)
-        {
-          aliases.Add(new TObjString(hvNamer.DCSSwitchName(detElemId,i)));
-        }
-      }
-      break;
-      default:
-        break;
-    };
+
+    }
 
     deIt.Next();
   }
@@ -119,24 +104,24 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   while ( ( alias = static_cast<TObjString*>(next()) ) ) 
   {
     TString aliasName(alias->String());
-    TPair* hvPair = static_cast<TPair*>(dcsAliasMap->FindObject(aliasName.Data()));
-    if (!hvPair)
+    TPair* dcsMapPair = static_cast<TPair*>(dcsAliasMap->FindObject(aliasName.Data()));
+    if (!dcsMapPair)
     {
       ++aliasNotFound;
     }
     else
     {
       kNoAliases = kFALSE;
-      TObjArray* values = static_cast<TObjArray*>(hvPair->Value()->Clone());
-      if (!values)
+      if (!dcsMapPair->Value())
       {
         ++valueNotFound;
       }
       else
       {
+	TObjArray* values = static_cast<TObjArray*>(dcsMapPair->Value()->Clone());
         //FIXME : should insure here that values are only the ones within run
         //limits (startTime<timestamp<endTime)
-        hv.Add(new TObjString(aliasName.Data()),values);
+        dcsMap.Add(new TObjString(aliasName.Data()),values);
       }
     }
   }
@@ -161,12 +146,12 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
-  metaData.SetResponsible("MUON TRK");
-  metaData.SetComment("Computed by AliMUONHVSubprocessor $Id$");
+  metaData.SetResponsible("MUON TRG");
+  metaData.SetComment("Computed by AliMUONTriggerDCSSubprocessor $Id$");
   
   Bool_t validToInfinity(kFALSE);
   
-  Bool_t result = Master()->Store("Calib","HV",&hv,&metaData,0,validToInfinity);
+  Bool_t result = Master()->Store("Calib","TriggerDCS",&dcsMap,&metaData,0,validToInfinity);
   
   return ( result != kTRUE); // return 0 if everything is ok
 }

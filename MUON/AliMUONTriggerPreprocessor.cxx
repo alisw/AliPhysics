@@ -19,6 +19,7 @@
 
 #include "AliLog.h"
 #include "AliMUONTriggerSubprocessor.h"
+#include "AliMUONTriggerDCSSubprocessor.h"
 #include "AliShuttleInterface.h"
 #include "Riostream.h"
 
@@ -38,7 +39,8 @@ ClassImp(AliMUONTriggerPreprocessor)
 //_____________________________________________________________________________
 AliMUONTriggerPreprocessor::AliMUONTriggerPreprocessor(AliShuttleInterface* shuttle)
 : AliMUONPreprocessor("MTR",shuttle),
-fTriggerSubprocessor(new AliMUONTriggerSubprocessor(this))
+  fTriggerSubprocessor(new AliMUONTriggerSubprocessor(this)),
+  fTriggerDCSSubprocessor(new AliMUONTriggerDCSSubprocessor(this))
 {
   /// ctor. 
   AddRunType("PHYSICS");
@@ -50,6 +52,7 @@ AliMUONTriggerPreprocessor::~AliMUONTriggerPreprocessor()
 {
   /// dtor
   delete fTriggerSubprocessor;
+  delete fTriggerDCSSubprocessor;
 }
 
 //_____________________________________________________________________________
@@ -65,8 +68,12 @@ AliMUONTriggerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   
   TString runType = GetRunType();
   
-  if ( runType == "PHYSICS" ||
-       runType == "CALIBRATION" ) 
+  if ( runType == "PHYSICS" ) 
+  {
+    Add(fTriggerSubprocessor);
+    Add(fTriggerDCSSubprocessor,kTRUE); // uses DCS
+  }
+  else if (runType == "CALIBRATION")
   {
     Add(fTriggerSubprocessor);
   }

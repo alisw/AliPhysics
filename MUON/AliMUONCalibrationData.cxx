@@ -62,6 +62,7 @@ fRunNumber(runNumber),
 fGains(0x0), 
 fPedestals(0x0),
 fHV(0x0),
+fTriggerDCS(0x0),
 fLocalTriggerBoardMasks(0x0),
 fRegionalTriggerConfig(0x0),
 fGlobalTriggerCrateConfig(0x0),
@@ -83,6 +84,7 @@ fNeighbours(0x0)
     Gains();
     Pedestals();
     HV();
+    TriggerDCS();
     LocalTriggerBoardMasks(0);
     RegionalTriggerConfig();
     GlobalTriggerCrateConfig();
@@ -148,6 +150,14 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a new HV map from the OCDB for a given run
   return dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
+}
+
+//_____________________________________________________________________________
+TMap*
+AliMUONCalibrationData::CreateTriggerDCS(Int_t runNumber, Int_t* startOfValidity)
+{
+  /// Create a new Trigger HV and curent map from the OCDB for a given run
+  return dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/TriggerDCS",startOfValidity));
 }
 
 //_____________________________________________________________________________
@@ -290,6 +300,19 @@ AliMUONCalibrationData::HV() const
 }
 
 //_____________________________________________________________________________
+TMap*
+AliMUONCalibrationData::TriggerDCS() const
+{
+  /// Return the calibration for a given (detElemId, manuId) pair
+  
+  if (!fTriggerDCS)
+  {
+    fTriggerDCS = CreateTriggerDCS(fRunNumber);
+  }
+  return fTriggerDCS;
+}
+
+//_____________________________________________________________________________
 AliMUONVStore*
 AliMUONCalibrationData::Neighbours() const
 {
@@ -364,6 +387,7 @@ AliMUONCalibrationData::Print(Option_t*) const
   << " fGains=" << fGains
   << " fPedestals=" << fPedestals
   << " fHV=" << fHV
+  << " fTriggerDCS=" << fTriggerDCS
   << " fLocalTriggerBoardMasks=" << fLocalTriggerBoardMasks
   << " fRegionalTriggerConfig=" << fRegionalTriggerConfig
   << " fGlobalTriggerCrateConfig=" << fGlobalTriggerCrateConfig
@@ -425,6 +449,8 @@ AliMUONCalibrationData::Reset()
   fGains = 0x0;
   delete fHV;
   fHV = 0x0;
+  delete fTriggerDCS;
+  fTriggerDCS = 0x0;
   delete fLocalTriggerBoardMasks;
   fLocalTriggerBoardMasks = 0x0;
   delete fRegionalTriggerConfig;
@@ -483,6 +509,15 @@ AliMUONCalibrationData::Check(Int_t runNumber)
   else
   {
     AliInfoClass("HV read OK");
+  }
+
+  if ( !  CreateTriggerDCS(runNumber) )
+  {
+    AliErrorClass("Could not read Trigger HV and Currents");
+  }
+  else
+  {
+    AliInfoClass("Trigger HV and Currents read OK");
   }
 
   if ( ! CreateNeighbours(runNumber) )

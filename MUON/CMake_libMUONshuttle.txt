@@ -9,6 +9,7 @@ AliMUONHVSubprocessor.cxx
 AliMUONGainSubprocessor.cxx 
 AliMUONTrackerPreprocessor.cxx 
 AliMUONTriggerSubprocessor.cxx 
+AliMUONTriggerDCSSubprocessor.cxx 
 AliMUONTriggerPreprocessor.cxx
 )
 

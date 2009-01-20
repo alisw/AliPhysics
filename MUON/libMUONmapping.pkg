@@ -90,7 +90,7 @@ SRCS +=  \
          mapping/AliMpManuUID.cxx \
          mapping/AliMpPadUID.cxx \
          mapping/AliMpHVUID.cxx \
-         mapping/AliMpHVNamer.cxx \
+         mapping/AliMpDCSNamer.cxx \
          mapping/AliMpSegmentation.cxx \
 	 mapping/AliMpDetElement.cxx \
 	 mapping/AliMpDEStore.cxx  \

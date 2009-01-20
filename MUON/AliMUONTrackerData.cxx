@@ -34,7 +34,7 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
-#include "AliMpHVNamer.h"
+#include "AliMpDCSNamer.h"
 #include "AliMpManuIterator.h"
 #include <Riostream.h>
 #include <TClass.h>
@@ -1133,7 +1133,7 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
   
   if ( stationType == AliMp::kStation345 ) 
   {
-    AliMpHVNamer namer;
+    AliMpDCSNamer namer("TRACKER");
     pcbIndex = namer.ManuId2PCBIndex(detElemId,manuId);
   }
   
@@ -1346,7 +1346,7 @@ AliMUONTrackerData::CreatePCBParam(Int_t detElemId, Int_t pcbIndex) const
   
   AliCodeTimerAuto("");
   
-  AliMpHVNamer namer;
+  AliMpDCSNamer namer("TRACKER");
   
   AliMUONVCalibParam* pcb = new AliMUONCalibParamND(Dimension(),
                                                     namer.NumberOfPCBs(detElemId),

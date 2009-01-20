@@ -30,7 +30,7 @@
 #include "AliMpArrayI.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
-#include "AliMpHVNamer.h"
+#include "AliMpDCSNamer.h"
 #include "AliMpHVUID.h"
 #include "AliMpManuUID.h"
 #include "AliMpPadUID.h"
@@ -301,7 +301,7 @@ AliMpDetElement::AddManu(Int_t manuId)
 
   fNofChannels += n;
   
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
   Int_t index = hvNamer.ManuId2Index(fId,manuId);
                             

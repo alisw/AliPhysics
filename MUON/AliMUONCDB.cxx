@@ -53,7 +53,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpFiles.h"
-#include "AliMpHVNamer.h"
+#include "AliMpDCSNamer.h"
 #include "AliMpManuIterator.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
@@ -326,7 +326,7 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
 {
   /// Create a HV store
   
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
   TObjArray* aliases = hvNamer.GenerateAliases();
   
@@ -380,6 +380,54 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
   AliInfo(Form("%d HV channels and %d switches",nChannels,nSwitch));
   
   return nChannels+nSwitch;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONCDB::MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues)
+{
+  /// Create a Trigger HV and Currents store
+  
+  AliMpDCSNamer triggerDCSNamer("TRIGGER");
+  
+  TObjArray* aliases = triggerDCSNamer.GenerateAliases();
+  
+  Int_t nChannels[2] = {0, 0};
+  
+  for ( Int_t i = 0; i < aliases->GetEntries(); ++i ) 
+  {
+    TObjString* alias = static_cast<TObjString*>(aliases->At(i));
+    TString& aliasName = alias->String();
+
+    TObjArray* valueSet = new TObjArray;
+    valueSet->SetOwner(kTRUE);
+    Int_t measureType = triggerDCSNamer.DCSvariableFromDCSAlias(aliasName.Data());
+    for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
+    {
+      Float_t value = 
+	(measureType == AliMpDCSNamer::kDCSI) ? 0.4 : 8000.;
+      if (!defaultValues) {
+	switch (measureType){
+	case AliMpDCSNamer::kDCSI:
+	  value = GetRandom(0.4,0.02,true);
+	  break;
+	case AliMpDCSNamer::kDCSHV:
+	  value = GetRandom(8000.,100.,true);
+	  break;
+	}
+      }
+      AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+      valueSet->Add(dcsValue);
+    }
+    aliasMap.Add(new TObjString(*alias),valueSet);
+    ++nChannels[measureType];
+  }
+  
+  delete aliases;
+  
+  AliInfo(Form("Trigger channels I -> %i   HV -> %i",nChannels[0], nChannels[1]));
+  
+  return nChannels[0] + nChannels[1];
 }
 
 //_____________________________________________________________________________
@@ -952,6 +1000,26 @@ AliMUONCDB::WriteHV(Bool_t defaultValues,
 
 //_____________________________________________________________________________
 void 
+AliMUONCDB::WriteTriggerDCS(Bool_t defaultValues,
+                    Int_t startRun, Int_t endRun)
+{
+  /// generate Trigger HV and current values (either const if defaultValues=true or random
+  /// if defaultValues=false, see makeTriggerDCSStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  TMap* triggerDCSStore = new TMap;
+  Int_t ngenerated = MakeTriggerDCSStore(*triggerDCSStore,defaultValues);
+  AliInfo(Form("Ngenerated = %d",ngenerated));
+  if (ngenerated>0)
+  {
+    WriteToCDB("MUON/Calib/TriggerDCS",triggerDCSStore,startRun,endRun,defaultValues);
+  }
+  delete triggerDCSStore;
+}
+
+//_____________________________________________________________________________
+void 
 AliMUONCDB::WritePedestals(Bool_t defaultValues,
                            Int_t startRun, Int_t endRun)
 {
@@ -1023,9 +1091,10 @@ AliMUONCDB::WriteCapacitances(Bool_t defaultValues,
 
 //_____________________________________________________________________________
 void
-AliMUONCDB::WriteTrigger(Int_t startRun, Int_t endRun)
+AliMUONCDB::WriteTrigger(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 {
   /// Writes all Trigger related calibration to CDB
+  WriteTriggerDCS(defaultValues,startRun,endRun);
   WriteLocalTriggerMasks(startRun,endRun);
   WriteRegionalTriggerConfig(startRun,endRun);
   WriteGlobalTriggerConfig(startRun,endRun);

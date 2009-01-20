@@ -44,8 +44,16 @@ MCH       PHYSICS                     read DCS HV values and    AliMUONHVSubproc
                                       
 MCH       CALIBRATION                 read ASCII gain files     AliMUONGainSubprocessor
                                       and put them into OCDB
+
+MTR       CALIBRATION		      read date files (masks,   AliMUONTriggerSubprocessor
+	  			      crates, and LUT)
+				      and put them in OCDB           
                                       
-MTR       to be defined               to be defined             to be done
+MTR       PHYSICS                     read date files as in     AliMUONTriggerDCSSubprocessor
+	                              CALIBRATION,
+				      read DCS HV and currents
+				      and put them in OCDB
+				     
 </pre>
 
 
@@ -216,6 +224,22 @@ the macro MUONGenerateTestGMS.C:
 The matrices of TGeoHMatrix type, with TObject::fUniqueID equal to the geometry
 module Id, are put in a TClonesArray and saved in the Root file with a 
 key "GMSarray".
+
+
+\section shuttle_s7 Trigger DCS
+
+HV and currents DCS values are created in CreateDCSAliasMap() of TestMUONPreprocessor.C
+As done in Tracker HV, you might want to modify this function to create a given set of 
+error conditions in order to test whether the TriggerDCSSubprocessor is reacting 
+properly to those errors.
+
+COMMENT: the trigger subprocessor requires trigger .dat files to be present.
+In order to test only the DCS values when the remaining trigger files are not present, 
+a workaround is put in the TestMUONPreprocessor.C which creates fake date files.
+This results in some "ERROR" flags appearing in the LOG file (for masks and LUT), 
+which are absolutely expected.
+The fake date files are automatically removed at the end of the macro.
+
 
 This chapter is defined in the READMEshuttle.txt file.
 

@@ -110,7 +110,7 @@
 #pragma link C++ class  AliMpManuUID;
 #pragma link C++ class  AliMpPadUID;
 #pragma link C++ class  AliMpHVUID;
-#pragma link C++ class  AliMpHVNamer;
+#pragma link C++ class  AliMpDCSNamer;
 #pragma link C++ class  AliMpSegmentation+;
 #pragma link C++ class  AliMpDetElement+;
 #pragma link C++ class  AliMpDEStore+;

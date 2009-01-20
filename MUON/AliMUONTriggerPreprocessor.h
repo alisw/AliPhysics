@@ -15,6 +15,7 @@
 #include "AliMUONPreprocessor.h"
 
 class AliMUONTriggerSubprocessor;
+class AliMUONTriggerDCSSubprocessor;
 
 class AliMUONTriggerPreprocessor : public AliMUONPreprocessor
 {
@@ -33,8 +34,9 @@ private:
 
 private:
   AliMUONTriggerSubprocessor* fTriggerSubprocessor; //!< the real worker class
+  AliMUONTriggerDCSSubprocessor* fTriggerDCSSubprocessor; //!< the real worker class for DCS info
   
-  ClassDef(AliMUONTriggerPreprocessor,1) // MUON Trigger Shuttle preprocessor
+  ClassDef(AliMUONTriggerPreprocessor,2) // MUON Trigger Shuttle preprocessor
 };
 
 #endif

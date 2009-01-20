@@ -42,7 +42,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
-#include "AliMpHVNamer.h"
+#include "AliMpDCSNamer.h"
 #include "AliMpManuUID.h"
 
 #include "AliCDBEntry.h"
@@ -263,9 +263,9 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
   hvChannelTooHigh = kFALSE;
   hvChannelON = kTRUE;
 
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
-  TString hvChannel(hvNamer.DCSHVChannelName(detElemId,sector));
+  TString hvChannel(hvNamer.DCSChannelName(detElemId,sector));
   
   TMap* hvMap = fCalibrationData.HV();
   TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(hvChannel.Data()));
@@ -331,9 +331,9 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
   hvSwitchON = kTRUE;
   hvChannelON = kTRUE;
   
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
-  TString hvChannel(hvNamer.DCSHVChannelName(detElemId));
+  TString hvChannel(hvNamer.DCSChannelName(detElemId));
   
   TMap* hvMap = fCalibrationData.HV();
   
@@ -376,7 +376,7 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
     }
   }
   
-  TString hvSwitch(hvNamer.DCSHVSwitchName(detElemId,pcbIndex));
+  TString hvSwitch(hvNamer.DCSSwitchName(detElemId,pcbIndex));
   TPair* switchPair = static_cast<TPair*>(hvMap->FindObject(hvSwitch.Data()));
   if (!switchPair)
   {
@@ -446,7 +446,7 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
 
   Int_t status(0);
   
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
   switch ( AliMpDEManager::GetStationType(detElemId) )
   {

@@ -38,7 +38,12 @@
 ///
 /// MUON base class for converting histos as a function of strip/board/slat number
 /// into display histos showing the detection element position in the 
-/// trigger chamber
+/// trigger chamber.
+///
+/// Input histos can be given as:
+///  - TH2 with x -> board # [1-234]  and   y -> strip # in board [0-15].  Option: kDisplayStrips
+///  - TH1 with x -> board # [1-234]                                       Option: kDisplayBoards
+///  - TH1 with x -> slat #  [0-17]                                        Option: kDisplaySlats
 ///
 /// \author D. Stocco
 

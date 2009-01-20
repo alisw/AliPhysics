@@ -30,7 +30,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
 #include "AliMpDEManager.h"
-#include "AliMpHVNamer.h"
+#include "AliMpDCSNamer.h"
 #include <TClass.h>
 #include <TMap.h>
 #include <TObjArray.h>
@@ -167,7 +167,7 @@ AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
   
   TIter next(&m);
   TObjString* s;
-  AliMpHVNamer hvNamer;
+  AliMpDCSNamer hvNamer("TRACKER");
   
   while ( ( s = static_cast<TObjString*>(next()) ) )
   {
@@ -183,7 +183,7 @@ AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
     }
     
     Int_t nindex = 1;
-    Int_t hvIndex = hvNamer.HVIndexFromDCSAlias(name.Data());
+    Int_t hvIndex = hvNamer.DCSIndexFromDCSAlias(name.Data());
     
     if ( hvIndex > 0 && detElemId >= 500 ) 
     {

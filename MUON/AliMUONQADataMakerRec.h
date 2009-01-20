@@ -45,6 +45,10 @@ private:
     kTriggeredBoards           = 2,  ///< Triggered boards histogram index
     kTriggerDigitsDisplay      = 3,  ///< Trigger digits display histogram per plane index
     kTriggerBoardsDisplay      = 11, ///< Triggered boards display histogram index
+    kTriggerRPCi               = 12, ///< Trigger chamber currents index
+    kTriggerRPChv              = 13, ///< Trigger chamber HV index
+    kTriggerIDisplay           = 14, ///< Trigger chamber currents display histogram index
+    kTriggerHVDisplay          = 18, ///< Trigger chamber HV display histogram index
     
     kTrackerNumberOfClustersPerChamber    = 100, ///< Tracker: # of clusters per chamber
     kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
@@ -105,6 +109,7 @@ private:
 	
 	void Ctor();
   void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
+  Bool_t FillTriggerDCSHistos();
 	void InitRecPointsTracker();
 	void InitRecPointsTrigger();
 	void MakeRawsTracker(AliRawReader* rawReader);
