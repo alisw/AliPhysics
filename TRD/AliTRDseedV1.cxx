@@ -224,9 +224,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 // Detailed description
 // Calculates average dE/dx for all slices. Depending on the PID methode 
 // the number of slices can be 3 (LQ) or 8(NN). 
-// The calculation of dQ/dl are done using the tracklet fit results (see AliTRDseedV1::GetdQdl(Int_t)) i.e.
-//
-// dQ/dl = qc/(dx * sqrt(1 + dy/dx^2 + dz/dx^2))
+// The calculation of dQ/dl are done using the tracklet fit results (see AliTRDseedV1::GetdQdl(Int_t))
 //
 // The following effects are included in the calculation:
 // 1. calibration values for t0 and vdrift (using x coordinate to calculate slice)
@@ -239,22 +237,22 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
     fdEdx[i]     = 0.;
     nclusters[i] = 0;
   }
-  Float_t clength = (/*.5 * */AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+  Float_t pathLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
-  AliTRDcluster *cluster = 0x0;
+  AliTRDcluster *c = 0x0;
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
-    if(!(cluster = fClusters[ic])) continue;
-    Float_t x = cluster->GetX();
+    if(!(c = fClusters[ic]) && !(c = fClusters[knTimebins+ic])) continue;
+    Float_t x = c->GetX();
     
     // Filter clusters for dE/dx calculation
     
     // 1.consider calibration effects for slice determination
     Int_t slice; 
-    if(cluster->IsInChamber()) slice = Int_t(TMath::Abs(fX0 - x) * nslices / clength);
+    if(c->IsInChamber()) slice = Int_t(TMath::Abs(fX0 - x) * nslices / pathLength);
     else slice = x < fX0 ? 0 : nslices-1;
     
     // 2. take sharing into account
-    Float_t w = cluster->IsShared() ? .5 : 1.;
+    Float_t w = c->IsShared() ? .5 : 1.;
     
     // 3. take into account large clusters TODO
     //w *= c->GetNPads() > 3 ? .8 : 1.;
@@ -309,7 +307,23 @@ void AliTRDseedV1::GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y
 //____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
 {
-  return fClusters[ic] ? TMath::Abs(fClusters[ic]->GetQ()) /fdX / TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]) : 0.;
+// Using the linear approximation of the track inside one TRD chamber (TRD tracklet) 
+// the charge per unit length can be written as:
+// BEGIN_LATEX
+// #frac{dq}{dl} = #frac{q_{c}}{dx * #sqrt{1 + #(){#frac{dy}{dx}}^{2}_{fit} + #(){#frac{dy}{dx}}^{2}_{ref}}}
+// END_LATEX
+// where qc is the total charge collected in the current time bin and dx is the length 
+// of the time bin. For the moment (Jan 20 2009) only pad row cross corrections are 
+// considered for the charge but none are applied for drift velocity variations along 
+// the drift region or assymetry of the TRF
+// 
+// Author : Alex Bercuci <A.Bercuci@gsi.de>
+//
+  Float_t dq = 0.;
+  if(fClusters[ic]) dq += TMath::Abs(fClusters[ic]->GetQ());
+  if(fClusters[knTimebins+ic]) dq += TMath::Abs(fClusters[knTimebins+ic]->GetQ());
+
+  return dq/fdX/TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
 }
 
 //____________________________________________________________________
