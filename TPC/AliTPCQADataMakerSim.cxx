@@ -156,7 +156,7 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
   const Int_t nTracks = hitTree->GetEntries();
-  TBranch* branch = hitTree->GetBranch("TPC");  
+  TBranch* branch = hitTree->GetBranch("TPC2");
   AliTPCv2* tpc = (AliTPCv2*)gAlice->GetDetector("TPC");
   
   //
