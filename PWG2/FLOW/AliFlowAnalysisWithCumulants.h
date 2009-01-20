@@ -45,7 +45,7 @@ class AliFlowAnalysisWithCumulants{
   virtual void WriteHistograms(TString* outputFileName);
   
 //----------------------------------------------------------------------------------------------------------------
-//                                            setters and getters                                                 
+//                                            setters and getters                                     fBinWidth            
 //----------------------------------------------------------------------------------------------------------------
   TList* GetHistList() const {return this->fHistList;}      //output histogram list
   
@@ -102,21 +102,57 @@ class AliFlowAnalysisWithCumulants{
   
   void SetAverageMultiplicity16(TProfile* am16)    {this->fAvMultIntFlow16GFC = am16;}; //(only for other system of Eq.)
   TProfile* GetAverageMultiplicity16() const       {return this->fAvMultIntFlow16GFC;}; //(only for other system of Eq.)
- 
-  void SetDiffFlowGenFunRe(TProfile3D* dfgfRe)    {this->fDiffFlowGenFunRe = dfgfRe;};
-  TProfile3D* GetDiffFlowGenFunRe() const         {return this->fDiffFlowGenFunRe;};
   
-  void SetDiffFlowGenFunIm(TProfile3D* dfgfIm)  {this->fDiffFlowGenFunIm = dfgfIm;};
-  TProfile3D* GetDiffFlowGenFunIm() const         {return this->fDiffFlowGenFunIm;};
+  //----------------------------------------------------------------------------------------------------------
+  //RP = Reaction Plane (RP denotes particles used to determine the reaction plane)
+  void SetDiffFlowPtRPGenFunRe(TProfile3D* dfRPPtgfRe)  {this->fDiffFlowPtRPGenFunRe = dfRPPtgfRe;};
+  TProfile3D* GetDiffFlowPtRPGenFunRe() const            {return this->fDiffFlowPtRPGenFunRe;};
   
-  void SetNumberOfParticlesPerPtBin(TProfile* nopppb)    {this->fBinNoOfParticles = nopppb;};
-  TProfile* GetNumberOfParticlesPerPtBin() const         {return this->fBinNoOfParticles;};  
+  void SetDiffFlowPtRPGenFunIm(TProfile3D* dfRPPtgfIm)  {this->fDiffFlowPtRPGenFunIm = dfRPPtgfIm;};
+  TProfile3D* GetDiffPtRPFlowGenFunIm() const            {return this->fDiffFlowPtRPGenFunIm;};
   
+  void SetNumberOfParticlesPerPtBinRP(TProfile* nopppbRP) {this->fPtBinRPNoOfParticles = nopppbRP;};
+  TProfile* GetNumberOfParticlesPerPtBinRP() const         {return this->fPtBinRPNoOfParticles;};  
+  
+  void SetDiffFlowEtaRPGenFunRe(TProfile3D* dfEtaRPgfRe)   {this->fDiffFlowEtaRPGenFunRe = dfEtaRPgfRe;};
+  TProfile3D* GetDiffFlowEtaRPGenFunRe() const              {return this->fDiffFlowEtaRPGenFunRe;};
+  
+  void SetDiffFlowEtaRPGenFunIm(TProfile3D* dfEtaRPgfIm)   {this->fDiffFlowEtaRPGenFunIm = dfEtaRPgfIm;};
+  TProfile3D* GetDiffFlowEtaRPGenFunIm() const              {return this->fDiffFlowEtaRPGenFunIm;};
+  
+  void SetNumberOfParticlesPerEtaBinRP(TProfile* noppebRP)    {this->fEtaBinRPNoOfParticles = noppebRP;};
+  TProfile* GetNumberOfParticlesPerEtaBinRP() const            {return this->fEtaBinRPNoOfParticles;}; 
+  //----------------------------------------------------------------------------------------------------------
+   
+  //----------------------------------------------------------------------------------------------------------
+  //POI = Particles Of Interest (POI denotes particles of interest for the final physical results for int. and diff. flow)
+  void SetDiffFlowPtPOIGenFunRe(TProfile3D* dfPOIPtgfRe)  {this->fDiffFlowPtPOIGenFunRe = dfPOIPtgfRe;};
+  TProfile3D* GetDiffFlowPtPOIGenFunRe() const            {return this->fDiffFlowPtPOIGenFunRe;};
+  
+  void SetDiffFlowPtPOIGenFunIm(TProfile3D* dfPOIPtgfIm)  {this->fDiffFlowPtPOIGenFunIm = dfPOIPtgfIm;};
+  TProfile3D* GetDiffPtPOIFlowGenFunIm() const            {return this->fDiffFlowPtPOIGenFunIm;};
+  
+  void SetNumberOfParticlesPerPtBinPOI(TProfile* nopppbPOI) {this->fPtBinPOINoOfParticles = nopppbPOI;};
+  TProfile* GetNumberOfParticlesPerPtBinPOI() const         {return this->fPtBinPOINoOfParticles;};  
+  
+  void SetDiffFlowEtaPOIGenFunRe(TProfile3D* dfEtaPOIgfRe)   {this->fDiffFlowEtaPOIGenFunRe = dfEtaPOIgfRe;};
+  TProfile3D* GetDiffFlowEtaPOIGenFunRe() const              {return this->fDiffFlowEtaPOIGenFunRe;};
+  
+  void SetDiffFlowEtaPOIGenFunIm(TProfile3D* dfEtaPOIgfIm)   {this->fDiffFlowEtaPOIGenFunIm = dfEtaPOIgfIm;};
+  TProfile3D* GetDiffFlowEtaPOIGenFunIm() const              {return this->fDiffFlowEtaPOIGenFunIm;};
+  
+  void SetNumberOfParticlesPerEtaBinPOI(TProfile* noppebPOI)    {this->fEtaBinPOINoOfParticles = noppebPOI;};
+  TProfile* GetNumberOfParticlesPerEtaBinPOI() const            {return this->fEtaBinPOINoOfParticles;};  
+  //----------------------------------------------------------------------------------------------------------
+    
   void SetAverageMultiplicity(TProfile* am)      {this->fAvMultIntFlowGFC = am;};
   TProfile* GetAverageMultiplicity() const       {return this->fAvMultIntFlowGFC;};
   
   void SetQVectorComponents(TProfile* sqvc)    {this->fQVectorComponentsGFC = sqvc;};
   TProfile* GetQVectorComponents() const       {return this->fQVectorComponentsGFC;};
+  
+  void SetCommonHists(AliFlowCommonHist* ch)  {this->fCommonHists = ch;};
+  AliFlowCommonHist* GetCommonHists() const   {return this->fCommonHists;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -125,23 +161,28 @@ class AliFlowAnalysisWithCumulants{
   AliFlowTrackSimple* fTrack;                                   //track
   static const Int_t fgkQmax = AliFlowCumuConstants::kQmax;     //needed for numerics
   static const Int_t fgkPmax = AliFlowCumuConstants::kPmax;     //needed for numerics  
-  static const Int_t fgkQmax4 = AliFlowCumuConstants::kQmax4;   //needed for numerics
-  static const Int_t fgkPmax4 = AliFlowCumuConstants::kPmax4;   //needed for numerics  
-  static const Int_t fgkQmax6 = AliFlowCumuConstants::kQmax6;   //needed for numerics
-  static const Int_t fgkPmax6 = AliFlowCumuConstants::kPmax6;   //needed for numerics  
-  static const Int_t fgkQmax8 = AliFlowCumuConstants::kQmax8;   //needed for numerics
-  static const Int_t fgkPmax8 = AliFlowCumuConstants::kPmax8;   //needed for numerics   
-  static const Int_t fgkQmax16 = AliFlowCumuConstants::kQmax16; //needed for numerics
-  static const Int_t fgkPmax16 = AliFlowCumuConstants::kPmax16; //needed for numerics 
+  static const Int_t fgkQmax4 = AliFlowCumuConstants::kQmax4;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax4 = AliFlowCumuConstants::kPmax4;   //needed for numerics (only for different system of Eq.) 
+  static const Int_t fgkQmax6 = AliFlowCumuConstants::kQmax6;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax6 = AliFlowCumuConstants::kPmax6;   //needed for numerics (only for different system of Eq.) 
+  static const Int_t fgkQmax8 = AliFlowCumuConstants::kQmax8;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax8 = AliFlowCumuConstants::kPmax8;   //needed for numerics (only for different system of Eq.)  
+  static const Int_t fgkQmax16 = AliFlowCumuConstants::kQmax16; //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax16 = AliFlowCumuConstants::kPmax16; //needed for numerics (only for different system of Eq.)
   static const Int_t fgkFlow = AliFlowCumuConstants::kFlow;     //integrated flow coefficient to be calculated
   static const Int_t fgkMltpl = AliFlowCumuConstants::kMltpl;   //the multiple in p=m*n (diff. flow) 
   TList* fHistList;                                             //list to hold all output histograms
 
-  Double_t fR0;       //needed for numerics
-  Double_t fPtMax;    //maximum pt
-  Double_t fPtMin;    //minimum pt
-  Double_t fBinWidth; //width of pt bin (in GeV)
-  Int_t fgknBins;     //number of pt bins
+  Double_t fR0;         //needed for numerics
+  Double_t fPtMax;      //maximum pt
+  Double_t fPtMin;      //minimum pt
+  Double_t fBinWidthPt; //width of pt bin (in GeV)
+  Int_t    fgknBinsPt;  //number of pt bins
+  
+  Double_t fEtaMax;      //maximum pt
+  Double_t fEtaMin;      //minimum pt
+  Double_t fBinWidthEta; //width of pt bin (in GeV)
+  Int_t    fgknBinsEta;  //number of pt bins
       
   Double_t fAvQx;  //<Q_x>
   Double_t fAvQy;  //<Q_y>
@@ -175,10 +216,22 @@ class AliFlowAnalysisWithCumulants{
   TProfile*          fAvMultIntFlow6GFC;  //average selected multiplicity (only for different system of Eq.) 
   TProfile*          fAvMultIntFlow8GFC;  //average selected multiplicity (only for different system of Eq.)
   TProfile*          fAvMultIntFlow16GFC; //average selected multiplicity (only for different system of Eq.)
-                   
-  TProfile3D*        fDiffFlowGenFunRe; //avarage of the generating function for differential flow (real part)
-  TProfile3D*        fDiffFlowGenFunIm; //avarage of the generating function for differential flow (imaginary part)
-  TProfile*          fBinNoOfParticles; //number of particles per pt bin
+
+  //RP = Reaction Plane (RP denotes particles used to determine the reaction plane)                                                       
+  TProfile3D*        fDiffFlowPtRPGenFunRe; //avarage of the generating function for differential flow in Pt (real part)
+  TProfile3D*        fDiffFlowPtRPGenFunIm; //avarage of the generating function for differential flow in Pt (imaginary part)
+  TProfile*          fPtBinRPNoOfParticles; //number of particles per pt bin
+  TProfile3D*        fDiffFlowEtaRPGenFunRe; //avarage of the generating function for differential flow in Eta (real part)
+  TProfile3D*        fDiffFlowEtaRPGenFunIm; //avarage of the generating function for differential flow in Eta (imaginary part)
+  TProfile*          fEtaBinRPNoOfParticles; //number of particles per eta bin
+                                    
+  //POI = Particles Of Interest (POI denotes particles of interest for the final physical results for int. and diff. flow)                                                        
+  TProfile3D*        fDiffFlowPtPOIGenFunRe; //avarage of the generating function for differential flow in Pt (real part)
+  TProfile3D*        fDiffFlowPtPOIGenFunIm; //avarage of the generating function for differential flow in Pt (imaginary part)
+  TProfile*          fPtBinPOINoOfParticles; //number of particles per pt bin
+  TProfile3D*        fDiffFlowEtaPOIGenFunRe; //avarage of the generating function for differential flow in Eta (real part)
+  TProfile3D*        fDiffFlowEtaPOIGenFunIm; //avarage of the generating function for differential flow in Eta (imaginary part)
+  TProfile*          fEtaBinPOINoOfParticles; //number of particles per eta bin
   
   /*
   TProfile2D *fDiffFlowGenFunRe0,*fDiffFlowGenFunRe1,*fDiffFlowGenFunRe2,*fDiffFlowGenFunRe3;//differential flow 
