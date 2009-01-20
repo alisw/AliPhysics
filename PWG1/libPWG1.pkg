@@ -18,9 +18,10 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliComparisonDEdx.cxx \
 	AliComparisonDCA.cxx \
 	AliComparisonObject.cxx \
-	AliGenInfoTask.cxx
+	AliGenInfoTask.cxx  \
+	AliMCTrackingTestTask.cxx
 
- 
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG1LinkDef.h

@@ -29,6 +29,6 @@
 #pragma link C++ class AliComparisonObject+;
 
 #pragma link C++ class AliGenInfoTask+;
-
+#pragma link C++ class AliMCTrackingTestTask+;
 
 #endif
