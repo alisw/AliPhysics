@@ -55,6 +55,7 @@ public:
 
   TObjArray *GetGraphs() { return fGraph; };
   virtual TObjArray *Histos();
+  void EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency);
 
 private:
   AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented

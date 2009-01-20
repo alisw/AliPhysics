@@ -1049,49 +1049,56 @@ Bool_t AliTRDpidChecker::PostProcess()
     AliError("Efficiency container missing.");
     return 0x0;
   }
-
-  TGraphErrors *g = 0x0;
   if(!fGraph){ 
     fGraph = new TObjArray(6);
     fGraph->SetOwner();
-
-    // efficiency graphs
-    TObjArray *arr = new TObjArray(3); arr->SetOwner();
-    fGraph->AddAt(arr, 0);
-    arr->AddAt(g = new TGraphErrors(), kLQ);
-    g->SetLineColor(kBlue);
-    g->SetMarkerColor(kBlue);
-    g->SetMarkerStyle(7);
-    arr->AddAt(g = new TGraphErrors(), kNN);
-    g->SetLineColor(kGreen);
-    g->SetMarkerColor(kGreen);
-    g->SetMarkerStyle(7);
-    arr -> AddAt(g = new TGraphErrors(), kESD);
-    g->SetLineColor(kRed);
-    g->SetMarkerColor(kRed);
-    g->SetMarkerStyle(24);
-
-    arr = new TObjArray(3); arr->SetOwner();
-    fGraph->AddAt(arr, 1);
-    arr->AddAt(g = new TGraphErrors(), kLQ);
-    g->SetLineColor(kBlue);
-    g->SetMarkerColor(kBlue);
-    g->SetMarkerStyle(7);
-    arr->AddAt(g = new TGraphErrors(), kNN);
-    g->SetLineColor(kGreen);
-    g->SetMarkerColor(kGreen);
-    g->SetMarkerStyle(7);
-    arr -> AddAt(g = new TGraphErrors(), kESD);
-    g->SetLineColor(kRed);
-    g->SetMarkerColor(kRed);
-    g->SetMarkerStyle(24);
+    EvaluatePionEfficiency(fEfficiency, fGraph, 0.9);
   }
+  fNRefFigures = 8;
+  return kTRUE;
+}
 
+//________________________________________________________________________
+void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
+  TGraphErrors *g = 0x0;
+  fUtil->SetElectronEfficiency(electron_efficiency);
+
+  // efficiency graphs
+  TObjArray *arr = new TObjArray(3); arr->SetOwner();
+  results->AddAt(arr, 0);
+  arr->AddAt(g = new TGraphErrors(), kLQ);
+  g->SetLineColor(kBlue);
+  g->SetMarkerColor(kBlue);
+  g->SetMarkerStyle(7);
+  arr->AddAt(g = new TGraphErrors(), kNN);
+  g->SetLineColor(kGreen);
+  g->SetMarkerColor(kGreen);
+  g->SetMarkerStyle(7);
+  arr -> AddAt(g = new TGraphErrors(), kESD);
+  g->SetLineColor(kRed);
+  g->SetMarkerColor(kRed);
+  g->SetMarkerStyle(24);
+
+  arr = new TObjArray(3); arr->SetOwner();
+  results->AddAt(arr, 1);
+  arr->AddAt(g = new TGraphErrors(), kLQ);
+  g->SetLineColor(kBlue);
+  g->SetMarkerColor(kBlue);
+  g->SetMarkerStyle(7);
+  arr->AddAt(g = new TGraphErrors(), kNN);
+  g->SetLineColor(kGreen);
+  g->SetMarkerColor(kGreen);
+  g->SetMarkerStyle(7);
+  arr -> AddAt(g = new TGraphErrors(), kESD);
+  g->SetLineColor(kRed);
+  g->SetMarkerColor(kRed);
+  g->SetMarkerStyle(24);
+  
   Float_t mom = 0.;
   TH1D *Histo1=0x0, *Histo2=0x0;
 
   // calculate the pion efficiencies and the errors for 90% electron efficiency (2-dim LQ)
-  TH2F *hPIDLQ = (TH2F*)fEfficiency->At(kLQ);
+  TH2F *hPIDLQ = (TH2F*)histoContainer->At(kLQ);
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
     mom = AliTRDCalPID::GetMomentum(iMom);
 
@@ -1112,7 +1119,7 @@ Bool_t AliTRDpidChecker::PostProcess()
   
 
   // calculate the pion efficiencies and the errors for 90% electron efficiency (NN)
-  TH2F *hPIDNN = (TH2F*)fEfficiency->At(kNN);
+  TH2F *hPIDNN = (TH2F*)histoContainer->At(kNN);
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
     mom = AliTRDCalPID::GetMomentum(iMom);
 
@@ -1133,7 +1140,7 @@ Bool_t AliTRDpidChecker::PostProcess()
 
 
   // calculate the pion efficiencies and the errors for 90% electron efficiency (ESD)
-  TH2F *hPIDESD = (TH2F*)fEfficiency->At(kESD);
+  TH2F *hPIDESD = (TH2F*)histoContainer->At(kESD);
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
     mom = AliTRDCalPID::GetMomentum(iMom);
 
@@ -1152,11 +1159,7 @@ Bool_t AliTRDpidChecker::PostProcess()
     if(fDebugLevel>=2) Printf("Pion Efficiency for ESD is : %f +/- %f\n\n", fUtil->GetPionEfficiency(), fUtil->GetError());
   }
 
-  fNRefFigures = 8;
-
-  return kTRUE;
 }
-
 
 //________________________________________________________________________
 void AliTRDpidChecker::Terminate(Option_t *) 
