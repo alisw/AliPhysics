@@ -1204,19 +1204,10 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA28", "CONE", idtmed[7], conpar, 5); 
   gMC->Gspos("QA28", 1, "ZDCA", -7.9-0.175, 0., conpar[0]+0.5+zd2, irotpipe3, "ONLY");
   gMC->Gspos("QA28", 2, "ZDCA", 7.9+0.175, 0., conpar[0]+0.5+zd2, irotpipe4, "ONLY");
-  printf("\n	QA28 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+0.2+zd2);
+  //printf("\n	QA28 CONE from z = %f to z = %f\n",zd2,2*conpar[0]+0.2+zd2);
 
   zd2 += 2.*conpar[0]+1.;
-  
-  // Flange to simulate the support for the trousers
-  tubspar[0] = 7.0/2.;
-  tubspar[1] = 14.0/2.;
-  tubspar[2] = 2.0/2.;
-  tubspar[3] = -90.;
-  tubspar[4] = 90.; 
-  gMC->Gsvolu("QF03", "TUBS", idtmed[7], tubspar, 5);
-  gMC->Gspos("QF03", 1, "ZDCA", 16.5/2., 0.,  tubspar[2]+zd2, 0, "ONLY");  
-  
+    
   // 2 tubes (ID = 63 mm OD=70 mm)      
   tubpar[0] = 6.3/2.;
   tubpar[1] = 7.0/2.;
@@ -1224,7 +1215,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA29", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA29", 1, "ZDCA", -16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
   gMC->Gspos("QA29", 2, "ZDCA",  16.5/2., 0., tubpar[2]+zd2, 0, "ONLY");
-  printf("\n	QA29 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);  
+  //printf("\n	QA29 TUBE from z = %f to z = %f\n",zd2,2*tubpar[2]+zd2);  
 
   zd2 += 2.*tubpar[2];
 	   

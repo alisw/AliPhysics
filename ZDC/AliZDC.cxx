@@ -179,16 +179,9 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
      curprimquad = (AliZDCHit*) lhits[j];
      if(*curprimquad == *newquad){
         *curprimquad = *curprimquad+*newquad;
-        // CH. debug
-        /*if(newquad->GetEnergy() != 0. || newquad->GetLightPMC() != 0. || 
-	   newquad->GetLightPMQ() != 0.){
-	  printf("\n\t --- Equal hits found\n");
-	  curprimquad->Print("");
-	  newquad->Print("");
-          printf("\t --- Det. %d, Quad. %d: X = %f, E = %f, LightPMC = %f, LightPMQ = %f\n",
-          curprimquad->GetVolume(0),curprimquad->GetVolume(1),curprimquad->GetXImpact(),
-          curprimquad->GetEnergy(), curprimquad->GetLightPMC(), curprimquad->GetLightPMQ());
-	}*/
+        // Ch. debug
+        //printf("\n\t Summing hits **************** \n", fNhits);
+        //curprimquad->Print("");
 	//
 	delete newquad;
 	return;
@@ -198,12 +191,10 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     //Otherwise create a new hit
     new(lhits[fNhits]) AliZDCHit(*newquad);
     fNhits++;
-    // CH. debug
-    /*printf("\n\t New ZDC hit added! fNhits = %d\n", fNhits);
-    printf("\t Det. %d, Quad.t %d: X = %f, E = %f, LightPMC = %f, LightPMQ = %f\n",
-    newquad->GetVolume(0),newquad->GetVolume(1),newquad->GetXImpact(),
-    newquad->GetEnergy(), newquad->GetLightPMC(), newquad->GetLightPMQ());
-    */
+    // Ch. debug
+    //printf("\n\t New ZDC hit added! fNhits = %d\n", fNhits);
+    //newquad->Print("");
+    
     delete newquad;
 }
 
