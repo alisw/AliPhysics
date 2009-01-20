@@ -199,7 +199,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       hmpTrk->GetXYZAt(radClu,bz,trkMARS);                                                     //get the track coordinates at the rad distance after prop. 
       d3d=TMath::Sqrt((cluMARS[0]-trkMARS[0])*(cluMARS[0]-trkMARS[0])+(cluMARS[1]-trkMARS[1])*(cluMARS[1]-trkMARS[1])+(cluMARS[2]-trkMARS[2])*(cluMARS[2]-trkMARS[2]));
       chi2=hmpTrk->GetPredictedChi2(pClu);
-      if(dmin > d3d ) {                                                                         //to be saved for the moment...
+      if(dmin > d3d ) {   +                                                                      //to be saved for the moment...
         cluSiz = pClu->Size();
         dmin=d3d;
         bestHmpCluster=pClu;
@@ -221,8 +221,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
     pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
     
-//    if(dmin < pParam->DistCut()) {
-    if(dmin < 10.) {
+    if(dmin < pParam->DistCut()) {
       isOkDcut = kTRUE;
     }
 
