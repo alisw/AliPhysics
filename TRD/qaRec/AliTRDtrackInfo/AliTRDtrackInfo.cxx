@@ -426,6 +426,10 @@ void AliTRDtrackInfo::AliMCinfo::PropagateKalman(Double_t dx[kNTrackRefs], Doubl
   };
   TDatabasePDG db;
   const TParticlePDG *pdg=db.GetParticle(fPDG);
+  if(!pdg){
+    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::PropagateKalman()", Form("PDG entry missing for code %d. References for track %d", fPDG, fNTrackRefs));
+    return;
+  }
   tt.Set(xyz, pxyz, cov, Short_t(pdg->Charge()));
   tt.SetMass(pdg->Mass());
   
