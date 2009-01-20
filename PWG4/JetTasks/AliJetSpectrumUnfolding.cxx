@@ -38,18 +38,19 @@
 #include <TProfile2D.h>
 #include <TStyle.h>
 #include <TColor.h>
+#include <TVectorD.h>
 
 #include <THnSparse.h>
 
 ClassImp(AliJetSpectrumUnfolding)
 
-const Int_t NBINSE  = 50;
-const Int_t NBINSZ  = 50;
-const Int_t NEVENTS = 500000;
-const Double_t axisLowerLimitE = 0.;
-const Double_t axisLowerLimitZ = 0.;
-const Double_t axisUpperLimitE = 250.;
-const Double_t axisUpperLimitZ = 1.;
+const Int_t AliJetSpectrumUnfolding::fgkNBINSE  = 50;
+const Int_t AliJetSpectrumUnfolding::fgkNBINSZ  = 50;
+const Int_t AliJetSpectrumUnfolding::fgkNEVENTS = 500000;
+const Double_t AliJetSpectrumUnfolding::fgkaxisLowerLimitE = 0.;
+const Double_t AliJetSpectrumUnfolding::fgkaxisLowerLimitZ = 0.;
+const Double_t AliJetSpectrumUnfolding::fgkaxisUpperLimitE = 250.;
+const Double_t AliJetSpectrumUnfolding::fgkaxisUpperLimitZ = 1.;
 
 Float_t AliJetSpectrumUnfolding::fgBayesianSmoothing  = 1;           // smoothing parameter (0 = no smoothing)
 Int_t   AliJetSpectrumUnfolding::fgBayesianIterations = 100;         // number of iterations in Bayesian method
@@ -57,8 +58,8 @@ Int_t   AliJetSpectrumUnfolding::fgBayesianIterations = 100;         // number o
 //____________________________________________________________________
 
 AliJetSpectrumUnfolding::AliJetSpectrumUnfolding() :
-  TNamed(), fCurrentRec(0), fCurrentCorrelation(0), fGenSpectrum(0),
-  fRecSpectrum(0), fUnfSpectrum(0), fCorrelation(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
+  TNamed(), fCurrentRec(0), fCurrentCorrelation(0), fRecSpectrum(0),  fGenSpectrum(0),
+  fUnfSpectrum(0), fCorrelation(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
 {
   //
   // default constructor
@@ -72,8 +73,8 @@ AliJetSpectrumUnfolding::AliJetSpectrumUnfolding() :
 
 //____________________________________________________________________
 AliJetSpectrumUnfolding::AliJetSpectrumUnfolding(const Char_t* name, const Char_t* title) :
-  TNamed(name, title), fCurrentRec(0), fCurrentCorrelation(0), fGenSpectrum(0),
-  fRecSpectrum(0), fUnfSpectrum(0), fCorrelation(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
+  TNamed(name, title), fCurrentRec(0), fCurrentCorrelation(0), fRecSpectrum(0),
+  fGenSpectrum(0), fUnfSpectrum(0), fCorrelation(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
 {
   //
   // named constructor
@@ -82,20 +83,22 @@ AliJetSpectrumUnfolding::AliJetSpectrumUnfolding(const Char_t* name, const Char_
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
+  fRecSpectrum = new TH2F("fRecSpectrum", "Reconstructed Spectrum;E^{jet}_{rec} [GeV];z^{lp}_{rec}",
+			  fgkNBINSE, fgkaxisLowerLimitE, fgkaxisUpperLimitE,
+			  fgkNBINSZ, fgkaxisLowerLimitZ, fgkaxisUpperLimitZ);
+  fGenSpectrum = new TH2F("fGenSpectrum", "Generated Spectrum;E^{jet}_{gen} [GeV];z^{lp}_{gen}", 
+			  fgkNBINSE, fgkaxisLowerLimitE, fgkaxisUpperLimitE,
+			  fgkNBINSZ, fgkaxisLowerLimitZ, fgkaxisUpperLimitZ);
+  fUnfSpectrum = new TH2F("fUnfSpectrum", "Unfolded Spectrum;E^{jet} [GeV];z^{lp}", 
+			  fgkNBINSE, fgkaxisLowerLimitE, fgkaxisUpperLimitE,
+			  fgkNBINSZ, fgkaxisLowerLimitZ, fgkaxisUpperLimitZ);
 
-  #define ZBINNING NBINSZ, axisLowerLimitZ, axisUpperLimitZ       // fragmentation of leading particle
-  #define EBINNING NBINSE, axisLowerLimitE, axisUpperLimitE       // energy of the jet
-
-  fRecSpectrum = new TH2F("fRecSpectrum", "Reconstructed Spectrum;E^{jet}_{rec} [GeV];z^{lp}_{rec}", EBINNING, ZBINNING);
-  fGenSpectrum = new TH2F("fGenSpectrum", "Generated Spectrum;E^{jet}_{gen} [GeV];z^{lp}_{gen}", EBINNING, ZBINNING);
-  fUnfSpectrum = new TH2F("fUnfSpectrum", "Unfolded Spectrum;E^{jet} [GeV];z^{lp}", EBINNING, ZBINNING);
-
-  const Int_t nbin[4]={NBINSE, NBINSE, NBINSZ, NBINSZ};
+  const Int_t nbin[4]={fgkNBINSE, fgkNBINSE, fgkNBINSZ, fgkNBINSZ};
   //arrays for bin limits
-  Double_t LowEdge[4] = {axisLowerLimitE, axisLowerLimitE, axisLowerLimitZ, axisLowerLimitZ};
-  Double_t UpEdge[4]  = {axisUpperLimitE, axisUpperLimitE, axisUpperLimitZ, axisUpperLimitZ};
+  Double_t lowEdge[4] = {fgkaxisLowerLimitE, fgkaxisLowerLimitE, fgkaxisLowerLimitZ, fgkaxisLowerLimitZ};
+  Double_t upEdge[4]  = {fgkaxisUpperLimitE, fgkaxisUpperLimitE, fgkaxisUpperLimitZ, fgkaxisUpperLimitZ};
 
-  fCorrelation = new THnSparseF("fCorrelation", "Correlation Function", 4, nbin, LowEdge, UpEdge);
+  fCorrelation = new THnSparseF("fCorrelation", "Correlation Function", 4, nbin, lowEdge, upEdge);
 
   TH1::AddDirectory(oldStatus);
 }
@@ -269,7 +272,7 @@ void AliJetSpectrumUnfolding::SetupCurrentHists(Bool_t createBigBin)
     for (Int_t me=1; me<=fCurrentRec->GetNbinsX(); me++)
       for (Int_t mz=1; mz<=fCurrentRec->GetNbinsY(); mz++)
       {
-        if (fCurrentRec->GetBinContent(me,mz) <= 5 && me>NBINSE/2 && mz>NBINSZ/2)
+        if (fCurrentRec->GetBinContent(me,mz) <= 5 && me>fgkNBINSE/2 && mz>fgkNBINSZ/2)
         {
           maxBinE = me;
 	  maxBinZ = mz;
@@ -331,14 +334,14 @@ void AliJetSpectrumUnfolding::SetupCurrentHists(Bool_t createBigBin)
         Float_t binContent = fCurrentCorrelation->GetBinContent(idx,bin);
         Float_t binError   = fCurrentCorrelation->GetBinError(idx);
         Int_t binMin[4] = {bin[0], maxBinE, bin[2], maxBinZ};
-        if ( (bin[1]>maxBinE && bin[1]<=NBINSE) && (bin[3]>maxBinZ && bin[3]<=NBINSZ) )
+        if ( (bin[1]>maxBinE && bin[1]<=fgkNBINSE) && (bin[3]>maxBinZ && bin[3]<=fgkNBINSZ) )
         {
 	  fCurrentCorrelation->SetBinContent(binMin, binContent + fCurrentCorrelation->GetBinContent(binMin));
           fCurrentCorrelation->SetBinError(binMin, binError + TMath::Sqrt(fCurrentCorrelation->GetBinContent(binMin)));
           fCurrentCorrelation->SetBinContent(bin, 0.);
           fCurrentCorrelation->SetBinError(bin, 0.);         
         } 
-        printf("create big bin1, nbins = %d, te  = %d, tz = %d\n", NBINSE, bin[0], bin[1]);
+        printf("create big bin1, nbins = %d, te  = %d, tz = %d\n", fgkNBINSE, bin[0], bin[1]);
       }
 
       printf("Adjusted correlation matrix!\n");
@@ -361,7 +364,7 @@ void AliJetSpectrumUnfolding::SetBayesianParameters(Float_t smoothing, Int_t nIt
 }
 
 //____________________________________________________________________
-void AliJetSpectrumUnfolding::NormalizeToBinWidth(TH2* hist)
+void AliJetSpectrumUnfolding::NormalizeToBinWidth(TH2* const hist)
 {
   //
   // normalizes a 2-d histogram to its bin width (x width * y width)
@@ -390,10 +393,12 @@ void AliJetSpectrumUnfolding::DrawHistograms()
   fRecSpectrum->DrawCopy("COLZ");
 
   TCanvas* canvas2 = new TCanvas("fGenSpectrum", "fGenSpectrum", 900, 600);
+  canvas2->cd();
   gPad->SetLogz();    
   fGenSpectrum->DrawCopy("COLZ");
 
   TCanvas* canvas3 = new TCanvas("fUnfSpectrum", "fUnfSpectrum", 900, 600);
+  canvas3->cd();
   gPad->SetLogz();    
   fUnfSpectrum->DrawCopy("COLZ");
 
@@ -419,8 +424,11 @@ void AliJetSpectrumUnfolding::DrawHistograms()
 }
 
 //____________________________________________________________________
-void AliJetSpectrumUnfolding::DrawComparison(const char* name, TH2* genHist)
+void AliJetSpectrumUnfolding::DrawComparison(const char* name, TH2* const genHist)
 {
+  // 
+  // Draws the copmparison plot (gen,rec and unfolded distributions
+  //
 
   if (fUnfSpectrum->Integral() == 0)
   {
@@ -477,15 +485,15 @@ void AliJetSpectrumUnfolding::DrawComparison(const char* name, TH2* genHist)
   canvas1->Divide(2, 3);
   
   Int_t style = 1;
-  const Int_t NRGBs = 5;
-  const Int_t NCont = 500;
+  const Int_t nRGBs = 5;
+  const Int_t nCont = 500;
 
-  Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
-  Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
-  Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
-  Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
-  TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-  gStyle->SetNumberContours(NCont);
+  Double_t stops[nRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+  Double_t red[nRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+  Double_t green[nRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+  Double_t blue[nRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+  TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, nCont);
+  gStyle->SetNumberContours(nCont);
 
   canvas1->cd(1);
   gStyle->SetPalette(style);
@@ -565,7 +573,7 @@ void AliJetSpectrumUnfolding::DrawComparison(const char* name, TH2* genHist)
 
 
 //____________________________________________________________________
-void AliJetSpectrumUnfolding::GetComparisonResults(Float_t* gen, Int_t* genLimit, Float_t* residuals, Float_t* ratioAverage) const
+void AliJetSpectrumUnfolding::GetComparisonResults(Float_t* const gen, Int_t*  const genLimit, Float_t* const residuals, Float_t* const ratioAverage) const
 {
   // Returns the chi2 between the Generated and the unfolded Reconstructed spectrum as well as between the Reconstructed and the folded unfolded
   // These values are computed during DrawComparison, thus this function picks up the
@@ -582,7 +590,7 @@ void AliJetSpectrumUnfolding::GetComparisonResults(Float_t* gen, Int_t* genLimit
 }
 
 //____________________________________________________________________
-void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterations, TH2* initialConditions, Bool_t determineError)
+void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterations, TH2* const initialConditions, Bool_t determineError)
 {
   //
   // correct spectrum using bayesian unfolding
@@ -617,14 +625,14 @@ void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterati
 	     fCurrentCorrelation->SetBinError(bin, fCurrentCorrelation->GetBinError(bin)/sum);
 	   }
     }*/
-  Float_t sum[NBINSE+2][NBINSZ+2];
-  memset(sum,0,sizeof(Float_t)*(NBINSE+2)*(NBINSZ+2));
+  Float_t sum[fgkNBINSE+2][fgkNBINSZ+2];
+  memset(sum,0,sizeof(Float_t)*(fgkNBINSE+2)*(fgkNBINSZ+2));
 
   for (Int_t idx=0; idx<=fCurrentCorrelation->GetNbins(); idx++)
   {
     Int_t bin[4];
     Float_t binContent = fCurrentCorrelation->GetBinContent(idx, bin);
-    if ( (bin[1]>0 && bin[1]<=NBINSE) && (bin[3]>0 && bin[3]<=NBINSZ) )
+    if ( (bin[1]>0 && bin[1]<=fgkNBINSE) && (bin[3]>0 && bin[3]<=fgkNBINSZ) )
       sum[bin[0]][bin[2]] += binContent; 
   }
   
@@ -633,8 +641,8 @@ void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterati
     Int_t bin[4];
     Float_t binContent = fCurrentCorrelation->GetBinContent(idx, bin);
     Float_t binError   = fCurrentCorrelation->GetBinError(bin);
-    if (sum[bin[0]][bin[2]]>0 && (bin[1]>0 && bin[1]<=NBINSE) &&
-        (bin[3]>0 && bin[3]<=NBINSZ) && (bin[0]>0 && bin[0]<=NBINSE) && (bin[2]>0 && bin[2]<=NBINSZ) )
+    if (sum[bin[0]][bin[2]]>0 && (bin[1]>0 && bin[1]<=fgkNBINSE) &&
+        (bin[3]>0 && bin[3]<=fgkNBINSZ) && (bin[0]>0 && bin[0]<=fgkNBINSE) && (bin[2]>0 && bin[2]<=fgkNBINSZ) )
     {
       fCurrentCorrelation->SetBinContent(bin, binContent/sum[bin[0]][bin[2]]);
       fCurrentCorrelation->SetBinError(bin, binError/sum[bin[0]][bin[2]]);    
@@ -713,7 +721,7 @@ void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterati
 }
 
 //____________________________________________________________________
-Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* measured, TH2* initialConditions, TH2* aResult, Float_t regPar, Int_t nIterations, Bool_t calculateErrors)
+Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* const correlation, TH2* const measured, TH2* const initialConditions, TH2* const aResult, Float_t regPar, Int_t nIterations, Bool_t calculateErrors)
 {
   //
   // unfolds a spectrum
@@ -724,15 +732,15 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
     Printf("AliJetSpectrumUnfolding::UnfoldWithBayesian: ERROR: The measured spectrum is empty");
     return 1;
   }
-  const Int_t NFilledBins = correlation->GetNbins();  
+  const Int_t nFillesBins = correlation->GetNbins();  
   const Int_t kStartBin = 1;
 
-  const Int_t kMaxTZ = NBINSZ; // max true axis fragmentation function
-  const Int_t kMaxMZ = NBINSZ; // max measured axis fragmentation function
-  const Int_t kMaxTE = NBINSE; // max true axis energy
-  const Int_t kMaxME = NBINSE; // max measured axis energy
+  const Int_t kMaxTZ = fgkNBINSZ; // max true axis fragmentation function
+  const Int_t kMaxMZ = fgkNBINSZ; // max measured axis fragmentation function
+  const Int_t kMaxTE = fgkNBINSE; // max true axis energy
+  const Int_t kMaxME = fgkNBINSE; // max measured axis energy
   
-  printf("NbinsE=%d - NbinsZ=%d\n", NBINSE, NBINSZ);
+  printf("NbinsE=%d - NbinsZ=%d\n", fgkNBINSE, fgkNBINSZ);
 
   // store information in arrays, to increase processing speed 
   Double_t measuredCopy[kMaxME+1][kMaxMZ+1];
@@ -799,8 +807,8 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
     {
       Int_t bin[4];
       Float_t binContent = correlation->GetBinContent(idx, bin);
-      if (bin[1]>0 && bin[1]<=NBINSE && bin[3]>0 && bin[3]<=NBINSZ &&
-          bin[0]>0 && bin[0]<=NBINSE && bin[2]>0 && bin[2]<=NBINSZ)
+      if (bin[1]>0 && bin[1]<=fgkNBINSE && bin[3]>0 && bin[3]<=fgkNBINSZ &&
+          bin[0]>0 && bin[0]<=fgkNBINSE && bin[2]>0 && bin[2]<=fgkNBINSZ)
         norm[bin[1]][bin[3]] += binContent*prior[bin[0]][bin[2]];
     }
     Float_t chi2Measured=0, diff;    
@@ -808,8 +816,8 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
     {
       Int_t bin[4];
       Float_t binContent = correlation->GetBinContent(idx, bin);
-      if (norm[bin[1]][bin[3]]>0 && bin[1]>0 && bin[1]<=NBINSE && 
-          bin[3]>0 && bin[3]<=NBINSZ && bin[0]>0 && bin[2]>0 && bin[0]<=NBINSE && bin[2]<=NBINSZ)
+      if (norm[bin[1]][bin[3]]>0 && bin[1]>0 && bin[1]<=fgkNBINSE && 
+          bin[3]>0 && bin[3]<=fgkNBINSZ && bin[0]>0 && bin[2]>0 && bin[0]<=fgkNBINSE && bin[2]<=fgkNBINSZ)
       {    
         inverseCorrelation->SetBinContent(bin, binContent*prior[bin[0]][bin[2]]/norm[bin[1]][bin[3]]);
         if (errors[bin[1]][bin[3]]>0)
@@ -868,7 +876,7 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
       for (Int_t tz = kStartBin; tz<=kMaxTZ; tz++)
       {
         Float_t valueError = 0;
-        Float_t binError = 0;
+	//        Float_t binError = 0;
         for (Int_t me=1; me<=kMaxME; me++)
 	  for (Int_t mz=1; mz<=kMaxMZ; mz++)
 	  {
@@ -887,58 +895,58 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
     printf("Covariance matrix will be calculated... this will take a lot of time (>1 day) ;)\n");
     
     //Variables and Matrices that will be use along the calculation    
-    const Int_t binsV[4] = {NBINSE,NBINSE, NBINSZ, NBINSZ};
-    const Double_t LowEdgeV[4] = {axisLowerLimitE, axisLowerLimitE, axisLowerLimitZ, axisLowerLimitZ};
-    const Double_t UpEdgeV[4] = {axisUpperLimitE, axisUpperLimitE, axisUpperLimitZ, axisUpperLimitZ};
+    const Int_t binsV[4] = {fgkNBINSE,fgkNBINSE, fgkNBINSZ, fgkNBINSZ};
+    const Double_t lowEdgeV[4] = {fgkaxisLowerLimitE, fgkaxisLowerLimitE, fgkaxisLowerLimitZ, fgkaxisLowerLimitZ};
+    const Double_t upEdgeV[4] = {fgkaxisUpperLimitE, fgkaxisUpperLimitE, fgkaxisUpperLimitZ, fgkaxisUpperLimitZ};
     
-    const Double_t Ntrue = (Double_t)measured->Integral();
+    const Double_t nTrue = (Double_t)measured->Integral();
     
-    THnSparseF *V = new THnSparseF("V","",4, binsV, LowEdgeV, UpEdgeV);
-    V->Reset();            
-    Double_t invCorrContent1, Nt;
-    Double_t invCorrContent2, v11, v12, v2;        
+    THnSparseF *v = new THnSparseF("V","",4, binsV, lowEdgeV, upEdgeV);
+    v->Reset();            
+    Double_t invCorrContent1, nt;
+    Double_t invCorrContent2, v11,v12, v2;        
     // calculate V1 and V2
-    for (Int_t idx1=0; idx1<=NFilledBins; idx1++)
+    for (Int_t idx1=0; idx1<=nFillesBins; idx1++)
     {
-      printf("Covariance Matrix calculation: iteration idx1=%d of %d\n", idx1, NFilledBins);
-      for (Int_t idx2=0; idx2<=NFilledBins; idx2++)
+      printf("Covariance Matrix calculation: iteration idx1=%d of %d\n", idx1, nFillesBins);
+      for (Int_t idx2=0; idx2<=nFillesBins; idx2++)
       {      
         Int_t bin1[4];
         Int_t bin2[4];
         invCorrContent1 = inverseCorrelation->GetBinContent(idx1, bin1);
         invCorrContent2 = inverseCorrelation->GetBinContent(idx2, bin2);        
         v11=0; v12=0; v2=0;
-        if(bin1[0]>0 && bin1[0]<=NBINSE && bin1[1]>0 && bin1[1]<=NBINSE && 
-           bin1[2]>0 && bin1[2]<=NBINSZ && bin1[3]>0 && bin1[3]<=NBINSZ &&
-           bin2[0]>0 && bin2[0]<=NBINSE && bin2[1]>0 && bin2[1]<=NBINSE && 
-           bin2[2]>0 && bin2[2]<=NBINSZ && bin2[3]>0 && bin2[3]<=NBINSZ)
+        if(bin1[0]>0 && bin1[0]<=fgkNBINSE && bin1[1]>0 && bin1[1]<=fgkNBINSE && 
+           bin1[2]>0 && bin1[2]<=fgkNBINSZ && bin1[3]>0 && bin1[3]<=fgkNBINSZ &&
+           bin2[0]>0 && bin2[0]<=fgkNBINSE && bin2[1]>0 && bin2[1]<=fgkNBINSE && 
+           bin2[2]>0 && bin2[2]<=fgkNBINSZ && bin2[3]>0 && bin2[3]<=fgkNBINSZ)
         {   
           if (bin1[1]==bin2[1] && bin1[3]==bin2[3])    
             v11 = invCorrContent1*invCorrContent2*measuredCopy[bin1[1]][bin1[3]]
-                  *(1. - measuredCopy[bin2[1]][bin2[3]]/Ntrue);                       
+                  *(1. - measuredCopy[bin2[1]][bin2[3]]/nTrue);                       
           else
             v12 = invCorrContent1*invCorrContent2*measuredCopy[bin1[1]][bin1[3]]*
-                  measuredCopy[bin2[1]][bin2[3]]/Ntrue;
-          Nt = (Double_t)prior[bin2[0]][bin2[2]];
+                  measuredCopy[bin2[1]][bin2[3]]/nTrue;
+          nt = (Double_t)prior[bin2[0]][bin2[2]];
           v2 = measuredCopy[bin1[1]][bin1[3]]*measuredCopy[bin2[1]][bin2[3]]*
                invCorrContent1*invCorrContent2*
-               BayesUncertaintyTerms(inverseCorrelation, correlation, bin1, bin2, Nt);   
+               BayesUncertaintyTerms(inverseCorrelation, correlation, bin1, bin2, nt);   
           Int_t binV[4] = {bin1[0],bin2[0],bin1[2],bin2[2]};         
-          V->SetBinContent(binV,v11-v12 + v2);
+          v->SetBinContent(binV,v11-v12 + v2);
         }  
       }
     }    
 
-    for(Int_t te = 1; te<=NBINSE; te++)
-      for(Int_t tz = 1; tz<=NBINSZ; tz++)
+    for(Int_t te = 1; te<=fgkNBINSE; te++)
+      for(Int_t tz = 1; tz<=fgkNBINSZ; tz++)
       {
         Int_t binV[4] = {te,te,tz,tz}; 
-        aResult->SetBinError( te, tz, V->GetBinContent(binV) );
+        aResult->SetBinError( te, tz, v->GetBinContent(binV) );
       }            
       
     TFile* f = new TFile("Covariance_UnfSpectrum.root");
     f->Open("RECREATE");
-    V->Write();
+    v->Write();
     f->Close();    
   }  
   
@@ -947,7 +955,7 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* correlation, TH2* 
 }
 
 //____________________________________________________________________
-Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF *M, THnSparseF *C, Int_t* binTM, Int_t* binTM1, Double_t Nt)
+Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THnSparseF* const C, Int_t* const binTM, Int_t* const binTM1, Double_t nt)
 {
   //
   // helper function for the covariance matrix of the bayesian method
@@ -957,11 +965,11 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF *M, THnSparse
   Float_t term[9];
   Int_t tmpBin[4], tmpBin1[4];
   const Int_t nFilledBins = C->GetNbins();
-  if (Nt==0)
+  if (nt==0)
     return 0;
     
-  Float_t CorrContent;
-  Float_t InvCorrContent;
+  Float_t corrContent;
+  Float_t invCorrContent;
 
   tmpBin[0] =binTM[0]; tmpBin[1] =binTM[1];  tmpBin[2] =binTM[2]; tmpBin[3] =binTM[3];
   tmpBin1[0]=binTM[0]; tmpBin1[1]=binTM1[1]; tmpBin1[2]=binTM[2]; tmpBin1[3]=binTM1[3];      
@@ -990,10 +998,10 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF *M, THnSparse
   for(Int_t idx1=0; idx1<=nFilledBins; idx1++)
   { 
     Int_t bin1[4];
-    CorrContent    = C->GetBinContent(idx1, bin1); 
-    InvCorrContent = M->GetBinContent(idx1, bin1); 
-    if(bin1[0]>0 && bin1[0]<=NBINSE && bin1[1]>0 && bin1[1]<=NBINSE && 
-       bin1[2]>0 && bin1[2]<=NBINSZ && bin1[3]>0 && bin1[3]<=NBINSZ)
+    corrContent    = C->GetBinContent(idx1, bin1); 
+    invCorrContent = M->GetBinContent(idx1, bin1); 
+    if(bin1[0]>0 && bin1[0]<=fgkNBINSE && bin1[1]>0 && bin1[1]<=fgkNBINSE && 
+       bin1[2]>0 && bin1[2]<=fgkNBINSZ && bin1[3]>0 && bin1[3]<=fgkNBINSZ)
     {
       tmpBin[0] =binTM[0]; tmpBin[1] =binTM[1]; tmpBin[2] =binTM[2]; tmpBin[3] =binTM[3];
       tmpBin1[0]=binTM[0]; tmpBin1[1]=bin1[1];  tmpBin1[2]=binTM[2]; tmpBin1[3]=bin1[3];      
@@ -1037,7 +1045,7 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF *M, THnSparse
         term[8] = 0;
                        
       for (Int_t i=0; i<9; i++)
-        result += term[i]/Nt;                    
+        result += term[i]/nt;                    
     }          
   }
    
@@ -1045,8 +1053,14 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF *M, THnSparse
 }
 
 //____________________________________________________________________
-Double_t AliJetSpectrumUnfolding::BayesCov(THnSparseF *M, THnSparseF *correlation, Int_t* binTM, Int_t* bin1)
+Double_t AliJetSpectrumUnfolding::BayesCov(THnSparseF* const M, THnSparseF* const correlation, Int_t* const binTM, Int_t* const bin1)
 {
+
+  //
+  // get the covariance matrix  
+  //
+
+
   Double_t result, result1, result2, result3;
   
   if (binTM[0]==bin1[0] && binTM[2]==bin1[2])
@@ -1081,7 +1095,7 @@ Double_t AliJetSpectrumUnfolding::BayesCov(THnSparseF *M, THnSparseF *correlatio
 }
 
 //____________________________________________________________________
-TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* inputGen)
+TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* const inputGen)
 {
   // runs the distribution given in inputGen through the correlation histogram identified by
   // fCorrelation and produces a reconstructed spectrum
@@ -1113,14 +1127,14 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* inputGen)
 	   }
     }*/  
   // normalize to convert number of events into probability (the following loop is much faster)
-  Float_t sum[NBINSE+2][NBINSZ+2];
-  memset(sum,0,sizeof(Float_t)*(NBINSE+2)*(NBINSZ+2));
+  Float_t sum[fgkNBINSE+2][fgkNBINSZ+2];
+  memset(sum,0,sizeof(Float_t)*(fgkNBINSE+2)*(fgkNBINSZ+2));
 
   for (Int_t idx=0; idx<fCorrelation->GetNbins(); idx++)
   {
     Int_t bin[4];
     Float_t binContent = fCorrelation->GetBinContent(idx, bin);
-    if (bin[1]>0 && bin[1]<=NBINSE && bin[3]>0 && bin[3]<=NBINSZ){
+    if (bin[1]>0 && bin[1]<=fgkNBINSE && bin[3]>0 && bin[3]<=fgkNBINSZ){
       sum[bin[0]][bin[2]] += binContent; 
     }
   }
@@ -1130,8 +1144,8 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* inputGen)
     Int_t bin[4];
     Float_t binContent = fCorrelation->GetBinContent(idx, bin);
     Float_t binError   = fCorrelation->GetBinError(bin);
-    if (sum[bin[0]][bin[2]]>0 && bin[1]>0 && bin[1]<=NBINSE && 
-        bin[3]>0 && bin[3]<=NBINSZ && bin[0]>0 && bin[2]>0 && bin[0]<=NBINSE && bin[2]<=NBINSZ) 
+    if (sum[bin[0]][bin[2]]>0 && bin[1]>0 && bin[1]<=fgkNBINSE && 
+        bin[3]>0 && bin[3]<=fgkNBINSZ && bin[0]>0 && bin[2]>0 && bin[0]<=fgkNBINSE && bin[2]<=fgkNBINSZ) 
     {
       fCorrelation->SetBinContent(bin, binContent/sum[bin[0]][bin[2]]);
       fCorrelation->SetBinError(bin, binError/sum[bin[0]][bin[2]]); 
@@ -1141,14 +1155,14 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* inputGen)
   TH2F* target = dynamic_cast<TH2F*> (fRecSpectrum->Clone(Form("reconstructed_%s", inputGen->GetName())));
   target->Reset();
 
-  for (Int_t me=1; me<=NBINSE; ++me)
-    for (Int_t mz=1; mz<=NBINSZ; ++mz)
+  for (Int_t me=1; me<=fgkNBINSE; ++me)
+    for (Int_t mz=1; mz<=fgkNBINSZ; ++mz)
     {
       Float_t measured = 0;
       Float_t error = 0;
 
-      for (Int_t te=1; te<=NBINSE; ++te)
-        for (Int_t tz=1; tz<=NBINSZ; ++tz)
+      for (Int_t te=1; te<=fgkNBINSE; ++te)
+        for (Int_t tz=1; tz<=fgkNBINSZ; ++tz)
         {
 	  Int_t bin[4] = {te, me, tz, mz};
           measured += inputGen->GetBinContent(te,tz) * fCorrelation->GetBinContent(bin);
@@ -1162,7 +1176,7 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* inputGen)
 }
 
 //__________________________________________________________________________________________________
-void AliJetSpectrumUnfolding::SetGenRecFromFunc(TF2* inputGen)
+void AliJetSpectrumUnfolding::SetGenRecFromFunc(TF2* const inputGen)
 {
   // uses the given function to fill the input Generated histogram and generates from that
   // the reconstructed histogram by applying the response histogram
@@ -1172,13 +1186,16 @@ void AliJetSpectrumUnfolding::SetGenRecFromFunc(TF2* inputGen)
   if (!inputGen)
     return;
 
-  TH2F* histtmp = new TH2F("histtmp", "tmp", EBINNING, ZBINNING);
+  TH2F* histtmp = new TH2F("histtmp", "tmp", 
+			  fgkNBINSE, fgkaxisLowerLimitE, fgkaxisUpperLimitE,
+			  fgkNBINSZ, fgkaxisLowerLimitZ, fgkaxisUpperLimitZ);
+
   TH2F* gen  = fGenSpectrum;
 
   histtmp->Reset();
   gen->Reset();
 
-  histtmp->FillRandom(inputGen->GetName(), NEVENTS);
+  histtmp->FillRandom(inputGen->GetName(), fgkNEVENTS);
 
   for (Int_t i=1; i<=gen->GetNbinsX(); ++i)
     for (Int_t j=1; j<=gen->GetNbinsY(); ++j)
