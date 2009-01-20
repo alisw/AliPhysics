@@ -70,7 +70,7 @@ public:
   void SetDigitsArray(AliTPCDigitsArray* param) {fDigitsArray=param;}  //MI change
 
 // additional function neccesary for the new hits 
-   virtual void MakeBranch2(Option_t *opt=" ", const char *file=0);  //
+   virtual void MakeBranch(Option_t *opt=" ");  //
    virtual void SetTreeAddress();
    virtual void SetTreeAddress2();
    virtual void AddHit2(Int_t a1,  Int_t *a2, Float_t *a3);  //

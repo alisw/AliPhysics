@@ -2166,7 +2166,7 @@ AliTPChit::AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
 //________________________________________________________________________
 // Additional code because of the AliTPCTrackHitsV2
 
-void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
+void AliTPC::MakeBranch(Option_t *option)
 {
   //
   // Create a new branch in the current Root Tree
@@ -2247,7 +2247,8 @@ void AliTPC::FinishPrimary()
 void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
 { 
   //
-  // add hit to the list  
+  // add hit to the list
+
   Int_t rtrack;
   if (fIshunt) {
     int primary = gAlice->GetMCApp()->GetPrimary(track);
