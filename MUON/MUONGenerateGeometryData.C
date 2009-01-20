@@ -37,8 +37,11 @@
 
 #include "AliRun.h"
 #include "AliCDBManager.h"
+#include "AliMC.h"
 
 #include <Riostream.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
 
 #endif
 
@@ -57,7 +60,10 @@ void MUONGenerateGeometryData(Bool_t transforms = true,
   man->SetRun(0);
 
   // Initialize
-  gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+  TString configFileName = "$ALICE_ROOT/MUON/Config.C";
+  gROOT->LoadMacro(configFileName.Data());
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  gAlice->GetMCApp()->Init();
   cout << "Init done " << endl;
 
   // Get MUON detector
