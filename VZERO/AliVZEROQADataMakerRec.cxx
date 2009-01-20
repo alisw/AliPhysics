@@ -221,8 +221,6 @@ void AliVZEROQADataMakerRec::InitESDs()
  {
    // Creates RAW histograms in Raws subdir
    
-  fCalibData = GetCalibData();
-
   Bool_t expert   = kTRUE ; 
   Bool_t saveCorr = kTRUE ; 
 
@@ -722,6 +720,8 @@ void AliVZEROQADataMakerRec::StartOfDetectorCycle()
   // Detector specific actions at start of cycle
   
   // Reset of the histogram used - to have the trend versus time -
+ 
+  fCalibData = GetCalibData();
   
   TH1* h;
   h = GetRawsData(kPedestalCycleInt0);
