@@ -16,9 +16,11 @@
 class AliTRDcluster;
 
 class AliTRDseed : public TObject {
-
- public:
-	enum { knTimebins = 70/*35*/ };
+public:
+	enum {
+    knTimebins = 70 // maximum number of clusters/tracklet
+    ,kNtb = 35       // maximum clusters/pad row
+  };
 
   AliTRDseed(); 
   AliTRDseed(const AliTRDseed &s);

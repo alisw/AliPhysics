@@ -241,7 +241,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 
   AliTRDcluster *c = 0x0;
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
-    if(!(c = fClusters[ic]) && !(c = fClusters[knTimebins+ic])) continue;
+    if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
     Float_t x = c->GetX();
     
     // Filter clusters for dE/dx calculation
@@ -321,7 +321,8 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
 //
   Float_t dq = 0.;
   if(fClusters[ic]) dq += TMath::Abs(fClusters[ic]->GetQ());
-  if(fClusters[knTimebins+ic]) dq += TMath::Abs(fClusters[knTimebins+ic]->GetQ());
+  if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
+  if(dq<1.e-3 || fdX < 1.e-3) return 0.;
 
   return dq/fdX/TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
 }
