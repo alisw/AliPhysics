@@ -200,8 +200,8 @@ void PrintEsd()
     idx = word%1000;
     Double_t rout[3]; pTrk->GetOuterXYZ(rout);
     vol = gGeoManager->FindNode(rout[0],rout[1],rout[2]);
-    Printf("Track %02i Ch. %2i with pOuter %7.2f with ThetaCer %7.3f with %3i photons with MIP Q %4i size %2i (idx %3i) in vol. %s",iTrk,ch,pMomOut,
-        pTrk->GetHMPIDsignal(),nacc,q,size,idx,vol->GetName());
+    Printf("Trk %02i Ch.%2i (%5.2f,%5.2f) pOut %7.2f ThCer %7.3f phots %3i QMip %4i size %2i (idx %3i) in vol. %s",iTrk,ch,
+        xra,yra,pMomOut,pTrk->GetHMPIDsignal(),nacc,q,size,idx,vol->GetName());
   }  
 }//PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
