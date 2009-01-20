@@ -57,6 +57,7 @@ AliGenDPMjet::AliGenDPMjet()
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
+     fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
 {
@@ -83,6 +84,7 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
+     fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
 {
@@ -113,6 +115,7 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
+     fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb)
 {
@@ -146,6 +149,7 @@ void AliGenDPMjet::Init()
     fDPMjet->SetfFCentr(fICentr);  
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
     fDPMjet->SetPi0Decay(fPi0Decay);
+    fDPMjet->SetDecayAll(fDecayAll);
 //
 //  Initialize DPMjet  
 //    

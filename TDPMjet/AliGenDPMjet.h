@@ -44,6 +44,7 @@ class AliGenDPMjet : public AliGenMC
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     virtual void    SetPi0Decay(Int_t iPi0)  {fPi0Decay = iPi0;}
+    virtual void    SetDecayAll(Int_t iDec)  {fDecayAll = iDec;}
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
 			{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
     virtual Int_t   GetSpectators()        {return fSpectators;}
@@ -74,6 +75,7 @@ class AliGenDPMjet : public AliGenMC
     Int_t         fNoGammas;       // Don't write gammas if flag "on"
     Int_t         fLHC;            // Assume LHC as lab frame
     Int_t         fPi0Decay;       // Flag for pi0 decays
+    Int_t         fDecayAll;       // Flag to switch on long-lived particle decays
     Float_t	  fGenImpPar;	   // GeneratedImpactParameter
     DpmProcess_t  fProcess;        // Process type
     

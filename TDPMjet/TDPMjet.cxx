@@ -111,6 +111,7 @@ ClassImp(TDPMjet)
 	fBmax(0.),
 	fFCentr(0),
 	fPi0Decay(0),
+	fDecayAll(0),
 	fProcess(kDpmMb)
 {
 // Default Constructor
@@ -133,6 +134,7 @@ TDPMjet::TDPMjet(DpmProcess_t  iproc, Int_t Ip=208, Int_t Ipz=82, Int_t It=208, 
       fBmax(0.),
       fFCentr(0),
       fPi0Decay(0),
+      fDecayAll(0),
       fProcess(iproc)
 {  
     printf("TDPMJet Constructor %d %d %d %d \n", Ip, Ipz, It, Itz);
@@ -272,10 +274,13 @@ void TDPMjet::Initialize()
 //  Beam energy and crossing-angle
     fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);
 //  Centrality
-    fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., fBmin, fBmax, 0., 0., 0.);
+    if (fIp > 1. && fIt > 1) 
+	fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., fBmin, fBmax, 0., 0., 0.);
 //  Particle decays
     if (fPi0Decay) 
-    fprintf(out, "PARDECAY  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 2., 0., 0., 0., 0., 0.);    
+	fprintf(out, "PARDECAY  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 2., 0., 0., 0., 0., 0.);    
+
+    
 //
 //  PHOJET specific
     fprintf(out, "PHOINPUT\n");
@@ -293,6 +298,26 @@ void TDPMjet::Initialize()
         fprintf(out, "PROCESS           0 0 0 0 0 0 1 0\n");
     }
     
+    Int_t iPDG[19] = 
+	{
+//          K0s   pi0  lam   sig+  sig-  tet0
+	310,  111, 3122, 3222, 3112, 3322,
+//          tet- om-    D+      D0     Ds+
+	3312, 3334,  411,  421,  431,
+//          etac lamc+ sigc++ sigc+ sigc0 Ksic+
+        441, 4122, 4222, 4212, 4112, 4232,
+//         Ksic0 sig0 
+	4132, 3212
+	};
+    
+    
+    Int_t iON = (fDecayAll) ? 1:0;
+    for (Int_t i = 0; i < 19; i++) {
+	fprintf(out, "LUND-DECAY%5d %5d\n",  iPDG[i], iON);    
+    }
+	
+    fprintf(out, "LUND-MSTJ %5d %5d\n",   22, 1);    
+
     fprintf(out, "ENDINPUT\n");
 //
 //  START card
