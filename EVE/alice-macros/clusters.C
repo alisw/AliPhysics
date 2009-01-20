@@ -1,6 +1,7 @@
 #ifndef __CINT__
 #include <TEveManager.h>
 #include <TEvePointSet.h>
+#include <TGeoManager.h>
 #include <EveBase/AliEveEventManager.h>
 
 #include "AliRunLoader.h"
@@ -10,6 +11,8 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDfriend.h"
+
+#include "ITS/AliITSRecoParam.h"
 #endif
 
 void clusters()
@@ -33,7 +36,7 @@ void clusters()
   gGeoManager = xxx;
 
   // Hack for ITS - it requires RecoParams outside event-loop!
-  reco.SetRecoParam("ITS", AliITSRecoParam::GetLowFluxParam());
+  reco->SetRecoParam("ITS", AliITSRecoParam::GetLowFluxParam());
 
   reco->ImportRunLoader(rl);
   {
@@ -59,6 +62,7 @@ void clusters()
       continue;
 
     AliTracker* tracker = reco->GetTracker(det);
+    if (tracker == 0) continue;
     tracker->LoadClusters(cTree);
     tracker->FillClusterArray(clarr);
   }
@@ -74,6 +78,7 @@ void clusters()
     {
       Int_t det = detIds[i];
       AliTracker* tracker = reco->GetTracker(det);
+      if (tracker == 0) continue;
       Int_t nclusters = at->GetClusters(det, idx);
       Int_t p=0;
       for (Int_t c = 0; c < nclusters; )
