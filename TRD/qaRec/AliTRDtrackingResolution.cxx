@@ -314,6 +314,26 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
   Int_t label = fMC->GetLabel();
   Float_t p, pt, x0, y0, z0, dx, dy, dz, dydx, dzdx;
 
+  if(fDebugLevel>=1){
+    Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
+    fMC->PropagateKalman(DX, DY, DZ, DPt, COV);
+    (*fDebugStream) << "MCkalman"
+      << "pdg="  << pdg
+      << "dx0="  << DX[0]
+      << "dx1="  << DX[1]
+      << "dx2="  << DX[2]
+      << "dy0="  << DY[0]
+      << "dy1="  << DY[1]
+      << "dy2="  << DY[2]
+      << "dz0="  << DZ[0]
+      << "dz1="  << DZ[1]
+      << "dz2="  << DZ[2]
+      << "dpt0=" << DPt[0]
+      << "dpt1=" << DPt[1]
+      << "dpt2=" << DPt[2]
+      << "\n";
+  }
+
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fTrack->GetTracklet(ily)) ||

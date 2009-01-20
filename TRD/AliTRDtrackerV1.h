@@ -99,6 +99,7 @@ public:
   Int_t           LoadClusters(TTree *cTree);
   Int_t           LoadClusters(TClonesArray *clusters);
   Int_t           PropagateBack(AliESDEvent *event);
+  static Int_t    PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
   Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
@@ -139,7 +140,6 @@ protected:
   Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
   Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
   AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
-  static Int_t   PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
   AliTRDtrackV1* SetTrack(AliTRDtrackV1 *track);
   AliTRDseedV1*  SetTracklet(AliTRDseedV1 *tracklet);
 

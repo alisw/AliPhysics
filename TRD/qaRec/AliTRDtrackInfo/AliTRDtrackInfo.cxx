@@ -25,6 +25,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "TDatabasePDG.h"
+
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliLog.h"
@@ -32,6 +34,7 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDtrackerV1.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -394,3 +397,51 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   return kTRUE;
 }
 
+//___________________________________________________
+void AliTRDtrackInfo::AliMCinfo::PropagateKalman(Double_t dx[kNTrackRefs], Double_t dy[kNTrackRefs], Double_t dz[kNTrackRefs], Double_t dp[kNTrackRefs], Double_t c[kNTrackRefs][15], Double_t step) const
+{
+// Propagate Kalman from the first TRD track reference to 
+// last one and save residuals in the y, z and pt.
+// 
+// This is to calibrate the dEdx and MS corrections
+
+  for(Int_t itr=kNTrackRefs; itr--;){
+    dx[itr] = -1.; dy[itr] = 100.; dz[itr] = 100.; dp[itr] = 100.;
+  }
+  if(!fNTrackRefs) return;
+
+  // Initialize TRD track to the first track reference
+  AliTrackReference *tr = fTrackRefs[0];
+  AliTRDtrackV1 tt;
+  Double_t xyz[3]={tr->X(),tr->Y(),tr->Z()};
+  Double_t pxyz[3]={tr->Px(),tr->Py(),tr->Pz()};
+  Double_t var[6] = {1.e-4, 1.e-4, 1.e-4, 1.e-4, 1.e-4, 1.e-4};
+  Double_t cov[21]={
+    var[0],  0.,  0.,  0.,  0.,  0.,
+         var[1],  0.,  0.,  0.,  0.,
+              var[2],  0.,  0.,  0.,
+                   var[3],  0.,  0.,
+                        var[4],  0.,
+                             var[5]
+  };
+  TDatabasePDG db;
+  const TParticlePDG *pdg=db.GetParticle(fPDG);
+  tt.Set(xyz, pxyz, cov, Short_t(pdg->Charge()));
+  tt.SetMass(pdg->Mass());
+  
+  Double_t x0 = tr->LocalX();
+  const Double_t *cc = 0x0;
+  for(Int_t itr=1, ip=0; itr<fNTrackRefs; itr++){
+    tr = fTrackRefs[itr];
+    if(!AliTRDtrackerV1::PropagateToX(tt, tr->LocalX(), step)) continue;
+
+    //if(update) ...
+    dx[ip] = tt.GetX() - x0;
+    dy[ip] = tt.GetY() - tr->LocalY();
+    dz[ip] = tt.GetZ() - tr->Z();
+    dp[ip] = tt.Pt()- tr->Pt();
+    cc = tt.GetCovariance();
+    memcpy(c[ip], cc, 15*sizeof(Double_t));
+    ip++;
+  }
+}
