@@ -902,9 +902,11 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
   TAxis *ax = 0x0;
   TH1 *h1 = 0x0, *h=0x0;
   TH2 *h2 = 0x0;
+  TObjArray *arr = 0x0;
   switch(ifig){
   case kEfficiency:
-    if(!(g = (TGraphErrors*)fGraph->At(kLQ))) break;
+    arr = (TObjArray*)fGraph->At(ifig);
+    if(!(g = (TGraphErrors*)arr->At(kLQ))) break;
     if(!g->GetN()) break;
     leg->SetHeader("PID Method");
     g->Draw("apl");
@@ -916,10 +918,10 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ax->SetTitle("#epsilon_{#pi} [%]");
     ax->SetRangeUser(1.e-3, 1.e-1);
     leg->AddEntry(g, "2D LQ", "pl");
-    if(! (g = (TGraphErrors*)fGraph->At(kNN))) break;
+    if(! (g = (TGraphErrors*)arr->At(kNN))) break;
     g->Draw("pl");
     leg->AddEntry(g, "NN", "pl");
-    if(! (g = (TGraphErrors*)fGraph->At(kESD))) break;
+    if(! (g = (TGraphErrors*)arr->At(kESD))) break;
     g->Draw("p");
     leg->AddEntry(g, "ESD", "pl");
     leg->Draw();
@@ -1007,7 +1009,8 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
   case kMomentumBin:
     break; 
   case kThresh:
-    if(!(g = (TGraphErrors*)fGraph->At(kLQ+3))) break;
+    arr = (TObjArray*)fGraph->FindObject("Thresholds");
+    if(!(g = (TGraphErrors*)arr->At(kLQ))) break;
     if(!g->GetN()) break;
     leg->SetHeader("PID Method");
     g->Draw("apl");
@@ -1019,10 +1022,10 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ax->SetTitle("threshold");
     ax->SetRangeUser(5.e-2, 1.);
     leg->AddEntry(g, "2D LQ", "pl");
-    if(!(g = (TGraphErrors*)fGraph->At(kNN+3))) break;
+    if(!(g = (TGraphErrors*)arr->At(kNN))) break;
     g->Draw("pl");
     leg->AddEntry(g, "NN", "pl");
-    if(!(g = (TGraphErrors*)fGraph->At(kESD+3))) break;
+    if(!(g = (TGraphErrors*)arr->At(kESD))) break;
     g->Draw("p");
     leg->AddEntry(g, "ESD", "pl");
     leg->Draw();
@@ -1050,46 +1053,50 @@ Bool_t AliTRDpidChecker::PostProcess()
     return 0x0;
   }
   if(!fGraph){ 
-    fGraph = new TObjArray(6);
+    fGraph = new TObjArray(2);
     fGraph->SetOwner();
-    EvaluatePionEfficiency(fEfficiency, fGraph, 0.9);
   }
+  EvaluatePionEfficiency(fEfficiency, fGraph, 0.9);
   fNRefFigures = 8;
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
+void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency)
+{
+  if(!histoContainer || !results) return;
+
   TGraphErrors *g = 0x0;
   fUtil->SetElectronEfficiency(electron_efficiency);
 
   // efficiency graphs
-  TObjArray *arr = new TObjArray(3); arr->SetOwner();
-  results->AddAt(arr, 0);
-  arr->AddAt(g = new TGraphErrors(), kLQ);
+  TObjArray *eff = new TObjArray(3); eff->SetOwner(); eff->SetName("Efficiencies");
+  results->AddAt(eff, 0);
+  eff->AddAt(g = new TGraphErrors(), kLQ);
   g->SetLineColor(kBlue);
   g->SetMarkerColor(kBlue);
   g->SetMarkerStyle(7);
-  arr->AddAt(g = new TGraphErrors(), kNN);
+  eff->AddAt(g = new TGraphErrors(), kNN);
   g->SetLineColor(kGreen);
   g->SetMarkerColor(kGreen);
   g->SetMarkerStyle(7);
-  arr -> AddAt(g = new TGraphErrors(), kESD);
+  eff -> AddAt(g = new TGraphErrors(), kESD);
   g->SetLineColor(kRed);
   g->SetMarkerColor(kRed);
   g->SetMarkerStyle(24);
 
-  arr = new TObjArray(3); arr->SetOwner();
-  results->AddAt(arr, 1);
-  arr->AddAt(g = new TGraphErrors(), kLQ);
+  // Threshold graphs
+  TObjArray *thres = new TObjArray(3); thres->SetOwner(); thres->SetName("Thresholds");
+  results->AddAt(thres, 1);
+  thres->AddAt(g = new TGraphErrors(), kLQ);
   g->SetLineColor(kBlue);
   g->SetMarkerColor(kBlue);
   g->SetMarkerStyle(7);
-  arr->AddAt(g = new TGraphErrors(), kNN);
+  thres->AddAt(g = new TGraphErrors(), kNN);
   g->SetLineColor(kGreen);
   g->SetMarkerColor(kGreen);
   g->SetMarkerStyle(7);
-  arr -> AddAt(g = new TGraphErrors(), kESD);
+  thres -> AddAt(g = new TGraphErrors(), kESD);
   g->SetLineColor(kRed);
   g->SetMarkerColor(kRed);
   g->SetMarkerStyle(24);
@@ -1107,10 +1114,10 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
 
     if(!fUtil->CalculatePionEffi(Histo1, Histo2)) continue;
 
-    g = (TGraphErrors*)fGraph->At(kLQ);
+    g = (TGraphErrors*)eff->At(kLQ);
     g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
     g->SetPointError(iMom, 0., fUtil->GetError());
-    g = (TGraphErrors*)fGraph->At(3 + kLQ);
+    g = (TGraphErrors*)thres->At(kLQ);
     g->SetPoint(iMom, mom, fUtil->GetThreshold());
     g->SetPointError(iMom, 0., 0.);
 
@@ -1128,10 +1135,10 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
 
     if(!fUtil -> CalculatePionEffi(Histo1, Histo2)) continue;
 
-    g = (TGraphErrors*)fGraph->At(kNN);
+    g = (TGraphErrors*)eff->At(kNN);
     g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
     g->SetPointError(iMom, 0., fUtil->GetError());
-    g = (TGraphErrors*)fGraph->At(3+kNN);
+    g = (TGraphErrors*)thres->At(3+kNN);
     g->SetPoint(iMom, mom, fUtil->GetThreshold());
     g->SetPointError(iMom, 0., 0.);
 
@@ -1149,10 +1156,10 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
 
     if(!fUtil->CalculatePionEffi(Histo1, Histo2)) continue;
 
-    g = (TGraphErrors*)fGraph->At(kESD);
+    g = (TGraphErrors*)eff->At(kESD);
     g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
     g->SetPointError(iMom, 0., fUtil->GetError());
-    g = (TGraphErrors*)fGraph->At(3+kESD);
+    g = (TGraphErrors*)thres->At(3+kESD);
     g->SetPoint(iMom, mom, fUtil->GetThreshold());
     g->SetPointError(iMom, 0., 0.);
 
