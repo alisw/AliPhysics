@@ -28,6 +28,7 @@ public:
   virtual Float_t GetLightPMQ() const      {return fLightPMQ;}
   virtual Float_t GetLightPMC() const      {return fLightPMC;}
   virtual Float_t GetEnergy() const        {return fEnergy;}
+  virtual Float_t GetTrackTOF() const      {return fTrackTOF;}
 
   // Setters 
   virtual void SetVolume(Int_t i, Int_t val) {fVolume[i]=val;} 
@@ -38,6 +39,7 @@ public:
   virtual void SetPrimKinEn(Float_t value){fPrimKinEn=value;}
   virtual void SetXImpact(Float_t value)  {fXImpact=value;}
   virtual void SetYImpact(Float_t value)  {fYImpact=value;}
+  virtual void SetTrackTOF(Float_t value) {fTrackTOF=value;}
 
   // Operators
   Int_t operator == (AliZDCHit &quad){
@@ -59,18 +61,18 @@ public:
 
 protected:
   // Data members
-  Int_t      fVolume[2];    //Array of volumes
-  Float_t    fPrimKinEn;    //Primary particle energy
-  Float_t    fXImpact;      //x-coord. of the impact point over the ZDC
-  Float_t    fYImpact;      //y-coord. of the impact point over the ZDC
-  Float_t    fSFlag;        //Secondary flag
-  Float_t    fLightPMQ;     //Cerenkov light produced in each quadrant
-  Float_t    fLightPMC;     //Cerenkov light seen by the common PM
-  Float_t    fEnergy;       //Total energy deposited in eV
-  Int_t      fPDGCode;	    //PDG code of particle in the ZDC
- 
+  Int_t   fVolume[2]; //Array of volumes
+  Float_t fPrimKinEn; //Primary particle energy
+  Float_t fXImpact;   //x-coord. of the impact point over the ZDC
+  Float_t fYImpact;   //y-coord. of the impact point over the ZDC
+  Float_t fSFlag;     //Secondary flag
+  Float_t fLightPMQ;  //Cerenkov light produced in each quadrant
+  Float_t fLightPMC;  //Cerenkov light seen by the common PM
+  Float_t fEnergy;    //Total energy deposited in eV
+  Int_t   fPDGCode;   //PDG code of particle in the ZDC
+  Float_t fTrackTOF;  //Track time
 
-  ClassDef(AliZDCHit,2)  // Hits for the Zero Degree Calorimeters
+  ClassDef(AliZDCHit,3)  // Hits for the Zero Degree Calorimeters
 };
  
 #endif

@@ -2169,7 +2169,7 @@ void AliZDCv3::StepManager()
   // Routine called at every step in the Zero Degree Calorimeters
   //
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
-  Float_t hits[11], x[3], xdet[3], um[3], ud[3];
+  Float_t hits[12], x[3], xdet[3], um[3], ud[3];
   Float_t m=0., ekin=0., destep=0., be=0., out=0.;
   // Parametrization for light guide uniformity
   // NEW!!! Light guide tilted @ 51 degrees
@@ -2177,7 +2177,7 @@ void AliZDCv3::StepManager()
   Double_t s[3], p[3];
   const char *knamed;
   //
-  for(j=0;j<11;j++) hits[j]=-999.;
+  for(j=0;j<12;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
@@ -2373,7 +2373,10 @@ void AliZDCv3::StepManager()
         TParticle *part = (gAlice->GetMCApp())->Particle(curTrackN);
 	hits[10] = part->GetPdgCode();
 	//printf("\t PDGCode = %d\n", part->GetPdgCode());
-
+        //
+	hits[11] = 1.0e09*gMC->TrackTime();
+	//printf("\t TrackTime = %f\n", hits[11]);
+        
 	AddHit(curTrackN, vol, hits);
 	
 	if(fNoShower==1){
