@@ -58,7 +58,7 @@ void TEveJetConeGL::SetBBox()
 /******************************************************************************/
 
 //______________________________________________________________________________
-void TEveJetConeGL::DirectDraw(TGLRnrCtx & rnrCtx) const
+void TEveJetConeGL::DirectDraw(TGLRnrCtx& /*rnrCtx*/) const
 {
    // Render with OpenGL.
 
