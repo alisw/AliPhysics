@@ -896,7 +896,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuo
   muonTrack.SetLocalTrigger(locTrg.LoCircuit(),
 			    locTrg.LoStripX(),
 			    locTrg.LoStripY(),
-			    locTrg.LoDev(),
+			    locTrg.GetDeviation(),
 			    locTrg.LoLpt(),
 			    locTrg.LoHpt());
   esdTrack.SetLocalTrigger(muonTrack.GetLocalTrigger());
