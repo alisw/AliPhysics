@@ -25,6 +25,7 @@ class AliITSPreprocessorSPD : public AliPreprocessor
   private:
     TList  fIdList; // list of ids for files that should be retrieved from FXS
     Bool_t RemoveIdFromList(const Char_t *id);
+    Bool_t StoreRefForIdStartingWith(const Char_t *idStart);
     Bool_t StoreRefFromTarForId(const Char_t *id);
 
     ClassDef(AliITSPreprocessorSPD, 0);

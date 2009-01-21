@@ -67,9 +67,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
 
 
   fIdList.Clear();
-  UInt_t nrEqForScan  = 0;
-  //  UInt_t nrEqForPhysN = 0;
-  //  UInt_t nrEqForPhysD = 0;
+
 
   // ******************************************************************************************** //
   // *** GET THE FILE IDs FOR DEBUGGING *** //
@@ -122,106 +120,38 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
   // ******************************************************************************************** //
   // *** REFERENCE DATA *** //
 
-  // Standalone runs:
+  // SCAN runs:
   if (runType == "DAQ_MIN_TH_SCAN" ||
       runType == "DAQ_MEAN_TH_SCAN" ||
       runType == "DAQ_GEN_DAC_SCAN" || 
       runType == "DAQ_UNIFORMITY_SCAN" ||
       runType == "DAQ_NOISY_PIX_SCAN" ||
-      runType == "DAQ_PIX_DELAY_SCAN" ||
-      runType == "DAQ_FO_UNIF_SCAN") {
-    // Store the scan container files as reference data (0 or 1 file for each equipment)
-    for (UInt_t eq=0; eq<20; eq++) {
-      TString id = Form("SPD_ref_scan_%d",eq);
-      TList* list = GetFileSources(kDAQ,id.Data()); // (the id should be unique, so always 1 file)
-      if (list) {
-	TObjString* fileNameEntry = (TObjString*) list->First();
-	if (fileNameEntry!=NULL) {
-	  nrEqForScan++;
-	  TString fileName = GetFile(kDAQ, id, fileNameEntry->GetString().Data());
-	  if (fileName.IsNull()) {
-	    Log(Form("GetFile failed to retrieve file %s.",fileNameEntry->GetString().Data()));
-	    return 1;
-	  }
-	  if (!RemoveIdFromList(id.Data())) {
-	    Log(Form("Warning: Retrieved file with id %s, that was not in the id list!",id.Data()));
-	  }
-	  TString refCAT = Form("SPD_ref_scan_eq_%d",eq);
-	  if (!StoreReferenceFile(fileName.Data(),refCAT.Data())) {
-	    Log(Form("Failed to store reference file %s.",fileName.Data()));
-	    return 1;
-	  }
-	}
-      }
-    }
+      runType == "DAQ_PIX_DELAY_SCAN") {
+    // Store scan container files for all equipments used - as reference data
+    // ids from FXS follow ("SPD_ref_scan_%d",eq), while Alien follow ("SPD_ref_scan_eq_%d",eq)
+    // the first part of the id is passed as argument here:
+    if (!StoreRefForIdStartingWith("SPD_ref_scan")) return 1;
+  }
+
+  // FO runs:
+  else if (runType == "DAQ_FO_UNIF_SCAN") {
+    // Store fo container files for all equipments used - as reference data
+    // ids from FXS follow ("SPD_ref_fo_%d",eq), while Alien follow ("SPD_ref_fo_eq_%d",eq)
+    // the first part of the id is passed as argument here:
+    if (!StoreRefForIdStartingWith("SPD_ref_fo")) return 1;
   }
 
   // Physics runs (online monitoring):
-  if (runType == "PHYSICS") {
-    // Store the phys "per run" container files as reference data
+  else if (runType == "PHYSICS") {
+    // Store the phys "per run" container files - as reference data
     if (!StoreRefFromTarForId("SPD_ref_phys")) return 1;
-    // Store the phys "dead" container files as reference data
+    // Store the phys "dead" container files - as reference data
     if (!StoreRefFromTarForId("SPD_ref_phys_dead")) return 1;
   }
 
 
-// *** OLD CODE NOT TARED
-//    for (UInt_t eq=0; eq<20; eq++) {
-//      TString id = Form("SPD_ref_phys_%d",eq);
-//      TList* list = GetFileSources(kDAQ,id.Data()); // (the id should be unique, so always 1 file)
-//      if (list) {
-//	TObjString* fileNameEntry = (TObjString*) list->First();
-//	if (fileNameEntry!=NULL) {
-//	  nrEqForPhysN++;
-//	  TString fileName = GetFile(kDAQ, id, fileNameEntry->GetString().Data());
-//	  if (fileName.IsNull()) {
-//	    Log(Form("GetFile failed to retrieve file %s.",fileNameEntry->GetString().Data()));
-//	    return 1;
-//	  }
-//	  if (!RemoveIdFromList(id.Data())) {
-//	    Log(Form("Warning: Retrieved file with id %s, that was not in the id list!",id.Data()));
-//	  }
-//	  TString refCAT = Form("SPD_ref_phys_eq_%d",eq);
-//	  if (!StoreReferenceFile(fileName.Data(),refCAT.Data())) {
-//	    Log(Form("Failed to store reference file %s.",fileName.Data()));
-//	    return 1;
-//	  }
-//	}
-//      }
-//    }
-// ***
-
-// *** OLD CODE NOT TARED
-//    // Store the phys "dead" container files as reference data (0 or 1 file for each equipment)
-//    for (UInt_t eq=0; eq<20; eq++) {
-//      TString id = Form("SPD_ref_phys_dead_%d",eq);
-//      TList* list = GetFileSources(kDAQ,id.Data()); // (the id should be unique, so always 1 file)
-//      if (list) {
-//	TObjString* fileNameEntry = (TObjString*) list->First();
-//	if (fileNameEntry!=NULL) {
-//	  nrEqForPhysD++;
-//	  TString fileName = GetFile(kDAQ, id, fileNameEntry->GetString().Data());
-//	  if (fileName.IsNull()) {
-//	    Log(Form("GetFile failed to retrieve file %s.",fileNameEntry->GetString().Data()));
-//	    return 1;
-//	  }
-//	  if (!RemoveIdFromList(id.Data())) {
-//	    Log(Form("Warning: Retrieved file with id %s, that was not in the id list!",id.Data()));
-//	  }
-//	  TString refCAT = Form("SPD_ref_phys_dead_eq_%d",eq);
-//	  if (!StoreReferenceFile(fileName.Data(),refCAT.Data())) {
-//	    Log(Form("Failed to store reference file %s.",fileName.Data()));
-//	    return 1;
-//	  }
-//	}
-//      }
-//    }
-//  }
-// ***
 
   // ******************************************************************************************** //
-
-
   // *** NOISY AND DEAD DATA *** //
 
   // Standalone runs:
@@ -411,6 +341,8 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
   }
 
 
+
+  // ******************************************************************************************** //
   // check that there are no ids left in the list:
   if (fIdList.First()!=NULL) {
     TString logMessage = "";
@@ -423,8 +355,8 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     Log(Form("Files with the following ids were never retrieved: %s.",logMessage.Data()));
     return 1;
   }
-
   fIdList.Clear();
+
 
   return 0; // 0 means success
 
@@ -443,6 +375,34 @@ Bool_t AliITSPreprocessorSPD::RemoveIdFromList(const Char_t *id) {
   }
   delete iter;
   return found;
+}
+//_________________________________________________________________________________________
+Bool_t AliITSPreprocessorSPD::StoreRefForIdStartingWith(const Char_t *idStart) {
+  // Store the standalone container files as reference data (0 or 1 file for each equipment)
+  // idStart is the first part of the id string (which also should contain the actual eq)
+  for (UInt_t eq=0; eq<20; eq++) {
+    TString id = Form("%s_%d",idStart,eq);
+    TList* list = GetFileSources(kDAQ,id.Data()); // (the id should be unique, so always 1 file)
+    if (list) {
+      TObjString* fileNameEntry = (TObjString*) list->First();
+      if (fileNameEntry!=NULL) {
+	TString fileName = GetFile(kDAQ, id, fileNameEntry->GetString().Data());
+	if (fileName.IsNull()) {
+	    Log(Form("GetFile failed to retrieve file %s.",fileNameEntry->GetString().Data()));
+	    return kFALSE;
+	}
+	if (!RemoveIdFromList(id.Data())) {
+	  Log(Form("Warning: Retrieved file with id %s, that was not in the id list!",id.Data()));
+	}
+	TString refCAT = Form("%s_eq_%d",idStart,eq);
+	if (!StoreReferenceFile(fileName.Data(),refCAT.Data())) {
+	  Log(Form("Failed to store reference file %s.",fileName.Data()));
+	  return kFALSE;
+	}
+      }
+    }
+  }
+  return kTRUE;
 }
 //_________________________________________________________________________________________
 Bool_t AliITSPreprocessorSPD::StoreRefFromTarForId(const Char_t *id) {
