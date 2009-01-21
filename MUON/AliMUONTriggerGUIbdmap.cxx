@@ -57,7 +57,7 @@ ClassImp(AliMUONTriggerGUIbdmap)
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)
+AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *mainWindow, UInt_t w, UInt_t h)
   : TGFrame(0),
     fMain(0),
     fLocTrigE(0),
@@ -88,7 +88,7 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
   gStyle->SetPadTopMargin(0.05);
   gStyle->SetPadBottomMargin(0.05);
 
-  fMain = new TGTransientFrame(p, main, w, h, kVerticalFrame);
+  fMain = new TGTransientFrame(p, mainWindow, w, h, kVerticalFrame);
   fMain->Connect("CloseWindow()", "AliMUONTriggerGUIbdmap", this, "CloseWindow()");
   fMain->DontCallClose(); // to avoid double deletions.
   

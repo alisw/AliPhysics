@@ -30,6 +30,7 @@ class AliMUONTriggerCrateStore;
 class AliMUONMCDataInterface;
 class AliMUONDigitStoreV1;
 class AliMUONTriggerStoreV1;
+class AliMUONCalibrationData;
 class AliLoader;
 
 class AliMUONTriggerGUIbdmap : public TGFrame
@@ -37,7 +38,7 @@ class AliMUONTriggerGUIbdmap : public TGFrame
 
 public:
 
-  AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h);
+  AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *mainWindow, UInt_t w, UInt_t h);
   virtual ~AliMUONTriggerGUIbdmap();
   
   /// set the name of the board gui window
