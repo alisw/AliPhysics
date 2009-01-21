@@ -1,11 +1,14 @@
 //
-// This class is the task for connecting together 
-// MC information and the RC information 
+// This class is the task to check the 
+// Propagation method used in the 
+//               1. AliExternalTrackParam 
+//               2. AliTracker
 //
-// The task is a wrapper over two components
-// AliGenInfoMaker
-// AliESDRecInfoMaker.h
+// Principle - Creates AliExternalTrackParam form 1 Track Refernece - 
+//             Propagate it to other
+// Magnetic filed and the geomtry has to bec 
 
+//
 // ROOT includes
 #include <TChain.h>
 #include <TMath.h>
@@ -32,6 +35,7 @@
 #include "AliESDRecInfo.h"
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
+#include "AliTPCseed.h"
 
 // STL includes
 #include <iostream>
@@ -237,8 +241,8 @@ Bool_t  AliMCTrackingTestTask::PropagateToPoint(AliExternalTrackParam *param, Do
   //  mass  - particle mass
   //  step  - step to be used
   Double_t radius=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-  AliTracker::PropagateTrackTo(param, radius+step, mass, step, kTRUE,0.8);
-  AliTracker::PropagateTrackTo(param, radius+0.5, mass, 0.5, kTRUE,0.8);
+  AliTracker::PropagateTrackTo(param, radius+step, mass, step, kTRUE,0.99);
+  AliTracker::PropagateTrackTo(param, radius+0.5, mass, step*0.1, kTRUE,0.99);
   Double_t sxyz[3]={0,0,0};
   AliESDVertex vertex(xyz,sxyz);
   Bool_t isOK = param->PropagateToDCA(&vertex,AliTracker::GetBz(),10);
@@ -323,7 +327,10 @@ void  AliMCTrackingTestTask::ProcessMCInfo(){
       if (ref->R()<rmin) rmin=ref->R();
       if (ref->R()>rmax) rmax=ref->R();
     }
-    if (tpcIn && tpcOut) ProcessRefTracker(tpcIn,tpcOut,particle,1);
+    if (tpcIn && tpcOut) {
+      ProcessRefTracker(tpcIn,tpcOut,particle,1);
+      ProcessRefTracker(tpcIn,tpcOut,particle,3);
+    }
     if (itsIn && itsOut) ProcessRefTracker(itsIn,itsOut,particle,0);
     if (trdIn && trdOut) ProcessRefTracker(trdIn,trdOut,particle,2);
   }
@@ -344,7 +351,19 @@ void AliMCTrackingTestTask::ProcessRefTracker(AliTrackReference* refIn,  AliTrac
   param=MakeTrack(refOut,part);
   paramMC=MakeTrack(refOut,part);
   if (!param) return;
-  PropagateToPoint(param,xyzIn, mass, step);
+  if (type<3) PropagateToPoint(param,xyzIn, mass, step);
+  if (type==3) {
+    AliTPCseed seed;
+    seed.Set(param->GetX(),param->GetAlpha(),param->GetParameter(),param->GetCovariance());
+    Float_t alpha= TMath::ATan2(refIn->Y(),refIn->X());
+    seed.Rotate(alpha-seed.GetAlpha());
+    seed.SetMass(mass);
+    for (Float_t xlayer= seed.GetX(); xlayer>refIn->R(); xlayer-=step){
+      seed.PropagateTo(xlayer);
+    }
+    seed.PropagateTo(refIn->R());
+    param->Set(seed.GetX(),seed.GetAlpha(),seed.GetParameter(),seed.GetCovariance());
+  }
   TTreeSRedirector *pcstream = GetDebugStreamer();
   TVectorD gpos(3);
   TVectorD gmom(3);
@@ -417,5 +436,48 @@ void AliMCTrackingTestTask::RegisterDebugOutput(){
   chain->SetAlias("pdg","(p.fPdgCode)");
   chain->SetAlias("dPRec","(refOut.P()-par.P())/refIn.P()");
   chain->SetAlias("dPMC","(refOut.P()-refIn.P())/refIn->P()");
+  chain->SetAlias("dPtRec","(refOut.Pt()-par.Pt())/refIn.Pt()");
+  chain->SetAlias("dPtMC","(refOut.Pt()-refIn.Pt())/refIn->Pt()");
 
+
+  // ITS
+  chain->Draw("-sqrt(dPRec):-sqrt(dPMC)","abs(pdg)!=11&&type==0&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  htemp->SetYTitle("#sqrt{#DeltaP_{rec}/P}");
+  htemp->SetXTitle("#sqrt{#DeltaP_{mc}/P}");
+  gPad->SaveAs("picLoss/dPcorr_ITS_step1.gif");
+  gPad->SaveAs("picLoss/dPcorr_ITS_step1.eps");
+  // TPC
+  chain->Draw("-sqrt(dPRec):-sqrt(dPMC)","abs(pdg)!=11&&type==1&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  htemp->SetYTitle("#sqrt{#DeltaP_{rec}/P}");
+  htemp->SetXTitle("#sqrt{#DeltaP_{mc}/P}");
+  gPad->SaveAs("picLoss/dPcorr_TPC_step1.gif");
+  gPad->SaveAs("picLoss/dPcorr_TPC_step1.eps");
+  //
+   // TPC
+  chain->Draw("-sqrt(dPRec):-sqrt(dPMC)","abs(pdg)!=11&&type==3&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  htemp->SetYTitle("#sqrt{#DeltaP_{rec}/P}");
+  htemp->SetXTitle("#sqrt{#DeltaP_{mc}/P}");
+  gPad->SaveAs("picLoss/dPcorr_TPCseed_step1.gif");
+  gPad->SaveAs("picLoss/dPcorr_TPCseed_step1.eps");
+
+
+  // TRD
+  chain->Draw("-sqrt(dPRec):-sqrt(dPMC)","abs(pdg)!=11&&type==2&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  htemp->SetYTitle("#sqrt{#DeltaP_{rec}/P}");
+  htemp->SetXTitle("#sqrt{#DeltaP_{mc}/P}");
+  gPad->SaveAs("picLoss/dPcorr_TRD_step1.gif");
+  gPad->SaveAs("picLoss/dPcorr_TRD_step1.eps");
+
+  //
+  //
+  //
+  chain->Draw("(par.Pt()-refIn.Pt())/refIn.Pt()>>his(100,-0.02,0.02)","abs(pdg)!=11&&type==3&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  his->SetXTitle("(P_{trec}-P_{tmc})/P_{tmc}");
+  gPad->SaveAs("picLoss/dPtcorr_TPCseed_step1_1D.eps");
+  gPad->SaveAs("picLoss/dPtcorr_TPCseed_step1_1D.gif");
+
+  chain->Draw("(par.P()-refIn.P())/refIn.P()>>his(100,-0.02,0.02)","abs(pdg)!=11&&type==3&&p.Pt()<0.5&&abs(p.R())<1&&abs(refOut.fZ)<220");
+  his->SetXTitle("(P_{rec}-P_{mc})/P_{mc}");
+  gPad->SaveAs("picLoss/dPcorr_TPCseed_step1_1D.eps");
+  gPad->SaveAs("picLoss/dPcorr_TPCseed_step1_1D.gif");
 */
