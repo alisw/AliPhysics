@@ -117,25 +117,30 @@ void AliFittingFunctionsForQDistribution::Calculate()
  }
  
  cout<<" "<<endl;
- cout<<"***********************************"<<endl;
- cout<<"***********************************"<<endl;
- cout<<"    integrated flow by fitting "<<endl;
- cout<<"         q-distribution:      "<<endl;
+ cout<<"***************************************"<<endl;
+ cout<<"***************************************"<<endl;
+ cout<<"      integrated flow by fitting "<<endl;
+ cout<<"           q-distribution:      "<<endl;
  cout<<""<<endl;
- cout<<" v_"<<n<<"{FQD} = "<<v<<" +/- "<<errorv<<endl;
- cout<<" sigma^2  = "<<sigma2<<" +/- "<<errorsigma2<<endl; 
+ cout<<"   v_"<<n<<"{FQD} = "<<v<<" +/- "<<errorv<<endl;
+ cout<<"   sigma^2  = "<<sigma2<<" +/- "<<errorsigma2<<endl; 
  //cout<<"vm       = "<<v*pow(AvM,0.5)<<endl;
  cout<<" "<<endl;
- cout<<"    nEvts = "<<nEvts<<", AvM = "<<AvM<<endl; 
- cout<<"***********************************"<<endl;
- cout<<"***********************************"<<endl;
+ cout<<"      nEvts = "<<nEvts<<", AvM = "<<AvM<<endl; 
+ cout<<"***************************************"<<endl;
+ cout<<"***************************************"<<endl;
  fIntFlowResFQD->SetBinContent(1,v);
  fIntFlowResFQD->SetBinError(1,errorv);
  fSigma2->SetBinContent(1,sigma2);
  fSigma2->SetBinError(1,errorsigma2);
+ 
  //common histograms:
  fchrFQD->FillIntegratedFlow(v,errorv);
  fchrFQD->FillChi(v*pow(AvM,0.5));
+ //RP:
+ fchrFQD->FillIntegratedFlowRP(v,errorv);
+ fchrFQD->FillChiRP(v*pow(AvM,0.5));
+ 
  cout<<" "<<endl;
 
  //fQDistributionFQD->Draw("");
