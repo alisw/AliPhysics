@@ -145,13 +145,19 @@
 //   cdb->SetDefaultStorage("local://$ALICE_ROOT");
 //   cdb->SetRun(0);
 //   // initialize magnetic field.
-//   AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+//   AliMagFCheb *field=new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG);
 //   AliTracker::SetFieldMap(field, kTRUE);
 // 
 //   AliTRDclusterResolution *res = new AliTRDclusterResolution();
 //   res->SetMCdata();
 //   res->Load("TRD.TaskClErrParam.root");
-//   res->SetExB();
+//   res->SetExB();  
+//   res->SetVisual(); 
+//   //res->SetSaveAs();
+//   res->SetProcessCharge(kFALSE);
+//   res->SetProcessCenterPad(kFALSE);
+//   //res->SetProcessMean(kFALSE);
+//   res->SetProcessSigma(kFALSE);
 //   if(!res->PostProcess()) return;
 //   new TCanvas;
 //   res->GetRefFigure(fig);
@@ -190,8 +196,8 @@ ClassImp(AliTRDclusterResolution)
 
 
 //_______________________________________________________
-AliTRDclusterResolution::AliTRDclusterResolution()
-  : AliTRDrecoTask("ClErrParam", "Cluster Error Parametrization")
+AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
+  : AliTRDrecoTask(name, "Cluster Error Parametrization")
   ,fCanvas(0x0)
   ,fInfo(0x0)
   ,fResults(0x0)
@@ -311,7 +317,7 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 TObjArray* AliTRDclusterResolution::Histos()
 {
   if(fContainer) return fContainer;
-  fContainer = new TObjArray(sizeof(AliTRDclusterResolution::EResultContainers));
+  fContainer = new TObjArray(sizeof(AliTRDclusterResolution::EResultContainer));
   //fContainer->SetOwner(kTRUE);
 
   TH2I *h2 = 0x0;
@@ -323,6 +329,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   h2->SetZTitle("entries");
 
   fContainer->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer), kCenter);
+  arr->SetName("y(PadWidth)");
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     arr->AddAt(h2 = new TH2I(Form("h_y%d", ily), Form("Ly[%d]", ily), 51, -.51, .51, 100, -.5, .5), ily);
     h2->SetXTitle("y_{w} [w]");
@@ -331,6 +338,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   }
 
   fContainer->AddAt(arr = new TObjArray(kN), kSigm);
+  arr->SetName("Resolution");
   Int_t ih = 0;
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     for(Int_t it=1; it<=fAt->GetNbins(); it++){
@@ -342,6 +350,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   }
 
   fContainer->AddAt(arr = new TObjArray(kN), kMean);
+  arr->SetName("Systematics");
   ih = 0;
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     for(Int_t it=1; it<=fAt->GetNbins(); it++){
@@ -433,7 +442,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
   TH2 *h2 = 0x0; 
   if(!fResults){
     TGraphErrors *g = 0x0;
-    fResults = new TObjArray(sizeof(AliTRDclusterResolution::EResultContainers));
+    fResults = new TObjArray(sizeof(AliTRDclusterResolution::EResultContainer));
     fResults->SetOwner();
     fResults->AddAt(arr = new TObjArray(3), kQRes);
     arr->SetOwner();

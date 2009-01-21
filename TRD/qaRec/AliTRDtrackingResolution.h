@@ -27,13 +27,13 @@ class AliTRDtrackingResolution : public AliTRDrecoTask
 {
 public:
   enum{
-    kCluster        = 0
+    kCluster        = 0 // cluster - track
     ,kTrackletY     = 1 // tracklet - track y pools
     ,kTrackletPhi   = 2 // tracklet - track angular pools residuals
-    ,kMCcluster     = 3/*5*/
-    ,kMCtrackletY   = 4/*6*/
-    ,kMCtrackletZ   = 5/*6*/
-    ,kMCtrackletPhi = 6/*7*/
+    ,kMCcluster     = 3 // cluster - mc residuals/systematics
+    ,kMCtrackletY   = 4 // tracklet - mc y resolution/systematics
+    ,kMCtrackletZ   = 5 // tracklet - mc z resolution/systematics (pad row cross)
+    ,kMCtrackletPhi = 6 // tracklet - mc phi resolution/systematics
     ,kMCtrackY      = 7 // Kalman Y resolution
     ,kMCtrackZ      = 8 // Kalman Z resolution
     ,kMCtrackPt     = 9 // Kalman Pt resolution
@@ -78,12 +78,11 @@ private:
   TObjArray           *fGraphM;         //! result holder - mean values
 
   // calibration containers
-  TObjArray           *fClResiduals;    //!
-  TObjArray           *fTrkltResiduals;    //!
-  TObjArray           *fTrkltPhiResiduals;    //!
-  TObjArray           *fClResolution;   //!
-  TObjArray           *fTrkltResolution;//!
+  TObjArray           *fCl;     //! cluster2track calib
+  TObjArray           *fTrklt;  //! tracklet2track calib
+  TObjArray           *fMCcl;   //! cluster2mc calib
+  TObjArray           *fMCtrklt;//! tracklet2mc calib
   
-  ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
+  ClassDef(AliTRDtrackingResolution, 1) // TRD tracking resolution task
 };
 #endif

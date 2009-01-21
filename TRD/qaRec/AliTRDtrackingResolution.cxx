@@ -94,11 +94,10 @@ AliTRDtrackingResolution::AliTRDtrackingResolution()
   ,fGeo(0x0)
   ,fGraphS(0x0)
   ,fGraphM(0x0)
-  ,fClResiduals(0x0)
-  ,fTrkltResiduals(0x0)
-  ,fTrkltPhiResiduals(0x0)
-  ,fClResolution(0x0)
-  ,fTrkltResolution(0x0)
+  ,fCl(0x0)
+  ,fTrklt(0x0)
+  ,fMCcl(0x0)
+  ,fMCtrklt(0x0)
 {
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
@@ -106,11 +105,10 @@ AliTRDtrackingResolution::AliTRDtrackingResolution()
 
   InitFunctorList();
 
-  DefineOutput(1+kCluster, TObjArray::Class());
-  DefineOutput(1+kTrackletY, TObjArray::Class());
-  DefineOutput(1+kTrackletPhi, TObjArray::Class());
-  DefineOutput(1+kMCcluster, TObjArray::Class());
-  DefineOutput(1+kMCtrackletY, TObjArray::Class());
+  DefineOutput(1, TObjArray::Class()); // cluster2track
+  DefineOutput(2, TObjArray::Class()); // tracklet2track
+  DefineOutput(3, TObjArray::Class()); // cluster2mc
+  DefineOutput(4, TObjArray::Class()); // tracklet2mc
 }
 
 //________________________________________________________
@@ -121,14 +119,10 @@ AliTRDtrackingResolution::~AliTRDtrackingResolution()
   delete fGeo;
   delete fReconstructor;
   if(gGeoManager) delete gGeoManager;
-  if(fClResiduals){fClResiduals->Delete(); delete fClResiduals;}
-  if(fTrkltResiduals){fTrkltResiduals->Delete(); delete fTrkltResiduals;}
-  if(fTrkltPhiResiduals){fTrkltPhiResiduals->Delete(); delete fTrkltPhiResiduals;}
-  if(fClResolution){
-    fClResolution->Delete(); 
-    delete fClResolution;
-  }
-  if(fTrkltResolution){fTrkltResolution->Delete(); delete fTrkltResolution;}
+  if(fCl){fCl->Delete(); delete fCl;}
+  if(fTrklt){fTrklt->Delete(); delete fTrklt;}
+  if(fMCcl){fMCcl->Delete(); delete fMCcl;}
+  if(fMCtrklt){fMCtrklt->Delete(); delete fMCtrklt;}
 }
 
 
@@ -140,34 +134,30 @@ void AliTRDtrackingResolution::CreateOutputObjects()
 
   fContainer = Histos();
 
-  fClResiduals = new TObjArray();
-  fClResiduals->SetOwner(kTRUE);
-  fTrkltResiduals = new TObjArray();
-  fTrkltResiduals->SetOwner(kTRUE);
-  fTrkltPhiResiduals = new TObjArray();
-  fTrkltPhiResiduals->SetOwner(kTRUE);
-  fClResolution = new TObjArray();
-  fClResolution->SetOwner(kTRUE);
-  fTrkltResolution = new TObjArray();
-  fTrkltResolution->SetOwner(kTRUE);
+  fCl = new TObjArray();
+  fCl->SetOwner(kTRUE);
+  fTrklt = new TObjArray();
+  fTrklt->SetOwner(kTRUE);
+  fMCcl = new TObjArray();
+  fMCcl->SetOwner(kTRUE);
+  fMCtrklt = new TObjArray();
+  fMCtrklt->SetOwner(kTRUE);
 }
 
 //________________________________________________________
 void AliTRDtrackingResolution::Exec(Option_t *opt)
 {
-  fClResiduals->Delete();
-  fTrkltResiduals->Delete();
-  fTrkltPhiResiduals->Delete();
-  fClResolution->Delete();
-  fTrkltResolution->Delete();
+  fCl->Delete();
+  fTrklt->Delete();
+  fMCcl->Delete();
+  fMCtrklt->Delete();
 
   AliTRDrecoTask::Exec(opt);
 
-  PostData(1+kCluster, fClResiduals);
-  PostData(1+kTrackletY, fTrkltResiduals);
-  PostData(1+kTrackletPhi, fTrkltPhiResiduals);
-  PostData(1+kMCcluster, fClResolution);
-  PostData(1+kMCtrackletY, fTrkltResolution);
+  PostData(1, fCl);
+  PostData(2, fTrklt);
+  PostData(3, fMCcl);
+  PostData(4, fMCtrklt);
 }
 
 //________________________________________________________
@@ -224,7 +214,7 @@ TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
         if (d > 0.25) d  = 0.5 - d;
 
 /*        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-        fClResiduals->Add(clInfo);
+        fCl->Add(clInfo);
         clInfo->SetCluster(c);
         clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
         clInfo->SetResolution(dy);
@@ -448,7 +438,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       d -= ((Int_t)(2 * d)) / 2.0;
       if (d > 0.25) d  = 0.5 - d;
       AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-      fClResolution->Add(clInfo);
+      fMCcl->Add(clInfo);
       clInfo->SetCluster(c);
       clInfo->SetMC(pdg, label);
       clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);

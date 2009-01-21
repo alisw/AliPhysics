@@ -45,7 +45,7 @@
 #include "TGridCollection.h"
 #include "TGridResult.h"
 
-#include "AliMagFMaps.h"
+#include "AliMagFCheb.h"
 #include "AliTracker.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
@@ -98,9 +98,13 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
-  // initialize magnetic field. We should use the GRP !
-  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+
+  // initialize magnetic field. TODO We should use the GRP !
+  AliMagFCheb *field = 0x0;
+  field = new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG, kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  //field = new AliMagFCheb("Maps","Maps", 2, 0., 10., AliMagFCheb::k2kG);
   AliTracker::SetFieldMap(field, kTRUE);
+
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
@@ -237,8 +241,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
 
     // Create output containers for calibration tasks
-    const Int_t nc = 5;
-    const Char_t *cn[nc] = {"Cl", "TrkltY", "TrkltPhi", "ClMC", "TrkltYMC"}; 
+    const Int_t nc = 4;
+    const Char_t *cn[nc] = {"Cl", "Trklt", "MC_Cl", "MC_Trklt"}; 
     AliAnalysisDataContainer *co[nc]; 
     for(Int_t ic = 0; ic<nc; ic++){
       co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
@@ -253,11 +257,11 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
       mgr->ConnectInput(task, 0, co[0]);
       mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   
-      mgr->AddTask(task = new AliTRDclusterResolution());
+      mgr->AddTask(task = new AliTRDclusterResolution("ClErrParamMC"));
       taskPtr[(Int_t)kClErrParam+1] = task;
       ((AliTRDclusterResolution*)task)->SetExB();
-      mgr->ConnectInput(task, 0, co[3]);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("%sMC", task->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sMC.root", task->GetName())));
+      mgr->ConnectInput(task, 0, co[2]);
+      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
     }
   }
 

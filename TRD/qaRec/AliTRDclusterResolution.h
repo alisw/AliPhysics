@@ -17,7 +17,7 @@ public:
     ,kND = 5
     ,kN  = kND*kNTB
   };
-  enum EResultContainers { // results containers
+  enum EResultContainer { // results container type
     kQRes   = 0
     ,kCenter= 1
     ,kSigm  = 2
@@ -33,7 +33,7 @@ public:
     ,kProcSigma     = 3
     ,kProcMean      = 4
   };
-  AliTRDclusterResolution();
+  AliTRDclusterResolution(const char *name="ClErrParam");
   virtual ~AliTRDclusterResolution();
 
   void    ConnectInputData(Option_t *);
