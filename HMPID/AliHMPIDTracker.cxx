@@ -215,8 +215,6 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       continue;                                                                     
     }
               
-    Printf(" Track n. %i Chamber intersected %i dist %f index %i cluster ch %i",iTrk,ipCh,dmin,index,bestHmpCluster->Ch());
-
     Int_t cluSiz = bestHmpCluster->Size();
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
     pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
@@ -234,10 +232,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(!isMatched) continue;                                                                    // If matched continue...
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,0.1,0);
-    Printf(" status of thracking update %i",isOk);
     if(!isOk) continue;
     pTrk->SetOuterParam(hmpTrk,AliESDtrack::kHMPIDout);                 
-    Printf("ok for reconstruction...");
     
     /*    
     Int_t indexAll = 0;
