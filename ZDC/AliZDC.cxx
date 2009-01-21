@@ -257,9 +257,8 @@ void AliZDC::Hits2SDigits()
 
   // Event loop
   for(Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    Float_t pmCZNC=0, pmCZPC=0, pmCZNA=0, pmCZPA=0, pmZEM1 = 0, pmZEM2 = 0;
-    Float_t pmQZNC[4], pmQZPC[4], pmQZNA[4], pmQZPA[4];
-    for(Int_t i = 0; i < 4; i++) pmQZNC[i] = pmQZPC[i] =  pmQZNA[i] = pmQZPA[i] = 0;
+    Float_t pmZNC[5], pmZPC[5], pmZNA[5], pmZPA[5], pmZEM1=0., pmZEM2=0.;
+    for(Int_t i=0; i<4; i++) pmZNC[i] = pmZPC[i] =  pmZNA[i] = pmZPA[i] = 0;
 
     runLoader->GetEvent(iEvent);
     TTree* treeH = fLoader->TreeH();
@@ -271,41 +270,43 @@ void AliZDC::Hits2SDigits()
     for(Int_t itrack = 0; itrack < ntracks; itrack++) {
       treeH->GetEntry(itrack);
       for(AliZDCHit* zdcHit = (AliZDCHit*)FirstHit(-1); zdcHit;
-                      zdcHit = (AliZDCHit*)NextHit()) { 
+          zdcHit = (AliZDCHit*)NextHit()) { 
 		      
 	sector[0] = zdcHit->GetVolume(0);
 	sector[1] = zdcHit->GetVolume(1);
-	if((sector[1] < 1) || (sector[1] > 5)) {
-	  Error("Hits2SDigits", "sector[0] = %d, sector[1] = %d", 
-		sector[0], sector[1]);
+	if((sector[1] < 1) || (sector[1]>5)) {
+	  Error("Hits2SDigits", "sector[0] = %d, sector[1] = %d", sector[0], sector[1]);
 	  continue;
 	}
 	Float_t lightQ = zdcHit->GetLightPMQ();
 	Float_t lightC = zdcHit->GetLightPMC();
 	trackTime = zdcHit->GetTrackTOF();
+	// Ch. debug
+	//printf("\t det %d vol %d trackTOF %f lightQ %1.0f lightC %1.0f\n",
+	//	sector[0], sector[1], trackTime, lightQ, lightC);
      
 	if(sector[0] == 1) { //ZNC 
-	  pmCZNC += lightC;
-	  pmQZNC[sector[1]-1] += lightQ;
+	  pmZNC[0] += lightC;
+	  pmZNC[sector[1]] += lightQ;
 	} 
 	else if(sector[0] == 2) { //ZPC 
-	  pmCZPC += lightC;
-	  pmQZPC[sector[1]-1] += lightQ;
+	  pmZPC[0] += lightC;
+	  pmZPC[sector[1]] += lightQ;
 	} 
 	else if(sector[0] == 3) { //ZEM 
 	  if(sector[1] == 1) pmZEM1 += lightC;
 	  else pmZEM2 += lightQ;
 	}
 	if(sector[0] == 4) { //ZNA 
-	  pmCZNA += lightC;
-	  pmQZNA[sector[1]-1] += lightQ;
+	  pmZNA[0] += lightC;
+	  pmZNA[sector[1]] += lightQ;
 	} 
 	else if(sector[0] == 5) { //ZPA 
-	  pmCZPA += lightC;
-	  pmQZPA[sector[1]-1] += lightQ;
+	  pmZPA[0] += lightC;
+	  pmZPA[sector[1]] += lightQ;
 	} 
       }//Hits loop
-    }
+    }//Tracks loop
 
     // create the output tree
     fLoader->MakeTree("S");
@@ -315,55 +316,74 @@ void AliZDC::Hits2SDigits()
 
     // Create sdigits for ZNC
     sector[0] = 1; // Detector = ZNC
-    sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZNC, trackTime);
-    if(pmCZNC > 0) treeS->Fill();
-    for(Int_t j = 0; j < 4; j++) {
-      sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZNC[j], trackTime);
-      if(pmQZNC[j] > 0) treeS->Fill();
+    for(Int_t j = 0; j < 5; j++) {
+      sector[1] = j; 
+      if(pmZNC[j]>0){
+        new(psdigit) AliZDCSDigit(sector, pmZNC[j], trackTime);
+        treeS->Fill();
+	// Ch. debug
+	//printf("\t SDigit created: det %d quad %d pmZNC[%d] %1.0f trackTOF %f\n",
+	//	sector[0], sector[1], j, pmZNC[j], trackTime);
+      }
     }
   
     // Create sdigits for ZPC
     sector[0] = 2; // Detector = ZPC
-    sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZPC, trackTime);
-    if(pmCZPC > 0) treeS->Fill();
-    for(Int_t j = 0; j < 4; j++) {
-      sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZPC[j], trackTime);
-      if(pmQZPC[j] > 0) treeS->Fill();
+    for(Int_t j = 0; j < 5; j++) {
+      sector[1] = j; // Towers PM ADCs
+      if(pmZPC[j]>0){
+        new(psdigit) AliZDCSDigit(sector, pmZPC[j], trackTime);
+        treeS->Fill();
+	// Ch. debug
+	//printf("\t SDigit created: det %d quad %d pmZPC[%d] %1.0f trackTOF %f\n",
+	//	sector[0], sector[1], j, pmZPC[j], trackTime);
+      }
     }
 
     // Create sdigits for ZEM
     sector[0] = 3; 
     sector[1] = 1; // Detector = ZEM1
-    new(psdigit) AliZDCSDigit(sector, pmZEM1, trackTime);
-    if(pmZEM1 > 0) treeS->Fill();
+    if(pmZEM1>0){ 
+      new(psdigit) AliZDCSDigit(sector, pmZEM1, trackTime);
+      treeS->Fill();
+      // Ch. debug
+      //printf("\t SDigit created: det %d quad %d pmZEM1 %1.0f trackTOF %f\n",
+      //	sector[0], sector[1], pmZEM1, trackTime);
+    }
     sector[1] = 2; // Detector = ZEM2
-    new(psdigit) AliZDCSDigit(sector, pmZEM2, trackTime);
-    if(pmZEM2 > 0) treeS->Fill();
+    if(pmZEM2>0){
+      new(psdigit) AliZDCSDigit(sector, pmZEM2, trackTime);
+      treeS->Fill();
+      // Ch. debug
+      //printf("\t SDigit created: det %d quad %d pmZEM2 %1.0f trackTOF %f\n",
+      //	sector[0], sector[1], pmZEM2, trackTime);
+    }
 
     // Create sdigits for ZNA
     sector[0] = 4; // Detector = ZNA
-    sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZNA, trackTime);
-    if(pmCZNA > 0) treeS->Fill();
-    for(Int_t j = 0; j < 4; j++) {
-      sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZNA[j], trackTime);
-      if(pmQZNA[j] > 0) treeS->Fill();
+    for(Int_t j = 0; j < 5; j++) {
+      sector[1] = j; // Towers PM ADCs
+      if(pmZNA[j]>0){
+        new(psdigit) AliZDCSDigit(sector, pmZNA[j], trackTime);
+        treeS->Fill();
+	// Ch. debug
+	//printf("\t SDigit created: det %d quad %d pmZNA[%d] %1.0f trackTOF %f\n",
+	//	sector[0], sector[1], j, pmZNA[j], trackTime);
+      }
     }
   
     // Create sdigits for ZPA
     sector[0] = 5; // Detector = ZPA
     sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZPA, trackTime);
-    if(pmCZPA > 0) treeS->Fill();
-    for(Int_t j = 0; j < 4; j++) {
-      sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZPA[j], trackTime);
-      if(pmQZPA[j] > 0) treeS->Fill();
+    for(Int_t j = 0; j < 5; j++) {
+      sector[1] = j; // Towers PM ADCs
+      if(pmZPA[j]>0){
+        new(psdigit) AliZDCSDigit(sector, pmZPA[j], trackTime);
+        treeS->Fill();
+	// Ch. debug
+	//printf("\t SDigit created: det %d quad %d pmZPA[%d] %1.0f trackTOF %f\n",
+	//	sector[0], sector[1], j, pmZPA[j], trackTime);
+      }
     }
 
     // write the output tree
