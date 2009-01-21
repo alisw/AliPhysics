@@ -29,7 +29,8 @@ ClassImp(AliZDCSDigit)
 
 //____________________________________________________________________________
 AliZDCSDigit::AliZDCSDigit() :
-  fLightPM(0)
+  fLightPM(0),
+  fTrackTime(0)
 {
   // Default constructor 
   
@@ -38,8 +39,9 @@ AliZDCSDigit::AliZDCSDigit() :
 }
 
 //____________________________________________________________________________
-AliZDCSDigit::AliZDCSDigit(Int_t* sector, Float_t lightPM) :
-  fLightPM(lightPM)
+AliZDCSDigit::AliZDCSDigit(Int_t* sector, Float_t lightPM, Float_t trackTime) :
+  fLightPM(lightPM),
+  fTrackTime(trackTime)
 {  
   // Constructor 
  

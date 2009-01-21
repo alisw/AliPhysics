@@ -8,7 +8,7 @@
 ///_________________________________________________________________________
 ///
 ///
-///   ZDC summable digit = Cerenkov light for each PM 
+///   ZDC summable digit = Cerenkov light for each PM + time info
 ///
 ///_________________________________________________________________________
 
@@ -19,20 +19,22 @@ class AliZDCSDigit : public TObject {
  public:
   
   AliZDCSDigit() ;
-  AliZDCSDigit(Int_t* sector, Float_t lightPM);
+  AliZDCSDigit(Int_t* sector, Float_t lightPM, Float_t trackTime);
   virtual ~AliZDCSDigit() {}
 
   // Getters 
   Int_t   GetSector(Int_t i) const {return fSector[i];}
   Float_t GetLightPM()       const {return fLightPM;}
+  Float_t GetTrackTime()     const {return fTrackTime;}
 
  protected:
 
   //Data members
   Int_t   fSector[2];         // Detector and tower in which light is produced
   Float_t fLightPM;           // Cerenkov light seen by the PM
+  Float_t fTrackTime;	      // Track TOF propagated from hits
 
-  ClassDef(AliZDCSDigit, 1)   // Summable digit in ZDC 
+  ClassDef(AliZDCSDigit, 2)   // Summable digit in ZDC 
 
 } ;
 
