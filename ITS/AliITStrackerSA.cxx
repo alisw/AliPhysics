@@ -474,10 +474,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	  if(!tr2) continue;
 	  //printf("-NPOINTS fit: %d\n",tr2->GetNumberOfClusters());	  
 
-	  
-	  AliESDtrack outtrack;
-	  outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
-	  event->AddTrack(&outtrack);
+	  StoreTrack(tr2,event);
 	  ntrack++;
 	}
 	delete trs;
@@ -550,9 +547,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	  if(!tr2) continue;
 	  //printf("--NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	  
-	  AliESDtrack outtrack;
-	  outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
-	  event->AddTrack(&outtrack);
+	  StoreTrack(tr2,event);
 	  ntrack++;
 	  
 	}   
@@ -625,9 +620,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    if(!tr2) continue;
 	    //printf("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	    
-	    AliESDtrack outtrack;
-	    outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
-	    event->AddTrack(&outtrack);
+	    StoreTrack(tr2,event);
 	    ntrack++;
 	    
 	  }   
@@ -700,9 +693,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    if(!tr2) continue;
 	    //printf("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	    
-	    AliESDtrack outtrack;
-	    outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
-	    event->AddTrack(&outtrack);
+	    StoreTrack(tr2,event);
 	    ntrack++;
 	    
 	  }   
@@ -1007,6 +998,21 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 
 }
 
+//_______________________________________________________
+void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const 
+{
+  //
+  // Add new track to the ESD
+  //
+  AliESDtrack outtrack;
+  outtrack.UpdateTrackParams(t,AliESDtrack::kITSin);
+  for(Int_t i=0;i<12;i++) {
+    outtrack.SetITSModuleIndex(i,t->GetModuleIndex(i));
+  }
+  event->AddTrack(&outtrack);
+
+  return;
+}
 
 
 //_______________________________________________________

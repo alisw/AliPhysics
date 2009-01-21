@@ -43,6 +43,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t FindTracks(AliESDEvent* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
+  void StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const; 
   Int_t FindTrackLowChiSquare() const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
@@ -121,4 +122,3 @@ class AliITStrackerSA : public AliITStrackerMI {
 };
 
 #endif
-
