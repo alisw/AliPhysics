@@ -74,5 +74,7 @@
 #pragma link C++ class AliTPCQAChecker+;
 #pragma link C++ class AliExternalComparison+;
 #pragma link C++ class AliTPCkalmanTime+;
+#pragma link C++ class AliTPCPointCorrection+;
+#pragma link C++ class AliESDcosmic+;
 #endif
 
