@@ -36,9 +36,9 @@ public:
     return AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass());
   }
   Bool_t PropagateTo(Double_t xr, Double_t d, Double_t x0=AliITSRecoParam::GetX0Air());
-  Bool_t PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOverX0, Double_t &xTimesRho);
-  Bool_t PropagateToTGeo(Double_t xToGo, Int_t nstep=1) {
-    Double_t dummy1,dummy2; return PropagateToTGeo(xToGo,nstep,dummy1,dummy2);
+  Bool_t PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOverX0, Double_t &xTimesRho, Bool_t addTime=kTRUE);
+  Bool_t PropagateToTGeo(Double_t xToGo, Int_t nstep=1, Bool_t addTime=kTRUE) {
+    Double_t dummy1,dummy2; return PropagateToTGeo(xToGo,nstep,dummy1,dummy2,addTime);
   }
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Bool_t Update(const AliCluster *cl, Double_t chi2, Int_t i);

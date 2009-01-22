@@ -2348,7 +2348,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
   } // end loop on layers
 
-  if (!track->Propagate(xx)) return kFALSE;
+  if (!track->PropagateTo(xx,0.,0.)) return kFALSE;
 
   return kTRUE;
 }
@@ -4953,6 +4953,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
   Int_t nsteps=1;
   Double_t rOld,xOld;
 
+  Bool_t addTime = kFALSE;
   switch(mode) {
   case 0:
     xOverX0 = fgLayers[layerindex].GetThickness(t->GetY(),t->GetZ(),x0);
@@ -4967,7 +4968,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
     if (!t->GetLocalXat(rOld,xOld)) return 0;
     if (!t->Propagate(xOld)) return 0; // back before material (no correction)
     nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
-    if (!t->PropagateToTGeo(xToGo,nsteps)) return 0; // cross the material and apply correction
+    if (!t->PropagateToTGeo(xToGo,nsteps,addTime)) return 0; // cross the material and apply correction
     break;
   case 2:
     if(fxOverX0Layer[layerindex]<0) BuildMaterialLUT("Layers");  

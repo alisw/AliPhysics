@@ -190,7 +190,7 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
 }
 
 //____________________________________________________________________________
-Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOverX0, Double_t &xTimesRho) {
+Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOverX0, Double_t &xTimesRho, Bool_t addTime) {
   //-------------------------------------------------------------------
   //  Propagates the track to a reference plane x=xToGo in n steps.
   //  These n steps are only used to take into account the curvature.
@@ -219,7 +219,7 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOv
     }
   }
 
-  if (IsStartedTimeIntegral() && GetX()>startx) {
+  if (addTime && IsStartedTimeIntegral() && GetX()>startx) {
     Double_t l2 = ( (GetX()-startx)*(GetX()-startx) +
 		    (GetY()-starty)*(GetY()-starty) +
 		    (GetZ()-startz)*(GetZ()-startz) );
