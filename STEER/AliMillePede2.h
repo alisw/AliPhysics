@@ -1,0 +1,278 @@
+#ifndef ALIMILLEPEDE2_H
+#define ALIMILLEPEDE2_H
+
+#include <TObject.h>
+#include <TTree.h>
+#include <TFile.h>
+#include <TMatrixD.h>
+#include "AliSymMatrix.h"
+#include "AliMatrixSparse.h"
+#include "AliMinResSolve.h"
+class AliLog;
+class TStopwatch;
+
+/**********************************************************************************************/
+/* AliMillePedeRecords: class to store the data of single track processing                    */
+/* Format: for each measured point the data is stored consequtively                           */
+/* INDEX                                                      VALUE                           */
+/* -1                                                         residual                        */
+/* Local_param_id                                             dResidual/dLocal_param          */
+/* ...                                                        ...                             */
+/* -2                                                         weight of the measurement       */
+/* Global_param_od                                            dResidual/dGlobal_param         */
+/* ...                                                        ...                             */
+/*                                                                                            */
+/* The records for all processed tracks are stored in the temporary tree in orgder to be      */
+/* reused for multiple iterations of MillePede                                                */
+/*                                                                                            */
+/**********************************************************************************************/
+
+class AliMillePedeRecord : public TObject
+{
+ public:
+  AliMillePedeRecord();
+  AliMillePedeRecord(const AliMillePedeRecord& src);
+  AliMillePedeRecord& operator=(const AliMillePedeRecord& rhs);
+  //
+  virtual    ~AliMillePedeRecord();
+  void       Reset()                                             {fSize = 0;}
+  void       Print(const Option_t *opt="")                 const;
+  //
+  Int_t      GetSize()                                     const {return fSize;}
+  Int_t     *GetIndex()                                    const {return fIndex;}
+  Int_t      GetIndex(int i)                               const {return fIndex[i];}
+  //
+  void       GetIndexValue(int i,int &ind,double &val)     const {ind=fIndex[i]; val=fValue[i];}
+  void       AddIndexValue(int ind, double val);
+  void       AddResidual(double val)                             {AddIndexValue(-1,val);}
+  void       AddWeight(double val)                               {AddIndexValue(-2,val);}
+  Bool_t     IsResidual(int i)                             const {return fIndex[i]==-1;}
+  Bool_t     IsWeight(int i)                               const {return fIndex[i]==-2;}
+  //
+  Double_t  *GetValue()                                    const {return fValue;}
+  Double_t   GetValue(int i)                               const {return fValue[i];}
+  //
+ protected:
+  Int_t      GetBufferSize()                               const {return GetUniqueID();}
+  void       SetBufferSize(int sz)                               {SetUniqueID(sz);}
+  void       Expand(int bfsize);
+  //
+ protected:
+  Int_t      fSize;                             // size of the record
+  Int_t   *  fIndex;                            //[fSize] index of variables
+  Double_t*  fValue;                            //[fSize] array of values: derivs,residuals
+  //
+  ClassDef(AliMillePedeRecord,1)                // Record of track residuals and local/global deriavtives
+};
+
+inline void  AliMillePedeRecord::AddIndexValue(int ind, double val) 
+{
+  if (fSize>=GetBufferSize()) Expand(2*(fSize+1));
+  fIndex[fSize]=ind; 
+  fValue[fSize++]=val;
+}
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+
+class AliMillePede2: public TObject
+{
+ public:
+  //
+  enum {gkFailed,gkInvert,gkMinRes};    // used global matrix solution methods
+  //
+  AliMillePede2();
+  AliMillePede2(const AliMillePede2& src);
+  virtual ~AliMillePede2();
+  AliMillePede2& operator=(const AliMillePede2& )             {printf("Dummy\n"); return *this;}
+  //
+  Int_t                InitMille(int nGlo, int nLoc, Int_t lNStdDev=-1,double lResCut=-1., double lResCutInit=-1.);
+  //
+  Int_t                GetNGloPar()                     const {return fNGloPar;}
+  Int_t                GetNLocPar()                     const {return fNLocPar;}
+  Long_t               GetNLocalEquations()             const {return fNLocEquations;}
+  Int_t                GetCurrentIteration()            const {return fIter;}
+  Int_t                GetNMaxIterations()              const {return fMaxIter;}
+  Int_t                GetNStdDev()                     const {return fNStdDev;} 
+  Int_t                GetNGlobalConstraints()          const {return fNGloConstraints;}
+  Long_t               GetNLocalFits()                  const {return fNLocFits;}
+  Long_t               GetNLocalFitsRejected()          const {return fNLocFitsRejected;}
+  Int_t                GetNGlobalsFixed()               const {return fNGloFix;}
+  Int_t                GetGlobalSolveStatus()           const {return fGloSolveStatus;}
+  Float_t              GetChi2CutFactor()               const {return fChi2CutFactor;}
+  Float_t              GetChi2CutRef()                  const {return fChi2CutRef;}
+  Float_t              GetResCurInit()                  const {return fResCutInit;}
+  Float_t              GetResCut()                      const {return fResCut;}
+  Int_t                GetMinPntValid()                 const {return fMinPntValid;}
+  Int_t                GetProcessedPoints(Int_t i)      const {return fProcPnt[i];}
+  Int_t*               GetProcessedPoints()             const {return fProcPnt;}
+  //
+  AliMatrixSq*         GetGlobalMatrix()                const {return fMatCGlo;}
+  Double_t*            GetGlobals()                     const {return fVecBGlo;}
+  Double_t*            GetDeltaPars()                   const {return fDeltaPar;}
+  Double_t*            GetInitPars()                    const {return fInitPar;}
+  Double_t*            GetSigmaPars()                   const {return fSigmaPar;}
+  Bool_t*              GetIsLinear()                    const {return fIsLinear;}        
+  Double_t             GetGlobal(Int_t i)               const {return fVecBGlo[i];}
+  Double_t             GetInitPar(Int_t i)              const {return fInitPar[i];}
+  Double_t             GetSigmaPar(Int_t i)             const {return fSigmaPar[i];}
+  Bool_t               GetIsLinear(Int_t i)             const {return fIsLinear[i];}
+  static Bool_t        IsGlobalMatSparse()                    {return fgIsMatGloSparse;}
+  //
+  void                 SetNGloPar(Int_t n)                    {fNGloPar = n;}
+  void                 SetNLocPar(Int_t n)                    {fNLocPar = n;}
+  void                 SetNMaxIterations(Int_t n=10)          {fMaxIter = n;}
+  void                 SetNStdDev(Int_t n)                    {fNStdDev = n;}
+  void                 SetChi2CutFactor(Float_t v)            {fChi2CutFactor = v;}
+  void                 SetChi2CutRef(Float_t v)               {fChi2CutRef = v;}
+  void                 SetResCurInit(Float_t v)               {fResCutInit = v;}
+  void                 SetResCut(Float_t v)                   {fResCut = v;}
+  void                 SetMinPntValid(Int_t n)                {fMinPntValid = n;}
+  static void          SetGlobalMatSparse(Bool_t v=kTRUE)     {fgIsMatGloSparse = v;}
+  //
+  void                 SetInitPars(const Double_t* par)       {memcpy(fInitPar,par,fNGloPar*sizeof(Double_t));}
+  void                 SetSigmaPars(const Double_t* par)      {memcpy(fSigmaPar,par,fNGloPar*sizeof(Double_t));}
+  void                 SetInitPar(Int_t i,Double_t par)       {fInitPar[i] = par;;}
+  void                 SetSigmaPar(Int_t i,Double_t par)      {fSigmaPar[i] = par;}
+  //
+  Int_t                GlobalFit(Double_t *par=0, Double_t *error=0, Double_t *pull=0);
+  Int_t                GlobalFitIteration();
+  Int_t                SolveGlobalMatEq();
+  static void          SetMinResPrecondType(Int_t tp=0)       {fgMinResCondType = tp;}
+  static void          SetMinResTol(Double_t val=1e-12)       {fgMinResTol = val;}
+  static void          SetMinResMaxIter(Int_t val=2000)       {fgMinResMaxIter = val;}
+  static void          SetIterSolverType(Int_t val=AliMinResSolve::kSolMinRes) {fgIterSol = val;}
+  static void          SetNKrylovV(Int_t val=60)              {fgNKrylovV = val;}
+  //
+  static Int_t         GetMinResPrecondType()                 {return fgMinResCondType;}
+  static Double_t      GetMinResTol()                         {return fgMinResTol;}
+  static Int_t         GetMinResMaxIter()                     {return fgMinResMaxIter;}
+  static Int_t         GetIterSolverType()                    {return fgIterSol;}
+  static Int_t         GetNKrylovV()                          {return fgNKrylovV;}
+  //
+  Double_t             GetParError(int iPar)           const;
+  Int_t                PrintGlobalParameters()         const;
+  //
+  //
+  Int_t                SetIterations(double lChi2CutFac);
+
+  //
+  // constraints
+  void                 SetGlobalConstraint(double *dergb, double val);
+  void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val);
+  //
+  // processing of the local measurement
+  void                 SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma);
+  void                 SetLocalEquation(int *indgb, double *dergb, int ngb, int *indlc, 
+					double *derlc,int nlc,double lMeas,double lSigma);
+  //
+  // manipilation with processed data and costraints records and its buffer
+  void                 SetDataRecFName(const char* flname)   {fDataRecFName = flname;}
+  const Char_t*        GetDataRecFName()               const {return fDataRecFName.Data();}
+  void                 SetConsRecFName(const char* flname)   {fConstrRecFName = flname;}
+  const Char_t*        GetConsRecFName()               const {return fConstrRecFName.Data();}
+
+  Bool_t               InitDataRecStorage(Bool_t read=kFALSE);
+  Bool_t               InitConsRecStorage(Bool_t read=kFALSE);
+  Bool_t               ImposeDataRecFile(const char* fname);
+  Bool_t               ImposeConsRecFile(const char* fname);
+  void                 CloseDataRecStorage();
+  void                 CloseConsRecStorage();
+  void                 ReadRecordData(Long_t recID);
+  void                 ReadRecordConstraint(Long_t recID);
+  Bool_t               ReadNextRecordData();
+  Bool_t               ReadNextRecordConstraint();
+  void                 SaveRecordData();
+  void                 SaveRecordConstraint();
+  void                 ResetConstraints();
+  AliMillePedeRecord*  GetRecord()                      const {return fRecord;}
+  //
+  Float_t              Chi2DoFLim(int nSig, int nDoF)   const;
+  //
+  // aliases for compatibility with millipede1
+  void                 SetParSigma(Int_t i,Double_t par)      {SetSigmaPar(i,par);}
+  void                 SetGlobalParameters(Double_t *par)     {SetInitPars(par);}
+  //
+ protected:
+  //
+  Int_t                LocalFit(double *localParams=0);
+  //
+ protected:
+  //
+  Int_t                 fNLocPar;                        // number of local parameters
+  Int_t                 fNGloPar;                        // number of global parameters
+  Int_t                 fNGloSize;                       // final size of the global matrix (NGloPar+NConstraints)
+  //
+  Long_t                fNLocEquations;                  // Number of local equations 
+  Int_t                 fIter;                           // Current iteration
+  Int_t                 fMaxIter;                        // Maximum number of iterations
+  Int_t                 fNStdDev;                        // Number of standard deviations for chi2 cut 
+  Int_t                 fNGloConstraints;                // Number of constraint equations
+  Long_t                fNLocFits;                       // Number of local fits
+  Long_t                fNLocFitsRejected;               // Number of local fits rejected
+  Int_t                 fNGloFix;                        // Number of globals fixed by user
+  Int_t                 fGloSolveStatus;                 // Status of global solver at current step
+  //
+  Float_t               fChi2CutFactor;                  // Cut factor for chi2 cut to accept local fit 
+  Float_t               fChi2CutRef;                     // Reference cut for chi2 cut to accept local fit 
+  Float_t               fResCutInit;                     // Cut in residual for first iterartion
+  Float_t               fResCut;                         // Cut in residual for other iterartiona
+  Int_t                 fMinPntValid;                    // min number of points for global to vary
+  //
+  Int_t                *fProcPnt;                        // N of processed points per global variable
+  Double_t             *fVecBLoc;                        // Vector B local (parameters) 
+  Double_t             *fDiagCGlo;                       // Initial diagonal elements of C global matrix
+  Double_t             *fVecBGlo;                        // Vector B global (parameters)
+  //
+  Double_t             *fInitPar;                        // Initial global parameters
+  Double_t             *fDeltaPar;                       // Variation of global parameters
+  Double_t             *fSigmaPar;                       // Sigma of allowed variation of global parameter
+  //
+  Bool_t               *fIsLinear;                       // Flag for linear parameters
+  Bool_t               *fConstrUsed;                     // Flag for used constraints
+  //
+  Int_t                *fGlo2CGlo;                       // global ID to compressed ID buffer
+  Int_t                *fCGlo2Glo;                       // compressed ID to global ID buffer
+  //
+  // Matrices
+  AliSymMatrix         *fMatCLoc;                        // Matrix C local
+  AliMatrixSq          *fMatCGlo;                        // Matrix C global
+  TMatrixD             *fMatCGloLoc;                     // Rectangular matrix C g*l 
+  //
+  // processed data record bufferization   
+  TString               fDataRecFName;                   // Name of File for data records               
+  AliMillePedeRecord   *fRecord;                         // Buffer of measurements records
+  TFile                *fDataRecFile;                    // File of processed measurements records
+  TTree                *fTreeData;                       // Tree of processed measurements records
+  //
+  TString               fConstrRecFName;                 // Name of File for constraints records               
+  TTree                *fTreeConstr;                     // Tree of constraint records
+  TFile                *fConsRecFile;                    // File of processed constraints records
+  Long_t                fCurrRecDataID;                  // ID of the current data record
+  Long_t                fCurrRecConstrID;                // ID of the current constraint record
+  //
+  static Bool_t         fgIsMatGloSparse;                // Type of the global matrix (sparse ...)
+  static Int_t          fgMinResCondType;                // Type of the preconditioner for MinRes method 
+  static Double_t       fgMinResTol;                     // Tolerance for MinRes solution
+  static Int_t          fgMinResMaxIter;                 // Max number of iterations for the MinRes method
+  static Int_t          fgIterSol;                       // type of iterative solution: MinRes or FGMRES
+  static Int_t          fgNKrylovV;                      // size of Krylov vectors buffer in FGMRES
+  //
+  ClassDef(AliMillePede2,0)
+};
+
+//_____________________________________________________________________________________________
+inline void AliMillePede2::ReadRecordData(Long_t recID)       {fTreeData->GetEntry(recID); fCurrRecDataID=recID;}
+
+//_____________________________________________________________________________________________
+inline void AliMillePede2::ReadRecordConstraint(Long_t recID) {fTreeConstr->GetEntry(recID); fCurrRecConstrID=recID;}
+
+//_____________________________________________________________________________________________
+inline void AliMillePede2::SaveRecordData()                   {fTreeData->Fill(); fRecord->Reset(); fCurrRecDataID++;}
+
+//_____________________________________________________________________________________________
+inline void AliMillePede2::SaveRecordConstraint()             {fTreeConstr->Fill(); fRecord->Reset();fCurrRecConstrID++;}
+
+#endif
