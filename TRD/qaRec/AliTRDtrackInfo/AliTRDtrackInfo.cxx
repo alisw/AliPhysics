@@ -379,6 +379,8 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     else SETBIT(status, 1);
     return kFALSE;
   }
+  if((pt=tr[1]->Pt()) < 1.e-3) return kFALSE;
+
   Double_t dx = tr[1]->LocalX() - tr[0]->LocalX();
   if(dx <= 0.){
     AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Track ref with wrong radial distances refX0[%6.3f] refX1[%6.3f]", tr[0]->LocalX(), tr[1]->LocalX()));
@@ -393,7 +395,6 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   y0   =  tr[1]->LocalY()/* - dydx*dx0*/;
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
-  pt   =  tr[1]->Pt();
   return kTRUE;
 }
 
@@ -412,6 +413,8 @@ void AliTRDtrackInfo::AliMCinfo::PropagateKalman(Double_t dx[kNTrackRefs], Doubl
 
   // Initialize TRD track to the first track reference
   AliTrackReference *tr = fTrackRefs[0];
+  if(tr->Pt()<1.e-3) return;
+
   AliTRDtrackV1 tt;
   Double_t xyz[3]={tr->X(),tr->Y(),tr->Z()};
   Double_t pxyz[3]={tr->Px(),tr->Py(),tr->Pz()};
