@@ -96,6 +96,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     AliESDtrack *track=fESD->GetTrack(i);
     TObject *calibObject=0;
     AliTPCseed *seed=0;
+    if (!friendTrack) continue;
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
