@@ -75,7 +75,7 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
