@@ -1,25 +1,19 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-TRACKING_CA:=	
 TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
-		tracking-ca/AliHLTTPCCADisplay.h  \
 		tracking-ca/AliHLTTPCCATracker.h \
 		tracking-ca/AliHLTTPCCAOutTrack.h  \
 		tracking-ca/AliHLTTPCCATrackParam.h \
-		tracking-ca/AliHLTTPCCATrackParam1.h \
 		tracking-ca/AliHLTTPCCATrackConvertor.h \
 		tracking-ca/AliHLTTPCCAParam.h     \
 		tracking-ca/AliHLTTPCCARow.h \
 		tracking-ca/AliHLTTPCCAGrid.h \
 		tracking-ca/AliHLTTPCCAHitArea.h \
 		tracking-ca/AliHLTTPCCAGBHit.h  \
-		tracking-ca/AliHLTTPCCAMCTrack.h  \
 		tracking-ca/AliHLTTPCCAMCPoint.h  \
 		tracking-ca/AliHLTTPCCAGBTrack.h  \
 		tracking-ca/AliHLTTPCCAGBTracker.h \
-		tracking-ca/AliHLTTPCCAPerformance.h \
-		tracking-ca/AliTPCtrackerCA.h \
 		tracking-ca/AliHLTTPCCATrackerComponent.h \
 		tracking-ca/AliHLTTPCCANeighboursFinder.h \
 		tracking-ca/AliHLTTPCCANeighboursCleaner.h \
@@ -27,7 +21,11 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCAUsedHitsInitialiser.h \
 		tracking-ca/AliHLTTPCCATrackletConstructor.h \
 		tracking-ca/AliHLTTPCCATrackletSelector.h \
-		tracking-ca/AliHLTTPCCALinksWriter.h
+		tracking-ca/AliHLTTPCCADisplay.h \
+		tracking-ca/AliHLTTPCCAMCTrack.h  \
+		tracking-ca/AliHLTTPCCAPerformance.h \
+		tracking-ca/AliTPCtrackerCA.h 
+#TRACKING_CA:=	
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCAgent.h \
