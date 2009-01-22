@@ -589,7 +589,10 @@ void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl,
   PrintClusters();
   AliInfo(Form("zlo[%f] zhi[%f]", zvals[0], zvals[1]));
   AliInfo(Form("zlo[%d] zhi[%d]", zlo, zhi));*/
-  
+
+  Double_t ylo = cond[0] - cond[2],
+           yhi = cond[0] + cond[2];
+  //printf("CTB : ylo[%f] yhi[%f]\n", ylo, yhi);
   //Preordering in Direction z saves a lot of loops (boundary checked)
   for(UChar_t z = zlo; z <= zhi; z++){
     UInt_t upper = (z < fNRows-1) ? fPositions[z+1] : fN;
@@ -600,8 +603,8 @@ void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl,
         return;	//Buffer filled
       }
       
-      if(fClusters[y]->GetY() > (cond[0] + cond[2])) break;			// Abbortion conditions!!!
-      if(fClusters[y]->GetY() < (cond[0] - cond[2])) continue;	// Too small
+      if(fClusters[y]->GetY() > yhi) break;			// Abbortion conditions!!!
+      if(fClusters[y]->GetY() < ylo) continue;	// Too small
       if(((Int_t)((fClusters[y]->GetZ())*1000) < (Int_t)(zvals[0]*1000)) || ((Int_t)((fClusters[y]->GetZ())*1000) > (Int_t)(zvals[1]*1000))){/*printf("exit z\n"); TODO*/ continue;}
       index[ncl] = y;
       ncl++;

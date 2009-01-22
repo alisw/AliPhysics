@@ -302,7 +302,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
-  Float_t p, pt, x0, y0, z0, dx, dy, dz, dydx, dzdx;
+  Float_t p, pt, xref, x0, y0, z0, dx, dy, dz, dydx, dzdx;
 
   if(fDebugLevel>=1){
     Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
@@ -332,18 +332,18 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     det = fTracklet->GetDetector();
     x0  = fTracklet->GetX0();
     //radial shift with respect to the MC reference (radial position of the pad plane)
-    dx  = x0 - fTracklet->GetXref();
-    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, pt, s)) continue; 
+    xref= fTracklet->GetXref();
+    dx  = x0 - xref;
+    if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, pt, s)) continue;
     // MC track position at reference radial position
-    Float_t yt = y0 - dx*dydx;
-    Float_t zt = z0 - dx*dzdx;
+    Float_t yt = y0 - (x0-xref)*dydx;
+    Float_t zt = z0 - (x0-xref)*dzdx;
     p = pt*(1.+dzdx*dzdx); // pt -> p
 
     // add Kalman residuals for y, z and pt
-    Float_t dxr= fTracklet->GetX0() - x0 + dx; 
-    Float_t yr = fTracklet->GetYref(0) - dxr*fTracklet->GetYref(1);
+    Float_t yr = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1);
     dy = yt - yr;
-    Float_t zr = fTracklet->GetZref(0) - dxr*fTracklet->GetZref(1);
+    Float_t zr = fTracklet->GetZref(0) - dx*fTracklet->GetZref(1);
     dz = zt - zr;
     Float_t tgl = fTracklet->GetTgl();
     Float_t ptr = fTracklet->GetMomentum()/(1.+tgl*tgl);
@@ -375,9 +375,11 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     tt.SetZref(0, z0);
     tt.SetZref(1, dzdx); 
     if(!tt.Fit(kTRUE)) continue;
+    xref= fTracklet->GetXref(); // the true one 
+    yt = y0 - (x0-xref)*dydx;
 
     // add tracklet residuals for y and dydx
-    Float_t yf = tt.GetYfit(0) - dxr*tt.GetYfit(1);
+    Float_t yf = tt.GetYat(xref);
     dy = yt - yf;
     Float_t dphi   = (tt.GetYfit(1) - dydx);
     dphi /= 1.- tt.GetYfit(1)*dydx;
@@ -426,8 +428,8 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       Float_t yc = y;
       Float_t zc = c->GetZ();
       dx = x0 - xc; 
-      Float_t yt = y0 - dx*dydx;
-      Float_t zt = z0 - dx*dzdx; 
+      yt = y0 - dx*dydx;
+      zt = z0 - dx*dzdx;
       dy = yt - (yc - tilt*(zc-zt));
 
       // Fill Histograms
@@ -444,7 +446,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
       clInfo->SetResolution(dy);
       clInfo->SetAnisochronity(d);
-      clInfo->SetDriftLength(dx);
+      clInfo->SetDriftLength(dx-.5*AliTRDgeometry::CamHght());
       clInfo->SetTilt(tilt);
 
       // Fill Debug Tree

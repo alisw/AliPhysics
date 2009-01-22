@@ -529,9 +529,8 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
     }
   }
 
-  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0,xrho,GetMass())) { 
-    return kFALSE;
-  }
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
+
 
   {
 
@@ -733,7 +732,7 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
   Double_t x      = GetX();
   Double_t p[2]   = { trklt->GetYat(x)
                     , trklt->GetZat(x) };
-  Double_t cov[3], covR[3], cov0[3];
+  Double_t cov[3]/*, covR[3], cov0[3]*/;
 
 //   printf("\tD[%3d] Ly[%d] Trk: x[%f] y[%f] z[%f]\n", trklt->GetDetector(), trklt->GetPlane(), GetX(), GetY(), GetZ());
 // //   
