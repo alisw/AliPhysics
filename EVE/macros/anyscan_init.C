@@ -1,4 +1,4 @@
-// $Id: NLT_trackcount_init.C 24927 2008-04-04 13:46:04Z mtadel $
+// $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -6,6 +6,9 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+// This macro has been cloned to visscan_init.C
+// This one will be removed soon and will not be updated any further.
 
 class AliEveMacroExecutor;
 
@@ -17,6 +20,7 @@ TEveGeoShape *gGeomGentle     = 0;
 TEveGeoShape *gGeomGentleRPhi = 0;
 TEveGeoShape *gGeomGentleRhoZ = 0;
 TEveGeoShape *gGeomGentleTRD  = 0;
+TEveGeoShape *gGeomGentleMUON = 0;
 
 TEveScene *gRPhiGeomScene  = 0;
 TEveScene *gRhoZGeomScene  = 0;
@@ -30,7 +34,10 @@ TEveViewer *g3DView   = 0;
 TEveViewer *gRPhiView = 0;
 TEveViewer *gRhoZView = 0;
 
-Bool_t gShowTRD = kFALSE;
+Bool_t gShowTRD      = kFALSE;
+Bool_t gShowMUON     = kTRUE;
+Bool_t gShowMUONRPhi = kFALSE;
+Bool_t gShowMUONRhoZ = kFALSE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
@@ -62,6 +69,10 @@ void anyscan_init()
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     gGeomGentleTRD = geom_gentle_trd();
   }
+  if (gShowMUON) {
+    TEveUtil::LoadMacro("geom_gentle_muon.C");
+    gGeomGentleMUON = geom_gentle_muon();
+  }
 
   // Scenes
 
@@ -90,8 +101,8 @@ void anyscan_init()
     gRPhiGeomScene->AddElement(a);
   }
   gRPhiMgr->ImportElements(gGeomGentleRPhi, gRPhiGeomScene);
-  if (gShowTRD)
-    gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
+  if (gShowTRD)      gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
+  if (gShowMUONRPhi) gRPhiMgr->ImportElements(gGeomGentleMUON, gRPhiGeomScene);
 
   gRhoZMgr = new TEveProjectionManager();
   gRhoZMgr->SetProjection(TEveProjection::kPT_RhoZ);
@@ -107,8 +118,8 @@ void anyscan_init()
     gRhoZGeomScene->AddElement(a);
   }
   gRhoZMgr->ImportElements(gGeomGentleRhoZ, gRhoZGeomScene);
-  if (gShowTRD)
-    gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
+  if (gShowTRD)      gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
+  if (gShowMUONRhoZ) gRhoZMgr->ImportElements(gGeomGentleMUON, gRhoZGeomScene);
 
   // Viewers
 

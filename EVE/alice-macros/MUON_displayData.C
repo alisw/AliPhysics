@@ -1,4 +1,4 @@
-// $Id: MUON_display.C 24485 2008-03-13 15:27:38Z mtadel $
+// $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -61,7 +61,7 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   g_fromRaw = fromRaw;
 
   TString dataPath = TString(AliEveEventManager::GetMaster()->GetTitle());
-  dataPath.Append("/rawmuon.root");
+  dataPath.Append("/raw.root");
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   g_muon_data = new AliEveMUONData;

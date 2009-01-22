@@ -529,7 +529,6 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     if (iHit == 0) {
       if (IsMUONTrack() || IsESDTrack()) {
 	pt = TMath::Sqrt(trackParam->Px()*trackParam->Px()+trackParam->Py()*trackParam->Py());
-	printf("Set line color = %d \n",ColorIndex(pt));
 	SetLineColor(ColorIndex(pt));
       }
       pv[0] = trackParam->Px();
