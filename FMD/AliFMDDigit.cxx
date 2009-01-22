@@ -83,14 +83,15 @@ AliFMDDigit::AliFMDDigit()
 }
 
 //____________________________________________________________________
-AliFMDDigit::AliFMDDigit(UShort_t detector, 
-			 Char_t   ring, 
-			 UShort_t sector, 
-			 UShort_t strip, 
-			 UShort_t count1,
-			 Short_t  count2, 
-			 Short_t  count3,
-			 Short_t  count4)
+AliFMDDigit::AliFMDDigit(UShort_t       detector, 
+			 Char_t         ring, 
+			 UShort_t       sector, 
+			 UShort_t       strip, 
+			 UShort_t       count1,
+			 Short_t        count2, 
+			 Short_t        count3,
+			 Short_t        count4, 
+			 const TArrayI& refs)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fCount1(count1),
     fCount2(count2),
@@ -109,6 +110,7 @@ AliFMDDigit::AliFMDDigit(UShort_t detector,
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word) -1 if not used
   //    count3    ADC count (a 10-bit word) -1 if not used
+  for (Int_t i = 0; i < refs.fN; i++) AddTrack(refs.fArray[i]);
 }
 
 //____________________________________________________________________
@@ -123,13 +125,23 @@ AliFMDDigit::GetTitle() const
 
 //____________________________________________________________________
 void
-AliFMDDigit::Print(Option_t* /* option*/) const 
+AliFMDDigit::Print(Option_t* option) const 
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  cout << "\t" 
-       << fCount1 << " (" << fCount2 << "," << fCount3 << "," << fCount4 
-       << ") = " << Counts() << endl;
+  std::cout << "\t" 
+	    << std::setw(4) << fCount1 << " (" 
+	    << std::setw(4) << fCount2 << "," 
+	    << std::setw(4) << fCount3 << "," 
+	    << std::setw(4) << fCount4 << ") = " 
+	    << std::setw(4) << Counts() << std::flush;
+  TString opt(option);
+  if (opt.Contains("l", TString::kIgnoreCase)) {
+    std::cout << " ";
+    for (Int_t i = 0; i < 3; i++) 
+      std::cout << (i == 0 ? "" : ",") << std::setw(5) << fTracks[i];
+  }
+  std::cout << std::endl;
 }
 
 //____________________________________________________________________

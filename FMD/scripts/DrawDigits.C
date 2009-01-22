@@ -38,6 +38,7 @@ private:
 public:
   //__________________________________________________________________
   DrawDigits(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1023.5) 
+    : AliFMDInput("galice.root")
   { 
     AddLoad(kDigits);
     fAdc = new TH1D("adc", "ADC", m, amin, amax);
@@ -49,6 +50,7 @@ public:
   {
     if (!digit) return kTRUE;
     fAdc->Fill(digit->Counts());
+    digit->Print("l");
     return kTRUE;
   }
   //__________________________________________________________________

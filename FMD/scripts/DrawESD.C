@@ -64,20 +64,24 @@ public:
     return AliFMDInput::Begin(ev);
   }
   //__________________________________________________________________
-  Bool_t ProcessESD(UShort_t /* det */, 
-		    Char_t   /* ring */, 
-		    UShort_t /* sec */, 
-		    UShort_t /* strip */, 
+  Bool_t ProcessESD(UShort_t det, 
+		    Char_t   rng, 
+		    UShort_t sec, 
+		    UShort_t str, 
 		    Float_t  /* eta */, 
 		    Float_t  mult)
   {
     // Cache the energy loss 
-    if (mult/fCorr > 0.01) fMult->Fill(mult/fCorr);
+    if (mult > 0) 
+      Info("ProcessESD", "FMD%d%c[%2d,%3d]=%f", det, rng, sec, str, mult);
+    if (mult/fCorr > 0.001) fMult->Fill(mult/fCorr);
     return kTRUE;
   }
   //__________________________________________________________________
   TF1* FitPeak(Int_t n, TH1D* hist, Double_t min, Double_t& max)
   {
+    if (TMath::Abs(max-min) < .25) return 0;
+    std::cout << "Fit peack in range " << min << " to " << max << std::endl;
     TF1* l = new TF1(Form("l%02d", n), "landau", min, max);
     hist->GetXaxis()->SetRangeUser(0, 4);
     hist->Fit(l, "0Q", "", min, max);
@@ -112,6 +116,7 @@ public:
   //__________________________________________________________________
   Bool_t Finish()
   {
+    Info("Finish", "Will draw results");
     gStyle->SetPalette(1);
     gStyle->SetOptTitle(0);
     gStyle->SetOptFit(1111111);
@@ -120,16 +125,20 @@ public:
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
     
+    if (fMult->GetEntries() <= 0) return kFALSE;
+    
     TCanvas* c = new TCanvas("c", "C");
     c->cd();
-    c->SetLogy();
+    // c->SetLogy();
     fMult->GetXaxis()->SetRangeUser(0,4);
     fMult->Scale(1. / fMult->GetEntries());
     fMult->SetStats(kFALSE);
     fMult->SetFillColor(2);
     fMult->SetFillStyle(3001);
     fMult->Draw("hist e");
-
+    
+    return kTRUE;
+    
     Double_t mean, rms;
     MaxInRange(fMult, 0.2, mean, rms);
     Double_t x1   = mean-rms/2; // .75; // .8;  // .65 / fCorr;
@@ -139,49 +148,61 @@ public:
     MaxInRange(fMult, x2, mean, rms);
     Double_t x3   = mean + rms;
     TF1*     l2   = FitPeak(2, fMult, x2, x3);
-    Double_t diff = l2->GetParameter(1)-l1->GetParameter(1);
-    TF1*     f    = new TF1("user", "landau(0)+landau(3)", x1, x3);
-
+    TF1*     f    = 0;
+    Double_t diff = 0;
+    if (l2) {
+      diff          = l2->GetParameter(1)-l1->GetParameter(1);
+      f             = new TF1("user", "landau(0)+landau(3)", x1, x3);
+      f->SetParNames("A_{1}", "Mpv_{1}", "#sigma_{1}",
+		     "A_{2}", "Mpv_{2}", "#sigma_{2}",
+		     "A_{3}", "Mpv_{3}", "#sigma_{3}");
+      f->SetParameters(l1->GetParameter(0), 
+		       l1->GetParameter(1), 
+		       l1->GetParameter(2), 
+		       l2 ? l2->GetParameter(0) : 0, 
+		       l2 ? l2->GetParameter(1) : 0, 
+		       l2 ? l2->GetParameter(2) : 0,
+		       l2->GetParameter(0)/10, 
+		       l2->GetParameter(1) + diff, 
+		       l2->GetParameter(2));
+    }
+    else { 
+      x3 = x2;
+      f  = new TF1("usr", "landau", x1, x3);
+    }
+    
+    std::cout << "Range: " << x1 << "-" << x3 << std::endl;
+    
     fMult->GetXaxis()->SetRangeUser(0, 4);
-    f->SetParNames("A_{1}", "Mpv_{1}", "#sigma_{1}",
-		   "A_{2}", "Mpv_{2}", "#sigma_{2}",
-		   "A_{3}", "Mpv_{3}", "#sigma_{3}");
-    f->SetParameters(l1->GetParameter(0), 
-		     l1->GetParameter(1), 
-		     l1->GetParameter(2), 
-		     l2->GetParameter(0), 
-		     l2->GetParameter(1), 
-		     l2->GetParameter(2),
-		     l2->GetParameter(0)/10, 
-		     l2->GetParameter(1) + diff, 
-		     l2->GetParameter(2));
-    fMult->Fit(f, "0Q", "", x1, x3);
-    fMult->Fit(f, "ME0", "E1", x1, x3);
+    fMult->Fit(f, "0QR", "", x1, x3);
+    fMult->Fit(f, "ME0R", "E1", x1, x3);
     fMult->DrawClone("same hist");
 
     l1->SetLineColor(3);
     l1->SetLineWidth(2);
     l1->SetRange(0, 4);
     l1->Draw("same");
-    l2->SetLineColor(4);
-    l2->SetLineWidth(2);
-    l2->SetRange(0, 4);
-    l2->Draw("same");
+    if (l2) {
+      l2->SetLineColor(4);
+      l2->SetLineWidth(2);
+      l2->SetRange(0, 4);
+      l2->Draw("same");
+    }
     f->SetLineWidth(2);
     f->SetRange(0, 4);
     f->Draw("same");
 
     TLegend* l = new TLegend(0.6, 0.6, .89, .89);
     l->AddEntry(l1, "1 particle Landau", "l");
-    l->AddEntry(l2, "2 particle Landau", "l");
+    if (l2) l->AddEntry(l2, "2 particle Landau", "l");
     l->AddEntry(f,  "1+2 particle Landau", "l");
     l->SetFillColor(0);
     l->Draw("same");
 
 
-#if 1
+#if 0
     c = new TCanvas("c2", "Landaus");
-    c->SetLogy();
+    // c->SetLogy();
     fMult->DrawClone("axis");
     f->Draw("same");
     Double_t* p1 = f->GetParameters();

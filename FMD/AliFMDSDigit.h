@@ -27,17 +27,22 @@
 class AliFMDSDigit : public AliFMDBaseDigit
 {
 public:
-  /** CTOR */
+  /** 
+   * CTOR 
+   */
   AliFMDSDigit();
-  /** Constrctor 
-      @param detector Detector 
-      @param ring     Ring
-      @param sector   Sector
-      @param strip    Strip 
-      @param edep     Energy deposited 
-      @param count    ADC (first sample)
-      @param count2   ADC (second sample, or -1 if not used)
-      @param count3   ADC (third sample, or -1 if not used) */
+  /** 
+   * Constrctor 
+   *
+   * @param detector Detector 
+   * @param ring     Ring
+   * @param sector   Sector
+   * @param strip    Strip 
+   * @param edep     Energy deposited 
+   * @param count    ADC (first sample)
+   * @param count2   ADC (second sample, or -1 if not used)
+   * @param count3   ADC (third sample, or -1 if not used) 
+   */
   AliFMDSDigit(UShort_t       detector, 
 	       Char_t         ring='\0', 
 	       UShort_t       sector=0, 
@@ -50,29 +55,67 @@ public:
 	       UShort_t       npart=0,
 	       UShort_t       nprim=0, 
 	       const TArrayI& refs=TArrayI());
-  /** DTOR */
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDSDigit() {}
-  /** @return ADC count (first sample) */
-  UShort_t Count1()                const { return fCount1;   }
-  /** @return ADC count (second sample, or -1 if not used) */
-  Short_t  Count2()                const { return fCount2;   }
-  /** @return ADC count (third sample, or -1 if not used) */
-  Short_t  Count3()                const { return fCount3;   }
-  /** @return ADC count (third sample, or -1 if not used) */
-  Short_t  Count4()                const { return fCount4;   }
-  /** @return Canonical ADC counts */
-  UShort_t Counts()                const;
-  /** @return Energy deposited */
-  Float_t  Edep()                  const { return fEdep;     }
-  /** @return Number of particles that hit this strip */
+  /** 
+   * 
+   * @return ADC count (first sample) 
+   */
+  UShort_t Count1() const { return fCount1;   }
+  /** 
+   * 
+   * @return ADC count (second sample, or -1 if not used) 
+   */
+  Short_t  Count2() const { return fCount2;   }
+  /** 
+   * 
+   * @return ADC count (third sample, or -1 if not used) 
+   */
+  Short_t  Count3() const { return fCount3;   }
+  /** 
+   * 
+   * @return ADC count (third sample, or -1 if not used) 
+   */
+  Short_t  Count4() const { return fCount4;   }
+  /** 
+   *
+   * @return Canonical ADC counts 
+   */
+  UShort_t Counts() const;
+  /** 
+   * 
+   * @return Energy deposited 
+   */
+  Float_t  Edep() const { return fEdep;     }
+  /** 
+   * 
+   * @return Number of particles that hit this strip 
+   */
   UShort_t NParticles() const { return fNParticles; }
-  /** @return Number of primary particles that hit this strip */
+  /** 
+   * 
+   * @return Number of primary particles that hit this strip 
+   */
   UShort_t NPrimaries() const { return fNPrimaries; }
+#if 0
   /** @return the track labels */
   const TArrayI& TrackLabels() const { return fLabels; }
-  /** Print info 
-      @param opt Not used */
+#endif
+  /** 
+   * Print info 
+   *
+   * @param opt Not used 
+   */
   void     Print(Option_t* opt="") const;
+  /** 
+   * Set the count value 
+   * 
+   * @param s Sample number 
+   * @param c Counts 
+   */
+  void SetCount(UShort_t s, Short_t c);
 protected:
   Float_t  fEdep;       // Energy deposited 
   UShort_t fCount1;     // Digital signal 
@@ -81,8 +124,10 @@ protected:
   Short_t  fCount4;     // Digital signal (-1 if not used)
   UShort_t fNParticles; // Total number of particles that hit this strip
   UShort_t fNPrimaries; // Number of primary particles that his this strip
+#if 0
   TArrayI  fLabels;     // MC-truth track labels
-  ClassDef(AliFMDSDigit,4)     // Summable FMD digit
+#endif
+  ClassDef(AliFMDSDigit,5)     // Summable FMD digit
 };
   
 inline UShort_t 
@@ -94,6 +139,16 @@ AliFMDSDigit::Counts() const
   return fCount1;
 }
 
+inline void
+AliFMDSDigit::SetCount(UShort_t i, Short_t c)
+{
+  switch (i) {
+  case 0: fCount1 = c; break;
+  case 1: fCount2 = c; break;
+  case 2: fCount3 = c; break;
+  case 3: fCount4 = c; break;
+  }
+}
 
 #endif
 //____________________________________________________________________

@@ -39,6 +39,7 @@
 #include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
 #include "AliFMDAltroMapping.h"            // ALIFMDALTROMAPPING_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
+#include "AliFMDSDigit.h"                  // ALIFMDDIGIT_H
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
@@ -205,7 +206,7 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 				   TTree* digitsTree) const
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
-  AliFMDDebug(2, ("Reading raw data into digits tree"));
+  AliFMDDebug(1, ("Reading raw data into digits tree"));
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
   rawRead.Exec();
@@ -278,6 +279,34 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
 
 //____________________________________________________________________
 void 
+AliFMDReconstructor::Digitize(AliRawReader* reader, TClonesArray* sdigits) const
+{
+  // Reconstruct directly from raw data (no intermediate output on
+  // digit tree or rec point tree).  
+  // 
+  // Parameters: 
+  //   reader	Raw event reader 
+  //   ctree    Not used. 
+  AliFMDRawReader rawReader(reader, 0);
+
+  UShort_t det, sec, str, sam, rat, fac;
+  Short_t  adc, oldDet = -1;
+  Bool_t   zs;
+  Char_t   rng;
+    
+  while (rawReader.NextSample(det, rng, sec, str, sam, rat, adc, zs, fac)) { 
+    if (!rawReader.SelectSample(sam, rat)) continue;
+    if (det != oldDet) { 
+      fZS[det-1]       = zs;
+      fZSFactor[det-1] = fac;
+      oldDet           = det;
+    }
+    DigitizeSignal(sdigits, det, rng, sec, str, sam, adc);
+  }
+}
+
+//____________________________________________________________________
+void 
 AliFMDReconstructor::Reconstruct(TTree* digitsTree, 
 				 TTree* clusterTree) const 
 {
@@ -311,7 +340,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   AliFMDDebug(5, ("Getting entry 0 from digit branch"));
   digitBranch->GetEntry(0);
   
-  AliFMDDebug(5, ("Processing digits"));
+  AliFMDDebug(1, ("Processing digits"));
   ProcessDigits(digits);
 
   Int_t written = clusterTree->Fill();
@@ -418,6 +447,99 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
 
 }
 
+//____________________________________________________________________
+void
+AliFMDReconstructor::DigitizeSignal(TClonesArray* sdigits, 
+				    UShort_t det, 
+				    Char_t   rng, 
+				    UShort_t sec, 
+				    UShort_t str, 
+				    UShort_t /* sam */,
+				    Short_t  adc) const
+{
+  // Process the signal from a single strip 
+  // 
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    adc     ADC counts
+  // 
+  AliFMDParameters* param  = AliFMDParameters::Instance();
+  // Check that the strip is not marked as dead 
+  if (param->IsDead(det, rng, sec, str)) {
+    AliFMDDebug(10, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    return;
+  }
+  
+  // Substract pedestal. 
+  UShort_t counts   = SubtractPedestal(det, rng, sec, str, adc);
+  if(counts == USHRT_MAX || counts == 0) return;
+  
+    // Gain match digits. 
+  Double_t edep     = Adc2Energy(det, rng, sec, str, counts);
+  // Get rid of nonsense energy
+  if(edep < 0)  return;
+
+  Int_t n = sdigits->GetEntriesFast();
+  // AliFMDSDigit* sdigit = 
+  new ((*sdigits)[n]) 
+    AliFMDSDigit(det, rng, sec, str, edep, counts, counts, counts, counts);
+  // sdigit->SetCount(sam, counts);
+}
+
+//____________________________________________________________________
+UShort_t
+AliFMDReconstructor::SubtractPedestal(UShort_t det, 
+				      Char_t   rng, 
+				      UShort_t sec, 
+				      UShort_t str, 
+				      UShort_t adc, 
+				      Float_t  noiseFactor,
+				      Bool_t   zsEnabled, 
+				      UShort_t zsNoiseFactor) const
+{
+  AliFMDParameters* param  = AliFMDParameters::Instance();
+  Float_t           ped    = (zsEnabled ? 0 : 
+				param->GetPedestal(det, rng, sec, str));
+  Float_t           noise  = param->GetPedestalWidth(det, rng, sec, str);
+  if(ped < 0 || noise < 0) { 
+    AliWarningClass(Form("Invalid pedestal (%f) or noise (%f) "
+			 "for FMD%d%c[%02d,%03d]", 
+		    ped, noise, det, rng, sec, str));
+    return USHRT_MAX;
+  }
+  AliDebugClass(15, Form("Subtracting pedestal for FMD%d%c[%2d,%3d]=%4d "
+			 "(%s w/factor %d, noise factor %f, "
+			 "pedestal %8.2f+/-%8.2f)",
+			 det, rng, sec, str, adc, 
+			 (zsEnabled ? "zs'ed" : "straight"), 
+			 zsNoiseFactor, noiseFactor, ped, noise));
+
+  Int_t counts = adc + Int_t(zsEnabled ? zsNoiseFactor * noise : - ped);
+  counts =  TMath::Max(Int_t(counts), 0);
+  // Calculate the noise factor for suppressing remenants of the noise
+  // peak.  If we have done on-line zero suppression, we only check
+  // for noise signals that are larger than the suppressed noise.  If
+  // the noise factor used on line is larger than the factor used
+  // here, we do not do this check at all.  
+  // 
+  // For example:
+  //    Online factor  |  Read factor |  Result 
+  //    ---------------+--------------+-------------------------------
+  //           2       |      3       | Check if signal > 1 * noise
+  //           3       |      3       | Check if signal > 0
+  //           3       |      2       | Check if signal > 0
+  //
+  // In this way, we make sure that we do not suppress away too much
+  // data, and that the read-factor is the most stringent cut. 
+  Float_t nf = TMath::Max(0.F, noiseFactor - (zsEnabled ? zsNoiseFactor : 0));
+  if (counts < noise * nf) counts = 0;
+  if (counts > 0) AliDebugClass(15, "Got a hit strip");
+
+  return counts;
+}
 
 
 //____________________________________________________________________
@@ -439,29 +561,72 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
   // Return:
   //    Pedestal subtracted signal or USHRT_MAX in case of problems 
   //
-  AliFMDParameters* param  = AliFMDParameters::Instance();
-  Bool_t            zs     = fZS[det-1];
-  UShort_t          fac    = fZSFactor[det-1];
-  Float_t           ped    = (zs ? 0 : 
-			      param->GetPedestal(det, rng, sec, str));
-  Float_t           noise  = param->GetPedestalWidth(det, rng, sec, str);
-  if(ped < 0 || noise < 0) { 
-    AliWarning(Form("Invalid pedestal (%f) or noise (%f) "
-		    "for FMD%d%c[%02d,%03d]", ped, noise, det, rng, sec, str));
-    return USHRT_MAX;
-  }
-
-  AliFMDDebug(5, ("Subtracting pedestal %f from signal %d", ped, adc));
-  // if (digit->Count3() > 0)      adc = digit->Count3();
-  // else if (digit->Count2() > 0) adc = digit->Count2();
-  // else                          adc = digit->Count1();
-  Int_t counts = adc + Int_t(zs ? fac * noise : - ped);
-  counts       = TMath::Max(Int_t(counts), 0);
-  if (counts < noise * fNoiseFactor) counts = 0;
-  if (counts > 0) AliFMDDebug(15, ("Got a hit strip"));
+  UShort_t counts = SubtractPedestal(det, rng, sec, str, adc, 
+				     fNoiseFactor, fZS[det-1], 
+				     fZSFactor[det-1]);
   if (fDiagStep1) fDiagStep1->Fill(adc, counts);
   
-  return  UShort_t(counts);
+  return counts;
+}
+
+//____________________________________________________________________
+Float_t
+AliFMDReconstructor::Adc2Energy(UShort_t det, 
+				Char_t   rng, 
+				UShort_t sec, 
+				UShort_t str, 
+				UShort_t count) const
+{
+  // Converts number of ADC counts to energy deposited. 
+  // Note, that this member function can be overloaded by derived
+  // classes to do strip-specific look-ups in databases or the like,
+  // to find the proper gain for a strip. 
+  // 
+  // In the first simple version, we calculate the energy deposited as 
+  // 
+  //    EnergyDeposited = cos(theta) * gain * count
+  // 
+  // where 
+  // 
+  //           Pre_amp_MIP_Range
+  //    gain = ----------------- * Energy_deposited_per_MIP
+  //           ADC_channel_size    
+  // 
+  // is constant and the same for all strips.
+  //
+  // For the production we use the conversion measured in the NBI lab.
+  // The total conversion is then:
+  // 
+  //    gain = ADC / DAC
+  // 
+  //                  EdepMip * count
+  //      => energy = ----------------
+  //                  gain * DACPerADC
+  // 
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    counts  Number of ADC counts over pedestal
+  // Return 
+  //    The energy deposited in a single strip, or -1 in case of problems
+  //
+  if (count <= 0) return 0;
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  Float_t           gain  = param->GetPulseGain(det, rng, sec, str);
+  // 'Tagging' bad gains as bad energy
+  if (gain < 0) { 
+    AliWarning(Form("Invalid gain (%f) for FMD%d%c[%02d,%03d]", 
+		    gain, det, rng, sec, str));
+    return -1;
+  }
+  AliFMDDebug(5, ("Converting counts %d to energy (factor=%f, DAC2MIP=%f)", 
+		  count, gain,param->GetDACPerMIP()));
+
+  Double_t edep  = ((count * param->GetEdepMip()) 
+		    / (gain * param->GetDACPerMIP()));
+  return edep;
 }
 
 //____________________________________________________________________
@@ -509,20 +674,8 @@ AliFMDReconstructor::Adc2Energy(UShort_t det,
   // Return 
   //    The energy deposited in a single strip, or -1 in case of problems
   //
-  if (count <= 0) return 0;
-  AliFMDParameters* param = AliFMDParameters::Instance();
-  Float_t           gain  = param->GetPulseGain(det, rng, sec, str);
-  // 'Tagging' bad gains as bad energy
-  if (gain < 0) { 
-    AliWarning(Form("Invalid gain (%f) for FMD%d%c[%02d,%03d]", 
-		    gain, det, rng, sec, str));
-    return -1;
-  }
-  AliFMDDebug(5, ("Converting counts %d to energy (factor=%f, DAC2MIP=%f)", 
-		  count, gain,param->GetDACPerMIP()));
-
-  Double_t edep  = ((count * param->GetEdepMip()) 
-		    / (gain * param->GetDACPerMIP()));
+  Double_t edep = Adc2Energy(det, rng, sec, str, count);
+  
   if (fDiagStep2) fDiagStep2->Fill(count, edep);  
   if (fAngleCorrect) {
     Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));

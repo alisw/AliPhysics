@@ -327,7 +327,8 @@ protected:
 };
 
 inline Bool_t AliFMDInput::ProcessHit(AliFMDHit*,TParticle*) { return kTRUE; }
-inline Bool_t AliFMDInput::ProcessTrackRef(AliTrackReference* trackRef, TParticle* track) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessTrackRef(AliTrackReference*, 
+					   TParticle*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessTrack(Int_t,TParticle*,
 					AliFMDHit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }

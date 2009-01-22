@@ -170,7 +170,7 @@ enum MC_t {
 // Functions
 Float_t       EtaToTheta(Float_t eta);
 EG_t          LookupEG(const Char_t* name);
-AliGenerator* GeneratorFactory(EG_t eg, Rad_t rad, TString& comment);
+AliGenerator* GeneratorFactory(EG_t eg, Rad_t rad);
 AliGenHijing* HijingStandard();
 void          ProcessEnvironmentVars(EG_t& eg, Int_t& seed);
 
@@ -191,10 +191,6 @@ Config()
   Mag_t mag  = k5kG;
   Int_t seed = 12345; //Set 0 to use the current time
   MC_t  mc   = kGEANT3TGEO;
-  
-  //____________________________________________________________________
-  // Comment line 
-  static TString  comment;
   
   //____________________________________________________________________
   // Get settings from environment variables
@@ -367,7 +363,7 @@ Config()
   
   //__________________________________________________________________
   // Generator Configuration
-  AliGenerator* gener = GeneratorFactory(eg, rad, comment);
+  AliGenerator* gener = GeneratorFactory(eg, rad);
   gener->SetOrigin(0, 0, 0);    // vertex position
   gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
   gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
@@ -375,30 +371,6 @@ Config()
   gener->SetTrackingFlag(1);
   gener->Init();
     
-  //__________________________________________________________________
-  // 
-  // Comments 
-  // 
-  switch (mag) {
-  case k2kG: comment = comment.Append(" | L3 field 0.2 T"); break;
-  case k4kG: comment = comment.Append(" | L3 field 0.4 T"); break;
-  case k5kG: comment = comment.Append(" | L3 field 0.5 T"); break;
-  }
-
-  switch (rad) {
-  case kGluonRadiation: 
-    comment = comment.Append(" | Gluon Radiation On");  break;
-  default:
-    comment = comment.Append(" | Gluon Radiation Off"); break;
-  }
-
-  switch(geo) {
-  case kHoles: comment = comment.Append(" | Holes for PHOS/HMPID"); break;
-  default:     comment = comment.Append(" | No holes for PHOS/HMPID"); break;
-  }
-
-  std::cout << "\n\n Comment: " << comment << "\n" << std::endl;
-
   //__________________________________________________________________
   // Field (L3 0.4 T)
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
@@ -488,7 +460,7 @@ LookupEG(const Char_t* name)
 
 //____________________________________________________________________  
 AliGenerator* 
-GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)  
+GeneratorFactory(EG_t eg, Rad_t rad)  
 {
   Int_t isw = 3;
   if (rad == kNoGluonRadiation) isw = 0;
@@ -520,7 +492,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
   switch (eg) {
   case test50:
     {
-      comment = comment.Append(":HIJINGparam test 50 particles");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
@@ -533,7 +504,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kParam_8000:
     {
-      comment = comment.Append(":HIJINGparam N=8000");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(86030);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
@@ -546,7 +516,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kParam_4000:
     {
-      comment = comment.Append("HIJINGparam N=4000");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(43015);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
@@ -559,7 +528,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kParam_2000:
     {
-      comment = comment.Append("HIJINGparam N=2000");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(21507);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
@@ -572,7 +540,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kParam_fmd:
     {
-      comment = comment.Append("HIJINGparam N=100");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(500);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
@@ -588,7 +555,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     //
   case kHijing_cent1:
     {
-      comment = comment.Append("HIJING cent1");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -597,7 +563,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_cent2:
     {
-      comment = comment.Append("HIJING cent2");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 2.);
@@ -609,7 +574,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     //
   case kHijing_per1:
     {
-      comment = comment.Append("HIJING per1");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(5., 8.6);
@@ -618,7 +582,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_per2:
     {
-      comment = comment.Append("HIJING per2");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(8.6, 11.2);
@@ -627,7 +590,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_per3:
     {
-      comment = comment.Append("HIJING per3");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(11.2, 13.2);
@@ -636,7 +598,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_per4:
     {
-      comment = comment.Append("HIJING per4");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(13.2, 15.);
@@ -645,7 +606,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_per5:
     {
-      comment = comment.Append("HIJING per5");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(15., 100.);
@@ -657,7 +617,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     //
   case kHijing_jj25:
     {
-      comment = comment.Append("HIJING Jet 25 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -674,7 +633,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_jj50:
     {
-      comment = comment.Append("HIJING Jet 50 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -691,7 +649,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_jj75:
     {
-      comment = comment.Append("HIJING Jet 75 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -708,7 +665,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_jj100:
     {
-      comment = comment.Append("HIJING Jet 100 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -725,7 +681,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_jj200:
     {
-      comment = comment.Append("HIJING Jet 200 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -744,7 +699,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     //
   case kHijing_gj25:
     {
-      comment = comment.Append("HIJING Gamma 25 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -761,7 +715,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_gj50:
     {
-      comment = comment.Append("HIJING Gamma 50 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -778,7 +731,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_gj75:
     {
-      comment = comment.Append("HIJING Gamma 75 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -795,7 +747,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_gj100:
     {
-      comment = comment.Append("HIJING Gamma 100 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -812,7 +763,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
 
   case kHijing_gj200:
     {
-      comment = comment.Append("HIJING Gamma 200 GeV");
       AliGenHijing *gener = HijingStandard();
       // impact parameter range
       gener->SetImpactParameterRange(0., 5.);
@@ -828,7 +778,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kHijing_pA:
     {
-      comment = comment.Append("HIJING pA");
 
       AliGenCocktail *gener  = new AliGenCocktail();
 
@@ -865,7 +814,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6:
     {
-      comment = comment.Append(":Pythia p-p @ 14 TeV");
       AliGenPythia *gener = new AliGenPythia(-1); 
       gener->SetMomentumRange(0,999999);
       gener->SetThetaRange(0., 180.);
@@ -878,7 +826,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets20_24:
     {
-      comment = comment.Append(":Pythia jets 20-24 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -897,7 +844,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets24_29:
     {
-      comment = comment.Append(":Pythia jets 24-29 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -916,7 +862,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets29_35:
     {
-      comment = comment.Append(":Pythia jets 29-35 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -935,7 +880,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets35_42:
     {
-      comment = comment.Append(":Pythia jets 35-42 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -954,7 +898,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets42_50:
     {
-      comment = comment.Append(":Pythia jets 42-50 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -973,7 +916,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets50_60:
     {
-      comment = comment.Append(":Pythia jets 50-60 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -992,7 +934,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets60_72:
     {
-      comment = comment.Append(":Pythia jets 60-72 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1011,7 +952,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets72_86:
     {
-      comment = comment.Append(":Pythia jets 72-86 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1030,7 +970,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets86_104:
     {
-      comment = comment.Append(":Pythia jets 86-104 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1049,7 +988,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets104_125:
     {
-      comment = comment.Append(":Pythia jets 105-125 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1068,7 +1006,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets125_150:
     {
-      comment = comment.Append(":Pythia jets 125-150 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1087,7 +1024,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPythia6Jets150_180:
     {
-      comment = comment.Append(":Pythia jets 150-180 GeV @ 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);//        Centre of mass energy
       gener->SetProcess(kPyJets);//        Process type
@@ -1106,7 +1042,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kD0PbPb5500:
     {
-      comment = comment.Append(" D0 in Pb-Pb at 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(10);
       gener->SetProcess(kPyD0PbPbMNR);
       gener->SetStrucFunc(kCTEQ4L);
@@ -1123,7 +1058,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kCharmSemiElPbPb5500:
     {
-      comment = comment.Append(" Charm in Pb-Pb at 5.5 TeV");
       AliGenPythia * gener = new AliGenPythia(10);
       gener->SetProcess(kPyCharmPbPbMNR);
       gener->SetStrucFunc(kCTEQ4L);
@@ -1139,7 +1073,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kBeautySemiElPbPb5500:
     {
-      comment = comment.Append(" Beauty in Pb-Pb at 5.5 TeV");
       AliGenPythia *gener = new AliGenPythia(10);
       gener->SetProcess(kPyBeautyPbPbMNR);
       gener->SetStrucFunc(kCTEQ4L);
@@ -1155,7 +1088,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kCocktailTRD:
     {
-      comment = comment.Append(" Cocktail for TRD at 5.5 TeV");
       AliGenCocktail *gener  = new AliGenCocktail();
 
       AliGenParam *jpsi = new AliGenParam(10,
@@ -1201,7 +1133,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPyJJ:
     {
-      comment = comment.Append(" Jet-jet at 5.5 TeV");
       AliGenPythia *gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);
       gener->SetProcess(kPyJets);
@@ -1215,7 +1146,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kPyGJ:
     {
-      comment = comment.Append(" Gamma-jet at 5.5 TeV");
       AliGenPythia *gener = new AliGenPythia(-1);
       gener->SetEnergyCMS(5500.);
       gener->SetProcess(kPyDirectGamma);
@@ -1230,7 +1160,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailCent1:
     {
-      comment = comment.Append(" Muon Cocktail Cent1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1245,7 +1174,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer1:
     {
-      comment = comment.Append(" Muon Cocktail Per1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1260,7 +1188,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer4:
     {
-      comment = comment.Append(" Muon Cocktail Per4");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1275,7 +1202,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailCent1HighPt:
     {
-      comment = comment.Append(" Muon Cocktail HighPt Cent1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1290,7 +1216,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer1HighPt :
     {
-      comment = comment.Append(" Muon Cocktail HighPt Per1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1305,7 +1230,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer4HighPt:
     {
-      comment = comment.Append(" Muon Cocktail HighPt Per4");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1320,7 +1244,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailCent1Single:
     {
-      comment = comment.Append(" Muon Cocktail Single Cent1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1335,7 +1258,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer1Single :
     {
-      comment = comment.Append(" Muon Cocktail Single Per1");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1350,7 +1272,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kMuonCocktailPer4Single:
     {
-      comment = comment.Append(" Muon Cocktail Single Per4");
       AliGenMUONCocktail * gener = new AliGenMUONCocktail();
       gener->SetPtRange(1.0,100.);       // Transverse momentum range   
       gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
@@ -1365,7 +1286,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kFMD1Flat: 
     {
-      comment = comment.Append(" Flat in FMD1 range");
       AliGenBox* gener = new AliGenBox(2000);
       gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
@@ -1376,7 +1296,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kFMD2Flat: 
     {
-      comment = comment.Append(" Flat in FMD2 range");
       AliGenBox* gener = new AliGenBox(10);
       gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
@@ -1387,7 +1306,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kFMD3Flat: 
     {
-      comment = comment.Append(" Flat in FMD3 range");
       AliGenBox* gener = new AliGenBox(2000);
       gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
@@ -1398,7 +1316,6 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     break;
   case kFMDFlat:
     {
-      comment = comment.Append(" Flat in FMD range");
       AliGenCocktail* gener = new AliGenCocktail();
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);

@@ -13,42 +13,156 @@
 #include "AliFMDGeometry.h"
 
 //____________________________________________________________________
+Double_t
+AliFMDSurveyToAlignObjs::GetUnitFactor() const
+{
+  // Returns the conversion factor from the measured values to
+  // centimeters. 
+  TString units(fSurveyObj->GetUnits());
+  if      (units.CompareTo("mm", TString::kIgnoreCase) == 0) return .1;
+  else if (units.CompareTo("cm", TString::kIgnoreCase) == 0) return 1.;
+  else if (units.CompareTo("m",  TString::kIgnoreCase) == 0) return 100.;
+  return 1;
+}
+
+//____________________________________________________________________
 Bool_t
-AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot, 
-				      Double_t* trans)
+AliFMDSurveyToAlignObjs::GetPoint(const char* name, 
+				  TVector3&   point, 
+				  TVector3&   error) const
+{
+  // Get named point.   On return, point will contain the point
+  // coordinates in centimeters, and error will contain the
+  // meassurement errors in centimeters too.  If no point is found,
+  // returns false, otherwise true. 
+  Double_t unit = GetUnitFactor();
+  TObject* obj  = fSurveyPoints->FindObject(name);
+  if (!obj) return kFALSE;
+  
+   AliSurveyPoint* p = static_cast<AliSurveyPoint*>(obj);
+   point.SetXYZ(unit * p->GetX(), 
+		unit * p->GetY(),
+		unit * p->GetZ());
+   error.SetXYZ(unit * p->GetPrecisionX(),
+		unit * p->GetPrecisionY(),
+		unit * p->GetPrecisionZ());
+   return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a, 
+					const     TVector3& b,
+					const     TVector3& c, 
+					Double_t* trans,
+					Double_t* rot) const
+{
+  // Vector a->b, b->c, and normal to plane defined by these two
+  // vectors. 
+  TVector3 ab(b-a), bc(c-b);
+  
+  // Normal vector to the plane of the fiducial marks obtained
+  // as cross product of the two vectors on the plane d0^d1
+  TVector3 nn(ab.Cross(bc));
+  if (nn.Mag() < 1e-8) { 
+    Info("DoIt", "Normal vector is null vector");
+    return kFALSE;
+  }
+  
+  // We express the plane in Hessian normal form.
+  //
+  //   n x = -p,
+  //
+  // where n is the normalised normal vector given by 
+  // 
+  //   n_x = a / l,   n_y = b / l,   n_z = c / l,  p = d / l
+  //
+  // with l = sqrt(a^2+b^2+c^2) and a, b, c, and d are from the
+  // normal plane equation 
+  //
+  //  ax + by + cz + d = 0
+  // 
+  // Normalize
+  TVector3 n(nn.Unit());
+  Double_t p = - (n * a);
+  
+  // The center of the square with the fiducial marks as the
+  // corners.  The mid-point of one diagonal - md.  Used to get the
+  // center of the surveyd box. 
+  TVector3 md(a + c);
+  md *= 1/2.;
+  
+  // The center of the box. 
+  TVector3 orig(md);
+  trans[0] = orig[0];
+  trans[1] = orig[1];
+  trans[2] = orig[2];
+  
+  // Normalize the spanning vectors 
+  TVector3 uab(ab.Unit());
+  TVector3 ubc(bc.Unit());
+  
+  for (size_t i = 0; i < 3; i++) { 
+    rot[i * 3 + 0] = uab[i];
+    rot[i * 3 + 1] = ubc[i];
+    rot[i * 3 + 2] = n[i];
+  }
+  return kTRUE;
+}
+
+
+//____________________________________________________________________
+Bool_t
+AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
 {
 
   // The possile survey points 
-  const char*  names[] = { "FMD2_ITOP",  "FMD2_OTOP", 
-			   "FMD2_IBOTM", "FMD2_OBOTM", 
-			   "FMD2_IBOT",  "FMD2_OBOT", 
-			   0 };
-  const char** name    = names;
-  Int_t    i = 0;
+  TVector3  icb, ict, ocb, oct, dummy;
+  Int_t     missing = 0;
+  if (!GetPoint("V0L_ICB", icb, dummy)) missing++;
+  if (!GetPoint("V0L_ICT", icb, dummy)) missing++;
+  if (!GetPoint("V0L_OCB", icb, dummy)) missing++;
+  if (!GetPoint("V0L_OCT", icb, dummy)) missing++;
+
+  // Check that we have enough points
+  if (missing > 1) { 
+    Error("GetFMD1Plane", "Only got %d survey points - no good for FMD1 plane",
+	  4-missing);
+    return kFALSE;
+  }
+
+  if (!CalculatePlane(icb, ict, oct, rot, trans)) return kFALSE;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDSurveyToAlignObjs::DoFMD1()
+{
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot, Double_t* trans) const
+{
+
+  // The possile survey points 
+  const char*    names[] = { "FMD2_ITOP",  "FMD2_OTOP", 
+			     "FMD2_IBOTM", "FMD2_OBOTM", 
+			     "FMD2_IBOT",  "FMD2_OBOT", 
+			     0 };
+  const char**   name    = names;
+  Int_t          i       = 0;
   TGraph2DErrors g;
-  
-  Double_t unit = 1.;
-  TString units(fSurveyObj->GetUnits());
-  if      (units.CompareTo("mm", TString::kIgnoreCase) == 0) unit = .1;
-  else if (units.CompareTo("cm", TString::kIgnoreCase) == 0) unit = 1.;
-  else if (units.CompareTo("m",  TString::kIgnoreCase) == 0) unit = 100.;
-  
   // Loop and fill graph 
   while (*name) {
-    TObject* obj = fSurveyPoints->FindObject(*name);
-    name++;
-    if (!obj) continue;
-    
-    AliSurveyPoint* p = static_cast<AliSurveyPoint*>(obj);
-    Double_t x  = unit * p->GetX();
-    Double_t y  = unit * p->GetY();
-    Double_t z  = unit * p->GetZ();
-    Double_t ex = unit * p->GetPrecisionX();
-    Double_t ey = unit * p->GetPrecisionY();
-    Double_t ez = unit * p->GetPrecisionZ();
-    
-    g.SetPoint(i, x, y, z);
-    g.SetPointError(i, ex, ey, ez);
+    TVector3 p, e;
+    if (!GetPoint(*name++, p, e)) continue;
+
+    g.SetPoint(i, p.X(), p.Y(), p.Z());
+    g.SetPointError(i, e.X(), e.Y(), e.Z());
     i++;
   }
   
@@ -83,9 +197,9 @@ AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot,
   TVector3 ua(a.Unit());
   TVector3 ub(b.Unit());
   Double_t angAb = ua.Angle(ub);
-  PrintVector("ua: ", ua);
-  PrintVector("ub: ", ub);
-  std::cout << "Angle: " << angAb * 180 / TMath::Pi() << std::endl;
+  // PrintVector("ua: ", ua);
+  // PrintVector("ub: ", ub);
+  // std::cout << "Angle: " << angAb * 180 / TMath::Pi() << std::endl;
   
   for (size_t i = 0; i < 3; i++) { 
     rot[i * 3 + 0] = ua[i];

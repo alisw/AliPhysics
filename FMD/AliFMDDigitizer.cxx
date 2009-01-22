@@ -270,7 +270,7 @@ AliFMDDigitizer::Exec(Option_t*)
 		    folderName.Data()));
       return;
     }
-    runLoader->LoadgAlice();
+    if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
     runLoader->GetAliRun();
   }
   if (!gAlice) { 
@@ -339,6 +339,7 @@ AliFMDDigitizer::Exec(Option_t*)
     fFMD->SetTreeAddress();
 
     // Sum contributions from the sdigits
+    AliFMDDebug(3, ("Will now sum contributions from SDigits"));
     SumContributions(sdigitsBranch);
 
     // Unload the sdigits
@@ -398,6 +399,16 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
       // Get the sdigit number `sdigit'
       AliFMDSDigit* fmdSDigit = 
 	static_cast<AliFMDSDigit*>(fmdSDigits->UncheckedAt(sdigit));
+
+      AliFMDDebug(5, ("Adding contribution of %d tracks", 
+		      fmdSDigit->GetNTrack()));
+      AliFMDDebug(15, ("Contrib from FMD%d%c[%2d,%3d] (%s) from track %d", 
+		       fmdSDigit->Detector(),
+		       fmdSDigit->Ring(),
+		       fmdSDigit->Sector(),
+		       fmdSDigit->Strip(),
+		       fmdSDigit->GetName(), 
+		       fmdSDigit->GetTrack(0)));
       
       // Extract parameters 
       AddContribution(fmdSDigit->Detector(),
@@ -406,7 +417,8 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 		      fmdSDigit->Strip(),
 		      fmdSDigit->Edep(), 
 		      kTRUE,
-		      -1);
+		      fmdSDigit->GetNTrack(),
+		      fmdSDigit->GetTracks());
     }  // sdigit loop
   } // event loop
 

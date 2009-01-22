@@ -117,6 +117,16 @@ public:
    */
   virtual void   FillESD(AliRawReader*, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
+
+  /** 
+   * Create SDigits from raw data
+   * 
+   * @param reader  The raw reader
+   * @param sdigits Array to fill with AliFMDSDigit objects. 
+   */  
+  virtual void Digitize(AliRawReader* reader, 
+			TClonesArray* sdigits) const;
+  
   /** 
    * Not used 
    */
@@ -200,6 +210,49 @@ protected:
 			     UShort_t str, 
 			     Short_t  adc) const;
   /** 
+   * Process the signal from a single strip. 
+   * 
+   * @param sdigits Array to fill
+   * @param det     Detector number 
+   * @param rng     Ring identifier 
+   * @param sec     Sector number
+   * @param str     Strip number 
+   * @param sam     Sample number 
+   * @param adc     Number of ADC counts for this strip
+   */  
+  virtual void DigitizeSignal(TClonesArray* sdigits, 
+			      UShort_t      det, 
+			      Char_t         rng, 
+			      UShort_t       sec, 
+			      UShort_t       str, 
+			      UShort_t       sam,
+			      Short_t        adc) const;
+  /** 
+   * Subtract the pedestal off the ADC counts. 
+   * 
+   * @param det           Detector number
+   * @param rng           Ring identifier
+   * @param sec           Sector number
+   * @param str           Strip number
+   * @param adc           ADC counts
+   * @param noiseFactor   If pedestal substracted pedestal is less then
+   *        this times the noise, then consider this to be 0. 
+   * @param zsEnabled     Whether zero-suppression is on.
+   * @param zsNoiseFactor Noise factor used in on-line pedestal
+   *        subtraction. 
+   * 
+   * @return The pedestal subtracted ADC counts (possibly 0), or @c
+   *         USHRT_MAX in case of problems.
+   */  
+  virtual UShort_t SubtractPedestal(UShort_t det, 
+				    Char_t   rng, 
+				    UShort_t sec, 
+				    UShort_t str, 
+				    UShort_t adc, 
+				    Float_t  noiseFactor,
+				    Bool_t   zsEnabled, 
+				    UShort_t zsNoiseFactor) const;
+  /** 
    * Substract pedestals from raw ADC in @a digit
    * 
    * @param det	  Detector number  
@@ -215,6 +268,29 @@ protected:
 				    UShort_t sec, 
 				    UShort_t str, 
 				    Short_t  adc) const;
+  /** 
+   * Converts number of ADC counts to energy deposited.   This is
+   * done by 
+   * @f[
+   * E_i = A_i g_i
+   * @f]
+   * where @f$ A_i@f$ is the pedestal subtracted ADC counts, and @f$
+   * g_i@f$ is the gain for the @f$ i^{\mbox{th}}@f$ strip. 
+   * 
+   * @param det	  Detector number  
+   * @param rng   Ring identifier 
+   * @param sec   Sector number
+   * @param str   Strip number 
+   * @param eta   Psuedo-rapidity of digit.
+   * @param count Pedestal subtracted ADC counts
+   *
+   * @return Energy deposited @f$ E_i@f$ 
+   */
+  virtual Float_t  Adc2Energy(UShort_t det, 
+			      Char_t   rng, 
+			      UShort_t sec, 
+			      UShort_t str, 
+			      UShort_t count) const;
   /** 
    * Converts number of ADC counts to energy deposited.   This is
    * done by 

@@ -1,9 +1,9 @@
 //____________________________________________________________________
 //
-// $Id$
+// $Id: DrawHitsSDigits.C 20907 2007-09-25 08:44:03Z cholm $
 //
 // Script that contains a class to draw eloss from hits, versus ADC
-// counts from digits, using the AliFMDInputHits class in the util library. 
+// counts from sdigits, using the AliFMDInputHits class in the util library. 
 //
 // It draws the energy loss versus the p/(mq^2).  It can be overlayed
 // with the Bethe-Bloc curve to show how the simulation behaves
@@ -13,7 +13,7 @@
 //
 #include <TH2D.h>
 #include <AliFMDHit.h>
-#include <AliFMDDigit.h>
+#include <AliFMDSDigit.h>
 #include <AliFMDInput.h>
 #include <AliFMDEdepMap.h>
 #include <iostream>
@@ -22,27 +22,27 @@
 #include <AliLog.h>
 #include <TMath.h>
 
-/** @class DrawHitsDigits
-    @brief Draw hit energy loss versus digit ADC
+/** @class DrawHitsSDigits
+    @brief Draw hit energy loss versus sdigit ADC
     @code 
     Root> .L Compile.C
-    Root> Compile("DrawHitsDigits.C")
-    Root> DrawHitsDigits c
+    Root> Compile("DrawHitsSDigits.C")
+    Root> DrawHitsSDigits c
     Root> c.Run();
     @endcode
     @ingroup FMD_script
  */
-class DrawHitsDigits : public AliFMDInput
+class DrawHitsSDigits : public AliFMDInput
 {
 private:
   TH2D* fElossVsAdc; // Histogram 
   AliFMDEdepMap fMap;
 public:
   //__________________________________________________________________
-  DrawHitsDigits(Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
+  DrawHitsSDigits(Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
 		 Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5) 
   { 
-    AddLoad(kDigits);
+    AddLoad(kSDigits);
     AddLoad(kHits);
     TArrayF eloss(MakeLogScale(n, emin, emax));
     TArrayF adcs(m+1);
@@ -65,7 +65,7 @@ public:
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
   {
-    // Info("ProcessHit", "Processing hit %p", hit);
+    Info("ProcessHit", "Processing hit %p", hit);
     // Cache the energy loss 
     if (!hit) return kFALSE;
     UShort_t det = hit->Detector();
@@ -78,27 +78,24 @@ public:
     }
     fMap(det, rng, sec, str).fEdep += hit->Edep();
     fMap(det, rng, sec, str).fN++;
-    // hit->Print();
+    hit->Print();
     return kTRUE;
   }
   //__________________________________________________________________
-  Bool_t ProcessDigit(AliFMDDigit* digit)
+  Bool_t ProcessSDigit(AliFMDSDigit* sdigit)
   {
-    // Info("ProcessDigit", "Processing digit %p", digit);
-    if (!digit) return kFALSE;
-    UShort_t det = digit->Detector();
-    Char_t   rng = digit->Ring();
-    UShort_t sec = digit->Sector();
-    UShort_t str = digit->Strip();
+    Info("ProcessSDigit", "Processing sdigit %p", sdigit);
+    if (!sdigit) return kFALSE;
+    UShort_t det = sdigit->Detector();
+    Char_t   rng = sdigit->Ring();
+    UShort_t sec = sdigit->Sector();
+    UShort_t str = sdigit->Strip();
     if (str > 511) {
-      AliWarning(Form("Bad strip number %d in digit", str));
+      AliWarning(Form("Bad strip number %d in sdigit", str));
       return kFALSE;
     }
-    fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, digit->Counts());
-    if (fMap(det, rng, sec, str).fEdep > 0) 
-      Info("ProcessDigit", "FMD%d%c[%2d,%3d] Edep=%8.5f -> ADC=0x%03x",
-	   det, rng, sec, str, 
-	   fMap(det, rng, sec, str).fEdep, digit->Counts());
+    fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, sdigit->Counts());
+    sdigit->Print();
     return kTRUE;
   }
   //__________________________________________________________________
@@ -115,7 +112,7 @@ public:
     return kTRUE;
   }
 
-  ClassDef(DrawHitsDigits,0);
+  ClassDef(DrawHitsSDigits,0);
 };
 
 //____________________________________________________________________

@@ -230,7 +230,8 @@ protected:
 			       UShort_t strip, 
 			       Float_t  edep, 
 			       Bool_t   isPrimary,
-			       Int_t    trackno);
+			       Int_t    nTrackno,
+			       Int_t*   tracknos);
   /** Add a digit to output */
   virtual void     AddDigit(UShort_t       detector, 
 			    Char_t         ring,

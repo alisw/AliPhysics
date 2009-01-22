@@ -64,6 +64,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "AliFMDBaseDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDStripIndex.h"
 #include "Riostream.h"		// ROOT_Riostream
 // #include <TString.h>
 // #include <AliLog.h>
@@ -89,7 +90,8 @@ AliFMDBaseDigit::AliFMDBaseDigit(UShort_t detector,
 				 Char_t   ring, 
 				 UShort_t sector, 
 				 UShort_t strip)
-  : fDetector(detector), 
+  : AliDigit(), 
+    fDetector(detector), 
     fRing(ring), 
     fSector(sector), 
     fStrip(strip),
@@ -107,11 +109,36 @@ AliFMDBaseDigit::AliFMDBaseDigit(UShort_t detector,
 }
 
 //____________________________________________________________________
+AliFMDBaseDigit::AliFMDBaseDigit(Int_t*   tracks, 
+				 UShort_t detector, 
+				 Char_t   ring, 
+				 UShort_t sector, 
+				 UShort_t strip)
+  : AliDigit(tracks), 
+    fDetector(detector), 
+    fRing(ring), 
+    fSector(sector), 
+    fStrip(strip),
+    fName("")
+{
+  //
+  // Creates a base data digit object
+  //
+  // Parameters 
+  //
+  //    tracks    Array of 3 track labels
+  //    detector  Detector # (1, 2, or 3)                      
+  //    ring	  Ring ID ('I' or 'O')
+  //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
+  //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
+}
+
+//____________________________________________________________________
 void
 AliFMDBaseDigit::Print(Option_t* /* option*/) const 
 {
   // Print digit to standard out 
-  cout << ClassName() << ": FMD" << GetName() << flush;
+  cout << ClassName() << ": " << GetName() << flush;
 }
 
 //____________________________________________________________________
@@ -132,9 +159,13 @@ ULong_t
 AliFMDBaseDigit::Hash() const
 {
   // Calculate a hash value based on the detector coordinates. 
+#if 1  
+  return AliFMDStripIndex::Pack(fDetector, fRing, fSector, fStrip);
+#else
   size_t ringi = (fRing == 'I' ||  fRing == 'i' ? 0 : 1);
   return fStrip + fMaxStrips * 
     (fSector + fMaxSectors * (ringi + fMaxRings * (fDetector - 1)));
+#endif
 }
 
 
@@ -162,6 +193,28 @@ AliFMDBaseDigit::Compare(const TObject* o) const
   if (Hash() == o->Hash()) return 0;
   if (Hash() < o->Hash()) return -1;
   return 1;
+}
+
+//____________________________________________________________________
+void
+AliFMDBaseDigit::AddTrack(Int_t track)
+{
+  if      (fTracks[0] == -1) fTracks[0] = track;
+  else if (fTracks[1] == -1) fTracks[1] = track;
+  else if (fTracks[2] == -1) fTracks[2] = track;
+  else 
+    AliWarning(Form("While adding track label to %s for %s: "
+		    "All 3 track labels used, cannot add reference to track %d",
+		    ClassName(), GetName(), track));
+}
+
+//____________________________________________________________________
+UShort_t
+AliFMDBaseDigit::GetNTrack() const
+{
+  for (Int_t i = 3; i > 0; i--) 
+    if (fTracks[i-1] != -1) return i;
+  return 0;
 }
 
 

@@ -15,6 +15,10 @@
 #ifndef ALIFMDBASEDIGIT_H
 # include <AliFMDBaseDigit.h>
 #endif
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
+
 
 //____________________________________________________________________
 /** @class AliFMDDigit AliFMDDigit.h <FMD/AliFMDDigit.h>
@@ -26,45 +30,79 @@ class AliFMDDigit : public AliFMDBaseDigit
 public:
   /** CTOR */
   AliFMDDigit();
-  /** Constrctor 
-      @param detector Detector 
-      @param ring     Ring
-      @param sector   Sector
-      @param strip    Strip 
-      @param count    ADC (first sample)
-      @param count2   ADC (second sample, or -1 if not used)
-      @param count3   ADC (third sample, or -1 if not used) */
-  AliFMDDigit(UShort_t detector, 
-	      Char_t   ring='\0', 
-	      UShort_t sector=0, 
-	      UShort_t strip=0, 
-	      UShort_t count=0, 
-	      Short_t  count2=-1, 
-	      Short_t  count3=-1, 
-	      Short_t  count4=-1);
-  /** DTOR */
+  /** 
+   * Constrctor 
+   *
+   * @param detector Detector 
+   * @param ring     Ring
+   * @param sector   Sector
+   * @param strip    Strip 
+   * @param count    ADC (first sample)
+   * @param count2   ADC (second sample, or -1 if not used)
+   * @param count3   ADC (third sample, or -1 if not used) 
+   * @param refs     Track references
+   */
+  AliFMDDigit(UShort_t       detector, 
+	      Char_t         ring='\0', 
+	      UShort_t       sector=0, 
+	      UShort_t       strip=0, 
+	      UShort_t       count=0, 
+	      Short_t        count2=-1, 
+	      Short_t        count3=-1, 
+	      Short_t        count4=-1, 
+	      const TArrayI& refs=TArrayI());
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDDigit() {}
-  /** @param i # of sample to get 
-      @return sample # @a i */
+  /** 
+   * @param i # of sample to get 
+   * 
+   * @return sample # @a i 
+   */
   Int_t Count(UShort_t i=0) const;
-  /** @return ADC count (first sample) */
-  UShort_t Count1()                const { return fCount1;   }
-  /** @return ADC count (second sample, or -1 if not used) */
-  Short_t  Count2()                const { return fCount2;   }
-  /** @return ADC count (third sample, or -1 if not used) */
-  Short_t  Count3()                const { return fCount3;   }
-  /** @return ADC count (third sample, or -1 if not used) */
-  Short_t  Count4()                const { return fCount4;   }
-  /** @return Canonical ADC counts */
-  UShort_t Counts()                const;
-  /** Print info 
-      @param opt Not used */
+  /** 
+   * 
+   * @return ADC count (first sample) 
+   */
+  UShort_t Count1() const { return fCount1;   }
+  /** 
+   * 
+   * @return ADC count (second sample, or -1 if not used) 
+   */
+  Short_t  Count2() const { return fCount2;   }
+  /** 
+   * 
+   * @return ADC count (third sample, or -1 if not used) 
+   */
+  Short_t  Count3() const { return fCount3;   }
+  /** 
+   * 
+   * @return ADC count (third sample, or -1 if not used) 
+   */
+  Short_t  Count4() const { return fCount4;   }
+  /** 
+   * 
+   * @return Canonical ADC counts 
+   */
+  UShort_t Counts() const;
+  /** 
+   * Print info 
+   * 
+   * @param opt Not used 
+   */
   void     Print(Option_t* opt="") const;
-  /** @return Title */
+  /** 
+   * 
+   * @return Title 
+   */
   const char* GetTitle() const;
-  /** Set the count value 
-      @param s Sample number 
-      @param c Counts */
+  /** 
+   * Set the count value 
+   * 
+   * @param s Sample number 
+   * @param c Counts 
+   */
   void SetCount(UShort_t s, Short_t c);
 protected:
   UShort_t fCount1;     // Digital signal 

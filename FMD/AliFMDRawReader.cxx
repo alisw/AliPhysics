@@ -50,6 +50,7 @@
 #include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDSDigit.h"	// ALIFMDSDIGIT_H
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
@@ -77,12 +78,17 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
   : TTask("FMDRawReader", "Reader of Raw ADC values from the FMD"),
     fTree(tree),
     fReader(reader), 
-    fSampleRate(1),
+    // fSampleRate(1),
     fData(0),
     fNbytes(0), 
     fSeen()
 {
   // Default CTOR
+  for (Int_t i = 0; i < 3; i++) { 
+    fSampleRate[i]   = 0;
+    fZeroSuppress[i] = kFALSE;
+    fNoiseFactor[i]  = 1;
+  }
 }
 
 //____________________________________________________________________
@@ -104,13 +110,11 @@ AliFMDRawReader::Exec(Option_t*)
 		   array->GetEntriesFast(), nWrite));
 }
 
-
 //____________________________________________________________________
 Bool_t
-AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng, 
-			    UShort_t& sec, UShort_t& str, 
-			    Short_t&  adc, Bool_t&   zs, 
-			    UShort_t& fac)
+AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec, 
+			    UShort_t& str, UShort_t& sam, UShort_t& rat, 
+			    Short_t&  adc, Bool_t&   zs,  UShort_t& fac)
 {
   // Scan current event for next signal.   It returns kFALSE when
   // there's no more data in the event. 
@@ -118,12 +122,14 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
   static AliFMDParameters*   pars     = 0;
   static AliFMDAltroMapping* map      = 0;
   static Int_t               ddl      = -1;
-  static UInt_t              rate     = 0;
+  // static UInt_t              rate     = 0;
   static UShort_t            tdet     = 0;
   static Char_t              trng     = '\0';
   static UShort_t            tsec     = 0;
   static Short_t             tstr     = 0;   
   static Short_t             bstr     = -1;
+  static Short_t             tsam     = -1;   
+  static UInt_t              trate    = 0;
   static Int_t               hwaddr   = -1;
   static UShort_t            stripMin = 0;
   static UShort_t            stripMax = 0; // 127;
@@ -146,11 +152,12 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
 
     // Reset variables
     ddl    = -1;  
-    rate   = 0;   
+    trate  = 0;   
     tdet   = 0;   
     trng   = '\0';
     tsec   = 0;   
     tstr   = 0;  
+    tsam   = -1;
     hwaddr = -1;
   }
   do { 
@@ -163,14 +170,14 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
     Int_t thisDDL = stream.GetDDLNumber();
     AliFMDDebug(10, ("RCU @ DDL %d", thisDDL));
     if (thisDDL != ddl) { 
-      ddl  = thisDDL;
-      zs   = stream.GetZeroSupp();
-      fac  = stream.GetNPostsamples();
-      tdet = map->DDL2Detector(ddl);
-      rate = 0; // stream.GetNPresamples();
+      ddl   = thisDDL;
+      fZeroSuppress[ddl] = zs    = stream.GetZeroSupp();
+      fNoiseFactor[ddl]  = fac   = stream.GetNPostsamples();
+      fSampleRate[ddl]   = trate = 0; // stream.GetNPresamples();
+      tdet  = map->DDL2Detector(ddl);
       AliFMDDebug(10, ("RCU @ DDL %d zero suppression: %s",ddl, zs?"yes":"no"));
       AliFMDDebug(10, ("RCU @ DDL %d noise factor: %d", ddl,fac));
-      AliFMDDebug(10, ("RCU @ DDL %d sample rate: %d", ddl, rate));
+      AliFMDDebug(10, ("RCU @ DDL %d sample rate: %d", ddl, trate));
     }
     Int_t thisAddr = stream.GetHWAddress();
     AliFMDDebug(10, ("RCU @ DDL %d, Address 0x%03x", ddl, thisAddr));    
@@ -185,9 +192,10 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
       stripMin = pars->GetMinStrip(tdet, trng, tsec, bstr);
       stripMax = pars->GetMaxStrip(tdet, trng, tsec, bstr);
       preSamp  = pars->GetPreSamples(tdet, trng, tsec, bstr);
-      if (rate == 0) rate = pars->GetSampleRate(tdet, trng, tsec, bstr);
+      if (trate == 0) 
+	fSampleRate[ddl] = trate = pars->GetSampleRate(tdet, trng, tsec, bstr);
       AliFMDDebug(10, ("RCU @ DDL %d, Address 0x%03x sample rate: %d", 
-		      ddl, hwaddr, rate));
+		      ddl, hwaddr, trate));
       
       Int_t nChAddrMismatch = stream.GetNChAddrMismatch();
       Int_t nChLenMismatch  = stream.GetNChLengthMismatch();
@@ -220,22 +228,12 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
 
     Short_t  strOff = 0;
     UShort_t samp   = 0;
-    map->Timebin2Strip(tsec, t, preSamp, rate, strOff, samp);
+    map->Timebin2Strip(tsec, t, preSamp, trate, strOff, samp);
     tstr = bstr + strOff;
+    tsam = samp;
     AliFMDDebug(20, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d", 
 		     ddl, hwaddr, t, tdet, trng, tsec, tstr, samp));
     
-    Bool_t take = kFALSE;
-    switch (rate) { 
-    case 1:                      take = kTRUE; break;
-    case 2:  if (samp == 1)      take = kTRUE; break;
-    case 3:  if (samp == 1)      take = kTRUE; break; 
-    case 4:  if (samp == 2)      take = kTRUE; break;
-    default: if (samp == rate-2) take = kTRUE; break;
-    }
-    if (!take) continue;
-
-
     // Local strip number to channel
     Short_t l = (tstr > bstr ? tstr - bstr : bstr - tstr);
     AliFMDDebug(10, ("Checking if strip %d in range [%d,%d]", 
@@ -252,6 +250,8 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
     rng = trng;
     sec = tsec;
     str = tstr;
+    sam = tsam;
+    rat = trate;
     // adc = stream.GetSignal();
     
     break;
@@ -259,6 +259,49 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
   return kTRUE;
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng, 
+			    UShort_t& sec, UShort_t& str, 
+			    Short_t&  adc, Bool_t&   zs, 
+			    UShort_t& fac)
+{
+  
+  do { 
+    UShort_t samp, rate;
+    if (!NextSample(det, rng, sec, str, samp, rate, adc, zs, fac)) 
+      return kFALSE;
+
+    Bool_t take = kFALSE;
+    switch (rate) { 
+    case 1:                      take = kTRUE; break;
+    case 2:  if (samp == 1)      take = kTRUE; break;
+    case 3:  if (samp == 1)      take = kTRUE; break; 
+    case 4:  if (samp == 2)      take = kTRUE; break;
+    default: if (samp == rate-2) take = kTRUE; break;
+    }
+    if (!take) continue;
+    break;
+  } while (true);
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::SelectSample(UShort_t samp, UShort_t rate) 
+{
+  Bool_t take = kFALSE;
+  switch (rate) { 
+  case 1:                      take = kTRUE; break;
+  case 2:  if (samp == 1)      take = kTRUE; break;
+  case 3:  if (samp == 1)      take = kTRUE; break; 
+  case 4:  if (samp == 2)      take = kTRUE; break;
+  default: if (samp == rate-2) take = kTRUE; break;
+  }
+  
+  return take;
+}
+  
 #if 1
 //____________________________________________________________________
 Bool_t
@@ -291,7 +334,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 
   Int_t  oldddl = -1;
   UInt_t ddl    = 0;
-  UInt_t rate   = 0;
+  // UInt_t rate   = 0;
   UInt_t last   = 0;
   UInt_t hwaddr = 0;
   // Data array is approx twice the size needed. 
@@ -318,6 +361,12 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
       fNoiseFactor[ddl]  = input.GetNPostsamples();
       AliFMDDebug(20, ("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));
 
+      // WARNING: We store the noise factor in the 2nd baseline
+      // filters excluded post samples, since we'll never use that
+      // mode. 
+      fSampleRate[ddl]     = input.GetNPretriggerSamples();
+      AliFMDDebug(20, ("RCU @ DDL %d Sample rate: %d", ddl,fNoiseFactor[ddl]));
+
       Int_t nChAddrMismatch = input.GetNChAddrMismatch();
       Int_t nChLenMismatch  = input.GetNChLengthMismatch();
       if (nChAddrMismatch != 0) 
@@ -343,16 +392,14 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		    "hardware address 0x%03x", ddl, hwaddr));
       continue;
     }
-    AliFMDDebug(1, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x, Length: %4d", 
+    AliFMDDebug(5, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x, Length: %4d", 
 		    board, chip, channel, last));
 
     stripMin = pars->GetMinStrip(det, ring, sec, strbase);
     stripMax = pars->GetMaxStrip(det, ring, sec, strbase);
     preSamp  = pars->GetPreSamples(det, ring, sec, strbase);
-    // WARNING: We use the number of pre-samples to store the
-    // oversampling rate in. 
-    rate     = input.GetNPretriggerSamples();
-    if (rate == 0) rate = pars->GetSampleRate(det, ring, sec, strbase);
+    if (fSampleRate[ddl] == 0) 
+      fSampleRate[ddl] = pars->GetSampleRate(det, ring, sec, strbase);
     
     // Loop over the `timebins', and make the digits
     for (size_t i = 0; i < last; i++) {
@@ -360,7 +407,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
       AliFMDDebug(15, ("0x%04x/0x%03x/%04d %4d", ddl, hwaddr, i, data[i]));
 
       Short_t  stroff = 0;
-      map->Timebin2Strip(sec, i, preSamp, rate, stroff, samp);
+      map->Timebin2Strip(sec, i, preSamp, fSampleRate[ddl], stroff, samp);
       Short_t  str    = strbase + stroff;
       
       AliFMDDebug(10, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d", 
@@ -371,7 +418,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	continue;
       }
       
-      Short_t lstrip = (i - preSamp) / rate + stripMin;
+      Short_t lstrip = (i - preSamp) / fSampleRate[ddl] + stripMin;
       
       AliFMDDebug(15, ("Checking if strip %d (%d) in range [%d,%d]", 
 		      lstrip, str, stripMin, stripMax));
@@ -381,6 +428,9 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	data[i] = 0; // Reset cache 
 	continue;
       }
+      // Possibly do pedestal subtraction of signal 
+      Int_t counts = data[i];
+	
       
       // Check the cache of indicies
       Int_t idx = fSeen(det, ring, sec, str);
@@ -391,11 +441,11 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		       det, ring, sec, str, samp, i));
 	new ((*array)[idx]) AliFMDDigit(det, ring, sec, str);
       }
-      AliFMDDigit* digit = static_cast<AliFMDDigit*>(array->At(idx));
+      AliFMDBaseDigit* digit = static_cast<AliFMDBaseDigit*>(array->At(idx));
       AliFMDDebug(10,
-		  ("Setting from FMD%d%c[%2d,%3d]-%d from timebin %4d = %4d", 
-		   det, ring, sec, str, samp, i, data[i]));
-      digit->SetCount(samp, data[i]);
+		  ("Setting FMD%d%c[%2d,%3d]-%d from timebin %4d=%4d (%4d)", 
+		   det, ring, sec, str, samp, i, counts, data[i]));
+      digit->SetCount(samp, counts);
       data[i] = 0; // Reset cache 
     }
   }

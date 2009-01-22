@@ -90,7 +90,7 @@ public:
       std::cout << "No track" << std::endl;
       return kFALSE;
     }
-    if (!p->IsPrimary()) return kTRUE;
+    // if (!p->IsPrimary()) return kTRUE;
     if (hit->IsStop()) return kTRUE;
 
     Float_t x = hit->P();
@@ -103,7 +103,7 @@ public:
     y /= q * q;
     fElossVsPMQ->Fill(x, y);
     fEloss->Fill(y);
-
+    fNHits++;
     return kTRUE;
   }
   //__________________________________________________________________
@@ -155,24 +155,27 @@ public:
 
     c = new TCanvas("eloss", "Energy loss per unit material");
     // c->SetLogx();
-    c->SetLogy();
-    fEloss->Scale(1. / fEloss->GetEntries());
-    fEloss->GetXaxis()->SetRangeUser(1, 10);
-    fEloss->Fit("landau", "", "", 1, 10);
-    TF1* land = fEloss->GetFunction("landau");
-    land->SetLineWidth(2);
-    Double_t max = fEloss->GetMaximum();
-    TGraph* resp  = GetResp();
-    Double_t* x   = resp->GetX();
-    Double_t* y   = resp->GetY();
-    TGraph*   g   = new TGraph(resp->GetN());
-    TGraph*   co  = GetCorr();
-    std::cout << "Correction factor: " << co->Eval(fBetaGammaMip) << std::endl;
-    Double_t  xs  = fRho; // * 1.19; // / 
-    for (Int_t i = 0; i < g->GetN(); i++) 
-      g->SetPoint(i, x[i] * xs, y[i] * max);
-    g->Draw("C same");
-
+    if (fEloss->GetEntries() != 0) { 
+      c->SetLogy();
+      fEloss->Scale(1. / fEloss->GetEntries());
+      fEloss->GetXaxis()->SetRangeUser(1, 10);
+      fEloss->Fit("landau", "", "", 1, 10);
+      TF1* land = fEloss->GetFunction("landau");
+      land->SetLineWidth(2);
+      Double_t max = fEloss->GetMaximum();
+      TGraph* resp  = GetResp();
+      Double_t* x   = resp->GetX();
+      Double_t* y   = resp->GetY();
+      TGraph*   g   = new TGraph(resp->GetN());
+      TGraph*   co  = GetCorr();
+      std::cout << "Correction factor: " << co->Eval(fBetaGammaMip) 
+		<< std::endl;
+      Double_t  xs  = fRho; // * 1.19; // / 
+      for (Int_t i = 0; i < g->GetN(); i++) 
+	g->SetPoint(i, x[i] * xs, y[i] * max);
+      g->Draw("C same");
+    }
+    
     l = new TLegend(.6, .6, .89, .89);
     l->AddEntry(fEloss, fEloss->GetTitle(), "lf");
     l->AddEntry(land,   "Landau fit", "l");

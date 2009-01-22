@@ -231,7 +231,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
     fShapingTime(6),
-    fStoreTrackRefs(kFALSE)
+    fStoreTrackRefs(kTRUE)
 {
   AliFMDDebug(1, ("Constructed"));
   // Default ctor - don't use it
@@ -247,7 +247,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips), 
     fShapingTime(6),
-    fStoreTrackRefs(kFALSE)
+    fStoreTrackRefs(kTRUE)
 {
   // Normal CTOR
   AliFMDDebug(1, ("Constructed"));
@@ -265,7 +265,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
     fShapingTime(6),
-    fStoreTrackRefs(kFALSE)
+    fStoreTrackRefs(kTRUE)
 {
   // Normal CTOR
   AliFMDDebug(1, (" Constructed"));
@@ -314,7 +314,8 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 				     UShort_t strip, 
 				     Float_t  edep, 
 				     Bool_t   isPrimary,
-				     Int_t    trackno)
+				     Int_t    nTrack,
+				     Int_t*   tracknos)
 {
   // Add edep contribution from (detector,ring,sector,strip) to cache
   AliFMDParameters* param = AliFMDParameters::Instance();
@@ -341,15 +342,17 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
       
   // Sum energy deposition
   entry.fEdep += edep;
-  entry.fN    += 1;
-  if (isPrimary) entry.fNPrim += 1;
+  entry.fN    += nTrack;
+  if (isPrimary) entry.fNPrim += nTrack;
   if (fStoreTrackRefs) { 
+    Int_t oldN = entry.fLabels.fN;
     entry.fLabels.Set(entry.fN);
-    entry.fLabels[entry.fN-1] = trackno;
+    for (Int_t i = 0; i < nTrack; i++) 
+      entry.fLabels[oldN + i] = tracknos[i];
   }
-  AliFMDDebug(15, ("Adding contribution %f to FMD%d%c[%2d,%3d] (%f)", 
+  AliFMDDebug(15, ("Adding contribution %f to FMD%d%c[%2d,%3d] (%f) track %d", 
 		   edep, detector, ring, sector, strip,
-		   entry.fEdep));
+		   entry.fEdep, (nTrack > 0 ? tracknos[0] : -1)));
   
 }
 
@@ -428,7 +431,7 @@ AliFMDBaseDigitizer::DigitizeHits() const
 		   Short_t(counts[2]), Short_t(counts[3]), 
 		   ntot, nprim, labels);
 	  AliFMDDebug(15, ("   Adding digit in FMD%d%c[%2d,%3d]=%d", 
-			  detector,ring,sector,strip,counts[0]));
+			   detector,ring,sector,strip,counts[0]));
 #if 0
 	  // This checks if the digit created will give the `right'
 	  // number of particles when reconstructed, using a naiive
@@ -550,12 +553,12 @@ AliFMDBaseDigitizer::AddDigit(UShort_t        detector,
 			      Short_t         count4,
 			      UShort_t        /* ntot */, 
 			      UShort_t        /* nprim */,
-			      const TArrayI&  /* refs */) const
+			      const TArrayI&  refs) const
 {
   // Add a digit or summable digit
   
   fFMD->AddDigitByFields(detector, ring, sector, strip, 
-			 count1, count2, count3, count4);
+			 count1, count2, count3, count4, refs);
 }
 
 //____________________________________________________________________

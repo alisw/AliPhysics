@@ -430,7 +430,8 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
 		      fmdHit->Strip(),
 		      fmdHit->Edep(), 
 		      isPrimary, 
-		      trackno);
+		      1, 
+		      &trackno);
     }  // hit loop
   } // track loop
   AliFMDDebug(5, ("Size of cache: %d bytes, read %d bytes", 
@@ -469,6 +470,9 @@ AliFMDHitDigitizer::AddDigit(UShort_t        detector,
 {
   // Add a digit or summable digit
   if (fOutput == kDigits) { 
+    AliFMDDebug(15,("Adding digit for FMD%d%c[%2d,%3d] = (%x,%x,%x,%x)",
+		    detector, ring, sector, strip, 
+		    count1, count2, count3, count4));
     AliFMDBaseDigitizer::AddDigit(detector, ring, sector, strip, 0,
 				  count1, count2, count3, count4, 0, 0, refs);
     return;
@@ -484,9 +488,10 @@ AliFMDHitDigitizer::AddDigit(UShort_t        detector,
 		    detector, ring, sector, strip));
     return;
   }
-  AliFMDDebug(15, ("Adding digit for FMD%d%c[%2d,%3d] = (%x,%x,%x,%x) [%d/%d]",
+  AliFMDDebug(15, ("Adding sdigit for FMD%d%c[%2d,%3d] = "
+		   "(%x,%x,%x,%x) [%d/%d] %d",
 		   detector, ring, sector, strip, 
-		   count1, count2, count3, count4, nprim, ntotal));
+		   count1, count2, count3, count4, nprim, ntotal, refs.fN));
   fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
 			  count1, count2, count3, count4, 
 			  ntotal, nprim, refs);

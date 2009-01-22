@@ -15,16 +15,39 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//Struct to encode a strip address into one integer
-//developed by Christian Holm Christensen (cholm@nbi.dk).
-// The functions are static
-// to ensure applicability from anywhere. This is needed to smoothly store
-//strip addresses in track references.
+// Struct to encode a strip address into one integer
+// developed by Christian Holm Christensen (cholm@nbi.dk).
+// 
+// The functions are static to ensure applicability from
+// anywhere. This is needed to smoothly store strip addresses in track
+// references. 
+//
 // Added by Hans H. Dalsgaard (hans.dalsgaard@cern.ch) 
 
 
-struct AliFMDStripIndex
+class AliFMDStripIndex
 {
+public:
+  /** 
+   * Constructor
+   * 
+   */  
+  AliFMDStripIndex() {}
+  /** 
+   * Destructor 
+   * 
+   */
+  virtual ~AliFMDStripIndex() {}
+  /** 
+   * Pack an identifier from detector coordinates
+   * 
+   * @param det  Detector
+   * @param rng  Ring
+   * @param sec  Sector
+   * @param str  Strip
+   * 
+   * @return Packed identifier 
+   */
   static UInt_t Pack(UShort_t det, Char_t rng, UShort_t sec, UShort_t str) 
   {
     UInt_t irg  = (rng == 'I' || rng == 'i' ? 0 : 1);
@@ -34,8 +57,17 @@ struct AliFMDStripIndex
 		   ((det & 0x003) << 17));
     return id;
   }
+  /** 
+   * Unpack an identifier to detector coordinates
+   * 
+   * @param id   Identifier to unpack
+   * @param det  On return, the detector
+   * @param rng  On return, the ring
+   * @param sec  On return, the sector
+   * @param str  On return, the strip
+   */  
   static void Unpack(UInt_t id, 
-	      UShort_t& det, Char_t& rng, UShort_t& sec, UShort_t& str)
+		     UShort_t& det, Char_t& rng, UShort_t& sec, UShort_t& str)
   {
     str = ((id >>  0) & 0x1FF);
     sec = ((id >>  9) & 0x03F);
@@ -43,6 +75,11 @@ struct AliFMDStripIndex
     det = ((id >> 17) & 0x003);
   }
 
-  ClassDef(AliFMDStripIndex,0)
+  ClassDef(AliFMDStripIndex,1)
 };
 #endif
+//
+// Local Variables:
+//   mode: C++
+// End:
+//

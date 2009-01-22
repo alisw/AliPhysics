@@ -28,9 +28,9 @@ Simulate(Int_t n=1)
   sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
   sim.SetMakeSDigits("FMD");
   sim.SetMakeDigits("FMD"); 
-  sim.SetWriteRawData("FMD"); 
+  sim.SetWriteRawData("FMD", "raw.root"); 
   // sim.SetMakeDigitsFromHits("FMD"); 
-  sim.SetRunQA(":");
+  sim.SetRunQA("FMD:ALL");
   TStopwatch w; 
   w.Start(); 
   sim.Run(n);  

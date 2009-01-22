@@ -79,7 +79,9 @@ AliFMDSDigit::AliFMDSDigit()
     fCount2(-1),
     fCount3(-1), 
     fCount4(-1), 
-    fLabels(0)
+    fNParticles(0),
+    fNPrimaries(0)
+    // ,     fLabels(0)
 {
   // cTOR 
 }
@@ -104,8 +106,8 @@ AliFMDSDigit::AliFMDSDigit(UShort_t       detector,
     fCount3(count3),
     fCount4(count4),
     fNParticles(npart), 
-    fNPrimaries(nprim), 
-    fLabels(refs)
+    fNPrimaries(nprim)
+    // , fLabels(refs)
 {
   //
   // Creates a real data digit object
@@ -120,6 +122,7 @@ AliFMDSDigit::AliFMDSDigit(UShort_t       detector,
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word) -1 if not used
   //    count3    ADC count (a 10-bit word) -1 if not used
+  for (Int_t i = 0; i < refs.fN; i++) AddTrack(refs.fArray[i]);
 }
 
 //____________________________________________________________________
@@ -128,17 +131,28 @@ AliFMDSDigit::Print(Option_t* option) const
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  std::cout << "\t" << fEdep << " -> "
-	    << fCount1 << " (" << fCount2 << "," << fCount3 << "," 
-	    << fCount4 << ") = " << Counts() << std::flush;
+  std::cout << "\t" 
+	    << std::setw(10) << fEdep << " -> "
+	    << std::setw(4) << fCount1 << " (" 
+	    << std::setw(4) << fCount2 << "," 
+	    << std::setw(4) << fCount3 << "," 
+	    << std::setw(4) << fCount4 << ") = " 
+	    << std::setw(4) << Counts() << std::flush;
+
   TString opt(option);
   if (opt.Contains("p", TString::kIgnoreCase)) 
-    std::cout << " [" << fNPrimaries << "/" << fNParticles << "]"
+    std::cout << " [" 
+	      << std::setw(2) << fNPrimaries << "/" 
+	      << std::setw(2) << fNParticles << "]"
 	      << std::flush;
   if (opt.Contains("l", TString::kIgnoreCase)) {
     std::cout << " ";
+    for (Int_t i = 0; i < GetNTrack(); i++) 
+      std::cout << (i == 0 ? "" : ",") << std::setw(5) << fTracks[i];
+#if 0
     for (Int_t i = 0; i < fLabels.fN; i++) 
       std::cout << (i == 0 ? "" : ",") << fLabels.fArray[i];
+#endif
   }
   std::cout << std::endl;
 }

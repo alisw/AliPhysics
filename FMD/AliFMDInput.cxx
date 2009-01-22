@@ -93,6 +93,7 @@ AliFMDInput::AliFMDInput()
     fChainE(0),
     fArrayE(0),
     fArrayH(0),
+    fArrayTR(0), 
     fArrayD(0),
     fArrayS(0), 
     fArrayR(0), 
@@ -136,6 +137,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fChainE(0),
     fArrayE(0),
     fArrayH(0),
+    fArrayTR(0), 
     fArrayD(0),
     fArrayS(0), 
     fArrayR(0), 
@@ -160,6 +162,7 @@ AliFMDInput::NEvents() const
 {
   // Get number of events
   if (TESTBIT(fTreeMask, kRaw)) return fReader->GetNumberOfEvents();
+  if (fChainE) return fChainE->GetEntriesFast();
   if (fTreeE) return fTreeE->GetEntries();
   return -1;
 }
@@ -175,38 +178,71 @@ AliFMDInput::Init()
     AliWarning("Already initialized");
     return fIsInit;
   }
+  Info("Init","Initialising w/mask 0x%04x\n"
+       "\tHits:          %d\n"
+       "\tKinematics:    %d\n"
+       "\tDigits:        %d\n"
+       "\tSDigits:       %d\n"
+       "\tHeader:        %d\n"
+       "\tRecPoints:     %d\n"
+       "\tESD:           %d\n"
+       "\tRaw:           %d\n"
+       "\tGeometry:      %d\n"
+       "\tTracks:        %d\n"
+       "\tTracksRefs:    %d",
+       fTreeMask,
+       TESTBIT(fTreeMask, kHits),
+       TESTBIT(fTreeMask, kKinematics),
+       TESTBIT(fTreeMask, kDigits),
+       TESTBIT(fTreeMask, kSDigits),
+       TESTBIT(fTreeMask, kHeader),
+       TESTBIT(fTreeMask, kRecPoints),
+       TESTBIT(fTreeMask, kESD),
+       TESTBIT(fTreeMask, kRaw),
+       TESTBIT(fTreeMask, kGeometry),
+       TESTBIT(fTreeMask, kTracks),
+       TESTBIT(fTreeMask, kTrackRefs));
   // Get the run 
-  if (!TESTBIT(fTreeMask, kRaw) && 
-      !TESTBIT(fTreeMask, kESD)) { 
-    if (fGAliceFile.IsNull()) fGAliceFile = "galice.root";
-    // Get the loader
-    fLoader = AliRunLoader::Open(fGAliceFile.Data(), "Alice", "read");
-    if (!fLoader) {
-      AliError(Form("Coulnd't read the file %s", fGAliceFile.Data()));
-      return kFALSE;
+  if (TESTBIT(fTreeMask, kDigits)     ||
+      TESTBIT(fTreeMask, kSDigits)    || 
+      TESTBIT(fTreeMask, kKinematics) || 
+      TESTBIT(fTreeMask, kTrackRefs)  || 
+      TESTBIT(fTreeMask, kTracks)     || 
+      TESTBIT(fTreeMask, kHeader)) {
+    if (!gSystem->FindFile(".:/", fGAliceFile)) {
+      AliWarning(Form("Cannot find file %s in .:/", fGAliceFile.Data()));
     }
-  
-    if  (fLoader->LoadgAlice()) return kFALSE;
-    fRun = fLoader->GetAliRun();
-  
-    // Get the FMD 
-    fFMD = static_cast<AliFMD*>(fRun->GetDetector("FMD"));
-    if (!fFMD) {
-      AliError("Failed to get detector FMD from loader");
-      return kFALSE;
+    else {
+      fLoader = AliRunLoader::Open(fGAliceFile.Data(), "Alice", "read");
+      if (!fLoader) {
+	AliError(Form("Coulnd't read the file %s", fGAliceFile.Data()));
+	return kFALSE;
+      }
+      AliInfo(Form("Opened GAlice file %s", fGAliceFile.Data()));
+
+      if  (fLoader->LoadgAlice()) return kFALSE;
+      
+      fRun = fLoader->GetAliRun();
+      
+      // Get the FMD 
+      fFMD = static_cast<AliFMD*>(fRun->GetDetector("FMD"));
+      if (!fFMD) {
+	AliError("Failed to get detector FMD from loader");
+	return kFALSE;
+      }
+      
+      // Get the FMD loader
+      fFMDLoader = fLoader->GetLoader("FMDLoader");
+      if (!fFMDLoader) {
+	AliError("Failed to get detector FMD loader from loader");
+	return kFALSE;
+      }
+      if (fLoader->LoadHeader()) { 
+	AliError("Failed to get event header information from loader");
+	return kFALSE;
+      }
+      fTreeE = fLoader->TreeE();
     }
-  
-    // Get the FMD loader
-    fFMDLoader = fLoader->GetLoader("FMDLoader");
-    if (!fFMDLoader) {
-      AliError("Failed to get detector FMD loader from loader");
-      return kFALSE;
-    }
-    if (fLoader->LoadHeader()) { 
-      AliError("Failed to get event header information from loader");
-      return kFALSE;
-    }
-    fTreeE = fLoader->TreeE();
   }
 
   // Optionally, get the ESD files
@@ -361,7 +397,10 @@ AliFMDInput::Begin(Int_t event)
   // Possibly load FMD Sdigit information 
   if (TESTBIT(fTreeMask, kSDigits)) {
     // AliInfo("Getting FMD summable digits");
-    if (!fFMDLoader || fFMDLoader->LoadSDigits("READ")) return kFALSE;
+    if (!fFMDLoader || fFMDLoader->LoadSDigits("READ")) { 
+      AliWarning("Failed to load SDigits!");
+      return kFALSE;
+    }
     fTreeS = fFMDLoader->TreeS();
     if (!fArrayS) fArrayS = fFMD->SDigits();
   }
@@ -428,10 +467,10 @@ AliFMDInput::Event()
     if (!ProcessTrackRefs()) return kFALSE; 
   if (TESTBIT(fTreeMask, kTracks)) 
     if (!ProcessTracks()) return kFALSE; 
-  if (TESTBIT(fTreeMask, kDigits)) 
-    if (!ProcessDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kSDigits)) 
     if (!ProcessSDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kDigits)) 
+    if (!ProcessDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kRaw)) 
     if (!ProcessRawDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kRecPoints)) 
@@ -606,9 +645,13 @@ AliFMDInput::ProcessSDigits()
   Int_t nEv = fTreeS->GetEntries();
   for (Int_t i = 0; i < nEv; i++) {
     Int_t sdigitRead  = fTreeS->GetEntry(i);
-    if (sdigitRead <= 0) continue;
-    Int_t nSdigit = fArrayS->GetEntries();
+    if (sdigitRead <= 0) { 
+      AliInfo(Form("Read nothing from tree"));
+      continue;
+    }
+    Int_t nSdigit = fArrayS->GetEntriesFast();
     AliFMDDebug(0, ("Got %5d digits for this event", nSdigit));
+    AliInfo(Form("Got %5d digits for this event", nSdigit));
     if (nSdigit <= 0) continue;
     for (Int_t j = 0; j < nSdigit; j++) {
       AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fArrayS->At(j));

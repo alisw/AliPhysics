@@ -115,8 +115,11 @@
 //#endif
 // #include "AliFMDGeometryBuilder.h"
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
+#include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H
 #include "AliTrackReference.h" 
 #include "AliFMDStripIndex.h"
+#include "AliFMDParameters.h"
+#include "AliFMDReconstructor.h"
 
 //____________________________________________________________________
 ClassImp(AliFMD)
@@ -696,14 +699,15 @@ AliFMD::AddDigit(Int_t* digits, Int_t*)
 
 //____________________________________________________________________
 void 
-AliFMD::AddDigitByFields(UShort_t detector, 
-			 Char_t   ring, 
-			 UShort_t sector, 
-			 UShort_t strip, 
-			 UShort_t count1, 
-			 Short_t  count2,
-			 Short_t  count3, 
-			 Short_t  count4)
+AliFMD::AddDigitByFields(UShort_t       detector, 
+			 Char_t         ring, 
+			 UShort_t       sector, 
+			 UShort_t       strip, 
+			 UShort_t       count1, 
+			 Short_t        count2,
+			 Short_t        count3, 
+			 Short_t        count4,
+			 const TArrayI& refs)
 {
   // add a real digit - as coming from data
   // 
@@ -719,11 +723,13 @@ AliFMD::AddDigitByFields(UShort_t detector,
   TClonesArray& a = *(DigitsArray());
   
   new (a[fNdigits++]) 
-    AliFMDDigit(detector, ring, sector, strip, count1, count2, count3, count4);
-  AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]=(%d,%d,%d,%d)",
+    AliFMDDigit(detector, ring, sector, strip, 
+		count1, count2, count3, count4, refs);
+  AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]"
+		   "=(%d,%d,%d,%d) with %d tracks",
 		   fNdigits-1, a.GetEntriesFast(),
 		   detector, ring, sector, strip, 
-		   count1, count2, count3, count4));
+		   count1, count2, count3, count4, refs.fN));
   
 }
 
@@ -905,6 +911,45 @@ AliFMD::Digits2Raw()
   // to that class for more information. 
   AliFMDRawWriter writer(this);
   writer.Exec();
+}
+
+//====================================================================
+//
+// Raw data reading 
+//
+//__________________________________________________________________
+Bool_t
+AliFMD::Raw2SDigits(AliRawReader* reader) 
+{
+  // Turn digits into raw data. 
+  // 
+  // This uses the class AliFMDRawWriter to do the job.   Please refer
+  // to that class for more information. 
+  AliFMDParameters::Instance()->Init();
+  MakeTree("S");
+  MakeBranch("S");
+  
+  TClonesArray*       sdigits = SDigits();
+  AliFMDReconstructor rec;
+  
+  // The two boolean arguments
+  //   Make sdigits instead of digits 
+  //   Subtract the pedestal off the signal
+  rec.Digitize(reader, sdigits);
+  // 
+  // Bool_t ret = fmdReader.ReadAdcs(sdigits, kTRUE, kTRUE);
+  // sdigits->ls();
+  UShort_t ns = sdigits->GetEntriesFast();
+  for (UShort_t i = 0; i < ns; i++) 
+    sdigits->At(i)->Print("pl");
+  
+  AliFMDDebug(1, ("Got a total of %d SDigits", ns));
+
+  fLoader->TreeS()->Fill();
+  ResetSDigits();
+  fLoader->WriteSDigits("OVERWRITE");
+
+  return kTRUE;
 }
 
 

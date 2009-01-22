@@ -433,14 +433,15 @@ public:
       @param count1    ADC count (a 10-bit word)
       @param count2    ADC count (a 10-bit word), or -1 if not used
       @param count3    ADC count (a 10-bit word), or -1 if not used */
-  virtual        void   AddDigitByFields(UShort_t detector=0, 
-					 Char_t   ring='\0', 
-					 UShort_t sector=0, 
-					 UShort_t strip=0, 
-					 UShort_t count1=0, 
-					 Short_t  count2=-1, 
-					 Short_t  count3=-1, 
-					 Short_t  count4=-1);
+  virtual        void   AddDigitByFields(UShort_t       detector=0, 
+					 Char_t         ring='\0', 
+					 UShort_t       sector=0, 
+					 UShort_t       strip=0, 
+					 UShort_t       count1=0, 
+					 Short_t        count2=-1, 
+					 Short_t        count3=-1, 
+					 Short_t        count4=-1, 
+					 const TArrayI& refs=TArrayI());
   /** Add a digit to the Digit tree 
       @param digits
       - digits[0]  [UShort_t] Detector #
@@ -495,16 +496,30 @@ public:
 
   /** @{ */
   /** @name Raw data */
-  /** Turn digits into raw data. This uses the class AliFMDRawWriter
-      to do the job.   Please refer to that class for more
-      information. */
-  virtual        void   Digits2Raw();
+  /** 
+   * Turn digits into raw data. This uses the class AliFMDRawWriter to
+   * do the job.  Please refer to that class for more information.
+   */
+  virtual void   Digits2Raw();
+  /** 
+   * Convert raw data to sdigits
+   * 
+   * @param reader Raw reader
+   * 
+   * @return @c true on success
+   */
+  virtual Bool_t Raw2SDigits(AliRawReader* reader);
   /** @}*/
 
   /** @{ */
-  /** @name Utility */
-  /** Browse this object 
-      @param b Browser to show this object in */
+  /** 
+   * @name Utility 
+   */
+  /** 
+   * Browse this object 
+   *
+   * @param b Browser to show this object in 
+   */
   void   Browse(TBrowser* b);
   /** @}*/
 protected:

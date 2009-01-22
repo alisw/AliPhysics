@@ -47,18 +47,34 @@ class AliFMDCalibStripRange;
 class AliFMDRawReader : public TTask 
 {
 public:
-  /** CTOR 
-      @param reader Raw reader
-      @param array  Output tree */
+  /** 
+   * CTOR 
+   *
+   * @param reader Raw reader
+   * @param array  Output tree 
+   */
   AliFMDRawReader(AliRawReader* reader, TTree* array);
-  /** DTOR */
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDRawReader() {}
-  /** Read in, and store in output tree 
-      @param option Not used */
+  /** 
+   * Read in, and store in output tree 
+   *
+   * @param option Not used 
+   */
   virtual void   Exec(Option_t* option="");
-  /** Read ADC's into a TClonesArray of AliFMDDigit objects. 
-      @param array Array to read into 
-      @return @c true on success */
+  /**
+   * Read ADC's into a TClonesArray of AliFMDDigit objects. 
+   *
+   * @param array       Array to read into 
+   * @param summable    Create SDigits rather than digits 
+   * @param pedSub      Whether to do pedestal subtraction.
+   * @param noiseFactor If we do pedestal subtraction, then this is
+   *        the number we use to suppress remenants of the noise.
+   * 
+   * @return @c true on success 
+   */
   virtual Bool_t ReadAdcs(TClonesArray* array);
   /** 
    * Read SOD event into passed objects.
@@ -92,16 +108,55 @@ public:
    */
   UShort_t NoiseFactor(UShort_t ddl) const { return fNoiseFactor[ddl]; }
 
+  /** 
+   * Get the next signal
+   * 
+   * @param det  On return, the detector
+   * @param rng  On return, the ring
+   * @param sec  On return, the sector
+   * @param str  On return, the strip
+   * @param sam  On return, the sample
+   * @param rat  On return, the sample rate
+   * @param adc  On return, the ADC value
+   * @param zs   On return, whether zero-supp. is enabled
+   * @param fac  On return, the usd noise factor
+   * 
+   * @return true if valid data is returned
+   */
+  Bool_t NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec, UShort_t& str,
+		    UShort_t& sam, UShort_t& rat, Short_t&  adc, 
+		    Bool_t&   zs,  UShort_t& fac);
+  /** 
+   * Get the next signal
+   * 
+   * @param det  On return, the detector
+   * @param rng  On return, the ring
+   * @param sec  On return, the sector
+   * @param str  On return, the strip
+   * @param adc  On return, the ADC value
+   * @param zs   On return, whether zero-supp. is enabled
+   * @param fac  On return, the usd noise factor
+   * 
+   * @return true if valid data is returned
+   */
   Bool_t NextSignal(UShort_t& det, Char_t&   rng, 
 		    UShort_t& sec, UShort_t& str, 
 		    Short_t&  adc, Bool_t&   zs, 
 		    UShort_t& fac);
+  /** 
+   * Whether to keep a sample based on the rate used. 
+   * 
+   * @param samp Sample number 
+   * @param rate Over sampling rate
+   * 
+   * @return Whether to keep the sample or not
+   */
+  static Bool_t SelectSample(UShort_t samp, UShort_t rate);
 protected:
   AliFMDRawReader(const AliFMDRawReader& o) 
     : TTask(o), 
       fTree(0), 
       fReader(0), 
-      fSampleRate(0),
       fData(0),
       fNbytes(0), 
       fSeen()
@@ -112,7 +167,7 @@ protected:
   Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board);
   TTree*          fTree;       //! Pointer to tree to read into 
   AliRawReader*   fReader;     //! Pointer to raw reader 
-  UShort_t        fSampleRate; // The sample rate (if 0, inferred from data)
+  UShort_t        fSampleRate[3]; // The sample rate (if 0, inferred from data)
   UChar_t*        fData; 
   ULong_t  	  fNbytes; 
   Bool_t          fZeroSuppress[3];

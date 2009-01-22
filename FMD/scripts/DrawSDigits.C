@@ -68,6 +68,7 @@ public:
     
   //__________________________________________________________________
   DrawSDigits(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1023.5) 
+    : AliFMDInput("galice.root")
   { 
     AddLoad(kSDigits);
     AddLoad(kGeometry);
@@ -121,6 +122,7 @@ public:
   {
     if (!digit) return kTRUE;
     fAdc->Fill(digit->Counts());
+    digit->Print("lp");
     if (digit->NParticles() == 0) return kTRUE;
     
 
@@ -143,7 +145,6 @@ public:
     Double_t ratio = digit->NPrimaries() / digit->NParticles();
     if (phi < 0) phi += 360;
     fPrimRatio[primIdx]->Fill(eta, phi, ratio);
-    
     return kTRUE;
   }
   //__________________________________________________________________

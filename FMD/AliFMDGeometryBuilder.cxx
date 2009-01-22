@@ -654,9 +654,12 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   AliFMDRing* r             = fmd1->GetInner();
   Double_t    z             = fmd1->GetInnerZ();  
   
+  // `Top' or `Outside' master volume
   TGeoVolume* fmd1TopVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
 							  fmd1->GetId(), 'T'));
   fmd1TopVolume->SetTitle("FMD1 top half");
+
+  // `Bottom' or `Inside' master volume
   TGeoVolume* fmd1BotVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
 							  fmd1->GetId(), 'B'));
   fmd1BotVolume->SetTitle("FMD1 bottom half");
@@ -728,11 +731,57 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   TGeoRotation* rot = new TGeoRotation("FMD1 rotatation");
   rot->RotateZ(90);
   TGeoMatrix* matrix = new TGeoCombiTrans("FMD1 trans", 0, 0, z, rot);
+
   AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd1TopVolume->GetName(), fmd1BotVolume->GetName(), z));
   top->AddNode(fmd1TopVolume, fmd1->GetId(), matrix);
   top->AddNode(fmd1BotVolume, fmd1->GetId(), matrix);
+
+
+  // Survey points on V0A (screw holes for the FMD) 
+  const Double_t icb[] = { +12.700, -21.997, 324.670 };
+  const Double_t ict[] = { +12.700, +21.997, 324.670 };
+  const Double_t ocb[] = { -12.700, -21.997, 324.670 };
+  const Double_t oct[] = { -12.700, +21.997, 324.670 };
+
+  TGeoTube* surveyShape = new TGeoTube("FMD1_survey_marker", 
+					0, .2, .001);
+
+  TGeoMatrix* outMat = matrix;
+#if 0
+  if (gGeoManager->cd("/ALIC_1/F1MT_1")) 
+    outMat = gGeoManager->GetCurrentMatrix();
+  else 
+    AliWarning("Couldn't cd to /ALIC_1/F1MT_1");
+#endif
+
+  Double_t loct[3], locb[3];
+  outMat->MasterToLocal(oct, loct);
+  outMat->MasterToLocal(ocb, locb);
+  TGeoVolume* vOct = new TGeoVolume("V0L_OCT", surveyShape, fPlastic);
+  TGeoVolume* vOcb = new TGeoVolume("V0L_OCB", surveyShape, fPlastic);
   
+  fmd1TopVolume->AddNode(vOct, 1, new TGeoTranslation(loct[0],loct[1],loct[2]));
+  fmd1TopVolume->AddNode(vOcb, 1, new TGeoTranslation(locb[0],locb[1],locb[2]));
+    
+  
+  TGeoMatrix* inMat = matrix;
+#if 0
+  if (gGeoManager->cd("/ALIC_1/F1MT_1")) 
+    inMat = gGeoManager->GetCurrentMatrix();
+  else 
+    AliWarning("Couldn't cd to /ALIC_1/F1MT_1");
+#endif
+
+  Double_t lict[3], licb[3];
+  inMat->MasterToLocal(ict, lict);
+  inMat->MasterToLocal(icb, licb);
+  TGeoVolume* vIct = new TGeoVolume("V0L_ICT", surveyShape, fPlastic);
+  TGeoVolume* vIcb = new TGeoVolume("V0L_ICB", surveyShape, fPlastic);
+  
+  fmd1BotVolume->AddNode(vIct, 1, new TGeoTranslation(lict[0],lict[1],lict[2]));
+  fmd1BotVolume->AddNode(vIcb, 1, new TGeoTranslation(licb[0],licb[1],licb[2]));
+
   return 0;
 }
 
