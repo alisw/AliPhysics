@@ -35,8 +35,8 @@ Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 
 int runFlowAnalysisOnKine(Int_t aRuns = 20, const char* 
-			  //			  dir="/data/alice1/kolk/KineOnly3/")
-			  dir="/Users/snelling/alice_data/KineOnly3/")
+			  dir="/data/alice1/kolk/KineOnly3/")
+			  //dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -120,13 +120,15 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
   //flow event
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker(); 
   
-  AliFlowAnalysisWithQCumulants   *qc   = NULL;
-  AliFlowAnalysisWithCumulants    *gfc  = NULL;
-  AliFittingQDistribution         *fqd  = NULL;
-  AliFlowAnalysisWithLeeYangZeros *lyz1 = NULL;
-  AliFlowAnalysisWithLeeYangZeros *lyz2 = NULL;
-  AliFlowAnalysisWithMCEventPlane *mcep = NULL;
-  
+  AliFlowAnalysisWithQCumulants    *qc    = NULL;
+  AliFlowAnalysisWithCumulants     *gfc   = NULL;
+  AliFittingQDistribution          *fqd   = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz1  = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz2  = NULL;
+  AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
+  AliFlowAnalysisWithScalarProduct *sp    = NULL;
+  AliFlowAnalysisWithMCEventPlane  *mcep  = NULL;
+   
   //flow methods:
   //MCEP = monte carlo event plane
   AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
@@ -187,7 +189,39 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
 	}
       }
     }
-  
+
+ //LYZEP = Lee-Yang Zeroes event plane
+  AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
+  AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
+  if(LYZEP)
+    {
+      // read the input file from the second lyz run 
+      TString inputFileNameLYZEP = "outputLYZ2analysis.root" ;
+      TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+      if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
+	cerr << " ERROR: NO Second Run file... " << endl ; }
+      else { 
+	TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
+	if (!inputListLYZEP) {cout<<"list is NULL pointer!"<<endl;
+	}
+	else {
+	  cout<<"LYZEP input file/list read..."<<endl;
+	  ep   ->SetSecondRunList(inputListLYZEP);
+	  lyzep->SetSecondRunList(inputListLYZEP);
+	  ep   ->Init();
+	  lyzep->Init();
+	}
+      }
+    }
+   
+  //SP = Scalar Product 
+  AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+  if(SP)
+    {
+      sp->Init();
+    }
+
+
   //------------------------------------------------------------------------
   
   //standard code
@@ -327,6 +361,20 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
 		  lyz2->Make(fEvent);
 		  cout<<"  --> LYZ2 analysis..."<<endl;
 		}
+	      //LYZEP
+	      if(LYZEP)
+		{
+		  lyzep->Make(fEvent,ep);
+		  cout<<"  --> LYZEP analysis..."<<endl;
+		}
+	      //SP
+	      if(SP)
+		{
+		  sp->Make(fEvent);
+		  cout<<"  --> SP analysis..."<<endl;
+		}
+
+
 
 	      //-----------------------------------------------------------
 	      
@@ -345,7 +393,7 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
     {
       mcep->Finish();
       TString *outputFileNameMCEP = new TString("outputMCEPanalysis.root");
-      //mcep->WriteHistograms(outputFileNameMCEP); //add this method
+      //mcep->WriteHistograms(outputFileNameMCEP); //add this method to MCEP classes
       delete outputFileNameMCEP;
     }
   //QC
@@ -388,6 +436,23 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
       lyz2->WriteHistograms(outputFileNameLYZ2);
       delete outputFileNameLYZ2;
     }
+  //LYZEP
+  if(LYZEP)
+    {
+      lyzep->Finish();
+      TString *outputFileNameLYZEP = new TString("outputLYZEPanalysis.root");
+      lyzep->WriteHistograms(outputFileNameLYZEP);
+      delete outputFileNameLYZEP;
+    }
+  //SP
+  if(SP)
+    {
+      sp->Finish();
+      TString *outputFileNameSP = new TString("outputSPanalysis.root");
+      sp->WriteHistograms(outputFileNameSP);
+      delete outputFileNameSP;
+    }
+
 
 
   //--------------------------------------------------------------
