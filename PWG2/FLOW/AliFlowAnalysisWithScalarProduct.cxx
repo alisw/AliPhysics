@@ -16,7 +16,7 @@
 #define AliFlowAnalysisWithScalarProduct_cxx
  
 #include "Riostream.h"  //needed as include
-//#include "TFile.h"      //needed as include
+#include "TFile.h"      //needed as include
 #include "TList.h"
 #include "TMath.h"
 #include "TProfile.h"
@@ -62,6 +62,17 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    delete fHistList;
  }
  
+
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString* outputFileName)
+{
+ //store the final results in output .root file
+
+  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+  output->WriteObject(fHistList, "cobjSP","SingleKey");
+  delete output;
+}
 
 //-----------------------------------------------------------------------
 void AliFlowAnalysisWithScalarProduct::Init() {

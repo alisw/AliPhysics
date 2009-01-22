@@ -240,7 +240,7 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //Q-cumulant analysis    
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);//cuts
     //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
     
     fQCA->Make(fEvent); 
@@ -344,12 +344,34 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   TProfile *QProduct = dynamic_cast<TProfile*>(fListHistos->FindObject("fQProduct"));
   
-  //average 2-, 3- and 4-particle correlations per bin 
-  TProfile *binned2p1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerBin1n1n"));
-  TProfile *binned2p2n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerBin2n2n"));
-  TProfile *binned3p2n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerBin2n1n1n"));
-  TProfile *binned3p1n1n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerBin1n1n2n"));
-  TProfile *binned4p1n1n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerBin1n1n1n1n"));
+  //average 2-, 3- and 4-particle correlations per pt-bin 
+  TProfile *binnedPt2p1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerPtBin1n1nRP"));
+  TProfile *binnedPt2p2n2nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerPtBin2n2nRP"));
+  TProfile *binnedPt3p2n1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerPtBin2n1n1nRP"));
+  TProfile *binnedPt3p1n1n2nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerPtBin1n1n2nRP"));
+  TProfile *binnedPt4p1n1n1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerPtBin1n1n1n1nRP"));
+  
+  //average 2-, 3- and 4-particle correlations per eta-bin 
+  TProfile *binnedEta2p1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerEtaBin1n1nRP"));
+  TProfile *binnedEta2p2n2nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerEtaBin2n2nRP"));
+  TProfile *binnedEta3p2n1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin2n1n1nRP"));
+  TProfile *binnedEta3p1n1n2nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin1n1n2nRP"));
+  TProfile *binnedEta4p1n1n1n1nRP = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerEtaBin1n1n1n1nRP"));  
+  
+  //average 2-, 3- and 4-particle correlations per pt-bin 
+  TProfile *binnedPt2p1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerPtBin1n1nPOI"));
+  TProfile *binnedPt2p2n2nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerPtBin2n2nPOI"));
+  TProfile *binnedPt3p2n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerPtBin2n1n1nPOI"));
+  TProfile *binnedPt3p1n1n2nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerPtBin1n1n2nPOI"));
+  TProfile *binnedPt4p1n1n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerPtBin1n1n1n1nPOI"));
+  
+  //average 2-, 3- and 4-particle correlations per eta-bin 
+  TProfile *binnedEta2p1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerEtaBin1n1nPOI"));
+  TProfile *binnedEta2p2n2nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f2PerEtaBin2n2nPOI"));
+  TProfile *binnedEta3p2n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin2n1n1nPOI"));
+  TProfile *binnedEta3p1n1n2nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin1n1n2nPOI"));
+  TProfile *binnedEta4p1n1n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerEtaBin1n1n1n1nPOI")); 
+  
   
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
@@ -376,11 +398,29 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetQProduct(QProduct);
   fQCA->SetQVectorComponents(QVectorComponents);
  
-  fQCA->SetTwo1n1nPerBin(binned2p1n1n);
-  fQCA->SetTwo2n2nPerBin(binned2p2n2n);
-  fQCA->SetThree2n1n1nPerBin(binned3p2n1n1n);
-  fQCA->SetThree1n1n2nPerBin(binned3p1n1n2n);
-  fQCA->SetFour1n1n1n1nPerBin(binned4p1n1n1n1n);
+  fQCA->SetTwo1n1nPerPtBinRP(binnedPt2p1n1nRP);
+  fQCA->SetTwo2n2nPerPtBinRP(binnedPt2p2n2nRP);
+  fQCA->SetThree2n1n1nPerPtBinRP(binnedPt3p2n1n1nRP);
+  fQCA->SetThree1n1n2nPerPtBinRP(binnedPt3p1n1n2nRP);
+  fQCA->SetFour1n1n1n1nPerPtBinRP(binnedPt4p1n1n1n1nRP);
+  
+  fQCA->SetTwo1n1nPerEtaBinRP(binnedEta2p1n1nRP);
+  fQCA->SetTwo2n2nPerEtaBinRP(binnedEta2p2n2nRP);
+  fQCA->SetThree2n1n1nPerEtaBinRP(binnedEta3p2n1n1nRP);
+  fQCA->SetThree1n1n2nPerEtaBinRP(binnedEta3p1n1n2nRP);
+  fQCA->SetFour1n1n1n1nPerEtaBinRP(binnedEta4p1n1n1n1nRP); 
+  
+  fQCA->SetTwo1n1nPerPtBinPOI(binnedPt2p1n1nPOI);
+  fQCA->SetTwo2n2nPerPtBinPOI(binnedPt2p2n2nPOI);
+  fQCA->SetThree2n1n1nPerPtBinPOI(binnedPt3p2n1n1nPOI);
+  fQCA->SetThree1n1n2nPerPtBinPOI(binnedPt3p1n1n2nPOI);
+  fQCA->SetFour1n1n1n1nPerPtBinPOI(binnedPt4p1n1n1n1nPOI);
+  
+  fQCA->SetTwo1n1nPerEtaBinPOI(binnedEta2p1n1nPOI);
+  fQCA->SetTwo2n2nPerEtaBinPOI(binnedEta2p2n2nPOI);
+  fQCA->SetThree2n1n1nPerEtaBinPOI(binnedEta3p2n1n1nPOI);
+  fQCA->SetThree1n1n2nPerEtaBinPOI(binnedEta3p1n1n2nPOI);
+  fQCA->SetFour1n1n1n1nPerEtaBinPOI(binnedEta4p1n1n1n1nPOI);    
  
   fQCA->SetDirectCorrelations(DirectCorrelations);
  
