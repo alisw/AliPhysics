@@ -1138,7 +1138,7 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
     g = (TGraphErrors*)eff->At(kNN);
     g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
     g->SetPointError(iMom, 0., fUtil->GetError());
-    g = (TGraphErrors*)thres->At(3+kNN);
+    g = (TGraphErrors*)thres->At(kNN);
     g->SetPoint(iMom, mom, fUtil->GetThreshold());
     g->SetPointError(iMom, 0., 0.);
 
@@ -1159,7 +1159,7 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
     g = (TGraphErrors*)eff->At(kESD);
     g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
     g->SetPointError(iMom, 0., fUtil->GetError());
-    g = (TGraphErrors*)thres->At(3+kESD);
+    g = (TGraphErrors*)thres->At(kESD);
     g->SetPoint(iMom, mom, fUtil->GetThreshold());
     g->SetPointError(iMom, 0., 0.);
 
