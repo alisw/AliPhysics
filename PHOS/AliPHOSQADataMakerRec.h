@@ -34,7 +34,10 @@ public:
                  kNtotLG,kNtotHG,kEtotLG,kEtotHG,
                  kLGtime,kHGtime,kSpecLG,kSpecHG,
                  kHGqualMod1,kHGqualMod2,kHGqualMod3,kHGqualMod4,kHGqualMod5,
-                 kHGpedRMS} ;
+		 kLGqualMod1,kLGqualMod2,kLGqualMod3,kLGqualMod4,kLGqualMod5,
+		 kHGpedRMSMod1,kHGpedRMSMod2,kHGpedRMSMod3,kHGpedRMSMod4,kHGpedRMSMod5,
+		 kLGpedRMSMod1,kLGpedRMSMod2,kLGpedRMSMod3,kLGpedRMSMod4,kLGpedRMSMod5,
+                 kHGpedRMS,kLGpedRMS} ;
   //Histograms for RecPoints  control
   enum HRPType_t {kRPmod1,kRPmod2,kRPmod3,kRPmod4,kRPmod5,
                 kRPNtot,kRPEtot,kRPSpec,kRPTime,kRPNcpv} ;
