@@ -11,22 +11,11 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TLorentzVector.h>
-#include <TVirtualMC.h>
 
 #include "AliDetector.h"
 
-#include "AliTRDTriggerL1.h"
-
-class TFile;
-class TLorentzVector;
-
-class AliRun;
-class AliDigit;
 class AliRawReader;
 
-class AliTRDhit;
-class AliTRDsim;
 class AliTRDgeometry;
 
 class AliTRD : public AliDetector {
@@ -43,7 +32,6 @@ class AliTRD : public AliDetector {
 
   virtual void     CreateGeometry();
   virtual void     CreateMaterials();
-  virtual void     DrawModule() const;
 
   virtual void     Hits2Digits();
   virtual void     Hits2SDigits();
@@ -65,34 +53,28 @@ class AliTRD : public AliDetector {
 
   virtual void     SetStepSize(Double_t s)    = 0;
   virtual void     SetHits()                             { };
-  virtual void     SetDrawTR(Int_t idraw = 1)            { fDrawTR      = idraw;         };
-  virtual void     SetDisplayType(Int_t type = 0)        { fDisplayType = type;          };
   virtual void     SetTR(Bool_t )             = 0;
 
   virtual Bool_t   GetTR() const              = 0;
-  AliTRDgeometry  *GetGeometry() const                   { return fGeometry;             };
 
+          AliTRDgeometry  *GetGeometry() const           { return fGeometry; };
   virtual AliDigitizer    *CreateDigitizer(AliRunDigitizer *manager) const; 
-  virtual AliTRDTriggerL1 *CreateTriggerDetector() const { return new AliTRDTriggerL1(); };
-  virtual AliLoader* MakeLoader(const char* topfoldername);
+  virtual AliLoader       *MakeLoader(const char* topfoldername);
 
  protected:
 
-  AliTRDgeometry  *fGeometry;           //  The TRD geometry
+  AliTRDgeometry       *fGeometry;             //  The TRD geometry
 
-          Float_t  fGasDensity;         //  The density of the drift gas
-          Float_t  fFoilDensity;        //  The density of the entrance window foil
-          Float_t  fGasNobleFraction;   //  The fraction of noble gas in the mixture
-
-          Int_t    fDrawTR;             //  Switches marking the TR photons in the display
-          Int_t    fDisplayType;        //  Display type (0: normal, 1: detailed) 
+  Float_t               fGasDensity;           //  The density of the drift gas
+  Float_t               fFoilDensity;          //  The density of the entrance window foil
+  Float_t               fGasNobleFraction;     //  The fraction of noble gas in the mixture
 
  private:
 
   AliTRD(const AliTRD &trd);
   AliTRD  &operator=(const AliTRD &trd);
 
-  ClassDef(AliTRD,10)                   //  Transition Radiation Detector base class
+  ClassDef(AliTRD,11)                          //  Transition Radiation Detector base class
 
 };
 

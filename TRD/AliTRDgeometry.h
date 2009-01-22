@@ -11,13 +11,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliGeometry.h"
-
 #include "TObjArray.h"
 
-class TGeoHMatrix;
+#include "AliGeometry.h"
 
-class AliRunLoader;
+class TGeoHMatrix;
 
 class AliTRDpadPlane;
 
@@ -221,8 +219,7 @@ class AliTRDgeometry : public AliGeometry {
 
   Char_t                fSMstatus[kNsector];                 //  Super module status byte
 
-  ClassDef(AliTRDgeometry,19)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,20)                                //  TRD geometry class
 
 };
-
 #endif

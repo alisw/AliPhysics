@@ -23,38 +23,19 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <Riostream.h>
-
-#include <TClonesArray.h>
-#include <TFile.h>
-#include <TLorentzVector.h>
-#include <TMath.h>
-#include <TParticle.h>
-#include <TROOT.h>
-#include <TTree.h>
 #include <TVirtualMC.h>
  
-#include "AliConst.h"
-#include "AliDigit.h"
-#include "AliLoader.h"
-#include "AliLog.h"
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
-#include "AliTrackReference.h"
-#include "AliRawReader.h"
 
 #include "AliTRD.h"
-#include "AliTRDdigit.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
 #include "AliTRDrawData.h"
 #include "AliTRDSimParam.h"
-#include "AliTRDCommonParam.h"
-#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRD)
  
@@ -65,8 +46,6 @@ AliTRD::AliTRD()
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
-  ,fDrawTR(0)
-  ,fDisplayType(0)
 {
   //
   // Default constructor
@@ -81,8 +60,6 @@ AliTRD::AliTRD(const char *name, const char *title)
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
-  ,fDrawTR(0)
-  ,fDisplayType(0)
 {
   //
   // Standard constructor for the TRD
@@ -327,7 +304,7 @@ void AliTRD::CreateGeometry()
   fGeometry->CreateGeometry(fIdtmed->GetArray() - 1299);
 
 }
- 
+
 //_____________________________________________________________________________
 void AliTRD::CreateMaterials()
 {
@@ -532,55 +509,6 @@ void AliTRD::CreateMaterials()
     fGasDensity       = dgmAr;
     fGasNobleFraction = fac;
   }
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::DrawModule() const
-{
-  //
-  // Draw a shaded view of the Transition Radiation Detector version 0
-  //
-
-  // Set everything unseen
-  gMC->Gsatt("*"   ,"SEEN",-1);
-  
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN", 0);
-  
-  // Set the volumes visible
-  if (fGeometry->IsVersion() == 0) {
-    gMC->Gsatt("B071","SEEN", 0);
-    gMC->Gsatt("B074","SEEN", 0);
-    gMC->Gsatt("B075","SEEN", 0);
-    gMC->Gsatt("B077","SEEN", 0);
-    gMC->Gsatt("BTR1","SEEN", 0);
-    gMC->Gsatt("BTR2","SEEN", 0);
-    gMC->Gsatt("BTR3","SEEN", 0);
-    gMC->Gsatt("UTR1","SEEN", 0);
-    gMC->Gsatt("UTR2","SEEN", 0);
-    gMC->Gsatt("UTR3","SEEN", 0);
-  }
-  else {
-    gMC->Gsatt("B071","SEEN", 0);
-    gMC->Gsatt("B074","SEEN", 0);
-    gMC->Gsatt("B075","SEEN", 0);
-    gMC->Gsatt("B077","SEEN", 0);
-    gMC->Gsatt("BTR1","SEEN", 0);
-    gMC->Gsatt("BTR2","SEEN", 0);
-    gMC->Gsatt("BTR3","SEEN", 0);
-    gMC->Gsatt("UTR1","SEEN", 0);
-  }
-  
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 12, 9.4, .021, .021);
-  gMC->Gdhead(1111, "Transition Radiation Detector");
-  gMC->Gdman(18, 4, "MAN");
 
 }
  

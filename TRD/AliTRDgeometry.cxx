@@ -23,19 +23,13 @@
 
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
-#include <TGeoMatrix.h>
+#include <TVirtualMC.h>
 
-#include "AliLog.h"
-#include "AliRunLoader.h"
-#include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
-#include "AliRun.h"
 
-#include "AliTRD.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDgeometry)
 
@@ -2507,7 +2501,7 @@ void AliTRDgeometry::GroupChamber(Int_t ilayer, Int_t istack, Int_t *idtmed)
     xyzBoxd[i] = 0.5*(xyzMax[i]-xyzMin[i]);
 
   }
-  
+
   sprintf(cTagM,"UT%02d",iDet);
   gMC->Gsvolu(cTagM,"BOX ",idtmed[1302-1],xyzBoxd,kNparCha);
 
