@@ -15,7 +15,7 @@ void CompareFlowResults()
  //                         accessing output files
  //==================================================================================
  //type of analysis was: ESD, AOD, MC, ESDMC0, ESDMC1
- const TString type = "ESD";
+ const TString type = "";
  
  //open the output files:
  TString inputFileNameMCEP = "outputMCEPanalysis";
@@ -24,11 +24,11 @@ void CompareFlowResults()
  
  TString inputFileNameLYZ1 = "outputLYZ1analysis";
  TFile* fileLYZ1 = NULL;
- fileLYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append("_firstrun.root")).Data(), "READ"); 
+ fileLYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append(".root")).Data(), "READ"); 
 
  TString inputFileNameLYZ2 = "outputLYZ2analysis";
  TFile* fileLYZ2 = NULL;
- fileLYZ2 = TFile::Open(((inputFileNameLYZ2.Append(type)).Append("_secondrun.root")).Data(), "READ"); 
+ fileLYZ2 = TFile::Open(((inputFileNameLYZ2.Append(type)).Append(".root")).Data(), "READ"); 
  
  TString inputFileNameLYZEP = "outputLYZEPanalysis";
  TFile* fileLYZEP = NULL;
