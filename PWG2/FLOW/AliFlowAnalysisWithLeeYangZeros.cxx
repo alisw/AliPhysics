@@ -15,6 +15,7 @@
 
 
 #include "Riostream.h"                 //needed as include
+#include "TObject.h"                 //needed as include
 #include "AliFlowCommonConstants.h"    //needed as include
 #include "AliFlowLYZConstants.h"       //needed as include
 #include "AliFlowAnalysisWithLeeYangZeros.h"
@@ -109,17 +110,15 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
 void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
- TFile *output = new TFile(outputFileName->Data(),"RECREATE");
- if (GetFirstRun()) {
-   output->mkdir("cobjLYZ1","cobjLYZ1");
-   output->cd("cobjLYZ1"); 
- }
- else {
-   output->mkdir("cobjLYZ2","cobjLYZ2");
-   output->cd("cobjLYZ2"); 
- }
- fHistList->Write(); 
- delete output;
+
+  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+  if (GetFirstRun()) {
+    output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+  }
+  else {
+    output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+  }
+  delete output;
 }
 
 //-----------------------------------------------------------------------

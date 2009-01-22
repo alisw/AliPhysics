@@ -4,13 +4,13 @@
 
 //RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kFALSE;
-Bool_t LYZ2  = kTRUE;  //does not work yet 24/12/08
-Bool_t LYZEP = kFALSE; //does not work yet 24/12/08
-Bool_t GFC   = kFALSE;
-Bool_t QC    = kFALSE;
-Bool_t FQD   = kFALSE;
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
+Bool_t LYZ2  = kFALSE;  
+Bool_t LYZEP = kFALSE; 
+Bool_t GFC   = kTRUE;
+Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 
 Int_t offset = 0;
@@ -34,10 +34,9 @@ Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 
-int runFlowAnalysisOnKine(Int_t aRuns = 2, const char* 
-			  dir="/data/alice1/kolk/KineOnly3/")
-			  
-
+int runFlowAnalysisOnKine(Int_t aRuns = 20, const char* 
+			  //			  dir="/data/alice1/kolk/KineOnly3/")
+			  dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
