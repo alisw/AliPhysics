@@ -219,17 +219,19 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
 	       cerr<<"Wrong cluster index ! "<<idx<<endl;
                return 5;
              }
-             AliTOFcluster *cls=(AliTOFcluster*)clusters->UncheckedAt(idx);
-             if (cls->GetLabel(0)!=lab)
-	       if (cls->GetLabel(1)!=lab)
-		 if (cls->GetLabel(2)!=lab) {
-                 mismatched++; 
-                 if (ptg>pmin) { hfake->Fill(ptg); hfak->Fill(tgl); } 
-                 break;
-               }
-             if (ptg>pmin) { hfound->Fill(ptg); hfoun->Fill(tgl); }
-             matched++;
-             break;
+             AliTOFcluster *cls=(AliTOFcluster*)clusters->At(idx);
+	     if (cls) {
+	       if (cls->GetLabel(0)!=lab)
+		 if (cls->GetLabel(1)!=lab)
+		   if (cls->GetLabel(2)!=lab) {
+		     mismatched++; 
+		     if (ptg>pmin) { hfake->Fill(ptg); hfak->Fill(tgl); } 
+		     break;
+		   }
+	       if (ptg>pmin) { hfound->Fill(ptg); hfoun->Fill(tgl); }
+	       matched++;
+	       break;
+	     }
          }
          if (j==ntrk) {
 	    cerr<<"Not matched: "<<lab<<"   ";
