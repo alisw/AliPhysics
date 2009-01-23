@@ -173,7 +173,7 @@ void AliFittingQDistribution::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
- fHistList->Write(); 
+ output->WriteObject(fHistList, "cobjFQD","SingleKey");
  delete output;
 }
 
