@@ -241,7 +241,10 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 			{
 				const AliHLTMUONRecHitStruct& h = inblock[n];
-				event.Add(new AliHLTMUONRecHit(h.fX, h.fY, h.fZ, sourceDDL));
+				AliHLTUInt8_t chamber;
+				AliHLTUInt16_t detElemId;
+				AliHLTMUONUtils::UnpackRecHitFlags(h.fFlags, chamber, detElemId);
+				event.Add(new AliHLTMUONRecHit(h.fX, h.fY, h.fZ, sourceDDL, detElemId, chamber));
 			}
 		}
 		else if (block->fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
