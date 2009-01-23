@@ -1489,9 +1489,7 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
- output->mkdir("cobjQC","cobjQC");
- output->cd("cobjQC");
- fHistList->Write(); 
+ output->WriteObject(fHistList, "cobjQC","SingleKey");
  delete output;
 }
 
