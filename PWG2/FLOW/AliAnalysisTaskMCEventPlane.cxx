@@ -322,7 +322,7 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
 
   //Get output data
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histgram list in Terminate" << endl;
+  cout << "histogram list in Terminate" << endl;
   if (fListHistos) {
     //Get the common histograms from the output list
     AliFlowCommonHist *pCommonHists = dynamic_cast<AliFlowCommonHist*> 
@@ -334,10 +334,30 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
     TProfile *pHistProFlow = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_VPt_MCEP"));
 
-    if (pCommonHists && pCommonHistResults && pHistProFlow) {
+    TProfile *pHistProIntFlowRP = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProIntFlowRP")); 
+                               
+    TProfile *pHistProDiffFlowPtRP = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProDiffFlowPtRP")); 
+     
+    TProfile *pHistProDiffFlowEtaRP = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProDiffFlowEtaRP"));
+      
+    TProfile *pHistProDiffFlowPtPOI = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProDiffFlowPtPOI")); 
+     
+    TProfile *pHistProDiffFlowEtaPOI = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProDiffFlowEtaPOI"));                             
+
+    if (pCommonHists && pCommonHistResults && pHistProFlow && pHistProIntFlowRP && pHistProDiffFlowPtRP && pHistProDiffFlowEtaRP && pHistProDiffFlowPtPOI && pHistProDiffFlowEtaPOI) {
       fMcTerm->SetCommonHists(pCommonHists);
       fMcTerm->SetCommonHistsRes(pCommonHistResults);
       fMcTerm->SetHistProFlow(pHistProFlow);
+      fMcTerm->SetHistProIntFlowRP(pHistProIntFlowRP);
+      fMcTerm->SetHistProDiffFlowPtRP(pHistProDiffFlowPtRP);      
+      fMcTerm->SetHistProDiffFlowEtaRP(pHistProDiffFlowEtaRP);  
+      fMcTerm->SetHistProDiffFlowPtPOI(pHistProDiffFlowPtPOI);      
+      fMcTerm->SetHistProDiffFlowEtaPOI(pHistProDiffFlowEtaPOI);          
       fMcTerm->Finish();
       PostData(0,fListHistos);
     } else {
