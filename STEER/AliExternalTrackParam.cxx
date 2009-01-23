@@ -1039,8 +1039,12 @@ static void Evaluate(const Double_t *h, Double_t t,
   Double_t phase=h[4]*t+h[2];
   Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
 
-  r[0] = h[5] + (sn - h[6])/h[4];
-  r[1] = h[0] - (cs - h[7])/h[4];  
+  r[0] = h[5];
+  r[1] = h[0];
+  if (TMath::Abs(h[4])>kAlmost0) {
+     r[0] += (sn - h[6])/h[4];
+     r[1] -= (cs - h[7])/h[4];  
+  }
   r[2] = h[1] + h[3]*t;
 
   g[0] = cs; g[1]=sn; g[2]=h[3];
