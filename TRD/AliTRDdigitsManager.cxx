@@ -35,6 +35,7 @@
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDSignalIndex.h"
+#include "AliTRDReconstructor.h"
 
 ClassImp(AliTRDdigitsManager)
 
@@ -44,7 +45,7 @@ ClassImp(AliTRDdigitsManager)
   const Int_t AliTRDdigitsManager::fgkNDict = kNDict;
 
 //_____________________________________________________________________________
-AliTRDdigitsManager::AliTRDdigitsManager()
+AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDReconstructor *const rec)
   :TObject()
   ,fEvent(0)
   ,fTree(0)
@@ -54,18 +55,23 @@ AliTRDdigitsManager::AliTRDdigitsManager()
   ,fUseDictionaries(kTRUE)
   ,fTreeD(0)
   ,fBranch(0)
+  ,fDets(AliTRDgeometry::Ndet())
+  ,fRawRec(kFALSE)
 {
   //
   // Default constructor
   //
+  
+  if(rec)
+    {
+      fDets=1;
+      fRawRec=kTRUE;
+    }
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) 
     {
       fDict[iDict] = NULL;
-    }
-  
-  fSignalIndexes = new TObjArray(AliTRDgeometry::Ndet());
-  
+    }  
 }
 
 //_____________________________________________________________________________
@@ -79,6 +85,8 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   ,fUseDictionaries(kTRUE)
   ,fTreeD(m.fTree)
   ,fBranch(m.fBranch)
+  ,fDets(m.fDets)
+  ,fRawRec(m.fRawRec)
 {
   //
   // AliTRDdigitsManager copy constructor
@@ -103,9 +111,12 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) 
     {
-      fDict[iDict]->Delete();
-      delete fDict[iDict];
-      fDict[iDict] = NULL;
+      if(fDict[iDict])
+	{
+	  fDict[iDict]->Delete();
+	  delete fDict[iDict];
+	  fDict[iDict] = NULL;
+	}
     }
 
   if (fSignalIndexes) 
@@ -149,6 +160,8 @@ void AliTRDdigitsManager::Copy(TObject &m) const
     }
   ((AliTRDdigitsManager &) m).fSignalIndexes   = fSignalIndexes;
   ((AliTRDdigitsManager &) m).fUseDictionaries = fUseDictionaries;
+  ((AliTRDdigitsManager &) m).fDets            = fDets;
+  ((AliTRDdigitsManager &) m).fRawRec           = fRawRec;
 
   TObject::Copy(m);
 
@@ -168,13 +181,9 @@ void AliTRDdigitsManager::CreateArrays()
 	  fDigits->Delete();                                
 	  delete fDigits;                                   
 	}                                                    
-      fDigits = new TObjArray(AliTRDgeometry::Ndet());
-      for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	{
-	  AliTRDarraySignal *chamber= new AliTRDarraySignal();
-	  chamber->SetNdet(index);
-	  fDigits->AddAt(chamber,index);
-	} 
+      fDigits = new TObjArray(fDets);
+      for (Int_t index = 0; index < fDets; index++) 
+	fDigits->AddAt(new AliTRDarraySignal(),index);
     }
   else 
     {
@@ -183,13 +192,9 @@ void AliTRDdigitsManager::CreateArrays()
 	  fDigits->Delete();                                
 	  delete fDigits;                                   
 	}                                                   
-      fDigits = new TObjArray(AliTRDgeometry::Ndet());    
-      for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	{
-	  AliTRDarrayADC *chamber= new AliTRDarrayADC();                                                 
-	  chamber->SetNdet(index);
-	  fDigits->AddAt(chamber,index);
-	}       
+      fDigits = new TObjArray(fDets);    
+      for (Int_t index = 0; index < fDets;index++) 
+	fDigits->AddAt(new AliTRDarrayADC(),index);
     }
 
   if (fUseDictionaries) 
@@ -201,25 +206,21 @@ void AliTRDdigitsManager::CreateArrays()
 	    delete fDict[iDict];                                    
 	  }
       for(Int_t iDict = 0; iDict < kNDict; iDict++)
-	{
-	  fDict[iDict] = new TObjArray(AliTRDgeometry::Ndet());    
-	}
+	fDict[iDict] = new TObjArray(fDets);
 
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	{
-	  for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	    {
-	      AliTRDarrayDictionary *dictio= new AliTRDarrayDictionary();
-	      dictio->SetNdet(index);
-	      fDict[iDict]->AddAt(dictio,index);
-	    } 
-	}
+	for (Int_t index = 0; index < fDets; index++) 
+	  fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
     }
-
-  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++) 
+  
+  if(fSignalIndexes)
     {
-      fSignalIndexes->AddLast(new AliTRDSignalIndex());
-    } 
+      fSignalIndexes->Delete();
+      delete fSignalIndexes;
+    }
+  fSignalIndexes = new TObjArray(fDets);
+  for (Int_t i = 0; i < fDets; i++) 
+    fSignalIndexes->AddLast(new AliTRDSignalIndex());
 
 }
 
@@ -230,65 +231,74 @@ void AliTRDdigitsManager::ResetArrays()
   // Reset the data arrays
   //
 
-  if (fDigits) 
+  if (fDigits)
     {
       fDigits->Delete();
       delete fDigits;
     }
-
-  for (Int_t iDict = 0; iDict < kNDict; iDict++)          
-    {                                                        
-      if (fDict[iDict])                                
-	{                                                    
-	  fDict[iDict]->Delete();                      
-	  delete fDict[iDict];                        
-	}
-    }
-
   if (fHasSDigits)
     {
-      fDigits = new TObjArray(AliTRDgeometry::Ndet());     
-      for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	{
-	  AliTRDarraySignal *chamber= new AliTRDarraySignal();
-	  chamber->SetNdet(index);
-	  fDigits->AddAt(chamber,index);
-	} 
+      fDigits = new TObjArray(fDets);     
+      for (Int_t index = 0; index < fDets; index++) 
+	fDigits->AddAt(new AliTRDarraySignal(),index);
     }
-  else 
+  else
     {
-      fDigits = new TObjArray(AliTRDgeometry::Ndet());      
-      for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	{
-	  AliTRDarrayADC *chamber= new AliTRDarrayADC();
-	  chamber->SetNdet(index);
-	  fDigits->AddAt(chamber,index);
-	}
+      fDigits = new TObjArray(fDets);
+      for (Int_t index = 0; index < fDets; index++)
+	fDigits->AddAt(new AliTRDarrayADC(),index);
     }
   
+  for (Int_t iDict = 0; iDict < kNDict; iDict++)
+    {
+      if (fDict[iDict])
+	{
+	  fDict[iDict]->Delete();
+	  delete fDict[iDict];
+	  fDict[iDict]=NULL;
+	}
+    }
   if (fUseDictionaries) 
     {
       for(Int_t iDict = 0; iDict < kNDict; iDict++)
-	{
-	  fDict[iDict] = new TObjArray(AliTRDgeometry::Ndet());  
-	}
+	fDict[iDict] = new TObjArray(fDets);
+      
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	{
-	  for (Int_t index = 0; index < AliTRDgeometry::Ndet(); index++) 
-	    {
-	      AliTRDarrayDictionary *dictio= new AliTRDarrayDictionary();   
-	      dictio->SetNdet(index);                                       
-	      fDict[iDict]->AddAt(dictio,index);                            
-	    }
-	}
+	for (Int_t index = 0; index < fDets; index++)
+	  fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
     }
-
-  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++) 
+  
+  if(fSignalIndexes)
     {
-      AliTRDSignalIndex *idx = (AliTRDSignalIndex *) fSignalIndexes->At(i);
-      if (idx) idx->Reset();
+      fSignalIndexes->Delete();
+      delete fSignalIndexes;
     }
+  fSignalIndexes = new TObjArray(fDets);
+  for (Int_t i = 0; i < fDets; i++)
+    fSignalIndexes->AddLast(new AliTRDSignalIndex());
+}
 
+//_____________________________________________________________________________
+void AliTRDdigitsManager::ResetArrays(Int_t det)
+{
+  Int_t RecoDet = fRawRec ? 0 : det;
+
+  RemoveDigits(RecoDet);
+  RemoveDictionaries(RecoDet);
+  RemoveIndexes(RecoDet);
+
+  if (fHasSDigits)
+    fDigits->AddAt(new AliTRDarraySignal(),RecoDet);
+  else
+    fDigits->AddAt(new AliTRDarrayADC(),RecoDet);
+
+  if (fUseDictionaries) 
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++)
+	fDict[iDict]->AddAt(new AliTRDarrayDictionary(),RecoDet);
+    }
+  
+  fSignalIndexes->AddAt(new AliTRDSignalIndex(),RecoDet);
 }
 
 //_____________________________________________________________________________
@@ -298,10 +308,7 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time, Int_t 
   // Returns the amplitude of a digit
   //
 
-  if (!GetDigits(det)) 
-    {
-      return 0;
-    }
+  if (!GetDigits(det)) return 0;
   
   return ((Short_t) ((AliTRDarrayADC *) GetDigits(det))->GetDataB(row,col,time));
 
@@ -314,10 +321,7 @@ UChar_t AliTRDdigitsManager::GetPadStatus(Int_t row, Int_t col, Int_t time, Int_
   // Returns the pad status for the requested pad
   //
 	
-  if (!GetDigits(det)) 
-    {
-      return 0;
-    }
+  if (!GetDigits(det)) return 0;
 
   return ((UChar_t) ((AliTRDarrayADC *) GetDigits(det))->GetPadStatus(row,col,time));
  
@@ -551,6 +555,8 @@ AliTRDarrayADC *AliTRDdigitsManager::GetDigits(Int_t det) const
   // Returns the digits array for one detector
   //
 
+  Int_t RecoDet = fRawRec ? 0 : det;
+
   if (!fDigits)   
     {
       return 0x0;
@@ -558,7 +564,8 @@ AliTRDarrayADC *AliTRDdigitsManager::GetDigits(Int_t det) const
 
   if (!fHasSDigits)
     {
-      return (AliTRDarrayADC *) fDigits->At(det); 
+      ((AliTRDarrayADC *) fDigits->At(RecoDet))->SetNdet(det);
+      return (AliTRDarrayADC *) fDigits->At(RecoDet); 
     }
   else
     {
@@ -575,6 +582,8 @@ AliTRDarraySignal *AliTRDdigitsManager::GetSDigits(Int_t det) const
   // Returns the sdigits array for one detector
   //
 
+  Int_t RecoDet = fRawRec ? 0 : det;
+
   if (!fDigits)   
     {
       //      AliDebug(1,"NO FDIGITS!");	
@@ -583,7 +592,8 @@ AliTRDarraySignal *AliTRDdigitsManager::GetSDigits(Int_t det) const
 
   if (fHasSDigits)
     {
-      return (AliTRDarraySignal *) fDigits->At(det);
+      ((AliTRDarraySignal *) fDigits->At(RecoDet))->SetNdet(det);
+      return (AliTRDarraySignal *) fDigits->At(RecoDet);
     }
   else
     {
@@ -601,12 +611,15 @@ AliTRDarrayDictionary *AliTRDdigitsManager::GetDictionary(Int_t det
   // Returns the dictionary for one detector
   //
 
+  Int_t RecoDet = fRawRec ? 0 : det;
+
   if (fUseDictionaries == kFALSE)
     {
       return 0x0;
     }
 
-  return (AliTRDarrayDictionary *) fDict[i]->At(det);
+  ((AliTRDarrayDictionary *) fDigits->At(RecoDet))->SetNdet(det);
+  return (AliTRDarrayDictionary *) fDict[i]->At(RecoDet);
   
 }
 
@@ -633,7 +646,9 @@ AliTRDSignalIndex *AliTRDdigitsManager::GetIndexes(Int_t det)
   // Returns indexes of active pads
   //
 
-  return (AliTRDSignalIndex *) fSignalIndexes->At(det);
+  Int_t RecoDet = fRawRec ? 0 : det;
+
+  return (AliTRDSignalIndex *) fSignalIndexes->At(RecoDet);
 
 }
 
@@ -644,16 +659,18 @@ void AliTRDdigitsManager::RemoveDigits(Int_t det)
    // Clear memory at det for Digits
    //
 
-  if (fDigits->At(det))
+  Int_t RecoDet = fRawRec ? 0 : det;
+
+  if (fDigits->At(RecoDet))
     {
       if (fHasSDigits) 
         {
-          AliTRDarraySignal *arr = (AliTRDarraySignal *) fDigits->RemoveAt(det);
+          AliTRDarraySignal *arr = (AliTRDarraySignal *) fDigits->RemoveAt(RecoDet);
           delete arr;
 	}
       else 
         {
-          AliTRDarrayADC    *arr = (AliTRDarrayADC *)    fDigits->RemoveAt(det);
+          AliTRDarrayADC    *arr = (AliTRDarrayADC *)    fDigits->RemoveAt(RecoDet);
           delete arr;
 	}
     }
@@ -667,6 +684,8 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
   // Clear memory
   //
 
+  Int_t RecoDet = fRawRec ? 0 : det;
+
   if (fUseDictionaries == kFALSE) 
     {
       return;
@@ -674,9 +693,9 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
 
   for (Int_t i = 0; i < kNDict; i++) 
     {
-      if (fDict[i]->At(det))
+      if (fDict[i]->At(RecoDet))
 	{
-	  AliTRDarrayDictionary *arr = (AliTRDarrayDictionary *) fDict[i]->RemoveAt(det);
+	  AliTRDarrayDictionary *arr = (AliTRDarrayDictionary *) fDict[i]->RemoveAt(RecoDet);
           delete arr;
 	}
     }
@@ -684,13 +703,33 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
 }
 
 //_____________________________________________________________________________
+void AliTRDdigitsManager::RemoveIndexes(Int_t det) 
+{
+   // 
+   // Clear memory
+   //
+
+  Int_t RecoDet = fRawRec ? 0 : det;
+
+  if (fSignalIndexes->At(RecoDet))
+    {
+      AliTRDSignalIndex *arr = (AliTRDSignalIndex *) fSignalIndexes->RemoveAt(RecoDet);
+      delete arr;
+    }
+
+}
+
+
+//_____________________________________________________________________________
 void AliTRDdigitsManager::ClearIndexes(Int_t det) 
 {
   // 
   // Clear memory
   //
+  
+  Int_t RecoDet = fRawRec ? 0 : det;
 
-  ((AliTRDSignalIndex *) fSignalIndexes->At(det))->ClearAll();  
+  ((AliTRDSignalIndex *) fSignalIndexes->At(RecoDet))->ClearAll();  
 
 }
 
@@ -790,7 +829,7 @@ Bool_t AliTRDdigitsManager::LoadArray(TObjArray *object
 
   // Loop through all detectors and read them from the tree
   Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) 
+  for (Int_t iDet = 0; iDet < fDets; iDet++) 
     {
       if(fHasSDigits)
 	{
@@ -850,7 +889,7 @@ Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray *object
 
   // Loop through all detectors and read them from the tree
   Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) 
+  for (Int_t iDet = 0; iDet < fDets; iDet++) 
     {
       AliTRDarrayDictionary *dataArray = (AliTRDarrayDictionary *) object->At(iDet);
       if (!dataArray) 
@@ -895,7 +934,7 @@ Bool_t AliTRDdigitsManager::StoreArray(TObjArray *array1
 
   // Loop through all detectors and fill them into the tree
   Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) 
+  for (Int_t iDet = 0; iDet < fDets; iDet++) 
     {
       if (fHasSDigits)
 	{
@@ -955,7 +994,7 @@ Bool_t AliTRDdigitsManager::StoreArrayDict(TObjArray *array3
 
   // Loop through all detectors and fill them into the tree
   Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) 
+  for (Int_t iDet = 0; iDet < fDets; iDet++) 
     {
       const AliTRDarrayDictionary *kDataArray = (AliTRDarrayDictionary *) array3->At(iDet);
       if (!kDataArray) 

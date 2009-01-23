@@ -40,9 +40,23 @@ class AliTRDclusterizer : public TNamed
   enum{
     kOwner = BIT(14)
   };
+
+  struct MaxStruct
+  {
+    Int_t       Row;
+    Int_t       Col;
+    Int_t       Time;
+    UChar_t     padStatus;
+    Float_t     Signals[3];
+    MaxStruct():Row(0),Col(0),Time(0),padStatus(0)
+      {}
+    MaxStruct &operator=(const MaxStruct &a)
+      {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus;
+       memcpy(Signals, a.Signals, 3*sizeof(Signals[0])); return *this;}
+  };
   
-  AliTRDclusterizer(AliTRDReconstructor *rec = 0x0);
-  AliTRDclusterizer(const Text_t* name, const Text_t* title, AliTRDReconstructor *rec = 0x0);
+  AliTRDclusterizer(const AliTRDReconstructor *const rec = 0x0);
+  AliTRDclusterizer(const Text_t* name, const Text_t* title, const AliTRDReconstructor *const rec = 0x0);
   AliTRDclusterizer(const AliTRDclusterizer &c);
   virtual         ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
@@ -84,7 +98,7 @@ class AliTRDclusterizer : public TNamed
 			     ,const Int_t nTimeTotal, const Int_t nexp);
   void             TailCancelation();
 
-  virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
+  virtual Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
           Double_t GetCOG(Double_t signal[5]) const; 
   void             FillLUT();
           Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
@@ -93,12 +107,9 @@ class AliTRDclusterizer : public TNamed
   UChar_t          GetPadStatus(UChar_t encoding) const;
   Int_t            GetCorruption(UChar_t encoding) const;
 
-  Bool_t           IsMaximum(const Int_t row, const Int_t col, const Int_t time, 
-			     UChar_t &pasStatus, Double_t *const Signals);
-  Bool_t           IsFivePadCluster(const Int_t row, const Int_t col, const Int_t time, 
-				    Double_t *SignalsThisMax, Double_t *SignalsNeighbourMax, Double_t &ratio);
-  void             CreateCluster(const Int_t row, const Int_t col, const Int_t time, 
-				 const Double_t *const clusterSignal, const UChar_t padStatus);
+  Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Float_t *const Signals);       //for const correctness reasons not const parameters are given separately
+  Bool_t           IsFivePadCluster(const MaxStruct &ThisMax, const MaxStruct &NeighbourMax, Float_t &ratio); // ''
+  void             CreateCluster(const MaxStruct &Max); 
 
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
@@ -138,20 +149,6 @@ class AliTRDclusterizer : public TNamed
   AliTRDarraySignal   *fDigitsOut;
   Int_t                fClusterROC;           // The index to the first cluster of a given ROC
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
-
-  struct ClusterizerStruct
-  {
-    Int_t       Row;
-    Int_t       Col;
-    Int_t       Time;
-    UChar_t     padStatus;
-    Double_t    Signals[3];
-    ClusterizerStruct():Row(0),Col(0),Time(0),padStatus(0)
-      {}
-    ClusterizerStruct &operator=(const ClusterizerStruct &a)
-      {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus;
-       memcpy(Signals, a.Signals, 3*sizeof(Double_t)); return *this;}
-  };
 
   ClassDef(AliTRDclusterizer,6)              //  TRD clusterfinder
 
