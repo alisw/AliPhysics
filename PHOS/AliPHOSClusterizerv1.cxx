@@ -543,12 +543,8 @@ void AliPHOSClusterizerv1::MakeClusters()
   fNumberOfEmcClusters     = 0 ;
 
   //Mark all digits as unused yet
-  const Int_t maxNDigits = 1500;
+  const Int_t maxNDigits = 3584; // There is no clusters larger than PHOS module ;)
   Int_t nDigits=fDigitsArr->GetEntriesFast() ;
-  if (nDigits > maxNDigits) {
-    AliWarning(Form("Skip event with too high digit occupancy: nDigits=%d",nDigits));
-    return;
-  }
 
   for(Int_t i=0; i<nDigits; i++){
     fDigitsUsed[i]=0 ;
@@ -572,7 +568,6 @@ void AliPHOSClusterizerv1::MakeClusters()
     if (( IsInEmc(digit) &&  digit->GetEnergy() > fEmcClusteringThreshold ) || 
         ( IsInCpv(digit) &&  digit->GetEnergy() > fCpvClusteringThreshold ) ) {
       Int_t iDigitInCluster = 0 ; 
-      
       if  ( IsInEmc(digit) ) {   
         // start a new EMC RecPoint
         if(fNumberOfEmcClusters >= fEMCRecPoints->GetSize()) 
@@ -598,7 +593,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         iDigitInCluster++ ; 
         fDigitsUsed[i]=kTRUE ;
       } // else        
-      
+
       //Now scan remaining digits in list to find neigbours of our seed
  
       AliPHOSDigit * digitN ; 
@@ -607,6 +602,11 @@ void AliPHOSClusterizerv1::MakeClusters()
         digit =  static_cast<AliPHOSDigit*>( fDigitsArr->At(clusterdigitslist[index]) )  ;      
         index++ ; 
         for(Int_t j=iFirst; j<nDigits; j++){
+	  if (iDigitInCluster >= maxNDigits) {
+	    AliError(Form("The number of digits in cluster is more than %d, skip the rest of event",
+			  maxNDigits));
+	    return;
+	  }
           if(fDigitsUsed[j]) 
             continue ;        //look through remaining digits
           digitN = static_cast<AliPHOSDigit*>( fDigitsArr->At(j) ) ;
@@ -624,16 +624,16 @@ void AliPHOSClusterizerv1::MakeClusters()
             fDigitsUsed[j]=kTRUE ;
             break ;
           case 2 :   // too far from each other
-            goto endofloop;   
+            goto endOfLoop;   
           } // switch
           
         }
         
-        endofloop: ; //scanned all possible neighbours for this digit
+        endOfLoop: ; //scanned all possible neighbours for this digit
         
       } // loop over cluster     
     } // energy theshold  
-  } 
+  }
 
 }
 
