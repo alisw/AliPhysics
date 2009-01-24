@@ -131,9 +131,13 @@ int testAliRawReaderFile()
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////
-  if ((iResult=CheckRawReaderHLT(pRawReader, ddlArray, ddlidArray, nofDDLs))<0) {
-    return iResult;
-  }
+
+  // Matthias 2009-01-24
+  // disable check of RawReaderHLT for the moment due to problems with loeding libHLTrec
+  // from AliRAWHLTManager
+//   if ((iResult=CheckRawReaderHLT(pRawReader, ddlArray, ddlidArray, nofDDLs))<0) {
+//     return iResult;
+//   }
 
   delete pRawReader;
 
