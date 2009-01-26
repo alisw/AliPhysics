@@ -1,682 +1,640 @@
-void CompareFlowResults()
+//type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
+//const TString type = "ESD"; 
+void CompareFlowResults(TString type="")
 {
- gSystem->AddIncludePath("-I$ALICE_ROOT/include");
- gSystem->AddIncludePath("-I$ROOTSYS/include");
- 
- //load needed libraries:
- gSystem->Load("libTree.so");
- gSystem->Load("libANALYSIS.so");
- gSystem->Load("libPWG2flow.so");
- cerr<<"libPWG2flow.so loaded ..."<<endl;
- cout<<endl;
- 
- 
- 
- 
- //==================================================================================
- //             set here which plots will be shown by default
- //==================================================================================
- //RP = particles used to determine the reaction plane
- Bool_t plotIntFlowRP = kFALSE;    //integrated flow RP
- Bool_t plotDiffFlowPtRP = kFALSE;  //differential flow (Pt,RP)
- Bool_t plotDiffFlowEtaRP = kFALSE; //differential flow (Eta,RP)
- //POI = particle of interest
- Bool_t plotIntFlowPOI = kFALSE;     //integrated flow POI
- Bool_t plotDiffFlowPtPOI = kTRUE;  //differential flow (Pt,POI)
- Bool_t plotDiffFlowEtaPOI = kTRUE; //differential flow (Eta,POI)
- //==================================================================================
-
-
-
-
- //==================================================================================
- //                         accessing output files
- //==================================================================================
- //type of analysis was: ESD, AOD, MC, ESDMC0, ESDMC1
- const TString type = "ESD";
- 
- //open the output files:
- TString inputFileNameMCEP = "outputMCEPanalysis";
- TFile* fileMCEP = NULL;
- fileMCEP = TFile::Open(((inputFileNameMCEP.Append(type)).Append(".root")).Data(), "READ"); 
- 
- TString inputFileNameLYZ1 = "outputLYZ1analysis";
- TFile* fileLYZ1 = NULL;
- fileLYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append(".root")).Data(), "READ"); 
-
- TString inputFileNameLYZ2 = "outputLYZ2analysis";
- TFile* fileLYZ2 = NULL;
- fileLYZ2 = TFile::Open(((inputFileNameLYZ2.Append(type)).Append(".root")).Data(), "READ"); 
- 
- TString inputFileNameLYZEP = "outputLYZEPanalysis";
- TFile* fileLYZEP = NULL;
- fileLYZEP = TFile::Open(((inputFileNameLYZEP.Append(type)).Append(".root")).Data(), "READ");
- 
- TString inputFileNameFQD = "outputFQDanalysis";
- TFile* fileFQD = NULL;
- fileFQD = TFile::Open(((inputFileNameFQD.Append(type)).Append(".root")).Data(), "READ"); 
- 
- TString inputFileNameGFC = "outputGFCanalysis";
- TFile* fileGFC = NULL;
- fileGFC = TFile::Open(((inputFileNameGFC.Append(type)).Append(".root")).Data(), "READ"); 
- 
- TString inputFileNameQC = "outputQCanalysis";
- TFile* fileQC = NULL;
- fileQC = TFile::Open(((inputFileNameQC.Append(type)).Append(".root")).Data(), "READ"); 
- //==================================================================================
- 
- 
- 
- 
- //==================================================================================
- //                                 cosmetics
- //==================================================================================
- //removing the title and stat. box from all histograms:
- gStyle->SetOptTitle(0);
- gStyle->SetOptStat(0);
- 
- //choosing the style and color of mesh for MC error bands:
- Int_t meshStyle = 1001;
- Int_t meshColor = kRed-10;
-
- //marker style and color (int. flow) 
- Int_t markerStyle = 21;
- Int_t markerColor = kRed-3;
- //==================================================================================
-
-   
-             
-               
- //==================================================================================
- //                              INTEGRATED FLOW
- //==================================================================================
- //the number of different methods:
- const Int_t nMethods=12;
- 
- //booking the histogram for the integrated flow results from all methods:
- TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
- //intFlowAll->SetLabelSize(0.036,"X");
- //intFlowAll->SetLabelSize(0.036,"Y");
- intFlowAll->SetMarkerStyle(markerStyle);
- intFlowAll->SetMarkerColor(markerColor);
- (intFlowAll->GetXaxis())->SetBinLabel(1,"v_{2}{MC}");
- (intFlowAll->GetXaxis())->SetBinLabel(2,"v_{2}{2,GFC}");
- (intFlowAll->GetXaxis())->SetBinLabel(3,"v_{2}{2,QC}");
- (intFlowAll->GetXaxis())->SetBinLabel(4,"v_{2}{4,GFC}");
- (intFlowAll->GetXaxis())->SetBinLabel(5,"v_{2}{4,QC}");
- (intFlowAll->GetXaxis())->SetBinLabel(6,"v_{2}{6,GFC}");
- (intFlowAll->GetXaxis())->SetBinLabel(7,"v_{2}{6,QC}");
- (intFlowAll->GetXaxis())->SetBinLabel(8,"v_{2}{8,GFC}");
- (intFlowAll->GetXaxis())->SetBinLabel(9,"v_{2}{8,QC}");
- (intFlowAll->GetXaxis())->SetBinLabel(10,"v_{2}{FQD}");
- (intFlowAll->GetXaxis())->SetBinLabel(11,"v_{2}{LYZ}");
- (intFlowAll->GetXaxis())->SetBinLabel(12,"v_{2}{LYZEP}");
- 
- //booking the graph to store flow values and errors from all methods:  
- Double_t x[nMethods] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5};
- Double_t xError[nMethods] = {0.};
- Double_t flowValue[nMethods] = {0.};//to be removed
- Double_t flowError[nMethods] = {0.};//to be removed
- Double_t flowValueRP[nMethods] = {0.};
- Double_t flowErrorRP[nMethods] = {0.};
- Double_t flowValuePOI[nMethods] = {0.};
- Double_t flowErrorPOI[nMethods] = {0.};
- 
- //accessing the results for each method:
- //MCEP = Monte Carlo Event Plane
- TList *pListMCEP = NULL;
- AliFlowCommonHist *mcepCommonHist = NULL;
- AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
- if(fileMCEP) 
- {
-  fileMCEP->GetObject("cobjMCEP",pListMCEP); 
-  if(pListMCEP) 
-  {
-   mcepCommonHist    = dynamic_cast<AliFlowCommonHist*> (pListMCEP->FindObject("AliFlowCommonHistMCEP"));
-   mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListMCEP->FindObject("AliFlowCommonHistResultsMCEP"));
-   if(mcepCommonHistRes)
-   {
-    flowValue[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[0] = (mcepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[0] = (mcepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }
- 
- //LYZ1 = Lee-Yang Zeros (1st run)
- TList *pListLYZ1 = NULL;
- AliFlowCommonHist *lyz1CommonHist = NULL;
- AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
- if(fileLYZ1) 
- {
-  fileLYZ1->GetObject("cobjLYZ1",pListLYZ1); 
-  if(pListLYZ1) 
-  {
-   lyz1CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1->FindObject("AliFlowCommonHistLYZ1"));
-   lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1"));
-   if(lyz1CommonHistRes)
-   {
-    flowValue[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }
- 
- //LYZ2 = Lee-Yang Zeros (2nd run) (needed only for differential flow)
- TList *pListLYZ2 = NULL;
- AliFlowCommonHist *lyz2CommonHist = NULL;
- AliFlowCommonHistResults *lyz2CommonHistRes = NULL; 
- if(fileLYZ2) 
- {
-  fileLYZ2->GetObject("cobjLYZ2",pListLYZ2); 
-  if(pListLYZ2) 
-  {
-   lyz2CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2->FindObject("AliFlowCommonHistLYZ2"));
-   lyz2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2->FindObject("AliFlowCommonHistResultsLYZ2"));
-  }
- }
-
- //LYZEP = Lee-Yang Zeros Event Plane
- TList *pListLYZEP = NULL;
- AliFlowCommonHist *lyzepCommonHist = NULL;
- AliFlowCommonHistResults *lyzepCommonHistRes = NULL; 
- if(fileLYZEP) 
- {
-  fileLYZEP->GetObject("cobjLYZEP",pListLYZEP); 
-  if(pListLYZEP) 
-  {
-   lyzepCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZEP->FindObject("AliFlowCommonHistLYZEP"));
-   lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZEP->FindObject("AliFlowCommonHistResultsLYZEP"));
-   if(lyzepCommonHistRes)
-   {
-    flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-    //flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-    //flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-    //flowErrorPOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }
- 
- //FQD = Fitting q-distribution
- TList *pListFQD = NULL;
- AliFlowCommonHist *fqdCommonHist = NULL;
- AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
- if(fileFQD) 
- {
-  fileFQD->GetObject("cobjFQD",pListFQD); 
-  if(pListFQD) 
-  {
-   fqdCommonHist = dynamic_cast<AliFlowCommonHist*> (pListFQD->FindObject("AliFlowCommonHistFQD"));
-   fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListFQD->FindObject("AliFlowCommonHistResultsFQD"));
-   if(fqdCommonHistRes)
-   {
-    flowValue[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }
- 
- //GFC = Generating Function Cumulants
- TList *pListGFC = NULL;
- AliFlowCommonHist *gfcCommonHist = NULL;
- AliFlowCommonHistResults *gfcCommonHistRes2 = NULL; 
- AliFlowCommonHistResults *gfcCommonHistRes4 = NULL; 
- AliFlowCommonHistResults *gfcCommonHistRes6 = NULL; 
- AliFlowCommonHistResults *gfcCommonHistRes8 = NULL; 
- if(fileGFC) 
- {
-  fileGFC->GetObject("cobjGFC",pListGFC);
-  if(pListGFC) 
-  {
-   gfcCommonHist = dynamic_cast<AliFlowCommonHist*> (pListGFC->FindObject("AliFlowCommonHistGFC"));
-   gfcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
-   if(gfcCommonHistRes2) 
-   {
-    flowValue[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   gfcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
-   if(gfcCommonHistRes4) 
-   {
-    flowValue[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   gfcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
-   if(gfcCommonHistRes6) 
-   {
-    flowValue[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   gfcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC"));
-   if(gfcCommonHistRes8) 
-   {
-    flowValue[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
-    flowError[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
-    flowErrorRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
-    flowErrorPOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }
- 
- //QC = Q-cumulants
- TList *pListQC = NULL;
- AliFlowCommonHist *qcCommonHist2 = NULL; 
- AliFlowCommonHist *qcCommonHist4 = NULL; 
- AliFlowCommonHist *qcCommonHist6 = NULL; 
- AliFlowCommonHist *qcCommonHist8 = NULL; 
- AliFlowCommonHistResults *qcCommonHistRes2 = NULL; 
- AliFlowCommonHistResults *qcCommonHistRes4 = NULL; 
- AliFlowCommonHistResults *qcCommonHistRes6 = NULL; 
- AliFlowCommonHistResults *qcCommonHistRes8 = NULL; 
- 
- if(fileQC) 
- {
-  fileQC->GetObject("cobjQC",pListQC);
-  if(pListQC) 
-  {
-   qcCommonHist2 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist2ndOrderQC"));
-   qcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
-   if(qcCommonHistRes2) 
-   {
-    flowValue[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
-    //flowError[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
-    //flowErrorRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
-    //flowErrorPOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   qcCommonHist4 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist4thOrderQC"));
-   qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
-   if(qcCommonHistRes4) 
-   {
-    flowValue[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
-    //flowError[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
-    //flowErrorRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
-    //flowErrorPOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   qcCommonHist6 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist6thOrderQC"));
-   qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
-   if(qcCommonHistRes6) 
-   {
-    flowValue[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
-    //flowError[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
-    //flowErrorRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
-    //flowErrorPOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
-   }
-   qcCommonHist8 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist8thOrderQC"));
-   qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
-   if(qcCommonHistRes8) 
-   {
-    flowValue[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
-    //flowError[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
-    flowValueRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
-    //flowErrorRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
-    flowValuePOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
-    //flowErrorPOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
-   }
-  }
- }        
- 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //              !!!!  to be removed  !!!!
- Double_t dMax=flowValue[0]+flowError[0];
- Double_t dMin=flowValue[0]-flowError[0];
-
- for(Int_t i=1;i<nMethods;i++)
- {
-  if(!(flowValue[i]==0. && flowError[i]==0.)) 
-  {
-   if(dMax<flowValue[i]+flowError[i]) dMax=flowValue[i]+flowError[i];
-   if(dMin>flowValue[i]-flowError[i]) dMin=flowValue[i]-flowError[i];
-  } 
- }  
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ROOTSYS/include");
   
- //RP:
- Double_t dMaxRP=flowValueRP[0]+flowErrorRP[0];
- Double_t dMinRP=flowValueRP[0]-flowErrorRP[0];
-
- for(Int_t i=1;i<nMethods;i++)
- {
-  if(!(flowValueRP[i]==0. && flowErrorRP[i]==0.)) 
-  {
-   if(dMaxRP<flowValueRP[i]+flowErrorRP[i]) dMaxRP=flowValueRP[i]+flowErrorRP[i];
-   if(dMinRP>flowValueRP[i]-flowErrorRP[i]) dMinRP=flowValueRP[i]-flowErrorRP[i];
-  } 
- }  
-
- //POI:
- Double_t dMaxPOI=flowValuePOI[0]+flowErrorPOI[0];
- Double_t dMinPOI=flowValuePOI[0]-flowErrorPOI[0];
-
- for(Int_t i=1;i<nMethods;i++)
- {
-  if(!(flowValuePOI[i]==0. && flowErrorPOI[i]==0.)) 
-  {
-   if(dMaxPOI<flowValuePOI[i]+flowErrorPOI[i]) dMaxPOI=flowValuePOI[i]+flowErrorPOI[i];
-   if(dMinPOI>flowValuePOI[i]-flowErrorPOI[i]) dMinPOI=flowValuePOI[i]-flowErrorPOI[i];
-  } 
- }  
- 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
- //                    !!!!  to be removed  !!!!
- TGraph* flowResults = new TGraphErrors(nMethods, x, flowValue, xError, flowError);
- 
- flowResults->SetMarkerStyle(markerStyle);
- flowResults->SetMarkerColor(markerColor);
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- 
- //RP:
- TGraph* flowResultsRP = new TGraphErrors(nMethods, x, flowValueRP, xError, flowErrorRP);
- 
- flowResultsRP->SetMarkerStyle(markerStyle);
- flowResultsRP->SetMarkerColor(markerColor);
- 
- //POI:
- TGraph* flowResultsPOI = new TGraphErrors(nMethods, x, flowValuePOI, xError, flowErrorPOI);
- 
- flowResultsPOI->SetMarkerStyle(markerStyle);
- flowResultsPOI->SetMarkerColor(markerColor);
- 
- //-----------------------------------------------------------------------------------
+  //load needed libraries:
+  gSystem->Load("libTree.so");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libPWG2flow.so");
+  cerr<<"libPWG2flow.so loaded ..."<<endl;
+  cout<<endl;
   
- //----------------------------------------------------------------------------------
- //cosmetics: mesh for MC error bands (integrated flow)
- TGraph* pMesh = NULL;//to be removed
- TGraph* pMeshRP = NULL;
- TGraph* pMeshPOI = NULL;
+  
+  
+  
+  //==================================================================================
+  //             set here which plots will be shown by default
+  //==================================================================================
+  //RP = particles used to determine the reaction plane
+  Bool_t plotIntFlowRP = kFALSE;    //integrated flow RP
+  Bool_t plotDiffFlowPtRP = kFALSE;  //differential flow (Pt,RP)
+  Bool_t plotDiffFlowEtaRP = kFALSE; //differential flow (Eta,RP)
+  //POI = particle of interest
+  Bool_t plotIntFlowPOI = kFALSE;     //integrated flow POI
+  Bool_t plotDiffFlowPtPOI = kTRUE;  //differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE; //differential flow (Eta,POI)
+  //==================================================================================
+  
+  
+  
+  
+  //==================================================================================
+  //                         accessing output files
+  //==================================================================================
+  
+  //open the output files:
+  TString inputFileNameMCEP = "outputMCEPanalysis";
+  TFile* fileMCEP = NULL;
+  fileMCEP = TFile::Open(((inputFileNameMCEP.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameLYZ1 = "outputLYZ1analysis";
+  TFile* fileLYZ1 = NULL;
+  fileLYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameLYZ2 = "outputLYZ2analysis";
+  TFile* fileLYZ2 = NULL;
+  fileLYZ2 = TFile::Open(((inputFileNameLYZ2.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameLYZEP = "outputLYZEPanalysis";
+  TFile* fileLYZEP = NULL;
+  fileLYZEP = TFile::Open(((inputFileNameLYZEP.Append(type)).Append(".root")).Data(), "READ");
+  
+  TString inputFileNameFQD = "outputFQDanalysis";
+  TFile* fileFQD = NULL;
+  fileFQD = TFile::Open(((inputFileNameFQD.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameGFC = "outputGFCanalysis";
+  TFile* fileGFC = NULL;
+  fileGFC = TFile::Open(((inputFileNameGFC.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameQC = "outputQCanalysis";
+  TFile* fileQC = NULL;
+  fileQC = TFile::Open(((inputFileNameQC.Append(type)).Append(".root")).Data(), "READ"); 
+  //==================================================================================
  
- if(intFlowAll && mcepCommonHistRes)
- {
-  //Double_t valueMC = intFlowAll->GetBinContent(1);
-  //Double_t errorMC = intFlowAll->GetBinError(1);  
-  //Int_t nPts       = intFlowAll->GetNbinsX();     
-
-  Int_t nPts       = nMethods;
-  Double_t valueMC = flowValue[0];//to be removed
-  Double_t errorMC = flowError[0];//to be removed  
-  Double_t valueMCRP = flowValueRP[0];
-  Double_t errorMCRP = flowErrorRP[0]; 
-  Double_t valueMCPOI = flowValuePOI[0];
-  Double_t errorMCPOI = flowErrorPOI[0]; 
-              
-  pMesh = new TGraph(nPts);//to be removed
-  pMeshRP = new TGraph(nPts);
-  pMeshPOI = new TGraph(nPts);
+ 
+ 
+ 
+  //==================================================================================
+  //                                 cosmetics
+  //==================================================================================
+  //removing the title and stat. box from all histograms:
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
   
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //             !!!! to be removed !!!!
-  pMesh->SetPoint(1,0,valueMC+errorMC);
-  pMesh->SetPoint(2,nPts+1,valueMC+errorMC);
-  pMesh->SetPoint(3,nPts+1,valueMC-errorMC);
-  pMesh->SetPoint(4,0,valueMC-errorMC);
-  pMesh->SetPoint(5,0,valueMC+errorMC);
+  //choosing the style and color of mesh for MC error bands:
+  Int_t meshStyle = 1001;
+  Int_t meshColor = kRed-10;
   
-  pMesh->SetFillStyle(meshStyle);
-  pMesh->SetFillColor(meshColor);
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
+  //marker style and color (int. flow) 
+  Int_t markerStyle = 21;
+  Int_t markerColor = kRed-3;
+  //==================================================================================
+  
+  
+  
+  
+  //==================================================================================
+  //                              INTEGRATED FLOW
+  //==================================================================================
+  //the number of different methods:
+  const Int_t nMethods=12;
+  
+  //booking the histogram for the integrated flow results from all methods:
+  TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
+  //intFlowAll->SetLabelSize(0.036,"X");
+  //intFlowAll->SetLabelSize(0.036,"Y");
+  intFlowAll->SetMarkerStyle(markerStyle);
+  intFlowAll->SetMarkerColor(markerColor);
+  (intFlowAll->GetXaxis())->SetBinLabel(1,"v_{2}{MC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(2,"v_{2}{2,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(3,"v_{2}{2,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(4,"v_{2}{4,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(5,"v_{2}{4,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(6,"v_{2}{6,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(7,"v_{2}{6,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(8,"v_{2}{8,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(9,"v_{2}{8,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(10,"v_{2}{FQD}");
+  (intFlowAll->GetXaxis())->SetBinLabel(11,"v_{2}{LYZ}");
+  (intFlowAll->GetXaxis())->SetBinLabel(12,"v_{2}{LYZEP}");
+  
+  //booking the graph to store flow values and errors from all methods:  
+  Double_t x[nMethods] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5};
+  Double_t xError[nMethods] = {0.};
+  Double_t flowValue[nMethods] = {0.};//to be removed
+  Double_t flowError[nMethods] = {0.};//to be removed
+  Double_t flowValueRP[nMethods] = {0.};
+  Double_t flowErrorRP[nMethods] = {0.};
+  Double_t flowValuePOI[nMethods] = {0.};
+  Double_t flowErrorPOI[nMethods] = {0.};
+  
+  //accessing the results for each method:
+  //MCEP = Monte Carlo Event Plane
+  TList *pListMCEP = NULL;
+  AliFlowCommonHist *mcepCommonHist = NULL;
+  AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
+  if(fileMCEP) {
+    fileMCEP->GetObject("cobjMCEP",pListMCEP); 
+    if(pListMCEP) {
+      mcepCommonHist    = dynamic_cast<AliFlowCommonHist*> (pListMCEP->FindObject("AliFlowCommonHistMCEP"));
+      mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListMCEP->FindObject("AliFlowCommonHistResultsMCEP"));
+      if(mcepCommonHistRes) {
+	flowValue[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[0] = (mcepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[0] = (mcepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+  
+  //LYZ1 = Lee-Yang Zeros (1st run)
+  TList *pListLYZ1 = NULL;
+  AliFlowCommonHist *lyz1CommonHist = NULL;
+  AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
+  if(fileLYZ1) {
+    fileLYZ1->GetObject("cobjLYZ1",pListLYZ1); 
+    if(pListLYZ1) {
+      lyz1CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1->FindObject("AliFlowCommonHistLYZ1"));
+      lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1"));
+      if(lyz1CommonHistRes) {
+	flowValue[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+  
+  //LYZ2 = Lee-Yang Zeros (2nd run) (needed only for differential flow)
+  TList *pListLYZ2 = NULL;
+  AliFlowCommonHist *lyz2CommonHist = NULL;
+  AliFlowCommonHistResults *lyz2CommonHistRes = NULL; 
+  if(fileLYZ2) {
+    fileLYZ2->GetObject("cobjLYZ2",pListLYZ2); 
+    if(pListLYZ2) {
+      lyz2CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2->FindObject("AliFlowCommonHistLYZ2"));
+      lyz2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2->FindObject("AliFlowCommonHistResultsLYZ2"));
+    }
+  }
+  
+  //LYZEP = Lee-Yang Zeros Event Plane
+  TList *pListLYZEP = NULL;
+  AliFlowCommonHist *lyzepCommonHist = NULL;
+  AliFlowCommonHistResults *lyzepCommonHistRes = NULL; 
+  if(fileLYZEP) {
+    fileLYZEP->GetObject("cobjLYZEP",pListLYZEP); 
+    if(pListLYZEP) {
+      lyzepCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZEP->FindObject("AliFlowCommonHistLYZEP"));
+      lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZEP->FindObject("AliFlowCommonHistResultsLYZEP"));
+      if(lyzepCommonHistRes) {
+	flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
+	//flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+ 
+  //FQD = Fitting q-distribution
+  TList *pListFQD = NULL;
+  AliFlowCommonHist *fqdCommonHist = NULL;
+  AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
+  if(fileFQD) {
+    fileFQD->GetObject("cobjFQD",pListFQD); 
+    if(pListFQD) {
+      fqdCommonHist = dynamic_cast<AliFlowCommonHist*> (pListFQD->FindObject("AliFlowCommonHistFQD"));
+      fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListFQD->FindObject("AliFlowCommonHistResultsFQD"));
+      if(fqdCommonHistRes) {
+	flowValue[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+ 
+  //GFC = Generating Function Cumulants
+  TList *pListGFC = NULL;
+  AliFlowCommonHist *gfcCommonHist = NULL;
+  AliFlowCommonHistResults *gfcCommonHistRes2 = NULL; 
+  AliFlowCommonHistResults *gfcCommonHistRes4 = NULL; 
+  AliFlowCommonHistResults *gfcCommonHistRes6 = NULL; 
+  AliFlowCommonHistResults *gfcCommonHistRes8 = NULL; 
+  if(fileGFC) {
+    fileGFC->GetObject("cobjGFC",pListGFC);
+    if(pListGFC) {
+      gfcCommonHist = dynamic_cast<AliFlowCommonHist*> (pListGFC->FindObject("AliFlowCommonHistGFC"));
+      gfcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+      if(gfcCommonHistRes2) {
+	flowValue[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      gfcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+      if(gfcCommonHistRes4) {
+	flowValue[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      gfcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+      if(gfcCommonHistRes6) {
+	flowValue[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      gfcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC"));
+      if(gfcCommonHistRes8)  {
+	flowValue[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
+	flowError[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+ 
+  //QC = Q-cumulants
+  TList *pListQC = NULL;
+  AliFlowCommonHist *qcCommonHist2 = NULL; 
+  AliFlowCommonHist *qcCommonHist4 = NULL; 
+  AliFlowCommonHist *qcCommonHist6 = NULL; 
+  AliFlowCommonHist *qcCommonHist8 = NULL; 
+  AliFlowCommonHistResults *qcCommonHistRes2 = NULL; 
+  AliFlowCommonHistResults *qcCommonHistRes4 = NULL; 
+  AliFlowCommonHistResults *qcCommonHistRes6 = NULL; 
+  AliFlowCommonHistResults *qcCommonHistRes8 = NULL; 
+  
+  if(fileQC) {
+    fileQC->GetObject("cobjQC",pListQC);
+    if(pListQC) {
+      qcCommonHist2 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist2ndOrderQC"));
+      qcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
+      if(qcCommonHistRes2)  {
+	flowValue[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
+	//flowError[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      qcCommonHist4 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist4thOrderQC"));
+      qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
+      if(qcCommonHistRes4) {
+	flowValue[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
+	//flowError[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      qcCommonHist6 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist6thOrderQC"));
+      qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
+      if(qcCommonHistRes6) {
+	flowValue[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
+	//flowError[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      qcCommonHist8 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist8thOrderQC"));
+      qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
+      if(qcCommonHistRes8)  {
+	flowValue[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
+	//flowError[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValueRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }        
+  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //              !!!!  to be removed  !!!!
+  Double_t dMax=flowValue[0]+flowError[0];
+  Double_t dMin=flowValue[0]-flowError[0];
+  
+  for(Int_t i=1;i<nMethods;i++) {
+    if(!(flowValue[i]==0. && flowError[i]==0.)) {
+      if(dMax<flowValue[i]+flowError[i]) dMax=flowValue[i]+flowError[i];
+      if(dMin>flowValue[i]-flowError[i]) dMin=flowValue[i]-flowError[i];
+    } 
+  }  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
   //RP:
-  pMeshRP->SetPoint(1,0,valueMCRP+errorMCRP);
-  pMeshRP->SetPoint(2,nPts+1,valueMCRP+errorMCRP);
-  pMeshRP->SetPoint(3,nPts+1,valueMCRP-errorMCRP);
-  pMeshRP->SetPoint(4,0,valueMCRP-errorMCRP);
-  pMeshRP->SetPoint(5,0,valueMCRP+errorMCRP);
+  Double_t dMaxRP=flowValueRP[0]+flowErrorRP[0];
+  Double_t dMinRP=flowValueRP[0]-flowErrorRP[0];
   
-  pMeshRP->SetFillStyle(meshStyle);
-  pMeshRP->SetFillColor(meshColor);
+  for(Int_t i=1;i<nMethods;i++) {
+    if(!(flowValueRP[i]==0. && flowErrorRP[i]==0.)) {
+      if(dMaxRP<flowValueRP[i]+flowErrorRP[i]) dMaxRP=flowValueRP[i]+flowErrorRP[i];
+      if(dMinRP>flowValueRP[i]-flowErrorRP[i]) dMinRP=flowValueRP[i]-flowErrorRP[i];
+    } 
+  }  
 
   //POI:
-  pMeshPOI->SetPoint(1,0,valueMCPOI+errorMCPOI);
-  pMeshPOI->SetPoint(2,nPts+1,valueMCPOI+errorMCPOI);
-  pMeshPOI->SetPoint(3,nPts+1,valueMCPOI-errorMCPOI);
-  pMeshPOI->SetPoint(4,0,valueMCPOI-errorMCPOI);
-  pMeshPOI->SetPoint(5,0,valueMCPOI+errorMCPOI);
+  Double_t dMaxPOI=flowValuePOI[0]+flowErrorPOI[0];
+  Double_t dMinPOI=flowValuePOI[0]-flowErrorPOI[0];
   
-  pMeshPOI->SetFillStyle(meshStyle);
-  pMeshPOI->SetFillColor(meshColor);     
- }
- //---------------------------------------------------------------------------------- 
+  for(Int_t i=1;i<nMethods;i++) {
+    if(!(flowValuePOI[i]==0. && flowErrorPOI[i]==0.)) {
+      if(dMaxPOI<flowValuePOI[i]+flowErrorPOI[i]) dMaxPOI=flowValuePOI[i]+flowErrorPOI[i];
+      if(dMinPOI>flowValuePOI[i]-flowErrorPOI[i]) dMinPOI=flowValuePOI[i]-flowErrorPOI[i];
+    } 
+  }  
  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //                    !!!!  to be removed  !!!!
+  TGraph* flowResults = new TGraphErrors(nMethods, x, flowValue, xError, flowError);
  
- //----------------------------------------------------------------------------------
- //cosmetics: text (integrated flow) 
- //default text:
- TPaveText *textDefault = new TPaveText(0.05,0.77,0.95,0.90,"NDC");
- textDefault->SetTextFont(72);
- textDefault->SetTextSize(0.08);
- //textDefault->SetLineColor(kFALSE);
- //textDefault->SetShadowColor(kFALSE);
-
- TString *entryDefaultAvM = new TString("Average Multiplicity");
- TString *entryDefaultAnd = new TString("and"); 
- TString *entryDefaultNumOfEvts = new TString("Number of Events:");
-
- textDefault->AddText(entryDefaultAvM->Data());
- textDefault->AddText(entryDefaultAnd->Data());
- textDefault->AddText(entryDefaultNumOfEvts->Data());
- 
- //results:
- TPaveText *textResults = new TPaveText(0.05,0.12,0.95,0.70,"NDC");//to be removed
- textResults->SetTextFont(72);//to be removed
- textResults->SetTextSize(0.06);//to be removed
- //textResults->SetLineColor(kFALSE);
- //textResults->SetShadowColor(kFALSE);
-
- //results (RP):
- TPaveText *textResultsRP = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
- textResultsRP->SetTextFont(72);
- textResultsRP->SetTextSize(0.06);
-
- //results (POI):
- TPaveText *textResultsPOI = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
- textResultsPOI->SetTextFont(72);
- textResultsPOI->SetTextSize(0.06);
- 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //      !!!! to be removed !!!!!!                                      
- TString *entryMC    = new TString("MC ...... ");
- TString *entryGFC   = new TString("GFC ..... "); 
- TString *entryQC2   = new TString("QC{2} ... ");
- TString *entryQC4   = new TString("QC{4} ... ");
- TString *entryQC6   = new TString("QC{6} ... ");
- TString *entryQC8   = new TString("QC{8} ... ");
- TString *entryFQD   = new TString("FQD ..... "); 
- TString *entryLYZ1  = new TString("LYZ ..... "); 
- TString *entryLYZEP = new TString("LYZEP ... "); 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- 
- //RP: 
- TString *entryMCRP    = new TString("MC ...... ");
- TString *entryGFCRP   = new TString("GFC ..... "); 
- TString *entryQC2RP   = new TString("QC{2} ... ");
- TString *entryQC4RP   = new TString("QC{4} ... ");
- TString *entryQC6RP   = new TString("QC{6} ... ");
- TString *entryQC8RP   = new TString("QC{8} ... ");
- TString *entryFQDRP   = new TString("FQD ..... "); 
- TString *entryLYZ1RP  = new TString("LYZ ..... "); 
- TString *entryLYZEPRP = new TString("LYZEP ... "); 
-
- //POI: 
- TString *entryMCPOI    = new TString("MC ...... ");
- TString *entryGFCPOI   = new TString("GFC ..... "); 
- TString *entryQC2POI   = new TString("QC{2} ... ");
- TString *entryQC4POI   = new TString("QC{4} ... ");
- TString *entryQC6POI   = new TString("QC{6} ... ");
- TString *entryQC8POI   = new TString("QC{8} ... ");
- TString *entryFQDPOI   = new TString("FQD ..... "); 
- TString *entryLYZ1POI  = new TString("LYZ ..... "); 
- TString *entryLYZEPPOI = new TString("LYZEP ... "); 
- 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //                  !!!! to be removed !!!!
- Double_t avMultMC=0.;
- Long_t nEvtsMC=0;
-
- Double_t avMultGFC=0.;
- Long_t nEvtsGFC=0;
+  flowResults->SetMarkerStyle(markerStyle);
+  flowResults->SetMarkerColor(markerColor);
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   
- Double_t avMultQC2=0., avMultQC4=0., avMultQC6=0., avMultQC8=0.;
- Long_t nEvtsQC2=0, nEvtsQC4=0, nEvtsQC6=0, nEvtsQC8=0;
-
- Double_t avMultFQD=0.;
- Long_t nEvtsFQD=0;
-
- Double_t avMultLYZ1=0.;
- Long_t nEvtsLYZ1=0;
- 
- Double_t avMultLYZEP=0.;
- Long_t nEvtsLYZEP=0;
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
- //RP:
- Double_t avMultMCRP=0.;
- Long_t nEvtsMCRP=0;
-
- Double_t avMultGFCRP=0.;
- Long_t nEvtsGFCRP=0;
+  //RP:
+  TGraph* flowResultsRP = new TGraphErrors(nMethods, x, flowValueRP, xError, flowErrorRP);
   
- Double_t avMultQC2RP=0., avMultQC4RP=0., avMultQC6RP=0., avMultQC8RP=0.;
- Long_t nEvtsQC2RP=0, nEvtsQC4RP=0, nEvtsQC6RP=0, nEvtsQC8RP=0;
-
- Double_t avMultFQDRP=0.;
- Long_t nEvtsFQDRP=0;
-
- Double_t avMultLYZ1RP=0.;
- Long_t nEvtsLYZ1RP=0;
- 
- Double_t avMultLYZEPRP=0.;
- Long_t nEvtsLYZEPRP=0;
- 
- //POI:
- Double_t avMultMCPOI=0.;
- Long_t nEvtsMCPOI=0;
-
- Double_t avMultGFCPOI=0.;
- Long_t nEvtsGFCPOI=0;
+  flowResultsRP->SetMarkerStyle(markerStyle);
+  flowResultsRP->SetMarkerColor(markerColor);
   
- Double_t avMultQC2POI=0., avMultQC4POI=0., avMultQC6POI=0., avMultQC8POI=0.;
- Long_t nEvtsQC2POI=0, nEvtsQC4POI=0, nEvtsQC6POI=0, nEvtsQC8POI=0;
-
- Double_t avMultFQDPOI=0.;
- Long_t nEvtsFQDPOI=0;
-
- Double_t avMultLYZ1POI=0.;
- Long_t nEvtsLYZ1POI=0;
+  //POI:
+  TGraph* flowResultsPOI = new TGraphErrors(nMethods, x, flowValuePOI, xError, flowErrorPOI);
+  
+  flowResultsPOI->SetMarkerStyle(markerStyle);
+  flowResultsPOI->SetMarkerColor(markerColor);
+  
+  //-----------------------------------------------------------------------------------
+  
+  //----------------------------------------------------------------------------------
+  //cosmetics: mesh for MC error bands (integrated flow)
+  TGraph* pMesh = NULL;//to be removed
+  TGraph* pMeshRP = NULL;
+  TGraph* pMeshPOI = NULL;
+  
+  if(intFlowAll && mcepCommonHistRes) {
+    //Double_t valueMC = intFlowAll->GetBinContent(1);
+    //Double_t errorMC = intFlowAll->GetBinError(1);  
+    //Int_t nPts       = intFlowAll->GetNbinsX();     
+    
+    Int_t nPts       = nMethods;
+    Double_t valueMC = flowValue[0];//to be removed
+    Double_t errorMC = flowError[0];//to be removed  
+    Double_t valueMCRP = flowValueRP[0];
+    Double_t errorMCRP = flowErrorRP[0]; 
+    Double_t valueMCPOI = flowValuePOI[0];
+    Double_t errorMCPOI = flowErrorPOI[0]; 
+    
+    pMesh = new TGraph(nPts);//to be removed
+    pMeshRP = new TGraph(nPts);
+    pMeshPOI = new TGraph(nPts);
+    
+    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    //             !!!! to be removed !!!!
+    pMesh->SetPoint(1,0,valueMC+errorMC);
+    pMesh->SetPoint(2,nPts+1,valueMC+errorMC);
+    pMesh->SetPoint(3,nPts+1,valueMC-errorMC);
+    pMesh->SetPoint(4,0,valueMC-errorMC);
+    pMesh->SetPoint(5,0,valueMC+errorMC);
+    
+    pMesh->SetFillStyle(meshStyle);
+    pMesh->SetFillColor(meshColor);
+    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    
+    //RP:
+    pMeshRP->SetPoint(1,0,valueMCRP+errorMCRP);
+    pMeshRP->SetPoint(2,nPts+1,valueMCRP+errorMCRP);
+    pMeshRP->SetPoint(3,nPts+1,valueMCRP-errorMCRP);
+    pMeshRP->SetPoint(4,0,valueMCRP-errorMCRP);
+    pMeshRP->SetPoint(5,0,valueMCRP+errorMCRP);
+    
+    pMeshRP->SetFillStyle(meshStyle);
+    pMeshRP->SetFillColor(meshColor);
+    
+    //POI:
+    pMeshPOI->SetPoint(1,0,valueMCPOI+errorMCPOI);
+    pMeshPOI->SetPoint(2,nPts+1,valueMCPOI+errorMCPOI);
+    pMeshPOI->SetPoint(3,nPts+1,valueMCPOI-errorMCPOI);
+    pMeshPOI->SetPoint(4,0,valueMCPOI-errorMCPOI);
+    pMeshPOI->SetPoint(5,0,valueMCPOI+errorMCPOI);
+    
+    pMeshPOI->SetFillStyle(meshStyle);
+    pMeshPOI->SetFillColor(meshColor);     
+  }
+  //---------------------------------------------------------------------------------- 
  
- Double_t avMultLYZEPPOI=0.;
- Long_t nEvtsLYZEPPOI=0;
- 
- //MC:  
- if(mcepCommonHist)
- {
-  avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();//to be removed
-  nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();//to be removed
-  avMultMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
-  nEvtsMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
-  avMultMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
-  nEvtsMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();
- }
+  
+  //----------------------------------------------------------------------------------
+  //cosmetics: text (integrated flow) 
+  //default text:
+  TPaveText *textDefault = new TPaveText(0.05,0.77,0.95,0.90,"NDC");
+  textDefault->SetTextFont(72);
+  textDefault->SetTextSize(0.08);
+  //textDefault->SetLineColor(kFALSE);
+  //textDefault->SetShadowColor(kFALSE);
+  
+  TString *entryDefaultAvM = new TString("Average Multiplicity");
+  TString *entryDefaultAnd = new TString("and"); 
+  TString *entryDefaultNumOfEvts = new TString("Number of Events:");
+  
+  textDefault->AddText(entryDefaultAvM->Data());
+  textDefault->AddText(entryDefaultAnd->Data());
+  textDefault->AddText(entryDefaultNumOfEvts->Data());
+  
+  //results:
+  TPaveText *textResults = new TPaveText(0.05,0.12,0.95,0.70,"NDC");//to be removed
+  textResults->SetTextFont(72);//to be removed
+  textResults->SetTextSize(0.06);//to be removed
+  //textResults->SetLineColor(kFALSE);
+  //textResults->SetShadowColor(kFALSE);
+  
+  //results (RP):
+  TPaveText *textResultsRP = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
+  textResultsRP->SetTextFont(72);
+  textResultsRP->SetTextSize(0.06);
+  
+  //results (POI):
+  TPaveText *textResultsPOI = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
+  textResultsPOI->SetTextFont(72);
+  textResultsPOI->SetTextSize(0.06);
+  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //      !!!! to be removed !!!!!!                                      
+  TString *entryMC    = new TString("MC ...... ");
+  TString *entryGFC   = new TString("GFC ..... "); 
+  TString *entryQC2   = new TString("QC{2} ... ");
+  TString *entryQC4   = new TString("QC{4} ... ");
+  TString *entryQC6   = new TString("QC{6} ... ");
+  TString *entryQC8   = new TString("QC{8} ... ");
+  TString *entryFQD   = new TString("FQD ..... "); 
+  TString *entryLYZ1  = new TString("LYZ ..... "); 
+  TString *entryLYZEP = new TString("LYZEP ... "); 
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  //RP: 
+  TString *entryMCRP    = new TString("MC ...... ");
+  TString *entryGFCRP   = new TString("GFC ..... "); 
+  TString *entryQC2RP   = new TString("QC{2} ... ");
+  TString *entryQC4RP   = new TString("QC{4} ... ");
+  TString *entryQC6RP   = new TString("QC{6} ... ");
+  TString *entryQC8RP   = new TString("QC{8} ... ");
+  TString *entryFQDRP   = new TString("FQD ..... "); 
+  TString *entryLYZ1RP  = new TString("LYZ ..... "); 
+  TString *entryLYZEPRP = new TString("LYZEP ... "); 
+
+  //POI: 
+  TString *entryMCPOI    = new TString("MC ...... ");
+  TString *entryGFCPOI   = new TString("GFC ..... "); 
+  TString *entryQC2POI   = new TString("QC{2} ... ");
+  TString *entryQC4POI   = new TString("QC{4} ... ");
+  TString *entryQC6POI   = new TString("QC{6} ... ");
+  TString *entryQC8POI   = new TString("QC{8} ... ");
+  TString *entryFQDPOI   = new TString("FQD ..... "); 
+  TString *entryLYZ1POI  = new TString("LYZ ..... "); 
+  TString *entryLYZEPPOI = new TString("LYZEP ... "); 
+  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //                  !!!! to be removed !!!!
+  Double_t avMultMC=0.;
+  Long_t nEvtsMC=0;
+  
+  Double_t avMultGFC=0.;
+  Long_t nEvtsGFC=0;
+  
+  Double_t avMultQC2=0., avMultQC4=0., avMultQC6=0., avMultQC8=0.;
+  Long_t nEvtsQC2=0, nEvtsQC4=0, nEvtsQC6=0, nEvtsQC8=0;
+  
+  Double_t avMultFQD=0.;
+  Long_t nEvtsFQD=0;
+  
+  Double_t avMultLYZ1=0.;
+  Long_t nEvtsLYZ1=0;
+  
+  Double_t avMultLYZEP=0.;
+  Long_t nEvtsLYZEP=0;
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  //RP:
+  Double_t avMultMCRP=0.;
+  Long_t nEvtsMCRP=0;
+  
+  Double_t avMultGFCRP=0.;
+  Long_t nEvtsGFCRP=0;
+  
+  Double_t avMultQC2RP=0., avMultQC4RP=0., avMultQC6RP=0., avMultQC8RP=0.;
+  Long_t nEvtsQC2RP=0, nEvtsQC4RP=0, nEvtsQC6RP=0, nEvtsQC8RP=0;
+  
+  Double_t avMultFQDRP=0.;
+  Long_t nEvtsFQDRP=0;
+  
+  Double_t avMultLYZ1RP=0.;
+  Long_t nEvtsLYZ1RP=0;
+  
+  Double_t avMultLYZEPRP=0.;
+  Long_t nEvtsLYZEPRP=0;
+  
+  //POI:
+  Double_t avMultMCPOI=0.;
+  Long_t nEvtsMCPOI=0;
+  
+  Double_t avMultGFCPOI=0.;
+  Long_t nEvtsGFCPOI=0;
+  
+  Double_t avMultQC2POI=0., avMultQC4POI=0., avMultQC6POI=0., avMultQC8POI=0.;
+  Long_t nEvtsQC2POI=0, nEvtsQC4POI=0, nEvtsQC6POI=0, nEvtsQC8POI=0;
+  
+  Double_t avMultFQDPOI=0.;
+  Long_t nEvtsFQDPOI=0;
+  
+  Double_t avMultLYZ1POI=0.;
+  Long_t nEvtsLYZ1POI=0;
+  
+  Double_t avMultLYZEPPOI=0.;
+  Long_t nEvtsLYZEPPOI=0;
+  
+  //MC:  
+  if(mcepCommonHist) {
+    avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();//to be removed
+    nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();//to be removed
+    avMultMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
+    nEvtsMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
+    avMultMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
+    nEvtsMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();
+  }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //   !!!! to be removed !!!!
+  if(entryMC) {   
+    entryMC->Append("M = ");
+    (*entryMC)+=(Long_t)avMultMC;
+    entryMC->Append(", N = ");
+    (*entryMC)+=(Long_t)nEvtsMC;
+  }
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!
- if(entryMC)
- {   
-  entryMC->Append("M = ");
-  (*entryMC)+=(Long_t)avMultMC;
-  entryMC->Append(", N = ");
-  (*entryMC)+=(Long_t)nEvtsMC;
- }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- if(entryMCRP)
- {   
-  entryMCRP->Append("M = ");
-  (*entryMCRP)+=(Long_t)avMultMCRP;
-  entryMCRP->Append(", N = ");
-  (*entryMCRP)+=(Long_t)nEvtsMCRP;
- }
- if(entryMCPOI)
- {   
-  entryMCPOI->Append("M = ");
-  (*entryMCPOI)+=(Long_t)avMultMCPOI;
-  entryMCPOI->Append(", N = ");
-  (*entryMCPOI)+=(Long_t)nEvtsMCPOI;
+  if(entryMCRP) {   
+    entryMCRP->Append("M = ");
+    (*entryMCRP)+=(Long_t)avMultMCRP;
+    entryMCRP->Append(", N = ");
+    (*entryMCRP)+=(Long_t)nEvtsMCRP;
+  }
+ if(entryMCPOI) {   
+   entryMCPOI->Append("M = ");
+   (*entryMCPOI)+=(Long_t)avMultMCPOI;
+   entryMCPOI->Append(", N = ");
+   (*entryMCPOI)+=(Long_t)nEvtsMCPOI;
  }
   
  //GFC:
- if(gfcCommonHist)
- {
-  avMultGFC = (gfcCommonHist->GetHistMultInt())->GetMean();//to be removed
-  nEvtsGFC  = (gfcCommonHist->GetHistMultInt())->GetEntries();//to be removed
-  avMultGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();
-  nEvtsGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
-  avMultGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
-  nEvtsGFCPOI  = (gfcCommonHist->GetHistMultDiff())->GetEntries();
+ if(gfcCommonHist) {
+   avMultGFC = (gfcCommonHist->GetHistMultInt())->GetMean();//to be removed
+   nEvtsGFC  = (gfcCommonHist->GetHistMultInt())->GetEntries();//to be removed
+   avMultGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();
+   nEvtsGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
+   avMultGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
+   nEvtsGFCPOI  = (gfcCommonHist->GetHistMultDiff())->GetEntries();
  }
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //   !!!! to be removed !!!! 
- if(entryGFC)
- { 
-  entryGFC->Append("M = ");
-  (*entryGFC)+=(Long_t)avMultGFC;
-  entryGFC->Append(", N = ");
-  (*entryGFC)+=(Long_t)nEvtsGFC;
+ if(entryGFC) { 
+   entryGFC->Append("M = ");
+   (*entryGFC)+=(Long_t)avMultGFC;
+   entryGFC->Append(", N = ");
+   (*entryGFC)+=(Long_t)nEvtsGFC;
  }
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- if(entryGFCRP)
- { 
-  entryGFCRP->Append("M = ");
-  (*entryGFCRP)+=(Long_t)avMultGFCRP;
-  entryGFCRP->Append(", N = ");
-  (*entryGFCRP)+=(Long_t)nEvtsGFCRP;
+ if(entryGFCRP) { 
+   entryGFCRP->Append("M = ");
+   (*entryGFCRP)+=(Long_t)avMultGFCRP;
+   entryGFCRP->Append(", N = ");
+   (*entryGFCRP)+=(Long_t)nEvtsGFCRP;
  }
- if(entryGFCPOI)
- { 
-  entryGFCPOI->Append("M = ");
-  (*entryGFCPOI)+=(Long_t)avMultGFCPOI;
-  entryGFCPOI->Append(", N = ");
-  (*entryGFCPOI)+=(Long_t)nEvtsGFCPOI;
+ if(entryGFCPOI) { 
+   entryGFCPOI->Append("M = ");
+   (*entryGFCPOI)+=(Long_t)avMultGFCPOI;
+   entryGFCPOI->Append(", N = ");
+   (*entryGFCPOI)+=(Long_t)nEvtsGFCPOI;
  }
  
  //QC:
- if(qcCommonHist2)
- {
-  avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();//to be removed
-  nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();//to be removed
-  avMultQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
-  nEvtsQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
-  avMultQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
-  nEvtsQC2POI  = (qcCommonHist2->GetHistMultDiff())->GetEntries();
+ if(qcCommonHist2) {
+   avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();//to be removed
+   nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();//to be removed
+   avMultQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
+   nEvtsQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
+   avMultQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
+   nEvtsQC2POI  = (qcCommonHist2->GetHistMultDiff())->GetEntries();
  }
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //   !!!! to be removed !!!!   
