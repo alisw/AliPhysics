@@ -371,6 +371,8 @@ void AliPHOSClusterizerv1::Init()
     fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
   if (fgCalibData->GetCalibDataEmc() == 0)
     AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction.\n");
+  if (fgCalibData->GetCalibDataCpv() == 0)   
+    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction.\n");   
 
 }
 
@@ -565,8 +567,8 @@ void AliPHOSClusterizerv1::MakeClusters()
     Int_t index ;
 
     //is this digit so energetic that start cluster?
-    if (( IsInEmc(digit) &&  digit->GetEnergy() > fEmcClusteringThreshold ) || 
-        ( IsInCpv(digit) &&  digit->GetEnergy() > fCpvClusteringThreshold ) ) {
+    if (( IsInEmc(digit) &&  Calibrate(digit->GetEnergy(),digit->GetId()) > fEmcClusteringThreshold ) || 
+        ( IsInCpv(digit) &&  Calibrate(digit->GetEnergy(),digit->GetId()) > fCpvClusteringThreshold ) ) {
       Int_t iDigitInCluster = 0 ; 
       if  ( IsInEmc(digit) ) {   
         // start a new EMC RecPoint
@@ -576,7 +578,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         fEMCRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
         clu = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ; 
 	fNumberOfEmcClusters++ ; 
-	clu->AddDigit(*digit, digit->GetEnergy()) ;
+	clu->AddDigit(*digit, Calibrate(digit->GetEnergy(),digit->GetId())) ;
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;
         iDigitInCluster++ ;
         fDigitsUsed[i]=kTRUE ; 
@@ -588,7 +590,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         fCPVRecPoints->AddAt(new AliPHOSCpvRecPoint(""), fNumberOfCpvClusters) ;
         clu =  static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;  
         fNumberOfCpvClusters++ ; 
-        clu->AddDigit(*digit, digit->GetEnergy())  ;        
+        clu->AddDigit(*digit,  Calibrate(digit->GetEnergy(),digit->GetId())) ;
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList()  ;        
         iDigitInCluster++ ; 
         fDigitsUsed[i]=kTRUE ;
@@ -618,7 +620,7 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, digitN->GetEnergy());
+	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digit->GetId())) ;
             clusterdigitslist[iDigitInCluster] = j ; 
             iDigitInCluster++ ; 
             fDigitsUsed[j]=kTRUE ;
@@ -1086,4 +1088,25 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
     rp->SetDistanceToBadCrystal(minDist); 
   }
 
+}
+//==================================================================================
+Float_t AliPHOSClusterizerv1::Calibrate(Float_t amp, Int_t absId){
+  // Calibrate EMC digit, i.e. multiply its Amp by a factor read from CDB
+
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  if(relId[1]){ //CPV
+    Float_t calibration = fgCalibData->GetADCchannelCpv(module,column,row);
+    return amp*calibration ;
+  }   
+  else{ //EMC
+    Float_t calibration = fgCalibData->GetADCchannelEmc(module,column,row);
+    return amp*calibration ;
+  }
 }

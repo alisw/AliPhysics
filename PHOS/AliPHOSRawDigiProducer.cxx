@@ -246,9 +246,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
 //____________________________________________________________________________
 Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t isLowGain)
 {
-  // Convert EMC measured amplitude into real energy.
-  // Calibration parameters are taken from calibration data base for raw data,
-  // or from digitizer parameters for simulated data.                        
+  // Convert EMC LG amplitude to HG (multipli by ~16)
+  // Calibration parameters are taken from calibration data base 
   if(fgCalibData){ 
     Int_t   module = relId[0];  
     Int_t   column = relId[3];
@@ -257,7 +256,6 @@ Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t i
       if(isLowGain){
         amp*= fgCalibData->GetHighLowRatioEmc(module,column,row);
       }
-      amp *= fgCalibData->GetADCchannelEmc(module,column,row);                                                          
       return amp ;         
     }         
   }          
