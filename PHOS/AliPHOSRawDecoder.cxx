@@ -147,9 +147,6 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   
   AliCaloRawStream* in = fCaloStream;
   
-  Int_t    iBin     = 0;
-  Int_t    mxSmps   = fSamples->GetSize();
-  Int_t    tLength  = 0;
   fEnergy = -111;
   Float_t pedMean = 0;
   Float_t pedRMS = 0;
@@ -157,20 +154,10 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   Float_t baseLine = 1.0;
   const Int_t kPreSamples = 10;
   
-  fSamples->Reset();
   while ( in->Next() ) { 
-
-     if(!tLength) {
-       tLength = in->GetTimeLength();
-       if(tLength>mxSmps) {
-	 fSamples->Set(tLength);
-       }
-     }
-     
-     // Fit the full sample
-     if(in->IsNewHWAddress() && iBin>0) {
+    // Evaluate previous sample
+    if(in->IsNewHWAddress() && fEnergy!=-111){ //Do not return at first sample
        
-       iBin=0;
        //First remember new sample
        fNewLowGainFlag = in->IsLowGain();
        fNewModule = in->GetModule()+1;
@@ -178,11 +165,10 @@ Bool_t AliPHOSRawDecoder::NextDigit()
        fNewColumn = in->GetColumn()+1;
        fNewAmp = in->GetSignal() ;
        fNewTime=in->GetTime() ;                                                                                                                               
-       
-       // Temporarily we take the energy as a maximum amplitude
+       // We take the energy as a maximum amplitude
        // and the pedestal from the 0th point (30 Aug 2006).
-       // Time is not evaluated for the moment (12.01.2007). 
-       // Take is as a first time bin multiplied by the sample tick time
+       // Time is not evaluated 
+       // Take it as a first time bin multiplied by the sample tick time
        
        if(fPedSubtract) {
 	 if (nPed > 0){
@@ -203,7 +189,7 @@ Bool_t AliPHOSRawDecoder::NextDigit()
            pedestal += truePed - altroSettings ;
          }
          else{
-//           printf("AliPHOSRawDecoder::NextDigit() Can not read data from OCDB \n") ;
+           printf("AliPHOSRawDecoder::NextDigit() Can not read data from OCDB \n") ;
          }
          fEnergy-=pedestal ;
        }
@@ -213,7 +199,6 @@ Bool_t AliPHOSRawDecoder::NextDigit()
      }
 
      fLowGainFlag = in->IsLowGain();
-//     fTime =   in->GetTime();
      fTime = 1;
      fModule = in->GetModule()+1;
      fRow    = in->GetRow()   +1;
@@ -222,17 +207,17 @@ Bool_t AliPHOSRawDecoder::NextDigit()
     if(fLowGainFlag==fNewLowGainFlag && fModule==fNewModule &&
        fRow==fNewRow && fColumn==fNewColumn ){
        if(fNewAmp>fEnergy)  fEnergy = (Double_t)fNewAmp ;
-       fNewModule=-1 ;
+       fNewModule=-1 ;  //copyed, do not copy more
     } 
 
      //Calculate pedestal if necessary
-     if(fPedSubtract && in->GetTime() < kPreSamples) {
+     if(fPedSubtract && (in->GetTime() < kPreSamples)) {
        pedMean += in->GetSignal();
        pedRMS+=in->GetSignal()*in->GetSignal() ;
        nPed++;
      }
-     if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
-     iBin++ ;
+     if((Double_t)in->GetSignal() > fEnergy)
+       fEnergy = (Double_t)in->GetSignal();
      
    } // in.Next()
    
