@@ -473,7 +473,7 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	  HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCTransform::GetNTimeBins());
 	}
       }
-      else if (argument.CompareTo("-sorted")) {
+      else if (argument.CompareTo("-sorted")==0) {
 	fUnsorted=0;
 	HLTDebug("Swithching unsorted off.");
 	fClusterFinder->SetUnsorted(0);
@@ -486,7 +486,7 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	fGetActivePads = 1;
 	fClusterFinder->SetDoPadSelection(kTRUE);
       }
-      else if (argument.CompareTo("-occupancy-limit")==0 ||argument.CompareTo("occupancy-limit")==0){
+      else if (argument.CompareTo("-occupancy-limit")==0 || argument.CompareTo("occupancy-limit")==0){
 	if(argument.CompareTo("occupancy-limit" )==0){
 	  HLTWarning("Please switch to new component argument naming convention, use '-occupancy-limit' instead of 'occupancy-limit'");
 	}
