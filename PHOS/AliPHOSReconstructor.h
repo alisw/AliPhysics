@@ -58,6 +58,7 @@ class AliESDEvent ;
 class AliRawReader; 
 class AliPHOSRecoParam;
 class AliPHOSGeometry;
+class AliPHOSCalibData ;
 
 // --- Standard library ---
 
@@ -93,6 +94,7 @@ public:
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
+  virtual Float_t            Calibrate(Float_t amp, Int_t absId) const ;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
@@ -112,6 +114,7 @@ private:
   AliPHOSPID               *fPID;            //! PHOS PID maker
   static TClonesArray      *fgDigitsArray;   //! Array of PHOS digits
   static TObjArray         *fgEMCRecPoints;  //! Array of EMC rec.points
+  static AliPHOSCalibData * fgCalibData ;    //! Calibration database if aval.
 
   ClassDef(AliPHOSReconstructor,8)  // PHOS Reconstruction class
 

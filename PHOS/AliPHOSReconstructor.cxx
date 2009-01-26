@@ -37,6 +37,7 @@
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSTracker.h"
 #include "AliRawReader.h"
+#include "AliPHOSCalibData.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliPHOSTrigger.h"
@@ -56,6 +57,8 @@ ClassImp(AliPHOSReconstructor)
 Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
 TClonesArray*     AliPHOSReconstructor::fgDigitsArray = 0;   // Array of PHOS digits
 TObjArray*        AliPHOSReconstructor::fgEMCRecPoints = 0;   // Array of EMC rec.points
+AliPHOSCalibData * AliPHOSReconstructor::fgCalibData  = 0 ;
+
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
@@ -68,6 +71,9 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fPID         = new AliPHOSPIDv1              (fGeom);
   fgDigitsArray = new TClonesArray("AliPHOSDigit",100);
   fgEMCRecPoints= new TObjArray(100) ;
+  if (!fgCalibData)
+    fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
+ 
 }
 
 //____________________________________________________________________________
@@ -226,9 +232,9 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
     if(dig->GetId() <= knEMC && dig->GetEnergy() > GetRecoParam()->GetEMCMinE() ){
-      //printf("i %d; id %d; amp %f; time %e\n",
-      //idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
-      phsCells.SetCell(idignew,dig->GetId(), dig->GetEnergy(), dig->GetTime());   
+//      printf("i %d; id %d; amp %f; new E %f time %e\n",
+//      idignew,dig->GetId(),dig->GetEnergy(),Calibrate(dig->GetEnergy(),dig->GetId()), dig->GetTime());
+      phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()), dig->GetTime());   
       idignew++;
     }
   }
@@ -268,7 +274,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fgDigitsArray->At(digitsList[iCell]));
       absIdList[iCell] = (UShort_t)(digit->GetId());
       if (digit->GetEnergy() > 0)
- 	fracList[iCell] = rpElist[iCell]/digit->GetEnergy();
+ 	fracList[iCell] = rpElist[iCell]/(Calibrate(digit->GetEnergy(),digit->GetId()));
       else
  	fracList[iCell] = 0;
     }
@@ -394,3 +400,26 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   digits->Delete();
   delete digits;
 }
+//==================================================================================
+Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{
+  // Calibrate EMC digit, i.e. multiply its Amp by a factor read from CDB
+
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  if(relId[1]){ //CPV
+    Float_t calibration = fgCalibData->GetADCchannelCpv(module,column,row);
+    return amp*calibration ;
+  }
+  else{ //EMC
+    Float_t calibration = fgCalibData->GetADCchannelEmc(module,column,row);
+    return amp*calibration ;
+  }
+}
+
+
