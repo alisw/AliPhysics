@@ -30,24 +30,24 @@ void AliPHOSSetCDB()
   TControlBar *menu = new TControlBar("vertical","PHOS CDB");
   menu->AddButton("Help to run PHOS CDB","Help()",
 		  "Explains how to use PHOS CDB menus");
-  menu->AddButton("Equal CC","SetCC(0)",
+  menu->AddButton("Create ideal calibration","SetCC(0)",
 		  "Set equal CC");
-  menu->AddButton("Full decalibration","SetCC(1)",
+  menu->AddButton("Create full decalibration","SetCC(1)",
 		  "Set random decalibration CC");
-  menu->AddButton("Residual decalibration","SetCC(2)",
+  menu->AddButton("Create residual decalibration","SetCC(2)",
 		  "Set residual decalibration calibration coefficients");
 
-  menu->AddButton("Read equal CC","GetCC(0)",
+  menu->AddButton("Read ideal calibration","GetCC(0)",
 		  "Read equal calibration coefficients");
-  menu->AddButton("Read random CC","GetCC(1)",
+  menu->AddButton("Read full decalibration","GetCC(1)",
 		  "Read random decalibration calibration coefficients");
-  menu->AddButton("Read residual CC","GetCC(2)",
+  menu->AddButton("Read residual calibration","GetCC(2)",
 		  "Read residial calibration coefficients");
   menu->AddButton("Exit","gApplication->Terminate(0)","Quit aliroot session");
   menu->Show();
 }
 
-//------------------------------------------------------------------------
+//-----------------------------------------------------------------------
 void Help()
 {
   TString string="\nSet calibration parameters and write them into ALICE OCDB:";
@@ -76,33 +76,36 @@ void SetCC(Int_t flag=0)
   AliPHOSCalibData* cdb = 0;
 
   if      (flag == 0) {
+    // Ideal calibration with all channels at nominal value 0.005
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
     lastRun   =  999999;
-    objFormat = "PHOS initial pedestals and ADC gain factors (5x64x56)";
+    objFormat = "PHOS ideal pedestals and ADC gain factors (5x64x56)";
     cdb = new AliPHOSCalibData();
     cdb->CreateNew();
   }
 
   else if (flag == 1) {
+    // Full decalibration is +-10% of the nominal value
     DBFolder  ="local://FullDecalibDB";
     firstRun  =  0;
     lastRun   =  999999;
     objFormat = "PHOS fully decalibrated calibration coefficients (5x64x56)";
  
     cdb = new AliPHOSCalibData();    
-    cdb->RandomEmc(0.8,1.2);
+    cdb->RandomEmc(0.045,0.055);
     cdb->RandomCpv(0.0008,0.0016);
   }
   
   else if (flag == 2) {
+    // Residual decalibration is +-1% of the nominal value
     DBFolder  ="local://ResidualCalibDB";
     firstRun  =  0;
     lastRun   =  999999;
     objFormat = "PHOS residual calibration coefficients (5x64x56)";
     
     cdb = new AliPHOSCalibData();    
-    cdb->RandomEmc(0.98,1.02);
+    cdb->RandomEmc(0.00495,0.00505);
     cdb->RandomCpv(0.00115,0.00125);
   }
   
