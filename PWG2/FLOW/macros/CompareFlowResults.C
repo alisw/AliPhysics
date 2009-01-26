@@ -9,13 +9,31 @@ void CompareFlowResults()
  gSystem->Load("libPWG2flow.so");
  cerr<<"libPWG2flow.so loaded ..."<<endl;
  cout<<endl;
-  
+ 
+ 
+ 
+ 
+ //==================================================================================
+ //             set here which plots will be shown by default
+ //==================================================================================
+ //RP = particles used to determine the reaction plane
+ Bool_t plotIntFlowRP = kFALSE;    //integrated flow RP
+ Bool_t plotDiffFlowPtRP = kFALSE;  //differential flow (Pt,RP)
+ Bool_t plotDiffFlowEtaRP = kFALSE; //differential flow (Eta,RP)
+ //POI = particle of interest
+ Bool_t plotIntFlowPOI = kFALSE;     //integrated flow POI
+ Bool_t plotDiffFlowPtPOI = kTRUE;  //differential flow (Pt,POI)
+ Bool_t plotDiffFlowEtaPOI = kTRUE; //differential flow (Eta,POI)
+ //==================================================================================
+
+
+
 
  //==================================================================================
  //                         accessing output files
  //==================================================================================
  //type of analysis was: ESD, AOD, MC, ESDMC0, ESDMC1
- const TString type = "";
+ const TString type = "ESD";
  
  //open the output files:
  TString inputFileNameMCEP = "outputMCEPanalysis";
@@ -47,6 +65,9 @@ void CompareFlowResults()
  fileQC = TFile::Open(((inputFileNameQC.Append(type)).Append(".root")).Data(), "READ"); 
  //==================================================================================
  
+ 
+ 
+ 
  //==================================================================================
  //                                 cosmetics
  //==================================================================================
@@ -64,8 +85,7 @@ void CompareFlowResults()
  //==================================================================================
 
    
-      
-         
+             
                
  //==================================================================================
  //                              INTEGRATED FLOW
@@ -858,11 +878,11 @@ void CompareFlowResults()
  //LYZEP:
  if(lyzepCommonHist)
  {
-  avMultcLYZEP = (lyzepCommonHist->GetHistMultInt())->GetMean();//to be removed
+  avMultLYZEP = (lyzepCommonHist->GetHistMultInt())->GetMean();//to be removed
   nEvtsLYZEP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();//to be removed
-  avMultcLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
+  avMultLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
   nEvtsLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
-  avMultcLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
+  avMultLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
   nEvtsLYZEPPOI  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();    
  }
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -933,7 +953,6 @@ void CompareFlowResults()
  }
  //----------------------------------------------------------------------------------
  
- 
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //                           !!!! to be removed !!!!
  //----------------------------------------------------------------------------------
@@ -961,8 +980,8 @@ void CompareFlowResults()
        (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMin,0.9866*dMax);      
       }
   intFlowAll->Draw("E1");
- }
-                        
+ }                    
+                                                    
  if(pMesh) pMesh->Draw("LFSAME");
   
  if(flowResults) flowResults->Draw("PSAME");
@@ -975,89 +994,111 @@ void CompareFlowResults()
   textDefault->Draw();
   textResults->Draw();
  }
+ 
  //----------------------------------------------------------------------------------
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+ 
+ 
+ /*
+ 
+ 
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of RP (i.e. of particles used to determine the reaction plane):
- TCanvas* intFlowAllCanvasRP = new TCanvas("Integrated Flow RP","Integrated Flow RP",1000,600);
- 
- intFlowAllCanvasRP->Divide(2,1);
- 
- //1st pad is for plot:
- (intFlowAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(intFlowAll)
+ if(plotIntFlowRP)
  {
-  if(dMinRP>0. && dMaxRP>0.)
-  {
-   (intFlowAll->GetYaxis())->SetRangeUser(0.9744*dMinRP,1.0144*dMaxRP);
-  } else if(dMinRP<0. && dMaxRP>0.)
-    {
-     if(!(-1.*dMinRP<4.*dMaxRP))
-     {  
-      (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMinRP,1.0144*dMaxRP);
-     } else {(intFlowAll->GetYaxis())->SetRangeUser(1.1266*dMinRP,1.0144*dMaxRP);}  
-    } else if(dMinRP<0. && dMaxRP<0.)
-      {
-       (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMinRP,0.9866*dMaxRP);      
-      }
-  intFlowAll->Draw("E1");
- }
-                            
- if(pMeshRP) pMeshRP->Draw("LFSAME");
-  
- if(flowResultsRP) flowResultsRP->Draw("PSAME");
-
- //2nd pad is for legend:
- (intFlowAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  TCanvas* intFlowAllCanvasRP = new TCanvas("Integrated Flow RP","Integrated Flow RP",1000,600);
  
- if(textDefault) textDefault->Draw();
+  intFlowAllCanvasRP->Divide(2,1);
+ 
+  //1st pad is for plot:
+  (intFlowAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+ 
+  TH1D intFlowAllRPtemp = *intFlowAll;//to be improved 
+  TH1D *intFlowAllRP=&intFlowAllRPtemp;//to be improved  
+  
+  if(intFlowAllRP)
+  {
+   if(dMinRP>0. && dMaxRP>0.)
+   {
+    (intFlowAllRP->GetYaxis())->SetRangeUser(0.9744*dMinRP,1.0144*dMaxRP);
+   } else if(dMinRP<0. && dMaxRP>0.)
+     {
+      if(!(-1.*dMinRP<4.*dMaxRP))
+      {  
+       (intFlowAllRP->GetYaxis())->SetRangeUser(1.0266*dMinRP,1.0144*dMaxRP);
+      } else {(intFlowAllRP->GetYaxis())->SetRangeUser(1.1266*dMinRP,1.0144*dMaxRP);}  
+     } else if(dMinRP<0. && dMaxRP<0.)
+       {
+        (intFlowAllRP->GetYaxis())->SetRangeUser(1.0266*dMinRP,0.9866*dMaxRP);      
+       } 
+   intFlowAllRP->Draw("E1");
+  }
+                                       
+  if(pMeshRP) pMeshRP->Draw("LFSAME");
+   
+  if(flowResultsRP) flowResultsRP->Draw("PSAME");
 
- if(textResultsRP) textResultsRP->Draw();
+  //2nd pad is for legend:
+  (intFlowAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  
+  if(textDefault) textDefault->Draw();
+ 
+  if(textResultsRP) textResultsRP->Draw();
+ }//end of if(plotIntFlowRP} 
  //----------------------------------------------------------------------------------
  
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of POI (i.e. of particles of interest):
- TCanvas* intFlowAllCanvasPOI = new TCanvas("Integrated Flow POI","Integrated Flow POI",1000,600);
- 
- intFlowAllCanvasPOI->Divide(2,1);
- 
- //1st pad is for plot:
- (intFlowAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(intFlowAll)
+ if(plotIntFlowPOI)
  {
-  if(dMinPOI>0. && dMaxPOI>0.)
-  {
-   (intFlowAll->GetYaxis())->SetRangeUser(0.9744*dMinPOI,1.0144*dMaxPOI);
-  } else if(dMinPOI<0. && dMaxPOI>0.)
-    {
-     if(!(-1.*dMinPOI<4.*dMaxPOI))
-     {  
-      (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMinPOI,1.0144*dMaxPOI);
-     } else {(intFlowAll->GetYaxis())->SetRangeUser(1.1266*dMinPOI,1.0144*dMaxPOI);}  
-    } else if(dMinPOI<0. && dMaxPOI<0.)
-      {
-       (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMinPOI,0.9866*dMaxPOI);      
-      }
-  intFlowAll->Draw("E1");
- }
-                            
- if(pMeshPOI) pMeshPOI->Draw("LFSAME");
-  
- if(flowResultsPOI) flowResultsPOI->Draw("PSAME");
-
- //2nd pad is for legend:
- (intFlowAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  TCanvas* intFlowAllCanvasPOI = new TCanvas("Integrated Flow POI","Integrated Flow POI",1000,600);
  
- if(textDefault) textDefault->Draw();
+  intFlowAllCanvasPOI->Divide(2,1);
+ 
+  //1st pad is for plot:
+  (intFlowAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  TH1D intFlowAllPOItemp = *intFlowAll;//to be improved 
+  TH1D *intFlowAllPOI=&intFlowAllRPtemp;//to be improved  
+  if(intFlowAllPOI)
+  {
+   if(dMinPOI>0. && dMaxPOI>0.)
+   {
+    (intFlowAllPOI->GetYaxis())->SetRangeUser(0.9744*dMinPOI,1.0144*dMaxPOI);
+   } else if(dMinPOI<0. && dMaxPOI>0.)
+     {
+      if(!(-1.*dMinPOI<4.*dMaxPOI))
+      {  
+       (intFlowAllPOI->GetYaxis())->SetRangeUser(1.0266*dMinPOI,1.0144*dMaxPOI);
+      } else {(intFlowAllPOI->GetYaxis())->SetRangeUser(1.1266*dMinPOI,1.0144*dMaxPOI);}  
+     } else if(dMinPOI<0. && dMaxPOI<0.)
+       {
+        (intFlowAllPOI->GetYaxis())->SetRangeUser(1.0266*dMinPOI,0.9866*dMaxPOI);      
+       }
+   intFlowAllPOI->Draw("E1");
+  }
+                            
+  if(pMeshPOI) pMeshPOI->Draw("LFSAME");
+   
+  if(flowResultsPOI) flowResultsPOI->Draw("PSAME");
+ 
+  //2nd pad is for legend:
+  (intFlowAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+  if(textDefault) textDefault->Draw();
 
- if(textResultsPOI) textResultsPOI->Draw();
+  if(textResultsPOI) textResultsPOI->Draw();
+ }// end of if(plotIntFlowPOI) 
  //----------------------------------------------------------------------------------
  
  //==================================================================================   
  
+
+
+ 
+ */
+
 
 
 
@@ -1120,7 +1161,6 @@ void CompareFlowResults()
  //----------------------------------------------------------------------------------
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-
  //----------------------------------------------------------------------------------
  //RP:
  //cosmetics: Monte Carlo error bands for differential flow (Pt)
@@ -1158,21 +1198,21 @@ void CompareFlowResults()
   Double_t binWidthEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinWidth(1);//assuming that all bins have the same width
        
   pMeshDiffFlowEtaRP = new TGraph(2*nPtsDFEtaRP+1);
-  
+
   Double_t valueMCEtaRP=0., errorMCEtaRP=0.;
   for(Int_t i=1;i<nPtsDFEtaRP+1;i++)
   {
    valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(i);
-   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(i);       
-   pMeshDiffFlowEtaRP->SetPoint(i,(i-0.5)*binWidthEtaRP,valueMCEtaRP+errorMCEtaRP);
+   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(i);  
+   pMeshDiffFlowEtaRP->SetPoint(i,(i-0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP+errorMCEtaRP);
   }    
   for(Int_t i=nPtsDFEtaRP+1;i<2*nPtsDFEtaRP+1;i++)
   {
    valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(2*nPtsDFEtaRP+1-i);
    errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(2*nPtsDFEtaRP+1-i);       
-   pMeshDiffFlowEtaRP->SetPoint(i,(2*nPtsDFEtaRP-i+0.5)*binWidthEtaRP,valueMCEtaRP-errorMCEtaRP); 
+   pMeshDiffFlowEtaRP->SetPoint(i,(2*nPtsDFEtaRP-i+0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP-errorMCEtaRP);   
   }
-  pMeshDiffFlowEtaRP->SetPoint(2*nPtsDFEtaRP+1,0.5*binWidthEtaRP,valueMCEtaRP+errorMCEtaRP); 
+  pMeshDiffFlowEtaRP->SetPoint(2*nPtsDFEtaRP+1,0.5*binWidthEtaRP+dEtaMin,valueMCEtaRP+errorMCEtaRP); 
   pMeshDiffFlowEtaRP->SetFillStyle(meshStyle);
   pMeshDiffFlowEtaRP->SetFillColor(meshColor);
  } 
@@ -1222,15 +1262,15 @@ void CompareFlowResults()
   {
    valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(i);
    errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(i);       
-   pMeshDiffFlowEtaPOI->SetPoint(i,(i-0.5)*binWidthEtaPOI,valueMCEtaPOI+errorMCEtaPOI);
+   pMeshDiffFlowEtaPOI->SetPoint(i,(i-0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI+errorMCEtaPOI);
   }    
   for(Int_t i=nPtsDFEtaPOI+1;i<2*nPtsDFEtaPOI+1;i++)
   {
    valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(2*nPtsDFEtaPOI+1-i);
    errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(2*nPtsDFEtaPOI+1-i);       
-   pMeshDiffFlowEtaPOI->SetPoint(i,(2*nPtsDFEtaPOI-i+0.5)*binWidthEtaPOI,valueMCEtaPOI-errorMCEtaPOI); 
+   pMeshDiffFlowEtaPOI->SetPoint(i,(2*nPtsDFEtaPOI-i+0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI-errorMCEtaPOI); 
   }
-  pMeshDiffFlowEtaPOI->SetPoint(2*nPtsDFEtaPOI+1,0.5*binWidthEtaPOI,valueMCEtaPOI+errorMCEtaPOI); 
+  pMeshDiffFlowEtaPOI->SetPoint(2*nPtsDFEtaPOI+1,0.5*binWidthEtaPOI+dEtaMin,valueMCEtaPOI+errorMCEtaPOI); 
   pMeshDiffFlowEtaPOI->SetFillStyle(meshStyle);
   pMeshDiffFlowEtaPOI->SetFillColor(meshColor);
  } 
@@ -1280,54 +1320,54 @@ void CompareFlowResults()
  {
   if(gfcCommonHistRes2)
   {
-   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(kViolet+3);//to be removed
+   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(kViolet+7);//to be removed
    (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(20);//to be removed
-   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+3);
+   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+3);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+3);
+   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+3);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerStyle(20);
   }
   if(gfcCommonHistRes4)
   { 
-   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(kViolet-6);//to be removed
+   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(kViolet-3);//to be removed
    (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(21);//to be removed
-   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-6);
+   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-6);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-6);
+   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-6);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerStyle(21);         
   }
   if(gfcCommonHistRes6)
   { 
-   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(kViolet+5);//to be removed
+   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(kViolet+7);//to be removed
    (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(24);//to be removed
-   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+5);
+   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+5);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+5);
+   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+5);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+7);
    (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(24);
   }
   if(gfcCommonHistRes8)
   { 
-   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(kViolet-5);//to be removed
+   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(kViolet-3);//to be removed
    (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(25);//to be removed
-   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-5);
+   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-5);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-5);
+   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-5);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-3);
    (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(25);
   }
   if(gfcCommonHist)
@@ -1344,6 +1384,8 @@ void CompareFlowResults()
  //QC = Q-cumulants
  Double_t avMultDiffFlowQC2=0., avMultDiffFlowQC4=0.;//to be removed
  Double_t nEvtsDiffFlowQC2=0., nEvtsDiffFlowQC4=0.;//to be removed
+ Double_t avMultDiffFlowQC6=0., avMultDiffFlowQC8=0.;//to be removed
+ Double_t nEvtsDiffFlowQC6=0., nEvtsDiffFlowQC8=0.;//to be removed
  Double_t avMultDiffFlowQC2RP=0.;
  Double_t nEvtsDiffFlowQC2RP=0.;
  Double_t avMultDiffFlowQC2POI=0.;
@@ -1352,6 +1394,14 @@ void CompareFlowResults()
  Double_t nEvtsDiffFlowQC4RP=0.;
  Double_t avMultDiffFlowQC4POI=0.;
  Double_t nEvtsDiffFlowQC4POI=0.;
+ Double_t avMultDiffFlowQC6RP=0.;
+ Double_t nEvtsDiffFlowQC6RP=0.;
+ Double_t avMultDiffFlowQC6POI=0.;
+ Double_t nEvtsDiffFlowQC6POI=0.;
+ Double_t avMultDiffFlowQC8RP=0.;
+ Double_t nEvtsDiffFlowQC8RP=0.;
+ Double_t avMultDiffFlowQC8POI=0.;
+ Double_t nEvtsDiffFlowQC8POI=0.;
 
  if(fileQC)
  {
@@ -1401,6 +1451,52 @@ void CompareFlowResults()
    avMultDiffFlowQC4POI = (qcCommonHist4->GetHistMultDiff())->GetMean();
    nEvtsDiffFlowQC4POI  = (qcCommonHist4->GetHistMultDiff())->GetEntries();
   }
+  //QC{6}
+  if(qcCommonHistRes6)
+  {
+   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(kOrange+3);//to be removed
+   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(24);//to be removed
+   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange+3);
+   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(24);
+   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange+3);
+   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(24);
+   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange+3);
+   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(24);
+   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange+3);
+   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(24);
+  }
+  if(qcCommonHist6)
+  {
+   avMultDiffFlowQC6 = (qcCommonHist6->GetHistMultDiff())->GetMean();//to be removed
+   nEvtsDiffFlowQC6  = (qcCommonHist6->GetHistMultDiff())->GetEntries();//to be removed
+   avMultDiffFlowQC6RP = (qcCommonHist6->GetHistMultInt())->GetMean();
+   nEvtsDiffFlowQC6RP  = (qcCommonHist6->GetHistMultInt())->GetEntries();
+   avMultDiffFlowQC6POI = (qcCommonHist6->GetHistMultDiff())->GetMean();
+   nEvtsDiffFlowQC6POI  = (qcCommonHist6->GetHistMultDiff())->GetEntries();
+  }
+  //QC{8}
+  if(qcCommonHistRes8)
+  {
+   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(kOrange-6);//to be removed
+   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(25);//to be removed
+   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange-6);
+   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(25);
+   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange-6);
+   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(25);
+   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange-6);
+   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(25);
+   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange-6);
+   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(25);
+  }
+  if(qcCommonHist8)
+  {
+   avMultDiffFlowQC8 = (qcCommonHist8->GetHistMultDiff())->GetMean();//to be removed
+   nEvtsDiffFlowQC8  = (qcCommonHist8->GetHistMultDiff())->GetEntries();//to be removed
+   avMultDiffFlowQC8RP = (qcCommonHist8->GetHistMultInt())->GetMean();
+   nEvtsDiffFlowQC8RP  = (qcCommonHist8->GetHistMultInt())->GetEntries();
+   avMultDiffFlowQC8POI = (qcCommonHist8->GetHistMultDiff())->GetMean();
+   nEvtsDiffFlowQC8POI  = (qcCommonHist8->GetHistMultDiff())->GetEntries();
+  }
  } 
 
  //LYZ2 = Lee-Yang Zeros (2nd run)
@@ -1433,6 +1529,40 @@ void CompareFlowResults()
    nEvtsDiffFlowLYZ2RP  = (lyz2CommonHist->GetHistMultInt())->GetEntries();
    avMultDiffFlowLYZ2POI = (lyz2CommonHist->GetHistMultDiff())->GetMean();
    nEvtsDiffFlowLYZ2POI  = (lyz2CommonHist->GetHistMultDiff())->GetEntries();
+  } 
+ } 
+
+ //LYZEP = Lee-Yang Zeros Event Plane
+ Double_t avMultDiffFlowLYZEP=0.;//to be removed
+ Double_t nEvtsDiffFlowLYZEP=0;//to be removed
+ Double_t avMultDiffFlowLYZEPRP=0.;
+ Double_t nEvtsDiffFlowLYZEPRP=0;
+ Double_t avMultDiffFlowLYZEPPOI=0.;
+ Double_t nEvtsDiffFlowLYZEPPOI=0;
+ if(fileLYZEP)
+ {
+  if(lyzepCommonHistRes)
+  {
+   (lyzepCommonHistRes->GetHistDiffFlow())->Scale(0.01);//to be improved
+   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(kGreen+3);//to be removed
+   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(26);//to be removed
+   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(kGreen+3);
+   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(26);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(kGreen+3);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(26);
+   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(kGreen+3);
+   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(26);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(kGreen+3);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(26);
+  } 
+  if(lyzepCommonHist)
+  {
+   avMultDiffFlowLYZEP = (lyzepCommonHist->GetHistMultDiff())->GetMean();//to be removed
+   nEvtsDiffFlowLYZEP  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();//to be removed
+   avMultDiffFlowLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
+   nEvtsDiffFlowLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
+   avMultDiffFlowLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
+   nEvtsDiffFlowLYZEPPOI  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();
   } 
  } 
 
@@ -1492,6 +1622,11 @@ void CompareFlowResults()
  { 
   (lyz2CommonHistRes->GetHistDiffFlow())->Draw("E1PSAME");
  }
+ //LYZEP
+ if(lyzepCommonHistRes)
+ { 
+  (lyzepCommonHistRes->GetHistDiffFlow())->Draw("E1PSAME");
+ }
  
  //2nd pad is for legend:
  (diffFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
@@ -1509,6 +1644,7 @@ void CompareFlowResults()
  TString *entryDiffQC2  = new TString("QC{2} .... ");
  TString *entryDiffQC4  = new TString("QC{4} .... ");
  TString *entryDiffLYZ2 = new TString("LYZ ...... ");
+ TString *entryDiffLYZEP = new TString("LYZEP ... ");
  
  //MC
  if(mcepCommonHistRes)
@@ -1582,6 +1718,17 @@ void CompareFlowResults()
   (*entryDiffLYZ2)+=(Long_t)nEvtsDiffFlowLYZ2; 
   legendDiffFlow->AddEntry(lyz2CommonHistRes->GetHistDiffFlow(),entryDiffLYZ2->Data(),"p");
  }
+ 
+ //LYZEP
+ if(lyzepCommonHistRes)
+ {
+  entryDiffLYZEP->Append("M = ");
+  (*entryDiffLYZEP)+=(Long_t)avMultDiffFlowLYZEP;
+  entryDiffLYZEP->Append(", N = ");
+  (*entryDiffLYZEP)+=(Long_t)nEvtsDiffFlowLYZEP; 
+  legendDiffFlow->AddEntry(lyzepCommonHistRes->GetHistDiffFlow(),entryDiffLYZEP->Data(),"p");
+ }
+
 
  //drawing finally the legend in the 2nd pad:     
  if(legendDiffFlow)
@@ -1595,624 +1742,852 @@ void CompareFlowResults()
  
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, RP):
- TCanvas* diffFlowPtAllCanvasRP = new TCanvas("Differential Flow (Pt) of RP","Differential Flow (Pt) of RP ",1000,600);
- 
- diffFlowPtAllCanvasRP->Divide(2,1);
- 
- //1st pad is for plot:
- (diffFlowPtAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(styleHistPt)
+ //set here the results of which methods will be plotted by default:
+ Bool_t plotMCPtRP    = kFALSE;
+ Bool_t plotGFC2PtRP  = kTRUE;
+ Bool_t plotGFC4PtRP  = kTRUE;
+ Bool_t plotGFC6PtRP  = kTRUE;
+ Bool_t plotGFC8PtRP  = kTRUE;
+ Bool_t plotQC2PtRP   = kTRUE;
+ Bool_t plotQC4PtRP   = kTRUE;
+ Bool_t plotQC6PtRP   = kTRUE;
+ Bool_t plotQC8PtRP   = kTRUE;
+ Bool_t plotLYZ2PtRP  = kTRUE;
+ Bool_t plotLYZEPPtRP = kTRUE;  
+ if(plotDiffFlowPtRP)
  {
-  styleHistPt->Draw();
- }
- if(pMeshDiffFlowPtRP)
- {
-  pMeshDiffFlowPtRP->Draw("LFSAME");
- }
+  TCanvas* diffFlowPtAllCanvasRP = new TCanvas("Differential Flow (Pt) of RP","Differential Flow (Pt) of RP ",1000,600);
+  
+  diffFlowPtAllCanvasRP->Divide(2,1);
  
- //MC 
- if(mcepCommonHistRes)
- { 
-  (mcepCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
- }
- //GFC
- if(gfcCommonHistRes2)
- { 
-  (gfcCommonHistRes2->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes4)
- { 
-  (gfcCommonHistRes4->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes6)
- { 
-  (gfcCommonHistRes6->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes8)
- { 
-  (gfcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
- }    
- //QC
- if(qcCommonHistRes2)
- { 
-  (qcCommonHistRes2->GetHistDiffFlowPtRP())->Draw("E1PSAME");
- }
- if(qcCommonHistRes4)
- { 
-  (qcCommonHistRes4->GetHistDiffFlowPtRP())->Draw("E1PSAME");
- }
- //LYZ2
- if(lyz2CommonHistRes)
- { 
-  (lyz2CommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
- }
+  //1st pad is for plot:
+  (diffFlowPtAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
  
- //2nd pad is for legend:
- (diffFlowPtAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  if(styleHistPt)
+  {
+   (styleHistPt->GetYaxis())->SetRangeUser(-0.3,1.0);
+   styleHistPt->Draw();
+  }
+  if(pMeshDiffFlowPtRP)
+  {
+   pMeshDiffFlowPtRP->Draw("LFSAME");
+  }
+ 
+  //MC 
+  if(plotMCPtRP && mcepCommonHistRes)
+  { 
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  //GFC
+  if(plotGFC2PtRP && gfcCommonHistRes2)
+  { 
+   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC4PtRP && gfcCommonHistRes4)
+  { 
+   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC6PtRP && gfcCommonHistRes6)
+  { 
+   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC8PtRP && gfcCommonHistRes8)
+  { 
+   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
+  }    
+  //QC
+  if(plotQC2PtRP && qcCommonHistRes2)
+  { 
+   (qcCommonHistRes2->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  if(plotQC4PtRP && qcCommonHistRes4)
+  { 
+   (qcCommonHistRes4->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  if(plotQC6PtRP && qcCommonHistRes6)
+  { 
+   (qcCommonHistRes6->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  if(plotQC8PtRP && qcCommonHistRes8)
+  { 
+   (qcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  //LYZ2
+  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  { 
+   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  //LYZEP
+  if(plotLYZEPPtRP && lyzepCommonHistRes)
+  { 
+   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
 
- TLegend* legendDiffFlowPtRP = new TLegend(0.02,0.25,0.97,0.75);
- legendDiffFlowPtRP->SetTextFont(72);
- legendDiffFlowPtRP->SetTextSize(0.06);
+  //2nd pad is for legend:
+  (diffFlowPtAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
  
- //legend's entries:
- TString *entryDiffMCPtRP   = new TString("MC ....... ");
- TString *entryDiffGFC2PtRP = new TString("GFC{2} ... ");
- TString *entryDiffGFC4PtRP = new TString("GFC{4} ... ");
- TString *entryDiffGFC6PtRP = new TString("GFC{6} ... ");
- TString *entryDiffGFC8PtRP = new TString("GFC{8} ... "); 
- TString *entryDiffQC2PtRP  = new TString("QC{2} .... ");
- TString *entryDiffQC4PtRP  = new TString("QC{4} .... ");
- TString *entryDiffLYZ2PtRP = new TString("LYZ ...... ");
+  TLegend* legendDiffFlowPtRP = new TLegend(0.02,0.25,0.97,0.75);
+  legendDiffFlowPtRP->SetTextFont(72);
+  legendDiffFlowPtRP->SetTextSize(0.06);
  
- //MC
- if(mcepCommonHistRes)
- {
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
-  entryDiffMCPtRP->Append("M = ");
-  (*entryDiffMCPtRP)+=(Long_t)avMultDiffFlowMCRP;
-  entryDiffMCPtRP->Append(", N = ");
-  (*entryDiffMCPtRP)+=(Long_t)nEvtsDiffFlowMCRP; 
-  legendDiffFlowPtRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffMCPtRP->Data(),"f");
- }
+  //legend's entries:
+  TString *entryDiffMCPtRP    = new TString("MC ....... ");
+  TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
+  TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
+  TString *entryDiffGFC6PtRP  = new TString("GFC{6} ... ");
+  TString *entryDiffGFC8PtRP  = new TString("GFC{8} ... "); 
+  TString *entryDiffQC2PtRP   = new TString("QC{2} .... ");
+  TString *entryDiffQC4PtRP   = new TString("QC{4} .... ");
+  TString *entryDiffQC6PtRP   = new TString("QC{6} .... ");
+  TString *entryDiffQC8PtRP   = new TString("QC{8} .... ");
+  TString *entryDiffLYZ2PtRP  = new TString("LYZ ...... ");
+  TString *entryDiffLYZEPPtRP = new TString("LYZEP ... ");
+  
+  //MC
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetFillStyle(meshStyle);
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetFillColor(meshColor);
+   entryDiffMCPtRP->Append("M = ");
+   (*entryDiffMCPtRP)+=(Long_t)avMultDiffFlowMCRP;
+   entryDiffMCPtRP->Append(", N = ");
+   (*entryDiffMCPtRP)+=(Long_t)nEvtsDiffFlowMCRP; 
+   legendDiffFlowPtRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffMCPtRP->Data(),"f");
+  }
 
- //GFC
- if(gfcCommonHistRes2)
- {
-  entryDiffGFC2PtRP->Append("M = ");
-  (*entryDiffGFC2PtRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC2PtRP->Append(", N = ");
-  (*entryDiffGFC2PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowPtRP->AddEntry(gfcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffGFC2PtRP->Data(),"p");
- }
- if(gfcCommonHistRes4)
- {
-  entryDiffGFC4PtRP->Append("M = ");
-  (*entryDiffGFC4PtRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC4PtRP->Append(", N = ");
-  (*entryDiffGFC4PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowPtRP->AddEntry(gfcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffGFC4PtRP->Data(),"p");
- }
- if(gfcCommonHistRes6)
- {
-  entryDiffGFC6PtRP->Append("M = ");
-  (*entryDiffGFC6PtRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC6PtRP->Append(", N = ");
-  (*entryDiffGFC6PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowPtRP->AddEntry(gfcCommonHistRes6->GetHistDiffFlowPtRP(),entryDiffGFC6PtRP->Data(),"p");
- } 
- if(gfcCommonHistRes8)
- {
-  entryDiffGFC8PtRP->Append("M = ");
-  (*entryDiffGFC8PtRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC8PtRP->Append(", N = ");
-  (*entryDiffGFC8PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowPtRP->AddEntry(gfcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffGFC8PtRP->Data(),"p");
- }  
- 
- //QC
- if(qcCommonHistRes2)
- {
-  entryDiffQC2PtRP->Append("M = ");
-  (*entryDiffQC2PtRP)+=(Long_t)avMultDiffFlowQC2RP;
-  entryDiffQC2PtRP->Append(", N = ");
-  (*entryDiffQC2PtRP)+=(Long_t)nEvtsDiffFlowQC2RP; 
-  legendDiffFlowPtRP->AddEntry(qcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffQC2PtRP->Data(),"p");
- }
- if(qcCommonHistRes4)
- {
-  entryDiffQC4PtRP->Append("M = ");
-  (*entryDiffQC4PtRP)+=(Long_t)avMultDiffFlowQC4RP;
-  entryDiffQC4PtRP->Append(", N = ");
-  (*entryDiffQC4PtRP)+=(Long_t)nEvtsDiffFlowQC4RP; 
-  legendDiffFlowPtRP->AddEntry(qcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffQC4PtRP->Data(),"p");
- }
- 
- //LYZ
- if(lyz2CommonHistRes)
- {
-  entryDiffLYZ2PtRP->Append("M = ");
-  (*entryDiffLYZ2PtRP)+=(Long_t)avMultDiffFlowLYZ2RP;
-  entryDiffLYZ2PtRP->Append(", N = ");
-  (*entryDiffLYZ2PtRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
-  legendDiffFlowPtRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PtRP->Data(),"p");
- }
+  //GFC
+  if(plotGFC2PtRP && gfcCommonHistRes2)
+  {
+   entryDiffGFC2PtRP->Append("M = ");
+   (*entryDiffGFC2PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC2PtRP->Append(", N = ");
+   (*entryDiffGFC2PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowPtRP->AddEntry(gfcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffGFC2PtRP->Data(),"p");
+  }
+  if(plotGFC4PtRP && gfcCommonHistRes4)
+  {
+   entryDiffGFC4PtRP->Append("M = ");
+   (*entryDiffGFC4PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC4PtRP->Append(", N = ");
+   (*entryDiffGFC4PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowPtRP->AddEntry(gfcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffGFC4PtRP->Data(),"p");
+  }
+  if(plotGFC6PtRP && gfcCommonHistRes6)
+  {
+   entryDiffGFC6PtRP->Append("M = ");
+   (*entryDiffGFC6PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC6PtRP->Append(", N = ");
+   (*entryDiffGFC6PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowPtRP->AddEntry(gfcCommonHistRes6->GetHistDiffFlowPtRP(),entryDiffGFC6PtRP->Data(),"p");
+  } 
+  if(plotGFC8PtRP && gfcCommonHistRes8)
+  {
+   entryDiffGFC8PtRP->Append("M = ");
+   (*entryDiffGFC8PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC8PtRP->Append(", N = ");
+   (*entryDiffGFC8PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowPtRP->AddEntry(gfcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffGFC8PtRP->Data(),"p");
+  }  
+  
+  //QC
+  if(plotQC2PtRP && qcCommonHistRes2)
+  {
+   entryDiffQC2PtRP->Append("M = ");
+   (*entryDiffQC2PtRP)+=(Long_t)avMultDiffFlowQC2RP;
+   entryDiffQC2PtRP->Append(", N = ");
+   (*entryDiffQC2PtRP)+=(Long_t)nEvtsDiffFlowQC2RP; 
+   legendDiffFlowPtRP->AddEntry(qcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffQC2PtRP->Data(),"p");
+  }
+  if(plotQC4PtRP && qcCommonHistRes4)
+  {
+   entryDiffQC4PtRP->Append("M = ");
+   (*entryDiffQC4PtRP)+=(Long_t)avMultDiffFlowQC4RP;
+   entryDiffQC4PtRP->Append(", N = ");
+   (*entryDiffQC4PtRP)+=(Long_t)nEvtsDiffFlowQC4RP; 
+   legendDiffFlowPtRP->AddEntry(qcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffQC4PtRP->Data(),"p");
+  }
+  if(plotQC6PtRP && qcCommonHistRes6)
+  {
+   entryDiffQC6PtRP->Append("M = ");
+   (*entryDiffQC6PtRP)+=(Long_t)avMultDiffFlowQC6RP;
+   entryDiffQC6PtRP->Append(", N = ");
+   (*entryDiffQC6PtRP)+=(Long_t)nEvtsDiffFlowQC6RP; 
+   legendDiffFlowPtRP->AddEntry(qcCommonHistRes6->GetHistDiffFlowPtRP(),entryDiffQC6PtRP->Data(),"p");
+  }
+  if(plotQC8PtRP && qcCommonHistRes8)
+  {
+   entryDiffQC8PtRP->Append("M = ");
+   (*entryDiffQC8PtRP)+=(Long_t)avMultDiffFlowQC8RP;
+   entryDiffQC8PtRP->Append(", N = ");
+   (*entryDiffQC8PtRP)+=(Long_t)nEvtsDiffFlowQC8RP; 
+   legendDiffFlowPtRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffQC8PtRP->Data(),"p");
+  }
+  
+  //LYZ2
+  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  {
+   entryDiffLYZ2PtRP->Append("M = ");
+   (*entryDiffLYZ2PtRP)+=(Long_t)avMultDiffFlowLYZ2RP;
+   entryDiffLYZ2PtRP->Append(", N = ");
+   (*entryDiffLYZ2PtRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
+   legendDiffFlowPtRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PtRP->Data(),"p");
+  }
+  
+  //LYZEP
+  if(plotLYZEPPtRP && lyzepCommonHistRes)
+  {
+   entryDiffLYZEPPtRP->Append("M = ");
+   (*entryDiffLYZEPPtRP)+=(Long_t)avMultDiffFlowLYZEPRP;
+   entryDiffLYZEPPtRP->Append(", N = ");
+   (*entryDiffLYZEPPtRP)+=(Long_t)nEvtsDiffFlowLYZEPRP; 
+   legendDiffFlowPtRP->AddEntry(lyzepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZEPPtRP->Data(),"p");
+  }
 
- //drawing finally the legend in the 2nd pad:     
- if(legendDiffFlowPtRP)
- {
-  legendDiffFlowPtRP->SetMargin(0.15);
-  legendDiffFlowPtRP->Draw();
- }
-
+  //drawing finally the legend in the 2nd pad:     
+  if(legendDiffFlowPtRP)
+  {
+   legendDiffFlowPtRP->SetMargin(0.15);
+   legendDiffFlowPtRP->Draw();
+  }
+ }// end of if(plotDiffFlowPtRP)
  //----------------------------------------------------------------------------------
  
  
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, RP):
- TCanvas* diffFlowEtaAllCanvasRP = new TCanvas("Differential Flow (Eta) of RP","Differential Flow (Eta) of RP ",1000,600);
- 
- diffFlowEtaAllCanvasRP->Divide(2,1);
- 
- //1st pad is for plot:
- (diffFlowEtaAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(styleHistEta)
+ //set here the results of which methods will be plotted by default:
+ Bool_t plotMCEtaRP    = kFALSE;
+ Bool_t plotGFC2EtaRP  = kTRUE;
+ Bool_t plotGFC4EtaRP  = kTRUE;
+ Bool_t plotGFC6EtaRP  = kTRUE;
+ Bool_t plotGFC8EtaRP  = kTRUE;
+ Bool_t plotQC2EtaRP   = kTRUE;
+ Bool_t plotQC4EtaRP   = kTRUE;
+ Bool_t plotQC6EtaRP   = kTRUE;
+ Bool_t plotQC8EtaRP   = kTRUE;
+ Bool_t plotLYZ2EtaRP  = kTRUE;
+ Bool_t plotLYZEPEtaRP = kTRUE;
+ if(plotDiffFlowEtaRP)
  {
-  styleHistEta->Draw();
- }
- if(pMeshDiffFlowEtaRP)
- {
-  pMeshDiffFlowEtaRP->Draw("LFSAME");
- }
+  TCanvas* diffFlowEtaAllCanvasRP = new TCanvas("Differential Flow (Eta) of RP","Differential Flow (Eta) of RP ",1000,600);
  
- //MC 
- if(mcepCommonHistRes)
- { 
-  (mcepCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
- }
- //GFC
- if(gfcCommonHistRes2)
- { 
-  (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes4)
- { 
-  (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes6)
- { 
-  (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes8)
- { 
-  (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
- }    
- //QC
- if(qcCommonHistRes2)
- { 
-  (qcCommonHistRes2->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
- }
- if(qcCommonHistRes4)
- { 
-  (qcCommonHistRes4->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
- }
- //LYZ2
- if(lyz2CommonHistRes)
- { 
-  (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
- }
+  diffFlowEtaAllCanvasRP->Divide(2,1);
  
- //2nd pad is for legend:
- (diffFlowEtaAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  //1st pad is for plot:
+  (diffFlowEtaAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  if(styleHistEta)
+  {
+   (styleHistEta->GetYaxis())->SetRangeUser(-0.3,1.0);
+   styleHistEta->Draw();
+  }
+  if(pMeshDiffFlowEtaRP)
+  {
+   pMeshDiffFlowEtaRP->Draw("LFSAME");
+  }
+ 
+  //MC 
+  if(plotMCEtaRP && mcepCommonHistRes)
+  { 
+   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  //GFC
+  if(plotGFC2EtaRP && gfcCommonHistRes2)
+  { 
+   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC4EtaRP && gfcCommonHistRes4)
+  { 
+   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC6EtaRP && gfcCommonHistRes6)
+  { 
+   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC8EtaRP && gfcCommonHistRes8)
+  { 
+   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME"); 
+  }    
+  //QC
+  if(plotQC2EtaRP && qcCommonHistRes2)
+  { 
+   (qcCommonHistRes2->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  if(plotQC4EtaRP && qcCommonHistRes4)
+  { 
+   (qcCommonHistRes4->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  if(plotQC6EtaRP && qcCommonHistRes6)
+  { 
+   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  if(plotQC8EtaRP && qcCommonHistRes8)
+  { 
+   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  //LYZ2
+  if(plotLYZ2EtaRP && lyz2CommonHistRes)
+  { 
+   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  //LYZEP
+  if(plotLYZEPEtaRP && lyzepCommonHistRes)
+  { 
+   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+ 
+  //2nd pad is for legend:
+  (diffFlowEtaAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
 
- TLegend* legendDiffFlowEtaRP = new TLegend(0.02,0.25,0.97,0.75);
- legendDiffFlowEtaRP->SetTextFont(72);
- legendDiffFlowEtaRP->SetTextSize(0.06);
+  TLegend* legendDiffFlowEtaRP = new TLegend(0.02,0.25,0.97,0.75);
+  legendDiffFlowEtaRP->SetTextFont(72);
+  legendDiffFlowEtaRP->SetTextSize(0.06);
+  
+  //legend's entries:
+  TString *entryDiffMCEtaRP   = new TString("MC ....... ");
+  TString *entryDiffGFC2EtaRP = new TString("GFC{2} ... ");
+  TString *entryDiffGFC4EtaRP = new TString("GFC{4} ... ");
+  TString *entryDiffGFC6EtaRP = new TString("GFC{6} ... ");
+  TString *entryDiffGFC8EtaRP = new TString("GFC{8} ... "); 
+  TString *entryDiffQC2EtaRP  = new TString("QC{2} .... ");
+  TString *entryDiffQC4EtaRP  = new TString("QC{4} .... ");
+  TString *entryDiffQC6EtaRP  = new TString("QC{6} .... ");
+  TString *entryDiffQC8EtaRP  = new TString("QC{8} .... ");
+  TString *entryDiffLYZ2EtaRP = new TString("LYZ ...... ");
+  TString *entryDiffLYZEPEtaRP = new TString("LYZEP ... ");
  
- //legend's entries:
- TString *entryDiffMCEtaRP   = new TString("MC ....... ");
- TString *entryDiffGFC2EtaRP = new TString("GFC{2} ... ");
- TString *entryDiffGFC4EtaRP = new TString("GFC{4} ... ");
- TString *entryDiffGFC6EtaRP = new TString("GFC{6} ... ");
- TString *entryDiffGFC8EtaRP = new TString("GFC{8} ... "); 
- TString *entryDiffQC2EtaRP  = new TString("QC{2} .... ");
- TString *entryDiffQC4EtaRP  = new TString("QC{4} .... ");
- TString *entryDiffLYZ2EtaRP = new TString("LYZ ...... ");
+  //MC
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetFillStyle(meshStyle);
+   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetFillColor(meshColor);
+   entryDiffMCEtaRP->Append("M = ");
+   (*entryDiffMCEtaRP)+=(Long_t)avMultDiffFlowMCRP;
+   entryDiffMCEtaRP->Append(", N = ");
+   (*entryDiffMCEtaRP)+=(Long_t)nEvtsDiffFlowMCRP; 
+   legendDiffFlowEtaRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffMCEtaRP->Data(),"f");
+  }
  
- //MC
- if(mcepCommonHistRes)
- {
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
-  entryDiffMCEtaRP->Append("M = ");
-  (*entryDiffMCEtaRP)+=(Long_t)avMultDiffFlowMCRP;
-  entryDiffMCEtaRP->Append(", N = ");
-  (*entryDiffMCEtaRP)+=(Long_t)nEvtsDiffFlowMCRP; 
-  legendDiffFlowEtaRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffMCEtaRP->Data(),"f");
- }
+  //GFC
+  if(plotGFC2EtaRP && gfcCommonHistRes2)
+  {
+   entryDiffGFC2EtaRP->Append("M = ");
+   (*entryDiffGFC2EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC2EtaRP->Append(", N = ");
+   (*entryDiffGFC2EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes2->GetHistDiffFlowEtaRP(),entryDiffGFC2EtaRP->Data(),"p");
+  }
+  if(plotGFC4EtaRP && gfcCommonHistRes4)
+  {
+   entryDiffGFC4EtaRP->Append("M = ");
+   (*entryDiffGFC4EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC4EtaRP->Append(", N = ");
+   (*entryDiffGFC4EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes4->GetHistDiffFlowEtaRP(),entryDiffGFC4EtaRP->Data(),"p");
+  }
+  if(plotGFC6EtaRP && gfcCommonHistRes6)
+  {
+   entryDiffGFC6EtaRP->Append("M = ");
+   (*entryDiffGFC6EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC6EtaRP->Append(", N = ");
+   (*entryDiffGFC6EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes6->GetHistDiffFlowEtaRP(),entryDiffGFC6EtaRP->Data(),"p");
+  } 
+  if(plotGFC8EtaRP && gfcCommonHistRes8)
+  {
+   entryDiffGFC8EtaRP->Append("M = ");
+   (*entryDiffGFC8EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC8EtaRP->Append(", N = ");
+   (*entryDiffGFC8EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes8->GetHistDiffFlowEtaRP(),entryDiffGFC8EtaRP->Data(),"p");
+  }  
+  
+  //QC
+  if(plotQC2EtaRP && qcCommonHistRes2)
+  {
+   entryDiffQC2EtaRP->Append("M = ");
+   (*entryDiffQC2EtaRP)+=(Long_t)avMultDiffFlowQC2RP;
+   entryDiffQC2EtaRP->Append(", N = ");
+   (*entryDiffQC2EtaRP)+=(Long_t)nEvtsDiffFlowQC2RP; 
+   legendDiffFlowEtaRP->AddEntry(qcCommonHistRes2->GetHistDiffFlowEtaRP(),entryDiffQC2EtaRP->Data(),"p");
+  }
+  if(plotQC4EtaRP && qcCommonHistRes4)
+  {
+   entryDiffQC4EtaRP->Append("M = ");
+   (*entryDiffQC4EtaRP)+=(Long_t)avMultDiffFlowQC4RP;
+   entryDiffQC4EtaRP->Append(", N = ");
+   (*entryDiffQC4EtaRP)+=(Long_t)nEvtsDiffFlowQC4RP; 
+   legendDiffFlowEtaRP->AddEntry(qcCommonHistRes4->GetHistDiffFlowEtaRP(),entryDiffQC4EtaRP->Data(),"p");
+  }
+  if(plotQC6EtaRP && qcCommonHistRes6)
+  {
+   entryDiffQC6EtaRP->Append("M = ");
+   (*entryDiffQC6EtaRP)+=(Long_t)avMultDiffFlowQC6RP;
+   entryDiffQC6EtaRP->Append(", N = ");
+   (*entryDiffQC6EtaRP)+=(Long_t)nEvtsDiffFlowQC6RP; 
+   legendDiffFlowEtaRP->AddEntry(qcCommonHistRes6->GetHistDiffFlowEtaRP(),entryDiffQC6EtaRP->Data(),"p");
+  }
+  if(plotQC8EtaRP && qcCommonHistRes8)
+  {
+   entryDiffQC8EtaRP->Append("M = ");
+   (*entryDiffQC8EtaRP)+=(Long_t)avMultDiffFlowQC8RP;
+   entryDiffQC8EtaRP->Append(", N = ");
+   (*entryDiffQC8EtaRP)+=(Long_t)nEvtsDiffFlowQC8RP; 
+   legendDiffFlowEtaRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowEtaRP(),entryDiffQC8EtaRP->Data(),"p");
+  }
+ 
+  //LYZ2
+  if(plotLYZ2EtaRP && lyz2CommonHistRes)
+  {
+   entryDiffLYZ2EtaRP->Append("M = ");
+   (*entryDiffLYZ2EtaRP)+=(Long_t)avMultDiffFlowLYZ2RP;
+   entryDiffLYZ2EtaRP->Append(", N = ");
+   (*entryDiffLYZ2EtaRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
+   legendDiffFlowEtaRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZ2EtaRP->Data(),"p");
+  }
+  
+  //LYZEP
+  if(plotLYZEPEtaRP && lyzepCommonHistRes)
+  {
+   entryDiffLYZEPEtaRP->Append("M = ");
+   (*entryDiffLYZEPEtaRP)+=(Long_t)avMultDiffFlowLYZEPRP;
+   entryDiffLYZEPEtaRP->Append(", N = ");
+   (*entryDiffLYZEPEtaRP)+=(Long_t)nEvtsDiffFlowLYZEPRP; 
+   legendDiffFlowEtaRP->AddEntry(lyzepCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZEPEtaRP->Data(),"p");
+  }
 
- //GFC
- if(gfcCommonHistRes2)
- {
-  entryDiffGFC2EtaRP->Append("M = ");
-  (*entryDiffGFC2EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC2EtaRP->Append(", N = ");
-  (*entryDiffGFC2EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes2->GetHistDiffFlowEtaRP(),entryDiffGFC2EtaRP->Data(),"p");
- }
- if(gfcCommonHistRes4)
- {
-  entryDiffGFC4EtaRP->Append("M = ");
-  (*entryDiffGFC4EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC4EtaRP->Append(", N = ");
-  (*entryDiffGFC4EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes4->GetHistDiffFlowEtaRP(),entryDiffGFC4EtaRP->Data(),"p");
- }
- if(gfcCommonHistRes6)
- {
-  entryDiffGFC6EtaRP->Append("M = ");
-  (*entryDiffGFC6EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC6EtaRP->Append(", N = ");
-  (*entryDiffGFC6EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes6->GetHistDiffFlowEtaRP(),entryDiffGFC6EtaRP->Data(),"p");
- } 
- if(gfcCommonHistRes8)
- {
-  entryDiffGFC8EtaRP->Append("M = ");
-  (*entryDiffGFC8EtaRP)+=(Long_t)avMultDiffFlowGFCRP;
-  entryDiffGFC8EtaRP->Append(", N = ");
-  (*entryDiffGFC8EtaRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
-  legendDiffFlowEtaRP->AddEntry(gfcCommonHistRes8->GetHistDiffFlowEtaRP(),entryDiffGFC8EtaRP->Data(),"p");
- }  
- 
- //QC
- if(qcCommonHistRes2)
- {
-  entryDiffQC2EtaRP->Append("M = ");
-  (*entryDiffQC2EtaRP)+=(Long_t)avMultDiffFlowQC2RP;
-  entryDiffQC2EtaRP->Append(", N = ");
-  (*entryDiffQC2EtaRP)+=(Long_t)nEvtsDiffFlowQC2RP; 
-  legendDiffFlowEtaRP->AddEntry(qcCommonHistRes2->GetHistDiffFlowEtaRP(),entryDiffQC2EtaRP->Data(),"p");
- }
- if(qcCommonHistRes4)
- {
-  entryDiffQC4EtaRP->Append("M = ");
-  (*entryDiffQC4EtaRP)+=(Long_t)avMultDiffFlowQC4RP;
-  entryDiffQC4EtaRP->Append(", N = ");
-  (*entryDiffQC4EtaRP)+=(Long_t)nEvtsDiffFlowQC4RP; 
-  legendDiffFlowEtaRP->AddEntry(qcCommonHistRes4->GetHistDiffFlowEtaRP(),entryDiffQC4EtaRP->Data(),"p");
- }
- 
- //LYZ
- if(lyz2CommonHistRes)
- {
-  entryDiffLYZ2EtaRP->Append("M = ");
-  (*entryDiffLYZ2EtaRP)+=(Long_t)avMultDiffFlowLYZ2RP;
-  entryDiffLYZ2EtaRP->Append(", N = ");
-  (*entryDiffLYZ2EtaRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
-  legendDiffFlowEtaRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZ2EtaRP->Data(),"p");
- }
-
- //drawing finally the legend in the 2nd pad:     
- if(legendDiffFlowEtaRP)
- {
-  legendDiffFlowEtaRP->SetMargin(0.15);
-  legendDiffFlowEtaRP->Draw();
- }
-
+  //drawing finally the legend in the 2nd pad:     
+  if(legendDiffFlowEtaRP)
+  {
+   legendDiffFlowEtaRP->SetMargin(0.15);
+   legendDiffFlowEtaRP->Draw();
+  }
+ }// end of if(plotDiffFlowEtaRP)
  //----------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, POI):
- TCanvas* diffFlowPtAllCanvasPOI = new TCanvas("Differential Flow (Pt) of POI","Differential Flow (Pt) of POI ",1000,600);
- 
- diffFlowPtAllCanvasPOI->Divide(2,1);
- 
- //1st pad is for plot:
- (diffFlowPtAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(styleHistPt)
+ //set here the results of which methods will be plotted by default:
+ Bool_t plotMCPtPOI    = kFALSE;
+ Bool_t plotGFC2PtPOI  = kTRUE;
+ Bool_t plotGFC4PtPOI  = kTRUE;
+ Bool_t plotGFC6PtPOI  = kTRUE;
+ Bool_t plotGFC8PtPOI  = kTRUE;
+ Bool_t plotQC2PtPOI   = kTRUE;
+ Bool_t plotQC4PtPOI   = kTRUE;
+ Bool_t plotQC6PtPOI   = kTRUE;
+ Bool_t plotQC8PtPOI   = kTRUE;
+ Bool_t plotLYZ2PtPOI  = kTRUE;
+ Bool_t plotLYZEPPtPOI = kTRUE; 
+ if(plotDiffFlowPtPOI)
  {
-  styleHistPt->Draw();
- }
- if(pMeshDiffFlowPtPOI)
- {
-  pMeshDiffFlowPtPOI->Draw("LFSAME");
- }
+  TCanvas* diffFlowPtAllCanvasPOI = new TCanvas("Differential Flow (Pt) of POI","Differential Flow (Pt) of POI ",1000,600);
  
- //MC 
- if(mcepCommonHistRes)
- { 
-  (mcepCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
- }
- //GFC
- if(gfcCommonHistRes2)
- { 
-  (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes4)
- { 
-  (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes6)
- { 
-  (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes8)
- { 
-  (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
- }    
- //QC
- if(qcCommonHistRes2)
- { 
-  (qcCommonHistRes2->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
- }
- if(qcCommonHistRes4)
- { 
-  (qcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
- }
- //LYZ2
- if(lyz2CommonHistRes)
- { 
-  (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
- }
+  diffFlowPtAllCanvasPOI->Divide(2,1);
  
- //2nd pad is for legend:
- (diffFlowPtAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  //1st pad is for plot:
+  (diffFlowPtAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  if(styleHistPt)
+  {
+   (styleHistPt->GetYaxis())->SetRangeUser(-0.3,1.0);
+   styleHistPt->Draw();
+  }
+  if(pMeshDiffFlowPtPOI)
+  {
+   pMeshDiffFlowPtPOI->Draw("LFSAME");
+  }
+ 
+  //MC 
+  if(plotMCPtPOI && mcepCommonHistRes)
+  { 
+   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  //GFC
+  if(plotGFC2PtPOI && gfcCommonHistRes2)
+  { 
+   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC4PtPOI && gfcCommonHistRes4)
+  { 
+   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC6PtPOI && gfcCommonHistRes6)
+  { 
+   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC8PtPOI && gfcCommonHistRes8)
+  { 
+   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME"); 
+  }    
+  //QC
+  if(plotQC2PtPOI && qcCommonHistRes2)
+  { 
+   (qcCommonHistRes2->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  if(plotQC4PtPOI && qcCommonHistRes4)
+  { 
+   (qcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  if(plotQC6PtPOI && qcCommonHistRes6)
+  { 
+   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  if(plotQC8PtPOI && qcCommonHistRes8)
+  { 
+   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  //LYZ2
+  if(plotLYZ2PtPOI && lyz2CommonHistRes)
+  { 
+   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  //LYZEP
+  if(plotLYZEPPtPOI && lyzepCommonHistRes)
+  { 
+   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+ 
+  //2nd pad is for legend:
+  (diffFlowPtAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
 
- TLegend* legendDiffFlowPtPOI = new TLegend(0.02,0.25,0.97,0.75);
- legendDiffFlowPtPOI->SetTextFont(72);
- legendDiffFlowPtPOI->SetTextSize(0.06);
+  TLegend* legendDiffFlowPtPOI = new TLegend(0.02,0.25,0.97,0.75);
+  legendDiffFlowPtPOI->SetTextFont(72);
+  legendDiffFlowPtPOI->SetTextSize(0.06);
  
- //legend's entries:
- TString *entryDiffMCPtPOI   = new TString("MC ....... ");
- TString *entryDiffGFC2PtPOI = new TString("GFC{2} ... ");
- TString *entryDiffGFC4PtPOI = new TString("GFC{4} ... ");
- TString *entryDiffGFC6PtPOI = new TString("GFC{6} ... ");
- TString *entryDiffGFC8PtPOI = new TString("GFC{8} ... "); 
- TString *entryDiffQC2PtPOI  = new TString("QC{2} .... ");
- TString *entryDiffQC4PtPOI  = new TString("QC{4} .... ");
- TString *entryDiffLYZ2PtPOI = new TString("LYZ ...... ");
+  //legend's entries:
+  TString *entryDiffMCPtPOI   = new TString("MC ....... ");
+  TString *entryDiffGFC2PtPOI = new TString("GFC{2} ... ");
+  TString *entryDiffGFC4PtPOI = new TString("GFC{4} ... ");
+  TString *entryDiffGFC6PtPOI = new TString("GFC{6} ... ");
+  TString *entryDiffGFC8PtPOI = new TString("GFC{8} ... "); 
+  TString *entryDiffQC2PtPOI  = new TString("QC{2} .... ");
+  TString *entryDiffQC4PtPOI  = new TString("QC{4} .... ");
+  TString *entryDiffQC6PtPOI  = new TString("QC{6} .... ");
+  TString *entryDiffQC8PtPOI  = new TString("QC{8} .... ");
+  TString *entryDiffLYZ2PtPOI = new TString("LYZ ...... ");
+  TString *entryDiffLYZEPPtPOI = new TString("LYZEP ... "); 
  
- //MC
- if(mcepCommonHistRes)
- {
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
-  entryDiffMCPtPOI->Append("M = ");
-  (*entryDiffMCPtPOI)+=(Long_t)avMultDiffFlowMCPOI;
-  entryDiffMCPtPOI->Append(", N = ");
-  (*entryDiffMCPtPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
-  legendDiffFlowPtPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffMCPtPOI->Data(),"f");
- }
+  //MC
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetFillStyle(meshStyle);
+   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetFillColor(meshColor);
+   entryDiffMCPtPOI->Append("M = ");
+   (*entryDiffMCPtPOI)+=(Long_t)avMultDiffFlowMCPOI;
+   entryDiffMCPtPOI->Append(", N = ");
+   (*entryDiffMCPtPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
+   legendDiffFlowPtPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffMCPtPOI->Data(),"f");
+  }
 
- //GFC
- if(gfcCommonHistRes2)
- {
-  entryDiffGFC2PtPOI->Append("M = ");
-  (*entryDiffGFC2PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC2PtPOI->Append(", N = ");
-  (*entryDiffGFC2PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes2->GetHistDiffFlowPtPOI(),entryDiffGFC2PtPOI->Data(),"p");
- }
- if(gfcCommonHistRes4)
- {
-  entryDiffGFC4PtPOI->Append("M = ");
-  (*entryDiffGFC4PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC4PtPOI->Append(", N = ");
-  (*entryDiffGFC4PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes4->GetHistDiffFlowPtPOI(),entryDiffGFC4PtPOI->Data(),"p");
- }
- if(gfcCommonHistRes6)
- {
-  entryDiffGFC6PtPOI->Append("M = ");
-  (*entryDiffGFC6PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC6PtPOI->Append(", N = ");
-  (*entryDiffGFC6PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes6->GetHistDiffFlowPtPOI(),entryDiffGFC6PtPOI->Data(),"p");
- } 
- if(gfcCommonHistRes8)
- {
-  entryDiffGFC8PtPOI->Append("M = ");
-  (*entryDiffGFC8PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC8PtPOI->Append(", N = ");
-  (*entryDiffGFC8PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes8->GetHistDiffFlowPtPOI(),entryDiffGFC8PtPOI->Data(),"p");
- }  
+  //GFC
+  if(plotGFC2PtPOI && gfcCommonHistRes2)
+  {
+   entryDiffGFC2PtPOI->Append("M = ");
+   (*entryDiffGFC2PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC2PtPOI->Append(", N = ");
+   (*entryDiffGFC2PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes2->GetHistDiffFlowPtPOI(),entryDiffGFC2PtPOI->Data(),"p");
+  }
+  if(plotGFC4PtPOI && gfcCommonHistRes4)
+  {
+   entryDiffGFC4PtPOI->Append("M = ");
+   (*entryDiffGFC4PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC4PtPOI->Append(", N = ");
+   (*entryDiffGFC4PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes4->GetHistDiffFlowPtPOI(),entryDiffGFC4PtPOI->Data(),"p");
+  }
+  if(plotGFC6PtPOI && gfcCommonHistRes6)
+  {
+   entryDiffGFC6PtPOI->Append("M = ");
+   (*entryDiffGFC6PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC6PtPOI->Append(", N = ");
+   (*entryDiffGFC6PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes6->GetHistDiffFlowPtPOI(),entryDiffGFC6PtPOI->Data(),"p");
+  } 
+  if(plotGFC8PtPOI && gfcCommonHistRes8)
+  {
+   entryDiffGFC8PtPOI->Append("M = ");
+   (*entryDiffGFC8PtPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC8PtPOI->Append(", N = ");
+   (*entryDiffGFC8PtPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowPtPOI->AddEntry(gfcCommonHistRes8->GetHistDiffFlowPtPOI(),entryDiffGFC8PtPOI->Data(),"p");
+  }  
+  
+  //QC
+  if(plotQC2PtPOI && qcCommonHistRes2)
+  {
+   entryDiffQC2PtPOI->Append("M = ");
+   (*entryDiffQC2PtPOI)+=(Long_t)avMultDiffFlowQC2POI;
+   entryDiffQC2PtPOI->Append(", N = ");
+   (*entryDiffQC2PtPOI)+=(Long_t)nEvtsDiffFlowQC2POI; 
+   legendDiffFlowPtPOI->AddEntry(qcCommonHistRes2->GetHistDiffFlowPtPOI(),entryDiffQC2PtPOI->Data(),"p");
+  }
+  if(plotQC4PtPOI && qcCommonHistRes4)
+  {
+   entryDiffQC4PtPOI->Append("M = ");
+   (*entryDiffQC4PtPOI)+=(Long_t)avMultDiffFlowQC4POI;
+   entryDiffQC4PtPOI->Append(", N = ");
+   (*entryDiffQC4PtPOI)+=(Long_t)nEvtsDiffFlowQC4POI; 
+   legendDiffFlowPtPOI->AddEntry(qcCommonHistRes4->GetHistDiffFlowPtPOI(),entryDiffQC4PtPOI->Data(),"p");
+  }
+  if(plotQC6PtPOI && qcCommonHistRes6)
+  {
+   entryDiffQC6PtPOI->Append("M = ");
+   (*entryDiffQC6PtPOI)+=(Long_t)avMultDiffFlowQC6POI;
+   entryDiffQC6PtPOI->Append(", N = ");
+   (*entryDiffQC6PtPOI)+=(Long_t)nEvtsDiffFlowQC6POI; 
+   legendDiffFlowPtPOI->AddEntry(qcCommonHistRes6->GetHistDiffFlowPtPOI(),entryDiffQC6PtPOI->Data(),"p");
+  }
+  if(plotQC8PtPOI && qcCommonHistRes8)
+  {
+   entryDiffQC8PtPOI->Append("M = ");
+   (*entryDiffQC8PtPOI)+=(Long_t)avMultDiffFlowQC8POI;
+   entryDiffQC8PtPOI->Append(", N = ");
+   (*entryDiffQC8PtPOI)+=(Long_t)nEvtsDiffFlowQC8POI; 
+   legendDiffFlowPtPOI->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtPOI(),entryDiffQC8PtPOI->Data(),"p");
+  }
  
- //QC
- if(qcCommonHistRes2)
- {
-  entryDiffQC2PtPOI->Append("M = ");
-  (*entryDiffQC2PtPOI)+=(Long_t)avMultDiffFlowQC2POI;
-  entryDiffQC2PtPOI->Append(", N = ");
-  (*entryDiffQC2PtPOI)+=(Long_t)nEvtsDiffFlowQC2POI; 
-  legendDiffFlowPtPOI->AddEntry(qcCommonHistRes2->GetHistDiffFlowPtPOI(),entryDiffQC2PtPOI->Data(),"p");
- }
- if(qcCommonHistRes4)
- {
-  entryDiffQC4PtPOI->Append("M = ");
-  (*entryDiffQC4PtPOI)+=(Long_t)avMultDiffFlowQC4POI;
-  entryDiffQC4PtPOI->Append(", N = ");
-  (*entryDiffQC4PtPOI)+=(Long_t)nEvtsDiffFlowQC4POI; 
-  legendDiffFlowPtPOI->AddEntry(qcCommonHistRes4->GetHistDiffFlowPtPOI(),entryDiffQC4PtPOI->Data(),"p");
- }
- 
- //LYZ
- if(lyz2CommonHistRes)
- {
-  entryDiffLYZ2PtPOI->Append("M = ");
-  (*entryDiffLYZ2PtPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
-  entryDiffLYZ2PtPOI->Append(", N = ");
-  (*entryDiffLYZ2PtPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
-  legendDiffFlowPtPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZ2PtPOI->Data(),"p");
- }
+  //LYZ2
+  if(plotLYZ2PtPOI && lyz2CommonHistRes)
+  {
+   entryDiffLYZ2PtPOI->Append("M = ");
+   (*entryDiffLYZ2PtPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
+   entryDiffLYZ2PtPOI->Append(", N = ");
+   (*entryDiffLYZ2PtPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
+   legendDiffFlowPtPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZ2PtPOI->Data(),"p");
+  }
+  
+  //LYZEP
+  if(plotLYZEPPtPOI && lyzepCommonHistRes)
+  {
+   entryDiffLYZEPPtPOI->Append("M = ");
+   (*entryDiffLYZEPPtPOI)+=(Long_t)avMultDiffFlowLYZEPPOI;
+   entryDiffLYZEPPtPOI->Append(", N = ");
+   (*entryDiffLYZEPPtPOI)+=(Long_t)nEvtsDiffFlowLYZEPPOI; 
+   legendDiffFlowPtPOI->AddEntry(lyzepCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZEPPtPOI->Data(),"p");
+  }
 
- //drawing finally the legend in the 2nd pad:     
- if(legendDiffFlowPtPOI)
- {
-  legendDiffFlowPtPOI->SetMargin(0.15);
-  legendDiffFlowPtPOI->Draw();
- }
-
+  //drawing finally the legend in the 2nd pad:     
+  if(legendDiffFlowPtPOI)
+  {
+   legendDiffFlowPtPOI->SetMargin(0.15);
+   legendDiffFlowPtPOI->Draw();
+  }
+ }//end of if(plotDiffFlowPtPOI)
  //----------------------------------------------------------------------------------
  
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, POI):
- TCanvas* diffFlowEtaAllCanvasPOI = new TCanvas("Differential Flow (Eta) of POI","Differential Flow (Eta) of POI ",1000,600);
- 
- diffFlowEtaAllCanvasPOI->Divide(2,1);
- 
- //1st pad is for plot:
- (diffFlowEtaAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(styleHistEta)
+ //set here the results of which methods will be plotted by default:
+ Bool_t plotMCEtaPOI    = kFALSE;
+ Bool_t plotGFC2EtaPOI  = kTRUE;
+ Bool_t plotGFC4EtaPOI  = kTRUE;
+ Bool_t plotGFC6EtaPOI  = kTRUE;
+ Bool_t plotGFC8EtaPOI  = kTRUE;
+ Bool_t plotQC2EtaPOI   = kTRUE;
+ Bool_t plotQC4EtaPOI   = kTRUE;
+ Bool_t plotQC6EtaPOI   = kTRUE;
+ Bool_t plotQC8EtaPOI   = kTRUE;
+ Bool_t plotLYZ2EtaPOI  = kTRUE;
+ Bool_t plotLYZEPEtaPOI = kTRUE;
+ if(plotDiffFlowEtaPOI)
  {
-  styleHistEta->Draw();
- }
- if(pMeshDiffFlowEtaPOI)
- {
-  pMeshDiffFlowEtaPOI->Draw("LFSAME");
- }
+  TCanvas* diffFlowEtaAllCanvasPOI = new TCanvas("Differential Flow (Eta) of POI","Differential Flow (Eta) of POI ",1000,600);
  
- //MC 
- if(mcepCommonHistRes)
- { 
-  (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
- }
- //GFC
- if(gfcCommonHistRes2)
- { 
-  (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes4)
- { 
-  (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes6)
- { 
-  (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes8)
- { 
-  (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
- }    
- //QC
- if(qcCommonHistRes2)
- { 
-  (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
- }
- if(qcCommonHistRes4)
- { 
-  (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
- }
- //LYZ2
- if(lyz2CommonHistRes)
- { 
-  (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
- }
+  diffFlowEtaAllCanvasPOI->Divide(2,1);
+  
+  //1st pad is for plot:
+  (diffFlowEtaAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
  
- //2nd pad is for legend:
- (diffFlowEtaAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  if(styleHistEta)
+  {
+   (styleHistEta->GetYaxis())->SetRangeUser(-0.3,1.0);
+   styleHistEta->Draw();
+  }
+  if(pMeshDiffFlowEtaPOI)
+  {
+   pMeshDiffFlowEtaPOI->Draw("LFSAME");
+  }
+ 
+  //MC 
+  if(plotMCEtaPOI && mcepCommonHistRes)
+  { 
+   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  //GFC
+  if(plotGFC2EtaPOI && gfcCommonHistRes2)
+  { 
+   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC4EtaPOI && gfcCommonHistRes4)
+  { 
+   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC6EtaPOI && gfcCommonHistRes6)
+  { 
+   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
+  } 
+  if(plotGFC8EtaPOI && gfcCommonHistRes8)
+  { 
+   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME"); 
+  }    
+  //QC
+  if(plotQC2EtaPOI && qcCommonHistRes2)
+  { 
+   (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  if(plotQC4EtaPOI && qcCommonHistRes4)
+  { 
+   (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  if(plotQC6EtaPOI && qcCommonHistRes6)
+  { 
+   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  if(plotQC8EtaPOI && qcCommonHistRes8)
+  { 
+   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  //LYZ2
+  if(plotLYZ2EtaPOI && lyz2CommonHistRes)
+  { 
+   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  //LYZEP
+  if(plotLYZEPEtaPOI && lyzepCommonHistRes)
+  { 
+   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+ 
+  //2nd pad is for legend:
+  (diffFlowEtaAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+  TLegend* legendDiffFlowEtaPOI = new TLegend(0.02,0.25,0.97,0.75);
+  legendDiffFlowEtaPOI->SetTextFont(72);
+  legendDiffFlowEtaPOI->SetTextSize(0.06);
+ 
+  //legend's entries:
+  TString *entryDiffMCEtaPOI    = new TString("MC ....... ");
+  TString *entryDiffGFC2EtaPOI  = new TString("GFC{2} ... ");
+  TString *entryDiffGFC4EtaPOI  = new TString("GFC{4} ... ");
+  TString *entryDiffGFC6EtaPOI  = new TString("GFC{6} ... ");
+  TString *entryDiffGFC8EtaPOI  = new TString("GFC{8} ... "); 
+  TString *entryDiffQC2EtaPOI   = new TString("QC{2} .... ");
+  TString *entryDiffQC4EtaPOI   = new TString("QC{4} .... ");
+  TString *entryDiffQC6EtaPOI   = new TString("QC{6} .... ");
+  TString *entryDiffQC8EtaPOI   = new TString("QC{8} .... ");
+  TString *entryDiffLYZ2EtaPOI  = new TString("LYZ ...... ");
+  TString *entryDiffLYZEPEtaPOI = new TString("LYZEP ... ");
+ 
+  //MC
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetFillStyle(meshStyle);
+   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetFillColor(meshColor);
+   entryDiffMCEtaPOI->Append("M = ");
+   (*entryDiffMCEtaPOI)+=(Long_t)avMultDiffFlowMCPOI;
+   entryDiffMCEtaPOI->Append(", N = ");
+   (*entryDiffMCEtaPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
+   legendDiffFlowEtaPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffMCEtaPOI->Data(),"f");
+  }
 
- TLegend* legendDiffFlowEtaPOI = new TLegend(0.02,0.25,0.97,0.75);
- legendDiffFlowEtaPOI->SetTextFont(72);
- legendDiffFlowEtaPOI->SetTextSize(0.06);
+  //GFC
+  if(plotGFC2EtaPOI && gfcCommonHistRes2)
+  {
+   entryDiffGFC2EtaPOI->Append("M = ");
+   (*entryDiffGFC2EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC2EtaPOI->Append(", N = ");
+   (*entryDiffGFC2EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes2->GetHistDiffFlowEtaPOI(),entryDiffGFC2EtaPOI->Data(),"p");
+  }
+  if(plotGFC4EtaPOI && gfcCommonHistRes4)
+  {
+   entryDiffGFC4EtaPOI->Append("M = ");
+   (*entryDiffGFC4EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC4EtaPOI->Append(", N = ");
+   (*entryDiffGFC4EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes4->GetHistDiffFlowEtaPOI(),entryDiffGFC4EtaPOI->Data(),"p");
+  }
+  if(plotGFC6EtaPOI && gfcCommonHistRes6)
+  {
+   entryDiffGFC6EtaPOI->Append("M = ");
+   (*entryDiffGFC6EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC6EtaPOI->Append(", N = ");
+   (*entryDiffGFC6EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes6->GetHistDiffFlowEtaPOI(),entryDiffGFC6EtaPOI->Data(),"p");
+  } 
+  if(plotGFC8EtaPOI && gfcCommonHistRes8)
+  {
+   entryDiffGFC8EtaPOI->Append("M = ");
+   (*entryDiffGFC8EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
+   entryDiffGFC8EtaPOI->Append(", N = ");
+   (*entryDiffGFC8EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
+   legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes8->GetHistDiffFlowEtaPOI(),entryDiffGFC8EtaPOI->Data(),"p");
+  }  
  
- //legend's entries:
- TString *entryDiffMCEtaPOI   = new TString("MC ....... ");
- TString *entryDiffGFC2EtaPOI = new TString("GFC{2} ... ");
- TString *entryDiffGFC4EtaPOI = new TString("GFC{4} ... ");
- TString *entryDiffGFC6EtaPOI = new TString("GFC{6} ... ");
- TString *entryDiffGFC8EtaPOI = new TString("GFC{8} ... "); 
- TString *entryDiffQC2EtaPOI  = new TString("QC{2} .... ");
- TString *entryDiffQC4EtaPOI  = new TString("QC{4} .... ");
- TString *entryDiffLYZ2EtaPOI = new TString("LYZ ...... ");
+  //QC
+  if(plotQC2EtaPOI && qcCommonHistRes2)
+  {
+   entryDiffQC2EtaPOI->Append("M = ");
+   (*entryDiffQC2EtaPOI)+=(Long_t)avMultDiffFlowQC2POI;
+   entryDiffQC2EtaPOI->Append(", N = ");
+   (*entryDiffQC2EtaPOI)+=(Long_t)nEvtsDiffFlowQC2POI; 
+   legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes2->GetHistDiffFlowEtaPOI(),entryDiffQC2EtaPOI->Data(),"p");
+  }
+  if(plotQC4EtaPOI && qcCommonHistRes4)
+  {
+   entryDiffQC4EtaPOI->Append("M = ");
+   (*entryDiffQC4EtaPOI)+=(Long_t)avMultDiffFlowQC4POI;
+   entryDiffQC4EtaPOI->Append(", N = ");
+   (*entryDiffQC4EtaPOI)+=(Long_t)nEvtsDiffFlowQC4POI; 
+   legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes4->GetHistDiffFlowEtaPOI(),entryDiffQC4EtaPOI->Data(),"p");
+  }
+  if(plotQC6EtaPOI && qcCommonHistRes6)
+  {
+   entryDiffQC6EtaPOI->Append("M = ");
+   (*entryDiffQC6EtaPOI)+=(Long_t)avMultDiffFlowQC6POI;
+   entryDiffQC6EtaPOI->Append(", N = ");
+   (*entryDiffQC6EtaPOI)+=(Long_t)nEvtsDiffFlowQC6POI; 
+   legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes6->GetHistDiffFlowEtaPOI(),entryDiffQC6EtaPOI->Data(),"p");
+  }
+  if(plotQC8EtaPOI && qcCommonHistRes8)
+  {
+   entryDiffQC8EtaPOI->Append("M = ");
+   (*entryDiffQC8EtaPOI)+=(Long_t)avMultDiffFlowQC8POI;
+   entryDiffQC8EtaPOI->Append(", N = ");
+   (*entryDiffQC8EtaPOI)+=(Long_t)nEvtsDiffFlowQC8POI; 
+   legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes8->GetHistDiffFlowEtaPOI(),entryDiffQC8EtaPOI->Data(),"p");
+  }
  
- //MC
- if(mcepCommonHistRes)
- {
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
-  entryDiffMCEtaPOI->Append("M = ");
-  (*entryDiffMCEtaPOI)+=(Long_t)avMultDiffFlowMCPOI;
-  entryDiffMCEtaPOI->Append(", N = ");
-  (*entryDiffMCEtaPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
-  legendDiffFlowEtaPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffMCEtaPOI->Data(),"f");
- }
+  //LYZ2
+  if(plotLYZ2EtaPOI && lyz2CommonHistRes)
+  {
+   entryDiffLYZ2EtaPOI->Append("M = ");
+   (*entryDiffLYZ2EtaPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
+   entryDiffLYZ2EtaPOI->Append(", N = ");
+   (*entryDiffLYZ2EtaPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
+   legendDiffFlowEtaPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZ2EtaPOI->Data(),"p");
+  }
+  
+  //LYZEP
+  if(plotLYZEPEtaPOI && lyzepCommonHistRes)
+  {
+   entryDiffLYZEPEtaPOI->Append("M = ");
+   (*entryDiffLYZEPEtaPOI)+=(Long_t)avMultDiffFlowLYZEPPOI;
+   entryDiffLYZEPEtaPOI->Append(", N = ");
+   (*entryDiffLYZEPEtaPOI)+=(Long_t)nEvtsDiffFlowLYZEPPOI; 
+   legendDiffFlowEtaPOI->AddEntry(lyzepCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZEPEtaPOI->Data(),"p");
+  }
 
- //GFC
- if(gfcCommonHistRes2)
- {
-  entryDiffGFC2EtaPOI->Append("M = ");
-  (*entryDiffGFC2EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC2EtaPOI->Append(", N = ");
-  (*entryDiffGFC2EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes2->GetHistDiffFlowEtaPOI(),entryDiffGFC2EtaPOI->Data(),"p");
- }
- if(gfcCommonHistRes4)
- {
-  entryDiffGFC4EtaPOI->Append("M = ");
-  (*entryDiffGFC4EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC4EtaPOI->Append(", N = ");
-  (*entryDiffGFC4EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes4->GetHistDiffFlowEtaPOI(),entryDiffGFC4EtaPOI->Data(),"p");
- }
- if(gfcCommonHistRes6)
- {
-  entryDiffGFC6EtaPOI->Append("M = ");
-  (*entryDiffGFC6EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC6EtaPOI->Append(", N = ");
-  (*entryDiffGFC6EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes6->GetHistDiffFlowEtaPOI(),entryDiffGFC6EtaPOI->Data(),"p");
- } 
- if(gfcCommonHistRes8)
- {
-  entryDiffGFC8EtaPOI->Append("M = ");
-  (*entryDiffGFC8EtaPOI)+=(Long_t)avMultDiffFlowGFCPOI;
-  entryDiffGFC8EtaPOI->Append(", N = ");
-  (*entryDiffGFC8EtaPOI)+=(Long_t)nEvtsDiffFlowGFCPOI; 
-  legendDiffFlowEtaPOI->AddEntry(gfcCommonHistRes8->GetHistDiffFlowEtaPOI(),entryDiffGFC8EtaPOI->Data(),"p");
- }  
- 
- //QC
- if(qcCommonHistRes2)
- {
-  entryDiffQC2EtaPOI->Append("M = ");
-  (*entryDiffQC2EtaPOI)+=(Long_t)avMultDiffFlowQC2POI;
-  entryDiffQC2EtaPOI->Append(", N = ");
-  (*entryDiffQC2EtaPOI)+=(Long_t)nEvtsDiffFlowQC2POI; 
-  legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes2->GetHistDiffFlowEtaPOI(),entryDiffQC2EtaPOI->Data(),"p");
- }
- if(qcCommonHistRes4)
- {
-  entryDiffQC4EtaPOI->Append("M = ");
-  (*entryDiffQC4EtaPOI)+=(Long_t)avMultDiffFlowQC4POI;
-  entryDiffQC4EtaPOI->Append(", N = ");
-  (*entryDiffQC4EtaPOI)+=(Long_t)nEvtsDiffFlowQC4POI; 
-  legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes4->GetHistDiffFlowEtaPOI(),entryDiffQC4EtaPOI->Data(),"p");
- }
- 
- //LYZ
- if(lyz2CommonHistRes)
- {
-  entryDiffLYZ2EtaPOI->Append("M = ");
-  (*entryDiffLYZ2EtaPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
-  entryDiffLYZ2EtaPOI->Append(", N = ");
-  (*entryDiffLYZ2EtaPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
-  legendDiffFlowEtaPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZ2EtaPOI->Data(),"p");
- }
-
- //drawing finally the legend in the 2nd pad:     
- if(legendDiffFlowEtaPOI)
- {
-  legendDiffFlowEtaPOI->SetMargin(0.15);
-  legendDiffFlowEtaPOI->Draw();
- }
-
+  //drawing finally the legend in the 2nd pad:     
+  if(legendDiffFlowEtaPOI)
+  {
+   legendDiffFlowEtaPOI->SetMargin(0.15);
+   legendDiffFlowEtaPOI->Draw();
+  }
+ }//end of if(plotDiffFlowEtaPOI)
  //----------------------------------------------------------------------------------
 
 
