@@ -58,6 +58,7 @@
 #include "AliRawReaderRoot.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliRunTag.h"
 
 ClassImp(AliQADataMakerSteer) 
 
@@ -337,6 +338,30 @@ AliLoader * AliQADataMakerSteer::GetLoader(Int_t iDet)
 	if (loader) 
 		fLoader[iDet] = loader ;
 	return loader ;
+}
+
+//_____________________________________________________________________________
+AliQA * AliQADataMakerSteer::GetQA(UInt_t run, UInt_t evt) 
+{
+// retrieves the QA object stored in a file named "Run{run}.Event{evt}_1.ESD.tag.root"  
+  char * fileName = Form("Run%d.Event%d_1.ESD.tag.root", run, evt) ; 
+  TFile * tagFile = TFile::Open(fileName) ;
+  if ( !tagFile ) {
+    AliError(Form("File %s not found", fileName)) ;
+    return NULL ; 
+  }
+  TTree * tagTree = dynamic_cast<TTree *>(tagFile->Get("T")) ; 
+  if ( !tagTree ) {
+    AliError(Form("Tree T not found in %s", fileName)) ; 
+    tagFile->Close() ; 
+    return NULL ; 
+  }
+  AliRunTag * tag = new AliRunTag ; 
+  tagTree->SetBranchAddress("AliTAG", &tag) ; 
+  tagTree->GetEntry(evt) ; 
+  AliQA * qa = AliQA::Instance(tag->GetQALength(), tag->GetQA(), tag->GetESLength(), tag->GetEventSpecies()) ; 
+  tagFile->Close() ; 
+  return qa ; 
 }
 
 //_____________________________________________________________________________

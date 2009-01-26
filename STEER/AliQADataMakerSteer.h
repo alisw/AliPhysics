@@ -44,6 +44,7 @@ public:
   void        EndOfCycle(TString detectors) ; 
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
+  AliQA     * GetQA(UInt_t run, UInt_t evt) ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	void        Increment() ;
 	void        InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
