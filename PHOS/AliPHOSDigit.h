@@ -75,11 +75,11 @@ public:
 
   Int_t   fNprimary ;      // Number of primaries
   Int_t * fPrimary ;       //[fNprimary] Array of primaries      
-  Float_t fEnergy ;        // Deposited energy in GeV
+  Float_t fEnergy ;        // Deposited energy in ADC counts
   Float_t fTime ;          // Calculcated time 
   Float_t fTimeR ;         // Earliest time: to be used by Digits2Raw
     
-  ClassDef(AliPHOSDigit,4) // Digit in PHOS 
+  ClassDef(AliPHOSDigit,5) // Digit in PHOS 
 
 } ;
 

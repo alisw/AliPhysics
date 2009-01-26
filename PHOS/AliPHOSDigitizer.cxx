@@ -265,7 +265,6 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   // This design avoids scanning over the list of digits to add 
   // contribution to new SDigits only.
 
-
   Bool_t toMakeNoise = kTRUE ; //Do not create noisy digits if merge with real data
 
   //First stream 
@@ -433,8 +432,12 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       
         //loop over inputs
         for(Int_t i = 0 ; i < fInput ; i++){
-  	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+  	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] ){
   	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+            if(AliPHOSSimParam::GetInstance()->IsStreamDigits(i)){ //This is Digits Stream
+              curSDigit->SetEnergy(Calibrate(curSDigit->GetEnergy(),curSDigit->GetId())) ;
+            }
+          }
 	  else
 	    curSDigit = 0 ;
 	  //May be several digits will contribute from the same input
@@ -456,7 +459,6 @@ void AliPHOSDigitizer::Digitize(Int_t event)
             eTime=curSDigit->GetEnergy() ;
             time=curSDigit->GetTime() ;
           }
-	  
 	    *digit += *curSDigit ;  //add energies
 
 	    index[i]++ ;
@@ -494,14 +496,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       digit->SetEnergy(adcW*ceil(digit->GetEnergy()/adcW)) ;
     } 
   }
-
-  //Apply Fast decalibration if necessary
-  if(AliPHOSSimParam::GetInstance()->GetFastDecalibration()>0.){
-    Float_t res=AliPHOSSimParam::GetInstance()->GetFastDecalibration() ;
-    for(Int_t i = 0 ; i < nEMC ; i++){
-      digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
-      digit->SetEnergy(gRandom->Gaus(1.,res)*digit->GetEnergy()) ;
-    }
+  //Apply decalibration if necessary
+  for(Int_t i = 0 ; i < nEMC ; i++){
+    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    Decalibrate(digit) ;
   }
  
   
@@ -612,9 +610,25 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   }
 
 }
-
 //____________________________________________________________________________
-void AliPHOSDigitizer::DecalibrateEMC(AliPHOSDigit *digit)
+Float_t AliPHOSDigitizer::Calibrate(Float_t amp,Int_t absId){
+  //Apply calibration
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  if(relId[1]==0){ //This Is EMC
+    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row);
+    return amp*calibration ;
+  }
+  return 0 ;
+}
+//____________________________________________________________________________
+void AliPHOSDigitizer::Decalibrate(AliPHOSDigit *digit)
 {
   // Decalibrate EMC digit, i.e. change its energy by a factor read from CDB
 
@@ -626,9 +640,11 @@ void AliPHOSDigitizer::DecalibrateEMC(AliPHOSDigit *digit)
   Int_t module=relId[0];
   Int_t row   =relId[2];
   Int_t column=relId[3];
-  Float_t decalibration = fcdb->GetADCchannelEmc(module,column,row);
-  Float_t energy = digit->GetEnergy() / decalibration;
-  digit->SetEnergy(energy);
+  if(relId[1]==0){ //This Is EMC
+    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row);
+    Float_t energy = digit->GetEnergy()/calibration;
+    digit->SetEnergy(energy); //Now digit measures E in ADC counts
+  }
 }
 //____________________________________________________________________________
 Int_t AliPHOSDigitizer::DigitizeCPV(Float_t charge, Int_t absId)

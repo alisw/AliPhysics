@@ -50,10 +50,6 @@ public:
   Float_t GetTOFb()const{return fTOFb ;}  //stohastic term
   void SetTOFparameters(Float_t a=0.5e-9, Float_t b=1.5e-9){fTOFa=a; fTOFb=b; }
 
-  //Parameter to simulate (random) decalibration
-  Float_t GetFastDecalibration(void)const {return fFastDecalibration;}
-  void SetFastDecalibration(Float_t res=0.01) { fFastDecalibration=res;}
-
   //Parameters for CPV noise and digitization  [see AliPHOSDigitizer for details] 
   Float_t GetCPVNoise() const {return fCPVNoise ;}           //RMS of CPV noise in
   void SetCPVNoise(Float_t noise=0.01){ fCPVNoise = noise ;} //CPV popugais
@@ -93,7 +89,6 @@ private:
   Float_t fEMCADCchannel ;      //width of ADC channel in GeV
   Float_t fTOFa  ;              //constant term of TOF resolution 
   Float_t fTOFb  ;              //stohastic term of TOF resolution 
-  Float_t fFastDecalibration;   //Parameter to describe decalibration
 
   //CPV parameters
   Float_t fADCpedestalCpv ;    //Pedestal value
