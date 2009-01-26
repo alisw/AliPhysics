@@ -494,7 +494,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       pedRMS += in->GetSignal()*in->GetSignal() ;
       nPed++;
     }
-    fSamples->AddAt(in->GetSignal()-10,iBin);
+    fSamples->AddAt(in->GetSignal(),iBin);
     fTimes->AddAt(in->GetTime(),iBin);
  
 //Debug==============
