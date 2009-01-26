@@ -312,8 +312,8 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit(AliFMDHit* h,
     return kTRUE;
   Bool_t retval = ProcessEvent(h->Detector(),
 			       h->Ring(),
-			       h->Sector()
-			       ,h->Strip(),
+			       h->Sector(),
+			       h->Strip(),
 			       h->Track(),
 			       h->Q());
   
@@ -375,7 +375,7 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
     Float_t   phi   = TMath::ATan2(y,x);
     if(phi<0) phi   = phi+2*TMath::Pi();
     Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-    Float_t   theta = TMath::ATan2(r,z+vertex.At(2));
+    Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
     Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
     hHits->Fill(eta,phi);
     fHits++;
