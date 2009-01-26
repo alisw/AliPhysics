@@ -66,7 +66,7 @@ protected:
 
   Float_t fEMCClusteringThreshold; // EMC: Min.digit energy to start a new cluster, in GeV
   Float_t fEMCLocMaxCut;           // EMC: Min.energy difference between two local maxima, in GeV
-  Float_t fEMCMinE;                // EMC: Min.E in the digits list associated with rec.point, in GeV
+  Float_t fEMCMinE;                // EMC: Min.E in the digits list associated with rec.point, in ADC counts
   Float_t fEMCW0;                  // EMC: Log.weight to evaluate a local coordinate of rec.point
   Float_t fEMCSampleQualityCut;    // EMC: Cut on pulse shape fit quality
   Float_t fEMCEcoreRadius;         // EMC: Radius within which the core energy is calculated, in cm

@@ -31,7 +31,6 @@ AliPHOSSimParam::AliPHOSSimParam() :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
-  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
@@ -47,9 +46,9 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
-  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
-  fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
+  fCPVNoise(0.),fCPVDigitThreshold(0.),
+  fNADCcpv(0),
   fDigitizeE(0)
 {
   //Real (private) constructor 
@@ -79,12 +78,10 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   //Parameters defining electronic noise calculation and Digits noise thresholds
   //used in AliPHOSDigitizer
   fAPDNoise           = 0.004 ;  // [GeV]
-  fEMCDigitThreshold  = 0.012 ;  // [GeV]
+  fEMCDigitThreshold  = 2.5   ;  // [ADC counts]
   fEMCADCchannel      = 0.005 ;  // [GeV]
   fTOFa               = 0.5e-9 ; // [sec] constant term
   fTOFb               = 1.e-9 ;  // [sec/sqrt(GeV)]] stohastic term
-
-  fFastDecalibration = 0. ; //Relative decalibration. By default there is no decalibration
 
   fADCpedestalCpv     = 0.012 ;  // [aux units]
   fADCchanelCpv       = 0.0012;  // [aux units]    
@@ -106,7 +103,6 @@ AliPHOSSimParam::AliPHOSSimParam(const AliPHOSSimParam& ):
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
-  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)

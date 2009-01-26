@@ -67,6 +67,7 @@ class TRandom ;
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSTrigger.h"
+class AliPHOSCalibData ;
 
 class AliPHOS : public AliDetector {
 
@@ -103,6 +104,9 @@ public:
  private:                                        
   AliPHOS(AliPHOS & phos);
   AliPHOS & operator = (const AliPHOS & /*rvalue*/);
+
+ protected:
+  AliPHOSCalibData * fgCalibData ; //!  Pointer to Calibration DB
 
   ClassDef(AliPHOS,6) // Photon Spectrometer Detector (base class)
 } ;

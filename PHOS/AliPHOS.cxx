@@ -94,6 +94,7 @@ class TFile;
 #include "AliPHOSPulseGenerator.h"
 #include "AliDAQ.h"
 #include "AliPHOSRawDecoder.h"
+#include "AliPHOSCalibData.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
 #include "AliPHOSRecoParam.h"
@@ -102,7 +103,7 @@ class TFile;
 ClassImp(AliPHOS)
 
 //____________________________________________________________________________
-  AliPHOS:: AliPHOS() : AliDetector()
+  AliPHOS:: AliPHOS() : AliDetector(),fgCalibData(0)
 {
   // Default ctor
   fName   = "PHOS" ;
@@ -110,7 +111,8 @@ ClassImp(AliPHOS)
 }
 
 //____________________________________________________________________________
-AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
+AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title),
+fgCalibData(0)
 {
   //   ctor : title is used to identify the layout
 }
@@ -118,6 +120,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
 {  
+  if(fgCalibData) delete fgCalibData ;
 }
 
 //____________________________________________________________________________
@@ -445,10 +448,13 @@ void AliPHOS::Digits2Raw()
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
   // some digitization constants
-  const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
+  const Float_t    kThreshold = 1.; // skip digits below 1 ADC channel
   const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
 
   Int_t prevDDL = -1;
+
+  if(fgCalibData==0)
+    fgCalibData= new AliPHOSCalibData(-1) ;
 
   // Create a shaper pulse object
   AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
@@ -478,9 +484,6 @@ void AliPHOS::Digits2Raw()
 
     // Skip small energy below treshold
     if (digit->GetEnergy() < kThreshold) 
-      continue;
-    // Skip CPV digits
-    if (digit->GetId() > geom->GetNModules() * geom->GetNCristalsInModule()) 
       continue;
 
     Int_t relId[4];
@@ -556,6 +559,8 @@ void AliPHOS::Digits2Raw()
       }
       pulse->SetAmplitude(energy);
       pulse->SetTZero(digit->GetTimeR());
+      Double_t r =fgCalibData->GetHighLowRatioEmc(relId[0],relId[3],relId[2]) ;
+      pulse->SetHG2LGRatio(r) ;
       pulse->MakeSamples();
       pulse->GetSamples(adcValuesHigh, adcValuesLow) ; 
       buffer[iDDL]->WriteChannel(relId[3]-1, relId[2]-1, 0, 
