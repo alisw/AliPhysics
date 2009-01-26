@@ -539,7 +539,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
         SetLineColor(kMagenta);
       }
     } else {
-      if(TESTBIT(s, kPID) == AliTRDReconstructor::kLQPID){
+      if(TESTBIT(s, kPID) == AliTRDpidUtil::kLQ){
         //printf("PID color kLQPID\n");
         //trk->GetReconstructor()->SetOption("!nn");
       } else {

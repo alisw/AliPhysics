@@ -856,10 +856,10 @@ void AliEveTRDTrackList::UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s,
       CLRBIT(fSelectedStyle, AliEveTRDTrack::kSource);
       switch(ss)
       {
-      case AliTRDReconstructor::kLQPID:
+      case AliTRDpidUtil::kLQ:
         CLRBIT(fSelectedStyle, AliEveTRDTrack::kPID);
         break;
-      case AliTRDReconstructor::kNNPID:
+      case AliTRDpidUtil::kNN:
         SETBIT(fSelectedStyle, AliEveTRDTrack::kPID);
         break;
       }

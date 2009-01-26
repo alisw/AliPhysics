@@ -941,11 +941,11 @@ void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 
   switch(ind)
   { 
-    case AliTRDReconstructor::kLQPID:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kLQPID);
+    case AliTRDpidUtil::kLQ:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDpidUtil::kLQ);
       break;
-    case AliTRDReconstructor::kNNPID:
-      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kNNPID);
+    case AliTRDpidUtil::kNN:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDpidUtil::kNN);
       break;
     default:
       fM->UpdateTrackStyle(AliEveTRDTrack::kSource);
