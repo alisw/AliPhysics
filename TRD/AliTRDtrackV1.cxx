@@ -772,7 +772,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // Update the TRD PID information in the ESD track
   //
 
-  Int_t nslices = fReconstructor->IsEightSlices() ? (Int_t)AliTRDReconstructor::kNNslices : (Int_t)AliTRDReconstructor::kLQslices;
+  Int_t nslices = fReconstructor->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
   track->SetNumberOfTRDslices(nslices);
 
   for (Int_t ip = 0; ip < kNplane; ip++) {

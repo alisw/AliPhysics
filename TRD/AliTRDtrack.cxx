@@ -669,7 +669,7 @@ Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
   }
 	
   // Retrieve the CDB container class with the probability distributions
-  const AliTRDCalPID *pd = calibration->GetPIDObject(AliTRDReconstructor::kLQPID);
+  const AliTRDCalPID *pd = calibration->GetPIDObject(AliTRDpidUtil::kLQ);
   if (!pd) {
     AliError("No access to AliTRDCalPID");
     return kFALSE;

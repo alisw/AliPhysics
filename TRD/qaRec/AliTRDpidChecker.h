@@ -6,8 +6,14 @@
 // Task to check PID performance of the TRD
 //
 // Author : Alex Wilk <wilka@uni-muenster.de>
+//          Alex Bercuci <A.Bercuci@gsi.de>
+//          Markus Fasel <M.Fasel@gsi.de>
 //
 ///////////////////////////////////////////////////////
+
+#ifndef ROOT_TAxis
+#include "TAxis.h"
+#endif
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
@@ -27,12 +33,6 @@ class AliTRDpidChecker : public AliTRDrecoTask
     ,kMomentum       =  5     // momentum distribution
     ,kMomentumBin    =  6     // momentum distribution
     ,kThresh         =  7     // threshold in efficiency
-  };
-  // PID methods
-  enum {
-     kLQ   = 0 // 2D likelihood method
-    ,kNN   = 1 // Neural network method
-    ,kESD  = 2 // ESD results - check offline
   };
 public:
   AliTRDpidChecker();
@@ -56,6 +56,9 @@ public:
   TObjArray *GetGraphs() { return fGraph; };
   virtual TObjArray *Histos();
   void EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency);
+  inline void SetMomentumBinning(Int_t nBins, Double_t *bins);
+  inline Int_t FindBin(Int_t species, Double_t momentum);
+  inline Bool_t IsInRange(Double_t momentum);
 
 private:
   AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented
@@ -68,8 +71,33 @@ private:
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fEfficiency;        //! array of histograms with efficiency
-
+  TAxis               *fMomentumAxis;      //! helper mementum binning
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };
+
+//________________________________________________________________________
+inline void AliTRDpidChecker::SetMomentumBinning(Int_t nBins, Double_t *bins){
+  //
+  // Set the Momentum Bins
+  //
+  if(fMomentumAxis) delete fMomentumAxis;
+  fMomentumAxis = new TAxis(nBins, bins);
+}
+
+//________________________________________________________________________
+inline Int_t AliTRDpidChecker::FindBin(Int_t species, Double_t momentum){
+  //
+  // Find the Bin in the 2D Histogram
+  //
+  return species * fMomentumAxis->GetNbins() + fMomentumAxis->FindBin(momentum);
+}
+
+//________________________________________________________________________
+inline Bool_t AliTRDpidChecker::IsInRange(Double_t momentum){
+  //
+  // Check Whether momentum is in the defined Range
+  //
+  return (momentum >= fMomentumAxis->GetXmin() && momentum <= fMomentumAxis->GetXmax());
+}
 
 #endif

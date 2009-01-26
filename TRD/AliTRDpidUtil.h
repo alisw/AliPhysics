@@ -13,34 +13,37 @@ class TH1;
 class AliESDtrack;
 class AliTRDpidUtil : public TObject {
 public:
-
   enum {
     kBins = 10001
   };
-  typedef enum{
+  enum ETRDPIDMethod {
      kLQ   = 0 // 2D likelihood method
     ,kNN   = 1 // Neural network method
     ,kESD  = 2 // ESD results - check offline
-  } PIDmethod_t;
+  };
+  enum{
+    kNNslices = 8
+   ,kLQslices = 3
+  };
 
   AliTRDpidUtil();
   virtual ~AliTRDpidUtil(){;}
 
-  Bool_t   CalculatePionEffi(TH1* histo1, TH1* histo2);
+  Bool_t       CalculatePionEffi(TH1* histo1, TH1* histo2);
 
-  static Float_t ElectronEfficiency() { return fEleEffi;};
+  static Float_t  ElectronEfficiency()   { return fEleEffi;};
   
-  static Bool_t IsElectron(const AliESDtrack *track, PIDmethod_t method = kNN);
-  static Double_t GetSystematicError(const AliESDtrack *track, PIDmethod_t method = kNN);
+  static Bool_t   IsElectron(const AliESDtrack *track, ETRDPIDMethod method = kNN);
+  static Double_t GetSystematicError(const AliESDtrack *track, ETRDPIDMethod method = kNN);
+  static Int_t GetNdEdxSlices(ETRDPIDMethod m)   { return m == kNN ? kNNslices : kLQslices;}
+  Double_t     GetCalcElectronEfficiency() const { return fCalcEleEffi;};
+  Double_t     GetPionEfficiency() const { return fPionEffi;};
+  Double_t     GetError() const          { return fError;};
+  Double_t     GetThreshold() const      { return fThreshold;};
 
-  Double_t GetCalcElectronEfficiency() {return fCalcEleEffi;};
-  Double_t GetPionEfficiency() {return fPionEffi;};
-  Double_t GetError() {return fError;};
-  Double_t GetThreshold() {return fThreshold;};
-
-  static Int_t    GetMomentumBin(Double_t p);
-
-  static void SetElectronEfficiency(Float_t eleeffi) {fEleEffi = eleeffi;};
+  static Int_t GetMomentumBin(Double_t p);
+  static Int_t Pdg2Pid(Int_t pdg);
+  static void  SetElectronEfficiency(Float_t eleeffi) {fEleEffi = eleeffi;};
 
 private:
   AliTRDpidUtil(const AliTRDpidUtil&);               // not implemented

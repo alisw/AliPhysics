@@ -27,6 +27,7 @@
 
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDReconstructor.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDtrackingSector.h"
 #include "AliTRDtrackingChamber.h"

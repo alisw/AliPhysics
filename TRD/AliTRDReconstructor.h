@@ -14,6 +14,7 @@
 #include "AliReconstructor.h"
 #include "AliDetectorRecoParam.h"
 #include "AliTRDrecoParam.h"
+#include "AliTRDpidUtil.h"
 
 class TClonesArray;
 class TTreeSRedirector;
@@ -38,17 +39,9 @@ public:
     ,kTracker     = 2
     ,kPID         = 3
   };
-  enum AliTRDpidMethod {
-    kLQPID = 0,
-    kNNPID = 1
-  };
   enum AliTRDdriftGas {
     kXe = 0,
     kAr = 1
-  };
-  enum{
-    kNNslices = 8
-   ,kLQslices = 3
   };
   enum{
     kOwner = BIT(14)
@@ -68,9 +61,9 @@ public:
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters() {return fgClusters;}
-  Int_t               GetNdEdxSlices() const     { return GetPIDMethod() == kNNPID ? kNNslices : kLQslices;}
+  Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDdriftGas      GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
-  AliTRDpidMethod     GetPIDMethod() const       { return fSteerParam&kSteerPID ? kNNPID : kLQPID;}
+  AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return fSteerParam&kSteerPID ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
   Int_t               GetStreamLevel(AliTRDReconstructorTask task) const    { return fStreamLevel[task];} 
   inline void         GetTCParams(Double_t *par) const;

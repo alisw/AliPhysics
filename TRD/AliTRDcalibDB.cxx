@@ -932,16 +932,16 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
 }
 
 //_____________________________________________________________________________
-const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDReconstructor::AliTRDpidMethod method)
+const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod method)
 {
   //
   // Returns the object storing the distributions for PID with likelihood
   //
 
   switch(method) {
-  case AliTRDReconstructor::kLQPID: 
+  case AliTRDpidUtil::kLQ: 
     return dynamic_cast<const AliTRDCalPID *>(GetCachedCDBObject(kIDPIDLQ));
-  case AliTRDReconstructor::kNNPID: 
+  case AliTRDpidUtil::kNN: 
     return dynamic_cast<const AliTRDCalPID *>(GetCachedCDBObject(kIDPIDNN));
   }
 

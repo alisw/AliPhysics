@@ -107,7 +107,7 @@ void AliTRDpidRefMaker::CreateOutputObjects()
   fNN->Branch("fLayer", &fLayer, "fLayer/I");
   fNN->Branch("fMom", &fMom, "fMom/F");
   fNN->Branch("fv0pid", fv0pid, Form("fv0pid[%d]/F", AliPID::kSPECIES));
-  fNN->Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDReconstructor::kNNslices));
+  fNN->Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDpidUtil::kNNslices));
 
   // open reference TTree for LQ
   OpenFile(2, "RECREATE");
@@ -115,7 +115,7 @@ void AliTRDpidRefMaker::CreateOutputObjects()
   fLQ->Branch("fLayer", &fLayer, "fLayer/I");
   fLQ->Branch("fMom", &fMom, "fMom/F");
   fLQ->Branch("fv0pid", fv0pid, Form("fv0pid[%d]/F", AliPID::kSPECIES));
-  fLQ->Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDReconstructor::kLQslices));
+  fLQ->Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDpidUtil::kLQslices));
 }
 
 
@@ -205,11 +205,11 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     fReconstructor -> SetOption("nn");
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
-      TRDtracklet->CookdEdx(AliTRDReconstructor::kNNslices);
+      TRDtracklet->CookdEdx(AliTRDpidUtil::kNNslices);
       dedx = TRDtracklet->GetdEdx();
-      for(Int_t iSlice = 0; iSlice < AliTRDReconstructor::kNNslices; iSlice++)
+      for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kNNslices; iSlice++)
 	dedx[iSlice] = dedx[iSlice]/AliTRDCalPIDNN::kMLPscale;
-      memcpy(fdEdx, dedx, AliTRDReconstructor::kNNslices*sizeof(Float_t));
+      memcpy(fdEdx, dedx, AliTRDpidUtil::kNNslices*sizeof(Float_t));
       if(fDebugLevel>=2) Printf("LayerNN : %d", ily);
       fLayer = ily;
       fNN->Fill();
@@ -220,9 +220,9 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     fReconstructor -> SetOption("!nn");
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
-      TRDtracklet->CookdEdx(AliTRDReconstructor::kLQslices);
+      TRDtracklet->CookdEdx(AliTRDpidUtil::kLQslices);
       dedx = TRDtracklet->GetdEdx();
-      memcpy(fdEdx, dedx, AliTRDReconstructor::kLQslices*sizeof(Float_t));
+      memcpy(fdEdx, dedx, AliTRDpidUtil::kLQslices*sizeof(Float_t));
       if(fDebugLevel>=2) Printf("LayerLQ : %d", ily);
       fLayer = ily;
       fLQ->Fill();

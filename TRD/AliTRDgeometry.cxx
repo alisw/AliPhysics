@@ -25,6 +25,7 @@
 #include <TGeoPhysicalNode.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliAlignObjParams.h"
 
 #include "AliTRDcalibDB.h"

@@ -5,6 +5,7 @@
 #include "TH1F.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TPDGCode.h"
 
 #include "AliLog.h"
 #include "Cal/AliTRDCalPID.h"
@@ -144,7 +145,7 @@ Int_t AliTRDpidUtil::GetMomentumBin(Double_t p)
 
 
 //__________________________________________________________________________
-Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, PIDmethod_t method){
+Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, ETRDPIDMethod method){
   //
   // Do PID decision for the TRD based on 90% Electron efficiency threshold
   //
@@ -166,7 +167,7 @@ Bool_t AliTRDpidUtil::IsElectron(const AliESDtrack *track, PIDmethod_t method){
 }
 
 //__________________________________________________________________________
-Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, PIDmethod_t method){
+Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, ETRDPIDMethod method){
   //
   // Returns the pion efficiency at 90% electron efficiency from the OCDB
   //
@@ -180,3 +181,33 @@ Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, PIDmethod_t
   TH1 * threshold_hist = dynamic_cast<TH1F *>(histos->FindObject(histname[method].Data()));
   return threshold_hist->GetBinContent(GetMomentumBin(track->P()) + 1);
 }
+
+//________________________________________________________________________
+Int_t AliTRDpidUtil::Pdg2Pid(Int_t pdg){
+  //
+  // Private Helper function to get the paticle species (ALICE notation) 
+  // from the Pdg code
+  //
+  Int_t species;
+  switch(TMath::Abs(pdg)){
+  case kElectron:
+    species = AliPID::kElectron;
+    break;
+  case kMuonMinus:
+    species = AliPID::kMuon;
+    break;
+  case kPiPlus:
+    species = AliPID::kPion;
+    break;
+  case kKPlus:
+    species = AliPID::kKaon;
+    break;
+  case kProton:
+    species = AliPID::kProton;
+    break;
+  default:
+    species = -1;
+  }
+  return species;
+}
+
