@@ -149,8 +149,23 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   // x,y,z,px,py,pz and their 6x6 covariance matrix
   // A.Dainese 10.10.08
 
-  // Calculate alpha: the rotation angle of the corresponding local system
-  fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+  // Calculate alpha: the rotation angle of the corresponding local system.
+  //
+  // For global radial position inside the beam pipe, alpha is the
+  // azimuthal angle of the momentum projected on (x,y).
+  //
+  // For global radial position outside the beam pipe, alpha is the
+  // azimuthal angle of the centre of the TPC sector in which the point
+  // xyz lies
+  //
+  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
+  if (radPos2 < 3.*3.) { // inside beam pipe
+     fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+  } else { // outside beam pipe
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
+     fAlpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
 
   // Get the vertex of origin and the momentum
   TVector3 ver(xyz[0],xyz[1],xyz[2]);
