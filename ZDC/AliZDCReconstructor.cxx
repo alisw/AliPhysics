@@ -25,7 +25,6 @@
 #include <TF1.h>
 
 #include "AliRunLoader.h"
-#include "AliRunInfo.h"
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
 #include "AliESDZDC.h"
@@ -169,19 +168,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
    }
   }
 
-  // Reconstruct the event according to beam type from AliInfo
-  AliRunInfo *runInfo;
-  if((strcmp(runInfo->GetBeamType(),"p-p") == 0)){
-    printf("\n\t ZDC reconstructing p-p event\n");
-    ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  // reconstruct the event
+  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
-  }
-  else if((strcmp(runInfo->GetBeamType(),"A-A") == 0)){
-    printf("\n\t ZDC reconstructing A-A event\n");
-    ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-    	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
-  }
-  else printf("\n\t ZDC does not reconstruct event! Beam type != p-p || A-A\n");
+
 }
 
 //_____________________________________________________________________________
@@ -262,19 +252,9 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     }//IsADCDataWord
   }
     
-  // Reconstruct the event according to beam type from AliInfo
-  AliRunInfo *runInfo;
-  if((strcmp(runInfo->GetBeamType(),"p-p") == 0)){
-    printf("\n\t ZDC reconstructing p-p event\n");
-    ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  // reconstruct the event
+  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
-  }
-  else if((strcmp(runInfo->GetBeamType(),"A-A") == 0)){
-    printf("\n\t ZDC reconstructing A-A event\n");
-    ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-    	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
-  }
-  else printf("\n\t ZDC does not reconstruct event! Beam type != p-p || A-A\n");
 
 }
 
