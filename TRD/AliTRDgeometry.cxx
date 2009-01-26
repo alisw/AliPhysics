@@ -969,7 +969,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   Float_t parTRP[kNparTRP];
 
   // The rotation matrices
-  const Int_t kNmatrix = 6;
+  const Int_t kNmatrix = 7;
   Int_t   matrix[kNmatrix];
   gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
   gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
