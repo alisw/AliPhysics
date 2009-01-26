@@ -513,7 +513,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     if(!tracklet) continue;
     if(!tracklet->IsOK()) AliWarning("tracklet not OK");
     
-    Double_t x  = tracklet->GetX0();
+    Double_t x  = tracklet->GetXref();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+fgkMaxStep) continue;
 
@@ -1505,9 +1505,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
     if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) return 0;
 
     // Propagate the track to the X-position after the next step
-    if (!t.PropagateTo(x,param[1],param[0]*param[4])) {
-      return 0;
-    }
+    if (!t.PropagateTo(x, param[1], param[0]*param[4])) return 0;
 
     // Rotate the track if necessary
     AdjustSector(&t);
