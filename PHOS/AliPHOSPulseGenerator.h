@@ -32,23 +32,16 @@ public:
   void      SetDigitise (Bool_t flag) {fDigitize  = flag;}
   void      SetAmplitude(Double_t  a) {fAmplitude = a   ; Reset();}
   void      SetTZero    (Double_t t0) {fTZero     = t0  ; Reset();}
+  void      SetHG2LGRatio(Double_t r=16.){fHG2LGratio = r ;}
   void      Reset();
 
   // Raw Read Out
-  Double_t        GetRawFormatCapa()        const { return fgCapa ; }
-  static Double_t GetRawFormatHighCharge()        { return fgHighCharge ; }
-  static Double_t GetRawFormatHighGain()          { return fgHighGain ; }
-  static Double_t GetRawFormatHighLowGainFactor() { return fgHighLowGainFactor ; }
-  static Double_t GetRawFormatLowCharge()         { return ( fgHighCharge *  fgHighLowGainFactor ) ; }
-  static Double_t GetRawFormatLowGain()           { return ( fgHighGain / fgHighLowGainFactor ) ; }
   Int_t           GetRawFormatOrder()       const { return fgOrder ; }
   static Int_t    GetRawFormatTimeBins()          { return fkTimeBins ; }
   static Double_t GetRawFormatTimeMax()           { return fgTimeTrigger*fkTimeBins ; }
   Double_t        GetRawFormatTimePeak()    const { return fgTimePeak ; }
   Double_t        GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
-  static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   static Double_t RawResponseFunction   (Double_t *x, Double_t *par) ;
-  static Double_t GeV2ADC();
 
   virtual void Print(Option_t*) const;
   virtual void Draw (Option_t* opt = "all");
@@ -59,10 +52,6 @@ public:
   }
 
 private:
-  static Double_t fgCapa ;              // capacitor of the preamplifier
-  static Double_t fgHighCharge ;        // high charge (to convert energy to charge)
-  static Double_t fgHighGain ;          // high gain
-  static Double_t fgHighLowGainFactor ; // high to low gain factor
   static Int_t    fgOrder ;             // order of the gamma function
 
   static const Int_t fkTimeBins = 100 ; // number of sampling bins
@@ -74,6 +63,7 @@ private:
 private:
   Double_t  fAmplitude;    // signal amplitude in GeV
   Double_t  fTZero;        // signal start time in ns
+  Double_t  fHG2LGratio ;  // HG/LG ratio for given channel
   Double_t *fDataHG;       // samples array for high gain
   Double_t *fDataLG;       // samples array for low  gain
   Bool_t    fDigitize;     // true is samples should be rounded to integers

@@ -51,17 +51,13 @@ using std::endl;
 
 ClassImp(AliPHOSPulseGenerator) 
 
-Double_t AliPHOSPulseGenerator::fgCapa        = 1.1;       // 1pF 
 Int_t    AliPHOSPulseGenerator::fgOrder       = 2 ;        // order of the Gamma function
 Double_t AliPHOSPulseGenerator::fgTimePeak    = 2.1E-6 ;   // tau=2.1 micro seconds
 Double_t AliPHOSPulseGenerator::fgTimeTrigger = 100E-9 ;   // one tick 100 ns
-Double_t AliPHOSPulseGenerator::fgHighCharge  = 8.8;       // adjusted for a high gain range of 5 GeV (10 bits)
-Double_t AliPHOSPulseGenerator::fgHighGain    = 6.85;
-Double_t AliPHOSPulseGenerator::fgHighLowGainFactor = 16.; // adjusted for a low gain range of 80 GeV (10 bits) 
 
 //-----------------------------------------------------------------------------
 AliPHOSPulseGenerator::AliPHOSPulseGenerator(Double_t a, Double_t t0)
-  : TObject(), fAmplitude(a), fTZero(t0), fDataHG(0), fDataLG(0), fDigitize(kTRUE)
+  : TObject(), fAmplitude(a), fTZero(t0), fHG2LGratio(16.), fDataHG(0), fDataLG(0), fDigitize(kTRUE)
 {
   // Contruct a pulsegenrator object and initializes all necessary parameters
   // @param a digit amplitude in GeV
@@ -75,7 +71,8 @@ AliPHOSPulseGenerator::AliPHOSPulseGenerator(Double_t a, Double_t t0)
 
 //-----------------------------------------------------------------------------
 AliPHOSPulseGenerator::AliPHOSPulseGenerator(const AliPHOSPulseGenerator & pulse)
-  : TObject(), fAmplitude(pulse.fAmplitude), fTZero(pulse.fTZero), fDataHG(0), fDataLG(0), fDigitize(kTRUE)
+  : TObject(), fAmplitude(pulse.fAmplitude), fTZero(pulse.fTZero),fHG2LGratio(pulse.fHG2LGratio),
+  fDataHG(0), fDataLG(0), fDigitize(kTRUE)
 {
   fDataHG = new Double_t[pulse.fkTimeBins];
   fDataLG = new Double_t[pulse.fkTimeBins];
@@ -184,31 +181,19 @@ Double_t AliPHOSPulseGenerator::RawResponseFunction(Double_t *x, Double_t *par)
 {
   // Shape of the electronics raw reponse:
   // It is a semi-gaussian, 2nd order Gamma function of the general form
-  // v(t) = n**n * Q * A**n / C *(t/tp)**n * exp(-n * t/tp) with 
-  // tp : peaking time par[0]
+  // v(t) = A *(t/tp)**n * exp(-n * t/tp-n) with 
+  // tp : peaking time  fgTimePeak
   // n  : order of the function
-  // C  : integrating capacitor in the preamplifier
-  // A  : open loop gain of the preamplifier
-  // Q  : the total APD charge to be measured Q = C * energy
   
   Double_t signal ;
-  Double_t xx = x[0] - ( fgTimeTrigger + par[3] ) ; 
+  Double_t xx = x[0] - ( fgTimeTrigger + par[1] ) ; 
 
   if (xx < 0 || xx > GetRawFormatTimeMax()) 
     signal = 0. ;  
   else {
-    Double_t fac = par[0] * TMath::Power(fgOrder, fgOrder) * TMath::Power(par[1], fgOrder)/fgCapa ; 
-    signal = fac * par[2] * TMath::Power(xx/fgTimePeak, fgOrder) * TMath::Exp(-fgOrder*(xx/fgTimePeak)) ;
+    signal =  par[0] * TMath::Power(xx/fgTimePeak, fgOrder) * TMath::Exp(-fgOrder*(xx/fgTimePeak-1.)) ; //normalized to par[2] at maximum
   }
   return signal ;  
-}
-
-//__________________________________________________________________
-Double_t AliPHOSPulseGenerator::RawResponseFunctionMax(Double_t charge, Double_t gain) 
-{
-  // Maximum value of the shaper response function
-  return ( charge * TMath::Power(fgOrder, fgOrder) * TMath::Power(gain, fgOrder) 
-	   / ( fgCapa * TMath::Exp(fgOrder) ) );  
 }
 
 //__________________________________________________________________
@@ -223,10 +208,8 @@ Bool_t AliPHOSPulseGenerator::MakeSamples()
   TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    signalF.SetParameter(0, fgHighCharge) ; 
-    signalF.SetParameter(1, fgHighGain) ; 
-    signalF.SetParameter(2, fAmplitude) ; 
-    signalF.SetParameter(3, fTZero) ; 
+    signalF.SetParameter(0, fAmplitude) ; 
+    signalF.SetParameter(1, fTZero) ; 
     Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
     Double_t signal = signalF.Eval(time) ;     
     fDataHG[iTime] += signal;
@@ -235,13 +218,12 @@ Bool_t AliPHOSPulseGenerator::MakeSamples()
       lowGain = kTRUE ; 
     }
 
-    signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
-    signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
+    Double_t aLGamp = fAmplitude/fHG2LGratio ;
+    signalF.SetParameter(0, aLGamp) ;
     signal = signalF.Eval(time) ;  
     fDataLG[iTime] += signal;
     if ( static_cast<Int_t>(fDataLG[iTime]+0.5) > kRawSignalOverflow)  // larger than 10 bits 
       fDataLG[iTime] = kRawSignalOverflow ;
-
   }
   // Digitize floating point amplitudes to integers
   if (fDigitize) Digitize();
@@ -323,11 +305,3 @@ void AliPHOSPulseGenerator::Draw(Option_t* opt)
   c1->Update();
 }
 
-//__________________________________________________________________
-Double_t AliPHOSPulseGenerator::GeV2ADC()
-{
-  //Return GeV to ADC counts conversion factor. 
-  //adc_counts = energy[GeV]*AliPHOSPulseGenerator::GeV2ADC().
-
-  return RawResponseFunctionMax(fgHighCharge,fgHighGain);
-}
