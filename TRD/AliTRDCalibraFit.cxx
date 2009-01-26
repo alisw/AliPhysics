@@ -331,7 +331,7 @@ void AliTRDCalibraFit::DestroyDebugStreamer()
  
 }
 //__________________________________________________________________________________
-void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end)
+void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const
 {
   //
   // From the drift velocity and t0
@@ -353,7 +353,7 @@ void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t 
 
 }
 //____________Functions fit Online CH2d________________________________________
-Bool_t AliTRDCalibraFit::AnalyseCH(TH2I *ch)
+Bool_t AliTRDCalibraFit::AnalyseCH(const TH2I *ch)
 {
   //
   // Fit the 1D histos, projections of the 2D ch on the Xaxis, for each
@@ -549,7 +549,7 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
   return kTRUE;
 }
 //________________functions fit Online PH2d____________________________________
-Bool_t AliTRDCalibraFit::AnalysePH(TProfile2D *ph)
+Bool_t AliTRDCalibraFit::AnalysePH(const TProfile2D *ph)
 {
   //
   // Take the 1D profiles (average pulse height), projections of the 2D PH
@@ -725,7 +725,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
   return kTRUE;
 }
 //____________Functions fit Online PRF2d_______________________________________
-Bool_t AliTRDCalibraFit::AnalysePRF(TProfile2D *prf)
+Bool_t AliTRDCalibraFit::AnalysePRF(const TProfile2D *prf)
 {
   //
   // Take the 1D profiles (pad response function), projections of the 2D PRF
@@ -812,7 +812,7 @@ Bool_t AliTRDCalibraFit::AnalysePRF(TProfile2D *prf)
   return kTRUE;
 }
 //____________Functions fit Online PRF2d_______________________________________
-Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(TProfile2D *prf)
+Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(const TProfile2D *prf)
 {
   //
   // Take the 1D profiles (pad response function), projections of the 2D PRF
@@ -1659,7 +1659,7 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
   
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool_t perdetector)
+AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(const TObjArray *vectorFit, Bool_t perdetector)
 {
   //
   // It creates the AliTRDCalDet object from the AliTRDFitInfo
@@ -1701,7 +1701,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool
   return object;
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Bool_t meanOtherBefore, Double_t scaleFitFactor, Bool_t perdetector)
+AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(const TObjArray *vectorFit, Bool_t meanOtherBefore, Double_t scaleFitFactor, Bool_t perdetector)
 {
   //
   // It creates the AliTRDCalDet object from the AliTRDFitInfo
@@ -1752,7 +1752,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Bool_t
   return object;
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(TObjArray *vectorFit, Bool_t perdetector)
+AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(const TObjArray *vectorFit, Bool_t perdetector)
 {
   //
   // It creates the AliTRDCalDet object from the AliTRDFitInfo2
@@ -1798,7 +1798,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(TObjArray *vectorFit, Bool_t p
 
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectLorentzAngle(TObjArray *vectorFit)
+AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectLorentzAngle(const TObjArray *vectorFit)
 {
   //
   // It creates the AliTRDCalDet object from the AliTRDFitInfo2
@@ -1838,7 +1838,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectLorentzAngle(TObjArray *vectorFit
   
 }
 //_____________________________________________________________________________
-TObject *AliTRDCalibraFit::CreatePadObjectGain(TObjArray *vectorFit, Double_t scaleFitFactor, AliTRDCalDet *detobject)
+TObject *AliTRDCalibraFit::CreatePadObjectGain(const TObjArray *vectorFit, Double_t scaleFitFactor, const AliTRDCalDet *detobject)
 {
   //
   // It Creates the AliTRDCalPad object from AliTRDFitInfo
@@ -1886,7 +1886,7 @@ TObject *AliTRDCalibraFit::CreatePadObjectGain(TObjArray *vectorFit, Double_t sc
   return object;  
 }
 //_____________________________________________________________________________
-TObject *AliTRDCalibraFit::CreatePadObjectVdrift(TObjArray *vectorFit, AliTRDCalDet *detobject)
+TObject *AliTRDCalibraFit::CreatePadObjectVdrift(const TObjArray *vectorFit, const AliTRDCalDet *detobject)
 {
   //
   // It Creates the AliTRDCalPad object from AliTRDFitInfo
@@ -1933,7 +1933,7 @@ TObject *AliTRDCalibraFit::CreatePadObjectVdrift(TObjArray *vectorFit, AliTRDCal
 
 }
 //_____________________________________________________________________________
-TObject *AliTRDCalibraFit::CreatePadObjectT0(TObjArray *vectorFit, AliTRDCalDet *detobject)
+TObject *AliTRDCalibraFit::CreatePadObjectT0(const TObjArray *vectorFit, const AliTRDCalDet *detobject)
 {
   //
   // It Creates the AliTRDCalPad object from AliTRDFitInfo2
@@ -1982,7 +1982,7 @@ TObject *AliTRDCalibraFit::CreatePadObjectT0(TObjArray *vectorFit, AliTRDCalDet 
 
 }
 //_____________________________________________________________________________
-TObject *AliTRDCalibraFit::CreatePadObjectPRF(TObjArray *vectorFit)
+TObject *AliTRDCalibraFit::CreatePadObjectPRF(const TObjArray *vectorFit)
 {
   //
   // It Creates the AliTRDCalPad object from AliTRDFitInfo
@@ -2014,7 +2014,7 @@ TObject *AliTRDCalibraFit::CreatePadObjectPRF(TObjArray *vectorFit)
 
 }
 //_____________________________________________________________________________
-AliTRDCalDet *AliTRDCalibraFit::MakeOutliersStatDet(TObjArray *vectorFit, const char *name, Double_t &mean)
+AliTRDCalDet *AliTRDCalibraFit::MakeOutliersStatDet(const TObjArray *vectorFit, const char *name, Double_t &mean)
 {
   //
   // It Creates the AliTRDCalDet object from AliTRDFitInfo
@@ -2052,7 +2052,7 @@ AliTRDCalDet *AliTRDCalibraFit::MakeOutliersStatDet(TObjArray *vectorFit, const 
   return object;  
 }
 //_____________________________________________________________________________
-TObject *AliTRDCalibraFit::MakeOutliersStatPad(TObjArray *vectorFit, const char *name, Double_t &mean)
+TObject *AliTRDCalibraFit::MakeOutliersStatPad(const TObjArray *vectorFit, const char *name, Double_t &mean)
 {
   //
   // It Creates the AliTRDCalPad object from AliTRDFitInfo
@@ -5426,7 +5426,7 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
   }
 } 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(Double_t *x, Double_t *y) const
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces trois points de degre 2
@@ -5448,7 +5448,7 @@ Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(Double_t *x, Double_t *y) co
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(Double_t *x, Double_t *y) const
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces quatre points de degre 3
@@ -5482,7 +5482,7 @@ Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(Double_t *x, Double_t *y) co
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(Double_t *x, Double_t *y) const
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces cinqs points de degre 4
@@ -5575,7 +5575,7 @@ void AliTRDCalibraFit::NormierungCharge()
     }
 }
 //_____________________________________________________________________________
-TH1I *AliTRDCalibraFit::ReBin(TH1I *hist) const
+TH1I *AliTRDCalibraFit::ReBin(const TH1I *hist) const
 {
   //
   // Rebin of the 1D histo for the gain calibration if needed.
@@ -5604,7 +5604,7 @@ TH1I *AliTRDCalibraFit::ReBin(TH1I *hist) const
 }
 
 //_____________________________________________________________________________
-TH1F *AliTRDCalibraFit::ReBin(TH1F *hist) const
+TH1F *AliTRDCalibraFit::ReBin(const TH1F *hist) const
 {
   //
   // Rebin of the 1D histo for the gain calibration if needed
@@ -5633,7 +5633,7 @@ TH1F *AliTRDCalibraFit::ReBin(TH1F *hist) const
 }
 
 //_____________________________________________________________________________
-TH1F *AliTRDCalibraFit::CorrectTheError(TGraphErrors *hist)
+TH1F *AliTRDCalibraFit::CorrectTheError(const TGraphErrors *hist)
 {
   //
   // In the case of the vectors method the trees contains TGraphErrors for PH and PRF
@@ -5738,7 +5738,7 @@ void AliTRDCalibraFit::ResetVectorFit()
 //
 
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::PH(Double_t *x, Double_t *par) 
+Double_t AliTRDCalibraFit::PH(const Double_t *x, const Double_t *par) 
 {
   //
   // Function for the fit
@@ -5793,7 +5793,7 @@ Double_t AliTRDCalibraFit::PH(Double_t *x, Double_t *par)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::AsymmGauss(Double_t *x, Double_t *par) 
+Double_t AliTRDCalibraFit::AsymmGauss(const Double_t *x, const Double_t *par)
 {
   //
   // Function for the fit
@@ -5829,7 +5829,7 @@ Double_t AliTRDCalibraFit::AsymmGauss(Double_t *x, Double_t *par)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::FuncLandauGaus(Double_t *x, Double_t *par)
+Double_t AliTRDCalibraFit::FuncLandauGaus(const Double_t *x, const Double_t *par)
 {
   //
   // Sum Landau + Gaus with identical mean
@@ -5845,7 +5845,7 @@ Double_t AliTRDCalibraFit::FuncLandauGaus(Double_t *x, Double_t *par)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::LanGauFun(Double_t *x, Double_t *par) 
+Double_t AliTRDCalibraFit::LanGauFun(const Double_t *x, const Double_t *par) 
 {
   //
   // Function for the fit
@@ -5906,8 +5906,8 @@ Double_t AliTRDCalibraFit::LanGauFun(Double_t *x, Double_t *par)
 
 }
 //_____________________________________________________________________________
-TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startvalues
-                                      , Double_t *parlimitslo, Double_t *parlimitshi
+TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, const Double_t *fitrange, const Double_t *startvalues
+                                      , const Double_t *parlimitslo, const Double_t *parlimitshi
                                       , Double_t *fitparams, Double_t *fiterrors
                                       , Double_t *chiSqr, Int_t *ndf) const
 {
@@ -5945,7 +5945,7 @@ TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startva
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFit::LanGauPro(Double_t *params, Double_t &maxx, Double_t &fwhm) 
+Int_t AliTRDCalibraFit::LanGauPro(const Double_t *params, Double_t &maxx, Double_t &fwhm) 
 {
   //
   // Function for the fit
@@ -6041,7 +6041,7 @@ Int_t AliTRDCalibraFit::LanGauPro(Double_t *params, Double_t &maxx, Double_t &fw
   return (0);
 }
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::GausConstant(Double_t *x, Double_t *par)
+Double_t AliTRDCalibraFit::GausConstant(const Double_t *x, const Double_t *par)
 {
   //
   // Gaus with identical mean

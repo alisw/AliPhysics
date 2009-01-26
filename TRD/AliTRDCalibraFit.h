@@ -50,21 +50,21 @@ class AliTRDCalibraFit : public TObject {
   AliTRDCalibraFit &operator=(const AliTRDCalibraFit &) { return *this; }
 
        // Function for integration range of the charge 
-       void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end);
+       void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const;
   
        // Functions fit for CH
-       Bool_t   AnalyseCH(TH2I *ch);
+       Bool_t   AnalyseCH(const TH2I *ch);
        Bool_t   AnalyseCH(AliTRDCalibraVector *calvect);
        
        // Functions fit for PH       
-       Bool_t   AnalysePH(TProfile2D *ph);
+       Bool_t   AnalysePH(const TProfile2D *ph);
        Bool_t   AnalysePH(AliTRDCalibraVector *calvect);
        
        // Functions fit for PRF
-       Bool_t   AnalysePRF(TProfile2D *prf);
+       Bool_t   AnalysePRF(const TProfile2D *prf);
        Bool_t   AnalysePRF(AliTRDCalibraVector *calvect);
        
-       Bool_t   AnalysePRFMarianFit(TProfile2D *prf);
+       Bool_t   AnalysePRFMarianFit(const TProfile2D *prf);
        Bool_t   AnalysePRFMarianFit(AliTRDCalibraVector *calvect);
        
        // Functions fit for vdrift/lorentzangle
@@ -77,30 +77,30 @@ class AliTRDCalibraFit : public TObject {
        void     ResetVectorFit();
        
        // Some functions
-       Double_t *CalculPolynomeLagrange2(Double_t *x, Double_t *y) const;
-       Double_t *CalculPolynomeLagrange3(Double_t *x, Double_t *y) const;
-       Double_t *CalculPolynomeLagrange4(Double_t *x, Double_t *y) const;
+       Double_t *CalculPolynomeLagrange2(const Double_t *x, const Double_t *y) const;
+       Double_t *CalculPolynomeLagrange3(const Double_t *x, const Double_t *y) const;
+       Double_t *CalculPolynomeLagrange4(const Double_t *x, const Double_t *y) const;
        
        // Fill the database
        void         PutMeanValueOtherVectorFit(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
        void         PutMeanValueOtherVectorFit2(Int_t ofwhat = 1, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectVdrift(TObjArray *vectorFit, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectGain(TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
-       AliTRDCalDet *CreateDetObjectT0(TObjArray *vectorFit, Bool_t perdetector = kFALSE);
-       AliTRDCalDet *CreateDetObjectLorentzAngle(TObjArray *vectorFit);
+       AliTRDCalDet *CreateDetObjectVdrift(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
+       AliTRDCalDet *CreateDetObjectGain(const TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
+       AliTRDCalDet *CreateDetObjectT0(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
+       AliTRDCalDet *CreateDetObjectLorentzAngle(const TObjArray *vectorFit);
        
-       TObject      *CreatePadObjectGain(TObjArray *vectorFit = 0, Double_t scaleFitFactor = 1.0, AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectVdrift(TObjArray *vectorFit = 0, AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectT0(TObjArray *vectorFit = 0, AliTRDCalDet *detobject = 0);
-       TObject      *CreatePadObjectPRF(TObjArray *vectorFit);
+       TObject      *CreatePadObjectGain(const TObjArray *vectorFit = 0, Double_t scaleFitFactor = 1.0, const AliTRDCalDet *detobject = 0);
+       TObject      *CreatePadObjectVdrift(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
+       TObject      *CreatePadObjectT0(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
+       TObject      *CreatePadObjectPRF(const TObjArray *vectorFit);
        
        // Outliers stats
-       AliTRDCalDet *MakeOutliersStatDet(TObjArray *vectorFit, const char *name, Double_t &mean);
-       TObject      *MakeOutliersStatPad(TObjArray *vectorFit, const char *name, Double_t &mean);
+       AliTRDCalDet *MakeOutliersStatDet(const TObjArray *vectorFit, const char *name, Double_t &mean);
+       TObject      *MakeOutliersStatPad(const TObjArray *vectorFit, const char *name, Double_t &mean);
        
        
        // Correct the error
-       TH1F   *CorrectTheError(TGraphErrors *hist);
+       TH1F   *CorrectTheError(const TGraphErrors *hist);
        
        //
        // Set or Get the variables
@@ -151,7 +151,7 @@ class AliTRDCalibraFit : public TObject {
        TObjArray  GetVectorFit2() const                                   { return fVectorFit2;             }
        
        // AliTRDCalibraMode
-       AliTRDCalibraMode *GetCalibraMode()                                { return fCalibraMode;            }
+       AliTRDCalibraMode *GetCalibraMode() const                          { return fCalibraMode;            }
        
  protected:
        
@@ -236,7 +236,7 @@ class AliTRDCalibraFit : public TObject {
 	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
 	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
 	 
-	 Float_t  *GetCoef()                                { return fCoef;            }
+	 Float_t  *GetCoef() const                          { return fCoef;            }
 	 Int_t     GetDetector() const                      { return fDetector;        }
 	 
        protected:
@@ -315,8 +315,8 @@ class AliTRDCalibraFit : public TObject {
        void     FitPente(TH1 *projPH);
        void     FitLagrangePoly(TH1* projPH);
        void     FitTnpRange(Double_t *arraye,Double_t *arraym,Double_t *arrayme,Int_t nbg,Int_t nybins);
-       TH1I    *ReBin(TH1I *hist) const;
-       TH1F    *ReBin(TH1F *hist) const;
+       TH1I    *ReBin(const TH1I *hist) const;
+       TH1F    *ReBin(const TH1F *hist) const;
        
        // Some basic geometry function
        virtual Int_t    GetLayer(Int_t d) const;
@@ -330,15 +330,15 @@ class AliTRDCalibraFit : public TObject {
        
  private:
        
-       static  Double_t PH(Double_t *x, Double_t *par);
-       static  Double_t AsymmGauss(Double_t *x, Double_t *par);
-       static  Double_t FuncLandauGaus(Double_t *x, Double_t *par);
-       static  Double_t LanGauFun(Double_t *x, Double_t *par);
-       TF1     *LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startvalues
-			  , Double_t *parlimitslo, Double_t *parlimitshi, Double_t *fitparams
+       static  Double_t PH(const Double_t *x, const Double_t *par);
+       static  Double_t AsymmGauss(const Double_t *x, const Double_t *par);
+       static  Double_t FuncLandauGaus(const Double_t *x, const Double_t *par);
+       static  Double_t LanGauFun(const Double_t *x, const Double_t *par);
+       TF1     *LanGauFit(TH1 *his, const Double_t *fitrange, const Double_t *startvalues
+			  , const Double_t *parlimitslo, const Double_t *parlimitshi, Double_t *fitparams
 			  , Double_t *fiterrors, Double_t *chiSqr, Int_t *ndf) const;
-       Int_t    LanGauPro(Double_t *params, Double_t &maxx, Double_t &fwhm);
-       static  Double_t GausConstant(Double_t *x, Double_t *par); 
+       Int_t    LanGauPro(const Double_t *params, Double_t &maxx, Double_t &fwhm);
+       static  Double_t GausConstant(const Double_t *x, const Double_t *par); 
        
        // This is a singleton, contructor is private!
        AliTRDCalibraFit();
