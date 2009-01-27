@@ -47,6 +47,7 @@
 #pragma link C++ class AliTPCRawStreamFast+;
 #pragma link C++ class AliTPCeventInfo+;
 
+#pragma link C++ class AliTPCCalibRawBase+;
 #pragma link C++ class AliTPCCalibPedestal+;
 #pragma link C++ class AliTPCCalibPulser+;
 #pragma link C++ class AliTPCCalibCE+;

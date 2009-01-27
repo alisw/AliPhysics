@@ -34,7 +34,7 @@
   //
   // To make laser scan the user interaction neccessary
   //
-  .x ~/UliStyle.C
+  .x ~/NimStyle.C
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
   TFile fcalib("CalibObjects.root");
@@ -490,11 +490,6 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     fClusterCounter[id]=0;
     fClusterSatur[id]=0;
   }
-  static Bool_t init=kFALSE;
-  if (!init){
-    init = kTRUE;  // way around for PROOF - to be investigated
-    MakeFitHistos();
-  }
   //
   Int_t n=fESD->GetNumberOfTracks();
   Int_t counter=0;
@@ -517,6 +512,11 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
 
   FitDriftV();
   if (!fFullCalib) return;
+  static Bool_t init=kFALSE;
+  if (!init){
+    init = kTRUE;  // way around for PROOF - to be investigated
+    MakeFitHistos();
+  }
   //
   for (Int_t id=0; id<336; id++){    
     //
@@ -687,7 +687,14 @@ void AliTPCcalibLaser::FitDriftV(){
       fdriftA.GetParameters(fitA);
       npointsA= fdriftA.GetNpoints();
       chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
-      if (chi2A<kChi2Cut ||(*fFitAside)[0]==0 ) (*fFitAside) = fitA;
+      if (chi2A<kChi2Cut ||(*fFitAside)[0]==0 ) {
+	if (fFitAside->GetNoElements()<5) fFitAside->ResizeTo(5);
+	(*fFitAside)[0] = fitA[0];
+	(*fFitAside)[1] = fitA[1];
+	(*fFitAside)[2] = fitA[2];
+	(*fFitAside)[3] = fdriftA.GetNpoints();
+	(*fFitAside)[4] = chi2A;	
+      }
     }
     if (fdriftC.GetNpoints()>10){
       fdriftC.Eval();
@@ -697,7 +704,14 @@ void AliTPCcalibLaser::FitDriftV(){
       fdriftC.GetParameters(fitC);
       npointsC= fdriftC.GetNpoints();
       chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
-      if (chi2C<kChi2Cut||(*fFitCside)[0]==0) (*fFitCside) = fitC;
+      if (chi2C<kChi2Cut||(*fFitCside)[0]==0) {	
+	if (fFitCside->GetNoElements()<5) fFitCside->ResizeTo(5);
+	(*fFitCside)[0] = fitC[0];
+	(*fFitCside)[1] = fitC[1];
+	(*fFitCside)[2] = fitC[2];
+	(*fFitCside)[3] = fdriftC.GetNpoints();
+	(*fFitCside)[4] = chi2C;	
+      }
     }
 
     if (fdriftAC.GetNpoints()>10&&fdriftC.GetNpoints()>10&&fdriftA.GetNpoints()>10){
@@ -904,6 +918,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   //
   Float_t radius=TMath::Abs(ltrp->GetX());
   AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kTRUE);
+  param.Rotate(ltrp->GetAlpha());
   //
   if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
   Bool_t accept=kTRUE;  
@@ -1040,11 +1055,13 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
   //=============================================//
   // Linear Fitters for the Different Approaches //
   //=============================================//
-  //linear fit model in y and z; inner - outer sector
+  //linear fit model in y and z; inner - outer sector, combined with offset
   static TLinearFitter fy1I(2,"hyp1");
   static TLinearFitter fy1O(2,"hyp1");
   static TLinearFitter fz1I(2,"hyp1");
   static TLinearFitter fz1O(2,"hyp1");
+  static TLinearFitter fy1IO(3,"hyp2");
+  static TLinearFitter fz1IO(3,"hyp2");
   //quadratic fit model in y and z; inner - sector
   static TLinearFitter fy2I(3,"hyp2");
   static TLinearFitter fy2O(3,"hyp2");
@@ -1089,6 +1106,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TVectorD vecy1resOuter(2),vecz1resOuter(2); //pol1 fit parameters outer
       TVectorD vecy2resOuter(3),vecz2resOuter(3); //pol2 fit parameters outer
       TVectorD vecy4res(5),vecz4res(5);
+      TVectorD vecy1resIO(3),vecz1resIO(3);
       // cluster and track positions for each row - used for residuals
       TVectorD vecgX(159);        // global X
       TVectorD vecgY(159);        // global Y
@@ -1099,6 +1117,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TVectorD vecZkalman(159);  // z from kalman fit
       TVectorD vecY1(159);       // y from pol1 fit per ROC
       TVectorD vecZ1(159);       // z from pol1 fit per ROC
+      TVectorD vecY1IO(159);     // y from pol1 fit per ROC
+      TVectorD vecZ1IO(159);     // z from pol1 fit per ROC
       TVectorD vecY2(159);       // y from pol2 fit per ROC
       TVectorD vecZ2(159);       // z from pol2 fit per ROC
       TVectorD vecY4(159);       // y from sector fit
@@ -1112,6 +1132,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       Double_t chi2I1y=0;       // chi2 of pol1 fit in y (inner)
       Double_t chi2O1z=0;       // chi2 of pol1 fit in z (outer)
       Double_t chi2O1y=0;       // chi2 of pol1 fit in y (outer)
+      Double_t chi2IO1z=0;       // chi2 of pol1 fit in z (outer)
+      Double_t chi2IO1y=0;       // chi2 of pol1 fit in y (outer)
       Double_t chi2I2z=0;       // chi2 of pol2 fit in z (inner)
       Double_t chi2I2y=0;       // chi2 of pol2 fit in y (inner)
       Double_t chi2O2z=0;       // chi2 of pol2 fit in z (outer)
@@ -1235,9 +1257,11 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
           //
 	  Double_t x2[2]={x,x*x};   //linear and parabolic parameters
 	  Double_t x4[4]={0,0,0,0}; //hyp4 parameters
+          Double_t xIO[2]={0,x};    //common linear + offset IROC-OROC
 	  if ( roc == innerSector ) {
 	      x4[0]=1; //offset inner - outer sector
 	      x4[1]=x; //slope parameter inner sector
+              xIO[0]=1;
 	  } else {
 	      x4[2]=x; //slope parameter outer sector
 	  }
@@ -1273,6 +1297,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  }
 	  fy4.AddPoint(x4,y);
 	  fz4.AddPoint(x4,z);
+          fy1IO.AddPoint(xIO,y);
+          fz1IO.AddPoint(xIO,z);
       }
       if (nclI>0)  {
 	msigmaYIn/=nclI;
@@ -1328,6 +1354,16 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      fz4.GetParameters(vecz4res);
 	      chi2IOz=fz4.GetChisquare()/(fz4.GetNpoints()-5);
 	  }
+          if (fy1IO.GetNpoints()>0) {
+            fy1IO.Eval();
+            fy1IO.GetParameters(vecy1resIO);
+            chi2IO1y=fy1IO.GetChisquare()/(fy1IO.GetNpoints()-3);
+          }
+          if (fz1IO.GetNpoints()>0) {
+            fz1IO.Eval();
+            fz1IO.GetParameters(vecz1resIO);
+            chi2IO1z=fz1IO.GetChisquare()/(fz1IO.GetNpoints()-3);
+          }
       }
       //clear points
       fy4.ClearPoints();  fz4.ClearPoints();
@@ -1335,6 +1371,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       fz1I.ClearPoints(); fz1O.ClearPoints();
       fy2I.ClearPoints(); fy2O.ClearPoints();
       fz2I.ClearPoints(); fz2O.ClearPoints();
+      fy1IO.ClearPoints(); fz1IO.ClearPoints();
       //==============================//
       // calculate tracklet positions //
       //==============================//
@@ -1371,6 +1408,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
           //
           Double_t yoffInner=0;
           Double_t zoffInner=0;
+          Double_t yoffInner1=0;
+          Double_t zoffInner1=0;
           Double_t yslopeInner=0;
           Double_t yslopeOuter=0;
           Double_t zslopeInner=0;
@@ -1391,10 +1430,14 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
               vecY2[irow]=vecy2resInner[0]+vecy2resInner[1]*xref+vecy2resInner[2]*xref*xref;
               vecZ2[irow]=vecz2resInner[0]+vecz2resInner[1]*xref+vecz2resInner[2]*xref*xref;
               yoffInner=vecy4res[1];
-	      zoffInner=vecz4res[1];
+              zoffInner=vecz4res[1];
+              yoffInner1=vecy1resIO[1];
+              zoffInner1=vecz1resIO[1];
               yslopeInner=vecy4res[2];
 	      zslopeInner=vecz4res[2];
 	  }
+          vecY1IO[irow]=vecy1resIO[0]+yoffInner1+vecy1resIO[2]*xref;
+          vecZ1IO[irow]=vecz1resIO[0]+zoffInner1+vecz1resIO[2]*xref;
 	  vecY4[irow]=vecy4res[0]+yoffInner+yslopeInner*xref+yslopeOuter*xref+vecy4res[4]*xref*xref;
 	  vecZ4[irow]=vecz4res[0]+zoffInner+zslopeInner*xref+zslopeOuter*xref+vecz4res[4]*xref*xref;
           //positions of kalman fits
@@ -1438,9 +1481,11 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      "dEdx="       << dedx <<
 	      "LTr.="       << ltrp <<
 	      "Tr.="        << extparam <<
-	      "yPol1In.="   << &vecy1resInner <<
-	      "zPol1In.="   << &vecz1resInner <<
-	      "yPol2In.="   << &vecy2resInner <<
+              "yPol1In.="   << &vecy1resInner <<
+              "zPol1In.="   << &vecz1resInner <<
+              "yPol1InOut.="<< &vecy1resIO <<
+              "zPol1InOut.="<< &vecz1resIO <<
+              "yPol2In.="   << &vecy2resInner <<
 	      "zPol2In.="   << &vecz2resInner <<
 	      "yPol1Out.="  << &vecy1resOuter <<
 	      "zPol1Out.="  << &vecz1resOuter <<
@@ -1448,9 +1493,11 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      "zPol2Out.="  << &vecz2resOuter <<
 	      "yInOut.="    << &vecy4res <<
 	      "zInOut.="    << &vecz4res <<
-	      "chi2y1In="   << chi2I1y <<
-	      "chi2z1In="   << chi2I1z <<
-	      "chi2y1Out="  << chi2O1y <<
+              "chi2y1In="   << chi2I1y <<
+              "chi2z1In="   << chi2I1z <<
+              "chi2y1InOut="<< chi2IO1y <<
+              "chi2z1InOut="<< chi2IO1z <<
+              "chi2y1Out="  << chi2O1y <<
 	      "chi2z1Out="  << chi2O1z <<
 	      "chi2y2In="   << chi2I2y <<
 	      "chi2z2In="   << chi2I2z <<
@@ -1502,9 +1549,11 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      "TrZpol1.="   << &vecZ1 <<
 	      "TrYpol2.="   << &vecY2 <<
 	      "TrZpol2.="   << &vecZ2 <<
-	      "TrYInOut.="  << &vecY4 <<
-	      "TrZInOut.="  << &vecZ4 <<
-	      "ClY.="       << &vecClY <<
+              "TrYpol1InOut.="<< &vecY1IO <<
+              "TrZpol1InOut.="<< &vecZ1IO <<
+              "TrYInOut.="  << &vecY4 <<
+              "TrZInOut.="  << &vecZ4 <<
+              "ClY.="       << &vecClY <<
 	      "ClZ.="       << &vecClZ <<
 	      "isReject.="  << &isReject<<
 	      "sec.="       << &vecSec <<
@@ -1525,7 +1574,9 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      "chi2z1In="   << chi2I1z <<
 	      "chi2y1Out="  << chi2O1y <<
 	      "chi2z1Out="  << chi2O1z <<
-	      "chi2y2In="   << chi2I2y <<
+              "chi2y1InOut="<< chi2IO1y <<
+              "chi2z1InOut="<< chi2IO1z <<
+              "chi2y2In="   << chi2I2y <<
 	      "chi2z2In="   << chi2I2z <<
 	      "chi2y2Out="  << chi2O2y <<
 	      "chi2z2Out="  << chi2O2z <<
@@ -1538,7 +1589,9 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      "zPol2In.="   << &vecz2resInner <<
 	      "yPol1Out.="  << &vecy1resOuter <<
 	      "zPol1Out.="  << &vecz1resOuter <<
-	      "yPol2Out.="  << &vecy2resOuter <<
+              "yPol1InOut.="<< &vecy1resIO <<
+              "zPol1InOut.="<< &vecz1resIO <<
+              "yPol2Out.="  << &vecy2resOuter <<
 	      "zPol2Out.="  << &vecz2resOuter <<
 
 	      "\n";
@@ -1707,7 +1760,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
     Double_t gphiP1 = fg.GetParameter(1);
     Double_t gphiP2 = fg.GetParameter(2);
     //
-    hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS(),hisZ->GetMean()+4*hisZ->GetRMS());
+    hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS()-0.1,hisZ->GetMean()+4*hisZ->GetRMS()+0.1);
     Double_t gz1 = fg.GetParameter(1);
     Double_t gz2 = fg.GetParameter(2);
     //

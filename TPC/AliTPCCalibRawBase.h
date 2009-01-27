@@ -1,0 +1,112 @@
+#ifndef ALITPCCALIBRAWBASE_H
+#define ALITPCCALIBRAWBASE_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                     //
+//                  Raw data processing base class                                     //
+//                                                                                     //
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#include <TNamed.h>
+
+class AliAltroMapping;
+class AliAltroRawStream;
+class AliRawReader;
+class AliTPCAltroMapping;
+class AliTPCRawStreamFast;
+class AliTPCRawStream;
+class AliTPCROC;
+class TTreeSRedirector;
+struct eventHeaderStruct;
+
+class AliTPCCalibRawBase : public TNamed {
+
+
+public:
+  AliTPCCalibRawBase();
+  AliTPCCalibRawBase(const AliTPCCalibRawBase &calib);
+
+  AliTPCCalibRawBase& operator = (const  AliTPCCalibRawBase &source);
+
+  virtual ~AliTPCCalibRawBase();
+  
+  
+  Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
+  Bool_t ProcessEventFast(AliRawReader        *rawReader);
+  
+  Bool_t ProcessEvent(AliTPCRawStream *rawStream);
+  Bool_t ProcessEvent(AliRawReader    *rawReader);
+  Bool_t ProcessEvent(eventHeaderStruct   *event);
+  
+  virtual Int_t Update(const Int_t /*isector*/, const Int_t /*iRow*/, const Int_t /*iPad*/,
+                       const Int_t /*iTimeBin*/, const Float_t /*signal*/) { return 0; }
+  virtual void Analyse(){ return; }
+  
+    //Setters
+  void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the signal is expected
+  void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; }
+  //
+  void SetUseL1Phase(Bool_t useL1Phase=kTRUE) {fUseL1Phase=useL1Phase;}
+  //
+  Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
+  Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
+  Int_t GetNevents() const { return fNevents; }
+  //
+  Double_t GetL1Phase()   const {return fAltroL1Phase;}
+  Double_t GetL1PhaseTB() const {return fAltroL1PhaseTB;}
+  Bool_t   GetUseL1Phase()const {return fUseL1Phase;}
+//
+  UInt_t GetTimeStamp() const {return fTimeStamp;}
+  UInt_t GetRunNumber() const {return fRunNumber;}
+  UInt_t GetEventType() const {return fEventType;}
+  //
+  AliTPCAltroMapping **GetAltroMapping() { return fMapping; }
+  const AliAltroRawStream *GetAltroRawStream() {return fAltroRawStream;}
+  const AliTPCROC *GetTPCROC() {return fROC;}
+  //
+  void IncrementNevents(){++fNevents;}
+  //
+  void DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
+  // debug and debug streamer support
+  TTreeSRedirector *GetDebugStreamer();
+  void       SetStreamLevel(Int_t streamLevel){fStreamLevel=streamLevel;}
+  void       SetDebugLevel(Int_t level) {fDebugLevel = level;}
+  Int_t      GetStreamLevel() const {return fStreamLevel;}
+  Int_t      GetDebugLevel() const {return fDebugLevel;}
+  
+protected:
+  Int_t fFirstTimeBin;                //  First Time bin used for analysis
+  Int_t fLastTimeBin;                 //  Last Time bin used for analysis
+  
+  Int_t fNevents;                     //  Number of processed events 
+  
+  Int_t fDebugLevel;                  //! debug level
+  Int_t fStreamLevel;                 //! level of streamer output
+  //
+  UInt_t fTimeStamp;                  //! time stamp from event header
+  UInt_t fRunNumber;                  //! current run number from event header
+  UInt_t fEventType;                  //! current event Type from event header
+  //
+  Double_t fAltroL1Phase;             //! L1 Phase
+  Float_t  fAltroL1PhaseTB;           //! L1 Phase in time bins
+  Bool_t   fUseL1Phase;               //  use L1 Phase information?
+  //
+  TTreeSRedirector *fDebugStreamer;   //! debug streamer
+  //
+  AliAltroRawStream *fAltroRawStream; //! pointer to the altro object
+  AliTPCAltroMapping **fMapping;      //! Altro Mapping object
+
+  AliTPCROC *fROC;                    //! ROC information
+    
+  virtual void EndEvent() {++fNevents; return; } //fNevents should be updated in the derived classes in a proper place
+  virtual void ResetEvent(){ return; }           //Reset Event counters
+  
+  
+  ClassDef(AliTPCCalibRawBase,1)      //  Calibration base class for raw data processing
+    
+};
+
+#endif
+

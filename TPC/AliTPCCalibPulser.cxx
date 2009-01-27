@@ -202,158 +202,7 @@
 ClassImp(AliTPCCalibPulser)
 
 AliTPCCalibPulser::AliTPCCalibPulser() :
-    TObject(),
-    fFirstTimeBin(60),
-    fLastTimeBin(900),
-    fNbinsT0(200),
-    fXminT0(-2),
-    fXmaxT0(2),
-    fNbinsQ(200),
-    fXminQ(10),
-    fXmaxQ(40),
-    fNbinsRMS(100),
-    fXminRMS(0.1),
-    fXmaxRMS(5.1),
-    fIsZeroSuppressed(kFALSE),
-    fLastSector(-1),
-    fROC(AliTPCROC::Instance()),
-    fMapping(NULL),
-    fParam(new AliTPCParam),
-    fPedestalTPC(0x0),
-    fPadNoiseTPC(0x0),
-    fOutliers(0x0),
-    fPedestalROC(0x0),
-    fPadNoiseROC(0x0),
-    fCalRocArrayT0(72),
-    fCalRocArrayQ(72),
-    fCalRocArrayRMS(72),
-    fCalRocArrayOutliers(72),
-    fHistoQArray(72),
-    fHistoT0Array(72),
-    fHistoRMSArray(72),
-    fHMeanTimeSector(0x0),
-    fVMeanTimeSector(72),
-    fPadTimesArrayEvent(72),
-    fPadQArrayEvent(72),
-    fPadRMSArrayEvent(72),
-    fPadPedestalArrayEvent(72),
-    fCurrentChannel(-1),
-    fCurrentSector(-1),
-    fCurrentRow(-1),
-    fCurrentPad(-1),
-    fMaxPadSignal(-1),
-    fMaxTimeBin(-1),
-    fPadSignal(1024),
-    fPadPedestal(0),
-    fPadNoise(0),
-    fVTime0Offset(72),
-    fVTime0OffsetCounter(72),
-//    fEvent(-1),
-    fDebugStreamer(0x0),
-    fDebugLevel(0)
-{
-    //
-    // AliTPCSignal default constructor
-    //
-
-  fParam->Update();
-}
-//_____________________________________________________________________
-AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
-    TObject(sig),
-    fFirstTimeBin(sig.fFirstTimeBin),
-    fLastTimeBin(sig.fLastTimeBin),
-    fNbinsT0(sig.fNbinsT0),
-    fXminT0(sig.fXminT0),
-    fXmaxT0(sig.fXmaxT0),
-    fNbinsQ(sig.fNbinsQ),
-    fXminQ(sig.fXminQ),
-    fXmaxQ(sig.fXmaxQ),
-    fNbinsRMS(sig.fNbinsRMS),
-    fXminRMS(sig.fXminRMS),
-    fXmaxRMS(sig.fXmaxRMS),
-    fIsZeroSuppressed(sig.fIsZeroSuppressed),
-    fLastSector(-1),
-    fROC(AliTPCROC::Instance()),
-    fMapping(NULL),
-    fParam(new AliTPCParam),
-    fPedestalTPC(0x0),
-    fPadNoiseTPC(0x0),
-    fOutliers(0x0),
-    fPedestalROC(0x0),
-    fPadNoiseROC(0x0),
-    fCalRocArrayT0(72),
-    fCalRocArrayQ(72),
-    fCalRocArrayRMS(72),
-    fCalRocArrayOutliers(72),
-    fHistoQArray(72),
-    fHistoT0Array(72),
-    fHistoRMSArray(72),
-    fHMeanTimeSector(0x0),
-    fVMeanTimeSector(72),
-    fPadTimesArrayEvent(72),
-    fPadQArrayEvent(72),
-    fPadRMSArrayEvent(72),
-    fPadPedestalArrayEvent(72),
-    fCurrentChannel(-1),
-    fCurrentSector(-1),
-    fCurrentRow(-1),
-    fCurrentPad(-1),
-    fMaxPadSignal(-1),
-    fMaxTimeBin(-1),
-    fPadSignal(1024),
-    fPadPedestal(0),
-    fPadNoise(0),
-    fVTime0Offset(72),
-    fVTime0OffsetCounter(72),
-//    fEvent(-1),
-    fDebugStreamer(0x0),
-    fDebugLevel(sig.fDebugLevel)
-{
-    //
-    // AliTPCSignal default constructor
-    //
-
-    for (Int_t iSec = 0; iSec < 72; ++iSec){
-	const AliTPCCalROC *calQ   = (AliTPCCalROC*)sig.fCalRocArrayQ.UncheckedAt(iSec);
-	const AliTPCCalROC *calT0  = (AliTPCCalROC*)sig.fCalRocArrayT0.UncheckedAt(iSec);
-	const AliTPCCalROC *calRMS = (AliTPCCalROC*)sig.fCalRocArrayRMS.UncheckedAt(iSec);
-        const AliTPCCalROC *calOut = (AliTPCCalROC*)sig.fCalRocArrayOutliers.UncheckedAt(iSec);
-
-	const TH2S *hQ   = (TH2S*)sig.fHistoQArray.UncheckedAt(iSec);
-	const TH2S *hT0  = (TH2S*)sig.fHistoT0Array.UncheckedAt(iSec);
-        const TH2S *hRMS = (TH2S*)sig.fHistoRMSArray.UncheckedAt(iSec);
-
-	if ( calQ   != 0x0 ) fCalRocArrayQ.AddAt(new AliTPCCalROC(*calQ), iSec);
-	if ( calT0  != 0x0 ) fCalRocArrayT0.AddAt(new AliTPCCalROC(*calT0), iSec);
-	if ( calRMS != 0x0 ) fCalRocArrayRMS.AddAt(new AliTPCCalROC(*calRMS), iSec);
-        if ( calOut != 0x0 ) fCalRocArrayOutliers.AddAt(new AliTPCCalROC(*calOut), iSec);
-
-	if ( hQ != 0x0 ){
-	    TH2S *hNew = new TH2S(*hQ);
-	    hNew->SetDirectory(0);
-	    fHistoQArray.AddAt(hNew,iSec);
-	}
-	if ( hT0 != 0x0 ){
-	    TH2S *hNew = new TH2S(*hT0);
-	    hNew->SetDirectory(0);
-	    fHistoQArray.AddAt(hNew,iSec);
-	}
-	if ( hRMS != 0x0 ){
-	    TH2S *hNew = new TH2S(*hRMS);
-	    hNew->SetDirectory(0);
-	    fHistoQArray.AddAt(hNew,iSec);
-	}
-        fVMeanTimeSector[iSec]=sig.fVMeanTimeSector[iSec];
-    }
-
-    if ( sig.fHMeanTimeSector ) fHMeanTimeSector=(TH2F*)sig.fHMeanTimeSector->Clone();
-    fParam->Update();
-}
-AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
-  TObject(),
-  fFirstTimeBin(60),
-  fLastTimeBin(900),
+  AliTPCCalibRawBase(),
   fNbinsT0(200),
   fXminT0(-2),
   fXmaxT0(2),
@@ -363,10 +212,151 @@ AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
   fNbinsRMS(100),
   fXminRMS(0.1),
   fXmaxRMS(5.1),
+  fPeakIntMinus(2),
+  fPeakIntPlus(2),
   fIsZeroSuppressed(kFALSE),
   fLastSector(-1),
-  fROC(AliTPCROC::Instance()),
-  fMapping(NULL),
+  fParam(new AliTPCParam),
+  fPedestalTPC(0x0),
+  fPadNoiseTPC(0x0),
+  fOutliers(0x0),
+  fPedestalROC(0x0),
+  fPadNoiseROC(0x0),
+  fCalRocArrayT0(72),
+  fCalRocArrayQ(72),
+  fCalRocArrayRMS(72),
+  fCalRocArrayOutliers(72),
+  fHistoQArray(72),
+  fHistoT0Array(72),
+  fHistoRMSArray(72),
+  fHMeanTimeSector(0x0),
+  fVMeanTimeSector(72),
+  fPadTimesArrayEvent(72),
+  fPadQArrayEvent(72),
+  fPadRMSArrayEvent(72),
+  fPadPedestalArrayEvent(72),
+  fCurrentChannel(-1),
+  fCurrentSector(-1),
+  fCurrentRow(-1),
+  fCurrentPad(-1),
+  fMaxPadSignal(-1),
+  fMaxTimeBin(-1),
+  fPadSignal(1024),
+  fPadPedestal(0),
+  fPadNoise(0),
+  fVTime0Offset(72),
+  fVTime0OffsetCounter(72)
+{
+  //
+  // AliTPCSignal default constructor
+  //
+  SetNameTitle("AliTPCCalibPulser","AliTPCCalibPulser");
+  fFirstTimeBin=60;
+  fLastTimeBin=900;
+  fParam->Update();
+}
+//_____________________________________________________________________
+AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
+  AliTPCCalibRawBase(sig),
+  fNbinsT0(sig.fNbinsT0),
+  fXminT0(sig.fXminT0),
+  fXmaxT0(sig.fXmaxT0),
+  fNbinsQ(sig.fNbinsQ),
+  fXminQ(sig.fXminQ),
+  fXmaxQ(sig.fXmaxQ),
+  fNbinsRMS(sig.fNbinsRMS),
+  fXminRMS(sig.fXminRMS),
+  fXmaxRMS(sig.fXmaxRMS),
+  fPeakIntMinus(sig.fPeakIntMinus),
+  fPeakIntPlus(sig.fPeakIntPlus),
+  fIsZeroSuppressed(sig.fIsZeroSuppressed),
+  fLastSector(-1),
+  fParam(new AliTPCParam),
+  fPedestalTPC(0x0),
+  fPadNoiseTPC(0x0),
+  fOutliers(0x0),
+  fPedestalROC(0x0),
+  fPadNoiseROC(0x0),
+  fCalRocArrayT0(72),
+  fCalRocArrayQ(72),
+  fCalRocArrayRMS(72),
+  fCalRocArrayOutliers(72),
+  fHistoQArray(72),
+  fHistoT0Array(72),
+  fHistoRMSArray(72),
+  fHMeanTimeSector(0x0),
+  fVMeanTimeSector(72),
+  fPadTimesArrayEvent(72),
+  fPadQArrayEvent(72),
+  fPadRMSArrayEvent(72),
+  fPadPedestalArrayEvent(72),
+  fCurrentChannel(-1),
+  fCurrentSector(-1),
+  fCurrentRow(-1),
+  fCurrentPad(-1),
+  fMaxPadSignal(-1),
+  fMaxTimeBin(-1),
+  fPadSignal(1024),
+  fPadPedestal(0),
+  fPadNoise(0),
+  fVTime0Offset(72),
+  fVTime0OffsetCounter(72)
+{
+  //
+  // AliTPCSignal default constructor
+  //
+  
+  for (Int_t iSec = 0; iSec < 72; ++iSec){
+    const AliTPCCalROC *calQ   = (AliTPCCalROC*)sig.fCalRocArrayQ.UncheckedAt(iSec);
+    const AliTPCCalROC *calT0  = (AliTPCCalROC*)sig.fCalRocArrayT0.UncheckedAt(iSec);
+    const AliTPCCalROC *calRMS = (AliTPCCalROC*)sig.fCalRocArrayRMS.UncheckedAt(iSec);
+    const AliTPCCalROC *calOut = (AliTPCCalROC*)sig.fCalRocArrayOutliers.UncheckedAt(iSec);
+    
+    const TH2S *hQ   = (TH2S*)sig.fHistoQArray.UncheckedAt(iSec);
+    const TH2S *hT0  = (TH2S*)sig.fHistoT0Array.UncheckedAt(iSec);
+    const TH2S *hRMS = (TH2S*)sig.fHistoRMSArray.UncheckedAt(iSec);
+    
+    if ( calQ   != 0x0 ) fCalRocArrayQ.AddAt(new AliTPCCalROC(*calQ), iSec);
+    if ( calT0  != 0x0 ) fCalRocArrayT0.AddAt(new AliTPCCalROC(*calT0), iSec);
+    if ( calRMS != 0x0 ) fCalRocArrayRMS.AddAt(new AliTPCCalROC(*calRMS), iSec);
+    if ( calOut != 0x0 ) fCalRocArrayOutliers.AddAt(new AliTPCCalROC(*calOut), iSec);
+    
+    if ( hQ != 0x0 ){
+      TH2S *hNew = new TH2S(*hQ);
+      hNew->SetDirectory(0);
+      fHistoQArray.AddAt(hNew,iSec);
+    }
+    if ( hT0 != 0x0 ){
+      TH2S *hNew = new TH2S(*hT0);
+      hNew->SetDirectory(0);
+      fHistoQArray.AddAt(hNew,iSec);
+    }
+    if ( hRMS != 0x0 ){
+      TH2S *hNew = new TH2S(*hRMS);
+      hNew->SetDirectory(0);
+      fHistoQArray.AddAt(hNew,iSec);
+    }
+    fVMeanTimeSector[iSec]=sig.fVMeanTimeSector[iSec];
+  }
+  
+  if ( sig.fHMeanTimeSector ) fHMeanTimeSector=(TH2F*)sig.fHMeanTimeSector->Clone();
+  fParam->Update();
+}
+AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
+  AliTPCCalibRawBase(),
+  fNbinsT0(200),
+  fXminT0(-2),
+  fXmaxT0(2),
+  fNbinsQ(200),
+  fXminQ(10),
+  fXmaxQ(40),
+  fNbinsRMS(100),
+  fXminRMS(0.1),
+  fXmaxRMS(5.1),
+  fPeakIntMinus(2),
+  fPeakIntPlus(2),
+  fIsZeroSuppressed(kFALSE),
+  fLastSector(-1),
   fParam(new  AliTPCParam),
   fPedestalTPC(0x0),
   fPadNoiseTPC(0x0),
@@ -396,14 +386,14 @@ AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
   fPadPedestal(0),
   fPadNoise(0),
   fVTime0Offset(72),
-  fVTime0OffsetCounter(72),
-  //  fEvent(-1),
-  fDebugStreamer(0x0),
-  fDebugLevel(0)
+  fVTime0OffsetCounter(72)
 {
   //
   // This constructor uses a TMap for setting some parametes
   //
+  SetNameTitle("AliTPCCalibPulser","AliTPCCalibPulser");
+  fFirstTimeBin=60;
+  fLastTimeBin=900;
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
   if (config->GetValue("LastTimeBin")) fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("NbinsT0")) fNbinsT0 = ((TObjString*)config->GetValue("NbinsT0"))->GetString().Atoi();
@@ -415,6 +405,8 @@ AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
   if (config->GetValue("NbinsRMS")) fNbinsRMS = ((TObjString*)config->GetValue("NbinsRMS"))->GetString().Atoi();
   if (config->GetValue("XminRMS")) fXminRMS = ((TObjString*)config->GetValue("XminRMS"))->GetString().Atof();
   if (config->GetValue("XmaxRMS")) fXmaxRMS = ((TObjString*)config->GetValue("XmaxRMS"))->GetString().Atof();
+  if (config->GetValue("PeakIntMinus")) fPeakIntMinus = (Int_t)((TObjString*)config->GetValue("PeakIntMinus"))->GetString().Atof();
+  if (config->GetValue("PeakIntPlus")) fPeakIntPlus = (Int_t)((TObjString*)config->GetValue("PeakIntPlus"))->GetString().Atof();
   if (config->GetValue("IsZeroSuppressed")) fIsZeroSuppressed = (Bool_t)((TObjString*)config->GetValue("IsZeroSuppressed"))->GetString().Atoi();
 
   fParam->Update();
@@ -433,35 +425,32 @@ AliTPCCalibPulser& AliTPCCalibPulser::operator = (const  AliTPCCalibPulser &sour
 //_____________________________________________________________________
 AliTPCCalibPulser::~AliTPCCalibPulser()
 {
-    //
-    // destructor
-    //
-
-    Reset();
-
-    if ( fDebugStreamer) delete fDebugStreamer;
-    delete fROC;
-    delete fParam;
+  //
+  // destructor
+  //
+  
+  Reset();
+  delete fParam;
 }
 void AliTPCCalibPulser::Reset()
 {
-    //
-    // Delete all information: Arrays, Histograms, CalRoc objects
-    //
-    fCalRocArrayT0.Delete();
-    fCalRocArrayQ.Delete();
-    fCalRocArrayRMS.Delete();
-    fCalRocArrayOutliers.Delete();
-
-    fHistoQArray.Delete();
-    fHistoT0Array.Delete();
-    fHistoRMSArray.Delete();
-
-    fPadTimesArrayEvent.Delete();
-    fPadQArrayEvent.Delete();
-    fPadRMSArrayEvent.Delete();
-    fPadPedestalArrayEvent.Delete();
-
+  //
+  // Delete all information: Arrays, Histograms, CalRoc objects
+  //
+  fCalRocArrayT0.Delete();
+  fCalRocArrayQ.Delete();
+  fCalRocArrayRMS.Delete();
+  fCalRocArrayOutliers.Delete();
+  
+  fHistoQArray.Delete();
+  fHistoT0Array.Delete();
+  fHistoRMSArray.Delete();
+  
+  fPadTimesArrayEvent.Delete();
+  fPadQArrayEvent.Delete();
+  fPadRMSArrayEvent.Delete();
+  fPadPedestalArrayEvent.Delete();
+  
   if (fHMeanTimeSector) delete fHMeanTimeSector;
 }
 //_____________________________________________________________________
@@ -611,8 +600,8 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
     Int_t   cemaxpos       = fMaxTimeBin;
     Float_t ceSumThreshold = 10.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal sum
     Float_t ceMaxThreshold = 5.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal max
-    const Int_t    kCemin  = 2;             // range for the analysis of the ce signal +- channels from the peak
-    const Int_t    kCemax  = 7;
+    const Int_t    kCemin  = fPeakIntMinus;             // range for the analysis of the ce signal +- channels from the peak
+    const Int_t    kCemax  = fPeakIntPlus;
     param[0] = ceQmax;
     param[1] = ceTime;
     param[2] = ceRMS;
@@ -621,7 +610,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
   if (cemaxpos>0){
     ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
     if ( ceQmax<ceMaxThreshold ) return;
-    for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; ++i){
+    for (Int_t i=cemaxpos-kCemin; i<=cemaxpos+kCemax; ++i){
       Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
       if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
         ceTime+=signal*(i+0.5);
@@ -633,6 +622,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
   if (ceQsum>ceSumThreshold) {
     ceTime/=ceQsum;
     ceRMS  = TMath::Sqrt(TMath::Abs(ceRMS/ceQsum-ceTime*ceTime));
+    ceTime-=GetL1PhaseTB();
         //only fill the Time0Offset if pad was not marked as an outlier!
     if ( !fOutliers ){
       //skip edge pads for calculating the mean time
@@ -696,25 +686,22 @@ void AliTPCCalibPulser::ProcessPad()
   
   
     //Fill debugging info
-  if ( fDebugLevel>0 ){
-    if ( fDebugLevel == 1 ){
-      if ( !fDebugStreamer ) {
-          //debug stream
-        TDirectory *backup = gDirectory;
-        fDebugStreamer = new TTreeSRedirector("debPulserPadSignals.root");
-        if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+  if ( GetStreamLevel()>0 ){
+    TTreeSRedirector *streamer=GetDebugStreamer();
+    if ( GetStreamLevel() == 1 ){
+      if ( streamer ) {
+        Int_t padc = fCurrentPad-(fROC->GetNPads(fCurrentSector,fCurrentRow)/2);
+        (*streamer) << "PadSignals" <<
+          "Sector=" <<fCurrentSector<<
+          "Row="    <<fCurrentRow<<
+          "Pad="    <<fCurrentPad<<
+          "PadC="   <<padc<<
+          "Channel="<<fCurrentChannel<<
+          "Sum="    <<qSum<<
+          "params.="<<&param<<
+          "signal.=" <<&fPadSignal<<
+          "\n";
       }
-      Int_t padc = fCurrentPad-(fROC->GetNPads(fCurrentSector,fCurrentRow)/2);
-      (*fDebugStreamer) << "PadSignals" <<
-        "Sector=" <<fCurrentSector<<
-        "Row="    <<fCurrentRow<<
-        "Pad="    <<fCurrentPad<<
-        "PadC="   <<padc<<
-        "Channel="<<fCurrentChannel<<
-        "Sum="    <<qSum<<
-        "params.="<<&param<<
-        "signal.=" <<&fPadSignal<<
-        "\n";
     } else { //debug > 1
       (*GetPadPedestalEvent(fCurrentSector,kTRUE))[fCurrentChannel]=fPadPedestal;
       (*GetPadRMSEvent(fCurrentSector,kTRUE))[fCurrentChannel]=sigmaT;
@@ -746,137 +733,40 @@ void AliTPCCalibPulser::EndEvent()
       
       
       //Debug start
-      if ( fDebugLevel>1 ){
-        if ( !fDebugStreamer ) {
-                        //debug stream
-          TDirectory *backup = gDirectory;
-          fDebugStreamer = new TTreeSRedirector("deb2.root");
-          if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
-        }
-        
-        Int_t row=0;
-        Int_t pad=0;
-        Int_t padc=0;
-        
-        Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
-        Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
-        
-        UInt_t channel=iChannel;
-        Int_t sector=iSec;
-        
-        while ( channel > (fROC->GetRowIndexes(sector)[row]+fROC->GetNPads(sector,row)-1) ) row++;
-        pad = channel-fROC->GetRowIndexes(sector)[row];
-        padc = pad-(fROC->GetNPads(sector,row)/2);
-         
-        (*fDebugStreamer) << "DataPad" <<
+      if ( GetStreamLevel()>1 ){
+        TTreeSRedirector *streamer=GetDebugStreamer();
+        if ( streamer ) {
+          Int_t row=0;
+          Int_t pad=0;
+          Int_t padc=0;
+          
+          Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
+          Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
+          
+          UInt_t channel=iChannel;
+          Int_t sector=iSec;
+          
+          while ( channel > (fROC->GetRowIndexes(sector)[row]+fROC->GetNPads(sector,row)-1) ) row++;
+          pad = channel-fROC->GetRowIndexes(sector)[row];
+          padc = pad-(fROC->GetNPads(sector,row)/2);
+          
+          (*streamer) << "DataPad" <<
 //		    "Event=" << fEvent <<
-          "Sector="<< sector <<
-          "Row="   << row<<
-          "Pad="   << pad <<
-          "PadC="  << padc <<
-          "PadSec="<< channel <<
-          "Time0="  << time0 <<
-          "Time="  << time <<
-          "RMS="   << rms <<
-          "Sum="   << q <<
-          "\n";
+            "Sector="<< sector <<
+            "Row="   << row<<
+            "Pad="   << pad <<
+            "PadC="  << padc <<
+            "PadSec="<< channel <<
+            "Time0="  << time0 <<
+            "Time="  << time <<
+            "RMS="   << rms <<
+            "Sum="   << q <<
+            "\n";
+        }
       }
       //Debug end
     }
   }
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
-{
-  //
-  // Event Processing loop - AliTPCRawStream
-  //
-  ResetEvent();
-  Bool_t withInput = kFALSE;
-  while ( rawStreamFast->NextDDL() ){
-    while ( rawStreamFast->NextChannel() ){
-      Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-      Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-      Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-
-      while ( rawStreamFast->NextBunch() ){
-        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-          Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-          Update(isector,iRow,iPad,iTimeBin+1,signal);
-          withInput = kTRUE;
-        }
-      }
-    }
-  }
-  if (withInput){
-    EndEvent();
-  }
-  return withInput;
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEventFast(AliRawReader *rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEventFast(rawStreamFast);
-  delete rawStreamFast;
-  return res;
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
-{
-  //
-  // Event Processing loop - AliTPCRawStream
-  //
-
-  ResetEvent();
-
-  Bool_t withInput = kFALSE;
-
-  while (rawStream->Next()) {
-      Int_t isector  = rawStream->GetSector();                       //  current sector
-      Int_t iRow     = rawStream->GetRow();                          //  current row
-      Int_t iPad     = rawStream->GetPad();                          //  current pad
-      Int_t iTimeBin = rawStream->GetTime();                         //  current time bin
-      Float_t signal = rawStream->GetSignal();                       //  current ADC signal
-
-      Update(isector,iRow,iPad,iTimeBin,signal);
-      withInput = kTRUE;
-  }
-  if (withInput){
-      EndEvent();
-  }
-  return withInput;
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEvent(AliRawReader *rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-
-
-  AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
-
-  rawReader->Select("TPC");
-
-  return ProcessEvent(&rawStream);
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEvent(eventHeaderStruct *event)
-{
-  //
-  //  Event processing loop - date event
-  //
-    AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-    Bool_t result=ProcessEvent(rawReader);
-    delete rawReader;
-    return result;
-
 }
 //_____________________________________________________________________
 TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
@@ -1174,9 +1064,9 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
 //_____________________________________________________________________
 void AliTPCCalibPulser::Analyse()
 {
-    //
-    //  Calculate calibration constants
-    //
+  //
+  //  Calculate calibration constants
+  //
   
   TVectorD paramQ(3);
   TVectorD paramT0(3);
@@ -1260,66 +1150,31 @@ void AliTPCCalibPulser::Analyse()
       rocT0->SetValue(iChannel, cogTime0+meanTsec); //offset by mean time of the sector
       rocRMS->SetValue(iChannel, cogRMS);
       rocOut->SetValue(iChannel, cogOut);
-      
-      
       //debug
-      if ( fDebugLevel > 2 ){
-        if ( !fDebugStreamer ) {
-                        //debug stream
-          TDirectory *backup = gDirectory;
-          fDebugStreamer = new TTreeSRedirector("deb2.root");
-          if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+      if ( GetStreamLevel() > 2 ){
+        TTreeSRedirector *streamer=GetDebugStreamer();
+        if ( streamer ) {
+          while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
+          pad = iChannel-fROC->GetRowIndexes(iSec)[row];
+          padc = pad-(fROC->GetNPads(iSec,row)/2);
+          
+          (*streamer) << "DataEnd" <<
+            "Sector="  << iSec      <<
+            "Pad="     << pad       <<
+            "PadC="    << padc      <<
+            "Row="     << row       <<
+            "PadSec="  << iChannel   <<
+            "Q="       << cogQ      <<
+            "T0="      << cogTime0  <<
+            "RMS="     << cogRMS    <<
+            "\n";
         }
-        
-        while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
-        pad = iChannel-fROC->GetRowIndexes(iSec)[row];
-        padc = pad-(fROC->GetNPads(iSec,row)/2);
-        
-        (*fDebugStreamer) << "DataEnd" <<
-          "Sector="  << iSec      <<
-          "Pad="     << pad       <<
-          "PadC="    << padc      <<
-          "Row="     << row       <<
-          "PadSec="  << iChannel   <<
-          "Q="       << cogQ      <<
-          "T0="      << cogTime0  <<
-          "RMS="     << cogRMS    <<
-          "\n";
       }
       //! debug
     }
     
     
   }
-  delete fDebugStreamer;
-  fDebugStreamer = 0x0;
-}
-//_____________________________________________________________________
-void AliTPCCalibPulser::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append)
-{
-  //
-  //  Write class to file
-  //
-  
-  TString sDir(dir);
-  TString option;
-  
-  if ( append )
-    option = "update";
-  else
-    option = "recreate";
-  
-  TDirectory *backup = gDirectory;
-  TFile f(filename,option.Data());
-  f.cd();
-  if ( !sDir.IsNull() ){
-    f.mkdir(sDir.Data());
-    f.cd(sDir);
-  }
-  this->Write();
-  f.Close();
-  
-  if ( backup ) backup->cd();
 }
 //_____________________________________________________________________
 //_________________________  Test Functions ___________________________

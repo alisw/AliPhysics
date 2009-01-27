@@ -201,16 +201,12 @@
 ClassImp(AliTPCCalibPedestal)
 
 AliTPCCalibPedestal::AliTPCCalibPedestal() : 
-  TObject(),
-  fFirstTimeBin(60),
-  fLastTimeBin(1000),
+  AliTPCCalibRawBase(),
   fAdcMin(1),
   fAdcMax(100),
   fAnaMeanDown(0.),
   fAnaMeanUp(1.),
   fTimeAnalysis(kFALSE),
-  fROC(AliTPCROC::Instance()),
-  fMapping(NULL),
   fCalRocArrayPedestal(72),
   fCalRocArraySigma(72),
   fHistoPedestalArray(72),
@@ -221,21 +217,20 @@ AliTPCCalibPedestal::AliTPCCalibPedestal() :
   //
   // default constructor
   //
+  SetNameTitle("AliTPCCalibPedestal","AliTPCCalibPedestal");
+  fFirstTimeBin=60;
+  fLastTimeBin=1000;
 }
 
 
 //_____________________________________________________________________
 AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) : 
-  TObject(ped),
-  fFirstTimeBin(ped.GetFirstTimeBin()),
-  fLastTimeBin(ped.GetLastTimeBin()),
+  AliTPCCalibRawBase(ped),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
   fAnaMeanDown(ped.fAnaMeanDown),
   fAnaMeanUp(ped.fAnaMeanUp),
   fTimeAnalysis(ped.fTimeAnalysis),
-  fROC(AliTPCROC::Instance()),
-  fMapping(NULL),
   fCalRocArrayPedestal(72),
   fCalRocArraySigma(72),
   fHistoPedestalArray(72),
@@ -262,16 +257,12 @@ AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) :
   }
 }
 AliTPCCalibPedestal::AliTPCCalibPedestal(const TMap *config): 
-  TObject(),
-  fFirstTimeBin(60),
-  fLastTimeBin(1000),
+  AliTPCCalibRawBase(),
   fAdcMin(1),
   fAdcMax(100),
   fAnaMeanDown(0.),
   fAnaMeanUp(1.),
   fTimeAnalysis(kFALSE),
-  fROC(AliTPCROC::Instance()),
-  fMapping(NULL),
   fCalRocArrayPedestal(72),
   fCalRocArraySigma(72),
   fHistoPedestalArray(72),
@@ -282,13 +273,14 @@ AliTPCCalibPedestal::AliTPCCalibPedestal(const TMap *config):
  //
  // This constructor uses a TMap for setting some parametes
  //
+  SetNameTitle("AliTPCCalibPedestal","AliTPCCalibPedestal");
+  fFirstTimeBin=60;
+  fLastTimeBin=1000;
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
   if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
   if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
   if (config->GetValue("TimeAnalysis")) SetTimeAnalysis(((TObjString*)config->GetValue("TimeAnalysis"))->GetString().Atoi());
- 
-     
 } 
 
 
@@ -402,99 +394,6 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector,
 
 
 //_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
-{
-  //
-  // Event Processing loop - AliTPCRawStream
-  //
-  Bool_t withInput = kFALSE;
-
-  while ( rawStreamFast->NextDDL() ){
-      while ( rawStreamFast->NextChannel() ){
-	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-
-	  while ( rawStreamFast->NextBunch() ){
-            Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-            Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-            for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-		  Update(isector,iRow,iPad,iTimeBin+1,signal);
-		  withInput = kTRUE;
-	      }
-	  }
-      }
-  }
-
-  return withInput;
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEventFast(AliRawReader *rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEventFast(rawStreamFast);
-  delete rawStreamFast;
-  return res;
-}
-
-//_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
-{
-  //
-  // Event Processing loop - AliTPCRawStream
-  //
-
-  Bool_t withInput = kFALSE;
-
-  while (rawStream->Next()) {
-
-    Int_t iSector  = rawStream->GetSector();      //  current ROC
-    Int_t iRow     = rawStream->GetRow();         //  current row
-    Int_t iPad     = rawStream->GetPad();         //  current pad
-    Int_t iTimeBin = rawStream->GetTime();        //  current time bin
-    Float_t signal = rawStream->GetSignal();      //  current ADC signal
-    
-    Update(iSector,iRow,iPad,iTimeBin,signal);
-    withInput = kTRUE;
-  }
-
-  return withInput;
-}
-
-
-//_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEvent(AliRawReader *rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-
-  // if fMapping is NULL the rawstream will crate its own mapping
-  AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
-  rawReader->Select("TPC");
-  return ProcessEvent(&rawStream);
-}
-
-
-//_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEvent(eventHeaderStruct *event)
-{
-  //
-  //  process date event
-  //
-
-  AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-  Bool_t result=ProcessEvent(rawReader);
-  delete rawReader;
-  return result;
-}
-
-
-//_____________________________________________________________________
 Bool_t AliTPCCalibPedestal::TestEvent() 
 {
   //
@@ -502,20 +401,20 @@ Bool_t AliTPCCalibPedestal::TestEvent()
   // fill one oroc and one iroc with random gaus
   //
 
-    gRandom->SetSeed(0);
+  gRandom->SetSeed(0);
 
-    for (UInt_t iSec=0; iSec<72; ++iSec){
-        if (iSec%36>0) continue;
-	for (UInt_t iRow=0; iRow < fROC->GetNRows(iSec); ++iRow){
-	    for (UInt_t iPad=0; iPad < fROC->GetNPads(iSec,iRow); ++iPad){
-		for (UInt_t iTimeBin=0; iTimeBin<1024; ++iTimeBin){
-		    Float_t signal=(Int_t)(iRow+3+gRandom->Gaus(0,.7));
-		    if ( signal>0 )Update(iSec,iRow,iPad,iTimeBin,signal);
-		}
-	    }
-	}
+  for (UInt_t iSec=0; iSec<72; ++iSec){
+    if (iSec%36>0) continue;
+    for (UInt_t iRow=0; iRow < fROC->GetNRows(iSec); ++iRow){
+      for (UInt_t iPad=0; iPad < fROC->GetNPads(iSec,iRow); ++iPad){
+        for (UInt_t iTimeBin=0; iTimeBin<1024; ++iTimeBin){
+          Float_t signal=(Int_t)(iRow+3+gRandom->Gaus(0,.7));
+          if ( signal>0 )Update(iSec,iRow,iPad,iTimeBin,signal);
+        }
+      }
     }
-    return kTRUE;
+  }
+  return kTRUE;
 }
 
 
@@ -732,33 +631,4 @@ void AliTPCCalibPedestal::AnalyseTime(Int_t nevents)
       }
     }
   }
-}
-
-
-//_____________________________________________________________________
-void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) 
-{
-  //
-  //  Write class to file
-  //
-
-  TString sDir(dir);
-  TString option;
-
-  if ( append )
-    option = "update";
-  else
-    option = "recreate";
-
-  TDirectory *backup = gDirectory;
-  TFile f(filename,option.Data());
-  f.cd();
-  if ( !sDir.IsNull() ){
-    f.mkdir(sDir.Data());
-    f.cd(sDir);
-  }
-  this->Write();
-  f.Close();
-
-  if ( backup ) backup->cd();
 }
