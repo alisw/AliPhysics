@@ -10,7 +10,7 @@
 //                       Class AliProtonQAAnalysis
 //   This is the class for the baryon (proton) analysis
 //
-//    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//    Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
@@ -33,6 +33,8 @@ class AliProtonQAAnalysis : public TObject {
  public:
   AliProtonQAAnalysis();
   virtual ~AliProtonQAAnalysis();
+
+  void SetEtaMode() {fAnalysisEtaMode = kTRUE;}
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   void UseHybridTPC() {fUseTPCOnly = kTRUE; fUseHybridTPC = kTRUE;}
@@ -129,9 +131,8 @@ class AliProtonQAAnalysis : public TObject {
   void RunEfficiencyAnalysis(AliStack *stack, 
 			     AliESDEvent *esd,
 			     const AliESDVertex *vertex);
-  void SetRunEfficiencyAnalysis(Bool_t gEtaMode, Bool_t gUseCuts) {
+  void SetRunEfficiencyAnalysis(Bool_t gUseCuts) {
     fRunEfficiencyAnalysis = kTRUE;
-    fRunEfficiencyAnalysisEtaMode = gEtaMode;
     fUseCutsInEfficiency = gUseCuts;
   }
   TList *GetEfficiencyQAList() {return fEfficiencyList;}
@@ -179,8 +180,10 @@ class AliProtonQAAnalysis : public TObject {
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
-  Int_t fNBinsY; //number of bins in y
-  Float_t fMinY, fMaxY; //min & max value of y
+  Bool_t fAnalysisEtaMode; //run the QA in eta or y
+
+  Int_t fNBinsY; //number of bins in eta or y
+  Float_t fMinY, fMaxY; //min & max value of eta or y
   Int_t fNBinsPt;  //number of bins in pT
   Float_t fMinPt, fMaxPt; //min & max value of pT
   
@@ -249,7 +252,6 @@ class AliProtonQAAnalysis : public TObject {
 
   //Efficiency (reconstruction & PID)
   Bool_t fRunEfficiencyAnalysis; //run this part or not
-  Bool_t fRunEfficiencyAnalysisEtaMode;//kTRUE in case of eta-pT otherwise y-pT
   Bool_t fUseCutsInEfficiency;//use the cuts in the reco and pid efficiency
 
   TList *fEfficiencyList;// list of the efficiency histograms

@@ -458,7 +458,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
   TH2F *hEmptyY = new TH2F("hEmptyY","",100,-1.2,1.2,100,0,120); 
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("Particle composition [%]");
-  hEmptyY->GetXaxis()->SetTitle("y");
+  hEmptyY->GetXaxis()->SetTitle(gHistYPtPDGProtons->GetXaxis()->GetTitle());
 
   TCanvas *c12 = new TCanvas("c12",
 			     "Composition of accepted secondaries vs y",
@@ -655,7 +655,7 @@ void DrawContamination(TList *inputList,
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("Particle composition [%]");
   hEmptyY->GetYaxis()->SetTitleOffset(1.3);
-  hEmptyY->GetXaxis()->SetTitle("y");
+  hEmptyY->GetXaxis()->SetTitle(hPrimaryProtons->GetXaxis()->GetTitle());
 
   TCanvas *c7 = new TCanvas("c7","(Anti)Proton contamination vs y",
 			    150,150,700,400);
@@ -841,7 +841,7 @@ void DrawCutEfficiency(TList *inputList,
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("#epsilon [%]");
   hEmptyY->GetYaxis()->SetTitleOffset(1.3);
-  hEmptyY->GetXaxis()->SetTitle("y");
+  hEmptyY->GetXaxis()->SetTitle(hPrimaryESDProtons->GetXaxis()->GetTitle());
 
   TCanvas *c10 = new TCanvas("c10","(Anti)Proton cut efficiency vs y",
 			    250,250,700,400);
@@ -1032,7 +1032,7 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   TH2F *hEmptyY = new TH2F("hEmptyY","",100,-1.2,1.2,100,0,120); 
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("Particle composition [%]");
-  hEmptyY->GetXaxis()->SetTitle("y");
+  hEmptyY->GetXaxis()->SetTitle(gHistYPtPDGProtons->GetXaxis()->GetTitle());
 
   TCanvas *c3 = new TCanvas("c3","MC secondary composition vs y - Protons",
 			    450,450,700,400);

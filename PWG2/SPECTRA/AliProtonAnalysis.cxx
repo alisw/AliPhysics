@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------
 //                 AliProtonAnalysis class
 //   This is the class to deal with the proton analysis
-//   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//   Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 #include <Riostream.h>
 #include <TFile.h>
@@ -44,7 +44,7 @@ ClassImp(AliProtonAnalysis)
 
 //____________________________________________________________________//
 AliProtonAnalysis::AliProtonAnalysis() : 
-  TObject(), 
+  TObject(), fAnalysisEtaMode(kFALSE),
   fNBinsY(0), fMinY(0), fMaxY(0),
   fNBinsPt(0), fMinPt(0), fMaxPt(0),
   fMinTPCClusters(0), fMinITSClusters(0),
@@ -84,7 +84,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
 
 //____________________________________________________________________//
 AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt) : 
-  TObject(),
+  TObject(), fAnalysisEtaMode(kFALSE),
   fNBinsY(nbinsY), fMinY(fLowY), fMaxY(fHighY),
   fNBinsPt(nbinsPt), fMinPt(fLowPt), fMaxPt(fHighPt),
   fMinTPCClusters(0), fMinITSClusters(0),
@@ -746,17 +746,19 @@ void AliProtonAnalysis::Analyze(AliStack* stack,
 Bool_t AliProtonAnalysis::IsInPhaseSpace(AliESDtrack* track) {
   // Checks if the track is outside the analyzed y-Pt phase space
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
-  
+  Double_t eta = 0.0;
+
   if(fUseTPCOnly) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0; eta = -10.0;
     }
     else {
       Pt = tpcTrack->Pt();
       Px = tpcTrack->Px();
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
+      eta = tpcTrack->Eta();
     }
   }
   else {
@@ -764,11 +766,18 @@ Bool_t AliProtonAnalysis::IsInPhaseSpace(AliESDtrack* track) {
     Px = track->Px();
     Py = track->Py();
     Pz = track->Pz();
+    eta = track->Eta();
   }
   
   if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
-  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
-    return kFALSE;
+  if(fAnalysisEtaMode) {
+    if((eta < fMinY) || (eta > fMaxY)) 
+      return kFALSE;
+  }
+  else {
+    if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
+      return kFALSE;
+  }
 
   return kTRUE;
 }

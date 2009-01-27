@@ -92,8 +92,9 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   
   //proton analysis object
   fProtonQAAnalysis = new AliProtonQAAnalysis();
+  fProtonQAAnalysis->SetEtaMode(); //in case you want eta-Pt instead of y-Pt
   fProtonQAAnalysis->SetRunMCAnalysis();
-  fProtonQAAnalysis->SetRunEfficiencyAnalysis(kTRUE,kFALSE); //kTRUE,kTRUE for eta-pT efficiencies and if the cuts should be used in the reco and pid efficiencies
+  fProtonQAAnalysis->SetRunEfficiencyAnalysis(kFALSE); //kTRUE if the cuts should be used in the reco and pid efficiencies
   //fProtonQAAnalysis->SetMCProcessId(13);//4: weak decay - 13: hadronic interaction
   //fProtonQAAnalysis->SetMotherParticlePDGCode(3122);//3122: Lambda
 
@@ -135,11 +136,11 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
     //fProtonQAAnalysis->SetPointOnITSLayer3();
     //fProtonQAAnalysis->SetPointOnITSLayer2();
     //fProtonQAAnalysis->SetPointOnITSLayer1();
-    //fProtonQAAnalysis->SetMinITSClusters(5);
+    //fProtonQAAnalysis->SetMinITSClusters(4);
   }
   //Combined tracking
   else if(fProtonAnalysisMode == kGlobal) {
-    fProtonQAAnalysis->SetQAYPtBins(20, -1.0, 1.0, 28, 0.1, 1.5); //combined tracking
+    fProtonQAAnalysis->SetQAYPtBins(20, -1.0, 1.0, 48, 0.3, 1.5); //combined tracking
     fProtonQAAnalysis->SetMinTPCClusters(110);
     fProtonQAAnalysis->SetMaxChi2PerTPCCluster(2.2);
     fProtonQAAnalysis->SetMaxCov11(0.5);
