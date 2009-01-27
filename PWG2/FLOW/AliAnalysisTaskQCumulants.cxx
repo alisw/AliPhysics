@@ -55,6 +55,7 @@
 #include "AliFlowAnalysisWithQCumulants.h"
 #include "AliFlowCumuConstants.h"
 #include "AliFlowCommonConstants.h"
+#include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliQCumulantsFunctions.h"
 
@@ -323,6 +324,18 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //final results for covariances (1st bin <2*4>-<2>*<4>, 2nd bin <2*6>-<2>*<6>, ...)
   TH1D *covariances = dynamic_cast<TH1D*>(fListHistos->FindObject("fCovariances"));
   
+  //common control histograms (taking into account only the events with 2 and more particles)  
+  AliFlowCommonHist *commonHist2nd = dynamic_cast<AliFlowCommonHist*>(fListHistos->FindObject("AliFlowCommonHist2ndOrderQC"));
+  
+  //common control histograms (taking into account only the events with 4 and more particles)  
+  AliFlowCommonHist *commonHist4th = dynamic_cast<AliFlowCommonHist*>(fListHistos->FindObject("AliFlowCommonHist4thOrderQC"));
+  
+  //common control histograms (taking into account only the events with 6 and more particles)  
+  AliFlowCommonHist *commonHist6th = dynamic_cast<AliFlowCommonHist*>(fListHistos->FindObject("AliFlowCommonHist6thOrderQC"));
+  
+  //common control histograms (taking into account only the events with 8 and more particles)  
+  AliFlowCommonHist *commonHist8th = dynamic_cast<AliFlowCommonHist*>(fListHistos->FindObject("AliFlowCommonHist8thOrderQC"));
+  
   //common histograms to store the final results for the 2nd order integrated and differential flow
   AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults2ndOrderQC"));
   
@@ -387,6 +400,11 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetDiffFlowResults2nd(diffFlowResults2ndOrder);
   fQCA->SetDiffFlowResults4th(diffFlowResults4thOrder); 
   fQCA->SetCovariances(covariances); 
+  
+  fQCA->SetCommonHists2nd(commonHist2nd); 
+  fQCA->SetCommonHists4th(commonHist4th);
+  fQCA->SetCommonHists6th(commonHist6th);
+  fQCA->SetCommonHists8th(commonHist8th);
 
   fQCA->SetCommonHistsResults2nd(commonHistRes2nd); 
   fQCA->SetCommonHistsResults4th(commonHistRes4th);

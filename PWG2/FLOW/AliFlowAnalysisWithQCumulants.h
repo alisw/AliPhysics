@@ -59,6 +59,18 @@ class AliFlowAnalysisWithQCumulants{
   void SetCovariances(TH1D* const cov) {this->fCovariances = cov;};
   TH1D* GetCovariances() const {return this->fCovariances;};
   
+  void SetCommonHists2nd(AliFlowCommonHist* const ch2nd) {this->fCommonHists2nd = ch2nd;};
+  AliFlowCommonHist* GetCommonHists2nd() const {return this->fCommonHists2nd;};
+  
+  void SetCommonHists4th(AliFlowCommonHist* const ch4th) {this->fCommonHists4th = ch4th;};
+  AliFlowCommonHist* GetCommonHists4th() const {return this->fCommonHists4th;};
+  
+  void SetCommonHists6th(AliFlowCommonHist* const ch6th) {this->fCommonHists6th = ch6th;};
+  AliFlowCommonHist* GetCommonHists6th() const {return this->fCommonHists6th;};
+  
+  void SetCommonHists8th(AliFlowCommonHist* const ch8th) {this->fCommonHists8th = ch8th;};
+  AliFlowCommonHist* GetCommonHists8th() const {return this->fCommonHists8th;};
+  
   void SetCommonHistsResults2nd(AliFlowCommonHistResults* const chr2nd) {this->fCommonHistsResults2nd = chr2nd;};
   AliFlowCommonHistResults* GetCommonHistsResults2nd() const {return this->fCommonHistsResults2nd;};
   
@@ -215,10 +227,10 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  f3PerEtaBin1n1n2nPOI;      //<<3'>>_{n,n|2n} per eta-bin
   TProfile*                  f4PerEtaBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin  
  
-  AliFlowCommonHist*         fCommonHists2nd;           //common control histograms for 2nd order
-  AliFlowCommonHist*         fCommonHists4th;           //common control histograms for 4th order
-  AliFlowCommonHist*         fCommonHists6th;           //common control histograms for 6th order
-  AliFlowCommonHist*         fCommonHists8th;           //common control histograms for 8th order
+  AliFlowCommonHist*         fCommonHists2nd;           //common control histograms (taking into account only the events with 2 and more particles) 
+  AliFlowCommonHist*         fCommonHists4th;           //common control histograms (taking into account only the events with 4 and more particles) 
+  AliFlowCommonHist*         fCommonHists6th;           //common control histograms (taking into account only the events with 6 and more particles) 
+  AliFlowCommonHist*         fCommonHists8th;           //common control histograms (taking into account only the events with 8 and more particles) 
   
   AliFlowCommonHistResults*  fCommonHistsResults2nd;    //final results for 2nd order int. and diff. flow stored in the common histograms 
   AliFlowCommonHistResults*  fCommonHistsResults4th;    //final results for 4th order int. and diff. flow stored in the common histograms 

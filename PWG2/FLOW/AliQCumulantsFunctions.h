@@ -35,7 +35,7 @@ class AliQCumulantsFunctions{
  public:
   AliQCumulantsFunctions();
   virtual ~AliQCumulantsFunctions();
-  AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
+  AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, AliFlowCommonHist *ch2nd, AliFlowCommonHist *ch4th, AliFlowCommonHist *ch6th, AliFlowCommonHist *ch8th, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th);
  
   void Calculate();
 
@@ -78,6 +78,11 @@ class AliQCumulantsFunctions{
   TProfile *fbinEta3p2n1n1nPOI;   //<<3'>>_{2n,n|n} per eta-bin
   TProfile *fbinEta3p1n1n2nPOI;   //<<3'>>_{n,n|2n} per eta-bin
   TProfile *fbinEta4p1n1n1n1nPOI; //<<4'>>_{n,n|n,n} per eta-bin  
+  
+  AliFlowCommonHist *fch2nd; //common control histograms (taking into account only the events with 2 and more particles) 
+  AliFlowCommonHist *fch4th; //common control histograms (taking into account only the events with 4 and more particles) 
+  AliFlowCommonHist *fch6th; //common control histograms (taking into account only the events with 6 and more particles) 
+  AliFlowCommonHist *fch8th; //common control histograms (taking into account only the events with 8 and more particles) 
   
   AliFlowCommonHistResults *fchr2nd; //final results for 2nd order int. and diff. flow stored in the common histograms
   AliFlowCommonHistResults *fchr4th; //final results for 4th order int. and diff. flow stored in the common histograms
