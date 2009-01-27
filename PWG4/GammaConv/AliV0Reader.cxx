@@ -187,7 +187,9 @@ AliESDv0* AliV0Reader::GetV0(Int_t index){
   UpdateV0Information();
   return fCurrentV0;
 }
-
+Bool_t AliV0Reader::CheckForPrimaryVertex(){
+  return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
+}
 
 Bool_t AliV0Reader::NextV0(){
   //see header file for documentation
@@ -199,28 +201,35 @@ Bool_t AliV0Reader::NextV0(){
     //checks if on the fly mode is set
     if ( !fCurrentV0->GetOnFlyStatus() ){
       fCurrentV0IndexNumber++;
-      fHistograms->FillHistogram("V0MassDebugCut1",GetMotherCandidateMass());
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("V0MassDebugCut1",GetMotherCandidateMass());
+      }
       continue;
     }
 
     if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) {//checks if we have a vertex
       fCurrentV0IndexNumber++;
-      fHistograms->FillHistogram("V0MassDebugCut2",GetMotherCandidateMass());
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("V0MassDebugCut2",GetMotherCandidateMass());
+      }
       continue;
     }
 
     if(CheckPIDProbability(fPIDProbabilityCutNegativeParticle,fPIDProbabilityCutPositiveParticle)==kFALSE){
       fCurrentV0IndexNumber++;
-      fHistograms->FillHistogram("V0MassDebugCut3",GetMotherCandidateMass());
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("V0MassDebugCut3",GetMotherCandidateMass());
+      }
       continue;
     }
-
 
     fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
  
     if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
       fCurrentV0IndexNumber++;
-      fHistograms->FillHistogram("V0MassDebugCut4",GetMotherCandidateMass());
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("V0MassDebugCut4",GetMotherCandidateMass());
+      }
       continue;
     }
 
@@ -229,28 +238,35 @@ Bool_t AliV0Reader::NextV0(){
     if(fUseKFParticle){
       if(fCurrentMotherKFCandidate->GetNDF()<=0){
 	fCurrentV0IndexNumber++;
-	fHistograms->FillHistogram("V0MassDebugCut5",GetMotherCandidateMass());
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("V0MassDebugCut5",GetMotherCandidateMass());
+	}
 	continue;
       }
       Double_t chi2V0 = fCurrentMotherKFCandidate->GetChi2()/fCurrentMotherKFCandidate->GetNDF();
       if(chi2V0 > fChi2CutConversion || chi2V0 <=0){
 	fCurrentV0IndexNumber++;
-	fHistograms->FillHistogram("V0MassDebugCut6",GetMotherCandidateMass());
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("V0MassDebugCut6",GetMotherCandidateMass());
+	}
   	continue;
       }
       
       if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut){
 	fCurrentV0IndexNumber++;
-	fHistograms->FillHistogram("V0MassDebugCut7",GetMotherCandidateMass());
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("V0MassDebugCut7",GetMotherCandidateMass());
+	}
 	continue;
       }
       
       if(fMotherCandidateLorentzVector->Pt()<fPtCut){
 	fCurrentV0IndexNumber++;
-	fHistograms->FillHistogram("V0MassDebugCut8",GetMotherCandidateMass());
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("V0MassDebugCut8",GetMotherCandidateMass());
+	}
 	continue;
       }
-      
     }
     else if(fUseESDTrack){
       //TODO
@@ -335,8 +351,12 @@ void AliV0Reader::UpdateV0Information(){
   }
     
   if(fDoMC == kTRUE){
+    fMotherMCParticle= NULL;
     fNegativeMCParticle = fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetNindex())->GetLabel()));
     fPositiveMCParticle = fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetPindex())->GetLabel()));
+    if(fPositiveMCParticle->GetMother(0)>-1){
+      fMotherMCParticle = fMCStack->Particle(fPositiveMCParticle->GetMother(0));
+    }
   }
   fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
 }
@@ -348,8 +368,9 @@ Bool_t AliV0Reader::HasSameMCMother(){
   if(fDoMC == kTRUE){
     if(fNegativeMCParticle != NULL && fPositiveMCParticle != NULL){
       if(fNegativeMCParticle->GetMother(0) == fPositiveMCParticle->GetMother(0))
-	fMotherMCParticle = fMCStack->Particle(fPositiveMCParticle->GetMother(0));
-      iResult = kTRUE;
+	if(fMotherMCParticle){
+	  iResult = kTRUE;
+	}
     }
   }
   return iResult;
@@ -376,6 +397,24 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
   delete [] posProbArray;
   delete [] negProbArray;
   return iResult;
+}
+
+void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
+
+  Double_t *posProbArray = new Double_t[10];
+  Double_t *negProbArray = new Double_t[10];
+  AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+  AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+  
+  negTrack->GetTPCpid(negProbArray);
+  posTrack->GetTPCpid(posProbArray);
+
+  if(negProbArray!=NULL && posProbArray!=NULL){
+    negPIDProb = negProbArray[GetSpeciesIndex(-1)];
+    posPIDProb = posProbArray[GetSpeciesIndex(1)];
+  }
+  delete [] posProbArray;
+  delete [] negProbArray;
 }
 
 void AliV0Reader::UpdateEventByEventData(){

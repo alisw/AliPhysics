@@ -71,6 +71,13 @@ class AliGammaConversionHistograms{
   Double_t fDeltaPhi;
 
   TList * fMappingContainer;
+  TList * fBackgroundContainer;
+  TList * fDebugContainer;
+  TList * fResolutionContainer;
+  TList * fMatchContainer;
+  TList * fESDContainer;
+  TList * fMCContainer;
+  TList * fOtherContainer;
 
   
   ClassDef(AliGammaConversionHistograms,1)

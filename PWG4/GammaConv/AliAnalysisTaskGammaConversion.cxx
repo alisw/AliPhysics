@@ -2,7 +2,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: Ana Marin, Kathrin Koch, Kenneth Aamodt                        *
- * Version 1.0                                                            *
+ * Version 1.1                                                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -64,7 +64,11 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion():
   fGammaWidth(-1),
   fPi0Width(-1),
   fEtaWidth(-1),
-  fCalculateBackground(kFALSE)
+  fCalculateBackground(kFALSE),
+  fWriteNtuple(kFALSE),
+  fGammaNtuple(NULL),
+  fNeutralMesonNtuple(NULL),
+  fTotalNumberOfAddedNtupleEntries(0)
 {
   // Default constructor
   // Common I/O in slot 0
@@ -94,7 +98,11 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fGammaWidth(-1),
   fPi0Width(-1),
   fEtaWidth(-1),
-  fCalculateBackground(kFALSE)
+  fCalculateBackground(kFALSE),
+  fWriteNtuple(kFALSE),
+  fGammaNtuple(NULL),
+  fNeutralMesonNtuple(NULL),
+  fTotalNumberOfAddedNtupleEntries(0)
 {
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
@@ -380,8 +388,61 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
   }// end for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++)
 } // end ProcessMCData
 
+void AliAnalysisTaskGammaConversion::FillNtuple(){
+
+  if(fGammaNtuple == NULL){
+    return;
+  }
+  Int_t numberOfV0s = fV0Reader->GetNumberOfV0s();
+  for(Int_t i=0;i<numberOfV0s;i++){
+    Float_t values[27] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    AliESDv0 * cV0 = fV0Reader->GetV0(i);
+    Double_t negPID=0;
+    Double_t posPID=0;
+    fV0Reader->GetPIDProbability(negPID,posPID);
+    values[0]=cV0->GetOnFlyStatus();
+    values[1]=fV0Reader->CheckForPrimaryVertex();
+    values[2]=negPID;
+    values[3]=posPID;
+    values[4]=fV0Reader->GetX();
+    values[5]=fV0Reader->GetY();
+    values[6]=fV0Reader->GetZ();
+    values[7]=fV0Reader->GetXYRadius();
+    values[8]=fV0Reader->GetMotherCandidateNDF();
+    values[9]=fV0Reader->GetMotherCandidateChi2();
+    values[10]=fV0Reader->GetMotherCandidateEnergy();
+    values[11]=fV0Reader->GetMotherCandidateEta();
+    values[12]=fV0Reader->GetMotherCandidatePt();
+    values[13]=fV0Reader->GetMotherCandidateMass();
+    values[14]=fV0Reader->GetMotherCandidateWidth();
+    //    values[15]=fV0Reader->GetMotherMCParticle()->Pt();   MOVED TO THE END, HAS TO BE CALLED AFTER HasSameMother NB: still has the same entry in the array
+    values[16]=fV0Reader->GetOpeningAngle();
+    values[17]=fV0Reader->GetNegativeTrackEnergy();
+    values[18]=fV0Reader->GetNegativeTrackPt();
+    values[19]=fV0Reader->GetNegativeTrackEta();
+    values[20]=fV0Reader->GetNegativeTrackPhi();
+    values[21]=fV0Reader->GetPositiveTrackEnergy();
+    values[22]=fV0Reader->GetPositiveTrackPt();
+    values[23]=fV0Reader->GetPositiveTrackEta();
+    values[24]=fV0Reader->GetPositiveTrackPhi();
+    values[25]=fV0Reader->HasSameMCMother();
+    if(values[25] != 0){
+      values[26]=fV0Reader->GetMotherMCParticlePDGCode();
+      values[15]=fV0Reader->GetMotherMCParticle()->Pt();
+    }
+    fTotalNumberOfAddedNtupleEntries++;
+    fGammaNtuple->Fill(values);
+  }
+  fV0Reader->ResetV0IndexNumber();
+  
+}
+
 void AliAnalysisTaskGammaConversion::ProcessV0s(){
   // see header file for documentation
+
+  if(fWriteNtuple == kTRUE){
+    FillNtuple();
+  }
 
   Int_t nSurvivingV0s=0;
   while(fV0Reader->NextV0()){
@@ -606,7 +667,24 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
   if(fOutputContainer == NULL){
     fOutputContainer = new TList();
   }
+  
+  //Adding the histograms to the output container
   fHistograms->GetOutputContainer(fOutputContainer);
+
+  
+  if(fWriteNtuple){
+    if(fGammaNtuple == NULL){
+      fGammaNtuple = new TNtuple("V0ntuple","V0ntuple","OnTheFly:HasVertex:NegPIDProb:PosPIDProb:X:Y:Z:R:MotherCandidateNDF:MotherCandidateChi2:MotherCandidateEnergy:MotherCandidateEta:MotherCandidatePt:MotherCandidateMass:MotherCandidateWidth:MCMotherCandidatePT:EPOpeningAngle:ElectronEnergy:ElectronPt:ElectronEta:ElectronPhi:PositronEnergy:PositronPt:PositronEta:PositronPhi:HasSameMCMother:MotherMCParticlePIDCode",50000);
+    }
+    if(fNeutralMesonNtuple == NULL){
+      fNeutralMesonNtuple = new TNtuple("NeutralMesonNtuple","NeutralMesonNtuple","test");
+    }
+    TList * ntupleTList = new TList();
+    ntupleTList->SetName("Ntuple");
+    ntupleTList->Add((TNtuple*)fGammaNtuple);
+    fOutputContainer->Add(ntupleTList);
+  }
+
   fOutputContainer->SetName(GetName());
 }
 

@@ -2,7 +2,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: Ana Marin, Kathrin Koch, Kenneth Aamodt                        *
- * Version 1.0                                                            *
+ * Version 1.1                                                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -43,7 +43,14 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fMinPhi(0.),
   fMaxPhi(0.),
   fDeltaPhi(0.),
-  fMappingContainer(NULL)
+  fMappingContainer(NULL),
+  fBackgroundContainer(NULL),
+  fDebugContainer(NULL),
+  fResolutionContainer(NULL),
+  fMatchContainer(NULL),
+  fESDContainer(NULL),
+  fMCContainer(NULL),
+  fOtherContainer(NULL)
 {
   // see header file for documenation
 }
@@ -59,7 +66,14 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fMinPhi(original.fMinPhi),
   fMaxPhi(original.fMaxPhi),
   fDeltaPhi(original.fDeltaPhi),
-  fMappingContainer(original.fMappingContainer)
+  fMappingContainer(original.fMappingContainer),
+  fBackgroundContainer(original.fBackgroundContainer),
+  fDebugContainer(original.fDebugContainer),
+  fResolutionContainer(original.fResolutionContainer),
+  fMatchContainer(original.fMatchContainer),
+  fESDContainer(original.fESDContainer),
+  fMCContainer(original.fMCContainer),
+  fOtherContainer(original.fOtherContainer)
 {    
   //see header file for documentation
 }
@@ -102,9 +116,6 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
   if(tmp){
       tmp->Fill(xValue);
   }
-  else{
-    cout<<"Histogram does not exist: "<<histogramName.Data()<<endl;
-  }
 }
 
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue, Double_t yValue) const{
@@ -112,9 +123,6 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
   if(tmp){
     tmp->Fill(xValue, yValue);
-  }
-  else{
-    cout<<"Histogram does not exist: "<<histogramName.Data()<<endl;
   }
 }
 
@@ -140,10 +148,95 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
 	}
       }
-      fOutputContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+      else if(histogramString.Contains("Background")){// means it should be put in the background folder
+	if(fBackgroundContainer == NULL){
+	  fBackgroundContainer = new TList();
+	  fBackgroundContainer->SetName("Background histograms");
+	}
+	if(fBackgroundContainer != NULL){
+	  fBackgroundContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else if(histogramString.Contains("Debug")){// means it should be put in the debug folder
+	if(fDebugContainer == NULL){
+	  fDebugContainer = new TList();
+	  fDebugContainer->SetName("Debug histograms");
+	}
+	if(fDebugContainer != NULL){
+	  fDebugContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else if(histogramString.Contains("Resolution")){// means it should be put in the resolution folder
+	if(fResolutionContainer == NULL){
+	  fResolutionContainer = new TList();
+	  fResolutionContainer->SetName("Resolution histograms");
+	}
+	if(fResolutionContainer != NULL){
+	  fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else if(histogramString.Contains("Match")){// means it should be put in the mapping folder
+	if(fMatchContainer == NULL){
+	  fMatchContainer = new TList();
+	  fMatchContainer->SetName("Match histograms");
+	}
+	if(fMatchContainer != NULL){
+	  fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else if(histogramString.Contains("ESD")){// means it should be put in the ESD folder
+	if(fESDContainer == NULL){
+	  fESDContainer = new TList();
+	  fESDContainer->SetName("ESD histograms");
+	}
+	if(fESDContainer != NULL){
+	  fESDContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else if(histogramString.Contains("MC")){// means it should be put in the MC folder
+	if(fMCContainer == NULL){
+	  fMCContainer = new TList();
+	  fMCContainer->SetName("MC histograms");
+	}
+	if(fMCContainer != NULL){
+	  fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
+      else{
+	if(fOtherContainer == NULL){
+	  fOtherContainer = new TList();
+	  fOtherContainer->SetName("Other histograms");
+	}
+	if(fOtherContainer != NULL){
+	  fOtherContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
       histogramName = NULL;
     } // end while
-    //   fOutputContainer->Add(fMappingContainer);
+    if(fMappingContainer != NULL){
+      fOutputContainer->Add(fMappingContainer);
+    }
+    if(fBackgroundContainer != NULL){
+      fOutputContainer->Add(fBackgroundContainer);
+    }
+    if(fDebugContainer != NULL){
+      fOutputContainer->Add(fDebugContainer);
+    }
+    if(fResolutionContainer != NULL){
+      fOutputContainer->Add(fResolutionContainer);
+    }
+    if(fMatchContainer != NULL){
+      fOutputContainer->Add(fMatchContainer);
+    }
+    if(fESDContainer != NULL){
+      fOutputContainer->Add(fESDContainer);
+    }
+    if(fMCContainer != NULL){
+      fOutputContainer->Add(fMCContainer);
+    }
+    if(fOtherContainer != NULL){
+      fOutputContainer->Add(fMCContainer);
+    }
   }
 }
 
