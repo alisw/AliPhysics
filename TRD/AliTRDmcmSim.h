@@ -48,7 +48,7 @@ class AliTRDmcmSim : public TObject {
 	  Int_t*    GetPosLUT();
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize );   // Produce raw data stream from this MCM - old
-	  Int_t     ProduceRawStreamV2( UInt_t *buf, Int_t bufsize ); // Produce raw data stream - Read data format
+	  Int_t     ProduceRawStreamV2( UInt_t *buf, Int_t bufsize, UInt_t iEv ); // Produce raw data stream - Read data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
 	  void      Filter();                                  // Apply digital filters for existing data
 	  void      ZSMapping();                               // Do ZS mapping for existing data

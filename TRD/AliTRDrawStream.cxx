@@ -120,7 +120,7 @@ Bool_t AliTRDrawStream::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawStream::fgStackNumberChecker = kTRUE;
 Bool_t AliTRDrawStream::fgStackLinkNumberChecker = kTRUE;
 Bool_t AliTRDrawStream::fgSkipData = kTRUE;
-UInt_t AliTRDrawStream::fgDumpHead = 0;
+Int_t AliTRDrawStream::fgDumpHead = -1;
 Int_t  AliTRDrawStream::fgCommonAdditive = 0;
 Int_t AliTRDrawStream::fgEmptySignals[] = 
   {
@@ -331,22 +331,21 @@ AliTRDrawStream::SwapOnEndian()
 }
 
 //------------------------------------------------------------
-Bool_t 
+Bool_t
 AliTRDrawStream::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
 {
+    //UInt_t iEnd = iw;
+    //if ( iw ==0 ) iEnd = (fpEnd - px)/sizeof(UInt_t); // if iw is 0, dump all words
 
   TString tsreturn = Form("\n[ Dump Sequence at 0x%08x ] : ", px);
   for (UInt_t i = 0; i < iw; i++)
+  //for (UInt_t i = 0; i < iEnd; i++)
     {
-      if (px + iw >= fpEnd)
-  return kFALSE;
+      if ( iw != 0 && px + iw > fpEnd) return kFALSE;
 
-      if (i % 8 == 0)
-  tsreturn += "\n                              ";
-      if (marker != 0 && marker == px[i])
-  tsreturn += Form(" *>0x%08x<* ", px[i]);
-      else
-  tsreturn += Form("0x%08x ", px[i]);
+      if (i % 8 == 0) tsreturn += "\n                              ";
+      if (marker != 0 && marker == px[i]) tsreturn += Form(" *>0x%08x<* ", px[i]);
+      else tsreturn += Form("0x%08x ", px[i]);
     }
   tsreturn += "\n";
 
@@ -949,15 +948,16 @@ AliTRDrawStream::InitBuffer(void *buffer, UInt_t length)
 
   SwapOnEndian();
 
-  if (fgDumpHead > 0)
-    {
-      AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
-      if (DumpWords(fpBegin, fgDumpHead) == kFALSE)
-  {
-    AliError("Dump failed. Not enough data.");	  
-  }
-      AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
+  if (fgDumpHead >= 0){
+    if ( fgDumpHead == 0 ){ // dump all words
+        AliInfo(Form("---------- Dumping all words from the beginnig of the buffer ----------"));
+        if (DumpWords(fpBegin, fWordLength) == kFALSE) AliError("Dump failed. Not enough data.");
+    } else {
+        AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
+        if (DumpWords(fpBegin, fgDumpHead) == kFALSE) AliError("Dump failed. Not enough data.");
     }
+    AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
+  }
 
   return kTRUE;
 }

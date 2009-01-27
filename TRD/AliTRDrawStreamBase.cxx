@@ -39,7 +39,7 @@
 //--------------------------------------------------------
 ClassImp(AliTRDrawStreamBase)
 
-Int_t AliTRDrawStreamBase::fgRawStreamVersion = AliTRDrawStreamBase::kTRDsimStream;
+Int_t AliTRDrawStreamBase::fgRawStreamVersion = AliTRDrawStreamBase::kTRDrealStream;
 
 //_____________________________________________________________________________
 AliTRDrawStreamBase::AliTRDrawStreamBase()

@@ -610,7 +610,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize )
+Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize, UInt_t iEv )
 {
   //
   // Produce raw data stream from this MCM and put in buf
@@ -619,7 +619,7 @@ Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize )
   //
 
   UInt_t  x;
-  UInt_t  iEv = 0;
+  //UInt_t  iEv = 0;
   Int_t   nw  = 0;  // Number of written words
   Int_t   of  = 0;  // Number of overflowed words
   Int_t   rawVer   = fFeeParam->GetRAWversion();
@@ -634,8 +634,13 @@ Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize )
     adc = fADCF;
   }
 
-  // Produce MCM header
-  x = (1<<31) | ((fRobPos * fFeeParam->GetNmcmRob() + fMcmPos) << 24) | ((iEv % 0x100000) << 4) | 0xC;
+  // Produce MCM header : xrrr mmmm eeee eeee eeee eeee eeee 1100
+  //                      x : 0 before , 1 since 10.2007
+  //                      r : Readout board position (Alice numbering)
+  //                      m : MCM posi
+  //                      e : Event counter from 1
+  //x = (1<<31) | ((fRobPos * fFeeParam->GetNmcmRob() + fMcmPos) << 24) | ((iEv % 0x100000) << 4) | 0xC;
+  x = (1<<31) | (fRobPos << 28) | (fMcmPos << 24) | ((iEv % 0x100000) << 4) | 0xC;
   if (nw < maxSize) {
     buf[nw++] = x;
 	//printf("\nMCM header: %X ",x);
@@ -673,7 +678,7 @@ Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize )
 
   for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
     if( rawVer>= 3 && fZSM1Dim[iAdc] != 0 ) continue; // Zero Suppression, 0 means not suppressed
-    aa = !(iAdc & 1) + 2;
+    aa = !(iAdc & 1) + 2;	// 3 for the even ADC channel , 2 for the odd ADC channel
     for (Int_t iT = 0; iT < fNTimeBin; iT+=3 ) {
       a1 = ((iT    ) < fNTimeBin ) ? adc[iAdc][iT  ] : 0;
       a2 = ((iT + 1) < fNTimeBin ) ? adc[iAdc][iT+1] : 0;

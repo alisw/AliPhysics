@@ -522,7 +522,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   static void    SetExtraWordsFix() {fgExtraSkip = kTRUE;} // extra skip of 24 32-bit words 
   static void    SetSkipCDH() {fgSkipCDH = kTRUE;} // skip of 8 32-bit words 
-  static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
+  static void    SetDumpHead(Int_t iv) {fgDumpHead = iv;}
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
   static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  
   static void    DisableSkipData() {fgSkipData = kFALSE;} // keep reading next words even previous words were corrupted - debugging purpose  
@@ -642,7 +642,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
   static Bool_t fgStackLinkNumberChecker; // decide if we check stack link number insanity - debuging purpose
   static Bool_t fgSkipData; // decide if we skip corrupted data of given HC
-  static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
+  static Int_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
   static Short_t  fgMCMordering[16]; // mcm number odering for mcm header corruption check
   static Short_t  fgROBordering[16]; // mcm number odering for mcm header corruption check

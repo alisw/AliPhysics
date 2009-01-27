@@ -45,7 +45,8 @@
 
 ClassImp(AliTRDrawData)
 
-Int_t AliTRDrawData::fgRawFormatVersion = AliTRDrawData::kRawOldFormat;
+Int_t AliTRDrawData::fgRawFormatVersion = AliTRDrawData::kRawNewFormat;
+Int_t AliTRDrawData::fgDataSuppressionLevel = 1;
 
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
@@ -53,6 +54,9 @@ AliTRDrawData::AliTRDrawData()
   ,fGeo(NULL)
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
+  ,fSMindexPos(0)
+  ,fStackindexPos(0)
+  ,fEventCounter(0)
 {
   //
   // Default constructor
@@ -69,6 +73,9 @@ AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   ,fGeo(NULL)
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
+  ,fSMindexPos(0)
+  ,fStackindexPos(0)
+  ,fEventCounter(0)
 {
   //
   // Copy constructor
@@ -157,6 +164,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   UInt_t     *hcBuffer    = new UInt_t[kMaxHcWords];
   
   Bool_t newEvent = kFALSE;  // only for correct readout tree
+  Bool_t newSM    = kFALSE;  // new SM flag, for writing SM index words
+  Bool_t newStack = kFALSE;  // new stack flag, for writing stack index words
 
   // sect is same as iDDL, so I use only sect here.
   for (Int_t sect = 0; sect < fGeo->Nsector(); sect++) { 
@@ -166,7 +175,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
     AliFstream* of = new AliFstream(name);
 
-    // Write a dummy data header
+	    // Write a dummy data header
     AliRawDataHeaderSim  header;  // the event header
     UInt_t hpos = of->Tellp();
     of->WriteBuffer((char *) (& header), sizeof(header));
@@ -174,38 +183,93 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     // Reset payload byte size (payload does not include header).
     Int_t npayloadbyte = 0;
 
-    
-	if ( fgRawFormatVersion == 0 ){
+
+    if ( fgRawFormatVersion == 0 ){
     // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t stack = 0; stack < fGeo->Nstack(); stack++ ) {
       UInt_t gtuCdh = (UInt_t)(0xe << 28);
       for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
-	Int_t iDet = fGeo->GetDetector(layer, stack, sect);
-	
-	// If chamber status is ok, we assume that the optical link is also OK.
+    Int_t iDet = fGeo->GetDetector(layer, stack, sect);
+
+    // If chamber status is ok, we assume that the optical link is also OK.
         // This is shown in the GTU link mask.
-	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
-	  gtuCdh = gtuCdh | (3 << (2*layer));
+    if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
+      gtuCdh = gtuCdh | (3 << (2*layer));
       }
       of->WriteBuffer((char *) (& gtuCdh), sizeof(gtuCdh));
       npayloadbyte += 4;
     }
-	}
+    }
+
+
+    // check the existance of the data
+    // SM index word and Stack index word
+   if ( fgRawFormatVersion == 1 ){
+    UInt_t *iwbuffer = new UInt_t[42]; // index word buffer; max 42 = 2 SM headers + 5*8 stack headers
+    Int_t nheader = 0;
+    UInt_t StackMask = 0x0;
+    Bool_t StackHasData = kFALSE;
+    Bool_t SMHasData = kFALSE;
+    iwbuffer[nheader++] = 0x0001a020;   // SM index words 
+    iwbuffer[nheader++] = 0x10404071;   // SM header
+
+    for ( Int_t stack= 0; stack < fGeo->Nstack(); stack++) {
+        UInt_t LinkMask = 0x0;
+        for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
+            Int_t iDet = fGeo->GetDetector(layer,stack,sect);
+			AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
+            if ( digits->HasData() ) {
+                StackMask = StackMask | ( 1 << stack ); // active stack mask for new stack
+                LinkMask = LinkMask | ( 3 << (2*layer) );    // 3 = 0011
+                StackHasData = kTRUE;
+                SMHasData = kTRUE;
+            } // has data
+        } // loop over layer
+
+        if ( fgDataSuppressionLevel==0 || StackHasData ){
+        //if ( StackHasData ){
+            iwbuffer[nheader++] = 0x0007a000 | LinkMask;    // stack index word + link masks
+            //if (fgDataSuppressionLevel==0) iwbuffer[nheader-1] = 0x0007afff;  // no suppression
+            iwbuffer[nheader++] = 0x04045b01;               // stack header
+            for (Int_t i=0;i<6;i++) iwbuffer[nheader++] = 0x00000000; // 6 dummy words
+            StackHasData = kFALSE;
+        }
+    } // loop over stack
+
+    if ( fgDataSuppressionLevel==0 || SMHasData ){
+        iwbuffer[0] = iwbuffer[0] | StackMask;  // add stack masks to SM index word
+        if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0001a03f;    // no suppression
+        of->WriteBuffer((char *) iwbuffer, nheader*4);
+        AliDebug(11, Form("SM %d index word: %08x", iwbuffer[0]));
+        AliDebug(11, Form("SM %d header: %08x", iwbuffer[1]));
+    }
+   }
+    // end of SM & stack header ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
 
     // Prepare chamber data
     for( Int_t stack = 0; stack < fGeo->Nstack(); stack++) {
       for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
 
         Int_t iDet = fGeo->GetDetector(layer,stack,sect);
-	if (iDet == 0) newEvent = kTRUE; // it is expected that each event has at least one tracklet; this is only needed for correct readout tree
-	// Get the digits array
-	AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
-        if (digits->HasData() ) {  // second part is new!! and is for indicating a new event
+        if (iDet == 0){
+            newEvent = kTRUE; // it is expected that each event has at least one tracklet; 
+                                         // this is only needed for correct readout tree
+            fEventCounter++;
+            AliDebug(11, Form("New event!! Event counter: %d",fEventCounter));
+        }
 
-          digits->Expand();
+        if ( stack==0 && layer==0 ) newSM = kTRUE;  // new SM flag
+        if ( layer==0 ) newStack = kTRUE;           // new stack flag
+        AliDebug(15, Form("stack : %d, layer : %d, iDec : %d\n",stack,layer,iDet));
+        // Get the digits array
+		AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
+        if (fgDataSuppressionLevel==0 || digits->HasData() ) {  // second part is new!! and is for indicating a new event
 
-          Int_t hcwords = 0;
-	  Int_t rv = fFee->GetRAWversion();
+         	if (digits->HasData()) digits->Expand();
+
+   			Int_t hcwords = 0;
+	  		Int_t rv = fFee->GetRAWversion();
 
 
 	if ( fgRawFormatVersion == 0 ){
@@ -236,24 +300,56 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
           of->WriteBuffer((char *) hcBuffer, hcwords*4);
           npayloadbyte += hcwords*4;
 
-	} else { // real data format
-		// Process A side of the chamber
-		hcwords = ProduceHcData(digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
-		if(newEvent == kTRUE) newEvent = kFALSE;
+    } else { // real data format
+
+       if (digits->HasData()){
+        // Process A side of the chamber
+        hcwords = ProduceHcData(digits,0,iDet,hcBuffer,kMaxHcWords,newEvent,newSM);
+        //if ( newStack ){
+        //  AssignStackMask(hcBuffer, stack);   // active stack mask for this stack
+        //  hcwords += AddStackIndexWords(hcBuffer, stack, hcwords);
+        //  newStack = kFALSE;
+        //}
+        //if ( newSM ) newSM = kFALSE;
+        if ( newEvent ) newEvent = kFALSE;
+        //AssignLinkMask(hcBuffer, layer);  // active link mask for this layer(2*HC)
         of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
-		//for ( Int_t i=0; i<hcwords; i++ ) AliInfo(Form("Buf : %X",hcBuffer[i]));
+        //for ( Int_t i=0; i<hcwords; i++ ) AliInfo(Form("Buf : %X",hcBuffer[i]));
 
-		// Process B side of the chamber
-		hcwords = ProduceHcData(digits,1,iDet,hcBuffer,kMaxHcWords,newEvent);
+        // Process B side of the chamber
+        hcwords = ProduceHcData(digits,1,iDet,hcBuffer,kMaxHcWords,newEvent,newSM);
         of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
-	}
+       } else {
+        hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
+        hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
+        hcBuffer[hcwords++] = (1<<31) | (0<<24) | (0<<17) | (1<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (0<<2) | 1;
+        hcBuffer[hcwords++] = (24<<26) | (99<<10) | (15<<6) | (11<<2) | 1;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        npayloadbyte += hcwords*4;
 
-	}
+        hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
+        hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
+        hcBuffer[hcwords++] = (1<<31) | (0<<24) | (0<<17) | (1<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (1<<2) | 1;
+        hcBuffer[hcwords++] = (24<<26) | (99<<10) | (15<<6) | (11<<2) | 1;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        hcBuffer[hcwords++] = kEndofrawdatamarker;
+        npayloadbyte += hcwords*4;
 
-      }
+        of->WriteBuffer((char *) hcBuffer, hcwords*4);
+       }
     }
+
+    } // has data
+
+      } // loop over layer
+    } // loop over stack
 
     // Complete header
     header.fSize = UInt_t(of->Tellp()) - hpos;
@@ -302,19 +398,89 @@ void AliTRDrawData::ProduceSMIndexData(UInt_t *buf, Int_t& nw){
 	// 	 and 6 dummy words(0x00000000)
 	//
 	
-	buf[nw++] = 0x0001a03f;	// SM index words
-	buf[nw++] = 0x10404071;	// SM header
+    //buf[nw++] = 0x0001a03f;   // SM index words
+    fSMindexPos = nw;       // memorize position of the SM index word for re-allocating stack mask
+    buf[nw++] = 0x0001a020; // SM index words
+    buf[nw++] = 0x10404071; // SM header
 
-	for (Int_t istack=0; istack<5; istack++){
-		buf[nw++] = 0x0007afff; // stack index words
-		buf[nw++] = 0x04045b01;	// stack header
-		for (Int_t i=0;i<6;i++) buf[nw++] = 0x00000000; // 6 dummy words
-	} // loop over 5 stacks
-
+    fStackindexPos = nw;    // memorize position of the stack index word for future adding
+	/*  
+    for (Int_t istack=0; istack<5; istack++){
+        buf[nw++] = 0x0007afff; // stack index words
+        buf[nw++] = 0x04045b01; // stack header
+        for (Int_t i=0;i<6;i++) buf[nw++] = 0x00000000; // 6 dummy words
+    } // loop over 5 stacks
+	*/
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE){
+void AliTRDrawData::AssignStackMask(UInt_t *buf, Int_t nStack){
+    //
+    // This function re-assign stack mask active(from 0 to 1) in the SM index word
+    //   
+    buf[fSMindexPos] = buf[fSMindexPos] | ( 1 << nStack );
+}
+
+//_____________________________________________________________________________  
+Int_t AliTRDrawData::AddStackIndexWords(UInt_t *buf, Int_t nStack, Int_t nMax){
+    // 
+    // This function add stack index words and stack header when there is data for the stack
+    //
+    //   1) stack index words : ssssssss ssssssss vvvv mmmm mmmmmmmm 
+    //      - s : size of stack header (number of header, (default = 0x0007)       
+    //      - v : header version (default = 0xa)
+    //      - m : link mask (default = 0xfff)
+    //      - m : link mask (starting value = 0x000)
+    //
+    //   2) stack header : vvvvvvvv vvvvvvvv bbbbbbbb rrrr rrr c
+    //      - v : hardware design revision (default = 0x0404)
+    //      - b : physical board ID (default = 0x5b)
+    //      - r : reserved for future use (default = 0000 000)
+    //      - c : clean checkout flag (default = 1)
+    //  
+    //   and 6 dummy words(0x00000000)
+    //
+
+    Int_t nAddedWords = 0;  // Number of added words
+    if ( ShiftWords(buf, fStackindexPos, 8, nMax)== kFALSE ){
+        AliError("Adding stack header failed.");
+        return 0;
+    }
+
+    buf[fStackindexPos++] = 0x0007a000; // stack index words
+    buf[fStackindexPos++] = 0x04045b01; // stack header
+    for (Int_t i=0;i<6;i++) buf[fStackindexPos++] = 0x00000000; // 6 dummy words 
+    nAddedWords += 8;
+
+    return nAddedWords;
+}
+
+//_____________________________________________________________________________
+void AliTRDrawData::AssignLinkMask(UInt_t *buf, Int_t nLayer){
+    //
+    // This function re-assign link mask active(from 0 to 1) in the stack index word
+    //   
+    buf[fStackindexPos-8] = buf[fStackindexPos-8] | ( 3 << (2*nLayer) );    // 3 = 0011 
+}
+
+//_____________________________________________________________________________ 
+Bool_t AliTRDrawData::ShiftWords(UInt_t *buf, Int_t nStart, Int_t nWords, Int_t nMax){
+    //  
+    // This function shifts n words
+    //
+    //if ( nStart+nWords > sizeof(buf)/sizeof(UInt_t) ){
+    //  AliError("Words shift failed. No more buffer space.");
+    //  return kFALSE;
+    //}
+
+    for ( Int_t iw=nMax; iw>nStart-1; iw--){
+        buf[iw+nWords] = buf[iw];
+    }
+    return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE, Bool_t newSM = kFALSE){
 	//
 	// This function can be used for both ZS and NZS data
 	//
@@ -343,14 +509,15 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 
   	AliTRDmcmSim** mcm = new AliTRDmcmSim*[(kCtype + 3)*(fGeo->MCMmax())];
 
-	if (newEvent) ProduceSMIndexData(buf, nw);		// SM index words , Stack index words
+	//if (newEvent) ProduceSMIndexData(buf, nw);		// SM index words , Stack index words
 
 	if (!tracklet_on) WriteIntermediateWordsV2(buf,nw,of,maxSize,det,side);	// no tracklet or NZS
  
   	
   	// scanning direction such, that tracklet-words are sorted in ascending z and then in ascending y order
   	// ROB numbering on chamber and MCM numbering on ROB increase with decreasing z and increasing y
-  	for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
+  	//for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
+	for (Int_t iRobRow = 0; iRobRow <= (kCtype + 3)-1; iRobRow++ ) {	// ROB number should be increasing
     	Int_t iRob = iRobRow * 2 + side;
     	// MCM on one ROB
     	for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
@@ -396,7 +563,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		    }
 		} else { // no tracklets: write raw-data already in this loop 
 		    // Write MCM data to buffer
-		    Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw );
+		    Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw, fEventCounter );
 		    if( tempNw < 0 ) {
 				of += tempNw;
 				nw += maxSize - nw;
@@ -426,7 +593,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		      	Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm; 
 		      
 		      	// Write MCM data to buffer
-		      	Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw );
+		      	Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw, fEventCounter );
 		      	if( tempNw < 0 ) {
 			  		of += tempNw;
 			  		nw += maxSize - nw;
@@ -444,7 +611,10 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
   	delete [] mcm;
   
   	// Write end of raw data marker
-  	if (nw < maxSize) {
+  	if (nw+3 < maxSize) {
+    	buf[nw++] = kEndofrawdatamarker; 
+    	buf[nw++] = kEndofrawdatamarker; 
+    	buf[nw++] = kEndofrawdatamarker; 
     	buf[nw++] = kEndofrawdatamarker; 
   	} else {
     	of++;
@@ -588,7 +758,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side
       // ADC data
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
 	Int_t padcol = fFee->GetPadColFromADC(iRob, iMcm, iAdc);
-	UInt_t aa = !(iAdc & 1) + 2;
+	UInt_t aa = !(iAdc & 1) + 2;	// 3 for the even ADC channel , 2 for the odd ADC channel
         UInt_t *a = new UInt_t[kNTBin+2];
         // 3 timebins are packed into one 32 bits word
         for (Int_t iT = 0; iT < kNTBin; iT+=3) { 
@@ -935,7 +1105,14 @@ void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, 
     UInt_t           x = 0;
 
     // Write end of tracklet marker
-    if (nw < maxSize) buf[nw++] = fgkEndOfTrackletMarker; else of++;
+	if (nw < maxSize){
+        buf[nw++] = fgkEndOfTrackletMarker;
+        buf[nw++] = fgkEndOfTrackletMarker;     // the number of tracklet end marker should be more than 2
+    }
+    else {
+        of++;
+    }
+
    
   	// Half Chamber header
   	// h[0] (there are 2 HC headers) xmmm mmmm nnnn nnnq qqss sssp ppcc ci01
@@ -968,7 +1145,7 @@ void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, 
     Int_t ptCtr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
     Int_t ptPhase = 11; // pretrigger phase. Here it is set to 11 always for no reason
     //x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1; 	// old format
-    x = ((kNTBin-1)<<26) | (bcCtr<<10) | (ptCtr<<6) | (ptPhase<<2) | 1;
+    x = ((kNTBin)<<26) | (bcCtr<<10) | (ptCtr<<6) | (ptPhase<<2) | 1;
     if (nw < maxSize) buf[nw++] = x; else of++;
   
 }
