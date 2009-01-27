@@ -10,7 +10,7 @@
 //                       Class AliProtonAnalysis
 //   This is the class for the baryon (proton) analysis
 //
-//    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//    Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
@@ -39,6 +39,8 @@ class AliProtonAnalysis : public TObject {
   AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   virtual ~AliProtonAnalysis();
+
+  void SetEtaMode() {fAnalysisEtaMode = kTRUE;}
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   void UseHybridTPC() {fUseHybridTPC = kTRUE;}
@@ -187,6 +189,8 @@ class AliProtonAnalysis : public TObject {
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
+  Bool_t fAnalysisEtaMode; //run the analysis in eta or y
+
   Int_t fNBinsY; //number of bins in y
   Float_t fMinY, fMaxY; //min & max value of y
   Int_t fNBinsPt;  //number of bins in pT
