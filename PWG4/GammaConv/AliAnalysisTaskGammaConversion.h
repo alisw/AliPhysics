@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 #include "AliV0Reader.h"
+#include "TNtuple.h"
 
 class AliGammaConversionHistograms;
 class AliESDv0;
@@ -53,6 +54,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     void SetV0Reader(AliV0Reader* reader){fV0Reader=reader;}
     void SetCalculateBackground(Bool_t bg){fCalculateBackground=bg;}
     void CalculateBackground();
+    void SetWriteNtuple(Bool_t writeNtuple){fWriteNtuple = writeNtuple;}
+    void FillNtuple();
     Double_t GetMCOpeningAngle(TParticle* daughter0, TParticle* daughter1) const;
 
  private:
@@ -87,9 +90,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     Double_t fPi0Width;
     Double_t fEtaWidth;
     Bool_t fCalculateBackground;
+    Bool_t fWriteNtuple;
+    TNtuple *fGammaNtuple;
+    TNtuple *fNeutralMesonNtuple;
 
+    Int_t fTotalNumberOfAddedNtupleEntries;
 
-    ClassDef(AliAnalysisTaskGammaConversion, 0); // Analysis task for gamma conversions
+    ClassDef(AliAnalysisTaskGammaConversion, 1); // Analysis task for gamma conversions
 };
  
 #endif //ALIANALYSISTASKGAMMA_H

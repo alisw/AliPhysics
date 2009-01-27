@@ -90,14 +90,21 @@ class AliV0Reader : public TObject {
    * Returns the positive KF particle which belongs to fCurrentV0
    */
   AliKFParticle* GetPositiveKFParticle() const{return fCurrentPositiveKFParticle;}
+
   /*
    * Returns the KFParticle object of the 2 tracks.
    */
   AliKFParticle* GetMotherCandidateKFCombination() const{return fCurrentMotherKFCandidate;}
+
   /*
    * Checks the probablity that the PID of the particle is what we want it to be.
    */
   Bool_t CheckPIDProbability(Double_t negProbCut, Double_t posProbCut);
+  
+  /*
+   * Checks if the PID of the two particles are within our cuts.
+   */
+  void GetPIDProbability(Double_t &negPIDProb, Double_t &posPIDProb);
 
   /*
    *Get the negative MC TParticle from the stack 
@@ -114,7 +121,16 @@ class AliV0Reader : public TObject {
    */
   TParticle * GetMotherMCParticle() const{return fMotherMCParticle;}
 
+  /*
+   * Flag to see if the v0 particles share the same mother
+   */
   Bool_t HasSameMCMother();
+
+
+  /*
+   *Get the PID of the MC mother particle
+   */
+  Int_t GetMotherMCParticlePDGCode() const{if(fMotherMCParticle != NULL){ cout<<"MCParticle exists"<<endl;} return fMotherMCParticle->GetPdgCode();}
 
   /*
    *Get the MC stack 
@@ -186,56 +202,207 @@ class AliV0Reader : public TObject {
    */
   Double_t GetOpeningAngle(){return fNegativeTrackLorentzVector->Angle(fPositiveTrackLorentzVector->Vect());}
 
+  /*
+   * Gets the Energy of the negative track.
+   */
   Double_t GetNegativeTrackEnergy() const{return fCurrentNegativeKFParticle->E();}
+
+  /*
+   * Gets the Energy of the positive track.
+   */
   Double_t GetPositiveTrackEnergy() const{return fCurrentPositiveKFParticle->E();}
+
+  /*
+   * Gets the Energy of the mother candidate.
+   */
   Double_t GetMotherCandidateEnergy() const{return fCurrentMotherKFCandidate->E();}
 
+  /*
+   * Gets the Pt of the negative track.
+   */
   Double_t GetNegativeTrackPt() const{return fNegativeTrackLorentzVector->Pt();}
+
+  /*
+   * Gets the Pt of the positive track.
+   */
   Double_t GetPositiveTrackPt() const{return fPositiveTrackLorentzVector->Pt();}
+
+  /*
+   * Gets the Pt of the mother candidate.
+   */
   Double_t GetMotherCandidatePt() const{return fMotherCandidateLorentzVector->Pt();}
 
+  /*
+   * Gets the Eta of the negative track.
+   */
   Double_t GetNegativeTrackEta() const{return fNegativeTrackLorentzVector->Eta();}
+  /*
+   * Gets the Eta of the positive track.
+   */
   Double_t GetPositiveTrackEta() const{return fPositiveTrackLorentzVector->Eta();}
+  /*
+   * Gets the Eta of the mother candidate.
+   */
   Double_t GetMotherCandidateEta() const{return fMotherCandidateLorentzVector->Eta();}
 
+  /*
+   * Gets the NDF of the mother candidate.
+   */
   Double_t GetMotherCandidateNDF() const{return fCurrentMotherKFCandidate->GetNDF();}
+
+  /*
+   * Gets the Chi2 of the mother candidate.
+   */
   Double_t GetMotherCandidateChi2() const{return fCurrentMotherKFCandidate->GetChi2();}
+
+  /*
+   * Gets the Mass of the mother candidate.
+   */
   Double_t GetMotherCandidateMass() const{return fMotherCandidateKFMass;}
+
+  /*
+   * Gets the Width of the mother candidate.
+   */
   Double_t GetMotherCandidateWidth() const{return fMotherCandidateKFWidth;}
 
+  /*
+   * Gets the Phi of the negative track.
+   */
   Double_t GetNegativeTrackPhi() const;
+
+  /*
+   * Gets the Phi of the positive track.
+   */
   Double_t GetPositiveTrackPhi() const;
+
+  /*
+   * Gets the Phi of the mother candidate.
+   */
   Double_t GetMotherCandidatePhi() const;
 
+  /*
+   * Update data which need to be updated every event.
+   */
   void UpdateEventByEventData();
   
+  /*
+   * Gets the MaxRCut value.
+   */
   Double_t GetMaxRCut() const{return fMaxR;}
+
+  /*
+   * Gets the Eta cut value.
+   */
   Double_t GetEtaCut() const{return fEtaCut;}
+
+  /*
+   * Gets the Pt cut value.
+   */
   Double_t GetPtCut() const{return fPtCut;}
+
+  /*
+   * Gets the Chi2 cut value for the conversions.
+   */
   Double_t GetChi2CutConversion() const{return fChi2CutConversion;}
+
+  /*
+   * Gets the Chi2 cut value for the mesons.
+   */
   Double_t GetChi2CutMeson() const{return fChi2CutMeson;}
 
+  /*
+   * Sets the MaxRCut value.
+   */
   void SetMaxRCut(Double_t maxR){fMaxR=maxR;}
+
+  /*
+   * Sets the EtaCut value.
+   */
   void SetEtaCut(Double_t etaCut){fEtaCut=etaCut;}
+
+  /*
+   * Sets the PtCut value.
+   */
   void SetPtCut(Double_t ptCut){fPtCut=ptCut;}
+
+  /*
+   * Sets the Chi2Cut value for conversions.
+   */
   void SetChi2CutConversion(Double_t chi2){fChi2CutConversion=chi2;}
+
+  /*
+   * Sets the Chi2Cut for the mesons.
+   */
   void SetChi2CutMeson(Double_t chi2){fChi2CutMeson=chi2;}
   
+  /*
+   * Sets the XVertexCut value.
+   */
   void SetXVertexCut(Double_t xVtx){fCurrentXValue=xVtx;}
+
+  /*
+   * Sets the YVertexCut value.
+   */
   void SetYVertexCut(Double_t yVtx){fCurrentYValue=yVtx;}
+
+  /*
+   * Sets the ZVertexCut value.
+   */
   void SetZVertexCut(Double_t zVtx){fCurrentZValue=zVtx;}
+
+  /*
+   * Sets the PIDProbabilityCut value for track particles.
+   */
   void SetPIDProbability(Double_t pidProb){fPIDProbabilityCutPositiveParticle=pidProb; fPIDProbabilityCutNegativeParticle=pidProb;}
+
+  /*
+   * Sets the PIDProbability cut value for the negative track.
+   */
   void SetPIDProbabilityNegativeParticle(Double_t pidProb){fPIDProbabilityCutNegativeParticle=pidProb;}
+
+  /*
+   * Sets the PIDProbability cut value for the positive track.
+   */
   void SetPIDProbabilityPositiveParticle(Double_t pidProb){fPIDProbabilityCutPositiveParticle=pidProb;}
+
+  /*
+   * Sets the SigmaMassCut value.
+   */
   void SetSigmaMass(Double_t sigmaMass){fNSigmaMass=sigmaMass;}
 
+  /*
+   * Sets the flag to enable/disable the usage of MC information. 
+   */
   void SetDoMCTruth(Bool_t doMC){fDoMC = doMC;}
 
+  /*
+   * Updates the V0 information of the current V0.
+   */
   void UpdateV0Information();
 
+  /*
+   * Resets the V0 index.
+   */
+  void ResetV0IndexNumber(){fCurrentV0IndexNumber=0;}
+
+  /*
+   * Sets the histograms.
+   */
   void SetHistograms(AliGammaConversionHistograms *histograms){fHistograms=histograms;}
 
+  /*
+   * Check for primary vertex.
+   */
+  Bool_t CheckForPrimaryVertex();
+
+  /*
+   * Gets a vector of good v0s.
+   */
   vector<AliKFParticle> GetCurrentEventGoodV0s() const{return fCurrentEventGoodV0s;}
+
+  /*
+   * Gets the vector of previous events v0s (for bacground analysis)
+   */
   vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
 
  private:

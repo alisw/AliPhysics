@@ -1,4 +1,9 @@
 
+/** VERSION NUMBER 0 */
+
+Bool_t usePWG4PartCorr = kTRUE;
+
+
 /** ------------------------------ Monte Carlo flag -----------------------------------------*/
 Bool_t doMCTruth = kTRUE;
 /** ---------------------------- end Monte Carlo flag ---------------------------------------*/
@@ -11,7 +16,7 @@ Bool_t useESDTrack   = kFALSE;
 
 Bool_t calculateBackground = kTRUE;
 
-Int_t numberOfFilesToAnalyze=100;
+Int_t numberOfFilesToAnalyze=2000;
 
 /** ---------------------------------- define cuts here ------------------------------------*/
 
@@ -61,147 +66,147 @@ Double_t maxPhi      = TMath::Pi();
 
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
-Bool_t plotMCEPR                             = kTRUE;
-Bool_t plotMCEPZR                            = kTRUE;
-Bool_t plotMCEPXY                            = kTRUE;
-Bool_t plotMCEPOpeningAngle                  = kTRUE;
+Bool_t plotMCEPR                                           = kTRUE;
+Bool_t plotMCEPZR                                          = kTRUE;
+Bool_t plotMCEPXY                                          = kTRUE;
+Bool_t plotMCEPOpeningAngle                                = kTRUE;
 
-Bool_t plotMCEEnergy                         = kTRUE;
-Bool_t plotMCEPt                             = kTRUE;
-Bool_t plotMCEEta                            = kTRUE;
-Bool_t plotMCEPhi                            = kTRUE;
+Bool_t plotMCEEnergy                                       = kTRUE;
+Bool_t plotMCEPt                                           = kTRUE;
+Bool_t plotMCEEta                                          = kTRUE;
+Bool_t plotMCEPhi                                          = kTRUE;
 
-Bool_t plotMCPEnergy                         = kTRUE;
-Bool_t plotMCPPt                             = kTRUE;
-Bool_t plotMCPEta                            = kTRUE;
-Bool_t plotMCPPhi                            = kTRUE;
+Bool_t plotMCPEnergy                                       = kTRUE;
+Bool_t plotMCPPt                                           = kTRUE;
+Bool_t plotMCPEta                                          = kTRUE;
+Bool_t plotMCPPhi                                          = kTRUE;
 
-Bool_t plotMCGammaEnergy                     = kTRUE;
-Bool_t plotMCGammaPt                         = kTRUE;
-Bool_t plotMCGammaEta                        = kTRUE;
-Bool_t plotMCGammaPhi                        = kTRUE;
+Bool_t plotMCGammaEnergy                                   = kTRUE;
+Bool_t plotMCGammaPt                                       = kTRUE;
+Bool_t plotMCGammaEta                                      = kTRUE;
+Bool_t plotMCGammaPhi                                      = kTRUE;
 
-Bool_t plotMCDirectGammaEnergy               = kTRUE;
-Bool_t plotMCDirectGammaPt                   = kTRUE;
-Bool_t plotMCDirectGammaEta                  = kTRUE;
-Bool_t plotMCDirectGammaPhi                  = kTRUE;
+Bool_t plotMCDirectGammaEnergy                             = kTRUE;
+Bool_t plotMCDirectGammaPt                                 = kTRUE;
+Bool_t plotMCDirectGammaEta                                = kTRUE;
+Bool_t plotMCDirectGammaPhi                                = kTRUE;
 
-Bool_t plotMCMatchGammaEta                   = kTRUE;
-Bool_t plotMCMatchGammaPhi                   = kTRUE;
-Bool_t plotMCMatchGammaPt                    = kTRUE;
-Bool_t plotMCMatchGammaEnergy                = kTRUE;
-Bool_t plotMCMatchGammaMass                  = kTRUE;
-Bool_t plotMCMatchGammaOpeningAngle          = kTRUE;
-Bool_t plotMCMatchGammaR                     = kTRUE;
-Bool_t plotMCMatchGammaZR                    = kTRUE;
-Bool_t plotMCMatchGammaXY                    = kTRUE;
+Bool_t plotMCMatchGammaEta                                 = kTRUE;
+Bool_t plotMCMatchGammaPhi                                 = kTRUE;
+Bool_t plotMCMatchGammaPt                                  = kTRUE;
+Bool_t plotMCMatchGammaEnergy                              = kTRUE;
+Bool_t plotMCMatchGammaMass                                = kTRUE;
+Bool_t plotMCMatchGammaOpeningAngle                        = kTRUE;
+Bool_t plotMCMatchGammaR                                   = kTRUE;
+Bool_t plotMCMatchGammaZR                                  = kTRUE;
+Bool_t plotMCMatchGammaXY                                  = kTRUE;
 
-Bool_t plotMCPi0Eta                          = kTRUE;
-Bool_t plotMCPi0Phi                          = kTRUE;
-Bool_t plotMCPi0Pt                           = kTRUE;
-Bool_t plotMCPi0Energy                       = kTRUE;
-Bool_t plotMCPi0Mass                         = kTRUE;
-Bool_t plotMCPi0OpeningAngle                 = kTRUE;
-Bool_t plotMCPi0R                            = kTRUE;
-Bool_t plotMCPi0ZR                           = kTRUE;
-Bool_t plotMCPi0XY                           = kTRUE;
+Bool_t plotMCPi0Eta                                        = kTRUE;
+Bool_t plotMCPi0Phi                                        = kTRUE;
+Bool_t plotMCPi0Pt                                         = kTRUE;
+Bool_t plotMCPi0Energy                                     = kTRUE;
+Bool_t plotMCPi0Mass                                       = kTRUE;
+Bool_t plotMCPi0OpeningAngle                               = kTRUE;
+Bool_t plotMCPi0R                                          = kTRUE;
+Bool_t plotMCPi0ZR                                         = kTRUE;
+Bool_t plotMCPi0XY                                         = kTRUE;
 
-Bool_t plotMCEtaEta                          = kTRUE;
-Bool_t plotMCEtaPhi                          = kTRUE;
-Bool_t plotMCEtaPt                           = kTRUE;
-Bool_t plotMCEtaEnergy                       = kTRUE;
-Bool_t plotMCEtaMass                         = kTRUE;
-Bool_t plotMCEtaOpeningAngleGamma            = kTRUE;
-Bool_t plotMCEtaR                            = kTRUE;
-Bool_t plotMCEtaZR                           = kTRUE;
-Bool_t plotMCEtaXY                           = kTRUE;
+Bool_t plotMCEtaEta                                        = kTRUE;
+Bool_t plotMCEtaPhi                                        = kTRUE;
+Bool_t plotMCEtaPt                                         = kTRUE;
+Bool_t plotMCEtaEnergy                                     = kTRUE;
+Bool_t plotMCEtaMass                                       = kTRUE;
+Bool_t plotMCEtaOpeningAngleGamma                          = kTRUE;
+Bool_t plotMCEtaR                                          = kTRUE;
+Bool_t plotMCEtaZR                                         = kTRUE;
+Bool_t plotMCEtaXY                                         = kTRUE;
     
 // Histograms from esd tracks
-Bool_t plotESDEPR                            = kTRUE;
-Bool_t plotESDEPZR                           = kTRUE;
-Bool_t plotESDEPXY                           = kTRUE;
-Bool_t plotESDEPOpeningAngle                 = kTRUE;
+Bool_t plotESDEPR                                          = kTRUE;
+Bool_t plotESDEPZR                                         = kTRUE;
+Bool_t plotESDEPXY                                         = kTRUE;
+Bool_t plotESDEPOpeningAngle                               = kTRUE;
 
-Bool_t plotESDEEnergy                        = kTRUE;
-Bool_t plotESDEPt                            = kTRUE;
-Bool_t plotESDEEta                           = kTRUE;
-Bool_t plotESDEPhi                           = kTRUE;
+Bool_t plotESDEEnergy                                      = kTRUE;
+Bool_t plotESDEPt                                          = kTRUE;
+Bool_t plotESDEEta                                         = kTRUE;
+Bool_t plotESDEPhi                                         = kTRUE;
 
-Bool_t plotESDPEnergy                        = kTRUE;
-Bool_t plotESDPPt                            = kTRUE;
-Bool_t plotESDPEta                           = kTRUE;
-Bool_t plotESDPPhi                           = kTRUE;
+Bool_t plotESDPEnergy                                      = kTRUE;
+Bool_t plotESDPPt                                          = kTRUE;
+Bool_t plotESDPEta                                         = kTRUE;
+Bool_t plotESDPPhi                                         = kTRUE;
 
 
-Bool_t plotESDGammaEnergy                    = kTRUE;
-Bool_t plotESDGammaPt                        = kTRUE;
-Bool_t plotESDGammaEta                       = kTRUE;
-Bool_t plotESDGammaPhi                       = kTRUE;
+Bool_t plotESDGammaEnergy                                  = kTRUE;
+Bool_t plotESDGammaPt                                      = kTRUE;
+Bool_t plotESDGammaEta                                     = kTRUE;
+Bool_t plotESDGammaPhi                                     = kTRUE;
 
-Bool_t plotESDMatchGammaOpeningAngle         = kTRUE;
-Bool_t plotESDMatchGammaEnergy               = kTRUE;
-Bool_t plotESDMatchGammaPt                   = kTRUE;
-Bool_t plotESDMatchGammaEta                  = kTRUE;
-Bool_t plotESDMatchGammaPhi                  = kTRUE;
-Bool_t plotESDMatchGammaMass                 = kTRUE;
-Bool_t plotESDMatchGammaWidth                = kTRUE;
-Bool_t plotESDMatchGammaChi2                 = kTRUE;
-Bool_t plotESDMatchGammaNDF                  = kTRUE;
-Bool_t plotESDMatchGammaR                    = kTRUE;
-Bool_t plotESDMatchGammaZR                   = kTRUE;
-Bool_t plotESDMatchGammaXY                   = kTRUE;
+Bool_t plotESDMatchGammaOpeningAngle                       = kTRUE;
+Bool_t plotESDMatchGammaEnergy                             = kTRUE;
+Bool_t plotESDMatchGammaPt                                 = kTRUE;
+Bool_t plotESDMatchGammaEta                                = kTRUE;
+Bool_t plotESDMatchGammaPhi                                = kTRUE;
+Bool_t plotESDMatchGammaMass                               = kTRUE;
+Bool_t plotESDMatchGammaWidth                              = kTRUE;
+Bool_t plotESDMatchGammaChi2                               = kTRUE;
+Bool_t plotESDMatchGammaNDF                                = kTRUE;
+Bool_t plotESDMatchGammaR                                  = kTRUE;
+Bool_t plotESDMatchGammaZR                                 = kTRUE;
+Bool_t plotESDMatchGammaXY                                 = kTRUE;
 
 Bool_t plotESDTwoGammaCombinationOpeningAngleGamma         = kTRUE;
-Bool_t plotESDTwoGammaCombinationEnergy      = kTRUE;
-Bool_t plotESDTwoGammaCombinationPt          = kTRUE;
-Bool_t plotESDTwoGammaCombinationEta         = kTRUE;
-Bool_t plotESDTwoGammaCombinationPhi         = kTRUE;
-Bool_t plotESDTwoGammaCombinationMass        = kTRUE;
-Bool_t plotESDTwoGammaCombinationR           = kTRUE;
-Bool_t plotESDTwoGammaCombinationZR          = kTRUE;
-Bool_t plotESDTwoGammaCombinationXY          = kTRUE;
+Bool_t plotESDTwoGammaCombinationEnergy                    = kTRUE;
+Bool_t plotESDTwoGammaCombinationPt                        = kTRUE;
+Bool_t plotESDTwoGammaCombinationEta                       = kTRUE;
+Bool_t plotESDTwoGammaCombinationPhi                       = kTRUE;
+Bool_t plotESDTwoGammaCombinationMass                      = kTRUE;
+Bool_t plotESDTwoGammaCombinationR                         = kTRUE;
+Bool_t plotESDTwoGammaCombinationZR                        = kTRUE;
+Bool_t plotESDTwoGammaCombinationXY                        = kTRUE;
 
-Bool_t plotESDBackgroundOpeningAngleGamma    = kTRUE;
-Bool_t plotESDBackgroundEnergy               = kTRUE;
-Bool_t plotESDBackgroundPt                   = kTRUE;
-Bool_t plotESDBackgroundEta                  = kTRUE;
-Bool_t plotESDBackgroundPhi                  = kTRUE;
-Bool_t plotESDBackgroundMass                 = kTRUE;
-Bool_t plotESDBackgroundR                    = kTRUE;
-Bool_t plotESDBackgroundZR                   = kTRUE;
-Bool_t plotESDBackgroundXY                   = kTRUE;
+Bool_t plotESDBackgroundOpeningAngleGamma                  = kTRUE;
+Bool_t plotESDBackgroundEnergy                             = kTRUE;
+Bool_t plotESDBackgroundPt                                 = kTRUE;
+Bool_t plotESDBackgroundEta                                = kTRUE;
+Bool_t plotESDBackgroundPhi                                = kTRUE;
+Bool_t plotESDBackgroundMass                               = kTRUE;
+Bool_t plotESDBackgroundR                                  = kTRUE;
+Bool_t plotESDBackgroundZR                                 = kTRUE;
+Bool_t plotESDBackgroundXY                                 = kTRUE;
 
-Bool_t plotMapping                           = kTRUE;       
+Bool_t plotMapping                                         = kTRUE;       
 
-Bool_t plotResolutiondPt                     = kTRUE;
-Bool_t plotResolutiondR                      = kTRUE;
-Bool_t plotResolutiondZ                      = kTRUE;
+Bool_t plotResolutiondPt                                   = kTRUE;
+Bool_t plotResolutiondR                                    = kTRUE;
+Bool_t plotResolutiondZ                                    = kTRUE;
   
-Bool_t plotResolutiondRdPt                   = kTRUE;
+Bool_t plotResolutiondRdPt                                 = kTRUE;
 
-Bool_t plotResolutionMCPt                    = kTRUE;
-Bool_t plotResolutionMCR                     = kTRUE;
-Bool_t plotResolutionMCZ                     = kTRUE;
+Bool_t plotResolutionMCPt                                  = kTRUE;
+Bool_t plotResolutionMCR                                   = kTRUE;
+Bool_t plotResolutionMCZ                                   = kTRUE;
 
-Bool_t plotResolutionESDPt                   = kTRUE;
-Bool_t plotResolutionESDR                    = kTRUE;
-Bool_t plotResolutionESDZ                    = kTRUE;
+Bool_t plotResolutionESDPt                                 = kTRUE;
+Bool_t plotResolutionESDR                                  = kTRUE;
+Bool_t plotResolutionESDZ                                  = kTRUE;
 
-Bool_t plotNumberOfV0s                       = kTRUE;
-Bool_t plotNumberOfSurvivingV0s              = kTRUE;
+Bool_t plotNumberOfV0s                                     = kTRUE;
+Bool_t plotNumberOfSurvivingV0s                            = kTRUE;
 
   //  debug histograms
-Bool_t plotV0MassDebugCut1                   = kTRUE;
-Bool_t plotV0MassDebugCut2                   = kTRUE;
-Bool_t plotV0MassDebugCut3                   = kTRUE;
-Bool_t plotV0MassDebugCut4                   = kTRUE;
-Bool_t plotV0MassDebugCut5                   = kTRUE;
-Bool_t plotV0MassDebugCut6                   = kTRUE;
-Bool_t plotV0MassDebugCut7                   = kTRUE;
-Bool_t plotV0MassDebugCut8                   = kTRUE;
+Bool_t plotV0MassDebugCut1                                 = kTRUE;
+Bool_t plotV0MassDebugCut2                                 = kTRUE;
+Bool_t plotV0MassDebugCut3                                 = kTRUE;
+Bool_t plotV0MassDebugCut4                                 = kTRUE;
+Bool_t plotV0MassDebugCut5                                 = kTRUE;
+Bool_t plotV0MassDebugCut6                                 = kTRUE;
+Bool_t plotV0MassDebugCut7                                 = kTRUE;
+Bool_t plotV0MassDebugCut8                                 = kTRUE;
 
-Bool_t plotPi0Spectra                        = kTRUE;
-Bool_t plotEtaSpectra                        = kTRUE;
+Bool_t plotPi0Spectra                                      = kTRUE;
+Bool_t plotEtaSpectra                                      = kTRUE;
 
 
 /** ----------------- end define which histograms to plot here -------------------------------*/
@@ -362,7 +367,7 @@ Double_t lastYBinSpectra = 100.;
  *                                                                                              *
  ************************************************************************************************/
 
-void ConfigGammaConversion(const char *chainName, const char *sample, int limit = 0){
+void ConfigGammaConversion(const char *chainName, const char *sample, Bool_t writeNtuple = kFALSE){
   
   build();//build (if necessary) and load the libraries needed
 
@@ -557,7 +562,7 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   // Declare Common Input Tchain
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("Chain",TChain::Class(),AliAnalysisManager::kInputContainer);
 
-  // Common Output Tree in common ‘default’ output file
+  // Common Output Tree in common âdefaultâ output file
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
 
   // Private output objects
@@ -602,7 +607,9 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   // Create the GammaConversionTask
   AliAnalysisTaskGammaConversion *gammaconversion = new AliAnalysisTaskGammaConversion("GammaConversionTask");
   gammaconversion->SetDebugLevel(10);
-  
+
+  gammaconversion->SetWriteNtuple(writeNtuple);
+
   gammaconversion->SetV0Reader(v0Reader);
   gammaconversion->SetCalculateBackground(calculateBackground);
   gammaconversion->Init();
@@ -655,60 +662,57 @@ void build() {
   //  gSystem->Load("libANALYSISalice");
 
   ////
-  ////
-  //Setting up STEERBase.par//
-  ////
-  setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
-
-  ////
   //Setting up ESD.par//
   ////
+  cout<<"compiling ESD"<<endl;
   setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
 
   ////
+  ////
+  //Setting up STEERBase.par//
+  ////
+  cout<<"compiling STEERBase"<<endl;
+  setupPar("STEERBase");
+  gSystem->Load("libSTEERBase.so");
+
+  ////
   //Setting up AOD.par//
   ////
+  cout<<"compiling AOD"<<endl;
   setupPar("AOD");
   gSystem->Load("libAOD.so");
                                                                 
   ////
   //Setting up ANALYSIS.par//
   ////
+  cout<<"compiling ANALYSIS"<<endl;
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
 
   ////
   //Setting up ANALYSISalice.par//
   ////
+  cout<<"compiling ANALUSISalice"<<endl;
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
                                                                                                                                   
   ////
   //Setting up PWG4Gamma.par//
   ////
-  //  setupPar("PWG4Gamma");
-  //  gSystem->Load("libPWG4Gamma.so");
-  setupPar("PWG4PartCorr");
-  gSystem->Load("libPWG4PartCorr.so");
+  //  cout<<"compiling GammaConv"<<endl;
+
+  if(usePWG4PartCorr == kTRUE){
+    cout<<"Using PWG4PartCorr library"<<endl;
+    setupPar("PWG4PartCorr");
+    gSystem->Load("libPWG4PartCorr.so");  
+  }
+  else{
+    setupPar("PWG4GammaConv");
+    gSystem->Load("libPWG4GammaConv.so");
+  }
   //if head:: use PWG4PartCorr
-             
-  //gROOT->LoadMacro("AliAnalysisTaskPi0.cxx+");
-  // gROOT->LoadMacro("AliAnalysisTaskPtMC.cxx+");
-  //  gROOT->LoadMacro("AliAnalysisTaskPi0MC.cxx+");
-  //  gROOT->LoadMacro("AliAnaScale.cxx+");
-
-
-  //gROOT->LoadMacro("$ALICEROOT/PWG0/CreateESDChain.C");
-  //TChain* chain = CreateESDChain("files1.txt");
-
-
-
-  ////
-
-
 }
 
 Int_t setupPar(const char* pararchivename) {
