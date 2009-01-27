@@ -42,6 +42,7 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithCumulants.h"
 #include "AliFlowCommonConstants.h"
+#include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliQCumulantsFunctions.h"
 
@@ -79,7 +80,11 @@ AliQCumulantsFunctions::AliQCumulantsFunctions():
  fbinEta3p2n1n1nPOI(NULL),
  fbinEta3p1n1n2nPOI(NULL),
  fbinEta4p1n1n1n1nPOI(NULL),  
- fchr2nd(NULL),
+ fch2nd(NULL),//ch = common histogram (control)
+ fch4th(NULL),
+ fch6th(NULL),
+ fch8th(NULL), 
+ fchr2nd(NULL),//chr = common histogram results 
  fchr4th(NULL),
  fchr6th(NULL),
  fchr8th(NULL) 
@@ -92,7 +97,7 @@ AliQCumulantsFunctions::~AliQCumulantsFunctions()
  //destructor
 }
 
-AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, AliFlowCommonHist *ch2nd, AliFlowCommonHist *ch4th, AliFlowCommonHist *ch6th, AliFlowCommonHist *ch8th, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntRes(intRes),
  fDiffRes2nd(diffRes2nd),
  fDiffRes4th(diffRes4th),
@@ -121,7 +126,11 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
  fbinEta2p2n2nPOI(binEta2p2n2nPOI),
  fbinEta3p2n1n1nPOI(binEta3p2n1n1nPOI),
  fbinEta3p1n1n2nPOI(binEta3p1n1n2nPOI),
- fbinEta4p1n1n1n1nPOI(binEta4p1n1n1n1nPOI),   
+ fbinEta4p1n1n1n1nPOI(binEta4p1n1n1n1nPOI), 
+ fch2nd(ch2nd),
+ fch4th(ch4th),
+ fch6th(ch6th),
+ fch8th(ch8th),   
  fchr2nd(chr2nd),
  fchr4th(chr4th),
  fchr6th(chr6th),
@@ -313,24 +322,38 @@ for(Int_t bb=1;bb<nBinsEtaRP+1;bb++)
  }
 }      
 
-
 //differential flow (POI)
+Int_t nBinsPtPOI = fbinPt2p1n1nPOI->GetNbinsX();
+Int_t nBinsEtaPOI = fbinEta2p1n1nPOI->GetNbinsX();
 
 //Pt:
 Double_t secondOrderQCumulantDiffFlowPtPOI = 0.;
 Double_t fourthOrderQCumulantDiffFlowPtPOI = 0.;
 
-Int_t nBinsPtPOI = fbinPt2p1n1nPOI->GetNbinsX();
+Double_t dVn2ndPOI=0.,dDiffvn2nd=0.,dYield2nd=0.,dSum2nd=0.;
+
+Double_t dVn2ndPOIEta=0.,dDiffvn2ndEta=0.,dYield2ndEta=0.,dSum2ndEta=0.;//to be removed
 
 for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
 {
+ //QC{2}
  if(fbinPt2p1n1nPOI->GetBinEntries(bb)>0.&&vn2!=0)
  {
+  //cout<<"bin = "<<bb<<" : "<<(fch2nd->GetHistPtDiff())->GetBinContent(bb)<<endl;
+  //cout<<endl;
   secondOrderQCumulantDiffFlowPtPOI = fbinPt2p1n1nPOI->GetBinContent(bb);
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlowPtPOI/vn2);
   //common histogram:
-  fchr2nd->FillDifferentialFlowPtPOI(bb,secondOrderQCumulantDiffFlowPtPOI/vn2, 0.);//to be improved (errors)
+  fchr2nd->FillDifferentialFlowPtPOI(bb,secondOrderQCumulantDiffFlowPtPOI/vn2, 0.);//to be improved (errors) && bb or bb+1
+  //-------------------------------------------------------------
+  //integrated flow (POI, Pt, 2nd order):
+  dDiffvn2nd=(fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(bb);
+  dYield2nd=(fch2nd->GetHistPtDiff())->GetBinContent(bb);
+  dVn2ndPOI+=dDiffvn2nd*dYield2nd;
+  dSum2nd+=dYield2nd;
+  //-------------------------------------------------------------
  }
+ //QC{4]
  if(fbinPt4p1n1n1n1nPOI->GetBinEntries(bb)>0.&&vn4!=0.)
  {
   fourthOrderQCumulantDiffFlowPtPOI = fbinPt4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinPt2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.);
@@ -340,11 +363,20 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
  }
 }      
 
+//storing the final results for integrated flow (POI):
+//QC{2}
+if(dSum2nd && fchr2nd)
+{
+ dVn2ndPOI/=dSum2nd;
+ fchr2nd->FillIntegratedFlowPOI(dVn2ndPOI,0.);
+}
+
+
+
+
 //Eta:
 Double_t secondOrderQCumulantDiffFlowEtaPOI = 0.;
 Double_t fourthOrderQCumulantDiffFlowEtaPOI = 0.;
-
-Int_t nBinsEtaPOI = fbinEta2p1n1nPOI->GetNbinsX();
 
 for(Int_t bb=1;bb<nBinsEtaPOI+1;bb++)
 {
@@ -369,7 +401,35 @@ for(Int_t bb=1;bb<nBinsEtaPOI+1;bb++)
  
 
  
- 
+//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//         !!!! to be removed !!!!
+for(Int_t bb=1;bb<nBinsEtaPOI+1;bb++)
+{
+ //integrated flow (POI, Eta, 2nd order):
+  dDiffvn2ndEta=(fchr2nd->GetHistDiffFlowEtaPOI())->GetBinContent(bb);
+  dYield2ndEta=(fch2nd->GetHistEtaDiff())->GetBinContent(bb);
+ // cout<<"bin = "<<bb<<" : "<<dDiffvn2ndEta<<" "<<dYield2ndEta<<endl;
+ // cout<<endl;
+  dVn2ndPOIEta+=dDiffvn2ndEta*dYield2ndEta;
+  dSum2ndEta+=dYield2ndEta;
+
+
+//check why for small number of events there is a mismatch here (should be exactly the same)://to be removed
+//cout<<dSum2nd<<"   to be improved   "<<(fch2nd->GetHistPtDiff())->Integral()<<endl;//to be removed
+}
+if(dSum2ndEta)
+{
+ dVn2ndPOIEta/=dSum2ndEta;
+ //cout<<"POI Pt vs POI Eta:"<<endl;
+ //cout<<dVn2ndPOI<<" vs "<<dVn2ndPOIEta<<endl;
+ //cout<<dSum2nd<<" vs "<<dSum2ndEta<<endl;
+// cout<<"eta = "<<(fchr2nd->GetHistDiffFlowEtaPOI())->GetBinContent(44)<<endl;
+// cout<<"poi = "<<(fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(14)<<endl;
+// cout<<"+++++++++"<<endl; 
+}
+
+//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
  
  /*
  Double_t first=16.*pow(two*twoErr,2.);
