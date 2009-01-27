@@ -95,6 +95,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPtImq1nPOI(NULL),
  fPtReq2nPOI(NULL),
  fPtImq2nPOI(NULL),
+ fOverlapPerPtBin(NULL),
  f2PerPtBin1n1nPOI(NULL),
  f2PerPtBin2n2nPOI(NULL),
  f3PerPtBin2n1n1nPOI(NULL),
@@ -104,6 +105,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEtaImq1nPOI(NULL),
  fEtaReq2nPOI(NULL),
  fEtaImq2nPOI(NULL),
+ fOverlapPerEtaBin(NULL),
  f2PerEtaBin1n1nPOI(NULL),
  f2PerEtaBin2n2nPOI(NULL),
  f3PerEtaBin2n1n1nPOI(NULL),
@@ -405,6 +407,12 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fPtImq2nPOI->SetYTitle("Im[q_2n]");
  //fHistList->Add(fPtImq2nPOI);
  
+ //fOverlapPerPtBin
+ fOverlapPerPtBin = new TProfile("fOverlapPerPtBin","# of particles selected both as RP and POI per #p_{t} bin",fnBinsPt,fPtMin,fPtMax,"s");
+ fOverlapPerPtBin->SetXTitle("p_{t} [GeV]");
+ fOverlapPerPtBin->SetYTitle("Counts");
+ //fHistList->Add(fOverlapPerPtBin);
+ 
  //f2PerPtBin1n1nPOI
  f2PerPtBin1n1nPOI = new TProfile("f2PerPtBin1n1nPOI","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
  f2PerPtBin1n1nPOI->SetXTitle("p_{t} [GeV]");
@@ -458,6 +466,12 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fEtaImq2nPOI->SetXTitle("#eta");
  fEtaImq2nPOI->SetYTitle("Im[q_2n]");
  //fHistList->Add(fEtaImq2nPOI);
+ 
+ //fOverlapPerEtaBin
+ fOverlapPerEtaBin = new TProfile("fOverlapPerEtaBin","# of particles selected both as RP and POI per #eta bin",fnBinsEta,fEtaMin,fEtaMax,"s");
+ fOverlapPerEtaBin->SetXTitle("#eta");
+ fOverlapPerEtaBin->SetYTitle("Counts");
+ //fHistList->Add(fOverlapPerEtaBin);
  
  //f2PerEtaBin1n1nPOI
  f2PerEtaBin1n1nPOI = new TProfile("f2PerEtaBin1n1nPOI","<2'>_{n|n}",fnBinsEta,fEtaMin,fEtaMax,"s");
@@ -832,9 +846,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t dQ2nx = afvQvector2n.X();
  Double_t dQ2ny = afvQvector2n.Y();
  
- Double_t dBinWidthPt=1.*(fPtMax-fPtMin)/fnBinsPt;
- Double_t dBinWidthEta=1.*(fEtaMax-fEtaMin)/fnBinsEta;
-
+ Double_t dBinWidthPt=0.,dBinWidthEta=0.;
+ if(fnBinsPt)
+ { 
+  dBinWidthPt=1.*(fPtMax-fPtMin)/fnBinsPt;
+ } 
+ if(fnBinsEta)
+ {
+  dBinWidthEta=1.*(fEtaMax-fEtaMin)/fnBinsEta;
+ }
+ 
  //RP:
  Double_t qxPtRP=0.,qyPtRP=0.,q2xPtRP=0.,q2yPtRP=0.,mPtRP=0.;//add comments for these variables (deleteMe)
  Double_t qxEtaRP=0.,qyEtaRP=0.,q2xEtaRP=0.,q2yEtaRP=0.,mEtaRP=0.;//add comments for these variables (deleteMe)
@@ -944,7 +965,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //POI:
  Double_t qxPtPOI=0.,qyPtPOI=0.,q2xPtPOI=0.,q2yPtPOI=0.,mPtPOI=0.;//add comments for these variables (deleteMe)
  Double_t qxEtaPOI=0.,qyEtaPOI=0.,q2xEtaPOI=0.,q2yEtaPOI=0.,mEtaPOI=0.;//add comments for these variables (deleteMe)
- Int_t iOverlap=0; 
+ Double_t dOverlapPt=0.,dOverlapEta=0.; 
   
  for(Int_t i=0;i<dMult;i++) //check if nPrim == M
  { 
@@ -952,7 +973,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   if(fTrack && fTrack->UseForDifferentialFlow())//checking POI condition 
   {
    //Pt:
-   fPtReq1nPOI->Fill(fTrack->Pt(),cos(n*(fTrack->Phi())),1.);
+   fPtReq1nPOI->Fill(fTrack->Pt(),cos(n*(fTrack->Phi())),1.); 
    fPtImq1nPOI->Fill(fTrack->Pt(),sin(n*(fTrack->Phi())),1.);
    fPtReq2nPOI->Fill(fTrack->Pt(),cos(2.*n*(fTrack->Phi())),1.);
    fPtImq2nPOI->Fill(fTrack->Pt(),sin(2.*n*(fTrack->Phi())),1.);
@@ -960,12 +981,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    fEtaReq1nPOI->Fill(fTrack->Eta(),cos(n*(fTrack->Phi())),1.);
    fEtaImq1nPOI->Fill(fTrack->Eta(),sin(n*(fTrack->Phi())),1.);
    fEtaReq2nPOI->Fill(fTrack->Eta(),cos(2.*n*(fTrack->Phi())),1.);
-   fEtaImq2nPOI->Fill(fTrack->Eta(),sin(2.*n*(fTrack->Phi())),1.);       
-   if(fTrack->UseForDifferentialFlow() && fTrack->UseForIntegratedFlow())//counting the overlap between RP and POI
+   fEtaImq2nPOI->Fill(fTrack->Eta(),sin(2.*n*(fTrack->Phi())),1.);        
+   if(fTrack->UseForIntegratedFlow())//counting the overlap between RP and POI
    {
-    iOverlap++;
+    fOverlapPerPtBin->Fill(fTrack->Pt(),1.,1.);
+    fOverlapPerEtaBin->Fill(fTrack->Eta(),1.,1.);
    } 
-  }
+  } 
  } 
  
  //Pt:
@@ -977,17 +999,15 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   qyPtPOI = (fPtImq1nPOI->GetBinContent(bin))*(fPtImq1nPOI->GetBinEntries(bin)); 
   q2xPtPOI = (fPtReq2nPOI->GetBinContent(bin))*(fPtReq2nPOI->GetBinEntries(bin));  
   q2yPtPOI = (fPtImq2nPOI->GetBinContent(bin))*(fPtImq2nPOI->GetBinEntries(bin)); 
-  mPtPOI = fPtReq1nPOI->GetBinEntries(bin);          
- 
+  mPtPOI = fPtReq1nPOI->GetBinEntries(bin);
+  dOverlapPt = fOverlapPerPtBin->GetBinEntries(bin);  
   if(mPtPOI>0&&dMult>1)
   {
-   //twoDiffPt1n1nPOI = (qxPtPOI*dQ1nx+qyPtPOI*dQ1ny-mPtPOI)/(mPtPOI*(dMult-1.));
-   twoDiffPt1n1nPOI = (qxPtPOI*dQ1nx+qyPtPOI*dQ1ny-iOverlap)/(mPtPOI*(dMult-1.));   
-   f2PerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nPOI,mPtPOI*(dMult-1.));//<2'>_{n|n}
-   
-   //twoDiffPt2n2nPOI = (q2xPtPOI*dQ2nx+q2yPtPOI*dQ2ny-mPtPOI)/(mPtPOI*(dMult-1.));
-   twoDiffPt2n2nPOI = (q2xPtPOI*dQ2nx+q2yPtPOI*dQ2ny-iOverlap)/(mPtPOI*(dMult-1.));   
-   f2PerPtBin2n2nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt2n2nPOI,mPtPOI*(dMult-1.));//<2'>_{2n|2n} 
+   twoDiffPt1n1nPOI = (qxPtPOI*dQ1nx+qyPtPOI*dQ1ny-dOverlapPt)/((mPtPOI-dOverlapPt)*dMult+dOverlapPt*(dMult-1.));   
+   f2PerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nPOI,(mPtPOI-dOverlapPt)*dMult+dOverlapPt*(dMult-1.));//<2'>_{n|n}
+  
+   twoDiffPt2n2nPOI = (q2xPtPOI*dQ2nx+q2yPtPOI*dQ2ny-dOverlapPt)/((mPtPOI-dOverlapPt)*dMult+dOverlapPt*(dMult-1.));   
+   f2PerPtBin2n2nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt2n2nPOI,(mPtPOI-dOverlapPt)*dMult+dOverlapPt*(dMult-1.));//<2'>_{2n|2n} 
   }
   
   if(mPtPOI>0&&dMult>2)
@@ -1011,6 +1031,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  fPtImq1nPOI->Reset();
  fPtReq2nPOI->Reset();
  fPtImq2nPOI->Reset();
+ fOverlapPerPtBin->Reset();
  
  //Eta:
  Double_t twoDiffEta1n1nPOI=0.,twoDiffEta2n2nPOI=0.,threeDiffEta2n1n1nPOI=0.,threeDiffEta1n1n2nPOI=0.,fourDiffEta1n1n1n1nPOI=0.;
@@ -1021,17 +1042,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   qyEtaPOI = (fEtaImq1nPOI->GetBinContent(bin))*(fEtaImq1nPOI->GetBinEntries(bin)); 
   q2xEtaPOI = (fEtaReq2nPOI->GetBinContent(bin))*(fEtaReq2nPOI->GetBinEntries(bin));  
   q2yEtaPOI = (fEtaImq2nPOI->GetBinContent(bin))*(fEtaImq2nPOI->GetBinEntries(bin)); 
-  mEtaPOI = fEtaReq1nPOI->GetBinEntries(bin); 
+  mEtaPOI = fEtaReq1nPOI->GetBinEntries(bin);
+  dOverlapEta = fOverlapPerEtaBin->GetBinEntries(bin);  
   
   if(mEtaPOI>0&&dMult>1)
   {
-   //twoDiffEta1n1nPOI = (qxEtaPOI*dQ1nx+qyEtaPOI*dQ1ny-mEtaPOI)/(mEtaPOI*(dMult-1.));
-   twoDiffEta1n1nPOI = (qxEtaPOI*dQ1nx+qyEtaPOI*dQ1ny-iOverlap)/(mEtaPOI*(dMult-1.));
-   f2PerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nPOI,mEtaPOI*(dMult-1.));//<2'>_{n|n}
+   twoDiffEta1n1nPOI = (qxEtaPOI*dQ1nx+qyEtaPOI*dQ1ny-dOverlapEta)/((mEtaPOI-dOverlapEta)*dMult+dOverlapEta*(dMult-1.));
+   f2PerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nPOI,(mEtaPOI-dOverlapEta)*dMult+dOverlapEta*(dMult-1.));//<2'>_{n|n}
    
-   //twoDiffEta2n2nPOI = (q2xEtaPOI*dQ2nx+q2yEtaPOI*dQ2ny-mEtaPOI)/(mEtaPOI*(dMult-1.));
-   twoDiffEta2n2nPOI = (q2xEtaPOI*dQ2nx+q2yEtaPOI*dQ2ny-iOverlap)/(mEtaPOI*(dMult-1.));
-   f2PerEtaBin2n2nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta2n2nPOI,mEtaPOI*(dMult-1.));//<2'>_{2n|2n} 
+   twoDiffEta2n2nPOI = (q2xEtaPOI*dQ2nx+q2yEtaPOI*dQ2ny-dOverlapEta)/((mEtaPOI-dOverlapEta)*dMult+dOverlapEta*(dMult-1.));
+   f2PerEtaBin2n2nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta2n2nPOI,(mEtaPOI-dOverlapEta)*dMult+dOverlapEta*(dMult-1.));//<2'>_{2n|2n} 
   }
   
   if(mEtaPOI>0&&dMult>2)
@@ -1055,6 +1075,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  fEtaImq1nPOI->Reset();
  fEtaReq2nPOI->Reset();
  fEtaImq2nPOI->Reset();
+ fOverlapPerEtaBin->Reset();
+
  
 //---------------------------------------------------------------------------------------------------------
 
