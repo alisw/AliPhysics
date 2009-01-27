@@ -21,9 +21,11 @@ void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefaul
     AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
     phosRecoParam->SetEventSpecie(AliRecoParam::kDefault);
     phosRecoParam->SetEMCSubtractPedestals(kFALSE);
-    phosRecoParam->SetEMCMinE(0.045);
+    phosRecoParam->SetEMCRawDigitThreshold(2);
+    phosRecoParam->SetEMCMinE(0.012);
     phosRecoParam->SetEMCClusteringThreshold(0.20);
     phosRecoParam->SetEMCDecoderVersion("v1");
+    phosRecoParam->SetEMCSampleQualityCut(10.);
     recoParamArray->AddLast(phosRecoParam);
   }
   {

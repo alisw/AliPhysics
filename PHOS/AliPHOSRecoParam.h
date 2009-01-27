@@ -21,6 +21,7 @@ public:
 
   Float_t GetEMCClusteringThreshold() const { return fEMCClusteringThreshold;  }
   Float_t GetEMCLocalMaxCut()         const { return fEMCLocMaxCut;            }
+  Float_t GetEMCRawDigitThreshold()   const { return fEMCRawDigitThreshold;  }
   Float_t GetEMCMinE()                const { return fEMCMinE;                 }
   Float_t GetEMCLogWeight()           const { return fEMCW0;                   }
   Float_t GetEMCSampleQualityCut()    const { return fEMCSampleQualityCut;     }
@@ -40,6 +41,7 @@ public:
 
   void SetEMCClusteringThreshold(Float_t cluth)      { fEMCClusteringThreshold=cluth;   }
   void SetEMCLocalMaxCut(Float_t cut)                { fEMCLocMaxCut          =cut;     }
+  void SetEMCRawDigitThreshold(Float_t rawDigTh)     { fEMCRawDigitThreshold  =rawDigTh;}
   void SetEMCMinE(Float_t minE)                      { fEMCMinE               =minE;    }
   void SetEMCLogWeight(Float_t w)                    { fEMCW0                 =w;       }
   void SetEMCSampleQualityCut(Float_t qu)            { fEMCSampleQualityCut   =qu;      }
@@ -57,7 +59,7 @@ public:
   void SetCPVLogWeight(Float_t w)                    { fCPVW0                 =w;       }
   void SetCPVUnfolding(Bool_t toUnfold=kFALSE)       { fCPVUnfold            =toUnfold;}
 
-  virtual void Print(const Option_t *option="") const;
+  virtual void Print(const Option_t *option="RecoParam") const;
 
   static AliPHOSRecoParam* GetDefaultParameters();
   static const  TObjArray* GetMappings();
@@ -66,7 +68,8 @@ protected:
 
   Float_t fEMCClusteringThreshold; // EMC: Min.digit energy to start a new cluster, in GeV
   Float_t fEMCLocMaxCut;           // EMC: Min.energy difference between two local maxima, in GeV
-  Float_t fEMCMinE;                // EMC: Min.E in the digits list associated with rec.point, in ADC counts
+  Float_t fEMCRawDigitThreshold;   // EMC: Min.amplitude of a digit produced from raw data in ADC
+  Float_t fEMCMinE;                // EMC: Min.E in the digits list associated with rec.point, in GeV
   Float_t fEMCW0;                  // EMC: Log.weight to evaluate a local coordinate of rec.point
   Float_t fEMCSampleQualityCut;    // EMC: Cut on pulse shape fit quality
   Float_t fEMCEcoreRadius;         // EMC: Radius within which the core energy is calculated, in cm
@@ -85,7 +88,7 @@ protected:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
 
-  ClassDef(AliPHOSRecoParam,8)
+  ClassDef(AliPHOSRecoParam,9)
 };
 
 #endif

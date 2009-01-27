@@ -74,7 +74,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam
 
   if(!recoParam) AliFatal("Reconstruction parameters are not set!");
 
-  fEmcMinE = recoParam->GetEMCMinE();
+  fEmcMinE = recoParam->GetEMCRawDigitThreshold();
   fCpvMinE = recoParam->GetCPVMinE();
   fSampleQualityCut = recoParam->GetEMCSampleQualityCut() ;
   fGlobalAltroOffset = recoParam->GetGlobalAltroOffset() ;

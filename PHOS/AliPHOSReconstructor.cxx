@@ -231,9 +231,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Add to CaloCells only EMC digits with non-zero energy 
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
-    if(dig->GetId() <= knEMC && dig->GetEnergy() > GetRecoParam()->GetEMCMinE() ){
-//      printf("i %d; id %d; amp %f; new E %f time %e\n",
-//      idignew,dig->GetId(),dig->GetEnergy(),Calibrate(dig->GetEnergy(),dig->GetId()), dig->GetTime());
+    if(dig->GetId() <= knEMC && 
+       Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetEMCMinE() ){
       phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()), dig->GetTime());   
       idignew++;
     }

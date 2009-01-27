@@ -34,7 +34,8 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   AliDetectorRecoParam(),
   fEMCClusteringThreshold(0.2),
   fEMCLocMaxCut(0.03),
-  fEMCMinE(2.),
+  fEMCRawDigitThreshold(2),
+  fEMCMinE(0.012),
   fEMCW0(4.5),
   fEMCSampleQualityCut(1.),
   fEMCEcoreRadius(3.),
@@ -58,7 +59,8 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   AliDetectorRecoParam(),
   fEMCClusteringThreshold(0.2),
   fEMCLocMaxCut(0.03),
-  fEMCMinE(2.),
+  fEMCRawDigitThreshold(2),
+  fEMCMinE(0.012),
   fEMCW0(4.5),
   fEMCSampleQualityCut(1.),
   fEMCEcoreRadius(3.),
@@ -85,6 +87,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
   if(this != &recoParam) {
     fEMCClusteringThreshold = recoParam.fEMCClusteringThreshold;
     fEMCLocMaxCut           = recoParam.fEMCLocMaxCut;
+    fEMCRawDigitThreshold   = recoParam.fEMCRawDigitThreshold;
     fEMCMinE                = recoParam.fEMCMinE;
     fEMCW0                  = recoParam.fEMCW0;
     fEMCSampleQualityCut    = recoParam.fEMCSampleQualityCut;
@@ -111,6 +114,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
   AliDebug(2,Form("PHOS reconstruction parameters:\n"
 		  "\tEMCClusteringThreshold = %f\n"
 		  "\tEMCLocMaxCut           = %f\n"
+		  "\tEMCRawDigitThreshold   = %f\n"
 		  "\tEMCMinE                = %f\n"
 		  "\tEMCW0                  = %f\n"
 		  "\tEMCSampleQualityCut    = %f\n"
@@ -123,6 +127,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tGlobalAltroOffset      = %d",
 		  fEMCClusteringThreshold,
 		  fEMCLocMaxCut,
+		  fEMCRawDigitThreshold,
 		  fEMCMinE,
 		  fEMCW0,
 		  fEMCSampleQualityCut,
