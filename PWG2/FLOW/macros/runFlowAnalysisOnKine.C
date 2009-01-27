@@ -34,9 +34,9 @@ Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 
-int runFlowAnalysisOnKine(Int_t aRuns = 20, const char* 
-			  dir="/data/alice1/kolk/KineOnly3/")
-			  //dir="/Users/snelling/alice_data/KineOnly3/")
+int runFlowAnalysisOnKine(Int_t aRuns = 100, const char* 
+			  //			  dir="/data/alice1/kolk/KineOnly3/")
+			  dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -380,6 +380,7 @@ int runFlowAnalysisOnKine(Int_t aRuns = 20, const char*
 	      
 	      fCount++;
 	      delete kTree;
+	      delete fEvent;
 	    }
 	  delete kineFile ;
 	}
