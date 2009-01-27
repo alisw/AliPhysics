@@ -1,6 +1,6 @@
 //type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
 //const TString type = "ESD"; 
-void CompareFlowResults(TString type="")
+void CompareFlowResults(TString type="ESD")
 {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->AddIncludePath("-I$ROOTSYS/include");
@@ -19,13 +19,13 @@ void CompareFlowResults(TString type="")
   //             set here which plots will be shown by default
   //==================================================================================
   //RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kFALSE;    //integrated flow RP
+  Bool_t plotIntFlowRP = kFALSE;     //integrated flow RP
   Bool_t plotDiffFlowPtRP = kFALSE;  //differential flow (Pt,RP)
   Bool_t plotDiffFlowEtaRP = kFALSE; //differential flow (Eta,RP)
   //POI = particle of interest
-  Bool_t plotIntFlowPOI = kFALSE;     //integrated flow POI
-  Bool_t plotDiffFlowPtPOI = kTRUE;  //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE; //differential flow (Eta,POI)
+  Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
+  Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;  //differential flow (Eta,POI)
   //==================================================================================
   
   
@@ -958,8 +958,6 @@ void CompareFlowResults(TString type="")
 
  
  
- /*
- 
  
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of RP (i.e. of particles used to determine the reaction plane):
@@ -972,9 +970,8 @@ void CompareFlowResults(TString type="")
   //1st pad is for plot:
   (intFlowAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
  
-  TH1D intFlowAllRPtemp = *intFlowAll;//to be improved 
-  TH1D *intFlowAllRP=&intFlowAllRPtemp;//to be improved  
-  
+  TH1D *intFlowAllRP = new TH1D(*intFlowAll); 
+
   if(intFlowAllRP)
   {
    if(dMinRP>0. && dMaxRP>0.)
@@ -992,7 +989,7 @@ void CompareFlowResults(TString type="")
        } 
    intFlowAllRP->Draw("E1");
   }
-                                       
+                                                                                                                                                                                                                                                                                   
   if(pMeshRP) pMeshRP->Draw("LFSAME");
    
   if(flowResultsRP) flowResultsRP->Draw("PSAME");
@@ -1017,8 +1014,8 @@ void CompareFlowResults(TString type="")
   //1st pad is for plot:
   (intFlowAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
   
-  TH1D intFlowAllPOItemp = *intFlowAll;//to be improved 
-  TH1D *intFlowAllPOI=&intFlowAllRPtemp;//to be improved  
+  TH1D *intFlowAllPOI = new TH1D(*intFlowAll);
+  
   if(intFlowAllPOI)
   {
    if(dMinPOI>0. && dMaxPOI>0.)
@@ -1051,11 +1048,6 @@ void CompareFlowResults(TString type="")
  //----------------------------------------------------------------------------------
  
  //==================================================================================   
- 
-
-
- 
- */
 
 
 
