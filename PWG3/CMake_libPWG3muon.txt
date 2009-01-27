@@ -7,6 +7,7 @@ set(SRCS
                  muon/AliAnalysisTaskSingleMu.cxx 
                  muon/AliAnalysisTaskLUT.cxx  
                  muon/AliAnalysisTaskTrigChEff.cxx 
+  		 muon/AliAnalysisTaskLinkToMC.cxx
                  muon/AliAODDimuon.cxx 
                  muon/AliAODEventInfo.cxx 
                  muon/AliESDMuonTrackCuts.cxx 
