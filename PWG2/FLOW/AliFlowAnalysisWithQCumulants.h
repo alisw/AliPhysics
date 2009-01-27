@@ -195,6 +195,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fPtImq1nPOI;               //imaginary part of q-vector evaluated in harmonic n for each pt-bin
   TProfile*                  fPtReq2nPOI;               //real part of q-vector evaluated in harmonic 2n for each pt-bin
   TProfile*                  fPtImq2nPOI;               //imaginary part of q-vector evaluated in harmonic 2n for each pt-bin
+  TProfile*                  fOverlapPerPtBin;          //number of particles selected both as RP and POI in each pt-bin
 
   TProfile*                  f2PerPtBin1n1nPOI;         //<<2'>>_{n|n} per pt-bin
   TProfile*                  f2PerPtBin2n2nPOI;         //<<2'>>_{2n|2n} per pt-bin
@@ -206,6 +207,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fEtaImq1nPOI;              //imaginary part of q-vector evaluated in harmonic n for each eta-bin
   TProfile*                  fEtaReq2nPOI;              //real part of q-vector evaluated in harmonic 2n for each eta-bin
   TProfile*                  fEtaImq2nPOI;              //imaginary part of q-vector evaluated in harmonic 2n for each eta-bin
+  TProfile*                  fOverlapPerEtaBin;         //number of particles selected both as RP and POI in each eta-bin
 
   TProfile*                  f2PerEtaBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin
   TProfile*                  f2PerEtaBin2n2nPOI;        //<<2'>>_{2n|2n} per eta-bin
