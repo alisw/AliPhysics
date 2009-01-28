@@ -41,7 +41,6 @@
 #include "AliTRDcluster.h"
 #include "AliTRDqaRecPoints.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayI.h"
 
 #include "AliQAChecker.h"
 
