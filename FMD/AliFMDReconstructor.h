@@ -178,8 +178,10 @@ protected:
    * Try to get the vertex from either ESD or generator header.  Sets
    * @c fCurrentVertex to the found Z posistion of the vertex (if 
    * found), and sets the flag @c fVertexType accordingly 
+   *
+   * @param esd ESD structure to get Vz from
    */
-  virtual void GetVertex() const;
+  virtual void GetVertex(AliESDEvent* esd) const;
   /** 
    * Process AliFMDDigit objects in @a digits.  For each digit, find
    * the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,

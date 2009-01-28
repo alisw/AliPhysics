@@ -219,32 +219,32 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::GetVertex() const
+AliFMDReconstructor::GetVertex(AliESDEvent* esd) const
 {
   // Return the vertex to use. 
   // This is obtained from the ESD object. 
   // If not found, a warning is issued.
   fVertexType    = kNoVertex;
   fCurrentVertex = 0;
-  if (fESD) {
-    const AliESDVertex* vertex = fESD->GetPrimaryVertex();
-    if (!vertex)        vertex = fESD->GetPrimaryVertexSPD();
-    if (!vertex)        vertex = fESD->GetPrimaryVertexTPC();
-    if (!vertex)        vertex = fESD->GetVertex();
+  if (!esd) return;
+  
+  const AliESDVertex* vertex = esd->GetPrimaryVertex();
+  if (!vertex)        vertex = esd->GetPrimaryVertexSPD();
+  if (!vertex)        vertex = esd->GetPrimaryVertexTPC();
+  if (!vertex)        vertex = esd->GetVertex();
 
-    if (vertex) {
-      AliFMDDebug(2, ("Got %s (%s) from ESD: %f", 
-		      vertex->GetName(), vertex->GetTitle(), vertex->GetZv()));
-      fCurrentVertex = vertex->GetZv();
-      fVertexType    = kESDVertex;
-      return;
-    }
-    else if (fESD->GetESDTZERO()) { 
-      AliFMDDebug(2, ("Got primary vertex from T0: %f", fESD->GetT0zVertex()));
-      fCurrentVertex = fESD->GetT0zVertex();
-      fVertexType    = kESDVertex;
-      return;
-    }
+  if (vertex) {
+    AliFMDDebug(2, ("Got %s (%s) from ESD: %f", 
+		    vertex->GetName(), vertex->GetTitle(), vertex->GetZv()));
+    fCurrentVertex = vertex->GetZv();
+    fVertexType    = kESDVertex;
+    return;
+  }
+  else if (esd->GetESDTZERO()) { 
+    AliFMDDebug(2, ("Got primary vertex from T0: %f", esd->GetT0zVertex()));
+    fCurrentVertex = esd->GetT0zVertex();
+    fVertexType    = kESDVertex;
+    return;
   }
   AliWarning("Didn't get any vertex from ESD or generator");
 }
@@ -320,7 +320,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   clusterTree	Pointer to output tree 
   // 
   AliFMDDebug(2, ("Reconstructing from digits in a tree"));
-  GetVertex();
+  GetVertex(fESD);
 
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
@@ -777,7 +777,7 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // fESDObj->Print();
 
   Double_t oldVz = fCurrentVertex;
-  GetVertex();
+  GetVertex(esd);
   if (fVertexType != kNoVertex) { 
     AliFMDDebug(2, ("Revertexing the ESD data to vz=%f (was %f)",
 		    fCurrentVertex, oldVz));
