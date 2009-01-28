@@ -89,6 +89,9 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * \li -tryrecover <br>
  *      This is a special option to the raw data decoder to turn on logic which will
  *      try and recover from corrupt raw DDL data. This is off by default. <br>
+ * \li -useidealgain <br>
+ *      When this option is used then the gain correction parameters are not loaded
+ *      from the CDB but ideal linear gain is assumed. <br>
  *
  * <h2>Standard configuration:</h2>
  * This component should normally be configured with either of the two sets of
@@ -184,6 +187,7 @@ private:
 	AliHLTMUONHitRecoLutRow* fLut;  ///< The lookup table used by the hit reconstruction algorithm (Owned by this component however).
 	IdManuChannelToEntry fIdToEntry; ///< id to line mapping.
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fUseIdealGain;  ///< Flag to indicate that ideal gain should be used and not loaded from the CDB.
 	
 	ClassDef(AliHLTMUONHitReconstructorComponent, 0) // Hit reconstructor component for dHLT tracker DDL raw data.
 };

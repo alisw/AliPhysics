@@ -202,17 +202,29 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
 	}
 	else
 	{
+		HLTError("Cannot decode the DDL.");
 		return false;
 	}
   }
 
   fDigitPerDDL = handler.GetDataCount();
   fMaxFiredPerDetElem[fNofFiredDetElem-1] = handler.GetDataCount();
-    
-  if(fDigitPerDDL == 1){
-    HLTInfo("An Empty DDL File found");
+  
+  HLTDebug("fNofFiredDetElem : %d, NofDigits %d and max reco point limit is : %d, nofDetElems : %d",
+          fNofFiredDetElem,fDigitPerDDL,fMaxRecPointsCount,fNofFiredDetElem);
+
+  for(int iDet=0; iDet<TMath::Max(fNofFiredDetElem,130); iDet++)
+    HLTDebug("NofCount (fMaxFiredPerDetElem) in iDet %d is : %d", iDet, fMaxFiredPerDetElem[iDet]);
+  
+  if(fNofFiredDetElem>129){
+    HLTError("Number of fired detection elements is %d, which is more than 129.", fNofFiredDetElem);
+    return false;
   }
-    
+  
+  if(fDigitPerDDL == 1){
+    HLTDebug("An Empty DDL file was found.");
+  }
+  
   return true;
 }
 
@@ -231,6 +243,8 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
   assert( fNofNBChannel == NULL );
   
   bool resultOk = false;
+  
+  HLTDebug("Number of fired detection elements = %d.", fNofFiredDetElem);
 
   for(int iDet=0; iDet<fNofFiredDetElem ; iDet++)
   {
@@ -249,6 +263,7 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
     {
       HLTError("Dynamic memory allocation failed for fCentralChargeNB and fCentralChargeB");
       resultOk = false;
+      //break; Do not break. Might have smaller memory requirements in the next iteration.
     }
 
     // Continue processing, but check if everything is OK as we do, otherwise
@@ -256,11 +271,43 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
     if (resultOk)
     {
       if(iDet>0)
+      {
+        HLTDebug("Finding central hists from fMaxFiredPerDetElem[%d] : %d, to fMaxFiredPerDetElem[%d] : %d.",
+                 iDet-1, fMaxFiredPerDetElem[iDet-1], iDet, fMaxFiredPerDetElem[iDet]
+        );
         FindCentralHits(fMaxFiredPerDetElem[iDet-1],fMaxFiredPerDetElem[iDet]);
+      }
       else
+      {
+        HLTDebug("Finding central hists from fMaxFiredPerDetElem[1] : %d, to fMaxFiredPerDetElem[%d] : %d.",
+                 fMaxFiredPerDetElem[1], iDet, fMaxFiredPerDetElem[iDet]
+        );
         // minimum value is 1 because dataCount in ReadDDL starts from 1 instead of 0;
         FindCentralHits(1,fMaxFiredPerDetElem[iDet]);
+      }
+      
+      HLTDebug("Found fCentralCountB : %d, fCentralCountNB : %d",fCentralCountB,fCentralCountNB);
+      if(fCentralCountB==0 or fCentralCountNB==0)
+      {
+        HLTDebug("There is no fired pad in bending/nonbending plane...skipping this detection element");
+        if (fCentralChargeB != NULL)
+        {
+          delete [] fCentralChargeB;
+          HLTDebug("Released fCentralChargeB array.");
+          fCentralChargeB = NULL;
+        }
+        if (fCentralChargeNB != NULL)
+        {
+          delete [] fCentralChargeNB;
+          HLTDebug("Released fCentralChargeNB array.");
+          fCentralChargeNB = NULL;
+        }
+        continue;
+      }
+    }
 
+    if (resultOk)
+    {
       try
       {
         fRecY = new float[fCentralCountB];
@@ -280,6 +327,7 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
       catch(const std::bad_alloc&){
         HLTError("Dynamic memory allocation failed for internal arrays.");
         resultOk = false;
+        //break; Must not break, this will prevent calling delete and memory cleanup, i.e. memory leak.
       }
     }
 
@@ -288,15 +336,17 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
     {
       resultOk = MergeRecHits();
     }
-    if (resultOk)
+    
+    if(iDet==0)
     {
-      if(iDet==0)
-        // minimum value in loop is 1 because dataCount in ReadDDL starts from 1 instead of 0;
-        for(int i=1;i<fMaxFiredPerDetElem[iDet];i++)
-          fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
-      else
-        for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
-          fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
+      // minimum value in loop is 1 because dataCount in ReadDDL starts from 1 instead of 0;
+      for(int i=1;i<fMaxFiredPerDetElem[iDet];i++)
+        fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
+    }
+    else
+    {
+      for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
+        fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
     }
 
     // Make sure to release any memory that was allocated.
@@ -503,8 +553,13 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     if(fPadData[idUpper].fCharge>0)
       fNofBChannel[b]++ ;
 
-    HLTDebug("lower : %d, middle : %d, upper : %d, nofChannel : %d",fPadData[idLower].fCharge,
-	    fPadData[idCentral].fCharge,fPadData[idUpper].fCharge,fNofBChannel[b]);
+    HLTDebug("detelem : %d :--(charge,pos) lower[%d]  : (%d,%f), middle[%d]  : (%d,%f), upper[%d] : (%d,%f), nofChannel : %d",
+            fPadData[idCentral].fDetElemId,
+            idLower, fPadData[idLower].fCharge, fPadData[idLower].fRealY,
+            idCentral, fPadData[idCentral].fCharge,fPadData[idCentral].fRealY,
+            idUpper, fPadData[idUpper].fCharge, fPadData[idUpper].fRealY,
+            fNofBChannel[b]
+    );
 
     HLTDebug("RecY[%d] : %f",b,fRecY[b]);
   }
@@ -541,8 +596,13 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     if(fPadData[idRight].fCharge>0)
       fNofNBChannel[nb]++ ;
 
-    HLTDebug("left : %d, middle : %d, right : %d, nofChannel : %d",fPadData[idLeft].fCharge,
-	    fPadData[idCentral].fCharge,fPadData[idRight].fCharge,fNofNBChannel[nb]);
+    HLTDebug("detelem : %d:--(charge,pos) left[%d] : (%d,%f), middle[%d] : (%d,%f), right[%d] : (%d,%f), nofChannel : %d",
+            fPadData[idLeft].fDetElemId,
+            idLeft, fPadData[idLeft].fCharge, fPadData[idLeft].fRealX,
+            idCentral, fPadData[idCentral].fCharge, fPadData[idCentral].fRealX,
+            idRight, fPadData[idRight].fCharge, fPadData[idRight].fRealX,
+            fNofNBChannel[nb]
+    );
 
     HLTDebug("RecX[%d] : %f",nb,fRecX[nb]);
 
@@ -683,7 +743,10 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 	    
 	    // First check that we have not overflowed the buffer.
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      HLTError("Number of RecHit (i.e. %d) exceeds the max number of RecHit limit %d.",(*fRecPointsCount),fMaxRecPointsCount);
+	      HLTError("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
+	                " Output buffer is too small.",
+	               (*fRecPointsCount),fMaxRecPointsCount
+	      );
 	      return false;
 	    }
 
@@ -695,6 +758,11 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 	    fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
 	    fRecPoints[(*fRecPointsCount)].fY = fRecY[b];
 	    fRecPoints[(*fRecPointsCount)].fZ = fPadData[idCentralB].fRealZ;
+	    HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
+                     fRecPoints[(*fRecPointsCount)].fX,
+                     fRecPoints[(*fRecPointsCount)].fY,
+                     fRecPoints[(*fRecPointsCount)].fZ
+            );
 // 	    fRecPoints[(*fRecPointsCount)].fXCenter = fPadData[idCentralNB].fRealX;
 // 	    fRecPoints[(*fRecPointsCount)].fYCenter = fPadData[idCentralB].fRealY;
 // 	    fRecPoints[(*fRecPointsCount)].fNofBChannel = fNofBChannel[b];
@@ -715,6 +783,8 @@ void AliHLTMUONHitReconstructor::Clear()
 {
   // function to clear internal arrays.
 
+  HLTDebug("Clearing fPadData and fMaxFiredPerDetElem buffers.");
+
   for(int iPad=1;iPad<fDigitPerDDL;iPad++){
     fGetIdTotalData[fPadData[iPad].fIX][fPadData[iPad].fIY][fPadData[iPad].fPlane] = 0;
     fPadData[iPad].fDetElemId = 0;
@@ -728,7 +798,7 @@ void AliHLTMUONHitReconstructor::Clear()
     fPadData[iPad].fCharge = 0 ;
   }  
   
-  for(int i=0;i<13;i++)
+  for(int i=0;i<130;i++)
     fMaxFiredPerDetElem[i] = 0;
 }
 
@@ -800,6 +870,11 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
   
   IdManuChannelToEntry& idToEntry = * const_cast<IdManuChannelToEntry*>(fIdToEntry);
   fLutEntry = idToEntry[fIdManuChannel];
+  if(fLutEntry==0)
+  {
+    HLTDebug("Failed to find a valid LUT entry.");
+    return;
+  }
   fPadCharge = int(((unsigned short)(dataWord & 0xFFF)) - fLookUpTableData[fLutEntry].fPed);
   
   fCharge = 0;	  
@@ -828,18 +903,27 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
       if((*fNofFiredDetElem)>0){
 	fMaxFiredPerDetElem[(*fNofFiredDetElem)-1] = fDataCount;
       }
+      
+      HLTDebug("detElem : %d, prevDetElem : %d, datacount : %d, maxFiredPerDetElem[%d] : %d",
+               fLookUpTableData[fLutEntry].fDetElemId,fPrevDetElemId,fDataCount,
+               ((*fNofFiredDetElem)-1),fMaxFiredPerDetElem[(*fNofFiredDetElem)-1]
+      );
+      
       (*fNofFiredDetElem)++;
       fPrevDetElemId =  fLookUpTableData[fLutEntry].fDetElemId ;
     }
     
-//     HLTDebug("buspatch : %d, detele : %d, id : %d, manu : %d, channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f), charge : %d, padsize : %f, plane : %d",
-// 	     fBusPatchId,fPadData[fDataCount].fDetElemId,
-// 	     fIdManuChannel,((dataWord >> 18) & 0x7FF),((dataWord >> 12) & 0x3F),
-// 	     fPadData[fDataCount].fIX,fPadData[fDataCount].fIY,
-// 	     fPadData[fDataCount].fRealX,fPadData[fDataCount].fRealY,
-// 	     fPadData[fDataCount].fCharge,fPadData[fDataCount].fHalfPadSize,fPadData[fDataCount].fPlane);
+    HLTDebug("LUT address: %p, lutEntry : %d, buspatch : %d, detElem : %d, id : %d, manu : %d,"
+              " channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f), charge : %d, padsize : %f, plane : %d",
+             fLookUpTableData, fLutEntry, fBusPatchId, fPadData[fDataCount].fDetElemId,
+             fIdManuChannel, ((dataWord >> 18) & 0x7FF), ((dataWord >> 12) & 0x3F),
+             fPadData[fDataCount].fIX, fPadData[fDataCount].fIY,
+             fPadData[fDataCount].fRealX, fPadData[fDataCount].fRealY,
+             fPadData[fDataCount].fCharge, fPadData[fDataCount].fHalfPadSize,
+             fPadData[fDataCount].fPlane
+    );
     
-      fDataCount ++;
+    fDataCount++;
   }// if charge is more than DC Cut limit condition
   
 }

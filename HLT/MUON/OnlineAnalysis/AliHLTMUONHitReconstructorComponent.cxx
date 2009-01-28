@@ -76,7 +76,8 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fLutSize(0),
 	fLut(NULL),
 	fIdToEntry(),
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fUseIdealGain(false)
 {
 	///
 	/// Default constructor.
@@ -173,6 +174,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fDDL = -1;
 	fIdToEntry.clear();
 	fWarnForUnexpecedBlock = false;
+	fUseIdealGain = false;
 	const char* lutFileName = NULL;
 	bool useCDB = false;
 	bool tryRecover = false;
@@ -320,6 +322,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			tryRecover = true;
 			continue;
 		}
+		
+		if (strcmp( argv[i], "-useidealgain" ) == 0)
+		{
+			fUseIdealGain = true;
+			continue;
+		}
 	
 		HLTError("Unknown option '%s'", argv[i]);
 		return -EINVAL;
@@ -419,7 +427,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	}
 	
 	fHitRec->TryRecover(tryRecover);
-	
+	HLTDebug("dHLT hit reconstruction component is initialized.");
 	return 0;
 }
 
@@ -916,6 +924,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					// Getting Manu id
 					manuId = pad.GetLocation().GetFirst();
 					manuId &= 0x7FF; // 11 bits 
+					if(!calibData.Pedestals(detElemId, manuId)) continue;
 			
 					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
 					
@@ -936,13 +945,23 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 						realX,realY,realZ
 					);
 					
-					padSizeX = pad.Dimensions().X();
-					padSizeY = pad.Dimensions().Y();
+					padSizeX = AliHLTFloat32_t( pad.Dimensions().X() );
+					padSizeY = AliHLTFloat32_t( pad.Dimensions().Y() );
 					
-					calibA0Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 0);
-					calibA1Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 1);
-					thresold = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 2);
-					saturation = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 4);
+					if (fUseIdealGain)
+					{
+						calibA0Coeff = 1.0;
+						calibA1Coeff = 0.0;
+						thresold = 0;
+						saturation = 0;
+					}
+					else
+					{
+						calibA0Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 0);
+						calibA1Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 1);
+						thresold = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 2);
+						saturation = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 4);
+					}
 					
 					pedestal = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 0);
 					sigma = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 1);
@@ -969,6 +988,10 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					lut.fThres = thresold;
 					lut.fSat = saturation;
 					
+					HLTDebug("lut : detele : %d, id : %d, manu : %d, channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f), padsize : %f, plane : %d, ped : %f, sigma : %f",
+						lut.fDetElemId,idManuChannel,manuId,channelId,lut.fIX,lut.fIY,lut.fRealX,lut.fRealY,lut.fHalfPadSize,lut.fPlane,lut.fPed,lut.fSigma
+					);
+					
 					lutList.push_back(lut);
 					iEntry++;
 				} // iX, iY loop
@@ -982,10 +1005,12 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 		// which is used as a sentinel value.
 		fLut = new AliHLTMUONHitRecoLutRow[iEntry+1];
 		fLutSize = iEntry+1;
+		HLTDebug("Address of new LUT buffer at fLut = %p", fLut);
 	}
 	catch (const std::bad_alloc&)
 	{
 		HLTError("Could not allocate more memory for the lookuptable.");
+		//lutList.clear();  not necessary, implicitly done during stack cleanup.
 		return -ENOMEM;
 	}
 	

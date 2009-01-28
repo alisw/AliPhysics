@@ -41,6 +41,8 @@
  */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliRawReader.h"
+#include "AliHLTOfflineInterface.h"
 #include "AliCDBManager.h"
 #include "AliHLTSystem.h"
 #include "AliHLTConfiguration.h"
@@ -80,8 +82,13 @@ using std::endl;
  *                  using the ROOTFileWriter component. This option is equivalent
  *                  to 'bin' if the chain type is 'ddlreco'.
  * @param dataSource  This is the data source from which to use hits and trigger
- *     records when we are running the tracker only chain. Note this parameter
- *     only makes sense if chainType = "tracker". The possible options are:
+ *     records when we are running the tracker only chain and the DDL raw data
+ *     reading method when running the 'full' or 'ddlreco' chain. If the
+ *     chainType = "full" or "ddlreco", then the possible options are:
+ *       "file"      - Reads the raw data directly from the DDL files. (default)
+ *       "rawreader" - Reads the raw data using the AliRawReader interface from
+ *               the current working directory.
+ *     If the chainType = "tracker", then the possible options are:
  *       "sim" - Take data from GEANT hits. (default)
  *       "rec" - Take data from offline reconstructed hits and local trigger
  *               objects.
@@ -97,16 +104,19 @@ using std::endl;
  *      CDB instead. The default behaviour is to read from the local CDB store.
  * @param checkData  A flag for indicating if the event data should be checked
  *      for consistency with the AliHLTMUONDataCheckerComponent.
+ * @param rawDataPath  The path of the raw data (i.e. path to the rawXX directories)
+ *      or can be the file name if using the "rawreader" option for dataSource.
  */
 void RunChain(
 		const char* chainType = "full",
 		Int_t firstEvent = 0,
 		Int_t lastEvent = -1,
 		const char* output = "bin",
-		const char* dataSource = "sim",
+		const char* dataSource = "file",
 		const char* logLevel = "normal",
 		const char* lutDir = "CDB",
-		bool checkData = false
+		bool checkData = false,
+		const char* rawDataPath = "./"
 	)
 {
 	// Setup the CDB default storage and run number if nothing was set.
@@ -131,6 +141,7 @@ void RunChain(
 	int eventCount = lastEvent - firstEvent + 1;
 	
 	bool buildDDLFilePubs = false;
+	bool buildRawReaderPubs = false;
 	bool buildDDLRecoComps = false;
 	bool buildSimDataPubs = false;
 	bool buildRecDataPubs = false;
@@ -164,22 +175,52 @@ void RunChain(
 	}
 	else
 	{
-		cerr << "ERROR: Unknown option for output: " << output << endl;
+		cerr << "ERROR: Unknown option for output: '" << output << "'" << endl;
 		return;
 	}
 	
 	TString chainOpt = chainType;
 	if (chainOpt.CompareTo("full", TString::kIgnoreCase) == 0)
 	{
-		buildDDLFilePubs = true;
 		buildDDLRecoComps = true;
 		buildTrackerComp = true;
+		
+		TString dataOpt = dataSource;
+		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
+		{
+			buildDDLFilePubs = true;
+		}
+		else if (dataOpt.CompareTo("rawreader", TString::kIgnoreCase) == 0)
+		{
+			buildRawReaderPubs = true;
+		}
+		else
+		{
+			cerr << "ERROR: Unknown option for dataSource: '" << dataSource
+				<< "'. Valid options are: 'file' or 'rawreader'" << endl;
+			return;
+		}
 	}
 	else if (chainOpt.CompareTo("ddlreco", TString::kIgnoreCase) == 0)
 	{
-		buildDDLFilePubs = true;
 		buildDDLRecoComps = true;
 		buildDecisionComp = false;
+		
+		TString dataOpt = dataSource;
+		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
+		{
+			buildDDLFilePubs = true;
+		}
+		else if (dataOpt.CompareTo("rawreader", TString::kIgnoreCase) == 0)
+		{
+			buildRawReaderPubs = true;
+		}
+		else
+		{
+			cerr << "ERROR: Unknown option for dataSource: '" << dataSource
+				<< "'. Valid options are: 'file' or 'rawreader'" << endl;
+			return;
+		}
 	}
 	else if (chainOpt.CompareTo("tracker", TString::kIgnoreCase) == 0)
 	{
@@ -196,13 +237,14 @@ void RunChain(
 		}
 		else
 		{
-			cerr << "ERROR: Unknown option for dataSource: " << dataSource << endl;
+			cerr << "ERROR: Unknown option for dataSource: '" << dataSource
+				<< "'. Valid options are: 'sim' or 'rec'" << endl;
 			return;
 		}
 	}
 	else
 	{
-		cerr << "ERROR: Unknown option for chainType: " << chainType << endl;
+		cerr << "ERROR: Unknown option for chainType: '" << chainType << "'" << endl;
 		return;
 	}
 	
@@ -225,7 +267,7 @@ void RunChain(
 	}
 	else
 	{
-		cerr << "ERROR: Unknown option for logLevel: " << logLevel << endl;
+		cerr << "ERROR: Unknown option for logLevel: '" << logLevel << "'" << endl;
 		return;
 	}
 	
@@ -298,16 +340,16 @@ void RunChain(
 			}
 			char buf[16];
 			sprintf(buf, "%d", i);
-			cmd13 += " -datafile raw"; cmd13 += buf; cmd13 += "/MUONTRK_2572.ddl";
-			cmd14 += " -datafile raw"; cmd14 += buf; cmd14 += "/MUONTRK_2573.ddl";
-			cmd15 += " -datafile raw"; cmd15 += buf; cmd15 += "/MUONTRK_2574.ddl";
-			cmd16 += " -datafile raw"; cmd16 += buf; cmd16 += "/MUONTRK_2575.ddl";
-			cmd17 += " -datafile raw"; cmd17 += buf; cmd17 += "/MUONTRK_2576.ddl";
-			cmd18 += " -datafile raw"; cmd18 += buf; cmd18 += "/MUONTRK_2577.ddl";
-			cmd19 += " -datafile raw"; cmd19 += buf; cmd19 += "/MUONTRK_2578.ddl";
-			cmd20 += " -datafile raw"; cmd20 += buf; cmd20 += "/MUONTRK_2579.ddl";
-			cmd21 += " -datafile raw"; cmd21 += buf; cmd21 += "/MUONTRG_2816.ddl";
-			cmd22 += " -datafile raw"; cmd22 += buf; cmd22 += "/MUONTRG_2817.ddl";
+			cmd13 += " -datafile "; cmd13 += rawDataPath; cmd13 += "raw"; cmd13 += buf; cmd13 += "/MUONTRK_2572.ddl";
+			cmd14 += " -datafile "; cmd14 += rawDataPath; cmd14 += "raw"; cmd14 += buf; cmd14 += "/MUONTRK_2573.ddl";
+			cmd15 += " -datafile "; cmd15 += rawDataPath; cmd15 += "raw"; cmd15 += buf; cmd15 += "/MUONTRK_2574.ddl";
+			cmd16 += " -datafile "; cmd16 += rawDataPath; cmd16 += "raw"; cmd16 += buf; cmd16 += "/MUONTRK_2575.ddl";
+			cmd17 += " -datafile "; cmd17 += rawDataPath; cmd17 += "raw"; cmd17 += buf; cmd17 += "/MUONTRK_2576.ddl";
+			cmd18 += " -datafile "; cmd18 += rawDataPath; cmd18 += "raw"; cmd18 += buf; cmd18 += "/MUONTRK_2577.ddl";
+			cmd19 += " -datafile "; cmd19 += rawDataPath; cmd19 += "raw"; cmd19 += buf; cmd19 += "/MUONTRK_2578.ddl";
+			cmd20 += " -datafile "; cmd20 += rawDataPath; cmd20 += "raw"; cmd20 += buf; cmd20 += "/MUONTRK_2579.ddl";
+			cmd21 += " -datafile "; cmd21 += rawDataPath; cmd21 += "raw"; cmd21 += buf; cmd21 += "/MUONTRG_2816.ddl";
+			cmd22 += " -datafile "; cmd22 += rawDataPath; cmd22 += "raw"; cmd22 += buf; cmd22 += "/MUONTRG_2817.ddl";
 		}
 
 		AliHLTConfiguration pubDDL13("pubDDL13", "FilePublisher", NULL, cmd13.c_str());
@@ -320,6 +362,32 @@ void RunChain(
 		AliHLTConfiguration pubDDL20("pubDDL20", "FilePublisher", NULL, cmd20.c_str());
 	        AliHLTConfiguration pubDDL21("pubDDL21", "FilePublisher", NULL, cmd21.c_str());
 	        AliHLTConfiguration pubDDL22("pubDDL22", "FilePublisher", NULL, cmd22.c_str());
+	}
+
+	// Build the DDL file publishers using AliRawReaderPublisher components.
+	if (buildRawReaderPubs)
+	{
+		string cmd13 = "-skipempty -minid 2572 -maxid 2572 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x001000";
+		string cmd14 = "-skipempty -minid 2573 -maxid 2573 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x002000";
+		string cmd15 = "-skipempty -minid 2574 -maxid 2574 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x004000";
+		string cmd16 = "-skipempty -minid 2575 -maxid 2575 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x008000";
+		string cmd17 = "-skipempty -minid 2576 -maxid 2576 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x010000";
+		string cmd18 = "-skipempty -minid 2577 -maxid 2577 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x020000";
+		string cmd19 = "-skipempty -minid 2578 -maxid 2578 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x040000";
+		string cmd20 = "-skipempty -minid 2579 -maxid 2579 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x080000";
+		string cmd21 = "-skipempty -minid 2816 -maxid 2816 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x100000";
+		string cmd22 = "-skipempty -minid 2817 -maxid 2817 -datatype 'DDL_RAW ' 'MUON' -dataspec 0x200000";
+
+		AliHLTConfiguration pubDDL13("pubDDL13", "AliRawReaderPublisher", NULL, cmd13.c_str());
+		AliHLTConfiguration pubDDL14("pubDDL14", "AliRawReaderPublisher", NULL, cmd14.c_str());
+		AliHLTConfiguration pubDDL15("pubDDL15", "AliRawReaderPublisher", NULL, cmd15.c_str());
+		AliHLTConfiguration pubDDL16("pubDDL16", "AliRawReaderPublisher", NULL, cmd16.c_str());
+		AliHLTConfiguration pubDDL17("pubDDL17", "AliRawReaderPublisher", NULL, cmd17.c_str());
+		AliHLTConfiguration pubDDL18("pubDDL18", "AliRawReaderPublisher", NULL, cmd18.c_str());
+		AliHLTConfiguration pubDDL19("pubDDL19", "AliRawReaderPublisher", NULL, cmd19.c_str());
+		AliHLTConfiguration pubDDL20("pubDDL20", "AliRawReaderPublisher", NULL, cmd20.c_str());
+	        AliHLTConfiguration pubDDL21("pubDDL21", "AliRawReaderPublisher", NULL, cmd21.c_str());
+	        AliHLTConfiguration pubDDL22("pubDDL22", "AliRawReaderPublisher", NULL, cmd22.c_str());
 	}
 	
 	// Build the DDL reconstructor components for all the DDLs 13 to 22, that
@@ -441,5 +509,33 @@ void RunChain(
 	
 	// Build and run the chain's tasks.
 	sys.BuildTaskList("sink");
-	sys.Run(eventCount);
+	if (buildDDLFilePubs)
+	{
+		sys.Run(eventCount);
+	}
+	else
+	{
+		// Setup the raw reader.
+		AliRawReader* rawReader = AliRawReader::Create(rawDataPath);
+		if (rawReader == NULL)
+		{
+			cerr << "ERROR: Could not create raw reader." << endl;
+			return;
+		}
+		if (! rawReader->IsRawReaderValid())
+		{
+			cerr << "ERROR: Raw reader is not valid." << endl;
+			return;
+		}
+		AliHLTOfflineInterface::SetParamsToComponents(NULL, rawReader);
+		// Now step through the events.
+		for (int i = 0; i < firstEvent; i++) rawReader->NextEvent();
+		for (int i = firstEvent; i <= lastEvent; i++)
+		{
+			// The "(i == lastEvent) ? 1 : 0" part is to indicate a
+			// stop run command when we hit the last event.
+			sys.Run(1, (i == lastEvent) ? 1 : 0);
+			rawReader->NextEvent();
+		}
+	}
 }
