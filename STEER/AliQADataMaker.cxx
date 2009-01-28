@@ -159,6 +159,10 @@ void AliQADataMaker::Finish() const
 TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)  
 { 
 	// Returns the QA object at index. Limit is 100. 
+  if ( ! list ) {
+		AliError("Data list is NULL !!") ; 
+		return NULL ; 		
+	}
 	if (list[AliRecoParam::AConvert(fEventSpecie)]) {
 		if ( index > 10000 ) {
 			AliError("Max number of authorized QA objects is 10000") ; 
