@@ -58,12 +58,10 @@ set(SRCS
       AliTRDSensor.cxx
       AliTRDSensorArray.cxx
       AliTRDalignment.cxx
-      AliTRDTriggerL1.cxx
       AliTRDmcmTracklet.cxx
-      AliTRDmcm.cxx
       AliTRDmcmSim.cxx
+      AliTRDmcm.cxx
       AliTRDtrigParam.cxx
-      AliTRDtrigger.cxx
       AliTRDtrackGTU.cxx
       AliTRDtrackletBase.cxx
       AliTRDtrackletGTU.cxx
@@ -74,7 +72,6 @@ set(SRCS
       AliTRDgtuSim.cxx
       AliTRDgtuTMU.cxx
       AliTRDtrapAlu.cxx
-      AliTRDmodule.cxx
       AliTRDhit.cxx
       AliTRDrecoParam.cxx
       AliTRDSimParam.cxx

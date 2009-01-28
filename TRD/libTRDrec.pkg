@@ -11,7 +11,6 @@ SRCS= AliTRDcluster.cxx \
       AliTRDpidUtil.cxx \
       AliTRDpidESD.cxx \
       AliTRDReconstructor.cxx \
-      AliTRDtrackingAnalysis.cxx \
       AliTRDseedV1.cxx \
       AliTRDtrackV1.cxx \
       AliTRDtrackerV1.cxx \

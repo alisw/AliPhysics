@@ -80,12 +80,10 @@
 #pragma link C++ class  AliTRDSensor+;
 #pragma link C++ class  AliTRDSensorArray+;
 
-#pragma link C++ class  AliTRDTriggerL1+;
-#pragma link C++ class  AliTRDtrigger+;
-#pragma link C++ class  AliTRDtrigParam+;
 #pragma link C++ class  AliTRDmcmTracklet+;
-#pragma link C++ class  AliTRDmcm+;
 #pragma link C++ class  AliTRDmcmSim+;
+#pragma link C++ class  AliTRDmcm+;
+#pragma link C++ class  AliTRDtrigParam;
 #pragma link C++ class  AliTRDtrackletBase+;
 #pragma link C++ class  AliTRDtrackletGTU+;
 #pragma link C++ class  AliTRDtrackletMCM+;
@@ -96,7 +94,6 @@
 #pragma link C++ class  AliTRDgtuTMU+;
 #pragma link C++ class  AliTRDtrackGTU+;
 #pragma link C++ class  AliTRDtrapAlu++;
-#pragma link C++ class  AliTRDmodule+;
 
 #pragma link C++ class  AliTRDhit+;
 
