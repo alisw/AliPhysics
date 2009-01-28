@@ -18,7 +18,8 @@
 #include "AliFMDInput.h"
 #include "TObjArray.h"
 #include "AliRunLoader.h"
-
+#include "AliFMDFloatMap.h"
+#include "TH2F.h"
 class AliTrackReference;
 
 class AliFMDBackgroundCorrection : public TNamed {
@@ -66,8 +67,12 @@ public:
 			Float_t charge);
 		
     Bool_t Begin(Int_t event );
+    Bool_t End();
     TObjArray fPrimaryArray;
     TObjArray fHitArray;
+    TH2F    fPrimaryMapInner;
+    TH2F    fPrimaryMapOuter;
+    AliFMDFloatMap fHitMap;
     Int_t fPrim;
     Int_t fHits;
     Double_t fZvtxCut;

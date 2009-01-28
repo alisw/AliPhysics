@@ -42,7 +42,6 @@
 #include "AliFMDHit.h"
 #include "AliLoader.h" 
 #include "AliFMD.h"
-#include "TH2F.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
 #include "TFile.h"
@@ -71,6 +70,7 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
   AliFMDInput("galice.root"),
   fPrimaryArray(),
   fHitArray(),
+  fHitMap(),
   fPrim(0),
   fHits(0),
   fZvtxCut(0),
@@ -88,6 +88,8 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
     AddLoad(kTrackRefs);
   AddLoad(kKinematics); 
   AddLoad(kHeader);
+  
+  
 }
 
 //_____________________________________________________________________
@@ -348,38 +350,14 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
 							Float_t  charge)
 {
   
-  AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
-  TArrayF vertex;
-  genHeader->PrimaryVertex(vertex);
   
-  if(TMath::Abs(vertex.At(2)) > fZvtxCut) 
-    return kTRUE;
-  
-  Double_t delta           = 2 * fZvtxCut / fNvtxBins;
-  Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
-  Int_t    vertexBin       = Int_t(vertexBinDouble);
   
   if(charge !=  0 && 
-     (nTrack != fPrevTrack || 
-      det != fPrevDetector || 
-      ring != fPrevRing) ||
-     sec != fPrevSec) {
-    Double_t x,y,z;
-    AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
-    fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
-    
-    Int_t iring = (ring == 'I' ? 0 : 1);
-    
-    TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
-    TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
-    TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
-    
-    Float_t   phi   = TMath::ATan2(y,x);
-    if(phi<0) phi   = phi+2*TMath::Pi();
-    Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-    Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
-    Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
-    hHits->Fill(eta,phi);
+     ((nTrack != fPrevTrack) || 
+      (det != fPrevDetector) || 
+      (ring != fPrevRing)    ||
+      (sec != fPrevSec))) {
+    fHitMap.operator()(det,ring,sec,strip) = 1;
     fHits++;
     
   }
@@ -399,6 +377,13 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init()
   fPrimaryArray.SetOwner();
   fPrimaryArray.SetName("FMD_primary");
   
+  fPrimaryMapInner.SetBins(fNbinsEta, -6,6, 20, 0, 2*TMath::Pi());
+  fPrimaryMapOuter.SetBins(fNbinsEta, -6,6, 40, 0, 2*TMath::Pi());
+  fPrimaryMapInner.SetName("fPrimaryMapInner");
+  fPrimaryMapInner.SetName("fPrimaryMapOuter");
+  
+  fPrimaryMapInner.Sumw2();
+  fPrimaryMapOuter.Sumw2();
   for(Int_t iring = 0; iring<2;iring++) {
     Char_t ringChar = (iring == 0 ? 'I' : 'O');
     TObjArray* ringArray = new TObjArray();
@@ -453,6 +438,41 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event )
   Bool_t             retVal    = AliFMDInput::Begin(event); 
   AliStack*          partStack = fLoader->Stack();
   Int_t              nTracks   = partStack->GetNtrack();
+  
+  
+  for(Int_t j=0;j<nTracks;j++) {
+    TParticle* p           = partStack->Particle(j);
+    TDatabasePDG* pdgDB    = TDatabasePDG::Instance();
+    TParticlePDG* pdgPart  = pdgDB->GetParticle(p->GetPdgCode());
+    Float_t       charge   = (pdgPart ? pdgPart->Charge() : 0);
+    Float_t       phi      = TMath::ATan2(p->Py(),p->Px());
+    
+    if(phi<0) phi = phi+2*TMath::Pi();
+    // if(p->Theta() == 0) continue;
+    Float_t eta   = p->Eta();   
+    
+    // std::cout<<-1*TMath::Log(TMath::Tan(0.5*p->Theta()))<<std::endl;
+    
+    Bool_t primary = partStack->IsPhysicalPrimary(j);
+    //(charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
+    if(primary && charge !=0) {
+      
+      
+      
+      fPrim++;
+      
+      fPrimaryMapInner.Fill(eta,phi);
+      fPrimaryMapOuter.Fill(eta,phi);
+    }
+  }
+  
+  return retVal;
+}
+//_____________________________________________________________________
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::End()  {
+  
+  Bool_t retval = AliFMDInput::End();
+  
   AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
@@ -463,36 +483,60 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event )
   Double_t delta           = 2*fZvtxCut/fNvtxBins;
   Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
   Int_t    vertexBin       = (Int_t)vertexBinDouble;
+  //Primaries
+  TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
+  TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
   
-  for(Int_t j=0;j<nTracks;j++) {
-    TParticle* p           = partStack->Particle(j);
-    TDatabasePDG* pdgDB    = TDatabasePDG::Instance();
-    TParticlePDG* pdgPart  = pdgDB->GetParticle(p->GetPdgCode());
-    Float_t       charge   = (pdgPart ? pdgPart->Charge() : 0);
-    Float_t       phi      = TMath::ATan2(p->Py(),p->Px());
-    
-    if(phi<0) phi = phi+2*TMath::Pi();
-    if(p->Theta() == 0) continue;
-    Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*p->Theta()));
-    
-    Bool_t primary = partStack->IsPhysicalPrimary(j);
-    //(charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
-    if(primary && charge !=0) {
+  TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
+  TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
+  
+  hPrimaryInner->Add(&fPrimaryMapInner);
+  hPrimaryOuter->Add(&fPrimaryMapOuter);
+  
+  //Hits
+  for(UShort_t det=1;det<=3;det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t   ring = (ir == 0 ? 'I' : 'O');
+      UShort_t nsec = (ir == 0 ? 20  : 40);
+      UShort_t nstr = (ir == 0 ? 512 : 256);
       
-      fPrim++;
-      TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
-      TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
-      
-      TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
-      TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
-      hPrimaryInner->Fill(eta,phi);
-      hPrimaryOuter->Fill(eta,phi);
+      for(UShort_t sec =0; sec < nsec;  sec++) {
+	
+	for(UShort_t strip = 0; strip < nstr; strip++) {
+	  
+	  if(fHitMap.operator()(det,ring,sec,strip) > 0) {
+	  
+	    Double_t x,y,z;
+	    AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
+	    fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	    
+	    Int_t iring = (ring == 'I' ? 0 : 1);
+	    
+	    TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
+	    TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
+	    TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
+	    
+	    Float_t   phi   = TMath::ATan2(y,x);
+	    if(phi<0) phi   = phi+2*TMath::Pi();
+	    Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+	    Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
+	    Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	    hHits->Fill(eta,phi);
+	  }
+	  
+	}
+      }
     }
   }
   
-  return retVal;
+  fPrimaryMapInner.Reset();
+  fPrimaryMapOuter.Reset();
+  fHitMap.Reset(0);
+  
+  return retval;
 }
-//_____________________________________________________________________
+
 //
 // EOF
 //
