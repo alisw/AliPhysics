@@ -68,7 +68,7 @@ AliFMDBackgroundCorrection::AliFMDBackgroundCorrection() :
 
 //_____________________________________________________________________
 AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackref) : 
-  AliFMDInput(),
+  AliFMDInput("galice.root"),
   fPrimaryArray(),
   fHitArray(),
   fPrim(0),
@@ -78,6 +78,7 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
   fPrevTrack(-1),
   fPrevDetector(-1),
   fPrevRing('Q'),
+  fPrevSec(-1),
   fNbinsEta(100)
 {
   AddLoad(kTracks); 
@@ -361,7 +362,8 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
   if(charge !=  0 && 
      (nTrack != fPrevTrack || 
       det != fPrevDetector || 
-      ring != fPrevRing)) {
+      ring != fPrevRing) ||
+     sec != fPrevSec) {
     Double_t x,y,z;
     AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
     fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
@@ -379,11 +381,14 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
     Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
     hHits->Fill(eta,phi);
     fHits++;
-    fPrevDetector = det;
-    fPrevRing     = ring;
+    
   }
   
-  fPrevTrack = nTrack;
+  fPrevDetector = det;
+  fPrevRing     = ring;
+  fPrevSec      = sec;
+  fPrevTrack    = nTrack;
+  
   return kTRUE;
 
 }
@@ -460,11 +465,11 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event )
   Int_t    vertexBin       = (Int_t)vertexBinDouble;
   
   for(Int_t j=0;j<nTracks;j++) {
-    TParticle* p  = partStack->Particle(j);
-    TDatabasePDG* pdgDB   = TDatabasePDG::Instance();
-    TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
-    Float_t       charge  = (pdgPart ? pdgPart->Charge() : 0);
-    Float_t       phi     = TMath::ATan2(p->Py(),p->Px());
+    TParticle* p           = partStack->Particle(j);
+    TDatabasePDG* pdgDB    = TDatabasePDG::Instance();
+    TParticlePDG* pdgPart  = pdgDB->GetParticle(p->GetPdgCode());
+    Float_t       charge   = (pdgPart ? pdgPart->Charge() : 0);
+    Float_t       phi      = TMath::ATan2(p->Py(),p->Px());
     
     if(phi<0) phi = phi+2*TMath::Pi();
     if(p->Theta() == 0) continue;
