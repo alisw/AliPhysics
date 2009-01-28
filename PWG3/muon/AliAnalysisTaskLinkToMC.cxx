@@ -96,7 +96,7 @@
 #include "TH2D.h"
 #include "TStyle.h"
 
-ClassImp(AliAnalysisTaskLinkToMC);
+ClassImp(AliAnalysisTaskLinkToMC)
 
 
 void AliAnalysisTaskLinkToMC::HardCutLimitX(Double_t value)

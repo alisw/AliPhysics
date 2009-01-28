@@ -140,7 +140,7 @@ private:
 	Bool_t fChamberMustMatch[14];  //! A flag for each chamber which must have a compatible hit matched.
 	Bool_t fStationMustMatch[7];  //! A flag for each station which must have at least one compatible hit matched.
 
-	ClassDef(AliAnalysisTaskLinkToMC, 0); // Analysis task to connect reconstructed tracks to their Monte Carlo counterparts.
+	ClassDef(AliAnalysisTaskLinkToMC, 0) // Analysis task to connect reconstructed tracks to their Monte Carlo counterparts.
 };
 
 #endif // ALIANALYSISTASKLINKTOMC_H
