@@ -44,6 +44,8 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
   ,fDate(0)
   ,fMom(0.)
   ,fDoTraining(0)
+  ,fContinueTraining(0)
+  ,fTrainPath(0x0)
 {
   //
   // Default constructor
@@ -547,8 +549,15 @@ void AliTRDpidRefMaker::TrainNetworks(Int_t mombin)
 	fNet[iChamb] = new TMultiLayerPerceptron("fdEdx[0],fdEdx[1],fdEdx[2],fdEdx[3],fdEdx[4],fdEdx[5],fdEdx[6],fdEdx[7]:15:7:fv0pid[0],fv0pid[1],fv0pid[2],fv0pid[3],fv0pid[4]!",fNN,fTrain[mombin][iChamb],fTest[mombin][iChamb]);
 	fNet[iChamb] -> SetLearningMethod(TMultiLayerPerceptron::kStochastic);       // set learning method
 	fNet[iChamb] -> TMultiLayerPerceptron::SetEta(0.001);                        // set learning speed
-	if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph");
-	else fNet[iChamb] -> Train(nEpochs,"");
+	if(!fContinueTraining){
+	  if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph");
+	  else fNet[iChamb] -> Train(nEpochs,"");
+	}
+	else{
+	  fNet[iChamb] -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fTrainPath, mombin, iChamb, kMoniTrain - 1));
+	  if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
+	  else fNet[iChamb] -> Train(nEpochs,"+");                   
+	}
 	bFirstLoop[iChamb] = kFALSE;
       }
       else{    
@@ -635,30 +644,6 @@ void AliTRDpidRefMaker::MonitorTraining(Int_t mombin)
     for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
       fNet[iChamb] -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fDate, mombin, iChamb, iLoop));
     }
-
-//     // debug loop
-//     if(fDebugLevel>=2){
-//       Printf("Entries[%d]", fTest[mombin][0] -> GetN());
-//       Int_t iType[AliPID::kSPECIES];
-//       memset(iType, 0, AliPID::kSPECIES*sizeof(Int_t));
-//       memset(fv0pid, 0, AliPID::kSPECIES*sizeof(Float_t));
-//       for(Int_t iEvent = 0; iEvent < fTest[mombin][0] -> GetN(); iEvent++ ){
-// 	fNN -> GetEntry(fTest[mombin][0] -> GetEntry(iEvent));
-
-// 	if(fv0pid[AliPID::kElectron] == 1.0)
-// 	  iType[AliPID::kElectron]++;
-// 	else if(fv0pid[AliPID::kMuon] == 1.0)
-// 	  iType[AliPID::kMuon]++;
-// 	else if(fv0pid[AliPID::kPion] == 1.0)
-// 	  iType[AliPID::kPion]++;
-// 	else if(fv0pid[AliPID::kKaon] == 1.0)
-// 	  iType[AliPID::kKaon]++;
-// 	else if(fv0pid[AliPID::kProton] == 1.0)
-// 	  iType[AliPID::kProton]++;
-//       }
-//       Printf("Numbers [%d] [%d] [%d] [%d] [%d]", iType[AliPID::kElectron], iType[AliPID::kMuon], iType[AliPID::kPion], iType[AliPID::kKaon], iType[AliPID::kProton]);    
-//     }
-
 
     // event loop training list
     for(Int_t iEvent = 0; iEvent < fTrain[mombin][0] -> GetN(); iEvent++ ){

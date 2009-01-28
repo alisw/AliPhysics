@@ -63,7 +63,7 @@ public:
 
   AliTRDpidRefMaker();
   AliTRDpidRefMaker(const Char_t *InFileNN, const Char_t *InFileLQ); 
-/*   AliTRDpidRefMaker(const Char_t *InFileNN, const Char_t *InFileLQ, AliTRDCalMomentumBin bin = kAll);  */
+
   virtual ~AliTRDpidRefMaker();
   
   void    CreateOutputObjects();
@@ -79,6 +79,8 @@ public:
   void    SetTrainMomBin(Int_t trainmombin) {fTrainMomBin = trainmombin;};
   void    SetDate(Int_t date) {fDate = date;};
   void    SetDoTraining(Bool_t train) {fDoTraining = train;};
+  void    SetContinueTraining(Bool_t continTrain) {fContinueTraining = continTrain;};
+  void    SetTrainPath(Int_t path) {fTrainPath = path;};
   void    LoadFiles(const Char_t *InFileNN, const Char_t *InFileLQ);
 
   void    Terminate(Option_t *);
@@ -93,10 +95,8 @@ private:
   AliTRDpidRefMaker& operator=(const AliTRDpidRefMaker&);   // not implemented
 
   void GetV0info(AliTRDtrackV1 *TRDtrack, Float_t *v0pdg);  // get the v0 information
-/*   void MakeTrainingLists();                                 // build the training and the test list */
   void TrainNetworks(Int_t mombin);                         // train the neural networks for a given momentum bin
   void BuildLQRefs(Int_t mombin);                           // build the 2dim histos for a given momentum bin
-/*   void MonitorTraining(Int_t mombin);                       // monitor training process */
 
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   TTree         *fNN;                      // NN data
@@ -104,7 +104,6 @@ private:
   TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];          // Training list for each momentum 
   TEventList *fTest[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];           // Test list for each momentum 
   TMultiLayerPerceptron *fNet[AliTRDgeometry::kNlayer]; // artificial neural network
-/*   TMultiLayerPerceptron *fNet[AliTRDCalPID::kNMom][AliTRDCalPID::kNPlane]; // artificial neural network */
 
   Int_t         fLayer;                    // TRD layer index 
   Int_t         fTrainMomBin;              // momentum bin for the training
@@ -115,6 +114,8 @@ private:
   Float_t       *fdEdx[10];                // dEdx array
   Float_t       fv0pid[AliPID::kSPECIES];  // pid from v0s
   Bool_t        fDoTraining;               // checks if training will be done
+  Bool_t        fContinueTraining;         // checks if training from an older run should be continued
+  Int_t         fTrainPath;                // sets the path for continuing the training
 
   ClassDef(AliTRDpidRefMaker, 1); // TRD reference  maker for NN
 };
