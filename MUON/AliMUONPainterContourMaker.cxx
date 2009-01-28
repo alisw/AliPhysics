@@ -29,10 +29,8 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
 #include "AliMpSector.h"
-#include "AliMpSectorSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpSlat.h"
-#include "AliMpSlatSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVMotif.h"
 #include "AliCodeTimer.h"
@@ -690,25 +688,25 @@ AliMUONPainterContourMaker::FindMotifPosition(Int_t detElemId, Int_t manuId) con
   
   AliCodeTimerAuto("")
   
-  const AliMpVSegmentation* vseg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-  if (!vseg)
-  {
-    AliFatal(Form("Could not find motif for DE %d manu %d",detElemId,manuId));
-  }
-  
   AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
   
   if ( stationType == AliMp::kStation345 ) 
   {
-    const AliMpSlatSegmentation* seg = static_cast<const AliMpSlatSegmentation*>(vseg);
-    const AliMpSlat* slat = seg->Slat();
-    return slat->FindMotifPosition(manuId);
+    const AliMpSlat* kSlat 
+      = AliMpSegmentation::Instance()->GetSlatByElectronics(detElemId,manuId);
+    if ( ! kSlat ) {
+      AliFatal(Form("Could not find motif for DE %d manu %d",detElemId,manuId));
+    }
+    return kSlat->FindMotifPosition(manuId);
   }
   else
   {
-    const AliMpSectorSegmentation* seg = static_cast<const AliMpSectorSegmentation*>(vseg);
-    const AliMpSector* sector = seg->GetSector();
-    return sector->GetMotifMap()->FindMotifPosition(manuId);
+    const AliMpSector* kSector 
+      = AliMpSegmentation::Instance()->GetSectorByElectronics(detElemId,manuId);
+    if ( ! kSector ) {
+      AliFatal(Form("Could not find motif for DE %d manu %d",detElemId,manuId));
+    }
+    return kSector->GetMotifMap()->FindMotifPosition(manuId);
   }
   return 0x0;
 }

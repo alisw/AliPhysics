@@ -23,6 +23,7 @@
 #include "AliMpPadPair.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
+#include "AliMpStationType.h"
 
 class AliMpVPadIterator;
 class AliMpIntPair;
@@ -84,6 +85,9 @@ class AliMpVSegmentation : public TObject
             /// Return the plane type
     virtual AliMp::PlaneType PlaneType() const = 0;
     
+            /// Return the station type
+    virtual AliMp::StationType StationType() const = 0;
+
             /// Return the half-sizes of the detection element
     virtual TVector2 Dimensions() const = 0;
     

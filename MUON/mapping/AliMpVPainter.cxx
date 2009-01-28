@@ -46,7 +46,7 @@
 #include "AliMpSlatPainter.h"
 #include "AliMpIteratorPainter.h"
 #include "AliMpVPadIterator.h"
-#include "AliMpSlatSegmentation.h"
+#include "AliMpSegmentation.h"
 //#include "AliMpSectorSegmentation.h"
 
 #include <TList.h>
@@ -180,11 +180,20 @@ AliMpVPainter *AliMpVPainter::CreatePainter(TObject *object)
 //      return new AliMpSectorPainter(sectorSegmentation->GetSector());
 //    }
 
+  /*
     const AliMpSlatSegmentation* slatSegmentation = dynamic_cast<const AliMpSlatSegmentation*>(object);
     if (slatSegmentation)
     {
       return new AliMpSlatPainter(slatSegmentation->Slat());
     }
+  */
+    const AliMpSlat* kSlat 
+      = AliMpSegmentation::Instance()->GetSlat((AliMpVSegmentation*)object);
+    if ( kSlat )
+    {
+      return new AliMpSlatPainter(kSlat);
+    }
+    
   }
   return painter;
 }

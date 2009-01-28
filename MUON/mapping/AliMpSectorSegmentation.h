@@ -100,6 +100,8 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 
     AliMp::PlaneType PlaneType() const;
     
+    AliMp::StationType StationType() const;
+
     TVector2 Dimensions() const;
     
   private:
@@ -148,6 +150,11 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 /// Return the sector
 inline const AliMpSector* AliMpSectorSegmentation::GetSector() const
 { return fkSector; }
+
+/// Return station type
+inline AliMp::StationType AliMpSectorSegmentation::StationType() const
+{ return AliMp::kStation12; }
+
 
 #endif //ALI_MP_SECTOR_SEGMENTATION_H
 

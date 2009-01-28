@@ -36,7 +36,6 @@
 #include "AliMpContainers.h"
 #include "AliMpConstants.h"
 #include "AliMpCDB.h"
-#include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
@@ -414,15 +413,11 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
     AliFatal("Mapping has to be loaded first !");
   }
        
-  const AliMpSectorSegmentation* kSegmentation1 
-    = dynamic_cast<const AliMpSectorSegmentation*>(
-        AliMpSegmentation::Instance()
-          ->GetMpSegmentation(100, AliMpDEManager::GetCathod(100, AliMp::kBendingPlane))); 
-  if ( ! kSegmentation1 ) {
+  const AliMpSector* kSector1 
+    = AliMpSegmentation::Instance()->GetSector(100, AliMpDEManager::GetCathod(100, AliMp::kBendingPlane));
+  if ( ! kSector1 ) {
     AliFatal("Could not access sector segmentation !");
   }
-
-  const AliMpSector* kSector1 = kSegmentation1->GetSector();
 
   //Bool_t reflectZ = true;
   Bool_t reflectZ = false;
@@ -448,15 +443,12 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
       // in the true position)   
 
-  const AliMpSectorSegmentation* kSegmentation2 
-    = dynamic_cast<const AliMpSectorSegmentation*>(
-        AliMpSegmentation::Instance()
-          ->GetMpSegmentation(100, AliMpDEManager::GetCathod(100, AliMp::kNonBendingPlane))); 
-  if ( ! kSegmentation2 ) {
-    AliFatal("Could not access sector segmentation !");
+  const AliMpSector* kSector2 
+    = AliMpSegmentation::Instance()
+          ->GetSector(100, AliMpDEManager::GetCathod(100, AliMp::kNonBendingPlane));
+  if ( ! kSector2 ) {
+    AliFatal("Could not access sector !");
   }
-    
-  const AliMpSector* kSector2 = kSegmentation2->GetSector();
 
   //reflectZ = false;
   reflectZ = true;

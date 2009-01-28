@@ -1461,11 +1461,10 @@ void AliMUONTriggerGUI::InitBoards()
 
       // x-strips
       manuIdPrev = 0;
-      const AliMpTriggerSegmentation *trigseg0 = static_cast<const AliMpTriggerSegmentation*>(seg0);
       for (Int_t ix = 0; ix <= seg0->MaxPadIndexX(); ix++) {
 	for (Int_t iy = 0; iy <= seg0->MaxPadIndexY(); iy++) {
 	  AliMpIntPair indices(ix,iy);
-	  AliMpPad pad = trigseg0->PadByIndices(indices,kFALSE);
+	  AliMpPad pad = seg0->PadByIndices(indices,kFALSE);
 	  if (pad.IsValid()) {
 	    AliMpIntPair loc = pad.GetLocation(0);
 	    Int_t manuId = loc.GetFirst();
@@ -1493,11 +1492,10 @@ void AliMUONTriggerGUI::InitBoards()
          
       // y-strips
       manuIdPrev = 0;
-      const AliMpTriggerSegmentation *trigseg1 = static_cast<const AliMpTriggerSegmentation*>(seg1);
       for (Int_t ix = 0; ix <= seg1->MaxPadIndexX(); ix++) {
 	for (Int_t iy = 0; iy <= seg1->MaxPadIndexY(); iy++) {
 	  AliMpIntPair indices(ix,iy);
-	  AliMpPad pad = trigseg1->PadByIndices(indices,kFALSE);
+	  AliMpPad pad = seg1->PadByIndices(indices,kFALSE);
 	  if (pad.IsValid()) {
 	    Int_t nloc = pad.GetNofLocations();
 	    for (Int_t iloc = 0; iloc < nloc; iloc++) {

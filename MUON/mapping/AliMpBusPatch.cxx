@@ -29,7 +29,6 @@
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
-#include "AliMpSlatSegmentation.h"
 #include "AliMpSlat.h"
 #include "AliMpPCB.h"
 #include "AliMpMotifPosition.h"
@@ -152,17 +151,11 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
 
   if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation345 ) {
   
-    const AliMpSlatSegmentation* seg0 
-	= static_cast<const AliMpSlatSegmentation*>(
-            AliMpSegmentation::Instance()->GetMpSegmentation(fDEId, AliMp::kCath0));
+    const AliMpSlat* kSlat0 
+	= AliMpSegmentation::Instance()->GetSlat(fDEId, AliMp::kCath0);
 
-    const AliMpSlatSegmentation* seg1 
-	= static_cast<const AliMpSlatSegmentation*>(
-            AliMpSegmentation::Instance()->GetMpSegmentation(fDEId, AliMp::kCath1));
-
-    const AliMpSlat* slat0 = seg0->Slat();
-    const AliMpSlat* slat1 = seg1->Slat();
-
+    const AliMpSlat* kSlat1 
+	= AliMpSegmentation::Instance()->GetSlat(fDEId, AliMp::kCath1);
        
     Int_t iPcb = 0;
     Int_t iPcbPrev = -1;
@@ -174,8 +167,8 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
     // Loop over manu
     for (Int_t iManu = 0; iManu < GetNofManus(); ++iManu) {
       Int_t manuId = GetManuId(iManu);
-      AliMpMotifPosition* motifPos0 = slat0->FindMotifPosition(manuId);
-      AliMpMotifPosition* motifPos1 = slat1->FindMotifPosition(manuId);	  
+      AliMpMotifPosition* motifPos0 = kSlat0->FindMotifPosition(manuId);
+      AliMpMotifPosition* motifPos1 = kSlat1->FindMotifPosition(manuId);	  
       
       if ( !motifPos0 && !motifPos1 ) {
         // should never happen
@@ -187,11 +180,11 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
       // find PCB id
       if ( motifPos0 ) {
         x = motifPos0->Position().X();
-        length = slat0->GetPCB(0)->DX()*2.;
+        length = kSlat0->GetPCB(0)->DX()*2.;
       }
       if ( motifPos1 ) {
         x = motifPos1->Position().X();
-        length = slat1->GetPCB(0)->DX()*2.;
+        length = kSlat1->GetPCB(0)->DX()*2.;
       }
       
       iPcb = Int_t(x/length + AliMpConstants::LengthTolerance());

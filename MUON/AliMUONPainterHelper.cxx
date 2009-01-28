@@ -40,10 +40,8 @@
 #include "AliMpPCB.h"
 #include "AliMpPad.h"
 #include "AliMpSector.h"
-#include "AliMpSectorSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpSlat.h"
-#include "AliMpSlatSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
 #include "AliCodeTimer.h"
@@ -456,12 +454,7 @@ AliMUONPainterHelper::GetSector(Int_t detElemId, AliMp::PlaneType planeType) con
   
   AliMp::CathodType cathodeType = AliMpDEManager::GetCathod(detElemId,planeType);
   
-  const AliMpVSegmentation* seg =
-  AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathodeType);
-  
-  const AliMpSectorSegmentation* sectorSeg = static_cast<const AliMpSectorSegmentation*>(seg);
-  return sectorSeg->GetSector();
-  
+  return AliMpSegmentation::Instance()->GetSector(detElemId,cathodeType);
 }
 
 //_____________________________________________________________________________
@@ -472,11 +465,7 @@ AliMUONPainterHelper::GetSlat(Int_t detElemId, AliMp::CathodType cathodeType) co
   AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
   if ( stationType != AliMp::kStation345 ) return 0x0;
 
-  const AliMpVSegmentation* seg =
-    AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathodeType);
-  
-  const AliMpSlatSegmentation* slatSeg = static_cast<const AliMpSlatSegmentation*>(seg);
-  return slatSeg->Slat();
+  return AliMpSegmentation::Instance()->GetSlat(detElemId,cathodeType);
 }
 
 //_____________________________________________________________________________
@@ -484,11 +473,10 @@ const AliMpSlat*
 AliMUONPainterHelper::GetSlat(Int_t detElemId, Int_t manuId) const
 {
   /// Get a given slat
-  const AliMpVSegmentation* seg =
-    AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-  
-  const AliMpSlatSegmentation* slatSeg = static_cast<const AliMpSlatSegmentation*>(seg);
-  return slatSeg->Slat();
+  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+  if ( stationType != AliMp::kStation345 ) return 0x0;
+
+  return AliMpSegmentation::Instance()->GetSlatByElectronics(detElemId,manuId);
 }
 
 //_____________________________________________________________________________

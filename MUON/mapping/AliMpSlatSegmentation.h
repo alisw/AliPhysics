@@ -71,7 +71,9 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   void GetAllElectronicCardIDs(TArrayI& ecn) const;
   
-  AliMp::PlaneType PlaneType() const;
+  virtual AliMp::PlaneType PlaneType() const;
+   
+  virtual AliMp::StationType StationType() const;
   
   TVector2 Dimensions() const;
   
@@ -86,5 +88,9 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
 
   ClassDef(AliMpSlatSegmentation,2) // A slat for stations 3,4,5
 };
+
+/// Return station type
+inline AliMp::StationType AliMpSlatSegmentation::StationType() const
+{ return AliMp::kStation345; }
 
 #endif

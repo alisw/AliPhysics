@@ -26,10 +26,8 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpSector.h"
-#include "AliMpSectorSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpSlat.h"
-#include "AliMpSlatSegmentation.h"
 #include "AliMpConstants.h"
 #include <Riostream.h>
 #include <TMap.h>
@@ -667,11 +665,9 @@ AliMpDCSNamer::ManuId2PCBIndex(Int_t detElemId, Int_t manuId) const
   
   AliCodeTimerAuto("")
   
-  const AliMpSlatSegmentation* seg = static_cast<const AliMpSlatSegmentation*>
-    (AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId));
-	if (!seg) return -1;
-	
-  const AliMpSlat* slat = seg->Slat();
+  const AliMpSlat* slat 
+    = AliMpSegmentation::Instance()->GetSlatByElectronics(detElemId, manuId);
+  if ( ! slat ) return -1;
   
   return slat->FindPCBIndexByMotifPositionID(manuId);
 }
@@ -684,11 +680,10 @@ AliMpDCSNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
   
   AliCodeTimerAuto("")
   
-  const AliMpSectorSegmentation* seg = static_cast<const AliMpSectorSegmentation*>
-  (AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId));
-	if (!seg) return -1;
-	
-  const AliMpSector* sector = seg->GetSector();
+  const AliMpSector* sector 
+    = AliMpSegmentation::Instance()->GetSectorByElectronics(detElemId, manuId);
+  if ( ! sector ) return -1;
+  
   const AliMpMotifMap* motifMap = sector->GetMotifMap();
   const AliMpMotifPosition* motifPos = motifMap->FindMotifPosition(manuId);
 
@@ -733,9 +728,8 @@ AliMpDCSNamer::NumberOfPCBs(Int_t detElemId) const
   }
   else
   {
-    const AliMpSlatSegmentation* seg = static_cast<const AliMpSlatSegmentation*>
-    (AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0));
-    const AliMpSlat* slat = seg->Slat();
+    const AliMpSlat* slat 
+      = AliMpSegmentation::Instance()->GetSlat(detElemId, AliMp::kCath0);
     return slat->GetSize();
   }
 }

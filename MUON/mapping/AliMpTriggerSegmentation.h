@@ -62,8 +62,10 @@ public:
    
   virtual void GetAllElectronicCardIDs(TArrayI& ecn) const;
   
-  AliMp::PlaneType PlaneType() const;
-  
+  virtual AliMp::PlaneType PlaneType() const;
+   
+  virtual AliMp::StationType StationType() const;
+ 
   TVector2 Dimensions() const;
   
 private:
@@ -71,12 +73,17 @@ private:
   AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right);
   /// Not implemented
   AliMpTriggerSegmentation&  operator = (const AliMpTriggerSegmentation& right);
-
+  
   const AliMpTrigger* fkSlat;  ///< Slat
   Bool_t              fIsOwner;///< Trigger slat ownership     
   Int_t fNofStrips; ///< Number of strips in this slat
 
   ClassDef(AliMpTriggerSegmentation,3) // Segmentation for slat trigger stations
 };
+
+/// Return station type
+inline AliMp::StationType AliMpTriggerSegmentation::StationType() const
+{ return AliMp::kStationTrigger; }
+
 
 #endif

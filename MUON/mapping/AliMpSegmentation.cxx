@@ -332,3 +332,144 @@ AliMpSegmentation::GetMpSegmentationByElectronics(
    
   return static_cast<AliMpVSegmentation*>(object);
 }
+
+//_____________________________________________________________________________
+const AliMpSector*  
+AliMpSegmentation::GetSector(const AliMpVSegmentation* kSegmentation, 
+                             Bool_t warn) const
+{
+/// Return sector for given mapping segmentation.
+/// If segmentation is not of sector type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  if ( ! kSegmentation ) return 0;
+
+  if ( kSegmentation->StationType() != AliMp::kStation12 ) {
+    if ( warn ) {
+      AliErrorStream() 
+        << "Segmentation is not of sector type" << endl;
+     }   
+     return 0;
+  }
+  
+  return 
+    static_cast<const AliMpSectorSegmentation*>(kSegmentation)->GetSector();
+}
+                             
+//_____________________________________________________________________________
+const AliMpSector*  
+AliMpSegmentation::GetSector(Int_t detElemId, AliMp::CathodType cath, 
+                             Bool_t warn) const
+{
+/// Return sector for given detElemId and cath.
+/// If segmentation is not of sector type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetSector(GetMpSegmentation(detElemId, cath, warn), warn);
+}    
+      
+//_____________________________________________________________________________
+const AliMpSector*  
+AliMpSegmentation::GetSectorByElectronics(Int_t detElemId, Int_t elCardID, 
+                             Bool_t warn) const
+{
+/// Return sector for given detElemId and elCardID.
+/// If segmentation is not of sector type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetSector(GetMpSegmentationByElectronics(detElemId, elCardID, warn), warn);
+}    
+      
+//_____________________________________________________________________________
+const AliMpSlat*    
+AliMpSegmentation::GetSlat(const AliMpVSegmentation* kSegmentation, 
+                           Bool_t warn) const
+{                           
+/// Return slat for given mapping segmentation.
+/// If segmentation is not of slat type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  if ( ! kSegmentation ) return 0;
+ 
+  if ( kSegmentation->StationType() != AliMp::kStation345 ) {
+     if ( warn ) {
+       AliErrorStream() 
+         << "Segmentation is not of slat type" << endl;
+     }    
+     return 0;
+  }
+  
+  return 
+    static_cast<const AliMpSlatSegmentation*>(kSegmentation)->Slat();
+}    
+                           
+//_____________________________________________________________________________
+const AliMpSlat*  
+AliMpSegmentation::GetSlat(Int_t detElemId, AliMp::CathodType cath, 
+                           Bool_t warn) const
+{
+/// Return slat for given detElemId and cath.
+/// If segmentation is not of slat type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetSlat(GetMpSegmentation(detElemId, cath, warn), warn);
+}    
+
+//_____________________________________________________________________________
+const AliMpSlat*  
+AliMpSegmentation::GetSlatByElectronics(Int_t detElemId, Int_t elCardID, 
+                           Bool_t warn) const
+{
+/// Return slat for given detElemId and elCardID.
+/// If segmentation is not of slat type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetSlat(GetMpSegmentationByElectronics(detElemId, elCardID, warn), warn);
+}    
+
+//_____________________________________________________________________________
+const AliMpTrigger* 
+AliMpSegmentation::GetTrigger(const AliMpVSegmentation* kSegmentation, 
+                              Bool_t warn) const
+{                               
+/// Return trigger for given mapping segmentation.
+/// If segmentation is not of trigger type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  if ( ! kSegmentation ) return 0;
+ 
+  if ( kSegmentation->StationType() != AliMp::kStationTrigger ) {
+     if ( warn ) {
+       AliErrorStream() 
+         << "Segmentation is not of trigger type" << endl;
+     }    
+     return 0;
+  }
+  
+  return 
+    static_cast<const AliMpTriggerSegmentation*>(kSegmentation)->Slat();
+}    
+
+//_____________________________________________________________________________
+const AliMpTrigger*  
+AliMpSegmentation::GetTrigger(Int_t detElemId, AliMp::CathodType cath, 
+                              Bool_t warn) const
+{
+/// Return trigger for given detElemId and cath.
+/// If segmentation is not of trigger type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetTrigger(GetMpSegmentation(detElemId, cath, warn), warn);
+}    
+
+//_____________________________________________________________________________
+const AliMpTrigger*  
+AliMpSegmentation::GetTriggerByElectronics(Int_t detElemId, Int_t elCardID, 
+                              Bool_t warn) const
+{
+/// Return trigger for given detElemId and elCardID.
+/// If segmentation is not of trigger type, zero is returned 
+/// and an Error is issued if warn is set true (default). 
+
+  return GetTrigger(GetMpSegmentationByElectronics(detElemId, elCardID, warn), warn);
+}    

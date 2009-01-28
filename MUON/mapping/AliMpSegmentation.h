@@ -12,7 +12,8 @@
 /// \brief Singleton container class for mapping segmentations
 ///
 /// It provides access to mapping segmentations based on the
-/// AliMpVSegmentation interface.                                        \n
+/// AliMpVSegmentation interface and to segmentations underlying
+/// detectors (sector, slat, trigger).                                  \n
 /// Mapping segmentations for all detection elements
 /// are created at the first call to AliMpSegmentation::Instance().
 /// The class is a singleton, it has all constructors
@@ -41,6 +42,9 @@ class AliMpVSegmentation;
 class AliMpSegmentation;
 class AliMpSlatMotifMap;
 class AliMpDataStreams;
+class AliMpSector;
+class AliMpSlat;
+class AliMpTrigger;
 class TRootIOCtor;
 
 class AliMpSegmentation : public  TObject {
@@ -55,6 +59,11 @@ class AliMpSegmentation : public  TObject {
                                        Bool_t warn = true);
 
     // methods
+    
+    //
+    // Access to segmentations
+    //
+    
     const AliMpVSegmentation* GetMpSegmentation(
                                  Int_t detElemId, AliMp::CathodType cath, 
 			         Bool_t warn = true) const;
@@ -62,7 +71,31 @@ class AliMpSegmentation : public  TObject {
     const AliMpVSegmentation* GetMpSegmentationByElectronics(
                                  Int_t detElemId, Int_t elCardID, 
 			         Bool_t warn = true) const;
-    
+    //
+    // Access to sectors, slats, triggers
+    //
+
+    const AliMpSector*  GetSector(const AliMpVSegmentation* kSegmentation, 
+                                  Bool_t warn = true) const;
+    const AliMpSector*  GetSector(Int_t detElemId, AliMp::CathodType cath, 
+                                  Bool_t warn = true) const;
+    const AliMpSector*  GetSectorByElectronics(Int_t detElemId, Int_t elCardID, 
+                                  Bool_t warn = true) const;
+  
+    const AliMpSlat*    GetSlat(const AliMpVSegmentation* kSegmentation, 
+                                  Bool_t warn = true) const;
+    const AliMpSlat*    GetSlat(Int_t detElemId, AliMp::CathodType cath, 
+                                  Bool_t warn = true) const;
+    const AliMpSlat*    GetSlatByElectronics(Int_t detElemId, Int_t elCardID, 
+                                  Bool_t warn = true) const;
+  
+    const AliMpTrigger* GetTrigger(const AliMpVSegmentation* kSegmentation, 
+                                  Bool_t warn = true) const;
+    const AliMpTrigger* GetTrigger(Int_t detElemId, AliMp::CathodType cath, 
+                                  Bool_t warn = true) const;
+    const AliMpTrigger* GetTriggerByElectronics(Int_t detElemId, Int_t elCardID, 
+                                  Bool_t warn = true) const;
+  
   private:
     AliMpSegmentation(const AliMpDataStreams& dataStreams);
     /// Not implemented
@@ -72,6 +105,7 @@ class AliMpSegmentation : public  TObject {
 
     AliMpVSegmentation* CreateMpSegmentation(
                               Int_t detElemId, AliMp::CathodType cath);
+                              
 
     AliMpExMap* FillElCardsMap(Int_t detElemId);
 

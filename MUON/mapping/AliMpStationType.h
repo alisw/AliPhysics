@@ -21,6 +21,7 @@ namespace AliMp {
   {
     kStation1,           ///< station 1 (quadrants)
     kStation2,           ///< station 2 (quadrants)
+    kStation12,          ///< station 1,2 (quadrants)
     kStation345,         ///< station 3,4,5 (slats)
     kStationTrigger      ///< trigger stations (slats)
   };

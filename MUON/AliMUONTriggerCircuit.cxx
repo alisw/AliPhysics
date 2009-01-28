@@ -28,7 +28,6 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONConstants.h"
 
-#include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
 #include "AliMpSlat.h"
 #include "AliMpPCB.h"
@@ -238,8 +237,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
 	  ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
       // get iFirstStrip in this module 
-      const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(fCurrentSeg);
-      const AliMpTrigger* t = trig->Slat();
+      const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fCurrentSeg);
       const AliMpSlat* slat = t->GetLayer(0);
 
       if (iline == 5) icolDo = icol + 1; // special case
@@ -328,8 +326,7 @@ void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* localBoard)
   if (zeroAllYLSB) iStripCircuit = 8;
   
   // get iFirstStrip in this module 
-  const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(fCurrentSeg);
-  const AliMpTrigger* t = trig->Slat();
+  const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fCurrentSeg);
   const AliMpSlat* slat = t->GetLayer(0);
   
   const AliMpPCB* pcb = slat->GetPCB(icol-1);
