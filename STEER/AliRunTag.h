@@ -99,7 +99,7 @@ class AliRunTag : public TObject {
   Int_t        fESLength;                // Length of the Event Specie Length
   Bool_t *     fEventSpecies;           //[fESLength] EventSpecies in this run	
   
-  ClassDef(AliRunTag,4)  //(ClassName, ClassVersion)
+  ClassDef(AliRunTag,5)  //(ClassName, ClassVersion)
 };
 //___________________________________________________________________________
 
