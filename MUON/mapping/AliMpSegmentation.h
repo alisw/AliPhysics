@@ -37,12 +37,9 @@
 #  include "AliMpCathodType.h"
 #endif
 
-#ifndef ALI_MP_V_SEGMENTATION_H
-#  include "AliMpVSegmentation.h"
-#endif
-
 class AliMpDEStore;
 class AliMpSegmentation;
+class AliMpVSegmentation;
 class AliMpSlatMotifMap;
 class AliMpDataStreams;
 class AliMpSector;
