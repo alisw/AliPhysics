@@ -1,4 +1,6 @@
 void sim(Int_t nev=1) {
+  if (gSystem->Getenv("EVENT"))
+   nev = atoi(gSystem->Getenv("EVENT")) ;   
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
