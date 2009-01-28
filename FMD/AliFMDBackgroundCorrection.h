@@ -75,6 +75,7 @@ public:
     Int_t fPrevTrack;
     Int_t fPrevDetector;
     Char_t fPrevRing;
+    Int_t fPrevSec;
     Int_t fNbinsEta;
   };
   
