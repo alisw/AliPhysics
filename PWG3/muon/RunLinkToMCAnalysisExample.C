@@ -48,10 +48,8 @@ void RunLinkToMCAnalysisExample(const char* esdFile = "./AliESDs.root")
 	gSystem->Load("libAOD.so");
 	gSystem->Load("libANALYSIS.so");
 	gSystem->Load("libANALYSISalice.so");
-	gROOT->ProcessLine(".include $ALICE_ROOT/include");
-	
-	// Compile and load the analysis task class.
-	gROOT->ProcessLine(".L AliAnalysisTaskLinkToMC.cxx++");
+	gSystem->Load("libPWG3base.so");
+	gSystem->Load("libPWG3muon.so");
 	
 	// Create the TChain for esdTrees in the AliESDs.root file.
 	TChain* chain = new TChain("esdTree");
