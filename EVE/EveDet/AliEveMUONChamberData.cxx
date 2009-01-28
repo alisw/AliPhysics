@@ -11,7 +11,6 @@
 
 #include <AliMUONGeometryTransformer.h>
 #include <mapping/AliMpDEIterator.h>
-#include <mapping/AliMpSectorSegmentation.h>
 #include <mapping/AliMpSector.h>
 #include <mapping/AliMpPad.h>
 #include <mapping/AliMpSegmentation.h>
@@ -114,7 +113,6 @@ void AliEveMUONChamberData::Init(Int_t chamber)
   Float_t deltax, deltay;
   AliMpDEIterator it;
   const AliMpVSegmentation *vseg;
-  const AliMpSectorSegmentation *sseg;
   const AliMpSector *sector;
   TVector2 position;
   TVector2 dimension;
@@ -125,9 +123,7 @@ void AliEveMUONChamberData::Init(Int_t chamber)
 
     if (chamber < 4) {
 
-      sseg = (AliMpSectorSegmentation*)
-             AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
-      sector = sseg->GetSector();
+      sector = AliMpSegmentation::Instance()->GetSector(detElemId,AliMp::kCath0);
 
       position  = sector->Position();
       dimension = sector->Dimensions(); // half length
