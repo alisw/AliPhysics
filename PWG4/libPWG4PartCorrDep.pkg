@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = PartCorrDep/AliAnaCaloTrigger.cxx PartCorrDep/AliAnaCaloTriggerMC.cxx \
+SRCS = PartCorrDep/AliAnaCaloTrigger.cxx \
        PartCorrDep/AliAnalysisTaskPHOSExample.cxx \
        PartCorrDep/AliAnaExample.cxx  PartCorrDep/AliAnaParticleIsolation.cxx \
        PartCorrDep/AliAnaParticlePartonCorrelation.cxx \

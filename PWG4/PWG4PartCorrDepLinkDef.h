@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnaCaloTrigger+;
-#pragma link C++ class AliAnaCaloTriggerMC+;
 #pragma link C++ class AliAnalysisTaskPHOSExample+;
 #pragma link C++ class AliAnaExample+;
 #pragma link C++ class AliAnaPhoton+;
