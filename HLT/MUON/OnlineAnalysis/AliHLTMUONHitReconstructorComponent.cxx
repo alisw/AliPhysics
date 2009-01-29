@@ -177,8 +177,11 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fUseIdealGain = false;
 	const char* lutFileName = NULL;
 	bool useCDB = false;
-	bool tryRecover = false;
+	typedef AliHLTMUONHitReconstructor HR;
+	HR::ERecoveryMode recoveryMode = HR::kDontTryRecover;
 	AliHLTInt32_t dccut = -1;
+	bool skipParityErrors = false;
+	bool dontPrintParityErrors = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -319,7 +322,47 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-tryrecover" ) == 0)
 		{
-			tryRecover = true;
+			if (argc > i+1)
+			{
+				// There might be an optional parameter so check
+				// if it is a recognised one. If not then assume it
+				// is the next argument, so no error message.
+				if (strcmp(argv[i+1], "full") == 0)
+				{
+					recoveryMode = HR::kRecoverFull;
+					i++;
+				}
+				else if (strcmp(argv[i+1], "skip") == 0)
+				{
+					recoveryMode = HR::kRecoverJustSkip;
+					i++;
+				}
+				else if (strcmp(argv[i+1], "parityerrors") == 0)
+				{
+					recoveryMode = HR::kRecoverFromParityErrorsOnly;
+					i++;
+				}
+				else
+				{
+					recoveryMode = HR::kRecoverFull;
+				}
+			}
+			else
+			{
+				recoveryMode = HR::kRecoverFull;
+			}
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-skipparityerrors" ) == 0)
+		{
+			skipParityErrors = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-dontprintparityerrors" ) == 0)
+		{
+			dontPrintParityErrors = true;
 			continue;
 		}
 		
@@ -426,7 +469,9 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
 	}
 	
-	fHitRec->TryRecover(tryRecover);
+	fHitRec->TryRecover(recoveryMode);
+	fHitRec->SkipParityErrors(skipParityErrors);
+	fHitRec->DontPrintParityErrors(dontPrintParityErrors);
 	HLTDebug("dHLT hit reconstruction component is initialized.");
 	return 0;
 }

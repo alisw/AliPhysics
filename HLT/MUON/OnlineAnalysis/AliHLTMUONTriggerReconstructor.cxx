@@ -98,11 +98,12 @@ bool AliHLTMUONTriggerReconstructor::Run(
 		{
 			HLTWarning("There was a problem with the raw data."
 				" Recovered as much data as possible."
-				" Will continue processing next event."
+				" Will continue processing the next event."
 			);
 		}
 		else
 		{
+			HLTError("Failed to decode the trigger DDL raw data.");
 			return false;
 		}
 	}

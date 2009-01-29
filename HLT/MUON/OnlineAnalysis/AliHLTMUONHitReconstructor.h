@@ -68,12 +68,34 @@ public:
 	static AliHLTInt32_t GetkNofDDL() { return fgkNofDDL; }
 	static AliHLTInt32_t GetkDDLHeaderSize() { return fgkDDLHeaderSize; }
 	
-	/// Returns true if the decoder is set to enable recovery logic if
-	/// raw data errors are found.
-	bool TryRecover() const { return fHLTMUONDecoder.TryRecover(); };
+	/// The error recovery mode used for TryRecover.
+	enum ERecoveryMode
+	{
+		kDontTryRecover = 0,  /// Will not try recover from errors.
+		kRecoverFull,  /// Try recover from all errors.
+		kRecoverJustSkip,  /// Just skip any corrupt structures.
+		kRecoverFromParityErrorsOnly  /// Recover only from parity errors.
+	};
 	
-	/// Sets if the decoder should enable the error recovery logic.
-	void TryRecover(bool value);
+	/// Returns the recovery mode used for the TryRecover option.
+	/// This controls if the decoder is set to enable recovery logic if
+	/// raw data errors are found.
+	ERecoveryMode TryRecover() const { return fRecoveryMode; }
+	
+	/// Sets if the decoder should enable the error recovery logic and how.
+	void TryRecover(ERecoveryMode mode);
+	
+	/// Returns true if ADC digits with parity errors are skipped.
+	bool SkipParityErrors() const { return fHLTMUONDecoder.GetHandler().SkipParityErrors(); }
+	
+	/// Sets the flag indicating if ADC digits with parity errors are skipped.
+	void SkipParityErrors(bool value) { fHLTMUONDecoder.GetHandler().SkipParityErrors(value); }
+	
+	/// Returns true if messages about parity errors are not printed.
+	bool DontPrintParityErrors() const { return fHLTMUONDecoder.GetHandler().DontPrintParityErrors(); }
+	
+	/// Sets the flag indicating if messages about parity errors are not printed.
+	void DontPrintParityErrors(bool value) { fHLTMUONDecoder.GetHandler().DontPrintParityErrors(value); }
 
 private:
 
@@ -137,6 +159,41 @@ private:
 		 * warnings rather than error messages.
 		 */
 		void WarnOnly(bool value) { fWarnOnly = value; }
+		
+		/**
+		 * Returns true if ADC digits with parity errors are skipped.
+		 */
+		bool SkipParityErrors() const { return fSkipParityErrors; }
+		
+		/**
+		 * Sets the flag indicating if ADC digits with parity errors are skipped.
+		 */
+		void SkipParityErrors(bool value) { fSkipParityErrors = value; }
+		
+		/**
+		 * Returns true if messages about parity errors are not printed.
+		 */
+		bool DontPrintParityErrors() const { return fDontPrintParityErrors; }
+		
+		/**
+		 * Sets the flag indicating if messages about parity errors are not printed.
+		 */
+		void DontPrintParityErrors(bool value) { fDontPrintParityErrors = value; }
+		
+		/**
+		 * Returns true if parity error messages are printed as warnings.
+		 */
+		bool PrintParityErrorAsWarning() const { return fPrintParityErrorAsWarning; }
+		
+		/**
+		 * Sets the flag indicating if parity error messages are printed as warnings.
+		 */
+		void PrintParityErrorAsWarning(bool value) { fPrintParityErrorAsWarning = value; }
+		
+		/**
+		 * Returns true if a non-parity error was found during the last call to Decode.
+		 */
+		bool NonParityErrorFound() const { return fNonParityErrorFound; }
 	
 	private:
 		// Do not allow copying of this class.
@@ -162,6 +219,10 @@ private:
 		AliHLTInt32_t fLutEntry;            // i-th entry in lookuptable
 		
 		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
+		bool fSkipParityErrors;  ///< Flag indicating if ADC digits with parity errors should be skipped.
+		bool fDontPrintParityErrors;  ///< Flag for controlling if messages about parity errors should be printed.
+		bool fPrintParityErrorAsWarning;  ///< Flag for controlling if parity error messages are printed as warnings.
+		bool fNonParityErrorFound;  ///< Flag which indicates if a non parity error code was found after a decoding pass.
 	};
 
 	AliMUONTrackerDDLDecoder<AliHLTMUONRawDecoder> fHLTMUONDecoder; // robust HLTMUON Decoder
@@ -189,6 +250,8 @@ private:
 	AliHLTInt32_t fGetIdTotalData[336][237][2];              // an array of idManuChannel with argument of centralX, centralY and planeType.
 	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[130];  // counter for detector elements that are fired
 	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
+	
+	ERecoveryMode fRecoveryMode;  ///< The recovery mode for the decoder.
 	
 	bool DecodeDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 	void FindCentralHits(AliHLTInt32_t minPadId, AliHLTInt32_t maxPadId);

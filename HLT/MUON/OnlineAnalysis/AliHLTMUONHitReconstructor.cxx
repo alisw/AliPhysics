@@ -71,7 +71,8 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fNofBChannel(NULL),
 	fNofNBChannel(NULL),
 	fNofFiredDetElem(0),
-	fIdToEntry()
+	fIdToEntry(),
+	fRecoveryMode(kDontTryRecover)
 {
 	/// Default constructor
 	
@@ -132,13 +133,41 @@ void AliHLTMUONHitReconstructor::SetLookUpTable(
 }
 
 
-void AliHLTMUONHitReconstructor::TryRecover(bool value)
+void AliHLTMUONHitReconstructor::TryRecover(ERecoveryMode mode)
 {
 	/// Sets if the decoder should enable the error recovery logic.
 	
-	fHLTMUONDecoder.TryRecover(value);
-	fHLTMUONDecoder.ExitOnError(not value);
-	fHLTMUONDecoder.GetHandler().WarnOnly(value);
+	// Here we setup the various flags to control exactly how the DDL raw data
+	// decoder will behave and what output is generated during errors.
+	fRecoveryMode = mode;
+	switch (mode)
+	{
+	case kRecoverFull:
+		fHLTMUONDecoder.TryRecover(true);
+		fHLTMUONDecoder.ExitOnError(false);
+		fHLTMUONDecoder.GetHandler().WarnOnly(true);
+		fHLTMUONDecoder.GetHandler().PrintParityErrorAsWarning(true);
+		break;
+	case kRecoverJustSkip:
+		fHLTMUONDecoder.TryRecover(false);
+		fHLTMUONDecoder.ExitOnError(false);
+		fHLTMUONDecoder.GetHandler().WarnOnly(true);
+		fHLTMUONDecoder.GetHandler().PrintParityErrorAsWarning(true);
+		break;
+	case kRecoverFromParityErrorsOnly:
+		fHLTMUONDecoder.TryRecover(false);
+		fHLTMUONDecoder.ExitOnError(false);
+		fHLTMUONDecoder.GetHandler().WarnOnly(false);
+		fHLTMUONDecoder.GetHandler().PrintParityErrorAsWarning(true);
+		break;
+	default:
+		fRecoveryMode = kDontTryRecover;
+		fHLTMUONDecoder.TryRecover(false);
+		fHLTMUONDecoder.ExitOnError(true);
+		fHLTMUONDecoder.GetHandler().WarnOnly(false);
+		fHLTMUONDecoder.GetHandler().PrintParityErrorAsWarning(false);
+		break;
+	}
 }
 
 
@@ -193,16 +222,32 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
  
   if(!fHLTMUONDecoder.Decode(rawData,bufferSize))
   {
-	if (TryRecover())
+	switch (TryRecover())
 	{
+	case kRecoverFull:
 		HLTWarning("There was a problem with the raw data."
 			" Recovered as much data as possible."
-			" Will continue processing next event."
+			" Will continue processing the next event."
 		);
-	}
-	else
-	{
-		HLTError("Cannot decode the DDL.");
+		break;
+	case kRecoverJustSkip:
+		HLTWarning("There was a problem with the raw data."
+			" Skipped corrupted data structures."
+			" Will continue processing the next event."
+		);
+		break;
+	case kRecoverFromParityErrorsOnly:
+		if (fHLTMUONDecoder.GetHandler().NonParityErrorFound())
+		{
+			HLTError("Failed to decode the tracker DDL raw data.");
+			return false;
+		}
+		HLTWarning("Found parity errors in the raw data,"
+			" but will continue processing."
+		);
+		break;
+	default:
+		HLTError("Failed to decode the tracker DDL raw data.");
 		return false;
 	}
   }
@@ -818,7 +863,11 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fCharge(0.0),
 	fIdManuChannel(0x0),
 	fLutEntry(0),
-	fWarnOnly(false)
+	fWarnOnly(false),
+	fSkipParityErrors(false),
+	fDontPrintParityErrors(false),
+	fPrintParityErrorAsWarning(false),
+	fNonParityErrorFound(false)
 {
 	// ctor
 }
@@ -842,6 +891,7 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnNewBuffer(const void* b
 	fDataCount = 1;
 	*fNofFiredDetElem = 0;
 	fPrevDetElemId = 0 ;
+	fNonParityErrorFound = false;
 };
 
 
@@ -853,16 +903,31 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnError(ErrorCode code, c
 	/// \param location  A pointer to the location in the raw data buffer
 	///      where the problem was found.
 	
+	if (code != kParityError) fNonParityErrorFound = true;
+	if (fDontPrintParityErrors and code == kParityError) return;
+	
 	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
-	HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
-		ErrorCodeToMessage(code), code, bytepos
-	);
+	if (fWarnOnly or (fPrintParityErrorAsWarning and code == kParityError))
+	{
+		HLTWarning("There is a problem with decoding the raw data."
+			" %s (Error code: %d, at byte %d). Trying to recover from corrupt data.",
+			ErrorCodeToMessage(code), code, bytepos
+		);
+	}
+	else
+	{
+		HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
+			ErrorCodeToMessage(code), code, bytepos
+		);
+	}
 };
 
 
-void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, bool /*parityError*/)
+void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, bool parityError)
 {
   //function to arrange the decoded Raw Data
+
+  if (fSkipParityErrors and parityError) return;
 
   fIdManuChannel = 0x0;
   fIdManuChannel = (fIdManuChannel|fBusPatchId)<<17;

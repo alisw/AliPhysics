@@ -86,9 +86,22 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  *      This will cause the component to generate warnings when it receives data block
  *      types it does not know how to handle. Without this option the component only
  *      generates debug messages when they are compiled in. <br>
- * \li -tryrecover <br>
+ * \li -tryrecover <i>mode</i> <br>
  *      This is a special option to the raw data decoder to turn on logic which will
  *      try and recover from corrupt raw DDL data. This is off by default. <br>
+ *      The <i>mode</i> is and optional parameter which can be one of the
+ *      following: <br>
+ *         - full  This turns on all recovery logic and the decoder tries is best
+ *             to recover from all data corruption. <br>
+ *         - skip  This will just skip any data structures that are found to be
+ *             corrupt in the raw data, without trying to recover the data inside. <br>
+ *         - parityerrors  Will only continue decoding if parity errors are found
+ *             but the decoder will stop if any other corruption is found. <br>
+ * \li -skipparityerrors <br>
+ *      Skips any ADC digit data words that contain parity errors. <br>
+ * \li -dontprintparityerrors <br>
+ *      If specified then no error or warning messages are printed if any parity
+ *      errors are found in the ADC digit data words. <br>
  * \li -useidealgain <br>
  *      When this option is used then the gain correction parameters are not loaded
  *      from the CDB but ideal linear gain is assumed. <br>
