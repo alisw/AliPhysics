@@ -34,6 +34,7 @@ class AliTRDarrayDictionary: public TObject
   Int_t GetDim() const {return fNDdim;};
   void  Compress();
   void  Expand();
+  void  Reset();
 
  protected:
 

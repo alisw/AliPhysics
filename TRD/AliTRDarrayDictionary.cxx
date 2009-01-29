@@ -25,6 +25,7 @@
 /////////////////////////////////////////////////////////
 
 #include "AliTRDarrayDictionary.h"
+#include "TArray.h"
 
 ClassImp(AliTRDarrayDictionary)
 
@@ -326,5 +327,16 @@ void AliTRDarrayDictionary::Expand()
     }
   if(bufferE) delete [] bufferE;
   if(longArr) delete [] longArr;
+
+}
+//________________________________________________________________________________
+void AliTRDarrayDictionary::Reset()
+{
+  //
+  // Reset the array, the old contents are deleted
+  // and the data array elements are set to zero.
+  //
+
+  memset(fDictionary,0,sizeof(Int_t)*fNDdim);
 
 }

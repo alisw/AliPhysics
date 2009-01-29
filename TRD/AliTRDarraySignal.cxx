@@ -356,3 +356,14 @@ void AliTRDarraySignal::Expand()
   if(longArr) delete [] longArr;
 
 }
+//________________________________________________________________________________
+void AliTRDarraySignal::Reset()
+{
+  //
+  // Reset the array, the old contents are deleted
+  // The array keeps the same dimensions as before
+  //
+
+  memset(fSignal,0,sizeof(Float_t)*fNdim);
+
+}

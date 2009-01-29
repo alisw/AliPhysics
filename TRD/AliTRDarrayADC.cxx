@@ -545,3 +545,15 @@ void AliTRDarrayADC::DeleteNegatives()
 	}
     }
 }
+//________________________________________________________________________________
+void AliTRDarrayADC::Reset()
+{
+  //
+  // Reset the array, the old contents are deleted
+  // The array keeps the same dimensions as before
+  //
+ 
+  memset(fADC,0,sizeof(Short_t)*fNAdim);
+
+}
+

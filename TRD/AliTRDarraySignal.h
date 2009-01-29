@@ -39,6 +39,7 @@ class AliTRDarraySignal: public TObject
   Int_t   GetOverThreshold(Float_t threshold);
   void    Compress(Float_t minval);
   void    Expand();
+  void    Reset();
 
  protected:
 
