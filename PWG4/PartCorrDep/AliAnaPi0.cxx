@@ -27,11 +27,15 @@
 // --- ROOT system ---
 #include "TH3.h"
 //#include "Riostream.h"
+#include "TCanvas.h"
+#include "TPad.h"
+#include "TROOT.h"
 
 //---- AliRoot system ----
 #include "AliAnaPi0.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
+#include "AliStack.h"
 
 #ifdef __PHOSGEO__
 	#include "AliPHOSGeoUtils.h"
@@ -304,7 +308,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
 
 
 //____________________________________________________________________________________________________________________________________________________
-void AliAnaPi0:: MakeAnalysisFillHistograms() 
+void AliAnaPi0::MakeAnalysisFillHistograms() 
 {
 	//Process one event and extract photons from AOD branch 
 	// filled with AliAnaPhoton and fill histos with invariant mass
@@ -471,8 +475,97 @@ void AliAnaPi0:: MakeAnalysisFillHistograms()
 
 
 
+//____________________________________________________________________________________________________________________________________________________
+void AliAnaPi0::Terminate() 
+{
+  //Do some calculations and plots from the final histograms.
+ 
+  printf(" *** %s Terminate:", GetName()) ; 
+  printf("        Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
+ 
+  TCanvas  * cIM = new TCanvas("cIM", "", 400, 10, 600, 700) ;
+  cIM->Divide(2, 2);
+
+  cIM->cd(1) ; 
+  //gPad->SetLogy();
+  TH1D * hIMAllPt = (TH1D*) fhRe1[0]->ProjectionZ();
+  hIMAllPt->SetLineColor(2);
+  hIMAllPt->SetTitle("No cut on  p_{T, #gamma#gamma} ");
+  hIMAllPt->Draw();
+
+  cIM->cd(2) ; 
+  TH3F * hRe1Pt5 = (TH3F*)fhRe1[0]->Clone("IMPt5");
+  hRe1Pt5->GetXaxis()->SetRangeUser(0,5);
+  TH1D * hIMPt5 = (TH1D*) hRe1Pt5->Project3D("z");
+  hIMPt5->SetLineColor(2);  
+  hIMPt5->SetTitle("0 < p_{T, #gamma#gamma} < 5 GeV/c");
+  hIMPt5->Draw();
+  
+  cIM->cd(3) ; 
+  TH3F * hRe1Pt10 =  (TH3F*)fhRe1[0]->Clone("IMPt10");
+  hRe1Pt10->GetXaxis()->SetRangeUser(5,10);
+  TH1D * hIMPt10 = (TH1D*) hRe1Pt10->Project3D("z");
+  hIMPt10->SetLineColor(2);  
+  hIMPt10->SetTitle("5 < p_{T, #gamma#gamma} < 10 GeV/c");
+  hIMPt10->Draw();
+  
+  cIM->cd(4) ; 
+  TH3F * hRe1Pt20 =  (TH3F*)fhRe1[0]->Clone("IMPt20");
+  hRe1Pt20->GetXaxis()->SetRangeUser(10,20);
+  TH1D * hIMPt20 = (TH1D*) hRe1Pt20->Project3D("z");
+  hIMPt20->SetLineColor(2);  
+  hIMPt20->SetTitle("10 < p_{T, #gamma#gamma} < 20 GeV/c");
+  hIMPt20->Draw();
+   
+  cIM->Print("Mgg.eps");
 
 
+ TCanvas  * cPt = new TCanvas("cPt", "", 400, 10, 600, 700) ;
+  cPt->Divide(2, 2);
+
+  cPt->cd(1) ; 
+  //gPad->SetLogy();
+  TH1D * hPt = (TH1D*) fhRe1[0]->Project3D("x");
+  hPt->SetLineColor(2);
+  hPt->SetTitle("No cut on  M_{#gamma#gamma} ");
+  hPt->Draw();
+
+  cPt->cd(2) ; 
+  TH3F * hRe1IM1 = (TH3F*)fhRe1[0]->Clone("PtIM1");
+  hRe1IM1->GetZaxis()->SetRangeUser(0.05,0.21);
+  TH1D * hPtIM1 = (TH1D*) hRe1IM1->Project3D("x");
+  hPtIM1->SetLineColor(2);  
+  hPtIM1->SetTitle("0.05 < M_{#gamma#gamma} < 0.21 GeV/c^{2}");
+  hPtIM1->Draw();
+  
+  cPt->cd(3) ; 
+  TH3F * hRe1IM2 = (TH3F*)fhRe1[0]->Clone("PtIM2");
+  hRe1IM2->GetZaxis()->SetRangeUser(0.09,0.17);
+  TH1D * hPtIM2 = (TH1D*) hRe1IM2->Project3D("x");
+  hPtIM2->SetLineColor(2);  
+  hPtIM2->SetTitle("0.09 < M_{#gamma#gamma} < 0.17 GeV/c^{2}");
+  hPtIM2->Draw();
+
+  cPt->cd(4) ; 
+  TH3F * hRe1IM3 = (TH3F*)fhRe1[0]->Clone("PtIM3");
+  hRe1IM3->GetZaxis()->SetRangeUser(0.11,0.15);
+  TH1D * hPtIM3 = (TH1D*) hRe1IM1->Project3D("x");
+  hPtIM3->SetLineColor(2);  
+  hPtIM3->SetTitle("0.11 < M_{#gamma#gamma} < 0.15 GeV/c^{2}");
+  hPtIM3->Draw();
+   
+  cPt->Print("Pt.eps");
+
+ 
+  char line[1024] ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  gROOT->ProcessLine(line);
+  sprintf(line, ".!rm -fR *.eps"); 
+  gROOT->ProcessLine(line);
+ 
+  printf("!! All the eps files are in %s.tar.gz !!!", GetName());
+
+}
 
 
 

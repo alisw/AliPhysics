@@ -38,8 +38,8 @@ ClassImp(AliAnaParticleHadronCorrelation)
 //____________________________________________________________________________
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation() : 
     AliAnaPartCorrBaseClass(),
-    fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), 
-    fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
+    fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fSelectIsolated(0),  
+	fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
     fhDeltaPhiCharged(0), fhDeltaPhiNeutral(0), 
     fhDeltaEtaCharged(0), fhDeltaEtaNeutral(0),
     fhDeltaPhiChargedPt(0), fhDeltaPhiNeutralPt(0), 
@@ -55,6 +55,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
 AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & g) :   
   AliAnaPartCorrBaseClass(g),
   fDeltaPhiMaxCut(g.fDeltaPhiMaxCut), fDeltaPhiMinCut(g.fDeltaPhiMinCut), 
+  fSelectIsolated(g.fSelectIsolated),
   fhPhiCharged(g.fhPhiCharged), fhPhiNeutral(g.fhPhiNeutral), 
   fhEtaCharged(g.fhEtaCharged), fhEtaNeutral(g.fhEtaNeutral), 
   fhDeltaPhiCharged(g.fhDeltaPhiCharged),  
@@ -80,7 +81,8 @@ AliAnaParticleHadronCorrelation & AliAnaParticleHadronCorrelation::operator = (c
   
   fDeltaPhiMaxCut = source.fDeltaPhiMaxCut ; 
   fDeltaPhiMinCut = source.fDeltaPhiMinCut ; 
-
+  fSelectIsolated = source.fSelectIsolated ;
+ 
   fhPhiCharged = source.fhPhiCharged ; fhPhiNeutral = source.fhPhiNeutral ; 
   fhEtaCharged = source.fhEtaCharged ; fhEtaNeutral = source.fhEtaNeutral ; 
   fhDeltaPhiCharged = source.fhDeltaPhiCharged ;  
@@ -230,7 +232,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   SetPtCutRange(2,300);
   fDeltaPhiMinCut = 1.5 ;
   fDeltaPhiMaxCut = 4.5 ;
-
+  fSelectIsolated = kFALSE;
 }
 
 //__________________________________________________________________
@@ -246,8 +248,7 @@ void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
   printf("pT Hadron       <    %2.2f\n", GetMaxPt()) ; 
   printf("Phi trigger particle-Hadron      <     %3.2f\n", fDeltaPhiMaxCut) ; 
   printf("Phi trigger particle-Hadron      >     %3.2f\n", fDeltaPhiMinCut) ;
-  
-
+  printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
 } 
 
 //____________________________________________________________________________
@@ -317,6 +318,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 			printf("Particle %d, In Track Refs  entries %d\n", iaod, (particle->GetRefTracks())->GetEntriesFast());
 			printf("Particle %d, In Cluster Refs entries %d\n",iaod, (particle->GetRefClusters())->GetEntriesFast());
 		}
+		
+		if(OnlyIsolated() && !particle->IsIsolated()) continue;
 		
 		//Make correlation with charged hadrons
 		if((particle->GetRefTracks())->GetEntriesFast() > 0)

@@ -36,8 +36,9 @@
 #include "AliIsolationCut.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliCaloPID.h"
+#include "AliMCAnalysisUtils.h"
 #include "AliAODPWG4ParticleCorrelation.h"
-
+    #include "AliStack.h"
 ClassImp(AliAnaPi0EbE)
   
 //____________________________________________________________________________
@@ -264,24 +265,42 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 		AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
 		mom1 = *(photon1->Momentum());
 		
-		//Play with the MC stack if available
-		
+	
 		for(Int_t jphoton = iphoton+1; jphoton < GetInputAODBranch()->GetEntriesFast()-1; jphoton++){
 			
 			AliAODPWG4ParticleCorrelation * photon2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(jphoton));
 			mom2 = *(photon2->Momentum());
+		
 			//Select good pair (good phi, pt cuts, aperture and invariant mass)
 			if(GetNeutralMesonSelection()->SelectPair(mom1, mom2))
 			{
-				if(GetDebug()>1) printf("Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+				if(GetDebug()>1) 
+					printf("Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
 				
-				
+						//Play with the MC stack if available
 				if(IsDataMC()){
 					//Check origin of the candidates
-					tag1 = GetCaloPID()->CheckOrigin(photon1->GetLabel(), GetMCStack());
-					tag2 = GetCaloPID()->CheckOrigin(photon2->GetLabel(), GetMCStack());
+					tag1 = GetMCAnalysisUtils()->CheckOrigin(photon1->GetLabel(), GetMCStack());
+					tag2 = GetMCAnalysisUtils()->CheckOrigin(photon2->GetLabel(), GetMCStack());
+					
 					if(GetDebug() > 0) printf("Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-					if(tag1 == AliCaloPID::kMCPi0Decay && tag2 == AliCaloPID::kMCPi0Decay) tag = AliCaloPID::kMCPi0;
+					if(tag1 == AliMCAnalysisUtils::kMCPi0Decay && tag2 == AliMCAnalysisUtils::kMCPi0Decay){
+					
+					 //Check if pi0 mother is the same
+					Int_t label1 = photon1->GetLabel();
+					TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+					label1 = mother1->GetFirstMother();
+					//mother1 = GetMCStack()->Particle(label1);//pi0
+					
+					Int_t label2 = photon2->GetLabel();
+					TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+					label2 = mother2->GetFirstMother();
+					//mother2 = GetMCStack()->Particle(label2);//pi0
+					
+					//printf("mother1 %d, mother2 %d\n",label1,label2);
+					if(label1 == label2)
+						tag = AliMCAnalysisUtils::kMCPi0;
+					}
 				}//Work with stack also   
 				
 			   	//Create AOD for analysis
@@ -339,10 +358,25 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 				
 				if(IsDataMC()){
 					//Check origin of the candidates
-					tag1 = GetCaloPID()->CheckOrigin(photon1->GetLabel(), GetMCStack());
-					tag2 = GetCaloPID()->CheckOrigin(photon2->GetLabel(), GetMCStack());
+					tag1 = GetMCAnalysisUtils()->CheckOrigin(photon1->GetLabel(), GetMCStack());
+					tag2 = GetMCAnalysisUtils()->CheckOrigin(photon2->GetLabel(), GetMCStack());
 					if(GetDebug() > 0) printf("Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-					if(tag1 == AliCaloPID::kMCPi0Decay && tag2 == AliCaloPID::kMCPi0Decay) tag = AliCaloPID::kMCPi0;
+					if(tag1 == AliMCAnalysisUtils::kMCPi0Decay && tag2 == AliMCAnalysisUtils::kMCPi0Decay){
+						//Check if pi0 mother is the same
+						Int_t label1 = photon1->GetLabel();
+						TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+						label1 = mother1->GetFirstMother();
+						//mother1 = GetMCStack()->Particle(label1);//pi0
+					
+						Int_t label2 = photon2->GetLabel();
+						TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+						label2 = mother2->GetFirstMother();
+						//mother2 = GetMCStack()->Particle(label2);//pi0
+					
+						//printf("mother1 %d, mother2 %d\n",label1,label2);
+						if(label1 == label2)
+							tag = AliMCAnalysisUtils::kMCPi0;
+					}
 				}//Work with stack also   
 				
 			   	//Create AOD for analysis
@@ -454,7 +488,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 		//Play with the MC stack if available
 		//Check origin of the candidates
 		if(IsDataMC()){
-			aodph.SetTag(GetCaloPID()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
+			aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
 			if(GetDebug() > 0) printf("AliAnaPi0EbE::FillAOD: Origin of candidate %d\n",aodph.GetTag());
 		}//Work with stack also   
 		
@@ -496,7 +530,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 		fhEtaPi0 ->Fill(pt,eta);
 		
 		if(IsDataMC()){
-			if(pi0->GetTag()== AliCaloPID::kMCPi0Decay){
+			if(pi0->GetTag()== AliMCAnalysisUtils::kMCPi0){
 				fhPtMCPi0  ->Fill(pt);
 				fhPhiMCPi0 ->Fill(pt,phi);
 				fhEtaMCPi0 ->Fill(pt,eta);

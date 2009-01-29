@@ -173,9 +173,10 @@ void  AliCaloTrackMCReader::FillCalorimeters(const Int_t iParticle, TParticle* p
 }
 
 //____________________________________________________________________________
-void AliCaloTrackMCReader::FillInputEvent()
-{
-	//Create list of particles from EMCAL, PHOS and CTS. 
+void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
+	//Fill the event counter and input lists that are needed, called by the analysis maker.
+	
+	fEventNumber = iEntry;
 	
 	if(fClonesArrayType == kTParticle){
 		fAODCTS = new TClonesArray("TParticle",0);
@@ -190,14 +191,14 @@ void AliCaloTrackMCReader::FillInputEvent()
 	else {AliFatal("Wrong clones type");}
 	
 	
-	Int_t indexCh      = 0 ;
+	Int_t indexCh    = 0 ;
 	Int_t indexEMCAL = 0 ;
-	Int_t indexPHOS = 0 ;
+	Int_t indexPHOS  = 0 ;
 	
 	Int_t iParticle = 0 ;
 	Double_t charge = 0.;
 
-	for (iParticle=0 ; iParticle <  GetStack()->GetNtrack() ; iParticle++) {
+	for (iParticle = 0 ; iParticle <  GetStack()->GetNtrack() ; iParticle++) {
 		TParticle * particle = GetStack()->Particle(iParticle);
 		TLorentzVector momentum;
 		Float_t p[3];

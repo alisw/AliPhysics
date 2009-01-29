@@ -7,22 +7,18 @@
 // Creates an ntuple for 2x2 and NxN triggers
 // Each ntuple connects the maximum trigger amplitudes 
 // and its positions with reconstructed clusters
+// and if MC stack available, with pt of parent.
 //
 //*-- Yves Schutz (CERN) & Gustavo Conesa Balbastre (INFN-LNF)
 //////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliAnalysisTask.h"  
-class TFile ;
+#include "AliAnalysisTaskSE.h"  
 class TNtuple ;
-class TH1D ; 
-class TH1I ; 
-class TChain;
 
-class AliAnalysisManager ;
 class AliESDEvent ; 
 
-class AliAnaCaloTrigger : public AliAnalysisTask {
+class AliAnaCaloTrigger : public AliAnalysisTaskSE {
 
 public:
   AliAnaCaloTrigger() ;
@@ -31,26 +27,22 @@ public:
   AliAnaCaloTrigger & operator=(const AliAnaCaloTrigger& source);
   virtual ~AliAnaCaloTrigger() ;
    
-  virtual void Exec(Option_t * opt = "") ;
-  virtual void ConnectInputData(Option_t *);
-  virtual void CreateOutputObjects();
+  virtual void UserExec(Option_t * opt = "") ;
+  virtual void UserCreateOutputObjects();
 //  virtual void Terminate(Option_t * opt = "") const ;
 
   TString GetCalorimeter()     const   {return fCalorimeter ; }
   void    SetCalorimeter(TString calo) {fCalorimeter = calo ; }
 
 private:
-  TChain       * fChain ;            //!pointer to the analyzed TTree or TChain
-  AliESDEvent  * fESD ;              //! Declaration of leave types
-
-  TObjArray * fOutputContainer ; //! output data container
-
+ 
+  TList * fOutputContainer ; //! output data container
   TString fCalorimeter ; // "PHOS" or "EMCAL"
 
   // Histograms
   TNtuple * fNtTrigger22 ; //Ntuple with 2x2 max dig amplitude and cluster energy, and positions.
   TNtuple * fNtTriggerNN ; //Ntuple with NxN max dig amplitude and cluster energy, and positions.
 
-  ClassDef(AliAnaCaloTrigger, 1); // a photon analysis task 
+  ClassDef(AliAnaCaloTrigger, 2); // a trigger analysis task 
 };
 #endif // ALIANACALOTRIGGER_H

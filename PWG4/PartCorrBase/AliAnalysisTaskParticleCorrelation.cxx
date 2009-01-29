@@ -171,8 +171,10 @@ void AliAnalysisTaskParticleCorrelation::UserExec(Option_t */*option*/)
 void AliAnalysisTaskParticleCorrelation::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
+  // Do some plots
   //
-  AliDebug(1,"Do nothing in Terminate");
-  //fAna->Terminate();
+  
+  fAna->Terminate();
+
 }
 

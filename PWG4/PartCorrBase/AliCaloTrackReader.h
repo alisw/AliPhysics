@@ -50,6 +50,7 @@ public:
   virtual Int_t GetDataType()      const { return fDataType ; }
   virtual void  SetDataType(Int_t data ) { fDataType = data ; }
 
+  virtual Int_t GetEventNumber() const {return fEventNumber ; }
 
   //Minimum pt setters and getters 
   virtual Float_t  GetEMCALPtMin() const { return fEMCALPtMin  ; }
@@ -82,7 +83,7 @@ public:
   void SwitchOnPHOSCells()   {fFillPHOSCells = kTRUE ; }
   void SwitchOffPHOSCells()  {fFillPHOSCells = kFALSE ; }
 
-  virtual void FillInputEvent()  ;
+  virtual void FillInputEvent(Int_t iEntry)  ;
   virtual void FillInputCTS()   {;}
   virtual void FillInputEMCAL() {;}
   virtual void FillInputPHOS()  {;}
@@ -116,11 +117,11 @@ public:
   virtual void SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* /*mc*/) {;}
 
  protected:
-  
+  Int_t			   fEventNumber; // Event number
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFidutialCut * fFidutialCut; // Acceptance cuts
-
+		
   Float_t        fCTSPtMin;      // pT  Threshold on charged particles 
   Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
   Float_t        fPHOSPtMin;     // pT  Threshold on phos clusters

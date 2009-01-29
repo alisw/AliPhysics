@@ -21,6 +21,7 @@ class AliCaloTrackReader ;
 class AliCaloPID ;
 class AliFidutialCut ;
 class AliIsolationCut ;
+class AliMCAnalysisUtils ;
 class AliNeutralMesonSelection ;
 class AliStack ; 
 class AliHeader ; 
@@ -58,12 +59,15 @@ public:
 	virtual Int_t GetDebug() const  { return fDebug ; }
 	virtual void SetDebug(Int_t d)   { fDebug = d ; }
 	
+	virtual Int_t GetEventNumber() const ;
+	
 	virtual AliCaloTrackReader * GetReader() const {return fReader ; }
 	virtual void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
 		
+	virtual void Terminate() {;}
+
 	//analysis AOD branch
 	virtual TClonesArray * GetCreateOutputAODBranch() ;
-	//{return (new TClonesArray("AliAODPWG4Particle",0)) ;}
 	virtual TString GetInputAODName() const {return fInputAODName ; }
 	virtual void SetInputAODName(TString name)   { fInputAODName = name; }	
 	virtual TString GetOutputAODName()  const {return fOutputAODName ; }
@@ -91,7 +95,7 @@ public:
 	virtual AliHeader* GetMCHeader() const ;
 	virtual AliGenEventHeader* GetMCGenEventHeader() const ;
 	
-	
+	//Analysis helpers classes pointers setters and getters
 	virtual AliCaloPID * GetCaloPID() const {return  fCaloPID ;}
 	virtual void SetCaloPID(AliCaloPID * pid) { fCaloPID = pid ;}
 	
@@ -100,6 +104,9 @@ public:
 	
 	virtual AliIsolationCut * GetIsolationCut() const {return  fIC ;}
 	virtual void SetIsolationCut(AliIsolationCut * fc) { fIC = fc ;}
+	
+	virtual AliMCAnalysisUtils * GetMCAnalysisUtils() const {return  fMCUtils ;}
+	virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { fMCUtils = mcutils ;}	
 	
 	virtual AliNeutralMesonSelection * GetNeutralMesonSelection() const {return  fNMS ;}
 	virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * nms) { fNMS = nms ;}
@@ -126,7 +133,6 @@ public:
 	virtual void SetMinPt(Float_t pt)              {fMinPt = pt ; }
 	void SetPtCutRange(Double_t ptmin, Double_t ptmax)
 	{  fMaxPt=ptmax;   fMinPt=ptmin;}
-	
 	
 	//Histogrammes setters and getters
 	virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -181,9 +187,12 @@ public:
 
 	TClonesArray* fAODCaloClusters ;  //! selected PHOS/EMCAL CaloClusters
 	AliAODCaloCells * fAODCaloCells ; //! selected PHOS/EMCAL CaloCells
+	
+	//Analysis helper classes access pointers
 	AliCaloPID * fCaloPID;            // PID calculation
 	AliFidutialCut * fFidCut;         // Acceptance cuts
 	AliIsolationCut * fIC;            // Isolation cut 
+	AliMCAnalysisUtils * fMCUtils;    // MonteCarlo Analysis utils 
 	AliNeutralMesonSelection * fNMS;  // Neutral Meson Selection
 	
 	//Histograms binning and range    
@@ -197,7 +206,7 @@ public:
 	Float_t fHistoEtaMax ;   //Maximum value of eta histogram range
 	Float_t fHistoEtaMin ;   //Minimum value of eta histogram range
 						
-	ClassDef(AliAnaPartCorrBaseClass,2)
+	ClassDef(AliAnaPartCorrBaseClass,3)
 } ;
 
 

@@ -32,6 +32,9 @@ public:
   void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
   {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
 
+  Bool_t OnlyIsolated() const {return fSelectIsolated ; }
+  void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
+  
   void InitParameters();
 
   void Print(const Option_t * opt) const;
@@ -48,8 +51,9 @@ public:
   private:
   
   Double_t   fDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Hadron
-  Double_t   fDeltaPhiMinCut ;      //  Maximum Delta Phi Gamma-Hadron
-
+  Double_t   fDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Hadron
+  Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
+   	
   //Histograms
   TH2F * fhPhiCharged  ; //! Phi distribution of selected charged particles
   TH2F * fhPhiNeutral   ;  //! Phi distribution of selected neutral particles

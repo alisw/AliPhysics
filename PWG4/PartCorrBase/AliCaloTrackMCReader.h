@@ -59,7 +59,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   
   void GetVertex(Double_t v[3]) const ;
 
-  void FillInputEvent() ;
+  void FillInputEvent(Int_t iEntry) ;
   AliVEvent*  GetInputEvent() const {return GetMC();}
   void SetInputEvent(TObject* esd, TObject* aod, TObject* mc) ;
   

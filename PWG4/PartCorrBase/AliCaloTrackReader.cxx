@@ -43,7 +43,8 @@ ClassImp(AliCaloTrackReader)
   
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
-    TObject(), fDataType(0), fDebug(0), fFidutialCut(0x0),
+    TObject(), fEventNumber(-1), fDataType(0), fDebug(0), 
+	fFidutialCut(0x0),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0),
     fAODCTS(0x0), fAODEMCAL(0x0), fAODPHOS(0x0),
     fEMCALCells(0x0), fPHOSCells(0x0),
@@ -59,7 +60,8 @@ ClassImp(AliCaloTrackReader)
 
 //____________________________________________________________________________
 AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :   
-  TObject(g), fDataType(g.fDataType), fDebug(g.fDebug),fFidutialCut(g.fFidutialCut),
+  TObject(g), fEventNumber(g.fEventNumber), fDataType(g.fDataType), fDebug(g.fDebug),
+  fFidutialCut(g.fFidutialCut),
   fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
   fAODCTS(new TClonesArray(*g.fAODCTS)),  
   fAODEMCAL(new TClonesArray(*g.fAODEMCAL)),
@@ -81,30 +83,30 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   
   if(&source == this) return *this;
   
-  fDataType = source.fDataType ;
-  fDebug = source.fDebug ;
-  
+  fDataType    = source.fDataType ;
+  fDebug       = source.fDebug ;
+  fEventNumber = source.fEventNumber ;
   fFidutialCut = source.fFidutialCut;
   
-  fCTSPtMin = source.fCTSPtMin ;
+  fCTSPtMin   = source.fCTSPtMin ;
   fEMCALPtMin = source.fEMCALPtMin ;
-  fPHOSPtMin = source.fPHOSPtMin ; 
+  fPHOSPtMin  = source.fPHOSPtMin ; 
   
-  fAODCTS = new TClonesArray(*source.fAODCTS) ;
-  fAODEMCAL = new TClonesArray(*source.fAODEMCAL) ;
-  fAODPHOS = new TClonesArray(*source.fAODPHOS) ;
+  fAODCTS     = new TClonesArray(*source.fAODCTS) ;
+  fAODEMCAL   = new TClonesArray(*source.fAODEMCAL) ;
+  fAODPHOS    = new TClonesArray(*source.fAODPHOS) ;
   fEMCALCells = new TNamed(*source.fEMCALCells) ;
-  fPHOSCells = new TNamed(*source.fPHOSCells) ;
+  fPHOSCells  = new TNamed(*source.fPHOSCells) ;
 
   fESD = source.fESD;
-  fAOD= source.fAOD;
-  fMC = source.fMC;
+  fAOD = source.fAOD;
+  fMC  = source.fMC;
   
-  fFillCTS = source.fFillCTS;
-  fFillEMCAL = source.fFillEMCAL;
-  fFillPHOS = source.fFillPHOS;
+  fFillCTS        = source.fFillCTS;
+  fFillEMCAL      = source.fFillEMCAL;
+  fFillPHOS       = source.fFillPHOS;
   fFillEMCALCells = source.fFillEMCALCells;
-  fFillPHOSCells = source.fFillPHOSCells;
+  fFillPHOSCells  = source.fFillPHOSCells;
 
   return *this;
   
@@ -163,7 +165,7 @@ AliHeader* AliCaloTrackReader::GetHeader() const {
   if(fMC)
     return fMC->Header();
   else{
-    printf("header is not available"); 
+    printf("Header is not available\n"); 
     return 0x0 ;
   }
 }
@@ -173,7 +175,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const {
   if(fMC)
     return fMC->GenEventHeader();
   else{
-    printf("GenEventHeader is not available"); 
+    printf("GenEventHeader is not available\n"); 
     return 0x0 ;
   }
 }
@@ -222,9 +224,10 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 } 
 
 //___________________________________________________
-void AliCaloTrackReader::FillInputEvent() {
-  //Fill the input lists that are needed, called by the analysis maker.
-
+void AliCaloTrackReader::FillInputEvent(Int_t iEntry) {
+  //Fill the event counter and input lists that are needed, called by the analysis maker.
+  
+  fEventNumber = iEntry;
   if(fFillCTS) FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS) FillInputPHOS();
