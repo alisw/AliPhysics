@@ -1,7 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-       PartCorrDep/AliAnaCaloTrigger.cxx PartCorrDep/AliAnaCaloTriggerMC.cxx
+       PartCorrDep/AliAnaCaloTrigger.cxx
        PartCorrDep/AliAnalysisTaskPHOSExample.cxx PartCorrDep/AliAnaExample.cxx
        PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx 
        PartCorrDep/AliAnaParticleIsolation.cxx PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
