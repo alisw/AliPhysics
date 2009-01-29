@@ -7,6 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include "AliMpVSegmentation.h"
 #include "AliEveMUONChamberData.h"
 
 #include <AliMUONGeometryTransformer.h>
