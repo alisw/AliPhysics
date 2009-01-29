@@ -33,6 +33,8 @@ public:
   
   TList *  GetCreateOutputObjects();
 
+  void Init();
+
   void MakeAnalysisFillAOD()  ;
   
   void MakeAnalysisFillHistograms() ; 
@@ -71,6 +73,10 @@ public:
   TH2F * fhPhiFragmentation;  //! Phi of identified  fragmentation gamma
   TH2F * fhEtaFragmentation;  //! eta of identified  fragmentation gamma
 
+  TH1F * fhPtISR;   //! Number of identified initial state radiation gamma 
+  TH2F * fhPhiISR;  //! Phi of identified initial state radiation gamma
+  TH2F * fhEtaISR;  //! eta of identified initial state radiation gamma
+
   TH1F * fhPtPi0Decay;   //! Number of identified Pi0Decay gamma 
   TH2F * fhPhiPi0Decay;  //! Phi of identified  Pi0Decay gamma
   TH2F * fhEtaPi0Decay;  //! eta of identified  Pi0Decay gamma
@@ -87,7 +93,8 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-  ClassDef(AliAnaPhoton,1)
+  ClassDef(AliAnaPhoton,2)
+
 } ;
  
 

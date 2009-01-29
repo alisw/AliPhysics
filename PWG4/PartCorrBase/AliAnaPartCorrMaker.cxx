@@ -198,7 +198,7 @@ Bool_t AliAnaPartCorrMaker::ProcessEvent(Int_t iEntry){
 		fAODBranchList->At(iaod)->Clear();
 	
 	//Tell the reader to fill the data in the 3 detector lists
-	fReader->FillInputEvent();
+	fReader->FillInputEvent(iEntry);
 	
 	//Loop on analysis algorithms
 	if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
@@ -222,4 +222,18 @@ Bool_t AliAnaPartCorrMaker::ProcessEvent(Int_t iEntry){
 	
 	return kTRUE ;
 	
+}
+
+//________________________________________________________________________
+void AliAnaPartCorrMaker::Terminate()
+{  
+	//Execute Terminate of analysis
+	//Do some final plots.
+			
+	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+			
+		AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+		ana->Terminate();
+
+	}//Loop on analysis defined
 }

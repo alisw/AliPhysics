@@ -30,6 +30,9 @@
 //#include "Riostream.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
+#include "TCanvas.h"
+#include "TPad.h"
+#include "TROOT.h"
 
 //---- AliRoot system ----
 #include "AliAnaExample.h"
@@ -316,8 +319,8 @@ void  AliAnaExample::MakeAnalysisFillAOD()
 		if(fDetector!="CTS" && GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
 			printf("Example: final aod calocluster entries %d\n", GetAODCaloClusters()->GetEntriesFast());
 		printf("Example: final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());  
-		if(fDetector!="CTS" && GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
-			printf("Example: final aod cell  entries %d\n", GetAODCaloCells()->GetNumberOfCells());
+		//	if(fDetector!="CTS" && GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
+		//printf("Example: final aod cell  entries %d\n", GetAODCaloCells()->GetNumberOfCells());
 	}
 } 
 
@@ -371,4 +374,41 @@ void  AliAnaExample::MakeAnalysisFillHistograms()
 			}
 		}//calo cells container exist
 	}
+}
+
+//__________________________________________________________________
+void  AliAnaExample::Terminate() 
+{
+
+  //Do some plots to end
+
+  printf(" *** %s Report:", GetName()) ; 
+  printf("        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
+ 
+  TCanvas  * c = new TCanvas("c", "PHOS ESD Test", 400, 10, 600, 700) ;
+  c->Divide(1, 3);
+
+  c->cd(1) ; 
+  gPad->SetLogy();
+  fhPt->SetLineColor(2);
+  fhPt->Draw();
+
+  c->cd(2) ; 
+  fhPhi->SetLineColor(2);
+  fhPhi->Draw();
+
+  c->cd(3) ; 
+  fhEta->SetLineColor(2);
+  fhEta->Draw();
+ 
+  c->Print("Example.eps");
+ 
+  char line[1024] ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  gROOT->ProcessLine(line);
+  sprintf(line, ".!rm -fR *.eps"); 
+  gROOT->ProcessLine(line);
+ 
+  printf("!! All the eps files are in %s.tar.gz !!!", GetName());
+
 }

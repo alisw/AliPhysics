@@ -35,7 +35,7 @@
 #include "AliIsolationCut.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliAODPWG4ParticleCorrelation.h"
-#include "AliCaloPID.h"
+#include "AliMCAnalysisUtils.h"
 
 ClassImp(AliAnaParticleIsolation)
   
@@ -792,30 +792,30 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 			if(IsDataMC()){
 				Int_t tag =aod->GetTag();
 				
-				if(tag == AliCaloPID::kMCPrompt){
+				if(tag == AliMCAnalysisUtils::kMCPrompt){
 					fhPtIsoPrompt  ->Fill(ptcluster);
 					fhPhiIsoPrompt ->Fill(ptcluster,phicluster);
 					fhEtaIsoPrompt ->Fill(ptcluster,etacluster);
 				}
-				else if(tag == AliCaloPID::kMCFragmentation)
+				else if(tag == AliMCAnalysisUtils::kMCFragmentation)
 				{
 					fhPtIsoFragmentation  ->Fill(ptcluster);
 					fhPhiIsoFragmentation ->Fill(ptcluster,phicluster);
 					fhEtaIsoFragmentation ->Fill(ptcluster,etacluster);
 				}
-				else if(tag == AliCaloPID::kMCPi0Decay)
+				else if(tag == AliMCAnalysisUtils::kMCPi0Decay)
 				{
 					fhPtIsoPi0Decay  ->Fill(ptcluster);
 					fhPhiIsoPi0Decay ->Fill(ptcluster,phicluster);
 					fhEtaIsoPi0Decay ->Fill(ptcluster,etacluster);
 				}
-				else if(tag == AliCaloPID::kMCEtaDecay || tag == AliCaloPID::kMCOtherDecay)
+				else if(tag == AliMCAnalysisUtils::kMCEtaDecay || tag == AliMCAnalysisUtils::kMCOtherDecay)
 				{
 					fhPtIsoOtherDecay  ->Fill(ptcluster);
 					fhPhiIsoOtherDecay ->Fill(ptcluster,phicluster);
 					fhEtaIsoOtherDecay ->Fill(ptcluster,etacluster);
 				}
-				else if(tag == AliCaloPID::kMCConversion)
+				else if(tag == AliMCAnalysisUtils::kMCConversion)
 				{
 					fhPtIsoConversion  ->Fill(ptcluster);
 					fhPhiIsoConversion ->Fill(ptcluster,phicluster);
@@ -899,11 +899,11 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
 			if(n[icone][ipt] == 0) {
 				fhPtThresIsolated[icone][ipt]->Fill(ptC);
 				if(IsDataMC()){
-					if(tag == AliCaloPID::kMCPrompt) fhPtThresIsolatedPrompt[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCConversion) fhPtThresIsolatedConversion[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCFragmentation) fhPtThresIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCPi0Decay) fhPtThresIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCOtherDecay || tag == AliCaloPID::kMCEtaDecay) fhPtThresIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
+					if(tag == AliMCAnalysisUtils::kMCPrompt) fhPtThresIsolatedPrompt[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCConversion) fhPtThresIsolatedConversion[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCFragmentation) fhPtThresIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCPi0Decay) fhPtThresIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCOtherDecay || tag == AliMCAnalysisUtils::kMCEtaDecay) fhPtThresIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
 					else  fhPtThresIsolatedUnknown[icone][ipt]->Fill(ptC) ;
 				}
 			}
@@ -912,11 +912,11 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
 			if(nfrac[icone][ipt] == 0) {
 				fhPtFracIsolated[icone][ipt]->Fill(ptC);
 				if(IsDataMC()){
-					if(tag == AliCaloPID::kMCPrompt) fhPtFracIsolatedPrompt[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCConversion) fhPtFracIsolatedConversion[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCFragmentation) fhPtFracIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCPi0Decay) fhPtFracIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
-					else if(tag == AliCaloPID::kMCOtherDecay || tag == AliCaloPID::kMCEtaDecay) fhPtFracIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
+					if(tag == AliMCAnalysisUtils::kMCPrompt) fhPtFracIsolatedPrompt[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCConversion) fhPtFracIsolatedConversion[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCFragmentation) fhPtFracIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCPi0Decay) fhPtFracIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
+					else if(tag == AliMCAnalysisUtils::kMCOtherDecay || tag == AliMCAnalysisUtils::kMCEtaDecay) fhPtFracIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
 					else  fhPtFracIsolatedUnknown[icone][ipt]->Fill(ptC) ;
 				}
 			}
@@ -925,11 +925,11 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
 		//Sum in cone histograms
 		fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
 		if(IsDataMC()){
-			if(tag == AliCaloPID::kMCPrompt) fhPtSumIsolatedPrompt[icone]->Fill(ptC,coneptsum) ;
-			else if(tag == AliCaloPID::kMCConversion) fhPtSumIsolatedConversion[icone]->Fill(ptC,coneptsum) ;
-			else if(tag == AliCaloPID::kMCFragmentation) fhPtSumIsolatedFragmentation[icone]->Fill(ptC,coneptsum) ;
-			else if(tag == AliCaloPID::kMCPi0Decay) fhPtSumIsolatedPi0Decay[icone]->Fill(ptC,coneptsum) ;
-			else if(tag == AliCaloPID::kMCOtherDecay || tag == AliCaloPID::kMCEtaDecay) fhPtSumIsolatedOtherDecay[icone]->Fill(ptC,coneptsum) ;
+			if(tag == AliMCAnalysisUtils::kMCPrompt) fhPtSumIsolatedPrompt[icone]->Fill(ptC,coneptsum) ;
+			else if(tag == AliMCAnalysisUtils::kMCConversion) fhPtSumIsolatedConversion[icone]->Fill(ptC,coneptsum) ;
+			else if(tag == AliMCAnalysisUtils::kMCFragmentation) fhPtSumIsolatedFragmentation[icone]->Fill(ptC,coneptsum) ;
+			else if(tag == AliMCAnalysisUtils::kMCPi0Decay) fhPtSumIsolatedPi0Decay[icone]->Fill(ptC,coneptsum) ;
+			else if(tag == AliMCAnalysisUtils::kMCOtherDecay || tag == AliMCAnalysisUtils::kMCEtaDecay) fhPtSumIsolatedOtherDecay[icone]->Fill(ptC,coneptsum) ;
 			else  fhPtSumIsolatedUnknown[icone]->Fill(ptC,coneptsum) ;
 		}
 		

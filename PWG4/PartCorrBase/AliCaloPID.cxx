@@ -33,8 +33,6 @@
 #include "AliCaloPID.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODPWG4Particle.h"
-#include "AliStack.h"
-#include "TParticle.h"
 
 ClassImp(AliCaloPID)
 
@@ -48,7 +46,7 @@ fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
 fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
 fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
-fDispCut(0.),fTOFCut(0.), fDebug(-1), fMCGenerator("")
+fDispCut(0.),fTOFCut(0.), fDebug(-1)
 {
 	//Ctor
 	
@@ -72,7 +70,7 @@ fPHOSWeightFormula(pid.fPHOSWeightFormula),
 fPHOSPhotonWeightFormula(pid.fPHOSPhotonWeightFormula), 
 fPHOSPi0WeightFormula(pid.fPHOSPi0WeightFormula), 
 fDispCut(pid.fDispCut),fTOFCut(pid.fTOFCut),
-fDebug(pid.fDebug),fMCGenerator(pid.fMCGenerator)
+fDebug(pid.fDebug)
 {
 	// cpy ctor
 	
@@ -104,8 +102,7 @@ AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
 	fDispCut  = pid.fDispCut;
 	fTOFCut   = pid.fTOFCut;
 	fDebug    = pid.fDebug;
-	fMCGenerator = pid.fMCGenerator;
-
+	
 	return *this;
 	
 }
@@ -119,99 +116,6 @@ AliCaloPID::~AliCaloPID() {
 	
 }
 
-
-//_________________________________________________________________________
-Int_t AliCaloPID::CheckOrigin(const Int_t label, AliStack * stack) const {
-  //Play with the MC stack if available
-  //Check origin of the candidates, good for PYTHIA
-  
-  if(!stack) AliFatal("Stack is not available, check analysis settings in configuration file, STOP!!");
-  
-  if(label >= 0 && label <  stack->GetNtrack()){
-    //Mother
-    TParticle * mom = stack->Particle(label);
-    Int_t mPdg = TMath::Abs(mom->GetPdgCode());
-    Int_t mStatus =  mom->GetStatusCode() ;
-    Int_t iParent =  mom->GetFirstMother() ;
-    if(fDebug > 0 && label < 8 ) printf("AliCaloPID::CheckOrigin: Mother is parton %d\n",iParent);
-    
-    //GrandParent
-    TParticle * parent = new TParticle ;
-    Int_t pPdg = -1;
-    Int_t pStatus =-1;
-    if(iParent > 0){
-      parent = stack->Particle(iParent);
-      pPdg = TMath::Abs(parent->GetPdgCode());
-      pStatus = parent->GetStatusCode();  
-    }
-    else if(fDebug > 0 ) printf("AliCaloPID::CheckOrigin: Parent with label %d\n",iParent);
-    
-    //return tag
-    if(mPdg == 22){
-      if(mStatus == 1){
-	if(fMCGenerator == "PYTHIA"){
-	  if(iParent < 8 && iParent > 5) {//outgoing partons
-	    if(pPdg == 22) return kMCPrompt;
-	    else  return kMCFragmentation;
-	  }//Outgoing partons
-	  else if(pStatus == 11){//Decay
-	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 321)  return kMCEtaDecay ;
-	    else  return kMCOtherDecay ;
-	  }//Decay
-	  else return kMCISR; //Initial state radiation
-	}//PYTHIA
-
-	else if(fMCGenerator == "HERWIG"){	  
-	  if(pStatus < 197){//Not decay
- 	    while(1){
-	      if(parent->GetFirstMother()<=5) break;
-	      iParent = parent->GetFirstMother();
-	      parent=stack->Particle(iParent);
-	      pStatus= parent->GetStatusCode();
-	      pPdg = parent->GetPdgCode();
-	    }//Look for the parton
-	    
-	    if(iParent < 8 && iParent > 5) {
-	      if(pPdg == 22) return kMCPrompt;
-	      else  return kMCFragmentation;
-	    }
-	    return kMCISR;//Initial state radiation
-	  }//Not decay
-	  else{//Decay
-	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 321)  return kMCEtaDecay ;
-	    else  return kMCOtherDecay ;
-	  }//Decay
-	}//HERWIG
-	else return  kMCUnknown;
-      }//Status 1 : Pythia generated
-      else if(mStatus == 0){
-	if(pPdg ==22 || pPdg ==11) return kMCConversion ;
-	if(pPdg == 111) return kMCPi0Decay ;
-	else if (pPdg == 221)  return kMCEtaDecay ;
-	else  return kMCOtherDecay ;
-      }//status 0 : geant generated
-    }//Mother Photon
-    else if(mPdg == 111)  return kMCPi0 ;
-    else if(mPdg == 221)  return kMCEta ;
-    else if(mPdg ==11){
-      printf("Origin electron, pT %f\n",mom->Pt());
-
-      if(mStatus == 0) return kMCConversion ;
-      else return kMCElectron ;
-    }
-    else return kMCUnknown;
-  }//Good label value
-  else{
-    if(label < 0 ) printf("AliCaloPID::CheckOrigin: *** bad label or no stack ***:  label %d \n", label);
-    if(label >=  stack->GetNtrack()) printf("AliCaloPID::CheckOrigin: *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
-    return kMCUnknown;
-  }//Bad label
-	
-  return kMCUnknown;
-  
-}
 
 //_______________________________________________________________
 void AliCaloPID::InitParameters()
@@ -240,7 +144,6 @@ void AliCaloPID::InitParameters()
     fDispCut  = 1.5;
 	fTOFCut   = 5.e-9;
 	fDebug = -1;
-	fMCGenerator = "PYTHIA";
 }
 
 //_______________________________________________________________
@@ -405,7 +308,6 @@ void AliCaloPID::Print(const Option_t * opt) const
 	printf("TOF cut        = %e\n",fTOFCut);
 	printf("Dispersion cut = %2.2f\n",fDispCut);
 	printf("Debug level    = %d\n",fDebug);
-	printf("MC Generator   = %s\n",fMCGenerator.Data());
 
 	printf(" \n");
 	
@@ -431,13 +333,13 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliAODCaloCluster * cluste
     ph->SetChargedBit(ntr>0) ;  //Temporary cut, should we evaluate distance?
 	
     //Set PID pdg
-	ph->SetPdg(GetPdg(calo,cluster->PID(),ph->E()));
-	
-	if(fDebug > 0){ 
-		printf("AliCaloPID::SetPIDBits: TOF %e, Dispersion %2.2f, NTracks %d\n",tof , disp, ntr); 	
-		printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
-			   ph->GetPdg(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
-	}
+    ph->SetPdg(GetPdg(calo,cluster->PID(),ph->E()));
+    
+    if(fDebug > 0){ 
+      printf("AliCaloPID::SetPIDBits: TOF %e, Dispersion %2.2f, NTracks %d\n",tof , disp, ntr); 	
+      printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
+	     ph->GetPdg(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
+    }
 }
 
 

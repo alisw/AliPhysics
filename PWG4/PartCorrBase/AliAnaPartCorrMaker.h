@@ -46,6 +46,8 @@ public:
   void SwitchOnAODsMaker()   { fMakeAOD = kTRUE ; }
   void SwitchOffAODsMaker()   { fMakeAOD = kFALSE ; }
   
+  void Terminate();
+
   void AddAnalysis(TObject* ana, Int_t n) {
 	if ( fAnalysisContainer) fAnalysisContainer->AddAt(ana,n); 
     else { printf("AnalysisContainer not initialized");

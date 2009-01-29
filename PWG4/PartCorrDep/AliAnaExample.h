@@ -42,6 +42,8 @@ class AliAnaExample : public AliAnaPartCorrBaseClass {
        TString GetDetector() const {return fDetector ;}
        void SetDetector( TString calo ) {fDetector = calo; }
 
+       void Terminate();
+
  private:
        
        Int_t  fPdg ; //identified particle id

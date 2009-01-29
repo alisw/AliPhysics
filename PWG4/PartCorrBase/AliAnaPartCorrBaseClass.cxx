@@ -33,6 +33,7 @@
 #include "AliCaloPID.h"
 #include "AliFidutialCut.h"
 #include "AliIsolationCut.h"
+#include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliLog.h"
 #include "AliAODPWG4ParticleCorrelation.h"
@@ -60,6 +61,7 @@ ClassImp(AliAnaPartCorrBaseClass)
   fCaloPID = new AliCaloPID();
   fFidCut  = new AliFidutialCut();
   fIC      = new AliIsolationCut();
+  fMCUtils = new AliMCAnalysisUtils();
   
   //Initialize parameters
   InitParameters();
@@ -76,7 +78,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   fOutputAODName(abc.fOutputAODName), fOutputAODClassName(abc.fOutputAODClassName),
   fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
-  fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fNMS(abc.fNMS),
+  fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fMCUtils(abc.fMCUtils), fNMS(abc.fNMS),
   fHistoNPtBins(abc.fHistoNPtBins),   fHistoPtMax(abc.fHistoPtMax),   fHistoPtMin(abc.fHistoPtMin),
   fHistoNPhiBins(abc.fHistoNPhiBins), fHistoPhiMax(abc.fHistoPhiMax), fHistoPhiMin(abc.fHistoPhiMin),
   fHistoNEtaBins(abc.fHistoNEtaBins), fHistoEtaMax(abc.fHistoEtaMax), fHistoEtaMin(abc.fHistoEtaMin)
@@ -108,15 +110,15 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
 	fCaloPID = abc.fCaloPID;  
 	fFidCut  = abc.fFidCut;
 	fIC      = abc.fIC;
+	fMCUtils = abc.fMCUtils;
 	fNMS     = abc.fNMS;
-	
+		
 	fInputAODBranch     = new TClonesArray(*abc.fInputAODBranch) ;
 	fInputAODName       = abc.fInputAODName;
 	fOutputAODBranch    = new TClonesArray(*abc.fOutputAODBranch) ;
 	fNewAOD             = abc.fNewAOD ; 
 	fOutputAODName      = abc.fOutputAODName; 
 	fOutputAODClassName = abc.fOutputAODClassName;
-	
 	
 	fHistoNPtBins  = abc.fHistoNPtBins;  fHistoPtMax  = abc.fHistoPtMax;  fHistoPtMin  = abc.fHistoPtMin;
 	fHistoNPhiBins = abc.fHistoNPhiBins; fHistoPhiMax = abc.fHistoPhiMax; fHistoPhiMin = abc.fHistoPhiMin;
@@ -151,11 +153,12 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
 		delete fAODCaloCells ;
 	}
 	
-	if(fReader) delete fReader ;
+	if(fReader)  delete fReader ;
 	if(fCaloPID) delete fCaloPID ;
-	if(fFidCut) delete fFidCut ;
-	if(fIC) delete fIC ;
-	if(fNMS) delete fNMS ;
+	if(fFidCut)  delete fFidCut ;
+	if(fIC)      delete fIC ;
+	if(fMCUtils) delete fMCUtils ;
+	if(fNMS)     delete fNMS ;
 
 }
 
@@ -303,6 +306,13 @@ TNamed *  AliAnaPartCorrBaseClass::GetEMCALCells() const {
 
 }
 
+//__________________________________________________
+Int_t AliAnaPartCorrBaseClass::GetEventNumber() const {
+	//Get current event number
+	
+	return fReader->GetEventNumber() ; 
+}
+	
 //__________________________________________________
 AliStack *  AliAnaPartCorrBaseClass::GetMCStack() const {
   //Get stack pointer from reader

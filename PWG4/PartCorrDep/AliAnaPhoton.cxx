@@ -31,6 +31,8 @@
 #include "AliAnaPhoton.h" 
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliStack.h"
 
 ClassImp(AliAnaPhoton)
   
@@ -42,6 +44,7 @@ ClassImp(AliAnaPhoton)
     //MC
     fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0), 
     fhPtFragmentation(0),fhPhiFragmentation(0),fhEtaFragmentation(0), 
+    fhPtISR(0),fhPhiISR(0),fhEtaISR(0), 
     fhPtPi0Decay(0),fhPhiPi0Decay(0),fhEtaPi0Decay(0), 
     fhPtOtherDecay(0),fhPhiOtherDecay(0),fhEtaOtherDecay(0), 
     fhPtConversion(0),fhPhiConversion(0),fhEtaConversion(0), 
@@ -62,10 +65,12 @@ AliAnaPhoton::AliAnaPhoton(const AliAnaPhoton & g) :
   //MC
   fhPtPrompt(g.fhPtPrompt),fhPhiPrompt(g.fhPhiPrompt),fhEtaPrompt(g.fhEtaPrompt), 
   fhPtFragmentation(g.fhPtFragmentation),fhPhiFragmentation(g.fhPhiFragmentation),fhEtaFragmentation(g.fhEtaFragmentation), 
+  fhPtISR(g.fhPtISR),fhPhiISR(g.fhPhiISR),fhEtaISR(g.fhEtaISR), 
   fhPtPi0Decay(g.fhPtPi0Decay),fhPhiPi0Decay(g.fhPhiPi0Decay),fhEtaPi0Decay(g.fhEtaPi0Decay), 
   fhPtOtherDecay(g.fhPtOtherDecay),fhPhiOtherDecay(g.fhPhiOtherDecay),fhEtaOtherDecay(g.fhEtaOtherDecay), 
   fhPtConversion(g. fhPtConversion),fhPhiConversion(g.fhPhiConversion),fhEtaConversion(g.fhEtaConversion), 
-  fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown) 
+  fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown)
+  
 {
   // cpy ctor
   
@@ -83,26 +88,29 @@ AliAnaPhoton & AliAnaPhoton::operator = (const AliAnaPhoton & g)
   fMinDist2 = g.fMinDist2;
   fMinDist3 = g.fMinDist3;
   
-  fhPtPhoton = g.fhPtPhoton ; 
+  fhPtPhoton  = g.fhPtPhoton ; 
   fhPhiPhoton = g.fhPhiPhoton ;
   fhEtaPhoton = g.fhEtaPhoton ;
  
-  fhPtPrompt = g.fhPtPrompt;
+  fhPtPrompt  = g.fhPtPrompt;
   fhPhiPrompt = g.fhPhiPrompt;
   fhEtaPrompt = g.fhEtaPrompt; 
-  fhPtFragmentation = g.fhPtFragmentation;
+  fhPtFragmentation  = g.fhPtFragmentation;
   fhPhiFragmentation = g.fhPhiFragmentation;
   fhEtaFragmentation = g.fhEtaFragmentation; 
-  fhPtPi0Decay = g.fhPtPi0Decay;
+  fhPtISR  = g.fhPtISR;
+  fhPhiISR = g.fhPhiISR; 
+  fhEtaISR = g.fhEtaISR; 
+  fhPtPi0Decay  = g.fhPtPi0Decay;
   fhPhiPi0Decay = g.fhPhiPi0Decay;
   fhEtaPi0Decay = g.fhEtaPi0Decay; 
-  fhPtOtherDecay = g.fhPtOtherDecay;
+  fhPtOtherDecay  = g.fhPtOtherDecay;
   fhPhiOtherDecay = g.fhPhiOtherDecay;
   fhEtaOtherDecay = g.fhEtaOtherDecay; 
-  fhPtConversion = g. fhPtConversion;
+  fhPtConversion  = g. fhPtConversion;
   fhPhiConversion = g.fhPhiConversion;
   fhEtaConversion = g.fhEtaConversion; 
-  fhPtUnknown = g.fhPtUnknown;
+  fhPtUnknown  = g.fhPtUnknown;
   fhPhiUnknown = g.fhPhiUnknown;
   fhEtaUnknown = g.fhEtaUnknown; 
 
@@ -172,7 +180,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 		fhEtaPrompt->SetYTitle("#eta");
 		fhEtaPrompt->SetXTitle("p_{T #gamma} (GeV/c)");
 		outputContainer->Add(fhEtaPrompt) ;
-		
+
 		fhPtFragmentation  = new TH1F("hPtFragmentation","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
 		fhPtFragmentation->SetYTitle("N");
 		fhPtFragmentation->SetXTitle("p_{T #gamma}(GeV/c)");
@@ -189,6 +197,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 		fhEtaFragmentation->SetYTitle("#eta");
 		fhEtaFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
 		outputContainer->Add(fhEtaFragmentation) ;
+		
+		fhPtISR  = new TH1F("hPtISR","Number of initial state radiation #gamma over calorimeter",nptbins,ptmin,ptmax); 
+		fhPtISR->SetYTitle("N");
+		fhPtISR->SetXTitle("p_{T #gamma}(GeV/c)");
+		outputContainer->Add(fhPtISR) ; 
+		
+		fhPhiISR  = new TH2F
+		("hPhiISR","#phi_{#gamma} initial state radiation",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+		fhPhiISR->SetYTitle("#phi");
+		fhPhiISR->SetXTitle("p_{T #gamma} (GeV/c)");
+		outputContainer->Add(fhPhiISR) ; 
+		
+		fhEtaISR  = new TH2F
+		("hEtaISR","#phi_{#gamma} initial state radiation",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+		fhEtaISR->SetYTitle("#eta");
+		fhEtaISR->SetXTitle("p_{T #gamma} (GeV/c)");
+		outputContainer->Add(fhEtaISR) ;
 		
 		fhPtPi0Decay  = new TH1F("hPtPi0Decay","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
 		fhPtPi0Decay->SetYTitle("N");
@@ -240,7 +265,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 		fhEtaConversion->SetYTitle("#eta");
 		fhEtaConversion->SetXTitle("p_{T #gamma} (GeV/c)");
 		outputContainer->Add(fhEtaConversion) ;
-		
+
 		fhPtUnknown  = new TH1F("hPtUnknown","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
 		fhPtUnknown->SetYTitle("N");
 		fhPtUnknown->SetXTitle("p_{T #gamma}(GeV/c)");
@@ -257,6 +282,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 		fhEtaUnknown->SetYTitle("#eta");
 		fhEtaUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
 		outputContainer->Add(fhEtaUnknown) ;
+
 	}//Histos with MC
 	
  	//Save parameters used for analysis
@@ -289,6 +315,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 	return outputContainer ;
 	
 }
+
+//____________________________________________________________________________
+void AliAnaPhoton::Init()
+{
+  
+  //Init
+  //Do some checks
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
+    printf("!!ABORT: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
+    printf("!!ABORT: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  
+}
+
 
 //____________________________________________________________________________
 void AliAnaPhoton::InitParameters()
@@ -397,7 +441,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 		//Play with the MC stack if available
 		//Check origin of the candidates
 		if(IsDataMC()){
-			aodph.SetTag(GetCaloPID()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
+			aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
 			if(GetDebug() > 0) printf("AliAnaPhoton::FillAOD: Origin of candidate %d\n",aodph.GetTag());
 		}//Work with stack also   
 		
@@ -447,40 +491,47 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 		fhPtPhoton   ->Fill(ptcluster);
 		fhPhiPhoton ->Fill(ptcluster,phicluster);
 		fhEtaPhoton ->Fill(ptcluster,etacluster);
-		
+	
 		if(IsDataMC()){
 			Int_t tag =ph->GetTag();
-			if(tag == AliCaloPID::kMCPrompt){
-				fhPtPrompt   ->Fill(ptcluster);
+			if(tag == AliMCAnalysisUtils::kMCPrompt){
+				fhPtPrompt  ->Fill(ptcluster);
 				fhPhiPrompt ->Fill(ptcluster,phicluster);
 				fhEtaPrompt ->Fill(ptcluster,etacluster);
 			}
-			else if(tag==AliCaloPID::kMCFragmentation)
+			else if(tag==AliMCAnalysisUtils::kMCFragmentation)
 			{
-				fhPtFragmentation   ->Fill(ptcluster);
+				fhPtFragmentation  ->Fill(ptcluster);
 				fhPhiFragmentation ->Fill(ptcluster,phicluster);
 				fhEtaFragmentation ->Fill(ptcluster,etacluster);
 			}
-			else if(tag==AliCaloPID::kMCPi0Decay)
+			else if(tag==AliMCAnalysisUtils::kMCISR)
 			{
-				fhPtPi0Decay   ->Fill(ptcluster);
+				fhPtISR  ->Fill(ptcluster);
+				fhPhiISR ->Fill(ptcluster,phicluster);
+				fhEtaISR ->Fill(ptcluster,etacluster);
+			}
+			else if(tag==AliMCAnalysisUtils::kMCPi0Decay)
+			{
+				fhPtPi0Decay  ->Fill(ptcluster);
 				fhPhiPi0Decay ->Fill(ptcluster,phicluster);
 				fhEtaPi0Decay ->Fill(ptcluster,etacluster);
 			}
-			else if(tag==AliCaloPID::kMCEtaDecay || tag==AliCaloPID::kMCOtherDecay)
+			else if(tag==AliMCAnalysisUtils::kMCEtaDecay || tag==AliMCAnalysisUtils::kMCOtherDecay)
 			{
-				fhPtOtherDecay   ->Fill(ptcluster);
+				fhPtOtherDecay  ->Fill(ptcluster);
 				fhPhiOtherDecay ->Fill(ptcluster,phicluster);
 				fhEtaOtherDecay ->Fill(ptcluster,etacluster);
 			}
-			else if(tag==AliCaloPID::kMCConversion)
+			else if(tag==AliMCAnalysisUtils::kMCConversion)
 			{
-				fhPtConversion   ->Fill(ptcluster);
+				fhPtConversion  ->Fill(ptcluster);
 				fhPhiConversion ->Fill(ptcluster,phicluster);
 				fhEtaConversion ->Fill(ptcluster,etacluster);
+
 			}
 			else{
-				fhPtUnknown   ->Fill(ptcluster);
+				fhPtUnknown  ->Fill(ptcluster);
 				fhPhiUnknown ->Fill(ptcluster,phicluster);
 				fhEtaUnknown ->Fill(ptcluster,etacluster);
 			}
