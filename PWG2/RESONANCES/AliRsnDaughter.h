@@ -16,8 +16,6 @@
 
 #include "AliVParticle.h"
 #include "AliRsnPID.h"
-#include "AliRsnPIDDefESD.h"
-#include "AliESDtrackCuts.h"
 
 class TParticle;
 
@@ -41,9 +39,6 @@ class AliRsnDaughter : public AliVParticle
 
     AliRsnDaughter();
     AliRsnDaughter(const AliRsnDaughter &copy);
-    AliRsnDaughter(AliESDtrack *track);
-    AliRsnDaughter(AliAODTrack *track);
-    AliRsnDaughter(AliMCParticle *track);
     virtual ~AliRsnDaughter();
     AliRsnDaughter& operator= (const AliRsnDaughter& copy);
 
@@ -82,37 +77,40 @@ class AliRsnDaughter : public AliVParticle
     void             ShiftZero(Double_t x, Double_t y, Double_t z){fV[0]-=x;fV[1]-=y;fV[2]-=z;}
 
     // Orientation
-    virtual Double_t Phi() const {return TMath::ATan2(Py(), Px()) * TMath::RadToDeg();}   // degrees
-    virtual Double_t Theta() const {return TMath::ATan2(Pt(), Pz()) * TMath::RadToDeg();} // degrees
+    virtual Double_t Phi() const {return TMath::ATan2(Py(), Px());}
+    virtual Double_t PhiDeg() const {return Phi() * TMath::RadToDeg();}
+    virtual Double_t Theta() const {return TMath::ATan2(Pt(), Pz()) ;}
+    virtual Double_t ThetaDeg() const {return Theta() * TMath::RadToDeg();}
     virtual Double_t Eta() const {return -TMath::Log(TMath::Tan(0.5*Theta()));}
     virtual Double_t Y() const {return 0.5*TMath::Log((E() + Pz()) / (E() - Pz()));}
 
-    // Charge
-    virtual Short_t Charge() const {return fCharge;}
+    // Kink
     virtual Char_t  Kink() const {return fKink;}
     virtual Bool_t  IsKinkMother() const {return (fKink < 0);}
     virtual Bool_t  IsKinkDaughter() const {return (fKink > 0);}
     virtual Bool_t  IsKink() const {return (IsKinkMother() || IsKinkDaughter());}
-    void            SetCharge(Short_t value) {fCharge = value;}
     void            SetKink(Char_t kink) {fKink = kink;}
+    void            SetKinkMother() {fKink = -1;}
+    void            SetKinkDaughter() {fKink = 1;}
+    void            SetNoKink() {fKink = 0;}
+
+    // Charge
+    virtual Short_t Charge() const {return fCharge;}
+    void            SetCharge(Short_t value) {fCharge = value;}
 
     // PID
     virtual const Double_t* PID() const {return fPIDWeight;}
     const Double_t*         PIDProb() const {return fPIDProb;}
-    void                    SetPIDProb(Int_t i, Double_t value) {if(i>=0&&i<AliRsnPID::kSpecies)fPIDProb[i]=value;}
-    void                    SetPIDWeight(Int_t i, Double_t value) {if(i>=0&&i<AliRsnPID::kSpecies)fPIDWeight[i]=value;}
+    void                    SetPIDProb(Int_t i, Double_t value) {if (i>=0&&i<AliRsnPID::kSpecies)fPIDProb[i]=value;}
+    void                    SetPIDWeight(Int_t i, Double_t value) {if (i>=0&&i<AliRsnPID::kSpecies)fPIDWeight[i]=value;}
     static void             SetPIDMethod(EPIDMethod method) {fgPIDMethod = method;}
     void                    AssignRealisticPID();
     AliRsnPID::EType        PIDType(Double_t &prob) const;
 
     // check that contains a given ESD flag
+    void    SetFlags(ULong_t flags) {fFlags = flags;}
     UInt_t  GetFlags() {return fFlags;}
     Bool_t  CheckFlag(ULong_t flag) {return ((fFlags & flag) == flag);}
-
-    // information getters from objects
-    Bool_t  Adopt(AliESDtrack *track, AliRsnPIDDefESD pidDef);
-    Bool_t  Adopt(AliAODTrack *track);
-    Bool_t  Adopt(AliMCParticle *track);
 
     // position in stack/array
     Int_t   Index() const {return fIndex;}
@@ -125,7 +123,6 @@ class AliRsnDaughter : public AliVParticle
     Float_t NSigmaToVertex() const { return fNSigmaToVertex; }
     void    SetNSigmaToVertex(const Float_t& theValue) { fNSigmaToVertex = theValue; }
 
-
     // ITS/TPC clusters
     Int_t   NumberOfITSClusters() const {return fITSnum;}
     Int_t   NumberOfTPCClusters() const {return fTPCnum;}
@@ -136,7 +133,6 @@ class AliRsnDaughter : public AliVParticle
     void    Print(Option_t *option = "ALL") const;
     void    InitMCInfo();
     Bool_t  InitMCInfo(TParticle *particle);
-    Bool_t  InitMCInfo(AliMCParticle *mcParticle);
 
     // MC info
     AliRsnMCInfo* GetMCInfo() const { return fMCInfo; }

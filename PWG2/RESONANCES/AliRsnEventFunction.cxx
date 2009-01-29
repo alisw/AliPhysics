@@ -70,7 +70,7 @@ AliRsnEventFunction::AliRsnEventFunction() :
 
 //________________________________________________________________________________________
 AliRsnEventFunction::AliRsnEventFunction
-(EType type, AliRsnHistoDef *hd, AliRsnDaughter::EPIDMethod pidMethod, 
+(EType type, AliRsnHistoDef *hd, AliRsnDaughter::EPIDMethod pidMethod,
  AliRsnPID::EType pidType, Char_t sign) :
   fType(type),
   fPIDMethod(pidMethod),
@@ -266,10 +266,16 @@ TString AliRsnEventFunction::GetFcnName()
     case kAngleLeadingRMS:
       text = "ANGLEADRMS";
       break;
+    case kVtResolution:
+      text = "VTRES";
+      break;
+    case kVzResolution:
+      text = "VZRES";
+      break;
     default:
       AliError("Type not defined");
   }
-  
+
   switch (fPIDMethod)
   {
     case AliRsnDaughter::kNoPID:
@@ -284,10 +290,10 @@ TString AliRsnEventFunction::GetFcnName()
     default:
       AliError("PID method not defined");
   }
-  
+
   text += AliRsnPID::ParticleName(fPIDType);
   text += fCharge;
-  
+
   if (fEventCuts) {
     text += '_';
     text += fEventCuts->GetName();
@@ -307,9 +313,9 @@ Bool_t AliRsnEventFunction::Fill(AliRsnEvent *event)
   // Fillse the histogram with data contained in a defined pair.
   // This method must be overidden by an appropriate definition in each inheriting class.
   //
-  
+
   if (fEventCuts) if (!fEventCuts->IsSelected(AliRsnCut::kEvent, event)) return kFALSE;
-  
+
   // first of all, set all selection definitions, using the ones in this object
   event->SetSelectionPIDType(fPIDType);
   event->SetSelectionCharge(fCharge);
@@ -351,7 +357,7 @@ Double_t AliRsnEventFunction::FcnValue(AliRsnEvent *event)
   //
 
   Int_t count;
-  Double_t output, mean = 0.0, rms = 0.0;
+  Double_t output, v[3], vMC[3], vt, vtMC, mean = 0.0, rms = 0.0;
   AliRsnDaughter *trk = 0x0;
 
   switch (fType)
@@ -391,12 +397,25 @@ Double_t AliRsnEventFunction::FcnValue(AliRsnEvent *event)
       fAccept = event->GetAngleDistrWRLeading(mean, rms, fLeadPtMin);
       if (fType == kAngleLeadingMean) output = mean; else output = rms;
       break;
+    case kVzResolution:
+    case kVtResolution:
+      fAccept = kTRUE;
+      v[0] = event->GetPrimaryVertexX();
+      v[1] = event->GetPrimaryVertexY();
+      v[2] = event->GetPrimaryVertexZ();
+      vMC[0] = event->GetPrimaryVertexXMC();
+      vMC[1] = event->GetPrimaryVertexYMC();
+      vMC[2] = event->GetPrimaryVertexZMC();
+      vt = TMath::Sqrt(v[0]*v[0] + v[1]*v[1]);
+      vtMC = TMath::Sqrt(vMC[0]*vMC[0] + vMC[1]*vMC[1]);
+      if (fType == kVtResolution) return (vt - vtMC); else return (v[2] - vMC[2]);
+      break;
     default:
       AliError(Form("Type '%d' not supported for EVENT functions", fType));
       fAccept = kFALSE;
       output = 0.0;
   }
-  
+
   return output;
 }
 

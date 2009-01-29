@@ -13,7 +13,7 @@
 //
 
 #include <Riostream.h>
-#include "TObjArray.h"
+#include <TObjArray.h>
 
 #include "AliLog.h"
 
@@ -25,18 +25,12 @@
 ClassImp(AliRsnPair)
 
 //_____________________________________________________________________________
-AliRsnPair::AliRsnPair
-(EPairType type, AliRsnPairDef *def, Int_t mixNum) :
+AliRsnPair::AliRsnPair(EPairType type, AliRsnPairDef *def) :
   TObject(),
   fIsMixed(kFALSE),
-  fUseMC(kFALSE),
-  fIsLikeSign(kFALSE),
-  fMixNum(mixNum),
-  fMixingCut(0x0),
-  fMatched(mixNum),
-  fPairDef(def),
   fPairType(type),
-  fTypePID(AliRsnDaughter::kRealistic),
+  fPIDMethod(AliRsnDaughter::kRealistic),
+  fPairDef(def),
   fCutMgr(0),
   fFunctions("AliRsnFunction", 0)
 {
@@ -45,7 +39,6 @@ AliRsnPair::AliRsnPair
 //
 
   SetUp(type);
-  if (!fIsMixed) fMatched.Set(1);
 }
 //_____________________________________________________________________________
 AliRsnPair::~AliRsnPair()
@@ -65,53 +58,28 @@ void AliRsnPair::SetUp(EPairType type)
   switch (type)
   {
     case kNoPID:
-      SetAllFlags(AliRsnDaughter::kNoPID, kFALSE, kFALSE);
+      SetAllFlags(AliRsnDaughter::kNoPID, kFALSE);
       break;
     case kNoPIDMix:
-      SetAllFlags(AliRsnDaughter::kNoPID, kTRUE, kFALSE);
+      SetAllFlags(AliRsnDaughter::kNoPID, kTRUE);
       break;
     case kRealisticPID:
-      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE, kFALSE);
+      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
       break;
     case kRealisticPIDMix:
-      SetAllFlags(AliRsnDaughter::kRealistic, kTRUE, kFALSE);
+      SetAllFlags(AliRsnDaughter::kRealistic, kTRUE);
       break;
     case kPerfectPID:
-      // SetAllFlags (AliRsnDaughter::kPerfect, kFALSE, kFALSE);
-      SetAllFlags(AliRsnDaughter::kPerfect, kFALSE, kTRUE);
+      SetAllFlags (AliRsnDaughter::kPerfect, kFALSE);
       break;
     case kPerfectPIDMix:
-      // SetAllFlags (AliRsnDaughter::kPerfect, kTRUE, kFALSE);
-      SetAllFlags(AliRsnDaughter::kPerfect, kTRUE, kTRUE);
+      SetAllFlags (AliRsnDaughter::kPerfect, kTRUE);
       break;
     default :
-      AliWarning("Wrong type selected: setting up for kRealisticPID.");
-      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE, kFALSE);
+      AliWarning("Wrong type selected: setting up for realistic PID - no mixing.");
+      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
       break;
   }
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::SetAllFlags(AliRsnDaughter::EPIDMethod pidType, Bool_t isMix, Bool_t useMC)
-{
-//
-// Sets up all flags values
-//
-
-  fTypePID = pidType;
-  fIsMixed = isMix;
-  fUseMC = useMC;
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::Init()
-{
-//
-// Init pair
-//
-
-  fIsLikeSign = fPairDef->IsLikeSign();
-  Print();
 }
 
 //_____________________________________________________________________________
@@ -120,12 +88,15 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 //
 // Prints info about pair
 //
+
   AliInfo(Form("%s", GetPairHistTitle(0x0).Data()));
   AliInfo(Form("PDG %d %d", AliRsnPID::PDGCode(fPairDef->GetType(0)),
                AliRsnPID::PDGCode(fPairDef->GetType(1))));
   AliInfo(Form("Masses %f %f", fPairDef->GetMass(0), fPairDef->GetMass(1)));
   AliInfo(Form("Number of functions %d", fFunctions.GetEntries()));
-  switch(fTypePID) {
+
+  switch(fPIDMethod)
+  {
     case AliRsnDaughter::kNoPID:
       AliInfo("PID method: none");
       break;
@@ -137,231 +108,57 @@ void AliRsnPair::Print(Option_t* /*option*/) const
       break;
     default:
       AliInfo("PID method: undefined");
-    }
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
-{
-//
-// Process current event in the passed buffer.
-// If this pair is a single-event pair, only that event is processed,
-// otherwise, if it is a mixing pair, all good matches are found and mixed.
-//
-
-  if (fIsMixed && buf->GetEventsBufferIndex() >= fMixNum) ProcessPairMix(buf);
-  else ProcessPairSingle(buf);
-
-  /*
-  // track type/charge #0 in pairDef is taken from this event,
-  // track tipe/charge #1 is taken from the matched event
-  AliRsnEvent *e1 = buf->GetCurrentEvent();
-  if (!e1) return;
-  TArrayI* array1 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-
-  // reset array of matched events
-  Int_t i;
-  for (i = 0; i < fMixNum; i++) fMatched[i] = -1;
-
-  // here searches for all matched events:
-  // in case of single-event pairs, there will be only one, equal to current,
-  // otherwise there will be many
-  Int_t lastOkEvent = buf->IndexOf(e1) - 1;
-  Double_t nMatched = 0.0;
-  if (fIsMixed) {
-    for (i = 0; i < fMixNum; i++) {
-      // find other event by event cut
-      AliRsnEvent *e2 = FindEventByEventCut(buf, lastOkEvent);
-      if (!e2) break;
-      fMatched[i] = lastOkEvent;
-      lastOkEvent--;
-      nMatched++;
-    }
-    if (fMatched.GetSize() < 0) {
-      AliWarning(Form("Event #%d: found no events to match", buf->IndexOf(e1)));
-      return;
-    }
-  }
-  else {
-    fMatched[0] = buf->IndexOf(e1);
-    nMatched = 1;
-  }
-
-  // in order to balance the problem that different events could be matched
-  // a different number of times (between 1 and the maximum allowd quantity),
-  // for each event, the histograms are filled with a variable weight depending
-  // on the number of matches found:
-  Double_t weight = (Double_t)fMixNum / (Double_t)nMatched;
-
-  // now that matched events are found, they are used to fill the histograms
-  TArrayI* array2 = 0;
-  for (i = 0; i < fMixNum; i++) {
-    if (fMatched[i] < 0) break;
-    AliRsnEvent *e2 = buf->GetEvent(fMatched[i]);
-    array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
-    if (fIsMixed) LoopPair(e1, array1, e2, array2, weight);
-    else LoopPair(e1, array1, e2, array2);
-  }
-  */
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::ProcessPairSingle(AliRsnEventBuffer *buf)
-{
-//
-// SINGLE EVENT PROCESSING
-// This function fills the functions' histograms using tracks
-// from the same event for both components of the defined pair.
-// This function is used for signal, like-sign and rotated background.
-//
-
-  AliRsnEvent *event = buf->GetCurrentEvent();
-  if (!event) return;
-
-  TArrayI* array1 = event->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-  TArrayI* array2 = event->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
-
-  LoopPair(event, array1, event, array2);
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::ProcessPairMix(AliRsnEventBuffer *buf)
-{
-//
-// MIXED EVENT PROCESSING
-// This function fills the functions' histograms using
-// tracks from different events.
-// Used for event mixing.
-//
-
-  // track type/charge #0 in pairDef is taken from this event,
-  // track tipe/charge #1 is taken from the matched events
-  AliRsnEvent *e1 = buf->GetCurrentEvent();
-  if (!e1) return;
-  TArrayI* array10 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-  TArrayI* array11 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
-
-  // find matched events
-  Int_t i, iev = buf->GetEventsBufferIndex();
-  Int_t nMatched = FindMatchedEvents(iev, buf);
-  if (!nMatched) {
-    AliWarning(Form("Event #%d: found no events to match", iev));
-    return;
-  }
-  else if (nMatched < fMixNum) {
-    AliWarning(Form("Event #%d: found only %d events to match", iev, nMatched));
-    return;
-  }
-
-  /*
-  else {
-    TString str("Matched events: ");
-    for (i = 0; i < nMatched; i++) str.Append(Form("%d ", fMatched[i]));
-    AliInfo(Form("Event #%d: %s", iev, str.Data()));
-  }
-  */
-
-  // in order to balance the problem that different events could be matched
-  // a different number of times (between 1 and the maximum allowd quantity),
-  // for each event, the histograms are filled with a variable weight depending
-  // on the number of matches found:
-  // Double_t weight = 0.5 * (Double_t)fMixNum / (Double_t)nMatched;
-
-  // now that matched events are found, they are used to fill the histograms
-  TArrayI *array20 = 0, *array21 = 0;
-  for (i = 0; i < fMixNum; i++) {
-    if (fMatched[i] < 0) break;
-    AliRsnEvent *e2 = buf->GetEvent(fMatched[i]);
-    array20 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-    array21 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
-    // track type/charge #0 from event1, track type/charge #1 from event2
-    LoopPair(e1, array10, e2, array21);
-    // track type/charge #1 from event1, track type/charge #0 from event2
-    LoopPair(e1, array11, e2, array20);
   }
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnPair::FindMatchedEvents(Int_t evIndex, AliRsnEventBuffer *buf)
+void AliRsnPair::ProcessPair(AliRsnEvent *ev1, AliRsnEvent *ev2)
 {
 //
-// Resets the 'fMatched' data member and stores into it
-// a number of well-matched events found in the buffer,
-// (maximum amount = fMixNum).
-// The argument is the index of the event to be matched,
-// in the event buffer.
+// Fills the functions' histograms using tracks from passed events.
+// What tracks are taken in each event depend from the order of
+// track types defined in the AliRsnPairDef for this object:
+//  - tracks of type 0 are the ones stored as pairDef data members with index [0]
+//    ---> taken from first argument (ev1)
+//  - tracks of type 1 are the ones stored as pairDef data members with index [1]
+//    ---> taken from second argument (ev2)
+//
+// When doing single-event analysis (e.g. signal, like-sign), second argument
+// can be NULL, and it will be forced to point to the same object of first one.
 //
 
-  // reset array of matched events
-  Int_t i;
-  for (i = 0; i < fMixNum; i++) fMatched[i] = -1;
+  if (!ev2) ev2 = ev1;
 
-  // starts from the position behind the one
-  // of the event to be matched and goes backward
-  // if it reaches the value 0, stops
-  AliRsnEvent *eventToBeMatched = buf->GetCurrentEvent();
-  AliRsnEvent *matchEvent = 0x0;
-  Int_t checkIndex = evIndex - 1, curIndex = 0;
-  for (;;checkIndex--) {
-    if (checkIndex < 0) checkIndex = buf->GetEventsBufferSize() - 1;
-    if (checkIndex == evIndex) break;
-    matchEvent = buf->GetEvent(checkIndex);
-    if (!matchEvent) continue;
-    if (fMixingCut) {
-      if (fMixingCut->IsSelected(AliRsnCut::kMixEvent, eventToBeMatched, matchEvent)) continue;
-    }
-    // assign to current array slot the matched event
-    // and increment current slot and stops if it exceeds array size
-    fMatched[curIndex++] = checkIndex;
-    if (curIndex >= fMixNum) break;
-  }
+  TArrayI *array1 = ev1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(0), fPairDef->GetType(0));
+  TArrayI *array2 = ev2->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), fPairDef->GetType(1));
 
-  // returns the current index value,
-  // which is also the number of matched events found
-  return curIndex;
-}
-
-//_____________________________________________________________________________
-AliRsnEvent * AliRsnPair::FindEventByEventCut(AliRsnEventBuffer *buf, Int_t& num)
-{
-//
-// For now it just returns num events before current event
-// in buffer (buf)
-// TODO event cut selection
-//
-
-  AliRsnEvent *returnEvent = 0x0;
-
-  if (fIsMixed)
-  {
-    //returnEvent = buf->GetEvent(buf->GetEventsBufferIndex() - num);
-    returnEvent = buf->GetNextGoodEvent(num, fMixingCut);
-  }
-  else
-  {
-    returnEvent = buf->GetCurrentEvent();
-  }
-
-  return returnEvent;
+  LoopPair(ev1, array1, ev2, array2);
 }
 
 //_____________________________________________________________________________
 void AliRsnPair::LoopPair
-(AliRsnEvent * ev1, TArrayI * a1, AliRsnEvent * ev2, TArrayI * a2, Double_t weight)
+(AliRsnEvent * ev1, TArrayI * a1, AliRsnEvent * ev2, TArrayI * a2)
 {
 //
 // Loop on all pairs of tracks of the defined types/charges,
 // using the arrays of indexes and the events containing them.
+// This method is private, for safety reasons.
 //
 
   if (!a1) {AliDebug(4, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
   if (!a2) {AliDebug(4, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
 
-  AliRsnDaughter::SetPIDMethod(fTypePID);
+  // cuts on events
+  if (!CutPass(ev1) || !CutPass(ev2)) return;
+
+  AliRsnDaughter::SetPIDMethod(fPIDMethod);
   AliRsnDaughter *daughter1 = 0;
   AliRsnDaughter *daughter2 = 0;
   AliRsnFunction *fcn = 0;
+
+  Bool_t isLikeSign = fPairDef->IsLikeSign();
   Int_t j, startj = 0;
+
     for (Int_t i = 0; i < a1->GetSize(); i++)
     {
         // get track #1
@@ -373,7 +170,7 @@ void AliRsnPair::LoopPair
         daughter2 = 0;
         // check starting index for searching the event:
         // for like-sign pairs we avoid duplicating the pairs
-        if (fIsLikeSign) startj = i+1; else startj = 0;
+        if (isLikeSign) startj = i+1; else startj = 0;
         // AliInfo(Form("%d",startj));
         // loop on event for all track #2 to be combined with the found track #1
         for (j = startj; j < a2->GetSize(); j++)
@@ -390,7 +187,7 @@ void AliRsnPair::LoopPair
             // fill all histograms
             TObjArrayIter nextFcn(&fFunctions);
             while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
-                fcn->Fill(&pairParticle, fPairDef, weight);
+                fcn->Fill(&pairParticle, fPairDef);
             }
         }
     }
@@ -400,7 +197,11 @@ void AliRsnPair::LoopPair
 TList * AliRsnPair::GenerateHistograms(TString prefix)
 {
 //
-// Generates needed histograms
+// Generates needed histograms, giving them a name based on
+// the flags defined here, on the pair definition, and attaches
+// a prefix to it, according to the argument.
+//
+// All generated histograms are stored into the output TList.
 //
 
   TList *list = new TList();
@@ -414,7 +215,7 @@ TList * AliRsnPair::GenerateHistograms(TString prefix)
     sprintf(hName, "%s_%s", prefix.Data(), GetPairHistName(fcn).Data());
     sprintf(hTitle, "%s", GetPairHistTitle(fcn).Data());
     TList *histos = fcn->Init(hName, hTitle);
-    histos->Print();
+    //histos->Print();
     list->Add(histos);
   }
 
@@ -425,7 +226,11 @@ TList * AliRsnPair::GenerateHistograms(TString prefix)
 void AliRsnPair::GenerateHistograms(TString prefix, TList *tgt)
 {
 //
-// Generates needed histograms
+// Generates needed histograms, giving them a name based on
+// the flags defined here, on the pair definition, and attaches
+// a prefix to it, according to the argument.
+//
+// All generated histograms are stored into the TList passed as argument
 //
 
   if (!tgt) {
@@ -450,6 +255,7 @@ TString AliRsnPair::GetPairTypeName(EPairType type) const
 //
 // Returns type name, made with particle names ant chosen PID
 //
+
   switch (type)
   {
     case kNoPID : return ("NOPID_");break;
@@ -458,7 +264,6 @@ TString AliRsnPair::GetPairTypeName(EPairType type) const
     case kRealisticPIDMix : return ("REALISTICMIX_");break;
     case kPerfectPID : return ("PERFECT_");break;
     case kPerfectPIDMix : return ("PERFECTMIX_");break;
-    case kTruePairs : return ("TRUEPAIRS_"); break;
     default:
       AliWarning("Unrecognized value of EPairTypeName argument");
       break;
@@ -473,6 +278,7 @@ TString AliRsnPair::GetPairName() const
 //
 // Retruns pair name
 //
+
   TString sName;
   sName += GetPairTypeName(fPairType);
   sName += fPairDef->GetPairName();
@@ -484,7 +290,7 @@ TString AliRsnPair::GetPairName() const
 TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
 {
 //
-// Returns eff. mass histogram name
+// Returns definitive histogram name
 //
 
   TString sName;
@@ -505,7 +311,7 @@ TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
 TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text) const
 {
 //
-// Returns eff. mass histogram title
+// Returns definitive histogram title
 //
 
   TString sTitle;
@@ -528,8 +334,9 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
 //
 // Adds a new computing function
 //
+
   Int_t size = fFunctions.GetEntries();
-  new(fFunctions[size]) AliRsnFunction(*fcn);
+  new (fFunctions[size]) AliRsnFunction(*fcn);
 }
 
 //________________________________________________________________________________________
@@ -539,6 +346,7 @@ Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)
 // Check if the AliRsnDaughter argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
 //
+
   if (!fCutMgr) return kTRUE;
   else return fCutMgr->IsSelected(AliRsnCut::kParticle, d);
 }
@@ -549,11 +357,6 @@ Bool_t AliRsnPair::CutPass(AliRsnPairParticle *p)
 //
 // Check if the AliRsnPairParticle argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
-// In this case, another separate check which could be necessary
-// concerns the possibility that the two tracks are a "true pair" of
-// daughters of the same resonance. If the corresponding flag is set,
-// this further check is done, and the method returns kTRUE only
-// when also this check is passed.
 //
 
   if (!fCutMgr) return kTRUE;
@@ -567,6 +370,7 @@ Bool_t AliRsnPair::CutPass(AliRsnEvent *e)
 // Check if the AliRsnEvent argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
 //
+
   if (!fCutMgr) return kTRUE;
   else return fCutMgr->IsSelected(AliRsnCut::kEvent, e);
 }

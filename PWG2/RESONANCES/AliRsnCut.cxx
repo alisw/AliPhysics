@@ -299,11 +299,14 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       return IsBetween(daughter->Eta());
     case kRadialImpactParam:
       return IsBetween(daughter->Dr());
+    case kRadialImpactParamMC:
+      if (mcinfo) return IsBetween(mcinfo->Dr());
+      else return kTRUE;
     case kMomentumMC:
       if (mcinfo) return IsBetween(mcinfo->P());
       else return kTRUE;
     case kTransMomentumMC:
-      if (mcinfo) return IsBetween(mcinfo->P());
+      if (mcinfo) return IsBetween(mcinfo->Pt());
       else return kTRUE;
     case kStatus:
       return daughter->CheckFlag(fUIMin);
@@ -316,6 +319,8 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       pidType = daughter->PIDType(prob);
       if (fType == kPIDType) return MatchesValue((Int_t) pidType);
       if (fType == kPIDProb) return IsBetween(prob);
+    case kPIDProbForSpecies:
+      return IsBetween(daughter->PIDProb()[(AliRsnPID::EType)fIMin]);
     case kTruePID:
       pdg = TMath::Abs(mcinfo->PDG());
       cut = MatchesValue(pdg);
@@ -328,6 +333,10 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
     case kIsPrimary:
       if (mcinfo) return (mcinfo->Mother() < 0);
       else return kTRUE;
+    case kIsKinkMother:
+      return (!daughter->IsKink() || daughter->IsKinkMother());
+    case kIsKinkDaughter:
+      return daughter->IsKinkDaughter();
     case kNSigma:
       return IsBetween(daughter->NSigmaToVertex());
       /*
@@ -396,6 +405,8 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
   {
     case kMultiplicity:
       return IsBetween((Int_t) event->GetMultiplicity());
+    case kVz:
+      return IsBetween((Double_t)event->GetPrimaryVertexZ());
     default:
       AliWarning("Requested a cut which cannot be applied to an event");
       return kTRUE;

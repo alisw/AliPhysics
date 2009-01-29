@@ -20,6 +20,8 @@
 #include "AliRsnEvent.h"
 #include "AliMCEvent.h"
 
+#include "AliRsnMCInfo.h"
+#include "AliRsnDaughter.h"
 #include "AliRsnAnalysisTaskSEBase.h"
 
 

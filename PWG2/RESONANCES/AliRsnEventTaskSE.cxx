@@ -7,6 +7,7 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <Riostream.h>
 #include <TList.h>
 
 #include "AliLog.h"
@@ -63,18 +64,18 @@ void AliRsnEventTaskSE::UserCreateOutputObjects()
   fOutList = new TList();
   fOutList->SetOwner();
   fOutList->SetName("EventFunctions");
-  
+
   AliRsnEventFunction *fcn = 0;
   TObjArrayIter next(&fEventFunctions);
-  
+
   while ( (fcn = (AliRsnEventFunction*)next()) )
   {
     fcn->Init(fOutList);
   }
-  
-  AliInfo("List");
+
+  AliInfo("*************************** List");
   fOutList->Print();
-  AliInfo("End List");
+  AliInfo("*********************** End List");
 }
 
 //________________________________________________________________________
@@ -84,19 +85,19 @@ void AliRsnEventTaskSE::UserExec(Option_t *)
 // UserExec() of AliAnalysisTaskSE
 //
 
-  if (fEntry++ % 1000 == 0) AliInfo(Form("Event %d", fEntry-1));
+  if (fEntry++ % 100 == 0) cout << "[" << GetName() << "]: event " << fEntry-1 << endl;
 
-  AliRsnEvent *curEvent = GetRsnEventFromInputType();return;
+  AliRsnEvent *curEvent = GetRsnEventFromInputType();
   if (!curEvent) return;
 
   AliRsnEventFunction *fcn = 0;
   TObjArrayIter next(&fEventFunctions);
-  
+
   while ( (fcn = (AliRsnEventFunction*)next()) )
   {
     fcn->Fill(curEvent);
   }
-  
+
   PostData(1, fOutList);
 }
 

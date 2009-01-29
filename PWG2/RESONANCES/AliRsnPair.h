@@ -33,21 +33,22 @@ class AliRsnPair : public TObject
       kNoPID = 0,    kNoPIDMix,
       kRealisticPID, kRealisticPIDMix,
       kPerfectPID,   kPerfectPIDMix,
-      kTruePairs,
       kPairTypes
     };
 
-    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0, Int_t mixNum = 1);
+    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0);
     ~AliRsnPair();
 
-    void    Init();
     void    Print(Option_t *option = "") const;
-    void    ProcessPair(AliRsnEventBuffer *buf);
+    void    ProcessPair(AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
-    void    SetMixingCut(AliRsnCutSet* theValue) { fMixingCut = theValue; }
     void    AddFunction(AliRsnFunction *fcn);
     TList*  GenerateHistograms(TString prefix = "");
     void    GenerateHistograms(TString prefix, TList *tgt);
+
+    Bool_t  IsMixed() {return fIsMixed;}
+    Bool_t  IsPairEqual() {if (fPIDMethod == AliRsnDaughter::kNoPID) return (fPairDef->IsLikeSign());
+                           else return (fPairDef->IsLikeSign() && fPairDef->HasEqualTypes());}
 
     TString GetPairTypeName(EPairType type) const;
     TString GetPairName() const;
@@ -57,39 +58,27 @@ class AliRsnPair : public TObject
   private:
 
     AliRsnPair (const AliRsnPair &copy) : TObject(copy),
-      fIsMixed(kFALSE),fUseMC(kFALSE),fIsLikeSign(kFALSE),fMixNum(1),fMixingCut(0x0),fMatched(0),
-      fPairDef(0x0),fPairType(kPairTypes),fTypePID(AliRsnDaughter::kRealistic),
-      fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
+      fIsMixed(kFALSE),fPairType(kPairTypes),fPIDMethod(AliRsnDaughter::kRealistic),
+      fPairDef(0x0),fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
     AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 
-    void           SetUp(EPairType type);  // sets up all flags
-    void           SetAllFlags(AliRsnDaughter::EPIDMethod pidType,Bool_t isMix, Bool_t useMC);
-    AliRsnEvent*   FindEventByEventCut(AliRsnEventBuffer *buf, Int_t & num);
-    Int_t          FindMatchedEvents(Int_t evIndex, AliRsnEventBuffer *buf);
-    void           ProcessPairSingle(AliRsnEventBuffer *buf);
-    void           ProcessPairMix(AliRsnEventBuffer *buf);
-    void           LoopPair(AliRsnEvent *ev1, TArrayI *a1, AliRsnEvent *ev2, TArrayI *a2, Double_t weight = 0.0);
+    void     SetUp(EPairType type);
+    void     SetAllFlags(AliRsnDaughter::EPIDMethod pid, Bool_t mix) {fPIDMethod = pid; fIsMixed = mix;}
+    void     LoopPair(AliRsnEvent *ev1, TArrayI *a1, AliRsnEvent *ev2, TArrayI *a2);
 
-    Bool_t         CutPass(AliRsnDaughter *d);
-    Bool_t         CutPass(AliRsnPairParticle *p);
-    Bool_t         CutPass(AliRsnEvent *e);
+    Bool_t   CutPass(AliRsnDaughter *d);
+    Bool_t   CutPass(AliRsnPairParticle *p);
+    Bool_t   CutPass(AliRsnEvent *e);
 
-    // flags & integer data
-    Bool_t         fIsMixed;                 // doing event-mixing ?
-    Bool_t         fUseMC;                   // using MC inv. mass ?
-    Bool_t         fIsLikeSign;              // is a like-sign pair ?
-    Int_t          fMixNum;                  // number of mixed events
-    AliRsnCutSet  *fMixingCut;               // cut for event mixing
+    Bool_t                      fIsMixed;        // doing event-mixing ?
+    EPairType                   fPairType;       // pair type (PID + mixing or not)
+    AliRsnDaughter::EPIDMethod  fPIDMethod;      // pid type variable for single track
 
-    // work management
-    TArrayI                     fMatched;                // array with indexes of matched events (used in mixing)
-    AliRsnPairDef              *fPairDef;                // pair definition (particles, charges)
-    EPairType                   fPairType;               // pair type (PID + mixing or not)
-    AliRsnDaughter::EPIDMethod  fTypePID;                // pid type variable for single track
-    AliRsnCutMgr               *fCutMgr;                 // cut manager
-    TClonesArray                fFunctions;              // functions
+    AliRsnPairDef              *fPairDef;        // pair definition (particles, charges)
+    AliRsnCutMgr               *fCutMgr;         // cut manager
+    TClonesArray                fFunctions;      // functions
 
-    ClassDef (AliRsnPair, 1)
+    ClassDef (AliRsnPair, 2)
 };
 
 #endif
