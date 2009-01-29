@@ -334,10 +334,10 @@ Double_t AliAODcascade::EBachKaon() const {
 
 Double_t AliAODcascade::EXi() const {
   static Double_t lMassXi = TDatabasePDG::Instance()->GetParticle("Xi-")->Mass();
-  return ::sqrt(Ptot2Bach() + lMassXi*lMassXi);
+  return ::sqrt(Ptot2Xi() + lMassXi*lMassXi);
 }
 
 Double_t AliAODcascade::EOmega() const {
   static Double_t lMassOmega = TDatabasePDG::Instance()->GetParticle("Omega-")->Mass();
-  return ::sqrt(Ptot2Bach() + lMassOmega*lMassOmega);
+  return ::sqrt(Ptot2Xi() + lMassOmega*lMassOmega);
 }
