@@ -152,7 +152,7 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
     else if (mode==mPROOF) 
       smode = "proof";
     else if (mode==mGRID) 
-      smode = "grid";
+      smode = "local";
     
     mgr->InitAnalysis();
     mgr->PrintStatus();
