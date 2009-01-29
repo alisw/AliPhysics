@@ -49,6 +49,17 @@ class AliRsnMCInfo : public TObject
     void     SetP(Double_t px, Double_t py, Double_t pz) {SetPx(px); SetPy(py); SetPz(pz);}
     void     SetE(Double_t e) {fEnergy = e;}
 
+    Double_t Vx() const {return fV[0];}
+    Double_t Vy() const {return fV[1];}
+    Double_t Vz() const {return fV[2];}
+    Double_t Dr() const {return TMath::Sqrt(Vx()*Vx() + Vy()*Vy());}
+    void     ShiftZero(Double_t x, Double_t y, Double_t z){fV[0]-=x;fV[1]-=y;fV[2]-=z;}
+
+    void     SetVx(Double_t value) {fV[0] = value;}
+    void     SetVy(Double_t value) {fV[1] = value;}
+    void     SetVz(Double_t value) {fV[2] = value;}
+    void     SetV(Double_t x, Double_t y, Double_t z) {SetVx(x); SetVy(y); SetVz(z);}
+
     Int_t    PDG() const {return fPDG;}
     Int_t    Mother() const {return fMother;}
     Short_t  MotherPDG() const {return fMotherPDG;}
@@ -59,6 +70,7 @@ class AliRsnMCInfo : public TObject
   private:
 
     Double_t  fP[3];          // MC momentum
+    Double_t  fV[3];          // MC position
     Double_t  fEnergy;        // MC energy
     Int_t     fPDG;           // PDG code
     Int_t     fMother;        // GEANT label of mother particle

@@ -45,6 +45,9 @@ AliRsnEvent::AliRsnEvent() :
     fPVz(0.0),
     fPhiMean(0.0),
     fMult(0),
+    fPVxMC(0.0),
+    fPVyMC(0.0),
+    fPVzMC(0.0),
     fTracks(0x0),
     fNoPID(0x0),
     fPerfectPID(0x0),
@@ -68,6 +71,9 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
     fPVz(event.fPVz),
     fPhiMean(event.fPhiMean),
     fMult(event.fMult),
+    fPVxMC(event.fPVxMC),
+    fPVyMC(event.fPVyMC),
+    fPVzMC(event.fPVzMC),
     fTracks(0x0),
     fNoPID(0x0),
     fPerfectPID(0x0),
@@ -110,7 +116,10 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
   fPVx = event.fPVx;
   fPVy = event.fPVy;
   fPVz = event.fPVz;
-  
+  fPVxMC = event.fPVxMC;
+  fPVyMC = event.fPVyMC;
+  fPVzMC = event.fPVzMC;
+
   // other data
   fPhiMean = event.fPhiMean;
   fMult = event.fMult;
@@ -347,12 +356,12 @@ void AliRsnEvent::MakeComputations()
 // - mean phi of tracks
 //
 
-  if (!fTracks) 
+  if (!fTracks)
   {
-    fMult = 0; 
+    fMult = 0;
     fPhiMean = 1000.0;
   }
-  else 
+  else
   {
     fMult = fTracks->GetEntries();
     if (fMult < 1) {
@@ -365,6 +374,25 @@ void AliRsnEvent::MakeComputations()
       TObjArrayIter next(fTracks);
       while ( (d = (AliRsnDaughter*)next()) ) fPhiMean += d->Phi();
       fPhiMean /= (Double_t)fMult;
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnEvent::CorrectTracks()
+{
+//
+// Corrects in all tracks the DCA vertex position using the primary vertex.
+// If present, also MC infos are corrected with primaryvertexMC.
+//
+
+  AliRsnDaughter *track = 0;
+  TObjArrayIter next(fTracks);
+
+  while ( (track = (AliRsnDaughter*)next()) ) {
+    track->ShiftZero(fPVx, fPVy, fPVz);
+    if (track->GetMCInfo()) {
+      track->GetMCInfo()->ShiftZero(fPVxMC, fPVyMC, fPVzMC);
     }
   }
 }
@@ -536,7 +564,7 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count)
       pmean = 0.0;
     }
   }
-  
+
   return pmean;
 }
 
@@ -552,30 +580,30 @@ Bool_t AliRsnEvent::GetAngleDistrWRLeading
 
   AliRsnDaughter *leading = GetLeadingParticle(ptMin);
   if (!leading) return kFALSE;
-  
+
   Int_t count = 0;
   Double_t angle, angle2Mean;
   AliRsnDaughter *trk = 0x0;
   TObjArrayIter next(fTracks);
-  
+
   angleMean = angle2Mean = 0.0;
-  
+
   while ( (trk = (AliRsnDaughter*)next()) )
   {
     if (trk == leading) continue;
-    
+
     angle = leading->AngleTo(trk);
-    
+
     angleMean += angle;
     angle2Mean += angle * angle;
     count++;
   }
-  
+
   if (!count) return kFALSE;
-  
+
   angleMean /= (Double_t)count;
   angle2Mean /= (Double_t)count;
   angleRMS = TMath::Sqrt(angle2Mean - angleMean*angleMean);
-  
+
   return kTRUE;
 }

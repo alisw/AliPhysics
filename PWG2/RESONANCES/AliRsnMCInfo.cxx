@@ -14,7 +14,7 @@ ClassImp(AliRsnMCInfo)
 
 //_____________________________________________________________________________
 AliRsnMCInfo::AliRsnMCInfo() :
-    TObject(), fEnergy(0), fPDG(0), fMother(-1), fMotherPDG(0)
+  TObject(), fEnergy(0), fPDG(0), fMother(-1), fMotherPDG(0)
 {
 //
 // Default constructor.
@@ -22,23 +22,26 @@ AliRsnMCInfo::AliRsnMCInfo() :
 //
 
   Int_t i;
-  for (i = 0; i < 3; i++) fP[i] = 0.0;
+  for (i = 0; i < 3; i++) fP[i] = fV[i] = 0.0;
 }
 
 //_____________________________________________________________________________
 AliRsnMCInfo::AliRsnMCInfo(const AliRsnMCInfo & copy) :
-    TObject(copy),
-    fEnergy(copy.fEnergy),
-    fPDG(copy.fPDG),
-    fMother(copy.fMother),
-    fMotherPDG(copy.fMotherPDG)
+  TObject(copy),
+  fEnergy(copy.fEnergy),
+  fPDG(copy.fPDG),
+  fMother(copy.fMother),
+  fMotherPDG(copy.fMotherPDG)
 {
 //
 // Copy constructor.
 //
 
   Int_t i;
-  for (i = 0; i < 3; i++) fP[i] = copy.fP[i];
+  for (i = 0; i < 3; i++) {
+    fP[i] = copy.fP[i];
+    fV[i] = copy.fV[i];
+  }
 }
 
 //_____________________________________________________________________________
@@ -58,15 +61,15 @@ void AliRsnMCInfo::Adopt(TParticle * particle)
 // If the argument is NULL, nothing is done and an error message is returned.
 //
 
-  if (!particle)
-  {
-    AliError("NULL argument passed. Nothing done.");
-    return;
-  }
+  if (!particle) return;
 
   fP[0] = particle->Px();
   fP[1] = particle->Py();
   fP[2] = particle->Pz();
+
+  fV[0] = particle->Vx();
+  fV[1] = particle->Vy();
+  fV[2] = particle->Vz();
 
   fEnergy = particle->Energy();
 

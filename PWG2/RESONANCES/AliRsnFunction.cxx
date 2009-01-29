@@ -43,9 +43,10 @@ AliRsnFunction::AliRsnFunction() :
     fRotAngle(0.0),
     fUseBins(kFALSE),
     fSkipOutsideInterval(kFALSE),
-    fBins(0),
-    fBinningCut(),
-    fBinningCutType(AliRsnCut::kLastCutType),
+    fNumberOfBinTypes(0),
+//     fBins(0),
+//     fBinningCut(),
+//     fBinningCutType(AliRsnCut::kLastCutType),
     fHistoDef(0x0)
 {
   //
@@ -55,11 +56,11 @@ AliRsnFunction::AliRsnFunction() :
   // which must be overridden in any derivate implementation.
   //
 
-  Int_t i;
-  for (i = 0; i < 100; i++)
-  {
-    fHisto[i] = 0x0;
-  }
+  Int_t i, j;
+  for (j = 0 ; j < kFcnBinTypes; j++)
+    for (i = 0; i < 100; i++)
+      fHisto[j][i] = 0x0;
+
 }
 
 //________________________________________________________________________________________
@@ -69,9 +70,10 @@ AliRsnFunction::AliRsnFunction
     fRotAngle(0.0),
     fUseBins(kFALSE),
     fSkipOutsideInterval(skipOut),
-    fBins(0),
-    fBinningCut(),
-    fBinningCutType(AliRsnCut::kLastCutType),
+    fNumberOfBinTypes(0),
+//     fBins(0),
+//     fBinningCut(),
+//     fBinningCutType(AliRsnCut::kLastCutType),
     fHistoDef(hd)
 {
   //
@@ -81,11 +83,10 @@ AliRsnFunction::AliRsnFunction
   // which must be overridden in any derivate implementation.
   //
 
-  Int_t i;
-  for (i = 0; i < 100; i++)
-  {
-    fHisto[i] = 0x0;
-  }
+  Int_t i, j;
+  for (j = 0 ; j < kFcnBinTypes; j++)
+    for (i = 0; i < 100; i++)
+      fHisto[j][i] = 0x0;
 }
 
 //________________________________________________________________________________________
@@ -95,9 +96,10 @@ AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
     fRotAngle(copy.fRotAngle),
     fUseBins(copy.fUseBins),
     fSkipOutsideInterval(copy.fSkipOutsideInterval),
-    fBins(0),
-    fBinningCut(),
-    fBinningCutType(AliRsnCut::kLastCutType),
+    fNumberOfBinTypes(copy.fNumberOfBinTypes),
+//     fBins(0),
+//     fBinningCut(),
+//     fBinningCutType(AliRsnCut::kLastCutType),
     fHistoDef(copy.fHistoDef)
 {
   //
@@ -105,19 +107,21 @@ AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
   // Calls the function to define binning.
   //
 
-  Int_t i, n = 100;
-  for (i = 0; i < n; i++)
-  {
-    fHisto[i] = 0x0;
-  }
+  Int_t i, j, n;
+  for (j = 0 ; j < kFcnBinTypes; j++)
+    for (i = 0; i < 100; i++)
+      fHisto[j][i] = 0x0;
 
   if (fUseBins)
   {
-    n = copy.fBins.GetSize();
-    Double_t *array = new Double_t[n];
-    for (i = 0; i < n; i++) array[i] = copy.fBins[i];
-    SetBinningCut(copy.fBinningCutType, copy.fBins.GetSize(), array);
-    delete [] array;
+    for (i = 0 ; i < kFcnBinTypes; i++){
+      if (fNumberOfBinTypes<=i) continue;
+      n = copy.fBins[i].GetSize();
+      Double_t *array = new Double_t[n];
+      for (j = 0; j < n; j++) array[j] = copy.fBins[i][j];
+      SetBinningCut(copy.fBinningCutType[i], copy.fBins[i].GetSize(), array,i,kTRUE);
+      delete [] array;
+    }
   }
 }
 //________________________________________________________________________________________
@@ -140,12 +144,13 @@ void AliRsnFunction::Clear(Option_t* /*option*/)
   // For the sake of security, all pointers are also set explicitly to NULL.
   //
 
-  Int_t i;
-  for (i = 0; i < 100; i++)
-  {
-    delete fHisto[i];
-    fHisto[i] = 0x0;
-  }
+  Int_t i, j;
+  for (j = 0 ; j < kFcnBinTypes; j++)
+    for (i = 0; i < 100; i++)
+    {
+      delete fHisto[j][i];
+      fHisto[j][i] = 0x0;
+    }
 }
 
 //________________________________________________________________________________________
@@ -171,23 +176,29 @@ TList* AliRsnFunction::Init(const char *histoName, const char *histoTitle)
 
   // a general histogram is always added,
   // which overrides the binning and collects everything
-  fHisto[0] = new TH1D(histoName, histoTitle, nbins, min, max);
-  fHisto[0]->Sumw2();
-  histos->AddLast(fHisto[0]);
+
+  fHisto[0][0] = new TH1D(histoName, histoTitle, nbins, min, max);
+  fHisto[0][0]->Sumw2();
+  histos->AddLast(fHisto[0][0]);
 
   // if requested a binning w.r. to some cut variable, histograms are added
   // for that in this part of the method (one per each bin)
   Char_t hName[255];
   Char_t hTitle[255];
+  Int_t j;
   if (fUseBins)
   {
-    for (ibin = 0, i = 1; ibin < fBins.GetSize() - 1; ibin++, i++)
-    {
-      sprintf(hName, "%s[%.2f-%.2f]", histoName, fBins[ibin], fBins[ibin+1]);
-      sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[ibin], fBins[ibin+1]);
-      fHisto[i] = new TH1D(hName, hTitle, nbins, min, max);
-      fHisto[i]->Sumw2();
-      histos->AddLast(fHisto[i]);
+    for (j = 0 ; j < kFcnBinTypes; j++){
+      if (fNumberOfBinTypes<=j) continue;
+      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
+      {
+	sprintf(hName, "%s_%d%02d_[%.2f-%.2f]", histoName, j,i,fBins[j][ibin], fBins[j][ibin+1]);
+	sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[j][ibin], fBins[j][ibin+1]);
+// 	AliInfo(Form("Adding %s",hName));
+	fHisto[j][i] = new TH1D(hName, hTitle, nbins, min, max);
+	fHisto[j][i]->Sumw2();
+	histos->AddLast(fHisto[j][i]);
+      }
     }
   }
 
@@ -221,60 +232,95 @@ void AliRsnFunction::Init(const char *histoName, const char *histoTitle, TList *
 
   // a general histogram is always added,
   // which overrides the binning and collects everything
-  fHisto[0] = new TH1D(histoName, histoTitle, nbins, min, max);
-  histos->AddLast(fHisto[0]);
+  fHisto[0][0] = new TH1D(histoName, histoTitle, nbins, min, max);
+  histos->AddLast(fHisto[0][0]);
 
   // if requested a binning w.r. to some cut variable, histograms are added
   // for that in this part of the method (one per each bin)
   Char_t hName[255];
   Char_t hTitle[255];
+  Int_t j;
   if (fUseBins)
   {
-    for (ibin = 0, i = 1; ibin < fBins.GetSize() - 1; ibin++, i++)
-    {
-      sprintf(hName, "%s[%.2f-%.2f]", histoName, fBins[ibin], fBins[ibin+1]);
-      sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[ibin], fBins[ibin+1]);
-      fHisto[i] = new TH1D(hName, hTitle, nbins, min, max);
-      histos->AddLast(fHisto[i]);
+    for (j = 0 ; j < kFcnBinTypes; j++){
+      if (fNumberOfBinTypes<=j) continue;
+      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
+      {
+
+	sprintf(hName, "%s_%d_%02d[%.2f-%.2f]", histoName,j,i, fBins[j][ibin], fBins[j][ibin+1]);
+	sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[j][ibin], fBins[j][ibin+1]);
+// 	AliInfo(Form("Adding %s",hName));
+	fHisto[j][i] = new TH1D(hName, hTitle, nbins, min, max);
+	histos->AddLast(fHisto[j][i]);
+      }
     }
   }
 }
 
 //________________________________________________________________________________________
 void AliRsnFunction::SetBinningCut
-(AliRsnCut::EType type, Double_t min, Double_t max, Double_t step)
+(AliRsnCut::EType type, Double_t min, Double_t max, Double_t step,Int_t index,Bool_t IsCopyConstructor)
 {
   //
   // Set fixed bins
   //
 
-  fUseBins = kTRUE;
+  if (index >= kFcnBinTypes) {
+    AliError(Form("We support only %d Binning cuts(0-%d). Skipping...",kFcnBinTypes,kFcnBinTypes-1));
+    return;
+  }
+  
+  if (!IsCopyConstructor){
+    // TODO if some one sets indexes 0,2,3 it is a bug here(i'll solve it)
+    if (index == fNumberOfBinTypes)
+      fNumberOfBinTypes++;
+    else {
+      AliError(Form("Wrong index %d. fUseBins is set to kFALSE",index));
+//       fUseBins = kFALSE;
+      return;
+    }
+  }
 
+  fUseBins = kTRUE;
   Int_t i, nBins = (Int_t)((max - min) / step) + 1;
-  fBinningCutType = type;
-  fBins.Set(nBins);
+  fBinningCutType[index] = type;
+  fBins[index].Set(nBins);
   for (i = 0; i < nBins; i++)
   {
-    fBins[i] = min + (Double_t)i * step;
+    fBins[index][i] = min + (Double_t)i * step;
   }
 }
 
 //________________________________________________________________________________________
 void AliRsnFunction::SetBinningCut
-(AliRsnCut::EType type, Int_t nbins, Double_t *bins)
+(AliRsnCut::EType type, Int_t nbins, Double_t *bins,Int_t index,Bool_t IsCopyConstructor)
 {
   //
   // Set variable bins
   //
 
-  fUseBins = kTRUE;
+  if (index >= kFcnBinTypes) {
+    AliError(Form("We support only %d Binning cuts(0-%d). Skipping...",kFcnBinTypes,kFcnBinTypes-1));
+    return;
+  }
+   if (!IsCopyConstructor){
+     // TODO if some one sets indexes 0,2,3 it is a bug here(i'll solve it)
+     if (index >= fNumberOfBinTypes)
+      fNumberOfBinTypes++;
+     else {
+        AliError(Form("Wrong index %d (%d). fUseBins is set to kFALSE",index,fNumberOfBinTypes));
+ //        fUseBins = kFALSE;
+        return;
+      }
+   }
 
+  fUseBins = kTRUE;
   Int_t i;
-  fBinningCutType = type;
-  fBins.Set(nbins);
+  fBinningCutType[index] = type;
+  fBins[index].Set(nbins);
   for (i = 0; i < nbins; i++)
   {
-    fBins[i] = bins[i];
+    fBins[index][i] = bins[i];
   }
 }
 
@@ -348,7 +394,7 @@ TString AliRsnFunction::GetFcnTitle()
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnFunction::Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref, Double_t weight)
+Bool_t AliRsnFunction::Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref)
 {
   //
   // Fillse the histogram with data contained in a defined pair.
@@ -363,22 +409,23 @@ Bool_t AliRsnFunction::Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref, Double
   }
 
   // fill global histogram
-  if (weight == 0.0) fHisto[0]->Fill(value);
-  else fHisto[0]->Fill(value, weight);
+  fHisto[0][0]->Fill(value);
 
   // if bins are allocated, find right one and fill it
   if (fUseBins)
   {
-    Int_t i, ibin;
-    for (ibin = 0, i = 1; ibin < fBins.GetSize() - 1; ibin++, i++)
-    {
-      if (!fHisto[i]) continue;
-      fBinningCut.SetCutValues(fBinningCutType, fBins[ibin], fBins[ibin+1]);
-      if (fBinningCut.IsSelected(AliRsnCut::kPair, pair))
+    Int_t i, j, ibin;
+    for (j = 0 ; j < kFcnBinTypes; j++){
+      if (fNumberOfBinTypes<=j) continue;
+      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
       {
-        if (weight == 0.0) fHisto[i]->Fill(value);
-        else fHisto[i]->Fill(value, weight);
-        break;
+	if (!fHisto[j][i]) continue;
+	fBinningCut[j].SetCutValues(fBinningCutType[j], fBins[j][ibin], fBins[j][ibin+1]);
+	if (fBinningCut[j].IsSelected(AliRsnCut::kPair, pair))
+	{
+	  fHisto[j][i]->Fill(value);
+	  break;
+	}
       }
     }
   }

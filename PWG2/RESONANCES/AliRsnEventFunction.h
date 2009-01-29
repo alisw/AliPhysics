@@ -47,10 +47,13 @@ class AliRsnEventFunction : public TObject
       kAverageMomentum,
       kAngleLeadingMean,
       kAngleLeadingRMS,
-      
+      kPtResolution,
+      kVtResolution,
+      kVzResolution,
+
       kTypes
     };
-    
+
     AliRsnEventFunction();
     AliRsnEventFunction(EType type, AliRsnHistoDef *hd,
                         AliRsnDaughter::EPIDMethod pidMethod = AliRsnDaughter::kNoPID,
@@ -81,19 +84,19 @@ class AliRsnEventFunction : public TObject
     const AliRsnEventFunction& operator=(const AliRsnEventFunction& /*copy*/) { return *this; }
 
     EType                      fType;      // function type
-    
+
     AliRsnDaughter::EPIDMethod fPIDMethod; // PID method to be used
     AliRsnPID::EType           fPIDType;   // PID species to be used
     Char_t                     fCharge;    // charge sign
     Double_t                   fLeadPtMin; // smallest acceptable momentum of leading particle
-    
+
     Bool_t                     fAccept;    // internal flag to check a computed value
     Bool_t                     fUseBins;   // flag to choose if binning is used
 
     TArrayD                    fBins;            // low edge of each bin (upper is the low edge of next bin)
     AliRsnCut                  fBinningCut;      // binning cut
     AliRsnCut::EType           fBinningCutType;  // binning cut type
-    
+
     AliRsnCutSet              *fEventCuts;       // selection cuts for events
     AliRsnCutSet              *fTrackCuts;       // selection cuts for tracks in each event
 

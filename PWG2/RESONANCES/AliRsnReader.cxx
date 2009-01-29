@@ -17,6 +17,7 @@
 // author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <Riostream.h>
 #include <TString.h>
 
 #include "AliLog.h"
@@ -26,6 +27,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
@@ -40,6 +42,7 @@
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnPIDDefESD.h"
+#include "AliRsnCut.h"
 
 #include "AliRsnReader.h"
 
@@ -50,13 +53,17 @@ AliRsnReader::AliRsnReader() :
   fCheckSplit(kFALSE),
   fRejectFakes(kFALSE),
   fTPCOnly(kFALSE),
+  fUseESDTrackCuts(kFALSE),
+  fUseRsnTrackCuts(kFALSE),
   fPIDDef(),
   fITSClusters(0),
   fTPCClusters(0),
   fTRDClusters(0),
   fTrackRefs(0),
   fTrackRefsITS(0),
-  fTrackRefsTPC(0)
+  fTrackRefsTPC(0),
+  fESDTrackCuts(),
+  fRsnTrackCuts("primaryCuts")
 {
 //
 // Constructor.
@@ -114,6 +121,135 @@ void AliRsnReader::SetTPCOnly(Bool_t doit)
 }
 
 //_____________________________________________________________________________
+Bool_t AliRsnReader::ConvertTrack(AliRsnDaughter *daughter, AliESDtrack *esdTrack)
+{
+//
+// Translates an ESD track into a RSN daughter
+//
+
+  if (!esdTrack) {
+    AliError("Passed NULL object: nothing done");
+    return kFALSE;
+  }
+
+  Double_t p[3], v[3], pid[AliRsnPID::kSpecies];
+
+  // copy values which don't need treatment:
+  // momentum, vertex, chi2, flags, charge, number of TPC and ITS clusters
+  esdTrack->GetPxPyPz(p);
+  daughter->SetP(p[0], p[1], p[2]);
+  esdTrack->GetXYZ(v);
+  daughter->SetV(v[0], v[1], v[2]);
+  daughter->SetChi2(esdTrack->GetConstrainedChi2());
+  daughter->SetFlags(esdTrack->GetStatus());
+  daughter->SetCharge((Short_t)esdTrack->Charge());
+  daughter->SetNumberOfITSClusters(esdTrack->GetITSclusters(0x0));
+  daughter->SetNumberOfTPCClusters(esdTrack->GetTPCclusters(0x0));
+
+  // define the kink index:
+  //  0 = no kink
+  //  1 = kink daughter
+  // -1 = kink mother
+  Int_t i, ik[3];
+  for (i = 0; i < 3; i++) ik[i] = esdTrack->GetKinkIndex(i);
+  if (ik[0] < 0 || ik[1] < 0 || ik[2] < 0) daughter->SetKinkMother();
+  else if (ik[0] > 0 || ik[1] > 0 || ik[2] > 0) daughter->SetKinkDaughter();
+  else daughter->SetNoKink();
+
+  // store PID weights according to definition
+  // check: if the sum of all weights is null, the adoption fails
+  Double_t sum = 0.0;
+  fPIDDef.ComputeWeights(esdTrack, pid);
+  for (i = 0; i < AliRsnPID::kSpecies; i++)
+  {
+    daughter->SetPIDWeight(i, pid[i]);
+    sum += pid[i];
+  }
+  if (sum <= 0.0) return kFALSE;
+
+  // calculate N sigma to vertex
+  AliESDtrackCuts trkCut;
+  daughter->SetNSigmaToVertex(trkCut.GetSigmaToVertex(esdTrack));
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnReader::ConvertTrack(AliRsnDaughter *daughter, AliAODTrack *aodTrack)
+{
+//
+// Translates an AOD track into a RSN daughter
+//
+
+  if (!aodTrack)
+  {
+    AliError("Passed NULL object: nothing done");
+    return kFALSE;
+  }
+
+  // copy momentum  and vertex
+  daughter->SetP(aodTrack->Px(), aodTrack->Py(), aodTrack->Pz());
+  daughter->SetV(aodTrack->Xv(), aodTrack->Yv(), aodTrack->Zv());
+
+  // chi2
+  daughter->SetChi2(aodTrack->Chi2perNDF());
+
+  // copy PID weights
+  Int_t i;
+  for (i = 0; i < 5; i++) daughter->SetPIDWeight(i, aodTrack->PID()[i]);
+
+  // copy flags
+  daughter->SetFlags(aodTrack->GetStatus());
+
+  // copy sign
+  daughter->SetCharge(aodTrack->Charge());
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnReader::ConvertTrack(AliRsnDaughter *daughter, TParticle *particle)
+{
+//
+// Translates an MC particle into a RSN daughter
+//
+
+  if (!particle) return kFALSE;
+
+  // copy other MC info (mother PDG code cannot be retrieved here)
+  daughter->InitMCInfo(particle);
+
+  // copy momentum  and vertex
+  daughter->SetP(particle->Px(), particle->Py(), particle->Pz());
+  daughter->SetV(particle->Vx(), particle->Vy(), particle->Vz());
+
+  // recognize charge sign from PDG code sign
+  Int_t pdg = particle->GetPdgCode();
+  Int_t absPDG = TMath::Abs(pdg);
+  if (absPDG == 11 || absPDG == 13)
+  {
+    if (pdg > 0) daughter->SetCharge(-1); else daughter->SetCharge(1);
+  }
+  else if (absPDG == 211 || absPDG == 321 || absPDG == 2212)
+  {
+    if (pdg > 0) daughter->SetCharge(1); else daughter->SetCharge(-1);
+  }
+  else
+  {
+    // when trying to "adopt" a neutral track (photon, neutron, etc.)
+    // for the moment a "failed" message is returned
+    return kFALSE;
+  }
+
+  // flags and PID weights make no sense with MC tracks
+  daughter->SetFlags(0);
+  for (pdg = 0; pdg < AliRsnPID::kSpecies; pdg++) daughter->SetPIDWeight(pdg, 0.0);
+  daughter->SetPIDWeight(AliRsnPID::InternalType(absPDG), 1.0);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliRsnReader::Fill
 (AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *mc)
 {
@@ -163,6 +299,17 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   // retrieve stack (if possible)
   AliStack *stack = 0x0;
   if (mc) stack = mc->Stack();
+
+  // set MC primary vertex if present
+  TArrayF fvertex(3);
+  Double_t mcvx = 0., mcvy = 0., mcvz = 0.;
+  if (mc) {
+    mc->GenEventHeader()->PrimaryVertex(fvertex);
+    mcvx = (Double_t)fvertex[0];
+    mcvy = (Double_t)fvertex[1];
+    mcvz = (Double_t)fvertex[2];
+    rsn->SetPrimaryVertexMC(mcvx, mcvy, mcvz);
+  }
 
   // get number of tracks
   Int_t ntracks = esd->GetNumberOfTracks();
@@ -228,6 +375,8 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
     }
     // get ESD track
     esdTrack = esd->GetTrack(index);
+    // check for ESD track cuts (if required)
+    if (fUseESDTrackCuts && (!fESDTrackCuts.AcceptTrack(esdTrack))) continue;
     // check for fake tracks
     label = esdTrack->GetLabel();
     if (fRejectFakes && (label < 0)) continue;
@@ -246,7 +395,7 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
     }
     // try to get information from this track
     // output value tells if this was successful or not
-    check = temp.Adopt(esdTrack, fPIDDef);
+    check = ConvertTrack(&temp, esdTrack);
     if (!check) {
       AliDebug(10, Form("Failed adopting track #%d", index));
       continue;
@@ -269,8 +418,10 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
     temp.SetIndex(index);
     temp.SetLabel(label);
 
-    // shifts the track DCA to the found vertex
-    temp.ShiftZero(vertex[0], vertex[1], vertex[2]);
+    // check this object against the Rsn cuts (if required)
+    if (fUseRsnTrackCuts) {
+      if (!fRsnTrackCuts.IsSelected(AliRsnCut::kParticle, &temp)) continue;
+    }
 
     // try to add track to collection and returns an error in case of problems
     AliRsnDaughter *ptr = rsn->AddTrack(temp);
@@ -285,7 +436,11 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   }
 
   // sort tracks w.r. to Pt (from largest to smallest)
-  rsn->SortTracks();
+  //rsn->SortTracks();
+
+  // correct tracks for primary vertex
+  //rsn->CorrectTracks();
+
   return kTRUE;
 }
 
@@ -318,6 +473,17 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
     vertex[2] = aod->GetPrimaryVertex()->GetZ();
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 
+    // set MC primary vertex if present
+    TArrayF fvertex(3);
+    Double_t mcvx = 0., mcvy = 0., mcvz = 0.;
+    if (mc) {
+      mc->GenEventHeader()->PrimaryVertex(fvertex);
+      mcvx = (Double_t)fvertex[0];
+      mcvy = (Double_t)fvertex[1];
+      mcvz = (Double_t)fvertex[2];
+      rsn->SetPrimaryVertexMC(mcvx, mcvy, mcvz);
+    }
+
     // store tracks from ESD
     Int_t  index, label, labmum;
     Bool_t check;
@@ -332,7 +498,7 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
         if (fRejectFakes && (label < 0)) continue;
         // copy ESD track data into RsnDaughter
         // if unsuccessful, this track is skipped
-        check = temp.Adopt(aodTrack);
+        check = ConvertTrack(&temp, aodTrack);
         if (!check) continue;
         // if stack is present, copy MC info
         if (stack)
@@ -352,6 +518,12 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
         // set index and label and add this object to the output container
         temp.SetIndex(index);
         temp.SetLabel(label);
+
+        // check this object against the Rsn cuts (if required)
+        if (fUseRsnTrackCuts) {
+          if (!fRsnTrackCuts.IsSelected(AliRsnCut::kParticle, &temp)) continue;
+        }
+
         AliRsnDaughter *ptr = rsn->AddTrack(temp);
         // if problems occurred while storin, that pointer is NULL
         if (!ptr) AliWarning(Form("Failed storing track#%d"));
@@ -364,6 +536,9 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
         AliDebug(1, "Zero multiplicity in this event");
         return kFALSE;
     }
+
+    // correct tracks for primary vertex
+    rsn->CorrectTracks();
 
     return kTRUE;
 }
@@ -389,54 +564,58 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 
   // get primary vertex
   TArrayF fvertex(3);
-  Double_t vertex[3];
+  Double_t vx, vy, vz;
   mc->GenEventHeader()->PrimaryVertex(fvertex);
-  vertex[0] = (Double_t)fvertex[0];
-  vertex[1] = (Double_t)fvertex[1];
-  vertex[2] = (Double_t)fvertex[2];
-  rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+  vx = (Double_t)fvertex[0];
+  vy = (Double_t)fvertex[1];
+  vz = (Double_t)fvertex[2];
+  rsn->SetPrimaryVertex(vx, vy, vz);
+  rsn->SetPrimaryVertexMC(vx, vy, vz);
 
   // store tracks from MC
-  Int_t  i, index, labmum, nHitsITS, nHitsTPC, nRef;
-  Bool_t check;
+  Int_t  i, index, labmum, nRef, nRefITS, nRefTPC, detectorID;
   AliRsnDaughter temp;
-  for (index = 0; index < ntracks; index++) {
-    // get and check MC track
+  for (index = 0; index < ntracks; index++)
+  {
+    // get MC track & take index and label
     AliMCParticle *mcTrack = mc->GetTrack(index);
+    temp.SetIndex(index);
+    temp.SetLabel(mcTrack->Label());
+
     // check particle track references
     nRef = mcTrack->GetNumberOfTrackReferences();
-    if (fTrackRefs > 0 && nRef < fTrackRefs) continue;
-    else if (fTrackRefsITS > 0 || fTrackRefsTPC > 0) {
-      nHitsITS = nHitsTPC = 0;
-      for (i = 0; i < nRef; i++) {
-        AliTrackReference *trackRef = mcTrack->GetTrackReference(i);
-        if (trackRef) {
-          Int_t detectorId = trackRef->DetectorId();
-          switch(detectorId) {
-            case AliTrackReference::kITS  : nHitsITS++  ; break ;
-            case AliTrackReference::kTPC  : nHitsTPC++  ; break ;
-            default : break ;
-          }
-        }
+    for (i = 0, nRefITS = 0, nRefTPC = 0; i < nRef; i++) {
+      AliTrackReference *trackRef = mcTrack->GetTrackReference(i);
+      if (!trackRef) continue;
+      detectorID = trackRef->DetectorId();
+      switch (detectorID) {
+        case AliTrackReference::kITS  : nRefITS++; break;
+        case AliTrackReference::kTPC  : nRefTPC++; break;
+        default: break;
       }
-      if (fTrackRefsITS > 0 && nHitsITS < fTrackRefsITS) continue;
-      if (fTrackRefsTPC > 0 && nHitsTPC < fTrackRefsTPC) continue;
     }
+    if (fTrackRefs > 0 && nRef < fTrackRefs) continue;
+    if (fTrackRefsITS > 0 && nRefITS < fTrackRefsITS) continue;
+    if (fTrackRefsTPC > 0 && nRefTPC < fTrackRefsTPC) continue;
+
     // try to insert in the RsnDaughter its data
-    check = temp.Adopt(mcTrack);
-    if (!check) continue;
+    TParticle *mcPart = mcTrack->Particle();
+    if (!ConvertTrack(&temp, mcPart)) continue;
+
+    // assign mother label and PDG code (if any)
     labmum = temp.GetMCInfo()->Mother();
-    if (labmum >= 0)
-    {
+    if (labmum >= 0) {
       TParticle *mum = stack->Particle(labmum);
       temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
     }
-    // if successful, set other data and stores it
-    temp.SetIndex(index);
-    temp.SetLabel(mcTrack->Label());
+
+    // check this object against the Rsn cuts (if required)
+    if (fUseRsnTrackCuts) {
+      if (!fRsnTrackCuts.IsSelected(AliRsnCut::kParticle, &temp)) continue;
+    }
+
     AliRsnDaughter *ptr = rsn->AddTrack(temp);
-    // if problems occurred while storin, that pointer is NULL
-    if (!ptr) AliWarning(Form("Failed storing track#%d", index));
+    if (!ptr) AliWarning(Form("Failed storing track #%d", index));
   }
 
   // compute total multiplicity
@@ -449,5 +628,9 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 
   // sort tracks w.r. to Pt (from largest to smallest)
   rsn->SortTracks();
+
+  // correct tracks for primary vertex
+  rsn->CorrectTracks();
+
   return kTRUE;
 }
