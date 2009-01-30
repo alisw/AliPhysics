@@ -50,9 +50,24 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   cout<<" ---- BEGIN ANALYSIS ---- "<<endl;
   cout<<endl;
   
-  //  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+
   gSystem->AddIncludePath("-I$ROOTSYS/include");
-    
+
+  // In AliRoot
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libPWG2flow.so");
+  cerr<<"libPWG2flow.so loaded ..."<<endl;
+  cout<<endl; 
+
+  // flow event in AliRoot
+  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker(); 
+  //------------------------------------------------------------------------
+
+  // In root
+
+  /*    
   // constants  
   gROOT->LoadMacro("code/AliFlowCommonConstants.cxx+");
   gROOT->LoadMacro("code/AliFlowLYZConstants.cxx+");
@@ -87,14 +102,19 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   gROOT->LoadMacro("code/AliFlowAnalysisWithQCumulants.cxx+"); 
   gROOT->LoadMacro("code/AliFittingQDistribution.cxx+");
 
-  // Method to fill the FlowEvent
+  // Class to fill the FlowEvent without aliroot dependence
+  // can be found in the directory other
   gROOT->LoadMacro("code/FlowEventSimpleMaker.cxx+");   
+
+  cout << "finished loading macros!" << endl;  
+
+  //flow event
+  FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
+  //------------------------------------------------------------------------
+  */
 
   //load needed libraries
   gSystem->Load("libTree.so");
-
-  cout << "finished loading macros!" << endl;  
-  //  gSystem->Load("libPWG2flow.so");
 
   //------------------------------------------------------------------------
   //cuts
@@ -116,9 +136,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   cutsDiff->SetPhiMin(phiMinDiff);
   cutsDiff->SetPID(PIDDiff);
 
-  //------------------------------------------------------------------------
-  //flow event
-  FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
   
   AliFlowAnalysisWithQCumulants    *qc    = NULL;
   AliFlowAnalysisWithCumulants     *gfc   = NULL;
