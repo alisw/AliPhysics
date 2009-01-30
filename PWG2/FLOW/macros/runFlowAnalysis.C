@@ -171,6 +171,13 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
     AliFittingQDistribution* fqd = new AliFittingQDistribution();
     fqd->CreateOutputObjects();
   }
+
+  //SP = Scalar Product 
+  if(SP) {
+    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+    sp->Init();
+  }
+
   //LYZ1 = Lee-Yang Zeroes first run
   if(LYZ1) {
     AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
@@ -222,12 +229,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	lyzep->Init();
       }
     }
-  }
-  
-  //SP = Scalar Product 
-  if(SP) {
-    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
-    sp->Init();
   }
   //------------------------------------------------------------------------
   
@@ -326,7 +327,8 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	      AliFlowEventSimple* fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff);
 	      
 	      //pass the flow event to flow methods for analysis 
-	      if (MCEP) //mcep->Make(fEvent,fEP);  //fix fEP
+	      Double_t fEP = 0.; // temporary number need true value
+	      if(MCEP) mcep->Make(fEvent,fEP);  //fix fEP
 	      if(QC) qc->Make(fEvent);
 	      if(GFC) gfc->Make(fEvent);
 	      if(FQD) fqd->Make(fEvent);
@@ -348,7 +350,7 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 
   //--------------------------------------------------------------
   //calculating and storing the final results of flow analysis
-  if (MCEP) {mcep->Finish(); mcep->WriteHistograms("outputMCEPanalysis.root");}
+  if(MCEP) {mcep->Finish(); mcep->WriteHistograms("outputMCEPanalysis.root");}
   if(QC) {qc->Finish(); qc->WriteHistograms("outputQCanalysis.root");}
   if(GFC) {gfc->Finish(); gfc->WriteHistograms("outputGFCanalysis.root");}
   if(FQD) {fqd->Finish(); fqd->WriteHistograms("outputFQDanalysis.root");}
