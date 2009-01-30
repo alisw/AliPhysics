@@ -2057,8 +2057,8 @@ TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberJunction(Double_t width){
   /////////////////////////////////////////////////////////////
   const Int_t kvertexnumber = 6;
   TGeoXtru* carbonfiberjunctionshape = new TGeoXtru(2);
-  Double_t reflectionparam[3] = {TMath::Tan(fgkCarbonFiberJunctionAngle[0]
-							  *  TMath::DegToRad()),-1.,0.};
+  Double_t reflectionparam[4] = {TMath::Tan(fgkCarbonFiberJunctionAngle[0]
+					    *  TMath::DegToRad()),-1.,0.,0.};
   TVector3* vertex[kvertexnumber];
   vertex[0] = new TVector3();
   vertex[3] = new TVector3(fgkCarbonFiberJunctionEdge[0]
