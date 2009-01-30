@@ -1,4 +1,3 @@
-
 /** VERSION NUMBER 0 */
 
 Bool_t usePWG4PartCorr = kTRUE;
@@ -16,7 +15,7 @@ Bool_t useESDTrack   = kFALSE;
 
 Bool_t calculateBackground = kTRUE;
 
-Int_t numberOfFilesToAnalyze=2000;
+Int_t numberOfFilesToAnalyze=0;
 
 /** ---------------------------------- define cuts here ------------------------------------*/
 
@@ -137,7 +136,6 @@ Bool_t plotESDPPt                                          = kTRUE;
 Bool_t plotESDPEta                                         = kTRUE;
 Bool_t plotESDPPhi                                         = kTRUE;
 
-
 Bool_t plotESDGammaEnergy                                  = kTRUE;
 Bool_t plotESDGammaPt                                      = kTRUE;
 Bool_t plotESDGammaEta                                     = kTRUE;
@@ -195,7 +193,7 @@ Bool_t plotResolutionESDZ                                  = kTRUE;
 Bool_t plotNumberOfV0s                                     = kTRUE;
 Bool_t plotNumberOfSurvivingV0s                            = kTRUE;
 
-  //  debug histograms
+//  debug histograms
 Bool_t plotV0MassDebugCut1                                 = kTRUE;
 Bool_t plotV0MassDebugCut2                                 = kTRUE;
 Bool_t plotV0MassDebugCut3                                 = kTRUE;
@@ -301,7 +299,6 @@ Int_t nYBinsResdRdPt=1000;
 Int_t firstYBinResdRdPt= -5;
 Int_t lastYBinResdRdPt=5;
 
-
 //RESMCPt
 Int_t nXBinsResPt=500;
 Int_t firstXBinResPt= 0;
@@ -358,7 +355,6 @@ Double_t lastYBinSpectra = 100.;
 /** ---------- end Define the binning for the different plot types here ----------------------*/
 
 
-
 /************************************************************************************************
  *                                                                                              *
  *                                                                                              *
@@ -366,9 +362,96 @@ Double_t lastYBinSpectra = 100.;
  *                                                                                              *
  *                                                                                              *
  ************************************************************************************************/
+TString outputFileName = "histogramsGammaConversion";
+TString outputFileAppendix = "";
+TString dataList = "";
+Bool_t writeNtuple = kFALSE;
 
-void ConfigGammaConversion(const char *chainName, const char *sample, Bool_t writeNtuple = kFALSE){
-  
+Bool_t scanArguments(TString arguments){
+  Bool_t iResult = kTRUE;
+
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    
+    for(int i=0; i<pTokens->GetEntries() && iResult==kTRUE; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      
+      if(argument.IsNull()) continue;
+      // -- deconvolute-time option
+      if(argument.CompareTo("-data-list") == 0){
+	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	dataList = ((TObjString*)pTokens->At(i))->GetString();
+	if(dataList.IsNull()){
+	  cout<<"-data-list is NULL"<<endl;
+	  iResult=kFALSE;
+	}
+	else{
+	  cout<<"Data list is set to: "<<dataList<<endl;
+	}
+      }
+      else if(argument.CompareTo("-output-file-name") == 0){
+	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	outputFileName = ((TObjString*)pTokens->At(i))->GetString();
+	if(outputFileName.IsNull()){
+	  cout<<"-output-file-name is NULL"<<endl;
+	  iResult=kFALSE;
+	}
+	else{
+	  cout<<"Setting output file name to: "<<outputFileName<<endl;
+	}
+      }
+      else if (argument.CompareTo("-write-ntuple") == 0){
+	cout<<"Writing ntuple to file."<<endl;
+	writeNtuple = kTRUE;
+      }
+      else if(argument.CompareTo("-append-to-output-file") == 0){
+	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	outputFileAppendix = "_"+((TObjString*)pTokens->At(i))->GetString();
+	if(outputFileAppendix.IsNull()){
+	  cout<<"-appending-to-output-file is NULL"<<endl;
+	  iResult=kFALSE;
+	}
+	else{
+	  cout<<"Appending to the output file: "<<outputFileAppendix<<endl;
+	}
+      }
+    }
+
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    cout<<"Missing parameter for argument "<< argument.Data()<<endl;
+    iResult=kFALSE;
+  }
+  return iResult;
+}
+
+void ConfigGammaConversion(TString arguments){
+
+  if(!scanArguments(arguments)){
+    break;
+  }
+
+  if(numberOfFilesToAnalyze==0){
+    ifstream dataInStream;
+    dataInStream.open(dataList.Data());
+    if ( !dataInStream ){
+      cout<<"Data list file does not exist: "<<dataList.Data()<<endl;
+      return 0;
+    }
+    string line;
+    while ( !dataInStream.eof() )
+      {
+	getline(dataInStream, line);
+	numberOfFilesToAnalyze++;
+      }
+  }
+  cout<<"Number Of files to analyze: "<<numberOfFilesToAnalyze<<endl;
+
   build();//build (if necessary) and load the libraries needed
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C"); // load the CreateChain macro
@@ -566,7 +649,12 @@ void ConfigGammaConversion(const char *chainName, const char *sample, Bool_t wri
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
 
   // Private output objects
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, "histogramsAliGammaConversion.root");
+  outputFileName.ReplaceAll(".root","");
+  outputFileAppendix..ReplaceAll(".root","");
+  TString fileOut = outputFileName + outputFileAppendix + ".root";
+
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, fileOut);
+
 
 
   //------------------------ END: Define input/output handlers ---------------------------------------------------
@@ -642,7 +730,12 @@ void ConfigGammaConversion(const char *chainName, const char *sample, Bool_t wri
   mgr->ConnectOutput(gammaconversion, 0, coutput1);
   mgr->ConnectOutput(gammaconversion, 1, coutput2);
 
-  TChain* chain= CreateESDChain(sample,numberOfFilesToAnalyze);
+  if(dataList.IsNull()){
+    cout<<"Data list is not set, aborting."<<endl;
+    return;
+  }
+
+  TChain* chain= CreateESDChain(dataList,numberOfFilesToAnalyze);
   
   mgr->InitAnalysis();
   
@@ -650,9 +743,6 @@ void ConfigGammaConversion(const char *chainName, const char *sample, Bool_t wri
   
   mgr->StartAnalysis("local",chain);
 }
-
-
-
 
 void build() {
   TStopwatch timer;
