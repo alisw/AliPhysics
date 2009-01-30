@@ -41,6 +41,7 @@ class AliFittingQDistribution{
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
   virtual void WriteHistograms(TString* outputFileName);
+  virtual void WriteHistograms(TString outputFileName);
 
 //----------------------------------------------------------------------------------------------------------------
 //                                            setters and getters                                                 

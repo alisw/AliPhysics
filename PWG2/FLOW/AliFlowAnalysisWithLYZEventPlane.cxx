@@ -111,6 +111,17 @@ void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TString* outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TString outputFileName)
+{
+ //store the final results in output .root file
+
+  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
+  output->WriteObject(fHistList, "cobjLYZEP","SingleKey");
+  delete output;
+}
+
+//-----------------------------------------------------------------------
 void AliFlowAnalysisWithLYZEventPlane::Init() {
 
   //Initialise all histograms

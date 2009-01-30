@@ -37,6 +37,7 @@ class AliFlowAnalysisWithScalarProduct {
    void    Make(AliFlowEventSimple* anEvent);        //calculates variables and fills histograms
    void    Finish();                                 //saves histograms
    void    WriteHistograms(TString* outputFileName); //writes histograms locally
+   void    WriteHistograms(TString outputFileName); //writes histograms locally
 
    void      SetDebug(Bool_t kt)            { this->fDebug = kt ; }
    Bool_t    GetDebug() const               { return this->fDebug ; }
