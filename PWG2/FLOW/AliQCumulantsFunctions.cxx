@@ -144,7 +144,7 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
 void AliQCumulantsFunctions::Calculate()
 {
  //final results
-
+ 
  //harmonics
  Int_t n = 2; //to be improved 
  
@@ -206,9 +206,9 @@ void AliQCumulantsFunctions::Calculate()
               
  //integrated flow estimates from Q-cumulants:
  cout<<endl;
- cout<<"***********************************"<<endl;
- cout<<"***********************************"<<endl;
- cout<<"flow estimates from Q-cumulants:"<<endl;
+ cout<<"**************************************"<<endl;
+ cout<<"**************************************"<<endl;
+ cout<<"flow estimates from Q-cumulants (RP):"<<endl;
  cout<<endl;
  
  Double_t vn2=0.,vn4=0.,vn6=0.,vn8=0.;
@@ -225,7 +225,7 @@ void AliQCumulantsFunctions::Calculate()
   fchr2nd->FillIntegratedFlowRP(vn2,sd2);
  }else{
   cout<<" v_"<<n<<"{2} = Im"<<endl;
- }
+ }          
  if(four!=0. && fourthOrderQCumulant<0.){
   vn4 = pow(-fourthOrderQCumulant,1./4.); //v_n{4}
   sd4 = 0.25*pow(-fourthOrderQCumulant,-3./4.)*fourthOrderQCumulantError;//sigma_{v_n{4}}
@@ -266,8 +266,8 @@ void AliQCumulantsFunctions::Calculate()
  }
  cout<<endl;
  cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
- cout<<"***********************************"<<endl;
- cout<<"***********************************"<<endl;
+ cout<<"**************************************"<<endl;
+ cout<<"**************************************"<<endl;
  cout<<endl; 
 //--------------------------------------------------------------------------------------------------------- 
  
@@ -331,6 +331,7 @@ Double_t secondOrderQCumulantDiffFlowPtPOI = 0.;
 Double_t fourthOrderQCumulantDiffFlowPtPOI = 0.;
 
 Double_t dVn2ndPOI=0.,dDiffvn2nd=0.,dYield2nd=0.,dSum2nd=0.;
+Double_t dVn4thPOI=0.,dDiffvn4th=0.,dYield4th=0.,dSum4th=0.;
 
 Double_t dVn2ndPOIEta=0.,dDiffvn2ndEta=0.,dYield2ndEta=0.,dSum2ndEta=0.;//to be removed
 
@@ -360,6 +361,13 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlowPtPOI/pow(vn4,3.));
   //common histogram:
   fchr4th->FillDifferentialFlowPtPOI(bb,-1.*fourthOrderQCumulantDiffFlowPtPOI/pow(vn4,3.), 0.);//to be improved (errors)
+  //-------------------------------------------------------------
+  //integrated flow (POI, Pt, 4th order):
+  dDiffvn4th=(fchr4th->GetHistDiffFlowPtPOI())->GetBinContent(bb);
+  dYield4th=(fch4th->GetHistPtDiff())->GetBinContent(bb);
+  dVn4thPOI+=dDiffvn4th*dYield4th;
+  dSum4th+=dYield4th;
+  //-------------------------------------------------------------
  }
 }      
 
@@ -368,11 +376,14 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
 if(dSum2nd && fchr2nd)
 {
  dVn2ndPOI/=dSum2nd;
- fchr2nd->FillIntegratedFlowPOI(dVn2ndPOI,0.);
+ fchr2nd->FillIntegratedFlowPOI(dVn2ndPOI,0.);//to be improved (errors)
 }
-
-
-
+//QC{4}
+if(dSum4th && fchr4th)
+{
+ dVn4thPOI/=dSum4th;
+ fchr4th->FillIntegratedFlowPOI(dVn4thPOI,0.);//to be improved (errors)
+}
 
 //Eta:
 Double_t secondOrderQCumulantDiffFlowEtaPOI = 0.;
@@ -398,7 +409,46 @@ for(Int_t bb=1;bb<nBinsEtaPOI+1;bb++)
 
 //---------------------------------------------------------------------------------------------------------       
         
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -429,6 +479,18 @@ if(dSum2ndEta)
 }
 
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+
+
+
+
+
+
+
+
+
 
  
  /*
@@ -845,21 +907,15 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
 
 
 
-/*
-
-
- 
- 
-
-
-//needed for direct correlations
-
-
+Bool_t bNestedLoopsResults=kFALSE;
+if(bNestedLoopsResults) 
+{ 
+ //needed for direct correlations (obtained from nested loops)
  cout<<endl;
  cout<<endl;
  cout<<"   **** cross-checking the formulas ****"<<endl;
  cout<<"   ****     for integrated flow     ****"<<endl;
- cout<<"(selected only events for which 8 < M < 14 "<<endl;
+ cout<<"(selected only events for which 0 < M < 12 "<<endl;
  cout<<"  from dataset in /data/alice2/ante/AOD)   "<<endl;
 
  cout<<endl;
@@ -941,51 +997,52 @@ Double_t sixthOrderQCumulant = (AvQ6+9.*HereQ2nQnQ2nstarQnstar-6.*HereQ2nQnQnsta
  cout<<"<8>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirect->GetBinContent(31)<<endl;
  cout<<endl; 
 
-//DIFFERENTIAL FLOW
-
-
+ //DIFFERENTIAL FLOW:
  //41st bin: <2'>_{n|n}
  //42nd bin: <2'>_{2n|2n}
  //46th bin: <3'>_{2n|n,n}
  //47th bin: <3'>_{n,n|2n}
  //51st bin: <4'>_{n,n|n,n}
 
-
-
-
- 
  cout<<endl;
  cout<<endl;
  cout<<"   **** cross-checking the formulas ****"<<endl;
  cout<<"   ****    for differential flow    ****"<<endl;
- cout<<"(selected only events for which 8 < M < 14 "<<endl;
+ cout<<"(selected only events for which 0 < M < 12 "<<endl;
  cout<<"  from dataset in /data/alice2/ante/AOD)   "<<endl;
 
  cout<<endl; 
  cout<<"nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
  cout<<"0.5 < Pt < 0.6 GeV"<<endl;                                
  cout<<endl;                                       
- cout<<"<2'>_{n|n} from Q-vectors        = "<<fbinPt2p1n1n->GetBinContent(6)<<endl;kTRUE
- cout<<"<2'>_{n|n} from nested loops     = "<<fDirect->GetBinContent(41)<<endl;
+ cout<<"<2'>_{n|n} from Q-vectors                = "<<fbinPt2p1n1nPOI->GetBinContent(6)<<endl;
+ cout<<"<2'>_{n|n} from nested loops             = "<<fDirect->GetBinContent(41)<<endl;
  cout<<endl;                                       
- cout<<"<2'>_{2n|2n} from Q-vectors      = "<<fbinPt2p2n2n->GetBinContent(6)<<endl;
- cout<<"<2'>_{2n|2n} from nested loops   = "<<fDirect->GetBinContent(42)<<endl;                                        
+ cout<<"<2'>_{2n|2n} from Q-vectors              = "<<fbinPt2p2n2nPOI->GetBinContent(6)<<endl;
+ cout<<"<2'>_{2n|2n} from nested loops           = "<<fDirect->GetBinContent(42)<<endl;                                        
  cout<<endl;  
- cout<<"<3'>_{2n|n,n} from Q-vectors     = "<<fbinPt3p2n1n1n->GetBinContent(6)<<endl;
- cout<<"<3'>_{2n|n,n} from nested loops  = "<<fDirect->GetBinContent(46)<<endl;                   
+ cout<<"<3'>_{2n|n,n} from Q-vectors             = "<<fbinPt3p2n1n1nPOI->GetBinContent(6)<<endl;
+ cout<<"<3'>_{2n|n,n} from nested loops          = "<<fDirect->GetBinContent(46)<<endl;                   
  cout<<endl;              
- cout<<"<3'>_{n,n|2n} from Q-vectors     = "<<fbinPt3p1n1n2n->GetBinContent(6)<<endl;
- cout<<"<3'>_{n,n|2n} from nested loops  = "<<fDirect->GetBinContent(47)<<endl;                                 
+ cout<<"<3'>_{n,n|2n} from Q-vectors             = "<<fbinPt3p1n1n2nPOI->GetBinContent(6)<<endl;
+ cout<<"<3'>_{n,n|2n} from nested loops          = "<<fDirect->GetBinContent(47)<<endl;                                 
  cout<<endl;                                                                   
- cout<<"<4'>_{n,n|n,n} from Q-vectors    = "<<fbinPt4p1n1n1n1n->GetBinContent(6)<<endl;
- cout<<"<4'>_{n,n|n,n} from nested loops = "<<fDirect->GetBinContent(51)<<endl;                                                                                   
+ cout<<"<4'>_{n,n|n,n} from Q-vectors            = "<<fbinPt4p1n1n1n1nPOI->GetBinContent(6)<<endl;
+ cout<<"<4'>_{n,n|n,n} from nested loops         = "<<fDirect->GetBinContent(51)<<endl;                                                                                   
  cout<<endl;   
- 
-     
-       
-
-     */                                   
-                                                
+ cout<<"<5'>_{2n,n|n,n,n} from Q-vectors         = "<<endl;
+ cout<<"<5'>_{2n,n|n,n,n} from nested loops      = "<<fDirect->GetBinContent(56)<<endl;                                                                                   
+ cout<<endl;   
+ cout<<"<6'>_{n,n,n|n,n,n} from Q-vectors        = "<<endl;
+ cout<<"<6'>_{n,n,n|n,n,n} from nested loops     = "<<fDirect->GetBinContent(61)<<endl;                                                                                   
+ cout<<endl;       
+ cout<<"<7'>_{2n,n,n|n,n,n,n} from Q-vectors     = "<<endl;
+ cout<<"<7'>_{2n,n,n|n,n,n,n} from nested loops  = "<<fDirect->GetBinContent(66)<<endl;                                                                                   
+ cout<<endl;         
+ cout<<"<8'>_{n,n,n,n|n,n,n,n} from Q-vectors    = "<<endl;
+ cout<<"<8'>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirect->GetBinContent(71)<<endl;                                                                                   
+ cout<<endl;   
+}//end of if(bNestedLoopsResults)                                              
 
 }
 

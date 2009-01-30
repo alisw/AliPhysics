@@ -40,7 +40,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void CreateOutputObjects();
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
-  virtual void WriteHistograms(TString* outputFileName);
+  virtual void WriteHistograms(TString outputFileName);
  
 //----------------------------------------------------------------------------------------------------------------
 //                                            setters and getters                                                 
@@ -203,23 +203,36 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  f4PerEtaBin1n1n1n1nRP;     //<<4'>>_{n,n|n,n} per eta-bin  
 
   //POI (Particles Of Interest): 
-  TProfile*                  fPtReq1nPOI;               //real part of q-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtImq1nPOI;               //imaginary part of q-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtReq2nPOI;               //real part of q-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fPtImq2nPOI;               //imaginary part of q-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fOverlapPerPtBin;          //number of particles selected both as RP and POI in each pt-bin
-
+  TProfile*                  fPtReq1nPrimePOI;          //real part of q'-vector evaluated in harmonic n for each pt-bin
+  TProfile*                  fPtImq1nPrimePOI;          //imaginary part of q'-vector evaluated in harmonic n for each pt-bin
+  TProfile*                  fPtReq2nPrimePOI;          //real part of q'-vector evaluated in harmonic 2n for each pt-bin
+  TProfile*                  fPtImq2nPrimePOI;          //imaginary part of q'-vector evaluated in harmonic 2n for each pt-bin
+  TProfile*                  fmPrimePerPtBin;           //number of particles selected both as POI and not as RP per each pt-bin
+  
+  TProfile*                  fPtReq1nPrimePrimePOI;     //real part of q''-vector evaluated in harmonic n for each pt-bin
+  TProfile*                  fPtImq1nPrimePrimePOI;     //imaginary part of q''-vector evaluated in harmonic n for each pt-bin
+  TProfile*                  fPtReq2nPrimePrimePOI;     //real part of q''-vector evaluated in harmonic 2n for each pt-bin
+  TProfile*                  fPtImq2nPrimePrimePOI;     //imaginary part of q''-vector evaluated in harmonic 2n for each pt-bin
+  TProfile*                  fmPrimePrimePerPtBin;      //number of particles selected both as RP and POI per each pt-bin
+  
+  TProfile*                  fEtaReq1nPrimePOI;         //real part of q'-vector evaluated in harmonic n for each eta-bin
+  TProfile*                  fEtaImq1nPrimePOI;         //imaginary part of q'-vector evaluated in harmonic n for each eta-bin
+  TProfile*                  fEtaReq2nPrimePOI;         //real part of q'-vector evaluated in harmonic 2n for each eta-bin
+  TProfile*                  fEtaImq2nPrimePOI;         //imaginary part of q'-vector evaluated in harmonic 2n for each eta-bin
+  TProfile*                  fmPrimePerEtaBin;          //number of particles selected both as POI and not as RP per each eta-bin
+  
+  
+  TProfile*                  fEtaReq1nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic n for each eta-bin
+  TProfile*                  fEtaImq1nPrimePrimePOI;    //imaginary part of q''-vector evaluated in harmonic n for each eta-bin
+  TProfile*                  fEtaReq2nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic 2n for each eta-bin
+  TProfile*                  fEtaImq2nPrimePrimePOI;    //imaginary part of q''-vector evaluated in harmonic 2n for each eta-bin
+  TProfile*                  fmPrimePrimePerEtaBin;     //number of particles selected both as RP and POI in each eta-bin
+ 
   TProfile*                  f2PerPtBin1n1nPOI;         //<<2'>>_{n|n} per pt-bin
   TProfile*                  f2PerPtBin2n2nPOI;         //<<2'>>_{2n|2n} per pt-bin
   TProfile*                  f3PerPtBin2n1n1nPOI;       //<<3'>>_{2n|n,n} per pt-bin
   TProfile*                  f3PerPtBin1n1n2nPOI;       //<<3'>>_{n,n|2n} per pt-bin
   TProfile*                  f4PerPtBin1n1n1n1nPOI;     //<<4'>>_{n,n|n,n} per pt-bin
-  
-  TProfile*                  fEtaReq1nPOI;              //real part of q-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaImq1nPOI;              //imaginary part of q-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaReq2nPOI;              //real part of q-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fEtaImq2nPOI;              //imaginary part of q-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fOverlapPerEtaBin;         //number of particles selected both as RP and POI in each eta-bin
 
   TProfile*                  f2PerEtaBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin
   TProfile*                  f2PerEtaBin2n2nPOI;        //<<2'>>_{2n|2n} per eta-bin
