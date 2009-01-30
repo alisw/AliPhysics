@@ -2,17 +2,22 @@
 //const TString type = "ESD"; 
 void CompareFlowResults(TString type="ESD")
 {
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ROOTSYS/include");
-  
   //load needed libraries:
+  gSystem->AddIncludePath("-I$ROOTSYS/include");
   gSystem->Load("libTree.so");
+
+  // for AliRoot
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libPWG2flow.so");
   cerr<<"libPWG2flow.so loaded ..."<<endl;
-  cout<<endl;
   
-  
+  // for root load histrogram classes
+  // output histosgrams
+  //  gROOT->LoadMacro("code/AliFlowCommonHist.cxx+");
+  //  gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
+  //  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
+  //  gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");  
   
   
   //==================================================================================
