@@ -87,6 +87,16 @@ void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString* outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString outputFileName)
+{
+ //store the final results in output .root file
+ TFile *output = new TFile(outputFileName.Data(),"RECREATE");
+ output->WriteObject(fHistList, "cobjMCEP","SingleKey");
+ delete output;
+}
+
+//-----------------------------------------------------------------------
 void AliFlowAnalysisWithMCEventPlane::Init() {
 
   //Define all histograms

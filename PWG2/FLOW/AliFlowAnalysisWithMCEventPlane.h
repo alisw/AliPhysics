@@ -40,6 +40,7 @@ class AliFlowAnalysisWithMCEventPlane {
    virtual  ~AliFlowAnalysisWithMCEventPlane();  //destructor
  
    void      WriteHistograms(TString* outputFileName);
+   void      WriteHistograms(TString outputFileName);
    void      Init();                             //defines variables and histograms
    void      Make(AliFlowEventSimple* anEvent, Double_t aRP);   //calculates variables and fills histograms
    void      Finish();                           //saves histograms

@@ -75,6 +75,17 @@ void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString* outputFileName)
 }
 
 //-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString outputFileName)
+{
+ //store the final results in output .root file
+
+  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
+  output->WriteObject(fHistList, "cobjSP","SingleKey");
+  delete output;
+}
+
+//-----------------------------------------------------------------------
 void AliFlowAnalysisWithScalarProduct::Init() {
 
   //Define all histograms
