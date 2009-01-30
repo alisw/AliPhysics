@@ -280,7 +280,7 @@ protected:
     fStoreTrackRefs = o.fStoreTrackRefs;
     return *this; 
   }
-  ClassDef(AliFMDBaseDigitizer,2) // Base class for FMD digitizers
+  ClassDef(AliFMDBaseDigitizer,3) // Base class for FMD digitizers
 };
 
 
