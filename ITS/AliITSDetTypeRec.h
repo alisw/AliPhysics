@@ -80,17 +80,10 @@ class AliITSDetTypeRec : public TObject {
     const Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
     
     TObjArray* GetDigits() const {return fDigits;} 
-    Int_t *Ndtype() {return fNdtype;}
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
-    virtual void SelectVertexer(TString sel=" "){fSelectedVertexer = sel;}
-    //
-    virtual void ResetClusters(); 
-    virtual void ResetClusters(Int_t branch);
+
     TBranch* MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
 
-    TObjArray    *Ctype()  {return fCtype;}
-    Int_t        *Nctype() {return fNctype;}
-    TClonesArray *ClustersAddress(Int_t id) const {return ((TClonesArray*)(*fCtype)[id]);}
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
 
@@ -136,29 +129,23 @@ class AliITSDetTypeRec : public TObject {
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
     AliITSFastOrCalibrationSPD *fSPDFastOr; // Map of FastOr configured chips
-    TObjArray    *fPreProcess;    //! [] e.g. Find Calibration values
-    TObjArray    *fPostProcess;   //! [] e.g. find primary vertex
     TObjArray    *fDigits;        //! [NMod][NDigits]
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
-    Int_t        *fNdtype;        //! detector types  
     const Char_t*       fDigClassName[3];     //! String with digit class name.
 
-    TObjArray    *fCtype;      //! List of clusters
-    Int_t        *fNctype;     //[fNDetTypes] Num. of clust. per type of det.
 
     TClonesArray *fRecPoints;  //! List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
 
-    TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     Bool_t fFirstcall;         //! flag
     Bool_t fLoadOnlySPDCalib;  //! flag for loading calibrations only fr SPD
 
     TBits fFastOrFiredMap;     // Map of FastOr fired chips
 
-    ClassDef(AliITSDetTypeRec,16) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,17) // ITS Reconstruction structure
 };
 
 #endif

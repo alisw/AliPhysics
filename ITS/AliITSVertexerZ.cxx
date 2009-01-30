@@ -188,10 +188,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
 void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
-  AliITSDetTypeRec detTypeRec;
 
   TTree *tR = itsClusterTree;
-  detTypeRec.SetTreeAddressR(tR);
+  fDetTypeRec->SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
   Float_t lc1[3]; for(Int_t ii=0; ii<3; ii++) lc1[ii]=0.;
@@ -200,7 +199,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  itsRec = detTypeRec.RecPoints();
+  itsRec = fDetTypeRec->RecPoints();
   TBranch *branch;
   branch = tR->GetBranch("ITSRecPoints");
 
@@ -211,13 +210,13 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     branch->GetEvent(module);
     nrpL1+= itsRec->GetEntries();
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
   }
   //By default fFirstL2=80 and fLastL2=239
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
     nrpL2+= itsRec->GetEntries();
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     ResetHistograms();
@@ -257,7 +256,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
       new(prpl1[j])AliITSRecPoint(*recp);
     }
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
     for(Int_t j1=0;j1<nrecp1;j1++){
       AliITSRecPoint *recp = (AliITSRecPoint*)prpl1.At(j1);
       /*
@@ -313,7 +312,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 	      fZCombc->Fill(zr0);
 	    }
 	  }
-	  detTypeRec.ResetRecPoints();
+	  fDetTypeRec->ResetRecPoints();
 	}
       }
     }

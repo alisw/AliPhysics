@@ -148,10 +148,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   // All the possible combinations between recpoints on layer 1and 2 are
   // considered. Straight lines (=tracklets)are formed. 
   // The tracklets are processed in Prepare3DVertex
-  AliITSDetTypeRec detTypeRec;
 
   TTree *tR = itsClusterTree;
-  detTypeRec.SetTreeAddressR(tR);
+  fDetTypeRec->SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
   //  Float_t lc1[3]={0.,0.,0.};
@@ -160,7 +159,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   //  Float_t lc2[3]={0.,0.,0.};
   Float_t gc2[3]={0.,0.,0.};
 
-  itsRec = detTypeRec.RecPoints();
+  itsRec = fDetTypeRec->RecPoints();
   TBranch *branch;
   branch = tR->GetBranch("ITSRecPoints");
 
@@ -188,7 +187,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   for(Int_t module= firstL1; module<=lastL1;module++){  // count number of recopints on layer 1
     branch->GetEvent(module);
     nrpL1+= itsRec->GetEntries();
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
   }
   //By default firstL2=80 and lastL2=239
   Int_t firstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
@@ -196,7 +195,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   for(Int_t module= firstL2; module<=lastL2;module++){  // count number of recopints on layer 2
     branch->GetEvent(module);
     nrpL2+= itsRec->GetEntries();
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     return -1;
@@ -222,7 +221,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
       new(prpl1[j])AliITSRecPoint(*recp);
     }
-    detTypeRec.ResetRecPoints();
+    fDetTypeRec->ResetRecPoints();
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1.At(j);
       // Local coordinates of this recpoint
@@ -320,7 +319,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    new(fLines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE);
 
 	  }
-	  detTypeRec.ResetRecPoints();
+	  fDetTypeRec->ResetRecPoints();
 	}
       }
     }
@@ -494,8 +493,7 @@ void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklet
 	  peak[1] = yval;
 	  peak[0] = xval;
 	  nOfTimes = 1;
-	}
-	if(bc==nOfTracklets){
+	}else if(bc==nOfTracklets){
 	  nOfTimes++;
 	}
       }

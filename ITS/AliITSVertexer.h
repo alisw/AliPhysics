@@ -36,8 +36,8 @@ class AliITSVertexer : public AliVertexer {
       else return 0;
     }
 
-    const AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
-    virtual void SetDetTypeRec(const AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
+    AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
+    virtual void SetDetTypeRec(AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
     enum{kNSPDMod=240};
 
     // Methods containing run-loaders, should be moved to some other class
@@ -51,6 +51,7 @@ class AliITSVertexer : public AliVertexer {
     Int_t fLadOnLay2;   // (2*fLadOnLay2+1)=number of layer2 ladders 
                       // associated to a layer1 ladder
     Bool_t  fUseModule[kNSPDMod]; // flag for enabling/disabling SPD modules
+    AliITSDetTypeRec *fDetTypeRec;  //! pointer to DetTypeRec
  
  private:
     // copy constructor (NO copy allowed: the constructor is protected
@@ -61,9 +62,8 @@ class AliITSVertexer : public AliVertexer {
 
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices
-    const AliITSDetTypeRec *fDetTypeRec;  //! pointer to DetTypeRec
 
-  ClassDef(AliITSVertexer,7);
+  ClassDef(AliITSVertexer,8);
 };
 
 #endif

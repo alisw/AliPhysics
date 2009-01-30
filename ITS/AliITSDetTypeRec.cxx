@@ -72,19 +72,13 @@ fCalibration(0),
 fSSDCalibration(0),
 fSPDDead(0),
 fSPDFastOr(0),
-fPreProcess(0),
-fPostProcess(0),
 fDigits(0),
 fDDLMapSDD(0),
 fRespSDD(0),
 fAveGainSDD(0),
 fIsHLTmodeC(0),
-fNdtype(0),
-fCtype(0),
-fNctype(0),
 fRecPoints(0),
 fNRecPoints(0),
-fSelectedVertexer(),
 fFirstcall(kTRUE),
 fLoadOnlySPDCalib(0),
 fFastOrFiredMap(1200){
@@ -102,9 +96,6 @@ fFastOrFiredMap(1200){
     fDigClassName[i]=0;
   }
   fSSDCalibration=new AliITSCalibrationSSD();
-  fNdtype = new Int_t[fgkNdettypes];
-  fCtype = new TObjArray(fgkNdettypes);
-  fNctype = new Int_t[fgkNdettypes];
   fNMod = new Int_t [fgkNdettypes];
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
@@ -112,12 +103,7 @@ fFastOrFiredMap(1200){
   fRecPoints = new TClonesArray("AliITSRecPoint",3000);
   fNRecPoints = 0;
   
-  for(Int_t i=0;i<fgkNdettypes;i++){
-    fNdtype[i]=0;
-    fNctype[i]=0;
-  }
   
-  SelectVertexer(" "); 
 }
 
 //______________________________________________________________________
@@ -130,19 +116,13 @@ fCalibration(rec.fCalibration),
 fSSDCalibration(rec.fSSDCalibration),
 fSPDDead(rec.fSPDDead),
 fSPDFastOr(rec.fSPDFastOr),
-fPreProcess(rec.fPreProcess),
-fPostProcess(rec.fPostProcess),
 fDigits(rec.fDigits),
 fDDLMapSDD(rec.fDDLMapSDD),
 fRespSDD(rec.fRespSDD),
 fAveGainSDD(rec.fAveGainSDD),
 fIsHLTmodeC(rec.fIsHLTmodeC),
-fNdtype(rec.fNdtype),
-fCtype(rec.fCtype),
-fNctype(rec.fNctype),
 fRecPoints(rec.fRecPoints),
 fNRecPoints(rec.fNRecPoints),
-fSelectedVertexer(rec.fSelectedVertexer),
 fFirstcall(rec.fFirstcall),
 fLoadOnlySPDCalib(rec.fLoadOnlySPDCalib),
 fFastOrFiredMap(rec.fFastOrFiredMap){
@@ -190,8 +170,6 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       fSPDDead = 0;
     }
   }  
-  if(fPreProcess) delete fPreProcess;
-  if(fPostProcess) delete fPostProcess;
   if(fDigits){
     fDigits->Delete();
     delete fDigits;
@@ -202,13 +180,6 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
     delete fRecPoints;
     fRecPoints=0;
   }
-  if(fCtype) {
-    fCtype->Delete();
-    delete fCtype;
-    fCtype = 0;
-  }
-  delete [] fNctype;
-  delete [] fNdtype;
   delete [] fNMod;
   
   if (fITSgeom) delete fITSgeom;
@@ -749,26 +720,7 @@ void AliITSDetTypeRec::ResetDigits(Int_t branch){
   // Reset number of digits and the digits array for this branch.
   
   if(fDigits->At(branch)) ((TClonesArray*)fDigits->At(branch))->Clear();
-  if(fNdtype) fNdtype[branch]=0;
 
-}
-
-//__________________________________________________________________
-void AliITSDetTypeRec::ResetClusters(){
-
-  //Resets number of clusters and the cluster array 
-  for(Int_t i=0;i<fgkNdettypes;i++){
-    ResetClusters(i);
-  }
-}
-
-//__________________________________________________________________
-void AliITSDetTypeRec::ResetClusters(Int_t i){
-
-  //Resets number of clusters and the cluster array for this branch
-
-  if (fCtype->At(i))    ((TClonesArray*)fCtype->At(i))->Clear();
-  if (fNctype)  fNctype[i]=0;
 }
 //__________________________________________________________________
 void AliITSDetTypeRec::MakeBranchR(TTree *treeR, Option_t *opt){
@@ -864,7 +816,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     AliInfo("V2 cluster finder has been selected \n");
   }else{
     SetDefaultClusterFindersV2();
-    AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be udes \n");    
+    AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be used \n");    
   }
 
   AliITSClusterFinder *rec     = 0;
@@ -892,7 +844,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
       } // end if
       treeR->Fill();
       ResetRecPoints();
-      ResetClusters();
   } 
 }
 //______________________________________________________________________

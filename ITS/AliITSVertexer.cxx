@@ -22,9 +22,9 @@ ClassImp(AliITSVertexer)
 AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
 fLadOnLay2(0),
+fDetTypeRec(NULL),
 fFirstEvent(0),
-fLastEvent(-1),
-fDetTypeRec(NULL)
+fLastEvent(-1)
 {
   // Default Constructor
   SetLaddersOnLayer2();
