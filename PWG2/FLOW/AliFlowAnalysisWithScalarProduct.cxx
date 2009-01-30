@@ -158,7 +158,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
       }//loop over tracks
 	 
     fEventNumber++;
-    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
   }
 }
 

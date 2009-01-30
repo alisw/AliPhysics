@@ -270,7 +270,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
       }//loop over tracks
 	  
     fEventNumber++;
-    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
   }
 }
 
