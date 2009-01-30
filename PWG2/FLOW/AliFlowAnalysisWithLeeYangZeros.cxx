@@ -272,7 +272,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     cout<<"##### FlowLeeYangZero: Stack pointer null"<<endl;
     return kFALSE;
   }
-  cout<<"^^^^read event "<<fEventNumber<<endl;
+  //  cout<<"^^^^read event "<<fEventNumber<<endl;
   fEventNumber++;
   
      

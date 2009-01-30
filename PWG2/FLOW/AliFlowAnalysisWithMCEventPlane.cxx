@@ -219,7 +219,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
       }//loop over tracks
 	  
     fEventNumber++;
-    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
   }
 }
 

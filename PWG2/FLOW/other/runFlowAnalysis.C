@@ -42,9 +42,7 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   timer.Start();
   
   if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-  
   if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
 
 
@@ -96,7 +94,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   gSystem->Load("libTree.so");
 
   cout << "finished loading macros!" << endl;  
-  //  gSystem->Load("libANALYSIS.so");
   //  gSystem->Load("libPWG2flow.so");
 
   //------------------------------------------------------------------------
@@ -133,99 +130,88 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   AliFlowAnalysisWithMCEventPlane  *mcep  = NULL;
    
   //flow methods:
+
   //MCEP = monte carlo event plane
-  AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
-  if (MCEP)
-    {
-      mcep->Init();
-    }
+  if (MCEP) {
+    AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
+    mcep->Init();
+  }
 
   //QC = Q-cumulants  
-  if(QC)
-    { 
-      AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
-      qc->CreateOutputObjects();
-    }
+  if(QC) { 
+    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
+    qc->CreateOutputObjects();
+  }
   
   //GFC = Generating Function Cumulants 
-  if(GFC)
-    {
-      AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
-      gfc->CreateOutputObjects();
-    }
+  if(GFC) {
+    AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
+    gfc->CreateOutputObjects();
+  }
   
   //FQD = Fitting q-distribution 
-  AliFittingQDistribution* fqd = new AliFittingQDistribution();
-  if(FQD)
-    {
-      fqd->CreateOutputObjects();
-    }
-  
+  if(FQD) {
+    AliFittingQDistribution* fqd = new AliFittingQDistribution();
+    fqd->CreateOutputObjects();
+  }
   //LYZ1 = Lee-Yang Zeroes first run
-  AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
-  if(LYZ1)
-    {
-      lyz1->SetFirstRun(kTRUE);
-      lyz1->SetUseSum(kTRUE);
-      lyz1->Init();
-    }
+  if(LYZ1) {
+    AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
+    lyz1->SetFirstRun(kTRUE);
+    lyz1->SetUseSum(kTRUE);
+    lyz1->Init();
+  }
 
   //LYZ2 = Lee-Yang Zeroes second run
-  AliFlowAnalysisWithLeeYangZeros* lyz2 = new AliFlowAnalysisWithLeeYangZeros();
-  if(LYZ2)
-    {
-      // read the input file from the first run 
-      TString inputFileNameLYZ2 = "outputLYZ1analysis.root" ;
-      TFile* inputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
-      if(!inputFileLYZ2 || inputFileLYZ2->IsZombie()) { 
-	cerr << " ERROR: NO First Run file... " << endl ; }
-      else { 
-	TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
-	if (!inputListLYZ2) {cout<<"list is NULL pointer!"<<endl;
-	}
-	else {
-	  cout<<"LYZ2 input file/list read..."<<endl;
-	  lyz2->SetFirstRunList(inputListLYZ2);
-	  lyz2->SetFirstRun(kFALSE);
-	  lyz2->SetUseSum(kTRUE);
-	  lyz2->Init();
-	}
+ 
+  if(LYZ2) {
+    AliFlowAnalysisWithLeeYangZeros* lyz2 = new AliFlowAnalysisWithLeeYangZeros();
+    // read the input file from the first run 
+    TString inputFileNameLYZ2 = "outputLYZ1analysis.root" ;
+    TFile* inputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
+    if(!inputFileLYZ2 || inputFileLYZ2->IsZombie()) { 
+      cerr << " ERROR: NO First Run file... " << endl ; 
+    }
+    else { 
+      TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
+      if (!inputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
+      else {
+	cout<<"LYZ2 input file/list read..."<<endl;
+	lyz2->SetFirstRunList(inputListLYZ2);
+	lyz2->SetFirstRun(kFALSE);
+	lyz2->SetUseSum(kTRUE);
+	lyz2->Init();
       }
     }
-
+  }
+  
  //LYZEP = Lee-Yang Zeroes event plane
-  AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
-  AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
-  if(LYZEP)
-    {
-      // read the input file from the second lyz run 
-      TString inputFileNameLYZEP = "outputLYZ2analysis.root" ;
-      TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
-      if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
-	cerr << " ERROR: NO Second Run file... " << endl ; }
-      else { 
-	TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
-	if (!inputListLYZEP) {cout<<"list is NULL pointer!"<<endl;
-	}
-	else {
-	  cout<<"LYZEP input file/list read..."<<endl;
-	  ep   ->SetSecondRunList(inputListLYZEP);
-	  lyzep->SetSecondRunList(inputListLYZEP);
-	  ep   ->Init();
-	  lyzep->Init();
-	}
+  if(LYZEP) {
+    AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
+    AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
+    // read the input file from the second lyz run 
+    TString inputFileNameLYZEP = "outputLYZ2analysis.root" ;
+    TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+    if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
+      cerr << " ERROR: NO Second Run file... " << endl ; }
+    else { 
+      TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
+      if (!inputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
+      else {
+	cout<<"LYZEP input file/list read..."<<endl;
+	ep   ->SetSecondRunList(inputListLYZEP);
+	lyzep->SetSecondRunList(inputListLYZEP);
+	ep   ->Init();
+	lyzep->Init();
       }
     }
-   
+  }
+  
   //SP = Scalar Product 
-  AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
-  if(SP)
-    {
-      sp->Init();
-    }
-
-
-
+  if(SP) {
+    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+    sp->Init();
+  }
   //------------------------------------------------------------------------
   
   //standard code
@@ -273,15 +259,14 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	       << endl; 
 	  continue; 
 	}
-      cout << endl ; cout << "Directory (" << iDir << "): " << presentDirName 
-	   << " ... " << endl;
+      //      cout << endl ; cout << "Directory (" << iDir << "): " << presentDirName << " ... " << endl;
       
       //loop (simulations in the present dir) 
       TSystemDirectory* evtsDir = new TSystemDirectory(".", 
 						       presentDirName.Data());
       TList* fileList 	    = evtsDir->GetListOfFiles();
       Int_t nFiles		    = fileList->GetEntries();
-      cout<<" Int_t nFiles = "<<nFiles<<endl;
+      //cout<<" Int_t nFiles = "<<nFiles<<endl;
       gSystem->cd(execDir);      
       for(Int_t iFiles=0; iFiles<nFiles; ++iFiles)
 	{
@@ -292,13 +277,12 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	  if(!(presentFileName.Contains("Kinematics") && 
 	       presentFileName.Contains("root"))) { continue ; }
 	  
-	  cout << " found: " << presentFileName.Data() << endl; 
+	  //cout << " found: " << presentFileName.Data() << endl; 
 	  
 	  TFile* kineFile = new TFile(presentFileName.Data(), "READ"); 
 	  // kineFile->ls();
 	  Int_t nEvts = kineFile->GetNkeys() ; 
-	  cout << "  . found: " << nEvts << " KineTree(s) in " << 
-	    presentFileName.Data() << endl;
+	  //cout << "  . found: " << nEvts << " KineTree(s) in " << presentFileName.Data() << endl;
 	  TList* kineEventsList = (TList*)kineFile->GetListOfKeys(); 
 	  TTree* kTree;
 	  TIter next(kineEventsList); 
@@ -311,16 +295,13 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	      if(!tDir) break;
 	      
 	      TString evtDir(tDir->GetName()); 
-	      cout << "  . . found: " << tDir->GetName() << endl;
+	      //cout << "  . . found: " << tDir->GetName() << endl;
 	      
 	      kTree = (TTree *)tDir->Get("TreeK");
 	      if(!kTree) break;
 	      
 	      Int_t nPart = kTree->GetEntries();
-	      cout << "  . . . kTree " << fCount << " has " << nPart << 
-		" particles " << endl; 
-	      
-	      
+	      //cout << "  . . . kTree " << fCount << " has " << nPart << " particles " << endl; 
 	      
 	      //-----------------------------------------------------------
 	      //fill and save the flow event
@@ -328,60 +309,18 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	      AliFlowEventSimple* fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff);
 	      
 	      //pass the flow event to flow methods for analysis 
-	      //MCEP
-	      if (MCEP)
-		{
-		  //mcep->Make(fEvent,fEP);  //fix fEP
-		  cout<<"  --> MCEP analysis..."<<endl;
-		}
- 	      //QC
-	      if(QC)
-		{  
-		  qc->Make(fEvent);
-		  cout<<"  --> QC analysis..."<<endl;
-		}
-	      //GFC
-	      if(GFC)
-		{
-		  gfc->Make(fEvent);
-		  cout<<"  --> GFC analysis..."<<endl;
-		}
-	      //FQD 
-	      if(FQD)
-		{
-		  fqd->Make(fEvent);
-		  cout<<"  --> FQD analysis..."<<endl;
-		}
-	      //LYZ1
-	      if(LYZ1)
-		{
-		  lyz1->Make(fEvent);
-		  cout<<"  --> LYZ1 analysis..."<<endl;
-		}
-	      //LYZ2
-	      if(LYZ2)
-		{
-		  lyz2->Make(fEvent);
-		  cout<<"  --> LYZ2 analysis..."<<endl;
-		}
-	      //LYZEP
-	      if(LYZEP)
-		{
-		  lyzep->Make(fEvent,ep);
-		  cout<<"  --> LYZEP analysis..."<<endl;
-		}
-	      //SP
-	      if(SP)
-		{
-		  sp->Make(fEvent);
-		  cout<<"  --> SP analysis..."<<endl;
-		}
-
-
-
+	      if (MCEP) //mcep->Make(fEvent,fEP);  //fix fEP
+	      if(QC) qc->Make(fEvent);
+	      if(GFC) gfc->Make(fEvent);
+	      if(FQD) fqd->Make(fEvent);
+	      if(LYZ1) lyz1->Make(fEvent);
+	      if(LYZ2) lyz2->Make(fEvent);
+	      if(LYZEP) lyzep->Make(fEvent,ep);
+	      if(SP) sp->Make(fEvent);
 	      //-----------------------------------------------------------
 	      
 	      fCount++;
+	      cout << "# " << fCount << " events processed" << endl;
 	      delete kTree;
 	      delete fEvent;
 	    }
@@ -392,73 +331,14 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 
   //--------------------------------------------------------------
   //calculating and storing the final results of flow analysis
-  //MCEP
-  if (MCEP)
-    {
-      mcep->Finish();
-      TString *outputFileNameMCEP = new TString("outputMCEPanalysis.root");
-      //mcep->WriteHistograms(outputFileNameMCEP); //add this method to MCEP classes
-      delete outputFileNameMCEP;
-    }
-  //QC
-  if(QC)
-    {
-      qc->Finish();
-      TString *outputFileNameQC = new TString("outputQCanalysis.root");
-      qc->WriteHistograms(outputFileNameQC);
-      delete outputFileNameQC;
-    }
-  //GFC
-  if(GFC)
-    {
-      gfc->Finish();
-      TString *outputFileNameGFC = new TString("outputGFCanalysis.root");
-      gfc->WriteHistograms(outputFileNameGFC);
-      delete outputFileNameGFC;
-    }
-  //FQD
-  if(FQD)
-    {
-      fqd->Finish();
-      TString *outputFileNameFQD = new TString("outputFQDanalysis.root");
-      fqd->WriteHistograms(outputFileNameFQD);
-      delete outputFileNameFQD;
-    }
-  //LYZ1
-  if(LYZ1)
-    {
-      lyz1->Finish();
-      TString *outputFileNameLYZ1 = new TString("outputLYZ1analysis.root");
-      lyz1->WriteHistograms(outputFileNameLYZ1);
-      delete outputFileNameLYZ1;
-    }
-  //LYZ2
-  if(LYZ2)
-    {
-      lyz2->Finish();
-      TString *outputFileNameLYZ2 = new TString("outputLYZ2analysis.root");
-      lyz2->WriteHistograms(outputFileNameLYZ2);
-      delete outputFileNameLYZ2;
-    }
-  //LYZEP
-  if(LYZEP)
-    {
-      lyzep->Finish();
-      TString *outputFileNameLYZEP = new TString("outputLYZEPanalysis.root");
-      lyzep->WriteHistograms(outputFileNameLYZEP);
-      delete outputFileNameLYZEP;
-    }
-  //SP
-  if(SP)
-    {
-      sp->Finish();
-      TString *outputFileNameSP = new TString("outputSPanalysis.root");
-      sp->WriteHistograms(outputFileNameSP);
-      delete outputFileNameSP;
-    }
-
-
-
+  if (MCEP) {mcep->Finish(); mcep->WriteHistograms("outputMCEPanalysis.root");}
+  if(QC) {qc->Finish(); qc->WriteHistograms("outputQCanalysis.root");}
+  if(GFC) {gfc->Finish(); gfc->WriteHistograms("outputGFCanalysis.root");}
+  if(FQD) {fqd->Finish(); fqd->WriteHistograms("outputFQDanalysis.root");}
+  if(LYZ1) {lyz1->Finish(); lyz1->WriteHistograms("outputLYZ1analysis.root");}
+  if(LYZ2) {lyz2->Finish(); lyz2->WriteHistograms("outputLYZ2analysis.root");}
+  if(LYZEP) {lyzep->Finish(); lyzep->WriteHistograms("outputLYZEPanalysis.root");}
+  if(SP) {sp->Finish(); sp->WriteHistograms("outputSPanalysis.root");}
   //--------------------------------------------------------------
   
   cout << endl;
