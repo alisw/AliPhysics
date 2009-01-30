@@ -94,13 +94,13 @@ fEventSpecies(NULL)
   if (fQALength == 0 ) 
     fQA = NULL ; 
   else {
-    fQA = new ULong_t(fQALength) ; 
+    fQA = new ULong_t[fQALength] ; 
     memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
   }
   if (fESLength == 0 ) 
     fEventSpecies = NULL ; 
   else {
-    fEventSpecies = new Bool_t(fESLength) ; 
+    fEventSpecies = new Bool_t[fESLength] ; 
     memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
   }
 }
@@ -132,7 +132,7 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
     if (fQALength == 0 ) 
       fQA = NULL ; 
     else {
-      fQA = new ULong_t(fQALength) ; 
+      fQA = new ULong_t[fQALength] ; 
       memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
     }
     fESLength                 = tag.fESLength ; 
@@ -141,6 +141,7 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
     if (fESLength == 0 ) 
       fEventSpecies = NULL ; 
     else {
+      fEventSpecies = new Bool_t[fESLength] ; 
       memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
     }
   }
@@ -171,21 +172,25 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
 //___________________________________________________________________________
 void AliRunTag::SetQA(ULong_t * qa, Int_t qalength) {
   //Setter for the qa bits 
-  fQALength = qalength ; 
-  if (fQA) 
-    delete [] fQA ; 
-  fQA = new ULong_t(qalength) ; 
-  memcpy(fQA, qa, qalength*sizeof(ULong_t)) ;
+  if (qa && qalength > 0) {
+    fQALength = qalength ; 
+    if (fQA) 
+      delete [] fQA ; 
+    fQA = new ULong_t[qalength] ; 
+    memcpy(fQA, qa, qalength*sizeof(ULong_t)) ;
+  }
 }
 
 //___________________________________________________________________________
 void AliRunTag::SetEventSpecies(Bool_t * es, Int_t eslength) {
   //setter for the eventspecices 
-  fESLength = eslength ; 
-  if (fEventSpecies) 
-    delete [] fEventSpecies ; 
-  fEventSpecies = new Bool_t(eslength) ;
-  memcpy(fEventSpecies, es, eslength*sizeof(Bool_t)) ; 
+  if (es && eslength >0 ) {
+    fESLength = eslength ; 
+    if (fEventSpecies) 
+      delete [] fEventSpecies ; 
+    fEventSpecies = new Bool_t[eslength] ;
+    memcpy(fEventSpecies, es, eslength*sizeof(Bool_t)) ; 
+  }
 }
 
 
