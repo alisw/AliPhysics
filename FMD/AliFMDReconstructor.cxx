@@ -755,7 +755,7 @@ AliFMDReconstructor::PhysicalCoordinates(UShort_t det,
   Double_t x, y, z, r, theta;
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
   // Correct for vertex offset. 
-  z     += fCurrentVertex;
+  z     -= fCurrentVertex;
   phi   =  TMath::ATan2(y, x);
   r     =  TMath::Sqrt(y * y + x * x);
   theta =  TMath::ATan2(r, z);

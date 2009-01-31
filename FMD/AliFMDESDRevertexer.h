@@ -191,7 +191,7 @@ AliFMDESDRevertexer::PhysicalCoordinates(UShort_t  det,
   if (x == 0 && y == 0 && z == 0) return kFALSE;
   
   // Correct for vertex offset. 
-  z     += vz;
+  z     -= vz;
   phi   =  TMath::ATan2(y, x);
   r     =  TMath::Sqrt(y * y + x * x);
   theta =  TMath::ATan2(r, z);
