@@ -30,7 +30,7 @@ void CompareFlowResults(TString type="ESD")
   //POI = particle of interest
   Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
   Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE;  //differential flow (Eta,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;   //differential flow (Eta,POI)
   //==================================================================================
   
   
@@ -1080,6 +1080,41 @@ void CompareFlowResults(TString type="ESD")
  styleHistEta->SetTitle("Differential Flow");
  styleHistEta->SetXTitle("#eta");
  styleHistEta->SetYTitle("v_{n}");
+ 
+ //cosmetics: marker style and color for each method:
+ //MC:
+ Int_t markerStyleMC = 20;//full circle
+ Int_t markerColorMC = kRed;
+ //GFC{2}
+ Int_t markerStyleGFC2 = 21;//full square
+ Int_t markerColorGFC2 = kAzure-7;
+ //GFC{4}
+ Int_t markerStyleGFC4 = 20;//full circle
+ Int_t markerColorGFC4 = kAzure+3;
+ //GFC{6}
+ Int_t markerStyleGFC6 = 25;//open circle
+ Int_t markerColorGFC6 = kAzure-7;
+ //GFC{8}
+ Int_t markerStyleGFC8 = 24;//open square
+ Int_t markerColorGFC8 = kAzure+3;
+ //QC{2}
+ Int_t markerStyleQC2 = 21;//full square
+ Int_t markerColorQC2 = kOrange-7;
+ //QC{4}
+ Int_t markerStyleQC4 = 20;//full circle
+ Int_t markerColorQC4 = kOrange+3;
+ //QC{6}
+ Int_t markerStyleQC6 = 25;//open circle
+ Int_t markerColorQC6 = kOrange-7;
+ //QC{8}
+ Int_t markerStyleQC8 = 24;//open square
+ Int_t markerColorQC8 = kOrange+3;
+ //LYZ2
+ Int_t markerStyleLYZ2 = 22;//full triangle
+ Int_t markerColorLYZ2 = kYellow+3;
+ //LYZEP
+ Int_t markerStyleLYZEP = 26;//open triangle
+ Int_t markerColorLYZEP = kYellow+3; 
  //----------------------------------------------------------------------------------
  
  
@@ -1091,25 +1126,25 @@ void CompareFlowResults(TString type="ESD")
  TGraph* pMeshDiffFlow = NULL;
  if(mcepCommonHistRes)
  {
-  Int_t nPtsDF = (mcepCommonHistRes->GetHistDiffFlow())->GetNbinsX();
+  Int_t nPtsDiffFlow = (mcepCommonHistRes->GetHistDiffFlow())->GetNbinsX();
   Double_t binWidth = (mcepCommonHistRes->GetHistDiffFlow())->GetBinWidth(1);//assuming that all bins have the same width
        
-  pMeshDiffFlow = new TGraph(2*nPtsDF+1);
+  pMeshDiffFlow = new TGraph(2*nPtsDiffFlow+1);
   
   Double_t valueMC=0., errorMC=0.;
-  for(Int_t i=1;i<nPtsDF+1;i++)
+  for(Int_t i=1;i<nPtsDiffFlow+1;i++)
   {
    valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(i);
    errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(i);       
    pMeshDiffFlow->SetPoint(i,(i-0.5)*binWidth,valueMC+errorMC);
   }    
-  for(Int_t i=nPtsDF+1;i<2*nPtsDF+1;i++)
+  for(Int_t i=nPtsDiffFlow+1;i<2*nPtsDiffFlow+1;i++)
   {
-   valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(2*nPtsDF+1-i);
-   errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(2*nPtsDF+1-i);       
-   pMeshDiffFlow->SetPoint(i,(2*nPtsDF-i+0.5)*binWidth,valueMC-errorMC); 
+   valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(2*nPtsDiffFlow+1-i);
+   errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(2*nPtsDiffFlow+1-i);       
+   pMeshDiffFlow->SetPoint(i,(2*nPtsDiffFlow-i+0.5)*binWidth,valueMC-errorMC); 
   }
-  pMeshDiffFlow->SetPoint(2*nPtsDF+1,0.5*binWidth,valueMC+errorMC); 
+  pMeshDiffFlow->SetPoint(2*nPtsDiffFlow+1,0.5*binWidth,valueMC+errorMC); 
   pMeshDiffFlow->SetFillStyle(meshStyle);
   pMeshDiffFlow->SetFillColor(meshColor);
  } 
@@ -1122,56 +1157,114 @@ void CompareFlowResults(TString type="ESD")
  TGraph* pMeshDiffFlowPtRP = NULL;
  if(mcepCommonHistRes)
  {
-  Int_t nPtsDFPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetNbinsX();
+  Int_t nBinsDiffFlowPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetNbinsX();
   Double_t binWidthPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinWidth(1);//assuming that all bins have the same width
-       
-  pMeshDiffFlowPtRP = new TGraph(2*nPtsDFPtRP+1);
-  
-  Double_t valueMCPtRP=0., errorMCPtRP=0.;
-  for(Int_t i=1;i<nPtsDFPtRP+1;i++)
+
+  //counting the non-empty bins: 
+  Int_t nNonEmptyBinsDiffFlowPtRP=0;
+  for(Int_t i=1;i<nBinsDiffFlowPtRP+1;i++)
   {
-   valueMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(i);
-   errorMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(i);       
-   pMeshDiffFlowPtRP->SetPoint(i,(i-0.5)*binWidthPtRP,valueMCPtRP+errorMCPtRP);
+   if(!(mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(i)==0.0))
+   {
+    nNonEmptyBinsDiffFlowPtRP++;
+   }
   }    
-  for(Int_t i=nPtsDFPtRP+1;i<2*nPtsDFPtRP+1;i++)
+       
+  pMeshDiffFlowPtRP = new TGraph(2*nNonEmptyBinsDiffFlowPtRP+1);
+  
+  Double_t valueMCPtRP=0.,errorMCPtRP=0.;
+  Int_t countDiffFlowPtRP=1;
+  Double_t xFirstDiffFlowPtRP=0.,yUpFirstDiffFlowPtRP=0.;//needed to close up the mesh
+  for(Int_t i=1;i<nBinsDiffFlowPtRP+1;i++)
   {
-   valueMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(2*nPtsDFPtRP+1-i);
-   errorMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(2*nPtsDFPtRP+1-i);       
-   pMeshDiffFlowPtRP->SetPoint(i,(2*nPtsDFPtRP-i+0.5)*binWidthPtRP,valueMCPtRP-errorMCPtRP); 
+   //setting up the upper limit of the mesh:
+   valueMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(i);
+   errorMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(i);   
+   if(!(errorMCPtRP==0.0))
+   {    
+    pMeshDiffFlowPtRP->SetPoint(countDiffFlowPtRP++,(i-0.5)*binWidthPtRP+dPtMin,valueMCPtRP+errorMCPtRP);
+    if(xFirstDiffFlowPtRP==0.)
+    {
+     xFirstDiffFlowPtRP=(i-0.5)*binWidthPtRP+dPtMin;
+     yUpFirstDiffFlowPtRP=valueMCPtRP+errorMCPtRP;
+    }
+   } 
+  }   
+  for(Int_t i=nBinsDiffFlowPtRP+1;i<2*nBinsDiffFlowPtRP+1;i++)
+  {
+   //setting up the lower limit of the mesh:
+   valueMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(2*nBinsDiffFlowPtRP+1-i);
+   errorMCPtRP = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(2*nBinsDiffFlowPtRP+1-i); 
+   if(!(errorMCPtRP==0.0))
+   {      
+    pMeshDiffFlowPtRP->SetPoint(countDiffFlowPtRP++,(2*nBinsDiffFlowPtRP-i+0.5)*binWidthPtRP+dPtMin,valueMCPtRP-errorMCPtRP);
+   }  
   }
-  pMeshDiffFlowPtRP->SetPoint(2*nPtsDFPtRP+1,0.5*binWidthPtRP,valueMCPtRP+errorMCPtRP); 
+  //closing the mesh area:
+  pMeshDiffFlowPtRP->SetPoint(2*nNonEmptyBinsDiffFlowPtRP+1,xFirstDiffFlowPtRP,yUpFirstDiffFlowPtRP);   
+  
+  //setting the mesh style and color:               
   pMeshDiffFlowPtRP->SetFillStyle(meshStyle);
   pMeshDiffFlowPtRP->SetFillColor(meshColor);
  }
- 
+
  //cosmetics: Monte Carlo error bands for differential flow (Eta)
  TGraph* pMeshDiffFlowEtaRP = NULL;
  if(mcepCommonHistRes)
  {
-  Int_t nPtsDFEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetNbinsX();
+  Int_t nBinsDiffFlowEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetNbinsX();
   Double_t binWidthEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinWidth(1);//assuming that all bins have the same width
-       
-  pMeshDiffFlowEtaRP = new TGraph(2*nPtsDFEtaRP+1);
 
-  Double_t valueMCEtaRP=0., errorMCEtaRP=0.;
-  for(Int_t i=1;i<nPtsDFEtaRP+1;i++)
+  //counting the non-empty bins: 
+  Int_t nNonEmptyBinsDiffFlowEtaRP=0;
+  for(Int_t i=1;i<nBinsDiffFlowEtaRP+1;i++)
   {
-   valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(i);
-   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(i);  
-   pMeshDiffFlowEtaRP->SetPoint(i,(i-0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP+errorMCEtaRP);
+   if(!(mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(i)==0.0))
+   {
+    nNonEmptyBinsDiffFlowEtaRP++;
+   }
   }    
-  for(Int_t i=nPtsDFEtaRP+1;i<2*nPtsDFEtaRP+1;i++)
+       
+  pMeshDiffFlowEtaRP = new TGraph(2*nNonEmptyBinsDiffFlowEtaRP+1);
+  
+  Double_t valueMCEtaRP=0.,errorMCEtaRP=0.;
+  Int_t countDiffFlowEtaRP=1;
+  Double_t xFirstDiffFlowEtaRP=0.,yUpFirstDiffFlowEtaRP=0.;//needed to close up the mesh
+  for(Int_t i=1;i<nBinsDiffFlowEtaRP+1;i++)
   {
-   valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(2*nPtsDFEtaRP+1-i);
-   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(2*nPtsDFEtaRP+1-i);       
-   pMeshDiffFlowEtaRP->SetPoint(i,(2*nPtsDFEtaRP-i+0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP-errorMCEtaRP);   
+   //setting up the upper limit of the mesh:
+   valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(i);
+   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(i);   
+   if(!(errorMCEtaRP==0.0))
+   {    
+    pMeshDiffFlowEtaRP->SetPoint(countDiffFlowEtaRP++,(i-0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP+errorMCEtaRP);
+    if(xFirstDiffFlowEtaRP==0.)
+    {
+     xFirstDiffFlowEtaRP=(i-0.5)*binWidthEtaRP+dEtaMin;
+     yUpFirstDiffFlowEtaRP=valueMCEtaRP+errorMCEtaRP;
+    }
+   } 
+  }   
+  for(Int_t i=nBinsDiffFlowEtaRP+1;i<2*nBinsDiffFlowEtaRP+1;i++)
+  {
+   //setting up the lower limit of the mesh:
+   valueMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinContent(2*nBinsDiffFlowEtaRP+1-i);
+   errorMCEtaRP = (mcepCommonHistRes->GetHistDiffFlowEtaRP())->GetBinError(2*nBinsDiffFlowEtaRP+1-i); 
+   if(!(errorMCEtaRP==0.0))
+   {      
+    pMeshDiffFlowEtaRP->SetPoint(countDiffFlowEtaRP++,(2*nBinsDiffFlowEtaRP-i+0.5)*binWidthEtaRP+dEtaMin,valueMCEtaRP-errorMCEtaRP);
+   }  
   }
-  pMeshDiffFlowEtaRP->SetPoint(2*nPtsDFEtaRP+1,0.5*binWidthEtaRP+dEtaMin,valueMCEtaRP+errorMCEtaRP); 
+  //closing the mesh area:
+  pMeshDiffFlowEtaRP->SetPoint(2*nNonEmptyBinsDiffFlowEtaRP+1,xFirstDiffFlowEtaRP,yUpFirstDiffFlowEtaRP);   
+  
+  //setting the mesh style and color:               
   pMeshDiffFlowEtaRP->SetFillStyle(meshStyle);
   pMeshDiffFlowEtaRP->SetFillColor(meshColor);
  } 
  //----------------------------------------------------------------------------------
+
+
 
 
  //----------------------------------------------------------------------------------
@@ -1180,55 +1273,111 @@ void CompareFlowResults(TString type="ESD")
  TGraph* pMeshDiffFlowPtPOI = NULL;
  if(mcepCommonHistRes)
  {
-  Int_t nPtsDFPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetNbinsX();
+  Int_t nBinsDiffFlowPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetNbinsX();
   Double_t binWidthPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinWidth(1);//assuming that all bins have the same width
-       
-  pMeshDiffFlowPtPOI = new TGraph(2*nPtsDFPtPOI+1);
-  
-  Double_t valueMCPtPOI=0., errorMCPtPOI=0.;
-  for(Int_t i=1;i<nPtsDFPtPOI+1;i++)
+
+  //counting the non-empty bins: 
+  Int_t nNonEmptyBinsDiffFlowPtPOI=0;
+  for(Int_t i=1;i<nBinsDiffFlowPtPOI+1;i++)
   {
-   valueMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinContent(i);
-   errorMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinError(i);       
-   pMeshDiffFlowPtPOI->SetPoint(i,(i-0.5)*binWidthPtPOI,valueMCPtPOI+errorMCPtPOI);
+   if(!(mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinError(i)==0.0))
+   {
+    nNonEmptyBinsDiffFlowPtPOI++;
+   }
   }    
-  for(Int_t i=nPtsDFPtPOI+1;i<2*nPtsDFPtPOI+1;i++)
+       
+  pMeshDiffFlowPtPOI = new TGraph(2*nNonEmptyBinsDiffFlowPtPOI+1);
+  
+  Double_t valueMCPtPOI=0.,errorMCPtPOI=0.;
+  Int_t countDiffFlowPtPOI=1;
+  Double_t xFirstDiffFlowPtPOI=0.,yUpFirstDiffFlowPtPOI=0.;//needed to close up the mesh
+  for(Int_t i=1;i<nBinsDiffFlowPtPOI+1;i++)
   {
-   valueMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinContent(2*nPtsDFPtPOI+1-i);
-   errorMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinError(2*nPtsDFPtPOI+1-i);       
-   pMeshDiffFlowPtPOI->SetPoint(i,(2*nPtsDFPtPOI-i+0.5)*binWidthPtPOI,valueMCPtPOI-errorMCPtPOI); 
+   //setting up the upper limit of the mesh:
+   valueMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinContent(i);
+   errorMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinError(i);   
+   if(!(errorMCPtPOI==0.0))
+   {    
+    pMeshDiffFlowPtPOI->SetPoint(countDiffFlowPtPOI++,(i-0.5)*binWidthPtPOI+dPtMin,valueMCPtPOI+errorMCPtPOI);
+    if(xFirstDiffFlowPtPOI==0.)
+    {
+     xFirstDiffFlowPtPOI=(i-0.5)*binWidthPtPOI+dPtMin;
+     yUpFirstDiffFlowPtPOI=valueMCPtPOI+errorMCPtPOI;
+    }
+   } 
+  }   
+  for(Int_t i=nBinsDiffFlowPtPOI+1;i<2*nBinsDiffFlowPtPOI+1;i++)
+  {
+   //setting up the lower limit of the mesh:
+   valueMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinContent(2*nBinsDiffFlowPtPOI+1-i);
+   errorMCPtPOI = (mcepCommonHistRes->GetHistDiffFlowPtPOI())->GetBinError(2*nBinsDiffFlowPtPOI+1-i); 
+   if(!(errorMCPtPOI==0.0))
+   {      
+    pMeshDiffFlowPtPOI->SetPoint(countDiffFlowPtPOI++,(2*nBinsDiffFlowPtPOI-i+0.5)*binWidthPtPOI+dPtMin,valueMCPtPOI-errorMCPtPOI);
+   }  
   }
-  pMeshDiffFlowPtPOI->SetPoint(2*nPtsDFPtPOI+1,0.5*binWidthPtPOI,valueMCPtPOI+errorMCPtPOI); 
+  //closing the mesh area:
+  pMeshDiffFlowPtPOI->SetPoint(2*nNonEmptyBinsDiffFlowPtPOI+1,xFirstDiffFlowPtPOI,yUpFirstDiffFlowPtPOI);   
+  
+  //setting the mesh style and color:               
   pMeshDiffFlowPtPOI->SetFillStyle(meshStyle);
   pMeshDiffFlowPtPOI->SetFillColor(meshColor);
  }
- 
+
  //cosmetics: Monte Carlo error bands for differential flow (Eta)
  TGraph* pMeshDiffFlowEtaPOI = NULL;
  if(mcepCommonHistRes)
  {
-  Int_t nPtsDFEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetNbinsX();
+  Int_t nBinsDiffFlowEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetNbinsX();
   Double_t binWidthEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinWidth(1);//assuming that all bins have the same width
-       
-  pMeshDiffFlowEtaPOI = new TGraph(2*nPtsDFEtaPOI+1);
-  
-  Double_t valueMCEtaPOI=0., errorMCEtaPOI=0.;
-  for(Int_t i=1;i<nPtsDFEtaPOI+1;i++)
+
+  //counting the non-empty bins: 
+  Int_t nNonEmptyBinsDiffFlowEtaPOI=0;
+  for(Int_t i=1;i<nBinsDiffFlowEtaPOI+1;i++)
   {
-   valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(i);
-   errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(i);       
-   pMeshDiffFlowEtaPOI->SetPoint(i,(i-0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI+errorMCEtaPOI);
+   if(!(mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(i)==0.0))
+   {
+    nNonEmptyBinsDiffFlowEtaPOI++;
+   }
   }    
-  for(Int_t i=nPtsDFEtaPOI+1;i<2*nPtsDFEtaPOI+1;i++)
+       
+  pMeshDiffFlowEtaPOI = new TGraph(2*nNonEmptyBinsDiffFlowEtaPOI+1);
+  
+  Double_t valueMCEtaPOI=0.,errorMCEtaPOI=0.;
+  Int_t countDiffFlowEtaPOI=1;
+  Double_t xFirstDiffFlowEtaPOI=0.,yUpFirstDiffFlowEtaPOI=0.;//needed to close up the mesh
+  for(Int_t i=1;i<nBinsDiffFlowEtaPOI+1;i++)
   {
-   valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(2*nPtsDFEtaPOI+1-i);
-   errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(2*nPtsDFEtaPOI+1-i);       
-   pMeshDiffFlowEtaPOI->SetPoint(i,(2*nPtsDFEtaPOI-i+0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI-errorMCEtaPOI); 
+   //setting up the upper limit of the mesh:
+   valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(i);
+   errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(i);   
+   if(!(errorMCEtaPOI==0.0))
+   {    
+    pMeshDiffFlowEtaPOI->SetPoint(countDiffFlowEtaPOI++,(i-0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI+errorMCEtaPOI);
+    if(xFirstDiffFlowEtaPOI==0.)
+    {
+     xFirstDiffFlowEtaPOI=(i-0.5)*binWidthEtaPOI+dEtaMin;
+     yUpFirstDiffFlowEtaPOI=valueMCEtaPOI+errorMCEtaPOI;
+    }
+   } 
+  }   
+  for(Int_t i=nBinsDiffFlowEtaPOI+1;i<2*nBinsDiffFlowEtaPOI+1;i++)
+  {
+   //setting up the lower limit of the mesh:
+   valueMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinContent(2*nBinsDiffFlowEtaPOI+1-i);
+   errorMCEtaPOI = (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->GetBinError(2*nBinsDiffFlowEtaPOI+1-i); 
+   if(!(errorMCEtaPOI==0.0))
+   {      
+    pMeshDiffFlowEtaPOI->SetPoint(countDiffFlowEtaPOI++,(2*nBinsDiffFlowEtaPOI-i+0.5)*binWidthEtaPOI+dEtaMin,valueMCEtaPOI-errorMCEtaPOI);
+   }  
   }
-  pMeshDiffFlowEtaPOI->SetPoint(2*nPtsDFEtaPOI+1,0.5*binWidthEtaPOI+dEtaMin,valueMCEtaPOI+errorMCEtaPOI); 
+  //closing the mesh area:
+  pMeshDiffFlowEtaPOI->SetPoint(2*nNonEmptyBinsDiffFlowEtaPOI+1,xFirstDiffFlowEtaPOI,yUpFirstDiffFlowEtaPOI);   
+  
+  //setting the mesh style and color:               
   pMeshDiffFlowEtaPOI->SetFillStyle(meshStyle);
   pMeshDiffFlowEtaPOI->SetFillColor(meshColor);
- } 
+ }
  //----------------------------------------------------------------------------------
    
  //MCEP = Monte Carlo Event Plane
@@ -1242,16 +1391,16 @@ void CompareFlowResults(TString type="ESD")
  {
   if(mcepCommonHistRes)
   {
-   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(2);//to be removed
-   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(20);//to be removed
-   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(2);
-   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(20);
-   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(2);
-   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(20);
-   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(2);
-   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(20);
-   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(2);
-   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(20);
+   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorMC);//to be removed
+   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleMC);//to be removed
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorMC);
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleMC);
+   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorMC);
+   (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleMC);
+   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorMC);
+   (mcepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleMC);
+   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorMC);
+   (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleMC);
   } 
   if(mcepCommonHist)
   {
@@ -1275,55 +1424,55 @@ void CompareFlowResults(TString type="ESD")
  {
   if(gfcCommonHistRes2)
   {
-   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(kViolet+7);//to be removed
-   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(20);//to be removed
-   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerStyle(20);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerStyle(20);
+   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(markerColorGFC2);//to be removed
+   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC2);//to be removed
+   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorGFC2);
+   (gfcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleGFC2);
   }
   if(gfcCommonHistRes4)
   { 
-   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(kViolet-3);//to be removed
-   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(21);//to be removed
-   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerStyle(21);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerStyle(21);         
+   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(markerColorGFC4);//to be removed
+   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC4);//to be removed
+   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorGFC4);
+   (gfcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleGFC4);         
   }
   if(gfcCommonHistRes6)
   { 
-   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(kViolet+7);//to be removed
-   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(24);//to be removed
-   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(24);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet+7);
-   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(24);
+   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(markerColorGFC6);//to be removed
+   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC6);//to be removed
+   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorGFC6);
+   (gfcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleGFC6);
   }
   if(gfcCommonHistRes8)
   { 
-   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(kViolet-3);//to be removed
-   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(25);//to be removed
-   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(25);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(kViolet-3);
-   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(25);
+   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(markerColorGFC8);//to be removed
+   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC8);//to be removed
+   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorGFC8);
+   (gfcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleGFC8);
   }
   if(gfcCommonHist)
   {
@@ -1363,16 +1512,16 @@ void CompareFlowResults(TString type="ESD")
   //QC{2}
   if(qcCommonHistRes2)
   {
-   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(kOrange+3);//to be removed
-   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(20);//to be removed
-   (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(20);
-   (qcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerStyle(20);
-   (qcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerStyle(20);
-   (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerStyle(20);
+   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(markerColorQC2);//to be removed
+   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC2);//to be removed
+   (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC2);
+   (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC2);
+   (qcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC2);
+   (qcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleQC2);
+   (qcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorQC2);
+   (qcCommonHistRes2->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleQC2);
+   (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorQC2);
+   (qcCommonHistRes2->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleQC2);
   }
   if(qcCommonHist2)
   {
@@ -1386,16 +1535,16 @@ void CompareFlowResults(TString type="ESD")
   //QC{4}
   if(qcCommonHistRes4)
   {
-   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(kOrange-6);//to be removed
-   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(21);//to be removed
-   (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(21);
-   (qcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerStyle(21);
-   (qcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerStyle(21);
-   (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerStyle(21);
+   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(markerColorQC4);//to be removed
+   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC4);//to be removed
+   (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC4);
+   (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC4);
+   (qcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC4);
+   (qcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleQC4);
+   (qcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorQC4);
+   (qcCommonHistRes4->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleQC4);
+   (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorQC4);
+   (qcCommonHistRes4->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleQC4);
   }
   if(qcCommonHist4)
   {
@@ -1409,16 +1558,16 @@ void CompareFlowResults(TString type="ESD")
   //QC{6}
   if(qcCommonHistRes6)
   {
-   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(kOrange+3);//to be removed
-   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(24);//to be removed
-   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(24);
-   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(24);
-   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(24);
-   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange+3);
-   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(24);
+   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(markerColorQC6);//to be removed
+   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC6);//to be removed
+   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC6);
+   (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC6);
+   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC6);
+   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleQC6);
+   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorQC6);
+   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleQC6);
+   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorQC6);
+   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleQC6);
   }
   if(qcCommonHist6)
   {
@@ -1432,16 +1581,16 @@ void CompareFlowResults(TString type="ESD")
   //QC{8}
   if(qcCommonHistRes8)
   {
-   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(kOrange-6);//to be removed
-   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(25);//to be removed
-   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(25);
-   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(25);
-   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(25);
-   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(kOrange-6);
-   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(25);
+   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(markerColorQC8);//to be removed
+   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC8);//to be removed
+   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC8);
+   (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC8);
+   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC8);
+   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleQC8);
+   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorQC8);
+   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleQC8);
+   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorQC8);
+   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleQC8);
   }
   if(qcCommonHist8)
   {
@@ -1465,16 +1614,16 @@ void CompareFlowResults(TString type="ESD")
  {
   if(lyz2CommonHistRes)
   {
-   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerColor(kGreen+3);//to be removed
-   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerStyle(22);//to be removed
-   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(kGreen+3);
-   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(22);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(kGreen+3);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(22);
-   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(kGreen+3);
-   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(22);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(kGreen+3);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(22);
+   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorLYZ2);//to be removed
+   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleLYZ2);//to be removed
+   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorLYZ2);
+   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleLYZ2);
   } 
   if(lyz2CommonHist)
   {
@@ -1499,16 +1648,16 @@ void CompareFlowResults(TString type="ESD")
   if(lyzepCommonHistRes)
   {
    (lyzepCommonHistRes->GetHistDiffFlow())->Scale(0.01);//to be improved
-   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(kGreen+3);//to be removed
-   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(26);//to be removed
-   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(kGreen+3);
-   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(26);
-   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(kGreen+3);
-   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(26);
-   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(kGreen+3);
-   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(26);
-   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(kGreen+3);
-   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(26);
+   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorLYZEP);//to be removed
+   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleLYZEP);//to be removed
+   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorLYZEP);
+   (lyzepCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleLYZEP);
   } 
   if(lyzepCommonHist)
   {
@@ -1734,7 +1883,7 @@ void CompareFlowResults(TString type="ESD")
    (mcepCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
   //GFC
-  if(plotGFC2PtRP && gfcCommonHistRes2)
+  if(plotGFC2PtRP && gfcCommonHistRes2)Pt
   { 
    (gfcCommonHistRes2->GetHistDiffFlowPtRP())->Draw("E1PSAME"); 
   } 
@@ -1761,11 +1910,11 @@ void CompareFlowResults(TString type="ESD")
   }
   if(plotQC6PtRP && qcCommonHistRes6)
   { 
-   (qcCommonHistRes6->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+   //(qcCommonHistRes6->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
   if(plotQC8PtRP && qcCommonHistRes8)
   { 
-   (qcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+   //(qcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
   //LYZ2
   if(plotLYZ2PtRP && lyz2CommonHistRes)
@@ -1785,7 +1934,7 @@ void CompareFlowResults(TString type="ESD")
   legendDiffFlowPtRP->SetTextFont(72);
   legendDiffFlowPtRP->SetTextSize(0.06);
  
-  //legend's entries:
+  //legend's entries:Pt
   TString *entryDiffMCPtRP    = new TString("MC ....... ");
   TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
   TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
@@ -1974,11 +2123,11 @@ void CompareFlowResults(TString type="ESD")
   }
   if(plotQC6EtaRP && qcCommonHistRes6)
   { 
-   (qcCommonHistRes6->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+   //(qcCommonHistRes6->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
   }
   if(plotQC8EtaRP && qcCommonHistRes8)
   { 
-   (qcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+   //(qcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
   }
   //LYZ2
   if(plotLYZ2EtaRP && lyz2CommonHistRes)
@@ -2186,11 +2335,11 @@ void CompareFlowResults(TString type="ESD")
   }
   if(plotQC6PtPOI && qcCommonHistRes6)
   { 
-   (qcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+   //(qcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   if(plotQC8PtPOI && qcCommonHistRes8)
   { 
-   (qcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+   //(qcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   //LYZ2
   if(plotLYZ2PtPOI && lyz2CommonHistRes)
@@ -2399,11 +2548,11 @@ void CompareFlowResults(TString type="ESD")
   }
   if(plotQC6EtaPOI && qcCommonHistRes6)
   { 
-   (qcCommonHistRes6->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+   //(qcCommonHistRes6->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
   }
   if(plotQC8EtaPOI && qcCommonHistRes8)
   { 
-   (qcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+   //(qcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
   }
   //LYZ2
   if(plotLYZ2EtaPOI && lyz2CommonHistRes)
