@@ -29,6 +29,7 @@ public:
 
   void SubtractPedestals(Bool_t subtract) {fPedSubtract=subtract;}
   void SetAmpOffset(Int_t extPed=5){fAmpOffset=extPed ;}
+  void SetAmpThreshold(Int_t thr=5){fAmpThreshold=thr ;}
 
   Double_t GetEnergy() const { return fEnergy; }
   Double_t GetTime() const { return fTime; }
@@ -55,6 +56,7 @@ protected:
   Double_t fQuality ; //Sample quality
   Double_t fPedestalRMS; //calciulated RMS of pedestal (non-ZS runs)
   Int_t fAmpOffset ; //Pedestal offset from ALTRO chips
+  Int_t fAmpThreshold ; //Zero Suppression threshold from ALTRO chips
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row
@@ -71,7 +73,7 @@ protected:
   AliPHOSCalibData * fCalibData ;   //! Calibration database if avalable
 
 
-  ClassDef(AliPHOSRawDecoder,2)
+  ClassDef(AliPHOSRawDecoder,3)
 };
 
 #endif

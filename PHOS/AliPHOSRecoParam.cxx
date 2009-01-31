@@ -45,6 +45,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fEMCEnergyCorrectionOn(kTRUE),
   fEMCDecoderVersion(""),
   fGlobalAltroOffset(0),
+  fGlobalAltroThreshold(0),
   fCPVClusteringThreshold(0.0),
   fCPVLocMaxCut(0.03),
   fCPVMinE(0.0),
@@ -70,6 +71,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fEMCEnergyCorrectionOn(kTRUE),
   fEMCDecoderVersion(""),
   fGlobalAltroOffset(0),
+  fGlobalAltroThreshold(0),
   fCPVClusteringThreshold(0.0),
   fCPVLocMaxCut(0.03),
   fCPVMinE(0.0),
@@ -98,6 +100,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fEMCEnergyCorrectionOn  = recoParam.fEMCEnergyCorrectionOn;
     fEMCDecoderVersion      = recoParam.fEMCDecoderVersion;
     fGlobalAltroOffset      = recoParam.fGlobalAltroOffset;
+    fGlobalAltroThreshold   = recoParam.fGlobalAltroThreshold;
     fCPVClusteringThreshold = recoParam.fCPVClusteringThreshold;
     fCPVLocMaxCut           = recoParam.fCPVLocMaxCut;
     fCPVMinE                = recoParam.fCPVMinE;
@@ -125,6 +128,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tEMCEnergyCorrectionOn  = %d\n"
 		  "\tEMCDecoderVersion      = \"%s\"\n"
 		  "\tGlobalAltroOffset      = %d",
+		  "\tGlobalAltroThreshold   = %d",
 		  fEMCClusteringThreshold,
 		  fEMCLocMaxCut,
 		  fEMCRawDigitThreshold,
@@ -137,7 +141,8 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  fEMCUnfold,
 		  fEMCEnergyCorrectionOn,
 		  fEMCDecoderVersion.Data(),
-		  fGlobalAltroOffset));
+		  fGlobalAltroOffset,
+		  fGlobalAltroThreshold));
 
 }
 

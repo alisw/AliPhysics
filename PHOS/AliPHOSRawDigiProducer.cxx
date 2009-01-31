@@ -53,6 +53,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   fCpvMinE(0.),
   fSampleQualityCut(1.),
   fGlobalAltroOffset(0),
+  fGlobalAltroThreshold(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -66,6 +67,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam
   fCpvMinE(0.),
   fSampleQualityCut(1.),
   fGlobalAltroOffset(0),
+  fGlobalAltroThreshold(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -78,6 +80,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam
   fCpvMinE = recoParam->GetCPVMinE();
   fSampleQualityCut = recoParam->GetEMCSampleQualityCut() ;
   fGlobalAltroOffset = recoParam->GetGlobalAltroOffset() ;
+  fGlobalAltroThreshold = recoParam->GetGlobalAltroThreshold() ;
 
   fGeom=AliPHOSGeometry::GetInstance() ;
   if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
@@ -95,6 +98,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fCpvMinE(0.),
   fSampleQualityCut(1.),
   fGlobalAltroOffset(0),
+  fGlobalAltroThreshold(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -103,6 +107,9 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
 
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
+  fSampleQualityCut = dp.fSampleQualityCut;
+  fGlobalAltroOffset = dp.fGlobalAltroOffset;
+  fGlobalAltroThreshold = dp.fGlobalAltroThreshold;
   fEmcCrystals = dp.fEmcCrystals ;
   fPulseGenerator = new AliPHOSPulseGenerator();
   fGeom = dp.fGeom ;
@@ -118,6 +125,7 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   fCpvMinE = dp.fCpvMinE ;
   fSampleQualityCut = dp.fSampleQualityCut ;
   fGlobalAltroOffset = dp.fGlobalAltroOffset ;
+  fGlobalAltroThreshold = dp.fGlobalAltroThreshold ;
   fEmcCrystals = dp.fEmcCrystals ;
   fGeom = dp.fGeom ;
   if(fPulseGenerator) delete fPulseGenerator ;
@@ -152,6 +160,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
 
   //Read current altro offcet from RCU
   decoder->SetAmpOffset(fGlobalAltroOffset) ;
+
+  //Read ZS threshold from RCU
+  decoder->SetAmpThreshold(fGlobalAltroThreshold) ;
 
   //Let decoder subtract pedestals in case of ZS
   decoder->SetCalibData(fgCalibData) ;

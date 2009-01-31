@@ -32,6 +32,7 @@ public:
   const char* EMCDecoderVersion()     const { return fEMCDecoderVersion.Data();}
   Bool_t  GetEMCEnergyCorrectionOn()  const { return fEMCEnergyCorrectionOn;   }
   Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;      }
+  Int_t   GetGlobalAltroThreshold()   const { return fGlobalAltroThreshold ;   }
 
   Float_t GetCPVClusteringThreshold() const { return fCPVClusteringThreshold;  }
   Float_t GetCPVLocalMaxCut()         const { return fCPVLocMaxCut;            }
@@ -52,6 +53,7 @@ public:
   void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold             =toUnfold;}
   void SetEMCEnergyCorrectionOn(Bool_t on=kTRUE)     { fEMCEnergyCorrectionOn =on;      }
   void SetGlobalAltroOffset(Int_t offset=5)          { fGlobalAltroOffset     =offset ; }
+  void SetGlobalAltroThreshold(Int_t ZSth=5)         { fGlobalAltroThreshold  =ZSth;    }
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
   void SetCPVLocalMaxCut(Float_t cut)                { fCPVLocMaxCut          =cut;     }
@@ -79,6 +81,7 @@ protected:
   Bool_t  fEMCEnergyCorrectionOn;  // EMC: if true do non-linear correction of cluster energy
   TString fEMCDecoderVersion ;     // EMC: AliPHOSRawDecoder version
   Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
+  Int_t   fGlobalAltroThreshold ;  // Threshold used in ALTRO chips in SZ runs
 
   Float_t fCPVClusteringThreshold; // CPV: Min.digit energy to start a new cluster, in GeV
   Float_t fCPVLocMaxCut;           // CPV: Min.energy difference between two local maxima, in GeV
@@ -88,7 +91,7 @@ protected:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
 
-  ClassDef(AliPHOSRecoParam,9)
+  ClassDef(AliPHOSRecoParam,10)
 };
 
 #endif

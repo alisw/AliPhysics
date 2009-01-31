@@ -45,13 +45,13 @@ private:
   Float_t fCpvMinE ;                 // minimum energy of digit to be included into cluster
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
   Int_t   fGlobalAltroOffset;        // Global ALTRO offset used in ZS runs
-
+  Int_t   fGlobalAltroThreshold;     // Global ALTRO threshold used in ZS runs
   Int_t fEmcCrystals ;               //  number of EMC crystals
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
   static AliPHOSCalibData * fgCalibData ;   //! Calibration database if avalable
   AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse shape parameters
 
-  ClassDef(AliPHOSRawDigiProducer,3)
+  ClassDef(AliPHOSRawDigiProducer,4)
 };
 
 #endif

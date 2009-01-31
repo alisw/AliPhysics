@@ -56,7 +56,7 @@ ClassImp(AliPHOSRawDecoderv1)
 
 //-----------------------------------------------------------------------------
   AliPHOSRawDecoderv1::AliPHOSRawDecoderv1():AliPHOSRawDecoder(),
-fSampleParamsLow(0x0),fSampleParamsHigh(0x0),fToFit(0x0)
+  fSampleParamsLow(0x0),fSampleParamsHigh(0x0),fToFit(0x0)
 {
   //Default constructor.
 }
@@ -217,7 +217,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       }
       else{
         //take pedestals from DB
-        pedestal = fAmpOffset ;
+        pedestal = fAmpThreshold ;
         if(fCalibData){
            Float_t truePed = fCalibData->GetADCpedestalEmc(fModule, fColumn, fRow) ;
            Int_t   altroSettings = fCalibData->GetAltroOffsetEmc(fModule, fColumn, fRow) ;
@@ -494,7 +494,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       pedRMS += in->GetSignal()*in->GetSignal() ;
       nPed++;
     }
-    fSamples->AddAt(in->GetSignal(),iBin);
+    fSamples->AddAt(in->GetSignal()-fAmpOffset,iBin);
     fTimes->AddAt(in->GetTime(),iBin);
  
 //Debug==============
