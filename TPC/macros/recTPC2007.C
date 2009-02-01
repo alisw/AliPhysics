@@ -37,9 +37,6 @@ void recTPC2007(Int_t type, const char *filename="data.root")
   //
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(100);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,1);
-  //
   //
   AliReconstruction rec;  
   rec.SetDefaultStorage("alien://folder=/alice/data/2007/LHC07w/OCDB/");

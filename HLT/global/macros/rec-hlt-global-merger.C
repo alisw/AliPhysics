@@ -192,8 +192,6 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
   rec.SetFillESD("HLT");
   rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTRD.so libAliHLTTPC.so libAliHLTGlobal.so chains=sink1");
   rec.Run();

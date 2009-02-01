@@ -17,7 +17,7 @@ class TFile;
 class TGeoManager;
 //class AliTRDtrackerHLT;
 class AliTRDtracker;
-class AliMagFMaps;
+class AliMagF;
 
 /**
  * @class AliHLTTRDTrackerComponent
@@ -70,8 +70,6 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 
 	string fStrorageDBpath; // Default path for OCDB
 	AliCDBManager *fCDB; //! Pointer to OCDB
-
-	AliMagFMaps* fField; //! magn. field settings
 
 	string fGeometryFileName; // Path to geometry file 
 	TFile *fGeometryFile; //! // Pointer to the geom root file

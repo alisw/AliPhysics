@@ -25,6 +25,7 @@
 #include <TArrayI.h>
 #include <TClonesArray.h>
 #include <TFile.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TParticle.h>
 #include <TROOT.h>
@@ -693,13 +694,6 @@ void AliMC::FinishEvent()
 }
 
 //_______________________________________________________________________
-void AliMC::Field(const Double_t* x, Double_t* b) const
-{
-  // Calculates field "b" at point "x"
-    gAlice->Field(x,b);
-}
-    
-//_______________________________________________________________________
 void AliMC::Init()
 {
   // MC initialization
@@ -1132,7 +1126,7 @@ void AliMC::FixParticleDecaytime()
     // Transverse velocity 
     Double_t vt    = p.Pt() / p.E();
     
-    if ((b = gAlice->Field()->SolenoidField()) > 0.) {     // [kG]
+    if ((b = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField()) > 0.) {     // [kG]
 
 	// Radius of helix
 	

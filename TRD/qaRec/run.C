@@ -45,7 +45,7 @@
 #include "TGridCollection.h"
 #include "TGridResult.h"
 
-#include "AliMagFCheb.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
@@ -98,12 +98,6 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
-
-  // initialize magnetic field. TODO We should use the GRP !
-  AliMagFCheb *field = 0x0;
-  field = new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG, kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
-  //field = new AliMagFCheb("Maps","Maps", 2, 0., 10., AliMagFCheb::k2kG);
-  AliTracker::SetFieldMap(field, kTRUE);
 
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();

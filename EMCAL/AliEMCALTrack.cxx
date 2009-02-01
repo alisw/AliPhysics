@@ -30,7 +30,6 @@
 #include "TVector3.h"
 
 #include "AliLog.h"
-#include "AliTracker.h"
 #include "AliESDtrack.h" 
 
 #include "AliEMCALTrack.h"
@@ -161,25 +160,6 @@ Int_t AliEMCALTrack::Compare(const TObject *obj) const
 	if (thisVal > thatVal) return 1;
 	else if (thisVal < thatVal) return -1;
 	else return 0;
-}
-//
-//------------------------------------------------------------------------------
-//
-Double_t AliEMCALTrack::GetBz() const 
-{
-	//
-	// Returns Z-component of the magnetic field in kG.
-	// In case it B is not constant, its value is returned
-	// at the current position of the track (local X,Y,Z)
-	//
-	
-	// if magnetic field is constant...
-	if (AliTracker::UniformField()) return AliTracker::GetBz();
-	
-	// ...else:
-	Double_t r[3];
-	GetXYZ(r);
-	return AliTracker::GetBz(r);
 }
 //
 //------------------------------------------------------------------------------

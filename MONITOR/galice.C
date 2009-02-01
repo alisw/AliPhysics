@@ -18,8 +18,7 @@ void Config()
     new TGeant3("C++ Interface to Geant3");
 
     // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
-    gAlice->SetField(field);    
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
     Int_t   iABSO  =  0;
     Int_t   iDIPO  =  0;

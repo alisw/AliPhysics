@@ -56,7 +56,6 @@ public:
   Bool_t         CookLabel(Float_t wrong);
   AliTRDtrackV1* GetBackupTrack() const {return fBackupTrack;}
   Double_t       GetBudget(Int_t i) const { return fBudget[i];}
-  Double_t       GetBz() const;
   AliTRDcluster* GetCluster(Int_t id);
   Int_t          GetClusterIndex(Int_t id) const;
   Float_t        GetEdep() const {return fDE;}

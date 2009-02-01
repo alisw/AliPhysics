@@ -153,8 +153,6 @@ void activePadsTest(const char* input="./"){
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
   //rec.SetFillESD("HLT");
   rec.SetFillESD("");
   rec.SetFillTriggerESD(false);

@@ -6,7 +6,6 @@
   #include "TStopwatch.h"
 
   #include "AliRun.h"
-  #include "AliMagF.h"
   #include "AliESD.h"
   #include "AliTracker.h"
   #include "AliRunLoader.h"

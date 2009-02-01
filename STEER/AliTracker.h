@@ -10,20 +10,21 @@
 //   that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
-#include <TObject.h>
-#include <AliPlaneEff.h>
-#include "AliRecoParam.h"
 
+#include <TGeoGlobalMagField.h>
+#include <TObject.h>
+
+#include "AliMagF.h"
+#include "AliRecoParam.h"
+#include "AliPlaneEff.h"
 
 class TTree;
-class AliMagF;
 class AliCluster;
-class AliKalmanTrack;
 class AliESDEvent;
 class AliESDtrack;
 class AliExternalTrackParam;
 class AliTrackPoint;
-
+class AliKalmanTrack;
 class AliTracker : public TObject {
 public:
   AliTracker();
@@ -60,17 +61,11 @@ public:
   static
   Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
 	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  
-
-  static void SetFieldMap(const AliMagF* map, Bool_t uni);
-  static const AliMagF *GetFieldMap() {return fgkFieldMap;}
-  static Double_t GetBz(const Float_t *r); 
-  static Double_t GetBz(const Double_t *r) {
-    Float_t rr[]={r[0],r[1],r[2]};
-    return GetBz(rr);
-  }
-  static Double_t GetBz() {return fgBz;}
-  static Bool_t UniformField() {return fgUniformField;}
-
+  //
+  static Double_t GetBz(const Double_t *r);
+  static Double_t GetBz();
+  static Bool_t   UniformField();
+  //
   static void FillResiduals(const AliExternalTrackParam *t,
 			   Double_t *p, Double_t *cov, 
                            UShort_t id, Bool_t updated=kTRUE);
@@ -83,11 +78,6 @@ protected:
   AliTracker(const AliTracker &atr);
 private:
   AliTracker & operator=(const AliTracker & atr);
-
-  static Bool_t fgUniformField;       // uniform field flag
-  static const AliMagF *fgkFieldMap;  //! field map
-  static Double_t fgBz;               // Nominal Bz (kG)
-
   static Bool_t fFillResiduals;       // Fill residuals flag
   static TObjArray **fResiduals;    //! Array of histograms with residuals
 
@@ -104,6 +94,11 @@ private:
   ClassDef(AliTracker,4) //abstract tracker
 };
 
+//__________________________________________________________________________
+inline Bool_t AliTracker::UniformField()
+{
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  return fld ? fld->IsUniform():kTRUE;
+}
+
 #endif
-
-

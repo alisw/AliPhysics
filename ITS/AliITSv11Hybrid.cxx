@@ -70,8 +70,8 @@
 // Updates concerning the geometry: versioning system, new V11hybrid version, bug fixes (B.Nilsend and L. Gaudichet
 //
 
-
 #include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
@@ -5091,8 +5091,8 @@ void AliITSv11Hybrid::CreateMaterials(){
     // Return:
     //   none.
 
-    Int_t   ifield = gAlice->Field()->Integ();
-    Float_t fieldm = gAlice->Field()->Max();
+    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
     Float_t tmaxfd = 0.1; // 1.0; // Degree
     Float_t stemax = 1.0; // cm

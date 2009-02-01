@@ -319,8 +319,6 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
   }
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,0);
   TGeoManager::Import("geometry.root");
 
 

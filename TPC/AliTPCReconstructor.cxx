@@ -51,10 +51,8 @@ fClusterer(NULL)
   //
   //
   AliTPCcalibDB * calib = AliTPCcalibDB::Instance();
-  const AliMagF * field = AliTracker::GetFieldMap();
-  if (field) { // Set correctly the magnetic field in the ExB calculation
-    calib->SetExBField(field->SolenoidField());
-  }
+  const AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance();
+  calib->SetExBField(field->SolenoidField());
   AliTPCParam* param = GetTPCParam();
   if (!param) {
     AliWarning("Loading default TPC parameters !");

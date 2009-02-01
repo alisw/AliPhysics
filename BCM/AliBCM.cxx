@@ -22,16 +22,17 @@
 //  andreas.morsch@cern.ch                                                   // 
 ///////////////////////////////////////////////////////////////////////////////
  
-#include <TVirtualMC.h>
 #include <TClonesArray.h>
-#include <TGeoMaterial.h>
-#include <TGeoMedium.h>
-#include <TGeoVolume.h>
-#include <TGeoMatrix.h>
-#include <TGeoPgon.h>
-#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TGeoMaterial.h>
+#include <TGeoMatrix.h>
+#include <TGeoMedium.h>
+#include <TGeoPgon.h>
+#include <TGeoVolume.h>
+#include <TGeoXtru.h>
+#include <TVirtualMC.h>
 
 #include "AliBCM.h"
 #include "AliBCMHit.h"
@@ -169,8 +170,8 @@ void AliBCM::CreateMaterials()
     Float_t tmaxfd = -20. ;  // Maximum angle due to field deflection 
     Float_t deemax = -.01;   // Maximum fractional energy loss, DLS 
     Float_t stmin  = -.8;
-    Int_t   isxfld = gAlice->Field()->Integ();
-    Float_t sxmgmx = gAlice->Field()->Max();
+    Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
     AliMaterial(1, "PCD", 12.011, 6., rho, radl, absl);
     //

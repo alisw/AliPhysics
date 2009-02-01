@@ -41,7 +41,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDVertex.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliGeomManager.h"
 

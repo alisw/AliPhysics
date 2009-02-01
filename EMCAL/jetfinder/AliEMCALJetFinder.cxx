@@ -48,7 +48,6 @@
 #include "AliEMCALJetFinder.h"
 #include "AliHeader.h"
 #include "AliMagF.h"
-#include "AliMagFCM.h"
 #include "AliRun.h"
 #include "AliGenerator.h"
 #include "AliRunLoader.h"
@@ -1654,7 +1653,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 //
   static Float_t b = 0.0, rEMCAL = -1.0;
 // Get field in kGS
-  b = gAlice->Field()->SolenoidField();
+  b = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
 // Get EMCAL radius in cm 
   rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
   Float_t dPhi = 0.;

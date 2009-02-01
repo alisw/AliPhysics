@@ -154,8 +154,6 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   }
 
   // init solenoid field
-  Bool_t bUniformField=kTRUE;
-  AliTracker::SetFieldMap(pRunLoader->GetAliRun()->Field(),bUniformField);
   Double_t solenoidBz=AliTracker::GetBz();
   AliCDBManager* man = AliCDBManager::Instance();
   if (man && man->IsDefaultStorageSet())

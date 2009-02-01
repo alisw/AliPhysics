@@ -19,6 +19,9 @@
 //     Author: A. Dainese
 //-------------------------------------------------------------------------
 
+#include <TGeoGlobalMagField.h>
+
+#include "AliMagF.h"
 #include "AliVTrack.h"
 
 ClassImp(AliVTrack)
@@ -34,3 +37,17 @@ AliVTrack& AliVTrack::operator=(const AliVTrack& vTrack)
   return *this; 
 }
 
+Double_t AliVTrack::GetBz() const 
+{
+  // returns Bz component of the magnetic field (kG)
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) return kAlmost0Field;
+  double bz;
+  if (fld->IsUniform()) bz = -fld->SolenoidField();
+  else {
+    Double_t r[3]; 
+    GetXYZ(r); 
+    bz = -fld->GetBz(r);
+  }
+  return TMath::Sign(kAlmost0Field,bz) + bz;
+}

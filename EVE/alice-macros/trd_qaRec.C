@@ -16,8 +16,6 @@ void trd_qaRec()
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
   AliEveEventManager::AssertGeometry();
-  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kTRUE);
 
   AliTRDReconstructor *reco = new AliTRDReconstructor();
   reco->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());

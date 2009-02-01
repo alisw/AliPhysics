@@ -94,7 +94,7 @@ Float_t AliEMCALJetFinderAlgo::PropagatePhi(Float_t pt, Float_t charge, Bool_t& 
  Float_t b = 0.0, rEMCAL = -1.0;
  if(rEMCAL<0) 
  {	
-	 b =  gAlice->Field()->SolenoidField();
+	 b =  ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
 	 rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
  }
  Float_t dPhi = 0.;

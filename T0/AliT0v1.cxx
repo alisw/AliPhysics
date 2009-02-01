@@ -31,15 +31,16 @@
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include <TLorentzVector.h>
-#include <TMath.h>
-#include <TVirtualMC.h>
+#include "TGeoCompositeShape.h"
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TGeoPcon.h"
 #include "TGeoTube.h"
-#include "TGeoCompositeShape.h"
+#include <TGeoGlobalMagField.h>
 #include <TGraph.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TVirtualMC.h>
 
 #include "AliLog.h"
 #include "AliMagF.h"
@@ -488,8 +489,8 @@ symName.Data(),volPath.Data()));
 //------------------------------------------------------------------------
 void AliT0v1::CreateMaterials()
 {
-   Int_t isxfld   = gAlice->Field()->Integ();
-   Float_t sxmgmx = gAlice->Field()->Max();
+   Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+   Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
    //   Float_t a,z,d,radl,absl,buf[1];
    // Int_t nbuf;
 // AIR

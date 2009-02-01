@@ -51,7 +51,6 @@ public:
    }
 
 protected:
-   Double_t GetBz() const;
    Bool_t Update(const AliCluster */*c*/, Double_t /*chi2*/, Int_t /*idx*/) {
      return 0;
    }

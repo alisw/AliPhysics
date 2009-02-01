@@ -24,11 +24,6 @@ void TestEMCALReconstruction(Int_t nev =-1) {
   //rec.SetInput("raw.root");
   //rec.SetRunQA(":");
 
-  // **** The field map settings must be the same as in Config.C !
-  AliMagFMaps *field=new AliMagFMaps("Maps","Maps",2,1.,10.,AliMagFMaps::k5kG);
-  Bool_t uniform=kFALSE;
-  AliTracker::SetFieldMap(field,uniform);
-
   TStopwatch timer;
   timer.Start();
 

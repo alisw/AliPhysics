@@ -66,12 +66,13 @@
 
 // --- ROOT system ---
 class TFile;
+#include <TF1.h> 
 #include <TFolder.h> 
+#include <TGeoGlobalMagField.h>
+#include <TH1F.h> 
+#include <TRandom.h> 
 #include <TTree.h>
 #include <TVirtualMC.h> 
-#include <TH1F.h> 
-#include <TF1.h> 
-#include <TRandom.h> 
 
 // --- Standard library ---
 
@@ -291,8 +292,8 @@ void AliPHOS::CreateMaterials()
   // DEFINITION OF THE TRACKING MEDIA
 
   // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
-  Int_t   isxfld = gAlice->Field()->Integ() ;
-  Float_t sxmgmx = gAlice->Field()->Max() ;
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ() ;
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max() ;
 
   // The scintillator of the calorimeter made of PBW04                              -> idtmed[699]
   AliMedium(0, "PHOS Xtal    $", 0, 1,

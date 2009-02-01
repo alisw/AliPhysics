@@ -21,14 +21,16 @@
 //  Author: A.Morsch
 //------------------------------------------------------------------------
 
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TString.h>
-#include <TGeoManager.h>
 #include <TGeoBBox.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPgon.h>
-#include <TGeoCompositeShape.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -1274,8 +1276,8 @@ void AliFRAMEv2::CreateMaterials()
   tmaxfd = -20.;      // Maximum angle due to field deflection 
   deemax = -.3;       // Maximum fractional energy loss, DLS 
   stmin  = -.8;
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
 
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };

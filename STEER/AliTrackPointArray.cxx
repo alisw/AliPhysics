@@ -201,7 +201,7 @@ Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
   p.SetVolumeID(fVolumeID[i]);
   p.SetCharge(fCharge[i]);
   p.SetDriftTime(fDriftTime[i]);
-  p.SetExtra(fIsExtra[i]);
+  p.SetExtra(fIsExtra ? fIsExtra[i] : kFALSE);
   return kTRUE;
 }
 

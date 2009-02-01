@@ -39,11 +39,12 @@
 
 // --- ROOT libraries ---
 #include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TObjectTable.h>
-#include <TVirtualMC.h>
 #include <TParticle.h>
+#include <TVirtualMC.h>
 
 // --- AliRoot header files ---
 #include "AliConst.h"
@@ -396,10 +397,9 @@ void AliVZEROv3::CreateMaterials()
     AliMaterial( 5, "ALUMINIUM2$", aal, zal, densal, radlal, 0, 0, 0);
  
     AliMixture( 6, "Scintillator$",ascin,zscin,denscin,-2,wscin);
-    
-     
-    Int_t   iSXFLD = gAlice->Field()->Integ();
-    Float_t sXMGMX = gAlice->Field()->Max();
+         
+    Int_t   iSXFLD = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type  
+    Float_t sXMGMX = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();       // Field max.
     
     Float_t tmaxfd, stemax, deemax, epsil, stmin;
         

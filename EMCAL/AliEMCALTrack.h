@@ -31,8 +31,6 @@ public:
 	AliEMCALTrack& operator=(const AliEMCALTrack &t);
 	
 	Int_t    Compare(const TObject *o) const;
-	
-	Double_t GetBz() const;
 	Int_t    GetClusterIndex() const {return fClusterIndex;}
 	Double_t GetClusterDist() const {return fClusterDist;}
 	Double_t GetMass() const {return fMass;}

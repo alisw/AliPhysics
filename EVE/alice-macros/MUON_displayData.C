@@ -15,8 +15,6 @@ AliEveMUONData     *g_muon_data       = 0;
 Int_t  g_currentEvent = -1;
 Bool_t g_fromRaw      = kFALSE;
 
-AliMagFMaps *g_field = 0;
-
 void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t clustersFromESD = kTRUE)
 {
   //
@@ -27,12 +25,13 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();
   if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
 
-  if (g_field == 0) {
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
     printf("Loading field map...\n");
-    g_field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-    AliTracker::SetFieldMap(g_field, kFALSE);
-    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
   }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
 
   TTree* dt = 0;
   TTree* ct = 0;

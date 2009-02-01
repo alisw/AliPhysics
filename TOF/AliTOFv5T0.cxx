@@ -112,13 +112,14 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TDirectory.h"
-#include "TLorentzVector.h"
-#include "TVirtualMC.h"
-#include "TGeoManager.h"
+#include <TDirectory.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoVolume.h>
+#include <TLorentzVector.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
 #include "AliGeomManager.h"
@@ -1310,7 +1311,7 @@ void AliTOFv5T0::CreateMaterials()
 
   //AliTOF::CreateMaterials();
 
-  AliMagF *magneticField = (AliMagF*)gAlice->Field();
+  AliMagF *magneticField = (AliMagF*)((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
 
   Int_t   isxfld = magneticField->Integ();
   Float_t sxmgmx = magneticField->Max();

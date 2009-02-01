@@ -19,7 +19,7 @@
 #include "EVGEN/AliGenHIJINGpara.h"
 #include "EVGEN/AliGenFixed.h"
 #include "EVGEN/AliGenBox.h"
-#include "STEER/AliMagFCheb.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -314,10 +314,7 @@ void Config()
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.5 T)
-    AliMagFCheb* field = new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG);
-
-    gAlice->SetField(field);    
-
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
     Int_t   iABSO  =  1;
     Int_t   iDIPO  =  1;

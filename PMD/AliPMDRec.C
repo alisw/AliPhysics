@@ -10,9 +10,6 @@ void AliPMDRec()
   Int_t firstEvent = 0;
   Int_t lastEvent = 1;
 
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,1);
-
   AliReconstruction rec;
   rec.SetRunReconstruction("PMD");
   rec.SetRunVertexFinder(kFALSE);

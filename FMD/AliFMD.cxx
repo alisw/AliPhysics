@@ -84,14 +84,15 @@
 // These files are not in the same directory, so there's no reason to
 // ask the preprocessor to search in the current directory for these
 // files by including them with `#include "..."' 
-#include <cmath>                // __CMATH__
+#include <TBrowser.h>		// ROOT_TBrowser
 #include <TClonesArray.h>	// ROOT_TClonesArray
+#include <TGeoGlobalMagField.h> // ROOT_TGeoGlobalMagField
+#include <TGeoManager.h>        // ROOT_TGeoManager
 #include <TRotMatrix.h>		// ROOT_TRotMatrix
 #include <TTree.h>		// ROOT_TTree
-#include <TBrowser.h>		// ROOT_TBrowser
-#include <TVirtualMC.h>	        // ROOT_TVirtualMC
 #include <TVector2.h>           // ROOT_TVector2 
-#include <TGeoManager.h>        // ROOT_TGeoManager
+#include <TVirtualMC.h>	        // ROOT_TVirtualMC
+#include <cmath>                // __CMATH__
 
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
@@ -264,8 +265,8 @@ void AliFMD::CreateMaterials()
   Double_t density          = 0;
   Double_t radiationLength  = 0;
   Double_t absorbtionLength = 999;
-  Int_t    fieldType        = gAlice->Field()->Integ();     // Field type 
-  Double_t maxField         = gAlice->Field()->Max();     // Field max.
+  Int_t    fieldType        = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type 
+  Double_t maxField         = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();     // Field max.
   Double_t maxBending       = 0;     // Max Angle
   Double_t maxStepSize      = 0.001; // Max step size 
   Double_t maxEnergyLoss    = 1;     // Max Delta E

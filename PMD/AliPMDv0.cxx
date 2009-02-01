@@ -29,8 +29,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 ////
 
-#include "Riostream.h"
+#include <Riostream.h>
+#include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
+
 #include "AliConst.h" 
 #include "AliMagF.h" 
 #include "AliPMDv0.h"
@@ -776,8 +778,8 @@ void AliPMDv0::CreateMaterials()
   
   //  cout << " Inside create materials " << endl;
 
-  Int_t isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   // --- Define the various materials for GEANT --- 
 

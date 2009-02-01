@@ -29,8 +29,9 @@
 
 #include "AliMagF.h" 
 
-#include <TMath.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TMath.h>
 
 #include <Riostream.h>
 
@@ -38,7 +39,6 @@
 ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
 /// \endcond
 
-const AliMagF* AliMUONTrackExtrap::fgkField = 0x0;
 const Double_t AliMUONTrackExtrap::fgkSimpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
 const Double_t AliMUONTrackExtrap::fgkSimpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
       Double_t AliMUONTrackExtrap::fgSimpleBValue = 0.;
@@ -49,26 +49,15 @@ const Double_t AliMUONTrackExtrap::fgkHelixStepLength = 6.;
 const Double_t AliMUONTrackExtrap::fgkRungeKuttaMaxResidue = 0.002;
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::SetField(const AliMagF* magField)
+void AliMUONTrackExtrap::SetField()
 {
-  /// set magnetic field
-  
-  // set field map
-  fgkField = magField;
-  if (!fgkField) {
-    cout<<"E-AliMUONTrackExtrap::SetField: fgkField = 0x0"<<endl;
-    return;
-  }
-  
-  // set field on/off flag
-  fgFieldON = (fgkField->Factor() == 0.) ? kFALSE : kTRUE;
-  
+  // set field on/off flag  
   // set field at the centre of the dipole
-  if (fgFieldON) {
-    Float_t b[3] = {0.,0.,0.}, x[3] = {50.,50.,(Float_t) fgkSimpleBPosition};
-    fgkField->Field(x,b);
-    fgSimpleBValue = (Double_t) b[0];
-  } else fgSimpleBValue = 0.;
+  const Double_t x[3] = {50.,50.,fgkSimpleBPosition};
+  Double_t b[3] = {0.,0.,0.};
+  TGeoGlobalMagField::Instance()->Field(x,b);
+  fgSimpleBValue = b[0];
+  fgFieldON = fgSimpleBValue ? kTRUE : kFALSE;
   
 }
 
@@ -81,11 +70,6 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   /// The sign of "BendingMomentum" is the sign of the charge.
   
   if (bendingMomentum == 0.) return 1.e10;
-  
-  if (!fgkField) {
-    cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
-    exit(-1);
-  }
   
   const Double_t kCorrectionFactor = 0.9; // impact parameter is 10% overestimated
   
@@ -102,11 +86,6 @@ AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
   /// using simple values for dipole magnetic field.
   
   if (impactParam == 0.) return 1.e10;
-  
-  if (!fgkField) {
-    cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
-    exit(-1);
-  }
   
   const Double_t kCorrectionFactor = 1.1; // bending momentum is 10% underestimated
   
@@ -1013,7 +992,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Doub
     xyz[2]    = vect[kiz] + 0.5 * step * vect[kipz];
 
     //cmodif: call gufld (xyz, h) changed into:
-    GetField (xyz, h);
+    TGeoGlobalMagField::Instance()->Field(xyz,h);
  
     h2xy = h[0]*h[0] + h[1]*h[1];
     h[3] = h[2]*h[2]+ h2xy;
@@ -1230,8 +1209,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       rest  = step - tl;
       if (TMath::Abs(h) > TMath::Abs(rest)) h = rest;
       //cmodif: call gufld(vout,f) changed into:
-
-      GetField(vout,f);
+      TGeoGlobalMagField::Instance()->Field(vout,f);
 
       // *
       // *             start of integration
@@ -1275,7 +1253,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       xyzt[2] = zt;
 
       //cmodif: call gufld(xyzt,f) changed into:
-      GetField(xyzt,f);
+      TGeoGlobalMagField::Instance()->Field(xyzt,f);
 
       at     = a + secxs[0];
       bt     = b + secys[0];
@@ -1312,7 +1290,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       xyzt[2] = zt;
 
       //cmodif: call gufld(xyzt,f) changed into:
-      GetField(xyzt,f);
+      TGeoGlobalMagField::Instance()->Field(xyzt,f);
 
       z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * kthird) * h;
       y      = y + (b + (secys[0] + secys[1] + secys[2]) * kthird) * h;
@@ -1397,21 +1375,3 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     return;
 }
 
-//___________________________________________________________
-void  AliMUONTrackExtrap::GetField(Double_t *Position, Double_t *Field)
-{
-  /// interface for arguments in double precision (Why ? ChF)
-  Float_t x[3], b[3];
-  
-  x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
-  
-  if (fgkField) fgkField->Field(x,b);
-  else {
-    cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
-    exit(-1);
-  }
-  
-  Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
-  
-  return;
-}

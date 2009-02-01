@@ -9,23 +9,16 @@ enum PprRad_t
     kGluonRadiation, kNoGluonRadiation
 };
                                                                                 
-enum PprMag_t
-{
-    k2kG, k4kG, k5kG
-};
-                                                                                
-                                                                                
 // This part for configuration
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k5kG;
+static AliMagF::BMap_t smag = AliMagF::k5kG;
                                                                                 
 // Comment line
 static TString  comment;
                                                                                 
 // Functions
 Float_t EtaToTheta(Float_t arg);
-
 
 void Config()
 {
@@ -153,11 +146,9 @@ void Config()
   //
 
 
-     if (smag == k2kG) {
+    if (smag == AliMagF::k2kG) {
         comment = comment.Append(" | L3 field 0.2 T");
-    } else if (smag == k4kG) {
-        comment = comment.Append(" | L3 field 0.4 T");
-    } else if (smag == k5kG) {
+    } else if (smag == AliMagF::k5kG) {
         comment = comment.Append(" | L3 field 0.5 T");
     }
                                                                                 
@@ -182,10 +173,10 @@ void Config()
                                                                                 
                                                                                 
 // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
+    AliMagF *field = new AliMagF("Maps","Maps", 2, 1., 1., 10., smag);
     field->SetL3ConstField(0); //Using const. field in the barrel
+    TGeoGlobalMagField::Instance()->SetField(field);
     rl->CdGAFile();
-    gAlice->SetField(field);
  
   Int_t   iABSO    = 0; 
   Int_t   iACORDE  = 0; 

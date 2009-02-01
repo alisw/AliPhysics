@@ -272,8 +272,8 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
             }
 	}
 
-	if (gAlice && gAlice->Field()) 
-	  bfield = gAlice->Field()->SolenoidField();
+	if (gAlice && ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())) 
+	  bfield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
 	else
 	  bfield = 0.4;
 	rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();

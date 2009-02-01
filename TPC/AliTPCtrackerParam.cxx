@@ -276,9 +276,7 @@ Int_t AliTPCtrackerParam::Init() {
     
   } else printf("\n ! Creating ALL TRUE tracks at TPC inner radius !\n\n");
 
-
-  // Check if value in the galice file is equal to selected one (fBz)
-  AliMagF *fiel = (AliMagF*)gAlice->Field();
+  AliMagF *fiel = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   Double_t fieval=TMath::Abs((Double_t)fiel->SolenoidField()/10.);
   printf("Magnetic field is %6.2f Tesla\n",fieval);
   if(fBz!=fieval) {
@@ -287,9 +285,6 @@ Int_t AliTPCtrackerParam::Init() {
     printf("Field found on file is: %f T\n",fieval);
     return 1;
   }
-
-  // Set the conversion constant between curvature and Pt
-  AliTracker::SetFieldMap(fiel,kTRUE);
 
   return 0;
 }

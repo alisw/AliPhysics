@@ -217,7 +217,7 @@ void AliTPCCreateDummyCDB()
   //     currently scaling factor 0 used - no magnetic field
   //
   metaData = CreateMetaObject("AliTPCExB");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 0., 10., 1);
+  AliMagF* field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kG));
   AliTPCExBFirst *exbfirst = new  AliTPCExBFirst(field,2.83000000000000000e+04,50,50,50);
   StoreObject("TPC/Calib/ExB", exbfirst, metaData); 
 

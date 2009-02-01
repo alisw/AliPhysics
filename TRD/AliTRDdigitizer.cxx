@@ -36,16 +36,17 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TVector.h>
-#include <TRandom.h>
-#include <TROOT.h>
-#include <TTree.h>
-#include <TFile.h>
 #include <TF1.h>
-#include <TList.h>
-#include <TTask.h>
+#include <TFile.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TList.h>
+#include <TMath.h>
+#include <TROOT.h>
+#include <TRandom.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVector.h>
 
 #include "AliRun.h"
 #include "AliMC.h"
@@ -2665,8 +2666,8 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
     
     // The magnetic field strength
     Double_t x[3] = { 0.0, 0.0, 0.0 };
-    Double_t b[3]; 	 
-    gAlice->Field(x,b);         // b[] is in kilo Gauss 	 
+    Double_t b[3] = {0.,0.,0.}; 	 
+    TGeoGlobalMagField::Instance()->Field(x,b);  // b[] is in kilo Gauss
     Float_t field = b[2] * 0.1; // Tesla
     
     

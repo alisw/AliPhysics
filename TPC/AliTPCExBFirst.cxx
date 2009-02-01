@@ -36,7 +36,7 @@
 
 
 #include "TMath.h"
-#include "AliFieldMap.h"
+//#include "AliFieldMap.h"
 #include "AliMagF.h"
 #include "TTreeStream.h"
 #include "AliTPCExBFirst.h"
@@ -73,10 +73,12 @@ AliTPCExBFirst::AliTPCExBFirst(const AliMagF *bField,
   // drift velocity. Since some kind of lookuptable is created the
   // number of its meshpoints can be supplied.
   //
-  ConstructCommon(0,bField);
+  //  ConstructCommon(0,bField);
+  ConstructCommon(bField);
   SetInstance(this);
 }
 
+/*
 AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
 			       Double_t driftVelocity) 
   : fDriftVelocity(driftVelocity),
@@ -115,6 +117,7 @@ AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
 
   ConstructCommon(bFieldMap,0);
 }
+*/
 
 AliTPCExBFirst::~AliTPCExBFirst() { 
   //
@@ -201,7 +204,8 @@ void AliTPCExBFirst::TestThisBeautifulObject(const char* fileName) {
       }
 }
 
-void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
+
+void AliTPCExBFirst::ConstructCommon(//const AliFieldMap *bFieldMap,
 				     const AliMagF *bField) {
   //
   // THIS IS PRIVATE! (a helper for the constructor)
@@ -221,15 +225,15 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
       Double_t bx=0.,by=0.;
       for (int k=0;k<fkNZ;++k) {
 	x[2]=fkZMin+k*(fkZMax-fkZMin)/(fkNZ-1);
-	Float_t b[3];
+	Double_t b[3];
 	// the x is not const in the Field function...
-	Float_t xt[3];
+	Double_t xt[3];
 	for (int l=0;l<3;++l) xt[l]=x[l];
 	// that happens due to the lack of a sophisticated class design:
-	if (bFieldMap!=0)
-	  bFieldMap->Field(xt,b);
-	else 
-	  bField->Field(xt,b);
+	//	if (bFieldMap!=0)
+	//	  bFieldMap->Field(xt,b);
+	//	else 
+	((AliMagF*)bField)->Field(xt,b);
 	bx+=b[0]/10.;
 	by+=b[1]/10.;
 	fkMeanBx[(k*fkNY+j)*fkNX+i]=bx;
@@ -243,6 +247,7 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
   }
   fkMeanBz/=nBz;
 }
+
 
 void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
 				   Double_t *Bx,Double_t *By) const {

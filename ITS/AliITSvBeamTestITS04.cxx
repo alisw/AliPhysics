@@ -4,23 +4,25 @@
 //  Author: mercedes.lopez.noriega@cern.ch            //
 ////////////////////////////////////////////////////////
 
-#include <TLorentzVector.h>
 
-#include <TGeoManager.h>
-#include <TGeoVolume.h>
-#include <TGeoMatrix.h>
-#include <TGeoPcon.h>
-#include "AliRun.h"
-#include "AliITSvBeamTestITS04.h"
-#include <TClonesArray.h>
-#include <TString.h>
 #include "AliITS.h"
-#include "AliMagF.h"
-#include "TVirtualMC.h"
-#include "AliMC.h"
-#include "AliTrackReference.h"
 #include "AliITSgeom.h"
 #include "AliITShit.h"
+#include "AliITSvBeamTestITS04.h"
+#include "AliMC.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliTrackReference.h"
+
+#include <TVirtualMC.h>
+#include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoPcon.h>
+#include <TGeoVolume.h>
+#include <TLorentzVector.h>
+#include <TString.h>
 
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSPD = 4;
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSDD = 2;
@@ -139,8 +141,8 @@ void AliITSvBeamTestITS04::CreateMaterials(){
     // Media defined here should correspond to the one defined in galice.cuts
     // This file is read in (AliMC*) fMCApp::Init() { ReadTransPar(); }
     // Create ITS materials
-    Int_t   ifield = gAlice->Field()->Integ();
-    Float_t fieldm = gAlice->Field()->Max();
+    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
     
     Float_t tmaxfdSi = 0.1;
     Float_t stemaxSi = 0.0075;

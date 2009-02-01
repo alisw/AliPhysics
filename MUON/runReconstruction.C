@@ -28,7 +28,6 @@
 #include "AliMUONRecoParam.h"
 #include "AliRecoParam.h"
 #include "AliCDBManager.h"
-#include "AliMagFMaps.h"
 #include "AliTracker.h"
 #include "AliReconstruction.h"
 #include <TRandom.h>
@@ -41,9 +40,6 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   man->SetDefaultStorage("local://$ALICE_ROOT");
   
   gRandom->SetSeed(seed);
-  
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
   
   AliReconstruction* MuonRec = new AliReconstruction("galice.root");
   MuonRec->SetInput(input);

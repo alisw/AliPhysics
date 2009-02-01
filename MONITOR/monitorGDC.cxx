@@ -53,8 +53,6 @@
 #include <AliKalmanTrack.h>
 #include "AliITSgeomTGeo.h"
 #include "AliITSgeom.h"
-#include "AliMagF.h"
-#include "AliMagFMaps.h"
 #endif
 
 //_____________________________________________________________________________
@@ -120,19 +118,14 @@ int main(int argc, char** argv)
   //  Int_t sfield = 0;
   //  switch ((Int_t)(AliHLTTransform::GetSolenoidField()+0.5)) {
   //  case 2:
-  //    sfield = AliMagFMaps::k2kG;
-  //    break;
-  //  case 4:
-  //    sfield = AliMagFMaps::k4kG;
+  //    sfield = AliMagF::k2kG;
   //    break;
   //  case 5:
-  //    sfield = AliMagFMaps::k5kG;
+  //    sfield = AliMagF::k5kG;
   //    break;
   //  default:
   //    ::Fatal("AliHLTTransform::GetSolenoidField", "Incorrect magnetic field");
   //  }
-  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
 
   // Init PID
   AliPID pid;

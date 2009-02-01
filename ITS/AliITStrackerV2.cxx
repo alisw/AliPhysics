@@ -452,7 +452,7 @@ Int_t AliITStrackerV2::RefitInward(AliESDEvent *event) {
        if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {//The beam pipe 
          AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
          esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
-         Float_t r[3]={0.,0.,0.};
+         Double_t r[3]={0.,0.,0.};
          Double_t maxD=3.;
 	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
          ntrk++;

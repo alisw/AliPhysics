@@ -47,7 +47,7 @@
 
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
@@ -81,11 +81,13 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   
   // set  mag field 
   // waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
   // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  AliMUONTrackExtrap::SetField();
 
   Double_t parameters[3*156];
   Double_t errors[3*156];

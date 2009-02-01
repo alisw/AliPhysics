@@ -10,20 +10,17 @@
 
 #include "AliTPCExB.h"
 
-class AliFieldMap;
 class AliMagF;
 
 class AliTPCExBExact:public AliTPCExB  {
 public:
   AliTPCExBExact(); // just for the I/O stuff
-  AliTPCExBExact(const AliFieldMap *bFieldMap,Double_t driftVelocity,
-		 Int_t n=100);
+  //AliTPCExBExact(const AliMagF *bFieldMap,Double_t driftVelocity,Int_t n=100);
   AliTPCExBExact(const AliMagF *bField,Double_t driftVelocity,Int_t n=100,
 		 Int_t nx=30,Int_t ny=30,Int_t nz=100);
   virtual ~AliTPCExBExact();
   virtual void Correct(const Double_t *position,Double_t *corrected);
-  void TestThisBeautifulObject(const AliFieldMap *bFieldMap,
-			       const char* fileName);
+  //void TestThisBeautifulObject(const AliFieldMap *bFieldMap,const char* fileName);
   void TestThisBeautifulObject(const AliMagF *bField,const char* fileName);
 protected:
   Double_t fDriftVelocity; // The electron drift velocity.
@@ -37,7 +34,7 @@ private:
   void Motion(const Double_t *x,Double_t t,Double_t *dxdt) const;
   void CalculateDistortion(const Double_t *x,Double_t *dist) const;
   void DGLStep(Double_t *x,Double_t t,Double_t h) const;
-  const AliFieldMap *fkMap; //! the magnetic field map as supplied by the user
+  //const AliFieldMap *fkMap; //! the magnetic field map as supplied by the user
   const AliMagF *fkField;   //! the magnetic field as supplied by the user
   Int_t fkN;        // max number of integration steps
   Int_t fkNX;       // field mesh points in x direction

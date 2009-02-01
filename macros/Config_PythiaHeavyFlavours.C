@@ -23,7 +23,7 @@
 #include "STEER/AliConfig.h"
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFMaps.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -67,11 +67,6 @@ enum YCut_t
 {
   kFull, kBarrel, kMuonArm
 };
-//--- Magnetic Field ---
-enum Mag_t
-{
-    k2kG, k4kG, k5kG
-};
 //--- Trigger config ---
 enum TrigConf_t
 {
@@ -91,7 +86,7 @@ void          LoadPythia();
 static ProcessHvFl_t procHvFl = kCharmpp14000wmi;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
-static Mag_t         mag      = k5kG; 
+static AliMagF::BMap_t mag    = AliMagF::k5kG; 
 static TrigConf_t    trig     = kDefaultPbPbTrig; // default PbPb trigger configuration
 // nEvts = -1  : you get 1 QQbar pair and all the fragmentation and 
 //               decay chain
@@ -301,20 +296,18 @@ void Config()
 
   // FIELD
   //    
-  if (mag == k2kG) {
+  if (mag == AliMagF::k2kG) {
     comment = comment.Append(" | L3 field 0.2 T");
-  } else if (mag == k4kG) {
-    comment = comment.Append(" | L3 field 0.4 T");
-  } else if (mag == k5kG) {
+  } else if (mag == AliMagF::k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
     
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
+  AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., mag);
   field->SetL3ConstField(0); //Using const. field in the barrel
-  rl->CdGAFile();
-  gAlice->SetField(field);    
+  TGeoGlobalMagField::Instance()->SetField(field);
 
+  rl->CdGAFile();
 
   // By default all ALICE is switched off
   Int_t iABSO=0;

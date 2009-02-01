@@ -28,7 +28,7 @@
 #include "AliMUONRecoParam.h"
 #include "AliRecoParam.h"
 #include "AliCDBManager.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliReconstruction.h"
 #include <TRandom.h>
@@ -62,8 +62,9 @@ void runDataReconstruction(Int_t calib = 1)
   gRandom->SetSeed(seed);
   
   // no magnetic field --> factor (4th parameter) = 0
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 0., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
+  TGeoGlobalMagField::Instance()->GetField()->SetFactorSol(0);
+  TGeoGlobalMagField::Instance()->GetField()->SetFactorDip(0);
+
   AliReconstruction *MuonRec = new AliReconstruction();
   
   MuonRec->SetInput(input.Data());

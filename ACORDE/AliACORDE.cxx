@@ -38,10 +38,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
-#include <TTree.h>
-#include <TVirtualMC.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TStopwatch.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 #include "AliACORDE.h"
 #include "AliMagF.h"
@@ -85,8 +86,8 @@ AliACORDE::~AliACORDE()
 void AliACORDE::CreateMaterials()
 {
   // Magnatic field inside the pit
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
   //Magnetic field above the Magnet.
   Int_t xfield = 0;   // no Magnetic field.

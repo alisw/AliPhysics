@@ -43,7 +43,7 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
@@ -205,9 +205,14 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   
   // set  mag field 
   // waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
+
 
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
@@ -347,7 +352,7 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
     }
 
     // set the magnetic field for track extrapolations
-    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+    AliMUONTrackExtrap::SetField();
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 

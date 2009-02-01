@@ -9,7 +9,6 @@
 //  #include "AliTPCLoader.h"
   #include "AliITSLoader.h"
   #include "TStopwatch.h"
-  #include "AliMagF.h"
 #endif
 
 Int_t AliITSFindTracksSA(Int_t evin=0,Int_t nevents=1,char *opt="onlyITS+6/6",const Char_t *clusterFileName="clusters.root", const Char_t *tracksFileName="ITS.TracksSA.root") {

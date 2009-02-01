@@ -1,9 +1,6 @@
 void plotField(Int_t iField = 0)
 {
 //
-//  iField = 0    2 kG  solenoid 
-//           1    4 kG  solenoid
-//           2    5 kG  solenoid
 //  
 //  load necessary libraries
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libminicern");
@@ -15,9 +12,7 @@ void plotField(Int_t iField = 0)
 //
 //  create field map
 
-     AliMagFMaps* field = new AliMagFMaps(
-     "Maps","Maps", 
-     2, 1., 10., iField);
+     AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
 
 //     field-SetL3ConstField(1);
      

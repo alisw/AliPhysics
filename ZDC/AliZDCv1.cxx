@@ -963,8 +963,8 @@ void AliZDCv1::CreateMaterials()
   
   // --- Tracking media parameters 
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
-//  Int_t   isxfld = gAlice->Field()->Integ();
-//  Float_t fieldm = gAlice->Field()->Max();
+//  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+//  Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   Float_t fieldm = 0., tmaxfd = 0.;
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   

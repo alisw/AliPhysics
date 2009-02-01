@@ -744,7 +744,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
 	 AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
 	 //printf("                                       %d\n",esdTrack->GetITSModuleIndex(0));
 	 //esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit); //original line
-	 Float_t r[3]={0.,0.,0.};
+	 Double_t r[3]={0.,0.,0.};
 	 Double_t maxD=3.;
 	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
 	 ntrk++;

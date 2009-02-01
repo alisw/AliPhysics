@@ -63,7 +63,6 @@
 
 #include "AliMpConstants.h"
 
-#include "AliMagF.h"
 #include "AliLog.h"
 #include "AliTracker.h"
 
@@ -98,11 +97,7 @@ fkMaxDistance(99999.)
 {
     /// Default constructor
     InitMembers();
-
-    // Set magnetic field
-    const AliMagF* kField = AliTracker::GetFieldMap();
-    if (!kField) AliFatal("No field available");
-    AliMUONTrackExtrap::SetField(kField);
+    AliMUONTrackExtrap::SetField();
 }
 
 

@@ -23,7 +23,7 @@
 #include <AliRawReaderRoot.h>
 #include <AliRawReaderFile.h>
 #include <AliRawReaderDate.h>
-#include <AliMagFMaps.h>
+#include <AliMagF.h>
 #include <AliCDBManager.h>
 #include <AliCDBStorage.h>
 #include <AliHeader.h>
@@ -76,8 +76,6 @@ TString  AliEveEventManager::fgESDFileName("AliESDs.root");
 TString  AliEveEventManager::fgAODFileName("AliAOD.root");
 TString  AliEveEventManager::fgRawFileName("raw.root");
 TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
-
-AliMagF* AliEveEventManager::fgMagField = 0;
 
 TList*   AliEveEventManager::fgAODfriends = 0;
 
@@ -944,33 +942,6 @@ AliRawReader* AliEveEventManager::AssertRawReader()
   return fgCurrent->fRawReader;
 }
 
-AliMagF* AliEveEventManager::AssertMagField()
-{
-  // Make sure AliMagF is initialized and returns it.
-  // Run-loader must be initialized to get the correct magnetic field!
-  // Throws exception in case magnetic field is not available.
-  // Static utility for macros.
-
-  // !!!! This should be fixed ... get field also in some other way,
-  // not only via run-loader.
-
-  static const TEveException kEH("AliEveEventManager::AssertMagField ");
-
-  if (fgMagField == 0)
-  {
-    if (fgMaster && fgMaster->fRunLoader && fgMaster->fRunLoader->GetAliRun())
-    {
-      ::Info(kEH, "Retrieving magnetic field from AliRun.");
-      fgMagField = fgMaster->fRunLoader->GetAliRun()->Field();
-    }
-    else
-    {
-      ::Warning(kEH, "Instantiating default magnetic field (5kG).");
-      fgMagField = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-    }
-  }
-  return fgMagField;
-}
 
 TGeoManager* AliEveEventManager::AssertGeometry()
 {

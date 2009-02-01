@@ -23,6 +23,7 @@ class AliCDBParam;
 class AliRunLoader;
 class AliLegoGenerator;
 class AliLego;
+class AliMagF;
 
 class AliSimulation: public TNamed {
 public:

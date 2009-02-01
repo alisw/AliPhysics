@@ -26,7 +26,7 @@ class TGraph;
 class TGeoManager; 
 class TString;
 class TStatToolkit; 
-class AliMagFMaps;
+class AliMagF;
 class AliESDVertex;
 
 #include "TNamed.h"

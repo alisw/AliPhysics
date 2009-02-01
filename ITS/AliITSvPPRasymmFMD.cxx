@@ -29,15 +29,16 @@
 
 // See AliITSvPPRasymmFMD::StepManager().
 
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TGeoMatrix.h>
-#include <TGeoPhysicalNode.h>
 #include <TArrayD.h>
 #include <TArrayF.h>
-#include <TString.h>
+#include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoPhysicalNode.h>
 #include <TGeoVolume.h>
+#include <TLorentzVector.h>
+#include <TString.h>
 #include <TVirtualMC.h>
 
 #include "AliITS.h"
@@ -5285,8 +5286,8 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     // Return:
     //   none.
 
-    Int_t   ifield = gAlice->Field()->Integ();
-    Float_t fieldm = gAlice->Field()->Max();
+    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
     Float_t tmaxfd = 0.1; // 1.0; // Degree
     Float_t stemax = 1.0; // cm

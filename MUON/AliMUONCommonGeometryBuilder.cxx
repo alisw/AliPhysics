@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 
 
+#include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
 
 #include "AliMUONCommonGeometryBuilder.h"
@@ -104,8 +105,8 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
   Float_t wbak[3] = {6.     , 6.   , 1.}; 
   Float_t dbak = 1.4;
 
-  Int_t iSXFLD   = gAlice->Field()->PrecInteg();
-  Float_t sXMGMX = gAlice->Field()->Max();
+  Int_t iSXFLD   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->PrecInteg();
+  Float_t sXMGMX = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   //
   // --- Define the various materials for GEANT --- 
   fMUON->AliMaterial(9, "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);

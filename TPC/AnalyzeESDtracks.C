@@ -97,9 +97,6 @@ void AnalyzeESDtracks(Int_t run){
   TTreeSRedirector *  pcstream = new TTreeSRedirector("TPCtracks.root");
   TTreeSRedirector &cstream = *pcstream;
   //
-  // dummy magnetic field
-  AliMagF mag("aaa","aaa",1,1,10);
-  AliTracker::SetFieldMap(&mag,kTRUE);
   TFile f("AliESDs.root");
   TTree * tree =(TTree*)f.Get("esdTree"); 
   AliESD * esd =0;

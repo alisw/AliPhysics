@@ -42,7 +42,7 @@ void AliITSVertexerTracksTest2(Int_t evFirst=0,Int_t evLast=0,
   if(!gSystem->AccessPathName(galiceName,kFileExists)) {
     galice = new TFile(galiceName);
     gAlice = (AliRun*)galice->Get("gAlice");
-    AliMagF *fiel = (AliMagF*)gAlice->Field();
+    AliMagF *fiel = TGeoGlobalMagField::Instance()->GetField();
     field=(Double_t)fiel->SolenoidField()/10.;
     AliKalmanTrack::SetConvConst(100/0.299792458/field);
     printf(" B = %3.1f read from gAlice and set\n",field);

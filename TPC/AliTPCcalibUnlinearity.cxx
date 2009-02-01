@@ -66,7 +66,7 @@
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliTracker.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTPCCalROC.h"
 
 #include "AliLog.h"

@@ -130,9 +130,7 @@ void Config()
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-    gAlice->SetField(field);    
-
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
     Int_t   iABSO  =  0;
     Int_t   iDIPO  =  0;

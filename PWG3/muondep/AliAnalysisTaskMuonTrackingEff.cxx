@@ -35,7 +35,7 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDInputHandler.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliAnalysisManager.h"
 
@@ -209,16 +209,10 @@ void AliAnalysisTaskMuonTrackingEff::CreateOutputObjects()
 void AliAnalysisTaskMuonTrackingEff::ConnectInputData(Option_t */*option*/)
 
 {
-//Set mag field; waiting for mag field in CDB 
-//-------------------------------------------
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-    AliTracker::SetFieldMap(field, kFALSE);
-    
-//Set Field Map for track extrapolation
-//-------------------------------------
-    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  //Set Field Map for track extrapolation
+  AliMUONTrackExtrap::SetField();
 
-//Connect input
+  //Connect input
     AliESDInputHandler* esdHandler = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if (!esdHandler)
     {

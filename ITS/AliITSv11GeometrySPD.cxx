@@ -69,14 +69,15 @@
 #include <TPolyMarker.h>
 
 // Root Geometry includes
-#include <TGeoVolume.h>
-#include <TGeoTube.h> // contains TGeoTubeSeg
-#include <TGeoEltu.h>
-#include <TGeoXtru.h>
-#include <TGeoMatrix.h>
-#include <TGeoMaterial.h>
-#include <TGeoMedium.h>
 #include <TGeoCompositeShape.h>
+#include <TGeoEltu.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoMaterial.h>
+#include <TGeoMatrix.h>
+#include <TGeoMedium.h>
+#include <TGeoTube.h> // contains TGeoTubeSeg
+#include <TGeoVolume.h>
+#include <TGeoXtru.h>
 
 // AliRoot includes
 #include "AliLog.h"
@@ -273,8 +274,8 @@ Int_t AliITSv11GeometrySPD::CreateSPDCentralMaterials(Int_t &medOffset,
     TGeoMixture  *mix;
     TGeoMedium   *med;
     //
-    Int_t    ifield = (gAlice->Field()->Integ());
-    Double_t fieldm = (gAlice->Field()->Max());
+    Int_t    ifield = (((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ());
+    Double_t fieldm = (((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max());
     Double_t params[8] = {8 * 0.0};
 
     params[1] = (Double_t) ifield;

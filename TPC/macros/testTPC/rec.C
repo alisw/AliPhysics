@@ -52,11 +52,6 @@ void rec(const char *filename="data.root")
   // MUON settings
   AliLog::SetClassDebugLevel("AliMUONRawStreamTracker",3);
  
-  // Tracking settings
-  //  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 0., 10., 2);
-  AliTracker::SetFieldMap(field,1);
-
   // AliReconstruction settings
   AliReconstruction rec;
   rec.SetUniformFieldTracking(kFALSE);  

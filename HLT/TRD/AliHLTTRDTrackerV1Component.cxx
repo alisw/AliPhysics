@@ -36,7 +36,7 @@ using namespace std;
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliESDEvent.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliESDfriend.h"
 
 #include "AliTRDcalibDB.h"
@@ -62,7 +62,6 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fOutputPercentage(100), // By default we copy to the output exactly what we got as input  
   fStrorageDBpath("local://$ALICE_ROOT"),
   fCDB(NULL),
-  fField(NULL),
   fGeometryFileName(""),
   fUseHLTClusters(kFALSE),
   fUseHLTTracks(kFALSE),
@@ -332,28 +331,26 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
       HLTWarning("No magnetic field switch stated. Use -magnetic_field_ON or -magnetic_field_OFF flag. Defaulting to OFF = NO MAGNETIC FIELD");
     }
   
-  if (iMagneticField == 0)
-    {
-      // magnetic field OFF
-      fField = new AliMagFMaps("Maps","Maps", 2, 0., 10., 1);
-      HLTDebug("Magnetic field is OFF.");
-    }
-
-  if (iMagneticField == 1)
-    {
-      // magnetic field ON
-      fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-      HLTDebug("Magnetic field is ON.");
-    }
-
-  if (fField == 0)
-    {
-      HLTError("Unable to init the field. Trouble at this point.");
-      return -1;
-    }
-
-  // kTRUE sets the map uniform
-  AliTracker::SetFieldMap(fField,kTRUE);
+  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
+    if (iMagneticField == 0)
+      {
+	// magnetic field OFF
+	AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kGUniform);
+	TGeoGlobalMagField::Instance()->SetField(field);
+	HLTDebug("Magnetic field is OFF.");
+      }
+    
+    if (iMagneticField == 1)
+      {
+	// magnetic field ON
+	AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+	TGeoGlobalMagField::Instance()->SetField(field);
+	HLTDebug("Magnetic field is ON.");
+      }
+  }
+  else {
+    HLTError("Magnetic field is already set and locked, cannot redefine it." );
+  }
 
   // reconstruction parameters
   if (iRecoParamType < 0 || iRecoParamType > 2)
@@ -443,9 +440,6 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 int AliHLTTRDTrackerV1Component::DoDeinit()
 {
   // Deinitialization of the component
-  
-  delete fField;
-  fField = 0x0;
 
   fTracker->SetClustersOwner(kFALSE);
   delete fTracker;

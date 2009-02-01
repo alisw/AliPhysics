@@ -402,12 +402,3 @@ void  AliTPCtrack::UpdatePoints()
   //
 }
 
-Double_t AliTPCtrack::GetBz() const {
-  //
-  // returns Bz component of the magnetic field (kG)
-  //
-  if (AliTracker::UniformField()) return AliTracker::GetBz();
-  Double_t r[3]; GetXYZ(r);
-  return AliTracker::GetBz(r);
-}
-

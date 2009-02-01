@@ -29,11 +29,12 @@
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
 //#include <TGeoManager.h>      //CreateGeometry()
+#include <AliCDBEntry.h>      //CreateMaterials()
+#include <AliCDBManager.h>    //CreateMaterials()
 #include <TF1.h>              //DefineOpticalProperties()
 #include <TF2.h>              //DefineOpticalProperties()
+#include <TGeoGlobalMagField.h>
 #include <TLorentzVector.h>   //IsLostByFresnel() 
-#include <AliCDBManager.h>    //CreateMaterials()
-#include <AliCDBEntry.h>      //CreateMaterials()
  
 ClassImp(AliHMPIDv1)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -66,8 +67,8 @@ void AliHMPIDv1::CreateMaterials()
   
     Int_t   matId=0;                           //tmp material id number
     Int_t   unsens =  0, sens=1;               //sensitive or unsensitive medium
-    Int_t   itgfld = gAlice->Field()->Integ(); //type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
-    Float_t maxfld = gAlice->Field()->Max();   //max field value
+    Int_t   itgfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ(); //type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
+    Float_t maxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();   //max field value
     Float_t tmaxfd = -10.0;                    //max deflection angle due to magnetic field in one step
     Float_t deemax = - 0.2;                    //max fractional energy loss in one step   
     Float_t stemax = - 0.1;                    //mas step allowed [cm]

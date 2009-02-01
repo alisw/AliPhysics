@@ -27,6 +27,8 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
+
 #include "AliVZEROv6.h"
  
 ClassImp(AliVZEROv6)
@@ -400,8 +402,8 @@ void AliVZEROv6::CreateMaterials()
 
 //   Int_t  *idtmed = fIdtmed->GetArray()-2999;
       
-   Int_t     fieldType       = gAlice->Field()->Integ();     // Field type 
-   Double_t  maxField        = gAlice->Field()->Max();       // Field max.
+   Int_t     fieldType       = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type 
+   Double_t  maxField        = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();       // Field max.
    Double_t  maxBending      = 0;     // Max Angle
    Double_t  maxStepSize     = 0.001; // Max step size 
    Double_t  maxEnergyLoss   = 1;     // Max Delta E

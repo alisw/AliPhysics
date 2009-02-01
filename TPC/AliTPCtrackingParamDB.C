@@ -90,10 +90,8 @@ Int_t TPCParamTracks(const Int_t coll,Int_t firstEvent,Int_t lastEvent) {
    TDatabasePDG *DataBase = TDatabasePDG::Instance();
 
    // Get field from galice.root
-   AliMagF *fiel = (AliMagF*)gAlice->Field();
+   AliMagF *fiel = TGeoGlobalMagField::Instance()->GetField();
    Double_t fieval=TMath::Abs((Double_t)fiel->SolenoidField()/10.);
-   // Set the conversion constant between curvature and Pt
-   AliTracker::SetFieldMap(fiel,kTRUE);
 
    /**** The TPC corner ********************/
 

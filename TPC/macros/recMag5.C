@@ -75,9 +75,6 @@ void recMag5(const char *filename="data.root")
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
  
   // Tracking settings
-  //  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliMagF* field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG);
-  AliTracker::SetFieldMap(field,1);
   Double_t mostProbPt=0.35;
   AliExternalTrackParam::SetMostProbablePt(mostProbPt);
 

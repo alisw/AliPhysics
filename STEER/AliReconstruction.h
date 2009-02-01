@@ -78,10 +78,9 @@ public:
 
   //*** Magnetic field setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
-  Bool_t 
-  SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
-	      Float_t factor=1., 
-              const char *path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  Bool_t SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
+		     Float_t l3Pol=1., Float_t dipPol=1., Float_t benergy=7000., char* btype="pp",  
+		     const char *path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
 
   //*** Global reconstruction flag setters
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
@@ -200,7 +199,6 @@ private:
 
   //*** Magnetic field map settings *******************
   Bool_t         fUniformField;       // uniform field tracking flag
-  AliMagF       *fForcedFieldMap;     //! independent, not GRP, field map
 
   //*** Global reconstruction flags *******************
   Bool_t         fRunVertexFinder;    // run the vertex finder

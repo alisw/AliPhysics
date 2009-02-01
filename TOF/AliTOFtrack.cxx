@@ -216,15 +216,6 @@ Int_t AliTOFtrack::Compare(const TObject *o) const {
   return 0;
 }
 
-//_____________________________________________________________________________
-Double_t AliTOFtrack::GetBz() const {
-  //
-  // returns Bz component of the magnetic field (kG)
-  //
-  if (AliTracker::UniformField()) return AliTracker::GetBz();
-  Double_t r[3]; GetXYZ(r);
-  return AliTracker::GetBz(r);
-}
 
 //_____________________________________________________________________________
 void AliTOFtrack::GetPropagationParameters(Double_t *param) {

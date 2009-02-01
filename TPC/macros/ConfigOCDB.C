@@ -20,8 +20,7 @@ void ConfigOCDB(Float_t bfield){
   //
   // Setup magnetic field
   //
-  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,0);
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
   //
   //
   //

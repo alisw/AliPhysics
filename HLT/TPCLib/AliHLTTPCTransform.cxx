@@ -16,10 +16,11 @@
 #include <AliTPCRF1D.h>
 #endif
 #ifdef use_root
-#include <TFile.h>
-#include <TUnixSystem.h>
-#include <TTimeStamp.h>
 #include <TError.h>
+#include <TFile.h>
+#include <TGeoGlobalMagField.h>
+#include <TTimeStamp.h>
+#include <TUnixSystem.h>
 #endif
 
 #include "AliHLTTPCLogging.h"
@@ -971,11 +972,12 @@ Bool_t AliHLTTPCTransform::Init(AliRunLoader *runLoader)
   }
   
   fgVersion=kValiroot;
-  SetBFieldFactor((Double_t)runLoader->GetAliRun()->Field()->Factor());
-  SetSolenoidBField(-
-		    (Double_t)runLoader->GetAliRun()->Field()->SolenoidField()/
-		    (Double_t)runLoader->GetAliRun()->Field()->Factor()
-		    );
+  AliMagF* mag = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  double fc = mag ? mag->GetFactorSol() : 0;
+  double bz = mag ? -mag->SolenoidField() : 0;
+  if (fc!=0) bz/=fc;
+  SetBFieldFactor( fc );
+  SetSolenoidBField( bz );
   fgPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();
@@ -1318,11 +1320,18 @@ Bool_t AliHLTTPCTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   }
   
   fgVersion=kValiroot;
-  SetBFieldFactor((Double_t)lgAlice->Field()->Factor());
-  SetSolenoidBField(-
-		    (Double_t)lgAlice->Field()->SolenoidField()/
-		    (Double_t)lgAlice->Field()->Factor()
-		    );
+  AliMagF* mag = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  double fc = mag ? mag->GetFactorSol() : 0;
+  double bz = mag ? -mag->SolenoidField() : 0;
+  if (fc!=0) bz/=fc;
+  SetBFieldFactor( fc );
+  SetSolenoidBField( bz );
+
+  //   SetBFieldFactor((Double_t)l((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Factor());
+  //   SetSolenoidBField(-
+  // 		    (Double_t)l((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField()/
+  // 		    (Double_t)l((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Factor()
+  // 		    );
   fgPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();

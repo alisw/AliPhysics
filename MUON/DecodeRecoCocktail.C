@@ -57,12 +57,12 @@
 #include "AliESDVertex.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMagF.h"
 /*TODO: need to update this with changes made to ITS
 #include "AliITSVertexerPPZ.h"
 #include "AliITSLoader.h"
 */
 #include "AliTracker.h"
-#include "AliMagFMaps.h"
 #endif
 
 
@@ -103,11 +103,13 @@ void DecodeRecoCocktail(
   
   // set  mag field 
   // waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
   // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  AliMUONTrackExtrap::SetField();
 
   AliMUONRecoCheck *rc = new AliMUONRecoCheck("AliESDs.root", simdir);
   Int_t nev = rc->NumberOfEvents();

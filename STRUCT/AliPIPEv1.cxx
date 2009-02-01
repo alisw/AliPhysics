@@ -284,8 +284,8 @@ void AliPIPEv1::CreateMaterials()
   // Create materials for beam pipe
   //
 
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };

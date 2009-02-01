@@ -3,7 +3,6 @@
   #include "AliRun.h"
   #include "AliRunLoader.h"
   #include "AliLoader.h"
-  #include "AliMagF.h"
   #include "AliTPCtracker.h"
   #include "AliITS.h"
   #include "AliITSgeom.h"

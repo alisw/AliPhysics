@@ -138,8 +138,6 @@ void cal_hlt_tpc_offline(const char* input="./")
   rec.SetFillESD("");
   rec.SetRunQA(":");
   rec.SetRunGlobalQA(kFALSE);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kFALSE);
   rec.SetFillTriggerESD(kFALSE);
   rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libANALYSIS.so libANALYSISalice.so libTPCcalib.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
   rec.Run();

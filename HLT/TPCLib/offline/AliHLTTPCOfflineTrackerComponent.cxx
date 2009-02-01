@@ -30,7 +30,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliGeomManager.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTPCReconstructor.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
@@ -296,28 +296,30 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
 	// TODO: check if there is common functionality in the AliMagF* classes
 	float SolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
 	if (SolenoidBz<kAlmost0Field) SolenoidBz=kAlmost0Field;
-	float factor=1.;
-	int map=AliMagFMaps::k2kG;
+	float factor=SolenoidBz/5;
+	//
+	AliMagF::BMap_t map = AliMagF::k5kG;
 	if (SolenoidBz<3.) {
-	  map=AliMagFMaps::k2kG;
+	  map=AliMagF::k2kG;
 	  factor=SolenoidBz/2;
-	} else if (SolenoidBz>=3. && SolenoidBz<4.5) {
+	} /*else if (SolenoidBz>=3. && SolenoidBz<4.5) {
 	  map=AliMagFMaps::k4kG;
 	  factor=SolenoidBz/4;
-	} else {
+	  }
+	else {
 	  map=AliMagFMaps::k5kG;
 	  factor=SolenoidBz/5;
-	}
+	  } */
 	// the magnetic field map is not supposed to change
 	// field initialization should be done once in the beginning
 	// TODO: does the factor need adjustment?
-	const AliMagF* currentMap=AliTracker::GetFieldMap();
+	const AliMagF* currentMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
 	if (!currentMap) {
-	  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., map);
-	  AliTracker::SetFieldMap(field,kFALSE);
+	  AliMagF* field = new AliMagF("MagneticFieldMap", "BMap", 2, 1., 1., 10., map);
+	  TGeoGlobalMagField::Instance()->SetField(field);
 	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
-	} else if (currentMap->Map()!=map) {
-	  HLTWarning("omitting request to override field map %s with %s", currentMap->Map(), map);
+	} else if (currentMap->GetMapType()!=map) {
+	  HLTWarning("omitting request to override field map %d with %d", currentMap->GetMapType(), map);
 	}
 	continue;
       } else {

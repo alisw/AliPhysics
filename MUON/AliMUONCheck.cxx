@@ -49,7 +49,7 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliLog.h"
 
 #include <TSystem.h>

@@ -43,13 +43,14 @@
 #include "AliTrackReference.h"
 #include "AliLog.h"
 
-#include <TRandom.h>
+#include <TClonesArray.h>
 #include <TF1.h>
 #include <TF2.h>
-#include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoMatrix.h>
+#include <TRandom.h>
 #include <TRandom.h> 
 #include <TVirtualMC.h>
-#include <TGeoMatrix.h>
 
 #include <string>
 
@@ -406,7 +407,7 @@ void AliMUONv1::StepManager()
     Float_t thetawires      =  TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) ;// We use Pi-theta because z is negative
     Double_t bField[3] = {0};
     fTrackPosition.Vect().GetXYZ(tmp);
-    gAlice->Field(tmp,bField);
+    TGeoGlobalMagField::Instance()->Field(tmp,bField);
 
     if (fAngleEffect && !fMagEffect){
       thetawires = TMath::Abs(thetawires);

@@ -36,6 +36,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
 
 #include "AliBODY.h"
@@ -139,8 +140,8 @@ void AliBODY::CreateGeometry()
 void AliBODY::CreateMaterials()
 {
 // Create materials and media
-  Int_t isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   // AIR
 

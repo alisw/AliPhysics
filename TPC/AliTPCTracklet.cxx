@@ -744,11 +744,9 @@ Bool_t AliTPCTracklet::PropagateToMeanX(const AliTPCTracklet &t1,
   return t1m&&t2m;
 }
 
-double AliTPCTracklet::GetBz(Double_t *xyz) {
-  if (AliTracker::UniformField())
-    return AliTracker::GetBz();
-  else
-    return AliTracker::GetBz(xyz);
+double AliTPCTracklet::GetBz(Double_t *xyz) 
+{
+  return AliTracker::GetBz(xyz);
 }
 
 void AliTPCTracklet::RandomND(Int_t ndim,const Double_t *p,const Double_t *c,

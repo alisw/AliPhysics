@@ -15,7 +15,7 @@
 
 // STEER includes
 #include "AliLog.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
@@ -139,9 +139,14 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
   
   // set mag field
   // waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
+
 
   // open the ESD file
   TFile* esdFile = TFile::Open(esdFileName);
@@ -189,8 +194,6 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
     //    printf("\n Nb of events analysed: %d\r",iEvent);
     //      cout << " number of tracks: " << nTracks  <<endl;
   
-    // set the magnetic field for track extrapolations
-    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 

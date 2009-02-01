@@ -18,6 +18,7 @@
 
 class AliESDtrack;
 class AliESDVertex;
+class AliTracker;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {
@@ -90,7 +91,6 @@ public:
   Int_t GetExtraModule(Int_t ilayer) const {return fModule[AliITSgeomTGeo::kNLayers+ilayer];}
 
 protected:
-  Double_t GetBz() const ;
   Double_t fdEdx;            // dE/dx
 
   static const Int_t fgkWARN; //! used for debugging purposes

@@ -23,6 +23,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
  
 #include "AliMC.h"
@@ -312,8 +313,8 @@ void AliTRD::CreateMaterials()
   // Create the materials for the TRD
   //
 
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   // For polyethilene (CH2) 
   Float_t ape[2]    = { 12.011 ,  1.0079 };

@@ -108,91 +108,83 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TArrayF.h>
-#include <TFile.h>
-#include <TList.h>
-#include <TSystem.h>
-#include <TROOT.h>
-#include <TPluginManager.h>
-#include <TGeoManager.h>
-#include <TLorentzVector.h>
-#include <TArrayS.h>
 #include <TArrayD.h>
-#include <TObjArray.h>
-#include <TMap.h>
+#include <TArrayF.h>
+#include <TArrayS.h>
 #include <TChain.h>
+#include <TFile.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
+#include <TList.h>
+#include <TLorentzVector.h>
+#include <TMap.h>
+#include <TObjArray.h>
+#include <TPRegexp.h>
+#include <TParameter.h>
+#include <TPluginManager.h>
 #include <TProof.h>
 #include <TProofOutputFile.h>
-#include <TParameter.h>
+#include <TROOT.h>
+#include <TSystem.h>
 
-#include "AliReconstruction.h"
-#include "AliCodeTimer.h"
-#include "AliReconstructor.h"
-#include "AliLog.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliRawReaderFile.h"
-#include "AliRawReaderDate.h"
-#include "AliRawReaderRoot.h"
-#include "AliRawEventHeaderBase.h"
-#include "AliRawEvent.h"
-#include "AliESDEvent.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDfriend.h"
-#include "AliESDVertex.h"
-#include "AliESDcascade.h"
-#include "AliESDkink.h"
-#include "AliESDtrack.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
-#include "AliMultiplicity.h"
-#include "AliTracker.h"
-#include "AliVertexer.h"
-#include "AliVertexerTracks.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliPID.h"
-#include "AliESDpid.h"
-#include "AliESDtrack.h"
-#include "AliESDPmdTrack.h"
-
-#include "AliESDTagCreator.h"
-
-#include "AliGeomManager.h"
-#include "AliTrackPointArray.h"
+#include "AliAlignObj.h"
+#include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
-#include "AliAlignObj.h"
-
+#include "AliCTPRawStream.h"
+#include "AliCascadeVertexer.h"
 #include "AliCentralTrigger.h"
-#include "AliTriggerConfiguration.h"
+#include "AliCodeTimer.h"
+#include "AliDAQ.h"
+#include "AliDetectorRecoParam.h"
+#include "AliESDCaloCells.h"
+#include "AliESDCaloCluster.h"
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDPmdTrack.h"
+#include "AliESDTagCreator.h"
+#include "AliESDVertex.h"
+#include "AliESDcascade.h"
+#include "AliESDfriend.h"
+#include "AliESDkink.h"
+#include "AliESDpid.h"
+#include "AliESDtrack.h"
+#include "AliESDtrack.h"
+#include "AliEventInfo.h"
+#include "AliGRPObject.h"
+#include "AliGRPRecoParam.h"
+#include "AliGenEventHeader.h"
+#include "AliGeomManager.h"
+#include "AliGlobalQADataMaker.h" 
+#include "AliHeader.h"
+#include "AliLog.h"
+#include "AliMagF.h"
+#include "AliMultiplicity.h"
+#include "AliPID.h"
+#include "AliPlaneEff.h"
+#include "AliQA.h"
+#include "AliQADataMakerRec.h" 
+#include "AliQADataMakerSteer.h"
+#include "AliRawEvent.h"
+#include "AliRawEventHeaderBase.h"
+#include "AliRawHLTManager.h"
+#include "AliRawReaderDate.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderRoot.h"
+#include "AliReconstruction.h"
+#include "AliReconstructor.h"
+#include "AliRun.h"
+#include "AliRunInfo.h"
+#include "AliRunLoader.h"
+#include "AliSysInfo.h" // memory snapshots
+#include "AliTrackPointArray.h"
+#include "AliTracker.h"
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
-#include "AliCTPRawStream.h"
-
-#include "AliQADataMakerRec.h" 
-#include "AliGlobalQADataMaker.h" 
-#include "AliQA.h"
-#include "AliQADataMakerSteer.h"
-
-#include "AliPlaneEff.h"
-
-#include "AliSysInfo.h" // memory snapshots
-#include "AliRawHLTManager.h"
-
-#include "AliMagFCheb.h"
-
-#include "AliDetectorRecoParam.h"
-#include "AliGRPRecoParam.h"
-#include "AliRunInfo.h"
-#include "AliEventInfo.h"
-
-#include "AliDAQ.h"
-
-#include "AliGRPObject.h"
+#include "AliTriggerConfiguration.h"
+#include "AliV0vertexer.h"
+#include "AliVertexer.h"
+#include "AliVertexerTracks.h"
 
 ClassImp(AliReconstruction)
 
@@ -203,7 +195,6 @@ const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] =
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   TSelector(),
   fUniformField(kFALSE),
-  fForcedFieldMap(NULL),
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunHLTTracking(kFALSE),
@@ -296,7 +287,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TSelector(),
   fUniformField(rec.fUniformField),
-  fForcedFieldMap(NULL),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunHLTTracking(rec.fRunHLTTracking),
@@ -402,7 +392,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   if(&rec == this) return *this;
 
   fUniformField          = rec.fUniformField;
-  fForcedFieldMap        = NULL;
   fRunVertexFinder       = rec.fRunVertexFinder;
   fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
   fRunHLTTracking        = rec.fRunHLTTracking;
@@ -508,7 +497,6 @@ AliReconstruction::~AliReconstruction()
 
   CleanUp();
   delete fGRPData;
-  delete fForcedFieldMap;
   fOptions.Delete();
   if (fAlignObjArray) {
     fAlignObjArray->Delete();
@@ -798,7 +786,8 @@ void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam 
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Float_t factor, const char *path) {
+Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol, Float_t diPol,
+				      Float_t beamenergy, Char_t *beamtype,const char *path) {
   //------------------------------------------------
   // The magnetic field map, defined externally...
   // L3 current 30000 A  -> 0.5 T
@@ -812,53 +801,69 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
 
   const Float_t tolerance=0.03; // relative current tolerance
   const Float_t zero=77.;       // "zero" current (A)
-
-  Int_t map=0;
-  Bool_t dipoleON=kFALSE;
-
-  TString s=(factor < 0) ? "L3: -" : "L3: +";
-
-  l3Current = TMath::Abs(l3Current);
-  if (TMath::Abs(l3Current-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
-    map=AliMagFCheb::k5kG;
-    s+="0.5 T;  ";
-  } else
-  if (TMath::Abs(l3Current-l3NominalCurrent2)/l3NominalCurrent2 < tolerance) {
-    map=AliMagFCheb::k2kG;
-    s+="0.2 T;  ";
-  } else
-  if (l3Current < zero) {
-    map=AliMagFCheb::k2kG;
-    s+="0.0 T;  ";
-    factor=0.;                  // in fact, this is a global factor...
+  //
+  TString s=(l3Pol < 0) ? "L3: -" : "L3: +";
+  //
+  AliMagF::BMap_t map = AliMagF::k5kG;
+  //
+  double fcL3,fcDip;
+  //
+  l3Cur = TMath::Abs(l3Cur);
+  if (TMath::Abs(l3Cur-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
+    fcL3 = l3Cur/l3NominalCurrent1;
+    map  = AliMagF::k5kG;
+    s   += "0.5 T;  ";
+  } else if (TMath::Abs(l3Cur-l3NominalCurrent2)/l3NominalCurrent2 < tolerance) {
+    fcL3 = l3Cur/l3NominalCurrent2;
+    map  = AliMagF::k2kG;
+    s   += "0.2 T;  ";
+  } else if (l3Cur <= zero) {
+    fcL3 = 0;
+    map  = AliMagF::k5kGUniform;
+    s   += "0.0 T;  ";
     fUniformField=kTRUE;        // track with the uniform (zero) B field
   } else {
-    AliError(Form("Wrong L3 current (%f A)!",l3Current));
+    AliError(Form("Wrong L3 current (%f A)!",l3Cur));
     return kFALSE;
   }
-
-  diCurrent = TMath::Abs(diCurrent);
-  if (TMath::Abs(diCurrent-diNominalCurrent)/diNominalCurrent < tolerance) {
+  //
+  diCur = TMath::Abs(diCur);
+  if (TMath::Abs(diCur-diNominalCurrent)/diNominalCurrent < tolerance) {
     // 3% current tolerance...
-    dipoleON=kTRUE;
-    s+="Dipole ON";
-  } else
-  if (diCurrent < zero) { // some small current..
-    dipoleON=kFALSE;
-    s+="Dipole OFF";
+    fcDip = diCur/diNominalCurrent;
+    s    += "Dipole ON";
+  } else if (diCur <= zero) { // some small current..
+    fcDip = 0.;
+    s    += "Dipole OFF";
   } else {
-    AliError(Form("Wrong dipole current (%f A)!",diCurrent));
+    AliError(Form("Wrong dipole current (%f A)!",diCur));
     return kFALSE;
   }
-
-  delete fForcedFieldMap;
-  fForcedFieldMap=
-    new AliMagFCheb("B field map  ",s,2,factor,10.,map,dipoleON,path);
-
-  fForcedFieldMap->Print();
-
-  AliTracker::SetFieldMap(fForcedFieldMap,fUniformField);    
-
+  //
+  if (l3Pol!=diPol && (map==AliMagF::k5kG || map==AliMagF::k2kG) && fcDip!=0) {
+    AliError("L3 and Dipole polarities must be the same");
+    return kFALSE;
+  }
+  //
+  if (l3Pol<0) fcL3  = -fcL3;
+  if (diPol<0) fcDip = -fcDip;
+  //
+  AliMagF::BeamType_t btype = AliMagF::kNoBeamField;
+  TString btypestr = beamtype;
+  btypestr.ToLower();
+  TPRegexp protonBeam("(proton|p)\\s*-?\\s*\\1");
+  TPRegexp ionBeam("(lead|pb|ion|a)\\s*-?\\s*\\1");
+  if (btypestr.Contains(ionBeam)) btype = AliMagF::kBeamTypeAA;
+  else if (btypestr.Contains(protonBeam)) btype = AliMagF::kBeamTypepp;
+  else {
+    AliInfo(Form("Cannot determine the beam type from %s, assume no LHC magnet field",beamtype));
+  }
+  
+  AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), 2, fcL3, fcDip, 10., map, path, 
+			     btype,beamenergy,kTRUE);
+  TGeoGlobalMagField::Instance()->SetField( fld );
+  TGeoGlobalMagField::Instance()->Lock();
+  //
   return kTRUE;
 }
 
@@ -911,6 +916,8 @@ Bool_t AliReconstruction::InitGRP() {
     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
     beamEnergy = 0;
   }
+  // energy is provided in MeV*120
+  beamEnergy /= 120E3;
 
   TString runType = fGRPData->GetRunType();
   if (runType==AliGRPObject::GetInvalidString()) {
@@ -965,20 +972,17 @@ Bool_t AliReconstruction::InitGRP() {
   AliInfo("===================================================================================");
 
   //*** Dealing with the magnetic field map
-  if (AliTracker::GetFieldMap()) {
-    AliInfo("Running with the externally set B field !");
-  } else {
+  if ( TGeoGlobalMagField::Instance()->IsLocked() ) {AliInfo("Running with the externally locked B field !");}
+  else {
     // Construct the field map out of the information retrieved from GRP.
-
     Bool_t ok = kTRUE;
-
     // L3
     Float_t l3Current = fGRPData->GetL3Current((AliGRPObject::Stats)0);
     if (l3Current == AliGRPObject::GetInvalidFloat()) {
       AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
       ok = kFALSE;
     }
-
+    
     Char_t l3Polarity = fGRPData->GetL3Polarity();
     if (l3Polarity == AliGRPObject::GetInvalidChar()) {
       AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
@@ -1028,27 +1032,14 @@ Bool_t AliReconstruction::InitGRP() {
     */
 
     if (ok) { 
-       Float_t l3Cur=TMath::Abs(l3Current);
-       Float_t diCur=TMath::Abs(diCurrent);
-       Float_t l3Pol=l3Polarity;
-       //       Float_t l3Cur=TMath::Abs(atof(l3Current->GetName()));
-       //Float_t diCur=TMath::Abs(atof(diCurrent->GetName()));
-       //Float_t l3Pol=atof(l3Polarity->GetName());
-       Float_t factor=1.;
-       if (l3Pol != 0.) factor=-1.;
-    
-
-      if (!SetFieldMap(l3Cur, diCur, factor)) {
-         AliFatal("Failed to creat a B field map ! Exiting...");
-      }
+      if ( !SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1) )
+	AliFatal("Failed to creat a B field map ! Exiting...");
       AliInfo("Running with the B field constructed out of GRP !");
     }
-    else {
-      AliFatal("B field is neither set nor constructed from GRP ! Exitig...");
-    }
-
+    else AliFatal("B field is neither set nor constructed from GRP ! Exitig...");
+    
   }
-
+  
   //*** Get the diamond profiles from OCDB
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
   if (entry) {
@@ -1262,7 +1253,7 @@ void AliReconstruction::Begin(TTree *)
     gGeoManager = NULL;
     fInput->Add(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
     fInput->Add(new TParameter<Int_t>("RunNumber",AliCDBManager::Instance()->GetRun()));
-    AliMagF *magFieldMap = (AliMagF*)AliTracker::GetFieldMap();
+    AliMagF *magFieldMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     magFieldMap->SetName("MagneticFieldMap");
     fInput->Add(magFieldMap);
   }
@@ -1296,7 +1287,7 @@ void AliReconstruction::SlaveBegin(TTree*)
       }
     }
     if (AliMagF *map = (AliMagF*)fInput->FindObject("MagneticFieldMap")) {
-      AliTracker::SetFieldMap(map,fUniformField);
+      TGeoGlobalMagField::Instance()->SetField(map);
     }
     if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
       outProofFile = new TProofOutputFile(gSystem->BaseName(TUrl(outputFileName->GetTitle()).GetFile()));

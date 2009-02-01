@@ -18,6 +18,7 @@ $Id$
 */
 
 #include <Riostream.h>
+#include <TGeoGlobalMagField.h>
 #include <TH1.h>
 #include <TString.h>
 #include "AliITS.h"
@@ -145,10 +146,9 @@ Bool_t AliITSsimulationSPD::SetTanLorAngle(Double_t WeightHole) {
      }
      Double_t WeightEle=1.-WeightHole;
      AliITSSimuParam* simpar = fDetType->GetSimuParam();
-     AliMagF *mf = gAlice->Field();
-     Float_t pos[3]={0.,0.,0.};
-     Float_t B[3]={0.,0.,0.};
-     mf->Field(pos,B);
+     Double_t pos[3]={0.,0.,0.};
+     Double_t B[3]={0.,0.,0.};
+     TGeoGlobalMagField::Instance()->Field(pos,B);
      fTanLorAng = TMath::Tan(WeightHole*simpar->LorentzAngleHole(B[2]) +
                               WeightEle*simpar->LorentzAngleElectron(B[2]));
      fTanLorAng*=-1.; // this only for the old geometry

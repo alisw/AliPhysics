@@ -35,9 +35,10 @@
 
 // --- ROOT libraries ---
 #include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include <TMath.h>
-#include <TVirtualMC.h>
 #include <TParticle.h>
+#include <TVirtualMC.h>
 
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
@@ -1726,8 +1727,8 @@ void AliVZEROv7::CreateMaterials()
 
   AliDebug(2,"Create materials");
   // Parameters for simulation scope
-  Int_t     fieldType       = gAlice->Field()->Integ();     // Field type 
-  Double_t  maxField        = gAlice->Field()->Max();       // Field max.
+  Int_t     fieldType       = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type 
+  Double_t  maxField        = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();       // Field max.
   Double_t  maxBending      = 10;    // Max Angle
   Double_t  maxStepSize     = 0.01;  // Max step size 
   Double_t  maxEnergyLoss   = 1;     // Max Delta E

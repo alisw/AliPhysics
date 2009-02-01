@@ -65,7 +65,7 @@ AliITSTrackV1::AliITSTrackV1(Double_t fieldfactor) {
   
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
- // AliMagF * fieldPointer = gAlice->Field();
+ // AliMagF * fieldPointer = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
   // fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
     fFieldFactor = fieldfactor;
   //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
@@ -134,7 +134,7 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj, Double_t fieldfactor)
 
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
-   // AliMagF * fieldPointer = gAlice->Field();
+   // AliMagF * fieldPointer = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
   // fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
     fFieldFactor = fieldfactor;
  // cout<< " field factor dentro alitrack = "<<fFieldFactor<<"\n";/* getchar();*/

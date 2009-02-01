@@ -119,10 +119,11 @@ void Config()
     //
     //gener->SetVertexSmear(perTrack); 
     // Magnetic field
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
+    AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., smag);
     field->SetL3ConstField(0); //Using const. field in the barrel
+    TGeoGlobalMagField::Instance()->SetField(field);
+
     rl->CdGAFile();
-    gAlice->SetField(field);    
 
     Int_t   iABSO  =  1;
     Int_t   iDIPO  =  1;

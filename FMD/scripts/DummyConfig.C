@@ -151,13 +151,6 @@ enum Rad_t {
 };
 
 //____________________________________________________________________
-enum Mag_t {
-  k2kG,				//
-  k4kG,				//
-  k5kG				//
-};
-
-//____________________________________________________________________
 enum MC_t {
   kFLUKA, 
   kGEANT3, 
@@ -185,7 +178,7 @@ Config()
   // EG_t  eg   = kFMDFlat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
-  Mag_t mag  = k5kG;
+  AliMagF::BMap_t mag  = AliMagF::k5kG;
   Int_t seed = 12345; //Set 0 to use the current time
   MC_t  mc   = kGEANT3TGEO;
   
@@ -372,9 +365,8 @@ Config()
   // Comments 
   // 
   switch (mag) {
-  case k2kG: comment = comment.Append(" | L3 field 0.2 T"); break;
-  case k4kG: comment = comment.Append(" | L3 field 0.4 T"); break;
-  case k5kG: comment = comment.Append(" | L3 field 0.5 T"); break;
+  case AliMagF::k2kG: comment = comment.Append(" | L3 field 0.2 T"); break;
+  case AliMagF::k5kG: comment = comment.Append(" | L3 field 0.5 T"); break;
   }
 
   switch (rad) {
@@ -393,10 +385,11 @@ Config()
 
   //__________________________________________________________________
   // Field (L3 0.4 T)
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
+  AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
   field->SetL3ConstField(0); //Using const. field in the barrel
+  TGeoGlobalMagField::Instance()->SetField(field);
+
   rl->CdGAFile();
-  gAlice->SetField(field);    
 
   //__________________________________________________________________
   // 

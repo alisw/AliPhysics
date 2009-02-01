@@ -28,7 +28,7 @@ class AliMUONTrackExtrap : public TObject
 	/// Destructor
   virtual ~AliMUONTrackExtrap(){};
   
-  static void SetField(const AliMagF* magField);
+  static void SetField();
   
   /// return kTRUE if the field is switched ON
   static Bool_t IsFieldON() {return fgFieldON;}
@@ -74,7 +74,6 @@ class AliMUONTrackExtrap : public TObject
   
   
  private:
-  static const AliMagF* fgkField;		//!< field map
   static const Double_t fgkSimpleBPosition;     //!< position of the dipole
   static const Double_t fgkSimpleBLength;       //!< length of the dipole
   static       Double_t fgSimpleBValue;         //!< magnetic field value at the centre
@@ -120,8 +119,6 @@ class AliMUONTrackExtrap : public TObject
   
   static void ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout);
   static void ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout);
-
-  static void GetField(Double_t *Position, Double_t *Field);
   
   ClassDef(AliMUONTrackExtrap, 0) // Tools for track extrapolation in ALICE dimuon spectrometer
 };

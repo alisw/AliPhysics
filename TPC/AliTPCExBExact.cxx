@@ -23,7 +23,6 @@
 
 #include "TMath.h"
 #include "TTreeStream.h"
-#include "AliFieldMap.h"
 #include "AliMagF.h"
 #include "AliTPCExBExact.h"
 
@@ -34,7 +33,8 @@ const Double_t AliTPCExBExact::fgkDriftField=40.e3;
 
 AliTPCExBExact::AliTPCExBExact()
   : fDriftVelocity(0),
-    fkMap(0),fkField(0),fkN(0),
+    //fkMap(0),
+    fkField(0),fkN(0),
     fkNX(0),fkNY(0),fkNZ(0),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
     fkZMin(-250.),fkZMax(250.),
@@ -48,7 +48,8 @@ AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
 			       Double_t driftVelocity,
 			       Int_t nx,Int_t ny,Int_t nz,Int_t n)
   : fDriftVelocity(driftVelocity),
-    fkMap(0),fkField(bField),fkN(n),
+    //fkMap(0),
+    fkField(bField),fkN(n),
     fkNX(nx),fkNY(ny),fkNZ(nz),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
     fkZMin(-250.),fkZMax(250.),
@@ -63,6 +64,7 @@ AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
   CreateLookupTable();
 }
 
+/*
 AliTPCExBExact::AliTPCExBExact(const AliFieldMap *bFieldMap,
 			       Double_t driftVelocity,Int_t n) 
   : fDriftVelocity(driftVelocity),
@@ -101,6 +103,7 @@ AliTPCExBExact::AliTPCExBExact(const AliFieldMap *bFieldMap,
 
   CreateLookupTable();
 }
+*/
 
 AliTPCExBExact::~AliTPCExBExact() {
   //
@@ -155,6 +158,7 @@ void AliTPCExBExact::Correct(const Double_t *position, Double_t *corrected) {
   //    corrected[2]=position[2];
 }
 
+/*
 void AliTPCExBExact::TestThisBeautifulObject(const AliFieldMap *bFieldMap,
 					     const char* fileName) {
   //
@@ -164,6 +168,7 @@ void AliTPCExBExact::TestThisBeautifulObject(const AliFieldMap *bFieldMap,
   fkField=0;
   TestThisBeautifulObjectGeneric(fileName);
 }
+*/
 
 void AliTPCExBExact::TestThisBeautifulObject(const AliMagF *bField,
 					     const char* fileName) {
@@ -171,7 +176,7 @@ void AliTPCExBExact::TestThisBeautifulObject(const AliMagF *bField,
   // Have a look at the common part "TestThisBeautifulObjectGeneric".
   //
   fkField=bField;
-  fkMap=0;
+  //fkMap=0;
   TestThisBeautifulObjectGeneric(fileName);
 }
 
@@ -261,15 +266,15 @@ void AliTPCExBExact::GetB(Double_t *b,const Double_t *x) const {
   //
   // Helper function returning the B field in SI units (T).
   //
-  Float_t xm[3];
+  Double_t xm[3];
   // the beautiful m to cm (and the ugly "const_cast") and Double_t 
   // to Float_t read the NRs introduction!:
   for (int i=0;i<3;++i) xm[i]=x[i]*100.;
-  Float_t bf[3];
-  if (fkMap!=0)
-    fkMap->Field(xm,bf);
-  else
-    fkField->Field(xm,bf);
+  Double_t bf[3];
+  //if (fkMap!=0)
+  //  fkMap->Field(xm,bf);
+  //else
+  ((AliMagF*)fkField)->Field(xm,bf);
   for (int i=0;i<3;++i) b[i]=bf[i]/10.;
 }
 

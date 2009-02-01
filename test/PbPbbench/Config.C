@@ -31,7 +31,7 @@
 #include "EVGEN/AliGenGeVSim.h"
 #include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFCheb.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -105,11 +105,6 @@ enum PprRad_t
     kGluonRadiation, kNoGluonRadiation
 };
 
-enum PprMag_t
-{
-    k2kG, k4kG, k5kG
-};
-
 enum PprTrigConf_t
 {
     kDefaultPPTrig, kDefaultPbPbTrig
@@ -123,7 +118,7 @@ const char * pprTrigConfName[] = {
 
 static PprRun_t srun = kHijing_per2;
 static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k5kG;
+static AliMagF::BMap_t smag = AliMagF::k5kG;
 static Int_t    sseed = 12345; //Set 0 to use the current time
 static PprTrigConf_t strig = kDefaultPbPbTrig; // default pp trigger configuration
 
@@ -255,8 +250,6 @@ void Config()
     
     if (smag == k2kG) {
 	comment = comment.Append(" | L3 field 0.2 T");
-    } else if (smag == k4kG) {
-	comment = comment.Append(" | L3 field 0.4 T");
     } else if (smag == k5kG) {
 	comment = comment.Append(" | L3 field 0.5 T");
     }
@@ -274,9 +267,8 @@ void Config()
     
     
 // Field
-    AliMagFCheb* field = new AliMagFCheb("Maps","Maps", 2, 1., 10., smag);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., smag));
     rl->CdGAFile();
-    gAlice->SetField(field);    
 //
     Int_t   iABSO   = 1;
     Int_t   iDIPO   = 1;

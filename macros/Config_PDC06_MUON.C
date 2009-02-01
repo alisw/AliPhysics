@@ -152,9 +152,9 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   }
   //============================================================= 
   // Field (L3 0.5 T) outside dimuon spectrometer
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
   field->SetL3ConstField(0); // Using const. field in the barrel 
-  gAlice->SetField(field);
+  TGeoGlobalMagField::Instance()->SetField(field);
 
   Int_t   iITS = 1;
   Int_t   iZDC = 1;

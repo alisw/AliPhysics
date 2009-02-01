@@ -90,8 +90,6 @@ public:
   static AliAODEvent*  AssertAOD();
   static AliRawReader* AssertRawReader();
 
-  static AliMagF*      AssertMagField();
-
   static TGeoManager*  AssertGeometry();
 
   static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
@@ -160,8 +158,6 @@ protected:
   static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
   static Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.
   static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
-
-  static AliMagF *fgMagField;		// Global pointer to magnetic field.
 
   static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
 

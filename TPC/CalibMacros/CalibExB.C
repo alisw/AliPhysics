@@ -2,11 +2,11 @@ void Init(){
   //
   // Initialize
   //
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
   AliTPCExB::RegisterField(0,field);
-  AliMagF* fieldC0 = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG);
+  AliMagF* fieldC0 = new AliMagF("Maps","Maps", 2, 1, 1, 10., AliMagF::k5kG);
   AliTPCExB::RegisterField(1,fieldC0);
-  AliMagF* fieldC1 = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliMagF* fieldC1 = new AliMagF("Maps","Maps", 2, 1, 1, 10., AliMagF::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliTPCExB::RegisterField(2,fieldC1);
 
   gSystem->Load("libSTAT.so");

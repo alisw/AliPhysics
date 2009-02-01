@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------------
 
 class AliComparisonObject;
-class AliMagFMaps;
+class AliMagF;
 class TList;
 
 #include "AliAnalysisTask.h"

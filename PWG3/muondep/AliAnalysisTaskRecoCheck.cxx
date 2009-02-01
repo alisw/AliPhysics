@@ -4,7 +4,7 @@
 #include "TIterator.h"
 
 #include "AliStack.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 
 #include "AliAnalysisTask.h"
@@ -68,14 +68,7 @@ void AliAnalysisTaskRecoCheck::ConnectInputData(Option_t *)
   }
   
   // calculate the filed map in the L3 magnet using the current value
-  AliMagFMaps* field = 0x0;
-  if (fL3Current == 30000.0) {
-    field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  }
-
-  // set the tracker field map
-  AliTracker::SetFieldMap(field, kFALSE);
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  AliMUONTrackExtrap::SetField();
 
 }
 

@@ -29,6 +29,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
+
 #include "AliSHIL.h"
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -71,10 +73,10 @@ void AliSHIL::CreateMaterials()
   //
   // Defines materials for the muon shield
   //
-  Int_t   isxfld1 = gAlice->Field()->Integ();
-  Int_t   isxfld2 = gAlice->Field()->PrecInteg();
+  Int_t   isxfld1 = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Int_t   isxfld2 = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->PrecInteg();
 
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 // Steel  
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };

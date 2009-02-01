@@ -968,8 +968,8 @@ void AliITSv11Geometry::CreateDefaultMaterials(){
     itsFreon->SetTemperature(22.0*fgkCelsius);
     itsFreon->SetState(TGeoMaterial::kMatStateLiquid);
     //
-    //    Int_t   ifield = gAlice->Field()->Integ();
-    //    Float_t fieldm = gAlice->Field()->Max();
+    //    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    //    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
     //    Float_t tmaxfd = 0.1;//  1.0;//  Degree
     //    Float_t stemax = 1.0;//  cm

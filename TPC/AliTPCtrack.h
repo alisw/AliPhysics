@@ -91,7 +91,6 @@ public:
   Int_t GetNFoundable() const {return fNFoundable;}
 
 protected: 
-  Double_t GetBz() const;
   Double_t fdEdx;           // dE/dx
 
   Int_t fIndex[kMaxRow];       // indices of associated clusters 

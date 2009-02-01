@@ -107,9 +107,7 @@ fRecoParam(recoParam)
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 100);
   
   // set the magnetic field for track extrapolations
-  const AliMagF* kField = AliTracker::GetFieldMap();
-  if (!kField) AliFatal("No field available");
-  AliMUONTrackExtrap::SetField(kField);
+  AliMUONTrackExtrap::SetField();
 }
 
   //__________________________________________________________________________

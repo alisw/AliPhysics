@@ -3,9 +3,7 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
   //
   // Set mag field map (needed to propagate track to the DCA)
   //
-  Int_t magField = 2;  // 0 - 0.2 T, 1 = 0.4 T, 2  - 0.5 T
-  magFMap = new AliMagFMaps("Maps","Maps", 2, 1., 10., magField);
-  AliTracker::SetFieldMap(magFMap,kFALSE);
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
   //
   // Create global cuts objects 
@@ -79,8 +77,6 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
 
   // Create, add task
   task = new AliComparisonTask;
-
-  //task->SetMagField(magField);
 
   task->AddComparisonObject( pCompRes );
   task->AddComparisonObject( pCompEff );

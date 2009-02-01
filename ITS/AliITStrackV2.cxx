@@ -24,11 +24,11 @@
 #include <TMath.h>
 
 #include "AliCluster.h"
-#include "AliTracker.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliITSReconstructor.h"
 #include "AliITStrackV2.h"
+#include "AliTracker.h"
 
 const Int_t AliITStrackV2::fgkWARN = 5;
 
@@ -151,7 +151,7 @@ GetGlobalXYZat(Double_t xloc, Double_t &x, Double_t &y, Double_t &z) const {
   //This function returns a track position in the global system
   //------------------------------------------------------------------
   Double_t r[3];
-  Bool_t rc=GetXYZAt(xloc, AliTracker::GetBz(), r);
+  Bool_t rc=GetXYZAt(xloc, GetBz(), r);
   x=r[0]; y=r[1]; z=r[2]; 
   return rc;
 }
@@ -447,15 +447,6 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
   if (nu-nl>0) dedx /= (nu-nl);
 
   SetdEdx(dedx);
-}
-
-Double_t AliITStrackV2::GetBz() const {
-  //
-  // returns Bz component of the magnetic field (kG)
-  //
-  if (AliTracker::UniformField()) return AliTracker::GetBz();
-  Double_t r[3]; GetXYZ(r); 
-  return AliTracker::GetBz(r);
 }
 
 //____________________________________________________________________________

@@ -60,11 +60,12 @@
 // --- ROOT system ---
 class TFile;
 #include <TFolder.h> 
-#include <TTree.h>
-#include <TVirtualMC.h> 
+#include <TGeoGlobalMagField.h>
+#include <TGraph.h> 
 #include <TH1F.h> 
 #include <TRandom.h> 
-#include <TGraph.h> 
+#include <TTree.h>
+#include <TVirtualMC.h> 
 
 // --- Standard library ---
 
@@ -244,8 +245,8 @@ void AliEMCAL::CreateMaterials()
   // DEFINITION OF THE TRACKING MEDIA
 
   // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
-  Int_t   isxfld = gAlice->Field()->Integ() ;
-  Float_t sxmgmx = gAlice->Field()->Max() ;
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ() ;
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max() ;
 
   // Air                                                                         -> idtmed[1599]
  AliMedium(0, "Air$", 0, 0,

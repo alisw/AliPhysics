@@ -30,7 +30,6 @@
   #include "AliITStrackerV2.h"
   #include "AliRun.h"
   #include "AliESD.h"
-  #include "AliMagF.h"
   #include "AliGenEventHeader.h"
 
   #include "AliHLTITStrack.h"

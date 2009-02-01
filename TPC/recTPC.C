@@ -44,8 +44,6 @@ void recTPC(Int_t type, const char *filename="data.root")
   rec.SetFillESD("TPC");
   rec.SetFillTriggerESD(kFALSE);
   rec.SetRunVertexFinder(kFALSE);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,1);
   rec.SetWriteAlignmentData(kTRUE);
   rec.Run();
 }
@@ -87,8 +85,6 @@ void recTracking(Int_t type, const char *filename="data.root")
   rec.SetFillESD("TPC");
   rec.SetFillTriggerESD(kFALSE);
   rec.SetRunVertexFinder(kFALSE);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,1);
   rec.SetWriteAlignmentData(kTRUE);
   rec.Run(0);
 }

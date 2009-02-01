@@ -315,20 +315,6 @@ Bool_t AliTRDtrackV1::CookPID()
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-Double_t AliTRDtrackV1::GetBz() const 
-{
-  //
-  // Returns Bz component of the magnetic field (kG)
-  //
-
-  if (AliTracker::UniformField()) return AliTracker::GetBz();
-
-  Double_t r[3]; 
-  GetXYZ(r);
-  return AliTracker::GetBz(r);
-}
-
 //_______________________________________________________________
 AliTRDcluster* AliTRDtrackV1::GetCluster(Int_t id)
 {

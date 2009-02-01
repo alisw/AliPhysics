@@ -37,7 +37,6 @@ class AliEveMUONTrack: public TEveTrack
   void  MakeESDTrack(AliESDMuonTrack *mtrack);
   void  MakeMCTrack(TParticle *part);
   void  MakeRefTrack(AliMUONTrack *mtrack);
-  void  GetField(Double_t *position, Double_t *field);
   void  Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t i2);
   void  OneStepRungekutta(Double_t charge, Double_t step,
 			  Double_t* vect, Double_t* vout);
@@ -70,8 +69,6 @@ class AliEveMUONTrack: public TEveTrack
   Bool_t        fIsESDTrack;         // track from AliESDs.root
   Bool_t        fIsMCTrack;          // track from Kinematics.root
   Bool_t        fIsRefTrack;         // track from TrackRefs.root
-
-  static AliMagF      *fgFieldMap;    // pointer to the magnetic field map
 
   ClassDef(AliEveMUONTrack, 0);    // Produce TEveUtil:TEveTrack from AliMUONTrack
 };

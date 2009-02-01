@@ -34,7 +34,6 @@ public:
 
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
-   virtual AliMagF *Field() const {return fField;}
    void           AddModule(AliModule* mod);
    Int_t          GetEvNumber() const;
    Int_t          GetRunNumber() const {return fRun;}
@@ -71,10 +70,6 @@ public:
    const char*    GetTriggerDescriptor() const {return fTriggerDescriptor.Data();}
    void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
    virtual  void  SetBaseFile(const char *filename="galice.root");
-   virtual  void  SetField(AliMagF* magField);
-   
-   virtual  void Field(const Double_t* x, Double_t* b) const;
-   
    //
    // End of MC Application
 
@@ -92,7 +87,6 @@ protected:
   Int_t          fEventNrInRun;      //! Current unique event number in run
   TObjArray     *fModules;           //  List of Detectors
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
-  AliMagF       *fField;             //  Magnetic Field Map
   Int_t          fNdets;             //  Number of detectors
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator
@@ -106,7 +100,7 @@ private:
   AliRun(const AliRun&); // Not implemented
   AliRun& operator = (const AliRun&); // Not implemented
 
-  ClassDef(AliRun,12)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,13)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

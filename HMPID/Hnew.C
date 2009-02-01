@@ -231,13 +231,13 @@ void HmpGui::CreateConfigC()
   f<<Form("  gMC->SetExternalDecayer(pDecayer);\n\n");
   
 //Field
-       if(fMagBG->GetButton(kFld0)->GetState())     f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",0,1,10,0));       //no field\n\n");
-  else if(fMagBG->GetButton(kFld2)->GetState())     f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,0));//0.2 Tesla field\n\n");
-  else if(fMagBG->GetButton(kFld4)->GetState())     f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,1));//0.4 Tesla field\n\n");
-  else if(fMagBG->GetButton(kFld5)->GetState())     f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,2));//0.5 Tesla field\n\n");
-  else if(fMagBG->GetButton(kFld_2)->GetState())    f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,0));//-0.2 Tesla field\n\n");
-  else if(fMagBG->GetButton(kFld_4)->GetState())    f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,1));//-0.4 Tesla field\n\n");
-  else if(fMagBG->GetButton(kFld_5)->GetState())    f<<Form("  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,2));//-0.5 Tesla field\n\n");
+       if(fMagBG->GetButton(kFld0)->GetState())     f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",0,1,1,10,0));       //no field\n\n");
+  else if(fMagBG->GetButton(kFld2)->GetState())     f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,1,1,10,0));//0.2 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld4)->GetState())     f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,1,1,10,1));//0.4 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld5)->GetState())     f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,1,1,10,2));//0.5 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_2)->GetState())    f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,0));//-0.2 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_4)->GetState())    f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,1));//-0.4 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_5)->GetState())    f<<Form("  gAlice->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,2));//-0.5 Tesla field\n\n");
   
   if(fProBG->GetButton(kDCAY)->GetState()) f<<Form("  gMC->SetProcess(\"DCAY\",1);  ");else f<<Form("  gMC->SetProcess(\"DCAY\",0);  ");
   if(fProBG->GetButton(kPAIR)->GetState()) f<<Form("  gMC->SetProcess(\"PAIR\",1);  ");else f<<Form("  gMC->SetProcess(\"PAIR\",0);  ");

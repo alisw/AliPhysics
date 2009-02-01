@@ -11,8 +11,6 @@ void Rec(TString file="/scratch/alicehp2/commun/testbeam07/LHC07a_EMCAL/00000019
   AliCDBManager::Instance()->SetSpecificStorage("EMCAL/Calib/Data","local://$ALICE_ROOT/EMCAL/beamtest07/");
 
   //AliLog::SetGlobalDebugLevel(2);
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,kFALSE);
 
   AliReconstruction rec ;
   rec.SetOption("EMCAL","OldRCUFormat");

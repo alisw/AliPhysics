@@ -36,6 +36,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
 
 #include "AliConst.h"
@@ -272,7 +273,7 @@ void AliHALL::CreateMaterials()
   //
     
   Int_t   isxfld = 0;
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };

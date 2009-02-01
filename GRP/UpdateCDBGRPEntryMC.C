@@ -128,7 +128,7 @@ TString ParseConfig(char * option)
 		while (getline(in, line)) {
 			sline = line ; 
 			sline.ReplaceAll(" ", "") ; 
-			if (sline.Contains("AliMagFMaps*field=newAliMagFMaps(")) {
+			if (sline.Contains("AliMagF*field=newAliMagF(")) {
 				sarg = sline(sline.Last(',')+1, sline.Last(')')-sline.Last(',')-1) ; 
 				break ; 
 			}
@@ -143,8 +143,6 @@ TString ParseConfig(char * option)
 					rv = "30000" ;
 				else if (sarg == "k2kG")
 					rv = "12000" ;
-				else if (sarg == "k4kG")
-					rv = "24000"; 
 				break ; 
 			}
 		}		

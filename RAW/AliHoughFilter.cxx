@@ -36,7 +36,6 @@
 
 #include "AliRawReaderRoot.h"
 #include <AliMagF.h>
-#include <AliMagFMaps.h>
 #include <AliKalmanTrack.h>
 #include <AliITSgeom.h>
 #include <AliESDVertex.h>
@@ -65,7 +64,7 @@ fITSgeom(NULL)
     AliError("HLT initialization failed!");
 
   // Init magnetic field
-  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance();
   AliTracker::SetFieldMap(field,kTRUE);
   fPtmin = 0.1*AliHLTTransform::GetSolenoidField();
 

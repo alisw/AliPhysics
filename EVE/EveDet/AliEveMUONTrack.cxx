@@ -12,7 +12,6 @@
 #include <EveBase/AliEveEventManager.h>
 
 #include <AliMagF.h>
-#include <AliMagFMaps.h>
 #include <AliLog.h>
 #include <AliESDMuonTrack.h>
 #include <AliESDEvent.h>
@@ -28,10 +27,11 @@
 #include <AliMUONVCluster.h>
 
 #include <TClonesArray.h>
-#include <TStyle.h>
-#include <TROOT.h>
+#include <TGeoGlobalMagField.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TROOT.h>
+#include <TStyle.h>
 
 #include <Riostream.h>
 
@@ -45,7 +45,6 @@
 
 ClassImp(AliEveMUONTrack)
 
-AliMagF* AliEveMUONTrack::fgFieldMap = 0;
 
 //______________________________________________________________________________
 AliEveMUONTrack::AliEveMUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
@@ -62,9 +61,6 @@ AliEveMUONTrack::AliEveMUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
   //
   // constructor
   //
-
-  if (fgFieldMap == 0)
-    fgFieldMap = AliEveEventManager::AssertMagField();
 }
 
 //______________________________________________________________________________
@@ -814,37 +810,6 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
 }
 
 //______________________________________________________________________________
-void AliEveMUONTrack::GetField(Double_t *position, Double_t *field)
-{
-  //
-  // returns field components at position, for a give field map
-  //
-
-  /// interface for arguments in double precision (Why ? ChF)
-  Float_t x[3], b[3];
-
-  x[0] = position[0]; x[1] = position[1]; x[2] = position[2];
-
-  if (fgFieldMap) {
-    fgFieldMap->Field(x,b);
-  }
-  else {
-    AliWarning("No field map");
-    field[0] = field[1] = field[2] = 0.0;
-    return;
-  }
-
-  // force components
-  //b[1] = 0.0;
-  //b[2] = 0.0;
-
-  field[0] = b[0]; field[1] = b[1]; field[2] = b[2];
-
-  return;
-
-}
-
-//______________________________________________________________________________
 void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
 				  Double_t* vect, Double_t* vout)
 {
@@ -922,8 +887,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
       rest  = step - tl;
       if (TMath::Abs(h) > TMath::Abs(rest)) h = rest;
       //cmodif: call gufld(vout,f) changed into:
-
-      GetField(vout,f);
+      TGeoGlobalMagField::Instance()->Field(vout,f);
 
       // *
       // *             start of integration
@@ -967,7 +931,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
       xyzt[2] = zt;
 
       //cmodif: call gufld(xyzt,f) changed into:
-      GetField(xyzt,f);
+      TGeoGlobalMagField::Instance()->Field(xyzt,f);
 
       at     = a + secxs[0];
       bt     = b + secys[0];
@@ -1004,7 +968,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
       xyzt[2] = zt;
 
       //cmodif: call gufld(xyzt,f) changed into:
-      GetField(xyzt,f);
+      TGeoGlobalMagField::Instance()->Field(xyzt,f);
 
       z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * kthird) * h;
       y      = y + (b + (secys[0] + secys[1] + secys[2]) * kthird) * h;

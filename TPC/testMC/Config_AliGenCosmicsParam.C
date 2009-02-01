@@ -17,7 +17,7 @@
 #include "EVGEN/AliGenCocktail.h"
 #include "EVGEN/AliGenCosmicsParam.h"
 #include "EVGEN/AliGenHIJINGpara.h"
-#include "STEER/AliMagFMaps.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv0.h"
@@ -50,7 +50,7 @@ enum Mag_t
 
 Float_t EtaToTheta(Float_t arg);
 
-static Mag_t         mag      = k5kG; 
+static AliMagF::BMap_t         mag      = AliMagF::k5kG; 
 
 
 
@@ -181,10 +181,9 @@ void Config()
 
 
     // MAGNETIC FIELD IN THE BARREL
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag); // FIELD
-    //    field->SetL3ConstField(0); //Using const. field in the barrel
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., mag));
+    //    TGeoGlobalMagField::Instance()->GetField()->SetL3ConstField(0); //Using const. field in the barrel
     rl->CdGAFile();
-    gAlice->SetField(field);    
 
 
     Int_t   iABSO  =  1;

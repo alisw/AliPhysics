@@ -36,7 +36,7 @@
   #include "AliESD.h"
   #include "AliTracker.h"
   #include "AliTPCParam.h"
-  #include "AliMagFMaps.h"
+  #include "AliMagF.h"
   #include "AliITStrackV2.h"
 #endif
 
@@ -68,9 +68,7 @@ void AliL1Delay(const Char_t *esdfilename = "./AliESDs.root", const Char_t *gali
   gAlice = rl->GetAliRun();
 
   // Set magnetic field
-  AliMagF* field = gAlice->Field();
-  AliTracker::SetFieldMap(field,kTRUE);
-  AliExternalTrackParam::SetFieldMap(field);
+  AliMagF* field = TGeoGlobalMagField::Instance()->GetField();
   AliExternalTrackParam::SetNonuniformFieldTracking();
   const Float_t sfield = field->SolenoidField();
 

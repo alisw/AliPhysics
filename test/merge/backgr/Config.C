@@ -32,7 +32,7 @@
 #include "EVGEN/AliGenGeVSim.h"
 #include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFCheb.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -106,11 +106,6 @@ enum PprRad_t
     kGluonRadiation, kNoGluonRadiation
 };
 
-enum PprMag_t
-{
-    k2kG, k4kG, k5kG
-};
-
 enum PprTrigConf_t
 {
     kDefaultPPTrig, kDefaultPbPbTrig
@@ -124,7 +119,7 @@ const char * pprTrigConfName[] = {
 //static PprRun_t srun = test50;
 static PprRun_t srun = kHijing_per4;
 static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k5kG;
+static AliMagF::BMap_t smag = AliMagF::k5kG;
 TDatime dat;
 static Int_t    sseed = dat.Get(); //Set 0 to use the current time
 //static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
@@ -166,7 +161,8 @@ void Config()
 
     AliRunLoader* rl=0x0;
 
-    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()"," ConfigPPR.C", __LINE__);
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", 
+		    "", "", "Config()"," Config.C", __LINE__);
 
     rl = AliRunLoader::Open("galice.root",
 			    AliConfig::GetDefaultEventFolderName(),
@@ -257,13 +253,12 @@ void Config()
     gener->SetTrackingFlag(1);
     gener->Init();
     
-    if (smag == k2kG) {
+    if (smag == AliMagF::k2kG) {
 	comment = comment.Append(" | L3 field 0.2 T");
-    } else if (smag == k4kG) {
-	comment = comment.Append(" | L3 field 0.4 T");
-    } else if (smag == k5kG) {
+    } else if (smag == AliMagF::k5kG) {
 	comment = comment.Append(" | L3 field 0.5 T");
-    }
+    } else AliLog::Message(AliLog::kFatal, "Invalid Mag Field", 
+			   "", "", "Config()"," Config.C", __LINE__);
     
     
     if (srad == kGluonRadiation)
@@ -278,9 +273,8 @@ void Config()
     
     
 // Field (L3 0.4 T)
-    AliMagFCheb* field = new AliMagFCheb("Maps","Maps", 2, 1., 10., smag);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., smag));
     rl->CdGAFile();
-    gAlice->SetField(field);    
 //
     Int_t   iABSO   = 1;
     Int_t   iDIPO   = 1;

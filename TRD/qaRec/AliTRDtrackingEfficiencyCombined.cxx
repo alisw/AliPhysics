@@ -31,7 +31,7 @@
 #include <TCanvas.h>
 #include "TTreeStream.h"
 
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliPID.h"
 #include "AliTracker.h"
 #include "AliTrackReference.h"

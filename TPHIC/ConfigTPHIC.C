@@ -86,9 +86,8 @@ void Config()
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
     rootfile->cd();
-    gAlice->SetField(field);    
 
 
     Int_t   iABSO  =  0;

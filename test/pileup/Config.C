@@ -21,7 +21,7 @@
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "TDPMjet/AliGenDPMjet.h"
-#include "STEER/AliMagFCheb.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -58,12 +58,6 @@ const char * pprRunName[] = {
   "kPythia6", "kPhojet"
 };
 
-//--- Magnetic Field ---
-enum Mag_t
-{
-  kNoField, k5kG, kFieldMax
-};
-
 const char * pprField[] = {
   "kNoField", "k5kG"
 };
@@ -76,7 +70,7 @@ void ProcessEnvironmentVars();
 
 // Geterator, field, beam energy
 static PDC06Proc_t   proc     = kPhojet;
-static Mag_t         mag      = k5kG;
+static AliMagF::BMap_t mag    = AliMagF::k5kG;
 static Float_t       energy   = 10000; // energy in CMS
 //========================//
 // Set Random Number seed //
@@ -239,20 +233,18 @@ void Config()
 
   // FIELD
   //
-  AliMagFCheb* field = 0x0;
+  AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagFCheb("Maps","Maps", 2, 0., 10., AliMagFCheb::k2kG);
-  } else if (mag == k5kG) {
+    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
+  } else if (mag == AliMagF::k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG);
+    field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
+  TGeoGlobalMagField::Instance()->SetField(field);
     
   rl->CdGAFile();
-  gAlice->SetField(field);    
-
-
 
   Int_t iABSO  = 1;
   Int_t iACORDE= 0;

@@ -268,8 +268,6 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
 
   // NOTE: FillESD is a step in the AliReconstruction sequence and has
   // nothing to do with the fact that this macro writes ESD output

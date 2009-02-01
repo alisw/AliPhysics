@@ -201,17 +201,7 @@ Bool_t AliHMPIDtrack::PropagateTo(const AliCluster3D *c) {
   }
   return kTRUE;
 }//PropagateTo()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDtrack::GetBz() const {
-  // 
-  // Arguments: none
-  // Returns: Bz component of the magnetic field (kG)
-  //
-  if (AliTracker::UniformField()) return AliTracker::GetBz();
-  Double_t r[3]; GetXYZ(r);
-  return AliTracker::GetBz(r);
-}//GetBz()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   // Origin: K. Shileev (Kirill.Shileev@cern.ch)

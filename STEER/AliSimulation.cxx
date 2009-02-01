@@ -107,6 +107,7 @@
 
 #include <TCint.h>
 #include <TFile.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TObjString.h>
 #include <TROOT.h>
@@ -131,6 +132,8 @@
 #include "AliGeomManager.h"
 #include "AliHLTSimulation.h"
 #include "AliHeader.h"
+#include "AliLego.h"
+#include "AliLegoGenerator.h"
 #include "AliLog.h"
 #include "AliMC.h"
 #include "AliMagF.h"
@@ -145,8 +148,6 @@
 #include "AliSimulation.h"
 #include "AliSysInfo.h"
 #include "AliVertexGenFile.h"
-#include "AliLegoGenerator.h"
-#include "AliLego.h"
 
 ClassImp(AliSimulation)
 
@@ -779,12 +780,15 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   } else {
     AliWarning("Run number not initialized!!");
   }
-  
+
   AliRunLoader::GetRunLoader()->CdGAFile();
   
   AliPDG::AddParticlesToPdgDataBase();  
   
   gAlice->GetMCApp()->Init();
+  
+  gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+
   
   //Must be here because some MCs (G4) adds detectors here and not in Config.C
   gAlice->InitLoaders();
@@ -925,6 +929,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
    AliPDG::AddParticlesToPdgDataBase();  
 
    gAlice->GetMCApp()->Init();
+
+   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
@@ -1698,6 +1704,8 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
    AliPDG::AddParticlesToPdgDataBase();  
 
    gAlice->GetMCApp()->Init();
+
+   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
@@ -2147,9 +2155,9 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
   grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
 
-  AliMagF *field = gAlice->Field();
-  Float_t solenoidField = TMath::Abs(field->SolenoidField());
-  Float_t factor = field->Factor();
+  AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  Float_t solenoidField = field ? TMath::Abs(field->SolenoidField()) : 0;
+  Float_t factor =        field ? field->Factor() : 0;
   Float_t l3current = TMath::Abs(factor)*solenoidField*30000./5.;
   grpObj->SetL3Current(l3current,(AliGRPObject::Stats)0);
   

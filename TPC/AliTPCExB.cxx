@@ -235,9 +235,9 @@ Double_t AliTPCExB::GetBx(Double_t r, Double_t phi, Double_t z,Int_t index){
   //
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
-  Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
+  Double_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
   //  xyz[1]+=30;
-  Float_t bxyz[3];
+  Double_t bxyz[3];
   mag->Field(xyz,bxyz);
   return bxyz[0];
 }  
@@ -248,9 +248,9 @@ Double_t AliTPCExB::GetBy(Double_t r, Double_t phi, Double_t z,Int_t index){
   //
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
-  Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
+  Double_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
   //  xyz[1]+=30;
-  Float_t bxyz[3];
+  Double_t bxyz[3];
   mag->Field(xyz,bxyz);
   return bxyz[1];
 }  
@@ -261,9 +261,9 @@ Double_t AliTPCExB::GetBz(Double_t r, Double_t phi, Double_t z,Int_t index){
   //
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
-  Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
+  Double_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
   //  xyz[1]+=30;
-  Float_t bxyz[3];
+  Double_t bxyz[3];
   mag->Field(xyz,bxyz);
   return bxyz[2];
 }  
@@ -276,12 +276,12 @@ Double_t AliTPCExB::GetBr(Double_t r, Double_t phi, Double_t z,Int_t index){
   //
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
-  Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
+  Double_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
   //xyz[1]+=30;
-  Float_t bxyz[3];
+  Double_t bxyz[3];
   mag->Field(xyz,bxyz);
   if (r==0) return 0;
-  Float_t br = (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/r;
+  Double_t br = (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/r;
   return br;
 }  
 
@@ -291,12 +291,12 @@ Double_t AliTPCExB::GetBrfi(Double_t r, Double_t phi, Double_t z,Int_t index){
   //
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
-  Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
+  Double_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
   //xyz[1]+=30;
-  Float_t bxyz[3];
+  Double_t bxyz[3];
   mag->Field(xyz,bxyz);
   if (r==0) return 0;
-  Float_t br = (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/r;
+  Double_t br = (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/r;
   return br;
 }  
 

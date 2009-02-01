@@ -16,11 +16,12 @@
 // Enrico Fragiacomo - 15/03/2004
 // Geometry for the June 2003 SSD beam test
 
-#include <TLorentzVector.h>
 #include <TClonesArray.h>
-#include <TVirtualMC.h>
-#include <TGeoMatrix.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TLorentzVector.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -329,8 +330,8 @@ void AliITSvSSD03::CreateMaterials2003(){
     //    none.
     /////////////////////////////////////////////////////////////////////////
 
-    Int_t   ifield = gAlice->Field()->Integ();
-    Float_t fieldm = gAlice->Field()->Max();   
+    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();   
 
     // Scintillator CH
     Float_t ascin[2]={1.01,12.01};

@@ -58,7 +58,7 @@
 #include "AliLoader.h"
 #include "AliTracker.h"
 #include "AliStack.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 
 
 // MUON includes
@@ -245,15 +245,15 @@ void efficiencyThetaPhi( Int_t event2Check=0, char * filename="galice.root" )
 
 //--------------------------------------------------------------------------------------------------------------
 //Set mag field; waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  if (!AliTracker::GetFieldMap()) {
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);}
-
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
 
 //--------------------------------------------------------------------------------------------------------------
 //Set Field Map for track extrapolation
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  AliMUONTrackExtrap::SetField()
 
 
 //Creating a MUON data container
@@ -510,15 +510,16 @@ void efficiencyThetaI( Int_t event2Check=0, char * filename="galice.root" )
 
 //--------------------------------------------------------------------------------------------------------------
 //Set mag field; waiting for mag field in CDB 
-  printf("Loading field map...\n");
-  if (!AliTracker::GetFieldMap()) {
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);}
-
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }  printf("Loading field map...\n");
+ 
 
 //--------------------------------------------------------------------------------------------------------------
 //Set Field Map for track extrapolation
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  AliMUONTrackExtrap::SetField();
 
 
 //Creating a MUON data container

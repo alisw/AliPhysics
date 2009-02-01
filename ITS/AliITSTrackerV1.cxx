@@ -280,10 +280,8 @@ AliITSTrackerV1::AliITSTrackerV1(Int_t evnumber, Bool_t flag) {
 	 
 
     ////////// gets magnetic field factor //////////////////////////////
-
-    AliMagF * fieldPointer = gAlice->Field();
-   // fFieldFactor = (Double_t)fieldPointer->Factor();
-    fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
+    AliMagF * fieldPointer = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    fFieldFactor =  fieldPointer ? fieldPointer->SolenoidField()/10/.2 : 0;
    // cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
     delete rl;
     
@@ -518,10 +516,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 
     gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  
-    AliKalmanTrack::SetFieldMap(gAlice->Field());
-   // cout<<" field = "<<gAlice->Field()->SolenoidField()<<endl;
-
-
     TFile *cf=TFile::Open("AliTPCclusters.root");  
     AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60_150x60");
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; getchar();}

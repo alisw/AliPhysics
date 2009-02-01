@@ -575,8 +575,8 @@ void AliPMDv3::CreateMaterials()
   Float_t wsteel[4] = { .715,.18,.1,.005 };
   
   Int_t *idtmed = fIdtmed->GetArray()-599;
-  Int_t isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   
   // --- Define the various materials for GEANT --- 
   AliMaterial(1, "Pb    $", 207.19, 82., 11.35, .56, 18.5);

@@ -38,7 +38,7 @@ using namespace std;
 //#include "AliTRDtrackerHLT.h"
 #include "AliTRDtracker.h"
 #include "AliTRDCalibraFillHisto.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTRDcluster.h"
 #include "AliESDfriend.h"
 #include <cstdlib>
@@ -55,7 +55,6 @@ AliHLTTRDTrackerComponent::AliHLTTRDTrackerComponent()
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
   , fStrorageDBpath("local://$ALICE_ROOT")
   , fCDB(NULL)
-  , fField(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)
   , fGeoManager(NULL)
@@ -163,12 +162,6 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
       return EINVAL;
     }
 
-  //init alifield map - temporarly fixed - should come from a DB
-  fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  if (fField)
-    AliTracker::SetFieldMap(fField,1);
-  else
-    HLTError("Unable to init the field");
 
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
@@ -223,9 +216,6 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
 int AliHLTTRDTrackerComponent::DoDeinit()
 {
   // Deinitialization of the component
-
-  delete fField;
-  fField = 0;
 
   delete fTracker;
   fTracker = 0;

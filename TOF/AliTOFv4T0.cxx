@@ -832,7 +832,7 @@ void AliTOFv4T0::CreateMaterials()
   // Revision: F. Pierella 18-VI-2002
   //
 
-  AliMagF *magneticField = (AliMagF*)gAlice->Field();
+  AliMagF *magneticField = (AliMagF*)((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
 
   Int_t   isxfld = magneticField->Integ();
   Float_t sxmgmx = magneticField->Max();

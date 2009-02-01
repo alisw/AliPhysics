@@ -24,18 +24,19 @@
 
 #include <Riostream.h>
 
-#include <TSystem.h>
-#include <TVirtualMC.h>
+#include <TGeoBBox.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoCone.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
-#include <TGeoVolume.h>
+#include <TGeoPcon.h>
 #include <TGeoTorus.h>
 #include <TGeoTube.h>
-#include <TGeoCone.h>
-#include <TGeoPcon.h>
-#include <TGeoBBox.h>
+#include <TGeoVolume.h>
 #include <TGeoXtru.h>
-#include <TGeoCompositeShape.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
 #include "AliMagF.h"
@@ -2695,8 +2696,8 @@ void AliPIPEv3::CreateMaterials()
   //
 
   AliDebugClass(1,"Create PIPEv3 materials");
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   // Steel (Inox)  
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };

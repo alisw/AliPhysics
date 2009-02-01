@@ -86,12 +86,6 @@
     class  AliDigit {};
     class  AliHit {};
     class  AliDisplay {};
-    class  AliMagFC {};
-    class  AliMagFCM {};
-    class  AliMagFMaps {};
-    class  AliMagFMapsV1 {};
-    class  AliMagFDM {};
-    class  AliMagFCheb {};
     class  AliCheb3DCalc {};
     class  AliCheb3D {};
     class  AliMagWrapCheb {};

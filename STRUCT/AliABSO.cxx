@@ -36,6 +36,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
+
 #include "AliABSO.h"
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -86,8 +88,8 @@ void AliABSO::CreateMaterials()
   //
   // Define materials for muon absorber
   //
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 //
 // Air
 //

@@ -35,14 +35,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
  
-#include <TVirtualMC.h>
-#include <TGeoMedium.h>
-#include <TGeoVolume.h>
-#include <TGeoMatrix.h>
-#include <TGeoPgon.h>
-#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoMedium.h>
+#include <TGeoPgon.h>
+#include <TGeoVolume.h>
+#include <TGeoXtru.h>
+#include <TVirtualMC.h>
 
 #include "AliMAG.h"
 #include "AliMagF.h"
@@ -345,8 +346,8 @@ void AliMAG::CreateMaterials()
   // Create materials for L3 magnet
   //
   
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
 
 

@@ -32,7 +32,7 @@
 #include <TROOT.h>
 
 // STEER includes
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
@@ -212,11 +212,15 @@ void Prepare()
     }
   }
   
-  // set mag field
-  printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kFALSE);
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  // set  mag field 
+  // waiting for mag field in CDB 
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
   
   // Load mapping
   AliCDBManager* man = AliCDBManager::Instance();

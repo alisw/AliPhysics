@@ -15,7 +15,7 @@ class TTree;
 
 class TGeoManager;
 class AliCDBManager;
-class AliMagFMaps;
+class AliMagF;
 class AliTRDtrackerV1;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
@@ -75,8 +75,6 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 
 	string fStrorageDBpath; // Default path for OCDB
 	AliCDBManager *fCDB; //! Pointer to OCDB
-
-	AliMagFMaps* fField; //! magn. field settings
 
 	string fGeometryFileName; // Path to geometry file 
 	Bool_t   fUseHLTClusters;

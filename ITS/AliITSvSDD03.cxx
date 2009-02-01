@@ -22,10 +22,11 @@
 //                                                             //
 /////////////////////////////////////////////////////////////////
 
+#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
-#include <TGeoMatrix.h>
 
 #include "AliMC.h"
 #include "AliRun.h"
@@ -393,8 +394,8 @@ void AliITSvSDD03::CreateMaterials(){
     Float_t deemaxAir = 0.1; // Fraction of particle's energy 0<deemax<=1
     Float_t epsilAir  = 1.0E-4;//
     Float_t stminAir  = 0.0; // cm "Default value used"
-    Int_t   ifield = gAlice->Field()->Integ();
-    Float_t fieldm = gAlice->Field()->Max();
+    Int_t   ifield = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+    Float_t fieldm = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
     //
 
     // AIR

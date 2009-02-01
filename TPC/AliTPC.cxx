@@ -36,21 +36,22 @@
 #include <Riostream.h>
 #include <stdlib.h>
 
+#include <TF2.h>
 #include <TFile.h>  
+#include <TGeoGlobalMagField.h>
 #include <TInterpreter.h>
 #include <TMath.h>
 #include <TMatrixF.h>
-#include <TVector.h>
 #include <TObjectTable.h>
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TRandom.h>
+#include <TStopwatch.h>
+#include <TString.h>
 #include <TSystem.h>     
 #include <TTree.h>
+#include <TVector.h>
 #include <TVirtualMC.h>
-#include <TString.h>
-#include <TF2.h>
-#include <TStopwatch.h>
 
 #include "AliDigits.h"
 #include "AliMagF.h"
@@ -230,8 +231,8 @@ void AliTPC::CreateMaterials()
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-   Int_t iSXFLD=gAlice->Field()->Integ();
-  Float_t sXMGMX=gAlice->Field()->Max();
+   Int_t iSXFLD=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Float_t sXMGMX=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
   Float_t amat[5]; // atomic numbers
   Float_t zmat[5]; // z
@@ -1790,7 +1791,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   //-----------------------------------------------------------------
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   if (gAlice){ // Set correctly the magnetic field in the ExB calculation
-    AliMagF * field = gAlice->Field();
+    AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
     if (field) {
       calib->SetExBField(field->SolenoidField());
     }

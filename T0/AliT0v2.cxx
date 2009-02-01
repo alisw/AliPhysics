@@ -148,8 +148,8 @@ void AliT0v2::CreateGeometry()
 //////////////////////////////////////////////////////////////////////
 void AliT0v2::CreateMaterials()
 {
-   Int_t isxfld   = gAlice->Field()->Integ();
-   Float_t sxmgmx = gAlice->Field()->Max();
+   Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+   Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
    
    Float_t a, z, d, radl, absl, buf[1];
    Int_t nbuf;

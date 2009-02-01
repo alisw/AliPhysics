@@ -56,7 +56,7 @@
 //
 #include "AliMathBase.h"
 #include "AliTreeDraw.h" 
-#include "AliMagFMaps.h" 
+#include "AliMagF.h" 
 #include "AliESDVertex.h" 
 #include "AliExternalTrackParam.h" 
 #include "AliTracker.h" 

@@ -49,7 +49,6 @@ public:
    virtual  void  FinishEvent();
    virtual  Double_t  TrackingZmax() const {return fTrZmax;}
    virtual  Double_t  TrackingRmax() const {return fTrRmax;}
-   virtual  void Field(const Double_t* x, Double_t* b) const;
    virtual  Int_t   DetFromMate(Int_t i) const { return (*fImedia)[i];}
 //
 

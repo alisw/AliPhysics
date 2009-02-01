@@ -8,7 +8,6 @@
   #include "AliTPCtracker.h"
   #include "AliTPCtrackerMI.h"
   #include "AliRun.h"
-  #include "AliMagF.h"
   #include "AliRunLoader.h"
   #include "AliTPCLoader.h"
   #include "AliESD.h"

@@ -34,9 +34,6 @@
 
 extern TGeoManager *gGeoManager;
 
-Bool_t AliTracker::fgUniformField=kTRUE;
-Double_t AliTracker::fgBz=kAlmost0Field;
-const AliMagF *AliTracker::fgkFieldMap=0;
 Bool_t AliTracker::fFillResiduals=kFALSE;
 TObjArray **AliTracker::fResiduals=NULL;
 AliRecoParam::EventSpecie_t AliTracker::fEventSpecie=AliRecoParam::kDefault;
@@ -55,7 +52,8 @@ AliTracker::AliTracker():
   //--------------------------------------------------------------------
   // The default constructor.
   //--------------------------------------------------------------------
-  if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
+  if (!TGeoGlobalMagField::Instance()->GetField())
+    AliWarning("Field map is not set.");
 }
 
 //__________________________________________________________________________
@@ -71,30 +69,28 @@ AliTracker::AliTracker(const AliTracker &atr):
   //--------------------------------------------------------------------
   // The default constructor.
   //--------------------------------------------------------------------
-  if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
+  if (!TGeoGlobalMagField::Instance()->GetField())
+    AliWarning("Field map is not set.");
 }
 
 //__________________________________________________________________________
-void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
-  //--------------------------------------------------------------------
-  //This passes the field map to the reconstruction.
-  //--------------------------------------------------------------------
-  if (map==0) AliFatalClass("Can't access the field map !");
+Double_t AliTracker::GetBz()
+{
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) return kAlmost0Field;
+  Double_t bz = -fld->SolenoidField();
+  return TMath::Sign(kAlmost0Field,bz) + bz;
+}
 
-  if (fgkFieldMap) {
-     AliWarningClass("The magnetic field map has been already set !");
-     return;
-  }
-
-  fgUniformField=uni;
-  fgkFieldMap=map;
-
-  //Float_t r[3]={0.,0.,0.},b[3]; map->Field(r,b);
-  //Double_t bz=-b[2];
- 
-  Double_t bz=-map->SolenoidField();
-  fgBz=TMath::Sign(kAlmost0Field,bz) + bz;
-
+//__________________________________________________________________________
+Double_t AliTracker::GetBz(const Double_t *r) {
+  //------------------------------------------------------------------
+  // Returns Bz (kG) at the point "r" .
+  //------------------------------------------------------------------
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) return  kAlmost0Field;
+  Double_t bz = -fld->GetBz(r);
+  return  TMath::Sign(kAlmost0Field,bz) + bz;
 }
 
 //__________________________________________________________________________
@@ -170,17 +166,7 @@ void AliTracker::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   }
 }
 
-Double_t AliTracker::GetBz(const Float_t *r) {
-  //------------------------------------------------------------------
-  // Returns Bz (kG) at the point "r" .
-  //------------------------------------------------------------------
-    Float_t b[3]; fgkFieldMap->Field(r,b);
-    Double_t bz=-Double_t(b[2]);
-    return  (TMath::Sign(kAlmost0Field,bz) + bz);
-}
-
-Double_t 
-AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *end, Double_t *mparam)
+Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *end, Double_t *mparam)
 {
   // 
   // Calculate mean material budget and material properties between 

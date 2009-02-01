@@ -53,10 +53,6 @@ AliAnalysisManager * SetupV0Task() {
   TStopwatch stopwatch;
   stopwatch.Start();
   //
-  // set magnetic field form the cosmos - it should be provided by framework
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
-  AliTracker::SetFieldMap(field,0);
-  //
   AliAnalysisManager *mgr=new AliAnalysisManager("TestManager");
 
   AliESDInputHandler* esdH=new AliESDInputHandler;

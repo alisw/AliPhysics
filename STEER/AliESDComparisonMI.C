@@ -169,7 +169,6 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
 #include "AliComplexCluster.h"
-#include "AliMagF.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliITStrackMI.h"
@@ -838,8 +837,6 @@ ESDCmpTr::ESDCmpTr(const char* fnGenTracks,
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
   }
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,0);
 
 }
 

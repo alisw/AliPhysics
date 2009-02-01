@@ -9,13 +9,13 @@
 #define ALITPCEXBFIRST_H
 
 #include "AliTPCExB.h"
-class AliFieldMap;
+//class AliFieldMap;
 class AliMagF;
 
 class AliTPCExBFirst:public AliTPCExB {
 public:
   AliTPCExBFirst();
-  AliTPCExBFirst(const AliFieldMap *bFieldMap,Double_t driftVelocity);
+  //  AliTPCExBFirst(const AliFieldMap *bFieldMap,Double_t driftVelocity);
   AliTPCExBFirst(const AliMagF *bField,Double_t driftVelocity,
 		 Int_t nx=100,Int_t ny=100,Int_t nz=100);
   virtual ~AliTPCExBFirst();
@@ -29,7 +29,8 @@ protected:
 private:
   AliTPCExBFirst& operator=(const AliTPCExBFirst&); // don't assign me
   AliTPCExBFirst(const AliTPCExBFirst&); // don't copy me
-  void ConstructCommon(const AliFieldMap *bFieldMap,const AliMagF *bField);
+  //  void ConstructCommon(const AliFieldMap *bFieldMap,const AliMagF *bField);
+  void ConstructCommon(const AliMagF *bField);
   void GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
 		     Double_t *Bx,Double_t *By) const;
   Int_t fkNX;         // field mesh points in x direction

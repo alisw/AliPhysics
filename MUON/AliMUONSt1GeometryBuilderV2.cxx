@@ -47,18 +47,19 @@
 #include "AliMagF.h"
 #include "AliLog.h"
 
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoTube.h>
+#include <TGeoVolume.h>
+#include <TGeoXtru.h>
+#include <TSystem.h>
 #include <TVector2.h>
 #include <TVector3.h>
-#include <TGeoMatrix.h>
-#include <TClonesArray.h>
-#include <Riostream.h>
-#include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeoManager.h>
-#include <TGeoVolume.h>
-#include <TGeoTube.h>
-#include <TGeoXtru.h>
-#include <TGeoCompositeShape.h>
 
 #ifdef WITH_STL
   #include <vector>
@@ -2227,8 +2228,8 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
   GReal_t maxStepAlu   = fMUON->GetMaxStepAlu();
   GReal_t maxDestepAlu = fMUON->GetMaxDestepAlu();
   // GReal_t maxStepGas   = fMUON->GetMaxStepGas();
-  Int_t iSXFLD   = gAlice->Field()->PrecInteg();
-  Float_t sXMGMX = gAlice->Field()->Max();
+  Int_t iSXFLD   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->PrecInteg();
+  Float_t sXMGMX = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
   fMUON->AliMedium(21, "ALU_II$",    41, 0, iSXFLD, sXMGMX, 
                    tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);

@@ -34,7 +34,7 @@
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliTracker.h"
-#include "AliMagFMaps.h"
+#include "AliMagF.h"
 #include "AliAnalysisManager.h"
 
 #include "Cal/AliTRDCalPID.h"

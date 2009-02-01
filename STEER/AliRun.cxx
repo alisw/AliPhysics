@@ -51,9 +51,6 @@
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliMC.h"
-#include "AliMagFC.h"
-#include "AliMagFCM.h"
-#include "AliMagFDM.h"
 #include "AliPDG.h"
 #include "AliRun.h"
 #include "AliStack.h"
@@ -73,7 +70,6 @@ AliRun::AliRun():
   fEventNrInRun(-1),
   fModules(0),
   fMCApp(0),
-  fField(0),
   fNdets(0),
   fConfigFunction(""),
   fRandom(0),
@@ -100,7 +96,6 @@ AliRun::AliRun(const char *name, const char *title):
   fEventNrInRun(-1),
   fModules(new TObjArray(77)), // Support list for the Detectors
   fMCApp(new AliMC(GetName(),GetTitle())),
-  fField(0),
   fNdets(0),
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
@@ -130,9 +125,6 @@ AliRun::AliRun(const char *name, const char *title):
   // Add to list of browsable  
   gROOT->GetListOfBrowsables()->Add(this,name);
   
-  // Create default mag field
-  fField = new AliMagFC("Map1"," ",2.,1.,10.);
-
 }
 
 
@@ -156,7 +148,6 @@ AliRun::~AliRun()
      }
    }
     
-  delete fField;
   delete fMCApp;
   delete gMC; gMC=0;
   if (fModules) {
@@ -166,15 +157,6 @@ AliRun::~AliRun()
   
 }
 
-//_______________________________________________________________________
-void  AliRun::SetField(AliMagF* magField)
-{
-  //
-  // Set Magnetic Field Map
-  //
-  fField = magField;
-  fField->ReadField();
-}
 
 //_______________________________________________________________________
 void AliRun::SetRootGeometry(Bool_t flag)
@@ -408,30 +390,6 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
    }
 }
 
-// 
-// MC Application
-// 
-
-//_______________________________________________________________________
-void AliRun::Field(const Double_t* x, Double_t *b) const
-{
-  //
-  // Return the value of the magnetic field
-  //
-    
-  if (Field()) Field()->Field(x,b);
-
-  else {
-    AliError("No mag field defined!");
-    b[0]=b[1]=b[2]=0.;
-  }
-
-  
-}      
-
-// 
-// End of MC Application
-// 
 
 //_______________________________________________________________________
 void AliRun::Streamer(TBuffer &R__b)

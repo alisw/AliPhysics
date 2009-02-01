@@ -31,7 +31,7 @@
 #include "EVGEN/AliGenGeVSim.h"
 #include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFMaps.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -274,11 +274,8 @@ void Config()
     
     
 // Field
-    AliMagF* field = new AliMagWrapCheb("MapsSimCheb","MapsSimCheb", 2, 1., 10., AliMagWrapCheb::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
     rl->CdGAFile();
-    gAlice->SetField(field);    
-
-
   
 //
     Int_t   iABSO   = 1;
