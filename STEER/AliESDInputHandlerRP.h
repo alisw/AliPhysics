@@ -46,7 +46,6 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     TList*          fDetectors;        // List of detector names
     TDirectoryFile *fDirR;             //! Directory for RP Tree
     Int_t           fEventNumber;      //! Current event number
-    Int_t           fNEvent;           //! Number of events in current directory
     Int_t           fFileNumber;       //! Input file number
     Int_t           fEventsPerFile;    //! Number of events per file
     const Char_t   *fExtension;        //! File name extension

@@ -46,6 +46,7 @@ AliESDInputHandler::AliESDInputHandler() :
   fBranches(""),
   fBranchesOn(""),
   fAnalysisType(0),
+  fNEvents(0),
   fUseTags(kFALSE),
   fChainT(0),
   fTreeT(0),
@@ -87,6 +88,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fEvent = new AliESDEvent();
 
     fEvent->ReadFromTree(fTree);
+    fNEvents = fTree->GetEntries();
     return kTRUE;
 }
 

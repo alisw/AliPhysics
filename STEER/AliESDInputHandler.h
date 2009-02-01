@@ -43,12 +43,13 @@ class AliESDInputHandler : public AliInputEventHandler {
     void SwitchOnBranches()  const;
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
- private:
+ protected:
     // ESD event
     AliESDEvent    *fEvent;        //! Pointer to the event
     TString         fBranches;     //  List of branches to be switched off (separated by space)
     TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
     Option_t       *fAnalysisType; //! local, proof, grid
+    Int_t           fNEvents;      //! Number of events in the current tree 
     
     // ESD Tags (optional)
     Bool_t          fUseTags;    //  Flag to use tags

@@ -44,7 +44,6 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
     fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
-    fNEvent(-1),
     fFileNumber(0),
     fEventsPerFile(0),
     fExtension(""),
@@ -63,7 +62,6 @@ AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
-    fNEvent(-1),
     fFileNumber(0),
     fEventsPerFile(0),
     fExtension(""),
@@ -99,20 +97,19 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
 	if (!file) AliFatal(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
 	fRFiles->Add(file);
     }
+
     if (file) {
 	fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
     } else {
 	AliFatal(Form("AliESDInputHandlerRP: No file with RecPoints found in %s ! \n", fPathName->Data()));
     }
     
-    
+
     // Reset the event number
     fEventNumber      = -1;
     fFileNumber       =  0;
     // Get number of events from esd tree 
-    fNEvent           =  fTree->GetEntries();
-    
-    printf("AliESDInputHandler::Init() %d\n",__LINE__);
+    printf("AliESDInputHandler::Init() %d %d\n",__LINE__, fNEvents);
     return kTRUE;
 }
 
@@ -129,8 +126,8 @@ Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
 	fEventNumber = entry;
     }
     
-    if (entry >= fNEvent) {
-	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5d %5d\n", entry, fNEvent));
+    if (entry >= fNEvents) {
+	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5d %5d\n", entry, fNEvents));
 	return kFALSE;
     }
     return LoadEvent(entry);
@@ -152,10 +149,9 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     char folder[20];
     sprintf(folder, "Event%d", iev);
     // Tree R
-    fRTrees->Clear();
-    
     TIter next(fRFiles);
     TFile* file;
+    Int_t idx = 0;
     while ((file = (TFile*) next()))
     {
 	file->GetObject(folder, fDirR);
@@ -163,9 +159,9 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
 	    AliWarning(Form("AliESDInputHandlerRP: Event #%5d not found\n", iev));
 	    return kFALSE;
 	}
-	TTree* tree;
+	TTree* tree = 0;
 	fDirR ->GetObject("TreeR", tree);
-	fRTrees->Add(tree);
+	fRTrees->AddAt(tree, idx++);
     }
     return kTRUE;
 }
@@ -235,6 +231,8 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     TIter next(members);
     TFile* entry;
     Int_t ien = 0;
+    fRTrees->Clear();
+    
     while ( (entry = (TFile*) next()) )
     {
 	printf("File %s \n", entry->GetName());
@@ -251,7 +249,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	    fDetectors->Add(ent);
 	}
     } // loop over files
-    
+
 
     // Now we have the path and the list of detectors
     
@@ -261,7 +259,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     InitIO("");
     // Some clean-up
     members->Delete();
-    //
+
     return kTRUE;
 }
 
@@ -276,8 +274,8 @@ Bool_t AliESDInputHandlerRP::FinishEvent()
 void AliESDInputHandlerRP::ResetIO()
 {
 // Delete trees and files
-    fRTrees->Delete();
-    fRFiles->Delete();
+//    fRTrees->Clear();
+    fRFiles->Clear();
     fExtension="";
 }
 
