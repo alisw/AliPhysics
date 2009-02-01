@@ -5,9 +5,9 @@
 //                                                                               //
 //  Wrapper for the set of mag.field parameterizations by Chebyshev polinomials  //
 //  To obtain the field in cartesian coordinates/components use                  //
-//    Field(float* xyz, float* bxyz);                                            //
+//    Field(double* xyz, double* bxyz);                                          //
 //  For cylindrical coordinates/components:                                      //
-//    FieldCyl(float* rphiz, float* brphiz)                                      //
+//    FieldCyl(double* rphiz, double* brphiz)                                    //
 //                                                                               //
 //  The solenoid part is parameterized in the volume  R<500, -550<Z<550 cm       //
 //                                                                               //
@@ -25,9 +25,9 @@
 //                                                                               //
 //  To obtain the field integral in the TPC region from given point to nearest   //
 //  cathod plane (+- 250 cm) use:                                                //
-//  GetTPCInt(float* xyz, float* bxyz);  for Cartesian frame                     //
+//  GetTPCInt(double* xyz, double* bxyz);  for Cartesian frame                   //
 //  or                                                                           //
-//  GetTPCIntCyl(Float_t *rphiz, Float_t *b); for Cylindrical frame              //
+//  GetTPCIntCyl(Double_t *rphiz, Double_t *b); for Cylindrical frame            //
 //                                                                               //
 //                                                                               //
 //  The units are kiloGauss and cm.                                              //
@@ -58,7 +58,7 @@ class AliMagWrapCheb: public TNamed
   //
   Int_t      GetNParamsSol()                              const {return fNParamsSol;}
   Int_t      GetNSegZSol()                                const {return fNSegZSol;}
-  Float_t*     GetSegZSol() const {return fSegZSol;}
+  Float_t*   GetSegZSol() const {return fSegZSol;}
   //
   Int_t      GetNParamsTPCInt()                           const {return fNParamsTPCInt;}
   Int_t      GetNSegZTPCInt()                             const {return fNSegZTPCInt;}
@@ -84,36 +84,26 @@ class AliMagWrapCheb: public TNamed
   //
   virtual void Print(Option_t * = "")                     const;
   //
-  virtual void Field(const Float_t *xyz, Float_t *b)                const;
-  virtual void Field(const Double_t *xyz, Double_t *b)              const;
+  virtual void Field(const Double_t *xyz, Double_t *b)    const;
+  Double_t     GetBz(const Double_t *xyz)                 const;
   //
-  virtual void FieldCyl(const Float_t *rphiz, Float_t *b)     const;
-  virtual void FieldCyl(const Double_t *rphiz, Double_t *b)   const;
+  void FieldCyl(const Double_t *rphiz, Double_t  *b)      const;
+  void GetTPCInt(const Double_t *xyz, Double_t *b)        const;
+  void GetTPCIntCyl(const Double_t *rphiz, Double_t *b)   const;
   //
-  virtual void GetTPCInt(const Float_t *xyz, Float_t *b)        const;
-  virtual void GetTPCIntCyl(const Float_t *rphiz, Float_t *b)   const;
-  //
-  template <class T>
-    Int_t      FindDipSegment(const T *xyz)               const; 
-  //
-  template <class T>
-    static void CylToCartCylB(const T *rphiz, const T *brphiz,T *bxyz);
-  template <class T>
-    static void CylToCartCartB(const T *xyz,  const T *brphiz,T *bxyz);
-  template <class T>
-    static void CartToCylCartB(const T *xyz,  const T *bxyz,  T *brphiz);
-  template <class T>  
-    static void CartToCylCylB(const T *rphiz, const T *bxyz,  T *brphiz);
-  template <class T>
-    static void CartToCyl(const T *xyz,  T *rphiz);
-  template <class T>
-    static void CylToCart(const T *rphiz,T *xyz);
+  Int_t       FindDipSegment(const Double_t *xyz)         const; 
+  static void CylToCartCylB(const Double_t *rphiz, const Double_t *brphiz,Double_t *bxyz);
+  static void CylToCartCartB(const Double_t *xyz,  const Double_t *brphiz,Double_t *bxyz);
+  static void CartToCylCartB(const Double_t *xyz,  const Double_t *bxyz,  Double_t *brphiz);
+  static void CartToCylCylB(const Double_t *rphiz, const Double_t *bxyz,  Double_t *brphiz);
+  static void CartToCyl(const Double_t *xyz,  Double_t *rphiz);
+  static void CylToCart(const Double_t *rphiz,Double_t *xyz);
   //
 #ifdef  _INC_CREATION_ALICHEB3D_                          // see AliCheb3D.h for explanation
   void         LoadData(const char* inpfile);
   //
   AliMagWrapCheb(const char* inputFile);
-  void       SaveData(const char* outfile)              const;
+  void       SaveData(const char* outfile)                const;
   Int_t      SegmentDipDimension(Float_t** seg,const TObjArray* par,int npar, int dim, 
 				 Float_t xmn,Float_t xmx,Float_t ymn,Float_t ymx,Float_t zmn,Float_t zmx);
   //
@@ -129,8 +119,8 @@ class AliMagWrapCheb: public TNamed
 #endif
   //
  protected:
-    virtual void FieldCylSol(const Float_t *rphiz, Float_t *b)      const;
-    virtual void FieldCylSol(const Double_t *rphiz, Double_t *b)    const;
+  void     FieldCylSol(const Double_t *rphiz, Double_t *b)    const;
+  Double_t FieldCylSolBz(const Double_t *rphiz)               const;
   //
  protected:
   //
@@ -182,18 +172,9 @@ class AliMagWrapCheb: public TNamed
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
   TObjArray* fParamsTPCInt;          // Parameterization pieces for Solenoid field integrals in TPC region
   //
-  ClassDef(AliMagWrapCheb,3)            // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
+  ClassDef(AliMagWrapCheb,4)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //
  };
-
-
-//__________________________________________________________________________________________
-inline void AliMagWrapCheb::FieldCyl(const Float_t *rphiz, Float_t *b) const
-{
-  // compute field in Cylindircal coordinates
-  //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
-  FieldCylSol(rphiz,b);
-}
 
 
 //__________________________________________________________________________________________
@@ -205,12 +186,11 @@ inline void AliMagWrapCheb::FieldCyl(const Double_t *rphiz, Double_t *b) const
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CylToCartCylB(const T *rphiz, const T *brphiz,T *bxyz)
+inline void AliMagWrapCheb::CylToCartCylB(const Double_t *rphiz, const Double_t *brphiz,Double_t *bxyz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
-  T btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  T psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
+  Double_t btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  Double_t psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
   bxyz[0] = btr*TMath::Cos(psiPLUSphi);
   bxyz[1] = btr*TMath::Sin(psiPLUSphi);
   bxyz[2] = brphiz[2];
@@ -218,12 +198,11 @@ inline void AliMagWrapCheb::CylToCartCylB(const T *rphiz, const T *brphiz,T *bxy
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CylToCartCartB(const T *xyz, const T *brphiz, T *bxyz)
+inline void AliMagWrapCheb::CylToCartCartB(const Double_t* xyz, const Double_t *brphiz, Double_t *bxyz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cart.system
-  T btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
-  T phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
+  Double_t btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  Double_t phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
   bxyz[0] = btr*TMath::Cos(phiPLUSpsi);
   bxyz[1] = btr*TMath::Sin(phiPLUSpsi);
   bxyz[2] = brphiz[2];
@@ -231,12 +210,11 @@ inline void AliMagWrapCheb::CylToCartCartB(const T *xyz, const T *brphiz, T *bxy
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CartToCylCartB(const T *xyz, const T *bxyz, T *brphiz)
+inline void AliMagWrapCheb::CartToCylCartB(const Double_t *xyz, const Double_t *bxyz, Double_t *brphiz)
 {
   // convert field in cylindrical coordinates to cartesian system, poin is in cart.system
-  T btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  T psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
+  Double_t btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  Double_t psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
   //
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
@@ -245,12 +223,11 @@ inline void AliMagWrapCheb::CartToCylCartB(const T *xyz, const T *bxyz, T *brphi
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CartToCylCylB(const T *rphiz, const T *bxyz, T *brphiz)
+inline void AliMagWrapCheb::CartToCylCylB(const Double_t *rphiz, const Double_t *bxyz, Double_t *brphiz)
 {
   // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
-  T btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
-  T psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
+  Double_t btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  Double_t psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
   brphiz[0] = btr*TMath::Cos(psiMINphi);
   brphiz[1] = btr*TMath::Sin(psiMINphi);
   brphiz[2] = bxyz[2];
@@ -258,8 +235,7 @@ inline void AliMagWrapCheb::CartToCylCylB(const T *rphiz, const T *bxyz, T *brph
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CartToCyl(const T *xyz,T *rphiz)
+inline void AliMagWrapCheb::CartToCyl(const Double_t *xyz, Double_t *rphiz)
 {
   rphiz[0] = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
   rphiz[1] = TMath::ATan2(xyz[1],xyz[0]);
@@ -267,32 +243,11 @@ inline void AliMagWrapCheb::CartToCyl(const T *xyz,T *rphiz)
 }
 
 //__________________________________________________________________________________________________
-template <class T>
-inline void AliMagWrapCheb::CylToCart(const T *rphiz, T *xyz)
+inline void AliMagWrapCheb::CylToCart(const Double_t *rphiz, Double_t *xyz)
 {
   xyz[0] = rphiz[0]*TMath::Cos(rphiz[1]);
   xyz[1] = rphiz[0]*TMath::Sin(rphiz[1]);
   xyz[2] = rphiz[2];
-}
-
-//__________________________________________________________________________________________________
-template <class T>
-Int_t    AliMagWrapCheb::FindDipSegment(const T *xyz) const 
-{
-  // find the segment containing point xyz. If it is outside find the closest segment 
-  int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(Float_t)xyz[2]); // find zsegment
-  int ysegBeg = fBegSegYDip[zid];
-  //
-  for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
-  if ( --yid < 0 ) yid = 0;
-  yid +=  ysegBeg;
-  //
-  int xsegBeg = fBegSegXDip[yid];
-  for (xid=0;xid<fNSegXDip[yid];xid++) if (xyz[0]<fSegXDip[xsegBeg+xid]) break;
-  if ( --xid < 0) xid = 0;
-  xid +=  xsegBeg;
-  //
-  return fSegIDDip[xid];
 }
 
 #endif

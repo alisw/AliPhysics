@@ -52,6 +52,10 @@
 #pragma link C++ class AliMCParticle+;
 
 #pragma link C++ class  AliMagF+;
+#pragma link C++ class  AliMagWrapCheb+;
+#pragma link C++ class  AliCheb3DCalc+;
+#pragma link C++ class  AliCheb3D+;
+
 
 #pragma link C++ class AliCodeTimer+;
 #pragma link C++ class AliCodeTimer::AliPair+;

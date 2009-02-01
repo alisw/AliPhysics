@@ -21,15 +21,6 @@
 #pragma link C++ class  AliDetector+;
 #pragma link C++ class  AliDigit+;
 #pragma link C++ class  AliHit+;
-#pragma link C++ class  AliMagFC+;
-#pragma link C++ class  AliMagFCM+;
-#pragma link C++ class  AliMagFMaps-;
-#pragma link C++ class  AliMagFMapsV1+;
-#pragma link C++ class  AliMagFDM+;
-#pragma link C++ class  AliMagFCheb+;
-#pragma link C++ class  AliCheb3DCalc+;
-#pragma link C++ class  AliCheb3D+;
-#pragma link C++ class  AliMagWrapCheb+;
 #pragma link C++ class  AliLego+;
 #pragma link C++ class  AliLegoGenerator+;
 #pragma link C++ class  AliLegoGeneratorXYZ+;
@@ -47,7 +38,6 @@
 #pragma link C++ class  AliRunDigitizer+;
 #pragma link C++ class  AliStream+;
 #pragma link C++ class  AliMergeCombi+;
-#pragma link C++ class  AliFieldMap-;
 #pragma link C++ class  AliGausCorr+;
 #pragma link C++ class  AliLoader+;
 #pragma link C++ class  AliDataLoader+;
@@ -150,5 +140,13 @@
 #pragma link C++ class AliESDTagCreator+;
 
 #pragma link C++ class AliGRPObject+;
+
+#pragma link C++ class AliMillePede2+;
+#pragma link C++ class AliMillePedeRecord+;
+#pragma link C++ class AliMinResSolve+;
+#pragma link C++ class AliMatrixSparse+;
+#pragma link C++ class AliMatrixSq+;
+#pragma link C++ class AliSymMatrix+;
+
 
 #endif

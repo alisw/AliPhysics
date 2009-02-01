@@ -239,41 +239,6 @@ void AliMagWrapCheb::Clear(const Option_t *)
 }
 
 //__________________________________________________________________________________________
-void AliMagWrapCheb::Field(const float *xyz, float *b) const
-{
-  // compute field in cartesian coordinates. If point is outside of the parameterized region
-  // get it at closest valid point
-  static float rphiz[3];
-  //
-#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
-  if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
-       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) {for (int i=3;i--;) b[i]=0; return;}
-#endif
-  //
-  if (xyz[2]<fMaxZDip) {    // dipole part?
-#ifndef _BRING_TO_BOUNDARY_
-    AliCheb3D* par = GetParamDip(FindDipSegment(xyz));
-    if (par->IsInside(xyz)) {par->Eval(xyz,b); return;}
-    for (int i=3;i--;) b[i]=0; return;
-#else
-    GetParamDip(FindDipSegment(xyz))->Eval(xyz,b); return;  
-#endif
-  }
-  //
-  // Sol region: convert coordinates to cyl system
-  CartToCyl(xyz,rphiz);
-#ifndef _BRING_TO_BOUNDARY_
-  if (rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
-#endif
-  //
-  FieldCylSol(rphiz,b);
-  //
-  // convert field to cartesian system
-  CylToCartCylB(rphiz, b,b);
-  //
-}
-
-//__________________________________________________________________________________________
 void AliMagWrapCheb::Field(const Double_t *xyz, Double_t *b) const
 {
   // compute field in cartesian coordinates. If point is outside of the parameterized region
@@ -309,67 +274,29 @@ void AliMagWrapCheb::Field(const Double_t *xyz, Double_t *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagWrapCheb::GetTPCInt(const Float_t *xyz, Float_t *b) const
+Double_t AliMagWrapCheb::GetBz(const Double_t *xyz) const
 {
-  // compute TPC region field integral in cartesian coordinates.
-  // If point is outside of the parameterized region get it at closeset valid point
-  static float rphiz[3];
+  // compute Bz for the point in cartesian coordinates. If point is outside of the parameterized region
+  // get it at closest valid point
+  static Double_t rphiz[3];
   //
-  // TPCInt region
-  // convert coordinates to cyl system
-  CartToCyl(xyz,rphiz);
-#ifndef _BRING_TO_BOUNDARY_
-  if ( (rphiz[2]>GetMaxZTPCInt()||rphiz[2]<GetMinZTPCInt()) ||
-       rphiz[0]>GetMaxRTPCInt()) {for (int i=3;i--;) b[i]=0; return;}
+#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
+  if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
+       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) return 0;
 #endif
   //
-  GetTPCIntCyl(rphiz,b);
-  //
-  // convert field to cartesian system
-  CylToCartCylB(rphiz, b,b);
-  //
-}
-
-//__________________________________________________________________________________________
-void AliMagWrapCheb::FieldCylSol(const float *rphiz, float *b) const
-{
-  // compute Solenoid field in Cylindircal coordinates
-  // note: if the point is outside the volume get the field in closest parameterized point
-  int SolZId = 0;
-  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
-  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
-  int SolRMax = SolRId + fNSegRSol[SolZId];
-  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
-  GetParamSol( SolRId )->Eval(rphiz,b);
-  //
-}
-
-//__________________________________________________________________________________________
-void AliMagWrapCheb::FieldCylSol(const Double_t *rphiz, Double_t *b) const
-{
-  // compute Solenoid field in Cylindircal coordinates
-  // note: if the point is outside the volume get the field in closest parameterized point
-  int SolZId = 0;
-  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
-  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
-  int SolRMax = SolRId + fNSegRSol[SolZId];
-  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
-  GetParamSol( SolRId )->Eval(rphiz,b);
-  //
-}
-
-//__________________________________________________________________________________________
-void AliMagWrapCheb::GetTPCIntCyl(const Float_t *rphiz, Float_t *b) const
-{
-  // compute field integral in TPC region in Cylindircal coordinates
-  // note: the check for the point being inside the parameterized region is done outside
-  int tpcIntZId = 0;
-  while (rphiz[2]>fSegZTPCInt[tpcIntZId] && tpcIntZId<fNSegZTPCInt) ++tpcIntZId;    // find Z segment
-  int tpcIntRId = fSegZIdTPCInt[tpcIntZId];        // first R segment for this Z
-  int tpcIntRIdMax = tpcIntRId + fNSegRTPCInt[tpcIntZId];
-  while (rphiz[0]>fSegRTPCInt[tpcIntRId] && tpcIntRId<tpcIntRIdMax) ++tpcIntRId;    // find R segment
-  GetParamTPCInt( tpcIntRId )->Eval(rphiz,b);
-  //
+  if (xyz[2]<fMaxZDip) {    // dipole part?
+#ifndef _BRING_TO_BOUNDARY_
+    AliCheb3D* par = GetParamDip(FindDipSegment(xyz));
+    if (par->IsInside(xyz)) return par->Eval(xyz,2);
+    else return 0;
+#else
+    return GetParamDip(FindDipSegment(xyz))->Eval(xyz,2);
+#endif
+  }
+  // Sol region: convert coordinates to cyl system
+  CartToCyl(xyz,rphiz);
+  return FieldCylSolBz(rphiz);
 }
 
 
@@ -414,6 +341,92 @@ void AliMagWrapCheb::Print(Option_t *) const
   
 
 }
+
+
+//__________________________________________________________________________________________________
+Int_t    AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const 
+{
+  // find the segment containing point xyz. If it is outside find the closest segment 
+  int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(Float_t)xyz[2]); // find zsegment
+  int ysegBeg = fBegSegYDip[zid];
+  //
+  for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
+  if ( --yid < 0 ) yid = 0;
+  yid +=  ysegBeg;
+  //
+  int xsegBeg = fBegSegXDip[yid];
+  for (xid=0;xid<fNSegXDip[yid];xid++) if (xyz[0]<fSegXDip[xsegBeg+xid]) break;
+  if ( --xid < 0) xid = 0;
+  xid +=  xsegBeg;
+  //
+  return fSegIDDip[xid];
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
+{
+  // compute TPC region field integral in cartesian coordinates.
+  // If point is outside of the parameterized region get it at closeset valid point
+  static Double_t rphiz[3];
+  //
+  // TPCInt region
+  // convert coordinates to cyl system
+  CartToCyl(xyz,rphiz);
+#ifndef _BRING_TO_BOUNDARY_
+  if ( (rphiz[2]>GetMaxZTPCInt()||rphiz[2]<GetMinZTPCInt()) ||
+       rphiz[0]>GetMaxRTPCInt()) {for (int i=3;i--;) b[i]=0; return;}
+#endif
+  //
+  GetTPCIntCyl(rphiz,b);
+  //
+  // convert field to cartesian system
+  CylToCartCylB(rphiz, b,b);
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::FieldCylSol(const Double_t *rphiz, Double_t *b) const
+{
+  // compute Solenoid field in Cylindircal coordinates
+  // note: if the point is outside the volume get the field in closest parameterized point
+  int SolZId = 0;
+  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
+  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
+  int SolRMax = SolRId + fNSegRSol[SolZId];
+  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
+  GetParamSol( SolRId )->Eval(rphiz,b);
+  //
+}
+
+//__________________________________________________________________________________________
+Double_t AliMagWrapCheb::FieldCylSolBz(const Double_t *rphiz) const
+{
+  // compute Solenoid field in Cylindircal coordinates
+  // note: if the point is outside the volume get the field in closest parameterized point
+  int SolZId = 0;
+  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
+  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
+  int SolRMax = SolRId + fNSegRSol[SolZId];
+  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
+  return GetParamSol( SolRId )->Eval(rphiz,2);
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
+{
+  // compute field integral in TPC region in Cylindircal coordinates
+  // note: the check for the point being inside the parameterized region is done outside
+  int tpcIntZId = 0;
+  while (rphiz[2]>fSegZTPCInt[tpcIntZId] && tpcIntZId<fNSegZTPCInt) ++tpcIntZId;    // find Z segment
+  int tpcIntRId = fSegZIdTPCInt[tpcIntZId];        // first R segment for this Z
+  int tpcIntRIdMax = tpcIntRId + fNSegRTPCInt[tpcIntZId];
+  while (rphiz[0]>fSegRTPCInt[tpcIntRId] && tpcIntRId<tpcIntRIdMax) ++tpcIntRId;    // find R segment
+  GetParamTPCInt( tpcIntRId )->Eval(rphiz,b);
+  //
+}
+
+
 #ifdef  _INC_CREATION_ALICHEB3D_
 //_______________________________________________
 void AliMagWrapCheb::LoadData(const char* inpfile)
@@ -778,7 +791,7 @@ void AliMagWrapCheb::BuildTableTPCInt()
   //
   if (fNParamsTPCInt<1) return;
   fNSegZTPCInt = 0;
-  fSegRTPCInt   = new Float_t[fNParamsTPCInt];
+  fSegRTPCInt     = new Float_t[fNParamsTPCInt];
   float *tmpbufF  = new float[fNParamsTPCInt+1];
   int   *tmpbufI  = new int[fNParamsTPCInt+1];
   int   *tmpbufI1 = new int[fNParamsTPCInt+1];

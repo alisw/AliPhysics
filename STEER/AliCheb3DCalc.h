@@ -94,6 +94,7 @@ class AliCheb3DCalc: public TNamed
 inline Float_t AliCheb3DCalc::ChebEval1D(Float_t  x, const Float_t * array, int ncf ) 
 {
   // evaluate 1D Chebyshev parameterization. x is the argument mapped to [-1:1] interval
+  if (ncf<=0) return 0;
   Float_t b0, b1, b2, x2 = x+x;
   b0 = array[--ncf]; 
   b1 = b2 = 0;

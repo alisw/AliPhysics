@@ -20,7 +20,7 @@ set(SRCS
   AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx
   AliTrackReference.cxx AliSysInfo.cxx
   AliMCEvent.cxx AliMCParticle.cxx
-  AliMagF.cxx
+  AliMagF.cxx AliMagF.cxx AliMagWrapCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx
   AliCodeTimer.cxx
   AliPDG.cxx
   AliQA.cxx
