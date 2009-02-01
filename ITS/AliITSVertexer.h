@@ -45,6 +45,17 @@ class AliITSVertexer : public AliVertexer {
     void WriteCurrentVertex();
     void FindVertices();
 
+    Int_t GetMinTrackletsForPilup() const {return fMinTrackletsForPilup;}
+    void SetMinTrackletsForPilup(Int_t mint=2) {fMinTrackletsForPilup=mint;} 
+    Bool_t IsPileup() const{return fIsPileup;}
+    Float_t GetZPileupV() const {
+      if(IsPileup()) return fZpuv;
+      else return -9999999.;
+    }
+    Int_t GetNTrackletsPileupV() const {
+      if(IsPileup()) return fNTrpuv;
+      else return -2;
+    }
  protected:
     static const Float_t fgkPipeRadius;  // beam pipe radius (cm)
     UShort_t *fLadders; // array with layer1-layer2 ladders correspondances  
@@ -52,7 +63,11 @@ class AliITSVertexer : public AliVertexer {
                       // associated to a layer1 ladder
     Bool_t  fUseModule[kNSPDMod]; // flag for enabling/disabling SPD modules
     AliITSDetTypeRec *fDetTypeRec;  //! pointer to DetTypeRec
- 
+    Int_t fMinTrackletsForPilup;  // min. n. of tracklets for pilup definition
+    Bool_t fIsPileup;             // flag for pileup
+    Int_t fNTrpuv;             // tracklets in pile-up vertex
+    Float_t fZpuv;             // Z of second pile-up vertex
+
  private:
     // copy constructor (NO copy allowed: the constructor is protected
     // to avoid misuse)
@@ -63,7 +78,7 @@ class AliITSVertexer : public AliVertexer {
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices
 
-  ClassDef(AliITSVertexer,8);
+  ClassDef(AliITSVertexer,9);
 };
 
 #endif

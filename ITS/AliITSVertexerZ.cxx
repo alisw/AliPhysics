@@ -117,7 +117,7 @@ void AliITSVertexerZ::ConfigIterations(Int_t noiter,Float_t *ptr){
 }
 
 //______________________________________________________________________
-Int_t AliITSVertexerZ::GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax) const {
+Int_t AliITSVertexerZ::GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax){
   // Finds a region around a peak in the Z histogram
   // Case of 2 peaks is treated 
   Int_t imax=h->GetNbinsX();
@@ -377,8 +377,34 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: B");
   points.Clear();
+  fIsPileup=kFALSE;
+  fNTrpuv=-2;
+  if(ncontr>fMinTrackletsForPilup){ 
+    Float_t secPeakPos;
+    Int_t ncontr2=FindSecondPeak(fZCombc,binmin,binmax,secPeakPos);
+    if(ncontr2>=fMinTrackletsForPilup){ 
+      fIsPileup=kTRUE;
+      fZpuv=secPeakPos;
+      fNTrpuv=ncontr2;
+    }
+  }    
   ResetHistograms();
   return;
+}
+
+//_____________________________________________________________________
+Int_t AliITSVertexerZ::FindSecondPeak(TH1F* h, Int_t binmin,Int_t binmax, Float_t& secPeakPos){  
+  for(Int_t i=binmin-1;i<=binmax+1;i++){
+    h->SetBinContent(i,0.);
+  }
+  Int_t secPeakBin=h->GetMaximumBin();
+  secPeakPos=h->GetBinCenter(secPeakBin);
+  Int_t secPeakCont=h->GetBinContent(secPeakBin);
+  secPeakCont+=h->GetBinContent(secPeakBin-1);
+  secPeakCont+=h->GetBinContent(secPeakBin+1);  
+  secPeakCont+=h->GetBinContent(secPeakBin-2);
+  secPeakCont+=h->GetBinContent(secPeakBin+2);  
+  return secPeakCont;
 }
 
 //_____________________________________________________________________

@@ -39,7 +39,8 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t GetHighLimit() const {return fHighLim;}
   void SetBinWidthCoarse(Float_t bw=0.01){fStepCoarse = bw;}
   void SetPPsetting(Float_t cl2=250., Float_t coarsebin=0.02){fPPsetting[0]=cl2; fPPsetting[1]=coarsebin;}
-  Int_t GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax) const;
+  static Int_t GetPeakRegion(TH1F* h, Int_t &binmin, Int_t &binmax);
+  static Int_t FindSecondPeak(TH1F* h, Int_t binmin,Int_t binmax, Float_t& secPeakPos);
   Float_t GetBinWidthCoarse() const {return fStepCoarse;}
   void SetTolerance(Float_t tol = 20./10000.){fTolerance = tol;}
   void SetWindowWidth(Float_t ww=0.2){fWindowWidth=ww;}

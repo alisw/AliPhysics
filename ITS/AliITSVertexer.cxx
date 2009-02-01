@@ -23,11 +23,16 @@ AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
 fLadOnLay2(0),
 fDetTypeRec(NULL),
+fMinTrackletsForPilup(0),
+fIsPileup(0),
+fNTrpuv(-2),
+fZpuv(-9999999.),
 fFirstEvent(0),
 fLastEvent(-1)
 {
   // Default Constructor
   SetLaddersOnLayer2();
+  SetMinTrackletsForPilup();
   for(Int_t i=0; i<kNSPDMod;i++) fUseModule[i]=kTRUE;
 }
 
