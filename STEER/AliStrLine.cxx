@@ -204,13 +204,15 @@ AliStrLine::AliStrLine(const AliStrLine &source):TObject(source),
 fWMatrix(0),
 fTpar(source.fTpar){
   // copy constructor
-  if(source.fWMatrix)fWMatrix = new Double_t [6];
   for(Int_t i=0;i<3;i++){
     fP0[i]=source.fP0[i];
     fSigma2P0[i]=source.fSigma2P0[i];
     fCd[i]=source.fCd[i];
   }
-  for(Int_t i=0;i<6;i++)fWMatrix[i]=source.fWMatrix[i];
+  if(source.fWMatrix){
+    fWMatrix = new Double_t [6];
+    for(Int_t i=0;i<6;i++)fWMatrix[i]=source.fWMatrix[i];
+  }
 }
 
 //________________________________________________________
