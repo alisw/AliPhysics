@@ -248,9 +248,9 @@ void Config()
     gener->SetTrackingFlag(1);
     gener->Init();
     
-    if (smag == k2kG) {
+    if (smag == AliMagF::k2kG) {
 	comment = comment.Append(" | L3 field 0.2 T");
-    } else if (smag == k5kG) {
+    } else if (smag == AliMagF::k5kG) {
 	comment = comment.Append(" | L3 field 0.5 T");
     }
     
