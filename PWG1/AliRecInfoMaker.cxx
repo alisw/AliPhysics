@@ -296,7 +296,7 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
-    //delete AliRunLoader::GetRunLoader();
+    //delete AliRunLoader::Instance();
     delete gAlice;
     gAlice = 0x0;
   }

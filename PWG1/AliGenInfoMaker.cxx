@@ -146,7 +146,7 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
-    delete AliRunLoader::GetRunLoader();
+    delete AliRunLoader::Instance();
     delete gAlice;
     gAlice = 0x0;
   }
