@@ -629,36 +629,3 @@ void AliPHOS::SetTreeAddress()
   }
 }
 
-//____________________________________________________________________________
-Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
-{
-
-  AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ;
-
-  TTree * tree = 0 ;
-  tree = loader->TreeS() ;
-  if ( !tree ) {
-    loader->MakeTree("S");
-    tree = loader->TreeS() ;
-  }
-
-  TClonesArray * sdigits = loader->SDigits() ;
-  if(!sdigits) { 
-    loader->MakeSDigitsArray();
-    sdigits = loader->SDigits();
-  }
-  sdigits->Clear();
-
-  AliPHOSRawDecoder dc(rawReader);
-  AliPHOSRawDigiProducer pr;
-  pr.MakeDigits(sdigits,&dc);
-
-  Int_t bufferSize = 32000 ;
-  // TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize);
-  tree->Branch("PHOS",&sdigits,bufferSize);
-  tree->Fill();
-
-  fLoader->WriteSDigits("OVERWRITE");
-  return kTRUE;
-    
-}

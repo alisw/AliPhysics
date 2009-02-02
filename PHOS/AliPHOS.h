@@ -86,7 +86,6 @@ public:
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();
-  virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
   virtual void  FinishRun() {;}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
