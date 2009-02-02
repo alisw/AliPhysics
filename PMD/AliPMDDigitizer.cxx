@@ -323,6 +323,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 	      Int_t igstatus = 0;
 	      //------------------modified by Mriganka ----------------------
+	      Int_t trnotemp = trackno;
+	      
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
 		vy = mparticle->Vy();
@@ -331,8 +333,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		if(trackpid==kGamma||trackpid==11||trackpid==-11||
 		   trackpid==kPi0)igstatus=1;
 	      }
-	      
-	      
 	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
 		    (ks = mparticle->GetStatusCode() <1) )
 		{
@@ -342,19 +342,25 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		  
-		  trackno=imo;
-		  		
+		  trnotemp = trackno;
+                  if(trackpid == 111)
+		    {
+		      trackno = trnotemp;
 		    }
-	 
+                  if(trackpid != 111)
+		    {
+		      trackno = imo;
+		    }
+		}
+	      
 	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
 		 trackpid==kPi0)igstatus=1;
 	      mtrackpid=trackpid;
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
-	      
 	      //-----------------end of modification----------------
+	      
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
@@ -549,6 +555,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
 	      Int_t igstatus = 0;
 	      //-----------------------modified by Mriganka ------------------
+	      Int_t trnotemp = trackno;
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
 		vy = mparticle->Vy();
@@ -568,10 +575,16 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		  
-		  trackno=imo;
-		  		
+		  trnotemp = trackno;
+                  if(trackpid == 111)
+		    {
+		      trackno = trnotemp;
 		    }
+                  if(trackpid != 111)
+		    {
+		      trackno = imo;
+		    }
+		}
 	 
 	      if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
 		igstatus=1;
