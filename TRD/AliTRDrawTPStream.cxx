@@ -32,6 +32,7 @@
 #include "TString.h"
 #include "AliLog.h"
 
+#include "AliTRDrawStream.h"
 #include "AliTRDrawTPStream.h"
 
 
@@ -114,14 +115,11 @@ AliTRDrawTPStream::~AliTRDrawTPStream()
 //---------------------------------------------------------------------
 Bool_t AliTRDrawTPStream::DecodeTPdata()
 {
-  //////////////////////////////////////////////////////////////////////////////////////
-  //since this is not yet tested with test pattern data, by default, it returns false!!!  
-  AliError("These are test pattern data. You need other reader");
-  return kFALSE;
-  //////////////////////////////////////////////////////////////////////////////////////
 
-  if (fRawVMajorOpt == 7) 
+  if (fRawVMajorOpt == 7)
     {
+     AliInfo("This is configuration data event read by first trigger.");
+     if(!AliTRDrawStream::fgEnableDecodeConfigData) return kTRUE;
      if (DecodeConfigdata() == kFALSE) // configuration data 
        {
         AliError("failed to to decode configuration data");
@@ -174,7 +172,7 @@ Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t *nWords)
     err = 0;
 
     // decode mcm header
-    if(!MCM_HEADER_MASK_ERR(vword)) err++;
+    if(MCM_HEADER_MASK_ERR(vword)) err++;
 
     robNum = MCM_ROB_NUMBER(vword);
     mcmNum = MCM_MCM_NUMBER(vword);
@@ -198,6 +196,9 @@ Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t *nWords)
         pData++;
         iLength++;
     } while (NoEndMarker && (iLength < 256));
+
+    word++;       
+    fpPos = word;
 
     *nWords = iLength;
     if (iLength == 0) 

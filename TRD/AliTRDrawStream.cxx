@@ -120,6 +120,7 @@ Bool_t AliTRDrawStream::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawStream::fgStackNumberChecker = kTRUE;
 Bool_t AliTRDrawStream::fgStackLinkNumberChecker = kTRUE;
 Bool_t AliTRDrawStream::fgSkipData = kTRUE;
+Bool_t AliTRDrawStream::fgEnableDecodeConfigData = kFALSE;
 Int_t AliTRDrawStream::fgDumpHead = -1;
 Int_t  AliTRDrawStream::fgCommonAdditive = 0;
 Int_t AliTRDrawStream::fgEmptySignals[] = 
@@ -1118,7 +1119,6 @@ AliTRDrawStream::DecodeSM(void *buffer, UInt_t length)
           fgLastIndex = -1 ; // to check mcm number odering 
     if (DecodeHC() == kFALSE)
       {
-        if ((fHC->fRawVMajor & 64) == 64 && fHC->fRawVMajorOpt == 7) continue; // special treatmeant for the configuration data which doesn't have data-end-marker 
         fSM.fClean = kFALSE;
               if (fHC->fCorrupted < 16)  SeekEndOfData(); // In case that we meet END_OF_TRACKLET_MARKERNEW 
                                                           // during ADC data decoding or MCM header decoding
@@ -1490,7 +1490,6 @@ AliTRDrawStream::DecodeMCMheader()
   fMCM->fROW = fTRDfeeParam->GetPadRowFromMCM(fMCM->fROB, fMCM->fMCM); 
 
   if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || ((fHC->fRawVMajor & 32) == 32)) //cover old and new version definition of ZS data
-  //if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || (fHC->fRawVMajor > 31 && fHC->fRawVMajor < 64)) //cover old and new version definition of ZS data
     {
       fpPos++;
       if ( fpPos < fpEnd )
@@ -1700,7 +1699,6 @@ AliTRDrawStream::DecodeHC()
          if (fgWarnError) AliError("failed to decode test pattern data");
          return kFALSE; 
         }
-      else if(fHC->fRawVMajorOpt == 7) return kFALSE; // always return false in case of configuration data(special treatment due to lack of data-end-marker).
       return kTRUE;
     } 
 

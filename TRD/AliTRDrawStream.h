@@ -534,6 +534,10 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   static void    SetSubtractBaseline(Int_t baseline) {fgCommonAdditive = baseline;}
   Int_t          GetCommonAdditive() const {return fgCommonAdditive;}           // return the common additive
 
+  static void    EnableDecodeConfigData() {fgEnableDecodeConfigData = kTRUE;} // allow configuration data decoding
+  static Bool_t  fgEnableDecodeConfigData;
+
+
   //--------------------------------------------------------
   // Decoding functions
   //--------------------------------------------------------
