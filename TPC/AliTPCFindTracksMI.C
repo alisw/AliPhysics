@@ -24,7 +24,7 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
 
    if (gAlice)
     {
-     delete AliRunLoader::GetRunLoader();
+     delete AliRunLoader::Instance();
      delete gAlice;
      gAlice = 0x0;
     }

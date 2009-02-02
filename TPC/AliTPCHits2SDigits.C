@@ -22,7 +22,7 @@ Int_t AliTPCHits2SDigits(Int_t nevent=1)
   //it assures full cleaning of prevous session
    if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;//if everything was OK here it is already NULL
       gAlice = 0x0;
     }

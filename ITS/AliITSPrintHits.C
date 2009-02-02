@@ -9,7 +9,7 @@ void AliITSPrintHits(TString hfn="galice.root",Int_t mod=-1,
   } 
   else {
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

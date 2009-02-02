@@ -79,7 +79,7 @@ void AliGenReaderTreeK::Init()
 // Initialization
 // Connect base file and file to read from
 
-    TTree *ali = AliRunLoader::GetRunLoader()->TreeE();
+    TTree *ali = AliRunLoader::Instance()->TreeE();
     if (ali) {
       fBaseFile = ali->GetCurrentFile();
     } else {

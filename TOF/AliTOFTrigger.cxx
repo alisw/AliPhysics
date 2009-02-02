@@ -376,7 +376,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
     }
   }
   AliRunLoader *rl;
-  rl = AliRunLoader::GetRunLoader();
+  rl = AliRunLoader::Instance();
   
   Int_t ncurrevent = rl->GetEventNumber();
   rl->GetEvent(ncurrevent);

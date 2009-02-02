@@ -10,7 +10,7 @@ void display (const char *filename="galice.root",Int_t nevent=0, Int_t * tracks=
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
    } else {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0;
    }

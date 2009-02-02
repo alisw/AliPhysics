@@ -954,7 +954,7 @@ void AliMUONTriggerGUI::DoRunGalApply()
       
       fRunLoader->LoadgAlice();
       gAlice = fRunLoader->GetAliRun();
-      fEventsPerRun = AliRunLoader::GetRunLoader()->GetNumberOfEvents();
+      fEventsPerRun = AliRunLoader::Instance()->GetNumberOfEvents();
       
       fLoader = fRunLoader->GetLoader("MUONLoader");
       fRunLoader->GetEvent(fEvent);

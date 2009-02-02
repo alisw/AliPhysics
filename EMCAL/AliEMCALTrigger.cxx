@@ -866,7 +866,7 @@ void AliEMCALTrigger::Trigger()
 {
   TH1::AddDirectory(0);
   //Main Method to select triggers.
-  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader *runLoader = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = 0;
   if(runLoader) {
     emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));

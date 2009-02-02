@@ -110,7 +110,7 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 
   if(fRunLoader) return kTRUE;
   
-  fRunLoader = AliRunLoader::GetRunLoader();
+  fRunLoader = AliRunLoader::Instance();
   if(!fRunLoader) fRunLoader = AliRunLoader::Open(filename,
          AliConfig::GetDefaultEventFolderName(),"read");
   if(!fRunLoader) return kFALSE;

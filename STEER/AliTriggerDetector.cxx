@@ -149,7 +149,7 @@ void AliTriggerDetector::Trigger()
    AliWarning( Form( "Triggering dummy detector %s", GetName() ) );
 
    //  ********** Get Digits for the current event **********
-   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+   AliRunLoader* runLoader = AliRunLoader::Instance();
    AliInfo( Form( "Event %d", runLoader->GetEventNumber() ) );
    
    TString loadername = GetName(); 

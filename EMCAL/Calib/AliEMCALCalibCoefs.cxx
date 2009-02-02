@@ -127,7 +127,7 @@ AliEMCALCalibCoefs* AliEMCALCalibCoefs::GetCalibTableFromDb(const char *tn, AliE
   AliCDBStorage* specificStorage = man->GetSpecificStorage(calibType);
 
   AliEMCALCalibData* caldata = (AliEMCALCalibData*)
-  specificStorage->Get(calibTypeData, gAlice->GetRunNumber())->GetObject();
+    specificStorage->Get(calibTypeData, AliRunLoader::Instance()->GetRunNumber())->GetObject();
   if(caldata == 0) return 0;
 
   AliEMCALGeometry *g = AliEMCALGeometry::GetInstance();

@@ -211,9 +211,9 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
   //dtor
-  if (AliRunLoader::GetRunLoader()) {
+  if (AliRunLoader::Instance()) {
     AliLoader *emcalLoader=0;
-    if ((emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")))
+    if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
       emcalLoader->CleanDigitizer();
   }
   else
@@ -240,7 +240,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   //
   static int nEMC=0; //max number of digits possible
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
   Int_t readEvent = event ; 
   // fManager is data member from AliDigitizer
@@ -518,7 +518,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
 
   // Post Digitizer to the white board
@@ -586,7 +586,7 @@ Bool_t AliEMCALDigitizer::Init()
 {
   // Makes all memory allocations
   fInit = kTRUE ; 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 
   if ( emcalLoader == 0 ) {
     Fatal("Init", "Could not obtain the AliEMCALLoader");  
@@ -673,7 +673,7 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     return ; 
   }
   // looking for the file which contains SDigits
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
     if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
@@ -735,7 +735,7 @@ void AliEMCALDigitizer::Print(Option_t*)const
       printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
     }
 
-    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 
     printf("\nWriting digits to %s", emcalLoader->GetDigitsFileName().Data()) ;
     
@@ -754,7 +754,7 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option)
 {
   //utility method for printing digit information
 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   TClonesArray * digits  = emcalLoader->Digits() ;
   TClonesArray * sdigits = emcalLoader->SDigits() ;
   
@@ -801,7 +801,7 @@ void AliEMCALDigitizer::Unload()
     if ((rl = AliRunLoader::GetRunLoader(tempo))) 
       rl->GetDetectorLoader("EMCAL")->UnloadSDigits() ; 
   }
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   emcalLoader->UnloadDigits() ; 
 }
 
@@ -817,7 +817,7 @@ void AliEMCALDigitizer::WriteDigits()
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 
   const TClonesArray * digits = emcalLoader->Digits() ; 
   TTree * treeD = emcalLoader->TreeD(); 

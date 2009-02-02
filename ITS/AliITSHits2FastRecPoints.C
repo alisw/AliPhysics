@@ -37,7 +37,7 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
   }
   else { 
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

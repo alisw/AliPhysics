@@ -74,7 +74,7 @@ void AliITSDigitPlot(Int_t istart=0,Int_t iend=-1,
         gROOT->ProcessLine(".x $(ALICE_ROOT)/macros/loadlibs.C");
     }
     if(gAlice){
-        delete AliRunLoader::GetRunLoader();
+        delete AliRunLoader::Instance();
         delete gAlice;
         gAlice=0;
     } // end if gAlice

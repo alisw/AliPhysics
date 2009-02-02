@@ -683,7 +683,7 @@ int AliHLTMUONDigitPublisherComponent::GetEvent(
 	}
 	
 	// Make sure we have the correct CTP trigger loaded.
-	AliRunLoader* runloader = AliRunLoader::GetRunLoader();
+	AliRunLoader* runloader = AliRunLoader::Instance();
 	if (runloader != NULL)
 	{
 		if (runloader->GetTrigger() == NULL)
@@ -917,7 +917,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
   AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(outBuffer);
   // Fill header with default values.
   *header = AliRawDataHeader();
-  AliRunLoader* runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runloader = AliRunLoader::Instance();
   if (runloader != NULL)
   {
     if (runloader->GetTrigger() != NULL)
@@ -1124,7 +1124,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
   AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(outBuffer);
   // Fill header with default values.
   *header = AliRawDataHeader();
-  AliRunLoader* runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runloader = AliRunLoader::Instance();
   if (runloader != NULL)
   {
     if (runloader->GetTrigger() != NULL)

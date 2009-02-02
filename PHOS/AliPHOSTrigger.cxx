@@ -665,7 +665,7 @@ void AliPHOSTrigger::DoIt()
 {
   // does the trigger job
 
-  AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+  AliRunLoader* rl = AliRunLoader::Instance() ;
   AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   
   // Get PHOS Geometry object

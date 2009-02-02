@@ -75,7 +75,7 @@ void AliZDCTrigger::Trigger()
 
    // Trigger selection
    //
-   AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
+   AliRunLoader *runLoader = AliRunLoader::Instance();
 
    AliLoader *aZDCLoader = runLoader->GetLoader("ZDCLoader");
    

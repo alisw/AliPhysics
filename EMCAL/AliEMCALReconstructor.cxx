@@ -74,7 +74,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {

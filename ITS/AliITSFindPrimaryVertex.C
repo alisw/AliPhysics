@@ -25,7 +25,7 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
     gROOT->Macro("loadlibs.C");
   } else {
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

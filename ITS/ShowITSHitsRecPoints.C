@@ -28,7 +28,7 @@ Int_t ShowITSHitsRecPoints(Bool_t align=kFALSE,
   }
   else { 
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }
@@ -338,7 +338,7 @@ Int_t ShowITSHitsRecPointsNtuple(Bool_t align=kFALSE,
   }
   else { 
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

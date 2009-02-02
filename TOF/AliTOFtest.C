@@ -25,7 +25,7 @@ Int_t AliTOFtest(Int_t nevents=1)
   
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -35,7 +35,7 @@ Int_t AliTOFtest(Int_t nevents=1)
   
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -45,7 +45,7 @@ Int_t AliTOFtest(Int_t nevents=1)
 
     if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -55,7 +55,7 @@ Int_t AliTOFtest(Int_t nevents=1)
   
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }  
@@ -67,7 +67,7 @@ Int_t AliTOFtest(Int_t nevents=1)
 
     if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -76,7 +76,7 @@ Int_t AliTOFtest(Int_t nevents=1)
   if (rc=AliTOFanalyzeDigits()) return rc;
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }

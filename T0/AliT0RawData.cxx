@@ -82,7 +82,7 @@ uncertances
   memset(fBuffer,0,512*sizeof(UInt_t));
 
   //get event number 
-  AliRunLoader *runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader *runloader = AliRunLoader::Instance();
   if (runloader) {
     fEventNumber = runloader->GetEventNumber();
   }

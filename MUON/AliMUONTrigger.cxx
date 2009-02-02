@@ -82,7 +82,7 @@ void AliMUONTrigger::Trigger()
 {
   /// sets the trigger inputs
 
-   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+   AliRunLoader* runLoader = AliRunLoader::Instance();
   
    AliLoader * muonLoader = runLoader->GetDetectorLoader("MUON");
    muonLoader->LoadDigits("READ");

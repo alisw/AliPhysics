@@ -35,7 +35,7 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
   }
   else {
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

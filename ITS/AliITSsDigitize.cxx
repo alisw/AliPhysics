@@ -124,7 +124,7 @@ Bool_t AliITSsDigitize::Init(){
  
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
-    fEnt  = AliRunLoader::GetRunLoader()->GetNumberOfEvents(); 
+    fEnt  = AliRunLoader::Instance()->GetNumberOfEvents(); 
  
     AliLoader* loader = fRunLoader->GetLoader("ITSLoader");
     

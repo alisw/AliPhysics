@@ -102,6 +102,8 @@ class AliRunLoader: public TNamed
     TTree*      TreeTR() const; //returns the tree from folder; shortcut method    
     
     AliRun*     GetAliRun()const;
+    Int_t       GetRunNumber() const {return fRun;}
+    void        SetRunNumber(Int_t run) {fRun=run;}
         
     Int_t       WriteHeader(Option_t* opt="");
     Int_t       WriteTrigger(Option_t* opt="");
@@ -174,7 +176,7 @@ class AliRunLoader: public TNamed
   /*****   Public S T A T I C Stuff   *******/
   /******************************************/
     static AliRunLoader* GetRunLoader(const char* eventfoldername);
-    static AliRunLoader* GetRunLoader(){return fgRunLoader;}
+    static AliRunLoader* Instance(){return fgRunLoader;}
     static AliLoader*    GetDetectorLoader(const char* detname, const char* eventfoldername);
     static TTree*        GetTreeH(const char* detname, Bool_t maketree, const char* eventfoldername);
     static TTree*        GetTreeS(const char* detname, Bool_t maketree, const char* eventfoldername);
@@ -183,7 +185,6 @@ class AliRunLoader: public TNamed
     static TTree*        GetTreeT(const char* detname, Bool_t maketree, const char* eventfoldername);
     static TTree*        GetTreeP(const char* detname, Bool_t maketree, const char* eventfoldername);
 
-//    static AliRunDigitizer* GetRunDigitizer();
 //  Tasks are supposed to be singletons, that is why following methods are static
     static TTask*           GetRunDigitizer();        //
     static TTask*           GetRunSDigitizer();       //
@@ -204,60 +205,46 @@ class AliRunLoader: public TNamed
     static TString GetGAliceName () {return fgkGAliceName;}
      
 protected:
-    /**********************************************/
-    /************    PROTECTED      ***************/
-    /*********        D A T A          ************/
-    /**********************************************/
+    void               SetGAliceFile(TFile* gafile);//sets the pointer to gAlice file
+    Int_t              OpenKineFile(Option_t* opt);
+    Int_t              OpenTrackRefsFile(Option_t* opt);
 
-    TObjArray     *fLoaders;          //  List of Detectors
-    TFolder       *fEventFolder;      //!top folder for this run
+    Int_t              OpenDataFile(const TString& filename,TFile*& file,TDirectory*& dir,Option_t* opt,Int_t cl);
+    void               SetUnixDir(const TString& udirname);
+    const TString      SetFileOffset(const TString& fname);//adds the proper number before .root
+    void               SetDetectorAddresses();
+
+    TObjArray         *fLoaders;          //  List of Detectors
+    TFolder           *fEventFolder;      //!top folder for this run
     
-    Int_t          fCurrentEvent;//!Number of current event
+    Int_t              fRun;               //! Current run number
+    Int_t              fCurrentEvent;//!Number of current event
     
     TFile             *fGAFile;//!  pointer to main file with AliRun and Run Loader -> galice.root 
     AliHeader         *fHeader;//!  pointer to header
     AliStack          *fStack; //!  pointer to stack
     AliCentralTrigger *fCTrigger; //! pointer to CEntral Trigger Processor
     
-    AliDataLoader *fKineDataLoader;// kinematics data loader
-    AliDataLoader *fTrackRefsDataLoader;//track reference data loader
+    AliDataLoader     *fKineDataLoader;// kinematics data loader
+    AliDataLoader     *fTrackRefsDataLoader;//track reference data loader
     
-    Int_t          fNEventsPerFile;  //defines number of events stored per one file
-    TString        fUnixDirName;    //! name of unix path to directory that contains event
+    Int_t              fNEventsPerFile;  //defines number of events stored per one file
+    TString            fUnixDirName;    //! name of unix path to directory that contains event
     static const TString   fgkDefaultKineFileName;//default file name with kinamatics
     static const TString   fgkDefaultTrackRefsFileName;//default file name with kinamatics
     static const TString   fgkDefaultTriggerFileName;//default file name with trigger
 
-
-    /*********************************************/
-    /************    PROTECTED      **************/
-    /*********     M E T H O D S       ***********/
-    /*********************************************/
-
-    void           SetGAliceFile(TFile* gafile);//sets the pointer to gAlice file
-    Int_t          OpenKineFile(Option_t* opt);
-    Int_t          OpenTrackRefsFile(Option_t* opt);
-
-    Int_t          OpenDataFile(const TString& filename,TFile*& file,TDirectory*& dir,Option_t* opt,Int_t cl);
-    void           SetUnixDir(const TString& udirname);
-    const TString  SetFileOffset(const TString& fname);//adds the proper number before .root
-    void           SetDetectorAddresses();
         
   private:
     AliRunLoader(const AliRunLoader &r);      //Not implemented
     AliRunLoader & operator = (const AliRunLoader &); //Not implemented 
-
     void  GetListOfDetectors(const char * namelist,TObjArray& pointerarray) const;
-
     void  CleanHeader(){Clean(fgkHeaderContainerName);}
     void  CleanTrigger(){Clean(fgkTriggerContainerName);}
     void  Clean(const TString& name);
-    
     Int_t SetEvent();
    
-    static AliRunLoader* fgRunLoader; //pointer to the AliRunLoader instance
-
-private:
+    static AliRunLoader*   fgRunLoader; //pointer to the AliRunLoader instance
 
     static const TString   fgkRunLoaderName;          //default name of the run loader
     static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE

@@ -364,7 +364,7 @@ Int_t AliITSComparisonV2
 
 Int_t GoodTracksITS(const Char_t *dir) {
    if (gAlice) { 
-       delete AliRunLoader::GetRunLoader();
+       delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
        gAlice = 0x0;
    }

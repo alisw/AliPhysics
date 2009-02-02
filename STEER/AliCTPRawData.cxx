@@ -64,7 +64,7 @@ void AliCTPRawData::RawData()
   ULong64_t l2class = 0;
   UChar_t l2cluster = 0;
   AliInfo("Storing the CTP DDL raw data...");
-  AliRunLoader *runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader *runloader = AliRunLoader::Instance();
   if (runloader) {
     if (!runloader->LoadTrigger()) {
       AliCentralTrigger *aCTP = runloader->GetTrigger();

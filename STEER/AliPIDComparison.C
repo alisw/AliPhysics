@@ -103,7 +103,7 @@ Int_t AliPIDComparison(const Char_t *dir=".") {
    Char_t fname[100];
 
    if (gAlice) {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
    }

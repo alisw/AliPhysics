@@ -106,7 +106,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
 
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   if(!rl) AliError("Cannot find RunLoader!");
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
@@ -202,7 +202,7 @@ void AliEMCALRawUtils::Digits2Raw()
 {
   // convert digits of the current event to raw data
   
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *loader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
 
   // get the digits

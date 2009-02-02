@@ -868,12 +868,12 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
    gInterpreter->ProcessLine(gAlice->GetConfigFunction());
    
    if(AliCDBManager::Instance()->GetRun() >= 0) { 
-     gAlice->SetRunNumber(AliCDBManager::Instance()->GetRun());
+     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
    } else {
      AliWarning("Run number not initialized!!");
    }
   
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
     
    AliPDG::AddParticlesToPdgDataBase();  
 
@@ -881,16 +881,16 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
-   AliRunLoader::GetRunLoader()->MakeTree("E");
-   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   AliRunLoader::Instance()->MakeTree("E");
+   AliRunLoader::Instance()->LoadKinematics("RECREATE");
+   AliRunLoader::Instance()->LoadTrackRefs("RECREATE");
+   AliRunLoader::Instance()->LoadHits("all","RECREATE");
    //
    // Save stuff at the beginning of the file to avoid file corruption
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
    gAlice->Write();
 
-   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+   AliRunLoader* runLoader = AliRunLoader::Instance();
    if( !runLoader ) {
       AliError( Form( "gAlice has no run loader object. "
                       "Check your config file: %s", configfile.Data() ) );

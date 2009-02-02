@@ -208,7 +208,7 @@ void AliGenPileup::Generate()
 
   // Loop over the generated collision times, call the generator
   // and correct the partcile times in the stack
-  AliStack *stack = AliRunLoader::GetRunLoader()->Stack();
+  AliStack *stack = AliRunLoader::Instance()->Stack();
   Int_t lastpart=0;
   entry->SetFirst(lastpart);
 

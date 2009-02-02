@@ -40,7 +40,7 @@ fSmear(0)
 {
   // Default Constructor
   fSmear = 0;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  AliRunLoader *rl =AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
   if(!trK)AliFatal("This class should be used only with simulated events!!");
   rl->LoadHeader(); 
@@ -54,7 +54,7 @@ fSmear(0)
   fSmear = new Double_t[3];
   for(Int_t i=0;i<3;i++)fSmear[i]=smear[i];
   Info("AliITSVertexerFast","Gaussian smaring of the generated vertex. Parameters %f12.5 , %f12.5 , %f12.5 \n",fSmear[0],fSmear[1],fSmear[2]);
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  AliRunLoader *rl =AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
   if(!trK)AliFatal("This class should be used only with simulated events!!");
   rl->LoadHeader(); 
@@ -75,7 +75,7 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(TTree *itsClusterTre
   AliWarning(Form("This class should be used only with simulated events!! Input cluster tree (%p) will not be used!!",itsClusterTree));
 
   fCurrentVertex = 0;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  AliRunLoader *rl =AliRunLoader::Instance();
   TArrayF primaryVertex(3);  // true vertex
   AliHeader* header = rl->GetHeader();
   AliGenEventHeader* genEventHeader = header->GenEventHeader();   

@@ -76,7 +76,7 @@ void AliITSTrigger::Trigger()
 {
 
   //  ********** Get run loader for the current event **********
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::Instance();
 
   AliITSLoader* loader = (AliITSLoader* )runLoader->GetLoader( "ITSLoader" );
   AliITSgeom* geom = loader->GetITSgeom();

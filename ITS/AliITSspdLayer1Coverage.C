@@ -8,7 +8,7 @@ void AliITSspdLayer1Coverage(TString hfn="galice.root",Int_t mod=-1,
     loadlibs();
   } else {
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

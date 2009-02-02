@@ -86,6 +86,7 @@ const TString AliRunLoader::fgkDefaultTriggerFileName("Trigger.root");
 AliRunLoader::AliRunLoader():
  fLoaders(0x0),
  fEventFolder(0x0),
+ fRun(-1),
  fCurrentEvent(0),
  fGAFile(0x0),
  fHeader(0x0),
@@ -105,6 +106,7 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
  TNamed(fgkRunLoaderName,fgkRunLoaderName),
  fLoaders(new TObjArray()),
  fEventFolder(0x0),
+ fRun(-1),
  fCurrentEvent(0),
  fGAFile(0x0),
  fHeader(0x0),

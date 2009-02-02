@@ -43,7 +43,7 @@ Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=0, Int_t iEvNum=-1, Int_t nEvent=0)
 
   if (gAlice) 
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
    }
@@ -191,7 +191,7 @@ Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=0, Int_t iEvNum=-1, Int_t nEvent=0)
 
   if (gAlice) 
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }

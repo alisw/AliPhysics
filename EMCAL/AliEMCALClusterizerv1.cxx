@@ -344,7 +344,7 @@ void AliEMCALClusterizerv1::Init()
   // Make all memory allocations which can not be done in default constructor.
   // Attach the Clusterizer task to the list of EMCAL tasks
   
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   else 

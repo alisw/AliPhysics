@@ -135,7 +135,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
 AliEMCALSDigitizer::~AliEMCALSDigitizer() {
   //dtor
   AliLoader *emcalLoader=0;
-  if ((emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")))
+  if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
       emcalLoader->CleanSDigitizer();
 }
 
@@ -150,7 +150,7 @@ void AliEMCALSDigitizer::Init(){
 
   fInit = kTRUE; 
    
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 
   if ( emcalLoader == 0 ) {
     Fatal("Init", "Could not obtain the AliEMCALLoader");
@@ -227,7 +227,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALSDigitizer");
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
 
   //switch off reloading of this task while getting event
@@ -427,7 +427,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 {
   //Prints list of digits produced at the current pass of AliEMCALDigitizer
     
-  AliEMCALLoader *rl = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *rl = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   const TClonesArray * sdigits = rl->SDigits() ; 
   
   printf("\n") ;  
@@ -462,7 +462,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 void AliEMCALSDigitizer::Unload() const
 {
   // Unload Hits and SDigits from the folder
-  AliEMCALLoader *rl = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALLoader *rl = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   rl->UnloadHits() ; 
   rl->UnloadSDigits() ; 
 }

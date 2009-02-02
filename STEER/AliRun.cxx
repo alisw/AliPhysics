@@ -65,7 +65,7 @@ ClassImp(AliRun)
 
 //_______________________________________________________________________
 AliRun::AliRun():
-  fRun(-1),
+//  fRun(-1),
   fEvent(0),
   fEventNrInRun(-1),
   fModules(0),
@@ -91,7 +91,6 @@ AliRun::AliRun():
 //_____________________________________________________________________________
 AliRun::AliRun(const char *name, const char *title):
   TNamed(name,title),
-  fRun(-1),
   fEvent(0),
   fEventNrInRun(-1),
   fModules(new TObjArray(77)), // Support list for the Detectors
@@ -279,7 +278,7 @@ Int_t AliRun::GetEvent(Int_t event)
 /****       R  E  L  O  A  D          ****/
 /*****************************************/
 
-  AliRunLoader::GetRunLoader()->GetEvent(event);
+  AliRunLoader::Instance()->GetEvent(event);
 
 /*****************************************/ 
 /****  P O S T    R E L O A D I N G   ****/
@@ -293,7 +292,7 @@ Int_t AliRun::GetEvent(Int_t event)
      detector->SetTreeAddress();
    }
  
-  return AliRunLoader::GetRunLoader()->GetHeader()->GetNtrack();
+  return AliRunLoader::Instance()->GetHeader()->GetNtrack();
 }
 
 //_______________________________________________________________________
@@ -309,7 +308,7 @@ void AliRun::Hits2Digits(const char *selected)
 
    // Convert Hits to sumable digits
    // 
-   for (Int_t nevent=0; nevent<AliRunLoader::GetRunLoader()->TreeE()->GetEntries(); nevent++) {
+   for (Int_t nevent=0; nevent<AliRunLoader::Instance()->TreeE()->GetEntries(); nevent++) {
      GetEvent(nevent);
      Hits2SDigits(selected);
      SDigits2Digits(selected);
@@ -410,7 +409,7 @@ void AliRun::Streamer(TBuffer &R__b)
 
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
-  AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
+  AliRunLoader::Instance()->GetHeader()->SetGenEventHeader(header);
 }
 
 

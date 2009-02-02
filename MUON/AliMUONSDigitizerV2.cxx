@@ -92,7 +92,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   
   AliDebug(1,"");
   
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::Instance();
   AliLoader* loader = runLoader->GetDetectorLoader("MUON");
 
   loader->LoadHits("READ");

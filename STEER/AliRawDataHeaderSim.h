@@ -15,7 +15,7 @@ public:
   AliRawDataHeaderSim() : AliRawDataHeader() {
     // Takes the trigger mask and
     // stores it in the data header
-    AliRunLoader *runloader = AliRunLoader::GetRunLoader();
+    AliRunLoader *runloader = AliRunLoader::Instance();
     if (runloader) {
       if (!runloader->LoadTrigger()) {
 	AliCentralTrigger *aCTP = runloader->GetTrigger();

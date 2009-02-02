@@ -27,7 +27,7 @@ Int_t AliITSDigits2RecPoints(TString filename="galice.root",TString fileRP=""){
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->ProcessLine(".x $(ALICE_ROOT)/macros/loadlibs.C");
   }else if (gAlice){
-    delete AliRunLoader::GetRunLoader();
+    delete AliRunLoader::Instance();
     delete gAlice;
     gAlice=0;
   } // end if

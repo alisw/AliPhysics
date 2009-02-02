@@ -123,7 +123,7 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
 
 
    if (gAlice) { 
-     delete AliRunLoader::GetRunLoader();
+     delete AliRunLoader::Instance();
      delete gAlice;//if everything was OK here it is already NULL
      gAlice = 0x0;
    }
@@ -317,7 +317,7 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
 
 Int_t GoodTracksTOF(const Char_t *dir) {
    if (gAlice) { 
-       delete AliRunLoader::GetRunLoader();
+       delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
        gAlice = 0x0;
    }

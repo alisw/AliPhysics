@@ -92,7 +92,7 @@ const Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "EMCAL_COMPLE
 //
 //  MC:   If you work with MC data you have to get geometry the next way: 
 //  ==                                      =============================
-//  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
+//  AliRunLoader    *rl   = AliRunLoader::Instance();
 //  AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 //  TGeoManager::Import("geometry.root");
 

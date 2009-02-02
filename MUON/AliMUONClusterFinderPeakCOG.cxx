@@ -112,7 +112,7 @@ AliMUONClusterFinderPeakCOG::Prepare(Int_t detElemId, TClonesArray* pads[2],
   fDetElemId = detElemId;
   
   // find out current event number, and reset the cluster number
-  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader *runLoader = AliRunLoader::Instance();
   fEventNumber = runLoader ? runLoader->GetEventNumber() : 0;
   fClusterNumber = -1;
   fClusterList.Delete();

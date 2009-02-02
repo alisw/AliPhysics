@@ -272,7 +272,7 @@ void AliTOFT0::Exec(Option_t *option)
     AliInfo("Memorandum: 0 means PION | 1 means KAON | 2 means PROTON")
   }
 
-  if (fNevents == 0) fNevents = (Int_t) AliRunLoader::GetRunLoader()->TreeE()->GetEntries();
+  if (fNevents == 0) fNevents = (Int_t) AliRunLoader::Instance()->TreeE()->GetEntries();
 
   for (Int_t ievent = 0; ievent < fNevents; ievent++) {
     gAlice->GetEvent(ievent);

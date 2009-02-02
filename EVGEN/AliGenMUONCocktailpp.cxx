@@ -347,7 +347,7 @@ void AliGenMUONCocktailpp::Generate()
     Bool_t primordialTrigger = kFALSE;
     while(!primordialTrigger) {
 	//Reseting stack
-	AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+	AliRunLoader * runloader = AliRunLoader::Instance();
 	if (runloader)
 	    if (runloader->Stack())
 		runloader->Stack()->Clean();

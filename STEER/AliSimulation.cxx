@@ -781,7 +781,7 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
     AliWarning("Run number not initialized!!");
   }
 
-  AliRunLoader::GetRunLoader()->CdGAFile();
+  AliRunLoader::Instance()->CdGAFile();
   
   AliPDG::AddParticlesToPdgDataBase();  
   
@@ -792,11 +792,11 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   //Must be here because some MCs (G4) adds detectors here and not in Config.C
   gAlice->InitLoaders();
-  AliRunLoader::GetRunLoader()->MakeTree("E");
+  AliRunLoader::Instance()->MakeTree("E");
   
   //
   // Save stuff at the beginning of the file to avoid file corruption
-  AliRunLoader::GetRunLoader()->CdGAFile();
+  AliRunLoader::Instance()->CdGAFile();
   gAlice->Write();
 
   //Save current generator
@@ -808,7 +808,7 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   //Run Lego Object
   
   
-  AliRunLoader::GetRunLoader()->SetNumberOfEventsPerFile(nev);
+  AliRunLoader::Instance()->SetNumberOfEventsPerFile(nev);
   gMC->ProcessRun(nev);
   
   // End of this run, close files
@@ -919,12 +919,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
 
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
-  	gAlice->SetRunNumber(AliCDBManager::Instance()->GetRun());
+    AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
   } else {
   	AliWarning("Run number not initialized!!");
   }
   
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
     
    AliPDG::AddParticlesToPdgDataBase();  
 
@@ -934,13 +934,13 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
-   AliRunLoader::GetRunLoader()->MakeTree("E");
-   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   AliRunLoader::Instance()->MakeTree("E");
+   AliRunLoader::Instance()->LoadKinematics("RECREATE");
+   AliRunLoader::Instance()->LoadTrackRefs("RECREATE");
+   AliRunLoader::Instance()->LoadHits("all","RECREATE");
    //
    // Save stuff at the beginning of the file to avoid file corruption
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
    gAlice->Write();
    gAlice->SetEventNrInRun(-1); //important - we start Begin event from increasing current number in run
   //___________________________________________________________________________________________
@@ -958,7 +958,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Set run number in CDBManager
   AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
 
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::Instance();
   if (!runLoader) {
              AliError(Form("gAlice has no run loader object. "
         		     "Check your config file: %s", fConfigFileName.Data()));
@@ -985,7 +985,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   MisalignGeometry(runLoader);
 #endif
 
-//   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+//   AliRunLoader* runLoader = AliRunLoader::Instance();
 //   if (!runLoader) {
 //     AliError(Form("gAlice has no run loader object. "
 //                   "Check your config file: %s", fConfigFileName.Data()));
@@ -1119,7 +1119,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
   SetCDBLock();
   
-  delete AliRunLoader::GetRunLoader();
+  delete AliRunLoader::Instance();
   delete gAlice;
   gAlice = NULL;
 
@@ -1563,7 +1563,7 @@ AliRunLoader* AliSimulation::LoadRun(const char* mode) const
 {
 // delete existing run loaders, open a new one and load gAlice
 
-  delete AliRunLoader::GetRunLoader();
+  delete AliRunLoader::Instance();
   AliRunLoader* runLoader = 
     AliRunLoader::Open(fGAliceFileName.Data(), 
 		       AliConfig::GetDefaultEventFolderName(), mode);
@@ -1699,7 +1699,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
   	AliWarning("Run number not initialized!!");
   }
   
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
     
    AliPDG::AddParticlesToPdgDataBase();  
 
@@ -1709,13 +1709,13 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
-   AliRunLoader::GetRunLoader()->MakeTree("E");
-   AliRunLoader::GetRunLoader()->LoadKinematics("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadTrackRefs("RECREATE");
-   AliRunLoader::GetRunLoader()->LoadHits("all","RECREATE");
+   AliRunLoader::Instance()->MakeTree("E");
+   AliRunLoader::Instance()->LoadKinematics("RECREATE");
+   AliRunLoader::Instance()->LoadTrackRefs("RECREATE");
+   AliRunLoader::Instance()->LoadHits("all","RECREATE");
    //
    // Save stuff at the beginning of the file to avoid file corruption
-   AliRunLoader::GetRunLoader()->CdGAFile();
+   AliRunLoader::Instance()->CdGAFile();
    gAlice->Write();
 //
 //  Initialize CDB     
@@ -1726,7 +1726,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     Int_t iDet;
     //
     // Get the runloader
-    AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+    AliRunLoader* runLoader = AliRunLoader::Instance();
     //
     // Open esd file if available
     TFile* esdFile = TFile::Open(esdFileName);
@@ -1823,7 +1823,7 @@ void AliSimulation::FinishRun()
   if(IsLegoRun()) 
    {
     AliDebug(1, "Finish Lego");
-    AliRunLoader::GetRunLoader()->CdGAFile();
+    AliRunLoader::Instance()->CdGAFile();
     fLego->FinishRun();
    }
   
@@ -1835,16 +1835,16 @@ void AliSimulation::FinishRun()
     detector->FinishRun();
   }
   
-  AliDebug(1, "AliRunLoader::GetRunLoader()->WriteHeader(OVERWRITE)");
-  AliRunLoader::GetRunLoader()->WriteHeader("OVERWRITE");
+  AliDebug(1, "AliRunLoader::Instance()->WriteHeader(OVERWRITE)");
+  AliRunLoader::Instance()->WriteHeader("OVERWRITE");
 
   // Write AliRun info and all detectors parameters
-  AliRunLoader::GetRunLoader()->CdGAFile();
+  AliRunLoader::Instance()->CdGAFile();
   gAlice->Write(0,TObject::kOverwrite);//write AliRun
-  AliRunLoader::GetRunLoader()->Write(0,TObject::kOverwrite);//write RunLoader itself
+  AliRunLoader::Instance()->Write(0,TObject::kOverwrite);//write RunLoader itself
   
   if(gAlice->GetMCApp()) gAlice->GetMCApp()->FinishRun();  
-  AliRunLoader::GetRunLoader()->Synchronize();
+  AliRunLoader::Instance()->Synchronize();
 }
 
 //_____________________________________________________________________________
@@ -1983,7 +1983,7 @@ Bool_t AliSimulation::RunQA()
 	// run the QA on summable hits, digits or digits
 	
   if(!gAlice) return kFALSE;
-	fQASteer->SetRunLoader(AliRunLoader::GetRunLoader()) ;
+	fQASteer->SetRunLoader(AliRunLoader::Instance()) ;
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 

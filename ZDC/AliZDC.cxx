@@ -661,7 +661,7 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
 {
   // Convert ZDC raw data to Sdigits
   
-  AliLoader* loader = (AliRunLoader::GetRunLoader())->GetLoader("ZDCLoader");
+  AliLoader* loader = (AliRunLoader::Instance())->GetLoader("ZDCLoader");
   if(!loader) {
     AliError("no ZDC loader found");
     return kFALSE;
@@ -670,7 +670,7 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
 //  // Event loop
   Int_t iEvent = 0;
   while(rawReader->NextEvent()){
-    (AliRunLoader::GetRunLoader())->GetEvent(iEvent++);
+    (AliRunLoader::Instance())->GetEvent(iEvent++);
     // Create the output digit tree
     TTree* treeS = loader->TreeS();
     if(!treeS){

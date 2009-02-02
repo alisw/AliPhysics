@@ -269,7 +269,7 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
 
   if(trK){
@@ -343,7 +343,7 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10]) {
 //______________________________________________________________________
 void AliITSClusterFinder::AddLabel(Int_t lab[10], Int_t label) {
   //add label to the cluster
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
   if(trK){
     if(label<0) return; // In case of no label just exit

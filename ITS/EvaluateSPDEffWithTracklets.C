@@ -66,7 +66,7 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
   AliRunLoader* runLoader;
 
     if (gAlice) {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

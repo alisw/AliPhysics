@@ -392,7 +392,7 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
 
 Int_t GoodV0s(const Char_t *dir) {
    if (gAlice) { 
-       delete AliRunLoader::GetRunLoader();
+       delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
        gAlice = 0x0;
    }

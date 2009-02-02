@@ -17,7 +17,7 @@ Bool_t AliITSCompareHitsRecPoints(Char_t *rfn="galice.root"){
         loadlibs();
     } else {
         if(gAlice){
-            delete AliRunLoader::GetRunLoader();
+            delete AliRunLoader::Instance();
             delete gAlice;
             gAlice=0;
         } // end if gAlice

@@ -185,7 +185,7 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
   //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::Instance();
   if (!runLoader) {
     Error("Digits2Clusters", "no run loader found");
     return;
@@ -258,7 +258,7 @@ static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
 
   if(trK){
@@ -324,7 +324,7 @@ static void CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
 
   if(trK){
@@ -395,7 +395,7 @@ static void CheckLabels2(Int_t lab[10]) {
 static void AddLabel(Int_t lab[10], Int_t label) {
 // add label of the particle in the kine tree which originates this cluster
 // (used for reconstruction of MC data only, for comparison purposes)
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   TTree *trK=(TTree*)rl->TreeK();
 
   if(trK){

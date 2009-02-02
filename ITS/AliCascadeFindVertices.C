@@ -15,7 +15,7 @@ Int_t AliCascadeFindVertices(Int_t nev=5) {
    cerr<<"Looking for cascade vertices...\n";
 
    if (gAlice) {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
    }

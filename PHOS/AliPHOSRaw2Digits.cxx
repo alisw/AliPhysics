@@ -288,7 +288,7 @@ Bool_t AliPHOSRaw2Digits::CloseRootFiles(void ){
     printf("writing gAlice \n") ;
     fHeaderFile->cd() ;
     gAlice->Write(0,TObject::kOverwrite);
-    AliRunLoader::GetRunLoader()->TreeE()->Write(0,TObject::kOverwrite);
+    AliRunLoader::Instance()->TreeE()->Write(0,TObject::kOverwrite);
   }
 
   delete gAlice ;
@@ -650,7 +650,7 @@ void AliPHOSRaw2Digits::WriteDigits(void){
 
   //Write header
   fHeaderFile->cd() ;
-  AliRunLoader::GetRunLoader()->TreeE()->Fill();
+  AliRunLoader::Instance()->TreeE()->Fill();
 }
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::Print(const Option_t *)const{

@@ -35,7 +35,7 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=0, Int_t numberOfEvents=0)
 
   if (gAlice) 
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -173,7 +173,7 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=0, Int_t numberOfEvents=0)
 
   if (gAlice) 
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }

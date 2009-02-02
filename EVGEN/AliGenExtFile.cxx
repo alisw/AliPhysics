@@ -182,7 +182,7 @@ void AliGenExtFile::Generate()
 void AliGenExtFile::CdEventFile()
 {
 // CD back to the event file
-    (AliRunLoader::GetRunLoader())->CdGAFile();
+  AliRunLoader::Instance()->CdGAFile();
 }
 
 

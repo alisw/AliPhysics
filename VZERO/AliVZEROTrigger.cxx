@@ -69,7 +69,7 @@ void AliVZEROTrigger::Trigger()
 {
   
   //  ********** Get run loader for the current event **********
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = AliRunLoader::Instance();
 
   AliVZEROLoader* loader = 
     (AliVZEROLoader* )runLoader->GetLoader( "VZEROLoader" );

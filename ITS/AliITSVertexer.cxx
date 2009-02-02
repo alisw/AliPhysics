@@ -160,7 +160,7 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
 void AliITSVertexer::Init(TString filename){
   // Initialize the vertexer in case of
   // analysis of an entire file
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   if(!rl){
     Fatal("AliITSVertexer","Run Loader not found");
   }
@@ -174,7 +174,7 @@ void AliITSVertexer::Init(TString filename){
 //______________________________________________________________________
 void AliITSVertexer::WriteCurrentVertex(){
   // Write the current AliVertex object to file fOutFile
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   fCurrentVertex->SetName("Vertex");
   //  const char * name = fCurrentVertex->GetName();
@@ -187,7 +187,7 @@ void AliITSVertexer::WriteCurrentVertex(){
 void AliITSVertexer::FindVertices(){
   // computes the vertices of the events in the range FirstEvent - LastEvent
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *rl = AliRunLoader::Instance();
   AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   itsloader->LoadRecPoints("read");
   for(Int_t i=fFirstEvent;i<=fLastEvent;i++){

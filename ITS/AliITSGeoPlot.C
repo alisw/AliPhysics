@@ -101,7 +101,7 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", TString filenam
   }
   else { 
     if(gAlice){
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

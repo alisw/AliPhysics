@@ -36,7 +36,6 @@ public:
    TObjArray     *Modules() const {return fModules;}
    void           AddModule(AliModule* mod);
    Int_t          GetEvNumber() const;
-   Int_t          GetRunNumber() const {return fRun;}
    void           SetEventNrInRun(Int_t event) {fEventNrInRun=event;}
    Int_t          GetEventNrInRun() const {return fEventNrInRun;}
    Int_t          GetNdets() const {return fNdets;}
@@ -78,11 +77,9 @@ public:
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
-  void           SetRunNumber(Int_t run) {fRun=run;}
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
-  Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
   TObjArray     *fModules;           //  List of Detectors

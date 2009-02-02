@@ -14,7 +14,7 @@ Int_t AliTPCSDigits2Digits(Int_t nevent=1)
 
    if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;//if everything was OK here it is already NULL
       gAlice = 0x0;
     }

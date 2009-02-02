@@ -178,7 +178,7 @@ void AliGenBeamGasNew::Generate()
   fHeader = new AliGenCocktailEventHeader("Beamgas Header");
   
   const TObjArray *partArray = gAlice->GetMCApp()->Particles();
-  AliStack *stack = AliRunLoader::GetRunLoader()->Stack();
+  AliStack *stack = AliRunLoader::Instance()->Stack();
   
   for (Int_t l = 0; l < numbg; l++) {
     Vertex();

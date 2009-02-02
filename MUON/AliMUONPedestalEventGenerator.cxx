@@ -436,10 +436,10 @@ AliRunLoader*
 AliMUONPedestalEventGenerator::LoadRun(const char* mode)
 {
   /// Get access to AliRunLoader object
-  while (AliRunLoader::GetRunLoader()) 
+  while (AliRunLoader::Instance()) 
   {
-    AliDebug(1,Form("Deleting AliRunLoader %p",AliRunLoader::GetRunLoader()));
-    delete AliRunLoader::GetRunLoader();
+    AliDebug(1,Form("Deleting AliRunLoader %p",AliRunLoader::Instance()));
+    delete AliRunLoader::Instance();
   }
   
   AliRunLoader* runLoader = 

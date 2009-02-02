@@ -66,7 +66,7 @@ void AliT0Trigger::Trigger()
 {
   // trigger input
 
-   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+   AliRunLoader* runLoader = AliRunLoader::Instance();
    AliLoader * fT0Loader = runLoader->GetLoader("T0Loader");
    //   AliT0digit *fDigits; 
    fT0Loader->LoadDigits("READ");

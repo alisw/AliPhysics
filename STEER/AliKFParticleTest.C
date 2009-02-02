@@ -139,7 +139,7 @@ void RunV0(  AliESDEvent *event )
   cout<<"Event "<<iEvent++<<endl;
 
   if( !gAlice ) return;
-  AliRunLoader *rl = AliRunLoader::GetRunLoader(); 
+  AliRunLoader *rl = AliRunLoader::Instance(); 
  
   AliStack *stack = rl->Stack();
   if( !stack ) return;  
@@ -307,7 +307,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     cout <<"  Opening "<<filename<<"\nand ESD "<<esdfile<<endl;
     
     if (gAlice) {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice=0;
     }

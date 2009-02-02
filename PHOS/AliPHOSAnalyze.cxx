@@ -1260,7 +1260,7 @@ void AliPHOSAnalyze::Contamination(){
  
   
   //print Final Table
-  maxevent = (Int_t)AliRunLoader::GetRunLoader()->TreeE()->GetEntries() ; 
+  maxevent = (Int_t)AliRunLoader::Instance()->TreeE()->GetEntries() ; 
 
   TString message ; 
   message  = "Resolutions: Analyzed %d event(s)\n" ; 

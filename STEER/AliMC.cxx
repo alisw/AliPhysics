@@ -177,7 +177,7 @@ Bool_t  AliMC::MisalignGeometry()
    if(!AliGeomManager::CheckSymNamesLUT("ALL"))
     AliFatal("Current loaded geometry differs in the definition of symbolic names!");
 
-   return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::GetRunLoader());
+   return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::Instance());
 }   
 
 //_______________________________________________________________________
@@ -367,7 +367,7 @@ void AliMC::EnergySummary()
   Float_t ed, ed2;
   Int_t kn, i, left, j, id;
   const Float_t kzero=0;
-  Int_t ievent=AliRunLoader::GetRunLoader()->GetHeader()->GetEvent()+1;
+  Int_t ievent=AliRunLoader::Instance()->GetHeader()->GetEvent()+1;
   //
   // Energy loss information
   if(ievent) {
@@ -435,7 +435,7 @@ void AliMC::BeginEvent()
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     
-  AliRunLoader *runloader=AliRunLoader::GetRunLoader();
+  AliRunLoader *runloader=AliRunLoader::Instance();
 
   /*******************************/    
   /*   Clean after eventual      */
@@ -559,7 +559,7 @@ void AliMC::FinishPrimary()
   //
   // Called  at the end of each primary track
   //
-  AliRunLoader *runloader=AliRunLoader::GetRunLoader();
+  AliRunLoader *runloader=AliRunLoader::Instance();
   //  static Int_t count=0;
   //  const Int_t times=10;
   // This primary is finished, purify stack
@@ -590,7 +590,7 @@ void AliMC::RemapHits()
 {
 //    
 // Remaps the track labels of the hits
-    AliRunLoader *runloader=AliRunLoader::GetRunLoader();
+    AliRunLoader *runloader=AliRunLoader::Instance();
     AliStack* stack = runloader->Stack();
     TList* hitLists = GetHitLists();
     TIter next(hitLists);
@@ -646,7 +646,7 @@ void AliMC::FinishEvent()
     fSum2Energy[i]+=fEventEnergy[i]*fEventEnergy[i];
    }
 
-  AliRunLoader *runloader=AliRunLoader::GetRunLoader();
+  AliRunLoader *runloader=AliRunLoader::Instance();
 
   AliHeader* header = runloader->GetHeader();
   AliStack* stack = runloader->Stack();
@@ -917,7 +917,7 @@ Int_t AliMC::GetCurrentTrackNumber() const {
   //
   // Returns current track
   //
-  return AliRunLoader::GetRunLoader()->Stack()->GetCurrentTrackNumber();
+  return AliRunLoader::Instance()->Stack()->GetCurrentTrackNumber();
 }
 
 //_______________________________________________________________________
@@ -926,7 +926,7 @@ void AliMC::DumpPart (Int_t i) const
   //
   // Dumps particle i in the stack
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
    if (runloader->Stack())
     runloader->Stack()->DumpPart(i);
 }
@@ -937,7 +937,7 @@ void AliMC::DumpPStack () const
   //
   // Dumps the particle stack
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
    if (runloader->Stack())
     runloader->Stack()->DumpPStack();
 }
@@ -948,7 +948,7 @@ Int_t AliMC::GetNtrack() const {
   // Returns number of tracks in stack
   //
   Int_t ntracks = -1;
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
    if (runloader->Stack())
      ntracks = runloader->Stack()->GetNtrack();
    return ntracks;
@@ -961,7 +961,7 @@ Int_t AliMC::GetPrimary(Int_t track) const
   // return number of primary that has generated track
   //
   Int_t nprimary = -999;
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader->Stack())
     nprimary = runloader->Stack()->GetPrimary(track);
   return nprimary;
@@ -972,7 +972,7 @@ TParticle* AliMC::Particle(Int_t i) const
 {
   // Returns the i-th particle from the stack taking into account
   // the remaping done by PurifyKine
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
    if (runloader->Stack())
     return runloader->Stack()->Particle(i);
@@ -984,7 +984,7 @@ const TObjArray* AliMC::Particles() const {
   //
   // Returns pointer to Particles array
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
    if (runloader->Stack())
     return runloader->Stack()->Particles();
@@ -998,7 +998,7 @@ void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmom,
 { 
 // Delegate to stack
 //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
@@ -1014,7 +1014,7 @@ void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg,
 { 
   // Delegate to stack
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
@@ -1026,7 +1026,7 @@ void AliMC::SetHighWaterMark(Int_t nt) const
 {
     //
     // Set high water mark for last track in event
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->SetHighWaterMark(nt);
@@ -1038,7 +1038,7 @@ void AliMC::KeepTrack(Int_t track) const
   //
   // Delegate to stack
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->KeepTrack(track);
@@ -1049,7 +1049,7 @@ void AliMC::FlagTrack(Int_t track) const
 {
   // Delegate to stack
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->FlagTrack(track);
@@ -1061,7 +1061,7 @@ void AliMC::SetCurrentTrack(Int_t track) const
   //
   // Set current track number
   //
-  AliRunLoader * runloader = AliRunLoader::GetRunLoader();
+  AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->SetCurrentTrack(track); 
@@ -1175,7 +1175,7 @@ void AliMC::ReorderAndExpandTreeTR()
 //  Reorder and expand the temporary track reference tree in order to match the kinematics tree
 //
 
-    AliRunLoader *rl = AliRunLoader::GetRunLoader();
+    AliRunLoader *rl = AliRunLoader::Instance();
 //
 //  TreeTR
     AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");

@@ -786,8 +786,10 @@ void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam 
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol, Float_t diPol,
-				      Float_t beamenergy, Char_t *beamtype,const char *path) {
+Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol, 
+				      Float_t diPol, Float_t beamenergy, 
+				      const Char_t *beamtype, const Char_t *path) 
+{
   //------------------------------------------------
   // The magnetic field map, defined externally...
   // L3 current 30000 A  -> 0.5 T

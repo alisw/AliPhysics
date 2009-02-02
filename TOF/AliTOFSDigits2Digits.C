@@ -29,7 +29,7 @@ Int_t AliTOFSDigits2Digits(Int_t numberOfEvents = 0) {
 
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }
@@ -210,7 +210,7 @@ Int_t AliTOFSDigits2Digits(Int_t numberOfEvents = 0) {
 
   if (gAlice)
     {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice;
       gAlice = 0x0;
     }

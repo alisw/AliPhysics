@@ -29,7 +29,7 @@ Int_t AliITSFindTracksSA(Int_t evin=0,Int_t nevents=1,char *opt="onlyITS+6/6",co
 
    
    if (gAlice) {
-      delete AliRunLoader::GetRunLoader();
+      delete AliRunLoader::Instance();
       delete gAlice; 
       gAlice=0;
    }

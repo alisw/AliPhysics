@@ -410,7 +410,7 @@ void AliGenDPMjet::AddHeader(AliGenEventHeader* header)
     if (fContainer) {
         fContainer->AddHeader(header);
     } else {
-        AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
+        AliRunLoader::Instance()->GetHeader()->SetGenEventHeader(header);
     }
 }
 
