@@ -1311,7 +1311,7 @@ Bool_t AliITSv11GeometrySPD::CFHolePoints(Double_t s,Double_t r1,
     bc = 2.*l*r2;
     if(bc==0.0) {printf("bc=0 l=%e r2=%e\n",l,r2);return kFALSE;}
     betac = TMath::ACos(ac/bc);
-    alphac = TMath::Sqrt(bc*bc-ac*ac)/(2.*l*r1);
+    alphac = TMath::Sqrt((bc-ac)*(bc+ac))/(2.*l*r1);
     scb = r2*betac;
     sca = r1*alphac;
     t = r1*0.5*TMath::Pi() - sca + scb;

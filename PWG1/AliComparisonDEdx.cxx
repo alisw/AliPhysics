@@ -178,7 +178,7 @@ void AliComparisonDEdx::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
   //
   Float_t ratio = infoRC->GetESDtrack()->GetTPCsignal()/infoMC->GetPrim();
   Float_t sphi =  infoRC->GetESDtrack()->GetInnerParam()->GetSnp();
-  Float_t tphi =  sphi/TMath::Sqrt(1-sphi*sphi);
+  Float_t tphi =  sphi/TMath::Sqrt((1.-sphi)*(1.+sphi));
 
   if (TMath::Abs(infoMC->GetParticle().GetPdgCode()) != GetMCPdgCode()) return;
   //if (mcpt>0.5) {

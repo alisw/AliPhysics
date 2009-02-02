@@ -1483,7 +1483,7 @@ AliExternalTrackParam::GetYAt(Double_t x, Double_t b, Double_t &y) const {
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
   y = fP[0] + dx*(f1+f2)/(r1+r2);
   return kTRUE;
 }
@@ -1503,7 +1503,7 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
-  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
+  Double_t r1=sqrt((1.-f1)*(1.+f1)), r2=sqrt((1.-f2)*(1.+f2));
   z = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3]; // Many thanks to P.Hristov !
   return kTRUE;
 }
@@ -1522,7 +1522,7 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
   r[0] = x;
   r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
   r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Thanks to Andrea & Peter

@@ -270,7 +270,7 @@ void AliMUONTrackExtrap::RecoverTrackParam(Double_t *v3, Double_t charge, AliMUO
   trackParam->SetNonBendingCoor(v3[0]); // X
   trackParam->SetBendingCoor(v3[1]); // Y
   trackParam->SetZ(v3[2]); // Z
-  Double_t pYZ = v3[6] * TMath::Sqrt(1.0 - v3[3] * v3[3]);
+  Double_t pYZ = v3[6] * TMath::Sqrt((1.-v3[3])*(1.+v3[3]));
   trackParam->SetInverseBendingMomentum(charge/pYZ);
   trackParam->SetBendingSlope(v3[4]/v3[5]);
   trackParam->SetNonBendingSlope(v3[3]/v3[5]);

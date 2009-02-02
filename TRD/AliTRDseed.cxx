@@ -638,7 +638,7 @@ Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
     if (-params[2]*params[0] + params[1]*params[1] + 1 > 0) {
       Double_t rm1 = params[0] / TMath::Sqrt(-params[2]*params[0] + params[1]*params[1] + 1); 
       if (1.0/(rm1*rm1) - (x-x0) * (x-x0) > 0.0) {
-				Double_t res = (x - x0) / TMath::Sqrt(1.0 / (rm1*rm1) - (x-x0)*(x-x0));
+	                        Double_t res = (x - x0) / TMath::Sqrt((1./rm1-(x-x0))*(1./rm1+(x-x0)));
 				if (params[0] < 0) res *= -1.0;
 				dy = res;
       }

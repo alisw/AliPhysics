@@ -380,17 +380,17 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   y1   =tp1.GetY();
   z1   =tp1.GetZ();
   Double_t snp1=tp1.GetSnp();
-  dydx1=snp1/TMath::Sqrt(1.-snp1*snp1);
+  dydx1=snp1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   Double_t tgl1=tp1.GetTgl();
   // dz/dx = 1/(cos(theta)*cos(phi))
-  dzdx1=tgl1/TMath::Sqrt(1.-snp1*snp1);
+  dzdx1=tgl1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   x2   =tp2.GetX();
   y2   =tp2.GetY();
   z2   =tp2.GetZ();
   Double_t snp2=tp2.GetSnp();
-  dydx2=snp2/TMath::Sqrt(1.-snp2*snp2);
+  dydx2=snp2/TMath::Sqrt((1.-snp2)*(1.+snp2));
   Double_t tgl2=tp2.GetTgl();
-  dzdx2=tgl2/TMath::Sqrt(1.-snp2*snp2);
+  dzdx2=tgl2/TMath::Sqrt((1.-snp2)*(1.+snp2));
   Int_t accept =   AcceptTracklet(tp1,tp2);  
   //
   //

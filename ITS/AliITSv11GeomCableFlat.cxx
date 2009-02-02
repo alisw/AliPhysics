@@ -712,7 +712,7 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
   Double_t torusPhi1 = TMath::ACos(cosPhi);
   Double_t torusR = (length/2)/TMath::Sin(torusPhi1);
   torusPhi1 = torusPhi1*TMath::RadToDeg();
-  Double_t perpLength = TMath::Sqrt(torusR*torusR-length*length/4);
+  Double_t perpLength = TMath::Sqrt((torusR-0.5*length)*(torusR+0.5*length));
   Double_t localTransT[3] = {-perpLength,0,0};
   Double_t globalTransT[3];
   rotTorus.LocalToMasterVect(localTransT, globalTransT);

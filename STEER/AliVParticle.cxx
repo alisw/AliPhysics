@@ -56,7 +56,7 @@ Bool_t AliVParticle::Local2GlobalMomentum(Double_t p[3], Double_t alpha) const {
 
   Double_t pt=1./TMath::Abs(p[0]);
   Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
-  Double_t r=TMath::Sqrt(1 - p[1]*p[1]);
+  Double_t r=TMath::Sqrt((1. - p[1])*(1. + p[1]));
   p[0]=pt*(r*cs - p[1]*sn); p[1]=pt*(p[1]*cs + r*sn); p[2]=pt*p[2];
 
   return kTRUE;

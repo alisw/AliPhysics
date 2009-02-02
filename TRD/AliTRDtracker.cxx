@@ -3119,7 +3119,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
 
   AliTRDtrack track2(* track);
   Float_t  snpy      = track->GetSnp();
-  Float_t  tany      = TMath::Sqrt(snpy*snpy / (1.0 - snpy*snpy)); 
+  Float_t  tany      = TMath::Sqrt(snpy*snpy / ((1.-snpy)*(1.+snpy))); 
   if (snpy < 0.0) {
     tany *= -1.0;
   }

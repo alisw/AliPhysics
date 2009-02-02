@@ -423,8 +423,8 @@ Int_t AliITSNeuralTrack::PropagateTo(Double_t rk)
 	Double_t bk = ArgB(rk), bkm1 = ArgB(rkm1);
 	Double_t ck = ArgC(rk), ckm1 = ArgC(rkm1);
 	
-	Double_t f02 = ck / TMath::Sqrt(1. - aAk * aAk) - ckm1 / TMath::Sqrt(1. - aAkm1 * aAkm1);
-	Double_t f04 = bk / TMath::Sqrt(1. - aAk * aAk) - bkm1 / TMath::Sqrt(1. - aAkm1 * aAkm1);
+	Double_t f02 = ck / TMath::Sqrt((1.-aAk)*(1.+aAk)) - ckm1 / TMath::Sqrt((1.-aAkm1)*(1.+aAkm1));
+	Double_t f04 = bk / TMath::Sqrt((1.-aAk)*(1.+aAk)) - bkm1 / TMath::Sqrt((1.-aAkm1)*(1.+aAkm1));
 	Double_t f12 = fTanL * fDt * (1. / rk - 1. / rkm1);
 	Double_t f13 = rk - rkm1;
 	

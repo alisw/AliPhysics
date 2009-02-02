@@ -22,8 +22,8 @@ static int PropagateTo(TVector &x, Double_t fX, Double_t xk) {
   }
 
   Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1;//, y1=x(0), z1=x(1);
-  Double_t c1=x(2)*x1 - x(3), r1=sqrt(1.- c1*c1);
-  Double_t c2=x(2)*x2 - x(3), r2=sqrt(1.- c2*c2);
+  Double_t c1=x(2)*x1 - x(3), r1=sqrt((1.-c1)*(1.+c1));
+  Double_t c2=x(2)*x2 - x(3), r2=sqrt((1.-c2)*(1.+c2));
   
   x(0) += dx*(c1+c2)/(r1+r2);
   x(1) += dx*(c1+c2)/(c1*r2 + c2*r1)*x(4);
@@ -38,7 +38,7 @@ static int Rotate(TVector &x, Double_t fX, Double_t alpha) {
   
   fX = x1*ca + y1*sa;
   x(0)=-x1*sa + y1*ca;
-  x(3)=x(3)*ca + (x(2)*y1 + sqrt(1.- r1*r1))*sa;
+  x(3)=x(3)*ca + (x(2)*y1 + sqrt((1.-r1)*(1.+r1)))*sa;
   
   Double_t r2=x(2)*fX - x(3);
   if (TMath::Abs(r2) >= 0.999) {
@@ -46,7 +46,7 @@ static int Rotate(TVector &x, Double_t fX, Double_t alpha) {
     return 0;
   }
   
-  Double_t y0=x(0) + sqrt(1.- r2*r2)/x(2);
+  Double_t y0=x(0) + sqrt((1.-r2)*(1.+r2))/x(2);
   if ((x(0)-y0)*x(2) >= 0.) {
     //cerr<<"Rotation failed !!!\n";
     return 0;

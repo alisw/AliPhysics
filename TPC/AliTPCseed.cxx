@@ -442,8 +442,8 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
   }
 
   //  Double_t y1=fP0, z1=fP1;
-  Double_t c1=GetSnp(), r1=sqrt(1.- c1*c1);
-  Double_t c2=c1 + GetC()*dx, r2=sqrt(1.- c2*c2);
+  Double_t c1=GetSnp(), r1=sqrt((1.-c1)*(1.+c1));
+  Double_t c2=c1 + GetC()*dx, r2=sqrt((1.-c2)*(1.+c2));
   
   y = GetY();
   z = GetZ();
@@ -1023,10 +1023,10 @@ Double_t AliTPCseed::GetYat(Double_t xk) const {
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 //-----------------------------------------------------------------
   if (TMath::Abs(GetSnp())>AliTPCReconstructor::GetMaxSnpTrack()) return 0.; //patch 01 jan 06
-    Double_t c1=GetSnp(), r1=TMath::Sqrt(1.- c1*c1);
+    Double_t c1=GetSnp(), r1=TMath::Sqrt((1.-c1)*(1.+c1));
     Double_t c2=c1+GetC()*(xk-GetX());
     if (TMath::Abs(c2)>AliTPCReconstructor::GetMaxSnpTrack()) return 0;
-    Double_t r2=TMath::Sqrt(1.- c2*c2);
+    Double_t r2=TMath::Sqrt((1.-c2)*(1.+c2));
     return GetY() + (xk-GetX())*(c1+c2)/(r1+r2);
 }
 
@@ -1351,10 +1351,10 @@ void  AliTPCseed::GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * par
   AliTPCClusterParam *clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
   Double_t tany,tanz;  
   Double_t snp1=param->GetSnp();
-  tany=snp1/TMath::Sqrt(1.-snp1*snp1);
+  tany=snp1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   //
   Double_t tgl1=param->GetTgl();
-  tanz=tgl1/TMath::Sqrt(1.-snp1*snp1);
+  tanz=tgl1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   //
   Int_t padSize = 0;                          // short pads
   if (cluster->GetDetector() >= 36) {
@@ -1376,10 +1376,10 @@ void  AliTPCseed::GetShape(AliTPCclusterMI* cluster, AliExternalTrackParam * par
   AliTPCClusterParam *clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
   Double_t tany,tanz;  
   Double_t snp1=param->GetSnp();
-  tany=snp1/TMath::Sqrt(1.-snp1*snp1);
+  tany=snp1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   //
   Double_t tgl1=param->GetTgl();
-  tanz=tgl1/TMath::Sqrt(1.-snp1*snp1);
+  tanz=tgl1/TMath::Sqrt((1.-snp1)*(1.+snp1));
   //
   Int_t padSize = 0;                          // short pads
   if (cluster->GetDetector() >= 36) {

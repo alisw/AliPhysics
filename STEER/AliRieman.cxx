@@ -577,8 +577,9 @@ Double_t AliRieman::GetDYat(Double_t x) const {
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<0) return 0;
   Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  if ( 1./(rm1*rm1)-(x-x0)*(x-x0)<=0) return 0;
-  Double_t res = (x-x0)/TMath::Sqrt(1./(rm1*rm1)-(x-x0)*(x-x0));
+  Double_t arg = (1./rm1-(x-x0))*(1./rm1+(x-x0));
+  if ( arg <= 0) return 0;
+  Double_t res = (x-x0)/TMath::Sqrt(arg);
   if (fParams[0]<0) res*=-1.;
   return res;
 }

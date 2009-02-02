@@ -34,7 +34,7 @@
 void GetProlongation(Double_t xk, Double_t &x, Double_t *param, Double_t &y, Double_t &z){
   Double_t dx=xk-x;  
   Double_t f1=param[2], f2=f1 + param[4]*dx;
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
   y  = param[0] + dx*(f1+f2)/(r1+r2);
   //z  = param[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*param[3];
   //z    = param[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*param[3];

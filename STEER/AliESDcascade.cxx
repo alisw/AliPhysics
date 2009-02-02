@@ -335,7 +335,7 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   Double_t pxl=px0+pxb, pyl=py0+pyb, pzl=pz0+pzb;
   Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
   
-  fEffMassXi=TMath::Sqrt((e0+eb)*(e0+eb) - pl*pl);
+  fEffMassXi=TMath::Sqrt(((e0+eb)-pl)*((e0+eb)+pl));
 
   Double_t beta=pl/(e0+eb);
   Double_t pl0=(px0*pxl + py0*pyl + pz0*pzl)/pl;

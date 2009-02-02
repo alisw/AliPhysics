@@ -258,10 +258,10 @@ void AliITSTrackV1::LmTPC() {
   Double_t r = 1./cTPC;
   xo =  etaTPC / cTPC;
   Double_t yo1, yo2, diffsq1, diffsq2;  
-  yo1 = yTPC +  TMath::Sqrt(r*r - (xl-xo)*(xl-xo)); 
-  yo2 = yTPC -  TMath::Sqrt(r*r - (xl-xo)*(xl-xo));   
-  diffsq1=TMath::Abs((yo1-vyl)*(yo1-vyl)+(xo-vxl)*(xo-vxl)-r*r);
-  diffsq2=TMath::Abs((yo2-vyl)*(yo2- vyl)+(xo-vxl)*(xo-vxl)-r*r);
+  yo1 = yTPC +  TMath::Sqrt((r-(xl-xo))*(r+(xl-xo))); 
+  yo2 = yTPC -  TMath::Sqrt((r-(xl-xo))*(r+(xl-xo)));   
+  diffsq1=TMath::Abs((yo1-vyl)*(yo1-vyl)+((xo-vxl)-r)*((xo-vxl)+r));
+  diffsq2=TMath::Abs((yo2-vyl)*(yo2-vyl)+((xo-vxl)-r)*((xo-vxl)+r));
   if(diffsq1<diffsq2) {yo=yo1; signy=1.;} else {yo=yo2; signy=-1.;};
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,12 +292,12 @@ void AliITSTrackV1::LmTPC() {
 
   dfidy=(xm*cosa+ym*sina)/(frtrack*frtrack);
   dDdy=signdd*((y0m-fVertex(1))*cosa-(x0m-fVertex(0))*sina)/dd;
-  Double_t dyodr=signy*(r+(xl-xo)*etaTPC)/TMath::Sqrt(r*r-(xl-xo)*(xl-xo));
+  Double_t dyodr=signy*(r+(xl-xo)*etaTPC)/TMath::Sqrt((r-(xl-xo))*(r+(xl-xo)));
   Double_t dyomdr=sina*etaTPC+cosa*dyodr;
   Double_t dxomdr=cosa*etaTPC-sina*dyodr;
   Double_t ddddR=((x0m-fVertex(0))*dxomdr+(y0m-fVertex(1))*dyomdr)/dd;
   dDdC=-r*r*(signdd*ddddR-1.);
-  Double_t dyoldxol=signy*(xl-xo)/TMath::Sqrt(r*r-(xl-xo)*(xl-xo));
+  Double_t dyoldxol=signy*(xl-xo)/TMath::Sqrt((r-(xl-xo))*(r+(xl-xo)));
   Double_t dxomdeta=r*(cosa-sina*dyoldxol);
   Double_t dyomdeta=r*(sina+cosa*dyoldxol);
   dDdeta=signdd*((x0m-fVertex(0))*dxomdeta+(y0m-fVertex(1))*dyomdeta)/dd;
@@ -474,8 +474,8 @@ void AliITSTrackV1::Propagation(Double_t rk) {
   Double_t bk=ArgB(rk), bkm1=ArgB(rkm1);	
   Double_t ck=ArgC(rk), ckm1=ArgC(rkm1);  
 
-  Double_t f02=ck/TMath::Sqrt(1.-aAk*aAk) - ckm1/TMath::Sqrt(1.-aAkm1*aAkm1);
-  Double_t f04=bk/TMath::Sqrt(1.-aAk*aAk) - bkm1/TMath::Sqrt(1.-aAkm1*aAkm1);  	
+  Double_t f02=ck/TMath::Sqrt((1.-aAk)*(1.+aAk)) - ckm1/TMath::Sqrt((1.-aAkm1)*(1.+aAkm1));
+  Double_t f04=bk/TMath::Sqrt((1.-aAk)*(1.+aAk)) - bkm1/TMath::Sqrt((1.-aAkm1)*(1.+aAkm1));  	
   Double_t f12=tgl*d*(1./rk - 1./rkm1);
   Double_t f13=rk - rkm1;
   
@@ -593,7 +593,7 @@ void AliITSTrackV1::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
   dE=signdE*dE/1000.; 
 	  
   e+=dE;
-  Double_t p=TMath::Sqrt(e*e-mass*mass);   
+  Double_t p=TMath::Sqrt((e-mass)*(e+mass));   
   Double_t sign=1.;
   if(fX4 < 0.) sign=-1.; 
   pt=sign*p/sqcl; 

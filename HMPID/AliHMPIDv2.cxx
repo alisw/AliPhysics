@@ -533,7 +533,7 @@ void AliHMPIDv2::GenFee(Float_t qtot)
     gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
     cthf=ranf[0]*2-1.0;
     if(cthf<0) continue;
-    sthf = TMath::Sqrt((1 - cthf) * (1 + cthf));
+    sthf = TMath::Sqrt((1. - cthf) * (1. + cthf));
     phif = ranf[1] * 2 * TMath::Pi();
     
     if(Double_t randomNumber=gMC->GetRandom()->Rndm()<=0.57)
@@ -673,7 +673,7 @@ Float_t AliHMPIDv2::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
     //FORMULAE FROM HANDBOOK OF OPTICS, 33.23 OR
     //W.R. HUNTER, J.O.S.A. 54 (1964),15 , J.O.S.A. 55(1965),1197
 
-    Float_t sinin=TMath::Sqrt(1-pdoti*pdoti);
+    Float_t sinin=TMath::Sqrt((1.-pdoti)*(1.+pdoti));
     Float_t tanin=sinin/pdoti;
 
     Float_t c1=cn*cn-ck*ck-sinin*sinin;

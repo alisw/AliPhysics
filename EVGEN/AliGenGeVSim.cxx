@@ -265,11 +265,10 @@ static Double_t aPtYFormula2(Double_t *x, Double_t * par) {
   // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
 
   Double_t aFormE = TMath::Sqrt(par[0]*par[0] + x[0]*x[0]) * TMath::CosH(x[1]);
-  Double_t aFormG = 1 / TMath::Sqrt( 1 - par[2]*par[2] );
+  Double_t aFormG = 1 / TMath::Sqrt((1.-par[2])*(1.+par[2]));
   Double_t aFormYp = par[2]*TMath::Sqrt( (par[0]*par[0] + x[0]*x[0]) 
-					 * TMath::CosH(x[1])*TMath::CosH(x[1])
-					 - par[0]*par[0] )
-    /( par[1]*TMath::Sqrt(1-par[2]*par[2]));
+					 * (TMath::CosH(x[1])-par[0])*(TMath::CosH(x[1])+par[0]))
+    /( par[1]*TMath::Sqrt((1.-par[2])*(1.+par[2])));
 
   return x[0] * aFormE * TMath::Exp( - aFormG * aFormE / par[1])
     *( TMath::SinH(aFormYp)/aFormYp 

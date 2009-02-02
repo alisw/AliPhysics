@@ -3631,7 +3631,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   Float_t erry,errz;
   Float_t theta = track->GetTgl();
   Float_t phi   = track->GetSnp();
-  phi = TMath::Sqrt(phi*phi/(1.-phi*phi));
+  phi = TMath::Abs(phi)*TMath::Sqrt(1./((1.-phi)*(1.+phi)));
   AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   // Take into account the mis-alignment (bring track to cluster plane)
@@ -3655,7 +3655,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   track->SetSigmaY(layer,erry);
   track->SetSigmaZ(layer, errz);
   //track->fNormQ[layer] = cluster->GetQ()/TMath::Sqrt(1+theta*theta+phi*phi);
-  track->SetNormQ(layer,cluster->GetQ()/TMath::Sqrt((1.+ track->GetTgl()*track->GetTgl())/(1.- track->GetSnp()*track->GetSnp())));
+  track->SetNormQ(layer,cluster->GetQ()/TMath::Sqrt((1.+ track->GetTgl()*track->GetTgl())/((1.-track->GetSnp())*(1.+track->GetSnp()))));
   return chi2;
 
 }
@@ -4776,7 +4776,7 @@ Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
     if(fxOverX0PipeTrks[index]<0) {
       if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
       Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
-				 (1.-t->GetSnp()*t->GetSnp()));
+				 ((1.-t->GetSnp())*(1.+t->GetSnp())));
       fxOverX0PipeTrks[index] = TMath::Abs(xOverX0)/angle;
       fxTimesRhoPipeTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
       return 1;
@@ -4879,7 +4879,7 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
     if(fxOverX0ShieldTrks[index]<0) {
       if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
       Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
-				 (1.-t->GetSnp()*t->GetSnp()));
+				 ((1.-t->GetSnp())*(1.+t->GetSnp())));
       fxOverX0ShieldTrks[index] = TMath::Abs(xOverX0)/angle;
       fxTimesRhoShieldTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
       return 1;
@@ -4989,7 +4989,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
       AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
       if(mparam[1]>900000) return 0;
       Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
-				 (1.-t->GetSnp()*t->GetSnp()));
+				 ((1.-t->GetSnp())*(1.+t->GetSnp())));
       xOverX0=mparam[1]/angle;
       lengthTimesMeanDensity=mparam[0]*mparam[4]/angle;
       fxOverX0LayerTrks[index] = TMath::Abs(xOverX0);

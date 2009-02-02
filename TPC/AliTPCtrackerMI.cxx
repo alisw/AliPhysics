@@ -1060,8 +1060,8 @@ Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5
     return kFALSE;
   }
 
-  Double_t c1=x[4]*x1 - x[2], r1=sqrt(1.- c1*c1);
-  Double_t c2=x[4]*x2 - x[2], r2=sqrt(1.- c2*c2);  
+  Double_t c1=x[4]*x1 - x[2], r1=sqrt((1.-c1)*(1.+c1));
+  Double_t c2=x[4]*x2 - x[2], r2=sqrt((1.-c2)*(1.+c2));  
   y = x[0];
   z = x[1];
   

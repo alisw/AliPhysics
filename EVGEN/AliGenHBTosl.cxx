@@ -1565,7 +1565,7 @@ void  AliGenHBTosl::GetQOutQSideQLong(TParticle* f, TParticle* s,Double_t& out, 
   }
 
  Double_t beta = pzsum/esum;
- Double_t gamma = 1.0/TMath::Sqrt(1.0 - beta*beta);
+ Double_t gamma = 1.0/TMath::Sqrt((1.-beta)*(1.+beta));
 
  lon = gamma * ( pzdiff - beta*ediff );
 

@@ -114,9 +114,9 @@ void AliLhcProcessIBS::Evolve(Float_t dt)
      // impact parameter
      Float_t d    = sige*avd/sigx;
      // 
-     Float_t at = sige*TMath::Sqrt(1.-d*d)/(gamma*ssigx);
-     Float_t bt = sige*TMath::Sqrt(1.-d*d)/(gamma*ssigy);
-     Float_t ct = sige*TMath::Sqrt(1.-d*d)*TMath::Sqrt(4.*sigy/fR[i]);
+     Float_t at = sige*TMath::Sqrt((1.-d)*(1.+d))/(gamma*ssigx);
+     Float_t bt = sige*TMath::Sqrt((1.-d)*(1.+d))/(gamma*ssigy);
+     Float_t ct = sige*TMath::Sqrt((1.-d)*(1.+d))*TMath::Sqrt(4.*sigy/fR[i]);
      //
      Double_t par[3];
      par[0] = at;
@@ -127,8 +127,9 @@ void AliLhcProcessIBS::Evolve(Float_t dt)
      Float_t f = (Float_t) 8.0*TMath::Pi()*
 	 fct->Integral(0., 1., par, 1.e-5);
      //
-     fTaux =  1./(asd*f*(d*d-at*at/2.));
-     fTaue =  1./(asd*f*(1.-d*d));
+     const Double_t osq2=1./TMath::Sqrt(2.);
+     fTaux =  1./(asd*f*(d-osq2*at)*(d+osq2*at)); 
+     fTaue =  1./(asd*f*((1.-d)*(1.+d)));
      //     printf("\n taux, taue %f %f", taux, taue);
      //     Float_t tauy = -2./at*at/asd/f;
      fBeam[i]->IncreaseEmittance(dt/fTaux, dt/fTaue);

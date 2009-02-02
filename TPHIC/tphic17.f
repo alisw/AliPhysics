@@ -526,7 +526,7 @@ CDECK  ID>, GGRUN.
           e3     = xkin(5)
           e4     = xmgg - e3
         END IF
-        sinthe = sqrt (1 - costhe*costhe)
+        sinthe = sqrt ((1.-costhe)*(1.+costhe))
         p3(1) = p3abs * cos(phi) * sinthe
         p3(2) = p3abs * sin(phi) * sinthe
         p3(3) = p3abs * costhe
@@ -826,10 +826,10 @@ CDECK  ID>, GGDECY.
 *         Decay chi_1^+- --> chi_1^0 W^+- in CMS, uniformly
         eb = (amprt(1)**2 + amprt(2)**2 - amprt(4)**2) / (2 * amprt(1))
         ec = (amprt(1)**2 - amprt(2)**2 + amprt(4)**2) / (2 * amprt(1))
-        pb = sqrt (eb*eb - amprt(2)*amprt(2))
+        pb = sqrt ((eb-amprt(2))*(eb+amprt(2)))
         pc = pb
         costhe = 2*ggrnd(0) - 1.
-        sinthe = sqrt (1 - costhe*costhe)
+        sinthe = sqrt((1.-costhe)*(1.+costhe))
         phi = 2*pi*ggrnd(0)
         pcm(1) = pb * sinthe * cos(phi)
         pcm(2) = pb * sinthe * sin(phi)
@@ -878,7 +878,7 @@ CDECK  ID>, GGDECY.
 *
         phi    = 2.*pi * ggrnd(0)
         costhe = 2.*ggrnd(0) - 1.
-        sinthe = sqrt (1. - costhe*costhe)
+        sinthe = sqrt ((1.-costhe)*(1.+costhe))
 *
         pp = xm23 / 2.
         p2(1) = pp * sinthe * cos(phi)
@@ -895,7 +895,7 @@ CDECK  ID>, GGDECY.
 *       3-momenta p2, p3 are along z-axis
 *
         gamma = e23 / xm23
-        gambe = sqrt (gamma*gamma - 1.)
+        gambe = sqrt ((gamma-1.)*(gamma+1.))
 *
         p2z = gamma*p2(3) + gambe*p2(4)
         e2  = gamma*p2(4) + gambe*p2(3)
@@ -911,7 +911,7 @@ CDECK  ID>, GGDECY.
 *
         phi    = 2.*pi * ggrnd(0)
         costhe = 2.*ggrnd(0) - 1.
-        sinthe = sqrt (1. - costhe*costhe)
+        sinthe = sqrt ((1.-costhe)*(1.+costhe))
         cosphi = cos(phi)
         sinphi = sin(phi)
 *
@@ -976,7 +976,7 @@ CDECK  ID>, GGDECY.
         p12 = am1 * p2(4)
 *
         e4 = am1 - e23
-        pp =sqrt (e4*e4 - am4*am4)
+        pp =sqrt ((e4-am4)*(e4+am4))
         p4(1) =  pp * sinthe * cos(phi)
         p4(2) =  pp * sinthe * sin(phi)
         p4(3) = -pp * costhe
@@ -1184,7 +1184,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
       pa(1)= 0D0
       pa(2)= 0D0
-      pa(3)= dsqrt(1D0*(eb*eb-amas*amas))
+      pa(3)= dsqrt(1D0*((eb-amas)*(eb+amas)))
       pa(4)= eb*1D0
       pa(5)= amas*1D0
 C

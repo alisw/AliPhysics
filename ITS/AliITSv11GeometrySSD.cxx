@@ -2581,8 +2581,8 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
 				 - fgkSSDConnectorSeparation;
   Double_t wirey = ssdstiffenerseparation+fgkSSDStiffenerWidth
 				 - 2.*fgkSSDConnectorPosition[1]-fgkSSDConnectorWidth;
-  Double_t ssdwireradius = TMath::Sqrt(TMath::Power(wirex,2.)
-				         + TMath::Power(wirey,2));
+  Double_t ssdwireradius = TMath::Sqrt(wirex*wirex+wirey*wirey);
+
   Double_t wireangle = TMath::ATan(wirex/wirey);
   TGeoTube *hybridwireshape = new TGeoTube("HybridWireShape", 0., 
 						fgkSSDWireRadius, 0.5*ssdwireradius);
@@ -4502,17 +4502,17 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   for(Int_t i=0; i<fgklayernumber; i++){
 	mountingblockratio[i] = fgkSSDMountingBlockLength[0]/fgkMountingBlockSupportRadius[i];
     mountingsupportedge[i]    = 0.5*fgkMountingBlockSupportRadius[i]
-							  *(TMath::Sqrt(4.0-TMath::Power(mountingblockratio[i],2))
+                                                          * (TMath::Sqrt((2.-mountingblockratio[i])*(2.+mountingblockratio[i]))
 							  * TMath::Sin(2.0*TMath::Pi()/kssdlayladdernumber[i])
 							  - mountingblockratio[i]*(1.0+TMath::Cos(2.0*TMath::Pi()
 							  / kssdlayladdernumber[i])));
     theta[i] = TMath::ASin(0.5*mountingblockratio[i]+mountingsupportedge[i]/fgkMountingBlockSupportRadius[i]);
     phi[i]   = TMath::ASin(0.5*mountingblockratio[i]);
 	mountingsupportedgevector[i] = new TVector3();
-    mountingsupportedgevector[i]->SetX(-0.5*fgkSSDMountingBlockLength[0]);
-	mountingsupportedgevector[i]->SetY(fgkMountingBlockSupportRadius[i]*TMath::Sqrt(1.
-								 -TMath::Power(mountingsupportedgevector[i]->X()
-								 /			   fgkMountingBlockSupportRadius[i],2)));
+        mountingsupportedgevector[i]->SetX(-0.5*fgkSSDMountingBlockLength[0]);
+	mountingsupportedgevector[i]->SetY(fgkMountingBlockSupportRadius[i]*TMath::Sqrt(
+							(1.-mountingsupportedgevector[i]->X()/fgkMountingBlockSupportRadius[i])*
+							(1.+mountingsupportedgevector[i]->X()/fgkMountingBlockSupportRadius[i])));
     psi0[i] = 0.5*TMath::Pi()-phi[i];	
     deltapsi[i] = (theta[i]+phi[i])/nedges;
   }
@@ -5018,7 +5018,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   for(Int_t i=0; i<fgklayernumber; i++){
 	mountingblockratio[i] = fgkSSDMountingBlockLength[0]/fgkMountingBlockSupportRadius[i];
     mountingsupportedge[i]    = 0.5*fgkMountingBlockSupportRadius[i]
-							  *(TMath::Sqrt(4.0-TMath::Power(mountingblockratio[i],2))
+                                                          *(TMath::Sqrt((2.-mountingblockratio[i])*(2.+mountingblockratio[i]))
 							  * TMath::Sin(2.0*TMath::Pi()/kssdlayladdernumber[i])
 							  - mountingblockratio[i]*(1.0+TMath::Cos(2.0*TMath::Pi()
 							  / kssdlayladdernumber[i])));
@@ -7029,9 +7029,8 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Generating EndCap High Voltage Tubes 
   /////////////////////////////////////////////////////////////
   Double_t effectiveinneradius = TMath::Sqrt(ncables)*radiusmin;
-  Double_t effectiveouteradius = TMath::Sqrt(TMath::Power(effectiveinneradius,2.)
-							   +             TMath::Power(radiusmax,2.)
-                               -             TMath::Power(radiusmin,2.));
+  Double_t effectiveouteradius = TMath::Sqrt(effectiveinneradius*effectiveinneradius+(radiusmax-radiusmin)*(radiusmax-radiusmin));
+
   TGeoTube* effectiveinnertubeshape = new TGeoTube(0.,effectiveinneradius,0.5*width);
   TGeoTube* effectiveoutertubeshape = new TGeoTube(effectiveinneradius,
 												   effectiveouteradius,0.5*width);

@@ -1304,7 +1304,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
     Float_t xyz[3];
     for(int ip=0; ip<np; ip++){
       points[ip].GetXYZ(xyz);
-      xyz[1] = TMath::Abs(xyz[0] - x0) > R ? 100. : y0 - (y0>0.?1.:-1.)*TMath::Sqrt(R*R-(xyz[0]-x0)*(xyz[0]-x0));
+      xyz[1] = TMath::Abs(xyz[0] - x0) > R ? 100. : y0 - (y0>0.?1.:-1.)*TMath::Sqrt((R-(xyz[0]-x0))*(R+(xyz[0]-x0)));
       xyz[2] = z0 + dzdx * (xyz[0] - xref);
       points[ip].SetXYZ(xyz);
     }

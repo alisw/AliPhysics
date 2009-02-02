@@ -361,7 +361,7 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
       //
       Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
                sa=TMath::Sin(alphan-track->GetAlpha());
-      Double_t sf=track->GetSnp(), cf=TMath::Sqrt(1.- sf*sf);
+      Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
       Double_t sinNew =  sf*ca - cf*sa;
       if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
       if (!track->Rotate(alphan)) return kFALSE;

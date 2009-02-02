@@ -329,8 +329,9 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
       if ((status&AliESDtrack::kESDpid)==0) continue;
       Double_t p[3];
       esdTrack->GetPxPyPz(p);
-      Double_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-      Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+      Double_t pt2 = p[0]*p[0]+p[1]*p[1];
+      Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
+      Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
       if(fPt > maxPt) maxPt = fPt;
@@ -655,8 +656,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
       if ((status&AliESDtrack::kESDpid)==0) continue;
       Double_t p[3];
       esdTrack->GetPxPyPz(p);
-      Double_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-      Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+      Double_t pt2 = p[0]*p[0]+p[1]*p[1];
+      Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
+      Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
       if(fPt > maxPt) maxPt = fPt;
@@ -975,8 +977,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
       if ((status&AliESDtrack::kESDpid)==0) continue;
       Double_t p[3];
       esdTrack->GetPxPyPz(p);
-      Double_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-      Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+      Double_t pt2 = p[0]*p[0]+p[1]*p[1];
+      Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
+      Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
       if(fPt > maxPt) maxPt = fPt;
@@ -1308,8 +1311,9 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
       if ((status&AliESDtrack::kESDpid)==0) continue;
       Double_t p[3];
       esdTrack->GetPxPyPz(p);
-      Double_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-      Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+      Double_t pt2 = p[0]*p[0]+p[1]*p[1];
+      Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
+      Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
       if(fPt > maxPt) maxPt = fPt;

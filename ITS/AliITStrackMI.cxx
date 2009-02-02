@@ -160,7 +160,7 @@ Int_t AliITStrackMI::GetProlongationFast(Double_t alp, Double_t xk,Double_t &y, 
   //get fast prolongation 
   //-----------------------------------------------------------------------------
   Double_t ca=TMath::Cos(alp-GetAlpha()), sa=TMath::Sin(alp-GetAlpha());
-  Double_t cf=TMath::Sqrt(1.- GetSnp()*GetSnp());  
+  Double_t cf=TMath::Sqrt((1.-GetSnp())*(1.+GetSnp()));  
   // **** rotation **********************  
   y= -GetX()*sa + GetY()*ca;
   // **** translation ******************  
@@ -169,7 +169,7 @@ Int_t AliITStrackMI::GetProlongationFast(Double_t alp, Double_t xk,Double_t &y, 
   if (TMath::Abs(f2) >= 0.9999) {
     return 0;
   }
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);  
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));  
   y += dx*(f1+f2)/(r1+r2);
   z  = GetZ()+dx*(f1+f2)/(f1*r2 + f2*r1)*GetTgl();  
   return 1;

@@ -617,7 +617,7 @@ Bool_t AliTPCTracklet::Riemann2Helix(Double_t *a,Double_t */*ca*/,
   Double_t R=.5*TMath::Sqrt(4.*a[0]+a[1]*a[1]+a[2]*a[2]);
   Double_t dx=x0-xr0;
   if (dx*dx>=R*R) return kFALSE;
-  Double_t dy=TMath::Sqrt(R*R-dx*dx); //sign!!
+  Double_t dy=TMath::Sqrt((R-dx)*(R+dx)); //sign!!
   if (TMath::Abs(yr0+dy)>TMath::Abs(yr0-dy))
     dy=-dy;
   Double_t y0=yr0+dy; 

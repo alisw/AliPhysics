@@ -321,7 +321,7 @@ void AliGenParam::Generate()
 		    "Division by 0: Please check you rapidity range !");
 	  }
 	  
-	  pl=xmt*ty/sqrt(1.-ty*ty);
+	  pl=xmt*ty/sqrt((1.-ty)*(1.+ty));
 	  theta=TMath::ATan2(pt,pl);
 // Cut on theta
 	  if(theta<fThetaMin || theta>fThetaMax) continue;

@@ -759,7 +759,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   Double_t tgl                        = t->GetTglPlane(GetLayer(detector)); // dz/dl and not dz/dx!  
   Double_t tnp                        = 0.0;                                // tan angle in the plan xy track
   if( TMath::Abs(snp) <  1.){
-    tnp = snp / (TMath::Sqrt(1-(snp*snp)));
+    tnp = snp / TMath::Sqrt((1.-snp)*(1.+snp));
   } 
   Float_t dzdx                        = tgl*TMath::Sqrt(1+tnp*tnp);         // dz/dx now from dz/dl
   // tilting pad and cross row
@@ -912,7 +912,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   Double_t snp = tracklet->GetSnp();             // sin dy/dx at the end of the chamber
   Double_t tnp = 0.0;                            // dy/dx at the end of the chamber 
   if( TMath::Abs(snp) <  1.){
-    tnp = snp / (TMath::Sqrt(1-(snp*snp)));
+    tnp = snp / TMath::Sqrt((1.-snp)*(1.+snp));
   } 
   Double_t tgl  = tracklet->GetTgl();           // dz/dl
   Double_t dzdx = tgl*TMath::Sqrt(1+tnp*tnp);   // dz/dx calculated from dz/dl
@@ -1056,7 +1056,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
   Float_t  dzdx = 0.0;                                // dzdx
   Float_t  tnp  = 0.0;
   if(TMath::Abs(snp) < 1.0){
-    tnp = snp / (TMath::Sqrt(1-snp*snp));
+    tnp = snp / TMath::Sqrt((1.-snp)*(1.+snp));
     dzdx = tgl*TMath::Sqrt(1+tnp*tnp);
   }
   // linear fitter
@@ -1353,7 +1353,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   Double_t snp = tracklet->GetSnp();             // sin dy/dx at the end of the chamber
   Double_t tnp = 0.0;                            // dy/dx at the end of the chamber 
   if( TMath::Abs(snp) <  1.){
-    tnp = snp / (TMath::Sqrt(1-(snp*snp)));
+    tnp = snp / TMath::Sqrt((1.-snp)*(1.+snp));
   } 
   Double_t tgl  = tracklet->GetTgl();           // dz/dl
   Double_t dzdx = tgl*TMath::Sqrt(1+tnp*tnp);   // dz/dx calculated from dz/dl

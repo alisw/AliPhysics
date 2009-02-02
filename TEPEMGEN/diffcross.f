@@ -44,10 +44,10 @@ C======================================================================
       COMMON/PHYSPARAM/gamma,beta,m,w1xw1,w1xw2,w2xw2,wl,wy
 
       DOUBLE PRECISION ARCOSH,x
-      ARCOSH(x)=LOG(x+SQRT(x**2-1D0))
+      ARCOSH(x)=LOG(x+SQRT((x-1D0)*(x+1D0)))
 
       gamma=gm
-      beta=sqrt(1D0-1D0/gamma**2)
+      beta=sqrt((1D0-1D0/gamma)*(1D0+1D0/gamma))
       m=mass
       
       w1xw1 = 1D0/gamma**2

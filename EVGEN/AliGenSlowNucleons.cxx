@@ -310,7 +310,7 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
 {
 /* Lorentz transform in the direction of q[2] */
  
-    Double_t gamma  = 1/sqrt(1-beta*beta); 
+    Double_t gamma  = 1/sqrt((1.-beta)*(1.+beta)); 
     Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
 }
