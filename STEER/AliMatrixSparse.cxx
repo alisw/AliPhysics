@@ -63,7 +63,7 @@ Double_t AliVectorSparse::FindIndex(Int_t ind) const
 }
 
 //___________________________________________________________
-void AliVectorSparse::Zero(Int_t ind)
+void AliVectorSparse::SetToZero(Int_t ind)
 {
   // set element to 0 if it was already defined
   int first = 0;

@@ -26,7 +26,7 @@ class AliVectorSparse {
   //
   virtual Double_t         operator()(Int_t ind)         const;
   virtual Double_t&        operator()(Int_t ind);
-  virtual void             Zero(Int_t ind);
+  virtual void             SetToZero(Int_t ind);
   Double_t                 FindIndex(Int_t ind)          const;
   Double_t&                FindIndexAdd(Int_t ind);
   //
@@ -75,7 +75,7 @@ class AliMatrixSparse : public AliMatrixSq
   AliMatrixSparse& operator=(const AliMatrixSparse& src);
   Double_t&        operator()(Int_t row,Int_t col);
   Double_t         operator()(Int_t row,Int_t col)     const;
-  void             Zero(Int_t row,Int_t col);
+  void             SetToZero(Int_t row,Int_t col);
   Float_t          GetDensity()                        const;
   //
   Double_t         DiagElem(Int_t r)                   const;
@@ -93,12 +93,12 @@ class AliMatrixSparse : public AliMatrixSq
 };
 
 //___________________________________________________
-inline void AliMatrixSparse::Zero(Int_t row,Int_t col)
+inline void AliMatrixSparse::SetToZero(Int_t row,Int_t col)
 {
   //  set existing element to 0
   if (IsSymmetric() && col>row) Swap(row,col); 
   AliVectorSparse* rowv = GetRow(row);
-  if (rowv) rowv->Zero(col);
+  if (rowv) rowv->SetToZero(col);
 }
 
 //___________________________________________________

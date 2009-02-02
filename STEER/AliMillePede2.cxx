@@ -769,7 +769,7 @@ Int_t AliMillePede2::GlobalFitIteration()
 	AliVectorSparse& row = *((AliMatrixSparse*)fMatCGlo)->GetRow(i);
 	row.Clear();
 	row(i) = float(fNLocEquations);
-	for (int j=i+1;j<fNGloPar;j++) ((AliMatrixSparse*)fMatCGlo)->Zero(i,j);
+	for (int j=i+1;j<fNGloPar;j++) ((AliMatrixSparse*)fMatCGlo)->SetToZero(i,j);
       }
       else 
 	for (int j=fNGloPar;j--;) if (MatCGlo.Querry(i,j)) MatCGlo(i,j)=0;
