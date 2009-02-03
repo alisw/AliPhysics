@@ -361,13 +361,20 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     dc=new AliPHOSRawDecoder(rawReader,mapping);
 
   dc->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
-  
+  dc->SetAmpOffset(GetRecoParam()->GetGlobalAltroOffset());
+  dc->SetAmpThreshold(GetRecoParam()->GetGlobalAltroThreshold());
+
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
   Int_t bufsize = 32000;
   digitsTree->Branch("PHOS", &digits, bufsize);
 
-  AliPHOSRawDigiProducer pr(GetRecoParam());
+  //AliPHOSRawDigiProducer pr(GetRecoParam());
+  AliPHOSRawDigiProducer pr;
+
+  pr.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
+  pr.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
+  pr.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
   pr.MakeDigits(digits,dc);
 
   delete dc ;

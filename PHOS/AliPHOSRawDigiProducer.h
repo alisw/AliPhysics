@@ -11,7 +11,6 @@
 class AliPHOSRawDecoder;
 class AliPHOSCalibData ;
 class AliPHOSDigit ;
-class AliPHOSRecoParam ;
 class AliPHOSGeometry ;
 class AliPHOSPulseGenerator;
 #include "TObject.h"
@@ -21,13 +20,16 @@ class AliPHOSRawDigiProducer: public TObject {
 public:
 
   AliPHOSRawDigiProducer() ;
-  AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam) ;
   AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp);
   AliPHOSRawDigiProducer& operator= (const AliPHOSRawDigiProducer &dp);
  
   virtual ~AliPHOSRawDigiProducer(); 
 
   void MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder);
+
+  void SetEmcMinAmp(Float_t emcMin) { fEmcMinE=emcMin; }
+  void SetCpvMinAmp(Float_t cpvMin) { fCpvMinE=cpvMin; }
+  void SetSampleQualityCut(Float_t qcut) { fSampleQualityCut=qcut; }
 
 protected:
 
@@ -41,17 +43,15 @@ protected:
   Double_t CalibrateT(Double_t amp, Int_t* relId, Bool_t isLowGain) ; //calibrate time
 
 private:
-  Float_t fEmcMinE ;                 // minimum energy of digit to be included into cluster
-  Float_t fCpvMinE ;                 // minimum energy of digit to be included into cluster
+  Float_t fEmcMinE ;                 // minimum energy of digit (ADC)
+  Float_t fCpvMinE ;                 // minimum energy of digit (ADC)
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
-  Int_t   fGlobalAltroOffset;        // Global ALTRO offset used in ZS runs
-  Int_t   fGlobalAltroThreshold;     // Global ALTRO threshold used in ZS runs
   Int_t fEmcCrystals ;               //  number of EMC crystals
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
   static AliPHOSCalibData * fgCalibData ;   //! Calibration database if avalable
   AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse shape parameters
 
-  ClassDef(AliPHOSRawDigiProducer,4)
+  ClassDef(AliPHOSRawDigiProducer,5)
 };
 
 #endif
