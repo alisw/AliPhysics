@@ -1249,15 +1249,16 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("InitRecoParams");
 
-  if (fInput) {
+  if (fInput && gProof) {
     if (reco) *reco = *this;
-    fInput->Add(gGeoManager);
+
+    gProof->AddInputData(gGeoManager,kTRUE);
     gGeoManager = NULL;
-    fInput->Add(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
+    gProof->AddInputData(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()),kTRUE);
     fInput->Add(new TParameter<Int_t>("RunNumber",AliCDBManager::Instance()->GetRun()));
     AliMagF *magFieldMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     magFieldMap->SetName("MagneticFieldMap");
-    fInput->Add(magFieldMap);
+    gProof->AddInputData(magFieldMap,kTRUE);
   }
 
 }
