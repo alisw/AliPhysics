@@ -183,8 +183,8 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
 
   if (fMc->GetHistList()) {
     //fMc->GetHistList()->Print();
-	fListHistos = fMc->GetHistList();
-	fListHistos->Print();
+    fListHistos = fMc->GetHistList();
+    //fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 
@@ -322,7 +322,7 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
 
   //Get output data
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histogram list in Terminate" << endl;
+  // cout << "histogram list in Terminate" << endl;
   if (fListHistos) {
     //Get the common histograms from the output list
     AliFlowCommonHist *pCommonHists = dynamic_cast<AliFlowCommonHist*> 
@@ -363,8 +363,8 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
     } else {
       cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl;  }
     
-    fListHistos->Print();
+    //fListHistos->Print();
   } else { cout << "histogram list pointer is empty" << endl;}
     
-  cout<<"...finished."<<endl;
+  cout<<"...finished MCEventPlane."<<endl;
 }

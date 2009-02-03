@@ -314,7 +314,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
   fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
    
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histogram list in Terminate" << endl;
+  //cout << "histogram list in Terminate" << endl;
 
   if (fListHistos) {
 
@@ -427,5 +427,5 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
   }	
   else { cout << "histogram list pointer is empty" << endl;}
 
-  cout<<".....finished"<<endl;
+  cout<<".....finished LYZ"<<endl;
 }

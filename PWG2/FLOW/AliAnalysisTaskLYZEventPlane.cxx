@@ -305,7 +305,7 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
   // Called once at the end of the query
   AliFlowAnalysisWithLYZEventPlane* fLyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histogram list in Terminate" << endl;
+  //cout << "histogram list in Terminate" << endl;
   if (fListHistos) {
     //Get the common histograms from the output list
     AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
@@ -338,7 +338,7 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
     fListHistos->Print(); 
   } else { cout << "histogram list pointer is empty" << endl;}
 
-  cout<<".....finished"<<endl;  
+  cout<<".....finished LYZ EventPlane"<<endl;  
 }
 
 

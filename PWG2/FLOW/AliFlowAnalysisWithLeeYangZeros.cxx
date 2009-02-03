@@ -285,7 +285,9 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 {
   //finish method
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::Finish()****"<<endl; 
-  
+
+  cout << endl;
+  cout << "******************************************************" << endl;  
   //define variables for both runs
   Double_t  dJ01 = 2.405; 
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
