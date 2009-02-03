@@ -31,7 +31,8 @@ ClassImp(AliShuttleLogbookEntry)
 AliShuttleLogbookEntry::AliShuttleLogbookEntry() :
 TObject(),
 fRun(-1),
-fRunParameters(0)
+fRunParameters(0),
+fDATestMode(kFALSE)
 {
 	//
 	// default constructor
@@ -46,7 +47,8 @@ fRunParameters(0)
 AliShuttleLogbookEntry::AliShuttleLogbookEntry(Int_t run, Status* status) :
 TObject(),
 fRun(run),
-fRunParameters(0)
+fRunParameters(0),
+fDATestMode(kFALSE)
 {
 	//
 	// default constructor
@@ -70,7 +72,8 @@ AliShuttleLogbookEntry::~AliShuttleLogbookEntry() {
 AliShuttleLogbookEntry::AliShuttleLogbookEntry(const AliShuttleLogbookEntry &c) :
 TObject(),
 fRun(c.fRun),
-fRunParameters(0)
+fRunParameters(0),
+fDATestMode(c.fDATestMode)
 {
 	//
 	// copy constructor
@@ -119,6 +122,7 @@ void AliShuttleLogbookEntry::Copy(TObject& c) const
 	}
 
 	target.SetDetectorStatus(GetDetectorStatus());
+	target.fDATestMode = fDATestMode;
 }
 
 //______________________________________________________________________________________________

@@ -40,6 +40,7 @@ public:
 	UInt_t GetEndTime() const {TString tmp(GetRunParameter("DAQ_time_end")); return tmp.Atoi();}
 	UInt_t GetTimeCreated() const {TString tmp(GetRunParameter("time_created")); return tmp.Atoi();}
 	Bool_t GetECSSuccess() const {TString tmp(GetRunParameter("ecs_success")); return (Bool_t) tmp.Atoi();}
+	Bool_t GetDATestMode() const {return fDATestMode;}
 
 //	void SetRun(Int_t run) {fRun=run;}
 
@@ -56,6 +57,7 @@ public:
 	void SetDetectorStatus(UInt_t detPos, Status status);
 	void SetDetectorStatus(const char* detCode, const char* statusName);
 	void SetDetectorStatus(UInt_t detPos, const char* statusName);
+	void SetDATestMode(Bool_t daTestMode) {fDATestMode = daTestMode;}
 
 	const char* GetRunType() const { return GetRunParameter("run_type"); }
 
@@ -69,6 +71,7 @@ private:
 	Int_t fRun;   			// Run number
 	TMap fRunParameters;		// run parameters written in DAQ logbook
 	Status fDetectorStatus[AliShuttleInterface::kNDetectors]; 	// Detector status array
+	Bool_t fDATestMode;             // flag to set whether we are in the DA Test Mode for the current run
 
 	ClassDef(AliShuttleLogbookEntry, 0)
 };

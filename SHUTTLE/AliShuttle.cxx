@@ -1203,6 +1203,9 @@ void AliShuttle::SendMLRunInfo(const char* status)
 		runType += fLogbookEntry->GetRunParameter("log");
 		runType += ")";
 	}
+	if (fLogbookEntry->GetDATestMode()){
+		runType += " (DATest)";
+	}
 	TMonaLisaText  mlRunType("SHUTTLE_runtype", runType);
 
 	TList mlList;
@@ -1319,21 +1322,27 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	// Initialization
 	Bool_t hasError = kFALSE;
 
-	// Set the CDB and Reference folders according to the year and LHC period
-	TString lhcPeriod(GetLHCPeriod());
-	if (lhcPeriod.Length() == 0) 
-	{
-		Log("SHUTTLE","Process - LHCPeriod not found in logbook!");
-		return 0; 
-	}	
-	
-	// build cdb paths (repeat each time, LHCperiod might have changed)
-	fgkMainCDB.Form("alien://folder=%s%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
-					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
-	
-	fgkMainRefStorage.Form("alien://folder=%s%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
-					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
-	
+	// Set the CDB and Reference folders according to the year
+
+	// build cdb paths (repeat each time, run might be a DATest run)
+	if (!fLogbookEntry->GetDATestMode()){
+		fgkMainCDB.Form("alien://folder=%s%d/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
+				fConfig->GetAlienPath(), GetCurrentYear());
+		
+		fgkMainRefStorage.Form("alien://folder=%s%d/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
+				       fConfig->GetAlienPath(), GetCurrentYear());
+	}
+	else {
+		fgkMainCDB.Form("alien://folder=%s%d/DATest/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache",
+				fConfig->GetAlienPath(), GetCurrentYear());
+		
+		fgkMainRefStorage.Form("alien://folder=%s%d/DATest/Reference?user=alidaq?cacheFold=/tmp/OCDBCache",
+				       fConfig->GetAlienPath(), GetCurrentYear());
+	}
+
+	AliDebug(2,Form("Main CDB storage = %s",fgkMainCDB.Data()));
+	AliDebug(2,Form("Main Reference storage = %s",fgkMainRefStorage.Data()));
+
 	// Loop on detectors in the configuration
 	TIter iter(fConfig->GetDetectors());
 	TObjString* aDetector = 0;
@@ -1907,6 +1916,11 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		AliShuttleLogbookEntry *entry = QueryRunParameters(run);
 		if (!entry)
 			continue;
+
+		// DA test mode flag
+		TString daTestModeString(aRow->GetField(2), aRow->GetFieldLength(2)); // field 2 = DA test mode flag 
+		Bool_t daTestMode = (Bool_t)daTestModeString.Atoi();
+		entry->SetDATestMode(daTestMode);
 
 		// loop on detectors
 		for(UInt_t ii = 0; ii < nCols; ii++)
@@ -3461,7 +3475,7 @@ Bool_t AliShuttle::TouchFile()
 	}
 
 	TString dir;
-	dir.Form("%s%d/%s/SHUTTLE_DONE", fConfig->GetAlienPath(), GetCurrentYear(), GetLHCPeriod());
+	dir.Form("%s%d/SHUTTLE_DONE", fConfig->GetAlienPath(), GetCurrentYear());
 	// checking whether directory for touch command exists
 	TString commandLs;
 	commandLs.Form("ls %s",dir.Data());
