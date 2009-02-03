@@ -902,7 +902,7 @@ void AliCumulantsFunctions::Calculate()
   //3D profiles (for pt)
   for(Int_t b=0;b<fgknBinsPt;b++)
   {
-   ptBinPOINoOfParticles[b]=fPtBinPOINoOfParticles->GetBinEntries(b);
+   ptBinPOINoOfParticles[b]=fPtBinPOINoOfParticles->GetBinEntries(b+1);
    for(Int_t p=0;p<fgkPmax;p++)
    {
     for(Int_t q=0;q<fgkQmax;q++)
@@ -929,7 +929,7 @@ void AliCumulantsFunctions::Calculate()
   //3D profiles (for eta)
   for(Int_t b=0;b<fgknBinsEta;b++)
   {
-   etaBinPOINoOfParticles[b]=fEtaBinPOINoOfParticles->GetBinEntries(b);
+   etaBinPOINoOfParticles[b]=fEtaBinPOINoOfParticles->GetBinEntries(b+1);
    for(Int_t p=0;p<fgkPmax;p++)
    {
     for(Int_t q=0;q<fgkQmax;q++)
@@ -1142,7 +1142,7 @@ void AliCumulantsFunctions::Calculate()
  Double_t dV2POI=0., dV4POI=0., dV6POI=0., dV8POI=0.;
  Double_t dV2POIError=0., dV4POIError=0., dV6POIError=0., dV8POIError=0.;
  Double_t dSumOfYield=0.;
- for (Int_t b=0;b<fgknBinsPt;b++)
+ for (Int_t b=1;b<fgknBinsPt+1;b++)
  { 
   if(fch->GetHistPtDiff())
   {  
@@ -1150,18 +1150,22 @@ void AliCumulantsFunctions::Calculate()
    if(fchr2nd->GetHistDiffFlowPtPOI())
    {
     dV2POI+=((fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
+    dV2POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtPOI())->GetBinError(b),2.);  
    }
    if(fchr4th->GetHistDiffFlowPtPOI())
    {
     dV4POI+=((fchr4th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
+    dV4POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }
    if(fchr6th->GetHistDiffFlowPtPOI())
    {
     dV6POI+=((fchr6th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
+    dV6POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }
    if(fchr8th->GetHistDiffFlowPtPOI())
    {
     dV8POI+=((fchr8th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
+    dV8POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }      
   } 
  }
@@ -1169,13 +1173,17 @@ void AliCumulantsFunctions::Calculate()
  if(dSumOfYield)
  {
   dV2POI/=dSumOfYield;
+  dV2POIError/=(dSumOfYield*dSumOfYield);
   dV4POI/=dSumOfYield;
+  dV4POIError/=(dSumOfYield*dSumOfYield);
   dV6POI/=dSumOfYield;
+  dV6POIError/=(dSumOfYield*dSumOfYield);
   dV8POI/=dSumOfYield;
-  fchr2nd->FillIntegratedFlowPOI(dV2POI, 0.);//to be improved (errors) 
-  fchr4th->FillIntegratedFlowPOI(dV4POI, 0.);//to be improved (errors) 
-  fchr6th->FillIntegratedFlowPOI(dV6POI, 0.);//to be improved (errors) 
-  fchr8th->FillIntegratedFlowPOI(dV8POI, 0.);//to be improved (errors)  
+  dV8POIError/=(dSumOfYield*dSumOfYield);
+  fchr2nd->FillIntegratedFlowPOI(dV2POI,pow(dV2POIError,0.5)); 
+  fchr4th->FillIntegratedFlowPOI(dV4POI,pow(dV4POIError,0.5)); 
+  fchr6th->FillIntegratedFlowPOI(dV6POI,pow(dV6POIError,0.5));//to be improved (errors needed) 
+  fchr8th->FillIntegratedFlowPOI(dV8POI,pow(dV8POIError,0.5));//to be improved (errors needed)  
  }
  
  cout<<endl;
@@ -1184,10 +1192,10 @@ void AliCumulantsFunctions::Calculate()
  cout<<"flow estimates from GF-cumulants (POI):"<<endl;
  cout<<endl;     
 
- cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2POI<<" +/- "<<dV2POIError<<endl;
- cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4POI<<" +/- "<<dV4POIError<<endl;
- cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6POI<<" +/- "<<dV6POIError<<endl;
- cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8POI<<" +/- "<<dV8POIError<<endl;
+ cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2POI<<" +/- "<<pow(dV2POIError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4POI<<" +/- "<<pow(dV4POIError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6POI<<" +/- "<<pow(dV6POIError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8POI<<" +/- "<<pow(dV8POIError,0.5)<<endl;
 
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
