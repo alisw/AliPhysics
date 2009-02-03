@@ -330,8 +330,8 @@ Int_t nBinsEtaPOI = fbinEta2p1n1nPOI->GetNbinsX();
 Double_t secondOrderQCumulantDiffFlowPtPOI = 0.;
 Double_t fourthOrderQCumulantDiffFlowPtPOI = 0.;
 
-Double_t dVn2ndPOI=0.,dDiffvn2nd=0.,dYield2nd=0.,dSum2nd=0.;
-Double_t dVn4thPOI=0.,dDiffvn4th=0.,dYield4th=0.,dSum4th=0.;
+Double_t dVn2ndPOI=0.,dSd2ndPOI=0.,dDiffvn2nd=0.,dYield2nd=0.,dSum2nd=0.;
+Double_t dVn4thPOI=0.,dSd4thPOI=0.,dDiffvn4th=0.,dYield4th=0.,dSum4th=0.;
 
 Double_t dVn2ndPOIEta=0.,dDiffvn2ndEta=0.,dYield2ndEta=0.,dSum2ndEta=0.;//to be removed
 
@@ -371,19 +371,43 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
  }
 }      
 
+//---------------------------------------------------------------------------------------------------
+//integrated flow estimates from Q-cumulants (POI):
+cout<<endl;
+cout<<"**************************************"<<endl;
+cout<<"**************************************"<<endl;
+cout<<"flow estimates from Q-cumulants (POI):"<<endl;
+cout<<endl;
 //storing the final results for integrated flow (POI):
 //QC{2}
 if(dSum2nd && fchr2nd)
 {
  dVn2ndPOI/=dSum2nd;
  fchr2nd->FillIntegratedFlowPOI(dVn2ndPOI,0.);//to be improved (errors)
-}
+ cout<<" v_"<<n<<"{2} = "<<dVn2ndPOI<<" +/- "<<dSd2ndPOI<<endl;
+}else 
+ {
+  cout<<" v_"<<n<<"{2} = Im"<<endl;
+ }
+
 //QC{4}
 if(dSum4th && fchr4th)
 {
  dVn4thPOI/=dSum4th;
  fchr4th->FillIntegratedFlowPOI(dVn4thPOI,0.);//to be improved (errors)
-}
+ cout<<" v_"<<n<<"{4} = "<<dVn4thPOI<<" +/- "<<dSd4thPOI<<endl;
+}else
+ {
+  cout<<" v_"<<n<<"{4} = Im"<<endl;
+ }
+
+cout<<endl;
+cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
+cout<<"**************************************"<<endl;
+cout<<"**************************************"<<endl;
+cout<<endl;  
+//---------------------------------------------------------------------------------------------------
+
 
 //Eta:
 Double_t secondOrderQCumulantDiffFlowEtaPOI = 0.;
