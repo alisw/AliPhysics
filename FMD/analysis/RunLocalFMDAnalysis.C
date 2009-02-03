@@ -9,7 +9,8 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
   cdb->SetRun(0);
-  
+  AliFMDParameters* recopars = AliFMDParameters::Instance();
+  recopars->Init();
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init();
   if (AliGeomManager::GetGeometry() == NULL)
@@ -42,9 +43,9 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   AliAnalysisDataContainer* cdiag1 = mgr->CreateContainer("diagSharing1",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer* cdiag2 = mgr->CreateContainer("diagSharing2",TList::Class(),AliAnalysisManager::kOutputContainer,"edists.root");
   AliAnalysisDataContainer* cexchange1 = mgr->CreateContainer("exchangeESDFMD1",AliESDFMD::Class(),AliAnalysisManager::kExchangeContainer);
-  AliAnalysisDataContainer* cexchange2 = mgr->CreateContainer("listOfhists",TList::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* cexchange2 = mgr->CreateContainer("list_of_hits",TList::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer* cvertex = mgr->CreateContainer("vertex",TObjString::Class(),AliAnalysisManager::kExchangeContainer);
-  AliAnalysisDataContainer* cexchange3 = mgr->CreateContainer("BackgroundCorrectedperevent",TList::Class(),AliAnalysisManager::kOutputContainer,"testOut.root");
+  AliAnalysisDataContainer* cexchange3 = mgr->CreateContainer("list_of_hits_and_mult",TList::Class(),AliAnalysisManager::kOutputContainer,"testOut.root");
   AliAnalysisDataContainer* coutput = mgr->CreateContainer("BackgroundCorrected",TList::Class(),AliAnalysisManager::kOutputContainer,outFile);
   
   mgr->ConnectInput(FMDana0, 0 , cin_esd);   
@@ -81,7 +82,7 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   TStopwatch timer;
   timer.Start();
   cout<<"Executing analysis"<<endl;
-  mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local",chain,1000);
   timer.Stop();
   timer.Print();
 }

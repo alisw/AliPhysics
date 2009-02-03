@@ -107,10 +107,18 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
   if (old) {
     fESD->CopyFromOldESD();
   }
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   Double_t vertex[3];
-  fESD->GetVertex()->GetXYZ(vertex);
+  
+  GetVertex(vertex);
+  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0)
+    return;
   fZvtxDist->Fill(vertex[2]);
+  
+  if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
+    return;
+  
   AliESDFMD* fmd = fESD->GetFMDData();
   if (!fmd) return;
   
@@ -152,7 +160,34 @@ void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/)
   }
   */
 }
-
+//_____________________________________________________________________
+void AliFMDAnalysisTaskCollector::GetVertex(Double_t* vertexXYZ) 
+{
+  const AliESDVertex* vertex = 0;
+  vertex = fESD->GetPrimaryVertex();
+  if (!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+    vertex = fESD->GetPrimaryVertexSPD();
+  if (!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+    vertex = fESD->GetPrimaryVertexTPC();
+  
+  if (!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))    
+    vertex = fESD->GetVertex();
+  
+  if (vertex && (vertexXYZ[0] != 0 || vertexXYZ[1] != 0 || vertexXYZ[2] != 0)) {
+    vertex->GetXYZ(vertexXYZ);
+    //std::cout<<vertex->GetName()<<"   "<< vertex->GetTitle() <<"   "<< vertex->GetZv()<<std::endl;
+    return;
+  }
+  else if (fESD->GetESDTZERO()) { 
+    vertexXYZ[0] = 0;
+    vertexXYZ[1] = 0;
+    vertexXYZ[2] = fESD->GetT0zVertex();
+    
+    return;
+  }
+  
+  return;
+}
 //____________________________________________________________________
 //
 // EOF

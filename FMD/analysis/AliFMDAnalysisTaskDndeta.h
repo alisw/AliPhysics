@@ -10,6 +10,7 @@
 #include "TObjString.h"
 #include "TArrayI.h"
 #include "TH1I.h"
+#include "AliMCEvent.h"
 
 class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 {
@@ -25,7 +26,9 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
       fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
       fNevents(o.fNevents),
-      fStandalone(o.fStandalone) {}
+      fNMCevents(o.fNMCevents),
+      fStandalone(o.fStandalone),
+      fMCevent(o.fMCevent) {}
     AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -38,7 +41,10 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     void SetInputList(TList* inputList) {fInputList = inputList;}
     void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
     void SetOutputList(TList* outputList) {fOutputList = outputList;}
+    void SetMCEvent(AliMCEvent* mcevent) {fMCevent = mcevent;}
+    void ProcessPrimary();
     TList* GetOutputList() {return fOutputList;}
+    
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
@@ -47,7 +53,9 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     TObjArray*    fInputArray;
     TObjString*   fVertexString;
     TH1I          fNevents;
+    TH1I          fNMCevents;
     Bool_t        fStandalone;
+    AliMCEvent*   fMCevent;
     ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  

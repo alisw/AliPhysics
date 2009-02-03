@@ -32,7 +32,8 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity()
   fESD(0x0),
   fVertexString(),
   fVertex(0),
-  fStandalone(kTRUE)
+  fStandalone(kTRUE),
+  fStatus(kTRUE)
 {
   // Default constructor
   DefineInput (0, AliESDFMD::Class());
@@ -48,7 +49,8 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
     fESD(0x0),
     fVertexString(),
     fVertex(0),
-    fStandalone(kTRUE)
+    fStandalone(kTRUE),
+    fStatus(kTRUE)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -67,6 +69,9 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
   if(!fOutputList)
     fOutputList = new TList();
   fOutputList->SetName("density_list");
+  
+  fOutputList->Add(&fArray);
+  fOutputList->Add(&fVertexString);
   
   TH2F* hMult = 0;
   
@@ -94,14 +99,13 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
-	    vtxArray->AddAtAndExpand(hMult,i);
 	    
+	    vtxArray->AddAtAndExpand(hMult,i);
 	  }
 	} 
     }
   
-  fOutputList->Add(&fArray);
-  fOutputList->Add(&fVertexString);
+  
   
   
 }
@@ -124,8 +128,13 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   Double_t vertex[3];
   fVertex->GetXYZ(vertex);
   // Z Vtx cut
-  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) 
+  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+    fStatus = kFALSE;
     return;
+  }
+  else
+    fStatus = kTRUE;
+  
   Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
   Double_t vertexBinDouble = (vertex[2] + pars->GetVtxCutZ()) / delta;
   
@@ -153,13 +162,20 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
       
       TH2F* hMult   = (TH2F*)vtxArray->At(vtxbin);
+      
       Char_t   ring = (ir == 0 ? 'I' : 'O');
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
+      
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
-	  if(mult < 1 || mult == AliESDFMD::kInvalidMult) continue;
+	  Float_t mult_cut = 0.1;
+	  if(mult == 0 || mult == AliESDFMD::kInvalidMult) continue;
+	  //Particle number cut goes here...
+	  Float_t nParticles = 0;
+	  if(mult > mult_cut)
+	    nParticles = 1;
 	  Float_t eta = fESD->Eta(det,ring,sec,strip);
 	  Double_t x,y,z;
 	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
@@ -168,11 +184,14 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	    phi = phi+2*TMath::Pi();
 	  Float_t correction = GetAcceptanceCorrection(ring,strip);
 	  if(correction) mult = mult / correction;
-	  hMult->Fill(eta,phi,mult);
+	  hMult->Fill(eta,phi,nParticles);
+	  
 	  
 	}
       }
+      
     }
+    
 	
   
   }

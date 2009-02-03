@@ -81,9 +81,18 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   fSharing.SetInputESD(fESD);
   
   fSharing.Exec("");
-  fDensity.Exec("");
-  fBackground.Exec("");  
-  fDndeta.Exec("");
+  if(fSharing.GetEventStatus()) {
+    fDensity.Exec("");
+    if(fDensity.GetEventStatus()) {
+      fBackground.Exec("");  
+      AliMCEvent* mcevent = MCEvent();
+      fDndeta.SetMCEvent(mcevent);
+      fDndeta.Exec("");
+    }
+  }
+  else
+    return;
+  
   //fListOfHistos = fBackground.GetOutputList();
   
   PostData(1, fListOfHistos);

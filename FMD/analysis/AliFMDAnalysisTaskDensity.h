@@ -31,7 +31,8 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
       fESD(o.fESD),
       fVertexString(o.fVertexString),
       fVertex(o.fVertex),
-      fStandalone(o.fStandalone) {}
+      fStandalone(o.fStandalone),
+      fStatus(o.fStatus) {}
     AliFMDAnalysisTaskDensity& operator=(const AliFMDAnalysisTaskDensity&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option);
@@ -46,7 +47,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     void SetOutputList(TList* outlist) {fOutputList = outlist;}
     void SetInputESDFMD(AliESDFMD* esdfmd) {fESD = esdfmd;}
     void SetInputVertex(AliESDVertex* vertex) {fVertex = vertex;}
-   
+    Bool_t GetEventStatus() { return fStatus; }
  private:
     
     Int_t         fDebug;        //  Debug flag
@@ -56,6 +57,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     TObjString    fVertexString;
     AliESDVertex* fVertex;
     Bool_t        fStandalone;
+    Bool_t        fStatus;
     
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };

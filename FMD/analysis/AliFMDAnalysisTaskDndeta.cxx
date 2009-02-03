@@ -6,6 +6,7 @@
 #include <TFile.h>
 #include <TList.h>
 #include <iostream>
+#include "TH1F.h"
 #include "TH2F.h"
 #include "AliFMDAnalysisTaskDndeta.h"
 #include "AliAnalysisManager.h"
@@ -20,6 +21,7 @@
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
 #include "AliFMDGeometry.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliFMDAnalysisTaskDndeta)
 
@@ -32,7 +34,9 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
   fInputArray(0),
   fVertexString(0x0),
   fNevents(),
-  fStandalone(kTRUE)
+  fNMCevents(),
+  fStandalone(kTRUE),
+  fMCevent(0)
 {
   // Default constructor
   DefineInput (0, TList::Class());
@@ -48,7 +52,9 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fInputArray(0),
     fVertexString(0x0),
     fNevents(),
-    fStandalone(kTRUE)
+    fNMCevents(),
+    fStandalone(kTRUE),
+    fMCevent(0)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -72,8 +78,18 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   
   
   TH2F* hMult = 0;
+  TH1F* hPrimVertexBin = 0;
   
+  
+  TH2F* hBg = pars->GetBackgroundCorrection(1, 'I', 0);
+  TH1F* hPrimary = new TH1F("hMultvsEta","hMultvsEta",
+			    hBg->GetNbinsX(),
+			    hBg->GetXaxis()->GetXmin(),
+			    hBg->GetXaxis()->GetXmax());
+  hPrimary->Sumw2();
+  fOutputList->Add(hPrimary);
   Int_t nVtxbins = pars->GetNvtxBins();
+  
   
   for(Int_t det =1; det<=3;det++)
     {
@@ -104,10 +120,24 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 	} 
     }
   
+  for(Int_t i = 0; i< nVtxbins; i++) {
+   
+    hPrimVertexBin = new TH1F(Form("primmult_vtxbin%d",i),
+			      Form("primmult_vtxbin%d",i),
+			      hBg->GetNbinsX(),
+			      hBg->GetXaxis()->GetXmin(),
+			      hBg->GetXaxis()->GetXmax());
+    hPrimVertexBin->Sumw2();
+    fOutputList->Add(hPrimVertexBin);
+    
+  }
+  
   fNevents.SetBins(nVtxbins,0,nVtxbins);
   fNevents.SetName("nEvents");
+  fNMCevents.SetBins(nVtxbins,0,nVtxbins);
+  fNMCevents.SetName("nMCEvents");
   fOutputList->Add(&fNevents);
-   
+  fOutputList->Add(&fNMCevents);
   
 }
 //_____________________________________________________________________
@@ -142,6 +172,10 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
       
     }
   }
+  
+  if(fMCevent)
+    ProcessPrimary();
+  
   if(fStandalone) {
     PostData(0, fOutputList); 
   }
@@ -169,6 +203,44 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
     }
   }
   
+}
+//_____________________________________________________________________
+void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
+
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
+  AliMCParticle* particle = 0;
+  AliStack* stack = fMCevent->Stack();
+  
+  TH1F* hPrimary = (TH1F*)fOutputList->FindObject("hMultvsEta");
+  
+  Bool_t firstTrack = kTRUE;
+  Int_t nTracks = fMCevent->GetNumberOfTracks();
+  for(Int_t i = 0 ;i<nTracks;i++) {
+    particle = fMCevent->GetTrack(i);
+    if(!particle)
+      continue;
+    if(TMath::Abs(particle->Zv()) > pars->GetVtxCutZ())
+      continue;
+    if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
+      hPrimary->Fill(particle->Eta());
+      Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+      Double_t vertexBinDouble = (particle->Zv() + pars->GetVtxCutZ()) / delta;
+      Int_t    vertexBin       = (Int_t)vertexBinDouble;
+      TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_vtxbin%d",vertexBin));
+      hPrimVtxBin->Fill(particle->Eta());
+      if(firstTrack) {
+	fNMCevents.Fill(vertexBin);
+	firstTrack = kFALSE;
+      }
+    }
+      
+  }
+  
+  
+  
+  
+
 }
 //_____________________________________________________________________
 //

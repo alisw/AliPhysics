@@ -40,6 +40,7 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTask
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:
+    void          GetVertex(Double_t* vertexXYZ); 
     Int_t         fDebug;        //  Debug flag
     TChain*       fChain;        //! chained files
     AliESDEvent*  fESD;          //! ESD

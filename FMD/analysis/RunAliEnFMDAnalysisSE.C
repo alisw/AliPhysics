@@ -15,7 +15,10 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   // ESD input handler
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdHandler);
-
+  
+  AliMCEventHandler *mcHandler = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mcHandler);
+  
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
   aodHandler->SetOutputFileName("AliAODs.root");
@@ -61,7 +64,7 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   timer.Start();
   if (mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain, 1000);
+    mgr->StartAnalysis("local",chain, 100);
   }   
   timer.Stop();
   timer.Print();

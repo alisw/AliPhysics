@@ -77,7 +77,7 @@ void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
   TAlienCollection* coll =  TAlienCollection::Open(collectionfile);  
   coll->Reset();
   Int_t nFiles = 0;
-  while(coll->Next() && nFiles<10) {
+  while(coll->Next() && nFiles<2) {
     cout<<coll->GetTURL("")<<endl;
     TString test(coll->GetTURL(""));
     chain->Add(coll->GetTURL(""));

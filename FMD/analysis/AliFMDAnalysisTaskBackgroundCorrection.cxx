@@ -74,7 +74,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   
   
   TH2F* hMult = 0;
-  
+  TH2F* hHits = 0;
   Int_t nVtxbins = pars->GetNvtxBins();
   
   for(Int_t det =1; det<=3;det++)
@@ -100,16 +100,24 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      nSec, 0, 2*TMath::Pi());
 	    hMult->Sumw2();
 	    fOutputList->Add(hMult);
+	    hHits  = new TH2F(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i),
+			      hBg->GetNbinsX(),
+			      hBg->GetXaxis()->GetXmin(),
+			      hBg->GetXaxis()->GetXmax(),
+			      nSec, 0, 2*TMath::Pi());
+	    
+	    hHits->Sumw2();
+	    fOutputList->Add(hHits);
 	    vtxArray->AddAtAndExpand(hMult,i);
 	    
 	  }
 	} 
     }
-  
   if(fStandalone) {
     fOutputVertexString = new TObjString();
   }
   fOutputList->Add(fOutputVertexString);
+  
   
   
 }
@@ -161,11 +169,14 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
       TH2F* hMultTotal = (TH2F*)vtxArray->At(vtxbin);
       TH2F* hMultInput = (TH2F*)vtxInputArray->At(vtxbin);
+      TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      
+      hHits->Add(hMultInput);
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
       
       TH2F* hTmp       = (TH2F*)hMultInput->Clone("hMult_from_event");
-            
-      hTmp->Divide(hTmp,hBg,1,1,"B");
+      
+      hTmp->Divide(hTmp,hBg,1,1);//,"B");
       
       hMultTotal->Add(hTmp);
       delete hTmp;

@@ -17,7 +17,10 @@ void RunLocalFMDAnalysisSE(const Char_t* filename= "AliESDs.root", const Char_t*
   // ESD input handler
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdHandler);
-
+  
+  AliMCEventHandler *mcHandler = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mcHandler);
+  
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
   aodHandler->SetOutputFileName("AliAODs.root");
