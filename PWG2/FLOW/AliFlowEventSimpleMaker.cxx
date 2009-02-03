@@ -157,7 +157,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   //Fills the event from the MC kinematic information
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
  
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -237,7 +237,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   //Fills the event from the MC kinematic information
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   if (iNumberOfInputTracks==-1) {
     cout<<"Skipping Event -- No MC information available for this event"<<endl;
     return 0;
@@ -307,7 +307,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   //Fills the event from the ESD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -364,7 +364,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   //Fills the event from the ESD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -426,7 +426,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   //Fills the event from the AOD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -478,7 +478,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
   //Fills the event from the AOD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
   
@@ -544,7 +544,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   }
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -627,9 +627,10 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   }
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+  //  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   Int_t iNumberOfInputTracksMC = anInputMc->GetNumberOfTracks() ;
-  cerr<<"anInputMc->GetNumberOfTracks() = "<<iNumberOfInputTracksMC<<endl;
+  //  cerr<<"anInputMc->GetNumberOfTracks() = "<<iNumberOfInputTracksMC<<endl;
+  Printf("There are %d MC tracks in this event", iNumberOfInputTracksMC);
   if (iNumberOfInputTracksMC==-1) {
     cout<<"Skipping Event -- No MC information available for this event"<<endl;
     return 0;
