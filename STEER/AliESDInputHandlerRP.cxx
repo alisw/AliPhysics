@@ -27,6 +27,7 @@
 #include <TSystemDirectory.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <TObjArray.h>
 #include <TProcessID.h>
 
 #include "AliESDInputHandlerRP.h"
@@ -39,7 +40,7 @@ ClassImp(AliESDInputHandlerRP)
 //______________________________________________________________________________
 AliESDInputHandlerRP::AliESDInputHandlerRP() :
     AliESDInputHandler(),
-    fRTrees(   new TList()),
+    fRTrees(   new TObjArray()),
     fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
@@ -57,7 +58,7 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
 //______________________________________________________________________________
 AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     AliESDInputHandler(name, title),
-    fRTrees(   new TList()),
+    fRTrees(   new TObjArray()),
     fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
@@ -152,6 +153,7 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     TIter next(fRFiles);
     TFile* file;
     Int_t idx = 0;
+    
     while ((file = (TFile*) next()))
     {
 	file->GetObject(folder, fDirR);
@@ -160,7 +162,7 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
 	    return kFALSE;
 	}
 	TTree* tree = 0;
-	fDirR ->GetObject("TreeR", tree);
+	fDirR->GetObject("TreeR", tree);
 	fRTrees->AddAt(tree, idx++);
     }
     return kTRUE;
@@ -216,6 +218,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     if (fPathName->Contains(".zip")) fIsArchive = kTRUE;
 
     TSeqCollection* members;
+
     
     if (fIsArchive) {
 	// Archive
@@ -227,15 +230,14 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	TSystemDirectory dir(".", fPathName->Data());
 	members = dir.GetListOfFiles();
     }
-    
+
     TIter next(members);
     TFile* entry;
     Int_t ien = 0;
-    fRTrees->Clear();
+    fDetectors->Delete();
     
     while ( (entry = (TFile*) next()) )
     {
-	printf("File %s \n", entry->GetName());
 	TString name(entry->GetName());
 	TObjArray* tokens = name.Tokenize(".");
 	Int_t ntok = tokens->GetEntries();
@@ -243,8 +245,9 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	TString str = ((TObjString*) tokens->At(1))->GetString();
 	if (!(strcmp(str.Data(), "RecPoints"))){
 	    TString det = ((TObjString*) tokens->At(0))->GetString();
-	    printf("Name  %s \n", det.Data());
+	    printf("Found file with RecPoints for %s \n", det.Data());
 	    TNamed* ent = new TNamed(det.Data(), det.Data());
+	    fRTrees->AddAt(0, ien);
 	    ent->SetUniqueID(ien++);
 	    fDetectors->Add(ent);
 	}
@@ -274,8 +277,7 @@ Bool_t AliESDInputHandlerRP::FinishEvent()
 void AliESDInputHandlerRP::ResetIO()
 {
 // Delete trees and files
-//    fRTrees->Clear();
-    fRFiles->Clear();
+    fRFiles->Delete();
     fExtension="";
 }
 

@@ -41,7 +41,7 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     AliESDInputHandlerRP(const AliESDInputHandlerRP& handler);             
     AliESDInputHandlerRP& operator=(const AliESDInputHandlerRP& handler);  
  private:
-    TList*          fRTrees;           // List of RecPoint Trees
+    TObjArray*      fRTrees;           // List of RecPoint Trees
     TList*          fRFiles;           // List of RecPoint Files
     TList*          fDetectors;        // List of detector names
     TDirectoryFile *fDirR;             //! Directory for RP Tree
