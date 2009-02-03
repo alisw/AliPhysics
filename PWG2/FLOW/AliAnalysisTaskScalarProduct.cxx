@@ -297,7 +297,7 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   //  PostData(0,fListHistos);
 
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histgram list in Terminate" << endl;
+  // cout << "histgram list in Terminate" << endl;
   if (fListHistos)  {
     //    fListHistos->Print();
   }	

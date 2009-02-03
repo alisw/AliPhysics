@@ -1,9 +1,4 @@
-// from CreateESDChain.C - instead of  #include "CreateESDChain.C"
-TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
-TChain* CreateAODChain(const char* aDataDir = "AODfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
-void LookupWrite(TChain* chain, const char* target) ;
-
- ///////////////////////////////////////////////////////////////////////////////// 	 
+///////////////////////////////////////////////////////////////////////////////// 	 
 // 	 
 // HOW TO USE THIS MACRO: 	 
 // 	 
@@ -39,13 +34,13 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 //Flow analysis methods can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kFALSE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kFALSE;
-Bool_t QC    = kFALSE;
-Bool_t FQD   = kFALSE;
-Bool_t MCEP  = kFALSE;
+Bool_t GFC   = kTRUE;
+Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
+Bool_t MCEP  = kTRUE;
 
 
 //Type of analysis can be:
@@ -53,13 +48,13 @@ Bool_t MCEP  = kFALSE;
 const TString type = "ESD";
 
 //Bolean to fill/not fill the QA histograms
-Bool_t QA = kTRUE;    
+Bool_t QA = kFALSE;    
 
 //SETTING THE CUTS
 
 //for integrated flow
 const Double_t ptmin1 = 0.0;
-const Double_t ptmax1 = 1000.0;
+const Double_t ptmax1 = 10.0;
 const Double_t ymin1  = -1.;
 const Double_t ymax1  = 1.;
 const Int_t mintrackrefsTPC1 = 2;
@@ -72,7 +67,7 @@ const Int_t maxnsigmatovertex1 = 3;
 
 //for differential flow
 const Double_t ptmin2 = 0.0;
-const Double_t ptmax2 = 1000.0;
+const Double_t ptmax2 = 10.0;
 const Double_t ymin2  = -1.;
 const Double_t ymax2  = 1.;
 const Int_t mintrackrefsTPC2 = 2;
@@ -84,18 +79,16 @@ const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
 
-void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
   TStopwatch timer;
   timer.Start();
   
   if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-  
   if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  
   
   // include path (to find the .h files when compiling)
   gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
@@ -115,10 +108,10 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
   cerr<<"libPWG2flow.so loaded..."<<endl;
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
-  if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);
-  cout<<"chain ("<<chain<<")"<<endl; }
-  else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);
-  cout<<"chain ("<<chain<<")"<<endl; }
+  if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
+  //  cout<<"chain ("<<chain<<")"<<endl; }
+  else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
+  //  cout<<"chain ("<<chain<<")"<<endl; }
  
   //____________________________________________//
   //Create cuts using correction framework
@@ -892,7 +885,7 @@ TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
 	  presentDirName += "/";
 	  presentDirName += presentDir->GetName();	  
 	  chain->Add(presentDirName + "/AliESDs.root/esdTree");
-	  cerr<<presentDirName<<endl;
+	  //  cerr<<presentDirName<<endl;
 	}
       
     }
@@ -982,7 +975,7 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
 	  presentDirName += "/";
 	  presentDirName += presentDir->GetName();	  
 	  chain->Add(presentDirName + "/AliAOD.root/aodTree");
-	  cerr<<presentDirName<<endl;
+	  // cerr<<presentDirName<<endl;
 	}
       
     }
@@ -1019,25 +1012,3 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 }
 
-
-
-void LookupWrite(TChain* chain, const char* target)
-{
-  // looks up the chain and writes the remaining files to the text file target
-  
-  chain->Lookup();
-  
-  TObjArray* list = chain->GetListOfFiles();
-  TIterator* iter = list->MakeIterator();
-  TObject* obj = 0;
-  
-  ofstream outfile;
-  outfile.open(target);
-  
-  while ((obj = iter->Next()))
-    outfile << obj->GetTitle() << "#AliESDs.root" << endl;
-  
-  outfile.close();
-  
-  delete iter;
-}
