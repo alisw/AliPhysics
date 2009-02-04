@@ -25,6 +25,7 @@ public:
 		    kTOF   = 4,
 		    kMUON  = 5,
 		    kHMPID = 6,
+		    kT0    = 7,
 		    kFMD   = 12
     };
   AliTrackReference();
