@@ -244,7 +244,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   }
   Double_t GetMinLambdaSA() const {return fMinLambdaSA;}
   Double_t GetMaxLambdaSA() const {return fMaxLambdaSA;}
-
+  
+  void   SetSAMinClusterCharge(Float_t minq=0.) {fMinClusterChargeSA=minq;}
+  Float_t GetSAMinClusterCharge() const {return fMinClusterChargeSA;}
 
   void   SetSAOnePointTracks() { fSAOnePointTracks=kTRUE; return; }
   Bool_t GetSAOnePointTracks() const { return fSAOnePointTracks; }
@@ -439,7 +441,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t fMaxPhiSA;               // maximum phi value for SA windows
   Double_t fMinLambdaSA;            // minimum lambda value for SA windows
   Double_t fMaxLambdaSA;            // maximum lambda value for SA windows
-
+  Float_t  fMinClusterChargeSA;     // minimum SDD,SSD cluster charge for SA tarcker
   Bool_t fSAOnePointTracks; // one-cluster tracks in SA (only for cosmics!)
   Bool_t fSAUseAllClusters; // do not skip clusters used by MI (same track twice in AliESDEvent!)
 
@@ -461,7 +463,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
-  ClassDef(AliITSRecoParam,13) // ITS reco parameters
+  ClassDef(AliITSRecoParam,14) // ITS reco parameters
 };
 
 #endif

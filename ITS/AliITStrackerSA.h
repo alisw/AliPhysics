@@ -57,6 +57,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   void SetFixedWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void SetCalculatedWindowSizes(Int_t n=10, Float_t phimin=0.002, Float_t phimax=0.0145, Float_t lambdamin=0.003, Float_t lambdamax=0.008);
 
+  void SetMinimumChargeSDDSSD(Float_t minq=0.){fMinQ=minq;}
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
  protected:
@@ -114,11 +115,12 @@ class AliITStrackerSA : public AliITStrackerMI {
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
   Int_t fOuterStartLayer;     // Search for tracks with <6 points: outer layer to start from
+  Float_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,7)
+  ClassDef(AliITStrackerSA,8)
 };
 
 #endif

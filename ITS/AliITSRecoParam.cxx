@@ -132,6 +132,7 @@ fMinPhiSA(0.002),
 fMaxPhiSA(0.0145),
 fMinLambdaSA(0.003),
 fMaxLambdaSA(0.008),
+fMinClusterChargeSA(0.),
 fSAOnePointTracks(kFALSE),
 fSAUseAllClusters(kFALSE),
 fFindV0s(kTRUE),
@@ -369,8 +370,9 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->fSigmaXDeadZoneHit2 = 0.004/12.;
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
-  param->SetNLoopsSA(10);
-
+  param->SetNLoopsSA(20);
+  param->fMaxPhiSA = 0.07;
+  param->fMaxLambdaSA = 0.04;
   return param;
 }
 //_____________________________________________________________________________

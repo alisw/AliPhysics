@@ -62,6 +62,7 @@ fListOfSATracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fOuterStartLayer(0),
+fMinQ(0.),
 fCluLayer(0),
 fCluCoord(0){
   // Default constructor
@@ -87,6 +88,7 @@ fListOfSATracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fOuterStartLayer(0),
+fMinQ(0.),
 fCluLayer(0),
 fCluCoord(0) 
 {
@@ -119,6 +121,7 @@ fListOfSATracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fOuterStartLayer(0),
+fMinQ(0.),
 fCluLayer(0),
 fCluCoord(0)
 {
@@ -149,6 +152,7 @@ fListOfSATracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fOuterStartLayer(0),
+fMinQ(0.),
 fCluLayer(0),
 fCluCoord(0)
 {
@@ -180,6 +184,7 @@ fListOfSATracks(tracker.fListOfSATracks),
 fITSclusters(tracker.fITSclusters),
 fSixPoints(tracker.fSixPoints),
 fOuterStartLayer(tracker.fOuterStartLayer),
+fMinQ(tracker.fMinQ),
 fCluLayer(tracker.fCluLayer),
 fCluCoord(tracker.fCluCoord) {
   // Copy constructor
@@ -289,6 +294,7 @@ void AliITStrackerSA::Init(){
       Double_t lambmax=AliITSReconstructor::GetRecoParam()->GetMaxLambdaSA();
       SetCalculatedWindowSizes(nLoops,phimin,phimax,lambmin,lambmax);
     }
+    fMinQ=AliITSReconstructor::GetRecoParam()->GetSAMinClusterCharge();
     fITSclusters = 0;
     SetSixPoints();
     SetOuterStartLayer(0);
@@ -364,6 +370,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
 	if(cls->TestBit(kSAflag)==kTRUE) continue; //clusters used by TPC prol.
 	if(cls->GetQ()==0) continue; //fake clusters dead zones
+	if(i>1 && cls->GetQ()<=fMinQ) continue; // cut on SDD and SSD cluster charge
 	nclusters[i]++;
       }
     }
@@ -383,6 +390,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
 	if(cls->TestBit(kSAflag)==kTRUE) continue;
 	if(cls->GetQ()==0) continue;
+	if(ilay>1 && cls->GetQ()<=fMinQ) continue; 
 	Double_t phi=0;Double_t lambda=0;
 	Float_t x=0;Float_t y=0;Float_t z=0;
 	Float_t sx=0;Float_t sy=0;Float_t sz=0;
@@ -422,11 +430,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
       
 	if(!cl) continue;
 	if (cl->GetQ()<=0) continue;
-      
+
 	AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(0,ncl); 
 	fPhic = arr->GetPhi();
 	fLambdac = arr->GetLambda();
-	if (TMath::Abs(fLambdac)>0.26*TMath::Pi()) continue;
 	fPhiEstimate = fPhic;
 	AliITStrackSA* trs = new AliITStrackSA(); 
 	fPoint1[0]=primaryVertex[0];
@@ -1040,6 +1047,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->At(index);
     if (!c) continue;
     if (c->GetQ()<=0) continue;
+    if(layer>1 && c->GetQ()<=fMinQ) continue;
     
      AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
      Double_t phi = arr->GetPhi();
