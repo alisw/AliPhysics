@@ -63,7 +63,7 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fDoPP(false),
   fDoPbPb(false),
   fMultiplicity(4000),
-  fBField(0.4),
+  fBField(0.5),
   fnonvertextracking(kFALSE),
   fmainvertextracking(kTRUE),
   fPhisegment(50),
@@ -735,12 +735,17 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
 	continue;
       } 
       else if (argument.CompareTo("-solenoidBz")==0 || argument.CompareTo("-bfield")==0) {
-	if(argument.CompareTo("-bfield")==0){
-	  HLTWarning("-bfield is the old way. The field is set, but please use -solenoidBz.");
-	}
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
+	fBField=fBField/10.0;
+	continue;
+      } 
+      else if (argument.CompareTo("-bfield")==0) {
+	HLTWarning("-bfield is the old way. The field is set, but please use -solenoidBz.");
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Magnetic field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fBField=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } 
       else if (argument.CompareTo("-etarange")==0) {
