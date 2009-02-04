@@ -44,8 +44,6 @@ class AliTRDcluster;
 class AliTRDtrackV1;
 class AliTRDtrack;
 class AliTRDseedV1;
-class AliTRDmcm;
-class AliTRDmcmTracklet;
 class AliTRDgeometry;
 class AliTRDCalDet;
 class AliTRDCalROC;
@@ -76,10 +74,6 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Int_t   ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
-
-	  Int_t   ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQV1(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQV1(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;
@@ -278,12 +272,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Calibration on DAQ
 
 	  Int_t    FillDAQ(Double_t phvalue[16][144][36]);
-	  Int_t    FillDAQ(AliTRDmcm *mcm);
-	  Int_t    TestTracklet( Int_t idet, Int_t row, Int_t iSeed, AliTRDmcm *mcm);
 	  Bool_t   UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/, Int_t timebin, Float_t signal, Int_t nbtimebins);
-	  Int_t    UpdateHistogramcm(AliTRDmcmTracklet *trk);
-
-  // row col calibration groups stuff
+	  
+ // row col calibration groups stuff
           Bool_t   LocalisationDetectorXbins(Int_t detector);
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
 	  void     CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col);
