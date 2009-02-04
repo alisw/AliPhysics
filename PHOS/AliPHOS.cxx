@@ -95,6 +95,7 @@ class TFile;
 #include "AliPHOSPulseGenerator.h"
 #include "AliDAQ.h"
 #include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawDecoderv1.h"
 #include "AliPHOSCalibData.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
@@ -629,3 +630,50 @@ void AliPHOS::SetTreeAddress()
   }
 }
 
+//____________________________________________________________________________ 	 
+Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader) 	 
+{ 	 
+	  	 
+  AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ; 	 
+	  	 
+  TTree * tree = 0 ; 	 
+  tree = loader->TreeS() ; 	 
+  if ( !tree ) { 	 
+    loader->MakeTree("S"); 	 
+    tree = loader->TreeS() ; 	 
+  } 	 
+	  	 
+  TClonesArray * sdigits = loader->SDigits() ; 	 
+  if(!sdigits) { 	 
+    loader->MakeSDigitsArray(); 	 
+    sdigits = loader->SDigits(); 	 
+  } 	 
+  sdigits->Clear(); 	 
+	  	 
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  AliAltroMapping *mapping[4];
+  for(Int_t i = 0; i < 4; i++) {
+    mapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
+  AliPHOSRawDecoderv1 dc(rawReader,mapping); 	 
+
+  dc.SubtractPedestals(AliPHOSSimParam::GetInstance()->EMCSubtractPedestals());
+  dc.SetAmpOffset(AliPHOSSimParam::GetInstance()->GetGlobalAltroOffset());
+  dc.SetAmpThreshold(AliPHOSSimParam::GetInstance()->GetGlobalAltroThreshold());
+
+  AliPHOSRawDigiProducer pr;
+  pr.SetSampleQualityCut(AliPHOSSimParam::GetInstance()->GetEMCSampleQualityCut()); 	 
+  pr.MakeDigits(sdigits,&dc); 	 
+	  	 
+  Int_t bufferSize = 32000 ; 	 
+  // TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize); 	 
+  tree->Branch("PHOS",&sdigits,bufferSize); 	 
+  tree->Fill(); 	 
+	  	 
+  fLoader->WriteSDigits("OVERWRITE"); 	 
+  return kTRUE; 	 
+  
+}

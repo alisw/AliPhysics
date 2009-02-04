@@ -71,6 +71,19 @@ public:
   void    SetStreamDigits(Int_t i){if(i<10)fDStream[i]=kTRUE;}
   Bool_t  IsStreamDigits(Int_t i){return fDStream[i]; }
 
+  //Parameters for RAW embedding
+  void SetEMCSubtractPedestals(Bool_t subtract) { fEMCSubtractPedestals = subtract;}
+  Bool_t  EMCSubtractPedestals()      const { return fEMCSubtractPedestals;    }
+
+  void SetGlobalAltroOffset(Int_t offset)  { fGlobalAltroOffset = offset ; }
+  Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;  }
+
+  void SetGlobalAltroThreshold(Int_t ZSth) { fGlobalAltroThreshold = ZSth; }
+  Int_t   GetGlobalAltroThreshold()   const { return fGlobalAltroThreshold;}
+
+  void SetSampleQualityCut(Float_t qcut) { fEMCSampleQualityCut=qcut; }
+  Float_t GetEMCSampleQualityCut()    const { return fEMCSampleQualityCut; }
+
 private:
 
   AliPHOSSimParam(Int_t i); //True constructor which should be called by GetInstance()
@@ -90,6 +103,12 @@ private:
   Float_t fTOFa  ;              //constant term of TOF resolution 
   Float_t fTOFb  ;              //stohastic term of TOF resolution 
 
+  //Parameters used for RAW embedding
+  Bool_t  fEMCSubtractPedestals;   // true if pedestal should be subtracted (in non-ZS)
+  Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
+  Int_t   fGlobalAltroThreshold ;  // Threshold used in ALTRO chips in SZ runs
+  Float_t fEMCSampleQualityCut;    // Cut on pulse shape fit quality
+
   //CPV parameters
   Float_t fADCpedestalCpv ;    //Pedestal value
   Float_t fADCchanelCpv ;      //ADC channel width
@@ -102,7 +121,7 @@ private:
 
   static AliPHOSSimParam * fgSimParam ; // pointer to the unique instance of the class
 
-  ClassDef(AliPHOSSimParam,1)
+  ClassDef(AliPHOSSimParam,2)
 };
 
 #endif

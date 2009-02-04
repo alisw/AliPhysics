@@ -31,6 +31,8 @@ AliPHOSSimParam::AliPHOSSimParam() :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fEMCSubtractPedestals(kFALSE),
+  fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(0),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
@@ -46,6 +48,8 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fEMCSubtractPedestals(kFALSE),
+  fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(0),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),
   fNADCcpv(0),
@@ -89,6 +93,10 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fCPVDigitThreshold  = 0.09 ;   // [aux units]
   fNADCcpv  =  (Int_t)TMath::Power(2,12) ;
 
+  fGlobalAltroOffset = 10;
+  fGlobalAltroThreshold = 5;
+  fEMCSampleQualityCut = 4.;
+
   //Imput streams for merging. If true => this stream contains digits (and thus noise) and not SDigits.
   for(Int_t i=0; i<10; i++){
     fDStream[i] = 0 ;
@@ -103,6 +111,8 @@ AliPHOSSimParam::AliPHOSSimParam(const AliPHOSSimParam& ):
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fEMCSubtractPedestals(kFALSE),
+  fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(1.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
