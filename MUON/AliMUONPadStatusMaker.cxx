@@ -450,8 +450,7 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
   
   switch ( AliMpDEManager::GetStationType(detElemId) )
   {
-    case AliMp::kStation1:
-    case AliMp::kStation2:
+    case AliMp::kStation12:
     {
       int sector = hvNamer.ManuId2Sector(detElemId,manuId);
       if ( sector >= 0 ) 

@@ -19,9 +19,10 @@
 #include <TExMap.h>
 
 #include "AliMpArrayI.h"
-#include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpCathodType.h"
+#include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 
 #ifndef ALI_MP_EX_MAP_H
 #  include "AliMpExMap.h"
@@ -53,10 +54,11 @@ class AliMpDetElement : public  TObject {
     TString GetSegType() const;
     TString GetSegName(AliMp::CathodType cath) const;
 
-    AliMp::PlaneType   GetPlaneType(AliMp::CathodType cath) const;
-    AliMp::CathodType  GetCathodType(AliMp::PlaneType planeType) const;
-    AliMp::CathodType  GetCathodTypeFromManuId(Int_t manuId) const;
-    AliMp::StationType GetStationType() const;
+    AliMp::PlaneType     GetPlaneType(AliMp::CathodType cath) const;
+    AliMp::CathodType    GetCathodType(AliMp::PlaneType planeType) const;
+    AliMp::CathodType    GetCathodTypeFromManuId(Int_t manuId) const;
+    AliMp::StationType   GetStationType() const;
+    AliMq::Station12Type GetStation12Type() const;
     
     Int_t  GetNofBusPatches() const;
     Int_t  GetBusPatchId(Int_t index) const;

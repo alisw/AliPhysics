@@ -157,6 +157,8 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
   TString deName = de->GetDEName();
   AliMp::StationType stationType 
     =  AliMpDEManager::GetStationType(de->GetId());
+  AliMq::Station12Type station12Type 
+    =  AliMpDEManager::GetStation12Type(de->GetId());
 
   // Nothing to be done for trigger
   if ( stationType == AliMp::kStationTrigger ) {
@@ -168,7 +170,8 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
 
   istream& in 
     = fDataStreams.
-        CreateDataStream(AliMpFiles::ManuToSerialPath(deName, stationType));
+        CreateDataStream(
+          AliMpFiles::ManuToSerialPath(deName, stationType, station12Type));
 
   char line[80];
 
@@ -298,12 +301,14 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
     TString deName = detElement->GetDEName();
     AliMp::StationType stationType 
       =  AliMpDEManager::GetStationType(detElemId);
+    AliMq::Station12Type station12Type 
+      =  AliMpDEManager::GetStation12Type(detElemId);
       
     if ( stationType == AliMp::kStationTrigger ) continue;  
 
     // Create directory if it does not yet exist
     //
-    TString dirPath = outDir + AliMpFiles::StationDataDir(stationType);
+    TString dirPath = outDir + AliMpFiles::StationDataDir(stationType, station12Type);
     if ( ! gSystem->OpenDirectory(dirPath.Data()) ) {
       AliDebugStream(2) << "Making directory " <<  dirPath.Data() << endl;
       gSystem->mkdir(dirPath.Data());
@@ -311,7 +316,7 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
 
     // Compose output file path 
     //
-    string dataPath = AliMpFiles::ManuToSerialPath(deName, stationType).Data();
+    string dataPath = AliMpFiles::ManuToSerialPath(deName, stationType, station12Type).Data();
     string top = AliMpFiles::GetTop().Data();
     if ( dataPath.find(top) != string::npos ) dataPath.erase(0, top.size()+1);
     dataPath.erase(0,dataPath.find('/')+1);

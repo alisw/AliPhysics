@@ -292,8 +292,7 @@ AliMpDCSNamer::DetElemId2DCS(Int_t detElemId, Int_t& side, Int_t &chId) const
 
   switch ( AliMpDEManager::GetStationType(detElemId) )
   {
-    case AliMp::kStation1:
-    case AliMp::kStation2:
+    case AliMp::kStation12:
     {
       switch (dcsNumber)
       {
@@ -388,8 +387,7 @@ const char*
 
   switch (AliMpDEManager::GetStationType(detElemId))
   {
-    case AliMp::kStation1:
-    case AliMp::kStation2:
+    case AliMp::kStation12:
       return Form(fgkDCSChannelSt12Pattern[side],chamberId,dcsNumber,sector);
       break;
     case AliMp::kStation345:
@@ -598,8 +596,7 @@ AliMpDCSNamer::GenerateAliases() const
       {
 	switch ( AliMpDEManager::GetStationType(detElemId) )
 	{
-	case AliMp::kStation1:
-	case AliMp::kStation2:
+	case AliMp::kStation12:
 	  for ( int sector = 0; sector < 3; ++sector)
 	  {
 	    aliases->Add(new TObjString(DCSChannelName(detElemId,sector)));
@@ -649,7 +646,7 @@ AliMpDCSNamer::ManuId2Index(Int_t detElemId, Int_t manuId) const
   {
     return ManuId2PCBIndex(detElemId,manuId);
   }
-  else if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) 
+  else if ( stationType == AliMp::kStation12 ) 
   {
     return ManuId2Sector(detElemId,manuId);
   }
@@ -692,9 +689,9 @@ AliMpDCSNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
   Double_t x = lowerLeft.X()*10.0; // cm -> mm
   Int_t isector(-1);
 
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+  AliMq::Station12Type stationType = AliMpDEManager::GetStation12Type(detElemId);
   
-  if ( stationType == AliMp::kStation1 ) 
+  if ( stationType == AliMq::kStation1 ) 
   {
     if ( x < -10 ) AliFatal("");
     
@@ -746,8 +743,7 @@ Bool_t AliMpDCSNamer::CheckConsistency(Int_t detElemId) const
   TString requestInfo;
   switch(AliMpDEManager::GetStationType(detElemId))
   {
-  case AliMp::kStation1:
-  case AliMp::kStation2:
+  case AliMp::kStation12:
   case AliMp::kStation345:
     if (fDetector == kTrackerDet) isConsistent = kTRUE;
     requestInfo = "TRACKER";

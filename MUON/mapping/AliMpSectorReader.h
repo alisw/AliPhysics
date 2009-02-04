@@ -15,7 +15,7 @@
 
 #include <TObject.h>
 
-#include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 #include "AliMpPlaneType.h"
 #include "AliMpXDirection.h"
 #include "AliMpIntPair.h"
@@ -39,7 +39,7 @@ class AliMpSectorReader : public TObject
 {
   public:
     AliMpSectorReader(const AliMpDataStreams& dataStreams,
-                      AliMp::StationType station, AliMp::PlaneType plane);
+                      AliMq::Station12Type station, AliMp::PlaneType plane);
     virtual ~AliMpSectorReader();
   
     // methods   
@@ -80,11 +80,11 @@ class AliMpSectorReader : public TObject
     static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
-    const AliMpDataStreams&  fDataStreams; ///< data streams
-    AliMp::StationType  fStationType; ///< station type 
-    AliMp::PlaneType    fPlaneType;   ///< plane type 
-    AliMpSector*        fSector;      ///< sector
-    AliMpMotifReader*   fMotifReader; ///< motif reader
+    const AliMpDataStreams&    fDataStreams; ///< data streams
+    AliMq::Station12Type  fStationType; ///< station type 
+    AliMp::PlaneType      fPlaneType;   ///< plane type 
+    AliMpSector*          fSector;      ///< sector
+    AliMpMotifReader*     fMotifReader; ///< motif reader
 
   ClassDef(AliMpSectorReader,0)  // Data reader
 };

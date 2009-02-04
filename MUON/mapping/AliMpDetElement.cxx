@@ -160,17 +160,38 @@ AliMp::StationType AliMpDetElement::GetStationType() const
   Int_t chamberId = AliMpDEManager::GetChamberId(fId, false);
   if ( ! AliMpDEManager::IsValidChamberId(chamberId, true) ) {
     AliFatal("Cannot return AliMp::StationType value.");
-    return AliMp::kStation1;
+    return AliMp::kStation12;
   }  
   
-  if ( chamberId ==  0 || chamberId ==  1 )  return AliMp::kStation1;
-  if ( chamberId ==  2 || chamberId ==  3 )  return AliMp::kStation2;
+  if ( chamberId >=  0 && chamberId <=  3 )  return AliMp::kStation12;
   if ( chamberId >=  4 && chamberId <=  9 )  return AliMp::kStation345;
   if ( chamberId >= 10 && chamberId <= 13 )  return AliMp::kStationTrigger;
 
   // Should never get to this line
   AliFatal("Cannot return AliMp::StationType value.");
-  return AliMp::kStation1;
+  return AliMp::kStation12;
+}
+
+//______________________________________________________________________________
+AliMq::Station12Type AliMpDetElement::GetStation12Type() const
+{
+/// Return station12 type                                                      \n
+/// Failure causes Fatal error - as AliMp::Station12Type has no possibility
+/// to return undefined value
+
+  Int_t chamberId = AliMpDEManager::GetChamberId(fId, false);
+  if ( ! AliMpDEManager::IsValidChamberId(chamberId, true) ) {
+    AliFatal("Cannot return AliMp::StationType value.");
+    return AliMq::kNotSt12;
+  }  
+  
+  if ( chamberId ==  0 || chamberId ==  1 )  return AliMq::kStation1;
+  if ( chamberId ==  2 || chamberId ==  3 )  return AliMq::kStation2;
+  if ( chamberId >=  4 || chamberId <= 13 )  return AliMq::kNotSt12;
+
+  // Should never get to this line
+  AliFatal("Cannot return AliMp::StationType value.");
+  return AliMq::kNotSt12;
 }
 
 //______________________________________________________________________________

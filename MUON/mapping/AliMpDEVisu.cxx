@@ -476,7 +476,7 @@ void AliMpDEVisu::DrawQuadrant(Option_t* option, Bool_t popup)
   canvas->Clear();
   
   AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
-  AliMp::StationType  station = detElem->GetStationType();
+  AliMq::Station12Type  station = detElem->GetStation12Type();
 
   AliMpDataStreams dataStreams;
   

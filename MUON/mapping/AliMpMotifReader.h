@@ -18,6 +18,7 @@
 #include "AliMpContainers.h"
 
 #include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 #include "AliMpPlaneType.h"
 #include "AliMpIntPair.h"
 #include "AliMpContainers.h"
@@ -56,7 +57,9 @@ class AliMpMotifReader : public TObject
 
   public:
     AliMpMotifReader(const AliMpDataStreams& dataStreams,
-                     AliMp::StationType station, AliMp::PlaneType plane);
+                     AliMp::StationType station, 
+                     AliMq::Station12Type station12,
+                     AliMp::PlaneType plane);
     virtual ~AliMpMotifReader();
   
     // methods   
@@ -76,8 +79,9 @@ class AliMpMotifReader : public TObject
 
     // data members  
     const AliMpDataStreams& fDataStreams; ///< data streams
-    AliMp::StationType  fStationType; ///< station type 
-    AliMp::PlaneType    fPlaneType;   ///< plane type 
+    AliMp::StationType    fStationType;   ///< station type 
+    AliMq::Station12Type  fStation12Type; ///< station12 type 
+    AliMp::PlaneType      fPlaneType;     ///< plane type 
 
   ClassDef(AliMpMotifReader,0)  // Data reader
 };

@@ -20,6 +20,7 @@
 #include "AliMpExMap.h"
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 #include "AliMpIntPair.h"
 
 class AliMpDetElement;
@@ -54,10 +55,9 @@ class AliMpDEStore : public  TObject {
 
     // methods
     Bool_t IsPlaneType(const TString& planeTypeName);
-    AliMp::PlaneType   PlaneType(const TString& planeTypeName);
-    AliMp::StationType StationType(const TString& stationTypeName);
-
-    Bool_t ReadDENames(AliMp::StationType stationType);
+ 
+    Bool_t ReadDENames(AliMp::StationType stationType, 
+                       AliMq::Station12Type station12Type = AliMq::kNotSt12);
     void   FillDEs();
 
     // static data members	

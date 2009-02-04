@@ -89,7 +89,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
                              AliMp::kStation345, pcbType));
  
   AliMpMotifReader reader(fDataStreams, 
-                          AliMp::kStation345,AliMp::kNonBendingPlane); 
+                          AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for station345, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory

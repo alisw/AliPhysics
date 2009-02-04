@@ -19,8 +19,6 @@
 TString AliMp::StationTypeName(AliMp::StationType stationType)
 {
   switch ( stationType ) {
-    case kStation1:       return "st1";     break;
-    case kStation2:       return "st2";     break;
     case kStation12:      return "st12";    break;
     case kStation345:     return "slat";    break;
     case kStationTrigger: return "trigger"; break;

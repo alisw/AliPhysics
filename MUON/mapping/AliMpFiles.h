@@ -21,6 +21,7 @@
 #include <TObject.h>
 
 #include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 #include "AliMpPlaneType.h"
 
 #include <TString.h>
@@ -37,6 +38,12 @@ class AliMpFiles : public TObject
     // methods
     //
     
+    static TString PlaneDataDir(AliMp::StationType station, 
+                                AliMq::Station12Type station12Type,
+                                AliMp::PlaneType plane);
+    static TString StationDataDir(AliMp::StationType station,
+                                AliMq::Station12Type station12Type);
+  
     // bus patch
     //
     static TString BusPatchFilePath(); 
@@ -45,7 +52,8 @@ class AliMpFiles : public TObject
 
     // de names
     //
-    static TString DENamesFilePath(AliMp::StationType stationType);
+    static TString DENamesFilePath(AliMp::StationType stationType,
+                                   AliMq::Station12Type station12Type);
 
     // trigger
     //
@@ -60,34 +68,37 @@ class AliMpFiles : public TObject
                                 const char* pcbType);
     // sectors
     //
-    static TString SectorFilePath(AliMp::StationType station, 
+    static TString SectorFilePath(AliMq::Station12Type station, 
                                   AliMp::PlaneType plane);
-    static TString SectorSpecialFilePath(AliMp::StationType station, 
+    static TString SectorSpecialFilePath(AliMq::Station12Type station, 
                                   AliMp::PlaneType plane);
-    static TString SectorSpecialFilePath2(AliMp::StationType station, 
+    static TString SectorSpecialFilePath2(AliMq::Station12Type station, 
                                   AliMp::PlaneType plane);
     // motifs
     //
     static TString MotifFilePath(AliMp::StationType station, 
+                                 AliMq::Station12Type station12Type,
                                  AliMp::PlaneType plane, 
                                  const TString& motifTypeID);
     static TString MotifFileName(const TString& motifTypeID);
     static TString MotifSpecialFilePath(AliMp::StationType station,
+                                 AliMq::Station12Type station12Type,
                                  AliMp::PlaneType plane, const TString& motifID);
     static TString MotifSpecialFileName(const TString& motifID);
     static TString PadPosFilePath(AliMp::StationType station, 
+                                 AliMq::Station12Type station12Type,
                                  AliMp::PlaneType plane, const TString& motifTypeID);
     static TString PadPosFileName(const TString& motifTypeID);
 
-    static TString BergToGCFilePath(AliMp::StationType station);
+    static TString BergToGCFilePath(AliMp::StationType station,
+                                 AliMq::Station12Type station12Type);
 
-    static TString ManuToSerialPath(const TString& deName, AliMp::StationType station);
+    static TString ManuToSerialPath(const TString& deName, 
+                                 AliMp::StationType station,
+                                 AliMq::Station12Type station12Type);
 
     static TString SerialToBinFilePath();
 
-    static TString PlaneDataDir(AliMp::StationType station, AliMp::PlaneType plane); 
-    static TString StationDataDir(AliMp::StationType station); 
-  
     // set methods
     static void SetTopPath(const TString& topPath);
     static TString GetTop();

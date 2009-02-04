@@ -75,14 +75,14 @@ const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
 
 //_____________________________________________________________________________
 AliMpSectorReader::AliMpSectorReader(const AliMpDataStreams& dataStreams,
-                                     AliMp::StationType station, 
+                                     AliMq::Station12Type station, 
                                      AliMp::PlaneType plane) 
   : TObject(),
     fDataStreams(dataStreams),
     fStationType(station),
     fPlaneType(plane),
     fSector(0),
-    fMotifReader(new AliMpMotifReader(dataStreams, station, plane))
+    fMotifReader(new AliMpMotifReader(dataStreams, AliMp::kStation12, station, plane))
  
 {
 /// Standard constructor

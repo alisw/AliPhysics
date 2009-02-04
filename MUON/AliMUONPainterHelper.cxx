@@ -450,7 +450,7 @@ AliMUONPainterHelper::GetSector(Int_t detElemId, AliMp::PlaneType planeType) con
 {
   /// Get a given sector
   AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-  if ( stationType != AliMp::kStation1 && stationType != AliMp::kStation2 ) return 0x0;
+  if ( stationType != AliMp::kStation12 ) return 0x0;
   
   AliMp::CathodType cathodeType = AliMpDEManager::GetCathod(detElemId,planeType);
   

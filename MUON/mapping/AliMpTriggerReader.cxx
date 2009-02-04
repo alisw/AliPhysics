@@ -616,7 +616,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
                              AliMp::kStationTrigger,pcbName));
  
   AliMpMotifReader reader(fDataStreams,
-                          AliMp::kStationTrigger,AliMp::kNonBendingPlane); 
+                          AliMp::kStationTrigger, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for trigger, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory

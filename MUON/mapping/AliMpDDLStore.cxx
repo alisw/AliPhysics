@@ -252,7 +252,7 @@ Bool_t AliMpDDLStore::ReadDDLs()
             TString sManu = ((TObjString*)stringList->At(3))->GetString();
             AliMpHelper::DecodeName(sManu,',',fManuList12[GetManuListIndex(idDE)]);
 
-            if(AliMpDEManager::GetStationType(idDE) == AliMp::kStation2) {
+            if(AliMpDEManager::GetStation12Type(idDE) == AliMq::kStation2) {
                 TString sManuBridge = ((TObjString*)stringList->At(4))->GetString();
                 AliMpHelper::DecodeName(sManuBridge,',',fManuBridge2[GetManuListIndex(idDE)]);
             }
@@ -568,7 +568,7 @@ Bool_t AliMpDDLStore::SetPatchModules()
             Bool_t newResult = false;
             Int_t idDE = busPatch->GetDEId();
 
-            if (AliMpDEManager::GetStationType(idDE) == AliMp::kStation2 )
+            if (AliMpDEManager::GetStation12Type(idDE) == AliMq::kStation2 )
                 newResult = busPatch->SetNofManusPerModule(fManuBridge2[GetManuListIndex(idDE)].At(i));
             else
                 newResult = busPatch->SetNofManusPerModule();

@@ -85,8 +85,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     
     switch ( AliMpDEManager::GetStationType(detElemId) )
     {
-      case AliMp::kStation1:
-      case AliMp::kStation2:
+      case AliMp::kStation12:
       {
         for ( int i = 0; i <3; ++i)
         {

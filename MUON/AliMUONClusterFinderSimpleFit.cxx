@@ -19,7 +19,6 @@
 
 #include "AliLog.h"
 #include "AliMpDEManager.h"
-#include "AliMpStationType.h"
 #include "AliMUONCluster.h"
 #include "AliMUONConstants.h"
 #include "AliMUONVDigit.h"
@@ -119,13 +118,13 @@ AliMUONClusterFinderSimpleFit::Prepare(Int_t detElemId,
   // FIXME: should we get the Mathieson from elsewhere ?
   
   // Find out the DetElemId
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+  AliMq::Station12Type stationType = AliMpDEManager::GetStation12Type(detElemId);
   
   Float_t kx3 = AliMUONConstants::SqrtKx3();
   Float_t ky3 = AliMUONConstants::SqrtKy3();
   Float_t pitch = AliMUONConstants::Pitch();
   
-  if ( stationType == AliMp::kStation1 )
+  if ( stationType == AliMq::kStation1 )
   {
     kx3 = AliMUONConstants::SqrtKx3St1();
     ky3 = AliMUONConstants::SqrtKy3St1();

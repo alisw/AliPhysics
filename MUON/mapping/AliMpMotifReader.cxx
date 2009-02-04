@@ -53,10 +53,12 @@ ClassImp(AliMpMotifReader)
 //_____________________________________________________________________________
 AliMpMotifReader::AliMpMotifReader(const AliMpDataStreams& dataStreams,
                                    AliMp::StationType station, 
+                                   AliMq::Station12Type station12,
                                    AliMp::PlaneType plane) 
   : TObject(),
     fDataStreams(dataStreams),
     fStationType(station),
+    fStation12Type(station12),
     fPlaneType(plane)
 {
 /// Standard constructor
@@ -85,15 +87,15 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   istream& padPosStream 
     = fDataStreams.
         CreateDataStream(AliMpFiles::PadPosFilePath(
-                            fStationType,fPlaneType, motifTypeId));
+                            fStationType, fStation12Type, fPlaneType, motifTypeId));
   istream& bergToGCStream 
     = fDataStreams.
-        CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType));
+        CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType, fStation12Type));
       
   istream& motifTypeStream 
     = fDataStreams.
         CreateDataStream(AliMpFiles::MotifFilePath(
-                            fStationType, fPlaneType, motifTypeId));
+                            fStationType, fStation12Type, fPlaneType, motifTypeId));
 
   AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
 
@@ -128,7 +130,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   } while (!padPosStream.eof());
 
   const Int_t knbergpins = 
-    (fStationType == AliMp::kStation1 || fStationType == AliMp::kStation2 ) ? 80 : 100;
+    (fStationType == AliMp::kStation12 ) ? 80 : 100;
   // Station1 & 2 Bergstak connectors have 80 pins, while for stations
   // 3, 4 and 5 they have 100 pins.
   Int_t gassiChannel[100];
@@ -262,7 +264,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   istream& in 
     = fDataStreams.
         CreateDataStream(AliMpFiles::MotifSpecialFilePath(
-                             fStationType,fPlaneType, motifID));
+                             fStationType, fStation12Type, fPlaneType, motifID));
 
   TString id = MotifSpecialName(motifID,scale);
   

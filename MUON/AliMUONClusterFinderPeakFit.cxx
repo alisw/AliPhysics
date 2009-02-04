@@ -37,7 +37,6 @@
 
 #include "AliMpDEManager.h"
 #include "AliMpPad.h"
-#include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
 
 #include "AliLog.h"
@@ -192,13 +191,13 @@ AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
   
   AliDebug(3,Form("EVT %d DE %d",fEventNumber,fDetElemId));
   
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(fDetElemId);
+  AliMq::Station12Type stationType = AliMpDEManager::GetStation12Type(fDetElemId);
   
   Float_t kx3 = AliMUONConstants::SqrtKx3();
   Float_t ky3 = AliMUONConstants::SqrtKy3();
   Float_t pitch = AliMUONConstants::Pitch();
   
-  if ( stationType == AliMp::kStation1 )
+  if ( stationType == AliMq::kStation1 )
   {
     kx3 = AliMUONConstants::SqrtKx3St1();
     ky3 = AliMUONConstants::SqrtKy3St1();

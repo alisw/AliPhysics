@@ -153,48 +153,9 @@ Bool_t AliMpDEStore::IsPlaneType(const TString& planeTypeName)
 }  
 
 //______________________________________________________________________________
-AliMp::PlaneType AliMpDEStore::PlaneType(const TString& planeTypeName)
-{
-/// Return plane type for the given planeTypeName                            \n
-/// Fatal error if planeTypeName is wrong 
-
-  if ( planeTypeName == PlaneTypeName(AliMp::kBendingPlane) ) 
-    return AliMp::kBendingPlane;
-
-  if ( planeTypeName == PlaneTypeName(AliMp::kNonBendingPlane) ) 
-    return AliMp::kNonBendingPlane;
-
-  // Should never reach this line
-  AliFatalClass(Form("No plane type defined for %s", planeTypeName.Data()));
-  return AliMp::kBendingPlane;
-}       
-
-//______________________________________________________________________________
-AliMp::StationType AliMpDEStore::StationType(const TString& stationTypeName)
-{
-/// Return station type for the given stationTypeName                        \n
-/// Fatal error if stationTypeName is wrong 
-
-  if ( stationTypeName == StationTypeName(AliMp::kStation1) )
-    return AliMp::kStation1;
-
-  if ( stationTypeName == StationTypeName(AliMp::kStation2) )
-    return AliMp::kStation2;
-
-  if ( stationTypeName == StationTypeName(AliMp::kStation345) )
-    return AliMp::kStation345;
-
-  if ( stationTypeName == StationTypeName(AliMp::kStationTrigger) ) 
-    return AliMp::kStationTrigger;
-
-  // Should never reach this line
-  AliFatalClass(Form("No station type defined for ", stationTypeName.Data()));
-  return AliMp::kStation1;
-}
-
-//______________________________________________________________________________
 Bool_t
-AliMpDEStore::ReadDENames(AliMp::StationType station)
+AliMpDEStore::ReadDENames(AliMp::StationType station, 
+                          AliMq::Station12Type station12)
 { 
 /// Read det element names for cath = 0 from the file specified by name
 /// and fill the map 
@@ -202,7 +163,7 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
   // Open stream
   istream& in 
     = fDataStreams.
-        CreateDataStream(AliMpFiles::DENamesFilePath(station));
+        CreateDataStream(AliMpFiles::DENamesFilePath(station, station12));
   
   // Read plane types per cathods
   //
@@ -309,8 +270,8 @@ void AliMpDEStore::FillDEs()
 {
 /// Fill DE names from files
   AliDebugClass(2,"");
-  Bool_t result1 = ReadDENames(AliMp::kStation1);
-  Bool_t result2 = ReadDENames(AliMp::kStation2);
+  Bool_t result1 = ReadDENames(AliMp::kStation12, AliMq::kStation1);
+  Bool_t result2 = ReadDENames(AliMp::kStation12, AliMq::kStation2);
   Bool_t result3 = ReadDENames(AliMp::kStation345);
   Bool_t result4 = ReadDENames(AliMp::kStationTrigger);
   

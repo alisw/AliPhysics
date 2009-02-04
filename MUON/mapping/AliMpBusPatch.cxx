@@ -130,7 +130,7 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
 /// - for stations 2 there maximum two PCBs per buspatch,
 /// - for slat stations there are maximum three PCBs per buspatch
 
-  if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation1) {
+  if ( AliMpDEManager::GetStation12Type(fDEId) == AliMq::kStation1) {
 
     // simply fill the number of manus, no bridge for station 1
        
@@ -138,7 +138,7 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
     return true;
   }
 
- if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation2) {
+ if ( AliMpDEManager::GetStation12Type(fDEId) == AliMq::kStation2) {
 
     // there is max two patch modules per buspatch
        

@@ -144,7 +144,7 @@ AliMUONGeometryTransformer::CreateDEAreas() const
     Double_t dx(seg->Dimensions().X());
     Double_t dy(seg->Dimensions().Y());
     
-    if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) 
+    if ( stationType == AliMp::kStation12 ) 
     {
       Double_t xmin(FLT_MAX);
       Double_t xmax(-FLT_MAX);

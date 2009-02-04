@@ -9,8 +9,9 @@
 #
 SRCS +=  \
          mapping/AliMpPlaneType.cxx \
-         mapping/AliMpStationType.cxx \
          mapping/AliMpCathodType.cxx \
+         mapping/AliMpStationType.cxx \
+         mapping/AliMpStation12Type.cxx \
 	 mapping/AliMpArea.cxx  \
 	 mapping/AliMpConstants.cxx  \
 	 mapping/AliMpFiles.cxx  \

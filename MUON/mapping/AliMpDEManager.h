@@ -25,8 +25,9 @@
 
 #include "AliMpExMap.h"
 #include "AliMpPlaneType.h"
-#include "AliMpStationType.h"
 #include "AliMpCathodType.h"
+#include "AliMpStationType.h"
+#include "AliMpStation12Type.h"
 #include "AliMpDEIterator.h"
 
 class AliMpDetElement;
@@ -44,9 +45,10 @@ class AliMpDEManager : public  TObject {
 
     static Int_t   GetChamberId(Int_t detElemId, Bool_t warn = true);    
     static Int_t   GetGeomModuleId(Int_t detElemId, Bool_t warn = true);    
-    static AliMp::PlaneType   GetPlaneType(Int_t detElemId, AliMp::CathodType cath);
-    static AliMp::StationType GetStationType(Int_t detElemId);
-    static AliMp::CathodType  GetCathod(Int_t detElemId, AliMp::PlaneType planeType);
+    static AliMp::PlaneType     GetPlaneType(Int_t detElemId, AliMp::CathodType cath);
+    static AliMp::CathodType    GetCathod(Int_t detElemId, AliMp::PlaneType planeType);
+    static AliMp::StationType   GetStationType(Int_t detElemId);
+    static AliMq::Station12Type GetStation12Type(Int_t detElemId);
 
     static AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true);
     static AliMpDetElement* GetDetElement(const TString& deName, Bool_t warn = true);

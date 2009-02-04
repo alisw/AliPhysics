@@ -186,10 +186,25 @@ AliMp::StationType AliMpDEManager::GetStationType(Int_t detElemId)
 
   if ( ! IsValidDetElemId(detElemId, true) ) {
     AliFatalClass("Cannot return AliMp::StationType value.");
-    return AliMp::kStation1;
+    return AliMp::kStation12;
   }  
   
   return GetDetElement(detElemId)->GetStationType();
+}
+
+//______________________________________________________________________________
+AliMq::Station12Type AliMpDEManager::GetStation12Type(Int_t detElemId)
+{
+/// Return station12 type                                                    \n
+/// Failure causes Fatal error - as AliMp::StationNumber has no possibility
+/// to return undefined value
+
+  if ( ! IsValidDetElemId(detElemId, true) ) {
+    AliFatalClass("Cannot return AliMp::Station12Type value.");
+    return AliMq::kNotSt12;
+  }  
+  
+  return GetDetElement(detElemId)->GetStation12Type();
 }
 
 //______________________________________________________________________________

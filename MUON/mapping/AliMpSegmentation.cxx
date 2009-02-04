@@ -209,8 +209,9 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
 
   AliMpVSegmentation* mpSegmentation = 0;
 
-  if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) {
-    AliMpSectorReader reader(fDataStreams, stationType, planeType);
+  if ( stationType == AliMp::kStation12 ) {
+    AliMq::Station12Type station12Type = detElement->GetStation12Type();
+    AliMpSectorReader reader(fDataStreams, station12Type, planeType);
     AliMpSector* sector = reader.BuildSector();
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }

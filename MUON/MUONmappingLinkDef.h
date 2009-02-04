@@ -27,8 +27,9 @@
 #pragma link C++ enum   AliMp::Direction;
 #pragma link C++ enum   AliMp::XDirection;
 #pragma link C++ enum   AliMp::PlaneType;
-#pragma link C++ enum   AliMp::StationType;
 #pragma link C++ enum   AliMp::CathodType;
+#pragma link C++ enum   AliMp::StationType;
+#pragma link C++ enum   AliMq::Station12Type;
 
 #pragma link C++ function operator<<(ostream& ,const AliMpPad& );
 #pragma link C++ function operator<<(ostream& ,const AliMpArea& );
