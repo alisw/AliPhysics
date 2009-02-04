@@ -58,5 +58,6 @@
 #pragma link C++ class  AliGenCosmicsParam+;
 #pragma link C++ class  AliGenKrypton+;
 #pragma link C++ class  AliGenThermalPhotons+;
+#pragma link C++ class  AliGenPromptPhotons+;
 #pragma link C++ class  AliGenPileup+;
 #endif
