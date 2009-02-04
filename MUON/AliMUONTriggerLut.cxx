@@ -92,13 +92,20 @@ AliMUONTriggerLut::Compare(TH3* h1, TH3* h2) const
   {
     return 0;
   }
-  
-  for ( Int_t i = 0; i < h1->GetBufferSize(); ++i ) 
-  {
-    Double_t x1 = h1->GetBinContent(i);
-    Double_t x2 = h2->GetBinContent(i);
-    if ( x1 != x2 ) return 0;
-  }
+  Int_t bin;
+  for ( Int_t ix = 0; ix <= h1->GetNbinsX()+1; ix++ ) 
+    for ( Int_t iy = 0; iy <= h1->GetNbinsY()+1; iy++ ) 
+      for ( Int_t iz = 0; iz <= h1->GetNbinsZ()+1; iz++ ) 
+	{
+	  {
+	    {
+	      bin = h1->GetBin(ix,iy,iz);
+	      Double_t x1 = h1->GetBinContent(bin);
+	      Double_t x2 = h2->GetBinContent(bin);
+	      if ( x1 != x2 ) return 0;
+	    }
+	  }
+	}
 
   AliDebug(1,"same");
   
@@ -229,6 +236,10 @@ AliMUONTriggerLut::SetContent(const char* hname, Int_t icirc, UChar_t istripX,
     fHptPlus = new TH3S("HptPlus","HptPlus",234,0,234,31,0,31,31,0,31);
     fHptMinu = new TH3S("HptMinu","HptMinu",234,0,234,31,0,31,31,0,31);
     fHptUnde = new TH3S("HptUnde","HptUnde",234,0,234,31,0,31,31,0,31);
+    
+    fAptPlus = new TH3S("AptPlus","AptPlus",234,0,234,31,0,31,31,0,31);
+    fAptMinu = new TH3S("AptMinu","AptMinu",234,0,234,31,0,31,31,0,31);
+    fAptUnde = new TH3S("AptUnde","AptUnde",234,0,234,31,0,31,31,0,31);
     
     RegisterHistos();
   }

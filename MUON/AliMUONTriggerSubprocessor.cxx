@@ -221,13 +221,13 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
   
   if ( fGlobalConfig ) 
   {
-    result1 = Master()->Store("Calib", "GlobalTriggerBoardMasks", fGlobalConfig, 
+    result1 = Master()->Store("Calib", "GlobalTriggerCrateConfig", fGlobalConfig, 
                               &metaData, 0, validToInfinity);
   }
   
   if ( fRegionalConfig && fRegionalConfig->GetNofTriggerCrates() > 0 )
   {
-    result2 = Master()->Store("Calib", "RegionalTriggerBoardMasks", fRegionalConfig, 
+    result2 = Master()->Store("Calib", "RegionalTriggerConfig", fRegionalConfig, 
                               &metaData, 0, validToInfinity);
   }
   

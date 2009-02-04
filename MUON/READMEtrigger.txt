@@ -111,11 +111,16 @@ root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
 root [1] MUONTriggerEfficiency()
 </pre>
 
-For the CVS default version of the trigger LUT (i.e. lutAptLpt1Hpt1p7.root),
-Two LUTs are stored in the CDB (/Calib/TriggerLut/)
-Run0_999999999_v0_s0.root   with Lpt 1.0 GeV and Hpt 1.7 GeV
-and
-Run0_999999999_v1_s0.root   with Lpt 0.0 GeV and Hpt 1.0 GeV (default)
+Two LUTs are stored in the CDB (/Calib/TriggerLut/):
+- Run0_999999999_v0_s0.root   with Lpt 1.0 GeV and Hpt 1.7 GeV
+- Run0_999999999_v1_s0.root   with Lpt 0.0 GeV and Hpt 1.0 GeV (default)
+
+and can be built with the AliMUONCDB class taking as source the root files
+(found in $ALICE_ROOT/MUON/data/):
+- lutAptLpt1Hpt1p7.root
+- lutAptAptLpt1.root
+
+respectively.
 
 The reference for J/psi and Upsilon is as below
  For 1000 Jpsi events with:
@@ -138,7 +143,8 @@ The reference for J/psi and Upsilon is as below
   Efficiency Hpt cut = 0.6943 +/- 0.0376
 </pre>
 
- Similarly, for 1000 Upsilon events, the output should be
+ Similarly, for 1000 Upsilon events (replace kJpsi by kUpsilon), the output 
+should be
 
 <pre>
   Efficiency Lpt cut = 0.9872 +/- 0.0458
