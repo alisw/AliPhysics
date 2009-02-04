@@ -32,7 +32,8 @@ AliTPCLaserTrack::AliTPCLaserTrack() :
   fSide(-1),
   fRod(-1),
   fBundle(-1),
-  fBeam(-1)
+  fBeam(-1),
+  fRayLength(0)
 {
   //
   // Default constructor
@@ -40,13 +41,14 @@ AliTPCLaserTrack::AliTPCLaserTrack() :
 
 }
 
-AliTPCLaserTrack::AliTPCLaserTrack(AliTPCLaserTrack &ltr) :
+AliTPCLaserTrack::AliTPCLaserTrack(const AliTPCLaserTrack &ltr) :
   AliExternalTrackParam(ltr),
   fId(ltr.fId),
   fSide(ltr.fSide),
   fRod(ltr.fRod),
   fBundle(ltr.fBundle),
-  fBeam(ltr.fBeam)
+  fBeam(ltr.fBeam),
+  fRayLength(ltr.fRayLength)
 {
   //
   // Default constructor
@@ -58,18 +60,30 @@ AliTPCLaserTrack::AliTPCLaserTrack(const Int_t id, const Int_t side, const Int_t
 		     const Int_t bundle, const Int_t beam,
 		     Double_t x, Double_t alpha,
 		     const Double_t param[5],
-		     const Double_t covar[15]) :
+		     const Double_t covar[15], const Float_t rayLength) :
   AliExternalTrackParam(x,alpha,param,covar),
   fId(id),
   fSide(side),
   fRod(rod),
   fBundle(bundle),
-  fBeam(beam)
+  fBeam(beam),
+  fRayLength(rayLength)
 {
   //
   // create laser track from arguments
   //
 
+}
+//_____________________________________________________________________
+AliTPCLaserTrack& AliTPCLaserTrack::operator = (const  AliTPCLaserTrack &source)
+{
+  //
+  // assignment operator
+  //
+  if (&source == this) return *this;
+  new (this) AliTPCLaserTrack(source);
+  
+  return *this;
 }
 
 void AliTPCLaserTrack::LoadTracks()
