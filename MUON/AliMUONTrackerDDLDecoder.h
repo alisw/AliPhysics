@@ -970,7 +970,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 	const UInt_t* headerKey = reinterpret_cast<const UInt_t*>(structStart);
 	bool headerKeyOk = (expectedKey == *headerKey);
 	
-	bool lengthsMatch = (totalLength == length + headerSize);
+	bool lengthsMatch = (totalLength*4 == length*4 + headerSize);
 	
 	bool lengthIsCorrect = false;
 	bool totalLengthIsCorrect = false;
