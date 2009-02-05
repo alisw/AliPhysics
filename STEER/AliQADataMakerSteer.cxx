@@ -496,7 +496,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char
 {
 	// Initialize the event source and QA data makers
 	
-	//fTasks = AliQA::GetTaskName(taskIndex) ; 
+	fTasks += Form("%d", taskIndex) ; 
 
 	if (taskIndex == AliQA::kRAWS) { 
 		if (!fRawReader) {
