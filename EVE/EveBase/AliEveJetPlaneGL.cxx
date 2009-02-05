@@ -10,6 +10,7 @@
 #include "AliEveJetPlaneGL.h"
 #include "AliEveJetPlane.h"
 
+#include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
 #include <TGLIncludes.h>
 
@@ -60,7 +61,7 @@ void AliEveJetPlaneGL::SetBBox()
 
 /******************************************************************************/
 
-void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
+void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 {
   // Render the object.
 
@@ -80,46 +81,50 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   glVertex3f(minEta, maxPhi, 0);
   glEnd();
 
-  // Show grid in Eta-Phi coordinates
-
-  dPhi = (maxPhi-minPhi)/(fM->fNPhiDiv - 1);
-  dEta = (maxEta-minEta)/(fM->fNEtaDiv - 1);
-
-  for (Int_t count = 1; count < fM->fNPhiDiv-1; ++count)
+  if (rnrCtx.Selection() == kFALSE && rnrCtx.Highlight() == kFALSE)
   {
-    phiCoord = minPhi + count*dPhi;
-    glBegin(GL_LINES);
-    glVertex3f( minEta, phiCoord, 0);
-    glVertex3f( maxEta, phiCoord, 0);
-    glEnd();
-  }
 
-  for (Int_t count = 1; count < fM->fNEtaDiv-1; ++count)
-  {
-    etaCoord = minEta + count*dEta;
-    glBegin(GL_LINES);
-    glVertex3f(etaCoord, minPhi, 0);
-    glVertex3f(etaCoord, maxPhi, 0);
-    glEnd();
-  }
+    // Show grid in Eta-Phi coordinates
 
-  // Show axis tick marks and labels
+    dPhi = (maxPhi-minPhi)/(fM->fNPhiDiv - 1);
+    dEta = (maxEta-minEta)/(fM->fNEtaDiv - 1);
 
-  {
-    TGLCapabilitySwitch lightsOff(GL_LIGHTING, false);
+    for (Int_t count = 1; count < fM->fNPhiDiv-1; ++count)
+    {
+      phiCoord = minPhi + count*dPhi;
+      glBegin(GL_LINES);
+      glVertex3f( minEta, phiCoord, 0);
+      glVertex3f( maxEta, phiCoord, 0);
+      glEnd();
+    }
 
-    TGLAxis ap;
-    ap.SetLineColor(fM->fGridColor);
-    ap.SetTextColor(fM->fGridColor);
-    TGLVector3 start, end;
+    for (Int_t count = 1; count < fM->fNEtaDiv-1; ++count)
+    {
+      etaCoord = minEta + count*dEta;
+      glBegin(GL_LINES);
+      glVertex3f(etaCoord, minPhi, 0);
+      glVertex3f(etaCoord, maxPhi, 0);
+      glEnd();
+    }
 
-    start.Set(minEta, minPhi, 0);
-    end.Set(maxEta, minPhi, 0);
-    ap.PaintGLAxis(start.CArr(), end.CArr(), fM->fMinEta, fM->fMaxEta, 205);
+    // Show axis tick marks and labels
 
-    start.Set(maxEta, minPhi, 0);
-    end.Set(maxEta, maxPhi, 0);
-    ap.PaintGLAxis(start.CArr(), end.CArr(), fM->fMinPhi, fM->fMaxPhi, 205);
+    {
+      TGLCapabilitySwitch lightsOff(GL_LIGHTING, false);
+
+      TGLAxis ap;
+      ap.SetLineColor(fM->fGridColor);
+      ap.SetTextColor(fM->fGridColor);
+      TGLVector3 start, end;
+
+      start.Set(minEta, minPhi, 0);
+      end.Set(maxEta, minPhi, 0);
+      ap.PaintGLAxis(start.CArr(), end.CArr(), fM->fMinEta, fM->fMaxEta, 205);
+
+      start.Set(maxEta, minPhi, 0);
+      end.Set(maxEta, maxPhi, 0);
+      ap.PaintGLAxis(start.CArr(), end.CArr(), fM->fMinPhi, fM->fMaxPhi, 205);
+    }
 
   }
 

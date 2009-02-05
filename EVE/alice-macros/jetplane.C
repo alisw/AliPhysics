@@ -22,6 +22,8 @@ AliEveJetPlane* jetplane()
     gJPView  = gEve->SpawnNewViewer("JetPlane", "");
     gJPScene = gEve->SpawnNewScene("JetPlane", "Scene holding elements of the jet-plane view.");
     gJPView->AddScene(gJPScene);
+
+    gJPView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
   }
 
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
@@ -31,6 +33,7 @@ AliEveJetPlane* jetplane()
   Int_t iev = AliEveEventManager::GetMaster()->GetEventId();
 
   AliEveJetPlane* jp = new AliEveJetPlane(iev);
+  jp->SetPickable(kTRUE);
 
   // Read Jets in current event
 

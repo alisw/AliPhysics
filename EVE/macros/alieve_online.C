@@ -43,9 +43,9 @@ void alieve_online_init()
     a->SetMainColor(kWhite);
     a->SetTitle("R-Phi");
     a->SetTitleSize(0.05);
-    a->SetTitleFontName("comicbd");
+    a->SetTitleFont();
     a->SetLabelSize(0.025);
-    a->SetLabelFontName("comicbd");
+    a->SetLabelFont();
     gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
   }
   if (gRhoZMgr) {
@@ -53,9 +53,9 @@ void alieve_online_init()
     a->SetMainColor(kWhite);
     a->SetTitle("Rho-Phi");
     a->SetTitleSize(0.05);
-    a->SetTitleFontName("comicbd");
+    a->SetTitleFont();
     a->SetLabelSize(0.025);
-    a->SetLabelFontName("comicbd");
+    a->SetLabelFont();
     gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
   }
 

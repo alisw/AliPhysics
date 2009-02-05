@@ -34,12 +34,17 @@ TEveViewer *gRhoZView = 0;
 Bool_t gShowTRD      = kFALSE;
 Bool_t gShowMUON     = kTRUE;
 Bool_t gShowMUONRPhi = kFALSE;
-Bool_t gShowMUONRhoZ = kFALSE;
+Bool_t gShowMUONRhoZ = kTRUE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-void visscan_init()
+void visscan_init(Bool_t show_extra_geo=kFALSE)
 {
+  if (!show_extra_geo)
+  {
+    gShowTRD = gShowMUON = gShowMUONRPhi = gShowMUONRhoZ = kFALSE;
+  }
+
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
@@ -92,9 +97,9 @@ void visscan_init()
     a->SetMainColor(kWhite);
     a->SetTitle("R-Phi");
     a->SetTitleSize(0.05);
-    a->SetTitleFontName("comicbd");
+    a->SetTitleFont(102);
     a->SetLabelSize(0.025);
-    a->SetLabelFontName("comicbd");
+    a->SetLabelFont(102);
     gRPhiGeomScene->AddElement(a);
   }
   gRPhiMgr->ImportElements(gGeomGentleRPhi, gRPhiGeomScene);
@@ -109,9 +114,9 @@ void visscan_init()
     a->SetMainColor(kWhite);
     a->SetTitle("Rho-Z");
     a->SetTitleSize(0.05);
-    a->SetTitleFontName("comicbd");
+    a->SetTitleFont(102);
     a->SetLabelSize(0.025);
-    a->SetLabelFontName("comicbd");
+    a->SetLabelFont(102);
     gRhoZGeomScene->AddElement(a);
   }
   gRhoZMgr->ImportElements(gGeomGentleRhoZ, gRhoZGeomScene);
