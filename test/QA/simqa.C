@@ -13,7 +13,7 @@ void simqa()
 //	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   
 
-	AliQADataMakerSteer qas ; 
+	AliQADataMakerSteer qas("sim") ; 
 	qas.Run(detectors.Data(), AliQA::kHITS);
 	qas.Run(detectors.Data(), AliQA::kSDIGITS);
 	qas.Run(detectors.Data(), AliQA::kDIGITS);
