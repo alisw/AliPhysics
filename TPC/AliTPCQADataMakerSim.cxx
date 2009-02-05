@@ -190,8 +190,8 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 	  
           if(trackNo==n) { // primary track
 	    
-            GetDigitsData(kElectrons)->Fill(tpcHit->fQ);
-            GetDigitsData(kRadius)->Fill(radius);
+            GetHitsData(kElectrons)->Fill(tpcHit->fQ);
+            GetHitsData(kRadius)->Fill(radius);
 	    
             // find the new distance
             dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
@@ -207,8 +207,8 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
               if(nprim==1)
                 cout << radius << ", " << radiusOld << ", " << dist << endl; 
 	      
-              GetDigitsData(kPrimPerCm)->Fill((Float_t)nprim);
-              GetDigitsData(kElectronsPerCm)->Fill(q);
+              GetHitsData(kPrimPerCm)->Fill((Float_t)nprim);
+              GetHitsData(kElectronsPerCm)->Fill(q);
 	      
               dist  = 0;
               q     = 0;
@@ -225,7 +225,7 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
         tpcHit = (AliTPChit*) tpc->NextHit();
         }
       }
-      GetDigitsData(kNhits)->Fill(nHits);
+      GetHitsData(kNhits)->Fill(nHits);
     }
   }
 
