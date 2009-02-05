@@ -95,7 +95,9 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fNTracksPassed(0),
     fNTracksFailed(0),
     fRemoveKinks(kFALSE),
-    fMostProbable(0)
+    fMostProbable(0), 
+    fMaxImpactXY(1000.0),
+    fMaxImpactZ(1000.0)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
@@ -156,6 +158,12 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       return false;
     }
 	
+  if (fMaxImpactXY < track->ImpactD())
+    return false;
+
+  if (fMaxImpactZ < track->ImpactZ())
+    return false;
+  
   if (fMaxSigmaToVertex < track->SigmaToVertex()) {
     return false;
   }
@@ -351,6 +359,10 @@ TList *AliFemtoESDTrackCut::ListSettings()
   snprintf(buf, 200, "AliFemtoESDTrackCut.maxtpcchindof=%f", fMaxTPCchiNdof);
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maximpactxy=%f", fMaxImpactXY);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maximpactz=%f", fMaxImpactZ);
   tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
     if (fMostProbable == 2)

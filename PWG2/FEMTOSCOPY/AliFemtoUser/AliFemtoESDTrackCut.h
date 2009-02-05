@@ -47,6 +47,8 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMaxITSChiNdof(const float& maxchi);
   void SetMaxTPCChiNdof(const float& maxchi);
   void SetMaxSigmaToVertex(const float& maxsig);
+  void SetMaxImpactXY(const float& maximpxy);
+  void SetMaxImpactZ(const float& maximpz);
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
@@ -75,6 +77,9 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   long              fNTracksFailed;      // failed tracks count
   bool              fRemoveKinks;        // if true particles with any kink label will not pass
   int               fMostProbable;       // this particle type is required to be most probable
+
+  float             fMaxImpactXY;        // Max XY impact parameter
+  float             fMaxImpactZ;         // Max Z impact parameter
 
   float PidFractionElectron(float mom) const;
   float PidFractionPion(float mom) const;
@@ -107,6 +112,8 @@ inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
 inline void AliFemtoESDTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
 inline void AliFemtoESDTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
+inline void AliFemtoESDTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
+inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
 
 #endif
 
