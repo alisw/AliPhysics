@@ -55,6 +55,10 @@
 #include "AliFemtoEvent.h"
 
 #include "TMath.h"
+#include "TParticle.h"
+#include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelGlobalHiddenInfo.h"
+#include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderESDKine)
 
@@ -289,15 +293,60 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
 	
   //Vertex
   double fV1[3];
-  fEvent->GetVertex()->GetXYZ(fV1);
+  double fVCov[6];
+  if (fUseTPCOnly) {
+    fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
+    fEvent->GetPrimaryVertexTPC()->GetCovMatrix(fVCov);
+    if (!fEvent->GetPrimaryVertexTPC()->GetStatus())
+      fVCov[4] = -1001.0;
+  }
+  else {
+    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+    fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
+    if (!fEvent->GetPrimaryVertex()->GetStatus())
+      fVCov[4] = -1001.0;
+  }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
+  hbtEvent->SetPrimVertCov(fVCov);
+
+  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
 	
+  Double_t tReactionPlane = 0;
+  if (hdh)
+    {
+      tReactionPlane = hdh->ReactionPlaneAngle();
+    }
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
   int realnofTracks=0;//number of track which we use ina analysis
+
+  Int_t *motherids;
+  motherids = new Int_t[fStack->GetNtrack()];
+  for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
+
+  // Read in mother ids
+  TParticle *motherpart;
+  for (int ip=0; ip<fStack->GetNtrack(); ip++) {
+    motherpart = fStack->Particle(ip);
+    if (motherpart->GetDaughter(0) > 0)
+      motherids[motherpart->GetDaughter(0)] = ip;
+    if (motherpart->GetDaughter(1) > 0)
+      motherids[motherpart->GetDaughter(1)] = ip;
+
+//     if (motherpart->GetPdgCode() == 211) {
+//       cout << "Mother " << ip << " has daughters " 
+// 	   << motherpart->GetDaughter(0) << " " 
+// 	   << motherpart->GetDaughter(1) << " " 
+// 	   << motherpart->Vx() << " " 
+// 	   << motherpart->Vy() << " " 
+// 	   << motherpart->Vz() << " " 
+// 	   << endl;
+      
+//     }
+  }
 
   for (int i=0;i<nofTracks;i++)
     {
@@ -321,36 +370,89 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
       trackCopy->SetPidProbProton(esdpid[4]);
 						
       double pxyz[3];
-      if (fConstrained==true)		    
-	tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-      else
-	tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
-      AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-      trackCopy->SetP(v);//setting momentum
-      trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-      const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
-      if (ktP.mag() == 0) {
-	delete trackCopy;
-	continue;
+      double rxyz[3];
+      double impact[2];
+      double covimpact[3];
+      
+      if (fUseTPCOnly) {
+	if (!esdtrack->GetTPCInnerParam()) {
+	  delete trackCopy;
+	  continue;
+	}
+
+	AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	param->GetXYZ(rxyz);
+	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
+	param->GetPxPyPz(pxyz);//reading noconstarined momentum
+
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+
+	//some stuff which could be useful 
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
+
+	delete param;
       }
-      const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-      //setting helix I do not if it is ok
-      AliFmPhysicalHelixD helix(ktP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
-      trackCopy->SetHelix(helix);
+      else {
+	if (fConstrained==true)		    
+	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	else
+	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+	
+	//some stuff which could be useful 
+	float imp[2];
+	float cim[3];
+	esdtrack->GetImpactParameters(imp,cim);
+
+	impact[0] = imp[0];
+	impact[1] = imp[1];
+	covimpact[0] = cim[0];
+	covimpact[1] = cim[1];
+	covimpact[2] = cim[2];
+
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact,covimpact));
+      }
 	    	
       trackCopy->SetTrackId(esdtrack->GetID());
       trackCopy->SetFlags(esdtrack->GetStatus());
       trackCopy->SetLabel(esdtrack->GetLabel());
 		
-      //some stuff which could be useful 
-      float impact[2];
-      float covimpact[3];
-      esdtrack->GetImpactParameters(impact,covimpact);
-      trackCopy->SetImpactD(impact[0]);
-      trackCopy->SetImpactZ(impact[1]);
-      trackCopy->SetCdd(covimpact[0]);
-      trackCopy->SetCdz(covimpact[1]);
-      trackCopy->SetCzz(covimpact[2]);
       trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
       trackCopy->SetITSncls(esdtrack->GetNcls(0));     
       trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
@@ -358,21 +460,18 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
       trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
       trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
-      trackCopy->SetSigmaToVertex(GetSigmaToVertex(esdtrack));
+
 
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
-      double pvrt[3];
-      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
-
       double xtpc[3];
       esdtrack->GetInnerXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCEntrancePoint(xtpc);
 
       esdtrack->GetOuterXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCExitPoint(xtpc);
 
       int indexes[3];
@@ -382,9 +481,42 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
       trackCopy->SetKinkIndexes(indexes);
 
       // Fill the hidden information with the simulated data
-      TParticle *tPart = tStack->Particle(TMath::Abs(esdtrack->GetLabel()));
-      //      AliAODParticle* tParticle= new AliAODParticle(*tPart,i);
-      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+      TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
+
+      // Check the mother information
+
+      // Using the new way of storing the freeze-out information
+      // Final state particle is stored twice on the stack
+      // one copy (mother) is stored with original freeze-out information
+      //   and is not tracked
+      // the other one (daughter) is stored with primary vertex position
+      //   and is tracked
+	
+      // Freeze-out coordinates
+      double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+      fpx = tPart->Vx() - fV1[0];
+      fpy = tPart->Vy() - fV1[1];
+      fpz = tPart->Vz() - fV1[2];
+      fpt = tPart->T();
+
+      AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
+      tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+
+      if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
+ 	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
+ 	// Check if this is the same particle stored twice on the stack
+  	if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
+	  // It is the same particle
+	  // Read in the original freeze-out information
+	  // and convert it from to [fm]
+ 	  fpx = mother->Vx()*1e13;
+ 	  fpy = mother->Vy()*1e13;
+ 	  fpz = mother->Vz()*1e13;
+ 	  fpt = mother->T()*1e13*3e10;
+	  
+	}
+      }
+
       tInfo->SetPDGPid(tPart->GetPdgCode());
       tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
       Double_t mass2 = (tPart->Energy() *tPart->Energy() -
@@ -395,9 +527,10 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
 	tInfo->SetMass(TMath::Sqrt(mass2));
       else 
 	tInfo->SetMass(0.0);
-      tInfo->SetEmissionPoint(tPart->Vx()*1e13, tPart->Vy()*1e13, tPart->Vz()*1e13, tPart->T()*1e13*300000);
-      trackCopy->SetHiddenInfo(tInfo);
 
+      tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+      trackCopy->SetHiddenInfo(tInfo);
+      
       //decision if we want this track
       //if we using diffrent labels we want that this label was use for first time 
       //if we use hidden info we want to have match between sim data and ESD
@@ -405,6 +538,7 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
 	{
 	  hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	  realnofTracks++;//real number of tracks
+	  //	  delete trackCopy;
 	}
       else
 	{
@@ -432,11 +566,13 @@ Float_t AliFemtoEventReaderESDKine::GetSigmaToVertex(const AliESDtrack* esdTrack
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  esdTrack->GetImpactParameters(b,bCov);
-//   if (bCov[0]<=0 || bCov[2]<=0) {
-//     AliDebug(1, "Estimated b resolution lower or equal zero!");
-//     bCov[0]=0; bCov[2]=0;
-//   }
+
+  b[0] = impact[0];
+  b[1] = impact[1];
+  bCov[0] = covar[0];
+  bCov[1] = covar[1];
+  bCov[2] = covar[2];
+
   bRes[0] = TMath::Sqrt(bCov[0]);
   bRes[1] = TMath::Sqrt(bCov[2]);
 
