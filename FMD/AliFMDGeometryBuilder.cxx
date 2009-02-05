@@ -680,9 +680,10 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
 			 {  6.80, 24.50, 24.65 },
 			 {  6.80, 24.50, 26.00 },
 			 {  6.95, 24.50, 26.00 } };
-  TGeoPcon* lidBaseS = new TGeoPcon("FMD1_lid_base", 0, 180, 12);
+  Double_t  lidZStart = lidP[11][0];
+  TGeoPcon* lidBaseS  = new TGeoPcon("FMD1_lid_base", 0, 180, 12);
   for (size_t i = 0; i < 12; i++) 
-    lidBaseS->DefineSection(i, lidP[i][0], lidP[i][1], lidP[i][2]);
+    lidBaseS->DefineSection(i, lidP[i][0] - lidZStart, lidP[i][1], lidP[i][2]);
   
   
   Double_t lidH[][2] = { {  7.84903, 24.15680  }, 
@@ -696,10 +697,10 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   TString lidComp("FMD1_lid_base-(");
   TGeoTranslation* trans = 0;
   for (size_t i = 0; i < 4; i++) { 
-    trans = new TGeoTranslation(-lidH[i][0], lidH[i][1], 6.95-lidHL/2);
+    trans = new TGeoTranslation(-lidH[i][0], lidH[i][1], /*6.95*/-lidHL/2);
     trans->SetName(Form("FMD1_lid_hole_mat%d", 2*i+0));
     trans->RegisterYourself();
-    trans = new TGeoTranslation(+lidH[i][0], lidH[i][1], 6.95-lidHL/2);
+    trans = new TGeoTranslation(+lidH[i][0], lidH[i][1], /*6.95*/-lidHL/2);
     trans->SetName(Form("FMD1_lid_hole_mat%d", 2*i+1));
     trans->RegisterYourself();
     lidComp.Append(Form("FMD1_lid_hole:FMD1_lid_hole_mat%d+" 
@@ -712,7 +713,8 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   lidV->SetTransparency(63);
   
   // Place top cover
-  Double_t lidZ = -(3.3 - r->GetModuleDepth() - r->GetModuleSpacing() / 2);
+  Double_t lidZ = (lidZStart - 
+		   (3.3 - r->GetModuleDepth() - r->GetModuleSpacing() / 2));
   AliFMDDebug(1, ("FMD1 lid offset in Z=%f", lidZ));
 
   for (Int_t i = 0; i  < 2; i++) {

@@ -1,6 +1,6 @@
 > Title:
 
-Measurement of targets on FMD2
+Measurement of targets on FMD1
 
 > Date:
 
@@ -25,6 +25,7 @@ Afterwards it has been moved close to final position and measured on
 25.07.2008.  The final alignment of the V0A detector has been done in
 three iterations (called sessions) on 12.08.2008.
 
+
 > Coordinate System:
 
 ALICEPH
@@ -43,7 +44,7 @@ Point Name,XPH,YPH,ZPH,Point Type,Target Used,Precision(mm)
 
 
 > Data:
-V0L_ICB		127.73	-220.41	3246.58	M	Y	1
-V0L_ICT		127.37	219.48	3247.24	M	Y	1
-V0L_OCB		-126.99	-220.40	3247.27	M	Y	1
-V0L_OCT		-126.99	219.51	3247.49	M	Y	1
+V0L_ICB	127.73	-220.41	3246.58	M	Y	1
+V0L_ICT	127.37	219.48	3247.24	M	Y	1
+V0L_OCB	-126.99	-220.40	3247.27	M	Y	1
+V0L_OCT	-126.99	219.51	3247.49	M	Y	1

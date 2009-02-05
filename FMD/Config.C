@@ -386,7 +386,7 @@ Config()
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
   Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kFALSE;
+  Bool_t useITS   = kTRUE;
   Bool_t useMAG   = kFALSE; 
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
