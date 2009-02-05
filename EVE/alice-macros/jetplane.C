@@ -7,13 +7,28 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-AliEveJetPlane* jetplane(Int_t iev)
+TEveViewer *gJPView   = 0;
+TEveScene  *gJPScene  = 0;
+
+AliEveJetPlane* jetplane()
 {
-  TFile* f       = new TFile("aod.root");
-  TTree* treeAOD = (TTree*) f->Get("AOD");
-  AliAODEvent* aod = new AliAODEvent();
-  aod->ReadFromTree(treeAOD);
-  treeAOD->GetEntry(iev);
+  if (gJPView == 0)
+  {
+    TEveWindowSlot *slot    = 0;
+    TEveBrowser    *browser = gEve->GetBrowser();
+
+    slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+    slot->MakeCurrent();
+    gJPView  = gEve->SpawnNewViewer("JetPlane", "");
+    gJPScene = gEve->SpawnNewScene("JetPlane", "Scene holding elements of the jet-plane view.");
+    gJPView->AddScene(gJPScene);
+  }
+
+  AliAODEvent* aod = AliEveEventManager::AssertAOD();
+
+  
+  // We have event id everywhere now.
+  Int_t iev = AliEveEventManager::GetMaster()->GetEventId();
 
   AliEveJetPlane* jp = new AliEveJetPlane(iev);
 
@@ -43,7 +58,9 @@ AliEveJetPlane* jetplane(Int_t iev)
 
   // Render Jet Plane
   gStyle->SetPalette(1, 0);
-  gEve->AddElement(jp);
+  // gEve->AddElement(jp);
+  gJPScene->AddElement(jp);
+
   gEve->Redraw3D();
 
   return jp;
