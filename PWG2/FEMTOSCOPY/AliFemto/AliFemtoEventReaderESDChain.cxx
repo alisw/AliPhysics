@@ -214,6 +214,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   // Get the friend information
   cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
+  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
