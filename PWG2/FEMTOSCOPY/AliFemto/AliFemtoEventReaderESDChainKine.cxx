@@ -26,6 +26,8 @@
 #include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliGenHijingEventHeader.h"
 
+#include "AliVertexerTracks.h"
+
 ClassImp(AliFemtoEventReaderESDChainKine)
 
 #if !(ST_NO_NAMESPACES)
@@ -156,8 +158,21 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   else {
     fEvent->GetPrimaryVertex()->GetXYZ(fV1);
     fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
-    if (!fEvent->GetPrimaryVertex()->GetStatus())
-      fVCov[4] = -1001.0;
+
+    if (!fEvent->GetPrimaryVertex()->GetStatus()) {
+      // Get the vertex from SPD
+      fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
+      fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
+      
+      
+      if (!fEvent->GetPrimaryVertexSPD()->GetStatus())
+	fVCov[4] = -1001.0;
+      else {
+	fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
+	fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
+      }
+    }
+    
   }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -355,6 +370,11 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+
+      fpx *= 1e13;
+      fpy *= 1e13;
+      fpz *= 1e13;
+      fpt *= 1e13*3e10;
 
       if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
  	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
