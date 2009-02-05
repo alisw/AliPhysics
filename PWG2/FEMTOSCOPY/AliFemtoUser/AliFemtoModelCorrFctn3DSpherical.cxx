@@ -12,6 +12,7 @@
 #include "AliFemtoModelManager.h"
 #include <TMath.h>
 #include <cstdio>
+//#include <Math/SpecFunc.h>
 
 #ifdef __ROOT__ 
 ClassImp(AliFemtoModelCorrFctn3DSpherical)
