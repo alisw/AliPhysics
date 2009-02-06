@@ -48,12 +48,15 @@ class AliCFVGrid : public AliCFFrame
   virtual void SetElementError(Int_t *bin, Float_t val) = 0; 
   virtual void SetElementError(Double_t *var, Float_t val) = 0; 
 
-  virtual TH1D* Project( Int_t ivar) const = 0;
-  virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const = 0;
-  virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const = 0;
+  virtual TH1D*       Project( Int_t ivar) const = 0;
+  virtual TH2D*       Project( Int_t ivar1, Int_t ivar2) const = 0;
+  virtual TH3D*       Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const = 0;
+  virtual AliCFVGrid* Project( Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const = 0;
   virtual TH1D* Slice(Int_t ivar, Double_t *varMin, Double_t *varMax) const = 0;
   virtual TH2D* Slice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax) const = 0;
   virtual TH3D* Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax) const = 0;
+
+  virtual void  UseAxisRange(Bool_t b) const = 0 ;
 
   //basic operations
   virtual void SumW2()=0;
@@ -69,8 +72,6 @@ class AliCFVGrid : public AliCFFrame
 
   //implemented in AliCFVGrid
 
-  virtual void   SetExcludeOffEntriesInProj(Bool_t in){fExclOffEntriesInProj=in;}; 
-  virtual Bool_t GetExcludeOffEntriesInProj( ) const {return fExclOffEntriesInProj;}; 
   virtual void Scale(Int_t iel, Double_t *fact); 
   virtual void Scale(Int_t* bin, Double_t *fact); 
   virtual void Scale(Double_t* var, Double_t *fact); 
@@ -89,14 +90,13 @@ class AliCFVGrid : public AliCFFrame
 
   Double_t GetSum(Int_t ivar, Int_t *binMin, Int_t* binMax) const; 
   void GetScaledValues(Double_t *fact, Double_t *in, Double_t *out) const;
-  Bool_t fExclOffEntriesInProj; // exclude under/overflows in 
   //'hidden dimensions' when performing projections, 
   // default is kTRUE. please notice that 
   // if you you use AliCFGrid instead of AliCFGridSparse, 
   // only option kTRUE is actually available  
   Bool_t   fSumW2;//flag to check if calculation of squared weights enabled
    
-  ClassDef(AliCFVGrid,2);
+  ClassDef(AliCFVGrid,3);
 };
     
 #endif

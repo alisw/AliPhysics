@@ -29,8 +29,6 @@ class AliCFGrid : public AliCFVGrid
 
   virtual void  Fill(Double_t *var, Double_t weight=1.);
 
-  virtual void   SetExcludeOffEntriesInProj(Bool_t in); 
-  virtual Bool_t GetExcludeOffEntriesInProj( ) const; 
   virtual Float_t GetOverFlows(Int_t var) const;
   virtual Float_t GetUnderFlows(Int_t var)const ;
   virtual Float_t GetEntries()const ;
@@ -48,14 +46,18 @@ class AliCFGrid : public AliCFVGrid
   virtual void SetElementError(Int_t *bin, Float_t val); 
   virtual void SetElementError(Double_t *var, Float_t val); 
 
-  virtual TH1D* Project( Int_t ivar) const;
-  virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
-  virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
+  virtual TH1D*      Project( Int_t ivar) const;
+  virtual TH2D*      Project( Int_t ivar1, Int_t ivar2) const;
+  virtual TH3D*      Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
+  virtual AliCFGrid* Project( Int_t /*nVars*/, Int_t* /*vars*/, Double_t* /*varMin*/, Double_t* /*varMax*/) const
+  {AliWarning("not implemented"); return 0x0;}
   virtual TH1D* Slice( Int_t ivar, Double_t *varMin, Double_t *varMax) const;
   virtual TH2D* Slice( Int_t /*ivar1*/, Int_t /*ivar2*/, Double_t */*varMin*/, Double_t */*varMax*/) const 
   {AliWarning("not implemented"); return 0x0;}
   virtual TH3D* Slice( Int_t /*ivar1*/, Int_t /*ivar2*/, Int_t /*ivar3*/, Double_t */*varMin*/, Double_t */*varMax*/) const 
   {AliWarning("not implemented"); return 0x0;}
+
+  virtual void UseAxisRange(Bool_t b) const {AliWarning("Not implemented because this class is obsolete");}
 
   //basic operations
 

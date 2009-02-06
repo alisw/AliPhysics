@@ -15,8 +15,8 @@
  **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
-// AliCFContainer Class                                           //
-// Class to accumulate data on an N-dimensional grids, at different    //
+// AliCFContainer Class                                               //
+// Class to accumulate data on an N-dimensional grids, at different   //
 // selection stages. To be used as an input to get corrections for    //
 // Reconstruction & Trigger efficiency                                // 
 //                                                                    //
@@ -36,7 +36,6 @@ ClassImp(AliCFContainer)
 AliCFContainer::AliCFContainer() : 
   AliCFFrame(),
   fNStep(0),
-  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   //
@@ -47,7 +46,6 @@ AliCFContainer::AliCFContainer() :
 AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) : 
   AliCFFrame(name,title),
   fNStep(0),
-  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   // default constructor
@@ -57,7 +55,6 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) :
 AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn, const Bool_t useSparse) :  
   AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
   fNStep(0),
-  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   //
@@ -85,7 +82,6 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int
 AliCFContainer::AliCFContainer(const AliCFContainer& c) : 
   AliCFFrame(),
   fNStep(c.fNStep),
-  fExclOffEntriesInProj(c.fExclOffEntriesInProj),
   fGrid(c.fGrid)
 {
   //
@@ -134,7 +130,6 @@ void AliCFContainer::Copy(TObject& c) const
   //
   AliCFContainer& target = (AliCFContainer &) c;
   target.fNStep=fNStep;
-  target.fExclOffEntriesInProj=fExclOffEntriesInProj;
   target.fNVar=fNVar;
   target.fNDim=fNDim;
   target.fNVarBinLimits=fNVarBinLimits;
@@ -173,7 +168,11 @@ TH1D *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
     AliError("Non-existent selection step, return NULL");
     return 0x0;
   }
-  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
+  if(ivar >= fNVar || ivar < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
+
   return fGrid[istep]->Project(ivar);
 }
 //___________________________________________________________________
@@ -186,7 +185,11 @@ TH2D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) cons
     AliError("Non-existent selection step, return NULL");
     return 0x0;
   }
-  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
+  if(ivar1 >= fNVar || ivar1 < 0 || ivar2 >= fNVar || ivar2 < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
+
   return fGrid[istep]->Project(ivar1,ivar2);
 }
 //___________________________________________________________________
@@ -200,7 +203,13 @@ TH3D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_
     AliError("Non-existent selection step, return NULL");
     return 0x0;
   }
-  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
+  if(ivar1 >= fNVar || ivar1 < 0 || 
+     ivar2 >= fNVar || ivar2 < 0 ||
+     ivar3 >= fNVar || ivar3 < 0 ) {
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
+
   return fGrid[istep]->Project(ivar1,ivar2,ivar3);
 }
 //___________________________________________________________________
@@ -251,6 +260,37 @@ TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t 
   }
   return (TH3D*)fGrid[istep]->Slice(ivar1,ivar2,ivar3,varMin,varMax);
 }
+//____________________________________________________________________
+AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const
+{
+  //
+  // Makes a slice along the "nVars" variables defined in "vars" in range [varMin,varMax]
+  // and returns a new container
+  //
+
+  if (nVars < 1 || nVars > fNVar)   AliError("Bad number of dimensions required for the slice");
+
+  //define new binning for new container
+  Int_t* bins=new Int_t[nVars];
+  for (Int_t iVar=0; iVar<nVars; iVar++) bins[iVar] = fNVarBins[vars[iVar]];
+  AliCFContainer* out = new AliCFContainer(fName,fTitle,fNStep,nVars,bins);
+
+  //set the bin limits
+  for (Int_t iVar=0; iVar<nVars; iVar++) {
+    Double_t *array = new Double_t[fNVarBins[vars[iVar]]+1];
+    GetBinLimits(vars[iVar],array);
+    out->SetBinLimits(iVar,array);
+    delete array;
+  }
+
+  //set grid for each step
+  AliInfo(Form("Making a slice in %d dimension(s)",nVars));
+  for (Int_t iStep=0; iStep<fNStep; iStep++) out->SetGrid(iStep,fGrid[iStep]->Project(nVars,vars,varMin,varMax));
+
+  delete bins;
+  return out;
+}
+
 //____________________________________________________________________
 Long64_t AliCFContainer::Merge(TCollection* list)
 {
@@ -394,5 +434,22 @@ void AliCFContainer::SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, 
     AliError("Non-existent selection var");
     return ;
   }
-  ((AliCFGridSparse*)fGrid[istep])->GetGrid()->GetAxis(ivar)->SetRangeUser(varMin,varMax);
+  ((AliCFGridSparse*)fGrid[istep])->SetRangeUser(ivar,varMin,varMax);
+}
+
+//_____________________________________________________________________
+void AliCFContainer::SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) 
+{
+  //
+  // set all axis ranges at step istep according to varMin and varMax values
+  //
+  if ( strcmp(fGrid[istep]->ClassName(),"AliCFGrid") ==0 ) {
+    AliWarning("Could not AliCFGrid::SetRangeUser(), function not implemented");
+    return;
+  }
+  if (istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step");
+    return ;
+  }
+  ((AliCFGridSparse*)fGrid[istep])->SetRangeUser(varMin,varMax);
 }

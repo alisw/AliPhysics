@@ -1110,27 +1110,3 @@ void AliCFGrid::Copy(TObject& c) const
     target.fErr2 = fErr2;
   
 }
-//____________________________________________________________________
-void AliCFGrid::SetExcludeOffEntriesInProj(Bool_t in)
-{
-  //
-  // require under/overflows in 'hidden dimensions' to be excluded
-  // or included, when performing projections.
-  // For AliCFGrid implementation, only option = kTRUE is available
-
-  if(!in){
-    AliInfo(Form("This option is not available for AliCFGrid, Under/Overflows in hidden dimensions are always excluded")); 
-    return;
-  }
-
-  fExclOffEntriesInProj=in;
-} 
-//____________________________________________________________________
-Bool_t AliCFGrid::GetExcludeOffEntriesInProj( ) const 
-{
-  //
-  // return flag saying whether under/overflows are excluded in projections 
-  //
-  
-  return fExclOffEntriesInProj;
-} 

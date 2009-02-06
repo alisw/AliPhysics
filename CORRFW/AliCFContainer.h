@@ -29,11 +29,12 @@ class AliCFContainer : public AliCFFrame
   virtual ~AliCFContainer();
   AliCFContainer& operator=(const AliCFContainer& corr);
   virtual Int_t GetNStep() const {return fNStep;};
+
+  virtual void  SetNStep(Int_t nStep) {fNStep=nStep;}
   virtual void  SetBinLimits(Int_t varindex, Double_t * array);
+
   virtual void  Fill(Double_t *var, Int_t istep, Double_t weight=1.);
 
-  virtual void   SetExcludeOffEntriesInProj(Bool_t in){fExclOffEntriesInProj=in;}; 
-  virtual Bool_t GetExcludeOffEntriesInProj( ) const {return fExclOffEntriesInProj;}; 
   virtual Float_t GetOverFlows(Int_t var,Int_t istep) const;
   virtual Float_t GetUnderFlows(Int_t var,Int_t istep)const ;
   virtual Float_t GetEntries(Int_t istep)const ;
@@ -53,15 +54,17 @@ class AliCFContainer : public AliCFFrame
   virtual TH1D* ShowSlice( Int_t ivar, Double_t *varMin, Double_t *varMax, Int_t istep) const;
   virtual TH2D* ShowSlice( Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax, Int_t istep) const;
   virtual TH3D* ShowSlice( Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax, Int_t istep) const;
+  virtual AliCFContainer*  MakeSlice (Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const ;
   virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
+  virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
+  virtual void  SetGrid(Int_t step, AliCFVGrid* grid) {fGrid[step]=grid;}
   virtual AliCFVGrid * GetGrid(Int_t istep) const {return (AliCFVGrid*)fGrid[istep];};
   
  private:
   Int_t    fNStep; //number of selection steps
-  Bool_t fExclOffEntriesInProj; // exclude under/overflows in 
   AliCFVGrid **fGrid;//[fNStep]
   
-  ClassDef(AliCFContainer,3);
+  ClassDef(AliCFContainer,4);
 };
     
 #endif

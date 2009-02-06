@@ -48,14 +48,17 @@ class AliCFGridSparse : public AliCFVGrid
   virtual void SetElementError(Int_t *bin, Float_t val) ; 
   virtual void SetElementError(Double_t *var, Float_t val); 
 
-  virtual TH1D* Project( Int_t ivar) const;
-  virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
-  virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
+  virtual TH1D*            Project( Int_t ivar) const;
+  virtual TH2D*            Project( Int_t ivar1, Int_t ivar2) const;
+  virtual TH3D*            Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
+  virtual AliCFGridSparse* Project(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const ;
   virtual TH1D* Slice(Int_t ivar, Double_t* varMin, Double_t* varMax) const ; 
   virtual TH2D* Slice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax) const ;
   virtual TH3D* Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax) const ;
+  virtual void  SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) ;
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax) ;
 
+  virtual void UseAxisRange(Bool_t b) const ;
 
   //basic operations
 
@@ -68,8 +71,8 @@ class AliCFGridSparse : public AliCFVGrid
   virtual void Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1=1., Double_t c2=1.,Option_t *option=0);
 
   virtual void Rebin(const Int_t* group);
-
-  THnSparse  *GetGrid() const {return fData;};//  Getter for the data Container: a THnSparse
+  virtual void SetGrid(THnSparse* grid) {fData=grid;}
+  THnSparse   *GetGrid() const {return fData;};//  Getter for the data Container: a THnSparse
 
   virtual void Copy(TObject& c) const;
 

@@ -33,6 +33,7 @@ class AliCFEffGrid : public AliCFGridSparse
   virtual TH1D* Project( Int_t ivar) const;
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
+  virtual AliCFEffGrid* Project(Int_t,Int_t*,Double_t*,Double_t*) const {return 0x0;} //not to be used.
 
   //Efficiency calculation
   virtual void  CalculateEfficiency(Int_t istep1, Int_t istep2);

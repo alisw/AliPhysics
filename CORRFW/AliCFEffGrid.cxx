@@ -242,6 +242,10 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
     proj1D =new TH1D(pname,htitle, nbins, bins);
   }  
   
+  //unset the use of axis range to be able to divide the histos
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
+
   proj1D->Sumw2();
   proj1D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar),fContainer->GetGrid(fSelDen)->Project(ivar),1.,1.,"B");
   
@@ -276,6 +280,10 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   if(!proj2D){
     proj2D =new TH2D(pname,htitle, nbins1,bins1,nbins2,bins2);
   }  
+  
+  //unset the use of axis range to be able to divide the histos
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
   
   proj2D->Sumw2();
   proj2D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2),1.,1.,"B");
@@ -321,6 +329,10 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
     proj3D =new TH3D(pname,htitle, nbins1, bins1,nbins2,bins2,nbins3,bins3);
   }  
   
+  //unset the use of axis range to be able to divide the histos
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
+
   proj3D->Sumw2();
   proj3D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2,ivar3),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2,ivar3),1.,1.,"B");
   
@@ -330,3 +342,4 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   
   return proj3D;
 } 
+

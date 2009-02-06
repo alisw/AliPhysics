@@ -138,13 +138,6 @@ TH1D *AliCFGridSparse::Project(Int_t ivar) const
   // Make a 1D projection along variable ivar 
   //
 
-  //exclude overflows in hidden dimesniosn by default (used in projections)
-  if(fExclOffEntriesInProj){
-    for(Int_t i=0;i<fNVar;i++){
-      if(i!=ivar)
-	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
-    }
-  }
   TH1D *hist=fData->Projection(ivar);
   return hist;
 }
@@ -155,13 +148,6 @@ TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
   // Make a 2D projection along variables ivar1 & ivar2 
   //
 
-  //exclude overflows by default (used in projections)
-  if(fExclOffEntriesInProj){
-    for(Int_t i=0;i<fNVar;i++){
-      if(i!=ivar1 && i!=ivar2)
-	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
-    }
-  }
   TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projection convention...)
   return hist;
 
@@ -172,17 +158,32 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   //
   // Make a 3D projection along variables ivar1 & ivar2 & ivar3 
   //
-  //exclude overflows by default (used in projections)
-  if(fExclOffEntriesInProj){
-    for(Int_t i=0;i<fNVar;i++){
-      if(i!=ivar1 && i!=ivar2 && i!=ivar3)
-	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
-    }
-  }
 
   TH3D *hist=fData->Projection(ivar1,ivar2,ivar3); 
   return hist;
 
+}
+
+//___________________________________________________________________
+AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const
+{
+
+  // binning for new grid
+  Int_t* bins = new Int_t[nVars];
+  for (Int_t iVar=0; iVar<nVars; iVar++) {
+    bins[iVar] = fNVarBins[vars[iVar]];
+  }
+  
+  // create new grid sparse
+  AliCFGridSparse* out = new AliCFGridSparse(fName,fTitle,nVars,bins);
+
+  //set the range in the THnSparse to project
+  THnSparse* clone = ((THnSparse*)fData->Clone());
+  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
+    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  }
+  out->SetGrid(clone->Projection(nVars,vars));
+  return out;
 }
 
 //____________________________________________________________________
@@ -681,12 +682,26 @@ TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, Double_t *va
 }
 
 //____________________________________________________________________
+void AliCFGridSparse::SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) {
+  //
+  // set range of axis iVar. 
+  //
+  fData->GetAxis(iVar)->SetRangeUser(varMin,varMax);
+  AliWarning(Form("THnSparse axis %d range has been modified",iVar));
+}
+
+//____________________________________________________________________
 void AliCFGridSparse::SetRangeUser(Double_t *varMin, Double_t *varMax) {
   //
   // set range of every axis. varMin and varMax must be of dimension fNVar
   //
   for (Int_t iAxis=0; iAxis<fNVar ; iAxis++) { // set new range for every axis
-    fData->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+    SetRangeUser(iAxis,varMin[iAxis],varMax[iAxis]);
   }
-  AliWarning("THnSparse has been modified");
+  AliWarning("THnSparse axes ranges have been modified");
+}
+
+//____________________________________________________________________
+void AliCFGridSparse::UseAxisRange(Bool_t b) const {
+  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) fData->GetAxis(iAxis)->SetBit(TAxis::kAxisRange,b);
 }
