@@ -73,17 +73,13 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   gSystem->Load("libPWG2flow.so");
   cerr<<"libPWG2flow.so loaded ..."<<endl;
   cout<<endl; 
-
-  //open the file with the weights: 
-  TFile *file = NULL;
-  if(useWeightsPhi||useWeightsPt||useWeightsEta)
-  {
-   file = TFile::Open("weightsForTheSecondRun.root", "READ");
-  }
   
   // flow event in AliRoot
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
-
+  
+  /*   
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //                       !!!! to be removed
   // if weights are being used initialize the weight's histos in AliFlowEvenSimpleMaker:
   fEventMaker->SetUseWeightsPhi(useWeightsPhi);
   fEventMaker->SetUseWeightsPt(useWeightsPt);
@@ -92,6 +88,9 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   {
    fEventMaker->Init(file);
   }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  */  
+  
   
   // In root
 
@@ -112,7 +111,7 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   // output histosgrams
   gROOT->LoadMacro("code/AliFlowCommonHist.cxx+");
   gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
+  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");fPhiWeights
   gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");
 
   // functions needed for various methods
@@ -145,7 +144,7 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   gSystem->Load("libTree.so");
 
   //------------------------------------------------------------------------
-  //cuts
+  //cuts:
   AliFlowTrackSimpleCuts* cutsInt = new AliFlowTrackSimpleCuts();
   cutsInt->SetPtMax(ptMaxInt);
   cutsInt->SetPtMin(ptMinInt);
@@ -164,7 +163,22 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   cutsDiff->SetPhiMin(phiMinDiff);
   cutsDiff->SetPID(PIDDiff);
 
+  //weights:
+  //open the file with the weights: 
+  TFile *file = NULL;
+  TH1F *phiWeights = NULL;
+  TH1D *ptWeights = NULL;
+  TH1D *etaWeights = NULL;
   
+  if(useWeightsPhi||useWeightsPt||useWeightsEta)
+  {
+   file = TFile::Open("weightsForTheSecondRun.root", "READ");
+   if(useWeightsPhi) file->GetObject("phi_weights",phiWeights); 
+   if(useWeightsPt) file->GetObject("pt_weights",ptWeights); 
+   if(useWeightsEta) file->GetObject("eta_weights",etaWeights);    
+  }
+
+  //flow methods:  
   AliFlowAnalysisWithQCumulants    *qc    = NULL;
   AliFlowAnalysisWithCumulants     *gfc   = NULL;
   AliFittingQDistribution          *fqd   = NULL;
@@ -172,9 +186,7 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   AliFlowAnalysisWithLeeYangZeros  *lyz2  = NULL;
   AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
   AliFlowAnalysisWithScalarProduct *sp    = NULL;
-  AliFlowAnalysisWithMCEventPlane  *mcep  = NULL;
-   
-  //flow methods:
+  AliFlowAnalysisWithMCEventPlane  *mcep  = NULL;   
 
   //MCEP = monte carlo event plane
   if (MCEP) {
@@ -185,7 +197,10 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   //QC = Q-cumulants  
   if(QC) { 
     AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
-    qc->CreateOutputObjects();
+    qc->Init();
+    if(useWeightsPhi) qc->SetPhiWeights(*phiWeights);
+    if(useWeightsPt) qc->SetPtWeights(*ptWeights);
+    if(useWeightsEta) qc->SetEtaWeights(*etaWeights);    
   }
   
   //GFC = Generating Function Cumulants 

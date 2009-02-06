@@ -29,6 +29,7 @@
 #include "TChain.h"
 #include "TFile.h"
 #include "TList.h"
+#include "TGraph.h"
 #include "TParticle.h"
 #include "TRandom3.h"
 #include "TStyle.h"
@@ -36,6 +37,9 @@
 #include "TProfile2D.h" 
 #include "TProfile3D.h"
 #include "TMath.h"
+#include "TArrow.h"
+#include "TPaveLabel.h"
+#include "TCanvas.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithQCumulants.h"
@@ -70,6 +74,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fDiffFlowResults2ndOrderQC(NULL),
  fDiffFlowResults4thOrderQC(NULL),
  fCovariances(NULL),
+ fQvectorForEachEventX(NULL),//to be removed
+ fQvectorForEachEventY(NULL),//to be removed
  fQCorrelations(NULL),
  fQProduct(NULL),
  fDirectCorrelations(NULL),
@@ -138,7 +144,14 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPtMax(0),
  fnBinsEta(0),
  fEtaMin(0),
- fEtaMax(0)
+ fEtaMax(0),
+ fEventCounter(0),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fPhiWeights(),
+ fPtWeights(),
+ fEtaWeights()
 {
  //constructor 
  fHistList = new TList(); 
@@ -150,6 +163,11 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fnBinsEta = AliFlowCommonConstants::GetNbinsEta();
  fEtaMin   = AliFlowCommonConstants::GetEtaMin();	     
  fEtaMax   = AliFlowCommonConstants::GetEtaMax();
+ 
+ //to be improved
+ fPhiWeights.Reset();
+ fPtWeights.Reset();
+ fEtaWeights.Reset();
 }
 
 AliFlowAnalysisWithQCumulants::~AliFlowAnalysisWithQCumulants()
@@ -160,7 +178,7 @@ AliFlowAnalysisWithQCumulants::~AliFlowAnalysisWithQCumulants()
 
 //================================================================================================================
 
-void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
+void AliFlowAnalysisWithQCumulants::Init()
 {
  //various output histograms
  //avarage multiplicity 
@@ -219,6 +237,17 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  (fCovariances->GetXaxis())->SetBinLabel(6,"Cov(6,8)");
  fHistList->Add(fCovariances);
   
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ //                   !!!! to be removed !!!! 
+ //profile containing the x-components of Q-vectors from all events 
+ fQvectorForEachEventX = new TProfile("fQvectorForEachEventX","x-components of Q-vectors",44000,1,44000,"s");
+ fHistList->Add(fQvectorForEachEventX);
+ 
+ //profile containing the y-components of Q-vectors from all events 
+ fQvectorForEachEventY = new TProfile("fQvectorForEachEventY","y-components of Q-vectors",44000,1,44000,"s");
+ fHistList->Add(fQvectorForEachEventY);
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    
  //multi-particle correlations calculated from Q-vectors
  fQCorrelations = new TProfile("fQCorrelations","multi-particle correlations from Q-vectors",32,0,32,"s");
  //fQCorrelations->SetXTitle("correlations");
@@ -301,7 +330,7 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fPtReq2nRP->SetXTitle("p_{t} [GeV]");
  fPtReq2nRP->SetYTitle("Im[D]");
  //fHistList->Add(fPtReq2nRP);
- 
+
  //fPtImq2nRP
  fPtImq2nRP = new TProfile("fPtImq2nRP","Im[q_2n]",fnBinsPt,fPtMin,fPtMax,"s");
  fPtImq2nRP->SetXTitle("p_{t} [GeV]");
@@ -628,13 +657,39 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  f8pDistribution->SetXTitle("<8>_{n,n,n,n|n,n,n,n}");
  f8pDistribution->SetYTitle("Counts");
  fHistList->Add(f8pDistribution);
-}//end of CreateOutputObjects()
+ 
+ //phi weights
+ //fHistList->Add(&fPhiWeights);
+ 
+ //pt weights
+ //fHistList->Add(&fPtWeights);
+ 
+ //eta weights
+ //fHistList->Add(&fEtaWeights);
+}//end of Init()
 
 //================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 {
- //running over data         
+ //running over data 
+ //set the weights:
+ if(fUsePhiWeights)
+ {
+  anEvent->SetUseWeightsPhi(fUsePhiWeights);
+  anEvent->SetPhiWeights(&fPhiWeights);
+ }
+ if(fUsePtWeights)
+ {
+  anEvent->SetUseWeightsPt(fUsePtWeights);
+  anEvent->SetPtWeights(&fPtWeights);
+ }
+ if(fUseEtaWeights)
+ {
+  anEvent->SetUseWeightsEta(fUseEtaWeights);
+  anEvent->SetEtaWeights(&fEtaWeights);
+ }
+  
  //get the total multiplicity nPrim of event:
  Int_t nPrim = anEvent->NumberOfTracks();//nPrim = RPs + POIs + rest  
 
@@ -653,7 +708,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  afvQvector1n.Set(0.,0.);
  afvQvector1n.SetMult(0);
  afvQvector1n=anEvent->GetQ(1*n); 
- 
+
  afvQvector2n.Set(0.,0.);
  afvQvector2n.SetMult(0);
  afvQvector2n=anEvent->GetQ(2*n);                          
@@ -664,7 +719,17 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  afvQvector4n.Set(0.,0.);
  afvQvector4n.SetMult(0);
- afvQvector4n=anEvent->GetQ(4*n);       
+ afvQvector4n=anEvent->GetQ(4*n); 
+ 
+            
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ //                        !!!! to be removed !!!!
+ fQvectorForEachEventX->Fill(1.*(++fEventCounter),afvQvector1n.X());
+ fQvectorForEachEventY->Fill(1.*(fEventCounter),afvQvector1n.Y()); 
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                       
+                                  
+                                                        
  //---------------------------------------------------------------------------------------------------------
  
  //multiplicity of RP particles:
@@ -1872,7 +1937,48 @@ void AliFlowAnalysisWithQCumulants::Finish()
  //calculate the final results
  AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations, fQProduct,fDirectCorrelations,f2PerPtBin1n1nRP,f2PerPtBin2n2nRP,f3PerPtBin2n1n1nRP,f3PerPtBin1n1n2nRP,f4PerPtBin1n1n1n1nRP, f2PerEtaBin1n1nRP,f2PerEtaBin2n2nRP,f3PerEtaBin2n1n1nRP,f3PerEtaBin1n1n2nRP,f4PerEtaBin1n1n1n1nRP,f2PerPtBin1n1nPOI,f2PerPtBin2n2nPOI,f3PerPtBin2n1n1nPOI,f3PerPtBin1n1n2nPOI,f4PerPtBin1n1n1n1nPOI, f2PerEtaBin1n1nPOI,f2PerEtaBin2n2nPOI,f3PerEtaBin2n1n1nPOI,f3PerEtaBin1n1n2nPOI,f4PerEtaBin1n1n1n1nPOI,fCommonHists2nd,fCommonHists4th, fCommonHists6th, fCommonHists8th,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
 
- finalResults.Calculate();  
+ finalResults.Calculate(); 
+ 
+ 
+ /*
+   
+    
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ //                   !!!! to be removed !!!!  
+ 
+ TCanvas* qvectorPlot = new TCanvas("qvectorPlot","Q-vector Plot",1000,1000);
+ 
+ qvectorPlot->cd(1);
+ 
+ TH1D* style = new TH1D("style","Q-vectors",100,-244,244); 
+ (style->GetYaxis())->SetRangeUser(-244,244);
+ 
+ style->Draw();
+  
+ Int_t nBins=fQvectorForEachEventX->GetNbinsX();
+ Double_t qxxx=0.,qyyy=0.;
+ //cout<<"nBins = "<<nBins<<endl;   
+ //cout<<fQvectorForEachEventX->GetBinEntries(4)<<endl;    
+ //cout<<fQvectorForEachEventY->GetBinEntries(4)<<endl;     
+ 
+ for(Int_t b=1;b<nBins+1;b++)
+ {
+  if(fQvectorForEachEventX->GetBinEntries(b)==1 && fQvectorForEachEventY->GetBinEntries(b)==1)
+  {
+   qxxx=fQvectorForEachEventX->GetBinContent(b);
+   qyyy=fQvectorForEachEventY->GetBinContent(b);
+   //cout<<qxxx<<" "<<qyyy<<endl;
+   TArrow *qvector = new TArrow(0.0,0.0,qxxx,qyyy,0.0144,"|>");
+   qvector->SetAngle(40);
+   qvector->SetLineWidth(2);
+   qvector->Draw("");
+  }
+ }  
+ 
+ //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx       
+
+ */        
+                           
 }
 
 //================================================================================================================

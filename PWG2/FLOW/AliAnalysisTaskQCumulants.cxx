@@ -30,6 +30,7 @@
 #include "TFile.h"
 #include "TList.h"
 #include "TH1.h"
+#include "TGraph.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TProfile3D.h"
@@ -187,7 +188,7 @@ void AliAnalysisTaskQCumulants::CreateOutputObjects()
  
  //analyser
  fQCA = new AliFlowAnalysisWithQCumulants();
- fQCA->CreateOutputObjects();
+ fQCA->Init();
 
  if(fQCA->GetHistList()) 
  {
@@ -351,6 +352,13 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //average selected multiplicity (for int. flow) 
   TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowQC"));
   
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //                        !!!! to be removed !!!!
+  //profiles containing the Q-vectors from all events 
+  TProfile *qvectorForEachEventX = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorForEachEventX"));
+  TProfile *qvectorForEachEventY = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorForEachEventY"));  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    
   //multi-particle correlations calculated from Q-vectors
   TProfile *QCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelations"));
   
@@ -384,8 +392,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   TProfile *binnedEta3p2n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin2n1n1nPOI"));
   TProfile *binnedEta3p1n1n2nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f3PerEtaBin1n1n2nPOI"));
   TProfile *binnedEta4p1n1n1n1nPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("f4PerEtaBin1n1n1n1nPOI")); 
-  
-  
+    
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
   
@@ -412,6 +419,11 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetCommonHistsResults8th(commonHistRes8th);
  
   fQCA->SetAverageMultiplicity(AvMult);
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //             !!!! to be removed !!!!
+  fQCA->SetQvectorForEachEventX(qvectorForEachEventX);
+  fQCA->SetQvectorForEachEventY(qvectorForEachEventY);
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   fQCA->SetQCorrelations(QCorrelations);
   fQCA->SetQProduct(QProduct);
   fQCA->SetQVectorComponents(QVectorComponents);
