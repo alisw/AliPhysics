@@ -26,7 +26,7 @@ class AliMagF : public TVirtualMagField
 	  Double_t factorSol=1., Double_t factorDip=1., 
 	  Double_t fmax=15, BMap_t maptype = k5kG,
 	  const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
-	  BeamType_t btype=kBeamTypepp, Double_t benergy=7000., Bool_t compensator=kFALSE);
+	  BeamType_t btype=kBeamTypepp, Double_t benergy=7000.);
   AliMagF(const AliMagF& src);             
   AliMagF& operator=(const AliMagF& src);
   virtual ~AliMagF();
@@ -48,7 +48,6 @@ class AliMagF : public TVirtualMagField
   //
   void         MachineField(const Double_t  *x, Double_t *b)    const;
   BMap_t       GetMapType()                                     const {return fMapType;}
-  Bool_t       GetCompensator()                                 const {return fCompensator;}
   BeamType_t   GetBeamType()                                    const {return fBeamType;}
   Double_t     GetBeamEnergy()                                  const {return fBeamEnergy;}
   Double_t     Max()                                            const {return fMax;}
@@ -68,7 +67,6 @@ class AliMagF : public TVirtualMagField
   void         InitMachineField(BeamType_t btype, Double_t benergy);
   void         SetBeamType(BeamType_t type)                           {fBeamType = type;}
   void         SetBeamEnergy(Float_t energy)                          {fBeamEnergy = energy;}
-  void         SetCompensatorMagnet(Bool_t flag)                      {fCompensator = flag;}
   //
  protected:
   AliMagWrapCheb*  fMeasuredMap;     //! Measured part of the field map
@@ -76,7 +74,6 @@ class AliMagF : public TVirtualMagField
   Double_t         fSolenoid;        // Solenoid field setting
   BeamType_t       fBeamType;        // Beam type: A-A (fBeamType=0) or p-p (fBeamType=1)
   Double_t         fBeamEnergy;      // Beam energy in GeV
-  Bool_t           fCompensator;     // Flag for compensator magnetic field (kTrue -> ON)
   // 
   Int_t            fInteg;           // Default integration method as indicated in Geant
   Int_t            fPrecInteg;       // Alternative integration method, e.g. for higher precision
@@ -94,10 +91,8 @@ class AliMagF : public TVirtualMagField
   TNamed           fParNames;        // file and parameterization loadad
   //
   static const Double_t  fgkSol2DipZ;    // conventional Z of transition from L3 to Dipole field 
-  static const Double_t  fgkBMachineZ1;  // Min Z of the LHC mag field range (to be checked?)
-  static const Double_t  fgkBMachineZ2;  // Max Z of the LHC mag field range
   //   
-  ClassDef(AliMagF, 1)           // Class for all Alice MagField wrapper for measured data + Tosca parameterization
+  ClassDef(AliMagF, 2)           // Class for all Alice MagField wrapper for measured data + Tosca parameterization
 };
 
 

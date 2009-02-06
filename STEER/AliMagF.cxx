@@ -24,9 +24,7 @@
 
 ClassImp(AliMagF)
 
-const Double_t AliMagF::fgkSol2DipZ   =  -700.;
-const Double_t AliMagF::fgkBMachineZ1 =   919.;
-const Double_t AliMagF::fgkBMachineZ2 = -1972.;
+const Double_t AliMagF::fgkSol2DipZ    =  -700.;  
 
 //_______________________________________________________________________
 AliMagF::AliMagF():
@@ -36,7 +34,6 @@ AliMagF::AliMagF():
   fSolenoid(0),
   fBeamType(kNoBeamField),
   fBeamEnergy(0),
-  fCompensator(kFALSE),
   //
   fInteg(0),
   fPrecInteg(0),
@@ -60,14 +57,13 @@ AliMagF::AliMagF():
 AliMagF::AliMagF(const char *name, const char* title, Int_t integ, 
 		 Double_t factorSol, Double_t factorDip, 
 		 Double_t fmax, BMap_t maptype, const char* path,
-		 BeamType_t bt, Double_t be, Bool_t compensator):
+		 BeamType_t bt, Double_t be):
   TVirtualMagField(name),
   fMeasuredMap(0),
   fMapType(maptype),
   fSolenoid(0),
   fBeamType(bt),
   fBeamEnergy(be),
-  fCompensator(compensator),
   //
   fInteg(integ),
   fPrecInteg(1),
@@ -83,6 +79,9 @@ AliMagF::AliMagF(const char *name, const char* title, Int_t integ,
   fACorr2Field(0),
   fParNames("","")
 {
+  // Initialize the field with Geant integration option "integ" and max field "fmax,
+  // Impose scaling of parameterized L3 field by factorSol and of dipole by factorDip.
+  // The "be" is the energy of the beam in GeV/nucleon
   //
   SetTitle(title);
   if(integ<0 || integ > 2) {
@@ -123,7 +122,6 @@ AliMagF::AliMagF(const AliMagF &src):
   fSolenoid(src.fSolenoid),
   fBeamType(src.fBeamType),
   fBeamEnergy(src.fBeamEnergy),
-  fCompensator(src.fCompensator),
   fInteg(src.fInteg),
   fPrecInteg(src.fPrecInteg),
   fFactorSol(src.fFactorSol),
@@ -177,13 +175,13 @@ void AliMagF::Field(const Double_t *xyz, Double_t *b)
 {
   // Method to calculate the field at point  xyz
   //
-  b[0]=b[1]=b[2]=0.0;
-  if (xyz[2] > fgkBMachineZ1 || xyz[2] < fgkBMachineZ2) MachineField(xyz, b);
-  else if (fMeasuredMap) {
+  //  b[0]=b[1]=b[2]=0.0;
+  if (fMeasuredMap && xyz[2]>fMeasuredMap->GetMinZ() && xyz[2]<fMeasuredMap->GetMaxZ()) {
     fMeasuredMap->Field(xyz,b);
     if (xyz[2]>fgkSol2DipZ || fDipoleOFF) for (int i=3;i--;) b[i] *= fFactorSol;
-    else                                  for (int i=3;i--;) b[i] *= fFactorDip;
+    else                                  for (int i=3;i--;) b[i] *= fFactorDip;    
   }
+  else MachineField(xyz, b);
   //
 }
 
@@ -192,13 +190,11 @@ Double_t AliMagF::GetBz(const Double_t *xyz) const
 {
   // Method to calculate the field at point  xyz
   //
-  if (xyz[2] <= fgkBMachineZ1 && xyz[2] >= fgkBMachineZ2) return fMeasuredMap->GetBz(xyz);
-  else {
-    double b[3] = {0,0,0};
-    MachineField(xyz, b);
-    return b[2];
+  if (fMeasuredMap && xyz[2]>fMeasuredMap->GetMinZ() && xyz[2]<fMeasuredMap->GetMaxZ()) {
+    double bz = fMeasuredMap->GetBz(xyz);
+    return (xyz[2]>fgkSol2DipZ || fDipoleOFF) ? bz*fFactorSol : bz*fFactorDip;    
   }
-  //
+  else return 0.;
 }
 
 //_______________________________________________________________________
@@ -211,7 +207,6 @@ AliMagF& AliMagF::operator=(const AliMagF& src)
     fSolenoid    = src.fSolenoid;
     fBeamType    = src.fBeamType;
     fBeamEnergy  = src.fBeamEnergy;
-    fCompensator = src.fCompensator;
     fInteg       = src.fInteg;
     fPrecInteg   = src.fPrecInteg;
     fFactorSol   = src.fFactorSol;
@@ -226,41 +221,23 @@ AliMagF& AliMagF::operator=(const AliMagF& src)
 //_______________________________________________________________________
 void AliMagF::InitMachineField(BeamType_t btype, Double_t benergy)
 {
-  const double kToler = 0.1;
-  if (btype==kNoBeamField) {
+  if (btype==kNoBeamField || benergy<1.) {
     fQuadGradient = fDipoleField = fCCorrField = fACorr1Field = fACorr2Field = 0.;
+    return;
   }
   //
-  else if (btype==kBeamTypepp && TMath::Abs(1.-benergy/5000.)<kToler ){
-    // p-p @ 5+5 TeV
-    fQuadGradient = 15.7145;
-    fDipoleField  = 27.0558;
-    // SIDE C
-    fCCorrField   = 9.7017;
-    // SIDE A
-    fACorr1Field  = -13.2143;
-    fACorr2Field  = -11.9909;
-  } else if (btype == kBeamTypepp && TMath::Abs(1.-benergy/450.)<kToler) {
-    // p-p 0.45+0.45 TeV
-    Double_t const kEnergyRatio = benergy / 7000.;
-    fQuadGradient = 22.0002 * kEnergyRatio;
-    fDipoleField  = 37.8781 * kEnergyRatio;
-    // SIDE C
-    fCCorrField   =  9.6908;
-    // SIDE A
-    fACorr1Field  = -13.2014;
-    fACorr2Field  = -9.6908;
-  } else if ( (btype == kBeamTypepp && TMath::Abs(1.-benergy/7000.)<kToler) || 
-	      (fBeamType == kBeamTypeAA) ) {
-    // Pb-Pb @ 2.7+2.7 TeV or p-p @ 7+7 TeV
-    fQuadGradient = 22.0002;
-    fDipoleField  = 37.8781;
-    // SIDE C
-    fCCorrField   = 9.6908;
-    // SIDE A
-    fACorr1Field  = -13.2014;
-    fACorr2Field  = -9.6908;
-  }
+  double rigScale = benergy/7000.;   // scale according to ratio of E/Enominal
+  // for ions assume PbPb (with energy provided per nucleon) and account for A/Z
+  if (btype == kBeamTypeAA) rigScale *= 208./82.;
+  //
+  fQuadGradient = 22.0002*rigScale;
+  fDipoleField  = 37.8781*rigScale;
+  //
+  // SIDE C
+  fCCorrField   = -9.6980;
+  // SIDE A
+  fACorr1Field  = -13.2247;
+  fACorr2Field  =  11.7905;
   //
 }
 
@@ -268,126 +245,92 @@ void AliMagF::InitMachineField(BeamType_t btype, Double_t benergy)
 void AliMagF::MachineField(const Double_t *x, Double_t *b) const
 {
   // ---- This is the ZDC part
-  const Double_t kCCorrBegin = fgkBMachineZ2-0.5,kCCorrEnd = kCCorrBegin - 153., kCCorrSqRadius = 4.5*4.5;
+  // Compansators for Alice Muon Arm Dipole
+  const Double_t kBComp1CZ = 1075., kBComp1hDZ = 260./2., kBComp1SqR = 4.0*4.0; 
+  const Double_t kBComp2CZ = 2049., kBComp2hDZ = 153./2., kBComp2SqR = 4.5*4.5; 
+  //  
+  const Double_t kTripQ1CZ = 2615., kTripQ1hDZ = 637./2., kTripQ1SqR = 3.5*3.5;
+  const Double_t kTripQ2CZ = 3408., kTripQ2hDZ = 550./2., kTripQ2SqR = 3.5*3.5;
+  const Double_t kTripQ3CZ = 4130., kTripQ3hDZ = 550./2., kTripQ3SqR = 3.5*3.5;
+  const Double_t kTripQ4CZ = 5015., kTripQ4hDZ = 637./2., kTripQ4SqR = 3.5*3.5;
   //
-  const Double_t kCTripletBegin  = -2296.5;
-  const Double_t kCQ1Begin = kCTripletBegin,        kCQ1End = kCQ1Begin-637., kCQ1SqRadius = 3.5*3.5;
-  const Double_t kCQ2Begin = kCTripletBegin-908.5,  kCQ2End = kCQ2Begin-550., kCQ2SqRadius = 3.5*3.5;
-  const Double_t kCQ3Begin = kCTripletBegin-1558.5, kCQ3End = kCQ3Begin-550., kCQ3SqRadius = 3.5*3.5;
-  const Double_t kCQ4Begin = kCTripletBegin-2400.,  kCQ4End = kCQ4Begin-637., kCQ4SqRadius = 3.5*3.5;
-  //
-  const Double_t kCD1Begin = -5838.3,  kCD1End = kCD1Begin-945., kCD1SqRadius = 4.5*4.5;
-  const Double_t kCD2Begin = -12167.8, kCD2End = kCD2Begin-945., kCD2SqRadius = 4.5*4.5;
-  const Double_t kCD2XCentre1 = -9.7;
-  const Double_t kCD2XCentre2 =  9.7;
-  //
-  // -> SIDE A
-  // NB -> kACorr1Begin = 919. to be checked
-  const Double_t kACorr1Begin = fgkBMachineZ1, kACorr1End = kACorr1Begin+260., kCCorr1SqRadius = 4.*4.;
-  const Double_t kACorr2Begin = -fgkBMachineZ2 + 0.5, kACorr2End = kACorr2Begin+153., kCCorr2SqRadius = 4.5*4.5;
-  const Double_t kATripletBegin  = 2296.5;
-  const Double_t kAQ1Begin = kATripletBegin,	kAQ1End = kAQ1Begin+637., kAQ1SqRadius = 3.5*3.5;
-  const Double_t kAQ2Begin = kATripletBegin+908.5,  kAQ2End = kAQ2Begin+550., kAQ2SqRadius = 3.5*3.5;
-  const Double_t kAQ3Begin = kATripletBegin+1558.5, kAQ3End = kAQ3Begin+550., kAQ3SqRadius = 3.5*3.5;
-  const Double_t kAQ4Begin = kATripletBegin+2400.,  kAQ4End = kAQ4Begin+637., kAQ4SqRadius = 3.5*3.5;
-  //
-  const Double_t kAD1Begin = 5838.3,  kAD1End = kAD1Begin+945., kAD1SqRadius = 3.375*3.375;
-  const Double_t kAD2Begin = 12167.8, kAD2End = kAD2Begin+945., kAD2SqRadius = 3.75*3.75;
-  const Double_t kAD2XCentre1 = -9.4;
-  const Double_t kAD2XCentre2 =  9.4;
+  const Double_t kDip1CZ = 6310.8,  kDip1hDZ = 945./2., kDip1SqRC = 4.5*4.5, kDip1SqRA = 3.375*3.375;
+  const Double_t kDip2CZ = 12640.3, kDip2hDZ = 945./2., kDip2SqRC = 4.5*4.5, kDip2SqRA = 3.75*3.75;
+  const Double_t kDip2DXC = 9.7, kDip2DXA = 9.4;
   //
   double rad2 = x[0] * x[0] + x[1] * x[1];
   //
+  b[0] = b[1] = b[2] = 0;
+  //
   // SIDE C **************************************************
   if(x[2]<0.){  
-    if(x[2] < kCCorrBegin && x[2] > kCCorrEnd && rad2 < kCCorrSqRadius){
-      b[0] = fCCorrField;
-      b[1] = 0.;
-      b[2] = 0.;
+    if(TMath::Abs(x[2]+kBComp2CZ)<kBComp2hDZ && rad2 < kBComp2SqR){
+      b[0] = fCCorrField*fFactorDip;
     } 
-    else if(x[2] < kCQ1Begin && x[2] > kCQ1End && rad2 < kCQ1SqRadius){
+    else if(TMath::Abs(x[2]+kTripQ1CZ)<kTripQ1hDZ && rad2 < kTripQ1SqR){
       b[0] = fQuadGradient*x[1];
       b[1] = fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] < kCQ2Begin && x[2] > kCQ2End && rad2 < kCQ2SqRadius){
+    else if(TMath::Abs(x[2]+kTripQ2CZ)<kTripQ2hDZ && rad2 < kTripQ2SqR){
       b[0] = -fQuadGradient*x[1];
       b[1] = -fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] < kCQ3Begin && x[2] > kCQ3End && rad2 < kCQ3SqRadius){
+    else if(TMath::Abs(x[2]+kTripQ3CZ)<kTripQ3hDZ && rad2 < kTripQ3SqR){
       b[0] = -fQuadGradient*x[1];
       b[1] = -fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] < kCQ4Begin && x[2] > kCQ4End && rad2 < kCQ4SqRadius){
+    else if(TMath::Abs(x[2]+kTripQ4CZ)<kTripQ4hDZ && rad2 < kTripQ4SqR){
       b[0] = fQuadGradient*x[1];
       b[1] = fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] < kCD1Begin && x[2] > kCD1End && rad2 < kCD1SqRadius){
+    else if(TMath::Abs(x[2]+kDip1CZ)<kDip1hDZ && rad2 < kDip1SqRC){
       b[1] = fDipoleField;
-      b[2] = 0.;
-      b[2] = 0.;
     }
-    else if(x[2] < kCD2Begin && x[2] > kCD2End){
-      if(((x[0]-kCD2XCentre1)*(x[0]-kCD2XCentre1)+(x[1]*x[1]))<kCD2SqRadius
-	 || ((x[0]-kCD2XCentre2)*(x[0]-kCD2XCentre2)+(x[1]*x[1]))<kCD2SqRadius){
+    else if(TMath::Abs(x[2]+kDip2CZ)<kDip2hDZ && rad2 < kDip2SqRC) {
+      double dxabs = TMath::Abs(x[0])-kDip2DXC;
+      if ( (dxabs*dxabs + x[1]*x[1])<kDip2SqRC) {
 	b[1] = -fDipoleField;
-	b[2] = 0.;
-	b[2] = 0.;
       }
     }
   }
   //
   // SIDE A **************************************************
   else{        
-    if(fCompensator && (x[2] > kACorr1Begin && x[2] < kACorr1End) && rad2 < kCCorr1SqRadius) {
+    if(TMath::Abs(x[2]-kBComp1CZ)<kBComp1hDZ && rad2 < kBComp1SqR) {
       // Compensator magnet at z = 1075 m 
-      b[0] = fACorr1Field;
-      b[1] = 0.;
-      b[2] = 0.;
-      return;
+      b[0] = fACorr1Field*fFactorDip;
     }
     //
-    if(x[2] > kACorr2Begin && x[2] < kACorr2End && rad2 < kCCorr2SqRadius){
-      b[0] = fACorr2Field;
-      b[1] = 0.;
-      b[2] = 0.;
-    }          
-    else if(x[2] > kAQ1Begin && x[2] < kAQ1End && rad2 < kAQ1SqRadius){
-      // First quadrupole of inner triplet de-focussing in x-direction
+    if(TMath::Abs(x[2]-kBComp2CZ)<kBComp2hDZ && rad2 < kBComp2SqR){
+      b[0] = fACorr2Field*fFactorDip;
+    }
+    else if(TMath::Abs(x[2]-kTripQ1CZ)<kTripQ1hDZ && rad2 < kTripQ1SqR){
       b[0] = -fQuadGradient*x[1];
       b[1] = -fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] > kAQ2Begin && x[2] < kAQ2End && rad2 < kAQ2SqRadius){
-      b[0] = fQuadGradient*x[1];
-      b[1] = fQuadGradient*x[0];
-      b[2] = 0.;
+    else if(TMath::Abs(x[2]-kTripQ2CZ)<kTripQ2hDZ && rad2 < kTripQ2SqR){
+      b[0] =  fQuadGradient*x[1];
+      b[1] =  fQuadGradient*x[0];
     }
-    else if(x[2] > kAQ3Begin && x[2] < kAQ3End && rad2 < kAQ3SqRadius){
-      b[0] = fQuadGradient*x[1];
-      b[1] = fQuadGradient*x[0];
-      b[2] = 0.;
+    else if(TMath::Abs(x[2]-kTripQ3CZ)<kTripQ3hDZ && rad2 < kTripQ3SqR){
+      b[0] =  fQuadGradient*x[1];
+      b[1] =  fQuadGradient*x[0];
     }
-    else if(x[2] > kAQ4Begin && x[2] < kAQ4End && rad2 < kAQ4SqRadius){
+    else if(TMath::Abs(x[2]-kTripQ4CZ)<kTripQ4hDZ && rad2 < kTripQ4SqR){
       b[0] = -fQuadGradient*x[1];
       b[1] = -fQuadGradient*x[0];
-      b[2] = 0.;
     }
-    else if(x[2] > kAD1Begin && x[2] < kAD1End && rad2 < kAD1SqRadius){
-      b[0] = 0.;
+    else if(TMath::Abs(x[2]-kDip1CZ)<kDip1hDZ && rad2 < kDip1SqRA){
       b[1] = -fDipoleField;
-      b[2] = 0.;
     }
-    else if(x[2] > kAD2Begin && x[2] < kAD2End){
-      if(((x[0]-kAD2XCentre1)*(x[0]-kAD2XCentre1)+(x[1]*x[1])) < kAD2SqRadius
-	 || ((x[0]-kAD2XCentre2)*(x[0]-kAD2XCentre2)+(x[1]*x[1])) < kAD2SqRadius){
+    else if(TMath::Abs(x[2]-kDip2CZ)<kDip2hDZ && rad2 < kDip2SqRA) {
+      double dxabs = TMath::Abs(x[0])-kDip2DXA;
+      if ( (dxabs*dxabs + x[1]*x[1])<kDip2SqRA) {
 	b[1] = fDipoleField;
       }
     }
   }
+  //
 }
 
 //_______________________________________________________________________

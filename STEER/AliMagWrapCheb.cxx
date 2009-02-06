@@ -282,20 +282,24 @@ Double_t AliMagWrapCheb::GetBz(const Double_t *xyz) const
   //
 #ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
   if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
-       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) return 0;
+       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) return 0.;
 #endif
   //
   if (xyz[2]<fMaxZDip) {    // dipole part?
 #ifndef _BRING_TO_BOUNDARY_
     AliCheb3D* par = GetParamDip(FindDipSegment(xyz));
     if (par->IsInside(xyz)) return par->Eval(xyz,2);
-    else return 0;
+    else return 0.;
 #else
     return GetParamDip(FindDipSegment(xyz))->Eval(xyz,2);
 #endif
   }
   // Sol region: convert coordinates to cyl system
   CartToCyl(xyz,rphiz);
+#ifndef _BRING_TO_BOUNDARY_
+  if (rphiz[0]>GetMaxRSol()) return 0.;
+#endif
+  //
   return FieldCylSolBz(rphiz);
 }
 

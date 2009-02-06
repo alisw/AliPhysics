@@ -862,7 +862,7 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
   }
   
   AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), 2, fcL3, fcDip, 10., map, path, 
-			     btype,beamenergy,kTRUE);
+			     btype,beamenergy);
   TGeoGlobalMagField::Instance()->SetField( fld );
   TGeoGlobalMagField::Instance()->Lock();
   //

@@ -66,6 +66,8 @@ class AliMagWrapCheb: public TNamed
   Int_t      GetNParamsDip()                              const {return fNParamsDip;}
   Int_t      GetNSegZDip()                                const {return fNZSegDip;}
   //
+  Float_t    GetMaxZ()                                    const {return GetMaxZSol();}
+  Float_t    GetMinZ()                                    const {return fParamsDip ? GetMinZDip() : GetMinZSol();}
   //
   Float_t    GetMinZSol()                                 const {return fMinZSol;}
   Float_t    GetMaxZSol()                                 const {return fMaxZSol;}
