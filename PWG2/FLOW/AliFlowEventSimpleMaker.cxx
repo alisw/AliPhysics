@@ -38,13 +38,7 @@
 
 ClassImp(AliFlowEventSimpleMaker)
 //----------------------------------------------------------------------- 
-AliFlowEventSimpleMaker::AliFlowEventSimpleMaker():
- fUseWeightsPhi(kFALSE),
- fUseWeightsPt(kFALSE),
- fUseWeightsEta(kFALSE),
- fPhiWeights(NULL),
- fPtWeights(NULL),   
- fEtaWeights(NULL)
+AliFlowEventSimpleMaker::AliFlowEventSimpleMaker()
 {
   //constructor
 }
@@ -53,27 +47,6 @@ AliFlowEventSimpleMaker::AliFlowEventSimpleMaker():
 AliFlowEventSimpleMaker::~AliFlowEventSimpleMaker()
 {
   //destructor
-}
-
-//----------------------------------------------------------------------- 
-void AliFlowEventSimpleMaker::Init(TFile *file)
-{
- //initialize weights' histograms 
- if(file)
- {
-  if(fUseWeightsPhi)
-  {
-   file->GetObject("phi_weights",fPhiWeights);
-  }
-  if(fUseWeightsPt)
-  { 
-   file->GetObject("pt_weights",fPtWeights);
-  } 
-  if(fUseWeightsEta)
-  {
-   file->GetObject("eta_weights",fEtaWeights);
-  } 
- }//end of if(file)
 }
 
 //-----------------------------------------------------------------------   
@@ -113,14 +86,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
   //cerr<<pEvent<<" pEvent "<<endl;
   
-  //needed if weights are used:
-  pEvent->SetUseWeightsPhi(fUseWeightsPhi);
-  pEvent->SetUseWeightsPt(fUseWeightsPt);
-  pEvent->SetUseWeightsEta(fUseWeightsEta);
-  pEvent->SetPhiWeights(fPhiWeights); 
-  pEvent->SetPtWeights(fPtWeights); 
-  pEvent->SetEtaWeights(fEtaWeights); 
-
   Int_t iN = iNumberOfInputTracks; // additional variable to artificially fix the number of tracks
   //  Int_t iN = 576; //multiplicity for chi=1.5
   //  Int_t iN = 256; //multiplicity for chi=1

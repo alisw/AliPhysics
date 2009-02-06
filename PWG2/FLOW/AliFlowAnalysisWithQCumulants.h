@@ -19,6 +19,7 @@
 class TObjArray;
 class TList;
 class TFile;
+class TGraph;
 
 class TH1;
 class TProfile;
@@ -37,7 +38,7 @@ class AliFlowAnalysisWithQCumulants{
   AliFlowAnalysisWithQCumulants();
   virtual ~AliFlowAnalysisWithQCumulants(); 
   
-  virtual void CreateOutputObjects();
+  virtual void Init();
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
   virtual void WriteHistograms(TString outputFileName);
@@ -86,6 +87,12 @@ class AliFlowAnalysisWithQCumulants{
   void SetAverageMultiplicity(TProfile* const am) {this->fAvMultIntFlowQC = am;};
   TProfile* GetAverageMultiplicity() const {return this->fAvMultIntFlowQC;};
   
+  void SetQvectorForEachEventX(TProfile* const qvfeex) {this->fQvectorForEachEventX = qvfeex;};
+  TProfile* GetQvectorForEachEventX() const {return this->fQvectorForEachEventX;};
+
+  void SetQvectorForEachEventY(TProfile* const qvfeey) {this->fQvectorForEachEventY = qvfeey;};
+  TProfile* GetQvectorForEachEventY() const {return this->fQvectorForEachEventY;};
+        
   void SetQCorrelations(TProfile* const QCorr) {this->fQCorrelations = QCorr;};
   TProfile* GetQCorrelations() const {return this->fQCorrelations;};
   
@@ -157,6 +164,15 @@ class AliFlowAnalysisWithQCumulants{
   
   void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
   TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
+  
+  void SetPhiWeights(TH1F const phiW) { this->fPhiWeights = phiW; this->fUsePhiWeights = kTRUE;};
+  TH1F GetPhiWeights() const { return this->fPhiWeights;};
+  
+  void SetPtWeights(TH1D const ptW) { this->fPtWeights = ptW; ; this->fUsePtWeights = kTRUE;};
+  TH1D GetPtWeights() const { return this->fPtWeights;};
+  
+  void SetEtaWeights(TH1D const etaW) { this->fEtaWeights = etaW; ; this->fUseEtaWeights = kTRUE;};
+  TH1D GetEtaWeights() const { return this->fEtaWeights;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -174,6 +190,8 @@ class AliFlowAnalysisWithQCumulants{
   TH1D*               fDiffFlowResults4thOrderQC;       //differential flow results from 4th order Q-cumulant
   TH1D*               fCovariances;                     //final results for covariances: 1st bin: <2*4>-<2>*<4>, 2nd bin: <2*6>-<2>*<6>, ...
   
+  TProfile*                  fQvectorForEachEventX;     //profile containing the x-components of Q-vectors from all events (to be removed)  
+  TProfile*                  fQvectorForEachEventY;     //profile containing the y-components of Q-vectors from all events (to be removed)   
   TProfile*                  fQCorrelations;            //multi-particle correlations calculated from Q-vectors 
   TProfile*                  fQProduct;                 //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   
@@ -220,8 +238,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fEtaReq2nPrimePOI;         //real part of q'-vector evaluated in harmonic 2n for each eta-bin
   TProfile*                  fEtaImq2nPrimePOI;         //imaginary part of q'-vector evaluated in harmonic 2n for each eta-bin
   TProfile*                  fmPrimePerEtaBin;          //number of particles selected both as POI and not as RP per each eta-bin
-  
-  
+   
   TProfile*                  fEtaReq1nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic n for each eta-bin
   TProfile*                  fEtaImq1nPrimePrimePOI;    //imaginary part of q''-vector evaluated in harmonic n for each eta-bin
   TProfile*                  fEtaReq2nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic 2n for each eta-bin
@@ -261,7 +278,15 @@ class AliFlowAnalysisWithQCumulants{
   
   Int_t                      fnBinsEta;                 //number of eta bins
   Double_t                   fEtaMin;                   //minimum eta   
-  Double_t                   fEtaMax;                   //maximum eta           
+  Double_t                   fEtaMax;                   //maximum eta
+  Int_t                      fEventCounter;             //counting the number of events    
+   
+  Bool_t                     fUsePhiWeights;            // phi weights
+  Bool_t                     fUsePtWeights;             // v_2(pt) weights
+  Bool_t                     fUseEtaWeights;            // v_2(eta) weights
+  TH1F                       fPhiWeights;               // histogram with phi weights
+  TH1D                       fPtWeights;                // histogram with v_2(pt) weights   
+  TH1D                       fEtaWeights;               // histogram with v_2(eta) weights    
                         
   ClassDef(AliFlowAnalysisWithQCumulants, 0);
 };
