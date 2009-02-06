@@ -1,0 +1,30 @@
+Executable = "aliroot_new";
+Jobtag={"comment:PbPb, HIJING Central"};
+
+Packages={"VO_ALICE@AliRoot::v4-16-Rev-05",
+          "VO_ALICE@GEANT3::v1-9-8","VO_ALICE@ROOT::v5-22-00","VO_ALICE@APISCONFIG::V2.4"};
+
+TTL = "72000";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/a/aliprod/prod2007/configs_pbpb_hijing/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/Config.C",
+            "LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/simRun.C",
+            "LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/sim.C",
+            "LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/rec.C",
+            "LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/CheckESD.C",
+            "LF:/alice/cern.ch/user/e/estienne/prod2008/config_pbpb_hijing/tag.C"};
+
+OutputArchive={"log_archive:*.tag.root,stdout,stderr,*.log@Alice::NIHAM::File","root_archive.zip:galice.root,geometry.root,Kinematics.root,TrackRefs.root,AliESDs.root,AliESDfriends.root,FMD.Hits.root,T0.Hits.root,VZERO.Hits.root,*.SDigits.root@Alice::Subatech::DPM"};
+
+OutputFile={"Run*.root@Alice::NIHAM::File"};
+OutputDir="[:OUTPUTDIR:]/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+splitarguments="simRun.C --run $1 --event #alien_counter# --bmin 0 --bmax 5 --quench 1 --qhat 1 --etamin -8 --etamax 8 --phimin 0 --phimax 360";
+split="production:1-1000";
+
+Workdirectorysize={"6000MB"};
