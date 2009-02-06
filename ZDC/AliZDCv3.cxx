@@ -357,7 +357,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QT05", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT05", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
-  printf("	QT05 TUBE pipe from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QT05 TUBE pipe from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += 2.*tubpar[2];
      
@@ -447,7 +447,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QC08", "CONE", idtmed[7], conpar, 5);
   gMC->Gspos("QC08", 1, "ZDCC", 0., 0., -conpar[0]-zd1, 0, "ONLY");
   // Ch.debug
-  printf("	QC08 CONE pipe from z = %1.2f to z= %1.2f\n",-zd1,-2*conpar[0]-zd1);
+  //printf("	QC08 CONE pipe from z = %1.2f to z= %1.2f\n",-zd1,-2*conpar[0]-zd1);
 
   zd1 += 2.*conpar[0];
   
@@ -472,7 +472,7 @@ void AliZDCv3::CreateBeamLine()
  
   zd1 += 2.*tubpar[2];
   // Ch.debug
-  printf("	Beginning of VCTYB volume @ z = %f \n",-zd1);
+  //printf("	Beginning of VCTYB volume @ z = %1.2f \n",-zd1);
   
   // simulation of the trousers (VCTYB)     
   tubpar[0] = 19.6/2.;
@@ -1063,7 +1063,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA14", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA14", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug  
-  printf("	QA14 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
+  //printf("	QA14 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
         
@@ -2287,7 +2287,7 @@ void AliZDCv3::StepManager()
   // Routine called at every step in the Zero Degree Calorimeters
   //
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
-  Float_t hits[11], x[3], xdet[3], um[3], ud[3];
+  Float_t hits[12], x[3], xdet[3], um[3], ud[3];
   Float_t m=0., ekin=0., destep=0., be=0., out=0.;
   // Parametrization for light guide uniformity
   // NEW!!! Light guide tilted @ 51 degrees
@@ -2295,7 +2295,7 @@ void AliZDCv3::StepManager()
   Double_t s[3], p[3];
   const char *knamed;
   //
-  for(j=0;j<11;j++) hits[j]=-999.;
+  for(j=0;j<12;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
@@ -2491,6 +2491,9 @@ void AliZDCv3::StepManager()
         TParticle *part = (gAlice->GetMCApp())->Particle(curTrackN);
 	hits[10] = part->GetPdgCode();
 	//printf("\t PDGCode = %d\n", part->GetPdgCode());
+        //
+	hits[11] = 1.0e09*gMC->TrackTime();
+	//printf("\t TrackTime = %f\n", hits[11]);
 
 	AddHit(curTrackN, vol, hits);
 	
