@@ -1,20 +1,22 @@
 #include "TStopwatch.h"
 #include "TObjArray"
 #include "Riostream.h"
+#include "TFile.h"
 
+//----------------------------------------------------------
 //RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kTRUE;
+Bool_t SP    = kFALSE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;  
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
+Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
+//----------------------------------------------------------
 
-Int_t offset = 0;
-
+//----------------------------------------------------------
 //CUT SETTINGS
 //integrated selection
 Double_t ptMaxInt  = 10.;
@@ -33,10 +35,21 @@ Double_t etaMinDiff = -1.;
 Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
+//----------------------------------------------------------
 
-int runFlowAnalysis(Int_t aRuns = 100, const char* 
-			  //			  dir="/data/alice1/kolk/KineOnly3/")
-			  dir="/Users/snelling/alice_data/KineOnly3/")
+//----------------------------------------------------------
+//WEIGHTS SETTINGS 
+//to use or not to use the weights - that is a question!
+Bool_t useWeightsPhi = kFALSE;//Phi
+Bool_t useWeightsPt  = kFALSE;//v'(pt)
+Bool_t useWeightsEta = kFALSE;//v'(eta)
+//----------------------------------------------------------
+
+Int_t offset = 0;
+                                          
+int runFlowAnalysis(Int_t aRuns = 44, const char* 
+			 			  dir="/data/alice1/kolk/KineOnly3/")
+			  //dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -61,10 +74,25 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   cerr<<"libPWG2flow.so loaded ..."<<endl;
   cout<<endl; 
 
+  //open the file with the weights: 
+  TFile *file = NULL;
+  if(useWeightsPhi||useWeightsPt||useWeightsEta)
+  {
+   file = TFile::Open("weightsForTheSecondRun.root", "READ");
+  }
+  
   // flow event in AliRoot
-  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker(); 
-  //------------------------------------------------------------------------
+  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
 
+  // if weights are being used initialize the weight's histos in AliFlowEvenSimpleMaker:
+  fEventMaker->SetUseWeightsPhi(useWeightsPhi);
+  fEventMaker->SetUseWeightsPt(useWeightsPt);
+  fEventMaker->SetUseWeightsEta(useWeightsEta);
+  if(useWeightsPhi||useWeightsPt||useWeightsEta)
+  {
+   fEventMaker->Init(file);
+  }
+  
   // In root
 
   /*    
@@ -187,7 +215,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   }
 
   //LYZ2 = Lee-Yang Zeroes second run
- 
   if(LYZ2) {
     AliFlowAnalysisWithLeeYangZeros* lyz2 = new AliFlowAnalysisWithLeeYangZeros();
     // read the input file from the first run 
@@ -231,6 +258,7 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
     }
   }
   //------------------------------------------------------------------------
+  
   
   //standard code
   Int_t fCount = 0;
@@ -322,10 +350,9 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 	      //cout << "  . . . kTree " << fCount << " has " << nPart << " particles " << endl; 
 	      
 	      //-----------------------------------------------------------
-	      //fill and save the flow event
-	      
-	      AliFlowEventSimple* fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff);
-	      
+	      //fill and save the flow event	      
+	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
+	                    
 	      //pass the flow event to flow methods for analysis 
 	      Double_t fEP = 0.; // temporary number need true value
 	      if(MCEP) mcep->Make(fEvent,fEP);  //fix fEP
