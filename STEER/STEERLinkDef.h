@@ -141,6 +141,13 @@
 
 #pragma link C++ class AliGRPObject+;
 
+#pragma link C++ class AliQA+;
+
+#pragma link C++ class AliRunInfo+;
+#pragma link C++ class AliEventInfo+;
+#pragma link C++ class AliDetectorRecoParam+;
+#pragma link C++ class AliRecoParam+;
+
 #pragma link C++ class AliMillePede2+;
 #pragma link C++ class AliMillePedeRecord+;
 #pragma link C++ class AliMinResSolve+;

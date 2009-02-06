@@ -62,15 +62,8 @@
 
 #pragma link C++ class  AliPDG+;
 
-#pragma link C++ class AliQA+;
-
 #pragma link C++ class AliTimeStamp+;
 #pragma link C++ class AliTriggerScalers+;
 #pragma link C++ class AliTriggerScalersRecord+;
-
-#pragma link C++ class AliRunInfo+;
-#pragma link C++ class AliEventInfo+;
-#pragma link C++ class AliDetectorRecoParam+;
-#pragma link C++ class AliRecoParam+;
 
 #endif

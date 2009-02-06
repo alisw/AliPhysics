@@ -64,6 +64,9 @@ AliGRPRecoParam.cxx \
 AliRelAlignerKalman.cxx \
 AliESDTagCreator.cxx \
 AliGRPObject.cxx \
+AliQA.cxx \
+AliRunInfo.cxx AliEventInfo.cxx \
+AliRecoParam.cxx AliDetectorRecoParam.cxx \
 AliMillePede2.cxx AliMatrixSq.cxx AliMatrixSparse.cxx AliSymMatrix.cxx AliMinResSolve.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 

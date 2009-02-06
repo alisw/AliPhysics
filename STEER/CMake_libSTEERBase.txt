@@ -23,11 +23,7 @@ set(SRCS
   AliMagF.cxx AliMagF.cxx AliMagWrapCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx
   AliCodeTimer.cxx
   AliPDG.cxx
-  AliQA.cxx
   AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
-  AliRunInfo.cxx AliEventInfo.cxx 
-  AliRecoParam.cxx 
-  AliDetectorRecoParam.cxx 
 )
 
 # fill list of header files from list of source files
