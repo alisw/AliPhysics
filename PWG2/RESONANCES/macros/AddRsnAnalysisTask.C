@@ -10,34 +10,32 @@
 
 
 
-static AliRsnAnalysisTaskSEBase::EInputType inputType = AliRsnAnalysisTaskSEBase::kESDMC;
+static AliRsnAnalysisTaskSEBase::EInputType inputType      = AliRsnAnalysisTaskSEBase::kESDMC;
+static const char*                          outputFileName = "rsn.root";
 
-static Bool_t useAutoHandler = kTRUE;
-static Int_t  bufferSize     = 3000;
-static Int_t  pidArraySize   = 2000;
+static Bool_t    useAutoHandler = kTRUE;
+static Int_t     bufferSize     = 3000;
+static Int_t     pidArraySize   = 2000;
+static Int_t     nMixedEvents   = 5;
 
-static const char*       outputFileName = "rsn.root";
+static Bool_t    useRsnTrackCuts = kFALSE;
+static Double_t  etaRange = 10.0;
+static Double_t  rsnImpactParam = 3.0;
+static Double_t  ptMin = 0.0;
 
-static Bool_t            useRsnTrackCuts = kFALSE;
-static Double_t          etaRange = 10.0;
-static Double_t          rsnImpactParam = 3.0;
-static Double_t          ptMin = 0.0;
-
-static Bool_t            useESDTrackCuts = kFALSE;
-static Double_t          cov11 = 2;
-static Double_t          cov22 = 2;
-static Double_t          cov33 = 0.5;
-static Double_t          cov44 = 0.5;
-static Double_t          cov55 = 2;
-static Double_t          nSigmaToVertex = 4;
-static Double_t          dcaToVertex = 3.0;
-static Double_t          maxChi2PerClusterTPC = 3.5;
-static Bool_t            requireTPCRefit = kTRUE;
-static Bool_t            requireSigmaToVertex = kTRUE;
-static Bool_t            acceptKinkDaughters = kFALSE;
-static Int_t             minNClustersTPC = 50;
-
-static Int_t             nMixedEvents = 5;
+static Bool_t    useESDTrackCuts = kFALSE;
+static Double_t  cov11 = 2;
+static Double_t  cov22 = 2;
+static Double_t  cov33 = 0.5;
+static Double_t  cov44 = 0.5;
+static Double_t  cov55 = 2;
+static Double_t  nSigmaToVertex = 4;
+static Double_t  dcaToVertex = 3.0;
+static Double_t  maxChi2PerClusterTPC = 3.5;
+static Bool_t    requireTPCRefit = kTRUE;
+static Bool_t    requireSigmaToVertex = kTRUE;
+static Bool_t    acceptKinkDaughters = kFALSE;
+static Int_t     minNClustersTPC = 50;
 
 Int_t AddRsnAnalysisTask(AliAnalysisManager *mgr)
 {
@@ -104,7 +102,7 @@ Int_t AddRsnAnalysisTask(AliAnalysisManager *mgr)
   reader->SetUseRsnTrackCuts(useRsnTrackCuts);
 
   // add configs for all impact parameters
-  task->AddPairMgrFromMacro("CreatePairsPhi.C");
+  task->AddPairMgrFromConfig("CreatePairsPhi.C");
 
   // initialize containers
   AliAnalysisDataContainer *input = mgr->CreateContainer("in", TChain::Class(), AliAnalysisManager::kInputContainer);
