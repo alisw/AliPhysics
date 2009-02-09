@@ -38,7 +38,7 @@ void RunRecoCheck(Bool_t local = kFALSE) {
   // set the magnetic field for track extrapolations
   // look in the OCDB for the value of the magnet current
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //cdb->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-10-Release/Ideal/");
   cdb->SetRun(0);
 
