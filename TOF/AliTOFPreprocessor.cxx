@@ -794,7 +794,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 					  
 					  nNoise++;
 					  nNoiseSource++;
-					  if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 kHz
+					  if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 Hz
 						  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
 						  AliDebug(2,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
 					  }
