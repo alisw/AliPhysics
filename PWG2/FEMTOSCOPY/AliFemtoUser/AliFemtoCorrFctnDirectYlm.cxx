@@ -10,9 +10,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "AliFemtoCorrFctnDirectYlm.h"
 #include <TMath.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_complex.h>
 #include <iostream>
 
 using namespace std;
