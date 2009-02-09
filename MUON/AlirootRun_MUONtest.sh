@@ -211,7 +211,7 @@ EOF
   if [ -f "$OUTDIR/$SIMDIR/galice.root" ]; then
     aliroot -l -b  << EOF
     AliCDBManager* man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliMUONMCDataInterface mcdSim("$OUTDIR/$SIMDIR/galice.root");
     mcdSim.DumpKine($DUMPEVENT);       > $OUTDIR/dump.$DUMPEVENT.kine
     mcdSim.DumpHits($DUMPEVENT);       > $OUTDIR/dump.$DUMPEVENT.hits
@@ -227,7 +227,7 @@ EOF
   if [ -f "$OUTDIR/galice.root" ]; then
     aliroot -l -b << EOF
     AliCDBManager* man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliMUONDataInterface dRec("$OUTDIR/galice.root");
     dRec.DumpDigits($DUMPEVENT,true); > $OUTDIR/dump.$DUMPEVENT.recdigits
     dRec.DumpRecPoints($DUMPEVENT);  > $OUTDIR/dump.$DUMPEVENT.recpoints

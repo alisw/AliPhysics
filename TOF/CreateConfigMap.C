@@ -16,6 +16,6 @@ void CreateConfigMap(const char* delayFlag="kFALSE", const char* startRun="0", c
 	mapTOF->Add(new TObjString("IntegralThr"),new TObjString(integralThr));
 	mapTOF->Add(new TObjString("ThrPar"),new TObjString(thrPar));
 	AliCDBManager *man = AliCDBManager::Instance();
-	man->SetDefaultStorage("local://$ALICE_ROOT");
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	tofcalib->WriteConfigMapOnCDB("TOF/Calib");
 }

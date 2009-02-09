@@ -58,7 +58,7 @@ void ReadCDD(Bool_t residual, Int_t ndet){
   AliCDBManager *man = AliCDBManager::Instance();
  
 
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetSpecificStorage("TRD/Calib/LocalGainFactor","local://.");
   man->SetSpecificStorage("TRD/Calib/LocalT0","local://.");
   man->SetSpecificStorage("TRD/Calib/LocalVdrift","local://.");

@@ -128,7 +128,7 @@ void RunChain(
 	}
 	if (cdbManager->GetDefaultStorage() == NULL)
 	{
-		cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+		cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	}
 	if (cdbManager->GetRun() == -1)
 	{
@@ -397,16 +397,16 @@ void RunChain(
 	{
 		if (TString(lutDir) == "CDB")
 		{
-			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -cdbpath local://$ALICE_ROOT -run 0"));
-			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -cdbpath local://$ALICE_ROOT -run 0 -suppress_partial_triggers"));
-			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -cdbpath local://$ALICE_ROOT -run 0 -suppress_partial_triggers"));
+			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
+			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -cdbpath local://$ALICE_ROOT/OCDB -run 0 -suppress_partial_triggers"));
+			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -cdbpath local://$ALICE_ROOT/OCDB -run 0 -suppress_partial_triggers"));
 		}
 		else
 		{

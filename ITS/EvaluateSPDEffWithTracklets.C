@@ -101,7 +101,7 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
     }
     if (!man->IsDefaultStorageSet()) {
       printf("Setting a local default CDB storage and run number 0\n");
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
       man->SetRun(0);
     }
     // retrives geometry

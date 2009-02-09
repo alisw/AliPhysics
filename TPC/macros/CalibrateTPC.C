@@ -59,7 +59,7 @@ TObject  * SetupCalibTask(char * prefix ="/V12/") {
   //
   //
   AliCDBManager::Instance()->SetRun(1) ;
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("TPC calibration task");
   

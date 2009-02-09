@@ -27,9 +27,9 @@ void rec(const char *filename="data.root")
   man->SetDefaultStorage(ocdbpath);
   //  man->SetSpecificStorage("TPC/Calib/Parameters","local:///data/test2007/");
   // man->SetSpecificStorage("TPC/Calib/PadNoise","local:///data/test2007/");
-  //   man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT");
-  //   man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  //   man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  //   man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT/OCDB");
+  //   man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT/OCDB");
+  //   man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT/OCDB");
 
   // TPC settings
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);

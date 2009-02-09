@@ -21,7 +21,7 @@ void SetCalibDB() {
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
-  TString DBFolder  ="local://$ALICE_ROOT/EMCAL/beamtest07";
+  TString DBFolder  ="local://$ALICE_ROOT/OCDB/EMCAL/beamtest07";
   firstRun  =  0;
   lastRun   =  999999999;
   objFormat = "EMCAL beam test 2007 gain factors and pedestals";

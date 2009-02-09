@@ -59,7 +59,7 @@ void MUONTrigger(const char* filename)
     
     // Creating MUONTriggerDecision
     AliCDBManager* cdbManager = AliCDBManager::Instance();
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     
     Int_t runnumber = cdbManager->GetRun();
     AliMpCDB::LoadDDLStore();

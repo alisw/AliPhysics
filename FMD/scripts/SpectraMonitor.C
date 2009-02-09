@@ -12,7 +12,7 @@
 void
 SpectraMonitor(const char* file="", 
 	       Int_t       runno=0, 
-	       const char* cdbSrc="local://$ALICE_ROOT", 
+	       const char* cdbSrc="local://$ALICE_ROOT/OCDB", 
 	       UShort_t    over=0)
 {
   gSystem->Load("libANALYSIS.so");
@@ -28,7 +28,7 @@ SpectraMonitor(const char* file="",
 	      << "   <runno>       Is the (optional) run number\n"
 	      << "   <cdb>         Is the (optional) CDB storage\n"
 	      << "   <over>        Is the (optional) over sampling rate\n\n"
-	      << "Defaults are <runno>=0 and cdb=\"local://$ALICE_ROOT\"\n" 
+	      << "Defaults are <runno>=0 and cdb=\"local://$ALICE_ROOT/OCDB\"\n" 
 	      << "<over> allows one to override the CDB setting.  Default\n"
 	      << "is to use the CDB setting.\n\n"
 	      << "Note: This script _must_ be compiled with ACLic"
@@ -696,7 +696,7 @@ public:
 void
 RunSpectraMonitor(const char* file="", 
 		  Int_t       runno=0, 
-		  const char* cdbSrc="local://$ALICE_ROOT", 
+		  const char* cdbSrc="local://$ALICE_ROOT/OCDB", 
 		  UShort_t    over=0)
 {
   // AliLog::SetModuleDebugLevel("FMD", 8);
@@ -709,7 +709,7 @@ RunSpectraMonitor(const char* file="",
 	      << "   <runno>       Is the (optional) run number\n"
 	      << "   <cdb>         Is the (optional) CDB storage\n"
 	      << "   <over>        Is the (optional) over sampling rate\n\n"
-	      << "Defaults are <runno>=0 and cdb=\"local://$ALICE_ROOT\"\n" 
+	      << "Defaults are <runno>=0 and cdb=\"local://$ALICE_ROOT/OCDB\"\n" 
 	      << "<over> allows one to override the CDB setting.  Default\n"
 	      << "is to use the CDB setting.\n\n"
 	      << "Note: This script _must_ be compiled with ACLic"

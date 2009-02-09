@@ -893,7 +893,7 @@ void AliTOFcalib::CreateTreeFromCDB(Int_t minrun, Int_t maxrun){
   fTree->Branch("nentries",&nentries,"nentries/I");
   fTree->Branch("TOFentries",p,"TOFentries[nentries]/F");
   AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBStorage *aStorage = man->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *aStorage = man->GetStorage("local://$ALICE_ROOT/OCDB");
   for (Int_t irun = minrun;irun<=maxrun;irun++){
     AliCDBEntry *entry = aStorage->Get("TOF/RefData/TreeForCalib",irun);
     if (!entry){

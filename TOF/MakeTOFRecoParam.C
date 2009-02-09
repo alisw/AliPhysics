@@ -2,7 +2,7 @@ void MakeTOFRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   // Create TOF Calibration Object for Ideal calibration and 
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   TObjArray *recoParamArray = new TObjArray();
 

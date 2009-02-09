@@ -61,7 +61,7 @@ void Config()
   //  Create the output file
    
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(0);
   }
   

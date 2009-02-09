@@ -11,7 +11,7 @@ void
 FancyDigits()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   gSystem->Load("libFMDutil.so");
   AliFMDFancy* d = new AliFMDFancy;
   d->AddLoad(AliFMDInput::kDigits);

@@ -36,7 +36,7 @@ Reconstruct()
   // AliMagF* mag = static_cast<AliMagF*>(magF->Get("mag"));
   // if (!mag) return;
   // AliTracker::SetFieldMap(mag, true);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
 
   AliReconstruction rec;   

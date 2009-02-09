@@ -162,7 +162,7 @@ void AliITSSurveyToAlignSSD::CreateAlignObj(){
 
   //load ideal geometry from the OCDB
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(fRun);
   AliCDBEntry* entry = cdb->Get("GRP/Geometry/Data");
   AliGeomManager::SetGeometry(gGeoManager);

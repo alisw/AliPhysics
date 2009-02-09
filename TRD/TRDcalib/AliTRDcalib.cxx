@@ -87,7 +87,7 @@ void AliTRDcalib::SlaveBegin(TTree * tree)
   ffriendTrack = 0x0;
 
   AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //cdbManager->SetSpecificStorage("TRD/Calib/FEE","local:///u/bailhach/aliroot/database30head/");
   cdbManager->SetRun(0);
 

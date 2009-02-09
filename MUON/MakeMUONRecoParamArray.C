@@ -47,7 +47,7 @@ void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::I
   
   // init CDB
   AliCDBManager* man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet()) man->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!man->IsDefaultStorageSet()) man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(startRun);
   
   // set RecoParams

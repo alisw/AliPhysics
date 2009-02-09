@@ -18,7 +18,7 @@ class AliITSgeom;
 //                                                //
 ////////////////////////////////////////////////////
 
-/* $Id:$ */
+/* $Id$ */
 
 class AliITSPlaneEff : public AliPlaneEff {
  public:

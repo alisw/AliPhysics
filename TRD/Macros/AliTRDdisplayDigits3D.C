@@ -60,7 +60,7 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 4
   }
 
   AliCDBManager *cdbManager  = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   calibration->SetRun(0);
 

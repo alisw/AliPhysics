@@ -1,4 +1,4 @@
-void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const Char_t* cdbPath="local://$ALICE_ROOT") {
+void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const Char_t* cdbPath="local://$ALICE_ROOT/OCDB") {
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");

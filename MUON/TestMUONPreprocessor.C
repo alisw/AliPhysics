@@ -126,11 +126,11 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
-  const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
+  const char* inputCDB = "local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB";
   //const char* inputCDB = "alien://folder=/alice/testdata/2008/TS08a/OCDB";
   
   AliTestShuttle::SetMainCDB(inputCDB);
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   TString rt(runType);
   rt.ToUpper();

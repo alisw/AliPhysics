@@ -4,7 +4,7 @@ void MakeACORDEZeroMisAlignment(){
   const char* macroname = "MakeACORDEZeroMisAlignment.C";
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/ACORDE/Align/Data");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB/ACORDE/Align/Data");
   cdb->SetRun(0);
   
   AliCDBStorage* storage;

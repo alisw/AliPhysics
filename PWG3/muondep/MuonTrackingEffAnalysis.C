@@ -40,7 +40,7 @@ void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, 
     }
     else
     {
-      ocdbPath = "local://$ALICE_ROOT";
+      ocdbPath = "local://$ALICE_ROOT/OCDB";
     }
 
     man->SetDefaultStorage(ocdbPath.Data());

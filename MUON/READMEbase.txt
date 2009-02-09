@@ -18,7 +18,7 @@ for MC information, use AliMUONMCDataInterface :
 
 <pre>
 > aliroot (or root with just the loading of MUON libs, see loadlibs.C)
-root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 root [1] AliMUONMCDataInterface mcdi("galice.root");
 root [2] mcdi.DumpKine(5);       > dump.kine
 root [3] mcdi.DumpHits(5);       > dump.hits
@@ -29,7 +29,7 @@ for all other information, use AliMUONDataInterface :
 
 <pre>
 > aliroot
-root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 root [1] AliMUONDataInterface di("galice.root");
 root [2] di.DumpDigits(5);     > dump.digits
 root [3] di.DumpSDigits(5);    > dump.sdigits

@@ -47,7 +47,7 @@ void StoreObject(AliTPCClusterParam *clParam)
   //
   //
   Int_t gkDummyRun = 0;
-  char *gCDBpath   = "local://$ALICE_ROOT";
+  char *gCDBpath   = "local://$ALICE_ROOT/OCDB";
   AliCDBMetaData *md1= new AliCDBMetaData(); 
   AliCDBId id1("TPC/Calib/ClusterParam", gkDummyRun, gkDummyRun); 
   AliCDBStorage* gStorLoc = 0;

@@ -16,7 +16,7 @@ void CreateIdealOnlineCalibPars(){
   // Write the dummy offline calibration object on CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
     AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);

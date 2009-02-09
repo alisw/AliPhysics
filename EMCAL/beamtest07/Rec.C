@@ -7,8 +7,8 @@ void Rec(TString file="/scratch/alicehp2/commun/testbeam07/LHC07a_EMCAL/00000019
   // Boris Polichtchouk, 31 Aug 2007
 
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("EMCAL/Calib/Data","local://$ALICE_ROOT/EMCAL/beamtest07/");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("EMCAL/Calib/Data","local://$ALICE_ROOT/OCDB/EMCAL/beamtest07/");
 
   //AliLog::SetGlobalDebugLevel(2);
 

@@ -17,7 +17,7 @@ void CreateOnlineCalibPars(){
   // Write the online calibration object on CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
   Float_t delay=0.;
   Float_t meanDelay=0.3;

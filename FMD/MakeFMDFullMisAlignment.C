@@ -5,7 +5,7 @@ void MakeFMDFullMisAlignment()
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   Bool_t    toCdb   = TString(gSystem->Getenv("TOCDB")) == TString("kTRUE");

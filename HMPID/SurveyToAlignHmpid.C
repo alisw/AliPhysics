@@ -22,9 +22,9 @@ void SurveyToAlignHmpid(const char* filename="Survey_781282_HMPID.txt"){
 	// We retrieve and open the ideal geometry
 	AliCDBManager* cdbman = AliCDBManager::Instance();
 	if(!cdbman->IsDefaultStorageSet()){
-		cdbman->SetDefaultStorage("local://$ALICE_ROOT");
+		cdbman->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	}else{
-		cdbman->SetSpecificStorage("GRP/Geometry/*","local://$ALICE_ROOT");
+		cdbman->SetSpecificStorage("GRP/Geometry/*","local://$ALICE_ROOT/OCDB");
 	}
 	cdbman->SetRun(0);
 	AliCDBEntry* cdbe = (AliCDBEntry*) cdbman->Get("GRP/Geometry/Data"); 

@@ -47,8 +47,8 @@ void Init(){
   //
   //
   //
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
@@ -65,8 +65,8 @@ void InitAlien(const char *path="LHC08b"){
   alpath+=path;
   alpath+="/OCDB";
     
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data",alpath.Data());
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature",alpath.Data());
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie",alpath.Data());

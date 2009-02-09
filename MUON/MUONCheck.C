@@ -39,7 +39,7 @@ void MUONCheck(Int_t firstEvent, Int_t lastEvent,
 {
    // Set default CDB storage
    AliCDBManager* man = AliCDBManager::Instance();
-   man->SetDefaultStorage("local://$ALICE_ROOT");
+   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
    gSystem->Load("libMUONevaluation");
 

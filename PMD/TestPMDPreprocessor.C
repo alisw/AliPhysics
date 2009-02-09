@@ -17,7 +17,7 @@ void TestPMDPreprocessor()
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
 
    AliTestShuttle::SetOCDBStorage("local://TestCDB");
-  // AliTestShuttle::SetReferenceStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // AliTestShuttle::SetReferenceStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
 
   printf("Test OCDB storage Uri: %s\n", AliTestShuttle::GetOCDBStorage().Data());
 

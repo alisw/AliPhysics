@@ -4,7 +4,7 @@ void DBStorageCalib(){
 AliCDBManager *man = AliCDBManager::Instance();
 
 AliCDBStorage *storLoc;
-man->SetDefaultStorage("local://$ALICE_ROOT");
+man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
 // Setting gain and pedestal values :
 

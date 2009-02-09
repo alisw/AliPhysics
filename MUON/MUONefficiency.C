@@ -86,7 +86,7 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 
   // Set default CDB storage
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   Double_t MUON_MASS = 0.105658369;
   Double_t UPSILON_MASS = 9.4603 ;

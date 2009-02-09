@@ -145,7 +145,7 @@ lines AlirootRun_MUONtest.sh).
 <pre>
 aliroot -b  >& testSim.out << EOF
 AliCDBManager* man = AliCDBManager::Instance();
-man->SetDefaultStorage("local://$ALICE_ROOT");
+man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 man->SetSpecificStorage("MUON/align/Data","local://ResMisAlignCDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetWriteRawData("MUON");

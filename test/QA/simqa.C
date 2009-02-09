@@ -5,11 +5,11 @@ void simqa()
 	gEnv->SetValue("Root.Stacktrace","no");
 	AliCDBManager * man = AliCDBManager::Instance();
 	//man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
-	man->SetDefaultStorage("local://$ALICE_ROOT");
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD PMD ZDC T0 VZERO"); 
 	
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+	AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
 //	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   
 

@@ -42,7 +42,7 @@ TString ocdbPath = "alien://folder=/alice/data/2008/LHC08b/OCDB";
 
 // Data file, OCDB locally
 //TString input="$ALICE_ROOT/MUON/test_out.100/raw.root";
-//TString ocdbPath = "local://$ALICE_ROOT";
+//TString ocdbPath = "local://$ALICE_ROOT/OCDB";
 
 TString caliboption1 = "NOGAIN";
 TString caliboption2 = "GAINCONSTANTCAPA";
@@ -56,8 +56,8 @@ void runDataReconstruction(Int_t calib = 1)
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath.Data());
 
-  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT/OCDB");
+  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT/OCDB");
   
   gRandom->SetSeed(seed);
   

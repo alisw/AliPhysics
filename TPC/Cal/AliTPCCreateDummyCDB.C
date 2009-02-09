@@ -27,7 +27,7 @@
 //
 // run number for the dummy file
 Int_t gkDummyRun = 0;
-char *gCDBpath   = "local://$ALICE_ROOT";
+char *gCDBpath   = "local://$ALICE_ROOT/OCDB";
 AliCDBStorage* gStorLoc = 0;
 
 //

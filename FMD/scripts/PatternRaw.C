@@ -12,7 +12,7 @@ PatternRaw(const char* file="raw.root")
 {
   // AliLog::SetModuleDebugLevel("FMD", 8);
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliFMDParameters::Instance()->Init();
   gSystem->Load("libFMDutil.so");

@@ -89,11 +89,11 @@ void Config()
 	 cout << "#####################################################" << endl;
 	 cout << "#                                                   #" << endl;
 	 cout << "#     WARNING: CDB DEFAULT STORAGE NOT SET !!!      #" << endl;
-	 cout << "#     SETTING IT TO local://$ALICE_ROOT !!!         #" << endl;
+	 cout << "#     SETTING IT TO local://$ALICE_ROOT/OCDB !!!         #" << endl;
 	 cout << "#                                                   #" << endl;
 	 cout << "#####################################################" << endl;
           
-         AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+         AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
     
     if(AliCDBManager::Instance()->GetRun() < 0){

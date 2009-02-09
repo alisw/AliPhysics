@@ -216,7 +216,7 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2008/LHC08a/0000219
   
   AliCodeTimer::Instance()->Reset();
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   AliMpCDB::LoadDDLStore();
   

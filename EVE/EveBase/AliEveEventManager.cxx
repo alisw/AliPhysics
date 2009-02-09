@@ -75,7 +75,7 @@ Bool_t AliEveEventManager::fgAssertRaw       = kFALSE;
 TString  AliEveEventManager::fgESDFileName("AliESDs.root");
 TString  AliEveEventManager::fgAODFileName("AliAOD.root");
 TString  AliEveEventManager::fgRawFileName("raw.root");
-TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
+TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT/OCDB");
 
 TList*   AliEveEventManager::fgAODfriends = 0;
 
@@ -203,7 +203,7 @@ void AliEveEventManager::SetRawFileName(const TString& raw)
 
 void AliEveEventManager::SetCdbUri(const TString& cdb)
 {
-  // Set path to CDB, default "local://$ALICE_ROOT".
+  // Set path to CDB, default "local://$ALICE_ROOT/OCDB".
 
   if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }

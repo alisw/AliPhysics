@@ -142,7 +142,7 @@
 // 
 //   // initialize DB manager
 //   AliCDBManager *cdb = AliCDBManager::Instance();
-//   cdb->SetDefaultStorage("local://$ALICE_ROOT");
+//   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 //   cdb->SetRun(0);
 //   // initialize magnetic field.
 //   AliMagFCheb *field=new AliMagFCheb("Maps","Maps", 2, 1., 10., AliMagFCheb::k5kG);

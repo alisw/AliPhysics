@@ -38,13 +38,13 @@ public:
 
   // Methods for display
   void DisplayEfficiency(Bool_t perSlat=kFALSE,
-			 const Char_t* cdbStorage = "local://$ALICE_ROOT",
+			 const Char_t* cdbStorage = "local://$ALICE_ROOT/OCDB",
 			 Int_t runNumber=0);
 
   // Methods for efficiency check
   /// Set the list of fired strips
   void SetFiredStrips(TList *firedStrips){fFiredStrips = firedStrips;}
-  void CheckFiredStrips(const Char_t* cdbStorage = "local://$ALICE_ROOT",
+  void CheckFiredStrips(const Char_t* cdbStorage = "local://$ALICE_ROOT/OCDB",
 			Int_t runNumber=0);
                                 // Check for strips with lower counts than others:
                                 // syntomatic of possible read-out problems in boards

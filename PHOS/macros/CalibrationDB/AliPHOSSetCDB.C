@@ -116,7 +116,7 @@ void SetCC(Int_t flag=0)
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("Boris Polichtchouk");
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   if(gSystem->Getenv("STORAGE")){
     cout << "Setting specific storage" << endl;
     AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
@@ -156,7 +156,7 @@ void GetCC(Int_t flag=0)
     runNumber = 0;
   }
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   if(gSystem->Getenv("STORAGE")){
     cout << "Setting specific storage" << endl;
     AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());

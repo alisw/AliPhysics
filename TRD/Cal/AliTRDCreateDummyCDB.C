@@ -216,7 +216,7 @@ void AliTRDCreateDummyCDB()
        << endl;
   
   AliCDBManager *man = AliCDBManager::Instance();
-  gStorLoc = man->GetStorage("local://$ALICE_ROOT");
+  gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc) {
     return;
   }

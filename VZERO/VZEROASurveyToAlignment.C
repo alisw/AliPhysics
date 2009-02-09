@@ -258,7 +258,7 @@ void VZEROASurveyToAlignment(){
   }else{
     // save in CDB storage
      AliCDBManager* cdb = AliCDBManager::Instance();
-     AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
+     AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
      AliCDBMetaData* mda = new AliCDBMetaData();
      mda->SetResponsible("Lizardo Valencia");
      mda->SetComment("Alignment objects for V0A survey");

@@ -34,7 +34,7 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   // Fill the Sim calibration object
 
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   TRandom *rnd   = new TRandom(4357);
   Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){

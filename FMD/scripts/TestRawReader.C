@@ -21,7 +21,7 @@ TestRawReader(const char* file=
 	      "/media/cholm_data/alice/data/08000059807016.10.root" // w/ZS
 	      )
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(59807);
   AliFMDParameters::Instance()->Init();
   AliLog::SetModuleDebugLevel("FMD", 2);

@@ -33,9 +33,9 @@ AliTRDgeometry *gGeo;
 void AliTRDcompareDigits( Int_t id_start = 0 , Int_t id_end = 539 )
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT");
+  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   //  cout << "[I] Is storage set : " << cdb->IsDefaultStorageSet() << endl;
   cout << endl;
 

@@ -184,13 +184,13 @@ namespace {
 //
 // Read back the calibrations written, and check the values 
 //
-void ReadBack(const char* dbBase="local://$ALICE_ROOT/FMD/")
+void ReadBack(const char* dbBase="local://$ALICE_ROOT/OCDB/FMD/")
 {
   // AliLog::SetModuleDebugLevel("FMD", 1);
   // Set specific storage of FMD ALTRO map 
   AliCDBManager::Instance()->SetDefaultStorage(Form("%s/TestCDB", dbBase));
   AliCDBManager::Instance()->SetSpecificStorage("FMD/Calib/AltroMap",
-						"local://$ALICE_ROOT");
+						"local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   
   AliFMDParameters* param = AliFMDParameters::Instance();
@@ -256,7 +256,7 @@ void ReadBack(const char* dbBase="local://$ALICE_ROOT/FMD/")
 //
 void TestPreprocessor(const char* runType="PEDESTAL", 
 		      Bool_t createDummies=kTRUE,
-		      const char* dbBase="local://$ALICE_ROOT/FMD/")
+		      const char* dbBase="local://$ALICE_ROOT/OCDB/FMD/")
 {
   // Dummy data
   if (createDummies) { 
@@ -272,7 +272,7 @@ void TestPreprocessor(const char* runType="PEDESTAL",
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/FMD/TestCDB");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB/FMD/TestCDB");
   AliTestShuttle::SetLocalCDB(Form("%s/TestCDB", dbBase));
   AliTestShuttle::SetMainRefStorage(Form("%s/TestReference", dbBase));
 
@@ -379,7 +379,7 @@ int
 main(int argc, char** argv)
 {
   Bool_t createDummies = kTRUE;
-  TString dbBase   = "local://$ALICE_ROOT/FMD/";
+  TString dbBase   = "local://$ALICE_ROOT/OCDB/FMD/";
   for (int i = 1; i < argc; i++) { 
     if (argv[i][0] == '-') { 
       switch (argv[i][1])  {

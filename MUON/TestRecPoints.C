@@ -80,7 +80,7 @@ Int_t GetPlane(Int_t ch, Int_t cath){return kNcathodes * ch + cath;}
 void ClusterSize(TList&, AliMUONVDigit*, Int_t&, Int_t);
 
 // Main Method
-void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10., Int_t whatToTest=kTrackTrig, Int_t runNumber=0, TString cdbStorage="local://$ALICE_ROOT")
+void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10., Int_t whatToTest=kTrackTrig, Int_t runNumber=0, TString cdbStorage="local://$ALICE_ROOT/OCDB")
 {
   const Int_t kNplanes = kNtrigChambers * kNcathodes;
   const Int_t kNslats = 18;

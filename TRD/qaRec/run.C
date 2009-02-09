@@ -95,7 +95,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   // DB INITIALIZATION
   // initialize OCDB manager
   AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
 

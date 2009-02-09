@@ -19,8 +19,8 @@ void TestPreprocessor()
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());

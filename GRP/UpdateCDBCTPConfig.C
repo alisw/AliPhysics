@@ -7,7 +7,7 @@ void UpdateCDBCTPConfig(const char *CTPcfg, const char* cdbUri, const char* cfgF
   AliCDBManager* cdb = AliCDBManager::Instance();
   // we set the default storage to the repository because some dets require
   // already at the time of geometry creation to find calibration objects in the cdb
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBStorage* storage = cdb->GetStorage(cdbUri);
   cdb->SetRun(0);
   AliCDBId id("GRP/CTP/Config",0,AliCDBRunRange::Infinity());

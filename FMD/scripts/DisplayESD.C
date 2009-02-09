@@ -11,7 +11,7 @@ void
 DisplayESD()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   gSystem->Load("libFMDutil.so");
   AliFMDDisplay* d = new AliFMDDisplay;
   d->AddLoad(AliFMDInput::kESD);

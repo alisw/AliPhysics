@@ -511,7 +511,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadModuleFromDB(UInt_t module, In
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -564,7 +564,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyModuleFromDB(UInt_t module, I
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -612,7 +612,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, const Char
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -669,7 +669,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, const Cha
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -715,7 +715,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDBasNoisy(Int_t runNr, con
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -810,7 +810,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -857,7 +857,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart,
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {
@@ -904,7 +904,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteNoisyToDB(Int_t runNrStart, Int_t
   TString storageSTR = Form("%s",storage);
   if (storageSTR.CompareTo("default")==0) {
     if(!man->IsDefaultStorageSet()) {
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     }
   }
   else {

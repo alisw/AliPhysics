@@ -33,7 +33,7 @@ public:
       fHasRaw(kFALSE),
       fHasESD(kFALSE)
   {
-    AliEveEventManager::SetCdbUri(TString("local://$ALICE_ROOT"));
+    AliEveEventManager::SetCdbUri(TString("local://$ALICE_ROOT/OCDB"));
     LoadMacros();
     Setup(file, false);
     SetupSelect();
@@ -387,7 +387,7 @@ Display* Display::fgInstance = 0;
 Display* display(const char* file="")
 {
   // TGeoManager::Import(geom);
-  // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   // AliCDBManager::Instance()->SetRun(0);
   // AliGeomManager::LoadGeometry("geometry.root");
 

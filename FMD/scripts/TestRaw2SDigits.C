@@ -1,7 +1,7 @@
 void
 TestRaw2SDigits()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   AliLog::SetModuleDebugLevel("FMD", 2);
   AliSimulation sim;

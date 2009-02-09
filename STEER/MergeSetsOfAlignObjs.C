@@ -41,7 +41,7 @@ void MergeSetsOfAlignObjs(const char* filename1, const char* filename2, const ch
 
   
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   
   if(fromOcdb1){

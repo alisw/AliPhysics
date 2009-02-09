@@ -3,7 +3,7 @@
 	// reading MC parameter from Config.C
 	
 	AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
 	AliCDBId id(AliQA::GetGRPPath(), 0, AliCDBRunRange::Infinity());
   AliCDBMetaData *metadata= new AliCDBMetaData();

@@ -4,11 +4,11 @@ void sim(Int_t nev=1) {
    nev = atoi(gSystem->Getenv("EVENT")) ;   
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT");
+  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   simulator.SetRunQA("ALL:ALL") ; 
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simulator.SetQACycles(det, nev+1) ;

@@ -200,7 +200,7 @@ void MUONReCalcGlobalTrigger(const char* input) {
   Int_t runNumber = 0;
 
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(runNumber);
   AliMpCDB::LoadDDLStore();
 

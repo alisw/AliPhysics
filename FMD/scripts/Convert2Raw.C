@@ -13,7 +13,7 @@ Convert2Raw()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(0);
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliRunLoader* runLoader = 
     AliRunLoader::Open("galice.root", "Alice", "read");
   runLoader->LoadgAlice();

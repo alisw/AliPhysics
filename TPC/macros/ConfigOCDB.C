@@ -24,10 +24,10 @@ void ConfigOCDB(Float_t bfield){
   //
   //
   //
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/ClusterParam","local://$ALICE_ROOT");
-  //  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/PadTime0","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/ClusterParam","local://$ALICE_ROOT/OCDB");
+  //  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/PadTime0","local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/PadTime0","local:///u/miranov/OCDB0");
 
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");

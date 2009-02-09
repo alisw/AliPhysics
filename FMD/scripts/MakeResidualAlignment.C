@@ -14,7 +14,7 @@ MakeResidualAlignment()
     gAlice->Init("$ALICE_ROOT/FMD/Config.C");
   AliCDBManager* cdb   = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) 
-    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliLog::SetModuleDebugLevel("FMD", 1);
   gSystem->Load("libFMDutil.so");

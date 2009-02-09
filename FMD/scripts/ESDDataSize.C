@@ -2,7 +2,7 @@ void
 FillEtas(AliFMDFloatMap& etas)
 {
   AliCDBManager*  cdb  = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliGeomManager::LoadGeometry("geometry.root");
   AliFMDGeometry* geom = AliFMDGeometry::Instance();

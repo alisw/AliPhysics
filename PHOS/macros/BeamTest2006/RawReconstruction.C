@@ -3,7 +3,7 @@ void Rec(TString file="raw.root")
   // Reconstruction of RAW data from the input file raw.root
   // Boris Polichtchouk, 13 Mar 2008
 
-  //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://BadMap");
 
   AliReconstruction rec ;

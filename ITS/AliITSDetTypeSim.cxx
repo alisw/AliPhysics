@@ -849,7 +849,7 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun,
 
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
     AliWarning("No storage set! Will use dummy one");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   }
 
   if (!fCalibration) {

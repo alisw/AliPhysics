@@ -10,7 +10,7 @@ void AliEMCALDecalibrate(Int_t nevents=3)
 {
   //Use "decalibration" database to simulate decalibrated EMCAL.
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("EMCAL","local://DeCalibDB");
 
   //Make digitization, calibration parameters will be taken from CDB

@@ -38,7 +38,7 @@ metaData->SetBeamPeriod(1);
 metaData->SetAliRootVersion("05-06-00"); //root version
 metaData->SetComment("October runs calibration");
 AliCDBId id1("TPC/Calib/ClusterParam", runNumber, AliCDBRunRange::Infinity());
-gStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+gStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT/OCDB");
 gStorage->Put(paramCl, id1, metaData);
 
 

@@ -51,13 +51,13 @@
  * Generates the lookup tables for the AliHLTMUONTriggerReconstructorComponent
  * components. The tables are generated from the CDB database information.
  * \param CDBPath  This is the CDB path to use as the DB storage.
- *                 (Default = local://$ALICE_ROOT)
+ *                 (Default = local://$ALICE_ROOT/OCDB)
  * \param run  This is the run number to use for the CDB (Default = 0).
  * \param useCrateId  Indicates if the crate ID should be used for the lookup table
  *            indexing rather than just a sequencial number (Default = true).
  */
 void CreateTriggerRecoLookupTables(
-		const char* CDBPath = "local://$ALICE_ROOT",
+		const char* CDBPath = "local://$ALICE_ROOT/OCDB",
 		Int_t run = 0,
 		bool useCrateId = true
 	)

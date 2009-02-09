@@ -16,7 +16,7 @@ void makePIDRefs(const char *dir = ".", const char *file="Refs.root")
 //             "dir" 
 
 	AliCDBManager *man = AliCDBManager::Instance();
-	man->SetDefaultStorage("local://$ALICE_ROOT");
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	man->SetRun(0);
 
 	AliTRDCalPIDRefMaker maker;
@@ -30,10 +30,10 @@ void generatePIDDB(const char *fileNN = "NN.root", const char *fileLQ = "LQ.root
 
 
 	AliCDBManager *man = AliCDBManager::Instance();
-	man->SetDefaultStorage("local://$ALICE_ROOT");
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	man->SetRun(0);
 
-	AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT");
+	AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
 	if (!gStorLoc) return;
 
   
@@ -69,7 +69,7 @@ AliTRDCalPID* getPIDObject(const char *method="NN")
 	gStyle->SetOptStat(0);
 	
   AliCDBManager *CDBManager = AliCDBManager::Instance();
-	CDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+	CDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	CDBManager->SetRun(0);
 
 	AliCDBEntry *wrap = CDBManager->Get(Form("TRD/Calib/PID%s", method), 0);

@@ -17,8 +17,8 @@ void TOFPreprocessorFDR()
 
   AliLog::SetClassDebugLevel("AliTOFPreprocessorFDR",1);
   // initialize location of CDB
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   // create AliTestShuttle instance
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1000);
@@ -153,7 +153,7 @@ void WriteDCSAliasMap()
   AliCDBId id("TOF/DCS/Data", 0, 0);
 
   // initialize location of CDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
 
   AliCDBManager::Instance()->Put(dcsAliasMap, id, &metaData);
 }

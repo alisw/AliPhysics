@@ -221,7 +221,7 @@ void get_pedestalAll(int runNumber = 33,
   //Save calibration objects to OCDB.
   if(saveDb) {
 
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetSpecificStorage("EMCAL/*",DBFolder.Data());
 
     AliCDBMetaData md;

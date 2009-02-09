@@ -74,7 +74,7 @@ void SetAC()
   alignda->Print();
   
   //Store calibration data into database
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
    AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
   
   AliCDBMetaData md;
@@ -120,7 +120,7 @@ void SetTimeDelay()
  
   calibda->Print();
   //Store calibration data into database
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   //  AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
   
@@ -166,7 +166,7 @@ void SetWalk()
     calibda->SetAmpLEDRec(ipmt);
   }
   //Store calibration data into database
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   //  AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
   
@@ -196,7 +196,7 @@ void GetTimeDelay()
   DBFolder  ="local://Calib";
   Int_t nRun=gAlice->GetRunNumber();
   
-  AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT/OCDB");
   AliCDBEntry* entry = stor->Get("T0/Calib/TimeDelay",0);
   
   AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject();
@@ -219,7 +219,7 @@ void GetWalk()
   DBFolder  ="local://Calib";
   Int_t nRun=gAlice->GetRunNumber();
   
-   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT/OCDB");
    AliCDBEntry* entry = stor->Get("T0/Calib/Slewing_Walk",0);
    
    AliT0CalibWalk *clb = (AliT0CalibWalk*)entry->GetObject();
@@ -270,7 +270,7 @@ void SetLookUp()
   calibda->ReadAsciiLookup("lookUpTable_tanay.txt");
 
   //Store calibration data into database
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   //  AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
 
@@ -299,7 +299,7 @@ void GetLookUp()
   //  DBFolder  ="local://Calib";
   //   Int_t nRun=gAlice->GetRunNumber();
   AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   // cout<<" GetLookUp :: "<<stor<<endl;
   AliCDBEntry *entry;
   //entry = stor->Get("T0/Calib/LookUp_Table",2,0,0);

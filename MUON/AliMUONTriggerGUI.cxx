@@ -144,7 +144,7 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   fRawTriggerStore->Create();
 
   fCDBManager = AliCDBManager::Instance();
-  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   fCDBManager->SetRun(runNumber);
   AliMpCDB::LoadDDLStore();
   fCalibrationData = new AliMUONCalibrationData(runNumber);

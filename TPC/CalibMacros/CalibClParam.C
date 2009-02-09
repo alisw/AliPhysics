@@ -17,7 +17,7 @@ void PseudoCode(){
   
   //1. Load Parameters to be modified:
   //e.g:
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0) ;
   AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();  
   //
@@ -93,7 +93,7 @@ void TestChainCosmicDedx(){
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0) ;
   AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();  
   param->SetInstance(param);

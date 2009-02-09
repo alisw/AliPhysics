@@ -79,7 +79,7 @@ void FindBad(AliMUONPadStatusMaker& statusMaker, Int_t mask, Int_t& nBadPads, In
   }
 }
 
-AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT",
+AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT/OCDB",
                              Int_t runNumber=0, Bool_t statusOnly=kFALSE, 
                              Int_t mask=0x8080)
 {  

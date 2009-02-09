@@ -53,7 +53,7 @@ ClassImp(AliHLTTRDTrackerComponent);
 AliHLTTRDTrackerComponent::AliHLTTRDTrackerComponent()
   : AliHLTProcessor()
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
-  , fStrorageDBpath("local://$ALICE_ROOT")
+  , fStrorageDBpath("local://$ALICE_ROOT/OCDB")
   , fCDB(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)

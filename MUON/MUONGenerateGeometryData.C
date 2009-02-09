@@ -56,7 +56,7 @@ void MUONGenerateGeometryData(Bool_t transforms = true,
 
   // Default CDB and run number
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
 
   // Initialize

@@ -535,7 +535,7 @@ void PMDSurveyToAlignment_v1(){
   }else{
     // save in CDB storage
     AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
+    AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
     AliCDBMetaData* mda = new AliCDBMetaData();
     mda->SetResponsible("   ");
     mda->SetComment("Alignment objects for PMD survey");

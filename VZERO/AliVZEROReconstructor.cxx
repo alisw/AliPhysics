@@ -288,7 +288,7 @@ AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
 //     AliWarning("Load of calibration data from default storage failed!");
 //     AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
 //     Int_t runNumber = man->GetRun();
-//     entry = man->GetStorage("local://$ALICE_ROOT")
+//     entry = man->GetStorage("local://$ALICE_ROOT/OCDB")
 //       ->Get("VZERO/Calib/Data",runNumber);
 // 	
 //   }

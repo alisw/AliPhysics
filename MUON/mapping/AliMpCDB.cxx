@@ -350,7 +350,7 @@ Bool_t AliMpCDB::WriteMpData()
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
@@ -370,7 +370,7 @@ Bool_t AliMpCDB::WriteMpRunData()
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
@@ -392,7 +392,7 @@ Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
@@ -418,7 +418,7 @@ Bool_t AliMpCDB::WriteDDLStore(Bool_t readData)
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
@@ -443,7 +443,7 @@ Bool_t AliMpCDB::WriteManuStore(Bool_t readData)
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");

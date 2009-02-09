@@ -38,7 +38,7 @@ void AliTRDplotNoiseBaseline(Int_t run=34529, Int_t sm=0, Int_t det=0, const cha
   //TGrid::Connect("alien://",0,0,"t");
 
   AliCDBManager *CDB = AliCDBManager::Instance();
-  CDB->SetDefaultStorage("local://$ALICE_ROOT"); 
+  CDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
   CDB->SetSpecificStorage("TRD/Calib/PadNoise",pathdatabase);
   CDB->SetSpecificStorage("TRD/Calib/DetNoise",pathdatabase);
   CDB->SetSpecificStorage("TRD/Calib/PadStatus",pathdatabase);

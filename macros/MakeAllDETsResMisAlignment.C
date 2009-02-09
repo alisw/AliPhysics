@@ -28,7 +28,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisA
   // Load geometry from CDB updating it if we are producing the
   // alignment objects for the CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   
   if(strStorage.IsNull()){ //if we produce the objects into a file

@@ -101,7 +101,7 @@ int main(int argc, char** argv)
   
   AliWarningGeneral("main","FIXME ? Remove default storage and run number from here...");
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
  
   gROOT->SetStyle("Plain");  

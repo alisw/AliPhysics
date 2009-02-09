@@ -53,7 +53,7 @@ void Config()
   }
   
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
       AliCDBManager::Instance()->SetRun(0);
   }
 

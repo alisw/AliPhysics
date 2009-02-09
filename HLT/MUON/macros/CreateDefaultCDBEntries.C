@@ -51,7 +51,7 @@ using std::endl;
  * Generates default CDB entries in the given CDB storage (local by default)
  * \param cdbPath  The path to the local storage.
  */
-void CreateDefaultCDBEntries(const char* cdbPath = "local://$ALICE_ROOT")
+void CreateDefaultCDBEntries(const char* cdbPath = "local://$ALICE_ROOT/OCDB")
 {
 	// Setup the CDB default storage and run number.
 	AliCDBManager* cdbManager = AliCDBManager::Instance();

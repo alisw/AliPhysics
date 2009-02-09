@@ -43,15 +43,15 @@ class AliMpCDB : public  TObject {
     static Bool_t LoadManuStore(Bool_t warn = false);
     
     static Bool_t LoadMpSegmentation2(
-                    const char* cdbpath = "local://$ALICE_ROOT",
+                    const char* cdbpath = "local://$ALICE_ROOT/OCDB",
                     Int_t runNumber = 0,
                     Bool_t warn = false);
     static Bool_t LoadDDLStore2(
-                    const char* cdbpath = "local://$ALICE_ROOT",
+                    const char* cdbpath = "local://$ALICE_ROOT/OCDB",
                     Int_t runNumber = 0,
                     Bool_t warn = false);
     static Bool_t LoadManuStore2(
-                    const char* cdbpath = "local://$ALICE_ROOT",
+                    const char* cdbpath = "local://$ALICE_ROOT/OCDB",
                     Int_t runNumber = 0,
                     Bool_t warn = false);
 
@@ -62,10 +62,10 @@ class AliMpCDB : public  TObject {
     static Bool_t WriteManuStore(Bool_t readData= true);
     
     static Bool_t GenerateMpData(
-                    const char* cdbpath = "local://$ALICE_ROOT",
+                    const char* cdbpath = "local://$ALICE_ROOT/OCDB",
                     Int_t runNumber = 0);
     static Bool_t GenerateMpRunData(
-                    const char* cdbpath = "local://$ALICE_ROOT",
+                    const char* cdbpath = "local://$ALICE_ROOT/OCDB",
                     Int_t runNumber = 0);
 
     // Switch loading

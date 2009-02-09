@@ -13,7 +13,7 @@ void
 PrintAlignment()
 {
   AliCDBManager* cdb   = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBEntry*   align = cdb->Get("FMD/Align/Data");
   if (!align) {
     Error("PrintAlignment","didn't alignment data from CDB");

@@ -208,7 +208,7 @@ protected:
 	 * Sets the CDB path and run number to read from.
 	 * \param cdbPath  The CDB path to use. If set to NULL and the path has
 	 *      not been set in the CDB manager then the default path
-	 *      "local://$ALICE_ROOT" is used if the 'useDefault' flag is also true.
+	 *      "local://$ALICE_ROOT/OCDB" is used if the 'useDefault' flag is also true.
 	 * \param run  The run number to use. If set to -1 and the run number has
 	 *      not been set in the CDB manager then a value of zero is used if
 	 *      the 'useDefault' flag is also true.

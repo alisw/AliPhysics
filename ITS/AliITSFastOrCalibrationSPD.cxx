@@ -42,7 +42,7 @@ Bool_t AliITSFastOrCalibrationSPD::WriteFOConfToDB(Int_t runNrStart, Int_t runNr
   AliCDBManager* man = AliCDBManager::Instance();
 
   if(!man->IsDefaultStorageSet()) {
-     man->SetDefaultStorage("local://$ALICE_ROOT");
+     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   }
 
   AliCDBMetaData* metaData = new AliCDBMetaData();

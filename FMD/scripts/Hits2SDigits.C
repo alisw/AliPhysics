@@ -1,7 +1,7 @@
 void
 Hits2SDigits()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root", "Alice", "read");

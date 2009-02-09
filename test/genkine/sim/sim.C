@@ -1,7 +1,7 @@
 void sim(Int_t nev=1) {
   AliSimulation simulator;
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT");
+  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
 

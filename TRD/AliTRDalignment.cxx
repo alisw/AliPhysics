@@ -46,7 +46,7 @@
 // TGeoManager::Import("geometry.root"); a.WriteRoot("kuku.root");           //
 // TGeoManager::Import("geometry.root"); a.WriteDB("kukudb.root",0,0);       //
 // TGeoManager::Import("geometry.root");                                     //
-// a.WriteDB("local://$ALICE_ROOT", "TRD/Align/Data", 0,0);                  //
+// a.WriteDB("local://$ALICE_ROOT/OCDB", "TRD/Align/Data", 0,0);                  //
 // TGeoManager::Import("geometry.root"); a.WriteGeo("kukugeometry.root");    //
 //                                                                           //
 // b.ReadAscii("kuku.dat");                                                  //

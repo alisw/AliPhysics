@@ -190,6 +190,6 @@ AliMUONGainEventGenerator::WriteToCDB(TObject* object, Int_t runNumber)
   md.SetResponsible("AliMUONGainEventGenerator");
   
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
   man->Put(object,id,&md);
 }

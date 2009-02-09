@@ -16,7 +16,7 @@ void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sig
   // CDB
   
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
   AliCDBId id("GRP/Calib/MeanVertex",0,AliCDBRunRange::Infinity());
   AliCDBId idTPC("GRP/Calib/MeanVertexTPC",0,AliCDBRunRange::Infinity());

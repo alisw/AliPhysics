@@ -15,7 +15,7 @@
 // Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
-/* $Id:$ */
+/* $Id$ */
   
 class AliITSPlaneEffSPD :  public AliITSPlaneEff {
  public:

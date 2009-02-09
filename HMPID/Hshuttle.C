@@ -3,7 +3,7 @@ void Hshuttle(Int_t runTime=1500)
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
-  AliTestShuttle::SetMainCDB(TString("local://$ALICE_ROOT"));
+  AliTestShuttle::SetMainCDB(TString("local://$ALICE_ROOT/OCDB"));
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   

@@ -28,7 +28,7 @@ void AliTRDFindTheCoef()
   
   ////Set the CDBManager(You have to use the same as during the reconstruction)*************************
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT"); 
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
   man->SetRun(0);
 
   ////Set the parameters of AliTRDCalibra***************

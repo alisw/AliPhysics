@@ -2547,7 +2547,7 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
     //1. Load Parameters to be modified:
     //e.g:
     
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(0) 
     AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
 

@@ -11,8 +11,8 @@ void TestPreprocessorSSD()
   // initialize location of CDB
   //  AliCDBManager::Instance()->SetDefaultStorage("local://${ALICE_ROOT}/SHUTTLE/TestShuttle/TestCDB");
 
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());

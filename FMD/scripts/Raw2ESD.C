@@ -2,7 +2,7 @@ void
 Raw2ESD(const char* file="")
 {
   AliCDBManager::Instance()->SetRun(0);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliGeomManager::LoadGeometry("geometry.root");
 
   AliRawReader* reader = 0;

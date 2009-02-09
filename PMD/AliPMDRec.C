@@ -3,7 +3,7 @@ void AliPMDRec()
   // This macro for the full reconstruction chain. Only PMD is ON.
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
 
 

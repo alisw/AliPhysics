@@ -3,7 +3,7 @@
 void
 MakeFakeDigits()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   AliFMDParameters* param = AliFMDParameters::Instance();
   param->Init(kFALSE,(AliFMDParameters::kPulseGain|

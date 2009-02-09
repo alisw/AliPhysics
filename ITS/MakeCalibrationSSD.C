@@ -1,7 +1,7 @@
 void MakeCalibrationSSD(Int_t firstRun=0,Int_t lastRun=999999999 ){
   
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB/");
   }
   
   AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object

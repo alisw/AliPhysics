@@ -18,7 +18,7 @@ void scanESD(Int_t irun=7727)
   //Author: D.Peressounko Dmitri.Peressounko@cern.ch
 
   //Uncomment the following if misalignement should be applied
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //   AliCDBManager::Instance()->SetDefaultStorage("local://./");
   //   AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local:///data/prsnko/");
   AliCDBManager::Instance()->SetRun(irun) ;

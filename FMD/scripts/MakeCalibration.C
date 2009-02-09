@@ -19,7 +19,7 @@ AdcPerMip2Gain(Int_t adc)
 }
 
 void
-MakeCalibration(const char* base="local://$ALICE_ROOT")
+MakeCalibration(const char* base="local://$ALICE_ROOT/OCDB")
 {
   AliCDBManager* cdb   = AliCDBManager::Instance();
   cdb->SetDefaultStorage(base);

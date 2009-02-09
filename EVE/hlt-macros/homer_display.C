@@ -136,7 +136,7 @@ TEveTrack* makeESDTrack( TEveTrackPropagator*   rnrStyle,
 void homer_display( Int_t run = 0) {
 
   AliCDBManager::Instance()->SetRun(run);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   gMemReader = new AliRawReaderMemory(0, 0);
 

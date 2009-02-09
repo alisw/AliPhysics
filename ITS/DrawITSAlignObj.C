@@ -40,7 +40,7 @@ void DrawITSAlignObj(Bool_t local=kFALSE) {  //
       return;
     }
   }else{
-    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     cdb->SetRun(0);
     AliGeomManager::LoadGeometry("geometry.root"); //load geom from default CDB storage
     const char* filename="ITSfullMisalignment.root";

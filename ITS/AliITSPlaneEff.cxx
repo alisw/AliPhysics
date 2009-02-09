@@ -192,7 +192,7 @@ void AliITSPlaneEff::InitCDB()
         AliDebug(2, Form("Default CDB storage is set to: %s", fCDBUri.Data()));
         AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     } else {
-        fCDBUri="local://$ALICE_ROOT";
+        fCDBUri="local://$ALICE_ROOT/OCDB";
         AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         AliWarning("Default CDB storage not yet set !!!!");
         AliWarning(Form("Setting it now to: %s", fCDBUri.Data()));

@@ -27,8 +27,8 @@ class AliMUONCDB : public TObject
 {
 public:
   /// Ctor. change the path for testing the Shuttle preprocessor, to
-  /// "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"
-  AliMUONCDB(const char* cdbpath = "local://$ALICE_ROOT");
+  /// "local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"
+  AliMUONCDB(const char* cdbpath = "local://$ALICE_ROOT/OCDB");
   virtual ~AliMUONCDB();
   
   void SetMaxNofChannelsToGenerate(Int_t n);

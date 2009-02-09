@@ -83,7 +83,7 @@ void IdealAlignment()
   // Make CDB storage and put TClonesArray in
   // 
   AliCDBManager *CDB = AliCDBManager::Instance();
-  CDB->SetDefaultStorage("local://$ALICE_ROOT");
+  CDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");
@@ -145,7 +145,7 @@ void ResidualAlignment()
   // Make CDB storage and put TClonesArray in
   // 
   AliCDBManager *CDB = AliCDBManager::Instance();
-  CDB->SetDefaultStorage("local://$ALICE_ROOT");
+  CDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");
@@ -206,7 +206,7 @@ void FullMisalignment()
   // Make CDB storage and put TClonesArray in
   // 
   AliCDBManager *CDB = AliCDBManager::Instance();
-  CDB->SetDefaultStorage("local://$ALICE_ROOT");
+  CDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");

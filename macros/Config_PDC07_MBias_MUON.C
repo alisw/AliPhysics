@@ -21,7 +21,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
   //=======================================================================
 
     if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	AliCDBManager::Instance()->SetRun(0);
     }
 

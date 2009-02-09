@@ -16,7 +16,7 @@ void
 PrintCalibration(Int_t r=0, const char* what="gain")
 {
   AliCDBManager* cdb   = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(r);
   AliFMDParameters* p = AliFMDParameters::Instance();
   p->Init(kTRUE);

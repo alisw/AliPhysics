@@ -212,7 +212,7 @@ int AliHLTMUONProcessor::SetCDBPathAndRunNo(
 	/// Sets the CDB path and run number to read from.
 	/// \param cdbPath  The CDB path to use. If set to NULL and the path has
 	///      not been set in the CDB manager then the default path
-	///      "local://$ALICE_ROOT" is used if the 'useDefault' flag is also true.
+	///      "local://$ALICE_ROOT/OCDB" is used if the 'useDefault' flag is also true.
 	/// \param run  The run number to use. If set to -1 and the run number has
 	///      not been set in the CDB manager then a value of zero is used if
 	///      the 'useDefault' flag is also true.
@@ -222,7 +222,7 @@ int AliHLTMUONProcessor::SetCDBPathAndRunNo(
 	/// \return Zero if the object could be loaded. Otherwise an error code,
 	///      compatible with the HLT framework, is returned.
 	
-	const char* defaultPath = "local://$ALICE_ROOT";
+	const char* defaultPath = "local://$ALICE_ROOT/OCDB";
 	Int_t defaultRun = 0;
 	
 	AliCDBManager* cdbManager = AliCDBManager::Instance();

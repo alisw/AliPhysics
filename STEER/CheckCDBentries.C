@@ -10,7 +10,7 @@
 void CheckCDBentries(const char* dest)
 {
 	AliCDBManager* cdb = AliCDBManager::Instance();
-	const char* ref="local://$ALICE_ROOT";
+	const char* ref="local://$ALICE_ROOT/OCDB";
 	cdb->SetDefaultStorage(ref);
 	cdb->SetRun(0);
 	AliCDBStorage* newstor = cdb->GetStorage(dest);

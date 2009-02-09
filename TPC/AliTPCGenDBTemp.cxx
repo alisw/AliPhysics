@@ -9,7 +9,7 @@
 //  Data base entry generation:
   
 //  AliTPCGenDBTemp db
-//  db->SetDefaultStorage("local://$ALICE_ROOT");
+//  db->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 //  db->SetSpecificStorage("local:///afs/cern.ch/alice/tpctest/Calib/");
 //  db->Init(0,"TPC/Config/Temperature","TPC/*/*")
 //  db->MakeConfig("TempSensor.txt",0,999999999,"TPC/Config/Temperature")

@@ -40,7 +40,7 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
 
   //TRDCalibra
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
   AliTRDCalibra *calibra = AliTRDCalibra::Instance();
 

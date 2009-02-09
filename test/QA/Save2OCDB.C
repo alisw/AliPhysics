@@ -4,7 +4,7 @@ void Save2OCDB(Int_t runNumber=0)
   const char * kYear = "08" ; 
   // where ? 
   //AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
   AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   AliQADataMakerSteer qas ; 
   qas.Save2OCDB(runNumber) ; 

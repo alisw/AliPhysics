@@ -45,7 +45,7 @@ void rawqa(const char * filename)
 
   // set the location of reference data 
   //AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
 	
   AliLog::SetGlobalDebugLevel(0) ; 
 	

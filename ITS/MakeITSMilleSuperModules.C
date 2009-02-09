@@ -26,7 +26,7 @@ void MakeITSMilleSuperModules(char *geomfile="geometry.root") {
   if (!geomfile) { // look for default geometry
     // Activate CDB storage and load geometry from CDB
     AliCDBManager* cdb = AliCDBManager::Instance();
-    if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     cdb->SetRun(0);
     
     AliCDBStorage* storage = NULL;

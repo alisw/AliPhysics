@@ -73,7 +73,7 @@ void MakeHitsTable(
 	}
 	if (cdbManager->GetDefaultStorage() == NULL)
 	{
-		cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+		cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	}
 	if (cdbManager->GetRun() == -1)
 	{

@@ -61,7 +61,7 @@
 //
 //  Example how to retrieve the paramterization:
 /*    
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
       AliCDBManager::Instance()->SetRun(0) 
       AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
 

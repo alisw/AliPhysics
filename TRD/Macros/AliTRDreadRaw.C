@@ -1,7 +1,7 @@
 void AliTRDreadRaw(const char *fname = "raw.root")
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   
   AliTRDdigitsManager manR;
@@ -29,7 +29,7 @@ void AliTRDreadRaw(const char *fname = "raw.root")
 void readRaw2(const char *fname = "raw.root")
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   AliRawReaderRoot reader(fname, 0);

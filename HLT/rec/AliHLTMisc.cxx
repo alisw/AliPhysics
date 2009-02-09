@@ -38,7 +38,7 @@ int AliHLTMiscInitCDB(const char* cdbpath)
       pCDB->SetDefaultStorage(cdbpath);
       log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
     } else if (!pCDB->IsDefaultStorageSet()) {
-      const char* cdbUri="local://$ALICE_ROOT";
+      const char* cdbUri="local://$ALICE_ROOT/OCDB";
       pCDB->SetDefaultStorage(cdbUri);
       pCDB->SetRun(0);
       log.Logging(kHLTLogInfo, "InitCDB", "CDB handling", "set default URI: %s", cdbUri);

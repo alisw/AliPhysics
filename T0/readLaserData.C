@@ -30,7 +30,7 @@ void readLaserData(Int_t runNumber=905)
   TString names[106], type;
   AliT0LookUpKey* lookkey= new AliT0LookUpKey();
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   AliT0Parameters *fParam = AliT0Parameters::Instance();
   fParam->Init();

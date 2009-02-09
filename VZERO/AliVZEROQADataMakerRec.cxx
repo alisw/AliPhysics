@@ -98,7 +98,7 @@ AliVZEROCalibData* AliVZEROQADataMakerRec::GetCalibData() const
   
   AliCDBManager *man = AliCDBManager::Instance();
   
-  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   AliCDBEntry *entry=0;
   

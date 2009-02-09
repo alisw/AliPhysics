@@ -19,7 +19,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   //=======================================================================
 
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(0);
   }
   

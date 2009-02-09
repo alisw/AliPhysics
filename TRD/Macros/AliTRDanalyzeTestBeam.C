@@ -61,7 +61,7 @@ void AliTRDanalyzeTestBeam(Int_t run, Int_t begin, Int_t end) {
   // gStyle->SetOptStat(0);
 
   // needed by the AliTRDRawStreamTB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTRDcalibDB *calib = AliTRDcalibDB::Instance();
   calib->SetRun(0);
 

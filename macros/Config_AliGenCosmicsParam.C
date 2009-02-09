@@ -77,7 +77,7 @@ void Config()
     new     TGeant3TGeo("C++ Interface to Geant3");
 
     if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
       AliCDBManager::Instance()->SetRun(0);
     }
 

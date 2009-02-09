@@ -21,7 +21,7 @@ TStatToolkit toolkit;
 void Init(){
 
   AliCDBManager::Instance()->SetRun(0);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTPCClusterParam *clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCClusterParam::SetInstance(clparam);  
   //

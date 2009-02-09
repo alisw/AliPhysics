@@ -9,7 +9,7 @@ void AliPHOSDecalibrate(Int_t nevents=1)
 
   //Use "decalibration" database to simulate decalibrated PHOS.
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("PHOS","local://DeCalibDB");
 
   // Make digitization, calibration parameters will be taken from CDB

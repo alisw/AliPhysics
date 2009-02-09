@@ -155,7 +155,7 @@ void makeBadModESD(Int_t mod=3){
 
   //put now result to local CDB
   AliCDBManager *CDB = AliCDBManager::Instance();
-  //  CDB->SetDefaultStorage("local://$ALICE_ROOT");
+  //  CDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   CDB->SetDefaultStorage("local://./");
   //  CDB->SetSpecificStorage("local://./","PHOS");
   

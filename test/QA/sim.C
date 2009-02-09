@@ -4,12 +4,12 @@ void sim(Int_t nev=1) {
   simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
   simu.SetMakeDigitsFromHits("ITS TPC");
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
-  simu.SetDefaultStorage("local://$ALICE_ROOT");
+  simu.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simu.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
 
   simu.SetRunQA("ALL:ALL") ; 
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
 
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simu.SetQACycles(det, 2) ;

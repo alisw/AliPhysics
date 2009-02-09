@@ -33,7 +33,7 @@ aliroot -b  >& testSim.out << EOF
 // Uncoment following lines to run simulation with local full mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
 AliCDBManager* man = AliCDBManager::Instance();
-man->SetDefaultStorage("local://$ALICE_ROOT");
+man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 man->SetSpecificStorage("MUON/Align/Data","local://FullMisAlignCDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetSeed($SEED);
@@ -57,8 +57,8 @@ aliroot -b >& testReco.out << EOF
 // Uncoment following lines to run reconstruction with local full mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
 //AliCDBManager* man = AliCDBManager::Instance();
-//man->SetDefaultStorage("local://$ALICE_ROOT");
-//man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/FullMisAlignCDB");
+//man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+//man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/OCDB/MUON/FullMisAlignCDB");
 gRandom->SetSeed($SEED);
 AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);

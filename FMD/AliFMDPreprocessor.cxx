@@ -148,7 +148,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // 
   // Invoking the cdb manager and the FMD parameters class
   // AliCDBManager* cdb   = AliCDBManager::Instance();
-  // cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  // cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   // cdb->SetRun(0);
   AliFMDParameters* pars = AliFMDParameters::Instance();
   pars->Init(this, false, AliFMDParameters::kAltroMap);

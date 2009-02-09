@@ -40,7 +40,7 @@ void readRawDDLT0()
   TH2F*hLEDCFD= new TH2F("hLEDCFD","LEd vs CFD",500,-0.5,10000.5,500,-0.5,10000.5);
 
   AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
 
   // AliRawReader *reader = new AliRawReaderDate("raw0/T0_3328.ddl");
    AliRawReader *reader = new AliRawReaderFile();

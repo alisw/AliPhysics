@@ -41,7 +41,7 @@ void AliTRDmakePIDThresholds(TString filename){
   
   AliCDBId id("TRD/Calib/PIDThresholds", 0, AliCDBRunRange::Infinity()); 
   AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc) {
     return;
   }

@@ -61,7 +61,7 @@ AliAnalysisManager * SetupV0Task() {
   //
   //
   AliCDBManager::Instance()->SetRun(1) ;
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("TPC calibration task");
   

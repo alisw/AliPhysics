@@ -271,7 +271,7 @@ void AliT0Align::StoreAlignObj()
  // Storing T0 alignment objects 
  //
  AliCDBManager* cdb = AliCDBManager::Instance();
- if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+ if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
  //
  TClonesArray *array = new TClonesArray("AliAlignObjParams",2);
 //

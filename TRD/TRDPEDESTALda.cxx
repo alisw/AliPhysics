@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
  
   //Instance of AliCDBManager: needed by AliTRDRawStream
   //AliCDBManager *man = AliCDBManager::Instance();
-  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetRun(0);
   // AliTRDCalibPadStatus object
   AliTRDCalibPadStatus calipad = AliTRDCalibPadStatus();

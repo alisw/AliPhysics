@@ -213,7 +213,7 @@ void ShowSPDRecPoints(Int_t RunStart, Int_t RunStop){
     AliCDBManager* man = AliCDBManager::Instance();
     if (!man->IsDefaultStorageSet()) {
       printf("Setting a local default storage and run number 0\n");
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
       man->SetRun(0);
     }
     else {

@@ -14,7 +14,7 @@ void recTPC(Int_t type, const char *filename="data.root")
   // type variable = 0 - cosmic test
   //               = 1 - laser test   
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetRun(0);
   //man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   //
@@ -31,7 +31,7 @@ void recTPC(Int_t type, const char *filename="data.root")
   //
   //
   AliReconstruction rec;  
-  rec.SetDefaultStorage("local://$ALICE_ROOT");
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   rec.SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   rec.SetLoadAlignData("");
   rec.SetWriteESDfriend(kTRUE);
@@ -54,7 +54,7 @@ void recTracking(Int_t type, const char *filename="data.root")
   // Set path to calibration data
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
   man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   //

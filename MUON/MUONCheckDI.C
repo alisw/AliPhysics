@@ -790,7 +790,7 @@ bool TriggersOk()
  */
 bool MUONCheckDI(bool checkSim = true, bool checkRec = true)
 {
-	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
 	// Note: we do not bother checking the AliMUONMCDataInterface::Particle,
 	// AliMUONMCDataInterface::Stack and AliMUONMCDataInterface::TrackRefs methods

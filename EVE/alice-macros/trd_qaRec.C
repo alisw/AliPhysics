@@ -13,7 +13,7 @@ void trd_qaRec()
   gROOT->cd();
 
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliEveEventManager::AssertGeometry();
 

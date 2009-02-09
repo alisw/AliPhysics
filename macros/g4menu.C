@@ -65,7 +65,7 @@ void g4menu()
 void MakeGeometry()
 {  
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(1);
   gAlice->Init("$ALICE_ROOT/macros/g4ConfigGeometry.C");
   
@@ -84,7 +84,7 @@ void MakeGeometry()
 void Init()
 {  
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
   gAlice->Init("$ALICE_ROOT/macros/g4Config.C");
 

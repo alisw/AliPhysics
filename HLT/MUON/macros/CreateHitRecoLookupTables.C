@@ -75,10 +75,10 @@ This also makes this macro much cleaner.
  * Generates the ASCII lookup tables for the AliHLTMUONHitReconstructorComponent
  * components. The tables are generated from the CDB database information.
  * \param CDBPath  This is the CDB path to use as the DB storage.
- *                 (Default = local://$ALICE_ROOT)
+ *                 (Default = local://$ALICE_ROOT/OCDB)
  * \param run  This is the run number to use for the CDB (Default = 0).
  */
-void CreateHitRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT", Int_t run = 0)
+void CreateHitRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT/OCDB", Int_t run = 0)
 {
 	gSystem->Load("libAliHLTMUON.so");
 

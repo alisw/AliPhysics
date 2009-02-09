@@ -4,7 +4,7 @@ void MakePHOSAlignmentModule2()
   // from the survey measurements on P2 in May 2008.
   // To store alignment in OCDB, define the evnironment variables:
   // TOCDB=kTRUE
-  // STORAGE="local://$ALICE_ROOT"
+  // STORAGE="local://$ALICE_ROOT/OCDB"
   // Author: Timur Pocheptsov, 19.06.2008
 
   const char * macroName = "MakePHOS2Alignment";
@@ -21,7 +21,7 @@ void MakePHOSAlignmentModule2()
   //[Part of code, taken from ITS version of MakexxxFullMisalignment
   AliCDBManager * cdb = AliCDBManager::Instance();
   if (!cdb->IsDefaultStorageSet())
-    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   if (TString(gSystem->Getenv("TOCDB")) == TString("kTRUE")) {

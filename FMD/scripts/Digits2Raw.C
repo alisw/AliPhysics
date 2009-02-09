@@ -32,7 +32,7 @@ Digits2Raw()
   TTree* treeE = runLoader->TreeE();
   
   AliCDBManager::Instance()->SetRun(0);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliFMDParameters::Instance()->Init(kFALSE,
 				     (AliFMDParameters::kPulseGain|

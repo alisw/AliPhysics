@@ -390,7 +390,7 @@ void AliPMDCalibrator::CalculateIsoCell()
 Bool_t AliPMDCalibrator::Store()
 {
   AliCDBManager *man = AliCDBManager::Instance();
-  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   if(!man->IsDefaultStorageSet()) return kFALSE;
   AliCDBId id("PMD/Calib/Gain",0,999999999);
   AliCDBMetaData md;

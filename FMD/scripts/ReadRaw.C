@@ -12,7 +12,7 @@ ReadRaw(const char* file=0, Int_t evno=0, bool old=false)
   TString        src(file ? file : "");
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(0);
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliLog::SetModuleDebugLevel("FMD", 1);
   AliFMDParameters::Instance()->Init();
   AliFMDParameters::Instance()->UseRcuTrailer(!old);

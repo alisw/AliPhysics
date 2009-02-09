@@ -2379,7 +2379,7 @@ const char* TryDecodeDataSpec(const char* filename)
 namespace
 {
 	// CDB path and run number to use.
-	const char* gCDBPath = "local://$ALICE_ROOT";
+	const char* gCDBPath = "local://$ALICE_ROOT/OCDB";
 	Int_t gRunNumber = 0;
 }
 

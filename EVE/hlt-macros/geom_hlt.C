@@ -52,7 +52,7 @@ Int_t MUON_geom()
   gEve->DisableRedraw();
 
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   AliEveMUONData *g_muon_data = new AliEveMUONData;

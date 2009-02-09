@@ -10,7 +10,7 @@ void AliTRDmakeRecoParam()
   
   AliCDBId id("TRD/Calib/RecoParam", 0, AliCDBRunRange::Infinity()); 
   AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc) {
     return;
   }

@@ -3,7 +3,7 @@ void sim(Int_t nev=1) {
   simulator.MergeWith("../backgr/galice.root",3);
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
 
-  simulator.SetDefaultStorage("local://$ALICE_ROOT");
+  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
 

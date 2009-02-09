@@ -3,7 +3,7 @@ void RecRaw(char * file)
   // Reconstruction of RAW data from the input (raw) root file 
   // D.Peressounko after Boris Polichtchouk, 31 Aug 2007
 
-   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   // AliCDBManager::Instance()->SetDefaultStorage("local://./");
   // Provide here address of misalignment parametrs, Calibration or bad modules maps
   // AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local:///data/prsnko/");

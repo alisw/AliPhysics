@@ -112,7 +112,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Bool_t from_hits,
     Simulate(nEvents);
   else {
     //AliCDBManager::Instance()->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(runNo);
     
 #if defined(__CINT__)
@@ -270,7 +270,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Bool_t from_hits,
   
   if(storeInAlien) {
     AliCDBManager* cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBId      id(AliFMDAnaParameters::GetBackgroundPath(),runNo,endRunNo);
     
     AliCDBMetaData* meta = new AliCDBMetaData;				

@@ -34,8 +34,8 @@ void runSimulation(int seed, int nevents, const char* config)
 // Uncoment following lines to run simulation with local residual mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
 // AliCDBManager* man = AliCDBManager::Instance();
-// man->SetDefaultStorage("local://$ALICE_ROOT");
-// man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
+// man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+// man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/OCDB/MUON/ResMisAlignCDB");
 
   AliSimulation MuonSim(config);
   MuonSim.SetSeed(seed);

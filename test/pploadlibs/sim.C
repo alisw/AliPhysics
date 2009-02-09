@@ -6,7 +6,7 @@ void sim(Int_t nev=20) {
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
  
-  simulator.SetDefaultStorage("local://$ALICE_ROOT");
+  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   TStopwatch timer;

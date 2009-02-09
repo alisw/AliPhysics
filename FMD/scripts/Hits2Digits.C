@@ -30,7 +30,7 @@ Hits2Digits()
   TTree* treeE = runLoader->TreeE();
   
   AliCDBManager::Instance()->SetRun(0);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   fmd->Hits2Digits();
 }

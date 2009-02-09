@@ -68,13 +68,13 @@ are taken from the Offline Condition DataBase (OCDB) (which is itself fakely fil
 using the WritePedestals() method of AliMUONCDB class
 
 So first generate a valid pedestal CDB entry by using the AliMUONCDB class. There's one
- little trick : you should first point to the "default" OCDB (local://$ALICE_ROOT) in
+ little trick : you should first point to the "default" OCDB (local://$ALICE_ROOT/OCDB) in
  order to get the mapping loaded, then only you can play with another OCDB. 
  Or, alternatively, you can put the mapping stuff in the test OCDB, like this :
  
 <pre>
 root[] AliMpDDLStore::ReadData(); // read mapping from ASCII files
-root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+root[] const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath);
 root[] AliMpCDB::WriteMpSegmentation();
 root[] AliMpCDB::WriteDDLStore();
@@ -84,11 +84,11 @@ If you've not put the mapping in the test database, then you must start with the
  test database :
  
 <pre>
-root[] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"); // only if you've not put the mapping in test OCDB
+root[] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); // only if you've not put the mapping in test OCDB
 root[] AliCDBManager::Instance()->SetRun(0); // only if you've not put the mapping in test OCDB
 root[] AliMpCDB::LoadDDLStore(); // only if you've not put the mapping in test OCDB
 // below are lines to be executed whatever you did with the mapping...
-root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+root[] const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliMUONCDB cdb(cdbpath)
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 root[] Int_t startRun = 80;
@@ -104,7 +104,7 @@ I-AliMUONCDB::ManuList: Manu List generated.
 I-AliMUONCDB::MakePedestalStore: 16828 Manus and 1064008 channels.
 I-AliMUONCDB::WritePedestals: Ngenerated = 1064008
 I-AliCDBManager::Init: AliEn classes enabled in Root. AliCDBGrid factory registered.
-I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB
 I-AliCDBLocal::PutEntry: CDB object stored into file ($ALICE_ROOT)/SHUTTLE/TestShuttle/TestCDB/MUON/Calib/Pedestals/Run80_80_v0_s0.root
 </pre>
 
@@ -112,7 +112,7 @@ Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
 
 Usage (from the Root prompt) :
 <pre>
-AliMpCDB::LoadDDLStore2(); // load mapping from "default" OCDB=local://$ALICE_ROOT
+AliMpCDB::LoadDDLStore2(); // load mapping from "default" OCDB=local://$ALICE_ROOT/OCDB
 AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals values generated in the previous step
 const char* dateFileName = "raw.date"; // base filename for the output
@@ -164,7 +164,7 @@ So first you need to generate a valid pedestal CDB entry and a valid gain CDB
 entry by using the AliMUONCDB class, from the Root prompt:
 
 <pre>
-const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 AliMUONCDB cdb(cdbpath)
 Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 Int_t gainRun = 80;
@@ -182,7 +182,7 @@ will be n x 4 date files (n is the number of fake injections, currently 9, and 4
 Usage (again, from the Root prompt) :
 
 <pre>
-const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to get the CDB
+const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to get the CDB
 AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals and gain values generated in the previous step
 const char* dateFileName = "raw.date"; // base filename for the output

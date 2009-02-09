@@ -13,16 +13,16 @@ void recMag5(const char *filename="data.root")
   //man->SetDefaultStorage("local:///data/OCDB");
   
   // Files that we can not read from alien...solved
-  //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT");
-  //  man->SetSpecificStorage("ITS/Calib/MapsTimeSDD","local://$ALICE_ROOT");
-  //  man->SetSpecificStorage("TPC/Calib/ExB","local://$ALICE_ROOT");
+  //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT/OCDB");
+  //  man->SetSpecificStorage("ITS/Calib/MapsTimeSDD","local://$ALICE_ROOT/OCDB");
+  //  man->SetSpecificStorage("TPC/Calib/ExB","local://$ALICE_ROOT/OCDB");
 
   // Objects not found if using LHC07w database...solved
   //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local:///afs/cern.ch/user/c/cheshkov/public/OCDB");
-  // man->SetSpecificStorage("GRP/GRP/Data","local://$ALICE_ROOT");
-  // man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT");
-  // man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  // man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  // man->SetSpecificStorage("GRP/GRP/Data","local://$ALICE_ROOT/OCDB");
+  // man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT/OCDB");
+  // man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT/OCDB");
+  // man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT/OCDB");
   
   AliITSRecoParam * itsRecoParam =  AliITSRecoParam::GetCosmicTestParam();
   itsRecoParam->SetFactorSAWindowSizes(20);

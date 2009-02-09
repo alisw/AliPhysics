@@ -4,7 +4,7 @@
 
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  reco.SetDefaultStorage("local://$ALICE_ROOT");
+  reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
 
@@ -12,7 +12,7 @@
 
   reco.SetRunQA("ALL:ALL") ;
 	  
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 999) ;

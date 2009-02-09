@@ -67,7 +67,7 @@ fCDBManager(0) {
   //initilize the raw signal vs strip number histograms
   if(fkOnline) {
     fCDBManager = AliCDBManager::Instance();
-    //fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+    //fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
     Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
     if(!runNumber) 

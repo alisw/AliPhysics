@@ -1,7 +1,7 @@
 void AliTRDreadRaw2Clusters(const char *fname = "raw.root", const char *fnameGeom = "./geometry.root")
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   TFile *fGeometryFile = TFile::Open(fnameGeom);

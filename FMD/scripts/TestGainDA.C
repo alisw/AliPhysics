@@ -6,7 +6,7 @@ void TestGainDA(Char_t* fileName, Int_t runNumber){
   Bool_t old = kTRUE;
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runNumber);
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliLog::SetModuleDebugLevel("FMD", 1);
   AliFMDParameters::Instance()->Init();
   AliFMDParameters::Instance()->UseRcuTrailer(!old);

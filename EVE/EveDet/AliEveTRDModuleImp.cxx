@@ -470,7 +470,7 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 // eg_shape->StampColorSelection();
   if(!(gGeoManager)){ 
     AliCDBManager *fCDBManager=AliCDBManager::Instance();
-    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     fCDBManager->SetRun(0);
     AliEveEventManager::AssertGeometry();
   }

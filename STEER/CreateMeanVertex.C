@@ -12,7 +12,7 @@ void CreateMeanVertex(Double_t xmed=0., Double_t ymed=0., Double_t sigx=0.005,Do
   vave->PrintStatus();
 
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliCDBId id("GRP/Calib/MeanVertex", 0, AliCDBRunRange::Infinity());
   AliCDBMetaData md;

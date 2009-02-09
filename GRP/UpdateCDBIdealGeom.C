@@ -22,7 +22,7 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   // we set the default storage to the repository because some dets require
   // already at the time of geometry creation to find calibration objects in the cdb
   AliCDBStorage* storage = 0;
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   storage = cdb->GetStorage(cdbUri);
   if(!storage) 
   {

@@ -39,7 +39,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()) {
     printf("Setting a local default storage and run number 0\n");
-    man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     man->SetRun(0);
   }
   else {

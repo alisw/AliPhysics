@@ -345,7 +345,7 @@ const TObjArray* AliEMCALRecParam::GetMappings()
   //If not found, read it from OCDB.                                           
 
   //Quick check as follows:                                                   
-  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"
+  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB"
   //  root [1] AliCDBManager::Instance()->SetRun(1);                             
   //  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                
   //  root [3] maps->Print();                                                    

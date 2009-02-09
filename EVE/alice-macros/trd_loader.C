@@ -6,7 +6,7 @@
 // Usage:
 // .L trd_loader.C
 // AliCDBManager *cdb = AliCDBManager::Instance();
-// cdb->SetDefaultStorage("local://$ALICE_ROOT");
+// cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 // cdb->SetRun(0)
 // AliEveTRDLoader *loader = trd_loader();
 // loader->NextEvent();

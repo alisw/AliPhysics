@@ -15,7 +15,7 @@ void MakeITSPlaneEfficiencySPD(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::I
    printf("Efficiency must be in the range [0,1]: nothing done");
   }
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   }
   
   AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object

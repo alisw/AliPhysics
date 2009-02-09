@@ -27,7 +27,7 @@ void TestPedestalDA(Char_t* fileName="data.raw", Int_t runNumber=1,
   // Set-up CDB interface 
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runNumber);
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   // Set debug level
   AliLog::SetModuleDebugLevel("FMD", 1);

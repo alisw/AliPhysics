@@ -7,7 +7,7 @@ FullMapping()
   AliCDBManager*    cdb   = AliCDBManager::Instance();
   AliFMDParameters* param = AliFMDParameters::Instance();
   AliFMDGeometry*   geom  = AliFMDGeometry::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   param->Init();
   geom->Init();

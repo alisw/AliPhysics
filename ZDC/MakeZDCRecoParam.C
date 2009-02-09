@@ -10,7 +10,7 @@ void MakeZDCRecoParam(Int_t type=0){
 
   AliCDBManager* cdb = AliCDBManager::Instance();
   //if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   AliZDCRecoParam *zdcRecoParam = 0;
   //

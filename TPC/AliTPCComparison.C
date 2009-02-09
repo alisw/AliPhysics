@@ -409,7 +409,7 @@ Int_t GoodTracksTPC(const Char_t *dir) {
 
 
    AliCDBManager *man=AliCDBManager::Instance();
-   man->SetDefaultStorage("local://$ALICE_ROOT");
+   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
    man->SetRun(0);
    AliTPCParamSR *digp=
    (AliTPCParamSR*)(AliTPCcalibDB::Instance()->GetParameters());

@@ -25,7 +25,7 @@ extern TRandom* gRandom;
 void AliTRDbenchmarkCalibDB()
 {
   TStopwatch timer;
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliTRDcalibDB* calib = AliTRDcalibDB::Instance();
   if (!calib)
   {

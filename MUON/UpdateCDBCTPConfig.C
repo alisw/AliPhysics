@@ -66,7 +66,7 @@
 void UpdateCDBCTPConfig(Bool_t check = false) {
   
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
 
   if (check) {
@@ -117,7 +117,7 @@ void UpdateCDBCTPConfig(Bool_t check = false) {
   md->SetAliRootVersion(av.Data());
   md->SetComment(Form("Default CTP configuration for MUON mode produced with root version %s and AliRoot version %s revision %d ",rootv,av.Data(),revnum));
 
-  AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
+  AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   storage->Put(trconfig,id,md);
   
 }

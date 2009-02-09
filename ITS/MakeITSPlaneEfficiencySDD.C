@@ -10,7 +10,7 @@
 void MakeITSPlaneEfficiencySDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
   
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   }
   
   AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object

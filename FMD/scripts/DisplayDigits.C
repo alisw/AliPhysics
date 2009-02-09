@@ -11,7 +11,7 @@ void
 DisplayDigits()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   gSystem->Load("libFMDutil.so");
   AliFMDDisplay* d = new AliFMDDisplay;

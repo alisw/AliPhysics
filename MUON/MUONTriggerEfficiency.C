@@ -67,7 +67,7 @@ void MUONTriggerEfficiency(const char* filenameSim="galice_sim.root",
   
   // Set default CDB storage
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   // output file
   

@@ -13,7 +13,7 @@ void showLegend(TH1F *h, TH1F *h2)
 void AliTRDtestDigitsRW(Int_t thresh = 0, Int_t maxDet = 540)
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   cout << endl;
 
@@ -191,9 +191,9 @@ void AliTRDtestDigitsRW(Int_t thresh = 0, Int_t maxDet = 540)
 void testDigits2streams()
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT");
+  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   //  cout << "[I] Is storage set : " << cdb->IsDefaultStorageSet() << endl;
   cout << endl;
 
@@ -322,9 +322,9 @@ void testDigits2streams()
 void printDigits()
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT");
+  //AliCDBStorage* localStorage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   //  cout << "[I] Is storage set : " << cdb->IsDefaultStorageSet() << endl;
   cout << endl;
 

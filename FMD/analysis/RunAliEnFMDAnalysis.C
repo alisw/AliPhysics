@@ -1,5 +1,5 @@
 void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
-			 const Char_t* cdbPath        = "local://$ALICE_ROOT",
+			 const Char_t* cdbPath        = "local://$ALICE_ROOT/OCDB",
 			 const Char_t* outFile        = "fmd_analysis.root"){
   
   gSystem->Load("libANALYSIS");

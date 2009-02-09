@@ -12,7 +12,7 @@
 #include <TList.h>
 #endif
 
-void CDBToGrid(const char *detName="", const char* fromUri="local://$ALICE_ROOT", 
+void CDBToGrid(const char *detName="", const char* fromUri="local://$ALICE_ROOT/OCDB", 
 	const char* toUri="local://newOCDB")
 {
 

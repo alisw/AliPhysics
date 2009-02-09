@@ -28,7 +28,7 @@ extern "C" {
    * When running from AliRoot, the CDB path is set in the startup of the
    * reconstruction.<br>
    * If cdbpath is nil or empty and the CDB is not already initialized, the
-   * CDB storage is set to local://$ALICE_ROOT and the run no to 0.
+   * CDB storage is set to local://$ALICE_ROOT/OCDB and the run no to 0.
    * @param cdbpath     path to the CDB
    * @return neg. error code if failed
    * @note function implemented in libHLTrec

@@ -12,7 +12,7 @@ PatternSDigits()
 {
   AliLog::SetModuleDebugLevel("FMD", 1);
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliFMDParameters::Instance()->Init();
   gSystem->Load("libANALYSIS.so");

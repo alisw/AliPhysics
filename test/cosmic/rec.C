@@ -17,12 +17,12 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/");
-  man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT");
+  man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT/OCDB");
   
   // Example in case a specific CDB storage is needed
-  //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT");
+  //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT/OCDB");
 
   // Reconstruction settings
   AliReconstruction rec;

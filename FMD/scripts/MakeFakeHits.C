@@ -25,7 +25,7 @@ MakeFakeHits()
 
   // OCDB manager
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT")
+  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB")
   cdb->SetRunNumber(0)
 
   // Geometry database 
