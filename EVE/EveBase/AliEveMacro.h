@@ -28,7 +28,8 @@ public:
                       kRunLoader = 1,
                       kESD       = 2,
                       kESDfriend = 4,
-                      kRawReader = 8 };
+                      kRawReader = 8,
+                      kAOD       = 16 };
 
   enum ExecStatus_e { kNotRun    = -2,
                       kNoData    = -1,
@@ -57,6 +58,7 @@ public:
   Bool_t         RequiresESD()       const { return fSources & kESD;       }
   Bool_t         RequiresESDfriend() const { return fSources & kESDfriend; }
   Bool_t         RequiresRawReader() const { return fSources & kRawReader; }
+  Bool_t         RequiresAOD()       const { return fSources & kAOD;       }
 
   void           ResetExecState();
 

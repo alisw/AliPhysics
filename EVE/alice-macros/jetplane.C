@@ -27,10 +27,11 @@ AliEveJetPlane* jetplane()
   }
 
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
-
   
   // We have event id everywhere now.
   Int_t iev = AliEveEventManager::GetMaster()->GetEventId();
+
+  gStyle->SetPalette(1, 0);
 
   AliEveJetPlane* jp = new AliEveJetPlane(iev);
   jp->SetPickable(kTRUE);
@@ -60,9 +61,8 @@ AliEveJetPlane* jetplane()
   }
 
   // Render Jet Plane
-  gStyle->SetPalette(1, 0);
-  // gEve->AddElement(jp);
   gJPScene->AddElement(jp);
+  AliEveEventManager::RegisterTransient(jp);
 
   gEve->Redraw3D();
 

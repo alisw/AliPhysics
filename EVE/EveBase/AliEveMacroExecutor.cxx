@@ -98,7 +98,8 @@ void AliEveMacroExecutor::ExecMacros()
     if ((mac->RequiresRunLoader() && ! AliEveEventManager::HasRunLoader()) ||
         (mac->RequiresESD()       && ! AliEveEventManager::HasESD())       ||
         (mac->RequiresESDfriend() && ! AliEveEventManager::HasESDfriend()) ||
-        (mac->RequiresRawReader() && ! AliEveEventManager::HasRawReader()))
+        (mac->RequiresRawReader() && ! AliEveEventManager::HasRawReader()) ||
+	(mac->RequiresAOD()       && ! AliEveEventManager::HasAOD()))
     {
       mac->SetExecNoData();
       continue;

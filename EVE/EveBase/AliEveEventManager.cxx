@@ -104,6 +104,10 @@ void AliEveEventManager::InitInternals()
   fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
 
   fExecutor = new AliEveMacroExecutor;
+
+  fTransients = new TEveElementList("Transients", "Transient per-event elements.");
+  fTransients->IncDenyDestroy();
+  gEve->AddToListTree(fTransients, kTRUE);
 }
 
 AliEveEventManager::AliEveEventManager(const TString& name) :
@@ -118,7 +122,7 @@ AliEveEventManager::AliEveEventManager(const TString& name) :
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
   fSelectOnTriggerType(kFALSE), fTriggerType(""),
-  fExecutor    (0),
+  fExecutor    (0), fTransients(0),
   fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -139,7 +143,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
   fSelectOnTriggerType(kFALSE), fTriggerType(""),
-  fExecutor    (0),
+  fExecutor    (0), fTransients(0),
   fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -164,6 +168,9 @@ AliEveEventManager::~AliEveEventManager()
   {
     Close();
   }
+
+  fTransients->DecDenyDestroy();
+  fTransients->Destroy();
 }
 
 /******************************************************************************/
@@ -667,6 +674,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // !!! MT this is somewhat brutal; at least optionally, one could be
   // a bit gentler, checking for objs owning their external refs and having
   // additinal parents.
+  fTransients->DestroyElements();
   DestroyElements();
 
   if (fESDTree) {
@@ -1040,6 +1048,11 @@ AliEveEventManager* AliEveEventManager::GetCurrent()
   // Get current event-manager.
 
   return fgCurrent;
+}
+
+void AliEveEventManager::RegisterTransient(TEveElement* element)
+{
+  GetCurrent()->fTransients->AddElement(element);
 }
 
 //------------------------------------------------------------------------------

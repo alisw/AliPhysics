@@ -49,6 +49,7 @@ public:
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
 				Bool_t assertAod, Bool_t assertRaw);
 
+
   AliEveEventManager(const TString& name="Event");
   AliEveEventManager(const TString& name, const TString& path, Int_t ev=0);
   virtual ~AliEveEventManager();
@@ -97,6 +98,9 @@ public:
 
   static AliEveEventManager* GetMaster();
   static AliEveEventManager* GetCurrent();
+
+  static void                RegisterTransient(TEveElement* element);
+
 
   Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
   Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
@@ -147,6 +151,8 @@ protected:
   TString       fTriggerType;           // Trigger-type to select on.
 
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
+
+  TEveElementList     *fTransients;     // Container for additional transient (per event) elements.
 
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
