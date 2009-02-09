@@ -26,8 +26,10 @@
 #include "AliESDtrack.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include "../../CORRFW/AliCFManager.h"
+#include "AliLog.h"
+#include "AliCFManager.h"
 #include "AliFlowTrackSimpleCuts.h"
+
 
 
 // AliFlowEventSimpleMaker:
