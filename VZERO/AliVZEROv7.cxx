@@ -58,6 +58,7 @@
 #include "AliVZEROhit.h"
 #include "AliVZEROv7.h"
 #include "AliLog.h"
+#include "AliTrackReference.h"
  
 ClassImp(AliVZEROv7)
 
@@ -2007,6 +2008,9 @@ void AliVZEROv7::StepManager()
       nPhotons        = 0;
       nPhotonsInStep  = 0;
       numStep         = 0;  
+    }
+    if( gMC->IsTrackEntering() || gMC->IsTrackExiting() ) {
+      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kVZERO);
     }
   }
 }
