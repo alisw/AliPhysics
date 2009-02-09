@@ -7,13 +7,10 @@
 #define AliFlowEventSimpleMaker_H
 
 #include "AliFlowEventSimple.h"  //needed as include
-//class AliFlowEventSimple; //does not compile
-
-#include "../../CORRFW/AliCFManager.h"
-//class AliCFManager;
 #include "AliFlowTrackSimpleCuts.h"
 
 class TTree;
+class AliCFManager;
 class AliMCEvent;
 class AliESDEvent;
 class AliAODEvent;
