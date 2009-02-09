@@ -12,6 +12,7 @@
 //=============================================================================
 
 #include <TProof.h>
+#include <TGrid.h>
 
 enum Rsn_DataSource
 {
@@ -20,16 +21,27 @@ enum Rsn_DataSource
   kDataset          // CAF dataset
 };
 
-static Bool_t            cleanPars = kTRUE;
+static Bool_t            cleanPars = kFALSE;
 static Bool_t            cleanPWG2resonances = kFALSE;
 static const char*       listPar = "STEERBase:ESD:AOD:ANALYSIS:ANALYSISalice:PWG2resonances";
 static const char*       proofConnection = "pulvir@alicecaf.cern.ch";
 
+static Bool_t            isAlien = kTRUE;
 static Bool_t            isProof = kFALSE;
-static Rsn_DataSource    listType = kTextFile;
 
-static const char*       inputSource = "local.txt";
-static Int_t             nReadFiles = 2;
+// Uncomment these two lines for an example run with a local list of local files
+//static Rsn_DataSource    listType = kTextFile;
+//static const char*       inputSource = "local.txt";
+
+// Uncomment these two lines for an example run with PROOF
+//static const char*    inputSource = "/COMMON/COMMON/LHC08c11_10TeV_0.5T";
+//static Rsn_DataSource listType    = kDataset;
+
+// Uncomment these two lines for an example run with AliEn XML collection
+static const char*    inputSource = "wn.xml";
+static Rsn_DataSource listType    = kXMLCollection;
+
+static Int_t             nReadFiles = 0;
 static Int_t             nSkippedFiles = 0;
 static TString           treeName = "esdTree";
 
@@ -158,13 +170,17 @@ TChain* CreateChainFromTXT()
 }
 
 //_________________________________________________________________________________________________
-TChain* CreateChainFromXML
-(const char *fileName, Int_t nread = 0, Int_t nskip = 0, const char *treeName = "esdTree")
+TChain* CreateChainFromXML()
 {
 //
 // Create a TChain of files to be analyzed from a XML file.
 // Last argument specifies the TTree name.
 //
+
+  if (!gGrid) {
+    Error("CreateChainFromXML", "gGrid object not instantiated");
+    return 0;
+  }
 
   TChain *chain = new TChain(treeName.Data());
   TAlienCollection *myCollection = TAlienCollection::Open(inputSource);
@@ -202,7 +218,7 @@ TChain* CreateChainFromDataset()
 
   if (!gProof) {
     Error("CreateChainFromDataset", "gProof object not initialized");
-    return kFALSE;
+    return 0;
   }
 
   TFileCollection *fc = gProof->GetDataSet(inputSource)->GetStagedSubset();
@@ -247,6 +263,7 @@ Int_t AliRsnAnalysis(const char *addMacro = "AddRsnAnalysisTask.C")
 
   // connect to PROOF if required
   if (isProof) TProof::Open(proofConnection);
+  else if (isAlien) TGrid::Connect("alien://");
 
   //
   // *** SETUP PAR LIBRARIES **********************************************************************

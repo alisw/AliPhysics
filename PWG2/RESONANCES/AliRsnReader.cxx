@@ -55,6 +55,8 @@ AliRsnReader::AliRsnReader() :
   fTPCOnly(kFALSE),
   fUseESDTrackCuts(kFALSE),
   fUseRsnTrackCuts(kFALSE),
+  fCheckVertexStatus(kFALSE),
+  fMinNContributors(0),
   fPIDDef(),
   fITSClusters(0),
   fTPCClusters(0),
@@ -345,6 +347,8 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
     // This is known from the "Status" parameter of the vertex itself.
     const AliESDVertex *v = esd->GetPrimaryVertex();
     if (!v->GetStatus()) v = esd->GetPrimaryVertexSPD();
+    if (fCheckVertexStatus && v->GetStatus() == kFALSE) return kFALSE;
+    if (fMinNContributors > 0 && v->GetNContributors() < fMinNContributors) return kFALSE;
 
     // get primary vertex
     vertex[0] = (Double_t)v->GetXv();
@@ -353,6 +357,8 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   }
   else {
     const AliESDVertex *v = esd->GetPrimaryVertexTPC();
+    if (fCheckVertexStatus && v->GetStatus() == kFALSE) return kFALSE;
+    if (fMinNContributors > 0 && v->GetNContributors() < fMinNContributors) return kFALSE;
 
     // get primary vertex
     vertex[0] = (Double_t)v->GetXv();
@@ -431,8 +437,8 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   // compute total multiplicity
   rsn->MakeComputations();
   if (rsn->GetMultiplicity() <= 0) {
-      AliDebug(1, "Zero Multiplicity in this event");
-      return kFALSE;
+    AliDebug(1, "Zero Multiplicity in this event");
+    return kFALSE;
   }
 
   // sort tracks w.r. to Pt (from largest to smallest)
@@ -458,89 +464,89 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
 // AliRsnEvent object will be set to 'kAOD'.
 //
 
-    // retrieve stack (if possible)
-    AliStack *stack = 0x0;
-    if (mc) stack = mc->Stack();
+  // retrieve stack (if possible)
+  AliStack *stack = 0x0;
+  if (mc) stack = mc->Stack();
 
-    // get number of tracks
-    Int_t ntracks = aod->GetNTracks();
-    if (!ntracks) return kFALSE;
+  // get number of tracks
+  Int_t ntracks = aod->GetNTracks();
+  if (!ntracks) return kFALSE;
 
-    // get primary vertex
-    Double_t vertex[3];
-    vertex[0] = aod->GetPrimaryVertex()->GetX();
-    vertex[1] = aod->GetPrimaryVertex()->GetY();
-    vertex[2] = aod->GetPrimaryVertex()->GetZ();
-    rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+  // get primary vertex
+  Double_t vertex[3];
+  vertex[0] = aod->GetPrimaryVertex()->GetX();
+  vertex[1] = aod->GetPrimaryVertex()->GetY();
+  vertex[2] = aod->GetPrimaryVertex()->GetZ();
+  rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 
-    // set MC primary vertex if present
-    TArrayF fvertex(3);
-    Double_t mcvx = 0., mcvy = 0., mcvz = 0.;
-    if (mc) {
-      mc->GenEventHeader()->PrimaryVertex(fvertex);
-      mcvx = (Double_t)fvertex[0];
-      mcvy = (Double_t)fvertex[1];
-      mcvz = (Double_t)fvertex[2];
-      rsn->SetPrimaryVertexMC(mcvx, mcvy, mcvz);
-    }
+  // set MC primary vertex if present
+  TArrayF fvertex(3);
+  Double_t mcvx = 0., mcvy = 0., mcvz = 0.;
+  if (mc) {
+    mc->GenEventHeader()->PrimaryVertex(fvertex);
+    mcvx = (Double_t)fvertex[0];
+    mcvy = (Double_t)fvertex[1];
+    mcvz = (Double_t)fvertex[2];
+    rsn->SetPrimaryVertexMC(mcvx, mcvy, mcvz);
+  }
 
-    // store tracks from ESD
-    Int_t  index, label, labmum;
-    Bool_t check;
-    AliAODTrack *aodTrack = 0;
-    AliRsnDaughter temp;
-    TObjArrayIter iter(aod->GetTracks());
-    while ((aodTrack = (AliAODTrack*)iter.Next()))
-    {
-        // retrieve index
-        index = aod->GetTracks()->IndexOf(aodTrack);
-        label = aodTrack->GetLabel();
-        if (fRejectFakes && (label < 0)) continue;
-        // copy ESD track data into RsnDaughter
-        // if unsuccessful, this track is skipped
-        check = ConvertTrack(&temp, aodTrack);
-        if (!check) continue;
-        // if stack is present, copy MC info
-        if (stack)
-        {
-            TParticle *part = stack->Particle(TMath::Abs(label));
-            if (part)
-            {
-                temp.InitMCInfo(part);
-                labmum = part->GetFirstMother();
-                if (labmum >= 0)
-                {
-                    TParticle *mum = stack->Particle(labmum);
-                    temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
-                }
-            }
-        }
-        // set index and label and add this object to the output container
-        temp.SetIndex(index);
-        temp.SetLabel(label);
+  // store tracks from ESD
+  Int_t  index, label, labmum;
+  Bool_t check;
+  AliAODTrack *aodTrack = 0;
+  AliRsnDaughter temp;
+  TObjArrayIter iter(aod->GetTracks());
+  while ((aodTrack = (AliAODTrack*)iter.Next()))
+  {
+      // retrieve index
+      index = aod->GetTracks()->IndexOf(aodTrack);
+      label = aodTrack->GetLabel();
+      if (fRejectFakes && (label < 0)) continue;
+      // copy ESD track data into RsnDaughter
+      // if unsuccessful, this track is skipped
+      check = ConvertTrack(&temp, aodTrack);
+      if (!check) continue;
+      // if stack is present, copy MC info
+      if (stack)
+      {
+          TParticle *part = stack->Particle(TMath::Abs(label));
+          if (part)
+          {
+              temp.InitMCInfo(part);
+              labmum = part->GetFirstMother();
+              if (labmum >= 0)
+              {
+                  TParticle *mum = stack->Particle(labmum);
+                  temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
+              }
+          }
+      }
+      // set index and label and add this object to the output container
+      temp.SetIndex(index);
+      temp.SetLabel(label);
 
-        // check this object against the Rsn cuts (if required)
-        if (fUseRsnTrackCuts) {
-          if (!fRsnTrackCuts.IsSelected(AliRsnCut::kParticle, &temp)) continue;
-        }
+      // check this object against the Rsn cuts (if required)
+      if (fUseRsnTrackCuts) {
+        if (!fRsnTrackCuts.IsSelected(AliRsnCut::kParticle, &temp)) continue;
+      }
 
-        AliRsnDaughter *ptr = rsn->AddTrack(temp);
-        // if problems occurred while storin, that pointer is NULL
-        if (!ptr) AliWarning(Form("Failed storing track#%d"));
-    }
+      AliRsnDaughter *ptr = rsn->AddTrack(temp);
+      // if problems occurred while storin, that pointer is NULL
+      if (!ptr) AliWarning(Form("Failed storing track#%d"));
+  }
 
-    // compute total multiplicity
-    rsn->MakeComputations();
-    if (rsn->GetMultiplicity() <= 0)
-    {
-        AliDebug(1, "Zero multiplicity in this event");
-        return kFALSE;
-    }
+  // compute total multiplicity
+  rsn->MakeComputations();
+  if (rsn->GetMultiplicity() <= 0)
+  {
+      AliDebug(1, "Zero multiplicity in this event");
+      return kFALSE;
+  }
 
-    // correct tracks for primary vertex
-    rsn->CorrectTracks();
+  // correct tracks for primary vertex
+  rsn->CorrectTracks();
 
-    return kTRUE;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

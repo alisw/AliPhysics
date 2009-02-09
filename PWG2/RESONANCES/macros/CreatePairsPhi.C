@@ -26,20 +26,20 @@
 AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
 {
   AliRsnPairMgr  *pairMgr  = new AliRsnPairMgr(name);
-  
+
   // ========== USER CUSTOMIZATION VARIABLES ==========
-  
+
   Int_t   iResPDG             = 333;
   Int_t   nMixEvents          = 10;
   Bool_t  boolUseNoPID        = kTRUE;
   Bool_t  boolUseRealisticPID = kTRUE;
   Bool_t  boolUsePerfectPID   = kTRUE;
-  
+
   // ======= END USER CUSTOMIZATION VARIABLES =========
 
   // =========== DEFINE PAIRS ==============
-  
-  // decay tree definitions 
+
+  // decay tree definitions
   // for a PHI resonance (PDG = 333) decaying into K+ K-
   // and for related like-sign pairs
   AliRsnPairDef *defUnlike = new AliRsnPairDef(AliRsnPID::kKaon, '+', AliRsnPID::kKaon, '-', iResPDG);
@@ -49,7 +49,7 @@ AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
   // No PID
   AliRsnPair *pairUnlike_NoPID_Signal = new AliRsnPair(AliRsnPair::kNoPID, defUnlike);
   AliRsnPair *pairUnlike_NoPID_True   = new AliRsnPair(AliRsnPair::kNoPID, defUnlike);
-  AliRsnPair *pairUnlike_NoPID_Mix    = new AliRsnPair(AliRsnPair::kNoPIDMix, defUnlike, nMixEvents);
+  AliRsnPair *pairUnlike_NoPID_Mix    = new AliRsnPair(AliRsnPair::kNoPIDMix, defUnlike);
   AliRsnPair *pairLikePP_NoPID        = new AliRsnPair(AliRsnPair::kNoPID, defLikePP);
   AliRsnPair *pairLikeMM_NoPID        = new AliRsnPair(AliRsnPair::kNoPID, defLikeMM);
   // end No PID
@@ -57,87 +57,44 @@ AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
   // Perfect PID
   AliRsnPair *pairUnlike_PerfectPID_Signal = new AliRsnPair(AliRsnPair::kPerfectPID, defUnlike);
   AliRsnPair *pairUnlike_PerfectPID_True   = new AliRsnPair(AliRsnPair::kPerfectPID, defUnlike);
-  AliRsnPair *pairUnlike_PerfectPID_Mix    = new AliRsnPair(AliRsnPair::kPerfectPIDMix, defUnlike, nMixEvents);
+  AliRsnPair *pairUnlike_PerfectPID_Mix    = new AliRsnPair(AliRsnPair::kPerfectPIDMix, defUnlike);
   AliRsnPair *pairLikePP_PerfectPID        = new AliRsnPair(AliRsnPair::kPerfectPID, defLikePP);
   AliRsnPair *pairLikeMM_PerfectPID        = new AliRsnPair(AliRsnPair::kPerfectPID, defLikeMM);
   // end Perfect PID
-  
+
   // Perfect PID
   AliRsnPair *pairUnlike_RealisticPID_Signal = new AliRsnPair(AliRsnPair::kRealisticPID, defUnlike);
   AliRsnPair *pairUnlike_RealisticPID_True   = new AliRsnPair(AliRsnPair::kRealisticPID, defUnlike);
-  AliRsnPair *pairUnlike_RealisticPID_Mix    = new AliRsnPair(AliRsnPair::kRealisticPIDMix, defUnlike, nMixEvents);
+  AliRsnPair *pairUnlike_RealisticPID_Mix    = new AliRsnPair(AliRsnPair::kRealisticPIDMix, defUnlike);
   AliRsnPair *pairLikePP_RealisticPID        = new AliRsnPair(AliRsnPair::kRealisticPID, defLikePP);
   AliRsnPair *pairLikeMM_RealisticPID        = new AliRsnPair(AliRsnPair::kRealisticPID, defLikeMM);
   // end Realistic PID
-  
+
   // =========== END DEFINE PAIRS ==============
 
   // =========== CUTS ==============
-  
-  // cuts on single tracks:
-  // - pt between 0.2 and 10000.0 GeV/c
-  // - eta between -0.9 and 0.9 (ALICE acceptance)
-  // - impact parameter
-  AliRsnCut *cutDr = new AliRsnCut("cutDr", "", AliRsnCut::kRadialImpactParam, 0.0, 1.0);
-  AliRsnCut *cutPtMCPart = new AliRsnCut("cutPtMCPart", "cutPtMCPart", AliRsnCut::kTransMomentumMC, 0.2, 10000.0);
-  AliRsnCut *cutEtaMCPart = new AliRsnCut("cutMcEta", "cutMcEta", AliRsnCut::kEtaMC, -0.9, 0.9);
-  
+
+  // cuts on tracks:
+  // - defined in 'AddRsnAnalysisTask.C' for single-step analysis
+
   // cuts on pairs:
   // - true daughters of a phi resonance (only for true pairs histogram)
   AliRsnCut *cutTruePair = new AliRsnCut("cutTrue", "cutTrue", AliRsnCut::kIsTruePair, iResPDG);
-  
-  // cut set definition for single particles
-  AliRsnCutSet *cutSetParticle = new AliRsnCutSet("partCut");
-  cutSetParticle->AddCut(cutPtMCPart);
-  cutSetParticle->AddCut(cutEtaMCPart);
-  cutSetParticle->AddCut(cutDr);
-  cutSetParticle->SetCutScheme("cutPtMCPart&cutMcEta&cutDr");
-  
+
   // cut set definition for true pairs
   AliRsnCutSet *cutSetPairTrue = new AliRsnCutSet("truePairs");
   cutSetPairTrue->AddCut(cutTruePair);
   cutSetPairTrue->SetCutScheme("cutTrue");
-  
-  // define cut manager for all histos but true pairs
-  AliRsnCutMgr *cutMgr = new AliRsnCutMgr("standard", "Standard cuts");
-  cutMgr->SetCutSet(AliRsnCut::kParticle, cutSetParticle);
-  
+
   // define cut manager for true pairs
   AliRsnCutMgr *cutMgrTrue = new AliRsnCutMgr("true", "True pairs");
-  cutMgrTrue->SetCutSet(AliRsnCut::kParticle, cutSetParticle);
   cutMgrTrue->SetCutSet(AliRsnCut::kPair, cutSetPairTrue);
-  
-  // define cut for mixing
-  AliRsnCut *cutMult = new AliRsnCut("cutM", "", AliRsnCut::kMultiplicityDifference, 0, 10);
-  AliRsnCut *cutVz = new AliRsnCut("cutV", "", AliRsnCut::kVzDifference, 0.0, 3.0);
-  AliRsnCutSet *cutMixing = new AliRsnCutSet("");
-  cutMixing->AddCut(cutMult);
-  cutMixing->AddCut(cutVz);
-  cutMixing->SetCutScheme("cutM&cutV");
-    
+
   // add cuts to pair analysis
-  pairUnlike_NoPID_Signal->SetCutMgr(cutMgr);
   pairUnlike_NoPID_True->SetCutMgr(cutMgrTrue);
-  pairUnlike_NoPID_Mix->SetCutMgr(cutMgr);
-  pairLikePP_NoPID->SetCutMgr(cutMgr);
-  pairLikeMM_NoPID->SetCutMgr(cutMgr);
-  
-  pairUnlike_PerfectPID_Signal->SetCutMgr(cutMgr);
   pairUnlike_PerfectPID_True->SetCutMgr(cutMgrTrue);
-  pairUnlike_PerfectPID_Mix->SetCutMgr(cutMgr);
-  pairLikePP_PerfectPID->SetCutMgr(cutMgr);
-  pairLikeMM_PerfectPID->SetCutMgr(cutMgr);
-  
-  pairUnlike_RealisticPID_Signal->SetCutMgr(cutMgr);
   pairUnlike_RealisticPID_True->SetCutMgr(cutMgrTrue);
-  pairUnlike_RealisticPID_Mix->SetCutMgr(cutMgr);
-  pairLikePP_RealisticPID->SetCutMgr(cutMgr);
-  pairLikeMM_RealisticPID->SetCutMgr(cutMgr);
-  
-  pairUnlike_NoPID_Mix->SetMixingCut(cutMixing);
-  pairUnlike_PerfectPID_Mix->SetMixingCut(cutMixing);
-  pairUnlike_RealisticPID_Mix->SetMixingCut(cutMixing);
-  
+
   // =========== END CUTS ==============
 
   // =========== FUNCTIONS ==============
@@ -145,45 +102,39 @@ AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
   // define histogram templates
   AliRsnHistoDef *hdIM  = new AliRsnHistoDef(800, 0.0, 2.0);     // invmass
   AliRsnHistoDef *hdRES = new AliRsnHistoDef(200, -10.0, 10.0);  // resolution
-  AliRsnHistoDef *hdPt  = new AliRsnHistoDef(10, 0.0, 10.0);     // pt distribution
-  
+
   // functions
   AliRsnFunction *fcnIM  = new AliRsnFunction(AliRsnFunction::kInvMass, hdIM);      // invmass
   AliRsnFunction *fcnRES = new AliRsnFunction(AliRsnFunction::kResolution, hdRES);    // IM resolution
-  AliRsnFunction *fcnPt  = new AliRsnFunction(AliRsnFunction::kPtSpectrum, hdPt);     // pt spectrum
-  
+
   // uncomment these lines when doing analysis in momentum bins
   // in this case, take care of the dimension and values in the template array
   Double_t mom[7] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0};
   fcnIM->SetBinningCut(AliRsnCut::kTransMomentum, 7, mom);
   fcnRES->SetBinningCut(AliRsnCut::kTransMomentum, 7, mom);
-  
+
   pairUnlike_NoPID_Signal->AddFunction(fcnIM);
   pairUnlike_NoPID_True->AddFunction(fcnIM);
   pairUnlike_NoPID_Mix->AddFunction(fcnIM);
   pairLikePP_NoPID->AddFunction(fcnIM);
   pairLikeMM_NoPID->AddFunction(fcnIM);
-  
+
   pairUnlike_PerfectPID_Signal->AddFunction(fcnIM);
   pairUnlike_PerfectPID_True->AddFunction(fcnIM);
   pairUnlike_PerfectPID_Mix->AddFunction(fcnIM);
   pairLikePP_PerfectPID->AddFunction(fcnIM);
   pairLikeMM_PerfectPID->AddFunction(fcnIM);
-  
+
   pairUnlike_RealisticPID_Signal->AddFunction(fcnIM);
   pairUnlike_RealisticPID_True->AddFunction(fcnIM);
   pairUnlike_RealisticPID_Mix->AddFunction(fcnIM);
   pairLikePP_RealisticPID->AddFunction(fcnIM);
   pairLikeMM_RealisticPID->AddFunction(fcnIM);
-  
+
   pairUnlike_NoPID_Signal->AddFunction(fcnRES);
   pairUnlike_PerfectPID_Signal->AddFunction(fcnRES);
   pairUnlike_RealisticPID_Signal->AddFunction(fcnRES);
-  
-  pairUnlike_NoPID_True->AddFunction(fcnPt);
-  pairUnlike_PerfectPID_True->AddFunction(fcnPt);
-  pairUnlike_RealisticPID_True->AddFunction(fcnPt);
-  
+
   // =========== END FUNCTIONS =============
 
   if (boolUseNoPID) {
@@ -193,7 +144,7 @@ AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
     pairMgr->AddPair(pairLikePP_NoPID);
     pairMgr->AddPair(pairLikeMM_NoPID);
   }
-  
+
   if (boolUsePerfectPID) {
     pairMgr->AddPair(pairUnlike_PerfectPID_Signal);
     pairMgr->AddPair(pairUnlike_PerfectPID_True);
@@ -201,7 +152,7 @@ AliRsnPairMgr* CreatePairsPhi(const char *name = "PHI")
     pairMgr->AddPair(pairLikePP_PerfectPID);
     pairMgr->AddPair(pairLikeMM_PerfectPID);
   }
-  
+
   if (boolUseRealisticPID) {
     pairMgr->AddPair(pairUnlike_RealisticPID_Signal);
     pairMgr->AddPair(pairUnlike_RealisticPID_True);

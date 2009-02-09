@@ -99,6 +99,9 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
     fOutList->Add(listTmp);
   }
 
+  TH1I *hUsed = new TH1I("hRsnUsed", "skipped and used events in this analysis", 2, 0, 2);
+  fOutList->Add(hUsed);
+
   fBuffer = new AliRsnEventBuffer(fBufferSize);
 }
 
@@ -113,12 +116,18 @@ void AliRsnAnalysisSE::UserExec(Option_t *)
 
   if (fEntry++ % 100 == 0) cout << "[" << GetName() << "] : processing entry " << fEntry-1 << endl;
 
-  AliRsnEvent *curEvent = GetRsnEventFromInputType();
-  if (!curEvent) return;
-  curEvent->SetUniqueID(eventID++);
+  TH1I *h = (TH1I*)fOutList->FindObject("hRsnUsed");
 
-  ProcessEventAnalysis(curEvent);
-  PostEventProcess();
+  AliRsnEvent *curEvent = GetRsnEventFromInputType();
+  if (curEvent) {
+    curEvent->SetUniqueID(eventID++);
+    ProcessEventAnalysis(curEvent);
+    PostEventProcess();
+    h->Fill(1);
+  }
+  else {
+    h->Fill(0);
+  }
 
   PostData(1, fOutList);
 }

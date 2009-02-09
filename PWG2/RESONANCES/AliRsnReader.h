@@ -52,6 +52,10 @@ class AliRsnReader : public TObject
     void    SetTPCOnly(Bool_t doit = kTRUE);
     Bool_t  DoesTPCOnly() {return fTPCOnly;}
 
+    void    SetCheckVertexStatus(Bool_t doit = kTRUE);
+    Bool_t  DoesCheckVertexStatus() {return fCheckVertexStatus;}
+    void    SetMinNContributors(Int_t n) {fMinNContributors = n;}
+
     void    SetUseESDTrackCuts(Bool_t doit = kTRUE) {fUseESDTrackCuts = doit;}
     Bool_t  DoesESDTrackCuts() {return fUseESDTrackCuts;}
     AliESDtrackCuts* GetESDTrackCuts() {return &fESDTrackCuts;}
@@ -84,29 +88,33 @@ class AliRsnReader : public TObject
 
     // dummy copy methods
     AliRsnReader(const AliRsnReader &copy) :
-      TObject(copy),fCheckSplit(0),fRejectFakes(0),fTPCOnly(0),fUseESDTrackCuts(0),fUseRsnTrackCuts(0),
-      fPIDDef(copy.fPIDDef),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
+      TObject(copy),fCheckSplit(0),fRejectFakes(0),fTPCOnly(0),
+      fUseESDTrackCuts(0),fUseRsnTrackCuts(0),fCheckVertexStatus(kFALSE),
+      fMinNContributors(0),fPIDDef(copy.fPIDDef),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
       fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0),fESDTrackCuts(),fRsnTrackCuts("") { /*nothing*/ }
     AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
 
-    Bool_t          fCheckSplit;       // flag to check and remove split tracks
-    Bool_t          fRejectFakes;      // flag to reject fake tracks (negative label)
-    Bool_t          fTPCOnly;          // flag to use only the TPC for reading data
-    Bool_t          fUseESDTrackCuts;  // flag to use ESD track cuts
-    Bool_t          fUseRsnTrackCuts;  // flag to use ESD track cuts
+    Bool_t          fCheckSplit;         // flag to check and remove split tracks
+    Bool_t          fRejectFakes;        // flag to reject fake tracks (negative label)
+    Bool_t          fTPCOnly;            // flag to use only the TPC for reading data
+    Bool_t          fUseESDTrackCuts;    // flag to use ESD track cuts
+    Bool_t          fUseRsnTrackCuts;    // flag to use ESD track cuts
 
-    AliRsnPIDDefESD fPIDDef;           // manager for alternative PID weights (ESD only)
+    Bool_t          fCheckVertexStatus;  // reject events with vertex status = kFALSE
+    Int_t           fMinNContributors;   // reject events whose primary vertex has too few contributors
 
-    Int_t           fITSClusters;      // minimum number of ITS clusters to accept a track
-    Int_t           fTPCClusters;      // minimum number of TPC clusters to accept a track
-    Int_t           fTRDClusters;      // minimum number of TRD clusters to accept a track
+    AliRsnPIDDefESD fPIDDef;             // manager for alternative PID weights (ESD only)
 
-    Int_t           fTrackRefs;        // minimum required track references for MC reading
-    Int_t           fTrackRefsITS;     // minimum required track references for MC reading (ITS)
-    Int_t           fTrackRefsTPC;     // minimum required track references for MC reading (TPC)
+    Int_t           fITSClusters;        // minimum number of ITS clusters to accept a track
+    Int_t           fTPCClusters;        // minimum number of TPC clusters to accept a track
+    Int_t           fTRDClusters;        // minimum number of TRD clusters to accept a track
 
-    AliESDtrackCuts fESDTrackCuts;     // object for ESD track cuts
-    AliRsnCutSet    fRsnTrackCuts;     // other local cuts used in preliminary track selection
+    Int_t           fTrackRefs;          // minimum required track references for MC reading
+    Int_t           fTrackRefsITS;       // minimum required track references for MC reading (ITS)
+    Int_t           fTrackRefsTPC;       // minimum required track references for MC reading (TPC)
+
+    AliESDtrackCuts fESDTrackCuts;       // object for ESD track cuts
+    AliRsnCutSet    fRsnTrackCuts;       // other local cuts used in preliminary track selection
 
     ClassDef(AliRsnReader, 1);
 };
