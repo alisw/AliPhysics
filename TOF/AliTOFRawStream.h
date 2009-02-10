@@ -385,6 +385,9 @@ class AliTOFRawStream: public TObject {
   AliTOFRawStream(AliRawReader* rawReader); // ctr
   virtual ~AliTOFRawStream(); // default dtr
 
+  AliTOFRawStream(const AliTOFRawStream& stream); // copy ctr
+  AliTOFRawStream& operator = (const AliTOFRawStream& stream); // ass. op.
+
   virtual Bool_t Next();
   
   virtual void   LoadRawData(Int_t indexDDL);
@@ -486,9 +489,6 @@ class AliTOFRawStream: public TObject {
  private:
   
   Int_t GetField(UInt_t word, Int_t fieldMask, Int_t fieldPosition) const;
-  
-  AliTOFRawStream(const AliTOFRawStream& stream); // copy ctr
-  AliTOFRawStream& operator = (const AliTOFRawStream& stream); // ass. op.
   
   AliRawReader*  fRawReader; // object for reading the raw data
 
