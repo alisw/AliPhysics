@@ -237,20 +237,22 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
     fdEdx[i]     = 0.;
     nclusters[i] = 0;
   }
-  Float_t pathLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+  const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
   AliTRDcluster *c = 0x0;
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
     if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
-    Float_t x = c->GetX();
+    Float_t dx = TMath::Abs(fX0 - c->GetX());
     
     // Filter clusters for dE/dx calculation
     
     // 1.consider calibration effects for slice determination
-    Int_t slice; 
-    if(c->IsInChamber()) slice = Int_t(TMath::Abs(fX0 - x) * nslices / pathLength);
-    else slice = x < fX0 ? 0 : nslices-1;
-    
+    Int_t slice;
+    if(dx<kDriftLength){ // TODO should be replaced by c->IsInChamber() 
+      slice = Int_t(dx * nslices / kDriftLength);
+    } else slice = c->GetX() < fX0 ? nslices-1 : 0;
+
+
     // 2. take sharing into account
     Float_t w = c->IsShared() ? .5 : 1.;
     
