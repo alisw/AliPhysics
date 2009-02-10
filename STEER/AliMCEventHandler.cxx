@@ -364,7 +364,9 @@ Bool_t AliMCEventHandler::Notify(const char *path)
 	// for running with galice and kinematics alone...
 	fileName.ReplaceAll("galice.root", "");
     }
-    
+    else if (fileName.BeginsWith("root:")) {
+      fileName.Append("?ZIP=");
+    }
     *fPathName = fileName;
     AliInfo(Form("Notify() Path: %s\n", fPathName->Data()));
     
