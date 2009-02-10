@@ -93,8 +93,8 @@ enum EAliAnalysisFlags {
    void                SetSpecialOutputLocation(const char *location) {fSpecialOutputLocation = location;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
    void                SetCollectSysInfoEach(Int_t nevents=0) {fNSysInfo = nevents;}
-   void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
-   void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
+   void                SetInputEventHandler(AliVEventHandler*  handler);
+   void                SetOutputEventHandler(AliVEventHandler*  handler);
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
    void                SetGridHandler(AliAnalysisGrid *handler) {fGridHandler = handler;}
    void                SetEventPool(AliVEventPool* epool) {fEventPool = epool;}
@@ -103,6 +103,8 @@ enum EAliAnalysisFlags {
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
+   AliAnalysisDataContainer *GetCommonInputContainer() {return fCommonInput;}
+   AliAnalysisDataContainer *GetCommonOutputContainer() {return fCommonOutput;}
    AliAnalysisGrid*    GetGridHandler()         {return fGridHandler;}
    AliVEventPool*      GetEventPool()           {return fEventPool;}
 
@@ -154,10 +156,12 @@ private:
    TObjArray              *fContainers;          // List of all containers
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
+   AliAnalysisDataContainer *fCommonInput;       // Common input container
+   AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,3)  // Analysis manager class
+   ClassDef(AliAnalysisManager,4)  // Analysis manager class
 };   
 #endif

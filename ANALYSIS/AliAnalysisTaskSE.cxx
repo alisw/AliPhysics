@@ -24,6 +24,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataSlot.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliAODEvent.h"
@@ -299,8 +300,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
 // Call the user analysis    
     UserExec(option);
-    PostData(0, fTreeA);
-    
+    // Added protection in case the derived task is not an AOD producer.
+    AliAnalysisDataSlot *out0 = GetOutputSlot(0);
+    if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
 }
 
 const char* AliAnalysisTaskSE::CurrentFileName()

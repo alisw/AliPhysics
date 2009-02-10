@@ -70,6 +70,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
+                    fCommonInput(NULL),
+                    fCommonOutput(NULL),
                     fSelector(NULL),
                     fGridHandler(NULL)
 {
@@ -104,6 +106,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
+                    fCommonInput(NULL),
+                    fCommonOutput(NULL),
                     fSelector(NULL),
                     fGridHandler(NULL)
 {
@@ -139,6 +143,8 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fContainers = new TObjArray(*other.fContainers);
       fInputs     = new TObjArray(*other.fInputs);
       fOutputs    = new TObjArray(*other.fOutputs);
+      fCommonInput = NULL;
+      fCommonOutput = NULL;
       fSelector   = NULL;
       fGridHandler = NULL;
       fgAnalysisManager = this;
@@ -841,6 +847,10 @@ Bool_t AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
                                         AliAnalysisDataContainer *cont)
 {
 // Connect input of an existing task to a data container.
+   if (!task) {
+      Error("ConnectInput", "Task pointer is NULL");
+      return kFALSE;
+   }   
    if (!fTasks->FindObject(task)) {
       AddTask(task);
       Info("ConnectInput", "Task %s was not registered. Now owned by analysis manager", task->GetName());
@@ -854,6 +864,10 @@ Bool_t AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
                                         AliAnalysisDataContainer *cont)
 {
 // Connect output of an existing task to a data container.
+   if (!task) {
+      Error("ConnectOutput", "Task pointer is NULL");
+      return kFALSE;
+   }   
    if (!fTasks->FindObject(task)) {
       AddTask(task);
       Warning("ConnectOutput", "Task %s not registered. Now owned by analysis manager", task->GetName());
@@ -1279,4 +1293,20 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 void AliAnalysisManager::FinishAnalysis()
 {
 // Finish analysis.
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetInputEventHandler(AliVEventHandler*  handler)
+{
+// Set the input event handler and create a container for it.
+   fInputEventHandler   = handler;
+   fCommonInput = CreateContainer("cinput", TChain::Class(), AliAnalysisManager::kInputContainer);
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
+{
+// Set the input event handler and create a container for it.
+   fOutputEventHandler   = handler;
+   fCommonOutput = CreateContainer("coutput", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
 }
