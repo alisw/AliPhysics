@@ -1300,7 +1300,7 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler*  handler)
 {
 // Set the input event handler and create a container for it.
    fInputEventHandler   = handler;
-   fCommonInput = CreateContainer("cinput", TChain::Class(), AliAnalysisManager::kInputContainer);
+   fCommonInput = CreateContainer("cAUTO_INPUT", TChain::Class(), AliAnalysisManager::kInputContainer);
 }
 
 //______________________________________________________________________________
@@ -1308,5 +1308,5 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
 {
 // Set the input event handler and create a container for it.
    fOutputEventHandler   = handler;
-   fCommonOutput = CreateContainer("coutput", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+   fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
 }
