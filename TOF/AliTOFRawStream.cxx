@@ -181,7 +181,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   //fLocalEventCounterTRM(),
   //fLocalEventCounterChain(),
   //fChainBunchID(),
-  fCableLengthMap(0x0),
+  //fCableLengthMap(new AliTOFCableLengthMap()),
   fEventID(0)
 {
   //
@@ -206,8 +206,6 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
       fChainBunchID[jj][ii] = -1;
     }
   }
-
-  fCableLengthMap = new AliTOFCableLengthMap();
 
   fEventID = (Int_t)fRawReader->GetBCID(); //bunch crossing
 
@@ -251,7 +249,7 @@ AliTOFRawStream::AliTOFRawStream():
   //fLocalEventCounterTRM(),
   //fLocalEventCounterChain(),
   //fChainBunchID(),
-  fCableLengthMap(0x0),
+  //fCableLengthMap(new AliTOFCableLengthMap()),
   fEventID(0)
 {
   //
@@ -272,8 +270,6 @@ AliTOFRawStream::AliTOFRawStream():
       fChainBunchID[j][k] = -1;
     }
   }
-
-  fCableLengthMap = new AliTOFCableLengthMap();
 
 }
 
@@ -316,7 +312,7 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   //fLocalEventCounterTRM(),
   //fLocalEventCounterChain(),
   //fChainBunchID(),
-  fCableLengthMap(stream.fCableLengthMap),
+  //fCableLengthMap(stream.fCableLengthMap),
   fEventID(stream.fEventID)
 {
   //
@@ -403,7 +399,7 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
     }
   }
 
-  fCableLengthMap = stream.fCableLengthMap;
+  //fCableLengthMap = stream.fCableLengthMap;
 
   fEventID = stream.fEventID;
 
@@ -423,7 +419,7 @@ AliTOFRawStream::~AliTOFRawStream()
   fTOFrawData->Clear();
   delete fTOFrawData;
 
-  delete fCableLengthMap;
+  //delete fCableLengthMap;
 
 }
 

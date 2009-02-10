@@ -16,7 +16,7 @@
 //#include "AliTOFHitData.h"
 #include "AliTOFHitDataBuffer.h"
 #include "AliTOFDecoder.h"
-#include "AliTOFCableLengthMap.h"
+//#include "AliTOFCableLengthMap.h"
 
 class AliTOFHitData;
 
@@ -535,7 +535,7 @@ class AliTOFRawStream: public TObject {
   Int_t fLocalEventCounterChain[13][2]; // event counter recorded in the chains trailer
   Int_t fChainBunchID[13][2];           // BC ID recorded in the chains header
 
-  AliTOFCableLengthMap * fCableLengthMap;
+  //AliTOFCableLengthMap * fCableLengthMap; // Pointer to the map of Amphenol cable length
 
   Int_t fEventID; // event ID1 in the common data header
 
