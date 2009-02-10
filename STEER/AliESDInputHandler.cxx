@@ -39,6 +39,8 @@
 
 ClassImp(AliESDInputHandler)
 
+static Option_t *gESDDataType = "ESD";
+
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
@@ -235,4 +237,10 @@ void AliESDInputHandler::SwitchOnBranches() const {
       fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 1);
       AliInfo(Form("Branch %s switched on \n", str.Data()));
   }
+}
+
+Option_t *AliESDInputHandler::GetDataType() const
+{
+// Returns handled data type.
+   return gESDDataType;
 }

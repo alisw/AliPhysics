@@ -26,6 +26,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODEvent         *GetEvent() const {return fEvent;}
     virtual void         AddFriend(char* filename);
     virtual Bool_t       BeginEvent(Long64_t entry);
+    Option_t            *GetDataType() const;
  private:
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  

@@ -29,6 +29,8 @@
 
 ClassImp(AliAODInputHandler)
 
+static Option_t *gAODDataType = "AOD";
+
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler() :
     AliInputEventHandler(),
@@ -94,4 +96,10 @@ void AliAODInputHandler::AddFriend(char* filename)
     // Add a friend tree 
     TNamed* obj = new TNamed(filename, filename);
     fFriends->Add(obj);
+}
+
+Option_t *AliAODInputHandler::GetDataType() const
+{
+// Returns handled data type.
+   return gAODDataType;
 }

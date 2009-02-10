@@ -31,6 +31,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual Bool_t       FinishEvent();
     AliESDEvent         *GetEvent()        const {return fEvent;}
     Option_t            *GetAnalysisType() const {return fAnalysisType;}
+    Option_t            *GetDataType() const;
     //
     void SetInactiveBranches(const char* branches) {fBranches   = branches;}
     void SetActiveBranches  (const char* branches) {fBranchesOn = branches;}

@@ -22,6 +22,7 @@ class AliVEventHandler : public TNamed {
     virtual ~AliVEventHandler();
     // Handled tree
     virtual TTree       *GetTree() const { return NULL; }
+    virtual Option_t    *GetDataType() const { return NULL; }
     // Output
     virtual void         SetOutputFileName(const char* fname)   = 0;
     virtual const char*  GetOutputFileName()              = 0;
