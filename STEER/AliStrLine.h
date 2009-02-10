@@ -10,17 +10,18 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
 
 class AliStrLine : public TObject {
 
  public:
     AliStrLine();        // default constructor
-    AliStrLine(Double_t *point, Double_t *cd, Bool_t twopoints=kFALSE);  // standard constructor
-    AliStrLine(Float_t *pointf, Float_t *cdf, Bool_t twopoints=kFALSE); 
-    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd, Bool_t twopoints=kFALSE);
-    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf, Bool_t twopoints=kFALSE); 
-    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd, Bool_t twopoints=kFALSE);
-    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf, Bool_t twopoints=kFALSE); 
+    AliStrLine(Double_t *point, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);  // standard constructor
+    AliStrLine(Float_t *pointf, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
+    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
+    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
+    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
+    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
     AliStrLine(const AliStrLine& source);
     AliStrLine& operator=(const AliStrLine& source);
     virtual ~AliStrLine(); // destructor
@@ -30,11 +31,21 @@ class AliStrLine : public TObject {
     void SetSigma2P0(const Double_t *sigsq) {for(Int_t i=0;i<3;i++)fSigma2P0[i]=sigsq[i];}
     void SetWMatrix(const Double_t *wmat);
     void SetCd(const Double_t *cd) {for(Int_t i=0;i<3;i++)fCd[i]=cd[i];}
+    void SetIdPoints(UShort_t id1, UShort_t id2){
+      fIdPoint[0]=id1;
+      fIdPoint[1]=id2;
+    } 
+
     void GetP0(Double_t *point) const {for(Int_t i=0;i<3;i++)point[i]=fP0[i];}
     void GetSigma2P0(Double_t *sigsq) const {for(Int_t i=0;i<3;i++)sigsq[i]=fSigma2P0[i];}
     void GetWMatrix(Double_t *wmat) const;
     void GetCd(Double_t *cd) const {for(Int_t i=0;i<3;i++)cd[i]=fCd[i];}
     void GetCurrentPoint(Double_t *point) const;
+    UShort_t GetIdPoint(Int_t i) const {
+      if(i<2) return fIdPoint[i];
+      AliError("Wrong element: only 2 points are stored in AliStrLine");
+      return 65535;
+    }
     Int_t IsParallelTo(AliStrLine *line) const;
     Int_t Crossrphi(AliStrLine *line);
     Int_t CrossPoints(AliStrLine *line, Double_t *point1, Double_t *point2);
@@ -64,12 +75,14 @@ class AliStrLine : public TObject {
        6 --> 2,0
        7 --> 2,1
        8 --> 2,2                                                 */
-    Double_t fCd[3];           // direction cosines
-    Double_t fTpar;            //! parameter 
+    Double_t fCd[3];         // direction cosines
+    Double_t fTpar;          //! parameter 
+    UShort_t fIdPoint[2];    // Identifiers of RecPoints defining the line
+    
  private:
     void SetPar(const Double_t par){fTpar = par;}
 
-  ClassDef(AliStrLine,4);
+  ClassDef(AliStrLine,5);
 };
 
 #endif

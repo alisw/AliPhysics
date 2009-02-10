@@ -26,6 +26,7 @@
 #include <TTree.h>
 #include <TMath.h>
 
+#include "AliLog.h"
 #include "AliStrLine.h"
 
 ClassImp(AliStrLine)
@@ -42,10 +43,11 @@ AliStrLine::AliStrLine() :
     fSigma2P0[i] = 0.;
     fCd[i] = 0.;
   }
+  SetIdPoints(65535,65535);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
+AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -65,10 +67,11 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
+AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -92,10 +95,11 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t twopoints) :
+AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -115,10 +119,11 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t twopoints) :
+AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -142,9 +147,10 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t 
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd,Bool_t twopoints) :
+AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -167,10 +173,11 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Dou
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf,Bool_t twopoints) :
+AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -197,6 +204,7 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float
   else {
     InitDirection(point,cd);
   }
+  SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
@@ -213,6 +221,7 @@ fTpar(source.fTpar){
     fWMatrix = new Double_t [6];
     for(Int_t i=0;i<6;i++)fWMatrix[i]=source.fWMatrix[i];
   }
+  for(Int_t i=0;i<2;i++) fIdPoint[i]=source.fIdPoint[i];
 }
 
 //________________________________________________________
