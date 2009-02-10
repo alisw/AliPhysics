@@ -52,7 +52,7 @@ Revision 0.01  2008/05/10 A. De Caro
 #include "AliTOFDigitMap.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFrawData.h"
-#include "AliTOFRawStream.h"
+//#include "AliTOFRawStream.h"
 
 ClassImp(AliTOFClusterFinderV1)
 
@@ -66,8 +66,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
-  fTOFdigitMap(new AliTOFDigitMap())
-
+  fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFRawStream(AliTOFRawStream())
 {
 //
 // Constructor
@@ -86,8 +86,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
-  fTOFdigitMap(new AliTOFDigitMap())
-
+  fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFRawStream(AliTOFRawStream())
 {
 //
 // Constructor
@@ -107,8 +107,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source
    fVerbose(0),
    fDecoderVersion(source.fDecoderVersion),
    fTOFcalib(source.fTOFcalib),
-   fTOFdigitMap(new AliTOFDigitMap())
-
+   fTOFdigitMap(new AliTOFDigitMap()),
+   fTOFRawStream(source.fTOFRawStream)
 {
   // copy constructor
 }
@@ -128,6 +128,7 @@ AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinde
   fDecoderVersion=source.fDecoderVersion;
   fTOFcalib=source.fTOFcalib;
   fTOFdigitMap=source.fTOFdigitMap;
+  fTOFRawStream=source.fTOFRawStream;
   return *this;
 
 }
@@ -332,7 +333,9 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
   digitsTree->Branch("TOF", &fDigits);
   TClonesArray &aDigits = *fDigits;
 
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
 
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
@@ -369,11 +372,11 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
     rawReader->Reset();
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
-      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+      fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
     }
-    else tofInput.LoadRawData(indexDDL);
+    else fTOFRawStream.LoadRawData(indexDDL);
 
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
     if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3i", clonesRawData->GetEntriesFast()));
     for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -382,8 +385,8 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
       if (tofRawDatum->GetTOF()==-1) continue;
 
-      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
 
       tdcCorr = 0;
       dummy = detectorIndex[3];

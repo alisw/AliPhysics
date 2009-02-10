@@ -129,7 +129,7 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFrawData.h"
-#include "AliTOFRawStream.h"
+//#include "AliTOFRawStream.h"
 
 //extern TFile *gFile;
 
@@ -145,7 +145,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
   fNumberOfTofClusters(0),
   fVerbose(0),
   fDecoderVersion(0),
-  fTOFcalib(calib)
+  fTOFcalib(calib),
+  fTOFRawStream(AliTOFRawStream())
 {
 //
 // Constructor
@@ -164,7 +165,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
   fNumberOfTofClusters(0),
   fVerbose(0),
   fDecoderVersion(0),
-  fTOFcalib(calib)
+  fTOFcalib(calib),
+  fTOFRawStream(AliTOFRawStream())
 {
 //
 // Constructor
@@ -184,7 +186,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
   fNumberOfTofClusters(0),
   fVerbose(0),
   fDecoderVersion(source.fDecoderVersion),
-  fTOFcalib(source.fTOFcalib)
+  fTOFcalib(source.fTOFcalib),
+  fTOFRawStream(source.fTOFRawStream)
 {
   // copy constructor
 }
@@ -203,6 +206,7 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   fVerbose=source.fVerbose;
   fDecoderVersion=source.fDecoderVersion;
   fTOFcalib=source.fTOFcalib;
+  fTOFRawStream=source.fTOFRawStream;
   return *this;
 
 }
@@ -453,7 +457,9 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
@@ -461,11 +467,11 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
     rawReader->Reset();
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
-      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+      fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
     }
-    else tofInput.LoadRawData(indexDDL);
+    else fTOFRawStream.LoadRawData(indexDDL);
 
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -485,8 +491,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	ftxt << "  " << tofRawDatum->GetTDCchannel();
       }
 
-      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];
       detectorIndex[4] = dummy;
@@ -595,7 +601,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
@@ -603,11 +611,11 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
     rawReader->Reset();
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
-      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+      fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
     }
-    else tofInput.LoadRawData(indexDDL);
+    else fTOFRawStream.LoadRawData(indexDDL);
 
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -627,8 +635,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 	ftxt << "  " << tofRawDatum->GetTDCchannel();
       }
 
-      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];
       detectorIndex[4] = dummy;
@@ -742,7 +750,9 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   Int_t detectorIndex[5];
   Int_t digit[4];
 
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
@@ -750,11 +760,11 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
     rawReader->Reset();
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
-      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+      fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
     }
-    else tofInput.LoadRawData(indexDDL);
+    else fTOFRawStream.LoadRawData(indexDDL);
 
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -763,15 +773,15 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
       //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
       if (tofRawDatum->GetTOF()==-1) continue;
 
-      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];
       detectorIndex[4] = dummy;
 
-      digit[0] = tofInput.GetTofBin();
-      digit[1] = tofInput.GetToTbin();
-      digit[2] = tofInput.GetToTbin();
+      digit[0] = fTOFRawStream.GetTofBin();
+      digit[1] = fTOFRawStream.GetToTbin();
+      digit[2] = fTOFRawStream.GetToTbin();
       digit[3] = -1;
 
       Int_t tracknum[3]={-1,-1,-1};
@@ -831,7 +841,9 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   Int_t detectorIndex[5];
   Int_t digit[4];
 
-  AliTOFRawStream tofInput(rawReader);
+  //AliTOFRawStream tofInput(rawReader);
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
@@ -839,11 +851,11 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
     rawReader->Reset();
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
-      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+      fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
     }
-    else tofInput.LoadRawData(indexDDL);
+    else fTOFRawStream.LoadRawData(indexDDL);
 
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -852,15 +864,15 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
       //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
       if (tofRawDatum->GetTOF()==-1) continue;
 
-      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];
       detectorIndex[4] = dummy;
 
-      digit[0] = tofInput.GetTofBin();
-      digit[1] = tofInput.GetToTbin();
-      digit[2] = tofInput.GetToTbin();
+      digit[0] = fTOFRawStream.GetTofBin();
+      digit[1] = fTOFRawStream.GetToTbin();
+      digit[2] = fTOFRawStream.GetToTbin();
       digit[3] = -1;
 
       Int_t tracknum[3]={-1,-1,-1};

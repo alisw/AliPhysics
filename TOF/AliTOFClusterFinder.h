@@ -8,6 +8,8 @@
 
 #include "TObject.h"
 
+#include "AliTOFRawStream.h"
+
 class TClonesArray;
 class TFile;
 class TTree;
@@ -79,7 +81,9 @@ class AliTOFClusterFinder : public TObject
                             // -false ->old version  (default value!!)
   AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
 
-  ClassDef(AliTOFClusterFinder,4) // To run TOF clustering
+  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
+
+  ClassDef(AliTOFClusterFinder,5) // To run TOF clustering
 };
 #endif
 

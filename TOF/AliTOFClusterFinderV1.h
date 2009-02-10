@@ -8,6 +8,8 @@
 
 #include "TObject.h"
 
+#include "AliTOFRawStream.h"
+
 class TClonesArray;
 class TTree;
 
@@ -152,7 +154,9 @@ class AliTOFClusterFinderV1 : public TObject
   AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
   AliTOFDigitMap* fTOFdigitMap; // TOF digit map pointer
 
-  ClassDef(AliTOFClusterFinderV1,1) // To run TOF clustering
+  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
+
+  ClassDef(AliTOFClusterFinderV1,2) // To run TOF clustering
 };
 #endif
 
