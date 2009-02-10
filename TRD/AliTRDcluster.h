@@ -11,16 +11,19 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliCluster.h"  
+#include "AliCluster.h"
 
 class AliTRDcluster : public AliCluster {
+public:
 
- public:
-
-  enum { kInChamber = BIT(16)};
-  enum { kMaskedLeft   = 0
-       , kMaskedCenter = 1
-       , kMaskedRight  = 2
+  enum ETRDclusterStatus { 
+    kInChamber = BIT(16) // Out of fiducial volume of chamber (signal tails)
+   ,kFivePad   = BIT(17) // Deconvoluted clusters
+  };
+  enum ETRDclusterMask { 
+    kMaskedLeft   = 0
+   ,kMaskedCenter = 1
+   ,kMaskedRight  = 2
   };
 
   AliTRDcluster();
@@ -40,6 +43,7 @@ class AliTRDcluster : public AliCluster {
   Bool_t   IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
   Bool_t   IsShared() const                { return IsClusterShared();}
   Bool_t   IsUsed() const                  { return IsClusterUsed(); }
+  Bool_t   IsFivePad() const               { return TestBit(kFivePad);}
 
   UChar_t  GetPadMaskedPosition() const    { return fClusterMasking & 7; }
   UChar_t  GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
@@ -53,7 +57,9 @@ class AliTRDcluster : public AliCluster {
   Int_t    GetPadTime() const              { return fPadTime;       }
   Short_t *GetSignals()                    { return fSignals;       }
   Float_t  GetSumS() const;
-  
+  Float_t  GetXpos(Float_t t0, Float_t vd, Float_t *const q=0x0);
+  Float_t  GetYpos(Float_t Sigma2, Float_t PadWidth, Float_t *const yPos1=0x0, Float_t *const yPos2=0x0);
+
   void     Print(Option_t* o="") const;
 
   void     SetLocalTimeBin(Char_t t)       { fLocalTimeBin = t;     }
@@ -68,19 +74,20 @@ class AliTRDcluster : public AliCluster {
   void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
   void     SetShared(Bool_t sh  = kTRUE)   { SetBit(AliCluster::kShared,sh);    }
   void     Use(Int_t = 0)                  { SetBit(AliCluster::kUsed, kTRUE);              }
+  void     SetFivePad(Bool_t b = kTRUE) { SetBit(kFivePad,b);}
 
-  protected:
-    UChar_t fPadCol;         //  Central pad number in column direction
-    UChar_t fPadRow;         //  Central pad number in row direction
-    UChar_t fPadTime;        //  Uncalibrated time bin number
-    Char_t  fLocalTimeBin;   //  T0-calibrated time bin number
-    UChar_t fNPads;          //  Number of pads in cluster
-    UChar_t fClusterMasking; //  Bit field containing cluster status information;
-    Short_t fDetector;       //  TRD detector number
-    Short_t fSignals[7];     //  Signals in the cluster
-    Float_t fQ;              //  Amplitude 
-    Float_t fCenter;         //  Center of the cluster relative to the pad 
+protected:
+  UChar_t fPadCol;         //  Central pad number in column direction
+  UChar_t fPadRow;         //  Central pad number in row direction
+  UChar_t fPadTime;        //  Uncalibrated time bin number
+  Char_t  fLocalTimeBin;   //  T0-calibrated time bin number
+  UChar_t fNPads;          //  Number of pads in cluster
+  UChar_t fClusterMasking; //  Bit field containing cluster status information;
+  Short_t fDetector;       //  TRD detector number
+  Short_t fSignals[7];     //  Signals in the cluster
+  Float_t fQ;              //  Amplitude 
+  Float_t fCenter;         //  Center of the cluster relative to the pad 
 
-    ClassDef(AliTRDcluster, 6)        //  Cluster for the TRD
+  ClassDef(AliTRDcluster, 6)        //  Cluster for the TRD
 };
 #endif

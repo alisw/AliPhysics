@@ -22,6 +22,8 @@
 //                                                                           //
 /////////////////////////////////////////////////////////////////////////////// 
 
+#include "TMath.h"
+
 #include "AliLog.h"
 #include "AliTRDcluster.h"
 
@@ -234,6 +236,106 @@ Float_t AliTRDcluster::GetSumS() const
 
 }
 
+//_____________________________________________________________________________
+Float_t AliTRDcluster::GetXpos(Float_t t0, Float_t vd, Float_t *const q)
+{
+//
+// (Re)Calculate cluster position in the x direction in local chamber coordinates using all available information from tracking.
+// Input parameters:
+//   t0 - calibration aware trigger delay
+//   vd - drift velocity in the region of the cluster
+//   q  - array of chrges from previous clusters in the tracklet
+// Output values :
+//   return x position of the cluster from all information
+//
+// X-position calculation
+// The estimation of the radial position is based on calculating the drift time and the drift velocity at the point of 
+// estimation. The drift time can be estimated according to the expression:
+// BEGIN_LATEX
+// t_{drift} = t_{bin} - t_{0} - t_{cause}(x) - t_{TC}(q_{i-1}, q_{i-2}, ...)
+// END_LATEX
+// where t_0 is the delay of the trigger signal. t_cause is the causality delay between ionisation electrons hitting 
+// the anode and the registration of maximum signal by the electronics - it is due to the rising time of the TRF 
+// convoluted with the diffusion width. t_TC is the residual charge from previous bins due to residual tails after tail 
+// cancellation.
+//
+// The drift velocity is considered to vary linearly with the drift length (independent of the distance to the anode wire 
+// in the z direction). Thus one can write the calculate iteratively the drift length from the expression:
+// BEGIN_LATEX
+// x = t_{drift}(x)*v_{drfit}(x)
+// END_LATEX
+//
+// Authors
+// Alex Bercuci <A.Bercuci@gsi.de>
+//
+
+  Double_t td = fPadTime + .5; // center of the time bin
+  if(td < t0+2.5) return 0.; // do not calculate radial posion of clusters in the amplification region
+
+  // correction for t0
+  td -= t0;
+
+  Double_t x = vd*td, xold=0.;
+  Float_t tc0   = 0.244, // TRF rising time 0.2us
+          dtcdx = 0.009, // diffusion contribution to the rising time of the signal
+          kTC   = 0.,    // tail cancellation residual
+          kVD   = 0.;    // variation of the drift velocity with drift length
+  while(TMath::Abs(x-xold)>1.e-3){ // convergence on 10um level 
+    xold = x;
+    Float_t tc  = tc0 - dtcdx*x; 
+    Float_t tq  = 0.;
+    if(q){
+      for(Int_t iq=0; iq<3; iq++) tq += q[iq]*TMath::Exp(-kTC*x);
+    }
+    Float_t dvd = TMath::Exp(-kVD*x);
+    x    = (td - tc - tq) * (vd + dvd);
+  }
+  return x;
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDcluster::GetYpos(Float_t s2, Float_t W, Float_t *const yPos1, Float_t *const yPos2)
+{
+//
+// (Re)Calculate cluster position in the y direction in local chamber coordinates using all available information from tracking.
+// Input parameters:
+//   s2 - sigma of gaussian parameterization (see bellow for the exact parameterization)
+//   W  - pad width
+// Output values :
+//   y1 and y2 - partial positions based on 2 pads clusters
+//   return y position of the cluster from all information
+//
+// Y-position calculation 
+// Estimation of y coordinate is based on the gaussian approximation of the PRF. Thus one may
+// calculate the y position knowing the signals q_i-1, q_i and q_i+1 in the 3 adiacent pads by:
+// BEGIN_LATEX
+// y = #frac{1}{w_{1}+w_{2}}#[]{w_{1}#(){y_{0}-#frac{W}{2}+#frac{s^{2}}{W}ln#frac{q_{i}}{q_{i-1}}}+w_{2}#(){y_{0}+ #frac{W}{2}+#frac{s^{2}}{W}ln#frac{q_{i+1}}{q_{i}}}}
+// END_LATEX
+// where W is the pad width, y_0 is the position of the center pad and s^2 is given by
+// BEGIN_LATEX
+// s^{2} = s^{2}_{0} + s^{2}_{diff} (x,B) + #frac{tg^{2}(#phi-#alpha_{L})*l^{2}}{12}
+// END_LATEX
+// with s_0 being the PRF for 0 drift and track incidence phi equal to the lorentz angle a_L and the diffusion term 
+// being described by:
+// BEGIN_LATEX
+// s_{diff} (x,B) = #frac{D_{L}#sqrt{x}}{1+#(){#omega#tau}^{2}}
+// END_LATEX
+// with x being the drift length. The weights w_1 and w_2 are taken to be q_i-1^2 and q_i+1^2 respectively
+// 
+
+  Float_t y0 = GetY()-W*fCenter;
+  Double_t w1 = fSignals[2]*fSignals[2];
+  Double_t w2 = fSignals[4]*fSignals[4];
+  Float_t y1 = fSignals[2]>0 ? (y0 - .5*W + s2*TMath::Log(fSignals[3]/(Float_t)fSignals[2])/W) : 0.;
+  Float_t y2 = fSignals[4]>0 ? (y0 + .5*W + s2*TMath::Log(fSignals[4]/(Float_t)fSignals[3])/W) : 0.;
+
+  if(yPos1 && yPos2){
+    *yPos1 = y1;
+    *yPos2 = y2;
+  }
+
+  return (w1*y1+w2*y2)/(w1+w2);
+}
 
 //_____________________________________________________________________________
 Bool_t AliTRDcluster::IsEqual(const TObject *o) const
