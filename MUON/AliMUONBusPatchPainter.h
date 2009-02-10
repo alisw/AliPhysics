@@ -24,7 +24,7 @@ class AliMUONBusPatchPainter : public AliMUONVPainter
 public:
   
   AliMUONBusPatchPainter();
-  AliMUONBusPatchPainter(TRootIOCtor*);
+  AliMUONBusPatchPainter(TRootIOCtor* ioCtor);
   AliMUONBusPatchPainter(const AliMUONAttPainter& att, Int_t busPatchId);
   AliMUONBusPatchPainter(const AliMUONBusPatchPainter& rhs);
   AliMUONBusPatchPainter& operator=(const AliMUONBusPatchPainter& rhs);

@@ -1,5 +1,5 @@
-#ifndef AliMUONQADataMakerRec_H
-#define AliMUONQADataMakerRec_H
+#ifndef ALIMUONQADATAMAKERREC_H
+#define ALIMUONQADATAMAKERREC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -28,6 +28,22 @@ public:
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
   virtual ~AliMUONQADataMakerRec();
   
+protected:
+	
+  virtual void StartOfDetectorCycle(); 
+
+  virtual void InitRaws(); 
+  virtual void InitRecPoints(); 
+  virtual void InitESDs(); 
+  
+  virtual void MakeRaws(AliRawReader* rawReader); 
+  virtual void MakeRecPoints(TTree* recpo); 
+  virtual void MakeESDs(AliESDEvent* esd) ;
+  
+  virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
+
+	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
+
 private:
   /// Raw histograms indices
   enum ERaw { 
@@ -88,22 +104,6 @@ private:
     kESDResidualXPerDESigma = 67, ///< cluster-track residual-X per DE: sigma
     kESDResidualYPerDESigma = 68  ///< cluster-track residual-Y per DE: sigma
   };
-
-protected:
-	
-  virtual void StartOfDetectorCycle(); 
-
-  virtual void InitRaws(); 
-  virtual void InitRecPoints(); 
-  virtual void InitESDs(); 
-  
-  virtual void MakeRaws(AliRawReader* rawReader); 
-  virtual void MakeRecPoints(TTree* recpo); 
-  virtual void MakeESDs(AliESDEvent* esd) ;
-  
-  virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
-
-	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
 
 private:
 	

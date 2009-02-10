@@ -36,7 +36,7 @@ class TArrayI;
 class AliMpDDLStore : public  TObject {
 
   public:
-    AliMpDDLStore(TRootIOCtor* /*ioCtor*/);
+    AliMpDDLStore(TRootIOCtor* ioCtor);
     virtual ~AliMpDDLStore();
     
     // static access method
@@ -104,7 +104,7 @@ class AliMpDDLStore : public  TObject {
     static const TString  fgkExplicitKeyword; ///< A keyword for ReadBusPatchSpecial()
 
     // data members	
-    const AliMpDataStreams&  fDataStreams;  //!< Data streams
+    const AliMpDataStreams&  fkDataStreams;  //!< Data streams
     TObjArray     fDDLs;           ///< Array of DDL objects
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus

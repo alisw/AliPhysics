@@ -50,7 +50,7 @@ class TRootIOCtor;
 class AliMpSegmentation : public  TObject {
 
   public:
-    AliMpSegmentation(TRootIOCtor* /*ioCtor*/);
+    AliMpSegmentation(TRootIOCtor* ioCtor);
     virtual ~AliMpSegmentation();
     
     // static methods
@@ -113,7 +113,7 @@ class AliMpSegmentation : public  TObject {
     static AliMpSegmentation* fgInstance; ///< Singleton instance
 
     // data members
-    const AliMpDataStreams&  fDataStreams;  //!< Data streams
+    const AliMpDataStreams&  fkDataStreams;  //!< Data streams
     AliMpDEStore*      fDetElements;    ///< Detection element store
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations

@@ -9,8 +9,8 @@
 ///
 /// \author Ch. Finck, Subatech Nantes
 
-#ifndef ALIMUON_TRIGGER_CRATE_CONFIG_H
-#define ALIMUON_TRIGGER_CRATE_CONFIG_H
+#ifndef ALI_MUON_TRIGGER_CRATE_CONFIG_H
+#define ALI_MUON_TRIGGER_CRATE_CONFIG_H
 
 #include "AliMpArrayI.h"
 #include "AliMpTriggerCrate.h"
@@ -23,7 +23,7 @@ class AliMUONTriggerCrateConfig : public  TObject {
 
   public:
     AliMUONTriggerCrateConfig(AliMpTriggerCrate* mpTriggerCrate);
-    AliMUONTriggerCrateConfig(TRootIOCtor* /*ioCtor*/);
+    AliMUONTriggerCrateConfig(TRootIOCtor* ioCtor);
     virtual ~AliMUONTriggerCrateConfig();
     
       // set methods

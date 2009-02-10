@@ -52,7 +52,7 @@ private:
   /// Not implemented
   AliMpSt345Reader& operator=(const AliMpSt345Reader& rhs);
 
-  const AliMpDataStreams&  fDataStreams; ///< data streams
+  const AliMpDataStreams&  fkDataStreams; ///< data streams
   AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   ClassDef(AliMpSt345Reader,0) // Reader for slat stations mapping files 

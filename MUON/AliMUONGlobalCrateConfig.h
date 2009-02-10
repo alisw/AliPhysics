@@ -9,8 +9,8 @@
 ///
 /// \author Ch. Finck, Subatech Nantes
 
-#ifndef ALIMUON_GLOBAL_CRATE_CONFIG_H
-#define ALIMUON_GLOBAL_CRATE_CONFIG_H
+#ifndef ALI_MUON_GLOBAL_CRATE_CONFIG_H
+#define ALI_MUON_GLOBAL_CRATE_CONFIG_H
 
 #include <TNamed.h>
 #include <TString.h>

@@ -100,7 +100,7 @@ AliMpManuStore* AliMpManuStore::ReadData(const AliMpDataStreams& dataStreams,
 //______________________________________________________________________________
 AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams)
 : TObject(),
-  fDataStreams(dataStreams),
+  fkDataStreams(dataStreams),
   fManuToSerialNbs(),
   fSerialNbToManus(),
   fNofManusInDE(),
@@ -124,7 +124,7 @@ AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams)
 //______________________________________________________________________________
 AliMpManuStore::AliMpManuStore(TRootIOCtor* ioCtor)
 : TObject(),
-  fDataStreams(ioCtor),
+  fkDataStreams(ioCtor),
   fManuToSerialNbs(),
   fSerialNbToManus(),
   fNofManusInDE(),
@@ -169,7 +169,7 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
   static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
 
   istream& in 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(
           AliMpFiles::ManuToSerialPath(deName, stationType, station12Type));
 

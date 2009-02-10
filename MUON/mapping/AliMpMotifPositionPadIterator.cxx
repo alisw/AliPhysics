@@ -37,7 +37,7 @@ ClassImp(AliMpMotifPositionPadIterator)
 //______________________________________________________________________________
 AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator():
     AliMpVPadIterator(),
-    fMotifPos(0),
+    fkMotifPos(0),
     fIterator()
 {
 /// Default constructor, set the current position to "invalid"
@@ -48,7 +48,7 @@ AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator():
 AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator(
                                     const AliMpMotifPosition* motifPos)
   : AliMpVPadIterator(),
-    fMotifPos(motifPos),
+    fkMotifPos(motifPos),
     fIterator(motifPos->GetMotif()->GetMotifType())
 {
 /// Standard constructor, let *this to invalid position
@@ -58,7 +58,7 @@ AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator(
 AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator(
                                     const AliMpMotifPositionPadIterator& right)
   : AliMpVPadIterator(right),
-    fMotifPos(right.fMotifPos),
+    fkMotifPos(right.fkMotifPos),
     fIterator(right.fIterator)
     
 {
@@ -88,7 +88,7 @@ AliMpMotifPositionPadIterator::operator = (const AliMpMotifPositionPadIterator& 
   // base class assignment
   AliMpVPadIterator::operator=(right);
 
-  fMotifPos = right.fMotifPos;
+  fkMotifPos = right.fkMotifPos;
   fIterator = right.fIterator;
 
   return *this;
@@ -102,7 +102,7 @@ Bool_t AliMpMotifPositionPadIterator::IsValid() const
 {
 /// Is the iterator in a valid position?
 
-    return (fMotifPos!=0) && (!fIterator.IsDone());
+    return (fkMotifPos!=0) && (!fIterator.IsDone());
 } 
 
 //
@@ -115,7 +115,7 @@ void AliMpMotifPositionPadIterator::First()
 /// Reset the iterator, so that it points to the first available
 /// pad in the motif type
 
-    if (!fMotifPos) {
+    if (!fkMotifPos) {
         Invalidate();
         return ;
     }
@@ -145,17 +145,17 @@ AliMpPad AliMpMotifPositionPadIterator::CurrentItem() const
 {
 /// Return current pad.
 
-    if (!fMotifPos)
+    if (!fkMotifPos)
         return AliMpPad::Invalid();
     else {
       AliMpIntPair ind = fIterator.CurrentItem().GetIndices();
-      AliMpMotifType* mt = fMotifPos->GetMotif()->GetMotifType();
+      AliMpMotifType* mt = fkMotifPos->GetMotif()->GetMotifType();
       AliMpConnection* connect = 
         mt->FindConnectionByLocalIndices(ind);
-      return AliMpPad(AliMpIntPair(fMotifPos->GetID(),connect->GetGassiNum()),
-                  fMotifPos->GlobalIndices(ind),
-                  fMotifPos->Position()+fMotifPos->GetMotif()->PadPositionLocal(ind),
-                  fMotifPos->GetMotif()->GetPadDimensions(ind));
+      return AliMpPad(AliMpIntPair(fkMotifPos->GetID(),connect->GetGassiNum()),
+                  fkMotifPos->GlobalIndices(ind),
+                  fkMotifPos->Position()+fkMotifPos->GetMotif()->PadPositionLocal(ind),
+                  fkMotifPos->GetMotif()->GetPadDimensions(ind));
     }
 }
 

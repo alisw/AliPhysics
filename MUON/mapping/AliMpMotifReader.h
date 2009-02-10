@@ -78,7 +78,7 @@ class AliMpMotifReader : public TObject
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
     // data members  
-    const AliMpDataStreams& fDataStreams; ///< data streams
+    const AliMpDataStreams& fkDataStreams;///< data streams
     AliMp::StationType    fStationType;   ///< station type 
     AliMq::Station12Type  fStation12Type; ///< station12 type 
     AliMp::PlaneType      fPlaneType;     ///< plane type 

@@ -56,7 +56,7 @@ AliMpMotifReader::AliMpMotifReader(const AliMpDataStreams& dataStreams,
                                    AliMq::Station12Type station12,
                                    AliMp::PlaneType plane) 
   : TObject(),
-    fDataStreams(dataStreams),
+    fkDataStreams(dataStreams),
     fStationType(station),
     fStation12Type(station12),
     fPlaneType(plane)
@@ -85,15 +85,15 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   // Open streams
   //
   istream& padPosStream 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(AliMpFiles::PadPosFilePath(
                             fStationType, fStation12Type, fPlaneType, motifTypeId));
   istream& bergToGCStream 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType, fStation12Type));
       
   istream& motifTypeStream 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(AliMpFiles::MotifFilePath(
                             fStationType, fStation12Type, fPlaneType, motifTypeId));
 
@@ -262,7 +262,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   // Open streams
   //
   istream& in 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(AliMpFiles::MotifSpecialFilePath(
                              fStationType, fStation12Type, fPlaneType, motifID));
 

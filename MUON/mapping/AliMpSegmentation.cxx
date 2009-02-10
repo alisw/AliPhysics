@@ -105,7 +105,7 @@ AliMpSegmentation* AliMpSegmentation::ReadData(const AliMpDataStreams& dataStrea
 //______________________________________________________________________________
 AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
 : TObject(),
-  fDataStreams(dataStreams),
+  fkDataStreams(dataStreams),
   fDetElements(0),
   fMpSegmentations(true),
   fElCardsMap(),
@@ -146,7 +146,7 @@ AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
 //______________________________________________________________________________
 AliMpSegmentation::AliMpSegmentation(TRootIOCtor* ioCtor)
 : TObject(),
-  fDataStreams(ioCtor),
+  fkDataStreams(ioCtor),
   fDetElements(0),
   fMpSegmentations(),
   fElCardsMap(ioCtor),
@@ -211,17 +211,17 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
 
   if ( stationType == AliMp::kStation12 ) {
     AliMq::Station12Type station12Type = detElement->GetStation12Type();
-    AliMpSectorReader reader(fDataStreams, station12Type, planeType);
+    AliMpSectorReader reader(fkDataStreams, station12Type, planeType);
     AliMpSector* sector = reader.BuildSector();
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
   else if ( stationType == AliMp::kStation345 ) { 
-    AliMpSt345Reader reader(fDataStreams,fSlatMotifMap);
+    AliMpSt345Reader reader(fkDataStreams,fSlatMotifMap);
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
   else if ( stationType == AliMp::kStationTrigger ) {
-    AliMpTriggerReader reader(fDataStreams,fSlatMotifMap);
+    AliMpTriggerReader reader(fkDataStreams,fSlatMotifMap);
     AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
   }

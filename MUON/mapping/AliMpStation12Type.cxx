@@ -17,6 +17,8 @@
 //_____________________________________________________________________________
 TString AliMq::Station12TypeName(AliMq::Station12Type station12Type)
 {
+/// Return the station12 name for given station12 type
+
   switch ( station12Type ) {
     case kStation1:         return "st1";     break;
     case kStation2:         return "st2";     break;

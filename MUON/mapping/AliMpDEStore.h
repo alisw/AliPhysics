@@ -32,7 +32,7 @@ class AliMpDEStore : public  TObject {
   friend class AliMpDEIterator;
 
   public:
-    AliMpDEStore(TRootIOCtor* /*ioCtor*/);
+    AliMpDEStore(TRootIOCtor* ioCtor);
     virtual ~AliMpDEStore();
     
     // static access method
@@ -65,7 +65,7 @@ class AliMpDEStore : public  TObject {
     static const char    fgkCommentPrefix; ///< Comment prefix in DE names file
 
     // data members	
-    const AliMpDataStreams&  fDataStreams; //!< Data streams
+    const AliMpDataStreams&  fkDataStreams; //!< Data streams
     AliMpExMap  fDetElements; ///< Map between DE Ids and DE objects
       
   ClassDef(AliMpDEStore,1)  // The manager class for definition of detection element types

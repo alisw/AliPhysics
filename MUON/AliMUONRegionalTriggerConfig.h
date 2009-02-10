@@ -9,8 +9,8 @@
 ///
 /// \author Ch. Finck, Subatech Nantes; I. Hrivnacova, IPN Orsay
 
-#ifndef ALIMUON_REGIONAL_TRIGGER_CONFIG_H
-#define ALIMUON_REGIONAL_TRIGGER_CONFIG_H
+#ifndef ALI_MUON_REGIONAL_TRIGGER_CONFIG_H
+#define ALI_MUON_REGIONAL_TRIGGER_CONFIG_H
 
 #include <TObject.h>
 

@@ -92,7 +92,7 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fCurrentPlane(AliMp::kBendingPlane),
   fCurrentDetElem(100),
   fCurrentDEName(),
-  fSegmentation(),
+  fkSegmentation(),
   fDDLStore(0x0),
   fManuStore(0x0),
   fZoomMode(false)
@@ -270,7 +270,7 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fMain->MapWindow();
   
   // instance segmentation
-  fSegmentation = AliMpSegmentation::Instance()->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
+  fkSegmentation = AliMpSegmentation::Instance()->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
   fLogMessage->AddLine("Segmentation loaded");
   fLogMessage->ShowBottom();
 }
@@ -349,7 +349,7 @@ void AliMpDEVisu::HandleMovement(Int_t eventType, Int_t eventX, Int_t eventY, TO
       EventToReal(eventX,eventY,x,y);
       
       // get manu
-      AliMpPad pad = fSegmentation->PadByPosition(TVector2(x,y), false);
+      AliMpPad pad = fkSegmentation->PadByPosition(TVector2(x,y), false);
       
       if (!pad.IsValid()) {
        
@@ -515,7 +515,7 @@ AliMpDEVisu::EventToReal(Int_t eventX, Int_t eventY, Double_t& x, Double_t& y) c
   static TVector2 padDim = br - ul;
   
   // get DE dimension (half size)
-  TVector2 deDim(fSegmentation->Dimensions()*2.0);
+  TVector2 deDim(fkSegmentation->Dimensions()*2.0);
   
   TVector2 padReal;
   
@@ -658,7 +658,7 @@ Bool_t AliMpDEVisu::ProcessMessage(Long_t msg, Long_t parm1, Long_t /*parm2*/)
                   fNumberEntry->SetNumber(fNumberEntry->GetIntNumber() - 1024);
               }
               DrawDE();
-              fSegmentation = AliMpSegmentation::Instance()
+              fkSegmentation = AliMpSegmentation::Instance()
                 ->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
               break;
 
@@ -712,7 +712,7 @@ void AliMpDEVisu::UpdateComboCH()
 
     fCurrentDetElem = fDEComboIdx[fDECombo->GetSelected()];
 
-    fSegmentation = AliMpSegmentation::Instance()
+    fkSegmentation = AliMpSegmentation::Instance()
 	->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
 }
 
@@ -763,7 +763,7 @@ void AliMpDEVisu::UpdateNameView(Bool_t firstTime)
   }
 
   fNameDECombo->Select(fDEOccurrence[fCurrentDetElem]);
-  fSegmentation = AliMpSegmentation::Instance()
+  fkSegmentation = AliMpSegmentation::Instance()
     ->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
 }
 
@@ -939,7 +939,7 @@ void AliMpDEVisu::PopUpZoom(Int_t ix0, Int_t iy0, Int_t ix1, Int_t iy1)
   
   if ( area.IsValid() )
   {
-    AliMpVPadIterator* iterator = fSegmentation->CreateIterator(area);
+    AliMpVPadIterator* iterator = fkSegmentation->CreateIterator(area);
     if (iterator)
     {
       AliMpVPainter* painter = AliMpVPainter::CreatePainter(iterator);

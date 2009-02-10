@@ -50,7 +50,7 @@ private:
   TString fFileNameSim; //!< File (galiceSim.root) for simulated data
   TString fesdFileName; //!< File (AliESDs.root) to read from
  
-  const char* foutDir;  //!< output data directory
+  const char* fkOutDir;  //!< output data directory
   
   Int_t   fFirstEvent;  //!< First event to consider
   Int_t   fLastEvent;   //!< Last event to consider

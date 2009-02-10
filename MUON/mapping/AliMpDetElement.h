@@ -36,7 +36,7 @@ class AliMpDetElement : public  TObject {
   public:  
     AliMpDetElement(Int_t id, const TString& name,
                     const TString& segType, AliMp::PlaneType planeType);
-    AliMpDetElement(TRootIOCtor* /*ioCtor*/);
+    AliMpDetElement(TRootIOCtor* ioCtor);
     virtual ~AliMpDetElement();
 
     // static methods

@@ -42,10 +42,10 @@ class AliMpMotifTypePadIterator : public AliMpVPadIterator
     Bool_t IsValid() const;
 
     // private data members
-    const AliMpMotifType* fMotifType;///< the motif type over which iterate
-    AliMpIntPair fCurrentPosition;   ///< the current position inside the motif type
+    const AliMpMotifType* fkMotifType;///< the motif type over which iterate
+    AliMpIntPair fCurrentPosition;    ///< the current position inside the motif type
 
- ClassDef(AliMpMotifTypePadIterator,1) // iterator over motif's pads
+ ClassDef(AliMpMotifTypePadIterator,2) // iterator over motif's pads
 };
 
 #endif // ALI_MP_MOTIF_TYPE_PAD_ITERATOR_H

@@ -19,6 +19,8 @@
 //_____________________________________________________________________________
 AliMp::CathodType AliMp::GetCathodType(Int_t cathodNumber)
 {
+/// Return cathod type for a given cathod number of Int_t type
+
   switch ( cathodNumber ) {
     case kCath0:  return kCath0;  break;
     case kCath1:  return kCath1;  break;
@@ -36,6 +38,8 @@ AliMp::CathodType AliMp::GetCathodType(Int_t cathodNumber)
 //_____________________________________________________________________________
 TString AliMp::CathodTypeName(AliMp::CathodType cathodType)
 {
+/// Return cathod type name for a given cathod type
+
   switch ( cathodType ) {
     case kCath0:  return "cath0";  break;
     case kCath1:  return "cath1"; break;
@@ -49,6 +53,8 @@ TString AliMp::CathodTypeName(AliMp::CathodType cathodType)
 //_____________________________________________________________________________
 AliMp::CathodType AliMp::OtherCathodType(AliMp::CathodType cathodType)
 {
+/// Return the other cathod type for a given cathod type
+
   switch ( cathodType ) {
     case kCath0: return kCath1;  break;
     case kCath1: return kCath0;  break;

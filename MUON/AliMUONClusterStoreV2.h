@@ -1,5 +1,5 @@
-#ifndef AliMUONCLUSTERSTOREV2_H
-#define AliMUONCLUSTERSTOREV2_H
+#ifndef ALIMUONCLUSTERSTOREV2_H
+#define ALIMUONCLUSTERSTOREV2_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */

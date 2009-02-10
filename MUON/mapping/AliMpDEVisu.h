@@ -102,9 +102,9 @@ private:
     Int_t            fCurrentDetElem; //!< current DE
     TString          fCurrentDEName;  //!< current DE name
 
-    const AliMpVSegmentation* fSegmentation; //!< segmentation instance
-    AliMpDDLStore*            fDDLStore;     //!< DDL Store
-    AliMpManuStore*           fManuStore;    //!< Manu Store
+    const AliMpVSegmentation* fkSegmentation; //!< segmentation instance
+    AliMpDDLStore*            fDDLStore;      //!< DDL Store
+    AliMpManuStore*           fManuStore;     //!< Manu Store
 
     Bool_t           fZoomMode;        //!< flag for zoom mode on canvas instead of click mode
 

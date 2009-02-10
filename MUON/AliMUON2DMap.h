@@ -10,8 +10,8 @@
 ///
 //  Author Laurent Aphecetche
 
-#ifndef AliMUON2DMAP_H
-#define AliMUON2DMAP_H
+#ifndef ALIMUON2DMAP_H
+#define ALIMUON2DMAP_H
 
 #include "AliMUONVStore.h"
 

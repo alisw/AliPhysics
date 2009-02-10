@@ -88,7 +88,7 @@ private:
   /// Not implemented
   AliMpTriggerReader& operator=(const AliMpTriggerReader& rhs);
     
-  const AliMpDataStreams&  fDataStreams; //!< data streams
+  const AliMpDataStreams&  fkDataStreams; //!< data streams
   AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   TMap fLocalBoardMap; //!< map of TObjString to TObjString

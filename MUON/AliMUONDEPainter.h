@@ -20,7 +20,7 @@ class AliMUONDEPainter : public AliMUONVPainter
 {
 public:
   AliMUONDEPainter();
-  AliMUONDEPainter(TRootIOCtor*);
+  AliMUONDEPainter(TRootIOCtor* ioCtor);
   AliMUONDEPainter(const AliMUONAttPainter& att, Int_t detElemId);
   AliMUONDEPainter(const AliMUONDEPainter& rhs);
   AliMUONDEPainter& operator=(const AliMUONDEPainter& rhs);

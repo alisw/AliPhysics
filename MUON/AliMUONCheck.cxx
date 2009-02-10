@@ -68,7 +68,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t fir
 fFileName(galiceFile),
 fFileNameSim(),
 fesdFileName(esdFile),
-foutDir(outDir),
+fkOutDir(outDir),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {
@@ -83,7 +83,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim,
 fFileName(galiceFile),
 fFileNameSim(galiceFileSim),
 fesdFileName(esdFile),
-foutDir(outDir),
+fkOutDir(outDir),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {
@@ -335,7 +335,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     
   }//if(pdc06TriggerResponse)
   
-  gSystem->cd(foutDir);
+  gSystem->cd(fkOutDir);
   
   FILE *outtxt=fopen("output.txt","a");
   freopen("output.txt","a",outtxt);
@@ -518,7 +518,7 @@ AliMUONCheck::CheckKine()
   printf("***                       Leaving MuonKine()                 *** \n");
   printf("**************************************************************** \n");
   
-  gSystem->cd(foutDir);
+  gSystem->cd(fkOutDir);
   FILE *outtxt=fopen("output.txt","a");
   freopen("output.txt","a",outtxt);
   fprintf(outtxt,"                                                   \n");
@@ -663,7 +663,7 @@ AliMUONCheck::CheckTrackRef()
     
   }//evt loop
   
-  gSystem->cd(foutDir);
+  gSystem->cd(fkOutDir);
   TCanvas *c6 = new TCanvas("c6","TOF",400,10,600,700);
   c6->Divide(1,2);
   c6->cd(1);

@@ -80,7 +80,7 @@ class AliMpSectorReader : public TObject
     static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
-    const AliMpDataStreams&    fDataStreams; ///< data streams
+    const AliMpDataStreams&  fkDataStreams; ///< data streams
     AliMq::Station12Type  fStationType; ///< station type 
     AliMp::PlaneType      fPlaneType;   ///< plane type 
     AliMpSector*          fSector;      ///< sector

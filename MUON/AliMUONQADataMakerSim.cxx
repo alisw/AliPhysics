@@ -50,7 +50,8 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim() :
     fHitStore(0x0),
     fDigitStore(0x0)   
 {
-    /// ctor
+  /// Default constructor
+
   AliDebug(1,"");
 }
 
@@ -60,9 +61,10 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) 
   fHitStore(0x0),
   fDigitStore(0x0)
 {
+  /// Copy constructor
+
   AliDebug(1,"");
 
-    ///copy ctor
     if ( qadm.fHitStore ) 
     {
       fHitStore = static_cast<AliMUONVHitStore*>(qadm.fHitStore->Clone());
@@ -78,9 +80,10 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) 
 //__________________________________________________________________
 AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMakerSim& qadm )
 {
+  /// Assignment operator
+
     AliDebug(1,"");
 
-    /// Equal operator.
     this->~AliMUONQADataMakerSim();
     new(this) AliMUONQADataMakerSim(qadm);
     return *this;
@@ -89,9 +92,10 @@ AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMak
 //__________________________________________________________________
 AliMUONQADataMakerSim::~AliMUONQADataMakerSim()
 {
+  /// Destructor
+
   AliDebug(1,"");
 
-    /// dtor
   delete fHitStore;
   delete fDigitStore;
 }

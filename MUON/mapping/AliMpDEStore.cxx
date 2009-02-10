@@ -97,7 +97,7 @@ AliMpDEStore* AliMpDEStore::ReadData(const AliMpDataStreams& dataStreams,
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore(const AliMpDataStreams& dataStreams)
 : TObject(),
-  fDataStreams(dataStreams),
+  fkDataStreams(dataStreams),
   fDetElements()
 {  
 /// Standard constructor
@@ -112,7 +112,7 @@ AliMpDEStore::AliMpDEStore(const AliMpDataStreams& dataStreams)
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore(TRootIOCtor* ioCtor)
 : TObject(),
-  fDataStreams(ioCtor),
+  fkDataStreams(ioCtor),
   fDetElements(ioCtor)
 {  
 /// Constructor for IO
@@ -162,7 +162,7 @@ AliMpDEStore::ReadDENames(AliMp::StationType station,
 
   // Open stream
   istream& in 
-    = fDataStreams.
+    = fkDataStreams.
         CreateDataStream(AliMpFiles::DENamesFilePath(station, station12));
   
   // Read plane types per cathods

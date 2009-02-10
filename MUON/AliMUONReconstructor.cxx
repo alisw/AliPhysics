@@ -165,9 +165,10 @@ fClusterStore(0x0)
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
+  /// dtor
+
   AliDebug(1,"");
 
-  /// dtor
   delete fDigitMaker;
   delete fDigitStore;
   delete fTransformer;

@@ -107,6 +107,11 @@ class AliMpMotifMap : public TObject
     Int_t CalculateNofPads() const;
      
   private:
+    /// Not implemented
+    AliMpMotifMap(const AliMpMotifMap& rhs);
+    /// Not implemented
+    AliMpMotifMap& operator=(const AliMpMotifMap& rhs);
+  
     // methods
     void  PrintMotif(const AliMpVMotif* motif) const;
     void  PrintMotifType(const AliMpMotifType* motifType) const;

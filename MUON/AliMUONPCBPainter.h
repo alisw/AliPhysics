@@ -19,7 +19,7 @@
 class AliMUONPCBPainter : public AliMUONVPainter
 {
 public:
-  AliMUONPCBPainter(TRootIOCtor*);
+  AliMUONPCBPainter(TRootIOCtor* ioCtor);
   AliMUONPCBPainter();
   AliMUONPCBPainter(const AliMUONAttPainter& att, 
                     Int_t detElemId, 

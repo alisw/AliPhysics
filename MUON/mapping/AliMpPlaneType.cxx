@@ -16,6 +16,8 @@
 //_____________________________________________________________________________
 TString AliMp::PlaneTypeName(PlaneType planeType)
 {
+/// Return plane type name for given plane type
+
   switch ( planeType ) {
     case kBendingPlane:    return "bp";  break;
     case kNonBendingPlane: return "nbp"; break;
@@ -29,6 +31,8 @@ TString AliMp::PlaneTypeName(PlaneType planeType)
 //_____________________________________________________________________________
 AliMp::PlaneType AliMp::OtherPlaneType(PlaneType planeType)
 {
+/// Return the other plane type for a given plane type
+
   switch ( planeType ) {
     case kBendingPlane:    return kNonBendingPlane;  break;
     case kNonBendingPlane: return kBendingPlane;     break;

@@ -18,6 +18,8 @@
 //_____________________________________________________________________________
 TString AliMp::StationTypeName(AliMp::StationType stationType)
 {
+/// Return the station name for given station type
+
   switch ( stationType ) {
     case kStation12:      return "st12";    break;
     case kStation345:     return "slat";    break;

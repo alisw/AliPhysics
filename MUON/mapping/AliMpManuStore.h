@@ -29,7 +29,7 @@ class TString;
 class AliMpManuStore : public  TObject {
 
   public:
-    AliMpManuStore(TRootIOCtor* /*ioCtor*/);
+    AliMpManuStore(TRootIOCtor* ioCtor);
     virtual ~AliMpManuStore();
     
     // static access method
@@ -71,7 +71,7 @@ class AliMpManuStore : public  TObject {
     static Bool_t          fgWarnIfDoublon; ///< Option to warn about doublons
 
     // data members	
-    const AliMpDataStreams& fDataStreams; //!< Data streams
+    const AliMpDataStreams& fkDataStreams; //!< Data streams
     mutable TExMap fManuToSerialNbs; ///< Map from manuId to serial #   
     mutable TExMap fSerialNbToManus; ///< Map manu serial # to manuId
     mutable TExMap fNofManusInDE;    ///< Number of manus with serial nbs in DE
