@@ -4319,7 +4319,8 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
       AliTPCseed * track1 = (AliTPCseed*)array->At(i1);
       if (!track1) continue;      
       //
-      if (TMath::Abs(track0->GetRelativeSector()-track1->GetRelativeSector())>1) continue;
+      Int_t dsec = TMath::Abs((track0->GetRelativeSector()%18)-(track1->GetRelativeSector()%18));  // sector distance      
+      if (dsec>1 && dsec<17) continue;
       if (track1->GetKinkIndexes()[0]>0 &&track0->GetKinkIndexes()[0]<0) continue;
       if (track1->GetKinkIndexes()[0]!=0) continue;
 
