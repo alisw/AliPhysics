@@ -387,6 +387,8 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
+  AliTRDtrackV1 cTrack(*fTrack);
+  cTrack.SetReconstructor(fReconstructor);
   Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fMC){
@@ -394,8 +396,6 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
-    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -406,7 +406,8 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     SumdEdx = 0;
-    for(Int_t i = 2; i--;) SumdEdx += fTrack->GetTracklet(iChamb)->GetdEdx()[i];
+    cTrack.GetTracklet(iChamb) -> CookdEdx(AliTRDpidUtil::kLQslices);
+    for(Int_t i = 2; i--;) SumdEdx += cTrack.GetTracklet(iChamb)->GetdEdx()[i];
     hdEdx -> Fill(iBin, SumdEdx);
   }
   return hdEdx;
@@ -434,6 +435,8 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
+  AliTRDtrackV1 cTrack(*fTrack);
+  cTrack.SetReconstructor(fReconstructor);
   Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fMC){
@@ -441,8 +444,6 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
-    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -452,7 +453,8 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    fdEdx = fTrack->GetTracklet(iChamb)->GetdEdx();
+    cTrack.GetTracklet(iChamb) -> CookdEdx(AliTRDpidUtil::kLQslices);
+    fdEdx = cTrack.GetTracklet(iChamb)->GetdEdx();
     for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kLQslices; iSlice++){
       hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + iMomBin * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
     }
