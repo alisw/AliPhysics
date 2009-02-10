@@ -527,6 +527,10 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
     trackTOFout->PropagateTo(379.);
+
+    // Fill the track residual histograms.
+    FillResiduals(trackTOFout,cgold,kFALSE);
+
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
     t->SetIntegratedLength(length[igold]);
     t->SetIntegratedTimes(times[igold]);

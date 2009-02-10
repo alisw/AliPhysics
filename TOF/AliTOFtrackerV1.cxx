@@ -421,6 +421,8 @@ void AliTOFtrackerV1::MatchTracks( ){
     //Propagate the track to the best matched cluster
     trackTOFin->PropagateTo(bestCluster);
 
+    // Fill the track residual histograms.
+    FillResiduals(trackTOFin,bestCluster,kFALSE);
 
     //now take the local distance in Z from the pad center for time walk correction
     Float_t tiltangle = AliTOFGeometry::GetAngles(bestCluster->GetDetInd(1),bestCluster->GetDetInd(2))*TMath::DegToRad();

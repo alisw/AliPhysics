@@ -601,6 +601,10 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
     trackTOFout->PropagateTo(xpos);
+
+    // Fill the track residual histograms.
+    FillResiduals(trackTOFout,c,kFALSE);
+
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
     t->SetIntegratedLength(recL);
     t->SetIntegratedTimes(time);
