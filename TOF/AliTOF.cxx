@@ -53,7 +53,7 @@
 #include "AliMC.h"
 #include "AliRun.h"
 
-#include "AliTOFDDLRawData.h"
+//#include "AliTOFDDLRawData.h"
 #include "AliTOFDigitizer.h"
 #include "AliTOFdigit.h"
 #include "AliTOFhitT0.h"
@@ -84,7 +84,8 @@ AliTOF::AliTOF():
   fIdSens(-1),
   fTZero(kFALSE),
   fTOFHoles(kTRUE),
-  fTOFGeometry(0x0)
+  fTOFGeometry(0x0),
+  fTOFRawWriter(AliTOFDDLRawData())
 {
   //
   // Default constructor
@@ -112,7 +113,8 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fIdSens(-1),
   fTZero(kFALSE),
   fTOFHoles(kTRUE),
-  fTOFGeometry(0x0)
+  fTOFGeometry(0x0),
+  fTOFRawWriter(AliTOFDDLRawData())
 {
   //
   // AliTOF standard constructor
@@ -677,17 +679,18 @@ void AliTOF::Digits2Raw()
     return;
   }
   
-  AliTOFDDLRawData rawWriter;
-  rawWriter.SetVerbose(0);
-  if (rawWriter.GetPackedAcquisitionMode()) {
-    if(rawWriter.GetMatchingWindow()>8192)
+  //AliTOFDDLRawData rawWriter;
+  fTOFRawWriter.Clear();
+  fTOFRawWriter.SetVerbose(0);
+  if (fTOFRawWriter.GetPackedAcquisitionMode()) {
+    if(fTOFRawWriter.GetMatchingWindow()>8192)
       AliWarning(Form("You are running in packing mode and the matching window is %.2f ns, i.e. greater than 199.8848 ns",
-		      rawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
+		      fTOFRawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
   }
   
   AliDebug(1,"Formatting raw data for TOF");
   digits->GetEvent(0);
-  rawWriter.RawDataTOF(digits->GetBranch("TOF"));  
+  fTOFRawWriter.RawDataTOF(digits->GetBranch("TOF"));  
 
   fLoader->UnloadDigits();
   
