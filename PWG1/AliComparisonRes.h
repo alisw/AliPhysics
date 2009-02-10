@@ -66,19 +66,90 @@ public :
 
   static TH1F*       MakeResol(TH2F * his, Int_t integ, Bool_t type); 
 
+  // getters
+  TH3F *GetMCVertex()  { return fMCVertex; }
+  TH3F *GetRecVertex() { return fRecVertex; } 
+
+  TH3F *GetPhiTanPtTPC() { return fPhiTanPtTPC; } 
+  TH3F *GetPhiTanPtTPCITS() { return fPhiTanPtTPCITS; } 
+
+  TH2F *GetPtResolTPC()     { return fPtResolTPC; } 
+  TH2F *GetPtPullTPC()      { return fPtPullTPC; } 
+  TH2F *GetPhiResolTanTPC() { return fPhiResolTanTPC; } 
+  TH2F *GetTanResolTanTPC() { return fTanResolTanTPC; } 
+  TH2F *GetPhiPullTanTPC()  { return fPhiPullTanTPC; } 
+  TH2F *GetTanPullTanTPC()  { return fTanPullTanTPC; } 
+
+  TH2F *GetPtResolTPCITS()     { return fPtResolTPCITS; } 
+  TH2F *GetPtPullTPCITS()      { return fPtPullTPCITS; } 
+  TH2F *GetPhiResolTanTPCITS() { return fPhiResolTanTPCITS; } 
+  TH2F *GetTanResolTanTPCITS() { return fTanResolTanTPCITS; } 
+  TH2F *GetPhiPullTanTPCITS()  { return fPhiPullTanTPCITS; } 
+  TH2F *GetTanPullTanTPCITS()  { return fTanPullTanTPCITS; } 
+
+  //
+  // Resolution constrained param
+  //
+  TH2F *GetCPhiResolTan() { return fCPhiResolTan; } 
+  TH2F *GetCTanResolTan() { return fCTanResolTan; } 
+  TH2F *GetCPtResolTan()  { return fCPtResolTan; } 
+  TH2F *GetCPhiPullTan()  { return fCPhiPullTan; } 
+  TH2F *GetCTanPullTan()  { return fCTanPullTan; } 
+  TH2F *GetCPtPullTan()   { return fCPtPullTan; } 
+
+  //
+  // Histograms for track resolution parameterisation
+  //
+  TH2F *Get1Pt2ResolS1PtTPC()    { return f1Pt2ResolS1PtTPC; } 
+  TH2F *Get1Pt2ResolS1PtTPCITS() { return f1Pt2ResolS1PtTPCITS; } 
+  TH2F *GetYResolS1PtTPC()       { return fYResolS1PtTPC; } 
+  TH2F *GetYResolS1PtTPCITS()    { return fYResolS1PtTPCITS; } 
+  TH2F *GetZResolS1PtTPC()       { return fZResolS1PtTPC; } 
+  TH2F *GetZResolS1PtTPCITS()    { return fZResolS1PtTPCITS; } 
+  TH2F *GetPhiResolS1PtTPC()     { return fPhiResolS1PtTPC; } 
+  TH2F *GetPhiResolS1PtTPCITS()  { return fPhiResolS1PtTPCITS; } 
+  TH2F *GetThetaResolS1PtTPC()   { return fThetaResolS1PtTPC; } 
+  TH2F *GetThetaResolS1PtTPCITS(){ return fThetaResolS1PtTPCITS; } 
+
+  // constrained
+  //
+  TH2F *GetC1Pt2ResolS1PtTPC()    { return fC1Pt2ResolS1PtTPC; } 
+  TH2F *GetC1Pt2ResolS1PtTPCITS() { return fC1Pt2ResolS1PtTPCITS; } 
+  TH2F *GetCYResolS1PtTPC()       { return fCYResolS1PtTPC; } 
+  TH2F *GetCYResolS1PtTPCITS()    { return fCYResolS1PtTPCITS; } 
+  TH2F *GetCZResolS1PtTPC()       { return fCZResolS1PtTPC; } 
+  TH2F *GetCZResolS1PtTPCITS()    { return fCZResolS1PtTPCITS; } 
+  TH2F *GetCPhiResolS1PtTPC()     { return fCPhiResolS1PtTPC; } 
+  TH2F *GetCPhiResolS1PtTPCITS()  { return fCPhiResolS1PtTPCITS; } 
+  TH2F *GetCThetaResolS1PtTPC()   { return fCThetaResolS1PtTPC; } 
+  TH2F *GetCThetaResolS1PtTPCITS(){ return fCThetaResolS1PtTPCITS; } 
 
 private:
   //
   // Control histograms
   //
-  TH2F *fPtResolLPT;        //-> pt resolution - low pt
-  TH2F *fPtResolHPT;        //-> pt resolution - high pt 
-  TH2F *fPtPullLPT;         //-> pt resolution - low pt
-  TH2F *fPtPullHPT;         //-> pt resolution - high pt 
-  TH2F *fPhiResolTan;       //-> angular resolution 
-  TH2F *fTanResolTan;       //-> angular resolution
-  TH2F *fPhiPullTan;        //-> angular resolution
-  TH2F *fTanPullTan;        //-> angular resolution
+
+  TH3F *fMCVertex;  //-> MC primary vertex 
+  TH3F *fRecVertex; //-> Reconstructed primary vertex
+
+  TH3F *fPhiTanPtTPC; //-> phi vs tantheta vs pt
+  TH3F *fPhiTanPtTPCITS; //-> phi vs tantheta vs pt
+
+  // TPC only
+  TH2F *fPtResolTPC;        //-> pt resolution
+  TH2F *fPtPullTPC;         //-> pt pull
+  TH2F *fPhiResolTanTPC;       //-> angular resolution 
+  TH2F *fTanResolTanTPC;       //-> angular resolution
+  TH2F *fPhiPullTanTPC;        //-> angular resolution
+  TH2F *fTanPullTanTPC;        //-> angular resolution
+
+  // TPC+ITS
+  TH2F *fPtResolTPCITS;        //-> pt resolution
+  TH2F *fPtPullTPCITS;         //-> pt pull
+  TH2F *fPhiResolTanTPCITS;       //-> angular resolution 
+  TH2F *fTanResolTanTPCITS;       //-> angular resolution
+  TH2F *fPhiPullTanTPCITS;        //-> angular resolution
+  TH2F *fTanPullTanTPCITS;        //-> angular resolution
 
   //
   // Resolution constrained param
@@ -116,8 +187,6 @@ private:
   TH2F* fCPhiResolS1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
   TH2F* fCThetaResolS1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC)
   TH2F* fCThetaResolS1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
-
-  AliESDVertex *fVertex;  //! 
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks

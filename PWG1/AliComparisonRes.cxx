@@ -17,8 +17,9 @@
   LoadMyLibs();
 
   TFile f("Output.root");
-  AliComparisonRes * compObj = (AliComparisonRes*)f.Get("AliComparisonRes");
-
+  //AliComparisonRes * compObj = (AliComparisonRes*)f.Get("AliComparisonRes");
+  AliComparisonRes * compObj = (AliComparisonRes*)cOutput->FindObject("AliComparisonRes");
+ 
   // analyse comparison data
   compObj->Analyse();
 
@@ -71,15 +72,31 @@ ClassImp(AliComparisonRes)
 AliComparisonRes::AliComparisonRes():
   AliComparisonObject("AliComparisonRes"),
 
+  // Vertices
+  fMCVertex(0),  //-> MC primary vertex
+  fRecVertex(0), //-> Reconstructed primary vertex
+
+  // global observables
+  fPhiTanPtTPC(0),
+  fPhiTanPtTPCITS(0),
+
   // Resolution 
-  fPtResolLPT(0),        // pt resolution - low pt
-  fPtResolHPT(0),        // pt resolution - high pt 
-  fPtPullLPT(0),         // pt resolution - low pt
-  fPtPullHPT(0),         // pt resolution - high pt 
-  fPhiResolTan(0),       //-> angular resolution 
-  fTanResolTan(0),       //-> angular resolution
-  fPhiPullTan(0),        //-> angular resolution
-  fTanPullTan(0),        //-> angular resolution
+
+  // TPC only
+  fPtResolTPC(0),
+  fPtPullTPC(0),
+  fPhiResolTanTPC(0),
+  fTanResolTanTPC(0),
+  fPhiPullTanTPC(0),
+  fTanPullTanTPC(0),
+
+  // TPC+ITS
+  fPtResolTPCITS(0),
+  fPtPullTPCITS(0),
+  fPhiResolTanTPCITS(0),
+  fTanResolTanTPCITS(0),
+  fPhiPullTanTPCITS(0),
+  fTanPullTanTPCITS(0),
 
   //
   // Resolution constrained param
@@ -118,9 +135,6 @@ AliComparisonRes::AliComparisonRes():
   fCThetaResolS1PtTPC(0),
   fCThetaResolS1PtTPCITS(0),
 
-  // vertex
-  fVertex(0),
- 
   // Cuts 
   fCutsRC(0),  
   fCutsMC(0),  
@@ -129,28 +143,35 @@ AliComparisonRes::AliComparisonRes():
   fAnalysisFolder(0)
 {
   Init();
-  
-  // vertex (0,0,0)
-  fVertex = new AliESDVertex();
-  fVertex->SetXv(0.0);
-  fVertex->SetYv(0.0);
-  fVertex->SetZv(0.0);
 }
 
 //_____________________________________________________________________________
 AliComparisonRes::~AliComparisonRes(){
   
+  // Vertices
+  if(fMCVertex) delete fMCVertex; fMCVertex=0;     
+  if(fRecVertex) delete fRecVertex; fRecVertex=0;     
+
+  // Global observables
+  //
+  if(fPhiTanPtTPC) delete fPhiTanPtTPC; fPhiTanPtTPC=0;     
+  if(fPhiTanPtTPCITS) delete fPhiTanPtTPCITS; fPhiTanPtTPCITS=0;     
+
   // Resolution histograms
-  if(fPtResolLPT) delete  fPtResolLPT; fPtResolLPT=0;     
-  if(fPtResolHPT) delete  fPtResolHPT; fPtResolHPT=0;    
-  if(fPtPullLPT)  delete  fPtPullLPT;  fPtPullLPT=0;    
-  if(fPtPullHPT)  delete  fPtPullHPT;  fPtPullHPT=0;   
+  if(fPtResolTPC) delete fPtResolTPC; fPtResolTPC=0;     
+  if(fPtPullTPC) delete fPtPullTPC; fPtPullTPC=0;     
+  if(fPhiResolTanTPC) delete fPhiResolTanTPC; fPhiResolTanTPC=0;     
+  if(fTanResolTanTPC) delete fTanResolTanTPC; fTanResolTanTPC=0;     
+  if(fPhiPullTanTPC) delete fPhiPullTanTPC; fPhiPullTanTPC=0;     
+  if(fTanPullTanTPC) delete fTanPullTanTPC; fTanPullTanTPC=0;     
 
-  if(fPhiResolTan)  delete  fPhiResolTan; fPhiResolTan=0;   
-  if(fTanResolTan)  delete  fTanResolTan; fTanResolTan=0;   
-  if(fPhiPullTan)  delete  fPhiPullTan; fPhiPullTan=0;   
-  if(fTanPullTan)  delete  fTanPullTan; fTanPullTan=0;   
-
+  if(fPtResolTPCITS) delete fPtResolTPCITS; fPtResolTPCITS=0;     
+  if(fPtPullTPCITS) delete fPtPullTPCITS; fPtPullTPCITS=0;     
+  if(fPhiResolTanTPCITS) delete fPhiResolTanTPCITS; fPhiResolTanTPCITS=0;     
+  if(fTanResolTanTPCITS) delete fTanResolTanTPCITS; fTanResolTanTPCITS=0;     
+  if(fPhiPullTanTPCITS) delete fPhiPullTanTPCITS; fPhiPullTanTPCITS=0;     
+  if(fTanPullTanTPCITS) delete fTanPullTanTPCITS; fTanPullTanTPCITS=0;     
+  
   // Resolution histograms (constrained param)
   if(fCPhiResolTan) delete fCPhiResolTan; fCPhiResolTan=0;
   if(fCTanResolTan) delete fCTanResolTan; fCTanResolTan=0;
@@ -184,22 +205,91 @@ AliComparisonRes::~AliComparisonRes(){
   if(fCThetaResolS1PtTPC) delete fCThetaResolS1PtTPC; fCThetaResolS1PtTPC=0;
   if(fCThetaResolS1PtTPCITS) delete fCThetaResolS1PtTPCITS; fCThetaResolS1PtTPCITS=0;
 
-  if(fVertex) delete fVertex; fVertex=0;
-
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
 void AliComparisonRes::Init(){
 
-  // Init histograms
+  // Control histograms
+  fMCVertex = new TH3F("MCVertex","MC vertex Xv:Yv:Zv",100,-0.05,0.05,100,-0.05,0.05,100,-10,10);
+  fMCVertex->SetXTitle("Xv [cm]");
+  fMCVertex->SetYTitle("Yv [cm]");
+  fMCVertex->SetZTitle("Zv [cm]");
+
+  fRecVertex = new TH3F("RecVertex","Rec prim. vertex Xv:Yv:Zv",100,-0.01,0.01,100,-0.01,0.01,100,-0.5,0.5);
+  fRecVertex->SetXTitle("Xv [cm]");
+  fRecVertex->SetYTitle("Yv [cm]");
+  fRecVertex->SetZTitle("Zv [cm]");
+
+  //
+  fPhiTanPtTPC = new TH3F("PhiTanPtTPC","phi vs tan#theta vs pt - TPC only",200,-3.5,3.5,50,-2,2,100,0.1,3.0);
+  fPhiTanPtTPC->SetXTitle("#phi [rad]");
+  fPhiTanPtTPC->SetYTitle("tan#theta");
+  fPhiTanPtTPC->SetZTitle("p_{t} [GeV]");
+
+  fPhiTanPtTPCITS = new TH3F("PhiTanPtTPCITS","phi vs tan#theta vs pt - TPC+ITS",200,-3.5,3.5,50,-2,2,100,0.1,3.0);
+  fPhiTanPtTPCITS->SetXTitle("#phi [rad]");
+  fPhiTanPtTPCITS->SetYTitle("tan#theta");
+  fPhiTanPtTPCITS->SetZTitle("p_{t} [GeV]");
+
+  //
+  fPtResolTPC = new TH2F("PtResolTPC","pt resol",10, 0.1,3,200,-0.2,0.2);
+  fPtResolTPC->SetXTitle("p_{t} [GeV]");
+  fPtResolTPC->SetYTitle("#Deltap_{t}/p_{t}");
+
+  fPtPullTPC = new TH2F("fPtPullTPC","pt pull",10, 0.1,3,200,-6,6);
+  fPtPullTPC->SetXTitle("p_{t} [GeV]");
+  fPtPullTPC->SetYTitle("#Deltap_{t}/#Sigma");
+
+  fPhiResolTanTPC = new TH2F("PhiResolTanTPC","PhiResolTanTPC",50, -2,2,200,-0.025,0.025);   
+  fPhiResolTanTPC->SetXTitle("tan(#theta)");
+  fPhiResolTanTPC->SetYTitle("#Delta#phi [rad]");
+
+  fTanResolTanTPC = new TH2F("TanResolTanTPC","TanResolTanTPC",50, -2,2,200,-0.025,0.025);
+  fTanResolTanTPC->SetXTitle("tan(#theta)");
+  fTanResolTanTPC->SetYTitle("#Delta#theta [rad]");
+
+  fPhiPullTanTPC = new TH2F("PhiPullTanTPC","PhiPullTanTPC",50, -2,2,200,-5,5);   
+  fPhiPullTanTPC->SetXTitle("Tan(#theta)");
+  fPhiPullTanTPC->SetYTitle("#Delta#phi/#Sigma");
+
+  fTanPullTanTPC = new TH2F("TanPullTanTPC","TanPullTanTPC",50, -2,2,200,-5,5);
+  fTanPullTanTPC->SetXTitle("Tan(#theta)");
+  fTanPullTanTPC->SetYTitle("#Delta#theta/#Sigma");
+
+  fPtResolTPCITS = new TH2F("PtResolTPCITS","pt resol",10, 0.1,3,200,-0.2,0.2);
+  fPtResolTPCITS->SetXTitle("p_{t} [GeV]");
+  fPtResolTPCITS->SetYTitle("#Deltap_{t}/p_{t}");
+
+  fPtPullTPCITS = new TH2F("fPtPullTPCITS","pt pull",10, 0.1,3,200,-6,6);
+  fPtPullTPCITS->SetXTitle("p_{t} [GeV]");
+  fPtPullTPCITS->SetYTitle("#Deltap_{t}/#Sigma");
+
+  fPhiResolTanTPCITS = new TH2F("PhiResolTanTPCITS","PhiResolTanTPCITS",50, -2,2,200,-0.025,0.025);   
+  fPhiResolTanTPCITS->SetXTitle("tan(#theta)");
+  fPhiResolTanTPCITS->SetYTitle("#Delta#phi [rad]");
+
+  fTanResolTanTPCITS = new TH2F("TanResolTanTPCITS","TanResolTanTPCITS",50, -2,2,200,-0.025,0.025);
+  fTanResolTanTPCITS->SetXTitle("tan(#theta)");
+  fTanResolTanTPCITS->SetYTitle("#Delta#theta [rad]");
+
+  fPhiPullTanTPCITS = new TH2F("PhiPullTanTPCITS","PhiPullTanTPCITS",50, -2,2,200,-5,5);   
+  fPhiPullTanTPCITS->SetXTitle("Tan(#theta)");
+  fPhiPullTanTPCITS->SetYTitle("#Delta#phi/#Sigma");
+
+  fTanPullTanTPCITS = new TH2F("TanPullTanTPCITS","TanPullTanTPCITS",50, -2,2,200,-5,5);
+  fTanPullTanTPCITS->SetXTitle("Tan(#theta)");
+  fTanPullTanTPCITS->SetYTitle("#Delta#theta/#Sigma");
+
+  // Resolution constrained param
   fCPhiResolTan = new TH2F("CPhiResolTan","CPhiResolTan",50, -2,2,200,-0.025,0.025);   
   fCPhiResolTan->SetXTitle("tan(#theta)");
-  fCPhiResolTan->SetYTitle("#Delta#phi");
+  fCPhiResolTan->SetYTitle("#Delta#phi [rad]");
 
   fCTanResolTan = new TH2F("CTanResolTan","CTanResolTan",50, -2,2,200,-0.025,0.025);
   fCTanResolTan->SetXTitle("tan(#theta)");
-  fCTanResolTan->SetYTitle("#Delta#theta");
+  fCTanResolTan->SetYTitle("#Delta#theta [rad]");
 
   fCPtResolTan=new TH2F("CPtResol","CPtResol",50, -2,2,200,-0.2,0.2);    
   fCPtResolTan->SetXTitle("Tan(#theta)");
@@ -216,39 +306,7 @@ void AliComparisonRes::Init(){
   fCPtPullTan=new TH2F("CPtPull","CPtPull",50, -2,2,200,-5,5);    
   fCPtPullTan->SetXTitle("Tan(#theta)");
   fCPtPullTan->SetYTitle("(1/mcp_{t}-1/p_{t})/#Sigma");
-
-  fPtResolLPT = new TH2F("Pt_resol_lpt","pt resol",10, 0.1,3,200,-0.2,0.2);
-  fPtResolLPT->SetXTitle("p_{t}");
-  fPtResolLPT->SetYTitle("#Deltap_{t}/p_{t}");
-
-  fPtResolHPT = new TH2F("Pt_resol_hpt","pt resol",10, 2,100,200,-0.3,0.3);  
-  fPtResolHPT->SetXTitle("p_{t}");
-  fPtResolHPT->SetYTitle("#Deltap_{t}/p_{t}");
-
-  fPtPullLPT = new TH2F("Pt_pull_lpt","pt pull",10, 0.1,3,200,-6,6);
-  fPtPullLPT->SetXTitle("p_{t}");
-  fPtPullLPT->SetYTitle("#Deltap_{t}/#Sigma");
-
-  fPtPullHPT = new TH2F("Pt_pull_hpt","pt pull",10,2,100,200,-6,6);  
-  fPtPullHPT->SetXTitle("p_{t}");
-  fPtPullHPT->SetYTitle("#Deltap_{t}/#Sigma");
   
-  fPhiResolTan = new TH2F("PhiResolTan","PhiResolTan",50, -2,2,200,-0.025,0.025);   
-  fPhiResolTan->SetXTitle("tan(#theta)");
-  fPhiResolTan->SetYTitle("#Delta#phi");
-
-  fTanResolTan = new TH2F("TanResolTan","TanResolTan",50, -2,2,200,-0.025,0.025);
-  fTanResolTan->SetXTitle("tan(#theta)");
-  fTanResolTan->SetYTitle("#Delta#theta");
-
-  fPhiPullTan = new TH2F("PhiPullTan","PhiPullTan",50, -2,2,200,-5,5);   
-  fPhiPullTan->SetXTitle("Tan(#theta)");
-  fPhiPullTan->SetYTitle("#Delta#phi/#Sigma");
-
-  fTanPullTan = new TH2F("TanPullTan","TanPullTan",50, -2,2,200,-5,5);
-  fTanPullTan->SetXTitle("Tan(#theta)");
-  fTanPullTan->SetYTitle("#Delta#theta/#Sigma");
-
   //
   // Parametrisation histograms
   // 
@@ -351,16 +409,18 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   AliExternalTrackParam *track = 0;
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
+  AliESDVertex vertexMC;  // MC primary vertex
 
   Int_t clusterITS[200];
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
 
   Float_t deltaPt, pullPt, deltaPhi,pullPhi, deltaTan, pullTan, delta1Pt2, deltaY1Pt, deltaZ1Pt, deltaPhi1Pt, deltaTheta1Pt; 
-  Float_t deltaPtTPC, pullPtTPC, deltaPhiTPC, deltaTanTPC, delta1Pt2TPC, deltaY1PtTPC, deltaZ1PtTPC, deltaPhi1PtTPC, deltaTheta1PtTPC; 
+  Float_t deltaPtTPC, pullPtTPC, deltaPhiTPC, pullPhiTPC, deltaTanTPC, pullTanTPC, delta1Pt2TPC, deltaY1PtTPC, deltaZ1PtTPC, deltaPhi1PtTPC, deltaTheta1PtTPC; 
 
   Float_t mcpt = infoMC->GetParticle().Pt();
   Float_t s1mcpt = TMath::Sqrt(1./infoMC->GetParticle().Pt());
   Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
+  Float_t eta =  infoMC->GetParticle().Eta();
 
   // distance to Prim. vertex 
   const Double_t* dv = infoMC->GetVDist(); 
@@ -374,9 +434,17 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
 
   // calculate and set prim. vertex
-  fVertex->SetXv( infoMC->GetParticle().Vx() - dv[0] );
-  fVertex->SetYv( infoMC->GetParticle().Vy() - dv[1] );
-  fVertex->SetZv( infoMC->GetParticle().Vz() - dv[2] );
+  vertexMC.SetXv( infoMC->GetParticle().Vx() - dv[0] );
+  vertexMC.SetYv( infoMC->GetParticle().Vy() - dv[1] );
+  vertexMC.SetZv( infoMC->GetParticle().Vz() - dv[2] );
+
+  // Fill MC vertex histo
+  fMCVertex->Fill(vertexMC.GetXv(),vertexMC.GetYv(),vertexMC.GetZv());
+
+   
+  // Fill Rec vertex histo
+  //fRecVertex->Fill(infoRC->GetESDvertex()->GetXv(),infoRC->GetESDvertex()->GetYv(),infoRC->GetESDvertex()->GetZv());
+  //printf("Rec vertex xv %f, yv %f, zv %f \n",infoRC->GetESDvertex()->GetXv(),infoRC->GetESDvertex()->GetYv(),infoRC->GetESDvertex()->GetZv());
 
   deltaPt= (mcpt-infoRC->GetESDtrack()->Pt())/mcpt;  
   pullPt= (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Sqrt(infoRC->GetESDtrack()->GetSigma1Pt2());  
@@ -386,7 +454,7 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 
   deltaTan = TMath::ATan2(infoRC->GetESDtrack()->Pz(),infoRC->GetESDtrack()->Pt())-
                      TMath::ATan2(infoMC->GetParticle().Pz(),infoMC->GetParticle().Pt());
-  pullTan = deltaPhi/TMath::Sqrt(infoRC->GetESDtrack()->GetSigmaSnp2());
+  pullTan = deltaTan/TMath::Sqrt(infoRC->GetESDtrack()->GetSigmaTgl2());
 
   delta1Pt2 = (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Power(1+1/mcpt,2);       
   deltaY1Pt = (infoMC->GetParticle().Vy()-infoRC->GetESDtrack()->GetY()) / (0.2+1/mcpt);
@@ -400,18 +468,21 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+      Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
 
       // Fill parametrisation histograms (only TPC track)
       if(bDCAStatus) 
 	  {
+		  
 			deltaPtTPC= (mcpt-innerTPC->Pt())/mcpt;  
 			pullPtTPC= (1/mcpt-innerTPC->OneOverPt())/TMath::Sqrt(innerTPC->GetSigma1Pt2());  
 			deltaPhiTPC = TMath::ATan2(innerTPC->Py(),innerTPC->Px())-
 								TMath::ATan2(infoMC->GetParticle().Py(),infoMC->GetParticle().Px());
+                        pullPhiTPC = deltaPhiTPC/TMath::Sqrt(innerTPC->GetSigmaSnp2()); 
 
 			deltaTanTPC = TMath::ATan2(innerTPC->Pz(),innerTPC->Pt())-
 								TMath::ATan2(infoMC->GetParticle().Pz(),infoMC->GetParticle().Pt());
+                        pullTanTPC = deltaTanTPC/TMath::Sqrt(infoRC->GetESDtrack()->GetSigmaTgl2());
 
 			delta1Pt2TPC = (1/mcpt-innerTPC->OneOverPt())/TMath::Power(1+1/mcpt,2);       
 			deltaY1PtTPC= (infoMC->GetParticle().Vy()-innerTPC->GetY()) / (0.2+1/mcpt);
@@ -419,37 +490,48 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 			deltaPhi1PtTPC = deltaPhiTPC   / (0.1+1/mcpt);
 			deltaTheta1PtTPC = deltaTanTPC / (0.1+1/mcpt);
 
+	        fPhiTanPtTPC->Fill(TMath::ATan2(innerTPC->Py(),innerTPC->Px()), 
+			                   TMath::ATan2(innerTPC->Pz(),innerTPC->Pt()),
+							   innerTPC->Pt()); 
+
 			f1Pt2ResolS1PtTPC->Fill(s1mcpt,delta1Pt2TPC);
 			fYResolS1PtTPC->Fill(s1mcpt,deltaY1PtTPC);
 			fZResolS1PtTPC->Fill(s1mcpt,deltaZ1PtTPC);
 			fPhiResolS1PtTPC->Fill(s1mcpt,deltaPhi1PtTPC);
 			fThetaResolS1PtTPC->Fill(s1mcpt,deltaTheta1PtTPC);
+
+	        fPtResolTPC->Fill(mcpt,deltaPtTPC);
+		    fPtPullTPC->Fill(mcpt,pullPtTPC);
+		    fPhiResolTanTPC->Fill(tantheta,deltaPhiTPC);
+		    fPhiPullTanTPC->Fill(tantheta,pullPhiTPC);
+		    fTanResolTanTPC->Fill(tantheta,deltaTanTPC);
+		    fTanPullTanTPC->Fill(tantheta,pullTanTPC);
 	  }
 	  delete track;
     }
   }
 
-  // TPC and ITS (nb. of clusters >2) in the system
-  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
+  // TPC and ITS clusters in the system
+  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()) 
   {
+	  fPhiTanPtTPCITS->Fill(TMath::ATan2(infoRC->GetESDtrack()->Py(),infoRC->GetESDtrack()->Px()), 
+	                        TMath::ATan2(infoRC->GetESDtrack()->Pz(),infoRC->GetESDtrack()->Pt()), 
+	                        infoRC->GetESDtrack()->Pt()); 
+
       f1Pt2ResolS1PtTPCITS->Fill(s1mcpt,delta1Pt2);
       fYResolS1PtTPCITS->Fill(s1mcpt,deltaY1Pt);
       fZResolS1PtTPCITS->Fill(s1mcpt,deltaZ1Pt);
       fPhiResolS1PtTPCITS->Fill(s1mcpt,deltaPhi1Pt);
       fThetaResolS1PtTPCITS->Fill(s1mcpt,deltaTheta1Pt);
+
+	  fPtResolTPCITS->Fill(mcpt,deltaPt);
+	  fPtPullTPCITS->Fill(mcpt,pullPt);
+
+	  fPhiResolTanTPCITS->Fill(tantheta,deltaPhi);
+	  fPhiPullTanTPCITS->Fill(tantheta,pullPhi);
+	  fTanResolTanTPCITS->Fill(tantheta,deltaTan);
+	  fTanPullTanTPCITS->Fill(tantheta,pullTan);
   }
-
-  // Fill histograms
-  fPtResolLPT->Fill(mcpt,deltaPt);
-  fPtResolHPT->Fill(mcpt,deltaPt);
-  fPtPullLPT->Fill(mcpt,pullPt);
-  fPtPullHPT->Fill(mcpt,pullPt);  
-
-  fPhiResolTan->Fill(tantheta,deltaPhi);
-  fPhiPullTan->Fill(tantheta,pullPhi);
-  fTanResolTan->Fill(tantheta,deltaTan);
-  fTanPullTan->Fill(tantheta,pullTan);
-
 }
 
 //_____________________________________________________________________________
@@ -460,6 +542,7 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   AliExternalTrackParam *track = 0;
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
+  AliESDVertex vertexMC;  // MC primary vertex
 
   Int_t clusterITS[200];
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
@@ -476,6 +559,7 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
   
   // Check selection cuts
+ 
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
   if (!isPrim) return;
   if (infoRC->GetStatus(1)!=3) return;
@@ -484,9 +568,9 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
 
 // calculate and set prim. vertex
-  fVertex->SetXv( infoMC->GetParticle().Vx() - dv[0] );
-  fVertex->SetYv( infoMC->GetParticle().Vy() - dv[1] );
-  fVertex->SetZv( infoMC->GetParticle().Vz() - dv[2] );
+  vertexMC.SetXv( infoMC->GetParticle().Vx() - dv[0] );
+  vertexMC.SetYv( infoMC->GetParticle().Vy() - dv[1] );
+  vertexMC.SetZv( infoMC->GetParticle().Vz() - dv[2] );
 
   // constrained parameters resolution
   const AliExternalTrackParam * cparam = infoRC->GetESDtrack()->GetConstrainedParam();
@@ -512,7 +596,7 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+      Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
 
       // Fill parametrisation histograms (only TPC track)
       if(bDCAStatus) 
@@ -541,23 +625,23 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
     }
   }
 
- // TPC and ITS (nb. of clusters >2) in the system
-  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
+ // TPC and ITS in the system
+  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()) 
   {
       fC1Pt2ResolS1PtTPCITS->Fill(s1mcpt,delta1Pt2);
       fCYResolS1PtTPCITS->Fill(s1mcpt,deltaY1Pt);
       fCZResolS1PtTPCITS->Fill(s1mcpt,deltaZ1Pt);
       fCPhiResolS1PtTPCITS->Fill(s1mcpt,deltaPhi1Pt);
       fCThetaResolS1PtTPCITS->Fill(s1mcpt,deltaTheta1Pt);
-  }
 
-  // Fill histograms
-  fCPtResolTan->Fill(tantheta,deltaPt);
-  fCPtPullTan->Fill(tantheta,pullPt);
-  fCPhiResolTan->Fill(tantheta,deltaPhi);
-  fCPhiPullTan->Fill(tantheta,pullPhi);
-  fCTanResolTan->Fill(tantheta,deltaTan);
-  fCTanPullTan->Fill(tantheta,pullTan);
+	  // Fill histograms
+	  fCPtResolTan->Fill(tantheta,deltaPt);
+	  fCPtPullTan->Fill(tantheta,pullPt);
+	  fCPhiResolTan->Fill(tantheta,deltaPhi);
+	  fCPhiPullTan->Fill(tantheta,pullPhi);
+	  fCTanResolTan->Fill(tantheta,deltaTan);
+	  fCTanPullTan->Fill(tantheta,pullTan);
+  }
 }
  
 //_____________________________________________________________________________
@@ -597,6 +681,116 @@ void AliComparisonRes::Analyse(){
   TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");
   c->cd();
   //
+  hiss = comp->MakeResol(comp->fPtResolTPC,1,0);
+  hiss->SetXTitle("p_{t} (GeV)");
+  hiss->SetYTitle("#sigmap_{t}/p_{t}");
+  hiss->Draw(); 
+  hiss->SetName("PtResolPtTPC");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPtResolTPC,1,1);
+  hiss->SetXTitle("p_{t} (GeV)");
+  hiss->SetYTitle("mean #Deltap_{t}/p_{t}");
+  hiss->Draw(); 
+  hiss->SetName("PtMeanPtTPC");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPhiResolTanTPC,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#phi (rad)");
+  hiss->Draw();
+  hiss->SetName("PhiResolTanTPC");
+
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPhiResolTanTPC,1,1);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("mean #Delta#phi (rad)");
+  hiss->Draw();
+  hiss->SetName("PhiMeanTanTPC");
+  
+
+  aFolderObj->Add(hiss);
+  //
+  hiss = comp->MakeResol(comp->fTanResolTanTPC,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#theta (rad)");
+  hiss->Draw();
+  hiss->SetName("ThetaResolTanTPC");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fTanResolTanTPC,1,1);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("mean #Delta#theta (rad)");
+  hiss->Draw();
+  hiss->SetName("ThetaMeanTanTPC");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  //
+  hiss = comp->MakeResol(comp->fPtResolTPCITS,1,0);
+  hiss->SetXTitle("p_{t}");
+  hiss->SetYTitle("#sigmap_{t}/p_{t}");
+  hiss->Draw(); 
+  hiss->SetName("PtResolPtTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPtResolTPCITS,1,1);
+  hiss->SetXTitle("p_{t}");
+  hiss->SetYTitle("mean #Deltap_{t}/p_{t}");
+  hiss->Draw(); 
+  hiss->SetName("PtMeanPtTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPhiResolTanTPCITS,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#phi (rad)");
+  hiss->Draw();
+  hiss->SetName("PhiResolTanTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fPhiResolTanTPCITS,1,1);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("mean #Delta#phi (rad)");
+  hiss->Draw();
+  hiss->SetName("PhiMeanTanTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fTanResolTanTPCITS,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#theta (rad)");
+  hiss->Draw();
+  hiss->SetName("ThetaResolTanTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  hiss = comp->MakeResol(comp->fTanResolTanTPCITS,1,1);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("mean #Delta#theta (rad)");
+  hiss->Draw();
+  hiss->SetName("ThetaMeanTanTPCITS");
+  
+  aFolderObj->Add(hiss);
+
+  //
+  //
   hiss = comp->MakeResol(comp->fCPtResolTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigmap_{t}/p_{t}");
@@ -605,59 +799,6 @@ void AliComparisonRes::Analyse(){
   
   aFolderObj->Add(hiss);
 
-  //
-  hiss = comp->MakeResol(comp->fPtResolLPT,1,0);
-  hiss->SetXTitle("p_{t} (GeV)");
-  hiss->SetYTitle("#sigmap_{t}/p_{t}");
-  hiss->Draw(); 
-  hiss->SetName("PtResolPt");
-  
-  aFolderObj->Add(hiss);
-
-  //
-  hiss = comp->MakeResol(comp->fPtResolLPT,1,1);
-  hiss->SetXTitle("p_{t} (GeV)");
-  hiss->SetYTitle("mean #Deltap_{t}/p_{t}");
-  hiss->Draw(); 
-  hiss->SetName("PtMeanPt");
-  
-  aFolderObj->Add(hiss);
-
-  //
-  hiss = comp->MakeResol(comp->fPhiResolTan,1,0);
-  hiss->SetXTitle("Tan(#theta)");
-  hiss->SetYTitle("#sigma#phi (rad)");
-  hiss->Draw();
-  hiss->SetName("PhiResolTan");
-  
-  aFolderObj->Add(hiss);
-  //
-  hiss = comp->MakeResol(comp->fTanResolTan,1,0);
-  hiss->SetXTitle("Tan(#theta)");
-  hiss->SetYTitle("#sigma#theta (rad)");
-  hiss->Draw();
-  hiss->SetName("ThetaResolTan");
-  
-  aFolderObj->Add(hiss);
-
-  //
-  hiss = comp->MakeResol(comp->fPhiResolTan,1,1);
-  hiss->SetXTitle("Tan(#theta)");
-  hiss->SetYTitle("mean #Delta#phi (rad)");
-  hiss->Draw();
-  hiss->SetName("PhiMeanTan");
-  
-  aFolderObj->Add(hiss);
-  //
-  hiss = comp->MakeResol(comp->fTanResolTan,1,1);
-  hiss->SetXTitle("Tan(#theta)");
-  hiss->SetYTitle("mean #Delta#theta (rad)");
-  hiss->Draw();
-  hiss->SetName("ThetaMeanTan");
-  
-  aFolderObj->Add(hiss);
-
-  //
   hiss = comp->MakeResol(comp->fCPhiResolTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigma#phi (rad)");
@@ -905,15 +1046,26 @@ Long64_t AliComparisonRes::Merge(TCollection* list)
   {
   AliComparisonRes* entry = dynamic_cast<AliComparisonRes*>(obj);
   if (entry == 0) continue; 
+  
+  fMCVertex->Add(entry->fMCVertex);
+  fRecVertex->Add(entry->fRecVertex);
 
-  fPtResolLPT->Add(entry->fPtResolLPT);
-  fPtResolHPT->Add(entry->fPtResolHPT);
-  fPtPullLPT->Add(entry->fPtPullLPT);
-  fPtPullHPT->Add(entry->fPtPullHPT);
-  fPhiResolTan->Add(entry->fPhiResolTan);
-  fTanResolTan->Add(entry->fTanResolTan);
-  fPhiPullTan->Add(entry->fPhiPullTan);
-  fTanPullTan->Add(entry->fTanPullTan);
+  fPhiTanPtTPC->Add(entry->fPhiTanPtTPC);
+  fPhiTanPtTPCITS->Add(entry->fPhiTanPtTPCITS);
+
+  fPtResolTPC->Add(entry->fPtResolTPC);
+  fPtPullTPC->Add(entry->fPtPullTPC);
+  fPhiResolTanTPC->Add(entry->fPhiResolTanTPC);
+  fTanResolTanTPC->Add(entry->fTanResolTanTPC);
+  fPhiPullTanTPC->Add(entry->fPhiPullTanTPC);
+  fTanPullTanTPC->Add(entry->fTanPullTanTPC);
+
+  fPtResolTPCITS->Add(entry->fPtResolTPCITS);
+  fPtPullTPCITS->Add(entry->fPtPullTPCITS);
+  fPhiResolTanTPCITS->Add(entry->fPhiResolTanTPCITS);
+  fTanResolTanTPCITS->Add(entry->fTanResolTanTPCITS);
+  fPhiPullTanTPCITS->Add(entry->fPhiPullTanTPCITS);
+  fTanPullTanTPCITS->Add(entry->fTanPullTanTPCITS);
 
   // Histograms for 1/pt parameterisation
   f1Pt2ResolS1PtTPC->Add(entry->f1Pt2ResolS1PtTPC);

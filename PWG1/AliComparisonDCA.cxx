@@ -16,7 +16,8 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
   LoadMyLibs();
   TFile f("Output.root");
-  AliComparisonDCA * compObj = (AliComparisonDCA*)f.Get("AliComparisonDCA");
+  //AliComparisonDCA * compObj = (AliComparisonDCA*)f.Get("AliComparisonDCA");
+  AliComparisonDCA * compObj = (AliComparisonDCA*)cOutput->FindObject("AliComparisonDCA");
 
   // Analyse comparison data
   compObj->Analyse();
@@ -35,7 +36,6 @@
 #include <iostream>
 
 #include "TFile.h"
-#include "TCint.h"
 #include "TH3F.h"
 #include "TH2F.h"
 #include "TF1.h"
@@ -68,17 +68,15 @@ ClassImp(AliComparisonDCA)
 
 //_____________________________________________________________________________
 AliComparisonDCA::AliComparisonDCA():
-//  TNamed("AliComparisonDCA","AliComparisonDCA"),
   AliComparisonObject("AliComparisonDCA"),
 
   // DCA histograms
-  fD0TanSPtB1(0),
-  fD1TanSPtB1(0),
-  fD0TanSPtL1(0),
-  fD1TanSPtL1(0),
-  fD0TanSPtInTPC(0),
-  fD1TanSPtInTPC(0),
-  fVertex(0),
+  fD0TanSPtTPCITS(0),
+  fD1TanSPtTPCITS(0),
+  fD0TanSPt(0),
+  fD1TanSPt(0),
+  fD0TanSPtTPC(0),
+  fD1TanSPtTPC(0),
 
   // Cuts 
   fCutsRC(0), 
@@ -94,13 +92,12 @@ AliComparisonDCA::AliComparisonDCA():
 AliComparisonDCA::~AliComparisonDCA()
 {
   //
-  if(fD0TanSPtB1) delete fD0TanSPtB1; fD0TanSPtB1=0;
-  if(fD1TanSPtB1) delete fD1TanSPtB1; fD1TanSPtB1=0;
-  if(fD0TanSPtL1) delete fD0TanSPtL1; fD0TanSPtL1=0;
-  if(fD1TanSPtL1) delete fD1TanSPtL1; fD1TanSPtL1=0;
-  if(fD0TanSPtInTPC) delete fD0TanSPtInTPC; fD0TanSPtInTPC=0;
-  if(fD1TanSPtInTPC) delete fD1TanSPtInTPC; fD1TanSPtInTPC=0;
-  if(fVertex) delete fVertex; fVertex=0;
+  if(fD0TanSPtTPCITS) delete fD0TanSPtTPCITS; fD0TanSPtTPCITS=0;
+  if(fD1TanSPtTPCITS) delete fD1TanSPtTPCITS; fD1TanSPtTPCITS=0;
+  if(fD0TanSPt) delete fD0TanSPt; fD0TanSPt=0;
+  if(fD1TanSPt) delete fD1TanSPt; fD1TanSPt=0;
+  if(fD0TanSPtTPC) delete fD0TanSPtTPC; fD0TanSPtTPC=0;
+  if(fD1TanSPtTPC) delete fD1TanSPtTPC; fD1TanSPtTPC=0;
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 
 }
@@ -109,35 +106,35 @@ AliComparisonDCA::~AliComparisonDCA()
 void AliComparisonDCA::Init()
 {
   // DCA histograms
-  fD0TanSPtB1 = new TH3F("DCAyTanSPtB1","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
-  fD0TanSPtB1->SetXTitle("tan(#theta)");
-  fD0TanSPtB1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
-  fD0TanSPtB1->SetZTitle("DCA_{xy}");
+  fD0TanSPtTPCITS = new TH3F("DCAyTanSPtTPCITS","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
+  fD0TanSPtTPCITS->SetXTitle("tan(#theta)");
+  fD0TanSPtTPCITS->SetYTitle("#sqrt{p_{t}(GeV)}");
+  fD0TanSPtTPCITS->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtB1 = new TH3F("DCAzTanSPtB1","DCAzTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
-  fD1TanSPtB1->SetXTitle("tan(#theta)");
-  fD1TanSPtB1->SetYTitle("#sqrt(p_{t}(GeV/c))");
-  fD1TanSPtB1->SetZTitle("DCA_{z}");
+  fD1TanSPtTPCITS = new TH3F("DCAzTanSPtTPCITS","DCAzTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
+  fD1TanSPtTPCITS->SetXTitle("tan(#theta)");
+  fD1TanSPtTPCITS->SetYTitle("#sqrt(p_{t}(GeV))");
+  fD1TanSPtTPCITS->SetZTitle("DCA_{z}");
 
-  fD0TanSPtL1 = new TH3F("DCAyTanSPtL1","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
-  fD0TanSPtL1->SetXTitle("tan(#theta)");
-  fD0TanSPtL1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
-  fD0TanSPtL1->SetZTitle("DCA_{xy}");
+  fD0TanSPt = new TH3F("DCAyTanSPt","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
+  fD0TanSPt->SetXTitle("tan(#theta)");
+  fD0TanSPt->SetYTitle("#sqrt{p_{t}(GeV)}");
+  fD0TanSPt->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtL1 = new TH3F("DCAzTanSPtL1","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
-  fD1TanSPtL1->SetXTitle("tan(#theta)");
-  fD1TanSPtL1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
-  fD1TanSPtL1->SetZTitle("DCA_{z}");
+  fD1TanSPt = new TH3F("DCAzTanSPt","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
+  fD1TanSPt->SetXTitle("tan(#theta)");
+  fD1TanSPt->SetYTitle("#sqrt{p_{t}(GeV)}");
+  fD1TanSPt->SetZTitle("DCA_{z}");
 
-  fD0TanSPtInTPC = new TH3F("DCAyTanSPtInTPC","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
-  fD0TanSPtInTPC->SetXTitle("tan(#theta)");
-  fD0TanSPtInTPC->SetYTitle("#sqrt{p_{t}(GeV/c)}");
-  fD0TanSPtInTPC->SetZTitle("DCA_{xy}");
+  fD0TanSPtTPC = new TH3F("DCAyTanSPtTPC","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
+  fD0TanSPtTPC->SetXTitle("tan(#theta)");
+  fD0TanSPtTPC->SetYTitle("#sqrt{p_{t}(GeV)}");
+  fD0TanSPtTPC->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtInTPC = new TH3F("DCAzTanSPtInTPC","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
-  fD1TanSPtInTPC->SetXTitle("tan(#theta)");
-  fD1TanSPtInTPC->SetYTitle("#sqrt{p_{t}(GeV/c)}");
-  fD1TanSPtInTPC->SetZTitle("DCA_{z}");
+  fD1TanSPtTPC = new TH3F("DCAzTanSPtTPC","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
+  fD1TanSPtTPC->SetXTitle("tan(#theta)");
+  fD1TanSPtTPC->SetYTitle("#sqrt{p_{t}(GeV)}");
+  fD1TanSPtTPC->SetZTitle("DCA_{z}");
 
   // init cuts
   if(!fCutsMC) 
@@ -147,12 +144,6 @@ void AliComparisonDCA::Init()
  
   // init folder
   fAnalysisFolder = CreateFolder("folderDCA","Analysis DCA Folder");
-
-  // vertex (0,0,0)
-  fVertex = new AliESDVertex();
-  fVertex->SetXv(0.0);
-  fVertex->SetYv(0.0);
-  fVertex->SetZv(0.0);
 }
 
 //_____________________________________________________________________________
@@ -185,35 +176,36 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
 
   // calculate and set prim. vertex
-  fVertex->SetXv( infoMC->GetParticle().Vx() - dv[0] );
-  fVertex->SetYv( infoMC->GetParticle().Vy() - dv[1] );
-  fVertex->SetZv( infoMC->GetParticle().Vz() - dv[2] );
+  AliESDVertex vertexMC;
+  vertexMC.SetXv( infoMC->GetParticle().Vx() - dv[0] );
+  vertexMC.SetYv( infoMC->GetParticle().Vy() - dv[1] );
+  vertexMC.SetZv( infoMC->GetParticle().Vz() - dv[2] );
 
   // calculate track parameters at vertex
   if (infoRC->GetESDtrack()->GetTPCInnerParam())
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+      Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
 
       if(bDCAStatus) {
-        fD0TanSPtInTPC->Fill(tantheta,spt,dca[0]);
-        fD1TanSPtInTPC->Fill(tantheta,spt,dca[1]);
+        fD0TanSPtTPC->Fill(tantheta,spt,dca[0]);
+        fD1TanSPtTPC->Fill(tantheta,spt,dca[1]);
 	  }
 
 	  delete track;
     }
   }
   
- // ITS + TPC
  infoRC->GetESDtrack()->GetImpactParameters(dca1,cov1);
 
- if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)==0){
-    fD0TanSPtB1->Fill(tantheta,spt,dca1[0]);
-    fD1TanSPtB1->Fill(tantheta,spt,dca1[1]);
+ // ITS + TPC
+ if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()){
+    fD0TanSPtTPCITS->Fill(tantheta,spt,dca1[0]);
+    fD1TanSPtTPCITS->Fill(tantheta,spt,dca1[1]);
   }
-    fD0TanSPtL1->Fill(tantheta,spt,dca1[0]);
-    fD1TanSPtL1->Fill(tantheta,spt,dca1[1]);
+    fD0TanSPt->Fill(tantheta,spt,dca1[0]);
+    fD1TanSPt->Fill(tantheta,spt,dca1[1]);
 }
 
 //_____________________________________________________________________________
@@ -238,12 +230,12 @@ Long64_t AliComparisonDCA::Merge(TCollection* list)
     if (entry == 0) continue; 
     
 
-    fD0TanSPtB1->Add(entry->fD0TanSPtB1);
-    fD1TanSPtB1->Add(entry->fD1TanSPtB1);
-    fD0TanSPtL1->Add(entry->fD0TanSPtL1);
-    fD1TanSPtL1->Add(entry->fD1TanSPtL1);
-    fD0TanSPtInTPC->Add(entry->fD0TanSPtInTPC);
-    fD1TanSPtInTPC->Add(entry->fD1TanSPtInTPC);
+    fD0TanSPtTPCITS->Add(entry->fD0TanSPtTPCITS);
+    fD1TanSPtTPCITS->Add(entry->fD1TanSPtTPCITS);
+    fD0TanSPt->Add(entry->fD0TanSPt);
+    fD1TanSPt->Add(entry->fD1TanSPt);
+    fD0TanSPtTPC->Add(entry->fD0TanSPtTPC);
+    fD1TanSPtTPC->Add(entry->fD1TanSPtTPC);
 
     count++;
   }
@@ -267,8 +259,8 @@ void AliComparisonDCA::Analyse()
   
   TH1::AddDirectory(kFALSE);
 
-  TGraph * gr[4]= { 0,0,0,0 };
-  TGraph2D *gr2[4]= { 0,0,0,0};
+  TGraph * gr[8]= { 0,0,0,0,0,0,0,0 };
+  TGraph2D *gr2[8]= { 0,0,0,0,0,0,0,0};
   AliComparisonDCA * comp=this;
   TObjArray *aFolderObj = new TObjArray;
 
@@ -280,89 +272,190 @@ void AliComparisonDCA::Analyse()
   // DCA resolution
   //
   c->cd(1);
-  gr[0] = AliMathBase::MakeStat1D(comp->fD0TanSPtB1,2,5);
+  gr[0] = AliMathBase::MakeStat1D(comp->fD0TanSPtTPC,2,5);
   gr[0]->GetXaxis()->SetTitle("Tan(#theta)");
   gr[0]->GetYaxis()->SetTitle("#sigmaDCA_xy (cm)");
-  gr[0]->SetName("DCAXYResolTan");
+  gr[0]->SetName("DCAXYResolTanTPC");
+  gr[0]->SetTitle("resol. DCA_xy (TPC only)");
   gr[0]->Draw("Al*");
 
   aFolderObj->Add(gr[0]);
 
   c->cd(2);
-  gr[1] = AliMathBase::MakeStat1D(comp->fD1TanSPtB1,2,5);
+  gr[1] = AliMathBase::MakeStat1D(comp->fD1TanSPtTPC,2,5);
   gr[1]->GetXaxis()->SetTitle("Tan(#theta)");
   gr[1]->GetYaxis()->SetTitle("#sigmaDCA_z (cm)");
-  gr[1]->SetName("DCAZResolTan");
+  gr[1]->SetName("DCAZResolTanTPC");
+  gr[1]->SetTitle("resol. DCA_z (TPC only)");
   gr[1]->Draw("Al*");
 
   aFolderObj->Add(gr[1]);
 
-  //
-  // DCA mean value
-  //
   c->cd(3);
-  gr[2] = AliMathBase::MakeStat1D(comp->fD0TanSPtB1,2,4);
+  gr[2] = AliMathBase::MakeStat1D(comp->fD0TanSPtTPCITS,2,5);
   gr[2]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr[2]->GetYaxis()->SetTitle("mean DCA_xy (cm)");
-  gr[2]->SetName("DCAXYMeanTan");
+  gr[2]->GetYaxis()->SetTitle("#sigmaDCA_xy (cm)");
+  gr[2]->SetName("DCAXYResolTanTPCITS");
+  gr[2]->SetTitle("resol. DCA_xy (TPC+ITS)");
   gr[2]->Draw("Al*");
 
   aFolderObj->Add(gr[2]);
 
   c->cd(4);
-  gr[3] = AliMathBase::MakeStat1D(comp->fD1TanSPtB1,2,4);
+  gr[3] = AliMathBase::MakeStat1D(comp->fD1TanSPtTPCITS,2,5);
   gr[3]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr[3]->GetYaxis()->SetTitle("mean DCA_z (cm)");
-  gr[3]->SetName("DCAZMeanTan");
+  gr[3]->GetYaxis()->SetTitle("#sigmaDCA_z (cm)");
+  gr[3]->SetName("DCAZResolTanTPCITS");
+  gr[3]->SetTitle("resol. DCA_z (TPC+ITS)");
   gr[3]->Draw("Al*");
 
   aFolderObj->Add(gr[3]);
 
-  // 2D DCA resolution 
+  //
+  // DCA mean value
+  //
   c->cd(5);
-  gr2[0] = AliMathBase::MakeStat2D(comp->fD0TanSPtB1,4,2,5); 
-  gr2[0]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr2[0]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
-  gr2[0]->GetZaxis()->SetTitle("#sigmaDCA_xy (cm)");
-  gr2[0]->SetName("DCAXYResolSPTTan");
-  gr2[0]->GetHistogram()->Draw("colz");
+  gr[4] = AliMathBase::MakeStat1D(comp->fD0TanSPtTPC,2,4);
+  gr[4]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr[4]->GetYaxis()->SetTitle("mean DCA_xy (cm)");
+  gr[4]->SetName("DCAXYMeanTanTPC");
+  gr[4]->SetTitle("mean DCA_xy (TPC only)");
+  gr[4]->Draw("Al*");
 
-  gr2[0]->GetHistogram()->SetName("DCAXYResolSPTTan");
-  aFolderObj->Add(gr2[0]->GetHistogram());
+  aFolderObj->Add(gr[4]);
 
   c->cd(6);
-  gr2[1] = AliMathBase::MakeStat2D(comp->fD1TanSPtB1,4,2,5); 
-  gr2[1]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr2[1]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
-  gr2[1]->GetZaxis()->SetTitle("#sigmaDCA_z (cm)");
-  gr2[1]->SetName("DCAZResolSPTTan");
-  gr2[1]->GetHistogram()->Draw("colz");
+  gr[5] = AliMathBase::MakeStat1D(comp->fD1TanSPtTPC,2,4);
+  gr[5]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr[5]->GetYaxis()->SetTitle("mean DCA_z (cm)");
+  gr[5]->SetName("DCAZMeanTanTPC");
+  gr[5]->SetTitle("mean DCA_z (TPC only)");
+  gr[5]->Draw("Al*");
 
-  gr2[1]->GetHistogram()->SetName("DCAZResolSPTTan");
-  aFolderObj->Add(gr2[1]->GetHistogram());
+  aFolderObj->Add(gr[5]);
 
-  // 2D DCA mean value  
   c->cd(7);
-  gr2[2] = AliMathBase::MakeStat2D(comp->fD0TanSPtB1,4,2,4); 
-  gr2[2]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr2[2]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
-  gr2[2]->GetZaxis()->SetTitle("mean DCA_xy (cm)");
-  gr2[2]->SetName("DCAXYMeanSPTTan");
-  gr2[2]->GetHistogram()->Draw("colz");
+  gr[6] = AliMathBase::MakeStat1D(comp->fD0TanSPtTPCITS,2,4);
+  gr[6]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr[6]->GetYaxis()->SetTitle("mean DCA_xy (cm)");
+  gr[6]->SetName("DCAXYMeanTanTPCITS");
+  gr[6]->SetTitle("mean DCA_xy (TPC+ITS)");
+  gr[6]->Draw("Al*");
 
-  gr2[2]->GetHistogram()->SetName("DCAXYMeanSPTTan");
-  aFolderObj->Add(gr2[2]->GetHistogram());
+  aFolderObj->Add(gr[6]);
 
   c->cd(8);
-  gr2[3] = AliMathBase::MakeStat2D(comp->fD1TanSPtB1,4,2,4); 
+  gr[7] = AliMathBase::MakeStat1D(comp->fD1TanSPtTPCITS,2,4);
+  gr[7]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr[7]->GetYaxis()->SetTitle("mean DCA_z (cm)");
+  gr[7]->SetName("DCAZMeanTanTPCITS");
+  gr[7]->SetTitle("mean DCA_z (TPC+ITS)");
+  gr[7]->Draw("Al*");
+
+  aFolderObj->Add(gr[7]);
+
+  // 2D DCA resolution 
+  TCanvas * c1 = new TCanvas("canDCA1","2D DCA resolution");
+  c1->Divide(2,4);
+
+  // TPC only
+  c1->cd(1);
+  gr2[0] = AliMathBase::MakeStat2D(comp->fD0TanSPtTPC,4,2,5); 
+  gr2[0]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[0]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[0]->GetZaxis()->SetTitle("#sigmaDCA_xy (cm)");
+  gr2[0]->SetName("DCAXYResolSPTTanTPC");
+  gr2[0]->SetTitle("#sigma DCA_xy (TPC only)");
+  gr2[0]->GetHistogram()->Draw("colz");
+
+  gr2[0]->GetHistogram()->SetName("DCAXYResolSPTTanTPC");
+  aFolderObj->Add(gr2[0]->GetHistogram());
+
+  c1->cd(2);
+  gr2[1] = AliMathBase::MakeStat2D(comp->fD1TanSPtTPC,4,2,5); 
+  gr2[1]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[1]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[1]->GetZaxis()->SetTitle("#sigmaDCA_z (cm)");
+  gr2[1]->SetName("DCAZResolSPTTanTPC");
+  gr2[1]->SetTitle("#sigma DCA_z (TPC only)");
+  gr2[1]->GetHistogram()->Draw("colz");
+
+  gr2[1]->GetHistogram()->SetName("DCAZResolSPTTanTPC");
+  aFolderObj->Add(gr2[1]->GetHistogram());
+
+  // TPC+ITS
+  c1->cd(3);
+  gr2[2] = AliMathBase::MakeStat2D(comp->fD0TanSPtTPCITS,4,2,5); 
+  gr2[2]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[2]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[2]->GetZaxis()->SetTitle("#sigmaDCA_xy (cm)");
+  gr2[2]->SetName("DCAXYResolSPTTanTPCITS");
+  gr2[2]->SetTitle("#sigma DCA_xy (TPC+ITS)");
+  gr2[2]->GetHistogram()->Draw("colz");
+
+  gr2[2]->GetHistogram()->SetName("DCAXYResolSPTTanTPCITS");
+  aFolderObj->Add(gr2[2]->GetHistogram());
+
+  c1->cd(4);
+  gr2[3] = AliMathBase::MakeStat2D(comp->fD1TanSPtTPCITS,4,2,5); 
   gr2[3]->GetXaxis()->SetTitle("Tan(#theta)");
-  gr2[3]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
-  gr2[3]->GetZaxis()->SetTitle("mean DCA_z (cm)");
-  gr2[3]->SetName("DCAZMeanSPTTan");
+  gr2[3]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[3]->GetZaxis()->SetTitle("#sigmaDCA_z (cm)");
+  gr2[3]->SetName("DCAZResolSPTTanTPCITS");
+  gr2[3]->SetTitle("#sigma DCA_z (TPC+ITS)");
   gr2[3]->GetHistogram()->Draw("colz");
 
-  gr2[3]->GetHistogram()->SetName("DCAZMeanSPTTan");
+  gr2[3]->GetHistogram()->SetName("DCAZResolSPTTanTPCITS");
   aFolderObj->Add(gr2[3]->GetHistogram());
+
+  // 2D DCA mean value  
+  c1->cd(5);
+  gr2[4] = AliMathBase::MakeStat2D(comp->fD0TanSPtTPC,4,2,4); 
+  gr2[4]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[4]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[4]->GetZaxis()->SetTitle("mean DCA_xy (cm)");
+  gr2[4]->SetName("DCAXYMeanSPTTanTPC");
+  gr2[4]->SetTitle("mean DCA_xy (TPC only)");
+  gr2[4]->GetHistogram()->Draw("colz");
+
+  gr2[4]->GetHistogram()->SetName("DCAXYMeanSPTTanTPC");
+  aFolderObj->Add(gr2[4]->GetHistogram());
+
+  c1->cd(6);
+  gr2[5] = AliMathBase::MakeStat2D(comp->fD1TanSPtTPC,4,2,4); 
+  gr2[5]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[5]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[5]->GetZaxis()->SetTitle("mean DCA_z (cm)");
+  gr2[5]->SetName("DCAZMeanSPTTanTPC");
+  gr2[5]->SetTitle("mean DCA_z (TPC only)");
+  gr2[5]->GetHistogram()->Draw("colz");
+
+  gr2[5]->GetHistogram()->SetName("DCAZMeanSPTTanTPC");
+  aFolderObj->Add(gr2[5]->GetHistogram());
+
+  c1->cd(7);
+  gr2[6] = AliMathBase::MakeStat2D(comp->fD0TanSPtTPCITS,4,2,4); 
+  gr2[6]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[6]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[6]->GetZaxis()->SetTitle("mean DCA_xy (cm)");
+  gr2[6]->SetName("DCAXYMeanSPTTanTPCITS");
+  gr2[6]->SetTitle("mean DCA_xy (TPC+ITS)");
+  gr2[6]->GetHistogram()->Draw("colz");
+
+  gr2[6]->GetHistogram()->SetName("DCAXYMeanSPTTanTPCITS");
+  aFolderObj->Add(gr2[6]->GetHistogram());
+
+  c1->cd(8);
+  gr2[7] = AliMathBase::MakeStat2D(comp->fD1TanSPtTPCITS,4,2,4); 
+  gr2[7]->GetXaxis()->SetTitle("Tan(#theta)");
+  gr2[7]->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
+  gr2[7]->GetZaxis()->SetTitle("mean DCA_z (cm)");
+  gr2[7]->SetName("DCAZMeanSPTTanTPCITS");
+  gr2[7]->SetTitle("mean DCA_z (TPC+ITS)");
+  gr2[7]->GetHistogram()->Draw("colz");
+
+  gr2[7]->GetHistogram()->SetName("DCAZMeanSPTTanTPCITS");
+  aFolderObj->Add(gr2[7]->GetHistogram());
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);

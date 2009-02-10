@@ -16,7 +16,8 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
   LoadMyLibs();
   TFile f("Output.root");
-  AliComparisonEff * compObj = (AliComparisonEff*)f.Get("AliComparisonEff");
+  //AliComparisonEff * compObj = (AliComparisonEff*)f.Get("AliComparisonEff");
+  AliComparisonEff * compObj = (AliComparisonEff*)cOutput->FindObject("AliComparisonEff");
 
   // Analyse comparison data
   compObj->Analyse();
@@ -104,6 +105,9 @@ AliComparisonEff::AliComparisonEff():
   fEffTPCPtTan(0),
   fEffTPCPtTanMC(0),
   fEffTPCPtTanF(0),
+  // TPC+ITS
+  fEffTPCITSPt(0),
+  fEffTPCITSTan(0),
 
   // Cuts 
   fCutsRC(0), 
@@ -177,6 +181,9 @@ AliComparisonEff::~AliComparisonEff(){
   if(fEffTPCPtTanMC) delete  fEffTPCPtTanMC; fEffTPCPtTanMC=0;
   if(fEffTPCPtTanF)  delete  fEffTPCPtTanF;  fEffTPCPtTanF=0;
 
+  if(fEffTPCITSPt)   delete  fEffTPCITSPt;   fEffTPCITSPt=0;
+  if(fEffTPCITSTan)   delete  fEffTPCITSTan;   fEffTPCITSTan=0;
+
   for(Int_t i=0; i<4; ++i)
   {
     if(fTPCPtDCASigmaIdeal[i]) delete  fTPCPtDCASigmaIdeal[i];  fTPCPtDCASigmaIdeal[i]=0;
@@ -222,6 +229,12 @@ void AliComparisonEff::Init(){
   fEffTPCPt = new TProfile("Eff_pt","Eff_Pt",50,0.1,3);           
   fEffTPCPt->SetXTitle("p_{t}");
   fEffTPCPt->SetYTitle("TPC Efficiency");
+
+// Efficiency as function of pt (TPC+ITS)
+  fEffTPCITSPt = new TProfile("Eff_pt_TPCITS","Eff_Pt_TPCITS",50,0.1,3);           
+  fEffTPCITSPt->SetXTitle("p_{t}");
+  fEffTPCITSPt->SetYTitle("TPCITS Efficiency");
+
 
   fEffTPCPtMC = new TProfile("MC_Eff_pt","MC_Eff_Pt",50,0.1,3);   
   fEffTPCPtMC->SetXTitle("p_{t}");
@@ -274,6 +287,12 @@ void AliComparisonEff::Init(){
   fEffTPCTan = new TProfile("Eff_tan","Eff_tan",50,-2.5,2.5);         
   fEffTPCTan->SetXTitle("tan(#theta)");
   fEffTPCTan->SetYTitle("TPC Efficiency");
+
+// Efficiency as function of tan(theta) (TPC+ITS)
+  fEffTPCITSTan = new TProfile("Eff_tan_TPCITS","Eff_tan_TPCITS",50,-2.5,2.5);         
+  fEffTPCITSTan->SetXTitle("tan(#theta)");
+  fEffTPCITSTan->SetYTitle("TPCITS Efficiency");
+
 
   fEffTPCTanMC = new TProfile("MC_Eff_tan","MC_Eff_tan",50,-2.5,2.5); 
   fEffTPCTanMC->SetXTitle("tan(#theta)");
@@ -347,16 +366,17 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   AliExternalTrackParam *track = 0;
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
+  Int_t clusterITS[200];
 
   // systematics
   const Double_t kSigma2Full_xy  = 0.25; // ExB full systematics  [cm]
   const Double_t kSigma2Full_z  =  5.0;  // drift velocity (goofie) [cm] 
 
   const Double_t kSigma2Day0_xy  = 0.02; //  ExB  [cm]
-  const Double_t kSigma2Day0_z  =  0.1;  //   drift velocity (goofie) [cm]  
+  const Double_t kSigma2Day0_z  =  0.1;  //  drift velocity (goofie) [cm]  
 
   //  
-  Double_t	DCASigmaIdeal=0;
+  Double_t  DCASigmaIdeal=0;
   Double_t  DCASigmaFull=0;
   Double_t  DCASigmaDay0=0;
 
@@ -536,6 +556,8 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
     if (infoMC->GetRowsWithDigits()>fCutsMC->GetMinRowsWithDigits()){
       fEffTPCPtF->Fill(mcpt, infoRC->GetStatus(1)==3);
     }
+  
+    fEffTPCITSPt->Fill(mcpt, infoRC->GetStatus(1)==3 && (infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()));
 
     // protons
     if(TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetProt()) { 
@@ -565,7 +587,7 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
        if(infoMC->GetRowsWithDigits()>fCutsMC->GetMinRowsWithDigits()) {
          fEffTPCPtF_K->Fill(mcpt, infoRC->GetStatus(1)==3);
        }
-	}
+    }
   }
 
   // theta
@@ -575,6 +597,8 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
     if (infoMC->GetRowsWithDigits()>fCutsMC->GetMinRowsWithDigits()){
       fEffTPCTanF->Fill(tantheta, infoRC->GetStatus(1)==3);
     }
+
+    fEffTPCITSTan->Fill(tantheta, infoRC->GetStatus(1)==3 && (infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()));
   }
 
   // pt-theta
@@ -643,6 +667,9 @@ Long64_t AliComparisonEff::Merge(TCollection* list)
 	fEffTPCPtTanMC->Add(entry->fEffTPCPtTanMC);
 	fEffTPCPtTanF->Add(entry->fEffTPCPtTanF);
     
+    fEffTPCITSPt->Add(entry->fEffTPCITSPt);
+    fEffTPCITSTan->Add(entry->fEffTPCITSTan);
+
     for(Int_t i=0; i<4; ++i)
     {
       fTPCPtDCASigmaIdeal[i]->Add(entry->fTPCPtDCASigmaIdeal[i]);

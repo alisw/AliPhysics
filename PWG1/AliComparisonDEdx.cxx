@@ -16,7 +16,8 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
   LoadMyLibs();
   TFile f("Output.root");
-  AliComparisonDEdx * compObj = (AliComparisonDEdx*)f.Get("AliComparisonDEdx");
+  //AliComparisonDEdx * compObj = (AliComparisonDEdx*)f.Get("AliComparisonDEdx");
+  AliComparisonDEdx * compObj = (AliComparisonDEdx*)cOutput->FindObject("AliComparisonDEdx");
 
   // Analyse comparison data
   compObj->Analyse();
