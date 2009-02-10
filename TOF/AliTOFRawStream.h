@@ -436,8 +436,8 @@ class AliTOFRawStream: public TObject {
   Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];}; // getter for the chain event counter
   Int_t GetChainBunchID(Int_t trm, Int_t chain) {return fChainBunchID[trm][chain];}; // getter for the chain BC ID
 
-  void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
-			     Int_t iTDC, Int_t iCH, Int_t *volume) const;
+  static void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
+				    Int_t iTDC, Int_t iCH, Int_t *volume);
   void  EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume) const;
   static Int_t Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC);
   static Int_t Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC);

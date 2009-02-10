@@ -1169,7 +1169,7 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
 
   if (((iDDL==1 || iDDL==2) && iPadAlongTheStrip< AliTOFGeometry::NpadX()) ||
       ((iDDL==0 || iDDL==3) && iPadAlongTheStrip>=AliTOFGeometry::NpadX())) {
-    std::cerr << "Problems with the padX number!" << endl;
+    std::cerr << "Warning -> AliTOFRawStream::Equip2VolNpad: Problems with the padX number!" << endl;
     //AliWarning("Problems with the padX number!");
   }
   return iPadAlongTheStrip;
@@ -1250,7 +1250,7 @@ void AliTOFRawStream::EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume
 //----------------------------------------------------------------------------
 void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 					Int_t nTDC, Int_t iCH,
-					Int_t *volume) const
+					Int_t *volume)
 {
   //
   // To convert:
@@ -1274,23 +1274,23 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
   Int_t iPlate = Equip2VolNplate(iDDL, nTRM, nTDC);
   if (iPlate==-1) {
-    if (fRawReader)
-      fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");
-    AliWarning("Problems with the plate number!");
+    /*if (fRawReader)
+      fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");*/
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number!/n");
   }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
   if (iStrip==-1) {
-    if (fRawReader)
-      fRawReader->AddMajorErrorLog(kStripError,"strip = -1");
-    AliWarning("Problems with the strip number!");
+    /*if (fRawReader)
+      fRawReader->AddMajorErrorLog(kStripError,"strip = -1");*/
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the strip number!\n");
   }
 
   Int_t iPadAlongTheStrip  = Equip2VolNpad(iDDL, iChain, nTDC, iCH);
-  if (iPadAlongTheStrip==-1){
-    if (fRawReader)
-      fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");
-    AliWarning("Problems with the pad number along the strip!");
+  if (iPadAlongTheStrip==-1) {
+    /*if (fRawReader)
+      fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");*/
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the pad number along the strip!\n");
   }
   
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
