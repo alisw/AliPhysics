@@ -65,16 +65,22 @@ public :
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
+  // getters
+  TH3F  *GetD0TanSPtTPCITS() {return fD0TanSPtTPCITS;}
+  TH3F  *GetD1TanSPtTPCITS() {return fD1TanSPtTPCITS;}
+  TH3F  *GetD0TanSPt() {return fD0TanSPt;}
+  TH3F  *GetD1TanSPt() {return fD1TanSPt;}
+  TH3F  *GetD0TanSPtTPC() {return fD0TanSPtTPC;}
+  TH3F  *GetD1TanSPtTPC() {return fD1TanSPtTPC;}
+
 private:
   // DCA resolution
-  TH3F  *fD0TanSPtB1;     //-> distance to vertex y (no ITS clusters) 
-  TH3F  *fD1TanSPtB1;     //-> distance to vertex z (no ITS clusters) 
-  TH3F  *fD0TanSPtL1;     //-> distance to vertex y  
-  TH3F  *fD1TanSPtL1;     //-> distance to vertex z 
-  TH3F  *fD0TanSPtInTPC;  //-> distance to vertex y (Inner TPC track parameters) 
-  TH3F  *fD1TanSPtInTPC;  //-> distance to vertex z (Inner TPC track parameters)
-
-  AliESDVertex *fVertex;  //! 
+  TH3F  *fD0TanSPtTPCITS; //-> distance to vertex y (TPC+ITS clusters) 
+  TH3F  *fD1TanSPtTPCITS; //-> distance to vertex z (TPC+ITS clusters) 
+  TH3F  *fD0TanSPt;     //-> distance to vertex y  
+  TH3F  *fD1TanSPt;     //-> distance to vertex z 
+  TH3F  *fD0TanSPtTPC;  //-> distance to vertex y (only TPC track parameters) 
+  TH3F  *fD1TanSPtTPC;  //-> distance to vertex z (only TPC track parameters)
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks

@@ -74,6 +74,17 @@ public :
 
   static TH1F*     MakeResol(TH2F * his, Int_t integ, Bool_t type); 
 
+  //
+  // TPC dE/dx 
+  TH2F* GetTPCSignalNormTan() {return fTPCSignalNormTan;}
+  TH2F* GetTPCSignalNormSPhi() {return fTPCSignalNormSPhi;}
+  TH2F* GetTPCSignalNormTPhi() {return fTPCSignalNormTPhi;}
+  //
+  TH3F* GetTPCSignalNormTanSPhi() {return fTPCSignalNormTanSPhi;}
+  TH3F* GetTPCSignalNormTanTPhi() {return fTPCSignalNormTanTPhi;}
+  TH3F* GetTPCSignalNormTanSPt() {return fTPCSignalNormTanSPt;}
+  
+
 private:
 
   // TPC dE/dx 

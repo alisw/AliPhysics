@@ -69,7 +69,55 @@ public :
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;} 
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
-   
+  TH1F *GetMCPt() {return fMCPt;}
+  TH1F *GetMCRecPt() {return fMCRecPt;}
+  TH1F *GetMCRecPrimPt() {return fMCRecPrimPt;}
+  TH1F *GetMCRecSecPt() {return fMCRecSecPt;}
+  
+  TProfile* GetEffTPCPt() {return fEffTPCPt;}
+  TProfile* GetEffTPCITSPt() {return fEffTPCITSPt;}
+  TProfile* GetEffTPCPtMC() {return fEffTPCPtMC;}
+  TProfile* GetEffTPCPtF() {return fEffTPCPtF;}
+
+  TProfile* GetEffTPCPt_P() {return fEffTPCPt_P;}
+  TProfile* GetEffTPCPtMC_P() {return fEffTPCPtMC_P;}
+  TProfile* GetEffTPCPtF_P() {return fEffTPCPtF_P;}
+
+  TProfile* GetEffTPCPt_Pi() {return fEffTPCPt_Pi;}
+  TProfile* GetEffTPCPtMC_Pi() {return fEffTPCPtMC_Pi;}
+  TProfile* GetEffTPCPtF_Pi() {return fEffTPCPtF_Pi;}
+
+  TProfile* GetEffTPCPt_K() {return fEffTPCPt_K;}
+  TProfile* GetEffTPCPtMC_K() {return fEffTPCPtMC_K;}
+  TProfile* GetEffTPCPtF_K() {return fEffTPCPtF_K;}
+
+  //
+  TProfile* GetEffTPCTan() {return fEffTPCTan;}
+  TProfile* GetEffTPCITSTan() {return fEffTPCITSTan;}
+  TProfile* GetEffTPCTanMC() {return fEffTPCTanMC;}
+  TProfile* GetEffTPCTanF() {return fEffTPCTanF;}
+  //
+  TProfile2D* GetEffTPCPtTan() {return fEffTPCPtTan;}
+  TProfile2D* GetEffTPCPtTanMC() {return fEffTPCPtTanMC;}
+  TProfile2D* GetEffTPCPtTanF() {return fEffTPCPtTanF;}
+  
+  // idx - 0 (isPrim), idx - 1 (isPrim && infoRC->GetStatus(1)==3)
+  // idx - 2 (infoRC->GetStatus(1)==3),  idx - 3 (infoRC->GetStatus(1)==3 && !isPrim )
+  //
+  TH2F* GetTPCPtDCASigmaIdeal(Int_t i) {if(i<4) return fTPCPtDCASigmaIdeal[i]; else return 0;}
+  TH2F* GetTPCPtDCASigmaFull(Int_t i) {if(i<4) return fTPCPtDCASigmaFull[i] ; else return 0;}
+  TH2F* GetTPCPtDCASigmaDay0(Int_t i) {if(i<4) return fTPCPtDCASigmaFull[i] ; else  return 0;}
+
+  TH2F* GetTPCPtDCAXY(Int_t i) {if(i<4) return fTPCPtDCAXY[i] ; else return 0;}
+  TH2F* GetTPCPtDCAZ(Int_t i) {if(i<4) return fTPCPtDCAZ[i] ; else return 0;}
+
+  // Pid = 0 - electrons,  1 - muons, 2 - kaons, 3 - pions, 4 - protons   
+  //
+  TH3F* GetTPCPtDCASigmaIdealPid(Int_t i) {if(i<4) return fTPCPtDCASigmaIdealPid[i]; else return 0;}
+  TH3F* GetTPCPtDCASigmaFullPid(Int_t i) {if(i<4) return fTPCPtDCASigmaFullPid[i]; else return 0;}
+  TH3F* GetTPCPtDCASigmaDay0Pid(Int_t i) {if(i<4) return fTPCPtDCASigmaDay0Pid[i]; else return 0;}
+  TH3F* GetTPCPtDCAXYPid(Int_t i) {if(i<4) return fTPCPtDCAXYPid[i]; else return 0;}
+  TH3F* GetTPCPtDCAZPid(Int_t i) {if(i<4) return fTPCPtDCAZPid[i]; else return 0;}
 
 private:
 
@@ -121,6 +169,10 @@ private:
   TH3F* fTPCPtDCASigmaDay0Pid[4];  //->TPC efficiency vs Pt vs DCA/Sigma (tan+-1, goofie systematics)
   TH3F* fTPCPtDCAXYPid[4];     //->TPC efficiency vs Pt vs DCA_XY (tan+-1)
   TH3F* fTPCPtDCAZPid[4];      //->TPC efficiency vs Pt vs DCA_Z (tan+-1)
+
+  // TPC +ITS
+  TProfile* fEffTPCITSPt;      //->TPCITS efficiency as function of Pt (tan+-1)
+  TProfile* fEffTPCITSTan;      //->TPCITS efficiency as function of Tan (pt>0.15)
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
