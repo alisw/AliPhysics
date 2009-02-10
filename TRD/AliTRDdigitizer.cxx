@@ -1117,7 +1117,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
       Double_t drifttime;
       if (simParam->TimeStructOn()) {
 	// Get z-position with respect to anode wire
-        Double_t zz  =  row0 - locR + simParam->GetAnodeWireOffset();
+        Double_t zz  =  row0 - locR + padPlane->GetAnodeWireOffset();
 	zz -= ((Int_t)(2 * zz)) / 2.0;
         if (zz > 0.25) {
           zz  = 0.5 - zz;
@@ -1177,6 +1177,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
         Double_t timeResponse = 1.0;
         Double_t crossTalk    = 0.0;
         Double_t time         = (iTimeBin - timeBinTruncated) / samplingRate + timeOffset;
+
         if (simParam->TRFOn()) {
           timeResponse = simParam->TimeResponse(time);
         }

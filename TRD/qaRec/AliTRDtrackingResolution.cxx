@@ -209,7 +209,7 @@ TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
         Int_t istk = fGeo->GetStack(c->GetDetector());
         AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
         Float_t row0 = pp->GetRow0();
-        Float_t d  =  row0 - zt + simParam->GetAnodeWireOffset();
+        Float_t d  =  row0 - zt + pp->GetAnodeWireOffset();
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
 
@@ -414,7 +414,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
     Int_t istk = AliTRDgeometry::GetStack(det); 
     AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
-    Float_t zr0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
+    Float_t zr0 = pp->GetRow0() + pp->GetAnodeWireOffset();
     Float_t tilt = fTracklet->GetTilt();
 
     Double_t x,y;

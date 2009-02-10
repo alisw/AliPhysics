@@ -317,6 +317,8 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
 
   padPlane->SetNcols(144);
 
+  padPlane->SetAnodeWireOffset(0.25);
+
   //
   // The pad plane parameter
   //

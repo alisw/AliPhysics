@@ -44,13 +44,14 @@ class AliTRDpadPlane : public TObject {
                                                  fPadRow         = new Double_t[fNrows]; };
   void     SetPadCol(Int_t ic, Double_t c)     { if (ic < fNcols) fPadCol[ic] = c;       };
   void     SetPadRow(Int_t ir, Double_t r)     { if (ir < fNrows) fPadRow[ir] = r;       };
-  void     SetLength(Double_t l)               { fLength         = l; };
-  void     SetWidth(Double_t w)                { fWidth          = w; };
-  void     SetLengthOPad(Double_t l)           { fLengthOPad     = l; };
-  void     SetWidthOPad(Double_t w)            { fWidthOPad      = w; };
-  void     SetLengthIPad(Double_t l)           { fLengthIPad     = l; };
-  void     SetWidthIPad(Double_t w)            { fWidthIPad      = w; };
-  void     SetPadRowSMOffset(Double_t o)       { fPadRowSMOffset = o; };
+  void     SetLength(Double_t l)               { fLength          = l; };
+  void     SetWidth(Double_t w)                { fWidth           = w; };
+  void     SetLengthOPad(Double_t l)           { fLengthOPad      = l; };
+  void     SetWidthOPad(Double_t w)            { fWidthOPad       = w; };
+  void     SetLengthIPad(Double_t l)           { fLengthIPad      = l; };
+  void     SetWidthIPad(Double_t w)            { fWidthIPad       = w; };
+  void     SetPadRowSMOffset(Double_t o)       { fPadRowSMOffset  = o; };
+  void     SetAnodeWireOffset(Float_t o)       { fAnodeWireOffset = o; };
   void     SetTiltingAngle(Double_t t);
 
   Int_t    GetPadRowNumber(Double_t z) const;
@@ -77,22 +78,22 @@ class AliTRDpadPlane : public TObject {
                                                else
                                                  return rphi - fPadCol[col]; };
 
-  Double_t GetTiltingAngle() const           { return fTiltingAngle; };
+  Double_t GetTiltingAngle() const           { return fTiltingAngle;    };
 
-  Int_t    GetNrows() const                  { return fNrows;        };
-  Int_t    GetNcols() const                  { return fNcols;        };
+  Int_t    GetNrows() const                  { return fNrows;           };
+  Int_t    GetNcols() const                  { return fNcols;           };
 
   Double_t GetRow0() const                   { return fPadRow[0] + fPadRowSMOffset;    };
-  Double_t GetRow0ROC() const                { return fPadRow[0];    };
-  Double_t GetCol0() const                   { return fPadCol[0];    };
+  Double_t GetRow0ROC() const                { return fPadRow[0];       };
+  Double_t GetCol0() const                   { return fPadCol[0];       };
 
   Double_t GetRowEnd() const                 { return fPadRow[fNrows-1] - fLengthOPad + fPadRowSMOffset; };
   Double_t GetRowEndROC() const              { return fPadRow[fNrows-1] - fLengthOPad; };
   Double_t GetColEnd() const                 { return fPadCol[fNcols-1] + fWidthOPad;  };
 
   Double_t GetRowPos(Int_t row) const        { return fPadRow[row] + fPadRowSMOffset;  };
-  Double_t GetRowPosROC(Int_t row) const     { return fPadRow[row];  };
-  Double_t GetColPos(Int_t col) const        { return fPadCol[col];  };
+  Double_t GetRowPosROC(Int_t row) const     { return fPadRow[row];     };
+  Double_t GetColPos(Int_t col) const        { return fPadCol[col];     };
   
   Double_t GetRowSize(Int_t row) const       { if ((row == 0) || (row == fNrows-1))
                                                  return fLengthOPad;
@@ -101,19 +102,21 @@ class AliTRDpadPlane : public TObject {
   Double_t GetColSize(Int_t col) const       { if ((col == 0) || (col == fNcols-1))
                                                  return fWidthOPad;
                                                else
-                                                 return fWidthIPad;  };
+                                                 return fWidthIPad;     };
 
-  Double_t GetLengthRim() const              { return fLengthRim;    };
-  Double_t GetWidthRim() const               { return fWidthRim;     };
+  Double_t GetLengthRim() const              { return fLengthRim;       };
+  Double_t GetWidthRim() const               { return fWidthRim;        };
 
-  Double_t GetRowSpacing() const             { return fRowSpacing;   };
-  Double_t GetColSpacing() const             { return fColSpacing;   };
+  Double_t GetRowSpacing() const             { return fRowSpacing;      };
+  Double_t GetColSpacing() const             { return fColSpacing;      };
 
-  Double_t GetLengthOPad() const             { return fLengthOPad;   };
-  Double_t GetLengthIPad() const             { return fLengthIPad;   };
+  Double_t GetLengthOPad() const             { return fLengthOPad;      };
+  Double_t GetLengthIPad() const             { return fLengthIPad;      };
 
-  Double_t GetWidthOPad() const              { return fWidthOPad;    };
-  Double_t GetWidthIPad() const              { return fWidthIPad;    };
+  Double_t GetWidthOPad() const              { return fWidthOPad;       };
+  Double_t GetWidthIPad() const              { return fWidthIPad;       };
+
+  Double_t GetAnodeWireOffset() const        { return fAnodeWireOffset; };
 
  protected:
 
@@ -146,7 +149,9 @@ class AliTRDpadPlane : public TObject {
 
   Double_t  fPadRowSMOffset;  //  To be added to translate local ROC system to local SM system
 
-  ClassDef(AliTRDpadPlane,5)  //  TRD ROC pad plane
+  Double_t  fAnodeWireOffset; //  Distance of first anode wire from pad edge
+
+  ClassDef(AliTRDpadPlane,6)  //  TRD ROC pad plane
 
 };
 

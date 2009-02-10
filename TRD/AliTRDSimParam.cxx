@@ -94,7 +94,6 @@ AliTRDSimParam::AliTRDSimParam()
   ,fTRFwid(0.0)
   ,fCTOn(kFALSE)
   ,fCTsmp(0)
-  ,fAnodeWireOffset(0.0)
   ,fPadCoupling(0.0)
   ,fTimeCoupling(0.0)
   ,fTimeStructOn(kFALSE)
@@ -146,9 +145,6 @@ void AliTRDSimParam::Init()
 
   // The time coupling factor (same number as for the TPC)
   fTimeCoupling      = 0.4;
-
-  // Distance of first Anode wire from first pad edge
-  fAnodeWireOffset   = 0.25;
 
   // Use drift time maps
   fTimeStructOn      = kTRUE;
@@ -202,7 +198,6 @@ AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p)
   ,fTRFwid(p.fTRFwid)
   ,fCTOn(p.fCTOn)
   ,fCTsmp(0)
-  ,fAnodeWireOffset(p.fAnodeWireOffset)
   ,fPadCoupling(p.fPadCoupling)
   ,fTimeCoupling(p.fTimeCoupling)
   ,fTimeStructOn(p.fTimeStructOn)
@@ -275,7 +270,6 @@ void AliTRDSimParam::Copy(TObject &p) const
   target->fTRFhi              = fTRFhi;
   target->fTRFwid             = fTRFwid;
   target->fCTOn               = fCTOn;
-  target->fAnodeWireOffset    = fAnodeWireOffset;
   target->fPadCoupling        = fPadCoupling;
   target->fTimeCoupling       = fTimeCoupling;
   target->fPRFOn              = fPRFOn;

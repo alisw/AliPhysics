@@ -57,6 +57,7 @@ AliTRDpadPlane::AliTRDpadPlane()
   ,fPadRow(0)
   ,fPadCol(0)
   ,fPadRowSMOffset(0)
+  ,fAnodeWireOffset(0)
 {
   //
   // Default constructor
@@ -86,6 +87,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t layer, Int_t stack)
   ,fPadRow(0)
   ,fPadCol(0)
   ,fPadRowSMOffset(0)
+  ,fAnodeWireOffset(0)
 {
   //
   // Constructor
@@ -115,6 +117,7 @@ AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
   ,fPadRow(0)
   ,fPadCol(0)
   ,fPadRowSMOffset(p.fPadRowSMOffset)
+  ,fAnodeWireOffset(p.fAnodeWireOffset)
 {
   //
   // AliTRDpadPlane copy constructor
@@ -183,28 +186,29 @@ void AliTRDpadPlane::Copy(TObject &p) const
 
   Int_t iBin = 0;
 
-  ((AliTRDpadPlane &) p).fLayer          = fLayer;
-  ((AliTRDpadPlane &) p).fStack          = fStack;
+  ((AliTRDpadPlane &) p).fLayer           = fLayer;
+  ((AliTRDpadPlane &) p).fStack           = fStack;
 
-  ((AliTRDpadPlane &) p).fLength         = fLength;
-  ((AliTRDpadPlane &) p).fWidth          = fWidth;
-  ((AliTRDpadPlane &) p).fLengthRim      = fLengthRim;
-  ((AliTRDpadPlane &) p).fWidthRim       = fWidthRim;
-  ((AliTRDpadPlane &) p).fLengthOPad     = fLengthOPad;
-  ((AliTRDpadPlane &) p).fWidthOPad      = fWidthOPad;
-  ((AliTRDpadPlane &) p).fLengthIPad     = fLengthIPad;
-  ((AliTRDpadPlane &) p).fWidthIPad      = fWidthIPad;
+  ((AliTRDpadPlane &) p).fLength          = fLength;
+  ((AliTRDpadPlane &) p).fWidth           = fWidth;
+  ((AliTRDpadPlane &) p).fLengthRim       = fLengthRim;
+  ((AliTRDpadPlane &) p).fWidthRim        = fWidthRim;
+  ((AliTRDpadPlane &) p).fLengthOPad      = fLengthOPad;
+  ((AliTRDpadPlane &) p).fWidthOPad       = fWidthOPad;
+  ((AliTRDpadPlane &) p).fLengthIPad      = fLengthIPad;
+  ((AliTRDpadPlane &) p).fWidthIPad       = fWidthIPad;
 
-  ((AliTRDpadPlane &) p).fRowSpacing     = fRowSpacing;
-  ((AliTRDpadPlane &) p).fColSpacing     = fColSpacing;
+  ((AliTRDpadPlane &) p).fRowSpacing      = fRowSpacing;
+  ((AliTRDpadPlane &) p).fColSpacing      = fColSpacing;
 
-  ((AliTRDpadPlane &) p).fNrows          = fNrows;
-  ((AliTRDpadPlane &) p).fNcols          = fNcols;
+  ((AliTRDpadPlane &) p).fNrows           = fNrows;
+  ((AliTRDpadPlane &) p).fNcols           = fNcols;
 
-  ((AliTRDpadPlane &) p).fTiltingAngle   = fTiltingAngle;
-  ((AliTRDpadPlane &) p).fTiltingTan     = fTiltingTan;
+  ((AliTRDpadPlane &) p).fTiltingAngle    = fTiltingAngle;
+  ((AliTRDpadPlane &) p).fTiltingTan      = fTiltingTan;
 
-  ((AliTRDpadPlane &) p).fPadRowSMOffset = fPadRowSMOffset;
+  ((AliTRDpadPlane &) p).fPadRowSMOffset  = fPadRowSMOffset;
+  ((AliTRDpadPlane &) p).fAnodeWireOffset = fAnodeWireOffset;
 
   if (((AliTRDpadPlane &) p).fPadRow) {
     delete [] ((AliTRDpadPlane &) p).fPadRow;

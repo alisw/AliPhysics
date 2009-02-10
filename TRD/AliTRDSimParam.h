@@ -46,7 +46,6 @@ class AliTRDSimParam : public TObject {
           void     SetCrossTalk(Int_t ctOn = 1)              { fCTOn              = ctOn; ReInit();   }
           void     SetPadCoupling(Float_t v)                 { fPadCoupling       = v;                }
           void     SetTimeCoupling(Float_t v)                { fTimeCoupling      = v;                }
-          void     SetAnodeWireOffset(Float_t offset = 0.25) { fAnodeWireOffset   = offset;           }
           void     SetTimeStruct(Bool_t tsOn = 1)            { fTimeStructOn      = tsOn;             }
           void     SetPadResponse(Int_t prfOn = 1)           { fPRFOn             = prfOn;            }
           void     SetXenon()                                { fGasMixture        = kXenon; ReInit(); }
@@ -62,7 +61,6 @@ class AliTRDSimParam : public TObject {
           Float_t  GetTRFhi() const                          { return fTRFhi;                         }
           Float_t  GetPadCoupling() const                    { return fPadCoupling;                   }
           Float_t  GetTimeCoupling() const                   { return fTimeCoupling;                  }
-          Float_t  GetAnodeWireOffset() const                { return fAnodeWireOffset;               }
           Int_t    GetGasMixture() const                     { return fGasMixture;                    }
 
           Bool_t   DiffusionOn() const                       { return fDiffusionOn;                   }
@@ -111,7 +109,6 @@ class AliTRDSimParam : public TObject {
           Int_t    fCTOn;              //  Switch for cross talk
           Float_t *fCTsmp;             //! Integrated cross talk
   
-          Float_t  fAnodeWireOffset;   //  Distance of first anode wire from pad edge
           Float_t  fPadCoupling;       //  Pad coupling factor
           Float_t  fTimeCoupling;      //  Time coupling factor (image charge of moving ions)
           Int_t    fTimeStructOn;      //  Switch for cell time structure
@@ -130,7 +127,7 @@ class AliTRDSimParam : public TObject {
           void ReInit();
           void SampleTRF();
   
-  ClassDef(AliTRDSimParam,2)          // The TRD simulation parameters
+  ClassDef(AliTRDSimParam,3)          // The TRD simulation parameters
 
 };
 
