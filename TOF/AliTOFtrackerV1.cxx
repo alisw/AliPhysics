@@ -362,7 +362,7 @@ void AliTOFtrackerV1::MatchTracks( ){
 	break;
       }
     } else if (ysect <-ymax) {
-      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
+      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
 	break;
       }
     }
