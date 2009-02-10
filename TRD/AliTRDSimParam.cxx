@@ -463,15 +463,11 @@ Double_t AliTRDSimParam::TimeResponse(Double_t time) const
   // (We assume a signal rise time of 0.2us = fTRFlo/2.
   //
 
-  Int_t iBin = ((Int_t) ((time - fTRFlo/2.0) / fTRFwid)); 
-  if ((iBin >=       0) && 
-      (iBin <  fTRFbin)) {
-    return fTRFsmp[iBin];
-  }
-  else {
-    return 0.0;
-  }    
-
+  Double_t  rt = (time - .5*fTRFlo) / fTRFwid;
+  Int_t iBin = (Int_t)rt; Double_t dt = rt-iBin; 
+  if ((iBin >= 0) && (iBin+1 < fTRFbin)) {
+    return fTRFsmp[iBin] + (fTRFsmp[iBin+1] - fTRFsmp[iBin])*dt;
+  } else return 0.0;
 }
 
 //_____________________________________________________________________________
@@ -481,13 +477,9 @@ Double_t AliTRDSimParam::CrossTalk(Double_t time) const
   // Applies the pad-pad capacitive cross talk
   //
 
-  Int_t iBin = ((Int_t) ((time - fTRFlo) / fTRFwid)); 
-  if ((iBin >=       0) && 
-      (iBin <  fTRFbin)) {
-    return fCTsmp[iBin];
-  }
-  else {
-    return 0.0;
-  }    
-
+  Double_t  rt = (time - fTRFlo) / fTRFwid;
+  Int_t iBin = (Int_t)rt; Double_t dt = rt-iBin; 
+  if ((iBin >= 0) && (iBin+1 < fTRFbin)) {
+    return fCTsmp[iBin] + (fCTsmp[iBin+1] - fCTsmp[iBin])*dt;
+  } else return 0.0;
 }
