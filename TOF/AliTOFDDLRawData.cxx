@@ -102,9 +102,9 @@ AliTOFDDLRawData::AliTOFDDLRawData():
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
   fTOFdigitMap(new AliTOFDigitMap()),
-  fTOFdigitArray(0x0),
-  fTOFrawStream(new AliTOFRawStream()),
-  fTOFCableLengthMap(new AliTOFCableLengthMap())
+  fTOFdigitArray(0x0)
+  //fTOFrawStream(AliTOFRawStream()),
+  //fTOFCableLengthMap(new AliTOFCableLengthMap())
 {
   //Default constructor
 }
@@ -117,9 +117,9 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   fFakeOrphaneProduction(source.fFakeOrphaneProduction),
   fMatchingWindow(source.fMatchingWindow),
   fTOFdigitMap(source.fTOFdigitMap),
-  fTOFdigitArray(source.fTOFdigitArray),
-  fTOFrawStream(source.fTOFrawStream),
-  fTOFCableLengthMap(source.fTOFCableLengthMap)
+  fTOFdigitArray(source.fTOFdigitArray)
+  //fTOFrawStream(source.fTOFrawStream),
+  //fTOFCableLengthMap(source.fTOFCableLengthMap)
  {
   //Copy Constructor
   return;
@@ -140,8 +140,8 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   fMatchingWindow=source.fMatchingWindow;
   fTOFdigitMap=source.fTOFdigitMap;
   fTOFdigitArray=source.fTOFdigitArray;
-  fTOFrawStream=source.fTOFrawStream;
-  fTOFCableLengthMap=source.fTOFCableLengthMap;
+  //fTOFrawStream=source.fTOFrawStream;
+  //fTOFCableLengthMap=source.fTOFCableLengthMap;
   return *this;
 }
 
@@ -149,8 +149,8 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
 AliTOFDDLRawData::~AliTOFDDLRawData()
 {
   delete fTOFdigitMap;
-  delete fTOFrawStream;
-  delete fTOFCableLengthMap;
+  //delete fTOFrawStream;
+  //delete fTOFCableLengthMap;
 }
 //----------------------------------------------------------------------------
 Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
@@ -165,6 +165,8 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
 
   // To clear the digit indices map for each event
   fTOFdigitMap->Clear();
+
+  //fTOFrawStream->Clear();
 
   fIndex = -1;
 
@@ -198,7 +200,8 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
     strcpy(fileName,AliDAQ::DdlFileName("TOF",nDDL)); //The name of the output file
 
     outfile = new AliFstream(fileName);
-    iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
+    //iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
+    iDDL = AliTOFRawStream::GetDDLnumberPerSector(nDDL);
 
     // write Dummy DATA HEADER
     UInt_t dataHeaderPosition = outfile->Tellp();
@@ -313,9 +316,11 @@ void AliTOFDDLRawData::MakeDRMheader(Int_t nDDL, UInt_t *buf)
   // DRM global header
   //
 
-  Int_t iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
+  //Int_t iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
+  Int_t iDDL = AliTOFRawStream::GetDDLnumberPerSector(nDDL);
 
-  Int_t iSector = fTOFrawStream->GetSectorNumber(nDDL);
+  //Int_t iSector = fTOFrawStream->GetSectorNumber(nDDL);
+  Int_t iSector = AliTOFRawStream::GetSectorNumber(nDDL);
 
   UInt_t baseWord=0;
   UInt_t word;
@@ -962,7 +967,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
       //numberOfMeasuresPerChannel = 0;
 
-      fTOFrawStream->EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
+      //fTOFrawStream->EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
+      AliTOFRawStream::EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
 	
       if (volume[0]==-1 || volume[1]==-1 || volume[2]==-1 ||
 	  volume[3]==-1 || volume[4]==-1) continue;
