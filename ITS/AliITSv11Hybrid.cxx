@@ -665,9 +665,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     modnum = 0;
     TString str0 = "/ALIC_1/ITSV_1/ITSsddLayer3_1/ITSsddLadd_"; // SDD layer1
     TString str1 = "/ITSsddSensor3_";
-    TString str2 = "/ITSsddWafer3_1";
     TString ladder;
-    TString wafer;
+    TString sensor;
 
     for(Int_t c1 = 0; c1<14; c1++) {
 
@@ -685,17 +684,16 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
       for(Int_t c2 =0; c2<6; c2++) {
 
 	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
-	wafer = ladder;
-	wafer += str1;
-	wafer += c2;
-	wafer += str2;    // one wafer
+	sensor = ladder;
+	sensor += str1;
+	sensor += c2;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),sensor.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
-                   strEntryName2.Data(),wafer.Data()));
+                   strEntryName2.Data(),sensor.Data()));
 
 	if(c1 != 2) { 
 	SetT2Lmatrix(modUID, 0, kFALSE, c2>=3);
@@ -709,7 +707,6 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     modnum = 0;
     str0 = "/ALIC_1/ITSV_1/ITSsddLayer4_1/ITSsddLadd_"; // SDD layer2
     str1 = "/ITSsddSensor4_";
-    str2 = "/ITSsddWafer4_1";
     
     for(Int_t c1 = 0; c1<22; c1++) {
 
@@ -727,17 +724,16 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
       for(Int_t c2 =0; c2<8; c2++) {
 
 	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
-	wafer = ladder;
-	wafer += str1;
-	wafer += c2;
-	wafer += str2;    // one wafer
+	sensor = ladder;
+	sensor += str1;
+	sensor += c2;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),sensor.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
-                   strEntryName2.Data(),wafer.Data()));
+                   strEntryName2.Data(),sensor.Data()));
 
   	SetT2Lmatrix(modUID, 0, kFALSE, c2>=4);
       }
@@ -4812,8 +4808,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 59.;
   dgh[2] = 0.6;    
   gMC->Gsvolu("ICYL", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., -74.1,idrotm[199], "ONLY");   
-  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., 74.1, 0, "ONLY"); 
+  gMC->Gspos("ICYL", 1, "ITSV", 0., 0., -74.1,idrotm[199], "ONLY");   
+  gMC->Gspos("ICYL", 2, "ITSV", 0., 0., 74.1, 0, "ONLY"); 
 
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE CYLINDERS
 
