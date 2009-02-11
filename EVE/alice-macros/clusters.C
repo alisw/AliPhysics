@@ -21,13 +21,11 @@ void clusters()
 
   AliRunLoader *rl        = AliEveEventManager::AssertRunLoader();
   AliESDEvent  *esd       = AliEveEventManager::AssertESD();
-  AliESDfriend *esdfriend = AliEveEventManager::AssertESDfriend();
-  AliMagF      *magfield  = AliEveEventManager::AssertMagField();
+  AliEveEventManager::AssertESDfriend();
+  AliEveEventManager::AssertMagField();
 
-  AliTracker::SetFieldMap(magfield, kFALSE);
-
-  const char* detNames[] = { "ITS", "TPC", "TRD", "TOF", "HMPID" };
-  const Int_t detIds[]   = {   0,     1,     2,     3,     5   };
+  const char* detNames[] = { "ITS", "TPC", /*"TRD",*/ "TOF", "HMPID" };
+  const Int_t detIds[]   = {   0,     1,   /*  2,  */   3,     5   };
   const Int_t detN       = sizeof(detNames)/sizeof(char*);
 
   // Hack - AliReconstruction does wonders with gGeoManager.

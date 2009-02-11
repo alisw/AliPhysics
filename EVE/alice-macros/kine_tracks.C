@@ -20,7 +20,8 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
-  if (!stack) {
+  if (!stack)
+  {
     Error("kine_tracks.C", "can not get kinematics.");
     return 0;
   }
@@ -29,9 +30,11 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
 
   TEveTrackList* cont = new TEveTrackList("Kine Tracks");
   cont->SetMainColor(3);
-  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  rnrStyle->SetMagField(fld ? -0.1*fld->SolenoidField() : 0);
+  TEveTrackPropagator* trkProp = cont->GetPropagator();
+
+  AliMagF* fld = AliEveEventManager::AssertMagField();
+  // !!! Watch the '-', apparently different sign convention then for ESD.
+  trkProp->SetMagField(fld ? -0.1*fld->SolenoidField() : 0);
 
   gEve->AddElement(cont);
   Int_t count = 0;
@@ -45,7 +48,7 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
       if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
-      TEveTrack* track = new TEveTrack(p, i, rnrStyle);
+      TEveTrack* track = new TEveTrack(p, i, trkProp);
 
       //PH The line below is replaced waiting for a fix in Root
       //PH which permits to use variable siza arguments in CINT
@@ -77,7 +80,7 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   if (use_track_refs && rl->LoadTrackRefs() == 0)
   {
     kt.SetTrackReferences(cont, rl->TreeTR(), recurse);
-    rnrStyle->SetEditPathMarks(kTRUE);
+    trkProp->SetEditPathMarks(kTRUE);
   }
   kt.SortPathMarks(cont, recurse);
 
@@ -218,15 +221,16 @@ kine_track(Int_t  label,
 	(Form("Kinematics of %d", label, p->GetNDaughters()));
       cont = tlist;
 
-      TEveTrackPropagator* rnrStyle = tlist->GetPropagator();
-      // !!! Watch the '-', apparently different sign convention then for ESD.
-      AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-      rnrStyle->SetMagField( fld ? -0.1*fld->SolenoidField() : 0 );
+      TEveTrackPropagator* trkProp = tlist->GetPropagator();
+
+      AliMagF* fld = AliEveEventManager::AssertMagField();
+      trkProp->SetMagField(fld ? -0.1*fld->SolenoidField() : 0);
+
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       tlist->SetTitle(tooltip);
-      rnrStyle->fMaxOrbs = 2;
-      rnrStyle->SetEditPathMarks(kTRUE);
+      trkProp->fMaxOrbs = 2;
+      trkProp->SetEditPathMarks(kTRUE);
 
       gEve->AddElement(cont);
       rs = tlist->GetPropagator();

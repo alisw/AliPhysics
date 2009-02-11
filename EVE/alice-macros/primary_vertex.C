@@ -54,7 +54,7 @@ make_vertex_cross(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Flo
   }
   title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
 		x[0], x[1], x[2], e[0], e[1], e[2]);
-  ls.SetTitle(title);
+  ls->SetTitle(title);
 
   ls->AddLine(e[0], 0,    0,   -e[0], 0,    0);
   ls->AddLine(0,    e[1], 0,    0,   -e[1], 0);
@@ -84,7 +84,7 @@ make_vertex_ellipse(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, F
   }
   title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
 		x[0], x[1], x[2], e[0], e[1], e[2]);
-  ls.SetTitle(title);
+  ls->SetTitle(title);
 
   const Int_t   N = 32;
   const Float_t S = 2*TMath::Pi()/N;
@@ -128,7 +128,7 @@ make_vertex_box(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Float
   }
   title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
 		x[0], x[1], x[2], e[0], e[1], e[2]);
-  ls.SetTitle(title);
+  ls->SetTitle(title);
 
   // pos z
   ls->AddLine( e[0],  e[1],  e[2],  e[0], -e[1],  e[2]);

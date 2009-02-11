@@ -22,6 +22,7 @@ class AliESDfriend;
 class AliAODEvent;
 class AliRawReader;
 
+class AliGRPObject;
 class AliMagF;
 
 class TFile;
@@ -91,6 +92,7 @@ public:
   static AliAODEvent*  AssertAOD();
   static AliRawReader* AssertRawReader();
 
+  static AliMagF*      AssertMagField();
   static TGeoManager*  AssertGeometry();
 
   static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
@@ -99,7 +101,8 @@ public:
   static AliEveEventManager* GetMaster();
   static AliEveEventManager* GetCurrent();
 
-  static void                RegisterTransient(TEveElement* element);
+  static void                RegisterTransient    (TEveElement* element);
+  static void                RegisterTransientList(TEveElement* element);
 
 
   Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
@@ -153,6 +156,7 @@ protected:
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
 
   TEveElementList     *fTransients;     // Container for additional transient (per event) elements.
+  TEveElementList     *fTransientLists; // Container for lists of transient (per event) elements.
 
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
@@ -167,6 +171,10 @@ protected:
 
   static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
 
+  static AliGRPObject *fgGRPData;       // Global run parameters.
+  static AliMagF      *fgMagField;      // Global pointer to magnetic field.
+  static Bool_t        fgUniformField;  // Track with uniform field.
+
 private:
   AliEveEventManager(const AliEveEventManager&);            // Not implemented
   AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
@@ -174,6 +182,13 @@ private:
   void InitInternals();
   void StartAutoLoadTimer();
   void StopAutoLoadTimer();
+
+  static Bool_t InitGRP();
+  static Bool_t SetFieldMap(Float_t l3Cur, Float_t diCur,
+			    Float_t l3Pol, Float_t diPol,
+			    Float_t beamenergy     = 7000,
+			    const Char_t *beamtype = "pp",
+			    const Char_t *path     = "$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
 
   Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 

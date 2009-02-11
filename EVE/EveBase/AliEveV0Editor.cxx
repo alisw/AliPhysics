@@ -121,6 +121,34 @@ void AliEveV0Editor::DisplayDetailed()
   pack->SetHorizontal();
 
   //
+  // This part is for getting the different objects to display
+  //
+  char displayInfo[100] = {0};
+  sprintf(displayInfo,"pt = %.3f",fM->GetPt());
+  TEveLine *lv0TransverseMomentumDirection = new TEveLine(displayInfo);
+  lv0TransverseMomentumDirection->SetLineColor(kOrange+8);
+  lv0TransverseMomentumDirection->SetLineWidth(2);
+  lv0TransverseMomentumDirection->SetLineStyle(2);
+  lv0TransverseMomentumDirection->SetLineWidth(2);
+  Float_t scalePt = 100.; // this needs to be available as a ruler
+  lv0TransverseMomentumDirection->SetPoint(0,fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+  lv0TransverseMomentumDirection->SetPoint(1,scalePt*fM->fRecDecayP.fX, scalePt*fM->fRecDecayP.fY,0);
+
+  TEvePointSet *pvlocation = new TEvePointSet("PV location");
+  pvlocation->SetNextPoint(fM->fRecBirthV.fX, fM->fRecBirthV.fY, fM->fRecBirthV.fZ);
+  pvlocation->SetTitle("pv location");
+  pvlocation->SetMarkerStyle(4);
+  pvlocation->SetMarkerSize(2.5);
+  pvlocation->SetMarkerColor(7);
+
+  TEvePointSet *v0location = new TEvePointSet("V0 location");
+  v0location->SetNextPoint(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+  v0location->SetTitle("v0 location");
+  v0location->SetMarkerStyle(4);
+  v0location->SetMarkerSize(2.5);
+  v0location->SetMarkerColor(kOrange+8);
+
+  //
   // This part is for the bending plane view
   //
   pack->NewSlot()->MakeCurrent();
@@ -143,45 +171,21 @@ void AliEveV0Editor::DisplayDetailed()
 
   bpViewer->AddScene(bpScene);
   bpScene->AddElement(fM);
-
-  char displayInfo[100] = {0};
-  sprintf(displayInfo,"pt = %.3f",fM->GetPt());
-  TEveLine *lv0TransverseMomentumDirection = new TEveLine(displayInfo);
-  lv0TransverseMomentumDirection->SetLineColor(kOrange+8);
-  lv0TransverseMomentumDirection->SetLineWidth(2);
-  lv0TransverseMomentumDirection->SetLineStyle(2);
-  lv0TransverseMomentumDirection->SetLineWidth(2);
-  Float_t scalePt = 100.;
-  lv0TransverseMomentumDirection->SetPoint(0,fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
-  lv0TransverseMomentumDirection->SetPoint(1,scalePt*fM->fRecDecayP.fX, scalePt*fM->fRecDecayP.fY,0);
-  
   bpScene->AddElement(lv0TransverseMomentumDirection);
-
-  TEvePointSet *pvlocation = new TEvePointSet("PV location");
-  pvlocation->SetNextPoint(fM->fRecBirthV.fX, fM->fRecBirthV.fY, fM->fRecBirthV.fZ);
-  pvlocation->SetTitle("pv location");
-  pvlocation->SetMarkerStyle(4);
-  pvlocation->SetMarkerSize(2.5);
-  pvlocation->SetMarkerColor(7);
   bpScene->AddElement(pvlocation);
-
-  TEvePointSet *v0location = new TEvePointSet("V0 location");
-  v0location->SetNextPoint(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
-  v0location->SetTitle("v0 location");
-  v0location->SetMarkerStyle(4);
-  v0location->SetMarkerSize(2.5);
-  v0location->SetMarkerColor(kOrange+8);
   bpScene->AddElement(v0location);
-
-  // show V0 position with a marker in orange
-  // show the pv in light blue...
 
   // This is the to-do list for the bending plane:
   // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) ->done! 
-  // 2. show axis and tickles along X and Y   ->done!
+  // 2. show axis and tickles along X and Y ->done!
+  //       -> note for the projection the cartesian scales are not very useful
+  //       -> propose a phi and R scale which rotates with a reset at 0;
+  //       -> propose a transformation for an eta scale (keep the z one);
   // 3. show the center, the main vertex and the detectors for this view ->done!
   // 4. show V0 direction in the bending plane with arrow length proportional to pT ->done!
   // 5. show angles with respect to axis (phi angle) ->almost.
+  // 6. show clusters in the ITS and in the TPC associated with the daughter tracks
+  //       -> include a radius cut for plotting only ITS and TPC
   bpViewer->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   bpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
   TGLViewer *lbpGLViewer = bpViewer->GetGLViewer();
@@ -189,8 +193,6 @@ void AliEveV0Editor::DisplayDetailed()
   co->SetShowOrthographic(true); //(false);
   co->SetOrthographicMode(TGLCameraOverlay::kAxis); // ::kPlaneIntersect or ::kBar
   // end of the bending plane part
-  
-
 
   //
   // This part is for the decay plane view
@@ -198,22 +200,49 @@ void AliEveV0Editor::DisplayDetailed()
   pack->NewSlot()->MakeCurrent();
   TEveViewer *dpViewer = gEve->SpawnNewViewer("V0 decay plane View");
   TEveScene  *dpScene  = gEve->SpawnNewScene("V0 decay plane Scene");
+
   dpViewer->AddScene(dpScene);
+
+  result = gInterpreter->ProcessLine("geom_gentle(kFALSE)");
+  if (result)
+  {
+    TEveGeoShape *geom = reinterpret_cast<TEveGeoShape*>(result);
+    geom->IncDenyDestroy();
+    geom->FindChild("TRD+TOF")->SetRnrState(kFALSE);
+    geom->FindChild("PHOS")   ->SetRnrState(kFALSE);
+    geom->FindChild("HMPID")  ->SetRnrState(kFALSE);
+    dpScene->AddElement(geom);
+  }
+  else
+  {
+    Warning("DisplayDetailed", "Import of 3D geometry failed.");
+  }
+
   dpScene->AddElement(fM);
+  dpScene->AddElement(lv0TransverseMomentumDirection);
+  dpScene->AddElement(pvlocation);
+  dpScene->AddElement(v0location);
+
   // This is the to-do list for the decay plane:
   // 1. fix the view to decay plane (no rotation allowed but moving the center ok)
-  // 2. show V0 direction with a vertical arrow length proportional to pT;
-  // 3. show the center, the main vertex and the detectors for this view;
-  // 4. show the x,y and z axis and the different angles;
+  // 2. show V0 direction with a vertical arrow length proportional to pT -> done!
+  // 3. show the center, the main vertex and the detectors for this view -> done!
+  // 4. show the x,y and z axis and the different angles
+  //       -> this needs a referential object that we can move around
+  //          or fix to a selected point (origin being the default)
   // 5. draw the dca between daughters and the extrapolation to the main vertex.
+  //       -> this is an issue since we only store the distance: check with J.Belikov
+  // 6. show clusters in the ITS and in the TPC associated with the daughter tracks
+  //       -> include a radius cut for plotting only ITS and TPC
   dpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
   TGLCamera& dpCam = dpViewer->GetGLViewer()->CurrentCamera();
   dpCam.SetExternalCenter(kTRUE);
   dpCam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
   // end of the decay plane part
 
-
+  //
   // This part is for displaying the information
+  //
   slot = pack->NewSlot();
   
   TEveWindowFrame *frame = slot->MakeFrame(new TRootEmbeddedCanvas());
