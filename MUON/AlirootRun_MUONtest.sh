@@ -115,7 +115,7 @@ fi
 #
 ###############################################################################
 
-if [ ! -f $ALICE_ROOT/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
+if [ ! -f $ALICE_ROOT/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
 
   echo "Updating GRP CTP config  ..."
 
