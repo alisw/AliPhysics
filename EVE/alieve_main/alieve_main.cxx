@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_Projectable);
   gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_Projectable);
 
-  gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/alice_fullgeo.root", evedir.Data()));
+  gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
   app.Run(); // Never returns.
 
