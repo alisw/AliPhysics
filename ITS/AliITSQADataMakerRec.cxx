@@ -131,23 +131,25 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
     if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
-  }
   
-  AliQAChecker *qac = AliQAChecker::Instance();
-  AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-  Int_t subdet=GetSubDet();
-  qacb->SetSubDet(subdet);
+  
+    AliQAChecker *qac = AliQAChecker::Instance();
+    AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+    Int_t subdet=GetSubDet();
+    qacb->SetSubDet(subdet);
  
-  if(subdet== 0 ){
-    qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task), fSDDDataMaker->GetOffset(task), fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list
-  }
- else
-    if(subdet!=0){
-      Int_t offset=GetDetTaskOffset(subdet, task);
-      qacb->SetDetTaskOffset(subdet,offset);
+    if(subdet== 0 ){
+      qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task), fSDDDataMaker->GetOffset(task), fSSDDataMaker->GetOffset(task)); //Setting the offset for the QAChecker list
     }
+    else
+      if(subdet!=0){
+	Int_t offset=GetDetTaskOffset(subdet, task);
+	qacb->SetDetTaskOffset(subdet,offset);
+      }
 
-  qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
+    qac->Run( AliQA::kITS , task, list); 
+
+  }
 }
 
 //____________________________________________________________________________ 
