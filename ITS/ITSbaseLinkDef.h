@@ -103,6 +103,6 @@
 #pragma link C++ class AliITSIntMapNode+;
 #pragma link C++ class AliITSPedestalSSD+;
 #pragma link C++ class AliITSPedestalSSDv2+;
-#pragma link C++ class AliITSSurveyToAlignSSD+;
+#pragma link C++ class AliITSSurveyToAlign+;
 
 #endif

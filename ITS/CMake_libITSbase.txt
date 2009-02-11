@@ -72,7 +72,7 @@ set(SRCS
 		AliITSIntMapNode.cxx
 		AliITSPedestalSSD.cxx
 		AliITSPedestalSSDv2.cxx
-		AliITSSurveyToAlignSSD.cxx
+		AliITSSurveyToAlign.cxx
 )
 
 # fill list of header files from list of source files

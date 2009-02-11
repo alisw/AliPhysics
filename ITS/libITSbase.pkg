@@ -71,7 +71,7 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSIntMapNode.cxx \
 		AliITSPedestalSSD.cxx \
 		AliITSPedestalSSDv2.cxx \
-		AliITSSurveyToAlignSSD.cxx
+		AliITSSurveyToAlign.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
 
