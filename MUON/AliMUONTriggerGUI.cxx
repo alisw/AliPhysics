@@ -535,14 +535,20 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
     if (fDiMap == 0) {
       fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
       fDiMap->SetLoader(fLoader);
-      fDiMap->SetMCDataInterface(fMCDataInterface);
-      fDiMap->SetRawDigitStore(fRawDigitStore);
+      if (fRUNRAW) {
+	fDiMap->SetRawDigitStore(fRawDigitStore);
+      } else {
+	fDiMap->SetMCDataInterface(fMCDataInterface);
+      }
       fDiMap->DrawAllMaps();
     } else if (!fDiMap->IsOn()) {
       fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
       fDiMap->SetLoader(fLoader);
-      fDiMap->SetMCDataInterface(fMCDataInterface);
-      fDiMap->SetRawDigitStore(fRawDigitStore);
+      if (fRUNRAW) {
+	fDiMap->SetRawDigitStore(fRawDigitStore);
+      } else {
+	fDiMap->SetMCDataInterface(fMCDataInterface);
+      }
       fDiMap->DrawAllMaps();
     }
 
@@ -1389,9 +1395,12 @@ void AliMUONTriggerGUI::OpenBoard(Int_t id)
   bf->SetBoard(Boards(),id);
   bf->SetLoader(fLoader);
   bf->SetCrateManager(fCrateManager);
-  bf->SetMCDataInterface(fMCDataInterface);
-  bf->SetRawDigitStore(fRawDigitStore);
-  bf->SetRawTriggerStore(fRawTriggerStore);
+  if (fRUNRAW) {
+    bf->SetRawDigitStore(fRawDigitStore);
+    bf->SetRawTriggerStore(fRawTriggerStore);
+  } else {
+    bf->SetMCDataInterface(fMCDataInterface);
+  }
   bf->Init();
 
   bf->Show();

@@ -456,7 +456,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
       digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
     }
     if (drawDigitsRaw) {
-      digitStore = static_cast<AliMUONVDigitStore*>(fRawDigitStore);
+      digitStore = fRawDigitStore;
     }
     
     TIter next(digitStore->CreateIterator());

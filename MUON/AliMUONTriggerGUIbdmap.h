@@ -44,22 +44,22 @@ public:
   /// set the name of the board gui window
   void SetName(const Char_t *name)         { fMain->SetWindowName(name); };
   /// set the board associated to this instance
-  void SetBoard(AliMUONTriggerGUIboard *b) { fBoard = b; };  
+  void SetBoard(AliMUONTriggerGUIboard * const b) { fBoard = b; };  
   /// set the board associated to this instance, from boards array and id
-  void SetBoard(TObjArray *boards, Int_t id) { 
+  void SetBoard(TObjArray * const boards, Int_t id) { 
     fBoards = boards;
     fBoard  = (AliMUONTriggerGUIboard*)boards->UncheckedAt(id); }
   /// set the current muon loader
-  void SetLoader(AliLoader *loader)        { fLoader = loader; };
+  void SetLoader(AliLoader * const loader)        { fLoader = loader; };
   /// set the MC data interface
-  void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
+  void SetMCDataInterface(AliMUONMCDataInterface * const mc) { fMCDataInterface = mc; };
   /// set the digit store from raw data
-  void SetRawDigitStore(AliMUONDigitStoreV1 *ds) { fRawDigitStore = ds; };
+  void SetRawDigitStore(AliMUONDigitStoreV1 * const ds) { fRawDigitStore = ds; };
   /// set the trigger store from raw data
-  void SetRawTriggerStore(AliMUONTriggerStoreV1 *ts) { fRawTriggerStore = ts; };
+  void SetRawTriggerStore(AliMUONTriggerStoreV1 * const ts) { fRawTriggerStore = ts; };
 
   /// set the trigger boards manager
-  void SetCrateManager(AliMUONTriggerCrateStore *crates) { fCrateManager = crates; };
+  void SetCrateManager(AliMUONTriggerCrateStore * const crates) { fCrateManager = crates; };
 
   void Show();
 

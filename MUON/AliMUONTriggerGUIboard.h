@@ -44,8 +44,6 @@ public:
   /// get column
   Int_t GetCol() const;
 
-  /// initialize the board
-  void Init() {};
   /// set the working status of this board
   void SetStatus(UShort_t s) { fStatus = s; };
   /// set the standard name of this board

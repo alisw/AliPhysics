@@ -33,11 +33,11 @@ public:
  virtual ~AliMUONTriggerGUIdimap();
  
  /// set the current muon loader
- void SetLoader(AliLoader *loader) { fLoader = loader; };
+ void SetLoader(AliLoader * const loader) { fLoader = loader; };
  /// set the MC data interface
- void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
+ void SetMCDataInterface(AliMUONMCDataInterface * const mc) { fMCDataInterface = mc; };
  /// set the digit store from raw data
- void SetRawDigitStore(AliMUONDigitStoreV1 *ds) { fRawDigitStore = ds; };
+ void SetRawDigitStore(AliMUONDigitStoreV1 * const ds) { fRawDigitStore = ds; };
 
  /// return info if the map is open
  Bool_t IsOn() const { return fIsOn; };
