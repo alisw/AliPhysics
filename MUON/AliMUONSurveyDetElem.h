@@ -9,7 +9,6 @@
 //
 // Author: Javier Castillo
 
-#include <TObject.h>
 #include "AliMUONSurveyObj.h"
 
 class AliMUONSurveyChamber;

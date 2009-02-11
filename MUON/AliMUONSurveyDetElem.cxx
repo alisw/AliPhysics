@@ -58,6 +58,7 @@ Int_t AliMUONSurveyDetElem::AddStickerTargets(TObjArray *pArray, TString stBaseN
 }
 
 Int_t AliMUONSurveyDetElem::AddStickerTargets(TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from internal SurveyObj
   if (!fSurveyChamber) {
     AliError("Pointer to mother chamber has not been set!");
     return 0;
@@ -74,6 +75,7 @@ Int_t AliMUONSurveyDetElem::AddGButtonTargets(TObjArray *pArray, TString stBaseN
 }
 
 Int_t AliMUONSurveyDetElem::AddGButtonTargets(TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from internal SurveyObj
   if (!fSurveyChamber) {
     AliError("Pointer to mother chamber has not been set!");
     return 0;
@@ -86,6 +88,7 @@ Int_t AliMUONSurveyDetElem::AddGButtonTargets(TString stBaseName, Int_t lTargetM
 }
 
 void AliMUONSurveyDetElem::SetLocalTransformation(TGeoCombiTrans *localTrf, Bool_t ownerLocalTrf) {
+  /// Set the geometry transformation of this detection element
   AliMUONSurveyObj::SetLocalTransformation(localTrf,ownerLocalTrf);
   if (!fSurveyChamber) {
     AliWarning("Pointer to mother chamber has not been set!");

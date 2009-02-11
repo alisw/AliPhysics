@@ -205,9 +205,6 @@ void MUONSurveyCh4() {
     myChamber = (AliMUONSurveyChamber*)myChamberArray->At(iCh);
 
     trfThChamber = TGeoCombiTrans(*transform->GetModuleTransformerByDEId(iDetElemToDetElemId[iCh*nDetElemsI])->GetTransformation());
-    trfThChamber.SetTranslation(trfThChamber.GetTranslation()[0]*10,
-				trfThChamber.GetTranslation()[1]*10,
-				trfThChamber.GetTranslation()[2]*10);
     trfThChamber.Print();
     myChamber->SetLocalTransformation(new TGeoCombiTrans(trfThChamber),kTRUE);
 
@@ -232,11 +229,7 @@ void MUONSurveyCh4() {
 
       trfThDetElem.Clear();
       trfThDetElem = TGeoCombiTrans(*transform->GetDetElement(iDetElemToDetElemId[iDetElem])->GetLocalTransformation());
-      trfThDetElem.SetTranslation(trfThDetElem.GetTranslation()[0]*10,
-				  trfThDetElem.GetTranslation()[1]*10,
-				  trfThDetElem.GetTranslation()[2]*10);
       trfThDetElem.Print();
-
       myDetElem->SetLocalTransformation(new TGeoCombiTrans(trfThDetElem),kTRUE);
 
       for (int iCor=0; iCor<3; iCor++){
@@ -258,7 +251,7 @@ void MUONSurveyCh4() {
       // Set DetElem plane function
       cout << "Setting plane for DetElem" << iDetElem+1 << " ..." << endl;
       myDetElem->SetPlane(Form("fDetElem%d",iDetElem+1));
-      myDetElem->SetPlaneParameters(0.,0.,30.)
+      myDetElem->SetPlaneParameters(0.,0.,3.)
 ;
       // Fit a plane to sticker targets
       Double_t lChi2 = myDetElem->FitPlane();
@@ -382,15 +375,15 @@ void MUONSurveyCh4() {
 	if (lDeltaDiffRotDetElem0[iDetElem][iCor]<-TMath::Pi()) lDeltaDiffRotDetElem0[iDetElem][iCor]+=TMath::TwoPi();
       }
 
-      gDeltaDiffCenXDetElem0->SetPoint(iDetElem,lDeltaDiffCenDetElem0[iDetElem][0],iDetElemToPos[iDetElem]+1);
-      gDeltaDiffCenYDetElem0->SetPoint(iDetElem,lDeltaDiffCenDetElem0[iDetElem][1],iDetElemToPos[iDetElem]+1);
-      gDeltaDiffCenZDetElem0->SetPoint(iDetElem,lDeltaDiffCenDetElem0[iDetElem][2],iDetElemToPos[iDetElem]+1);
+      gDeltaDiffCenXDetElem0->SetPoint(iDetElem,1e1*lDeltaDiffCenDetElem0[iDetElem][0],iDetElemToPos[iDetElem]+1);
+      gDeltaDiffCenYDetElem0->SetPoint(iDetElem,1e1*lDeltaDiffCenDetElem0[iDetElem][1],iDetElemToPos[iDetElem]+1);
+      gDeltaDiffCenZDetElem0->SetPoint(iDetElem,1e1*lDeltaDiffCenDetElem0[iDetElem][2],iDetElemToPos[iDetElem]+1);
       gDeltaDiffPsiDetElem0->SetPoint(iDetElem,1e3*lDeltaDiffRotDetElem0[iDetElem][0],iDetElemToPos[iDetElem]+1);
       gDeltaDiffThtDetElem0->SetPoint(iDetElem,1e3*lDeltaDiffRotDetElem0[iDetElem][1],iDetElemToPos[iDetElem]+1);
       gDeltaDiffPhiDetElem0->SetPoint(iDetElem,1e3*lDeltaDiffRotDetElem0[iDetElem][2],iDetElemToPos[iDetElem]+1);
-      gDeltaDiffCenXDetElem0->SetPointError(iDetElem,myDetElem->GetFitter()->GetParError(0),0.);
-      gDeltaDiffCenYDetElem0->SetPointError(iDetElem,myDetElem->GetFitter()->GetParError(1),0.);
-      gDeltaDiffCenZDetElem0->SetPointError(iDetElem,myDetElem->GetFitter()->GetParError(2),0.);
+      gDeltaDiffCenXDetElem0->SetPointError(iDetElem,1e1*myDetElem->GetFitter()->GetParError(0),0.);
+      gDeltaDiffCenYDetElem0->SetPointError(iDetElem,1e1*myDetElem->GetFitter()->GetParError(1),0.);
+      gDeltaDiffCenZDetElem0->SetPointError(iDetElem,1e1*myDetElem->GetFitter()->GetParError(2),0.);
       gDeltaDiffPsiDetElem0->SetPointError(iDetElem,1e3*myDetElem->GetFitter()->GetParError(3),0.);
       gDeltaDiffThtDetElem0->SetPointError(iDetElem,1e3*myDetElem->GetFitter()->GetParError(4),0.);
       gDeltaDiffPhiDetElem0->SetPointError(iDetElem,1e3*myDetElem->GetFitter()->GetParError(5),0.);  
@@ -406,10 +399,10 @@ void MUONSurveyCh4() {
     const TClonesArray* array = newTransform->GetMisAlignmentData();
     
     // Set the alignment resolution in the align objects for this chamber
-    Double_t chResX = 0.1*myChamberI->GetAlignResX();
-    Double_t chResY = 0.1*myChamberI->GetAlignResY();
-    Double_t deResX = 0.1*(myChamberI->GetMeanDetElemAlignResX()+myChamberO->GetMeanDetElemAlignResX())/2.;
-    Double_t deResY = 0.1*(myChamberI->GetMeanDetElemAlignResY()+myChamberO->GetMeanDetElemAlignResY())/2.;
+    Double_t chResX = myChamberI->GetAlignResX();
+    Double_t chResY = myChamberI->GetAlignResY();
+    Double_t deResX = (myChamberI->GetMeanDetElemAlignResX()+myChamberO->GetMeanDetElemAlignResX())/2.;
+    Double_t deResY = (myChamberI->GetMeanDetElemAlignResY()+myChamberO->GetMeanDetElemAlignResY())/2.;
     printf("Chamber alignment resolutions: resX=%f , resY=%f\n",chResX,chResY); 
     printf("Detection Elements alignment resolutions: resX=%f , resY=%f\n",deResX,deResY); 
     chResX = TMath::Sqrt(0.1*0.1+chResX*chResX);
@@ -482,7 +475,7 @@ void MUONSurveyCh4() {
   canvas = cvn2;
   canvas->Range(0,0,21,29);
   
-  title = Form(" MisAlignments Chamber %d - PL2G - In Single Frame - DE2Ok - DE3Ok - DE4Ok ",chId+1);
+  title = Form(" MisAlignments Chamber %d - PL2G - In Single Frame ",chId+1);
   TPaveLabel *theTitle2 = new TPaveLabel(3,27.0,18,28.5,title,"br");
   theTitle = theTitle2;
   theTitle->SetFillColor(18);
@@ -505,9 +498,9 @@ void MUONSurveyCh4() {
   myDetElemDeltaDiffCenX->SetYTitle("DetElem arbitrary ordering");
   gDeltaDiffCenXDetElem0->SetMarkerStyle(20);
   gDeltaDiffCenXDetElem0->Draw("P");
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][0],0.5,lDeltaDiffCenDetElem0[nDetElems+0][0],1.5);
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][0],3.5,lDeltaDiffCenDetElem0[nDetElems+0][0],4.5);
-  ch1Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+1][0],1.5,lDeltaDiffCenDetElem0[nDetElems+1][0],3.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][0],0.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][0],1.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][0],3.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][0],4.5);
+  ch1Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+1][0],1.5,1e1*lDeltaDiffCenDetElem0[nDetElems+1][0],3.5);
 
   pad->cd(2);
   myDetElemDeltaDiffCenY->Draw();
@@ -515,9 +508,9 @@ void MUONSurveyCh4() {
   myDetElemDeltaDiffCenY->SetYTitle("DetElem arbitrary ordering");
   gDeltaDiffCenYDetElem0->SetMarkerStyle(20);
   gDeltaDiffCenYDetElem0->Draw("P");
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][1],0.5,lDeltaDiffCenDetElem0[nDetElems+0][1],1.5);
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][1],3.5,lDeltaDiffCenDetElem0[nDetElems+0][1],4.5);
-  ch1Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+1][1],1.5,lDeltaDiffCenDetElem0[nDetElems+1][1],3.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][1],0.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][1],1.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][1],3.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][1],4.5);
+  ch1Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+1][1],1.5,1e1*lDeltaDiffCenDetElem0[nDetElems+1][1],3.5);
 
   pad->cd(3);
   myDetElemDeltaDiffCenZ->Draw();
@@ -525,9 +518,9 @@ void MUONSurveyCh4() {
   myDetElemDeltaDiffCenZ->SetYTitle("DetElem arbitrary ordering");
   gDeltaDiffCenZDetElem0->SetMarkerStyle(20);
   gDeltaDiffCenZDetElem0->Draw("P");
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][2],0.5,lDeltaDiffCenDetElem0[nDetElems+0][2],1.5);
-  ch0Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+0][2],3.5,lDeltaDiffCenDetElem0[nDetElems+0][2],4.5);
-  ch1Line->DrawLine(lDeltaDiffCenDetElem0[nDetElems+1][2],1.5,lDeltaDiffCenDetElem0[nDetElems+1][2],3.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][2],0.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][2],1.5);
+  ch0Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+0][2],3.5,1e1*lDeltaDiffCenDetElem0[nDetElems+0][2],4.5);
+  ch1Line->DrawLine(1e1*lDeltaDiffCenDetElem0[nDetElems+1][2],1.5,1e1*lDeltaDiffCenDetElem0[nDetElems+1][2],3.5);
 
   pad->cd(4);
   myDetElemDeltaDiffRotX->Draw();
@@ -563,12 +556,12 @@ void MUONSurveyCh4() {
  
   if(bMonitor){    
     // MONITOR: Histograms for monitoring
-    TH2F *hCPSTa = new TH2F("hCPSTa","hCPSTa",100,-2000,2000,100,-2000,2000);
-    TH2F *hCPSTc = new TH2F("hCPSTc","hCPSTc",100,-2000,2000,100,-2000,2000);
-    TH2F *hSSTa = new TH2F("hSSTa","hSSTa",100,-2000,2000,100,-2000,2000);
-    TH2F *hSSTc = new TH2F("hSSTc","hSSTc",100,-2000,2000,100,-2000,2000);
-    TH2F *hSSTap = new TH2F("hSSTap","hSSTap",800,-2000,2000,800,-2000,2000);
-    TH2F *hSSTcp = new TH2F("hSSTcp","hSSTcp",800,-2000,2000,800,-2000,2000);
+    TH2F *hCPSTa = new TH2F("hCPSTa","hCPSTa",100,-200,200,100,-200,200);
+    TH2F *hCPSTc = new TH2F("hCPSTc","hCPSTc",100,-200,200,100,-200,200);
+    TH2F *hSSTa = new TH2F("hSSTa","hSSTa",100,-200,200,100,-200,200);
+    TH2F *hSSTc = new TH2F("hSSTc","hSSTc",100,-200,200,100,-200,200);
+    TH2F *hSSTap = new TH2F("hSSTap","hSSTap",800,-200,200,800,-200,200);
+    TH2F *hSSTcp = new TH2F("hSSTcp","hSSTcp",800,-200,200,800,-200,200);
     
     // MONITOR: Fill histograms with chambers and slats sticker target positions
     for (int iCh =0; iCh<=1; iCh++) {
@@ -584,23 +577,25 @@ void MUONSurveyCh4() {
 	Double_t pl[3] = {0};
 	Double_t pg[3] = {0};
 	AliSurveyPoint *pointSBT0 = myDetElem->GetLButtonTarget(0);
-	AliSurveyPoint *pointSBT1 = myDetElem->GetLButtonTarget(1);
+	AliSurveyPoint *pointSBT1 = myDetElem->GetLButtonTarget(2);
 	if(pointSBT0&&pointSBT1) {
 	  if (pointSBT0->GetX()>pointSBT1->GetX()){
-	    pointSBT0=myDetElem->GetLButtonTarget(1);
+	    pointSBT0=myDetElem->GetLButtonTarget(2);
 	    pointSBT1=myDetElem->GetLButtonTarget(0);
 	  }
 	  Double_t lX = pointSBT0->GetX();
 	  while(lX<pointSBT1->GetX()){
-	    Double_t lY = pointSBT0->GetY()-200;
-	    while(lY<pointSBT0->GetY()+200){
+	    Double_t lY = pointSBT0->GetY()-50;
+	    while(lY<pointSBT0->GetY()+50){
 	      pl[0] = lX;  pl[1] = lY;  pl[2] = 0.;
 	      (TGeoCombiTrans((*(myDetElem->GetBaseTrf()))*(*(myDetElem->GetAlignTrf())))).LocalToMaster(pl,pg);
 	      if(myDetElem->GetGButtonTarget(0)->GetPointName().Contains("A")){
-		hSSTap->Fill(pg[0],pg[1],-pg[2]);
+		if (hSSTap->GetBinContent(hSSTap->FindBin(pg[0],pg[1]))==0)
+		  hSSTap->Fill(pg[0],pg[1],-pg[2]);
 	      }
 	      else {
-		hSSTcp->Fill(pg[0],pg[1],-pg[2]);
+		if (hSSTcp->GetBinContent(hSSTcp->FindBin(pg[0],pg[1]))==0)
+		  hSSTcp->Fill(pg[0],pg[1],-pg[2]);
 	      }
 	      lY+=hSSTap->GetYaxis()->GetBinWidth(1);
 	    }
@@ -635,20 +630,20 @@ void MUONSurveyCh4() {
     pad->Divide(2,2);
 
     pad->cd(1);
-    hCPSTa->SetMinimum(9500);
-    hCPSTa->SetMaximum(9750);
+    hCPSTa->SetMinimum(950);
+    hCPSTa->SetMaximum(975);
     hCPSTa->Draw("lego2z");
 
     pad->cd(2);
-    hSSTa->SetMinimum(9500);
-    hSSTa->SetMaximum(9800);
+    hSSTa->SetMinimum(950);
+    hSSTa->SetMaximum(980);
     hSSTa->Draw("lego2z");
 
     pad->cd(3);
 
     pad->cd(4);
-    hSSTap->SetMinimum(9500);
-    hSSTap->SetMaximum(9800);
+    hSSTap->SetMinimum(950);
+    hSSTap->SetMaximum(980);
     hSSTap->Draw("surf2z");
 
     pad->Update();
@@ -676,21 +671,27 @@ void MUONSurveyCh4() {
     pad->Draw();
     pad->Divide(2,2);
 
+    Double_t lMin, lMax;
+
     pad->cd(1);
-    hCPSTc->SetMinimum(9550);
-    hCPSTc->SetMaximum(9850);
-    hCPSTc->Draw("lego2z");
+//     hCPSTc->SetMinimum(955);
+//     hCPSTc->SetMaximum(985);
+//     hCPSTc->Draw("lego2z");
 
     pad->cd(2);
-    hSSTc->SetMinimum(6930);
-    hSSTc->SetMaximum(7030);
+    lMin = hSSTc->GetMinimum(0);
+    hSSTc->SetMinimum(TMath::Floor(lMin));
+    lMax = hSSTc->GetMaximum();
+    hSSTc->SetMaximum(TMath::Ceil(lMax));
     hSSTc->Draw("lego2z");
 
     pad->cd(3);
 
     pad->cd(4);
-    hSSTcp->SetMinimum(9600);
-    hSSTcp->SetMaximum(9850);
+    lMin = hSSTcp->GetMinimum(0);
+    hSSTcp->SetMinimum(TMath::Floor(lMin));
+    lMax = hSSTcp->GetMaximum();
+    hSSTcp->SetMaximum(TMath::Ceil(lMax));
     hSSTcp->Draw("surf2z");
   }
 

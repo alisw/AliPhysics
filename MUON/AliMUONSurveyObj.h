@@ -57,9 +57,12 @@ class AliMUONSurveyObj:public TObject
     fOwnerLocalTrf=ownerLocalTrf;
   }
 
-  TGeoCombiTrans* GetLocalTrf(){return fLocalTrf;}
-  TGeoCombiTrans* GetBaseTrf(){return fBaseTrf;}
-  TGeoCombiTrans* GetAlignTrf(){return fAlignTrf;}
+  TGeoCombiTrans* GetLocalTrf() const {return fLocalTrf;} 
+  TGeoCombiTrans* GetBaseTrf() const {return fBaseTrf;}
+  TGeoCombiTrans* GetAlignTrf()const {return fAlignTrf;}
+
+  void SetUseCM(Bool_t bUseCM = kTRUE) {fUseCM = bUseCM;}
+  Bool_t GetUseCM() const {return fUseCM;}
 
   void SetPlane(TString pName, Double_t xMin=-2000., Double_t xMax=+2000., Double_t yMin=-2000., Double_t yMax=2000.);
   void SetPlaneParameters(Double_t p0, Double_t p1, Double_t p2);
@@ -67,15 +70,15 @@ class AliMUONSurveyObj:public TObject
   void DrawSTargets();
   Double_t FitPlane();
 
-  TF2* GetPlane() {return fPlane;}
+  TF2* GetPlane() const {return fPlane;}
 
-  TFitter* GetFitter() {return fFitter;}
+  TFitter* GetFitter() const {return fFitter;}
 
   Int_t SurveyToAlign(TGeoCombiTrans &quadTransf, Double_t *parErr, Double_t psi=0., Double_t tht=0., Double_t epsi=0., Double_t etht=0.);
   Int_t SurveyToAlign(Double_t psi=0., Double_t tht=0., Double_t epsi=0., Double_t etht=0.);
   Double_t SurveyChi2(Double_t *par);
 
-  Double_t EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord);
+  Double_t EvalFunction(const TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord);
 
   void CalculateTranslation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, Int_t iP1, Int_t iP2, Double_t *lCenTemp);
   //  TGeoCombiTrans *CalculateTransformation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, TF2 *pFunc, Int_t iP1, Int_t iP2);
@@ -101,13 +104,15 @@ class AliMUONSurveyObj:public TObject
   Double_t GetAlignResX();
   Double_t GetAlignResY();
 
+  AliSurveyPoint* ConvertPointUnits(AliSurveyPoint *stPoint, Float_t lFactor = 0.1);
+
  private:
   /// Not implemented
   AliMUONSurveyObj(const AliMUONSurveyObj& right);
   /// Not implemented
   AliMUONSurveyObj&  operator = (const AliMUONSurveyObj& right);
 
-  Double_t eqPlane(Double_t *x, Double_t *par){
+  Double_t EqPlane(const Double_t *x, const Double_t *par) const {
     return (-par[1]*x[0] +par[0]*x[1] -par[2]);  // then psi=ATan(par[0]) and tht=ATan(par[0])
     //    return (-par[0]*x[0] -par[1]*x[1] -par[2]); 
   }
@@ -122,6 +127,8 @@ class AliMUONSurveyObj:public TObject
   Bool_t fOwnerLocalTrf;    ///< Flag for owner of fLocalTrf
   Bool_t fOwnerAlignTrf;    ///< Flag for owner of fAlignTrf
   Bool_t fOwnerBaseTrf;     ///< Flag for owner of fBaseTrf
+
+  Bool_t fUseCM;            ///< Use centimeters, survey units are mm but aliroot uses cm
 
   TF2 *fPlane;  ///< TF2 for plane fitting
 

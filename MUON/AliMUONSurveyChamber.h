@@ -32,10 +32,10 @@ class AliMUONSurveyChamber: public AliMUONSurveyObj
   virtual Int_t AddGButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax = 9);
  
   Int_t AddSurveyDetElem(Int_t lDetElemId);
-  Int_t GetNDetElem() {return fNDetElem;}
+  Int_t GetNDetElem() const  {return fNDetElem;}
   AliMUONSurveyDetElem* GetDetElem(Int_t lDetElemIndex);
 
-  AliSurveyObj* GetSurveyObj() {return fSurveyObj;}
+  AliSurveyObj* GetSurveyObj() const {return fSurveyObj;}
 
   virtual void SetLocalTransformation(TGeoCombiTrans *localTrf, Bool_t ownerLocalTrf = kFALSE);
 

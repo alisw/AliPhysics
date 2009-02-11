@@ -60,14 +60,15 @@ AliMUONSurveyObj::AliMUONSurveyObj()
   , fOwnerLocalTrf(kFALSE)
   , fOwnerAlignTrf(kTRUE)
   , fOwnerBaseTrf(kFALSE)
+  , fUseCM(kTRUE)
   , fPlane(0x0)
   , fFitter(0x0)
-  , fXMin(-4000.)
-  , fXMax(4000.)
-  , fYMin(-4000.)
-  , fYMax(4000.)
-  , fZMin(-20000.)
-  , fZMax(20000.)
+  , fXMin(-400.)
+  , fXMax(400.)
+  , fYMin(-400.)
+  , fYMax(400.)
+  , fZMin(-2000.)
+  , fZMax(2000.)
 {
 /// Default constructor
 
@@ -120,22 +121,39 @@ AliMUONSurveyObj::~AliMUONSurveyObj() {
 }
 
 void AliMUONSurveyObj::AddStickerTarget(AliSurveyPoint *stPoint){
-  fSTargets->Add(stPoint);
+  /// Add sticker target
+  if (fUseCM) {
+    fSTargets->Add(ConvertPointUnits(stPoint,0.1));
+  } else {
+    fSTargets->Add(stPoint);
+  }
 }
 
 void AliMUONSurveyObj::AddGButtonTarget(AliSurveyPoint *btPoint){
-  fGBTargets->Add(btPoint);
+  /// Add global button target
+  if (fUseCM) {
+    fGBTargets->Add(ConvertPointUnits(btPoint,0.1));
+  } else {
+    fGBTargets->Add(btPoint);
+  }  
 }
 
 void AliMUONSurveyObj::AddLButtonTarget(AliSurveyPoint *btPoint){
-  fLBTargets->Add(btPoint);
+  /// Add local button target target; AliSurveyPoint
+  if (fUseCM) {
+    fLBTargets->Add(ConvertPointUnits(btPoint,0.1));
+  } else {
+    fLBTargets->Add(btPoint);
+  }  
 }
 
 void AliMUONSurveyObj::AddLButtonTarget(TVector3 *btVector){
+  /// Add local button target target; TVector3
   fLBTargets->Add(btVector);
 }
 
 Int_t AliMUONSurveyObj::AddStickerTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax){
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from pArray 
   if (!pArray) {
     AliError(Form("Survey points array is empty %p!",pArray));
     return 0;
@@ -172,6 +190,7 @@ Int_t AliMUONSurveyObj::AddStickerTargets(TObjArray *pArray, TString stBaseName,
 }
 
 Int_t AliMUONSurveyObj::AddGButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax){
+  /// Add a maximum of lTargetMax global button targets with stBaseName from pArray 
   printf("%s \n",btBaseName.Data());
   if (!pArray) {
     AliError(Form("Survey points array is empty %p!",pArray));
@@ -209,6 +228,7 @@ Int_t AliMUONSurveyObj::AddGButtonTargets(TObjArray *pArray, TString btBaseName,
 }
 
 Int_t AliMUONSurveyObj::AddLButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax){
+  /// Add a maximum of lTargetMax local button targets with stBaseName from pArray 
   printf("%s \n",btBaseName.Data());
   if (!pArray) {
     AliError(Form("Local points array is empty %p!",pArray));
@@ -246,10 +266,12 @@ Int_t AliMUONSurveyObj::AddLButtonTargets(TObjArray *pArray, TString btBaseName,
 }
 
 Int_t AliMUONSurveyObj::GetNStickerTargets() {
+  /// return number of sticker targets
   return fSTargets->GetEntriesFast();
 }
 
 AliSurveyPoint* AliMUONSurveyObj::GetStickerTarget(Int_t stIndex){
+  /// return sticker target at stIndex
   if (stIndex<0||stIndex>=fSTargets->GetEntriesFast()) {
     AliError(Form("No sticker target at index %d",stIndex));
     return 0x0;
@@ -260,10 +282,12 @@ AliSurveyPoint* AliMUONSurveyObj::GetStickerTarget(Int_t stIndex){
 }
 
 Int_t AliMUONSurveyObj::GetNGButtonTargets() {
+  /// return number of global button targets
   return fGBTargets->GetEntriesFast();
 }
 
 AliSurveyPoint* AliMUONSurveyObj::GetGButtonTarget(Int_t btIndex){
+  /// return global button target at btIndex
   if (btIndex<0||btIndex>=fGBTargets->GetEntriesFast()) {
     AliError(Form("No surveyed button target at index %d",btIndex));
     return 0x0;
@@ -274,10 +298,12 @@ AliSurveyPoint* AliMUONSurveyObj::GetGButtonTarget(Int_t btIndex){
 }
 
 Int_t AliMUONSurveyObj::GetNLButtonTargets() {
+  /// return number of local button targets
   return fGBTargets->GetEntriesFast();
 }
 
 AliSurveyPoint* AliMUONSurveyObj::GetLButtonTarget(Int_t btIndex){
+  /// return local button target at btIndex
   if (btIndex<0||btIndex>=fLBTargets->GetEntriesFast()) {
     AliError(Form("No surveyed button target at index %d",btIndex));
     return 0x0;
@@ -298,14 +324,16 @@ AliSurveyPoint* AliMUONSurveyObj::GetLButtonTarget(Int_t btIndex){
 }
 
 void AliMUONSurveyObj::SetPlane(TString pName, Double_t xMin, Double_t xMax, Double_t yMin, Double_t yMax){
+  /// Set the plane function for the plane fitting
   if(fPlane) {
     fPlane->Delete();
     fPlane = 0x0;
   }
-  fPlane = new TF2(pName,this,&AliMUONSurveyObj::eqPlane,xMin,xMax,yMin,yMax,3,"AliMUONSurveyObj","eqPlane");
+  fPlane = new TF2(pName,this,&AliMUONSurveyObj::EqPlane,xMin,xMax,yMin,yMax,3,"AliMUONSurveyObj","EqPlane");
 }
 
 void AliMUONSurveyObj::SetPlaneParameters(Double_t p0, Double_t p1, Double_t p2) {
+  /// Set the parameters of plane function for the plane fitting
   if (!fPlane) {
     AliError("Must use SetPlane before SetPlaneParameters!!!");
   }
@@ -317,7 +345,7 @@ void AliMUONSurveyObj::SetPlaneParameters(Double_t p0, Double_t p1, Double_t p2)
 }
 
 void AliMUONSurveyObj::DrawSTargets() {
-    
+  /// Draw a graph of the sticker targets
   TGraph2DErrors *gST = new TGraph2DErrors(3);
   AliSurveyPoint *pST = 0x0;
   for (Int_t iPoint=0; iPoint<GetNStickerTargets(); iPoint++) {
@@ -332,6 +360,7 @@ void AliMUONSurveyObj::DrawSTargets() {
 }
 
 Double_t AliMUONSurveyObj::FitPlane() {
+  /// Fit plane to sticker targets
   if (!fPlane) {
     AliError("Must use SetPlane before FitPlane!!!");
     return 0.;
@@ -365,7 +394,7 @@ Double_t AliMUONSurveyObj::FitPlane() {
 }
 
 Double_t AliMUONSurveyObj::SurveyChi2(Double_t *par){
-
+  /// Returns the chisquare between local2global transform of local button targets and their surveyed position
   TGeoTranslation transTemp;
   TGeoRotation rotTemp;
   TGeoCombiTrans trfTemp;
@@ -425,11 +454,10 @@ Double_t AliMUONSurveyObj::SurveyChi2(Double_t *par){
 
 //_____________________________________________________________________________
 void SurveyFcn(int &npar, double *g, double &f, double *par, int iflag) {
-
-  // 
-  // Standard function as needed by Minuit-like minimization procedures. 
-  // For the set of parameters par calculates and returns chi-squared.
-  //
+  /// 
+  /// Standard function as needed by Minuit-like minimization procedures. 
+  /// For the set of parameters par calculates and returns chi-squared.
+  ///
 
   // smuggle a C++ object into a C function
   AliMUONSurveyObj *aSurveyObj = (AliMUONSurveyObj*) gMinuit->GetObjectFit(); 
@@ -443,7 +471,7 @@ void SurveyFcn(int &npar, double *g, double &f, double *par, int iflag) {
 
 //_____________________________________________________________________________
 Int_t AliMUONSurveyObj::SurveyToAlign(TGeoCombiTrans &quadTransf, Double_t *parErr, Double_t psi, Double_t tht, Double_t epsi, Double_t etht) {
-
+  /// Main function to obtain the misalignments from the surveyed position of the button targets; 
   if (fGBTargets->GetEntries()!=fLBTargets->GetEntries()){
     AliError(Form("Different number of button targets: %d survey points and %d local coord!",
 		  fGBTargets->GetEntries(),fLBTargets->GetEntries()));
@@ -502,7 +530,7 @@ Int_t AliMUONSurveyObj::SurveyToAlign(TGeoCombiTrans &quadTransf, Double_t *parE
 
 //_____________________________________________________________________________
 Int_t AliMUONSurveyObj::SurveyToAlign(Double_t psi, Double_t tht, Double_t epsi, Double_t etht) {
-
+  /// Main function to obtain the misalignments from the surveyed position of the button targets; 
   if (fGBTargets->GetEntries()!=fLBTargets->GetEntries()){
     AliError(Form("Different number of button targets: %d survey points and %d local coord!",
 		  fGBTargets->GetEntries(),fLBTargets->GetEntries()));
@@ -579,8 +607,8 @@ Int_t AliMUONSurveyObj::SurveyToAlign(Double_t psi, Double_t tht, Double_t epsi,
 
 }
 
-Double_t AliMUONSurveyObj::EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord) {
-
+Double_t AliMUONSurveyObj::EvalFunction(const TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord) {
+  /// Evaluate the given function at the given points for the given coordinate
   if (!lFunction) {
     AliError("No function given!!!");
     return 0;
@@ -641,7 +669,7 @@ Double_t AliMUONSurveyObj::EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, co
 }
 
 void AliMUONSurveyObj::CalculateTranslation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, Int_t iP1, Int_t iP2, Double_t *lCenTemp) {
-
+  /// Calculate the center translation using analytic functions
   lCenTemp[0] = EvalFunction(xFunc,iP1,iP2,"X");
   lCenTemp[1] = EvalFunction(yFunc,iP1,iP2,"Y");
   lCenTemp[2] = EvalFunction(zFunc,iP1,iP2,"Z");
@@ -649,7 +677,7 @@ void AliMUONSurveyObj::CalculateTranslation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, 
 }
 
 Double_t AliMUONSurveyObj::CalculateGlobalDiff(TGeoCombiTrans &lTransf, Int_t nPoints, TArrayD &lDiff){
-
+  /// By hand computation of distance between local2global transform of target position and its surveyed position
   if (nPoints > GetNGButtonTargets()) {
     nPoints = GetNGButtonTargets();
   }
@@ -710,7 +738,7 @@ Double_t AliMUONSurveyObj::CalculateGlobalDiff(TGeoCombiTrans &lTransf, Int_t nP
 }
 
 Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ, Double_t *lPTP) {
-
+  /// By hand calculation of the best local to global transform using 2 button targets
   Double_t lPsi = lPTP[0];
   Double_t lTht = lPTP[1];
 
@@ -931,7 +959,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
 }
 
 void AliMUONSurveyObj::CalculateMeanTransf(Double_t *lXYZ, Double_t *lPTP) {
-
+  /// By hand calculation of the mean (for nPairs of targets) of the best local to global transform using 2 button targets
     Double_t xce=0.;
     Double_t yce=0.;
     Double_t zce=0.;
@@ -964,18 +992,21 @@ void AliMUONSurveyObj::CalculateMeanTransf(Double_t *lXYZ, Double_t *lPTP) {
 }
 
 void AliMUONSurveyObj::PrintLocalTrf() {
+  /// Print the local transformation
   Double_t lRotTemp[3];
   AliMUONSurveyUtil::MatrixToAngles(fLocalTrf->GetRotationMatrix(),lRotTemp);
   printf("(%.3f %.3f %.3f), (%.6f %.6f %.6f)\n",fLocalTrf->GetTranslation()[0],fLocalTrf->GetTranslation()[1],fLocalTrf->GetTranslation()[2],lRotTemp[0],lRotTemp[1],lRotTemp[2]);
 }
 
 void AliMUONSurveyObj::PrintAlignTrf() {
+  /// Print the alignment transformation
   Double_t lRotTemp[3];
   AliMUONSurveyUtil::MatrixToAngles(fAlignTrf->GetRotationMatrix(),lRotTemp);
   printf("(%.3f %.3f %.3f), (%.6f %.6f %.6f)\n",fAlignTrf->GetTranslation()[0],fAlignTrf->GetTranslation()[1],fAlignTrf->GetTranslation()[2],lRotTemp[0],lRotTemp[1],lRotTemp[2]);
 }
 
 void AliMUONSurveyObj::FillSTHistograms(TString baseNameC, TH2 *hSTc, TString baseNameA, TH2 *hSTa) {
+  /// Fill sticker target histograms for monitoring
   if(baseNameC.IsNull()||!hSTc){
     AliError("Need base name for points on side C and/or a histogram for them!");
     return;
@@ -998,6 +1029,7 @@ void AliMUONSurveyObj::FillSTHistograms(TString baseNameC, TH2 *hSTc, TString ba
 }
 
 Double_t AliMUONSurveyObj::GetAlignResX() {
+  /// Returns the uncertainty of the x translation parameter 
   if(!fFitter) {
     AliError("There is no fitter for this object! X resolution will be 0.");
     return 0.;
@@ -1006,9 +1038,18 @@ Double_t AliMUONSurveyObj::GetAlignResX() {
 }
 
 Double_t AliMUONSurveyObj::GetAlignResY() {
+  /// Returns the uncertainty of the y translation parameter 
   if(!fFitter) {
     AliError("There is no fitter for this object! Y resolution will be 0.");
     return 0.;
   }
   return fFitter->GetParError(1);
+}
+
+AliSurveyPoint* AliMUONSurveyObj::ConvertPointUnits(AliSurveyPoint *stPoint, Float_t lFactor) {
+  /// Return the AliSurveyPoint with new units. Default is from mm -> cm 
+  return new AliSurveyPoint(stPoint->GetPointName(),
+			    lFactor*stPoint->GetX(),lFactor*stPoint->GetY(),lFactor*stPoint->GetZ(),
+			    lFactor*stPoint->GetPrecisionX(),lFactor*stPoint->GetPrecisionY(),lFactor*stPoint->GetPrecisionZ(),
+			    stPoint->GetType(), stPoint->GetTarget());
 }

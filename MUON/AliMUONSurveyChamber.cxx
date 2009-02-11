@@ -57,7 +57,7 @@ AliMUONSurveyChamber::~AliMUONSurveyChamber() {
 }
 
 Int_t AliMUONSurveyChamber::AddSurveyDetElem(Int_t lDetElemId) {
-  
+  /// Add a surveyed detection element to this chamber
   if (!fSurveyDetElem) {
     fSurveyDetElem = new TClonesArray("AliMUONSurveyDetElem",4);
     fNDetElem=0;
@@ -68,6 +68,7 @@ Int_t AliMUONSurveyChamber::AddSurveyDetElem(Int_t lDetElemId) {
 }
 
 AliMUONSurveyDetElem* AliMUONSurveyChamber::GetDetElem(Int_t lDetElemIndex) {
+  /// Return AluMUONSurveyDetElem at lDetElemIndex
   if (lDetElemIndex<0||(lDetElemIndex>=fNDetElem)) {
     return 0x0;
   }
@@ -81,6 +82,7 @@ Int_t AliMUONSurveyChamber::AddStickerTargets(TObjArray *pArray, TString stBaseN
 }
 
 Int_t AliMUONSurveyChamber::AddStickerTargets(TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from internal SurveyObj
   if (!fSurveyObj || !fSurveyObj->GetData()) {
     AliError("Survey data is missing!");
     return 0;    
@@ -93,6 +95,7 @@ Int_t AliMUONSurveyChamber::AddGButtonTargets(TObjArray *pArray, TString stBaseN
 }
 
 Int_t AliMUONSurveyChamber::AddGButtonTargets(TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax global button targets with stBaseName from internal SurveyObj
   if (!fSurveyObj || !fSurveyObj->GetData()) {
     AliError("Survey data is missing!");
     return 0;    
@@ -106,7 +109,7 @@ void AliMUONSurveyChamber::SetLocalTransformation(TGeoCombiTrans *localTrf, Bool
 }
 
 void AliMUONSurveyChamber::PrintSurveyReport() {
-
+  /// Print the survey report information and data
   printf("--> %d\n", fSurveyObj->GetEntries());
 
   printf("Title: \"%s\"\n", fSurveyObj->GetReportTitle().Data());
@@ -134,6 +137,7 @@ void AliMUONSurveyChamber::PrintSurveyReport() {
 }
 
 void AliMUONSurveyChamber::FillCPSTHistograms(TString baseNameC, TH2 *hCPSTc, TString baseNameA, TH2 *hCPSTa) {
+  /// Fill Chamber Plane Sticker Targest histograms for monitoring
   if(baseNameC.IsNull()||!hCPSTc){
     AliError("Need base name for points on side C and/or a histogram for them!");
     return;
@@ -142,12 +146,14 @@ void AliMUONSurveyChamber::FillCPSTHistograms(TString baseNameC, TH2 *hCPSTc, TS
 }
 
 void AliMUONSurveyChamber::FillDESTHistograms(TString baseNameC, TH2 *hDESTc, TString baseNameA, TH2 *hDESTa) {
+  /// Fill Detection Element Sticker Targest histograms for monitoring
   for (Int_t iDE=0; iDE<GetNDetElem(); iDE++){
     GetDetElem(iDE)->FillSTHistograms(baseNameC,hDESTc,baseNameA,hDESTa);
   }
 }
 
 Double_t AliMUONSurveyChamber::GetMeanDetElemAlignResX() {
+  /// Return the average uncertainty of the det. elem. translations along x parameter 
   Double_t alignResX = 0.;
   for (int iDE=0; iDE<GetNDetElem(); iDE++){
     alignResX += GetDetElem(iDE)->GetAlignResX();
@@ -160,6 +166,7 @@ Double_t AliMUONSurveyChamber::GetMeanDetElemAlignResX() {
 }
 
 Double_t AliMUONSurveyChamber::GetMeanDetElemAlignResY() {
+  /// Return the average uncertainty of the det. elem. translations along y parameter 
   Double_t alignResY = 0.;
   for (int iDE=0; iDE<GetNDetElem(); iDE++){
     alignResY += GetDetElem(iDE)->GetAlignResY();
