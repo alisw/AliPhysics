@@ -7,13 +7,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-TEveGeoShape* geom_gentle()
+TEveGeoShape* geom_gentle(Bool_t register_as_global=kTRUE)
 {
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
-  gEve->AddGlobalElement(gsre);
   f.Close();
+
+  if (register_as_global)
+  {
+    gEve->AddGlobalElement(gsre);
+  }
 
   return gsre;
 }

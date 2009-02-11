@@ -41,16 +41,21 @@ make_vertex_cross(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Flo
   v->GetXYZ(x); v->GetSigmaXYZ(e);
 
   TEveStraightLineSet* ls = new TEveStraightLineSet("Cross");
+  TString title;
   if (use_sigma)
   {
     e[0] *= fx; e[1] *= fy; e[2] *= fz;
-    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz));
+    title += Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz);
   }
   else
   {
     e[0] = fx; e[1] = fy; e[2] = fz;
-    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
+    title += Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz);
   }
+  title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
+		x[0], x[1], x[2], e[0], e[1], e[2]);
+  ls.SetTitle(title);
+
   ls->AddLine(e[0], 0,    0,   -e[0], 0,    0);
   ls->AddLine(0,    e[1], 0,    0,   -e[1], 0);
   ls->AddLine(0,    0,    e[2], 0,    0,   -e[2]);
@@ -66,16 +71,20 @@ make_vertex_ellipse(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, F
   v->GetXYZ(x); v->GetSigmaXYZ(e);
 
   TEveStraightLineSet* ls = new TEveStraightLineSet("Ellipse");
+  TString title;
   if (use_sigma)
   {
     e[0] *= fx; e[1] *= fy; e[2] *= fz;
-    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f sigma_z", fx, fy, fz));
+    title += Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f sigma_z", fx, fy, fz);
   }
   else
   {
     e[0] = fx; e[1] = fy; e[2] = fz;
-    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
+    title += Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz);
   }
+  title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
+		x[0], x[1], x[2], e[0], e[1], e[2]);
+  ls.SetTitle(title);
 
   const Int_t   N = 32;
   const Float_t S = 2*TMath::Pi()/N;
@@ -106,16 +115,21 @@ make_vertex_box(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Float
   v->GetXYZ(x); v->GetSigmaXYZ(e);
 
   TEveStraightLineSet* ls = new TEveStraightLineSet("Box");
+  TString title;
   if (use_sigma)
   {
     e[0] *= fx; e[1] *= fy; e[2] *= fz;
-    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz));
+    title += Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz);
   }
   else
   {
     e[0] = fx; e[1] = fy; e[2] = fz;
-    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
+    title += Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz);
   }
+  title += Form("\nx=%.5f, y=%.5f, z=%.5f\nsx=%.5f, sy=%.5f, sz=%.5f",
+		x[0], x[1], x[2], e[0], e[1], e[2]);
+  ls.SetTitle(title);
+
   // pos z
   ls->AddLine( e[0],  e[1],  e[2],  e[0], -e[1],  e[2]);
   ls->AddLine( e[0], -e[1],  e[2], -e[0], -e[1],  e[2]);
@@ -180,7 +194,7 @@ primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
-  if ( ! pv->GetStatus()) {
+  if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_tpc", "Primary vertex TPC not available.");
     return 0;
   }
@@ -235,7 +249,7 @@ primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
-  if ( ! pv->GetStatus()) {
+  if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_ellipse_tpc", "Primary vertex TPC not available.");
     return 0;
   }
@@ -290,7 +304,7 @@ primary_vertex_box_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
-  if ( ! pv->GetStatus()) {
+  if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_box_tpc", "Primary vertex TPC not available.");
     return 0;
   }

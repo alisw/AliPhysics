@@ -20,6 +20,9 @@
 
 #include <EveBase/AliEveEventManager.h>
 
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+
 #include <AliRunLoader.h>
 #include <AliCluster.h>
 #include <TPC/AliTPCClustersRow.h>
@@ -54,6 +57,21 @@ TEvePointSet* vplot_tpc(TEveElement* cont=0, Float_t maxR=270)
   const Int_t kMaxCl=100*160;
 
   AliEveEventManager::AssertGeometry();
+
+  Double_t pvert[3] = { 0, 0, 0 };
+  if (AliEveEventManager::HasESD())
+  {
+    AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+    const AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+    if (tpcv->GetStatus())
+      tpcv->GetXYZ(pvert);
+    else
+      Info("vplot_tpc", "Primary vertex TPC not available, using 0.");
+  }
+  else
+  {
+      Info("vplot_tpc", "ESD not available, using 0 for primary vertex.");
+  }
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TPC");
@@ -97,6 +115,9 @@ TEvePointSet* vplot_tpc(TEveElement* cont=0, Float_t maxR=270)
       AliCluster *c = (AliCluster*) cl->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
+      g[0] -= pvert[0];
+      g[1] -= pvert[1];
+      g[2] -= pvert[2];
       if (g[0]*g[0] + g[1]*g[1] < maxRsqr)
       {
         phi    =  TMath::ATan2(g[1], g[0]);
