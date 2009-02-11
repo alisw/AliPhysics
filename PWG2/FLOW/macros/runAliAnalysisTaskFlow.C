@@ -33,14 +33,14 @@
 //SETTING THE ANALYSIS
 
 //Flow analysis methods can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
+Bool_t SP    = kFALSE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kTRUE;
+Bool_t GFC   = kFALSE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kTRUE;
+Bool_t FQD   = kFALSE;
+Bool_t MCEP  = kFALSE;
 
 
 //Type of analysis can be:
@@ -78,9 +78,15 @@ const Int_t PDG2 = 211;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
+//WEIGHTS SETTINGS: 
+//to use or not to use the weights - that is a question!
+Bool_t usePhiWeights = kTRUE; //Phi
+Bool_t usePtWeights  = kFALSE; //v'(pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta)
+Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
 
-//void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
-void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
   TStopwatch timer;
@@ -430,6 +436,20 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
   
+  //weights: 
+  TFile *weightsFile = NULL;
+  TList *weightsList = NULL;
+  
+  if(useWeights)
+  {
+   //open the file with the weights:
+   weightsFile = TFile::Open("weights.root","READ");
+   if(weightsFile)
+   {
+    //access the list which holds the histos with weigths:
+    weightsList = (TList*)weightsFile->Get("weights");
+   }else{cout<<" WARNING: the file <weights.root> with weights from the previuos run was not accessed."<<endl;} 
+  }//end of if(useWeights)
   
   if (LYZ2){  
     // read the input file from the first run 
@@ -551,9 +571,12 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->AddTask(taskGFC);
   }
   if (QC){
-    if (QA) { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE);}
-    else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE);}
+    if (QA) { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE,useWeights);}
+    else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE,useWeights);}
     taskQC->SetAnalysisType(type);
+    taskQC->SetUsePhiWeights(usePhiWeights); 
+    taskQC->SetUsePtWeights(usePtWeights);
+    taskQC->SetUseEtaWeights(useEtaWeights); 
     taskQC->SetCFManager1(cfmgr1);
     taskQC->SetCFManager2(cfmgr2);
     if (QA) { 
@@ -586,9 +609,14 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   
   
   // Create containers for input/output
-  
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+    
+  //AliAnalysisDataContainer *cinputWeights = NULL;  
+  if(useWeights)
+  {    
+   cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
+  }  
   
   if (LYZ2){ 
     AliAnalysisDataContainer *cinputLYZ2 = 
@@ -809,6 +837,11 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
     mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
+    if(useWeights)
+    {
+     mgr->ConnectInput(taskQC,1,cinputWeights);
+     cinputWeights->SetData(weightsList);
+    } 
   }
   if (FQD)   { 
     mgr->ConnectInput(taskFQD,0,cinput1); 

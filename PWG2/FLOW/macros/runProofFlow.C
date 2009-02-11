@@ -30,17 +30,16 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 
-//RUN SETTINGS
-
+//RUN SETTINGS:
 //Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP    = kTRUE;
+Bool_t SP    = kFALSE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kFALSE;
+Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kFALSE;
+Bool_t MCEP  = kTRUE;
 
 //analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
@@ -48,33 +47,39 @@ const TString type = "ESD";
 //Bolean to fill/not fill the QA histograms
 Bool_t QA = kFALSE;   
 
-//SETTING THE CUTS
-
+//SETTING THE CUTS:
 //for integrated flow
 const Double_t ptmin1 = 0.0;
-const Double_t ptmax1 = 1000.0;
+const Double_t ptmax1 = 10.0;
 const Double_t ymin1  = -1.;
 const Double_t ymax1  = 1.;
 const Int_t mintrackrefsTPC1 = 2;
 const Int_t mintrackrefsITS1 = 3;
 const Int_t charge1 = 1;
-Bool_t UsePIDIntegratedFlow = kFALSE;
+Bool_t UsePIDIntegratedFlow = kTRUE;
 const Int_t PDG1 = 211;
 const Int_t minclustersTPC1 = 50;
 const Int_t maxnsigmatovertex1 = 3;
 
 //for differential flow
 const Double_t ptmin2 = 0.0;
-const Double_t ptmax2 = 1000.0;
+const Double_t ptmax2 = 10.0;
 const Double_t ymin2  = -1.;
 const Double_t ymax2  = 1.;
 const Int_t mintrackrefsTPC2 = 2;
 const Int_t mintrackrefsITS2 = 3;
 const Int_t charge2 = 1;
-Bool_t UsePIDDifferentialFlow = kFALSE;
+Bool_t UsePIDDifferentialFlow = kTRUE;
 const Int_t PDG2 = 211;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
+
+//WEIGHTS SETTINGS: 
+//to use or not to use the weights - that is a question!
+Bool_t usePhiWeights = kTRUE; //Phi
+Bool_t usePtWeights  = kFALSE; //v'(pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta)
+Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
 
 //ESD (pp)
 //void runProofFlow(const Char_t* data="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t nRuns=-1, Int_t offset=0) {
@@ -82,9 +87,9 @@ const Int_t maxnsigmatovertex2 = 3;
 
 
 //ESD (therminator)
-//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
+void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
 
-void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
+//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_central", Int_t nRuns=-1, Int_t offset=0) {
 
 
@@ -93,7 +98,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
 
 //AOD
 //void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
-//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=-1, Int_t offset=0) {
+//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0) {
 
   TStopwatch timer;
   timer.Start();
@@ -128,7 +133,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   gProof->EnablePackage("PWG2AOD");
   gProof->UploadPackage("CORRFW.par");
   gProof->EnablePackage("CORRFW");
-  //  gProof->ClearPackage("PWG2flow");
+  gProof->ClearPackage("PWG2flow");
   gProof->UploadPackage("PWG2flow.par");
   gProof->EnablePackage("PWG2flow");
   
@@ -447,11 +452,26 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
   
+  //weights: 
+  TFile *weightsFile = NULL;
+  TList *weightsList = NULL;
+
+  if(useWeights)
+  {
+   //open the file with the weights:
+   weightsFile = TFile::Open("weights.root","READ");
+   if(weightsFile)
+   {
+    //access the list which holds the histos with weigths:
+    weightsList = (TList*)weightsFile->Get("weights");
+   }else{cout<<" WARNING: the file <weights.root> with weights from the previuos run was not accessed."<<endl;} 
+  }//end of if(useWeights)
+
   if (LYZ2){  
     // read the input file from the first run 
     TString inputFileNameLYZ2 = "outputLYZ1analysis" ;
     inputFileNameLYZ2 += type;
-    inputFileNameLYZ2 += "_firstrun.root";
+    inputFileNameLYZ2 += ".root";
     cout<<"The input file is "<<inputFileNameLYZ2.Data()<<endl;
     TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
     if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
@@ -467,7 +487,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     // read the input file from the second LYZ run
     TString inputFileNameLYZEP = "outputLYZ2analysis" ;
     inputFileNameLYZEP += type;
-    inputFileNameLYZEP += "_secondrun.root";
+    inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
@@ -475,7 +495,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     else {
       TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
       if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
-    }kTRUE;
+    };
     cout<<"LYZEP input file/list read..."<<endl;
   }
   
@@ -503,7 +523,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     
     AliMCEventHandler *mc = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mc); }
-  
+
   //____________________________________________//
   // tasks
   if (SP){
@@ -566,9 +586,12 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     mgr->AddTask(taskGFC);
   }
   if (QC){
-    if (QA) { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE);}
-    else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE);}
+    if (QA) { AliAnalysisTaskQCumulants *taskQCtaskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE,useWeights);}
+    else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE,useWeights);}
     taskQC->SetAnalysisType(type);
+    taskQC->SetUsePhiWeights(usePhiWeights); 
+    taskQC->SetUsePtWeights(usePtWeights);
+    taskQC->SetUseEtaWeights(useEtaWeights);   
     taskQC->SetCFManager1(cfmgr1);
     taskQC->SetCFManager2(cfmgr2);
     if (QA) { 
@@ -598,11 +621,15 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
       taskMCEP->SetQAList2(qaDiffMCEP); }
     mgr->AddTask(taskMCEP);
   }
-  
-  
+ 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+
+  if(useWeights)
+  {    
+   AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
+  }
   
   if (LYZ2){ 
     AliAnalysisDataContainer *cinputLYZ2 = mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer); } 
@@ -619,14 +646,14 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   if(LYZ1) {
     TString outputLYZ1 = "outputLYZ1analysis";
     outputLYZ1+= type;
-    outputLYZ1+= "_firstrun.root";
+    outputLYZ1+= ".root";
     AliAnalysisDataContainer *coutputLYZ1 = mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
   }
   
   if(LYZ2) {
     TString outputLYZ2 = "outputLYZ2analysis";
     outputLYZ2+= type;
-    outputLYZ2+= "_secondrun.root";
+    outputLYZ2+= ".root";
     AliAnalysisDataContainer *coutputLYZ2 = mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
   }
   
@@ -664,8 +691,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     outputMCEP+= ".root";
     AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP);
   }
-  
-  
+   
   if (QA) { 
     if(SP) {
       TString qaNameIntSP = "QAforInt_SP_";
@@ -815,6 +841,12 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
     mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
+    if(useWeights)
+    {
+     mgr->ConnectInput(taskQC,1,cinputWeights);
+     cinputWeights->SetData(weightsList);
+    } 
+
   }
   if (FQD)   { 
     mgr->ConnectInput(taskFQD,0,cinput1); 

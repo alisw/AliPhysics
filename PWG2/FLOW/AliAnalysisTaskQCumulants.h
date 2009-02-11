@@ -32,7 +32,7 @@ class TFile;
 class AliAnalysisTaskQCumulants : public AliAnalysisTask{
  public:
   AliAnalysisTaskQCumulants();
-  AliAnalysisTaskQCumulants(const char *name, Bool_t QAon = kFALSE);
+  AliAnalysisTaskQCumulants(const char *name, Bool_t QAon = kFALSE, Bool_t useWeights=kFALSE);
   virtual ~AliAnalysisTaskQCumulants(){}; 
   
   virtual void   ConnectInputData(Option_t *);
@@ -53,6 +53,13 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTask{
   TList*        GetQAList2()              {return this->fQADiff; }
   void          SetQAOn(Bool_t kt)        {this->fQA = kt; }
   Bool_t        GetQAOn()                 {return this->fQA; }
+  
+  void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
+  Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
+  void SetUsePtWeights(Bool_t const uPtW) {this->fUsePtWeights = uPtW;};
+  Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
+  void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
+  Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
  
  private:
   AliAnalysisTaskQCumulants(const AliAnalysisTaskQCumulants& aatqc);
@@ -67,10 +74,16 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTask{
   AliCFManager* fCFManager2;              //correction framework manager
   TList  *fListHistos;                    //collection of output 
      
-  TList*        fQAInt;                   // QA histogram list
-  TList*        fQADiff;                  // QA histogram list
+  TList*       fQAInt;                    // QA histogram list
+  TList*       fQADiff;                   // QA histogram list
 
-  Bool_t fQA;                             // flag to set the filling of the QA hostograms  
+  Bool_t       fQA;                       // flag to set the filling of the QA hostograms 
+  
+  Bool_t       fUseWeights;               // use any weights
+  Bool_t       fUsePhiWeights;            // phi weights
+  Bool_t       fUsePtWeights;             // v_2(pt) weights
+  Bool_t       fUseEtaWeights;            // v_2(eta) weights  
+  TList*       fListWeights;              // list with weights
      
   ClassDef(AliAnalysisTaskQCumulants, 1); 
 };

@@ -173,7 +173,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
      {
       wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor(dEta/dBinWidthEta)))/dNormEta; 
      } 
-       
+   
      //building up the weighted Q-vector:       
      dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
      dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
