@@ -65,9 +65,9 @@ const char* AliMpDCSNamer::fgkDCSSideTrackerName[] = { "Left", "Right" };
 
 const char* AliMpDCSNamer::fgkDCSSwitchSt345Pattern = "MchDE%04dsw%d.inValue";
 
-const char* AliMpDCSNamer::fgkDCSChannelTriggerPattern[] = {"MTR_%3sSIDE_MT%2i_RPC%i_HV.%4s", "MTR_%2sSIDE_MT%2i_RPC%i_HV.%4s"};
+const char* AliMpDCSNamer::fgkDCSChannelTriggerPattern[] = {"MTR_%3sSIDE_MT%2i_RPC%i_HV.%s", "MTR_%2sSIDE_MT%2i_RPC%i_HV.%s"};
 const char* AliMpDCSNamer::fgkDCSSideTriggerName[] = { "OUT", "IN" };
-const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "imon", "vmon" };
+const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "actual.iMon", "vEff" };
 
 const char* AliMpDCSNamer::fgkDetectorName[] = { "TRACKER", "TRIGGER" };
 
@@ -476,7 +476,7 @@ AliMpDCSNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
   ///
   /// MchHvLv[Left|Right]/Chamber##[Left|Right]/Chamber##[Left|Right]Quad#Sect#.actual.vMon
   ///
-  /// MTR_Side[OUTSIDE|INSIDE]_MTChamber##_RPC#_HV_Type[imon|vmon]
+  /// MTR_Side[OUTSIDE|INSIDE]_MTChamber##_RPC#_HV.Type[actual.iMon|vEff]
   
   AliDebug(1,Form("dcsAlias=%s",dcsAlias));
   
@@ -497,7 +497,7 @@ AliMpDCSNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
   int n1(-1);
   int n3(-1);
   int n4(-1);
-  char type[10];
+  char type[15];
   char cside[4];
   int detElemId(-1);
   

@@ -281,18 +281,19 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 	    value = random.Gaus(1750,62.5);
 	    if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
 	  }
-	  else if(aliasName.Contains("imon")){
-	    value = random.Gaus(0.4,0.02);
+	  else if(aliasName.Contains("iMon")){
+	    value = random.Gaus(2.,0.4);
 	  }
 	  else {
-	    value = random.Gaus(8000,100);
+	    value = random.Gaus(8000.,16.);
 	  }
 	
 	  AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
 	  valueSet->Add(dcsValue);
 	}
 	if ( aliasName == "MchHvLvLeft/Chamber04Left/Slat06.actual.vMon" ) continue;
-	if ( aliasName == "MTR_INSIDE_MT22_RPC3_HV.vmon" ) continue;
+	if ( aliasName == "MTR_INSIDE_MT22_RPC3_HV.vEff" ) continue;
+	if ( aliasName == "MTR_OUTSIDE_MT21_RPC4_HV.actual.iMon" ) continue;
 	aliasMap->Add(new TObjString(*alias),valueSet);
       }
     } // loop on aliases

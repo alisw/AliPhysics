@@ -28,7 +28,7 @@ public:
 
   Bool_t SetDetector(const char* detName);
   
-  const char* DCSChannelName(Int_t detElemId, Int_t sector=0, Int_t DCSvariable=0) const;
+  const char* DCSChannelName(Int_t detElemId, Int_t sector=0, Int_t dcsMeasure=0) const;
   
   const char* DCSSwitchName(Int_t detElemId, Int_t pcbNumber) const;
 

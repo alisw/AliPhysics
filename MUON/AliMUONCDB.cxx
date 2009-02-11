@@ -405,14 +405,14 @@ AliMUONCDB::MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues)
     for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
     {
       Float_t value = 
-	(measureType == AliMpDCSNamer::kDCSI) ? 0.4 : 8000.;
+	(measureType == AliMpDCSNamer::kDCSI) ? 2. : 8000.;
       if (!defaultValues) {
 	switch (measureType){
 	case AliMpDCSNamer::kDCSI:
-	  value = GetRandom(0.4,0.02,true);
+	  value = GetRandom(2.,0.4,true);
 	  break;
 	case AliMpDCSNamer::kDCSHV:
-	  value = GetRandom(8000.,100.,true);
+	  value = GetRandom(8000.,16.,true);
 	  break;
 	}
       }

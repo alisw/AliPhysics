@@ -88,9 +88,9 @@ AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam
                                                const AliMUONGeometryTransformer& transformer,
                                                const AliMUONDigitMaker& digitMaker)
 : TObject(),
-fRecoParam(recoParam),
-fTransformer(transformer),
-fDigitMaker(digitMaker),
+fkRecoParam(recoParam),
+fkTransformer(transformer),
+fkDigitMaker(digitMaker),
 fDeltaZ(0.0),
 fTrigCovariance(0x0),
 fkMaxDistance(99999.)
@@ -144,7 +144,7 @@ void AliMUONTrackHitPattern::CheckConstants() const
 
 
 //______________________________________________________________________________
-void AliMUONTrackHitPattern::ExecuteValidation(AliMUONVTrackStore& trackStore,
+void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackStore,
 					       const AliMUONVTriggerTrackStore& triggerTrackStore,
 					       const AliMUONVTriggerStore& triggerStore) const
 {
@@ -431,7 +431,7 @@ AliMUONTrackHitPattern::TriggerDigits(const AliMUONVTriggerStore& triggerStore,
 //     }
     
     Int_t nBoard = locTrg->LoCircuit();
-    fDigitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
+    fkDigitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
   }
   return kTRUE;
 }
@@ -439,7 +439,7 @@ AliMUONTrackHitPattern::TriggerDigits(const AliMUONVTriggerStore& triggerStore,
 
 //______________________________________________________________________________
 void 
-AliMUONTrackHitPattern::FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
+AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
                                              const AliMUONTrackParam& trackParam,
                                              Bool_t isMatch[2], Int_t iChamber) const
 {
@@ -475,7 +475,7 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
       Float_t ylocal1 = pad.Position().Y();
       Float_t dpx = pad.Dimensions().X();
       Float_t dpy = pad.Dimensions().Y();
-      fTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
+      fkTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
       Float_t matchDist = MinDistanceFromPad(xpad, ypad, zpad, dpx, dpy, trackParam);
       if(matchDist>minMatchDist[cathode])continue;
       isMatch[cathode] = kTRUE;
@@ -522,7 +522,7 @@ AliMUONTrackHitPattern::MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t z
 
 
 //_____________________________________________________________________________
-Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(AliMUONVDigitStore& digitStore, Int_t &detElemId,
+Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digitStore, Int_t &detElemId,
 						  Float_t coor[2], Bool_t isMatch[2],
 						  TArrayI nboard[2], TArrayF &zRealMatch, Float_t y11) const
 {
@@ -575,7 +575,7 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(AliMUONVDigitStore& digitStore
 	Float_t ylocal1 = pad.Position().Y();
 	Float_t dpx = pad.Dimensions().X();
 	Float_t dpy = pad.Dimensions().Y();
-	fTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
+	fkTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
 	AliDebug(2, Form("\nDetElemId = %i  Cathode = %i  Pad = (%i,%i) = (%.2f,%.2f)  Dim = (%.2f,%.2f)  Track = (%.2f,%.2f)\n",currDetElemId,cathode,ix,iy,xpad,ypad,dpx,dpy,coor[0],coor[1]));
 	// searching track intersection with chambers (second approximation)
 	if(ch%2==1){
@@ -673,8 +673,8 @@ Int_t AliMUONTrackHitPattern::DetElemIdFromPos(Float_t x, Float_t y,
 	Float_t xlocal2 =  +deltax;
 	Float_t ylocal2 =  +deltay;
 	Float_t xg01, yg01, zg1, xg02, yg02, zg2;
-	fTransformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg01, yg01, zg1);
-	fTransformer.Local2Global(detElemId, xlocal2, ylocal2, 0, xg02, yg02, zg2);
+	fkTransformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg01, yg01, zg1);
+	fkTransformer.Local2Global(detElemId, xlocal2, ylocal2, 0, xg02, yg02, zg2);
 
 	Float_t xg1 = xg01, xg2 = xg02, yg1 = yg01, yg2 = yg02;
 
@@ -717,7 +717,7 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
 	localBoard[loc]=-1;
     }
     Float_t xl, yl, zl;
-    fTransformer.Global2Local(detElemId, x, y, 0, xl, yl, zl);
+    fkTransformer.Global2Local(detElemId, x, y, 0, xl, yl, zl);
     TVector2 pos(xl,yl);
     const AliMpVSegmentation* seg = 
 	AliMpSegmentation::Instance()
@@ -734,7 +734,7 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
 
 //_____________________________________________________________________________
 Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
-						     AliMUONTriggerTrack *matchedTrigTrack,
+						     const AliMUONTriggerTrack* matchedTrigTrack,
 						     AliMUONVDigitStore& digitStore) const
 {
   //

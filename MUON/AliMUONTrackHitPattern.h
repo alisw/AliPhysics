@@ -36,7 +36,7 @@ public:
                          const AliMUONDigitMaker& digitMaker);
   virtual ~AliMUONTrackHitPattern(); // Destructor
 
-  void ExecuteValidation(AliMUONVTrackStore& trackStore,
+  void ExecuteValidation(const AliMUONVTrackStore& trackStore,
 			 const AliMUONVTriggerTrackStore& triggerTrackStore,
 			 const AliMUONVTriggerStore& triggerStore) const;
   
@@ -63,7 +63,7 @@ protected:
   
 
   // Methods for hit pattern from tracker track
-  void FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
+  void FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
 			    const AliMUONTrackParam& trackParam,
 			    Bool_t isMatch[2], Int_t iChamber) const;
 
@@ -73,10 +73,10 @@ protected:
 
   // Methods for hit pattern from matched trigger track
   Bool_t PerformTrigTrackMatch(UShort_t &pattern,
-			       AliMUONTriggerTrack *matchedTrigTrack,
+			       const AliMUONTriggerTrack* matchedTrigTrack,
 			       AliMUONVDigitStore& digitStore) const;
   
-  Int_t FindPadMatchingTrig(AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
+  Int_t FindPadMatchingTrig(const AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
 			    Bool_t isMatch[2], TArrayI nboard[2],
 			    TArrayF &zRealMatch, Float_t y11) const;
   
@@ -88,7 +88,7 @@ protected:
   void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId,
 			 Int_t cathode, Int_t localBoard[4]) const;
 
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  const AliMUONRecoParam* GetRecoParam() const { return fkRecoParam; }
   
 private:
   /// Not implemented
@@ -98,9 +98,9 @@ private:
 
   void CheckConstants() const;
 
-  const AliMUONRecoParam* fRecoParam; //!< pointer to reco parameters
-  const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
-  const AliMUONDigitMaker& fDigitMaker; //!< pointer to digit maker
+  const AliMUONRecoParam* fkRecoParam; //!< pointer to reco parameters
+  const AliMUONGeometryTransformer& fkTransformer; //!< geometry transformer
+  const AliMUONDigitMaker& fkDigitMaker; //!< pointer to digit maker
 
   Double_t fDeltaZ; //!< distance between stations
 
