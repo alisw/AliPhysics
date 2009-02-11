@@ -64,7 +64,7 @@ ClassImp(AliAnalysisTaskQCumulants)
 
 //================================================================================================================
 
-AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t on): 
+AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t on, Bool_t useWeights): 
  AliAnalysisTask(name,""), 
  fESD(NULL),
  fAOD(NULL),
@@ -76,7 +76,12 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t on
  fListHistos(NULL),
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(on)
+ fQA(on),
+ fUseWeights(useWeights),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
  //constructor
  cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name)"<<endl;
@@ -85,6 +90,12 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t on
  // Input slot #0 works with a TChain
  DefineInput(0, TChain::Class());
   
+ // Input slot #1 is needed for the weights 
+ if(useWeights)
+ {
+  DefineInput(1, TList::Class());   
+ }
+        
  // Output slot #0 writes into a TList container
  DefineOutput(0, TList::Class());  
  if(on) 
@@ -92,6 +103,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t on
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class()); 
  }  
+ 
 }
 
 AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(): 
@@ -105,7 +117,12 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fListHistos(NULL),  
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(kFALSE)
+ fQA(kFALSE),
+ fUseWeights(kFALSE),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
  //dummy constructor
  cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()"<<endl;
@@ -189,7 +206,23 @@ void AliAnalysisTaskQCumulants::CreateOutputObjects()
  //analyser
  fQCA = new AliFlowAnalysisWithQCumulants();
  fQCA->Init();
-
+ 
+ //weights:
+ if(fUseWeights)
+ {
+  //pass the flags to class:
+  if(fUsePhiWeights) fQCA->SetUsePhiWeights(fUsePhiWeights);
+  if(fUsePtWeights) fQCA->SetUsePtWeights(fUsePtWeights);
+  if(fUseEtaWeights) fQCA->SetUseEtaWeights(fUseEtaWeights);
+  //get data from input slot #1 which is used for weights:
+  if(GetNinputs()==2) 
+  {                   
+   fListWeights = (TList*)GetInputData(1); 
+  }
+  //pass the list with weights to class:
+  if(fListWeights) fQCA->SetWeightsList(fListWeights);
+ }
+ 
  if(fQCA->GetHistList()) 
  {
   fListHistos = fQCA->GetHistList();
@@ -199,7 +232,7 @@ void AliAnalysisTaskQCumulants::CreateOutputObjects()
  {
   Printf("ERROR: Could not retrieve histogram list"); 
  }
- 
+
  //PostData(0,fListHistos);
  
 }
@@ -302,7 +335,7 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
   {
    PostData(1,fQAInt);
    PostData(2,fQADiff); 
-  }
+  }  
 }
 
 //================================================================================================================
@@ -312,7 +345,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
  //accessing the output list which contains the merged 2D and 3D profiles from all worker nodes
  fListHistos = (TList*)GetOutputData(0);
  //fListHistos->Print();
- 
+
  if(fListHistos)
  {	    
   //final results (integrated flow)

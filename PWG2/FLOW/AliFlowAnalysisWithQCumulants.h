@@ -168,13 +168,13 @@ class AliFlowAnalysisWithQCumulants{
   void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
   TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
   
-  void SetUsePhiWeights(Bool_t const) {this->fUsePhiWeights = kTRUE;};
+  void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
   
-  void SetUsePtWeights(Bool_t const) {this->fUsePtWeights = kTRUE;};
+  void SetUsePtWeights(Bool_t const uPtW) {this->fUsePtWeights = uPtW;};
   Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   
-  void SetUseEtaWeights(Bool_t const) {this->fUseEtaWeights = kTRUE;};
+  void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
 //----------------------------------------------------------------------------------------------------------------
  
