@@ -96,6 +96,9 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  CamHght()                                             { return fgkCamH;          }
   static  Float_t  CroHght()                                             { return fgkCroH;          }
   static  Float_t  CroWid()                                              { return fgkCroW;          }
+
+  static  Float_t  AnodePos()                                            { return fgkAnodePos;      }
+
   static  Float_t  MyThick()                                             { return fgkMyThick;       }
   static  Float_t  DrThick()                                             { return fgkDrThick;       }
   static  Float_t  AmThick()                                             { return fgkAmThick;       }
@@ -141,6 +144,8 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t  fgkCamH;                             //  Height of the amplification region of the chambers
   static const Float_t  fgkCroH;                             //  Height of the readout of the chambers
   static const Float_t  fgkCH;                               //  Total height of the chambers
+
+  static const Float_t  fgkAnodePos;                         //  Distance of anode wire plane relative to alignabl volume
 
   static const Float_t  fgkVspace;                           //  Vertical spacing of the chambers
   static const Float_t  fgkHspace;                           //  Horizontal spacing of the chambers
@@ -219,7 +224,7 @@ class AliTRDgeometry : public AliGeometry {
 
   Char_t                fSMstatus[kNsector];                 //  Super module status byte
 
-  ClassDef(AliTRDgeometry,20)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,21)                                //  TRD geometry class
 
 };
 #endif

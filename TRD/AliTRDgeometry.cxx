@@ -80,6 +80,12 @@ ClassImp(AliTRDgeometry)
                                               + AliTRDgeometry::fgkCamH
                                               + AliTRDgeometry::fgkCroH;  
 
+  // Distance of anode wire plane relative to middle of alignable volume
+  const Float_t  AliTRDgeometry::fgkAnodePos  = AliTRDgeometry::fgkCraH 
+                                              + AliTRDgeometry::fgkCdrH 
+                                              + AliTRDgeometry::fgkCamH/2.0
+                                              - 5.929;
+
   // Vertical spacing of the chambers
   const Float_t  AliTRDgeometry::fgkVspace    =   1.784;
   // Horizontal spacing of the chambers
