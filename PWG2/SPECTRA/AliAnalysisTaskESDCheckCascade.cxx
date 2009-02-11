@@ -48,6 +48,8 @@ class AliESDv0;
 #include "AliESDInputHandler.h"
 
 #include "AliESDEvent.h"
+//#include "AliCascadeVertexer.h"
+
 #include "AliESDcascade.h"
 
 #include "AliAnalysisTaskESDCheckCascade.h"
@@ -65,16 +67,14 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade()
 	// - Cascade part initialisation
     fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
+    fHistVtxStatus(0),
+
     fHistPosTrkgPrimaryVtxX(0), fHistPosTrkgPrimaryVtxY(0), fHistPosTrkgPrimaryVtxZ(0), fHistTrkgPrimaryVtxRadius(0),
-    fHistPosSPDPrimaryVtxX(0), fHistPosSPDPrimaryVtxY(0), fHistPosSPDPrimaryVtxZ(0), fHistSPDPrimaryVtxRadius(0),
-    f2dHistTrkgPrimVtxVsSPDPrimVtx(0),
+    fHistPosBestPrimaryVtxX(0), fHistPosBestPrimaryVtxY(0), fHistPosBestPrimaryVtxZ(0), fHistBestPrimaryVtxRadius(0),
+    f2dHistTrkgPrimVtxVsBestPrimVtx(0),
 
     fHistEffMassXi(0),  fHistChi2Xi(0),  
     fHistDcaXiDaughters(0), fHistDcaBachToPrimVertex(0), fHistXiCosineOfPointingAngle(0), fHistXiRadius(0),
-
-    fHistXiTransvMom(0),    fHistXiTotMom(0),
-    fHistBachTransvMom(0),   fHistBachTotMom(0),
-
 
     fHistMassLambdaAsCascDghter(0),
     fHistV0Chi2Xi(0),
@@ -85,7 +85,20 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade()
     fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
-    fHistMassOmegaMinus(0), fHistMassOmegaPlus(0)
+    fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+
+    fHistXiTransvMom(0),    fHistXiTotMom(0),
+    fHistBachTransvMom(0),   fHistBachTotMom(0),
+
+    fHistChargeXi(0),
+    fHistV0toXiCosineOfPointingAngle(0),
+
+    fHistRapXi(0), fHistRapOmega(0), fHistEta(0),
+    fHistTheta(0), fHistPhi(0),
+
+    f2dHistArmenteros(0),			
+    f2dHistEffMassXiVsEffMassLambda(0),
+    f2dHistXiRadiusVsEffMassXi(0)
 
 {
   // Dummy Constructor
@@ -107,16 +120,14 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade(const char *name)
     	// - Cascade part initialisation
     fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
+    fHistVtxStatus(0),
+
     fHistPosTrkgPrimaryVtxX(0), fHistPosTrkgPrimaryVtxY(0), fHistPosTrkgPrimaryVtxZ(0), fHistTrkgPrimaryVtxRadius(0),
-    fHistPosSPDPrimaryVtxX(0), fHistPosSPDPrimaryVtxY(0), fHistPosSPDPrimaryVtxZ(0), fHistSPDPrimaryVtxRadius(0),
-    f2dHistTrkgPrimVtxVsSPDPrimVtx(0),
+    fHistPosBestPrimaryVtxX(0), fHistPosBestPrimaryVtxY(0), fHistPosBestPrimaryVtxZ(0), fHistBestPrimaryVtxRadius(0),
+    f2dHistTrkgPrimVtxVsBestPrimVtx(0),
 
     fHistEffMassXi(0),  fHistChi2Xi(0),  
     fHistDcaXiDaughters(0), fHistDcaBachToPrimVertex(0), fHistXiCosineOfPointingAngle(0), fHistXiRadius(0),
-
-    fHistXiTransvMom(0),    fHistXiTotMom(0),
-    fHistBachTransvMom(0),   fHistBachTotMom(0),
-
 
     fHistMassLambdaAsCascDghter(0),
     fHistV0Chi2Xi(0),
@@ -127,7 +138,23 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade(const char *name)
     fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
-    fHistMassOmegaMinus(0), fHistMassOmegaPlus(0)
+    fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+
+    fHistXiTransvMom(0),    fHistXiTotMom(0),
+    fHistBachTransvMom(0),   fHistBachTotMom(0),
+
+    fHistChargeXi(0),
+    fHistV0toXiCosineOfPointingAngle(0),
+
+    fHistRapXi(0), fHistRapOmega(0), fHistEta(0),
+    fHistTheta(0), fHistPhi(0),
+
+    f2dHistArmenteros(0),			
+    f2dHistEffMassXiVsEffMassLambda(0),
+    f2dHistXiRadiusVsEffMassXi(0)
+
+
+
 {
   // Constructor
 
@@ -187,16 +214,24 @@ void AliAnalysisTaskESDCheckCascade::CreateOutputObjects()
 	// - General histos
   
 if(! fHistTrackMultiplicity) {
-	fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", "Track Multiplicity;Number of tracks;Events", 150, 0, 150);
+	fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", "Track Multiplicity;Nbr of tracks/Evt;Events", 200, 0, 200);
     	//  fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", "Multiplicity distribution;Number of tracks;Events", 200, 0, 40000); //HERE for Pb-Pb
 	fListHistCascade->Add(fHistTrackMultiplicity);
 }
 
 if(! fHistCascadeMultiplicity) {
-	fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", "Cascades per event;Number of Cascades;Events", 10, 0, 10);
+	fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", "Cascades per event;Nbr of Cascades/Evt;Events", 10, 0, 10);
 	//  fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", "Multiplicity distribution;Number of Cascades;Events", 200, 0, 4000); //HERE
 	fListHistCascade->Add(fHistCascadeMultiplicity);
 }
+
+
+
+if(! fHistVtxStatus ){
+	fHistVtxStatus   = new TH1F( "fHistVtxStatus" , "Does a Trckg Prim.vtx exist ?; true=1 or false=0; Nb of Events" , 4, -1.0, 3.0 );
+	fListHistCascade->Add(fHistVtxStatus);
+}
+
 
 
 
@@ -205,52 +240,52 @@ if(! fHistCascadeMultiplicity) {
 	// - Vertex Positions
   
 if(! fHistPosTrkgPrimaryVtxX ){
-	fHistPosTrkgPrimaryVtxX   = new TH1F( "fHistPosTrkgPrimaryVtxX" , "Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
+	fHistPosTrkgPrimaryVtxX   = new TH1F( "fHistPosTrkgPrimaryVtxX" , "Trkg Prim. Vertex Position in x; x (cm); Events" , 200, -0.5, 0.5 );
 	fListHistCascade->Add(fHistPosTrkgPrimaryVtxX);
 }
 
 
 if(! fHistPosTrkgPrimaryVtxY){
-	fHistPosTrkgPrimaryVtxY   = new TH1F( "fHistPosTrkgPrimaryVtxY" , "Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
+	fHistPosTrkgPrimaryVtxY   = new TH1F( "fHistPosTrkgPrimaryVtxY" , "Trkg Prim. Vertex Position in y; y (cm); Events" , 200, -0.5, 0.5 );
 	fListHistCascade->Add(fHistPosTrkgPrimaryVtxY);
 }
 
 if(! fHistPosTrkgPrimaryVtxZ ){
-	fHistPosTrkgPrimaryVtxZ   = new TH1F( "fHistPosTrkgPrimaryVtxZ" , "Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
+	fHistPosTrkgPrimaryVtxZ   = new TH1F( "fHistPosTrkgPrimaryVtxZ" , "Trkg Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
 	fListHistCascade->Add(fHistPosTrkgPrimaryVtxZ);
 }
 
 if(! fHistTrkgPrimaryVtxRadius ){
-	fHistTrkgPrimaryVtxRadius  = new TH1F( "fHistTrkgPrimaryVtxRadius",  "Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
+	fHistTrkgPrimaryVtxRadius  = new TH1F( "fHistTrkgPrimaryVtxRadius",  "Trkg Prim. Vertex radius; r (cm); Events" , 150, 0., 15.0 );
 	fListHistCascade->Add(fHistTrkgPrimaryVtxRadius);
 }
 
 
 
 
-if(! fHistPosSPDPrimaryVtxX ){
-	fHistPosSPDPrimaryVtxX   = new TH1F( "fHistPosSPDPrimaryVtxX" , "SPD Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
-	fListHistCascade->Add(fHistPosSPDPrimaryVtxX);
+if(! fHistPosBestPrimaryVtxX ){
+	fHistPosBestPrimaryVtxX   = new TH1F( "fHistPosBestPrimaryVtxX" , "Best Prim. Vertex Position in x; x (cm); Events" , 200, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosBestPrimaryVtxX);
 }
 
-if(! fHistPosSPDPrimaryVtxY){
-	fHistPosSPDPrimaryVtxY   = new TH1F( "fHistPosSPDPrimaryVtxY" , "SPD Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
-	fListHistCascade->Add(fHistPosSPDPrimaryVtxY);
+if(! fHistPosBestPrimaryVtxY){
+	fHistPosBestPrimaryVtxY   = new TH1F( "fHistPosBestPrimaryVtxY" , "Best Prim. Vertex Position in y; y (cm); Events" , 200, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosBestPrimaryVtxY);
 }
 
-if(! fHistPosSPDPrimaryVtxZ ){
-	fHistPosSPDPrimaryVtxZ   = new TH1F( "fHistPosSPDPrimaryVtxZ" , "SPD Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
-	fListHistCascade->Add(fHistPosSPDPrimaryVtxZ);
+if(! fHistPosBestPrimaryVtxZ ){
+	fHistPosBestPrimaryVtxZ   = new TH1F( "fHistPosBestPrimaryVtxZ" , "Best Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
+	fListHistCascade->Add(fHistPosBestPrimaryVtxZ);
 }
 
-if(! fHistSPDPrimaryVtxRadius ){
-	fHistSPDPrimaryVtxRadius  = new TH1F( "fHistSPDPrimaryVtxRadius",  "SPD Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
-	fListHistCascade->Add(fHistSPDPrimaryVtxRadius);
+if(! fHistBestPrimaryVtxRadius ){
+	fHistBestPrimaryVtxRadius  = new TH1F( "fHistBestPrimaryVtxRadius",  "Best Prim.  vertex radius; r (cm); Events" , 150, 0., 15.0 );
+	fListHistCascade->Add(fHistBestPrimaryVtxRadius);
 }
 
-if(! f2dHistTrkgPrimVtxVsSPDPrimVtx) {
-	f2dHistTrkgPrimVtxVsSPDPrimVtx = new TH2F( "f2dHistTrkgPrimVtxVsSPDPrimVtx", "r_{Trck Prim. Vtx} Vs r_{SPD Prim. Vtx}; r_{Track Vtx} (cm); r_{SPD Vtx} (cm)", 100, 0., 15.0, 100, 0., 15.);
-	fListHistCascade->Add(f2dHistTrkgPrimVtxVsSPDPrimVtx);
+if(! f2dHistTrkgPrimVtxVsBestPrimVtx) {
+	f2dHistTrkgPrimVtxVsBestPrimVtx = new TH2F( "f2dHistTrkgPrimVtxVsBestPrimVtx", "r_{Trck Prim. Vtx} Vs r_{Best Prim. Vtx}; r_{Track Vtx} (cm); r_{Best Vtx} (cm)", 300, 0., 15.0, 300, 0., 15.);
+	fListHistCascade->Add(f2dHistTrkgPrimVtxVsBestPrimVtx);
 }
 
 
@@ -275,7 +310,7 @@ if(! fHistDcaXiDaughters ){
 }
 
 if(! fHistDcaBachToPrimVertex) {
-	fHistDcaBachToPrimVertex = new TH1F("fHistDcaBachToPrimVertex", "DCA of Bach. to Prim. Vertex;DCA (cm);Number of Cascades", 100, 0., 0.25);
+	fHistDcaBachToPrimVertex = new TH1F("fHistDcaBachToPrimVertex", "DCA of Bach. to Prim. Vertex;DCA (cm);Number of Cascades", 250, 0., 0.25);
 	fListHistCascade->Add(fHistDcaBachToPrimVertex);
 }
 
@@ -288,32 +323,6 @@ if(! fHistXiRadius ){
 	fHistXiRadius  = new TH1F( "fHistXiRadius",  "Casc. decay transv. radius; r (cm); Counts" , 200, 0., 20.0 );
 	fListHistCascade->Add(fHistXiRadius);
 }
-
-
-
-if(! fHistXiTransvMom ){
-	fHistXiTransvMom  = new TH1F( "fHistXiTransvMom" , "Xi transverse momentum ; p_{t}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
-	fListHistCascade->Add(fHistXiTransvMom);
-}
-
-if(! fHistXiTotMom ){
-	fHistXiTotMom  = new TH1F( "fHistXiTotMom" , "Xi momentum norm; p_{tot}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
-	fListHistCascade->Add(fHistXiTotMom);
-}
-
-
-
-if(! fHistBachTransvMom ){
-	fHistBachTransvMom  = new TH1F( "fHistBachTransvMom" , "Bach. transverse momentum ; p_{t}(Bach.) (GeV/c); Counts", 50, 0.0, 2.5);
-	fListHistCascade->Add(fHistBachTransvMom);
-}
-
-if(! fHistBachTotMom ){
-	fHistBachTotMom  = new TH1F( "fHistBachTotMom" , "Bach. momentum norm; p_{tot}(Bach.) (GeV/c); Counts", 60, 0.0, 3.0);
-	fListHistCascade->Add(fHistBachTotMom);
-}
-
-
 
 
 // - Histos about ~ the "V0 part" of the cascade,  coming by inheritance from AliESDv0
@@ -376,14 +385,97 @@ if (! fHistMassXiPlus) {
 }
 
 if (! fHistMassOmegaMinus) {
-    fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.2,2.2);
     fListHistCascade->Add(fHistMassOmegaMinus);
 }
  
 if (! fHistMassOmegaPlus) {
-    fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts",250,1.2,2.2);
     fListHistCascade->Add(fHistMassOmegaPlus);
 }
+
+
+
+	// - Complements for QA
+
+if(! fHistXiTransvMom ){
+	fHistXiTransvMom  = new TH1F( "fHistXiTransvMom" , "Xi transverse momentum ; p_{t}(#Xi) (GeV/c); Counts", 100, 0.0, 10.0);
+	fListHistCascade->Add(fHistXiTransvMom);
+}
+
+if(! fHistXiTotMom ){
+	fHistXiTotMom  = new TH1F( "fHistXiTotMom" , "Xi momentum norm; p_{tot}(#Xi) (GeV/c); Counts", 150, 0.0, 15.0);
+	fListHistCascade->Add(fHistXiTotMom);
+}
+
+
+if(! fHistBachTransvMom ){
+	fHistBachTransvMom  = new TH1F( "fHistBachTransvMom" , "Bach. transverse momentum ; p_{t}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+	fListHistCascade->Add(fHistBachTransvMom);
+}
+
+if(! fHistBachTotMom ){
+	fHistBachTotMom  = new TH1F( "fHistBachTotMom" , "Bach. momentum norm; p_{tot}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+	fListHistCascade->Add(fHistBachTotMom);
+}
+
+
+if(! fHistChargeXi ){
+	fHistChargeXi  = new TH1F( "fHistChargeXi" , "Charge of casc. candidates ; Sign ; Counts", 5, -2.0, 3.0);
+	fListHistCascade->Add(fHistChargeXi);
+}
+
+
+if (! fHistV0toXiCosineOfPointingAngle) {
+	fHistV0toXiCosineOfPointingAngle = new TH1F("fHistV0toXiCosineOfPointingAngle", "Cos. of V0 Ptng Angl / Xi vtx ;Cos(V0 Point. Angl / Xi vtx); Counts", 100, 0.99, 1.0);
+	fListHistCascade->Add(fHistV0toXiCosineOfPointingAngle);
+}
+
+
+if(! fHistRapXi ){
+	fHistRapXi  = new TH1F( "fHistRapXi" , "Rapidity of Xi candidates ; y ; Counts", 200, -5.0, 5.0);
+	fListHistCascade->Add(fHistRapXi);
+}
+
+if(! fHistRapOmega ){
+	fHistRapOmega  = new TH1F( "fHistRapOmega" , "Rapidity of Omega candidates ; y ; Counts", 200, -5.0, 5.0);
+	fListHistCascade->Add(fHistRapOmega);
+}
+
+if(! fHistEta ){
+	fHistEta  = new TH1F( "fHistEta" , "Pseudo-rap. of casc. candidates ; #eta ; Counts", 120, -3.0, 3.0);
+	fListHistCascade->Add(fHistEta);
+}
+
+if(! fHistTheta ){
+	fHistTheta  = new TH1F( "fHistTheta" , "#theta of casc. candidates ; #theta (deg) ; Counts", 180, 0., 180.0);
+	fListHistCascade->Add(fHistTheta);
+}
+
+if(! fHistPhi ){
+	fHistPhi  = new TH1F( "fHistPhi" , "#phi of casc. candidates ; #phi (deg) ; Counts", 360, 0., 360.);
+	fListHistCascade->Add(fHistPhi);
+}
+
+
+if(! f2dHistArmenteros) {
+	f2dHistArmenteros = new TH2F( "f2dHistArmenteros", "#alpha_{Arm}(casc. cand.) Vs Pt_{Arm}(casc. cand.); #alpha_{Arm} ; Pt_{Arm} (GeV/c)", 140, -1.2, 1.2, 300, 0., 0.3);
+	fListHistCascade->Add(f2dHistArmenteros);
+}
+
+if(! f2dHistEffMassXiVsEffMassLambda) {
+	f2dHistEffMassXiVsEffMassLambda = new TH2F( "f2dHistEffMassXiVsEffMassLambda", "M_{#Xi^{-} candidates} Vs M_{#Lambda} ; M( #Lambda , #pi^{-} ) (GeV/c^{2}) ; Inv. M_{#Lambda^{0}} (GeV/c^{2})", 200, 1.2, 2.0, 300, 1.1,1.13);
+	fListHistCascade->Add(f2dHistEffMassXiVsEffMassLambda);
+}
+
+if(! f2dHistXiRadiusVsEffMassXi) {
+	f2dHistXiRadiusVsEffMassXi = new TH2F( "f2dHistXiRadiusVsEffMassXi", "Transv. R_{Xi Decay} Vs M_{#Xi^{-} candidates}; r_{Xi} (cm); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
+	fListHistCascade->Add(f2dHistXiRadiusVsEffMassXi);
+}
+
+
+
+
 
 
 
@@ -409,6 +501,16 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 
 
 
+//---------------------------------------------------
+//   fESD->ResetCascades();
+// 	AliCascadeVertexer CascVtxer;
+// 	CascVtxer.V0sTracks2CascadeVertices(fESD);
+//---------------------------------------------------
+
+
+
+
+
 
 
   // ---------------------------------------------------------------
@@ -423,6 +525,9 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	fHistCascadeMultiplicity->Fill( ncascades );
 
 
+
+
+	Short_t lStatusTrackingPrimVtx = -2;
   
   	// - 1st part of initialisation : variables needed to store AliESDCascade data members
 	Double_t lEffMassXi  = 0. ;
@@ -432,16 +537,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };
 	Double_t lXiRadius= 0. ;
 	
-	Double_t lXiMomX  = 0. ;	Double_t lXiMomY  = 0. ;	Double_t lXiMomZ   = 0. ;
-	Double_t lXiTransvMom  = 0. ;
-	Double_t lXiTotMom  = 0. ;
-	
-	Double_t lBachMomX  = 0. ;	Double_t lBachMomY  = 0. ;	Double_t lBachMomZ   = 0. ;
-	Double_t lBachTransvMom  = 0. ;
-	Double_t lBachTotMom  = 0. ;
-	
-	
-	
+		
 	// - 2nd part of initialisation : about V0 part in cascades
 
 	Double_t lInvMassLambdaAsCascDghter = 0.;
@@ -449,19 +545,35 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	Double_t lDcaV0DaughtersXi = 0.;
 	
 	Double_t lDcaBachToPrimVertexXi = 0. , lDcaV0ToPrimVertexXi = 0.;
-	Double_t lDcaPosToPrimVertexXi = 0 ;
-	Double_t lDcaNegToPrimVertexXi = 0;
-	Double_t lV0CosineOfPointingAngleXi = 0;
+	Double_t lDcaPosToPrimVertexXi = 0.;
+	Double_t lDcaNegToPrimVertexXi = 0.;
+	Double_t lV0CosineOfPointingAngleXi = 0. ;
 	Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
 	Double_t lV0RadiusXi = -1000.0;
 
 	
-	// - 3rd part of initialisation : extra tests
+	// - 3rd part of initialisation : Effective masses
   	Double_t lV0quality = 0.;
 		Double_t lInvMassXiMinus = 0.;
 		Double_t lInvMassXiPlus = 0.;
 		Double_t lInvMassOmegaMinus = 0.;
 		Double_t lInvMassOmegaPlus = 0.;
+
+
+	// - 4th part of initialisation : extra info for QA
+	Double_t lXiMomX  = 0.; 	Double_t lXiMomY  = 0.; 	Double_t lXiMomZ   = 0.;
+	Double_t lXiTransvMom  = 0. ;
+	Double_t lXiTotMom  = 0. ;
+	
+	Double_t lBachMomX  = 0.;	Double_t lBachMomY  = 0.;	Double_t lBachMomZ   = 0.;
+	Double_t lBachTransvMom  = 0.;
+	Double_t lBachTotMom  = 0.;
+
+	Short_t lChargeXi = -2;
+	Double_t lV0toXiCosineOfPointingAngle = 0. ;
+
+
+
 		
 	
 	
@@ -481,45 +593,36 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
       // cout << "Name of the file containing Xi candidate(s) :" <<  fesdH->GetTree()->GetCurrentFile()->GetName() << endl;
 	
 
-		// - II.Step 0 : Characteristics of the event : prim. Vtx + magentic field
+		// - II.Step 1 : Characteristics of the event : prim. Vtx + magnetic field
 		//-------------
-	const AliESDVertex *lPrimaryTrackingVtx = fESD->GetPrimaryVertex();  
+	const AliESDVertex *lPrimaryTrackingVtx = fESD->GetPrimaryVertexTracks();  
 		// get the vtx stored in ESD found with tracks
 	Double_t lTrkgPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
 		lPrimaryTrackingVtx->GetXYZ( lTrkgPrimaryVtxPos );
-		Double_t lTrkgPrimaryVtxRadius = TMath::Sqrt( lTrkgPrimaryVtxPos[0]*lTrkgPrimaryVtxPos[0] +
+		Double_t lTrkgPrimaryVtxRadius3D = TMath::Sqrt( lTrkgPrimaryVtxPos[0]*lTrkgPrimaryVtxPos[0] +
 						lTrkgPrimaryVtxPos[1] * lTrkgPrimaryVtxPos[1] +
 						lTrkgPrimaryVtxPos[2] * lTrkgPrimaryVtxPos[2] );
-									
-	const AliESDVertex *lPrimarySPDVtx = fESD->GetPrimaryVertexSPD();	
-		// get the vtx found by exclusive use of SPD
-	Double_t lSPDPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-		lPrimarySPDVtx->GetXYZ( lSPDPrimaryVtxPos );
-		Double_t lSPDPrimaryVtxRadius = TMath::Sqrt( lSPDPrimaryVtxPos[0]*lSPDPrimaryVtxPos[0] +
-						lSPDPrimaryVtxPos[1] * lSPDPrimaryVtxPos[1] +
-						lSPDPrimaryVtxPos[2] * lSPDPrimaryVtxPos[2] );
-	
-	// As done in AliCascadeVertexer, we keep, between both retrieved vertices, the one which is the best one available.
-	// This one will be used for next calculations (DCA essentially)
-		
-		Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-		if( lPrimaryTrackingVtx->GetStatus() ) { // if tracking vtx = ok
-			lBestPrimaryVtxPos[0] = lTrkgPrimaryVtxPos[0];
-			lBestPrimaryVtxPos[1] = lTrkgPrimaryVtxPos[1];
-			lBestPrimaryVtxPos[2] = lTrkgPrimaryVtxPos[2];
-		}
-		else{
-			lBestPrimaryVtxPos[0] = lSPDPrimaryVtxPos[0];
-			lBestPrimaryVtxPos[1] = lSPDPrimaryVtxPos[1];
-			lBestPrimaryVtxPos[2] = lSPDPrimaryVtxPos[2];
-		}
 
-		
+		lStatusTrackingPrimVtx = lPrimaryTrackingVtx->GetStatus();
+
+
+	const AliESDVertex *lPrimaryBestVtx = fESD->GetPrimaryVertex();	
+		// get the best primary vertex available for the event
+		// As done in AliCascadeVertexer, we keep the one which is the best one available.
+		// between SPD vertex and Tracking vertex.
+		// This one will be used for next calculations (DCA essentially)
+	Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
+		lPrimaryBestVtx->GetXYZ( lBestPrimaryVtxPos );
+		Double_t lBestPrimaryVtxRadius3D = TMath::Sqrt( lBestPrimaryVtxPos[0]*lBestPrimaryVtxPos[0] +
+						lBestPrimaryVtxPos[1] * lBestPrimaryVtxPos[1] +
+						lBestPrimaryVtxPos[2] * lBestPrimaryVtxPos[2] );
+	
+			
 	Double_t lMagneticField = fESD->GetMagneticField( );
 	
 	
 	
-		// - II.Step 1 : Assigning the necessary variables for specific AliESDcascade data members
+		// - II.Step 2 : Assigning the necessary variables for specific AliESDcascade data members
 		//-------------
 	lV0quality = 0.;
 	xi->ChangeMassHypothesis(lV0quality , 3312); // default working hypothesis : cascade = Xi- decay
@@ -533,20 +636,9 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] ); 
 		lXiRadius		= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
 		
-	xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
-		lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
-		lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
-		
-				
-		
-	xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
-		lBachTransvMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
-		lBachTotMom  		= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
 		
 
-	
-
-		// - II.Step 2 : around the tracks : Bach + V0 
+		// - II.Step 3 : around the tracks : Bach + V0 
 		// ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
 		//-------------
 		
@@ -563,14 +655,14 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 		continue;
 	}
 	
-	lInvMassLambdaAsCascDghter =	xi->GetEffMass();
+	lInvMassLambdaAsCascDghter	= xi->GetEffMass();
 		// This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
-	lDcaV0DaughtersXi =    	xi->GetDcaV0Daughters(); 
-	lV0Chi2Xi =    		xi->GetChi2V0();
+	lDcaV0DaughtersXi 		= xi->GetDcaV0Daughters(); 
+	lV0Chi2Xi 			= xi->GetChi2V0();
 	
-	lV0CosineOfPointingAngleXi = 	xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
-			// Maybe a pointing angle towards the Xi Vertex would also be appropriate
-	lDcaV0ToPrimVertexXi =	xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
+	lV0CosineOfPointingAngleXi 	= xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
+
+	lDcaV0ToPrimVertexXi 		= xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
 	
 	
 	
@@ -604,22 +696,84 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	
 		
 
+
+		// - II.Step 4 : around effective masses
+		// ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
+		//-------------
+
+	lV0quality = 0.;
+	xi->ChangeMassHypothesis(lV0quality , 3312); 	// Calculate the effective mass of the Xi- candidate. 
+							// pdg code 3312 = Xi-
+		if( bachTrackXi->Charge() < 0 )   	
+			lInvMassXiMinus = xi->GetEffMassXi();
+			
+	lV0quality = 0.;
+	xi->ChangeMassHypothesis(lV0quality , -3312); 	// Calculate the effective mass of the Xi+ candidate. 
+							// pdg code -3312 = Xi+
+		if( bachTrackXi->Charge() >  0 )
+			lInvMassXiPlus = xi->GetEffMassXi();
+			
+	lV0quality = 0.;
+	xi->ChangeMassHypothesis(lV0quality , 3334); 	// Calculate the effective mass of the Xi- candidate. 
+							// pdg code 3334 = Omega-
+		if( bachTrackXi->Charge() < 0 )
+			lInvMassOmegaMinus = xi->GetEffMassXi();
+		
+	lV0quality = 0.;
+	xi->ChangeMassHypothesis(lV0quality , -3334); 	// Calculate the effective mass of the Xi+ candidate. 
+							// pdg code -3334  = Omega+
+		if( bachTrackXi->Charge() >  0 )
+			lInvMassOmegaPlus = xi->GetEffMassXi();
+
+	lV0quality = 0.;
+	xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
+							
+
+
+		// - II.Step 5 : extra info for QA
+		// miscellaneous pieces onf info that may help regarding data quality assessment.
+		//-------------
+
+	xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+		lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+		lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
+		
+	xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
+		lBachTransvMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
+		lBachTotMom  		= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
+
+
+	lChargeXi = xi->Charge();
+
+	lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
+
+	// Double_t lRapXi, lRapOmega, lEta, lTheta, lPhi ;
+
+ 
+
+
+
   // -------------------------------------
   // III - Filling the TH1Fs
   
 
 		// - III.Step 1	
-		fHistPosTrkgPrimaryVtxX->Fill( lTrkgPrimaryVtxPos[0]  );
-		fHistPosTrkgPrimaryVtxY->Fill( lTrkgPrimaryVtxPos[1]  );	
-		fHistPosTrkgPrimaryVtxZ->Fill( lTrkgPrimaryVtxPos[2]  ); 
-		fHistTrkgPrimaryVtxRadius->Fill( lTrkgPrimaryVtxRadius );
+
+	 	fHistVtxStatus->Fill( lStatusTrackingPrimVtx );  // 1 if tracking vtx = ok
+
+		if( lStatusTrackingPrimVtx ){
+			fHistPosTrkgPrimaryVtxX->Fill( lTrkgPrimaryVtxPos[0]  );
+			fHistPosTrkgPrimaryVtxY->Fill( lTrkgPrimaryVtxPos[1]  );	
+			fHistPosTrkgPrimaryVtxZ->Fill( lTrkgPrimaryVtxPos[2]  ); 
+			fHistTrkgPrimaryVtxRadius->Fill( lTrkgPrimaryVtxRadius3D );
+		}
+
+		fHistPosBestPrimaryVtxX->Fill( lBestPrimaryVtxPos[0] );
+		fHistPosBestPrimaryVtxY->Fill( lBestPrimaryVtxPos[1] );	
+		fHistPosBestPrimaryVtxZ->Fill( lBestPrimaryVtxPos[2] ); 
+		fHistBestPrimaryVtxRadius->Fill( lBestPrimaryVtxRadius3D  );
 		
-		fHistPosSPDPrimaryVtxX->Fill( lSPDPrimaryVtxPos[0] );
-		fHistPosSPDPrimaryVtxY->Fill( lSPDPrimaryVtxPos[1] );	
-		fHistPosSPDPrimaryVtxZ->Fill( lSPDPrimaryVtxPos[2] ); 
-		fHistSPDPrimaryVtxRadius->Fill( lSPDPrimaryVtxRadius  );
-		
-		f2dHistTrkgPrimVtxVsSPDPrimVtx->Fill( lTrkgPrimaryVtxRadius, lSPDPrimaryVtxRadius );
+		f2dHistTrkgPrimVtxVsBestPrimVtx->Fill( lTrkgPrimaryVtxRadius3D, lBestPrimaryVtxRadius3D );
 
 			
 		// - III.Step 2
@@ -630,13 +784,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 		fHistXiCosineOfPointingAngle->Fill( lXiCosineOfPointingAngle ); // Flag CascadeVtxer: Cut Variable f
 		fHistXiRadius->Fill( lXiRadius );		// Flag CascadeVtxer: Cut Variable g+h
 		
-		fHistXiTransvMom->Fill( lXiTransvMom );
-		fHistXiTotMom->Fill( lXiTotMom );
 		
-		fHistBachTransvMom->Fill( lBachTransvMom );
-		fHistBachTotMom->Fill( lBachTotMom );
-		
-
 		// - III.Step 3
 		fHistMassLambdaAsCascDghter->Fill(  lInvMassLambdaAsCascDghter  ); // Flag CascadeVtxer: Cut Variable c
 		fHistV0Chi2Xi->Fill( lV0Chi2Xi  );	
@@ -644,50 +792,39 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 		fHistV0CosineOfPointingAngleXi->Fill( lV0CosineOfPointingAngleXi ); 
 		fHistV0RadiusXi->Fill( lV0RadiusXi );
 		
-		
 		fHistDcaV0ToPrimVertexXi->Fill( lDcaV0ToPrimVertexXi );	// Flag CascadeVtxer: Cut Variable b
 		fHistDcaPosToPrimVertexXi->Fill( lDcaPosToPrimVertexXi );
 		fHistDcaNegToPrimVertexXi->Fill( lDcaNegToPrimVertexXi );
-		
-
-		
+			
 	
 		// - III.Step 4
-       lV0quality = 0.;
-       xi->ChangeMassHypothesis(lV0quality , 3312); 	// Calculate the effective mass of the Xi- candidate. 
-							// pdg code 3312 = Xi-
-		if( bachTrackXi->Charge()  < 0 ){
-				lInvMassXiMinus = xi->GetEffMassXi();
-				fHistMassXiMinus->Fill( lInvMassXiMinus );
-		} // end if bachelor = negatively charged ( "Xi" = Xi-)
+		if( lChargeXi < 0 )	fHistMassXiMinus->Fill( lInvMassXiMinus );
+		if( lChargeXi > 0 )	fHistMassXiPlus->Fill( lInvMassXiPlus );
+		if( lChargeXi < 0 )	fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
+		if( lChargeXi > 0 )	fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );	
+
+
+		// - III.Step 5
+		fHistXiTransvMom->Fill( lXiTransvMom );
+		fHistXiTotMom->Fill( lXiTotMom );
+		
+		fHistBachTransvMom->Fill( lBachTransvMom );
+		fHistBachTotMom->Fill( lBachTotMom );
+
+		fHistChargeXi->Fill( lChargeXi );
+		fHistV0toXiCosineOfPointingAngle->Fill( lV0toXiCosineOfPointingAngle );
 	
-	
-       lV0quality = 0.;
-       xi->ChangeMassHypothesis(lV0quality , -3312); 	// Calculate the effective mass of the Xi+ candidate. 
-      							// pdg code -3312 = Xi+
-		if( bachTrackXi->Charge()  >  0 ){
-				lInvMassXiPlus = xi->GetEffMassXi();
-				fHistMassXiPlus->Fill( lInvMassXiPlus );			
-		} // end if bachelor = positively charged ( "Xi" = Xi+)
-	
-	
-	lV0quality = 0.;
-        xi->ChangeMassHypothesis(lV0quality , 3334); 	// Calculate the effective mass of the Xi- candidate. 
-							// pdg code 3334 = Omega-
-		if( bachTrackXi->Charge()  < 0 ){
-				lInvMassOmegaMinus = xi->GetEffMassXi();
-				fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
-		} // end if bachelor = negatively charged ( "Xi" = Omega-)
-	
-	
-	lV0quality = 0.;
-        xi->ChangeMassHypothesis(lV0quality , -3334); 	// Calculate the effective mass of the Xi+ candidate. 
-      							// pdg code -3334  = Omega+
-		if( bachTrackXi->Charge()  >  0 ){
-				lInvMassOmegaPlus = xi->GetEffMassXi();
-				fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );			
-		} // end if bachelor = positively charged ( "Xi" = Omega+)		
-			
+		fHistRapXi->Fill( xi->RapXi() );
+		fHistRapOmega->Fill( xi->RapOmega()  );
+		fHistEta->Fill( xi->Eta() );
+		fHistTheta->Fill( xi->Theta() *180.0/TMath::Pi() );
+		fHistPhi->Fill( xi->Phi() *180.0/TMath::Pi() );
+
+		f2dHistArmenteros->Fill( xi->AlphaXi(), xi->PtArmXi()  );
+		if( lChargeXi < 0 ) f2dHistEffMassXiVsEffMassLambda->Fill( lInvMassXiMinus, lInvMassLambdaAsCascDghter ); 
+		f2dHistXiRadiusVsEffMassXi->Fill( lXiRadius, lInvMassXiMinus );
+
+      
 
  
     }// This is the end of the Cascade loop
