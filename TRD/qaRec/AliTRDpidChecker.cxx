@@ -53,6 +53,12 @@ AliTRDpidChecker::AliTRDpidChecker()
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
 
+  // Initialize momentum axis with default values
+  Double_t defaultMomenta[AliTRDCalPID::kNMom];
+  for(Int_t imom = 0; imom < AliTRDCalPID::kNMom; imom++)
+    defaultMomenta[imom] = AliTRDCalPID::GetMomentum(imom);
+  SetMomentumBinning(AliTRDCalPID::kNMom - 1, defaultMomenta);
+
   fUtil = new AliTRDpidUtil();
   InitFunctorList();
 }
@@ -86,12 +92,6 @@ TObjArray * AliTRDpidChecker::Histos(){
   //
   if(fContainer) return fContainer;
 
-  if(!fMomentumAxis){
-    Double_t defaultMomenta[AliTRDCalPID::kNMom];
-    for(Int_t imom = 0; imom < AliTRDCalPID::kNMom; imom++)
-      defaultMomenta[imom] = AliTRDCalPID::GetMomentum(imom);
-    SetMomentumBinning(AliTRDCalPID::kNMom - 1, defaultMomenta);
-  }
   Int_t xBins = AliPID::kSPECIES*fMomentumAxis->GetNbins(); 
   fContainer = new TObjArray(); fContainer->Expand(7);
 
@@ -172,6 +172,7 @@ TObjArray * AliTRDpidChecker::Histos(){
 
   return fContainer;
 }
+
 
 //________________________________________________________________________
 Bool_t AliTRDpidChecker::CheckTrackQuality(const AliTRDtrackV1* track) 
@@ -760,7 +761,7 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     leg->SetHeader("PID Method");
     g->Draw("apl");
     ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("p [GeV/c]");
+    ax->SetTitle("p [GeV/c]");  
     //ax->SetRangeUser(.6, 10.5);
     ax->SetMoreLogLabels();
     ax = g->GetHistogram()->GetYaxis();
@@ -808,41 +809,33 @@ Bool_t AliTRDpidChecker::PostProcess()
 
 //________________________________________________________________________
 void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
-  TGraphErrors *g = 0x0;
   fUtil->SetElectronEfficiency(electron_efficiency);
 
+  Color_t colors[3] = {kBlue, kGreen, kRed};
+  Int_t markerStyle[3] = {7, 7, 24};
+  TString MethodName[3] = {"LQ", "NN", "ESD"};
   // efficiency graphs
-  TGraphErrors *gPtrEff[3], *gPtrThres[3];
+  TGraphErrors *g, *gPtrEff[3], *gPtrThres[3];
   TObjArray *eff = new TObjArray(3); eff->SetOwner(); eff->SetName("Efficiencies");
   results->AddAt(eff, 0);
-  eff->AddAt(gPtrEff[AliTRDpidUtil::kLQ] = new TGraphErrors(), AliTRDpidUtil::kLQ);
-  g->SetLineColor(kBlue);
-  g->SetMarkerColor(kBlue);
-  g->SetMarkerStyle(7);
-  eff->AddAt(gPtrEff[AliTRDpidUtil::kNN] = new TGraphErrors(), AliTRDpidUtil::kNN);
-  g->SetLineColor(kGreen);
-  g->SetMarkerColor(kGreen);
-  g->SetMarkerStyle(7);
-  eff -> AddAt(gPtrEff[AliTRDpidUtil::kESD] = new TGraphErrors(), AliTRDpidUtil::kESD);
-  g->SetLineColor(kRed);
-  g->SetMarkerColor(kRed);
-  g->SetMarkerStyle(24);
+  for(Int_t iMethod = 0; iMethod < 3; iMethod++){
+    eff->AddAt(g = gPtrEff[iMethod] = new TGraphErrors(), iMethod);
+    g->SetName(Form("efficiency_%s", MethodName[iMethod].Data()));
+    g->SetLineColor(colors[iMethod]);
+    g->SetMarkerColor(colors[iMethod]);
+    g->SetMarkerStyle(markerStyle[iMethod]);
+  }
 
   // Threshold graphs
   TObjArray *thres = new TObjArray(3); thres->SetOwner(); thres->SetName("Thresholds");
   results->AddAt(thres, 1);
-  thres->AddAt(gPtrThres[AliTRDpidUtil::kLQ] = new TGraphErrors(), AliTRDpidUtil::kLQ);
-  g->SetLineColor(kBlue);
-  g->SetMarkerColor(kBlue);
-  g->SetMarkerStyle(7);
-  thres->AddAt(gPtrThres[AliTRDpidUtil::kNN] = new TGraphErrors(), AliTRDpidUtil::kNN);
-  g->SetLineColor(kGreen);
-  g->SetMarkerColor(kGreen);
-  g->SetMarkerStyle(7);
-  thres -> AddAt(gPtrThres[AliTRDpidUtil::kESD] = new TGraphErrors(), AliTRDpidUtil::kESD);
-  g->SetLineColor(kRed);
-  g->SetMarkerColor(kRed);
-  g->SetMarkerStyle(24);
+  for(Int_t iMethod = 0; iMethod < 3; iMethod++){
+    thres->AddAt(g = gPtrThres[iMethod] = new TGraphErrors(), iMethod);
+    g->SetName(Form("threshold_%s", MethodName[iMethod].Data()));
+    g->SetLineColor(colors[iMethod]);
+    g->SetMarkerColor(colors[iMethod]);
+    g->SetMarkerStyle(markerStyle[iMethod]);
+  }
   
   Float_t mom = 0.;
   TH1D *Histo1=0x0, *Histo2=0x0;
@@ -851,7 +844,6 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
   hPtr[0] = (TH2F*)histoContainer->At(AliTRDpidUtil::kLQ);
   hPtr[1] = (TH2F*)histoContainer->At(AliTRDpidUtil::kNN);
   hPtr[2] = (TH2F*)histoContainer->At(AliTRDpidUtil::kESD);
-  TString MethodName[3] = {"LQ", "NN", "ESD"};
   
   for(Int_t iMom = 0; iMom < fMomentumAxis->GetNbins(); iMom++){
     mom = fMomentumAxis->GetBinCenter(iMom);
