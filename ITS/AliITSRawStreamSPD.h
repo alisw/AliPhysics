@@ -95,8 +95,9 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetFOHtriggers() const {return GetHtriggers();}
     Bool_t GetFOHchipPresent(UInt_t hs, UInt_t chip) const {return GetHchipPresent(hs,chip);}
     UInt_t GetFOHglobalDBversion() const {return fCalHeadWord[5];}
-    UInt_t GetFOHpixelCol() const {return fCalHeadWord[6] & 0x0000ffff;}
-    UInt_t GetFOHpixelRow() const {return (fCalHeadWord[6] >> 16) & 0x0000ffff;}
+    UInt_t GetFOHMatrixID() const {return fCalHeadWord[6] & 0x0000000f;}
+    UInt_t GetFOHpixelCol() const {return (fCalHeadWord[6] >> 20) & 0x0000001f;}
+    UInt_t GetFOHpixelRow() const {return (fCalHeadWord[6] >> 10) & 0x000000ff;}
     UInt_t GetFOHnumDacs() const;
     UInt_t GetFOHdacIndex(UInt_t index) const;
     UInt_t GetFOHdacValue(UInt_t index) const;
@@ -182,4 +183,3 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 };
 
 #endif
-
