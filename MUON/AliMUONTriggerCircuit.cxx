@@ -27,6 +27,7 @@
 
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONConstants.h"
+#include "AliMUONGeometryTransformer.h"
 
 #include "AliMpTrigger.h"
 #include "AliMpSlat.h"
@@ -37,6 +38,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpConstants.h"
+#include "AliMpPad.h"
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -51,8 +53,8 @@ ClassImp(AliMUONTriggerCircuit)
 //----------------------------------------------------------------------
 AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONGeometryTransformer* transformer)
     : TObject(),
-      fTransformer(transformer),
-      fCurrentSeg(0x0),
+      fkTransformer(transformer),
+      fkCurrentSeg(0x0),
       fCurrentDetElem(0x0),
       fCurrentLocalBoard(0x0)
 {
@@ -96,8 +98,8 @@ AliMUONTriggerCircuit::~AliMUONTriggerCircuit()
 //----------------------------------------------------------------------
 AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& circuit)
     :  TObject(circuit),
-       fTransformer(circuit.fTransformer), // do not copy, just pointed to
-       fCurrentSeg(circuit.fCurrentSeg),
+       fkTransformer(circuit.fkTransformer), // do not copy, just pointed to
+       fkCurrentSeg(circuit.fkCurrentSeg),
        fCurrentDetElem(circuit.fCurrentDetElem),
        fCurrentLocalBoard(circuit.fCurrentLocalBoard)
 {
@@ -117,8 +119,8 @@ AliMUONTriggerCircuit& AliMUONTriggerCircuit::operator=(const AliMUONTriggerCirc
 
   if (this == &circuit) return *this;
 
-  fTransformer       = circuit.fTransformer;
-  fCurrentSeg        = circuit.fCurrentSeg;
+  fkTransformer      = circuit.fkTransformer;
+  fkCurrentSeg       = circuit.fkCurrentSeg;
   fCurrentDetElem    = circuit.fCurrentDetElem;
   fCurrentLocalBoard = circuit.fCurrentLocalBoard;
 
@@ -133,7 +135,7 @@ AliMUONTriggerCircuit& AliMUONTriggerCircuit::operator=(const AliMUONTriggerCirc
 }
 
 //---------------------------------------------------------------------
-void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
+void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
 {
 /// fill fYpos11 and fYpos21 -> y position of X declusterized strips
   
@@ -152,7 +154,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
   ichamber = 10;
   fCurrentDetElem = AliMpDDLStore::Instance()->GetDEfromLocalBoard(fCurrentLocalBoard, ichamber);
 
-  fCurrentSeg = AliMpSegmentation::Instance()
+  fkCurrentSeg = AliMpSegmentation::Instance()
         ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
   Int_t iFirstStrip = FirstStrip(localBoard);
@@ -166,7 +168,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
   ichamber = 12;
   fCurrentDetElem = AliMpDDLStore::Instance()->GetDEfromLocalBoard(fCurrentLocalBoard, ichamber);
 
-  fCurrentSeg = AliMpSegmentation::Instance()
+  fkCurrentSeg = AliMpSegmentation::Instance()
         ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
   // second plane middle part
@@ -184,7 +186,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
     Int_t icolUp = icol;
 
     // check if we need to move to another detElemId
-    AliMpPad pad = fCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iLastStripMiddle+1),kFALSE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iLastStripMiddle+1),kFALSE);
 
     if (pad.IsValid()) { // upper strips within same detElemId
       iFirstStripUp = iLastStripMiddle;
@@ -194,7 +196,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
       fCurrentDetElem = AliMpDDLStore::Instance()->
 	           GetNextDEfromLocalBoard(fCurrentLocalBoard, ichamber);
 
-      fCurrentSeg = AliMpSegmentation::Instance()
+      fkCurrentSeg = AliMpSegmentation::Instance()
             ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
       iFirstStripUp = 0;
@@ -214,7 +216,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
   
   // restore current detElemId & segmentation
   fCurrentDetElem = AliMpDDLStore::Instance()->GetDEfromLocalBoard(fCurrentLocalBoard, ichamber);
-  fCurrentSeg = AliMpSegmentation::Instance()
+  fkCurrentSeg = AliMpSegmentation::Instance()
       ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
   // second plane lower part
@@ -224,7 +226,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
     Int_t icolDo = icol;
     
     // check if we need to move to another detElemId      
-    AliMpPad pad = fCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iFirstStripMiddle-1),kFALSE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iFirstStripMiddle-1),kFALSE);
     if (pad.IsValid()) { // lower strips within same detElemId
       iFirstStripDo = iFirstStripMiddle - 8;
       iLastStripDo  = iFirstStripDo + 8;	      
@@ -233,11 +235,11 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* localBoard)
       fCurrentDetElem = AliMpDDLStore::Instance()
 	  ->GetPreviousDEfromLocalBoard(fCurrentLocalBoard, ichamber);
 
-      fCurrentSeg = AliMpSegmentation::Instance()
+      fkCurrentSeg = AliMpSegmentation::Instance()
 	  ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
       // get iFirstStrip in this module 
-      const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fCurrentSeg);
+      const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fkCurrentSeg);
       const AliMpSlat* slat = t->GetLayer(0);
 
       if (iline == 5) icolDo = icol + 1; // special case
@@ -268,10 +270,10 @@ void AliMUONTriggerCircuit::FillXstrips(const Int_t icol,
   Double_t xyGlobal[2] = {0.};
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
-    AliMpPad pad = fCurrentSeg->PadByIndices(AliMpIntPair(icol-1,istrip),kTRUE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,istrip),kTRUE);
     if ( !pad.IsValid() ) {
       StdoutToAliError(cout << "Pad not found in seg " << endl;
-                       fCurrentSeg->Print();
+                       fkCurrentSeg->Print();
                        cout << " ix,iy=" << icol-1 << "," << istrip << endl;
                        );
     }
@@ -287,7 +289,7 @@ void AliMUONTriggerCircuit::FillXstrips(const Int_t icol,
 
 
 //----------------------------------------------------------------------
-void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* localBoard)
+void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* const localBoard)
 {
 /// fill fXpos11 -> x position of Y strips for the first plane only
 /// fXpos11 contains the x position of Y strip for the current circuit
@@ -315,7 +317,7 @@ void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* localBoard)
 
   fCurrentDetElem = AliMpDDLStore::Instance()->GetDEfromLocalBoard(fCurrentLocalBoard, ichamber);
 
-  fCurrentSeg = AliMpSegmentation::Instance()
+  fkCurrentSeg = AliMpSegmentation::Instance()
         ->GetMpSegmentation(fCurrentDetElem, AliMp::GetCathodType(icathode));  
 
   // check if one needs a strip doubling or not
@@ -326,7 +328,7 @@ void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* localBoard)
   if (zeroAllYLSB) iStripCircuit = 8;
   
   // get iFirstStrip in this module 
-  const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fCurrentSeg);
+  const AliMpTrigger* t = AliMpSegmentation::Instance()->GetTrigger(fkCurrentSeg);
   const AliMpSlat* slat = t->GetLayer(0);
   
   const AliMpPCB* pcb = slat->GetPCB(icol-1);
@@ -349,12 +351,12 @@ void AliMUONTriggerCircuit::FillYstrips(const Int_t iFirstStrip, const Int_t iLa
 
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
-    AliMpPad pad = fCurrentSeg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
 
     if ( !pad.IsValid() )
     {
 	StdoutToAliError(cout << "Pad not found in seg " << endl;
-			 fCurrentSeg->Print();
+			 fkCurrentSeg->Print();
 			 cout << " ix,iy=" << istrip << "," << 0 << endl;
 			 );
     }
@@ -391,7 +393,7 @@ void AliMUONTriggerCircuit::XYGlobal(const AliMpPad& pad,
   Double_t zg1 = 0;
   
   // positions from local to global 
-  fTransformer->Local2Global(fCurrentDetElem, xl1, yl1, 0, 
+  fkTransformer->Local2Global(fCurrentDetElem, xl1, yl1, 0, 
                                  xyGlobal[0], xyGlobal[1], zg1);
 }
 

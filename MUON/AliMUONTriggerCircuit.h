@@ -15,11 +15,10 @@
 #include <TObject.h>
 #include <TArrayF.h>
 
-#include "AliMpPad.h"
-#include "AliMpVSegmentation.h"
-#include "AliMUONGeometryTransformer.h"
-
 class AliMpLocalBoard;
+class AliMUONGeometryTransformer;
+class AliMpPad;
+class AliMpVSegmentation;
 
 class AliMUONTriggerCircuit : public TObject 
 {
@@ -41,15 +40,15 @@ public:
   //  void dump(const char* what, const Int_t* array, Int_t size);
   
   /// Set pointer to transformations
-  void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
+  void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fkTransformer = transformer;}
   /// Get pointer to transformations
-  const AliMUONGeometryTransformer* GetTransformer() const {return fTransformer;}
+  const AliMUONGeometryTransformer* GetTransformer() const {return fkTransformer;}
   Float_t PtCal(Int_t localBoardId, Int_t istripX, Int_t idev, Int_t istripY) const;
   
 private:
 
-  void LoadYPos(AliMpLocalBoard* localBoard);
-  void LoadXPos(AliMpLocalBoard* localBoard);
+  void LoadYPos(AliMpLocalBoard* const localBoard);
+  void LoadXPos(AliMpLocalBoard* const localBoard);
 
   Int_t FirstStrip(AliMpLocalBoard* localBoard);
 
@@ -70,8 +69,8 @@ private:
   TArrayF fYpos11[235];         ///< Y position of X strips in MC11
   TArrayF fYpos21[235];         ///< Y position of X strips in MC21
 
-  const AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
-  const AliMpVSegmentation* fCurrentSeg;          //!< current segmentation
+  const AliMUONGeometryTransformer* fkTransformer; //!< pointer to transformation
+  const AliMpVSegmentation* fkCurrentSeg;          //!< current segmentation
 
   Int_t fCurrentDetElem;                          //!< current detection elt id
   Int_t fCurrentLocalBoard;                       //!< current local board id
