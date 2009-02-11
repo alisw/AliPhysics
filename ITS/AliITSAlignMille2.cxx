@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSAlignMille.cxx 25025 2008-04-09 20:50:08Z masera $ */
+/* $Id$ */
 
 //-----------------------------------------------------------------------------
 /// \class AliITSAlignMille
@@ -352,20 +352,18 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile) {
   //
   // reorder the modules in such a way that parents come first
   for (int icld=0;icld<nmod;icld++) {
-    AliITSAlignMille2Module* child = GetMilleModule(icld);
-    if (!child->GetParent()) continue;
-    //
-    for (int icld=0;icld<nmod;icld++) {
-      AliITSAlignMille2Module* child = GetMilleModule(icld);
-      AliITSAlignMille2Module* parent = child->GetParent();
-      if (!parent || parent->GetUniqueID()<child->GetUniqueID()) continue;
+    AliITSAlignMille2Module* child  = GetMilleModule(icld);
+    AliITSAlignMille2Module* parent; 
+    while ( (parent=child->GetParent()) &&  (parent->GetUniqueID()<child->GetUniqueID()) ) {
       // swap
       fMilleModule[icld] = parent;
       fMilleModule[parent->GetUniqueID()] = child;
       child->SetUniqueID(parent->GetUniqueID());
       parent->SetUniqueID(icld);
+      child = parent;
     }
-  }
+    //
+  } 
   //
   // go over the child->parent chain and mark modules with explicitly provided sensors
   for (int icld=nmod;icld--;) {
@@ -1839,4 +1837,3 @@ void AliITSAlignMille2::ConstrainLinComb(const Int_t *vidLst, const Float_t *wgh
   AliInfo(Form("Constrained %d params for linerar combination of %d  modules",npc,nModules));
   //
 }
-

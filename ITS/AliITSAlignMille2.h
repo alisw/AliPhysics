@@ -3,6 +3,7 @@
 /* Copyright(c) 2007-2009 , ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                                */
 
+/* $Id$ */
 
 /// \ingroup rec
 /// \class AliITSAlignMille2
@@ -135,7 +136,7 @@ class AliITSAlignMille2: public TObject
   Int_t     GetCurrentModuleIndex()         const {return fCurrentModule ? fCurrentModule->GetIndex():-1;}
   TGeoHMatrix *GetCurrentModuleHMatrix()    const {return fCurrentModule ? fCurrentModule->GetMatrix():0;}
   Double_t *GetCurrentModuleTranslation()   const {return fCurrentModule ? fCurrentModule->GetMatrix()->GetTranslation():0;}
-  Int_t     GetCurrentModuleInternalIndex() const {return fCurrentModule ? fCurrentModule->GetUniqueID():-1;}
+  Int_t     GetCurrentModuleInternalIndex() const {return fCurrentModule ? static_cast<Int_t>(fCurrentModule->GetUniqueID()):-1;}
   Int_t     GetTotBadLocEqPoints()          const {return fTotBadLocEqPoints;}
   //
   AliITSAlignMille2Module*  GetMilleModuleByVID(UShort_t voluid) const; // get pointer to the defined supermodule
