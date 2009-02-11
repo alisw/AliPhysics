@@ -46,7 +46,10 @@ class AliFlowAnalysisWithQCumulants{
 //----------------------------------------------------------------------------------------------------------------
 //                                            setters and getters                                                 
 //----------------------------------------------------------------------------------------------------------------
-  TList* GetHistList() const {return this->fHistList;} //output histogram list
+  TList* GetHistList() const {return this->fHistList;} 
+  
+  void SetWeightsList(TList* wlist) {this->fWeightsList = wlist;}
+  TList* GetWeightsList() const {return this->fWeightsList;}   
  
   void SetIntFlowResults(TH1D* const ifr) {this->fIntFlowResultsQC = ifr;};
   TH1D* GetIntFlowResults() const {return this->fIntFlowResultsQC;};
@@ -116,7 +119,7 @@ class AliFlowAnalysisWithQCumulants{
   
   void SetFour1n1n1n1nPerPtBinRP(TProfile* const pb4PerPtBin1n1n1n1nRP) {this->f4PerPtBin1n1n1n1nRP = pb4PerPtBin1n1n1n1nRP;};
   TProfile* GetFour1n1n1n1nPerPtBinRP() const {return this->f4PerPtBin1n1n1n1nRP;}; 
-  
+
   void SetTwo1n1nPerEtaBinRP(TProfile* const pb2PerEtaBin1n1nRP) {this->f2PerEtaBin1n1nRP = pb2PerEtaBin1n1nRP;};
   TProfile* GetTwo1n1nPerEtaBinRP() const {return this->f2PerEtaBin1n1nRP;};
   
@@ -165,14 +168,14 @@ class AliFlowAnalysisWithQCumulants{
   void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
   TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
   
-  void SetPhiWeights(TH1F const phiW) { this->fPhiWeights = phiW; this->fUsePhiWeights = kTRUE;};
-  TH1F GetPhiWeights() const { return this->fPhiWeights;};
+  void SetUsePhiWeights(Bool_t const) {this->fUsePhiWeights = kTRUE;};
+  Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
   
-  void SetPtWeights(TH1D const ptW) { this->fPtWeights = ptW; ; this->fUsePtWeights = kTRUE;};
-  TH1D GetPtWeights() const { return this->fPtWeights;};
+  void SetUsePtWeights(Bool_t const) {this->fUsePtWeights = kTRUE;};
+  Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   
-  void SetEtaWeights(TH1D const etaW) { this->fEtaWeights = etaW; ; this->fUseEtaWeights = kTRUE;};
-  TH1D GetEtaWeights() const { return this->fEtaWeights;};
+  void SetUseEtaWeights(Bool_t const) {this->fUseEtaWeights = kTRUE;};
+  Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -181,6 +184,8 @@ class AliFlowAnalysisWithQCumulants{
   
   AliFlowTrackSimple* fTrack;                           //track
   TList*              fHistList;                        //list to hold all output histograms
+  TList*              fWeightsList;                     //list to hold all histograms with weights
+    
   TProfile*           fAvMultIntFlowQC;                 //average selected multiplicity (for int. flow)
  
   TProfile*           fQvectorComponents;               //averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, ...)
@@ -281,13 +286,10 @@ class AliFlowAnalysisWithQCumulants{
   Double_t                   fEtaMax;                   //maximum eta
   Int_t                      fEventCounter;             //counting the number of events    
    
-  Bool_t                     fUsePhiWeights;            // phi weights
-  Bool_t                     fUsePtWeights;             // v_2(pt) weights
-  Bool_t                     fUseEtaWeights;            // v_2(eta) weights
-  TH1F                       fPhiWeights;               // histogram with phi weights
-  TH1D                       fPtWeights;                // histogram with v_2(pt) weights   
-  TH1D                       fEtaWeights;               // histogram with v_2(eta) weights    
-                        
+  Bool_t                     fUsePhiWeights;            //phi weights
+  Bool_t                     fUsePtWeights;             //v_2(pt) weights
+  Bool_t                     fUseEtaWeights;            //v_2(eta) weights
+                     
   ClassDef(AliFlowAnalysisWithQCumulants, 0);
 };
 

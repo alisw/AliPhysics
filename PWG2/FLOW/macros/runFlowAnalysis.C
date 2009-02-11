@@ -3,21 +3,21 @@
 #include "Riostream.h"
 #include "TFile.h"
 
-//----------------------------------------------------------
-//RUN SETTINGS
+//--------------------------------------------------------------------------------------
+// RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kTRUE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;  
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
-//----------------------------------------------------------
+//--------------------------------------------------------------------------------------
 
-//----------------------------------------------------------
-//CUT SETTINGS
+//--------------------------------------------------------------------------------------
+// CUT SETTINGS
 //integrated selection
 Double_t ptMaxInt  = 10.;
 Double_t ptMinInt  = 0.;
@@ -35,15 +35,15 @@ Double_t etaMinDiff = -1.;
 Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
-//----------------------------------------------------------
+//--------------------------------------------------------------------------------------
 
-//----------------------------------------------------------
-//WEIGHTS SETTINGS 
+//--------------------------------------------------------------------------------------
+// WEIGHTS SETTINGS 
 //to use or not to use the weights - that is a question!
-Bool_t useWeightsPhi = kFALSE;//Phi
-Bool_t useWeightsPt  = kFALSE;//v'(pt)
-Bool_t useWeightsEta = kFALSE;//v'(eta)
-//----------------------------------------------------------
+Bool_t usePhiWeights = kFALSE; //Phi (correction for non-uniform azimuthal acceptance)
+Bool_t usePtWeights  = kFALSE; //v'(pt) (differential flow in pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
+//--------------------------------------------------------------------------------------
 
 Int_t offset = 0;
                                           
@@ -76,22 +76,7 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   
   // flow event in AliRoot
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
-  
-  /*   
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //                       !!!! to be removed
-  // if weights are being used initialize the weight's histos in AliFlowEvenSimpleMaker:
-  fEventMaker->SetUseWeightsPhi(useWeightsPhi);
-  fEventMaker->SetUseWeightsPt(useWeightsPt);
-  fEventMaker->SetUseWeightsEta(useWeightsEta);
-  if(useWeightsPhi||useWeightsPt||useWeightsEta)
-  {
-   fEventMaker->Init(file);
-  }
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  */  
-  
-  
+   
   // In root
 
   /*    
@@ -111,7 +96,7 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   // output histosgrams
   gROOT->LoadMacro("code/AliFlowCommonHist.cxx+");
   gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");fPhiWeights
+  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
   gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");
 
   // functions needed for various methods
@@ -163,19 +148,17 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   cutsDiff->SetPhiMin(phiMinDiff);
   cutsDiff->SetPID(PIDDiff);
 
-  //weights:
-  //open the file with the weights: 
-  TFile *file = NULL;
-  TH1F *phiWeights = NULL;
-  TH1D *ptWeights = NULL;
-  TH1D *etaWeights = NULL;
+  //if the weights are used: 
+  TFile *fileWithWeights = NULL;
+  TList *listWithWeights = NULL;
   
-  if(useWeightsPhi||useWeightsPt||useWeightsEta)
+  if(usePhiWeights||usePtWeights||useEtaWeights)
   {
-   file = TFile::Open("weightsForTheSecondRun.root", "READ");
-   if(useWeightsPhi) file->GetObject("phi_weights",phiWeights); 
-   if(useWeightsPt) file->GetObject("pt_weights",ptWeights); 
-   if(useWeightsEta) file->GetObject("eta_weights",etaWeights);    
+   fileWithWeights = TFile::Open("weights.root","READ");
+   if(fileWithWeights)
+   {
+    listWithWeights = (TList*)fileWithWeights->Get("weights");
+   }else{cout<<" WARNING: the file <weights.root> with weights from the previous run was not accessed."<<endl;}    
   }
 
   //flow methods:  
@@ -198,9 +181,10 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   if(QC) { 
     AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
     qc->Init();
-    if(useWeightsPhi) qc->SetPhiWeights(*phiWeights);
-    if(useWeightsPt) qc->SetPtWeights(*ptWeights);
-    if(useWeightsEta) qc->SetEtaWeights(*etaWeights);    
+    if(listWithWeights) qc->SetWeightsList(listWithWeights);
+    if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
+    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
+    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
   }
   
   //GFC = Generating Function Cumulants 

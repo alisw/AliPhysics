@@ -68,6 +68,7 @@ ClassImp(AliFlowAnalysisWithQCumulants)
 AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():  
  fTrack(NULL),
  fHistList(NULL),
+ fWeightsList(NULL),
  fAvMultIntFlowQC(NULL),
  fQvectorComponents(NULL),
  fIntFlowResultsQC(NULL),
@@ -148,14 +149,12 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEventCounter(0),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE),
- fPhiWeights(),
- fPtWeights(),
- fEtaWeights()
+ fUseEtaWeights(kFALSE)
 {
  //constructor 
  fHistList = new TList(); 
- 
+ fWeightsList = new TList();
+  
  fnBinsPt = AliFlowCommonConstants::GetNbinsPt();
  fPtMin   = AliFlowCommonConstants::GetPtMin();	     
  fPtMax   = AliFlowCommonConstants::GetPtMax();
@@ -163,17 +162,13 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fnBinsEta = AliFlowCommonConstants::GetNbinsEta();
  fEtaMin   = AliFlowCommonConstants::GetEtaMin();	     
  fEtaMax   = AliFlowCommonConstants::GetEtaMax();
- 
- //to be improved
- fPhiWeights.Reset();
- fPtWeights.Reset();
- fEtaWeights.Reset();
 }
 
 AliFlowAnalysisWithQCumulants::~AliFlowAnalysisWithQCumulants()
 {
- //desctructor
+ //destructor
  delete fHistList; 
+ delete fWeightsList;
 }
 
 //================================================================================================================
@@ -512,7 +507,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  fmPrimePerEtaBin->SetYTitle("Counts");
  //fHistList->Add(fOverlapPerEtaBin);
  
- //fEtaReq1nPrimePrimePOI
+ //fEtaReq1nPrimePrimePOIafvQvector1n=anEvent->GetQ(1*n
  fEtaReq1nPrimePrimePOI = new TProfile("fEtaReq1nPrimePrimePOI","Re[q_{n}^{''}]",fnBinsEta,fEtaMin,fEtaMax,"s");
  fEtaReq1nPrimePrimePOI->SetXTitle("#eta");
  fEtaReq1nPrimePrimePOI->SetYTitle("Re[q_{n}^{''}]");
@@ -657,15 +652,6 @@ void AliFlowAnalysisWithQCumulants::Init()
  f8pDistribution->SetXTitle("<8>_{n,n,n,n|n,n,n,n}");
  f8pDistribution->SetYTitle("Counts");
  fHistList->Add(f8pDistribution);
- 
- //phi weights
- //fHistList->Add(&fPhiWeights);
- 
- //pt weights
- //fHistList->Add(&fPtWeights);
- 
- //eta weights
- //fHistList->Add(&fEtaWeights);
 }//end of Init()
 
 //================================================================================================================
@@ -673,23 +659,7 @@ void AliFlowAnalysisWithQCumulants::Init()
 void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 {
  //running over data 
- //set the weights:
- if(fUsePhiWeights)
- {
-  anEvent->SetUseWeightsPhi(fUsePhiWeights);
-  anEvent->SetPhiWeights(&fPhiWeights);
- }
- if(fUsePtWeights)
- {
-  anEvent->SetUseWeightsPt(fUsePtWeights);
-  anEvent->SetPtWeights(&fPtWeights);
- }
- if(fUseEtaWeights)
- {
-  anEvent->SetUseWeightsEta(fUseEtaWeights);
-  anEvent->SetEtaWeights(&fEtaWeights);
- }
-  
+ 
  //get the total multiplicity nPrim of event:
  Int_t nPrim = anEvent->NumberOfTracks();//nPrim = RPs + POIs + rest  
 
@@ -707,20 +677,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  afvQvector1n.Set(0.,0.);
  afvQvector1n.SetMult(0);
- afvQvector1n=anEvent->GetQ(1*n); 
-
+ afvQvector1n=anEvent->GetQ(1*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights);
+ 
  afvQvector2n.Set(0.,0.);
  afvQvector2n.SetMult(0);
- afvQvector2n=anEvent->GetQ(2*n);                          
- 
+ afvQvector2n=anEvent->GetQ(2*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights);
+                                            
  afvQvector3n.Set(0.,0.);
  afvQvector3n.SetMult(0);
- afvQvector3n=anEvent->GetQ(3*n);       
+ afvQvector3n=anEvent->GetQ(3*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights); 
  
  afvQvector4n.Set(0.,0.);
  afvQvector4n.SetMult(0);
- afvQvector4n=anEvent->GetQ(4*n); 
- 
+ afvQvector4n=anEvent->GetQ(4*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights);
+
+            
             
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //                        !!!! to be removed !!!!
@@ -835,6 +806,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  if(dMult>1)
  {
   //fill the common control histogram (2nd order):
+  
   fCommonHists2nd->FillControlHistograms(anEvent); 
  
   two1n1n = (pow(afvQvector1n.Mod(),2.)-dMult)/(dMult*(dMult-1.)); //<2>_{n|n}   = <cos(n*(phi1-phi2))>
