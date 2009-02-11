@@ -16,6 +16,7 @@
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "TFile.h"
+#include "TList.h"
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH1D.h"
@@ -41,13 +42,7 @@ ClassImp(AliFlowEventSimple)
   AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
     fTrackCollection(NULL),
     fNumberOfTracks(0),
-    fEventNSelTracksIntFlow(0),
-    fUseWeightsPhi(kFALSE),
-    fUseWeightsPt(kFALSE),
-    fUseWeightsEta(kFALSE),
-    fPhiWeights(NULL),
-    fPtWeights(NULL),
-    fEtaWeights(NULL)
+    fEventNSelTracksIntFlow(0)
 {
   //constructor 
   fTrackCollection =  new TObjArray(aLenght) ;
@@ -59,13 +54,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   TObject(),
   fTrackCollection(anEvent.fTrackCollection),
   fNumberOfTracks(anEvent.fNumberOfTracks),
-  fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow),
-  fUseWeightsPhi(anEvent.fUseWeightsPhi),
-  fUseWeightsPt(anEvent.fUseWeightsPt),
-  fUseWeightsEta(anEvent.fUseWeightsEta),
-  fPhiWeights(anEvent.fPhiWeights),
-  fPtWeights(anEvent.fPtWeights),
-  fEtaWeights(anEvent.fEtaWeights)
+  fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow)
 {
   //copy constructor 
 }
@@ -77,12 +66,6 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   *fTrackCollection = *anEvent.fTrackCollection ;
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fEventNSelTracksIntFlow = anEvent.fEventNSelTracksIntFlow;
-  fUseWeightsPhi = anEvent.fUseWeightsPhi;
-  fUseWeightsPt = anEvent.fUseWeightsPt;
-  fUseWeightsEta = anEvent.fUseWeightsEta;
-  fPhiWeights = anEvent.fPhiWeights;
-  fPtWeights = anEvent.fPtWeights;
-  fEtaWeights = anEvent.fEtaWeights;
   
   return *this;
 }
@@ -105,7 +88,7 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 }
 
 //-----------------------------------------------------------------------   
-AliFlowVector AliFlowEventSimple::GetQ(Int_t n) 
+AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
 {
   //calculate Q-vector in harmonic n without weights (default harmonic n=2)  
   Double_t dQX = 0.;
@@ -131,32 +114,39 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n)
   Double_t wPt=1.;  //weight Pt 
   Double_t wEta=1.; //weight Eta 
   
-  if(fUseWeightsPhi)
+  TH1F *phiWeights = NULL;
+  TH1D *ptWeights = NULL;
+  TH1D *etaWeights = NULL;
+
+  if(weightsList)
   {
-   if(fPhiWeights)
+   if(usePhiWeights)
    {
-    nBinsPhi = fPhiWeights->GetNbinsX();
-   }else{cout<<" WARNING: couldn't find histogram phi_weights in the file weightsForTheSecondRun.root"<<endl;}           
-  } 
-  
-  if(fUseWeightsPt)
-  {
-   if(fPtWeights)
+    phiWeights = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights"));
+    if(phiWeights) nBinsPhi = phiWeights->GetNbinsX();
+   }          
+   if(usePtWeights)
    {
-    dBinWidthPt = fPtWeights->GetBinWidth(1);//assuming that all bins have the same width
-    dNormPt = fPtWeights->Integral();
-   }else{cout<<" WARNING: couldn't find histogram pt_weights in the file weightsForTheSecondRun.root"<<endl;}           
-  } 
-  
-  if(fUseWeightsEta)
-  {
-   if(fEtaWeights)
+    ptWeights = dynamic_cast<TH1D *>(weightsList->FindObject("pt_weights"));
+    if(ptWeights)
+    {
+     dBinWidthPt = ptWeights->GetBinWidth(1); // assuming that all bins have the same width
+     dNormPt = ptWeights->Integral();
+    } 
+   }       
+   if(useEtaWeights)
    {
-    dBinWidthEta = fEtaWeights->GetBinWidth(1);//assuming that all bins have the same width
-    dNormEta = fEtaWeights->Integral();
-   }else{cout<<" WARNING: couldn't find histogram eta_weights in the file weightsForTheSecondRun.root"<<endl;}           
-  } 
+    etaWeights = dynamic_cast<TH1D *>(weightsList->FindObject("eta_weights"));
+    if(etaWeights)
+    {
+     dBinWidthEta = etaWeights->GetBinWidth(1); // assuming that all bins have the same width
+     dNormEta = etaWeights->Integral();
+    } 
+   }          
+  } // end of if(weightsList)
+
   
+  // loop over tracks    
   for(Int_t i=0;i<fNumberOfTracks;i++)                               
   {
    pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i); 
@@ -167,25 +157,28 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n)
      dPhi = pTrack->Phi();
      dPt  = pTrack->Pt();
      dEta = pTrack->Eta();
+    
      //determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-     if(fUseWeightsPhi && fPhiWeights && (nBinsPhi!=0) && (fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())))!=0))
+     if(phiWeights && (nBinsPhi!=0) && (phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())))!=0))
      {
-      wPhi=pow(nBinsPhi*fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi()))),-1);
+      wPhi=pow(nBinsPhi*phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi()))),-1);
      }
      //determine v'(pt) weight:    
-     if(fUseWeightsPt && fPtWeights && dBinWidthPt && dNormPt)
+     if(ptWeights && dBinWidthPt && dNormPt)
      {
-      wPt=fPtWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPt/dBinWidthPt)))/dNormPt; 
+      wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPt/dBinWidthPt)))/dNormPt; 
      }            
      //determine v'(eta) weight:    
-     if(fUseWeightsEta && fEtaWeights && dBinWidthEta && dNormEta)
+     if(etaWeights && dBinWidthEta && dNormEta)
      {
-      wEta=fEtaWeights->GetBinContent(1+(Int_t)(TMath::Floor(dEta/dBinWidthEta)))/dNormEta; 
-     }  
+      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor(dEta/dBinWidthEta)))/dNormEta; 
+     } 
+       
      //building up the weighted Q-vector:       
      dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
      dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
      iUsedTracks++;
+     
     }//end of if (pTrack->UseForIntegratedFlow())
    }//end of if (pTrack)
    else {cerr << "no particle!!!"<<endl;}
