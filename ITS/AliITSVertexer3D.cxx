@@ -46,7 +46,11 @@ fMaxZCut(0.),
 fDCAcut(0.),
 fDiffPhiMax(0.),
 fMeanPSelTrk(0.),
-fMeanPtSelTrk(0.)
+fMeanPtSelTrk(0.),
+fUsedCluster(kMaxCluPerMod*kNSPDMod),
+fZHisto(0),
+fDCAforPileup(0.),
+fPileupAlgo(0)
 {
   // Default constructor
   SetCoarseDiffPhiCut();
@@ -58,12 +62,18 @@ fMeanPtSelTrk(0.)
   SetDiffPhiMax();
   SetMeanPSelTracks();
   SetMeanPtSelTracks();
+  SetMinDCAforPileup();
+  SetPileupAlgo();
+  Float_t binsize=0.02; // default 200 micron
+  Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
+  fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
 }
 
 //______________________________________________________________________
 AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
   fLines.Clear("C");
+  if(fZHisto) delete fZHisto;
 }
 
 //______________________________________________________________________
@@ -74,6 +84,10 @@ void AliITSVertexer3D::ResetVert3D(){
   fVert3D.SetZv(0.);
   fVert3D.SetDispersion(0.);
   fVert3D.SetNContributors(0);
+  fIsPileup=kFALSE;
+  fNTrpuv=-2;
+  fZpuv=-99999.;
+  fUsedCluster.ResetAllBits(0);
 }
 //______________________________________________________________________
 AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree){
@@ -116,6 +130,12 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
       fCurrentVertex->SetTitle("vertexer: 3D");
       fCurrentVertex->SetName("SPDVertex3D");
       fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
+
+      switch(fPileupAlgo){
+      case 0: PileupFromZ(); break;
+      case 1: FindOther3DVertices(itsClusterTree); break;
+      default: AliError("Wrong pileup algorithm"); break;
+      }
     }
   }
   if(!fCurrentVertex){
@@ -152,6 +172,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   TTree *tR = itsClusterTree;
   fDetTypeRec->SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
+  if(optCuts==0) fZHisto->Reset();
   // lc1 and gc1 are local and global coordinates for layer 1
   //  Float_t lc1[3]={0.,0.,0.};
   Float_t gc1[3]={0.,0.,0.};
@@ -170,14 +191,20 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Float_t deltaPhi=fCoarseDiffPhiCut;
   Float_t deltaR=fCoarseMaxRCut;
   Float_t dZmax=fZCutDiamond;
-  if(optCuts){
+  if(optCuts==1){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
     zvert=fVert3D.GetZv();
     deltaPhi = fDiffPhiMax; 
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
+  }else if(optCuts==2){
+    xbeam=fVert3D.GetXv();
+    ybeam=fVert3D.GetYv();
+    deltaPhi = fDiffPhiMax; 
+    deltaR=fMaxRCut;
   }
+
   Int_t nrpL1 = 0;    // number of rec points on layer 1
   Int_t nrpL2 = 0;    // number of rec points on layer 2
 
@@ -223,6 +250,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
     }
     fDetTypeRec->ResetRecPoints();
     for(Int_t j=0;j<nrecp1;j++){
+      if(j>kMaxCluPerMod) continue;
+      UShort_t idClu1=modul1*kMaxCluPerMod+j;
+      if(fUsedCluster.TestBitNumber(idClu1)) continue;
       AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1.At(j);
       // Local coordinates of this recpoint
       /*
@@ -241,6 +271,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
+	    if(j2>kMaxCluPerMod) continue;
+	    UShort_t idClu2=modul2*kMaxCluPerMod+j2;
+	    if(fUsedCluster.TestBitNumber(idClu2)) continue;
 	    AliITSRecPoint *recp2 = (AliITSRecPoint*)itsRec->At(j2);
 	    /*
 	    lc2[0]=recp2->GetDetLocalX();
@@ -251,6 +284,14 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
 	    Double_t diff = TMath::Abs(phi2-phi1); 
 	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
+	    if(optCuts==0 && diff<fDiffPhiMax){
+	      Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
+	      Float_t zc1=gc1[2];
+	      Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
+	      Float_t zc2=gc2[2];
+	      Float_t zr0=(r2*zc1-r1*zc2)/(r2-r1); //Z @ null radius
+	      fZHisto->Fill(zr0);
+	    }
 	    if(diff>deltaPhi)continue;
 	    AliStrLine line(gc1,gc2,kTRUE);
 	    Double_t cp[3];
@@ -268,7 +309,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    Float_t cov[6];
 	    recp2->GetGlobalCov(cov);
 
-	    
+
 	    Float_t rad1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
 	    Float_t rad2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
 	    Float_t factor=(rad1+rad2)/(rad2-rad1); //factor to account for error on tracklet direction 
@@ -316,7 +357,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    if(sigmasq[0]!=0.) wmat[0]=1./sigmasq[0];
 	    if(sigmasq[1]!=0.) wmat[4]=1./sigmasq[1];
 	    if(sigmasq[2]!=0.) wmat[8]=1./sigmasq[2];
-	    new(fLines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE);
+	    new(fLines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE,idClu1,idClu2);
 
 	  }
 	  fDetTypeRec->ResetRecPoints();
@@ -339,12 +380,16 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Float_t zvert=0.;
   Float_t deltaR=fCoarseMaxRCut;
   Float_t dZmax=fZCutDiamond;
-  if(optCuts){
+  if(optCuts==1){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
     zvert=fVert3D.GetZv();
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
+  }else if(optCuts==2){
+    xbeam=fVert3D.GetXv();
+    ybeam=fVert3D.GetYv();
+    deltaR=fMaxRCut;
   }
 
   Int_t nbr=50;
@@ -499,9 +544,84 @@ void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklet
       }
     }
   }
-  
 }
 
+//________________________________________________________
+void AliITSVertexer3D::MarkUsedClusters(){
+  // Mark clusters of tracklets used in vertex claulation
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    AliStrLine *lin = (AliStrLine*)fLines.At(i);
+    Int_t idClu1=lin->GetIdPoint(0);
+    Int_t idClu2=lin->GetIdPoint(1);
+    fUsedCluster.SetBitNumber(idClu1);
+    fUsedCluster.SetBitNumber(idClu2);
+  }
+}
+//________________________________________________________
+Int_t AliITSVertexer3D::RemoveTracklets(){
+  // Remove trackelts close to first found vertex
+  Double_t vert[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
+  Int_t nRemoved=0;
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    AliStrLine *lin = (AliStrLine*)fLines.At(i);
+    if(lin->GetDistFromPoint(vert)<fDCAforPileup){
+      Int_t idClu1=lin->GetIdPoint(0);
+      Int_t idClu2=lin->GetIdPoint(1);
+      fUsedCluster.SetBitNumber(idClu1);
+      fUsedCluster.SetBitNumber(idClu2);
+      fLines.RemoveAt(i);
+      ++nRemoved;
+    }
+  }
+  fLines.Compress();
+  return nRemoved;
+}
+//________________________________________________________
+void AliITSVertexer3D::FindOther3DVertices(TTree *itsClusterTree){
+  // pileup identification based on 3D vertexing with not used clusters
+  MarkUsedClusters();
+  fLines.Clear("C");
+  Int_t nolines = FindTracklets(itsClusterTree,2);
+  if(nolines>=2){
+    Int_t nr=RemoveTracklets();
+    nolines-=nr;
+    if(nolines>=2){
+      Int_t rc=Prepare3DVertex(2);
+      if(rc==0){ 
+	fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+	if(fVert3D.GetNContributors()>=fMinTrackletsForPilup){
+	  fIsPileup=kTRUE;
+	  fZpuv=fVert3D.GetZv();
+	  fNTrpuv=fVert3D.GetNContributors();
+	}
+      }
+    }
+  }
+}
+//______________________________________________________________________
+void AliITSVertexer3D::PileupFromZ(){
+  // Calls the pileup algorithm of ALiITSVertexerZ
+  Int_t binmin, binmax;
+  Int_t nPeaks=AliITSVertexerZ::GetPeakRegion(fZHisto,binmin,binmax);   
+  if(nPeaks==2)AliWarning("2 peaks found");
+  Int_t firstPeakCont=0;
+  Float_t firstPeakPos=0.;
+  for(Int_t i=binmin-1;i<=binmax+1;i++){
+    firstPeakCont+=fZHisto->GetBinContent(i);
+    firstPeakPos+=fZHisto->GetBinContent(i)*fZHisto->GetBinCenter(i);
+  }
+  firstPeakPos/=firstPeakCont;
+  Int_t ncontr2=0;
+  if(firstPeakCont>fMinTrackletsForPilup){     
+    Float_t secPeakPos;
+    ncontr2=AliITSVertexerZ::FindSecondPeak(fZHisto,binmin,binmax,secPeakPos);
+    if(ncontr2>=fMinTrackletsForPilup){ 
+      fIsPileup=kTRUE;
+      fZpuv=secPeakPos;
+      fNTrpuv=ncontr2;
+    }
+  }
+}
 //________________________________________________________
 void AliITSVertexer3D::PrintStatus() const {
   // Print current status
@@ -511,6 +631,8 @@ void AliITSVertexer3D::PrintStatus() const {
   printf("Cut on tracklet DCA to beam axis %f\n",fMaxRCut);
   printf("Cut on diamond (Z) %f\n",fZCutDiamond);
   printf("Cut on DCA - tracklet to tracklet and to vertex %f\n",fDCAcut);
-  printf(" Max Phi difference: %f\n",fDiffPhiMax);
+  printf("Max Phi difference: %f\n",fDiffPhiMax);
+  printf("Pileup algo: %d\n",fPileupAlgo);
+  printf("Min DCA to 1st vetrtex for pileup: %f\n",fDCAforPileup);
   printf("=======================================================\n");
 }

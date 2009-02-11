@@ -14,6 +14,7 @@
 #include <TClonesArray.h>
 #include <AliESDVertex.h>
 #include <TH3F.h>
+#include <TBits.h>
 
 class AliITSVertexer3D : public AliITSVertexer {
 
@@ -46,6 +47,8 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetMeanPSelTracks(Float_t pGeV=0.875){fMeanPSelTrk = pGeV;}
   void SetMeanPtSelTracks(Float_t ptGeV=0.630){fMeanPtSelTrk = ptGeV;}
   void SetMeanPPtSelTracks(Float_t fieldTesla);
+  void SetMinDCAforPileup(Float_t mindist=0.1) {fDCAforPileup=mindist;}
+  void SetPileupAlgo(UShort_t optalgo=0){fPileupAlgo=optalgo;}
 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
@@ -54,7 +57,12 @@ protected:
   Int_t Prepare3DVertex(Int_t optCuts);
   void ResetVert3D();
   void FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklets, Int_t &nOfTimes);
+  void PileupFromZ();
+  void MarkUsedClusters();
+  Int_t RemoveTracklets();
+  void  FindOther3DVertices(TTree *itsClusterTree);
 
+  enum {kMaxCluPerMod=250};
 
   TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
@@ -67,8 +75,14 @@ protected:
   Float_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
   Float_t fMeanPSelTrk; // GeV, mean P for tracks with dphi<0.01 rad
   Float_t fMeanPtSelTrk; // GeV, mean Pt for tracks with dphi<0.01 rad
+  TBits   fUsedCluster;  // flag for used clusters in vertex calculation
+  TH1F *fZHisto;           //! histogram with coarse z distribution
+  Float_t  fDCAforPileup;  // Minimum DCA to 1st vertex for pileup tracklets 
+  UShort_t fPileupAlgo;    // Algo for pileup identification
+                           // 0->VertexerZ pileup algo
+                           // 1->Unused RecPoints algo
 
-  ClassDef(AliITSVertexer3D,6);
+  ClassDef(AliITSVertexer3D,7);
 
 };
 
