@@ -353,7 +353,6 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   }
   
 
-
   int n_species = AliPID::kSPECIES ;
   Double_t* prior = new Double_t[n_species];
   
@@ -620,6 +619,9 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (QA) { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kTRUE);}
     else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE);}
     taskFQD->SetAnalysisType(type);
+    taskFQD->SetUsePhiWeights(usePhiWeights); 
+    taskFQD->SetUsePtWeights(usePtWeights);
+    taskFQD->SetUseEtaWeights(useEtaWeights);
     taskFQD->SetCFManager1(cfmgr1);
     taskFQD->SetCFManager2(cfmgr2);
     if (QA) { 
@@ -868,24 +870,23 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->ConnectInput(taskQC,0,cinput1); 
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
-    mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
-    if(useWeights)
-    {
-     mgr->ConnectInput(taskQC,1,cinputWeights);
-     cinputWeights->SetData(weightsList);
-    } 
+      mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
+    if (useWeights) { mgr->ConnectInput(taskQC,1,cinputWeights);
+      cinputWeights->SetData(weightsList);} 
   }
   if (FQD)   { 
     mgr->ConnectInput(taskFQD,0,cinput1); 
     mgr->ConnectOutput(taskFQD,0,coutputFQD);
     if (QA) { mgr->ConnectOutput(taskFQD,1,coutputQA1FQD);
-    mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
+      mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
+    if (useWeights) { mgr->ConnectInput(taskFQD,1,cinputWeights);
+      cinputWeights->SetData(weightsList);} 
   }    
   if (MCEP)  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 
     mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
     if (QA) { mgr->ConnectOutput(taskMCEP,1,coutputQA1MCEP);
-    mgr->ConnectOutput(taskMCEP,2,coutputQA2MCEP); }
+      mgr->ConnectOutput(taskMCEP,2,coutputQA2MCEP); }
   }  
   
   if (!mgr->InitAnalysis()) return;

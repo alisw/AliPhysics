@@ -30,9 +30,9 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 
-//RUN SETTINGS
+// RUN SETTINGS
 
-//Flow analysis method can be:(set to kTRUE or kFALSE)
+// Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
@@ -42,15 +42,23 @@ Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE;
 
-//analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
+// Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
 
-//Bolean to fill/not fill the QA histograms
+// Boolean to fill/not fill the QA histograms
 Bool_t QA = kFALSE;   
 
-//SETTING THE CUTS
+// Weights 
+//Use weights for Q vector
+Bool_t usePhiWeights = kFALSE; //Phi
+Bool_t usePtWeights  = kFALSE; //v'(pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta)
+Bool_t useWeights = usePhiWeights||usePtWeights||useEtaWeights;
 
-//for integrated flow
+
+// SETTING THE CUTS
+
+// For integrated flow
 const Double_t ptmin1 = 0.0;
 const Double_t ptmax1 = 10.0;
 const Double_t ymin1  = -1.;
@@ -63,7 +71,7 @@ const Int_t PDG1 = 211;
 const Int_t minclustersTPC1 = 50;
 const Int_t maxnsigmatovertex1 = 3;
 
-//for differential flow
+// For differential flow
 const Double_t ptmin2 = 0.0;
 const Double_t ptmax2 = 10.0;
 const Double_t ymin2  = -1.;
@@ -80,16 +88,12 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runProofFlow(const Char_t* data="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t nRuns=-1, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/COMMON/COMMON/LHC08c18_0.9TeV_0T_Phojet", Int_t nRuns=-1, Int_t offset=0) {
 
-
 //ESD (therminator)
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
 
 void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_central", Int_t nRuns=-1, Int_t offset=0) {
-
-
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral", Int_t nRuns=-1, Int_t offset=0) {
-
 
 //AOD
 //void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
@@ -99,9 +103,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   timer.Start();
 
   if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-
   if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
 
   //  set to debug root versus if needed
@@ -451,36 +453,22 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
   
-  
+  //weights: 
+  TFile *weightsFile = NULL;
+  TList *weightsList = NULL;
 
-/*
-
-   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   //     !!!! to be removed !!!!
-   TFile *weightsFile = NULL;
-   weightsFile = TFile::Open("weightsForTheSecondRun.root","READ");
-   weightsFile->Print();
-   
-   TList *weightsList = new 
-
-   //TList *weightsList = (TList*)weightsFile->GetListOfKeys();
-  
-   cout<<endl; 
-   cout<<endl;
-   cout<<endl;
-   cout<<"aaaaaaaa "<<weightsFile->GetName()<<endl;
-   weightsList->Print();
-   //cout<<"bbbbbbbb "<<weightsList<<" "<<dynamic_cast<TH1F*>(weightsList->FindObject("phi_weights"))<<endl;
-   cout<<"bbbbbbbb "<<weightsList<<" "<<weightsList->FindObject("phi_weights")<<endl;
-   cout<<"cccccccc "<<((TH1F*)(weightsList->FindObject("phi_weights")))->GetBinContent(4)<<endl; 
-   cout<<endl;
-   cout<<crashHere<<endl;
-  
-   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-*/
-
-
-
+  if(useWeights) {
+    //open the file with the weights:
+    weightsFile = TFile::Open("weights.root","READ");
+    if(weightsFile) {
+      //access the list which holds the histos with weigths:
+      weightsList = (TList*)weightsFile->Get("weights");
+    }
+    else {
+      cout<<" WARNING: the file <weights.root> with weights from the previous run was not available."<<endl;
+      break;
+    } 
+  }
 
 
   if (LYZ2){  
@@ -851,12 +839,20 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
     mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
+    if (useWeights) {
+      mgr->ConnectInput(taskQC,1,cinputWeights);
+      cinputWeights->SetData(weightsList);
+    } 
   }
   if (FQD)   { 
     mgr->ConnectInput(taskFQD,0,cinput1); 
     mgr->ConnectOutput(taskFQD,0,coutputFQD);
     if (QA) { mgr->ConnectOutput(taskFQD,1,coutputQA1FQD);
     mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
+    if(useWeights) {
+      mgr->ConnectInput(taskFQD,1,cinputWeights);
+      cinputWeights->SetData(weightsList);
+    } 
   }    
   if (MCEP)  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 
