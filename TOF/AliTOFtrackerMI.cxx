@@ -260,10 +260,10 @@ void AliTOFtrackerMI::MatchTracks( Bool_t /*mLastStep*/){
 void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
   //Match ESD tracks to clusters in TOF
-  const Float_t kTofOffset = 26;  // time offset
-  const Float_t kMinQuality        = -6.; // minimal quality
-  const Float_t kMaxQualityD       = 1.;  // max delta quality if cluster used
-  const Float_t kForbiddenR        = 0.1;  // minimal PID according TPC
+  const Float_t kTofOffset   = 26;  // time offset
+  const Float_t kMinQuality  = -6.; // minimal quality
+  const Float_t kMaxQualityD = 1.;  // max delta quality if cluster used
+  const Float_t kForbiddenR  = 0.1; // minimal PID according TPC
 
   static const Double_t kMasses[]={
     0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
@@ -349,10 +349,10 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     Float_t scalefact=3.;    
     Double_t dphi=
       scalefact*
-      ((5*TMath::Sqrt(cov[0]) + 3.*fDy +10.*TMath::Abs(par[2]))/fR); 
+      ((5*TMath::Sqrt(cov[0]) + 3.*fDy + 10.*TMath::Abs(par[2]))/fR); 
     Double_t dz=
       scalefact*
-      (5*TMath::Sqrt(cov[2]) + 3.*fDz  +10.*TMath::Abs(par[3]));
+      (5*TMath::Sqrt(cov[2]) + 3.*fDz + 10.*TMath::Abs(par[3]));
     
     Double_t phi=TMath::ATan2(par[0],x) + trackTOFin->GetAlpha();
     if (phi<-TMath::Pi())phi+=2*TMath::Pi();
@@ -386,7 +386,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       if (nfound>=1000) break;
       index[nfound]=clind[icl];
       AliTOFcluster *cluster = fClusters[clind[icl]];
-      GetLinearDistances(trackTOFin,cluster, distances);
+      GetLinearDistances(trackTOFin, cluster, distances);
       dist3D[nfound][0] = distances[4];
       dist3D[nfound][1] = distances[1];
       dist3D[nfound][2] = distances[2];
@@ -401,7 +401,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       //
       clusters[nfound] = cluster;
       //
-      //length  and TOF updates 
+      //length and TOF updates 
       trackTOFin->GetIntegratedTimes(times[nfound]);
       length[nfound] = trackTOFin->GetIntegratedLength();
       length[nfound]+=distances[4];

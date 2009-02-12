@@ -75,12 +75,12 @@ class AliTOFClusterFinder : public TObject
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  CalibrateRecPoint(); // Apply calibration pars to Clusters
 
-  Int_t fVerbose;  //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
+  Int_t fVerbose;           // Verbose level (0:no msg,
+                            //  1:msg, 2:digits in txt files)
   Bool_t fDecoderVersion;   //setting whether to use the new decoder version 
                             // -true -> new version
                             // -false ->old version  (default value!!)
-  AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
-
+  AliTOFcalib *fTOFcalib;         // pointer to the TOF calibration info
   AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
 
   ClassDef(AliTOFClusterFinder,5) // To run TOF clustering

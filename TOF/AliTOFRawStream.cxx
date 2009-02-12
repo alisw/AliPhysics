@@ -146,7 +146,7 @@ Bool_t AliTOFRawStream::fgApplyBCCorrections = kTRUE;
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader(rawReader),
-  fTOFrawData(0x0),
+  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDecoder(new AliTOFDecoder()),
   fDDL(-1),
   fTRM(-1),
@@ -193,7 +193,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
     ResetPackedDataBuffer(i);
   }
 
-  fTOFrawData = new TClonesArray("AliTOFrawData",1000);
+  //fTOFrawData = new TClonesArray("AliTOFrawData",1000);
   fTOFrawData->SetOwner();
 
   fRawReader->Reset();
@@ -213,8 +213,8 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream():
-  fRawReader(0x0), 
-  fTOFrawData(0x0),
+  fRawReader(0x0),
+  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDecoder(new AliTOFDecoder()),
   fDDL(-1),
   fTRM(-1),
@@ -260,7 +260,7 @@ AliTOFRawStream::AliTOFRawStream():
     ResetPackedDataBuffer(i);
   }
 
-  fTOFrawData = new TClonesArray("AliTOFrawData",1000);
+  //fTOFrawData = new TClonesArray("AliTOFrawData",1000);
   fTOFrawData->SetOwner();
 
   for (Int_t j=0;j<13;j++){

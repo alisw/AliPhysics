@@ -153,6 +153,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 //
 
 }
+
 //______________________________________________________________________________
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *calib):
@@ -301,7 +302,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
       }
     }
 
-    //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
+    AliDebug(2,Form(" %2d  %1d  %2d  %1d  %2d ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
     parTOF[0] = d->GetTdc(); //the TDC signal
     parTOF[1] = d->GetToT(); //the ToT signal
@@ -314,10 +315,10 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     GetClusterPars(dig, posClus,covClus);
     AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
     InsertCluster(tofCluster);
-
+    
   }
 
-  AliInfo(Form("Number of found clusters: %i for event: %i", fNumberOfTofClusters, iEvent));
+  AliInfo(Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -395,7 +396,7 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
       }
     }
 
-    //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
+    //    AliDebug(2,Form(" %2d  %1d  %2d  %1d  %2d ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
     parTOF[0] = d->GetTdc(); //the TDC signal
     parTOF[1] = d->GetToT(); //the ToT signal
@@ -407,12 +408,12 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
     Double_t covClus[6];
     UShort_t volIdClus=GetClusterVolIndex(dig);
     GetClusterPars(dig,posClus,covClus);
-   AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
+    AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
     InsertCluster(tofCluster);
 
   }
 
-  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -439,7 +440,6 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   Int_t inholes = 0;
 
-  //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
   ResetRecpoint();
@@ -527,7 +527,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       Int_t lab[3]={-1,-1,-1};
       Bool_t status=kTRUE;
       GetClusterPars(detectorIndex,posClus,covClus);
-     AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],lab,detectorIndex,parTOF,status,-1);
+      AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],lab,detectorIndex,parTOF,status,-1);
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
@@ -548,7 +548,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   if (fVerbose==2) ftxt.close();
 
-  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -575,12 +575,11 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   Int_t inholes = 0;
 
-  //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
   fRunLoader->GetEvent(iEvent);
 
-  AliDebug(2,Form(" Event number %2i ", iEvent));
+  AliDebug(2,Form(" Event number %2d ", iEvent));
 
   fTreeR = fTOFLoader->TreeR();
 
@@ -692,7 +691,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   if (fVerbose==2) ftxt.close();
 
-  AliInfo(Form("Number of found clusters: %i for event: %i", fNumberOfTofClusters, iEvent));
+  AliInfo(Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -721,7 +720,6 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors();
 
   fRunLoader->GetEvent(iEvent);
@@ -741,7 +739,7 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   fRunLoader->GetEvent(iEvent);
 
-  AliDebug(2,Form(" Event number %2i ", iEvent));
+  AliDebug(2,Form(" Event number %2d ", iEvent));
 
   TClonesArray * clonesRawData;
 
@@ -800,7 +798,9 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   fTOFLoader->WriteDigits("OVERWRITE");
-  
+
+  delete tofDigits;
+
   AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.2fs C:%.2fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
 
@@ -829,10 +829,6 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
   Int_t bufsize = 32000;
   digitsTree->Branch("TOF", &tofDigits, bufsize);
-
-  ///  fRunLoader->GetEvent(iEvent);
-
-  ///  AliDebug(2,Form(" Event number %2i ", iEvent));
 
   TClonesArray * clonesRawData;
 
@@ -889,7 +885,9 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
 
   digitsTree->Fill();
 
-  AliDebug(1, Form("Got %d digits: ", tofDigits->GetEntries()));
+  delete tofDigits;
+
+  AliDebug(1, Form("Got %d digits: ", fDigits->GetEntries()));
   AliDebug(1, Form("Execution time to read TOF raw data and fill TOF digit tree : R:%.2fs C:%.2fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
 
@@ -973,7 +971,7 @@ void AliTOFClusterFinder::FillRecPoint()
     GetClusterPars(detectorIndex,posClus,covClus);
     new(lRecPoints[ii]) AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],trackLabels,detectorIndex, parTOF,status,digitIndex);
 
-    AliDebug(2, Form(" %4i  %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+    AliDebug(2, Form(" %4d  %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 		     ii, volIdClus, posClus[0], posClus[1], posClus[2],
 		     fTofClusters[ii]->GetSigmaX2(),
 		     fTofClusters[ii]->GetSigmaXY(),
@@ -1035,13 +1033,13 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
     //check the status, also unknown is fine!!!!!!!
 
-    AliDebug(2, Form(" Status for channel %i = %i",index, (Int_t)status));
+    AliDebug(2, Form(" Status for channel %d = %d",index, (Int_t)status));
     if((statusPulser & AliTOFChannelOnlineStatusArray::kTOFPulserBad)==(AliTOFChannelOnlineStatusArray::kTOFPulserBad)||(statusNoise & AliTOFChannelOnlineStatusArray::kTOFNoiseBad)==(AliTOFChannelOnlineStatusArray::kTOFNoiseBad)||(statusHW & AliTOFChannelOnlineStatusArray::kTOFHWBad)==(AliTOFChannelOnlineStatusArray::kTOFHWBad)){
-      AliDebug(2, Form(" Bad Status for channel %i",index));
+      AliDebug(2, Form(" Bad Status for channel %d",index));
       fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     }
     else {
-      AliDebug(2, Form(" Good Status for channel %i",index));
+      AliDebug(2, Form(" Good Status for channel %d",index));
     }
     // Get Rough channel online equalization 
     Double_t roughDelay=(Double_t)calDelay->GetDelay(index);  // in ns
@@ -1054,7 +1052,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 	par[j]=(Double_t)calChannelOffline->GetSlewPar(j);
      } 
       AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
-      AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
+      AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %d , %d", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
       tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    
       tToT*=1.E-3; //ToT in ns
       AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
