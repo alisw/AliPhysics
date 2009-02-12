@@ -66,6 +66,36 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
 
   gSystem->AddIncludePath("-I$ROOTSYS/include");
 
+  // load needed libraries
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libPhysics.so");
+
+  
+  // in root using pars
+
+  SetupPar("PWG2flowCommon");
+  cerr<<"PWG2flowCommon.par loaded..."<<endl;
+
+  //aliroot specific stuff
+  SetupPar("STEERBase");
+  SetupPar("ESD");
+  SetupPar("AOD");
+
+  SetupPar("ANALYSIS");
+  SetupPar("ANALYSISalice");
+  SetupPar("PWG2AOD");
+
+  SetupPar("CORRFW");
+
+  SetupPar("PWG2flowTasks");
+  cerr<<"PWG2flowTasks.par loaded..."<<endl;
+
+  // AliFlow event in root with pars
+  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
+
+  /*
   // In AliRoot
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
@@ -79,7 +109,9 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   // Flow event in AliRoot
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
    
-  // In root
+  */
+
+  // In root inline compile
 
   /*    
   // Constants  
@@ -126,9 +158,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
   //------------------------------------------------------------------------
   */
-
-  //load needed libraries
-  gSystem->Load("libTree.so");
 
   //------------------------------------------------------------------------
   //cuts:
@@ -396,3 +425,53 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   cout << endl;
   timer.Print();
 }
+
+void SetupPar(char* pararchivename)
+{
+  //Load par files, create analysis libraries
+  //For testing, if par file already decompressed and modified
+  //classes then do not decompress.
+ 
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString parpar(Form("%s.par", pararchivename)) ; 
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ; 
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  } 
+  if ( gSystem->AccessPathName(pararchivename) ) {  
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
+  }
+  
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+  
+  // check for BUILD.sh and execute
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+  
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
+}
+
