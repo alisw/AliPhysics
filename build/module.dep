@@ -42,7 +42,7 @@ ZDC/module.mk:		ZDC/libZDCbase.pkg ZDC/libZDCrec.pkg ZDC/libZDCsim.pkg
 EVE/module.mk:		EVE/libEveBase.pkg EVE/libEveDet.pkg EVE/libEveHLT.pkg EVE/binalieve.pkg
 PWG0/module.mk:		PWG0/libPWG0base.pkg  PWG0/libPWG0selectors.pkg PWG0/libPWG0dep.pkg
 PWG1/module.mk:		PWG1/libPWG1.pkg
-PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2femtoscopyUser.pkg PWG2/libPWG2AOD.pkg PWG2/libPWG2flow.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2resonances.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2spectra.pkg
+PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2femtoscopyUser.pkg PWG2/libPWG2AOD.pkg PWG2/libPWG2flowCommon.pkg PWG2/libPWG2flowTasks.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2resonances.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2spectra.pkg
 PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg PWG3/libPWG3muon.pkg PWG3/libPWG3vertexingHF.pkg PWG3/libPWG3vertexingOld.pkg
 PWG4/module.mk:		PWG4/libPWG4PartCorrBase.pkg  PWG4/libPWG4PartCorrDep.pkg PWG4/libPWG4JetTasks.pkg PWG4/libPWG4GammaConv.pkg
 ESDCheck/module.mk:	ESDCheck/libAnalysisCheck.pkg 
