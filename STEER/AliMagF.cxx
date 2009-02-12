@@ -250,7 +250,7 @@ void AliMagF::MachineField(const Double_t *x, Double_t *b) const
   const Double_t kBComp2CZ = 2049., kBComp2hDZ = 153./2., kBComp2SqR = 4.5*4.5; 
   //  
   const Double_t kTripQ1CZ = 2615., kTripQ1hDZ = 637./2., kTripQ1SqR = 3.5*3.5;
-  const Double_t kTripQ2CZ = 3408., kTripQ2hDZ = 550./2., kTripQ2SqR = 3.5*3.5;
+  const Double_t kTripQ2CZ = 3480., kTripQ2hDZ = 550./2., kTripQ2SqR = 3.5*3.5;
   const Double_t kTripQ3CZ = 4130., kTripQ3hDZ = 550./2., kTripQ3SqR = 3.5*3.5;
   const Double_t kTripQ4CZ = 5015., kTripQ4hDZ = 637./2., kTripQ4SqR = 3.5*3.5;
   //
