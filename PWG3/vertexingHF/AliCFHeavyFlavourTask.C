@@ -18,7 +18,11 @@ Bool_t AliCFHeavyFlavourTask()
 	
 	AliLog::SetGlobalDebugLevel(0);
 	
-	Load() ; //load the required libraries
+	//load the required libraries
+	Bool_t useParFiles=kFALSE;
+	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+	LoadLibraries(useParFiles);
+
 	
 
 	TChain * analysisChain ;
@@ -172,23 +176,3 @@ Bool_t AliCFHeavyFlavourTask()
 	return kTRUE ;
 }
 
-void Load() {
-	
-	//load the required aliroot libraries
-	gSystem->Load("libANALYSIS") ;
-	gSystem->Load("libANALYSISalice") ;
-	gSystem->Load("libCORRFW.so") ;
-	gSystem->Load("libPWG3base.so");
-	gSystem->Load("libPWG3vertexingHF.so");
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libPhysics.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libESD.so");
-	gSystem->Load("libAOD.so"); 
-	
-	//compile online the task class
-	//gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG3/vertexingHF");
-	//gROOT->LoadMacro("./AliCFHeavyFlavourTask.cxx+");
-}
