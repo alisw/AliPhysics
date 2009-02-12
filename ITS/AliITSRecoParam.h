@@ -269,6 +269,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseUnfoldingInClusterFinderSSD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSSD=use; return; }
   Bool_t GetUseUnfoldingInClusterFinderSSD() const { return fUseUnfoldingInClusterFinderSSD; }
 
+  void   SetUseSDDClusterSizeSelection(Bool_t use=kTRUE) {fUseSDDClusterSizeSelection=use;}
+  Bool_t GetUseSDDClusterSizeSelection() const {return fUseSDDClusterSizeSelection;}
+  void   SetMinClusterChargeSDD(Float_t qcut=0.){fMinClusterChargeSDD=qcut;}
+  Float_t GetMinClusterChargeSDD() const {return fMinClusterChargeSDD;}
+
   void   SetUseChargeMatchingInClusterFinderSSD(Bool_t use=kTRUE) { fUseChargeMatchingInClusterFinderSSD=use; return; }
   Bool_t GetUseChargeMatchingInClusterFinderSSD() const { return fUseChargeMatchingInClusterFinderSSD; }
 
@@ -452,6 +457,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
+  Bool_t  fUseSDDClusterSizeSelection; // cut on SDD cluster size
+  Float_t fMinClusterChargeSDD; // cut on SDD cluster charge
+
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
   // SPD Tracklets (D. Elia)
@@ -463,7 +471,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
-  ClassDef(AliITSRecoParam,14) // ITS reco parameters
+
+  ClassDef(AliITSRecoParam,15) // ITS reco parameters
 };
 
 #endif

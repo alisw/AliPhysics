@@ -187,8 +187,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	}
 	Int_t maxi=0,mini=0,maxj=0,minj=0;
 
-	for (Int_t di=-2; di<=2;di++){
-	  for (Int_t dj=-3;dj<=3;dj++){
+	for (Int_t di=-5; di<=5;di++){
+	  for (Int_t dj=-10;dj<=10;dj++){
 	    Int_t index = idx[k]+di+dj*nzBins;
 	    if (index<0) continue;
 	    if (index>=nMaxBin) continue;
@@ -214,6 +214,13 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	      }
 	    }
 	  }
+	}
+	Int_t clSizAnode=maxi-mini+1;
+	Int_t clSizTb=maxj-minj+1;
+	if(repa->GetUseSDDClusterSizeSelection()){
+	  if(clSizTb==1) continue; // cut common mode noise spikes
+	  if(clSizAnode>3)  continue; // cut common mode noise spikes
+	  if(clSizTb>10)  continue; // cut clusters on noisy anodes
 	}
 
 	AliITSresponseSDD* rsdd = fDetTypeRec->GetResponseSDD();
@@ -242,8 +249,10 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
 	q/=rsdd->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
 	if(cal-> IsAMAt20MHz()) q*=2.; // account for 1/2 sampling freq.
+	if(q<repa->GetMinClusterChargeSDD()) continue; // remove noise clusters
+
 	Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
-	Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
+	Int_t  info[3] = {clSizTb, clSizAnode, fNlayer[fModule]};
 	if (digits) {	  
 	  //	   AliBin *b=&bins[s][idx[k]];
 	  //	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
@@ -257,7 +266,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	  }
 	}
 	milab[3]=fNdet[fModule];
-
 	AliITSRecPoint cc(milab,hit,info);
 	cc.SetType(npeaks);
 	cc.SetDriftTime(driftTimeUncorr);
