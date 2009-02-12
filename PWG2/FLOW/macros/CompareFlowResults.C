@@ -9,8 +9,8 @@ void CompareFlowResults(TString type="ESD")
   // for AliRoot
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libPWG2flow.so");
-  cerr<<"libPWG2flow.so loaded ..."<<endl;
+  gSystem->Load("libPWG2flowCommon.so");
+  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
   
   // for root load histrogram classes
   // output histosgrams

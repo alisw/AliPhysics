@@ -47,7 +47,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 
-#include "../../CORRFW/AliCFManager.h"
+#include "AliCFManager.h"
 
 #include "AliAnalysisTaskFittingQDistribution.h"
 #include "AliFlowEventSimpleMaker.h"

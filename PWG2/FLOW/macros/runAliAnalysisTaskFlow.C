@@ -110,8 +110,10 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   cerr<<"libANALYSISRL.so loaded..."<<endl;
   gSystem->Load("libCORRFW.so");
   cerr<<"libCORRFW.so loaded..."<<endl;
-  gSystem->Load("libPWG2flow.so");
-  cerr<<"libPWG2flow.so loaded..."<<endl;
+  gSystem->Load("libPWG2flowCommon.so");
+  cerr<<"libPWG2flowCommon.so loaded..."<<endl;
+  gSystem->Load("libPWG2flowTasks.so");
+  cerr<<"libPWG2flowTasks.so loaded..."<<endl;
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}

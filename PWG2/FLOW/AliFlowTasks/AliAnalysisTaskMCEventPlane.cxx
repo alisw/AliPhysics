@@ -33,7 +33,7 @@ class AliAnalysisTask;
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 
-#include "../../CORRFW/AliCFManager.h"
+#include "AliCFManager.h"
 
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"

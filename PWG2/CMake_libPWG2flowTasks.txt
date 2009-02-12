@@ -1,0 +1,17 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+      FLOW/AliFlowEventSimpleMaker.cxx 
+      FLOW/AliAnalysisTaskScalarProduct.cxx 
+      FLOW/AliAnalysisTaskMCEventPlane.cxx 
+      FLOW/AliAnalysisTaskLYZEventPlane.cxx 
+      FLOW/AliAnalysisTaskCumulants.cxx 
+      FLOW/AliAnalysisTaskQCumulants.cxx 
+      FLOW/AliAnalysisTaskLeeYangZeros.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG2flowTasks "${SRCS}" "${HDRS}")

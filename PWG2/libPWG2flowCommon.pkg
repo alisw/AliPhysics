@@ -1,0 +1,36 @@
+#-*- Mode: Makefile -*-
+
+SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
+      FLOW/AliFlowCommon/AliFlowTrackSimple.cxx \
+      FLOW/AliFlowCommon/AliFlowTrackSimpleCuts.cxx \
+      FLOW/AliFlowCommon/AliFlowVector.cxx \
+      FLOW/AliFlowCommon/AliFlowCommonConstants.cxx \
+      FLOW/AliFlowCommon/AliFlowLYZConstants.cxx \
+      FLOW/AliFlowCommon/AliFlowCumuConstants.cxx \
+      FLOW/AliFlowCommon/AliFlowCommonHist.cxx \
+      FLOW/AliFlowCommon/AliFlowCommonHistResults.cxx \
+      FLOW/AliFlowCommon/AliFlowLYZHist1.cxx \
+      FLOW/AliFlowCommon/AliFlowLYZHist2.cxx \
+      FLOW/AliFlowCommon/AliFlowLYZEventPlane.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithCumulants.cxx \
+      FLOW/AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx \
+      FLOW/AliFlowCommon/AliFittingQDistribution.cxx \
+      FLOW/AliFlowCommon/AliCumulantsFunctions.cxx \
+      FLOW/AliFlowCommon/AliQCumulantsFunctions.cxx \
+      FLOW/AliFlowCommon/AliFittingFunctionsForQDistribution.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2flowCommonLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(shell root-config --libdir) -lEG
+endif

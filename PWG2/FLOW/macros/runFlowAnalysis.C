@@ -6,13 +6,13 @@
 //--------------------------------------------------------------------------------------
 // RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kFALSE;
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;  
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kFALSE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
@@ -47,9 +47,9 @@ Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t aRuns = 44, const char* 
-			 			  dir="/data/alice1/kolk/KineOnly3/")
-			  //dir="/Users/snelling/alice_data/KineOnly3/")
+int runFlowAnalysis(Int_t aRuns = 100, const char* 
+		    // 			  dir="/data/alice1/kolk/KineOnly3/")
+		    dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -70,53 +70,55 @@ int runFlowAnalysis(Int_t aRuns = 44, const char*
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libPWG2flow.so");
-  cerr<<"libPWG2flow.so loaded ..."<<endl;
+  gSystem->Load("libPWG2flowCommon.so");
+  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+  gSystem->Load("libPWG2flowTasks.so");
+  cerr<<"libPWG2flowTasks.so loaded ..."<<endl;
   cout<<endl; 
   
-  // flow event in AliRoot
+  // Flow event in AliRoot
   AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
    
   // In root
 
   /*    
-  // constants  
-  gROOT->LoadMacro("code/AliFlowCommonConstants.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZConstants.cxx+");
-  gROOT->LoadMacro("code/AliFlowCumuConstants.cxx+");
+  // Constants  
+  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowCumuConstants.cxx+");
 
-  // flow event
-  gROOT->LoadMacro("code/AliFlowVector.cxx+"); 
-  gROOT->LoadMacro("code/AliFlowTrackSimple.cxx+");    
-  gROOT->LoadMacro("code/AliFlowEventSimple.cxx+");
+  // Flow event
+  gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
+  gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
+  gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
 
-  // cuts
-  gROOT->LoadMacro("code/AliFlowTrackSimpleCuts.cxx+");    
+  // Cuts
+  gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
 
-  // output histosgrams
-  gROOT->LoadMacro("code/AliFlowCommonHist.cxx+");
-  gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");
+  // Output histosgrams
+  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
 
-  // functions needed for various methods
-  gROOT->LoadMacro("code/AliCumulantsFunctions.cxx+");
-  gROOT->LoadMacro("code/AliQCumulantsFunctions.cxx+");
-  gROOT->LoadMacro("code/AliFittingFunctionsForQDistribution.cxx+");
-  gROOT->LoadMacro("code/AliFlowLYZEventPlane.cxx+");
+  // Functions needed for various methods
+  gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliQCumulantsFunctions.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
 
   // Flow Analysis code for various methods
-  gROOT->LoadMacro("code/AliFlowAnalysisWithMCEventPlane.cxx+"); 
-  gROOT->LoadMacro("code/AliFlowAnalysisWithScalarProduct.cxx+");
-  gROOT->LoadMacro("code/AliFlowAnalysisWithLYZEventPlane.cxx+");
-  gROOT->LoadMacro("code/AliFlowAnalysisWithLeeYangZeros.cxx+");
-  gROOT->LoadMacro("code/AliFlowAnalysisWithCumulants.cxx+");
-  gROOT->LoadMacro("code/AliFlowAnalysisWithQCumulants.cxx+"); 
-  gROOT->LoadMacro("code/AliFittingQDistribution.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx+"); 
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
+  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
+  gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
 
   // Class to fill the FlowEvent without aliroot dependence
-  // can be found in the directory other
-  gROOT->LoadMacro("code/FlowEventSimpleMaker.cxx+");   
+  // can be found in the directory FlowEventMakers
+  gROOT->LoadMacro("FlowEventMakers/FlowEventSimpleMaker.cxx+");   
 
   cout << "finished loading macros!" << endl;  
 

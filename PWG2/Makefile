@@ -41,6 +41,14 @@ ifneq ($(PWG2femtoscopy_INCLUDE),)
   ALICEINC += -I../$(PWG2femtoscopy_INCLUDE)
 endif
 
+ifneq ($(PWG2flowCommon_INCLUDE),)
+  ALICEINC += -I../$(PWG2flowCommon_INCLUDE)
+endif
+
+ifneq ($(PWG2flowTasks_INCLUDE),)
+  ALICEINC += -I../$(PWG2flowTasks_INCLUDE)
+endif
+
 ifneq ($(PWG2resonances_INCLUDE),)
   ALICEINC += -I../$(PWG2resonances_INCLUDE)
 endif
