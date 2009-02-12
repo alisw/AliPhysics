@@ -616,8 +616,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->AddTask(taskQC);
   }
   if (FQD){
-    if (QA) { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kTRUE);}
-    else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE);}
+    if (QA) { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kTRUE,useWeights);}
+    else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE,useWeights);}
     taskFQD->SetAnalysisType(type);
     taskFQD->SetUsePhiWeights(usePhiWeights); 
     taskFQD->SetUsePtWeights(usePtWeights);
@@ -646,10 +646,10 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
     
-  //AliAnalysisDataContainer *cinputWeights = NULL;  
+
   if(useWeights)
   {    
-   cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
+    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
   }  
   
   if (LYZ2){ 
