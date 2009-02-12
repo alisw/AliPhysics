@@ -50,109 +50,109 @@ class AliFlowAnalysisWithCumulants{
 //----------------------------------------------------------------------------------------------------------------
   TList* GetHistList() const {return this->fHistList;}      //output histogram list
   
-  void SetIntFlowResults(TH1D* ifr)  {this->fIntFlowResultsGFC = ifr;};
+  void SetIntFlowResults(TH1D* const ifr)  {this->fIntFlowResultsGFC = ifr;};
   TH1D* GetIntFlowResults() const    {return this->fIntFlowResultsGFC;};
   
-  void SetDiffFlowResults2nd(TH1D* diff2nd)  {this->fDiffFlowResults2ndOrderGFC = diff2nd;};
+  void SetDiffFlowResults2nd(TH1D* const diff2nd)  {this->fDiffFlowResults2ndOrderGFC = diff2nd;};
   TH1D* GetDiffFlowResults2nd() const        {return this->fDiffFlowResults2ndOrderGFC;};
   
-  void SetDiffFlowResults4th(TH1D* diff4th)  {this->fDiffFlowResults4thOrderGFC = diff4th;};
+  void SetDiffFlowResults4th(TH1D* const diff4th)  {this->fDiffFlowResults4thOrderGFC = diff4th;};
   TH1D* GetDiffFlowResults4th() const        {return this->fDiffFlowResults4thOrderGFC;};
   
-  void SetDiffFlowResults6th(TH1D* diff6th)  {this->fDiffFlowResults6thOrderGFC = diff6th;};
+  void SetDiffFlowResults6th(TH1D* const diff6th)  {this->fDiffFlowResults6thOrderGFC = diff6th;};
   TH1D* GetDiffFlowResults6th() const        {return this->fDiffFlowResults6thOrderGFC;};
   
-  void SetDiffFlowResults8th(TH1D* diff8th)  {this->fDiffFlowResults8thOrderGFC = diff8th;};
+  void SetDiffFlowResults8th(TH1D* const diff8th)  {this->fDiffFlowResults8thOrderGFC = diff8th;};
   TH1D* GetDiffFlowResults8th() const        {return this->fDiffFlowResults8thOrderGFC;};
   
-  void SetCommonHistsResults2nd(AliFlowCommonHistResults* chr2nd)  {this->fCommonHistsResults2nd = chr2nd;};
+  void SetCommonHistsResults2nd(AliFlowCommonHistResults* const chr2nd)  {this->fCommonHistsResults2nd = chr2nd;};
   AliFlowCommonHistResults* GetCommonHistsResults2nd() const       {return this->fCommonHistsResults2nd;};
   
-  void SetCommonHistsResults4th(AliFlowCommonHistResults* chr4th)  {this->fCommonHistsResults4th = chr4th;};
+  void SetCommonHistsResults4th(AliFlowCommonHistResults* const chr4th)  {this->fCommonHistsResults4th = chr4th;};
   AliFlowCommonHistResults* GetCommonHistsResults4th() const       {return this->fCommonHistsResults4th;};
   
-  void SetCommonHistsResults6th(AliFlowCommonHistResults* chr6th)  {this->fCommonHistsResults6th = chr6th;};
+  void SetCommonHistsResults6th(AliFlowCommonHistResults* const chr6th)  {this->fCommonHistsResults6th = chr6th;};
   AliFlowCommonHistResults* GetCommonHistsResults6th() const       {return this->fCommonHistsResults6th;};
   
-  void SetCommonHistsResults8th(AliFlowCommonHistResults* chr8th)  {this->fCommonHistsResults8th = chr8th;};
+  void SetCommonHistsResults8th(AliFlowCommonHistResults* const chr8th)  {this->fCommonHistsResults8th = chr8th;};
   AliFlowCommonHistResults* GetCommonHistsResults8th() const       {return this->fCommonHistsResults8th;};
   
-  void SetIntFlowGenFun(TProfile2D* ifgf)  {this->fIntFlowGenFun = ifgf;};
+  void SetIntFlowGenFun(TProfile2D* const ifgf)  {this->fIntFlowGenFun = ifgf;};
   TProfile2D* GetIntFlowGenFun() const     {return this->fIntFlowGenFun;};
 
-  void SetIntFlowGenFun4(TProfile2D* ifgf4)  {this->fIntFlowGenFun4 = ifgf4;}; //(only for other system of Eq.)
+  void SetIntFlowGenFun4(TProfile2D* const ifgf4)  {this->fIntFlowGenFun4 = ifgf4;}; //(only for other system of Eq.)
   TProfile2D* GetIntFlowGenFun4() const      {return this->fIntFlowGenFun4;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun6(TProfile2D* ifgf6)  {this->fIntFlowGenFun6 = ifgf6;}; //(only for other system of Eq.)
+  void SetIntFlowGenFun6(TProfile2D* const ifgf6)  {this->fIntFlowGenFun6 = ifgf6;}; //(only for other system of Eq.)
   TProfile2D* GetIntFlowGenFun6() const      {return this->fIntFlowGenFun6;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun8(TProfile2D* ifgf8)  {this->fIntFlowGenFun8 = ifgf8;}; //(only for other system of Eq.)
+  void SetIntFlowGenFun8(TProfile2D* const ifgf8)  {this->fIntFlowGenFun8 = ifgf8;}; //(only for other system of Eq.)
   TProfile2D* GetIntFlowGenFun8() const      {return this->fIntFlowGenFun8;};  //(only for other system of Eq.)
   
-  void SetIntFlowGenFun16(TProfile2D* ifgf16)  {this->fIntFlowGenFun16 = ifgf16;}; //(only for other system of Eq.)
+  void SetIntFlowGenFun16(TProfile2D* const ifgf16)  {this->fIntFlowGenFun16 = ifgf16;}; //(only for other system of Eq.)
   TProfile2D* GetIntFlowGenFun16() const       {return this->fIntFlowGenFun16;};   //(only for other system of Eq.)
  
-  void SetAverageMultiplicity4(TProfile* am4)     {this->fAvMultIntFlow4GFC = am4;};  //(only for other system of Eq.)
+  void SetAverageMultiplicity4(TProfile* const am4)     {this->fAvMultIntFlow4GFC = am4;};  //(only for other system of Eq.)
   TProfile* GetAverageMultiplicity4() const       {return this->fAvMultIntFlow4GFC;}; //(only for other system of Eq.)
   
-  void SetAverageMultiplicity6(TProfile* am6)     {this->fAvMultIntFlow6GFC = am6;};  //(only for other system of Eq.)
+  void SetAverageMultiplicity6(TProfile* const am6)     {this->fAvMultIntFlow6GFC = am6;};  //(only for other system of Eq.)
   TProfile* GetAverageMultiplicity6() const       {return this->fAvMultIntFlow6GFC;}; //(only for other system of Eq.)
   
-  void SetAverageMultiplicity8(TProfile* am8)     {this->fAvMultIntFlow8GFC = am8;};  //(only for other system of Eq.)
+  void SetAverageMultiplicity8(TProfile* const am8)     {this->fAvMultIntFlow8GFC = am8;};  //(only for other system of Eq.)
   TProfile* GetAverageMultiplicity8() const       {return this->fAvMultIntFlow8GFC;}; //(only for other system of Eq.)
   
-  void SetAverageMultiplicity16(TProfile* am16)    {this->fAvMultIntFlow16GFC = am16;}; //(only for other system of Eq.)
+  void SetAverageMultiplicity16(TProfile* const am16)    {this->fAvMultIntFlow16GFC = am16;}; //(only for other system of Eq.)
   TProfile* GetAverageMultiplicity16() const       {return this->fAvMultIntFlow16GFC;}; //(only for other system of Eq.)
   
   //----------------------------------------------------------------------------------------------------------
   //RP = Reaction Plane (RP denotes particles used to determine the reaction plane)
-  void SetDiffFlowPtRPGenFunRe(TProfile3D* dfRPPtgfRe)  {this->fDiffFlowPtRPGenFunRe = dfRPPtgfRe;};
+  void SetDiffFlowPtRPGenFunRe(TProfile3D* const dfRPPtgfRe)  {this->fDiffFlowPtRPGenFunRe = dfRPPtgfRe;};
   TProfile3D* GetDiffFlowPtRPGenFunRe() const            {return this->fDiffFlowPtRPGenFunRe;};
   
-  void SetDiffFlowPtRPGenFunIm(TProfile3D* dfRPPtgfIm)  {this->fDiffFlowPtRPGenFunIm = dfRPPtgfIm;};
+  void SetDiffFlowPtRPGenFunIm(TProfile3D* const dfRPPtgfIm)  {this->fDiffFlowPtRPGenFunIm = dfRPPtgfIm;};
   TProfile3D* GetDiffPtRPFlowGenFunIm() const            {return this->fDiffFlowPtRPGenFunIm;};
   
-  void SetNumberOfParticlesPerPtBinRP(TProfile* nopppbRP) {this->fPtBinRPNoOfParticles = nopppbRP;};
+  void SetNumberOfParticlesPerPtBinRP(TProfile* const nopppbRP) {this->fPtBinRPNoOfParticles = nopppbRP;};
   TProfile* GetNumberOfParticlesPerPtBinRP() const         {return this->fPtBinRPNoOfParticles;};  
   
-  void SetDiffFlowEtaRPGenFunRe(TProfile3D* dfEtaRPgfRe)   {this->fDiffFlowEtaRPGenFunRe = dfEtaRPgfRe;};
+  void SetDiffFlowEtaRPGenFunRe(TProfile3D* const dfEtaRPgfRe)   {this->fDiffFlowEtaRPGenFunRe = dfEtaRPgfRe;};
   TProfile3D* GetDiffFlowEtaRPGenFunRe() const              {return this->fDiffFlowEtaRPGenFunRe;};
   
-  void SetDiffFlowEtaRPGenFunIm(TProfile3D* dfEtaRPgfIm)   {this->fDiffFlowEtaRPGenFunIm = dfEtaRPgfIm;};
+  void SetDiffFlowEtaRPGenFunIm(TProfile3D* const dfEtaRPgfIm)   {this->fDiffFlowEtaRPGenFunIm = dfEtaRPgfIm;};
   TProfile3D* GetDiffFlowEtaRPGenFunIm() const              {return this->fDiffFlowEtaRPGenFunIm;};
   
-  void SetNumberOfParticlesPerEtaBinRP(TProfile* noppebRP)    {this->fEtaBinRPNoOfParticles = noppebRP;};
+  void SetNumberOfParticlesPerEtaBinRP(TProfile* const noppebRP)    {this->fEtaBinRPNoOfParticles = noppebRP;};
   TProfile* GetNumberOfParticlesPerEtaBinRP() const            {return this->fEtaBinRPNoOfParticles;}; 
   //----------------------------------------------------------------------------------------------------------
    
   //----------------------------------------------------------------------------------------------------------
   //POI = Particles Of Interest (POI denotes particles of interest for the final physical results for int. and diff. flow)
-  void SetDiffFlowPtPOIGenFunRe(TProfile3D* dfPOIPtgfRe)  {this->fDiffFlowPtPOIGenFunRe = dfPOIPtgfRe;};
+  void SetDiffFlowPtPOIGenFunRe(TProfile3D* const dfPOIPtgfRe)  {this->fDiffFlowPtPOIGenFunRe = dfPOIPtgfRe;};
   TProfile3D* GetDiffFlowPtPOIGenFunRe() const            {return this->fDiffFlowPtPOIGenFunRe;};
   
-  void SetDiffFlowPtPOIGenFunIm(TProfile3D* dfPOIPtgfIm)  {this->fDiffFlowPtPOIGenFunIm = dfPOIPtgfIm;};
+  void SetDiffFlowPtPOIGenFunIm(TProfile3D* const dfPOIPtgfIm)  {this->fDiffFlowPtPOIGenFunIm = dfPOIPtgfIm;};
   TProfile3D* GetDiffPtPOIFlowGenFunIm() const            {return this->fDiffFlowPtPOIGenFunIm;};
   
-  void SetNumberOfParticlesPerPtBinPOI(TProfile* nopppbPOI) {this->fPtBinPOINoOfParticles = nopppbPOI;};
+  void SetNumberOfParticlesPerPtBinPOI(TProfile* const nopppbPOI) {this->fPtBinPOINoOfParticles = nopppbPOI;};
   TProfile* GetNumberOfParticlesPerPtBinPOI() const         {return this->fPtBinPOINoOfParticles;};  
   
-  void SetDiffFlowEtaPOIGenFunRe(TProfile3D* dfEtaPOIgfRe)   {this->fDiffFlowEtaPOIGenFunRe = dfEtaPOIgfRe;};
+  void SetDiffFlowEtaPOIGenFunRe(TProfile3D* const dfEtaPOIgfRe)   {this->fDiffFlowEtaPOIGenFunRe = dfEtaPOIgfRe;};
   TProfile3D* GetDiffFlowEtaPOIGenFunRe() const              {return this->fDiffFlowEtaPOIGenFunRe;};
   
-  void SetDiffFlowEtaPOIGenFunIm(TProfile3D* dfEtaPOIgfIm)   {this->fDiffFlowEtaPOIGenFunIm = dfEtaPOIgfIm;};
+  void SetDiffFlowEtaPOIGenFunIm(TProfile3D* const dfEtaPOIgfIm)   {this->fDiffFlowEtaPOIGenFunIm = dfEtaPOIgfIm;};
   TProfile3D* GetDiffFlowEtaPOIGenFunIm() const              {return this->fDiffFlowEtaPOIGenFunIm;};
   
-  void SetNumberOfParticlesPerEtaBinPOI(TProfile* noppebPOI)    {this->fEtaBinPOINoOfParticles = noppebPOI;};
+  void SetNumberOfParticlesPerEtaBinPOI(TProfile* const noppebPOI)    {this->fEtaBinPOINoOfParticles = noppebPOI;};
   TProfile* GetNumberOfParticlesPerEtaBinPOI() const            {return this->fEtaBinPOINoOfParticles;};  
   //----------------------------------------------------------------------------------------------------------
     
-  void SetAverageMultiplicity(TProfile* am)      {this->fAvMultIntFlowGFC = am;};
+  void SetAverageMultiplicity(TProfile* const am)      {this->fAvMultIntFlowGFC = am;};
   TProfile* GetAverageMultiplicity() const       {return this->fAvMultIntFlowGFC;};
   
-  void SetQVectorComponents(TProfile* sqvc)    {this->fQVectorComponentsGFC = sqvc;};
+  void SetQVectorComponents(TProfile* const sqvc)    {this->fQVectorComponentsGFC = sqvc;};
   TProfile* GetQVectorComponents() const       {return this->fQVectorComponentsGFC;};
   
-  void SetCommonHists(AliFlowCommonHist* ch)  {this->fCommonHists = ch;};
+  void SetCommonHists(AliFlowCommonHist* const ch)  {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const   {return this->fCommonHists;};
 //----------------------------------------------------------------------------------------------------------------
  
