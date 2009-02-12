@@ -264,7 +264,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 	    Double_t dv2 = dWR * TMath::Cos(2*(dPhi-dRP));
 	    Double_t dPt = pTrack->Pt();
 	    //fill histogram
-	    fHistProFlow->Fill(dPt,100*dv2);  
+	    fHistProFlow->Fill(dPt,dv2);  
 	  }  
 	}//track selected
       }//loop over tracks
@@ -346,7 +346,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
       
       if (dErr2difcomb!=0.) {
 	dErr2difcomb /= iNtheta;
-	dErrdifcomb = TMath::Sqrt(dErr2difcomb)*100;
+	dErrdifcomb = TMath::Sqrt(dErr2difcomb);
 	//cerr<<"dErrdifcomb = "<<dErrdifcomb<<endl;
       }
       else {dErrdifcomb = 0.; }
