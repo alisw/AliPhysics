@@ -16,6 +16,12 @@ Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
+// Weights 
+// Use weights for Q vector
+Bool_t usePhiWeights = kFALSE; //Phi (correction for non-uniform azimuthal acceptance)
+Bool_t usePtWeights  = kFALSE; //v'(pt) (differential flow in pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
+
 //--------------------------------------------------------------------------------------
 // CUT SETTINGS
 //integrated selection
@@ -37,13 +43,6 @@ Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 //--------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------
-// Weights 
-// Use weights for Q vector
-Bool_t usePhiWeights = kFALSE; //Phi (correction for non-uniform azimuthal acceptance)
-Bool_t usePtWeights  = kFALSE; //v'(pt) (differential flow in pt)
-Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
-//--------------------------------------------------------------------------------------
 
 Int_t offset = 0;
                                           

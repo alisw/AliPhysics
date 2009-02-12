@@ -628,6 +628,10 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
   
+  if (useWeights) {    
+    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
+  }
+
   if (LYZ2){ 
     AliAnalysisDataContainer *cinputLYZ2 = mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer); } 
   if (LYZEP){ 
