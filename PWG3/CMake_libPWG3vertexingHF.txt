@@ -10,6 +10,8 @@ set(SRCS
        vertexingHF/AliAnalysisTaskSESelectHF.cxx
        vertexingHF/AliAnalysisTaskSECompareHF.cxx
        vertexingHF/AliCFHeavyFlavourTask.cxx
+       vertexingHF/AliMultiDimVector.cxx
+       vertexingHF/AliSignificanceCalculator.cxx
 )
 
 # fill list of header files from list of source files
