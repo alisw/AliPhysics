@@ -157,7 +157,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     TParticle *part = mcPart->Particle(); 
     TParticle *part0 = mcPart->Particle();
     TParticle *part1 = mcPart->Particle();
-
+ 
     // Selection of the resonance
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
 
@@ -170,43 +170,66 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     Float_t mass = part->GetCalcMass();
 
     // Decays kinematics
-    Int_t p0 = part->GetDaughter(0);
-    part0 = stack->Particle(p0);
-    Int_t pdg0 = part0->GetPdgCode();
-    Float_t e0 = part0->Energy();
-    Float_t pz0 = part0->Pz();
-    Float_t py0 = part0->Py();
-    Float_t px0 = part0->Px();
-    Float_t phi0 = part0->Phi(); // Warning in TParticle Phi = pi + ATan2(Py,Px) = [0,2pi] 
-    phi0 = Phideg(phi0);    
-    Float_t rapmc0=Rap(e0,pz0);
-    AliMCParticle *mcpart0 = new AliMCParticle(part0);
 
-    // selection of the rapidity for first muon
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mcpart0)) continue;                
+    Int_t p0 = part->GetDaughter(0);
+    part0 = stack->Particle(p0); 
+   // selection of the rapidity for first muon
+    AliMCParticle *mcpart0 = new AliMCParticle(part0);
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mcpart0)) continue;
+    Int_t pdg0 = part0->GetPdgCode();
 
     Int_t p1 = part->GetDaughter(1);
     part1 = stack->Particle(p1);
-    Int_t pdg1 = part1->GetPdgCode();
-    Float_t e1 = part1->Energy();
-    Float_t pz1 = part1->Pz();
-    Float_t py1 = part1->Py();
-    Float_t px1 = part1->Px();
-    Float_t phi1 = part1->Phi();
-    phi1 = Phideg(phi1);
-    Float_t rapmc1=Rap(e1,pz1);
+   // selection of the rapidity for second muon
     AliMCParticle *mcpart1 = new AliMCParticle(part1);
-
-    // selection of the rapidity for second muon
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mcpart1)) continue;
+    Int_t pdg1 = part1->GetPdgCode();
+ 
+   // 0 mu- 1 mu+
+    Float_t e0, pz0, py0, px0, phi0, rapmc0;
+    Float_t e1, pz1, py1, px1, phi1, rapmc1;
 
-    if(pdg0==13 || pdg1==13) { 
+    // ordering sign: first = mu-
+    if(pdg0==13){
+	e0 = part0->Energy();
+	pz0 = part0->Pz();
+	py0 = part0->Py();
+	px0 = part0->Px();
+	phi0 = part0->Phi(); // Warning in TParticle Phi = pi + ATan2(Py,Px) = [0,2pi] 
+	phi0 = Phideg(phi0);    
+	rapmc0=Rap(e0,pz0);
+
+	e1 = part1->Energy();
+	pz1 = part1->Pz();
+	py1 = part1->Py();
+	px1 = part1->Px();
+	phi1 = part1->Phi();
+	phi1 = Phideg(phi1);
+	rapmc1=Rap(e1,pz1);
+    }
+    else{
+	e1 = part0->Energy();
+	pz1 = part0->Pz();
+	py1 = part0->Py();
+	px1 = part0->Px();
+	phi1 = part0->Phi();
+	phi1 = Phideg(phi1);    
+	rapmc1=Rap(e1,pz1);
+
+	e0 = part1->Energy();
+	pz0 = part1->Pz();
+	py0 = part1->Py();
+	px0 = part1->Px();
+	phi0 = part1->Phi();
+	phi0 = Phideg(phi0);
+	rapmc0=Rap(e0,pz0); 
+    }
 
 	Float_t pmc = TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1)+
 				   (pz0+pz1)*(pz0+pz1));
 	Float_t ptmc = TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1));
 	Float_t imassmc = Imass(e0,px0,py0,pz0,e1,px1,py1,pz1);
-	Float_t rapmc=Rap((e0+e1),(pz0+pz1));
+	Float_t rapmc_check=Rap((e0+e1),(pz0+pz1));
 
 	containerInput[0] = fNevt ;   
 	containerInput[1] = rapmc0 ;   
@@ -220,8 +243,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 
 	// fill the container at the first step
 	fCFManager->GetParticleContainer()->Fill(containerInput,0);
-
-    } // one muon is positive
+ 
   }    
 
 ////////
