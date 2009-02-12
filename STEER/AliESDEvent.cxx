@@ -639,6 +639,15 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
     Int_t idx=cs->GetIndex();
     if (rm==idx) return kFALSE;
     if (idx==last) used++;
+
+    AliESDv0 *v0=cs;
+    idx=v0->GetNindex();
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
+
+    idx=v0->GetPindex();
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
   }
 
   Int_t nkn=GetNumberOfKinks();
@@ -715,6 +724,17 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
     AliESDcascade *cs=GetCascade(n);
     if (cs->GetIndex()==last) {
        cs->SetIndex(rm);
+       used--;
+       if (!used) return kTRUE;
+    }
+    AliESDv0 *v0=cs;
+    if (v0->GetIndex(0)==last) {
+       v0->SetIndex(0,rm);
+       used--;
+       if (!used) return kTRUE;
+    }
+    if (v0->GetIndex(1)==last) {
+       v0->SetIndex(1,rm);
        used--;
        if (!used) return kTRUE;
     }
