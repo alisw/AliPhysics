@@ -2209,8 +2209,8 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   vC->AddNode(cfcone,1,new TGeoTranslation(0,0,-kConeZPosition));
 
   for (Int_t i=0; i<4; i++) {
-    Double_t thetaW = kThetaWing + 90.*i;
-    vC->AddNode(wing, i+1, new TGeoCombiTrans(0, 0, -kConeZPosition, 
+    Double_t thetaW = kThetaWing + 90.*i + angleWideWing/2.;
+    vC->AddNode(wing, i+1, new TGeoCombiTrans(0, 0, -kConeZPosition+kWingHalfThick,
 			   new TGeoRotation("",thetaW,180,0)));
   }
 
