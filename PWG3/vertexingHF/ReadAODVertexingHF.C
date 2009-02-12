@@ -6,12 +6,10 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   // standard AOD + a friend heavy-flavour AOD) and apply cuts
   // Origin: A.Dainese
   //
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3vertexingHF.so");
+
+  Bool_t useParFiles=kFALSE;
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  LoadLibraries(useParFiles);
 
   // create a test histogram
   TH2F *hCPtaVSd0d0 = new TH2F("hCPtaVSd0d0","D^{0} correlation plot",1000,-50000,50000,1000,-1,1);
@@ -234,10 +232,9 @@ void ReadAODVertexingHFsa(const char *aodHFFileName="AliAOD.VertexingHF.sa.root"
   // heavy-flavour AOD (i.e. without standard AOD) and apply cuts
   // Origin: A.Dainese
   //
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libPWG3base.so");
+  Bool_t useParFiles=kFALSE;
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  LoadLibraries(useParFiles);
 
   // create a test histogram
   TH2F *hCPtaVSd0d0 = new TH2F("hCPtaVSd0d0","D^{0} correlation plot",1000,-50000,50000,1000,-1,1);
