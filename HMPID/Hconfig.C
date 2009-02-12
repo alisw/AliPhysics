@@ -1,7 +1,4 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
-//Change log:  21st June 2007 by Levente Molnar
-//             Detector description upgrade: ITS,ToF,Absorber, Dipole, V0, Emcal
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 
 #include <TPDGCode.h>
@@ -471,18 +468,7 @@ void HmpConfig::WriteDet(FILE *pF)
 //CORE detectors                  
   if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(pF,"\n  new AliPIPEv3(\"PIPE\",\"Beam Pipe\");\n");
   if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv3(\"SHIL\",\"Shielding Version 2\");\n");  
-  if(fDetBG->GetButton(kITS  )->GetState()){
-    fprintf(pF,"\n AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version with asymmetric services\");\n");
-    fprintf(pF,"\n  ITS->SetMinorVersion(2);\n");  
-    fprintf(pF,"\n  ITS->SetReadDet(kFALSE);\n");	
-    fprintf(pF,"\n  ITS->SetThicknessDet1(200.);\n"); 
-    fprintf(pF,"\n  ITS->SetThicknessDet2(200.); \n");
-    fprintf(pF,"\n  ITS->SetThicknessChip1(150.);\n");
-    fprintf(pF,"\n  ITS->SetThicknessChip2(150.);\n");
-    fprintf(pF,"\n  ITS->SetRails(0);\n");	
-    fprintf(pF,"\n  ITS->SetCoolingFluid(1);\n");
-    fprintf(pF,"\n  ITS->SetEUCLID(0);\n");
-  }  
+  if(fDetBG->GetButton(kITS  )->GetState()) fprintf(pF,"\n  new AliITSv11Hybrid(\"ITS\",\"ITS v11Hybrid\");\n");
   
   if(fDetBG->GetButton(kTPC  )->GetState())  fprintf(pF,"\n  new AliTPCv2(\"TPC\",\"Default\");\n");
   if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
