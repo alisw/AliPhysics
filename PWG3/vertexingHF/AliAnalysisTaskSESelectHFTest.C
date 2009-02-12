@@ -6,18 +6,10 @@ void AliAnalysisTaskSESelectHFTest()
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so"); 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3vertexingHF.so");
+  Bool_t useParFiles=kFALSE;
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  LoadLibraries(useParFiles);
 
 
   // Local files 
