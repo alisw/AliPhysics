@@ -60,7 +60,7 @@ ClassImp(AliAnalysisTaskFittingQDistribution)
 
 //================================================================================================================
 
-AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t on): 
+AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t on, Bool_t useWeights): 
  AliAnalysisTask(name,""), 
  fESD(NULL),
  fAOD(NULL),
@@ -72,7 +72,12 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fListHistos(NULL),
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(on)
+ fQA(on),
+ fUseWeights(useWeights),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
  //constructor
  cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name)"<<endl;
@@ -80,6 +85,12 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  // Define input and output slots here
  // Input slot #0 works with a TChain
  DefineInput(0, TChain::Class());
+ 
+ // Input slot #1 is needed for the weights 
+ if(useWeights)
+ {
+  DefineInput(1, TList::Class());   
+ }
   
  // Output slot #0 writes into a TList container
  DefineOutput(0, TList::Class());  
@@ -101,7 +112,12 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fListHistos(NULL),  
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(kFALSE)
+ fQA(kFALSE),
+ fUseWeights(kFALSE),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
  //dummy constructor
  cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution()"<<endl;
@@ -184,8 +200,24 @@ void AliAnalysisTaskFittingQDistribution::CreateOutputObjects()
   
  //analyser
  fFQDA = new AliFittingQDistribution();
- fFQDA->CreateOutputObjects();
-
+ fFQDA->Init();
+ 
+ //weights:
+ if(fUseWeights)
+ {
+  //pass the flags to class:
+  if(fUsePhiWeights) fFQDA->SetUsePhiWeights(fUsePhiWeights);
+  if(fUsePtWeights) fFQDA->SetUsePtWeights(fUsePtWeights);
+  if(fUseEtaWeights) fFQDA->SetUseEtaWeights(fUseEtaWeights);
+  //get data from input slot #1 which is used for weights:
+  if(GetNinputs()==2) 
+  {                   
+   fListWeights = (TList*)GetInputData(1); 
+  }
+  //pass the list with weights to class:
+  if(fListWeights) fFQDA->SetWeightsList(fListWeights);
+ }
+ 
  if(fFQDA->GetHistList()) 
  {
   fListHistos = fFQDA->GetHistList();

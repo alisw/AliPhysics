@@ -38,8 +38,8 @@ Int_t PIDDiff       = 211;
 //--------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------
-// WEIGHTS SETTINGS 
-//to use or not to use the weights - that is a question!
+// Weights 
+// Use weights for Q vector
 Bool_t usePhiWeights = kFALSE; //Phi (correction for non-uniform azimuthal acceptance)
 Bool_t usePtWeights  = kFALSE; //v'(pt) (differential flow in pt)
 Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
@@ -183,13 +183,15 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   TFile *fileWithWeights = NULL;
   TList *listWithWeights = NULL;
   
-  if(usePhiWeights||usePtWeights||useEtaWeights)
-  {
-   fileWithWeights = TFile::Open("weights.root","READ");
-   if(fileWithWeights)
-   {
-    listWithWeights = (TList*)fileWithWeights->Get("weights");
-   }else{cout<<" WARNING: the file <weights.root> with weights from the previous run was not accessed."<<endl;}    
+  if(usePhiWeights||usePtWeights||useEtaWeights) {
+    fileWithWeights = TFile::Open("weights.root","READ");
+    if(fileWithWeights) {
+      listWithWeights = (TList*)fileWithWeights->Get("weights");
+    }
+    else
+      {cout << " WARNING: the file <weights.root> with weights from the previous run was not found."<<endl;
+	break;
+      }    
   }
 
   //flow methods:  
@@ -227,7 +229,11 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   //FQD = Fitting q-distribution 
   if(FQD) {
     AliFittingQDistribution* fqd = new AliFittingQDistribution();
-    fqd->CreateOutputObjects();
+    fqd->Init();
+    if(listWithWeights) fqd->SetWeightsList(listWithWeights);
+    if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);
+    if(usePtWeights) fqd->SetUsePtWeights(usePtWeights);
+    if(useEtaWeights) fqd->SetUseEtaWeights(useEtaWeights);
   }
 
   //SP = Scalar Product 
