@@ -169,7 +169,7 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	entot += DTEVT1.phkk[i][3]; // PHKK[i][3] <-> PHKK(4,i)
      } 
   }
-  //printf("\n TDPMjet: DPMJET stack contains %d particles", numpart);
+  printf("\n TDPMjet: DPMJET stack contains %d particles", numpart);
   // printf("\n TDPMjet: Final not decayed particles: %d",    numStabpart);
   //printf("\n TDPMjet: Total energy: %f GeV          \n",   entot);
   Int_t nump = 0;
@@ -289,13 +289,15 @@ void TDPMjet::Initialize()
     if (fProcess == kDpmMb) {
 	fprintf(out, "PROCESS           1 0 1 1 1 1 1 1\n");
     } else if (fProcess == kDpmMbNonDiffr) {
-	fprintf(out, "PROCESS           1 0 1 1 0 0 0 1\n");
+	fprintf(out, "PROCESS           1 0 1 0 0 0 0 1\n");
     } else if (fProcess == kDpmDiffr) {
-	fprintf(out, "PROCESS           0 0 0 0 1 1 1 0\n");
+	fprintf(out, "PROCESS           0 0 0 1 1 1 1 0\n");
     }else if (fProcess == kDpmSingleDiffr) {
         fprintf(out, "PROCESS           0 0 0 0 1 1 0 0\n");
     }else if (fProcess == kDpmDoubleDiffr) {
         fprintf(out, "PROCESS           0 0 0 0 0 0 1 0\n");
+    } else if (fProcess == kDpmCentralDiffr){
+        fprintf(out, "PROCESS           0 0 0 1 0 0 0 0\n");
     }
     
     Int_t iPDG[19] = 

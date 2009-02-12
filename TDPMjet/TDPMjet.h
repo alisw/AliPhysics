@@ -17,7 +17,7 @@
 //*KEND.
 #endif
 
-typedef enum {kDpmMb, kDpmMbNonDiffr, kDpmDiffr, kDpmSingleDiffr, kDpmDoubleDiffr} DpmProcess_t;
+typedef enum {kDpmMb, kDpmMbNonDiffr, kDpmDiffr, kDpmSingleDiffr, kDpmDoubleDiffr, kDpmCentralDiffr} DpmProcess_t;
 class TClonesArray;
 
 
