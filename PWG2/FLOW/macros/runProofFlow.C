@@ -499,7 +499,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     else {
       TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
       if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
-    }kTRUE;
+    }
     cout<<"LYZEP input file/list read..."<<endl;
   }
   
@@ -593,6 +593,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     if (QA) { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE,useWeights);}
     else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE,useWeights);}
     taskQC->SetAnalysisType(type);
+    taskQC->SetUsePhiWeights(usePhiWeights); 
+    taskQC->SetUsePtWeights(usePtWeights);
+    taskQC->SetUseEtaWeights(useEtaWeights); 
     taskQC->SetCFManager1(cfmgr1);
     taskQC->SetCFManager2(cfmgr2);
     if (QA) { 
@@ -604,6 +607,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
     if (QA) { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kTRUE,useWeights);}
     else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE,useWeights);}
     taskFQD->SetAnalysisType(type);
+    taskFQD->SetUsePhiWeights(usePhiWeights); 
+    taskFQD->SetUsePtWeights(usePtWeights);
+    taskFQD->SetUseEtaWeights(useEtaWeights);
     taskFQD->SetCFManager1(cfmgr1);
     taskFQD->SetCFManager2(cfmgr2);
     if (QA) { 
