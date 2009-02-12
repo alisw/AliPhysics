@@ -30,29 +30,37 @@
 /////////////////////////////////////////////////////////////////////////////////// 	 
 	 
 
-//SETTING THE ANALYSIS
+// SETTING THE ANALYSIS
 
-//Flow analysis methods can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kFALSE;
+// Flow analysis methods can be: (set to kTRUE or kFALSE)
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kFALSE;
+Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kFALSE;
-Bool_t MCEP  = kFALSE;
+Bool_t FQD   = kTRUE;
+Bool_t MCEP  = kTRUE;
 
 
-//Type of analysis can be:
+// Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
 
-//Bolean to fill/not fill the QA histograms
+// Boolean to fill/not fill the QA histograms
 Bool_t QA = kFALSE;    
 
-//SETTING THE CUTS
 
-//for integrated flow
+// WEIGHTS SETTINGS: 
+// to use weigths for the Q vector
+Bool_t usePhiWeights = kFALSE; //Phi
+Bool_t usePtWeights  = kFALSE; //v'(pt)
+Bool_t useEtaWeights = kFALSE; //v'(eta)
+Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
+
+// SETTING THE CUTS
+
+// For integrated flow
 const Double_t ptmin1 = 0.0;
 const Double_t ptmax1 = 10.0;
 const Double_t ymin1  = -1.;
@@ -65,7 +73,7 @@ const Int_t PDG1 = 211;
 const Int_t minclustersTPC1 = 50;
 const Int_t maxnsigmatovertex1 = 3;
 
-//for differential flow
+// For differential flow
 const Double_t ptmin2 = 0.0;
 const Double_t ptmax2 = 10.0;
 const Double_t ymin2  = -1.;
@@ -78,15 +86,8 @@ const Int_t PDG2 = 211;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
-//WEIGHTS SETTINGS: 
-//to use or not to use the weights - that is a question!
-Bool_t usePhiWeights = kTRUE; //Phi
-Bool_t usePtWeights  = kFALSE; //v'(pt)
-Bool_t useEtaWeights = kFALSE; //v'(eta)
-Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
-
-void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
-//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t nRuns = 50, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
   TStopwatch timer;
@@ -96,12 +97,37 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
   
-  // include path (to find the .h files when compiling)
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  // Include path (to find the .h files when compiling)
   gSystem->AddIncludePath("-I$ROOTSYS/include") ;
   
-  // load needed libraries
+  // Load needed root libraries
   gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libPhysics.so");
+
+  // For using root and par files
+  SetupPar("PWG2flowCommon");
+  cerr<<"PWG2flowCommon.par loaded..."<<endl;
+
+  // Alice specific stuff
+  SetupPar("STEERBase");
+  SetupPar("ESD");
+  SetupPar("AOD");
+
+  SetupPar("ANALYSIS");
+  SetupPar("ANALYSISalice");
+  SetupPar("PWG2AOD");
+
+  SetupPar("CORRFW");
+
+  SetupPar("PWG2flowTasks");
+  cerr<<"PWG2flowTasks.par loaded..."<<endl;
+
+  // For using aliroot
+  /*
+  //  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+
   gSystem->Load("libESD.so");
   cerr<<"libESD loaded..."<<endl;
   gSystem->Load("libANALYSIS.so");
@@ -114,17 +140,18 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   cerr<<"libPWG2flowCommon.so loaded..."<<endl;
   gSystem->Load("libPWG2flowTasks.so");
   cerr<<"libPWG2flowTasks.so loaded..."<<endl;
+  */
 
-  // create the TChain. CreateESDChain() is defined in CreateESDChain.C
+  // Create the TChain. CreateESDChain() is defined in CreateESDChain.C
   if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
   //  cout<<"chain ("<<chain<<")"<<endl; }
   else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
   //  cout<<"chain ("<<chain<<")"<<endl; }
  
   //____________________________________________//
-  //Create cuts using correction framework
+  // Create cuts using correction framework
 
-  //Set TList for the QA histograms
+  // Set TList for the QA histograms
   if (QA) {
     if (SP){
       TList* qaIntSP = new TList();
@@ -424,7 +451,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   
   printf("CREATE INTERFACE AND CUTS FOR INTEGRATED FLOW\n");
   AliCFManager* cfmgr1 = new AliCFManager();
-  cfmgr1->SetNStepParticle(4); //05nov08
+  //  cfmgr1->SetNStepParticle(4); // needed for trunk not in 4.16
   cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);       //on MC
   cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);      //on MC
   cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);      //on ESD
@@ -432,7 +459,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   
   printf("CREATE INTERFACE AND CUTS FOR DIFFERENTIAL FLOW\n");
   AliCFManager* cfmgr2 = new AliCFManager();
-  cfmgr2->SetNStepParticle(4); //05nov08
+  //  cfmgr2->SetNStepParticle(4); // needed for trunk not in 4.16
   cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
@@ -446,11 +473,14 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2
   {
    //open the file with the weights:
    weightsFile = TFile::Open("weights.root","READ");
-   if(weightsFile)
-   {
-    //access the list which holds the histos with weigths:
-    weightsList = (TList*)weightsFile->Get("weights");
-   }else{cout<<" WARNING: the file <weights.root> with weights from the previuos run was not accessed."<<endl;} 
+   if(weightsFile) {
+     //access the list which holds the histos with weigths:
+     weightsList = (TList*)weightsFile->Get("weights");
+   }
+   else {
+     cout<<" WARNING: the file <weights.root> with weights from the previous run was not available."<<endl;
+     break;
+   } 
   }//end of if(useWeights)
   
   if (LYZ2){  
@@ -1045,5 +1075,54 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
     }
   
   return chain;
+}
+
+void SetupPar(char* pararchivename)
+{
+  //Load par files, create analysis libraries
+  //For testing, if par file already decompressed and modified
+  //classes then do not decompress.
+ 
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString parpar(Form("%s.par", pararchivename)) ; 
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ; 
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  } 
+  if ( gSystem->AccessPathName(pararchivename) ) {  
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
+  }
+  
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+  
+  // check for BUILD.sh and execute
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+  
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
 }
 
