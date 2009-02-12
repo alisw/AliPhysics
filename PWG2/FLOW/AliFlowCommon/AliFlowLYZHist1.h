@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliFlowLYZHist1.h 29627 2008-10-31 10:30:41Z snelling $ */
 
 #ifndef AliFlowLYZHist1_H
 #define AliFlowLYZHist1_H

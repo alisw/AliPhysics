@@ -12,7 +12,8 @@ ${CMAKE_SOURCE_DIR}/PWG2/EBYE/LRC
 ${CMAKE_SOURCE_DIR}/PWG2/FEMTOSCOPY
 ${CMAKE_SOURCE_DIR}/PWG2/FEMTOSCOPY/AliFemto
 ${CMAKE_SOURCE_DIR}/PWG2/FEMTOSCOPY/AliFemtoUser
-${CMAKE_SOURCE_DIR}/PWG2/FLOW
+${CMAKE_SOURCE_DIR}/PWG2/FLOW/AliFlowCommon
+${CMAKE_SOURCE_DIR}/PWG2/FLOW/AliFlowTasks
 ${CMAKE_SOURCE_DIR}/PWG2/SPECTRA
 ${CMAKE_SOURCE_DIR}/STEER
 ${CMAKE_SOURCE_DIR}/CORRFW
@@ -32,7 +33,9 @@ SetModule()
 
 include(CMake_libPWG2spectra.txt)
 
-include(CMake_libPWG2flow.txt)
+include(CMake_libPWG2flowCommon.txt)
+
+include(CMake_libPWG2flowTasks.txt)
 
 include(CMake_libPWG2femtoscopyUser.txt)
 

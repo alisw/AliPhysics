@@ -1,0 +1,25 @@
+#-*- Mode: Makefile -*-
+
+SRCS= FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskScalarProduct.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskMCEventPlane.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskLYZEventPlane.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskCumulants.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskQCumulants.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskLeeYangZeros.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2flowTasksLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= PWG2/FLOW/AliFlowCommon 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lPWG2AOD -lANALYSIS -lANALYSISalice \
+                         -lCORRFW \
+                         -L$(shell root-config --libdir) -lEG
+endif

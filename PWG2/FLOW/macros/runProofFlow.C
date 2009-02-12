@@ -76,7 +76,7 @@ const Int_t maxnsigmatovertex2 = 3;
 
 //WEIGHTS SETTINGS: 
 //to use or not to use the weights - that is a question!
-Bool_t usePhiWeights = kTRUE; //Phi
+Bool_t usePhiWeights = kFALSE; //Phi
 Bool_t usePtWeights  = kFALSE; //v'(pt)
 Bool_t useEtaWeights = kFALSE; //v'(eta)
 Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
@@ -114,8 +114,8 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice");
   
   printf("*** Connect to PROOF ***\n");
-  TProof::Open("abilandz@alicecaf.cern.ch");
-  //TProof::Open("snelling@localhost");
+  //  TProof::Open("abilandz@alicecaf.cern.ch");
+  TProof::Open("snelling@localhost");
  
   //gProof->UploadPackage("AF-v4-15"); 
   //gProof->EnablePackage("AF-v4-15");
@@ -133,9 +133,12 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   gProof->EnablePackage("PWG2AOD");
   gProof->UploadPackage("CORRFW.par");
   gProof->EnablePackage("CORRFW");
-  gProof->ClearPackage("PWG2flow");
-  gProof->UploadPackage("PWG2flow.par");
-  gProof->EnablePackage("PWG2flow");
+  gProof->ClearPackage("PWG2flowCommon");
+  gProof->UploadPackage("PWG2flowCommon.par");
+  gProof->EnablePackage("PWG2flowCommon");
+  gProof->ClearPackage("PWG2flowTasks");
+  gProof->UploadPackage("PWG2flowTasks.par");
+  gProof->EnablePackage("PWG2flowTasks");
   
   
   //____________________________________________//
