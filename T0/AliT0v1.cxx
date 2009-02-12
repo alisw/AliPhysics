@@ -710,11 +710,9 @@ void AliT0v1::StepManager()
 	    Float_t ttime=gMC->TrackTime();
 	    hits[5]=ttime*1e12;
 	    if(RegisterPhotoE(vol[1]-1,hits[3])) {
-	      AddHit(fIshunt,vol,hits);
+	      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
        // Create a track reference at the exit of photocatode
-        
-	      gMC->TrackMomentum(mom);
-	      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kT0);
+       	      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kT0);
 	    }	    
 	  }
 	  //  cout<< gAlice->GetMCApp()->GetCurrentTrackNumber()<<" hit added "<<endl;
