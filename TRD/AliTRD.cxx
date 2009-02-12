@@ -37,7 +37,6 @@
 #include "AliTRDhit.h"
 #include "AliTRDrawData.h"
 #include "AliTRDSimParam.h"
-#include "TTreeStream.h"
 
 ClassImp(AliTRD)
  
@@ -48,7 +47,6 @@ AliTRD::AliTRD()
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
-  ,fDebugStream(0x0)
 {
   //
   // Default constructor
@@ -63,7 +61,6 @@ AliTRD::AliTRD(const char *name, const char *title)
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
-  ,fDebugStream(0x0)
 {
   //
   // Standard constructor for the TRD
@@ -89,6 +86,7 @@ AliTRD::AliTRD(const char *name, const char *title)
   // Allocate the hit array
   fHits = new TClonesArray("AliTRDhit",405);
   gAlice->GetMCApp()->AddHitList(fHits);
+
 }
 
 //_____________________________________________________________________________
@@ -97,7 +95,7 @@ AliTRD::~AliTRD()
   //
   // TRD destructor
   //
-  delete fDebugStream;
+
   if (fGeometry) {
     delete fGeometry;
     fGeometry = 0;
@@ -122,12 +120,7 @@ void AliTRD::Hits2Digits()
 
   // Initialization
   digitizer.InitDetector();
-
-  TDirectory *savedir = gDirectory;
-  fDebugStream = new TTreeSRedirector("TRD.SimDebug.root");
-  savedir->cd();
-  digitizer.SetDebugStream(fDebugStream);
-  
+    
   if (!fLoader->TreeH()) {
     fLoader->LoadHits("read");
   }
@@ -161,12 +154,7 @@ void AliTRD::Hits2SDigits()
 
   // Initialization
   digitizer.InitDetector();
-
-  TDirectory *savedir = gDirectory;
-  fDebugStream = new TTreeSRedirector("TRD.SimDebug.root");
-  savedir->cd();
-  digitizer.SetDebugStream(fDebugStream);
-  
+    
   if (!fLoader->TreeH()) {
     fLoader->LoadHits("read");
   }
@@ -542,9 +530,8 @@ void AliTRD::Init()
   gMC->Gstpar((* fIdtmed)[9],"DRAY"    , 1.0);
   gMC->Gstpar((* fIdtmed)[9],"STRA"    , 1.0); 
   gMC->Gstpar((* fIdtmed)[9],"LOSS"    ,13.0);      // Specific energy loss
-  // Parameters related to Fluka MC machine
-  //gMC->Gstpar((* fIdtmed)[9],"PRIMIO_E",23.53);     // 1st ionisation potential
-  //gMC->Gstpar((* fIdtmed)[9],"PRIMIO_N",19.344431); // Number of primaries
+  gMC->Gstpar((* fIdtmed)[9],"PRIMIO_E",23.53);     // 1st ionisation potential
+  gMC->Gstpar((* fIdtmed)[9],"PRIMIO_N",19.344431); // Number of primaries
 
 }
 
