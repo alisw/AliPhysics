@@ -13,7 +13,7 @@
 static AliRsnAnalysisTaskSEBase::EInputType inputType      = AliRsnAnalysisTaskSEBase::kESDMC;
 static const char*                          outputFileName = "rsn.root";
 
-static Bool_t    useAutoHandler = kTRUE;
+static Bool_t    useAutoHandler = kFALSE;
 static Int_t     bufferSize     = 3000;
 static Int_t     pidArraySize   = 2000;
 static Int_t     nMixedEvents   = 5;
@@ -37,7 +37,7 @@ static Bool_t    requireSigmaToVertex = kTRUE;
 static Bool_t    acceptKinkDaughters = kFALSE;
 static Int_t     minNClustersTPC = 50;
 
-Int_t AddRsnAnalysisTask(AliAnalysisManager *mgr)
+Int_t AddRsnAnalysisTask()
 {
 //
 // Core method of the macro.
@@ -51,6 +51,7 @@ Int_t AddRsnAnalysisTask(AliAnalysisManager *mgr)
   AliRsnPID        *pid     = task->GetPID();
 
   // set the input type
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   task->SetInputType(inputType, mgr, useAutoHandler);
 
   // define event-mixing cuts
@@ -64,8 +65,8 @@ Int_t AddRsnAnalysisTask(AliAnalysisManager *mgr)
   task->SetMixingNum(nMixedEvents);
 
   // ESD settings
-  reader->SetCheckSplit(kTRUE);
-  pid->SetPIDArraysSize(pidArraySize);
+  reader->SetCheckSplit(kFALSE);
+  reader->SetPIDArraysSize(pidArraySize);
   pid->SetPriorProbability(AliRsnPID::kElectron, 0.02);
   pid->SetPriorProbability(AliRsnPID::kMuon,     0.02);
   pid->SetPriorProbability(AliRsnPID::kPion,     0.83);

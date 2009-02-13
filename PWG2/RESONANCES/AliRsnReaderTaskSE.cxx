@@ -83,7 +83,7 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
 // and store them in the output AOD event, with all required computations.
 //
 
-  AliInfo(Form("Reading event %d", ++fEntry));
+  AliDebug(1,Form("Reading event %d", ++fEntry));
 
   // before adding new data, the ones from previous event
   // must be cleared explicitly
@@ -121,9 +121,9 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
   if (!ok) AliWarning("Failed reading");
 
   // step 2: PID probability computation
-  if (!fPID.Process(fRsnEvent)) AliWarning("Failed PID");
+  //if (!fPID.Process(fRsnEvent)) AliWarning("Failed PID");
 
-  AliInfo(Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
+  AliDebug(1,Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
 }
 
 //_____________________________________________________________________________

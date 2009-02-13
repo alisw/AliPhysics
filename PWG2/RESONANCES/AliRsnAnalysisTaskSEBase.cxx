@@ -32,7 +32,7 @@ AliRsnAnalysisTaskSEBase::AliRsnAnalysisTaskSEBase(const char *name) :
     AliAnalysisTaskSE(name),
     fUseAutoHandler(kTRUE),
     fReader(),
-    fPID(),
+    //fPID(),
     fAnalysisMgr(0x0) // pointer to current AnalysisMgr
 {
 //
@@ -309,7 +309,7 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromAOD(const Short_t & index)
   // clear pevious event
   fRSN[0]->Clear();
   if (!fReader.FillFromAOD(fRSN[0], fRsnAOD[index])) return (AliRsnEvent*) 0x0;
-  if (!fPID.Process(fRSN[0])) AliWarning("Failed PID");
+  //if (!fPID.Process(fRSN[0])) AliWarning("Failed PID");
 
   return (AliRsnEvent*) fRSN[0];
 }
@@ -339,11 +339,11 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESD(const Short_t & index)
 
   if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], 0x0)) return (AliRsnEvent*) 0x0;
 
-  if (!fPID.Process(fRSN[index]))
-  {
-    AliWarning("Failed PID");
-    return (AliRsnEvent*) 0x0;
-  }
+  //if (!fPID.Process(fRSN[index]))
+  //{
+  //  AliWarning("Failed PID");
+  //  return (AliRsnEvent*) 0x0;
+  //}
 
   return fRSN[index];
 }
@@ -374,7 +374,7 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromMC(const Short_t & index)
 
   if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
   if (!fReader.FillFromMC(fRSN[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
-  fPID.Process(fRSN[index]);
+  //fPID.Process(fRSN[index]);
   return fRSN[index];
 }
 
@@ -404,11 +404,11 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESDMC(const Short_t & index)
 
   if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
   if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
-  if (!fPID.Process(fRSN[index]))
-  {
-    AliWarning("Failed PID");
-    return (AliRsnEvent*) 0x0;
-  }
+  //if (!fPID.Process(fRSN[index]))
+  //{
+  //  AliWarning("Failed PID");
+  //  return (AliRsnEvent*) 0x0;
+  //}
 
   return fRSN[index];
 }

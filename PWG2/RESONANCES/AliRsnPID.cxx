@@ -95,9 +95,7 @@ AliRsnPID::AliRsnPID() :
 //
 
   Int_t i;
-  for (i = 0; i < kSpecies; i++) fPrior[i] = 0.0;
-
-//     gDirectory->Append(this, kTRUE);
+  for (i = 0; i < kSpecies; i++) fPrior[i] = 0.2;
 }
 
 //_____________________________________________________________________________

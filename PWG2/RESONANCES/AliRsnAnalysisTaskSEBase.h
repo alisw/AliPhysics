@@ -29,7 +29,7 @@ class AliRsnAnalysisTaskSEBase : public AliAnalysisTaskSE
   public:
     AliRsnAnalysisTaskSEBase(const char *name = "AliRsnAnalysisTaskSEBase");
     AliRsnAnalysisTaskSEBase(const AliRsnAnalysisTaskSEBase& copy) :
-        AliAnalysisTaskSE(copy),fUseAutoHandler(kFALSE),fReader(),fPID(),fAnalysisMgr(0x0) {}
+        AliAnalysisTaskSE(copy),fUseAutoHandler(kFALSE),fReader(),/*fPID(),*/fAnalysisMgr(0x0) {}
     AliRsnAnalysisTaskSEBase& operator= (const AliRsnAnalysisTaskSEBase& /*copy*/) {return *this;}
     virtual ~AliRsnAnalysisTaskSEBase() {/* Does nothing*/}
 
@@ -69,7 +69,7 @@ class AliRsnAnalysisTaskSEBase : public AliAnalysisTaskSE
     AliAODInputHandler* GetAODHandler(const Int_t& theValue = 0) const { return fRsnAODEH[theValue]; }
 
     AliRsnReader *GetReader() { return &fReader; }
-    AliRsnPID *GetPID() { return &fPID;}
+    AliRsnPID *GetPID() { return fReader.GetPID();}
 
   protected:
 
@@ -87,7 +87,7 @@ class AliRsnAnalysisTaskSEBase : public AliAnalysisTaskSE
     AliAODInputHandler   *fRsnAODEH[2];  // AOD event handler
 
     AliRsnReader  fReader;               // Reader
-    AliRsnPID     fPID;                  // PID
+    //AliRsnPID     fPID;                  // PID
 
     AliAnalysisManager *fAnalysisMgr; // pointer to current AnalysisMgr
 

@@ -64,7 +64,10 @@ class AliRsnReader : public TObject
     Bool_t  DoesRsnTrackCuts() {return fUseRsnTrackCuts;}
     AliRsnCutSet* GetRsnTrackCuts() {return &fRsnTrackCuts;}
 
+    AliRsnPID*       GetPID() {return &fPID;}
     AliRsnPIDDefESD* GetPIDDef() {return &fPIDDef;}
+    void             SetPIDArraysSize(Int_t value) {fPIDArraysSize = value;}
+    Int_t            GetPIDArraysSize() {return fPIDArraysSize;}
 
     void SetTrackRefs(Int_t value) {fTrackRefs = value;}
     void SetTrackRefsITS(Int_t value) {fTrackRefsITS = value;}
@@ -88,10 +91,13 @@ class AliRsnReader : public TObject
 
     // dummy copy methods
     AliRsnReader(const AliRsnReader &copy) :
-      TObject(copy),fCheckSplit(0),fRejectFakes(0),fTPCOnly(0),
-      fUseESDTrackCuts(0),fUseRsnTrackCuts(0),fCheckVertexStatus(kFALSE),
-      fMinNContributors(0),fPIDDef(copy.fPIDDef),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
-      fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0),fESDTrackCuts(),fRsnTrackCuts("") { /*nothing*/ }
+      TObject(copy),
+      fCheckSplit(0),fRejectFakes(0),fTPCOnly(0),fUseESDTrackCuts(0),fUseRsnTrackCuts(0),
+      fCheckVertexStatus(kFALSE),fMinNContributors(0),
+      fPID(),fPIDDef(copy.fPIDDef),fPIDArraysSize(0),
+      fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
+      fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0),
+      fESDTrackCuts(),fRsnTrackCuts("") { /*nothing*/ }
     AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
 
     Bool_t          fCheckSplit;         // flag to check and remove split tracks
@@ -103,7 +109,9 @@ class AliRsnReader : public TObject
     Bool_t          fCheckVertexStatus;  // reject events with vertex status = kFALSE
     Int_t           fMinNContributors;   // reject events whose primary vertex has too few contributors
 
+    AliRsnPID       fPID;                // manager for Bayes combination
     AliRsnPIDDefESD fPIDDef;             // manager for alternative PID weights (ESD only)
+    Int_t           fPIDArraysSize;      // default size for the PID arrays in events
 
     Int_t           fITSClusters;        // minimum number of ITS clusters to accept a track
     Int_t           fTPCClusters;        // minimum number of TPC clusters to accept a track

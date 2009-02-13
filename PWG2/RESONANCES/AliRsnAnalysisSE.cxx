@@ -207,13 +207,15 @@ void  AliRsnAnalysisSE::AddPairMgr(AliRsnPairMgr * pairmgr)
 }
 
 //________________________________________________________________________
-void AliRsnAnalysisSE::AddPairMgrFromConfig(TString configfile)
+void AliRsnAnalysisSE::AddPairMgrFromConfig(TString configfile,TString analysisName)
 {
   gROOT->LoadMacro(configfile.Data());
 
   configfile.ReplaceAll(".C","");
 
-  AliRsnPairMgr *mgrRsn = (AliRsnPairMgr *) gROOT->ProcessLine(Form("%s();", configfile.Data()));
+  analysisName.ReplaceAll("_","-");
+  
+  AliRsnPairMgr *mgrRsn = (AliRsnPairMgr *) gROOT->ProcessLine(Form("%s(\"%s\");", configfile.Data(),analysisName.Data()));
   if (!mgrRsn) return;
 
   fPairMgrs.Add(mgrRsn);
