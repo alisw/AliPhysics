@@ -6961,11 +6961,14 @@ void AliTPCtrackerMI::MakeBitmaps(AliTPCseed *t)
   Int_t firstpoint = 0;
   Int_t lastpoint = 159;
   AliTPCTrackerPoint *point;
+  AliTPCclusterMI    *cluster;
   
   for (int iter=firstpoint; iter<lastpoint; iter++) {
-    point = t->GetTrackPoint(iter);
-    if (point) {
+    // Change to cluster pointers to see if we have a cluster at given padrow
+    cluster = t->GetClusterPointer(iter);
+    if (cluster) {
       t->SetClusterMapBit(iter, kTRUE);
+      point = t->GetTrackPoint(iter);
       if (point->IsShared())
 	t->SetSharedMapBit(iter,kTRUE);
       else
