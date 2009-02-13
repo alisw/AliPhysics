@@ -38,7 +38,7 @@ AliEveTPCSectorViz::AliEveTPCSectorViz(const Text_t* n, const Text_t* t) :
   fSectorID (0),
 
   fMinTime   (0),
-  fMaxTime   (450),
+  fMaxTime   (1000),
   fThreshold (5),
   fMaxVal    (128),
 
