@@ -30,7 +30,7 @@
 // the macro can be used to run local in aliroot or root, on the grid and on caf
 ///////////////////////////////////////////////////////////////////////////////////
 
-enum anaModes {mLocal, mLocalPAR,mPROOF,mGRID};
+enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 //mLocal: Analyze locally files in your computer using aliroot
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
 //mPROOF: Analyze CAF files with PROOF
@@ -90,18 +90,19 @@ const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
 // ESD data on PROOF cluster
-void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0)
+//void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0)
 
 // AOD data on PROOF cluster
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
-//void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0) {
+//void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 50, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
 //void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
-//void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
 
@@ -403,14 +404,14 @@ void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel
   
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* cfmgr1 = new AliCFManager();
-  //  cfmgr1->SetNStepParticle(4); //05nov08
+  cfmgr1->SetNStepParticle(4); //05nov08
   cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
   cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
   cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
   cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
   
   AliCFManager* cfmgr2 = new AliCFManager();
-  //  cfmgr2->SetNStepParticle(4); //05nov08
+  cfmgr2->SetNStepParticle(4); //05nov08
   cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
@@ -926,21 +927,27 @@ void LoadLibraries(const anaModes mode) {
     TProof::Open("snelling@localhost");
     
     // Enable the STEERBase Package
+    gProof->ClearPackage("STEERBase.par");
     gProof->UploadPackage("STEERBase.par");
     gProof->EnablePackage("STEERBase");
     // Enable the ESD Package
+    gProof->ClearPackage("ESD.par");
     gProof->UploadPackage("ESD.par");
     gProof->EnablePackage("ESD");
     // Enable the AOD Package
+    gProof->ClearPackage("AOD.par");
     gProof->UploadPackage("AOD.par");
     gProof->EnablePackage("AOD");
     // Enable the Analysis Package
+    gProof->ClearPackage("ANALYSIS.par");
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
     // Enable the Analysis Package alice
+    gProof->ClearPackage("ANALYSISalice.par");
     gProof->UploadPackage("ANALYSISalice.par");
     gProof->EnablePackage("ANALYSISalice");
     // Load the PWG2 AOD
+    gProof->ClearPackage("PWG2AOD.par");
     gProof->UploadPackage("PWG2AOD.par");
     gProof->EnablePackage("PWG2AOD");
     // Enable the Correction Framework
