@@ -45,6 +45,7 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
+#include "AliTRDCommonParam.h"
 
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalROC.h"
@@ -496,7 +497,7 @@ void AliTRDseedV1::SetExB()
   }
 
   Double_t vd = fCalVdriftDet->GetValue(fDet) * fCalVdriftROC->GetValue(col, row);
-  fExB   = fCalib->GetOmegaTau(vd, -0.1*AliTracker::GetBz());
+  fExB   = AliTRDCommonParam::Instance()->GetOmegaTau(vd);
 }
 
 //____________________________________________________________________

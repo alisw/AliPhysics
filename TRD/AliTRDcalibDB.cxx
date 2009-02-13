@@ -962,52 +962,6 @@ const AliTRDCalMonitoring *AliTRDcalibDB::GetMonitoringObject()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift, Float_t bz)
-{
-  //
-  // Returns omega*tau (tan(Lorentz-angle)) for a given drift velocity <vdrift> 
-  // and a B-field <bz> for Xe/CO2 (15%).
-  // The values are according to a GARFIELD simulation.
-  //
-  // This function basically does not belong to the calibration class.
-  // It should be moved somewhere else. 
-  // However, currently it is in use by simulation and reconstruction.
-  //
-  
-  Float_t fieldAbs = TMath::Abs(bz);
-  Float_t fieldSgn = (bz > 0.0) ? 1.0 : -1.0;
-
-  const Int_t kNb = 5;
-  Float_t p0[kNb] = {  0.004810,  0.007412,  0.010252,  0.013409,  0.016888 };
-  Float_t p1[kNb] = {  0.054875,  0.081534,  0.107333,  0.131983,  0.155455 };
-  Float_t p2[kNb] = { -0.008682, -0.012896, -0.016987, -0.020880, -0.024623 };
-  Float_t p3[kNb] = {  0.000155,  0.000238,  0.000330,  0.000428,  0.000541 };
-
-  // No ExB if field is too small (or zero)
-  if (fieldAbs < 0.01) {
-
-    return 0.0;
-
-  }
-  // Calculate ExB from parametrization
-  else {
-
-    Int_t ib = ((Int_t) (10 * (fieldAbs - 0.15)));
-    ib       = TMath::Max(  0,ib);
-    ib       = TMath::Min(kNb,ib);
-
-    Float_t alphaL = p0[ib] 
-                   + p1[ib] * vdrift
-                   + p2[ib] * vdrift*vdrift
-                   + p3[ib] * vdrift*vdrift*vdrift;
-
-    return TMath::Tan(fieldSgn * alphaL);
-
-  }
-
-}
-
-//_____________________________________________________________________________
 void AliTRDcalibDB::SamplePRF()
 {
   //

@@ -99,6 +99,7 @@ The default raw version is 2.
 #include "AliTRDmcmSim.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDSimParam.h"
+#include "AliTRDCommonParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
@@ -2187,7 +2188,7 @@ void AliTRDmcmSim::Tracklet(){
   Int_t    nrOfAmplTimeBins  = 2;                           // the number of time bins between anode wire and cathode wires in ampl.region (3.5mm)(guess)(suppose v_drift+3.5cm/us there=>all clusters arrive at anode wire within one time bin (100ns))
   Int_t    nrOfOffsetCorrTimeBins = tFS - nrOfAmplTimeBins - 1; // -1 is  to be conservative; offset correction will not remove the shift but is supposed to improve it; if tFS = 5, 2 drift time bins before tFS are assumed
   if(nrOfOffsetCorrTimeBins < 0) nrOfOffsetCorrTimeBins = 0;// don't apply offset correction if no drift time bins before tFS can be assumed 
-  Double_t lorTan     = fCal->GetOmegaTau(vdrift,magField); // tan of the Lorentz-angle for this detector; could be evaluated and set as a parameter for each mcm
+  Double_t lorTan     = AliTRDCommonParam::Instance()->GetOmegaTau(vdrift); // tan of the Lorentz-angle for this detector; could be evaluated and set as a parameter for each mcm
   //Double_t lorAngle   =  7.0;                             // Lorentz-angle in degrees
   Double_t tiltAngle  = padPlane->GetTiltingAngle();        // sign-respecting tilting angle of pads in actual layer
   Double_t tiltTan    = TMath::Tan(TMath::Pi()/180.0 * tiltAngle);

@@ -171,6 +171,7 @@
 #include "AliTRDtrackInfo/AliTRDclusterInfo.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDCommonParam.h"
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
 
@@ -545,7 +546,7 @@ Bool_t AliTRDclusterResolution::SetExB(Int_t det, Int_t col, Int_t row)
   const AliTRDCalDet  *fCalVdriftDet = fCalibration->GetVdriftDet();
 
   fVdrift = fCalVdriftDet->GetValue(det) * fCalVdriftROC->GetValue(col, row);
-  fExB   = fCalibration->GetOmegaTau(fVdrift, -0.1*AliTracker::GetBz());
+  fExB   = AliTRDCommonParam::Instance()->GetOmegaTau(fVdrift);
   SetBit(kExB);
   return kTRUE;
 }

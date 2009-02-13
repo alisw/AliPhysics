@@ -29,6 +29,7 @@
 #include "AliRun.h"
 
 #include "AliTRDSimParam.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDSimParam)
 
@@ -98,7 +99,6 @@ AliTRDSimParam::AliTRDSimParam()
   ,fTimeCoupling(0.0)
   ,fTimeStructOn(kFALSE)
   ,fPRFOn(kFALSE)
-  ,fGasMixture(0)
 {
   //
   // Default constructor
@@ -152,9 +152,6 @@ void AliTRDSimParam::Init()
   // The pad response function
   fPRFOn             = kTRUE;
 
-  // The gas mixture, default Xenon
-  fGasMixture        = kXenon;
-
   ReInit();
 
 }
@@ -202,7 +199,6 @@ AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p)
   ,fTimeCoupling(p.fTimeCoupling)
   ,fTimeStructOn(p.fTimeStructOn)
   ,fPRFOn(p.fPRFOn)
-  ,fGasMixture(p.fGasMixture)
 {
   //
   // Copy constructor
@@ -273,7 +269,6 @@ void AliTRDSimParam::Copy(TObject &p) const
   target->fPadCoupling        = fPadCoupling;
   target->fTimeCoupling       = fTimeCoupling;
   target->fPRFOn              = fPRFOn;
-  target->fGasMixture         = fGasMixture;
 
   if (target->fTRFsmp) {
     delete[] target->fTRFsmp;
@@ -300,7 +295,7 @@ void AliTRDSimParam::ReInit()
   // Reinitializes the parameter class after a change
   //
 
-  if      (fGasMixture == kXenon) {
+  if      (AliTRDCommonParam::Instance()->IsXenon()) {
     // The range and the binwidth for the sampled TRF 
     fTRFbin = 200;
     // Start 0.2 mus before the signal
@@ -310,7 +305,7 @@ void AliTRDSimParam::ReInit()
     // Standard gas gain
     fGasGain = 4000.0;
   }
-  else if (fGasMixture == kArgon) {
+  else if (AliTRDCommonParam::Instance()->IsArgon()) {
     // The range and the binwidth for the sampled TRF 
     fTRFbin  =  50;
     // Start 0.2 mus before the signal
@@ -425,23 +420,23 @@ void AliTRDSimParam::SampleTRF()
   }
   fCTsmp  = new Float_t[fTRFbin];
 
-  if      (fGasMixture == kXenon) {
+  if      (AliTRDCommonParam::Instance()->IsXenon()) {
     if (fTRFbin != kNpasa) {
       AliError("Array mismatch (xenon)\n\n");
     }
   }
-  else if (fGasMixture == kArgon) {
+  else if (AliTRDCommonParam::Instance()->IsArgon()) {
     if (fTRFbin != kNpasaAr) {
       AliError("Array mismatch (argon)\n\n");
     }
   }
 
   for (Int_t iBin = 0; iBin < fTRFbin; iBin++) {
-    if      (fGasMixture == kXenon) {
+    if      (AliTRDCommonParam::Instance()->IsXenon()) {
       fTRFsmp[iBin] = signal[iBin];
       fCTsmp[iBin]  = xtalk[iBin];
     }
-    else if (fGasMixture == kArgon) {
+    else if (AliTRDCommonParam::Instance()->IsArgon()) {
       fTRFsmp[iBin] = signalAr[iBin];
       fCTsmp[iBin]  = xtalkAr[iBin];
     }
@@ -457,11 +452,16 @@ Double_t AliTRDSimParam::TimeResponse(Double_t time) const
   // (We assume a signal rise time of 0.2us = fTRFlo/2.
   //
 
-  Double_t  rt = (time - .5*fTRFlo) / fTRFwid;
-  Int_t iBin = (Int_t)rt; Double_t dt = rt-iBin; 
+  Double_t rt   = (time - .5*fTRFlo) / fTRFwid;
+  Int_t    iBin = (Int_t) rt; 
+  Double_t dt   = rt - iBin; 
   if ((iBin >= 0) && (iBin+1 < fTRFbin)) {
     return fTRFsmp[iBin] + (fTRFsmp[iBin+1] - fTRFsmp[iBin])*dt;
-  } else return 0.0;
+  } 
+  else {
+    return 0.0;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -471,9 +471,14 @@ Double_t AliTRDSimParam::CrossTalk(Double_t time) const
   // Applies the pad-pad capacitive cross talk
   //
 
-  Double_t  rt = (time - fTRFlo) / fTRFwid;
-  Int_t iBin = (Int_t)rt; Double_t dt = rt-iBin; 
+  Double_t rt   = (time - fTRFlo) / fTRFwid;
+  Int_t    iBin = (Int_t) rt; 
+  Double_t dt   = rt - iBin; 
   if ((iBin >= 0) && (iBin+1 < fTRFbin)) {
     return fCTsmp[iBin] + (fCTsmp[iBin+1] - fCTsmp[iBin])*dt;
-  } else return 0.0;
+  } 
+  else {
+    return 0.0;
+  }
+
 }

@@ -3538,8 +3538,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   Short_t  maxpos5    = -1;
   Float_t  maxcharge5 =  0.0;
 
-  Double_t exB         = AliTRDcalibDB::Instance()->GetOmegaTau(AliTRDcalibDB::Instance()->GetVdrift(0,0,0)
-                                                               ,-AliTracker::GetBz()*0.1);
+  Double_t exB         = AliTRDCommonParam::Instance()->GetOmegaTau(AliTRDcalibDB::Instance()->GetVdrift(0,0,0));
   Double_t expectederr = sigma2*sigma2 + 0.01*0.01;
   if (mpads > 3.5) {
     expectederr += (mpads - 3.5) * 0.04;

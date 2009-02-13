@@ -267,8 +267,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // The drift distance
     Double_t driftLength = TMath::Max(xLocal - 0.5*ampLength,0.0);
     // ExB correction
-    Double_t exbCorr     = fCalibration->GetOmegaTau(vdrift
-                                                    ,-0.1*AliTracker::GetBz());
+    Double_t exbCorr     = AliTRDCommonParam::Instance()->GetOmegaTau(vdrift);
 
     // Pad dimensions
     Double_t rowSize     = fPadPlane->GetRowSize(row);

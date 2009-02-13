@@ -76,6 +76,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalDet.h"
@@ -2468,13 +2469,13 @@ Bool_t AliTRDCalibraFit::InitFitLinearFitter()
     fCalDet2 = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
     //printf("test2\n");
     for(Int_t k = 0; k < 540; k++){
-      fCalDet2->SetValue(k,cal->GetOmegaTau(fCalDet->GetValue(k),-fMagneticField));
+      fCalDet2->SetValue(k,AliTRDCommonParam::Instance()->GetOmegaTau(fCalDet->GetValue(k)));
     }
     //printf("test3\n");
   }
   else{
     Float_t devalue  = 1.5;
-    Float_t devalue2 = cal->GetOmegaTau(1.5,-fMagneticField); 
+    Float_t devalue2 = AliTRDCommonParam::Instance()->GetOmegaTau(1.5); 
     if(fCalDet) delete fCalDet;
     if(fCalDet2) delete fCalDet2;
     //printf("test1\n");

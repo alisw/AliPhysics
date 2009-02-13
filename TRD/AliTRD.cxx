@@ -36,7 +36,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
 #include "AliTRDrawData.h"
-#include "AliTRDSimParam.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRD)
  
@@ -405,10 +405,10 @@ void AliTRD::CreateMaterials()
   AliMixture(2, "Air"         , aAir,   zAir,   dAir,    4, wAir  );
   AliMixture(3, "Polyethilene", ape,    zpe,    dpe,    -2, wpe   );
   AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
-  if      (AliTRDSimParam::Instance()->IsXenon()) {
+  if      (AliTRDCommonParam::Instance()->IsXenon()) {
     AliMixture(10,"XeCO2",        aXeCO2, zXeCO2, dgmXe,  -3, wXeCO2);
   }
-  else if (AliTRDSimParam::Instance()->IsArgon()) {
+  else if (AliTRDCommonParam::Instance()->IsArgon()) {
     AliInfo("Gas mixture: Ar C02 (80/20)");
     AliMixture(10,"ArCO2",        aArCO2, zArCO2, dgmAr,  -3, wArCO2);
   }
@@ -502,11 +502,11 @@ void AliTRD::CreateMaterials()
   // Save the density values for the TRD absorbtion
   Float_t dmy  = 1.39;
   fFoilDensity = dmy;
-  if      (AliTRDSimParam::Instance()->IsXenon()) {
+  if      (AliTRDCommonParam::Instance()->IsXenon()) {
     fGasDensity       = dgmXe;
     fGasNobleFraction = fxc;
   }
-  else if (AliTRDSimParam::Instance()->IsArgon()) {
+  else if (AliTRDCommonParam::Instance()->IsArgon()) {
     fGasDensity       = dgmAr;
     fGasNobleFraction = fac;
   }

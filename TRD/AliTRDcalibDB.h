@@ -89,7 +89,6 @@ class AliTRDcalibDB : public TObject {
   const AliTRDCalPID                 *GetPIDObject(AliTRDpidUtil::ETRDPIDMethod m);
 
   // Related functions, these depend on calibration data
-  static Float_t                      GetOmegaTau(Float_t vdrift, Float_t bz);
          Int_t                        PadResponse(Double_t signal, Double_t dist
                                                 , Int_t layer, Double_t *pad) const;
   

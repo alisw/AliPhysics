@@ -22,9 +22,6 @@ class AliTRDSimParam : public TObject {
                , kNsect =  18
                , kNdet  = 540 };
 
-          enum { kXenon =   0
-	       , kArgon =   1 };
-
   static  AliTRDSimParam *Instance();
   static  void     Terminate();
   
@@ -48,8 +45,6 @@ class AliTRDSimParam : public TObject {
           void     SetTimeCoupling(Float_t v)                { fTimeCoupling      = v;                }
           void     SetTimeStruct(Bool_t tsOn = 1)            { fTimeStructOn      = tsOn;             }
           void     SetPadResponse(Int_t prfOn = 1)           { fPRFOn             = prfOn;            }
-          void     SetXenon()                                { fGasMixture        = kXenon; ReInit(); }
-          void     SetArgon()                                { fGasMixture        = kArgon; ReInit(); }
     
           Float_t  GetGasGain() const                        { return fGasGain;                       }
           Float_t  GetNoise() const                          { return fNoise;                         }
@@ -61,7 +56,6 @@ class AliTRDSimParam : public TObject {
           Float_t  GetTRFhi() const                          { return fTRFhi;                         }
           Float_t  GetPadCoupling() const                    { return fPadCoupling;                   }
           Float_t  GetTimeCoupling() const                   { return fTimeCoupling;                  }
-          Int_t    GetGasMixture() const                     { return fGasMixture;                    }
 
           Bool_t   DiffusionOn() const                       { return fDiffusionOn;                   }
           Bool_t   ElAttachOn() const                        { return fElAttachOn;                    } 
@@ -73,12 +67,9 @@ class AliTRDSimParam : public TObject {
 
           Double_t TimeResponse(Double_t time) const;  
           Double_t CrossTalk(Double_t time) const; 
-  
-          Bool_t   IsXenon() const                           { return (fGasMixture == kXenon) 
-                                                                    ? kTRUE : kFALSE;                 }
-          Bool_t   IsArgon() const                           { return (fGasMixture == kArgon) 
-                                                                    ? kTRUE : kFALSE;                 }
 
+          void     ReInit();
+  
  protected:
 
   static AliTRDSimParam* fgInstance;   //  Instance of this class (singleton implementation)
@@ -115,8 +106,6 @@ class AliTRDSimParam : public TObject {
   
           Int_t    fPRFOn;             //  Switch for the pad response
 
-          Int_t    fGasMixture;        //  Gas mixture: 0-Xe/C02 1-Ar/CO2. 
-
  private:
 
   // This is a singleton, constructor is private!  
@@ -124,10 +113,9 @@ class AliTRDSimParam : public TObject {
   virtual ~AliTRDSimParam();
 
           void Init();
-          void ReInit();
           void SampleTRF();
   
-  ClassDef(AliTRDSimParam,3)          // The TRD simulation parameters
+  ClassDef(AliTRDSimParam,4)          // The TRD simulation parameters
 
 };
 

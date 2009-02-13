@@ -41,7 +41,7 @@
 #include "AliGeomManager.h"
 
 #include "AliTRDgeometry.h"
-#include "AliTRDSimParam.h"
+#include "AliTRDCommonParam.h"
 #include "AliTRDhit.h"
 #include "AliTRDsimTR.h"
 #include "AliTRDv1.h"
@@ -86,10 +86,10 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
 
   SetBufferSize(128000);
 
-  if      (AliTRDSimParam::Instance()->IsXenon()) {
+  if      (AliTRDCommonParam::Instance()->IsXenon()) {
     fWion = 23.53; // Ionization energy XeCO2 (85/15)
   }
-  else if (AliTRDSimParam::Instance()->IsArgon()) {
+  else if (AliTRDCommonParam::Instance()->IsArgon()) {
     fWion = 27.21; // Ionization energy ArCO2 (82/18)
   }
   else {
@@ -224,7 +224,6 @@ void AliTRDv1::AddAlignableVolumes() const
 
 	// Add the tracking to local matrix following the TPC example
 	if (alignableEntry) {
-  	  // Is this correct still????
 	  TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	  Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
 	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
@@ -325,10 +324,10 @@ void AliTRDv1::CreateTRhit(Int_t det)
     // The absorbtion cross sections in the drift gas
     // Gas-mixture (Xe/CO2)
     Double_t muNo = 0.0;
-    if      (AliTRDSimParam::Instance()->IsXenon()) {
+    if      (AliTRDCommonParam::Instance()->IsXenon()) {
       muNo = fTR->GetMuXe(energyMeV);
     }
-    else if (AliTRDSimParam::Instance()->IsArgon()) {
+    else if (AliTRDCommonParam::Instance()->IsArgon()) {
       muNo = fTR->GetMuAr(energyMeV);
     }
     Double_t muCO = fTR->GetMuCO(energyMeV);

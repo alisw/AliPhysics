@@ -76,11 +76,8 @@ class AliTRDdigitizer : public AliDigitizer {
 
           Bool_t       GetCompress() const                  { return fCompress;       }
           Bool_t       GetSDigits() const                   { return fSDigits;        }
-          Float_t      GetDiffusionT(Float_t vdrift);
-          Float_t      GetDiffusionL(Float_t vdrift);
           Float_t      GetLorentzFactor(Float_t vdrift);
 
-          Double_t     TimeStruct(Float_t vdrift, Double_t time, Double_t z);
           Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength
                                , Double_t &lRow, Double_t &lCol, Double_t &lTime);
           Int_t        ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow);
@@ -89,8 +86,6 @@ class AliTRDdigitizer : public AliDigitizer {
  protected:
 
   virtual Bool_t       Init();
-          void         SampleTimeStruct(Float_t vdrift);
-          void         RecalcDiffusion(Float_t vdrift);
 
   AliRunLoader        *fRunLoader;          //! Local pointer
   AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
@@ -105,19 +100,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Bool_t       fSDigits;            //  Switch for the summable digits
           Bool_t       fMergeSignalOnly;    //  Merge only detectors that contain a signal
 
-          Float_t      fDiffLastVdrift;     //  The structures are valid for fLastVdrift (caching)
-          Float_t      fDiffusionT;         //  Transverse drift coefficient
-          Float_t      fDiffusionL;         //  Longitudinal drift coefficient
-          Float_t      fOmegaTau;           //  Tangens of the Lorentz angle
-          Float_t      fLorentzFactor;      //  Factor due to Lorentz force
-
-          Float_t      fTimeLastVdrift;     //  The structures are valid for fLastVdrift (caching)
-          Float_t     *fTimeStruct1;        //! Time Structure of Drift Cells
-          Float_t     *fTimeStruct2;        //! Time Structure of Drift Cells
-          Float_t      fVDlo;               //  Lower drift velocity, for interpolation
-          Float_t      fVDhi;               //  Higher drift velocity, for interpolation
-
-  ClassDef(AliTRDdigitizer,18)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,19)              //  Produces TRD-Digits
 
 };
 #endif
