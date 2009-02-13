@@ -238,7 +238,8 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) InitAnalysis();
    if (!fInitOK) return kFALSE;
    fTree = tree;
-   AliAnalysisDataContainer *top = (AliAnalysisDataContainer*)fInputs->At(0);
+   AliAnalysisDataContainer *top = fCommonInput;
+   if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
       Error("Init","No top input container !");
       return kFALSE;
@@ -1234,7 +1235,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       TIter next(fTasks);
    // De-activate all tasks
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
-      AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)fInputs->At(0);
+      AliAnalysisDataContainer *cont = fCommonInput;
+      if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
 	      Error("ExecAnalysis","Cannot execute analysis in TSelector mode without at least one top container");
          return;
@@ -1301,6 +1303,7 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler*  handler)
 // Set the input event handler and create a container for it.
    fInputEventHandler   = handler;
    fCommonInput = CreateContainer("cAUTO_INPUT", TChain::Class(), AliAnalysisManager::kInputContainer);
+   Warning("SetInputEventHandler", " An automatic input container for the input chain was created.\nPlease use: mgr->GetCommonInputContainer() to access it.");
 }
 
 //______________________________________________________________________________
@@ -1309,4 +1312,5 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
 // Set the input event handler and create a container for it.
    fOutputEventHandler   = handler;
    fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+   Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonInputContainer() to access it.");
 }
