@@ -1901,7 +1901,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	}
 
 	// TODO Check field count!
-	const UInt_t nCols = 24;
+	const UInt_t nCols = 25;
 	if (aResult->GetFieldCount() != (Int_t) nCols) {
 		Log("SHUTTLE", "Invalid SQL result field number!");
 		delete aResult;
