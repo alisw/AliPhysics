@@ -48,9 +48,10 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONVTriggerStore& triggerStore,
                                  const AliMUONTrackHitPattern& trackHitPattern);
 
+  /// Return reco parameters
   const AliMUONRecoParam* GetRecoParam() const { return fkRecoParam; }
   
-  /// re-fit the given track
+  /// Re-fit the given track
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
   
   

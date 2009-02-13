@@ -88,6 +88,7 @@ protected:
   void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId,
 			 Int_t cathode, Int_t localBoard[4]) const;
 
+  /// Return reco parameters
   const AliMUONRecoParam* GetRecoParam() const { return fkRecoParam; }
   
 private:

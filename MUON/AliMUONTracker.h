@@ -46,6 +46,7 @@ class AliMUONTracker : public AliTracker
 
   virtual void  UnloadClusters();
 
+  /// Return reco parameters
   const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
   
   /// Dummy implementation

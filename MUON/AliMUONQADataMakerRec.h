@@ -42,7 +42,7 @@ protected:
   
   virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
 
-	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
 
 private:
   /// Raw histograms indices
@@ -118,16 +118,17 @@ private:
 
 private:
 	
-	void Ctor();
+  void Ctor();
   void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
   Bool_t FillTriggerDCSHistos();
-	void InitRecPointsTracker();
-	void InitRecPointsTrigger();
-	void MakeRawsTracker(AliRawReader* rawReader);
-	void MakeRawsTrigger(AliRawReader* rawReader);
+  void InitRecPointsTracker();
+  void InitRecPointsTrigger();
+  void MakeRawsTracker(AliRawReader* rawReader);
+  void MakeRawsTrigger(AliRawReader* rawReader);
   void MakeRecPointsTracker(TTree* treeR);
   void MakeRecPointsTrigger(TTree* treeR);
 	
+  /// Return reco parameters
   const AliMUONRecoParam* GetRecoParam() const { return dynamic_cast<const AliMUONRecoParam *>(fRecoParam); }
   
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
