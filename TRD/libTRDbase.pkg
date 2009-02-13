@@ -3,13 +3,6 @@
 SRCS= AliTRDarrayI.cxx \
       AliTRDarrayS.cxx \
       AliTRDarrayF.cxx \
-      AliTRDsegmentID.cxx \
-      AliTRDdataArray.cxx \
-      AliTRDdataArrayI.cxx \
-      AliTRDdataArrayS.cxx \
-      AliTRDdataArrayF.cxx \
-      AliTRDdataArrayDigits.cxx \
-      AliTRDsegmentArray.cxx \
       AliTRDarraySignal.cxx \
       AliTRDarrayDictionary.cxx \
       AliTRDarrayADC.cxx \
@@ -72,8 +65,6 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDgtuTMU.cxx \
       AliTRDtrapAlu.cxx \
       AliTRDhit.cxx \
-      AliTRDrecoParam.cxx \
-      AliTRDSimParam.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 

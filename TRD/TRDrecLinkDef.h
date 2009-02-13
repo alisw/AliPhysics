@@ -23,6 +23,8 @@
 
 #pragma link C++ class  AliTRDReconstructor+;
 
+#pragma link C++ class  AliTRDrecoParam+;
+
 #pragma link C++ class  AliTRDseedV1+;
 #pragma link C++ class  AliTRDtrackV1+;
 #pragma link C++ class  AliTRDtrackerV1+;

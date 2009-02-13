@@ -22,6 +22,7 @@ SRCS= AliTRDcluster.cxx \
       AliTRDqaBlackEvents.cxx \
       AliTRDqaBuildReference.cxx \
       AliTRDCalibraFillHisto.cxx \
+      AliTRDrecoParam.cxx \
       AliTRDqaRecPoints.cxx
 
 HDRS= $(SRCS:.cxx=.h)
