@@ -334,8 +334,8 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
     TProfile *pHistProFlow = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_VPt_MCEP"));
 
-    TProfile *pHistProIntFlowRP = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("fHistProIntFlowRP")); 
+    TProfile *pHistProIntFlow = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("fHistProIntFlow")); 
                                
     TProfile *pHistProDiffFlowPtRP = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("fHistProDiffFlowPtRP")); 
@@ -349,11 +349,11 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
     TProfile *pHistProDiffFlowEtaPOI = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("fHistProDiffFlowEtaPOI"));                             
 
-    if (pCommonHists && pCommonHistResults && pHistProFlow && pHistProIntFlowRP && pHistProDiffFlowPtRP && pHistProDiffFlowEtaRP && pHistProDiffFlowPtPOI && pHistProDiffFlowEtaPOI) {
+    if (pCommonHists && pCommonHistResults && pHistProFlow && pHistProIntFlow && pHistProDiffFlowPtRP && pHistProDiffFlowEtaRP && pHistProDiffFlowPtPOI && pHistProDiffFlowEtaPOI) {
       fMcTerm->SetCommonHists(pCommonHists);
       fMcTerm->SetCommonHistsRes(pCommonHistResults);
       fMcTerm->SetHistProFlow(pHistProFlow);
-      fMcTerm->SetHistProIntFlowRP(pHistProIntFlowRP);
+      fMcTerm->SetHistProIntFlow(pHistProIntFlow);
       fMcTerm->SetHistProDiffFlowPtRP(pHistProDiffFlowPtRP);      
       fMcTerm->SetHistProDiffFlowEtaRP(pHistProDiffFlowEtaRP);  
       fMcTerm->SetHistProDiffFlowPtPOI(pHistProDiffFlowPtPOI);      
