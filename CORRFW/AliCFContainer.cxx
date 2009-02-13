@@ -264,8 +264,9 @@ TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t 
 AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const
 {
   //
-  // Makes a slice along the "nVars" variables defined in "vars" in range [varMin,varMax]
-  // and returns a new container
+  // Makes a slice along the "nVars" variables defined in the array vars[nVars].
+  // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar]
+  // The function returns a new container of nVars variables.
   //
 
   if (nVars < 1 || nVars > fNVar)   AliError("Bad number of dimensions required for the slice");
