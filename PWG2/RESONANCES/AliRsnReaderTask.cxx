@@ -123,7 +123,8 @@ void AliRsnReaderTask::Exec(Option_t */*option*/)
 
   fRSN[0] = GetRsnEventFromInputType(0);
   if (!fRSN[0]) return;
-  AliInfo(Form("Collected %d tracks", fRSN[0]->GetMultiplicity()));
+
+  AliDebug(1, Form("Collected %d tracks", fRSN[0]->GetMultiplicity()));
 
   fRsnTree->Fill();
   PostData(0, fRsnTree);

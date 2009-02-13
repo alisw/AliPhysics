@@ -30,7 +30,7 @@ class AliRsnAnalysisSE : public AliRsnAnalysisTaskSEBase
     virtual void    Terminate(Option_t *);
 
     void AddPairMgr(AliRsnPairMgr *pairmgr);
-    void AddPairMgrFromConfig(TString configfile);
+    void AddPairMgrFromConfig(TString configfile, TString analysisName = "default");
 
     void SetBufferSize(const Int_t size) {fBufferSize = size;}
     Int_t GetBufferSize() const {return fBufferSize;}

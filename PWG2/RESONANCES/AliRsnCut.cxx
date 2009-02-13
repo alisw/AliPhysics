@@ -15,7 +15,7 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-
+#include "Riostream.h"
 #include "AliLog.h"
 
 #include "AliRsnDaughter.h"
@@ -78,8 +78,8 @@ AliRsnCut::AliRsnCut(const char *name, const char *title, EType type, Double_t m
     fIMax(fgkIBigNumber),
     fUIMin(0),
     fUIMax(2 * (UInt_t) fgkIBigNumber),
-    fULMin(min),
-    fULMax(max),
+    fULMin((ULong_t)min),
+    fULMax((ULong_t)max),
     fType(type),
     fVarType(kDouble_t)
 {
@@ -320,7 +320,9 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       if (fType == kPIDType) return MatchesValue((Int_t) pidType);
       if (fType == kPIDProb) return IsBetween(prob);
     case kPIDProbForSpecies:
-      return IsBetween(daughter->PIDProb()[(AliRsnPID::EType)fIMin]);
+      cut = IsBetween(daughter->PIDProb()[(AliRsnPID::EType)fIMin]);
+      //cout << (AliRsnPID::EType)fIMin << ' ' << daughter->PIDProb()[(AliRsnPID::EType)fIMin] << ' ' << (cut?"OK":"NO") << endl;
+      return cut;
     case kTruePID:
       pdg = TMath::Abs(mcinfo->PDG());
       cut = MatchesValue(pdg);

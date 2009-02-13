@@ -21,29 +21,55 @@ enum Rsn_DataSource
   kDataset          // CAF dataset
 };
 
+enum Rsn_Environment
+{
+  kLocal,   // local analysis with a locally defined TXT list of files
+  kAlien,   // AliEn analysis with an XML collection
+  kProof    // CAF analysis with a DataSet
+};
+
 static Bool_t            cleanPars = kFALSE;
 static Bool_t            cleanPWG2resonances = kFALSE;
+static const char*       pathPar = "/home/pulvir/ALICE/ALIROOT/par-files/afs_proof";
 static const char*       listPar = "STEERBase:ESD:AOD:ANALYSIS:ANALYSISalice:PWG2resonances";
-static const char*       proofConnection = "pulvir@alicecaf.cern.ch";
+static const char*       proofConnection = "localhost";
 
-static Bool_t            isAlien = kTRUE;
-static Bool_t            isProof = kFALSE;
-
-// Uncomment these two lines for an example run with a local list of local files
-//static Rsn_DataSource    listType = kTextFile;
+// Uncomment these lines for an example run with a local list of local files
 //static const char*       inputSource = "local.txt";
+//static Rsn_DataSource    listType = kTextFile;
+//static Rsn_Environment   environment = kLocal;
 
-// Uncomment these two lines for an example run with PROOF
-//static const char*    inputSource = "/COMMON/COMMON/LHC08c11_10TeV_0.5T";
-//static Rsn_DataSource listType    = kDataset;
+// Uncomment these lines for an example run with PROOF
+static const char*       inputSource = "/COMMON/COMMON/LHC08c11_10TeV_0.5T";
+static Rsn_DataSource    listType    = kDataset;
+static Rsn_Environment   environment = kProof;
 
-// Uncomment these two lines for an example run with AliEn XML collection
-static const char*    inputSource = "wn.xml";
-static Rsn_DataSource listType    = kXMLCollection;
+// Uncomment these lines for an example run with AliEn XML collection
+//static const char*       inputSource = "wn.xml";
+//static Rsn_DataSource    listType    = kXMLCollection;
+//static Rsn_Environment   environment = kAlien;
 
-static Int_t             nReadFiles = 0;
+static Int_t             nReadFiles = 5;
 static Int_t             nSkippedFiles = 0;
 static TString           treeName = "esdTree";
+
+//_________________________________________________________________________________________________
+Bool_t IsProof()
+{
+//
+// Check if the environment is PROOF
+//
+  return (environment == kProof);
+}
+
+//_________________________________________________________________________________________________
+Bool_t IsAlien()
+{
+//
+// Check if the environment is Alien
+//
+  return (environment == kAlien);
+}
 
 //_________________________________________________________________________________________________
 Bool_t CleanPars(const char *pars)
@@ -65,7 +91,7 @@ Bool_t CleanPars(const char *pars)
     ostr = (TObjString *) array->At(i);
     str = ostr->GetString();
     Info("", ">> Cleaning PARs: %s", str.Data());
-    if (isProof) {
+    if (IsProof()) {
       if (!gProof) {
         Error("CleanPars", "gProof object not initialized");
         return kFALSE;
@@ -98,12 +124,17 @@ Bool_t LoadPars(TString pars)
     ostr = (TObjString *) array->At(i);
     str = ostr->GetString();
     Info("", ">> Creating PARs: %s", str.Data());
-    if (isProof) {
+    if (IsProof()) {
        if (!gProof) {
         Error("CleanPars", "gProof object not initialized");
         return kFALSE;
       }
-      gProof->UploadPackage(Form("%s.par", str.Data()));
+      if (!str.CompareTo("PWG2resonances")) {
+        gProof->UploadPackage(Form("%s.par", str.Data()));
+      }
+      else {
+          gProof->UploadPackage(Form("%s/%s.par", pathPar, str.Data()));
+      }
       gProof->EnablePackage(str.Data());
     }
     else {
@@ -262,8 +293,8 @@ Int_t AliRsnAnalysis(const char *addMacro = "AddRsnAnalysisTask.C")
 //
 
   // connect to PROOF if required
-  if (isProof) TProof::Open(proofConnection);
-  else if (isAlien) TGrid::Connect("alien://");
+  if (IsProof()) TProof::Open(proofConnection);
+  else if (IsAlien()) TGrid::Connect("alien://");
 
   //
   // *** SETUP PAR LIBRARIES **********************************************************************
@@ -334,16 +365,35 @@ Int_t AliRsnAnalysis(const char *addMacro = "AddRsnAnalysisTask.C")
     return 7;
   }
 
+  // set ESD and MC input handlers
+  AliESDInputHandler *esdHandler = new AliESDInputHandler();
+  AliAODInputHandler *aodHandler = new AliAODInputHandler();
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+  esdHandler->SetInactiveBranches("FMD CaloCluster");
+  if (!treeName.CompareTo("esdTree")) {
+    mgr->SetInputEventHandler(esdHandler);
+  }
+  else if (!treeName.CompareTo("aodTree")) {
+    mgr->SetInputEventHandler(aodHandler);
+  }
+  else {
+    Error("AliRsnAnalysis", "Input tree type not supported");
+    return 8;
+  }
+  mgr->SetMCtruthEventHandler(mcHandler); 
+
   // load configuration macro and uses it to initialize this object
   gROOT->LoadMacro(addMacro);
-  AddRsnAnalysisTask(mgr);
+  AddRsnAnalysisTask();
 
   // initialize analysis and run it
-  TString strEnv = (isProof ? "proof" : "local");
+  TString strEnv = (IsProof() ? "proof" : "local");
   TStopwatch timer;
   timer.Start();
   mgr->InitAnalysis();
   mgr->StartAnalysis(strEnv.Data(), analysisChain);
   timer.Stop();
   timer.Print();
+
+  return 0;
 }
