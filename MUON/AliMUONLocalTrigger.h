@@ -68,8 +68,8 @@ class AliMUONLocalTrigger : public TObject {
 
   Char_t GetLoDecision() const;
   
-        /// return deviation
   Int_t GetDeviation() const;
+  void  SetDeviation(Int_t deviation);
 
   /// Trigger response X strips
   Bool_t IsTrigX();

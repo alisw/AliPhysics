@@ -40,7 +40,7 @@ ClassImp(AliMUONClusterStoreV2Iterator)
 AliMUONClusterStoreV2Iterator::AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2* store,
                                                              Int_t firstChamberId, Int_t lastChamberId)
 : TIterator(),
-  fStore(store),
+  fkStore(store),
   fFirstChamberId(firstChamberId),
   fLastChamberId(lastChamberId),
   fCurrentChamberId(-1),
@@ -91,7 +91,7 @@ TObject* AliMUONClusterStoreV2Iterator::Next()
     
     fCurrentChamberId++;
     delete fChamberIterator;
-    fChamberIterator = static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
+    fChamberIterator = static_cast<AliMpExMap*>(fkStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
     
     o = NextInCurrentChamber();
   }
@@ -105,5 +105,5 @@ void AliMUONClusterStoreV2Iterator::Reset()
   /// Reset the iterator
   fCurrentChamberId = fFirstChamberId;
   delete fChamberIterator;
-  fChamberIterator = static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
+  fChamberIterator = static_cast<AliMpExMap*>(fkStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
 }

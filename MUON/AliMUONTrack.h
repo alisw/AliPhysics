@@ -90,6 +90,7 @@ class AliMUONTrack : public TObject
 
   Int_t ClustersInCommon(AliMUONTrack* track, Bool_t inSt345 = kFALSE) const;
 
+  Int_t    GetNDF() const;
   Double_t GetNormalizedChi2() const;
 
   Int_t CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;

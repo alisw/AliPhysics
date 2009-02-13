@@ -1001,13 +1001,21 @@ Int_t AliMUONTrack::ClustersInCommon(AliMUONTrack* track, Bool_t inSt345) const
 }
 
   //__________________________________________________________________________
+Int_t AliMUONTrack::GetNDF() const
+{
+  /// return the number of degrees of freedom
+  
+  Int_t ndf = 2 * GetNClusters() - 5;
+  return (ndf > 0) ? ndf : 0;
+}
+
+  //__________________________________________________________________________
 Double_t AliMUONTrack::GetNormalizedChi2() const
 {
-  /// return the chi2 value divided by the number of degrees of freedom (or 1.e10 if ndf < 0)
+  /// return the chi2 value divided by the number of degrees of freedom (or FLT_MAX if ndf <= 0)
   
-  Double_t numberOfDegFree = (2. * GetNClusters() - 5.);
-  if (numberOfDegFree > 0.) return fGlobalChi2 / numberOfDegFree;
-  else return fGlobalChi2; // system is under-constraint
+  Double_t ndf = (Double_t) GetNDF();
+  return (ndf > 0.) ? fGlobalChi2 / ndf : FLT_MAX;
 }
 
   //__________________________________________________________________________

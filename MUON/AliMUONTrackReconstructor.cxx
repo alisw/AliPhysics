@@ -35,6 +35,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONRecoParam.h"
 
 #include "AliMpArea.h"
 

@@ -447,7 +447,7 @@ void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam)
     
     fgRecoParam = new AliMUONRecoParam(*recoParam);
     
-  }else {
+  } else {
     
     fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
     fgRecoParam->SetTrackingMode("KALMAN");
@@ -751,10 +751,9 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
   locTrg.SetLoCircuit(esdTrack.LoCircuit());
   locTrg.SetLoStripX(esdTrack.LoStripX());
   locTrg.SetLoStripY(esdTrack.LoStripY());
-  locTrg.SetLoDev(esdTrack.LoDev());
+  locTrg.SetDeviation(esdTrack.LoDev());
   locTrg.SetLoLpt(esdTrack.LoLpt());
   locTrg.SetLoHpt(esdTrack.LoHpt());
-  locTrg.SetLoSdev(1);
   locTrg.SetLoTrigY(1);
   locTrg.SetX1Pattern(esdTrack.GetTriggerX1Pattern());
   locTrg.SetX2Pattern(esdTrack.GetTriggerX2Pattern());

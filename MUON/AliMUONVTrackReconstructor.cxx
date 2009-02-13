@@ -73,6 +73,8 @@
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONRecoParam.h"
+
 #include "AliMpDEManager.h"
 #include "AliMpArea.h"
 
@@ -98,7 +100,7 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(const AliMUONRecoParam* r
 fRecTracksPtr(0x0),
 fNRecTracks(0),
 fClusterServer(clusterServer),
-fRecoParam(recoParam)
+fkRecoParam(recoParam)
 {
   /// Constructor for class AliMUONVTrackReconstructor
   /// WARNING: if clusterServer=0x0, no clusterization will be possible at this level
@@ -473,7 +475,7 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONVTrackReconstructor::TryOneClusterFast(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster)
+Bool_t AliMUONVTrackReconstructor::TryOneClusterFast(const AliMUONTrackParam &trackParam, const AliMUONVCluster* cluster)
 {
 /// Test the compatibility between the track and the cluster
 /// given the track resolution + the maximum-distance-to-track value

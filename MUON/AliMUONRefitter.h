@@ -32,7 +32,7 @@ public:
   virtual ~AliMUONRefitter();
   
   /// connect to the ESD interface containing MUON data to refit
-  void Connect(AliMUONESDInterface* esdInterface) {fESDInterface = esdInterface;}
+  void Connect(const AliMUONESDInterface* esdInterface) {fkESDInterface = esdInterface;}
   
   // re-reconstruct all tracks (clusters) in the ESD event
   AliMUONVTrackStore* ReconstructFromDigits();
@@ -62,15 +62,13 @@ private:
   
   void AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
   
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
-  
 private:
     
-  const AliMUONRecoParam*     fRecoParam;           ///< pointer to reco param (not owner)
+  const AliMUONRecoParam*     fkRecoParam;          ///< pointer to reco param (not owner)
+  const AliMUONESDInterface*  fkESDInterface;       ///< container of MUON tracks/clusters/digits (not owner)
   AliMUONGeometryTransformer* fGeometryTransformer; ///< geometry transformer (owner)
   AliMUONVClusterServer*      fClusterServer;       ///< clusterizer (owner)
   AliMUONVTrackReconstructor* fTracker;             ///< tracker (owner)
-  AliMUONESDInterface*        fESDInterface;        ///< container of MUON tracks/clusters/digits (not owner)
   
   
   ClassDef(AliMUONRefitter,0)

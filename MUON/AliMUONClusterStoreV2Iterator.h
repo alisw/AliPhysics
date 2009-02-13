@@ -44,7 +44,7 @@ private:
   /// Overriden TIterator virtual operator=
   AliMUONClusterStoreV2Iterator& operator=(const TIterator& rhs);
 
-  const AliMUONClusterStoreV2* fStore; ///< store to iterate upon
+  const AliMUONClusterStoreV2* fkStore; ///< store to iterate upon
   Int_t fFirstChamberId; ///< first chamber
   Int_t fLastChamberId; ///< last chamber
   Int_t fCurrentChamberId; ///< current chamber

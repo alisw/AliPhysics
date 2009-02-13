@@ -252,16 +252,31 @@ void AliMUONLocalTrigger::Print(Option_t* opt) const
 //----------------------------------------------------------------------
 Int_t AliMUONLocalTrigger::GetDeviation() const
 {
-/// return deviation
+  /// return deviation
+  
+  Int_t deviation = LoDev(); 
+  Int_t sign = 0;
+  if ( !LoSdev() &&  deviation ) sign=-1;
+  if ( !LoSdev() && !deviation ) sign= 0;
+  if (  LoSdev() == 1 )          sign=+1;
+  deviation *= sign;
+  deviation += 15;
+  return deviation;
+}
 
-   Int_t deviation = LoDev(); 
-    Int_t sign = 0;
-    if ( !LoSdev() &&  deviation ) sign=-1;
-    if ( !LoSdev() && !deviation ) sign= 0;
-    if (  LoSdev() == 1 )          sign=+1;
-    deviation *= sign;
-    deviation += 15;
-    return deviation;
+//----------------------------------------------------------------------
+void AliMUONLocalTrigger::SetDeviation(Int_t deviation)
+{
+  /// set LoDev and LoSDev according to deviation
+  
+  deviation -= 15;
+  if (deviation > 0) {
+    SetLoDev(deviation);
+    SetLoSdev(1);
+  } else {
+    SetLoDev(-deviation);
+    SetLoSdev(0);
+  }
 }
 
 //----------------------------------------------------------------------

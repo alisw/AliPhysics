@@ -25,6 +25,7 @@
 #include "AliMUONPreClusterFinderV2.h"
 #include "AliMUONPreClusterFinderV3.h"
 #include "AliMUONSimpleClusterServer.h"
+#include "AliMUONReconstructor.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONRecoParam.h"
@@ -63,11 +64,11 @@ ClassImp(AliMUONRefitter)
 //_____________________________________________________________________________
 AliMUONRefitter::AliMUONRefitter(const AliMUONRecoParam* recoParam)
 : TObject(),
-  fRecoParam(recoParam),
+  fkRecoParam(recoParam),
+  fkESDInterface(0x0),
   fGeometryTransformer(0x0),
   fClusterServer(0x0),
-  fTracker(0x0),
-  fESDInterface(0x0)
+  fTracker(0x0)
 {
   /// Default constructor
   CreateGeometryTransformer();
@@ -94,7 +95,7 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromDigits()
   /// re-reconstruct all tracks and attached clusters from the digits
   /// it is the responsability of the user to delete the returned store
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
@@ -105,7 +106,7 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromDigits()
   
   // loop over tracks and refit them (create new tracks)
   AliMUONTrack *track;
-  TIter next(fESDInterface->CreateTrackIterator());
+  TIter next(fkESDInterface->CreateTrackIterator());
   while ((track = static_cast<AliMUONTrack*>(next()))) {
     AliMUONTrack *newTrack = RetrackFromDigits(*track);
     newTrackStore->Add(newTrack);
@@ -121,7 +122,7 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromClusters()
   /// refit all tracks from the attached clusters
   /// it is the responsability of the user to delete the returned store
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
@@ -132,7 +133,7 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromClusters()
   
   // loop over tracks and refit them (create new tracks)
   AliMUONTrack *track;
-  TIter next(fESDInterface->CreateTrackIterator());
+  TIter next(fkESDInterface->CreateTrackIterator());
   while ((track = static_cast<AliMUONTrack*>(next()))) {
     AliMUONTrack* newTrack = newTrackStore->Add(*track);
     if (!fTracker->RefitTrack(*newTrack)) newTrackStore->Remove(*newTrack);
@@ -147,13 +148,13 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(UInt_t trackId)
   /// refit track "trackId" from the digits (i.e. re-clusterized the attached clusters)
   /// it is the responsability of the user to delete the returned track
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
   
   // get the track to refit
-  AliMUONTrack* track = fESDInterface->FindTrack(trackId);
+  AliMUONTrack* track = fkESDInterface->FindTrack(trackId);
   
   return track ? RetrackFromDigits(*track) : 0x0;
 }
@@ -164,13 +165,13 @@ AliMUONTrack* AliMUONRefitter::RetrackFromClusters(UInt_t trackId)
   /// refit track "trackId" form the clusters (i.e. do not re-clusterize)
   /// it is the responsability of the user to delete the returned track
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
   
   // get the track to refit
-  AliMUONTrack* track = fESDInterface->FindTrack(trackId);
+  AliMUONTrack* track = fkESDInterface->FindTrack(trackId);
   if (!track) return 0x0;
   
   // refit the track (create a new one)
@@ -190,13 +191,13 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clust
   /// several new clusters may be reconstructed
   /// it is the responsability of the user to delete the returned store
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
   
   // get the cluster to re-clusterize
-  AliMUONVCluster* cluster = fESDInterface->FindCluster(trackId,clusterId);
+  AliMUONVCluster* cluster = fkESDInterface->FindCluster(trackId,clusterId);
   if (!cluster) return 0x0;
   
   // check if digits exist
@@ -210,9 +211,9 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clust
   if (!clusterStore) return 0x0;
   
   // re-clusterize
-  TIter next(fESDInterface->CreateDigitIterator(trackId, clusterId));
+  TIter next(fkESDInterface->CreateDigitIterator(trackId, clusterId));
   fClusterServer->UseDigits(next);
-  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),GetRecoParam());
+  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
   return clusterStore;
 }
@@ -224,13 +225,13 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t clusterId)
   /// several new clusters may be reconstructed
   /// it is the responsability of the user to delete the returned store
   
-  if (!fESDInterface) {
+  if (!fkESDInterface) {
     AliError("the refitter must be connected to an ESDInterface containing the ESD event to reconstruct");
     return 0x0;
   }
   
   // get the cluster to re-clusterize
-  AliMUONVCluster* cluster = fESDInterface->FindCluster(clusterId);
+  AliMUONVCluster* cluster = fkESDInterface->FindCluster(clusterId);
   if (!cluster) return 0x0;
   
   // check if digits exist
@@ -244,9 +245,9 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t clusterId)
   if (!clusterStore) return 0x0;
   
   // re-clusterize
-  TIter next(fESDInterface->CreateDigitIteratorInCluster(clusterId));
+  TIter next(fkESDInterface->CreateDigitIteratorInCluster(clusterId));
   fClusterServer->UseDigits(next);
-  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),GetRecoParam());
+  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
   return clusterStore;
 }
@@ -264,7 +265,7 @@ void AliMUONRefitter::CreateGeometryTransformer()
 void AliMUONRefitter::CreateClusterServer(AliMUONGeometryTransformer& transformer)
 {
   /// Create cluster server
-  AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(GetRecoParam()->GetClusteringMode());
+  AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(fkRecoParam->GetClusteringMode());
   fClusterServer = clusterFinder ? new AliMUONSimpleClusterServer(clusterFinder,transformer) : 0x0;
 }
 
@@ -278,7 +279,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
   
   // check if digits exist
   UInt_t trackId = track.GetUniqueID();
-  if (fESDInterface->GetNDigits(trackId) == 0) {
+  if (fkESDInterface->GetNDigits(trackId) == 0) {
     AliError(Form("no digit attached to track #%d",trackId));
     return 0x0;
   }
@@ -297,16 +298,16 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
   
   // loop over clusters, re-clusterize and build new tracks
   AliMUONVCluster* cluster;
-  TIter nextCluster(fESDInterface->CreateClusterIterator(trackId));
+  TIter nextCluster(fkESDInterface->CreateClusterIterator(trackId));
   while ((cluster = static_cast<AliMUONVCluster*>(nextCluster()))) {
     
     // reset the new cluster store
     newClusterStore->Clear();
     
     // re-clusterize current cluster
-    TIter nextDigit(fESDInterface->CreateDigitIterator(trackId, cluster->GetUniqueID()));
+    TIter nextDigit(fkESDInterface->CreateDigitIterator(trackId, cluster->GetUniqueID()));
     fClusterServer->UseDigits(nextDigit);
-    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea(),GetRecoParam());
+    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea(),fkRecoParam);
     
     // check that re-clusterizing succeeded
     if (nNewClusters == 0) {

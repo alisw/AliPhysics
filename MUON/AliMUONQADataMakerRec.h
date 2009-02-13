@@ -77,32 +77,43 @@ private:
   
   /// ESD histograms indices
   enum EESD { 
-    kESDnTracks             = 0,  ///< number of tracks
-    kESDMatchTrig           = 1,  ///< number of tracks matched with trigger
-    kESDMomentum            = 2,  ///< P distribution
-    kESDPt                  = 3,  ///< Pt distribution
-    kESDRapidity            = 4,  ///< rapidity distribution
-    kESDChi2                = 5,  ///< normalized chi2 distribution
+    kESDnTracks                 = 0,  ///< number of tracks
+    kESDMatchTrig               = 1,  ///< number of tracks matched with trigger
+    kESDMomentum                = 2,  ///< P distribution
+    kESDPt                      = 3,  ///< Pt distribution
+    kESDRapidity                = 4,  ///< rapidity distribution
+    kESDChi2                    = 5,  ///< normalized chi2 distribution
+    kESDProbChi2                = 6,  ///< distribution of probability of chi2
     
-    kESDClusterHitMap       = 6,  ///< cluster position distribution in chamber i
-    kESDnClustersPerTrack   = 16, ///< number of clusters per track
-    kESDnClustersPerCh      = 17, ///< number of clusters per chamber
-    kESDnClustersPerDE      = 18, ///< number of clusters per DE
-    kESDClusterCharge       = 19, ///< cluster charge distribution
-    kESDClusterChargeInCh   = 20, ///< cluster charge distribution in chamber i
-    kESDClusterChargePerDE  = 30, ///< cluster charge per DE: mean +- dispersion
-    kESDClusterMult         = 31, ///< cluster multiplicity distribution
-    kESDClusterMultInCh     = 32, ///< cluster multiplicity distribution in chamber i
-    kESDClusterMultPerDE    = 42, ///< cluster multiplicity per DE: mean +- dispersion
+    kESDClusterHitMap           = 7,  ///< cluster position distribution in chamber i
+    kESDnClustersPerTrack       = 17, ///< number of clusters per track
+    kESDnClustersPerCh          = 18, ///< number of clusters per chamber per track
+    kESDnClustersPerDE          = 19, ///< number of clusters per DE per track
+    kESDClusterChargeInCh       = 20, ///< cluster charge distribution in chamber i
+    kESDClusterChargePerChMean  = 30, ///< cluster charge per Ch: mean
+    kESDClusterChargePerChSigma = 31, ///< cluster charge per Ch: dispersion
+    kESDClusterChargePerDE      = 32, ///< cluster charge per DE: mean
+    kESDClusterSizeInCh         = 33, ///< cluster size distribution in chamber i
+    kESDClusterSizePerChMean    = 43, ///< cluster size per Ch: mean
+    kESDClusterSizePerChSigma   = 44, ///< cluster size per Ch: dispersion
+    kESDClusterSizePerDE        = 45, ///< cluster size per DE: mean
     
-    kESDResidualX           = 43, ///< cluster-track residual-X distribution
-    kESDResidualY           = 44, ///< cluster-track residual-Y distribution
-    kESDResidualXInCh       = 45, ///< cluster-track residual-X distribution in chamber i
-    kESDResidualYInCh       = 55, ///< cluster-track residual-Y distribution in chamber i
-    kESDResidualXPerDEMean  = 65, ///< cluster-track residual-X per DE: mean
-    kESDResidualYPerDEMean  = 66, ///< cluster-track residual-Y per DE: mean
-    kESDResidualXPerDESigma = 67, ///< cluster-track residual-X per DE: sigma
-    kESDResidualYPerDESigma = 68  ///< cluster-track residual-Y per DE: sigma
+    kESDResidualXInCh           = 46, ///< cluster-track residual-X distribution in chamber i
+    kESDResidualYInCh           = 56, ///< cluster-track residual-Y distribution in chamber i
+    kESDResidualXPerChMean      = 66, ///< cluster-track residual-X per Ch: mean
+    kESDResidualYPerChMean      = 67, ///< cluster-track residual-Y per Ch: mean
+    kESDResidualXPerChSigma     = 68, ///< cluster-track residual-X per Ch: dispersion
+    kESDResidualYPerChSigma     = 69, ///< cluster-track residual-Y per Ch: dispersion
+    kESDResidualXPerDEMean      = 70, ///< cluster-track residual-X per DE: mean
+    kESDResidualYPerDEMean      = 71, ///< cluster-track residual-Y per DE: mean
+    kESDResidualXPerDESigma     = 72, ///< cluster-track residual-X per DE: dispersion
+    kESDResidualYPerDESigma     = 73, ///< cluster-track residual-Y per DE: dispersion
+    kESDLocalChi2XInCh          = 74, ///< local chi2-X distribution in chamber i
+    kESDLocalChi2YInCh          = 84, ///< local chi2-Y distribution in chamber i
+    kESDLocalChi2XPerChMean     = 94, ///< local chi2-X per Ch: mean
+    kESDLocalChi2YPerChMean     = 95, ///< local chi2-Y per Ch: mean
+    kESDLocalChi2XPerDEMean     = 96, ///< local chi2-X per DE: mean
+    kESDLocalChi2YPerDEMean     = 97  ///< local chi2-Y per DE: mean
   };
 
 private:
@@ -130,8 +141,20 @@ private:
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 	
   AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
-	
-  ClassDef(AliMUONQADataMakerRec,4)  // MUON Quality assurance data maker
+  
+  TH1F* fhESDnTotClustersPerCh;      //!< total number of associated clusters per chamber
+  TH1F* fhESDnTotClustersPerDE;      //!< total number of associated clusters per DE
+  TH1F* fhESDnTotFullClustersPerDE;  //!< total number of associated clusters containing pad info per DE
+  TH1F* fhESDSumClusterChargePerDE;  //!< sum of cluster charge per DE
+  TH1F* fhESDSumClusterSizePerDE;    //!< sum of cluster size per DE
+  TH1F* fhESDSumResidualXPerDE;      //!< sum of cluster-track residual-X per DE
+  TH1F* fhESDSumResidualYPerDE;      //!< sum of cluster-track residual-Y per DE
+  TH1F* fhESDSumResidualX2PerDE;     //!< sum of cluster-track residual-X**2 per DE
+  TH1F* fhESDSumResidualY2PerDE;     //!< sum of cluster-track residual-Y**2 per DE
+  TH1F* fhESDSumLocalChi2XPerDE;     //!< sum of local chi2-X per DE
+  TH1F* fhESDSumLocalChi2YPerDE;     //!< sum of local chi2-X per DE
+  
+  ClassDef(AliMUONQADataMakerRec,5)  // MUON Quality assurance data maker
 
 };
 #endif

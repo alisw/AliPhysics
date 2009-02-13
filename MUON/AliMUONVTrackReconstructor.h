@@ -11,8 +11,6 @@
 ///
 //  Author: Philippe Pillot
 
-#include "AliMUONReconstructor.h"
-
 #include <TObject.h>
 
 class AliMUONTrack;
@@ -50,7 +48,7 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONVTriggerStore& triggerStore,
                                  const AliMUONTrackHitPattern& trackHitPattern);
 
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  const AliMUONRecoParam* GetRecoParam() const { return fkRecoParam; }
   
   /// re-fit the given track
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
@@ -63,7 +61,7 @@ class AliMUONVTrackReconstructor : public TObject {
 
   AliMUONVClusterServer* fClusterServer; ///< reference to our cluster server
 
-  const AliMUONRecoParam* fRecoParam; ///< reference to reco parameters
+  const AliMUONRecoParam* fkRecoParam; ///< reference to reco parameters
   
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
@@ -97,7 +95,7 @@ class AliMUONVTrackReconstructor : public TObject {
   
   Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster,
 			 AliMUONTrackParam &trackParamAtCluster, Bool_t updatePropagator = kFALSE);
-  Bool_t   TryOneClusterFast(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster);
+  Bool_t   TryOneClusterFast(const AliMUONTrackParam &trackParam, const AliMUONVCluster* cluster);
   Double_t TryTwoClustersFast(const AliMUONTrackParam &trackParamAtCluster1, AliMUONVCluster* cluster2,
 			      AliMUONTrackParam &trackParamAtCluster2);
 
