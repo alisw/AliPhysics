@@ -1,38 +1,43 @@
-///////////////////////////////////////////////////////////////////////////////// 	 
-// 	 
-// HOW TO USE THIS MACRO: 	 
-// 	 
-// With this macro several flow analysis can be run. 	 
-// SP    = Scalar Product                (for PbPb or pp) 	 
-// LYZ1  = Lee Yang Zeroes first run     (for PbPb) 	 
-// LYZ2  = Lee Yang Zeroes second run    (for PbPb) 	 
-// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb) 	 
-// GFC   = Generating Function Cumulants (for PbPb)  
-// QC    = Q-cumulants                   (for PbPb)  
-// FQD   = Fitting q-distribution        (for PbPb) 
-// MCEP  = Flow calculated from the real MC event plane (for PbPb only!) 	 
-// 	 
-// The LYZ analysis should be done in the following order; 	 
-// LYZ1 -> LYZ2 -> LYZEP, 	 
-// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile 	 
-// of LYZ2. 	 
-// 	 
-// The MCEP method is a reference method. 	 
-// It can only be run when MC information (kinematics.root & galice.root file) is available 	 
-// in which the reaction plane is stored. 	 
-// 	 
-// One can run on ESD, AOD or MC. 	 
-// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 	 
-// information is combined. Tracks are selected in the ESD, the PID information 	 
-// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 	 
-// from the ESD and for ESDMC1 it is taken from the MC information. 	 
-// 	 
-/////////////////////////////////////////////////////////////////////////////////// 	 
-	 
+/////////////////////////////////////////////////////////////////////////////////
+//
+// HOW TO USE THIS MACRO:
+//
+// With this macro several flow analysis can be run.
+// SP    = Scalar Product                (for PbPb or pp)
+// LYZ1  = Lee Yang Zeroes first run     (for PbPb)
+// LYZ2  = Lee Yang Zeroes second run    (for PbPb)
+// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
+// GFC   = Cumulants                     (for PbPb)
+// QC    = Q-cumulants                   (for PbPb or pp)
+// FQD   = Fitting q-distribution        (for PbPb)
+// MCEP  = Flow calculated from the real MC event plane (for PbPb only)
+//
+// The LYZ analysis should be done in the following order;
+// LYZ1 -> LYZ2 -> LYZEP,
+// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile
+// of LYZ2.
+//
+// The MCEP method is a reference method. 
+// It can only be run when MC information (kinematics.root & galice.root file) 
+// is available in which the reaction plane is stored.
+//
+// One can run on ESD, AOD or MC.
+// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 
+// information is combined. Tracks are selected in the ESD, the PID information 
+// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 
+// from the ESD and for ESDMC1 it is taken from the MC information.
+//
+// the macro can be used to run local in aliroot or root, on the grid and on caf
+///////////////////////////////////////////////////////////////////////////////////
 
-// SETTING THE ANALYSIS
+enum anaModes {mLocal, mLocalPAR,mPROOF,mGRID};
+//mLocal: Analyze locally files in your computer using aliroot
+//mLocalPAR: Analyze locally files in your computer using root + PAR files
+//mPROOF: Analyze CAF files with PROOF
 
-// Flow analysis methods can be: (set to kTRUE or kFALSE)
+// RUN SETTINGS
+
+// Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
@@ -42,21 +47,19 @@ Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE;
 
-
-// Type of analysis can be:
-// ESD, AOD, MC, ESDMC0, ESDMC1
+// Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
 
 // Boolean to fill/not fill the QA histograms
-Bool_t QA = kFALSE;    
+Bool_t QA = kFALSE;   
 
-
-// WEIGHTS SETTINGS: 
-// to use weigths for the Q vector
+// Weights 
+//Use weights for Q vector
 Bool_t usePhiWeights = kFALSE; //Phi
 Bool_t usePtWeights  = kFALSE; //v'(pt)
 Bool_t useEtaWeights = kFALSE; //v'(eta)
-Bool_t useWeights = usePhiWeights||usePtWeights||usePtWeights;
+Bool_t useWeights = usePhiWeights||usePtWeights||useEtaWeights;
+
 
 // SETTING THE CUTS
 
@@ -86,97 +89,48 @@ const Int_t PDG2 = 211;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
-//void runAliAnalysisTaskFlow(Int_t nRuns = 50, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
-void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+// ESD data on PROOF cluster
+void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0)
+
+// AOD data on PROOF cluster
+//void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
+//void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0) {
+
+// Data at Nikhef
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 50, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+
+// Data on my mac
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
+
   TStopwatch timer;
   timer.Start();
-  
+
   if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
   if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  
-  // Include path (to find the .h files when compiling)
-  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
-  
-  // Load needed root libraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
 
-  // For using root and par files
-  SetupPar("PWG2flowCommon");
-  cerr<<"PWG2flowCommon.par loaded..."<<endl;
+  LoadLibraries(mode);
 
-  // Alice specific stuff
-  SetupPar("STEERBase");
-  SetupPar("ESD");
-  SetupPar("AOD");
+ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
+   if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
+   else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
+ }
 
-  SetupPar("ANALYSIS");
-  SetupPar("ANALYSISalice");
-  SetupPar("PWG2AOD");
+  //Create cuts using correction framework
 
-  SetupPar("CORRFW");
-
-  SetupPar("PWG2flowTasks");
-  cerr<<"PWG2flowTasks.par loaded..."<<endl;
-
-  // For using aliroot
-  /*
-  //  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-
-  gSystem->Load("libESD.so");
-  cerr<<"libESD loaded..."<<endl;
-  gSystem->Load("libANALYSIS.so");
-  cerr<<"libANALYSIS.so loaded..."<<endl;
-  gSystem->Load("libANALYSISRL.so");
-  cerr<<"libANALYSISRL.so loaded..."<<endl;
-  gSystem->Load("libCORRFW.so");
-  cerr<<"libCORRFW.so loaded..."<<endl;
-  gSystem->Load("libPWG2flowCommon.so");
-  cerr<<"libPWG2flowCommon.so loaded..."<<endl;
-  gSystem->Load("libPWG2flowTasks.so");
-  cerr<<"libPWG2flowTasks.so loaded..."<<endl;
-  */
-
-  // Create the TChain. CreateESDChain() is defined in CreateESDChain.C
-  if (type!="AOD") { TChain* chain = CreateESDChain(dataDir, nRuns, offset);}
-  //  cout<<"chain ("<<chain<<")"<<endl; }
-  else { TChain* chain = CreateAODChain(dataDir, nRuns, offset);}
-  //  cout<<"chain ("<<chain<<")"<<endl; }
- 
-  //____________________________________________//
-  // Create cuts using correction framework
-
-  // Set TList for the QA histograms
+  //Set TList for the QA histograms
   if (QA) {
-    if (SP){
-      TList* qaIntSP = new TList();
-      TList* qaDiffSP = new TList(); }
-    if (LYZ1) {
-      TList* qaIntLYZ1 = new TList();
-      TList* qaDiffLYZ1 = new TList(); }
-    if (LYZ2) {
-      TList* qaIntLYZ2 = new TList();
-      TList* qaDiffLYZ2 = new TList(); }
-    if (LYZEP) {
-      TList* qaIntLYZEP = new TList();
-      TList* qaDiffLYZEP = new TList(); }
-    if (GFC) {
-      TList* qaIntGFC = new TList();
-      TList* qaDiffGFC = new TList(); }
-    if (QC) {
-      TList* qaIntQC = new TList();
-      TList* qaDiffQC = new TList(); }
-    if (FQD) {
-      TList* qaIntFQD = new TList();
-      TList* qaDiffFQD = new TList(); }
-    if (MCEP) {
-      TList* qaIntMCEP = new TList();
-      TList* qaDiffMCEP = new TList(); }
+    if (SP){ TList* qaIntSP = new TList(); TList* qaDiffSP = new TList(); }
+    if (LYZ1) { TList* qaIntLYZ1 = new TList(); TList* qaDiffLYZ1 = new TList(); }
+    if (LYZ2) { TList* qaIntLYZ2 = new TList(); TList* qaDiffLYZ2 = new TList(); }
+    if (LYZEP) { TList* qaIntLYZEP = new TList(); TList* qaDiffLYZEP = new TList(); }
+    if (GFC) { TList* qaIntGFC = new TList(); TList* qaDiffGFC = new TList(); }
+    if (QC) { TList* qaIntQC = new TList(); TList* qaDiffQC = new TList(); }
+    if (FQD) { TList* qaIntFQD = new TList(); TList* qaDiffFQD = new TList(); }
+    if (MCEP) { TList* qaIntMCEP = new TList(); TList* qaDiffMCEP = new TList(); }
   }
   
   //############# cuts on MC
@@ -205,11 +159,11 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (LYZ2) { mcKineCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcKineCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcKineCuts2->SetQAOn(qaDiffGFC); }
-    if (QC)   { mcKineCuts2->SetQAOn(qaDiffQC); } 
-    if (FQD)  { mcKineCuts2->SetQAOn(qaDiffFQD); }    
+    if (QC)   { mcKineCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { mcKineCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { mcKineCuts2->SetQAOn(qaDiffMCEP); }
   }
-
+  
   AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts for integrated flow");
   mcGenCuts1->SetRequireIsPrimary();
   if (UsePIDIntegratedFlow) {mcGenCuts1->SetRequirePdgCode(PDG1);}
@@ -223,7 +177,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { mcGenCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { mcGenCuts1->SetQAOn(qaIntMCEP); }
   }
-
+  
   AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts for differential flow");
   mcGenCuts2->SetRequireIsPrimary();
   if (UsePIDDifferentialFlow) {mcGenCuts2->SetRequirePdgCode(PDG2);}
@@ -238,7 +192,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (MCEP) { mcGenCuts2->SetQAOn(qaDiffMCEP); }
   }
   
-  //############# Acceptance Cuts
+  //############# Acceptance Cuts  
   AliCFAcceptanceCuts *mcAccCuts1 = new AliCFAcceptanceCuts("mcAccCuts1","MC acceptance cuts");
   mcAccCuts1->SetMinNHitITS(mintrackrefsITS1);
   mcAccCuts1->SetMinNHitTPC(mintrackrefsTPC1);
@@ -252,7 +206,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { mcAccCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { mcAccCuts1->SetQAOn(qaIntMCEP); }
   }
-
+  
   AliCFAcceptanceCuts *mcAccCuts2 = new AliCFAcceptanceCuts("mcAccCuts2","MC acceptance cuts");
   mcAccCuts2->SetMinNHitITS(mintrackrefsITS2);
   mcAccCuts2->SetMinNHitTPC(mintrackrefsTPC2);
@@ -263,7 +217,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (LYZEP){ mcAccCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcAccCuts2->SetQAOn(qaDiffGFC); }
     if (QC)   { mcAccCuts2->SetQAOn(qaDiffQC); }
-    if (FQD)  { mcAccCuts2->SetQAOn(qaDiffFQD); }    
+    if (FQD)  { mcAccCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { mcAccCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -282,7 +236,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { recKineCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recKineCuts1->SetQAOn(qaIntMCEP); }
   }
-
+  
   AliCFTrackKineCuts *recKineCuts2 = new AliCFTrackKineCuts("recKineCuts2","rec-level kine cuts");
   recKineCuts2->SetPtRange(ptmin2,ptmax2);
   recKineCuts2->SetRapidityRange(ymin2,ymax2);
@@ -311,7 +265,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { recQualityCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recQualityCuts1->SetQAOn(qaIntMCEP); }
   }
-
+  
   AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
   recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
   recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
@@ -325,7 +279,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { recQualityCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { recQualityCuts2->SetQAOn(qaDiffMCEP); }
   }
-
+ 
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
   recIsPrimaryCuts1->SetMaxNSigmaToVertex(maxnsigmatovertex1);
   if (QA) { 
@@ -338,7 +292,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { recIsPrimaryCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recIsPrimaryCuts1->SetQAOn(qaIntMCEP); }
   }
-
+  
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts2 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts2","rec-level isPrimary cuts");
   recIsPrimaryCuts2->SetMaxNSigmaToVertex(maxnsigmatovertex2);
   if (QA) { 
@@ -351,8 +305,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     if (FQD)  { recIsPrimaryCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { recIsPrimaryCuts2->SetQAOn(qaDiffMCEP); }
   }
-  
-
+ 
   int n_species = AliPID::kSPECIES ;
   Double_t* prior = new Double_t[n_species];
   
@@ -361,7 +314,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   prior[2] = 0.805747  ;
   prior[3] = 0.0928785 ;
   prior[4] = 0.0625243 ;
-
+ 
   AliCFTrackCutPid* cutPID1 = NULL;
   if(UsePIDIntegratedFlow) {
     AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID for integrated flow") ;
@@ -413,7 +366,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
       if (MCEP) {cutPID2->SetQAOn(qaIntMCEP);} 
     }
   }
-
+  
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList1 = new TObjArray(0);
   mcList1->AddLast(mcKineCuts1);
@@ -448,17 +401,16 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   TObjArray* fPIDCutList2 = new TObjArray(0) ;
   if (UsePIDDifferentialFlow)  {fPIDCutList2->AddLast(cutPID2);}
   
-  printf("CREATE INTERFACE AND CUTS FOR INTEGRATED FLOW\n");
+  printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* cfmgr1 = new AliCFManager();
-  //  cfmgr1->SetNStepParticle(4); // needed for trunk not in 4.16
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);       //on MC
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);      //on MC
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);      //on ESD
-  cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);  //on ESD
+  //  cfmgr1->SetNStepParticle(4); //05nov08
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
   
-  printf("CREATE INTERFACE AND CUTS FOR DIFFERENTIAL FLOW\n");
   AliCFManager* cfmgr2 = new AliCFManager();
-  //  cfmgr2->SetNStepParticle(4); // needed for trunk not in 4.16
+  //  cfmgr2->SetNStepParticle(4); //05nov08
   cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
@@ -467,21 +419,21 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   //weights: 
   TFile *weightsFile = NULL;
   TList *weightsList = NULL;
-  
-  if(useWeights)
-  {
-   //open the file with the weights:
-   weightsFile = TFile::Open("weights.root","READ");
-   if(weightsFile) {
-     //access the list which holds the histos with weigths:
-     weightsList = (TList*)weightsFile->Get("weights");
-   }
-   else {
-     cout<<" WARNING: the file <weights.root> with weights from the previous run was not available."<<endl;
-     break;
-   } 
-  }//end of if(useWeights)
-  
+
+  if(useWeights) {
+    //open the file with the weights:
+    weightsFile = TFile::Open("weights.root","READ");
+    if(weightsFile) {
+      //access the list which holds the histos with weigths:
+      weightsList = (TList*)weightsFile->Get("weights");
+    }
+    else {
+      cout<<" WARNING: the file <weights.root> with weights from the previous run was not available."<<endl;
+      break;
+    } 
+  }
+
+
   if (LYZ2){  
     // read the input file from the first run 
     TString inputFileNameLYZ2 = "outputLYZ1analysis" ;
@@ -491,8 +443,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
     if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
       cerr << " ERROR: NO First Run file... " << endl ; }
-    else { 
-      TList* fInputListLYZ2 = (TList*)fInputFileLYZ2->Get("cobjLYZ1");  
+    else {
+      TList* fInputListLYZ2 = (TList*)fInputFileLYZ2->Get("cobjLYZ1");
       if (!fInputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
     }
     cout<<"LYZ2 input file/list read..."<<endl;
@@ -502,32 +454,32 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     // read the input file from the second LYZ run
     TString inputFileNameLYZEP = "outputLYZ2analysis" ;
     inputFileNameLYZEP += type;
-    inputFileNameLYZEP += ".root";
+    inputFileNameLYZEP += "_secondrun.root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
-    if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
+    if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
+      cerr << " ERROR: NO First Run file... " << endl ; }
     else {
-      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");  
+      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
       if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
     }
     cout<<"LYZEP input file/list read..."<<endl;
   }
   
-
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
   
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH); 
+    mgr->SetInputEventHandler(esdH);
     if (MCEP) {
       AliMCEventHandler *mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc);}  }
   
   if (type == "AOD"){
     AliVEventHandler* aodH = new AliAODInputHandler;
-    mgr->SetInputEventHandler(aodH);
+    mgr->SetInputEventHandler(aodH); 
     if (MCEP) {
       AliMCEventHandler *mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc);}  }
@@ -540,8 +492,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->SetMCtruthEventHandler(mc); }
   
   //____________________________________________//
-  // Task
-  
+  // tasks
   if (SP){
     if (QA) { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kTRUE); }
     else { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kFALSE); }
@@ -645,83 +596,72 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-    
-
-  if(useWeights)
-  {    
-    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
-  }  
   
+  if (useWeights) {    
+    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 
+  }
+
   if (LYZ2){ 
-    AliAnalysisDataContainer *cinputLYZ2 = 
-      mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer); } 
+    AliAnalysisDataContainer *cinputLYZ2 = mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer); } 
   if (LYZEP){ 
-    AliAnalysisDataContainer *cinputLYZEP = 
-      mgr->CreateContainer("cobjLYZEPin",TList::Class(),AliAnalysisManager::kInputContainer); } 
+    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer("cobjLYZEPin",TList::Class(),AliAnalysisManager::kInputContainer); } 
   
   if(SP) {
     TString outputSP = "outputSPanalysis";
     outputSP+= type;
     outputSP+= ".root";
-    AliAnalysisDataContainer *coutputSP = 
-      mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
+    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
   }
   
   if(LYZ1) {
     TString outputLYZ1 = "outputLYZ1analysis";
     outputLYZ1+= type;
-    outputLYZ1+= ".root";
-    AliAnalysisDataContainer *coutputLYZ1 = 
-      mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
+    outputLYZ1+= "_firstrun.root";
+    AliAnalysisDataContainer *coutputLYZ1 = mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
   }
   
   if(LYZ2) {
     TString outputLYZ2 = "outputLYZ2analysis";
     outputLYZ2+= type;
-    outputLYZ2+= ".root";
-    AliAnalysisDataContainer *coutputLYZ2 = 
-      mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
+    outputLYZ2+= "_secondrun.root";
+    AliAnalysisDataContainer *coutputLYZ2 = mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
   }
   
   if(LYZEP) {
     TString outputLYZEP = "outputLYZEPanalysis";
     outputLYZEP+= type;
     outputLYZEP+= ".root";
-    AliAnalysisDataContainer *coutputLYZEP = 
-      mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP);
+    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP);
   }
   
   if(GFC) {
     TString outputGFC = "outputGFCanalysis";
     outputGFC+= type;
     outputGFC+= ".root";
-    AliAnalysisDataContainer *coutputGFC = 
-      mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC);
+    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC);
   }
   
   if(QC) {
     TString outputQC = "outputQCanalysis";
     outputQC+= type;
     outputQC+= ".root";
-    AliAnalysisDataContainer *coutputQC = 
-      mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC);
+    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC);
   }
   
   if(FQD) {
     TString outputFQD = "outputFQDanalysis";
     outputFQD+= type;
     outputFQD+= ".root";
-    AliAnalysisDataContainer *coutputFQD = 
-      mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD);
-  } 
+    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD);
+  }
 
   if(MCEP) {
     TString outputMCEP = "outputMCEPanalysis";
     outputMCEP+= type;
     outputMCEP+= ".root";
-    AliAnalysisDataContainer *coutputMCEP = 
-      mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP);
+    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP);
   }
+  
   
   if (QA) { 
     if(SP) {
@@ -749,7 +689,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
       qaNameDiffLYZ1 += ".root";
       AliAnalysisDataContainer *coutputQA2LYZ1 = 
 	mgr->CreateContainer("QAdiffLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffLYZ1);
-    }
+    } 
     if(LYZ2) {
       TString qaNameIntLYZ2 = "QAforInt_LYZ2_";
       qaNameIntLYZ2 += type;
@@ -802,7 +742,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
       AliAnalysisDataContainer *coutputQA2QC = 
 	mgr->CreateContainer("QAdiffQC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffQC);
     }
-    if(FQD) { 
+    if(FQQ) { 
       TString qaNameIntFQD = "QAforInt_FQD_";
       qaNameIntFQD += type;
       qaNameIntFQD += ".root";
@@ -828,7 +768,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
       AliAnalysisDataContainer *coutputQA2MCEP = 
 	mgr->CreateContainer("QAdiffMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffMCEP);
     }
-  }
+  }   
+  
   
   //____________________________________________//
   
@@ -870,31 +811,201 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/Users/snel
     mgr->ConnectInput(taskQC,0,cinput1); 
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
-      mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
-    if (useWeights) { mgr->ConnectInput(taskQC,1,cinputWeights);
-      cinputWeights->SetData(weightsList);} 
+    mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
+    if (useWeights) {
+      mgr->ConnectInput(taskQC,1,cinputWeights);
+      cinputWeights->SetData(weightsList);
+    } 
   }
   if (FQD)   { 
     mgr->ConnectInput(taskFQD,0,cinput1); 
     mgr->ConnectOutput(taskFQD,0,coutputFQD);
     if (QA) { mgr->ConnectOutput(taskFQD,1,coutputQA1FQD);
-      mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
-    if (useWeights) { mgr->ConnectInput(taskFQD,1,cinputWeights);
-      cinputWeights->SetData(weightsList);} 
+    mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
+    if(useWeights) {
+      mgr->ConnectInput(taskFQD,1,cinputWeights);
+      cinputWeights->SetData(weightsList);
+    } 
   }    
   if (MCEP)  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 
     mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
     if (QA) { mgr->ConnectOutput(taskMCEP,1,coutputQA1MCEP);
-      mgr->ConnectOutput(taskMCEP,2,coutputQA2MCEP); }
+    mgr->ConnectOutput(taskMCEP,2,coutputQA2MCEP); }
   }  
-  
+
+
+
+  //----------------------------------------------------------
+  // Run the analysis
+  //----------------------------------------------------------
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain);
-  
+
+  if (mode==mLocal || mode == mLocalPAR) {
+    mgr->StartAnalysis("local",chain);
+  }
+  else if (mode==mPROOF) {
+    //  mgr->StartAnalysis("proof",chain);
+    mgr->StartAnalysis("proof",data,nRuns,offset);
+  }
+  else if (mode==mGRID) { 
+    mgr->StartAnalysis("local",chain);
+  }
+
   timer.Stop();
   timer.Print();
+}
+
+
+void LoadLibraries(const anaModes mode) {
+  
+  //--------------------------------------
+  // Load the needed libraries most of them already loaded by aliroot
+  //--------------------------------------
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libPhysics.so");
+  
+  //----------------------------------------------------------
+  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
+  if (mode==mLocal) {
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libCORRFW.so");
+    cerr<<"libCORRFW.so loaded..."<<endl;
+    gSystem->Load("libPWG2flowCommon.so");
+    cerr<<"libPWG2flowCommon.so loaded..."<<endl;
+    gSystem->Load("libPWG2flowTasks.so");
+    cerr<<"libPWG2flowTasks.so loaded..."<<endl;
+  }
+
+  else if (mode == mLocalPAR || mode == mGRID) {
+    //--------------------------------------------------------
+    //If you want to use root and par files from aliroot
+    //--------------------------------------------------------  
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
+    SetupPar("PWG2AOD");
+    SetupPar("CORRFW");
+    SetupPar("PWG2flowCommon");
+    cerr<<"PWG2flowCommon.par loaded..."<<endl;
+    SetupPar("PWG2flowTasks");
+    cerr<<"PWG2flowTasks.par loaded..."<<endl;
+  }
+  
+  //---------------------------------------------------------
+  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
+  //---------------------------------------------------------
+  else if (mode==mPROOF) {
+    //
+    
+    //  set to debug root versus if needed
+    //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");
+    //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice");
+    
+    // Connect to proof
+    // Put appropriate username here
+    // TProof::Reset("proof://snelling@alicecaf.cern.ch"); 
+    printf("*** Connect to PROOF ***\n");
+    //  TProof::Open("abilandz@alicecaf.cern.ch");
+    TProof::Open("snelling@localhost");
+    
+    // Enable the STEERBase Package
+    gProof->UploadPackage("STEERBase.par");
+    gProof->EnablePackage("STEERBase");
+    // Enable the ESD Package
+    gProof->UploadPackage("ESD.par");
+    gProof->EnablePackage("ESD");
+    // Enable the AOD Package
+    gProof->UploadPackage("AOD.par");
+    gProof->EnablePackage("AOD");
+    // Enable the Analysis Package
+    gProof->UploadPackage("ANALYSIS.par");
+    gProof->EnablePackage("ANALYSIS");
+    // Enable the Analysis Package alice
+    gProof->UploadPackage("ANALYSISalice.par");
+    gProof->EnablePackage("ANALYSISalice");
+    // Load the PWG2 AOD
+    gProof->UploadPackage("PWG2AOD.par");
+    gProof->EnablePackage("PWG2AOD");
+    // Enable the Correction Framework
+    gProof->ClearPackage("CORRFW.par");
+    gProof->UploadPackage("CORRFW.par");
+    gProof->EnablePackage("CORRFW");
+    // Enable Flow Analysis
+    gProof->ClearPackage("PWG2flowCommon");
+    gProof->UploadPackage("PWG2flowCommon.par");
+    gProof->EnablePackage("PWG2flowCommon");
+    gProof->ClearPackage("PWG2flowTasks");
+    gProof->UploadPackage("PWG2flowTasks.par");
+    gProof->EnablePackage("PWG2flowTasks");
+    //
+    gProof->ShowEnabledPackages();
+  }  
+  
+}
+
+void SetupPar(char* pararchivename) {
+  //Load par files, create analysis libraries
+  //For testing, if par file already decompressed and modified
+  //classes then do not decompress.
+  
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString parpar(Form("%s.par", pararchivename)) ; 
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ; 
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  } 
+  if ( gSystem->AccessPathName(pararchivename) ) {  
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
+  }
+  
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+  
+  // check for BUILD.sh and execute
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+  
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
 }
 
 
@@ -1077,53 +1188,3 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   
   return chain;
 }
-
-void SetupPar(char* pararchivename)
-{
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
- 
-  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
-  TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
-    TString processline(Form(".! make %s", parpar.Data())) ; 
-    gROOT->ProcessLine(processline.Data()) ;
-    gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data()) ;
-  } 
-  if ( gSystem->AccessPathName(pararchivename) ) {  
-    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data());
-  }
-  
-  TString ocwd = gSystem->WorkingDirectory();
-  gSystem->ChangeDirectory(pararchivename);
-  
-  // check for BUILD.sh and execute
-  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-    printf("*******************************\n");
-    printf("*** Building PAR archive    ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    
-    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-      return -1;
-    }
-  }
-  // check for SETUP.C and execute
-  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-    printf("*******************************\n");
-    printf("*** Setup PAR archive       ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    gROOT->Macro("PROOF-INF/SETUP.C");
-  }
-  
-  gSystem->ChangeDirectory(ocwd.Data());
-  printf("Current dir: %s\n", ocwd.Data());
-}
-
