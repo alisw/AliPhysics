@@ -148,6 +148,49 @@ void AliEveV0Editor::DisplayDetailed()
   v0location->SetMarkerSize(2.5);
   v0location->SetMarkerColor(kOrange+8);
 
+  TEveUtil::LoadMacro("clusters_from_index.C");
+
+  TEveTrack *negTrack = fM->GetNegTrack();
+  TEveTrack *posTrack = fM->GetPosTrack();
+
+
+  char macroWithIndex[100] = {0};
+  Int_t daughterIndex = 0;
+  TEvePointSet *negDaughterCluster = 0;
+  TEvePointSet *posDaughterCluster = 0;
+  
+  daughterIndex = negTrack->GetIndex();
+  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
+  if (negResult) {
+    negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
+    if (negDaughterCluster){
+      negDaughterCluster->SetMarkerStyle(4);	
+      negDaughterCluster->SetMarkerSize(1.5);	
+      negDaughterCluster->SetMarkerColor(kBlue+3);
+    }
+  }
+  else
+  {
+    Warning("DisplayDetailed", "Import of negative daughter's clusters failed.");
+  }
+
+  daughterIndex = posTrack->GetIndex();
+  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  Long_t posResult = gInterpreter->ProcessLine(macroWithIndex);
+  if (posResult) {
+    posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
+    if (posDaughterCluster){
+      posDaughterCluster->SetMarkerStyle(4);	
+      posDaughterCluster->SetMarkerSize(1.5);	
+      posDaughterCluster->SetMarkerColor(kRed+3);
+    }
+  }
+  else
+  {
+    Warning("DisplayDetailed", "Import of positive daughter's clusters failed.");
+  }
+
   //
   // This part is for the bending plane view
   //
@@ -175,6 +218,9 @@ void AliEveV0Editor::DisplayDetailed()
   bpScene->AddElement(pvlocation);
   bpScene->AddElement(v0location);
 
+  if (negDaughterCluster) bpScene->AddElement(negDaughterCluster);
+  if (posDaughterCluster) bpScene->AddElement(posDaughterCluster);
+
   // This is the to-do list for the bending plane:
   // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) ->done! 
   // 2. show axis and tickles along X and Y ->done!
@@ -185,7 +231,7 @@ void AliEveV0Editor::DisplayDetailed()
   // 4. show V0 direction in the bending plane with arrow length proportional to pT ->done!
   // 5. show angles with respect to axis (phi angle) ->almost.
   // 6. show clusters in the ITS and in the TPC associated with the daughter tracks
-  //       -> include a radius cut for plotting only ITS and TPC
+  //       -> include a radius cut for plotting only ITS and TPC ->done!
   bpViewer->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   bpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
   TGLViewer *lbpGLViewer = bpViewer->GetGLViewer();
@@ -222,6 +268,8 @@ void AliEveV0Editor::DisplayDetailed()
   dpScene->AddElement(lv0TransverseMomentumDirection);
   dpScene->AddElement(pvlocation);
   dpScene->AddElement(v0location);
+  if (negDaughterCluster) dpScene->AddElement(negDaughterCluster);
+  if (posDaughterCluster) dpScene->AddElement(posDaughterCluster);
 
   // This is the to-do list for the decay plane:
   // 1. fix the view to decay plane (no rotation allowed but moving the center ok)
@@ -233,11 +281,18 @@ void AliEveV0Editor::DisplayDetailed()
   // 5. draw the dca between daughters and the extrapolation to the main vertex.
   //       -> this is an issue since we only store the distance: check with J.Belikov
   // 6. show clusters in the ITS and in the TPC associated with the daughter tracks
-  //       -> include a radius cut for plotting only ITS and TPC
+  //       -> include a radius cut for plotting only ITS and TPC ->done!
   dpViewer->GetGLViewer()->ResetCamerasAfterNextUpdate();
   TGLCamera& dpCam = dpViewer->GetGLViewer()->CurrentCamera();
   dpCam.SetExternalCenter(kTRUE);
   dpCam.SetCenterVec(fM->fRecDecayV.fX, fM->fRecDecayV.fY, fM->fRecDecayV.fZ);
+  dpCam.RotateRad(0,-TMath::Pi()/2.); // RotateRad rotates in radians (hRotate,vRotate)
+  //  Here rotate the _view_ (not the camera) by (fM->GetPhi() - TMath::Pi()/2.)
+
+  // In the end maybe truck and rotate properly...
+  //  dpCam.Truck(0,200);// Truck center wrt the view panel: (x=0 pixels, y pixels)
+  //  dpCam.Rotate(0,50,0,0); // Rotate in pixels (xDelta,yDelta)
+
   // end of the decay plane part
 
   //
@@ -252,7 +307,7 @@ void AliEveV0Editor::DisplayDetailed()
   // Calculation of the invariant mass with the max prob PID hypothesis first
   // pseudorapidity, phi angle, pt, radius, dcas
   char info[100] = {0};
-  sprintf(info,"#phi = %.3frad = %.1f°",fM->GetPhi(),57.296*fM->GetPhi());
+  sprintf(info,"#phi = %.3frad = %.1f°",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->Draw();
