@@ -2849,9 +2849,13 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   Double_t x[5], c[15];
   //  Int_t di = i1-i2;
   //
+  AliTPCseed * seed = new AliTPCseed();
   Double_t alpha=fSectors->GetAlpha(), shift=fSectors->GetAlphaShift();
   Double_t cs=cos(alpha), sn=sin(alpha);
-  //  
+  //
+  //  Double_t x1 =fOuterSec->GetX(i1);
+  //Double_t xx2=fOuterSec->GetX(i2);
+  
   Double_t x1 =GetXrow(i1);
   Double_t xx2=GetXrow(i2);
 
@@ -3052,78 +3056,82 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
         c[13]=f30*sy1*f40+f32*sy2*f42;
         c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
 	
+	//	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
 	
         UInt_t index=kr1.GetIndex(is);
-	AliTPCseed track(x1, ns*alpha+shift, x, c, index);
+	seed->~AliTPCseed(); // this does not set the pointer to 0...
+	AliTPCseed *track=new(seed) AliTPCseed(x1, ns*alpha+shift, x, c, index);
 	
-	track.SetIsSeeding(kTRUE);
-	track.SetSeed1(i1);
-	track.SetSeed2(i2);
-	track.SetSeedType(3);
+	track->SetIsSeeding(kTRUE);
+	track->SetSeed1(i1);
+	track->SetSeed2(i2);
+	track->SetSeedType(3);
 
        
 	//if (dsec==0) {
-	  FollowProlongation(track, (i1+i2)/2,1);
+	  FollowProlongation(*track, (i1+i2)/2,1);
 	  Int_t foundable,found,shared;
-	  track.GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
-	  if ((found<0.55*foundable)  || shared>0.5*found || (track.GetSigmaY2()+track.GetSigmaZ2())>0.5){
+	  track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
+	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
+	    seed->Reset();
+	    seed->~AliTPCseed();
 	    continue;
 	  }
 	  //}
 	
 	nin++;
-	FollowProlongation(track, i2,1);
+	FollowProlongation(*track, i2,1);
 	
 	
 	//Int_t rc = 1;
-	track.SetBConstrain(1);
+	track->SetBConstrain(1);
 	//	track->fLastPoint = i1+fInnerSec->GetNRows();  // first cluster in track position
-	track.SetLastPoint(i1);  // first cluster in track position
-	track.SetFirstPoint(track.GetLastPoint());
+	track->SetLastPoint(i1);  // first cluster in track position
+	track->SetFirstPoint(track->GetLastPoint());
 	
-	if (track.GetNumberOfClusters()<(i1-i2)*0.5 || 
-	    track.GetNumberOfClusters() < track.GetNFoundable()*0.6 || 
-	    track.GetNShared()>0.4*track.GetNumberOfClusters() ) {
+	if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
+	    track->GetNumberOfClusters() < track->GetNFoundable()*0.6 || 
+	    track->GetNShared()>0.4*track->GetNumberOfClusters() ) {
+	  seed->Reset();
+	  seed->~AliTPCseed();
 	  continue;
 	}
 	nout1++;
         // Z VERTEX CONDITION
 	Double_t zv, bz=GetBz();
-        if ( !track.GetZAt(0.,bz,zv) ) continue;
+        if ( !track->GetZAt(0.,bz,zv) ) continue;
 	if (TMath::Abs(zv-z3)>cuts[2]) {
-	  FollowProlongation(track, TMath::Max(i2-20,0));
-          if ( track.GetZAt(0.,bz,zv) ) continue;
+	  FollowProlongation(*track, TMath::Max(i2-20,0));
+          if ( !track->GetZAt(0.,bz,zv) ) continue;
 	  if (TMath::Abs(zv-z3)>cuts[2]){
-	    // If track do not point to the primary vertex, but sufficientlu long
-	    //try to refit it without constrain
-	    //
-	    //
-	    FollowProlongation(track, TMath::Max(i2-40,0));
-            if ( !track.GetZAt(0.,bz,zv) ) continue;
-	    if (TMath::Abs(zv-z3)>cuts[2] &&(track.GetNumberOfClusters() > track.GetNFoundable()*0.7)){
+	    FollowProlongation(*track, TMath::Max(i2-40,0));
+            if ( !track->GetZAt(0.,bz,zv) ) continue;
+	    if (TMath::Abs(zv-z3)>cuts[2] &&(track->GetNumberOfClusters() > track->GetNFoundable()*0.7)){
 	      // make seed without constrain
-	      AliTPCseed * track2 = MakeSeed(&track,0.2,0.5,1.);
+	      AliTPCseed * track2 = MakeSeed(track,0.2,0.5,1.);
 	      FollowProlongation(*track2, i2,1);
 	      track2->SetBConstrain(kFALSE);
 	      track2->SetSeedType(1);
-	      arr->AddLast(track2->Clone()); 
+	      arr->AddLast(track2); 
+	      seed->Reset();
+	      seed->~AliTPCseed();
 	      continue;		
 	    }
 	    else{
-	      //seed->Reset();
-	      //seed->~AliTPCseed();
+	      seed->Reset();
+	      seed->~AliTPCseed();
 	      continue;
-	      
+	    
 	    }
 	  }
 	}
       
-	track.SetSeedType(0);
-	arr->AddLast(track.Clone()); 
-	//seed = new AliTPCseed; 	
+	track->SetSeedType(0);
+	arr->AddLast(track); 
+	seed = new AliTPCseed; 	
 	nout2++;
 	// don't consider other combinations
-	if (track.GetNumberOfClusters() > track.GetNFoundable()*0.8)
+	if (track->GetNumberOfClusters() > track->GetNFoundable()*0.8)
 	  break;
       }
     }
@@ -3131,7 +3139,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   if (fDebug>3){
     Info("MakeSeeds3","\nSeeding statistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2);
   }
-  //  delete seed;
+  delete seed;
 }
 
 
@@ -4309,7 +4317,6 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
     Int_t i0 = indexes[is0];
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
     if (!track0) continue;     
-    if (track0->GetKinkIndexes()[0]!=0) continue;
     Float_t xc0 = helixes[i0].GetHelix(6);
     Float_t yc0 = helixes[i0].GetHelix(7);
     Float_t fi0 = TMath::ATan2(yc0,xc0);
@@ -4321,8 +4328,8 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
       //
       Int_t dsec = TMath::Abs((track0->GetRelativeSector()%18)-(track1->GetRelativeSector()%18));  // sector distance      
       if (dsec>1 && dsec<17) continue;
-      if (track1->GetKinkIndexes()[0]>0 &&track0->GetKinkIndexes()[0]<0) continue;
-      if (track1->GetKinkIndexes()[0]!=0) continue;
+
+      if (track1->GetKinkIndexes()[0] == -track0->GetKinkIndexes()[0]) continue;
 
       Float_t dtheta = TMath::Abs(track0->GetTgl()-track1->GetTgl())<TMath::Abs(track0->GetTgl()+track1->GetTgl())? track0->GetTgl()-track1->GetTgl():track0->GetTgl()+track1->GetTgl();
       if (TMath::Abs(dtheta)>kMaxdTheta) continue;      
@@ -4332,13 +4339,15 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
       Float_t fi1 = TMath::ATan2(yc1,xc1);
       //
       Float_t dfi = fi0-fi1;
-      if (dfi>1.5*TMath::Pi())  dfi-=TMath::Pi();  // take care about edge effect 
-      if (dfi<-1.5*TMath::Pi()) dfi+=TMath::Pi();  // 
+      if (dfi>TMath::Pi())  dfi-=TMath::TwoPi();  // take care about edge effect 
+      if (dfi<-TMath::Pi()) dfi+=TMath::TwoPi();  // 
       if (TMath::Abs(dfi)>kMaxdPhi&&helixes[i0].GetHelix(4)*helixes[i1].GetHelix(4)<0){
 	//
 	// if short tracks with undefined sign 
 	fi1 =  -TMath::ATan2(yc1,-xc1);
 	dfi = fi0-fi1;
+	if (dfi>TMath::Pi())  dfi-=TMath::TwoPi();  // take care about edge effect 
+       	if (dfi<-TMath::Pi()) dfi+=TMath::TwoPi();  // 
       }
       if (TMath::Abs(dfi)>kMaxdPhi) continue;
       //
