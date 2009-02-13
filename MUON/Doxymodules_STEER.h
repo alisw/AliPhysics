@@ -11,14 +11,17 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h revision 26112 2008-05-23 14:00:18Z kleinb
+// From STEERBaseLinkDef.h 30912 2009-02-06 18:04:37Z hristov
 
     enum  AliLog::EType_t {};
  
     class AliVParticle {};
+    class AliVTrack {};
+    class AliVVertex {};
     class AliVEvent {};
     class AliVHeader {};
     class AliVEventHandler {};
+    class AliVEventPool {};
 
     class AliPID {};
     class AliLog {};
@@ -53,14 +56,16 @@
     class AliMCEvent {};
     class AliMCParticle {};
 
-    class  AliMagF {};
+    class AliMagF {};
+    class AliMagWrapCheb {};
+    class AliCheb3DCalc {};
+    class AliCheb3D {};
+
 
     class AliCodeTimer {};
     class AliCodeTimer::AliPair {};
 
-    class  AliPDG {};
-
-    class AliQA {};
+    class AliPDG {};
 
     class AliTimeStamp {};
     class AliTriggerScalers {};
@@ -73,7 +78,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h revision 26112 2008-05-23 14:00:18Z kleinb
+// From STEERLinkDef.h 30912 2009-02-06 18:04:37Z hristov
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
@@ -85,10 +90,6 @@
     class  AliDetector {};
     class  AliDigit {};
     class  AliHit {};
-    class  AliDisplay {};
-    class  AliCheb3DCalc {};
-    class  AliCheb3D {};
-    class  AliMagWrapCheb {};
     class  AliLego {};
     class  AliLegoGenerator {};
     class  AliLegoGeneratorXYZ {};
@@ -98,17 +99,14 @@
     class  AliDigitNew {};
     class  AliGeometry {};
     class  AliRecPoint {};
-    class  AliSegmentation {};
     class  AliHitMap {};
     class  AliRndm {};
-    class  AliMCQA {};
     class  AliDebugVolume {};
     class  AliConfig {};
     class  AliDigitizer {};
     class  AliRunDigitizer {};
     class  AliStream {};
     class  AliMergeCombi {};
-    class  AliFieldMap {};
     class  AliGausCorr {};
     class  AliLoader {};
     class  AliDataLoader {};
@@ -183,6 +181,7 @@
 
     class AliSurveyObj {};
     class AliSurveyPoint {};
+    class AliSurveyToAlignObjs {};
 
     class AliFstream {};
     class AliCTPRawData {};
@@ -190,18 +189,40 @@
     class AliQADataMaker {};
     class AliQADataMakerSim {};
     class AliQADataMakerRec {};
+    class AliCorrQADataMakerRec {};
     class AliGlobalQADataMaker {};
     class AliQADataMakerSteer {};
     class AliQAChecker {};
+    class AliCorrQAChecker {};
+    class AliGlobalQAChecker {};
     class AliQACheckerBase {};
     class AliMillepede {};
 
-    class AliDetectorRecoParam {};
-    class AliRecoParam {};
     class AliPlaneEff {};
 
     class AliTriggerRunScalers {};
     class AliGRPPreprocessor {};
+    class AliGRPRecoParam {};
+
+    class AliRelAlignerKalman {};
+
+    class AliESDTagCreator {};
+
+    class AliGRPObject {};
+
+    class AliQA {};
+
+    class AliRunInfo {};
+    class AliEventInfo {};
+    class AliDetectorRecoParam {};
+    class AliRecoParam {};
+
+    class AliMillePede2 {};
+    class AliMillePedeRecord {};
+    class AliMinResSolve {};
+    class AliMatrixSparse {};
+    class AliMatrixSq {};
+    class AliSymMatrix {};
 
 /** @} */
 
@@ -210,7 +231,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h revision 25661 2008-05-08 15:24:44Z cvetan
+// From ESDLinkDef.h 30522 2009-01-05 14:06:19Z belikov
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -247,12 +268,11 @@
 
     class  AliKalmanTrack {};
     class  AliExternalTrackParam {};
+    class  AliNeutralTrackParam {};
     class  AliVertexerTracks {};
     class  AliStrLine {};
     class  AliTrackPointArray {};
     class  AliTrackPoint {};
-
-    class AliESDTagCreator {};
 
     class AliTrackPointArray {};
     class AliTrackPoint {};
@@ -275,6 +295,10 @@
 
     class  AliMeanVertex {};
     class  AliESDCaloCells {};
+
+    class  AliTriggerIR {};
+
+    class  AliESDVZEROfriend {};
 
 /** @} */
 
@@ -327,7 +351,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h revision 25938 2008-05-20 10:51:03Z morsch
+// From AODLinkDef.h 29409 2008-10-22 13:39:36Z kleinb
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
@@ -351,6 +375,7 @@
     class AliAODRedCov<6> {};
     class AliAODRecoDecay {};
     class AliAODv0 {};
+    class AliAODcascade {};
     class AliAODHandler {};
     class AliAODInputHandler {};
     class AliMultiAODInputHandler {};
@@ -358,6 +383,8 @@
     class AliAODTagCreator {};
     class AliAODCaloCells {};
     class AliAODDiJet {};
+    class AliAODMCParticle {};
+    class AliAODMCHeader {};
 
 /** @} */
 

@@ -427,7 +427,7 @@ INPUT                  = .
 
 #FILE_PATTERNS          = *.h *.cxx *.icc *.C *.txt *.sh
 #FILE_PATTERNS          = *.h *.cxx *.icc 
-FILE_PATTERNS          = Doxymain.h README*.txt
+FILE_PATTERNS          = Doxymain.h *README*.txt
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
