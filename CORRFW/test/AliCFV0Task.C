@@ -218,7 +218,7 @@ Bool_t AliCFV0Task(
   cinput0->SetData(analysisChain);
 
   mgr->AddTask(task);
-  mgr->ConnectInput (task,0,cinput0 );
+  mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,0,coutput0);
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
