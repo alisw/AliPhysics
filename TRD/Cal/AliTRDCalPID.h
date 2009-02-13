@@ -39,6 +39,8 @@ class AliTRDCalPID : public TNamed
   virtual Bool_t   LoadReferences(Char_t *refFile) = 0;
   static  Double_t GetMomentum(Int_t ip) { 
     return (ip<0 || ip>=kNMom) ? -1.0 : fTrackMomentum[ip]; }
+  static  Double_t GetMomentumBinning(Int_t ip) { 
+    return (ip<0 || ip>=kNMom+1) ? -1.0 : fTrackMomentumBinning[ip]; }
   virtual TObject *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const = 0;
   virtual Double_t GetProbability(Int_t spec, Float_t mom, Float_t *dedx
                                 , Float_t length, Int_t plane) const = 0;
@@ -66,6 +68,7 @@ class AliTRDCalPID : public TNamed
   static const Char_t   *fPartSymb[AliPID::kSPECIES]; //! Symbols of particle species
   static  Color_t  fPartColor[AliPID::kSPECIES]; //! Colors of particle species
   static  Float_t   fTrackMomentum[kNMom]; //  Track momenta for which response functions are available
+  static  Float_t   fTrackMomentumBinning[kNMom+1]; //  Defines the start and the endpoints of the momentum bins
   TObjArray        *fModel;                //  Model for probability estimate
 
   ClassDef(AliTRDCalPID, 3)                //  Base class for TRD PID methods

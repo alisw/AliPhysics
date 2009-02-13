@@ -54,10 +54,10 @@ AliTRDpidChecker::AliTRDpidChecker()
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
 
   // Initialize momentum axis with default values
-  Double_t defaultMomenta[AliTRDCalPID::kNMom];
-  for(Int_t imom = 0; imom < AliTRDCalPID::kNMom; imom++)
-    defaultMomenta[imom] = AliTRDCalPID::GetMomentum(imom);
-  SetMomentumBinning(AliTRDCalPID::kNMom - 1, defaultMomenta);
+  Double_t defaultMomenta[AliTRDCalPID::kNMom+1];
+  for(Int_t imom = 0; imom < AliTRDCalPID::kNMom+1; imom++)
+    defaultMomenta[imom] = AliTRDCalPID::GetMomentumBinning(imom);
+  SetMomentumBinning(AliTRDCalPID::kNMom, defaultMomenta);
 
   fUtil = new AliTRDpidUtil();
   InitFunctorList();
@@ -400,9 +400,10 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-  if(!IsInRange(momentum)) return 0x0;
-  
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
+  if(!IsInRange(momentum)) return 0x0;
+
+  
   Float_t SumdEdx = 0;
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
@@ -457,7 +458,7 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
     cTrack.GetTracklet(iChamb) -> CookdEdx(AliTRDpidUtil::kLQslices);
     fdEdx = cTrack.GetTracklet(iChamb)->GetdEdx();
     for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kLQslices; iSlice++){
-      hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + iMomBin * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
+      hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + (iMomBin-1) * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
     }
   }  
 
@@ -761,7 +762,7 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     leg->SetHeader("PID Method");
     g->Draw("apl");
     ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("p [GeV/c]");  
+    ax->SetTitle("p [GeV/c]");
     //ax->SetRangeUser(.6, 10.5);
     ax->SetMoreLogLabels();
     ax = g->GetHistogram()->GetYaxis();

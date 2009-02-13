@@ -89,7 +89,7 @@ inline Int_t AliTRDpidChecker::FindBin(Int_t species, Double_t momentum){
   //
   // Find the Bin in the 2D Histogram
   //
-  return species * fMomentumAxis->GetNbins() + fMomentumAxis->FindBin(momentum);
+  return species * fMomentumAxis->GetNbins() + (fMomentumAxis->FindBin(momentum) -1);
 }
 
 //________________________________________________________________________

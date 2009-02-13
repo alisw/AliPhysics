@@ -45,6 +45,9 @@ Color_t AliTRDCalPID::fPartColor[AliPID::kSPECIES] = { kRed, kGreen, kBlue, kYel
 Float_t AliTRDCalPID::fTrackMomentum[kNMom]       = {  
     0.6,  0.8,  1.0,  1.5,  2.0
    ,3.0,  4.0,  5.0,  6.0,  8.0, 10.0};
+Float_t AliTRDCalPID::fTrackMomentumBinning[kNMom+1]       = {  
+    0.5,  0.7,  0.9,  1.25, 1.75, 2.5,  
+    3.5,  4.5,  5.5,  7.0,  9.0, 12.0};
 
 //_________________________________________________________________________
 AliTRDCalPID::AliTRDCalPID()
