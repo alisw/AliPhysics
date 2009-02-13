@@ -44,6 +44,7 @@
 #include "TAlienCollection.h"
 #include "TGridCollection.h"
 #include "TGridResult.h"
+#include "TGeoGlobalMagField.h"
 
 #include "AliMagF.h"
 #include "AliTracker.h"
@@ -93,11 +94,17 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   if(gSystem->Load("libTRDqaRec.so")<0) return;
   
   // DB INITIALIZATION
+  //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
   // initialize OCDB manager
   AliCDBManager *cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
+  // initialize magnetic field.
+  AliMagF *field = 0x0;
+  field = new AliMagF("Maps","Maps", 2, 1., 10., AliMagF::k5kG);
+  //field = new AliMagF("Maps","Maps", 2, 0., 10., AliMagF::k2kG);
+  TGeoGlobalMagField::Instance()->SetField(field);
 
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
@@ -162,7 +169,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
 
   //____________________________________________
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TRD QA Reconstruction Manager");
+  AliAnalysisManager *mgr = new AliAnalysisManager("TRD Reconstruction QA");
   //mgr->SetSpecialOutputLocation(source); // To Be Changed
   AliVEventHandler *esdH = 0x0, *mcH = 0x0;
   mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
@@ -173,13 +180,13 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   // TRD track summary generator
   mgr->AddTask(task = new AliTRDtrackInfoGen());
   taskPtr[(Int_t)kInfoGen] = task;
-  task->SetDebugLevel(1);
+  task->SetDebugLevel(0);
   task->SetMCdata(fHasMCdata);
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
+  //AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
+  mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  mgr->ConnectInput( task, 0, cinput1);
   mgr->ConnectOutput(task, 0, coutput1);
   mgr->ConnectOutput(task, 1, coutput1a);
 
@@ -188,7 +195,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
 	if(TSTBIT(fSteerTask, kCheckDetector)){
     mgr->AddTask(task = new AliTRDcheckDetector());
     taskPtr[(Int_t)kCheckDetector] = task;
-    task->SetDebugLevel(4);
+    task->SetDebugLevel(0);
     task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output
@@ -228,7 +235,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
     taskPtr[(Int_t)kResolution] = task;
     task->SetMCdata(fHasMCdata);
     task->SetPostProcess(kFALSE);
-    task->SetDebugLevel(1);
+    task->SetDebugLevel(0);
     
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
@@ -325,13 +332,13 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   printf("\n\n");
   //mgr->PrintStatus();
 
-  mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local", chain);
 
   timer.Stop();
   timer.Print();  
 
   cal->Terminate();
-  delete field;
+  TGeoGlobalMagField::Instance()->SetField(NULL);
   delete cdbManager;
   for(Int_t it=NTRDTASKS; it--; ){ 
     if(taskPtr[it]){ 
