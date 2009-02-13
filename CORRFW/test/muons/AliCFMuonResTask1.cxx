@@ -208,22 +208,26 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 	rapmc1=Rap(e1,pz1);
     }
     else{
-	e1 = part0->Energy();
-	pz1 = part0->Pz();
-	py1 = part0->Py();
-	px1 = part0->Px();
-	phi1 = part0->Phi();
-	phi1 = Phideg(phi1);    
-	rapmc1=Rap(e1,pz1);
-
-	e0 = part1->Energy();
-	pz0 = part1->Pz();
-	py0 = part1->Py();
-	px0 = part1->Px();
-	phi0 = part1->Phi();
-	phi0 = Phideg(phi0);
-	rapmc0=Rap(e0,pz0); 
+	if(pdg0==-13){
+	    e1 = part0->Energy();
+	    pz1 = part0->Pz();
+	    py1 = part0->Py();
+	    px1 = part0->Px();
+	    phi1 = part0->Phi();
+	    phi1 = Phideg(phi1);    
+	    rapmc1=Rap(e1,pz1);
+	    
+	    e0 = part1->Energy();
+	    pz0 = part1->Pz();
+	    py0 = part1->Py();
+	    px0 = part1->Px();
+	    phi0 = part1->Phi();
+	    phi0 = Phideg(phi0);
+	    rapmc0=Rap(e0,pz0); 
+	}
     }
+    
+    if(pdg0==13 || pdg1==13) { 
 
 	Float_t pmc = TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1)+
 				   (pz0+pz1)*(pz0+pz1));
@@ -243,7 +247,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 
 	// fill the container at the first step
 	fCFManager->GetParticleContainer()->Fill(containerInput,0);
- 
+    }
   }    
 
 ////////
