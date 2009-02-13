@@ -52,7 +52,7 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fCommonHistsRes(NULL),
    fHistProFlow(NULL),
    fHistRP(NULL),
-   fHistProIntFlowRP(NULL),
+   fHistProIntFlow(NULL),
    fHistProDiffFlowPtRP(NULL),
    fHistProDiffFlowEtaRP(NULL),
    fHistProDiffFlowPtPOI(NULL),
@@ -125,11 +125,11 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistRP->SetYTitle("Counts");
   fHistList->Add(fHistRP);
   
-  fHistProIntFlowRP = new TProfile("fHistProIntFlowRP","fHistProIntFlowRP",1,0.,1.);
-  fHistProIntFlowRP->SetLabelSize(0.06);
-  (fHistProIntFlowRP->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
-  fHistProIntFlowRP->SetYTitle("");
-  fHistList->Add(fHistProIntFlowRP);
+  fHistProIntFlow = new TProfile("fHistProIntFlow","fHistProIntFlow",1,0.,1.);
+  fHistProIntFlow->SetLabelSize(0.06);
+  (fHistProIntFlow->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
+  fHistProIntFlow->SetYTitle("");
+  fHistList->Add(fHistProIntFlow);
  
   fHistProDiffFlowPtRP = new TProfile("fHistProDiffFlowPtRP","fHistProDiffFlowPtRP",iNbinsPt,dPtMin,dPtMax);
   fHistProDiffFlowPtRP->SetXTitle("P_{t}");
@@ -194,8 +194,8 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
             dv2 = TMath::Cos(2*(dPhi-aRP));
 	    dPt = pTrack->Pt();
 	    dEta = pTrack->Eta();
-            //integrated flow (RP):
-            fHistProIntFlowRP->Fill(0.,dv2);
+            //no-name int. flow (to be improved):
+            fHistProIntFlow->Fill(0.,dv2);
             //differential flow (Pt, RP):
             fHistProDiffFlowPtRP->Fill(dPt,dv2,1.);
             //differential flow (Eta, RP):
@@ -208,8 +208,6 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
 	    dv2 = TMath::Cos(2*(dPhi-aRP));
 	    dPt = pTrack->Pt();
 	    dEta = pTrack->Eta();
-	    //fill histogram
-	    fHistProFlow->Fill(dPt,dv2);//to be removed 
 	    //differential flow (Pt, POI):
             fHistProDiffFlowPtPOI->Fill(dPt,dv2,1.);
             //differential flow (Eta, POI):
@@ -232,83 +230,106 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();  
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta(); 
          
-  //RP:
-  //integrated flow:
-  Double_t dVRP = fHistProIntFlowRP->GetBinContent(1);  
-  Double_t dErrVRP = fHistProIntFlowRP->GetBinError(1);//to be improved (treatment of errors for non-Gaussian distribution needed!)  
-  fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrVRP);
+  // no-name int. flow (to be improved):
+  Double_t dV = fHistProIntFlow->GetBinContent(1);  
+  Double_t dErrV = fHistProIntFlow->GetBinError(1); // to be improved (treatment of errors for non-Gaussian distribution needed!)  
+  // fill no-name int. flow (to be improved):
+  fCommonHistsRes->FillIntegratedFlow(dV,dErrV);
+  cout<<"dV{MC} is       "<<dV<<" +- "<<dErrV<<endl;
   
-  //differential flow (Pt): 
+  //RP:
+  TH1F* fHistPtRP = fCommonHists->GetHistPtInt(); // to be improved (change "int" and "diff" to RP and POI in common control histos)
+  Double_t dYieldPtRP = 0.;
+  Double_t dVRP = 0.;
+  Double_t dErrVRP = 0.;
+  Double_t dSumRP = 0.;
+  //differential flow (RP, Pt): 
   Double_t dvPtRP = 0.;           
   Double_t dErrvPtRP = 0.;
-  for(Int_t b=0;b<iNbinsPt;b++)
+  for(Int_t b=1;b<iNbinsPt;b++)
   {
-   dvPtRP    = fHistProDiffFlowPtRP->GetBinContent(b+1);
-   dErrvPtRP = fHistProDiffFlowPtRP->GetBinError(b+1);//to be improved (treatment of errors for non-Gaussian distribution needed!)
-   fCommonHistsRes->FillDifferentialFlowPtRP(b+1, dvPtRP, dErrvPtRP);
+   dvPtRP    = fHistProDiffFlowPtRP->GetBinContent(b);
+   dErrvPtRP = fHistProDiffFlowPtRP->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
+   fCommonHistsRes->FillDifferentialFlowPtRP(b, dvPtRP, dErrvPtRP);
+   if(fHistPtRP){
+	//integrated flow (RP)
+	dYieldPtRP = fHistPtRP->GetBinContent(b);
+	dVRP += dvPtRP*dYieldPtRP;
+	dSumRP += dYieldPtRP;
+	//error on integrated flow
+	dErrVRP += dYieldPtRP*dYieldPtRP*dErrvPtRP*dErrvPtRP;
+      }
   }
+  if (dSumRP != 0. ) {
+    dVRP /= dSumRP;  //because pt distribution should be normalised
+    dErrVRP /= (dSumRP*dSumRP);
+    dErrVRP = TMath::Sqrt(dErrVRP); 
+  }
+  // fill integrated flow (RP):
+  fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrVRP);
+  cout<<"dV{MC} (RP) is  "<<dVRP<<" +- "<<dErrVRP<<endl;
   
-  //differential flow (Eta): 
+  //differential flow (RP, Eta): 
   Double_t dvEtaRP = 0.;           
   Double_t dErrvEtaRP = 0.;
-  for(Int_t b=0;b<iNbinsEta;b++)
+  for(Int_t b=1;b<iNbinsEta;b++)
   {
-   dvEtaRP    = fHistProDiffFlowEtaRP->GetBinContent(b+1);
-   dErrvEtaRP = fHistProDiffFlowEtaRP->GetBinError(b+1);//to be improved (treatment of errors for non-Gaussian distribution needed!)
-   fCommonHistsRes->FillDifferentialFlowEtaRP(b+1, dvEtaRP, dErrvEtaRP);
+   dvEtaRP    = fHistProDiffFlowEtaRP->GetBinContent(b);
+   dErrvEtaRP = fHistProDiffFlowEtaRP->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
+   fCommonHistsRes->FillDifferentialFlowEtaRP(b, dvEtaRP, dErrvEtaRP);
   }
                                                                                                                                    
   //POI:
-  TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff();
-  Double_t dYieldPt = 0.;
-  Double_t dV = 0.;
-  Double_t dErrV = 0.;
-  Double_t dSum = 0.;
-  Double_t dv2proPt = 0.;
-  Double_t dErrdifcombPt = 0.; 
-  Double_t dv2proEta = 0.;
-  Double_t dErrdifcombEta = 0.;   
+  TH1F* fHistPtPOI = fCommonHists->GetHistPtDiff(); // to be improved (change "int" and "diff" to RP and POI in common control histos)
+  Double_t dYieldPtPOI = 0.;
+  Double_t dVPOI = 0.;
+  Double_t dErrVPOI = 0.;
+  Double_t dSumPOI = 0.;
+  Double_t dv2proPtPOI = 0.;
+  Double_t dErrdifcombPtPOI = 0.; 
+  Double_t dv2proEtaPOI = 0.;
+  Double_t dErrdifcombEtaPOI = 0.;   
   //Pt:
   if(fHistProFlow && fHistProDiffFlowPtPOI) {//to be removed (fHistProFlow)
-    for(Int_t b=0;b<iNbinsPt;b++){
+    for(Int_t b=1;b<iNbinsPt;b++){
       //dv2pro = fHistProFlow->GetBinContent(b);//to be removed
       //dErrdifcomb = fHistProFlow->GetBinError(b);//to be removed
-      dv2proPt = fHistProDiffFlowPtPOI->GetBinContent(b+1);
-      dErrdifcombPt = fHistProDiffFlowPtPOI->GetBinError(b+1);//to be improved (treatment of errors for non-Gaussian distribution needed!)
+      dv2proPtPOI = fHistProDiffFlowPtPOI->GetBinContent(b);
+      dErrdifcombPtPOI = fHistProDiffFlowPtPOI->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
       //fill TH1D
-      fCommonHistsRes->FillDifferentialFlow(b+1, dv2proPt, dErrdifcombPt);//to be removed
-      fCommonHistsRes->FillDifferentialFlowPtPOI(b+1, dv2proPt, dErrdifcombPt); 
-      if (fHistPtDiff){
+      fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2proPtPOI, dErrdifcombPtPOI); 
+      if (fHistPtPOI){
 	//integrated flow (POI)
-	dYieldPt = fHistPtDiff->GetBinContent(b+1);
-	dV += dv2proPt*dYieldPt;
-	dSum += dYieldPt;
+	dYieldPtPOI = fHistPtPOI->GetBinContent(b);
+	dVPOI += dv2proPtPOI*dYieldPtPOI;
+	dSumPOI += dYieldPtPOI;
 	//error on integrated flow
-	dErrV += dYieldPt*dYieldPt*dErrdifcombPt*dErrdifcombPt;
+	dErrVPOI += dYieldPtPOI*dYieldPtPOI*dErrdifcombPtPOI*dErrdifcombPtPOI;
       }
     }//end of for(Int_t b=0;b<iNbinsPt;b++)  
   } else { cout<<"fHistProFlow is NULL"<<endl; }
-  if (dSum != 0. ) {
-    dV /= dSum;  //because pt distribution should be normalised
-    dErrV /= (dSum*dSum);
-    dErrV = TMath::Sqrt(dErrV); 
+  if (dSumPOI != 0. ) {
+    dVPOI /= dSumPOI;  //because pt distribution should be normalised
+    dErrVPOI /= (dSumPOI*dSumPOI);
+    dErrVPOI = TMath::Sqrt(dErrVPOI); 
   }
-  cout<<"dV{MC} is "<<dV<<" +- "<<dErrV<<endl;
-  fCommonHistsRes->FillIntegratedFlow(dV,dErrV);//to be removed 
-  fCommonHistsRes->FillIntegratedFlowPOI(dV,dErrV);
+  cout<<"dV{MC} (POI) is "<<dVPOI<<" +- "<<dErrVPOI<<endl;
+
+  fCommonHistsRes->FillIntegratedFlowPOI(dVPOI,dErrVPOI);
   
   //Eta:
   if(fHistProDiffFlowEtaPOI)
   {
-   for(Int_t b=0;b<iNbinsEta;b++)
+   for(Int_t b=1;b<iNbinsEta;b++)
    {
-    dv2proEta = fHistProDiffFlowEtaPOI->GetBinContent(b+1);
-    dErrdifcombEta = fHistProDiffFlowEtaPOI->GetBinError(b+1);//to be improved (treatment of errors for non-Gaussian distribution needed!)
+    dv2proEtaPOI = fHistProDiffFlowEtaPOI->GetBinContent(b);
+    dErrdifcombEtaPOI = fHistProDiffFlowEtaPOI->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
     //fill common hist results:
-    fCommonHistsRes->FillDifferentialFlowEtaPOI(b+1, dv2proEta, dErrdifcombEta); 
+    fCommonHistsRes->FillDifferentialFlowEtaPOI(b, dv2proEtaPOI, dErrdifcombEtaPOI); 
    }
   }   
-       	      	  
+  
+  cout<<endl;     	      	  
   cout<<".....finished"<<endl;
 }
 

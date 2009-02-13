@@ -1,6 +1,6 @@
 //type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
 //const TString type = "ESD"; 
-void CompareFlowResults(TString type="ESD")
+void compareFlowResults(TString type="ESD")
 {
   //load needed libraries:
   gSystem->AddIncludePath("-I$ROOTSYS/include");
@@ -24,9 +24,9 @@ void CompareFlowResults(TString type="ESD")
   //             set here which plots will be shown by default
   //==================================================================================
   //RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kFALSE;     //integrated flow RP
-  Bool_t plotDiffFlowPtRP = kFALSE;  //differential flow (Pt,RP)
-  Bool_t plotDiffFlowEtaRP = kFALSE; //differential flow (Eta,RP)
+  Bool_t plotIntFlowRP = kTRUE;     //integrated flow RP
+  Bool_t plotDiffFlowPtRP = kTRUE;  //differential flow (Pt,RP)
+  Bool_t plotDiffFlowEtaRP = kTRUE; //differential flow (Eta,RP)
   //POI = particle of interest
   Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
   Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
@@ -39,7 +39,6 @@ void CompareFlowResults(TString type="ESD")
   //==================================================================================
   //                         accessing output files
   //==================================================================================
-  
   //open the output files:
   TString inputFileNameMCEP = "outputMCEPanalysis";
   TFile* fileMCEP = NULL;
@@ -84,7 +83,7 @@ void CompareFlowResults(TString type="ESD")
   Int_t meshStyle = 1001;
   Int_t meshColor = kRed-10;
   
-  //marker style and color (int. flow) 
+  //marker style and color (plots for int. flow) 
   Int_t markerStyle = 21;
   Int_t markerColor = kRed-3;
   //==================================================================================
@@ -120,8 +119,8 @@ void CompareFlowResults(TString type="ESD")
   //booking the graph to store flow values and errors from all methods:  
   Double_t x[nMethods] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5};
   Double_t xError[nMethods] = {0.};
-  Double_t flowValue[nMethods] = {0.};//to be removed
-  Double_t flowError[nMethods] = {0.};//to be removed
+  Double_t flowValue[nMethods] = {0.};
+  Double_t flowError[nMethods] = {0.};
   Double_t flowValueRP[nMethods] = {0.};
   Double_t flowErrorRP[nMethods] = {0.};
   Double_t flowValuePOI[nMethods] = {0.};
@@ -138,8 +137,8 @@ void CompareFlowResults(TString type="ESD")
       mcepCommonHist    = dynamic_cast<AliFlowCommonHist*> (pListMCEP->FindObject("AliFlowCommonHistMCEP"));
       mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListMCEP->FindObject("AliFlowCommonHistResultsMCEP"));
       if(mcepCommonHistRes) {
-	flowValue[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[0] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[0] = (mcepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[0] = (mcepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
@@ -158,8 +157,8 @@ void CompareFlowResults(TString type="ESD")
       lyz1CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1->FindObject("AliFlowCommonHistLYZ1"));
       lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1"));
       if(lyz1CommonHistRes) {
-	flowValue[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
@@ -190,8 +189,8 @@ void CompareFlowResults(TString type="ESD")
       lyzepCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZEP->FindObject("AliFlowCommonHistLYZEP"));
       lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZEP->FindObject("AliFlowCommonHistResultsLYZEP"));
       if(lyzepCommonHistRes) {
-	flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-	//flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	//flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
@@ -210,8 +209,8 @@ void CompareFlowResults(TString type="ESD")
       fqdCommonHist = dynamic_cast<AliFlowCommonHist*> (pListFQD->FindObject("AliFlowCommonHistFQD"));
       fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListFQD->FindObject("AliFlowCommonHistResultsFQD"));
       if(fqdCommonHistRes) {
-	flowValue[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
@@ -233,8 +232,8 @@ void CompareFlowResults(TString type="ESD")
       gfcCommonHist = dynamic_cast<AliFlowCommonHist*> (pListGFC->FindObject("AliFlowCommonHistGFC"));
       gfcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
       if(gfcCommonHistRes2) {
-	flowValue[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
+	flowError[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
@@ -242,8 +241,8 @@ void CompareFlowResults(TString type="ESD")
       }
       gfcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
       if(gfcCommonHistRes4) {
-	flowValue[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
+	flowError[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
@@ -251,8 +250,8 @@ void CompareFlowResults(TString type="ESD")
       }
       gfcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
       if(gfcCommonHistRes6) {
-	flowValue[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
+	flowError[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
@@ -260,8 +259,8 @@ void CompareFlowResults(TString type="ESD")
       }
       gfcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC"));
       if(gfcCommonHistRes8)  {
-	flowValue[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
-	flowError[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
+	flowError[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
@@ -287,8 +286,8 @@ void CompareFlowResults(TString type="ESD")
       qcCommonHist2 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist2ndOrderQC"));
       qcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
       if(qcCommonHistRes2)  {
-	flowValue[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);//to be removed
-	//flowError[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
+	//flowError[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
@@ -297,8 +296,8 @@ void CompareFlowResults(TString type="ESD")
       qcCommonHist4 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist4thOrderQC"));
       qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
       if(qcCommonHistRes4) {
-	flowValue[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);//to be removed
-	//flowError[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
+	//flowError[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
@@ -307,8 +306,8 @@ void CompareFlowResults(TString type="ESD")
       qcCommonHist6 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist6thOrderQC"));
       qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
       if(qcCommonHistRes6) {
-	flowValue[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);//to be removed
-	//flowError[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
+	//flowError[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
@@ -317,8 +316,8 @@ void CompareFlowResults(TString type="ESD")
       qcCommonHist8 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist8thOrderQC"));
       qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
       if(qcCommonHistRes8)  {
-	flowValue[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);//to be removed
-	//flowError[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);//to be removed
+	flowValue[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
+	//flowError[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
@@ -327,8 +326,7 @@ void CompareFlowResults(TString type="ESD")
     }
   }        
   
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //              !!!!  to be removed  !!!!
+  //no-name:
   Double_t dMax=flowValue[0]+flowError[0];
   Double_t dMin=flowValue[0]-flowError[0];
   
@@ -338,7 +336,6 @@ void CompareFlowResults(TString type="ESD")
       if(dMin>flowValue[i]-flowError[i]) dMin=flowValue[i]-flowError[i];
     } 
   }  
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   
   //RP:
   Double_t dMaxRP=flowValueRP[0]+flowErrorRP[0];
@@ -362,23 +359,18 @@ void CompareFlowResults(TString type="ESD")
     } 
   }  
  
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //                    !!!!  to be removed  !!!!
+  //no-name:
   TGraph* flowResults = new TGraphErrors(nMethods, x, flowValue, xError, flowError);
- 
   flowResults->SetMarkerStyle(markerStyle);
   flowResults->SetMarkerColor(markerColor);
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   
   //RP:
-  TGraph* flowResultsRP = new TGraphErrors(nMethods, x, flowValueRP, xError, flowErrorRP);
-  
+  TGraph* flowResultsRP = new TGraphErrors(nMethods, x, flowValueRP, xError, flowErrorRP); 
   flowResultsRP->SetMarkerStyle(markerStyle);
   flowResultsRP->SetMarkerColor(markerColor);
   
   //POI:
   TGraph* flowResultsPOI = new TGraphErrors(nMethods, x, flowValuePOI, xError, flowErrorPOI);
-  
   flowResultsPOI->SetMarkerStyle(markerStyle);
   flowResultsPOI->SetMarkerColor(markerColor);
   
@@ -386,46 +378,38 @@ void CompareFlowResults(TString type="ESD")
   
   //----------------------------------------------------------------------------------
   //cosmetics: mesh for MC error bands (integrated flow)
-  TGraph* pMesh = NULL;//to be removed
+  TGraph* pMesh = NULL;
   TGraph* pMeshRP = NULL;
   TGraph* pMeshPOI = NULL;
   
   if(intFlowAll && mcepCommonHistRes) {
-    //Double_t valueMC = intFlowAll->GetBinContent(1);
-    //Double_t errorMC = intFlowAll->GetBinError(1);  
-    //Int_t nPts       = intFlowAll->GetNbinsX();     
-    
     Int_t nPts       = nMethods;
-    Double_t valueMC = flowValue[0];//to be removed
-    Double_t errorMC = flowError[0];//to be removed  
+    Double_t valueMC = flowValue[0];
+    Double_t errorMC = flowError[0]; 
     Double_t valueMCRP = flowValueRP[0];
     Double_t errorMCRP = flowErrorRP[0]; 
     Double_t valueMCPOI = flowValuePOI[0];
     Double_t errorMCPOI = flowErrorPOI[0]; 
     
-    pMesh = new TGraph(nPts);//to be removed
+    pMesh = new TGraph(nPts);
     pMeshRP = new TGraph(nPts);
     pMeshPOI = new TGraph(nPts);
     
-    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    //             !!!! to be removed !!!!
+    //no-name:
     pMesh->SetPoint(1,0,valueMC+errorMC);
     pMesh->SetPoint(2,nPts+1,valueMC+errorMC);
     pMesh->SetPoint(3,nPts+1,valueMC-errorMC);
     pMesh->SetPoint(4,0,valueMC-errorMC);
-    pMesh->SetPoint(5,0,valueMC+errorMC);
-    
+    pMesh->SetPoint(5,0,valueMC+errorMC);    
     pMesh->SetFillStyle(meshStyle);
     pMesh->SetFillColor(meshColor);
-    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    
+     
     //RP:
     pMeshRP->SetPoint(1,0,valueMCRP+errorMCRP);
     pMeshRP->SetPoint(2,nPts+1,valueMCRP+errorMCRP);
     pMeshRP->SetPoint(3,nPts+1,valueMCRP-errorMCRP);
     pMeshRP->SetPoint(4,0,valueMCRP-errorMCRP);
-    pMeshRP->SetPoint(5,0,valueMCRP+errorMCRP);
-    
+    pMeshRP->SetPoint(5,0,valueMCRP+errorMCRP);   
     pMeshRP->SetFillStyle(meshStyle);
     pMeshRP->SetFillColor(meshColor);
     
@@ -434,8 +418,7 @@ void CompareFlowResults(TString type="ESD")
     pMeshPOI->SetPoint(2,nPts+1,valueMCPOI+errorMCPOI);
     pMeshPOI->SetPoint(3,nPts+1,valueMCPOI-errorMCPOI);
     pMeshPOI->SetPoint(4,0,valueMCPOI-errorMCPOI);
-    pMeshPOI->SetPoint(5,0,valueMCPOI+errorMCPOI);
-    
+    pMeshPOI->SetPoint(5,0,valueMCPOI+errorMCPOI);    
     pMeshPOI->SetFillStyle(meshStyle);
     pMeshPOI->SetFillColor(meshColor);     
   }
@@ -448,8 +431,6 @@ void CompareFlowResults(TString type="ESD")
   TPaveText *textDefault = new TPaveText(0.05,0.77,0.95,0.90,"NDC");
   textDefault->SetTextFont(72);
   textDefault->SetTextSize(0.08);
-  //textDefault->SetLineColor(kFALSE);
-  //textDefault->SetShadowColor(kFALSE);
   
   TString *entryDefaultAvM = new TString("Average Multiplicity");
   TString *entryDefaultAnd = new TString("and"); 
@@ -459,12 +440,10 @@ void CompareFlowResults(TString type="ESD")
   textDefault->AddText(entryDefaultAnd->Data());
   textDefault->AddText(entryDefaultNumOfEvts->Data());
   
-  //results:
-  TPaveText *textResults = new TPaveText(0.05,0.12,0.95,0.70,"NDC");//to be removed
-  textResults->SetTextFont(72);//to be removed
-  textResults->SetTextSize(0.06);//to be removed
-  //textResults->SetLineColor(kFALSE);
-  //textResults->SetShadowColor(kFALSE);
+  //results (no-name):
+  TPaveText *textResults = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
+  textResults->SetTextFont(72);
+  textResults->SetTextSize(0.06);
   
   //results (RP):
   TPaveText *textResultsRP = new TPaveText(0.05,0.12,0.95,0.70,"NDC");
@@ -476,8 +455,7 @@ void CompareFlowResults(TString type="ESD")
   textResultsPOI->SetTextFont(72);
   textResultsPOI->SetTextSize(0.06);
   
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //      !!!! to be removed !!!!!!                                      
+  //no-name:              
   TString *entryMC    = new TString("MC ...... ");
   TString *entryGFC   = new TString("GFC ..... "); 
   TString *entryQC2   = new TString("QC{2} ... ");
@@ -487,7 +465,6 @@ void CompareFlowResults(TString type="ESD")
   TString *entryFQD   = new TString("FQD ..... "); 
   TString *entryLYZ1  = new TString("LYZ ..... "); 
   TString *entryLYZEP = new TString("LYZEP ... "); 
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   
   //RP: 
   TString *entryMCRP    = new TString("MC ...... ");
@@ -511,114 +488,96 @@ void CompareFlowResults(TString type="ESD")
   TString *entryLYZ1POI  = new TString("LYZ ..... "); 
   TString *entryLYZEPPOI = new TString("LYZEP ... "); 
   
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //                  !!!! to be removed !!!!
+  //no-name:
   Double_t avMultMC=0.;
   Long_t nEvtsMC=0;
-  
   Double_t avMultGFC=0.;
   Long_t nEvtsGFC=0;
-  
   Double_t avMultQC2=0., avMultQC4=0., avMultQC6=0., avMultQC8=0.;
   Long_t nEvtsQC2=0, nEvtsQC4=0, nEvtsQC6=0, nEvtsQC8=0;
-  
   Double_t avMultFQD=0.;
   Long_t nEvtsFQD=0;
-  
   Double_t avMultLYZ1=0.;
   Long_t nEvtsLYZ1=0;
-  
   Double_t avMultLYZEP=0.;
   Long_t nEvtsLYZEP=0;
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   
   //RP:
   Double_t avMultMCRP=0.;
   Long_t nEvtsMCRP=0;
-  
   Double_t avMultGFCRP=0.;
   Long_t nEvtsGFCRP=0;
-  
   Double_t avMultQC2RP=0., avMultQC4RP=0., avMultQC6RP=0., avMultQC8RP=0.;
   Long_t nEvtsQC2RP=0, nEvtsQC4RP=0, nEvtsQC6RP=0, nEvtsQC8RP=0;
-  
   Double_t avMultFQDRP=0.;
   Long_t nEvtsFQDRP=0;
-  
   Double_t avMultLYZ1RP=0.;
   Long_t nEvtsLYZ1RP=0;
-  
   Double_t avMultLYZEPRP=0.;
   Long_t nEvtsLYZEPRP=0;
   
   //POI:
   Double_t avMultMCPOI=0.;
   Long_t nEvtsMCPOI=0;
-  
   Double_t avMultGFCPOI=0.;
   Long_t nEvtsGFCPOI=0;
-  
   Double_t avMultQC2POI=0., avMultQC4POI=0., avMultQC6POI=0., avMultQC8POI=0.;
   Long_t nEvtsQC2POI=0, nEvtsQC4POI=0, nEvtsQC6POI=0, nEvtsQC8POI=0;
-  
   Double_t avMultFQDPOI=0.;
   Long_t nEvtsFQDPOI=0;
-  
   Double_t avMultLYZ1POI=0.;
   Long_t nEvtsLYZ1POI=0;
-  
   Double_t avMultLYZEPPOI=0.;
   Long_t nEvtsLYZEPPOI=0;
   
   //MC:  
   if(mcepCommonHist) {
-    avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();//to be removed
-    nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();//to be removed
+    avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();
+    nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();
     avMultMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
     nEvtsMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
     avMultMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
     nEvtsMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();
   }
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  //   !!!! to be removed !!!!
+  
   if(entryMC) {   
     entryMC->Append("M = ");
     (*entryMC)+=(Long_t)avMultMC;
     entryMC->Append(", N = ");
     (*entryMC)+=(Long_t)nEvtsMC;
   }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
   if(entryMCRP) {   
     entryMCRP->Append("M = ");
     (*entryMCRP)+=(Long_t)avMultMCRP;
     entryMCRP->Append(", N = ");
     (*entryMCRP)+=(Long_t)nEvtsMCRP;
   }
- if(entryMCPOI) {   
+  
+  if(entryMCPOI) {   
    entryMCPOI->Append("M = ");
    (*entryMCPOI)+=(Long_t)avMultMCPOI;
    entryMCPOI->Append(", N = ");
    (*entryMCPOI)+=(Long_t)nEvtsMCPOI;
- }
+  }
   
  //GFC:
  if(gfcCommonHist) {
-   avMultGFC = (gfcCommonHist->GetHistMultInt())->GetMean();//to be removed
-   nEvtsGFC  = (gfcCommonHist->GetHistMultInt())->GetEntries();//to be removed
+   avMultGFC = (gfcCommonHist->GetHistMultInt())->GetMean();
+   nEvtsGFC  = (gfcCommonHist->GetHistMultInt())->GetEntries();
    avMultGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();
    nEvtsGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
    avMultGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
    nEvtsGFCPOI  = (gfcCommonHist->GetHistMultDiff())->GetEntries();
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!! 
+ 
  if(entryGFC) { 
    entryGFC->Append("M = ");
    (*entryGFC)+=(Long_t)avMultGFC;
    entryGFC->Append(", N = ");
    (*entryGFC)+=(Long_t)nEvtsGFC;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryGFCRP) { 
    entryGFCRP->Append("M = ");
    (*entryGFCRP)+=(Long_t)avMultGFCRP;
@@ -634,15 +593,14 @@ void CompareFlowResults(TString type="ESD")
  
  //QC:
  if(qcCommonHist2) {
-   avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();//to be removed
-   nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();//to be removed
+   avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();
+   nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();
    avMultQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
    nEvtsQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
    avMultQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
    nEvtsQC2POI  = (qcCommonHist2->GetHistMultDiff())->GetEntries();
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!   
+ 
  if(entryQC2)
  { 
   entryQC2->Append("M = ");
@@ -650,7 +608,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC2->Append(", N = ");
   (*entryQC2)+=(Long_t)nEvtsQC2;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryQC2RP)
  { 
   entryQC2RP->Append("M = ");
@@ -658,6 +616,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC2RP->Append(", N = ");
   (*entryQC2RP)+=(Long_t)nEvtsQC2RP;
  } 
+ 
  if(entryQC2POI)
  { 
   entryQC2POI->Append("M = ");
@@ -668,15 +627,14 @@ void CompareFlowResults(TString type="ESD")
 
  if(qcCommonHist4)
  {
-  avMultQC4 = (qcCommonHist4->GetHistMultInt())->GetMean();//to be removed
-  nEvtsQC4  = (qcCommonHist4->GetHistMultInt())->GetEntries();//to be removed
+  avMultQC4 = (qcCommonHist4->GetHistMultInt())->GetMean();
+  nEvtsQC4  = (qcCommonHist4->GetHistMultInt())->GetEntries();
   avMultQC4RP = (qcCommonHist4->GetHistMultInt())->GetMean();
   nEvtsQC4RP  = (qcCommonHist4->GetHistMultInt())->GetEntries();
   avMultQC4POI = (qcCommonHist4->GetHistMultDiff())->GetMean();
   nEvtsQC4POI  = (qcCommonHist4->GetHistMultDiff())->GetEntries();
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!  
+ 
  if(entryQC4)
  {
   entryQC4->Append("M = ");
@@ -684,7 +642,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC4->Append(", N = ");
   (*entryQC4)+=(Long_t)nEvtsQC4;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryQC4RP)
  {
   entryQC4RP->Append("M = ");
@@ -692,6 +650,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC4RP->Append(", N = ");
   (*entryQC4RP)+=(Long_t)nEvtsQC4RP;
  }
+ 
  if(entryQC4POI)
  {
   entryQC4POI->Append("M = ");
@@ -702,15 +661,14 @@ void CompareFlowResults(TString type="ESD")
    
  if(qcCommonHist6)
  {
-  avMultQC6 = (qcCommonHist6->GetHistMultInt())->GetMean();//to be removed
-  nEvtsQC6  = (qcCommonHist6->GetHistMultInt())->GetEntries();//to be removed
+  avMultQC6 = (qcCommonHist6->GetHistMultInt())->GetMean();
+  nEvtsQC6  = (qcCommonHist6->GetHistMultInt())->GetEntries();
   avMultQC6RP = (qcCommonHist6->GetHistMultInt())->GetMean();
   nEvtsQC6RP  = (qcCommonHist6->GetHistMultInt())->GetEntries();
   avMultQC6POI = (qcCommonHist6->GetHistMultDiff())->GetMean();
   nEvtsQC6POI  = (qcCommonHist6->GetHistMultDiff())->GetEntries();
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!   
+ 
  if(entryQC6)
  {  
   entryQC6->Append("M = ");
@@ -718,7 +676,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC6->Append(", N = ");
   (*entryQC6)+=(Long_t)nEvtsQC6;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryQC6RP)
  {  
   entryQC6RP->Append("M = ");
@@ -726,6 +684,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC6RP->Append(", N = ");
   (*entryQC6RP)+=(Long_t)nEvtsQC6RP;
  }
+ 
  if(entryQC6POI)
  {  
   entryQC6POI->Append("M = ");
@@ -736,15 +695,14 @@ void CompareFlowResults(TString type="ESD")
    
  if(qcCommonHist8)
  {
-  avMultQC8 = (qcCommonHist8->GetHistMultInt())->GetMean();//to be removed
-  nEvtsQC8  = (qcCommonHist8->GetHistMultInt())->GetEntries();//to be removed
+  avMultQC8 = (qcCommonHist8->GetHistMultInt())->GetMean();
+  nEvtsQC8  = (qcCommonHist8->GetHistMultInt())->GetEntries();
   avMultQC8RP = (qcCommonHist8->GetHistMultInt())->GetMean();
   nEvtsQC8RP  = (qcCommonHist8->GetHistMultInt())->GetEntries();
   avMultQC8POI = (qcCommonHist8->GetHistMultDiff())->GetMean();
   nEvtsQC8POI  = (qcCommonHist8->GetHistMultDiff())->GetEntries();    
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!    
+  
  if(entryQC8)
  {
   entryQC8->Append("M = ");
@@ -752,7 +710,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC8->Append(", N = ");
   (*entryQC8)+=(Long_t)nEvtsQC8;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryQC8RP)
  {
   entryQC8RP->Append("M = ");
@@ -760,6 +718,7 @@ void CompareFlowResults(TString type="ESD")
   entryQC8RP->Append(", N = ");
   (*entryQC8RP)+=(Long_t)nEvtsQC8RP;
  }
+ 
  if(entryQC8POI)
  {
   entryQC8POI->Append("M = ");
@@ -771,15 +730,14 @@ void CompareFlowResults(TString type="ESD")
  //FQD:
  if(fqdCommonHist)
  {
-  avMultFQD = (fqdCommonHist->GetHistMultInt())->GetMean();//to be removed
-  nEvtsFQD  = (fqdCommonHist->GetHistMultInt())->GetEntries();//to be removed
+  avMultFQD = (fqdCommonHist->GetHistMultInt())->GetMean();
+  nEvtsFQD  = (fqdCommonHist->GetHistMultInt())->GetEntries();
   avMultFQDRP = (fqdCommonHist->GetHistMultInt())->GetMean();
   nEvtsFQDRP  = (fqdCommonHist->GetHistMultInt())->GetEntries();
   avMultFQDPOI = (fqdCommonHist->GetHistMultDiff())->GetMean();
   nEvtsFQDPOI  = (fqdCommonHist->GetHistMultDiff())->GetEntries();
  } 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!  
+ 
  if(entryFQD)
  {
   entryFQD->Append("M = ");
@@ -787,7 +745,7 @@ void CompareFlowResults(TString type="ESD")
   entryFQD->Append(", N = ");
   (*entryFQD)+=(Long_t)nEvtsFQD;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryFQDRP)
  {
   entryFQDRP->Append("M = ");
@@ -795,6 +753,7 @@ void CompareFlowResults(TString type="ESD")
   entryFQDRP->Append(", N = ");
   (*entryFQDRP)+=(Long_t)nEvtsFQDRP;
  }
+ 
  if(entryFQDPOI)
  {
   entryFQDPOI->Append("M = ");
@@ -806,15 +765,14 @@ void CompareFlowResults(TString type="ESD")
  //LYZ1:
  if(lyz1CommonHist)
  {
-  avMultLYZ1 = (lyz1CommonHist->GetHistMultInt())->GetMean();//to be removed
-  nEvtsLYZ1  = (lyz1CommonHist->GetHistMultInt())->GetEntries();//to be removed
+  avMultLYZ1 = (lyz1CommonHist->GetHistMultInt())->GetMean();
+  nEvtsLYZ1  = (lyz1CommonHist->GetHistMultInt())->GetEntries();
   avMultLYZ1RP = (lyz1CommonHist->GetHistMultInt())->GetMean();
   nEvtsLYZ1RP  = (lyz1CommonHist->GetHistMultInt())->GetEntries();
   avMultLYZ1POI = (lyz1CommonHist->GetHistMultDiff())->GetMean();
   nEvtsLYZ1POI  = (lyz1CommonHist->GetHistMultDiff())->GetEntries();
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!   
+ 
  if(entryLYZ1) 
  {
   entryLYZ1->Append("M = ");
@@ -822,7 +780,7 @@ void CompareFlowResults(TString type="ESD")
   entryLYZ1->Append(", N = ");
   (*entryLYZ1)+=(Long_t)nEvtsLYZ1;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 
  if(entryLYZ1RP) 
  {
   entryLYZ1RP->Append("M = ");
@@ -830,6 +788,7 @@ void CompareFlowResults(TString type="ESD")
   entryLYZ1RP->Append(", N = ");
   (*entryLYZ1RP)+=(Long_t)nEvtsLYZ1RP;
  }
+ 
  if(entryLYZ1POI) 
  {
   entryLYZ1POI->Append("M = ");
@@ -841,15 +800,14 @@ void CompareFlowResults(TString type="ESD")
  //LYZEP:
  if(lyzepCommonHist)
  {
-  avMultLYZEP = (lyzepCommonHist->GetHistMultInt())->GetMean();//to be removed
-  nEvtsLYZEP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();//to be removed
+  avMultLYZEP = (lyzepCommonHist->GetHistMultInt())->GetMean();
+  nEvtsLYZEP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
   avMultLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
   nEvtsLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
   avMultLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
   nEvtsLYZEPPOI  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();    
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!   
+ 
  if(entryLYZEP)
  {
   entryLYZEP->Append("M = ");
@@ -857,7 +815,7 @@ void CompareFlowResults(TString type="ESD")
   entryLYZEP->Append(", N = ");
   (*entryLYZEP)+=(Long_t)nEvtsLYZEP;
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  if(entryLYZEPRP)
  {
   entryLYZEPRP->Append("M = ");
@@ -865,6 +823,7 @@ void CompareFlowResults(TString type="ESD")
   entryLYZEPRP->Append(", N = ");
   (*entryLYZEPRP)+=(Long_t)nEvtsLYZEPRP;
  }
+ 
  if(entryLYZEPPOI)
  {
   entryLYZEPPOI->Append("M = ");
@@ -873,8 +832,7 @@ void CompareFlowResults(TString type="ESD")
   (*entryLYZEPPOI)+=(Long_t)nEvtsLYZEPPOI;
  }
 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //   !!!! to be removed !!!!   
+ //no-name:
  if(textResults)
  {
   textResults->AddText(entryMC->Data());
@@ -887,7 +845,7 @@ void CompareFlowResults(TString type="ESD")
   textResults->AddText(entryLYZ1->Data());
   textResults->AddText(entryLYZEP->Data());
  }
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
  //RP:
  if(textResultsRP)
  {
@@ -916,10 +874,11 @@ void CompareFlowResults(TString type="ESD")
  }
  //----------------------------------------------------------------------------------
  
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //                           !!!! to be removed !!!!
+ 
+ 
+ 
  //----------------------------------------------------------------------------------
- //final drawing for integrated flow:
+ //final drawing for integrated flow (no-name):
  TCanvas* intFlowAllCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
  
  intFlowAllCanvas->Divide(2,1);
@@ -957,9 +916,7 @@ void CompareFlowResults(TString type="ESD")
   textDefault->Draw();
   textResults->Draw();
  }
- 
  //----------------------------------------------------------------------------------
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
  
  
@@ -1007,6 +964,9 @@ void CompareFlowResults(TString type="ESD")
   if(textResultsRP) textResultsRP->Draw();
  }//end of if(plotIntFlowRP} 
  //----------------------------------------------------------------------------------
+ 
+ 
+ 
  
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of POI (i.e. of particles of interest):
@@ -1118,38 +1078,6 @@ void CompareFlowResults(TString type="ESD")
  //----------------------------------------------------------------------------------
  
  
- 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- //               !!!! to be removed !!!!
- //----------------------------------------------------------------------------------
- //cosmetics: Monte Carlo error bands for differential flow
- TGraph* pMeshDiffFlow = NULL;
- if(mcepCommonHistRes)
- {
-  Int_t nPtsDiffFlow = (mcepCommonHistRes->GetHistDiffFlow())->GetNbinsX();
-  Double_t binWidth = (mcepCommonHistRes->GetHistDiffFlow())->GetBinWidth(1);//assuming that all bins have the same width
-       
-  pMeshDiffFlow = new TGraph(2*nPtsDiffFlow+1);
-  
-  Double_t valueMC=0., errorMC=0.;
-  for(Int_t i=1;i<nPtsDiffFlow+1;i++)
-  {
-   valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(i);
-   errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(i);       
-   pMeshDiffFlow->SetPoint(i,(i-0.5)*binWidth,valueMC+errorMC);
-  }    
-  for(Int_t i=nPtsDiffFlow+1;i<2*nPtsDiffFlow+1;i++)
-  {
-   valueMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinContent(2*nPtsDiffFlow+1-i);
-   errorMC = (mcepCommonHistRes->GetHistDiffFlow())->GetBinError(2*nPtsDiffFlow+1-i);       
-   pMeshDiffFlow->SetPoint(i,(2*nPtsDiffFlow-i+0.5)*binWidth,valueMC-errorMC); 
-  }
-  pMeshDiffFlow->SetPoint(2*nPtsDiffFlow+1,0.5*binWidth,valueMC+errorMC); 
-  pMeshDiffFlow->SetFillStyle(meshStyle);
-  pMeshDiffFlow->SetFillColor(meshColor);
- } 
- //----------------------------------------------------------------------------------
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
  //----------------------------------------------------------------------------------
  //RP:
@@ -1381,8 +1309,6 @@ void CompareFlowResults(TString type="ESD")
  //----------------------------------------------------------------------------------
    
  //MCEP = Monte Carlo Event Plane
- Double_t avMultDiffFlowMC=0.;//to be removed
- Double_t nEvtsDiffFlowMC=0;//to be removed
  Double_t avMultDiffFlowMCRP=0.;
  Double_t nEvtsDiffFlowMCRP=0;
  Double_t avMultDiffFlowMCPOI=0.;
@@ -1391,8 +1317,6 @@ void CompareFlowResults(TString type="ESD")
  {
   if(mcepCommonHistRes)
   {
-   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorMC);//to be removed
-   (mcepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleMC);//to be removed
    (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorMC);
    (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleMC);
    (mcepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorMC);
@@ -1404,8 +1328,6 @@ void CompareFlowResults(TString type="ESD")
   } 
   if(mcepCommonHist)
   {
-   avMultDiffFlowMC = (mcepCommonHist->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowMC  = (mcepCommonHist->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
    nEvtsDiffFlowMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
    avMultDiffFlowMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
@@ -1424,8 +1346,6 @@ void CompareFlowResults(TString type="ESD")
  {
   if(gfcCommonHistRes2)
   {
-   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(markerColorGFC2);//to be removed
-   (gfcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC2);//to be removed
    (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC2);
    (gfcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC2);
    (gfcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC2);
@@ -1437,8 +1357,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(gfcCommonHistRes4)
   { 
-   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(markerColorGFC4);//to be removed
-   (gfcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC4);//to be removed
    (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC4);
    (gfcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC4);
    (gfcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC4);
@@ -1450,8 +1368,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(gfcCommonHistRes6)
   { 
-   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(markerColorGFC6);//to be removed
-   (gfcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC6);//to be removed
    (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC6);
    (gfcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC6);
    (gfcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC6);
@@ -1463,8 +1379,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(gfcCommonHistRes8)
   { 
-   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(markerColorGFC8);//to be removed
-   (gfcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(markerStyleGFC8);//to be removed
    (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorGFC8);
    (gfcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleGFC8);
    (gfcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorGFC8);
@@ -1476,8 +1390,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(gfcCommonHist)
   {
-   avMultDiffFlowGFC = (gfcCommonHist->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowGFC  = (gfcCommonHist->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();   
    nEvtsDiffFlowGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
    avMultDiffFlowGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
@@ -1486,10 +1398,6 @@ void CompareFlowResults(TString type="ESD")
  }
   
  //QC = Q-cumulants
- Double_t avMultDiffFlowQC2=0., avMultDiffFlowQC4=0.;//to be removed
- Double_t nEvtsDiffFlowQC2=0., nEvtsDiffFlowQC4=0.;//to be removed
- Double_t avMultDiffFlowQC6=0., avMultDiffFlowQC8=0.;//to be removed
- Double_t nEvtsDiffFlowQC6=0., nEvtsDiffFlowQC8=0.;//to be removed
  Double_t avMultDiffFlowQC2RP=0.;
  Double_t nEvtsDiffFlowQC2RP=0.;
  Double_t avMultDiffFlowQC2POI=0.;
@@ -1512,8 +1420,6 @@ void CompareFlowResults(TString type="ESD")
   //QC{2}
   if(qcCommonHistRes2)
   {
-   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerColor(markerColorQC2);//to be removed
-   (qcCommonHistRes2->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC2);//to be removed
    (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC2);
    (qcCommonHistRes2->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC2);
    (qcCommonHistRes2->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC2);
@@ -1525,8 +1431,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(qcCommonHist2)
   {
-   avMultDiffFlowQC2 = (qcCommonHist2->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowQC2  = (qcCommonHist2->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
    nEvtsDiffFlowQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
    avMultDiffFlowQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
@@ -1535,8 +1439,6 @@ void CompareFlowResults(TString type="ESD")
   //QC{4}
   if(qcCommonHistRes4)
   {
-   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerColor(markerColorQC4);//to be removed
-   (qcCommonHistRes4->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC4);//to be removed
    (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC4);
    (qcCommonHistRes4->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC4);
    (qcCommonHistRes4->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC4);
@@ -1548,8 +1450,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(qcCommonHist4)
   {
-   avMultDiffFlowQC4 = (qcCommonHist4->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowQC4  = (qcCommonHist4->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowQC4RP = (qcCommonHist4->GetHistMultInt())->GetMean();
    nEvtsDiffFlowQC4RP  = (qcCommonHist4->GetHistMultInt())->GetEntries();
    avMultDiffFlowQC4POI = (qcCommonHist4->GetHistMultDiff())->GetMean();
@@ -1558,8 +1458,6 @@ void CompareFlowResults(TString type="ESD")
   //QC{6}
   if(qcCommonHistRes6)
   {
-   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerColor(markerColorQC6);//to be removed
-   (qcCommonHistRes6->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC6);//to be removed
    (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC6);
    (qcCommonHistRes6->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC6);
    (qcCommonHistRes6->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC6);
@@ -1571,8 +1469,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(qcCommonHist6)
   {
-   avMultDiffFlowQC6 = (qcCommonHist6->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowQC6  = (qcCommonHist6->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowQC6RP = (qcCommonHist6->GetHistMultInt())->GetMean();
    nEvtsDiffFlowQC6RP  = (qcCommonHist6->GetHistMultInt())->GetEntries();
    avMultDiffFlowQC6POI = (qcCommonHist6->GetHistMultDiff())->GetMean();
@@ -1581,8 +1477,6 @@ void CompareFlowResults(TString type="ESD")
   //QC{8}
   if(qcCommonHistRes8)
   {
-   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerColor(markerColorQC8);//to be removed
-   (qcCommonHistRes8->GetHistDiffFlow())->SetMarkerStyle(markerStyleQC8);//to be removed
    (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorQC8);
    (qcCommonHistRes8->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleQC8);
    (qcCommonHistRes8->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorQC8);
@@ -1594,8 +1488,6 @@ void CompareFlowResults(TString type="ESD")
   }
   if(qcCommonHist8)
   {
-   avMultDiffFlowQC8 = (qcCommonHist8->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowQC8  = (qcCommonHist8->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowQC8RP = (qcCommonHist8->GetHistMultInt())->GetMean();
    nEvtsDiffFlowQC8RP  = (qcCommonHist8->GetHistMultInt())->GetEntries();
    avMultDiffFlowQC8POI = (qcCommonHist8->GetHistMultDiff())->GetMean();
@@ -1604,8 +1496,6 @@ void CompareFlowResults(TString type="ESD")
  } 
 
  //LYZ2 = Lee-Yang Zeros (2nd run)
- Double_t avMultDiffFlowLYZ2=0.;//to be removed
- Double_t nEvtsDiffFlowLYZ2=0;//to be removed
  Double_t avMultDiffFlowLYZ2RP=0.;
  Double_t nEvtsDiffFlowLYZ2RP=0;
  Double_t avMultDiffFlowLYZ2POI=0.;
@@ -1614,8 +1504,6 @@ void CompareFlowResults(TString type="ESD")
  {
   if(lyz2CommonHistRes)
   {
-   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorLYZ2);//to be removed
-   (lyz2CommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleLYZ2);//to be removed
    (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZ2);
    (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZ2);
    (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZ2);
@@ -1627,8 +1515,6 @@ void CompareFlowResults(TString type="ESD")
   } 
   if(lyz2CommonHist)
   {
-   avMultDiffFlowLYZ2 = (lyz2CommonHist->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowLYZ2  = (lyz2CommonHist->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowLYZ2RP = (lyz2CommonHist->GetHistMultInt())->GetMean();
    nEvtsDiffFlowLYZ2RP  = (lyz2CommonHist->GetHistMultInt())->GetEntries();
    avMultDiffFlowLYZ2POI = (lyz2CommonHist->GetHistMultDiff())->GetMean();
@@ -1637,8 +1523,6 @@ void CompareFlowResults(TString type="ESD")
  } 
 
  //LYZEP = Lee-Yang Zeros Event Plane
- Double_t avMultDiffFlowLYZEP=0.;//to be removed
- Double_t nEvtsDiffFlowLYZEP=0;//to be removed
  Double_t avMultDiffFlowLYZEPRP=0.;
  Double_t nEvtsDiffFlowLYZEPRP=0;
  Double_t avMultDiffFlowLYZEPPOI=0.;
@@ -1647,9 +1531,6 @@ void CompareFlowResults(TString type="ESD")
  {
   if(lyzepCommonHistRes)
   {
-   (lyzepCommonHistRes->GetHistDiffFlow())->Scale(0.01);//to be improved
-   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerColor(markerColorLYZEP);//to be removed
-   (lyzepCommonHistRes->GetHistDiffFlow())->SetMarkerStyle(markerStyleLYZEP);//to be removed
    (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZEP);
    (lyzepCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZEP);
    (lyzepCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZEP);
@@ -1661,8 +1542,6 @@ void CompareFlowResults(TString type="ESD")
   } 
   if(lyzepCommonHist)
   {
-   avMultDiffFlowLYZEP = (lyzepCommonHist->GetHistMultDiff())->GetMean();//to be removed
-   nEvtsDiffFlowLYZEP  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();//to be removed
    avMultDiffFlowLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
    nEvtsDiffFlowLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
    avMultDiffFlowLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
@@ -1670,180 +1549,7 @@ void CompareFlowResults(TString type="ESD")
   } 
  } 
 
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- // !!!! to be removed !!!!
- //----------------------------------------------------------------------------------
- //final drawing for differential flow:
- TCanvas* diffFlowAllCanvas = new TCanvas("Differential Flow","Differential Flow",1000,600);
- 
- diffFlowAllCanvas->Divide(2,1);
- 
- //1st pad is for plot:
- (diffFlowAllCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
-  
- if(styleHistPt)
- {
-  styleHistPt->Draw();
- }
 
- if(pMeshDiffFlow)
- {
-  pMeshDiffFlow->Draw("LFSAME");
- }
- //MC 
- if(mcepCommonHistRes)
- { 
-  (mcepCommonHistRes->GetHistDiffFlow())->Draw("E1PSAME");
- }
- //GFC
- if(gfcCommonHistRes2)
- { 
-  (gfcCommonHistRes2->GetHistDiffFlow())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes4)
- { 
-  (gfcCommonHistRes4->GetHistDiffFlow())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes6)
- { 
-  (gfcCommonHistRes6->GetHistDiffFlow())->Draw("E1PSAME"); 
- } 
- if(gfcCommonHistRes8)
- { 
-  (gfcCommonHistRes8->GetHistDiffFlow())->Draw("E1PSAME"); 
- }   
- //QC
- if(qcCommonHistRes2)
- { 
-  (qcCommonHistRes2->GetHistDiffFlow())->Draw("E1PSAME");
- }
- if(qcCommonHistRes4)
- { 
-  (qcCommonHistRes4->GetHistDiffFlow())->Draw("E1PSAME");
- }
- //LYZ2
- if(lyz2CommonHistRes)
- { 
-  (lyz2CommonHistRes->GetHistDiffFlow())->Draw("E1PSAME");
- }
- //LYZEP
- if(lyzepCommonHistRes)
- { 
-  (lyzepCommonHistRes->GetHistDiffFlow())->Draw("E1PSAME");
- }
- 
- //2nd pad is for legend:
- (diffFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
-
- TLegend* legendDiffFlow = new TLegend(0.02,0.25,0.97,0.75);
- legendDiffFlow->SetTextFont(72);
- legendDiffFlow->SetTextSize(0.06);
-
- //legend's entries:
- TString *entryDiffMC   = new TString("MC ....... ");
- TString *entryDiffGFC2 = new TString("GFC{2} ... ");
- TString *entryDiffGFC4 = new TString("GFC{4} ... ");
- TString *entryDiffGFC6 = new TString("GFC{6} ... ");
- TString *entryDiffGFC8 = new TString("GFC{8} ... "); 
- TString *entryDiffQC2  = new TString("QC{2} .... ");
- TString *entryDiffQC4  = new TString("QC{4} .... ");
- TString *entryDiffLYZ2 = new TString("LYZ ...... ");
- TString *entryDiffLYZEP = new TString("LYZEP ... ");
- 
- //MC
- if(mcepCommonHistRes)
- {
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillStyle(meshStyle);
-  (mcepCommonHistRes->GetHistDiffFlow())->SetFillColor(meshColor);
-  entryDiffMC->Append("M = ");
-  (*entryDiffMC)+=(Long_t)avMultDiffFlowMC;
-  entryDiffMC->Append(", N = ");
-  (*entryDiffMC)+=(Long_t)nEvtsDiffFlowMC; 
-  legendDiffFlow->AddEntry(mcepCommonHistRes->GetHistDiffFlow(),entryDiffMC->Data(),"f");
- }
-
- //GFC
- if(gfcCommonHistRes2)
- {
-  entryDiffGFC2->Append("M = ");
-  (*entryDiffGFC2)+=(Long_t)avMultDiffFlowGFC;
-  entryDiffGFC2->Append(", N = ");
-  (*entryDiffGFC2)+=(Long_t)nEvtsDiffFlowGFC; 
-  legendDiffFlow->AddEntry(gfcCommonHistRes2->GetHistDiffFlow(),entryDiffGFC2->Data(),"p");
- }
- if(gfcCommonHistRes4)
- {
-  entryDiffGFC4->Append("M = ");
-  (*entryDiffGFC4)+=(Long_t)avMultDiffFlowGFC;
-  entryDiffGFC4->Append(", N = ");
-  (*entryDiffGFC4)+=(Long_t)nEvtsDiffFlowGFC; 
-  legendDiffFlow->AddEntry(gfcCommonHistRes4->GetHistDiffFlow(),entryDiffGFC4->Data(),"p");
- }
- if(gfcCommonHistRes6)
- {
-  entryDiffGFC6->Append("M = ");
-  (*entryDiffGFC6)+=(Long_t)avMultDiffFlowGFC;
-  entryDiffGFC6->Append(", N = ");
-  (*entryDiffGFC6)+=(Long_t)nEvtsDiffFlowGFC; 
-  legendDiffFlow->AddEntry(gfcCommonHistRes6->GetHistDiffFlow(),entryDiffGFC6->Data(),"p");
- } 
- if(gfcCommonHistRes8)
- {
-  entryDiffGFC8->Append("M = ");
-  (*entryDiffGFC8)+=(Long_t)avMultDiffFlowGFC;
-  entryDiffGFC8->Append(", N = ");
-  (*entryDiffGFC8)+=(Long_t)nEvtsDiffFlowGFC; 
-  legendDiffFlow->AddEntry(gfcCommonHistRes8->GetHistDiffFlow(),entryDiffGFC8->Data(),"p");
- }  
- //QC
- if(qcCommonHistRes2)
- {
-  entryDiffQC2->Append("M = ");
-  (*entryDiffQC2)+=(Long_t)avMultDiffFlowQC2;
-  entryDiffQC2->Append(", N = ");
-  (*entryDiffQC2)+=(Long_t)nEvtsDiffFlowQC2; 
-  legendDiffFlow->AddEntry(qcCommonHistRes2->GetHistDiffFlow(),entryDiffQC2->Data(),"p");
- }
- if(qcCommonHistRes4)
- {
-  entryDiffQC4->Append("M = ");
-  (*entryDiffQC4)+=(Long_t)avMultDiffFlowQC4;
-  entryDiffQC4->Append(", N = ");
-  (*entryDiffQC4)+=(Long_t)nEvtsDiffFlowQC4; 
-  legendDiffFlow->AddEntry(qcCommonHistRes4->GetHistDiffFlow(),entryDiffQC4->Data(),"p");
- }
- 
- //LYZ
- if(lyz2CommonHistRes)
- {
-  entryDiffLYZ2->Append("M = ");
-  (*entryDiffLYZ2)+=(Long_t)avMultDiffFlowLYZ2;
-  entryDiffLYZ2->Append(", N = ");
-  (*entryDiffLYZ2)+=(Long_t)nEvtsDiffFlowLYZ2; 
-  legendDiffFlow->AddEntry(lyz2CommonHistRes->GetHistDiffFlow(),entryDiffLYZ2->Data(),"p");
- }
- 
- //LYZEP
- if(lyzepCommonHistRes)
- {
-  entryDiffLYZEP->Append("M = ");
-  (*entryDiffLYZEP)+=(Long_t)avMultDiffFlowLYZEP;
-  entryDiffLYZEP->Append(", N = ");
-  (*entryDiffLYZEP)+=(Long_t)nEvtsDiffFlowLYZEP; 
-  legendDiffFlow->AddEntry(lyzepCommonHistRes->GetHistDiffFlow(),entryDiffLYZEP->Data(),"p");
- }
-
-
- //drawing finally the legend in the 2nd pad:     
- if(legendDiffFlow)
- {
-  legendDiffFlow->SetMargin(0.15);
-  legendDiffFlow->Draw();
- }
- //----------------------------------------------------------------------------------
- //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
- 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, RP):
  //set here the results of which methods will be plotted by default:
@@ -2304,7 +2010,7 @@ void CompareFlowResults(TString type="ESD")
  
   //MC 
   if(plotMCPtPOI && mcepCommonHistRes)
-  { 
+  { kTRUE;
    (mcepCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   //GFC
@@ -2334,7 +2040,7 @@ void CompareFlowResults(TString type="ESD")
    (qcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   if(plotQC6PtPOI && qcCommonHistRes6)
-  { 
+  { kTRUE;
    //(qcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   if(plotQC8PtPOI && qcCommonHistRes8)
