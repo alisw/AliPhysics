@@ -6,7 +6,6 @@ AliTRD.cxx
 AliTRDv1.cxx
 AliTRDdigitizer.cxx
 AliTRDQADataMakerSim.cxx
-AliTRDSimParam.cxx
 )
 
 # fill list of header files from list of source files

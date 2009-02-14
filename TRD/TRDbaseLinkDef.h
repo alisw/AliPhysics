@@ -13,6 +13,13 @@
 #pragma link C++ class  AliTRDarrayI+;
 #pragma link C++ class  AliTRDarrayS+;
 #pragma link C++ class  AliTRDarrayF+;
+#pragma link C++ class  AliTRDsegmentID+;
+#pragma link C++ class  AliTRDsegmentArray+;
+#pragma link C++ class  AliTRDdataArray+;
+#pragma link C++ class  AliTRDdataArrayI+;
+#pragma link C++ class  AliTRDdataArrayS+;
+#pragma link C++ class  AliTRDdataArrayDigits+;
+#pragma link C++ class  AliTRDdataArrayF+;
 #pragma link C++ class  AliTRDSignalIndex+;
 #pragma link C++ class  AliTRDarraySignal+;
 #pragma link C++ class  AliTRDarrayDictionary+;
@@ -90,4 +97,6 @@
 
 #pragma link C++ class  AliTRDhit+;
 
+#pragma link C++ class  AliTRDrecoParam+;
+#pragma link C++ class  AliTRDSimParam+;
 #endif
