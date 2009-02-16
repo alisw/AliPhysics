@@ -174,7 +174,7 @@ void AliEveTRDDigits::Reset()
 
   TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
   // MT fBoxes.fBoxes.clear();
-  //fData.Reset();
+  fData.Reset();
 }
 
 ///////////////////////////////////////////////////////////
