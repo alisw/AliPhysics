@@ -21,6 +21,9 @@ ifneq ($(ESD_INCLUDE),)
 	ifneq ($(ANALYSISalice_INCLUDE),)
 		ALICEINC += -I../$(ANALYSISalice_INCLUDE)
 	endif
+	ifneq ($(CORRFW_INCLUDE),)
+		ALICEINC += -I../$(CORRFW_INCLUDE)
+	endif
 else
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/MUON
