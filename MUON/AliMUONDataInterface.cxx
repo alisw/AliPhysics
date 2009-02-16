@@ -34,13 +34,10 @@
 #include "AliMpCDB.h"
 
 #include "AliLoader.h"
-#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliCDBManager.h"
 
-#include <TError.h>
-#include <TParticle.h>
 #include <Riostream.h>
 #include <TFile.h>
 #include <TList.h>
