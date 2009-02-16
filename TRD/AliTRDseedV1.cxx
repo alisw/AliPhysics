@@ -828,15 +828,16 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   SetExB();
 
   // calculate dx for time bins in the drift region (calibration aware)
-  Int_t irp = 0; Float_t x[2]; Int_t tb[2];
+  Int_t irp = 0; Float_t x[2]={0., 0.}; Int_t tb[2] = {0, 0};
   for (Int_t it = t0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
     if(!fClusters[it]) continue;
     x[irp]  = fClusters[it]->GetX();
     tb[irp] = it;
     irp++;
     if(irp==2) break;
-  } 
-  fdX = (x[1] - x[0]) / (tb[0] - tb[1]);
+  }
+  Int_t dtb = tb[1] - tb[0];
+  fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
 
   // update X0 from the clusters (calibration/alignment aware) TODO remove dependence on x0 !!
   for (Int_t it = 0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
