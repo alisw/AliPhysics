@@ -53,6 +53,9 @@ public:
   TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
 
+  void SetRequireMinNTracklets(Int_t mintracklets) { fMinNTracklets = mintracklets; }
+  void SetRequireMaxNTracklets(Int_t maxtracklets) { fMaxNTracklets = maxtracklets; }
+
   TObjArray *GetGraphs() { return fGraph; };
   virtual TObjArray *Histos();
   void EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency);
@@ -72,6 +75,8 @@ private:
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fEfficiency;        //! array of histograms with efficiency
   TAxis               *fMomentumAxis;      //! helper mementum binning
+  Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
+  Int_t                fMaxNTracklets;     // maximum number of required Tracklets (for systematic studies) 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };
 

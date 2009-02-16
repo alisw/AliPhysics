@@ -45,6 +45,8 @@ AliTRDpidChecker::AliTRDpidChecker()
   ,fGraph(0x0)
   ,fEfficiency(0x0)
   ,fMomentumAxis(0x0)
+  ,fMinNTracklets(AliTRDgeometry::kNlayer)
+  ,fMaxNTracklets(AliTRDgeometry::kNlayer)
  {
   //
   // Default constructor
@@ -181,7 +183,8 @@ Bool_t AliTRDpidChecker::CheckTrackQuality(const AliTRDtrackV1* track)
   // Check if the track is ok for PID
   //
   
-  if(track->GetNumberOfTracklets() == AliTRDgeometry::kNlayer) return 1;
+  Int_t ntracklets = track->GetNumberOfTracklets();
+  if(ntracklets >= fMinNTracklets && ntracklets <= fMaxNTracklets) return 1;
 //   if(!fESD)
 //     return 0;
 
@@ -235,7 +238,7 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
   ULong_t status;
   status = fESD -> GetStatus();
-  if(!(status&AliESDtrack::kTPCout)) return 0x0;
+  if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
@@ -267,7 +270,7 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("!nn");
   cTrack.CookPID();
-  if(!(cTrack.GetPIDquality() == 6)) return 0x0;
+  if(cTrack.GetPIDquality() < fMinNTracklets) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDLQ -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -295,7 +298,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
   
   ULong_t status;
   status = fESD -> GetStatus();
-  if(!(status&AliESDtrack::kTPCout)) return 0x0;
+  if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
@@ -326,7 +329,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("nn");
   cTrack.CookPID();
-  if(!(cTrack.GetPIDquality() == 6)) return 0x0;
+  if(cTrack.GetPIDquality() < fMinNTracklets) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDNN -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -354,10 +357,10 @@ TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
   
   ULong_t status;
   status = fESD -> GetStatus();
-  if(!(status&AliESDtrack::kTPCout)) return 0x0;
+  if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
-  if(!(fTrack->GetPIDquality() == 6)) return 0x0;
+  if(fTrack->GetPIDquality() < fMinNTracklets) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");
@@ -431,10 +434,13 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
   fReconstructor -> SetOption("!nn");
   Float_t SumdEdx = 0;
   Int_t iBin = FindBin(species, momentum);
+  AliTRDseedV1 *tracklet = 0x0;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     SumdEdx = 0;
-    cTrack.GetTracklet(iChamb) -> CookdEdx(AliTRDpidUtil::kLQslices);
-    for(Int_t i = 3; i--;) SumdEdx += cTrack.GetTracklet(iChamb)->GetdEdx()[i];
+    tracklet = cTrack.GetTracklet(iChamb);
+    if(!tracklet) continue;
+    tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
+    for(Int_t i = 3; i--;) SumdEdx += tracklet->GetdEdx()[i];
     hdEdx -> Fill(iBin, SumdEdx);
   }
   return hdEdx;
@@ -480,9 +486,12 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
   Int_t iMomBin = fMomentumAxis->FindBin(momentum);
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
+  AliTRDseedV1 *tracklet = 0x0;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    cTrack.GetTracklet(iChamb) -> CookdEdx(AliTRDpidUtil::kLQslices);
-    fdEdx = cTrack.GetTracklet(iChamb)->GetdEdx();
+    tracklet = cTrack.GetTracklet(iChamb);
+    if(!tracklet) continue;
+    tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
+    fdEdx = tracklet->GetdEdx();
     for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kLQslices; iSlice++){
       hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + (iMomBin-1) * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
     }
@@ -533,6 +542,7 @@ TH1 *AliTRDpidChecker::PlotPH(const AliTRDtrackV1 *track)
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     tracklet = fTrack->GetTracklet(iChamb);
+    if(!tracklet) continue;
     for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
       if(!(TRDcluster = tracklet->GetClusters(iClus))) continue;
       hPH -> Fill(iBin, TRDcluster->GetLocalTimeBin(), tracklet->GetdQdl(iClus));
@@ -579,9 +589,13 @@ TH1 *AliTRDpidChecker::PlotNClus(const AliTRDtrackV1 *track)
   if(!IsInRange(momentum)) return 0x0;
 
   Int_t species = AliTRDpidUtil::AliTRDpidUtil::Pdg2Pid(pdg);
-  Int_t iBin = FindBin(species, momentum);
-  for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++)
-    hNClus -> Fill(iBin, fTrack->GetTracklet(iChamb)->GetN());
+  Int_t iBin = FindBin(species, momentum); 
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
+    tracklet = fTrack->GetTracklet(iChamb);
+    if(!tracklet) continue;
+    hNClus -> Fill(iBin, tracklet->GetN());
+  }
 
   return hNClus;
 }
