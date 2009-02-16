@@ -205,7 +205,7 @@ TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
   
       if(fDebugLevel>=1){
         // Get z-position with respect to anode wire
-        AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+        //AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
         Int_t istk = fGeo->GetStack(c->GetDetector());
         AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
         Float_t row0 = pp->GetRow0();
@@ -341,7 +341,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     p = pt*(1.+dzdx*dzdx); // pt -> p
 
     // add Kalman residuals for y, z and pt
-    Float_t yr = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1);
+    Float_t yr = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1) + .05;
     dy = yt - yr;
     Float_t zr = fTracklet->GetZref(0) - dx*fTracklet->GetZref(1);
     dz = zt - zr;
@@ -379,7 +379,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     yt = y0 - (x0-xref)*dydx;
 
     // add tracklet residuals for y and dydx
-    Float_t yf = tt.GetYat(xref);
+    Float_t yf = tt.GetYat(xref) + .05;
     dy = yt - yf;
     Float_t dphi   = (tt.GetYfit(1) - dydx);
     dphi /= 1.- tt.GetYfit(1)*dydx;
@@ -516,10 +516,11 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
   case kMCcluster:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.1; y[1] = 1.5;
+    y[0] = -.05; y[1] = 0.6;
     ax->SetRangeUser(y[0], y[1]);
     ax->SetTitle("Y_{cluster} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
+    ax->SetRangeUser(-.3, .3);
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
@@ -531,10 +532,11 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
   case kMCtrackletY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = 0.3;
+    y[0] = -.05; y[1] = 0.25;
     ax->SetRangeUser(y[0], y[1]);
     ax->SetTitle("Y_{tracklet} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
+    ax->SetRangeUser(-.2, .2);
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
@@ -569,10 +571,11 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
   case kMCtrackY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = 0.2;
+    y[0] = -.05; y[1] = 0.25;
     ax->SetRangeUser(y[0], y[1]);
     ax->SetTitle("Y_{track} #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
+    ax->SetRangeUser(-.2, .2);
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;

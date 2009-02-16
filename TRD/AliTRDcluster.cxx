@@ -26,6 +26,8 @@
 
 #include "AliLog.h"
 #include "AliTRDcluster.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDcluster)
 
@@ -237,18 +239,20 @@ Float_t AliTRDcluster::GetSumS() const
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcluster::GetXpos(Float_t t0, Float_t vd, Float_t *const q)
+Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const q, Double_t *const xq, Double_t z)
 {
 //
-// (Re)Calculate cluster position in the x direction in local chamber coordinates using all available information from tracking.
+// (Re)Calculate cluster position in the x direction in local chamber coordinates (with respect to the anode wire 
+// position) using all available information from tracking.
 // Input parameters:
-//   t0 - calibration aware trigger delay
-//   vd - drift velocity in the region of the cluster
-//   q  - array of chrges from previous clusters in the tracklet
+//   t0 - calibration aware trigger delay [us]
+//   vd - drift velocity in the region of the cluster [cm/us]
+//   z  - distance to the anode wire [cm]. By default 0.2 !!
+//   q & xq - array of charges and cluster positions from previous clusters in the tracklet [a.u.]
 // Output values :
-//   return x position of the cluster from all information
+//   return x position of the cluster with respect to the 
+//   anode wire using all tracking information
 //
-// X-position calculation
 // The estimation of the radial position is based on calculating the drift time and the drift velocity at the point of 
 // estimation. The drift time can be estimated according to the expression:
 // BEGIN_LATEX
@@ -269,7 +273,10 @@ Float_t AliTRDcluster::GetXpos(Float_t t0, Float_t vd, Float_t *const q)
 // Alex Bercuci <A.Bercuci@gsi.de>
 //
 
-  Double_t td = fPadTime + .5; // center of the time bin
+  AliTRDCommonParam *cp = AliTRDCommonParam::Instance(); 
+  Double_t fFreq = cp->GetSamplingFrequency();
+  //drift time corresponding to the center of the time bin
+  Double_t td = (fPadTime + .5)/fFreq; // [us] 
   if(td < t0+2.5) return 0.; // do not calculate radial posion of clusters in the amplification region
 
   // correction for t0
@@ -278,34 +285,35 @@ Float_t AliTRDcluster::GetXpos(Float_t t0, Float_t vd, Float_t *const q)
   Double_t x = vd*td, xold=0.;
   Float_t tc0   = 0.244, // TRF rising time 0.2us
           dtcdx = 0.009, // diffusion contribution to the rising time of the signal
-          kTC   = 0.,    // tail cancellation residual
-          kVD   = 0.;    // variation of the drift velocity with drift length
+          kTC   = 0.;    // tail cancellation residual
   while(TMath::Abs(x-xold)>1.e-3){ // convergence on 10um level 
     xold = x;
     Float_t tc  = tc0 - dtcdx*x; 
     Float_t tq  = 0.;
-    if(q){
-      for(Int_t iq=0; iq<3; iq++) tq += q[iq]*TMath::Exp(-kTC*x);
+    if(q && xq){
+      for(Int_t iq=0; iq<3; iq++) tq += q[iq]*TMath::Exp(-kTC*(x - xq[iq]));
     }
-    Float_t dvd = TMath::Exp(-kVD*x);
-    x    = (td - tc - tq) * (vd + dvd);
+    Float_t vdcorr = x/cp->TimeStruct(vd, x-.5*AliTRDgeometry::CamHght(), z);
+    x    = (td - tc - tq) * vdcorr;
   }
   return x;
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcluster::GetYpos(Float_t s2, Float_t W, Float_t *const yPos1, Float_t *const yPos2)
+Float_t AliTRDcluster::GetYloc(Double_t s2, Double_t W, Double_t xd, Double_t wt, Double_t *const y1, Double_t *const y2)
 {
 //
 // (Re)Calculate cluster position in the y direction in local chamber coordinates using all available information from tracking.
+//
 // Input parameters:
 //   s2 - sigma of gaussian parameterization (see bellow for the exact parameterization)
 //   W  - pad width
+//   xd - drift length (with respect to the anode wire) [cm]
+//   wt - omega*tau = tg(a_L)
 // Output values :
 //   y1 and y2 - partial positions based on 2 pads clusters
 //   return y position of the cluster from all information
 //
-// Y-position calculation 
 // Estimation of y coordinate is based on the gaussian approximation of the PRF. Thus one may
 // calculate the y position knowing the signals q_i-1, q_i and q_i+1 in the 3 adiacent pads by:
 // BEGIN_LATEX
@@ -322,19 +330,22 @@ Float_t AliTRDcluster::GetYpos(Float_t s2, Float_t W, Float_t *const yPos1, Floa
 // END_LATEX
 // with x being the drift length. The weights w_1 and w_2 are taken to be q_i-1^2 and q_i+1^2 respectively
 // 
-
+// Authors
+// Alex Bercuci <A.Bercuci@gsi.de>
+// Theodor Rascanu <trascanu@stud.uni-frankfurt.de>
+//
   Float_t y0 = GetY()-W*fCenter;
   Double_t w1 = fSignals[2]*fSignals[2];
   Double_t w2 = fSignals[4]*fSignals[4];
-  Float_t y1 = fSignals[2]>0 ? (y0 - .5*W + s2*TMath::Log(fSignals[3]/(Float_t)fSignals[2])/W) : 0.;
-  Float_t y2 = fSignals[4]>0 ? (y0 + .5*W + s2*TMath::Log(fSignals[4]/(Float_t)fSignals[3])/W) : 0.;
+  Float_t y1r = fSignals[2]>0 ? (y0 - .5*W + s2*TMath::Log(fSignals[3]/(Float_t)fSignals[2])/W) : 0.;
+  Float_t y2r = fSignals[4]>0 ? (y0 + .5*W + s2*TMath::Log(fSignals[4]/(Float_t)fSignals[3])/W) : 0.;
 
-  if(yPos1 && yPos2){
-    *yPos1 = y1;
-    *yPos2 = y2;
-  }
+  if(y1) (*y1) = y1r;
+  if(y2) (*y2) = y2r;
 
-  return (w1*y1+w2*y2)/(w1+w2);
+  Double_t ld  = TMath::Max(xd - 0.*AliTRDgeometry::CamHght(), 0.);
+
+  return (w1*y1r+w2*y2r)/(w1+w2) - ld*wt;
 }
 
 //_____________________________________________________________________________
