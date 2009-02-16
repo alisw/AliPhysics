@@ -18,6 +18,7 @@ class AliMUONDigitMaker;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMUONVClusterStore;
+class AliMUONVTrackerData;
 class AliMUONVTrackerDataMaker;
 
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
@@ -27,6 +28,8 @@ public:
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
   virtual ~AliMUONQADataMakerRec();
+  
+  AliMUONVTrackerData* GetTrackerData() const;
   
 protected:
 	

@@ -491,6 +491,22 @@ void AliMUONQADataMakerRec::InitRaws()
                       nbp,-0.5,nbp-0.5);
   
   Add2RawsList(hbp,kTrackerBusPatchOccupancy,!forExpert);
+
+  const Bool_t histogram(kFALSE);
+  const Bool_t fastDecoder(kTRUE);
+
+  fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(GetRecoParam(),
+							    AliCDBManager::Instance()->GetRun(),
+							    0x0,
+							    AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
+							    "NOGAIN",
+							    histogram,
+							    0.0,0.0,
+							    fastDecoder);
+		
+  fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
+	
+  fTrackerDataMaker->SetRunning(kTRUE);
   
 	fIsInitRaws = kTRUE;
 }
@@ -863,28 +879,7 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 void AliMUONQADataMakerRec::MakeRawsTracker(AliRawReader* rawReader)
 {
 	/// make QA for rawdata tracker
-  
-	if (!fTrackerDataMaker) 
-	{
-		const Bool_t histogram(kFALSE);
-		const Bool_t fastDecoder(kTRUE);
-    
-//    fTrackerDataMaker = new AliMUONTrackerRawDataMaker(rawReader,histogram,fastDecoder,takeRawReaderOwnership);
-
-		fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(GetRecoParam(),
-									  AliCDBManager::Instance()->GetRun(),
-									  rawReader,
-									  AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
-									  "NOGAIN",
-									  histogram,
-									  0.0,0.0,
-									  fastDecoder);
-		
-		fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
-		
-		fTrackerDataMaker->SetRunning(kTRUE);
-	}
-	
+  	
 	((AliMUONTrackerCalibratedDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
 	
 	fTrackerDataMaker->ProcessEvent();
@@ -1320,4 +1315,12 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
     deIt.Next();
   }
   return error;
+}
+
+//____________________________________________________________________________ 
+AliMUONVTrackerData* AliMUONQADataMakerRec::GetTrackerData() const
+{ 
+  
+  return fTrackerDataMaker->Data(); 
+  
 }
