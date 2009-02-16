@@ -59,6 +59,8 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
 {
   /// Read pedestal file (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
+  /// To be used when the input is a file (for instance when reading data 
+  /// from the OCDB).
   
   TString sFilename(gSystem->ExpandPathName(filename));
   
@@ -68,10 +70,29 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
     return kCannotOpenFile;
   }
   
+  TString datastring;
+  datastring.ReadFile(in);
+    
+  in.close();
+
+  return DecodePedestals(datastring,pedStore);
+  
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::DecodePedestals(TString data, AliMUONVStore& pedStore)
+{
+  /// Read pedestal Data (produced by the MUONTRKda.exe program for instance)
+  /// and append the read values into the given VStore
+  /// To be used when the input is a TString (for instance when getting data 
+  /// from AMORE DB).
+  
   char line[1024];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
   Int_t n(0);
+  istringstream in(data.Data());
   
   while ( in.getline(line,1024) )
   {
@@ -82,10 +103,9 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
     Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
     AliDebugClass(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d MEAN %7.2f SIGMA %7.2f",
                     busPatchID,detElemID,manuID,manuChannel,pedMean,pedSigma));
-    
+		    
     AliMUONVCalibParam* ped = 
       static_cast<AliMUONVCalibParam*>(pedStore.FindObject(detElemID,manuID));
-    
     if (!ped) 
     {
       ped = new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),
@@ -97,8 +117,6 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
     ped->SetValueAsFloat(manuChannel,1,pedSigma);
     ++n;
   }
-  
-  in.close();
 
   return n;
 }
@@ -110,6 +128,8 @@ AliMUONTrackerIO::ReadGains(const char* filename, AliMUONVStore& gainStore,
 {
   /// Read gain file (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
+  /// To be used when the input is a file (for instance when reading data 
+  /// from the OCDB).
   
   comment = "";
   
@@ -121,7 +141,31 @@ AliMUONTrackerIO::ReadGains(const char* filename, AliMUONVStore& gainStore,
     return kCannotOpenFile;
   }
   
+  TString datastring;
+  ostringstream stream;
   char line[1024];
+  while ( in.getline(line,1024) )
+  	stream << line << "\n";
+  datastring = TString(stream.str().c_str());
+  
+  in.close();
+  
+  return DecodeGains(datastring,gainStore,comment);
+
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
+                            TString& comment)
+{
+  /// Read gain file (produced by the MUONTRKda.exe program for instance)
+  /// and append the read values into the given VStore
+  /// To be used when the input is a TString (for instance when getting data 
+  /// from AMORE DB).
+  
+  char line[1024];
+  istringstream in(data.Data());
   Int_t busPatchID, manuID, manuChannel;
   Float_t a0, a1;
   Int_t thres;
@@ -203,7 +247,7 @@ AliMUONTrackerIO::ReadGains(const char* filename, AliMUONVStore& gainStore,
     AliMUONVCalibParam* gain = 
       static_cast<AliMUONVCalibParam*>(gainStore.FindObject(detElemID,manuID));
     
-    if (!gain) 
+   if (!gain) 
     {
       gain = new AliMUONCalibParamNF(5,AliMpConstants::ManuNofChannels(),detElemID,manuID,0);
       gainStore.Add(gain);
@@ -215,9 +259,7 @@ AliMUONTrackerIO::ReadGains(const char* filename, AliMUONVStore& gainStore,
     gain->SetValueAsInt(manuChannel,4,kSaturation);
     ++n;
   }
-  
-  in.close();
-  
+
   comment = "";
   
   if ( runNumber > 0 )

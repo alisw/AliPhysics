@@ -26,8 +26,10 @@ public:
   virtual ~AliMUONTrackerIO();
 
   static Int_t ReadPedestals(const char* filename, AliMUONVStore& pedStore);
+  static Int_t DecodePedestals(TString data, AliMUONVStore& pedStore);
   
   static Int_t ReadGains(const char* filename, AliMUONVStore& gainStore, TString& comment);
+  static Int_t DecodeGains(TString data, AliMUONVStore& gainStore, TString& comment);
   
   static Int_t ReadCapacitances(const char* filename, AliMUONVStore& capaStore);
   
