@@ -56,7 +56,7 @@ private:
   void AddManuHisto(TH1& h, Int_t detElemId, Int_t manuId) const;
   
 private:
-  const AliMUONVTrackerData& fData; ///< data we'll histogram 
+  const AliMUONVTrackerData& fkData; ///< data we'll histogram 
   Int_t fExternalDim; ///< (external) dimension we'll histogram
   Int_t fInternalDim; ///< (internal) dimension we'll make histogram for
   

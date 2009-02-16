@@ -92,14 +92,14 @@ private:
   
   Bool_t MainLoop(AliMUONCluster& cluster, Int_t iSimple); // repeat MLEM algorithm until pixels become sufficiently small
   
-  void   Mlem(AliMUONCluster& cluster, Double_t *coef, Double_t *probi, Int_t nIter); // use MLEM for cluster finding
+  void   Mlem(AliMUONCluster& cluster, const Double_t *coef, Double_t *probi, Int_t nIter); // use MLEM for cluster finding
   
   void   FindCOG(Double_t *xyc); // find COG position around maximum bin
-  Int_t  FindNearest(AliMUONPad *pixPtr0); // find nearest neighbouring pixel to the given one
+  Int_t  FindNearest(const AliMUONPad *pixPtr0); // find nearest neighbouring pixel to the given one
 
   Int_t FindLocalMaxima(TObjArray *pixArray, Int_t *localMax, Double_t *maxVal); // find local maxima 
   void  FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax); // flag local max
-  void  FindCluster(AliMUONCluster& cluster, Int_t *localMax, Int_t iMax); // find cluster around local max
+  void  FindCluster(AliMUONCluster& cluster, const Int_t *localMax, Int_t iMax); // find cluster around local max
   void  AddVirtualPad(AliMUONCluster& cluster); // add virtual pads for some clusters (if necessary)
   
   void  PadsInXandY(AliMUONCluster& cluster, Int_t &nInX, Int_t &nInY) const; // get number of pads in X and Y
@@ -139,7 +139,7 @@ private:
   Int_t fDetElemId; //!< current DE being processed
   Int_t fClusterNumber; //!< current cluster number
   
-  const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
+  const AliMpVSegmentation *fkSegmentation[2]; //!< new segmentation
   
   //Int_t fCathBeg;               //!< starting cathode (for combined cluster / track reco)
   //Int_t fPadBeg[2];             //!< starting pads (for combined cluster / track reco)

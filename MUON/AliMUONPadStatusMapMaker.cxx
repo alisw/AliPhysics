@@ -74,7 +74,7 @@ AliMUONPadStatusMapMaker::AliMUONPadStatusMapMaker(const AliMUONPadStatusMaker& 
                                                    Int_t mask,
                                                    Bool_t deferredInitialization) 
 : TObject(),
-fStatusMaker(padStatusMaker),
+fkStatusMaker(padStatusMaker),
 fMask(mask),
 fStatusMap(new AliMUON2DMap(true))
 {
@@ -119,9 +119,9 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
     AliFatal(Form("Could not add manu %d of de %d",manuId,detElemId));
   }
                                   
-  AliMUONVCalibParam* neighbours = fStatusMaker.Neighbours(detElemId,manuId);
+  AliMUONVCalibParam* neighbours = fkStatusMaker.Neighbours(detElemId,manuId);
   
-  AliMUONVCalibParam* statusParam = fStatusMaker.PadStatus(detElemId,manuId);
+  AliMUONVCalibParam* statusParam = fkStatusMaker.PadStatus(detElemId,manuId);
   
   Int_t n = neighbours->Dimension();
   
@@ -153,7 +153,7 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
       }
       else
       {
-        status = statusParam->ValueAsIntFast(c); //fStatusMaker.PadStatus(detElemId,m,c);
+        status = statusParam->ValueAsIntFast(c); //fkStatusMaker.PadStatus(detElemId,m,c);
       }
       if ( ( fMask==0 && status !=0 ) || ( (status & fMask) != 0 ) )
       {

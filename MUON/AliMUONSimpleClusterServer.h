@@ -57,7 +57,7 @@ private:
   
 private:
   AliMUONVClusterFinder* fClusterFinder; //!< the cluster finder (owner)
-  const AliMUONGeometryTransformer& fTransformer; //!< the geometry transformer (not owner)
+  const AliMUONGeometryTransformer& fkTransformer; //!< the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads
   AliMUONVTriggerTrackStore* fTriggerTrackStore; ///< trigger track store (if bypassing of St45 was requested) (not owner)
   AliMUONTriggerTrackToTrackerClusters* fBypass; ///< to convert trigger track into tracker clusters (owner)

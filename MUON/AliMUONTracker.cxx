@@ -71,23 +71,23 @@ AliMUONTracker::AliMUONTracker(const AliMUONRecoParam* recoParam,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit)
 : AliTracker(),
-fDigitMaker(digitMaker), // not owner
-fTransformer(transformer), // not owner
-fTriggerCircuit(triggerCircuit), // not owner
+fkDigitMaker(digitMaker), // not owner
+fkTransformer(transformer), // not owner
+fkTriggerCircuit(triggerCircuit), // not owner
 fTrackHitPatternMaker(0x0),
 fTrackReco(0x0),
 fClusterStore(0x0),
 fTriggerStore(0x0),
 fClusterServer(clusterServer), 
 fIsOwnerOfClusterServer(kFALSE),
-fDigitStore(digitStore), // not owner
+fkDigitStore(digitStore), // not owner
 fInputClusterStore(0x0),
 fTriggerTrackStore(0x0),
-fRecoParam(recoParam)
+fkRecoParam(recoParam)
 {
   /// constructor
-  if (fTransformer && fDigitMaker)
-    fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fTransformer,*fDigitMaker);
+  if (fkTransformer && fkDigitMaker)
+    fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fkTransformer,*fkDigitMaker);
   
   if (!fClusterServer)
   {
@@ -96,7 +96,7 @@ fRecoParam(recoParam)
   }
   else
   {
-    TIter next(fDigitStore.CreateIterator());
+    TIter next(fkDigitStore.CreateIterator());
     fClusterServer->UseDigits(next);
     
     SetupClusterServer(*fClusterServer);
@@ -172,7 +172,7 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
       fInputClusterStore->Connect(*clustersTree,kFALSE);
     }
     delete fClusterServer;
-    fClusterServer = new AliMUONLegacyClusterServer(*fTransformer,fInputClusterStore,
+    fClusterServer = new AliMUONLegacyClusterServer(*fkTransformer,fInputClusterStore,
 																										GetRecoParam()->BypassSt4(),
 																										GetRecoParam()->BypassSt5());
     SetupClusterServer(*fClusterServer);
@@ -212,10 +212,10 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   }
 
   // Make trigger tracks
-  if ( fTriggerCircuit ) 
+  if ( fkTriggerCircuit ) 
   {
     TriggerTrackStore()->Clear();
-    fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
+    fTrackReco->EventReconstructTrigger(*fkTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
   }
   
   if ( ( GetRecoParam()->BypassSt4() || 
@@ -252,7 +252,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 }
 
 //_____________________________________________________________________________
-void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
+void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
 {
   /// Fill the ESD from the trackStore
   AliDebug(1,"");
@@ -278,8 +278,8 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
       
       if (track->GetMatchTrigger() > 0) {
 	locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(track->LoCircuit()));
-	AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fDigitStore, locTrg);
-      } else AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fDigitStore);
+	AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fkDigitStore, locTrg);
+      } else AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fkDigitStore);
       
       esd->AddMuonTrack(&esdTrack);
     }

@@ -51,7 +51,7 @@ AliMUONTrackerDataHistogrammer::AliMUONTrackerDataHistogrammer(const AliMUONVTra
                                                                Int_t externalDim,
                                                                Int_t internalDim)
 : TObject(),
-fData(data),
+fkData(data),
 fExternalDim(externalDim),
 fInternalDim(internalDim)
 {
@@ -93,7 +93,7 @@ AliMUONTrackerDataHistogrammer::AddBusPatchHisto(TH1& h, Int_t busPatchId) const
 {
   /// Add data from one bus patch to the histogram
   
-  if ( fData.HasBusPatch(busPatchId ) )
+  if ( fkData.HasBusPatch(busPatchId ) )
   {
     AliMpBusPatch* busPatch = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
     for ( Int_t i = 0; i < busPatch->GetNofManus(); ++i ) 
@@ -109,7 +109,7 @@ AliMUONTrackerDataHistogrammer::AddDEHisto(TH1& h, Int_t detElemId) const
 {
   /// Add data from one detection element to the histogram
   
-  if ( fData.HasDetectionElement(detElemId) )
+  if ( fkData.HasDetectionElement(detElemId) )
   {
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
     for ( Int_t i = 0; i < de->GetNofBusPatches(); ++ i ) 
@@ -126,21 +126,21 @@ AliMUONTrackerDataHistogrammer::AddManuHisto(TH1& h, Int_t detElemId, Int_t manu
 {
   /// Add data from a given manu to histogram
   
-  if ( fData.HasManu(detElemId,manuId) )
+  if ( fkData.HasManu(detElemId,manuId) )
   {
-    if ( fData.IsChannelLevelEnabled() )
+    if ( fkData.IsChannelLevelEnabled() )
     {
       for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
       {
-        if ( fData.HasChannel(detElemId,manuId,i) )
+        if ( fkData.HasChannel(detElemId,manuId,i) )
         {
           if ( IsInternalMode() ) 
           {
-            h.Fill(fData.Channel(detElemId,manuId,i,fInternalDim));
+            h.Fill(fkData.Channel(detElemId,manuId,i,fInternalDim));
           }
           else
           {
-            AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,i,fExternalDim);
+            AliMUONSparseHisto* sh = fkData.GetChannelSparseHisto(detElemId,manuId,i,fExternalDim);
             
             if ( sh ) 
             {       
@@ -154,11 +154,11 @@ AliMUONTrackerDataHistogrammer::AddManuHisto(TH1& h, Int_t detElemId, Int_t manu
     {
       if ( IsInternalMode() ) 
       {
-        h.Fill(fData.Manu(detElemId,manuId,fInternalDim));
+        h.Fill(fkData.Manu(detElemId,manuId,fInternalDim));
       }
       else
       {
-        AliMUONSparseHisto* sh = fData.GetManuSparseHisto(detElemId,manuId,fExternalDim);
+        AliMUONSparseHisto* sh = fkData.GetManuSparseHisto(detElemId,manuId,fExternalDim);
         if (sh)
         {
           Add(h,*sh);
@@ -178,15 +178,15 @@ AliMUONTrackerDataHistogrammer::CreateChannelHisto(Int_t detElemId,
   /// to keep memory footprint as low as possible, you should delete
   /// the returned pointer as soon as possible...
   
-  if ( fData.HasChannel(detElemId, manuId, manuChannel) && fData.IsHistogrammed(fExternalDim) )
+  if ( fkData.HasChannel(detElemId, manuId, manuChannel) && fkData.IsHistogrammed(fExternalDim) )
   {
-    AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,manuChannel);
+    AliMUONSparseHisto* sh = fkData.GetChannelSparseHisto(detElemId,manuId,manuChannel);
     
     if ( sh ) 
     {
       Int_t nbins((1<<sh->Nbits()));
       Double_t xmin,xmax;
-      fData.HistogramRange(xmin,xmax);
+      fkData.HistogramRange(xmin,xmax);
       
       TH1* h = CreateHisto(Form("DE%04dMANU%04dCH%02d",detElemId,manuId,manuChannel),
                            nbins,xmin,xmax);
@@ -328,10 +328,10 @@ AliMUONTrackerDataHistogrammer::CreateManuHisto(Int_t detElemId, Int_t manuId,
   
   TH1* h(0x0);
   
-  if ( !fData.HasManu(detElemId,manuId) ) return 0x0;
+  if ( !fkData.HasManu(detElemId,manuId) ) return 0x0;
   
-  if ( ( fExternalDim >= 0 && fData.IsHistogrammed(fExternalDim) ) ||
-       ( fInternalDim >= 0 && fInternalDim < fData.NumberOfDimensions() ) )
+  if ( ( fExternalDim >= 0 && fkData.IsHistogrammed(fExternalDim) ) ||
+       ( fInternalDim >= 0 && fInternalDim < fkData.NumberOfDimensions() ) )
   {
     h = CreateHisto(Form("DE%04dMANU%04d",detElemId,manuId),
                     nbins,xmin,xmax);
@@ -367,9 +367,9 @@ AliMUONTrackerDataHistogrammer::GetDataRange(const TObjArray& manuArray,
     
     for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
     {
-      if ( fData.HasChannel(detElemId,manuId,i) ) 
+      if ( fkData.HasChannel(detElemId,manuId,i) ) 
       {
-        Double_t value = fData.Channel(detElemId,manuId,i,fInternalDim);
+        Double_t value = fkData.Channel(detElemId,manuId,i,fInternalDim);
 				
 				if ( ! TMath::Finite(value) )
 				{

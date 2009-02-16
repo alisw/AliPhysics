@@ -46,7 +46,7 @@ private:
   /// not defined
   AliMUONLegacyClusterServer& operator=(const AliMUONLegacyClusterServer& rhs);
 
-  const AliMUONGeometryTransformer& fTransformer; //!< geometry convertor
+  const AliMUONGeometryTransformer& fkTransformer; //!< geometry convertor
 	AliMUONVClusterStore* fClusterStore; //!< cluster store 
 	AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
 	AliMUONTriggerTrackToTrackerClusters* fBypass; //!< bypass 

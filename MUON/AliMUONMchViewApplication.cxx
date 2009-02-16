@@ -282,6 +282,8 @@ AliMUONMchViewApplication::Open(const char* filename)
 void
 AliMUONMchViewApplication::ReadDir(TDirectory& dir)
 {
+  /// Read the given directory and import VTrackerData objects found
+  
   TList* keys = dir.GetListOfKeys();
   TIter next(keys);
   

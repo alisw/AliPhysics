@@ -39,13 +39,13 @@ public:
 
   AliMUONVTrackerData* InteractiveReadOutConfig() const;
   
-  void DataSourceWasRegistered(AliMUONVTrackerData* data); // *SIGNAL*
+  void DataSourceWasRegistered(const AliMUONVTrackerData* data); // *SIGNAL*
   
-  void DataSourceWasUnregistered(AliMUONVTrackerData* data); // *SIGNAL*
+  void DataSourceWasUnregistered(const AliMUONVTrackerData* data); // *SIGNAL*
 
-  void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasRegistered(const AliMUONVTrackerDataMaker* reader); // *SIGNAL*
   
-  void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* reader); // *SIGNAL*
   
   Int_t FindIndexOf(AliMUONPainterMatrix* group) const;
   
@@ -66,11 +66,11 @@ public:
   
   void AddToHistory(AliMUONPainterMatrix* group);
     
-  void PainterMatrixWasRegistered(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWasRegistered(const AliMUONPainterMatrix* group); // *SIGNAL*
   
-  void PainterMatrixWasUnregistered(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWasUnregistered(const AliMUONPainterMatrix* group); // *SIGNAL*
   
-  void PainterMatrixWantToShow(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWantToShow(const AliMUONPainterMatrix* group); // *SIGNAL*
   
   void Print(Option_t* opt) const;
   

@@ -180,7 +180,7 @@ private:
     kManuOccupancyTooHigh = (1<<2)
   };
   
-  const AliMUONCalibrationData& fCalibrationData; //!< helper class to get data access (not owner)
+  const AliMUONCalibrationData& fkCalibrationData; //!< helper class to get data access (not owner)
   
   TVector2 fGainA1Limits; //!< Low and High threshold for gain a0 parameter
   TVector2 fGainA2Limits; //!< Low and High threshold for gain a1 parameter

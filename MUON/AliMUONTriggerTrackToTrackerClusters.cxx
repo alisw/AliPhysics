@@ -48,7 +48,7 @@ ClassImp(AliMUONTriggerTrackToTrackerClusters)
 //_____________________________________________________________________________
 AliMUONTriggerTrackToTrackerClusters::AliMUONTriggerTrackToTrackerClusters(const AliMUONGeometryTransformer& transformer,
                                                                            AliMUONVTriggerTrackStore* trackStore)
-: TObject(), fTransformer(transformer), fTriggerTrackStore(trackStore)
+: TObject(), fkTransformer(transformer), fTriggerTrackStore(trackStore)
 {
   /// ctor. We do not take ownership of the trigger track store.
 }
@@ -77,13 +77,13 @@ AliMUONTriggerTrackToTrackerClusters::DetElemId(Int_t chamber, Double_t x, Doubl
   {
     Int_t detElemId = it.CurrentDEId();
     
-    AliMpArea* area = fTransformer.GetDEArea(detElemId);
+    AliMpArea* area = fkTransformer.GetDEArea(detElemId);
     
     if ( area->Overlap(a) ) 
     {
       // get z of the center of that DE.
       Double_t dummyx, dummyy;
-      fTransformer.Local2Global(detElemId,0,0,0,dummyx,dummyy,z);
+      fkTransformer.Local2Global(detElemId,0,0,0,dummyx,dummyy,z);
       return detElemId;
     }
     it.Next();

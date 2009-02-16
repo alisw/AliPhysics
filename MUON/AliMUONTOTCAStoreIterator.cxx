@@ -39,7 +39,7 @@ AliMUONTOTCAStoreIterator::AliMUONTOTCAStoreIterator(const TObjArray* data,
                                                      Int_t lastChamberId)
 : 
 TIterator(),
-fData(data),
+fkData(data),
 fFirstChamberId(firstChamberId),
 fLastChamberId(lastChamberId),
 fCurrentTCA(0x0),
@@ -75,7 +75,7 @@ AliMUONTOTCAStoreIterator::operator=(const TIterator& rhs)
 AliMUONTOTCAStoreIterator::AliMUONTOTCAStoreIterator(const AliMUONTOTCAStoreIterator& rhs)
 : 
 TIterator(rhs),
-fData(0x0),
+fkData(0x0),
 fFirstChamberId(-1),
 fLastChamberId(-1),
 fCurrentTCA(0x0),
@@ -108,7 +108,7 @@ void
 AliMUONTOTCAStoreIterator::CopyTo(AliMUONTOTCAStoreIterator& destination) const
 {
   /// Copy *this to destination
-  destination.fData=fData;
+  destination.fkData=fkData;
   destination.fFirstChamberId=fFirstChamberId;
   destination.fLastChamberId=fLastChamberId;
   destination.fCurrentTCAIndex=fCurrentTCAIndex;
@@ -121,7 +121,7 @@ const TCollection*
 AliMUONTOTCAStoreIterator::GetCollection() const
 {
   /// The top level collection we're iterating upon, i.e. a TObjArray
-  return fData;
+  return fkData;
 }
 
 //_____________________________________________________________________________
@@ -143,7 +143,7 @@ AliMUONTOTCAStoreIterator::Next()
             fCurrentChamberId < fLastChamberId ) 
     {
       ++fCurrentChamberId;
-      fCurrentTCA = static_cast<TClonesArray*>(fData->At(fCurrentChamberId));
+      fCurrentTCA = static_cast<TClonesArray*>(fkData->At(fCurrentChamberId));
     }
   }
   

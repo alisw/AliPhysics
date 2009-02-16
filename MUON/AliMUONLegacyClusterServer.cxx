@@ -49,7 +49,7 @@ ClassImp(AliMUONLegacyClusterServer)
 AliMUONLegacyClusterServer::AliMUONLegacyClusterServer(const AliMUONGeometryTransformer& transformer, 
 																											 AliMUONVClusterStore* store,
 																											 Bool_t bypassSt4, Bool_t bypassSt5)
-: AliMUONVClusterServer(), fTransformer(transformer), fClusterStore(store), fTriggerTrackStore(0x0),
+: AliMUONVClusterServer(), fkTransformer(transformer), fClusterStore(store), fTriggerTrackStore(0x0),
 fBypass(0x0),
 fBypassSt4(bypassSt4),
 fBypassSt5(bypassSt5)
@@ -122,7 +122,7 @@ AliMUONLegacyClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trac
   /// Tells us to use trigger track store, and thus to bypass St4 and/or 5 clusters
   fTriggerTrackStore = trackStore; // not owner
   delete fBypass;
-  fBypass = new AliMUONTriggerTrackToTrackerClusters(fTransformer,fTriggerTrackStore);
+  fBypass = new AliMUONTriggerTrackToTrackerClusters(fkTransformer,fTriggerTrackStore);
   return kTRUE;
 }
 

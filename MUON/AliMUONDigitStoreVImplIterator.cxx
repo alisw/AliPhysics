@@ -40,7 +40,7 @@ ClassImp(AliMUONDigitStoreVImplIterator)
 //_____________________________________________________________________________
 AliMUONDigitStoreVImplIterator::AliMUONDigitStoreVImplIterator(const AliMUONDigitStoreVImpl* store)
 : TIterator(),
-fStore(store),
+fkStore(store),
 fFirstDetElemId(100),
 fLastDetElemId(1417),
 fCathode(2),
@@ -57,7 +57,7 @@ AliMUONDigitStoreVImplIterator::AliMUONDigitStoreVImplIterator(const AliMUONDigi
                                                                Int_t lastDE,
                                                                Int_t cathode)
 : TIterator(),
-fStore(store),
+fkStore(store),
 fFirstDetElemId(firstDE),
 fLastDetElemId(lastDE),
 fCathode(cathode),
@@ -108,7 +108,7 @@ AliMUONDigitStoreVImplIterator::Next()
     
     if (ix>=0)
     {
-      d = static_cast<AliMUONVDigit*>(fStore->fDigits->UncheckedAt(ix));
+      d = static_cast<AliMUONVDigit*>(fkStore->fDigits->UncheckedAt(ix));
     }  
   }
   else
@@ -122,7 +122,7 @@ AliMUONDigitStoreVImplIterator::Next()
     
       if (ix>=0)
       {
-        d = static_cast<AliMUONVDigit*>(fStore->fDigits->UncheckedAt(ix));
+        d = static_cast<AliMUONVDigit*>(fkStore->fDigits->UncheckedAt(ix));
         
         if (  fCathode == 2 || d->Cathode() == fCathode ) 
         {

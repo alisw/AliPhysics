@@ -151,7 +151,7 @@ fNAddVirtualPads(0)
 {
   /// Constructor
  
-  fSegmentation[1] = fSegmentation[0] = 0x0; 
+  fkSegmentation[1] = fkSegmentation[0] = 0x0; 
 
   if (fPlot) fDebug = 1;
 }
@@ -177,7 +177,7 @@ AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
   
   for ( Int_t i = 0; i < 2; ++i )
   {
-    fSegmentation[i] = seg[i];
+    fkSegmentation[i] = seg[i];
   }
   
   // Find out the DetElemId
@@ -415,7 +415,7 @@ AliMUONClusterFinderPeakFit::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
       Int_t cath = pad->Cathode();
       Int_t cath1 = TMath::Even(cath);
       // Check for edge effect (missing pads on the _other_ cathode)
-      AliMpPad mpPad = fSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
+      AliMpPad mpPad = fkSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
       if (!mpPad.IsValid()) continue;
       //if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
       if (nFlags == 1 && pad->Charge() < 20) continue;
@@ -890,8 +890,8 @@ void AliMUONClusterFinderPeakFit::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int
 }
 
 //_____________________________________________________________________________
-void AliMUONClusterFinderPeakFit::FindClusterFit(AliMUONCluster& cluster, Int_t *localMax, 
-						 Int_t *maxPos, Int_t nMax)
+void AliMUONClusterFinderPeakFit::FindClusterFit(AliMUONCluster& cluster, const Int_t *localMax, 
+                                                 const Int_t *maxPos, Int_t nMax)
 {
 /// Fit pad charge distribution with nMax hit hypothesis
 
@@ -984,7 +984,7 @@ void AliMUONClusterFinderPeakFit::FindClusterFit(AliMUONCluster& cluster, Int_t 
 
 //_____________________________________________________________________________
 void AliMUONClusterFinderPeakFit::FindClusterCOG(AliMUONCluster& cluster, 
-						 Int_t *localMax, Int_t iMax)
+                                                 const Int_t *localMax, Int_t iMax)
 {
 /// Find COG of pad charge distribution around local maximum \a iMax 
 

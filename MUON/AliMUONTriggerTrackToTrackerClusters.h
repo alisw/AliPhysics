@@ -43,7 +43,7 @@ private:
   AliMUONTriggerTrackToTrackerClusters& operator=(const AliMUONTriggerTrackToTrackerClusters& rhs);
   
 private:
-    const AliMUONGeometryTransformer& fTransformer; ///< to go from local to global
+    const AliMUONGeometryTransformer& fkTransformer; ///< to go from local to global
     AliMUONVTriggerTrackStore* fTriggerTrackStore; ///< not owner
   
   ClassDef(AliMUONTriggerTrackToTrackerClusters,1) // Convertor of trigger tracks to tracker clusters

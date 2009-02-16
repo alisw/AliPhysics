@@ -217,7 +217,7 @@ AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
       }
       if ( n ) hvValue /= n;
       
-      Int_t N(AliMpConstants::ManuNofChannels());
+      Int_t nofChannels(AliMpConstants::ManuNofChannels());
       
       for ( Int_t k = 0 ; k < manus->GetSize(); ++k )
       {
@@ -225,10 +225,10 @@ AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
         AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(store->FindObject(detElemId,manuId));
         if ( ! param ) 
         {
-          param = new AliMUONCalibParamND(1,N,detElemId,manuId,0);
+          param = new AliMUONCalibParamND(1,nofChannels,detElemId,manuId,0);
           store->Add(param);
         }
-        for ( Int_t j = 0 ; j < N; ++j )
+        for ( Int_t j = 0 ; j < nofChannels; ++j )
         {
           param->SetValueAsDouble(j,0,hvValue);
         }

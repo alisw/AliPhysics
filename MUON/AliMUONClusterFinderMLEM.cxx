@@ -85,7 +85,7 @@ fNAddVirtualPads(0)
 {
   /// Constructor
  
-  fSegmentation[1] = fSegmentation[0] = 0x0; 
+  fkSegmentation[1] = fkSegmentation[0] = 0x0; 
 
   if (fPlot) fDebug = 1;
 }
@@ -114,7 +114,7 @@ AliMUONClusterFinderMLEM::Prepare(Int_t detElemId,
   
   for ( Int_t i = 0; i < 2; ++i )
   {
-    fSegmentation[i] = seg[i];
+    fkSegmentation[i] = seg[i];
   }
   
   // Find out the DetElemId
@@ -363,7 +363,7 @@ AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
       Int_t cath = pad->Cathode();
       Int_t cath1 = TMath::Even(cath);
       // Check for edge effect (missing pads on the _other_ cathode)
-      AliMpPad mpPad = fSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
+      AliMpPad mpPad = fkSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
       if (!mpPad.IsValid()) continue;
       //if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
       if (nFlags == 1 && pad->Charge() < 20) continue;
@@ -1125,7 +1125,7 @@ void AliMUONClusterFinderMLEM::MaskPeaks(Int_t mask)
 
 //_____________________________________________________________________________
 void AliMUONClusterFinderMLEM::Mlem(AliMUONCluster& cluster, 
-                                    Double_t* coef, Double_t* probi, 
+                                    const Double_t* coef, Double_t* probi, 
                                     Int_t nIter)
 {
   /// Use MLEM to find pixel charges
@@ -1279,7 +1279,7 @@ void AliMUONClusterFinderMLEM::FindCOG(Double_t *xyc)
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONClusterFinderMLEM::FindNearest(AliMUONPad *pixPtr0)
+Int_t AliMUONClusterFinderMLEM::FindNearest(const AliMUONPad *pixPtr0)
 {
 /// Find the pixel nearest to the given one
 /// (algorithm may be not very efficient)
@@ -1459,7 +1459,7 @@ void AliMUONClusterFinderMLEM::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t 
 
 //_____________________________________________________________________________
 void AliMUONClusterFinderMLEM::FindCluster(AliMUONCluster& cluster, 
-                                           Int_t *localMax, Int_t iMax)
+                                           const Int_t *localMax, Int_t iMax)
 {
 /// Find pixel cluster around local maximum \a iMax and pick up pads
 /// overlapping with it
@@ -1660,8 +1660,8 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
       TVector2 pos;
       if (inb == 0) pos.Set (pad->X() + idir * (pad->DX()+fgkDistancePrecision), pad->Y());
       else pos.Set (pad->X(), pad->Y() + idir * (pad->DY()+fgkDistancePrecision));
-      //AliMpPad mppad = fSegmentation[nonb[inb]]->PadByPosition(pos,kTRUE);
-      AliMpPad mppad = fSegmentation[nonb[inb]]->PadByPosition(pos,kFALSE);
+      //AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kTRUE);
+      AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kFALSE);
       if (!mppad.IsValid()) continue; // non-existing pad
       cn = mppad.GetIndices();
       AliMUONPad muonPad(fDetElemId, nonb[inb], cn.GetFirst(), cn.GetSecond(), 

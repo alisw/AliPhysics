@@ -45,7 +45,7 @@ private:
   /// Overriden TIterator virtual operator=
   AliMUONDigitStoreVImplIterator& operator=(const TIterator& rhs);
 
-  const AliMUONDigitStoreVImpl* fStore; //!< store to iterate upon
+  const AliMUONDigitStoreVImpl* fkStore; //!< store to iterate upon
   Int_t fFirstDetElemId; //!< first de
   Int_t fLastDetElemId; //!< last de
   Int_t fCathode; //!< cathode (-1 for both)

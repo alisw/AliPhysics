@@ -80,7 +80,7 @@ namespace
 AliMUONPreClusterFinderV3::AliMUONPreClusterFinderV3()
 : AliMUONVClusterFinder(),
   fClusters(new TClonesArray("AliMUONCluster",10)),
-  fSegmentations(0x0),
+  fkSegmentations(0x0),
   fPads(0x0),
   fDetElemId(0),
   fIterator(0x0)
@@ -135,7 +135,7 @@ AliMUONPreClusterFinderV3::Prepare(Int_t detElemId,
     AliError("Handling of area not yet implemented for this class. Please check.");
   }
   
-  fSegmentations = seg;
+  fkSegmentations = seg;
   fPads = pads;
   
   fClusters->Clear("C");

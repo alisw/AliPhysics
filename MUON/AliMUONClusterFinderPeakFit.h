@@ -74,8 +74,8 @@ private:
   
   Int_t FindLocalMaxima(TObjArray *pixArray, Int_t *localMax, Double_t *maxVal); // find local maxima 
   void  FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax); // flag local max
-  void  FindClusterCOG(AliMUONCluster& cluster, Int_t *localMax, Int_t iMax); // find cluster around local max with COG
-  void  FindClusterFit(AliMUONCluster& cluster, Int_t *localMax, Int_t *maxPos, Int_t nMax); // find cluster around local max with fitting
+  void  FindClusterCOG(AliMUONCluster& cluster, const Int_t *localMax, Int_t iMax); // find cluster around local max with COG
+  void  FindClusterFit(AliMUONCluster& cluster, const Int_t *localMax, const Int_t *maxPos, Int_t nMax); // find cluster around local max with fitting
   void  PadsInXandY(AliMUONCluster& cluster, Int_t &nInX, Int_t &nInY) const; // get number of pads in X and Y
 
   void CheckOverlaps();
@@ -106,7 +106,7 @@ private:
   Int_t fNMax; //!< number of local maxima
   TH2D *fHistAnode; //!< histo for local maxima search
   
-  const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
+  const AliMpVSegmentation *fkSegmentation[2]; //!< new segmentation
   
   TObjArray* fPixArray; //!< collection of pixels
   Int_t fDebug; //!< debug level

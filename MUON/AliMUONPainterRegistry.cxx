@@ -73,6 +73,7 @@ AliMUONPainterRegistry::~AliMUONPainterRegistry()
 void
 AliMUONPainterRegistry::CreateInteractiveReadOutConfig() const
 {
+  /// Create configuration of readout
   fInteractiveReadOutConfig = new AliMUONTrackerData("IROC","IROC",1);
   fInteractiveReadOutConfig->SetDimensionName(0,"Switch");
     /// FIXME: should use a version of TrackerData w/ no storage for channels
@@ -119,7 +120,7 @@ AliMUONPainterRegistry::DataSource(Int_t i) const
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::DataMakerWasRegistered(AliMUONVTrackerDataMaker* data)
+AliMUONPainterRegistry::DataMakerWasRegistered(const AliMUONVTrackerDataMaker* data)
 {
   /// A new reader source was registered
   Long_t param[] = { (Long_t)data };
@@ -129,7 +130,7 @@ AliMUONPainterRegistry::DataMakerWasRegistered(AliMUONVTrackerDataMaker* data)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterRegistry::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* data)
+AliMUONPainterRegistry::DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* data)
 {
   /// A data reader was unregistered
   Long_t param[] = { (Long_t)data };
@@ -140,7 +141,7 @@ AliMUONPainterRegistry::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* data)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::DataSourceWasRegistered(AliMUONVTrackerData* data)
+AliMUONPainterRegistry::DataSourceWasRegistered(const AliMUONVTrackerData* data)
 {
   /// A new data source was registered
   Long_t param[] = { (Long_t)data };
@@ -150,7 +151,7 @@ AliMUONPainterRegistry::DataSourceWasRegistered(AliMUONVTrackerData* data)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterRegistry::DataSourceWasUnregistered(AliMUONVTrackerData* data)
+AliMUONPainterRegistry::DataSourceWasUnregistered(const AliMUONVTrackerData* data)
 {
   /// A data source was unregistered
   Long_t param[] = { (Long_t)data };
@@ -245,7 +246,7 @@ AliMUONPainterRegistry::PainterMatrix(Int_t i) const
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWantToShow(const AliMUONPainterMatrix* group)
 {
   /// A given paintermatrix want to appear on screen
   Long_t param[] = { (Long_t)group };
@@ -299,7 +300,7 @@ AliMUONPainterRegistry::AddToHistory(AliMUONPainterMatrix* group)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasRegistered(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasRegistered(const AliMUONPainterMatrix* group)
 {
   /// A new painter matrix was registered
   Long_t param[] = { (Long_t)group };
@@ -309,7 +310,7 @@ AliMUONPainterRegistry::PainterMatrixWasRegistered(AliMUONPainterMatrix* group)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasUnregistered(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasUnregistered(const AliMUONPainterMatrix* group)
 {
   /// A painter matrix was unregistered
   Long_t param[] = { (Long_t)group };

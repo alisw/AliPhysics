@@ -67,7 +67,7 @@ private:
     kRightTopBit = 18
   };
   
-  const AliMUONPadStatusMaker& fStatusMaker; //!< to access pad statuses
+  const AliMUONPadStatusMaker& fkStatusMaker; //!< to access pad statuses
   Int_t fMask; //!< mask to be tested
   mutable AliMUONVStore* fStatusMap; //!< status map
   

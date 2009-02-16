@@ -69,7 +69,7 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder* cl
                                                        const AliMUONGeometryTransformer& transformer)
 : AliMUONVClusterServer(), 
   fClusterFinder(clusterFinder),
-  fTransformer(transformer),
+  fkTransformer(transformer),
   fPads(),
   fTriggerTrackStore(0x0),
   fBypass(0x0)
@@ -197,7 +197,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
           rawCluster->SetChi2(cluster->Chi2());
           
           Double_t xg, yg, zg;
-          fTransformer.Local2Global(detElemId, 
+          fkTransformer.Local2Global(detElemId, 
                                     cluster->Position().X(), cluster->Position().Y(), 
                                     0, xg, yg, zg);
           rawCluster->SetXYZ(xg, yg, zg);
@@ -230,7 +230,7 @@ AliMUONSimpleClusterServer::Global2Local(Int_t detElemId, const AliMpArea& globa
   
   Double_t zg = AliMUONConstants::DefaultChamberZ(AliMpDEManager::GetChamberId(detElemId));
   
-  fTransformer.Global2Local(detElemId,
+  fkTransformer.Global2Local(detElemId,
                              globalArea.Position().X(),globalArea.Position().Y(),zg,
                              xl,yl,zl);
   
@@ -249,7 +249,7 @@ AliMUONSimpleClusterServer::Overlap(Int_t detElemId,
   
   Bool_t overlap(kFALSE);
   
-  AliMpArea* globalDEArea = fTransformer.GetDEArea(detElemId);
+  AliMpArea* globalDEArea = fkTransformer.GetDEArea(detElemId);
   
   if (!globalDEArea) return kFALSE;
   
@@ -293,7 +293,7 @@ AliMUONSimpleClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trac
   /// Tells us to use trigger track store, and thus to bypass St45 clusters
   fTriggerTrackStore = trackStore; // not owner
   delete fBypass;
-  fBypass = new AliMUONTriggerTrackToTrackerClusters(fTransformer,fTriggerTrackStore);
+  fBypass = new AliMUONTriggerTrackToTrackerClusters(fkTransformer,fTriggerTrackStore);
   return kTRUE;
 }
 

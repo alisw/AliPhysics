@@ -42,7 +42,7 @@ ClassImp(AliMUONPreClusterFinderV2)
 AliMUONPreClusterFinderV2::AliMUONPreClusterFinderV2()
 : AliMUONVClusterFinder(),
   fClusters(0x0),
-  fSegmentations(0x0),
+  fkSegmentations(0x0),
   fPads(0x0),
   fDetElemId(0)
 {
@@ -91,7 +91,7 @@ AliMUONPreClusterFinderV2::Prepare(Int_t detElemId,
   fClusters = new TClonesArray("AliMUONCluster");
 
   fPads = pads;
-  fSegmentations = seg;
+  fkSegmentations = seg;
   
   fDetElemId = detElemId;
   
@@ -120,8 +120,8 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   
   // Check neighbours
   TObjArray neighbours;
-  AliMpPad p = fSegmentations[pad->Cathode()]->PadByIndices(AliMpIntPair(pad->Ix(),pad->Iy()),kTRUE);
-  Int_t nn = fSegmentations[pad->Cathode()]->GetNeighbours(p,neighbours);
+  AliMpPad p = fkSegmentations[pad->Cathode()]->PadByIndices(AliMpIntPair(pad->Ix(),pad->Iy()),kTRUE);
+  Int_t nn = fkSegmentations[pad->Cathode()]->GetNeighbours(p,neighbours);
   for (Int_t in = 0; in < nn; ++in) 
   {
     AliMpPad* p1 = static_cast<AliMpPad*>(neighbours.At(in));

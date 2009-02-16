@@ -36,7 +36,7 @@ private:
     void CopyTo(AliMUONTOTCAStoreIterator& destination) const;
   
 private:
-  const TObjArray* fData; //!< Pointer to data accessor
+  const TObjArray* fkData; //!< Pointer to data accessor
   Int_t fFirstChamberId;      //!< First chamber to iterate on
   Int_t fLastChamberId;       //!< Last chamber to iterate on      
   TClonesArray* fCurrentTCA;    //!< TClonesArray of the current chamber

@@ -48,7 +48,7 @@ private:
   
 private:
   TClonesArray* fClusters; //!< the clusters we've found (owner)
-  const AliMpVSegmentation** fSegmentations; //!< segmentations (not owner)
+  const AliMpVSegmentation** fkSegmentations; //!< segmentations (not owner)
   TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
   Int_t fDetElemId; //!< which DE we're considering
   

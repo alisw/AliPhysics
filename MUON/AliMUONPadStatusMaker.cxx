@@ -67,7 +67,7 @@ ClassImp(AliMUONPadStatusMaker)
 
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData)
-: fCalibrationData(calibData),
+: fkCalibrationData(calibData),
 fGainA1Limits(0,1E30),
 fGainA2Limits(-1E-30,1E30),
 fGainThresLimits(0,4095),
@@ -267,7 +267,7 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
   
   TString hvChannel(hvNamer.DCSChannelName(detElemId,sector));
   
-  TMap* hvMap = fCalibrationData.HV();
+  TMap* hvMap = fkCalibrationData.HV();
   TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(hvChannel.Data()));
   if (!hvPair)
   {
@@ -335,7 +335,7 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
   
   TString hvChannel(hvNamer.DCSChannelName(detElemId));
   
-  TMap* hvMap = fCalibrationData.HV();
+  TMap* hvMap = fkCalibrationData.HV();
   
   TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(hvChannel.Data()));
   if (!hvPair)
@@ -435,7 +435,7 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
   
   AliCodeTimerAuto("")
   
-  if ( !fCalibrationData.HV() ) return kMissing;
+  if ( !fkCalibrationData.HV() ) return kMissing;
 
   Long_t lint = fHV->GetValue(AliMpManuUID::BuildUniqueID(detElemId,manuId));
   
@@ -500,7 +500,7 @@ AliMUONVCalibParam*
 AliMUONPadStatusMaker::Neighbours(Int_t detElemId, Int_t manuId) const
 {
   /// Get the neighbours parameters for a given manu
-  AliMUONVStore* neighbourStore = fCalibrationData.Neighbours();
+  AliMUONVStore* neighbourStore = fkCalibrationData.Neighbours();
   return static_cast<AliMUONVCalibParam*>(neighbourStore->FindObject(detElemId,manuId));
 }
 
@@ -509,7 +509,7 @@ AliMUONVStore*
 AliMUONPadStatusMaker::NeighboursStore() const
 {
   /// Return the store containing all the neighbours
-  return fCalibrationData.Neighbours();
+  return fkCalibrationData.Neighbours();
 }
 
 //_____________________________________________________________________________
