@@ -222,11 +222,20 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
+  if(!fESD){
+    AliWarning("No ESD info available.");
+    return 0x0;
+  }
+
   if(track) fTrack = track;
   if(!fTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
+
+  ULong_t status;
+  status = fESD -> GetStatus();
+  if(!(status&AliESDtrack::kTPCout)) return 0x0;
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
@@ -258,6 +267,7 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("!nn");
   cTrack.CookPID();
+  if(!(cTrack.GetPIDquality() == 6)) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDLQ -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -272,12 +282,21 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
+  if(!fESD){
+    AliWarning("No ESD info available.");
+    return 0x0;
+  }
+
   if(track) fTrack = track;
   if(!fTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
+  ULong_t status;
+  status = fESD -> GetStatus();
+  if(!(status&AliESDtrack::kTPCout)) return 0x0;
+
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
@@ -307,6 +326,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("nn");
   cTrack.CookPID();
+  if(!(cTrack.GetPIDquality() == 6)) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDNN -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -332,7 +352,12 @@ TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
     return 0x0;
   }
   
+  ULong_t status;
+  status = fESD -> GetStatus();
+  if(!(status&AliESDtrack::kTPCout)) return 0x0;
+
   if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!(fTrack->GetPIDquality() == 6)) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");
@@ -649,13 +674,14 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
   TH1 *h1 = 0x0, *h=0x0;
   TH2 *h2 = 0x0;
   TList *content = 0x0;
-  TLegend *leg = new TLegend(.7, .7, .98, .98); leg->SetBorderSize(1);
   switch(ifig){
-  case kEfficiency:
+  case kEfficiency:{
+    TLegend *legEff = new TLegend(.7, .7, .98, .98);
+    legEff->SetBorderSize(1);
     content = (TList *)fGraph->FindObject("Efficiencies");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
-    leg->SetHeader("PID Method");
+    legEff->SetHeader("PID Method");
     g->Draw("apl");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("p (GeV/c)");
@@ -664,24 +690,27 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ax = g->GetHistogram()->GetYaxis();
     ax->SetTitle("#epsilon_{#pi}");
     ax->SetRangeUser(1.e-3, 1.e-1);
-    leg->AddEntry(g, "2D LQ", "pl");
+    legEff->AddEntry(g, "2D LQ", "pl");
     if(! (g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
     g->Draw("pl");
-    leg->AddEntry(g, "NN", "pl");
+    legEff->AddEntry(g, "NN", "pl");
     if(! (g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
     g->Draw("p");
-    leg->AddEntry(g, "ESD", "pl");
-    leg->Draw();
+    legEff->AddEntry(g, "ESD", "pl");
+    legEff->Draw();
     gPad->SetLogy();
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
     return kTRUE;
-  case kdEdx:
+  }
+  case kdEdx:{
     // save 2.0 GeV projection as reference
+    TLegend *legdEdx = new TLegend(.7, .7, .98, .98);
+    legdEdx->SetBorderSize(1);
     FIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kdEdx)))) break;
-    leg->SetHeader("Particle Species");
+    legdEdx->SetHeader("Particle Species");
     for(Int_t is = AliPID::kSPECIES-1; is>=0; is--){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY("px", bin, bin);
@@ -693,23 +722,26 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
         h1->GetYaxis()->SetTitle("<Entries>");
       }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
+      legdEdx->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
-    leg->Draw();
+    legdEdx->Draw();
     gPad->SetLogy();
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
     return kTRUE;
+  }
   case kdEdxSlice:
     break;
-  case kPH:
+  case kPH:{
     // save 2.0 GeV projection as reference
+    TLegend *legPH = new TLegend(.4, .7, .68, .98);
+    legPH->SetBorderSize(1);
     FIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kPH)))) break;;
-    leg->SetHeader("Particle Species");
+    legPH->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY("py", bin, bin);
@@ -722,21 +754,24 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
         h1->GetYaxis()->SetTitle("<PH> (a.u.)");
       }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
+      legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
     if(FIRST) break;
-    leg->Draw();
+    legPH->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
     return kTRUE;
-  case kNClus:
+  }
+  case kNClus:{
     // save 2.0 GeV projection as reference
+    TLegend *legNClus = new TLegend(.4, .7, .68, .98);
+    legNClus->SetBorderSize(1);
     FIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kNClus)))) break;
-    leg->SetHeader("Particle Species");
+    legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY("py", bin, bin);
@@ -748,24 +783,27 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
       if(FIRST) h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
       if(FIRST) h1->GetYaxis()->SetTitle("<Entries>");
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
+      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
-    leg->Draw();
+    legNClus->Draw();
     gPad->SetLogy();
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
     return kTRUE;
+  }
   case kMomentum:
   case kMomentumBin:
     break; 
-  case kThresh:
+  case kThresh:{
+    TLegend *legThre = new TLegend(.7, .3, .98, .58);
+    legThre->SetBorderSize(1);
     content = (TList *)fGraph->FindObject("Thresholds");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
-    leg->SetHeader("PID Method");
+    legThre->SetHeader("PID Method");
     g->Draw("apl");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("p (GeV/c)");
@@ -774,18 +812,19 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ax = g->GetHistogram()->GetYaxis();
     ax->SetTitle("threshold (%)");
     ax->SetRangeUser(5.e-2, 1.);
-    leg->AddEntry(g, "2D LQ", "pl");
+    legThre->AddEntry(g, "2D LQ", "pl");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
     g->Draw("pl");
-    leg->AddEntry(g, "NN", "pl");
+    legThre->AddEntry(g, "NN", "pl");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
     g->Draw("p");
-    leg->AddEntry(g, "ESD", "pl");
-    leg->Draw();
+    legThre->AddEntry(g, "ESD", "pl");
+    legThre->Draw();
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
     return kTRUE;
+  }
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
   return kFALSE;
