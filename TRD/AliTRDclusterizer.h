@@ -30,6 +30,7 @@ class AliTRDSignalIndex;
 class AliTRDtransform;
 class AliTRDCalROC;
 class AliTRDReconstructor;
+class AliTRDCalSingleChamberStatus;
 
 class AliTRDclusterizer : public TNamed 
 {
@@ -47,12 +48,13 @@ class AliTRDclusterizer : public TNamed
     Int_t       Col;
     Int_t       Time;
     UChar_t     padStatus;
-    Float_t     Signals[3];
-    MaxStruct():Row(0),Col(0),Time(0),padStatus(0)
+    Short_t     Signals[3];
+    Bool_t      FivePad;
+  MaxStruct():Row(-1),Col(0),Time(0),padStatus(0),FivePad(kFALSE)
       {}
     MaxStruct &operator=(const MaxStruct &a)
-      {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus;
-       memcpy(Signals, a.Signals, 3*sizeof(Signals[0])); return *this;}
+    {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus; FivePad=a.FivePad;
+     memcpy(Signals, a.Signals, 3*sizeof(Signals[0])); return *this;}
   };
   
   AliTRDclusterizer(const AliTRDReconstructor *const rec = 0x0);
@@ -107,8 +109,8 @@ class AliTRDclusterizer : public TNamed
   UChar_t          GetPadStatus(UChar_t encoding) const;
   Int_t            GetCorruption(UChar_t encoding) const;
 
-  Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Float_t *const Signals);       //for const correctness reasons not const parameters are given separately
-  Bool_t           IsFivePadCluster(const MaxStruct &ThisMax, const MaxStruct &NeighbourMax, Float_t &ratio); // ''
+  Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Short_t *const Signals);       //for const correctness reasons not const parameters are given separately
+  Bool_t           FivePadCluster(MaxStruct &ThisMax, MaxStruct &NeighbourMax);
   void             CreateCluster(const MaxStruct &Max); 
 
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
@@ -130,7 +132,7 @@ class AliTRDclusterizer : public TNamed
   Int_t                fLUTbin;              //  Number of bins of the LUT
   Double_t            *fLUT;                 //! The lookup table
 
-  AliTRDarrayADC      *fDigitsIn;
+  AliTRDarrayADC      *fDigits;
   AliTRDSignalIndex   *fIndexes;
   Float_t              fADCthresh;            // ADC thresholds: There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
   Float_t              fMaxThresh;            // Threshold value for the maximum
@@ -146,7 +148,7 @@ class AliTRDclusterizer : public TNamed
   Float_t              fCalGainFactorDetValue;// Calibration value for chamber wise noise
   AliTRDCalROC        *fCalNoiseROC;          // Calibration object with pad wise values for the noise
   Float_t              fCalNoiseDetValue;     // Calibration value for chamber wise noise
-  AliTRDarraySignal   *fDigitsOut;
+  AliTRDCalSingleChamberStatus *fCalPadStatusROC; //// Calibration object with the pad status
   Int_t                fClusterROC;           // The index to the first cluster of a given ROC
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
 

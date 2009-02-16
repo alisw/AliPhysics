@@ -40,8 +40,8 @@
 #include "AliTRDarrayADC.h"  //mod
 #include "AliTRDSignalIndex.h"
 #include "AliTRDrecoParam.h"
-#include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalPadStatus.h"
+//#include "AliTRDcalibDB.h" 
+//#include "Cal/AliTRDCalPadStatus.h" //is now read in clusterizer
 
 //[mj tracklet writing] #include "AliTRDrawTracklet.h"
 
@@ -739,7 +739,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
   // Return value is the detector number
   //
 
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  //AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDarrayADC *digits = 0;
   AliTRDarrayDictionary *track0 = 0;
   AliTRDarrayDictionary *track1 = 0;
@@ -855,7 +855,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
       indexes->Allocate(rowMax, colMax, ntbins);
   }
 
-      Char_t padStatus =  cal->GetPadStatus(det, GetCol(), GetRow());
+      //Char_t padStatus =  cal->GetPadStatus(det, GetCol(), GetRow());
 
       // ntimebins data are ready to read
       for (it = 0; it < GetNumberOfTimeBins(); it++)
@@ -863,8 +863,8 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
     if (GetSignals()[it] > 0)
       {
         digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
-        if(padStatus)
-	  digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
+        /*if(padStatus)
+	  digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);*/
 	
         indexes->AddIndexRC(GetRow(), GetCol());
               if (digitsManager->UsesDictionaries()) 
