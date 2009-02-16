@@ -58,10 +58,10 @@ class AliITSDetTypeRec : public TObject {
     virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
     virtual AliITSFastOrCalibrationSPD* GetFastOrCalibrationSPD() const { return fSPDFastOr;}
-    virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
-    virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
-    virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
-    virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype);
+    virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype) const;
+    virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
+    virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod) const;
+    virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype) const;
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
     virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
     virtual Bool_t IsHLTmodeC() const {return fIsHLTmodeC;}

@@ -79,7 +79,7 @@ fSDDChannelStatus(0)
   InitFromOCDB(deadArrSPD,noisArrSPD,calArrSDD);
 }
 //______________________________________________________________________
-AliITSChannelStatus::AliITSChannelStatus(AliITSDetTypeRec *dtrec):
+AliITSChannelStatus::AliITSChannelStatus(const AliITSDetTypeRec *dtrec):
 TObject(),
 fSPDChannelStatus(0),
 fSDDChannelStatus(0)

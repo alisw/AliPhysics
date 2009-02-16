@@ -26,7 +26,7 @@ class AliITSChannelStatus : public TObject {
  public:
   AliITSChannelStatus();
   AliITSChannelStatus(AliCDBManager *cdb);
-  AliITSChannelStatus(AliITSDetTypeRec *dtrec);
+  AliITSChannelStatus(const AliITSDetTypeRec *dtrec);
   AliITSChannelStatus(const AliITSChannelStatus& cstatus);
   AliITSChannelStatus& operator=(const AliITSChannelStatus& cstatus);
   virtual ~AliITSChannelStatus();

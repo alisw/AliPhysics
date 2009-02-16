@@ -196,7 +196,7 @@ void AliITSDetTypeRec::SetReconstructionModel(Int_t dettype,AliITSClusterFinder 
   fReconstruction->AddAt(clf,dettype);
 }
 //______________________________________________________________________
-AliITSClusterFinder* AliITSDetTypeRec::GetReconstructionModel(Int_t dettype){
+AliITSClusterFinder* AliITSDetTypeRec::GetReconstructionModel(Int_t dettype) const{
 
   //Get reconstruction model for detector type
   if(fReconstruction==0)  {
@@ -217,7 +217,7 @@ void AliITSDetTypeRec::SetSegmentationModel(Int_t dettype,AliITSsegmentation *se
 
 }
 //______________________________________________________________________
-AliITSsegmentation* AliITSDetTypeRec::GetSegmentationModel(Int_t dettype){
+AliITSsegmentation* AliITSDetTypeRec::GetSegmentationModel(Int_t dettype) const {
 
   //Get segmentation model for detector type
    
@@ -258,7 +258,7 @@ void AliITSDetTypeRec::SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal){
   fSPDDead->AddAt(cal,iMod);
 }
 //_______________________________________________________________________
-AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
+AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod) const {
   
   //Get calibration model for module type
   
@@ -277,7 +277,7 @@ AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
 
 }
 //_______________________________________________________________________
-AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod){
+AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod) const {
   
   //Get SPD dead for module iMod
   
