@@ -10,6 +10,7 @@ void SETUP()
     CheckLoadLibrary("libSTEERBase");
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
+    CheckLoadLibrary("libCORRFW");
     CheckLoadLibrary("libANALYSISalice");
     CheckLoadLibrary("libPWG3vertexingHF");
 
