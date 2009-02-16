@@ -15,14 +15,13 @@
 
 #include "TObject.h"
 #include "TH1I.h"
-#include "TList.h"
-
-#include "AliPID.h"
 
 class TF1;
 class TH2D;
 class TH1F;
+class TList;
 
+#include "AliPID.h"
 #include "AliCFContainer.h"
 class AliCFDataGrid;
 class AliAODEvent;
@@ -53,11 +52,11 @@ class AliProtonAnalysis : public TObject {
   void Analyze(AliAODEvent *fAOD);
   void Analyze(AliStack *stack, Bool_t iInclusive);
   
-  AliCFContainer *GetProtonContainer() {return fProtonContainer;}
-  AliCFContainer *GetAntiProtonContainer() {return fAntiProtonContainer;}
+  AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
+  AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
-  TH2D *GetProtonYPtHistogram() {return fHistYPtProtons;}
-  TH2D *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}
+  TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
+  TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
   TH1D *GetProtonYHistogram();
   TH1D *GetAntiProtonYHistogram();
   TH1D *GetProtonPtHistogram();
@@ -76,7 +75,7 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
 
-  TH1I *GetEventHistogram() {return fHistEvents;}
+  TH1I *GetEventHistogram() const {return fHistEvents;}
 
   Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
   Bool_t  PrintMean(TH1 *hist, Double_t edge);
@@ -149,9 +148,13 @@ class AliProtonAnalysis : public TObject {
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
 
   //Prior probabilities
-  void SetPriorProbabilities(Double_t *partFrac) {
+  void SetPriorProbabilities(Double_t * const partFrac) {
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
-  void SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
+  void SetPriorProbabilityFunctions(TF1 *const felectron, 
+				    TF1 *const fmuon, 
+				    TF1 *const fpion, 
+				    TF1 *const fkaon, 
+				    TF1 *const fproton) {
     fFunctionProbabilityFlag = kTRUE;
     fElectronFunction = felectron; 
     fMuonFunction = fmuon; 
@@ -164,12 +167,12 @@ class AliProtonAnalysis : public TObject {
   //interface to the correction framework
   void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
-  TList *GetCorrectionListProtons2D() {return fCorrectionListProtons2D;} 
-  TList *GetEfficiencyListProtons1D() {return fEfficiencyListProtons1D;} 
-  TList *GetCorrectionListProtons1D() {return fCorrectionListProtons1D;} 
-  TList *GetCorrectionListAntiProtons2D() {return fCorrectionListAntiProtons2D;} 
-  TList *GetEfficiencyListAntiProtons1D() {return fEfficiencyListAntiProtons1D;} 
-  TList *GetCorrectionListAntiProtons1D() {return fCorrectionListAntiProtons1D;} 
+  TList *GetCorrectionListProtons2D() const {return fCorrectionListProtons2D;} 
+  TList *GetEfficiencyListProtons1D() const {return fEfficiencyListProtons1D;} 
+  TList *GetCorrectionListProtons1D() const {return fCorrectionListProtons1D;} 
+  TList *GetCorrectionListAntiProtons2D() const {return fCorrectionListAntiProtons2D;} 
+  TList *GetEfficiencyListAntiProtons1D() const {return fEfficiencyListAntiProtons1D;} 
+  TList *GetCorrectionListAntiProtons1D() const {return fCorrectionListAntiProtons1D;} 
   
   //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
   TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
@@ -186,8 +189,8 @@ class AliProtonAnalysis : public TObject {
 		      AliESDtrack *track);
   Bool_t   IsInPhaseSpace(AliESDtrack *track);
 
-  Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
-  Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
+  Float_t  GetSigmaToVertex(AliESDtrack* esdTrack) const; 
+  Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz) const;
   
   Bool_t fAnalysisEtaMode; //run the analysis in eta or y
 
