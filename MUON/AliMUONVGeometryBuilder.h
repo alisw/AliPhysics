@@ -10,8 +10,8 @@
 ///
 /// \author Ivana Hrivnacova, IPN Orsay
 
-#ifndef ALI_MUON_V_GEOMETRY_BUILDER_H
-#define ALI_MUON_V_GEOMETRY_BUILDER_H
+#ifndef ALI_MUONV_GEOMETRY_BUILDER_H
+#define ALI_MUONV_GEOMETRY_BUILDER_H
 
 #include <fstream>
 
@@ -139,4 +139,4 @@ inline Int_t  AliMUONVGeometryBuilder::NofGeometries() const
 inline AliMUONGeometryModule* AliMUONVGeometryBuilder::Geometry(Int_t i) const
 { return (AliMUONGeometryModule*)fGeometryModules->At(i); }
 
-#endif //ALI_MUON_V_GEOMETRY_BUILDER_H
+#endif //ALI_MUONV_GEOMETRY_BUILDER_H

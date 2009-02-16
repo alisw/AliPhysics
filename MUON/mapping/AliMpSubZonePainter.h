@@ -10,8 +10,8 @@
 ///
 /// \author David Guez, IPN Orsay
 
-#ifndef ALI_MP_SUBZONE_PAINTER_H
-#define ALI_MP_SUBZONE_PAINTER_H
+#ifndef ALI_MP_SUB_ZONE_PAINTER_H
+#define ALI_MP_SUB_ZONE_PAINTER_H
 
 #include "AliMpVPainter.h"
 
@@ -42,4 +42,4 @@ class AliMpSubZonePainter : public AliMpVPainter
 
   ClassDef(AliMpSubZonePainter,1) // SubZone painter
 };
-#endif //ALI_MP_SUBZONE_PAINTER_H
+#endif //ALI_MP_SUB_ZONE_PAINTER_H

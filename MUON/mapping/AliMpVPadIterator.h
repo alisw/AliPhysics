@@ -10,8 +10,8 @@
 ///
 /// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
-#ifndef ALI_MP_VPAD_ITERATOR_H
-#define ALI_MP_VPAD_ITERATOR_H
+#ifndef ALI_MP_V_PAD_ITERATOR_H
+#define ALI_MP_V_PAD_ITERATOR_H
 
 #include <TObject.h>
 

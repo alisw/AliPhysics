@@ -9,8 +9,8 @@
 ///
 /// \author Ivana Hrivnacova, IPN Orsay
 
-#ifndef ALI_MUON_GMS_SUBPROCESSOR_H
-#define ALI_MUON_GMS_SUBPROCESSOR_H
+#ifndef ALI_MUONGMS_SUBPROCESSOR_H
+#define ALI_MUONGMS_SUBPROCESSOR_H
 
 #ifndef ALIMUONVSUBPROCESSOR_H
 #  include "AliMUONVSubprocessor.h"
@@ -51,4 +51,4 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     ClassDef(AliMUONGMSSubprocessor, 1) // Shuttle sub-processor for GMS
 };
 
-#endif
+#endif //ALI_MUONGMS_SUBPROCESSOR_H
