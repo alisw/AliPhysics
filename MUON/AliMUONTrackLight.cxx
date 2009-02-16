@@ -41,6 +41,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONTrackParam.h"
 
 #include "AliESDMuonTrack.h"
 #include "AliRunLoader.h"

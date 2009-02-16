@@ -28,11 +28,12 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONConstants.h"
+#include "AliMUONTrackParam.h"
 
 #include "AliLog.h"
 
 #include <TMath.h>
-#include <TMatrixD.h>
 
 #include <Riostream.h>
 

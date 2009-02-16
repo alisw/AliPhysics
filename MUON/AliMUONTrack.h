@@ -14,12 +14,12 @@
 /// Reconstructed track in ALICE dimuon spectrometer
 ////////////////////////////////////////////////////
 
-#include "AliMUONTrackParam.h" // object belongs to the class
-#include "AliMUONConstants.h"
 #include <TClonesArray.h>
+#include <TMatrixD.h>
 
 class AliMUONVCluster;
 class AliMUONObjectPair;
+class AliMUONTrackParam;
 
 class AliMUONTrack : public TObject 
 {

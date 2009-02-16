@@ -34,6 +34,7 @@
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTracker.h"
+#include "AliMUONTrackParam.h"
 #include "AliLog.h"
 
 //-----------------------------------------------------------------------------

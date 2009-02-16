@@ -36,6 +36,7 @@
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONTrackParam.h"
 #include "AliMpArea.h"
 #include "AliMpDEManager.h"
 #include <TMath.h>

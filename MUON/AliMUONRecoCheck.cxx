@@ -40,6 +40,7 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONConstants.h"
 #include "AliMUONESDInterface.h"
+#include "AliMUONTrackParam.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
