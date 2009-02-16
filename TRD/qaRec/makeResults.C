@@ -1,5 +1,5 @@
 // Usage:
-//   makeResults.C("tasks?file_list")
+//   makeResults.C("tasks", "file_list", kGRID)
 //   tasks : "ALL" or one/more of the following separated by space:
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
@@ -14,15 +14,30 @@
 //   file_list : is the list of the files to be processed. 
 //     They should contain the full path. Here is an example:
 // /lustre_alpha/alice/TRDdata/HEAD/1.0GeV/RUN0/TRD.TaskResolution.root
-// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN1/TRD.TaskResolution.root
-// /lustre_alpha/alice/TRDdata/HEAD/3.0GeV/RUN2/TRD.TaskResolution.root
-// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN0/TRD.TaskDetChecker.root
-// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN1/TRD.TaskDetChecker.root
-// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN2/TRD.TaskDetChecker.root
-// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN0/TRD.TaskTrackingEff.root
+// or for GRID alien:///alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/1/TRD.TaskDetChecker.root
+//   kGRID : specify if files are comming from a GRID collection [default kFALSE]
 //
-// The files which will be processed are the initersaction between the 
-// condition on the tasks and the files iin the file list.  
+// HOW TO BUILD THE FILE LIST
+//   1. locally
+// ls -1 BaseDir/TRD.Task*.root > files.lst
+// 
+//   2. on Grid
+// char *BaseDir="/alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/";
+// TGrid::Connect("alien://");
+// TGridResult *res = gGrid->Query(BaseDir, "%/TRD.Task%.root");
+// TGridCollection *col = gGrid->OpenCollectionQuery(res);
+// col->Reset();
+// TMap *map = 0x0;
+// while(map = (TMap*)col->Next()){
+//   TIter it((TCollection*)map);
+//   TObjString *info = 0x0;
+//   while(info=(TObjString*)it()){
+//     printf("alien://%s\n", col->GetLFN(info->GetString().Data()));
+//   }
+// }
+//
+// The files which will be processed are the intersection between the
+// condition on the tasks and the files in the file list.
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
@@ -52,8 +67,16 @@
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
 
-void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0)
+void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 {
+  if(kGRID){
+    if(!gSystem->Getenv("GSHELL_ROOT")){
+      printf("alien not initialized.\n");
+      return;
+    }
+    TGrid::Connect("alien://");
+  }
+
 	// Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
