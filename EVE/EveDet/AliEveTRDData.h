@@ -24,9 +24,8 @@
 #include <TEvePointSet.h>
 #include <TEveLine.h>
 
-
-#ifndef ALITRDDATAARRAYI_H
-#include "AliTRDdataArrayI.h"
+#ifndef ALITRDARRAYADC_H
+#include "AliTRDarrayADC.h"
 #endif
 
 class AliEveTRDChamber;
@@ -57,7 +56,7 @@ public:
   ~AliEveTRDDigits();
 
   void			ComputeRepresentation();
-  const AliTRDdataArrayI*	GetData() const {return fData.GetNelems() ? &fData : 0x0;}
+  const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : 0x0;}
   void			Paint(Option_t *opt="");
   void			Reset();
   void			SetData(AliTRDdigitsManager *digits);
@@ -67,7 +66,7 @@ protected:
 
 private:
   TEveBoxSet		fBoxes; // Boxset for didigit representation.
-  AliTRDdataArrayI	fData;  // Raw-data array.
+  AliTRDarrayADC	fData;  // Raw-data array.
 
   AliEveTRDDigits(const AliEveTRDDigits&);            // Not implemented
   AliEveTRDDigits& operator=(const AliEveTRDDigits&); // Not implemented

@@ -36,8 +36,6 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 
-class AliTRDdataArrayI;
-
 ClassImp(AliEveTRDLoader)
 ClassImp(AliEveTRDLoaderEditor)
 

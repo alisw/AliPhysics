@@ -32,7 +32,6 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayDigits.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDgeometry.h"
@@ -97,7 +96,7 @@ void AliEveTRDDigits::ComputeRepresentation()
     for (Int_t ic = 0; ic < ncols; ic++) {
       dy = pp->GetColSize(ic);
       for (Int_t it = 0; it < ntbs; it++) {
-        q = fData.GetDataUnchecked(ir, ic, it);
+        q = fData.GetData(ir, ic, it);
         if (q < threshold) continue;
 
         Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
@@ -115,7 +114,7 @@ void AliEveTRDDigits::ComputeRepresentation()
       }  // end time loop
     }  // end col loop
   }  // end row loop
-  fData.Compress(1);
+  fData.Compress();
   
   // rotate to global coordinates
   //RefitPlex();
@@ -150,12 +149,12 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
       }
       adc = data->GetData(row, col, time);
       if(adc <= 1) continue;
-      fData.SetDataUnchecked(row, col, time, adc);
+      fData.SetData(row, col, time, adc);
       //fIndex->AddIndexTBin(row,col,time);
       //printf("\tr[%d] c[%d] t[%d] ADC[%d]\n", row, col, time, adc);
     } 
   }
-  fData.Compress(1);
+  fData.Compress();
 }
 
 
@@ -175,7 +174,7 @@ void AliEveTRDDigits::Reset()
 
   TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
   // MT fBoxes.fBoxes.clear();
-  fData.Reset();
+  //fData.Reset();
 }
 
 ///////////////////////////////////////////////////////////
