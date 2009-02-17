@@ -568,8 +568,8 @@ public:
 	/// Returns the current local struct being decoded or NULL if none found.
 	const AliLocalStruct* CurrentLocalStruct() const
 	{
-		return (fCurrentLocalStruct != fDecoder.GetHandler().EndOfLocalStructs()) ?
-			fCurrentLocalStruct : NULL;
+		return (fkCurrentLocalStruct != fDecoder.GetHandler().EndOfLocalStructs()) ?
+			fkCurrentLocalStruct : NULL;
 	}
 
 	/// Returns the current regional structure being decoded
@@ -713,7 +713,7 @@ private:
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
 	UChar_t* fBuffer;   //!< This is the buffer in which we store the DDL payload read from AliRawReader.
-	const AliLocalStruct* fCurrentLocalStruct;  //!< The current local trigger structure being handled by Next().
+	const AliLocalStruct* fkCurrentLocalStruct;  //!< The current local trigger structure being handled by Next().
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
 	mutable AliMUONDDLTrigger* fDDLObject; //!< Temporary DDL object used by GetDDLTrigger() for caching.
@@ -731,8 +731,8 @@ inline const AliMUONRawStreamTriggerHP::AliLocalStruct* AliMUONRawStreamTriggerH
 	/// When no more local triggers are found then NULL is returned.
 
 	do {
-		if (fCurrentLocalStruct != fDecoder.GetHandler().EndOfLocalStructs())
-			return fCurrentLocalStruct++;
+		if (fkCurrentLocalStruct != fDecoder.GetHandler().EndOfLocalStructs())
+			return fkCurrentLocalStruct++;
 	} while (NextDDL());
 	return NULL;
 }

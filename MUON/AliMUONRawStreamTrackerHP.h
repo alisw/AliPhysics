@@ -13,9 +13,10 @@
 /// \brief  Declaration of the high performance decoder for muon trigger chamber raw streams.
 ///
 
-#include <cstring>
 #include "AliMUONVRawStreamTracker.h"
 #include "AliMUONTrackerDDLDecoder.h"
+
+#include <cstring>
 
 class AliMUONDDLTracker;
 
@@ -480,8 +481,8 @@ public:
 	/// Returns the current bus patch being decoded or NULL if none found.
 	const AliBusPatch* CurrentBusPatch() const
 	{
-		return (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch()) ?
-			fCurrentBusPatch : NULL;
+		return (fkCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch()) ?
+			fkCurrentBusPatch : NULL;
 	}
 
 	/// Returns the current DSP being decoded or NULL if none found.
@@ -620,9 +621,9 @@ private:
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
 	UChar_t* fBuffer;   //!< This is the buffer in which we store the DDL payload read from AliRawReader.
-	const AliBusPatch* fCurrentBusPatch;  //!< The current bus patch being handled by Next().
-	const UInt_t* fCurrentData;  //!< The current data word to return by Next().
-	const UInt_t* fEndOfData;  //!< The last data word in the current bus patch.
+	const AliBusPatch* fkCurrentBusPatch;  //!< The current bus patch being handled by Next().
+	const UInt_t* fkCurrentData;  //!< The current data word to return by Next().
+	const UInt_t* fkEndOfData;  //!< The last data word in the current bus patch.
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
 	mutable AliMUONDDLTracker* fDDLObject; //!< Temporary DDL object used by GetDDLTracker() for caching.
@@ -635,10 +636,10 @@ private:
 inline const AliMUONRawStreamTrackerHP::AliBusPatch* AliMUONRawStreamTrackerHP::Next()
 {
 	/// Returns the next batch of decoded channel data.
-	if (fCurrentBusPatch == NULL) return NULL;
+	if (fkCurrentBusPatch == NULL) return NULL;
 	do {
-		if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
-			return fCurrentBusPatch++;
+		if (fkCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+			return fkCurrentBusPatch++;
 	} while (NextDDL());
 	return NULL;
 }

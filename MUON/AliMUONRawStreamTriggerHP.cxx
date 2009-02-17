@@ -47,7 +47,6 @@
 #include "AliLog.h"
 #include <cassert>
 #include <iostream>
-#include <iomanip>
 using std::cout;
 using std::endl;
 using std::hex;
@@ -66,7 +65,7 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP() :
 	fDDL(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fCurrentLocalStruct(NULL),
+	fkCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
 	fDDLObject(NULL)
@@ -92,7 +91,7 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP(AliRawReader* rawReader) :
 	fDDL(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fCurrentLocalStruct(NULL),
+	fkCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
 	fDDLObject(NULL)
@@ -159,7 +158,7 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 		fDDLObject = NULL;
 	}
 	
-	fCurrentLocalStruct = NULL;
+	fkCurrentLocalStruct = NULL;
 	
 	while (fDDL < GetMaxDDL())
 	{
@@ -235,7 +234,7 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	}
 
 	// Update the current local structure pointer.
-	fCurrentLocalStruct = fDecoder.GetHandler().FirstLocalStruct();
+	fkCurrentLocalStruct = fDecoder.GetHandler().FirstLocalStruct();
 
 	fDDL++; // Remember to increment index to next DDL.
 	return kTRUE;
@@ -258,6 +257,10 @@ Bool_t AliMUONRawStreamTriggerHP::Next(
 		TArrayS& xPattern, TArrayS& yPattern
 	)
 {
+	/// Advance one step in the iteration. Returns kFALSE if finished.
+	/// If kTRUE is returned then the output parameters are filled with
+	/// the values found in the next local trigger circuit structure.
+	
 	const AliLocalStruct* localStruct = Next();
 	if (localStruct == NULL) return kFALSE;
 	

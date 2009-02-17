@@ -44,6 +44,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONRawStreamTrackerHP.h"
+#include "AliMUONTrackerDDLDecoder.h"
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
@@ -52,7 +53,6 @@
 #include "AliLog.h"
 #include <cassert>
 #include <iostream>
-#include <iomanip>
 using std::cout;
 using std::endl;
 using std::hex;
@@ -69,9 +69,9 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 	fDDL(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fCurrentBusPatch(NULL),
-	fCurrentData(NULL),
-	fEndOfData(NULL),
+	fkCurrentBusPatch(NULL),
+	fkCurrentData(NULL),
+	fkEndOfData(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
 	fDDLObject(NULL)
@@ -101,9 +101,9 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
 	fDDL(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fCurrentBusPatch(NULL),
-	fCurrentData(NULL),
-	fEndOfData(NULL),
+	fkCurrentBusPatch(NULL),
+	fkCurrentData(NULL),
+	fkEndOfData(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
 	fDDLObject(NULL)
@@ -174,9 +174,9 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	}
 	
 	// Better to reset these pointers.
-	fCurrentBusPatch = NULL;
-	fCurrentData = NULL;
-	fEndOfData = NULL;
+	fkCurrentBusPatch = NULL;
+	fkCurrentData = NULL;
+	fkEndOfData = NULL;
 	
 	while (fDDL < GetMaxDDL())
 	{
@@ -249,18 +249,18 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	}
 
 	// Update the current bus patch pointers.
-	fCurrentBusPatch = fDecoder.GetHandler().FirstBusPatch();
-	if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+	fkCurrentBusPatch = fDecoder.GetHandler().FirstBusPatch();
+	if (fkCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 	{
-		fCurrentData = fCurrentBusPatch->GetData();
-		fEndOfData = fCurrentData + fCurrentBusPatch->GetDataCount();
+		fkCurrentData = fkCurrentBusPatch->GetData();
+		fkEndOfData = fkCurrentData + fkCurrentBusPatch->GetDataCount();
 	}
 	else
 	{
 		// If the DDL did not have any bus patches then mark both fCurrentData
 		// and fEndOfData as NULL so that in Next() we are forced to find the
 		// first non empty DDL.
-		fCurrentData = fEndOfData = NULL;
+		fkCurrentData = fkEndOfData = NULL;
 	}
 
 	fDDL++; // Remember to increment index to next DDL.
@@ -290,15 +290,15 @@ Bool_t AliMUONRawStreamTrackerHP::Next(
 	/// \return kTRUE if we read another digit and kFALSE if we have read all the
 	///    digits already, i.e. at the end of the iteration.
 	
-	if (fCurrentData == NULL) return kFALSE;
+	if (fkCurrentData == NULL) return kFALSE;
 	
 retry:
 	// Check if we still have data to be returned for the current bus patch.
-	if (fCurrentData != fEndOfData)
+	if (fkCurrentData != fkEndOfData)
 	{
-		busPatchId = fCurrentBusPatch->GetBusPatchId();
-		AliMUONTrackerDDLDecoderEventHandler::UnpackADC(*fCurrentData, manuId, manuChannel, adc);
-		fCurrentData++;
+		busPatchId = fkCurrentBusPatch->GetBusPatchId();
+		AliMUONTrackerDDLDecoderEventHandler::UnpackADC(*fkCurrentData, manuId, manuChannel, adc);
+		fkCurrentData++;
 		return kTRUE;
 	}
 	else
@@ -307,13 +307,13 @@ retry:
 		// bus patches to process for the current DDL. If we do, then increment
 		// the current bus patch, make sure it is not the last one and then try
 		// reading the first element again.
-		if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+		if (fkCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 		{
-			fCurrentBusPatch++;
-			if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+			fkCurrentBusPatch++;
+			if (fkCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 			{
-				fCurrentData = fCurrentBusPatch->GetData();
-				fEndOfData = fCurrentData + fCurrentBusPatch->GetDataCount();
+				fkCurrentData = fkCurrentBusPatch->GetData();
+				fkEndOfData = fkCurrentData + fkCurrentBusPatch->GetDataCount();
 				goto retry;
 			}
 		}
