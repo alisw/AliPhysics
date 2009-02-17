@@ -331,7 +331,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   TString altroConf = fConfEnv->GetValue("AltroConf","ON");
   goofieConf.ToUpper();
   if (altroConf != "OFF" ) { 
-   UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDAQ);
+   UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDCS);
    result+=altroResult;
    status = new TParameter<int>("altroResult",altroResult);
    resultArray->Add(status);
