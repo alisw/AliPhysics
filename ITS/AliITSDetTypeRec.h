@@ -12,28 +12,24 @@ $Id$
 // detector specific reconstruction for the ITS.                      //
 ////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
-#include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TBits.h>
-#include "AliITSDDLModuleMapSDD.h"
-#include "AliITSFastOrCalibrationSPD.h"
-#include "AliITSresponseSDD.h"
-#include "AliITSgeom.h"
+
+class TObjArray;
 class TTree;
 class TBranch;
-
-//#include "AliITSLoader.h"
-//#include "AliRunLoader.h"
-
+class AliITSgeom;
 class AliITSsegmentation;
 class AliITSCalibration;
 class AliITSCalibrationSSD;
+class AliITSFastOrCalibrationSPD;
 class AliITSresponseSDD;
 class AliITSClusterFinder;
 class AliITSRecPoint;
 class AliRawReader;
 class AliITSGainSSDv2;
 class AliITSBadChannelsSSDv2;
+class AliITSDDLModuleMapSDD;
 class AliITSNoiseSSDv2;
 
 class AliITSDetTypeRec : public TObject {
@@ -72,12 +68,12 @@ class AliITSDetTypeRec : public TObject {
     }
 
     virtual void SetDigitClassName(Int_t i,const Char_t *digit) 
-      {fDigClassName[i]=digit;}
+      {fkDigClassName[i]=digit;}
     
     virtual void SetLoadOnlySPDCalib(Bool_t opt=kFALSE)
       {fLoadOnlySPDCalib=opt;}
 
-    const Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
+    const Char_t* GetDigitClassName(Int_t i) const {return fkDigClassName[i];}
     
     TObjArray* GetDigits() const {return fDigits;} 
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
@@ -92,7 +88,7 @@ class AliITSDetTypeRec : public TObject {
     void AddRecPoint(const AliITSRecPoint &p);
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 
-    TClonesArray  *RecPoints()   {return fRecPoints;}
+    TClonesArray  *RecPoints() const  {return fRecPoints;}
     void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
@@ -107,11 +103,11 @@ class AliITSDetTypeRec : public TObject {
     AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
  
     //conversion of the old SSD calibration objects tothe new ones
-    void ReadOldSSDNoise(TObjArray *array, 
+    void ReadOldSSDNoise(const TObjArray *array, 
 			 AliITSNoiseSSDv2 *noiseSSD);
-    void ReadOldSSDBadChannels(TObjArray *array, 
+    void ReadOldSSDBadChannels(const TObjArray *array, 
 			       AliITSBadChannelsSSDv2 *badChannelsSSD);
-    void ReadOldSSDGain(TObjArray *array, 
+    void ReadOldSSDGain(const TObjArray *array, 
 			AliITSGainSSDv2 *gainSSD);
 
     //    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
@@ -134,7 +130,7 @@ class AliITSDetTypeRec : public TObject {
     AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
-    const Char_t*       fDigClassName[3];     //! String with digit class name.
+    const Char_t*       fkDigClassName[3];     //! String with digit class name.
 
 
     TClonesArray *fRecPoints;  //! List of reconstructed points

@@ -26,21 +26,15 @@
 #include "TTree.h"
 
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliITSClusterFinder.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSClusterFinderV2SSD.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSgeom.h"
+#include "AliITSDDLModuleMapSDD.h"
 #include "AliITSRecPoint.h"
-#include "AliITSReconstructor.h"
-#include "AliITSRecoParam.h"
 #include "AliITSCalibrationSDD.h"
-#include "AliITSMapSDD.h"
-#include "AliITSDriftSpeedArraySDD.h"
-#include "AliITSDriftSpeedSDD.h"
 #include "AliITSHLTforSDD.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSNoiseSSDv2.h"
@@ -54,6 +48,10 @@
 #include "AliITSsegmentationSSD.h"
 #include "AliLog.h"
 
+class AliITSDriftSpeedArraySDD;
+class AliITSMapSDD;
+class AliITSresponseSDD;
+class AliITSRecoParam;
 
 const Int_t AliITSDetTypeRec::fgkNdettypes = 3;
 const Int_t AliITSDetTypeRec::fgkDefaultNModulesSPD =  240;
@@ -93,7 +91,7 @@ fFastOrFiredMap(1200){
   fReconstruction = new TObjArray(fgkNdettypes);
   fDigits = new TObjArray(fgkNdettypes);
   for(Int_t i=0; i<3; i++){
-    fDigClassName[i]=0;
+    fkDigClassName[i]=0;
   }
   fSSDCalibration=new AliITSCalibrationSSD();
   fNMod = new Int_t [fgkNdettypes];
@@ -909,7 +907,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
 }
 
 //______________________________________________________________________
-void AliITSDetTypeRec::ReadOldSSDNoise(TObjArray *array, 
+void AliITSDetTypeRec::ReadOldSSDNoise(const TObjArray *array, 
 				       AliITSNoiseSSDv2 *noiseSSD) {
   //Reads the old SSD calibration object and converts it to the new format
   const Int_t fgkSSDSTRIPSPERMODULE = 1536;
@@ -933,7 +931,7 @@ void AliITSDetTypeRec::ReadOldSSDNoise(TObjArray *array,
 }
 
 //______________________________________________________________________
-void AliITSDetTypeRec::ReadOldSSDBadChannels(TObjArray *array, 
+void AliITSDetTypeRec::ReadOldSSDBadChannels(const TObjArray *array, 
 					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
   //Reads the old SSD calibration object and converts it to the new format
   Int_t gNMod = array->GetEntries();
@@ -957,7 +955,7 @@ void AliITSDetTypeRec::ReadOldSSDBadChannels(TObjArray *array,
 }
 
 //______________________________________________________________________
-void AliITSDetTypeRec::ReadOldSSDGain(TObjArray *array, 
+void AliITSDetTypeRec::ReadOldSSDGain(const TObjArray *array, 
 				      AliITSGainSSDv2 *gainSSD) {
   //Reads the old SSD calibration object and converts it to the new format
 

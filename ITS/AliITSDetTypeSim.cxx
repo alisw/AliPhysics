@@ -35,13 +35,14 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliCDBMetaData.h"
-
 #include "AliITSdigit.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSdigitSDD.h"
 #include "AliITSdigitSSD.h"
+#include "AliITSgeom.h"
 #include "AliITSDetTypeSim.h"
 #include "AliITSpListItem.h"
+#include "AliITSCalibration.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
@@ -62,7 +63,7 @@
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
-
+#include "AliITSDDLModuleMapSDD.h"
 
 const Int_t AliITSDetTypeSim::fgkNdettypes = 3;
 const Int_t AliITSDetTypeSim::fgkDefaultNModulesSPD =  240;
@@ -78,8 +79,6 @@ fSimulation(),   // [NDet]
 fSegmentation(), // [NDet]
 fCalibration(),     // [NMod]
 fSSDCalibration(0),
-fPreProcess(),   // [] e.g. Fill fHitModule with hits
-fPostProcess(),  // [] e.g. Wright Raw data
 fNSDigits(0),    //! number of SDigits
 fSDigits("AliITSpListItem",1000),   
 fNDigits(0),     //! number of Digits
@@ -87,9 +86,7 @@ fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
 fSimuPar(0),
 fDDLMapSDD(0),
-fHitClassName(), // String with Hit class name.
-fSDigClassName(),// String with SDigit class name.
-fDigClassName(), // String with digit class name.
+fkDigClassName(), // String with digit class name.
 fLoader(0),      // local pointer to loader
 fFirstcall(kTRUE),
 fIsHLTmodeC(0){ // flag
@@ -141,16 +138,6 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     }
     fCalibration = 0;
     if(fSSDCalibration) delete fSSDCalibration;
-     if(fPreProcess){
-	fPreProcess->Delete();
-	delete fPreProcess;
-    }
-    fPreProcess = 0;
-    if(fPostProcess){
-	fPostProcess->Delete();
-	delete fPostProcess;
-    }
-    fPostProcess = 0;
     if(fSimuPar) delete fSimuPar;
     if(fDDLMapSDD) delete fDDLMapSDD;
     if(fNDigits) delete [] fNDigits;
@@ -170,8 +157,6 @@ fSimulation(source.fSimulation),   // [NDet]
 fSegmentation(source.fSegmentation), // [NDet]
 fCalibration(source.fCalibration),     // [NMod]
 fSSDCalibration(source.fSSDCalibration),
-fPreProcess(source.fPreProcess),   // [] e.g. Fill fHitModule with hits
-fPostProcess(source.fPostProcess),  // [] e.g. Wright Raw data
 fNSDigits(source.fNSDigits),    //! number of SDigits
 fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
 fNDigits(source.fNDigits),     //! number of Digits
@@ -179,16 +164,14 @@ fRunNumber(source.fRunNumber),   //! Run number (to access DB)
 fDigits(source.fDigits),       //! [NMod][NDigits]
 fSimuPar(source.fSimuPar),
 fDDLMapSDD(source.fDDLMapSDD),
-fHitClassName(source.fHitClassName), // String with Hit class name.
-fSDigClassName(source.fSDigClassName),// String with SDigit class name.
-fDigClassName(), // String with digit class name.
+fkDigClassName(), // String with digit class name.
 fLoader(source.fLoader),      // local pointer to loader
 fFirstcall(source.fFirstcall),
 fIsHLTmodeC(source.fIsHLTmodeC)
 {
     // Copy Constructor for object AliITSDetTypeSim not allowed
   for(Int_t i=0;i<fgkNdettypes;i++){
-    fDigClassName[i] = source.fDigClassName[i];
+    fkDigClassName[i] = source.fkDigClassName[i];
   }
 }
 //----------------------------------------------------------------------
@@ -247,7 +230,7 @@ void AliITSDetTypeSim::SetSimulationModel(Int_t dettype,AliITSsimulation *sim){
   fSimulation->AddAt(sim,dettype);
 }
 //______________________________________________________________________
-AliITSsimulation* AliITSDetTypeSim::GetSimulationModel(Int_t dettype){
+AliITSsimulation* AliITSDetTypeSim::GetSimulationModel(Int_t dettype) const { 
 
   //Get simulation model for detector type
   if(fSimulation==0)  {
@@ -257,7 +240,7 @@ AliITSsimulation* AliITSDetTypeSim::GetSimulationModel(Int_t dettype){
   return (AliITSsimulation*)(fSimulation->At(dettype));
 }
 //______________________________________________________________________
-AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module){
+AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module) const {
 
   //Get simulation model by module number
   if(GetITSgeom()==0) {
@@ -304,7 +287,7 @@ void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,
   fSegmentation->AddAt(seg,dettype);
 }
 //______________________________________________________________________
-AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype){
+AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype) const{
   //Get segmentation model for detector type
    
    if(fSegmentation==0) {
@@ -314,7 +297,7 @@ AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype){
    return (AliITSsegmentation*)(fSegmentation->At(dettype));
 }
 //_______________________________________________________________________
-AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module){
+AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module) const{
     //Get segmentation model by module number
     if(GetITSgeom()==0){
 	Warning("GetSegmentationModelByModule","GetITSgeom() is 0!");
@@ -369,7 +352,7 @@ void AliITSDetTypeSim::ResetSegmentation(){
     if(fSegmentation) fSegmentation->Clear();
 }
 //_______________________________________________________________________
-AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod){
+AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod) const {
     //Get response model for module number iMod 
  
     if(fCalibration==0) {
@@ -804,7 +787,7 @@ void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){
   new(fSDigits[fNSDigits++]) AliITSpListItem(sdig);
 }
 //__________________________________________________________
-void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){  
+void AliITSDetTypeSim::AddSimDigit(Int_t branch, const AliITSdigit* d){  
   //    Add a simulated digit.
 
   TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
@@ -841,55 +824,7 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
   } 
 }
 //______________________________________________________________________
-void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun,
-					AliCDBMetaData &md) {
-  // Store calibration in the calibration database
-  // The database must be created in an external piece of code (i.e. 
-  // a configuration macro )
-
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliWarning("No storage set! Will use dummy one");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }
-
-  if (!fCalibration) {
-    AliError("AliITSCalibration classes are not defined - nothing done");
-    return;
-  }
-  AliCDBId idRespSPD("ITS/Calib/SPDDead",firstRun, lastRun);
-  AliCDBId idRespSDD("ITS/Calib/CalibSDD",firstRun, lastRun);
-  AliCDBId idRespSSD("ITS/Calib/CalibSSD",firstRun, lastRun);
-
-  TObjArray respSPD(fNMod[0]);
-  TObjArray respSDD(fNMod[1]-fNMod[0]);
-  TObjArray respSSD(fNMod[2]-fNMod[1]);
-  respSPD.SetOwner(kFALSE);
-  respSSD.SetOwner(kFALSE);
-  respSSD.SetOwner(kFALSE);
-
-  Int_t index[fgkNdettypes];
-  for (Int_t i = 0; i<fgkNdettypes; i++ ) {
-    index[i] = 0;
-    for (Int_t j = 0; j<=i; j++ )
-      index[i]+=fNMod[j];
-  }
-
-  for (Int_t i = 0; i<index[0]; i++ )
-    respSPD.Add(fCalibration->At(i));
-
-  for (Int_t i = index[0]; i<index[1]; i++ )
-    respSDD.Add(fCalibration->At(i));
-
-  for (Int_t i = index[1]; i<index[2]; i++ )
-    respSSD.Add(fCalibration->At(i));
-
-  AliCDBManager::Instance()->Put(&respSPD, idRespSPD, &md);
-  AliCDBManager::Instance()->Put(&respSDD, idRespSDD, &md);
-  AliCDBManager::Instance()->Put(&respSSD, idRespSSD, &md);
-}
-
-//______________________________________________________________________
-void AliITSDetTypeSim::ReadOldSSDNoise(TObjArray *array, 
+void AliITSDetTypeSim::ReadOldSSDNoise(const TObjArray *array, 
 				       AliITSNoiseSSDv2 *noiseSSD) {
   //Reads the old SSD calibration object and converts it to the new format
   const Int_t fgkSSDSTRIPSPERMODULE = 1536;
@@ -913,7 +848,7 @@ void AliITSDetTypeSim::ReadOldSSDNoise(TObjArray *array,
 }
 
 //______________________________________________________________________
-void AliITSDetTypeSim::ReadOldSSDBadChannels(TObjArray *array, 
+void AliITSDetTypeSim::ReadOldSSDBadChannels(const TObjArray *array, 
 					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
   //Reads the old SSD calibration object and converts it to the new format
   Int_t nMod = array->GetEntries();
@@ -937,7 +872,7 @@ void AliITSDetTypeSim::ReadOldSSDBadChannels(TObjArray *array,
 }
 
 //______________________________________________________________________
-void AliITSDetTypeSim::ReadOldSSDGain(TObjArray *array, 
+void AliITSDetTypeSim::ReadOldSSDGain(const TObjArray *array, 
 				      AliITSGainSSDv2 *gainSSD) {
   //Reads the old SSD calibration object and converts it to the new format
 
