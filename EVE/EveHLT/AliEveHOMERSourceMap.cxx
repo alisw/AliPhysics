@@ -15,17 +15,26 @@
 //______________________________________________________________________
 // AliEveHOMERSourceMap
 //
+// AliEveHOMERSourceMap is an abstract container for HLT HOMER sources,
+// see AliHLTHOMERSourceDesc.
+//
+// The concrete implementations AliEveHOMERSourceMapByDet and
+// AliEveHOMERSourceMapByType allow retrieval of HOMER sources in proper
+// order as required for their display in EVE object browser.
+// 
 
 ClassImp(AliEveHOMERSourceMap)
 
 AliEveHOMERSourceMap::AliEveHOMERSourceMap(ESourceGrouping_e grouping) :
   fGrouping(grouping)
 {
-
+  // Constructor.
 }
 
 AliEveHOMERSourceMap* AliEveHOMERSourceMap::Create(ESourceGrouping_e grouping)
 {
+  // Static constructor - instantiates appropriate sub-class.
+
   switch (grouping)
   {
     case kSG_ByDet:  return new AliEveHOMERSourceMapByDet(grouping);
@@ -36,6 +45,9 @@ AliEveHOMERSourceMap* AliEveHOMERSourceMap::Create(ESourceGrouping_e grouping)
 
 Int_t AliEveHOMERSourceMap::iterator::level()
 {
+  // Returns the depth in iteration:
+  // Det / Sub-Det / Sub-Sub-Det / Data-Type.
+
   const AliEveHOMERSource::SourceId& sid = id();
 
   Int_t lvl = 0;
@@ -48,6 +60,8 @@ Int_t AliEveHOMERSourceMap::iterator::level()
 
 void AliEveHOMERSourceMap::PrintXXX()
 {
+  // Print entries in the map.
+
   for (iterator i = begin(); i != end(); ++i)
   {
     printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*i.level(), "",
@@ -68,6 +82,8 @@ AliEveHOMERSourceMapByDet::AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping)
 
 TString AliEveHOMERSourceMapByDet::iterator_imp::description() const
 {
+  // Return identifier string for current entry.
+
   const AliEveHOMERSource::SourceId& sid = id();
 
   if ( ! sid.fType.IsNull())  return sid.fType;
@@ -81,6 +97,9 @@ void AliEveHOMERSourceMapByDet::insert(AliEveHOMERSource::SourceId& sid,
 				       AliEveHOMERSource::SourceState& sst,
 				       Bool_t def_state)
 {
+  // Insert source-state for given source-id.
+  // Does nothing if the entry already exists.
+
   Map_i i = fMap.find(sid);
   if (i == fMap.end())
   {
@@ -90,8 +109,10 @@ void AliEveHOMERSourceMapByDet::insert(AliEveHOMERSource::SourceId& sid,
   }
 }
 
-void AliEveHOMERSourceMapByDet::FillMap(TList* handles, Bool_t def_state)
+void AliEveHOMERSourceMapByDet::FillMap(const TList* handles, Bool_t def_state)
 {
+  // Fill the map from the list of HOMER source handles.
+
   TIter next(handles);
   AliHLTHOMERSourceDesc* h;
   while ((h = (AliHLTHOMERSourceDesc*) next()))
@@ -122,10 +143,14 @@ void AliEveHOMERSourceMapByDet::FillMap(TList* handles, Bool_t def_state)
 AliEveHOMERSourceMapByType::AliEveHOMERSourceMapByType(ESourceGrouping_e grouping) :
   AliEveHOMERSourceMap(grouping),
   fMap()
-{}
+{
+  // Constructor.
+}
 
 TString AliEveHOMERSourceMapByType::iterator_imp::description() const
 {
+  // Return identifier string for current entry.
+
   const AliEveHOMERSource::SourceId& sid = id();
 
   if ( ! sid.fSSDet.IsNull()) return sid.fSSDet;
@@ -139,6 +164,9 @@ void AliEveHOMERSourceMapByType::insert(AliEveHOMERSource::SourceId& sid,
 					AliEveHOMERSource::SourceState& sst,
 					Bool_t def_state)
 {
+  // Insert source-state for given source-id.
+  // Does nothing if the entry already exists.
+
   Map_i i = fMap.find(sid);
   if (i == fMap.end())
   {
@@ -148,8 +176,10 @@ void AliEveHOMERSourceMapByType::insert(AliEveHOMERSource::SourceId& sid,
   }
 }
 
-void AliEveHOMERSourceMapByType::FillMap(TList* handles, Bool_t def_state)
+void AliEveHOMERSourceMapByType::FillMap(const TList* handles, Bool_t def_state)
 {
+  // Fill the map from the list of HOMER source handles.
+
   TIter next(handles);
   AliHLTHOMERSourceDesc* h;
   while ((h = (AliHLTHOMERSourceDesc*) next()))

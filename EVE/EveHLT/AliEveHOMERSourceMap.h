@@ -16,6 +16,14 @@
 
 #include <map>
 
+//______________________________________________________________________________
+//
+// AliEveHOMERSourceMap is an abstract container for HLT HOMER sources.
+// The concrete implementations AliEveHOMERSourceMapByDet and
+// AliEveHOMERSourceMapByType allow retrieval of HOMER sources in proper
+// order as required for their display in EVE object browser.
+
+
 class AliEveHOMERSourceMap : public TNamed
 {
 protected:
@@ -79,7 +87,7 @@ public:
 
   static AliEveHOMERSourceMap* Create(ESourceGrouping_e grouping);
 
-  virtual void FillMap(TList* handles, Bool_t def_state) = 0;
+  virtual void FillMap(const TList* handles, Bool_t def_state) = 0;
 
   void PrintXXX();
 
@@ -102,7 +110,7 @@ public:
   AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping);
   virtual ~AliEveHOMERSourceMapByDet() {}
 
-  virtual void FillMap(TList* handles, Bool_t def_state);
+  virtual void FillMap(const TList* handles, Bool_t def_state);
 
 protected:
   typedef std::map<AliEveHOMERSource::SourceId,
@@ -153,7 +161,7 @@ public:
   AliEveHOMERSourceMapByType(ESourceGrouping_e grouping);
   virtual ~AliEveHOMERSourceMapByType() {}
 
-  virtual void FillMap(TList* handles, Bool_t def_state);
+  virtual void FillMap(const TList* handles, Bool_t def_state);
 
 protected:
   typedef std::map<AliEveHOMERSource::SourceId,
