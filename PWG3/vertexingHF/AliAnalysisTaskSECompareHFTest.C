@@ -56,14 +56,18 @@ void AliAnalysisTaskSECompareHFTest()
   
   //
   // Create containers for input/output
+  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
+  /*  
+  // before v4-17-Release
   AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinput",TChain::Class(), 
-							  AliAnalysisManager::kInputContainer);
+  						  AliAnalysisManager::kInputContainer);
+  mgr->ConnectInput(hfTask,0,cinput);
+  */
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "CmpHF.root");
-  mgr->ConnectInput(hfTask,0,cinput);
   mgr->ConnectOutput(hfTask,1,coutput);
-
+  
   //
   // Run the analysis
   //    
