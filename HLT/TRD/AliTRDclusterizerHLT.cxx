@@ -31,8 +31,6 @@
 
 #include "AliTRDclusterizerHLT.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayF.h"
-#include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDpadPlane.h"

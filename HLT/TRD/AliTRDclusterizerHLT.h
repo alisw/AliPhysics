@@ -11,10 +11,6 @@
 
 #include "AliTRDclusterizer.h"
 
-/* class AliTRDdataArrayI; */
-/* class AliTRDdataArrayF; */
-/* class AliTRDdigitsManager; */
-
 class AliRawReader;
 class AliRawReaderMemory;
 class AliTRDrawData;
