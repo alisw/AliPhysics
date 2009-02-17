@@ -7,7 +7,7 @@ void AliAnalysisTaskSEVertexingHFTest()
 
   Bool_t inputAOD=kTRUE; // otherwise, ESD
   TString mode="local"; // otherwise, "grid" 
-  Bool_t useParFiles=kTRUE;
+  Bool_t useParFiles=kFALSE;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
@@ -84,13 +84,18 @@ void AliAnalysisTaskSEVertexingHFTest()
   
   //
   // Create containers for input/output
+  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(hfTask,0,mgr->GetCommonOutputContainer());
+  /* 
+  // before v4-17-Release
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
 							   AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
 							    AliAnalysisManager::kOutputContainer, 
-							    "default");
+							    "default"); 
   mgr->ConnectInput(hfTask,0,cinput1);
   mgr->ConnectOutput(hfTask,0,coutput1);
+  */
 
   //
   // Run the analysis

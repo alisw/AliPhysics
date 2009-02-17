@@ -97,24 +97,30 @@ void CreateStandardAODfromESD()
   filter->SetTrackFilter(trackFilter);
 
   // Pipelining
+  mgr->ConnectInput(filter,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(filter,0,mgr->GetCommonOutputContainer());
+  mgr->ConnectInput(esdmuonfilter,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(esdmuonfilter,0,mgr->GetCommonOutputContainer());
+  if(writeKineToAOD) {
+    mgr->ConnectInput(kinefilter,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(kinefilter,0,mgr->GetCommonOutputContainer());
+  }
+  /*
+  // before v4-17-Release  
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain", TChain::Class(),
 							   AliAnalysisManager::kInputContainer);
-  
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    "default");
-  
-  
   mgr->ConnectInput(filter,0,cinput1);
   mgr->ConnectOutput(filter,0,coutput1);
-
   mgr->ConnectInput(esdmuonfilter,0,cinput1);
   mgr->ConnectOutput(esdmuonfilter,0,coutput1);
-
   if(writeKineToAOD) {
     mgr->ConnectInput(kinefilter,0,cinput1);
     mgr->ConnectOutput(kinefilter,0,coutput1);
   }
+  */
   //
   // Run the analysis
   //
