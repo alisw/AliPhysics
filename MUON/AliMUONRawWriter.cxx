@@ -563,7 +563,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 
     if (fScalerEvent) {
       // 10 Global scaler words
-      memcpy(fDarcHeader->GetGlobalScalers(), &buffer[index], kGlobalScalerLength*4);
+      memcpy(&buffer[index], fDarcHeader->GetGlobalScalers(), kGlobalScalerLength*4);
       index += kGlobalScalerLength;
     }
 

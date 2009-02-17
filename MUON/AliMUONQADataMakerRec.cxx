@@ -479,6 +479,10 @@ void AliMUONQADataMakerRec::InitRaws()
 	  Add2RawsList(h9, kTriggerHVDisplay + iChamber, !forExpert);
 	}
 
+	TH1F* h10 = new TH1F("hTriggerScalersTime", "Trigger scalers acquisition time", 1, 0.5, 1.5);
+	h10->GetXaxis()->SetBinLabel(1, "One-bin histogram: bin is filled at each scaler event.");
+	h10->GetYaxis()->SetTitle("Cumulated scaler time (s)");
+	Add2RawsList(h10, kTriggerScalersTime, !forExpert);
 	
   Int_t nbp(0);
   TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
@@ -905,6 +909,12 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
       AliMUONDDLTrigger* ddlTrigger = rawStreamTrig.GetDDLTrigger();
       AliMUONDarcHeader* darcHeader = ddlTrigger->GetDarcHeader();
 
+      if (darcHeader->GetGlobalFlag()){
+        UInt_t nOfClocks = darcHeader->GetGlobalClock();
+        Double_t nOfSeconds = ((Double_t) nOfClocks) / 40e6; // 1 clock each 25 ns
+        ((TH1F*)GetRawsData(kTriggerScalersTime))->Fill(1., nOfSeconds);
+      }
+
       Int_t nReg = darcHeader->GetRegHeaderEntries();
     
       for(Int_t iReg = 0; iReg < nReg ;iReg++)
@@ -1207,6 +1217,10 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
       histoStrips->GetXaxis()->SetRange(bin,bin);
       TH2F* inputHisto = (TH2F*)histoStrips->Project3D("zy");
       triggerDisplay.FillDisplayHistogram(inputHisto, histoDisplayStrips, AliMUONTriggerDisplay::kDisplayStrips, iCath, iChamber);
+      if(task==AliQA::kRAWS) {
+        Float_t acquisitionTime = ((TH1F*)GetRawsData(kTriggerScalersTime))->GetBinContent(1);
+        histoDisplayStrips->Scale(1./acquisitionTime);
+      }
     } // iChamber
   } // iCath
 

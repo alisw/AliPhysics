@@ -54,7 +54,8 @@ private:
     kTrackerBusPatchOccupancy = 4, ///< Bus patch occupancies
     kTriggerScalersBP      = 22, ///< Trigger scalers on BP histogram per chamber index
     kTriggerScalersNBP     = 23, ///< Trigger scalers on NBP histogram per chamber index
-    kTriggerScalersDisplay = 24  ///< Trigger scalers display histogram per chamber index
+    kTriggerScalersDisplay = 24, ///< Trigger scalers display histogram per chamber index
+    kTriggerScalersTime    = 32  ///< Trigger scalers acquisition time index
   };
          
   /// Rec points histograms indices
