@@ -1240,7 +1240,7 @@ void AliTPCv2::StepManager()
   const Float_t kprim = 14.35; // number of primary collisions per 1 cm
   const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
   const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
- 
+  const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references 
  
   const Float_t kbig = 1.e10;
 
@@ -1296,6 +1296,13 @@ void AliTPCv2::StepManager()
   //
 
   vol[0]=sector;
+
+  static Double_t lastReferenceR=0;
+  if (TMath::Abs(lastReferenceR-r)>kMaxDistRef){
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTPC);
+    lastReferenceR = r;
+  }
+
   // check if change of sector
   if(sector != fSecOld){
     fSecOld=sector;
