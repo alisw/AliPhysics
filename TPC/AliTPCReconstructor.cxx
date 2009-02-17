@@ -51,7 +51,7 @@ fClusterer(NULL)
   //
   //
   AliTPCcalibDB * calib = AliTPCcalibDB::Instance();
-  const AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance();
+  const AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   calib->SetExBField(field->SolenoidField());
   AliTPCParam* param = GetTPCParam();
   if (!param) {
