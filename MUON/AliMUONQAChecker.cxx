@@ -258,7 +258,7 @@ void AliMUONQAChecker::Init(const AliQA::DETECTORINDEX_t det)
 
 //______________________________________________________________________________
 void 
-AliMUONQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t * value) const
+AliMUONQAChecker::SetQA(AliQA::ALITASK_t index, Double_t * value) const
 {
   /// sets the QA according the return value of the Check
 

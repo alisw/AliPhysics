@@ -32,7 +32,7 @@ protected:
   
   virtual Double_t * Check(AliQA::ALITASK_t index) ;
   virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
-  virtual void SetQA(AliQA::ALITASK_t index, const Double_t * value) const ;	
+  virtual void SetQA(AliQA::ALITASK_t index, Double_t * value) const ;	
 	
   Double_t * CheckRaws(TObjArray** list);
   Double_t * CheckRecPoints(TObjArray** list);
