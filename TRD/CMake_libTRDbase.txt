@@ -1,16 +1,6 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-      AliTRDarrayI.cxx
-      AliTRDarrayS.cxx
-      AliTRDarrayF.cxx
-      AliTRDsegmentID.cxx
-      AliTRDdataArray.cxx
-      AliTRDdataArrayI.cxx
-      AliTRDdataArrayS.cxx
-      AliTRDdataArrayF.cxx
-      AliTRDdataArrayDigits.cxx
-      AliTRDsegmentArray.cxx
       AliTRDarraySignal.cxx
       AliTRDarrayDictionary.cxx
       AliTRDarrayADC.cxx
