@@ -13,22 +13,33 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//---------------------------------
+//Class to perform the realignment if the Inner Tracking System 
+//with an iterative approach based on track to cluster residuals
+// minimization. A chi2 function of the residuals is minimized with
+//respect to alignment parameters. The class allows both single module
+//realignment and set of modules realignment. Tracks are fitted with
+//AliTrackFitter* fitters. AliTrackFitterKalman is more suited for
+//straight line (e.g. cosmic in the absence of magnetic field) but can't
+//work with helixes. AliTrackFitterRieman is suited for helixes. 
+//The minimization is performed by AliTrackResiduals* classes: default
+//one is AliTrackResidualsFast (analytic minimization by inversion). 
+//For numerical minimization using MINUIT, use AliTrackResidualChi2.
+//Methods are present to defined both the set of modules where the tracks
+//are fittef and the set of modules which  are to be realigned
+//The main method is  AlignVolumesITS
+//
+//Class by: A. Rossi, andrea,rossi@ts.infn.it
 
-#include <TArray.h>
 #include <TFile.h>
 #include <TStopwatch.h>
-#include <TArray.h>
 #include <TNtuple.h>
 #include <TClonesArray.h>
 #include <TMath.h>
-#include <TGeoManager.h>
-#include <TSystem.h>
-#include <TGeoMatrix.h>
 #include <TGraph.h>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include "AliITSRealignTracks.h"
-#include "AliAlignmentTracks.h"
 #include "AliAlignObjParams.h"
 #include "AliAlignObj.h"
 #include "AliGeomManager.h"
@@ -38,14 +49,22 @@
 #include "AliTrackResidualsFast.h"
 #include "AliTrackResidualsChi2.h"
 #include "AliTrackResidualsLinear.h"
+
 #include "AliLog.h"
+#include <TSystem.h>
+#include <TGeoManager.h>
+
+class AliAlignmentTracks;
+class TGeoMatrix;
+class TArray;
+
 
 /* $Id$ */
 
 
 ClassImp(AliITSRealignTracks)
 
-const Int_t referSect=2;
+const Int_t kreferSect=2;
 
 
 AliITSRealignTracks::AliITSRealignTracks(TString minimizer,Int_t fit,Bool_t covUsed,TString fileintro,TString geometryfile,TString misalignmentFile,TString startingfile):
@@ -53,7 +72,6 @@ AliITSRealignTracks::AliITSRealignTracks(TString minimizer,Int_t fit,Bool_t covU
   fSurveyObjs(0),
   fgeomfilename(),
   fmintracks(),
-  fCovIsUsed(covUsed),
   fUpdateCov(kFALSE),
   fVarySigmaY(kFALSE),
   fCorrModules(0),
@@ -115,7 +133,6 @@ AliITSRealignTracks::AliITSRealignTracks(const AliITSRealignTracks &realignTrack
   fSurveyObjs(new AliAlignObj**(*realignTracks.fSurveyObjs)),
   fgeomfilename(realignTracks.fgeomfilename),
   fmintracks(realignTracks.fmintracks),
-  fCovIsUsed(realignTracks.fCovIsUsed),
   fUpdateCov(realignTracks.fUpdateCov),
   fVarySigmaY(realignTracks.fVarySigmaY),
   fCorrModules(new Double_t *(*realignTracks.fCorrModules)),
@@ -163,6 +180,10 @@ AliITSRealignTracks::~AliITSRealignTracks(){
 
 //_____________________________
 Bool_t AliITSRealignTracks::SelectFitter(Int_t fit,Int_t minTrackPoint){
+  //Method to select the fitter: 0 for AliTrackFitterRieman (use this for helixes)
+  //                             1 for AliTrackFitterKalman
+  //minTrackPoint defines the minimum number of points (not rejected by the fit itself) 
+  //a track should have to fit it
  
   if(fit==1){
      AliTrackFitterKalman *fitter= new AliTrackFitterKalman();
@@ -183,6 +204,21 @@ Bool_t AliITSRealignTracks::SelectFitter(Int_t fit,Int_t minTrackPoint){
 
 
 Bool_t AliITSRealignTracks::SelectMinimizer(TString minimizer,Int_t minpoints,const Bool_t *coord){
+  //Method to select the minimizer: "minuit" for AliTrackFitterChi2 (numerical minimization by MINUIT)
+  //                                "fast" for AliTrackResidualsFast
+  //                                "linear" for AliTrackResidualsLinear
+  //                                "minuitnorot" for AliTrackFitterChi2 by 
+  // coord[6] allows to fix the degrees of freedom in the minimization (e.g. look only for tranlsations, 
+  //       or only for rotations). The coord are: dTx,dTy,dTz,dPsi,dTheta,dPhi where "d" stands for 
+  //       "differential" and "T" for translation. If coord[i] is set to kTRUE then the i coord is fixed
+  //       When a coordinate is fixed the value returnd for it is 0
+  // minnpoints fix the minimum number of residuals to perform the minimization: it's not safe
+  //     to align a module with a small number of track passing through it since the results could be
+  //     not reliable. For single modules the number of residuals and the number of tracks passing 
+  //     through it and accepted bu the fit procedure coincide. This is not the case for sets of modules,
+  //     since a given track can pass through two or more modules in the set (e.g a cosmic track can give
+  //     two cluster on a layer)
+
   AliTrackResiduals *res;
   if(minimizer=="minuit"){
     res = new AliTrackResidualsChi2();
@@ -224,6 +260,13 @@ Bool_t AliITSRealignTracks::SelectMinimizer(TString minimizer,Int_t minpoints,co
 
 //____________________________________
 void AliITSRealignTracks::SetVarySigmaY(Bool_t varysigmay,Double_t sigmaYfixed){
+  //SigmaY is the value of the error along the track direction assigned 
+  //to the AliTrackPoint constructed from the extrapolation of the fit of a track
+  //to the module one is realigning. This error simulate the uncertainty on the
+  //position of the cluster in space due to the misalingment of the module (i.e. 
+  //you don't the real position and orientation of the plane of the desired extrapolation 
+  //but you rely on the fit and consider the point to lie along the track)
+  
   
   fVarySigmaY=varysigmay;
   if(!varysigmay){
@@ -407,22 +450,22 @@ void AliITSRealignTracks::RealignITStracks(TString minimizer,Int_t fit=0,Int_t i
       for(Int_t siter=0;siter<5;siter++){
 	fTrackFitter->SetMinNPoints(2);
 	SetCovUpdate(kFALSE);
-	AlignSPDHalfBarrelToSectorRef(referSect,3);
+	AlignSPDHalfBarrelToSectorRef(kreferSect,3);
 	//	AlignSPDBarrel(1);
 	//	if(siter==0)SetCovUpdate(kFALSE);
 	//	AlignSPDHalfBarrel(0,3);
 	//	SetCovUpdate(kTRUE);
 	AlignSPDHalfBarrelToHalfBarrel(1,3);
-	//	AlignSPDHalfBarrelToSectorRef(referSect,3);
+	//	AlignSPDHalfBarrelToSectorRef(kreferSect,3);
 	for(Int_t sector=0;sector<10;sector++){
 	  SetMinNtracks(100);
-	  if(sector==referSect)continue;
+	  if(sector==kreferSect)continue;
 	  AlignSPDSectorWithSectors(sector,1);
 	}
 
 
 	for(Int_t lay=1;lay<=6;lay++){
-	  if(!AlignLayerToSector(lay,referSect,3))AlignLayerToSPDHalfBarrel(lay,0,3);
+	  if(!AlignLayerToSector(lay,kreferSect,3))AlignLayerToSPDHalfBarrel(lay,0,3);
 	}
 	AlignSPDHalfBarrel(0,3);
 	
@@ -579,7 +622,12 @@ void AliITSRealignTracks::ResetCorrModules(){
 
 //______________________________________________________________________________
 Bool_t AliITSRealignTracks::InitSurveyObjs(Bool_t infinite,Double_t factor,TString filename,TString arrayName){
-  
+  //Initialize the Survey Objects. There is the possibility to set them equal to external objects
+  //   stored in file filename. Otherwuse they are set equal to 0 and with default values for the variances
+  //infinite: set the cov matrix to extremly large values, so that the results of a minimization
+  //   are never rejected by the comparison with the survey
+  //factor: multiplication factor for the variances of the cov. matrix of the survey obj.
+
   if(fSurveyObjs)DeleteSurveyObjs();
   Bool_t fromfile=kFALSE;
   TFile *surveyObj;
@@ -661,7 +709,7 @@ Bool_t AliITSRealignTracks::InitSurveyObjs(Bool_t infinite,Double_t factor,TStri
 
 
 //______________________________________________________________________________
-Int_t AliITSRealignTracks::CheckWithSurvey(Double_t factor,TArrayI *volids){
+Int_t AliITSRealignTracks::CheckWithSurvey(Double_t factor,const TArrayI *volids){
   
   // Check the parameters of the alignment objects in volids (or of all objects if volids is null) 
   // are into the boundaries set by the cov. matrix of the survey objs
@@ -735,7 +783,8 @@ void AliITSRealignTracks::ResetAlignObjs(Bool_t all,TArrayI *volids)
 
 //______________________________________________-
 void AliITSRealignTracks::DeleteSurveyObjs()
-{
+{//destructor for the survey objs. array
+
   if(!fSurveyObjs)return;
   // Delete the alignment objects array
   for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
@@ -788,7 +837,7 @@ Bool_t AliITSRealignTracks::ReadAlignObjs(const char *alignObjFileName, const ch
 }
 
 //_________________________________________
-Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
+Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
 
   //Align all modules in the set of layers independently according to a sequence based on the number of tracks passing through a given module
   
@@ -902,6 +951,10 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks
 
 //__________________________________________
 Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
+
+  //OBSOLETE METHOD: perform a stand-alone realignment of the SPD modules
+  //                 based on a sequence constructed accordingly to the number of tracks
+  //                 passing through each module
   
   BuildIndex();
    
@@ -1000,7 +1053,11 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
 
 //__________________________________
 Bool_t AliITSRealignTracks::SPDmodulesAlignToSSD(Int_t minNtracks,Int_t iterations){
-
+  //Align each SPD module with at least minNtracks passing through it with respect to SSD
+  //The selection based on the minimum number of tracks is a fast one:
+  // the number considere here doesn't coincide with the tracks effectively used then in the
+  // minimization, it's just the total number of tracks in the sample passing through the module
+  // The procedure is iterated "iterations" times
   Int_t volSSD[6]={0,0,0,0,1,1};
   TArrayI *volOuter=GetLayersVolUID(volSSD);
   TArrayI *voluid=new TArrayI(1);
@@ -1253,6 +1310,7 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
 
 //______________________________________________
 Bool_t AliITSRealignTracks::AlignSPDBarrel(Int_t iterations){
+  //Align the SPD barrel "iterations" times
   
   Int_t size=0,size2=0;
   Int_t layers[6]={1,1,0,0,0,0};
@@ -1283,7 +1341,12 @@ Bool_t AliITSRealignTracks::AlignSPDBarrel(Int_t iterations){
 
 //______________________
 Bool_t AliITSRealignTracks::AlignSPDHalfBarrel(Int_t method,Int_t iterations){
- 
+  //Align a SPD Half barrel "iterations" times
+  //method 0 : align SPDHalfBarrel Up without using the points on SPD Half Barrel down in the fits (only outer layers)
+  //method 1 : align SPDHalfBarrel Down without using the points on SPD Half Barrel up in the fits (only outer layers)
+  //method 10 : align SPDHalfBarrel Up using also the points on SPD Half Barrel down in the fits (and points on outer layers)
+  //method 11 : align SPDHalfBarrel Down using also the points on SPD Half Barrel up in the fits (and points on outer layers)
+
   Int_t size=0,size2=0;
   Int_t layers[6]={0,0,1,1,1,1};
   Int_t sectorsUp[10]={1,1,1,1,1,0,0,0,0,0}; 
@@ -1330,6 +1393,7 @@ Bool_t AliITSRealignTracks::AlignSPDHalfBarrel(Int_t method,Int_t iterations){
 
 //______________________________________________________
 Bool_t AliITSRealignTracks::AlignLayer(Int_t layer,Int_t iterations){
+  //Align the layer "layer" iterations times
 
   Int_t size=0,size2=0;
   Int_t layers[6]={0,0,0,0,0,0};
@@ -1360,8 +1424,15 @@ Bool_t AliITSRealignTracks::AlignLayer(Int_t layer,Int_t iterations){
 
 //___________________________________________
 
-Bool_t AliITSRealignTracks::AlignLayersToLayers(Int_t *layer,Int_t iterations){
+Bool_t AliITSRealignTracks::AlignLayersToLayers(const Int_t *layer,Int_t iterations){
 
+  //Align the set of layers A with respect to the set of layers B iterations time.
+  //The two sets A and B are defined into *layer==layer[6] the following way:
+  //   layer[i]=0 the layer is skipped both in the fits than in the minimization
+  //   layer[i]=1 the layer is skipped in the fits and considered in the minimization
+  //   layer[i]=2 the layer is considered in the fits and skipped in the minimization
+  //   layer[i]=3 the layer is considered both in the fits and in the minimization
+  
   UShort_t volid;
   Int_t size=0,size2=0,j=0,k=0;
   Int_t iLayer;
@@ -1421,6 +1492,7 @@ Bool_t AliITSRealignTracks::AlignLayersToLayers(Int_t *layer,Int_t iterations){
 //______________________________________________
 
 Bool_t AliITSRealignTracks::AlignSPDSectorToOuterLayers(Int_t sector,Int_t iterations){
+  //Align the SPD sector "sector" with respect to outer layers iterations times
 
   
   Int_t layers[6]={0,0,1,1,1,1};
@@ -1451,7 +1523,7 @@ Bool_t AliITSRealignTracks::AlignSPDSectorToOuterLayers(Int_t sector,Int_t itera
 
 //______________________________________________
 Bool_t AliITSRealignTracks::AlignSPDSectorWithSectors(Int_t sector,Int_t iterations){
-
+  //Align the SPD sector "sector" with respect to the other SPD sectors iterations times
 
   Int_t sectorsIN[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t sectorsFit[10]={1,1,1,1,1,1,1,1,1,1};
@@ -1474,6 +1546,8 @@ Bool_t AliITSRealignTracks::AlignSPDSectorWithSectors(Int_t sector,Int_t iterati
 
 //___________________________________________________
 Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations){
+  //Align SPD sectors defined in "sectorsIN" with respect to 
+  //SPD sectors defined in "sectorsFit" iterations time
 
   TArrayI *volIDs=GetSPDSectorsVolids(sectorsIN);
   TArrayI *volIDsFit=GetSPDSectorsVolids(sectorsFit);;   
@@ -1488,6 +1562,7 @@ Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(Int_t *sectorsIN,Int_t *s
 
 //___________________________________________________
 Bool_t AliITSRealignTracks::AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations){
+  //Align SPD staves defined by staves and sectorsIN with respect to sectorsFit volumes iterations times
 
   TArrayI *volIDs=GetSPDStavesVolids(sectorsIN,staves);
   TArrayI *volIDsFit=GetSPDSectorsVolids(sectorsFit);   
@@ -1507,6 +1582,9 @@ Bool_t AliITSRealignTracks::AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t 
 //___________________________________________
 
 Bool_t AliITSRealignTracks::AlignLayerToSPDHalfBarrel(Int_t layer,Int_t updown,Int_t iterations){
+  //Align the layer "layer" with respect to SPD Half Barrel Up (updowon=0) 
+  //or Down (updown=1) iterations times
+  
 
 
   Int_t sectorsDown[10]={0,0,0,0,0,1,1,1,1,1};
@@ -1539,7 +1617,8 @@ Bool_t AliITSRealignTracks::AlignLayerToSPDHalfBarrel(Int_t layer,Int_t updown,I
 //___________________________________________
 
 Bool_t AliITSRealignTracks::AlignLayerToSector(Int_t layer,Int_t sector,Int_t iterations){
-  
+  //Align the layer "layer" with respect to SPD sector "sector" iterations times
+
   if(sector>9){
     printf("Wrong Sector selection! \n");
     return kFALSE;
@@ -1565,6 +1644,8 @@ Bool_t AliITSRealignTracks::AlignLayerToSector(Int_t layer,Int_t sector,Int_t it
 //_______________________________________________
 
 Bool_t AliITSRealignTracks::AlignSPDHalfBarrelToHalfBarrel(Int_t updown,Int_t iterations){
+  //Align the SPD Half Barrel Up[Down] with respect to HB Down[Up] iterations time if
+  //updown=0[1]
 
   
   Int_t sectorsDown[10]={0,0,0,0,0,1,1,1,1,1};
@@ -1594,6 +1675,7 @@ Bool_t AliITSRealignTracks::AlignSPDHalfBarrelToHalfBarrel(Int_t updown,Int_t it
 
 //_______________________
 Bool_t AliITSRealignTracks::AlignSPDHalfBarrelToSectorRef(Int_t sector,Int_t iterations){
+  //Align the SPD Half Barrel Down with respect to sector "sector" iterations times
 
   Int_t sectorsIN[10]={0,0,0,0,0,1,1,1,1,1};
   Int_t sectorsFit[10]={0,0,0,0,0,0,0,0,0,0};
@@ -1614,6 +1696,8 @@ Bool_t AliITSRealignTracks::AlignSPDHalfBarrelToSectorRef(Int_t sector,Int_t ite
 }
 //_________________________________________
 Bool_t AliITSRealignTracks::AlignSPD1SectorRef(Int_t sector,Int_t iterations){
+  //OBSOLETE METHOD: Align the SPD1 modules of sector "sector" with respect 
+  // to the other SPD volumes iterations times
 
   Int_t sectorsIN[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t sectorsFit[10]={1,1,1,1,1,1,1,1,1,1};
@@ -1655,6 +1739,10 @@ Bool_t AliITSRealignTracks::AlignSPD1SectorRef(Int_t sector,Int_t iterations){
 //_____________________________________________
 
 AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(TArrayI *volIDs,Int_t lastVolid){
+  //TEMPORARY METHOD: perform an average of the values of the parameters of the AlignObjs 
+  // defined by the array volIDs up to lastVolid position in this array
+  //The aim of such a method is to look for collective movement of a given set of modules
+
   UShort_t volid;
 
   TGeoHMatrix hm;
@@ -1692,7 +1780,7 @@ AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(TArrayI *volIDs,Int_t la
 
 
 //________________________________________________
-TArrayI* AliITSRealignTracks::GetSPDStavesVolids(Int_t *sectors,Int_t* staves){
+TArrayI* AliITSRealignTracks::GetSPDStavesVolids(const Int_t *sectors,const Int_t* staves){
 
   
   // This method gets the volID Array for the chosen staves into the 
@@ -1761,7 +1849,7 @@ TArrayI* AliITSRealignTracks::GetSPDStavesVolids(Int_t *sectors,Int_t* staves){
 } 
 
 //________________________________________________
-TArrayI* AliITSRealignTracks::GetSPDSectorsVolids(Int_t *sectors) 
+TArrayI* AliITSRealignTracks::GetSPDSectorsVolids(const Int_t *sectors) 
 {
   //
   // This method gets the volID Array for the chosen sectors.
@@ -2049,7 +2137,10 @@ TArrayI* AliITSRealignTracks::GetSPDSectorsVolids(Int_t *sectors)
 }
 
 //___________________________________
-TArrayI* AliITSRealignTracks::GetLayersVolUID(Int_t *layer){
+TArrayI* AliITSRealignTracks::GetLayersVolUID(const Int_t *layer){
+
+  //return a TArrayI with the volUIDs of the modules into the set of layers
+  //defined by layer[6]
   
   TArrayI *out=new TArrayI(2198);
   Int_t last=0;
@@ -2070,6 +2161,8 @@ TArrayI* AliITSRealignTracks::GetLayersVolUID(Int_t *layer){
 
 //_________________
 TArrayI* AliITSRealignTracks::SelectLayerInVolids(const TArrayI *volidsIN,AliGeomManager::ELayerID layer){
+  //Select between the modules specified by their volUIDs in volidsIN only those
+  // of a given layer "layer"
 
   Int_t size=volidsIN->GetSize();
   Int_t count=0;
@@ -2090,6 +2183,8 @@ TArrayI* AliITSRealignTracks::SelectLayerInVolids(const TArrayI *volidsIN,AliGeo
 //______________________________________________
 
 TArrayI* AliITSRealignTracks::IntersectVolArray(const TArrayI *vol1,const TArrayI *vol2){
+
+  //Perform the intersection between the array vol1 and vol2
   
   Int_t size1=vol1->GetSize();
   Int_t size2=vol2->GetSize();
@@ -2114,7 +2209,7 @@ TArrayI* AliITSRealignTracks::IntersectVolArray(const TArrayI *vol1,const TArray
 //_________________________________________
 
 TArrayI* AliITSRealignTracks::JoinVolArrays(const TArrayI *vol1,const TArrayI *vol2){
-  //!BE CAREFUL: If an index is repeated in vol1 or vol2 will be repeated also in the final array
+  //!BE CAREFUL: If an index is repeated into vol1 or into vol2 will be repeated also in the final array
   
   Int_t size1=vol1->GetSize();
   Int_t size2=vol2->GetSize();
@@ -2128,11 +2223,11 @@ TArrayI* AliITSRealignTracks::JoinVolArrays(const TArrayI *vol1,const TArrayI *v
     volidOut->AddAt(volid,k);
   }
  
-  for(Int_t k=0;k<size1;k++){
+  for(Int_t k=0;k<size2;k++){
     found=kFALSE;
-    volid=vol1->At(k);
-    for(Int_t j=0;j<size2;j++){
-      if(vol2->At(j)==volid)found=kTRUE;
+    volid=vol2->At(k);
+    for(Int_t j=0;j<size1;j++){
+      if(volidOut->At(j)==volid)found=kTRUE;
     }
     if(!found){
       volidOut->AddAt(volid,size1+count);
@@ -2146,6 +2241,7 @@ TArrayI* AliITSRealignTracks::JoinVolArrays(const TArrayI *vol1,const TArrayI *v
 //______________________________________
 
 TArrayI* AliITSRealignTracks::ExcludeVolidsFromVolidsArray(const TArrayI *volidsToExclude,const TArrayI *volStart){
+  //Excludes the modules defined by their volUID in the array volidsToExclude from the array volStart
 
   Int_t size1=volidsToExclude->GetSize();
   Int_t size2=volStart->GetSize();
@@ -2175,7 +2271,9 @@ TArrayI* AliITSRealignTracks::ExcludeVolidsFromVolidsArray(const TArrayI *volids
 
 //________________________________________
 
-TArrayI* AliITSRealignTracks::GetLayerVolumes(Int_t *layer){
+TArrayI* AliITSRealignTracks::GetLayerVolumes(const Int_t *layer){
+  //returns a TArrayI with the volUIDs of the modules of the layers
+  //specified into *layer
   
   TArrayI *out=new TArrayI(2198);
   Int_t last=0;
@@ -2198,6 +2296,10 @@ TArrayI* AliITSRealignTracks::GetLayerVolumes(Int_t *layer){
 
 //______________________________
 TArrayI* AliITSRealignTracks::GetAlignedVolumes(char *filename){
+  //Open the file "filename" which is expected to contain
+  //a TClonesArray named "ITSAlignObjs" with stored a set of AlignObjs
+  //returns an array with the volumes UID of the modules considered realigned 
+  
   if(gSystem->AccessPathName(filename)){
     printf("Wrong Realignment file name \n");
     return 0x0;
@@ -2224,6 +2326,8 @@ TArrayI* AliITSRealignTracks::GetAlignedVolumes(char *filename){
 
 //________________________________________
 void AliITSRealignTracks::SetDraw(Bool_t draw,Bool_t refresh){
+  //TEPMORARY METHOD: method to switch on/off the drawing of histograms
+  // if refresh=kTRUE deletes the old histos and constructs new ones
   
   if(refresh){
     // WriteHists();
@@ -2235,6 +2339,8 @@ void AliITSRealignTracks::SetDraw(Bool_t draw,Bool_t refresh){
 }
 
 void AliITSRealignTracks::DeleteDrawHists(){
+  //Delete the pointers to the histograms
+
   for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       delete fAlignDrawObjs[iLayer][iModule];
@@ -2264,6 +2370,8 @@ void AliITSRealignTracks::DeleteDrawHists(){
 } 
 
 void AliITSRealignTracks::InitDrawHists(){
+  //Initialize the histograms to monitor the results
+
   Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
   fAlignDrawObjs = new AliAlignObj**[nLayers];
   for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
@@ -2386,7 +2494,10 @@ void AliITSRealignTracks::InitDrawHists(){
 }
 
 void AliITSRealignTracks::UpdateDraw(TArrayI *volids,Int_t iter,Int_t color){
-  
+  //Updates the histograms to monitor the results. Only the histograms
+  //of the volumes specified in *volids will be updated.
+  // iter is just a flag for the names of the histo
+  // color specifies the color of the lines of the histograms for this update
   
   TString name="hX_";
   name+=iter;
@@ -2479,6 +2590,8 @@ void AliITSRealignTracks::UpdateDraw(TArrayI *volids,Int_t iter,Int_t color){
 }
 
 void AliITSRealignTracks::WriteHists(const char *outfile){
+  //Writes the histograms for the monitoring of the results
+  // in a file named "outfile"
 
   TFile *f=new TFile(outfile,"RECREATE");
   f->cd();

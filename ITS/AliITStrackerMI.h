@@ -17,14 +17,17 @@ class TTree;
 class TTreeSRedirector;
 class AliESDEvent;
 
+class AliITSPlaneEff;
+class AliITSChannelStatus;
+class AliITSDetTypeRec;
+class AliPlaneEff;
+
 #include <TObjArray.h>
-#include "AliITSRecPoint.h"
+
 #include "AliITStrackMI.h"
-#include "AliITSPlaneEff.h"
-#include "AliITSChannelStatus.h"
-#include "AliITSDetTypeRec.h"
-#include "AliPlaneEff.h"
+#include "AliITSRecPoint.h"
 #include "AliTracker.h"
+
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -50,18 +53,18 @@ public:
 		 const AliITStrackMI *clusters, Bool_t extra=kFALSE, Bool_t planeeff=kFALSE);
   Bool_t RefitAt(Double_t x, AliITStrackMI *track, 
 		 const Int_t *clusters, Bool_t extra=kFALSE, Bool_t planeeff=kFALSE);
-  void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
-  void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
+  void SetupFirstPass(const Int_t *flags,const Double_t *cuts=0);
+  void SetupSecondPass(const Int_t *flags,const Double_t *cuts=0);
 
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
-  void SetLayersNotToSkip(Int_t *l);
+  void SetLayersNotToSkip(const Int_t *l);
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
 
-  void  GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
+  void  GetDCASigma(const AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
   Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEff;}   // return the pointer to AliPlaneEff
-  void SetDetTypeRec(AliITSDetTypeRec *detTypeRec) {fDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
+  void SetDetTypeRec(const AliITSDetTypeRec *detTypeRec) {fkDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
 
   class AliITSdetector { 
   public:
@@ -85,7 +88,7 @@ public:
     void SetZmin(Double_t min) {fZmin = min;}
     void SetZmax(Double_t max) {fZmax = max;}
     void SetBad() {fIsBad = kTRUE;}
-    void ReadBadDetectorAndChips(Int_t ilayer,Int_t idet,AliITSDetTypeRec *detTypeRec);
+    void ReadBadDetectorAndChips(Int_t ilayer,Int_t idet,const AliITSDetTypeRec *detTypeRec);
   private:
     AliITSdetector(const AliITSdetector& det);
     AliITSdetector & operator=(const AliITSdetector& det){
@@ -121,7 +124,7 @@ public:
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
     AliITSRecPoint *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t         *GetWeight(Int_t i) {return i<fN ?&fClusterWeight[i]:0;}
+    Float_t  *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -202,8 +205,8 @@ protected:
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
   Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
   void FindV02(AliESDEvent *event);  //try to find V0
-  void RefitV02(AliESDEvent *event);  //try to refit  V0's
-  void UpdateTPCV0(AliESDEvent *event);  //try to update, or reject TPC  V0s
+  void RefitV02(const AliESDEvent *event);  //try to refit  V0's
+  void UpdateTPCV0(const AliESDEvent *event);  //try to update, or reject TPC  V0s
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness();
@@ -218,27 +221,27 @@ protected:
   }
   void CookdEdx(AliITStrackMI* track);
   Double_t GetNormalizedChi2(AliITStrackMI * track, Int_t mode);
-  Double_t GetTruncatedChi2(AliITStrackMI * track, Float_t fac);
+  Double_t GetTruncatedChi2(const AliITStrackMI * track, Float_t fac);
   Double_t NormalizedChi2(AliITStrackMI * track, Int_t layer);
-  Double_t GetInterpolatedChi2(AliITStrackMI * forwardtrack, AliITStrackMI * backtrack);  
-  Double_t GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI * track2);
-  Double_t GetSPDDeadZoneProbability(Double_t zpos, Double_t zerr);
+  Double_t GetInterpolatedChi2(const AliITStrackMI * forwardtrack,const AliITStrackMI * backtrack);  
+  Double_t GetMatchingChi2(const AliITStrackMI * track1,const AliITStrackMI * track2);
+  Double_t GetSPDDeadZoneProbability(Double_t zpos, Double_t zerr) const;
 
   Float_t    *GetWeight(Int_t index);
   void AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex);
   void SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mode);
   AliITStrackMI * GetBestHypothesys(Int_t esdindex, AliITStrackMI * original, Int_t checkmax); 
   void  GetBestHypothesysMIP(TObjArray &itsTracks); 
-  void RegisterClusterTracks(AliITStrackMI* track, Int_t id);
-  void UnRegisterClusterTracks(AliITStrackMI* track, Int_t id);
+  void RegisterClusterTracks(const AliITStrackMI* track, Int_t id);
+  void UnRegisterClusterTracks(const AliITStrackMI* track, Int_t id);
   Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSRecPoint *clist[6]);
-  Int_t GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
+  Int_t GetOverlapTrack(const AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
   AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
   Float_t  * GetErrY(Int_t trackindex) const {return &fCoefficients[trackindex*48];}
   Float_t  * GetErrZ(Int_t trackindex) const {return &fCoefficients[trackindex*48+12];}
   Float_t  * GetNy(Int_t trackindex) const {return &fCoefficients[trackindex*48+24];}
   Float_t  * GetNz(Int_t trackindex) const {return &fCoefficients[trackindex*48+36];}
-  void       SignDeltas( TObjArray *ClusterArray, Float_t zv);
+  void       SignDeltas(const TObjArray *clusterArray, Float_t zv);
   void MakeCoefficients(Int_t ntracks);
   void BuildMaterialLUT(TString material);
   void MakeTrksMaterialLUT(Int_t ntracks);
@@ -248,14 +251,14 @@ protected:
   Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   void ReadBadFromDetTypeRec();
-  Int_t CheckSkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
+  Int_t CheckSkipLayer(const AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
   Int_t CheckDeadZone(AliITStrackMI *track,Int_t ilayer,Int_t idet,Double_t dz,Double_t dy,Bool_t noClusters=kFALSE) const;
-  Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,AliITStrackMI *track,
+  Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,const AliITStrackMI *track,
 			  Float_t &xloc,Float_t &zloc) const;
 // method to be used for Plane Efficiency evaluation
-  Bool_t IsOKForPlaneEff(AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const; // Check if a track is usable
+  Bool_t IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const; // Check if a track is usable
                                                                                            // for Plane Eff evaluation
-  void UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer);                            // Use this track for Plane Eff
+  void UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilayer);                            // Use this track for Plane Eff
 // 
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
@@ -292,12 +295,12 @@ protected:
   Float_t *fxTimesRhoLayerTrks;          //! material budget
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
-  AliITSDetTypeRec *fDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
+  const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,6)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,7)   //ITS tracker MI
 };
 
 
@@ -311,7 +314,7 @@ private:
 
 
 
-inline void AliITStrackerMI::SetupFirstPass(Int_t *flags, Double_t *cuts) {
+inline void AliITStrackerMI::SetupFirstPass(const Int_t *flags,const Double_t *cuts) {
   // This function sets up flags and cuts for the first tracking pass   
   //
   //   flags[0] - vertex constaint flag                                
@@ -323,7 +326,7 @@ inline void AliITStrackerMI::SetupFirstPass(Int_t *flags, Double_t *cuts) {
    if (cuts==0) return;
 }
 
-inline void AliITStrackerMI::SetupSecondPass(Int_t *flags, Double_t *cuts) {
+inline void AliITStrackerMI::SetupSecondPass(const Int_t *flags,const Double_t *cuts) {
   // This function sets up flags and cuts for the second tracking pass   
   //
   //   flags[0] - vertex constaint flag                                
