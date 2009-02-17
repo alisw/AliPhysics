@@ -37,8 +37,8 @@ class AliCFEffGrid : public AliCFGridSparse
 
   //Efficiency calculation
   virtual void  CalculateEfficiency(Int_t istep1, Int_t istep2);
-  virtual const AliCFVGrid*  GetNum() {return (AliCFVGrid*)fContainer->GetGrid(fSelNum);};
-  virtual const AliCFVGrid*  GetDen() {return (AliCFVGrid*)fContainer->GetGrid(fSelDen);};
+  virtual AliCFVGrid*  GetNum() const {return (AliCFVGrid*)fContainer->GetGrid(fSelNum);};
+  virtual AliCFVGrid*  GetDen() const {return (AliCFVGrid*)fContainer->GetGrid(fSelDen);};
   virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;};
 
   //basic operations

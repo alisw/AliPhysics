@@ -62,7 +62,6 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t 
 //____________________________________________________________________
 AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
   AliCFGridSparse(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
-  fContainer(0x0),
   fSelNum(-1),
   fSelDen(-1)
 {
@@ -248,7 +247,14 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
 
   proj1D->Sumw2();
   proj1D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar),fContainer->GetGrid(fSelDen)->Project(ivar),1.,1.,"B");
-  
+
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
+  proj1D->GetXaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar)->GetLast()
+			       );
+
   delete [] bins; 
   return proj1D;
 } 
@@ -288,6 +294,17 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   proj2D->Sumw2();
   proj2D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2),1.,1.,"B");
   
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
+  proj2D->GetXaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetLast()
+			       );
+  proj2D->GetYaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetLast()
+			       );
+
   delete [] bins1;
   delete [] bins2; 
   return proj2D;
@@ -336,6 +353,22 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   proj3D->Sumw2();
   proj3D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2,ivar3),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2,ivar3),1.,1.,"B");
   
+  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
+  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
+
+  proj3D->GetXaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetLast()
+			       );
+  proj3D->GetYaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetLast()
+			       );
+  proj3D->GetZaxis()->SetRange(
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar3)->GetFirst(),
+			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar3)->GetLast()
+			       );
+
   delete [] bins1;
   delete [] bins2;
   delete [] bins3; 
