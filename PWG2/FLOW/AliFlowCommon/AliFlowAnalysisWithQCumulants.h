@@ -184,6 +184,7 @@ class AliFlowAnalysisWithQCumulants{
   
   AliFlowTrackSimple* fTrack;                           //track
   TList*              fHistList;                        //list to hold all output histograms
+  TList*              fDiffFlowList;                    //list to hold all histograms and profiles needed for differential flow
   TList*              fWeightsList;                     //list to hold all histograms with weights
     
   TProfile*           fAvMultIntFlowQC;                 //average selected multiplicity (for int. flow)
@@ -289,7 +290,7 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t                     fUsePhiWeights;            //phi weights
   Bool_t                     fUsePtWeights;             //v_2(pt) weights
   Bool_t                     fUseEtaWeights;            //v_2(eta) weights
-                     
+                       
   ClassDef(AliFlowAnalysisWithQCumulants, 0);
 };
 
