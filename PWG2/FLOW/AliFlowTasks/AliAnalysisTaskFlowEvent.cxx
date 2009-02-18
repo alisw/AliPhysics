@@ -179,7 +179,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-
+  AliFlowEventSimple* fEvent = NULL;
         
   if (fAnalysisType == "MC") {
 
@@ -203,7 +203,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
     // analysis 
     Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
+    fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     // here we have the fEvent and want to make it available as an output stream
     // so no
     //   delete fEvent;
@@ -216,7 +216,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
+    fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
   }
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
     if (!fESD) {
@@ -240,7 +240,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
 
-    AliFlowEventSimple* fEvent=NULL;
+
     if (fAnalysisType == "ESDMC0") { 
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
     } else if (fAnalysisType == "ESDMC1") {
@@ -259,7 +259,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
     // analysis 
     //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
+    fEvent = fEventMaker->FillTracks(fAOD);
   }
 
   //fListHistos->Print();	
