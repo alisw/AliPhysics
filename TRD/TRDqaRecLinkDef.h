@@ -11,18 +11,19 @@
 #pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliMCinfo+;
+#pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDtrackInfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
 #pragma link C++ class  AliTRDcheckDetector+;
 #pragma link C++ class  AliTRDtrackingResolution+;
 #pragma link C++ class  AliTRDtrackingEfficiency+;
 #pragma link C++ class  AliTRDtrackingEfficiencyCombined+;
-#pragma link C++ class  AliTRDalignmentTask+;
-#pragma link C++ class  AliTRDcalibration+;
 #pragma link C++ class  AliTRDpidChecker+;
-#pragma link C++ class  AliTRDpidRefMaker+;
 
 // reconstruction calibration tasks
 #pragma link C++ class  AliTRDclusterResolution+;
+#pragma link C++ class  AliTRDalignmentTask+;
+#pragma link C++ class  AliTRDcalibration+;
+#pragma link C++ class  AliTRDpidRefMaker+;
 
 #endif

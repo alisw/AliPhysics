@@ -59,6 +59,7 @@
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
 #include "TRD/qaRec/AliTRDtrackInfo/AliTRDeventInfo.h"
+#include "TRD/qaRec/AliTRDcheckESD.h"
 #include "TRD/qaRec/AliTRDtrackInfoGen.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiency.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
@@ -177,13 +178,18 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   //mgr->SetDebugLevel(10);
 
   //____________________________________________
+  // TRD check ESD
+  AliTRDcheckESD *checkESD = new AliTRDcheckESD();
+  mgr->AddTask(checkESD);
+  checkESD->SetMC(fHasMCdata);
+  mgr->ConnectInput(checkESD, 0, mgr->GetCommonInputContainer());  mgr->ConnectOutput(checkESD, 0, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", checkESD->GetName())));
+
+  //____________________________________________
   // TRD track summary generator
   mgr->AddTask(task = new AliTRDtrackInfoGen());
   taskPtr[(Int_t)kInfoGen] = task;
   task->SetDebugLevel(0);
   task->SetMCdata(fHasMCdata);
-  // Create containers for input/output
-  //AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
   mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
