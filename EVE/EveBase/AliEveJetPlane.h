@@ -36,8 +36,8 @@ public:
   AliEveJetPlane(Int_t iev);
   virtual ~AliEveJetPlane() {}
 
-  void AddJet(AliAODJet jet);
-  void AddTrack(AliAODTrack track);
+  void AddJet(AliAODJet* jet);
+  void AddTrack(AliAODTrack* track);
 
   Int_t GetNEtaDiv() const  { return fNEtaDiv; }
   void  SetNEtaDiv(Int_t r) { fNEtaDiv = r; }

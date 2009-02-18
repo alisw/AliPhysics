@@ -44,7 +44,7 @@ AliEveJetPlane* jetplane()
 
   for (Int_t ij = 0; ij < njets; ij++)
   {
-    AliAODJet jet = (AliAODJet) jets->At(ij);
+    AliAODJet *jet = (AliAODJet*) jets->At(ij);
     jp->AddJet(jet);
   }
 
@@ -56,7 +56,7 @@ AliEveJetPlane* jetplane()
 
   for (Int_t ij = 0; ij < ntracks; ij++)
   {
-    AliAODTrack track = (AliAODTrack) tracks->At(ij);
+    AliAODTrack* track = (AliAODTrack*) tracks->At(ij);
     jp->AddTrack(track);
   }
 

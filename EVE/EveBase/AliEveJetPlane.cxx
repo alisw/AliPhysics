@@ -10,6 +10,7 @@
 #include "AliEveJetPlane.h"
 
 #include <TEveTrans.h>
+#include <TEveArrow.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
@@ -36,14 +37,14 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
   fMinEta (-1.5 ),
   fMaxEta ( 1.5 ),
-  fMinPhi (-TMath::Pi() ),
-  fMaxPhi ( TMath::Pi() ),
+  fMinPhi ( 0.0 ),
+  fMaxPhi ( 2.0 * TMath::Pi() ),
 
   fNEtaDiv(30),
   fNPhiDiv(30),
 
   fEtaScale(350/1.5),
-  fPhiScale(350/TMath::Pi()),
+  fPhiScale(350/(TMath::Pi())),
   fEnergyScale(100.0),
 
   fEnergyColorScale (0.),
@@ -69,20 +70,40 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
 /******************************************************************************/
 
-void AliEveJetPlane::AddJet(AliAODJet jet)
+void AliEveJetPlane::AddJet(AliAODJet* jet)
 {
   // Add a jet for display.
 
-  fJets.push_back(jet);
+  fJets.push_back(*jet);
+
+  TEveArrow* a = new TEveArrow();
+  a->SetElementName (Form("Jet %d", fJets.size()));
+  a->SetElementTitle("Tooltip");
+  a->SetPickable(kTRUE);
+  a->SetMainColor(kOrange);
+  //a->SetTubeR();
+  //a->SetConeR();
+  //a->SetConeL();
+  AddElement(a);
 }
 
 /******************************************************************************/
 
-void AliEveJetPlane::AddTrack(AliAODTrack track)
+void AliEveJetPlane::AddTrack(AliAODTrack* track)
 {
   // Add a track for display.
 
-  fTracks.push_back(track);
+  fTracks.push_back(*track);
+
+  TEveArrow* a = new TEveArrow(0,0,0.5, 20,20,0);
+  a->SetElementName (Form("Track %d", fTracks.size()));
+  a->SetElementTitle("Tooltip");
+  a->SetPickable(kTRUE);
+  a->SetMainColor(kOrange);
+  //a->SetTubeR();
+  //a->SetConeR();
+  //a->SetConeL();
+  AddElement(a);
 }
 
 
@@ -94,7 +115,7 @@ void AliEveJetPlane::ComputeBBox()
 
   BBoxInit();
   BBoxCheckPoint(-350, -350, -20);
-  BBoxCheckPoint( 350,  350,  20);
+  BBoxCheckPoint( 350, 350,  20);
 }
 
 void AliEveJetPlane::Paint(Option_t* /*option*/)

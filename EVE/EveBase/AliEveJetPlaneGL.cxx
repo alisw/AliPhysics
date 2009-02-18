@@ -67,8 +67,8 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 
   Float_t minEta = (fM->fMinEta)*(fM->fEtaScale);
   Float_t maxEta = (fM->fMaxEta)*(fM->fEtaScale);
-  Float_t minPhi = (fM->fMinPhi)*(fM->fPhiScale);
-  Float_t maxPhi = (fM->fMaxPhi)*(fM->fPhiScale);
+  Float_t minPhi = (fM->fMinPhi)*(fM->fPhiScale) - 350;
+  Float_t maxPhi = (fM->fMaxPhi)*(fM->fPhiScale) - 350;
   Float_t phiCoord, etaCoord, dPhi, dEta;
   Double_t eta, phi, e, x, y;
 
@@ -175,7 +175,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
       e   = j->E();
 
       x = eta*(fM->fEtaScale);
-      y = phi*(fM->fPhiScale);
+      y = phi*(fM->fPhiScale) - 350;
 
       Int_t colBin = TMath::Min((Int_t) ((nCol-2)*e*
 					 TMath::Power(10.,fM->fEnergyColorScale)/(eMax)),nCol-2);
@@ -223,7 +223,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
       }
 
       x = eta*(fM->fEtaScale);
-      y = phi*(fM->fPhiScale);
+      y = phi*(fM->fPhiScale) - 350;
 
       Int_t colBin = TMath::Min((Int_t) ((nCol-2)*e*
 					 TMath::Power(10.,fM->fEnergyColorScale)/(eMax)),nCol-2);
