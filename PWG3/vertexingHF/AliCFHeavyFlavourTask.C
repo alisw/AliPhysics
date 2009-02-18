@@ -141,7 +141,7 @@ Bool_t AliCFHeavyFlavourTask()
 	// Create and connect containers for input/output
 	
 	// ------ input data ------
-	AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+	AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
 	
 	// ----- output data -----
 	
@@ -155,7 +155,7 @@ Bool_t AliCFHeavyFlavourTask()
 	// output Correction Framework Container (for acceptance & efficiency calculations)
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
 	
-	cinput0->SetData(analysisChain);
+//	cinput0->SetData(analysisChain);
 	
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

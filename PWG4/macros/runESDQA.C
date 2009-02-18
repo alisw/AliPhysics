@@ -85,8 +85,7 @@ void runESDQA()
 
     // Create containers for input/output
     // Top ESD container
-    AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cchain",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
 
     // Histos
     //AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("qa_hists", TObjArray::Class(),

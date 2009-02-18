@@ -238,7 +238,7 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   mgr->SetInputEventHandler(esdHandler);
 
   //------ input data ------
-  AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
 
   // ----- output data -----
   //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)

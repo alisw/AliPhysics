@@ -88,10 +88,8 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
     mgr->AddTask(aodfilter);
   
     // Create containers for input/output
-    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
 							       
     mgr->ConnectInput(aodfilter,0,cinput1);
     mgr->ConnectOutput(aodfilter,0,coutput1);

@@ -114,9 +114,9 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
   mgr->AddTask(esdmuonfilter);
 
   // Containers for input/output
-  AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cESD",TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
   // Output AOD container. 
-  AliAnalysisDataContainer *cout_aod = mgr->CreateContainer("cAOD", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+  AliAnalysisDataContainer *cout_aod = mgr->GetCommonOutputContainer();
         						    
   // Connect containers to tasks slots
   mgr->ConnectInput  (esdfilter,  0, cin_esd  );

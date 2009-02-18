@@ -81,8 +81,8 @@ void RunLinkToMCAnalysisExample(const char* esdFile = "./AliESDs.root")
 	mgr->AddTask(linktask);
 	
 	// Create the input and output containers and connect them up to the analysis task.
-	AliAnalysisDataContainer* cinEsd = mgr->CreateContainer("cESD", TChain::Class(), AliAnalysisManager::kInputContainer);
-	AliAnalysisDataContainer* coutAod = mgr->CreateContainer("cAOD", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+	AliAnalysisDataContainer* cinEsd = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer* coutAod = mgr->GetCommonOutputContainer();
 	AliAnalysisDataContainer* coutHists = mgr->CreateContainer("cHists", TList::Class(), AliAnalysisManager::kOutputContainer, "hists.root");
 	mgr->ConnectInput(linktask, 0, cinEsd);
 	mgr->ConnectOutput(linktask, 0, coutAod);

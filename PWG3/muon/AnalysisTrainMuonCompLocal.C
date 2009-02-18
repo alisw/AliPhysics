@@ -79,9 +79,9 @@ void AnalysisTrainMuonCompLocal()
   mgr->AddTask(AODvsESD);
 
   // Input ESD container
-  AliAnalysisDataContainer *esdIn = mgr->CreateContainer("input1",TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *esdIn = mgr->GetCommonInputContainer();
   // Output AOD container. 
-  AliAnalysisDataContainer *aodOut = mgr->CreateContainer("output1", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+  AliAnalysisDataContainer *aodOut = mgr->GetCommonOutputContainer();
   // Output comparison
   AliAnalysisDataContainer *listOut = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer, "AODvsESDoutput.root");
 

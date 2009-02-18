@@ -80,11 +80,11 @@ void runBatch(const char *chainlistfile) {
   mgr->AddTask(task1);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Femto.ESD.root");
   
   //____________________________________________//
-  cinput1->SetData(chain);
+//  cinput1->SetData(chain);
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,0,coutput1);
 

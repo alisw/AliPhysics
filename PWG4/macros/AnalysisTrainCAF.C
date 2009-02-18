@@ -137,9 +137,6 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
     // Make the analysis manager
     AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "A test setup for the analysis train");
-    // Top container for input 
-    AliAnalysisDataContainer *cinput = mgr->CreateContainer("cInput",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
     if (iAODanalysis) {
     // AOD input handler
        AliAODInputHandler *aodH = new AliAODInputHandler();
@@ -156,6 +153,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
        mgr->SetMCtruthEventHandler(mcHandler);
        mcHandler->SetReadTR(readTR); 
     }   
+    // Top container for input 
+    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     
     // This container is managed by the AOD handler
     AliAnalysisDataContainer *cout_aod = 0;
@@ -165,8 +164,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
        aodHandler->SetFillAOD(kFALSE);
        mgr->SetOutputEventHandler(aodHandler);       
        aodHandler->SetOutputFileName(Form("AliAODs_pwg4_%07d-%07d.root",nOffset,nOffset+nEvents));
-       cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
-				       AliAnalysisManager::kOutputContainer, "default");
+       cout_aod = mgr->GetCommonOutputContainer();
        cout_aod->SetSpecialOutput();
     }   
 

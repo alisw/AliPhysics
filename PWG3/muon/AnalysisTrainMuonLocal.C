@@ -112,11 +112,9 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root",
     mgr->AddTask(tagTask);
     
     // Input container
-    AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cESD",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
     // Output AOD container. 
-    AliAnalysisDataContainer *cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *cout_aod = mgr->GetCommonOutputContainer();
     // Tag container							      
     AliAnalysisDataContainer *cout_tags = mgr->CreateContainer("cTag",TTree::Class(), 
                                                                AliAnalysisManager::kOutputContainer, "AOD.tag.root");

@@ -67,7 +67,7 @@ void RunRecoCheck(Bool_t local = kFALSE) {
   // Create containers for input/output
 
   // input
-  AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   // output
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("ctree", TTree::Class(),AliAnalysisManager::kOutputContainer,"RecoCheck.root");

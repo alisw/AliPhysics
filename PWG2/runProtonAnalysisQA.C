@@ -83,9 +83,7 @@ void runInteractive(const char *collectionfile,
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -190,9 +188,7 @@ void runProof(Int_t stats = 0,
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
