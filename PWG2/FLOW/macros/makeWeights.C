@@ -21,8 +21,8 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  //for AliRoot
  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
  gSystem->Load("libANALYSIS.so");
- gSystem->Load("libPWG2flowCommon.so");
- cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+ gSystem->Load("libPWG2flow.so");
+ cerr<<"libPWG2flow.so loaded ..."<<endl;
 
  //open the output file from the first run of the specified method:
  TString inputFileName = "output";
@@ -62,17 +62,30 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  //making the output file and creating the TList to hold the histograms with weights:
  TFile* outputFile = new TFile("weights.root","RECREATE"); 
  TList* listWeights = new TList();
+ Int_t nBinsPhi = 0;
+ Double_t nParticlesInBin = 0;  // number of particles in particular phi bin
+ Double_t nParticlesPerBin = 0; // average number of particles per phi bin
+ Double_t nParticles = 0;       // number of particles in all phi bins 
+ Double_t wPhi = 0.;  
  //common control histos:
  if(commonHist)
  {
   //azimuthal acceptance:
   (commonHist->GetHistPhiInt())->SetName("phi_weights");
-  //normalizing:
-  Double_t norm=(commonHist->GetHistPhiInt())->Integral();
-  if(norm)
+  (commonHist->GetHistPhiInt())->SetTitle("Phi_weights: correction for non-uniform acceptance");
+  (commonHist->GetHistPhiInt())->SetYTitle("weights");
+  (commonHist->GetHistPhiInt())->SetXTitle("#phi"); 
+  nBinsPhi = (commonHist->GetHistPhiInt())->GetNbinsX();
+  nParticles = (commonHist->GetHistPhiInt())->Integral();
+  if(nBinsPhi) nParticlesPerBin = nParticles/nBinsPhi; 
+  // loop over phi bins:
+  for(Int_t b=1;b<nBinsPhi+1;b++)
   {
-   (commonHist->GetHistPhiInt())->Scale(1./norm);
-  } 
+   nParticlesInBin = (commonHist->GetHistPhiInt())->GetBinContent(b);
+   // calculate the phi weight wPhi for each bin:
+   if(nParticlesInBin) wPhi = nParticlesPerBin/nParticlesInBin;
+   (commonHist->GetHistPhiInt())->SetBinContent(b,wPhi);
+  }
   listWeights->Add(commonHist->GetHistPhiInt());
  }else{cout<<" WARNING: the common control histos from the 1st run were not accessed."<<endl;} 
  //common results histos:

@@ -90,33 +90,41 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 //-----------------------------------------------------------------------   
 AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
 {
-  //calculate Q-vector in harmonic n without weights (default harmonic n=2)  
+  // calculate Q-vector in harmonic n without weights (default harmonic n=2)  
   Double_t dQX = 0.;
   Double_t dQY = 0.;
   AliFlowVector vQ;
   vQ.Set(0.,0.);
   
   Int_t iOrder = n;
-  Int_t iUsedTracks = 0;
+  Double_t iUsedTracks = 0;
   Double_t dPhi=0.;
-  Double_t dPt=0;
-  Double_t dEta=0;
+  Double_t dPt=0.;
+  Double_t dEta=0.;
   
   AliFlowTrackSimple* pTrack = NULL;
  
   Int_t nBinsPhi=0; 
   Double_t dBinWidthPt=0.;
-  Double_t dNormPt=0.;
+  Double_t dPtMin=0.;
   Double_t dBinWidthEta=0.;
-  Double_t dNormEta=0.;
+  Double_t dEtaMin=0.;
  
-  Double_t wPhi=1.; //weight Phi  
-  Double_t wPt=1.;  //weight Pt 
-  Double_t wEta=1.; //weight Eta 
+  Double_t wPhi=1.; // weight Phi  
+  Double_t wPt=1.;  // weight Pt 
+  Double_t wEta=1.; // weight Eta 
   
   TH1F *phiWeights = NULL;
-  TH1D *ptWeights = NULL;
+  TH1D *ptWeights  = NULL;
   TH1D *etaWeights = NULL;
+
+  Double_t dSumOfWeightsToPower2 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 2)
+  Double_t dSumOfWeightsToPower3 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 3)
+  Double_t dSumOfWeightsToPower4 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 4)
+  Double_t dSumOfWeightsToPower5 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 5)
+  Double_t dSumOfWeightsToPower6 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 6)
+  Double_t dSumOfWeightsToPower7 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 7)
+  Double_t dSumOfWeightsToPower8 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 8) 
 
   if(weightsList)
   {
@@ -131,7 +139,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
     if(ptWeights)
     {
      dBinWidthPt = ptWeights->GetBinWidth(1); // assuming that all bins have the same width
-     dNormPt = ptWeights->Integral();
+     dPtMin = (ptWeights->GetXaxis())->GetXmin();
     } 
    }       
    if(useEtaWeights)
@@ -140,11 +148,10 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
     if(etaWeights)
     {
      dBinWidthEta = etaWeights->GetBinWidth(1); // assuming that all bins have the same width
-     dNormEta = etaWeights->Integral();
+     dEtaMin = (etaWeights->GetXaxis())->GetXmin();
     } 
    }          
   } // end of if(weightsList)
-
   
   // loop over tracks    
   for(Int_t i=0;i<fNumberOfTracks;i++)                               
@@ -157,35 +164,53 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
      dPhi = pTrack->Phi();
      dPt  = pTrack->Pt();
      dEta = pTrack->Eta();
-    
-     //determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-     if(phiWeights && (nBinsPhi!=0) && (phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())))!=0))
+     
+     // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
+     if(phiWeights && nBinsPhi)
      {
-      wPhi=pow(nBinsPhi*phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi()))),-1);
+      wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
      }
-     //determine v'(pt) weight:    
-     if(ptWeights && dBinWidthPt && dNormPt)
+     // determine v'(pt) weight:    
+     if(ptWeights && dBinWidthPt)
      {
-      wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPt/dBinWidthPt)))/dNormPt; 
+      wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
      }            
-     //determine v'(eta) weight:    
-     if(etaWeights && dBinWidthEta && dNormEta)
+     // determine v'(eta) weight:    
+     if(etaWeights && dBinWidthEta)
      {
-      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor(dEta/dBinWidthEta)))/dNormEta; 
+      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
      } 
-   
-     //building up the weighted Q-vector:       
+
+     // building up the weighted Q-vector:       
      dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
      dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
-     iUsedTracks++;
+    
+     // weighted multiplicity:
+     iUsedTracks+=wPhi*wPt*wEta;
+    
+     // weights raised to various powers are summed up:
+     dSumOfWeightsToPower2+=pow(wPhi*wPt*wEta, 2); 
+     dSumOfWeightsToPower3+=pow(wPhi*wPt*wEta, 3); 
+     dSumOfWeightsToPower4+=pow(wPhi*wPt*wEta, 4); 
+     dSumOfWeightsToPower5+=pow(wPhi*wPt*wEta, 5); 
+     dSumOfWeightsToPower6+=pow(wPhi*wPt*wEta, 6); 
+     dSumOfWeightsToPower7+=pow(wPhi*wPt*wEta, 7); 
+     dSumOfWeightsToPower8+=pow(wPhi*wPt*wEta, 8); 
      
-    }//end of if (pTrack->UseForIntegratedFlow())
-   }//end of if (pTrack)
+    } // end of if (pTrack->UseForIntegratedFlow())
+   } // end of if (pTrack)
    else {cerr << "no particle!!!"<<endl;}
-  }//loop over particles
+  } // loop over particles
     
   vQ.Set(dQX,dQY);
   vQ.SetMult(iUsedTracks);
+  vQ.SetSumOfWeightsToPower2(dSumOfWeightsToPower2);
+  vQ.SetSumOfWeightsToPower3(dSumOfWeightsToPower3);
+  vQ.SetSumOfWeightsToPower4(dSumOfWeightsToPower4);
+  vQ.SetSumOfWeightsToPower5(dSumOfWeightsToPower5);
+  vQ.SetSumOfWeightsToPower6(dSumOfWeightsToPower6);
+  vQ.SetSumOfWeightsToPower7(dSumOfWeightsToPower7);
+  vQ.SetSumOfWeightsToPower8(dSumOfWeightsToPower8);
 
   return vQ;
   
