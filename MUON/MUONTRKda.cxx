@@ -51,6 +51,7 @@ extern "C" {
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 #include <math.h> 
 
 //AliRoot
@@ -68,6 +69,8 @@ extern "C" {
 #include "AliMpConstants.h"
 #include "AliRawDataErrorLog.h"
 
+#include "AliMUONTrackerIO.h"
+
 //ROOT
 #include "TFile.h"
 #include "TSystem.h"
@@ -82,8 +85,16 @@ extern "C" {
 #include "TROOT.h"
 #include "TPluginManager.h"
 #include "TFitter.h"
+#include "TObjString.h"
 #include "THashTable.h"
 #include <THashList.h>
+//
+//AMORE
+//
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
+
 
 #define  NFITPARAMS 4
 
@@ -229,12 +240,59 @@ void MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 }
 
 //________________
+TString WritePedHeader(void) 
+{
+	ostringstream stream;
+	stream<<"//===========================================================================" << endl;
+	stream<<"//                       Pedestal file calculated by MUONTRKda"<<endl;
+	stream<<"//===========================================================================" << endl;
+	stream<<"//       * Run           : " << gAliRunNumber << endl; 
+	stream<<"//       * Date          : " << gAlidate.AsString("l") <<endl;
+	stream<<"//       * Statictics    : " << gAliNEvents << endl;
+	stream<<"//       * # of MANUS    : " << gAliNManu << endl;
+	stream<<"//       * # of channels : " << gAliNChannel << endl;
+	if (gAliErrorBuspatchTable->GetSize())
+	{
+		stream<<"//"<<endl;
+		stream<<"//       * Buspatches with less statistics (due to parity errors)"<<endl;		
+		TIterator* iter = gAliErrorBuspatchTable->MakeIterator();
+		ErrorCounter* parityerror;
+		while((parityerror = (ErrorCounter*) iter->Next()))
+		{
+			stream<<"//         bp "<<parityerror->BusPatch()<<" events used "<<gAliNEvents-parityerror->Events()<<endl;
+		}
+			}	
+	stream<<"//"<<endl;
+	stream<<"//---------------------------------------------------------------------------" << endl;
+	stream<<"//---------------------------------------------------------------------------" << endl;
+	stream<<"//      BP     MANU     CH.      MEAN    SIGMA"<<endl;
+	stream<<"//---------------------------------------------------------------------------" << endl;
+	
+	return TString(stream.str().c_str());
+}
+
+//________________
+TString WritePedData(Int_t BP, Int_t Manu, Int_t ch, Double_t pedMean, Double_t pedSigma) 
+{
+	ostringstream stream("");
+	stream << "\t" << BP << "\t" << Manu <<"\t"<< ch << "\t"
+	       << pedMean <<"\t"<< pedSigma << endl;
+	return TString(stream.str().c_str());
+
+}
+
+//________________
 void MakePedStore(TString gAliOutputFile_1 = "")
 {
+	
 	/// Store pedestals in ASCII files
 	Double_t pedMean;
 	Double_t pedSigma;
 	ofstream fileout;
+#ifdef ALI_AMORE
+	ostringstream stringout; // String to be sent to AMORE_DB
+#endif
+	TString tempstring;	
 	Int_t busPatchId;
 	Int_t manuId;
 	Int_t channelId;
@@ -277,32 +335,11 @@ void MakePedStore(TString gAliOutputFile_1 = "")
 
 	if (!gAliOutputFile_1.IsNull()) {
 		fileout.open(gAliOutputFile_1.Data());
-		fileout<<"//===========================================================================" << endl;
-		fileout<<"//                       Pedestal file calculated by MUONTRKda"<<endl;
-		fileout<<"//===========================================================================" << endl;
-		fileout<<"//       * Run           : " << gAliRunNumber << endl; 
-		fileout<<"//       * Date          : " << gAlidate.AsString("l") <<endl;
-		fileout<<"//       * Statictics    : " << gAliNEvents << endl;
-		fileout<<"//       * # of MANUS    : " << gAliNManu << endl;
-		fileout<<"//       * # of channels : " << gAliNChannel << endl;
-		if (gAliErrorBuspatchTable->GetSize())
-		{
-			fileout<<"//"<<endl;
-			fileout<<"//       * Buspatches with less statistics (due to parity errors)"<<endl;		
-			TIterator* iter = gAliErrorBuspatchTable->MakeIterator();
-			ErrorCounter* parityerror;
-			while((parityerror = (ErrorCounter*) iter->Next()))
-			{
-				fileout<<"//         bp "<<parityerror->BusPatch()<<" events used "<<gAliNEvents-parityerror->Events()<<endl;
-			}
-	
-		}	
-		fileout<<"//"<<endl;
-		fileout<<"//---------------------------------------------------------------------------" << endl;
-		fileout<<"//---------------------------------------------------------------------------" << endl;
-		fileout<<"//      BP     MANU     CH.      MEAN    SIGMA"<<endl;
-		fileout<<"//---------------------------------------------------------------------------" << endl;
-
+		tempstring = WritePedHeader();
+		fileout << tempstring;
+#ifdef ALI_AMORE
+		stringout << tempstring;
+#endif
 	}
 	// print in logfile
 	if (gAliErrorBuspatchTable->GetSize())
@@ -360,8 +397,11 @@ void MakePedStore(TString gAliOutputFile_1 = "")
 
 
 			if (!gAliOutputFile_1.IsNull()) {
-				fileout << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t"
-					<< pedMean <<"\t"<< pedSigma << endl;
+				tempstring = WritePedData(busPatchId,manuId,channelId,pedMean,pedSigma);
+				fileout << tempstring;
+#ifdef ALI_AMORE
+				stringout << tempstring;
+#endif
 			}
 
 			if (gAliCommand.CompareTo("ped") == 0)
@@ -378,8 +418,29 @@ void MakePedStore(TString gAliOutputFile_1 = "")
 // file outputs
 if (!gAliOutputFile_1.IsNull())  fileout.close();
 
+// Outputs to root file and AMORE DB
 if (gAliCommand.CompareTo("ped") == 0)
 {
+#ifdef ALI_AMORE
+  //
+  //Send objects to the AMORE DB
+  //
+  const char *role=gSystem->Getenv("AMORE_DA_NAME");
+  if ( role ){
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+//     TObjString peddata(stringout.str().c_str());
+    TObjString peddata(stringout.str().c_str());
+    Int_t status =0;
+    status = amoreDA.Send("Pedestals",&peddata);
+    if ( status )
+      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+    // reset env var
+    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
+    } 
+  else {
+    cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
+    }
+#endif
 	histoFile->Write();
 	histoFile->Close();
 }
@@ -460,10 +521,45 @@ void MakePedStoreForGain(Int_t injCharge)
 }
 
 //________________
+TString WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, Int_t *numrun, Double_t *injCharge) 
+{
+      ostringstream stream;
+      stream << "//================================================" << endl;
+      stream << "//  Calibration file calculated by MUONTRKda " << endl;
+      stream << "//=================================================" << endl;
+      stream << "//   * Run           : " << gAliRunNumber << endl; 
+      stream << "//   * Date          : " << gAlidate.AsString("l") << endl;
+      stream << "//   * Statictics    : " << gAliNEvents << endl;
+      stream << "//   * # of MANUS    : " << gAliNManu << endl;
+      stream << "//   * # of channels : " << gAliNChannel << endl;
+      stream << "//-------------------------------------------------" << endl;
+      if(nInit==0)
+	stream << "//   " << nEntries << " DAC values  fit:  " << gAlinbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order)" << endl;
+      if(nInit==1)
+	stream << "//   " << nEntries << " DAC values  fit: " << gAlinbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order) DAC=0 excluded" << endl;
+      stream << "//   RUN     DAC   " << endl;
+      stream << "//-----------------" << endl;
+      for (Int_t i = 0; i < nEntries; ++i) stream << Form("//   %d   %5.0f",numrun[i],injCharge[i]) << endl;
+      stream << "//=======================================" << endl;
+      stream << "// BP MANU CH.   a1      a2     thres. q" << endl;
+      stream << "//=======================================" << endl;
+      return TString(stream.str().c_str());
+}
+
+//________________
+TString WriteGainData(Int_t busPatchId, Int_t manuId, Int_t channelId, Double_t par1, Double_t par2, Int_t threshold, Int_t q)
+{
+	ostringstream stream("");
+	stream << Form("%4i %5i %2i %7.4f %10.3e %4i %2x",busPatchId,manuId,channelId,par1,par2,threshold,q) << endl;
+	return TString(stream.str().c_str());
+}
+
+//________________
 void MakeGainStore()
 {
 	/// Store gains in ASCII files
   ofstream filcouc;
+  TString tempstring;
 
   Int_t nInit = 1; // DAC=0 excluded from fit procedure
   Double_t goodA1Min =  0.5;
@@ -559,38 +655,25 @@ void MakeGainStore()
       fprintf(pfilen,"//===================================================================\n");
     }
 
-  FILE *pfilew=0;
+  ofstream pfilew;
+#ifdef ALI_AMORE
+  ostringstream pstringw;
+#endif
   if(gAliOutputFile.IsNull())
     {
       sprintf(gAlifilename,"%s_%d.par",gAlifilenam,gAliRunNumber);
       gAliOutputFile=gAlifilename;
     }
   if(!gAliOutputFile.IsNull())
-    {
-      pfilew = fopen (gAliOutputFile.Data(),"w");
-
-      fprintf(pfilew,"//================================================\n");
-      fprintf(pfilew,"//  Calibration file calculated by MUONTRKda \n");
-      fprintf(pfilew,"//=================================================\n");
-      fprintf(pfilew,"//   * Run           : %d \n",gAliRunNumber); 
-      fprintf(pfilew,"//   * Date          : %s \n",gAlidate.AsString("l"));
-      fprintf(pfilew,"//   * Statictics    : %d \n",gAliNEvents);
-      fprintf(pfilew,"//   * # of MANUS    : %d \n",gAliNManu);
-      fprintf(pfilew,"//   * # of channels : %d \n",gAliNChannel);
-      fprintf(pfilew,"//-------------------------------------------------\n");
-      if(nInit==0)
-	fprintf(pfilew,"//   %d DAC values  fit:  %d pts (1st order) %d pts (2nd order) \n",nEntries,gAlinbpf1,nbpf2);
-      if(nInit==1)
-	fprintf(pfilew,"//   %d DAC values  fit: %d pts (1st order) %d pts (2nd order) DAC=0 excluded\n",nEntries,gAlinbpf1,nbpf2);
-      fprintf(pfilew,"//   RUN     DAC   \n");
-      fprintf(pfilew,"//-----------------\n");
+    {    
+      pfilew.open(gAliOutputFile.Data());
+      pfilew << WriteGainHeader(nInit,nEntries,nbpf2,numrun,injCharge);
+#ifdef ALI_AMORE
+      pstringw << WriteGainHeader(nInit,nEntries,nbpf2,numrun,injCharge);
+#endif
       for (Int_t i = 0; i < nEntries; ++i) {
 	tree->SetBranchAddress("run",&run[i]);
-	fprintf(pfilew,"//   %d    %5.0f \n",numrun[i],injCharge[i]);
       }
-      fprintf(pfilew,"//=======================================\n");
-      fprintf(pfilew,"// BP MANU CH.   a1      a2     thres. q\n");
-      fprintf(pfilew,"//=======================================\n");
     }
 
   FILE *pfilep = 0;
@@ -677,7 +760,7 @@ void MakeGainStore()
 
       busPatchId = p->ID0();
       manuId     = p->ID1();
-
+      
       // read back pedestal from the other runs for the given (bupatch, manu)
       for (Int_t i = 1; i < nEntries; ++i) {
 	ped[i] = static_cast<AliMUONVCalibParam*>(map[i]->FindObject(busPatchId, manuId));
@@ -895,7 +978,13 @@ void MakeGainStore()
 
 	  if (!gAliOutputFile.IsNull()) 
 	    {
-	      fprintf(pfilew,"%4i %5i %2i %7.4f %10.3e %4i %2x\n",busPatchId,manuId,channelId,par[1],par[2],threshold,q);
+	      tempstring = WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
+	      if(manuId && (busPatchId!=1621)) {// Add a protection to avoid a future crash in Amore due to manuId = 0 (bug not understood/fixed yet)
+	      	pfilew << tempstring;
+#ifdef ALI_AMORE
+	      	pstringw << tempstring;
+#endif
+	      }
 	    }
 
 	}
@@ -903,8 +992,26 @@ void MakeGainStore()
       if(fmod(nmanu,500)==0)std::cout << " Nb manu = " << nmanu << std::endl;
     }
 
-  // file outputs for gain
-  if (!gAliOutputFile.IsNull())  fclose(pfilew);
+  // outputs for gain (file + AMORE DB)
+  if (!gAliOutputFile.IsNull())  {
+  	pfilew.close();
+#ifdef ALI_AMORE
+  //
+  //Send objects to the AMORE DB
+  //
+  const char *role=gSystem->Getenv("AMORE_DA_NAME");
+  if ( role ){
+    	amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+	TObjString gaindata(pstringw.str().c_str());
+    	if ( amoreDA.Send("Gains",&gaindata) )
+      	   cout << "Warning: Failed to write Gains to the AMORE database" << endl;
+    // reset env var
+    	} 
+  else {
+	cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
+    	}
+#endif
+  }
   if(gAliPrintLevel==2){ fclose(pfilen); fclose(pfilep); }
 
   tg->Write();
@@ -1437,3 +1544,4 @@ int main(Int_t argc, Char_t **argv)
 
   return status;
 }
+
