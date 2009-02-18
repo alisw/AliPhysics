@@ -8237,36 +8237,47 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
  }
  ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
-									Double_t height, const char* shapename, Int_t isign) const{
+                                            Double_t height, const char* shapename, Int_t isign) const{
   /////////////////////////////////////////////////////////////
   // Method generating an Arb shape 
   /////////////////////////////////////////////////////////////
   const Int_t kvertexnumber = 8;
   const Int_t ktransvectnumber = 2;
-  TVector3* vertex[kvertexnumber];
-  TVector3* transvector[2];
-  for(Int_t i=0; i<ktransvectnumber; i++) transvector[i] = new TVector3(0.,width[i]);
+  TVector3 vertex[kvertexnumber];
+  TVector3 transvector[2];
+  for(Int_t i=0; i<ktransvectnumber; i++) transvector[i].SetY(width[i]);
   /////////////////////////////////////////////////////////////
   //Setting the vertices for TGeoArb8
   /////////////////////////////////////////////////////////////
-  vertex[0] = new TVector3(*vertexpos[0]);
-  vertex[1] = new TVector3(*vertexpos[1]);
-  vertex[2] = new TVector3(*vertex[1]+isign*(*transvector[0]));
-  vertex[3] = new TVector3(*vertex[0]+isign*(*transvector[0]));
-  vertex[4] = new TVector3(*vertexpos[2]);
-  vertex[5] = new TVector3(*vertexpos[3]);
-  vertex[6] = new TVector3(*vertex[5]+isign*(*transvector[1]));
-  vertex[7] = new TVector3(*vertex[4]+isign*(*transvector[1]));
+  vertex[0] = *vertexpos[0];
+  vertex[1] = *vertexpos[1];
+  vertex[2] = vertex[1]; 
+  vertex[3] = vertex[0]; 
+  vertex[4] = *vertexpos[2];
+  vertex[5] = *vertexpos[3];
+  vertex[6] = vertex[5];
+  vertex[7] = vertex[4];
+
+  // NB: order of points is clockwise
+  if (isign < 0) {
+    vertex[2] -= transvector[0];
+    vertex[3] -= transvector[0];
+    vertex[6] -= transvector[1];
+    vertex[7] -= transvector[1];
+  }
+  else {
+    vertex[0] += transvector[0];
+    vertex[1] += transvector[0];
+    vertex[4] += transvector[1];
+    vertex[5] += transvector[1];
+  }
+
   /////////////////////////////////////////////////////////////
   TGeoArb8* arbshape = new TGeoArb8(shapename,0.5*height);
-  for(Int_t i = 0; i<kvertexnumber;i++) 
-							arbshape->SetVertex(i,vertex[i]->X(),vertex[i]->Y());
-  /////////////////////////////////////////////////////////////
-  // Deallocating memory
-  /////////////////////////////////////////////////////////////
-  for(Int_t i=0; i< kvertexnumber; i++) delete vertex[i];  
-  for(Int_t i=0; i< ktransvectnumber; i++) delete transvector[i];  
-  /////////////////////////////////////////////////////////////
+  for(Int_t i = 0; i<kvertexnumber;i++) {
+    arbshape->SetVertex(i,vertex[i].X(),vertex[i].Y());
+  }
+
   return arbshape;
 } 
 ///////////////////////////////////////////////////////////////////////////////
