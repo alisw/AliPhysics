@@ -828,10 +828,10 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) the2Prong->UnsetOwnPrimaryVtx();
 
   // get PID info from ESD
-  Double_t esdpid0[5];
-  postrack->GetESDpid(esdpid0);
-  Double_t esdpid1[5];
-  negtrack->GetESDpid(esdpid1);
+  Double_t esdpid0[5]={0.,0.,0.,0.,0.};
+  if(postrack->GetStatus()&AliESDtrack::kESDpid) postrack->GetESDpid(esdpid0);
+  Double_t esdpid1[5]={0.,0.,0.,0.,0.};
+  if(negtrack->GetStatus()&AliESDtrack::kESDpid) negtrack->GetESDpid(esdpid1);
   Double_t esdpid[10];
   for(Int_t i=0;i<5;i++) {
     esdpid[i]   = esdpid0[i];
@@ -924,12 +924,12 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) the3Prong->UnsetOwnPrimaryVtx();
 
   // get PID info from ESD
-  Double_t esdpid0[5];
-  postrack1->GetESDpid(esdpid0);
-  Double_t esdpid1[5];
-  negtrack->GetESDpid(esdpid1);
-  Double_t esdpid2[5];
-  postrack2->GetESDpid(esdpid2);
+  Double_t esdpid0[5]={0.,0.,0.,0.,0.};
+  if(postrack1->GetStatus()&AliESDtrack::kESDpid) postrack1->GetESDpid(esdpid0);
+  Double_t esdpid1[5]={0.,0.,0.,0.,0.};
+  if(negtrack->GetStatus()&AliESDtrack::kESDpid) negtrack->GetESDpid(esdpid1);
+  Double_t esdpid2[5]={0.,0.,0.,0.,0.};
+  if(postrack2->GetStatus()&AliESDtrack::kESDpid) postrack2->GetESDpid(esdpid2);
   
   Double_t esdpid[15];
   for(Int_t i=0;i<5;i++) {
