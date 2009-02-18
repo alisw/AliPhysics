@@ -27,7 +27,6 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifPositionPadIterator.h"
 #include "AliMpMotifType.h"
-
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -70,7 +69,7 @@ AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const
 }  
 
 //______________________________________________________________________________
-Bool_t AliMpMotifPosition::HasPad(const AliMpIntPair& indices) const
+Bool_t AliMpMotifPosition::HasPadByIndices(const AliMpIntPair& indices) const
 {
 /// Return true if pad with the specified indices exists in 
 /// this motif position.
@@ -79,7 +78,16 @@ Bool_t AliMpMotifPosition::HasPad(const AliMpIntPair& indices) const
   
   if (fMotif->GetMotifType()->IsFull()) return kTRUE;
   
-  return fMotif->GetMotifType()->HasPad(indices-GetLowIndicesLimit());
+  return fMotif->GetMotifType()->HasPadByLocalIndices(indices-GetLowIndicesLimit());
+}
+
+//______________________________________________________________________________
+Bool_t AliMpMotifPosition::HasPadByManuChannel(Int_t manuChannel) const
+{
+  /// Return true if pad with the specified manuChannel exists in 
+  /// this motif position.
+
+  return fMotif->GetMotifType()->HasPadByManuChannel(manuChannel);
 }
 
 //_____________________________________________________________________________

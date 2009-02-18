@@ -105,6 +105,7 @@ class AliMpSector : public TNamed
     
     virtual void Print(Option_t* opt="") const;
     
+  Int_t GetNofMotifPositions() const;
     
   private:
     /// Not implemented

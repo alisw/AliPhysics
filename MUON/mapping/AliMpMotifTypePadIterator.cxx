@@ -105,7 +105,7 @@ AliMpMotifTypePadIterator::FindFirstPadInLine(AliMpIntPair indices) const
     if (!fkMotifType) return AliMpIntPair::Invalid();
 
     while (indices.GetFirst() < fkMotifType->GetNofPadsX()) {
-        if (fkMotifType->HasPad(indices)) return indices;
+        if (fkMotifType->HasPadByLocalIndices(indices)) return indices;
         indices += AliMpIntPair(1,0);
     }
     return AliMpIntPair::Invalid();
@@ -134,7 +134,7 @@ void AliMpMotifTypePadIterator::First()
         return ;
     }
     fCurrentPosition = AliMpIntPair(0,0);
-    if (fkMotifType->HasPad(fCurrentPosition)) return;
+    if (fkMotifType->HasPadByLocalIndices(fCurrentPosition)) return;
     
     
     // if (0,0) is not available

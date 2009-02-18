@@ -18,100 +18,97 @@
 #include "AliMpContainers.h"
 
 #include "AliMpIntPair.h"
-#ifdef WITH_ROOT
-#include "AliMpExMap.h"
+#ifndef ROOT_TObjArray
+#  include "TObjArray.h"
 #endif
 
 #include <TString.h>
 
-#ifdef WITH_STL
-#include <map>
-#endif
-
-class AliMpConnection;
 class AliMpVPadIterator;
+class AliMpConnection;
 
 class AliMpMotifType : public TObject
-{
-  public:
-#ifdef WITH_STL
-    /// Connection map type
-    typedef std::map< AliMpIntPair, AliMpConnection* > ConnectionMap;
-    /// Connection map iterator type
-    typedef ConnectionMap::const_iterator     ConnectionMapCIterator;
-#endif    
-#ifdef WITH_ROOT
-    /// Connection map type
-    typedef AliMpExMap ConnectionMap;
-#endif    
-
+  {
   public:
     AliMpMotifType(const TString &id);
     AliMpMotifType(const AliMpMotifType& rhs);
     AliMpMotifType& operator=(const AliMpMotifType& rhs);
     AliMpMotifType(TRootIOCtor* ioCtor);
     virtual ~AliMpMotifType();
-
+    
     TObject* Clone(const char* newname="") const;
     
     virtual AliMpVPadIterator* CreateIterator() const;
-
+    
     // find methods
     AliMpConnection *FindConnectionByPadNum(Int_t padNum) const;
     AliMpConnection *FindConnectionByLocalIndices(
-                               const AliMpIntPair& localIndices) const;
+                         const AliMpIntPair& localIndices) const;
     AliMpConnection *FindConnectionByGassiNum(Int_t gassiNum) const;
     AliMpConnection *FindConnectionByKaptonNum(Int_t kaptonNum) const;
     AliMpConnection *FindConnectionByBergNum(Int_t bergNum) const;
-
+    
     AliMpIntPair FindLocalIndicesByPadNum(Int_t padNum) const;
     AliMpIntPair FindLocalIndicesByGassiNum(Int_t gassiNum) const;
     AliMpIntPair FindLocalIndicesByKaptonNum(Int_t kaptonNum) const;
     AliMpIntPair FindLocalIndicesByBergNum(Int_t bergNum) const;
     AliMpIntPair FindLocalIndicesByConnection(
-                               const AliMpConnection* connection) const;
-
+                         const AliMpConnection* connection) const;
+    
     // set methods
     void SetNofPads(Int_t nofPadsX, Int_t nofPadY);
     
     // get methods
-             /// Return unique motif ID
+    /// Return unique motif ID
     TString  GetID() const        {return fID;}
-             /// Return number of pads in x direction
+    /// Return number of pads in x direction
     Int_t    GetNofPadsX() const  {return fNofPadsX;}
-             /// Return number of pads in y direction
+    /// Return number of pads in y direction
     Int_t    GetNofPadsY() const  {return fNofPadsY;}
-    Int_t    GetNofPads() const;
+    
+    Int_t    GetNofPads() const   {return fNofPads;}
     
     // Other methods
-    void AddConnection(const AliMpIntPair &localIndices, 
-                       AliMpConnection* connection);
+    Bool_t AddConnection(AliMpConnection* connection);
+
     virtual void Print(Option_t *option="") const;
+    
     Int_t   PadNum(const TString &padName) const;
+    
     TString PadName(Int_t padNum) const;
-    Bool_t  HasPad(const AliMpIntPair& localIndices) const;
-    Bool_t  IsFull() const;
+
+    Bool_t HasPadByLocalIndices(const AliMpIntPair& localIndices) const;
+
+    Bool_t HasPadByManuChannel(Int_t manuChannel) const;
+
+    Bool_t HasPadByGassiNum(Int_t gassiNum) const { return HasPadByManuChannel(gassiNum); }
+    
+    Bool_t IsFull() const;
     
     Bool_t Save(const char* motifName) const;
     Bool_t Save() const;
-
-  private:
-      void Copy(TObject& o) const;
     
   private:
     /// Not implemented
     AliMpMotifType();
+
+    // methods
+    void Copy(TObject& o) const;
+
     // static data members
     static const Int_t  fgkPadNumForA; ///< the pad number for the pad "A"
-  
+    
     // data members
     TString   fID;              ///< unique motif ID
     Int_t     fNofPadsX;        ///< number of pads in x direction
     Int_t     fNofPadsY;        ///< number of pads in y direction
-    ConnectionMap fConnections; ///< Map (ix,iy) of connections
+    Int_t     fNofPads;    ///< total number of pads (= the number of non-void entries in the arrays below)
+    Int_t     fMaxNofPads; ///< max number of pads we can hold
+    TObjArray fConnectionsByLocalIndices; ///< array [ix + 64*iy ] -> AliMpConnection*
+    TObjArray fConnectionsByManuChannel;  ///< array [manuChannel] -> AliMpConnection*
     
-  ClassDef(AliMpMotifType,1)  // Motif type
-};
+    ClassDef(AliMpMotifType,2)  // Motif type
+  };
 
 // inline functions
 
@@ -120,4 +117,5 @@ inline Bool_t AliMpMotifType::IsFull() const
 { return GetNofPads() == fNofPadsX*fNofPadsY; }
 
 #endif //ALI_MP_MOTIF_TYPE_H
+
 

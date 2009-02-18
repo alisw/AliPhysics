@@ -534,7 +534,7 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
 #endif
     {
       AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
-      if ( mp->HasPad(AliMpIntPair(ix,iy)) )
+      if ( mp->HasPadByIndices(AliMpIntPair(ix,iy)) )
       {
         return mp;
       }
@@ -562,7 +562,7 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
     
     AliMpIntPair localIndices(mp->GetMotif()->PadIndicesLocal(localPos));
     
-    if ( localIndices.IsValid() && mp->GetMotif()->GetMotifType()->HasPad(localIndices) )
+    if ( localIndices.IsValid() && mp->GetMotif()->GetMotifType()->HasPadByLocalIndices(localIndices) )
     {
       return mp;
     }

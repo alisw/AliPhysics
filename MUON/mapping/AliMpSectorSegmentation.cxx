@@ -112,15 +112,6 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 // private methods
 //
 
-//_____________________________________________________________________________
-void 
-AliMpSectorSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
-{
-  /// Fill the array ecn with all manuIds
-
-  GetSector()->GetAllMotifPositionsIDs(ecn);
-}
-
 #ifdef WITH_ROOT
 //______________________________________________________________________________
 Long_t AliMpSectorSegmentation::GetIndex(const TVector2& vector2) const
@@ -219,7 +210,7 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
                 motifPos 
 		  = fkSector->GetMotifMap()
 		    ->FindMotifPosition(seg->GetMotifPositionId(imot));
-                if (motifPos && motifPos->HasPad(indices)) return motifPos;
+                if (motifPos && motifPos->HasPadByIndices(indices)) return motifPos;
               }
             }
           }
@@ -259,7 +250,7 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
         motifPos 
 	  = fkSector->GetMotifMap()
 	    ->FindMotifPosition(seg->GetMotifPositionId(imot));
-        if (motifPos && motifPos->HasPad(indices)) break;
+        if (motifPos && motifPos->HasPadByIndices(indices)) break;
       }      
       if (imot==seg->GetNofMotifs()) return 0;
    
@@ -331,15 +322,6 @@ AliMpSectorSegmentation::PadByYDirection(const TVector2& startPosition,
 
 //______________________________________________________________________________
 AliMpVPadIterator* 
-AliMpSectorSegmentation::CreateIterator() const
-{
-/// Create the sector iterator
-
-  return new AliMpSectorPadIterator(fkSector);
-}
-
-//______________________________________________________________________________
-AliMpVPadIterator* 
 AliMpSectorSegmentation::CreateIterator(const AliMpArea& area) const
 {
 /// Create the area iterator. 
@@ -357,13 +339,12 @@ AliMpSectorSegmentation::CreateIterator(const AliMpArea& area) const
 }   
   
 //______________________________________________________________________________
-Int_t 
-AliMpSectorSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
-                                       Bool_t includeSelf,
-                                       Bool_t includeVoid) const
+AliMpVPadIterator* 
+AliMpSectorSegmentation::CreateIterator() const
 {
-  /// Uses default implementation
-  return AliMpVSegmentation::GetNeighbours(pad,neighbours,includeSelf,includeVoid);
+/// Create the sector iterator
+
+  return new AliMpSectorPadIterator(fkSector);
 }
 
 //______________________________________________________________________________
@@ -377,17 +358,13 @@ AliMpSectorSegmentation::CreateIterator(const AliMpPad& centerPad,
 }   
   
 //______________________________________________________________________________
-TVector2
-AliMpSectorSegmentation::Dimensions() const
+Int_t 
+AliMpSectorSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                                       Bool_t includeSelf,
+                                       Bool_t includeVoid) const
 {
-  return GetSector()->Dimensions();
-}
-
-//______________________________________________________________________________
-AliMp::PlaneType
-AliMpSectorSegmentation::PlaneType() const
-{
-  return GetSector()->GetPlaneType();
+  /// Uses default implementation
+  return AliMpVSegmentation::GetNeighbours(pad,neighbours,includeSelf,includeVoid);
 }
 
 //______________________________________________________________________________
@@ -519,6 +496,41 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
   return AliMpPad::Invalid();  
 }
 
+//_____________________________________________________________________________
+Bool_t 
+AliMpSectorSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+{
+  ///  Whether or not we have a pad at indices=(ix,iy) 
+  
+  AliMpMotifPosition* motifPos = FindMotifPosition(indices);
+  
+  if (motifPos) return motifPos->HasPadByIndices(indices);
+  
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpSectorSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+{
+  /// Whether or not we have a pad at location=(manuId,manuChannel)
+  
+  AliMpMotifPosition* motifPos = 
+  fkSector->GetMotifMap()->FindMotifPosition(location.GetFirst());
+  
+  if ( motifPos ) return motifPos->HasPadByManuChannel(location.GetSecond());
+  
+  return kFALSE;
+}
+
+//______________________________________________________________________________
+Bool_t AliMpSectorSegmentation::HasPad(const AliMpIntPair& indices) const
+{
+/// Does the pad specified by \a indices exist ?
+
+  return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
+}
+
 //______________________________________________________________________________
 Int_t  AliMpSectorSegmentation::MaxPadIndexX() const
 {
@@ -543,29 +555,73 @@ Int_t  AliMpSectorSegmentation::NofPads() const
   return fkSector->GetNofPads();
 }
 
-//______________________________________________________________________________
-Bool_t AliMpSectorSegmentation::HasPad(const AliMpIntPair& indices) const
+//_____________________________________________________________________________
+void 
+AliMpSectorSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 {
-/// Does the pad specified by \a indices exist ?
+  /// Fill the array ecn with all manuIds
 
-  return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
+  GetSector()->GetAllMotifPositionsIDs(ecn);
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMpSectorSegmentation::GetNofElectronicCards() const
+{
+  /// Get the number of manus of this sector
+  
+  return fkSector->GetNofMotifPositions();  
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpSectorSegmentation::HasMotifPosition(Int_t manuId) const
+{
+  /// Whether we get a given manu. Uses default implementation
+  return (AliMpVSegmentation::HasMotifPosition(manuId) != 0x0);
+}
+
+//_____________________________________________________________________________
+AliMpMotifPosition* 
+AliMpSectorSegmentation::MotifPosition(Int_t manuId) const
+{
+  /// Return a given manu
+  return fkSector->GetMotifMap()->FindMotifPosition(manuId);
 }
 
 //______________________________________________________________________________
-Bool_t AliMpSectorSegmentation::HasMotifPosition(Int_t motifPositionID) const
+AliMp::PlaneType
+AliMpSectorSegmentation::PlaneType() const
 {
-/// Does the motif position specified by motifPositionID exist ?
-
-  return (fkSector->GetMotifMap()->FindMotifPosition(motifPositionID) != 0);
+  return GetSector()->GetPlaneType();
 }
 
 //______________________________________________________________________________
-TVector2  AliMpSectorSegmentation::GetMinPadDimensions() const
+TVector2
+AliMpSectorSegmentation::Dimensions() const
 {
-/// Returne the dimensions of the smallest pad.
+/// Return sector dimensions
 
-  return fkSector->GetMinPadDimensions();
-}  
+  return GetSector()->Dimensions();
+}
+
+//______________________________________________________________________________
+TVector2 
+AliMpSectorSegmentation::Position() const 
+{ 
+/// Return sector position
+
+  return GetSector()->Position(); 
+}
+
+//______________________________________________________________________________
+void
+AliMpSectorSegmentation::Print(Option_t* opt) const
+{
+/// Print the sector
+
+  fkSector->Print(opt);
+}
 
 //______________________________________________________________________________
 Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
@@ -630,6 +686,14 @@ AliMpSectorSegmentation::PadDimensions(Int_t zone, Bool_t warning) const
 }  
 
 //______________________________________________________________________________
+TVector2  AliMpSectorSegmentation::GetMinPadDimensions() const
+{
+/// Returne the dimensions of the smallest pad.
+
+  return fkSector->GetMinPadDimensions();
+}  
+
+//______________________________________________________________________________
 Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
 {
 /// Verify that all methods for retrieving pads are consistents between them.
@@ -668,15 +732,6 @@ Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
 }
 
 //______________________________________________________________________________
-void
-AliMpSectorSegmentation::Print(Option_t* opt) const
-{
-/// Print the sector
-
-  fkSector->Print(opt);
-}
-
-//______________________________________________________________________________
 void AliMpSectorSegmentation::PrintZones() const
 {
 /// Print all zones and pads dimensions from the map.
@@ -705,4 +760,4 @@ void AliMpSectorSegmentation::PrintZones() const
   }
 #endif
 }
-  
+

@@ -233,7 +233,12 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     AliMpConnection* connection 
       = new AliMpConnection(padNum,numBerg,numKapton,gassiNum, AliMpIntPair(ix,iy));
     
-    motifType->AddConnection(AliMpIntPair(ix,iy),connection);
+    Bool_t ok = motifType->AddConnection(connection);
+    
+    if (!ok)
+    {
+      AliFatal("Could not add connection");
+    }
                   
     if (ix>=nofPadsX) nofPadsX=ix+1;
     if (iy>=nofPadsY) nofPadsY=iy+1;

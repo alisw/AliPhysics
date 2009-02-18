@@ -338,3 +338,40 @@ AliMpTriggerSegmentation::Slat() const
   
   return fkSlat;
 }
+
+//_____________________________________________________________________________
+Int_t 
+AliMpTriggerSegmentation::GetNofElectronicCards() const
+{
+  /// Get the number of local board numbers
+  
+  TArrayI ecn;
+  fkSlat->GetAllLocalBoardNumbers(ecn);
+  return ecn.GetSize();  
+}
+
+//_____________________________________________________________________________
+TVector2 
+AliMpTriggerSegmentation::Position() const 
+{ 
+  /// Return position of origin
+  
+  return Slat()->Position();
+}
+
+//_____________________________________________________________________________
+AliMpMotifPosition* 
+AliMpTriggerSegmentation::MotifPosition(Int_t /* manuId */) const
+{
+  /// No implemented (yet ?)
+  AliError("Not implemented");
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpTriggerSegmentation::HasMotifPosition(Int_t manuId) const
+{
+  /// Uses default implementation
+  return AliMpVSegmentation::HasMotifPosition(manuId);
+}

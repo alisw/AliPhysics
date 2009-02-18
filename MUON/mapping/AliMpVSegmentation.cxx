@@ -253,3 +253,32 @@ AliMpPadPair AliMpVSegmentation::PadsRight(const AliMpPad& pad) const
   return FindPads(position1, position2);
 }
 
+//_____________________________________________________________________________
+Bool_t 
+AliMpVSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+{
+  /// Default implementation. Must be overwritten if can be made more
+  /// efficient in the child class
+  
+  return (PadByIndices(indices,kFALSE) != AliMpPad::Invalid());
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpVSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+{
+  /// Default implementation. Must be overwritten if can be made more
+  /// efficient in the child class
+  
+  return (PadByLocation(location,kFALSE) != AliMpPad::Invalid());
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpVSegmentation::HasMotifPosition(Int_t manuId) const
+{
+  /// Default implementation to know if we hold a given manu
+  return ( MotifPosition(manuId) != 0x0 );
+}
+
+

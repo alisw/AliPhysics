@@ -27,11 +27,10 @@
 
 #include <cstdlib>
 #include "AliMpMotifType.h"
-
 #include "AliMpExMapIterator.h"
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpConnection.h"
-
+#include "AliMpConstants.h"
 #include "AliLog.h"
 #include "AliMpFiles.h"
 #include "TSystem.h"
@@ -46,48 +45,53 @@ const Int_t AliMpMotifType::fgkPadNumForA = 65;
 
 //______________________________________________________________________________
 AliMpMotifType::AliMpMotifType(const TString &id) 
-  : TObject(),
-    fID(id),
-    fNofPadsX(0),   
-    fNofPadsY(0),
-    fConnections()
+: TObject(),
+fID(id),
+fNofPadsX(0),   
+fNofPadsY(0),
+fNofPads(0),
+fMaxNofPads(AliMpConstants::ManuNofChannels()),
+fConnectionsByLocalIndices(fMaxNofPads*fMaxNofPads),
+fConnectionsByManuChannel(fMaxNofPads)
 {
   /// Standard constructor                                                   \n
   /// Please note that id should be of the form %s for station 1,2,
   //  %s-%e-%e for station345 and %sx%e for stationTrigger
-      
-      AliDebug(1,Form("this=%p id=%s",this,id.Data()));
+
+  fConnectionsByLocalIndices.SetOwner(kTRUE);
+  fConnectionsByManuChannel.SetOwner(kFALSE);
+  AliDebug(1,Form("this=%p id=%s",this,id.Data()));
 }
 
 //______________________________________________________________________________
-AliMpMotifType::AliMpMotifType(TRootIOCtor* ioCtor) 
-  : TObject(),
-    fID(""),
-    fNofPadsX(0),   
-    fNofPadsY(0),
-#ifdef WITH_STL
-    fConnections()
-#endif
-#ifdef WITH_ROOT
-    fConnections(ioCtor)
-#endif
+AliMpMotifType::AliMpMotifType(TRootIOCtor*) 
+: TObject(),
+fID(""),
+fNofPadsX(0),   
+fNofPadsY(0),
+fNofPads(0),
+fMaxNofPads(0),
+fConnectionsByLocalIndices(),
+fConnectionsByManuChannel()
 {
   /// Default constructor
-      AliDebug(1,Form("this=%p",this));
+  AliDebug(1,Form("this=%p",this));
 }
 
 //______________________________________________________________________________
 AliMpMotifType::AliMpMotifType(const AliMpMotifType& rhs)
 : TObject(),
-  fID(""),
-  fNofPadsX(0),   
-  fNofPadsY(0),
-  fConnections()
+fID(""),
+fNofPadsX(0),   
+fNofPadsY(0),
+fNofPads(0),
+fMaxNofPads(0),
+fConnectionsByLocalIndices(),
+fConnectionsByManuChannel()
 {
   /// Copy constructor
-
-    AliDebug(1,Form("this=%p (copy ctor)",this));
-    rhs.Copy(*this);
+  AliDebug(1,Form("this=%p (copy ctor)",this));
+  rhs.Copy(*this);
 }
 
 //______________________________________________________________________________
@@ -95,7 +99,7 @@ AliMpMotifType&
 AliMpMotifType::operator=(const AliMpMotifType& rhs)
 {
   /// Assignment operator
-
+  
   TObject::operator=(rhs);
   rhs.Copy(*this);
   return *this;  
@@ -120,24 +124,18 @@ AliMpMotifType::Copy(TObject& object) const
   mt.fID = fID;
   mt.fNofPadsX = fNofPadsX;
   mt.fNofPadsY = fNofPadsY;
-  mt.fConnections = fConnections;
+  mt.fNofPads = fNofPads;
+  mt.fMaxNofPads = fMaxNofPads;
+  mt.fConnectionsByLocalIndices = fConnectionsByLocalIndices;
+  mt.fConnectionsByManuChannel = fConnectionsByManuChannel;  
 }
 
 //______________________________________________________________________________
 AliMpMotifType::~AliMpMotifType() 
 {
-/// Destructor
+  /// Destructor
 
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   delete i->second;
-
-  fConnections.erase(fConnections.begin(),fConnections.end());
-#endif  
-  
   AliDebug(1,Form("this=%p",this));
-//  StdoutToAliDebug(1,this->Print(););
 }
 
 //______________________________________________________________________________
@@ -181,135 +179,130 @@ TString AliMpMotifType::PadName(Int_t padNum) const
 }
 
 //______________________________________________________________________________
-void AliMpMotifType::AddConnection(const AliMpIntPair &localIndices, 
-                               AliMpConnection* connection)
+Bool_t 
+AliMpMotifType::AddConnection(AliMpConnection* connection)
 {
   /// Add the connection to the map
   
-#ifdef WITH_STL
-  fConnections[localIndices]=connection;
-#endif
+  if (!connection) return kFALSE;
+  
+  Int_t ix = connection->LocalIndices().GetFirst();
+  Int_t iy = connection->LocalIndices().GetSecond();
+  
+  Int_t manuChannel = connection->ManuChannel();
+  
+  if ( ix >=0 && ix < fMaxNofPads &&
+      iy >=0 && iy < fMaxNofPads && 
+      manuChannel >= 0 && manuChannel < AliMpConstants::ManuNofChannels())
+  {
+  
+    Int_t index = ix + iy*AliMpConstants::ManuNofChannels();
+    
+    AliMpConnection* c = FindConnectionByLocalIndices(connection->LocalIndices());
+    
+    if (c)
+    {
+      AliError(Form("Connection already exists for ix=%d iy=%d",ix,iy));
+      return kFALSE;
+    }
+    
+    ++fNofPads;
 
-#ifdef WITH_ROOT
-  fConnections.Add(localIndices, connection);
-#endif   
-
-  connection->SetOwner(this);
+    fConnectionsByLocalIndices[index] = connection;
+    fConnectionsByManuChannel[manuChannel] = connection;
+    
+    connection->SetOwner(this);
+    
+    return kTRUE;
+  
+  }
+  return kFALSE;
 }  
 
 //______________________________________________________________________________
-AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
+AliMpConnection*
+AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 {
   /// Retrieve the AliMpConnection pointer from its pad num
+  /// This method is quite inefficient as we're looping over all connections
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetPadNum()==padNum) return i->second;
- return 0;
-#endif
-
-#ifdef WITH_ROOT
- TIter next(fConnections.CreateIterator());
- AliMpConnection* connection;
- 
- while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
- {
-   if (connection->GetPadNum()==padNum) return connection;
- }
- return 0x0;
-#endif
+  TIter next(&fConnectionsByManuChannel);
+  AliMpConnection* connection;
+  
+  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  {
+    if (connection->GetPadNum()==padNum) return connection;
+  }    
+  return 0x0;
 }
 
 //______________________________________________________________________________
-AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
-                                       const AliMpIntPair& localIndices) const
+AliMpConnection*
+AliMpMotifType::FindConnectionByLocalIndices(const AliMpIntPair& localIndices) const
 {
   /// Retrieve the AliMpConnection pointer from its position (in pad unit)
+
+  Int_t ix = localIndices.GetFirst();
+  Int_t iy = localIndices.GetSecond();
   
-  if (!localIndices.IsValid()) return 0;
+  if ( ix < fNofPadsX && iy < fNofPadsY && ix >= 0 && iy >= 0 )
+  {  
+    Int_t index = ix + iy*fMaxNofPads;
 
-#ifdef WITH_STL
-  ConnectionMapCIterator i = fConnections.find(localIndices);
- if (i != fConnections.end())
-   return i->second;
- else return 0;
-#endif
-
-#ifdef WITH_ROOT
-  return (AliMpConnection*)fConnections.GetValue(localIndices);
-#endif
+    return static_cast<AliMpConnection*>(fConnectionsByLocalIndices.UncheckedAt(index));
+  }
+  else
+  {
+    return 0x0;
+  }
 }
 
 //______________________________________________________________________________
-AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
+AliMpConnection*
+AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 {
   /// Return the connection for the given gassiplex number
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetGassiNum()==gassiNum) return i->second;
- return 0;
-#endif
-
-#ifdef WITH_ROOT
- TIter next(fConnections.CreateIterator());
- AliMpConnection* connection;
- 
- while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
- {
-   if (connection->GetGassiNum()==gassiNum) return connection;
- }
- return 0x0;
-#endif
+  if ( gassiNum >=0 && gassiNum < fMaxNofPads ) 
+  {
+    return static_cast<AliMpConnection*>(fConnectionsByManuChannel.UncheckedAt(gassiNum));
+  }
+  
+  return 0x0;
 }
 
 //______________________________________________________________________________
-AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) const
+AliMpConnection*
+AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) const
 {
   /// Give the connection related to the given kapton number
+  /// Inefficient method as we loop over connections to find the right one
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetKaptonNum()==kaptonNum) return i->second;
- return 0;
-#endif
-
-#ifdef WITH_ROOT
- TIter next(fConnections.CreateIterator());
- AliMpConnection* connection;
- 
- while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
- {
-   if (connection->GetKaptonNum()==kaptonNum) return connection;
- }
- return 0x0;
-#endif
+  TIter next(&fConnectionsByManuChannel);
+  AliMpConnection* connection;
+  
+  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  {
+    if ( connection && connection->GetKaptonNum()==kaptonNum) return connection;
+  }
+  return 0x0;
 }
+
 //______________________________________________________________________________
-AliMpConnection *AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
+AliMpConnection*
+AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 {
   /// Retrieve the connection from a Berg connector number
+  /// Inefficient method as we loop over connections to find the right one
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetBergNum()==bergNum) return i->second;
- return 0;
-#endif
-
-#ifdef WITH_ROOT
- TIter next(fConnections.CreateIterator());
- AliMpConnection* connection;
- 
- while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
- {
-   if (connection->GetBergNum()==bergNum) return connection;
- }
- return 0x0;
-#endif
+  TIter next(&fConnectionsByManuChannel);
+  AliMpConnection* connection;
+  
+  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  {
+    if ( connection && connection->GetBergNum()==bergNum) return connection;
+  }
+  return 0x0;
 }
 
 
@@ -326,22 +319,14 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 {
   /// Retrieve the AliMpConnection pointer from its pad num
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetPadNum()==padNum) return i->first;
-#endif
-   
-#ifdef WITH_ROOT
-  TIter next(fConnections.CreateIterator());
-  AliMpConnection* connection;
+  AliMpConnection* connection = FindConnectionByPadNum(padNum);
   
-  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  if (connection)
   {
-    if (connection->GetPadNum()==padNum) return connection->LocalIndices();
+    return connection->LocalIndices();
   }
-#endif
- return AliMpIntPair::Invalid();
+  else
+    return AliMpIntPair::Invalid();
 }
 
 //______________________________________________________________________________
@@ -349,47 +334,29 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 {
   /// Return the connection for the given gassiplex number
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetGassiNum()==gassiNum) return i->first;
-#endif
-   
-#ifdef WITH_ROOT
-  TIter next(fConnections.CreateIterator());
-  AliMpConnection* connection;
+  AliMpConnection* connection = FindConnectionByGassiNum(gassiNum);
   
-  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  if (connection)
   {
-    if (connection->GetGassiNum()==gassiNum) return connection->LocalIndices();
+    return connection->LocalIndices();
   }
-#endif
-   
- return AliMpIntPair::Invalid();
+  else
+    return AliMpIntPair::Invalid();
 }
 
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 {
   /// Give the connection related to the given kapton number
+
+  AliMpConnection* connection = FindConnectionByKaptonNum(kaptonNum);
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetKaptonNum()==kaptonNum) return i->first;
-#endif
-   
-#ifdef WITH_ROOT
-  TIter next(fConnections.CreateIterator());
-  AliMpConnection* connection;
-  
-  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  if (connection)
   {
-    if (connection->GetKaptonNum()==kaptonNum) return connection->LocalIndices();
+    return connection->LocalIndices();
   }
-#endif
-   
- return AliMpIntPair::Invalid();
+  else
+    return AliMpIntPair::Invalid();
 }
 
 //______________________________________________________________________________
@@ -397,54 +364,34 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 {
   /// Retrieve the connection from a Berg connector number
   
-#ifdef WITH_STL
- for(ConnectionMapCIterator i = fConnections.begin();
-  i!=fConnections.end();++i)
-   if (i->second->GetBergNum()==bergNum) return i->first;
-#endif
-   
-#ifdef WITH_ROOT
-  TIter next(fConnections.CreateIterator());
-  AliMpConnection* connection;
+  AliMpConnection* connection = FindConnectionByBergNum(bergNum);
   
-  while ( ( connection = static_cast<AliMpConnection*>(next()) ) )
+  if (connection)
   {
-    if (connection->GetBergNum()==bergNum) return connection->LocalIndices();
+    return connection->LocalIndices();
   }
-#endif
-   
- return AliMpIntPair::Invalid();
+  else
+    return AliMpIntPair::Invalid();
 }
 
 //______________________________________________________________________________
-Int_t  AliMpMotifType::GetNofPads() const   
+Bool_t 
+AliMpMotifType::HasPadByLocalIndices(const AliMpIntPair& localIndices) const
 {
-/// Return the number of pads
-
-#ifdef WITH_STL
-  return fConnections.size();
-#endif
-   
-#ifdef WITH_ROOT
-  return fConnections.GetSize();
-#endif
+  /// Return true if the pad indexed by \a localIndices has a connection
+    
+  return ( FindConnectionByLocalIndices(localIndices) != 0x0 );
 }
 
 //______________________________________________________________________________
-Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
+Bool_t 
+AliMpMotifType::HasPadByManuChannel(Int_t manuChannel) const
 {
   /// Return true if the pad indexed by \a localIndices has a connection
   
-  if (!localIndices.IsValid()) return false;
-
-#ifdef WITH_STL
-  return fConnections.find(localIndices)!=fConnections.end();
-#endif
-
-#ifdef WITH_ROOT
-  TObject* value = fConnections.GetValue(localIndices);
-  return value!=0;
-#endif
+  if ( manuChannel >= fNofPads ) return kFALSE;
+  
+  return ( FindConnectionByGassiNum(manuChannel) != 0x0 );
 }
 
 //______________________________________________________________________________

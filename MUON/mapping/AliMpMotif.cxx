@@ -67,7 +67,7 @@ TVector2 AliMpMotif::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
   /// Give the dimension of the specified pad in the motif
 
-  if (GetMotifType()->HasPad(localIndices))
+  if (GetMotifType()->HasPadByLocalIndices(localIndices))
     return fPadDimensions;
   else {
     Warning("GetPadDimensions","indices outside range");

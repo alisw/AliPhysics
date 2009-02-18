@@ -68,6 +68,14 @@ public:
  
   TVector2 Dimensions() const;
   
+  virtual Int_t GetNofElectronicCards() const;
+  
+  virtual TVector2 Position() const;
+  
+  virtual Bool_t HasMotifPosition(Int_t manuId) const;
+  
+  virtual AliMpMotifPosition* MotifPosition(Int_t manuId) const;
+  
 private:
   /// Not implemented
   AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right);

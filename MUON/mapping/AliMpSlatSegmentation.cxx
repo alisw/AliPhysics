@@ -382,3 +382,66 @@ AliMpSlatSegmentation::Slat() const
   
   return fkSlat;
 }
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpSlatSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+{
+  /// Tell whether we have a pad at indices=(ix,iy)
+  
+  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(indices.GetFirst(),
+                                                           indices.GetSecond());
+  
+  if (motifPos) return motifPos->HasPadByIndices(indices);
+  
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpSlatSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+{
+  /// Tell whether we have a pad at location=(manuId,manuChannel)
+  
+  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(location.GetFirst());
+  
+  if ( motifPos ) return motifPos->HasPadByManuChannel(location.GetSecond());
+  
+  return kFALSE;  
+}
+
+
+//_____________________________________________________________________________
+Int_t 
+AliMpSlatSegmentation::GetNofElectronicCards() const
+{
+  /// Get the number of manus of this slat
+  return Slat()->GetNofElectronicCards();
+
+}
+
+//_____________________________________________________________________________
+TVector2 
+AliMpSlatSegmentation::Position() const
+{
+  /// Return position of origin
+  
+  return Slat()->Position();
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpSlatSegmentation::HasMotifPosition(Int_t manuId) const
+{
+  /// Use default implementation
+  return AliMpVSegmentation::HasMotifPosition(manuId);
+}
+
+//_____________________________________________________________________________
+AliMpMotifPosition* 
+AliMpSlatSegmentation::MotifPosition(Int_t manuId) const
+{
+  /// Get back a given manu
+  return Slat()->FindMotifPosition(manuId);
+}
+

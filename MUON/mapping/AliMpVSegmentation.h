@@ -28,6 +28,7 @@
 class AliMpVPadIterator;
 class AliMpIntPair;
 class AliMpArea;
+class AliMpMotifPosition;
 
 class TArrayI;
 class TVector2;
@@ -39,6 +40,10 @@ class AliMpVSegmentation : public TObject
     AliMpVSegmentation();
     virtual ~AliMpVSegmentation();
   
+    //
+    // methods 
+    //
+
     // factory methods
     /// Create iterator over pads in the given area 
     virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const = 0;
@@ -52,8 +57,6 @@ class AliMpVSegmentation : public TObject
                                 Bool_t includeSelf=kFALSE,
                                 Bool_t includeVoid=kFALSE) const = 0;
 
-    // methods 
-    //
             /// Find pad by location
     virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
                                Bool_t warning = true) const = 0;
@@ -69,6 +72,17 @@ class AliMpVSegmentation : public TObject
     virtual AliMpPadPair PadsLeft(const AliMpPad& pad) const;
     virtual AliMpPadPair PadsRight(const AliMpPad& pad) const;
 
+            /// Return true if the pad with given indices exists.
+            /// Compared with the PadByIndices method, this one can generally be implemented
+            /// faster, as one does not have to create an AliMpPad object... 
+    virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
+  
+            /// Return true if the pad with given location exists
+    virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
+  
+            /// For backward compatibility
+    virtual Bool_t HasPad(const AliMpIntPair& indices) const { return HasPadByIndices(indices); }
+  
             /// Return maximum pad index in X direction
     virtual Int_t  MaxPadIndexX() const = 0;
             /// Return maximum pad index in Y direction
@@ -76,11 +90,17 @@ class AliMpVSegmentation : public TObject
             /// Return the number of pads in the detection element
     virtual Int_t  NofPads() const = 0;
 
-            /// Return true if the pad with given indices exists
-    virtual Bool_t HasPad(const AliMpIntPair& indices) const = 0;
-    
             /// Fill the given array with the electronic card IDs
     virtual void GetAllElectronicCardIDs(TArrayI& ecn) const = 0;
+
+            /// Get the number of electronic card IDs 
+    virtual Int_t GetNofElectronicCards() const = 0;
+    
+            /// Whether or not we have a given manu
+    virtual Bool_t HasMotifPosition(Int_t manuId) const = 0;
+  
+            /// Return the position of a given manu (aka motifPosition)
+    virtual AliMpMotifPosition* MotifPosition(Int_t manuId) const = 0;
 
             /// Return the plane type
     virtual AliMp::PlaneType PlaneType() const = 0;
@@ -91,6 +111,10 @@ class AliMpVSegmentation : public TObject
             /// Return the half-sizes of the detection element
     virtual TVector2 Dimensions() const = 0;
     
+            /// Return the position of the origine of the detection element
+    virtual TVector2 Position() const = 0;
+  
+  
   private:  
     // methods
     AliMpPadPair FindPads(const TVector2& position1, 

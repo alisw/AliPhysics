@@ -65,9 +65,9 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     AliMpVPadIterator* CreateIterator(const AliMpPad& centerPad,
                                       Bool_t includeCenter=kFALSE) const;
 
-     Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
-                         Bool_t includeSelf = kFALSE,
-                         Bool_t includeVoid = kFALSE) const;
+    virtual Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                               Bool_t includeSelf = kFALSE,
+                               Bool_t includeVoid = kFALSE) const;
     
     // methods  
     virtual AliMpPad PadByLocation(const AliMpIntPair& location,
@@ -79,31 +79,36 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     virtual AliMpPad PadByDirection(const TVector2& startPosition, 
                                Double_t distance) const;
  
+    virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
+    virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
+    virtual Bool_t HasPad(const AliMpIntPair& indices) const;
+  
     virtual Int_t  MaxPadIndexX() const;
     virtual Int_t  MaxPadIndexY() const;
     virtual Int_t  NofPads() const;
 
+    virtual void   GetAllElectronicCardIDs(TArrayI& ecn) const;
+    virtual Int_t  GetNofElectronicCards() const;
+    virtual Bool_t HasMotifPosition(Int_t motifPositionID) const;
+    virtual AliMpMotifPosition* MotifPosition(Int_t manuId) const;
+
+    virtual AliMp::PlaneType   PlaneType() const;
+    virtual AliMp::StationType StationType() const;
+
+    virtual TVector2 Dimensions() const;
+    virtual TVector2 Position() const;
+  
+    virtual void Print(Option_t* opt="") const;
+    
     virtual Int_t    Zone(const AliMpPad& pad, Bool_t warning = kTRUE) const;
     virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;
 
-    virtual Bool_t HasPad(const AliMpIntPair& indices) const;
-    Bool_t HasMotifPosition(Int_t motifPositionID) const;
     TVector2 GetMinPadDimensions() const;
     Bool_t CircleTest(const AliMpIntPair& indices) const;
     void   PrintZones() const;
    
     const AliMpSector* GetSector() const;
-
-    virtual void Print(Option_t* opt="") const;
-    
-    virtual void GetAllElectronicCardIDs(TArrayI& ecn) const;
-
-    AliMp::PlaneType PlaneType() const;
-    
-    AliMp::StationType StationType() const;
-
-    TVector2 Dimensions() const;
-    
+  
   private:
     /// Not implemented
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);

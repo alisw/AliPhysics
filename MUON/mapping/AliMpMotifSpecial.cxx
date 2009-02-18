@@ -103,7 +103,7 @@ AliMpMotifSpecial::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
 /// Return the dimensions of pad located at the given indices
 
-  if (GetMotifType()->HasPad(localIndices)) {
+  if (GetMotifType()->HasPadByLocalIndices(localIndices)) {
 #ifdef WITH_STL
     return fPadDimensionsVector[VectorIndex(localIndices)];
 #endif  
@@ -275,7 +275,7 @@ void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
   /// Set the dimensions of the pad located at \a localIndices to the given
   /// \a dimensions
   
-  if ( !GetMotifType()->HasPad(localIndices)){
+  if ( !GetMotifType()->HasPadByLocalIndices(localIndices)){
     Warning("SetPadDimensions","Pad indices outside limits");
     return;
   }  

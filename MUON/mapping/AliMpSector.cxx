@@ -528,6 +528,15 @@ AliMpSector::GetPlaneType() const
 }
 
 //_____________________________________________________________________________
+Int_t 
+AliMpSector::GetNofMotifPositions() const
+{
+  /// Return the number of manus
+  
+  return fMotifMap->GetNofMotifPositions();
+}
+
+//_____________________________________________________________________________
 void 
 AliMpSector::GetAllMotifPositionsIDs(TArrayI& ecn) const
 {

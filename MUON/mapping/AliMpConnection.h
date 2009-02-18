@@ -30,6 +30,8 @@ class AliMpConnection : public TObject
 
     // methods
 
+  Int_t ManuChannel() const { return fGassiNum; }
+  
     //
     // accessors
     //

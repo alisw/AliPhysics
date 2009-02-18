@@ -77,6 +77,18 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   TVector2 Dimensions() const;
   
+  virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
+  
+  virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
+
+  virtual Int_t GetNofElectronicCards() const;
+  
+  virtual TVector2 Position() const;
+  
+  virtual Bool_t HasMotifPosition(Int_t manuId) const;
+  
+  virtual AliMpMotifPosition* MotifPosition(Int_t manuId) const;
+  
  private:
   /// Not implemented
   AliMpSlatSegmentation(const AliMpSlatSegmentation& right);
