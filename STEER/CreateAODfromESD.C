@@ -81,12 +81,8 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     mgr->AddTask(tagTask);
 
     // Pipelining
-    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain", TChain::Class(),
-                                                             AliAnalysisManager::kInputContainer);
-    
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-                                                              AliAnalysisManager::kOutputContainer,
-                                                              "default");
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     AliAnalysisDataContainer *coutputT
 	= mgr->CreateContainer("cTag",  TTree::Class(), AliAnalysisManager::kOutputContainer, "AOD.tag.root");
     
@@ -94,7 +90,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     mgr->ConnectOutput(filter, 0, coutput1);
 
     mgr->ConnectInput (esdmuonfilter, 0, cinput1 );
-    mgr->ConnectOutput(esdmuonfilter, 0, coutput1);
+//    mgr->ConnectOutput(esdmuonfilter, 0, coutput1);
 
     mgr->ConnectInput (tagTask, 0, cinput1);
     mgr->ConnectOutput(tagTask, 1, coutputT);
