@@ -39,7 +39,7 @@ class AliFlowTrackSimple: public TObject {
   TBits fFlowBits;  // bits to set if track is selected
   
 
-  ClassDef(AliFlowTrackSimple,0)                 // macro for rootcint
+  ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
 
 };
 
