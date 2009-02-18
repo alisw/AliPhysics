@@ -8,6 +8,7 @@ void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
+  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
   cdb->SetRun(0);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
@@ -77,7 +78,7 @@ void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
   TAlienCollection* coll =  TAlienCollection::Open(collectionfile);  
   coll->Reset();
   Int_t nFiles = 0;
-  while(coll->Next() && nFiles<2) {
+  while(coll->Next() && nFiles<10) {
     cout<<coll->GetTURL("")<<endl;
     TString test(coll->GetTURL(""));
     chain->Add(coll->GetTURL(""));

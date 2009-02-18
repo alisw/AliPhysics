@@ -7,8 +7,13 @@ void RunLocalFMDAnalysisSE(const Char_t* filename= "AliESDs.root", const Char_t*
   //TGrid::Connect("alien://",0,0,"t"); 
  
   //TChain* chain = CreateChainSingle(collectionName);  
-  TFile::Open(filename);
-  TChain* chain = (TChain*)gFile->Get("esdTree");
+  //TFile::Open(filename);
+  TChain* chain = new TChain("esdTree");
+  chain->Add(filename);
+  
+  ///chain->Add("/home/canute/ALICE/Simulations/TestOfAnalysis/AliESDs.root");
+  
+  //(TChain*)gFile->Get("esdTree");
   if (!chain) return;
   
   //
@@ -49,6 +54,7 @@ void RunLocalFMDAnalysisSE(const Char_t* filename= "AliESDs.root", const Char_t*
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
+  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
   cdb->SetRun(0);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();

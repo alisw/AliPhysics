@@ -47,6 +47,7 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
+  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
   cdb->SetRun(0);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
@@ -62,7 +63,7 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   timer.Start();
   if (mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain, 100);
+    mgr->StartAnalysis("local",chain, 3000);
   }   
   timer.Stop();
   timer.Print();

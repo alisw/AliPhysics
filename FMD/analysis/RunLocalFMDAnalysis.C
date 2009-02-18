@@ -8,9 +8,10 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
+  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
   cdb->SetRun(0);
-  AliFMDParameters* recopars = AliFMDParameters::Instance();
-  recopars->Init();
+  //AliFMDParameters* recopars = AliFMDParameters::Instance();
+  // recopars->Init();
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init();
   if (AliGeomManager::GetGeometry() == NULL)
