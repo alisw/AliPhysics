@@ -82,8 +82,7 @@ void runESDQA_CAF(Char_t *dataset = "/PWG0/COMMON/LHC08c11_10TeV_0.5T", Int_t ma
 
     // Create containers for input/output
     // Top ESD container
-    AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cchain",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
 
     //AliAnalysisDataContainer *cout_aodex = mgr->CreateContainer("cAodEx", TTree::Class(),
 //							      AliAnalysisManager::kExchangeContainer, "default");

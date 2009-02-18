@@ -52,7 +52,7 @@ void runLocal() {
   AliAnalysisTaskPt *task1 = new AliAnalysisTaskPt("TaskPt");
   mgr->AddTask(task1);
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", TH1::Class(),AliAnalysisManager::kOutputContainer,"Pt.ESD.root");
   
   //____________________________________________//

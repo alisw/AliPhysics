@@ -595,8 +595,7 @@ void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel
   
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = 
-    mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   
   if (useWeights) {    
     AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer("cobjWeights",TList::Class(),AliAnalysisManager::kInputContainer); 

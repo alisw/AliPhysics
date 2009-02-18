@@ -643,10 +643,10 @@ void ConfigGammaConversion(TString arguments){
   mgr->SetDebugLevel(10);
 
   // Declare Common Input Tchain
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("Chain",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
   // Common Output Tree in common âdefaultâ output file
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
+  AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
 
   // Private output objects
   outputFileName.ReplaceAll(".root","");

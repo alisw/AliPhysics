@@ -106,7 +106,7 @@ Int_t AddRsnAnalysisTask()
   task->AddPairMgrFromConfig("CreatePairsPhi.C");
 
   // initialize containers
-  AliAnalysisDataContainer *input = mgr->CreateContainer("in", TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *input = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *dummy = mgr->CreateContainer("dummy1", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
   AliAnalysisDataContainer *out   = mgr->CreateContainer("RSN", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
 

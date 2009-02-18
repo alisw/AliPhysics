@@ -108,10 +108,8 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
     mgr->AddTask(taskpwg4);
     
     // Create containers for input/output
-    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TList::Class(),
 							      AliAnalysisManager::kOutputContainer, "histos.root");
     

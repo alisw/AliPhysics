@@ -89,8 +89,7 @@ void AnalysisTrigChEff(Int_t mode=kMlocal)
   
   // Create containers for input/output
   // Top container for ESD input 
-  AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cESD",TChain::Class(), 
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
 
   // Output histograms list for single muons analysis
   AliAnalysisDataContainer *cout_trigChEff = mgr->CreateContainer("triggerChamberEff", TList::Class(),

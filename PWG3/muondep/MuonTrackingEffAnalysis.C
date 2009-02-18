@@ -62,8 +62,7 @@ void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, 
     mgr->AddTask(ESDTask);
 
 //Create containers for input/output
-    AliAnalysisDataContainer* cinput1  =
-	mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer* cinput1  =	mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 =
 	mgr->CreateContainer("chistlist1", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root"); 
 

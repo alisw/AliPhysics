@@ -61,7 +61,7 @@ void RunSingleMuonAnalysisFromESD(Bool_t local = kFALSE) {
   // Create containers for input/output
 
   // input
-  AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   // output
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ctree", TNtuple::Class(),AliAnalysisManager::kOutputContainer,"SingleMuESD.root");

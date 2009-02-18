@@ -74,12 +74,10 @@ void producePWG2AOD(const char *esdsource, int nfiles)
 
     // Create containers for input/output
     // Top ESD container
-    AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cchain",TChain::Class(), 
-							     AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
 
     // Output AOD container
-    AliAnalysisDataContainer *cout_aod = mgr->CreateContainer("tree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *cout_aod = mgr->GetCommonOutputContainer();
 
     mgr->ConnectInput  (esdfilter,  0, cin_esd  );
     mgr->ConnectOutput (esdfilter,  0, cout_aod );

@@ -85,7 +85,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
   AliAnalysisTaskSingleMu *task1 = new AliAnalysisTaskSingleMu("SingleMu");
   mgr->AddTask(task1);
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree1", TTree::Class(),AliAnalysisManager::kOutputContainer,outFileName.Data());
   
   //____________________________________________//

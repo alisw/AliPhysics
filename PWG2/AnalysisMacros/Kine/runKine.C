@@ -54,7 +54,7 @@ void runKine() {
   AliAnalysisTaskPtMC *task1 = new AliAnalysisTaskPtMC("TaskPtMC");
   mgr->AddTask(task1);
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", TH1::Class(),AliAnalysisManager::kOutputContainer,"Pt.MC.root");
   
   //____________________________________________//
