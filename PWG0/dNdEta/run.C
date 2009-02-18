@@ -90,6 +90,12 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
+  // Add ESD handler
+  AliESDInputHandler* esdH = new AliESDInputHandler;
+  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
+  mgr->SetInputEventHandler(esdH);
+
+
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
   AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
 
@@ -109,7 +115,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
-  cInput  = mgr->CreateContainer("cInput", TChain::Class(), AliAnalysisManager::kInputContainer);
+  cInput  = mgr->GetCommonInputContainer();
 
   // Create, add task
   if (runWhat == 0 || runWhat == 2)
@@ -166,11 +172,6 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handler);
   }
-
-  // Add ESD handler
-  AliESDInputHandler* esdH = new AliESDInputHandler;
-  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
-  mgr->SetInputEventHandler(esdH);
 
   // Enable debug printouts
   if (aDebug)

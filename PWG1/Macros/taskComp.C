@@ -94,8 +94,7 @@ AliAnalysisManager *  MakeManager(){
   mgr->AddTask(genTask);
   //
   //
-  AliAnalysisDataContainer *cinput1 =
-    mgr->CreateContainer("cchain1",TChain::Class(),						  AliAnalysisManager::kInputContainer);  
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   mgr->ConnectInput(genTask,0,cinput1);
   //
   AliAnalysisDataContainer *coutput1

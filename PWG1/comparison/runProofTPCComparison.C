@@ -26,8 +26,7 @@ void runProofTPCComparison(const char * dataset = "/PWG0/COMMON/run30000X_10TeV_
   mgr->AddTask(task);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput = 
-    mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = 
     mgr->CreateContainer("coutput", TList::Class(), 
     AliAnalysisManager::kOutputContainer, "AliTPCComparisonHist.root");
