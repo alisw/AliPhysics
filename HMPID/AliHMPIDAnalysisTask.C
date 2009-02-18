@@ -31,12 +31,12 @@ Bool_t AliHMPIDAnalysisTask()
   // Create and connect containers for input/output
 
   //------ input data ------
-  AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
 
   // ----- output data -----
   
   //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
-  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"Houtput.root");
+//  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"Houtput.root");
 
   //now comes user's output objects :
   
@@ -49,7 +49,7 @@ Bool_t AliHMPIDAnalysisTask()
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput0);
-  mgr->ConnectOutput(task,0,coutput0);
+//  mgr->ConnectOutput(task,0,coutput0);
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
  

@@ -133,7 +133,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   mgr->SetInputEventHandler(esdH);
 
   // Attach input
-  cInput  = mgr->CreateContainer("cInput", TChain::Class(), AliAnalysisManager::kInputContainer);
+  cInput  = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cInput);
 
   // Attach output

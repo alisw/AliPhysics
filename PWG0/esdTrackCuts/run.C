@@ -78,7 +78,7 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   }
 
   // Attach input
-  cInput  = mgr->CreateContainer("cInput", TChain::Class(), AliAnalysisManager::kInputContainer);
+  cInput  = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cInput);
 
   // Attach output

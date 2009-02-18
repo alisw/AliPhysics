@@ -24,12 +24,10 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   aodHandler->SetOutputFileName("AliAODs.root");
   
   
-  AliAnalysisDataContainer *cin_esd = mgr->CreateContainer("cESD",TChain::Class(), 
-							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cin_esd = mgr->GetCommonInputContainer();
   // Output AOD container. Pointer to AOD put here only by filter task.
   // This container is managed by the AOD handler
-  AliAnalysisDataContainer *cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
-							    AliAnalysisManager::kOutputContainer, "default");
+  AliAnalysisDataContainer *cout_aod = mgr->GetCommonOutputContainer();
   
   AliFMDAnalysisTaskSE *fmdana = new AliFMDAnalysisTaskSE("FMDAnalysis");
   mgr->AddTask(fmdana);

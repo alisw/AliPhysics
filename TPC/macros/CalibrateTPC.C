@@ -142,8 +142,7 @@ TObject  * SetupCalibTask(char * prefix ="/V12/") {
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1
-    =mgr->CreateContainer("cchain1",TChain::Class(),
-			  AliAnalysisManager::kInputContainer);
+    =mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1
     =mgr->CreateContainer("TPCCalib",TObjArray::Class(),
 			  AliAnalysisManager::kOutputContainer,
