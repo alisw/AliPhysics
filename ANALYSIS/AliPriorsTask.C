@@ -32,7 +32,7 @@ Bool_t AliPriorsTask()
 
 
   // Create and connect containers for input/output
-  AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
   //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
   AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"output.root");
   // output TH1I for event counting

@@ -83,11 +83,8 @@ void runAODFilterMC()
     
       //
       // Create containers for input/output
-      AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-							       AliAnalysisManager::kInputContainer);
-      
-      AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+      AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+      AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
       
       coutput1->SetSpecialOutput();
 

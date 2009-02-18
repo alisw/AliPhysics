@@ -1,7 +1,7 @@
 {
     gSystem->Load("libPhysics.so");
     // Connecting to the PROOF cluster
-    TProof::Open("elopez@lxb6046");
+    TProof::Open("alicecaf");
 
     // Clear packages if changing ROOT version on CAF or local
     //gProof->ClearPackages();
@@ -86,11 +86,11 @@
 
     //
     // Create containers for input/output                  
-    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                                             AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+                                      AliAnalysisManager::kInputContainer);
 
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-                                                              AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TList::Class(),
                                                               AliAnalysisManager::kOutputContainer, "histos.root");
 
