@@ -116,11 +116,11 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   Bool_t fHasFriends = kTRUE;
   TObjArray *tasksArray = TString(tasks).Tokenize(" ");
 
-  Int_t fSteerTask = 0; SETBIT(fSteerTask, kInfoGen);
+  Int_t fSteerTask = 0;
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask < NQATASKS; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 0; itask < NQATASKS; itask++) SETBIT(fSteerTask, itask);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       fHasFriends = kFALSE;
@@ -130,7 +130,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 1; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask);
+        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, 0);
         foundOpt = kTRUE;
         break;
       }
@@ -186,15 +186,17 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
 
   //____________________________________________
   // TRD track summary generator
-  mgr->AddTask(task = new AliTRDtrackInfoGen());
-  taskPtr[(Int_t)kInfoGen] = task;
-  task->SetDebugLevel(0);
-  task->SetMCdata(fHasMCdata);
-  mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  mgr->ConnectOutput(task, 0, coutput1);
-  mgr->ConnectOutput(task, 1, coutput1a);
+	if(TSTBIT(fSteerTask, kInfoGen)){
+    mgr->AddTask(task = new AliTRDtrackInfoGen());
+    taskPtr[(Int_t)kInfoGen] = task;
+    task->SetDebugLevel(0);
+    task->SetMCdata(fHasMCdata);
+    mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 0, coutput1);
+    mgr->ConnectOutput(task, 1, coutput1a);
+  }
 
   //____________________________________________
   // TRD detector checker

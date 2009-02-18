@@ -18,6 +18,7 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TH2I.h>
+#include <TGraphErrors.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TROOT.h>
@@ -115,6 +116,10 @@ void AliTRDcheckESD::CreateOutputObjects()
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
   fHistos->AddAt(h, kTRDstat);
+
+  TObjArray *res = new TObjArray();
+  res->SetName("Results");
+  fHistos->AddAt(res, kResults);
 }
 
 //____________________________________________________________________
@@ -123,18 +128,18 @@ void AliTRDcheckESD::Exec(Option_t *){
   // Run the Analysis
   //
   if(!fESD){
-    AliError("ESD not found");
+    AliError("ESD event missing.");
     return;
   }
 
   // Get MC information if available
   AliStack * fStack = 0x0;
   if(HasMC() && !fMC){ 
-    AliWarning("Monte Carlo Event not available");
+    AliWarning("MC event missing");
     SetMC(kFALSE);
   } else {
     if(!(fStack = fMC->Stack())){
-      AliWarning("Cannot get the Monte Carlo Stack");
+      AliWarning("MC stack missing");
       SetMC(kFALSE);
     }
   }
@@ -151,7 +156,7 @@ void AliTRDcheckESD::Exec(Option_t *){
     if(esdTrack->GetNcls(2)) nTRD++;
 
     // track status
-    ULong_t status = esdTrack->GetStatus();
+    //ULong_t status = esdTrack->GetStatus();
 
     // TRD PID
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
@@ -180,12 +185,16 @@ void AliTRDcheckESD::Exec(Option_t *){
     // read MC particle
     AliMCParticle *mcParticle = 0x0; 
     if(!(mcParticle = fMC->GetTrack(TMath::Abs(fLabel)))){
-      AliWarning(Form("MC particle missing for ESD fLabel %d.", fLabel));
+      AliWarning(Form("MC particle missing. Label[ %d].", fLabel));
       continue;
     }
 
     AliTrackReference *ref = 0x0; 
     Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
+    if(!nRefs){
+      AliWarning(Form("Track refs missing. Label[%d].", fLabel));
+      continue;
+    }
     Int_t iref = 0;
     while(iref<nRefs){
       ref = mcParticle->GetTrackReference(iref);
@@ -195,7 +204,7 @@ void AliTRDcheckESD::Exec(Option_t *){
 
     // read TParticle
     TParticle *tParticle = mcParticle->Particle(); 
-    Int_t fPdg = tParticle->GetPdgCode();
+    //Int_t fPdg = tParticle->GetPdgCode();
     //tParticle->IsPrimary();
 
     //printf("[%c] ref[%2d]=", tParticle->IsPrimary() ? 'P' : 'S', iref);
@@ -204,16 +213,23 @@ void AliTRDcheckESD::Exec(Option_t *){
     if(ref){
       if(ref->LocalX() > xTOF){ 
         //printf("  TOF   [");
-        ref = mcParticle->GetTrackReference(iref-1);
+        ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
       } else {
         //printf("%7.2f [", ref->LocalX());
-        TRDin=1;
-        if(esdTrack->GetNcls(2)) TRDout=1;
-        if(esdTrack->GetTRDpidQuality()) TRDpid=1;
+        if(ref->LocalX() < 300. && tParticle->IsPrimary()){
+          TRDin=1;
+          if(esdTrack->GetNcls(2)) TRDout=1;
+          if(esdTrack->GetTRDpidQuality()) TRDpid=1;
+        }
       }
     } else { 
       //printf("  TPC   [");
-      ref = mcParticle->GetTrackReference(iref-1);
+      ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
+    }
+    if(!ref){
+      printf("[%c] ref[%2d] [", tParticle->IsPrimary() ? 'P' : 'S', iref);
+      for(Int_t ir=0; ir<nRefs; ir++) printf(" %6.2f", mcParticle->GetTrackReference(ir)->LocalX());
+      printf("]\n");
     }
     Float_t pt = ref->Pt();
     //printf("%f]\n", pt);
@@ -235,4 +251,58 @@ void AliTRDcheckESD::Exec(Option_t *){
 //____________________________________________________________________
 void AliTRDcheckESD::Terminate(Option_t *)
 {
+  TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
+  TAxis *ax = h2->GetXaxis();
+  TObjArray *res = (TObjArray*)fHistos->At(kResults);
+  
+  TH1 *h1[2] = {0x0, 0x0};
+  TGraphErrors *g = 0x0;
+  res->Expand(1);
+  Int_t n1 = 0, n2 = 0, ip=0;
+  Double_t eff = 0.;
+  
+  // geometrical efficiency
+  h1[0] = h2->ProjectionX("px0", 1, 1);
+  h1[1] = h2->ProjectionX("px1", 2, 2);
+  res->Add(g = new TGraphErrors());
+  g->SetNameTitle("geom", "TRD geometrical efficiency (TRDin/TPCout)");
+  for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
+    if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
+    n2 = (Int_t)h1[1]->GetBinContent(ib);
+    eff = n2/Float_t(n1);
+
+    ip=g->GetN();
+    g->SetPoint(ip, ax->GetBinCenter(ib), eff);
+    g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
+  }
+
+  // tracking efficiency
+  h1[0] = h2->ProjectionX("px0", 2, 2);
+  h1[1] = h2->ProjectionX("px1", 3, 3);
+  res->Add(g = new TGraphErrors());
+  g->SetNameTitle("tracking", "TRD tracking efficiency (TRDout/TRDin)");
+  for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
+    if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
+    n2 = (Int_t)h1[1]->GetBinContent(ib);
+    eff = n2/Float_t(n1);
+
+    ip=g->GetN();
+    g->SetPoint(ip, ax->GetBinCenter(ib), eff);
+    g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
+  }
+
+  // PID efficiency
+  h1[0] = h2->ProjectionX("px0", 2, 2);
+  h1[1] = h2->ProjectionX("px1", 4, 4);
+  res->Add(g = new TGraphErrors());
+  g->SetNameTitle("PID", "TRD PID efficiency (TRDpid/TRDin)");
+  for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
+    if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
+    n2 = (Int_t)h1[1]->GetBinContent(ib);
+    eff = n2/Float_t(n1);
+
+    ip=g->GetN();
+    g->SetPoint(ip, ax->GetBinCenter(ib), eff);
+    g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
+  }
 }

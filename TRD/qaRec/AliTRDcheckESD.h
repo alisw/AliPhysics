@@ -25,17 +25,18 @@ public:
   };
   enum ETRDcheckESDhistos {
     kNCl     = 0   // number of clusters per track
-   ,kTRDstat = 2   // TRD tracks status
+   ,kTRDstat = 1   // TRD tracks status
+   ,kResults = 2   // graphs as results
   };
   AliTRDcheckESD();
   virtual ~AliTRDcheckESD();
   
   void    ConnectInputData(Option_t *);
   void    CreateOutputObjects();
+  void    Exec(Option_t *);
 
   Bool_t  HasMC() const { return TESTBIT(fStatus, kMC);}
-
-  void    Exec(Option_t *);
+  Bool_t  Load(const Char_t *fn);
   void    SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   void    Terminate(Option_t *);
 
