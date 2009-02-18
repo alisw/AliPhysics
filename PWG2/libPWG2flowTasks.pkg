@@ -7,7 +7,8 @@ SRCS= FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskCumulants.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskQCumulants.cxx \
       FLOW/AliFlowTasks/AliAnalysisTaskLeeYangZeros.cxx \
-      FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx
+      FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx \
+      FLOW/AliFlowTasks/AliAnalysisTaskFlowEvent.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
