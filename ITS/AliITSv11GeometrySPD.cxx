@@ -2788,7 +2788,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     
     Double_t extThickness       = fgkmm * 0.25;
     Double_t ext1Length         = fgkmm * (26.7 - 10.0);
-    Double_t ext2Length         = fgkmm * (284.0 - ext1Length + extThickness);
+    Double_t ext2Length         = fgkmm * 284.0 - ext1Length + extThickness;
     Double_t extWidth           = fgkmm * 11.0;
     Double_t extHeight          = fgkmm * 2.5;
                
@@ -3092,14 +3092,14 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         rot1->RotateX(45.0);
 	angle1m[i] -= 1.5;
         rot1->RotateZ(90.0 - angle1m[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.5, rot1);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.0, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
         rot2->RotateX(-45.0);
 	angle2m[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2m[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.4, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -37.9, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 
@@ -3111,14 +3111,14 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         rot1->RotateX(45.0);
 	angle1c[i] -= 1.5;
         rot1->RotateZ(90.0 - angle1c[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.5, rot1);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.0, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
         rot2->RotateX(-45.0);
 	angle2c[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2c[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.4, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -37.9, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
