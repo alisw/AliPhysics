@@ -732,6 +732,9 @@ void AliEveVSDCreator::ConvertKinks()
   if (fTreeKK != 0)
     throw(kEH + "Kinks already converted.");
 
+  throw kEH + "Currently non-supported - TEveRecKink being updated.";
+
+  /*
   AliESDEvent* esdEvent = AliEveEventManager::AssertESD();
 
   fDirectory->cd();
@@ -774,6 +777,7 @@ void AliEveVSDCreator::ConvertKinks()
   }
   if (esdEvent->GetNumberOfKinks()) fTreeKK->BuildIndex("label");
   delete esdEvent;
+  */
 }
 /******************************************************************************/
 // TEveMCRecCrossRef
