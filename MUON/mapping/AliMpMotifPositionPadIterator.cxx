@@ -152,7 +152,7 @@ AliMpPad AliMpMotifPositionPadIterator::CurrentItem() const
       AliMpMotifType* mt = fkMotifPos->GetMotif()->GetMotifType();
       AliMpConnection* connect = 
         mt->FindConnectionByLocalIndices(ind);
-      return AliMpPad(AliMpIntPair(fkMotifPos->GetID(),connect->GetGassiNum()),
+      return AliMpPad(AliMpIntPair(fkMotifPos->GetID(),connect->GetManuChannel()),
                   fkMotifPos->GlobalIndices(ind),
                   fkMotifPos->Position()+fkMotifPos->GetMotif()->PadPositionLocal(ind),
                   fkMotifPos->GetMotif()->GetPadDimensions(ind));

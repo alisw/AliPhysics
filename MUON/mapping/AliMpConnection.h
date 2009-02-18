@@ -28,10 +28,6 @@ class AliMpConnection : public TObject
                     const AliMpIntPair& localIndices);
     virtual ~AliMpConnection();
 
-    // methods
-
-  Int_t ManuChannel() const { return fGassiNum; }
-  
     //
     // accessors
     //
@@ -39,8 +35,8 @@ class AliMpConnection : public TObject
     Int_t GetBergNum()   const {return fBergNum;}
           /// Return kapton connector number
     Int_t GetKaptonNum() const {return fKaptonNum;}
-          /// Return Gassiplex channel number
-    Int_t GetGassiNum()  const {return fGassiNum;}
+          /// Return manu channel number
+  Int_t GetManuChannel() const { return fGassiNum; }
           /// Return pad number
     Int_t GetPadNum()  const {return fPadNum;}
           /// Return the motif type which contains this connection

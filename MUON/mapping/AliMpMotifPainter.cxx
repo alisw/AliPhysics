@@ -191,7 +191,7 @@ void AliMpMotifPainter::Paint(Option_t *option)
               gVirtualX->SetTextSize(10);
               gVirtualX->SetTextAlign(22);
               gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
-                              Form("%d",connect->GetGassiNum()));
+                              Form("%d",connect->GetManuChannel()));
               
               gVirtualX->SetTextSize(textSize);
                  }

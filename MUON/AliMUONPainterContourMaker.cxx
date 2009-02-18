@@ -782,7 +782,7 @@ AliMUONPainterContourMaker::GenerateManuContour(const char* name,
         {
           // the pad is on the edge
           Int_t id = AliMUONVDigit::BuildUniqueID(detElemId,manuId,
-                                                  connection->GetGassiNum(),0);
+                                                  connection->GetManuChannel(),0);
           ePads.AddLast(new AliMUONNeighbour(id,position,dimensions,left,right,top,bottom));
         }
       }

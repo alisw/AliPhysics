@@ -290,7 +290,7 @@ AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices,
     return AliMpPad::Invalid();
 	}
 	
-  return AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetGassiNum()),
+  return AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
                   indices,
                   motifPos->Position()
                   + motif->PadPositionLocal(localIndices)
@@ -348,7 +348,7 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 		return AliMpPad::Invalid();
 	}
   
-  return AliMpPad(AliMpIntPair(motifPos->GetID(),connect->GetGassiNum()),
+  return AliMpPad(AliMpIntPair(motifPos->GetID(),connect->GetManuChannel()),
                   motifPos->GlobalIndices(localIndices),
                   motifPos->Position()
                   + motif->PadPositionLocal(localIndices)

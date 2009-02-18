@@ -73,7 +73,7 @@ AliMpPCB* flipX(const AliMpPCB& src,
       AliMpConnection* destConnection = getConnection(*dest,dix,iy);
       if ( srcConnection && destConnection )
       {
-        destConnection->SetGassiNum(srcConnection->GetGassiNum());
+        destConnection->SetGassiNum(srcConnection->GetManuChannel());
       }
       else
       {

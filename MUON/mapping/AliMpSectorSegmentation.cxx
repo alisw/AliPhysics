@@ -428,7 +428,7 @@ AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
   TVector2 localPos = motif->PadPositionLocal(localIndices);
 
   return (*fPadBuffer) 
-    = AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetGassiNum()),
+    = AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
                indices,
                motifPos->Position()+localPos,
                motif->GetPadDimensions(localIndices)); 
@@ -467,7 +467,7 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
   }
   
   return (*fPadBuffer)
-    = AliMpPad(AliMpIntPair(motifPosID,connect->GetGassiNum()),
+    = AliMpPad(AliMpIntPair(motifPosID,connect->GetManuChannel()),
                motifPos->GlobalIndices(localIndices),
                motifPos->Position()+motif->PadPositionLocal(localIndices),
                motif->GetPadDimensions(localIndices));

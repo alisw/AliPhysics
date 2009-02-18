@@ -189,7 +189,7 @@ AliMpMotifType::AddConnection(AliMpConnection* connection)
   Int_t ix = connection->LocalIndices().GetFirst();
   Int_t iy = connection->LocalIndices().GetSecond();
   
-  Int_t manuChannel = connection->ManuChannel();
+  Int_t manuChannel = connection->GetManuChannel();
   
   if ( ix >=0 && ix < fMaxNofPads &&
       iy >=0 && iy < fMaxNofPads && 
@@ -436,7 +436,7 @@ void AliMpMotifType::Print(Option_t *option) const
             break;
           case 'B':str=Form("%d",connexion->GetBergNum());
             break;
-          case 'G':str=Form("%d",connexion->GetGassiNum());
+          case 'G':str=Form("%d",connexion->GetManuChannel());
             break;
           default:str= Form("%d",connexion->GetPadNum());
         }
