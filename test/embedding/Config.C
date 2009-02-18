@@ -40,7 +40,8 @@
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
 #include "PHOS/AliPHOSv1.h"
-#include "PHOS/AliPHOSSimParam.h"
+
+#include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
@@ -222,6 +223,8 @@ void Config()
     Float_t thmin = EtaToTheta(1);   // theta min. <---> eta max
     Float_t thmax = EtaToTheta(-1);  // theta max. <---> eta min 
     gener->SetThetaRange(thmin,thmax);
+    gener->SetProjectile("A",208,82);
+    gener->SetTarget("A",208,82);
 
     AliGenTherminator *genther = new AliGenTherminator();
     genther->SetFileName("event.out");
@@ -276,23 +279,27 @@ void Config()
 
   // FIELD
   //
-  AliMagF* field = 0x0;
+// Field
+
+    //  AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
+    //    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagFCheb("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::kNoField));
+//     field = new AliMagFCheb("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
-  TGeoGlobalMagField::Instance()->SetField(field);
+  //  TGeoGlobalMagField::Instance()->SetField(field);
     
   rl->CdGAFile();
   
   Int_t iABSO  = 1;
   Int_t iACORDE= 0;
   Int_t iDIPO  = 1;
-  Int_t iEMCAL = 0;
+  Int_t iEMCAL = 1;
   Int_t iFMD   = 1;
   Int_t iFRAME = 1;
   Int_t iHALL  = 1;
@@ -301,7 +308,7 @@ void Config()
   Int_t iMUON  = 1;
   Int_t iPHOS  = 1;
   Int_t iPIPE  = 1;
-  Int_t iPMD   = 0;
+  Int_t iPMD   = 1;
   Int_t iHMPID = 1;
   Int_t iSHIL  = 1;
   Int_t iT0    = 1;
@@ -412,23 +419,6 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-        AliTRDgeometry *geoTRD = TRD->GetGeometry();
-	// Partial geometry: modules at 0,8,9,17
-	// starting at 3h in positive direction
-        geoTRD->SetSMstatus(1,0);
-	geoTRD->SetSMstatus(2,0);
-	geoTRD->SetSMstatus(3,0);
-	geoTRD->SetSMstatus(4,0);
-        geoTRD->SetSMstatus(5,0);
-	geoTRD->SetSMstatus(6,0);
-        geoTRD->SetSMstatus(7,0);
-        geoTRD->SetSMstatus(10,0);
-        geoTRD->SetSMstatus(11,0);
-        geoTRD->SetSMstatus(12,0);
-        geoTRD->SetSMstatus(13,0);
-        geoTRD->SetSMstatus(14,0);
-        geoTRD->SetSMstatus(15,0);
-        geoTRD->SetSMstatus(16,0);
     }
 
     if (iFMD)
@@ -449,25 +439,7 @@ void Config()
     if (iPHOS)
     {
         //=================== PHOS parameters ===========================
-
         AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-        //Set simulation parameters different from the default ones.
-        AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance() ;
-  
-        // APD noise of warm (+20C) PHOS:
-        // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
-        // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
-        // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
-        // Y = MeanLightYield*APDEfficiency.
-
-        Float_t apdNoise = 0.012*2.5; 
-        simEmc->SetAPDNoise(apdNoise);
-
-        //Raw Light Yield at +20C
-        simEmc->SetMeanLightYield(18800);
-
-        //ADC channel width at +18C.
-        simEmc->SetADCchannelW(0.0125);
     }
 
 
@@ -531,9 +503,10 @@ AliGenerator* MbPhojet()
 //
 //    DPMJET
 #if defined(__CINT__)
-  gSystem->Load("libdpmjet");      // Parton density functions
-  gSystem->Load("libTDPMjet");      // Parton density functions
 #endif
+      gSystem->Load("libdpmjet");      // Parton density functions
+      gSystem->Load("libTDPMjet");      // Parton density functions
+
       AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
       dpmjet->SetMomentumRange(0, 999999.);
       dpmjet->SetThetaRange(0., 180.);

@@ -70,11 +70,7 @@
   gSystem->Setenv("ALIMDC_RAWDB2","./mdc2");
   gSystem->Setenv("ALIMDC_TAGDB","./mdc1/tag");
   gSystem->Setenv("ALIMDC_RUNDB","./mdc1/meta");
-  cout<< "SIMRUN:: Run " << gSystem->Getenv("DC_RUN") << " Event " << gSystem->Getenv("DC_EVENT")
-	  << " Process "    << gSystem->Getenv("DC_RUN_TYPE")
-	  << " minpthard " << gSystem->Getenv("PTHARDMIN")
-	  << " maxpthard " << gSystem->Getenv("PTHARDMAX")
-	  << " minpt "     << gSystem->Getenv("PTGAMMAPI0MIN")
+  cout    << "SIMRUN:: Run " << gSystem->Getenv("DC_RUN") << " Event " << gSystem->Getenv("DC_EVENT")
 	  << endl;
 
 
@@ -82,15 +78,30 @@
   gSystem->Setenv("CONFIG_EMBEDDING","kBackground");
 
   cout<<">>>>> BACKGROUND SIMULATION <<<<<"<<endl;
-  gSystem->Exec("mkdir Background");
-  gSystem->Exec("cp Config.C Background/");
-  gSystem->Exec("cp sim.C Background/");
-  gSystem->Exec("cp rec.C Background/");
-  gSystem->ChangeDirectory("Background/");
+  gSystem->Exec("mkdir BackgroundFull");
+  gSystem->Exec("cp Config.C BackgroundFull/");
+  gSystem->Exec("cp sim.C BackgroundFull/");
+  gSystem->Exec("cp rec.C BackgroundFull/");
+  gSystem->ChangeDirectory("BackgroundFull/");
   gSystem->Exec("aliroot -b -q 'sim.C(0)' > sim.log 2>&1");
   cout<<">>>>> BACKGROUND RECONSTRUCTION <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q 'rec.C(0)' > rec.log 2>&1");
   gSystem->ChangeDirectory("../");
+
+  // Convert Raw to SDigits
+  cout << ">>>>> CONVERTING RAW 2 SDIGITS <<<<<" << endl;
+  gSystem->Exec("mkdir Background");
+  gSystem->Exec("cp BackgroundFull/raw.root Background/");
+  gSystem->Exec("cp BackgroundFull/AliESDs.root Background/");
+  gSystem->Exec("cp -a BackgroundFull/GRP Background/");
+  gSystem->Exec("cp sim.C Background/");
+  gSystem->ChangeDirectory("Background/");
+  gSystem->Exec("aliroot -b -q 'sim.C(4)' > sim.log 2>&1");
+  gSystem->ChangeDirectory("../");
+  gSystem->Exec("mkdir BackgroundSDigits");
+  gSystem->Exec("cp Background/*SDigits.root BackgroundSDigits");
+  gSystem->Exec("cp BackgroundFull/galice.root BackgroundSDigits/");
+  gSystem->Exec("cp BackgroundFull/AliESDs.root BackgroundSDigits/");
 
   // Merged simulation
   gSystem->Setenv("CONFIG_EMBEDDING","kMerged");
@@ -108,7 +119,7 @@
 
   // Pure signal re-reconstruction
   gSystem->Setenv("CONFIG_EMBEDDING","kSignal");
-
+  
   cout<<">>>>> SIGNAL SIMULATION <<<<<<"<< endl;
   gSystem->Exec("mkdir Signal");
   gSystem->Exec("cp Config.C Signal/");
@@ -122,7 +133,7 @@
   cout<<">>>>> SIGNAL RECONSTRUCTION <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q 'rec.C(2)' > rec.log 2>&1");
   gSystem->ChangeDirectory("../");
-
+  
   //  cout<<">>>>> TAG <<<<<"<<endl;
   //  gSystem->Exec("aliroot -b -q tag.C > tag.log 2>&1");
   //  cout<<">>>>> CHECK ESD <<<<<"<<endl;
