@@ -111,6 +111,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SPD -
   fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
+  fAdvLogger = new AliITSRawStreamSPDErrorLog();  
   AliInfo("Book Offline Histograms for SPD\n ");
 
   Char_t name[50];
@@ -134,7 +135,6 @@ void AliITSQASPDDataMakerRec::InitRaws()
     fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], 1+iLay+fGenRawsOffset);
     fSPDhRawsTask++;
   }
-  fAdvLogger = new AliITSRawStreamSPDErrorLog();  
   for (Int_t iDDL=0; iDDL<20; iDDL++) {
     sprintf(name,"SPDHitMap_SPD_DDL%d",iDDL+1);
     sprintf(title,"Hit map - SPD DDL %d",iDDL+1);
@@ -145,7 +145,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
     fSPDhRawsTask++;
     sprintf(name,"SPDErrors_SPD_DDL%d",iDDL+1);
     sprintf(title,"Error codes - SPD DDL %d",iDDL+1);
-    herrors[iDDL] = new TH1F (name,title,15,0,15);
+    herrors[iDDL] = new TH1F (name,title,fAdvLogger->GetNrErrorCodes(),0,fAdvLogger->GetNrErrorCodes());
     herrors[iDDL]->SetXTitle("Error Code");
     herrors[iDDL]->SetYTitle("Nr of errors");
     fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], 4+(2*iDDL)+fGenRawsOffset, kTRUE);
