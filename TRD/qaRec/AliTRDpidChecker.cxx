@@ -171,6 +171,13 @@ TObjArray * AliTRDpidChecker::Histos(){
   } else h->Reset();
   fContainer->AddAt(h, kMomentumBin);
 
+  // Number of tracklets per track
+  if(!(h = (TH2F*)gROOT->FindObject("nTracklets"))){
+    h = new TH2F("nTracklets", "", 
+      xBins, -0.5, xBins - 0.5,
+      AliTRDgeometry::kNlayer, 0.5, AliTRDgeometry::kNlayer+.5);
+  } else h->Reset();
+  fContainer->AddAt(h, kNTracklets);
 
   return fContainer;
 }
@@ -600,6 +607,44 @@ TH1 *AliTRDpidChecker::PlotNClus(const AliTRDtrackV1 *track)
   return hNClus;
 }
 
+//_______________________________________________________
+TH1 *AliTRDpidChecker::PlotNTracklets(const AliTRDtrackV1 *track)
+{
+  //
+  // Plot the probabilities for electrons using 2-dim LQ
+  //
+
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  
+  TH2F *hTracklets;
+  if(!(hTracklets = dynamic_cast<TH2F *>(fContainer->At(kNTracklets)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+
+  AliTRDtrackV1 cTrack(*fTrack);
+  cTrack.SetReconstructor(fReconstructor);
+  Int_t pdg = 0;
+  Float_t momentum = 0.;
+  if(fMC){
+    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+    pdg = fMC->GetPDG();
+  } else {
+    //AliWarning("No MC info available!");
+    momentum = cTrack.GetMomentum(0);
+    pdg = CalcPDG(&cTrack);
+  }
+  Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
+  if(!IsInRange(momentum)) return 0x0;
+
+  Int_t iBin = FindBin(species, momentum);
+  hTracklets -> Fill(iBin, cTrack.GetNumberOfTracklets());
+  return hTracklets;
+}
 
 //_______________________________________________________
 TH1 *AliTRDpidChecker::PlotMom(const AliTRDtrackV1 *track)
@@ -839,6 +884,34 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
     gPad->SetGridx();
     return kTRUE;
   }
+  case kNTracklets:{
+    TLegend *legNClus = new TLegend(.4, .7, .68, .98);
+    legNClus->SetBorderSize(1);
+    FIRST = kTRUE;
+    if(!(h2 = (TH2F*)(fContainer->At(kNTracklets)))) break;
+    legNClus->SetHeader("Particle Species");
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      Int_t bin = FindBin(is, 2.);
+      h1 = h2->ProjectionY("py", bin, bin);
+      if(!h1->GetEntries()) continue;
+      h1->Scale(1./h1->Integral());
+      //h1->SetMarkerStyle(24);
+      //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+      if(FIRST) h1->GetXaxis()->SetTitle("N^{tl}/track");
+      if(FIRST) h1->GetYaxis()->SetTitle("<Entries>");
+      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
+      FIRST = kFALSE;
+    }
+    if(FIRST) break;
+    legNClus->Draw();
+    gPad->SetLogy();
+    gPad->SetLogx(0);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    return kTRUE;
+  }
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
   return kFALSE;
@@ -863,7 +936,7 @@ Bool_t AliTRDpidChecker::PostProcess()
     fGraph->SetOwner();
     EvaluatePionEfficiency(fEfficiency, fGraph, 0.9);
   }
-  fNRefFigures = 8;
+  fNRefFigures = 9;
   return kTRUE;
 }
 

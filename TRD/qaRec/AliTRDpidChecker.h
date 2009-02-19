@@ -33,6 +33,7 @@ class AliTRDpidChecker : public AliTRDrecoTask
     ,kMomentum       =  5     // momentum distribution
     ,kMomentumBin    =  6     // momentum distribution
     ,kThresh         =  7     // threshold in efficiency
+    ,kNTracklets     =  8     // Number of tracklets per track
   };
 public:
   AliTRDpidChecker();
@@ -50,6 +51,7 @@ public:
   TH1 *PlotdEdxSlice(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotPH(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNClus(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotNTracklets(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
 
@@ -57,6 +59,7 @@ public:
   void SetRequireMaxNTracklets(Int_t maxtracklets) { fMaxNTracklets = maxtracklets; }
 
   TObjArray *GetGraphs() { return fGraph; };
+  //TObjArray *GetHistos() { return fContainer; };
   virtual TObjArray *Histos();
   void EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency);
   inline void SetMomentumBinning(Int_t nBins, Double_t *bins);
