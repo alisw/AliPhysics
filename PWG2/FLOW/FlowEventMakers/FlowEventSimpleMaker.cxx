@@ -16,11 +16,11 @@
 
 #include "Riostream.h"
 #include "FlowEventSimpleMaker.h"
-#include "AliFlowEventSimple.h"
-#include "AliFlowTrackSimple.h"
+#include "AliFlowCommon/AliFlowEventSimple.h"
+#include "AliFlowCommon/AliFlowTrackSimple.h"
 #include "TTree.h"
 #include "TParticle.h"
-#include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowCommon/AliFlowTrackSimpleCuts.h"
 
 
 // FlowEventSimpleMaker:

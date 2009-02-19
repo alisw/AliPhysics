@@ -6,8 +6,8 @@
 #ifndef FlowEventSimpleMaker_H
 #define FlowEventSimpleMaker_H
 
-#include "AliFlowEventSimple.h"  
-#include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowCommon/AliFlowEventSimple.h"  
+#include "AliFlowCommon/AliFlowTrackSimpleCuts.h"
 
 class TTree;
 

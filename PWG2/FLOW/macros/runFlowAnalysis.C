@@ -43,10 +43,16 @@ Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 //--------------------------------------------------------------------------------------
 
+enum anaModes {mLocal,mLocalSource,mLocalPAR,};
+//mLocal: Analyze data on your computer using aliroot
+//mLocalPAR: Analyze data on your computer using root + PAR files
+//mLocalSource: Analyze data on your computer using root + source files
+
+
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t aRuns = 100, const char* 
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
 		    // 			  dir="/data/alice1/kolk/KineOnly3/")
 		    dir="/Users/snelling/alice_data/KineOnly3/")
 {
@@ -62,101 +68,21 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
   cout<<" ---- BEGIN ANALYSIS ---- "<<endl;
   cout<<endl;
   
+  LoadLibraries(mode);
 
-  gSystem->AddIncludePath("-I$ROOTSYS/include");
+  if (mode == mLocal || mode == mLocalPAR) {
+    // AliFlow event in aliroot or with pars
+    AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
+  }
+  else if (mode == mLocalSource) {
+    // flow event in source mode
+    FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
+  }
+  else{
+    cout << "No supported running mode selected!" << endl;
+    break;
+  }
 
-  // load needed libraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-
-  
-  // in root using pars
-
-  SetupPar("PWG2flowCommon");
-  cerr<<"PWG2flowCommon.par loaded..."<<endl;
-
-  //aliroot specific stuff
-  SetupPar("STEERBase");
-  SetupPar("ESD");
-  SetupPar("AOD");
-
-  SetupPar("ANALYSIS");
-  SetupPar("ANALYSISalice");
-  SetupPar("PWG2AOD");
-
-  SetupPar("CORRFW");
-
-  SetupPar("PWG2flowTasks");
-  cerr<<"PWG2flowTasks.par loaded..."<<endl;
-
-  // AliFlow event in root with pars
-  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
-
-  /*
-  // In AliRoot
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libPWG2flowCommon.so");
-  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
-  gSystem->Load("libPWG2flowTasks.so");
-  cerr<<"libPWG2flowTasks.so loaded ..."<<endl;
-  cout<<endl; 
-  
-  // Flow event in AliRoot
-  AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
-   
-  */
-
-  // In root inline compile
-
-  /*    
-  // Constants  
-  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowCumuConstants.cxx+");
-
-  // Flow event
-  gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
-  gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
-  gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
-
-  // Cuts
-  gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
-
-  // Output histosgrams
-  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
-
-  // Functions needed for various methods
-  gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliQCumulantsFunctions.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
-
-  // Flow Analysis code for various methods
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx+"); 
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
-  gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
-  gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
-
-  // Class to fill the FlowEvent without aliroot dependence
-  // can be found in the directory FlowEventMakers
-  gROOT->LoadMacro("FlowEventMakers/FlowEventSimpleMaker.cxx+");   
-
-  cout << "finished loading macros!" << endl;  
-
-  //flow event
-  FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
-  //------------------------------------------------------------------------
-  */
 
   //------------------------------------------------------------------------
   //cuts:
@@ -477,4 +403,108 @@ void SetupPar(char* pararchivename)
   gSystem->ChangeDirectory(ocwd.Data());
   printf("Current dir: %s\n", ocwd.Data());
 }
+
+void LoadLibraries(const anaModes mode) {
+  
+  //--------------------------------------
+  // Load the needed libraries most of them already loaded by aliroot
+  //--------------------------------------
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libPhysics.so");
+  
+  //----------------------------------------------------------
+  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
+  if (mode==mLocal) {
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libCORRFW.so");
+    cerr<<"libCORRFW.so loaded..."<<endl;
+    gSystem->Load("libPWG2flowCommon.so");
+    cerr<<"libPWG2flowCommon.so loaded..."<<endl;
+    gSystem->Load("libPWG2flowTasks.so");
+    cerr<<"libPWG2flowTasks.so loaded..."<<endl;
+  }
+  
+  else if (mode == mLocalPAR) {
+    //--------------------------------------------------------
+    //If you want to use root and par files from aliroot
+    //--------------------------------------------------------  
+     //If you want to use root and par files from aliroot
+    //--------------------------------------------------------  
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
+    SetupPar("PWG2AOD");
+    SetupPar("CORRFW");
+    SetupPar("PWG2flowCommon");
+    cerr<<"PWG2flowCommon.par loaded..."<<endl;
+    SetupPar("PWG2flowTasks");
+    cerr<<"PWG2flowTasks.par loaded..."<<endl;
+  }
+  
+  //---------------------------------------------------------
+  // <<<<<<<<<< Source mode >>>>>>>>>>>>
+  //---------------------------------------------------------
+  else if (mode==mLocalSource) {
+ 
+    // In root inline compile
+
+   
+    // Constants  
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCumuConstants.cxx+");
+    
+    // Flow event
+    gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
+    
+    // Cuts
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
+    
+    // Output histosgrams
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
+    
+    // Functions needed for various methods
+    gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliQCumulantsFunctions.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
+    
+    // Flow Analysis code for various methods
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
+    gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
+    
+    // Class to fill the FlowEvent without aliroot dependence
+    // can be found in the directory FlowEventMakers
+    gROOT->LoadMacro("FlowEventMakers/FlowEventSimpleMaker.cxx+");   
+    
+    cout << "finished loading macros!" << endl;  
+    
+  }  
+  
+}
+
 
