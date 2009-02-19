@@ -2718,7 +2718,7 @@ void AliPIPEv3::CreateMaterials()
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
-  Float_t dAir1 = 1.20479E-10;
+  Float_t dAir1 = 1.20479E-11;
   //
   // Insulation powder
   //                    Si         O       Ti     Al
