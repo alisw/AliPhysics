@@ -23,7 +23,6 @@
 #include <TDatabasePDG.h>
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF4Prong.h"
-#include "TRandom.h" // for the time being
 
 ClassImp(AliAODRecoDecayHF4Prong)
 
@@ -107,20 +106,20 @@ AliAODRecoDecayHF4Prong &AliAODRecoDecayHF4Prong::operator=(const AliAODRecoDeca
 //--------------------------------------------------------------------------
 void AliAODRecoDecayHF4Prong::InvMassD0(Double_t mD0[2]) const {
   //
-  // the masses for D0 hypothesis
-  // 
+  // Mass for the two D0 hypotheses
+  //
   UInt_t pdg[4];
   pdg[0]=211; pdg[1]=321; pdg[2]=211; pdg[3]=211;
   mD0[0]=InvMass(4,pdg);
   pdg[1]=211; pdg[3]=321;
   mD0[1]=InvMass(4,pdg);
-
+  
   return;
 }
 //--------------------------------------------------------------------------
 void AliAODRecoDecayHF4Prong::InvMassD0bar(Double_t mD0bar[2]) const {
   //
-  // the two masses for D0bar hypothesis
+  // Mass for the two D0bar hypotheses
   //
   UInt_t pdg[4];
   pdg[0]=321; pdg[1]=211; pdg[2]=211; pdg[3]=211;
@@ -131,30 +130,37 @@ void AliAODRecoDecayHF4Prong::InvMassD0bar(Double_t mD0bar[2]) const {
   return;
 }
 //--------------------------------------------------------------------------
-Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar) const {
-//
-// This function compares the D0 with a set of cuts:
-// 
-// cuts[0] = invariant mass cut 
-// cuts[1] = DCA between opposite sign tracks 
-// cuts[2] = Distance between primary and two tracks vertex fDist12toPrim
-// cuts[3] = Distance between primary and three tracks vertex fDist3toPrim
-// cuts[4] = Distance between primary and two tracks vertex fDist4toPrim
-// cuts[5] = Cosinus of the pointing angle
-// cuts[6] = Transverse momentum of the D0 candidate
-// cuts[7] = Mass Pi+Pi- = mass of the rho0
-// cuts[8] = PID cut (one K in the quadruplet)
-//
-// If candidate D0 does not pass the cuts return kFALSE
-//
 
+Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar) const
+{
+  //
+  // This function compares the D0 with a set of cuts:
+  // 
+  // cuts[0] = D0 invariant mass 
+  // cuts[1] = DCA between opposite sign tracks 
+  // cuts[2] = Distance between primary and two tracks vertex fDist12toPrim
+  // cuts[3] = Distance between primary and three tracks vertex fDist3toPrim
+  // cuts[4] = Distance between primary and two tracks vertex fDist4toPrim
+  // cuts[5] = Cosinus of the pointing angle
+  // cuts[6] = Transverse momentum of the D0 candidate
+  // cuts[7] = Mass Pi+Pi- = mass of the rho0
+  // cuts[8] = PID cut (one K in the quadruplet)
+  //
+  // If candidate D0 does not pass the cuts return kFALSE
+  //
+  
   okD0=0; okD0bar=0;
-//  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-//  Double_t mD0=InvMassD0();
-//  if(TMath::Abs(mD0-mD0PDG)>cuts[0]) return kFALSE;
-
-  //single track
-  //if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion2
+  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t mD0[2];
+  Double_t mD0bar[2];
+  InvMassD0(mD0);
+  InvMassD0bar(mD0bar);
+  Bool_t goodMass=kFALSE;
+  if(TMath::Abs(mD0[0]-mD0PDG)<=cuts[0]) {goodMass=kTRUE; okD0=1;}
+  if(TMath::Abs(mD0[1]-mD0PDG)<=cuts[0]) {goodMass=kTRUE; okD0=1;}
+  if(TMath::Abs(mD0bar[0]-mD0PDG)<=cuts[0]) {goodMass=kTRUE; okD0bar=1;}
+  if(TMath::Abs(mD0bar[1]-mD0PDG)<=cuts[0]) {goodMass=kTRUE; okD0bar=1;}
+  if(!goodMass) return kFALSE;
   
   //DCA btw opposite sign tracks
   if(cuts[1]>0.){
@@ -190,13 +196,14 @@ Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t 
     Bool_t good=CutRhoMass(massD0,massD0bar,cuts[0],cuts[7]);
     if(!good) return kFALSE;
   }
-
+  
   return kTRUE;
 }
 //----------------------------------------------------------------------------
-Bool_t AliAODRecoDecayHF4Prong::CutRhoMass(Double_t massD0[2],Double_t massD0bar[2],Double_t cutMass,Double_t cutRho) const {
+Bool_t AliAODRecoDecayHF4Prong::CutRhoMass(Double_t massD0[2],Double_t massD0bar[2],Double_t cutMass,Double_t cutRho) const 
+{
   //
-  // cut on the mass of rho->pipi
+  // Cut on rho->pipi mass for any of the pairs
   //
   Bool_t isGood=kFALSE;
   Int_t nprongs=4;
