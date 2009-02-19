@@ -34,8 +34,11 @@ class AliFlowCommonHist: public TNamed {
   Bool_t FillControlHistograms(AliFlowEventSimple* anEvent);
   void Browse(TBrowser *b); 
   //make get methods here
-  Double_t GetEntriesInPtBin(Int_t iBin);   //gets entries from fHistPtDiff
-  Double_t GetMeanPt(Int_t iBin);           //gets the mean pt for this bin from fHistProMeanPtperBin   
+  Double_t GetEntriesInPtBinRP(Int_t iBin);   //gets entries from fHistPtInt
+  Double_t GetEntriesInPtBinPOI(Int_t iBin);  //gets entries from fHistPtDiff
+  Double_t GetEntriesInEtaBinRP(Int_t iBin);  //gets entries from fHistEtaInt
+  Double_t GetEntriesInEtaBinPOI(Int_t iBin); //gets entries from fHistEtaDiff
+  Double_t GetMeanPt(Int_t iBin);             //gets the mean pt for this bin from fHistProMeanPtperBin   
 
   TH1F*     GetHistMultOrig()               {return fHistMultOrig;  } ;  
   TH1F*     GetHistMultInt()                {return fHistMultInt; } ;  

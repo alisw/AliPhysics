@@ -614,14 +614,12 @@ void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel
   if(LYZ1) {
     TString outputLYZ1 = "outputLYZ1analysis";
     outputLYZ1+= type;
-    outputLYZ1+= "_firstrun.root";
     AliAnalysisDataContainer *coutputLYZ1 = mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
   }
   
   if(LYZ2) {
     TString outputLYZ2 = "outputLYZ2analysis";
     outputLYZ2+= type;
-    outputLYZ2+= "_secondrun.root";
     AliAnalysisDataContainer *coutputLYZ2 = mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
   }
   
