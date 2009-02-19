@@ -389,7 +389,7 @@ AliMpMotifType::HasPadByManuChannel(Int_t manuChannel) const
 {
   /// Return true if the pad indexed by \a localIndices has a connection
   
-  if ( manuChannel >= fNofPads ) return kFALSE;
+//  if ( manuChannel >= fNofPads ) return kFALSE;
   
   return ( FindConnectionByGassiNum(manuChannel) != 0x0 );
 }

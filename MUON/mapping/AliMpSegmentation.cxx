@@ -33,6 +33,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
 #include "AliMpExMap.h"
+#include "AliMpFastSegmentation.h"
 #include "AliMpSector.h"
 #include "AliMpSectorReader.h"
 #include "AliMpSectorSegmentation.h"
@@ -213,12 +214,12 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
     AliMq::Station12Type station12Type = detElement->GetStation12Type();
     AliMpSectorReader reader(fkDataStreams, station12Type, planeType);
     AliMpSector* sector = reader.BuildSector();
-    mpSegmentation = new AliMpSectorSegmentation(sector, true);
+    mpSegmentation = new AliMpFastSegmentation(new AliMpSectorSegmentation(sector, true));
   }
   else if ( stationType == AliMp::kStation345 ) { 
     AliMpSt345Reader reader(fkDataStreams,fSlatMotifMap);
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
-    mpSegmentation =  new AliMpSlatSegmentation(slat, true);
+    mpSegmentation = new AliMpFastSegmentation(new AliMpSlatSegmentation(slat, true));
   }
   else if ( stationType == AliMp::kStationTrigger ) {
     AliMpTriggerReader reader(fkDataStreams,fSlatMotifMap);
@@ -352,9 +353,25 @@ AliMpSegmentation::GetSector(const AliMpVSegmentation* kSegmentation,
      }   
      return 0;
   }
+    
+  // If fast segmentation
+  const AliMpFastSegmentation* fseg 
+    = dynamic_cast<const AliMpFastSegmentation*>(kSegmentation);
+  if ( fseg ) {   
+    return 
+      static_cast<const AliMpSectorSegmentation*>(fseg->GetHelper())->GetSector();
+  }
   
-  return 
-    static_cast<const AliMpSectorSegmentation*>(kSegmentation)->GetSector();
+  // If sector segmentation
+  const AliMpSectorSegmentation* sseg 
+    = dynamic_cast<const AliMpSectorSegmentation*>(kSegmentation);
+  if ( sseg ) {   
+    return sseg->GetSector();
+  }
+  
+  // Should not get to this line
+  AliErrorStream() << "Segemntation type not identified." << endl;
+  return 0;         
 }
                              
 //_____________________________________________________________________________
@@ -400,8 +417,25 @@ AliMpSegmentation::GetSlat(const AliMpVSegmentation* kSegmentation,
      return 0;
   }
   
-  return 
-    static_cast<const AliMpSlatSegmentation*>(kSegmentation)->Slat();
+  // If fast segmentation
+  const AliMpFastSegmentation* fseg 
+    = dynamic_cast<const AliMpFastSegmentation*>(kSegmentation);
+  if ( fseg ) {   
+    return 
+      static_cast<const AliMpSlatSegmentation*>(fseg->GetHelper())->Slat();
+  }
+  
+  // If slat segmentation
+  const AliMpSlatSegmentation* sseg 
+    = dynamic_cast<const AliMpSlatSegmentation*>(kSegmentation);
+    
+  if ( sseg ) {   
+    return sseg->Slat();
+  }
+  
+  // Should not get to this line
+  AliErrorStream() << "Segemntation type not identified." << endl;
+  return 0;         
 }    
                            
 //_____________________________________________________________________________
@@ -447,8 +481,25 @@ AliMpSegmentation::GetTrigger(const AliMpVSegmentation* kSegmentation,
      return 0;
   }
   
-  return 
-    static_cast<const AliMpTriggerSegmentation*>(kSegmentation)->Slat();
+  // If slat segmentation
+  const AliMpTriggerSegmentation* tseg 
+    = dynamic_cast<const AliMpTriggerSegmentation*>(kSegmentation);
+  if ( tseg ) {   
+    return tseg->Slat();
+  }
+  
+  // If fast segmentation
+  const AliMpFastSegmentation* fseg 
+    = dynamic_cast<const AliMpFastSegmentation*>(kSegmentation);
+    
+  if ( fseg ) {   
+    return 
+      static_cast<const AliMpTriggerSegmentation*>(fseg->GetHelper())->Slat();
+  }
+  
+  // Should not get to this line
+  AliErrorStream() << "Segemntation type not identified." << endl;
+  return 0;         
 }    
 
 //_____________________________________________________________________________

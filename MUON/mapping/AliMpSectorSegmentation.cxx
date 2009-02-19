@@ -611,7 +611,8 @@ AliMpSectorSegmentation::Position() const
 { 
 /// Return sector position
 
-  return GetSector()->Position(); 
+  // return GetSector()->Position(); 
+  return TVector2(0.,0.);
 }
 
 //______________________________________________________________________________
