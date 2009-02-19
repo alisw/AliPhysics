@@ -16,8 +16,8 @@
  *           (anteb@nikhef.nl)        * 
  * ***********************************/
 
-#ifndef AliAnalysisTaskFittingQDistribution_H
-#define AliAnalysisTaskFittingQDistribution_H
+#ifndef ALIANALYSISTASKFITTINGQDISTRIBUTION_H
+#define ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 
 #include "TString.h"
 #include "AliAnalysisTask.h"
@@ -58,10 +58,6 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTask{
   
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
-  void SetUsePtWeights(Bool_t const uPtW) {this->fUsePtWeights = uPtW;};
-  Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
-  void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
-  Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
  
  private:
   AliAnalysisTaskFittingQDistribution(const AliAnalysisTaskFittingQDistribution& aatfqd);
@@ -83,8 +79,6 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTask{
   
   Bool_t       fUseWeights;               // use any weights
   Bool_t       fUsePhiWeights;            // phi weights
-  Bool_t       fUsePtWeights;             // v_2(pt) weights
-  Bool_t       fUseEtaWeights;            // v_2(eta) weights  
   TList*       fListWeights;              // list with weights                                               
                                                            
   ClassDef(AliAnalysisTaskFittingQDistribution, 1); 

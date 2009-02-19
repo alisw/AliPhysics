@@ -75,8 +75,6 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fQA(on),
  fUseWeights(useWeights),
  fUsePhiWeights(kFALSE),
- fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE),
  fListWeights(NULL)
 {
  //constructor
@@ -115,8 +113,6 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fQA(kFALSE),
  fUseWeights(kFALSE),
  fUsePhiWeights(kFALSE),
- fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE),
  fListWeights(NULL)
 {
  //dummy constructor
@@ -207,8 +203,6 @@ void AliAnalysisTaskFittingQDistribution::CreateOutputObjects()
  {
   //pass the flags to class:
   if(fUsePhiWeights) fFQDA->SetUsePhiWeights(fUsePhiWeights);
-  if(fUsePtWeights) fFQDA->SetUsePtWeights(fUsePtWeights);
-  if(fUseEtaWeights) fFQDA->SetUseEtaWeights(fUseEtaWeights);
   //get data from input slot #1 which is used for weights:
   if(GetNinputs()==2) 
   {                   

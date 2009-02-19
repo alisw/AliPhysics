@@ -1404,6 +1404,11 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 //---------------------------------------------------------------------------------------------------------
 
 
+ delete mPerBinPtRP; 
+ delete mPerBinEtaRP; 
+ delete mPrimePrimePerBinPtPOI; 
+ delete mPrimePrimePerBinEtaPOI; 
+
 
 
 

@@ -69,11 +69,6 @@ class AliFittingQDistribution{
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
   
-  void SetUsePtWeights(Bool_t const uPtW) {this->fUsePtWeights = uPtW;};
-  Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
-  
-  void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
-  Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -81,7 +76,7 @@ class AliFittingQDistribution{
   AliFittingQDistribution& operator=(const AliFittingQDistribution& afqd);
   
   AliFlowTrackSimple*        fTrack;                   //track
-   
+           
   TList*                     fHistList;                //list to hold all output histograms
   TList*                     fWeightsList;             //list to hold all histograms with weights
   
@@ -93,8 +88,6 @@ class AliFittingQDistribution{
   TH1D*                      fQDistributionFQD;        //q-distribution 
   
   Bool_t                     fUsePhiWeights;           //phi weights
-  Bool_t                     fUsePtWeights;            //v_2(pt) weights
-  Bool_t                     fUseEtaWeights;           //v_2(eta) weights
          
   ClassDef(AliFittingQDistribution, 0);
 };

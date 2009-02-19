@@ -572,8 +572,6 @@ void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel
     else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE,useWeights);}
     taskFQD->SetAnalysisType(type);
     taskFQD->SetUsePhiWeights(usePhiWeights); 
-    taskFQD->SetUsePtWeights(usePtWeights);
-    taskFQD->SetUseEtaWeights(useEtaWeights);
     taskFQD->SetCFManager1(cfmgr1);
     taskFQD->SetCFManager2(cfmgr2);
     if (QA) { 

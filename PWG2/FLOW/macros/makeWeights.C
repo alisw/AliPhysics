@@ -21,8 +21,8 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  //for AliRoot
  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
  gSystem->Load("libANALYSIS.so");
- gSystem->Load("libPWG2flow.so");
- cerr<<"libPWG2flow.so loaded ..."<<endl;
+ gSystem->Load("libPWG2flowCommon.so");
+ cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
 
  //open the output file from the first run of the specified method:
  TString inputFileName = "output";
