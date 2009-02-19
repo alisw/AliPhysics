@@ -64,9 +64,7 @@ AliFittingQDistribution::AliFittingQDistribution():
  fCommonHists(NULL),
  fCommonHistsResults(NULL),
  fQDistributionFQD(NULL),
- fUsePhiWeights(kFALSE),
- fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE)
+ fUsePhiWeights(kFALSE)
 {
  //constructor 
  fHistList = new TList();
@@ -148,7 +146,7 @@ void AliFittingQDistribution::Make(AliFlowEventSimple* anEvent)
  AliFlowVector fQVector;
  fQVector.Set(0.,0.);
  fQVector.SetMult(0);
- fQVector=anEvent->GetQ(n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights);                                                                                  
+ fQVector=anEvent->GetQ(n,fWeightsList,fUsePhiWeights);                                                                                  
                                                                                                                                                                       
  //multiplicity
  fAvMultIntFlowFQD->Fill(0.,fQVector.GetMult(),1.);

@@ -231,8 +231,6 @@ int runFlowAnalysis(Int_t aRuns = 100, const char*
     fqd->Init();
     if(listWithWeights) fqd->SetWeightsList(listWithWeights);
     if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);
-    if(usePtWeights) fqd->SetUsePtWeights(usePtWeights);
-    if(useEtaWeights) fqd->SetUseEtaWeights(useEtaWeights);
   }
 
   //SP = Scalar Product 
