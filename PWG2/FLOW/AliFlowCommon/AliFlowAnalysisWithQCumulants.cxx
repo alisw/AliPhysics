@@ -950,7 +950,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //      !!!! to be removed: temporary fix !!!!
-   two1n1n = (pow(afvQvector1n.Mod(),2.)-dMult)/(dMult*(dMult-1.));
+ if(dMult>1)
+ {
+  two1n1n = (pow(afvQvector1n.Mod(),2.)-dMult)/(dMult*(dMult-1.));
+ }  
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     
  //6-particle
