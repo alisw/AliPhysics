@@ -43,8 +43,8 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
 
                        /// Build the 4 words (32bits) global input
       void             BuildGlobalInput();
-                       /// Apply masks to regional inputs
-      void             MaskRegionalInput();
+                       /// Apply masks to global input
+      void             MaskGlobalInput();
                        /// Global input 4 words (32bits) from regional responses
       UInt_t*          GetGlobalInput() { return fGlobalInput; }
       

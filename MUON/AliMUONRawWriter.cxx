@@ -593,8 +593,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
       fRegHeader->SetDarcWord(word);
 
       regOut    = regTrg->GetOutput();
-      regInpHpt = regTrg->GetLocalOutput(0);
-      regInpLpt = regTrg->GetLocalOutput(1);
+      regInpLpt = regTrg->GetLocalOutput(0);
+      regInpHpt = regTrg->GetLocalOutput(1);
 
       // fill darc word, not darc status for the moment (empty)
       //see  AliMUONRegHeader.h for details
@@ -694,7 +694,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 	  
       } // local card 
       // fill regional header with local output
-      fRegHeader->SetInput(regInpHpt, 0);
+      fRegHeader->SetInput(regInpLpt, 0);
       fRegHeader->SetInput(regInpHpt, 1);
       memcpy(&buffer[indexReg],fRegHeader->GetHeader(),kRegHeaderLength*4);
       
