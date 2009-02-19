@@ -139,7 +139,9 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
 	fhEtaPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
 	outputContainer->Add(fhEtaPi0) ;
 	
-	if(IsDataMC()){
+	if(IsDataMC()) {
+	  if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
+	     GetReader()->GetDataType() != AliCaloTrackReader::kMC){
 		
 		fhPtMCPi0  = new TH1F("hPtMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax); 
 		fhPtMCPi0->SetYTitle("N");
@@ -175,6 +177,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
 		fhEtaMCNoPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
 		outputContainer->Add(fhEtaMCNoPi0) ;
 		
+	}
 	}//Histos with MC
     
 	
@@ -275,7 +278,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 			if(GetNeutralMesonSelection()->SelectPair(mom1, mom2))
 			{
 				if(GetDebug()>1) 
-					printf("Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+					printf("AliAnaPi0EbE::kIMCalo::Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
 				
 						//Play with the MC stack if available
 				if(IsDataMC()){
@@ -283,7 +286,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 					tag1 = GetMCAnalysisUtils()->CheckOrigin(photon1->GetLabel(), GetMCStack());
 					tag2 = GetMCAnalysisUtils()->CheckOrigin(photon2->GetLabel(), GetMCStack());
 					
-					if(GetDebug() > 0) printf("Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
+					if(GetDebug() > 0) printf("AliAnaPi0EbE::kIMCalo::Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
 					if(tag1 == AliMCAnalysisUtils::kMCPi0Decay && tag2 == AliMCAnalysisUtils::kMCPi0Decay){
 					
 					 //Check if pi0 mother is the same
@@ -318,7 +321,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 		
 	}//1st photon loop
 	
-	if(GetDebug() > 1) printf("End fill AODs \n");  
+	if(GetDebug() > 1) printf("AliAnaPi0EbE::kIMCalo::End fill AODs \n");  
 	
 }
 
@@ -354,13 +357,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 			mom2 = *(photon2->Momentum());
 			//Select good pair (good phi, pt cuts, aperture and invariant mass)
 			if(GetNeutralMesonSelection()->SelectPair(mom1, mom2)){
-				if(GetDebug() > 1) printf("Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+				if(GetDebug() > 1) printf("AliAnaPi0EbE::kIMCaloCTS::Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
 				
 				if(IsDataMC()){
 					//Check origin of the candidates
 					tag1 = GetMCAnalysisUtils()->CheckOrigin(photon1->GetLabel(), GetMCStack());
 					tag2 = GetMCAnalysisUtils()->CheckOrigin(photon2->GetLabel(), GetMCStack());
-					if(GetDebug() > 0) printf("Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
+					if(GetDebug() > 0) printf("AliAnaPi0EbE::kIMCaloCTS::Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
 					if(tag1 == AliMCAnalysisUtils::kMCPi0Decay && tag2 == AliMCAnalysisUtils::kMCPi0Decay){
 						//Check if pi0 mother is the same
 						Int_t label1 = photon1->GetLabel();
@@ -395,7 +398,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 		
 	}//1st photon loop
 	
-	if(GetDebug() > 1) printf("End fill AODs \n");  
+	if(GetDebug() > 1) printf("AliAnaPi0EbE::kIMCaloCTS::End fill AODs \n");  
 	
 }
 
@@ -421,7 +424,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 	for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
 		AliAODCaloCluster * calo = (AliAODCaloCluster*) (pl->At(icalo));	
 		
-		//Cluster selection, not charged, with photon id and in fidutial cut
+		//Cluster selection, not charged, with pi0 id and in fidutial cut
 		//Get Momentum vector, 
 		calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
 		//If too small or big pt, skip it
@@ -433,10 +436,13 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 		}
 		
 		//Create AOD for analysis
-		AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
-		aodph.SetLabel(calo->GetLabel(0));
-		aodph.SetDetector(fCalorimeter);
-		if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
+		AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
+		aodpi0.SetLabel(calo->GetLabel(0));
+		//Set the indeces of the original caloclusters  
+		aodpi0.SetCaloLabel(calo->GetID(),-1);
+		aodpi0.SetDetector(fCalorimeter);
+		if(GetDebug() > 1) 
+		  printf("AliAnaPi0EbE::kSSCalo::::FillAOD: Min pt cut and fidutial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodpi0.Pt(),aodpi0.Phi(),aodpi0.Eta());	
 		
 		//Check Distance to Bad channel, set bit.
 		Double_t distBad=calo->GetDistToBadChannel() ; //Distance to bad channel
@@ -444,20 +450,21 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 		if(distBad < fMinDist) //In bad channel (PHOS cristal size 2.2x2.2 cm)
 			continue ;
 		
-		if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: Bad channel cut passed %4.2f\n",distBad);
+		if(GetDebug() > 1) printf("AliAnaPi0EbE::kSSCalo::::FillAOD: Bad channel cut passed %4.2f\n",distBad);
 		
-		if(distBad > fMinDist3) aodph.SetDistToBad(2) ;
-		else if(distBad > fMinDist2) aodph.SetDistToBad(1) ; 
-		else aodph.SetDistToBad(0) ;
+		if(distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
+		else if(distBad > fMinDist2) aodpi0.SetDistToBad(1) ; 
+		else aodpi0.SetDistToBad(0) ;
 		
 		//Check PID
 		//PID selection or bit setting
 		if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
 			//Get most probable PID, check PID weights (in MC this option is mandatory)
-			aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->PID(),mom.E()));//PID with weights
-			if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: PDG of identified particle %d\n",aodph.GetPdg());
-			//If primary is not photon, skip it.
-			if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;
+			aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->PID(),mom.E()));//PID with weights
+			if(GetDebug() > 1) 
+			  printf("AliAnaPi0EbE::kSSCalo::::FillAOD: PDG of identified particle %d\n",aodpi0.GetPdg());
+			//If primary is not pi0, skip it.
+			if(aodpi0.GetPdg() != AliCaloPID::kPi0) continue ;
 		}					
 		else if(IsCaloPIDOn()){
 			//Skip matched clusters with tracks
@@ -466,38 +473,41 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 			//Get most probable PID, 2 options check PID weights 
 			//or redo PID, recommended option for EMCal.		
 			if(!IsCaloPIDRecalculationOn())
-				aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->PID(),mom.E()));//PID with weights
+				aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->PID(),mom.E()));//PID with weights
 			else
-				aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,mom,calo));//PID recalculated
+				aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,mom,calo));//PID recalculated
 			
-			if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: PDG of identified particle %d\n",aodph.GetPdg());
+			if(GetDebug() > 1) printf("AliAnaPi0EbE::kSSCalo::::FillAOD: PDG of identified particle %d\n",aodpi0.GetPdg());
 			
-			//If cluster does not pass pid, not photon, skip it.
-			if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;			
+			//If cluster does not pass pid, not pi0, skip it.
+			if(aodpi0.GetPdg() != AliCaloPID::kPi0) continue ;			
 			
 		}
 		else{
 			//Set PID bits for later selection (AliAnaPi0 for example)
 			//GetPDG already called in SetPIDBits.
-			GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph);
-			if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: PID Bits set \n");		
+			GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0);
+			if(GetDebug() > 1) printf("AliAnaPi0EbE::kSSCalo::::FillAOD: PID Bits set \n");		
 		}
 		
-		if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetPdg());
+		if(GetDebug() > 1) printf("AliAnaPi0EbE::kSSCalo::::FillAOD: Pi0 selection cuts passed: pT %3.2f, pdg %d\n",aodpi0.Pt(), aodpi0.GetPdg());
 		
 		//Play with the MC stack if available
 		//Check origin of the candidates
 		if(IsDataMC()){
-			aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
-			if(GetDebug() > 0) printf("AliAnaPi0EbE::FillAOD: Origin of candidate %d\n",aodph.GetTag());
+		  if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
+		     GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+			aodpi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
+			if(GetDebug() > 0) printf("AliAnaPi0EbE::kSSCalo::EbE::FillAOD: Origin of candidate %d\n",aodpi0.GetTag());
+		  }
 		}//Work with stack also   
 		
-		//Add AOD with photon object to aod branch
-		AddAODParticle(aodph);
+		//Add AOD with pi0 object to aod branch
+		AddAODParticle(aodpi0);
 		
 	}//loop
 	
-	if(GetDebug() > 1) printf("AliAnaPhoton::FillAOD: End fill AODs \n");  
+	if(GetDebug() > 1) printf("AliAnaPi0EbE::kSSCalo::::FillAOD: End fill AODs \n");  
 	
 }
 //__________________________________________________________________
@@ -510,7 +520,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 	
 	//Loop on stored AOD pi0
 	Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-	if(GetDebug() > 0) printf("pi0 aod branch entries %d\n", naod);
+	if(GetDebug() > 0) printf("AliAnaPi0EbE::Histo::pi0 aod branch entries %d\n", naod);
 	
 	for(Int_t iaod = 0; iaod < naod ; iaod++){
 		
@@ -530,6 +540,8 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 		fhEtaPi0 ->Fill(pt,eta);
 		
 		if(IsDataMC()){
+		  if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
+		     GetReader()->GetDataType() != AliCaloTrackReader::kMC){
 			if(pi0->GetTag()== AliMCAnalysisUtils::kMCPi0){
 				fhPtMCPi0  ->Fill(pt);
 				fhPhiMCPi0 ->Fill(pt,phi);
@@ -540,12 +552,30 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 				fhPhiMCNoPi0 ->Fill(pt,phi);
 				fhEtaMCNoPi0 ->Fill(pt,eta);
 			}
+		  }
 		}//Histograms with MC
 		
 	}// aod loop
 	
 }
 
+
+//____________________________________________________________________________
+void AliAnaPi0EbE::Init()
+{
+  
+  //Init
+  //Do some checks
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
+    printf("!!ABORT: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
+    printf("!!ABORT: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  
+}
 
 //____________________________________________________________________________
 void AliAnaPi0EbE::InitParameters()
@@ -556,7 +586,7 @@ void AliAnaPi0EbE::InitParameters()
 	SetOutputAODName("pi0s");
 	fInputAODGammaConvName = "gammaconv" ;
 	fAnaType = kIMCalo ;
-	fCalorimeter = "PHOS" ;
+	fCalorimeter = "EMCAL" ;
 	fMinDist  = 2.;
 	fMinDist2 = 4.;
 	fMinDist3 = 5.;

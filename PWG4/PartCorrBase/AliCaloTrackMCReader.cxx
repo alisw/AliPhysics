@@ -43,7 +43,9 @@ ClassImp(AliCaloTrackMCReader)
 AliCaloTrackMCReader::AliCaloTrackMCReader() : 
   AliCaloTrackReader(), fDecayPi0(0), 
   fNeutralParticlesArray(0x0),    fChargedParticlesArray(0x0), 
-  fStatusArray(0x0), fKeepAllStatus(0), fClonesArrayType(0)
+  fStatusArray(0x0), fKeepAllStatus(0), fClonesArrayType(0), 
+  fCheckOverlap(0),  fEMCALOverlapAngle(0),fPHOSOverlapAngle(0),
+  fIndex2ndPhoton(0)
 {
   //Ctor
   
@@ -59,7 +61,10 @@ AliCaloTrackMCReader::AliCaloTrackMCReader(const AliCaloTrackMCReader & g) :
   fNeutralParticlesArray(g.fNeutralParticlesArray?new TArrayI(*g.fNeutralParticlesArray):0x0),
   fChargedParticlesArray(g.fChargedParticlesArray?new TArrayI(*g.fChargedParticlesArray):0x0),
   fStatusArray(g.fStatusArray?new TArrayI(*g.fStatusArray):0x0),
-  fKeepAllStatus(g.fKeepAllStatus), fClonesArrayType(g.fClonesArrayType)
+  fKeepAllStatus(g.fKeepAllStatus), fClonesArrayType(g.fClonesArrayType),
+  fCheckOverlap(g.fCheckOverlap),
+  fEMCALOverlapAngle( g.fEMCALOverlapAngle), fPHOSOverlapAngle(g.fPHOSOverlapAngle),
+  fIndex2ndPhoton(g.fIndex2ndPhoton)
 {
   // cpy ctor
 }
@@ -132,10 +137,55 @@ void AliCaloTrackMCReader::InitParameters()
   fKeepAllStatus = kTRUE;
   fClonesArrayType = kAliAOD ;
 
+  fCheckOverlap = kFALSE;
+  fEMCALOverlapAngle = 2.5 * TMath::DegToRad();
+  fPHOSOverlapAngle = 0.5 * TMath::DegToRad();
+  fIndex2ndPhoton = -1;
+}
+//____________________________________________________________________________
+void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg) {
+  //Check overlap of decay photons
+  if( fIndex2ndPhoton==iPrimary ){
+    fIndex2ndPhoton=-1;
+    return;
+  }
+  else fIndex2ndPhoton=-1;
+  
+
+  if(pdg!=22) return;
+  
+  TLorentzVector ph1, ph2;
+  TParticle *meson = GetStack()->Particle(imom);
+  Int_t mepdg = meson->GetPdgCode();
+  Int_t idaug1 = meson->GetFirstDaughter();
+  if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2){ //Check only decay in 2 photons
+    TParticle * d1 = GetStack()->Particle(idaug1);
+    TParticle  *d2 = GetStack()->Particle(idaug1+1);
+    if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 ){
+      d1->Momentum(ph1);
+      d2->Momentum(ph2);
+      //printf("angle %2.2f\n",ph1.Angle(ph2.Vect()));
+      
+      if(anglethres >  ph1.Angle(ph2.Vect())){ 	  
+	//Keep the meson
+	pdg=mepdg;
+	index=imom;
+	meson->Momentum(mom);
+	//printf("Overlap:: pt %2.2f, phi %2.2f, eta %2.2f\n",mom.Pt(),mom.Phi(),mom.Eta());
+	if(iPrimary == idaug1) iPrimary++; //skip next photon in list
+      }
+      else{
+	//Do not check overlapping for next decay photon from same meson
+	if(iPrimary == idaug1) {fIndex2ndPhoton = idaug1+1;
+	}
+
+      }
+    }
+  }//Meson Decay with 2 photon daughters
 }
 
 //____________________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(const Int_t iParticle, TParticle* particle, TLorentzVector momentum,
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum,
 					     Int_t &indexPHOS, Int_t &indexEMCAL) {
 	//Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
 	//In PHOS
@@ -143,13 +193,18 @@ void  AliCaloTrackMCReader::FillCalorimeters(const Int_t iParticle, TParticle* p
 		
 		if(fClonesArrayType == kTParticle) new((*fAODPHOS)[indexPHOS++])       TParticle(*particle) ;
 		else{
-			
-			Char_t ttype= AliAODCluster::kPHOSNeutral;
-			Int_t labels[] = {iParticle};
-			Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};			
+			Int_t index = iParticle ;
+			Int_t pdg = TMath::Abs(particle->GetPdgCode());
+			if(fCheckOverlap) 
+			  CheckOverlap(fPHOSOverlapAngle,particle->GetFirstMother(),index, iParticle, momentum, pdg);
+
+			Char_t ttype= AliAODCluster::kPHOSNeutral;	
+			Int_t labels[] = {index};
+			Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
 			AliAODCaloCluster *calo = new((*fAODPHOS)[indexPHOS++]) 
-			AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
-			SetCaloClusterPID(particle->GetPdgCode(),calo) ;
+			  AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
+		
+			SetCaloClusterPID(pdg,calo) ;
 			if(fDebug > 3 && momentum.Pt() > 0.2)
 					printf("Fill MC PHOS :: Selected tracks %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 							particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
@@ -159,12 +214,19 @@ void  AliCaloTrackMCReader::FillCalorimeters(const Int_t iParticle, TParticle* p
 	else if(fFillEMCAL && fFidutialCut->IsInFidutialCut(momentum,"EMCAL") && momentum.Pt() > fEMCALPtMin){
 		if(fClonesArrayType == kTParticle) new((*fAODEMCAL)[indexEMCAL++])       TParticle(*particle) ;
 		else{
+	                                Int_t index = iParticle ;
+			Int_t pdg = TMath::Abs(particle->GetPdgCode());
+			//Int_t pdgorg=pdg;
+			if(fCheckOverlap) 
+			  CheckOverlap(fEMCALOverlapAngle,particle->GetFirstMother(),iParticle, index, momentum, pdg);
+
 			Char_t ttype= AliAODCluster::kEMCALClusterv1;
-			Int_t labels[] = {iParticle};
+			Int_t labels[] = {index};
 			Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
 			AliAODCaloCluster *calo = new((*fAODEMCAL)[indexEMCAL++]) 
 			AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
-			SetCaloClusterPID(particle->GetPdgCode(),calo) ;
+		     
+			SetCaloClusterPID(pdg,calo) ;
 			if(fDebug > 3 && momentum.Pt() > 0.2)
 					printf("Fill MC EMCAL :: Selected tracks %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 							particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
@@ -203,8 +265,8 @@ void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
 		TLorentzVector momentum;
 		Float_t p[3];
 		Float_t x[3];
-		Int_t pdg = particle->GetPdgCode();
-		
+		Int_t pdg = particle->GetPdgCode();						
+
 		//Keep particles with a given status 
 		if(KeepParticleWithStatus(particle->GetStatusCode()) && (particle->Pt() > 0) ){
 		
@@ -246,7 +308,6 @@ void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
 				//Skip neutrinos or other neutral particles
 				//if(SkipNeutralParticles(pdg) || particle->IsPrimary()) continue ; // protection added (MG)
 				if(SkipNeutralParticles(pdg)) continue ;
-								
 				//Fill particle/calocluster arrays
 				if(!fDecayPi0) {
 					FillCalorimeters(iParticle, particle, momentum, indexPHOS, indexEMCAL);
@@ -276,7 +337,8 @@ void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
 			}//neutral particles
 		} //particle with correct status
 	}//particle loop
-	
+
+	fIndex2ndPhoton = -1; //In case of overlapping studies, reset for each event	
 }
 
 //________________________________________________________________
@@ -317,6 +379,7 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   
   printf("Decay Pi0?          : %d\n", fDecayPi0) ;
   printf("TClonesArray type   : %d\n", fClonesArrayType) ;
+  printf("Check Overlap in Calo?    : %d\n", fCheckOverlap) ;
   printf("Keep all status?    : %d\n", fKeepAllStatus) ;
   
   if(!fKeepAllStatus) printf("Keep particles with status : ");

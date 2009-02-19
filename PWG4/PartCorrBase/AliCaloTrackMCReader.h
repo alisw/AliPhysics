@@ -66,10 +66,19 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   void SetCaloClusterPID(const Int_t pdgCode, AliAODCaloCluster *calo) const ;
   void SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const ;
   
+  void SwitchOnOverlapCheck()  {fCheckOverlap = kTRUE;}
+  void SwitchOffOverlapCheck() {fCheckOverlap = kFALSE;}
+
+  Float_t GetEMCALOverlapAngle()  const {return fEMCALOverlapAngle ;}
+  Float_t GetPHOSOverlapAngle() const {return fPHOSOverlapAngle ;}
+  void SetEMCALOverlapAngle(Float_t angle)  {fEMCALOverlapAngle = angle;}
+  void SetPHOSOverlapAngle(Float_t angle) {fPHOSOverlapAngle = angle;}
+
  private:
   
+  void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
-  void FillCalorimeters(const Int_t iParticle, TParticle* particle, TLorentzVector momentum,   
+  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum,   
 			Int_t &indexPHOS, Int_t &indexEMCAL) ;
   
   private:
@@ -79,8 +88,12 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   TArrayI * fStatusArray ; //Keep particles with status of the list.
   Bool_t fKeepAllStatus ; //Do or do not select particles depending on their status code.
   Int_t fClonesArrayType; //Analysis with TParticles or AliAODCaloCluster/Track?
-  
-  ClassDef(AliCaloTrackMCReader,1)
+  Bool_t fCheckOverlap; //Check of overlapped photons from pi0 enter the calorimeter
+  Float_t fEMCALOverlapAngle; //Aperture angle of photons from decay that is not resolved by EMCAL, in radians
+  Float_t fPHOSOverlapAngle; //Aperture angle of photons from decay that is not resolved by PHOS, in radians
+  Int_t fIndex2ndPhoton; //Check overlap of first decay photon already done, internal use.
+
+  ClassDef(AliCaloTrackMCReader,2)
     } ;
 
 

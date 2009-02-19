@@ -39,6 +39,7 @@ public:
 	
 	TList *  GetCreateOutputObjects();
 	
+	void Init();
 	void InitParameters();
 	
 	void MakeAnalysisFillAOD()  ;
