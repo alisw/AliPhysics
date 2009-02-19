@@ -9,6 +9,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAnalysisTaskSESelectHF.cxx \
        vertexingHF/AliAnalysisTaskSECompareHF.cxx \
        vertexingHF/AliCFHeavyFlavourTask.cxx \
+       vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx \
        vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
