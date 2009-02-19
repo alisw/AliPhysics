@@ -334,10 +334,43 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
 
 //----------------------------------------------------------------------- 
 
-Double_t AliFlowCommonHist::GetEntriesInPtBin(Int_t aBin)
+Double_t AliFlowCommonHist::GetEntriesInPtBinRP(Int_t aBin)
+{
+  //get entries in bin aBin from fHistPtDiff
+  Double_t dEntries = fHistPtInt->GetBinContent(aBin);
+
+  return dEntries;
+
+}
+
+//----------------------------------------------------------------------- 
+
+Double_t AliFlowCommonHist::GetEntriesInPtBinPOI(Int_t aBin)
 {
   //get entries in bin aBin from fHistPtDiff
   Double_t dEntries = fHistPtDiff->GetBinContent(aBin);
+
+  return dEntries;
+
+}
+
+//----------------------------------------------------------------------- 
+
+Double_t AliFlowCommonHist::GetEntriesInEtaBinRP(Int_t aBin)
+{
+  //get entries in bin aBin from fHistPtDiff
+  Double_t dEntries = fHistEtaInt->GetBinContent(aBin);
+
+  return dEntries;
+
+}
+
+//----------------------------------------------------------------------- 
+
+Double_t AliFlowCommonHist::GetEntriesInEtaBinPOI(Int_t aBin)
+{
+  //get entries in bin aBin from fHistPtDiff
+  Double_t dEntries = fHistEtaDiff->GetBinContent(aBin);
 
   return dEntries;
 

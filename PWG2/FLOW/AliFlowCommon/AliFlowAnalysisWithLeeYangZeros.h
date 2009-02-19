@@ -37,17 +37,16 @@ class AliFlowAnalysisWithLeeYangZeros {
 
  public:
  
-   AliFlowAnalysisWithLeeYangZeros();              //default constructor
-   virtual  ~AliFlowAnalysisWithLeeYangZeros();    //destructor
+   AliFlowAnalysisWithLeeYangZeros();                  //default constructor
+   virtual  ~AliFlowAnalysisWithLeeYangZeros();        //destructor
  
-   Bool_t    Init();                               //defines variables and histograms
-   Bool_t    Make(AliFlowEventSimple* anEvent);    //calculates variables and fills histograms
-   Bool_t    Finish();                             //saves histograms
-   void      WriteHistograms(TString*);            //writes histograms
-   void      WriteHistograms(TString);             //writes histograms
+   Bool_t    Init();                                   //defines variables and histograms
+   Bool_t    Make(AliFlowEventSimple* anEvent);        //calculates variables and fills histograms
+   Bool_t    Finish();                                 //saves histograms
+   void      WriteHistograms(TString* outputFileName); //writes histograms locally
    
    Double_t  GetQtheta(AliFlowVector aQ, Double_t aTheta);
-
+   
    void      SetFirstRun(Bool_t kt)       { this->fFirstRun = kt ; }
    Bool_t    GetFirstRun() const          { return this->fFirstRun ; }
    void      SetUseSum(Bool_t kt)         { this->fUseSum = kt ; }
@@ -75,18 +74,26 @@ class AliFlowAnalysisWithLeeYangZeros {
    void               SetHist1(AliFlowLYZHist1* aLYZHist1[])  
      {for (Int_t i=0;i<5;i++) {this->fHist1[i] = aLYZHist1[i];} }
    //AliFlowLYZHist2* GetHist2() const             {return this->fHist2; } 
-   void               SetHist2(AliFlowLYZHist2* aLYZHist2[])  
-     {for (Int_t i=0;i<5;i++) {this->fHist2[i] = aLYZHist2[i];} }
+   void               SetHist2RP(AliFlowLYZHist2* aLYZHist2RP[])  
+     {for (Int_t i=0;i<5;i++) {this->fHist2RP[i] = aLYZHist2RP[i];} }
+   void               SetHist2POI(AliFlowLYZHist2* aLYZHist2POI[])  
+     {for (Int_t i=0;i<5;i++) {this->fHist2POI[i] = aLYZHist2POI[i];} }
 
    TProfile*  GetHistProVtheta() const   {return this->fHistProVtheta; } 
    void       SetHistProVtheta(TProfile* aHistProVtheta)     
      { this->fHistProVtheta = aHistProVtheta; }
-   TProfile*  GetHistProVeta() const     {return this->fHistProVeta; }  
-   void       SetHistProVeta(TProfile* aHistProVeta)         
-     {this->fHistProVeta = aHistProVeta; }
-   TProfile*  GetHistProVPt() const      {return this->fHistProVPt;}
-   void       SetHistProVPt(TProfile* aHistProVPt)           
-     {this->fHistProVPt = aHistProVPt; }
+   TProfile*  GetHistProVetaRP() const     {return this->fHistProVetaRP; }  
+   void       SetHistProVetaRP(TProfile* aHistProVetaRP)         
+     {this->fHistProVetaRP = aHistProVetaRP; }
+   TProfile*  GetHistProVetaPOI() const     {return this->fHistProVetaPOI; }  
+   void       SetHistProVetaPOI(TProfile* aHistProVetaPOI)         
+     {this->fHistProVetaPOI = aHistProVetaPOI; }
+   TProfile*  GetHistProVPtRP() const      {return this->fHistProVPtRP;}
+   void       SetHistProVPtRP(TProfile* aHistProVPtRP)           
+     {this->fHistProVPtRP = aHistProVPtRP; }
+   TProfile*  GetHistProVPtPOI() const      {return this->fHistProVPtPOI;}
+   void       SetHistProVPtPOI(TProfile* aHistProVPtPOI)           
+     {this->fHistProVPtPOI = aHistProVPtPOI; }
    TProfile*  GetHistProR0theta() const  {return this->fHistProR0theta; }
    void       SetHistProR0theta(TProfile* aHistProR0theta)   
      {this->fHistProR0theta = aHistProR0theta; }
@@ -140,8 +147,10 @@ class AliFlowAnalysisWithLeeYangZeros {
    TList*       fFirstRunList;      //list from first run output
         
    TProfile*    fHistProVtheta;      
-   TProfile*    fHistProVeta;        
-   TProfile*    fHistProVPt;         
+   TProfile*    fHistProVetaRP;
+   TProfile*    fHistProVetaPOI;
+   TProfile*    fHistProVPtRP;
+   TProfile*    fHistProVPtPOI;
    TProfile*    fHistProR0theta;     
    TProfile*    fHistProReDenom;     
    TProfile*    fHistProImDenom;     
@@ -155,7 +164,8 @@ class AliFlowAnalysisWithLeeYangZeros {
 
   //class AliFlowLYZHist1 defines the histograms: fHistProReNumer, fHistProImNumer, fHistProReNumerPt,
   //fHistProImNumerPt, fHistProReNumer2D, fHistProImNumer2D.
-  AliFlowLYZHist2* fHist2[5];       //
+  AliFlowLYZHist2* fHist2RP[5];       //
+  AliFlowLYZHist2* fHist2POI[5];       //
 
   AliFlowCommonHist*        fCommonHists;     //
   AliFlowCommonHistResults* fCommonHistsRes;  //
