@@ -30,11 +30,9 @@ ClassImp(AliAODRecoDecayHF4Prong)
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong() :
   AliAODRecoDecayHF(), 
-  //fSigmaVert(0),
   fDist12toPrim(0),
-  fDist23toPrim(0),
-  fDist14toPrim(0),
-  fDist34toPrim(0)
+  fDist3toPrim(0),
+  fDist4toPrim(0)
 {
   //
   // Default Constructor
@@ -45,15 +43,14 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
 						 Double_t *px,Double_t *py,Double_t *pz,
 						 Double_t *d0,Double_t *d0err,
 						 Double_t *dca, //Double_t sigvert,
-						 Double_t dist12,Double_t dist23,
-						 Double_t dist14,Double_t dist34,
+						 Double_t dist12,Double_t dist3,
+						 Double_t dist4,
 						 Short_t charge) :
   AliAODRecoDecayHF(vtx2,4,charge,px,py,pz,d0,d0err),
   // fSigmaVert(sigvert),
   fDist12toPrim(dist12),
-  fDist23toPrim(dist23),
-  fDist14toPrim(dist14),
-  fDist34toPrim(dist34)
+  fDist3toPrim(dist3),
+  fDist4toPrim(dist4)
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -64,15 +61,14 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
 AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
 						 Double_t *d0,Double_t *d0err,
 						 Double_t *dca, //Double_t sigvert,
-						 Double_t dist12,Double_t dist23, 
-						 Double_t dist14,Double_t dist34, 
+						 Double_t dist12,Double_t dist3, 
+						 Double_t dist4, 
 						 Short_t charge) :
   AliAODRecoDecayHF(vtx2,4,charge,d0,d0err),
   //fSigmaVert(sigvert),
   fDist12toPrim(dist12),
-  fDist23toPrim(dist23),
-  fDist14toPrim(dist14),
-  fDist34toPrim(dist34)
+  fDist3toPrim(dist3),
+  fDist4toPrim(dist4)
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -84,9 +80,8 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(const AliAODRecoDecayHF4Prong &
   AliAODRecoDecayHF(source),
   //fSigmaVert(source.fSigmaVert),
   fDist12toPrim(source.fDist12toPrim),
-  fDist23toPrim(source.fDist23toPrim),
-  fDist14toPrim(source.fDist14toPrim),
-  fDist34toPrim(source.fDist34toPrim)
+  fDist3toPrim(source.fDist3toPrim),
+  fDist4toPrim(source.fDist4toPrim)
 {
   //
   // Copy constructor
@@ -103,49 +98,168 @@ AliAODRecoDecayHF4Prong &AliAODRecoDecayHF4Prong::operator=(const AliAODRecoDeca
   AliAODRecoDecayHF::operator=(source);
 
   fDist12toPrim= source.fDist12toPrim;
-  fDist23toPrim= source.fDist23toPrim;
-  fDist14toPrim= source.fDist14toPrim;
-  fDist34toPrim= source.fDist34toPrim;
+  fDist3toPrim= source.fDist3toPrim;
+  fDist4toPrim= source.fDist4toPrim;
   //fSigmaVert= source.fSigmaVert;
 
   return *this;
 }
 //--------------------------------------------------------------------------
-Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar)
-  const {
+void AliAODRecoDecayHF4Prong::InvMassD0(Double_t mD0[2]) const {
+  //
+  // the masses for D0 hypothesis
+  // 
+  UInt_t pdg[4];
+  pdg[0]=211; pdg[1]=321; pdg[2]=211; pdg[3]=211;
+  mD0[0]=InvMass(4,pdg);
+  pdg[1]=211; pdg[3]=321;
+  mD0[1]=InvMass(4,pdg);
+
+  return;
+}
+//--------------------------------------------------------------------------
+void AliAODRecoDecayHF4Prong::InvMassD0bar(Double_t mD0bar[2]) const {
+  //
+  // the two masses for D0bar hypothesis
+  //
+  UInt_t pdg[4];
+  pdg[0]=321; pdg[1]=211; pdg[2]=211; pdg[3]=211;
+  mD0bar[0]=InvMass(4,pdg);
+  pdg[0]=211; pdg[2]=321;
+  mD0bar[1]=InvMass(4,pdg);
+  
+  return;
+}
+//--------------------------------------------------------------------------
+Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar) const {
 //
 // This function compares the D0 with a set of cuts:
 // 
-// to be implemented 
-//
-// cuts[1] = ... 
-// cuts[2] = ...
-// cuts[3] = ...
-// cuts[4] = ...
+// cuts[0] = invariant mass cut 
+// cuts[1] = DCA between opposite sign tracks 
+// cuts[2] = Distance between primary and two tracks vertex fDist12toPrim
+// cuts[3] = Distance between primary and three tracks vertex fDist3toPrim
+// cuts[4] = Distance between primary and two tracks vertex fDist4toPrim
+// cuts[5] = Cosinus of the pointing angle
+// cuts[6] = Transverse momentum of the D0 candidate
+// cuts[7] = Mass Pi+Pi- = mass of the rho0
+// cuts[8] = PID cut (one K in the quadruplet)
 //
 // If candidate D0 does not pass the cuts return kFALSE
 //
 
   okD0=0; okD0bar=0;
-  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-  Double_t mD0=InvMassD0();
-  if(TMath::Abs(mD0-mD0PDG)>cuts[0]) return kFALSE;
+//  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+//  Double_t mD0=InvMassD0();
+//  if(TMath::Abs(mD0-mD0PDG)>cuts[0]) return kFALSE;
 
   //single track
   //if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion2
-
-  //DCA
-  //for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
-
-  //2track cuts
-  //if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;
-  //if(Getd0Prong(0)*Getd0Prong(1)<0 && Getd0Prong(2)*Getd0Prong(1)<0)return kFALSE;
-
-  //sec vert
-  //if(fSigmaVert>cuts[6])return kFALSE;
-
-  //if(DecayLength()<cuts[7])return kFALSE;
   
-  return kFALSE; // for the time being 
-  // return kTRUE; // after implementation 
+  //DCA btw opposite sign tracks
+  if(cuts[1]>0.){
+    if(GetDCA(0)>cuts[1]) return kFALSE;
+    if(GetDCA(1)>cuts[1]) return kFALSE;
+    if(GetDCA(2)>cuts[1]) return kFALSE;
+    if(GetDCA(3)>cuts[1]) return kFALSE;
+    if(GetDCA(4)>cuts[1]) return kFALSE;
+    if(GetDCA(5)>cuts[1]) return kFALSE;
+  }
+  //2track cuts
+  if(cuts[2]>0.){
+    if(fDist12toPrim>10.)return kFALSE;
+    if(fDist12toPrim<cuts[2])return kFALSE;
+  }
+  //3track cuts
+  if(cuts[3]>0.){
+    if(fDist3toPrim<cuts[3])return kFALSE;
+  }
+  //4track cuts
+  if(cuts[4]>0.){
+    if(fDist4toPrim<cuts[4])return kFALSE;
+  }
+  if(cuts[5]>-1.1){
+    if(CosPointingAngle()<cuts[5])return kFALSE;
+  }
+  if(cuts[6]>0.){
+    if(Pt()<cuts[6])return kFALSE;
+  }
+  if(cuts[7]>0.){
+    Double_t massD0[2];
+    Double_t massD0bar[2];
+    Bool_t good=CutRhoMass(massD0,massD0bar,cuts[0],cuts[7]);
+    if(!good) return kFALSE;
+  }
+
+  return kTRUE;
+}
+//----------------------------------------------------------------------------
+Bool_t AliAODRecoDecayHF4Prong::CutRhoMass(Double_t massD0[2],Double_t massD0bar[2],Double_t cutMass,Double_t cutRho) const {
+  //
+  // cut on the mass of rho->pipi
+  //
+  Bool_t isGood=kFALSE;
+  Int_t nprongs=4;
+  for(Int_t i=0;i<2;i++){massD0[i]=0.;massD0bar[i]=0.;}
+  Bool_t isRho=kFALSE;
+  Bool_t isTrue=kFALSE;
+  Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t mPDGRho=TDatabasePDG::Instance()->GetParticle(113)->Mass();
+  Double_t minv01=InvMassRho(0,1);
+  if(TMath::Abs(minv01-mPDGRho)<cutRho) isRho=kTRUE;
+  if(isRho){
+    UInt_t pdg1[4]={211,211,321,211};
+    Double_t mass1=InvMass(nprongs,pdg1);
+    if(TMath::Abs(mass1-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0bar[1]=mass1;
+    isTrue=kFALSE;
+    UInt_t pdg2[4]={211,211,211,321};
+    Double_t mass2=InvMass(4,pdg2);
+    if(TMath::Abs(mass2-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0[1]=mass2;
+    isTrue=kFALSE;
+  }
+  Double_t minv03=InvMassRho(0,3);
+  if(TMath::Abs(minv03-mPDGRho)<cutRho) isRho=kTRUE;
+  if(isRho){
+    UInt_t pdg1[4]={211,211,321,211};
+    Double_t mass1=InvMass(4,pdg1);
+    if(TMath::Abs(mass1-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0bar[1]=mass1;
+    isTrue=kFALSE;
+    UInt_t pdg2[4]={211,321,211,211};
+    Double_t mass2=InvMass(4,pdg2);
+    if(TMath::Abs(mass2-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0[0]=mass2;
+    isTrue=kFALSE;
+  }
+  Double_t minv12=InvMassRho(1,2);
+  if(TMath::Abs(minv12-mPDGRho)<cutRho) isRho=kTRUE;
+  if(isRho){
+    UInt_t pdg1[4]={321,211,211,211};
+    Double_t mass1=InvMass(4,pdg1);
+    if(TMath::Abs(mass1-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0bar[0]=mass1;
+    isTrue=kFALSE;
+    UInt_t pdg2[4]={211,211,211,321};
+    Double_t mass2=InvMass(4,pdg2);
+    if(TMath::Abs(mass2-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0[1]=mass2;
+    isTrue=kFALSE;
+  }
+  Double_t minv23=InvMassRho(2,3);
+  if(TMath::Abs(minv23-mPDGRho)<cutRho) isRho=kTRUE;
+  if(isRho){
+    UInt_t pdg1[4]={321,211,211,211};
+    Double_t mass1=InvMass(4,pdg1);
+    if(TMath::Abs(mass1-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0bar[0]=mass1;
+    isTrue=kFALSE;
+    UInt_t pdg2[4]={211,321,211,211};
+    Double_t mass2=InvMass(4,pdg2);
+    if(TMath::Abs(mass2-mPDG)<cutMass) {isTrue=kTRUE;isGood=kTRUE;}
+    if(isTrue) massD0[0]=mass2;
+    isTrue=kFALSE;
+  }
+  return isGood;
 }

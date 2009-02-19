@@ -110,6 +110,11 @@ class AliAnalysisVertexingHF : public TNamed {
                       Double_t cut2=-1., Double_t cut3=1000.,
                       Double_t cut4=1.6); 
   void SetDstarCuts(const Double_t cuts[5]); 
+  void SetD0to4ProngsCuts(Double_t cut0=1000.,Double_t cut1=100000.,
+                      Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
+                      Double_t cut5=-1.1,Double_t cut6=0.,
+                      Double_t cut7=0.,Double_t cut8=0.);
+  void SetD0to4ProngsCuts(const Double_t cuts[9]);
   const Double_t *GetD0toKpiCuts() const {return fD0toKpiCuts;}
   const Double_t *GetD0fromDstarCuts() const {return fD0fromDstarCuts;}
   const Double_t *GetBtoJPSICuts() const {return fBtoJPSICuts;}
@@ -117,6 +122,7 @@ class AliAnalysisVertexingHF : public TNamed {
   const Double_t *GetDsCuts() const {return fDsCuts;}
   const Double_t *GetLcCuts() const {return fLcCuts;}
   const Double_t *GetDstarCuts() const {return fDstarCuts;}
+  const Double_t *GetD0to4ProngsCuts() const {return fD0to4ProngsCuts;}
 
   //
  private:
@@ -234,6 +240,18 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 3 = PtMax of pi_s [GeV/c]
                         // 4 = theta, angle between the track of pi_s and D0 decay plane [rad]
 
+  Double_t fD0to4ProngsCuts[9]; // cuts on D0->K3pi candidates
+                        // (to be passed to AliAODRecoDecayHF4Prong::SelectD0())
+                        // 0 = inv. mass half width of D0 [GeV]
+                        // 1 = DCA between opposite sign tracks 
+                        // 2 = Distance between primary and two tracks vertex fDist12toPrim
+                        // 3 = Distance between primary and three tracks vertex fDist3toPrim
+                        // 4 = Distance between primary and two tracks vertex fDist4toPrim
+                        // 5 = Cosinus of the pointing angle
+                        // 6 = Transverse momentum of the D0 candidate
+                        // 7 = Mass Pi+Pi- = mass of the rho0
+                        // 8 = PID cut (one K in the quadruplet)
+
   //
   void AddDaughterRefs(AliAODVertex *v,AliVEvent *event,
 		       TObjArray *trkArray) const;
@@ -248,12 +266,12 @@ class AliAnalysisVertexingHF : public TNamed {
 				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 				      Bool_t &ok3Prong) const;
   AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliVEvent *event,
-				      AliAODVertex *secVert,
-				      AliAODVertex *vertexp1n1,
-				      AliAODVertex *vertexp2n1,
-				      Double_t dcap1n1,Double_t dcap1n2,
-				      Double_t dcap2n1,
-				      Bool_t &ok4Prong) const;
+                                      AliAODVertex *secVert,
+                                      AliAODVertex *vertexp1n1,
+                                      AliAODVertex *vertexp1n1p2,
+                                      Double_t dcap1n1,Double_t dcap1n2,
+                                      Double_t dcap2n1,Double_t dcap2n2,
+                                      Bool_t &ok4Prong) const;
   AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray,AliVEvent *event,
 				   AliAODVertex *secVert,
 				   AliAODRecoDecayHF2Prong *rd2Prong,
@@ -270,7 +288,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,7)  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,8);  // Reconstruction of HF decay candidates
 };
 
 
