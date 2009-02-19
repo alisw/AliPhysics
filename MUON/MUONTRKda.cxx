@@ -434,8 +434,6 @@ if (gAliCommand.CompareTo("ped") == 0)
     status = amoreDA.Send("Pedestals",&peddata);
     if ( status )
       cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
-    // reset env var
-    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
     } 
   else {
     cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
@@ -1005,7 +1003,6 @@ void MakeGainStore()
 	TObjString gaindata(pstringw.str().c_str());
     	if ( amoreDA.Send("Gains",&gaindata) )
       	   cout << "Warning: Failed to write Gains to the AMORE database" << endl;
-    // reset env var
     	} 
   else {
 	cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
