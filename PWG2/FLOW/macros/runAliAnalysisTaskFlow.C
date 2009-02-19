@@ -39,8 +39,8 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kFALSE;
-Bool_t LYZ2  = kTRUE;
+Bool_t LYZ1  = kTRUE;
+Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kFALSE;
 Bool_t QC    = kFALSE;
@@ -572,8 +572,6 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE,useWeights);}
    taskFQD->SetAnalysisType(type);
    taskFQD->SetUsePhiWeights(usePhiWeights); 
-   taskFQD->SetUsePtWeights(usePtWeights);
-   taskFQD->SetUseEtaWeights(useEtaWeights);
    taskFQD->SetCFManager1(cfmgr1);
    taskFQD->SetCFManager2(cfmgr2);
    if (QA) { 
