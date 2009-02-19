@@ -24,7 +24,8 @@ if [ ! -e recraw ] ; then
 fi
 cd recraw
 ln -s ../raw.root
-aliroot -b -q rec.C      2>&1 | tee rec.log
+ln -s ../GRP
+aliroot -b -q $1recraw.C      2>&1 | tee rec.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
 
 
