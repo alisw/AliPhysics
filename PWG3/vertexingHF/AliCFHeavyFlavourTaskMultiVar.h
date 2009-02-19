@@ -37,7 +37,7 @@ class AliCFHeavyFlavourTaskMultiVar : public AliAnalysisTaskSE {
 
   enum {
     kStepGenerated       = 0,
-    kStepReconstructed   = 1,
+    kStepReconstructed   = 1
   };
 
   AliCFHeavyFlavourTaskMultiVar();
