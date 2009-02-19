@@ -29,7 +29,7 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
     AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& photon); 
     AliAODPWG4ParticleCorrelation& operator=(const AliAODPWG4ParticleCorrelation& photon);
 
-    virtual Float_t IsIsolated() const { return fIsolated ;}
+    virtual Bool_t IsIsolated() const { return fIsolated ;}
     virtual void    SetIsolated(Bool_t iso) {fIsolated = iso ;}
 
     virtual TRefArray* GetRefTracks()    const { return  fRefTracks;}
@@ -76,7 +76,7 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
 
  private:
 
-	Float_t		   fIsolated ; //Particle is isolated or not
+    Bool_t		   fIsolated ; //Particle is isolated or not
 	
     TRefArray*     fRefTracks;  // array of references to the tracks belonging to the jet / all selected hadrons  
     TRefArray*     fRefClusters; // array of references to the clusters belonging to the jet / all selected hadrons  
