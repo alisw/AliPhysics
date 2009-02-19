@@ -28,6 +28,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliESDkink.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
@@ -108,15 +109,16 @@ void AliTRDcheckESD::CreateOutputObjects()
   } else h->Reset();
   fHistos->AddAt(h, kNCl);
 
-  // TPC out
+  // status bits histogram
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
-    h = new TH2I("hTRDstat", "TRD status bits", 100, 0., 20., 4, -.5, 3.5);
+    h = new TH2I("hTRDstat", "TRD status bits", 100, 0., 20., kNbits, .5, kNbits+.5);
     h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     h->GetYaxis()->SetTitle("status bits");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
   fHistos->AddAt(h, kTRDstat);
 
+  // results array
   TObjArray *res = new TObjArray();
   res->SetName("Results");
   fHistos->AddAt(res, kResults);
@@ -143,29 +145,27 @@ void AliTRDcheckESD::Exec(Option_t *){
       SetMC(kFALSE);
     }
   }
-  Bool_t TPCout(0), TRDin(0), TRDout(0), TRDpid(0);
+  Bool_t TRDin(0), TRDout(0), TRDpid(0);
 
-
-  Int_t nTRD = 0, nTPC = 0;
-  //Int_t nTracks = fESD->GetNumberOfTracks();
   AliESDtrack *esdTrack = 0x0;
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
-    TPCout=0;TRDin=0;TRDout=0;TRDpid=0;
+    TRDin=0;TRDout=0;TRDpid=0;
     esdTrack = fESD->GetTrack(itrk);
-    if(esdTrack->GetNcls(1)) nTPC++;
-    if(esdTrack->GetNcls(2)) nTRD++;
+
+//     if(esdTrack->GetNcls(1)) nTPC++;
+//     if(esdTrack->GetNcls(2)) nTRD++;
 
     // track status
-    //ULong_t status = esdTrack->GetStatus();
+    ULong_t status = esdTrack->GetStatus();
+
+    // define TPC out tracks
+    if(!Bool_t(status & AliESDtrack::kTPCout)) continue;
+    if(esdTrack->GetKinkIndex(0) > 0) continue;
 
     // TRD PID
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     // pid quality
     esdTrack->GetTRDpidQuality();
-    // kink index
-    esdTrack->GetKinkIndex(0);
-    // TPC clusters
-    esdTrack->GetNcls(1);
 
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
@@ -205,45 +205,32 @@ void AliTRDcheckESD::Exec(Option_t *){
     // read TParticle
     TParticle *tParticle = mcParticle->Particle(); 
     //Int_t fPdg = tParticle->GetPdgCode();
-    //tParticle->IsPrimary();
+    // reject secondaries
+    //if(!tParticle->IsPrimary()) continue;
 
-    //printf("[%c] ref[%2d]=", tParticle->IsPrimary() ? 'P' : 'S', iref);
-
-    TPCout=1;
-    if(ref){
-      if(ref->LocalX() > xTOF){ 
-        //printf("  TOF   [");
+    if(ref){ 
+      if(ref->LocalX() > xTOF){ // track skipping TRD fiducial volume
         ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
       } else {
-        //printf("%7.2f [", ref->LocalX());
-        if(ref->LocalX() < 300. && tParticle->IsPrimary()){
-          TRDin=1;
-          if(esdTrack->GetNcls(2)) TRDout=1;
-          if(esdTrack->GetTRDpidQuality()) TRDpid=1;
-        }
+        TRDin=1;
+        if(esdTrack->GetNcls(2)) TRDout=1;
+        if(esdTrack->GetTRDpidQuality()) TRDpid=1;
       }
-    } else { 
-      //printf("  TPC   [");
+    } else { // track stopped in TPC 
       ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
     }
-    if(!ref){
-      printf("[%c] ref[%2d] [", tParticle->IsPrimary() ? 'P' : 'S', iref);
-      for(Int_t ir=0; ir<nRefs; ir++) printf(" %6.2f", mcParticle->GetTrackReference(ir)->LocalX());
-      printf("]\n");
-    }
+    // get the MC pt !!
     Float_t pt = ref->Pt();
-    //printf("%f]\n", pt);
-    
+
     TH2 *h = (TH2I*)fHistos->At(kTRDstat);
-    if(/*status & AliESDtrack::k*/TPCout) h->Fill(pt, 0);
-    if(/*status & AliESDtrack::k*/TRDin) h->Fill(pt, 1);
+    if(status & AliESDtrack::kTPCout) h->Fill(pt, kTPCout);
+    if(/*status & AliESDtrack::k*/TRDin) h->Fill(pt, kTRDin);
     if(/*status & AliESDtrack::k*/TRDout){ 
       ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
-      h->Fill(pt, 2);
+      h->Fill(pt, kTRDout);
     }
-    if(/*status & AliESDtrack::k*/TRDpid) h->Fill(pt, 3);
+    if(status & AliESDtrack::kTRDpid) h->Fill(pt, kTRDpid);
   }  
-
   PostData(0, fHistos);
 }
 
@@ -257,13 +244,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
   
   TH1 *h1[2] = {0x0, 0x0};
   TGraphErrors *g = 0x0;
-  res->Expand(1);
+  res->Expand(3);
   Int_t n1 = 0, n2 = 0, ip=0;
   Double_t eff = 0.;
   
   // geometrical efficiency
-  h1[0] = h2->ProjectionX("px0", 1, 1);
-  h1[1] = h2->ProjectionX("px1", 2, 2);
+  h1[0] = h2->ProjectionX("px0", kTPCout, kTPCout);
+  h1[1] = h2->ProjectionX("px1", kTRDin, kTRDin);
   res->Add(g = new TGraphErrors());
   g->SetNameTitle("geom", "TRD geometrical efficiency (TRDin/TPCout)");
   for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
@@ -277,8 +264,8 @@ void AliTRDcheckESD::Terminate(Option_t *)
   }
 
   // tracking efficiency
-  h1[0] = h2->ProjectionX("px0", 2, 2);
-  h1[1] = h2->ProjectionX("px1", 3, 3);
+  h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
+  h1[1] = h2->ProjectionX("px1", kTRDout, kTRDout);
   res->Add(g = new TGraphErrors());
   g->SetNameTitle("tracking", "TRD tracking efficiency (TRDout/TRDin)");
   for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
@@ -292,8 +279,8 @@ void AliTRDcheckESD::Terminate(Option_t *)
   }
 
   // PID efficiency
-  h1[0] = h2->ProjectionX("px0", 2, 2);
-  h1[1] = h2->ProjectionX("px1", 4, 4);
+  h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
+  h1[1] = h2->ProjectionX("px1", kTRDpid, kTRDpid);
   res->Add(g = new TGraphErrors());
   g->SetNameTitle("PID", "TRD PID efficiency (TRDpid/TRDin)");
   for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
@@ -306,3 +293,19 @@ void AliTRDcheckESD::Terminate(Option_t *)
     g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
   }
 }
+
+// if(TRDin && !TRDout){
+//   printf("[%c] x[%2d]=%7.2f pt[%7.3f] id[%d] kink[%d] label[%d] in[%d] out[%d] pdg[%d]\n", tParticle->IsPrimary() ? 'P' : 'S', iref, ref->LocalX(), pt, esdTrack->GetID(), esdTrack->GetKinkIndex(0), fLabel, TRDin, TRDout, tParticle->GetPdgCode());
+//   printf("\tstatus ITS[%d %d] TPC[%d %d %d] \n"
+//     ,Bool_t(status & AliESDtrack::kITSin)
+//     ,Bool_t(status & AliESDtrack::kITSout)
+//     ,Bool_t(status & AliESDtrack::kTPCin)
+//     ,Bool_t(status & AliESDtrack::kTPCout)
+//     ,Bool_t(status & AliESDtrack::kTPCrefit)
+//   );
+//   printf("clusters ITS[%d] TPC[%d] TRD[%d]\n", esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
+//   if(esdTrack->GetKinkIndex(0) != 0){
+//     AliESDkink *kink = fESD->GetKink(TMath::Abs(esdTrack->GetKinkIndex(0)));
+//     if(kink) printf("index[%d %d] label[%d %d]\n", kink->GetIndex(0), kink->GetIndex(1), kink->GetLabel(0), kink->GetLabel(1));
+//   }
+// }

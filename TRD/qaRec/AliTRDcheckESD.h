@@ -24,9 +24,17 @@ public:
     kMC = BIT(0)
   };
   enum ETRDcheckESDhistos {
-    kNCl     = 0   // number of clusters per track
-   ,kTRDstat = 1   // TRD tracks status
-   ,kResults = 2   // graphs as results
+    kNCl  = 0 // number of clusters per track
+   ,kTRDstat  // TRD tracks status
+   ,kResults  // graphs as results
+  };
+  enum ETRDcheckESDbits {
+    kTPCout = 1 // track left TPC
+   ,kTRDin      // track reach TRD fiducial volume
+   ,kTRDout     // track reconstructed in TRD
+   ,kTRDpid     // PID calculated in TRD
+   ,kTRDref     // track refitted in TRD
+   ,kNbits  = 5 // number of check bits
   };
   AliTRDcheckESD();
   virtual ~AliTRDcheckESD();

@@ -354,6 +354,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
       delete taskPtr[it];
     }
   }
+  delete checkESD;
+
   if(mcH) delete mcH;
   delete esdH;
   delete mgr;
