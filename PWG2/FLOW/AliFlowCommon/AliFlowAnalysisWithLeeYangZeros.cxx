@@ -126,6 +126,22 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
 
 //-----------------------------------------------------------------------
 
+void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString outputFileName)
+{
+ //store the final results in output .root file
+
+  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
+  if (GetFirstRun()) {
+    output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+  }
+  else {
+    output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+  }
+  delete output;
+}
+
+//-----------------------------------------------------------------------
+
 Bool_t AliFlowAnalysisWithLeeYangZeros::Init() 
 {
   //init method 
