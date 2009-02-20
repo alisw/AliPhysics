@@ -444,10 +444,20 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
   Int_t nmanus(0);
   
   const Int_t kChannels(AliMpConstants::ManuNofChannels());
-  const Float_t kPedestalMeanMean(200);
-  const Float_t kPedestalMeanSigma(10);
-  const Float_t kPedestalSigmaMean(1.0);
-  const Float_t kPedestalSigmaSigma(0.2);
+  
+  // bending
+  const Float_t kPedestalMeanMeanB(200.);
+  const Float_t kPedestalMeanSigmaB(10.);
+  const Float_t kPedestalSigmaMeanB(1.);
+  const Float_t kPedestalSigmaSigmaB(0.2);
+  
+  // non bending
+  const Float_t kPedestalMeanMeanNB(200.);
+  const Float_t kPedestalMeanSigmaNB(10.);
+  const Float_t kPedestalSigmaMeanNB(1.);
+  const Float_t kPedestalSigmaSigmaNB(0.2);
+  
+  const Float_t kFractionOfDeadManu(0.); // within [0.,1.]
 
   Int_t detElemId;
   Int_t manuId;
@@ -456,6 +466,9 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
   
   while ( it.Next(detElemId,manuId) )
   {
+    // skip a given fraction of manus
+    if (kFractionOfDeadManu > 0. && gRandom->Uniform() < kFractionOfDeadManu) continue;
+    
     ++nmanus;
 
     AliMUONVCalibParam* ped = 
@@ -481,12 +494,27 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
       {
         Bool_t positive(kTRUE);
         meanPedestal = 0.0;
-        while ( meanPedestal == 0.0 ) // avoid strict zero 
-        {
-          meanPedestal = GetRandom(kPedestalMeanMean,kPedestalMeanSigma,positive);
-        }
-        sigmaPedestal = GetRandom(kPedestalSigmaMean,kPedestalSigmaSigma,positive);
+	
+	if ( manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) ) { // manu in non bending plane
+	  
+	  while ( meanPedestal == 0.0 ) // avoid strict zero 
+	  {
+	    meanPedestal = GetRandom(kPedestalMeanMeanNB,kPedestalMeanSigmaNB,positive);
+	  }
+	  sigmaPedestal = GetRandom(kPedestalSigmaMeanNB,kPedestalSigmaSigmaNB,positive);
+	  
+	} else { // manu in bending plane
+	  
+	  while ( meanPedestal == 0.0 ) // avoid strict zero 
+	  {
+	    meanPedestal = GetRandom(kPedestalMeanMeanB,kPedestalMeanSigmaB,positive);
+	  }
+	  sigmaPedestal = GetRandom(kPedestalSigmaMeanB,kPedestalSigmaSigmaB,positive);
+	  
+	}
+	
       }
+      
       ped->SetValueAsFloat(manuChannel,0,meanPedestal);
       ped->SetValueAsFloat(manuChannel,1,sigmaPedestal);
       
