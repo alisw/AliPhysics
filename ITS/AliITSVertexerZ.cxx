@@ -188,6 +188,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
 void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
+  fIsPileup=kFALSE;
+  fNTrpuv=-2;     
+  fZpuv=-99999.;
 
   TTree *tR = itsClusterTree;
   fDetTypeRec->SetTreeAddressR(tR);
@@ -377,8 +380,6 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: B");
   points.Clear();
-  fIsPileup=kFALSE;
-  fNTrpuv=-2;
   if(ncontr>fMinTrackletsForPilup){ 
     Float_t secPeakPos;
     Int_t ncontr2=FindSecondPeak(fZCombc,binmin,binmax,secPeakPos);
@@ -387,7 +388,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
       fZpuv=secPeakPos;
       fNTrpuv=ncontr2;
     }
-  }    
+  }
   ResetHistograms();
   return;
 }
