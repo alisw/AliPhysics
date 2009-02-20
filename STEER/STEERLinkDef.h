@@ -75,6 +75,7 @@
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjParams+;
 #pragma link C++ class AliAlignObjMatrix+;
+#pragma link C++ class AliMisAligner+;
 
 #pragma link C++ class AliTrackFitter+;
 #pragma link C++ class AliTrackFitterRieman+;
