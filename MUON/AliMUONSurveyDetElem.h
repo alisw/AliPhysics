@@ -36,7 +36,7 @@ class AliMUONSurveyDetElem:public AliMUONSurveyObj
  private:
   /// Not implemented
   AliMUONSurveyDetElem(const AliMUONSurveyDetElem& right);
-  // Not implemented
+  /// Not implemented
   AliMUONSurveyDetElem&  operator = (const AliMUONSurveyDetElem& right);
 
   Int_t fDetElemId;   ///< Detection element id

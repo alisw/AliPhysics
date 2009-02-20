@@ -54,6 +54,7 @@ AliMUONSurveyDetElem::~AliMUONSurveyDetElem() {
 }
 
 Int_t AliMUONSurveyDetElem::AddStickerTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from pArray of targets 
   return AliMUONSurveyObj::AddStickerTargets(pArray, stBaseName, lTargetMax);
 }
 
@@ -71,6 +72,7 @@ Int_t AliMUONSurveyDetElem::AddStickerTargets(TString stBaseName, Int_t lTargetM
 }
 
 Int_t AliMUONSurveyDetElem::AddGButtonTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax global button targets with stBaseName from pArray of targets 
   return AliMUONSurveyObj::AddGButtonTargets(pArray, stBaseName, lTargetMax);
 }
 
@@ -109,11 +111,13 @@ void AliMUONSurveyDetElem::SetLocalTransformation(TGeoCombiTrans *localTrf, Bool
 }
 
 void AliMUONSurveyDetElem::PrintLocalTrf() {
+  /// Print the local transformation
   printf("DetElem%d Th",fDetElemId);
   AliMUONSurveyObj::PrintLocalTrf();
 }
 
 void AliMUONSurveyDetElem::PrintAlignTrf() {
+  /// Print the alignment transformation
   printf("DetElem%d d",fDetElemId);
   AliMUONSurveyObj::PrintAlignTrf();
 }

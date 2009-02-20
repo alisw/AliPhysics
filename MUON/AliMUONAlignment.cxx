@@ -955,8 +955,10 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
 			    double *misAlignments, Bool_t verbose)
 			    
 {
-  /////////////////////////////////////////////////////////////////////
-  //   Takes the internal geometry module transformers, copies them
+  /// Returns a new AliMUONGeometryTransformer with the found misalignments
+  /// applied. 
+
+  // Takes the internal geometry module transformers, copies them
   // and gets the Detection Elements from them.
   // Takes misalignment parameters and applies these
   // to the local transform of the Detection Element
@@ -1009,7 +1011,7 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
     while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
     {
       ++iDe;
-      /// make a new detection element
+      // make a new detection element
       AliMUONGeometryDetElement *newDetElement =
 	new AliMUONGeometryDetElement(detElement->GetId(),
 				      detElement->GetVolumePath());
@@ -1067,7 +1069,7 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
 
 //______________________________________________________________________
 void AliMUONAlignment::SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t rChId, Double_t rChResX, Double_t rChResY, Double_t rDeResX, Double_t rDeResY){
-  //// Set alignment resolution to misalign objects to be stored in CDB
+  /// Set alignment resolution to misalign objects to be stored in CDB
   Int_t chIdMin = (rChId<0)? 0 : rChId;
   Int_t chIdMax = (rChId<0)? 9 : rChId;
   Double_t chResX = rChResX;

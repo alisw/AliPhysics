@@ -32,7 +32,9 @@ class AliMUONSurveyObj:public TObject
   virtual Int_t AddGButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax = 9);
   virtual Int_t AddLButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax = 9);
 
+  /// To be implemented in a concrete Chamber or DetElem class
   virtual Int_t AddStickerTargets(TString stBaseName, Int_t lTargetMax = 9) = 0;
+  /// To be implemented in a concrete Chamber or DetElem class
   virtual Int_t AddGButtonTargets(TString btBaseName, Int_t lTargetMax = 9) = 0;
 
   void AddStickerTarget(AliSurveyPoint *stPoint);
@@ -57,11 +59,16 @@ class AliMUONSurveyObj:public TObject
     fOwnerLocalTrf=ownerLocalTrf;
   }
 
+  /// Returns the local transformation
   TGeoCombiTrans* GetLocalTrf() const {return fLocalTrf;} 
+  /// Returns the base (global) transformation
   TGeoCombiTrans* GetBaseTrf() const {return fBaseTrf;}
+  /// Returns the alignment transformation
   TGeoCombiTrans* GetAlignTrf()const {return fAlignTrf;}
 
+  /// Define wether to work in mm (survey units) or cm (alice units)
   void SetUseCM(Bool_t bUseCM = kTRUE) {fUseCM = bUseCM;}
+  /// Indicates if working in mm (survey units) or cm (alice units)
   Bool_t GetUseCM() const {return fUseCM;}
 
   void SetPlane(TString pName, Double_t xMin=-2000., Double_t xMax=+2000., Double_t yMin=-2000., Double_t yMax=2000.);
@@ -70,8 +77,10 @@ class AliMUONSurveyObj:public TObject
   void DrawSTargets();
   Double_t FitPlane();
 
+  /// Returns the plane (TF2) representing the object
   TF2* GetPlane() const {return fPlane;}
 
+  /// Returns the TFitter used for the best local to global transformation determination
   TFitter* GetFitter() const {return fFitter;}
 
   Int_t SurveyToAlign(TGeoCombiTrans &quadTransf, Double_t *parErr, Double_t psi=0., Double_t tht=0., Double_t epsi=0., Double_t etht=0.);
@@ -88,12 +97,18 @@ class AliMUONSurveyObj:public TObject
   Int_t CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ, Double_t *lPTP);
 
   void CalculateMeanTransf(Double_t *lXYZ, Double_t *lPTP);
-
+  
+  /// Set xMin for functions fitting
   void SetXMin(Double_t xMin) {fXMin = xMin;}
+  /// Set xMax for functions fitting
   void SetXMax(Double_t xMax) {fXMax = xMax;}
+  /// Set yMin for functions fitting
   void SetYMin(Double_t yMin) {fYMin = yMin;}
+  /// Set yMax for functions fitting
   void SetYMax(Double_t yMax) {fYMax = yMax;}
+  /// Set zMin for functions fitting
   void SetZMin(Double_t zMin) {fZMin = zMin;}
+  /// Set zMax for functions fitting
   void SetZMax(Double_t zMax) {fZMax = zMax;}
 
   virtual void PrintLocalTrf();
@@ -113,6 +128,7 @@ class AliMUONSurveyObj:public TObject
   AliMUONSurveyObj&  operator = (const AliMUONSurveyObj& right);
 
   Double_t EqPlane(const Double_t *x, const Double_t *par) const {
+    /// Plane equation 
     return (-par[1]*x[0] +par[0]*x[1] -par[2]);  // then psi=ATan(par[0]) and tht=ATan(par[0])
     //    return (-par[0]*x[0] -par[1]*x[1] -par[2]); 
   }
@@ -134,12 +150,12 @@ class AliMUONSurveyObj:public TObject
 
   TFitter *fFitter;  ///< Fitter for best local to global transformation
 
-  Double_t fXMin;   
-  Double_t fXMax;   
-  Double_t fYMin;   
-  Double_t fYMax;   
-  Double_t fZMin;   
-  Double_t fZMax;   
+  Double_t fXMin;    ///< xMin for functions fitting
+  Double_t fXMax;    ///< xMax for functions fitting
+  Double_t fYMin;    ///< yMin for functions fitting
+  Double_t fYMax;    ///< yMax for functions fitting
+  Double_t fZMin;    ///< zMin for functions fitting
+  Double_t fZMax;    ///< zMax for functions fitting
 
 
 ClassDef(AliMUONSurveyObj, 0) //Class for alignment of muon spectrometer

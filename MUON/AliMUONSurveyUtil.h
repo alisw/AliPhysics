@@ -56,8 +56,8 @@ class AliMUONSurveyUtil:public TObject
   AliMUONSurveyUtil&  operator = (const AliMUONSurveyUtil& right);
 
 
-  static int fgNDetElemCh[10];
-  static AliMUONSurveyUtil *fgInstance;
+  static int fgNDetElemCh[10];  ///< Numbers of detection elements per chamber
+  static AliMUONSurveyUtil *fgInstance;   ///< Singleton instance 
 
 ClassDef(AliMUONSurveyUtil, 0) //Class for alignment of muon spectrometer
 };

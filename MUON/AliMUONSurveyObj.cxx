@@ -70,7 +70,7 @@ AliMUONSurveyObj::AliMUONSurveyObj()
   , fZMin(-2000.)
   , fZMax(2000.)
 {
-/// Default constructor
+  /// Default constructor
 
   fSTargets = new TObjArray();  
   fSTargets->SetOwner(kFALSE);

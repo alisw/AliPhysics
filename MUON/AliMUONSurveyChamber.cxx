@@ -46,6 +46,7 @@ AliMUONSurveyChamber::AliMUONSurveyChamber(Int_t lChamberId)
   , fSurveyObj(0x0)
   , fSurveyDetElem(0x0)
 {
+  /// Constructor with the chamber id
   fSurveyObj = new AliSurveyObj();
   fSurveyDetElem = new TClonesArray("AliMUONSurveyDetElem",4);
 }
@@ -78,6 +79,7 @@ AliMUONSurveyDetElem* AliMUONSurveyChamber::GetDetElem(Int_t lDetElemIndex) {
 }
 
 Int_t AliMUONSurveyChamber::AddStickerTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax sticker targets with stBaseName from the pArray of targets
   return AliMUONSurveyObj::AddStickerTargets(pArray, stBaseName, lTargetMax);
 }
 
@@ -91,6 +93,7 @@ Int_t AliMUONSurveyChamber::AddStickerTargets(TString stBaseName, Int_t lTargetM
 }
 
 Int_t AliMUONSurveyChamber::AddGButtonTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax) {
+  /// Add a maximum of lTargetMax global targets with stBaseName from the pArray of targets
   return AliMUONSurveyObj::AddGButtonTargets(pArray, stBaseName, lTargetMax);
 }
 

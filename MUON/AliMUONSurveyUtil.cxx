@@ -15,7 +15,7 @@
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONSurveyUtil
-/// Utility class for the survey processing of the ALICE DiMuon spectrometer 
+/// Singleton utility class for the survey processing of the ALICE DiMuon spectrometer 
 /// 
 /// This class contains various functions to calculate misalignement parameters
 /// from survey data and designed positions of survey targets.
@@ -52,6 +52,7 @@ AliMUONSurveyUtil::~AliMUONSurveyUtil(){
 }
 
 AliMUONSurveyUtil* AliMUONSurveyUtil::Instance() {
+  ///  Return its instance 
   if (!fgInstance) 
     fgInstance = new AliMUONSurveyUtil();
   
@@ -79,9 +80,9 @@ Bool_t AliMUONSurveyUtil::MatrixToAngles(const Double_t *rot, Double_t *angles)
 
 void AliMUONSurveyUtil::AnglesToMatrix(const Double_t *angles, Double_t *rot)
 {
-  // Calculates the rotation matrix using the 
-  // Euler angles in "x y z" notation
-  //
+  /// Calculates the rotation matrix using the 
+  /// Euler angles in "x y z" notation
+  ///
   //  Double_t degrad = TMath::DegToRad();
   Double_t degrad = 1.;
   Double_t sinpsi = TMath::Sin(degrad*angles[0]);

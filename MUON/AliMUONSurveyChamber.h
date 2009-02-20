@@ -28,13 +28,15 @@ class AliMUONSurveyChamber: public AliMUONSurveyObj
   virtual Int_t AddStickerTargets(TString stBaseName, Int_t lTargetMax = 9);
   virtual Int_t AddGButtonTargets(TString btBaseName, Int_t lTargetMax = 9);
 
+  
   virtual Int_t AddStickerTargets(TObjArray *pArray, TString stBaseName, Int_t lTargetMax = 9);
   virtual Int_t AddGButtonTargets(TObjArray *pArray, TString btBaseName, Int_t lTargetMax = 9);
  
   Int_t AddSurveyDetElem(Int_t lDetElemId);
+  /// Returns the number od detection elements of the chamber
   Int_t GetNDetElem() const  {return fNDetElem;}
   AliMUONSurveyDetElem* GetDetElem(Int_t lDetElemIndex);
-
+  /// Returns the internal AliSurveyObj
   AliSurveyObj* GetSurveyObj() const {return fSurveyObj;}
 
   virtual void SetLocalTransformation(TGeoCombiTrans *localTrf, Bool_t ownerLocalTrf = kFALSE);

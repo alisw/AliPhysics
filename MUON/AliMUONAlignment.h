@@ -38,10 +38,12 @@ public:
   void SetBFieldOn(Bool_t bBFieldOn) {
     fBFieldOn =  bBFieldOn;
   }
+  /// Define chambers to align
   void SetChOnOff(Bool_t *bChOnOff) {
     for(int iCh=0; iCh<10; iCh++)
       fChOnOff[iCh] =  bChOnOff[iCh];
   }
+  /// Possibility to align only one side of the detector
   void SetSpecLROnOff(Bool_t *bSpecLROnOff) {
     fSpecLROnOff[0] =  bSpecLROnOff[0];    
     fSpecLROnOff[1] =  bSpecLROnOff[1];    
