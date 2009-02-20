@@ -12,7 +12,7 @@ Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
+Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
@@ -52,9 +52,9 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
-		    // 			  dir="/data/alice1/kolk/KineOnly3/")
-		    dir="/Users/snelling/alice_data/KineOnly3/")
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 44, const char* 
+		    			  dir="/data/alice1/kolk/KineOnly3/")
+		    //dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -148,7 +148,11 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   //GFC = Generating Function Cumulants 
   if(GFC) {
     AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
-    gfc->CreateOutputObjects();
+    gfc->Init();
+    if(listWithWeights) gfc->SetWeightsList(listWithWeights);
+    if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
+    if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
+    if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
   }
   
   //FQD = Fitting q-distribution 

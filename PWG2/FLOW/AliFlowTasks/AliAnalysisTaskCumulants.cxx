@@ -63,7 +63,7 @@ ClassImp(AliAnalysisTaskCumulants)
 
 //================================================================================================================
 
-AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on): 
+AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on, Bool_t useWeights): 
  AliAnalysisTask(name,""), 
  fESD(NULL),
  fAOD(NULL),
@@ -75,7 +75,12 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
  fListHistos(NULL),
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(on)
+ fQA(on),
+ fUseWeights(useWeights),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
 //constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name)"<<endl;
@@ -83,6 +88,12 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
  // Define input and output slots here
  // Input slot #0 works with a TChain
  DefineInput(0, TChain::Class());
+ 
+ // Input slot #1 is needed for the weights 
+ if(useWeights)
+ {
+  DefineInput(1, TList::Class());   
+ }
   
  // Output slot #0 writes into a TList container
  DefineOutput(0, TList::Class());  
@@ -104,7 +115,12 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants():
  fListHistos(NULL),  
  fQAInt(NULL),
  fQADiff(NULL),
- fQA(kFALSE)
+ fQA(kFALSE),
+ fUseWeights(kFALSE),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE),
+ fListWeights(NULL)
 {
  //dummy constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants()"<<endl;
@@ -187,7 +203,23 @@ void AliAnalysisTaskCumulants::CreateOutputObjects()
   
  //analyser
  fGFC = new AliFlowAnalysisWithCumulants();
- fGFC->CreateOutputObjects();
+ fGFC->Init();
+ 
+ //weights:
+ if(fUseWeights)
+ {
+  //pass the flags to class:
+  if(fUsePhiWeights) fGFC->SetUsePhiWeights(fUsePhiWeights);
+  if(fUsePtWeights) fGFC->SetUsePtWeights(fUsePtWeights);
+  if(fUseEtaWeights) fGFC->SetUseEtaWeights(fUseEtaWeights);
+  //get data from input slot #1 which is used for weights:
+  if(GetNinputs()==2) 
+  {                   
+   fListWeights = (TList*)GetInputData(1); 
+  }
+  //pass the list with weights to class:
+  if(fListWeights) fGFC->SetWeightsList(fListWeights);
+ }
 
  if(fGFC->GetHistList()) 
  {
