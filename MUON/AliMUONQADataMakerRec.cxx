@@ -96,18 +96,7 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0),
-fhESDnTotClustersPerCh(0x0),
-fhESDnTotClustersPerDE(0x0),
-fhESDnTotFullClustersPerDE(0x0),
-fhESDSumClusterChargePerDE(0x0),
-fhESDSumClusterSizePerDE(0x0),
-fhESDSumResidualXPerDE(0x0),
-fhESDSumResidualYPerDE(0x0),
-fhESDSumResidualX2PerDE(0x0),
-fhESDSumResidualY2PerDE(0x0),
-fhESDSumLocalChi2XPerDE(0x0),
-fhESDSumLocalChi2YPerDE(0x0)
+fTrackerDataMaker(0x0)
 {
     /// ctor
 	
@@ -136,18 +125,7 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0),
-fhESDnTotClustersPerCh(0x0),
-fhESDnTotClustersPerDE(0x0),
-fhESDnTotFullClustersPerDE(0x0),
-fhESDSumClusterChargePerDE(0x0),
-fhESDSumClusterSizePerDE(0x0),
-fhESDSumResidualXPerDE(0x0),
-fhESDSumResidualYPerDE(0x0),
-fhESDSumResidualX2PerDE(0x0),
-fhESDSumResidualY2PerDE(0x0),
-fhESDSumLocalChi2XPerDE(0x0),
-fhESDSumLocalChi2YPerDE(0x0)
+fTrackerDataMaker(0x0)
 {
     ///copy ctor 
 
@@ -192,17 +170,6 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
   delete fDigitMaker;
   delete fClusterStore;
   delete fTrackerDataMaker;
-  delete fhESDnTotClustersPerCh;
-  delete fhESDnTotClustersPerDE;
-  delete fhESDnTotFullClustersPerDE;
-  delete fhESDSumClusterChargePerDE;
-  delete fhESDSumClusterSizePerDE;
-  delete fhESDSumResidualXPerDE;
-  delete fhESDSumResidualYPerDE;
-  delete fhESDSumResidualX2PerDE;
-  delete fhESDSumResidualY2PerDE;
-  delete fhESDSumLocalChi2XPerDE;
-  delete fhESDSumLocalChi2YPerDE;
 }
 
 //____________________________________________________________________________ 
@@ -276,11 +243,22 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
       TH1* hESDResidualYPerDESigma = GetESDsData(kESDResidualYPerDESigma);
       TH1* hESDLocalChi2XPerDEMean = GetESDsData(kESDLocalChi2XPerDEMean);
       TH1* hESDLocalChi2YPerDEMean = GetESDsData(kESDLocalChi2YPerDEMean);
-      
+      TH1* hESDnTotClustersPerCh = GetESDsData(kESDnTotClustersPerCh);
+      TH1* hESDnTotClustersPerDE = GetESDsData(kESDnTotClustersPerDE);
+      TH1* hESDnTotFullClustersPerDE = GetESDsData(kESDnTotFullClustersPerDE);
+      TH1* hESDSumClusterChargePerDE = GetESDsData(kESDSumClusterChargePerDE);
+      TH1* hESDSumClusterSizePerDE = GetESDsData(kESDSumClusterSizePerDE);
+      TH1* hESDSumResidualXPerDE = GetESDsData(kESDSumResidualXPerDE);
+      TH1* hESDSumResidualYPerDE = GetESDsData(kESDSumResidualYPerDE);
+      TH1* hESDSumResidualX2PerDE = GetESDsData(kESDSumResidualX2PerDE);
+      TH1* hESDSumResidualY2PerDE = GetESDsData(kESDSumResidualY2PerDE);
+      TH1* hESDSumLocalChi2XPerDE = GetESDsData(kESDSumLocalChi2XPerDE);
+      TH1* hESDSumLocalChi2YPerDE = GetESDsData(kESDSumLocalChi2YPerDE);
+			  
       hESDnClustersPerCh->Reset();
       hESDnClustersPerDE->Reset();
-      hESDnClustersPerCh->Add(fhESDnTotClustersPerCh, 1./nTracks);
-      hESDnClustersPerDE->Add(fhESDnTotClustersPerDE, 1./nTracks);
+      hESDnClustersPerCh->Add(hESDnTotClustersPerCh, 1./nTracks);
+      hESDnClustersPerDE->Add(hESDnTotClustersPerDE, 1./nTracks);
       
       // loop over chambers
       for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
@@ -330,62 +308,62 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
 	  
 	  Int_t iDE = it.CurrentDEId();
 	  
-	  Double_t nClusters = fhESDnTotClustersPerDE->GetBinContent(iDE+1);
+	  Double_t nClusters = hESDnTotClustersPerDE->GetBinContent(iDE+1);
 	  if (nClusters > 1) {
 	    
-	    hESDClusterChargePerDE->SetBinContent(iDE+1, fhESDSumClusterChargePerDE->GetBinContent(iDE+1)/nClusters);
+	    hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1)/nClusters);
 	    hESDClusterChargePerDE->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
 	    
-	    Double_t meanResX = fhESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
+	    Double_t meanResX = hESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
 	    hESDResidualXPerDEMean->SetBinContent(iDE+1, meanResX);
 	    hESDResidualXPerDEMean->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(nClusters));
-	    hESDResidualXPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(fhESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
+	    hESDResidualXPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
 	    hESDResidualXPerDESigma->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(2.*nClusters));
 	    
-	    Double_t meanResY = fhESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
+	    Double_t meanResY = hESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
 	    hESDResidualYPerDEMean->SetBinContent(iDE+1, meanResY);
 	    hESDResidualYPerDEMean->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(nClusters));
-	    hESDResidualYPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(fhESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
+	    hESDResidualYPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
 	    hESDResidualYPerDESigma->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(2.*nClusters));
 	    
-	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, fhESDSumLocalChi2XPerDE->GetBinContent(iDE+1)/nClusters);
+	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1)/nClusters);
 	    hESDLocalChi2XPerDEMean->SetBinError(iDE+1, sigmaLocalChi2X/TMath::Sqrt(nClusters));
 	    
-	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, fhESDSumLocalChi2YPerDE->GetBinContent(iDE+1)/nClusters);
+	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1)/nClusters);
 	    hESDLocalChi2YPerDEMean->SetBinError(iDE+1, sigmaLocalChi2Y/TMath::Sqrt(nClusters));
 	    
 	  } else {
 	    
-	    hESDClusterChargePerDE->SetBinContent(iDE+1, fhESDSumClusterChargePerDE->GetBinContent(iDE+1));
+	    hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1));
 	    hESDClusterChargePerDE->SetBinError(iDE+1, hESDClusterChargeInCh->GetXaxis()->GetXmax());
 	    
-	    hESDResidualXPerDEMean->SetBinContent(iDE+1, fhESDSumResidualXPerDE->GetBinContent(iDE+1));
+	    hESDResidualXPerDEMean->SetBinContent(iDE+1, hESDSumResidualXPerDE->GetBinContent(iDE+1));
 	    hESDResidualXPerDEMean->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
 	    hESDResidualXPerDESigma->SetBinContent(iDE+1, 0.);
 	    hESDResidualXPerDESigma->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
 	    
-	    hESDResidualYPerDEMean->SetBinContent(iDE+1, fhESDSumResidualYPerDE->GetBinContent(iDE+1));
+	    hESDResidualYPerDEMean->SetBinContent(iDE+1, hESDSumResidualYPerDE->GetBinContent(iDE+1));
 	    hESDResidualYPerDEMean->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
 	    hESDResidualYPerDESigma->SetBinContent(iDE+1, 0.);
 	    hESDResidualYPerDESigma->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
 	    
-	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, fhESDSumLocalChi2XPerDE->GetBinContent(iDE+1));
+	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1));
 	    hESDLocalChi2XPerDEMean->SetBinError(iDE+1, hESDLocalChi2XInCh->GetXaxis()->GetXmax());
 	    
-	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, fhESDSumLocalChi2YPerDE->GetBinContent(iDE+1));
+	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1));
 	    hESDLocalChi2YPerDEMean->SetBinError(iDE+1, hESDLocalChi2YInCh->GetXaxis()->GetXmax());
 	    
 	  }
 	  
-	  Double_t nFullClusters = fhESDnTotFullClustersPerDE->GetBinContent(iDE+1);
+	  Double_t nFullClusters = hESDnTotFullClustersPerDE->GetBinContent(iDE+1);
 	  if (nFullClusters > 1) {
 	    
-	    hESDClusterSizePerDE->SetBinContent(iDE+1, fhESDSumClusterSizePerDE->GetBinContent(iDE+1)/nFullClusters);
+	    hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1)/nFullClusters);
 	    hESDClusterSizePerDE->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nFullClusters));
 	    
 	  } else {
 	    
-	    hESDClusterSizePerDE->SetBinContent(iDE+1, fhESDSumClusterSizePerDE->GetBinContent(iDE+1));
+	    hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1));
 	    hESDClusterSizePerDE->SetBinError(iDE+1, hESDClusterSizeInCh->GetXaxis()->GetXmax());
 	    
 	  }
@@ -831,29 +809,29 @@ void AliMUONQADataMakerRec::InitESDs()
   hESDLocalChi2YPerDEMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDLocalChi2YPerDEMean, kESDLocalChi2YPerDEMean,forExpert);
   
-  // temporary histograms
-  fhESDnTotClustersPerCh = new TH1F("fhESDnTotClustersPerCh", "total number of associated clusters per chamber;chamber ID", nCh, 0, nCh);
-  fhESDnTotClustersPerCh->SetDirectory(0);
-  fhESDnTotClustersPerDE = new TH1F("fhESDnTotClustersPerDE", "total number of associated clusters per DE;DetElem ID", nDE, 0, nDE);
-  fhESDnTotClustersPerDE->SetDirectory(0);
-  fhESDnTotFullClustersPerDE = new TH1F("fhESDnTotFullClustersPerDE", "total number of associated clusters containing pad info per DE;DetElem ID", nDE, 0, nDE);
-  fhESDnTotFullClustersPerDE->SetDirectory(0);
-  fhESDSumClusterChargePerDE = new TH1F("fhESDSumClusterChargePerDE", "sum of cluster charge per DE;DetElem ID;ADC counts", nDE, 0, nDE);
-  fhESDSumClusterChargePerDE->SetDirectory(0);
-  fhESDSumClusterSizePerDE = new TH1F("fhESDSumClusterSizePerDE", "sum of cluster size per DE;DetElem ID;averaged number of associated pads", nDE, 0, nDE);
-  fhESDSumClusterSizePerDE->SetDirectory(0);
-  fhESDSumResidualXPerDE = new TH1F("fhESDSumResidualXPerDE", "sum of cluster-track residual-X per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumResidualXPerDE->SetDirectory(0);
-  fhESDSumResidualYPerDE = new TH1F("fhESDSumResidualYPerDE", "sum of cluster-track residual-Y per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumResidualYPerDE->SetDirectory(0);
-  fhESDSumResidualX2PerDE = new TH1F("fhESDSumResidualX2PerDE", "sum of cluster-track residual-X**2 per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumResidualX2PerDE->SetDirectory(0);
-  fhESDSumResidualY2PerDE = new TH1F("fhESDSumResidualY2PerDE", "sum of cluster-track residual-Y**2 per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumResidualY2PerDE->SetDirectory(0);
-  fhESDSumLocalChi2XPerDE = new TH1F("fhESDSumLocalChi2XPerDE", "sum of local chi2-X per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumLocalChi2XPerDE->SetDirectory(0);
-  fhESDSumLocalChi2YPerDE = new TH1F("fhESDSumLocalChi2YPerDE", "sum of local chi2-Y per DE;DetElem ID", nDE, 0, nDE);
-  fhESDSumLocalChi2YPerDE->SetDirectory(0);
+  // intermediate histograms
+  TH1F* hESDnTotClustersPerCh = new TH1F("hESDnTotClustersPerCh", "total number of associated clusters per chamber;chamber ID;#Sigma(n_{clusters})", nCh, 0, nCh);
+  Add2ESDsList(hESDnTotClustersPerCh, kESDnTotClustersPerCh, forExpert);
+  TH1F* hESDnTotClustersPerDE = new TH1F("hESDnTotClustersPerDE", "total number of associated clusters per DE;DetElem ID;#Sigma(n_{clusters})", nDE, 0, nDE);
+  Add2ESDsList(hESDnTotClustersPerDE, kESDnTotClustersPerDE, forExpert);
+  TH1F* hESDnTotFullClustersPerDE = new TH1F("hESDnTotFullClustersPerDE", "total number of associated clusters containing pad info per DE;DetElem ID;#Sigma(n_{full clusters})", nDE, 0, nDE);
+  Add2ESDsList(hESDnTotFullClustersPerDE, kESDnTotFullClustersPerDE, forExpert);
+  TH1F* hESDSumClusterChargePerDE = new TH1F("hESDSumClusterChargePerDE", "sum of cluster charge per DE;DetElem ID;#Sigma(charge) (ADC counts)", nDE, 0, nDE);
+  Add2ESDsList(hESDSumClusterChargePerDE, kESDSumClusterChargePerDE, forExpert);
+  TH1F* hESDSumClusterSizePerDE = new TH1F("hESDSumClusterSizePerDE", "sum of cluster size per DE;DetElem ID;#Sigma(size) (n_{pads})", nDE, 0, nDE);
+  Add2ESDsList(hESDSumClusterSizePerDE, kESDSumClusterSizePerDE, forExpert);
+  TH1F* hESDSumResidualXPerDE = new TH1F("hESDSumResidualXPerDE", "sum of cluster-track residual-X per DE;DetElem ID;#Sigma(#Delta_{X}) (cm)", nDE, 0, nDE);
+  Add2ESDsList(hESDSumResidualXPerDE, kESDSumResidualXPerDE, forExpert);
+  TH1F* hESDSumResidualYPerDE = new TH1F("hESDSumResidualYPerDE", "sum of cluster-track residual-Y per DE;DetElem ID;#Sigma(#Delta_{Y}) (cm)", nDE, 0, nDE);
+  Add2ESDsList(hESDSumResidualYPerDE, kESDSumResidualYPerDE, forExpert);
+  TH1F* hESDSumResidualX2PerDE = new TH1F("hESDSumResidualX2PerDE", "sum of cluster-track residual-X**2 per DE;DetElem ID;#Sigma(#Delta_{X}^{2}) (cm^{2})", nDE, 0, nDE);
+  Add2ESDsList(hESDSumResidualX2PerDE, kESDSumResidualX2PerDE, forExpert);
+  TH1F* hESDSumResidualY2PerDE = new TH1F("hESDSumResidualY2PerDE", "sum of cluster-track residual-Y**2 per DE;DetElem ID;#Sigma(#Delta_{Y}^{2}) (cm^{2})", nDE, 0, nDE);
+  Add2ESDsList(hESDSumResidualY2PerDE, kESDSumResidualY2PerDE, forExpert);
+  TH1F* hESDSumLocalChi2XPerDE = new TH1F("hESDSumLocalChi2XPerDE", "sum of local chi2-X per DE;DetElem ID;#Sigma(local #chi^{2}_{X})", nDE, 0, nDE);
+  Add2ESDsList(hESDSumLocalChi2XPerDE, kESDSumLocalChi2XPerDE, forExpert);
+  TH1F* hESDSumLocalChi2YPerDE = new TH1F("hESDSumLocalChi2YPerDE", "sum of local chi2-Y per DE;DetElem ID;#Sigma(local #chi^{2}_{Y})", nDE, 0, nDE);
+  Add2ESDsList(hESDSumLocalChi2YPerDE, kESDSumLocalChi2YPerDE, forExpert);
   
   fIsInitESDs =  kTRUE;
 }
@@ -1085,10 +1063,6 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
     return;
   }    
   
-  // use event specie from RecoParam
-  AliRecoParam::EventSpecie_t savedEventSpecie = fEventSpecie;
-  if (GetRecoParam()) SetEventSpecie(static_cast<AliRecoParam::EventSpecie_t>(GetRecoParam()->GetEventSpecie()));
-  
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
   if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam());
@@ -1133,29 +1107,29 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
       
       GetESDsData(kESDClusterHitMap+chId)->Fill(cluster->GetX(), cluster->GetY());
       
-      fhESDnTotClustersPerCh->Fill(chId);
-      fhESDnTotClustersPerDE->Fill(deID);
+      GetESDsData(kESDnTotClustersPerCh)->Fill(chId);
+      GetESDsData(kESDnTotClustersPerDE)->Fill(deID);
       
       GetESDsData(kESDClusterChargeInCh+chId)->Fill(cluster->GetCharge());
-      fhESDSumClusterChargePerDE->Fill(deID, cluster->GetCharge());
+      GetESDsData(kESDSumClusterChargePerDE)->Fill(deID, cluster->GetCharge());
       
       if (cluster->GetNDigits() > 0) { // discard clusters with pad not stored in ESD
-	fhESDnTotFullClustersPerDE->Fill(deID);
+	GetESDsData(kESDnTotFullClustersPerDE)->Fill(deID);
         GetESDsData(kESDClusterSizeInCh+chId)->Fill(cluster->GetNDigits());
-	fhESDSumClusterSizePerDE->Fill(deID, cluster->GetNDigits());
+	GetESDsData(kESDSumClusterSizePerDE)->Fill(deID, cluster->GetNDigits());
       }
       
       GetESDsData(kESDResidualXInCh+chId)->Fill(residualX);
       GetESDsData(kESDResidualYInCh+chId)->Fill(residualY);
-      fhESDSumResidualXPerDE->Fill(deID, residualX);
-      fhESDSumResidualYPerDE->Fill(deID, residualY);
-      fhESDSumResidualX2PerDE->Fill(deID, residualX*residualX);
-      fhESDSumResidualY2PerDE->Fill(deID, residualY*residualY);
+      GetESDsData(kESDSumResidualXPerDE)->Fill(deID, residualX);
+      GetESDsData(kESDSumResidualYPerDE)->Fill(deID, residualY);
+      GetESDsData(kESDSumResidualX2PerDE)->Fill(deID, residualX*residualX);
+      GetESDsData(kESDSumResidualY2PerDE)->Fill(deID, residualY*residualY);
       
       GetESDsData(kESDLocalChi2XInCh+chId)->Fill(localChi2X);
       GetESDsData(kESDLocalChi2YInCh+chId)->Fill(localChi2Y);
-      fhESDSumLocalChi2XPerDE->Fill(deID, localChi2X);
-      fhESDSumLocalChi2YPerDE->Fill(deID, localChi2Y);
+      GetESDsData(kESDSumLocalChi2XPerDE)->Fill(deID, localChi2X);
+      GetESDsData(kESDSumLocalChi2YPerDE)->Fill(deID, localChi2Y);
       
       trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
     }
@@ -1163,9 +1137,6 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
   }
   
   GetESDsData(kESDMatchTrig)->Fill(nTrackMatchTrig);
-  
-  // restore event specie
-  SetEventSpecie(savedEventSpecie);
   
 }
 

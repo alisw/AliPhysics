@@ -117,9 +117,21 @@ private:
     kESDLocalChi2XPerChMean     = 94, ///< local chi2-X per Ch: mean
     kESDLocalChi2YPerChMean     = 95, ///< local chi2-Y per Ch: mean
     kESDLocalChi2XPerDEMean     = 96, ///< local chi2-X per DE: mean
-    kESDLocalChi2YPerDEMean     = 97  ///< local chi2-Y per DE: mean
+    kESDLocalChi2YPerDEMean     = 97, ///< local chi2-Y per DE: mean
+    
+    kESDnTotClustersPerCh       = 1000, ///< total number of associated clusters per chamber
+    kESDnTotClustersPerDE       = 1001, ///< total number of associated clusters per DE
+    kESDnTotFullClustersPerDE   = 1002, ///< total number of associated clusters containing pad info per DE
+    kESDSumClusterChargePerDE   = 1003, ///< sum of cluster charge per DE
+    kESDSumClusterSizePerDE     = 1004, ///< sum of cluster size per DE
+    kESDSumResidualXPerDE       = 1005, ///< sum of cluster-track residual-X per DE
+    kESDSumResidualYPerDE       = 1006, ///< sum of cluster-track residual-Y per DE
+    kESDSumResidualX2PerDE      = 1007, ///< sum of cluster-track residual-X**2 per DE
+    kESDSumResidualY2PerDE      = 1008, ///< sum of cluster-track residual-Y**2 per DE
+    kESDSumLocalChi2XPerDE      = 1009, ///< sum of local chi2-X per DE
+    kESDSumLocalChi2YPerDE      = 1010  ///< sum of local chi2-X per DE
   };
-
+  
 private:
 	
   void Ctor();
@@ -146,18 +158,6 @@ private:
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 	
   AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
-  
-  TH1F* fhESDnTotClustersPerCh;      //!< total number of associated clusters per chamber
-  TH1F* fhESDnTotClustersPerDE;      //!< total number of associated clusters per DE
-  TH1F* fhESDnTotFullClustersPerDE;  //!< total number of associated clusters containing pad info per DE
-  TH1F* fhESDSumClusterChargePerDE;  //!< sum of cluster charge per DE
-  TH1F* fhESDSumClusterSizePerDE;    //!< sum of cluster size per DE
-  TH1F* fhESDSumResidualXPerDE;      //!< sum of cluster-track residual-X per DE
-  TH1F* fhESDSumResidualYPerDE;      //!< sum of cluster-track residual-Y per DE
-  TH1F* fhESDSumResidualX2PerDE;     //!< sum of cluster-track residual-X**2 per DE
-  TH1F* fhESDSumResidualY2PerDE;     //!< sum of cluster-track residual-Y**2 per DE
-  TH1F* fhESDSumLocalChi2XPerDE;     //!< sum of local chi2-X per DE
-  TH1F* fhESDSumLocalChi2YPerDE;     //!< sum of local chi2-X per DE
   
   ClassDef(AliMUONQADataMakerRec,5)  // MUON Quality assurance data maker
 
