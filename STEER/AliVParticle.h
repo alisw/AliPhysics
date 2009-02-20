@@ -13,8 +13,10 @@
 #include <Rtypes.h>
 #include <TObject.h>
 
-const Double_t kAlmost1=0.999;
-const Double_t kAlmost0=1e-33;
+#include <float.h>
+
+const Double_t kAlmost1=1. - Double_t(FLT_EPSILON);
+const Double_t kAlmost0=Double_t(FLT_MIN);
 
 const Double_t kB2C=0.299792458e-3;
 const Double_t kAlmost0Field=1.e-13;
