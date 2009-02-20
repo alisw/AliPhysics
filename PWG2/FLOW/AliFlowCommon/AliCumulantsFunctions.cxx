@@ -326,9 +326,10 @@ void AliCumulantsFunctions::Calculate()
  Double_t chiQ[4]={0.};
                             
  //v_2{2}
- if(nEvents>0 && dAvM>0 && cumulant[0]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*dAvM,2.)>0.))
+ //if(nEvents>0 && dAvM>0 && cumulant[0]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*dAvM,2.)>0.))
+ if(nEvents>0 && dAvM>0 && cumulant[0]>=0.)// to be improved (take the above line once chi is rescaled with weights, analogously for higher orders)
  {        
-  chiQ[0]=dAvM*dV2/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.),0.5);
+  //chiQ[0]=dAvM*dV2/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.),0.5); // to be improved,  analogously for higher orders
   if(chiQ[0])
   {  
    sdQ[0]=pow(((1./(2.*dAvM*nEvents))*((1.+2.*pow(chiQ[0],2))/(2.*pow(chiQ[0],2)))),0.5);
@@ -354,9 +355,10 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(nEvents>0 && dAvM>0 && cumulant[1]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*dAvM,2.)>0.))
+ //if(nEvents>0 && dAvM>0 && cumulant[1]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*dAvM,2.)>0.))
+ if(nEvents>0 && dAvM>0 && cumulant[1]<=0.)
  {
-  chiQ[1]=dAvM*dV4/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.),0.5);
+  //chiQ[1]=dAvM*dV4/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.),0.5);
   if(chiQ[1])
   {
    sdQ[1]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((1.+4.*pow(chiQ[1],2)+1.*pow(chiQ[1],4.)+2.*pow(chiQ[1],6.))/(2.*pow(chiQ[1],6.)),0.5);
@@ -382,9 +384,10 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- if(nEvents>0 && dAvM>0 && cumulant[2]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*dAvM,2.)>0.))
+ //if(nEvents>0 && dAvM>0 && cumulant[2]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*dAvM,2.)>0.))
+ if(nEvents>0 && dAvM>0 && cumulant[2]>=0.)
  {
-  chiQ[2]=dAvM*dV6/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*dAvM,2.),0.5);
+  //chiQ[2]=dAvM*dV6/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*dAvM,2.),0.5);
   if(chiQ[2])
   {
    sdQ[2]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((3.+18.*pow(chiQ[2],2)+9.*pow(chiQ[2],4.)+28.*pow(chiQ[2],6.)+12.*pow(chiQ[2],8.)+24.*pow(chiQ[2],10.))/(24.*pow(chiQ[2],10.)),0.5);
@@ -411,9 +414,10 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- if(nEvents>0 && dAvM>0 && cumulant[3]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*dAvM,2.)>0.))
+ //if(nEvents>0 && dAvM>0 && cumulant[3]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*dAvM,2.)>0.))
+ if(nEvents>0 && dAvM>0 && cumulant[3]<=0.) 
  {  
-  chiQ[3]=dAvM*dV8/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*dAvM,2.),0.5);
+  //chiQ[3]=dAvM*dV8/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*dAvM,2.),0.5);
   if(chiQ[3])
   {
    sdQ[3]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((12.+96.*pow(chiQ[3],2.)+72.*pow(chiQ[3],4.)+304.*pow(chiQ[3],6.)+257.*pow(chiQ[3],8.)+804.*pow(chiQ[3],10.)+363.*pow(chiQ[3],12.)+726.*pow(chiQ[3],14.))/(726.*pow(chiQ[3],14.)),0.5);
@@ -571,9 +575,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2ptRP[b]=ptRPDiffCumulant2[b]/pow(cumulant[0],0.5);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
+      if (ptBinRPNoOfParticles[b]>0.)
       {
-       sdRPDiff2pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       //sdRPDiff2pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5); // to be improved
        //cout<<"v'_2/2{2} = "<<v2ptRP[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdRPDiff2pt[b]<<"%"<<endl;
        fdfr2->SetBinContent(b+1,v2ptRP[b]);
        fdfr2->SetBinError(b+1,sdRPDiff2pt[b]);
@@ -597,9 +602,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4ptRP[b]=-ptRPDiffCumulant4[b]/pow(-cumulant[1],.75);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
+      if (ptBinRPNoOfParticles[b]>0.)
       {
-       sdRPDiff4pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       //sdRPDiff4pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4ptRP[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdRPDiff4pt[b]<<"%"<<endl;
        fdfr4->SetBinContent(b+1,v4ptRP[b]);
        fdfr4->SetBinError(b+1,sdRPDiff4pt[b]);
@@ -750,9 +756,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2etaRP[b]=etaRPDiffCumulant2[b]/pow(cumulant[0],0.5);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.) // to be improved
+      if (etaBinRPNoOfParticles[b]>0.)
       {
-       sdRPDiff2eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       //sdRPDiff2eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2etaRP[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2eta[b]<<"%"<<endl;
        //fdfr2->SetBinContent(b+1,v2etaRP[b]);
        //fdfr2->SetBinError(b+1,sdDiff2eta[b]);
@@ -776,9 +783,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4etaRP[b]=-etaRPDiffCumulant4[b]/pow(-cumulant[1],0.75);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.) // to be improved
+      if (etaBinRPNoOfParticles[b]>0.) 
       {
-       sdRPDiff4eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       //sdRPDiff4eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4eta[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4eta[b]<<"%"<<endl;
        //fdfr4->SetBinContent(b+1,v4eta[b]);
        //fdfr4->SetBinError(b+1,sdDiff4eta[b]);
@@ -1037,9 +1045,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2pt[b]=ptDiffCumulant2[b]/pow(cumulant[0],0.5);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
+      if (ptBinPOINoOfParticles[b]>0.)
       {
-       sdDiff2pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       //sdDiff2pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2pt[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2pt[b]<<"%"<<endl;
        fdfr2->SetBinContent(b+1,v2pt[b]);
        fdfr2->SetBinError(b+1,sdDiff2pt[b]);
@@ -1063,9 +1072,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4pt[b]=-ptDiffCumulant4[b]/pow(-cumulant[1],.75);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
+      if (ptBinPOINoOfParticles[b]>0.)
       {
-       sdDiff4pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       //sdDiff4pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4pt[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4pt[b]<<"%"<<endl;
        fdfr4->SetBinContent(b+1,v4pt[b]);
        fdfr4->SetBinError(b+1,sdDiff4pt[b]);
@@ -1254,9 +1264,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2eta[b]=etaDiffCumulant2[b]/pow(cumulant[0],0.5);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
+      if (etaBinPOINoOfParticles[b]>0.)
       {
-       sdDiff2eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       //sdDiff2eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2eta[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2eta[b]<<"%"<<endl;
        //fdfr2->SetBinContent(b+1,v2eta[b]);
        //fdfr2->SetBinError(b+1,sdDiff2eta[b]);
@@ -1280,9 +1291,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4eta[b]=-etaDiffCumulant4[b]/pow(-cumulant[1],0.75);
-      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.)
+      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
+      if (etaBinPOINoOfParticles[b]>0.)
       {
-       sdDiff4eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       //sdDiff4eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4eta[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4eta[b]<<"%"<<endl;
        //fdfr4->SetBinContent(b+1,v4eta[b]);
        //fdfr4->SetBinError(b+1,sdDiff4eta[b]);

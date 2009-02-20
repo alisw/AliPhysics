@@ -517,20 +517,13 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  // weights:
  Bool_t useWeights = fUsePhiWeights||fUsePtWeights||fUseEtaWeights;
  
- cout<<endl;
- cout<<fUsePhiWeights<<endl;
- cout<<fUsePtWeights<<endl;
- cout<<fUseEtaWeights<<endl;
- cout<<endl;
-
- 
  TH1F *phiWeights = NULL; // histogram with phi weights
  TH1D *ptWeights  = NULL; // histogram with pt weights
  TH1D *etaWeights = NULL; // histogram with eta weights
 
- //Double_t wPhi = 1.; // phi weight
- //Double_t wPt  = 1.; // pt weight
- //Double_t wEta = 1.; // eta weight
+ Double_t wPhi = 1.; // phi weight
+ Double_t wPt  = 1.; // pt weight
+ Double_t wEta = 1.; // eta weight
    
  if(useWeights)
  {
@@ -586,6 +579,11 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   }
 
  Int_t nSelTracksIntFlow = 0; //cross-checking the selected multiplicity
+  
+ Double_t dPhi = 0.;
+ Double_t dPt  = 0.;
+ Double_t dEta = 0.;
+ Int_t nBinsPhi = 0;
  
  for(Int_t i=0;i<nPrim;i++)
  {
@@ -593,15 +591,45 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   if(fTrack && fTrack->UseForIntegratedFlow())
   {
    nSelTracksIntFlow++;
+   // get azimuthal angle, momentum and pseudorapidity of a particle:
+   dPhi = fTrack->Phi();
+   dPt  = fTrack->Pt();
+   dEta = fTrack->Eta();
+   // phi weights:
+   if(fUsePhiWeights) 
+   {
+    nBinsPhi = phiWeights->GetNbinsX();
+    if(nBinsPhi) 
+    {
+     wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+    }
+   } 
+   // pt weights:
+   if(fUsePtWeights)
+   {          
+    if(fBinWidthPt) 
+    {
+     wPt = ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/fBinWidthPt)));
+    }
+   }             
+   // eta weights:
+   if(fUseEtaWeights)
+   {    
+    if(fBinWidthEta)
+    {
+     wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fBinWidthEta))); 
+    }
+   }
+   // evaluate the generating function:
    for(Int_t p=0;p<fgkPmax;p++)
    {
     for(Int_t q=0;q<fgkQmax;q++)
     {
-     genfunG[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax));
+     genfunG[p][q]*=(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax));
     }
    } 
   }
- }  
+ } // end of for(Int_t i=0;i<nPrim;i++) 
  
  //storing the value of G[p][q] in 2D profile in order to get automatically the avarage <G[p][q]>
  for(Int_t p=0;p<fgkPmax;p++)
