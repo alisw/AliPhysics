@@ -61,6 +61,7 @@ ClassImp(AliFlowAnalysisWithCumulants)
 AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():  
  fTrack(NULL),
  fHistList(NULL),
+ fWeightsList(NULL),
  fR0(0),
  fPtMax(0),
  fPtMin(0),
@@ -125,10 +126,15 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fDiffFlowGenFunIm7(NULL),
  */
  fCommonHists(NULL),
- fOtherEquations(kFALSE)
+ fOtherEquations(kFALSE),
+ fUsePhiWeights(kFALSE),
+ fUsePtWeights(kFALSE),
+ fUseEtaWeights(kFALSE)
 {
  //constructor 
  fHistList = new TList();
+ fWeightsList = new TList();
+ fWeightsList->SetName("Weights");
  fR0=AliFlowCumuConstants::fgR0;
  //Pt:
  fPtMax=AliFlowCommonConstants::GetPtMax(); 
@@ -154,11 +160,12 @@ AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants()
 {
  //desctructor
  delete fHistList; 
+ delete fWeightsList;
 }
 
 //================================================================================================================
 
-void AliFlowAnalysisWithCumulants::CreateOutputObjects()
+void AliFlowAnalysisWithCumulants::Init()
 {
  //various output histograms
  
@@ -491,8 +498,10 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
  //common histograms for final results (8th order)
  fCommonHistsResults8th = new AliFlowCommonHistResults("AliFlowCommonHistResults8thOrderGFC");
  fHistList->Add(fCommonHistsResults8th);
-  
-}//end of CreateOutputObjects()
+ 
+ // add list fWeightsList with weights to the main list
+ fHistList->Add(fWeightsList); 
+}//end of Init()
 
 //================================================================================================================
 
@@ -502,6 +511,63 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  Int_t nPrim = anEvent->NumberOfTracks(); //total multiplicity
  
  Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow(); //selected multiplicity (particles used for int. flow)
+ 
+    
+ //---------------------------------------------------------------------------------------------------------
+ // weights:
+ Bool_t useWeights = fUsePhiWeights||fUsePtWeights||fUseEtaWeights;
+ 
+ cout<<endl;
+ cout<<fUsePhiWeights<<endl;
+ cout<<fUsePtWeights<<endl;
+ cout<<fUseEtaWeights<<endl;
+ cout<<endl;
+
+ 
+ TH1F *phiWeights = NULL; // histogram with phi weights
+ TH1D *ptWeights  = NULL; // histogram with pt weights
+ TH1D *etaWeights = NULL; // histogram with eta weights
+
+ //Double_t wPhi = 1.; // phi weight
+ //Double_t wPt  = 1.; // pt weight
+ //Double_t wEta = 1.; // eta weight
+   
+ if(useWeights)
+ {
+  if(!fWeightsList)
+  {
+   cout<<" WARNING: fWeightsList is NULL pointer. "<<endl;
+   exit(0);
+  }
+  if(fUsePhiWeights) 
+  {
+   phiWeights = dynamic_cast<TH1F *>(fWeightsList->FindObject("phi_weights"));
+   if(!phiWeights)
+   {
+    cout<<" WARNING: couldn't access the histogram with phi weights. "<<endl;
+    exit(0);
+   } 
+  } 
+  if(fUsePtWeights) 
+  { 
+   ptWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("pt_weights"));
+   if(!ptWeights) 
+   {
+    cout<<" WARNING: couldn't access the histogram with pt weights. "<<endl;
+    exit(0);
+   } 
+  } 
+  if(fUseEtaWeights) 
+  {
+   etaWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("eta_weights"));
+   if(!etaWeights) 
+   {
+    cout<<" WARNING: couldn't access the histogram with eta weights. "<<endl;
+    exit(0);
+   }
+  } 
+ } 
+ //---------------------------------------------------------------------------------------------------------
   
  if(nEventNSelTracksIntFlow>9) //generating function formalism applied here make sense only for selected multiplicity >= 10 
  { 
@@ -556,7 +622,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  AliFlowVector fQVector;
  fQVector.Set(0.,0.);
  fQVector.SetMult(0);
- fQVector=anEvent->GetQ();                               //get the Q vector for this event
+ fQVector=anEvent->GetQ(); //get the Q vector for this event
  fQVectorComponentsGFC->Fill(0.,fQVector.X(),1);         //in the 1st bin fill Q_x
  fQVectorComponentsGFC->Fill(1.,fQVector.Y(),1);         //in the 2nd bin fill Q_y
  fQVectorComponentsGFC->Fill(2.,pow(fQVector.X(),2.),1); //in the 3rd bin fill (Q_x)^2

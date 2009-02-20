@@ -39,16 +39,19 @@ class AliFlowAnalysisWithCumulants{
   AliFlowAnalysisWithCumulants();
   virtual ~AliFlowAnalysisWithCumulants(); 
   
-  virtual void CreateOutputObjects();
+  virtual void Init();
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
   virtual void WriteHistograms(TString* outputFileName);
   virtual void WriteHistograms(TString outputFileName);
   
 //----------------------------------------------------------------------------------------------------------------
-//                                            setters and getters                                     fBinWidth            
+//                                            setters and getters                                                 
 //----------------------------------------------------------------------------------------------------------------
-  TList* GetHistList() const {return this->fHistList;}      //output histogram list
+  TList* GetHistList() const {return this->fHistList;}     
+  
+  void SetWeightsList(TList* wlist) {this->fWeightsList = wlist;}
+  TList* GetWeightsList() const {return this->fWeightsList;}
   
   void SetIntFlowResults(TH1D* const ifr)  {this->fIntFlowResultsGFC = ifr;};
   TH1D* GetIntFlowResults() const    {return this->fIntFlowResultsGFC;};
@@ -154,6 +157,15 @@ class AliFlowAnalysisWithCumulants{
   
   void SetCommonHists(AliFlowCommonHist* const ch)  {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const   {return this->fCommonHists;};
+  
+  void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
+  Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
+  
+  void SetUsePtWeights(Bool_t const uPtW) {this->fUsePtWeights = uPtW;};
+  Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
+  
+  void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
+  Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -173,6 +185,7 @@ class AliFlowAnalysisWithCumulants{
   static const Int_t fgkFlow = AliFlowCumuConstants::kFlow;     //integrated flow coefficient to be calculated
   static const Int_t fgkMltpl = AliFlowCumuConstants::kMltpl;   //the multiple in p=m*n (diff. flow) 
   TList* fHistList;                                             //list to hold all output histograms
+  TList* fWeightsList;                                          //list to hold all histograms with weights
 
   Double_t fR0;         //needed for numerics
   Double_t fPtMax;      //maximum pt
@@ -244,6 +257,10 @@ class AliFlowAnalysisWithCumulants{
   AliFlowCommonHist* fCommonHists;      //common control histograms
   
   Bool_t fOtherEquations; //numerical equations for cumulants solved up to different highest order 
+  
+  Bool_t fUsePhiWeights;  //phi weights
+  Bool_t fUsePtWeights;   //v_2(pt) weights
+  Bool_t  fUseEtaWeights; //v_2(eta) weights
       
   ClassDef(AliFlowAnalysisWithCumulants, 0);
 };

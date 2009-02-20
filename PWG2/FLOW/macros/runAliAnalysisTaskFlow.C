@@ -42,7 +42,7 @@ Bool_t SP    = kTRUE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kFALSE;
+Bool_t GFC   = kTRUE;
 Bool_t QC    = kFALSE;
 Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kTRUE;
@@ -97,7 +97,7 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
@@ -543,9 +543,12 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->AddTask(taskLYZEP);
  }
  if (GFC){
-   if (QA) { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE);}
-   else { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE);}
+   if (QA) { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE,useWeights);}
+   else { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE,useWeights);}
    taskGFC->SetAnalysisType(type);
+   taskGFC->SetUsePhiWeights(usePhiWeights); 
+   taskGFC->SetUsePtWeights(usePtWeights);
+   taskGFC->SetUseEtaWeights(useEtaWeights); 
    taskGFC->SetCFManager1(cfmgr1);
    taskGFC->SetCFManager2(cfmgr2);
    if (QA) { 
@@ -804,6 +807,10 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->ConnectOutput(taskGFC,0,coutputGFC);
    if (QA) { mgr->ConnectOutput(taskGFC,1,coutputQA1GFC);
    mgr->ConnectOutput(taskGFC,2,coutputQA2GFC); }
+   if (useWeights) {
+     mgr->ConnectInput(taskGFC,1,cinputWeights);
+     cinputWeights->SetData(weightsList);
+   } 
  }  
  if (QC)   { 
    mgr->ConnectInput(taskQC,0,cinput1); 
