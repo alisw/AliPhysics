@@ -316,21 +316,31 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
     TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
 
-    TProfile* pHistProFlow = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VPt_LYZEP"));
+    TProfile* pHistProVetaRP = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VetaRP_LYZEP"));
+    TProfile* pHistProVetaPOI = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VetaPOI_LYZEP"));
+    TProfile* pHistProVPtRP = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VPtRP_LYZEP"));
+    TProfile* pHistProVPtPOI = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VPtPOI_LYZEP"));
 
     TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
       (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
 
     if (pCommonHist && pCommonHistResults && pHistProR0theta &&
-	pHistProFlow && pHistQsumforChi ) {
-    fLyzTerm->SetCommonHists(pCommonHist);
-    fLyzTerm->SetCommonHistsRes(pCommonHistResults);
-    fLyzTerm->SetFirstr0theta(pHistProR0theta);
-    fLyzTerm->SetHistProFlow(pHistProFlow);
-    fLyzTerm->SetHistQsumforChi(pHistQsumforChi);
-    fLyzTerm->Finish();
-    PostData(0,fListHistos);
+	pHistProVetaRP && pHistProVetaPOI && pHistProVPtRP && 
+	pHistProVPtPOI && pHistQsumforChi ) {
+      fLyzTerm -> SetCommonHists(pCommonHist);
+      fLyzTerm -> SetCommonHistsRes(pCommonHistResults);
+      fLyzTerm -> SetFirstr0theta(pHistProR0theta);
+      fLyzTerm -> SetHistProVetaRP(pHistProVetaRP);
+      fLyzTerm -> SetHistProVetaPOI(pHistProVetaPOI);
+      fLyzTerm -> SetHistProVPtRP(pHistProVPtRP);
+      fLyzTerm -> SetHistProVPtPOI(pHistProVPtPOI);
+      fLyzTerm -> SetHistQsumforChi(pHistQsumforChi);
+      fLyzTerm -> Finish();
+      PostData(0,fListHistos);
     } else { 
       cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl; 
     }

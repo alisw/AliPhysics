@@ -176,6 +176,14 @@ void compareFlowResults(TString type="ESD")
     if(pListLYZ2) {
       lyz2CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2->FindObject("AliFlowCommonHistLYZ2"));
       lyz2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2->FindObject("AliFlowCommonHistResultsLYZ2"));
+      if(lyz2CommonHistRes) {
+	flowValue[10] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[10] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[10] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[10] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[10] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[10] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
     }
   }
   
@@ -190,11 +198,11 @@ void compareFlowResults(TString type="ESD")
       lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZEP->FindObject("AliFlowCommonHistResultsLYZEP"));
       if(lyzepCommonHistRes) {
 	flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	//flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	flowErrorPOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
