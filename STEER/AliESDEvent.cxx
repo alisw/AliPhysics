@@ -663,6 +663,20 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
     if (idx==last) used++;
   }
 
+  // Check if this track is associated with a CaloCluster
+  Int_t ncl=GetNumberOfCaloClusters();
+  for (Int_t n=0; n<ncl; n++) {
+    AliESDCaloCluster *cluster=GetCaloCluster(n);
+    TArrayI *arr=cluster->GetTracksMatched();
+    Int_t s=arr->GetSize();
+    while (s--) {
+      Int_t idx=arr->At(s);
+      if (rm==idx) return kFALSE;
+      if (idx==last) used++;     
+    }
+  }
+
+
 
   //Replace the removed track with the last track 
   TClonesArray &a=*fTracks;
@@ -751,6 +765,21 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
        kn->SetIndex(rm,1);
        used--;
        if (!used) return kTRUE;
+    }
+  }
+
+  // Remap the indices of the tracks accosicated with CaloClusters
+  for (Int_t n=0; n<ncl; n++) {
+    AliESDCaloCluster *cluster=GetCaloCluster(n);
+    TArrayI *arr=cluster->GetTracksMatched();
+    Int_t s=arr->GetSize();
+    while (s--) {
+      Int_t idx=arr->At(s);
+      if (idx==last) {
+         arr->AddAt(rm,s);
+         used--; 
+         if (!used) return kTRUE;
+      }
     }
   }
 
