@@ -63,12 +63,19 @@ class AliFlowAnalysisWithLYZEventPlane {
   TProfile*  GetFirstr0theta()   {return this->fFirstr0theta; }
   void       SetFirstr0theta(TProfile* aFirstr0theta)
     {this->fFirstr0theta = aFirstr0theta; }
-  TProfile*  GetHistProFlow()    {return this->fHistProFlow;}
-  void       SetHistProFlow(TProfile* aHistProFlow)
-    {this->fHistProFlow =aHistProFlow; }        
-  TProfile*  GetHistProFlow2()   {return this->fHistProFlow2;} 
-  void       SetHistProFlow2(TProfile* aHistProFlow2)
-    {this->fHistProFlow2 = aHistProFlow2; }      
+  
+  TProfile*  GetHistProVetaRP()    {return this->fHistProVetaRP;}
+  void       SetHistProVetaRP(TProfile* aHistProVetaRP)
+    {this->fHistProVetaRP =aHistProVetaRP; }
+  TProfile*  GetHistProVetaPOI()   {return this->fHistProVetaPOI;} 
+  void       SetHistProVetaPOI(TProfile* aHistProVetaPOI)
+    {this->fHistProVetaPOI = aHistProVetaPOI; } 
+  TProfile*  GetHistProVPtRP()    {return this->fHistProVPtRP;}
+  void       SetHistProVPtRP(TProfile* aHistProVPtRP)
+    {this->fHistProVPtRP =aHistProVPtRP; } 
+  TProfile*  GetHistProVPtPOI()   {return this->fHistProVPtPOI;} 
+  void       SetHistProVPtPOI(TProfile* aHistProVPtPOI)
+    {this->fHistProVPtPOI = aHistProVPtPOI; }      
   TProfile*  GetHistProWr()      {return this->fHistProWr; }
   void       SetHistProWr(TProfile* aHistProWr)
     {this->fHistProWr = aHistProWr; }
@@ -112,13 +119,17 @@ class AliFlowAnalysisWithLYZEventPlane {
   //histograms
   TList*     fHistList;                       //list ro hold all histograms
   TList*     fSecondRunList;                  //list from Second LYZ run output
+  
   //input
   TProfile*  fSecondReDtheta;                 // input profile
   TProfile*  fSecondImDtheta;                 // input profile
   TProfile*  fFirstr0theta;                   // input profile
+  
   //output
-  TProfile*  fHistProFlow;                    //
-  TProfile*  fHistProFlow2;                   //
+  TProfile*  fHistProVetaRP;                  //
+  TProfile*  fHistProVetaPOI;                 //
+  TProfile*  fHistProVPtRP;                   //
+  TProfile*  fHistProVPtPOI;                  //
   TProfile*  fHistProWr;                      //
   TProfile*  fHistProWrCorr;                  //
   TH1F*      fHistQsumforChi;                 //
