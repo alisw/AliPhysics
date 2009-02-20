@@ -56,15 +56,19 @@ AliTRDReconstructor::AliTRDReconstructor()
   ,fSteerParam(0)
 {
   // setting default "ON" steering parameters
+  // owner of debug streamers 
+  SETFLG(fSteerParam, kOwner);
   // write clusters [cw]
   SETFLG(fSteerParam, kWriteClusters);
   // track seeding (stand alone tracking) [sa]
   SETFLG(fSteerParam, kSeeding);
   // PID method in reconstruction (NN) [nn]
   SETFLG(fSteerParam, kSteerPID);
+  // number of dEdx slices in the ESD track [8s]
+  //SETFLG(fSteerParam, kEightSlices);
 
-  memset(fStreamLevel, 0, 5*sizeof(UChar_t));
-  memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * 4);
+  memset(fStreamLevel, 0, kNtasks*sizeof(UChar_t));
+  memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * kNtasks);
   // Xe tail cancellation parameters
   fTCParams[0] = 1.156; // r1
   fTCParams[1] = 0.130; // r2
@@ -75,7 +79,6 @@ AliTRDReconstructor::AliTRDReconstructor()
   fTCParams[5] = 0.62;  // r2
   fTCParams[6] = 0.0087;// c1
   fTCParams[7] = 0.07;  // c2
-  SetBit(kOwner, kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -83,10 +86,11 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   :AliReconstructor(r)
   ,fSteerParam(r.fSteerParam)
 {
-  memcpy(fStreamLevel, r.fStreamLevel, 5*sizeof(UChar_t));
+  memcpy(fStreamLevel, r.fStreamLevel, kNtasks*sizeof(UChar_t));
   memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
-  memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *4);
-  SetBit(kOwner, kFALSE);
+  memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *kNtasks);
+  // ownership of debug streamers is not taken
+  CLRFLG(fSteerParam, kOwner);
 }
 
 //_____________________________________________________________________________
@@ -95,8 +99,8 @@ AliTRDReconstructor::~AliTRDReconstructor()
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
-  if(TestBit(kOwner)){
-    for(Int_t itask = 0; itask < 4; itask++)
+  if(TESTBIT(fSteerParam, kOwner)){
+    for(Int_t itask = 0; itask < kNtasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }
 }
@@ -285,7 +289,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       TString levelstring(((TObjString*)(*stl)[2])->String());
       // Set the stream Level
       Int_t level = levelstring.Atoi();
-      AliTRDReconstructorTask task = kTracker;
+      ETRDReconstructorTask task = kTracker;
       if(taskstr.CompareTo("raw") == 0) task = kRawReader;	
       else if(taskstr.CompareTo("cl") == 0) task = kClusterizer;	
       else if(taskstr.CompareTo("tr") == 0) task = kTracker;
@@ -297,7 +301,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask task){
+void AliTRDReconstructor::SetStreamLevel(Int_t level, ETRDReconstructorTask task){
   //
   // Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
   //
@@ -310,5 +314,6 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask ta
     TDirectory *savedir = gDirectory;
     fDebugStream[task] = new TTreeSRedirector(Form("TRD.%sDebug.root", taskname[task].Data()));
     savedir->cd();
+    SETFLG(fSteerParam, kOwner);
   }
 }

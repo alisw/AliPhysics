@@ -22,7 +22,7 @@ class AliRawReader;
 class AliTRDReconstructor: public AliReconstructor 
 {
 public:
-  enum AliTRDsteerParam {
+  enum ETRDReconstructorSteer {
     kDigitsConversion= BIT(0)
     ,kWriteClusters  = BIT(1)
     ,kSeeding        = BIT(2)
@@ -32,19 +32,18 @@ public:
     ,kDriftGas       = BIT(6)
     ,kHLT            = BIT(7)
     ,kCosmic         = BIT(8)
+    ,kOwner          = BIT(14)
   };
-  enum AliTRDReconstructorTask {
+  enum ETRDReconstructorTask {
     kRawReader    = 0
     ,kClusterizer = 1
     ,kTracker     = 2
     ,kPID         = 3
+    ,kNtasks      = 4  // number of reconsruction tasks
   };
-  enum AliTRDdriftGas {
-    kXe = 0,
-    kAr = 1
-  };
-  enum{
-    kOwner = BIT(14)
+  enum ETRDReconstructorGas {
+    kXe = 0
+    ,kAr = 1
   };
 
   AliTRDReconstructor();
@@ -56,16 +55,16 @@ public:
 
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
   virtual AliTracker* CreateTracker() const;
-  TTreeSRedirector*   GetDebugStream(AliTRDReconstructorTask task) const { return task < 4 ? fDebugStream[task] : 0x0; }
+  TTreeSRedirector*   GetDebugStream(ETRDReconstructorTask task) const { return task < kNtasks ? fDebugStream[task] : 0x0; }
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters() {return fgClusters;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
-  AliTRDdriftGas      GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
+  ETRDReconstructorGas GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return fSteerParam&kSteerPID ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
-  Int_t               GetStreamLevel(AliTRDReconstructorTask task) const    { return fStreamLevel[task];} 
+  Int_t               GetStreamLevel(ETRDReconstructorTask task) const    { return fStreamLevel[task];} 
   inline void         GetTCParams(Double_t *par) const;
   virtual Bool_t      HasDigitConversion() const                   { return fSteerParam&kDigitsConversion;  };
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
@@ -81,13 +80,13 @@ public:
   static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;}
   void	              SetOption(Option_t *opt);
   inline void         SetTCParams(Double_t *par);
-  void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker);
+  void                SetStreamLevel(Int_t level, ETRDReconstructorTask task= kTracker);
 
 private:
-  UChar_t           fStreamLevel[5];      // stream level for each reconstruction task         
+  UChar_t           fStreamLevel[kNtasks];// stream level for each reconstruction task         
   UInt_t            fSteerParam;          // steering flags
   Double_t          fTCParams[8];         // Tail Cancellation parameters for drift gases 
-  TTreeSRedirector *fDebugStream[4];      // Debug Streamer container;
+  TTreeSRedirector *fDebugStream[kNtasks];// Debug Streamer container;
  
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
 
