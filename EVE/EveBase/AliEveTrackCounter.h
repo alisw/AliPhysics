@@ -13,7 +13,7 @@
 #include "TEveElement.h"
 #include "TList.h"
 
-class TEveTrack;
+class AliEveTrack;
 class TEveTrackList;
 
 //______________________________________________________________________________
@@ -37,7 +37,7 @@ public:
 
   void RegisterTracks(TEveTrackList* tlist, Bool_t goodTracks);
 
-  void DoTrackAction(TEveTrack* track);
+  void DoTrackAction(AliEveTrack* track);
 
   Int_t GetClickAction() const  { return fClickAction; }
   void  SetClickAction(Int_t a) { fClickAction = a; }

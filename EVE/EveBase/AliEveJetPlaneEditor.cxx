@@ -72,14 +72,14 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   fEnergyColorScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoEnergyColorScale()");
   AddFrame(fEnergyColorScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  fOneSelection = new TGRadioButton(this, "&One TEveTrack/Jet");
-  fTwoSelection = new TGRadioButton(this, "&Two TEveTrack/Jet");
+  fOneSelection = new TGRadioButton(this, "&One AliEveTrack/Jet");
+  fTwoSelection = new TGRadioButton(this, "&Two AliEveTrack/Jet");
   AddFrame(fOneSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   AddFrame(fTwoSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   fOneSelection->Connect("Clicked()", "AliEveJetPlaneEditor", this, "DoOneSelection()");
   fTwoSelection->Connect("Clicked()", "AliEveJetPlaneEditor", this, "DoTwoSelection()");
 
-  // fInformationSetup = new TGTextButton(this, "TEveTrack/Jet Print");
+  // fInformationSetup = new TGTextButton(this, "AliEveTrack/Jet Print");
   // AddFrame(fInformationSetup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 0, 2, 2));
   // fInformationSetup->Connect("Clicked()", "AliEveJetPlaneEditor", this, "DoStaticDataWindow()");
 }
@@ -227,7 +227,7 @@ AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, cons
 
   fL3 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);
 
-  TGCompositeFrame *tf = fTab->AddTab("One TEveTrack/Jet");
+  TGCompositeFrame *tf = fTab->AddTab("One AliEveTrack/Jet");
 
   //    fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
   //    fF1->AddFrame(new TGTextButton(fF1, "&Test button", 0), fL3);
@@ -262,7 +262,7 @@ AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, cons
   MapSubwindows();
   Resize();
 
-  SetWindowName("TEveTrack/Jet Common Setup");
+  SetWindowName("AliEveTrack/Jet Common Setup");
 }
 
 AliEveJetPlaneEditor::StaticDataWindow::~StaticDataWindow()

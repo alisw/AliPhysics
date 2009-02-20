@@ -9,12 +9,10 @@
 
 #include "AliEveV0.h"
 
-#include <TEveTrack.h>
 #include <TEveTrackPropagator.h>
 #include <TEveManager.h>
 
 #include <TPolyLine3D.h>
-#include <TPolyMarker3D.h>
 #include <TColor.h>
 
 #include <TDatabasePDG.h>
@@ -67,8 +65,8 @@ AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
   fRecDecayV(v0->fVCa),
   fRecDecayP(v0->fPNeg + v0->fPPos),
 
-  fNegTrack(new TEveTrack(tNeg, rs)),
-  fPosTrack(new TEveTrack(tPos, rs)),
+  fNegTrack(new AliEveTrack(tNeg, rs)),
+  fPosTrack(new AliEveTrack(tPos, rs)),
 
   fRnrStyle(rs),
   fPointingLine(new TEveLine("Pointing line")),
@@ -121,7 +119,7 @@ AliEveV0::~AliEveV0()
 void AliEveV0::SetMaxProbPdgPid(Int_t iDaughter, Int_t rPdg, Float_t rPid)
 {
   // Sets the maximum probability Pdg value and Pid for one daughter
-  // Should be moved to TEveTrack property eventually (or AliEveTrack creation)
+  // Should be moved to AliEveTrack property eventually (or AliEveTrack creation)
 
   if(iDaughter==0){
     fNegMaxProbPdg = rPdg;

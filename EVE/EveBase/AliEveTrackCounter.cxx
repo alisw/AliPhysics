@@ -10,7 +10,7 @@
 #include "AliEveTrackCounter.h"
 
 #include "TEveManager.h"
-#include "TEveTrack.h"
+#include "AliEveTrack.h"
 #include "TEveGedEditor.h"
 
 //==============================================================================
@@ -22,7 +22,7 @@
 // Provides event-based method for tagging of good / bad (or primary /
 // secondary) tracks. A report can be written into a text file.
 //
-// TEveTrack status is toggled by using secondary-selection / ctrl-click
+// AliEveTrack status is toggled by using secondary-selection / ctrl-click
 // functionality of the GL viewer.
 //
 // Some of the functionality is implemented in AliEveTrackCounterEditor
@@ -46,11 +46,11 @@ AliEveTrackCounter::AliEveTrackCounter(const Text_t* name, const Text_t* title) 
    fTrackLists   ()
 {
    // Constructor.
-   // Connects to global signal "TEveTrack", "SecSelected(TEveTrack*)".
+   // Connects to global signal "AliEveTrack", "SecSelected(AliEveTrack*)".
 
    if (fgInstance == 0) fgInstance = this;
-   TQObject::Connect("TEveTrack", "SecSelected(TEveTrack*)",
-                     "AliEveTrackCounter", this, "DoTrackAction(TEveTrack*)");
+   TQObject::Connect("AliEveTrack", "SecSelected(AliEveTrack*)",
+                     "AliEveTrackCounter", this, "DoTrackAction(AliEveTrack*)");
 }
 
 //______________________________________________________________________________
@@ -59,7 +59,7 @@ AliEveTrackCounter::~AliEveTrackCounter()
    // Destructor.
    // Disconnect from the global track signals.
 
-   TQObject::Disconnect("TEveTrack", "DoTrackAction(TEveTrack*)");
+   TQObject::Disconnect("AliEveTrack", "DoTrackAction(AliEveTrack*)");
    if (fgInstance == this) fgInstance = 0;
 }
 
@@ -92,7 +92,7 @@ void AliEveTrackCounter::RegisterTracks(TEveTrackList* tlist, Bool_t goodTracks)
    List_i i = tlist->BeginChildren();
    while (i != tlist->EndChildren())
    {
-      TEveTrack* t = dynamic_cast<TEveTrack*>(*i);
+      AliEveTrack* t = dynamic_cast<AliEveTrack*>(*i);
       if (t != 0)
       {
          if (goodTracks)
@@ -108,7 +108,7 @@ void AliEveTrackCounter::RegisterTracks(TEveTrackList* tlist, Bool_t goodTracks)
 }
 
 //______________________________________________________________________________
-void AliEveTrackCounter::DoTrackAction(TEveTrack* track)
+void AliEveTrackCounter::DoTrackAction(AliEveTrack* track)
 {
    // Slot called when track is ctrl-clicked.
    //
@@ -126,7 +126,7 @@ void AliEveTrackCounter::DoTrackAction(TEveTrack* track)
 
       case kCA_PrintTrackInfo:
       {
-         printf("TEveTrack '%s'\n", track->GetObject(eh)->GetName());
+         printf("AliEveTrack '%s'\n", track->GetObject(eh)->GetName());
          const TEveVector &v = track->GetVertex();
          const TEveVector &p = track->GetMomentum();;
          printf("  Vx=%f, Vy=%f, Vz=%f; Pt=%f, Pz=%f, phi=%f)\n",
@@ -186,7 +186,7 @@ void AliEveTrackCounter::OutputEventTracks(FILE* out)
       List_i i = tlist->BeginChildren();
       while (i != tlist->EndChildren())
       {
-         TEveTrack* t = dynamic_cast<TEveTrack*>(*i);
+         AliEveTrack* t = dynamic_cast<AliEveTrack*>(*i);
          if (t != 0 && t->GetLineStyle() == 1)
          {
             ++cnt;

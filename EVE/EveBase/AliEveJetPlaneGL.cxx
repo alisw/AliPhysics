@@ -277,7 +277,7 @@ void AliEveJetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord 
     if (rec.GetN() == 3)
     {
       AliAODTrack v = fM->fTracks[rec.GetItem(2)];
-      printf("TEveTrack 4-momentum: %f, %f, %f, %f \n", v.Px(),v.Py(),v.Pz(),v.Pt() );
+      printf("AliEveTrack 4-momentum: %f, %f, %f, %f \n", v.Px(),v.Py(),v.Pz(),v.Pt() );
       printf("Eta-Phi values: %f, %f\n", v.Eta(), v.Phi());
     }
   }
@@ -323,8 +323,8 @@ void AliEveJetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord 
 	track2State = 1;
       }
 
-      printf("Jet: %i, TEveTrack: %i \n", jet1State, track1State);
-      printf("Jet: %i, TEveTrack: %i \n\n", jet2State, track2State);
+      printf("Jet: %i, AliEveTrack: %i \n", jet1State, track1State);
+      printf("Jet: %i, AliEveTrack: %i \n\n", jet2State, track2State);
 
       if(jet1State && jet2State)
       {

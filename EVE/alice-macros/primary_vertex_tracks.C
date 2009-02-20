@@ -24,7 +24,7 @@ TEveTrackList* primary_vertex_tracks()
   for (Int_t n=0; n<pv->GetNIndices(); n++)
   {
     AliESDtrack* at = esd->GetTrack(pv->GetIndices()[n]);
-    TEveTrack* track = esd_make_track(rnrStyle, n, at, at);
+    AliEveTrack* track = esd_make_track(rnrStyle, n, at, at);
     track->SetLineWidth(4);
     track->SetLineColor(cont->GetMainColor());
     track->SetLineStyle(7);

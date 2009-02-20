@@ -9,12 +9,10 @@
 
 #include "AliEveCascade.h"
 
-#include <TEveTrack.h>
 #include <TEveTrackPropagator.h>
 #include <TEveManager.h>
 
 #include <TPolyLine3D.h>
-#include <TPolyMarker3D.h>
 #include <TColor.h>
 
 #include <vector>
@@ -59,7 +57,7 @@ AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecV0* v0, TEveRecCascade* 
   fRecDecayV(cascade->fCascadeVCa),
   fRecDecayP(cascade->fPBac + v0->fPNeg + v0->fPPos),
   fRecDecayV0(v0->fVCa),
-  fBacTrack(new TEveTrack(tBac, rs)),
+  fBacTrack(new AliEveTrack(tBac, rs)),
 
   fRnrStyle(rs),
   fPointingCurve(new TEveLine("Pointing Curve")),

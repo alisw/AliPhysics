@@ -23,7 +23,7 @@ class AliHLTHOMERBlockDesc;
 
 class TEvePointSet;
 class TEveTrackList;
-class TEveTrack;
+class AliEveTrack;
 
 class AliEveTPCLoader;
 class AliEveTPCData;
@@ -44,7 +44,7 @@ class AliEveITSDigitsInfo;
 //***********************************************************
 #include "TEveManager.h"
 #include "TEvePointSet.h"
-#include "TEveTrack.h"
+#include "AliEveTrack.h"
 #include "TEveVSDStructs.h"
 #include "TEveTrackPropagator.h"
 #include "TEvePointSet.h"
@@ -459,7 +459,7 @@ TEveTrack* makeESDTrack( TEveTrackPropagator*   rnrStyle,
   Double_t ep = esdTrack->GetP(), mc = esdTrack->GetMass();
   rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
-  TEveTrack* track = new TEveTrack(&rt, rnrStyle);
+  AliEveTrack* track = new AliEveTrack(&rt, rnrStyle);
 
   cout<<"startPoint = "<<vbuf[0]<<" "<<vbuf[1]<<" "<<vbuf[2]<<" "<<pbuf[0]<<" "<<pbuf[1]<<" "<<pbuf[2]<<endl;
 
@@ -582,7 +582,7 @@ TEveTrack* makeESDTrack( TEveTrackPropagator*   rnrStyle,
   //PH		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
   //PH		       rt.V.x, rt.V.y, rt.V.z));
   char form[1000];
-  sprintf(form,"TEveTrack %d", rt.fIndex);
+  sprintf(form,"AliEveTrack %d", rt.fIndex);
   track->SetName(form);
   track->SetStdTitle();
   return track;
@@ -626,7 +626,7 @@ Int_t processTPCTracks(AliHLTHOMERBlockDesc* block) {
     cout<<"\nESD track N"<<ii<<":"<<endl;
     trackParam->Print();
 
-    TEveTrack* track = makeESDTrack( rnrStyle, ii, esdTrack, trackParam );
+    AliEveTrack* track = makeESDTrack( rnrStyle, ii, esdTrack, trackParam );
     esdTrack->GetPxPyPz(pin);
 
     //cout<<"pt : "<<sqrt(pin[0]*pin[0] + pin[1]*pin[1])<<endl;

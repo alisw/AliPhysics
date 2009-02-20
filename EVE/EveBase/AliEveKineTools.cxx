@@ -8,17 +8,14 @@
  **************************************************************************/
 
 #include "AliEveKineTools.h"
-
-#include <TObject.h>
-#include <TTree.h>
-#include <TBranchElement.h>
-#include <TClonesArray.h>
+#include "AliEveTrack.h"
 
 #include <AliStack.h>
 #include <AliTrackReference.h>
 
-#include <TEveTrack.h>
-#include <TEveElement.h>
+#include <TTree.h>
+#include <TBranchElement.h>
+#include <TClonesArray.h>
 
 #include <map>
 
@@ -38,14 +35,14 @@ namespace {
   // particular resonances) are not assigned proper status-codes
   // and can thus be found several times in the eve-track-list.
 
-  typedef std::multimap<Int_t, TEveTrack*>                 TrackMap_t;
-  typedef std::multimap<Int_t, TEveTrack*>::const_iterator TrackMap_ci;
+  typedef std::multimap<Int_t, AliEveTrack*>                 TrackMap_t;
+  typedef std::multimap<Int_t, AliEveTrack*>::const_iterator TrackMap_ci;
 
   void MapTracks(TrackMap_t& map, TEveElement* cont, Bool_t recurse)
   {
     TEveElement::List_i i = cont->BeginChildren();
     while (i != cont->EndChildren()) {
-      TEveTrack* track = dynamic_cast<TEveTrack*>(*i);
+      AliEveTrack* track = dynamic_cast<AliEveTrack*>(*i);
       map.insert(std::make_pair(track->GetLabel(), track));
       if (recurse)
         MapTracks(map, track, recurse);
@@ -63,7 +60,7 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
   TEveElement::List_i  iter = cont->BeginChildren();
   while(iter != cont->EndChildren())
   {
-    TEveTrack* track = dynamic_cast<TEveTrack*>(*iter);
+    AliEveTrack* track = dynamic_cast<AliEveTrack*>(*iter);
     TParticle* p = stack->Particle(track->GetLabel());
     if (p->GetNDaughters())
     {
@@ -162,7 +159,7 @@ void AliEveKineTools::SortPathMarks(TEveElement* el, Bool_t recurse)
   // Sort path-marks for track by time.
   // If recurse is true, descends down all track children.
 
-  TEveTrack* track = dynamic_cast<TEveTrack*>(el);
+  AliEveTrack* track = dynamic_cast<AliEveTrack*>(el);
   if (track)
     track->SortPathMarksByTime();
 

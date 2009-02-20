@@ -150,8 +150,8 @@ void AliEveV0Editor::DisplayDetailed()
 
   TEveUtil::LoadMacro("clusters_from_index.C");
 
-  TEveTrack *negTrack = fM->GetNegTrack();
-  TEveTrack *posTrack = fM->GetPosTrack();
+  AliEveTrack *negTrack = fM->GetNegTrack();
+  AliEveTrack *posTrack = fM->GetPosTrack();
 
 
   char macroWithIndex[100] = {0};

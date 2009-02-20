@@ -19,18 +19,13 @@
 * Boris Hippolyte, IPHC (hippolyt@in2p3.fr)
 ************************************************************************/
 
+#include "AliEveTrack.h"
 #include <TEveVSDStructs.h>
-#include <TEveElement.h>
-#include <TEveTrack.h>
 
-#include <TPolyMarker3D.h>
-#include <TPolyLine3D.h>
+class AliEveCascadeList;
 
 class TH1F;
 class TH2F;
-
-
-class AliEveCascadeList;
 
 class AliEveCascade : public TEvePointSet
 {
@@ -66,7 +61,7 @@ public:
 
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
-  TEveTrack* GetBacTrack() { return fBacTrack; }
+  AliEveTrack* GetBacTrack() { return fBacTrack; }
 
   TEveLine*  GetPointingCurve() { return fPointingCurve; }
   TEveLine*  GetV0Path() { return fV0Path; }
@@ -77,7 +72,7 @@ protected:
   TEveVector fRecDecayP;    // Reconstructed momentum at the decay
   TEveVector fRecDecayV0;   // Reconstructed birth point of neutral daughter
 
-  TEveTrack        *fBacTrack;
+  AliEveTrack        *fBacTrack;
 
   TEveTrackPropagator *fRnrStyle;
 

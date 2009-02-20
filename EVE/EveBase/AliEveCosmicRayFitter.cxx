@@ -11,7 +11,7 @@
 
 #include "AliLog.h"
 
-#include "TEveTrack.h"
+#include "AliEveTrack.h"
 #include "TEveTrackPropagator.h"
 #include "TEveVSDStructs.h"
 #include "TEveManager.h"
@@ -235,7 +235,7 @@ void AliEveCosmicRayFitter::FitTrack()
   rc.fV.Set(x, y, z);
   rc.fP.Set(1, params1(1), params2(1));
 
-  TEveTrack* track = new TEveTrack(&rc, fTrackList->GetPropagator());
+  AliEveTrack* track = new AliEveTrack(&rc, fTrackList->GetPropagator());
   track->SetAttLineAttMarker(fTrackList);
 
   TEveTrackPropagator* tp = fTrackList->GetPropagator();

@@ -48,7 +48,7 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
       if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
-      TEveTrack* track = new TEveTrack(p, i, trkProp);
+      AliEveTrack* track = new AliEveTrack(p, i, trkProp);
 
       //PH The line below is replaced waiting for a fix in Root
       //PH which permits to use variable siza arguments in CINT
@@ -96,7 +96,7 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   return cont;
 }
 
-void kine_daughters(TEveTrack* parent,  AliStack* stack,
+void kine_daughters(AliEveTrack* parent,  AliStack* stack,
 		    Double_t     min_pt,  Double_t  min_p,
 		    Bool_t       pdg_col, Bool_t    recurse)
 {
@@ -109,7 +109,7 @@ void kine_daughters(TEveTrack* parent,  AliStack* stack,
       TParticle* dp = stack->Particle(d);
       if (dp->Pt() < min_pt && dp->P() < min_p) continue;
 
-      TEveTrack* dtrack = new TEveTrack(dp, d, rs);
+      AliEveTrack* dtrack = new AliEveTrack(dp, d, rs);
       char form[1000];
       sprintf(form,"%s [%d]", dp->GetName(), d);
       dtrack->SetName(form);
@@ -124,7 +124,7 @@ void kine_daughters(TEveTrack* parent,  AliStack* stack,
   }
 }
 
-Color_t set_track_color(TEveTrack* t, Bool_t pdg_col)
+Color_t set_track_color(AliEveTrack* t, Bool_t pdg_col)
 {
   if (pdg_col)
     t->SetMainColor(get_pdg_color(t->GetPdg()));
@@ -211,7 +211,7 @@ kine_track(Int_t  label,
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
-    TEveTrack* toptrack = 0;
+    AliEveTrack* toptrack = 0;
     TEveTrackList* tracklist = 0;
     TEveTrackPropagator* rs = 0;
 
@@ -237,8 +237,8 @@ kine_track(Int_t  label,
     }
     else
     {
-      // check if container is TEveTrackList or TEveTrack (has rnr-style)
-      TEveTrack* t = dynamic_cast<TEveTrack*>(cont);
+      // check if container is TEveTrackList or AliEveTrack (has rnr-style)
+      AliEveTrack* t = dynamic_cast<AliEveTrack*>(cont);
       if (t) {
 	rs = t->GetPropagator();
       } else {
@@ -252,7 +252,7 @@ kine_track(Int_t  label,
 
     if (import_mother)
     {
-      TEveTrack* track = new TEveTrack(p, label, rs);
+      AliEveTrack* track = new AliEveTrack(p, label, rs);
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
@@ -269,7 +269,7 @@ kine_track(Int_t  label,
       for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d)
       {
 	TParticle* dp = stack->Particle(d);
-	TEveTrack* track = new TEveTrack(dp, d, rs);
+	AliEveTrack* track = new AliEveTrack(dp, d, rs);
 	char form[1000];
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);

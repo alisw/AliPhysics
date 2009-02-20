@@ -26,6 +26,9 @@
 
 #pragma link C++ class AliEveVSDCreator+;
 
+// AliEveTrack
+#pragma link C++ class AliEveTrack+;
+
 // AliEveTrackcounter
 #pragma link C++ class AliEveTrackCounter+;
 #pragma link C++ class AliEveTrackCounterEditor+;

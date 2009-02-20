@@ -43,6 +43,8 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void anyscan_init()
 {
+  Warning("anyscan_init", "This macro is deprecated - use visscan_init instead.");
+
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 

@@ -51,7 +51,7 @@ TString esd_track_title(AliESDtrack* t)
   return s;
 }
 
-void esd_track_add_param(TEveTrack* track, AliExternalTrackParam* tp)
+void esd_track_add_param(AliEveTrack* track, AliExternalTrackParam* tp)
 {
   // Add additional track parameters as a path-mark to track.
 
@@ -98,9 +98,9 @@ TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
   Double_t ep = at->GetP(), mc = at->GetMass();
   rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
-  TEveTrack* track = new TEveTrack(&rt, cont->GetPropagator());
+  AliEveTrack* track = new AliEveTrack(&rt, cont->GetPropagator());
   track->SetAttLineAttMarker(cont);
-  track->SetName(Form("TEveTrack %d", at->GetID()));
+  track->SetName(Form("AliEveTrack %d", at->GetID()));
   track->SetElementTitle(esd_track_title(at));
 
   // Add inner/outer track parameters as path-marks.
@@ -132,7 +132,7 @@ TEveTrackList* esd_tracks()
   for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
   {
     ++count;
-    TEveTrack* track = esd_make_track(esd->GetTrack(n), cont);
+    AliEveTrack* track = esd_make_track(esd->GetTrack(n), cont);
 
     cont->AddElement(track);
   }
@@ -205,7 +205,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
     ++count;
     AliESDtrack* at = (AliESDtrack*) obj;
 
-    TEveTrack* track = esd_make_track(at, cont);
+    AliEveTrack* track = esd_make_track(at, cont);
     cont->AddElement(track);
   }
   cont->SetTitle(Form("N=%d", count));
@@ -372,8 +372,8 @@ TEveElementList* esd_tracks_by_category()
     ++tc[ti];
     ++count;
 
-    TEveTrack* track = esd_make_track(at, tlist);
-    track->SetName(Form("TEveTrack idx=%d, sigma=%5.3f", at->GetID(), s));
+    AliEveTrack* track = esd_make_track(at, tlist);
+    track->SetName(Form("AliEveTrack idx=%d, sigma=%5.3f", at->GetID(), s));
     tlist->AddElement(track);
   }
 

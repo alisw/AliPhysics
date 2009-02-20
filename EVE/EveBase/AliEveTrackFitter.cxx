@@ -8,6 +8,7 @@
  **************************************************************************/
 
 #include "AliEveTrackFitter.h"
+#include "AliEveTrack.h"
 
 #include "TCanvas.h"
 #include "TGraph.h"
@@ -17,7 +18,6 @@
 #include "AliRieman.h"
 #include "AliExternalTrackParam.h"
 
-#include <TEveTrack.h>
 #include <TEveTrackPropagator.h>
 #include <TEveVSDStructs.h>
 #include <TEveManager.h>
@@ -34,7 +34,7 @@
 // It builds a list of points by listening to selection signal of any
 // object of type TEvePointSet. After selection the list is feeded to
 // AliRieman fitter, which returns helix parameters visualized with
-// TEveTrack.
+// AliEveTrack.
 //
 
 ClassImp(AliEveTrackFitter)
@@ -224,7 +224,7 @@ void AliEveTrackFitter::FitTrack()
   rc.fP.Set(p0);
   rc.fSign = trackParam.Charge();
 
-  TEveTrack* track = new TEveTrack(&rc, fTrackList->GetPropagator());
+  AliEveTrack* track = new AliEveTrack(&rc, fTrackList->GetPropagator());
   track->SetName(Form("track %f", fAlpha));
 
   track->MakeTrack();

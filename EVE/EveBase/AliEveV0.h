@@ -19,11 +19,9 @@
 * Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
+#include "AliEveTrack.h"
 #include <TEveVSDStructs.h>
-#include <TEveElement.h>
-#include <TEveTrack.h>
 
-#include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 
 #include <TPDGCode.h>
@@ -85,8 +83,8 @@ public:
 
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
-  TEveTrack* GetNegTrack() { return fNegTrack; }
-  TEveTrack* GetPosTrack() { return fPosTrack; }
+  AliEveTrack* GetNegTrack() { return fNegTrack; }
+  AliEveTrack* GetPosTrack() { return fPosTrack; }
 
   TEveLine*  GetPointingLine() { return fPointingLine; }
 
@@ -95,8 +93,8 @@ protected:
   TEveVector fRecDecayV;    // Point of closest approach
   TEveVector fRecDecayP;
 
-  TEveTrack        *fNegTrack;
-  TEveTrack        *fPosTrack;
+  AliEveTrack        *fNegTrack;
+  AliEveTrack        *fPosTrack;
 
   TEveTrackPropagator *fRnrStyle;
 
