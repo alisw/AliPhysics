@@ -12,7 +12,7 @@ Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kFALSE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
@@ -52,9 +52,9 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 44, const char* 
-		    			  dir="/data/alice1/kolk/KineOnly3/")
-		    //dir="/Users/snelling/alice_data/KineOnly3/")
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char* 
+		    //			  dir="/data/alice1/kolk/KineOnly3/")
+		    dir="/Users/snelling/alice_data/KineOnly3/")
 {
   TStopwatch timer;
   timer.Start();
@@ -184,7 +184,8 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 44, const char*
     TString inputFileNameLYZ2 = "outputLYZ1analysis.root" ;
     TFile* inputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
     if(!inputFileLYZ2 || inputFileLYZ2->IsZombie()) { 
-      cerr << " ERROR: NO First Run file... " << endl ; 
+      cerr << " ERROR: NO First Run file... " << endl ;
+      break; 
     }
     else { 
       TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
@@ -207,7 +208,9 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 44, const char*
     TString inputFileNameLYZEP = "outputLYZ2analysis.root" ;
     TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
-      cerr << " ERROR: NO Second Run file... " << endl ; }
+      cerr << " ERROR: NO Second Run file... " << endl ; 
+      break;
+    }
     else { 
       TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
       if (!inputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
