@@ -189,7 +189,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char*
     }
     else { 
       TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
-      if (!inputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
+      if (!inputListLYZ2) {cout<<"Input list is NULL pointer!"<<endl; break;}
       else {
 	cout<<"LYZ2 input file/list read..."<<endl;
 	lyz2->SetFirstRunList(inputListLYZ2);
@@ -213,7 +213,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char*
     }
     else { 
       TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
-      if (!inputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
+      if (!inputListLYZEP) {cout<<"Input list is NULL pointer!"<<endl; break;}
       else {
 	cout<<"LYZEP input file/list read..."<<endl;
 	ep   ->SetSecondRunList(inputListLYZEP);
@@ -320,7 +320,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char*
 	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
 	                    
 	      //pass the flow event to flow methods for analysis 
-	      Double_t fEP = 0.; // temporary number need true value
+	      Double_t fEP = 0.; // temporary number need true value of the reaction plane angle
 	      if(MCEP) mcep->Make(fEvent,fEP);  //fix fEP
 	      if(QC) qc->Make(fEvent);
 	      if(GFC) gfc->Make(fEvent);
@@ -344,17 +344,18 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char*
   //--------------------------------------------------------------
   //calculating and storing the final results of flow analysis
   if(MCEP) {mcep->Finish(); mcep->WriteHistograms("outputMCEPanalysis.root");}
+  if(SP) {sp->Finish(); sp->WriteHistograms("outputSPanalysis.root");}
   if(QC) {qc->Finish(); qc->WriteHistograms("outputQCanalysis.root");}
   if(GFC) {gfc->Finish(); gfc->WriteHistograms("outputGFCanalysis.root");}
   if(FQD) {fqd->Finish(); fqd->WriteHistograms("outputFQDanalysis.root");}
   if(LYZ1) {lyz1->Finish(); lyz1->WriteHistograms("outputLYZ1analysis.root");}
   if(LYZ2) {lyz2->Finish(); lyz2->WriteHistograms("outputLYZ2analysis.root");}
   if(LYZEP) {lyzep->Finish(); lyzep->WriteHistograms("outputLYZEPanalysis.root");}
-  if(SP) {sp->Finish(); sp->WriteHistograms("outputSPanalysis.root");}
+
   //--------------------------------------------------------------
   
   cout << endl;
-  cout << " Finished ... " << endl;
+  cout << " Fini ... " << endl;
   cout << endl;
   
   timer.Stop();
