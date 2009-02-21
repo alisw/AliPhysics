@@ -101,7 +101,8 @@
   cout<<">>>>> SIMULATION QA <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q simqa.C > simqa.log 2>&1");
   cout<<">>>>> RECONSTRUCTION <<<<<"<<endl;
-  gSystem->Exec("aliroot -b -q rec.C > rec.log 2>&1");
+  gSystem->Exec("rm galice.root");
+  gSystem->Exec("Aliroot -b -q rec.C > rec.log 2>&1");
   cout<<">>>>> RECONSTRUCTION QA <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q recqa.C > recqa.log 2>&1");
   cout<<">>>>> TAG <<<<<"<<endl;
