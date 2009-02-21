@@ -35,7 +35,7 @@ class AliVertexerTracks;
 class TFile;
 class TTree;
 class TList;
-class AliQADataMakerSteer; 
+class AliQAManager; 
 class TMap;
 class AliRecoParam;
 class AliDetectorRecoParam;
@@ -264,7 +264,7 @@ private:
   Int_t  fQACycles[     AliQA::kNDET];  // # events over which QA data are accumulated
   Bool_t fQAWriteExpert[AliQA::kNDET];  // Flag to save or not expert QA data
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
-  AliQADataMakerSteer * fQASteer    ;   //! steering class to run QA
+  AliQAManager * fQAManager    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	
   Bool_t                fRunQA ;        // Run QA flag
   Bool_t                fRunGlobalQA;   // Run global QA flag

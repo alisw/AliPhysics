@@ -164,7 +164,7 @@
 #include "AliPlaneEff.h"
 #include "AliQA.h"
 #include "AliQADataMakerRec.h" 
-#include "AliQADataMakerSteer.h"
+#include "AliQAManager.h"
 #include "AliRawEvent.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawHLTManager.h"
@@ -248,7 +248,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fInitCDBCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fQADetectors("ALL"), 
-  fQASteer(NULL),  
+  fQAManager(NULL),  
   fQATasks("ALL"), 
   fRunQA(kTRUE),  
   fRunGlobalQA(kTRUE),
@@ -340,7 +340,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInitCDBCalled(rec.fInitCDBCalled),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
-  fQASteer(NULL),  
+  fQAManager(NULL),  
   fQATasks(rec.fQATasks), 
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
@@ -469,7 +469,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fInitCDBCalled               = rec.fInitCDBCalled;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
   fQADetectors                 = rec.fQADetectors;
-  fQASteer                     = NULL;  
+  fQAManager                     = NULL;  
   fQATasks                     = rec.fQATasks; 
   fRunQA                       = rec.fRunQA;  
   fRunGlobalQA                 = rec.fRunGlobalQA;
@@ -503,7 +503,7 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-  delete fQASteer;
+  delete fQAManager;
   AliCodeTimer::Instance()->Print();
 }
 
@@ -934,7 +934,6 @@ Bool_t AliReconstruction::InitGRP() {
   }
 
   fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
-  printf("qqqqqqqqqqqqqqqqqqqqqqq %s %s %f %s %d\n", lhcState.Data(), beamType.Data(), beamEnergy, runType.Data(), activeDetectors);
   fRunInfo->Dump();
 
 
@@ -1394,22 +1393,23 @@ void AliReconstruction::SlaveBegin(TTree*)
   //QA
   //Initialize the QA and start of cycle 
   if (fRunQA) {
-    fQASteer = new AliQADataMakerSteer("rec") ; 
-    fQASteer->SetActiveDetectors(fQADetectors) ; 
+    fQAManager = AliQAManager::QAManager("rec") ; 
+    fQAManager->SetActiveDetectors(fQADetectors) ; 
     for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-      fQASteer->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
-      fQASteer->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+      fQAManager->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
+      fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
     }
     if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
       fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
-    fQASteer->SetTasks(fQATasks) ; 
-    fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
+    fQAManager->SetTasks(fQATasks) ; 
+    fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
   }
   
   if (fRunGlobalQA) {
     Bool_t sameCycle = kFALSE ;
-    if (!fQASteer) fQASteer = new AliQADataMakerSteer("rec") ; 
-    AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+    if (!fQAManager) 
+      fQAManager = AliQAManager::QAManager("rec") ; 
+    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
     AliInfo(Form("Initializing the global QA data maker"));
     if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
       qadm->StartOfCycle(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
@@ -1505,7 +1505,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
         if (fRunQA) {
-          fQASteer->SetRecoParam(iDet, par) ; 
+          fQAManager->SetRecoParam(iDet, par) ; 
         }
       }
     }
@@ -1513,8 +1513,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // QA on single raw 
   if (fRunQA) {
-    fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    fQASteer->RunOneEvent(fRawReader) ;  
+    fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+    fQAManager->RunOneEvent(fRawReader) ;  
   }
     // local single event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
@@ -1731,15 +1731,15 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fCleanESD) CleanESD(fesd);
 
   if (fRunQA) {
-    fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    fQASteer->RunOneEvent(fesd) ; 
+    fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+    fQAManager->RunOneEvent(fesd) ; 
   }
   if (fRunGlobalQA) {
-      AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+      AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-      if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
-        qadm->Exec(AliQA::kESDS, fesd);
-    }
+    if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
+      qadm->Exec(AliQA::kESDS, fesd);
+  }
 
     if (fWriteESDfriend) {
       //      fesdf->~AliESDfriend();
@@ -1779,7 +1779,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 	
   if (fRunQA || fRunGlobalQA) 
-      fQASteer->Increment() ; 
+      fQAManager->Increment() ; 
   
     return kTRUE;
 }
@@ -1843,10 +1843,10 @@ void AliReconstruction::SlaveTerminate()
 
   // End of cycle for the in-loop  
   if (fRunQA) 
-    fQASteer->EndOfCycle() ;
+    fQAManager->EndOfCycle() ;
   
   if (fRunGlobalQA) {
-    AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
     if (qadm) {
       if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
         qadm->EndOfCycle(AliQA::kRECPOINTS);
@@ -1939,8 +1939,8 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 
 		TString detQAStr(fQADetectors) ; 
 		if (fRunQA) {
-      fQASteer->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-			fQASteer->RunOneEventInOneDetector(iDet, clustersTree) ; 
+      fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+			fQAManager->RunOneEventInOneDetector(iDet, clustersTree) ; 
     }
 	loader->WriteRecPoints("OVERWRITE");
 	loader->UnloadRecPoints();

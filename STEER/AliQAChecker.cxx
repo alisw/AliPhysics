@@ -22,7 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliCDBEntry.h"
-#include "AliCDBManager.h"
+#include "AliQAManager.h"
 #include "AliCDBStorage.h"
 #include "AliRunInfo.h" 
 #include "AliLog.h"
@@ -175,7 +175,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
     return ; 
   } else {
-    AliCDBManager* man = AliCDBManager::Instance() ;
+    AliQAManager* manQA = AliQAManager::QAManager() ;
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
@@ -185,12 +185,14 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
         //  LoadRunInfoFromGRP() ; 
       AliQA::SetQARefDataDirName(specie) ;
       //}
-      if ( ! man->GetLock() ) { 
-        man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-        man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+      if ( ! manQA->GetLock() ) { 
+        manQA->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+        manQA->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+        manQA->SetRun(AliCDBManager::Instance()->GetRun()) ; 
+        manQA->SetLock() ; 
       }
       char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
-      AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
+      AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
       if (entry) {
         dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
         TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;

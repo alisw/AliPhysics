@@ -53,7 +53,7 @@ AliGlobalQADataMaker.cxx
 AliQADataMakerSim.cxx 
 AliQADataMakerRec.cxx 
 AliCorrQADataMakerRec.cxx 
-AliQADataMakerSteer.cxx 
+AliQAManager.cxx 
 AliQAChecker.cxx 
 AliCorrQAChecker.cxx 
 AliGlobalQAChecker.cxx 

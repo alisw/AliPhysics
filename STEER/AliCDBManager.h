@@ -119,12 +119,15 @@ class AliCDBManager: public TObject {
 
 	static AliCDBManager* Instance(TMap *entryCache = NULL, Int_t run = -1);
 
- private:
+	void Init();
+	void InitFromCache(TMap *entryCache, Int_t run);
+  
+protected:
 
 	static TString fgkCondUri;	// URI of the Conditions data base folder
 	static TString fgkRefUri;	// URI of the Reference data base folder
 
-	AliCDBManager();
+	AliCDBManager() ; 
 	AliCDBManager(const AliCDBManager & source);
 	AliCDBManager & operator=(const AliCDBManager & source);
 
@@ -138,9 +141,9 @@ class AliCDBManager: public TObject {
 	AliCDBParam* SelectSpecificStorage(const TString& path);
 	
 
-	void Init();
+//	void Init();
 	void InitShortLived();
-	void InitFromCache(TMap *entryCache, Int_t run);
+//	void InitFromCache(TMap *entryCache, Int_t run);
 
 
 	TList fFactories; 		//! list of registered storage factories

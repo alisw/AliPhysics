@@ -191,7 +191,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fLego(NULL),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
-  fQASteer(NULL), 
+  fQAManager(NULL), 
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
   fRunHLT("default"),
@@ -202,10 +202,10 @@ AliSimulation::AliSimulation(const char* configFileName,
   SetGAliceFile("galice.root");
   
 // for QA
-	fQASteer = new AliQADataMakerSteer("sim") ; 
-	fQASteer->SetActiveDetectors(fQADetectors) ; 
+	fQAManager = AliQAManager::QAManager("sim") ; 
+	fQAManager->SetActiveDetectors(fQADetectors) ; 
 	fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
-	fQASteer->SetTasks(fQATasks) ; 	
+	fQAManager->SetTasks(fQATasks) ; 	
 }
 
 //_____________________________________________________________________________
@@ -225,7 +225,7 @@ AliSimulation::~AliSimulation()
   fSpecCDBUri.Delete();
   if (fgInstance==this) fgInstance = 0;
 
-	delete fQASteer ; 
+	delete fQAManager ; 
 	
   AliCodeTimer::Instance()->Print();
 }
@@ -1983,12 +1983,12 @@ Bool_t AliSimulation::RunQA()
 	// run the QA on summable hits, digits or digits
 	
   if(!gAlice) return kFALSE;
-	fQASteer->SetRunLoader(AliRunLoader::Instance()) ;
+	fQAManager->SetRunLoader(AliRunLoader::Instance()) ;
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 
-  fQASteer->SetEventSpecie(fEventSpecie) ;
-	detectorsw = fQASteer->Run(fQADetectors.Data()) ; 
+  fQAManager->SetEventSpecie(fEventSpecie) ;
+	detectorsw = fQAManager->Run(fQADetectors.Data()) ; 
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
 	return rv ; 
@@ -2035,10 +2035,10 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
     tempo.ReplaceAll(Form("%d", AliQA::kDIGITS), AliQA::GetTaskName(AliQA::kDIGITS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
-	fQASteer->SetActiveDetectors(fQADetectors) ; 
-	fQASteer->SetTasks(fQATasks) ; 
+	fQAManager->SetActiveDetectors(fQADetectors) ; 
+	fQAManager->SetTasks(fQATasks) ; 
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
-    fQASteer->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+    fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
   
 	return kTRUE; 
 } 

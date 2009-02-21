@@ -185,7 +185,6 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 // create AliCDBParam object from URI string
 
 	TIter iter(&fFactories);
-
         AliCDBStorageFactory* factory=0;
         while ((factory = (AliCDBStorageFactory*) iter.Next())) {
 		AliCDBParam* param = factory->CreateParameter(dbString);
@@ -330,6 +329,7 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 	if (fStorageMap->Contains("default")) {
 		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
 	}
+
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
 

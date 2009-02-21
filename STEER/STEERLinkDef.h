@@ -123,7 +123,7 @@
 #pragma link C++ class AliQADataMakerRec+;
 #pragma link C++ class AliCorrQADataMakerRec+;
 #pragma link C++ class AliGlobalQADataMaker+;
-#pragma link C++ class AliQADataMakerSteer+;
+#pragma link C++ class AliQAManager+;
 #pragma link C++ class AliQAChecker+;
 #pragma link C++ class AliCorrQAChecker+;
 #pragma link C++ class AliGlobalQAChecker+;

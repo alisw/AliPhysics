@@ -16,7 +16,7 @@
 #include <TString.h>
 #include <TObjArray.h>
 #include "AliQA.h"
-#include "AliQADataMakerSteer.h"
+#include "AliQAManager.h"
 
 class AliCDBId;
 class AliCDBParam;
@@ -112,10 +112,10 @@ public:
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
-  void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQASteer->SetCycleLength(det, cycles) ; }
+  void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQAManager->SetCycleLength(det, cycles) ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
-  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQASteer->SetWriteExpert(det) ; }
+  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }
 
   void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
   void WriteGRPEntry();
@@ -175,7 +175,7 @@ private:
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
-  AliQADataMakerSteer * fQASteer ;                      // steering object to run QA
+  AliQAManager * fQAManager ;                      // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
   AliRecoParam::EventSpecie_t fEventSpecie ;                   // type of event (see AliRecoParam::EventSpecie_t)
 
