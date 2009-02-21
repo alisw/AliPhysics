@@ -9,12 +9,13 @@ void simqa()
 	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD PMD ZDC T0 VZERO"); 
 	
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-	AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
-//	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
+	AliQA::SetQARefStorage("local://$ALICE_ROOT/QAref") ;
   
 
-	AliQADataMakerSteer qas("sim") ; 
-	qas.Run(detectors.Data(), AliQA::kHITS);
-	qas.Run(detectors.Data(), AliQA::kSDIGITS);
-	qas.Run(detectors.Data(), AliQA::kDIGITS);
+	AliQAManager *  qas = AliQAManager::QAManager("sim") ; 
+	qas->SetDefaultStorage("local://$ALICE_ROOT/QAref");
+        qas->SetEventSpecie(AliRecoParam::kLowMult); 
+	qas->Run(detectors.Data(), AliQA::kHITS);
+	qas->Run(detectors.Data(), AliQA::kSDIGITS);
+	qas->Run(detectors.Data(), AliQA::kDIGITS);
 }
