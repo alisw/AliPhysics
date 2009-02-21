@@ -43,8 +43,8 @@ Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
-Bool_t QC    = kFALSE;
-Bool_t FQD   = kFALSE;
+Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE;
 
 // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
@@ -97,11 +97,11 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
@@ -443,7 +443,9 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    cout<<"The input file is "<<inputFileNameLYZ2.Data()<<endl;
    TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
    if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
-     cerr << " ERROR: NO First Run file... " << endl ; }
+     cerr << " ERROR: NO First Run file... " << endl ; 
+     break;
+   }
    else {
      TList* fInputListLYZ2 = (TList*)fInputFileLYZ2->Get("cobjLYZ1");
      if (!fInputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
@@ -459,7 +461,9 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
    TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
    if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
-     cerr << " ERROR: NO First Run file... " << endl ; }
+     cerr << " ERROR: NO First Run file... " << endl ; 
+     break;
+   }
    else {
      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
      if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
