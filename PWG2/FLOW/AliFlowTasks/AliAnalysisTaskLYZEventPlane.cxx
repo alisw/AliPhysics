@@ -345,10 +345,10 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
       cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl; 
     }
 
-    fListHistos->Print(); 
+    //fListHistos->Print(); 
   } else { cout << "histogram list pointer is empty" << endl;}
 
-  cout<<".....finished LYZ EventPlane"<<endl;  
+  //cout<<".....finished LYZ EventPlane"<<endl;  
 }
 
 

@@ -241,12 +241,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
     for (Int_t theta=0;theta<iNtheta;theta++)  {  
       TString nameRP = "AliFlowLYZHist2RP_";
       nameRP += theta;
-      fHist2RP[theta]=new AliFlowLYZHist2(theta,nameRP);
+      fHist2RP[theta]=new AliFlowLYZHist2(theta, "RP", nameRP);
       fHistList->Add(fHist2RP[theta]);
 
       TString namePOI = "AliFlowLYZHist2POI_";
       namePOI += theta;
-      fHist2POI[theta]=new AliFlowLYZHist2(theta,namePOI);
+      fHist2POI[theta]=new AliFlowLYZHist2(theta, "POI", namePOI);
       fHistList->Add(fHist2POI[theta]);
     }
      
@@ -363,7 +363,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       cout<<"      Integrated flow from           "<<endl;
       cout<<"        Lee-Yang Zeroes              "<<endl;
       cout<<endl;
-      cout<<"dV(RP) = "<<dV<<" and chi = "<<dChi<<endl;
+      cout<<"Chi = "<<dChi<<endl;
       cout<<endl;
     }
 	   
@@ -390,11 +390,11 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     //copy content of profile into TH1D and add error
     Double_t dv2pro = dV;   //in the case that fv is equal to fV
     Double_t dv2Err = dv2pro*dRelErrcomb ; 
-    cout<<"dV(RP) = "<<dv2pro<<" +- "<<dv2Err<<endl;
+    cout<<"dV = "<<dv2pro<<" +- "<<dv2Err<<endl;
     cout<<endl;
     cout<<"*************************************"<<endl;
     cout<<"*************************************"<<endl;
-    fCommonHistsRes->FillIntegratedFlowRP(dv2pro, dv2Err);  
+    fCommonHistsRes->FillIntegratedFlow(dv2pro, dv2Err);  
 
 
     if (fDebug) cout<<"****histograms filled****"<<endl;  
@@ -570,14 +570,16 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       }
       Double_t dRelErrcomb = TMath::Sqrt(dRelErr2comb);
       Double_t dVErr = dV*dRelErrcomb ; 
-      fCommonHistsRes->FillIntegratedFlowRP(dV,dVErr); 
+      fCommonHistsRes->FillIntegratedFlow(dV,dVErr); 
 
       cout<<"*************************************"<<endl;
       cout<<"*************************************"<<endl;
       cout<<"      Integrated flow from           "<<endl;
       cout<<"        Lee-Yang Zeroes              "<<endl;
       cout<<endl;
-      cout<<"dV(RP) = "<<dV<<" +- "<<dVErr<<" and chi = "<<dChi<<endl;
+      cout<<"Chi = "<<dChi<<endl;
+      cout<<"dV = "<<dV<<" +- "<<dVErr<<endl;
+      cout<<endl;
     }
 	     
     //copy content of profile into TH1D and add error and fill the AliFlowCommonHistResults
@@ -646,6 +648,10 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     
     
     //v as a function of Pt for RP selection
+    TH1F* fHistPtInt = fCommonHists->GetHistPtInt(); //for calculating integrated flow
+    Double_t dVRP = 0.;
+    Double_t dSum = 0.;
+    Double_t dErrV =0.;
     for(Int_t b=0;b<iNbinsPt;b++) {
       Double_t dv2pro  = fHistProVPtRP->GetBinContent(b);
       Double_t dNprime = fCommonHists->GetEntriesInPtBinRP(b);  
@@ -675,13 +681,30 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dErrdifcomb); 
+      //calculate integrated flow for RP selection
+      if (fHistPtInt){
+	Double_t dYieldPt = fHistPtInt->GetBinContent(b);
+	dVRP += dv2pro*dYieldPt;
+	dSum +=dYieldPt;
+	dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
+      } else { cout<<"fHistPtInt is NULL"<<endl; }
     } //loop over bins b
-          
+
+    if (dSum != 0.) {
+      dVRP /= dSum; //the pt distribution should be normalised
+      dErrV /= (dSum*dSum);
+      dErrV = TMath::Sqrt(dErrV);
+    }
+    cout<<"dV(RP) = "<<dVRP<<" +- "<<dErrV<<endl;
+    //cout<<endl;
+    fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrV);
+
+             
     //v as a function of Pt for POI selection 
     TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff(); //for calculating integrated flow
     Double_t dVPOI = 0.;
-    Double_t dSum = 0.;
-    Double_t dErrV =0.;
+    dSum = 0.;
+    dErrV =0.;
 
     for(Int_t b=0;b<iNbinsPt;b++) {
       Double_t dv2pro = fHistProVPtPOI->GetBinContent(b);
@@ -726,7 +749,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       dErrV /= (dSum*dSum);
       dErrV = TMath::Sqrt(dErrV);
     }
-    cout<<"dV(POI) is "<<dVPOI<<" +- "<<dErrV<<endl;
+    cout<<"dV(POI) = "<<dVPOI<<" +- "<<dErrV<<endl;
     cout<<endl;
     cout<<"*************************************"<<endl;
     cout<<"*************************************"<<endl;

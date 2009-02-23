@@ -54,7 +54,7 @@ ClassImp(AliFlowLYZHist2)
  
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta, const char *anInput,const char *aTitle):
+  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta, const char* aSelection, const char *anInput,const char *aTitle):
     TNamed(anInput,aTitle),
     fHistProReNumer(0),
     fHistProImNumer(0),
@@ -78,10 +78,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProReNumer
   name = "Second_FlowPro_ReNumer";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ReNumer";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProReNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax); 
   fHistProReNumer->SetXTitle("eta");
   fHistProReNumer->SetYTitle("v (%)");
@@ -89,10 +88,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProImNumer
   name = "Second_FlowPro_ImNumer";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ImNumer";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProImNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax);  
   fHistProImNumer->SetXTitle("eta");
   fHistProImNumer->SetYTitle("v (%)");
@@ -100,10 +98,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProReNumerPt
   name = "Second_FlowPro_ReNumerPt";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ReNumerPt";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProReNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax); 
   fHistProReNumerPt->SetXTitle("Pt");
   fHistProReNumerPt->SetYTitle("v (%)");
@@ -111,10 +108,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProImNumerPt
   name = "Second_FlowPro_ImNumerPt";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ImNumerPt";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProImNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumerPt->SetXTitle("Pt");
   fHistProImNumerPt->SetYTitle("v (%)");
@@ -122,10 +118,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProReNumer2D
   name = "Second_FlowPro_ReNumer2D";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ReNumer2D";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProReNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProReNumer2D->SetXTitle("eta");
   fHistProReNumer2D->SetYTitle("Pt (GeV/c)");
@@ -133,10 +128,9 @@ ClassImp(AliFlowLYZHist2)
   //fHistProImNumer2D 
   name = "Second_FlowPro_ImNumer2D";
   name +=theta;
+  name +=aSelection;
   name +="_LYZ";
-  title = "Second_FlowPro_ImNumer2D";
-  title +=theta;
-  title +="_LYZ";
+  title = name;
   fHistProImNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumer2D->SetXTitle("eta");
   fHistProImNumer2D->SetYTitle("Pt (GeV/c)");
