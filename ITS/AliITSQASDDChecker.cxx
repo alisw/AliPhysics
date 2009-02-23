@@ -30,7 +30,7 @@
 #include "AliITSQASDDChecker.h"
 #include "AliLog.h"
 #include "AliCDBEntry.h"
-#include "AliCDBManager.h"
+#include "AliQAManager.h"
 #include "AliQACheckerBase.h"
 #include "TSystem.h"
 
@@ -49,7 +49,8 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {  
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
-  AliCDBEntry *QARefObj = AliCDBManager::Instance()->Get("ITS/QARef/SDD");
+  char * detOCDBDir = Form("ITS/%s/%s", AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+  AliCDBEntry *QARefObj = AliQAManager::QAManager()->Get(detOCDBDir);
   if( !QARefObj){
     AliError("Calibration object retrieval failed! SDD will not be processed");
     return 1.;
@@ -67,7 +68,7 @@ Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
       TIter next(list) ;
       TH1 * hdata ;
       for(offset =0;offset < fSubDetOffset; offset++){
-	hdata = dynamic_cast<TH1 *>(next());  
+        hdata = dynamic_cast<TH1 *>(next());  
       }
 
       while ( (hdata = dynamic_cast<TH1 *>(next())) && offset >= fSubDetOffset){

@@ -39,7 +39,7 @@
 #include "AliQAChecker.h"
 #include "AliHMPIDQAChecker.h"
 #include "AliCDBEntry.h"
-#include "AliCDBManager.h"
+#include "AliQAManager.h"
 
 ClassImp(AliHMPIDQAChecker)
 
@@ -61,14 +61,13 @@ Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
 
   Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
   
-//YS THIS IS NOT CORRECT
   AliInfo(Form("Fix needed ....."));
-  AliCDBEntry *QARefRec = AliCDBManager::Instance()->Get("HMPID/QARef/Rec");
+  char * detOCDBDir = Form("HMPID/%s/%s", AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+  AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
   if( !QARefRec){
     AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker  ...exiting");
     return check;
   }
-//YS THIS IS NOT CORRECT
 
 // checking for empy histograms
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
