@@ -39,6 +39,8 @@ public:
   void AddJet(AliAODJet* jet);
   void AddTrack(AliAODTrack* track);
 
+  void CreateArrows();
+
   Int_t GetNEtaDiv() const  { return fNEtaDiv; }
   void  SetNEtaDiv(Int_t r) { fNEtaDiv = r; }
 
@@ -46,10 +48,10 @@ public:
   void  SetNPhiDiv(Int_t r) { fNPhiDiv = r; }
 
   Bool_t GetRnrJets() const   { return fRnrJets; }
-  void   SetRnrJets(Bool_t r) { fRnrJets = r; }
+  void   SetRnrJets(Bool_t r) { fRnrJets = r; CreateArrows(); }
 
   Bool_t GetRnrTracks() const   { return fRnrTracks; }
-  void   SetRnrTracks(Bool_t r) { fRnrTracks = r; }
+  void   SetRnrTracks(Bool_t r) { fRnrTracks = r; CreateArrows(); }
 
   Bool_t GetOneSelection() const   { return fOneSelection; }
   void   SetOneSelection(Bool_t r) { fOneSelection = r; }

@@ -60,6 +60,8 @@ AliEveJetPlane* jetplane()
     jp->AddTrack(track);
   }
 
+  jp->CreateArrows();
+
   // Render Jet Plane
   gJPScene->AddElement(jp);
   AliEveEventManager::RegisterTransient(jp);

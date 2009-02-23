@@ -70,21 +70,11 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
 /******************************************************************************/
 
-void AliEveJetPlane::AddJet(AliAODJet* jet)
+void AliEveJetPlane::AddJet(AliAODJet* jet) 
 {
   // Add a jet for display.
-
+  
   fJets.push_back(*jet);
-
-  TEveArrow* a = new TEveArrow();
-  a->SetElementName (Form("Jet %d", fJets.size()));
-  a->SetElementTitle("Tooltip");
-  a->SetPickable(kTRUE);
-  a->SetMainColor(kOrange);
-  //a->SetTubeR();
-  //a->SetConeR();
-  //a->SetConeL();
-  AddElement(a);
 }
 
 /******************************************************************************/
@@ -94,18 +84,76 @@ void AliEveJetPlane::AddTrack(AliAODTrack* track)
   // Add a track for display.
 
   fTracks.push_back(*track);
-
-  TEveArrow* a = new TEveArrow(0,0,0.5, 20,20,0);
-  a->SetElementName (Form("Track %d", fTracks.size()));
-  a->SetElementTitle("Tooltip");
-  a->SetPickable(kTRUE);
-  a->SetMainColor(kOrange);
-  //a->SetTubeR();
-  //a->SetConeR();
-  //a->SetConeL();
-  AddElement(a);
 }
 
+void AliEveJetPlane::CreateArrows()
+{
+  // Create arrows according to current state.
+
+  DestroyElements();
+
+  Double_t eta, phi, e, x, y;
+
+  if (fRnrJets)
+  {
+    UInt_t jetid = 0;
+    std::vector<AliAODJet>::iterator j = fJets.begin();
+    while (j != fJets.end())
+    {
+      eta = j->Eta();
+      phi = j->Phi();
+      e   = j->E();
+	
+      x = eta*(fEtaScale);
+      y = phi*(fPhiScale) - 350;
+	
+      //       printf("Jet 4-momentum: %f, %f, %f, %f \n", v.Px(),v.Py(),v.Pz(),v.Pt() );
+      //       printf("Eta-Phi values: %f, %f\n", v.Eta(), v.Phi());	
+	
+      TEveArrow *a = new TEveArrow(0, 0 , 100, x, y, 0);
+      a->SetSourceObject(&*j);
+      a->SetElementName (Form("Jet %d", jetid));
+      a->SetElementTitle(Form("Jet 4-momentum: %f, %f, %f, %f \n, Eta-Phi values: %f, %f, %f \n",  j->Px(), j->Py(), j->Pz(), j->Pt(), eta, phi, e ));
+	
+      a->SetPickable(kTRUE);
+      a->SetMainColor(kRed);
+      a->SetTubeR(0.081);
+      a->SetConeR(0.211);
+      a->SetConeL(0.481);
+      AddElement(a);
+
+      ++j; ++jetid;
+    }
+  }
+
+  if (fRnrTracks)
+  {
+    UInt_t trackid = 0;
+    std::vector<AliAODTrack>::iterator k = fTracks.begin();  
+    while (k != fTracks.end())
+    {
+      eta = k->Eta();
+      phi = k->Phi();
+      e   = k->E();
+	
+      x = eta*(fEtaScale);
+      y = phi*(fPhiScale) - 350;
+	
+      TEveArrow *a = new TEveArrow(0, 0 , 50, x, y, 0);
+      a->SetSourceObject(&*k);
+      a->SetElementName (Form("Track %d", trackid));
+      a->SetElementTitle("Tooltip");
+      a->SetPickable(kTRUE);
+      a->SetMainColor(kOrange);
+      a->SetTubeR(0.061);
+      a->SetConeR(0.211);
+      a->SetConeL(0.481);
+      AddElement(a);
+
+      ++k; ++trackid;
+    }
+  }
+}
 
 /******************************************************************************/
 
@@ -117,6 +165,7 @@ void AliEveJetPlane::ComputeBBox()
   BBoxCheckPoint(-350, -350, -20);
   BBoxCheckPoint( 350, 350,  20);
 }
+
 
 void AliEveJetPlane::Paint(Option_t* /*option*/)
 {
