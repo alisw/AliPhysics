@@ -183,10 +183,11 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       }
       //
       pm[(sdigit.GetSector(0))-1][sdigit.GetSector(1)] += sdigit.GetLightPM();
-      /*printf("\n\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
+      // Chiara debugging!
+      printf("\n\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
       	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
-      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]); // Chiara debugging!
-      */
+      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]); 
+      
     }
 
     loader->UnloadSDigits();
@@ -204,8 +205,8 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
     AliDebug(2, Form("\n AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP));
-    printf("\n\t AliZDCDigitizer -> b = %f fm, # generated spectator n = %d," 
-    " # generated spectator p = %d\n", impPar, specN, specP);
+    //printf("\n\t AliZDCDigitizer -> b = %f fm, # generated spectator n = %d," 
+    //" # generated spectator p = %d\n", impPar, specN, specP);
   }
 
   // add spectators
@@ -249,9 +250,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
            digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sector[0], sector[1], res);
       	}
-	/*printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
-	     sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
-	*/
+	//printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
+	//     sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
+	
 	//
 	new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
@@ -271,9 +272,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
      for(Int_t res=0; res<2; res++){
        sigRef[res] += Pedestal(sectorRef[0], sectorRef[1], res);
      }
-     /*printf("\t RefDigit added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-         sectorRef[0], sectorRef[1], sigRef[0], sigRef[1]); // Chiara debugging!
-     */
+     //printf("\t RefDigit added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+     //    sectorRef[0], sectorRef[1], sigRef[0], sigRef[1]); // Chiara debugging!
+     
      new(pdigit) AliZDCDigit(sectorRef, sigRef);
      treeD->Fill();     
   }
@@ -285,9 +286,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
         for(Int_t res=0; res<2; res++){
            digioot[res] = Pedestal(sector[0], sector[1], res); // out-of-time ADCs
       	}
-	/*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-	     sector[0], sector[1], digioot[0], digioot[1]); // Chiara debugging!
-	*/
+	//printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	//     sector[0], sector[1], digioot[0], digioot[1]); // Chiara debugging!
+	
 	//
 	new(pdigit) AliZDCDigit(sector, digioot);
         treeD->Fill();
@@ -300,9 +301,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
      for(Int_t res=0; res<2; res++){
        sigRefoot[res] = Pedestal(sectorRef[0], sectorRef[1], res);
      }
-     /*printf("\t RefDigitoot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-         sectorRef[0], sectorRef[1], sigRefoot[0], sigRefoot[1]); // Chiara debugging!
-     */
+     //printf("\t RefDigitoot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+     //    sectorRef[0], sectorRef[1], sigRefoot[0], sigRefoot[1]); // Chiara debugging!
+     
      new(pdigit) AliZDCDigit(sectorRef, sigRefoot);
      treeD->Fill();
   }
@@ -419,7 +420,7 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
   Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
-  //printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,vADCch);
+  printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,vADCch);
 
   return vADCch;
 }

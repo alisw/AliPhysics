@@ -13,6 +13,7 @@
 #pragma link C++ class  AliZDCPedestals+;
 #pragma link C++ class  AliZDCLaserCalib+;
 #pragma link C++ class  AliZDCCalib+;
+#pragma link C++ class  AliZDCMisAligner+;
 #pragma link C++ class  AliZDCChMap+;
 #pragma link C++ class  AliZDCDataDCS+;
 #pragma link C++ class  AliZDCPreprocessor+;

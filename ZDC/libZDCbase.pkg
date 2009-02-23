@@ -3,6 +3,7 @@
 
 SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx AliZDCPedestals.cxx\
       AliZDCLaserCalib.cxx AliZDCCalib.cxx AliZDCChMap.cxx\
+      AliZDCMisAligner.cxx\
       AliZDCDataDCS.cxx AliZDCPreprocessor.cxx AliZDCQAChecker.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
