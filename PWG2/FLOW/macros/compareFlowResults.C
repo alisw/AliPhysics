@@ -1,7 +1,115 @@
 //type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
 //const TString type = "ESD"; 
 void compareFlowResults(TString type="ESD")
-{
+{ 
+  //==================================================================================
+  //             set here which plots will be shown by default
+  //==================================================================================
+  Bool_t plotIntFlow = kTRUE;     //integrated flow (no-name) // to be improved
+  // RP = particles used to determine the reaction plane
+  Bool_t plotIntFlowRP = kTRUE;     //integrated flow RP
+  Bool_t plotDiffFlowPtRP = kTRUE;  //differential flow (Pt,RP)
+  Bool_t plotDiffFlowEtaRP = kTRUE; //differential flow (Eta,RP)
+  // POI = particle of interest
+  Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
+  Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;   //differential flow (Eta,POI)
+  //==================================================================================
+  
+ 
+  //==================================================================================
+  // set here which methods will be plotted by default for differential flow (Pt,RP):
+  Bool_t plotMCPtRP    = kFALSE;
+  Bool_t plotGFC2PtRP  = kTRUE;
+  Bool_t plotGFC4PtRP  = kTRUE;
+  Bool_t plotGFC6PtRP  = kTRUE;
+  Bool_t plotGFC8PtRP  = kTRUE;
+  Bool_t plotQC2PtRP   = kTRUE;
+  Bool_t plotQC4PtRP   = kTRUE;
+  Bool_t plotQC6PtRP   = kTRUE;
+  Bool_t plotQC8PtRP   = kTRUE;
+  Bool_t plotLYZ2PtRP  = kTRUE;
+  
+  // set here which methods will be plotted by default for differential flow (Eta,RP):
+  Bool_t plotMCEtaRP    = kFALSE;
+  Bool_t plotGFC2EtaRP  = kTRUE;
+  Bool_t plotGFC4EtaRP  = kTRUE;
+  Bool_t plotGFC6EtaRP  = kTRUE;
+  Bool_t plotGFC8EtaRP  = kTRUE;
+  Bool_t plotQC2EtaRP   = kTRUE;
+  Bool_t plotQC4EtaRP   = kTRUE;
+  Bool_t plotQC6EtaRP   = kTRUE;
+  Bool_t plotQC8EtaRP   = kTRUE;
+  Bool_t plotLYZ2EtaRP  = kTRUE;
+  Bool_t plotLYZEPEtaRP = kTRUE;
+  
+  // set here which methods will be plotted by default for differential flow (Pt,POI):
+  Bool_t plotMCPtPOI    = kFALSE;
+  Bool_t plotGFC2PtPOI  = kTRUE;
+  Bool_t plotGFC4PtPOI  = kTRUE;
+  Bool_t plotGFC6PtPOI  = kTRUE;
+  Bool_t plotGFC8PtPOI  = kTRUE;
+  Bool_t plotQC2PtPOI   = kTRUE;
+  Bool_t plotQC4PtPOI   = kTRUE;
+  Bool_t plotQC6PtPOI   = kTRUE;
+  Bool_t plotQC8PtPOI   = kTRUE;
+  Bool_t plotLYZ2PtPOI  = kTRUE;
+  Bool_t plotLYZEPPtPOI = kTRUE; 
+  
+  // set here which methods will be plotted by default for differential flow (Eta,POI):
+  Bool_t plotMCEtaPOI    = kFALSE;
+  Bool_t plotGFC2EtaPOI  = kTRUE;
+  Bool_t plotGFC4EtaPOI  = kTRUE;
+  Bool_t plotGFC6EtaPOI  = kTRUE;
+  Bool_t plotGFC8EtaPOI  = kTRUE;
+  Bool_t plotQC2EtaPOI   = kTRUE;
+  Bool_t plotQC4EtaPOI   = kTRUE;
+  Bool_t plotQC6EtaPOI   = kTRUE;
+  Bool_t plotQC8EtaPOI   = kTRUE;
+  Bool_t plotLYZ2EtaPOI  = kTRUE;
+  Bool_t plotLYZEPEtaPOI = kTRUE;
+  //==================================================================================
+ 
+  
+  //==================================================================================  
+  // cosmetics: marker style and color for each method:
+  // MC:
+  Int_t markerStyleMC = 20;//full circle
+  Int_t markerColorMC = kRed;
+  // GFC{2}
+  Int_t markerStyleGFC2 = 21;//full square
+  Int_t markerColorGFC2 = kAzure-7;
+  // GFC{4}
+  Int_t markerStyleGFC4 = 20;//full circle
+  Int_t markerColorGFC4 = kAzure+3;
+  // GFC{6}
+  Int_t markerStyleGFC6 = 25;//open circle
+  Int_t markerColorGFC6 = kAzure-7;
+  // GFC{8}
+  Int_t markerStyleGFC8 = 24;//open square
+  Int_t markerColorGFC8 = kAzure+3;
+  // QC{2}
+  Int_t markerStyleQC2 = 21;//full square
+  Int_t markerColorQC2 = kOrange-7;
+  // QC{4}
+  Int_t markerStyleQC4 = 20;//full circle
+  Int_t markerColorQC4 = kOrange+3;
+  // QC{6}
+  Int_t markerStyleQC6 = 25;//open circle
+  Int_t markerColorQC6 = kOrange-7;
+  // QC{8}
+  Int_t markerStyleQC8 = 24;//open square
+  Int_t markerColorQC8 = kOrange+3;
+  // LYZ2
+  Int_t markerStyleLYZ2 = 22;//full triangle
+  Int_t markerColorLYZ2 = kYellow+3;
+  // LYZEP
+  Int_t markerStyleLYZEP = 26;//open triangle
+  Int_t markerColorLYZEP = kYellow+3; 
+  //==================================================================================
+
+    
+  //==================================================================================  
   //load needed libraries:
   gSystem->AddIncludePath("-I$ROOTSYS/include");
   gSystem->Load("libTree.so");
@@ -18,22 +126,7 @@ void compareFlowResults(TString type="ESD")
   //  gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
   //  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
   //  gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");  
-  
-  
   //==================================================================================
-  //             set here which plots will be shown by default
-  //==================================================================================
-  //RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kTRUE;     //integrated flow RP
-  Bool_t plotDiffFlowPtRP = kTRUE;  //differential flow (Pt,RP)
-  Bool_t plotDiffFlowEtaRP = kTRUE; //differential flow (Eta,RP)
-  //POI = particle of interest
-  Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
-  Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE;   //differential flow (Eta,POI)
-  //==================================================================================
-  
-  
   
   
   //==================================================================================
@@ -886,44 +979,47 @@ void compareFlowResults(TString type="ESD")
  
  
  //----------------------------------------------------------------------------------
- //final drawing for integrated flow (no-name):
- TCanvas* intFlowAllCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
- 
- intFlowAllCanvas->Divide(2,1);
- 
- //1st pad is for plot:
- (intFlowAllCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
- 
- if(intFlowAll)
+ // final drawing for integrated flow (no-name):
+ if(plotIntFlow)
  {
-  if(dMin>0. && dMax>0.)
-  {
-   (intFlowAll->GetYaxis())->SetRangeUser(0.9744*dMin,1.0144*dMax);
-  } else if(dMin<0. && dMax>0.)
-    {
-     if(!(-1.*dMin<4.*dMax))
-     {  
-      (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMin,1.0144*dMax);
-     } else {(intFlowAll->GetYaxis())->SetRangeUser(1.1266*dMin,1.0144*dMax);}  
-    } else if(dMin<0. && dMax<0.)
-      {
-       (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMin,0.9866*dMax);      
-      }
-  intFlowAll->Draw("E1");
- }                    
-                                                    
- if(pMesh) pMesh->Draw("LFSAME");
+  TCanvas* intFlowAllCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
+ 
+  intFlowAllCanvas->Divide(2,1);
+ 
+  // 1st pad is for plot:
+  (intFlowAllCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
   
- if(flowResults) flowResults->Draw("PSAME");
+  if(intFlowAll)
+  {
+   if(dMin>0. && dMax>0.)
+   {
+    (intFlowAll->GetYaxis())->SetRangeUser(0.9744*dMin,1.0144*dMax);
+   } else if(dMin<0. && dMax>0.)
+     {
+      if(!(-1.*dMin<4.*dMax))
+      {  
+       (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMin,1.0144*dMax);
+      } else {(intFlowAll->GetYaxis())->SetRangeUser(1.1266*dMin,1.0144*dMax);}  
+     } else if(dMin<0. && dMax<0.)
+       {
+        (intFlowAll->GetYaxis())->SetRangeUser(1.0266*dMin,0.9866*dMax);      
+       }
+   intFlowAll->Draw("E1");
+  }                    
+                                                    
+  if(pMesh) pMesh->Draw("LFSAME");
+   
+  if(flowResults) flowResults->Draw("PSAME");
 
- //2nd pad is for legend:
- (intFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  // 2nd pad is for legend:
+  (intFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
  
- if(textDefault)
- {
-  textDefault->Draw();
-  textResults->Draw();
- }
+  if(textDefault)
+  {
+   textDefault->Draw();
+   textResults->Draw();
+  }
+ }// end of if(plotIntFlow) 
  //----------------------------------------------------------------------------------
 
  
@@ -1048,41 +1144,6 @@ void compareFlowResults(TString type="ESD")
  styleHistEta->SetTitle("Differential Flow");
  styleHistEta->SetXTitle("#eta");
  styleHistEta->SetYTitle("v_{n}");
- 
- //cosmetics: marker style and color for each method:
- //MC:
- Int_t markerStyleMC = 20;//full circle
- Int_t markerColorMC = kRed;
- //GFC{2}
- Int_t markerStyleGFC2 = 21;//full square
- Int_t markerColorGFC2 = kAzure-7;
- //GFC{4}
- Int_t markerStyleGFC4 = 20;//full circle
- Int_t markerColorGFC4 = kAzure+3;
- //GFC{6}
- Int_t markerStyleGFC6 = 25;//open circle
- Int_t markerColorGFC6 = kAzure-7;
- //GFC{8}
- Int_t markerStyleGFC8 = 24;//open square
- Int_t markerColorGFC8 = kAzure+3;
- //QC{2}
- Int_t markerStyleQC2 = 21;//full square
- Int_t markerColorQC2 = kOrange-7;
- //QC{4}
- Int_t markerStyleQC4 = 20;//full circle
- Int_t markerColorQC4 = kOrange+3;
- //QC{6}
- Int_t markerStyleQC6 = 25;//open circle
- Int_t markerColorQC6 = kOrange-7;
- //QC{8}
- Int_t markerStyleQC8 = 24;//open square
- Int_t markerColorQC8 = kOrange+3;
- //LYZ2
- Int_t markerStyleLYZ2 = 22;//full triangle
- Int_t markerColorLYZ2 = kYellow+3;
- //LYZEP
- Int_t markerStyleLYZEP = 26;//open triangle
- Int_t markerColorLYZEP = kYellow+3; 
  //----------------------------------------------------------------------------------
  
  
@@ -1560,17 +1621,6 @@ void compareFlowResults(TString type="ESD")
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, RP):
- //set here the results of which methods will be plotted by default:
- Bool_t plotMCPtRP    = kFALSE;
- Bool_t plotGFC2PtRP  = kTRUE;
- Bool_t plotGFC4PtRP  = kTRUE;
- Bool_t plotGFC6PtRP  = kTRUE;
- Bool_t plotGFC8PtRP  = kTRUE;
- Bool_t plotQC2PtRP   = kTRUE;
- Bool_t plotQC4PtRP   = kTRUE;
- Bool_t plotQC6PtRP   = kTRUE;
- Bool_t plotQC8PtRP   = kTRUE;
- Bool_t plotLYZ2PtRP  = kTRUE;
  Bool_t plotLYZEPPtRP = kTRUE;  
  if(plotDiffFlowPtRP)
  {
@@ -1773,18 +1823,6 @@ void compareFlowResults(TString type="ESD")
  
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, RP):
- //set here the results of which methods will be plotted by default:
- Bool_t plotMCEtaRP    = kFALSE;
- Bool_t plotGFC2EtaRP  = kTRUE;
- Bool_t plotGFC4EtaRP  = kTRUE;
- Bool_t plotGFC6EtaRP  = kTRUE;
- Bool_t plotGFC8EtaRP  = kTRUE;
- Bool_t plotQC2EtaRP   = kTRUE;
- Bool_t plotQC4EtaRP   = kTRUE;
- Bool_t plotQC6EtaRP   = kTRUE;
- Bool_t plotQC8EtaRP   = kTRUE;
- Bool_t plotLYZ2EtaRP  = kTRUE;
- Bool_t plotLYZEPEtaRP = kTRUE;
  if(plotDiffFlowEtaRP)
  {
   TCanvas* diffFlowEtaAllCanvasRP = new TCanvas("Differential Flow (Eta) of RP","Differential Flow (Eta) of RP ",1000,600);
@@ -1985,18 +2023,6 @@ void compareFlowResults(TString type="ESD")
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, POI):
- //set here the results of which methods will be plotted by default:
- Bool_t plotMCPtPOI    = kFALSE;
- Bool_t plotGFC2PtPOI  = kTRUE;
- Bool_t plotGFC4PtPOI  = kTRUE;
- Bool_t plotGFC6PtPOI  = kTRUE;
- Bool_t plotGFC8PtPOI  = kTRUE;
- Bool_t plotQC2PtPOI   = kTRUE;
- Bool_t plotQC4PtPOI   = kTRUE;
- Bool_t plotQC6PtPOI   = kTRUE;
- Bool_t plotQC8PtPOI   = kTRUE;
- Bool_t plotLYZ2PtPOI  = kTRUE;
- Bool_t plotLYZEPPtPOI = kTRUE; 
  if(plotDiffFlowPtPOI)
  {
   TCanvas* diffFlowPtAllCanvasPOI = new TCanvas("Differential Flow (Pt) of POI","Differential Flow (Pt) of POI ",1000,600);
@@ -2198,18 +2224,6 @@ void compareFlowResults(TString type="ESD")
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, POI):
- //set here the results of which methods will be plotted by default:
- Bool_t plotMCEtaPOI    = kFALSE;
- Bool_t plotGFC2EtaPOI  = kTRUE;
- Bool_t plotGFC4EtaPOI  = kTRUE;
- Bool_t plotGFC6EtaPOI  = kTRUE;
- Bool_t plotGFC8EtaPOI  = kTRUE;
- Bool_t plotQC2EtaPOI   = kTRUE;
- Bool_t plotQC4EtaPOI   = kTRUE;
- Bool_t plotQC6EtaPOI   = kTRUE;
- Bool_t plotQC8EtaPOI   = kTRUE;
- Bool_t plotLYZ2EtaPOI  = kTRUE;
- Bool_t plotLYZEPEtaPOI = kTRUE;
  if(plotDiffFlowEtaPOI)
  {
   TCanvas* diffFlowEtaAllCanvasPOI = new TCanvas("Differential Flow (Eta) of POI","Differential Flow (Eta) of POI ",1000,600);
