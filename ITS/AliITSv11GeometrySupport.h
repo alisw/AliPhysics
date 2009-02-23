@@ -37,10 +37,16 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void CreateSPDThermalShape(Double_t ina, Double_t inb, Double_t inr,
 			       Double_t oua, Double_t oub, Double_t our,
 			       Double_t   t, Double_t *x , Double_t *y );
-    void CreateSPDOmegaShape(Double_t *xin, Double_t *yin, Double_t  t,
-			     Double_t    d, Double_t   *x, Double_t *y);
+    void CreateSPDOmegaShape(Double_t *xin, Double_t *yin, Double_t  d,
+			     Double_t   *x, Double_t *y);
     void FillSPDXtruShape(Double_t a, Double_t  b, Double_t  r,
 			  Double_t t, Double_t *x, Double_t *y);
+    void PointFromParallelLines(Double_t x1, Double_t y1,
+				Double_t x2, Double_t y2, Double_t d,
+				Double_t &x, Double_t &y);
+
+    void ReflectPoint(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
+		      Double_t x3, Double_t y3, Double_t &x, Double_t &y);
 
     ClassDef(AliITSv11GeometrySupport,1) // ITS v11 Support geometry
 };

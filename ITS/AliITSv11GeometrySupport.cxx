@@ -158,7 +158,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
   // Create the Omega insert
   TGeoXtru *centralomegashape = new TGeoXtru(2);
 
-  CreateSPDOmegaShape(xair,yair,kTheta,kThicknessOmega,xomega,yomega);
+  CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
 
   centralomegashape->DefinePolygon(48,xomega,yomega);
   centralomegashape->DefineSection(0,-kHalfLengthCentral);
@@ -205,7 +205,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
   // Create the Omega insert
   TGeoXtru *endcapomegashape = new TGeoXtru(2);
 
-  CreateSPDOmegaShape(xair,yair,kTheta,kThicknessOmega,xomega,yomega);
+  CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
 
   endcapomegashape->DefinePolygon(48,xomega,yomega);
   endcapomegashape->DefineSection(0,-kHalfLengthEndCap);
@@ -555,8 +555,8 @@ void AliITSv11GeometrySupport::CreateSPDThermalShape(
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::CreateSPDOmegaShape(
-                             Double_t *xin, Double_t *yin, Double_t  t,
-			     Double_t    d, Double_t   *x, Double_t *y)
+                             Double_t *xin, Double_t *yin, Double_t  d,
+			     Double_t   *x, Double_t *y)
 {
 //
 // Creates the proper sequence of X and Y coordinates to determine
@@ -572,110 +572,52 @@ void AliITSv11GeometrySupport::CreateSPDOmegaShape(
 //
 // Created:      17 Nov 2007  Mario Sitta
 // Updated:      11 Dec 2007  Mario Sitta
+// Updated:      20 Feb 2009  Mario Sitta       New algorithm (the old one
+//                                              gives erroneous vertexes)
 //
-  Double_t xlocal[6],ylocal[6];
 
-  // First determine various parameters
-  Double_t ina = TMath::Sqrt( (xin[23]-xin[0])*(xin[23]-xin[0]) +
-			      (yin[23]-yin[0])*(yin[23]-yin[0]) );
-  Double_t inb = TMath::Sqrt( (xin[ 1]-xin[0])*(xin[ 1]-xin[0]) +
-			      (yin[ 1]-yin[0])*(yin[ 1]-yin[0]) );
-  Double_t inr = yin[0];
-  Double_t oua = TMath::Sqrt( (xin[12]-xin[11])*(xin[12]-xin[11]) +
-			      (yin[12]-yin[11])*(yin[12]-yin[11]) );
-  Double_t oub = TMath::Sqrt( (xin[10]-xin[11])*(xin[10]-xin[11]) +
-			      (yin[10]-yin[11])*(yin[10]-yin[11]) );
-  Double_t our = yin[11];
+  // This vector contains the index of those points which coincide
+  // with the corresponding points in the air shape
+  Int_t indexAir2Omega[12] = {1, 2, 5, 6, 9, 10, 11, 15, 16, 19, 20, 23};
 
-  //Create the first inner pseudo-quadrant
-  FillSPDXtruShape(ina,inb,inr,t,xlocal,ylocal);
-  x[ 1] = xlocal[0];
-  y[ 1] = ylocal[0];
+  // First fill those vertexes corresponding to
+  // the edges aligned to the air shape edges
+  for (Int_t j=0; j<12; j++) {
+    x[*(indexAir2Omega+j)] = xin[j];
+    y[*(indexAir2Omega+j)] = yin[j];
+  }
 
-  x[ 2] = xlocal[1];
-  y[ 2] = ylocal[1];
+  // Now get the coordinates of the first inner point
+  PointFromParallelLines(x[23],y[23],x[1],y[1],d,x[0],y[0]);
 
-  x[ 5] = xlocal[2];
-  y[ 5] = ylocal[2];
+  // Knowing this, the second internal point can be determined
+  InsidePoint(x[0],y[0],x[1],y[1],x[2],y[2],d,x[22],y[22]);
 
-  x[ 6] = xlocal[3];
-  y[ 6] = ylocal[3];
+  // The third point is now computable
+  ReflectPoint(x[1],y[1],x[2],y[2],x[22],y[22],x[21],y[21]);
 
-  x[ 9] = xlocal[4];
-  y[ 9] = ylocal[4];
+  // Repeat this logic
+  InsidePoint(x[21],y[21],x[20],y[20],x[19],y[19],-d,x[3],y[3]);
 
-  x[10] = xlocal[5];
-  y[10] = ylocal[5];
+  ReflectPoint(x[20],y[20],x[19],y[19],x[3],y[3],x[4],y[4]);
 
-  //Create the first outer pseudo-quadrant
-  FillSPDXtruShape(oua,oub,our,t,xlocal,ylocal);
-  x[23] = xlocal[0];
-  y[23] = ylocal[0];
+  InsidePoint(x[4],y[4],x[5],y[5],x[6],y[6],d,x[18],y[18]);
 
-  x[20] = xlocal[1];
-  y[20] = ylocal[1];
+  ReflectPoint(x[5],y[5],x[6],y[6],x[18],y[18],x[17],y[17]);
 
-  x[19] = xlocal[2];
-  y[19] = ylocal[2];
+  InsidePoint(x[17],y[17],x[16],y[16],x[15],y[15],-d,x[7],y[7]);
 
-  x[16] = xlocal[3];
-  y[16] = ylocal[3];
+  ReflectPoint(x[16],y[16],x[15],y[15],x[7],y[7],x[8],y[8]);
 
-  x[15] = xlocal[4];
-  y[15] = ylocal[4];
-
-  x[11] = xlocal[5];
-  y[11] = ylocal[5];
-
-  //Create the second inner pseudo-quadrant
-  FillSPDXtruShape(ina+2*d,inb-2*d,inr+d,t,xlocal,ylocal);
-  x[22] = xlocal[0];
-  y[22] = ylocal[0];
-
-  x[21] = xlocal[1];
-  y[21] = ylocal[1];
-
-  x[18] = xlocal[2];
-  y[18] = ylocal[2];
-
-  x[17] = xlocal[3];
-  y[17] = ylocal[3];
-
-  x[14] = xlocal[4];
-  y[14] = ylocal[4];
-
-  x[13] = xlocal[5];
-  y[13] = ylocal[5];
-
-  //Create the second outer pseudo-quadrant
-  FillSPDXtruShape(oua-2*d,oub+2*d,our-d,t,xlocal,ylocal);
-  x[ 0] = xlocal[0];
-  y[ 0] = ylocal[0];
-
-  x[ 3] = xlocal[1];
-  y[ 3] = ylocal[1];
-
-  x[ 4] = xlocal[2];
-  y[ 4] = ylocal[2];
-
-  x[ 7] = xlocal[3];
-  y[ 7] = ylocal[3];
-
-  x[ 8] = xlocal[4];
-  y[ 8] = ylocal[4];
-
-  x[12] = xlocal[5];
-  y[12] = ylocal[5];
+  InsidePoint(x[8],y[8],x[9],y[9],x[10],y[10],d,x[14],y[14]);
 
   // These need to be fixed explicitly
-  y[10] = yin[5];
-  y[11] = yin[6];
   x[12] = x[11];
   y[12] = y[11] + d;
   x[13] = x[10] + d;
   y[13] = y[12];
 
-  // Finally reflex on the negative side
+  // Finally reflect on the negative side
   for (Int_t i=0; i<24; i++) {
     x[24+i] = -x[23-i];
     y[24+i] =  y[23-i];
@@ -722,6 +664,111 @@ void AliITSv11GeometrySupport::FillSPDXtruShape(Double_t a, Double_t b,
   x[5] = x[4];
   y[5] = 0.;
 
+  return;
+}
+
+//______________________________________________________________________
+void AliITSv11GeometrySupport::PointFromParallelLines(Double_t x1, Double_t y1,
+			      Double_t x2, Double_t y2, Double_t d,
+			      Double_t &x, Double_t &y)
+{
+//
+// Determines the X and Y of the first internal point of the Omega shape
+// (i.e. the coordinates of a point given two parallel lines passing by
+// two points and placed at a known distance)
+//
+// Input:
+//        x1, y1 : first point
+//        x2, y2 : second point
+//        d      : distance between the two lines
+//
+// Output:
+//        x, y   : coordinate of the point
+//
+// Created:      22 Feb 2009  Mario Sitta
+//
+//Begin_Html
+/*
+<img src="ITS/doc/PointFromParallelLines.gif">
+*/
+//End_Html
+
+  // The slope of the paralles lines at a distance d
+  Double_t m; 
+
+  // The parameters of the solving equation
+  // a x^2 - 2 b x + c = 0
+  Double_t a = (x1 - x2)*(x1 - x2) - d*d;
+  Double_t b = (x1 - x2)*(y1 - y2);
+  Double_t c = (y1 - y2)*(y1 - y2) - d*d;
+
+  // (Delta4 is Delta/4 because we use the reduced formula)
+  Double_t Delta4 = b*b - a*c;
+
+  // Compute the slope of the two parallel lines
+  // (one of the two possible slopes, the one with the smaller
+  // absolute value is needed)
+  if (Delta4 < 0) { // Should never happen with our data, but just to be sure
+    x = -1;         // x is expected positive, so this flags an error
+    return;
+  } else
+    m = (b + TMath::Sqrt(Delta4))/a;  // b is negative with our data
+
+  // Finally compute the coordinates of the point
+  x = x2 + (y1 - y2 - d)/m;
+  y = y1 - d;
+
+  // Done
+  return;
+}
+
+//______________________________________________________________________
+void AliITSv11GeometrySupport::ReflectPoint(Double_t x1, Double_t y1,
+					    Double_t x2, Double_t y2,
+					    Double_t x3, Double_t y3,
+					    Double_t &x, Double_t &y)
+{
+//
+// Given two points (x1,y1) and (x2,y2), determines the point (x,y)
+// lying on the line parallel to the line passing by these points,
+// at a distance d and passing by the point (x3,y3), which is symmetric to
+// the third point with respect to the axis of the segment delimited by
+// the two first points.
+//
+// Input:
+//        x1, y1 : first point
+//        x2, y2 : second point
+//        x3, y3 : third point
+//        d      : distance between the two lines
+//
+// Output:
+//        x, y   : coordinate of the reflected point
+//
+// Created:      22 Feb 2009  Mario Sitta
+//
+//Begin_Html
+/*
+<img src="ITS/doc/ReflectPoint.gif">
+*/
+//End_Html
+
+  // The slope of the line passing by the first two points
+  Double_t k = (y2 - y1)/(x2 - x1);
+
+  // The middle point of the segment 1-2
+  Double_t xK = (x1 + x2)/2.;
+  Double_t yK = (y1 + y2)/2.;
+
+  // The intercept between the axis of the segment 1-2 and the line
+  // passing by 3 and parallel to the line passing by 1-2
+  Double_t xH = (k*k*x3 + k*(yK - y3) + xK)/(k*k + 1);
+  Double_t yH = k*(xH - x3) + y3;
+
+  // The point symmetric to 3 with respect to H
+  x = 2*xH - x3;
+  y = 2*yH - y3;
+
+  // Done
   return;
 }
 
