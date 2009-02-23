@@ -28,7 +28,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   // aProof option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
-
+  
   TString taskName;
   if (runWhat == 0 || runWhat == 2)
   {
@@ -49,7 +49,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   if (aProof)
   {
-    TProof::Open("lxb6046");
+    TProof::Open("alicecaf");
     //gProof->SetParallel(1);
 
     // Enable the needed package
@@ -68,8 +68,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     }
     else
     {
-      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-14-Release/AF-v4-14");
-      gProof->EnablePackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-14-Release/AF-v4-14");
+      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-16-Release/AF-v4-16");
+      gProof->EnablePackage("AF-v4-16");
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -77,8 +77,10 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   }
   else
   {
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/"); 
     gSystem->Load("libVMC");
     gSystem->Load("libTree");
+    gSystem->Load("libProof");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
@@ -94,7 +96,6 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   AliESDInputHandler* esdH = new AliESDInputHandler;
   esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
   mgr->SetInputEventHandler(esdH);
-
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
   AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
@@ -130,10 +131,12 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //task->SetUseMCVertex();
     //task->SetUseMCKine();
     //task->SetOnlyPrimaries();
-
+    //task->SetFillPhi();
+    
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
     task->SetTrackCuts(esdTrackCuts);
+    task->SetDeltaPhiCut(0.05);
 
     mgr->AddTask(task);
 
@@ -150,11 +153,13 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task2 = new AlidNdEtaCorrectionTask(option);
 
     // syst. error flags
+    //task2->SetFillPhi();
     //task2->SetOnlyPrimaries();
 
     task2->SetTrigger(trigger);
     task2->SetAnalysisMode(analysisMode);
     task2->SetTrackCuts(esdTrackCuts);
+    //task2->SetDeltaPhiCut(0.05);
 
     mgr->AddTask(task2);
 
@@ -189,8 +194,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   }
   else if (aProof == 3)
   {
-    ROOT->ProcessLine(".L CreateChainFromDataSet.C");
-    ds = gProof->GetDataSet(data);
+    gROOT->ProcessLine(".L CreateChainFromDataSet.C");
+    ds = gProof->GetDataSet(data)->GetStagedSubset();
     chain = CreateChainFromDataSet(ds);
     mgr->StartAnalysis("local", chain, nRuns, offset);
   }

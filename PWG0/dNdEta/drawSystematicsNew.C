@@ -64,101 +64,81 @@ void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
   
 }
 
+TPad* DrawChange(Bool_t spd, const char* basename, const char** changes, Int_t nChanges, Int_t nDraw, Int_t* colors, const char** names = 0, Float_t scale = 0.10)
+{  
+  Float_t etaMax = 1.05;
+  if (spd)
+    etaMax = 1.79;
 
-void DrawEffectOfChangeInCrossSection(const char* fileName = "systematics_vtxtrigger_compositions.root") {
-  
-  //get the data
-  TFile* fin = TFile::Open(fileName);
-
-  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore" };
-  //const Char_t* changes[]  = {"pythia","ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
-  const Int_t nChanges = 9;
-  //const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
-  //const Int_t nChanges = 3;
-  Int_t colors[] = {1,1,kRed,kBlue,kGreen,kPink,1,kRed,kBlue};
-
-  TH1F* hRatios[9];
+  TH1F* hRatios[100];
   for(Int_t i=0; i<nChanges; i++) {
-    hRatios[i] = (TH1F*)fin->Get(Form("ratio_vertexReco_triggerBias_%s",changes[i]));
-    hRatios[i]->SetLineWidth(2);
-    hRatios[i]->SetLineColor(colors[i]);
+    hRatios[i] = (TH1F*)gFile->Get(Form("%s%s",basename,changes[i]));
+    hRatios[i]->SetLineWidth(1);
     hRatios[i]->SetMarkerStyle(22);
     hRatios[i]->SetMarkerSize(0.8);
 
     Float_t average = hRatios[i]->Integral(hRatios[i]->FindBin(-1), hRatios[i]->FindBin(1)) / (hRatios[i]->FindBin(1) - hRatios[i]->FindBin(-1) + 1);
     Printf("%s: %.2f %%" , hRatios[i]->GetTitle(), (average - 1) * 100);
   }
-
+  
   TPad* p = DrawCanvasAndPad("syst_changeInXsection",700,400);
   p->SetRightMargin(0.2);
   p->SetLeftMargin(0.13);
-
-  TH2F* null = new TH2F("","",100,-1.05,1.05,100,0.9,1.1);
+  
+  TH2F* null = new TH2F("","",100,-etaMax, etaMax,100,1. - scale,1. + scale);
   null->GetXaxis()->SetTitle("#eta");
-  null->GetYaxis()->SetTitle("Ratio pythia/modified cross-sections");
+  null->GetYaxis()->SetTitle(hRatios[0]->GetYaxis()->GetTitle());
   null->Draw();
+  
+  line = new TLine(-etaMax, 1, etaMax, 1);
+  line->Draw();
 
-  TLatex* text[9];
+  TLatex* text[100];
 
-  for(Int_t i=1; i<nChanges; i++) {
-    hRatios[i]->Draw("same");
+  for(Int_t i=1; i<nDraw; i++) {
+    hRatios[i]->SetLineColor(colors[i]);
+    hRatios[i]->SetMarkerColor(colors[i]);
+    hRatios[i]->Draw("HISTPL SAME");
     
     TString str(hRatios[i]->GetTitle());
-    str.Remove(0,str.First("DD"));
-    str.Remove(str.First(")"),1);
-    text[i] = new TLatex(1.08,hRatios[i]->GetBinContent(hRatios[i]->FindBin(0.))-0.002,str.Data());
+    
+    if (names)
+      str = names[i];
+    
+    text[i] = new TLatex(etaMax + 0.03,hRatios[i]->GetBinContent(hRatios[i]->FindBin(etaMax-0.1))-0.002,str.Data());
+    text[i]->SetTextAlign(11);
     text[i]->SetTextColor(colors[i]);
     text[i]->Draw();
   }
+  
+  return p;
 }
 
+void DrawEffectOfChangeInCrossSection(Bool_t spd = kFALSE, const char* fileName = "systematics_vtxtrigger_compositions.root") 
+{
+  TFile::Open(fileName);
 
-void DrawEffectOfChangeInComposition() {
-  
-  //get the data
-  TFile* fin = TFile::Open("systematics_composition.root");
+  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
+  //const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
+  //const Int_t nChanges = 3;
+  Int_t colors[] = {1,1,4,1,2,2,4,2,1};
 
-  Int_t colors[] = {1,2,103,102,4,6,1};
+  c = DrawChange(spd, "ratio_vertexReco_triggerBias_", changes, 17, 9, colors, 0);
+  c->SaveAs("cross_sections.eps");
+}
 
-  TH1F* hRatios[6];
+void DrawEffectOfChangeInComposition(Bool_t spd = kFALSE, const char* fileName = "new_compositions_analysis.root") 
+{
+  TFile::Open(fileName);
 
-  Float_t etaRange = 0.899;
+  const Char_t* changes[]  = { "PythiaRatios", "KBoosted", "KReduced", "pBoosted", "pReduced", "KBoostedpBoosted", "KReducedpReduced", "KBoostedpReduced", "KReducedpBoosted"};
+  const char*   names[]    = { "",             "K #times 1.5", "K #times 0.5", "p #times 1.5", "p #times 0.5", "K #times 1.5, p #times 1.5", "K #times 0.5, p #times 0.5", "K #times 1.5, p #times 0.5", "K #times 0.5, p #times 1.5" };
+  //const Char_t* changes[]  = { "PythiaRatios", "PiBoosted",      "PiReduced", "KBoosted", "KReduced", "pBoosted", "pReduced", "othersBoosted", "othersReduced" };
+  //const char*   names[]    = { "",             "#pi #times 1.5", "#pi #times 0.5", "K #times 1.5", "K #times 0.5", "p #times 1.5", "p #times 0.5",  "others #times 1.5", "others #times 0.5" };
+  Int_t colors[] = {1,1,2,2,1,2,1,4,4};
 
-  for (Int_t i=0; i<6; i++) {
-    hRatios[i] = (TH1F*)fin->Get(Form("ratio_%d",i));
-
-    hRatios[i]->SetLineWidth(2);
-    hRatios[i]->SetLineColor(colors[i]);
-    hRatios[i]->SetMarkerStyle(22);
-    hRatios[i]->SetMarkerSize(0.8);
-
-    hRatios[i]->GetXaxis()->SetRangeUser(-etaRange, etaRange);
-  }
-
-  TPad* p = DrawCanvasAndPad("syst_changeOfComposition",700,400);
-  p->SetRightMargin(0.2);
-  p->SetLeftMargin(0.13);
-
-  TH2F* null = new TH2F("","",100,-1.05,1.05,100,0.97,1.03);
-  null->GetXaxis()->SetTitle("#eta");
-  null->GetYaxis()->SetTitle("Ratio pythia/modified composition");
-  null->Draw();
-
-  TLatex* text[6];
-
-  for(Int_t i=0; i<6; i++) {
-    hRatios[i]->Draw("same");
-    
-    TString str(hRatios[i]->GetTitle());
-    str.Remove(0,16);
-    text[i] = new TLatex(1.08,hRatios[i]->GetBinContent(hRatios[i]->FindBin(0))-0.002,str.Data());
-    text[i]->SetTextColor(colors[i]);
-    text[i]->SetTextSize(0.053);
-    
-    text[i]->Draw();
-  }
-
-
+  c = DrawChange(spd, "", changes, 9, 9, colors, names, 0.03);
+  c->SaveAs("compositions.eps");
 }
 
 TPad* DrawCanvasAndPad(const Char_t* name, Int_t sizeX=600, Int_t sizeY=500) {

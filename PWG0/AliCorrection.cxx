@@ -11,6 +11,7 @@
 #include <TCanvas.h>
 #include <TH3F.h>
 #include <TH2F.h>
+#include <TMath.h>
 
 #include <AliLog.h>
 #include "AliCorrectionMatrix2D.h"
@@ -59,10 +60,18 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
     return;
   }
 
+  // third axis for track histogram
   Int_t nBinsN2 = 1;
   Float_t binLimitsN2[]   = {-0.5, 1000};
+  const char* title3 = "Ntracks";
   //Int_t nBinsN2 = 21;
   //Float_t binLimitsN2[]   = {-0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 1000.5};
+  // phi
+  //Int_t nBinsN2 = 36;
+  //Float_t binLimitsN2[]   = {0.000, 0.175, 0.349, 0.524, 0.698, 0.873, 1.047, 1.222, 1.396, 1.571, 1.745, 1.920, 2.094, 2.269, 2.443, 2.618, 2.793, 2.967, 3.142, 3.316, 3.491, 3.665, 3.840, 4.014, 4.189, 4.363, 4.538, 4.712, 4.887, 5.061, 5.236, 5.411, 5.585, 5.760, 5.934, 6.109, TMath::Pi() * 2};
+  //const char* title3 = "#phi";
+
+  // mult axis for event histogram
   Int_t nBinsN = 22;
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
   //Int_t nBinsN = 52;
@@ -71,12 +80,13 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
   //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   Float_t binLimitsVtx[] = {-30,-25,-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20,25,30};
-  Float_t binLimitsEta[] = {-3.0,-2.8,-2.6,-2.4,-2.2,
+  /*Float_t binLimitsEta[] = {-3.0,-2.8,-2.6,-2.4,-2.2,
                             -2.0,-1.8,-1.6,-1.4,-1.2,
                             -1.0,-0.8,-0.6,-0.4,-0.2, 0.0,
                              0.2, 0.4, 0.6, 0.8, 1.0,
                              1.2, 1.4, 1.6, 1.8, 2.0,
-                             2.2, 2.4, 2.6, 2.8, 3.0};
+                             2.2, 2.4, 2.6, 2.8, 3.0};*/
+  Float_t binLimitsEta[] = { -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0 };
 //  Float_t binLimitsEta[] = {-2,-1.8,-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0};
 //  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 //  Float_t binLimitsEta[] = { -7.0, -6.9, -6.8, -6.7, -6.6, -6.5, -6.4, -6.3, -6.2, -6.1, -6.0, -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3, -5.2, -5.1, -5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0 };
@@ -85,21 +95,21 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
 
   if (analysisMode == AliPWG0Helper::kSPD)
   {
-    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta, nBinsN2, binLimitsN2);
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 60, binLimitsEta, nBinsN2, binLimitsN2);
     fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
-    fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "Ntracks");
+    fTrackCorr->SetAxisTitles("vtx-z (cm)", "#eta", title3);
     delete dummyBinning;
   }
   else
   {
-    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta , nBinsPt, binLimitsPt);
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 60, binLimitsEta , nBinsPt, binLimitsPt);
     fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
-    fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
+    fTrackCorr->SetAxisTitles("vtx-z (cm)", "#eta", "p_{T} (GeV/c)");
     delete dummyBinning;
   }
 
 
-  fEventCorr->SetAxisTitles("vtx z [cm]", "Ntracks");
+  fEventCorr->SetAxisTitles("vtx-z (cm)", "Ntracks");
 }
 
 //____________________________________________________________________
@@ -210,7 +220,7 @@ void AliCorrection::Divide()
   fEventCorr->Divide();
   fTrackCorr->Divide();
 
-  Int_t emptyBins = fTrackCorr->CheckEmptyBins(-9.99, 9.99, -0.79, 0.79, 0.3, 4.9);
+  Int_t emptyBins = fTrackCorr->CheckEmptyBins(-9.99, 9.99, -0.79, 0.79, 0.2, 4.9);
   printf("INFO: In the central region the track correction of %s has %d empty bins\n", GetName(), emptyBins);
 }
 

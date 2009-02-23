@@ -11,9 +11,6 @@
 // ------------------------------------------------------
 //
 // TODO:
-// - make the ntrack to npart correction 3D
-// - add documentation
-// - add status: generate or use maps
 // - add functionality to set the bin sizes
 // - update MERge function
 //

@@ -12,6 +12,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TString.h>
+#include <TMath.h>
 
 #include <AliLog.h>
 
@@ -227,6 +228,14 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Option_t* opt, Flo
 
   TH2F* meas = (TH2F*) ((TH3F*)fhMeas)->Project3D(option)->Clone(Form("%s_meas", corr2D->GetName()));
   TH2F* gene = (TH2F*) ((TH3F*)fhGene)->Project3D(option)->Clone(Form("%s_gene", corr2D->GetName()));
+  
+  // set errors
+  for (Int_t x = 0; x<=meas->GetNbinsX()+1; x++)
+    for (Int_t y = 0; y<=meas->GetNbinsY()+1; y++)
+    {
+      gene->SetBinError(x, y, TMath::Sqrt(gene->GetBinContent(x, y)));
+      meas->SetBinError(x, y, TMath::Sqrt(meas->GetBinContent(x, y)));
+    }
 
   TH2F* corr = (TH2F*)gene->Clone(Form("%s_corr", corr2D->GetName()));
   corr->Reset();
@@ -253,16 +262,15 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Option_t* opt, Flo
 TH1* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Option_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
 {
   // returns a 1D projection of this correction
-  AliDebug(AliLog::kWarning, Form("WARNING: test"));
   
-  AliCorrectionMatrix2D* corr2D;
+  AliCorrectionMatrix2D* corr2D = 0;
   if (strcmp(opt,"x")==0) {
-    corr2D = Get2DCorrection("yx",aMin1,aMax1);
-    return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
+    corr2D = Get2DCorrection("yx",aMin2,aMax2);
+    return corr2D->Get1DCorrectionHistogram("x",aMin1,aMax1);
   }
   if (strcmp(opt,"y")==0) {
-    corr2D = Get2DCorrection("xy",aMin1,aMax1);
-    return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
+    corr2D = Get2DCorrection("xy",aMin2,aMax2);
+    return corr2D->Get1DCorrectionHistogram("x",aMin1,aMax1);
   }  
   if (strcmp(opt,"z")==0) {
     corr2D = Get2DCorrection("yz",aMin1,aMax1);

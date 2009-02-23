@@ -37,6 +37,7 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
     TGraph* IntFractRate();
     void Contamination();
     void Contamination2();
+    void Contamination3();
     void MBComparison();
 
  protected:

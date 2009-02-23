@@ -8,6 +8,7 @@
 #include <TVector3.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TH1D.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TParticle.h>
@@ -42,6 +43,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kSPD),
   fTrigger(AliPWG0Helper::kMB1),
+  fDeltaPhiCut(-1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
   fMultiplicity(0),
@@ -49,6 +51,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   fSystSkipParticles(kFALSE),
   fSelectProcessType(0),
   fParticleSpecies(0),
+  fdNdpT(0),
   fPtSpectrum(0),
   fOutput(0)
 {
@@ -56,7 +59,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   // Constructor. Initialization of pointers
   //
 
-  for (Int_t i = 0; i<4; i++)
+  for (Int_t i = 0; i<8; i++)
     fParticleCorrection[i] = 0;
 
   // Define input and output slots here
@@ -92,6 +95,7 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read tree from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
+    /*
     tree->SetBranchStatus("*", 0);
 
     tree->SetBranchStatus("AliESDHeader*", 1);
@@ -105,6 +109,7 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
       //AliESDtrackCuts::EnableNeededBranches(tree);
       tree->SetBranchStatus("Tracks*", 1);
     }
+    */
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -127,6 +132,10 @@ void AliMultiplicityTask::CreateOutputObjects()
 
   fMultiplicity = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
   fOutput->Add(fMultiplicity);
+  
+  fdNdpT = new TH1F("fdNdpT", "fdNdpT", 1000, 0, 10);
+  fdNdpT->Sumw2();
+  fOutput->Add(fdNdpT);
 
   if (fOption.Contains("skip-particles"))
   {
@@ -135,7 +144,7 @@ void AliMultiplicityTask::CreateOutputObjects()
   }
 
   if (fOption.Contains("particle-efficiency"))
-    for (Int_t i = 0; i<4; i++)
+    for (Int_t i = 0; i<8; i++)
     {
       fParticleCorrection[i] = new AliCorrection(Form("correction_%d", i), Form("correction_%d", i));
       fOutput->Add(fParticleCorrection[i]);
@@ -161,33 +170,31 @@ void AliMultiplicityTask::CreateOutputObjects()
       TString subStr(fOption(fOption.Index("pt-spectrum")+17, 3));
       TString histName(Form("ptspectrum_%s", subStr.Data()));
       AliInfo(Form("Pt-Spectrum modification. Using %s.", histName.Data()));
-      fPtSpectrum = (TH1*) file->Get(histName);
-      if (!fPtSpectrum)
-	AliError("Histogram not found");
+      fPtSpectrum = (TH1D*) file->Get(histName);
+      if (!fPtSpectrum)   
+        AliError("Histogram not found");
     }
     else
       AliError("Could not open ptspectrum_fit.root. Pt Spectrum study could not be enabled.");
-
-    if (fPtSpectrum)
-      AliInfo("WARNING: Systematic study enabled. Pt spectrum will be modified");
   }
 
   if (fOption.Contains("pt-spectrum-func"))
   {
     if (fPtSpectrum)
     {
-      Printf("Using function from input list for systematic p_t study");
+      Printf("Using function for systematic p_t study");
     }
     else
     {
-      fPtSpectrum = new TH1F("fPtSpectrum", "fPtSpectrum", 1, 0, 100);
+      Printf("ERROR: Could not find function for systematic p_t study");
+      fPtSpectrum = new TH1D("fPtSpectrum", "fPtSpectrum", 1, 0, 100);
       fPtSpectrum->SetBinContent(1, 1);
     }
-
-    if (fPtSpectrum)
-      AliInfo("WARNING: Systematic study enabled. Pt spectrum will be modified");
   }
 
+  if (fPtSpectrum)
+    Printf("WARNING: Systematic study enabled. Pt spectrum will be modified");
+  
   if (fOption.Contains("particle-species")) {
     fParticleSpecies = new TNtuple("fParticleSpecies", "fParticleSpecies", "vtx:Pi_True:K_True:p_True:o_True:Pi_Rec:K_Rec:p_Rec:o_Rec:nolabel:doublePrim:doubleCount");
     fOutput->Add(fParticleSpecies);
@@ -207,7 +214,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     return;
   }
 
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
 
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
   Bool_t eventVertex = (vtxESD != 0);
@@ -218,7 +225,7 @@ void AliMultiplicityTask::Exec(Option_t*)
 
   // post the data already here
   PostData(0, fOutput);
-
+  
   //const Float_t kPtCut = 0.3;
 
   // create list of (label, eta) tuples
@@ -243,13 +250,19 @@ void AliMultiplicityTask::Exec(Option_t*)
     {
       //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
 
-      // This removes non-tracklets in PDC06 data. Very bad solution. New solution is implemented for newer data. Keeping this for compatibility.
-      if (mult->GetDeltaPhi(i) < -1000)
+      Float_t deltaPhi = mult->GetDeltaPhi(i);
+      
+      if (fDeltaPhiCut > 0 && TMath::Abs(deltaPhi) > fDeltaPhiCut)
         continue;
 
       etaArr[inputCount] = mult->GetEta(i);
-      // TODO add second label array
-      labelArr[inputCount] = mult->GetLabel(i, 0);
+      if (mult->GetLabel(i, 0) == mult->GetLabel(i, 1))
+      {
+        labelArr[inputCount] = mult->GetLabel(i, 0);
+      }
+      else
+        labelArr[inputCount] = -1;
+        
       ++inputCount;
     }
   }
@@ -261,29 +274,32 @@ void AliMultiplicityTask::Exec(Option_t*)
       return;
     }
 
-    // get multiplicity from ESD tracks
-    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
-    Int_t nGoodTracks = list->GetEntries();
-
-    labelArr = new Int_t[nGoodTracks];
-    etaArr = new Float_t[nGoodTracks];
-
-    // loop over esd tracks
-    for (Int_t i=0; i<nGoodTracks; i++)
+    if (vtxESD)
     {
-      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
-      if (!esdTrack)
+      // get multiplicity from ESD tracks
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
+      Int_t nGoodTracks = list->GetEntries();
+  
+      labelArr = new Int_t[nGoodTracks];
+      etaArr = new Float_t[nGoodTracks];
+  
+      // loop over esd tracks
+      for (Int_t i=0; i<nGoodTracks; i++)
       {
-        AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
-        continue;
+        AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+        if (!esdTrack)
+        {
+          AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+          continue;
+        }
+  
+        etaArr[inputCount] = esdTrack->Eta();
+        labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
+        ++inputCount;
       }
-
-      etaArr[inputCount] = esdTrack->Eta();
-      labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
-      ++inputCount;
+  
+      delete list;
     }
-
-    delete list;
   }
 
   // eta range for nMCTracksSpecies, nESDTracksSpecies
@@ -292,8 +308,8 @@ void AliMultiplicityTask::Exec(Option_t*)
     case AliPWG0Helper::kInvalid: break;
     case AliPWG0Helper::kTPC:
     case AliPWG0Helper::kTPCITS:
-    	etaRange = 0.9; break;
-    case AliPWG0Helper::kSPD: etaRange = 2.0; break;
+    	etaRange = 1.0; break;
+    case AliPWG0Helper::kSPD: etaRange = 1.0; break;
   }
 
   if (!fReadMC) // Processing of ESD information
@@ -301,7 +317,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     if (eventTriggered && eventVertex)
     {
       Int_t nESDTracks05 = 0;
-      Int_t nESDTracks09 = 0;
+      Int_t nESDTracks10 = 0;
       Int_t nESDTracks15 = 0;
       Int_t nESDTracks20 = 0;
 
@@ -312,8 +328,8 @@ void AliMultiplicityTask::Exec(Option_t*)
         if (TMath::Abs(eta) < 0.5)
           nESDTracks05++;
 
-        if (TMath::Abs(eta) < 0.9)
-          nESDTracks09++;
+        if (TMath::Abs(eta) < 1.0)
+          nESDTracks10++;
 
         if (TMath::Abs(eta) < 1.5)
           nESDTracks15++;
@@ -322,7 +338,7 @@ void AliMultiplicityTask::Exec(Option_t*)
           nESDTracks20++;
       }
 
-      fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks09, nESDTracks15, nESDTracks20);
+      fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
     }
   }
   else if (fReadMC)   // Processing of MC information
@@ -345,7 +361,7 @@ void AliMultiplicityTask::Exec(Option_t*)
       AliDebug(AliLog::kError, "Stack not available");
       return;
     }
-
+    
     AliHeader* header = mcEvent->Header();
     if (!header)
     {
@@ -363,34 +379,30 @@ void AliMultiplicityTask::Exec(Option_t*)
 
       vtx[2] = vtxMC[2];
     }
+    
+    // get process information
+    AliPWG0Helper::MCProcessType processType = AliPWG0Helper::GetEventProcessType(header);
 
     Bool_t processEvent = kTRUE;
     if (fSelectProcessType > 0)
     {
-      // getting process information; NB: this only works for Pythia
-      Int_t processtype = AliPWG0Helper::GetEventProcessType(header);
-
       processEvent = kFALSE;
 
       // non diffractive
-      if (fSelectProcessType == 1 && processtype == AliPWG0Helper::kND )
+      if (fSelectProcessType == 1 && processType == AliPWG0Helper::kND)
         processEvent = kTRUE;
 
       // single diffractive
-      if (fSelectProcessType == 2 && processtype == AliPWG0Helper::kSD )
+      if (fSelectProcessType == 2 && processType == AliPWG0Helper::kSD)
         processEvent = kTRUE;
 
       // double diffractive
-      if (fSelectProcessType == 3 && processtype == AliPWG0Helper::kDD )
+      if (fSelectProcessType == 3 && processType == AliPWG0Helper::kDD)
         processEvent = kTRUE;
 
       if (!processEvent)
-        AliDebug(AliLog::kDebug, Form("Skipping this event, because it is not of the requested process type (%d)", processtype));
+        Printf("Skipping this event, because it is not of the requested process type (%d)", (Int_t) processType);
     }
-
-    // systematic study: 10% lower efficiency
-    if (fSystSkipParticles && (gRandom->Uniform() < 0.1))
-      processEvent = kFALSE;
 
     if (processEvent)
     {
@@ -406,7 +418,7 @@ void AliMultiplicityTask::Exec(Option_t*)
 
       // tracks in different eta ranges
       Int_t nMCTracks05 = 0;
-      Int_t nMCTracks09 = 0;
+      Int_t nMCTracks10 = 0;
       Int_t nMCTracks15 = 0;
       Int_t nMCTracks20 = 0;
       Int_t nMCTracksAll = 0;
@@ -474,8 +486,8 @@ void AliMultiplicityTask::Exec(Option_t*)
         if (TMath::Abs(particle->Eta()) < 0.5)
           nMCTracks05 += particleWeight;
 
-        if (TMath::Abs(particle->Eta()) < 0.9)
-          nMCTracks09 += particleWeight;
+        if (TMath::Abs(particle->Eta()) < 1.0)
+          nMCTracks10 += particleWeight;
 
         if (TMath::Abs(particle->Eta()) < 1.5)
           nMCTracks15 += particleWeight;
@@ -484,6 +496,9 @@ void AliMultiplicityTask::Exec(Option_t*)
           nMCTracks20 += particleWeight;
 
         nMCTracksAll += particleWeight;
+        
+        if (particle->Pt() > 0 && TMath::Abs(particle->Eta()) < 1.0)
+          fdNdpT->Fill(particle->Pt(), 1.0 / particle->Pt());
 
         if (fParticleCorrection[0] || fParticleSpecies)
         {
@@ -504,12 +519,12 @@ void AliMultiplicityTask::Exec(Option_t*)
         }
       } // end of mc particle
 
-      fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, (Int_t) nMCTracks05, (Int_t) nMCTracks09, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
+      fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, processType, (Int_t) nMCTracks05, (Int_t) nMCTracks10, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
 
       if (eventTriggered && eventVertex)
       {
         Int_t nESDTracks05 = 0;
-        Int_t nESDTracks09 = 0;
+        Int_t nESDTracks10 = 0;
         Int_t nESDTracks15 = 0;
         Int_t nESDTracks20 = 0;
 
@@ -522,6 +537,10 @@ void AliMultiplicityTask::Exec(Option_t*)
         for (Int_t i=0; i<nPrim; i++)
           foundPrimaries[i] = kFALSE;
 
+        Bool_t* foundPrimaries2 = new Bool_t[nPrim];   // to prevent double counting
+        for (Int_t i=0; i<nPrim; i++)
+          foundPrimaries2[i] = kFALSE;
+
         Bool_t* foundTracks = new Bool_t[nMCPart];    // to prevent double counting
         for (Int_t i=0; i<nMCPart; i++)
           foundTracks[i] = kFALSE;
@@ -533,6 +552,10 @@ void AliMultiplicityTask::Exec(Option_t*)
 
           Int_t particleWeight = 1;
 
+          // systematic study: 5% lower efficiency
+          if (fSystSkipParticles && (gRandom->Uniform() < 0.05))
+            continue;
+      
           // in case of systematic study, weight according to the change of the pt spectrum
           if (fPtSpectrum)
           {
@@ -574,8 +597,8 @@ void AliMultiplicityTask::Exec(Option_t*)
           if (TMath::Abs(eta) < 0.5)
             nESDTracks05 += particleWeight;
 
-          if (TMath::Abs(eta) < 0.9)
-            nESDTracks09 += particleWeight;
+          if (TMath::Abs(eta) < 1.0)
+            nESDTracks10 += particleWeight;
 
           if (TMath::Abs(eta) < 1.5)
             nESDTracks15 += particleWeight;
@@ -584,7 +607,7 @@ void AliMultiplicityTask::Exec(Option_t*)
             nESDTracks20 += particleWeight;
 
 
-          if (fParticleCorrection[0] || fParticleSpecies)
+          if (fParticleSpecies)
           {
             Int_t motherLabel = -1;
             TParticle* mother = 0;
@@ -600,61 +623,181 @@ void AliMultiplicityTask::Exec(Option_t*)
               // count tracks that did not have a label
               if (TMath::Abs(eta) < etaRange)
                 nESDTracksSpecies[4]++;
-              continue;
             }
-
-            // get particle type (pion, proton, kaon, other)
-            Int_t id = -1;
-            switch (TMath::Abs(mother->GetPdgCode()))
+            else
             {
-              case 211: id = 0; break;
-              case 321: id = 1; break;
-              case 2212: id = 2; break;
-              default: id = 3; break;
-            }
+              // get particle type (pion, proton, kaon, other) of mother
+              Int_t idMother = -1;
+              switch (TMath::Abs(mother->GetPdgCode()))
+              {
+                case 211: idMother = 0; break;
+                case 321: idMother = 1; break;
+                case 2212: idMother = 2; break;
+                default: idMother = 3; break;
+              }
 
-            // double counting is ok for particle ratio study
-            if (TMath::Abs(eta) < etaRange)
-              nESDTracksSpecies[id]++;
-
-            // double counting is not ok for efficiency study
-
-            // check if we already counted this particle, this way distinguishes double counted particles (bug/artefact in tracking) or double counted primaries due to secondaries (physics)
-            if (foundTracks[label])
-            {
+              // double counting is ok for particle ratio study
               if (TMath::Abs(eta) < etaRange)
-                nESDTracksSpecies[6]++;
-              continue;
-            }
-            foundTracks[label] = kTRUE;
+                nESDTracksSpecies[idMother]++;
 
-            // particle (primary) already counted?
-            if (foundPrimaries[motherLabel])
+              // double counting is not ok for efficiency study
+
+              // check if we already counted this particle, this way distinguishes double counted particles (bug/artefact in tracking) or double counted primaries due to secondaries (physics)
+              if (foundTracks[label])
+              {
+                if (TMath::Abs(eta) < etaRange)
+                  nESDTracksSpecies[6]++;
+              }
+              else
+              {
+                foundTracks[label] = kTRUE;
+
+                // particle (primary) already counted?
+                if (foundPrimaries[motherLabel])
+                {
+                  if (TMath::Abs(eta) < etaRange)
+                    nESDTracksSpecies[5]++;
+                }
+                else
+                  foundPrimaries[motherLabel] = kTRUE;
+              }
+            }
+          }
+
+          if (fParticleCorrection[0])
+          {
+            if (label >= 0 && stack->IsPhysicalPrimary(label))
             {
-              if (TMath::Abs(eta) < etaRange)
-                nESDTracksSpecies[5]++;
-              continue;
-            }
-            foundPrimaries[motherLabel] = kTRUE;
+              TParticle* particle = stack->Particle(label);
 
-            if (fParticleCorrection[id])
-              fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
+              // get particle type (pion, proton, kaon, other)
+              Int_t id = -1;
+              switch (TMath::Abs(particle->GetPdgCode()))
+              {
+                case 211: id = 0; break;
+                case 321: id = 1; break;
+                case 2212: id = 2; break;
+                default: id = 3; break;
+              }
+
+              // todo check if values are not completely off??
+
+              // particle (primary) already counted?
+              if (!foundPrimaries2[label])
+              {
+                foundPrimaries2[label] = kTRUE;
+                fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], particle->Eta(), particle->Pt());
+              }
+            }
           }
         }
-
+          
+        if (fParticleCorrection[0])
+        {
+          // if the particle decays/stops before this radius we do not see it
+          // 8cm larger than SPD layer 2
+          // 123cm TPC radius where a track has about 50 clusters (cut limit)          
+          const Float_t endRadius = (fAnalysisMode == AliPWG0Helper::kSPD) ? 8. : 123;
+                  
+          // loop over all primaries that have not been found
+          for (Int_t i=0; i<nPrim; i++)
+          {
+            // already found
+            if (foundPrimaries2[i])
+              continue;
+              
+            TParticle* particle = 0;
+            TClonesArray* trackrefs = 0;
+            mcEvent->GetParticleAndTR(i, particle, trackrefs);
+            
+            // true primary and charged
+            if (!AliPWG0Helper::IsPrimaryCharged(particle, nPrim))
+              continue;              
+            
+            //skip particles with larger |eta| than 3, to keep the log clean, is anyway not included in correction map
+            if (TMath::Abs(particle->Eta()) > 3)
+              continue;
+            
+            // skipping checking of process type of daughter: Neither kPBrem, kPDeltaRay nor kPCerenkov should appear in the event generation
+            
+            // get particle type (pion, proton, kaon, other)
+            Int_t id = -1;
+            switch (TMath::Abs(particle->GetPdgCode()))
+            {
+              case 211: id = 4; break;
+              case 321: id = 5; break;
+              case 2212: id = 6; break;
+              default: id = 7; break;
+            }            
+            
+            if (!fParticleCorrection[id])
+              continue;
+              
+            // get last track reference
+            AliTrackReference* trackref = dynamic_cast<AliTrackReference*> (trackrefs->Last());
+            
+            if (!trackref)
+            {
+              Printf("ERROR: Could not get trackref of %d (count %d)", i, trackrefs->GetEntries());
+              particle->Print();
+              continue;
+            }
+              
+            // particle in tracking volume long enough...
+            if (trackref->R() > endRadius)
+              continue;  
+            
+            if (particle->GetLastDaughter() >= 0)
+            {
+              Int_t uID = stack->Particle(particle->GetLastDaughter())->GetUniqueID();
+              //if (uID != kPBrem && uID != kPDeltaRay && uID < kPCerenkov)
+              if (uID == kPDecay)
+              {
+                // decayed
+                
+                Printf("Particle %d (%s) decayed at %f, daugher uniqueID: %d:", i, particle->GetName(), trackref->R(), uID);
+                particle->Print();
+                Printf("Daughers:");
+                for (Int_t d = particle->GetFirstDaughter(); d <= particle->GetLastDaughter(); d++)
+                  stack->Particle(d)->Print();
+                Printf("");
+                
+                fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
+                continue;
+              }
+            }
+            
+            if (trackref->DetectorId() == -1)
+            {
+              // stopped
+              Printf("Particle %d stopped at %f:", i, trackref->R());
+              particle->Print();
+              Printf("");
+              
+              fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], particle->Eta(), particle->Pt());
+              continue;
+            }
+            
+            Printf("Particle %d simply not tracked", i);
+            particle->Print();
+            Printf("");
+          }
+        }
+        
         delete[] foundTracks;
         delete[] foundPrimaries;
+        delete[] foundPrimaries2;
 
-        if ((Int_t) nMCTracks15 > 15 && nESDTracks15 <= 3)
+        if ((Int_t) nMCTracks15 > 10 && nESDTracks15 <= 3)
         {
             TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-            printf("WARNING: Event %lld %s (vtx-z = %f) has %d generated and %d reconstructed...\n", tree->GetReadEntry(), tree->GetCurrentFile()->GetName(), vtxMC[2], nMCTracks15, nESDTracks15);
+            printf("WARNING: Event %lld %s (vtx-z = %f, recon: %f, contrib: %d, res: %f) has %d generated and %d reconstructed...\n", tree->GetReadEntry(), tree->GetCurrentFile()->GetName(), vtxMC[2], vtx[2], vtxESD->GetNContributors(), vtxESD->GetZRes(), nMCTracks15, nESDTracks15);
         }
 
         // fill response matrix using vtxMC (best guess)
-        fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks09,  nMCTracks15,  nMCTracks20,  nMCTracksAll,  nESDTracks05,  nESDTracks09,  nESDTracks15,  nESDTracks20);
+        fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks10,  nMCTracks15,  nMCTracks20,  nMCTracksAll,  nESDTracks05,  nESDTracks10,  nESDTracks15,  nESDTracks20);
 
-        fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks09, nESDTracks15, nESDTracks20);
+        fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
         if (fParticleSpecies)
           fParticleSpecies->Fill(vtxMC[2], nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3], nESDTracksSpecies[4], nESDTracksSpecies[5], nESDTracksSpecies[6]);
@@ -662,8 +805,10 @@ void AliMultiplicityTask::Exec(Option_t*)
     }
   }
 
-  delete etaArr;
-  delete labelArr;
+  if (etaArr)
+    delete[] etaArr;
+  if (labelArr)
+    delete[] labelArr;
 }
 
 void AliMultiplicityTask::Terminate(Option_t *)
@@ -679,9 +824,11 @@ void AliMultiplicityTask::Terminate(Option_t *)
   }
 
   fMultiplicity = dynamic_cast<AliMultiplicityCorrection*> (fOutput->FindObject("Multiplicity"));
-  for (Int_t i = 0; i < 4; ++i)
+  for (Int_t i = 0; i < 8; ++i)
     fParticleCorrection[i] = dynamic_cast<AliCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fParticleSpecies = dynamic_cast<TNtuple*> (fOutput->FindObject("fParticleSpecies"));
+  
+  fdNdpT = dynamic_cast<TH1*> (fOutput->FindObject("fdNdpT"));
 
   if (!fMultiplicity)
   {
@@ -692,11 +839,13 @@ void AliMultiplicityTask::Terminate(Option_t *)
   TFile* file = TFile::Open("multiplicity.root", "RECREATE");
 
   fMultiplicity->SaveHistograms();
-  for (Int_t i = 0; i < 4; ++i)
+  for (Int_t i = 0; i < 8; ++i)
     if (fParticleCorrection[i])
       fParticleCorrection[i]->SaveHistograms();
   if (fParticleSpecies)
     fParticleSpecies->Write();
+  if (fdNdpT)
+    fdNdpT->Write();
 
   TObjString option(fOption);
   option.Write();

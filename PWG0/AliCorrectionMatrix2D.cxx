@@ -8,6 +8,7 @@
 //
 
 #include <TH2F.h>
+#include <TMath.h>
 
 #include <AliLog.h>
 
@@ -114,7 +115,7 @@ TH2* AliCorrectionMatrix2D::GetMeasuredHistogram() const
 }
 
 //____________________________________________________________________
-TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(const Char_t* opt, Float_t min, Float_t max)
+TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(const Char_t* opt, Float_t min, Float_t max, Bool_t binomialErrors)
 {
   //
   // integrate the correction over one variable 
@@ -158,15 +159,24 @@ TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(const Char_t* opt, Float_t 
     return 0;
   }
 
-  gene1D->Sumw2();
-
+  if (!binomialErrors)
+  {
+    // set the errors on gene manually, and clear the ones on meas.
+    gene1D->Sumw2();
+    for (Int_t bin=0; bin <= gene1D->GetNbinsX()+1; bin++)
+    {
+      gene1D->SetBinError(bin, TMath::Sqrt(gene1D->GetBinContent(bin)));
+      meas1D->SetBinError(bin, 0);
+    }
+  }
+  
   gene1D->SetName(Form("corr_1D_%s",fName.Data()));
   gene1D->SetTitle(Form("corr_1D_%s",fName.Data()));
  
   TH1* divided = (TH1*) gene1D->Clone(Form("corr_1D_%s",fName.Data()));
   divided->Reset();
- 
-  divided->Divide(gene1D, meas1D, 1, 1, "B");
+  
+  divided->Divide(gene1D, meas1D, 1, 1, (binomialErrors) ? "B" : "");
 
   Printf("%p %p", gene1D, meas1D);
   

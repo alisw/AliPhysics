@@ -26,10 +26,11 @@ class TCollection;
 
 #include <TMatrixD.h>
 #include <TVectorD.h>
+#include <AliPWG0Helper.h>
 
 class AliMultiplicityCorrection : public TNamed {
   public:
-    enum EventType { kTrVtx = 0, kMB, kINEL };
+    enum EventType { kTrVtx = 0, kMB, kINEL, kNSD };
     enum RegularizationType { kNone = 0, kPol0, kPol1, kLog, kEntropy, kCurvature };
     enum MethodType { kChi2Minimization = 0, kBayesian = 1 };
     enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8, kQualityRegions = 3 };
@@ -37,11 +38,13 @@ class AliMultiplicityCorrection : public TNamed {
     AliMultiplicityCorrection();
     AliMultiplicityCorrection(const Char_t* name, const Char_t* title);
     virtual ~AliMultiplicityCorrection();
+    
+    static AliMultiplicityCorrection* Open(const char* fileName, const char* folderName = "Multiplicity");
 
     virtual Long64_t Merge(TCollection* list);
 
     void FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
-    void FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll);
+    void FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll);
 
     void FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
 
@@ -71,6 +74,7 @@ class AliMultiplicityCorrection : public TNamed {
     TH2F* GetMultiplicityVtx(Int_t i) { return fMultiplicityVtx[i]; }
     TH2F* GetMultiplicityMB(Int_t i) { return fMultiplicityMB[i]; }
     TH2F* GetMultiplicityINEL(Int_t i) { return fMultiplicityINEL[i]; }
+    TH2F* GetMultiplicityNSD(Int_t i) { return fMultiplicityNSD[i]; }
     TH2F* GetMultiplicityMC(Int_t i, EventType eventType);
     TH3F* GetCorrelation(Int_t i) { return fCorrelation[i]; }
     TH1F* GetMultiplicityESDCorrected(Int_t i) { return fMultiplicityESDCorrected[i]; }
@@ -79,6 +83,8 @@ class AliMultiplicityCorrection : public TNamed {
     void SetMultiplicityVtx(Int_t i, TH2F* hist)  { fMultiplicityVtx[i]  = hist; }
     void SetMultiplicityMB(Int_t i, TH2F* hist)   { fMultiplicityMB[i]   = hist; }
     void SetMultiplicityINEL(Int_t i, TH2F* hist) { fMultiplicityINEL[i] = hist; }
+    void SetMultiplicityNSD(Int_t i, TH2F* hist) { fMultiplicityNSD[i] = hist; }
+    void SetMultiplicityMC(Int_t i, EventType eventType, TH2F* hist);
     void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
     void SetMultiplicityESDCorrected(Int_t i, TH1F* hist) { fMultiplicityESDCorrected[i] = hist; }
 
@@ -88,6 +94,7 @@ class AliMultiplicityCorrection : public TNamed {
     void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0) const;
 
     TH1* GetEfficiency(Int_t inputRange, EventType eventType);
+    TH1* GetTriggerEfficiency(Int_t inputRange);
 
     static void SetQualityRegions(Bool_t SPDStudy);
     Float_t GetQuality(Int_t region) const { return fQuality[region]; }
@@ -137,11 +144,12 @@ class AliMultiplicityCorrection : public TNamed {
     static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
     // end of configuration
 
-    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2 (0..3)
+    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2 (0..3)
 
-    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityNSD[kMCHists]; // multiplicity histogram of NSD events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
 
     TH3F* fCorrelation[kCorrHists];              // vtx vs. (gene multiplicity (trig+vtx)) vs. (meas multiplicity); array: |eta| < 0.5, 1, 1.5, 2 (0..3 and 4..7), the first corrects to the eta range itself, the second to full phase space
 
@@ -161,7 +169,7 @@ class AliMultiplicityCorrection : public TNamed {
     AliMultiplicityCorrection(const AliMultiplicityCorrection&);
     AliMultiplicityCorrection& operator=(const AliMultiplicityCorrection&);
 
-  ClassDef(AliMultiplicityCorrection, 2);
+  ClassDef(AliMultiplicityCorrection, 4);
 };
 
 #endif

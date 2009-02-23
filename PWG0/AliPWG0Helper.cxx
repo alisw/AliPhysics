@@ -21,11 +21,13 @@
 #include <AliESDEvent.h>
 #include <AliESDVertex.h>
 #include <AliVertexerTracks.h>
+#include <AliMultiplicity.h>
 
 #include <AliGenEventHeader.h>
 #include <AliGenPythiaEventHeader.h>
 #include <AliGenCocktailEventHeader.h>
 #include <AliGenDPMjetEventHeader.h>
+#include <AliESDVZERO.h>
 
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
@@ -33,12 +35,77 @@ ClassImp(AliPWG0Helper)
 Int_t AliPWG0Helper::fgLastProcessType = -1;
 
 //____________________________________________________________________
-Bool_t AliPWG0Helper::IsEventTriggered(const AliESD* aEsd, Trigger trigger)
+Bool_t AliPWG0Helper::IsEventTriggered(const AliESDEvent* aEsd, Trigger trigger)
 {
-  // see function with ULong64_t argument
+  // checks if an event has been triggered
+  // this function implements the "offline" methods that use the ESD, other trigger requests are passed to the function prototype with ULong_t
 
-  ULong64_t triggerMask = aEsd->GetTriggerMask();
-  return IsEventTriggered(triggerMask, trigger);
+  Int_t firedChips = 0;
+  Bool_t v0A = kFALSE;
+  Bool_t v0C = kFALSE;
+
+  // offline triggers have to be dealt with here, because we need the esd pointer
+  if (trigger == kOfflineFASTOR || trigger == kOfflineMB1 || trigger == kOfflineMB2 || trigger == kOfflineMB3)
+  {
+      const AliMultiplicity* mult = aEsd->GetMultiplicity();
+      if (!mult)
+      {
+        Printf("AliPWG0Helper::IsEventTriggered: ERROR: AliMultiplicity not available");
+        return kFALSE;
+      }
+      firedChips = mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+  }
+  if (trigger == kOfflineMB1 || trigger == kOfflineMB2 || trigger == kOfflineMB3)
+  {
+    AliESDVZERO* v0Data = aEsd->GetVZEROData();
+    if (!v0Data)
+    {
+      Printf("AliPWG0Helper::IsEventTriggered: ERROR: AliESDVZERO not available");
+      return kFALSE;
+    }
+    for (Int_t i=0; i<32; i++)
+    {
+      if (v0Data->BBTriggerV0A(i))
+        v0A = kTRUE;
+      if (v0Data->BBTriggerV0C(i))
+        v0C = kTRUE;
+    }
+  }
+      
+  switch (trigger)
+  {
+    case kOfflineFASTOR:
+    {
+      if (firedChips > 0)
+        return kTRUE;
+      break;
+    }
+    case kOfflineMB1:
+    {
+      if ((firedChips > 0) || v0A || v0C)
+        return kTRUE;
+      break;
+    }
+    case kOfflineMB2:
+    {
+      if ((firedChips > 0) && (v0A || v0C))
+        return kTRUE;
+      break;
+    }
+    case kOfflineMB3:
+    {
+      if ((firedChips > 0) && v0A && v0C)
+        return kTRUE;
+      break;
+    }
+    default:
+    {
+      return IsEventTriggered(aEsd->GetTriggerMask(), trigger);
+      break;
+    }
+  }
+  
+  return kFALSE;
 }
 
 //____________________________________________________________________
@@ -50,8 +117,8 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
   
   // definitions from p-p.cfg
   ULong64_t spdFO = (1 << 14);
-  ULong64_t v0left = (1 << 11);
-  ULong64_t v0right = (1 << 12);
+  ULong64_t v0left = (1 << 10);
+  ULong64_t v0right = (1 << 11);
 
   switch (trigger)
   {
@@ -67,12 +134,21 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
         return kTRUE;
       break;
     }
+    case kMB3:
+    {
+      if (triggerMask & spdFO && (triggerMask & v0left) && (triggerMask & v0right))
+        return kTRUE;
+      break;
+    }
     case kSPDFASTOR:
     {
       if (triggerMask & spdFO)
         return kTRUE;
       break;
     }
+    default:
+      Printf("IsEventTriggered: ERROR: Trigger type %d not implemented in this method", (Int_t) trigger);
+      break;
   }
 
   return kFALSE;
@@ -104,7 +180,7 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
 }
 
 //____________________________________________________________________
-const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug,Bool_t bRedoTPC)
+const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug, Bool_t bRedoTPC)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -121,6 +197,8 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
   else if (analysisMode == kTPC)
   {
     if(bRedoTPC){
+      if (debug)
+        Printf("AliPWG0Helper::GetVertex: Redoing vertex");
       Double_t kBz = aEsd->GetMagneticField();
       AliVertexerTracks vertexer(kBz);
       vertexer.SetTPCMode();
@@ -569,7 +647,12 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
   {
     case kMB1 : str += "MB1"; break;
     case kMB2 : str += "MB2"; break;
+    case kMB3 : str += "MB3"; break;
     case kSPDFASTOR : str += "SPD FASTOR"; break;
+    case kOfflineMB1 : str += "Offline MB1"; break;
+    case kOfflineMB2 : str += "Offline MB2"; break;
+    case kOfflineMB3 : str += "Offline MB3"; break;
+    case kOfflineFASTOR : str += "Offline SPD FASTOR"; break;
   }
 
   str += " <<<<";

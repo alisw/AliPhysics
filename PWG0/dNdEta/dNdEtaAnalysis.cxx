@@ -308,7 +308,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     }
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
-    //new TCanvas; kineBias->Draw();
+    //new TCanvas; kineBias->DrawCopy();
   }
 
   fData->PrintInfo(ptCut);
@@ -364,10 +364,15 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   Int_t ptLowBin = 1;
   if (ptCut > 0 && fAnalysisMode != AliPWG0Helper::kSPD)
     ptLowBin = dataHist->GetZaxis()->FindBin(ptCut);
+    
+  //new TCanvas; dataHist->DrawCopy();
 
+  //dataHist->Sumw2();
   dataHist->GetZaxis()->SetRange(ptLowBin, dataHist->GetZaxis()->GetNbins()+1);
   printf("pt/multiplicity range %d %d\n", ptLowBin, dataHist->GetZaxis()->GetNbins()+1);
   TH2D* vtxVsEta = dynamic_cast<TH2D*> (dataHist->Project3D("yx2e"));
+  
+  //new TCanvas; vtxVsEta->Draw("COLZ");
 
   dataHist->GetZaxis()->SetRange(0, 0);
   vtxVsEta->GetXaxis()->SetTitle(dataHist->GetXaxis()->GetTitle());
@@ -400,22 +405,26 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
       const Int_t *binBegin = 0;
+      const Int_t maxBins = 60;
 
       // adjust acceptance range
+      // produce with drawPlots.C: DetermineAcceptance(...)
       if (fAnalysisMode == AliPWG0Helper::kSPD)
       {
         //const Int_t binBeginSPD[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 }; // by eye
-        const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
+        //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
 
         //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
 
         //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 15, 13, 11, 9, 8, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, -1, -1, -1, -1}; // limit 2
+        const Int_t binBeginSPD[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; //limit 5
 
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode == AliPWG0Helper::kTPC)
       {
-        const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
+        //const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
+        const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5
 
         binBegin = binBeginTPC;
       }
@@ -425,12 +434,12 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       }
 
       Int_t vtxBegin = 1;
-      Int_t vtxEnd   = 30;
+      Int_t vtxEnd   = maxBins;
 
       if (binBegin)
       {
         vtxBegin = binBegin[iEta - 1];
-        vtxEnd = 18 + 1 - binBegin[30 - iEta];
+        vtxEnd = 18 + 1 - binBegin[maxBins - iEta];
       }
       else
         Printf("WARNING: No acceptance applied!");
@@ -479,7 +488,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         else
         {
           unusedTracks += vtxVsEta->GetBinContent(iVtx, iEta);
-          unusedEvents +=vertexHist->GetBinContent(iVtx);
+          unusedEvents += vertexHist->GetBinContent(iVtx);
         }
       }
 
@@ -504,7 +513,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         }
       }
 
-      //printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
+      //printf("Eta: %d (%f) Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f \n", iEta, vtxVsEta->GetYaxis()->GetBinCenter(iEta), vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
 
       Int_t bin = fdNdEta[vertexPos]->FindBin(vtxVsEta->GetYaxis()->GetBinCenter(iEta));
       if (bin > 0 && bin <= fdNdEta[vertexPos]->GetNbinsX())
