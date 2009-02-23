@@ -184,7 +184,7 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 8)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 9)  // class for running generation, simulation and digitization
 };
 
 #endif
