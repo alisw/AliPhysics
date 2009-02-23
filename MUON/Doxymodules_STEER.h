@@ -191,7 +191,7 @@
     class AliQADataMakerRec {};
     class AliCorrQADataMakerRec {};
     class AliGlobalQADataMaker {};
-    class AliQADataMakerSteer {};
+    class AliQAManager {};
     class AliQAChecker {};
     class AliCorrQAChecker {};
     class AliGlobalQAChecker {};
