@@ -63,13 +63,13 @@ public:
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
-  void SetAcceptKinkDaughters(Bool_t b=kFALSE)   {fCutAcceptKinkDaughters=b;}
+  void SetAcceptKinkDaughters(Bool_t b=kTRUE)   {fCutAcceptKinkDaughters=b;}
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
 
   // track to vertex cut setters
   void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma; SetRequireSigmaToVertex(kTRUE);}
-  void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
+  void SetRequireSigmaToVertex(Bool_t b=kTRUE)        {fCutSigmaToVertexRequired = b;}
   void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutMaxDCAToVertexXY = dist;}
   void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
   void SetMinDCAToVertexXY(Float_t dist=0.)           {fCutMinDCAToVertexXY = dist;}
