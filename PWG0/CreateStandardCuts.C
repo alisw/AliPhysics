@@ -59,7 +59,7 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   }
 
   esdTrackCuts->SetRequireTPCRefit(tpcRefit);
-  esdTrackCuts->SetAcceptKingDaughters(kFALSE);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
   esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
