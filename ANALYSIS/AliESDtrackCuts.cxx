@@ -516,7 +516,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
   // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
   // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
   //
-  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-d**2)/2)
   // Can this be expressed in a different way?
 
   if (bRes[0] == 0 || bRes[1] ==0)
