@@ -78,6 +78,7 @@ AliCumulantsFunctions::AliCumulantsFunctions():
  fdfr8(NULL),
  fAvMult(NULL),
  fQVector(NULL),
+ fAverageOfSquaredWeight(NULL),
  fchr2nd(NULL),
  fchr4th(NULL),
  fchr6th(NULL),
@@ -110,7 +111,7 @@ AliCumulantsFunctions::~AliCumulantsFunctions()
  //destructor
 }
 
-AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *intGenFun4, TProfile2D *intGenFun6, TProfile2D *intGenFun8, TProfile2D *intGenFun16, TProfile *avMult4, TProfile *avMult6, TProfile *avMult8, TProfile *avMult16, TProfile3D *diffPtRPGenFunRe, TProfile3D *diffPtRPGenFunIm, TProfile *ptBinRPNoOfParticles, TProfile3D *diffEtaRPGenFunRe, TProfile3D *diffEtaRPGenFunIm, TProfile *etaBinRPNoOfParticles, TProfile3D *diffPtPOIGenFunRe, TProfile3D *diffPtPOIGenFunIm, TProfile *ptBinPOINoOfParticles, TProfile3D *diffEtaPOIGenFunRe, TProfile3D *diffEtaPOIGenFunIm, TProfile *etaBinPOINoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *avMult, TProfile *qVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th, AliFlowCommonHist *ch):
+AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *intGenFun4, TProfile2D *intGenFun6, TProfile2D *intGenFun8, TProfile2D *intGenFun16, TProfile *avMult4, TProfile *avMult6, TProfile *avMult8, TProfile *avMult16, TProfile3D *diffPtRPGenFunRe, TProfile3D *diffPtRPGenFunIm, TProfile *ptBinRPNoOfParticles, TProfile3D *diffEtaRPGenFunRe, TProfile3D *diffEtaRPGenFunIm, TProfile *etaBinRPNoOfParticles, TProfile3D *diffPtPOIGenFunRe, TProfile3D *diffPtPOIGenFunIm, TProfile *ptBinPOINoOfParticles, TProfile3D *diffEtaPOIGenFunRe, TProfile3D *diffEtaPOIGenFunIm, TProfile *etaBinPOINoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *avMult, TProfile *qVector, TProfile *averageOfSquaredWeight, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th, AliFlowCommonHist *ch):
  fIntGenFun(intGenFun),
  fIntGenFun4(intGenFun4),//only for other system of Eq.
  fIntGenFun6(intGenFun6),//only for other system of Eq.
@@ -139,6 +140,7 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *
  fdfr8(dfr8),
  fAvMult(avMult),
  fQVector(qVector),
+ fAverageOfSquaredWeight(averageOfSquaredWeight),
  fchr2nd(chr2nd),
  fchr4th(chr4th),
  fchr6th(chr6th),
@@ -217,6 +219,14 @@ void AliCumulantsFunctions::Calculate()
   dAvQ2x = fQVector->GetBinContent(3); //<(Q_x)^2>
   dAvQ2y = fQVector->GetBinContent(4); //<(Q_y)^2>
  }
+ 
+ //<w^2>
+ Double_t dAvw2 = fAverageOfSquaredWeight->GetBinContent(1); // <w^2>
+ if(dAvw2 ==0) 
+ {
+  cout<<" WARNING: Average squared weight is 0."<<endl;
+  exit(0);
+ } 
  
  //<G[p][q]>
  Double_t dAvG[fgkPmax][fgkQmax]={{0.}}; 
@@ -319,17 +329,16 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
- cout<<"flow estimates from GF-cumulants (RP):"<<endl;
+ cout<<"flow estimates from GF-cumulants:      "<<endl;
  cout<<endl;          
                 
  Double_t sdQ[4]={0.};
  Double_t chiQ[4]={0.};
                             
  //v_2{2}
- //if(nEvents>0 && dAvM>0 && cumulant[0]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*dAvM,2.)>0.))
- if(nEvents>0 && dAvM>0 && cumulant[0]>=0.)// to be improved (take the above line once chi is rescaled with weights, analogously for higher orders)
+ if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[0]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*(dAvM/dAvw2),2.)>0.))
  {        
-  //chiQ[0]=dAvM*dV2/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.),0.5); // to be improved,  analogously for higher orders
+  chiQ[0]=(dAvM/dAvw2)*dV2/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM/dAvw2,2.),0.5); // to be improved,  analogously for higher orders
   if(chiQ[0])
   {  
    sdQ[0]=pow(((1./(2.*dAvM*nEvents))*((1.+2.*pow(chiQ[0],2))/(2.*pow(chiQ[0],2)))),0.5);
@@ -355,10 +364,9 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- //if(nEvents>0 && dAvM>0 && cumulant[1]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*dAvM,2.)>0.))
- if(nEvents>0 && dAvM>0 && cumulant[1]<=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[1]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*(dAvM/dAvw2),2.)>0.))
  {
-  //chiQ[1]=dAvM*dV4/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.),0.5);
+  chiQ[1]=(dAvM/dAvw2)*dV4/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*(dAvM/dAvw2),2.),0.5);
   if(chiQ[1])
   {
    sdQ[1]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((1.+4.*pow(chiQ[1],2)+1.*pow(chiQ[1],4.)+2.*pow(chiQ[1],6.))/(2.*pow(chiQ[1],6.)),0.5);
@@ -384,10 +392,9 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- //if(nEvents>0 && dAvM>0 && cumulant[2]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*dAvM,2.)>0.))
- if(nEvents>0 && dAvM>0 && cumulant[2]>=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[2]>=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*(dAvM/dAvw2),2.)>0.))
  {
-  //chiQ[2]=dAvM*dV6/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*dAvM,2.),0.5);
+  chiQ[2]=(dAvM/dAvw2)*dV6/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*(dAvM/dAvw2),2.),0.5);
   if(chiQ[2])
   {
    sdQ[2]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((3.+18.*pow(chiQ[2],2)+9.*pow(chiQ[2],4.)+28.*pow(chiQ[2],6.)+12.*pow(chiQ[2],8.)+24.*pow(chiQ[2],10.))/(24.*pow(chiQ[2],10.)),0.5);
@@ -414,10 +421,9 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- //if(nEvents>0 && dAvM>0 && cumulant[3]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*dAvM,2.)>0.))
- if(nEvents>0 && dAvM>0 && cumulant[3]<=0.) 
+ if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[3]<=0. && (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*(dAvM/dAvw2),2.)>0.))
  {  
-  //chiQ[3]=dAvM*dV8/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*dAvM,2.),0.5);
+  chiQ[3]=(dAvM/dAvw2)*dV8/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*(dAvM/dAvw2),2.),0.5);
   if(chiQ[3])
   {
    sdQ[3]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((12.+96.*pow(chiQ[3],2.)+72.*pow(chiQ[3],4.)+304.*pow(chiQ[3],6.)+257.*pow(chiQ[3],8.)+804.*pow(chiQ[3],10.)+363.*pow(chiQ[3],12.)+726.*pow(chiQ[3],14.))/(726.*pow(chiQ[3],14.)),0.5);
@@ -575,10 +581,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2ptRP[b]=ptRPDiffCumulant2[b]/pow(cumulant[0],0.5);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
-      if (ptBinRPNoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*(dAvM/dAvw2),2.)>0. && ptBinRPNoOfParticles[b]>0.) 
       {
-       //sdRPDiff2pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5); // to be improved
+       sdRPDiff2pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5); 
        //cout<<"v'_2/2{2} = "<<v2ptRP[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdRPDiff2pt[b]<<"%"<<endl;
        fdfr2->SetBinContent(b+1,v2ptRP[b]);
        fdfr2->SetBinError(b+1,sdRPDiff2pt[b]);
@@ -602,10 +607,10 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4ptRP[b]=-ptRPDiffCumulant4[b]/pow(-cumulant[1],.75);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*(dAvM/dAvw2),2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
       if (ptBinRPNoOfParticles[b]>0.)
       {
-       //sdRPDiff4pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       sdRPDiff4pt[b]=pow((1./(2.*ptBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4ptRP[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdRPDiff4pt[b]<<"%"<<endl;
        fdfr4->SetBinContent(b+1,v4ptRP[b]);
        fdfr4->SetBinError(b+1,sdRPDiff4pt[b]);
@@ -673,9 +678,75 @@ void AliCumulantsFunctions::Calculate()
  
  
  
+  ///////////////////////////////////////////////////////////////////////////////////
+ //////////////////////// INTEGRATED FLOW CALCULATIONS (RP) /////////////////////////
+ ///////////////////////////////////////////////////////////////////////////////////
  
+ Double_t dV2RP=0., dV4RP=0., dV6RP=0., dV8RP=0.;
+ Double_t dV2RPError=0., dV4RPError=0., dV6RPError=0., dV8RPError=0.;
+ Double_t dSumOfYieldRP=0.;
+ for (Int_t b=1;b<fgknBinsPt+1;b++)
+ { 
+  if(fch->GetHistPtInt())
+  {  
+   dSumOfYieldRP+=(fch->GetHistPtInt())->GetBinContent(b);
+   if(fchr2nd->GetHistDiffFlowPtRP())
+   {
+    dV2RP+=((fchr2nd->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
+    dV2RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtRP())->GetBinError(b),2.);  
+   }
+   if(fchr4th->GetHistDiffFlowPtRP())
+   {
+    dV4RP+=((fchr4th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
+    dV4RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+   }
+   if(fchr6th->GetHistDiffFlowPtRP())
+   {
+    dV6RP+=((fchr6th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
+    dV6RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+   }
+   if(fchr8th->GetHistDiffFlowPtRP())
+   {
+    dV8RP+=((fchr8th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
+    dV8RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+   }      
+  } 
+ }
  
+ if(dSumOfYieldRP)
+ {
+  dV2RP/=dSumOfYieldRP;
+  dV2RPError/=(dSumOfYieldRP*dSumOfYieldRP);
+  dV4RP/=dSumOfYieldRP;
+  dV4RPError/=(dSumOfYieldRP*dSumOfYieldRP);
+  dV6RP/=dSumOfYieldRP;
+  dV6RPError/=(dSumOfYieldRP*dSumOfYieldRP);
+  dV8RP/=dSumOfYieldRP;
+  dV8RPError/=(dSumOfYieldRP*dSumOfYieldRP);
+  fchr2nd->FillIntegratedFlowRP(dV2RP,pow(dV2RPError,0.5)); 
+  fchr4th->FillIntegratedFlowRP(dV4RP,pow(dV4RPError,0.5)); 
+  fchr6th->FillIntegratedFlowRP(dV6RP,pow(dV6RPError,0.5));//to be improved (errors needed) 
+  fchr8th->FillIntegratedFlowRP(dV8RP,pow(dV8RPError,0.5));//to be improved (errors needed)  
+ }
  
+ cout<<endl;
+ cout<<"***************************************"<<endl;
+ cout<<"***************************************"<<endl;
+ cout<<"flow estimates from GF-cumulants (RP):"<<endl;
+ cout<<endl;     
+
+ cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2RP<<" +/- "<<pow(dV2RPError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4RP<<" +/- "<<pow(dV4RPError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6RP<<" +/- "<<pow(dV6RPError,0.5)<<endl;
+ cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8RP<<" +/- "<<pow(dV8RPError,0.5)<<endl;
+
+ cout<<endl;
+ cout<<"      nEvts = "<<(fch->GetHistMultInt())->GetEntries()<<", AvM = "<<(fch->GetHistMultInt())->GetMean()<<endl; 
+ cout<<"***************************************"<<endl;
+ cout<<"***************************************"<<endl;
+
+ 
+
  
  
  
@@ -756,10 +827,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2etaRP[b]=etaRPDiffCumulant2[b]/pow(cumulant[0],0.5);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.) // to be improved
-      if (etaBinRPNoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*(dAvM/dAvw2),2.)>0. && etaBinRPNoOfParticles[b]>0.) // to be improved
       {
-       //sdRPDiff2eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       sdRPDiff2eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2etaRP[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2eta[b]<<"%"<<endl;
        //fdfr2->SetBinContent(b+1,v2etaRP[b]);
        //fdfr2->SetBinError(b+1,sdDiff2eta[b]);
@@ -783,10 +853,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4etaRP[b]=-etaRPDiffCumulant4[b]/pow(-cumulant[1],0.75);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinRPNoOfParticles[b]>0.) // to be improved
-      if (etaBinRPNoOfParticles[b]>0.) 
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*(dAvM/dAvw2),2.)>0.&&etaBinRPNoOfParticles[b]>0.) // to be improved
       {
-       //sdRPDiff4eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       sdRPDiff4eta[b]=pow((1./(2.*etaBinRPNoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4eta[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4eta[b]<<"%"<<endl;
        //fdfr4->SetBinContent(b+1,v4eta[b]);
        //fdfr4->SetBinError(b+1,sdDiff4eta[b]);
@@ -1045,10 +1114,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2pt[b]=ptDiffCumulant2[b]/pow(cumulant[0],0.5);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
-      if (ptBinPOINoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*(dAvM/dAvw2),2.)>0.&&ptBinPOINoOfParticles[b]>0.)
       {
-       //sdDiff2pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       sdDiff2pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2pt[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2pt[b]<<"%"<<endl;
        fdfr2->SetBinContent(b+1,v2pt[b]);
        fdfr2->SetBinError(b+1,sdDiff2pt[b]);
@@ -1072,10 +1140,9 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4pt[b]=-ptDiffCumulant4[b]/pow(-cumulant[1],.75);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinPOINoOfParticles[b]>0.)
-      if (ptBinPOINoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*(dAvM/dAvw2),2.)>0.&&ptBinPOINoOfParticles[b]>0.)
       {
-       //sdDiff4pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       sdDiff4pt[b]=pow((1./(2.*ptBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4pt[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4pt[b]<<"%"<<endl;
        fdfr4->SetBinContent(b+1,v4pt[b]);
        fdfr4->SetBinError(b+1,sdDiff4pt[b]);
@@ -1145,18 +1212,18 @@ void AliCumulantsFunctions::Calculate()
    
      
   
- /////////////////////////////////////////////////////////////////////////////
- //////////////////////// INTEGRATED FLOW CALCULATIONS ///////////////////////
- /////////////////////////////////////////////////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////////////////
+ //////////////////////// INTEGRATED FLOW CALCULATIONS (POI) ///////////////////////
+ ///////////////////////////////////////////////////////////////////////////////////
  
  Double_t dV2POI=0., dV4POI=0., dV6POI=0., dV8POI=0.;
  Double_t dV2POIError=0., dV4POIError=0., dV6POIError=0., dV8POIError=0.;
- Double_t dSumOfYield=0.;
+ Double_t dSumOfYieldPOI=0.;
  for (Int_t b=1;b<fgknBinsPt+1;b++)
  { 
   if(fch->GetHistPtDiff())
   {  
-   dSumOfYield+=(fch->GetHistPtDiff())->GetBinContent(b);
+   dSumOfYieldPOI+=(fch->GetHistPtDiff())->GetBinContent(b);
    if(fchr2nd->GetHistDiffFlowPtPOI())
    {
     dV2POI+=((fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
@@ -1180,16 +1247,16 @@ void AliCumulantsFunctions::Calculate()
   } 
  }
  
- if(dSumOfYield)
+ if(dSumOfYieldPOI)
  {
-  dV2POI/=dSumOfYield;
-  dV2POIError/=(dSumOfYield*dSumOfYield);
-  dV4POI/=dSumOfYield;
-  dV4POIError/=(dSumOfYield*dSumOfYield);
-  dV6POI/=dSumOfYield;
-  dV6POIError/=(dSumOfYield*dSumOfYield);
-  dV8POI/=dSumOfYield;
-  dV8POIError/=(dSumOfYield*dSumOfYield);
+  dV2POI/=dSumOfYieldPOI;
+  dV2POIError/=(dSumOfYieldPOI*dSumOfYieldPOI);
+  dV4POI/=dSumOfYieldPOI;
+  dV4POIError/=(dSumOfYieldPOI*dSumOfYieldPOI);
+  dV6POI/=dSumOfYieldPOI;
+  dV6POIError/=(dSumOfYieldPOI*dSumOfYieldPOI);
+  dV8POI/=dSumOfYieldPOI;
+  dV8POIError/=(dSumOfYieldPOI*dSumOfYieldPOI);
   fchr2nd->FillIntegratedFlowPOI(dV2POI,pow(dV2POIError,0.5)); 
   fchr4th->FillIntegratedFlowPOI(dV4POI,pow(dV4POIError,0.5)); 
   fchr6th->FillIntegratedFlowPOI(dV6POI,pow(dV6POIError,0.5));//to be improved (errors needed) 
@@ -1207,9 +1274,11 @@ void AliCumulantsFunctions::Calculate()
  cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6POI<<" +/- "<<pow(dV6POIError,0.5)<<endl;
  cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8POI<<" +/- "<<pow(dV8POIError,0.5)<<endl;
 
+ cout<<endl;
+ cout<<"      nEvts = "<<(fch->GetHistMultDiff())->GetEntries()<<", AvM = "<<(fch->GetHistMultDiff())->GetMean()<<endl; 
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
- 
+ cout<<endl;
  
   //-------------------------------------------------------------------------------------------------------------------------------
   //final results for differential flow (in eta):
@@ -1264,13 +1333,12 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[0]>0)
     {
       v2eta[b]=etaDiffCumulant2[b]/pow(cumulant[0],0.5);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
-      if (etaBinPOINoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*(dAvM/dAvw2),2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
       {
-       //sdDiff2eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
+       sdDiff2eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((1.+pow(chiQ[0],2.))/pow(chiQ[0],2.)),0.5);
        //cout<<"v'_2/2{2} = "<<v2eta[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdDiff2eta[b]<<"%"<<endl;
-       //fdfr2->SetBinContent(b+1,v2eta[b]);
-       //fdfr2->SetBinError(b+1,sdDiff2eta[b]);
+       fdfr2->SetBinContent(b+1,v2eta[b]);
+       fdfr2->SetBinError(b+1,sdDiff2eta[b]);
        //common histogram:
        //fchr2nd->FillDifferentialFlow(b+1,v2eta[b],sdDiff2eta[b]);
        
@@ -1291,13 +1359,12 @@ void AliCumulantsFunctions::Calculate()
     if(cumulant[1]<0)
     {
       v4eta[b]=-etaDiffCumulant4[b]/pow(-cumulant[1],0.75);
-      //if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
-      if (etaBinPOINoOfParticles[b]>0.)
+      if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*(dAvM/dAvw2),2.)>0.&&etaBinPOINoOfParticles[b]>0.) // to be improved
       {
-       //sdDiff4eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
+       sdDiff4eta[b]=pow((1./(2.*etaBinPOINoOfParticles[b]))*((2.+6.*pow(chiQ[1],2.)+pow(chiQ[1],4.)+pow(chiQ[1],6.))/pow(chiQ[1],6.)),0.5);
        //cout<<"v'_2/2{4} = "<<v4eta[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdDiff4eta[b]<<"%"<<endl;
-       //fdfr4->SetBinContent(b+1,v4eta[b]);
-       //fdfr4->SetBinError(b+1,sdDiff4eta[b]);
+       fdfr4->SetBinContent(b+1,v4eta[b]);
+       fdfr4->SetBinError(b+1,sdDiff4eta[b]);
        //common histogram:
        //fchr4th->FillDifferentialFlow(b+1,v4eta[b],sdDiff4eta[b]);
        
@@ -1557,7 +1624,7 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC6[fgkPmax6]={0.};//<C[p][q]>
+ Double_t dAvC6[fgkPmax6]={0.};//<etBinContent(1)C[p][q]>
  Double_t tempHere6=0.;
  for (Int_t p=0;p<fgkPmax6;p++){
   tempHere6=0.; 

@@ -129,7 +129,8 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fOtherEquations(kFALSE),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
- fUseEtaWeights(kFALSE)
+ fUseEtaWeights(kFALSE),
+ fAverageOfSquaredWeight(NULL)
 {
  //constructor 
  fHistList = new TList();
@@ -170,13 +171,13 @@ void AliFlowAnalysisWithCumulants::Init()
  //various output histograms
  
  //average multiplicity 
- fAvMultIntFlowGFC = new TProfile("fAvMultIntFlowGFC","Average Multiplicity",1,0,1,"s");
+ fAvMultIntFlowGFC = new TProfile("fAvMultIntFlowGFC","Average Weighted Multiplicity",1,0,1,"s");
  fAvMultIntFlowGFC->SetXTitle("");
  fAvMultIntFlowGFC->SetYTitle("");
  fAvMultIntFlowGFC->SetLabelSize(0.06);
  fAvMultIntFlowGFC->SetMarkerStyle(25);
  fAvMultIntFlowGFC->SetLabelOffset(0.01);
- (fAvMultIntFlowGFC->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
+ (fAvMultIntFlowGFC->GetXaxis())->SetBinLabel(1,"Average Weighted Multiplicity");
  fHistList->Add(fAvMultIntFlowGFC);
  
  //averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>)
@@ -499,6 +500,14 @@ void AliFlowAnalysisWithCumulants::Init()
  fCommonHistsResults8th = new AliFlowCommonHistResults("AliFlowCommonHistResults8thOrderGFC");
  fHistList->Add(fCommonHistsResults8th);
  
+ //<w^2>
+ fAverageOfSquaredWeight = new TProfile("fAverageOfSquaredWeight","<w^{2}>",1,0,1);
+ fAverageOfSquaredWeight->SetLabelSize(0.06);
+ fAverageOfSquaredWeight->SetMarkerStyle(25);
+ fAverageOfSquaredWeight->SetLabelOffset(0.01);
+ (fAverageOfSquaredWeight->GetXaxis())->SetBinLabel(1,"<w^{2}>");
+ fHistList->Add(fAverageOfSquaredWeight);
+ 
  // add list fWeightsList with weights to the main list
  fHistList->Add(fWeightsList); 
 }//end of Init()
@@ -512,7 +521,8 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  
  Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow(); //selected multiplicity (particles used for int. flow)
  
-    
+ Int_t n = 2; // int flow harmonic (to be improved)
+ 
  //---------------------------------------------------------------------------------------------------------
  // weights:
  Bool_t useWeights = fUsePhiWeights||fUsePtWeights||fUseEtaWeights;
@@ -627,7 +637,9 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
     {
      genfunG[p][q]*=(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax));
     }
-   } 
+   }
+   // calculate <w^2> 
+   fAverageOfSquaredWeight->Fill(0.,pow(wPhi*wPt*wEta,2.),1); 
   }
  } // end of for(Int_t i=0;i<nPrim;i++) 
  
@@ -646,15 +658,15 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   fAvMultIntFlowGFC->Fill(0.,nSelTracksIntFlow,1);
  }
  
- //calculating Q-vector of event (needed for errors)
+ // calculating Q-vector of event (needed for errors)
  AliFlowVector fQVector;
  fQVector.Set(0.,0.);
  fQVector.SetMult(0);
- fQVector=anEvent->GetQ(); //get the Q vector for this event
- fQVectorComponentsGFC->Fill(0.,fQVector.X(),1);         //in the 1st bin fill Q_x
- fQVectorComponentsGFC->Fill(1.,fQVector.Y(),1);         //in the 2nd bin fill Q_y
- fQVectorComponentsGFC->Fill(2.,pow(fQVector.X(),2.),1); //in the 3rd bin fill (Q_x)^2
- fQVectorComponentsGFC->Fill(3.,pow(fQVector.Y(),2.),1); //in the 4th bin fill (Q_y)^2
+ fQVector=anEvent->GetQ(1*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights); // get the Q vector for this event
+ fQVectorComponentsGFC->Fill(0.,fQVector.X(),1);         // in the 1st bin fill Q_x
+ fQVectorComponentsGFC->Fill(1.,fQVector.Y(),1);         // in the 2nd bin fill Q_y
+ fQVectorComponentsGFC->Fill(2.,pow(fQVector.X(),2.),1); // in the 3rd bin fill (Q_x)^2
+ fQVectorComponentsGFC->Fill(3.,pow(fQVector.Y(),2.),1); // in the 4th bin fill (Q_y)^2
  
  //3D profiles for differential flow in pt and eta
  //second loop over data: evaluating the generating function D[b][p][q] for differential flow 
@@ -904,7 +916,7 @@ void AliFlowAnalysisWithCumulants::Finish()
  //calculate the final results
  //AliCumulantsFunctions finalResults(fIntFlowGenFun,NULL,NULL, fIntFlowResults,fDiffFlowResults2,fDiffFlowResults4,fDiffFlowResults6,fDiffFlowResults8,fAvMultIntFlow,fQVectorComponents,  fQDist,fDiffFlowGenFunRe0,fDiffFlowGenFunRe1,fDiffFlowGenFunRe2, fDiffFlowGenFunRe3,fDiffFlowGenFunRe4,fDiffFlowGenFunRe5,fDiffFlowGenFunRe6,fDiffFlowGenFunRe7,fDiffFlowGenFunIm0,fDiffFlowGenFunIm1, fDiffFlowGenFunIm2,fDiffFlowGenFunIm3,fDiffFlowGenFunIm4,fDiffFlowGenFunIm5,fDiffFlowGenFunIm6,fDiffFlowGenFunIm7);
 
- AliCumulantsFunctions finalResults(fIntFlowGenFun,fIntFlowGenFun4,fIntFlowGenFun6,fIntFlowGenFun8,fIntFlowGenFun16,fAvMultIntFlow4GFC, fAvMultIntFlow6GFC,fAvMultIntFlow8GFC,fAvMultIntFlow16GFC,fDiffFlowPtRPGenFunRe,fDiffFlowPtRPGenFunIm,fPtBinRPNoOfParticles, fDiffFlowEtaRPGenFunRe,fDiffFlowEtaRPGenFunIm,fEtaBinRPNoOfParticles,fDiffFlowPtPOIGenFunRe,fDiffFlowPtPOIGenFunIm,fPtBinPOINoOfParticles, fDiffFlowEtaPOIGenFunRe,fDiffFlowEtaPOIGenFunIm,fEtaBinPOINoOfParticles,fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th,fCommonHists);
+ AliCumulantsFunctions finalResults(fIntFlowGenFun,fIntFlowGenFun4,fIntFlowGenFun6,fIntFlowGenFun8,fIntFlowGenFun16,fAvMultIntFlow4GFC, fAvMultIntFlow6GFC,fAvMultIntFlow8GFC,fAvMultIntFlow16GFC,fDiffFlowPtRPGenFunRe,fDiffFlowPtRPGenFunIm,fPtBinRPNoOfParticles, fDiffFlowEtaRPGenFunRe,fDiffFlowEtaRPGenFunIm,fEtaBinRPNoOfParticles,fDiffFlowPtPOIGenFunRe,fDiffFlowPtPOIGenFunIm,fPtBinPOINoOfParticles, fDiffFlowEtaPOIGenFunRe,fDiffFlowEtaPOIGenFunIm,fEtaBinPOINoOfParticles,fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fAverageOfSquaredWeight,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th,fCommonHists);
                            
  finalResults.Calculate();  
 }

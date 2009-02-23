@@ -166,6 +166,9 @@ class AliFlowAnalysisWithCumulants{
   
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
+  
+  void SetAverageOfSquaredWeight(TProfile* const aosw) {this->fAverageOfSquaredWeight = aosw;};
+  TProfile* GetSumOfSquaredWeight() const {return this->fAverageOfSquaredWeight;}; 
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -260,8 +263,10 @@ class AliFlowAnalysisWithCumulants{
   
   Bool_t fUsePhiWeights;  //phi weights
   Bool_t fUsePtWeights;   //v_2(pt) weights
-  Bool_t  fUseEtaWeights; //v_2(eta) weights
-      
+  Bool_t fUseEtaWeights;  //v_2(eta) weights
+  
+  TProfile* fAverageOfSquaredWeight; //<w^2>      
+  
   ClassDef(AliFlowAnalysisWithCumulants, 0);
 };
 

@@ -399,6 +399,9 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *qVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQVectorComponentsGFC"));
+  
+  //<w^2> 
+  TProfile *averageOfSquaredWeight = dynamic_cast<TProfile*>(fListHistos->FindObject("fAverageOfSquaredWeight"));
       
   /*
   TProfile2D *diffFlowPtGenFunRe0 = dynamic_cast<TProfile2D*>(fListHistos->FindObject("fdiffFlowPtGenFunRe0"));
@@ -484,6 +487,8 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   fGFC->SetAverageMultiplicity16(avMult16); //only for other system of Eq.
   
   fGFC->SetQVectorComponents(qVectorComponents);
+  
+  fGFC->SetAverageOfSquaredWeight(averageOfSquaredWeight);
   
   fGFC->Finish();
   
