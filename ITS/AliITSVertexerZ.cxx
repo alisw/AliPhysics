@@ -400,11 +400,11 @@ Int_t AliITSVertexerZ::FindSecondPeak(TH1F* h, Int_t binmin,Int_t binmax, Float_
   }
   Int_t secPeakBin=h->GetMaximumBin();
   secPeakPos=h->GetBinCenter(secPeakBin);
-  Int_t secPeakCont=h->GetBinContent(secPeakBin);
-  secPeakCont+=h->GetBinContent(secPeakBin-1);
-  secPeakCont+=h->GetBinContent(secPeakBin+1);  
-  secPeakCont+=h->GetBinContent(secPeakBin-2);
-  secPeakCont+=h->GetBinContent(secPeakBin+2);  
+  Int_t secPeakCont=(Int_t)h->GetBinContent(secPeakBin);
+  secPeakCont+=(Int_t)h->GetBinContent(secPeakBin-1);
+  secPeakCont+=(Int_t)h->GetBinContent(secPeakBin+1);  
+  secPeakCont+=(Int_t)h->GetBinContent(secPeakBin-2);
+  secPeakCont+=(Int_t)h->GetBinContent(secPeakBin+2);  
   return secPeakCont;
 }
 
