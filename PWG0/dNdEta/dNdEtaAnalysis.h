@@ -60,6 +60,7 @@ public:
   TH1F* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) const { return fdNdEtaPtCutOffCorrected[i]; }
 
   void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
+  AliPWG0Helper::AnalysisMode GetAnalysisMode() { return fAnalysisMode; }
 
 protected:
   Float_t GetVtxMin(Float_t eta);

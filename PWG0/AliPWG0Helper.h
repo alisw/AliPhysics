@@ -7,7 +7,6 @@
 
 // static helper functions
 
-class AliESD;
 class AliESDEvent;
 class AliESDVertex;
 class TParticle;
@@ -22,14 +21,14 @@ class TTree;
 class AliPWG0Helper : public TObject
 {
   public:
-    enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR }; // definition from ALICE-INT-2005-025
+    enum Trigger { kMB1 = 0, kMB2, kMB3, kSPDFASTOR, kOfflineMB1, kOfflineMB2, kOfflineMB3, kOfflineFASTOR }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS };
     // in case we want to use bitmaps...
     enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4 };
 
-    static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
-    static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);
-    static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = false);
+    static Bool_t IsEventTriggered(const AliESDEvent* aEsd, Trigger trigger);
+    static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger);
+    static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE, Bool_t bRedoTPC = kFALSE);
     static Bool_t TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);

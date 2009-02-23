@@ -13,6 +13,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDEvent;
+class TGraph;
 
 class AlidNdEtaTask : public AliAnalysisTask {
   public:
@@ -32,6 +33,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
     void SetUseMCKine(Bool_t flag = kTRUE) { fUseMCKine = flag; }
     void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+    void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
+    void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
 
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -42,6 +45,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
     AliPWG0Helper::Trigger fTrigger;           // trigger that is used
+    Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
+    Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
     Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
@@ -61,7 +66,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     // Gathered from MC (when fReadMC is set)
     dNdEtaAnalysis* fdNdEtaAnalysis;        //! contains the dndeta from the full sample
-    dNdEtaAnalysis* fdNdEtaAnalysisNSD;        //! contains the dndeta for the NSD sample
+    dNdEtaAnalysis* fdNdEtaAnalysisND;      //! contains the dndeta for the ND sample
+    dNdEtaAnalysis* fdNdEtaAnalysisNSD;     //! contains the dndeta for the NSD sample
     dNdEtaAnalysis* fdNdEtaAnalysisTr;      //! contains the dndeta from the triggered events
     dNdEtaAnalysis* fdNdEtaAnalysisTrVtx;   //! contains the dndeta from the triggered events with vertex
     dNdEtaAnalysis* fdNdEtaAnalysisTracks;  //! contains the dndeta from the triggered events with vertex counted from the mc particles associated to the tracks (comparing this to the raw values from the esd shows the effect of the detector resolution)
@@ -72,8 +78,13 @@ class AlidNdEtaTask : public AliAnalysisTask {
     // control histograms (ESD)
     TH3F* fVertex;                //! 3d vertex distribution
     TH1F* fPhi;                   //! raw phi distribution
+    TH1F* fRawPt;                 //! raw pt distribution
     TH2F* fEtaPhi;                //! raw eta - phi distribution
+    TH2F* fZPhi[2];               //! raw z - phi distribution from tracklets per layer (only SPD)
     TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)
+    TH2F* fFiredChips;            //! fired chips l1+l2 vs. number of tracklets (only for SPD analysis)
+    TGraph* fTriggerVsTime;       //! trigger as function of event time
+    TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z
 
  private:
     AlidNdEtaTask(const AlidNdEtaTask&);

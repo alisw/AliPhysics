@@ -9,7 +9,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   if (aProof)
   {
-    TProof::Open("lxb6046");
+    TProof::Open("alicecaf");
+    //gProof->SetParallel(1);
 
     // Enable the needed package
     if (1)
@@ -27,8 +28,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
     }
     else
     {
-      gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
-      gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+      gProof->UploadPackage("$ALICE_ROOT/AF-v4-16");
+      gProof->EnablePackage("$ALICE_ROOT/AF-v4-16");
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -49,7 +50,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
   AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
@@ -79,6 +80,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
     task->SetTrackCuts(esdTrackCuts);
   }
+  else
+    task->SetDeltaPhiCut(0.05);
 
   task->SetAnalysisMode(analysisMode);
   task->SetTrigger(trigger);
@@ -90,46 +93,34 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   mgr->AddTask(task);
 
+  TString optionStr(option);
+  
   if (mc) {
     // Enable MC event handler
     AliMCEventHandler* handler = new AliMCEventHandler;
-    handler->SetReadTR(kFALSE);
+    if (!optionStr.Contains("particle-efficiency"))
+      handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handler);
   }
 
   // pt study
-  TString optionStr(option);
   if (optionStr.Contains("pt-spectrum-func"))
   {
-    //TF1* func = new TF1("func", "0.7 + x", 0, 0.3);
-    //TF1* func = new TF1("func", "1.3 - x", 0, 0.3);
-    //TF1* func = new TF1("func", "1", 0, 0.3);
+    TF1* func = new TF1("func", "1", 0, 0.2);
+    //TF1* func = new TF1("func", "1.5 - x / 0.2 * 0.5", 0, 0.2);
+    //TF1* func = new TF1("func", "1.25 - x / 0.2 * 0.25", 0, 0.2);
+    //TF1* func = new TF1("func", "0.75 + x / 0.2 * 0.25", 0, 0.2);
+    hist = func->GetHistogram();
     //new TCanvas; func->Draw();
     //inputList.Add(func->GetHistogram()->Clone("pt-spectrum"));
 
-    TFile* file = TFile::Open("ptspectrum_fit.root");
-    if (!file)
-    {
-      Printf("Could not open ptspectrum_fit.root");
-      return;
-    }
-
-    TString subStr(optionStr(optionStr.Index("pt-spectrum-func")+17, 3));
-    TString histName(Form("ptspectrum_%s", subStr.Data()));
-    Printf("Pt-Spectrum modification. Using %s.", histName.Data());
-    TH1* hist = (TH1*) file->Get(histName);
-    if (!hist)
-    {
-      Printf("Could not read histogram.");
-      return;
-    }
-
     new TCanvas; hist->Draw();
-    task->SetPtSpectrum((TH1*) hist->Clone("pt-spectrum"));
+    task->SetPtSpectrum((TH1D*) hist->Clone("pt-spectrum"));
   }
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
+  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   // Attach input
@@ -154,6 +145,13 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
     // process dataset
 
     mgr->StartAnalysis("proof", data, nRuns, offset);
+  }
+  else if (aProof == 3)
+  {
+    gROOT->ProcessLine(".L CreateChainFromDataSet.C");
+    ds = gProof->GetDataSet(data)->GetStagedSubset();
+    chain = CreateChainFromDataSet(ds);
+    mgr->StartAnalysis("local", chain, nRuns, offset);
   }
   else
   {

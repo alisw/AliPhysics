@@ -10,6 +10,22 @@ void SetTPC()
   AliMultiplicityCorrection::SetQualityRegions(kFALSE);
 }
 
+const char* GetMultLabel(Int_t etaR = -1, Bool_t trueM = kTRUE)
+{
+	if (etaR == -1)
+		etaR = etaRange;
+		
+	TString tmpStr((trueM) ? "True " : "Measured ");
+		
+	if (etaR == 4)
+	{
+		tmpStr += "multiplicity (full phase space)";
+	}
+	else
+		tmpStr += Form("multiplicity in |#eta| < %.1f", (etaR+1)* 0.5);
+	return Form("%s", tmpStr.Data());
+}
+
 void draw(const char* fileName = "multiplicity.root", const char* folder = "Multiplicity")
 {
   loadlibs();
@@ -44,20 +60,16 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
-void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kTRUE, Int_t histID = 2, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e3, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */)
+void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kFALSE, Int_t histID = 1, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e5, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */, const char* targetFile = "unfolded.root", const char* folderESD = "Multiplicity")
 {
   loadlibs();
 
-  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folder, folder);
-  TFile::Open(fileNameMC);
-  mult->LoadHistograms();
-
-  AliMultiplicityCorrection* esd = new AliMultiplicityCorrection(folder, folder);
-  TFile::Open(fileNameESD);
-  esd->LoadHistograms();
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
 
   TH2F* hist = esd->GetMultiplicityESD(histID);
   TH2F* hist2 = esd->GetMultiplicityMC(histID, eventType);
+  TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
 
   mult->SetMultiplicityESD(histID, hist);
 
@@ -76,26 +88,150 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
 
   if (chi2)
   {
-    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, beta);
+    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol0, beta);
     //mult->SetCreateBigBin(kFALSE);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
-    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e5);
+    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e4);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
-    //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, hist2->ProjectionY("mymchist"));
+    
+    //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, mcCompare);
+    //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
+    
     mult->ApplyMinuitFit(histID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
   }
   else
   {
-    mult->ApplyBayesianMethod(histID, fullPhaseSpace, eventType, 0.2, 100);
+    mult->ApplyBayesianMethod(histID, fullPhaseSpace, eventType, 1, 10, 0, kTRUE);
   }
 
-  TFile* file = TFile::Open("unfolded.root", "RECREATE");
+  mult->SetMultiplicityMC(histID, eventType, hist2);
+  
+  Printf("Writing result to %s", targetFile);
+  TFile* file = TFile::Open(targetFile, "RECREATE");
   mult->SaveHistograms();
   file->Write();
   file->Close();
 
-  mult->DrawComparison((chi2) ? "MinuitChi2" : "Bayesian", histID, fullPhaseSpace, kTRUE, hist2->ProjectionY("mymchist"));
+  mult->DrawComparison((chi2) ? "MinuitChi2" : "Bayesian", histID, fullPhaseSpace, kTRUE, mcCompare);
+}
+
+void DrawBayesianIterations(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root", Int_t histID = 1, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */)
+{
+  loadlibs();
+  
+  const char* folder = "Multiplicity";
+
+  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(fileNameMC);
+  mult->LoadHistograms();
+
+  AliMultiplicityCorrection* esd = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(fileNameESD);
+  esd->LoadHistograms();
+
+  TH2F* hist = esd->GetMultiplicityESD(histID);
+  TH2F* hist2 = esd->GetMultiplicityMC(histID, eventType);
+  
+  mult->SetMultiplicityESD(histID, hist);
+  mult->SetMultiplicityMC(histID, eventType, hist2);
+  
+  TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
+  //mcCompare->Scale(1.0 / mcCompare->Integral());
+
+  TH1* esdHist = (TH1*) hist->ProjectionY("myesd", 1, 1)->Clone("myesd");
+  //esdHist->Scale(1.0 / esdHist->Integral());
+  
+  c = new TCanvas("c", "c", 1200, 600);
+  c->Divide(2, 1);
+  
+  c->cd(1);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetTopMargin(0.05);
+  gPad->SetRightMargin(0.05);
+  gPad->SetLogy();
+  gPad->SetGridx();
+  gPad->SetGridy();
+    
+  mcCompare->GetXaxis()->SetRangeUser(0, 80);
+  mcCompare->SetStats(0);
+  mcCompare->SetFillColor(5);
+  mcCompare->SetLineColor(5);
+  mcCompare->SetTitle(Form(";%s;Entries", GetMultLabel(1)));
+  mcCompare->GetYaxis()->SetRangeUser(2, esdHist->GetMaximum() * 2);
+  mcCompare->GetYaxis()->SetTitleOffset(1.3);
+  mcCompare->Draw("HIST");
+  esdHist->SetMarkerStyle(5);
+  esdHist->Draw("P HIST SAME");
+  
+  c->cd(2);
+  gPad->SetTopMargin(0.05);
+  gPad->SetRightMargin(0.05);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  trueMeasuredRatio = (TH1*) mcCompare->Clone("trueMeasuredRatio");
+  trueMeasuredRatio->Divide(esdHist);
+  trueMeasuredRatio->SetStats(0);
+  trueMeasuredRatio->SetTitle(Form(";%s;Ratio", GetMultLabel(1)));
+  trueMeasuredRatio->GetYaxis()->SetTitleOffset(1.3);
+  trueMeasuredRatio->GetYaxis()->SetRangeUser(0, 2);
+  // ROOT displays all values > 2 at 2 which looks weird
+  for (Int_t i=1; i<=trueMeasuredRatio->GetNbinsX(); i++)
+    if (trueMeasuredRatio->GetBinContent(i) > 2)
+      trueMeasuredRatio->SetBinContent(i, 0);
+  trueMeasuredRatio->SetMarkerStyle(5);
+  trueMeasuredRatio->Draw("P");
+
+  Int_t colors[] = {1, 2, 4, 6};
+  
+  legend = new TLegend(0.15, 0.13, 0.5, 0.5);
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.04);
+  
+  legend->AddEntry(mcCompare, "True", "F");
+  legend->AddEntry(esdHist, "Measured", "P");
+
+  legend2 = new TLegend(0.15, 0.13, 0.5, 0.4);
+  legend2->SetFillColor(0);
+  legend2->SetTextSize(0.04);
+    
+  legend2->AddEntry(trueMeasuredRatio, "Measured", "P");
+  
+  Int_t iters[] = {1, 3, 10, -1};
+  for (Int_t i = 0; i<4; i++)
+  {
+    Int_t iter = iters[i];
+    mult->ApplyBayesianMethod(histID, kFALSE, eventType, 1, iter, 0, 0);
+    corr = mult->GetMultiplicityESDCorrected(histID);
+    corr->Scale(1.0 / corr->Integral());
+    corr->Scale(mcCompare->Integral());
+    corr->GetXaxis()->SetRangeUser(0, 80);
+    //corr->SetMarkerStyle(20+iter);
+    corr->SetLineColor(colors[i]);
+    corr->SetLineStyle(i+1);
+    corr->SetLineWidth(2);
+    
+    c->cd(1);
+    corr->DrawCopy("SAME HIST");
+    
+    c->cd(2);
+    clone = (TH1*) corr->Clone("clone");
+    clone->Divide(mcCompare, corr);
+    clone->GetYaxis()->SetRangeUser(0, 2);
+    clone->DrawCopy("SAME HIST");
+    
+    legend->AddEntry((TH1*) corr->Clone(), (iter > -1) ? Form("%d iteration%s", iter, (iter == 1) ? "" : "s") : "Convergence", "L");
+    legend2->AddEntry((TH1*) corr->Clone(), (iter > -1) ? Form("%d iteration%s", iter, (iter == 1) ? "" : "s") : "Convergence", "L");
+  }
+  
+  c->cd(1);
+  legend->Draw();
+  
+  c->cd(2);
+  legend2->Draw();
+  
+  c->SaveAs("bayesian_iterations.eps");
 }
 
 void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", const char* bayesianFile = "bayesian.root", const char* label1 = "Chi2", const char* label2 = "Bayesian", const char* mcFile = 0, Float_t simpleCorrect = 0)
@@ -376,7 +512,7 @@ const char* GetEventTypeName(Int_t type)
   return 0;
 }
 
-void EvaluateBayesianMethodIterationsSmoothing(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityMC.root", const char* targetDir, Int_t histID = 3)
+void EvaluateBayesianMethodIterationsSmoothing(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root", const char* targetDir = "bayesian", Int_t histID = 1)
 {
   gSystem->mkdir(targetDir);
 
@@ -395,8 +531,8 @@ void EvaluateBayesianMethodIterationsSmoothing(const char* fileNameMC = "multipl
 
   TFile* graphFile = TFile::Open(Form("%s/EvaluateBayesianMethodIterationsSmoothing.root", targetDir), "RECREATE");
 
-  Int_t colors[3] = {1, 2, 4};
-  Int_t markers[20] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3, 4, 5, 6};
+  Int_t colors[] =  {1, 2, 3, 4, 6};
+  Int_t markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3, 4, 5, 6};
 
   for (AliMultiplicityCorrection::EventType type = AliMultiplicityCorrection::kTrVtx; type <= AliMultiplicityCorrection::kTrVtx; ++type)
   //for (AliMultiplicityCorrection::EventType type = AliMultiplicityCorrection::kTrVtx; type <= AliMultiplicityCorrection::kINEL; ++type)
@@ -408,22 +544,22 @@ void EvaluateBayesianMethodIterationsSmoothing(const char* fileNameMC = "multipl
 
     for (Int_t i = 1; i <= 5; i++)
     {
-      Int_t iterArray[5] = {5, 20, 50, 100, -1};
-      //Int_t iter = i * 40 - 20;
+      Int_t iterArray[5] = {2, 5, 10, 20, -1};
       Int_t iter = iterArray[i-1];
 
       TGraph* fitResultsMC[3];
       for (Int_t region=0; region<AliMultiplicityCorrection::kQualityRegions; ++region)
       {
         fitResultsMC[region] = new TGraph;
-        fitResultsMC[region]->SetTitle(Form("%d iter. - reg. %d", iter, region+1));
+        fitResultsMC[region]->SetTitle(Form("%d iterations - reg. %d", iter, region+1));
         fitResultsMC[region]->GetXaxis()->SetTitle("smoothing parameter #alpha");
         fitResultsMC[region]->GetYaxis()->SetTitle(Form("P_{1} in region %d", region));
         fitResultsMC[region]->SetName(Form("%s_MC_%d", tmp.Data(), i * AliMultiplicityCorrection::kQualityRegions + region - 2));
         fitResultsMC[region]->SetFillColor(0);
         //fitResultsMC[region]->SetMarkerStyle(markers[(i-1) * AliMultiplicityCorrection::kQualityRegions + region]);
-        fitResultsMC[region]->SetMarkerStyle(markers[(i-1)]);
-        fitResultsMC[region]->SetLineColor(colors[region]);
+        fitResultsMC[region]->SetMarkerStyle(markers[i-1]);
+        fitResultsMC[region]->SetLineColor(colors[i-1]);
+        fitResultsMC[region]->SetMarkerColor(colors[i-1]);
       }
 
       TGraph* fitResultsRes = new TGraph;
@@ -433,9 +569,9 @@ void EvaluateBayesianMethodIterationsSmoothing(const char* fileNameMC = "multipl
       fitResultsRes->GetYaxis()->SetTitle("P_{2}");
 
       fitResultsRes->SetFillColor(0);
-      fitResultsRes->SetMarkerStyle(19+i);
-      fitResultsRes->SetMarkerColor(1);
-      fitResultsRes->SetLineColor(1);
+      fitResultsRes->SetMarkerStyle(markers[i-1]);
+      fitResultsRes->SetMarkerColor(colors[i-1]);
+      fitResultsRes->SetLineColor(colors[i-1]);
 
       for (Float_t weight = 0.0; weight < 1.01; weight += 0.2)
       {
@@ -609,7 +745,7 @@ void EvaluateDrawResult(const char* targetDir, Int_t type = 0, Bool_t plotRes = 
 
 void EvaluateDrawResultRegions(const char* targetDir, Int_t type = 0)
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   TString name;
   TFile* graphFile = 0;
@@ -624,43 +760,43 @@ void EvaluateDrawResultRegions(const char* targetDir, Int_t type = 0)
     graphFile = TFile::Open(Form("%s/EvaluateBayesianMethodIterationsSmoothing.root", targetDir));
   }
 
-  TCanvas* canvas = new TCanvas(name, name, 800, 1200);
+  TCanvas* canvas = new TCanvas(name, name, 1200, 800);
   //canvas->Divide(1, AliMultiplicityCorrection::kQualityRegions, 0, 0);
+  canvas->SetTopMargin(0);
+  canvas->SetBottomMargin(0);
+  canvas->SetRightMargin(0.05);
   canvas->Range(0, 0, 1, 1);
 
-  TPad* pad[3];
-  pad[0] = new TPad(Form("%s_pad1", name.Data()), "", 0.02, 0.05, 0.98, 0.35);
-  pad[1] = new TPad(Form("%s_pad2", name.Data()), "", 0.02, 0.35, 0.98, 0.65);
-  pad[2] = new TPad(Form("%s_pad3", name.Data()), "", 0.02, 0.65, 0.98, 0.95);
+  TPad* pad[4];
+  pad[3] = new TPad(Form("%s_pad1", name.Data()), "", 0, 0, 0.5, 0.5); pad[3]->SetTopMargin(0); pad[3]->SetBottomMargin(0.15);
+  pad[1] = new TPad(Form("%s_pad2", name.Data()), "", 0, 0.5, 0.5, 1); pad[1]->SetBottomMargin(0); 
+  pad[0] = new TPad(Form("%s_pad3", name.Data()), "", 0.5, 0, 1, 0.5); pad[0]->SetTopMargin(0); pad[0]->SetBottomMargin(0.15);
+  pad[2] = new TPad(Form("%s_pad4", name.Data()), "", 0.5, 0.5, 1, 1); pad[2]->SetBottomMargin(0); 
 
   Float_t yMinRegion[3];
   for (Int_t i=0; i<AliMultiplicityCorrection::kQualityRegions; ++i)
     yMinRegion[i] = 1e20;
 
-  for (Int_t region = 1; region <= AliMultiplicityCorrection::kQualityRegions; region++)
+  for (Int_t region = 0; region <= AliMultiplicityCorrection::kQualityRegions; region++)
   {
     canvas->cd();
-    pad[region-1]->Draw();
-    pad[region-1]->cd();
-    pad[region-1]->SetRightMargin(0.05);
-
-    if (region != 1)
-      pad[region-1]->SetBottomMargin(0);
-    if (region != AliMultiplicityCorrection::kQualityRegions)
-      pad[region-1]->SetTopMargin(0);
-
+    pad[region]->Draw();
+    pad[region]->cd();
+    pad[region]->SetRightMargin(0.05);
+    
     if (type == -1)
     {
-      pad[region-1]->SetLogx();
-      pad[region-1]->SetLogy();
+      pad[region]->SetLogx();
     }
-    pad[region-1]->SetTopMargin(0.05);
-    pad[region-1]->SetGridx();
-    pad[region-1]->SetGridy();
+    pad[region]->SetLogy();
+    
+    pad[region]->SetGridx();
+    pad[region]->SetGridy();
 
-    TLegend* legend = new TLegend(0.8, 0.15, 0.98, 0.98);
+    TLegend* legend = new TLegend(0.5, 0.4, 0.85, 0.85);
     legend->SetFillColor(0);
-
+    //legend->SetNColumns(3);
+    legend->SetTextSize(0.06);
     Int_t count = 0;
 
     Float_t xMin = 1e20;
@@ -675,49 +811,87 @@ void EvaluateDrawResultRegions(const char* targetDir, Int_t type = 0)
     {
       count++;
 
-      TGraph* mc = (TGraph*) graphFile->Get(Form("%s_MC_%d", name.Data(), count));
-      if (!mc)
-        break;
-
-      if (TString(mc->GetTitle()).Contains(Form("reg. %d", region)) == kFALSE)
-        continue;
+      if (region > 0)
+      {
+        TGraph* mc = (TGraph*) graphFile->Get(Form("%s_MC_%d", name.Data(), count));
+        if (!mc)
+          break;
+  
+        if (TString(mc->GetTitle()).Contains(Form("reg. %d", region)) == kFALSE)
+          continue;
+      
+        for (Int_t i=0; i<mc->GetN(); ++i)
+          yMinRegion[(count-1) % 3] = TMath::Min(yMinRegion[(count-1) % 3], mc->GetY()[i]);
+      }
+      else
+      {
+        TGraph* mc = (TGraph*) graphFile->Get(Form("%s_Res_%d", name.Data(), count));
+        if (!mc)
+          break;
+      }
 
       xaxis = mc->GetXaxis()->GetTitle();
       yaxis = mc->GetYaxis()->GetTitle();
 
-      mc->Print();
+      //mc->Print();
 
       xMin = TMath::Min(xMin, mc->GetXaxis()->GetXmin());
-      yMin = TMath::Min(yMin, mc->GetYaxis()->GetXmin());
+      yMin = TMath::Min(yMin, TMath::MinElement(mc->GetN(), mc->GetY()));
 
       xMax = TMath::Max(xMax, mc->GetXaxis()->GetXmax());
       yMax = TMath::Max(yMax, mc->GetYaxis()->GetXmax());
-
-      for (Int_t i=0; i<mc->GetN(); ++i)
-        yMinRegion[(count-1) % 3] = TMath::Min(yMinRegion[(count-1) % 3], mc->GetY()[i]);
+      
+      //Printf("%f %f %f %f", xMin, xMax, yMin, yMax);
     }
 
     if (type >= 0)
     {
-      xaxis = "smoothing parameter";
+      xaxis = "Smoothing parameter #alpha";
     }
     else if (type == -1)
     {
-      xaxis = "weight parameter";
-      xMax *= 5;
+      xaxis = "Weight parameter #beta";
+      //xMax *= 5;
     }
-    yaxis = "P_{1}"; // (2 <= t <= 150)";
+    if (region > 0)
+    {
+      yaxis = Form("Q_{1} in region %d ", region); // (2 <= t <= 150)";
+    }
+    else
+      yaxis = "Q_{2} ";
 
     printf("%f %f %f %f\n", xMin, xMax, yMin, yMax);
 
-    TGraph* dummy = new TGraph;
-    dummy->SetPoint(0, xMin, yMin);
-    dummy->SetPoint(1, xMax, yMax);
+    if (region > 0)
+    {
+      if (type == -1)
+      {
+        yMin = 0.534622;
+        yMax = 19.228941;
+      }
+      else
+      {
+        yMin = 0.759109;
+        yMax = 10;
+      }
+    }
+    
+    if (type != -1)
+      xMax = 1.0;
+
+    TH1* dummy = new TH2F("dummy", "dummy", 100, xMin, xMax, 100, yMin * 0.9, yMax * 1.1);
     dummy->SetTitle(Form(";%s;%s", xaxis.Data(), yaxis.Data()));
 
-    dummy->SetMarkerColor(0);
-    dummy->Draw("AP");
-    dummy->GetYaxis()->SetMoreLogLabels(1);
+    if (region == 0 && type != -1)
+      dummy->GetYaxis()->SetMoreLogLabels(1);
+    dummy->SetLabelSize(0.06, "xy");
+    dummy->SetTitleSize(0.06, "xy");
+    dummy->GetXaxis()->SetTitleOffset(1.2);
+    dummy->GetYaxis()->SetTitleOffset(0.8);
+    dummy->SetStats(0);
+    
+    dummy->DrawCopy();
+   
 
     count = 0;
 
@@ -725,26 +899,47 @@ void EvaluateDrawResultRegions(const char* targetDir, Int_t type = 0)
     {
       count++;
 
-      TGraph* mc = (TGraph*) graphFile->Get(Form("%s_MC_%d", name.Data(), count));
+      if (region > 0)
+      {
+        TGraph* mc = (TGraph*) graphFile->Get(Form("%s_MC_%d", name.Data(), count));
+        if (mc && TString(mc->GetTitle()).Contains(Form("reg. %d", region)) == kFALSE)
+          continue;
+      }
+      else
+        TGraph* mc = (TGraph*) graphFile->Get(Form("%s_Res_%d", name.Data(), count));
+
       if (!mc)
         break;
-      if (TString(mc->GetTitle()).Contains(Form("reg. %d", region)) == kFALSE)
-        continue;
-
-      printf("Loaded %d sucessful.\n", count);
+      //printf("Loaded %d sucessful.\n", count);
 
       if (type == -1)
       {
-        legend->AddEntry(mc, Form("Eq. (%d) - reg. %d", 10 + (count-1) / 3, 1+ (count-1) % 3));
+        //legend->AddEntry(mc, Form("Eq. (%d) - reg. %d", 10 + (count-1) / 3, 1+ (count-1) % 3));
+        //legend->AddEntry(mc, Form("Eq. (7.%d)", 11 + (count-1) / 3));
+        const char* names[] = { "Const", "Linear", "Log" };
+        legend->AddEntry(mc, names[(count-1) / 3], "PL");
       }
       else
-        legend->AddEntry(mc);
+      {
+        TString label(mc->GetTitle());
+        TString newLabel(label(0, label.Index(" ")));
+        //Printf("%s", newLabel.Data());
+        if (newLabel.Atoi() == -1)
+        {
+          newLabel = "Convergence";
+        }
+        else
+          newLabel = label(0, label.Index("iterations") + 10);
+          
+        legend->AddEntry(mc, newLabel, "PL");
+      }
 
       mc->Draw("SAME PC");
 
-     }
+    }
 
-     legend->Draw();
+    if (region == 2)
+      legend->Draw();
   }
 
   for (Int_t i=0; i<AliMultiplicityCorrection::kQualityRegions; ++i)
@@ -755,7 +950,7 @@ void EvaluateDrawResultRegions(const char* targetDir, Int_t type = 0)
   canvas->SaveAs(Form("%s/%s.eps", targetDir, canvas->GetName()));
 }
 
-void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const char* fileNameESD = "multiplicityMC_1M_3.root", const char* targetDir, Int_t histID = 3)
+void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root", const char* targetDir = "chi2compare", Int_t histID = 1)
 {
   gSystem->mkdir(targetDir);
 
@@ -773,16 +968,16 @@ void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const
   mult->SetMultiplicityESD(histID, hist);
 
   Int_t count = 0; // just to order the saved images...
-  Int_t colors[3] = {1, 2, 4};
-  Int_t markers[12] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3};
+  Int_t colors[] = {1, 2, 4, 3};
+  Int_t markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3};
 
   TGraph* fitResultsRes = 0;
 
   TFile* graphFile = TFile::Open(Form("%s/EvaluateChi2Method.root", targetDir), "RECREATE");
 
-  for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kPol0; type <= AliMultiplicityCorrection::kEntropy; ++type)
-//  for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kEntropy; type <= AliMultiplicityCorrection::kEntropy; ++type)
-  //for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kPol1; type <= AliMultiplicityCorrection::kPol1; ++type)
+  //for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kPol0; type <= AliMultiplicityCorrection::kLog; ++type)
+  //for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kEntropy; type <= AliMultiplicityCorrection::kEntropy; ++type)
+  for (AliMultiplicityCorrection::RegularizationType type = AliMultiplicityCorrection::kPol1; type <= AliMultiplicityCorrection::kPol1; ++type)
   {
     TGraph* fitResultsMC[3];
     for (Int_t region=0; region<AliMultiplicityCorrection::kQualityRegions; ++region)
@@ -793,8 +988,11 @@ void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const
       fitResultsMC[region]->GetYaxis()->SetTitle(Form("P_{1} in region %d", region));
       fitResultsMC[region]->SetName(Form("EvaluateChi2Method_MC_%d", type * AliMultiplicityCorrection::kQualityRegions + region - 2));
       fitResultsMC[region]->SetFillColor(0);
-      fitResultsMC[region]->SetMarkerStyle(markers[(type-1) * AliMultiplicityCorrection::kQualityRegions + region]);
-      fitResultsMC[region]->SetLineColor(colors[region]);
+      //fitResultsMC[region]->SetMarkerStyle(markers[(type-1) * AliMultiplicityCorrection::kQualityRegions + region]);
+      //fitResultsMC[region]->SetLineColor(colors[region]);
+      fitResultsMC[region]->SetMarkerStyle(markers[type-1]);
+      fitResultsMC[region]->SetMarkerColor(colors[type-1]);
+      fitResultsMC[region]->SetLineColor(colors[type-1]);
     }
 
     fitResultsRes = new TGraph;
@@ -803,13 +1001,13 @@ void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const
     fitResultsRes->GetXaxis()->SetTitle("Weight Parameter");
 
     fitResultsRes->SetFillColor(0);
-    fitResultsRes->SetMarkerStyle(23+type);
-    fitResultsRes->SetMarkerColor(kRed);
-    fitResultsRes->SetLineColor(kRed);
+    fitResultsRes->SetMarkerStyle(markers[type-1]);
+    fitResultsRes->SetMarkerColor(colors[type-1]);
+    fitResultsRes->SetLineColor(colors[type-1]);
 
-    for (Int_t i=0; i<7; ++i)
+    for (Int_t i=0; i<15; ++i)
     {
-      Float_t weight = TMath::Power(TMath::Sqrt(10), i+6);
+      Float_t weight = TMath::Power(TMath::Sqrt(10), i+1);
       //Float_t weight = TMath::Power(10, i+2);
 
       //if (type == AliMultiplicityCorrection::kEntropy) weight = 1e4 * (i+1) * 1.5;
@@ -823,7 +1021,7 @@ void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const
 
       mult->SetRegularizationParameters(type, weight);
       Int_t status = mult->ApplyMinuitFit(histID, kFALSE, AliMultiplicityCorrection::kTrVtx);
-      mult->DrawComparison(Form("%s/%s", targetDir, runName.Data()), histID, kFALSE, kTRUE, hist2->ProjectionY());
+      mult->DrawComparison(Form("%s/%s", targetDir, runName.Data()), histID, kFALSE, kTRUE, hist2->ProjectionY("mymc", 1, hist2->GetNbinsX()));
       if (status != 0)
       {
         printf("MINUIT did not succeed. Skipping...\n");
@@ -1119,23 +1317,23 @@ void StatisticsPlot(const char* fileNameMC = "multiplicityMC_2M.root", Int_t his
   file->Close();
 }
 
-void StartingConditions(const char* fileNameMC = "multiplicityMC_2M.root", Int_t histID = 3)
+void StartingConditions(const char* fileNameMC = "multiplicityMC.root", Int_t histID = 1)
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
 
   TFile::Open(fileNameMC);
   mult->LoadHistograms("Multiplicity");
 
-  const char* files[] = { "multiplicityMC_1M_3.root", "multiplicityMC_100k_1.root", "multiplicityMC_100k_2.root", "multiplicityMC_100k_3.root", "multiplicityMC_100k_4.root" }
+  const char* files[] = { "multiplicityESD.root", "multiplicityESD_100k_1.root", "multiplicityESD_100k_2.root", "multiplicityESD_100k_1.root", "multiplicityESD_100k_2.root" }
 
   // this one we try to unfold
   TFile::Open(files[0]);
   AliMultiplicityCorrection* multESD = new AliMultiplicityCorrection("MultiplicityESD", "MultiplicityESD");
   multESD->LoadHistograms("Multiplicity");
   mult->SetMultiplicityESD(histID, multESD->GetMultiplicityESD(histID));
-  TH1* mc = multESD->GetMultiplicityMC(histID, AliMultiplicityCorrection::kTrVtx)->ProjectionY("mc");
+  TH1* mc = multESD->GetMultiplicityMC(histID, AliMultiplicityCorrection::kTrVtx)->ProjectionY("mc", 1, 1);
 
   TGraph* fitResultsChi2 = new TGraph;
   fitResultsChi2->SetTitle(";Input Dist ID;Chi2");
@@ -1180,7 +1378,8 @@ void StartingConditions(const char* fileNameMC = "multiplicityMC_2M.root", Int_t
     }
     else if (i == 6)
     {
-      func = new TF1("nbd", "[0] * TMath::Binomial([2]+TMath::Nint(x)-1, [2]-1) * pow([1] / ([1]+[2]), TMath::Nint(x)) * pow(1 + [1]/[2], -[2])", 0, 50);
+      func = new TF1("nbd", "exp(log([0]) + TMath::LnGamma([2]+x) - TMath::LnGamma([2]) - TMath::LnGamma(x+1) + log([1] / ([1]+[2])) * x + log(1.0 + [1]/[2]) * -[2])", 0, 50);
+      
       func->SetParNames("scaling", "averagen", "k");
       func->SetParLimits(0, 1e-3, 1e10);
       func->SetParLimits(1, 0.001, 1000);
@@ -1196,9 +1395,9 @@ void StartingConditions(const char* fileNameMC = "multiplicityMC_2M.root", Int_t
         startCond->SetBinContent(j, 1);
     }
 
-    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, 10000);
+    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol0, 1e5);
     mult->ApplyMinuitFit(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, kFALSE, startCond);
-    mult->DrawComparison(Form("StartingConditions_%d_MinuitChi2", i), histID, kFALSE, kTRUE, mc);
+    //mult->DrawComparison(Form("StartingConditions_%d_MinuitChi2", i), histID, kFALSE, kTRUE, mc);
 
     Float_t chi2MC = 0;
     Int_t chi2MCLimit = 0;
@@ -1212,8 +1411,8 @@ void StartingConditions(const char* fileNameMC = "multiplicityMC_2M.root", Int_t
     if (!firstChi)
       firstChi = (TH1*) chi2Result->Clone("firstChi");
 
-    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 1, 100, startCond);
-    mult->DrawComparison(Form("StartingConditions_%d_Bayesian", i), histID, kFALSE, kTRUE, mc);
+    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 1, 10, startCond);
+    //mult->DrawComparison(Form("StartingConditions_%d_Bayesian", i), histID, kFALSE, kTRUE, mc);
     TH1* bayesResult = (TH1*) mult->GetMultiplicityESDCorrected(histID)->Clone(Form("bayesResult_%d", i));
     if (!firstBayesian)
       firstBayesian = (TH1*) bayesResult->Clone("firstBayesian");
@@ -1317,212 +1516,6 @@ void StartingConditions(const char* fileNameMC = "multiplicityMC_2M.root", Int_t
   canvas3->SaveAs(Form("%s.gif", canvas3->GetName()));
 }
 
-void DifferentSamples(const char* fileNameMC = "multiplicityMC_2M.root", Int_t histID = 3)
-{
-  gSystem->Load("libPWG0base");
-
-  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
-
-  TFile::Open(fileNameMC);
-  mult->LoadHistograms("Multiplicity");
-
-  const char* files[] = { "multiplicityMC_100k_1.root", "multiplicityMC_100k_2.root", "multiplicityMC_100k_3.root", "multiplicityMC_100k_4.root", "multiplicityMC_100k_5.root", "multiplicityMC_100k_6.root", "multiplicityMC_100k_7.root", "multiplicityMC_100k_8.root" };
-
-  TGraph* fitResultsChi2 = new TGraph;
-  fitResultsChi2->SetTitle(";Input Dist ID;Chi2");
-  TGraph* fitResultsBayes = new TGraph;
-  fitResultsBayes->SetTitle(";Input Dist ID;Chi2");
-  TGraph* fitResultsChi2Limit = new TGraph;
-  fitResultsChi2Limit->SetTitle(";Input Dist ID;Multiplicity reach");
-  TGraph* fitResultsBayesLimit = new TGraph;
-  fitResultsBayesLimit->SetTitle(";Input Dist ID;Multiplicity reach");
-
-  TCanvas* canvasA = new TCanvas("DifferentSamplesA", "DifferentSamplesA", 1200, 600);
-  canvasA->Divide(4, 2);
-
-  TCanvas* canvasB = new TCanvas("DifferentSamplesB", "DifferentSamplesB", 1200, 600);
-  canvasB->Divide(4, 2);
-
-  TCanvas* canvas4 = new TCanvas("DifferentSamples4", "DifferentSamples4", 1000, 400);
-  canvas4->Divide(2, 1);
-
-  TCanvas* canvas3 = new TCanvas("DifferentSamples3", "DifferentSamples3", 1000, 400);
-  canvas3->Divide(2, 1);
-
-  Float_t min = 1e10;
-  Float_t max = 0;
-
-  TH1* firstChi = 0;
-  TH1* firstBayesian = 0;
-
-  TLegend* legend = new TLegend(0.7, 0.7, 1, 1);
-
-  TFile* file = TFile::Open("DifferentSamples.root", "RECREATE");
-  file->Close();
-
-  for (Int_t i=0; i<8; ++i)
-  {
-    TFile::Open(files[i]);
-    AliMultiplicityCorrection* multESD = new AliMultiplicityCorrection("MultiplicityESD2", "MultiplicityESD2");
-    multESD->LoadHistograms("Multiplicity");
-    mult->SetMultiplicityESD(histID, multESD->GetMultiplicityESD(histID));
-    TH1* mc = multESD->GetMultiplicityMC(histID, AliMultiplicityCorrection::kTrVtx)->ProjectionY(Form("mc_%d", i));
-    mc->Sumw2();
-
-    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, 10000);
-    mult->ApplyMinuitFit(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, kFALSE);
-    mult->DrawComparison(Form("DifferentSamples_%d_MinuitChi2", i), histID, kFALSE, kTRUE, mc);
-
-    Float_t chi2MC = 0;
-    Int_t chi2MCLimit = 0;
-    mult->GetComparisonResults(&chi2MC, &chi2MCLimit, 0);
-    fitResultsChi2->SetPoint(fitResultsChi2->GetN(), i, chi2MC);
-    fitResultsChi2Limit->SetPoint(fitResultsChi2Limit->GetN(), i, chi2MCLimit);
-    min = TMath::Min(min, chi2MC);
-    max = TMath::Max(max, chi2MC);
-
-    TH1* chi2Result = (TH1*) mult->GetMultiplicityESDCorrected(histID)->Clone(Form("chi2Result_%d", i));
-    if (!firstChi)
-      firstChi = (TH1*) chi2Result->Clone("firstChi");
-
-    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 1, 100);
-    mult->DrawComparison(Form("DifferentSamples_%d_Bayesian", i), histID, kFALSE, kTRUE, mc);
-    TH1* bayesResult = (TH1*) mult->GetMultiplicityESDCorrected(histID)->Clone(Form("bayesResult_%d", i));
-    if (!firstBayesian)
-      firstBayesian = (TH1*) bayesResult->Clone("firstBayesian");
-
-    TFile* file = TFile::Open("DifferentSamples.root", "UPDATE");
-    mc->Write();
-    chi2Result->Write();
-    bayesResult->Write();
-    file->Close();
-
-    mult->GetComparisonResults(&chi2MC, &chi2MCLimit, 0);
-    fitResultsBayes->SetPoint(fitResultsBayes->GetN(), i, chi2MC);
-    fitResultsBayesLimit->SetPoint(fitResultsBayesLimit->GetN(), i, chi2MCLimit);
-
-    min = TMath::Min(min, chi2MC);
-    max = TMath::Max(max, chi2MC);
-    mc->GetXaxis()->SetRangeUser(0, 150);
-    chi2Result->GetXaxis()->SetRangeUser(0, 150);
-
-    // skip errors for now
-    for (Int_t j=0; j<=chi2Result->GetNbinsX(); ++j)
-    {
-      chi2Result->SetBinError(j, 0);
-      bayesResult->SetBinError(j, 0);
-    }
-
-    canvas4->cd(1);
-    TH1* tmp = (TH1*) chi2Result->Clone("tmp");
-    tmp->SetTitle("Unfolded/MC;Npart;Ratio");
-    tmp->Divide(mc);
-    tmp->GetYaxis()->SetRangeUser(0.5, 1.5);
-    tmp->GetXaxis()->SetRangeUser(0, 200);
-    tmp->SetLineColor(i+1);
-    tmp->DrawCopy((i > 0) ? "SAME HIST" : "HIST");
-
-    canvas4->cd(2);
-    tmp = (TH1*) bayesResult->Clone("tmp");
-    tmp->SetTitle("Unfolded/MC;Npart;Ratio");
-    tmp->Divide(mc);
-    tmp->SetLineColor(i+1);
-    tmp->GetYaxis()->SetRangeUser(0.5, 1.5);
-    tmp->GetXaxis()->SetRangeUser(0, 200);
-    tmp->DrawCopy((i > 0) ? "SAME HIST" : "HIST");
-
-    canvas3->cd(1);
-    TH1* tmp = (TH1*) chi2Result->Clone("tmp");
-    tmp->SetTitle("Ratio to first result;Npart;Ratio");
-    tmp->Divide(firstChi);
-    tmp->GetYaxis()->SetRangeUser(0.5, 1.5);
-    tmp->GetXaxis()->SetRangeUser(0, 200);
-    tmp->SetLineColor(i+1);
-    legend->AddEntry(tmp, Form("%d", i));
-    tmp->DrawCopy((i > 0) ? "SAME HIST" : "HIST");
-
-    canvas3->cd(2);
-    tmp = (TH1*) bayesResult->Clone("tmp");
-    tmp->SetTitle("Ratio to first result;Npart;Ratio");
-    tmp->Divide(firstBayesian);
-    tmp->SetLineColor(i+1);
-    tmp->GetYaxis()->SetRangeUser(0.5, 1.5);
-    tmp->GetXaxis()->SetRangeUser(0, 200);
-    tmp->DrawCopy((i > 0) ? "SAME HIST" : "HIST");
-
-    if (i < 4)
-    {
-      canvasA->cd(i+1);
-    }
-    else
-      canvasB->cd(i+1-4);
-
-    mc->SetFillColor(kYellow);
-    mc->DrawCopy();
-    chi2Result->SetLineColor(kRed);
-    chi2Result->DrawCopy("SAME");
-    bayesResult->SetLineColor(kBlue);
-    bayesResult->DrawCopy("SAME");
-    gPad->SetLogy();
-
-    if (i < 4)
-    {
-      canvasA->cd(i+5);
-    }
-    else
-      canvasB->cd(i+5-4);
-
-    chi2Result->Divide(chi2Result, mc, 1, 1, "B");
-    bayesResult->Divide(bayesResult, mc, 1, 1, "B");
-
-    // skip errors for now
-    for (Int_t j=0; j<=chi2Result->GetNbinsX(); ++j)
-    {
-      chi2Result->SetBinError(j, 0);
-      bayesResult->SetBinError(j, 0);
-    }
-
-    chi2Result->SetTitle("Ratios;Npart;unfolded measured/MC");
-    chi2Result->GetYaxis()->SetRangeUser(0.5, 1.5);
-
-    chi2Result->DrawCopy("");
-    bayesResult->DrawCopy("SAME");
-  }
-
-  canvas3->cd(1);
-  legend->Draw();
-
-  canvasA->SaveAs(Form("%s.gif", canvasA->GetName()));
-  canvasB->SaveAs(Form("%s.gif", canvasB->GetName()));
-
-  TCanvas* canvas2 = new TCanvas("DifferentSamples2", "DifferentSamples2", 800, 400);
-  canvas2->Divide(2, 1);
-
-  canvas2->cd(1);
-  fitResultsChi2->SetMarkerStyle(20);
-  fitResultsChi2->GetYaxis()->SetRangeUser(0.5 * min, 1.5 * max);
-  fitResultsChi2->Draw("AP");
-
-  fitResultsBayes->SetMarkerStyle(3);
-  fitResultsBayes->SetMarkerColor(2);
-  fitResultsBayes->Draw("P SAME");
-
-  gPad->SetLogy();
-
-  canvas2->cd(2);
-  fitResultsChi2Limit->SetMarkerStyle(20);
-  fitResultsChi2Limit->GetYaxis()->SetRangeUser(0.9 * TMath::Min(fitResultsChi2Limit->GetYaxis()->GetXmin(), fitResultsBayesLimit->GetYaxis()->GetXmin()), 1.1 * TMath::Max(fitResultsChi2Limit->GetYaxis()->GetXmax(), fitResultsBayesLimit->GetYaxis()->GetXmax()));
-  fitResultsChi2Limit->Draw("AP");
-
-  fitResultsBayesLimit->SetMarkerStyle(3);
-  fitResultsBayesLimit->SetMarkerColor(2);
-  fitResultsBayesLimit->Draw("P SAME");
-
-  canvas2->SaveAs(Form("%s.gif", canvas2->GetName()));
-  canvas3->SaveAs(Form("%s.gif", canvas3->GetName()));
-  canvas4->SaveAs(Form("%s.gif", canvas4->GetName()));
-}
-
 void Merge(Int_t n, const char** files, const char* output)
 {
   // const char* files[] = { "multiplicityMC_100k_1.root",  "multiplicityMC_100k_2.root",  "multiplicityMC_100k_3.root", "multiplicityMC_100k_4.root",  "multiplicityMC_100k_5.root",  "multiplicityMC_100k_6.root",  "multiplicityMC_100k_7.root",  "multiplicityMC_100k_8.root" };
@@ -1556,7 +1549,7 @@ void Merge(Int_t n, const char** files, const char* output)
 
 void testMethod(Int_t caseNo, const char* fileName = "multiplicityMC.root")
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
 
@@ -1567,7 +1560,8 @@ void testMethod(Int_t caseNo, const char* fileName = "multiplicityMC.root")
 
   if (caseNo >= 4)
   {
-    func = new TF1("nbd", "[0] * TMath::Binomial([2]+TMath::Nint(x)-1, [2]-1) * pow([1] / ([1]+[2]), TMath::Nint(x)) * pow(1 + [1]/[2], -[2])", 0, 500);
+    TF1* func = new TF1("nbd", "exp(log([0]) + TMath::LnGamma([2]+x) - TMath::LnGamma([2]) - TMath::LnGamma(x+1) + log([1] / ([1]+[2])) * x + log(1.0 + [1]/[2]) * -[2])", 0, 200);
+    //func = new TF1("nbd", "[0] * TMath::Binomial([2]+TMath::Nint(x)-1, [2]-1) * pow([1] / ([1]+[2]), TMath::Nint(x)) * pow(1 + [1]/[2], -[2])", 0, 200);
     func->SetParNames("scaling", "averagen", "k");
   }
 
@@ -1577,7 +1571,7 @@ void testMethod(Int_t caseNo, const char* fileName = "multiplicityMC.root")
     case 1: func = new TF1("flat", "501-x"); break;
     case 2: func = new TF1("flat", "1000 * 1/(x+1)"); break;
     case 3: func = new TF1("flat", "1000 * TMath::Landau(x, 10, 5)"); break;
-    case 4: func->SetParameters(1e7, 10, 2); break;
+    case 4: func->SetParameters(2e5, 15, 2); break;
     case 5: func->SetParameters(1, 13, 7); break;
     case 6: func->SetParameters(1e7, 30, 4); break;
     case 7: func->SetParameters(1e7, 30, 2); break; // ***
@@ -1589,13 +1583,13 @@ void testMethod(Int_t caseNo, const char* fileName = "multiplicityMC.root")
   new TCanvas;
   func->Draw();
 
-  mult->SetGenMeasFromFunc(func, 3);
+  mult->SetGenMeasFromFunc(func, 1);
 
   TFile::Open("out.root", "RECREATE");
   mult->SaveHistograms();
 
-  new TCanvas; mult->GetMultiplicityESD(3)->ProjectionY()->DrawCopy();
-  new TCanvas; mult->GetMultiplicityVtx(3)->ProjectionY()->DrawCopy();
+  new TCanvas; mult->GetMultiplicityESD(1)->ProjectionY()->DrawCopy();
+  new TCanvas; mult->GetMultiplicityVtx(1)->ProjectionY("mc", 1, mult->GetMultiplicityVtx(1)->GetNbinsX())->DrawCopy();
 
   //mult->ApplyBayesianMethod(2, kFALSE);
   //mult->ApplyMinuitFit(2, kFALSE);
@@ -1945,9 +1939,10 @@ void BuildResponseFromTree(const char* fileName, const char* target)
 {
   //
   // builds several response matrices with different particle ratios (systematic study)
-  //
+  // 
+  // WARNING doesn't work uncompiled, see test.C
 
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   TFile::Open(fileName);
   TNtuple* fParticleSpecies = (TNtuple*) gFile->Get("fParticleSpecies");
@@ -1960,9 +1955,11 @@ void BuildResponseFromTree(const char* fileName, const char* target)
   Int_t secondaries = 0;
   Int_t doubleCount = 0;
 
-  for (Int_t num = 0; num < 7; num++)
+  for (Int_t num = 0; num < 9; num++)
   {
-    AliMultiplicityCorrection* fMultiplicity = new AliMultiplicityCorrection(Form("Multiplicity_%d", num), Form("Multiplicity_%d", num));
+    TString name;
+    name.Form("Multiplicity_%d", num);
+    AliMultiplicityCorrection* fMultiplicity = new AliMultiplicityCorrection(name, name);
 
     Float_t ratio[4]; // pi, K, p, other
     for (Int_t i = 0; i < 4; i++)
@@ -1971,11 +1968,13 @@ void BuildResponseFromTree(const char* fileName, const char* target)
     switch (num)
     {
       case 1 : ratio[1] = 0.5; break;
-      case 2 : ratio[2] = 0.5; break;
-      case 3 : ratio[1] = 1.5; break;
+      case 2 : ratio[1] = 1.5; break;
+      case 3 : ratio[2] = 0.5; break;
       case 4 : ratio[2] = 1.5; break;
       case 5 : ratio[1] = 0.5; ratio[2] = 0.5; break;
       case 6 : ratio[1] = 1.5; ratio[2] = 1.5; break;
+      case 7 : ratio[1] = 0.5; ratio[2] = 1.5; break;
+      case 8 : ratio[1] = 1.5; ratio[2] = 0.5; break;
     }
 
     for (Int_t i=0; i<fParticleSpecies->GetEntries(); i++)
@@ -2010,7 +2009,8 @@ void BuildResponseFromTree(const char* fileName, const char* target)
       //Printf("%.f %.f %.f %.f %.f", f[5], f[6], f[7], f[8], f[9]);
 
       fMultiplicity->FillCorrection(f[0], gene, gene, gene, gene, 0, meas, meas, meas, meas);
-      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, gene, gene, gene, gene, 0);
+      // HACK all as kND = 1
+      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, 1, gene, gene, gene, gene, 0);
       fMultiplicity->FillMeasured(f[0], meas, meas, meas, meas);
     }
 
@@ -2029,16 +2029,28 @@ void BuildResponseFromTree(const char* fileName, const char* target)
   }
 }
 
-void MergeModifyCrossSection(const char* output)
+void ParticleRatioStudy()
 {
-  const char* files[] = { "multiplicityMC_400k_syst_nd.root", "multiplicityMC_400k_syst_sd.root", "multiplicityMC_400k_syst_dd.root" };
+  loadlibs();
 
-  gSystem->Load("libPWG0base");
+  for (Int_t num = 0; num < 9; num++)
+  {
+    TString target;
+    target.Form("chi2_species_%d.root", num);
+    correct("species.root", Form("Multiplicity_%d", num), "species.root", 1, 1, 0, 1e5, 0, target, "Multiplicity_0");
+  }
+}
+
+void MergeModifyCrossSection(const char* output = "multiplicityMC_xsection.root")
+{
+  const char* files[] = { "multiplicityMC_nd.root", "multiplicityMC_sd.root", "multiplicityMC_dd.root" };
+
+  loadlibs();
 
   TFile::Open(output, "RECREATE");
   gFile->Close();
 
-  for (Int_t num=0; num<7; ++num)
+  for (Int_t num = 0; num < 7; num++)
   {
     AliMultiplicityCorrection* data[3];
     TList list;
@@ -2073,6 +2085,7 @@ void MergeModifyCrossSection(const char* output)
         data[i]->GetMultiplicityVtx(j)->Scale(ratio[i]);
         data[i]->GetMultiplicityMB(j)->Scale(ratio[i]);
         data[i]->GetMultiplicityINEL(j)->Scale(ratio[i]);
+        data[i]->GetMultiplicityNSD(j)->Scale(ratio[i]);
       }
 
       for (Int_t j=0; j<AliMultiplicityCorrection::kESDHists; j++)

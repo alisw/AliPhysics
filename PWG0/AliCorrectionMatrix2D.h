@@ -37,7 +37,7 @@ public:
   TH2* GetCorrectionHistogram() {return (TH2*)fhCorr;}
 
   TH1* Get1DCorrection(const Char_t* opt="x", Float_t min=0, Float_t max=0) {return Get1DCorrectionHistogram(opt,min,max);}
-  TH1* Get1DCorrectionHistogram(const Char_t* opt="x", Float_t min=0, Float_t max=0);
+  TH1* Get1DCorrectionHistogram(const Char_t* opt="x", Float_t min=0, Float_t max=0, Bool_t binomialErrors = kFALSE);
 
   void Rebin(Int_t x = 1, Int_t y = 1);
 

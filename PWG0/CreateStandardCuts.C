@@ -25,9 +25,15 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   // TPC-only cuts
   if (analysisMode == AliPWG0Helper::kTPC)
   {
+    cov1 = 9;
+    cov2 = 9;
+    cov3 = 1e10;
+    cov4 = 1e10;
+    cov5 = 1e10;
+    
     tpcRefit = kFALSE;
     sigmaToVertex = kFALSE;
-
+    
     tag = "TPC-only tracking";
   }
 
@@ -43,12 +49,13 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   esdTrackCuts->SetRequireSigmaToVertex(sigmaToVertex);
 
   if (sigmaToVertex) {
-    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+    esdTrackCuts->SetMaxNsigmaToVertex(nSigma);
   }
   else{
-    //    esdTrackCuts->SetDCAToVertex(3.0);
-    esdTrackCuts->SetDCAToVertexZ(3.0);
-    esdTrackCuts->SetDCAToVertexXY(3.0);
+    
+    esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
   }
 
   esdTrackCuts->SetRequireTPCRefit(tpcRefit);

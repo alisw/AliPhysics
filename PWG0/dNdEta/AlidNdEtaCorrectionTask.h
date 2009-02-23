@@ -32,6 +32,8 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
     void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+    void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
+    void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
 
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -44,8 +46,12 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TString fOption;                 // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode;    // detector that is used for analysis
     AliPWG0Helper::Trigger fTrigger; // trigger used in the analysis
+    Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
+    Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
+
     Int_t fSignMode;                 // if 0 process all particles, if +-1 process only particles with that sign
     Bool_t fOnlyPrimaries;           // only process primaries (syst. studies)
+    Int_t fStatError;                // statistical error evaluation: if set to 1 we only count unique primaries (binomial errors are valid), for 2 all the rest
 
     AliESDtrackCuts*  fEsdTrackCuts;             // Object containing the parameters of the esd track cuts
 
@@ -68,8 +74,9 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH2F* fEtaCorrelationShift;                  //! (MC eta - ESD eta) vs MC eta
     TProfile* fEtaProfile;                       //! Profile of MC eta - ESD eta vs. MC eta
     TH1F* fEtaResolution;                        //! MC eta - ESD eta in |eta| < 1
+    TH2F* fDeltaPhiCorrelation;                  //! delta phi ESD vs. MC
 
-    TH1F* fpTResolution;                         //! MC pT - ESD pT in |eta| < 1
+    TH2F* fpTResolution;                         //! (MC pT - ESD pT) / MC pT vs. MC pT in |eta| < 0.9
 
     AliESDtrackCuts*  fEsdTrackCutsPrim;         //! control histograms for primaries
     AliESDtrackCuts*  fEsdTrackCutsSec;          //! control histograms for secondaries
@@ -83,12 +90,13 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fMultTr; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events
     TH1F* fMultVtx; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events with vertex
 
-    TH1F* fDeltaPhi[8]; //! delta phi of primaries, secondaries, other (= unclear cases)
+    TH2* fDeltaPhi[8]; //! delta phi of primaries, secondaries, other (= unclear cases)
 
-    TH2F* fEventStats;  //! some stats on number of events
+    TH2F* fEventStats;  //! some stats on number of events, see CreateOutputObjects for a detailed definition
 
-    AlidNdEtaCorrection* fdNdEtaCorrectionProcessType[3]; //! correction for specific process type (ND, SD, DD)
-                                                          // enable with option: process-types
+    AlidNdEtaCorrection* fdNdEtaCorrectionSpecial[4];   //! correction maps used for systematic studies, may contain:
+                                                        // for specific process type (ND, SD, DD), enable with option: process-types
+                                                        // for particle species (pi, K, p, rest), enable with: particle-species
 
  private:
     AlidNdEtaCorrectionTask(const AlidNdEtaCorrectionTask&);

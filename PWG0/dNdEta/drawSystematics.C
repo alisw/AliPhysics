@@ -145,11 +145,11 @@ void Track2Particle1DComposition(const char** fileNames, Int_t folderCount, cons
 
   for (Int_t i=0; i<folderCount; ++i)
   {
-    Track2Particle1DCreatePlots(fileNames[i], folderNames[i], upperPtLimit);
+    Correction1DCreatePlots(fileNames[i], folderNames[i], upperPtLimit);
 
-    TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_x_div_meas_%s_nTrackToNPart_x", folderNames[i], folderNames[i])));
-    TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_y_div_meas_%s_nTrackToNPart_y", folderNames[i], folderNames[i])));
-    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folderNames[i], folderNames[i])));
+    TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("generated_x_div_measured_x"));
+    TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject("generated_y_div_measured_y"));
+    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject("generated_z_div_measured_z"));
 
     Prepare1DPlot(corrX);
     Prepare1DPlot(corrY);
@@ -504,20 +504,35 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
       break;
 
       // one species enhanced / reduced
-    case 2: // + 50% pions
-    case 3: // - 50% pions
-    case 4: // + 50% kaons
-    case 5: // - 50% kaons
-    case 6: // + 50% protons
-    case 7: // - 50% protons
-      Int_t correctionIndex = (index - 2) / 2;
-      Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
-
-      fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetMeasuredHistogram()->Scale(scaleFactor);
-      fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetGeneratedHistogram()->Scale(scaleFactor);
-
+    case 2: // + 50% kaons
+    case 3: // - 50% kaons
+    case 4: // + 50% protons
+    case 5: // - 50% protons
+    case 6: // + 50% kaons + 50% protons
+    case 7: // - 50% kaons - 50% protons
+    case 8: // + 50% kaons - 50% protons
+    case 9: // - 50% kaons + 50% protons
       TString* str = new TString;
-      str->Form("%s%s", (correctionIndex == 0) ? "Pi" : ((correctionIndex == 1) ? "K" : "p"), (index % 2 == 0) ? "Boosted" : "Reduced");
+      if (index < 6)
+      {
+        Int_t correctionIndex = index / 2;
+        Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
+  
+        fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
+        str->Form("%s%s", (correctionIndex == 0) ? "Pi" : ((correctionIndex == 1) ? "K" : (correctionIndex == 2) ? "p" : "others"), (index % 2 == 0) ? "Boosted" : "Reduced");
+      }
+      else
+      {
+        Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
+        fdNdEtaCorrection[1]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
+        str->Form("%s%s", "K", (scaleFactor > 1) ? "Boosted" : "Reduced");
+        
+        if (index >= 8)
+          scaleFactor = (index % 2 == 0) ? 0.5 : 1.5;
+        fdNdEtaCorrection[2]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
+        *str += Form("%s%s", "p", (scaleFactor > 1) ? "Boosted" : "Reduced");
+      }
+
       return str->Data();
       break;
 
@@ -535,8 +550,8 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
 
       for (Int_t i=0; i<3; ++i)
       {
-        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDists[i]);
-        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDists[i]);
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram(), ptDists[i]);
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetGeneratedHistogram(), ptDists[i]);
       }
       TString* str = new TString;
       str->Form("%s%s", (functionIndex == 0) ? "Pi" : ((functionIndex == 1) ? "K" : "p"), (index % 2 == 0) ? "Boosted" : "Reduced");
@@ -545,8 +560,8 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
 
     case 999:
       TF1* ptDependence = new TF1("simple", "x", 0, 100);
-      ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDependence);
-      ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDependence);
+      ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetGeneratedHistogram(), ptDependence);
+      ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram(), ptDependence);
       break;
 
   }
@@ -556,23 +571,28 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
 
 void Composition()
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   gSystem->Unlink("new_compositions.root");
+  gSystem->Unlink("new_compositions_analysis.root");
+  
+  const char* names[] = { "pi", "K", "p", "other" };
+  TH1* hRatios[20];
 
-  Int_t nCompositions = 8;
-  for (Int_t comp = 0; comp < nCompositions; ++comp)
+  Int_t nCompositions = 10;
+  Int_t counter = 0;
+  for (Int_t comp = 1; comp < nCompositions; ++comp)
   {
     AlidNdEtaCorrection* fdNdEtaCorrection[4];
 
-    TFile::Open("systematics.root");
+    TFile::Open("correction_mapparticle-species.root");
 
     for (Int_t i=0; i<4; ++i)
     {
       TString name;
-      name.Form("correction_%d", i);
+      name.Form("dndeta_correction_%s", names[i]);
       fdNdEtaCorrection[i] = new AlidNdEtaCorrection(name, name);
-      fdNdEtaCorrection[i]->LoadHistograms("systematics.root", name);
+      fdNdEtaCorrection[i]->LoadHistograms();
     }
 
     const char* newName = ChangeComposition(fdNdEtaCorrection, comp);
@@ -584,8 +604,8 @@ void Composition()
 
     for (Int_t i=0; i<4; ++i)
     {
-      geneCount[i] = fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram()->Integral();
-      measCount[i] = fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram()->Integral();
+      geneCount[i] = fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetGeneratedHistogram()->Integral();
+      measCount[i] = fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram()->Integral();
 
       geneCount[4] += geneCount[i];
       measCount[4] += measCount[i];
@@ -599,27 +619,55 @@ void Composition()
 
     TList* collection = new TList;
 
-    for (Int_t i=0; i<4; ++i)
+    // skip "other" particle correction here
+    // with them has to be dealt differently, maybe just increasing the neutral particles...
+    for (Int_t i=1; i<3; ++i)
       collection->Add(fdNdEtaCorrection[i]);
 
-    AlidNdEtaCorrection* newComposition = new AlidNdEtaCorrection(newName, newName);
-    newComposition->Merge(collection);
-    newComposition->Finish();
+    fdNdEtaCorrection[0]->Merge(collection);
+    fdNdEtaCorrection[0]->Finish();
 
     delete collection;
 
+    // save everything
     TFile* file = TFile::Open("new_compositions.root", "UPDATE");
-    newComposition->SaveHistograms();
+    fdNdEtaCorrection[0]->SetName(newName);
+    fdNdEtaCorrection[0]->SaveHistograms();
     //file->Write();
     file->Close();
+    
+    // correct dNdeta distribution with modified correction map
+    TFile::Open("analysis_esd_raw.root");
+
+    dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("fdNdEtaAnalysisESD", "fdNdEtaAnalysisESD");
+    fdNdEtaAnalysis->LoadHistograms();
+
+    fdNdEtaAnalysis->Finish(fdNdEtaCorrection[0], 0.2, 3, newName);
+    
+    hRatios[counter] = (TH1F*) fdNdEtaAnalysis->GetdNdEtaHistogram()->Clone(newName);
+    hRatios[counter]->SetTitle(newName);
+    hRatios[counter]->SetYTitle("dN_{ch}/d#eta ratio #frac{default composition}{modified composition}");
+
+    if (counter > 0)
+      hRatios[counter]->Divide(hRatios[0],hRatios[counter],1,1);
+
+    file = TFile::Open("new_compositions_analysis.root", "UPDATE");
+    hRatios[counter]->Write();
+    file->Close();
+    
+    delete fdNdEtaAnalysis;
+
+    counter++;
   }
 
+  /*
   gROOT->ProcessLine(".L drawPlots.C");
 
   const char* fileNames[] = {"new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root" };
-  const char* folderNames[] = { "Pythia", "PythiaRatios", "PiBoosted", "PiReduced", "KBoosted", "KReduced", "pBoosted", "pReduced" };
+  const char* folderNames[] = { "PythiaRatios", "PiBoosted", "PiReduced", "KBoosted", "KReduced", "pBoosted", "pReduced" };
 
   Track2Particle1DComposition(fileNames, nCompositions, folderNames);
+  */
 }
 
 
@@ -748,7 +796,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
 
 
-  const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25"};
+  const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdlessddmore25", "sdmoreddless25"};
   Float_t scalesND[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
   Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
   Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
@@ -868,9 +916,9 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
       hRatios[counter] = (TH1F*) fdNdEtaAnalysis->GetdNdEtaHistogram()->Clone(name);
 
-      name.Append(Form(" (DD #times %0.2f, SD #times %0.2f)",scalesDD[i],scalesSD[i]));
+      name.Form("DD #times %0.2f, SD #times %0.2f",scalesDD[i],scalesSD[i]);
       hRatios[counter]->SetTitle(name.Data());
-      hRatios[counter]->SetYTitle("ratio (Pythia x-sections)/(changed x-sections)");
+      hRatios[counter]->SetYTitle("dN_{ch}/d#eta ratio #frac{default cross-section}{modified cross-sections}");
 
       if (counter > 0)
         hRatios[counter]->Divide(hRatios[0],hRatios[counter],1,1);
@@ -895,133 +943,6 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   fout->Write();
   fout->Close();
 }
-
-
-DrawVertexRecoSyst() {
-  // Draws the ratio of the dN/dEta obtained with changed SD and DD
-  // cross-sections vertex reco corrections to the dN/dEta obtained
-  // from the standard pythia cross-sections 
-  //
-  // The files with the vertex reco corrections for different
-  // processes (and with the other standard corrections) are expected
-  // to have the names "analysis_esd_X.root", where the Xs are defined
-  // in the array changes below.
-
-  Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
-  Char_t* descr[]  =   {"",
-			"#sigma_{DD}' = 1.5#times#sigma_{DD}",
-			"#sigma_{DD}' = 0.5#times#sigma_{DD}",
-			"#sigma_{SD}' = 1.5#times#sigma_{SD}",
-			"#sigma_{SD}' = 0.5#times#sigma_{SD}",
-			"#sigma_{D}' = 1.5#times#sigma_{D}",
-			"#sigma_{D}' = 0.5#times#sigma_{D}"};
-
-  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5};
-  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 0.5};
-
-  Int_t markers[] = {20,20,21,22,23,28,29};
-  Int_t colors[]  = {1,2,3,4,6,8,102};
-
-  // cross section from Pythia
-  Float_t sigmaND = 55.2;
-  Float_t sigmaDD = 9.78;
-  Float_t sigmaSD = 14.30;
-
-  TH1F* dNdEta[7];
-  TH1F* ratios[7];
-
-  TFile* fin;
-
-  for (Int_t i=0; i<7; i++) {
-    // calculating relative
-    fin = TFile::Open(Form("analysis_esd_%s.root",changes[i]));
-
-    dNdEta[i] = (TH1F*)(fin->Get("dndeta/dndeta_dNdEta_corrected_2"))->Clone();
-
-    for (Int_t b=0; b<dNdEta[i]->GetNbinsX(); b++) {
-      if (TMath::Abs(dNdEta[i]->GetBinCenter(b))>0.9) {
-	dNdEta[i]->SetBinContent(b,0);
-	dNdEta[i]->SetBinError(b,0);
-      }
-    }
-
-    dNdEta[i]->Rebin(4);
-
-    dNdEta[i]->SetLineWidth(2);
-    dNdEta[i]->SetLineColor(colors[i]);
-    dNdEta[i]->SetMarkerStyle(markers[i]);
-    dNdEta[i]->SetMarkerSize(0.9);
-    dNdEta[i]->SetMarkerColor(colors[i]);
-
-    ratios[i] = (TH1F*)dNdEta[i]->Clone("ratio");
-    ratios[i]->Divide(ratios[i],dNdEta[0],1,1,"B");
-    
-    ratios[i]->SetName(changes[i]);
-    ratios[i]->SetTitle(changes[i]);
-  }
-  
-  //##########################################################
-  
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
-  gStyle->SetOptFit(0);
-
-  gStyle->SetTextSize(0.2);
-  gStyle->SetTitleSize(0.05,"xyz");
-  gStyle->SetLabelOffset(0.01, "xyz");
-
-
-  gStyle->SetTitleOffset(1.2, "y");
-  gStyle->SetTitleOffset(1.2, "x");
-  gStyle->SetEndErrorSize(0.0);
-
-  //##############################################
-
-  //making canvas and pads
-  TCanvas *c = new TCanvas(Form("vertex_reco_syst_%s", plot), Form("vertex_reco_syst_%s", plot),600,500);
-
-  TPad* p1 = new TPad("pad1","", 0, 0.0, 1.0, 1.0, 0, 0, 0);
-
-  p1->SetBottomMargin(0.15);
-  p1->SetTopMargin(0.03);
-  p1->SetLeftMargin(0.15);
-  p1->SetRightMargin(0.03);
-
-  p1->SetGridx();
-  p1->SetGridy();
-
-  p1->Draw();
-  p1->cd();
-  
-  
-  TH2F* null = new TH2F("","",100,-1.5,1.5,100,0.9601,1.099);
-  null->SetXTitle("#eta");
-  null->GetXaxis()->CenterTitle(kTRUE);
-  null->SetYTitle("dN/d#eta / dN/d#eta_{pythia}");
-  null->GetYaxis()->CenterTitle(kTRUE);
-  null->Draw();
-
-  for (Int_t i=1; i<7; i++) 
-    ratios[i]->Draw("same");
-
-  TLegend* legend = new TLegend(0.6, 0.6, 0.95, 0.95);
-  legend->SetFillColor(0);
-
-  TLatex* text[7];
-  for (Int_t i=1; i<7; i++) {
-    legend->AddEntry(dNdEta[i], descr[i]);
-  }
-
-  legend->Draw();
-  //text(0.2,0.88,"Effect of changing",0.045,1,kTRUE);
-  //text(0.2,0.83,"relative cross-sections",0.045,1,kTRUE);
-  //text(0.2,0.78,"(vertex reconstruction corr.)",0.043,13,kTRUE);
-
-  c->SaveAs(Form("%s.gif", c->GetName()));
-  c->SaveAs(Form("%s.eps", c->GetName()));
-}
-
-
 
 DrawTriggerEfficiency(Char_t* fileName) {
 
@@ -1170,10 +1091,22 @@ DrawSpectraPID(Char_t* fileName) {
   generatedPt[0]->Draw("same");
 }
 
-void changePtSpectrum(const char* fileName = "analysis_mc.root")
+void changePtSpectrum(const char* fileName = "analysis_mc.root", Float_t ptCutOff = 0.2, const char* fileName2 = 0)
 {
+  Float_t factor = 0.5;
+
   TFile* file = TFile::Open(fileName);
-  TH1F* hist = dynamic_cast<TH1F*> (file->Get("dndeta_check_pt"));
+  TH1F* hist = dynamic_cast<TH1F*> (file->Get("dndeta_check_pt")->Clone());
+  
+  TH1* hist2 = 0;
+  if (fileName2)
+  {
+    file2 = TFile::Open(fileName2);
+    hist2 = dynamic_cast<TH1*> (file2->Get("dndeta_check_pt")->Clone());
+    hist2->Scale(hist->GetBinContent(hist->FindBin(ptCutOff)) / hist2->GetBinContent(hist2->FindBin(ptCutOff)));
+  }
+  
+  //hist->Scale(1.0 / hist->Integral());
 
   //hist->Rebin(3);
   //hist->Scale(1.0/3);
@@ -1183,8 +1116,6 @@ void changePtSpectrum(const char* fileName = "analysis_mc.root")
 
   TH1F* scale1 =  dynamic_cast<TH1F*> (hist->Clone("scale1"));
   TH1F* scale2 =  dynamic_cast<TH1F*> (hist->Clone("scale2"));
-
-  Float_t ptCutOff = 0.3;
 
   for (Int_t i=1; i <= hist->GetNbinsX(); ++i)
   {
@@ -1196,20 +1127,21 @@ void changePtSpectrum(const char* fileName = "analysis_mc.root")
     else
     {
       // 90 % at pt = 0, 0% at pt = ptcutoff
-      scale1->SetBinContent(i, 1 - (ptCutOff - hist->GetBinCenter(i)) / ptCutOff * 0.3);
+      scale1->SetBinContent(i, 1 - (ptCutOff - hist->GetBinCenter(i)) / ptCutOff * factor);
 
       // 110% at pt = 0, ...
-      scale2->SetBinContent(i, 1 + (ptCutOff - hist->GetBinCenter(i)) / ptCutOff * 0.3);
+      scale2->SetBinContent(i, 1 + (ptCutOff - hist->GetBinCenter(i)) / ptCutOff * factor);
     }
     scale1->SetBinError(i, 0);
     scale2->SetBinError(i, 0);
   }
 
+  /*
   new TCanvas;
-
   scale1->Draw();
   scale2->SetLineColor(kRed);
   scale2->Draw("SAME");
+  */
 
   clone1->Multiply(scale1);
   clone2->Multiply(scale2);
@@ -1223,11 +1155,15 @@ void changePtSpectrum(const char* fileName = "analysis_mc.root")
   clone2->SetMarkerStyle(markers[0]);*/
 
   hist->SetTitle(";p_{T} in GeV/c;dN_{ch}/dp_{T} in c/GeV");
-  hist->GetXaxis()->SetRangeUser(0, 0.7);
+  hist->GetXaxis()->SetRangeUser(0, 0.5);
   hist->GetYaxis()->SetRangeUser(0.01, clone2->GetMaximum() * 1.1);
   hist->GetYaxis()->SetTitleOffset(1);
 
-  TCanvas* canvas = new TCanvas;
+  TCanvas* canvas = new TCanvas("c", "c", 600, 600);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  gPad->SetTopMargin(0.05);
+  gPad->SetRightMargin(0.05);
   gPad->SetBottomMargin(0.12);
   hist->Draw("H");
   clone1->SetLineColor(kRed);
@@ -1235,6 +1171,13 @@ void changePtSpectrum(const char* fileName = "analysis_mc.root")
   clone2->SetLineColor(kBlue);
   clone2->Draw("HSAME");
   hist->Draw("HSAME");
+  
+  if (hist2)
+  {
+    Prepare1DPlot(hist2);
+    hist2->SetLineStyle(2);
+    hist2->Draw("HSAME");
+  }
 
   Float_t fraction =  hist->Integral(hist->GetXaxis()->FindBin(ptCutOff), hist->GetNbinsX()) / hist->Integral(1, hist->GetNbinsX());
   Float_t fraction1 = clone1->Integral(clone1->GetXaxis()->FindBin(ptCutOff), clone1->GetNbinsX()) / clone1->Integral(1, clone1->GetNbinsX());
@@ -1243,7 +1186,7 @@ void changePtSpectrum(const char* fileName = "analysis_mc.root")
   printf("%f %f %f\n", fraction, fraction1, fraction2);
   printf("Rel. %f %f\n", fraction1 / fraction, fraction2 / fraction);
 
-  canvas->SaveAs("changePtSpectrum.gif");
+  //canvas->SaveAs("changePtSpectrum.gif");
   canvas->SaveAs("changePtSpectrum.eps");
 }
 

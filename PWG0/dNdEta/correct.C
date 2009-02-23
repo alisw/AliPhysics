@@ -27,7 +27,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   // Note: the last parameter does not define which analysis is going to happen, the histograms will be overwritten when loading from the f
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaNSD", "dndetaNSD");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kNSD, "ESD -> NSD");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.21, AlidNdEtaCorrection::kNSD, "ESD -> NSD");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   TFile* file2 = TFile::Open(dataOutput, "RECREATE");
   fdNdEtaAnalysis->SaveHistograms();
@@ -35,7 +35,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL, "ESD -> full inelastic");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.21, AlidNdEtaCorrection::kINEL, "ESD -> full inelastic");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -43,7 +43,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco, "ESD -> minimum bias");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.21, AlidNdEtaCorrection::kVertexReco, "ESD -> minimum bias");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -51,7 +51,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, "ESD -> MB with vertex");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.21, AlidNdEtaCorrection::kTrack2Particle, "ESD -> MB with vertex");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -59,7 +59,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "ESD raw with pt cut");
+  fdNdEtaAnalysis->Finish(0, 0.21, AlidNdEtaCorrection::kNone, "ESD raw with pt cut");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -91,12 +91,12 @@ void* FinishAnalysis(const char* analysisFile = "analysis_esd_raw.root", const c
     TFile::Open(correctionMapFile);
     dNdEtaCorrection->LoadHistograms();
 
-    fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL);
+    fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.21, AlidNdEtaCorrection::kINEL);
     //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kINEL);
     //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kTrack2Particle);
   }
   else
-    fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+    fdNdEtaAnalysis->Finish(0, 0.21, AlidNdEtaCorrection::kNone);
 
   fdNdEtaAnalysis->DrawHistograms(simple);
 
@@ -114,11 +114,11 @@ void* FinishAnalysis(const char* analysisFile = "analysis_esd_raw.root", const c
   return fdNdEtaAnalysis;
 }
 
-void correct()
+void correct(Bool_t onlyESD = kFALSE)
 {
   FinishAnalysisAll();
   gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/dNdEta/drawPlots.C");
-  dNdEta();
+  dNdEta(onlyESD);
 }
 
 
