@@ -366,7 +366,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     }
     Double_t dRelErrcomb = TMath::Sqrt(dRelErr2comb);
     Double_t dVErr = dV*dRelErrcomb ; 
-    fCommonHistsRes->FillIntegratedFlowRP(dV, dVErr); 
+    fCommonHistsRes->FillIntegratedFlow(dV, dVErr); 
 
     cout<<"*************************************"<<endl;
     cout<<"*************************************"<<endl;
@@ -374,7 +374,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     cout<<"  Lee-Yang Zeroes Event Plane        "<<endl;
     cout<<endl;
     cout<<"dChi = "<<dChi<<endl;
-    cout<<"dV(RP) = "<<dV<<" +- "<<dVErr<<endl;
+    cout<<"dV = "<<dV<<" +- "<<dVErr<<endl;
     cout<<endl;
         
   }
@@ -443,6 +443,11 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   } //loop over bins b
     
   //v as a function of Pt for RP selection
+  TH1F* fHistPtInt = fCommonHists->GetHistPtInt(); //for calculating integrated flow
+  Double_t dVRP = 0.;
+  Double_t dSum = 0.;
+  Double_t dErrV =0.;
+
   for(Int_t b=0;b<iNbinsPt;b++) {
     Double_t dv2pro  = fHistProVPtRP->GetBinContent(b);
     Double_t dNprime = fCommonHists->GetEntriesInPtBinRP(b);   
@@ -471,14 +476,33 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     else {dErrdifcomb = 0.;}
       
     //fill TH1D
-    fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dErrdifcomb); 
+    fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dErrdifcomb);
+    //calculate integrated flow for RP selection
+    if (fHistPtInt){
+      Double_t dYieldPt = fHistPtInt->GetBinContent(b);
+      dVRP += dv2pro*dYieldPt;
+      dSum +=dYieldPt;
+      dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
+    } else { cout<<"fHistPtDiff is NULL"<<endl; }
+ 
   } //loop over bins b
+
+  if (dSum != 0.) {
+    dVRP /= dSum; //the pt distribution should be normalised
+    dErrV /= (dSum*dSum);
+    dErrV = TMath::Sqrt(dErrV);
+  }
+  fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrV);
+
+  cout<<"dV(RP) = "<<dVRP<<" +- "<<dErrV<<endl;
+  //cout<<endl;
+
        
   //v as a function of Pt for POI selection 
   TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff(); //for calculating integrated flow
   Double_t dVPOI = 0.;
-  Double_t dSum = 0.;
-  Double_t dErrV =0.;
+  dSum = 0.;
+  dErrV =0.;
   
   for(Int_t b=0;b<iNbinsPt;b++) {
     Double_t dv2pro = fHistProVPtPOI->GetBinContent(b);

@@ -25,7 +25,7 @@ class AliFlowLYZHist2: public TNamed  {
  public:
 
   AliFlowLYZHist2();                                //default constructor
-  AliFlowLYZHist2(Int_t theta, const char *name = "AliFlowLYZHist2" ,const char *title = "AliFlowLYZHist2");                     //constructor
+  AliFlowLYZHist2(Int_t theta, const char *selection = "POI", const char *name = "AliFlowLYZHist2" ,const char *title = "AliFlowLYZHist2");                     //constructor
   virtual  ~AliFlowLYZHist2();                      //destructor
   
   Bool_t  IsFolder() const {return kTRUE;};
