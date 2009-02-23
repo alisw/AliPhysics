@@ -691,7 +691,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     // loop over the clusters
     ////////////////////////////
     Int_t nbclusters = 0;
-    for(int jc=0; jc<AliTRDseed::knTimebins; jc++){
+    for(int jc=0; jc<AliTRDseed::kNtb; jc++){
       if(!(cl = tracklet->GetClusters(jc))) continue;
       nbclusters++;
       
@@ -927,7 +927,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////////////////////
   Int_t  nbli = 0;
   AliTRDcluster *cl                   = 0x0;
-  for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
+  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
     if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
     
@@ -943,6 +943,15 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     nbli++;  
 
   }
+
+  //////////////////////////////
+  // Check no shared clusters
+  //////////////////////////////
+
+  for(int ic=AliTRDseed::kNtb; ic<AliTRDseed::knTimebins; ic++){
+    if((cl = tracklet->GetClusters(ic)))  crossrow = 1;
+  }
+
   
   ////////////////////////////////////
   // Do the straight line fit now
@@ -1389,8 +1398,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
 
   Int_t nb3pc    = 0;              // number of three pads clusters used for fit 
   Double_t *padPositions;          // to see the difference between the fit and the 3 pad clusters position
-  padPositions = new Double_t[AliTRDseed::knTimebins];
-  for(Int_t k = 0; k < AliTRDseed::knTimebins; k++){
+  padPositions = new Double_t[AliTRDseed::kNtb];
+  for(Int_t k = 0; k < AliTRDseed::kNtb; k++){
     padPositions[k] = 0.0;
   } 
   fLinearFitterTracklet->ClearPoints();  
@@ -1400,8 +1409,12 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   // loop over the clusters
   ////////////////////////////
   AliTRDcluster *cl                   = 0x0;
-  for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
+  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
+    // reject shared clusters on pad row
+    if(((ic+AliTRDseed::kNtb) < AliTRDseed::knTimebins) && (cl = tracklet->GetClusters(ic+AliTRDseed::kNtb))) continue;
+    //    
     if(!(cl = tracklet->GetClusters(ic))) continue;
+   
     
     Double_t     time  = cl->GetLocalTimeBin();
     if((time<=7) || (time>=21)) continue;
@@ -1466,7 +1479,10 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   ////////////////////////////////////////////////
   // Fill the PRF: Second loop over clusters
   //////////////////////////////////////////////
-  for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
+  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
+    // reject shared clusters on pad row
+    if(((ic+AliTRDseed::kNtb) < AliTRDseed::knTimebins) && (cl = tracklet->GetClusters(ic+AliTRDseed::kNtb))) continue;
+    //
     if(!(cl = tracklet->GetClusters(ic))) continue;
 
     Short_t  *signals      = cl->GetSignals();              // signal
