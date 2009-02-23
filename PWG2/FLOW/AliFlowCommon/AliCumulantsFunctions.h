@@ -38,7 +38,7 @@ class AliCumulantsFunctions{
   virtual ~AliCumulantsFunctions();
   //AliCumulantsFunctions(TProfile2D *intGenFun, TProfile3D *diffGenFunRe, TProfile3D *diffGenFunIm, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *avMult, TProfile *fQVector, TH1D *fQDistrib, TProfile2D *fdRe0, TProfile2D *fdRe1, TProfile2D *fdRe2, TProfile2D *fdRe3, TProfile2D *fdRe4, TProfile2D *fdRe5, TProfile2D *fdRe6, TProfile2D *fdRe7, TProfile2D *fdIm0, TProfile2D *fdIm1, TProfile2D *fdIm2, TProfile2D *fdIm3, TProfile2D *fdIm4, TProfile2D *fdIm5, TProfile2D *fdIm6, TProfile2D *fdIm7);
   
-  AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *intGenFun4, TProfile2D *intGenFun6, TProfile2D *intGenFun8, TProfile2D *intGenFun16, TProfile *avMult4, TProfile *avMult6, TProfile *avMult8, TProfile *avMult16, TProfile3D *diffPtRPGenFunRe, TProfile3D *diffPtRPGenFunIm, TProfile *ptBinRPNoOfParticles, TProfile3D *diffEtaRPGenFunRe, TProfile3D *diffEtaRPGenFunIm, TProfile *etaBinRPNoOfParticles, TProfile3D *diffPtPOIGenFunRe, TProfile3D *diffPtPOIGenFunIm, TProfile *ptBinPOINoOfParticles, TProfile3D *diffEtaPOIGenFunRe, TProfile3D *diffEtaPOIGenFunIm, TProfile *etaBinPOINoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *avMult, TProfile *qVector, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th, AliFlowCommonHist *ch);
+  AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *intGenFun4, TProfile2D *intGenFun6, TProfile2D *intGenFun8, TProfile2D *intGenFun16, TProfile *avMult4, TProfile *avMult6, TProfile *avMult8, TProfile *avMult16, TProfile3D *diffPtRPGenFunRe, TProfile3D *diffPtRPGenFunIm, TProfile *ptBinRPNoOfParticles, TProfile3D *diffEtaRPGenFunRe, TProfile3D *diffEtaRPGenFunIm, TProfile *etaBinRPNoOfParticles, TProfile3D *diffPtPOIGenFunRe, TProfile3D *diffPtPOIGenFunIm, TProfile *ptBinPOINoOfParticles, TProfile3D *diffEtaPOIGenFunRe, TProfile3D *diffEtaPOIGenFunIm, TProfile *etaBinPOINoOfParticles, TH1D *ifr, TH1D *dfr2, TH1D *dfr4, TH1D *dfr6, TH1D *dfr8, TProfile *avMult, TProfile *qVector, TProfile *averageOfSquaredWeight, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th, AliFlowCommonHist *ch);
  
   void Calculate();
 
@@ -82,6 +82,8 @@ class AliCumulantsFunctions{
    
   TProfile *fAvMult;         //average selected multiplicity for int. flow
   TProfile *fQVector;        //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
+  
+  TProfile *fAverageOfSquaredWeight;    //<w^2>
   
   AliFlowCommonHistResults *fchr2nd; //final results for 2nd order int. and diff. flow stored in the common histograms
   AliFlowCommonHistResults *fchr4th; //final results for 4th order int. and diff. flow stored in the common histograms
