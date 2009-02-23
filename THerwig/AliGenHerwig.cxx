@@ -141,6 +141,7 @@ void AliGenHerwig::Init()
   // reset parameters according to user needs
   InitPDF();
   fHerwig->SetPTMIN(fPtHardMin);
+  fHerwig->SetPTMAX(fPtHardMax);
   fHerwig->SetPTRMS(fPtRMS);
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);

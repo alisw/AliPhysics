@@ -857,6 +857,8 @@ public:
   Hwhard_t*   GetHwhard        ()           { return fHwhard; }
   double      GetPTMIN         () const     { return fHwhard->PTMIN; }
   void        SetPTMIN    (double d)        { fHwhard->PTMIN = d; }
+  double      GetPTMAX         () const     { return fHwhard->PTMAX; }
+  void        SetPTMAX    (double d)        { fHwhard->PTMAX = d; }
   double      GetPTPOW         () const     { return fHwhard->PTPOW; }
   void        SetPTPOW    (double d)        { fHwhard->PTPOW = d; }
   double      GetYJMIN         () const     { return fHwhard->YJMIN; }
