@@ -118,7 +118,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMaxCovDiagonalElements();  				    
   SetRequireTPCRefit();
   SetRequireITSRefit();
-  SetAcceptKingDaughters();
+  SetAcceptKinkDaughters();
   SetMaxNsigmaToVertex();
   SetMaxDCAToVertexXY();
   SetMaxDCAToVertexZ();
@@ -1282,38 +1282,20 @@ void AliESDtrackCuts::SetMinNsigmaToVertex(Float_t sigma)
   SetMaxNsigmaToVertex(sigma);
 }
 
-void AliESDtrackCuts::SetDCAToVertex(Float_t dist)
+void AliESDtrackCuts::SetAcceptKingDaughters(Bool_t b)
 {
   // deprecated, will be removed in next release
 
-  SetMaxDCAToVertex(dist);
-}
+  Printf("WARNING: AliESDtrackCuts::SetAcceptKingDaughters is DEPRECATED and will be removed in the next release. Please use SetAcceptKinkDaughters instead. Renaming was done to improve code readability.");
   
-void AliESDtrackCuts::SetMaxDCAToVertex(Float_t dist)
-{
-  // deprecated, will be removed in next release
-  
-  Printf("WARNING: AliESDtrackCuts::SetMaxDCAToVertex is DEPRECATED and will be removed in the next release. Please use SetDCAToVertexXY(dist) and SetDCAToVertexZ(dist) and SetDCAToVertex2D(kTRUE)");
-  
-  SetDCAToVertexXY(dist);
-  SetDCAToVertexZ(dist);
-  SetDCAToVertex2D(kTRUE);
+  SetAcceptKinkDaughters(b);
 }
 
-void AliESDtrackCuts::SetDCAToVertexXY(Float_t dist)
+Bool_t AliESDtrackCuts::GetAcceptKingDaughters() const
 {
   // deprecated, will be removed in next release
 
-  Printf("WARNING: AliESDtrackCuts::SetDCAToVertexXY is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertexXY instead. Renaming was done to improve code readability.");
+  Printf("WARNING: AliESDtrackCuts::GetAcceptKingDaughters is DEPRECATED and will be removed in the next release. Please use GetAcceptKinkDaughters instead. Renaming was done to improve code readability.");
   
-  SetMaxDCAToVertexXY(dist);
-}
-  
-void AliESDtrackCuts::SetDCAToVertexZ(Float_t dist)
-{
-  // deprecated, will be removed in next release
-
-  Printf("WARNING: AliESDtrackCuts::SetDCAToVertexZ is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertexZ instead. Renaming was done to improve code readability.");
-  
-  SetMaxDCAToVertexZ(dist);
+  return GetAcceptKinkDaughters();
 }

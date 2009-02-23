@@ -63,7 +63,7 @@ public:
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
-  void SetAcceptKingDaughters(Bool_t b=kFALSE)   {fCutAcceptKinkDaughters=b;}
+  void SetAcceptKinkDaughters(Bool_t b=kFALSE)   {fCutAcceptKinkDaughters=b;}
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
 
@@ -77,12 +77,10 @@ public:
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
   
   // deprecated, will be removed in next release
-  void SetMaxDCAToVertex(Float_t dist=1e10);
   void SetMinNsigmaToVertex(Float_t sigma=1e10);
-  void SetDCAToVertex(Float_t dist=1e10);
-  void SetDCAToVertexXY(Float_t dist=1e10);
-  void SetDCAToVertexZ(Float_t dist=1e10);
   Float_t GetMinNsigmaToVertex() const;
+  void SetAcceptKingDaughters(Bool_t b=kFALSE);
+  Bool_t  GetAcceptKingDaughters() const;
 
   // getters
 
@@ -93,7 +91,7 @@ public:
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
   Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
-  Bool_t  GetAcceptKingDaughters()   const   { return fCutAcceptKinkDaughters;}
+  Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
