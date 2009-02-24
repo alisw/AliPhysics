@@ -1909,6 +1909,65 @@ void AliProtonQAAnalysis::InitQA() {
     gHistYPtPDGAntiProtonsPass->GetXaxis()->SetTitle("y");
   fQA2DList->Add(gHistYPtPDGAntiProtonsPass);//composition of secondary antiprotons
 
+  //eta-phi
+  TH2D *gHistEtaPhiPrimaryProtonsPass = new TH2D("gHistEtaPhiPrimaryProtonsPass",
+						 ";#eta;#phi [deg.]",
+						 fNBinsY,fMinY,fMaxY,
+						 100,0.,360.);
+  gHistEtaPhiPrimaryProtonsPass->SetStats(kTRUE);
+  gHistEtaPhiPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiPrimaryProtonsPass);//eta-phi of primary accepted ESD protons
+  TH2D *gHistEtaPhiPrimaryProtonsReject = new TH2D("gHistEtaPhiPrimaryProtonsReject",
+						   ";#eta;#phi [deg.]",
+						   fNBinsY,fMinY,fMaxY,
+						   100,0.,360.);
+  gHistEtaPhiPrimaryProtonsReject->SetStats(kTRUE);
+  gHistEtaPhiPrimaryProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiPrimaryProtonsReject);//eta-phi of primary rejected ESD protons
+  TH2D *gHistEtaPhiSecondaryProtonsPass = new TH2D("gHistEtaPhiSecondaryProtonsPass",
+						   ";#eta;#phi [deg.]",
+						   fNBinsY,fMinY,fMaxY,
+						   100,0.,360.);
+  gHistEtaPhiSecondaryProtonsPass->SetStats(kTRUE);
+  gHistEtaPhiSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiSecondaryProtonsPass);//eta-phi of secondary accepted ESD protons
+  TH2D *gHistEtaPhiSecondaryProtonsReject = new TH2D("gHistEtaPhiSecondaryProtonsReject",
+						     ";#eta;#phi [deg.]",
+						     fNBinsY,fMinY,fMaxY,
+						     100,0.,360.);
+  gHistEtaPhiSecondaryProtonsReject->SetStats(kTRUE);
+  gHistEtaPhiSecondaryProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiSecondaryProtonsReject);//eta-phi of secondary rejected ESD protons
+
+  TH2D *gHistEtaPhiPrimaryAntiProtonsPass = new TH2D("gHistEtaPhiPrimaryAntiProtonsPass",
+						     ";#eta;#phi [deg.]",
+						     fNBinsY,fMinY,fMaxY,
+						     100,0.,360.);
+  gHistEtaPhiPrimaryAntiProtonsPass->SetStats(kTRUE);
+  gHistEtaPhiPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiPrimaryAntiProtonsPass);//eta-phi of primary accepted ESD antiprotons
+  TH2D *gHistEtaPhiPrimaryAntiProtonsReject = new TH2D("gHistEtaPhiPrimaryAntiProtonsReject",
+						       ";#eta;#phi [deg.]",
+						       fNBinsY,fMinY,fMaxY,
+						       100,0.,360.);
+  gHistEtaPhiPrimaryAntiProtonsReject->SetStats(kTRUE);
+  gHistEtaPhiPrimaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiPrimaryAntiProtonsReject);//eta-phi of primary rejected ESD antiprotons
+  TH2D *gHistEtaPhiSecondaryAntiProtonsPass = new TH2D("gHistEtaPhiSecondaryAntiProtonsPass",
+						       ";#eta;#phi [deg.]",
+						       fNBinsY,fMinY,fMaxY,
+						       100,0.,360.);
+  gHistEtaPhiSecondaryAntiProtonsPass->SetStats(kTRUE);
+  gHistEtaPhiSecondaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiSecondaryAntiProtonsPass);//eta-phi of secondary accepted ESD antiprotons
+  TH2D *gHistEtaPhiSecondaryAntiProtonsReject = new TH2D("gHistEtaPhiSecondaryAntiProtonsReject",
+							 ";#eta;#phi [deg.]",
+							 fNBinsY,fMinY,fMaxY,
+							 100,0.,360.);
+  gHistEtaPhiSecondaryAntiProtonsReject->SetStats(kTRUE);
+  gHistEtaPhiSecondaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistEtaPhiSecondaryAntiProtonsReject);//eta-phi of secondary rejected ESD antiprotons
+
   /*gDirectory->cd("../");
   //protons
   TDirectory *dirProtons = gDirectory->mkdir("Protons");
@@ -3323,6 +3382,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }//accepted primary protons
 	    else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
@@ -3350,6 +3411,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }//accepted primary antiprotons
 	  }//accepted primary particles
 	  else if(label > stack->GetNprimary()) {
@@ -3392,6 +3455,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fAnalysisEtaMode)
 	      ((TH3F *)(fQA2DList->At(10)))->Fill(tpcTrack->Eta(),Pt,
 						  ConvertPDGToInt(motherPDGCode));
@@ -3428,6 +3493,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(18)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fAnalysisEtaMode)
 		((TH3F *)(fQA2DList->At(11)))->Fill(tpcTrack->Eta(),Pt,
 						    ConvertPDGToInt(motherPDGCode));
@@ -3440,7 +3507,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	    }//accepted secondary antiprotons
 	  }//accepted secondary particles
 	}//accepted - track cuts
-	else {// if(!IsAccepted(esd,vertex,track)) {
+	else {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0) {
 	      if(fAnalysisEtaMode)
@@ -3450,6 +3517,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }
 	    else if(track->Charge() < 0) {
 	      if(fAnalysisEtaMode)
@@ -3459,6 +3528,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(17)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }
 	  }//rejected primary particles
 	  else if(label > stack->GetNprimary()) {
@@ -3470,6 +3541,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(15)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }
 	    else if(track->Charge() < 0) {
 	      if(fAnalysisEtaMode)
@@ -3479,6 +3552,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    tpcTrack->Py(),
 							    tpcTrack->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(19)))->Fill(tpcTrack->Eta(),
+						  tpcTrack->Phi()*180./TMath::Pi());
 	    }
 	  }//rejected secondary particles
 	}//rejected - track cuts
@@ -3532,6 +3607,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(12)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	    else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
@@ -3559,6 +3636,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(16)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
@@ -3601,6 +3680,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(14)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	      if(fAnalysisEtaMode)
 		((TH3F *)(fQA2DList->At(10)))->Fill(track->Eta(),Pt,
 						    ConvertPDGToInt(motherPDGCode));
@@ -3638,6 +3719,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Pz()),
 						   Pt);
 	      
+	      ((TH2D *)(fQA2DList->At(18)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	      if(fAnalysisEtaMode)
 		((TH3F *)(fQA2DList->At(11)))->Fill(track->Eta(),Pt,
 						    ConvertPDGToInt(motherPDGCode));
@@ -3660,6 +3743,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(13)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	    else if(track->Charge() < 0) {
 	      if(fAnalysisEtaMode)
@@ -3669,6 +3754,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(17)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
@@ -3680,6 +3767,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(15)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	    else if(track->Charge() < 0) {
 	      if(fAnalysisEtaMode)
@@ -3689,6 +3778,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							    track->Py(),
 							    track->Pz()),
 						   Pt);
+	      ((TH2D *)(fQA2DList->At(19)))->Fill(track->Eta(),
+						  track->Phi()*180./TMath::Pi());
 	    }
 	  }//secondary particles
 	}//rejected - track cuts
