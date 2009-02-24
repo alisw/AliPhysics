@@ -53,7 +53,7 @@ AliITSSortTrkl::AliITSSortTrkl(Int_t n, Double_t cut):TObject(),
 fkSize(n),
 fIndex(0),
 fPairs(),
-fClustersTmp(),
+fClustersTmp(NULL),
 fClusters(NULL),
 fNoClus(0),
 fSize(NULL),
@@ -62,7 +62,8 @@ fCut(cut),
 fCoarseMaxRCut(0.) {
   // Standard constructor
   fPairs = new AliITSTracklPairs* [fkSize];
-  fClustersTmp = new Int_t* [fkSize-1]; 
+  fClustersTmp = new Int_t* [fkSize-1];
+  for(Int_t i=0; i<fkSize-1; i++) fClustersTmp[i]=NULL;
 }
 
 //______________________________________________________________________
@@ -70,7 +71,7 @@ AliITSSortTrkl::AliITSSortTrkl(TClonesArray &tclo, Int_t n, Double_t cut, Double
 fkSize(n),
 fIndex(0),
 fPairs(),
-fClustersTmp(),
+fClustersTmp(NULL),
 fClusters(NULL),
 fNoClus(0),
 fSize(NULL),
@@ -95,6 +96,7 @@ fCoarseMaxRCut(rcut){
   }
   fPairs = new AliITSTracklPairs* [fkSize];
   fClustersTmp = new Int_t* [fkSize-1];
+  for(Int_t i=0; i<fkSize-1; i++) fClustersTmp[i]=NULL;
   for(Int_t i=0;i<numtrack-1;i++){
     AliStrLine *one = (AliStrLine*)tclo[i];
     for(Int_t j=i+1;j<numtrack;j++){
@@ -129,7 +131,11 @@ AliITSSortTrkl::~AliITSSortTrkl(){
 void AliITSSortTrkl::DeleteClustersTmp(){
   // fClustersTmp is deleted
   if(fClustersTmp){
-    for(Int_t i=0;i<fIndex-1;i++)delete []fClustersTmp[i];
+    for(Int_t i=0;i<fIndex-1;i++){
+      if(fClustersTmp[i]){
+	delete []fClustersTmp[i];
+      }
+    }
     delete fClustersTmp;
     fClustersTmp = NULL;
   }
@@ -147,41 +153,60 @@ Int_t AliITSSortTrkl::AddPairs(Int_t t1, Int_t t2, Double_t dca, Double_t *coo){
 //______________________________________________________________________
 Int_t AliITSSortTrkl::FindClusters(){
   // find clusters
+  if(fIndex<2){
+    AliWarning(Form("fIndex = %d",fIndex));
+    fNoClus = 0;
+    return fNoClus;
+  }
   fMark.ResetAllBits();
   PrepareClustersTmp();
+  //  cout<<"AliITSSortTrkl::FindClusters fkSize "<<fkSize<<"; fIndex "<<fIndex<<endl;
   for(Int_t i=0; i<fIndex-1;i++){
     Int_t *v=fClustersTmp[i];
-    Clustering(i,v);
+    AliDebug(25,Form("Starting clustering for pair number %d",i));
+    Clustering(i,v);  
     if(v[0]>0){
-      AliInfo(Form("Clusters starting from pair %d : %d",i,v[0]));
+      AliDebug(25,Form("Clusters starting from pair %d : %d",i,v[0]));
       Int_t dim;
       v[v[0]+1]=i;
+      // arr will contain the labels of the tracks associated to
+      // the cluster of pairs starting from pair i.
       Int_t *arr=FindLabels(v+1,2*(v[0]+1),dim);
-      cout<<"Pairs involved \n";
-      for(Int_t j=1;j<=v[0];j++){
+
+      /*
+      cout<<"AliITSSortTrkl::FindClusters: Pairs involved \n";
+      for(Int_t j=1;j<=v[0]+1;j++){
 	cout<<v[j]<<" ";
 	if(j%10==0)cout<<endl;
       }
       cout<<endl;
-      cout<<"Tracklets involved\n";
+      cout<<"AliITSSortTrkl::FindClusters: Tracklets involved\n";
       for(Int_t j=0;j<dim;j++){
 	cout<<arr[j]<<" ";
 	if(j%10==0 && j>0)cout<<endl;
       }
       cout<<endl;
+      */
+
+      //In the following loop, all the pairs having 
+      // one tracklet already associated to the cluster starting
+      // at pair i are marked, in order to be excluded from further
+      // searches    
       for(Int_t j=0;j<fIndex;j++){
 	if(fMark.TestBitNumber(j))continue;
 	for(Int_t k=0;k<dim;k++){
 	  if(fPairs[j]->HasTrack(arr[k])){
 	    fMark.SetBitNumber(j);
-	    //	    cout<<"Marked pair "<<j<<" because has tracklet "<<arr[k]<<endl;
+	    // cout<<"Marked pair "<<j<<" because has tracklet "<<arr[k]<<endl;
 	    k=dim;
 	  }
 	}
       }
+    
       delete []arr;
     }
   }
+  // The following method builds the array fClusters
   Cleanup();
   return fNoClus;
 }
@@ -190,6 +215,7 @@ Int_t AliITSSortTrkl::FindClusters(){
 void AliITSSortTrkl::Cleanup(){
   // empty arrays are eliminated, the others are sorted according
   // to cluster multiplicity
+  AliDebug(25,Form("fIndex = %d",fIndex));
   Int_t *siz = new Int_t[fIndex-1];
   Int_t *index = new Int_t[fIndex-1];
   fNoClus=0;
@@ -203,17 +229,27 @@ void AliITSSortTrkl::Cleanup(){
     delete [] index;
     return;
   }
+  AliDebug(25,Form("fNoClus = %d",fNoClus));
   TMath::Sort(fIndex-1,siz,index);
   fClusters = new Int_t* [fNoClus];
   fSize = new Int_t [fNoClus];
   for(Int_t i=0;i<fNoClus;i++){
+    //    cout<<"AliITSSortTrkl::Cleanup: Cluster number "<<i<<"; Index= "<<index[i]<<endl;
     Int_t curind = index[i];
     Int_t *v=fClustersTmp[curind];
     fClusters[i] = new Int_t[v[0]+1];
     fSize[i]=v[0]+1;
+    //    cout<<"AliITSSortTrkl::Cleanup: Size = "<<fSize[i]<<endl;
     Int_t *vext=fClusters[i];
     vext[0]=curind;
     for(Int_t j=1;j<fSize[i];j++)vext[j]=v[j];
+    /*
+    for(Int_t j=0;j<fSize[i];j++){
+      cout<<vext[j]<<" ";
+      if(j%10 == 0 && j!=0)cout<<endl;
+    }
+    cout<<endl;
+    */
   }
   delete []siz;
   delete [] index;
@@ -223,11 +259,13 @@ void AliITSSortTrkl::Cleanup(){
 Int_t* AliITSSortTrkl::GetTrackletsLab(Int_t index, Int_t& dim) const {
   // Returns the tracklet labels corresponding to cluster index
   // Calling code must take care of memory deallocation
+  AliDebug(25,Form("called with parameters %d %d",index,dim));
   if(fNoClus <=0){
     dim = 0;
     return NULL;
   }
   Int_t dimmax = 2*GetSizeOfCluster(index);
+  AliDebug(25,Form("dimmax = %d",dimmax));
   if(dimmax<=0){
     dim = 0;
     return NULL;
@@ -241,12 +279,16 @@ Int_t* AliITSSortTrkl::FindLabels(Int_t *v, Int_t dimmax, Int_t& dim) const {
   // Returns the tracklet labels corresponding to te list of pairs 
   // contained in v.
   // Calling code must take care of memory deallocation
+
+  //  cout<<"AliITSSortTrkl::Findlabels parameters "<<v<<" dimmax = "<<dimmax<<" dim "<<dim<<endl;
   Int_t *arr = new Int_t [dimmax];
   Int_t j=0;
   for(Int_t i=0; i<dimmax/2; i++){
     AliITSTracklPairs *pai=GetPairsAt(v[i]);
     arr[j++]=pai->GetTrack1();
+    //    cout<<"AliITSSortTrkl::FindLabels - i="<<i<<" arr["<<j-1<<"]= "<<arr[j-1]<<endl;
     arr[j++]=pai->GetTrack2();
+    //    cout<<"AliITSSortTrkl::FindLabels arr["<<j-1<<"]= "<<arr[j-1]<<endl;
   }
   SortAndClean(dimmax,arr,dim);
   return arr;
@@ -257,6 +299,8 @@ void AliITSSortTrkl::SortAndClean(Int_t numb, Int_t *arr, Int_t& numb2){
   // Then possible reoccurrences
   // of elements are eliminated. numb2 is the number of remaining elements
   // after cleanup.
+   
+  //  cout<<"AliITSSortTrkl::SortAndClean - Parameters: numb= "<<numb<<" numb2= "<<numb2<<endl;
   if(numb<=0)return;
   Int_t* index = new Int_t[numb];
   TMath::Sort(numb,arr,index,kFALSE);
@@ -270,14 +314,18 @@ void AliITSSortTrkl::SortAndClean(Int_t numb, Int_t *arr, Int_t& numb2){
     }
   }
   ++numb2;
+  /*
+  cout<<"AliITSSortTrkl::SortAndClean - numb2 = "<<numb2<<endl;
   for(Int_t i=0;i<numb;i++){
     if(i<numb2){
       arr[i]=tmp[i];
+      cout<<"arr["<<i<<"]= "<<arr[i]<<endl;
     }
     else {
       arr[i]=0;
     }
   }
+  */
   delete [] index;
   delete [] tmp;
 }
@@ -286,19 +334,25 @@ void AliITSSortTrkl::SortAndClean(Int_t numb, Int_t *arr, Int_t& numb2){
 void AliITSSortTrkl::PrepareClustersTmp(){
   // prepare arrays of clusters
   for(Int_t i=0; i<fIndex-1;i++){
-    fClustersTmp[i] = new Int_t [fIndex-i];
+    fClustersTmp[i] = new Int_t [fIndex+1];
     Int_t *v = fClustersTmp[i];
     v[0]=0;
-    for(Int_t j=1;j<fIndex-i;j++)v[j]=-1;
+    for(Int_t j=1;j<fIndex+1;j++)v[j]=-1;
   }
 }
+
 
 //______________________________________________________________________
 void AliITSSortTrkl::Clustering(Int_t i,Int_t *v){
   // recursive method to build up clusters starting from point i
-  if(fMark.TestBitNumber(i))return;
+  AliDebug(25,Form("Clustering called for pair %d",i));
+  if(fMark.TestBitNumber(i)){
+    AliDebug(25,Form("Leaving Clustering for pair %d - nothing done",i));
+  return;
+  }
   AliITSTracklPairs *p1 = fPairs[i];
-  for(Int_t j=i+1;j<fIndex;j++){
+  for(Int_t j=0;j<fIndex;j++){
+    if(j == i) continue;
     if(fMark.TestBitNumber(j))continue;
     AliITSTracklPairs *p2 = fPairs[j];
     Double_t dist = p1->GetDistance(*p2);
@@ -312,14 +366,19 @@ void AliITSSortTrkl::Clustering(Int_t i,Int_t *v){
       if(!already){
 	++dimclu;
 	v[0]=dimclu;
-	fMark.SetBitNumber(j);
 	fMark.SetBitNumber(i);
+	AliDebug(25,Form("Marked pair %d - and call Clustering for pair %d",i,j));
 	v[dimclu]=j;
 	Clustering(j,v);
+	fMark.SetBitNumber(j);
+	AliDebug(25,Form("Marked pair %d",j));
       }
     }
   }
+  AliDebug(25,Form("Leaving Clustering for pair %d ",i));
 }
+
+
 
 
 
