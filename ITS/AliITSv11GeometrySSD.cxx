@@ -38,6 +38,7 @@
 #include "TGeoPcon.h"
 #include "TRotation.h"
 #include "AliITSv11GeometrySSD.h"
+#include "Riostream.h"
 /////////////////////////////////////////////////////////////////////////////////
 // Names of the Sensitive Volumes of Layer 5 and Layer 6
 /////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +52,8 @@ const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName6 = "ITSssdSensitivL6";
 const Double_t AliITSv11GeometrySSD::fgkSSDTolerance = 0.0001*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment = 0.2*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDModuleSideDisalignment     = 0.2*fgkmm;
+// For ladders:
+const Double_t AliITSv11GeometrySSD::fgkSSDLadderVerticalDisalignment = 0.2*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Layer5 (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -2016,8 +2019,8 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberSupportList(){
   Double_t* param = new Double_t[4]; 
   param[0] = 0., param[1] = 1., param[2] = 0., param[3] = -symmetryplaneposition;
   for(Int_t j=0; j<kvertexnumber; j++) vertexposition[1][j] = 
-				  new TVector3((GetReflection(vertexposition[0][j],param))->X(),
-							  (GetReflection(vertexposition[0][j],param))->Y());
+    new TVector3((GetReflection(vertexposition[0][j],param))->X(),
+		 (GetReflection(vertexposition[0][j],param))->Y());
   const char* carbonfibersupportshapename[kshapesnumber] = 
 						{"CarbonFiberSupportShape1","CarbonFiberSupportShape2"};
   const char* carbonfibersupportname[kshapesnumber] = 
@@ -3039,6 +3042,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 			 - fgkSSDMountingBlockHeight[0];
   yvertex[6] = yvertex[5];
   yvertex[7] = yvertex[0];
+
   ///////////////////////////////////////////////////////////////////////
   // TGeoXTru Volume definition for Mounting Block Part
   ///////////////////////////////////////////////////////////////////////
@@ -3229,6 +3233,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   ymothervertex[7] = ymothervertex[6]-fgkMountingBlockClipThickness;
   ymothervertex[8] = ymothervertex[7];
   ymothervertex[9] = ymothervertex[0];
+
   ///////////////////////////////////////////////////////////////////////
   // TGeoXTru Volume definition for Mounting Block Clip Part
   ///////////////////////////////////////////////////////////////////////
@@ -3889,17 +3894,41 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
   /////////////////////////////////////////
   // LadderSegmentBBox Volume
   /////////////////////////////////////////
-  TGeoBBox* laddercablesegmentbboxshape[kladdercablesegmentnumber];
+  static TGeoBBox* laddercablesegmentbboxshape[kladdercablesegmentnumber] = {0,0};
   const char* laddercablesegmentbboxshapename[kladdercablesegmentnumber] = 
 				{"LadderCableSegmentBBoxShape1","LadderCableSegmentBBoxShape2"};
+
+
+  const char* laddercablesegmentbboxname[kladdercablesegmentnumber] = 
+						  {"LadderCableSegmentBBox1","LadderCableSegmentBBox2"};
+  static TGeoVolume* laddercablesegmentbbox[kladdercablesegmentnumber];
+
+  static TGeoTranslation* laddercablesegmentbboxtrans[kladdercablesegmentnumber] = {
+						   new TGeoTranslation("LadderCableSegmentBBoxTrans1",
+											   0.5*fgkSSDFlexWidth[0],
+											   0.5*fgkSSDLadderCableWidth,
+								       0.5*fgkSSDFlexHeight[0]),
+						   new TGeoTranslation("LadderCableSegmentBBoxTrans2",
+											   0.5*fgkSSDFlexWidth[0],
+											   0.5*fgkSSDLadderCableWidth,
+											   fgkSSDFlexHeight[0]
+											   +0.5*fgkSSDFlexHeight[1])
+                                                                                   };
+  static TGeoVolume* laddercablesegmentbboxassembly = 						   new TGeoVolumeAssembly("LadderCableSegmentBBoxAssembly") ;
+  static TGeoVolume* laddercablesegmentarbassembly = 
+						   new TGeoVolumeAssembly("LadderCableSegmentArbAssembly"); 
+
+  static TGeoArb8* laddercablesegmentarbshape[kladdercablesegmentnumber];
+  static TGeoVolume* laddercablesegmentarb[kladdercablesegmentnumber];
+
+  if (laddercablesegmentbboxshape[0] == 0) { 
+    // Initialise static shapes and volumes 
   for(Int_t i=0; i<kladdercablesegmentnumber; i++) laddercablesegmentbboxshape[i] = 
 						  new TGeoBBox(laddercablesegmentbboxshapename[i],
 									   0.5*fgkSSDFlexWidth[0],
 									   0.5*fgkSSDLadderCableWidth,
 									   0.5*fgkSSDFlexHeight[i]); 
-  const char* laddercablesegmentbboxname[kladdercablesegmentnumber] = 
-						  {"LadderCableSegmentBBox1","LadderCableSegmentBBox2"};
-  TGeoVolume* laddercablesegmentbbox[kladdercablesegmentnumber];
+
   for(Int_t i=0; i<kladdercablesegmentnumber; i++){ 
 			laddercablesegmentbbox[i] =
 						  new TGeoVolume(laddercablesegmentbboxname[i],
@@ -3909,20 +3938,7 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
 			laddercablesegmentbbox[i]->SetLineColor(i==0 ? fColorAl : 
 														   fColorPolyhamide);
   }
-  TGeoTranslation* laddercablesegmentbboxtrans[kladdercablesegmentnumber];										  
-  laddercablesegmentbboxtrans[0] = 
-						   new TGeoTranslation("LadderCableSegmentBBoxTrans1",
-											   0.5*fgkSSDFlexWidth[0],
-											   0.5*fgkSSDLadderCableWidth,
-											   0.5*fgkSSDFlexHeight[0]);
-  laddercablesegmentbboxtrans[1] = 
-						   new TGeoTranslation("LadderCableSegmentBBoxTrans2",
-											   0.5*fgkSSDFlexWidth[0],
-											   0.5*fgkSSDLadderCableWidth,
-											   fgkSSDFlexHeight[0]
-											   +0.5*fgkSSDFlexHeight[1]);
-  TGeoVolume* laddercablesegmentbboxassembly = 
-						   new TGeoVolumeAssembly("LadderCableSegmentBBoxAssembly"); 
+  
   for(Int_t i=0; i<kladdercablesegmentnumber; i++)  
 		laddercablesegmentbboxassembly->AddNode(laddercablesegmentbbox[i],1,
 											    laddercablesegmentbboxtrans[i]);
@@ -3949,7 +3965,7 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
 							     		    {fgkSSDFlexHeight[1],fgkSSDFlexHeight[1]}};	
   const char* laddercablesegmentarbshapename[kladdercablesegmentnumber] = 
 					{"LadderCableSegmentArbShape1","LadderCableSegmentArbShape2"};
-  TGeoArb8* laddercablesegmentarbshape[kladdercablesegmentnumber];
+
   for(Int_t i = 0; i< kladdercablesegmentnumber; i++) laddercablesegmentarbshape[i] = 
 					GetArbShape(laddercablesegmentvertexposition[i],
 								laddercablesegmentwidth[i],
@@ -3957,7 +3973,7 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
 								laddercablesegmentarbshapename[i]);
   const char* laddercablesegmentarbname[kladdercablesegmentnumber] = 
 						  {"LadderCableSegmentArb1","LadderCableSegmentArb2"};
-  TGeoVolume* laddercablesegmentarb[kladdercablesegmentnumber];
+
   for(Int_t i=0; i<kladdercablesegmentnumber; i++){
 			 laddercablesegmentarb[i] =
 						   new TGeoVolume(laddercablesegmentarbname[i],
@@ -3978,13 +3994,13 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
 							 + fgkSSDFlexWidth[0],0.,0.,
 						   new TGeoRotation((*laddercablesegmentarbrot[1])
 						     *(*laddercablesegmentarbrot[0])));
-  TGeoVolume* laddercablesegmentarbassembly = 
-						   new TGeoVolumeAssembly("LadderCableSegmentArbAssembly"); 
   for(Int_t i=0; i<kladdercablesegmentnumber; i++)
   laddercablesegmentarbassembly->AddNode(laddercablesegmentarb[i],1,
 										   laddercablesegmentarbcombitrans);
+  }  // End of static initialisations
 /////////////////////////////////////////
 // End Ladder Cable Volume
+// Note: this part depends explicitly on the length passed as an argument to the function
 /////////////////////////////////////////
   TGeoBBox* ladderendcablesegmentbboxshape[kladdercablesegmentnumber];
   const char* ladderendcablesegmentbboxshapename[kladdercablesegmentnumber] = 
@@ -4029,7 +4045,8 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
   laddercablesegmentlist->Add(laddercablesegmentarbassembly);
   laddercablesegmentlist->Add(ladderendcablesegmentbboxassembly);
   return laddercablesegmentlist;
-  }
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetLadderCable(Int_t n, Double_t ssdendladdercablelength){
   /////////////////////////////////////////////////////////////
@@ -4265,88 +4282,116 @@ void AliITSv11GeometrySSD::SetLadder(){
 ///////////////////////////////////////////////////////////////////////////
 // Disalignement Mother Volume corrections 25/08/08
 ///////////////////////////////////////////////////////////////////////////
-  TGeoXtru* leftladdershape[fgkladdernumber];	
+  TGeoXtru* leftladdershape1[fgkladdernumber];	
+  TGeoXtru* leftladdershape2[fgkladdernumber];	
   TGeoXtru* centersensorladdershape[fgkladdernumber];	
-  TGeoXtru* rightladdershape[fgkladdernumber];	
+  TGeoXtru* rightladdershape1[fgkladdernumber];	
+  TGeoXtru* rightladdershape2[fgkladdernumber];	
   for(Int_t i=0; i<fgkladdernumber; i++){
-   leftladdershape[i] = new TGeoXtru(2);
-   centersensorladdershape[i] = new TGeoXtru(2);
-   rightladdershape[i] = new TGeoXtru(2);
-   }
+    leftladdershape1[i] = new TGeoXtru(2);
+    leftladdershape2[i] = new TGeoXtru(2);
+    centersensorladdershape[i] = new TGeoXtru(2);
+    rightladdershape1[i] = new TGeoXtru(2);
+    rightladdershape2[i] = new TGeoXtru(2);
+  }
   //////////////////////////////////////
-   // Setting the names for shapes  
+  // Setting the names for shapes  
   //////////////////////////////////////
-  leftladdershape[0]->SetName("Lay5LeftLadderSegmentContainer");
-  leftladdershape[1]->SetName("Lay6LeftLadderSegmentContainer");
+  leftladdershape1[0]->SetName("Lay5Left1LadderSegmentContainer");
+  leftladdershape2[0]->SetName("Lay5Left2LadderSegmentContainer");
+  leftladdershape1[1]->SetName("Lay6Left1LadderSegmentContainer");
+  leftladdershape2[1]->SetName("Lay6Left2LadderSegmentContainer");
   centersensorladdershape[0]->SetName("Lay5CenterSensorContainer");
   centersensorladdershape[1]->SetName("Lay6CenterSensorContainer");
-  rightladdershape[0]->SetName("Lay5RightLadderSegmentContainer");
-  rightladdershape[1]->SetName("Lay6RightLadderSegmentContainer");
+  rightladdershape1[0]->SetName("Lay5Right1LadderSegmentContainer");
+  rightladdershape2[0]->SetName("Lay5Right2LadderSegmentContainer");
+  rightladdershape1[1]->SetName("Lay6Right1LadderSegmentContainer");
+  rightladdershape2[1]->SetName("Lay6Right2LadderSegmentContainer");
   //////////////////////////////////////
-  Double_t xleftladdervertex[fgkladdernumber][kmothervertexnumber];
-  Double_t yleftladdervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t xend1laddervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t yend1laddervertex[fgkladdernumber][kmothervertexnumber];
   Double_t xcentersensorvertex[fgkladdernumber][kmothervertexnumber];
   Double_t ycentersensorvertex[fgkladdernumber][kmothervertexnumber];
-  Double_t xrightladdervertex[fgkladdernumber][kmothervertexnumber];
-  Double_t yrightladdervertex[fgkladdernumber][kmothervertexnumber];
-  for(Int_t i=0; i<fgkladdernumber; i++)
-	for(Int_t j=0; j<kmothervertexnumber; j++){
-		xleftladdervertex[i][j] = xmothervertex[i][j];
-		yleftladdervertex[i][j] = ymothervertex[i][j];
-		xcentersensorvertex[i][j] = xmothervertex[i][j];
-		ycentersensorvertex[i][j] = ymothervertex[i][j];
-		xrightladdervertex[i][j] = xmothervertex[i][j];
-		yrightladdervertex[i][j] = ymothervertex[i][j];
-	}
-	xcentersensorvertex[0][0] -= fgkSSDModuleSideDisalignment;	
-	xcentersensorvertex[0][1] =  xcentersensorvertex[0][0];
-	xcentersensorvertex[0][6] = -xcentersensorvertex[0][1];
-	xcentersensorvertex[0][7] = -xcentersensorvertex[0][0];
+  Double_t xend2laddervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t yend2laddervertex[fgkladdernumber][kmothervertexnumber];
+  for(Int_t i=0; i<fgkladdernumber; i++) {
+    for(Int_t j=0; j<kmothervertexnumber; j++){
+      xcentersensorvertex[i][j] = xmothervertex[i][j];
+      ycentersensorvertex[i][j] = ymothervertex[i][j];
+      xend1laddervertex[i][j] = xmothervertex[i][j];
+      yend1laddervertex[i][j] = ymothervertex[i][j];
+      xend2laddervertex[i][j] = xmothervertex[i][j];
+      yend2laddervertex[i][j] = ymothervertex[i][j];
+    }
+    // Add some space around sensors to accommodate misalignments
+    xcentersensorvertex[i][0] -= fgkSSDModuleSideDisalignment;	
+    xcentersensorvertex[i][1] =  xcentersensorvertex[0][0];
+    xcentersensorvertex[i][6] = -xcentersensorvertex[0][1];
+    xcentersensorvertex[i][7] = -xcentersensorvertex[0][0];
+    
+    ycentersensorvertex[i][0] -= fgkSSDModuleVerticalDisalignment;	
+    ycentersensorvertex[i][7] = ycentersensorvertex[0][0];
+    
+    // Center Ladder Piece
+    centersensorladdershape[i]->DefinePolygon(kmothervertexnumber,xcentersensorvertex[i],
+					      ycentersensorvertex[i]);
+    centersensorladdershape[i]->DefineSection(0, - fgkEndLadderCarbonFiberLowerJunctionLength[1]
+					         + 1.45*fgkSSDMountingBlockWidth);
+    centersensorladdershape[i]->DefineSection(1,   ssdlaysensorsnumber[i] * fgkCarbonFiberJunctionWidth
+					         + fgkEndLadderCarbonFiberLowerJunctionLength[0]
+					         - 2.4*fgkSSDMountingBlockWidth);
 
-	xcentersensorvertex[1][0] = xcentersensorvertex[0][0];	
-	xcentersensorvertex[1][1] = xcentersensorvertex[0][1];
-	xcentersensorvertex[1][6] = xcentersensorvertex[0][6];
-	xcentersensorvertex[1][7] = xcentersensorvertex[0][7];
+    // Left and Right Ladder Pieces: Mother volumes around ladder mounting areas 
 
-	ycentersensorvertex[0][0] -= fgkSSDModuleVerticalDisalignment;	
-	ycentersensorvertex[0][7] = ycentersensorvertex[0][0];
+    // Cuts off first corner (neg x)
+    xend1laddervertex[i][0] = -0.5*fgkSSDMountingBlockLength[0];
+    xend1laddervertex[i][1] = -0.5*fgkSSDMountingBlockLength[0];
+    // Cuts off last part (pos x)
+    xend2laddervertex[i][6] = 0.5*fgkSSDMountingBlockLength[0];
+    xend2laddervertex[i][7] = 0.5*fgkSSDMountingBlockLength[0];
 
-	ycentersensorvertex[1][0] = ycentersensorvertex[0][0];	
-	ycentersensorvertex[1][7] = ycentersensorvertex[0][7];
-	for(Int_t i=0; i<fgkladdernumber; i++){
-		// Left Ladder Piece
-		leftladdershape[i]->DefinePolygon(kmothervertexnumber,xleftladdervertex[i],
-										  yleftladdervertex[i]);
-		leftladdershape[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]);
-		leftladdershape[i]->DefineSection(1,-fgkEndLadderCarbonFiberLowerJunctionLength[1]
-											+1.45*fgkSSDMountingBlockWidth);
-		// Center Ladder Piece
-		centersensorladdershape[i]->DefinePolygon(kmothervertexnumber,xcentersensorvertex[i],
-									  ycentersensorvertex[i]);
-		centersensorladdershape[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]
-													+ 1.45*fgkSSDMountingBlockWidth);
-		centersensorladdershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
-											+		fgkEndLadderCarbonFiberLowerJunctionLength[0]
-											-		2.4*fgkSSDMountingBlockWidth);
-		// Right Ladder Piece
-		rightladdershape[i]->DefinePolygon(kmothervertexnumber,xrightladdervertex[i],
-										  yrightladdervertex[i]);
-		rightladdershape[i]->DefineSection(0,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
-											+fgkEndLadderCarbonFiberLowerJunctionLength[0]
-											-2.4*fgkSSDMountingBlockWidth);
-		rightladdershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
-											+fgkEndLadderCarbonFiberLowerJunctionLength[0]);
-	}
-	TGeoCompositeShape* laddershapecontainer[2];
-	laddershapecontainer[0] = new TGeoCompositeShape("Lay5LadderCompositeShape",
-							  "Lay5LeftLadderSegmentContainer+Lay5CenterSensorContainer+Lay5RightLadderSegmentContainer");
-	laddershapecontainer[1] = new TGeoCompositeShape("Lay6LadderCompositeShape",
-							  "Lay6LeftLadderSegmentContainer+Lay6CenterSensorContainer+Lay6RightLadderSegmentContainer");
-	const char* laddername[fgkladdernumber] = {"ITSssdLay5Ladd","ITSssdLay6Ladd"};
-    for(Int_t i=0; i<fgkladdernumber; i++){
-		fladder[i] = new TGeoVolume(laddername[i],laddershapecontainer[i],fSSDAir);
-		fladder[i]->SetLineColor(4);
-	}
+    leftladdershape1[i]->DefinePolygon(kmothervertexnumber,xend1laddervertex[i],  
+				       yend1laddervertex[i]);
+    leftladdershape1[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]);
+    leftladdershape1[i]->DefineSection(1,  fendladdersegmentmatrix[0][i]->GetTranslation()[2]    
+				         - fgkEndLadderMountingBlockPosition[0]);
+    
+    leftladdershape2[i]->DefinePolygon(kmothervertexnumber,xend2laddervertex[i],  
+				       yend2laddervertex[i]);
+    leftladdershape2[i]->DefineSection(0,  fendladdersegmentmatrix[0][i]->GetTranslation()[2]    
+				         - fgkEndLadderMountingBlockPosition[0]); 
+    leftladdershape2[i]->DefineSection(1,- fgkEndLadderCarbonFiberLowerJunctionLength[1] 
+				       + 1.45*fgkSSDMountingBlockWidth);  // connect to main volume at -1.6725 cm
+
+    rightladdershape1[i]->DefinePolygon(kmothervertexnumber,xend1laddervertex[i],
+					yend1laddervertex[i]);
+    rightladdershape1[i]->DefineSection(0,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
+					+fgkEndLadderCarbonFiberLowerJunctionLength[0]
+					-2.4*fgkSSDMountingBlockWidth);
+    rightladdershape1[i]->DefineSection(1,fendladdersegmentmatrix[1][i]->GetTranslation()[2]
+					+ fgkEndLadderMountingBlockPosition[1]);
+
+    rightladdershape2[i]->DefinePolygon(kmothervertexnumber,xend2laddervertex[i],
+					yend2laddervertex[i]);
+    rightladdershape2[i]->DefineSection(0, fendladdersegmentmatrix[1][i]->GetTranslation()[2]
+					   + fgkEndLadderMountingBlockPosition[1]);
+    rightladdershape2[i]->DefineSection(1,  ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
+					  + fgkEndLadderCarbonFiberLowerJunctionLength[0]);
+  }
+  TGeoCompositeShape* laddershapecontainer[2];
+  laddershapecontainer[0] = new TGeoCompositeShape("Lay5LadderCompositeShape",
+						   "Lay5Left1LadderSegmentContainer+Lay5Left2LadderSegmentContainer"
+						   "+Lay5CenterSensorContainer"
+						   "+Lay5Right1LadderSegmentContainer+Lay5Right2LadderSegmentContainer");
+  laddershapecontainer[1] = new TGeoCompositeShape("Lay6LadderCompositeShape",
+						   "Lay6Left1LadderSegmentContainer+Lay6Left2LadderSegmentContainer"
+						   "+Lay6CenterSensorContainer"
+						   "+Lay6Right1LadderSegmentContainer+Lay6Right2LadderSegmentContainer");
+  const char* laddername[fgkladdernumber] = {"ITSssdLay5Ladd","ITSssdLay6Ladd"};
+  for(Int_t i=0; i<fgkladdernumber; i++){
+    fladder[i] = new TGeoVolume(laddername[i],laddershapecontainer[i],fSSDAir);
+    fladder[i]->SetLineColor(4);
+  }
 ///////////////////////////////////////////////////////////////////////////
  if(!fCreateMaterials) CreateMaterials();
  if(!fTransformationMatrices) CreateTransformationMatrices();
@@ -4371,7 +4416,7 @@ void AliITSv11GeometrySSD::SetLadder(){
 	///////////////////////////////						
 	/// Placing End Ladder Segment
 	///////////////////////////////		
-    fladder[i]->AddNode(fendladdersegment[0],1,fendladdersegmentmatrix[0][i]);
+	fladder[i]->AddNode(fendladdersegment[0],1,fendladdersegmentmatrix[0][i]);
 	fladder[i]->AddNode(fendladdersegment[1],1,fendladdersegmentmatrix[1][i]);
    }
 /////////////////////////////////////////////////////////////////////////////						
@@ -4461,7 +4506,7 @@ void AliITSv11GeometrySSD::Layer5(TGeoVolume* moth){
   // Insert the layer 5 in the mother volume. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert layer5, mother is null!\n");
+    AliError("Can't insert layer5, mother is null!\n");
     return;
   };
   if(!fSSDLayer5) SetLayer();
@@ -4476,7 +4521,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   // Insert the layer 6 in the mother volume. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert layer6, mother is null!\n");
+    AliError("AliITSv11GeometrySSD: Can't insert layer6, mother is null!\n");
     return;
   };
   if(!fSSDLayer6) SetLayer();
@@ -4616,6 +4661,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	centermountingsupportshape[i]->DefineSection(0,0.);
     centermountingsupportshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]
 												  -fgkMountingBlockSupportWidth[0]);
+
     centermountingblocksupport[i] = new TGeoVolume(centermountingblockname,
 								          centermountingsupportshape[i],
 										  fSSDAlCoolBlockMedium);
@@ -4671,7 +4717,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
     sprintf(mountingblockpiecedownname,"MountingBlockPieceDownLay%d",i+5);
 	mountingblockpiecedownxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpiecedownyvertex[i][0] = fgkMountingBlockSupportRadius[i]
-										+ fgkMountingBlockSupportDownHeight;
+					      + fgkMountingBlockSupportDownHeight 
+                                              - fgkSSDLadderVerticalDisalignment;
 	mountingblockpiecedownxvertex[i][1] = mountingblockpiecedownxvertex[i][0];	
 	mountingblockpiecedownyvertex[i][1] = mountingblockpiecedownyvertex[i][0]
 										+ fgkSSDMountingBlockHeight[1]
@@ -4698,6 +4745,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblockpiecedown[i] = new TGeoVolume(mountingblockpiecedownname,
 								 mountingblockpiecedownshape[i],fSSDMountingBlockMedium);
 	mountingblockpiecedown[i]->SetLineColor(fColorG10);
+
     ///////////////////////////
     // Mounting Block Up Vertex
     ///////////////////////////
@@ -4705,7 +4753,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	sprintf(mountingblockpieceupname,"MountingBlockPieceUpLay%d",i+5);
 	mountingblockpieceupxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpieceupyvertex[i][0] = fgkMountingBlockSupportRadius[i]
-										+ fgkMountingBlockSupportUpHeight[i];
+										+ fgkMountingBlockSupportUpHeight[i]
+                                              - fgkSSDLadderVerticalDisalignment;
 	mountingblockpieceupxvertex[i][1] = mountingblockpieceupxvertex[i][0];	
 	mountingblockpieceupyvertex[i][1] = mountingblockpieceupyvertex[i][0]
 										+ fgkSSDMountingBlockHeight[1]
@@ -4725,6 +4774,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblockpieceupyvertex[i][6] = mountingblockpieceupyvertex[i][5];
 	mountingblockpieceupxvertex[i][7] = mountingblockpieceupxvertex[i][6];	
 	mountingblockpieceupyvertex[i][7] = mountingblockpieceupyvertex[i][0];
+
 	mountingblockpieceupshape[i]->DefinePolygon(8,mountingblockpieceupxvertex[i],
 													 mountingblockpieceupyvertex[i]);
 	mountingblockpieceupshape[i]->DefineSection(0,0.0);
@@ -4766,6 +4816,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblocksupportrapezoidownyvertex[i][3] = mountingblocksupportrapezoidownyvertex[i][2];
 	mountingblocksupportrapezoidownxvertex[i][4] = mountingblocksupportrapezoidownxvertex[i][3];
 	mountingblocksupportrapezoidownyvertex[i][4] = mountingblocksupportrapezoidownyvertex[i][0];
+
 	mountingblocksupportrapezoidownshape[i]->DefinePolygon(5,mountingblocksupportrapezoidownxvertex[i],
 	 												       mountingblocksupportrapezoidownyvertex[i]);
 	mountingblocksupportrapezoidownshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
@@ -4794,6 +4845,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblocksupportrapezoidupyvertex[i][3] = mountingblocksupportrapezoidupyvertex[i][2];
 	mountingblocksupportrapezoidupxvertex[i][4] = mountingblocksupportrapezoidupxvertex[i][3];
 	mountingblocksupportrapezoidupyvertex[i][4] = mountingblocksupportrapezoidupyvertex[i][0];
+
 	mountingblocksupportrapezoidupshape[i]->DefinePolygon(5,mountingblocksupportrapezoidupxvertex[i],
 	 												       mountingblocksupportrapezoidupyvertex[i]);
 	mountingblocksupportrapezoidupshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
@@ -4830,8 +4882,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   TGeoXtru* downmotherladdersupportshape[fgklayernumber];
   TGeoVolume* downmotherladdersupport[fgklayernumber]; 
   TGeoXtru* upmotherladdersupportshape[fgklayernumber];
-//  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
-  TGeoVolumeAssembly* upmotherladdersupport[fgklayernumber];   
+  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
   char upmotheladdersupportname[100];
   char downmotheladdersupportname[100];
   for(Int_t i=0; i<fgklayernumber; i++){
@@ -4853,18 +4904,25 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	ymothervertex[i][6] = ymothervertex[i][5];
 	xmothervertex[i][7] = xmothervertex[i][6];
 	ymothervertex[i][7] = ymothervertex[i][0];
+
 	sprintf(downmotheladdersupportname,"LadderSupportDownLay%d",i+5);
 	sprintf(upmotheladdersupportname,"LadderSupportUpLay%d",i+5);
-    downmotherladdersupportshape[i] = new TGeoXtru(2);
+
+	downmotherladdersupportshape[i] = new TGeoXtru(2);
 	downmotherladdersupportshape[i]->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
 	downmotherladdersupportshape[i]->DefineSection(0,ysidevertex[i][0]);
-    downmotherladdersupportshape[i]->DefineSection(1,ysidevertex[i][1]
+	downmotherladdersupportshape[i]->DefineSection(1,ysidevertex[i][1]
 								   +			   fgkMountingBlockSupportDownHeight
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
-								   -			   fgkSSDModuleCoolingBlockToSensor);
-    downmotherladdersupport[i] = new TGeoVolume(downmotheladdersupportname,
-								          downmotherladdersupportshape[i],fSSDAir);
+								   -			   fgkSSDModuleCoolingBlockToSensor
+						       - fgkSSDLadderVerticalDisalignment);
+	
+//						   - fgkSSDModuleVerticalDisalignment);
+	//downmotherladdersupport[i] = new TGeoVolumeAssembly(downmotheladdersupportname);
+
+        downmotherladdersupport[i] = new TGeoVolume(downmotheladdersupportname,
+    								          downmotherladdersupportshape[i],fSSDAir);
     upmotherladdersupportshape[i] = new TGeoXtru(2);
 	upmotherladdersupportshape[i]->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
 	upmotherladdersupportshape[i]->DefineSection(0,ysidevertex[i][0]);
@@ -4872,10 +4930,11 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   +			   fgkMountingBlockSupportUpHeight[i]
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
-								   -			   fgkSSDModuleCoolingBlockToSensor);
-	upmotherladdersupport[i] = new TGeoVolumeAssembly(upmotheladdersupportname);
-//    upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
-//											  upmotherladdersupportshape[i],fSSDAir);
+								   -			   fgkSSDModuleCoolingBlockToSensor
+						 - fgkSSDLadderVerticalDisalignment);
+
+     upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
+											  upmotherladdersupportshape[i],fSSDAir);
   }
   for(Int_t i=0; i<fgklayernumber; i++){
 	/////////////////////////
@@ -4883,7 +4942,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	/////////////////////////
 	boxorigindown[i][0][0] = -0.5*mountingsupportedge[i];
 	boxorigindown[i][0][1] =  fgkMountingBlockSupportRadius[i]
-						   +  0.5*fgkMountingBlockSupportDownHeight;
+						   +  0.5*fgkMountingBlockSupportDownHeight
+	                          - 0.5*fgkSSDLadderVerticalDisalignment;
 	boxorigindown[i][0][2] =  fgkMountingBlockSupportWidth[1]
 						   -  0.5*fgkMountingBlockSupportWidth[0];
   
@@ -4894,13 +4954,13 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 						   
 	boxoriginup[i][0][0] = -0.5*mountingsupportedge[i];
 	boxoriginup[i][0][1] = fgkMountingBlockSupportRadius[i]
-						 + 0.5*fgkMountingBlockSupportUpHeight[i];
+	                       + 0.5*fgkMountingBlockSupportUpHeight[i]
+	                       - 0.5*fgkSSDLadderVerticalDisalignment;
 	boxoriginup[i][0][2] = fgkMountingBlockSupportWidth[1]
 						 - 0.5*fgkMountingBlockSupportWidth[0];
   
 	boxoriginup[i][1][0] = 0.0;
-	boxoriginup[i][1][1] = fgkMountingBlockSupportRadius[i]
-						 + 0.5*fgkMountingBlockSupportUpHeight[i];
+	boxoriginup[i][1][1] = boxoriginup[i][0][1];
 	boxoriginup[i][1][2] = 0.5*(fgkMountingBlockSupportWidth[1]
 						 - fgkMountingBlockSupportWidth[0]);
   
@@ -4909,28 +4969,28 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	/////////////////////////
 	mountingblocksupportboxdownshape[i][0] = new TGeoBBox(0.5*(mountingsupportedge[i]
 										 +  fgkSSDMountingBlockLength[0]),
-											0.5*fgkMountingBlockSupportDownHeight,
+											0.5*fgkMountingBlockSupportDownHeight -	0.5*fgkSSDLadderVerticalDisalignment,
 											0.5*fgkMountingBlockSupportWidth[0],
 											boxorigindown[i][0]);
-    mountingblocksupportboxdownshape[i][1] = new TGeoBBox(0.5*fgkSSDMountingBlockLength[0],
-											0.5*fgkMountingBlockSupportDownHeight,
+	mountingblocksupportboxdownshape[i][1] = new TGeoBBox(0.5*fgkSSDMountingBlockLength[0],
+											0.5*fgkMountingBlockSupportDownHeight -	0.5*fgkSSDLadderVerticalDisalignment,
 											0.5*(fgkMountingBlockSupportWidth[1]
 										 -  fgkMountingBlockSupportWidth[0]),
 											boxorigindown[i][1]);
 											
 	mountingblocksupportboxupshape[i][0] = new TGeoBBox(0.5*(mountingsupportedge[i]
 										 +  fgkSSDMountingBlockLength[0]),
-											0.5*fgkMountingBlockSupportUpHeight[i],
+											0.5*fgkMountingBlockSupportUpHeight[i] - 0.5*fgkSSDLadderVerticalDisalignment,
 											0.5*fgkMountingBlockSupportWidth[0],
 											boxoriginup[i][0]);
-											
+
 	mountingblocksupportboxupshape[i][1] = new TGeoBBox(0.5*fgkSSDMountingBlockLength[0],
-											0.5*fgkMountingBlockSupportUpHeight[i],
+											0.5*fgkMountingBlockSupportUpHeight[i] - 0.5*fgkSSDLadderVerticalDisalignment,
 											0.5*(fgkMountingBlockSupportWidth[1]
 							             -	fgkMountingBlockSupportWidth[0]),
 											boxoriginup[i][1]);
 	///////////////////////////////////////
-    // Adding the Volumes to Mother Volume    
+	// Adding the Volumes to Mother Volume    
 	///////////////////////////////////////
 	for(Int_t j=0; j<2; j++){
 		sprintf(mountingblocksupportboxdownname,"MountingBlockSuppDownLay%dBox%d",i+5,j+1);
@@ -4945,7 +5005,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 		mountingblocksupportboxup[i][j]->SetLineColor(9);
 		for(Int_t k=0; k<2; k++){
 			downmotherladdersupport[i]->AddNode(mountingblocksupportboxdown[i][j],k+1,laddersupportmatrix[k]);
-//			upmotherladdersupport[i]->AddNode(mountingblocksupportboxup[i][j],k+1,laddersupportmatrix[k]);
+			upmotherladdersupport[i]->AddNode(mountingblocksupportboxup[i][j],k+1,laddersupportmatrix[k]);
 		}
 	}
 	for(Int_t k=0; k<2; k++){
@@ -4953,14 +5013,14 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 		downmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
 		downmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
 		downmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
-	    downmotherladdersupport[i]->AddNode(mountingblockpiecedown[i],k+1,laddersupportmatrix[k]);
+	        downmotherladdersupport[i]->AddNode(mountingblockpiecedown[i],k+1,laddersupportmatrix[k]);
 		downmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidown[i],k+1,laddersupportmatrix[k]);
 		upmotherladdersupport[i]->AddNode(centermountingblocksupport[i],k+1,laddersupportmatrix[k]);
-//		upmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
-//		upmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
-//		upmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
-//		upmotherladdersupport[i]->AddNode(mountingblockpieceup[i],k+1,laddersupportmatrix[k]);
-//		upmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidup[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(mountingblockpieceup[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidup[i],k+1,laddersupportmatrix[k]);
 	}
   }
   TList* laddersupportlist = new TList();
@@ -7285,7 +7345,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting End Cap Support + End Cap Assembly of Layer 5. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer5, mother is null!\n");
+    AliError("Can't insert end cap support of layer5, mother is null!\n");
     return;
   };
   if(!fgkEndCapSupportSystem) SetEndCapSupportAssembly();
@@ -7316,7 +7376,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting End Cap Support + End Cap Assembly of Layer 6. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer6, mother is null!\n");
+    AliError("Can't insert end cap support of layer6, mother is null!\n");
     return;
   };
   if(!fgkEndCapSupportSystem) SetEndCapSupportAssembly();
@@ -7347,7 +7407,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting Ladder Support of Layer 5. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert ladder lupport of layer5, mother is null!\n");
+    AliError("Can't insert ladder lupport of layer5, mother is null!\n");
     return;
   };
   if(!fLay5LadderSupportRing) SetLadderSupport(100);
@@ -7365,7 +7425,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting Ladder Support of Layer 6. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert ladder lupport of layer6, mother is null!\n");
+    AliError("Can't insert ladder lupport of layer6, mother is null!\n");
     return;
   };
   if(!fLay6LadderSupportRing) SetLadderSupport(100);
@@ -7383,7 +7443,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting Ladder Support of Layer 6. 
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert SSD Cone, mother is null!\n");
+    AliError("Can't insert SSD Cone, mother is null!\n");
     return;
   };
   if(!fSSDCone) SetSSDCone();
@@ -7685,7 +7745,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting SSD Cables
   /////////////////////////////////////////////////////////////
   if (! moth) {
-    printf("Error::AliITSv11GeometrySSD: Can't insert SSD Cables, mother is null!\n");
+    AliError("Can't insert SSD Cables, mother is null!\n");
     return;
   };
   TGeoVolume* ssdcables = SetSSDCables();
@@ -8442,7 +8502,7 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   sprintf(ch, "ITS_%s",mediumName);
   TGeoMedium* medium =  gGeoManager->GetMedium(ch);
   if (! medium)
-    printf("Error(AliITSv11GeometrySSD)::medium %s not found !\n", mediumName);
+    AliError(Form("medium %s not found !\n", mediumName));
   return medium;
 }
 ////////////////////////////////////////////////////////////////////////////////
