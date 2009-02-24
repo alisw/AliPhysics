@@ -1195,7 +1195,9 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTPCsignal=t->GetPIDsignal();
     break;
 
-  case kTRDout: case kTRDin: case kTRDrefit:
+  case kTRDin: case kTRDrefit:
+    break;
+  case kTRDout:
     index     = fFriendTrack->GetTRDindices();
     fTRDLabel = t->GetLabel(); 
     fTRDchi2  = t->GetChi2();
