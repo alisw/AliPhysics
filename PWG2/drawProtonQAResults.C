@@ -59,7 +59,41 @@ void drawCutStatistics(TList *list,
   GetQAEntries(fQA2DList,gEntriesQA2DList);
   TH3F *gHistYPtPDGProtonsPass = (TH3F *)fQA2DList->At(10);
   TH3F *gHistYPtPDGAntiProtonsPass = (TH3F *)fQA2DList->At(11);
+  TH2D *gHistEtaPtPrimaryProtonsAccepted = (TH2D *)fQA2DList->At(12);
+  TH2D *gHistEtaPtPrimaryProtonsRejected = (TH2D *)fQA2DList->At(13);
+  TH2D *gHistEtaPtSecondaryProtonsAccepted = (TH2D *)fQA2DList->At(14);
+  TH2D *gHistEtaPtSecondaryProtonsRejected = (TH2D *)fQA2DList->At(15);
+  TH2D *gHistEtaPtPrimaryAntiProtonsAccepted = (TH2D *)fQA2DList->At(16);
+  TH2D *gHistEtaPtPrimaryAntiProtonsRejected = (TH2D *)fQA2DList->At(17);
+  TH2D *gHistEtaPtSecondaryAntiProtonsAccepted = (TH2D *)fQA2DList->At(18);
+  TH2D *gHistEtaPtSecondaryAntiProtonsRejected = (TH2D *)fQA2DList->At(19);
 
+  TCanvas *c17 = new TCanvas("c17",
+			     "Proton eta-pT",
+			     800,800,700,700);
+  c17->SetHighLightColor(10); c17->Divide(2,2);
+  c17->cd(1); gHistEtaPtPrimaryProtonsAccepted->SetStats(kFALSE); 
+  gHistEtaPtPrimaryProtonsAccepted->Draw("col");
+  c17->cd(2); gHistEtaPtPrimaryProtonsRejected->SetStats(kFALSE); 
+  gHistEtaPtPrimaryProtonsRejected->Draw("col");
+  c17->cd(3); gHistEtaPtSecondaryProtonsAccepted->SetStats(kFALSE); 
+  gHistEtaPtSecondaryProtonsAccepted->Draw("col");
+  c17->cd(4); gHistEtaPtSecondaryProtonsRejected->SetStats(kFALSE); 
+  gHistEtaPtSecondaryProtonsRejected->Draw("col");
+
+  TCanvas *c18 = new TCanvas("c18",
+			     "Proton eta-pT",
+			     850,850,700,700);
+  c18->SetHighLightColor(10); c18->Divide(2,2);
+  c18->cd(1); gHistEtaPtPrimaryAntiProtonsAccepted->SetStats(kFALSE);
+  gHistEtaPtPrimaryAntiProtonsAccepted->Draw("col");
+  c18->cd(2); gHistEtaPtPrimaryAntiProtonsRejected->SetStats(kFALSE);
+  gHistEtaPtPrimaryAntiProtonsRejected->Draw("col");
+  c18->cd(3); gHistEtaPtSecondaryAntiProtonsAccepted->SetStats(kFALSE);
+  gHistEtaPtSecondaryAntiProtonsAccepted->Draw("col");
+  c18->cd(4); gHistEtaPtSecondaryAntiProtonsRejected->SetStats(kFALSE);
+  gHistEtaPtSecondaryAntiProtonsRejected->Draw("col");
+ 
   TList *fQAPrimaryProtonsAcceptedList = (TList *)list->At(1);
   GetQAEntries(fQAPrimaryProtonsAcceptedList,gEntriesQAPrimaryProtonsAcceptedList);
 
