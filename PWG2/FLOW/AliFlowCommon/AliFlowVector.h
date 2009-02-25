@@ -56,7 +56,7 @@ class AliFlowVector: public TVector2 {
   Double_t fSumOfWeightsToPower7; // pow(w_1,7) + pow(w_2,7) + ... + pow(w_n,7)
   Double_t fSumOfWeightsToPower8; // pow(w_1,8) + pow(w_2,8) + ... + pow(w_n,8)
  
-  ClassDef(AliFlowVector, 0) 
+  ClassDef(AliFlowVector, 1) 
 };
 #endif
 

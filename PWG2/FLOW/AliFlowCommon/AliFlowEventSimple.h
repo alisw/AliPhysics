@@ -24,6 +24,7 @@ class AliFlowTrackSimple;
 class AliFlowEventSimple: public TObject {
 
  public:
+  AliFlowEventSimple();
   AliFlowEventSimple(Int_t aLenght);
   AliFlowEventSimple(const AliFlowEventSimple& anEvent);
   AliFlowEventSimple& operator=(const AliFlowEventSimple& anEvent);

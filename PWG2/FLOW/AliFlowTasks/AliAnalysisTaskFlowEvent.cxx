@@ -53,6 +53,7 @@ ClassImp(AliAnalysisTaskFlowEvent)
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) : 
   AliAnalysisTask(name, ""), 
+//  fOutputFile(NULL),
   fESD(NULL),
   fAOD(NULL),
   fEventMaker(NULL),
@@ -69,17 +70,19 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TList container
-  DefineOutput(0, TObject::Class());  
+  // Define here the flow event output
+  DefineOutput(0, AliFlowEventSimple::Class());  
   if(on) {
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class()); }  
-  // Define here the flow event output
+  // and for testing open an output file
+  //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() : 
+  //  fOutputFile(NULL),
   fESD(NULL),
   fAOD(NULL),
   fEventMaker(NULL),
@@ -262,7 +265,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     fEvent = fEventMaker->FillTracks(fAOD);
   }
 
-  //fListHistos->Print();	
+  //fListHistos->Print();
+  //  fOutputFile->WriteObject(fEvent,"myFlowEventSimple");	
   PostData(0,fEvent);
   if (fQA) {
     PostData(1,fQAInt);
