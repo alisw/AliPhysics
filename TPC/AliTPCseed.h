@@ -75,10 +75,10 @@ class AliTPCseed : public AliTPCtrack {
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
      Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
      Float_t  CookShape(Int_t type);
+  Float_t CookShape2(Int_t type,Bool_t withQ);
      void CookPID();
      Double_t Bethe(Double_t bg);     // return bethe-bloch
      Double_t BetheMass(Double_t mass=0.1057);     // return bethe-bloch
-     //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
      Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
      AliTPCclusterMI* GetClusterPointer(Int_t i) const {return fClusterPointer[i];}
@@ -139,12 +139,14 @@ class AliTPCseed : public AliTPCtrack {
      const TBits& GetClusterMap() const { return fClusterMap; };
      const TBits& GetSharedMap() const { return fSharedMap; };
 
-  Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, AliTPCCalPad * gainMap = 0, Bool_t posNorm=kFALSE, Bool_t padNorm=kFALSE);
+  Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Bool_t shapeNorm=kTRUE, Bool_t posNorm=kFALSE, Int_t padNorm=0);
  static   void GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
 			 Double_t& erry, Double_t &errz);
  static   void GetShape(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
 			 Double_t& rmsy, Double_t &rmsz);
-
+  static   Double_t GetQCorrGeom(Float_t ty, Float_t tz);
+  static   Double_t GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr);
+  
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}

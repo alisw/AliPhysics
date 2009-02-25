@@ -567,235 +567,242 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
 
-  Float_t amp[200];
-  Float_t angular[200];
-  Float_t weight[200];
-  Int_t index[200];
-  //Int_t nc = 0;
-  Float_t meanlog = 100.;
-  
-  Float_t mean[4]  = {0,0,0,0};
-  Float_t sigma[4] = {1000,1000,1000,1000};
-  Int_t nc[4]      = {0,0,0,0};
-  Float_t norm[4]    = {1000,1000,1000,1000};
-  //
-  //
-  fNShared =0;
-
-  Float_t gainGG = 1;
-  if (AliTPCcalibDB::Instance()->GetParameters()){
-    gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000.;  //relative gas gain
-  }
-
-
-  for (Int_t of =0; of<4; of++){    
-    for (Int_t i=of+i1;i<i2;i+=4)
-      {
-	Int_t clindex = fIndex[i];
-	if (clindex<0||clindex&0x8000) continue;
-
-	//AliTPCTrackPoint * point = (AliTPCTrackPoint *) arr.At(i);
-	AliTPCTrackerPoint * point = GetTrackPoint(i);
-	//AliTPCTrackerPoint * pointm = GetTrackPoint(i-1);
-	//AliTPCTrackerPoint * pointp = 0;
-	//if (i<159) pointp = GetTrackPoint(i+1);
-
-	if (point==0) continue;
-	AliTPCclusterMI * cl = fClusterPointer[i];
-	if (cl==0) continue;	
-	if (onlyused && (!cl->IsUsed(10))) continue;
-	if (cl->IsUsed(11)) {
-	  fNShared++;
-	  continue;
-	}
-	Int_t   type   = cl->GetType();
-	//if (point->fIsShared){
-	//  fNShared++;
-	//  continue;
-	//}
-	//if (pointm) 
-	//  if (pointm->fIsShared) continue;
-	//if (pointp) 
-	//  if (pointp->fIsShared) continue;
-
-	if (type<0) continue;
-	//if (type>10) continue;       
-	//if (point->GetErrY()==0) continue;
-	//if (point->GetErrZ()==0) continue;
-
-	//Float_t ddy = (point->GetY()-cl->GetY())/point->GetErrY();
-	//Float_t ddz = (point->GetZ()-cl->GetZ())/point->GetErrZ();
-	//if ((ddy*ddy+ddz*ddz)>10) continue; 
-
-
-	//	if (point->GetCPoint().GetMax()<5) continue;
-	if (cl->GetMax()<5) continue;
-	Float_t angley = point->GetAngleY();
-	Float_t anglez = point->GetAngleZ();
-
-	Float_t rsigmay2 =  point->GetSigmaY();
-	Float_t rsigmaz2 =  point->GetSigmaZ();
-	/*
-	Float_t ns = 1.;
-	if (pointm){
-	  rsigmay +=  pointm->GetTPoint().GetSigmaY();
-	  rsigmaz +=  pointm->GetTPoint().GetSigmaZ();
-	  ns+=1.;
-	}
-	if (pointp){
-	  rsigmay +=  pointp->GetTPoint().GetSigmaY();
-	  rsigmaz +=  pointp->GetTPoint().GetSigmaZ();
-	  ns+=1.;
-	}
-	rsigmay/=ns;
-	rsigmaz/=ns;
-	*/
-
-	Float_t rsigma = TMath::Sqrt(rsigmay2*rsigmaz2);
-
-	Float_t ampc   = 0;     // normalization to the number of electrons
-	if (i>64){
-	  //	  ampc = 1.*point->GetCPoint().GetMax();
-	  ampc = 1.*cl->GetMax();
-	  //ampc = 1.*point->GetCPoint().GetQ();	  
-	  //	  AliTPCClusterPoint & p = point->GetCPoint();
-	  //	  Float_t dy = TMath::Abs(Int_t( TMath::Abs(p.GetY()/0.6)) - TMath::Abs(p.GetY()/0.6)+0.5);
-	  // Float_t iz =  (250.0-TMath::Abs(p.GetZ())+0.11)/0.566;
-	  //Float_t dz = 
-	  //  TMath::Abs( Int_t(iz) - iz + 0.5);
-	  //ampc *= 1.15*(1-0.3*dy);
-	  //ampc *= 1.15*(1-0.3*dz);
-	  //	  Float_t zfactor = (AliTPCReconstructor::GetCtgRange()-0.0004*TMath::Abs(point->GetCPoint().GetZ()));
-	  //ampc               *=zfactor; 
-	}
-	else{ 
-	  //ampc = 1.0*point->GetCPoint().GetMax(); 
-	  ampc = 1.0*cl->GetMax(); 
-	  //ampc = 1.0*point->GetCPoint().GetQ(); 
-	  //AliTPCClusterPoint & p = point->GetCPoint();
-	  // Float_t dy = TMath::Abs(Int_t( TMath::Abs(p.GetY()/0.4)) - TMath::Abs(p.GetY()/0.4)+0.5);
-	  //Float_t iz =  (250.0-TMath::Abs(p.GetZ())+0.11)/0.566;
-	  //Float_t dz = 
-	  //  TMath::Abs( Int_t(iz) - iz + 0.5);
-
-	  //ampc *= 1.15*(1-0.3*dy);
-	  //ampc *= 1.15*(1-0.3*dz);
-	  //	Float_t zfactor = (1.02-0.000*TMath::Abs(point->GetCPoint().GetZ()));
-	  //ampc               *=zfactor; 
-
-	}
-	ampc *= 2.0;     // put mean value to channel 50
-	//ampc *= 0.58;     // put mean value to channel 50
-	Float_t w      =  1.;
-	//	if (type>0)  w =  1./(type/2.-0.5); 
-	//	Float_t z = TMath::Abs(cl->GetZ());
-	if (i<64) {
-	  ampc /= 0.6;
-	  //ampc /= (1+0.0008*z);
-	} else
-	  if (i>128){
-	    ampc /=1.5;
-	    //ampc /= (1+0.0008*z);
-	  }else{
-	    //ampc /= (1+0.0008*z);
-	  }
-	
-	if (type<0) {  //amp at the border - lower weight
-	  // w*= 2.;
-	  
-	  continue;
-	}
-	if (rsigma>1.5) ampc/=1.3;  // if big backround
-	amp[nc[of]]        = ampc;
-	amp[nc[of]]       /=gainGG;
-	angular[nc[of]]    = TMath::Sqrt(1.+angley*angley+anglez*anglez);
-	weight[nc[of]]     = w;
-	nc[of]++;
-      }
-    
-    TMath::Sort(nc[of],amp,index,kFALSE);
-    Float_t sumamp=0;
-    Float_t sumamp2=0;
-    Float_t sumw=0;
-    //meanlog = amp[index[Int_t(nc[of]*0.33)]];
-    meanlog = 50;
-    for (Int_t i=int(nc[of]*low+0.5);i<int(nc[of]*up+0.5);i++){
-      Float_t ampl      = amp[index[i]]/angular[index[i]];
-      ampl              = meanlog*TMath::Log(1.+ampl/meanlog);
-      //
-      sumw    += weight[index[i]]; 
-      sumamp  += weight[index[i]]*ampl;
-      sumamp2 += weight[index[i]]*ampl*ampl;
-      norm[of]    += angular[index[i]]*weight[index[i]];
-    }
-    if (sumw<1){ 
-      SetdEdx(0);  
-    }
-    else {
-      norm[of] /= sumw;
-      mean[of]  = sumamp/sumw;
-      sigma[of] = sumamp2/sumw-mean[of]*mean[of];
-      if (sigma[of]>0.1) 
-	sigma[of] = TMath::Sqrt(sigma[of]);
-      else
-	sigma[of] = 1000;
-      
-    mean[of] = (TMath::Exp(mean[of]/meanlog)-1)*meanlog;
-    //mean  *=(1-0.02*(sigma/(mean*0.17)-1.));
-    //mean *=(1-0.1*(norm-1.));
-    }
-  }
-
-  Float_t dedx =0;
-  fSdEdx =0;
-  fMAngular =0;
-  //  mean[0]*= (1-0.05*(sigma[0]/(0.01+mean[1]*0.18)-1));
-  //  mean[1]*= (1-0.05*(sigma[1]/(0.01+mean[0]*0.18)-1));
-
-  
-  //  dedx = (mean[0]* TMath::Sqrt((1.+nc[0]))+ mean[1]* TMath::Sqrt((1.+nc[1])) )/ 
-  //  (  TMath::Sqrt((1.+nc[0]))+TMath::Sqrt((1.+nc[1])));
-
-  Int_t norm2 = 0;
-  Int_t norm3 = 0;
-  for (Int_t i =0;i<4;i++){
-    if (nc[i]>2&&nc[i]<1000){
-      dedx      += mean[i] *nc[i];
-      fSdEdx    += sigma[i]*(nc[i]-2);
-      fMAngular += norm[i] *nc[i];    
-      norm2     += nc[i];
-      norm3     += nc[i]-2;
-    }
-    fDEDX[i]  = mean[i];             
-    fSDEDX[i] = sigma[i];            
-    fNCDEDX[i]= nc[i]; 
-  }
-
-  if (norm3>0){
-    dedx   /=norm2;
-    fSdEdx /=norm3;
-    fMAngular/=norm2;
-  }
-  else{
-    SetdEdx(0);
-    return 0;
-  }
-  //  Float_t dedx1 =dedx;
-  /*
-  dedx =0;
-  for (Int_t i =0;i<4;i++){
-    if (nc[i]>2&&nc[i]<1000){
-      mean[i]   = mean[i]*(1-0.12*(sigma[i]/(fSdEdx)-1.));
-      dedx      += mean[i] *nc[i];
-    }
-    fDEDX[i]  = mean[i];                
-  }
-  dedx /= norm2;
-  */
-
-  
+  Float_t dedx = CookdEdxNorm(low,up,0,i1,i2,1,0,2);
   SetdEdx(dedx);
   return dedx;
+
+//  return CookdEdxNorm(low,up,0,i1,i2,1,0,2);
+
+
+//   Float_t amp[200];
+//   Float_t angular[200];
+//   Float_t weight[200];
+//   Int_t index[200];
+//   //Int_t nc = 0;
+//   Float_t meanlog = 100.;
+  
+//   Float_t mean[4]  = {0,0,0,0};
+//   Float_t sigma[4] = {1000,1000,1000,1000};
+//   Int_t nc[4]      = {0,0,0,0};
+//   Float_t norm[4]    = {1000,1000,1000,1000};
+//   //
+//   //
+//   fNShared =0;
+
+//   Float_t gainGG = 1;
+//   if (AliTPCcalibDB::Instance()->GetParameters()){
+//     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000.;  //relative gas gain
+//   }
+
+
+//   for (Int_t of =0; of<4; of++){    
+//     for (Int_t i=of+i1;i<i2;i+=4)
+//       {
+// 	Int_t clindex = fIndex[i];
+// 	if (clindex<0||clindex&0x8000) continue;
+
+// 	//AliTPCTrackPoint * point = (AliTPCTrackPoint *) arr.At(i);
+// 	AliTPCTrackerPoint * point = GetTrackPoint(i);
+// 	//AliTPCTrackerPoint * pointm = GetTrackPoint(i-1);
+// 	//AliTPCTrackerPoint * pointp = 0;
+// 	//if (i<159) pointp = GetTrackPoint(i+1);
+
+// 	if (point==0) continue;
+// 	AliTPCclusterMI * cl = fClusterPointer[i];
+// 	if (cl==0) continue;	
+// 	if (onlyused && (!cl->IsUsed(10))) continue;
+// 	if (cl->IsUsed(11)) {
+// 	  fNShared++;
+// 	  continue;
+// 	}
+// 	Int_t   type   = cl->GetType();
+// 	//if (point->fIsShared){
+// 	//  fNShared++;
+// 	//  continue;
+// 	//}
+// 	//if (pointm) 
+// 	//  if (pointm->fIsShared) continue;
+// 	//if (pointp) 
+// 	//  if (pointp->fIsShared) continue;
+
+// 	if (type<0) continue;
+// 	//if (type>10) continue;       
+// 	//if (point->GetErrY()==0) continue;
+// 	//if (point->GetErrZ()==0) continue;
+
+// 	//Float_t ddy = (point->GetY()-cl->GetY())/point->GetErrY();
+// 	//Float_t ddz = (point->GetZ()-cl->GetZ())/point->GetErrZ();
+// 	//if ((ddy*ddy+ddz*ddz)>10) continue; 
+
+
+// 	//	if (point->GetCPoint().GetMax()<5) continue;
+// 	if (cl->GetMax()<5) continue;
+// 	Float_t angley = point->GetAngleY();
+// 	Float_t anglez = point->GetAngleZ();
+
+// 	Float_t rsigmay2 =  point->GetSigmaY();
+// 	Float_t rsigmaz2 =  point->GetSigmaZ();
+// 	/*
+// 	Float_t ns = 1.;
+// 	if (pointm){
+// 	  rsigmay +=  pointm->GetTPoint().GetSigmaY();
+// 	  rsigmaz +=  pointm->GetTPoint().GetSigmaZ();
+// 	  ns+=1.;
+// 	}
+// 	if (pointp){
+// 	  rsigmay +=  pointp->GetTPoint().GetSigmaY();
+// 	  rsigmaz +=  pointp->GetTPoint().GetSigmaZ();
+// 	  ns+=1.;
+// 	}
+// 	rsigmay/=ns;
+// 	rsigmaz/=ns;
+// 	*/
+
+// 	Float_t rsigma = TMath::Sqrt(rsigmay2*rsigmaz2);
+
+// 	Float_t ampc   = 0;     // normalization to the number of electrons
+// 	if (i>64){
+// 	  //	  ampc = 1.*point->GetCPoint().GetMax();
+// 	  ampc = 1.*cl->GetMax();
+// 	  //ampc = 1.*point->GetCPoint().GetQ();	  
+// 	  //	  AliTPCClusterPoint & p = point->GetCPoint();
+// 	  //	  Float_t dy = TMath::Abs(Int_t( TMath::Abs(p.GetY()/0.6)) - TMath::Abs(p.GetY()/0.6)+0.5);
+// 	  // Float_t iz =  (250.0-TMath::Abs(p.GetZ())+0.11)/0.566;
+// 	  //Float_t dz = 
+// 	  //  TMath::Abs( Int_t(iz) - iz + 0.5);
+// 	  //ampc *= 1.15*(1-0.3*dy);
+// 	  //ampc *= 1.15*(1-0.3*dz);
+// 	  //	  Float_t zfactor = (AliTPCReconstructor::GetCtgRange()-0.0004*TMath::Abs(point->GetCPoint().GetZ()));
+// 	  //ampc               *=zfactor; 
+// 	}
+// 	else{ 
+// 	  //ampc = 1.0*point->GetCPoint().GetMax(); 
+// 	  ampc = 1.0*cl->GetMax(); 
+// 	  //ampc = 1.0*point->GetCPoint().GetQ(); 
+// 	  //AliTPCClusterPoint & p = point->GetCPoint();
+// 	  // Float_t dy = TMath::Abs(Int_t( TMath::Abs(p.GetY()/0.4)) - TMath::Abs(p.GetY()/0.4)+0.5);
+// 	  //Float_t iz =  (250.0-TMath::Abs(p.GetZ())+0.11)/0.566;
+// 	  //Float_t dz = 
+// 	  //  TMath::Abs( Int_t(iz) - iz + 0.5);
+
+// 	  //ampc *= 1.15*(1-0.3*dy);
+// 	  //ampc *= 1.15*(1-0.3*dz);
+// 	  //	Float_t zfactor = (1.02-0.000*TMath::Abs(point->GetCPoint().GetZ()));
+// 	  //ampc               *=zfactor; 
+
+// 	}
+// 	ampc *= 2.0;     // put mean value to channel 50
+// 	//ampc *= 0.58;     // put mean value to channel 50
+// 	Float_t w      =  1.;
+// 	//	if (type>0)  w =  1./(type/2.-0.5); 
+// 	//	Float_t z = TMath::Abs(cl->GetZ());
+// 	if (i<64) {
+// 	  ampc /= 0.6;
+// 	  //ampc /= (1+0.0008*z);
+// 	} else
+// 	  if (i>128){
+// 	    ampc /=1.5;
+// 	    //ampc /= (1+0.0008*z);
+// 	  }else{
+// 	    //ampc /= (1+0.0008*z);
+// 	  }
+	
+// 	if (type<0) {  //amp at the border - lower weight
+// 	  // w*= 2.;
+	  
+// 	  continue;
+// 	}
+// 	if (rsigma>1.5) ampc/=1.3;  // if big backround
+// 	amp[nc[of]]        = ampc;
+// 	amp[nc[of]]       /=gainGG;
+// 	angular[nc[of]]    = TMath::Sqrt(1.+angley*angley+anglez*anglez);
+// 	weight[nc[of]]     = w;
+// 	nc[of]++;
+//       }
+    
+//     TMath::Sort(nc[of],amp,index,kFALSE);
+//     Float_t sumamp=0;
+//     Float_t sumamp2=0;
+//     Float_t sumw=0;
+//     //meanlog = amp[index[Int_t(nc[of]*0.33)]];
+//     meanlog = 50;
+//     for (Int_t i=int(nc[of]*low+0.5);i<int(nc[of]*up+0.5);i++){
+//       Float_t ampl      = amp[index[i]]/angular[index[i]];
+//       ampl              = meanlog*TMath::Log(1.+ampl/meanlog);
+//       //
+//       sumw    += weight[index[i]]; 
+//       sumamp  += weight[index[i]]*ampl;
+//       sumamp2 += weight[index[i]]*ampl*ampl;
+//       norm[of]    += angular[index[i]]*weight[index[i]];
+//     }
+//     if (sumw<1){ 
+//       SetdEdx(0);  
+//     }
+//     else {
+//       norm[of] /= sumw;
+//       mean[of]  = sumamp/sumw;
+//       sigma[of] = sumamp2/sumw-mean[of]*mean[of];
+//       if (sigma[of]>0.1) 
+// 	sigma[of] = TMath::Sqrt(sigma[of]);
+//       else
+// 	sigma[of] = 1000;
+      
+//     mean[of] = (TMath::Exp(mean[of]/meanlog)-1)*meanlog;
+//     //mean  *=(1-0.02*(sigma/(mean*0.17)-1.));
+//     //mean *=(1-0.1*(norm-1.));
+//     }
+//   }
+
+//   Float_t dedx =0;
+//   fSdEdx =0;
+//   fMAngular =0;
+//   //  mean[0]*= (1-0.05*(sigma[0]/(0.01+mean[1]*0.18)-1));
+//   //  mean[1]*= (1-0.05*(sigma[1]/(0.01+mean[0]*0.18)-1));
+
+  
+//   //  dedx = (mean[0]* TMath::Sqrt((1.+nc[0]))+ mean[1]* TMath::Sqrt((1.+nc[1])) )/ 
+//   //  (  TMath::Sqrt((1.+nc[0]))+TMath::Sqrt((1.+nc[1])));
+
+//   Int_t norm2 = 0;
+//   Int_t norm3 = 0;
+//   for (Int_t i =0;i<4;i++){
+//     if (nc[i]>2&&nc[i]<1000){
+//       dedx      += mean[i] *nc[i];
+//       fSdEdx    += sigma[i]*(nc[i]-2);
+//       fMAngular += norm[i] *nc[i];    
+//       norm2     += nc[i];
+//       norm3     += nc[i]-2;
+//     }
+//     fDEDX[i]  = mean[i];             
+//     fSDEDX[i] = sigma[i];            
+//     fNCDEDX[i]= nc[i]; 
+//   }
+
+//   if (norm3>0){
+//     dedx   /=norm2;
+//     fSdEdx /=norm3;
+//     fMAngular/=norm2;
+//   }
+//   else{
+//     SetdEdx(0);
+//     return 0;
+//   }
+//   //  Float_t dedx1 =dedx;
+//   /*
+//   dedx =0;
+//   for (Int_t i =0;i<4;i++){
+//     if (nc[i]>2&&nc[i]<1000){
+//       mean[i]   = mean[i]*(1-0.12*(sigma[i]/(fSdEdx)-1.));
+//       dedx      += mean[i] *nc[i];
+//     }
+//     fDEDX[i]  = mean[i];                
+//   }
+//   dedx /= norm2;
+//   */
+
+  
+//   SetdEdx(dedx);
+//   return dedx;
 }
 Double_t AliTPCseed::Bethe(Double_t bg){
   //
@@ -846,178 +853,6 @@ void AliTPCseed::CookPID()
   }
 }
 
-/*
-void AliTPCseed::CookdEdx2(Double_t low, Double_t up) {
-  //-----------------------------------------------------------------
-  // This funtion calculates dE/dX within the "low" and "up" cuts.
-  //-----------------------------------------------------------------
-
-  Float_t amp[200];
-  Float_t angular[200];
-  Float_t weight[200];
-  Int_t index[200];
-  Bool_t inlimit[200];
-  for (Int_t i=0;i<200;i++) inlimit[i]=kFALSE;
-  for (Int_t i=0;i<200;i++) amp[i]=10000;
-  for (Int_t i=0;i<200;i++) angular[i]= 1;;
-  
-
-  //
-  Float_t meanlog = 100.;
-  Int_t indexde[4]={0,64,128,160};
-
-  Float_t amean     =0;
-  Float_t asigma    =0;
-  Float_t anc       =0;
-  Float_t anorm     =0;
-
-  Float_t mean[4]  = {0,0,0,0};
-  Float_t sigma[4] = {1000,1000,1000,1000};
-  Int_t nc[4]      = {0,0,0,0};
-  Float_t norm[4]    = {1000,1000,1000,1000};
-  //
-  //
-  fNShared =0;
-
-  //  for (Int_t of =0; of<3; of++){    
-  //  for (Int_t i=indexde[of];i<indexde[of+1];i++)
-  for (Int_t i =0; i<160;i++)
-    {
-	AliTPCTrackPoint * point = GetTrackPoint(i);
-	if (point==0) continue;
-	if (point->fIsShared){
-	  fNShared++;	  
-	  continue;
-	}
-	Int_t   type   = point->GetCPoint().GetType();
-	if (type<0) continue;
-	if (point->GetCPoint().GetMax()<5) continue;
-	Float_t angley = point->GetTPoint().GetAngleY();
-	Float_t anglez = point->GetTPoint().GetAngleZ();
-	Float_t rsigmay =  point->GetCPoint().GetSigmaY();
-	Float_t rsigmaz =  point->GetCPoint().GetSigmaZ();
-	Float_t rsigma = TMath::Sqrt(rsigmay*rsigmaz);
-
-	Float_t ampc   = 0;     // normalization to the number of electrons
-	if (i>64){
-	  ampc =  point->GetCPoint().GetMax();
-	}
-	else{ 
-	  ampc = point->GetCPoint().GetMax(); 
-	}
-	ampc *= 2.0;     // put mean value to channel 50
-	//	ampc *= 0.565;     // put mean value to channel 50
-
-	Float_t w      =  1.;
-	Float_t z = TMath::Abs(point->GetCPoint().GetZ());
-	if (i<64) {
-	  ampc /= 0.63;
-	} else
-	  if (i>128){
-	    ampc /=1.51;
-	  }	  	
-	if (type<0) {  //amp at the border - lower weight	  	  
-	  continue;
-	}
-	if (rsigma>1.5) ampc/=1.3;  // if big backround
-	angular[i]    = TMath::Sqrt(1.+angley*angley+anglez*anglez);
-	amp[i]        = ampc/angular[i];
-	weight[i]     = w;
-	anc++;
-    }
-
-  TMath::Sort(159,amp,index,kFALSE);
-  for (Int_t i=int(anc*low+0.5);i<int(anc*up+0.5);i++){      
-    inlimit[index[i]] = kTRUE;  // take all clusters
-  }
-  
-  //  meanlog = amp[index[Int_t(anc*0.3)]];
-  meanlog =10000.;
-  for (Int_t of =0; of<3; of++){    
-    Float_t sumamp=0;
-    Float_t sumamp2=0;
-    Float_t sumw=0;    
-   for (Int_t i=indexde[of];i<indexde[of+1];i++)
-      {
-	if (inlimit[i]==kFALSE) continue;
-	Float_t ampl      = amp[i];
-	///angular[i];
-	ampl              = meanlog*TMath::Log(1.+ampl/meanlog);
-	//
-	sumw    += weight[i]; 
-	sumamp  += weight[i]*ampl;
-	sumamp2 += weight[i]*ampl*ampl;
-	norm[of]    += angular[i]*weight[i];
-	nc[of]++;
-      }
-   if (sumw<1){ 
-     SetdEdx(0);  
-   }
-   else {
-     norm[of] /= sumw;
-     mean[of]  = sumamp/sumw;
-     sigma[of] = sumamp2/sumw-mean[of]*mean[of];
-     if (sigma[of]>0.1) 
-       sigma[of] = TMath::Sqrt(sigma[of]);
-     else
-       sigma[of] = 1000;      
-     mean[of] = (TMath::Exp(mean[of]/meanlog)-1)*meanlog;
-   }
-  }
-    
-  Float_t dedx =0;
-  fSdEdx =0;
-  fMAngular =0;
-  //
-  Int_t norm2 = 0;
-  Int_t norm3 = 0;
-  Float_t www[3] = {12.,14.,17.};
-  //Float_t www[3] = {1.,1.,1.};
-
-  for (Int_t i =0;i<3;i++){
-    if (nc[i]>2&&nc[i]<1000){
-      dedx      += mean[i] *nc[i]*www[i]/sigma[i];
-      fSdEdx    += sigma[i]*(nc[i]-2)*www[i]/sigma[i];
-      fMAngular += norm[i] *nc[i];    
-      norm2     += nc[i]*www[i]/sigma[i];
-      norm3     += (nc[i]-2)*www[i]/sigma[i];
-    }
-    fDEDX[i]  = mean[i];             
-    fSDEDX[i] = sigma[i];            
-    fNCDEDX[i]= nc[i]; 
-  }
-
-  if (norm3>0){
-    dedx   /=norm2;
-    fSdEdx /=norm3;
-    fMAngular/=norm2;
-  }
-  else{
-    SetdEdx(0);
-    return;
-  }
-  //  Float_t dedx1 =dedx;
-  
-  dedx =0;
-  Float_t norm4 = 0;
-  for (Int_t i =0;i<3;i++){
-    if (nc[i]>2&&nc[i]<1000&&sigma[i]>3){
-      //mean[i]   = mean[i]*(1+0.08*(sigma[i]/(fSdEdx)-1.));
-      dedx      += mean[i] *(nc[i])/(sigma[i]);
-      norm4     += (nc[i])/(sigma[i]);
-    }
-    fDEDX[i]  = mean[i];                
-  }
-  if (norm4>0) dedx /= norm4;
-  
-
-  
-  SetdEdx(dedx);
-    
-  //mi deDX
-
-}
-*/
 Double_t AliTPCseed::GetYat(Double_t xk) const {
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
@@ -1051,7 +886,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap, Bool_t posNorm, Bool_t padNorm){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Bool_t posNorm, Int_t padNorm){
  
   //
   // calculates dedx using the cluster
@@ -1059,20 +894,33 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   // type   -  1 - max charge  or 0- total charge in cluster 
   //           //2- max no corr 3- total+ correction
   // i1-i2  -  the pad-row range used for calculation
+  // shapeNorm - kTRUE  -taken from OCDB
+  //           
+  // posNorm   - usage of pos normalization 
   //
+  // 
   // normalization parametrization taken from AliTPCClusterParam
   //
-  AliTPCClusterParam * parcl = AliTPCClusterParam::Instance();
-  if (!parcl) parcl = AliTPCcalibDB::Instance()->GetClusterParam();
-  if (!parcl) return 0;
+  AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
+  AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
+  if (!parcl)  return 0;
+  if (!param) return 0;
   Float_t amp[160];
   Int_t   indexes[160];
   Int_t   ncl=0;
   //
   //
-  Float_t gainGG = 1;
+  Float_t gainGG      = 1;  // gas gain factor -always enabled
+  Float_t gainPad     = 1;  // gain map  - used always
+  Float_t corrShape   = 1;  // 
+  Float_t corrPos     = 1;  // local position correction - if posNorm enabled
+  Float_t corrPadType = 1;  // pad type correction - if padNorm enabled
+  Float_t corrNorm    = 1;  // normalization factor - set Q to channel 50
+  //   
+  //
+  //
   if (AliTPCcalibDB::Instance()->GetParameters()){
-    gainGG= 20000./AliTPCcalibDB::Instance()->GetParameters()->GetGasGain();  //relative gas gain
+    gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
   }
 
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
@@ -1084,59 +932,72 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     if (!cluster) continue;
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
-    if (!gainMap) gainMap =  AliTPCcalibDB::Instance()->GetDedxGainFactor();
-    if (gainMap) {      
-      Float_t factor = 1;      
-      AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
-      if (irow < 63) { // IROC
-	factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()))*1.55;
-      } else {         // OROC
-	factor = roc->GetValue(irow - 63, TMath::Nint(cluster->GetPad()));
-      }
-      if (factor>0.5) charge/=factor;
-    }
-    
-    //do normalization
-    Float_t corr=1;
     Int_t  ipad= 0;
     if (irow>62) ipad=1;
     if (irow>127) ipad=2;    
-    if (type<=1){
-      //	
-      AliTPCTrackerPoint * point = GetTrackPoint(irow);
-      Float_t              ty = TMath::Abs(point->GetAngleY());
-      Float_t              tz = TMath::Abs(point->GetAngleZ());
-      
-      Float_t dr    = (250.-TMath::Abs(cluster->GetZ()))/250.;
-      corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
+    //
+    //
+    //
+    AliTPCCalPad * gainMap =  AliTPCcalibDB::Instance()->GetDedxGainFactor();
+    if (gainMap) {
+      //
+      // Get gainPad - pad by pad calibration
+      //
+      Float_t factor = 1;      
+      AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
+      if (irow < 63) { // IROC
+	factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()));
+      } else {         // OROC
+	factor = roc->GetValue(irow - 63, TMath::Nint(cluster->GetPad()));
+      }
+      if (factor>0.5) gainPad=factor;
     }
-    amp[ncl]=charge/corr;
-    amp[ncl]/=gainGG;
+    //
+    //do position and angular normalization
+    //
+    if (shapeNorm){
+      if (type<=1){
+	//	
+	AliTPCTrackerPoint * point = GetTrackPoint(irow);
+	Float_t              ty = TMath::Abs(point->GetAngleY());
+	Float_t              tz = TMath::Abs(point->GetAngleZ());
+	
+	Float_t dr    = (250.-TMath::Abs(cluster->GetZ()))/250.;
+	corrShape  = parcl->Qnorm(ipad,type,dr,ty,tz);
+      }
+    }
+    
     if (posNorm){
       //
-      //
-      //
-      corr = parcl->QnormPos(ipad,type, cluster->GetPad(),cluster->GetTimeBin(), cluster->GetZ(),
-			     cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax(),cluster->GetQ());
-      amp[ncl]/=corr;
+      // Do position normalization - relative distance to 
+      // center of pad- time bin
+      // Work in progress
+      corrPos = parcl->QnormPos(ipad,type, cluster->GetPad(),
+				cluster->GetTimeBin(), cluster->GetZ(),
+				cluster->GetSigmaY2(),cluster->GetSigmaZ2(),
+				cluster->GetMax(),cluster->GetQ());
     }
 
-
-    amp[ncl] *= 2.0;     // put mean value to channel 50
-    if (padNorm){
-      corr=1;
-      if (type==0 && parcl->fQpadTnorm) corr = (*parcl->fQpadTnorm)[ipad];
-      if (type==1 && parcl->fQpadTnorm) corr = (*parcl->fQpadMnorm)[ipad];
-      amp[ncl]/=corr;
+    if (padNorm==1){
+      //taken from OCDB
+      if (type==0 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadTnorm)[ipad];
+      if (type==1 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadMnorm)[ipad];
     }
-
-    // if (ipad==0) {
-//       amp[ncl] /= 0.65; // this we will take form OCDB
-//     } else
-//       if (ipad==2){
-// 	amp[ncl] /=1.57;
-//       }else{
-//       }      
+    if (padNorm==2){
+      corrPadType  =param->GetPadPitchLength(cluster->GetDetector(),cluster->GetRow());
+      //use hardwired - temp fix
+      if (type==0) corrNorm=3.;
+      if (type==1) corrNorm=1.;
+    }
+    //
+    amp[ncl]=charge;
+    amp[ncl]/=gainGG;
+    amp[ncl]/=gainPad;
+    amp[ncl]/=corrShape;
+    amp[ncl]/=corrPadType;
+    amp[ncl]/=corrPos;
+    amp[ncl]/=corrNorm; 
+    //
     ncl++;
   }
 
@@ -1390,3 +1251,62 @@ void  AliTPCseed::GetShape(AliTPCclusterMI* cluster, AliExternalTrackParam * par
   rmsy  = clusterParam->GetRMSQ( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tany), TMath::Abs(cluster->GetMax()) );
   rmsz  = clusterParam->GetRMSQ( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tanz) ,TMath::Abs(cluster->GetMax()));
 }
+
+
+
+Double_t AliTPCseed::GetQCorrGeom(Float_t ty, Float_t tz){
+  //Geoetrical
+  //ty    - tangent in local y direction
+  //tz    - tangent 
+  //
+  Float_t norm=TMath::Sqrt(1+ty*ty+tz*tz);
+  return norm;
+}
+
+Double_t AliTPCseed::GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr){
+  //
+  // Q normalization
+  //
+  // return value =  Q Normalization factor
+  // Normalization - 1 - shape factor part for full drift          
+  //                 1 - electron attachment for 0 drift
+
+  // Input parameters:
+  //
+  // ipad - 0 short pad
+  //        1 medium pad
+  //        2 long pad
+  //
+  // type - 0 qmax
+  //      - 1 qtot
+  //
+  //z     - z position (-250,250 cm)
+  //ty    - tangent in local y direction
+  //tz    - tangent 
+  //
+
+  AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
+  AliTPCParam   * paramTPC = AliTPCcalibDB::Instance()->GetParameters();
+ 
+  if (!paramCl) return 1;
+  //
+  Double_t dr =  250.-TMath::Abs(z); 
+  Double_t sy =  paramCl->GetRMS0( 0,ipad, dr, TMath::Abs(ty));
+  Double_t sy0=  paramCl->GetRMS0(0,ipad, 250, 0);
+  Double_t sz =  paramCl->GetRMS0( 1,ipad, dr, TMath::Abs(tz));
+  Double_t sz0=  paramCl->GetRMS0(1,ipad, 250, 0);
+
+  Double_t sfactorMax = TMath::Sqrt(sy0*sz0/(sy*sz));
+
+ 
+  Double_t dt = 1000000*(dr/paramTPC->GetDriftV());  //time in microsecond
+  Double_t attProb = TMath::Exp(-paramTPC->GetAttCoef()*paramTPC->GetOxyCont()*dt);
+  //
+  //
+  if (type==0) return sfactorMax*attProb;
+
+  return attProb;
+
+
+}
+
