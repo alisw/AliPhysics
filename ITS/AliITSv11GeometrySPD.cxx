@@ -1055,8 +1055,12 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     sB0->DefineSection(1, ksecDz + ksecZEndLen);
 
     //printf("SectorB#%d ",0);
+  // Points around the most sharpened tips have to be avoided - M.S. 24 feb 09
+    const Int_t nSpecialPoints = 5;
+    const Int_t kSpecialPoints[nSpecialPoints] = {7, 17, 47, 62, 77};
+    Int_t i2 = 0;
     InsidePoint(xpp[m-1],ypp[m-1],xpp[0],ypp[0],xpp[1],ypp[1],
-                ksecCthick2,xpp2[0],ypp2[0]);
+                ksecCthick2,xpp2[i2],ypp2[i2]);
     for(i = 1; i < m - 1; i++) {
         t = ksecCthick2;
         for(k = 0; k < ksecNCoolingTubeDips; k++)
@@ -1066,15 +1070,23 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
                      ksecNPointsPerRadii == i))
                     t = ksecRCoolOut-ksecRCoolIn;
         //printf("SectorB#%d ",i);
-        InsidePoint(xpp[i-1],ypp[i-1],xpp[i],ypp[i],xpp[i+1],ypp[i+1],t,
-                    xpp2[i],ypp2[i]);
+	Bool_t useThisPoint = kTRUE;
+	for(Int_t ii = 0; ii < nSpecialPoints; ii++)
+	  if ( (i == kSpecialPoints[ii] - 1) ||
+	       (i == kSpecialPoints[ii] + 1)   ) useThisPoint = kFALSE;
+	if (useThisPoint) {
+	  i2++;
+	  InsidePoint(xpp[i-1],ypp[i-1],xpp[i],ypp[i],xpp[i+1],ypp[i+1],t,
+		      xpp2[i2],ypp2[i2]);
+	}
     }// end for i
     //printf("SectorB#%d ",m);
+    i2++;
     InsidePoint(xpp[m-2],ypp[m-2],xpp[m-1],ypp[m-1],xpp[0],ypp[0],
-                ksecCthick2,xpp2[m-1],ypp2[m-1]);
+                ksecCthick2,xpp2[i2],ypp2[i2]);
     sB1 = new TGeoXtru(2);
     sB1->SetName("ITS SPD Carbon fiber support Sector Air End B1");
-    sB1->DefinePolygon(m, xpp2, ypp2);
+    sB1->DefinePolygon(i2+1, xpp2, ypp2);
     sB1->DefineSection(0,sB0->GetZ(0));
     sB1->DefineSection(1,sB0->GetZ(1)-ksecCthick2);
     const Double_t kspdEndHoleRadius1=5.698*fgkmm;
