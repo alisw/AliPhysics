@@ -29,44 +29,40 @@ class AliHLTTRDTracklet
   AliTRDseedV1* fTRDtracklet;
   AliHLTUInt32_t fSize; // Size of the tracklet with clusters in the memory
   
-
-  /* ======= From AliTRDseed ======== */
-  enum { knTimebins = 35 };
-
   /* Defenitely need */
-  AliHLTTRDCluster *fClusters[knTimebins]; // Clusters
+  AliHLTTRDCluster *fClusters[AliTRDseedV1::kNTimeBins]; // Clusters
   Float_t        fYref[2];              //  Reference y
   Float_t        fZref[2];              //  Reference z
-  Float_t        fSigmaY;               //  "Robust" sigma in Y - constant fit
+  //Float_t        fSigmaY;               //  "Robust" sigma in Y - constant fit
   Float_t        fSigmaY2;              //  "Robust" sigma in Y - line fit
 
   /* Probably need */
   Float_t        fTilt;                 //  Tilting angle
   Float_t        fPadLength;            //  Pad length
   Float_t        fX0;                   //  X0 position
-  Float_t        fX[knTimebins];        //! X position
-  Float_t        fY[knTimebins];        //! Y position
-  Float_t        fZ[knTimebins];        //! Z position
-  Int_t          fIndexes[knTimebins];  //! Indexes
-  Bool_t         fUsable[knTimebins];   //  Indication  - usable cluster
+//  Float_t        fX[knTimebins];        //! X position
+//  Float_t        fY[knTimebins];        //! Y position
+//  Float_t        fZ[knTimebins];        //! Z position
+  Int_t          fIndexes[AliTRDseedV1::kNTimeBins];  //! Indexes
+  Long_t         fUsable;                //  Indication  - usable cluster
   Float_t        fYfit[2];              //  Y fit position +derivation
-  Float_t        fYfitR[2];             //  Y fit position +derivation
+  //Float_t        fYfitR[2];             //  Y fit position +derivation
   Float_t        fZfit[2];              //  Z fit position
-  Float_t        fZfitR[2];             //  Z fit position
-  Float_t        fMeanz;                //  Mean vaue of z
-  Float_t        fZProb;                //  Max probbable z
-  Int_t          fLabels[2];            //  Labels
-  Int_t          fN;                    //  Number of associated clusters
+  //Float_t        fZfitR[2];             //  Z fit position
+  //Float_t        fMeanz;                //  Mean vaue of z
+  //Float_t        fZProb;                //  Max probbable z
+  Int_t          fLabels[3];            //  Labels
+  //Int_t          fN;                    //  Number of associated clusters
   Int_t          fN2;                   //  Number of not crossed
   Int_t          fNUsed;                //  Number of used clusters
-  Int_t          fFreq;                 //  Frequency
-  Int_t          fNChange;              //  Change z counter
-  Float_t        fMPads;                //  Mean number of pads per cluster
+  //Int_t          fFreq;                 //  Frequency
+  //Int_t          fNChange;              //  Change z counter
+  //Float_t        fMPads;                //  Mean number of pads per cluster
 
   Float_t        fC;                    //  Curvature
-  Float_t        fCC;                   //  Curvature with constrain
+  //Float_t        fCC;                   //  Curvature with constrain
   Float_t        fChi2;                 //  Global chi2
-  Float_t        fChi2Z;                //  Global chi2
+  //Float_t        fChi2Z;                //  Global chi2
 
   /* ======= From AliTRDseedV1 ======== */
 

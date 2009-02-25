@@ -661,7 +661,7 @@ TH1 *AliTRDcheckDetector::PlotFindableTracklets(const AliTRDtrackV1 *track){
     // ignore y-crossing (material)
     if((z + delta_z > zmin && z - delta_z < zmax) && (y + delta_y > ymin && y - delta_y < ymax)) nFindable++;
       if(fDebugLevel > 3){
-        Double_t pos_tracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetMeanz() : 0};
+        Double_t pos_tracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetZfit(0) : 0};
         Int_t hasTracklet = tracklet ? 1 : 0;
         (*fDebugStream)   << "FindableTracklets"
           << "layer="     << il
@@ -865,7 +865,7 @@ TH1 *AliTRDcheckDetector::PlotChargeTracklet(const AliTRDtrackV1 *track){
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     Qtot = 0.;
-    for(Int_t ic = AliTRDseed::knTimebins; ic--;){
+    for(Int_t ic = AliTRDseedV1::kNTimeBins; ic--;){
       if(!(c = tracklet->GetClusters(ic))) continue;
       Qtot += TMath::Abs(c->GetQ());
     }

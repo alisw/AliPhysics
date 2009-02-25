@@ -15,7 +15,7 @@
 #pragma link C++ class  AliTRDtrackInfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
 #pragma link C++ class  AliTRDcheckDetector+;
-#pragma link C++ class  AliTRDtrackingResolution+;
+#pragma link C++ class  AliTRDresolution+;
 #pragma link C++ class  AliTRDtrackingEfficiency+;
 #pragma link C++ class  AliTRDtrackingEfficiencyCombined+;
 #pragma link C++ class  AliTRDpidChecker+;

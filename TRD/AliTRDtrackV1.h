@@ -29,20 +29,21 @@ class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
 public:
-  enum { kMAXCLUSTERSPERTRACK = 210 };
-    
-  enum { kNdet      = 540
-        , kNstacks   =  90
-        , kNplane    =   AliESDtrack::kTRDnPlanes
-        , kNcham     =   5
-        , kNsect     =  18
-        , kNslice    =   3
-        , kNMLPslice =   8 };
+  enum ETRDtrackV1Size { 
+    kNdet      = AliTRDgeometry::kNdet
+   ,kNstacks   = AliTRDgeometry::kNstack*AliTRDgeometry::kNsector
+   ,kNplane    = AliTRDgeometry::kNlayer
+   ,kNcham     = AliTRDgeometry::kNstack
+   ,kNsect     = AliTRDgeometry::kNsector
+   ,kNslice    =   3
+   ,kNMLPslice =   8 
+   ,kMAXCLUSTERSPERTRACK = 210
+  };
   
   // bits from 0-13 are reserved by ROOT (see TObject.h)
-  enum AliTRDtrackStatus {
-          kOwner   = BIT(14)
-        , kStopped = BIT(15) 
+  enum ETRDtrackV1Status {
+    kOwner   = BIT(14)
+   ,kStopped = BIT(15) 
   };
 
   AliTRDtrackV1();
@@ -69,8 +70,12 @@ public:
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
   AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : 0x0;}
-  Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;} 
-  UShort_t*      GetTrackletIndexes() {return &fTrackletIndex[0];}
+  Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;}
+  AliExternalTrackParam*
+                 GetTrackLow() const  { return fTrackLow;} 
+  AliExternalTrackParam*
+                 GetTrackHigh() const  { return fTrackHigh;} 
+  UShort_t*      GetTrackletIndexes() { return &fTrackletIndex[0];}
   
   Bool_t         IsEqual(const TObject *inTrack) const;
   Bool_t         IsOwner() const {return TestBit(kOwner);};
@@ -91,6 +96,8 @@ public:
   void           SetPIDquality(UChar_t inPIDquality){fPIDquality = inPIDquality;};
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
+  void           SetTrackLow();
+  void           SetTrackHigh(const AliExternalTrackParam *op=0x0);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   void           UnsetTracklet(Int_t plane);
@@ -108,9 +115,10 @@ private:
   const AliTRDReconstructor *fReconstructor;//! reconstructor link 
   AliTRDseedV1 *fTracklet[kNplane];   //  Tracklets array defining the track
   AliTRDtrackV1 *fBackupTrack;        // Backup track
+  AliExternalTrackParam *fTrackLow;   // parameters of the track which enter TRD from below (TPC) 
+  AliExternalTrackParam *fTrackHigh;  // parameters of the track which enter TRD from above (HMPID, PHOS) 
 
-
-  ClassDef(AliTRDtrackV1, 3)          // new TRD track
+  ClassDef(AliTRDtrackV1, 4)          // new TRD track
 };
 
 //____________________________________________________

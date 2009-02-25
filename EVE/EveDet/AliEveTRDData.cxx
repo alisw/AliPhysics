@@ -352,7 +352,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Float_t tilt = trklt->GetTilt();
   Float_t g[3];
   AliTRDcluster *c = 0x0;
-  for(Int_t ic=0; ic<AliTRDseed::knTimebins; ic++){
+  for(Int_t ic=0; ic<AliTRDseedV1::kNTimeBins; ic++){
     if(!(c = trklt->GetClusters(ic))) continue;
     if(!fClusters) AddElement(fClusters = new AliEveTRDClusters());
     dx = x0 - c->GetX();

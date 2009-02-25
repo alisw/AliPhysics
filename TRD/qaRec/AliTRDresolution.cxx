@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id: AliTRDtrackingResolution.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDresolution.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -33,7 +33,7 @@
 // {  
 //   gSystem->Load("libANALYSIS.so");
 //   gSystem->Load("libTRDqaRec.so");
-//   AliTRDtrackingResolution *res = new AliTRDtrackingResolution();
+//   AliTRDresolution *res = new AliTRDresolution();
 //   //res->SetMCdata();
 //   //res->SetVerbose();
 //   //res->SetVisual();
@@ -82,13 +82,13 @@
 
 #include "AliTRDtrackInfo/AliTRDclusterInfo.h"
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
-#include "AliTRDtrackingResolution.h"
+#include "AliTRDresolution.h"
 
-ClassImp(AliTRDtrackingResolution)
+ClassImp(AliTRDresolution)
 
 //________________________________________________________
-AliTRDtrackingResolution::AliTRDtrackingResolution()
-  :AliTRDrecoTask("Resolution", "Tracking Resolution")
+AliTRDresolution::AliTRDresolution()
+  :AliTRDrecoTask("Resolution", "Spatial and Momentum Resolution")
   ,fStatus(0)
   ,fReconstructor(0x0)
   ,fGeo(0x0)
@@ -112,7 +112,7 @@ AliTRDtrackingResolution::AliTRDtrackingResolution()
 }
 
 //________________________________________________________
-AliTRDtrackingResolution::~AliTRDtrackingResolution()
+AliTRDresolution::~AliTRDresolution()
 {
   if(fGraphS){fGraphS->Delete(); delete fGraphS;}
   if(fGraphM){fGraphM->Delete(); delete fGraphM;}
@@ -127,7 +127,7 @@ AliTRDtrackingResolution::~AliTRDtrackingResolution()
 
 
 //________________________________________________________
-void AliTRDtrackingResolution::CreateOutputObjects()
+void AliTRDresolution::CreateOutputObjects()
 {
   // spatial resolution
   OpenFile(0, "RECREATE");
@@ -145,7 +145,7 @@ void AliTRDtrackingResolution::CreateOutputObjects()
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::Exec(Option_t *opt)
+void AliTRDresolution::Exec(Option_t *opt)
 {
   fCl->Delete();
   fTrklt->Delete();
@@ -161,7 +161,7 @@ void AliTRDtrackingResolution::Exec(Option_t *opt)
 }
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
+TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -231,7 +231,7 @@ TH1* AliTRDtrackingResolution::PlotCluster(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotTracklet(const AliTRDtrackV1 *track)
+TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -245,17 +245,17 @@ TH1* AliTRDtrackingResolution::PlotTracklet(const AliTRDtrackV1 *track)
   }
 
   Double_t cov[3], covR[3];
-  Float_t xref, y0, dx, dy, dydx;
+  Float_t x, y0, dx, dy, dydx;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t il=AliTRDgeometry::kNlayer; il--;){
     if(!(fTracklet = fTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK()) continue;
     y0   = fTracklet->GetYref(0);
     dydx = fTracklet->GetYref(1);
-    xref = fTracklet->GetXref();
-    dx   = fTracklet->GetX0() - xref;
-    dy   = y0-dx*dydx - fTracklet->GetYat(xref);
-    fTracklet->GetCovAt(xref, cov);
+    x    = fTracklet->GetX();
+    dx   = fTracklet->GetX0() - x;
+    dy   = y0-dx*dydx - fTracklet->GetY();
+    fTracklet->GetCovAt(x, cov);
     fTracklet->GetCovRef(covR);
     h->Fill(dydx, dy/TMath::Sqrt(cov[0] + covR[0]));
   }
@@ -263,7 +263,7 @@ TH1* AliTRDtrackingResolution::PlotTracklet(const AliTRDtrackV1 *track)
 }
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotTrackletPhi(const AliTRDtrackV1 *track)
+TH1* AliTRDresolution::PlotTrackletPhi(const AliTRDtrackV1 *track)
 {
   if(track) fTrack = track;
   if(!fTrack){
@@ -287,7 +287,7 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhi(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
+TH1* AliTRDresolution::PlotResolution(const AliTRDtrackV1 *track)
 {
   if(!HasMCdata()){ 
     AliWarning("No MC defined. Results will not be available.");
@@ -302,7 +302,9 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
-  Float_t p, pt, xref, x0, y0, z0, dx, dy, dz, dydx, dzdx;
+  Double_t x, y, z;
+  Float_t p, pt, x0, y0, z0, dx, dy, dz, dydx, dzdx;
+  Double_t covR[3];
 
   if(fDebugLevel>=1){
     Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
@@ -332,41 +334,57 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     det = fTracklet->GetDetector();
     x0  = fTracklet->GetX0();
     //radial shift with respect to the MC reference (radial position of the pad plane)
-    xref= fTracklet->GetXref();
-    dx  = x0 - xref;
+    x= fTracklet->GetX();
+    dx  = x0 - x;
     if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, pt, s)) continue;
+    if(fDebugLevel>=1){
+      (*fDebugStream) << "MC"
+        << "det="     << det
+        << "pdg="     << pdg
+        << "pt="      << pt
+        << "x0="      << x0
+        << "y0="      << y0
+        << "z0="      << z0
+        << "dydx="    << dydx
+        << "dzdx="    << dzdx
+        << "\n";
+    }
     // MC track position at reference radial position
-    Float_t yt = y0 - (x0-xref)*dydx;
-    Float_t zt = z0 - (x0-xref)*dzdx;
+    Float_t yt = y0 - dx*dydx;
+    Float_t zt = z0 - dx*dzdx;
     p = pt*(1.+dzdx*dzdx); // pt -> p
 
     // add Kalman residuals for y, z and pt
-    Float_t yr = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1) + .05;
+    Float_t yr = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1);
     dy = yt - yr;
     Float_t zr = fTracklet->GetZref(0) - dx*fTracklet->GetZref(1);
     dz = zt - zr;
     Float_t tgl = fTracklet->GetTgl();
-    Float_t ptr = fTracklet->GetMomentum()/(1.+tgl*tgl);
+    Float_t dpt = pt - fTracklet->GetMomentum()/(1.+tgl*tgl);
+    fTracklet->GetCovRef(covR);
 
     ((TH2I*)fContainer->At(kMCtrackY))->Fill(dydx, dy);
-    ((TH2I*)fContainer->At(kMCtrackZ))->Fill(dzdx, dz);
-    if(pdg!=kElectron && pdg!=kPositron) ((TH2I*)fContainer->At(kMCtrackPt))->Fill(1./pt, ptr-pt);
+    ((TH2I*)fContainer->At(kMCtrackYPull))->Fill(dydx, dy/TMath::Sqrt(covR[0]));
+    if(ily==0){
+      ((TH2I*)fContainer->At(kMCtrackZIn))->Fill(dzdx, dz);
+      ((TH2I*)fContainer->At(kMCtrackZInPull))->Fill(dzdx, dz/TMath::Sqrt(covR[2]));
+    } else if(ily==AliTRDgeometry::kNlayer-1) {
+      ((TH2I*)fContainer->At(kMCtrackZOut))->Fill(dzdx, dz);
+      ((TH2I*)fContainer->At(kMCtrackZOutPull))->Fill(dzdx, dz/TMath::Sqrt(covR[2]));
+    }
+    if(pdg!=kElectron && pdg!=kPositron) ((TH2I*)fContainer->At(kMCtrackPt))->Fill(1./pt, dpt);
     // Fill Debug stream for Kalman track
     if(fDebugLevel>=1){
       Float_t dydxr = fTracklet->GetYref(1);
       (*fDebugStream) << "MCtrack"
-        << "det="     << det
-        << "pdg="     << pdg
-        << "pt="      << pt
-        << "yt="      << yt
-        << "zt="      << zt
-        << "dydx="    << dydx
-        << "dzdx="    << dzdx
-        << "ptr="     << ptr
+        << "x="       << x
+        << "dpt="     << dpt
         << "dy="      << dy
         << "dz="      << dz
         << "dydxr="   << dydxr
         << "dzdxr="   << tgl
+        << "s2y="     << covR[0]
+        << "s2z="     << covR[2]
         << "\n";
     }
 
@@ -374,41 +392,39 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     AliTRDseedV1 tt(*fTracklet);
     tt.SetZref(0, z0);
     tt.SetZref(1, dzdx); 
-    if(!tt.Fit(kTRUE)) continue;
-    xref= fTracklet->GetXref(); // the true one 
-    yt = y0 - (x0-xref)*dydx;
-
+    tt.Fit(kTRUE);
+    x= tt.GetX(); // the true one 
+    dx = x0 - x;
+    yt = y0 - dx*dydx;
+    Bool_t rc = tt.IsRowCross(); 
+    
     // add tracklet residuals for y and dydx
-    Float_t yf = tt.GetYat(xref) + .05;
-    dy = yt - yf;
+    Float_t yf = tt.GetY();
+    dy = yt - yf; dz = 100.;
     Float_t dphi   = (tt.GetYfit(1) - dydx);
     dphi /= 1.- tt.GetYfit(1)*dydx;
-    ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx, dy);
-    ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx, dphi*TMath::RadToDeg());
-
-    Float_t dz = 100.;
-    Bool_t rc = fTracklet->IsRowCross(); 
-    if(rc){
+    Double_t s2y = tt.GetS2Y(), s2z = tt.GetS2Z();
+    if(!rc){
+      ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx, dy);
+      ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx, dy/TMath::Sqrt(s2y));
+      ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx, dphi*TMath::RadToDeg());
+    } else {
       // add tracklet residuals for z
-      Double_t *xyz = tt.GetCrossXYZ();
-      dz = xyz[2] - (z0 - (x0 - xyz[0])*dzdx) ;
+      dz = tt.GetZ() - (z0 - dx*dzdx) ;
       ((TH2I*)fContainer->At(kMCtrackletZ))->Fill(dzdx, dz);
+      ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx, dz/TMath::Sqrt(s2z));
     }
   
     // Fill Debug stream for tracklet
     if(fDebugLevel>=1){
       (*fDebugStream) << "MCtracklet"
-        << "det="     << det
-        << "pdg="     << pdg
-        << "p="       << p
-        << "yt="      << yt
-        << "zt="      << zt
-        << "dydx="    << dydx
-        << "dzdx="    << dzdx
-        << "rowc="    << rc
-        << "dy="      << dy
-        << "dz="      << dz
-        << "dphi="    << dphi
+        << "rc="    << rc
+        << "x="     << x
+        << "dy="    << dy
+        << "dz="    << dz
+        << "dphi="  << dphi
+        << "s2y="   << s2y
+        << "s2z="   << s2z
         << "\n";
     }
 
@@ -417,16 +433,15 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
     Float_t zr0 = pp->GetRow0() + pp->GetAnodeWireOffset();
     Float_t tilt = fTracklet->GetTilt();
 
-    Double_t x,y;
     AliTRDcluster *c = 0x0;
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
       //AliTRDseedV1::GetClusterXY(c,x,y);
-      x = c->GetX(); y = c->GetY();
+      x = c->GetX(); y = c->GetY(); z = c->GetZ();
       Float_t xc = x;
       Float_t yc = y;
-      Float_t zc = c->GetZ();
+      Float_t zc = z;
       dx = x0 - xc; 
       yt = y0 - dx*dydx;
       zt = z0 - dx*dzdx;
@@ -463,7 +478,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
+Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 {
   Float_t y[2] = {0., 0.};
   TBox *b = 0x0;
@@ -584,7 +599,7 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
     b->SetFillStyle(3002);b->SetFillColor(kBlue);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kMCtrackZ:
+  case kMCtrackZIn:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 2.);
@@ -613,7 +628,7 @@ Bool_t AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
 
 
 //________________________________________________________
-Bool_t AliTRDtrackingResolution::PostProcess()
+Bool_t AliTRDresolution::PostProcess()
 {
   //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
   if (!fContainer) {
@@ -843,9 +858,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   }
 
   // track z resolution
-  h2 = (TH2I*)fContainer->At(kMCtrackZ);
-  gm = (TGraphErrors*)fGraphM->At(kMCtrackZ);
-  gs = (TGraphErrors*)fGraphS->At(kMCtrackZ);
+  h2 = (TH2I*)fContainer->At(kMCtrackZIn);
+  gm = (TGraphErrors*)fGraphM->At(kMCtrackZIn);
+  gs = (TGraphErrors*)fGraphS->At(kMCtrackZIn);
   for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
     h = h2->ProjectionY("pz", iphi, iphi);
     if(h->GetEntries()<70) continue;
@@ -905,7 +920,7 @@ Bool_t AliTRDtrackingResolution::PostProcess()
 
 
 //________________________________________________________
-void AliTRDtrackingResolution::Terminate(Option_t *)
+void AliTRDresolution::Terminate(Option_t *)
 {
   if(fDebugStream){ 
     delete fDebugStream;
@@ -916,7 +931,7 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::AdjustF1(TH1 *h, TF1 *f)
+void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
 {
 // Helper function to avoid duplication of code
 // Make first guesses on the fit parameters
@@ -946,11 +961,11 @@ void AliTRDtrackingResolution::AdjustF1(TH1 *h, TF1 *f)
 }
 
 //________________________________________________________
-TObjArray* AliTRDtrackingResolution::Histos()
+TObjArray* AliTRDresolution::Histos()
 {
   if(fContainer) return fContainer;
 
-  fContainer  = new TObjArray(10);
+  fContainer  = new TObjArray(kNhistos);
   //fContainer->SetOwner(kTRUE);
 
   TH1 *h = 0x0;
@@ -1004,6 +1019,15 @@ TObjArray* AliTRDtrackingResolution::Histos()
   fContainer->AddAt(h, kMCtrackletY);
 
   // tracklet y resolution [0]
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltYPull"))){
+    h = new TH2I("hMCtrkltYPull", "Tracklet Pulls (Y)", 31, -.48, .48, 100, -3.5, 3.5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y / #sigma_{y}");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackletYPull);
+
+  // tracklet y resolution [0]
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltZ"))){
     h = new TH2I("hMCtrkltZ", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
     h->GetXaxis()->SetTitle("tg(#theta)");
@@ -1011,6 +1035,15 @@ TObjArray* AliTRDtrackingResolution::Histos()
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
   fContainer->AddAt(h, kMCtrackletZ);
+
+  // tracklet y resolution [0]
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltZPull"))){
+    h = new TH2I("hMCtrkltZ", "Tracklet Pulls (Z)", 31, -.48, .48, 100, -3.5, 3.5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackletZPull);
 
   // tracklet angular resolution [1]
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltPhi"))){
@@ -1030,14 +1063,50 @@ TObjArray* AliTRDtrackingResolution::Histos()
   } else h->Reset();
   fContainer->AddAt(h, kMCtrackY);
 
+  // Kalman track y resolution
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkYPull"))){
+    h = new TH2I("hMCtrkYPull", "Kalman Track Pulls (Y)", 31, -.48, .48, 100, -3.5, 3.5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y / #sigma_{y}");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackYPull);
+
   // Kalman track Z resolution
-  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZ"))){
-    h = new TH2I("hMCtrkZ", "Kalman Track Resolution (Z)", 20, -1., 1., 100, -1.5, 1.5);
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZIn"))){
+    h = new TH2I("hMCtrkZIn", "Kalman Track Resolution (Zin)", 20, -1., 1., 100, -1.5, 1.5);
     h->GetXaxis()->SetTitle("tg(#theta)");
     h->GetYaxis()->SetTitle("#Delta z [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
-  fContainer->AddAt(h, kMCtrackZ);
+  fContainer->AddAt(h, kMCtrackZIn);
+
+  // Kalman track Z resolution
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZOut"))){
+    h = new TH2I("hMCtrkZOut", "Kalman Track Resolution (Zout)", 20, -1., 1., 100, -1.5, 1.5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackZOut);
+
+  // Kalman track Z resolution
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZInPull"))){
+    h = new TH2I("hMCtrkZInPull", "Kalman Track Pulls (Zin)", 20, -1., 1., 100, -4.5, 4.5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackZInPull);
+
+  // Kalman track Z resolution
+  if(!(h = (TH2I*)gROOT->FindObject("hMCtrkZOutPull"))){
+    h = new TH2I("hMCtrkZOutPull", "Kalman Track Pulls (Zout)", 20, -1., 1., 100, -4.5, 4.5);
+    h->GetXaxis()->SetTitle("tg(#theta)");
+    h->GetYaxis()->SetTitle("#Delta z / #sigma_{z}");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kMCtrackZOutPull);
 
   // Kalman track Pt resolution
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkPt"))){
@@ -1053,7 +1122,7 @@ TObjArray* AliTRDtrackingResolution::Histos()
 
 
 //________________________________________________________
-void AliTRDtrackingResolution::SetRecoParam(AliTRDrecoParam *r)
+void AliTRDresolution::SetRecoParam(AliTRDrecoParam *r)
 {
 
   fReconstructor->SetRecoParam(r);

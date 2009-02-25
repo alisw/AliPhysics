@@ -63,7 +63,7 @@
 #include "TRD/qaRec/AliTRDtrackInfoGen.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiency.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
-#include "TRD/qaRec/AliTRDtrackingResolution.h"
+#include "TRD/qaRec/AliTRDresolution.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
 #include "TRD/qaRec/AliTRDalignmentTask.h"
 #include "TRD/qaRec/AliTRDpidChecker.h"
@@ -186,14 +186,15 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
 
   //____________________________________________
   // TRD track summary generator
+  AliAnalysisDataContainer *coutput1 = 0x0, *coutput1a = 0x0;
 	if(TSTBIT(fSteerTask, kInfoGen)){
     mgr->AddTask(task = new AliTRDtrackInfoGen());
     taskPtr[(Int_t)kInfoGen] = task;
     task->SetDebugLevel(0);
     task->SetMCdata(fHasMCdata);
     mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+    coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 0, coutput1);
     mgr->ConnectOutput(task, 1, coutput1a);
   }
@@ -239,7 +240,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   //____________________________________________
   // TRD tracking resolution
   if(TSTBIT(fSteerTask, kResolution)){
-    mgr->AddTask(task = new AliTRDtrackingResolution());
+    mgr->AddTask(task = new AliTRDresolution());
     taskPtr[(Int_t)kResolution] = task;
     task->SetMCdata(fHasMCdata);
     task->SetPostProcess(kFALSE);

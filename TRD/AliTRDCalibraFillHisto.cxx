@@ -691,7 +691,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     // loop over the clusters
     ////////////////////////////
     Int_t nbclusters = 0;
-    for(int jc=0; jc<AliTRDseed::kNtb; jc++){
+    for(int jc=0; jc<AliTRDseedV1::kNtb; jc++){
       if(!(cl = tracklet->GetClusters(jc))) continue;
       nbclusters++;
       
@@ -927,7 +927,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////////////////////
   Int_t  nbli = 0;
   AliTRDcluster *cl                   = 0x0;
-  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
+  for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
     if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
     
@@ -942,16 +942,13 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     fLinearFitterTracklet->AddPoint(&timeis,ycluster,1);
     nbli++;  
 
+    //////////////////////////////
+    // Check no shared clusters
+    //////////////////////////////
+    for(int ic=AliTRDseedV1::kNtb; ic<AliTRDseedV1::kNTimeBins; ic++){
+      if((cl = tracklet->GetClusters(ic)))  crossrow = 1;
+    }
   }
-
-  //////////////////////////////
-  // Check no shared clusters
-  //////////////////////////////
-
-  for(int ic=AliTRDseed::kNtb; ic<AliTRDseed::knTimebins; ic++){
-    if((cl = tracklet->GetClusters(ic)))  crossrow = 1;
-  }
-
   
   ////////////////////////////////////
   // Do the straight line fit now
@@ -1397,11 +1394,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   //////////////////////
 
   Int_t nb3pc    = 0;              // number of three pads clusters used for fit 
-  Double_t *padPositions;          // to see the difference between the fit and the 3 pad clusters position
-  padPositions = new Double_t[AliTRDseed::kNtb];
-  for(Int_t k = 0; k < AliTRDseed::kNtb; k++){
-    padPositions[k] = 0.0;
-  } 
+  // to see the difference between the fit and the 3 pad clusters position
+  Double_t padPositions[AliTRDseedV1::kNtb];
+  memset(padPositions, 0, AliTRDseedV1::kNtb*sizeof(Double_t)); 
   fLinearFitterTracklet->ClearPoints();  
   
   //printf("loop clusters \n");
@@ -1409,13 +1404,10 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   // loop over the clusters
   ////////////////////////////
   AliTRDcluster *cl                   = 0x0;
-  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
+  for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseed::kNtb) < AliTRDseed::knTimebins) && (cl = tracklet->GetClusters(ic+AliTRDseed::kNtb))) continue;
-    //    
-    if(!(cl = tracklet->GetClusters(ic))) continue;
+    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNTimeBins) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
    
-    
     Double_t     time  = cl->GetLocalTimeBin();
     if((time<=7) || (time>=21)) continue;
     Short_t  *signals  = cl->GetSignals(); 
@@ -1461,9 +1453,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   // fit with a straight line
   /////////////////////////////
   if(nb3pc < 3){ 
-    delete [] padPositions;
     fLinearFitterTracklet->ClearPoints();  
-    delete [] padPositions;
     return kFALSE;
   }
   fLinearFitterTracklet->Eval();
@@ -1479,9 +1469,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   ////////////////////////////////////////////////
   // Fill the PRF: Second loop over clusters
   //////////////////////////////////////////////
-  for(int ic=0; ic<AliTRDseed::kNtb; ic++){
+  for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseed::kNtb) < AliTRDseed::knTimebins) && (cl = tracklet->GetClusters(ic+AliTRDseed::kNtb))) continue;
+    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNTimeBins) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
     //
     if(!(cl = tracklet->GetClusters(ic))) continue;
 
@@ -1679,9 +1669,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   } // second loop over clusters
 
 
-  delete [] padPositions;
   return kTRUE;
-  
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 // Pad row col stuff: see if masked or not

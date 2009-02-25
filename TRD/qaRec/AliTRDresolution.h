@@ -1,13 +1,13 @@
-#ifndef ALITRDTRACKINGRESOLUTION_H
-#define ALITRDTRACKINGRESOLUTION_H
+#ifndef ALITRDRESOLUTION_H
+#define ALITRDRESOLUTION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDtrackingResolution.h 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDresolution.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  Reconstruction QA                                                     //
+//  Resolution QA                                                     //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -23,28 +23,35 @@ class AliTRDgeometry;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
-class AliTRDtrackingResolution : public AliTRDrecoTask
+class AliTRDresolution : public AliTRDrecoTask
 {
 public:
-  enum{
-    kCluster        = 0 // cluster - track
-    ,kTrackletY     = 1 // tracklet - track y pools
-    ,kTrackletPhi   = 2 // tracklet - track angular pools residuals
-    ,kMCcluster     = 3 // cluster - mc residuals/systematics
-    ,kMCtrackletY   = 4 // tracklet - mc y resolution/systematics
-    ,kMCtrackletZ   = 5 // tracklet - mc z resolution/systematics (pad row cross)
-    ,kMCtrackletPhi = 6 // tracklet - mc phi resolution/systematics
-    ,kMCtrackY      = 7 // Kalman Y resolution
-    ,kMCtrackZ      = 8 // Kalman Z resolution
-    ,kMCtrackPt     = 9 // Kalman Pt resolution
+  enum ETRDresolutionPlots{
+    kCluster          =  0 // cluster - track
+    ,kTrackletY       =  1 // tracklet - track y pulls
+    ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
+    ,kMCcluster       =  3 // cluster - mc residuals/systematics
+    ,kMCtrackletY     =  4 // tracklet - mc y resolution/systematics
+    ,kMCtrackletYPull =  5 // tracklet - mc y resolution/systematics
+    ,kMCtrackletZ     =  6 // tracklet - mc z resolution/systematics (pad row cross)
+    ,kMCtrackletZPull =  7 // tracklet - mc z resolution/systematics (pad row cross)
+    ,kMCtrackletPhi   =  8 // tracklet - mc phi resolution/systematics
+    ,kMCtrackY        =  9 // Kalman Y resolution
+    ,kMCtrackYPull    = 10 // Kalman Y resolution
+    ,kMCtrackZIn      = 11 // Kalman Z resolution
+    ,kMCtrackZOut     = 12 // Kalman Z resolution
+    ,kMCtrackZInPull  = 13 // Kalman Z resolution
+    ,kMCtrackZOutPull = 14 // Kalman Z resolution
+    ,kMCtrackPt       = 15 // Kalman Pt resolution
+    ,kNhistos         = 16
   };
-  enum{
+  enum ETRDresolutionSteer {
     kVerbose  = 0
     ,kVisual  = 1
   };
 
-  AliTRDtrackingResolution();
-  virtual ~AliTRDtrackingResolution();
+  AliTRDresolution();
+  virtual ~AliTRDresolution();
   
   void    CreateOutputObjects();
   Bool_t  GetRefFigure(Int_t ifig);
@@ -66,8 +73,8 @@ public:
   void    Terminate(Option_t *);
   
 private:
-  AliTRDtrackingResolution(const AliTRDtrackingResolution&);
-  AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
+  AliTRDresolution(const AliTRDresolution&);
+  AliTRDresolution& operator=(const AliTRDresolution&);
   void        AdjustF1(TH1 *h, TF1 *f);
 
 private:
@@ -83,6 +90,6 @@ private:
   TObjArray           *fMCcl;   //! cluster2mc calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib
   
-  ClassDef(AliTRDtrackingResolution, 1) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 1) // TRD tracking resolution task
 };
 #endif

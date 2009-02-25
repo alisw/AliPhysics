@@ -44,6 +44,8 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
+  ,fTrackLow(0x0)
+  ,fTrackHigh(0x0)
 {
   //
   // Default constructor
@@ -67,6 +69,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   ,fDE(ref.fDE)
   ,fReconstructor(ref.fReconstructor)
   ,fBackupTrack(0x0)
+  ,fTrackLow(0x0)
+  ,fTrackHigh(0x0)
 {
   //
   // Copy constructor
@@ -78,7 +82,9 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
     fTrackletIndex[ip] = ref.fTrackletIndex[ip];
     fTracklet[ip]      = ref.fTracklet[ip];
   }
-
+  if(ref.fTrackLow) fTrackLow = new AliExternalTrackParam(*ref.fTrackLow);
+  if(ref.fTrackHigh) fTrackHigh = new AliExternalTrackParam(*ref.fTrackHigh);
+ 
   for (Int_t i = 0; i < 3;i++) fBudget[i]      = ref.fBudget[i];
 
 	for(Int_t is = 0; is<AliPID::kSPECIES; is++) fPID[is] = ref.fPID[is];
@@ -92,6 +98,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
+  ,fTrackLow(0x0)
+  ,fTrackHigh(0x0)
 {
   //
   // Constructor from AliESDtrack
@@ -140,6 +148,8 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
+  ,fTrackLow(0x0)
+  ,fTrackHigh(0x0)
 {
   //
   // The stand alone tracking constructor
@@ -200,8 +210,10 @@ AliTRDtrackV1::~AliTRDtrackV1()
   //AliInfo("");
   //printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
 
-  if(fBackupTrack) delete fBackupTrack;
-  fBackupTrack = 0x0;
+  if(fBackupTrack) delete fBackupTrack; fBackupTrack = 0x0;
+
+  if(fTrackLow) delete fTrackLow; fTrackLow = 0x0;
+  if(fTrackHigh) delete fTrackHigh; fTrackHigh = 0x0;
 
   for(Int_t ip=0; ip<kNplane; ip++){
     if(TestBit(kOwner) && fTracklet[ip]) delete fTracklet[ip];
@@ -226,7 +238,7 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
   AliTRDcluster *c    = 0x0;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
-    for (Int_t ic = 0; ic < AliTRDseed::knTimebins; ic++) {
+    for (Int_t ic = 0; ic < AliTRDseedV1::kNTimeBins; ic++) {
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
       for (Int_t k = 0; k < 3; k++) { 
         label      = c->GetLabel(k);
@@ -277,7 +289,7 @@ Bool_t AliTRDtrackV1::CookPID()
   fPIDquality = 0;
   
   // steer PID calculation @ tracklet level
-  Double_t *prob = 0x0;
+  Float_t *prob = 0x0;
   for(int ip=0; ip<kNplane; ip++){
     if(fTrackletIndex[ip] == 0xffff) continue;
     if(!fTracklet[ip]->IsOK()) continue;
@@ -326,7 +338,7 @@ AliTRDcluster* AliTRDtrackV1::GetCluster(Int_t id)
       continue;
     }
     AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+    for(Int_t ic=AliTRDseedV1::kNTimeBins; ic--;){
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
 
       if(n<id){n++; continue;}
@@ -347,7 +359,7 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
       continue;
     }
     AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+    for(Int_t ic=AliTRDseedV1::kNTimeBins; ic--;){
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
 
       if(n<id){n++; continue;}
@@ -370,7 +382,11 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
   Double_t cov[3];
   trklt->GetCovAt(x, cov);
   
-  return AliExternalTrackParam::GetPredictedChi2(p, cov);
+  const Double_t *cc = GetCovariance();
+  Double_t dy = p[0]-GetY(); dy*=dy;
+  Double_t s2 = cov[0]+cc[0];
+  return s2 > 0. ? dy/s2 : 0.; 
+  //return AliExternalTrackParam::GetPredictedChi2(p, cov);
 }
 
 //_______________________________________________________________
@@ -697,6 +713,20 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t index)
 
   fTracklet[plane]      = trklt;
   fTrackletIndex[plane] = index;
+}
+
+//_______________________________________________________________
+void AliTRDtrackV1::SetTrackLow()
+{
+  const AliExternalTrackParam *op = dynamic_cast<const AliExternalTrackParam*>(this);
+  fTrackLow = fTrackLow ? new(fTrackLow) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);
+}
+
+//_______________________________________________________________
+void AliTRDtrackV1::SetTrackHigh(const AliExternalTrackParam *op)
+{
+  if(!op) op = dynamic_cast<const AliExternalTrackParam*>(this);
+  fTrackHigh = fTrackHigh ? new(fTrackHigh) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);
 }
 
 //_______________________________________________________________

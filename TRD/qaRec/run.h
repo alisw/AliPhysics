@@ -28,7 +28,7 @@ const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
   ,"AliTRDcheckDetector"
   ,"AliTRDtrackingEfficiency"
   ,"AliTRDtrackingEfficiencyCombined"
-  ,"AliTRDtrackingResolution"
+  ,"AliTRDresolution"
   ,"AliTRDpidChecker"
   ,"AliTRDcalibration"
   ,"AliTRDalignmentTask"

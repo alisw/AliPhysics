@@ -147,21 +147,20 @@ void AliTRDcalibration::Exec(Option_t *)
     fTRDCalibraFillHisto->UpdateHistogramsV1(ftrdTrack);
     
     const AliTRDseedV1 *tracklet = 0x0;
-    for(Int_t itr = 0; itr < 6; itr++){
+    for(Int_t itr = 0; itr < AliTRDgeometry::kNlayer; itr++){
       if(!(tracklet = ftrdTrack->GetTracklet(itr))) continue;
       if(!tracklet->IsOK()) continue;
       Int_t nbclusters = 0;
       // For PH
-      Double_t phtb[35];
-      for(Int_t k=0; k < 35; k++){
-  phtb[k] = 0.0;
-      }
+      Double_t phtb[AliTRDseedV1::kNtb];
+      memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
+
       // For CH
       Double_t sum = 0.0;
       // normalisation
       Float_t normalisation = 6.67;
       Int_t detector = 0;
-      for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
+      for(int ic=0; ic<AliTRDseedV1::kNTimeBins; ic++){
         if(!(fcl = tracklet->GetClusters(ic))) continue;
         nbclusters++;
         Int_t time = fcl->GetPadTime();

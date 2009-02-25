@@ -314,14 +314,10 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     }
 
     if ((TMath::Abs(track.GetC(track.GetBz()) - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
-      //
+
       // Make backup for back propagation
-      //
       Int_t foundClr = track.GetNumberOfClusters();
       if (foundClr >= foundMin) {
-        //AliInfo(Form("Making backup track ncls [%d]...", foundClr));
-        //track.CookdEdx();
-        //track.CookdEdxTimBin(seed->GetID());
         track.CookLabel(1. - fgkLabelFraction);
         if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
 
@@ -444,12 +440,11 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
       continue;
     }
 
+    // reject tracks which failed propagation in the TRD or
+    // are produced by the TRD stand alone tracker
     ULong_t status = seed->GetStatus();
-    // reject tracks which failed propagation in the TRD
-    if((status & AliESDtrack::kTRDout) == 0) continue;
-
-    // reject tracks which are produced by the TRD stand alone track finder.
-    if((status & AliESDtrack::kTRDin)  == 0) continue;
+    if(!(status & AliESDtrack::kTRDout)) continue;
+    if(!(status & AliESDtrack::kTRDin)) continue;
     nseed++; 
 
     track.ResetCovariance(50.0);
@@ -460,16 +455,26 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     if(FollowProlongation(track)){	
       // Prolongate to TPC
       if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
-  seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
-  found++;
-  kUPDATE = kTRUE;
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
+        found++;
+        kUPDATE = kTRUE;
       }
-    }	 
+
+      // Update the friend track
+      if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0){ 
+        TObject *o = 0x0; Int_t ic = 0;
+        AliTRDtrackV1 *calibTrack = 0x0; 
+        while((o = seed->GetCalibObject(ic++))){
+          if(!(calibTrack = dynamic_cast<AliTRDtrackV1*>(o))) continue;
+          calibTrack->SetTrackHigh(track.GetTrackHigh());
+        }
+      }
+    }
     
     // Prolongate to TPC without update
     if(!kUPDATE) {
       AliTRDtrackV1 tt(*seed);
-      if (PropagateToX(tt, xTPC, fgkMaxStep)) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDrefit);
+      if (PropagateToX(tt, xTPC, fgkMaxStep)) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
     }
   }
   AliInfo(Form("Number of loaded seeds: %d",nseed));
@@ -505,15 +510,15 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
   // Debug level 2
   //
   
+  Bool_t kStoreIn = kTRUE;
   Int_t    nClustersExpected = 0;
-  Int_t lastplane = 5; //GetLastPlane(&t);
-  for (Int_t iplane = lastplane; iplane >= 0; iplane--) {
+  for (Int_t iplane = kNPlanes; iplane--;) {
     Int_t   index   = 0;
     AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
     if(!tracklet) continue;
     if(!tracklet->IsOK()) AliWarning("tracklet not OK");
     
-    Double_t x  = tracklet->GetXref();//GetX0();
+    Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+fgkMaxStep) continue;
 
@@ -551,7 +556,11 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       t.PropagateTo(x, xx0, xrho);
       if (!AdjustSector(&t)) break;
     }
-    
+    if(kStoreIn){
+      t.SetTrackHigh(); 
+      kStoreIn = kFALSE;
+    }
+
     Double_t maxChi2 = t.GetPredictedChi2(tracklet);
     if (maxChi2 < 1e+10 && t.Update(tracklet, maxChi2)){ 
       nClustersExpected += tracklet->GetN();
@@ -618,9 +627,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     tracklets[ip] = t.GetTracklet(ip);
     t.UnsetTracklet(ip);
   } 
+  Bool_t kStoreIn = kTRUE;
+
 
   // Loop through the TRD layers
-  for (Int_t ilayer = 0; ilayer < AliTRDgeometry::Nlayer(); ilayer++) {
+  for (Int_t ilayer = 0; ilayer < kNPlanes; ilayer++) {
     // BUILD TRACKLET IF NOT ALREADY BUILT
     Double_t x = 0., x0, y, z, alpha;
     ptrTracklet  = tracklets[ilayer];
@@ -699,7 +710,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t xyz0[3]; // entry point 
     t.GetXYZ(xyz0);
     alpha = t.GetAlpha();
-    x = ptrTracklet->GetXref(); //GetX0();
+    x = ptrTracklet->GetX(); //GetX0();
     if (!t.GetProlongation(x, y, z)) return -1/*nClustersExpected*/;
     Double_t xyz1[3]; // exit point
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
@@ -714,6 +725,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     // Propagate and update track
     if (!t.PropagateTo(x, xx0, xrho)) return -1/*nClustersExpected*/;
     if (!AdjustSector(&t)) return -1/*nClustersExpected*/;
+
+    if(kStoreIn){
+      t.SetTrackLow(); 
+      kStoreIn = kFALSE;
+    }
     Double_t maxChi2 = t.GetPredictedChi2(ptrTracklet);
     if (!t.Update(ptrTracklet, maxChi2)) return -1/*nClustersExpected*/;
     ptrTracklet->UpDate(&t);
@@ -744,8 +760,9 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         //(ratio0+ratio1           >   1.5) && 
         (t.GetNCross()           ==    0) && 
         (TMath::Abs(t.GetSnp())  <  0.85) &&
-        (t.GetNumberOfClusters() >    20)) t.MakeBackupTrack();
-    
+        (t.GetNumberOfClusters() >    20)){
+      t.MakeBackupTrack();
+    }
   } // end layers loop
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
@@ -787,7 +804,7 @@ Float_t AliTRDtrackerV1::FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_
   }
   for(Int_t il = 0; il < maxLayers; il++){
     if(!tracklets[ppl[il]].IsOK()) continue;
-    fitter->AddPoint(tracklets[ppl[il]].GetX0(), tracklets[ppl[il]].GetYfitR(0), tracklets[ppl[il]].GetZProb(),1,10);
+    fitter->AddPoint(tracklets[ppl[il]].GetX0(), tracklets[ppl[il]].GetYfit(0), tracklets[ppl[il]].GetZfit(0),1,10);
   }
   fitter->Update();
   // Set the reference position of the fit and calculate the chi2 values
@@ -900,7 +917,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
 
   Float_t chi2track = fitter->GetChisquare()/Double_t(nPoints);
   for(Int_t ip = 0; ip < AliTRDtrackerV1::kNPlanes; ip++)
-    tracklets[ip].SetCC(curvature);
+    tracklets[ip].SetC(curvature);
 
 /*  if(fReconstructor->GetStreamLevel() >= 5){
     //Linear Model on z-direction
@@ -1004,7 +1021,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
     zref = offset + slope * (tracklets[iLayer].GetX0() - xref);
-    if (TMath::Abs(tracklets[iLayer].GetZProb() - zref) > tracklets[iLayer].GetPadLength() * 0.5 + 1.0) 
+    if (TMath::Abs(tracklets[iLayer].GetZfit(0) - zref) > tracklets[iLayer].GetPadLength() * 0.5 + 1.0) 
       acceptablez = kFALSE;
   }
   if (!acceptablez) {
@@ -1249,7 +1266,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
   for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
     zref = z0 + dzdx * (tracklets[iLayer].GetX0() - xref);
-    if (TMath::Abs(tracklets[iLayer].GetZProb() - zref) > tracklets[iLayer].GetPadLength() * 0.5 + 1.0) 
+    if (TMath::Abs(tracklets[iLayer].GetZfit(0) - zref) > tracklets[iLayer].GetPadLength() * 0.5 + 1.0) 
       accept = kFALSE;
   }
   if (!accept) {
@@ -1448,7 +1465,7 @@ Float_t AliTRDtrackerV1::CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset
   for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNlayer; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
     Double_t z = offset + slope * (tracklets[iLayer].GetX0() - xref);
-    chi2Z += TMath::Abs(tracklets[iLayer].GetMeanz() - z);
+    chi2Z += TMath::Abs(tracklets[iLayer].GetZfit(0) - z);
     nLayers++;
   }
   chi2Z /= TMath::Max((nLayers - 3.0),1.0);
@@ -2558,10 +2575,10 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         Freq(nlab,labels,outlab,kFALSE);
         Int_t label     = outlab[0];
         Int_t frequency = outlab[1];
-        for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-          cseed[iLayer].SetFreq(frequency);
-          cseed[iLayer].SetChi2Z(chi2[1]);
-        }
+//         for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
+//           cseed[iLayer].SetFreq(frequency);
+//           cseed[iLayer].SetChi2Z(chi2[1]);
+//         }
             
         if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
           TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
@@ -2801,7 +2818,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
   Double_t sumdaf = 0, nLayers = 0;
   for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
-    sumdaf += TMath::Abs((tracklets[iLayer].GetYfit(1) - tracklets[iLayer].GetYref(1))/ tracklets[iLayer].GetSigmaY2());
+    sumdaf += TMath::Abs((tracklets[iLayer].GetYfit(1) - tracklets[iLayer].GetYref(1))/ tracklets[iLayer].GetS2Y());
     nLayers++;
   }
   sumdaf /= Float_t (nLayers - 2.0);
@@ -2869,7 +2886,7 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
   for(UChar_t ilayer = 0; ilayer < 4; ilayer++){
     Int_t jlayer = planes[ilayer];
     nclusters += cseed[jlayer].GetN2();
-    sumda += TMath::Abs(cseed[jlayer].GetYfitR(1) - cseed[jlayer].GetYref(1));
+    sumda += TMath::Abs(cseed[jlayer].GetYfit(1) - cseed[jlayer].GetYref(1));
   }
   nclusters *= .25;
 
@@ -3274,22 +3291,6 @@ Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
 
 
 //____________________________________________________________________
-
-//_____________________________________________________________________________
-Float_t AliTRDtrackerV1::GetChi2Y(AliTRDseedV1 *tracklets) const
-{
-  //	Chi2 definition on y-direction
-
-  Float_t chi2 = 0;
-  for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
-    if(!tracklets[ipl].IsOK()) continue;
-    Double_t distLayer = (tracklets[ipl].GetYfit(0) - tracklets[ipl].GetYref(0));// /tracklets[ipl].GetSigmaY(); 
-    chi2 += distLayer * distLayer;
-  }
-  return chi2;
-}
-
-//____________________________________________________________________
 void AliTRDtrackerV1::ResetSeedTB()
 {
 // reset buffer for seeding time bin layers. If the time bin 
@@ -3301,20 +3302,35 @@ void AliTRDtrackerV1::ResetSeedTB()
   }
 }
 
+
+//_____________________________________________________________________________
+Float_t AliTRDtrackerV1::GetChi2Y(AliTRDseedV1 *tracklets) const
+{
+  //	Calculates normalized chi2 in y-direction
+  // chi2 = Sum chi2 / n_tracklets
+
+  Double_t chi2 = 0.; Int_t n = 0;
+  for(Int_t ipl = kNPlanes; ipl--;){
+    if(!tracklets[ipl].IsOK()) continue;
+    chi2 += tracklets[ipl].GetChi2Y();
+    n++;
+  }
+  return n ? chi2/n : 0.;
+}
+
 //_____________________________________________________________________________
 Float_t AliTRDtrackerV1::GetChi2Z(AliTRDseedV1 *tracklets) const 
 {
   //	Calculates normalized chi2 in z-direction
+  // chi2 = Sum chi2 / n_tracklets
 
-  Float_t chi2 = 0;
-  // chi2 = Sum ((z - zmu)/sigma)^2
-  // Sigma for the z direction is defined as half of the padlength
-  for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
+  Double_t chi2 = 0; Int_t n = 0;
+  for(Int_t ipl = kNPlanes; ipl--;){
     if(!tracklets[ipl].IsOK()) continue;
-    Double_t distLayer = (tracklets[ipl].GetMeanz() - tracklets[ipl].GetZref(0)); // /(tracklets[ipl].GetPadLength()/2); 
-    chi2 += distLayer * distLayer;
+    chi2 += tracklets[ipl].GetChi2Z();
+    n++;
   }
-  return chi2;
+  return n ? chi2/n : 0.;
 }
 
 ///////////////////////////////////////////////////////

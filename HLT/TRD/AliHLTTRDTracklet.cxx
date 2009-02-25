@@ -8,23 +8,24 @@
 AliHLTTRDTracklet::AliHLTTRDTracklet():
   fTRDtracklet(NULL),
   fSize(sizeof(AliHLTTRDTracklet)),
-  fSigmaY(-1),
+  //fSigmaY(-1),
   fSigmaY2(-1),
   fTilt(-1),
   fPadLength(-1),
   fX0(-1),
-  fMeanz(-1),
-  fZProb(-1),
-  fN(-1),
+  fUsable(0),
+  //fMeanz(-1),
+  //fZProb(-1),
+  //fN(-1),
   fN2(-1),
   fNUsed(-1),
-  fFreq(-1),
-  fNChange(-1),
-  fMPads(-1),
+  //fFreq(-1),
+  //fNChange(-1),
+  //fMPads(-1),
   fC(-1),
-  fCC(-1),
+  //fCC(-1),
   fChi2(-1),
-  fChi2Z(-1),
+  //fChi2Z(-1),
   fDet(-1),
   fMom(-1),
   fdX(-1)
@@ -39,23 +40,24 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
 AliHLTTRDTracklet::AliHLTTRDTracklet(AliTRDseedV1 * inTracklet):
   fTRDtracklet(NULL),
   fSize(sizeof(AliHLTTRDTracklet)),
-  fSigmaY(-1),
+  //fSigmaY(-1),
   fSigmaY2(-1),
   fTilt(-1),
   fPadLength(-1),
   fX0(-1),
-  fMeanz(-1),
-  fZProb(-1),
-  fN(-1),
+  fUsable(0),
+  //fMeanz(-1),
+  //fZProb(-1),
+  //fN(-1),
   fN2(-1),
   fNUsed(-1),
-  fFreq(-1),
-  fNChange(-1),
-  fMPads(-1),
+  //fFreq(-1),
+  //fNChange(-1),
+  //fMPads(-1),
   fC(-1),
-  fCC(-1),
+  //fCC(-1),
   fChi2(-1),
-  fChi2Z(-1),
+  //fChi2Z(-1),
   fDet(-1),
   fMom(-1),
   fdX(-1)
@@ -74,7 +76,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(AliTRDseedV1 * inTracklet):
 //============================================================================
 void AliHLTTRDTracklet::AddClusters()
 {
-  for (Int_t iTimeBin = 0; iTimeBin < knTimebins; iTimeBin++)
+  for (Int_t iTimeBin = 0; iTimeBin < AliTRDseedV1::kNTimeBins; iTimeBin++)
     {
 //       if (fClusters[iTimeBin])
 // 	HLTWarning("Trying to rewrite cluster in tracklet. Not good.");
@@ -101,46 +103,36 @@ void AliHLTTRDTracklet::CopyDataMembers()
     fYref[i] = fTRDtracklet->GetYref(i);
     fZref[i] = fTRDtracklet->GetZref(i);
   }
-  fSigmaY = fTRDtracklet->GetSigmaY();
-  fSigmaY2 = fTRDtracklet->GetSigmaY2();
+  //fSigmaY = fTRDtracklet->GetSigmaY();
+  fSigmaY2 = fTRDtracklet->GetS2Y();
   fTilt = fTRDtracklet->GetTilt();
   fPadLength = fTRDtracklet->GetPadLength();
   
   fX0 = fTRDtracklet->GetX0();
-  for (Int_t i = 0; i < knTimebins; i++){
-    fX[i] = fTRDtracklet->GetX(i);
-    fY[i] = fTRDtracklet->GetY(i);
-    fZ[i] = fTRDtracklet->GetZ(i);
+  for (Int_t i = 0; i < AliTRDseedV1::kNTimeBins; i++){
+//     fX[i] = fTRDtracklet->GetX(i);
+//     fY[i] = fTRDtracklet->GetY(i);
+//     fZ[i] = fTRDtracklet->GetZ(i);
     fIndexes[i] = fTRDtracklet->GetIndexes(i);
-    fUsable[i] = fTRDtracklet->IsUsable(i);
   }
+  fUsable = fTRDtracklet->GetUsabilityMap();
 
   for (Int_t i=0; i < 2; i++){
     fYfit[i] = fTRDtracklet->GetYfit(i);
     fZfit[i] = fTRDtracklet->GetZfit(i);
-    fYfitR[i] = fTRDtracklet->GetYfitR(i);
-    fZfitR[i] = fTRDtracklet->GetZfitR(i);
     fLabels[i] = fTRDtracklet->GetLabels(i);
   }
-  
-  fMeanz   = fTRDtracklet->GetMeanz();
-  fZProb   = fTRDtracklet->GetZProb();
-  fN       = fTRDtracklet->GetNbClusters();
+  fLabels[2] = fTRDtracklet->GetLabels(2);
   fN2      = fTRDtracklet->GetN2();
   fNUsed   = fTRDtracklet->GetNUsed();
-  fFreq    = fTRDtracklet->GetFreq();
-  fNChange = fTRDtracklet->GetNChange();
-  fMPads = fTRDtracklet->GetMPads();
    
   fC = fTRDtracklet->GetC();
-  fCC = fTRDtracklet->GetCC();
   fChi2 = fTRDtracklet->GetChi2();
-  fChi2Z = fTRDtracklet->GetChi2Z();
+  //fChi2Z = fTRDtracklet->GetChi2Z();
   
   fDet = fTRDtracklet->GetDetector();
   fMom = fTRDtracklet->GetMomentum();
   fdX = fTRDtracklet->GetdX();
-  
 }
 
 /**
@@ -161,48 +153,38 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
     outTracklet->SetZref(i, fZref[i]);
   }
   
-  outTracklet->SetSigmaY(fSigmaY);
-  outTracklet->SetSigmaY2(fSigmaY2);
+  //outTracklet->SetSigmaY(fSigmaY);
+  //outTracklet->SetSigmaY2(fSigmaY2);
   outTracklet->SetTilt(fTilt);
   outTracklet->SetPadLength(fPadLength);
   outTracklet->SetX0(fX0);
 
-  for (Int_t i=0; i < knTimebins; i++){
-    outTracklet->SetX(i,fX[i]);
-    outTracklet->SetX(i,fY[i]);
-    outTracklet->SetX(i,fZ[i]);
+  for (Int_t i=0; i < AliTRDseedV1::kNTimeBins; i++){
+//     outTracklet->SetX(i,fX[i]);
+//     outTracklet->SetX(i,fY[i]);
+//     outTracklet->SetX(i,fZ[i]);
     outTracklet->SetIndexes(i, fIndexes[i]);
-    outTracklet->SetUsable(i, fUsable[i]);
   }
-  for (Int_t i=0; i < 2; i++){
-    outTracklet->SetYfit(i,fYfit[i]);
-    outTracklet->SetYfitR(i,fYfitR[i]);
-    outTracklet->SetZfit(i,fZfit[i]);
-    outTracklet->SetZfitR(i,fZfitR[i]);
-    outTracklet->SetLabels(i,fLabels[i]);
-  }
-  
-  outTracklet->SetMeanz(fMeanz);
-  outTracklet->SetZProb(fZProb);
-  outTracklet->SetN(fN);
-  outTracklet->SetN2(fN2);
-  outTracklet->SetNUsed(fNUsed);
-  outTracklet->SetFreq(fFreq);
-  outTracklet->SetNChange(fNChange);
-  outTracklet->SetMPads(fMPads);
-  outTracklet->SetC(fC);
-  outTracklet->SetCC(fCC);
-  outTracklet->SetChi2(fChi2);
-  outTracklet->SetChi2Z(fChi2Z);
+  outTracklet->SetUsabilityMap(fUsable);
 
-  for (Int_t iCluster = 0; iCluster < knTimebins; iCluster++){
+//   for (Int_t i=0; i < 2; i++){
+//     outTracklet->SetYfit(i,fYfit[i]);
+//     outTracklet->SetZfit(i,fZfit[i]);
+//   }
+  outTracklet->SetLabels(fLabels);
+  
+  //outTracklet->SetN2(fN2);
+  //outTracklet->SetNUsed(fNUsed);
+  outTracklet->SetC(fC);
+  outTracklet->SetChi2(fChi2);
+
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
     if (fClusters[iCluster]){
       AliTRDcluster *trdCluster = new AliTRDcluster();
       fClusters[iCluster]->ExportTRDCluster(trdCluster);
-      outTracklet->SetClusters(iCluster, trdCluster);
+      //outTracklet->SetClusters(iCluster, trdCluster);
     }
   }
-  
 }
 
 
@@ -212,7 +194,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
 //============================================================================
 void AliHLTTRDTracklet::InitArrays()
 {
-  for (Int_t i=0; i < knTimebins; i++){
+  for (Int_t i=0; i < AliTRDseedV1::kNTimeBins; i++){
     fClusters[i] = NULL;
   }
 
@@ -220,22 +202,22 @@ void AliHLTTRDTracklet::InitArrays()
     fYref[i] = -1;
     fZref[i] = -1;
   }
-  for (Int_t i = 0; i < knTimebins; i++){
-    fX[i] = -1;
-    fY[i] = -1;
-    fZ[i] = -1;
+  for (Int_t i = 0; i < AliTRDseedV1::kNTimeBins; i++){
+//     fX[i] = -1;
+//     fY[i] = -1;
+//     fZ[i] = -1;
     fIndexes[i] = -1;
-    fUsable[i] = -1;
   }
+  fUsable = 0;
 
   for (Int_t i=0; i < 2; i++){
     fYfit[i] = -1;
     fZfit[i] = -1;
-    fYfitR[i] = -1;
-    fZfitR[i] = -1;
+//     fYfitR[i] = -1;
+//     fZfitR[i] = -1;
     fLabels[i] = -1;
   }
-  
+  fLabels[2] = 0;
 }
 
 /**
@@ -245,20 +227,14 @@ void AliHLTTRDTracklet::InitArrays()
 void AliHLTTRDTracklet::Print(Bool_t printClusters)
 {
   //printf("--hltTracklet-- addr 0x%p(%i); fSize %i\n", this, (int)this, fSize);
-  printf("      fDet %i; dMom %f; fdX %f fN %i\n", fDet, fMom, fdX, fN);
+  printf("      fDet %i; dMom %f; fdX %f fN %i\n", fDet, fMom, fdX, fN2);
 
-  if (printClusters){
-    
-    for (Int_t iCluster = 0; iCluster < knTimebins; iCluster++){
-      printf(" [%i] ",iCluster);
-      if (fClusters[iCluster]){
-	fClusters[iCluster]->Print();
-      }
-      else 
-	printf("      NULL\n");
-    }
+  if(!printClusters) return;
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
+    printf(" [%i] ",iCluster);
+    if (fClusters[iCluster]) fClusters[iCluster]->Print();
+    else printf("      NULL\n");
   }
-  
 }
 
 /**
@@ -270,7 +246,7 @@ void AliHLTTRDTracklet::ReadClustersFromMemory(void *input)
   AliHLTUInt8_t *iterPtr = (AliHLTUInt8_t*) input;
   AliHLTTRDCluster* hltCluster = NULL;
   
-  for (Int_t iCluster = 0; iCluster < knTimebins; iCluster++){
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
     // if we had something in the fClusters[iCluster] before copying,
     // then this entry in the array should not be empty. Fill it.
     if (fClusters[iCluster]){
