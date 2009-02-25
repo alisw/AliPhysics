@@ -260,8 +260,7 @@ DefOperation( OpComplement, ~a,    !a       );
 DefOperation( OpUnion,      a | b, a | b    );
 DefOperation( OpIntersect,  a & b, a & b    );
 DefOperation( OpXor,        a ^ b, a ^ b    );
-DefOperation( OpPlus,       a + b, a | b    );
-DefOperation( OpMinus,      a - b, a & (!b) );
+DefOperation( OpDifference,      a - b, a & (!b) );
 
 /**
  * Randomly builds two trigger domains and tests a overloaded operator of the
@@ -416,8 +415,7 @@ DefTest(ComplementOperationTest, OperatorOK<OpComplement>, "operator ~a");
 DefTest(UnionOperationTest,      OperatorOK<OpUnion>,      "operator a | b");
 DefTest(IntersectOperationTest,  OperatorOK<OpIntersect>,  "operator a & b");
 DefTest(XorOperationTest,        OperatorOK<OpXor>,        "operator a ^ b");
-DefTest(PlusOperationTest,       OperatorOK<OpPlus>,       "operator a + b");
-DefTest(MinusOperationTest,      OperatorOK<OpMinus>,      "operator a - b");
+DefTest(DifferenceOperationTest, OperatorOK<OpDifference>, "operator a - b");
 DefTest(XorExpressionTest1,   EquivalentExpressionsOK<XorExprCheck1>,   "expression a ^ b == (a | b) - (a & b)");
 DefTest(XorExpressionTest2,   EquivalentExpressionsOK<XorExprCheck2>,   "expression a ^ b == (a - (a & b)) | (b - (a & b))");
 DefTest(MinusExpressionTest1, EquivalentExpressionsOK<MinusExprCheck1>, "expression a - b == a & (a ^ b)");
@@ -465,8 +463,7 @@ bool testTriggerDomain(bool print = true, int numOfTests = 100, int seed = 0)
 	if (not Run<UnionOperationTest>(print, numOfTests)) return false;
 	if (not Run<IntersectOperationTest>(print, numOfTests)) return false;
 	if (not Run<XorOperationTest>(print, numOfTests)) return false;
-	if (not Run<PlusOperationTest>(print, numOfTests)) return false;
-	if (not Run<MinusOperationTest>(print, numOfTests)) return false;
+	if (not Run<DifferenceOperationTest>(print, numOfTests)) return false;
 	if (not Run<XorExpressionTest1>(print, numOfTests)) return false;
 	if (not Run<XorExpressionTest2>(print, numOfTests)) return false;
 	if (not Run<MinusExpressionTest1>(print, numOfTests)) return false;

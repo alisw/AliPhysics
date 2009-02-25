@@ -27,7 +27,6 @@
  *  &  applies a bitwise and on the DDL bits.
  *  ^  applies a bitwise xor on the DDL bits.
  *  ~  applies a bitwise not on the DDL bits.
- *  +  synonym for the '|' operator.
  *  -  unsets the bits in readout list A that are set in readout list B.
  *      This effectively applies A & (A ^ B).
  */
@@ -232,16 +231,6 @@ class AliHLTReadoutList : public TObject
   AliHLTReadoutList& operator &= (const AliHLTReadoutList& list);
   
   /**
-   * This operator performs the same operation as '|='.
-   * \param list  The right hand side readout list to operate on.
-   * \return  A reference to this object.
-   */
-  AliHLTReadoutList& operator += (const AliHLTReadoutList& list)
-  {
-    return operator |= (list);
-  }
-  
-  /**
    * This operator performs the effective operation of "this and (this xor list)".
    * It removes all the DDLs specified in list from this readout list.
    * \param list  The right hand side readout list to operate on.
@@ -293,18 +282,8 @@ class AliHLTReadoutList : public TObject
   }
   
   /**
-   * This operator performs the same operation as '|'.
-   * \param list  The right hand side readout list to operate on.
-   * \return  The result of the binary operator.
-   */
-  AliHLTReadoutList operator + (const AliHLTReadoutList& list) const
-  {
-    AliHLTReadoutList result = *this;
-    return result.operator += (list);
-  }
-  
-  /**
    * This operator performs the effective operation of "this and (this xor list)".
+   * i.e. the set difference.
    * It removes all the DDLs specified in list from this readout list.
    * \param list  The right hand side readout list to operate on.
    * \return  The result of the binary operator.

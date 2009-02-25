@@ -11,7 +11,7 @@ include $(top_srcdir)/libAliHLTMUON.pkg
 
 lib_LTLIBRARIES			=  libAliHLTMUON.la
 
-LIBRARY_VERSION			= '0:10:0'
+LIBRARY_VERSION			= '1:0:0'
 
 # library sources
 # The source files are specified in libAliHLTMUON.pkg

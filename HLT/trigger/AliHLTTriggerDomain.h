@@ -310,16 +310,6 @@ class AliHLTTriggerDomain : public TObject
   }
   
   /**
-   * This operator performs the same operation as the '|=' operator.
-   * \param domain  The domain object on the right hand side of the operator.
-   * \return  A reference to this object.
-   */
-  AliHLTTriggerDomain& operator += (const AliHLTTriggerDomain& domain)
-  {
-    return operator |= (domain);
-  }
-  
-  /**
    * This operator removes all domain entries from this trigger domain that exisit
    * in <i>domain</i>, effectively implementing a set difference.
    * \param domain  The domain object on the right hand side of the operator.
@@ -368,18 +358,6 @@ class AliHLTTriggerDomain : public TObject
    *    R.IncludeInReadout(D) == this->IncludeInReadout(D) and domain.IncludeInReadout(D)
    */
   AliHLTTriggerDomain operator & (const AliHLTTriggerDomain& domain) const;
-  
-  /**
-   * This operator performs the same operation as the '|' operator.
-   * \param domain  The domain object on the right hand side of the operator.
-   * \return  a trigger domain object R, such that for each data block D, we will have
-   *    R.IncludeInReadout(D) == this->IncludeInReadout(D) or domain.IncludeInReadout(D)
-   */
-  AliHLTTriggerDomain operator + (const AliHLTTriggerDomain& domain) const
-  {
-    AliHLTTriggerDomain result = *this;
-    return result.operator += (domain);
-  }
   
   /**
    * This operator implements the set difference between this trigger domain and
