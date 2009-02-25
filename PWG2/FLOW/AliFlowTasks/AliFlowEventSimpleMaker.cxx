@@ -224,6 +224,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
@@ -291,6 +294,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent-> SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
@@ -346,6 +352,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
@@ -408,6 +417,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
@@ -458,6 +470,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
   
@@ -518,6 +533,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
   
@@ -596,6 +614,9 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
@@ -696,6 +717,9 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
+  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+
   //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
