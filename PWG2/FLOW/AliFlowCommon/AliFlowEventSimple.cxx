@@ -21,6 +21,7 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TProfile.h"
+#include "TBrowser.h"
 #include "AliFlowVector.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowEventSimple.h"
@@ -42,7 +43,9 @@ ClassImp(AliFlowEventSimple)
 AliFlowEventSimple::AliFlowEventSimple():
   fTrackCollection(NULL),
   fNumberOfTracks(0),
-  fEventNSelTracksIntFlow(0)
+  fEventNSelTracksIntFlow(0),
+  fNumberOfTracksWrap(NULL),
+  fEventNSelTracksIntFlowWrap(NULL)
 {
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
@@ -52,7 +55,9 @@ AliFlowEventSimple::AliFlowEventSimple():
 AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
   fTrackCollection(NULL),
   fNumberOfTracks(0),
-  fEventNSelTracksIntFlow(0)
+  fEventNSelTracksIntFlow(0),
+  fNumberOfTracksWrap(NULL),
+  fEventNSelTracksIntFlowWrap(NULL)
 {
   //constructor 
   fTrackCollection =  new TObjArray(aLenght) ;
@@ -64,7 +69,9 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   TObject(),
   fTrackCollection(anEvent.fTrackCollection),
   fNumberOfTracks(anEvent.fNumberOfTracks),
-  fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow)
+  fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow),
+  fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
+  fEventNSelTracksIntFlowWrap(anEvent.fEventNSelTracksIntFlowWrap)
 {
   //copy constructor 
 }
@@ -76,7 +83,9 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   *fTrackCollection = *anEvent.fTrackCollection ;
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fEventNSelTracksIntFlow = anEvent.fEventNSelTracksIntFlow;
-  
+  fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap; 
+  fEventNSelTracksIntFlowWrap = anEvent.fEventNSelTracksIntFlowWrap;
+
   return *this;
 }
 
@@ -85,12 +94,9 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
 AliFlowEventSimple::~AliFlowEventSimple()
 {
   //destructor
-  if (fTrackCollection) {
-    fTrackCollection->Delete() ; delete fTrackCollection ;
-  }
-  else { 
-    cout << "AliFlowEventSimple: Warning trying to delete track collections NULL pointer" << endl; 
-  }
+  if (fTrackCollection) fTrackCollection->Delete(); delete fTrackCollection;
+  if (fNumberOfTracksWrap) delete fNumberOfTracksWrap;
+  if (fEventNSelTracksIntFlowWrap) delete fEventNSelTracksIntFlowWrap;
 }
 
 //----------------------------------------------------------------------- 
@@ -230,6 +236,39 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
   return vQ;
   
 }
+
+//----------------------------------------------------------------------- 
+void AliFlowEventSimple::Print(Option_t *option) const
+{
+  //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+  //             ===============================================
+  //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
+  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d",
+	  GetName(),fNumberOfTracks, fEventNSelTracksIntFlow );
+
+  if (fTrackCollection) {  
+    fTrackCollection->Print(option);
+  }
+  else {
+    printf( "Empty track collection \n");
+  }
+}
+
+//----------------------------------------------------------------------- 
+ void AliFlowEventSimple::Browse(TBrowser *b)
+{
+  if (!b) return;
+  if (!fNumberOfTracksWrap) {
+    fNumberOfTracksWrap = new TParameter<int>("fNumberOfTracks", fNumberOfTracks);
+    b->Add(fNumberOfTracksWrap);
+  }
+  if (!fEventNSelTracksIntFlowWrap) {
+    fEventNSelTracksIntFlowWrap = new TParameter<int>("fEventNSelTracksIntFlow", fEventNSelTracksIntFlow);
+    b->Add(fEventNSelTracksIntFlowWrap);
+  }
+  if (fTrackCollection) b->Add(fTrackCollection,"AliFlowTracksSimple");
+}
+
 
 
 
