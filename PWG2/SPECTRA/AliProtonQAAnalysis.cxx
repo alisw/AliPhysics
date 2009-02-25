@@ -36,6 +36,7 @@
 #include <AliPID.h>
 #include <AliStack.h>
 #include <AliESDVertex.h>
+#include <AliGenEventHeader.h>
 
 ClassImp(AliProtonQAAnalysis)
 
@@ -64,7 +65,7 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
-  fGlobalQAList(0), fQA2DList(0),
+  fGlobalQAList(0), fQAVertexList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
   fQAPrimaryProtonsRejectedList(0),
   fQASecondaryProtonsAcceptedList(0),
@@ -94,6 +95,7 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
 AliProtonQAAnalysis::~AliProtonQAAnalysis() {
   //Default destructor
   if(fGlobalQAList) delete fGlobalQAList;
+  if(fQAVertexList) delete fQAVertexList;
   if(fQA2DList) delete fQA2DList;
   if(fQAPrimaryProtonsAcceptedList) delete fQAPrimaryProtonsAcceptedList;
   if(fQAPrimaryProtonsRejectedList) delete fQAPrimaryProtonsRejectedList;
@@ -135,39 +137,39 @@ Double_t AliProtonQAAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 }
 
 //____________________________________________________________________//
-Bool_t AliProtonQAAnalysis::IsInPhaseSpace(AliESDtrack* track) {
+Bool_t AliProtonQAAnalysis::IsInPhaseSpace(AliESDtrack* const track) {
   // Checks if the track is outside the analyzed y-Pt phase space
-  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t eta = 0.0;
 
   if(fUseTPCOnly) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0; eta = -10.0;
+      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
     }
     else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
+      gPt = tpcTrack->Pt();
+      gPx = tpcTrack->Px();
+      gPy = tpcTrack->Py();
+      gPz = tpcTrack->Pz();
       eta = tpcTrack->Eta();
     }
   }
   else {
-    Pt = track->Pt();
-    Px = track->Px();
-    Py = track->Py();
-    Pz = track->Pz();
+    gPt = track->Pt();
+    gPx = track->Px();
+    gPy = track->Py();
+    gPz = track->Pz();
     eta = track->Eta();
   }
   
-  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
+  if((gPt < fMinPt) || (gPt > fMaxPt)) return kFALSE;
   if(fAnalysisEtaMode) {
     if((eta < fMinY) || (eta > fMaxY)) 
       return kFALSE;
   }
   else {
-    if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
+    if((Rapidity(gPx,gPy,gPz) < fMinY) || (Rapidity(gPx,gPy,gPz) > fMaxY)) 
       return kFALSE;
   }
 
@@ -179,21 +181,21 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDEvent *esd,
 				       const AliESDVertex *vertex, 
 				       AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
-  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   
   if((fUseTPCOnly)&&(!fUseHybridTPC)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
       dca[0] = -100.; dca[1] = -100.;
       cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
     }
     else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
+      gPt = tpcTrack->Pt();
+      gPx = tpcTrack->Px();
+      gPy = tpcTrack->Py();
+      gPz = tpcTrack->Pz();
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
@@ -202,25 +204,25 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDEvent *esd,
   else if(fUseHybridTPC) {
      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
       dca[0] = -100.; dca[1] = -100.;
       cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
     }
     else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
+      gPt = tpcTrack->Pt();
+      gPx = tpcTrack->Px();
+      gPy = tpcTrack->Py();
+      gPz = tpcTrack->Pz();
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
     }
   }
   else{
-    Pt = track->Pt();
-    Px = track->Px();
-    Py = track->Py();
-    Pz = track->Pz();
+    gPt = track->Pt();
+    gPx = track->Px();
+    gPy = track->Py();
+    gPz = track->Pz();
     track->PropagateToDCA(vertex,
 			  esd->GetMagneticField(),
 			  100.,dca,cov);
@@ -296,6 +298,54 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDEvent *esd,
     if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) return kFALSE;
 
   return kTRUE;
+}
+
+//____________________________________________________________________//
+Float_t AliProtonQAAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) const {
+  // Calculates the number of sigma to the vertex.
+  
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
+  if((fUseTPCOnly)&&(!fUseHybridTPC))
+    esdTrack->GetImpactParametersTPC(b,bCov);
+  else
+    esdTrack->GetImpactParameters(b,bCov);
+  
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    //AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+  
+  if (bRes[0] == 0 || bRes[1] ==0) return -1;
+  
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+  
+  if (TMath::Exp(-d * d / 2) < 1e-10) return 1000;
+  
+  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  
+  return d;
+}
+
+//____________________________________________________________________//
+Double_t AliProtonQAAnalysis::Rapidity(Double_t gPx, 
+				       Double_t gPy, 
+				       Double_t gPz) const {
+  //returns the rapidity of the proton - to be removed
+  Double_t fMass = 9.38270000000000048e-01;
+  
+  Double_t gP = TMath::Sqrt(TMath::Power(gPx,2) + 
+                           TMath::Power(gPy,2) + 
+			   TMath::Power(gPz,2));
+  Double_t energy = TMath::Sqrt(gP*gP + fMass*fMass);
+  Double_t y = -999;
+  if(energy != gPz) 
+    y = 0.5*TMath::Log((energy + gPz)/(energy - gPz));
+
+  return y;
 }
 
 //____________________________________________________________________//
@@ -1223,55 +1273,11 @@ void AliProtonQAAnalysis::FillQA(AliStack *stack,
 }
 
 //____________________________________________________________________//
-Float_t AliProtonQAAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
-  // Calculates the number of sigma to the vertex.
-  Float_t b[2];
-  Float_t bRes[2];
-  Float_t bCov[3];
-  if((fUseTPCOnly)&&(!fUseHybridTPC))
-    esdTrack->GetImpactParametersTPC(b,bCov);
-  else 
-    esdTrack->GetImpactParameters(b,bCov);
-  
-  if (bCov[0]<=0 || bCov[2]<=0) {
-    //AliDebug(1, "Estimated b resolution lower or equal zero!");
-    bCov[0]=0; bCov[2]=0;
-  }
-  bRes[0] = TMath::Sqrt(bCov[0]);
-  bRes[1] = TMath::Sqrt(bCov[2]);
-  
-  if (bRes[0] == 0 || bRes[1] ==0) return -1;
-  
-  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
-  
-  if (TMath::Exp(-d * d / 2) < 1e-10) return 1000;
-  
-  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
-  
-  return d;
-}
-
-//____________________________________________________________________//
-Double_t AliProtonQAAnalysis::Rapidity(Double_t Px, Double_t Py, Double_t Pz) {
-  //returns the rapidity of the proton - to be removed
-  Double_t fMass = 9.38270000000000048e-01;
-  
-  Double_t P = TMath::Sqrt(TMath::Power(Px,2) + 
-                           TMath::Power(Py,2) + 
-			   TMath::Power(Pz,2));
-  Double_t energy = TMath::Sqrt(P*P + fMass*fMass);
-  Double_t y = -999;
-  if(energy != Pz) 
-    y = 0.5*TMath::Log((energy + Pz)/(energy - Pz));
-
-  return y;
-}
-
-//____________________________________________________________________//
 void AliProtonQAAnalysis::SetRunQAAnalysis() {
   //initializes the QA lists
   //fQAHistograms = kTRUE;
   fGlobalQAList = new TList();
+
   fQA2DList = new TList();
   fQA2DList->SetName("fQA2DList");
   fGlobalQAList->Add(fQA2DList);
@@ -1319,6 +1325,7 @@ void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t max
   fMinPt = minPt; fMaxPt = maxPt;
   InitQA();
   InitCutLists();
+  InitVertexQA();
   if(fRunMCAnalysis) InitMCAnalysis();
   if(fRunEfficiencyAnalysis) InitEfficiencyAnalysis();
 }
@@ -1765,8 +1772,147 @@ void AliProtonQAAnalysis::InitCutLists() {
 }
 
 //____________________________________________________________________//
+void AliProtonQAAnalysis::InitVertexQA() {
+  //Initializes the Vertex QA histograms
+  fQAVertexList = new TList();
+  fQAVertexList->SetName("fQAVertexList");
+
+  //MC primary multiplicity (vertex efficiency calculation)
+  TH1I *gHistMCPrimaryMultiplicity = new TH1I("gHistMCPrimaryMultiplicity",
+					      ";N_{prim. gen.};Entries",
+					      1000,0,2000);
+  fQAVertexList->Add(gHistMCPrimaryMultiplicity);
+  
+  //TPC
+  TH1I *gHistMCPrimaryMultiplicityTPC = new TH1I("gHistMCPrimaryMultiplicityTPC",
+						 ";N_{prim. gen.};Entries",
+						 1000,0,2000);
+  fQAVertexList->Add(gHistMCPrimaryMultiplicityTPC);
+  TH2F *gHistTPCESDVx = new TH2F("gHistTPCESDVx",
+				 "Primary vertex TPC;V_{x} [cm];N_{contributors}",
+				 100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistTPCESDVx);
+  TH2F *gHistTPCESDVy = new TH2F("gHistTPCESDVy",
+				 "Primary vertex TPC;V_{y} [cm];N_{contributors}",
+				 100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistTPCESDVy);
+  TH2F *gHistTPCESDVz = new TH2F("gHistTPCESDVz",
+				 "Primary vertex TPC;V_{z} [cm];N_{contributors}",
+				 100,-20.,20.,100,0,100);
+  fQAVertexList->Add(gHistTPCESDVz);
+  TH1F *gHistTPCDiffVx = new TH1F("gHistTPCDiffVx",
+				  ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistTPCDiffVx);
+  TH1F *gHistTPCDiffVy = new TH1F("gHistTPCDiffVy",
+				  ";V_{y}(rec.) - V_{y}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistTPCDiffVy);
+  TH1F *gHistTPCDiffVz = new TH1F("gHistTPCDiffVz",
+				  ";V_{z}(rec.) - V_{z}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistTPCDiffVz);
+  TH1F *gHistTPCResolutionVx = new TH1F("gHistTPCResolutionVx",
+					";#sigma_{x} [#mu m];Entries",
+					100,0.,1000.);
+  fQAVertexList->Add(gHistTPCResolutionVx);
+  TH1F *gHistTPCResolutionVy = new TH1F("gHistTPCResolutionVy",
+					";#sigma_{y} [#mu m];Entries",
+					100,0.,1000.);
+  fQAVertexList->Add(gHistTPCResolutionVy);
+  TH1F *gHistTPCResolutionVz = new TH1F("gHistTPCResolutionVz",
+					";#sigma_{z} [#mu m];Entries",
+					100,0.,500.);
+  fQAVertexList->Add(gHistTPCResolutionVz);
+  
+  //SPD
+  TH1I *gHistMCPrimaryMultiplicitySPD = new TH1I("gHistMCPrimaryMultiplicitySPD",
+						 ";N_{prim. gen.};Entries",
+						 1000,0,2000);
+  fQAVertexList->Add(gHistMCPrimaryMultiplicitySPD);
+  TH2F *gHistSPDESDVx = new TH2F("gHistSPDESDVx",
+				 "Primary vertex SPD;V_{x} [cm];N_{contributors}",
+				 100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistSPDESDVx);
+  TH2F *gHistSPDESDVy = new TH2F("gHistSPDESDVy",
+				 "Primary vertex SPD;V_{y} [cm];N_{contributors}",
+				 100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistSPDESDVy);
+  TH2F *gHistSPDESDVz = new TH2F("gHistSPDESDVz",
+				 "Primary vertex SPD;V_{z} [cm];N_{contributors}",
+				 100,-20.,20.,100,0,100);
+  fQAVertexList->Add(gHistSPDESDVz);
+  TH1F *gHistSPDDiffVx = new TH1F("gHistSPDDiffVx",
+				  ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistSPDDiffVx);
+  TH1F *gHistSPDDiffVy = new TH1F("gHistSPDDiffVy",
+				  ";V_{y}(rec.) - V_{y}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistSPDDiffVy);
+  TH1F *gHistSPDDiffVz = new TH1F("gHistSPDDiffVz",
+				  ";V_{z}(rec.) - V_{z}(true) [#mu m];Entries",
+				  100,-10000.,10000.);
+  fQAVertexList->Add(gHistSPDDiffVz);
+  TH1F *gHistSPDResolutionVx = new TH1F("gHistSPDResolutionVx",
+					";#sigma_{x} [#mu m];Entries",
+					100,0.,1000.);
+  fQAVertexList->Add(gHistSPDResolutionVx);
+  TH1F *gHistSPDResolutionVy = new TH1F("gHistSPDResolutionVy",
+					";#sigma_{y} [#mu m];Entries",
+					100,0.,1000.);
+  fQAVertexList->Add(gHistSPDResolutionVy);
+  TH1F *gHistSPDResolutionVz = new TH1F("gHistSPDResolutionVz",
+					";#sigma_{z} [#mu m];Entries",
+					100,0.,500.);
+  fQAVertexList->Add(gHistSPDResolutionVz);
+  
+  //Tracks
+  TH1I *gHistMCPrimaryMultiplicityTracks = new TH1I("gHistMCPrimaryMultiplicityTracks",
+						    ";N_{prim. gen.};Entries",
+						    1000,0,2000);
+  fQAVertexList->Add(gHistMCPrimaryMultiplicityTracks);
+  TH2F *gHistTracksESDVx = new TH2F("gHistTracksESDVx",
+				    "Primary vertex Tracks;V_{x} [cm];N_{contributors}",
+				    100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistTracksESDVx);
+  TH2F *gHistTracksESDVy = new TH2F("gHistTracksESDVy",
+				    "Primary vertex Tracks;V_{y} [cm];N_{contributors}",
+				    100,-10.,10.,100,0,100);
+  fQAVertexList->Add(gHistTracksESDVy);
+  TH2F *gHistTracksESDVz = new TH2F("gHistTracksESDVz",
+				    "Primary vertex Tracks;V_{z} [cm];N_{contributors}",
+				    100,-20.,20.,100,0,100);
+  fQAVertexList->Add(gHistTracksESDVz);
+  TH1F *gHistTracksDiffVx = new TH1F("gHistTracksDiffVx",
+				     ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
+				     100,-10000.,10000.);
+  fQAVertexList->Add(gHistTracksDiffVx);
+  TH1F *gHistTracksDiffVy = new TH1F("gHistTracksDiffVy",
+				     ";V_{y}(rec.) - V_{y}(true) [#mu m];Entries",
+				     100,-10000.,10000.);
+  fQAVertexList->Add(gHistTracksDiffVy);
+  TH1F *gHistTracksDiffVz = new TH1F("gHistTracksDiffVz",
+				     ";V_{z}(rec.) - V_{z}(true) [#mu m];Entries",
+				     100,-10000.,10000.);
+  fQAVertexList->Add(gHistTracksDiffVz);
+  TH1F *gHistTracksResolutionVx = new TH1F("gHistTracksResolutionVx",
+					   ";#sigma_{x} [#mu m];Entries",
+					   100,0.,1000.);
+  fQAVertexList->Add(gHistTracksResolutionVx);
+  TH1F *gHistTracksResolutionVy = new TH1F("gHistTracksResolutionVy",
+					   ";#sigma_{y} [#mu m];Entries",
+					   100,0.,1000.);
+  fQAVertexList->Add(gHistTracksResolutionVy);
+  TH1F *gHistTracksResolutionVz = new TH1F("gHistTracksResolutionVz",
+					   ";#sigma_{z} [#mu m];Entries",
+					   100,0.,500.);
+  fQAVertexList->Add(gHistTracksResolutionVz);
+}
+
+//____________________________________________________________________//
 void AliProtonQAAnalysis::InitQA() {
-  //Initializes the QA histograms and builds the directory structure
+  //Initializes the QA histograms
   //if(!fQAHistograms) 
   SetRunQAAnalysis();
 
@@ -3239,6 +3385,86 @@ Bool_t AliProtonQAAnalysis::IsLabelUsed(TArrayI labelArray,
   }
 
   return status;
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
+				      AliStack *stack, 
+				      AliESDEvent *esd) {
+  //Runs the vertex QA
+  //MC vertex
+  TArrayF primaryVertex(3);
+  header->PrimaryVertex(primaryVertex);
+
+  Int_t nPrimaries = stack->GetNprimary();
+  ((TH1I *)(fQAVertexList->At(0)))->Fill(nPrimaries);
+
+  //TPC vertex
+  const AliESDVertex *vertexTPC = esd->GetPrimaryVertexTPC();
+  if(!vertexTPC) {
+    Printf("ERROR: Could not retrieve the TPC vertex");
+    return;
+  }
+  if(vertexTPC->GetNContributors() > 0) {
+    ((TH1I *)(fQAVertexList->At(1)))->Fill(nPrimaries);
+    ((TH2F *)(fQAVertexList->At(2)))->Fill(vertexTPC->GetXv(),
+					   vertexTPC->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(3)))->Fill(vertexTPC->GetYv(),
+					   vertexTPC->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(4)))->Fill(vertexTPC->GetZv(),
+					   vertexTPC->GetNContributors());
+    ((TH1F *)(fQAVertexList->At(5)))->Fill((vertexTPC->GetXv()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(6)))->Fill((vertexTPC->GetYv()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(7)))->Fill((vertexTPC->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(8)))->Fill(vertexTPC->GetXRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(9)))->Fill(vertexTPC->GetYRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(10)))->Fill(vertexTPC->GetZRes()*10000.);
+  }//TPC vertex
+
+  //SPD vertex
+  const AliESDVertex *vertexSPD = esd->GetPrimaryVertexSPD();
+  if(!vertexSPD) {
+    Printf("ERROR: Could not retrieve the SPD vertex");
+    return;
+  }
+  if(vertexSPD->GetNContributors() > 0) {
+    ((TH1I *)(fQAVertexList->At(11)))->Fill(nPrimaries);
+    ((TH2F *)(fQAVertexList->At(12)))->Fill(vertexSPD->GetXv(),
+					    vertexSPD->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(13)))->Fill(vertexSPD->GetYv(),
+					    vertexSPD->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(14)))->Fill(vertexSPD->GetZv(),
+					    vertexSPD->GetNContributors());
+    ((TH1F *)(fQAVertexList->At(15)))->Fill((vertexSPD->GetXv()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(16)))->Fill((vertexSPD->GetYv()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(17)))->Fill((vertexSPD->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(18)))->Fill(vertexSPD->GetXRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(19)))->Fill(vertexSPD->GetYRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(20)))->Fill(vertexSPD->GetZRes()*10000.);
+  }//SPD vertex
+  
+  //Tracks vertex
+  const AliESDVertex *vertexTracks = esd->GetPrimaryVertex();
+  if(!vertexTracks) {
+    Printf("ERROR: Could not retrieve the Tracks vertex");
+    return;
+  }
+  if(vertexTracks->GetNContributors() > 0) {
+    ((TH1I *)(fQAVertexList->At(21)))->Fill(nPrimaries);
+    ((TH2F *)(fQAVertexList->At(22)))->Fill(vertexTracks->GetXv(),
+					    vertexTracks->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(23)))->Fill(vertexTracks->GetYv(),
+					    vertexTracks->GetNContributors());
+    ((TH2F *)(fQAVertexList->At(24)))->Fill(vertexTracks->GetZv(),
+					    vertexTracks->GetNContributors());
+    ((TH1F *)(fQAVertexList->At(25)))->Fill((vertexTracks->GetXv()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(26)))->Fill((vertexTracks->GetYv()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(27)))->Fill((vertexTracks->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(28)))->Fill(vertexTracks->GetXRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(29)))->Fill(vertexTracks->GetYRes()*10000.);
+    ((TH1F *)(fQAVertexList->At(30)))->Fill(vertexTracks->GetZRes()*10000.);
+  }//Tracks vertex
+
 }
 
 //____________________________________________________________________//

@@ -27,6 +27,7 @@ class TH3F;
 class AliESDEvent;
 class AliESDtrack;
 class AliStack;
+class AliGenEventHeader;
 class AliESDVertex;
 
 class AliProtonQAAnalysis : public TObject {
@@ -118,6 +119,12 @@ class AliProtonQAAnalysis : public TObject {
   } 
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
+  //Vertex QA
+  void RunVertexQA(AliGenEventHeader *header,
+		   AliStack *stack,
+		   AliESDEvent *esd);
+  TList *GetVertexQAList() {return fQAVertexList;}
+
   //QA histograms
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
@@ -170,6 +177,7 @@ class AliProtonQAAnalysis : public TObject {
 		  const AliESDVertex *vertex,
 		  AliESDtrack *track);
 
+  void     InitVertexQA();
   void     InitQA();
   void     InitMCAnalysis();
   void     InitCutLists();
@@ -177,8 +185,8 @@ class AliProtonQAAnalysis : public TObject {
 
   Bool_t   IsLabelUsed(TArrayI array, Int_t label);
   Int_t    ConvertPDGToInt(Int_t pdgCode);
-  Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
-  Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
+  Float_t  GetSigmaToVertex(AliESDtrack* esdTrack) const; 
+  Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz) const;
   
   Bool_t fAnalysisEtaMode; //run the QA in eta or y
 
@@ -213,6 +221,7 @@ class AliProtonQAAnalysis : public TObject {
   //QA histograms
   //Bool_t fQAHistograms; //Boolean to activate the QA histograms
   TList *fGlobalQAList; //TList storing the directories for the QA histograms
+  TList *fQAVertexList; //TList storing the vertex QA plots
   TList *fQA2DList; //TList storing the accepted primary/secondary (anti)protons
   TList *fQAPrimaryProtonsAcceptedList; //list of the QA histos for accepted primary protons
   TList *fQAPrimaryProtonsRejectedList; //list of the QA histos for rejected primary protons
