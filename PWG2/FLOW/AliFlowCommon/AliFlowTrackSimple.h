@@ -19,6 +19,11 @@ class AliFlowTrackSimple: public TObject {
   AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
   
+  Bool_t  IsFolder() const {return kTRUE;};
+  //  void Browse(TBrowser *b); 
+  //  void Print(Option_t* option = "") const;      //method to print stats
+ 
+
   Double_t Eta() const; 
   Double_t Pt()  const; 
   Double_t Phi() const; 

@@ -22,6 +22,8 @@ class AliFlowVector: public TVector2 {
 
   AliFlowVector& operator=(const AliFlowVector& aVector);
 
+  Bool_t  IsFolder() const {return kTRUE;};
+
   void SetMult(Double_t const mult) {this->fMult = mult;};
   Double_t GetMult() const {return this->fMult;};
   

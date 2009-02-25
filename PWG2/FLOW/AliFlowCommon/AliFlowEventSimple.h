@@ -9,6 +9,7 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TFile.h"
+#include "TParameter.h"
 class AliFlowTrackSimple;
 
 /**************************************
@@ -29,6 +30,10 @@ class AliFlowEventSimple: public TObject {
   AliFlowEventSimple(const AliFlowEventSimple& anEvent);
   AliFlowEventSimple& operator=(const AliFlowEventSimple& anEvent);
   virtual  ~AliFlowEventSimple();
+
+  Bool_t  IsFolder() const {return kTRUE;};
+  void Browse(TBrowser *b); 
+  void Print(Option_t* option = "") const;      //method to print stats
   
   Int_t NumberOfTracks() const              { return this->fNumberOfTracks; }
   Int_t GetEventNSelTracksIntFlow() const   { return this->fEventNSelTracksIntFlow; }
@@ -44,8 +49,10 @@ class AliFlowEventSimple: public TObject {
   TObjArray*           fTrackCollection;        // collection of tracks
   Int_t                fNumberOfTracks;         // number of tracks
   Int_t                fEventNSelTracksIntFlow; // number of tracks selected for integrated flow calculation
-  
-  ClassDef(AliFlowEventSimple,1)                // macro for rootcint
+  TParameter<Int_t>*   fNumberOfTracksWrap;         //! number of tracks in TBrowser
+  TParameter<Int_t>*   fEventNSelTracksIntFlowWrap; //! number of tracks selected for integrated flow calculation in TBrowser
+
+  ClassDef(AliFlowEventSimple,1)                // track collection used in flow analysis 
 };
 
 #endif
