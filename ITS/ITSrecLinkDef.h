@@ -102,6 +102,11 @@
 #pragma link C++ class AliITSOnlineSPDphys+;
 #pragma link C++ class AliITSOnlineSPDphysAnalyzer+;
 #pragma link C++ class AliITSOnlineSPDphysInfo+;
+#pragma link C++ class AliITSOnlineSPDfoChipConfig+;
+#pragma link C++ class AliITSOnlineSPDfoChip+;
+#pragma link C++ class AliITSOnlineSPDfo+;
+#pragma link C++ class AliITSOnlineSPDfoInfo+;
+#pragma link C++ class AliITSOnlineSPDfoAnalyzer+;
 #pragma link C++ class AliITSPreprocessorSDD+;
 #pragma link C++ class AliITSOnlineSDD+;
 #pragma link C++ class AliITSOnlineSDDBase+;

@@ -68,6 +68,11 @@ set(SRCS
 		AliITSOnlineSPDphys.cxx 
 		AliITSOnlineSPDphysAnalyzer.cxx 
 		AliITSOnlineSPDphysInfo.cxx 
+                AliITSOnlineSPDfoChipConfig.cxx 
+                AliITSOnlineSPDfoChip.cxx 
+                AliITSOnlineSPDfo.cxx 
+                AliITSOnlineSPDfoInfo.cxx 
+                AliITSOnlineSPDfoAnalyzer.cxx 
 		AliITSBadChannelsAuxSPD.cxx 
 		AliITSBadChannelsSPD.cxx  
 		AliITSChannelSPD.cxx  
