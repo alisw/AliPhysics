@@ -48,6 +48,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   AliAnalysisTaskFlowEvent(const AliAnalysisTaskFlowEvent& aAnalysisTask);
   AliAnalysisTaskFlowEvent& operator=(const AliAnalysisTaskFlowEvent& aAnalysisTask); 
 
+  //  TFile*        fOutputFile;              // temporary output file for testing
   AliESDEvent*  fESD;                     // ESD object
   AliAODEvent*  fAOD;                     // AOD object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
@@ -59,7 +60,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
 
   Bool_t fQA;                             // flag to set the filling of the QA hostograms
 
-  ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
+  ClassDef(AliAnalysisTaskFlowEvent, 0); // example of analysis
 };
 
 #endif

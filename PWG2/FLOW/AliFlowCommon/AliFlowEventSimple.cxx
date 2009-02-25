@@ -39,10 +39,20 @@ ClassImp(AliFlowEventSimple)
 
 //-----------------------------------------------------------------------
 
-  AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
-    fTrackCollection(NULL),
-    fNumberOfTracks(0),
-    fEventNSelTracksIntFlow(0)
+AliFlowEventSimple::AliFlowEventSimple():
+  fTrackCollection(NULL),
+  fNumberOfTracks(0),
+  fEventNSelTracksIntFlow(0)
+{
+  cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
+}
+
+//-----------------------------------------------------------------------
+
+AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
+  fTrackCollection(NULL),
+  fNumberOfTracks(0),
+  fEventNSelTracksIntFlow(0)
 {
   //constructor 
   fTrackCollection =  new TObjArray(aLenght) ;
@@ -75,7 +85,12 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
 AliFlowEventSimple::~AliFlowEventSimple()
 {
   //destructor
-  fTrackCollection->Delete() ; delete fTrackCollection ;
+  if (fTrackCollection) {
+    fTrackCollection->Delete() ; delete fTrackCollection ;
+  }
+  else { 
+    cout << "AliFlowEventSimple: Warning trying to delete track collections NULL pointer" << endl; 
+  }
 }
 
 //----------------------------------------------------------------------- 
