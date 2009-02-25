@@ -390,7 +390,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
 
    AliMCEventHandler *mc = new AliMCEventHandler();
    mgr->SetMCtruthEventHandler(mc); }
-
+ 
  //____________________________________________//
  // tasks
  AliAnalysisTaskFlowEvent *taskFE = NULL;
@@ -416,10 +416,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->AddTask(taskFQD);
  }
  if (SP){
-   AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kFALSE);
-   taskSP->SetAnalysisType(type);
-   taskSP->SetCFManager1(cfmgr1);
-   taskSP->SetCFManager2(cfmgr2);
+   AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct");
    mgr->AddTask(taskSP);
  }
  if (LYZ1){
@@ -584,7 +581,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    } 
  }    
  if (SP) { 
-   mgr->ConnectInput(taskSP,0,cinput1); 
+   mgr->ConnectInput(taskSP,0,coutputFE); 
    mgr->ConnectOutput(taskSP,0,coutputSP);
  } 
  if (LYZ1) { 
