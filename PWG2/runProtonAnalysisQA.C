@@ -12,10 +12,124 @@ void runProtonAnalysisQA(const char *analysisType = "TPC") {
   
   //runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",analysisType);
   //runInteractive("wn.xml",analysisType);
-  runBatch("wn.xml",analysisType);
-  
+  //runBatch("wn.xml",analysisType);
+  runLocal(analysisType);
+
   timer.Stop();
   timer.Print();
+}
+
+//_________________________________________________//
+void runLocal(const char* analysisType) {
+  TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += ".root"; //main QA file
+  TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += ".root"; //MC process QA
+  TString outputFilename3 = "Protons.QA.Histograms."; 
+  outputFilename3 += analysisType;
+  outputFilename3 += ".root"; //Accepted cut distributions
+  TString outputFilename4 = "Protons.Efficiency."; 
+  outputFilename4 += analysisType;
+  outputFilename4 += ".root"; //Reco and PID efficiency
+  TString outputFilename5 = "Vertex.QA.root"; //vertex QA
+
+  gSystem->Load("libProofPlayer.so");
+
+  //Setup the par files
+  setupPar("STEERBase");
+  gSystem->Load("libSTEERBase.so");
+  setupPar("ESD");
+  gSystem->Load("libESD.so");
+  setupPar("AOD");
+  gSystem->Load("libAOD.so");
+  setupPar("ANALYSIS");
+  gSystem->Load("libANALYSIS.so");
+  setupPar("ANALYSISalice");
+  gSystem->Load("libANALYSISalice.so");
+  setupPar("CORRFW");
+  gSystem->Load("libCORRFW.so");
+  setupPar("PWG2spectra");
+  gSystem->Load("libPWG2spectra.so");
+
+  gROOT->LoadMacro("AliAnalysisTaskProtonsQA.cxx+");
+  //____________________________________________//
+  //Create the chain from the xml collection of esd files
+  TChain *chain = new TChain("esdTree");  
+  chain->Add("AliESDs.root");
+  
+  //____________________________________________//
+  // Make the analysis manager
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliVEventHandler* esdH = new AliESDInputHandler;
+  mgr->SetInputEventHandler(esdH);
+  AliMCEventHandler *mc = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mc);
+  
+  //____________________________________________//
+  // 1st Proton task
+  AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
+  taskProtonsQA->SetTriggerMode(AliAnalysisTaskProtonsQA::kMB2);
+  switch(analysisType) {
+  case "TPC":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kTPC);
+    break;
+  case "Hybrid":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kHybrid);
+    break;
+  case "Global":
+    taskProtonsQA->SetAnalysisMode(AliAnalysisTaskProtonsQA::kGlobal);
+    break;
+  default:
+    break;
+  }
+  taskProtonsQA->SetAcceptedVertexDiamond(5.,5.,15.);
+  mgr->AddTask(taskProtonsQA);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename1.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("pdgCodeList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("mcProcessList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("acceptedCutList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename5.Data());
+
+  //____________________________________________//
+  mgr->ConnectInput(taskProtonsQA,0,cinput1);
+  mgr->ConnectOutput(taskProtonsQA,0,coutput1);
+  mgr->ConnectOutput(taskProtonsQA,1,coutput2);
+  mgr->ConnectOutput(taskProtonsQA,2,coutput3);
+  mgr->ConnectOutput(taskProtonsQA,3,coutput4);
+  mgr->ConnectOutput(taskProtonsQA,4,coutput5);
+  mgr->ConnectOutput(taskProtonsQA,5,coutput6);
+  mgr->ConnectOutput(taskProtonsQA,6,coutput7);
+  if (!mgr->InitAnalysis()) return;
+  mgr->PrintStatus();
+  mgr->StartAnalysis("local",chain);
 }
 
 //_________________________________________________//
@@ -31,6 +145,7 @@ void runBatch(const char *collectionfile,
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
   outputFilename4 += ".root"; //Reco and PID efficiency
+  TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
   TGrid::Connect("alien://");
   gSystem->Load("libProofPlayer.so");
@@ -120,6 +235,10 @@ void runBatch(const char *collectionfile,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename5.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -129,6 +248,7 @@ void runBatch(const char *collectionfile,
   mgr->ConnectOutput(taskProtonsQA,3,coutput4);
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
+  mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -147,6 +267,7 @@ void runInteractive(const char *collectionfile,
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
   outputFilename4 += ".root"; //Reco and PID efficiency
+  TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
   TGrid::Connect("alien://");
 
@@ -227,6 +348,10 @@ void runInteractive(const char *collectionfile,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename5.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -236,6 +361,7 @@ void runInteractive(const char *collectionfile,
   mgr->ConnectOutput(taskProtonsQA,3,coutput4);
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
+  mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -255,6 +381,7 @@ void runProof(Int_t stats = 0,
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
   outputFilename4 += ".root"; //Reco and PID efficiency
+  TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
@@ -332,6 +459,10 @@ void runProof(Int_t stats = 0,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename5.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -341,6 +472,7 @@ void runProof(Int_t stats = 0,
   mgr->ConnectOutput(taskProtonsQA,3,coutput4);
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
+  mgr->ConnectOutput(taskProtonsQA,6,coutput7);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
