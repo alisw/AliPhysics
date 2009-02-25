@@ -27,12 +27,11 @@ class TCollection;
 #include <TMatrixD.h>
 #include <TVectorD.h>
 #include <AliPWG0Helper.h>
+#include <AliUnfolding.h>
 
 class AliMultiplicityCorrection : public TNamed {
   public:
     enum EventType { kTrVtx = 0, kMB, kINEL, kNSD };
-    enum RegularizationType { kNone = 0, kPol0, kPol1, kLog, kEntropy, kCurvature };
-    enum MethodType { kChi2Minimization = 0, kBayesian = 1 };
     enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8, kQualityRegions = 3 };
 
     AliMultiplicityCorrection();
@@ -55,17 +54,12 @@ class AliMultiplicityCorrection : public TNamed {
 
     Int_t ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check = kFALSE, TH1* initialConditions = 0);
 
-    static void SetRegularizationParameters(RegularizationType type, Float_t weight, Int_t minuitParams = -1);
-    static void SetBayesianParameters(Float_t smoothing, Int_t nIterations);
-    static void SetCreateBigBin(Bool_t flag) { fgCreateBigBin = flag; }
-
-    void ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace);
-
     void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* initialConditions = 0, Bool_t determineError = kTRUE);
 
     static TH1* CalculateStdDev(TH1** results, Int_t max);
-    TH1* StatisticalUncertainty(MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
+    TH1* StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
 
+    Int_t ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
     void ApplyGaussianMethod(Int_t inputRange, Bool_t fullPhaseSpace);
 
     void ApplyLaszloMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
@@ -102,47 +96,13 @@ class AliMultiplicityCorrection : public TNamed {
     void FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y);
 
   protected:
-    static const Int_t fgkMaxParams;  //! bins in unfolded histogram = number of fit params
-    static const Int_t fgkMaxInput;   //! bins in measured histogram
-
-    static Double_t RegularizationPol0(TVectorD& params);
-    static Double_t RegularizationPol1(TVectorD& params);
-    static Double_t RegularizationTotalCurvature(TVectorD& params);
-    static Double_t RegularizationEntropy(TVectorD& params);
-    static Double_t RegularizationLog(TVectorD& params);
-
-    static void MinuitFitFunction(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
-    static void MinuitNBD(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
-
-    static void DrawGuess(Double_t *params);
-
-    void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t createBigBin);
+    void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
 
     Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
-    static Int_t UnfoldWithBayesian(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult, Float_t regPar, Int_t nIterations);
-    static Int_t UnfoldWithMinuit(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check);
-
+    
     TH1* fCurrentESD;         //! current input esd
-    TH1* fCurrentCorrelation; //! current correlation
+    TH2* fCurrentCorrelation; //! current correlation
     TH1* fCurrentEfficiency;  //! current efficiency
-
-    // static variable to be accessed by MINUIT
-    static TMatrixD* fgCorrelationMatrix;            //! contains fCurrentCorrelation in matrix form
-    static TMatrixD* fgCorrelationCovarianceMatrix;  //! contains the errors of fCurrentESD
-    static TVectorD* fgCurrentESDVector;             //! contains fCurrentESD
-    static TVectorD* fgEntropyAPriori;               //! a-priori distribution for entropy regularization
-
-    static TF1* fgNBD;   //! negative binomial distribution
-
-    // configuration params follow
-    static RegularizationType fgRegularizationType; //! regularization that is used during Chi2 method
-    static Float_t fgRegularizationWeight;          //! factor for regularization term
-    static Bool_t  fgCreateBigBin;                  //! to fix fluctuations at high multiplicities, all entries above a certain limit are summarized in one bin
-    static Int_t   fgNParamsMinuit;                 //! number of parameters minuit uses for unfolding (todo: to be merged w/ fgkMaxParams that has to be const. for the moment)
-
-    static Float_t fgBayesianSmoothing;             //! smoothing parameter (0 = no smoothing)
-    static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
-    // end of configuration
 
     TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2 (0..3)
 

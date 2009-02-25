@@ -88,7 +88,7 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
 
   if (chi2)
   {
-    mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol0, beta);
+    AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, beta);
     //mult->SetCreateBigBin(kFALSE);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
@@ -99,6 +99,7 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
     //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
     
     mult->ApplyMinuitFit(histID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
+    //mult->ApplyNBDFit(histID, fullPhaseSpace, eventType);
   }
   else
   {

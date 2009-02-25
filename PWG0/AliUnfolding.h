@@ -5,7 +5,8 @@
 
 //
 // class that implements several unfolding methods
-// E.g. chi2 minimization and bayesian unfolding
+// I.e. chi2 minimization and bayesian unfolding
+// The whole class is static and not thread-safe (due to the fact that MINUIT unfolding is not thread-safe)
 //
 
 // TMatrixD, TVectorD defined here, because it does not seem possible to predeclare these (or i do not know how)
@@ -19,83 +20,76 @@
 
 class TH1;
 class TH2;
-class TH1F;
-class TH2F;
-class TH3F;
 class TF1;
-class TCollection;
 
 class AliUnfolding : public TObject
 {
   public:
     enum RegularizationType { kNone = 0, kPol0, kPol1, kLog, kEntropy, kCurvature };
-    enum MethodType { kChi2Minimization = 0, kBayesian = 1 };
+    enum MethodType { kInvalid = -1, kChi2Minimization = 0, kBayesian = 1, kFunction = 2};
 
-    AliUnfolding();
-    virtual ~AliUnfolding();
+    virtual ~AliUnfolding() {};
 
-    void SetInput(TH2* correlationMatrix, TH1* efficiency, TH1* measured) { fCurrentCorrelation = correlationMatrix; fCurrentEfficiency = efficiency; fCurrentESD = measured; }
-    void SetInitialConditions(TH1* initialConditions) { fInitialConditions = initialConditions; }
-    const TH1* GetResult() const { return fResult; }
+    static void SetUnfoldingMethod(MethodType methodType);
+    static void SetCreateOverflowBin(Float_t overflowBinLimit);
+    static void SetSkipBinsBegin(Int_t nBins);
+    static void SetNbins(Int_t nMeasured, Int_t nUnfolded);
+    static void SetChi2Regularization(RegularizationType type, Float_t weight);
+    static void SetMinuitStepSize(Float_t stepSize) { fgMinuitStepSize = stepSize; }
+    static void SetNormalizeInput(Bool_t flag) { fgNormalizeInput = flag; }
+    static void SetBayesianParameters(Float_t smoothing, Int_t nIterations);
+    static void SetFunction(TF1* function);
+    static void SetDebug(Bool_t flag) { fgDebug = flag; }
 
-    static void SetParameters(Int_t measuredBins, Int_t unfoldedBins, Bool_t bigbin) { fMaxInput = measuredBins; fMaxParams = unfoldedBins; fgCreateBigBin = bigbin; }
-    static void SetChi2MinimizationParameters(RegularizationType type, Float_t weight) { fgRegularizationType = type; fgRegularizationWeight = weight; }
-    static void SetRegularizationRange(Int_t start, Int_t end) { fgRegularizationRangeStart = start; fgRegularizationRangeEnd = end; }
-    static void SetBayesianParameters(Float_t smoothing, Int_t nIterations) { fgBayesianSmoothing = smoothing; fgBayesianIterations = nIterations; }
-
-    Int_t ApplyMinuitFit(Bool_t check = kFALSE);
-    Int_t ApplyBayesianMethod(Bool_t determineError = kTRUE);
-    Int_t ApplyNBDFit();
-    Int_t ApplyLaszloMethod();
-
-    TH1* StatisticalUncertainty(MethodType methodType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
+    static Int_t Unfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check = kFALSE);
 
   protected:
+    AliUnfolding() {};
+
+    static Int_t UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check);
+    static Int_t UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult);
+    static Int_t UnfoldWithFunction(TH2* correlation, TH1* efficiency, TH1* measured, TH1* /* initialConditions */, TH1* aResult);
+
+    static void DrawGuess(Double_t *params);
+    static void CreateOverflowBin(TH2* correlation, TH1* measured); 
+    static void SetStaticVariables(TH2* correlation, TH1* measured);
+
     static Double_t RegularizationPol0(TVectorD& params);
     static Double_t RegularizationPol1(TVectorD& params);
     static Double_t RegularizationTotalCurvature(TVectorD& params);
     static Double_t RegularizationEntropy(TVectorD& params);
     static Double_t RegularizationLog(TVectorD& params);
 
-    static void MinuitFitFunction(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
-    static void MinuitNBD(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
-
-    void SetupCurrentHists();
-
-    Int_t UnfoldWithBayesian(* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult, Float_t regPar, Int_t nIterations);
-    Int_t UnfoldWithMinuit(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check);
-
-    Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
-
-    TH1* fCurrentESD;         //! measured spectrum
-    TH2* fCurrentCorrelation; //! correlation matrix
-    TH1* fCurrentEfficiency;  //! efficiency
-    TH1* fInitialConditions;  //! initial conditions
-    TH1* fResult;             //! unfolding result
+    static void Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
+    static void TF1Function(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
 
     // static variable to be accessed by MINUIT
-    static TMatrixD* fgCorrelationMatrix;            //! contains fCurrentCorrelation in matrix form
-    static TMatrixD* fgCorrelationCovarianceMatrix;  //! contains the errors of fCurrentESD
-    static TVectorD* fgCurrentESDVector;             //! contains fCurrentESD
-    static TVectorD* fgEntropyAPriori;               //! a-priori distribution for entropy regularization
+    static TMatrixD* fgCorrelationMatrix;            // contains fCurrentCorrelation in matrix form
+    static TMatrixD* fgCorrelationCovarianceMatrix;  // contains the errors of fCurrentESD
+    static TVectorD* fgCurrentESDVector;             // contains fCurrentESD
+    static TVectorD* fgEntropyAPriori;               // a-priori distribution for entropy regularization
 
-    static TF1* fgNBD;   //! negative binomial distribution
+    static TF1* fgFitFunction;                       // fit function
 
-    static Int_t fgMaxParams;  //! bins in unfolded histogram = number of fit params
-    static Int_t fgMaxInput;   //! bins in measured histogram
+    // --- configuration params follow ---
+    static MethodType fgMethodType;                  // unfolding method to be used
+    static Int_t fgMaxParams;                        // bins in unfolded histogram = number of fit params
+    static Int_t fgMaxInput;                         // bins in measured histogram
+    static Float_t fgOverflowBinLimit;               // to fix fluctuations at high multiplicities, all entries above the limit are summarized in one bin
 
-    // configuration params follow
-    static RegularizationType fgRegularizationType; //! regularization that is used during Chi2 method
-    static Float_t fgRegularizationWeight;          //! factor for regularization term
-    static Int_t fgRegularizationRangeStart;        //! first bin where regularization is applied
-    static Int_t fgRegularizationRangeEnd;          //! last bin + 1 where regularization is applied
-    static Bool_t  fgCreateBigBin;                  //! to fix fluctuations at high multiplicities, all entries above a certain limit are summarized in one bin
+    static RegularizationType fgRegularizationType;  // regularization that is used during Chi2 method
+    static Float_t fgRegularizationWeight;           // factor for regularization term
+    static Int_t fgSkipBinsBegin;                    // (optional) skip the given number of bins in the regularization
+    static Float_t fgMinuitStepSize;                 // (usually not needed to be changed) step size in minimization
+    static Bool_t fgNormalizeInput;                  // normalize input spectrum
 
-    static Float_t fgBayesianSmoothing;             //! smoothing parameter (0 = no smoothing)
-    static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
-    // end of configuration
+    static Float_t fgBayesianSmoothing;              // smoothing parameter (0 = no smoothing)
+    static Int_t   fgBayesianIterations;             // number of iterations in Bayesian method
 
- private:
+    static Bool_t fgDebug;                           // debug flag
+    // --- end of configuration ---
+
+private:
     AliUnfolding(const AliUnfolding&);
     AliUnfolding& operator=(const AliUnfolding&);
 
