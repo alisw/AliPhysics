@@ -39,11 +39,11 @@ class AliITSDetTypeRec : public TObject {
     virtual ~AliITSDetTypeRec(); // Proper Destructor
 
     virtual AliITSgeom* GetITSgeom() const { return fITSgeom; }
-    virtual void SetITSgeom(AliITSgeom *geom) { fITSgeom = geom; }
+    virtual void SetITSgeom(AliITSgeom* const geom) { fITSgeom = geom; }
     virtual void SetDefaults();
     virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE);
     virtual void MakeBranch(TTree *tree,Option_t *opt);
-    virtual void SetTreeAddressD(TTree* treeD);
+    virtual void SetTreeAddressD(TTree* const treeD);
 
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
     virtual void SetCalibrationModel(Int_t iMod, AliITSCalibration *cal);
@@ -78,13 +78,13 @@ class AliITSDetTypeRec : public TObject {
     TObjArray* GetDigits() const {return fDigits;} 
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
 
-    TBranch* MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
+    TBranch* MakeBranchInTree(TTree* const tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
 
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
 
     void MakeBranchR(TTree *treeR,Option_t *opt=" ");
-    void SetTreeAddressR(TTree *treeR);
+    void SetTreeAddressR(TTree* const treeR);
     void AddRecPoint(const AliITSRecPoint &p);
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 

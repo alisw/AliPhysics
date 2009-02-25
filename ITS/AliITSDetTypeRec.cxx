@@ -43,6 +43,7 @@
 #include "AliITSNoiseSSD.h"
 #include "AliITSGainSSD.h"
 #include "AliITSBadChannelsSSD.h"
+#include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
@@ -50,7 +51,6 @@
 
 class AliITSDriftSpeedArraySDD;
 class AliITSMapSDD;
-class AliITSresponseSDD;
 class AliITSRecoParam;
 
 const Int_t AliITSDetTypeRec::fgkNdettypes = 3;
@@ -288,7 +288,7 @@ AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod) const {
 }
 
 //______________________________________________________________________
-void AliITSDetTypeRec::SetTreeAddressD(TTree *treeD){
+void AliITSDetTypeRec::SetTreeAddressD(TTree* const treeD){
     // Set branch address for the tree of digits.
 
     const char *det[4] = {"SPD","SDD","SSD","ITS"};
@@ -316,10 +316,9 @@ void AliITSDetTypeRec::SetTreeAddressD(TTree *treeD){
 }
 
 //_______________________________________________________________________
-TBranch* AliITSDetTypeRec::MakeBranchInTree(TTree *tree, const char* name, 
-                                       const char *classname, 
-                                       void* address,Int_t size, 
-                                       Int_t splitlevel)
+TBranch* AliITSDetTypeRec::MakeBranchInTree(TTree* const tree, 
+                           const char* name, const char *classname, 
+                           void* address,Int_t size,Int_t splitlevel)
 { 
 //
 // Makes branch in given tree and diverts them to a separate file
@@ -749,7 +748,7 @@ void AliITSDetTypeRec::MakeBranchR(TTree *treeR, Option_t *opt){
     MakeBranchInTree(treeR,branchname,0,&fRecPoints,buffsz,99);
 }
 //______________________________________________________________________
-void AliITSDetTypeRec::SetTreeAddressR(TTree *treeR){
+void AliITSDetTypeRec::SetTreeAddressR(TTree* const treeR){
     // Set branch address for the Reconstructed points Trees.
     // Inputs:
     //      TTree *treeR   Tree containing the RecPoints.
