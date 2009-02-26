@@ -220,17 +220,16 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
+    if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+    if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
 
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
     // This handler can return the current MC event
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
+    if (!mcEvent) { Printf("ERROR: Could not retrieve MC event"); return;}
 
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
-    
+
     // analysis 
     Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
     fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
@@ -239,10 +238,10 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   }
   // Fill the FlowEventSimple for ESD input  
   else if (fAnalysisType == "ESD") {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
+    if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+    if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+
+    if (!fESD) { Printf("ERROR: fESD not available"); return;}
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
@@ -250,16 +249,12 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
+    if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+    if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+    if (!fESD) { Printf("ERROR: fESD not available"); return;}
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
+    if (!mcEvent) {Printf("ERROR: Could not retrieve MC event"); return;}
 
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
@@ -273,10 +268,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   }
   // Fill the FlowEventSimple for AOD input  
   else if (fAnalysisType == "AOD") {
-    if (!fAOD) {
-      Printf("ERROR: fAOD not available");
-      return;
-    }
+    if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     // analysis 
