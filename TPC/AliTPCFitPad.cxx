@@ -125,6 +125,7 @@ TLinearFitter* AliTPCFitPad::GetFitter(UInt_t segment, UInt_t padType, Bool_t wo
    TLinearFitter* fitter = GetFitterSimple(segment, padType);
    if (fitter == 0 || fitter->GetNumberTotalParameters() !=fNdim) {
      fitter = new TLinearFitter(fNdim, fFormula, fOpt);
+     fitter->StoreData(kFALSE);
      SetObject(fitter, segment, padType);
      fitter = (TLinearFitter*)(GetObject(segment, padType));
      if (workaround) {
