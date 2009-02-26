@@ -21,7 +21,7 @@ class TList;
 class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon = kFALSE);
+  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon);
   virtual ~AliAnalysisTaskFlowEvent();
   
   virtual void   ConnectInputData(Option_t *);
@@ -60,7 +60,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
 
   Bool_t fQA;                             // flag to set the filling of the QA hostograms
 
-  ClassDef(AliAnalysisTaskFlowEvent, 0); // example of analysis
+  ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
 };
 
 #endif
