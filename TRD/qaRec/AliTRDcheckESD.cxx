@@ -38,14 +38,14 @@
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
-#include "AliTRDgeometry.h"
 
 #include "AliTRDcheckESD.h"
 
 ClassImp(AliTRDcheckESD)
 
-const Float_t AliTRDcheckESD::xTPC = 290.;
-const Float_t AliTRDcheckESD::xTOF = 365.;
+const Int_t   AliTRDcheckESD::fgkNgraphs = 4;
+const Float_t AliTRDcheckESD::fgkxTPC = 290.;
+const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
@@ -125,6 +125,47 @@ void AliTRDcheckESD::CreateOutputObjects()
 }
 
 //____________________________________________________________________
+TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t*)
+{
+  Bool_t kBUILD = 1, // build graph if none found
+         kCLEAR = 1; // clear existing graph
+
+  const Char_t *name[] = {
+    "Geo", "Trk", "Pid", "Ref"
+  };
+  const Char_t *title[] = {
+    "TRD geometrical efficiency (TRDin/TPCout)"
+    ,"TRD tracking efficiency (TRDout/TRDin)"
+    ,"TRD PID efficiency (TRDpid/TRDin)"
+    ,"TRD refit efficiency (TRDrefit/TRDin)"
+  };
+  const Int_t ngr = sizeof(name)/sizeof(Char_t*);
+  if(ngr != fgkNgraphs){
+    AliWarning("No of graphs defined different from definition");
+    return 0x0;
+  }
+
+  TObjArray *res = 0x0;
+  if(!(res = (TObjArray*)fHistos->At(kResults)) ||
+      (id < 0 || id >= ngr)){
+    AliWarning("Graph missing.");
+    return 0x0;
+  }
+
+  TGraphErrors *g = 0x0;
+  if((g = dynamic_cast<TGraphErrors*>(res->At(id)))){
+    if(kCLEAR) for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
+  } else {
+    if(kBUILD){
+      g = new TGraphErrors();
+      g->SetNameTitle(name[id], title[id]);
+      res->AddAt(g, id);
+    }
+  }
+  return g;
+}
+
+//____________________________________________________________________
 void AliTRDcheckESD::Exec(Option_t *){
   //
   // Run the Analysis
@@ -198,23 +239,23 @@ void AliTRDcheckESD::Exec(Option_t *){
     Int_t iref = 0;
     while(iref<nRefs){
       ref = mcParticle->GetTrackReference(iref);
-      if(ref->LocalX() > xTPC) break;
+      if(ref->LocalX() > fgkxTPC) break;
       ref=0x0; iref++;
     }
 
     // read TParticle
-    TParticle *tParticle = mcParticle->Particle(); 
+    //TParticle *tParticle = mcParticle->Particle(); 
     //Int_t fPdg = tParticle->GetPdgCode();
     // reject secondaries
     //if(!tParticle->IsPrimary()) continue;
 
     if(ref){ 
-      if(ref->LocalX() > xTOF){ // track skipping TRD fiducial volume
+      if(ref->LocalX() > fgkxTOF){ // track skipping TRD fiducial volume
         ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
       } else {
         TRDin=1;
         if(esdTrack->GetNcls(2)) TRDout=1;
-        if(esdTrack->GetTRDpidQuality()) TRDpid=1;
+        if(esdTrack->GetTRDpidQuality()>=4) TRDpid=1;
       }
     } else { // track stopped in TPC 
       ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
@@ -229,60 +270,69 @@ void AliTRDcheckESD::Exec(Option_t *){
       ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
       h->Fill(pt, kTRDout);
     }
-    if(status & AliESDtrack::kTRDpid) h->Fill(pt, kTRDpid);
+    if(/*status & AliESDtrack::k*/TRDpid) h->Fill(pt, kTRDpid);
+    if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
   }  
   PostData(0, fHistos);
 }
 
+//____________________________________________________________________
+Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
+{
+  if(!TFile::Open(filename)){
+    AliWarning(Form("Couldn't open file %s.", filename));
+    return kFALSE;
+  }
+  TObjArray *o = 0x0;
+  if(!(o = (TObjArray*)gFile->Get(name ? name : GetName()))){
+    AliWarning("Missing histogram container.");
+    return kFALSE;
+  }
+  fHistos = (TObjArray*)o->Clone(GetName());
+  gFile->Close();
+  return kTRUE;
+}
 
 //____________________________________________________________________
 void AliTRDcheckESD::Terminate(Option_t *)
 {
-  TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
-  TAxis *ax = h2->GetXaxis();
-  TObjArray *res = (TObjArray*)fHistos->At(kResults);
-  
-  TH1 *h1[2] = {0x0, 0x0};
-  TGraphErrors *g = 0x0;
-  res->Expand(3);
-  Int_t n1 = 0, n2 = 0, ip=0;
-  Double_t eff = 0.;
+  TObjArray *res = 0x0;
+  if(!(res = (TObjArray*)fHistos->At(kResults))){
+    AliWarning("Graph container missing.");
+    return;
+  }
+  if(!res->GetEntriesFast()) res->Expand(fgkNgraphs);
   
   // geometrical efficiency
+  TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
+  TH1 *h1[2] = {0x0, 0x0};
   h1[0] = h2->ProjectionX("px0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("px1", kTRDin, kTRDin);
-  res->Add(g = new TGraphErrors());
-  g->SetNameTitle("geom", "TRD geometrical efficiency (TRDin/TPCout)");
-  for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
-    if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
-    n2 = (Int_t)h1[1]->GetBinContent(ib);
-    eff = n2/Float_t(n1);
-
-    ip=g->GetN();
-    g->SetPoint(ip, ax->GetBinCenter(ib), eff);
-    g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
-  }
+  Process(h1, GetGraph(0));
 
   // tracking efficiency
   h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("px1", kTRDout, kTRDout);
-  res->Add(g = new TGraphErrors());
-  g->SetNameTitle("tracking", "TRD tracking efficiency (TRDout/TRDin)");
-  for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
-    if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
-    n2 = (Int_t)h1[1]->GetBinContent(ib);
-    eff = n2/Float_t(n1);
-
-    ip=g->GetN();
-    g->SetPoint(ip, ax->GetBinCenter(ib), eff);
-    g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
-  }
+  Process(h1, GetGraph(1));
 
   // PID efficiency
-  h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
+  //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("px1", kTRDpid, kTRDpid);
-  res->Add(g = new TGraphErrors());
-  g->SetNameTitle("PID", "TRD PID efficiency (TRDpid/TRDin)");
+  Process(h1, GetGraph(2));
+
+  // Refit efficiency
+  //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
+  h1[1] = h2->ProjectionX("px1", kTRDref, kTRDref);
+  Process(h1, GetGraph(3));
+}
+
+//____________________________________________________________________
+void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
+{
+  Int_t n1 = 0, n2 = 0, ip=0;
+  Double_t eff = 0.;
+
+  TAxis *ax = h1[0]->GetXaxis();
   for(Int_t ib=1; ib<=ax->GetNbins(); ib++){
     if(!(n1 = (Int_t)h1[0]->GetBinContent(ib))) continue;
     n2 = (Int_t)h1[1]->GetBinContent(ib);
@@ -293,19 +343,3 @@ void AliTRDcheckESD::Terminate(Option_t *)
     g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
   }
 }
-
-// if(TRDin && !TRDout){
-//   printf("[%c] x[%2d]=%7.2f pt[%7.3f] id[%d] kink[%d] label[%d] in[%d] out[%d] pdg[%d]\n", tParticle->IsPrimary() ? 'P' : 'S', iref, ref->LocalX(), pt, esdTrack->GetID(), esdTrack->GetKinkIndex(0), fLabel, TRDin, TRDout, tParticle->GetPdgCode());
-//   printf("\tstatus ITS[%d %d] TPC[%d %d %d] \n"
-//     ,Bool_t(status & AliESDtrack::kITSin)
-//     ,Bool_t(status & AliESDtrack::kITSout)
-//     ,Bool_t(status & AliESDtrack::kTPCin)
-//     ,Bool_t(status & AliESDtrack::kTPCout)
-//     ,Bool_t(status & AliESDtrack::kTPCrefit)
-//   );
-//   printf("clusters ITS[%d] TPC[%d] TRD[%d]\n", esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
-//   if(esdTrack->GetKinkIndex(0) != 0){
-//     AliESDkink *kink = fESD->GetKink(TMath::Abs(esdTrack->GetKinkIndex(0)));
-//     if(kink) printf("index[%d %d] label[%d %d]\n", kink->GetIndex(0), kink->GetIndex(1), kink->GetLabel(0), kink->GetLabel(1));
-//   }
-// }

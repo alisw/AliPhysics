@@ -18,6 +18,7 @@
 class AliESDEvent;
 class AliMCEvent;
 class TObjArray;
+class TGraphErrors;
 class AliTRDcheckESD : public AliAnalysisTask {
 public:
   enum ETRDcheckESDstatus {
@@ -27,6 +28,7 @@ public:
     kNCl  = 0 // number of clusters per track
    ,kTRDstat  // TRD tracks status
    ,kResults  // graphs as results
+   ,kNhistos = 3 // number of histograms
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -39,21 +41,25 @@ public:
   AliTRDcheckESD();
   virtual ~AliTRDcheckESD();
   
-  void    ConnectInputData(Option_t *);
-  void    CreateOutputObjects();
-  void    Exec(Option_t *);
+  void          ConnectInputData(Option_t *);
+  void          CreateOutputObjects();
+  TGraphErrors* GetGraph(Int_t id, Option_t *opt=0x0);
+  void          Exec(Option_t *);
 
-  Bool_t  HasMC() const { return TESTBIT(fStatus, kMC);}
-  Bool_t  Load(const Char_t *fn);
-  void    SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
-  void    Terminate(Option_t *);
+  Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
+  Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
+  void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
+  void          Terminate(Option_t *);
 
-  static const Float_t xTPC;
-  static const Float_t xTOF;
+  static const Int_t   fgkNgraphs;
+  static const Float_t fgkxTPC;
+  static const Float_t fgkxTOF;
 
 private:
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
+  void          Process(TH1 **h, TGraphErrors *g);
+
   Int_t            fStatus;            // bit mask for controlling the task
   AliESDEvent      *fESD;              // ESD event
   AliMCEvent       *fMC;               // MC event
