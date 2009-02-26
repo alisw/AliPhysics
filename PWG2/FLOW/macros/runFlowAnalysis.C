@@ -52,7 +52,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char* 
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
 		    //			  dir="/data/alice1/kolk/KineOnly3/")
 		    dir="/Users/snelling/alice_data/KineOnly3/")
 {
@@ -328,9 +328,8 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
 	      if(LYZEP) lyzep->Make(fEvent,ep);
 	      if(SP) sp->Make(fEvent);
 	      //-----------------------------------------------------------
-	      
 	      fCount++;
-	      cout << "# " << fCount << " events processed" << endl;
+	      //cout << "# " << fCount << " events processed" << endl;
 	      delete kTree;
 	      delete fEvent;
 	    }
