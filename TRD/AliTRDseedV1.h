@@ -118,7 +118,7 @@ public:
   Double_t  GetYat(Double_t x) const { return fYfit[0] - fYfit[1] * (fX0-x);}
   Float_t   GetYfit(Int_t id) const { return fYfit[id];}
   Float_t   GetYref(Int_t id) const { return fYref[id];}
-  Float_t   GetZ() const             { return GetZat(fX); }
+  Float_t   GetZ() const            { return fZfit[0] - fZfit[1] * fX;}
   Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
   Float_t   GetZfit(Int_t id) const { return fZfit[id];}
   Float_t   GetZref(Int_t id) const { return fZref[id];}
