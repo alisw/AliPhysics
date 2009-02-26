@@ -1887,15 +1887,15 @@ void AliProtonQAAnalysis::InitVertexQA() {
   fQAVertexList->Add(gHistTPCDiffVz);
   TH1F *gHistTPCResolutionVx = new TH1F("gHistTPCResolutionVx",
 					";#sigma_{x} [#mu m];Entries",
-					100,0.,1000.);
+					100,0.,1000000.);
   fQAVertexList->Add(gHistTPCResolutionVx);
   TH1F *gHistTPCResolutionVy = new TH1F("gHistTPCResolutionVy",
 					";#sigma_{y} [#mu m];Entries",
-					100,0.,1000.);
+					100,0.,1000000.);
   fQAVertexList->Add(gHistTPCResolutionVy);
   TH1F *gHistTPCResolutionVz = new TH1F("gHistTPCResolutionVz",
 					";#sigma_{z} [#mu m];Entries",
-					100,0.,500.);
+					100,0.,6000.);
   fQAVertexList->Add(gHistTPCResolutionVz);
   
   //SPD
