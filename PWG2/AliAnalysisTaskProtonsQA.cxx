@@ -31,7 +31,8 @@ ClassImp(AliAnalysisTaskProtonsQA)
 //________________________________________________________________________ 
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
   : AliAnalysisTask(), fESD(0), fMC(0),
-    fList0(0), fList1(0), fList2(0), fList3(0), fList4(0), fList5(0),
+    fList0(0), fList1(0), fList2(0), fList3(0), 
+    fList4(0), fList5(0), fList6(0), fList7(0),
     fProtonQAAnalysis(0), 
     fTriggerMode(kMB2), fProtonAnalysisMode(kTPC),
     fVxMax(0), fVyMax(0), fVzMax(0) {
@@ -42,7 +43,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fMC(0),
     fList0(0), fList1(0), fList2(0), fList3(0), 
-    fList4(0), fList5(0), fList6(0),
+    fList4(0), fList5(0), fList6(0), fList7(0),
     fProtonQAAnalysis(0),
     fTriggerMode(kMB2), fProtonAnalysisMode(kTPC),
     fVxMax(0), fVyMax(0), fVzMax(0) {
@@ -59,6 +60,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineOutput(4, TList::Class());
   DefineOutput(5, TList::Class());
   DefineOutput(6, TList::Class());
+  DefineOutput(7, TList::Class());
 }
 
 //________________________________________________________________________
@@ -182,13 +184,16 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fList3 = fProtonQAAnalysis->GetAcceptedCutList();
 
   fList4 = new TList();
-  fList4 = fProtonQAAnalysis->GetAcceptedDCAList();
+  fList4 = fProtonQAAnalysis->GetRejectedCutList();
 
   fList5 = new TList();
-  fList5 = fProtonQAAnalysis->GetEfficiencyQAList();
+  fList5 = fProtonQAAnalysis->GetAcceptedDCAList();
 
   fList6 = new TList();
-  fList6 = fProtonQAAnalysis->GetVertexQAList();
+  fList6 = fProtonQAAnalysis->GetEfficiencyQAList();
+
+  fList7 = new TList();
+  fList7 = fProtonQAAnalysis->GetVertexQAList();
 }
 
 //________________________________________________________________________
@@ -239,6 +244,7 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   PostData(4, fList4);
   PostData(5, fList5);
   PostData(6, fList6);
+  PostData(7, fList7);
 }      
 
 //________________________________________________________________________

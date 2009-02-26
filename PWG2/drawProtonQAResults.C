@@ -1,6 +1,6 @@
 void drawProtonQAResults(const char *analysisType = "TPC") {
   //Macro to visualize the results of the proton QA task
-  //TCanvas objects: 16
+  //TCanvas objects: 20
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);
   gStyle->SetFrameFillColor(10);
@@ -42,8 +42,8 @@ void drawCutStatistics(TList *list,
   //The histogram shows the influence of each cut on the primary
   //and secondary (anti)protons
   const Int_t NQAHISTOSPERLIST = 26;
-  
-  Double_t gEntriesQA2DList[20] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+
+  Double_t gEntriesQA2DList[12] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t gEntriesQAPrimaryProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQAPrimaryProtonsRejectedList[NQAHISTOSPERLIST];
   Double_t gEntriesQASecondaryProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQASecondaryProtonsRejectedList[NQAHISTOSPERLIST];
   Double_t gEntriesQAPrimaryAntiProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQAPrimaryAntiProtonsRejectedList[NQAHISTOSPERLIST];
@@ -64,40 +64,6 @@ void drawCutStatistics(TList *list,
   GetQAEntries(fQA2DList,gEntriesQA2DList);
   TH3F *gHistYPtPDGProtonsPass = (TH3F *)fQA2DList->At(10);
   TH3F *gHistYPtPDGAntiProtonsPass = (TH3F *)fQA2DList->At(11);
-  TH2D *gHistEtaPtPrimaryProtonsAccepted = (TH2D *)fQA2DList->At(12);
-  TH2D *gHistEtaPtPrimaryProtonsRejected = (TH2D *)fQA2DList->At(13);
-  TH2D *gHistEtaPtSecondaryProtonsAccepted = (TH2D *)fQA2DList->At(14);
-  TH2D *gHistEtaPtSecondaryProtonsRejected = (TH2D *)fQA2DList->At(15);
-  TH2D *gHistEtaPtPrimaryAntiProtonsAccepted = (TH2D *)fQA2DList->At(16);
-  TH2D *gHistEtaPtPrimaryAntiProtonsRejected = (TH2D *)fQA2DList->At(17);
-  TH2D *gHistEtaPtSecondaryAntiProtonsAccepted = (TH2D *)fQA2DList->At(18);
-  TH2D *gHistEtaPtSecondaryAntiProtonsRejected = (TH2D *)fQA2DList->At(19);
-
-  TCanvas *c17 = new TCanvas("c17",
-			     "Proton eta-pT",
-			     800,800,700,700);
-  c17->SetHighLightColor(10); c17->Divide(2,2);
-  c17->cd(1); gHistEtaPtPrimaryProtonsAccepted->SetStats(kFALSE); 
-  gHistEtaPtPrimaryProtonsAccepted->Draw("col");
-  c17->cd(2); gHistEtaPtPrimaryProtonsRejected->SetStats(kFALSE); 
-  gHistEtaPtPrimaryProtonsRejected->Draw("col");
-  c17->cd(3); gHistEtaPtSecondaryProtonsAccepted->SetStats(kFALSE); 
-  gHistEtaPtSecondaryProtonsAccepted->Draw("col");
-  c17->cd(4); gHistEtaPtSecondaryProtonsRejected->SetStats(kFALSE); 
-  gHistEtaPtSecondaryProtonsRejected->Draw("col");
-
-  TCanvas *c18 = new TCanvas("c18",
-			     "Proton eta-pT",
-			     850,850,700,700);
-  c18->SetHighLightColor(10); c18->Divide(2,2);
-  c18->cd(1); gHistEtaPtPrimaryAntiProtonsAccepted->SetStats(kFALSE);
-  gHistEtaPtPrimaryAntiProtonsAccepted->Draw("col");
-  c18->cd(2); gHistEtaPtPrimaryAntiProtonsRejected->SetStats(kFALSE);
-  gHistEtaPtPrimaryAntiProtonsRejected->Draw("col");
-  c18->cd(3); gHistEtaPtSecondaryAntiProtonsAccepted->SetStats(kFALSE);
-  gHistEtaPtSecondaryAntiProtonsAccepted->Draw("col");
-  c18->cd(4); gHistEtaPtSecondaryAntiProtonsRejected->SetStats(kFALSE);
-  gHistEtaPtSecondaryAntiProtonsRejected->Draw("col");
  
   TList *fQAPrimaryProtonsAcceptedList = (TList *)list->At(1);
   GetQAEntries(fQAPrimaryProtonsAcceptedList,gEntriesQAPrimaryProtonsAcceptedList);
@@ -1349,135 +1315,138 @@ void drawVertexQA(TList *list) {
   TH1F *gHistTracksResolutionVy = (TH1F *)list->At(29);
   TH1F *gHistTracksResolutionVz = (TH1F *)list->At(30);
 
-  TCanvas *c19 = new TCanvas("c19",
+  TCanvas *c17 = new TCanvas("c17",
 			     "Vertex efficiency",
 			     300,0,900,400);
-  c19->SetHighLightColor(10); c19->Divide(3,1);
-  c19->cd(1)->SetLeftMargin(0.15); c19->cd(1)->SetBottomMargin(0.15);  
-  c19->cd(1)->SetRightMargin(0.2);
+  c17->SetHighLightColor(10); c17->Divide(3,1);
+  c17->cd(1)->SetLeftMargin(0.15); c17->cd(1)->SetBottomMargin(0.15);  
+  c17->cd(1)->SetRightMargin(0.2);
   gHistMCPrimaryMultiplicityTPC->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicityTPC,gHistMCPrimaryMultiplicity);
   gHistMCPrimaryMultiplicityTPC->Scale(100.);
   gHistMCPrimaryMultiplicityTPC->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicityTPC->SetMarkerColor(1);
   gHistMCPrimaryMultiplicityTPC->GetYaxis()->SetTitle("#epsilon [%]");
+  gHistMCPrimaryMultiplicityTPC->SetStats(kFALSE);
   gHistMCPrimaryMultiplicityTPC->Draw("E");
-  c19->cd(2)->SetLeftMargin(0.15); c19->cd(2)->SetBottomMargin(0.15);  
-  c19->cd(2)->SetRightMargin(0.2);
+  c17->cd(2)->SetLeftMargin(0.15); c17->cd(2)->SetBottomMargin(0.15);  
+  c17->cd(2)->SetRightMargin(0.2);
   gHistMCPrimaryMultiplicitySPD->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicitySPD,gHistMCPrimaryMultiplicity);
   gHistMCPrimaryMultiplicitySPD->Scale(100.);
   gHistMCPrimaryMultiplicitySPD->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicitySPD->SetMarkerColor(1);
   gHistMCPrimaryMultiplicitySPD->GetYaxis()->SetTitle("#epsilon [%]");
+  gHistMCPrimaryMultiplicitySPD->SetStats(kFALSE);
   gHistMCPrimaryMultiplicitySPD->Draw("E");
-  c19->cd(3)->SetLeftMargin(0.15); c19->cd(3)->SetBottomMargin(0.15);  
-  c19->cd(3)->SetRightMargin(0.2);
+  c17->cd(3)->SetLeftMargin(0.15); c17->cd(3)->SetBottomMargin(0.15);  
+  c17->cd(3)->SetRightMargin(0.2);
   gHistMCPrimaryMultiplicityTracks->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicityTracks,gHistMCPrimaryMultiplicity);
   gHistMCPrimaryMultiplicityTracks->Scale(100.);
   gHistMCPrimaryMultiplicityTracks->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicityTracks->SetMarkerColor(1);
   gHistMCPrimaryMultiplicityTracks->GetYaxis()->SetTitle("#epsilon [%]");
+  gHistMCPrimaryMultiplicityTracks->SetStats(kFALSE);
   gHistMCPrimaryMultiplicityTracks->Draw("E");
 
   //TPC vertex
-  TCanvas *c20 = new TCanvas("c20",
+  TCanvas *c18 = new TCanvas("c18",
 			     "TPC vertex",
 			     350,50,700,700);
-  c20->SetHighLightColor(10); c20->Divide(3,3);
-  c20->cd(1)->SetLeftMargin(0.15); c20->cd(1)->SetBottomMargin(0.15);  
-  c20->cd(1)->SetRightMargin(0.2); c20->cd(1)->SetLogy();
+  c18->SetHighLightColor(10); c18->Divide(3,3);
+  c18->cd(1)->SetLeftMargin(0.15); c18->cd(1)->SetBottomMargin(0.15);  
+  c18->cd(1)->SetRightMargin(0.2); c18->cd(1)->SetLogy();
   gHistTPCESDVx->Draw("col");
-  c20->cd(2)->SetLeftMargin(0.15); c20->cd(2)->SetBottomMargin(0.15);  
-  c20->cd(2)->SetRightMargin(0.2); c20->cd(2)->SetLogy();
+  c18->cd(2)->SetLeftMargin(0.15); c18->cd(2)->SetBottomMargin(0.15);  
+  c18->cd(2)->SetRightMargin(0.2); c18->cd(2)->SetLogy();
   gHistTPCESDVy->Draw("col");
-  c20->cd(3)->SetLeftMargin(0.15); c20->cd(3)->SetBottomMargin(0.15);  
-  c20->cd(3)->SetRightMargin(0.2); c20->cd(3)->SetLogy();
+  c18->cd(3)->SetLeftMargin(0.15); c18->cd(3)->SetBottomMargin(0.15);  
+  c18->cd(3)->SetRightMargin(0.2); c18->cd(3)->SetLogy();
   gHistTPCESDVz->Draw("col");
-  c20->cd(4)->SetLeftMargin(0.15); c20->cd(4)->SetBottomMargin(0.15);  
-  c20->cd(4)->SetRightMargin(0.2); c20->cd(4)->SetLogy();
+  c18->cd(4)->SetLeftMargin(0.15); c18->cd(4)->SetBottomMargin(0.15);  
+  c18->cd(4)->SetRightMargin(0.2); c18->cd(4)->SetLogy();
   gHistTPCDiffVx->Draw();
-  c20->cd(5)->SetLeftMargin(0.15); c20->cd(5)->SetBottomMargin(0.15);  
-  c20->cd(5)->SetRightMargin(0.2); c20->cd(5)->SetLogy();
+  c18->cd(5)->SetLeftMargin(0.15); c18->cd(5)->SetBottomMargin(0.15);  
+  c18->cd(5)->SetRightMargin(0.2); c18->cd(5)->SetLogy();
   gHistTPCDiffVy->Draw();
-  c20->cd(6)->SetLeftMargin(0.15); c20->cd(6)->SetBottomMargin(0.15);  
-  c20->cd(6)->SetRightMargin(0.2); c20->cd(6)->SetLogy();
+  c18->cd(6)->SetLeftMargin(0.15); c18->cd(6)->SetBottomMargin(0.15);  
+  c18->cd(6)->SetRightMargin(0.2); c18->cd(6)->SetLogy();
   gHistTPCDiffVz->Draw();
-  c20->cd(7)->SetLeftMargin(0.15); c20->cd(7)->SetBottomMargin(0.15);  
-  c20->cd(7)->SetRightMargin(0.2); c20->cd(7)->SetLogy();
+  c18->cd(7)->SetLeftMargin(0.15); c18->cd(7)->SetBottomMargin(0.15);  
+  c18->cd(7)->SetRightMargin(0.2); c18->cd(7)->SetLogy();
   gHistTPCResolutionVx->Draw();
-  c20->cd(8)->SetLeftMargin(0.15); c20->cd(8)->SetBottomMargin(0.15);  
-  c20->cd(8)->SetRightMargin(0.2); c20->cd(8)->SetLogy();
+  c18->cd(8)->SetLeftMargin(0.15); c18->cd(8)->SetBottomMargin(0.15);  
+  c18->cd(8)->SetRightMargin(0.2); c18->cd(8)->SetLogy();
   gHistTPCResolutionVy->Draw();
-  c20->cd(9)->SetLeftMargin(0.15); c20->cd(9)->SetBottomMargin(0.15);  
-  c20->cd(9)->SetRightMargin(0.2); c20->cd(9)->SetLogy();
+  c18->cd(9)->SetLeftMargin(0.15); c18->cd(9)->SetBottomMargin(0.15);  
+  c18->cd(9)->SetRightMargin(0.2); c18->cd(9)->SetLogy();
   gHistTPCResolutionVz->Draw();
 
   //SPD vertex
-  TCanvas *c21 = new TCanvas("c21",
+  TCanvas *c19 = new TCanvas("c19",
 			     "SPD vertex",
 			     400,100,700,700);
-  c21->SetHighLightColor(10); c21->Divide(3,3);
-  c21->cd(1)->SetLeftMargin(0.15); c21->cd(1)->SetBottomMargin(0.15);  
-  c21->cd(1)->SetRightMargin(0.2); c21->cd(1)->SetLogy();
+  c19->SetHighLightColor(10); c19->Divide(3,3);
+  c19->cd(1)->SetLeftMargin(0.15); c19->cd(1)->SetBottomMargin(0.15);  
+  c19->cd(1)->SetRightMargin(0.2); c19->cd(1)->SetLogy();
   gHistSPDESDVx->Draw("col");
-  c21->cd(2)->SetLeftMargin(0.15); c21->cd(2)->SetBottomMargin(0.15);  
-  c21->cd(2)->SetRightMargin(0.2); c21->cd(2)->SetLogy();
+  c19->cd(2)->SetLeftMargin(0.15); c19->cd(2)->SetBottomMargin(0.15);  
+  c19->cd(2)->SetRightMargin(0.2); c19->cd(2)->SetLogy();
   gHistSPDESDVy->Draw("col");
-  c21->cd(3)->SetLeftMargin(0.15); c21->cd(3)->SetBottomMargin(0.15);  
-  c21->cd(3)->SetRightMargin(0.2); c21->cd(3)->SetLogy();
+  c19->cd(3)->SetLeftMargin(0.15); c19->cd(3)->SetBottomMargin(0.15);  
+  c19->cd(3)->SetRightMargin(0.2); c19->cd(3)->SetLogy();
   gHistSPDESDVz->Draw("col");
-  c21->cd(4)->SetLeftMargin(0.15); c21->cd(4)->SetBottomMargin(0.15);  
-  c21->cd(4)->SetRightMargin(0.2); c21->cd(4)->SetLogy();
+  c19->cd(4)->SetLeftMargin(0.15); c19->cd(4)->SetBottomMargin(0.15);  
+  c19->cd(4)->SetRightMargin(0.2); c19->cd(4)->SetLogy();
   gHistSPDDiffVx->Draw();
-  c21->cd(5)->SetLeftMargin(0.15); c21->cd(5)->SetBottomMargin(0.15);  
-  c21->cd(5)->SetRightMargin(0.2); c21->cd(5)->SetLogy();
+  c19->cd(5)->SetLeftMargin(0.15); c19->cd(5)->SetBottomMargin(0.15);  
+  c19->cd(5)->SetRightMargin(0.2); c19->cd(5)->SetLogy();
   gHistSPDDiffVy->Draw();
-  c21->cd(6)->SetLeftMargin(0.15); c21->cd(6)->SetBottomMargin(0.15);  
-  c21->cd(6)->SetRightMargin(0.2); c21->cd(6)->SetLogy();
+  c19->cd(6)->SetLeftMargin(0.15); c19->cd(6)->SetBottomMargin(0.15);  
+  c19->cd(6)->SetRightMargin(0.2); c19->cd(6)->SetLogy();
   gHistSPDDiffVz->Draw();
-  c21->cd(7)->SetLeftMargin(0.15); c21->cd(7)->SetBottomMargin(0.15);  
-  c21->cd(7)->SetRightMargin(0.2); c21->cd(7)->SetLogy();
+  c19->cd(7)->SetLeftMargin(0.15); c19->cd(7)->SetBottomMargin(0.15);  
+  c19->cd(7)->SetRightMargin(0.2); c19->cd(7)->SetLogy();
   gHistSPDResolutionVx->Draw();
-  c21->cd(8)->SetLeftMargin(0.15); c21->cd(8)->SetBottomMargin(0.15);  
-  c21->cd(8)->SetRightMargin(0.2); c21->cd(8)->SetLogy();
+  c19->cd(8)->SetLeftMargin(0.15); c19->cd(8)->SetBottomMargin(0.15);  
+  c19->cd(8)->SetRightMargin(0.2); c19->cd(8)->SetLogy();
   gHistSPDResolutionVy->Draw();
-  c21->cd(9)->SetLeftMargin(0.15); c21->cd(9)->SetBottomMargin(0.15);  
-  c21->cd(9)->SetRightMargin(0.2); c21->cd(9)->SetLogy();
+  c19->cd(9)->SetLeftMargin(0.15); c19->cd(9)->SetBottomMargin(0.15);  
+  c19->cd(9)->SetRightMargin(0.2); c19->cd(9)->SetLogy();
   gHistSPDResolutionVz->Draw();
 
   //Tracks vertex
-  TCanvas *c22 = new TCanvas("c22",
+  TCanvas *c20 = new TCanvas("c20",
 			     "Tracks vertex",
-			     350,50,700,700);
-  c22->SetHighLightColor(10); c22->Divide(3,3);
-  c22->cd(1)->SetLeftMargin(0.15); c22->cd(1)->SetBottomMargin(0.15);  
-  c22->cd(1)->SetRightMargin(0.2); c22->cd(1)->SetLogy();
+			     450,150,700,700);
+  c20->SetHighLightColor(10); c20->Divide(3,3);
+  c20->cd(1)->SetLeftMargin(0.15); c20->cd(1)->SetBottomMargin(0.15);  
+  c20->cd(1)->SetRightMargin(0.2); c20->cd(1)->SetLogy();
   gHistTracksESDVx->Draw("col");
-  c22->cd(2)->SetLeftMargin(0.15); c22->cd(2)->SetBottomMargin(0.15);  
-  c22->cd(2)->SetRightMargin(0.2); c22->cd(2)->SetLogy();
+  c20->cd(2)->SetLeftMargin(0.15); c20->cd(2)->SetBottomMargin(0.15);  
+  c20->cd(2)->SetRightMargin(0.2); c20->cd(2)->SetLogy();
   gHistTracksESDVy->Draw("col");
-  c22->cd(3)->SetLeftMargin(0.15); c22->cd(3)->SetBottomMargin(0.15);  
-  c22->cd(3)->SetRightMargin(0.2); c22->cd(3)->SetLogy();
+  c20->cd(3)->SetLeftMargin(0.15); c20->cd(3)->SetBottomMargin(0.15);  
+  c20->cd(3)->SetRightMargin(0.2); c20->cd(3)->SetLogy();
   gHistTracksESDVz->Draw("col");
-  c22->cd(4)->SetLeftMargin(0.15); c22->cd(4)->SetBottomMargin(0.15);  
-  c22->cd(4)->SetRightMargin(0.2); c22->cd(4)->SetLogy();
+  c20->cd(4)->SetLeftMargin(0.15); c20->cd(4)->SetBottomMargin(0.15);  
+  c20->cd(4)->SetRightMargin(0.2); c20->cd(4)->SetLogy();
   gHistTracksDiffVx->Draw();
-  c22->cd(5)->SetLeftMargin(0.15); c22->cd(5)->SetBottomMargin(0.15);  
-  c22->cd(5)->SetRightMargin(0.2); c22->cd(5)->SetLogy();
+  c20->cd(5)->SetLeftMargin(0.15); c20->cd(5)->SetBottomMargin(0.15);  
+  c20->cd(5)->SetRightMargin(0.2); c20->cd(5)->SetLogy();
   gHistTracksDiffVy->Draw();
-  c22->cd(6)->SetLeftMargin(0.15); c22->cd(6)->SetBottomMargin(0.15);  
-  c22->cd(6)->SetRightMargin(0.2); c22->cd(6)->SetLogy();
+  c20->cd(6)->SetLeftMargin(0.15); c20->cd(6)->SetBottomMargin(0.15);  
+  c20->cd(6)->SetRightMargin(0.2); c20->cd(6)->SetLogy();
   gHistTracksDiffVz->Draw();
-  c22->cd(7)->SetLeftMargin(0.15); c22->cd(7)->SetBottomMargin(0.15);  
-  c22->cd(7)->SetRightMargin(0.2); c22->cd(7)->SetLogy();
+  c20->cd(7)->SetLeftMargin(0.15); c20->cd(7)->SetBottomMargin(0.15);  
+  c20->cd(7)->SetRightMargin(0.2); c20->cd(7)->SetLogy();
   gHistTracksResolutionVx->Draw();
-  c22->cd(8)->SetLeftMargin(0.15); c22->cd(8)->SetBottomMargin(0.15);  
-  c22->cd(8)->SetRightMargin(0.2); c22->cd(8)->SetLogy();
+  c20->cd(8)->SetLeftMargin(0.15); c20->cd(8)->SetBottomMargin(0.15);  
+  c20->cd(8)->SetRightMargin(0.2); c20->cd(8)->SetLogy();
   gHistTracksResolutionVy->Draw();
-  c22->cd(9)->SetLeftMargin(0.15); c22->cd(9)->SetBottomMargin(0.15);  
-  c22->cd(9)->SetRightMargin(0.2); c22->cd(9)->SetLogy();
+  c20->cd(9)->SetLeftMargin(0.15); c20->cd(9)->SetBottomMargin(0.15);  
+  c20->cd(9)->SetRightMargin(0.2); c20->cd(9)->SetLogy();
   gHistTracksResolutionVz->Draw();
 }
 
@@ -1814,3 +1783,96 @@ const char * const gMCProcessName[45] = {
   "Transportation",
   "Unknown process"
 };
+
+//________________________________________________//
+void drawKineQA(const char *filename) {
+  //Draws the QA plots for the kinematic variables for protons and antiprotons
+  gStyle->SetPalette(1,0);
+  gStyle->SetCanvasColor(41);
+  gStyle->SetFrameFillColor(10);
+
+  TFile *f = TFile::Open(filename);
+  TList *acceptedList = (TList *)f->Get("acceptedCutList");
+  TH3D *gHistEtaPhiNClustersPrimaryProtonsPass = (TH3D *)acceptedList->At(44);
+  TH3D *gHistEtaPhiNClustersSecondaryProtonsPass = (TH3D *)acceptedList->At(46);
+  TH3D *gHistEtaPhiNClustersPrimaryAntiProtonsPass = (TH3D *)acceptedList->At(45);
+  TH3D *gHistEtaPhiNClustersSecondaryAntiProtonsPass = (TH3D *)acceptedList->At(47);
+
+  TList *rejectedList = (TList *)f->Get("rejectedCutList");
+  TH3D *gHistEtaPhiNClustersPrimaryProtonsReject = (TH3D *)rejectedList->At(0);
+  gHistEtaPhiNClustersPrimaryProtonsPass->Add(gHistEtaPhiNClustersPrimaryProtonsReject);
+  TH3D *gHistEtaPhiNClustersSecondaryProtonsReject = (TH3D *)rejectedList->At(2);
+  gHistEtaPhiNClustersSecondaryProtonsPass->Add(gHistEtaPhiNClustersSecondaryProtonsReject);
+  TH3D *gHistEtaPhiNClustersPrimaryAntiProtonsReject = (TH3D *)rejectedList->At(1);
+  gHistEtaPhiNClustersPrimaryAntiProtonsPass->Add(gHistEtaPhiNClustersPrimaryAntiProtonsReject);
+  TH3D *gHistEtaPhiNClustersSecondaryAntiProtonsReject = (TH3D *)rejectedList->At(3);
+  gHistEtaPhiNClustersSecondaryAntiProtonsPass->Add(gHistEtaPhiNClustersSecondaryAntiProtonsReject);
+
+  //eta-phi
+  TCanvas *c21 = new TCanvas("c21",
+			     "#eta-#phi",
+			     0,0,600,600);
+  c21->SetHighLightColor(10); c21->Divide(2,2);
+  c21->cd(1)->SetLeftMargin(0.15); c21->cd(1)->SetBottomMargin(0.15);  
+  c21->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("yx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("yx")))->DrawCopy("col");
+  c21->cd(2)->SetLeftMargin(0.15); c21->cd(2)->SetBottomMargin(0.15);  
+  c21->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("yx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("yx")))->DrawCopy("col");
+  c21->cd(3)->SetLeftMargin(0.15); c21->cd(3)->SetBottomMargin(0.15);  
+  c21->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("yx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("yx")))->DrawCopy("col");
+  c21->cd(4)->SetLeftMargin(0.15); c21->cd(4)->SetBottomMargin(0.15);  
+  c21->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("yx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("yx")))->DrawCopy("col");
+
+  //eta-Nclusters
+  TCanvas *c22 = new TCanvas("c22",
+			     "#eta-N_{clusters}",
+			     100,100,600,600);
+  c22->SetHighLightColor(10); c22->Divide(2,2);
+  c22->cd(1)->SetLeftMargin(0.15); c22->cd(1)->SetBottomMargin(0.15);  
+  c22->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zx")))->DrawCopy("col");
+  c22->cd(2)->SetLeftMargin(0.15); c22->cd(2)->SetBottomMargin(0.15);  
+  c22->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zx")))->DrawCopy("col");
+  c22->cd(3)->SetLeftMargin(0.15); c22->cd(3)->SetBottomMargin(0.15);  
+  c22->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zx")))->DrawCopy("col");
+  c22->cd(4)->SetLeftMargin(0.15); c22->cd(4)->SetBottomMargin(0.15);  
+  c22->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zx")))->DrawCopy("col");
+
+  //phi-Nclusters
+  TCanvas *c23 = new TCanvas("c23",
+			     "#phi-N_{clusters}",
+			     200,200,600,600);
+  c23->SetHighLightColor(10); c23->Divide(2,2);
+  c23->cd(1)->SetLeftMargin(0.15); c23->cd(1)->SetBottomMargin(0.15);  
+  c23->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zy")))->DrawCopy("col");
+  c23->cd(2)->SetLeftMargin(0.15); c23->cd(2)->SetBottomMargin(0.15);  
+  c23->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zy")))->DrawCopy("col");
+  c23->cd(3)->SetLeftMargin(0.15); c23->cd(3)->SetBottomMargin(0.15);  
+  c23->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zy")))->DrawCopy("col");
+  c23->cd(4)->SetLeftMargin(0.15); c23->cd(4)->SetBottomMargin(0.15);  
+  c23->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("col");
+
+  f->Close();
+}

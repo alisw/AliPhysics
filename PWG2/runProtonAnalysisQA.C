@@ -12,8 +12,8 @@ void runProtonAnalysisQA(const char *analysisType = "TPC") {
   
   //runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",analysisType);
   //runInteractive("wn.xml",analysisType);
-  //runBatch("wn.xml",analysisType);
-  runLocal(analysisType);
+  runBatch("wn.xml",analysisType);
+  //runLocal(analysisType);
 
   timer.Stop();
   timer.Print();
@@ -105,15 +105,19 @@ void runLocal(const char* analysisType) {
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("rejectedCutList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("efficiencyList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
-  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("vertexList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
@@ -127,6 +131,7 @@ void runLocal(const char* analysisType) {
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
+  mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -227,15 +232,19 @@ void runBatch(const char *collectionfile,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("rejectedCutList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("efficiencyList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
-  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("vertexList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
@@ -249,6 +258,7 @@ void runBatch(const char *collectionfile,
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
+  mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -340,15 +350,19 @@ void runInteractive(const char *collectionfile,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("rejectedCutList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("efficiencyList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
-  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("vertexList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
@@ -362,6 +376,7 @@ void runInteractive(const char *collectionfile,
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
+  mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -451,15 +466,19 @@ void runProof(Int_t stats = 0,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("rejectedCutList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("efficiencyList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename4.Data());
-  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("vertexList", 
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("vertexList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename5.Data());
@@ -473,6 +492,7 @@ void runProof(Int_t stats = 0,
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   mgr->ConnectOutput(taskProtonsQA,6,coutput7);
+  mgr->ConnectOutput(taskProtonsQA,7,coutput8);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
