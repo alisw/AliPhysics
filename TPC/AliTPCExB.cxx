@@ -157,7 +157,8 @@ Double_t AliTPCExB::GetDr(Double_t r, Double_t phi, Double_t z, Double_t bz){
   // Posibble to us it for visualization 
   // 
   //
-  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  AliTPCExB *exb = Instance();
+  if (!exb) exb = AliTPCcalibDB::GetExB(bz,kFALSE);
   if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
@@ -175,12 +176,15 @@ Double_t AliTPCExB::GetDrphi(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
   //
-  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  AliTPCExB *exb = Instance();
+  if (!exb) exb = AliTPCcalibDB::GetExB(bz,kFALSE);
   if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
   exb->Correct(pos0,pos1);
   Double_t dphi=TMath::ATan2(pos1[1],pos1[0])-TMath::ATan2(pos0[1],pos0[0]);
+  if (dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+  if (dphi<-TMath::Pi()) dphi+=TMath::TwoPi();
   return r*dphi;  
 
 }
@@ -190,7 +194,8 @@ Double_t AliTPCExB::GetDphi(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
   // 
-  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  AliTPCExB *exb = Instance();
+  if (!exb) exb = AliTPCcalibDB::GetExB(bz,kFALSE);
   if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
@@ -204,7 +209,8 @@ Double_t AliTPCExB::GetDz(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
   //
-  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  AliTPCExB *exb = Instance();
+  if (!exb) exb = AliTPCcalibDB::GetExB(bz,kFALSE);
   if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
