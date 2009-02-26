@@ -406,13 +406,13 @@ TH1* AliTRDresolution::PlotResolution(const AliTRDtrackV1 *track)
     Double_t s2y = tt.GetS2Y(), s2z = tt.GetS2Z();
     if(!rc){
       ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx, dy);
-      ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx, dy/TMath::Sqrt(s2y));
+      if(s2y>0.) ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx, dy/TMath::Sqrt(s2y));
       ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx, dphi*TMath::RadToDeg());
     } else {
       // add tracklet residuals for z
       dz = tt.GetZ() - (z0 - dx*dzdx) ;
       ((TH2I*)fContainer->At(kMCtrackletZ))->Fill(dzdx, dz);
-      ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx, dz/TMath::Sqrt(s2z));
+      if(s2z>0.) ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx, dz/TMath::Sqrt(s2z));
     }
   
     // Fill Debug stream for tracklet
