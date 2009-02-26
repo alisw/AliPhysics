@@ -1349,6 +1349,7 @@ void drawVertexQA(TList *list) {
   gHistMCPrimaryMultiplicityTracks->GetYaxis()->SetTitle("#epsilon [%]");
   gHistMCPrimaryMultiplicityTracks->SetStats(kFALSE);
   gHistMCPrimaryMultiplicityTracks->Draw("E");
+  c17->SaveAs("VertexEfficiency.gif");
 
   //TPC vertex
   TCanvas *c18 = new TCanvas("c18",
@@ -1382,6 +1383,7 @@ void drawVertexQA(TList *list) {
   c18->cd(9)->SetLeftMargin(0.15); c18->cd(9)->SetBottomMargin(0.15);  
   c18->cd(9)->SetRightMargin(0.2); c18->cd(9)->SetLogy();
   gHistTPCResolutionVz->Draw();
+  c18->SaveAs("VertexTPC.gif");
 
   //SPD vertex
   TCanvas *c19 = new TCanvas("c19",
@@ -1415,6 +1417,7 @@ void drawVertexQA(TList *list) {
   c19->cd(9)->SetLeftMargin(0.15); c19->cd(9)->SetBottomMargin(0.15);  
   c19->cd(9)->SetRightMargin(0.2); c19->cd(9)->SetLogy();
   gHistSPDResolutionVz->Draw();
+  c19->SaveAs("VertexSPD.gif");
 
   //Tracks vertex
   TCanvas *c20 = new TCanvas("c20",
@@ -1448,6 +1451,7 @@ void drawVertexQA(TList *list) {
   c20->cd(9)->SetLeftMargin(0.15); c20->cd(9)->SetBottomMargin(0.15);  
   c20->cd(9)->SetRightMargin(0.2); c20->cd(9)->SetLogy();
   gHistTracksResolutionVz->Draw();
+  c120->SaveAs("VertexTracks.gif");
 }
 
 //________________________________________//
