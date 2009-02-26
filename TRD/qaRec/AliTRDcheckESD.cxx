@@ -96,32 +96,7 @@ void AliTRDcheckESD::CreateOutputObjects()
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
   OpenFile(0, "RECREATE");  
-  fHistos = new TObjArray(5);
-  //fHistos->SetOwner(kTRUE);
-  
-  TH1 *h = 0x0;
-
-  // clusters per tracklet
-  if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
-    h = new TH1I("hNCl", "Clusters per TRD track", 100, 0., 200.);
-    h->GetXaxis()->SetTitle("N_{cl}^{TRD}");
-    h->GetYaxis()->SetTitle("entries");
-  } else h->Reset();
-  fHistos->AddAt(h, kNCl);
-
-  // status bits histogram
-  if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
-    h = new TH2I("hTRDstat", "TRD status bits", 100, 0., 20., kNbits, .5, kNbits+.5);
-    h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    h->GetYaxis()->SetTitle("status bits");
-    h->GetZaxis()->SetTitle("entries");
-  } else h->Reset();
-  fHistos->AddAt(h, kTRDstat);
-
-  // results array
-  TObjArray *res = new TObjArray();
-  res->SetName("Results");
-  fHistos->AddAt(res, kResults);
+  Histos();
 }
 
 //____________________________________________________________________
@@ -274,6 +249,40 @@ void AliTRDcheckESD::Exec(Option_t *){
     if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
   }  
   PostData(0, fHistos);
+}
+
+//____________________________________________________________________
+TObjArray* AliTRDcheckESD::Histos()
+{
+  if(fHistos) return fHistos;
+
+  fHistos = new TObjArray(kNhistos);
+  //fHistos->SetOwner(kTRUE);
+  
+  TH1 *h = 0x0;
+
+  // clusters per tracklet
+  if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
+    h = new TH1I("hNCl", "Clusters per TRD track", 100, 0., 200.);
+    h->GetXaxis()->SetTitle("N_{cl}^{TRD}");
+    h->GetYaxis()->SetTitle("entries");
+  } else h->Reset();
+  fHistos->AddAt(h, kNCl);
+
+  // status bits histogram
+  if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
+    h = new TH2I("hTRDstat", "TRD status bits", 100, 0., 20., kNbits, .5, kNbits+.5);
+    h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    h->GetYaxis()->SetTitle("status bits");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fHistos->AddAt(h, kTRDstat);
+
+  // results array
+  TObjArray *res = new TObjArray();
+  res->SetName("Results");
+  fHistos->AddAt(res, kResults);
+  return fHistos;
 }
 
 //____________________________________________________________________

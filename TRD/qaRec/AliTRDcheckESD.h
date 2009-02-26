@@ -47,6 +47,7 @@ public:
   void          Exec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
+  TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   void          Terminate(Option_t *);
