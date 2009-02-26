@@ -41,7 +41,8 @@
 ClassImp(AliFlowEventSimpleMaker)
 //----------------------------------------------------------------------- 
 AliFlowEventSimpleMaker::AliFlowEventSimpleMaker() :
-   fMCReactionPlaneAngle(0.)
+  fMCReactionPlaneAngle(0.),
+  fCount(0)
 {
   //constructor
 }
@@ -82,12 +83,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   Int_t iPIDDiff       = diffCuts->GetPID();
   
   Int_t iNumberOfInputTracks = anInput->GetEntries() ;
-  //cerr<<"iNumberOfInputTracks = "<<iNumberOfInputTracks<<endl;
+
   TParticle* pParticle = new TParticle();
   anInput->SetBranchAddress("Particles",&pParticle);  
   //  AliFlowEventSimple* pEvent = new AliFlowEventSimple(iNumberOfInputTracks);
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
-  //cerr<<pEvent<<" pEvent "<<endl;
   
   Int_t iN = iNumberOfInputTracks; // additional variable to artificially fix the number of tracks
   //  Int_t iN = 576; //multiplicity for chi=1.5
@@ -145,14 +145,15 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   
   pEvent->SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for int. or for diff. flow
-
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
+
   if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
   else cout<<" MC Reaction Plane Angle = unknown "<< endl;
 
   cout<<" iGoodTracks = "<< iGoodTracks << endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
   delete pParticle;
   return pEvent;
@@ -164,7 +165,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   //Fills the event from the MC kinematic information
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
  
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -236,8 +236,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 }
@@ -249,7 +249,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   //Fills the event from the MC kinematic information
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+
   if (iNumberOfInputTracks==-1) {
     cout<<"Skipping Event -- No MC information available for this event"<<endl;
     return 0;
@@ -311,8 +311,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 }
@@ -324,7 +324,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   //Fills the event from the ESD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -374,11 +373,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-
-
 }
 
 
@@ -388,7 +385,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   //Fills the event from the ESD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -444,11 +440,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-
-
 }
 
 //-----------------------------------------------------------------------   
@@ -457,7 +451,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   //Fills the event from the AOD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -502,10 +495,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-  
 }
 
 
@@ -515,7 +507,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
   //Fills the event from the AOD
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
   
@@ -570,10 +561,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-  
 }
 
 //-----------------------------------------------------------------------   
@@ -587,7 +577,6 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   }
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
@@ -656,11 +645,9 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-
-
 }
 
 //-----------------------------------------------------------------------   
@@ -675,9 +662,8 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   }
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
-  cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
+
   Int_t iNumberOfInputTracksMC = anInputMc->GetNumberOfTracks() ;
-  cerr<<"anInputMc->GetNumberOfTracks() = "<<iNumberOfInputTracksMC<<endl;
   if (iNumberOfInputTracksMC==-1) {
     cout<<"Skipping Event -- No MC information available for this event"<<endl;
     return 0;
@@ -757,6 +743,8 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
 
+  cout << " Number of MC input tracks = " << iNumberOfInputTracksMC << endl;
+
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
   if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
   else cout<<" MC Reaction Plane Angle = unknown "<< endl;
@@ -764,14 +752,8 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
   cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
   cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
-  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
-
 }
 
-
-
-
-
- 

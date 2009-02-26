@@ -48,6 +48,7 @@ class AliFlowEventSimpleMaker {
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
   Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
+  Int_t     fCount;   // counter for the number of events processed
        
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };
