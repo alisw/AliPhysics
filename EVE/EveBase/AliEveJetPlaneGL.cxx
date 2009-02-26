@@ -70,7 +70,6 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
   Float_t minPhi = (fM->fMinPhi)*(fM->fPhiScale) - 350;
   Float_t maxPhi = (fM->fMaxPhi)*(fM->fPhiScale) - 350;
   Float_t phiCoord, etaCoord, dPhi, dEta;
-  Double_t eta, phi, e, x, y;
 
   // Show frame for Eta-Phi coordinates
 
@@ -135,6 +134,8 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 // 
 //   Double_t eJetMax = 0., eTrackMax = 0., eMax;
 // 
+//   Double_t eta, phi, e, x, y;
+//
 //   while (j != fM->fJets.end())
 //   {
 //     if (j->E() > eJetMax) eJetMax = j->E();

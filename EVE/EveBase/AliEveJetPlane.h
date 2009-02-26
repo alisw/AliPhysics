@@ -34,7 +34,7 @@ class AliEveJetPlane : public TEveElementList,
 
 public:
   AliEveJetPlane(Int_t iev);
-  virtual ~AliEveJetPlane() {}
+  virtual ~AliEveJetPlane();
 
   void AddJet(AliAODJet* jet);
   void AddTrack(AliAODTrack* track);
@@ -60,10 +60,10 @@ public:
   void   SetTwoSelection(Bool_t r) { fTwoSelection = r; }
 
   Float_t GetEnergyScale() const { return fEnergyScale; }
-  void    SetEnergyScale(Float_t s) { fEnergyScale = s; }
+  void    SetEnergyScale(Float_t s) { fEnergyScale = s; CreateArrows(); }
 
   Float_t GetEnergyColorScale() const { return fEnergyColorScale; }
-  void    SetEnergyColorScale(Float_t s) { fEnergyColorScale = s; }
+  void    SetEnergyColorScale(Float_t s) { fEnergyColorScale = s; CreateArrows(); }
 
   const AliAODJet& GetJet1() const { return *fJet1; }
   const AliAODJet& GetJet2() const { return *fJet2; }
@@ -76,6 +76,7 @@ public:
   void    SetTrack2(AliAODTrack* s) { fTrack2 = s; }
 
   void    SetSelectionFlag(Int_t s) { fSelectionFlag = s;}
+  void    SelectionAdded(TEveElement* el);
 
   virtual Bool_t  CanEditMainColor()const { return kTRUE; }
 
@@ -104,6 +105,7 @@ protected:
   Bool_t                 fRnrTracks;     // Show tracks.
   Bool_t                 fOneSelection;  // One object selected.
   Bool_t                 fTwoSelection;  // Two objects selected.
+  Bool_t                 fSelConnected;  // Connected to EVE selection.
 
   AliAODJet             *fJet1,   *fJet2;    // Selection jets.
   AliAODTrack           *fTrack1, *fTrack2;  // Selection tracks.

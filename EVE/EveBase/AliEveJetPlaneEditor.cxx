@@ -58,7 +58,7 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   fEnergyScale->SetLabelWidth(labelW);
   fEnergyScale->SetNELength(6);
   fEnergyScale->Build();
-  fEnergyScale->SetLimits(1, 500, 500, TGNumberFormat::kNESRealOne);
+  fEnergyScale->SetLimits(1, 200, 200, TGNumberFormat::kNESRealOne);
   fEnergyScale->SetToolTip("Energy mapped to length of arrow.");
   fEnergyScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoEnergyScale()");
   AddFrame(fEnergyScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));

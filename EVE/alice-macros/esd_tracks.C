@@ -102,6 +102,7 @@ TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
   track->SetAttLineAttMarker(cont);
   track->SetName(Form("AliEveTrack %d", at->GetID()));
   track->SetElementTitle(esd_track_title(at));
+  track->SetSourceObject(at);
 
   // Add inner/outer track parameters as path-marks.
   if (at->IsOn(AliESDtrack::kTPCrefit))
@@ -161,6 +162,7 @@ TEveElementList* esd_tracks_MI()
     at->FillPolymarker(l, esd->GetMagneticField(), 0, 250, 5);
     l->SetName(Form("ESDTrackMI %d", at->GetID()));
     l->SetElementTitle(esd_track_title(at));
+    l->SetSourceObject(at);
 
     cont->AddElement(l);
   }
