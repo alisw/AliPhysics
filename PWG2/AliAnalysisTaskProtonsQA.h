@@ -48,6 +48,7 @@ class AliAnalysisTaskProtonsQA : public AliAnalysisTask {
   TList  *fList4; //TList output object
   TList  *fList5; //TList output object
   TList  *fList6; //TList output object
+  TList  *fList7; //TList output object
   
   AliProtonQAAnalysis *fProtonQAAnalysis; //analysis object
  
