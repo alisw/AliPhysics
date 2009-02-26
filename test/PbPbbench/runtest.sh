@@ -24,7 +24,7 @@ fi
 cd recraw
 ln -s ../raw.root
 ln -s ../GRP
-aliroot -b -q recraw.C      2>&1 | tee rec.log
+aliroot -b -q ../recraw.C      2>&1 | tee rec.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
 
 
