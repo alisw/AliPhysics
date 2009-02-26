@@ -97,11 +97,11 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
@@ -459,10 +459,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->AddTask(taskQC);
  }
  if (MCEP){
-   AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kFALSE);
-   taskMCEP->SetAnalysisType(type);
-   taskMCEP->SetCFManager1(cfmgr1);
-   taskMCEP->SetCFManager2(cfmgr2);
+   AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
    mgr->AddTask(taskMCEP);
  }
 
@@ -611,7 +608,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    } 
  }
  if (MCEP) { 
-   mgr->ConnectInput(taskMCEP,0,cinput1); 
+   mgr->ConnectInput(taskMCEP,0,coutputFE); 
    mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
  }  
 

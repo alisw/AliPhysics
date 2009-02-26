@@ -157,11 +157,13 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t aRP) {
+void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 
   //Calculate v2 from the MC reaction plane
   if (anEvent) {
-         
+  
+    // get the MC reaction plane angle
+    Double_t aRP = anEvent->GetMCReactionPlaneAngle();  
     //fill control histograms     
     fCommonHists->FillControlHistograms(anEvent);
 
