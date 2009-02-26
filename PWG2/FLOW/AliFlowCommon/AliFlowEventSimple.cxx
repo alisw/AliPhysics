@@ -45,7 +45,8 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNumberOfTracks(0),
   fEventNSelTracksIntFlow(0),
   fNumberOfTracksWrap(NULL),
-  fEventNSelTracksIntFlowWrap(NULL)
+  fEventNSelTracksIntFlowWrap(NULL),
+  fMCReactionPlaneAngleWrap(NULL)
 {
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
@@ -57,7 +58,8 @@ AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
   fNumberOfTracks(0),
   fEventNSelTracksIntFlow(0),
   fNumberOfTracksWrap(NULL),
-  fEventNSelTracksIntFlowWrap(NULL)
+  fEventNSelTracksIntFlowWrap(NULL),
+  fMCReactionPlaneAngleWrap(NULL)
 {
   //constructor 
   fTrackCollection =  new TObjArray(aLenght) ;
@@ -70,8 +72,10 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fTrackCollection(anEvent.fTrackCollection),
   fNumberOfTracks(anEvent.fNumberOfTracks),
   fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow),
+  fMCReactionPlaneAngle(anEvent.fMCReactionPlaneAngle),
   fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
-  fEventNSelTracksIntFlowWrap(anEvent.fEventNSelTracksIntFlowWrap)
+  fEventNSelTracksIntFlowWrap(anEvent.fEventNSelTracksIntFlowWrap),
+  fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap)
 {
   //copy constructor 
 }
@@ -83,8 +87,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   *fTrackCollection = *anEvent.fTrackCollection ;
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fEventNSelTracksIntFlow = anEvent.fEventNSelTracksIntFlow;
+  fMCReactionPlaneAngle = anEvent.fMCReactionPlaneAngle;
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap; 
   fEventNSelTracksIntFlowWrap = anEvent.fEventNSelTracksIntFlowWrap;
+  fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
 
   return *this;
 }
@@ -97,6 +103,7 @@ AliFlowEventSimple::~AliFlowEventSimple()
   if (fTrackCollection) fTrackCollection->Delete(); delete fTrackCollection;
   if (fNumberOfTracksWrap) delete fNumberOfTracksWrap;
   if (fEventNSelTracksIntFlowWrap) delete fEventNSelTracksIntFlowWrap;
+  if (fMCReactionPlaneAngleWrap) delete fMCReactionPlaneAngleWrap;
 }
 
 //----------------------------------------------------------------------- 
@@ -243,8 +250,8 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d",
-	  GetName(),fNumberOfTracks, fEventNSelTracksIntFlow );
+  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %d",
+	  GetName(),fNumberOfTracks, fEventNSelTracksIntFlow, fMCReactionPlaneAngle );
 
   if (fTrackCollection) {  
     fTrackCollection->Print(option);
@@ -265,6 +272,10 @@ void AliFlowEventSimple::Print(Option_t *option) const
   if (!fEventNSelTracksIntFlowWrap) {
     fEventNSelTracksIntFlowWrap = new TParameter<int>("fEventNSelTracksIntFlow", fEventNSelTracksIntFlow);
     b->Add(fEventNSelTracksIntFlowWrap);
+  }
+  if (!fMCReactionPlaneAngleWrap) {
+     fMCReactionPlaneAngleWrap = new TParameter<double>(" fMCReactionPlaneAngle",  fMCReactionPlaneAngle);
+    b->Add( fMCReactionPlaneAngleWrap);
   }
   if (fTrackCollection) b->Add(fTrackCollection,"AliFlowTracksSimple");
 }
