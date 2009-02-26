@@ -1,4 +1,4 @@
-void sim(char * configPath, char * tpcDBpath, Int_t nevents){
+void sim(char * configPath, char * tpcDbpath, Int_t nevents){
   //
   //
   //
@@ -9,7 +9,7 @@ void sim(char * configPath, char * tpcDBpath, Int_t nevents){
 
   AliSimulation sim;
   sim.SetConfigFile(configPath);
-  //sim.SetSpecificStorage("TPC/*/*",tpcDBpath);
+  sim.SetSpecificStorage("TPC/*/*",tpcDbpath);
   sim.Run(nevents);
 
 

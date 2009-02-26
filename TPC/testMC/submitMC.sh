@@ -3,7 +3,7 @@
 # 1 argument      - the path to the environment setup
 # 2 argument      - the job ID
 # 3 argument      - path to Config.C  file
-# 4 argument      - path to TPC database files
+# 4 argument      - path to the database files
 # 5 argument      - number of events in the file
 # 6 argument      - output path
 # 7 argument      - reco type
@@ -45,7 +45,7 @@ mkdir $6
 cd $6
 cp $3 .
 cp $ALICE_ROOT/TPC/testMC/sim.C .
-cp $ALICE_ROOT/TPC/testMC/rec.C .
+cp $ALICE_ROOT/TPC/testMC/recMC.C .
 
 
 
@@ -85,8 +85,6 @@ echo
 echo SUBMITING  RECONSTRUCTION MACRO
 echo "$ALICE_ROOT/TPC/testMC/recMC.C"
 rm AliESD*
-command aliroot  -q -b  "$ALICE_ROOT/TPC/testMC/recMC.C"
+command aliroot  -q -b  "$ALICE_ROOT/TPC/testMC/recMC.C(\"$4\")"
 
 
-command aliroot  -q -b "$ALICE_ROOT/TPC/testMC/compGen.C"
-command aliroot  -q -b "$ALICE_ROOT/TPC/testMC/compRec.C"
