@@ -19,23 +19,33 @@
 #include "TFile.h" //needed as include
 #include "TList.h"
 
-
+// ALICE Analysis Framework
 class AliAnalysisTask;
 #include "AliAnalysisManager.h"
 
+// ESD interface
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
+// AOD interface
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 
+// Monte Carlo Event
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 
+// ALICE Correction Framework
 #include "AliCFManager.h"
 
-#include "AliAnalysisTaskFlowEvent.h"
+// Interface to Event generators to get Reaction Plane Angle
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+
+// Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEventSimpleMaker.h"
+
+#include "AliAnalysisTaskFlowEvent.h"
 
 // AliAnalysisTaskFlowEvent:
 //
@@ -183,19 +193,32 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   // Main loop
   // Called for each event
   AliFlowEventSimple* fEvent = NULL;
+  Double_t fRP = 0.; // the monte carlo reaction plane angle
+  AliMCEvent* mcEvent = NULL;
+  // See if we can get Monte Carlo Information and if so get the reaction plane
+
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (eventHandler) {
+    mcEvent = eventHandler->MCEvent();
+    if (mcEvent) {
+      AliGenCocktailEventHeader *header = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
+      if (header) {
+	TList *lhd = header->GetHeaders();
+	if (lhd) {
+	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
+	  if (hdh) {
+	    fRP = hdh->ReactionPlaneAngle();
+	    cout<<"The reactionPlane is: "<< fRP <<endl;
+	  }
+	}
+      }
+    }
+  }
         
   if (fAnalysisType == "MC") {
 
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
     // This handler can return the current MC event
-
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
       return;
@@ -203,13 +226,12 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
-
+    
     // analysis 
-    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+    Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
     fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     // here we have the fEvent and want to make it available as an output stream
-    // so no
-    //   delete fEvent;
+    // so no delete fEvent;
   }
   else if (fAnalysisType == "ESD") {
     if (!fESD) {
@@ -228,13 +250,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     }
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
       return;
@@ -249,8 +264,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     } else if (fAnalysisType == "ESDMC1") {
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
     }
-    //delete fEvent;
-    //delete mcEvent;
   }
   
   else if (fAnalysisType == "AOD") {

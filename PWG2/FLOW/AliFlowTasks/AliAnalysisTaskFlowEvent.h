@@ -32,9 +32,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
   TString GetAnalysisType() const    { return this->fAnalysisType; }
 
-  void SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
+  void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
-  void SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
+  void          SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
   AliCFManager* GetCFManager2()           {return this->fCFManager2; }
   void          SetQAList1(TList* list)   {this->fQAInt = list; }
   TList*        GetQAList1()              {return this->fQAInt; }
