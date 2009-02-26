@@ -9,7 +9,7 @@
 #endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
-		      const char *outFileName = "AliAOD.root") {
+		      const char *outFileName = "AliAODs.root") {
   
     gSystem->Load("libTree");
     gSystem->Load("libGeom");
