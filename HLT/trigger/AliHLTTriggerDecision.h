@@ -117,7 +117,8 @@ class AliHLTTriggerDecision : public TObject
    */
   void ReadoutList(const AliHLTReadoutList& value)
   {
-    fTriggerDomain |= AliHLTTriggerDomain(value);
+    fTriggerDomain.Remove("DAQRDOUT", kAliHLTDataOriginAny);
+    fTriggerDomain.Add(value);
   }
   
   /**

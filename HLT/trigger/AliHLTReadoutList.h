@@ -105,6 +105,12 @@ class AliHLTReadoutList : public TObject
   virtual ~AliHLTReadoutList();
   
   /**
+   * Checks if the readout list is empty, i.e. all DDLs are disabled.
+   * \returns true if the readout list is empty and false otherwise.
+   */
+  bool Empty() const;
+  
+  /**
    * Enables a specific DDL bit in the readout list.
    * \param ddlId  The ID number of the DDL to enable.
    */

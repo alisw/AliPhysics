@@ -139,6 +139,18 @@ AliHLTReadoutList::~AliHLTReadoutList()
 }
 
 
+bool AliHLTReadoutList::Empty() const
+{
+  // Returns true if the readout list has no DDLs enabled.
+
+  for (int i = 0; i < sizeof(fReadoutList.fList) / sizeof(fReadoutList.fList[0]); i++)
+  {
+    if (fReadoutList.fList[i] != 0x0) return false;
+  }
+  return true;
+}
+
+
 bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitIndex)
 {
   // Decodes the word index and bit index within that word for the readout list structure.
