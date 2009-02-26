@@ -44,6 +44,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fTrackCollection(NULL),
   fNumberOfTracks(0),
   fEventNSelTracksIntFlow(0),
+  fMCReactionPlaneAngle(0.),
   fNumberOfTracksWrap(NULL),
   fEventNSelTracksIntFlowWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
@@ -57,6 +58,7 @@ AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
   fTrackCollection(NULL),
   fNumberOfTracks(0),
   fEventNSelTracksIntFlow(0),
+  fMCReactionPlaneAngle(0.),
   fNumberOfTracksWrap(NULL),
   fEventNSelTracksIntFlowWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
@@ -250,7 +252,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %d",
+  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %f",
 	  GetName(),fNumberOfTracks, fEventNSelTracksIntFlow, fMCReactionPlaneAngle );
 
   if (fTrackCollection) {  
@@ -274,7 +276,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
     b->Add(fEventNSelTracksIntFlowWrap);
   }
   if (!fMCReactionPlaneAngleWrap) {
-     fMCReactionPlaneAngleWrap = new TParameter<double>(" fMCReactionPlaneAngle",  fMCReactionPlaneAngle);
+    fMCReactionPlaneAngleWrap = new TParameter<double>(" fMCReactionPlaneAngle",  fMCReactionPlaneAngle);
     b->Add( fMCReactionPlaneAngleWrap);
   }
   if (fTrackCollection) b->Add(fTrackCollection,"AliFlowTracksSimple");

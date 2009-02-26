@@ -97,11 +97,11 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
@@ -445,23 +445,17 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->AddTask(taskLYZEP);
  }
  if (GFC){
-   AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE,useWeights);
-   taskGFC->SetAnalysisType(type);
+   AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",useWeights);
    taskGFC->SetUsePhiWeights(usePhiWeights); 
    taskGFC->SetUsePtWeights(usePtWeights);
    taskGFC->SetUseEtaWeights(useEtaWeights); 
-   taskGFC->SetCFManager1(cfmgr1);
-   taskGFC->SetCFManager2(cfmgr2);
    mgr->AddTask(taskGFC);
  }
  if (QC){
-   AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE,useWeights);
-   taskQC->SetAnalysisType(type);
+   AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",useWeights);
    taskQC->SetUsePhiWeights(usePhiWeights); 
    taskQC->SetUsePtWeights(usePtWeights);
    taskQC->SetUseEtaWeights(useEtaWeights); 
-   taskQC->SetCFManager1(cfmgr1);
-   taskQC->SetCFManager2(cfmgr2);
    mgr->AddTask(taskQC);
  }
  if (MCEP){
@@ -601,7 +595,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    cinputLYZEP->SetData(fInputListLYZEP);
  }
  if (GFC) { 
-   mgr->ConnectInput(taskGFC,0,cinput1); 
+   mgr->ConnectInput(taskGFC,0,coutputFE); 
    mgr->ConnectOutput(taskGFC,0,coutputGFC);
    if (useWeights) {
      mgr->ConnectInput(taskGFC,1,cinputWeights);
@@ -609,7 +603,7 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    } 
  }  
  if (QC) { 
-   mgr->ConnectInput(taskQC,0,cinput1); 
+   mgr->ConnectInput(taskQC,0,coutputFE); 
    mgr->ConnectOutput(taskQC,0,coutputQC);
    if (useWeights) {
      mgr->ConnectInput(taskQC,1,cinputWeights);
