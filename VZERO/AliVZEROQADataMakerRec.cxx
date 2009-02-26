@@ -93,26 +93,29 @@ AliVZEROQADataMakerRec& AliVZEROQADataMakerRec::operator = (const AliVZEROQAData
 AliVZEROCalibData* AliVZEROQADataMakerRec::GetCalibData() const
 
 {
+   AliCDBManager *man = AliCDBManager::Instance();
 
-  // Gets calibration data - not used here anymore -
-  
-  AliCDBManager *man = AliCDBManager::Instance();
-  
-  //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+   AliCDBEntry *entry=0;
 
-  AliCDBEntry *entry=0;
-  
-  entry = man->Get("VZERO/Calib/Data",fRun);
+   entry = man->Get("VZERO/Calib/Data",fRun);
+   if(!entry){
+	AliWarning("Load of calibration data from default storage failed!");
+	AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+	
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+	entry = man->Get("VZERO/Calib/Data",fRun);
+   }
+   // Retrieval of data in directory VZERO/Calib/Data:
 
-  // Retrieval of data in directory VZERO/Calib/Data:
+   AliVZEROCalibData *calibdata = 0;
 
-  AliVZEROCalibData *calibdata = 0;
+   if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
+   if (!calibdata)  AliFatal("No calibration data from calibration database !");
 
-  if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
-  if (!calibdata)  AliFatal("No calibration data from calibration database !");
-
-  return calibdata;
+   return calibdata;
 }
+
+
  
 //____________________________________________________________________________ 
 void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
