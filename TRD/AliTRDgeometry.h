@@ -73,6 +73,9 @@ class AliTRDgeometry : public AliGeometry {
 
   static  Float_t  GetTime0(Int_t layer)                                 { return fgkTime0[layer];        }
 
+  static  Double_t GetXtrdBeg()                                          { return fgkXtrdBeg;             }
+  static  Double_t GetXtrdEnd()                                          { return fgkXtrdEnd;             }
+
           Char_t   GetSMstatus(Int_t sm) const                           { return fSMstatus[sm];          }
           Float_t  GetChamberWidth(Int_t layer) const                    { return fCwidth[layer]      ;   }
           Float_t  GetChamberLength(Int_t layer, Int_t stack) const      { return fClength[layer][stack]; }
@@ -208,7 +211,10 @@ class AliTRDgeometry : public AliGeometry {
 
   static const Double_t fgkTime0Base;                        //  Base value for calculation of Time-position of pad 0
   static const Float_t  fgkTime0[kNlayer];                   //  Time-position of pad 0
-  
+
+  static const Double_t fgkXtrdBeg;                          //  X-coordinate in tracking system of begin of TRD mother volume
+  static const Double_t fgkXtrdEnd;                          //  X-coordinate in tracking system of end of TRD mother volume
+
   Float_t               fChamberUAorig[3*kNdets][3];         //  Volumes origin in
   Float_t               fChamberUDorig[3*kNdets][3];         //  the chamber
   Float_t               fChamberUForig[3*kNdets][3];         //  [3] = x, y, z
@@ -224,7 +230,7 @@ class AliTRDgeometry : public AliGeometry {
 
   Char_t                fSMstatus[kNsector];                 //  Super module status byte
 
-  ClassDef(AliTRDgeometry,21)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,22)                                //  TRD geometry class
 
 };
 #endif

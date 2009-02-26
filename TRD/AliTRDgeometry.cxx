@@ -166,6 +166,9 @@ ClassImp(AliTRDgeometry)
                                                 , fgkTime0Base + 4 * (Cheight() + Cspace()) 
                                                 , fgkTime0Base + 5 * (Cheight() + Cspace())};
 
+  const Double_t AliTRDgeometry::fgkXtrdBeg   = 288.43; // Values depend on position of TRD
+  const Double_t AliTRDgeometry::fgkXtrdEnd   = 366.33; // mother volume inside space frame !!!
+
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry()
   :AliGeometry()
