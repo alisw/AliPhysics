@@ -114,7 +114,7 @@ public:
   Float_t   GetTilt() const          { return fTilt;}
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
-  Float_t   GetY() const             { return GetYat(fX); }
+  Float_t   GetY() const             { return fYfit[0] - fYfit[1] * fX;}
   Double_t  GetYat(Double_t x) const { return fYfit[0] - fYfit[1] * (fX0-x);}
   Float_t   GetYfit(Int_t id) const { return fYfit[id];}
   Float_t   GetYref(Int_t id) const { return fYref[id];}
