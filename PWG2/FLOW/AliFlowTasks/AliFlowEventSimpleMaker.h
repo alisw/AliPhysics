@@ -17,7 +17,7 @@ class AliAODEvent;
 
 // AliFlowEventSimpleMaker:
 // Class to fill the AliFlowEventSimple with AliFlowTrackSimple objects
-// author: N. van der Kolk (kolk@nikhef.nl)
+// author: N. van der Kolk (kolk@nikhef.nl),  Ante Bilandzic (anteb@nikhef.nl),  Raimond Snellings (Raimond.Snellings@nikhef.nl) 
           
 class AliFlowEventSimpleMaker {
 
@@ -25,7 +25,8 @@ class AliFlowEventSimpleMaker {
 
   AliFlowEventSimpleMaker();             //constructor
   virtual ~AliFlowEventSimpleMaker();    //destructor
-  
+
+  void SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; } 
   //TTree
   AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts);   //use own cut class
   //AliMCEvent
@@ -46,6 +47,7 @@ class AliFlowEventSimpleMaker {
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
+  Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
        
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };

@@ -208,13 +208,17 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
 	  if (hdh) {
 	    fRP = hdh->ReactionPlaneAngle();
-	    cout<<"The reactionPlane is: "<< fRP <<endl;
+	    //	    cout<<"The reactionPlane is: "<< fRP <<endl;
 	  }
 	}
       }
     }
   }
-        
+
+  // set the value of the monte carlo event plane for the flow event
+  fEventMaker->SetMCReactionPlaneAngle(fRP);
+
+  // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
 
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
@@ -233,6 +237,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     // here we have the fEvent and want to make it available as an output stream
     // so no delete fEvent;
   }
+  // Fill the FlowEventSimple for ESD input  
   else if (fAnalysisType == "ESD") {
     if (!fESD) {
       Printf("ERROR: fESD not available");
@@ -243,6 +248,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     // analysis 
     fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
   }
+  // Fill the FlowEventSimple for ESD input combined with MC info  
   else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
     if (!fESD) {
       Printf("ERROR: fESD not available");
@@ -265,7 +271,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
     }
   }
-  
+  // Fill the FlowEventSimple for AOD input  
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
