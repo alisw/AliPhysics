@@ -42,7 +42,7 @@ class AliFlowAnalysisWithMCEventPlane {
    void      WriteHistograms(TString* outputFileName);
    void      WriteHistograms(TString outputFileName);
    void      Init();                             //defines variables and histograms
-   void      Make(AliFlowEventSimple* anEvent, Double_t aRP);   //calculates variables and fills histograms
+   void      Make(AliFlowEventSimple* anEvent);   //calculates variables and fills histograms
    void      Finish();                           //saves histograms
    
    void      SetDebug(Bool_t kt)          { this->fDebug = kt ; }
@@ -112,9 +112,9 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile*    fHistProDiffFlowPtPOI;  //profile used to calculate the differential flow (Pt) of POI particles 
    TProfile*    fHistProDiffFlowEtaPOI; //profile used to calculate the differential flow (Eta) of POI particles    
    
-   ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // macro for rootcint
+   ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
      };
- 
+
      
 #endif
 

@@ -52,7 +52,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char* 
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char* 
 		    //			  dir="/data/alice1/kolk/KineOnly3/")
 		    dir="/Users/snelling/alice_data/KineOnly3/")
 {
@@ -319,9 +319,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = -1, const char*
 	      //fill and save the flow event	      
 	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
 	                    
-	      //pass the flow event to flow methods for analysis 
-	      Double_t fEP = 0.; // temporary number need true value of the reaction plane angle
-	      if(MCEP) mcep->Make(fEvent,fEP);  //fix fEP
+	      if(MCEP) mcep->Make(fEvent);
 	      if(QC) qc->Make(fEvent);
 	      if(GFC) gfc->Make(fEvent);
 	      if(FQD) fqd->Make(fEvent);

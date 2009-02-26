@@ -11,11 +11,8 @@
 // Author: 
 //        Naomi van der Kolk (kolk@nikhef.nl)
 
-class AliESDEvent;
-class AliAODEvent;
-class AliCFManager;
+class AliFlowEventSimple;
 class AliFlowAnalysisWithMCEventPlane;
-class AliFlowEventSimpleMaker;
 class TList;
 
 #include "TString.h"
@@ -25,7 +22,7 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
  public:
 
   AliAnalysisTaskMCEventPlane();
-  AliAnalysisTaskMCEventPlane(const char *name,Bool_t QAon = kFALSE);
+  AliAnalysisTaskMCEventPlane(const char *name);
   virtual ~AliAnalysisTaskMCEventPlane();
   
   virtual void   ConnectInputData(Option_t *);
@@ -33,41 +30,16 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void           SetAnalysisType(TString type) { this->fAnalysisType = type; }
-  TString        GetAnalysisType() const    { return this->fAnalysisType; }
-  
-  void           SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
-  AliCFManager*  GetCFManager1()               {return this->fCFManager1; }
-  void           SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
-  AliCFManager*  GetCFManager2()               {return this->fCFManager2; }
-  void           SetQAList1(TList* list)       {this->fQAInt = list; }
-  TList*         GetQAList1()                  {return this->fQAInt; }
-  void           SetQAList2(TList* list)       {this->fQADiff = list; }
-  TList*         GetQAList2()                  {return this->fQADiff; }
-  void           SetQAOn(Bool_t kt)            {this->fQA = kt; }
-  Bool_t         GetQAOn()                     {return this->fQA; }
-
  private:
  
   AliAnalysisTaskMCEventPlane(const AliAnalysisTaskMCEventPlane& aAnalysis);
   AliAnalysisTaskMCEventPlane& operator=(const AliAnalysisTaskMCEventPlane& aAnalysis);
   
-  AliESDEvent*     fESD;                 // ESD object
-  AliAODEvent*     fAOD;                 // AOD object
-  TString fAnalysisType;                 // can be MC, ESD or AOD
-  AliCFManager*    fCFManager1;          // correction framework manager
-  AliCFManager*    fCFManager2;          // correction framework manager
-  AliFlowAnalysisWithMCEventPlane* fMc;  // MC EP analysis object
-  AliFlowEventSimpleMaker* fEventMaker;  // FlowEventSimple maker object
-  
-  TList*           fListHistos;          // collection of output
-  TList*           fQAInt;               // QA histogram list
-  TList*           fQADiff;              // QA histogram list
+  AliFlowEventSimple*               fEvent;        //input event
+  AliFlowAnalysisWithMCEventPlane*  fMc;           // MC EP analysis object
+  TList*                            fListHistos;   // collection of output
 
-  Bool_t           fQA;                  // flag to set the filling of the QA hostograms
-
-
-  ClassDef(AliAnalysisTaskMCEventPlane, 1); // AliAnalysisTaskMCEventPlane class object
+  ClassDef(AliAnalysisTaskMCEventPlane, 0); // AliAnalysisTaskMCEventPlane class object
 };
 
 #endif
