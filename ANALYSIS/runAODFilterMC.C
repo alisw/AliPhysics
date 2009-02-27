@@ -69,6 +69,7 @@ void runAODFilterMC()
       esdTrackCutsL->SetRequireTPCRefit(kTRUE);
       esdTrackCutsL->SetDCAToVertexZ(3.0);
       esdTrackCutsL->SetDCAToVertexXY(3.0);
+      esdTrackCutsL->SetDCAToVertex2D(kTRUE);
       esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
       esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
       
