@@ -61,6 +61,14 @@ namespace paramDefinitions {
   Double_t krho = 0.934246; // density of TPC-Gas [kg/m^3]
                             // method of calculation: weighted average
   Double_t kg = 9.81;
+
+  //
+  // Nominal value obtained from 2008 data
+  //
+  const Double_t kKelvin       =273.15; // degree to Kelvin
+  const Double_t kNominalTemp  =19.03;  // mean between A and C side  in degree
+  const Double_t kNominalPress =973.9;  // pressure sensor - in mbar- 
+                                        // calibDB->GetPressure(tstamp,irun,1)
 }
 
 
@@ -71,7 +79,9 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSens
   fSensTemp(0),
   fSensPres(0),
   fTempMap(0),
-  fSensGasComp(0)
+  fSensGasComp(0),
+  fNominalTemp(0),    // nominal temperature in Kelvin
+  fNominalPress(0)    // nominal pressure    in mbar 
 {
   //
   //  Standard constructor
@@ -85,6 +95,8 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSens
     fTempMap = 0;
   }
   fSensGasComp = SensGasComp;
+  fNominalTemp = kNominalTemp;
+  fNominalPress= kNominalPress;
 }
 
 //_____________________________________________________________________________
@@ -93,7 +105,10 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(const AliTPCCalibVdrift& source) :
   fSensTemp(source.fSensTemp),
   fSensPres(source.fSensPres),
   fTempMap(source.fTempMap),
-  fSensGasComp(source.fSensGasComp)
+  fSensGasComp(source.fSensGasComp),
+  fNominalTemp(source.fNominalTemp),    // nominal temperature in Kelvin
+  fNominalPress(source.fNominalPress)    // nominal pressure    in mbar 
+
 {
   //
   //  Copy constructor
@@ -138,11 +153,15 @@ Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t absTimeSec, Int_t side){
   fitter->GetParameters(vec);
   delete fitter;
   if (vec[0]<10) return 0;
-  Double_t  temperature = vec[0]+273.15;
-  Double_t povertMeas = pressure/temperature;
-  Double_t povertNom =  kstdP/(torrTokPascal*kstdT);
+  //
+  //
+  //
+  Double_t  temperature = vec[0];  //vec[0] temeperature 
+  Double_t  tpnom       = (fNominalTemp+kKelvin)/(fNominalPress);
+  Double_t  tpmeasured  = (temperature+kKelvin)/(pressure);
+  Double_t  result      = (tpmeasured-tpnom)/tpnom;
 
-  return povertMeas/povertNom;
+  return result;
 
 }
 

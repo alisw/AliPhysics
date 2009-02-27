@@ -80,7 +80,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMaxC(0.3),
   fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE),
-  fLastSeedRowSec(120)
+  fLastSeedRowSec(120),
+  fUseTOFCorrection(kTRUE)
 {
   //
   // constructor
@@ -160,6 +161,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fMaxSnpTracker = 0.98;
   param->fMaxC          = 0.02;
   param->fBSpecialSeeding = kTRUE;
+  param->fUseTOFCorrection=kFALSE;
   //
   //
   param->SetName("Laser Flux");
@@ -181,6 +183,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
   param->fBSpecialSeeding = kTRUE;
   param->fMaxC          = 0.07;
   param->fBKinkFinder   = kFALSE;
+  param->fUseTOFCorrection =kFALSE;
   param->SetName("Cosmic Flux");
   param->SetTitle("Cosmic Flux");
 

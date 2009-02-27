@@ -13,11 +13,13 @@
 //      rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 //
 
+class AliTPCRecoParam;
 #include "AliTransform.h"
 
 class AliTPCTransform:public AliTransform {
 public:
   AliTPCTransform();
+  AliTPCTransform(const AliTPCTransform& transform);
   virtual ~AliTPCTransform();
   virtual void Transform(Double_t *x,Int_t *i,UInt_t time,
 			 Int_t coordinateType);
@@ -26,10 +28,19 @@ public:
   void RotatedGlobal2Global(Int_t sector,Double_t *x) const;
   void Global2RotatedGlobal(Int_t sector,Double_t *x) const;
   void GetCosAndSin(Int_t sector,Double_t &cos,Double_t &sin) const;
+  //
+  // set current values
+  //
+  void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
+  void SetCurrentRun(Int_t run){fCurrentRun=run;}
+  void SetCurrentTimeStamp(Int_t timeStamp){fCurrentTimeStamp=timeStamp;}
 private:
   Double_t fCoss[18];  // cache the transformation
   Double_t fSins[18];  // cache the transformation
   Double_t fPrimVtx[3];// position of the primary vertex - needed for TOF correction
+  AliTPCRecoParam * fCurrentRecoParam; //! current reconstruction parameters
+  Int_t    fCurrentRun;                //! current run
+  UInt_t   fCurrentTimeStamp;          //! current time stamp
   ClassDef(AliTPCTransform,1)
 };
 

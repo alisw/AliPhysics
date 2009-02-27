@@ -11,7 +11,7 @@
 class TObject;
 class AliTPCSensorTempArray;
 class TGraph;
-
+class AliTPCTempMap;
 class AliTPCCalibVdrift : public TNamed {
 
 public:
@@ -35,14 +35,20 @@ public:
   Double_t GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t absTimeSec);
 
   TGraph *MakeGraphMeanZVdriftChange(Double_t x, Double_t y, Int_t nPoints);
+  Float_t GetNominalTemperature(){return fNominalTemp;}
+  Float_t GetNominalPressure(){return fNominalPress;}
 
 protected:
-
+  //
   AliTPCSensorTempArray *fSensTemp;   // Temperature sensors 
   AliDCSSensor          *fSensPres;   // pressure sensor (cavernpress in GRP)
   AliTPCTempMap         *fTempMap;    // Temperature Map
   TObject *fSensGasComp;      // placeholder for GasConzentration infos  
-  
+  //
+  // Nominal values
+  //
+  Float_t               fNominalTemp;    // nominal temperature in Kelvin
+  Float_t               fNominalPress;    // nominal pressure    in mbar 
   ClassDef(AliTPCCalibVdrift,1);
 
 };

@@ -60,13 +60,36 @@
 #include "AliLog.h"
 #include "AliTPCExB.h"
 #include "TGeoMatrix.h"
+#include "AliTPCRecoParam.h"
+#include "AliTPCCalibVdrift.h"
 #include "AliTPCTransform.h"
 
 ClassImp(AliTPCTransform)
 
 
-  AliTPCTransform::AliTPCTransform():
-    AliTransform()
+AliTPCTransform::AliTPCTransform():
+  AliTransform(),
+  fCurrentRecoParam(0),       //! current reconstruction parameters
+  fCurrentRun(0),             //! current run
+  fCurrentTimeStamp(0)        //! current time stamp   
+{
+  //
+  // Speed it up a bit!
+  //
+  for (Int_t i=0;i<18;++i) {
+    Double_t alpha=TMath::DegToRad()*(10.+20.*(i%18));
+    fSins[i]=TMath::Sin(alpha);
+    fCoss[i]=TMath::Cos(alpha);
+  }
+  fPrimVtx[0]=0;
+  fPrimVtx[1]=0;
+  fPrimVtx[2]=0;
+}
+AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
+  AliTransform(transform),
+  fCurrentRecoParam(transform.fCurrentRecoParam),       //! current reconstruction parameters
+  fCurrentRun(transform.fCurrentRun),             //! current run
+  fCurrentTimeStamp(transform.fCurrentTimeStamp)        //! current time stamp   
 {
   //
   // Speed it up a bit!
@@ -117,7 +140,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
-  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
   //
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
   AliTPCParam  * param    = calib->GetParameters(); 
@@ -151,23 +174,29 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // Time of flight correction
   // 
-  const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector(); 
-  Float_t sign=1;
-  if (sector < kNIS) {
-    sign = (sector < kNIS/2) ? 1 : -1;
-  } else {
-    sign = ((sector-kNIS) < kNOS/2) ? 1 : -1;
+  if (fCurrentRecoParam&&fCurrentRecoParam->GetUseTOFCorrection()){
+    const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector(); 
+    Float_t sign=1;
+    if (sector < kNIS) {
+      sign = (sector < kNIS/2) ? 1 : -1;
+    } else {
+      sign = ((sector-kNIS) < kNOS/2) ? 1 : -1;
+    }
+    Float_t deltaDr =0;
+    Float_t dist=0;
+    dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
+    dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
+    dist+=(fPrimVtx[2]-x[2])*(fPrimVtx[2]-x[2]);
+    dist = TMath::Sqrt(dist);
+    // drift length correction because of TOF
+    // the drift velocity is in cm/s therefore multiplication by 0.01
+    deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C(); 
+    xx[2]+=sign*deltaDr;
   }
-  Float_t deltaDr =0;
-  Float_t dist=0;
-  dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
-  dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
-  dist+=(fPrimVtx[2]-x[2])*(fPrimVtx[2]-x[2]);
-  dist = TMath::Sqrt(dist);
-  // drift length correction because of TOF
-  // the drift velocity is in cm/s therefore multiplication by 0.01
-  deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C(); 
-  xx[2]+=sign*deltaDr;
+  //
+  //
+  //
+
   //
   Global2RotatedGlobal(sector,xx);
   //
@@ -186,8 +215,30 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   //  
   //
+  const  Int_t kMax =60;  // cache for 60 seconds
+  static Int_t lastStamp=-1;  //cached values
+  static Double_t lastCorr = 1;
+  //
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   AliTPCParam  * param    = calib->GetParameters(); 
+  AliTPCCalibVdrift *driftCalib = AliTPCcalibDB::Instance()->GetVdrift(fCurrentRun);
+  Double_t driftCorr = 1.;
+  if (driftCalib){
+    //
+    // caching drift correction - temp. fix
+    // Extremally slow procedure
+    if ( TMath::Abs((lastStamp)-Int_t(fCurrentTimeStamp))<kMax){
+      driftCorr = lastCorr;
+    }else{
+      driftCorr = 1.+(driftCalib->GetPTRelative(fCurrentTimeStamp,0)+ driftCalib->GetPTRelative(fCurrentTimeStamp,1))*0.5;
+      lastCorr=driftCorr;
+      lastStamp=fCurrentTimeStamp;
+      
+    }
+  }
+  
+
+
   if (!param){
     AliFatal("Parameters missing");
   }
@@ -196,7 +247,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
   Double_t sign = 1.;
-  Double_t zwidth    = param->GetZWidth();
+  Double_t zwidth    = param->GetZWidth()*driftCorr;
   Double_t padWidth  = 0;
   Double_t padLength = 0;
   Double_t    maxPad    = 0;

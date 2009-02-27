@@ -54,6 +54,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   //
+  // Correction setup
+  //
+  Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
+  //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
 
@@ -90,6 +94,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
   Bool_t   fBKinkFinder;     // do kink finder reconstruction
   Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
+  //
+  // Correction switches
+  //
+  Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //
   //  misscalibration
   //
