@@ -22,21 +22,9 @@
 
 class AliAnalysisTask;
 #include "AliAnalysisManager.h"
-
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-
-#include "AliAODEvent.h"
-#include "AliAODInputHandler.h"
-
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-
-#include "AliCFManager.h"
-
+#include "AliFlowEventSimple.h"
 #include "AliFlowLYZConstants.h"   
 #include "AliAnalysisTaskLeeYangZeros.h"
-#include "AliFlowEventSimpleMaker.h"
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowLYZHist1.h"
@@ -50,55 +38,35 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskLeeYangZeros)
 
 //________________________________________________________________________
-AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun, Bool_t on) : 
+AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun) : 
   AliAnalysisTask(name, ""), 
-  fESD(0),
-  fAOD(0),
-  fAnalysisType("ESD"), 
-  fCFManager1(NULL),
-  fCFManager2(NULL),
+  fEvent(0),
   fLyz(0),
-  fEventMaker(0),
   fFirstRunFile(0),
   fListHistos(NULL),
-  fQAInt(NULL),
-  fQADiff(NULL),
-  fFirstRunLYZ(firstrun),  //set boolean for firstrun to initial value
-  fUseSumLYZ(kTRUE),       //set boolean for use sum to initial value
-  fQA(on)
+  fFirstRunLYZ(firstrun), //set boolean for firstrun to initial value
+  fUseSumLYZ(kTRUE)       //set boolean for use sum to initial value
 {
   // Constructor
   cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name)"<<endl;
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
+  DefineInput(0, AliFlowEventSimple::Class());
   if (!firstrun) DefineInput(1, TList::Class()); //for second loop 
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
-  if(on) {
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class()); }  
+   
 } 
-
-
 
 //________________________________________________________________________
 AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :  
-  fESD(0),
-  fAOD(0),
-  fAnalysisType("ESD"), 
-  fCFManager1(NULL),
-  fCFManager2(NULL),
+  fEvent(0),
   fLyz(0),
-  fEventMaker(0),
   fFirstRunFile(0),
   fListHistos(NULL),
-  fQAInt(NULL),
-  fQADiff(NULL),
   fFirstRunLYZ(kTRUE), //set boolean for firstrun to initial value
-  fUseSumLYZ(kTRUE),    //set boolean for use sum to initial value
-  fQA(kFALSE)
+  fUseSumLYZ(kTRUE)    //set boolean for use sum to initial value
 {
   // Constructor
   cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros()"<<endl;
@@ -119,51 +87,7 @@ void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *)
   // Connect ESD or AOD here
   // Called once
   cout<<"AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *)"<<endl;
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } 
-  else {
-    // Disable all branches and enable only the needed ones
-    if (fAnalysisType == "MC") {
-      // we want to process only MC
-      tree->SetBranchStatus("*", kFALSE);
-
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } else {
-	fESD = esdH->GetEvent();
-      }
-    }
-    else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1"  ) {
-      tree->SetBranchStatus("*", kFALSE);
-      tree->SetBranchStatus("Tracks.*", kTRUE);
-
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } else
-	fESD = esdH->GetEvent();
-    }
-    else if (fAnalysisType == "AOD") {
-      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-      if (!aodH) {
-	Printf("ERROR: Could not get AODInputHandler");
-      }
-      else {
-	fAOD = aodH->GetEvent();
-      }
-    }
-    else {
-      Printf("Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
-
-    }
-  }
+ 
 }
 
 //________________________________________________________________________
@@ -172,16 +96,9 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
   // Called once
   cout<<"AliAnalysisTaskLeeYangZeros::CreateOutputObjects()"<<endl;
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMC0"  || fAnalysisType == "ESDMC1" || fAnalysisType == "MC")) {
-    cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMC0, ESDMC1, AOD and MC are allowed."<<endl;
-    exit(1);
-  }
-
-  //event maker
-  fEventMaker = new AliFlowEventSimpleMaker();
+  
   //Analyser
   fLyz = new AliFlowAnalysisWithLeeYangZeros() ;
-   
   fLyz -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
   fLyz -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
 
@@ -208,98 +125,16 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  if (fAnalysisType == "MC") {
-    // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
-    // This handler can return the current MC event
 
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-
-    fCFManager1->SetEventInfo(mcEvent);
-    fCFManager2->SetEventInfo(mcEvent);
-
-    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-
-    //lee yang zeros analysis 
-    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
+  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
+  if (fEvent) {
     fLyz->Make(fEvent);
-    delete fEvent;
   }
-  else if (fAnalysisType == "ESD") {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    
-    //lee yang zeros analysis 
-    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
-    fLyz->Make(fEvent);
-    delete fEvent;
-  }
-  else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-
-    fCFManager1->SetEventInfo(mcEvent);
-    fCFManager2->SetEventInfo(mcEvent);
-
-    //lee yang zeros analysis 
-    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
-    AliFlowEventSimple* fEvent=NULL;
-    if (fAnalysisType == "ESDMC0") { 
-      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
-    } else if (fAnalysisType == "ESDMC1") {
-      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
-    }
-    fLyz->Make(fEvent);
-    delete fEvent;
-    //delete mcEvent;
-  }
-  
-  else if (fAnalysisType == "AOD") {
-    if (!fAOD) {
-      Printf("ERROR: fAOD not available");
-      return;
-    }
-    Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
-
-    //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD); //no CF yet!
-    fLyz->Make(fEvent);
-    delete fEvent;
-  }
+  else {
+    cout << "Warning no input data!!!" << endl; }
   
   PostData(0,fListHistos); //here for CAF
-  if (fQA) {
-    PostData(1,fQAInt);
-    PostData(2,fQADiff); }
+  
 }      
 
 //________________________________________________________________________
@@ -314,7 +149,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
   fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
    
   fListHistos = (TList*)GetOutputData(0);
-  cout << "histogram list in Terminate" << endl;
+  //cout << "histogram list in Terminate" << endl;
 
   if (fListHistos) {
 
@@ -442,7 +277,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
           
     //    fListHistos->Print(); 
   }	
-  else { cout << "histogram list pointer is empty" << endl;}
+  else { cout << "histogram list pointer in Lee-Yang Zeros is empty" << endl;}
 
-  cout<<".....finished"<<endl;
+  //cout<<".....finished"<<endl;
 }
