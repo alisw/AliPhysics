@@ -13,6 +13,8 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
+#include <stdlib.h>
+
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
