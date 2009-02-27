@@ -4,35 +4,87 @@ void drawProtonQAResults(const char *analysisType = "TPC") {
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);
   gStyle->SetFrameFillColor(10);
-
+  
+  PrintHelpMenu();
+  
   TString filename1 = "Protons.QA.";
   filename1 += analysisType; filename1 += ".root";
   TString filename2 = "Protons.MC.QA.";
   filename2 += analysisType; filename2 += ".root";
   TString filename3 = "Protons.Efficiency.";
-  filename3 += analysisType; filename3 += ".root",
- 
+  filename3 += analysisType; filename3 += ".root";
+  
   TFile *fQA = TFile::Open(filename1.Data());
   TList *listGlobalQA = (TList *)fQA->Get("globalQAList");
   drawCutStatistics(listGlobalQA,analysisType);
+  fQA->Close();
  
   TFile *fMC = TFile::Open(filename2.Data());
   TList *listPDG = (TList *)fMC->Get("pdgCodeList");  
   TList *listMCProcesses = (TList *)fMC->Get("mcProcessList");  
   drawMCQA(listPDG,listMCProcesses);
+  fMC->Close();
   
   TFile *fEfficiency = TFile::Open(filename3.Data());
   TList *listEfficiency = (TList *)fEfficiency->Get("efficiencyList");
   drawEfficiency(listEfficiency,analysisType);
+  fEfficiency->Close();
 
   TFile *fVertex = TFile::Open("Vertex.QA.root");
   TList *listVertex = (TList *)fVertex->Get("vertexList");
   drawVertexQA(listVertex);
-
-  fQA->Close();
-  fMC->Close();
-  fEfficiency->Close();
   fVertex->Close();
+}
+
+//________________________________________//
+void PrintHelpMenu() {
+  //Function that prints the different possibilities the user has 
+  //with this macro (what to display, what is the input etc)
+  Printf("==============================HELP MENU===========================");
+  Printf("Function drawCutStatistics: Takes as an argument the list obtained from the Protons.QA.root file and the corresponding analysis type. Displays the following plots:");
+  Printf("\t 1. Influence of the track cuts to the primary and secondary protons. For each bin we show the percentage of particles rejected by the corresponding cut. The first column shows the percentage of tracks excluded from the analysis.");
+  Printf("\t 2. Influence of the track cuts to the primary and secondary antiprotons. For each bin we show the percentage of particles rejected by the corresponding cut. The first column shows the percentage of tracks excluded from the analysis.");
+  Printf("\t 3. The ITS cluster map for primary and secondary (anti)protons.");
+  Printf("\t 4. The (anti)proton purity and contamination as a function of eta or y.");
+  Printf("\t 5. The (anti)proton purity and contamination as a function of Pt.");
+  Printf("\t 6. The (anti)proton cut efficiency as a function of eta or y.");
+  Printf("\t 7. The (anti)proton cut efficiency as a function of Pt.");
+  Printf("\t 8. The composition of accepted secondary (anti)protons as a function of eta or y.");
+  Printf("\t 9. The composition of accepted secondary (anti)protons as a function of Pt.");
+  Printf("\t ***This function calls the DrawContamination function that creates an output root file with the name Contamination.root holding all the purity and contamination plots (eta or y and Pt dependence) and the DrawCutEfficiency function that creates an output root file with the name CutEfficiency.root with the y or eta and Pt dependence of the cut efficiency for protons and antiprotons.***");
+
+  Printf("\nFunction drawMCQA: Takes as an argument the two lists obtained from the Protons.MC.QA.root file holding pure MC information. Displays the following plots:");
+  Printf("\t 1. MC composition of secondary protons as a function of either eta or y.");
+  Printf("\t 2. MC composition of secondary antiprotons as a function of either eta or y.");
+  Printf("\t 3. MC composition of secondary protons as a function of Pt.");
+  Printf("\t 4. MC composition of secondary antiprotons as a function of Pt");
+
+  Printf("\nFunction drawEfficiency: Takes as an argument the list obtained from the Protons.Efficiency.root file along with the analysis type. Displays the following plots:");
+  Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("\t 2. Reconstruction efficiencies for primary and secondary (anti)protons as a function of Pt. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("\t 3. Particle identifiction efficiencies for (anti)protons as a function of either eta or y and of Pt.");
+  Printf("\t ***This function produces an output root file with the name Reconstruction-PID-Efficiency.root with all the efficiency and contamination plots.***");
+
+  Printf("\nFunction drawVertexQA: Takes as an argument the list obtained from the Vertex.QA.root file holding pure vertex information. Displays the following plots:");
+  Printf("\t 1. The vertex efficiencies for the TPC, SPD and track ones.");
+  Printf("\t 2. The QA plots for the TPC vertex.");
+  Printf("\t 3. The QA plots for the SPD vertex.");
+  Printf("\t 4. The QA plots for the tracks vertex.");
+
+  Printf("\nFunction drawKineQA: Takes as an argument the file Protons.QA.Histograms.root with all the histograms about kinematic or not variables");
+  Printf("\t 1. The phi vs eta correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 2. The Nclusters TPC vs eta correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 3. The Nclusters TPC vs phi correlation plots for primary and secondary (anti)protons.");
+
+ Printf("\nFunction drawEfficiencies: Takes as arguments the filename produced by the drawEfficiency (see before - usually the name is Reconstruction-PID-Efficiency.root) and three booleans indicating whether the points for primaries, secondaries from weak decays and secondaries from hadronic interactions will be shown.It displays:");
+  Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("\t 2. Reconstruction efficiencies for primary and secondary (anti)protons as a function of Pt. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("\t 3. Particle identifiction efficiencies for (anti)protons as a function of either eta or y and of Pt.");
+
+ Printf("\nFunction compareEfficiencies: Takes as arguments the filenames produced by the drawEfficiency (see before - usually the name is Reconstruction-PID-Efficiency.root) and three booleans indicating whether the points for primaries, secondaries from weak decays and secondaries from hadronic interactions will be shown. The two files correspond to two different tracking methods (e.g. TPC, Hybrid, Global). It displays:");
+  Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("\t 2. Reconstruction efficiencies for primary and secondary (anti)protons as a function of Pt. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+  Printf("==================================================================\n\n\n");
 }
 
 //________________________________________//
@@ -398,13 +450,13 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
 		     TH3F *gHistYPtPDGAntiProtons) {
   //Function to display the composition of secondary (anti)protons
   //that survive the quality criteria
-  Double_t nParticleCompositionProtonY[100], nParticleCompositionProtonPt[100];
-  Double_t nParticleCompositionProtonYError[100], nParticleCompositionProtonPtError[100];
-  Double_t nParticleCompositionAntiProtonY[100], nParticleCompositionAntiProtonPt[100];
-  Double_t nParticleCompositionAntiProtonYError[100], nParticleCompositionAntiProtonPtError[100];
-  Double_t gY[100], gPt[100];
-  Double_t gYError[100], gPtError[100];
-  for(Int_t iBins = 0; iBins < 100; iBins++) {
+  Double_t nParticleCompositionProtonY[200], nParticleCompositionProtonPt[200];
+  Double_t nParticleCompositionProtonYError[200], nParticleCompositionProtonPtError[200];
+  Double_t nParticleCompositionAntiProtonY[200], nParticleCompositionAntiProtonPt[200];
+  Double_t nParticleCompositionAntiProtonYError[200], nParticleCompositionAntiProtonPtError[200];
+  Double_t gY[200], gPt[200];
+  Double_t gYError[200], gPtError[200];
+  for(Int_t iBins = 0; iBins < 200; iBins++) {
     nParticleCompositionProtonY[iBins] = 0;
     nParticleCompositionProtonPt[iBins] = 0;
     nParticleCompositionProtonYError[iBins] = 0;
@@ -934,8 +986,8 @@ void GetQAEntries(TList *inputList, Double_t *entries) {
   for(Int_t i = 0; i < inputList->GetEntries(); i++) {
     TH1F *gHist = (TH1F *)inputList->At(i);
     entries[i] = gHist->GetEntries();
-    cout<<"Histogram: "<<gHist->GetName()<<
-      " - Entries: "<<entries[i]<<endl;
+    //cout<<"Histogram: "<<gHist->GetName()<<
+    //" - Entries: "<<entries[i]<<endl;
     gHist = 0;
   }
 }
@@ -964,13 +1016,13 @@ void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   TH3F *gHistYPtPDGProtons = (TH3F *)listPDG->At(0);
   TH3F *gHistYPtPDGAntiProtons = (TH3F *)listPDG->At(1);
   readProcesses(listMCProcesses);
-  Double_t nParticleCompositionProtonY[100], nParticleCompositionProtonPt[100];
-  Double_t nParticleCompositionProtonYError[100], nParticleCompositionProtonPtError[100];
-  Double_t nParticleCompositionAntiProtonY[100], nParticleCompositionAntiProtonPt[100];
-  Double_t nParticleCompositionAntiProtonYError[100], nParticleCompositionAntiProtonPtError[100];
-  Double_t gY[100], gPt[100];
-  Double_t gYError[100], gPtError[100];
-  for(Int_t iBins = 0; iBins < 100; iBins++) {
+  Double_t nParticleCompositionProtonY[200], nParticleCompositionProtonPt[200];
+  Double_t nParticleCompositionProtonYError[200], nParticleCompositionProtonPtError[200];
+  Double_t nParticleCompositionAntiProtonY[200], nParticleCompositionAntiProtonPt[200];
+  Double_t nParticleCompositionAntiProtonYError[200], nParticleCompositionAntiProtonPtError[200];
+  Double_t gY[200], gPt[200];
+  Double_t gYError[200], gPtError[200];
+  for(Int_t iBins = 0; iBins < 200; iBins++) {
     nParticleCompositionProtonY[iBins] = 0;
     nParticleCompositionProtonPt[iBins] = 0;
     nParticleCompositionProtonYError[iBins] = 0;
@@ -1165,8 +1217,8 @@ void GetComposition(Int_t iSpecies,
   Double_t ptmin = gHist->GetYaxis()->GetXmin();
   Double_t ptmax = gHist->GetYaxis()->GetXmax();
   Double_t nptbins = gHist->GetNbinsY();
-  Double_t nTotalY[100], nTotalPt[100];
-  for(Int_t iBins = 0; iBins < 100; iBins++) {
+  Double_t nTotalY[200], nTotalPt[200];
+  for(Int_t iBins = 0; iBins < 200; iBins++) {
     nParticleCompositionY[iBins] = 0;
     nParticleCompositionPt[iBins] = 0;
     nParticleCompositionYError[iBins] = 0;
@@ -1451,7 +1503,7 @@ void drawVertexQA(TList *list) {
   c20->cd(9)->SetLeftMargin(0.15); c20->cd(9)->SetBottomMargin(0.15);  
   c20->cd(9)->SetRightMargin(0.2); c20->cd(9)->SetLogy();
   gHistTracksResolutionVz->Draw();
-  c120->SaveAs("VertexTracks.gif");
+  c20->SaveAs("VertexTracks.gif");
 }
 
 //________________________________________//
@@ -1820,19 +1872,20 @@ void drawKineQA(const char *filename) {
   c21->cd(1)->SetLeftMargin(0.15); c21->cd(1)->SetBottomMargin(0.15);  
   c21->cd(1)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("yx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("yx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("yx")))->DrawCopy("colz");
   c21->cd(2)->SetLeftMargin(0.15); c21->cd(2)->SetBottomMargin(0.15);  
   c21->cd(2)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("yx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("yx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("yx")))->DrawCopy("colz");
   c21->cd(3)->SetLeftMargin(0.15); c21->cd(3)->SetBottomMargin(0.15);  
   c21->cd(3)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("yx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("yx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("yx")))->DrawCopy("colz");
   c21->cd(4)->SetLeftMargin(0.15); c21->cd(4)->SetBottomMargin(0.15);  
   c21->cd(4)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("yx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("yx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("yx")))->DrawCopy("colz");
+  c21->SaveAs("EtaPhi.gif");
 
   //eta-Nclusters
   TCanvas *c22 = new TCanvas("c22",
@@ -1842,19 +1895,20 @@ void drawKineQA(const char *filename) {
   c22->cd(1)->SetLeftMargin(0.15); c22->cd(1)->SetBottomMargin(0.15);  
   c22->cd(1)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
   c22->cd(2)->SetLeftMargin(0.15); c22->cd(2)->SetBottomMargin(0.15);  
   c22->cd(2)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
   c22->cd(3)->SetLeftMargin(0.15); c22->cd(3)->SetBottomMargin(0.15);  
   c22->cd(3)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
   c22->cd(4)->SetLeftMargin(0.15); c22->cd(4)->SetBottomMargin(0.15);  
   c22->cd(4)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zx")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c22->SaveAs("EtaNClusters.gif");
 
   //phi-Nclusters
   TCanvas *c23 = new TCanvas("c23",
@@ -1864,19 +1918,460 @@ void drawKineQA(const char *filename) {
   c23->cd(1)->SetLeftMargin(0.15); c23->cd(1)->SetBottomMargin(0.15);  
   c23->cd(1)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zy")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
   c23->cd(2)->SetLeftMargin(0.15); c23->cd(2)->SetBottomMargin(0.15);  
   c23->cd(2)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zy")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
   c23->cd(3)->SetLeftMargin(0.15); c23->cd(3)->SetBottomMargin(0.15);  
   c23->cd(3)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zy")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersPrimaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
   c23->cd(4)->SetLeftMargin(0.15); c23->cd(4)->SetBottomMargin(0.15);  
   c23->cd(4)->SetRightMargin(0.2);
   ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
-  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("col");
+  ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c23->SaveAs("PhiNClusters.gif");
 
   f->Close();
+}
+
+//________________________________________________//
+void drawEfficiencies(const char *filename,
+		      Bool_t gShowPrimaries = kTRUE,
+		      Bool_t gShowWeak = kFALSE,
+		      Bool_t gShowHadronic = kFALSE) {
+  //Macro to display the reconstruction, cut and pid efficiencies
+  gStyle->SetPalette(1,0);
+  gStyle->SetCanvasColor(41);
+  gStyle->SetFrameFillColor(10);
+
+  TH2F *hEmpty = new TH2F("hEmpty","",100,-1.5,5.0,100,0,120);
+  hEmpty->SetStats(kFALSE);
+  hEmpty->GetXaxis()->SetTitleColor(1);
+  hEmpty->GetXaxis()->SetNdivisions(15);
+  hEmpty->GetYaxis()->SetNdivisions(15);
+  hEmpty->GetYaxis()->SetTitleOffset(1.4);
+  hEmpty->GetYaxis()->SetTitle("#epsilon");
+
+  TLatex *t1 = new TLatex();
+  t1->SetTextSize(0.04);
+
+  TPaveText *tpave = new TPaveText();
+  tpave->SetFillColor(10);
+  Double_t bottomY = 0.0;
+
+  TFile *f = TFile::Open(filename);
+  TH1D *gYPrimariesESDProtons = (TH1D *)f->Get("gYPrimariesESDProtons");
+  TH1D *gYESDProtonsFromWeak = (TH1D *)f->Get("gYESDProtonsFromWeak");
+  TH1D *gYESDProtonsFromHadronic = (TH1D *)f->Get("gYESDProtonsFromHadronic");
+  TH1D *gPtPrimariesESDProtons = (TH1D *)f->Get("gPtPrimariesESDProtons");
+  TH1D *gPtESDProtonsFromWeak = (TH1D *)f->Get("gPtESDProtonsFromWeak");
+  TH1D *gPtESDProtonsFromHadronic = (TH1D *)f->Get("gPtESDProtonsFromHadronic");
+  TH1D *gYPrimariesESDAntiProtons = (TH1D *)f->Get("gYPrimariesESDAntiProtons");
+  TH1D *gYESDAntiProtonsFromWeak = (TH1D *)f->Get("gYESDAntiProtonsFromWeak");
+  TH1D *gYESDAntiProtonsFromHadronic = (TH1D *)f->Get("gYESDAntiProtonsFromHadronic");	
+  TH1D *gPtPrimariesESDAntiProtons = (TH1D *)f->Get("gPtPrimariesESDAntiProtons");	
+  TH1D *gPtESDAntiProtonsFromWeak = (TH1D *)f->Get("gPtESDAntiProtonsFromWeak");	
+  TH1D *gPtESDAntiProtonsFromHadronic = (TH1D *)f->Get("gPtESDAntiProtonsFromHadronic");	
+  TH1D *gYESDIdProtons = (TH1D *)f->Get("gYESDIdProtons");
+  TH1D *gYESDContamProtons = (TH1D *)f->Get("gYESDContamProtons");
+  TH1D *gPtESDIdProtons = (TH1D *)f->Get("gPtESDIdProtons");
+  TH1D *gPtESDContamProtons = (TH1D *)f->Get("gPtESDContamProtons");	
+
+  //Reconstruction efficiencies - protons
+  TCanvas *c1 = new TCanvas("c1","Reconstruction efficiencies - Protons",
+			    0,0,700,400);
+  c1->SetFillColor(41); c1->SetHighLightColor(41);
+  c1->Divide(2,1);
+  c1->cd(1)->SetLeftMargin(0.15); c1->cd(1)->SetBottomMargin(0.15);
+  c1->cd(1)->SetGridx(); c1->cd(1)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gYPrimariesESDProtons->GetXaxis()->GetXmin()-0.1,
+				   gYPrimariesESDProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gYPrimariesESDProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 111.0;
+  if(gShowWeak)
+    bottomY = 106.0;
+  if(gShowHadronic)
+    bottomY = 101.0;
+  tpave->DrawPave(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.1,119,
+		  gYPrimariesESDProtons->GetXaxis()->GetXmax()-0.1,bottomY);
+  if(gShowPrimaries) {
+    DrawMarker(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.2, 115, 20, 1.2, 1);
+    t1->DrawLatex(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.3,113,"Primary p");
+    gYPrimariesESDProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.2, 110, 21, 1.2, 2);
+    t1->DrawLatex(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.3,108,"#Lambda -> p + #pi^{-}");
+    gYESDProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.2, 105, 22, 1.2, 3);
+    t1->DrawLatex(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.3,103,"X + A -> p + B");
+    gYESDProtonsFromHadronic->DrawCopy("ESAME");
+  }
+
+  c1->cd(2)->SetLeftMargin(0.15); c1->cd(2)->SetBottomMargin(0.15);
+  c1->cd(2)->SetGridx(); c1->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gPtPrimariesESDProtons->GetXaxis()->GetXmin()-0.1,
+				   gPtPrimariesESDProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gPtPrimariesESDProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 111.0;
+  if(gShowWeak)
+    bottomY = 106.0;
+  if(gShowHadronic)
+    bottomY = 101.0;
+  tpave->DrawPave(gPtPrimariesESDProtons->GetXaxis()->GetXmin(),119,
+		  gPtPrimariesESDProtons->GetXaxis()->GetXmax(),bottomY);
+  if(gShowPrimaries) {
+    DrawMarker(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.05, 115, 20, 1.2, 1);
+    t1->DrawLatex(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.15,113,"Primary p");
+    gPtPrimariesESDProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.05, 110, 21, 1.2, 2);
+    t1->DrawLatex(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.15,108,"#Lambda -> p + #pi^{-}");
+    gPtESDProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.05, 105, 22, 1.2, 3);
+    t1->DrawLatex(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.15,103,"X + A -> p + B");
+    gPtESDProtonsFromHadronic->DrawCopy("ESAME");
+  }
+  c1->SaveAs("ReconstructionEfficiency-Protons.gif");
+
+  //Reconstruction efficiencies - antiprotons
+  TCanvas *c2 = new TCanvas("c2","Reconstruction efficiencies - Antirotons",
+			    100,100,700,400);
+  c2->SetFillColor(41); c2->SetHighLightColor(41);
+  c2->Divide(2,1);
+  c2->cd(1)->SetLeftMargin(0.15); c2->cd(1)->SetBottomMargin(0.15);
+  c2->cd(1)->SetGridx(); c2->cd(1)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()-0.1,
+				   gYPrimariesESDAntiProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gYPrimariesESDAntiProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 111.0;
+  if(gShowWeak)
+    bottomY = 104.0;
+  if(gShowHadronic)
+    bottomY = 97.0;
+  tpave->DrawPave(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.1,119,
+		  gYPrimariesESDAntiProtons->GetXaxis()->GetXmax()-0.1,bottomY);
+  if(gShowPrimaries) {
+    DrawMarker(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.2, 115, 20, 1.2, 1);
+    t1->DrawLatex(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.3,113,"Primary #bar{p}");
+    gYPrimariesESDAntiProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.2, 108, 21, 1.2, 2);
+    t1->DrawLatex(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.3,106,"#bar{#Lambda} -> #bar{p} + #pi^{+}");
+    gYESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.2, 101, 22, 1.2, 3);
+    t1->DrawLatex(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.3,98,"X + A -> #bar{p} + B");
+    gYESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+  }
+
+  c2->cd(2)->SetLeftMargin(0.15); c2->cd(2)->SetBottomMargin(0.15);
+  c2->cd(2)->SetGridx(); c2->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()-0.1,
+				   gPtPrimariesESDAntiProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gPtPrimariesESDAntiProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 111.0;
+  if(gShowWeak)
+    bottomY = 104.0;
+  if(gShowHadronic)
+    bottomY = 97.0;
+  tpave->DrawPave(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin(),119,
+		  gPtPrimariesESDAntiProtons->GetXaxis()->GetXmax(),bottomY);
+  if(gShowPrimaries) {
+    DrawMarker(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.05, 115, 20, 1.2, 1);
+    t1->DrawLatex(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.15,113,"Primary #bar{p}");
+    gPtPrimariesESDAntiProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.05, 108, 21, 1.2, 2);
+    t1->DrawLatex(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.15,106,"#bar{#Lambda} -> #bar{p} + #pi^{+}");
+    gPtESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.05, 101, 22, 1.2, 3);
+    t1->DrawLatex(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()+0.15,98,"X + A -> #bar{p} + B");
+    gPtESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+  }
+  c2->SaveAs("ReconstructionEfficiency-AntiProtons.gif");
+
+  //PID efficiencies - (anti)protons
+  TCanvas *c3 = new TCanvas("c3","PID efficiencies",
+			    200,200,700,400);
+  c3->SetFillColor(41); c3->SetHighLightColor(41);
+  c3->Divide(2,1);
+  c3->cd(1)->SetLeftMargin(0.15); c3->cd(1)->SetBottomMargin(0.15);
+  c3->cd(1)->SetGridx(); c3->cd(1)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gYPrimariesESDProtons->GetXaxis()->GetXmin()-0.1,
+				   gYPrimariesESDProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gYPrimariesESDProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  tpave->DrawPave(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.1,119,
+		  gYPrimariesESDProtons->GetXaxis()->GetXmax()-0.1,104);
+  gYESDIdProtons->DrawCopy("ESAME");
+  gYESDContamProtons->DrawCopy("ESAME");
+  DrawMarker(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.2, 115, 20, 1.2, 1);
+  t1->DrawLatex(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.3,113,"Efficiency");
+  DrawMarker(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.2, 108, 24, 1.2, 1);
+  t1->DrawLatex(gYPrimariesESDProtons->GetXaxis()->GetXmin()+0.3,106,"Contamination");
+ 
+  c3->cd(2)->SetLeftMargin(0.15); c3->cd(2)->SetBottomMargin(0.15);
+  c3->cd(2)->SetGridx(); c3->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gPtPrimariesESDProtons->GetXaxis()->GetXmin()-0.1,
+				   gPtPrimariesESDProtons->GetXaxis()->GetXmax()+0.1);
+  hEmpty->GetXaxis()->SetTitle(gPtPrimariesESDProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  tpave->DrawPave(gPtPrimariesESDProtons->GetXaxis()->GetXmin(),119,
+		  gPtPrimariesESDProtons->GetXaxis()->GetXmax(),104);
+  gPtESDIdProtons->DrawCopy("ESAME");
+  gPtESDContamProtons->DrawCopy("ESAME");
+  DrawMarker(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.05, 115, 20, 1.2, 1);
+  t1->DrawLatex(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.15,113,"Efficiency");
+  DrawMarker(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.05, 108, 24, 1.2, 1);
+  t1->DrawLatex(gPtPrimariesESDProtons->GetXaxis()->GetXmin()+0.15,106,"Contamination");
+  c3->SaveAs("PIDEfficiency-Protons.gif");
+}
+
+//________________________________________________//
+void compareEfficiencies(const char *filenameTPC,
+			 const char *filenameHybrid,
+			 Bool_t gShowPrimaries = kTRUE,
+			 Bool_t gShowWeak = kFALSE,
+			 Bool_t gShowHadronic = kFALSE) {
+  //Function to compare the reconstruction efficiencies between two methods:
+  //e.g. TPC standalone and global tracking
+  gStyle->SetPalette(1,0);
+  gStyle->SetCanvasColor(41);
+  gStyle->SetFrameFillColor(10);
+
+  TH2F *hEmpty = new TH2F("hEmpty","",100,-1.5,2.0,100,0,120);
+  hEmpty->SetStats(kFALSE);
+  hEmpty->GetXaxis()->SetTitleColor(1);
+  hEmpty->GetXaxis()->SetNdivisions(15);
+  hEmpty->GetYaxis()->SetNdivisions(15);
+  hEmpty->GetYaxis()->SetTitleOffset(1.4);
+  hEmpty->GetYaxis()->SetTitle("#epsilon");
+
+  TLatex *t1 = new TLatex();
+  t1->SetTextSize(0.04);
+
+  TPaveText *tpave = new TPaveText();
+  tpave->SetFillColor(10);
+  Double_t bottomY = 0.0;
+
+  //TPC standalone
+  TFile *f1 = TFile::Open(filenameTPC);
+  TH1D *g1YPrimariesESDProtons = (TH1D *)f1->Get("gYPrimariesESDProtons");
+  TH1D *g1YESDProtonsFromWeak = (TH1D *)f1->Get("gYESDProtonsFromWeak");
+  TH1D *g1YESDProtonsFromHadronic = (TH1D *)f1->Get("gYESDProtonsFromHadronic");
+  TH1D *g1PtPrimariesESDProtons = (TH1D *)f1->Get("gPtPrimariesESDProtons");
+  TH1D *g1PtESDProtonsFromWeak = (TH1D *)f1->Get("gPtESDProtonsFromWeak");
+  TH1D *g1PtESDProtonsFromHadronic = (TH1D *)f1->Get("gPtESDProtonsFromHadronic");
+  TH1D *g1YPrimariesESDAntiProtons = (TH1D *)f1->Get("gYPrimariesESDAntiProtons");
+  TH1D *g1YESDAntiProtonsFromWeak = (TH1D *)f1->Get("gYESDAntiProtonsFromWeak");
+  TH1D *g1YESDAntiProtonsFromHadronic = (TH1D *)f1->Get("gYESDAntiProtonsFromHadronic");	
+  TH1D *g1PtPrimariesESDAntiProtons = (TH1D *)f1->Get("gPtPrimariesESDAntiProtons");	
+  TH1D *g1PtESDAntiProtonsFromWeak = (TH1D *)f1->Get("gPtESDAntiProtonsFromWeak");	
+  TH1D *g1PtESDAntiProtonsFromHadronic = (TH1D *)f1->Get("gPtESDAntiProtonsFromHadronic");	
+
+  //Global tracking
+  TFile *f2 = TFile::Open(filenameHybrid);
+  TH1D *g2YPrimariesESDProtons = (TH1D *)f2->Get("gYPrimariesESDProtons");
+  TH1D *g2YESDProtonsFromWeak = (TH1D *)f2->Get("gYESDProtonsFromWeak");
+  TH1D *g2YESDProtonsFromHadronic = (TH1D *)f2->Get("gYESDProtonsFromHadronic");
+  TH1D *g2PtPrimariesESDProtons = (TH1D *)f2->Get("gPtPrimariesESDProtons");
+  TH1D *g2PtESDProtonsFromWeak = (TH1D *)f2->Get("gPtESDProtonsFromWeak");
+  TH1D *g2PtESDProtonsFromHadronic = (TH1D *)f2->Get("gPtESDProtonsFromHadronic");
+  TH1D *g2YPrimariesESDAntiProtons = (TH1D *)f2->Get("gYPrimariesESDAntiProtons");
+  TH1D *g2YESDAntiProtonsFromWeak = (TH1D *)f2->Get("gYESDAntiProtonsFromWeak");
+  TH1D *g2YESDAntiProtonsFromHadronic = (TH1D *)f2->Get("gYESDAntiProtonsFromHadronic");	
+  TH1D *g2PtPrimariesESDAntiProtons = (TH1D *)f2->Get("gPtPrimariesESDAntiProtons");	
+  TH1D *g2PtESDAntiProtonsFromWeak = (TH1D *)f2->Get("gPtESDAntiProtonsFromWeak");	
+  TH1D *g2PtESDAntiProtonsFromHadronic = (TH1D *)f2->Get("gPtESDAntiProtonsFromHadronic");	
+
+  //Reconstruction efficiencies - protons
+  TCanvas *c1 = new TCanvas("c1","Reconstruction efficiencies - Protons",
+			    0,0,700,400);
+  c1->SetFillColor(41); c1->SetHighLightColor(41);
+  c1->Divide(2,1);
+  c1->cd(1)->SetLeftMargin(0.15); c1->cd(1)->SetBottomMargin(0.15);
+  c1->cd(1)->SetGridx(); c1->cd(1)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(-1.1,1.1);
+  hEmpty->GetXaxis()->SetTitle("#eta");
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 106.0;
+  if(gShowWeak)
+    bottomY = 99.0;
+  if(gShowHadronic)
+    bottomY = 92.0;
+  tpave->DrawPave(-0.4,119,1.1,bottomY);
+  t1->DrawLatex(-0.3,113,"TPC");
+  t1->DrawLatex(0.0,113,"Global");
+  if(gShowPrimaries) {
+    DrawMarker(-0.15, 110, 20, 1.2, 1);
+    DrawMarker(0.15, 110, 24, 1.2, 1);
+    t1->DrawLatex(0.35,108,"Primary p");
+    g1YPrimariesESDProtons->DrawCopy("ESAME");
+    g2YPrimariesESDProtons->SetMarkerStyle(24);
+    g2YPrimariesESDProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(-0.15, 103, 21, 1.2, 2);
+    DrawMarker(0.15, 103, 25, 1.2, 2);
+    t1->DrawLatex(0.35,101,"#Lambda -> p + #pi^{-}");
+    g1YESDProtonsFromWeak->DrawCopy("ESAME");
+    g2YESDProtonsFromWeak->SetMarkerStyle(25);
+    g2YESDProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(-0.15, 96, 22, 1.2, 3);
+    DrawMarker(0.15, 96, 26, 1.2, 3);
+    t1->DrawLatex(0.35,94,"X + A -> p + B");
+    g1YESDProtonsFromHadronic->DrawCopy("ESAME");
+    g2YESDProtonsFromHadronic->SetMarkerStyle(26);
+    g2YESDProtonsFromHadronic->DrawCopy("ESAME");
+  }
+
+  c1->cd(2)->SetLeftMargin(0.15); c1->cd(2)->SetBottomMargin(0.15);
+  c1->cd(2)->SetGridx(); c1->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(0.0,1.7);
+  hEmpty->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 106.0;
+  if(gShowWeak)
+    bottomY = 99.0;
+  if(gShowHadronic)
+    bottomY = 92.0;
+  tpave->DrawPave(0.05,119,1.2,bottomY);
+  t1->DrawLatex(0.1,113,"TPC");
+  t1->DrawLatex(0.3,113,"Global");
+  if(gShowPrimaries) {
+    DrawMarker(0.15, 110, 20, 1.2, 1);
+    DrawMarker(0.4, 110, 24, 1.2, 1);
+    t1->DrawLatex(0.6,108,"Primary p");
+    g1PtPrimariesESDProtons->DrawCopy("ESAME");
+    g2PtPrimariesESDProtons->SetMarkerStyle(24);
+    g2PtPrimariesESDProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(0.15, 103, 21, 1.2, 2);
+    DrawMarker(0.4, 103, 25, 1.2, 2);
+    t1->DrawLatex(0.6,101,"#Lambda -> p + #pi^{-}");
+    g1PtESDProtonsFromWeak->DrawCopy("ESAME");
+    g2PtESDProtonsFromWeak->SetMarkerStyle(25);
+    g2PtESDProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(0.15, 96, 22, 1.2, 3);
+    DrawMarker(0.4, 96, 26, 1.2, 3);
+    t1->DrawLatex(0.6,94,"X + A -> p + B");
+    g1PtESDProtonsFromHadronic->DrawCopy("ESAME");
+    g2PtESDProtonsFromHadronic->SetMarkerStyle(26);
+    g2PtESDProtonsFromHadronic->DrawCopy("ESAME");
+  }
+  c1->SaveAs("ReconstructionEfficiency-Protons.gif");
+
+  //Reconstruction efficiencies - antiprotons
+  TCanvas *c2 = new TCanvas("c2","Reconstruction efficiencies - Antirotons",
+			    100,100,700,400);
+  c2->SetFillColor(41); c2->SetHighLightColor(41);
+  c2->Divide(2,1);
+  c2->cd(1)->SetLeftMargin(0.15); c2->cd(1)->SetBottomMargin(0.15);
+  c2->cd(1)->SetGridx(); c2->cd(1)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(-1.1,1.1);
+  hEmpty->GetXaxis()->SetTitle("#eta");
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 106.0;
+  if(gShowWeak)
+    bottomY = 99.0;
+  if(gShowHadronic)
+    bottomY = 92.0;
+  tpave->DrawPave(-0.4,119,1.1,bottomY);
+  t1->DrawLatex(-0.3,113,"TPC");
+  t1->DrawLatex(0.0,113,"Global");
+  if(gShowPrimaries) {
+    DrawMarker(-0.15, 110, 20, 1.2, 1);
+    DrawMarker(0.15, 110, 24, 1.2, 1);
+    t1->DrawLatex(0.35,108,"Primary #bar{p}");
+    g1YPrimariesESDAntiProtons->DrawCopy("ESAME");
+    g2YPrimariesESDAntiProtons->SetMarkerStyle(24);
+    g2YPrimariesESDAntiProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(-0.15, 103, 21, 1.2, 2);
+    DrawMarker(0.15, 103, 25, 1.2, 2);
+    t1->DrawLatex(0.35,101,"#bar{#Lambda} -> #bar{p} + #pi^{+}");
+    g1YESDAntiProtonsFromWeak->DrawCopy("ESAME");
+    g2YESDAntiProtonsFromWeak->SetMarkerStyle(25);
+    g2YESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(-0.15, 96, 22, 1.2, 3);
+    DrawMarker(0.15, 96, 26, 1.2, 3);
+    t1->DrawLatex(0.35,94,"X + A -> #bar{p} + B");
+    g1YESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+    g2YESDAntiProtonsFromHadronic->SetMarkerStyle(26);
+    g2YESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+  }
+
+  c2->cd(2)->SetLeftMargin(0.15); c2->cd(2)->SetBottomMargin(0.15);
+  c2->cd(2)->SetGridx(); c2->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(0.0,1.7);
+  hEmpty->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+  hEmpty->DrawCopy();
+  if(gShowPrimaries)
+    bottomY = 106.0;
+  if(gShowWeak)
+    bottomY = 99.0;
+  if(gShowHadronic)
+    bottomY = 92.0;
+  tpave->DrawPave(0.05,119,1.2,bottomY);
+  t1->DrawLatex(0.1,113,"TPC");
+  t1->DrawLatex(0.3,113,"Global");
+  if(gShowPrimaries) {
+    DrawMarker(0.15, 110, 20, 1.2, 1);
+    DrawMarker(0.4, 110, 24, 1.2, 1);
+    t1->DrawLatex(0.6,108,"Primary #bar{p}");
+    g1PtPrimariesESDAntiProtons->DrawCopy("ESAME");
+    g2PtPrimariesESDAntiProtons->SetMarkerStyle(24);
+    g2PtPrimariesESDAntiProtons->DrawCopy("ESAME");
+  }
+  if(gShowWeak) {
+    DrawMarker(0.15, 103, 21, 1.2, 2);
+    DrawMarker(0.4, 103, 25, 1.2, 2);
+    t1->DrawLatex(0.6,101,"#bar{#Lambda} -> #bar{p} + #pi^{+}");
+    g1PtESDAntiProtonsFromWeak->DrawCopy("ESAME");
+    g2PtESDAntiProtonsFromWeak->SetMarkerStyle(25);
+    g2PtESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  }
+  if(gShowHadronic) {
+    DrawMarker(0.15, 96, 22, 1.2, 3);
+    DrawMarker(0.4, 96, 26, 1.2, 3);
+    t1->DrawLatex(0.6,94,"X + A -> #bar{p} + B");
+    g1PtESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+    g2PtESDAntiProtonsFromHadronic->SetMarkerStyle(26);
+    g2PtESDAntiProtonsFromHadronic->DrawCopy("ESAME");
+  }
+  c2->SaveAs("ReconstructionEfficiency-AntiProtons.gif");
+
 }
