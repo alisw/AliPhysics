@@ -1,4 +1,4 @@
-void recMC(const char* tpcDBpath="local://$ALICE_ROOT"){
+void recMC(const char* tpcDBpath="local://$ALICE_ROOT", Int_t nevents){
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();  
   AliTPCReconstructor::SetStreamLevel(10);
   //
@@ -26,7 +26,7 @@ void recMC(const char* tpcDBpath="local://$ALICE_ROOT"){
   rec.SetUniformFieldTracking(kFALSE);
   rec.SetWriteAlignmentData(kTRUE);
   //
-
+  rec.SetEventRange(0,nevents);
   //
   rec.Run();
 }

@@ -54,7 +54,7 @@ void Config()
     // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
-  //gRandom->SetSeed(123456); // Set 0 to use the current time
+  gRandom->SetSeed(0); // Set 0 to use the current time
   
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
@@ -167,11 +167,11 @@ void Config()
     }
 
     AliGenCosmicsParam *gener = new AliGenCosmicsParam();
-    gener->SetNumberParticles(10);
+    gener->SetNumberParticles(20);
     gener->SetParamACORDE();
     gener->SetYOrigin(900.); // above ACORDE
     gener->SetMomentumRange(0.2,100.);
-    gener->SetMaxAngleWRTVertical(3.1415/2.5);
+    gener->SetMaxAngleWRTVertical(3.1415/4);
     gener->SetInTPC(); // "acceptance trigger"
     gener->SetBkG(0.); // needed for "acceptance trigger"
     gener->Init();

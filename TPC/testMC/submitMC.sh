@@ -85,6 +85,8 @@ echo
 echo SUBMITING  RECONSTRUCTION MACRO
 echo "$ALICE_ROOT/TPC/testMC/recMC.C"
 rm AliESD*
-command aliroot  -q -b  "$ALICE_ROOT/TPC/testMC/recMC.C(\"$4\")"
+rm *Rec*
+
+command aliroot  -q -b  "$ALICE_ROOT/TPC/testMC/recMC.C(\"$4\",$5)"
 
 
