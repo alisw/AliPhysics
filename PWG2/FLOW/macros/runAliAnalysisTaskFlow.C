@@ -39,13 +39,13 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;
-Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kTRUE;
-Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kTRUE;
+Bool_t LYZEP = kTRUE;
+Bool_t GFC   = kFALSE;
+Bool_t QC    = kFALSE;
+Bool_t FQD   = kFALSE;
+Bool_t MCEP  = kFALSE;
 
 // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
@@ -97,11 +97,11 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
@@ -420,28 +420,19 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->AddTask(taskSP);
  }
  if (LYZ1){
-   AliAnalysisTaskLeeYangZeros *taskLYZ1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kTRUE,kFALSE);
-   taskLYZ1->SetAnalysisType(type);
+   AliAnalysisTaskLeeYangZeros *taskLYZ1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kTRUE);
    taskLYZ1->SetFirstRunLYZ(kTRUE);
    taskLYZ1->SetUseSumLYZ(kTRUE);
-   taskLYZ1->SetCFManager1(cfmgr1);
-   taskLYZ1->SetCFManager2(cfmgr2);
    mgr->AddTask(taskLYZ1);
  }
  if (LYZ2){
-   AliAnalysisTaskLeeYangZeros *taskLYZ2 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kFALSE,kFALSE);
-   taskLYZ2->SetAnalysisType(type);
+   AliAnalysisTaskLeeYangZeros *taskLYZ2 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kFALSE);
    taskLYZ2->SetFirstRunLYZ(kFALSE);
    taskLYZ2->SetUseSumLYZ(kTRUE);
-   taskLYZ2->SetCFManager1(cfmgr1);
-   taskLYZ2->SetCFManager2(cfmgr2);
    mgr->AddTask(taskLYZ2);
  }
  if (LYZEP){
-   AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane",kFALSE);
-   taskLYZEP->SetAnalysisType(type);
-   taskLYZEP->SetCFManager1(cfmgr1);
-   taskLYZEP->SetCFManager2(cfmgr2);
+   AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane");
    mgr->AddTask(taskLYZEP);
  }
  if (GFC){
@@ -576,17 +567,17 @@ if (mode==mLocal || mode == mLocalPAR || mode == mGRID) {
    mgr->ConnectOutput(taskSP,0,coutputSP);
  } 
  if (LYZ1) { 
-   mgr->ConnectInput(taskLYZ1,0,cinput1); 
+   mgr->ConnectInput(taskLYZ1,0,coutputFE); 
    mgr->ConnectOutput(taskLYZ1,0,coutputLYZ1);
  }  
  if (LYZ2) { 
-   mgr->ConnectInput(taskLYZ2,0,cinput1); 
+   mgr->ConnectInput(taskLYZ2,0,coutputFE); 
    mgr->ConnectInput(taskLYZ2,1,cinputLYZ2);
    mgr->ConnectOutput(taskLYZ2,0,coutputLYZ2);
    cinputLYZ2->SetData(fInputListLYZ2);
  }  
  if (LYZEP) { 
-   mgr->ConnectInput(taskLYZEP,0,cinput1); 
+   mgr->ConnectInput(taskLYZEP,0,coutputFE); 
    mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
    mgr->ConnectOutput(taskLYZEP,0,coutputLYZEP);
    cinputLYZEP->SetData(fInputListLYZEP);
