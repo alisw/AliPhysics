@@ -17,7 +17,6 @@
 
 class AliMUONGeometryTransformer;
 
-class TRandom;
 class TGeoCombiTrans;
 class TClonesArray;
 
@@ -101,9 +100,9 @@ class AliMUONGeometryMisAligner:public TObject
 
   Double_t fXYAngMisAligFactor;  ///< factor (<1) to apply to angular misalignment range since range of motion is restricted out of the xy plane
   Double_t fZCartMisAligFactor; ///< factor (<1) to apply to cartetian misalignment range since range of motion is restricted in z direction
-  TRandom *fDisplacementGenerator;  ///< random number generator for the displacements
+
   
-  ClassDef(AliMUONGeometryMisAligner,3)	// Geometry parametrisation
+  ClassDef(AliMUONGeometryMisAligner,4)	// Geometry parametrisation
 };
 
 #endif //ALI_MUON_GEOMETRY_MIS_ALIGNER_H

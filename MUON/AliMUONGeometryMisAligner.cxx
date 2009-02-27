@@ -53,6 +53,7 @@
 #include "AliMpExMapIterator.h"
 
 #include "AliAlignObjMatrix.h"
+#include "AliMathBase.h"
 #include "AliLog.h"
 
 #include <TClonesArray.h>
@@ -72,8 +73,7 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Dou
     fUseUni(kFALSE),
     fUseGaus(kTRUE),
     fXYAngMisAligFactor(0.0),
-    fZCartMisAligFactor(0.0),
-    fDisplacementGenerator(0)
+    fZCartMisAligFactor(0.0)
 {
   /// Standard constructor
   for (Int_t i=0; i<6; i++){
@@ -89,7 +89,6 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Dou
   fDetElemMisAlig[5][0] = angMisAligM; 
   fDetElemMisAlig[5][1] = angMisAligW;
 
-  fDisplacementGenerator = new TRandom(0);
 }
 
 //______________________________________________________________________________
@@ -98,8 +97,7 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAligM, Doub
     fUseUni(kFALSE),
     fUseGaus(kTRUE),
     fXYAngMisAligFactor(0.0),
-    fZCartMisAligFactor(0.0),
-    fDisplacementGenerator(0)
+    fZCartMisAligFactor(0.0)
 {
   /// Standard constructor
   for (Int_t i=0; i<6; i++){
@@ -115,7 +113,6 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAligM, Doub
   fDetElemMisAlig[5][0] = angMisAligM; 
   fDetElemMisAlig[5][1] = angMisAligW;
 
-  fDisplacementGenerator = new TRandom(0);
 }
 
 //______________________________________________________________________________
@@ -124,8 +121,7 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAlig, Doubl
     fUseUni(kTRUE),
     fUseGaus(kFALSE),
     fXYAngMisAligFactor(0.0),
-    fZCartMisAligFactor(0.0),
-    fDisplacementGenerator(0)
+    fZCartMisAligFactor(0.0)
 {
   /// Standard constructor
   for (Int_t i=0; i<6; i++){
@@ -138,7 +134,6 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAlig, Doubl
   fDetElemMisAlig[1][1] = cartMisAlig; 
   fDetElemMisAlig[5][1] = angMisAlig;
 
-  fDisplacementGenerator = new TRandom(0);
 }
 
 //_____________________________________________________________________________
@@ -147,8 +142,7 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner()
     fUseUni(kTRUE),
     fUseGaus(kFALSE),
     fXYAngMisAligFactor(0.0),
-    fZCartMisAligFactor(0.0),
-    fDisplacementGenerator(0)
+    fZCartMisAligFactor(0.0)
 {
   /// Default constructor
   for (Int_t i=0; i<6; i++){
@@ -164,7 +158,6 @@ AliMUONGeometryMisAligner::~AliMUONGeometryMisAligner()
 {
 /// Destructor
 
-  if (fDisplacementGenerator) delete fDisplacementGenerator;
 }
 
 //_________________________________________________________________________
@@ -210,13 +203,13 @@ void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t cartMisAlig[3], Double_t
     detection elements are on a support structure), while rotation of the x-y
     plane is more free.
   */
-  cartMisAlig[0] = fDisplacementGenerator->Uniform(-lParMisAlig[0][1]+lParMisAlig[0][0], lParMisAlig[0][0]+lParMisAlig[0][1]);
-  cartMisAlig[1] = fDisplacementGenerator->Uniform(-lParMisAlig[1][1]+lParMisAlig[1][0], lParMisAlig[1][0]+lParMisAlig[1][1]);
-  cartMisAlig[2] = fDisplacementGenerator->Uniform(-lParMisAlig[2][1]+lParMisAlig[2][0], lParMisAlig[2][0]+lParMisAlig[2][1]);  
+  cartMisAlig[0] = gRandom->Uniform(-lParMisAlig[0][1]+lParMisAlig[0][0], lParMisAlig[0][0]+lParMisAlig[0][1]);
+  cartMisAlig[1] = gRandom->Uniform(-lParMisAlig[1][1]+lParMisAlig[1][0], lParMisAlig[1][0]+lParMisAlig[1][1]);
+  cartMisAlig[2] = gRandom->Uniform(-lParMisAlig[2][1]+lParMisAlig[2][0], lParMisAlig[2][0]+lParMisAlig[2][1]);  
  
-  angMisAlig[0] = fDisplacementGenerator->Uniform(-lParMisAlig[3][1]+lParMisAlig[3][0], lParMisAlig[3][0]+lParMisAlig[3][1]);
-  angMisAlig[1] = fDisplacementGenerator->Uniform(-lParMisAlig[4][1]+lParMisAlig[4][0], lParMisAlig[4][0]+lParMisAlig[4][1]);
-  angMisAlig[2] = fDisplacementGenerator->Uniform(-lParMisAlig[5][1]+lParMisAlig[5][0], lParMisAlig[5][0]+lParMisAlig[5][1]);	// degrees
+  angMisAlig[0] = gRandom->Uniform(-lParMisAlig[3][1]+lParMisAlig[3][0], lParMisAlig[3][0]+lParMisAlig[3][1]);
+  angMisAlig[1] = gRandom->Uniform(-lParMisAlig[4][1]+lParMisAlig[4][0], lParMisAlig[4][0]+lParMisAlig[4][1]);
+  angMisAlig[2] = gRandom->Uniform(-lParMisAlig[5][1]+lParMisAlig[5][0], lParMisAlig[5][0]+lParMisAlig[5][1]);	// degrees
 }
 
 //_________________________________________________________________________
@@ -232,13 +225,13 @@ void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_
     detection elements are on a support structure), while rotation of the x-y
     plane is more free.
   */
-  cartMisAlig[0] = fDisplacementGenerator->Gaus(lParMisAlig[0][0], lParMisAlig[0][1]);
-  cartMisAlig[1] = fDisplacementGenerator->Gaus(lParMisAlig[1][0], lParMisAlig[1][1]);
-  cartMisAlig[2] = fDisplacementGenerator->Gaus(lParMisAlig[2][0], lParMisAlig[2][1]);
+  cartMisAlig[0] = AliMathBase::TruncatedGaus(lParMisAlig[0][0], lParMisAlig[0][1], 3.*lParMisAlig[0][1]);
+  cartMisAlig[1] = AliMathBase::TruncatedGaus(lParMisAlig[1][0], lParMisAlig[1][1], 3.*lParMisAlig[1][1]);
+  cartMisAlig[2] = AliMathBase::TruncatedGaus(lParMisAlig[2][0], lParMisAlig[2][1], 3.*lParMisAlig[2][1]);
  
-  angMisAlig[0] = fDisplacementGenerator->Gaus(lParMisAlig[3][0], lParMisAlig[3][1]);
-  angMisAlig[1] = fDisplacementGenerator->Gaus(lParMisAlig[4][0], lParMisAlig[4][1]);
-  angMisAlig[2] = fDisplacementGenerator->Gaus(lParMisAlig[5][0], lParMisAlig[5][1]);	// degrees
+  angMisAlig[0] = AliMathBase::TruncatedGaus(lParMisAlig[3][0], lParMisAlig[3][1], 3.*lParMisAlig[3][1]);
+  angMisAlig[1] = AliMathBase::TruncatedGaus(lParMisAlig[4][0], lParMisAlig[4][1], 3.*lParMisAlig[4][1]);
+  angMisAlig[2] = AliMathBase::TruncatedGaus(lParMisAlig[5][0], lParMisAlig[5][1], 3.*lParMisAlig[5][1]);	// degrees
 }
 
 //_________________________________________________________________________
