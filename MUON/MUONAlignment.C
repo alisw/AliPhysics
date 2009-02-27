@@ -134,6 +134,9 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   Bool_t bChOnOff[10] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
 
+  // Set degrees of freedom to align (see AliMUONAlignment)
+  alig->AllowVariations(bChOnOff);
+
   // Fix parameters or add constraints here
 //   for (Int_t iSt=0; iSt<5; iSt++)
 //     if (!bStOnOff[iSt]) alig->FixStation(iSt+1);
