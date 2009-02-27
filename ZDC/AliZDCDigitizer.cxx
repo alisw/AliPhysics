@@ -53,6 +53,8 @@ ClassImp(AliZDCDigitizer)
 //____________________________________________________________________________
 AliZDCDigitizer::AliZDCDigitizer() :
   fIsCalibration(0), 
+  fIsSignalInADCGate(kFALSE),
+  fFracLostSignal(0.),
   fPedData(0), 
   fCalibData(0)
 {
@@ -64,6 +66,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
 AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager),
   fIsCalibration(0), //By default the simulation doesn't create calib. data
+  fIsSignalInADCGate(kFALSE),
+  fFracLostSignal(0.),
   fPedData(GetPedData()), 
   fCalibData(GetCalibData())
 {
@@ -84,6 +88,8 @@ AliZDCDigitizer::~AliZDCDigitizer()
 AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   AliDigitizer(),
   fIsCalibration(digitizer.fIsCalibration),
+  fIsSignalInADCGate(digitizer.fIsSignalInADCGate),
+  fFracLostSignal(digitizer.fFracLostSignal),
   fPedData(digitizer.fPedData),
   fCalibData(digitizer.fCalibData)
 {
@@ -127,11 +133,11 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // !!! 2nd ZDC set added 
   // *** 1st 3 arrays are digits from REAL (simulated) hits
   // *** last 2 are copied from simulated digits
-  // --- pm[0][...] = light in ZN right  [C, Q1, Q2, Q3, Q4]
-  // --- pm[1][...] = light in ZP right [C, Q1, Q2, Q3, Q4]
+  // --- pm[0][...] = light in ZN side C  [C, Q1, Q2, Q3, Q4]
+  // --- pm[1][...] = light in ZP side C [C, Q1, Q2, Q3, Q4]
   // --- pm[2][...] = light in ZEM [x, 1, 2, x, x]
-  // --- pm[3][...] = light in ZN left [C, Q1, Q2, Q3, Q4] ->NEW!
-  // --- pm[4][...] = light in ZP left [C, Q1, Q2, Q3, Q4] ->NEW!
+  // --- pm[3][...] = light in ZN side A [C, Q1, Q2, Q3, Q4] ->NEW!
+  // --- pm[4][...] = light in ZP side A [C, Q1, Q2, Q3, Q4] ->NEW!
   // ------------------------------------------------------------
   Float_t pm[5][5]; 
   for(Int_t iSector1=0; iSector1<5; iSector1++) 
@@ -151,8 +157,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 
   // impact parameter and number of spectators
   Float_t impPar = -1;
-  Int_t specN = 0;
-  Int_t specP = 0;
+  Int_t specNTarg = 0, specPTarg = 0;
+  Int_t specNProj = 0, specPProj = 0;
+  Float_t signalTime0;
 
   // loop over input streams
   for(Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
@@ -181,12 +188,32 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
                       sdigit.GetSector(0), sdigit.GetSector(1)));
 	continue;
       }
-      //
+      // Checking if signal is inside ADC gate
+      if(iSDigit==0) signalTime0 = sdigit.GetTrackTime();
+      else{
+        // Assuming a signal lenght of 20 ns, signal is in gate if 
+	// signal ENDS in signalTime0+50. -> sdigit.GetTrackTime()+20<=signalTime0+50.
+        if(sdigit.GetTrackTime()<=signalTime0+30.) fIsSignalInADCGate = kTRUE;
+        if(sdigit.GetTrackTime()>signalTime0+30.){
+	  fIsSignalInADCGate = kFALSE;
+	  // Vedi quaderno per spiegazione approx. usata 
+	  // nel calcolo della fraz. di segnale perso
+	  fFracLostSignal = (sdigit.GetTrackTime()-30)*(sdigit.GetTrackTime()-30)/280.;
+	}
+      }
+      Float_t sdSignal = sdigit.GetLightPM();
+      if(fIsSignalInADCGate == kFALSE){
+        AliWarning(Form("\t %f of ZDC signal 4 det.(%d, %d) out of ADC gate\n",
+		fFracLostSignal,sdigit.GetSector(0),sdigit.GetSector(1)));
+	sdSignal = (1-fFracLostSignal)*sdSignal;
+      }
+      
       pm[(sdigit.GetSector(0))-1][sdigit.GetSector(1)] += sdigit.GetLightPM();
       /*printf("\n\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
       	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
       	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]); // Chiara debugging!
       */
+      
     }
 
     loader->UnloadSDigits();
@@ -200,22 +227,30 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     if(!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
     impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
     // 
-    specN = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
-    specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-    AliDebug(2, Form("\n AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
-                     impPar, specN, specP));
-    printf("\n\t AliZDCDigitizer -> b = %f fm, # generated spectator n = %d," 
-    " # generated spectator p = %d\n", impPar, specN, specP);
+    specNProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
+    specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
+    specNTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
+    specPTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
+    printf("\n\t AliZDCDigitizer: b = %f fm\n"
+    " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
+    " \t    TARG.:  #spectator n %d, #spectator p %d\n", 
+    impPar, specNProj, specPProj, specNTarg, specPTarg);
   }
 
-  // add spectators
+  // Applying fragmentation algorithm and adding spectator signal
   if(impPar >= 0) {
-    Int_t freeSpecN, freeSpecP;
-    Fragmentation(impPar, specN, specP, freeSpecN, freeSpecP);
-    printf("\n\t AliZDCDigitizer -> Adding signal for %d free spectator n\n",freeSpecN);
-    SpectatorSignal(1, freeSpecN, pm);
-    printf("\t AliZDCDigitizer -> Adding signal for %d free spectator p\n\n",freeSpecP);
-    SpectatorSignal(2, freeSpecP, pm);
+    Int_t freeSpecNProj, freeSpecPProj;
+    Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
+    Int_t freeSpecNTarg, freeSpecPTarg;
+    Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
+    SpectatorSignal(1, freeSpecNProj, pm);
+    printf("    AliZDCDigitizer -> Signal for %d PROJ free spectator n added\n",freeSpecNProj);
+    SpectatorSignal(2, freeSpecPProj, pm);
+    printf("    AliZDCDigitizer -> Signal for %d PROJ free spectator p added\n",freeSpecPProj);
+    SpectatorSignal(3, freeSpecNTarg, pm);
+    printf("    AliZDCDigitizer -> Signal for %d TARG free spectator n added\n",freeSpecNTarg);
+    SpectatorSignal(4, freeSpecPTarg, pm);
+    printf("    AliZDCDigitizer -> Signal for %d TARG free spectator p added\n",freeSpecPTarg);
   }
 
 
@@ -343,26 +378,35 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
 
 //_____________________________________________________________________________
 void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents, 
-                                      Float_t pm[3][5]) const
+                                      Float_t pm[5][5]) const
 {
 // add signal of the spectators
- 
-  TFile* file = NULL;
-  if(SpecType == 1) {		// --- Signal for spectator neutrons
-    file = TFile::Open("$ALICE_ROOT/ZDC/ZNsignalntu.root");
-  } else if(SpecType == 2) {	// --- Signal for spectator protons
-    file = TFile::Open("$ALICE_ROOT/ZDC/ZPsignalntu.root");
+  
+  TString hfn; 
+  if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
+    hfn = "$ALICE_ROOT/ZDC/ZNCSignal.root";
+  } 
+  else if(SpecType == 2) { // --- Signal for projectile spectator protons
+    hfn = "$ALICE_ROOT/ZDC/ZPCSignal.root";
   }
+  else if(SpecType == 3) { // --- Signal for target spectator neutrons
+    hfn = "$ALICE_ROOT/ZDC/ZNASignal.root";
+  }
+  else if(SpecType == 4) { // --- Signal for target spectator protons
+    hfn = "$ALICE_ROOT/ZDC/ZPASignal.root";
+  }
+  
+  TFile* file = TFile::Open(hfn);
   if(!file || !file->IsOpen()) {
-    AliError("Opening of file failed");
+    AliError((Form(" Opening file %s failed\n",hfn.Data())));
     return;
   }
 
   TNtuple* zdcSignal = (TNtuple*) file->Get("ZDCSignal");
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
   
-  Float_t *entry, hitsSpec[7];
-  Int_t pl, i, j, k, iev=0, rnd[125], volume[2];
+  Float_t *entry;
+  Int_t pl, i, k, iev=0, rnd[125], volume[2];
   for(pl=0;pl<125;pl++) rnd[pl] = 0;
   if(numEvents > 125) {
     AliWarning(Form("numEvents (%d) is larger than 125", numEvents));
@@ -381,14 +425,10 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   	entry = zdcSignal->GetArgs();
   	if(entry[0] == rnd[iev]){
           for(k=0; k<2; k++) volume[k] = (Int_t) entry[k+1];
-          for(j=0; j<7; j++) hitsSpec[j] = entry[j+3];
 	  //
-	  Float_t lightQ = hitsSpec[4];
-	  Float_t lightC = hitsSpec[5];
-	  AliDebug(3, Form("SpectatorSignal -> vol = (%d, %d), lightQ = %.0f, lightC = %.0f",
-                           volume[0], volume[1], lightQ, lightC));
-	  //printf("\n   Volume = (%d, %d), lightQ = %.0f, lightC = %.0f",
-          //                 volume[0], volume[1], lightQ, lightC);
+	  Float_t lightQ = entry[7];
+	  Float_t lightC = entry[8];
+	  //
 	  if(volume[0] != 3) {  // ZN or ZP
             pm[volume[0]-1][0] += lightC;
             pm[volume[0]-1][volume[1]] += lightQ;

@@ -28,8 +28,7 @@ ClassImp(AliZDCRecoParam)
 
 //_____________________________________________________________________________
 AliZDCRecoParam::AliZDCRecoParam() :
-  AliDetectorRecoParam(),
-  fBeamEnergy(0)
+  AliDetectorRecoParam()
 {
   //
   //Default constructor

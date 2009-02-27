@@ -38,6 +38,7 @@
 #include <TParticle.h>
 
 // --- AliRoot classes
+#include "AliLog.h"
 #include "AliConst.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -2395,9 +2396,6 @@ void AliZDCv3::StepManager()
         if(xdet[1]<=0.) vol[1]=2;
         else vol[1]=4;
       }
-      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("	ZDC StepManager->ERROR in ZN!!! vol[1] = %d, xdet[0] = %f,"
-	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }
     
     else if(vol[0]==2){	//Quadrant in ZPC
@@ -2414,9 +2412,6 @@ void AliZDCv3::StepManager()
  	   break;
  	 }
       }
-      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("	ZDC StepManager->ERROR in ZP!!! vol[1] = %d, xdet[0] = %f,"
-	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }
     //
     // Quadrant in ZEM: vol[1] = 1 -> particle in 1st ZEM (placed at x = 8.5 cm)
@@ -2448,9 +2443,6 @@ void AliZDCv3::StepManager()
         if(xdet[1]<=0.) vol[1]=2;
         else vol[1]=4;
       }
-      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("	ZDC StepManager->ERROR in ZNA!!! vol[1] = %d, xdet[0] = %f,"
-	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }    
     //
     else if(vol[0]==5){	//Quadrant in ZPA
@@ -2467,11 +2459,12 @@ void AliZDCv3::StepManager()
  	   break;
  	 }
       }
-      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("	ZDC StepManager->ERROR in ZPA!!! vol[1] = %d, xdet[0] = %f,"
-	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }    
-    
+    if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
+      AliError(Form("AliZDCv3 -> WRONG tower for det %d: tow %d with xdet=(%f, %f)\n",
+		vol[0], vol[1], xdet[0], xdet[1]));
+    // Ch. debug
+    //printf("\t *** det %d vol %d xdet(%f, %f)\n",vol[0], vol[1], xdet[0], xdet[1]);
     
   // Store impact point and kinetic energy of the ENTERING particle
     

@@ -70,7 +70,7 @@ protected:
   Float_t fLightPMC;  //Cerenkov light seen by the common PM
   Float_t fEnergy;    //Total energy deposited in eV
   Int_t   fPDGCode;   //PDG code of particle in the ZDC
-  Float_t fTrackTOF;  //Track time
+  Float_t fTrackTOF;  //Track time in ns
 
   ClassDef(AliZDCHit,3)  // Hits for the Zero Degree Calorimeters
 };

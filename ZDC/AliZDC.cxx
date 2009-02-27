@@ -281,6 +281,8 @@ void AliZDC::Hits2SDigits()
 	Float_t lightQ = zdcHit->GetLightPMQ();
 	Float_t lightC = zdcHit->GetLightPMC();
 	trackTime = zdcHit->GetTrackTOF();
+	// Signals from ZEM are delayed to arrive in time with ZDC signals
+	if(sector[0] == 3)  trackTime += 320;
 	// Ch. debug
 	//printf("\t det %d vol %d trackTOF %f lightQ %1.0f lightC %1.0f\n",
 	//	sector[0], sector[1], trackTime, lightQ, lightC);

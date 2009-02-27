@@ -63,12 +63,13 @@ private:
 
   Float_t fPMGain[6][5];      	// PM gain
   Float_t fADCRes[2];	      	// ADC conversion factors
-  
   Int_t   fIsCalibration; 	// !=0 if simulation creates calibration data
+  Bool_t  fIsSignalInADCGate;   // true if signal in ADC gate
+  Float_t fFracLostSignal;      // fraction of lost signal
   
   AliZDCPedestals *fPedData; 	//! pedestal calibration data
   AliZDCCalib     *fCalibData; 	//! energy and equalization calibration data
        
-  ClassDef(AliZDCDigitizer, 7)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 8)     // digitizer for ZDC
 };    
 #endif

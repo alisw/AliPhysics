@@ -97,7 +97,7 @@ void AliGenZDC::Init()
          "= %f, Crossing plane = %d\n\n", fFermiflag, fBeamDiv, fBeamCrossAngle,
 	 fBeamCrossPlane);
 
-  FermiTwoGaussian(207.);
+  FermiTwoGaussian(208.);
 }  
   
 //_____________________________________________________________________________

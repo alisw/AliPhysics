@@ -46,8 +46,6 @@ AliZDCRecoParampp *AliZDCRecoParampp::GetppRecoParam()
   // Makes default reconstruction parameters 
   //
   AliZDCRecoParampp *param = new AliZDCRecoParampp();
-  //
-  param->SetBeamEnergy(5.);
   
   return param;
 
@@ -60,5 +58,4 @@ void AliZDCRecoParampp::PrintParameters() const
   // print reconstruction parameters
   //
   printf("\n\n\t AliZDCRecoParampp -> parameters set for reconstruction\n");
-  printf("\t p-p -> beam E : %1.2f TeV\n\n",fBeamEnergy);
 }

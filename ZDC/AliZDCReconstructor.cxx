@@ -23,9 +23,11 @@
 
 
 #include <TF1.h>
+#include <TMap.h>
 
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
+#include "AliGRPObject.h"
 #include "AliESDEvent.h"
 #include "AliESDZDC.h"
 #include "AliZDCDigit.h"
@@ -45,9 +47,12 @@ AliZDCRecoParam *AliZDCReconstructor::fRecoParam=0;  //reconstruction parameters
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor() :
   fPedData(GetPedData()),
-  fECalibData(GetECalibData())
+  fECalibData(GetECalibData()),
+  fRecoMode(0),
+  fBeamEnergy(0.)
 {
   // **** Default constructor
+  SetRecoMode();
 
 }
 
@@ -59,6 +64,54 @@ AliZDCReconstructor::~AliZDCReconstructor()
    if(fRecoParam)  delete fRecoParam;
    if(fPedData)    delete fPedData;    
    if(fECalibData) delete fECalibData;
+}
+
+//____________________________________________________________________________
+void AliZDCReconstructor::SetRecoMode()
+{
+  // Setting reconstruction mode
+
+  // Initialization of the GRP entry 
+  AliGRPObject* grpData;
+  AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  if(entry){
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+    if(m){
+       m->Print();
+       grpData = new AliGRPObject();
+       grpData->ReadValuesFromMap(m);
+    }
+    else{
+       grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+       entry->SetOwner(0);
+    }
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+  }
+  if(!grpData) AliError("No GRP entry found in OCDB!");
+
+  TString beamType = grpData->GetBeamType();
+  if(beamType==AliGRPObject::GetInvalidString()){
+    AliError("GRP/GRP/Data entry:  missing value for the beam energy !");
+    AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
+    return;
+  }
+  //
+  if((beamType.CompareTo("p-p")) == 0){
+    fRecoMode=0;
+    fRecoParam = (AliZDCRecoParampp*) AliZDCRecoParampp::GetppRecoParam();
+  }
+  else if((beamType.CompareTo("A-A")) == 0){
+    fRecoMode=1;
+    fRecoParam = (AliZDCRecoParamPbPb*) AliZDCRecoParamPbPb::GetPbPbRecoParam();
+  }
+  
+  fBeamEnergy = grpData->GetBeamEnergy();
+  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+    fBeamEnergy = 0.;
+  }
+  
+  printf("\n ***** ZDC reconstruction initialized for %s @ %1.3f GeV\n\n",beamType.Data(), fBeamEnergy);
 }
 
 //_____________________________________________________________________________
@@ -169,7 +222,11 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }
 
   // reconstruct the event
-  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  if(fRecoMode==0)
+    ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+    	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
+  else if(fRecoMode==1)
+    ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
 
 }
@@ -253,7 +310,11 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }
     
   // reconstruct the event
-  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  if(fRecoMode==0)
+    ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+    	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
+  else if(fRecoMode==1)
+    ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
 
 }
@@ -322,19 +383,17 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* ZN1AD
        calibSumZP2[1] += calibTowZP2[gi];
      }
   }
-
-  //
-  // --- Reconstruction parameters ------------------ 
-  if(!fRecoParam)  fRecoParam = (AliZDCRecoParampp*) AliZDCRecoParampp::GetppRecoParam();
   
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb
   Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
-  Float_t beamE = fRecoParam->GetBeamEnergy();
-  nDetSpecNLeft = (Int_t) (calibSumZN1[0]/beamE);
-  nDetSpecPLeft = (Int_t) (calibSumZP1[0]/beamE);
-  nDetSpecNRight = (Int_t) (calibSumZN2[0]/beamE);
-  nDetSpecPRight = (Int_t) (calibSumZP2[0]/beamE);
+  if(fBeamEnergy!=0){
+   nDetSpecNLeft = (Int_t) (calibSumZN1[0]/fBeamEnergy);
+   nDetSpecPLeft = (Int_t) (calibSumZP1[0]/fBeamEnergy);
+   nDetSpecNRight = (Int_t) (calibSumZN2[0]/fBeamEnergy);
+   nDetSpecPRight = (Int_t) (calibSumZP2[0]/fBeamEnergy);
+  }
+  else AliWarning(" ATTENTION -> fBeamEnergy = 0\n");
   /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
     " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
     nDetSpecNRight, nDetSpecPRight);*/
@@ -446,11 +505,13 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, Float_t* ZN1
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb
   Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
-  Float_t beamE = fRecoParam->GetBeamEnergy();
-  nDetSpecNLeft = (Int_t) (calibSumZN1[0]/beamE);
-  nDetSpecPLeft = (Int_t) (calibSumZP1[0]/beamE);
-  nDetSpecNRight = (Int_t) (calibSumZN2[0]/beamE);
-  nDetSpecPRight = (Int_t) (calibSumZP2[0]/beamE);
+  if(fBeamEnergy!=0){
+    nDetSpecNLeft = (Int_t) (calibSumZN1[0]/fBeamEnergy);
+    nDetSpecPLeft = (Int_t) (calibSumZP1[0]/fBeamEnergy);
+    nDetSpecNRight = (Int_t) (calibSumZN2[0]/fBeamEnergy);
+    nDetSpecPRight = (Int_t) (calibSumZP2[0]/fBeamEnergy);
+  }
+  else AliWarning(" ATTENTION -> fBeamEnergy = 0\n");
   /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
     " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
     nDetSpecNRight, nDetSpecPRight);*/
@@ -573,7 +634,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   // 
   esd->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), reco.GetZEM1HRsignal(), 
   	      reco.GetZEM2HRsignal(), reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
-	      reco.GetNPartLeft(),reco.GetNPartRight());
+	      reco.GetNPartLeft(), reco.GetNPartRight());
   //
   
 }

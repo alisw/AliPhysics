@@ -37,9 +37,12 @@ public:
   	        {FillZDCintoESD(clustersTree,esd);}
   virtual void FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, AliESDEvent* esd) const 
   	        {FillZDCintoESD(clustersTree,esd);}
-    
+
   // parameter settings for reconstruction
+  void SetRecoMode();
   static void SetRecoParam(AliZDCRecoParam * param){fRecoParam = param;}
+  
+  Int_t   GetRecoMode() {return fRecoMode;}
   static const AliZDCRecoParam* GetRecoParam(){return fRecoParam;}
   
   // OCDB objects for reconstruction
@@ -63,8 +66,10 @@ private:
 
   AliZDCPedestals *fPedData; 	//! pedestal calibration data
   AliZDCCalib     *fECalibData; //! energy and equalization calibration data
+  Int_t           fRecoMode;	// =0->p-p, =1->A-A
+  Float_t         fBeamEnergy;	// beam energy
 
-  ClassDef(AliZDCReconstructor, 4)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 5)   // class for the ZDC reconstruction
 };
 
 #endif

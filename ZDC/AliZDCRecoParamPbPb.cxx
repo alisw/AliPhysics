@@ -107,8 +107,6 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetPbPbRecoParam()
   param->SetEZN2MaxValue(161.);
   param->SetEZP2MaxValue(59.);
   param->SetEZDC2MaxValue(161.);
-  //
-  param->SetBeamEnergy(2.7);
   
   return param;
 
@@ -121,7 +119,6 @@ void AliZDCRecoParamPbPb::PrintParameters() const
   // print reconstruction parameters
   //
   printf("\n\n\t AliZDCRecoParamPbPb -> parameters set for reconstruction\n");
-  printf("\t Beam energy (for Pb-Pb): %1.2f TeV\n",fBeamEnergy);
   printf("\t Functions for reconstruction of centrality varibles (Pb-Pb):\n");
   
   fZNCen->Print(""); 
