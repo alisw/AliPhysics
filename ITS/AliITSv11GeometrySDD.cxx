@@ -809,11 +809,13 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   Double_t distCenterSideDown =  0.5*fgkLadderWidth/TMath::Cos(beta);
 
   //--- the top V of the Carbon Fiber Ladder (segment)
-  TGeoArb8 *cfLaddTop1 = CreateLadderSide( fgkSegmentLength/2., halfTheta, 
+  TGeoArb8 *cfLaddTop1 = CreateLadderSide( "CFladdTopCornerVol1shape",
+					   fgkSegmentLength/2., halfTheta, 
 			  -1, fgkLadderLa, fgkLadderHa, fgkLadderl);
   TGeoVolume *cfLaddTopVol1 = new TGeoVolume("ITSsddCFladdTopCornerVol1",
 				  cfLaddTop1,carbonFiberLadderStruct);
-  TGeoArb8 *cfLaddTop2 = CreateLadderSide( fgkSegmentLength/2., halfTheta,
+  TGeoArb8 *cfLaddTop2 = CreateLadderSide( "CFladdTopCornerVol2shape",
+					   fgkSegmentLength/2., halfTheta,
 			   1, fgkLadderLa, fgkLadderHa, fgkLadderl);
   TGeoVolume *cfLaddTopVol2 = new TGeoVolume("ITSsddCFladdTopCornerVol2",
 				  cfLaddTop2, carbonFiberLadderStruct);
@@ -822,11 +824,13 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   TGeoTranslation *trTop1 = new TGeoTranslation(0, fgkLadderHeight/2-dy, 0);
 
   //--- the 2 side V
-  TGeoArb8 *cfLaddSide1 = CreateLadderSide( fgkSegmentLength/2., beta, -1,
+  TGeoArb8 *cfLaddSide1 = CreateLadderSide( "CFladdSideCornerVol1shape",
+					    fgkSegmentLength/2., beta, -1,
 					    fgkLadderLb, fgkLadderHb, fgkLadderl);
   TGeoVolume *cfLaddSideVol1 = new TGeoVolume( "ITSsddCFladdSideCornerVol1",
 				   cfLaddSide1,carbonFiberLadderStruct);
-  TGeoArb8 *cfLaddSide2 = CreateLadderSide( fgkSegmentLength/2., beta, 1,
+  TGeoArb8 *cfLaddSide2 = CreateLadderSide( "CFladdSideCornerVol2shape",
+					    fgkSegmentLength/2., beta, 1,
 					    fgkLadderLb, fgkLadderHb, fgkLadderl);
   TGeoVolume *cfLaddSideVol2 = new TGeoVolume( "ITSsddCFladdSideCornerVol2",
 				   cfLaddSide2,carbonFiberLadderStruct);
@@ -1924,21 +1928,32 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
 
 
 //________________________________________________________________________
-TGeoArb8 *AliITSv11GeometrySDD::CreateLadderSide(Double_t dz, Double_t angle,
-                         Double_t xSign, Double_t L, Double_t H, Double_t l) {
+TGeoArb8 *AliITSv11GeometrySDD::CreateLadderSide(const char *name,
+                         Double_t dz, Double_t angle, Double_t xSign,
+                         Double_t L, Double_t H, Double_t l) {
     // Create one half of the V shape corner of CF ladder
   
     TGeoArb8 *cfLaddSide = new TGeoArb8(dz);
-    cfLaddSide->SetVertex( 0, 0,  0);
-    cfLaddSide->SetVertex( 1, 0, -H);
-    cfLaddSide->SetVertex( 2, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
-			   -L*TMath::Cos(angle)-l*TMath::Sin(angle));
-    cfLaddSide->SetVertex( 3, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
-    cfLaddSide->SetVertex( 4, 0,  0);
-    cfLaddSide->SetVertex( 5, 0, -H);
-    cfLaddSide->SetVertex( 6, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
-			   -L*TMath::Cos(angle)-l*TMath::Sin(angle));
-    cfLaddSide->SetVertex(7, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
+    cfLaddSide->SetName(name);
+
+    // Points must be in clockwise order
+    cfLaddSide->SetVertex(0, 0,  0);
+    cfLaddSide->SetVertex(2, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
+			  -L*TMath::Cos(angle)-l*TMath::Sin(angle));
+    cfLaddSide->SetVertex(4, 0,  0);
+    cfLaddSide->SetVertex(6, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
+			  -L*TMath::Cos(angle)-l*TMath::Sin(angle));
+    if (xSign < 0) {
+     cfLaddSide->SetVertex(1, 0, -H);
+     cfLaddSide->SetVertex(3, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
+     cfLaddSide->SetVertex(5, 0, -H);
+     cfLaddSide->SetVertex(7, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
+    } else {
+     cfLaddSide->SetVertex(1, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
+     cfLaddSide->SetVertex(3, 0, -H);
+     cfLaddSide->SetVertex(5, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
+     cfLaddSide->SetVertex(7, 0, -H);
+    }
     return cfLaddSide;
 }
 
@@ -2784,19 +2799,19 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportL() {
   Double_t diffX = fgkCoolPipeSuppHeight*TanD(fgkCoolPipeSuppAngle);
   
   TGeoArb8 *side1 = new TGeoArb8(fgkCoolPipeSuppHeight/2.);
+  side1->SetName("ITSsddCPSside1");
   side1->SetVertex( 0, 0, -fgkCoolPipeSuppWidthExt/2.);
-  side1->SetVertex( 1, fgkCoolPipeSuppMaxLength/2.-diffX,
-		       -fgkCoolPipeSuppWidthExt/2.);
+  side1->SetVertex( 1, 0,  fgkCoolPipeSuppWidthExt/2.);
   side1->SetVertex( 2, fgkCoolPipeSuppMaxLength/2.-diffX,
 		       fgkCoolPipeSuppWidthExt/2.);
-  side1->SetVertex( 3, 0,  fgkCoolPipeSuppWidthExt/2.);
-  side1->SetVertex( 4, 0, -fgkCoolPipeSuppWidthExt/2.);
-  side1->SetVertex( 5, fgkCoolPipeSuppMaxLength/2.,
+  side1->SetVertex( 3, fgkCoolPipeSuppMaxLength/2.-diffX,
 		       -fgkCoolPipeSuppWidthExt/2.);
+  side1->SetVertex( 4, 0, -fgkCoolPipeSuppWidthExt/2.);
+  side1->SetVertex( 5, 0,  fgkCoolPipeSuppWidthExt/2.);
   side1->SetVertex( 6, fgkCoolPipeSuppMaxLength/2.,
 		       fgkCoolPipeSuppWidthExt/2.);
-  side1->SetVertex( 7, 0,  fgkCoolPipeSuppWidthExt/2.);
-  side1->SetName("ITSsddCPSside1");
+  side1->SetVertex( 7, fgkCoolPipeSuppMaxLength/2.,
+		       -fgkCoolPipeSuppWidthExt/2.);
 
   TGeoTranslation *side1Tr = new TGeoTranslation("ITSsddCPStr1",0,
 				 - fgkCoolPipeSuppAxeDist
@@ -2873,6 +2888,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
   Double_t diffX = fgkCoolPipeSuppHeight*TanD(fgkCoolPipeSuppAngle);
   
   TGeoArb8 *side1 = new TGeoArb8(fgkCoolPipeSuppHeight/2.);
+  side1->SetName("ITSsddCPSside1R");
   side1->SetVertex( 0, 0, -fgkCoolPipeSuppWidthExt/2.);
   side1->SetVertex( 1, -(fgkCoolPipeSuppMaxLength/2.-diffX),
 		       -fgkCoolPipeSuppWidthExt/2.);
@@ -2885,7 +2901,6 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
   side1->SetVertex( 6, -fgkCoolPipeSuppMaxLength/2.,
 		       fgkCoolPipeSuppWidthExt/2.);
   side1->SetVertex( 7, 0,  fgkCoolPipeSuppWidthExt/2.);
-  side1->SetName("ITSsddCPSside1R");
 
   TGeoTranslation *side1Tr = new TGeoTranslation("ITSsddCPStr1R",0,
 				 - fgkCoolPipeSuppAxeDist
@@ -3103,12 +3118,14 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   
   //--- The 3 V shape corners of the Carbon Fiber Ladder
   //--- the top V
-  TGeoArb8 *cfLaddTop1 = CreateLadderSide(topCornerLength/2., halfTheta, -1,
+  TGeoArb8 *cfLaddTop1 = CreateLadderSide("CFladdTopCornerV1shape",
+					  topCornerLength/2., halfTheta, -1,
 					  fgkLadderLa, fgkLadderHa, fgkLadderl);
-  TGeoVolume *cfLaddTopVol1 = new TGeoVolume("ITSsddCFladdTopCornerVol1",
+  TGeoVolume *cfLaddTopVol1 = new TGeoVolume("ITSsddCFladdTopCornerV1",
 				  cfLaddTop1,carbonFiberLadderStruct);
   cfLaddTopVol1->SetLineColor(fColorCarbonFiber);
-  TGeoArb8 *cfLaddTop2 = CreateLadderSide( topCornerLength/2., halfTheta, 1,
+  TGeoArb8 *cfLaddTop2 = CreateLadderSide( "CFladdTopCornerV2shape",
+					   topCornerLength/2., halfTheta, 1,
 					   fgkLadderLa, fgkLadderHa, fgkLadderl);
   TGeoVolume *cfLaddTopVol2 = new TGeoVolume("ITSsddCFladdTopCornerV2",
 			          cfLaddTop2,carbonFiberLadderStruct);
@@ -3119,12 +3136,14 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   virtualEnd->AddNode(cfLaddTopVol2, 1, trTop1);
 
   //--- the 2 side V
-  TGeoArb8 *cfLaddSide1 = CreateLadderSide( length/2., beta, -1,
+  TGeoArb8 *cfLaddSide1 = CreateLadderSide( "CFladdSideCornerV1shape",
+					    length/2., beta, -1,
 					    fgkLadderLb, fgkLadderHb, fgkLadderl);
   TGeoVolume *cfLaddSideVol1 = new TGeoVolume("ITSsddCFladdSideCornerV1",
 				   cfLaddSide1,carbonFiberLadderStruct);
   cfLaddSideVol1->SetLineColor(fColorCarbonFiber);
-  TGeoArb8 *cfLaddSide2 = CreateLadderSide( length/2., beta, 1,
+  TGeoArb8 *cfLaddSide2 = CreateLadderSide( "CFladdSideCornerV2shape",
+					    length/2., beta, 1,
 					    fgkLadderLb, fgkLadderHb, fgkLadderl);
   TGeoVolume *cfLaddSideVol2 = new TGeoVolume("ITSsddCFladdSideCornerV2",
 				   cfLaddSide2,carbonFiberLadderStruct);

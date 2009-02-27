@@ -123,7 +123,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 			  Double_t dx=0, Double_t dy=0, Double_t dz=0) const;
 
   // Create one side of the CF corner of the CF structure
-  TGeoArb8* CreateLadderSide( Double_t dz, Double_t angle, Double_t xSign,
+  TGeoArb8* CreateLadderSide( const char *name,
+			      Double_t dz, Double_t angle, Double_t xSign,
 			      Double_t L, Double_t H, Double_t l);
 
   //----------------------------
