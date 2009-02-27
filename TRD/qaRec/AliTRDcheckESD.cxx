@@ -58,7 +58,7 @@ AliTRDcheckESD::AliTRDcheckESD():
   //
   // Default constructor
   //
-
+  SetMC(kTRUE);
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
 }
