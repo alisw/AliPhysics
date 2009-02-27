@@ -84,21 +84,22 @@ int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTCompon
 }
 
 
-void AliHLTTrigger::TriggerEvent(bool value)
+int AliHLTTrigger::TriggerEvent(bool value)
 {
   // Sets the trigger decision for the current event.
   // See header file for more details.
   
-  if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
+  if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fTriggerDomain, fDescription);
   // Append the readout list if it contains anything.
   triggerResult.TriggerDomain().Add(fReadoutList);
   fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
   if (fTriggerEventResult == 0) fDecisionMade = true;
+  return fTriggerEventResult;
 }
 
 
-void AliHLTTrigger::TriggerEvent(
+int AliHLTTrigger::TriggerEvent(
     AliHLTTriggerDecision* result, const AliHLTComponentDataType& type,
     AliHLTUInt32_t spec
   )
@@ -106,9 +107,10 @@ void AliHLTTrigger::TriggerEvent(
   // Sets a custom trigger decision for the current event.
   // See header file for more details.
   
-  if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
+  if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   fTriggerEventResult = PushBack(result, type, spec);
   if (fTriggerEventResult == 0) fDecisionMade = true;
+  return fTriggerEventResult;
 }
 
 

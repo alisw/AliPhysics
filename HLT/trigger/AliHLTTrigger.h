@@ -94,8 +94,12 @@ class AliHLTTrigger : public AliHLTProcessor
    * method when a trigger decision has been made.
    * @param value  The trigger decision value. True for positive trigger and false
    *     for a negative result. (true by default)
+   * \returns zero on success and negative value on failure. The possible failure
+   *    codes are:<br>
+   *     -ENOSPC - If there is not enough output buffer space for the trigger decision.<br>
+   *     -ENOMSG - If the trigger decision object could not be serialised.
    */
-  void TriggerEvent(bool value = true);
+  int TriggerEvent(bool value = true);
   
   /**
    * Fills the output with the given trigger decision. This should be called in the
@@ -105,12 +109,23 @@ class AliHLTTrigger : public AliHLTProcessor
    *    kAliHLTDataTypeTObject|kAliHLTDataOriginOut by default).
    * @param spec  The data block specification to use (set to kAliHLTVoidDataSpec
    *    by default).
+   * \returns zero on success and negative value on failure. The possible failure
+   *    codes are:<br>
+   *     -ENOSPC - If there is not enough output buffer space for the trigger decision.<br>
+   *     -ENOMSG - If the trigger decision object could not be serialised.<br>
+   *     -EINVAL - If the <i>result</i> object is NULL.
    */
-  void TriggerEvent(
+  int TriggerEvent(
       AliHLTTriggerDecision* result,
       const AliHLTComponentDataType& type = kAliHLTDataTypeTObject|kAliHLTDataOriginOut,
       AliHLTUInt32_t spec = kAliHLTVoidDataSpec
     );
+  
+  /**
+   * Method for finding out the result of the last call to TriggerEvent.
+   * \returns the error code for the last call to TriggerEvent.
+   */
+  int GetLastTriggerEventResult() const { return fTriggerEventResult; }
   
   /**
    * Returns the event data structure for the current event.
