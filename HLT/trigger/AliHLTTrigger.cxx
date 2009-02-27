@@ -119,7 +119,7 @@ void AliHLTTrigger::GetInputDataTypes(AliHLTComponentDataTypeList& list)
   // Assign to const temporary variable to make sure we call the constant version
   // of the GetOutputDataTypes method.
   const AliHLTTrigger* t = this;
-  t->GetOutputDataTypes(list);
+  t->GetInputDataTypes(list);
 }
 
 
