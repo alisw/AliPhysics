@@ -10,7 +10,7 @@
  AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
  //
 
- AliTPCclusterFast::Simul("aaa.root",50000); 
+ AliTPCclusterFast::Simul("aaa.root",5000); 
  gSystem->Load("libSTAT.so");
 
  TFile f("aaa.root");
@@ -33,6 +33,8 @@ public:
   void SetParam(Float_t mnprim, Float_t diff, Float_t y, Float_t z, Float_t ky, Float_t kz);
   void GenerElectrons();
   void Digitize();
+  Double_t GetQtot(Float_t thr, Float_t noise);
+  Double_t GetQmax(Float_t thr, Float_t noise);
   Double_t GetNsec();
   static void Simul(const char* simul, Int_t npoints);
 public:
@@ -185,11 +187,11 @@ void AliTPCclusterFast::Simul(const char* fname, Int_t npoints){
   TTreeSRedirector cstream(fname);
   for (Int_t icl=0; icl<npoints; icl++){
     Float_t nprim=(10+40*gRandom->Rndm());
-    Float_t diff =0.01 +0.3*gRandom->Rndm();
+    Float_t diff =0.01 +0.35*gRandom->Rndm();
     Float_t posY = gRandom->Rndm()-0.5;
     Float_t posZ = gRandom->Rndm()-0.5;
-    Float_t ky   = 1.*(gRandom->Rndm()-0.5);
-    Float_t kz   = 1.*(gRandom->Rndm()-0.5);
+    Float_t ky   = 2.0*(gRandom->Rndm()-0.5);
+    Float_t kz   = 2.0*(gRandom->Rndm()-0.5);
     fast.SetParam(nprim,diff,posY,posZ,ky,kz);
     fast.GenerElectrons();
     fast.Digitize();
@@ -200,7 +202,40 @@ void AliTPCclusterFast::Simul(const char* fname, Int_t npoints){
 }
 
 
+Double_t AliTPCclusterFast::GetQtot(Float_t thr, Float_t noise){
+  //
+  //
+  //
+  Float_t sum =0;
+  for (Int_t i=0;i<5;i++)
+    for (Int_t j=0;j<5;j++){
+      Float_t amp = fDigits(i,j)+gRandom->Gaus()*noise;
+      if (amp>thr) sum+=amp;
+    } 
+  return sum;
+}
+
+Double_t AliTPCclusterFast::GetQmax(Float_t thr, Float_t noise){
+  //
+  //
+  //
+  Float_t max =0;
+  for (Int_t i=0;i<5;i++)
+    for (Int_t j=0;j<5;j++){
+      Float_t amp = fDigits(i,j)+gRandom->Gaus()*noise;
+      if (amp>thr &&amp>max) max=amp;
+    } 
+  return max;
+}
+
+
 /*
-  TH2F *hisL = new TH2F("hisL","hisL",10,10,50,100,0,10)
+TH2F *hisL = new TH2F("hisL","hisL",10,10,50,100,0,10);
+
+tree->SetAlias("qmaxNormY","sqrt(sqrt(fDiff^2+fAngleY^2/12+0.5^2))/sqrt(0.5)");
+tree->SetAlias("qmaxNormZ","sqrt(sqrt(fDiff^2+fAngleZ^2/12+0.5^2))/sqrt(0.5)");
+tree->SetAlias("qmaxNorm","qmaxNormY*qmaxNormZ");
+
+
 
 */
