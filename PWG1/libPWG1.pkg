@@ -19,7 +19,8 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliComparisonDCA.cxx \
 	AliComparisonObject.cxx \
 	AliGenInfoTask.cxx  \
-	AliMCTrackingTestTask.cxx
+	AliMCTrackingTestTask.cxx \
+	AliTPCtaskPID.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
