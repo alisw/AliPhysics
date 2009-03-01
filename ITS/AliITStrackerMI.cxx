@@ -4191,7 +4191,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
     if (forbidden[itrack0]) continue;
     AliITStrackMI * btrack0 = (AliITStrackMI*)trackarray.At(itrack0);
     if (!btrack0) continue;    
-    if (btrack0->GetSign()>0) continue;
+    if (btrack0->GetSign()>0 && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
     AliITStrackMI *trackc0 = (AliITStrackMI*)trackarrayc.At(itrack0);
     //
     for (Int_t iesd1=0;iesd1<ntracks;iesd1++){
@@ -4200,7 +4200,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
 
       AliITStrackMI * btrack1 = (AliITStrackMI*)trackarray.At(itrack1); 
       if (!btrack1) continue;
-      if (btrack1->GetSign()<0) continue;
+      if (btrack1->GetSign()<0 && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
       Bool_t isGold = kFALSE;
       if (TMath::Abs(TMath::Abs(btrack0->GetLabel())-TMath::Abs(btrack1->GetLabel()))==1){
 	isGold = kTRUE;
