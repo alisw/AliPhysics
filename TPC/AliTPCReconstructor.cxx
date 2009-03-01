@@ -121,7 +121,7 @@ void AliTPCReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree*/
 {
 // make PID
 
-  Double_t parTPC[] = {47., 0.07, 5.};
+  Double_t parTPC[] = {50., 0.07, 5.};  // MIP nnormalized to channel 50 -MI
   AliTPCpidESD tpcPID(parTPC);
   tpcPID.MakePID(esd);
 }

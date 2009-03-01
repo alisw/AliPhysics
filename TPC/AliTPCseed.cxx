@@ -566,10 +566,30 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //-----------------------------------------------------------------
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
+  AliTPCParam *param = AliTPCcalibDB::Instance()->GetParameters();
+  Int_t row0 = param->GetNRowLow();
+  Int_t row1 = row0+param->GetNRowUp1();
+  Int_t row2 = row1+param->GetNRowUp2();
+  //
+  //
+  //
+  fDEDX[0]      = CookdEdxNorm(low,up,0 ,i1  ,i2,  kTRUE,kFALSE,2,0);
+  fDEDX[1]      = CookdEdxNorm(low,up,0 ,0   ,row0,kTRUE,kFALSE,2,0);
+  fDEDX[2]      = CookdEdxNorm(low,up,0 ,row0,row1,kTRUE,kFALSE,2,0);
+  fDEDX[3]      = CookdEdxNorm(low,up,0 ,row1,row2,kTRUE,kFALSE,2,0);
+  //
+  fSDEDX[0]     = CookdEdxNorm(low,up,0 ,i1  ,i2,  kTRUE,kFALSE,2,1);
+  fSDEDX[1]     = CookdEdxNorm(low,up,0 ,0   ,row0,kTRUE,kFALSE,2,1);
+  fSDEDX[2]     = CookdEdxNorm(low,up,0 ,row0,row1,kTRUE,kFALSE,2,1);
+  fSDEDX[3]     = CookdEdxNorm(low,up,0 ,row1,row2,kTRUE,kFALSE,2,1);
+  //
+  fNCDEDX[0]    = TMath::Nint(CookdEdxNorm(low,up,0 ,i1  ,i2,  kTRUE,kFALSE,2,2));
+  fNCDEDX[1]    = TMath::Nint(CookdEdxNorm(low,up,0 ,0   ,row0,kTRUE,kFALSE,2,2));
+  fNCDEDX[2]    = TMath::Nint(CookdEdxNorm(low,up,0 ,row0,row1,kTRUE,kFALSE,2,2));
+  fNCDEDX[3]    = TMath::Nint(CookdEdxNorm(low,up,0 ,row1,row2,kTRUE,kFALSE,2,2));
 
-  Float_t dedx = CookdEdxNorm(low,up,0,i1,i2,1,0,2);
-  SetdEdx(dedx);
-  return dedx;
+  SetdEdx(fDEDX[0]);
+  return fDEDX[0];
 
 //  return CookdEdxNorm(low,up,0,i1,i2,1,0,2);
 
@@ -886,7 +906,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Bool_t posNorm, Int_t padNorm){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Bool_t posNorm, Int_t padNorm, Int_t returnVal){
  
   //
   // calculates dedx using the cluster
@@ -897,14 +917,20 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   // shapeNorm - kTRUE  -taken from OCDB
   //           
   // posNorm   - usage of pos normalization 
-  //
-  // 
+  // padNorm   - pad type normalization
+  // returnVal - 0 return mean
+  //           - 1 return RMS
+  //           - 2 return number of clusters
+  //           
   // normalization parametrization taken from AliTPCClusterParam
   //
   AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
   if (!parcl)  return 0;
   if (!param) return 0;
+  Int_t row0 = param->GetNRowLow();
+  Int_t row1 = row0+param->GetNRowUp1();
+
   Float_t amp[160];
   Int_t   indexes[160];
   Int_t   ncl=0;
@@ -912,7 +938,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   //
   Float_t gainGG      = 1;  // gas gain factor -always enabled
   Float_t gainPad     = 1;  // gain map  - used always
-  Float_t corrShape   = 1;  // 
+  Float_t corrShape   = 1;  // correction due angular effect, diffusion and electron attachment
   Float_t corrPos     = 1;  // local position correction - if posNorm enabled
   Float_t corrPadType = 1;  // pad type correction - if padNorm enabled
   Float_t corrNorm    = 1;  // normalization factor - set Q to channel 50
@@ -933,8 +959,8 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
     Int_t  ipad= 0;
-    if (irow>62) ipad=1;
-    if (irow>127) ipad=2;    
+    if (irow>=row0) ipad=1;
+    if (irow>=row1) ipad=2;    
     //
     //
     //
@@ -945,10 +971,10 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       //
       Float_t factor = 1;      
       AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
-      if (irow < 63) { // IROC
+      if (irow < row0) { // IROC
 	factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()));
       } else {         // OROC
-	factor = roc->GetValue(irow - 63, TMath::Nint(cluster->GetPad()));
+	factor = roc->GetValue(irow - row0, TMath::Nint(cluster->GetPad()));
       }
       if (factor>0.5) gainPad=factor;
     }
@@ -960,7 +986,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
 	//	
 	AliTPCTrackerPoint * point = GetTrackPoint(irow);
 	Float_t              ty = TMath::Abs(point->GetAngleY());
-	Float_t              tz = TMath::Abs(point->GetAngleZ());
+	Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
 	
 	Float_t dr    = (250.-TMath::Abs(cluster->GetZ()))/250.;
 	corrShape  = parcl->Qnorm(ipad,type,dr,ty,tz);
@@ -1007,16 +1033,22 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   if (ncl<10) return 0;
   
   Float_t suma=0;
+  Float_t suma2=0;  
   Float_t sumn=0;
   Int_t icl0=TMath::Nint(ncl*low);
   Int_t icl1=TMath::Nint(ncl*up);
   for (Int_t icl=icl0; icl<icl1;icl++){
     suma+=amp[indexes[icl]];
+    suma2+=amp[indexes[icl]]*amp[indexes[icl]];
     sumn++;
   }
-  return suma/sumn;
-
+  Float_t mean =suma/sumn;
+  Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  if (returnVal==1) return rms;
+  if (returnVal==2) return ncl;
+  return mean;
 }
+
 
 Double_t AliTPCseed::BetheMass(Double_t mass){
   //
@@ -1263,7 +1295,7 @@ Double_t AliTPCseed::GetQCorrGeom(Float_t ty, Float_t tz){
   return norm;
 }
 
-Double_t AliTPCseed::GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr){
+Double_t AliTPCseed::GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t /*q*/, Float_t /*thr*/){
   //
   // Q normalization
   //

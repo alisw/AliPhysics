@@ -2610,8 +2610,8 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
       esd->SetTPCPointsF(seed->GetNFoundable());
-      Int_t ndedx   = seed->GetNCDEDX(0)+seed->GetNCDEDX(1)+seed->GetNCDEDX(2)+seed->GetNCDEDX(3);
-      Float_t sdedx = (seed->GetSDEDX(0)+seed->GetSDEDX(1)+seed->GetSDEDX(2)+seed->GetSDEDX(3))*0.25;
+      Int_t   ndedx = seed->GetNCDEDX(0);
+      Float_t sdedx = seed->GetSDEDX(0);
       Float_t dedx  = seed->GetdEdx();
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       //
@@ -2683,8 +2683,8 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCout);
       esd->SetTPCPoints(seed->GetPoints());
       esd->SetTPCPointsF(seed->GetNFoundable());
-      Int_t ndedx   = seed->GetNCDEDX(0)+seed->GetNCDEDX(1)+seed->GetNCDEDX(2)+seed->GetNCDEDX(3);
-      Float_t sdedx = (seed->GetSDEDX(0)+seed->GetSDEDX(1)+seed->GetSDEDX(2)+seed->GetSDEDX(3))*0.25;
+      Int_t   ndedx = seed->GetNCDEDX(0);
+      Float_t sdedx = seed->GetSDEDX(0);
       Float_t dedx  = seed->GetdEdx();
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       ntracks++;
