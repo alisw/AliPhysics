@@ -139,12 +139,12 @@ Short_t AliTRDrawStream::fgROBordering[] =
 Int_t  AliTRDrawStream::fgLastHC = -1;
 Int_t  AliTRDrawStream::fgLastROB = -1;
 Int_t  AliTRDrawStream::fgLastIndex = -1;
-Bool_t  AliTRDrawStream::fDumpingEnable = kFALSE;
-Int_t  AliTRDrawStream::fDumpingSM = -1;
-Int_t  AliTRDrawStream::fDumpingStack = -1;
-Int_t  AliTRDrawStream::fDumpingLayer = -1;
-Int_t  AliTRDrawStream::fDumpingROB = -1;
-Int_t  AliTRDrawStream::fDumpingMCM = -1;
+Bool_t  AliTRDrawStream::fgDumpingEnable = kFALSE;
+Int_t  AliTRDrawStream::fgDumpingSM = -1;
+Int_t  AliTRDrawStream::fgDumpingStack = -1;
+Int_t  AliTRDrawStream::fgDumpingLayer = -1;
+Int_t  AliTRDrawStream::fgDumpingROB = -1;
+Int_t  AliTRDrawStream::fgDumpingMCM = -1;
 
 
 AliTRDrawStream::AliTRDrawStream()
@@ -378,8 +378,11 @@ AliTRDrawStream::SkipWords(UInt_t iw)
 
 //------------------------------------------------------------
 Bool_t 
-AliTRDrawStream::SetReader(AliRawReader *reader)
+AliTRDrawStream::SetReader(AliRawReader * reader)
 {
+  //
+  // Set reader pointer
+  //
 
   if (reader != 0)
     {
@@ -730,7 +733,7 @@ if (fBufferRead)
 
 //------------------------------------------------------------
 Int_t 
-AliTRDrawStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trackletContainer) 
+AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer) 
 {
   //
   // Fills single chamber digit array 
@@ -917,7 +920,7 @@ AliTRDrawStream::Init()
 
 //------------------------------------------------------------
 Bool_t 
-AliTRDrawStream::InitBuffer(void *buffer, UInt_t length)
+AliTRDrawStream::InitBuffer(void * const buffer, UInt_t length)
 {
   // 
   // set initial information about the buffer
@@ -1037,7 +1040,7 @@ AliTRDrawStream::DecodeGTUheader()
 
 //------------------------------------------------------------
 Bool_t 
-AliTRDrawStream::DecodeSM(void *buffer, UInt_t length)
+AliTRDrawStream::DecodeSM(void * const buffer, UInt_t length)
 {
   //
   // decode one sm data in buffer
@@ -1231,7 +1234,9 @@ AliTRDrawStream::SeekEndOfData()
 Bool_t
 AliTRDrawStream::SkipMCMdata(UInt_t iw)
 {
-
+  //
+  // skip mcm data words due to corruption 
+  //
   if (fgDebugFlag) AliDebug(11,Form("Skip %d words due to MCM header corruption.",iw));
   UInt_t iwcounter = 0;  
   while ( *fpPos != ENDOFRAWDATAMARKER && iwcounter < iw)
@@ -1463,13 +1468,13 @@ AliTRDrawStream::DecodeMCMheader()
 
   DecodeMCMheader(fpPos, fMCM); 
 
-  if (fDumpingEnable) 
+  if (fgDumpingEnable) 
     {
-      if (fMCM->fMCM == fDumpingMCM) 
+      if (fMCM->fMCM == fgDumpingMCM) 
         {
-          if (fMCM->fROB == fDumpingROB && fHC->fLayer == fDumpingLayer)
+          if (fMCM->fROB == fgDumpingROB && fHC->fLayer == fgDumpingLayer)
             {
-              if (fHC->fSM == fDumpingSM && fHC->fStack == fDumpingStack)
+              if (fHC->fSM == fgDumpingSM && fHC->fStack == fgDumpingStack)
                 { 
                   if (fgDebugFlag) {
                     AliDebug(5,DumpHCinfoH0(fHC));
@@ -1985,6 +1990,9 @@ void AliTRDrawStream::DecodeStackInfo(const UInt_t *word, struct AliTRDrawStack 
 //--------------------------------------------------------
 void AliTRDrawStream::DecodeStackHeader(const UInt_t *word, struct AliTRDrawStack *st, Int_t iword) const
 {
+  //
+  // decode gtu header for stack info
+  //
       st->fPos = (UInt_t*)word;
       
       UInt_t vword = *word;

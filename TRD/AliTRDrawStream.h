@@ -1,5 +1,5 @@
-#ifndef ALITRDRAWSTREAMTB_H
-#define ALITRDRAWSTREAMTB_H
+#ifndef ALITRDRAWSTREAM_H
+#define ALITRDRAWSTREAM_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -438,20 +438,20 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   // rob and mcm ordering
   // side 0(even link) - ROB: 0 2 4 6  MCM: 12 13 14 15 8 9 10 11 4 5 6 7 0 1 2 3  
   // side 1( odd link) - ROB: 1 3 5 7  MCM: 12 13 14 15 8 9 10 11 4 5 6 7 0 1 2 3  
-  Int_t     GetMCM(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fMCM;}
-  Int_t     GetROB(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fROB;}
-  Int_t     GetMCMhdErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fMCMhdCorrupted;}
-  Int_t     GetMCMADCMaskErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCmaskCorrupted;}
-  Int_t     GetEventNumber(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fEvCounter;}
-  Int_t     GetADCcount(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCcount;}
+  Int_t     GetMCM(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fMCM;}
+  Int_t     GetROB(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fROB;}
+  Int_t     GetMCMhdErrorCode(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fMCMhdCorrupted;}
+  Int_t     GetMCMADCMaskErrorCode(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCmaskCorrupted;}
+  Int_t     GetEventNumber(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fEvCounter;}
+  Int_t     GetADCcount(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCcount;}
 
   // info from MCM data words
-  Int_t     GetMCMErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fCorrupted;} // get MCM data error code
-  Int_t     GetADCErrorCode(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCorrupted;} // get ADC error code
-  Int_t     GetADCnumber(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fADCnumber;} // get ADC error code
+  Int_t     GetMCMErrorCode(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fCorrupted;} // get MCM data error code
+  Int_t     GetADCErrorCode(Int_t stack, Int_t link, Int_t mcm, Int_t adc) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCorrupted;} // get ADC error code
+  Int_t     GetADCnumber(Int_t stack, Int_t link, Int_t mcm, Int_t adc) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fADCnumber;} // get ADC error code
 
-  Int_t     GetRow(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fROW;}         // get current row number
-  Int_t     GetCol(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCOL;}         // get current column number
+  Int_t     GetRow(Int_t stack, Int_t link, Int_t mcm) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fROW;}         // get current row number
+  Int_t     GetCol(Int_t stack, Int_t link, Int_t mcm, Int_t adc) const {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCOL;}         // get current column number
 
   // info from ADC data words
   Int_t    *GetSignalDirect(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fSignals;}
@@ -526,8 +526,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
   static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  
   static void    DisableSkipData() {fgSkipData = kFALSE;} // keep reading next words even previous words were corrupted - debugging purpose  
-  static void    SetDumpingEnable() {fDumpingEnable = kTRUE;} 
-  static void    SetDumpingMCM(Int_t sm, Int_t stack, Int_t layer, Int_t rob, Int_t mcm) {fDumpingSM = sm; fDumpingStack = stack; fDumpingLayer = layer; fDumpingROB = rob; fDumpingMCM = mcm;}
+  static void    SetDumpingEnable() {fgDumpingEnable = kTRUE;} 
+  static void    SetDumpingMCM(Int_t sm, Int_t stack, Int_t layer, Int_t rob, Int_t mcm) {fgDumpingSM = sm; fgDumpingStack = stack; fgDumpingLayer = layer; fgDumpingROB = rob; fgDumpingMCM = mcm;}
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -535,7 +535,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t          GetCommonAdditive() const {return fgCommonAdditive;}           // return the common additive
 
   static void    EnableDecodeConfigData() {fgEnableDecodeConfigData = kTRUE;} // allow configuration data decoding
-  static Bool_t  fgEnableDecodeConfigData;
+  static Bool_t fgEnableDecodeConfigData;
 
 
   //--------------------------------------------------------
@@ -654,13 +654,13 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   static Int_t  fgLastROB; 
   static Int_t  fgLastIndex; 
 
-  static Bool_t fDumpingEnable; 
+  static Bool_t fgDumpingEnable; 
 
-  static Int_t  fDumpingSM;
-  static Int_t  fDumpingStack;
-  static Int_t  fDumpingLayer;
-  static Int_t  fDumpingROB;
-  static Int_t  fDumpingMCM;
+  static Int_t  fgDumpingSM;
+  static Int_t  fgDumpingStack;
+  static Int_t  fgDumpingLayer;
+  static Int_t  fgDumpingROB;
+  static Int_t  fgDumpingMCM;
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
