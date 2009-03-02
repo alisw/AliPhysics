@@ -33,30 +33,17 @@
 
 */
 
-#include <iostream>
-
-#include "TFile.h"
-#include "TH3F.h"
-#include "TH2F.h"
-#include "TF1.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
 #include "TGraph2D.h"
 #include "TCanvas.h"
 #include "TGraph.h"
-// 
+
 #include "AliTracker.h"   
 #include "AliESDEvent.h"   
-#include "AliESD.h"
-#include "AliESDfriend.h"
-#include "AliESDfriendTrack.h"
 #include "AliRecInfoCuts.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliLog.h" 
 #include "AliESDVertex.h" 
-//
 #include "AliMathBase.h"
-#include "AliTreeDraw.h" 
 
 #include "AliMCInfo.h" 
 #include "AliESDRecInfo.h" 
@@ -71,12 +58,15 @@ AliComparisonDCA::AliComparisonDCA():
   AliComparisonObject("AliComparisonDCA"),
 
   // DCA histograms
+  fDCAHisto(0),
+  /*
   fD0TanSPtTPCITS(0),
   fD1TanSPtTPCITS(0),
   fD0TanSPt(0),
   fD1TanSPt(0),
   fD0TanSPtTPC(0),
   fD1TanSPtTPC(0),
+  */
 
   // Cuts 
   fCutsRC(0), 
@@ -85,19 +75,52 @@ AliComparisonDCA::AliComparisonDCA():
   // histogram folder 
   fAnalysisFolder(0)
 {
+  // default constructor	
+}
+
+//_____________________________________________________________________________
+AliComparisonDCA::AliComparisonDCA(Char_t* name="AliComparisonDCA", Char_t* title="AliComparisonDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+  AliComparisonObject(name,title),
+
+  // DCA histograms
+  fDCAHisto(0),
+  /*
+  fD0TanSPtTPCITS(0),
+  fD1TanSPtTPCITS(0),
+  fD0TanSPt(0),
+  fD1TanSPt(0),
+  fD0TanSPtTPC(0),
+  fD1TanSPtTPC(0),
+  */
+
+  // Cuts 
+  fCutsRC(0), 
+  fCutsMC(0),  
+
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // named constructor	 
+
+  SetAnalysisMode(analysisMode);
+  SetHptGenerator(hptGenerator);
   Init();
 }
+
 
 //_____________________________________________________________________________
 AliComparisonDCA::~AliComparisonDCA()
 {
-  //
+  // destructor
+  if(fDCAHisto)  delete fDCAHisto; fDCAHisto=0; 
+  /*
   if(fD0TanSPtTPCITS) delete fD0TanSPtTPCITS; fD0TanSPtTPCITS=0;
   if(fD1TanSPtTPCITS) delete fD1TanSPtTPCITS; fD1TanSPtTPCITS=0;
   if(fD0TanSPt) delete fD0TanSPt; fD0TanSPt=0;
   if(fD1TanSPt) delete fD1TanSPt; fD1TanSPt=0;
   if(fD0TanSPtTPC) delete fD0TanSPtTPC; fD0TanSPtTPC=0;
   if(fD1TanSPtTPC) delete fD1TanSPtTPC; fD1TanSPtTPC=0;
+  */
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 
 }
@@ -106,6 +129,31 @@ AliComparisonDCA::~AliComparisonDCA()
 void AliComparisonDCA::Init()
 {
   // DCA histograms
+
+ Int_t nPBins = 31;
+    Double_t binsP[32] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.25,2.5,2.75,3.,3.5,4.,5.,6.,8.,10.};
+    Double_t pMin = 0., pMax = 10.;
+
+    if(IsHptGenerator() == kTRUE) {
+      nPBins = 100;
+      pMin = 0.; pMax = 100.;
+    }
+
+   //dca_r, dca_z, eta, pt
+   Int_t binsQA[4]    = {100,100,20,nPBins};
+   Double_t xminQA[4] = {-10.,-10.,-1., pMin};
+   Double_t xmaxQA[4] = {10.,10.,1., pMax};
+
+   fDCAHisto = new THnSparseF("fDCAHisto","dca_r:dca_z:eta:pt",4,binsQA,xminQA,xmaxQA);
+   if(!IsHptGenerator()) fDCAHisto->SetBinEdges(3,binsP);
+
+   fDCAHisto->GetAxis(0)->SetTitle("dca_r (cm)");
+   fDCAHisto->GetAxis(1)->SetTitle("dca_z (cm)");
+   fDCAHisto->GetAxis(2)->SetTitle("eta");
+   fDCAHisto->GetAxis(3)->SetTitle("pt (GeV/c)");
+   fDCAHisto->Sumw2();
+	
+  /*	
   fD0TanSPtTPCITS = new TH3F("DCAyTanSPtTPCITS","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
   fD0TanSPtTPCITS->SetXTitle("tan(#theta)");
   fD0TanSPtTPCITS->SetYTitle("#sqrt{p_{t}(GeV)}");
@@ -135,6 +183,7 @@ void AliComparisonDCA::Init()
   fD1TanSPtTPC->SetXTitle("tan(#theta)");
   fD1TanSPtTPC->SetYTitle("#sqrt{p_{t}(GeV)}");
   fD1TanSPtTPC->SetZTitle("DCA_{z}");
+  */
 
   // init cuts
   if(!fCutsMC) 
@@ -147,20 +196,18 @@ void AliComparisonDCA::Init()
 }
 
 //_____________________________________________________________________________
-void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
+void AliComparisonDCA::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo * const infoRC)
 {
   // Fill DCA comparison information
   AliExternalTrackParam *track = 0;
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
-  Int_t clusterITS[200];
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  Float_t dca1[2], cov1[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
 
   Float_t mcpt = infoMC->GetParticle().Pt();
-  Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
-  Float_t spt = TMath::Sqrt(mcpt);
+  Float_t mceta = infoMC->GetParticle().Eta();
+  //Float_t spt = TMath::Sqrt(mcpt);
 
   // distance to Prim. vertex 
   const Double_t* dv = infoMC->GetVDist(); 
@@ -173,7 +220,7 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   if (infoRC->GetStatus(1)!=3) return;
   if (!infoRC->GetESDtrack()) return;  
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
-  if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
+  //if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
 
   // calculate and set prim. vertex
   AliESDVertex vertexMC;
@@ -189,27 +236,56 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
       Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
 
       if(bDCAStatus) {
-        fD0TanSPtTPC->Fill(tantheta,spt,dca[0]);
-        fD1TanSPtTPC->Fill(tantheta,spt,dca[1]);
-	  }
-
-	  delete track;
+	 Double_t vDCAHisto[4]={dca[0],dca[1],mceta,mcpt};
+	 fDCAHisto->Fill(vDCAHisto);
+      }
+    delete track;
     }
   }
-  
- infoRC->GetESDtrack()->GetImpactParameters(dca1,cov1);
-
- // ITS + TPC
- if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS()){
-    fD0TanSPtTPCITS->Fill(tantheta,spt,dca1[0]);
-    fD1TanSPtTPCITS->Fill(tantheta,spt,dca1[1]);
-  }
-    fD0TanSPt->Fill(tantheta,spt,dca1[0]);
-    fD1TanSPt->Fill(tantheta,spt,dca1[1]);
 }
 
 //_____________________________________________________________________________
-Long64_t AliComparisonDCA::Merge(TCollection* list) 
+void AliComparisonDCA::ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo * const infoRC)
+{
+  // Fill DCA comparison information
+  Int_t clusterITS[200];
+  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+
+  Float_t mcpt = infoMC->GetParticle().Pt();
+  Float_t mceta = infoMC->GetParticle().Eta();
+  //Float_t spt = TMath::Sqrt(mcpt);
+
+  // distance to Prim. vertex 
+  const Double_t* dv = infoMC->GetVDist(); 
+  Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
+
+  // Check selection cuts
+  if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
+  if (!isPrim) return;
+  if (infoRC->GetStatus(1)!=3) return;
+  if (!infoRC->GetESDtrack()) return;  
+  if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
+  //if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
+
+  infoRC->GetESDtrack()->GetImpactParameters(dca,cov);
+
+  // ITS + TPC
+  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>fCutsRC->GetMinNClustersITS())
+  {
+    Double_t vDCAHisto[4]={dca[0],dca[1],mceta,mcpt};
+    fDCAHisto->Fill(vDCAHisto);
+  }
+}
+
+void AliComparisonDCA::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo * const infoRC)
+{
+  // Fill DCA comparison information
+  
+  AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+Long64_t AliComparisonDCA::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
 
@@ -228,14 +304,16 @@ Long64_t AliComparisonDCA::Merge(TCollection* list)
   {
     AliComparisonDCA* entry = dynamic_cast<AliComparisonDCA*>(obj);
     if (entry == 0) continue; 
-    
 
+    fDCAHisto->Add(entry->fDCAHisto);
+    /*
     fD0TanSPtTPCITS->Add(entry->fD0TanSPtTPCITS);
     fD1TanSPtTPCITS->Add(entry->fD1TanSPtTPCITS);
     fD0TanSPt->Add(entry->fD0TanSPt);
     fD1TanSPt->Add(entry->fD1TanSPt);
     fD0TanSPtTPC->Add(entry->fD0TanSPtTPC);
     fD1TanSPtTPC->Add(entry->fD1TanSPtTPC);
+    */
 
     count++;
   }
@@ -244,9 +322,16 @@ return count;
 }
 
 //_____________________________________________________________________________
-void AliComparisonDCA::Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
+void AliComparisonDCA::Exec(AliMCInfo* const infoMC, AliESDRecInfo * const infoRC)
+{
   // Process comparison information
-  Process(infoMC,infoRC);
+  if(GetAnalysisMode() == 0) ProcessTPC(infoMC,infoRC);
+  else if(GetAnalysisMode() == 1) ProcessTPCITS(infoMC,infoRC);
+  else if(GetAnalysisMode() == 2) ProcessConstrained(infoMC,infoRC);
+  else {
+    printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
+    return;
+  }
 }
 
 //_____________________________________________________________________________
@@ -258,11 +343,12 @@ void AliComparisonDCA::Analyse()
   //
   
   TH1::AddDirectory(kFALSE);
+  TObjArray *aFolderObj = new TObjArray;
 
+  /*
   TGraph * gr[8]= { 0,0,0,0,0,0,0,0 };
   TGraph2D *gr2[8]= { 0,0,0,0,0,0,0,0};
   AliComparisonDCA * comp=this;
-  TObjArray *aFolderObj = new TObjArray;
 
   // write results in the folder 
   // Canvas to draw analysed histograms
@@ -457,6 +543,7 @@ void AliComparisonDCA::Analyse()
   gr2[7]->GetHistogram()->SetName("DCAZMeanSPTTanTPCITS");
   aFolderObj->Add(gr2[7]->GetHistogram());
 
+  */
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
 

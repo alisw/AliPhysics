@@ -33,9 +33,6 @@ RunAliComparisonTask(chain, kFALSE);
 
 2. Example (run on Proof/GSI):
 
-// -- Load libXrdClient.so e.g.
-gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
-
 // -- Connect to Proof as USER_NAME
 TProof::Open("USER_NAME@gsiaf.gsi.de");
 
@@ -64,7 +61,7 @@ RunAliComparisonTask(chain, kTRUE);
 
 //-----------------------------------------------------------------------------
 
-void RunGSI(Bool_t aProof=kTRUE) {
+void RunGSI(Bool_t aProof=kFALSE) {
 
   // -- RUN  LOCALLY
   if(aProof == kFALSE) 
@@ -76,7 +73,7 @@ void RunGSI(Bool_t aProof=kTRUE) {
     AliXRDPROOFtoolkit tool;
     
     // -- Make chain
-    TChain * chain = tool.MakeChain("cmpESDTracks.txt","ESDcmpTracks","",1000,0);
+    TChain * chain = tool.MakeChain("cmpESDTracks_post_v4-16-Rev-05.txt","ESDcmpTracks","",10,0);
     
     // -- Run AliComparisonTask task
     gROOT->LoadMacro("RunAliComparisonTask.C");
@@ -89,9 +86,6 @@ void RunGSI(Bool_t aProof=kTRUE) {
   //-- RUN ON PROOF
   else 
   {
-    // -- Load libXrdClient.so e.g.
-    gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
-     
     // -- Connect to Proof as USER_NAME
     TProof::Open("jacek@gsiaf.gsi.de");
      

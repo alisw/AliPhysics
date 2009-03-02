@@ -8,46 +8,38 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
-class TFile;
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent; 
-class AliESD;
-class AliESDfriend;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class TH1I;
-class TH3F;
-class TH3;
-class TProfile;
-class TProfile2D;
-class TGraph2D;
-class TGraph; 
 class TString;
+class TNamed;
+class TCanvas;
 
-#include "TNamed.h"
+#include "THnSparse.h"
 #include "AliComparisonObject.h"
 
-//class AliComparisonDEdx : public TNamed {
 class AliComparisonDEdx : public AliComparisonObject {
 public :
   AliComparisonDEdx(); 
+  AliComparisonDEdx(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
   ~AliComparisonDEdx();
 
   // Init data members
   virtual void Init();
 
   // Execute analysis
-  virtual void Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+  virtual void Exec(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
 
   // Analyse output histograms
   virtual void Analyse();
 
   // Get analysis folder
-  virtual TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+  virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDEdx",TString title = "Analysed DEdx histograms");
@@ -56,53 +48,32 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+  void  ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC);
+  void  ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC); // not implemented
+  void  ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC); // not implemented
 
   // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0)   {fCutsMC = cuts;} 
-
-  void SetMCPtMin(const Float_t cuts=0) {fMCPtMin = cuts;} 
-  void SetMCAbsTanThetaMax(const Float_t cuts=1e99) {fMCAbsTanThetaMax = cuts;} 
-  void SetMCPdgCode(const Int_t cuts=0) {fMCPdgCode = cuts;} 
+  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
+  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
 
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}      
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}     
-  Float_t GetMCPtMin() const {return fMCPtMin;}
-  Float_t GetMCAbsTanThetaMax() const {return fMCAbsTanThetaMax;}
-  Int_t GetMCPdgCode() const {return fMCPdgCode;} 
 
   static TH1F*     MakeResol(TH2F * his, Int_t integ, Bool_t type); 
 
   //
   // TPC dE/dx 
-  TH2F* GetTPCSignalNormTan() {return fTPCSignalNormTan;}
-  TH2F* GetTPCSignalNormSPhi() {return fTPCSignalNormSPhi;}
-  TH2F* GetTPCSignalNormTPhi() {return fTPCSignalNormTPhi;}
   //
-  TH3F* GetTPCSignalNormTanSPhi() {return fTPCSignalNormTanSPhi;}
-  TH3F* GetTPCSignalNormTanTPhi() {return fTPCSignalNormTanTPhi;}
-  TH3F* GetTPCSignalNormTanSPt() {return fTPCSignalNormTanSPt;}
-  
+  THnSparse* GetDeDxHisto() const {return fDeDxHisto;}
 
 private:
 
   // TPC dE/dx 
-  TH2F* fTPCSignalNormTan;    //-> TPC signal normalized to the calculated MC signal 
-  TH2F* fTPCSignalNormSPhi;   //-> TPC signal normalized to the calculated MC signal
-  TH2F* fTPCSignalNormTPhi;   //-> TPC signal normalized to the calculated MC signal
-  //
-  TH3F* fTPCSignalNormTanSPhi;   //-> TPC signal normalized to the calculated MC signal
-  TH3F* fTPCSignalNormTanTPhi;   //-> TPC signal normalized to the calculated MC signal
-  TH3F* fTPCSignalNormTanSPt;    //-> TPC signal normalized to the calculated MC signal
+  THnSparseF *fDeDxHisto; //-> signal:alpha:y:z:snp:tgl:ncls:pid:p
   
   // Selection cuts
   AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
   AliMCInfoCuts*   fCutsMC; // selection cuts for MC tracks
-
-  Float_t fMCPtMin;               // min. MC pt cut
-  Float_t fMCAbsTanThetaMax;      // max. MC abs[tan(theta)] cut
-  Int_t fMCPdgCode;               // selected particle with Pdg code
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms

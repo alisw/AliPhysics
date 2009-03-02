@@ -32,13 +32,19 @@ ClassImp(AliComparisonObject)
 
 //_____________________________________________________________________________
 AliComparisonObject::AliComparisonObject():
-  TNamed("AliComparisonObject","AliComparisonObject") {
+  TNamed("AliComparisonObject","AliComparisonObject"),
+  fAnalysisMode(-1),
+  fHptGenerator(kFALSE)
+{
   // constructor
 }
 
 //_____________________________________________________________________________
-AliComparisonObject::AliComparisonObject(const char* name):
-  TNamed(name,name) {
+AliComparisonObject::AliComparisonObject(const char* name, const char* title):
+  TNamed(name,title),
+  fAnalysisMode(-1),
+  fHptGenerator(kFALSE)
+{
   // constructor
 }
 

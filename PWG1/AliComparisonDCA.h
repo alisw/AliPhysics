@@ -9,45 +9,40 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
-class TFile;
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent; 
-class AliESD;
-class AliESDfriend;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class TH1I;
+class AliESDVertex;
 class TH3F;
 class TH3;
-class TProfile;
-class TProfile2D;
 class TString;
-class AliESDVertex;
+class TNamed;
 
-#include "TNamed.h"
+#include "THnSparse.h"
 #include "AliComparisonObject.h"
 
-//class AliComparisonDCA : public TNamed {
 class AliComparisonDCA : public AliComparisonObject {
 public :
   AliComparisonDCA(); 
+  AliComparisonDCA(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
   ~AliComparisonDCA();
 
   // Init data members
   virtual void Init();
 
   // Execute analysis
-  virtual void Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+  virtual void Exec(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
 
   // Analyse output histograms
   virtual void Analyse();
 
   // Get analysis folder
-  virtual TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+  virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDCA",TString title = "Analysed DCA histograms");
@@ -56,31 +51,43 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void  Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+  void  ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo* const infoRC);
+  void  ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo* const infoRC);
+  void  ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo* const infoRC); // not implemented
 
   // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0) {fCutsMC = cuts;}  
+  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
+  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
 
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
   // getters
-  TH3F  *GetD0TanSPtTPCITS() {return fD0TanSPtTPCITS;}
-  TH3F  *GetD1TanSPtTPCITS() {return fD1TanSPtTPCITS;}
-  TH3F  *GetD0TanSPt() {return fD0TanSPt;}
-  TH3F  *GetD1TanSPt() {return fD1TanSPt;}
-  TH3F  *GetD0TanSPtTPC() {return fD0TanSPtTPC;}
-  TH3F  *GetD1TanSPtTPC() {return fD1TanSPtTPC;}
+  /*
+  TH3F  *GetD0TanSPtTPCITS() const {return fD0TanSPtTPCITS;}
+  TH3F  *GetD1TanSPtTPCITS() const {return fD1TanSPtTPCITS;}
+  TH3F  *GetD0TanSPt() const {return fD0TanSPt;}
+  TH3F  *GetD1TanSPt() const {return fD1TanSPt;}
+  TH3F  *GetD0TanSPtTPC() const {return fD0TanSPtTPC;}
+  TH3F  *GetD1TanSPtTPC() const {return fD1TanSPtTPC;}
+  */
+
+  // DCA
+  THnSparse* GetDCAHisto() const {return fDCAHisto;}
 
 private:
-  // DCA resolution
+
+  // DCA histograms
+  THnSparseF *fDCAHisto; //-> dca_r:dca_z:eta:pt 
+ 
+  /*
   TH3F  *fD0TanSPtTPCITS; //-> distance to vertex y (TPC+ITS clusters) 
   TH3F  *fD1TanSPtTPCITS; //-> distance to vertex z (TPC+ITS clusters) 
   TH3F  *fD0TanSPt;     //-> distance to vertex y  
   TH3F  *fD1TanSPt;     //-> distance to vertex z 
   TH3F  *fD0TanSPtTPC;  //-> distance to vertex y (only TPC track parameters) 
   TH3F  *fD1TanSPtTPC;  //-> distance to vertex z (only TPC track parameters)
+  */
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
