@@ -30,12 +30,15 @@ public:
   //
   void              FindPairs(AliESDEvent *event);
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
-  void              SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
   static Double_t   CalculateMIPvalue(TH1F * hist);
-  AliExternalTrackParam *Invert(AliExternalTrackParam *input);
   AliExternalTrackParam *MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
+  AliExternalTrackParam *MakeCombinedTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
+
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
+  void SetComparison(AliExternalComparison * comp) { fComp=comp;}
+  AliExternalComparison *GetComparison() { return fComp;}
+  
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};
@@ -55,7 +58,7 @@ private:
 
   void              FillAcordeHist(AliESDtrack *upperTrack);
 
-  AliTPCCalPad *fGainMap;         //  gain map from Krypton calibration
+  AliExternalComparison * fComp;  //  comparison histogram
   TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
   TH1F  *fClusters;               //  histogram showing the number of clusters per track
   TH2F  *fModules;                //  2d histogram of tracks which are propagated to the ACORDE scintillator array

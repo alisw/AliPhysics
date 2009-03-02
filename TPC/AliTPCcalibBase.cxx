@@ -63,6 +63,7 @@ AliTPCcalibBase::AliTPCcalibBase():
     fTriggerMaskAccept(-1),   //trigger mask - accept trigger
     fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
     fRejectLaser(kTRUE),                 //flag- reject laser
+    fTriggerClass(),
     fDebugLevel(0)
 {
   //
@@ -83,6 +84,7 @@ AliTPCcalibBase::AliTPCcalibBase(const char * name, const char * title):
   fTriggerMaskAccept(-1),   //trigger mask - accept trigger
   fHasLaser(kFALSE),                    //flag the laser is overlayed with given event 
   fRejectLaser(kTRUE),                 //flag- reject laser
+  fTriggerClass(),
   fDebugLevel(0)
 {
   //
@@ -166,7 +168,9 @@ void    AliTPCcalibBase::UpdateEventInfo(AliESDEvent * event){
   fTime    = event->GetTimeStamp();
   fTrigger = event->GetTriggerMask();
   fMagF    = event->GetMagneticField();
+  fTriggerClass = event->GetFiredTriggerClasses().Data();
   fHasLaser = HasLaser(event); 
+  
 }
 
 

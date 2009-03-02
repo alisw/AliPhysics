@@ -350,22 +350,22 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
       
       // amplitude
       sprintf(chname,"Amp_Sector%d",i);
-      his1 = new TH1F(chname,chname,250,0,500);         // valgrind 
+      his1 = new TH1F(chname,chname,100,0,32);         // valgrind 
       his1->SetXTitle("Max Amplitude (ADC)");
       fArrayAmp->AddAt(his1,i);
       sprintf(chname,"Amp_Sector%d",i+36);
-      his1 = new TH1F(chname,chname,200,0,600);         // valgrind 3   13,408,208 bytes in 229 blocks are still reachable
+      his1 = new TH1F(chname,chname,100,0,32);         // valgrind 3   13,408,208 bytes in 229 blocks are still reachable
       his1->SetXTitle("Max Amplitude (ADC)");
       fArrayAmp->AddAt(his1,i+36);
       
       // driftlength
       sprintf(chname, "driftlengt vs. charge, ROC %i", i);
-      prof1 = new TProfile(chname, chname, 500, 0, 250);
+      prof1 = new TProfile(chname, chname, 25, 0, 250);
       prof1->SetYTitle("Charge");
       prof1->SetXTitle("Driftlength");
       fArrayChargeVsDriftlength->AddAt(prof1,i);
       sprintf(chname, "driftlengt vs. charge, ROC %i", i+36);
-      prof1 = new TProfile(chname, chname, 500, 0, 250);
+      prof1 = new TProfile(chname, chname, 25, 0, 250);
       prof1->SetYTitle("Charge");
       prof1->SetXTitle("Driftlength");
       fArrayChargeVsDriftlength->AddAt(prof1,i+36);
@@ -889,16 +889,17 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       
       TProfile *profAmpRow =  (TProfile*)fArrayAmpRow->At(sector);
       if ( irow >= kFirstLargePad) max /= kLargePadSize;
-      profAmpRow->Fill( (Double_t)cluster0->GetRow(), max );
+      Double_t smax = TMath::Sqrt(max);
+      profAmpRow->Fill( (Double_t)cluster0->GetRow(), smax );
       TH1F *hisAmp =  (TH1F*)fArrayAmp->At(sector);
-      hisAmp->Fill(max);
+      hisAmp->Fill(smax);
       
       // remove the following two lines one day:
       TProfile *profDriftLength = (TProfile*)fArrayChargeVsDriftlength->At(sector);
-      profDriftLength->Fill( 250.-(Double_t)TMath::Abs(cluster0->GetZ()), max );
+      profDriftLength->Fill( 250.-(Double_t)TMath::Abs(cluster0->GetZ()), smax );
       
       TProfile *profDriftLengthTmp = (TProfile*)(fcalPadRegionChargeVsDriftlength->GetObject(isegment, padSize));
-      profDriftLengthTmp->Fill( 250.-(Double_t)TMath::Abs(cluster0->GetZ()), max );
+      profDriftLengthTmp->Fill( 250.-(Double_t)TMath::Abs(cluster0->GetZ()), smax );
       
       fHclusterPerPadrow->Fill(irow);   // fill histogram showing clusters per padrow
       Int_t ipad = TMath::Nint(cluster0->GetPad());

@@ -60,6 +60,7 @@
 #include "AliTPCTransform.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
+#include "AliTPCPointCorrection.h"
 
 ClassImp(AliTPCcalibCalib)
 
@@ -149,10 +150,15 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   //
 
   //
+  // 0 - Setup transform object
+  //
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  transform->SetCurrentRun(fRun);
+  transform->SetCurrentTimeStamp((UInt_t)fTime);
+  //
   // First apply calibration
   //
-
-  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform();
+  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
   for (Int_t irow=0;irow<159;irow++) {
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
     if (!cluster) continue; 
@@ -169,7 +175,37 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Float_t dz =AliTPCClusterParam::SPosCorrection(1,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
     //x[1]-=dy;
     //x[2]-=dz;
+    //
+    // Apply sector alignment
+    //
+    Double_t dxq = AliTPCPointCorrection::SGetCorrectionSector(0,cluster->GetDetector()%36,cluster->GetX(),
+							       cluster->GetY(),cluster->GetZ());
+    Double_t dyq = AliTPCPointCorrection::SGetCorrectionSector(1,cluster->GetDetector()%36,cluster->GetX(),
+							       cluster->GetY(),cluster->GetZ());
+    Double_t dzq = AliTPCPointCorrection::SGetCorrectionSector(2,cluster->GetDetector()%36,cluster->GetX(),
+							       cluster->GetY(),cluster->GetZ());
+    if (kTRUE){
+      x[0]-=dxq;
+      x[1]-=dyq;
+      x[2]-=dzq;
+    }
+    //
+    // Apply r-phi correction  - To be done on track level- knowing the track angle !!!
+    //
+    Double_t corrclY =  
+      corr->RPhiCOGCorrection(cluster->GetDetector(),cluster->GetRow(), cluster->GetPad(),
+				  cluster->GetY(),cluster->GetY(), cluster->GetZ(), 0., cluster->GetMax(),2.5);
+    // R correction
+    Double_t corrR   = corr->CorrectionOutR0(kFALSE,kFALSE,cluster->GetX(),cluster->GetY(),cluster->GetZ(),cluster->GetDetector());
 
+    if (kTRUE){
+      if (cluster->GetY()>0) x[1]+=corrclY;  // rphi correction
+      if (cluster->GetY()<0) x[1]-=corrclY;  // rphi correction
+      x[0]+=corrR;                           // radial correction
+    }
+
+    //
+    //
     //
     cluster->SetX(x[0]);
     cluster->SetY(x[1]);
@@ -182,15 +218,23 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 	  "event="<<fEvent<<          //  event number
 	  "time="<<fTime<<            //  time stamp of event
 	  "trigger="<<fTrigger<<      //  trigger
+	  "triggerClass="<<&fTriggerClass<<      //  trigger	  
 	  "mag="<<fMagF<<             //  magnetic field
 	  "cl0.="<<&cl0<<
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
 	  "cz="<<dz<<
+	  "cR="<<corrR<<
+	  "dxq="<<dxq<<
+	  "dyq="<<dyq<<
+	  "dzq="<<dzq<<
 	  "\n";
       }
     }
   }
+  //
+  //
+  //
   Int_t ncl = seed->GetNumberOfClusters();
   Double_t covar[15];
   for (Int_t i=0;i<15;i++) covar[i]=0;
@@ -207,37 +251,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
 
   AliExternalTrackParam trackIn  = *trackOutOld;
-  AliExternalTrackParam trackOut = *trackInOld;
   trackIn.ResetCovariance(200.);
-  trackOut.ResetCovariance(200.);
   trackIn.AddCovariance(covar);
-  trackOut.AddCovariance(covar);
   Double_t xyz[3];
   Int_t nclIn=0,nclOut=0;
-  //
-  // Refit out
-  //
-  for (Int_t irow=0; irow<160; irow++){
-    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
-    if (!cl) continue;
-    if (cl->GetX()<80) continue;
-    Int_t sector = cl->GetDetector();
-    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
-
-    if (TMath::Abs(dalpha)>0.01)
-      trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
-    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-
-    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
-    AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
-    cov[0]*=cov[0];
-    cov[2]*=cov[2];
-    trackOut.GetXYZ(xyz);
-    Double_t bz = AliTracker::GetBz(xyz);
-    if (trackOut.PropagateTo(r[0],bz)) nclOut++;
-    if (RejectCluster(cl,&trackOut)) continue;
-    trackOut.Update(&r[1],cov);    
-  }
   //
   // Refit in
   //
@@ -258,10 +275,75 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     trackIn.GetXYZ(xyz);
     Double_t bz = AliTracker::GetBz(xyz);
 
-    if (trackIn.PropagateTo(r[0],bz)) nclIn++;
+    if (!trackIn.PropagateTo(r[0],bz)) continue;
     if (RejectCluster(cl,&trackIn)) continue;
+    nclIn++;
     trackIn.Update(&r[1],cov);    
   }
+  //
+  AliExternalTrackParam trackOut = trackIn;
+  trackOut.ResetCovariance(200.);
+  trackOut.AddCovariance(covar);
+  //
+  // Refit out
+  //
+  //Bool_t lastEdge=kFALSE;
+  for (Int_t irow=0; irow<160; irow++){
+    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+    if (!cl) continue;
+    if (cl->GetX()<80) continue;
+    Int_t sector = cl->GetDetector();
+    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
+
+    if (TMath::Abs(dalpha)>0.01)
+      trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
+    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
+    AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
+    trackOut.GetXYZ(xyz);
+    Double_t bz = AliTracker::GetBz(xyz);
+    if (!trackOut.PropagateTo(r[0],bz)) continue;
+    if (RejectCluster(cl,&trackOut)) continue;
+    nclOut++;
+    trackOut.Update(&r[1],cov);    	
+    //if (cl->GetType()<0) lastEdge=kTRUE;
+    //if (cl->GetType()>=0) lastEdge=kFALSE;    
+  }
+  //
+  //
+  //
+  nclIn=0;
+  trackIn  = trackOut;
+  trackIn.ResetCovariance(10.);
+  //
+  // Refit in one more time
+  //
+  for (Int_t irow=159; irow>0; irow--){
+    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+    if (!cl) continue;
+    if (cl->GetX()<80) continue;
+    Int_t sector = cl->GetDetector();
+    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
+    if (TMath::Abs(dalpha)>0.01)
+      trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
+    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
+    trackIn.GetXYZ(xyz);
+    Double_t bz = AliTracker::GetBz(xyz);
+
+    if (!trackIn.PropagateTo(r[0],bz)) continue;
+    if (RejectCluster(cl,&trackIn)) continue;
+    nclIn++;
+    trackIn.Update(&r[1],cov);    
+  }
+
+
   trackIn.Rotate(trackInOld->GetAlpha());
   trackOut.Rotate(trackOutOld->GetAlpha());
   //
@@ -282,6 +364,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 	"event="<<fEvent<<          //  event number
 	"time="<<fTime<<            //  time stamp of event
 	"trigger="<<fTrigger<<      //  trigger
+	"triggerClass="<<&fTriggerClass<<      //  trigger
 	"mag="<<fMagF<<             //  magnetic field
 	"nclIn="<<nclIn<<
 	"nclOut="<<nclOut<<
@@ -302,6 +385,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   AliExternalTrackParam *t = &trackIn;
   track->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   seed->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+  seed->SetNumberOfClusters((nclIn+nclOut)*0.5);
   return kTRUE;
 }
 
@@ -312,12 +396,22 @@ Bool_t AliTPCcalibCalib::RejectCluster(AliTPCclusterMI* cl, AliExternalTrackPara
   // check the acceptance of cluster
   // Cut on edge effects
   //
+  Float_t kEdgeCut=2.5;
+  Float_t kSigmaCut=6;
+
   Bool_t isReject = kFALSE;
   Float_t edgeY = cl->GetX()*TMath::Tan(TMath::Pi()/18);
   Float_t dist  = edgeY - TMath::Abs(cl->GetY());
   if (param)  dist  = TMath::Abs(edgeY - TMath::Abs(param->GetY()));
-  if (dist<3) isReject=kTRUE;
-  if (cl->GetType()<0) isReject=kTRUE;
+  if (dist<kEdgeCut) isReject=kTRUE;
+
+  Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
+  AliTPCseed::GetError(cl, param,cov[0],cov[2]);
+  Double_t py = (cl->GetY()-param->GetY())/TMath::Sqrt(cov[0]*cov[0]+param->GetSigmaY2());
+  Double_t pz = (cl->GetZ()-param->GetZ())/TMath::Sqrt(cov[2]*cov[2]+param->GetSigmaZ2());
+  //
+  if ((py*py+pz*pz)>kSigmaCut*kSigmaCut) isReject=kTRUE;
+  
   return isReject;
 }
 

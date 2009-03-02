@@ -9,6 +9,7 @@
 ////
 
 #include "TNamed.h"
+#include "TObjString.h"
 class AliTPCseed;
 class AliESDEvent;
 class AliESDtrack;
@@ -54,6 +55,7 @@ protected:
   Int_t   fTriggerMaskAccept;           //trigger mask - accept
   Bool_t  fHasLaser;                    //flag the laser is overlayed with given event
   Bool_t  fRejectLaser;                 //flag- reject laser
+  TObjString fTriggerClass;                // trigger class
 private:
   Int_t  fDebugLevel;                   //  debug level
 
