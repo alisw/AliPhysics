@@ -17,7 +17,7 @@ class AliESDRecInfo;
 class AliComparisonObject : public TNamed {
 public :
   AliComparisonObject(); 
-  AliComparisonObject(const char* name="AliComparisonObject"); 
+  AliComparisonObject(const char* name="AliComparisonObject", const char* title="AliComparisonObject"); 
   virtual ~AliComparisonObject();
 
   // Init data members
@@ -26,16 +26,32 @@ public :
 
   // Execute analysis
   // call in the event loop 
-  virtual void Exec(AliMCInfo* infoMC=0, AliESDRecInfo *infoRC=0) = 0;
+  virtual void Exec(AliMCInfo* const infoMC=0, AliESDRecInfo* const infoRC=0) = 0;
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list=0) = 0;
+  virtual Long64_t Merge(TCollection* const list=0) = 0;
 
   // Analyse output histograms
   virtual void Analyse() = 0;
 
   // Get output folder for analysed histograms
-  virtual TFolder* GetAnalysisFolder() = 0;
+  virtual TFolder* GetAnalysisFolder() const = 0;
+
+  // set and get analysisMode
+  void SetAnalysisMode(Int_t analysisMode=0) {fAnalysisMode = analysisMode;} 
+  Int_t GetAnalysisMode() {return fAnalysisMode;}
+
+  // set and get hpt generator 
+  void SetHptGenerator(Bool_t hptGenerator=kFALSE) {fHptGenerator = hptGenerator;}
+  Bool_t IsHptGenerator() {return fHptGenerator;}
+
+protected: 
+
+ // analysis mode
+ Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained
+
+ // hpt generator
+ Bool_t fHptGenerator; // hpt event generator
 
   ClassDef(AliComparisonObject,1);
 };

@@ -33,30 +33,13 @@
 
 */
 
-#include <iostream>
-
-#include "TFile.h"
-#include "TCint.h"
-#include "TH3F.h"
-#include "TH2F.h"
-#include "TF1.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TGraph2D.h"
 #include "TCanvas.h"
-#include "TGraph.h"
-//
 #include "AliESDEvent.h"
-#include "AliESD.h"
-#include "AliESDfriend.h"
-#include "AliESDfriendTrack.h"
 #include "AliRecInfoCuts.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliLog.h" 
-//
 #include "AliMathBase.h"
 #include "AliTreeDraw.h"
-//#include "TStatToolkit.h"
 
 #include "AliMCInfo.h" 
 #include "AliESDRecInfo.h" 
@@ -72,38 +55,49 @@ AliComparisonDEdx::AliComparisonDEdx():
   AliComparisonObject("AliComparisonDEdx"),
 
   // dEdx 
-  fTPCSignalNormTan(0), 
-  fTPCSignalNormSPhi(0),
-  fTPCSignalNormTPhi(0), 
-  //
-  fTPCSignalNormTanSPhi(0),
-  fTPCSignalNormTanTPhi(0),
-  fTPCSignalNormTanSPt(0), 
+  fDeDxHisto(0),
   
   // Cuts 
   fCutsRC(0), 
   fCutsMC(0),
-  fMCPtMin(0),
-  fMCAbsTanThetaMax(0),
-  fMCPdgCode(0),
 
   // histogram folder 
   fAnalysisFolder(0)
 {
-  Init();
+  // default constructor	
 }
 
 //_____________________________________________________________________________
-AliComparisonDEdx::~AliComparisonDEdx(){
-   
-  if(fTPCSignalNormTan)  delete fTPCSignalNormTan; fTPCSignalNormTan=0; 
-  if(fTPCSignalNormSPhi) delete fTPCSignalNormSPhi; fTPCSignalNormSPhi=0;
-  if(fTPCSignalNormTPhi) delete fTPCSignalNormTPhi; fTPCSignalNormTPhi=0;
-  //
-  if(fTPCSignalNormTanSPhi) delete fTPCSignalNormTanSPhi; fTPCSignalNormTanSPhi=0;
-  if(fTPCSignalNormTanTPhi) delete fTPCSignalNormTanTPhi; fTPCSignalNormTanTPhi=0;
-  if(fTPCSignalNormTanSPt)  delete fTPCSignalNormTanSPt; fTPCSignalNormTanSPt=0;
+AliComparisonDEdx::AliComparisonDEdx(Char_t* name="AliComparisonDEdx", Char_t* title="AliComparisonDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+  AliComparisonObject(name,title),
 
+  // dEdx 
+  fDeDxHisto(0),
+  
+  // Cuts 
+  fCutsRC(0), 
+  fCutsMC(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // named constructor
+
+  SetAnalysisMode(analysisMode);
+  SetHptGenerator(hptGenerator);
+  Init();
+}
+
+
+//_____________________________________________________________________________
+AliComparisonDEdx::~AliComparisonDEdx()
+{
+  // destructor
+  if(fDeDxHisto)  delete fDeDxHisto; fDeDxHisto=0; 
+
+  if(fCutsRC) delete fCutsRC; fCutsRC=0;
+  if(fCutsMC) delete fCutsMC; fCutsMC=0;
+  
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
@@ -113,92 +107,99 @@ void AliComparisonDEdx::Init()
   // Init histograms
   
   // TPC dEdx
-  fTPCSignalNormTan = new TH2F("CdEdxTan","CdEdxTan",50, -2,2,  40,30,70); 
-  fTPCSignalNormTan->SetXTitle("tan(#theta)");
-  fTPCSignalNormTan->SetYTitle("rec. dE/dx / calc. dE/dx");
+  Int_t nPBins = 31;
+    Double_t binsP[32] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.25,2.5,2.75,3.,3.5,4.,5.,6.,8.,10.};
+    Double_t pMin = 0., pMax = 10.;
 
-  fTPCSignalNormSPhi   = new TH2F("CdEdxSPhi","CdEdxSPhi",10,0.0,1,40,30,70);
-  fTPCSignalNormSPhi->SetXTitle("sin(#phi)");
-  fTPCSignalNormSPhi->SetYTitle("rec. dE/dx / calc. dE/dx");
+    if(IsHptGenerator() == kTRUE) {
+      nPBins = 100;
+      pMin = 0.; pMax = 100.;
+    }
 
-  fTPCSignalNormTPhi   = new TH2F("CdEdxTPhi","CdEdxTPhi",10,0.0,2,40,30,70); 
-  fTPCSignalNormTPhi->SetXTitle("tan(#phi)");
-  fTPCSignalNormTPhi->SetYTitle("rec. dE/dx / calc. dE/dx");
+   //signal:alpha:y:z:snp:tgl:ncls:pid:p
+   Int_t binsQA[9]    = {600,50, 50,  50, 50, 50, 80, 5, nPBins};
+   Double_t xminQA[9] = {0,  -4,-20,-250, -1, -2, 0, 0., pMin};
+   Double_t xmaxQA[9] = {300, 4, 20, 250,  1,  2, 160, 5., pMax};
 
-  fTPCSignalNormTanSPhi= new TH3F("CdEdxTanSPhi","CdEdxTanSPhi",20, -2,2, 10,0.0 ,1,  40,30,70);
-  fTPCSignalNormTanSPhi->SetXTitle("tan(#theta)");
-  fTPCSignalNormTanSPhi->SetYTitle("sin(#phi)");
-  fTPCSignalNormTanSPhi->SetZTitle("rec. dE/dx / calc. dE/dx");
+   fDeDxHisto = new THnSparseF("fDeDxHisto","signal:alpha:y:z:snp:tgl:ncls:pid:momentum",9,binsQA,xminQA,xmaxQA);
+   if(!IsHptGenerator()) fDeDxHisto->SetBinEdges(8,binsP);
 
-  fTPCSignalNormTanTPhi= new TH3F("CdEdxTanTPhi","CdEdxTanTPhi",20, -2,2, 10,0.0 ,1,  40,30,70);
-  fTPCSignalNormTanTPhi->SetXTitle("tan(#theta)");
-  fTPCSignalNormTanTPhi->SetYTitle("tan(#phi)");
-  fTPCSignalNormTanTPhi->SetZTitle("rec. dE/dx / calc. dE/dx");
+   fDeDxHisto->GetAxis(0)->SetTitle("signal");
+   fDeDxHisto->GetAxis(1)->SetTitle("alpha (rad)");
+   fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");
+   fDeDxHisto->GetAxis(3)->SetTitle("z (cm)");
+   fDeDxHisto->GetAxis(4)->SetTitle("snp");
+   fDeDxHisto->GetAxis(5)->SetTitle("tgl");
+   fDeDxHisto->GetAxis(6)->SetTitle("ncls");
+   fDeDxHisto->GetAxis(6)->SetTitle("pid");
+   fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
+   fDeDxHisto->Sumw2();
 
-  fTPCSignalNormTanSPt= new TH3F("CdEdxTanSPt","CdEdxTanSPt",20, -2,2, 10,0.3 ,3, 40,30,70); 
-  fTPCSignalNormTanSPt->SetXTitle("tan(#theta)");
-  fTPCSignalNormTanSPt->SetYTitle("#sqrt{p_{t}}");
-  fTPCSignalNormTanSPt->SetZTitle("rec. dE/dx / calc. dE/dx");
+   // Init cuts
+   if(!fCutsMC) 
+     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
+   if(!fCutsRC) 
+     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
 
-  // Init cuts
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-
-    // init folder
-    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
+   // init folder
+   fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
 }
 
 //_____________________________________________________________________________
-void AliComparisonDEdx::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
-
+void AliComparisonDEdx::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
+{
   // Fill dE/dx  comparison information
-  
-  Float_t mcpt = infoMC->GetParticle().Pt();
-  Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
-  Float_t mprim = infoMC->GetPrim();
-
-  // distance to Prim. vertex 
-  const Double_t* dv = infoMC->GetVDist(); 
-
-  Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
   
   // Check selection cuts 
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
-  if (!isPrim) return;
-  if (infoRC->GetStatus(1)!=3) return;
+ 
+  Double_t pid = -1;
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetEM() ) pid = 0;
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetMuM() ) pid = 1;
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetPiP() ) pid = 2;
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetKP() ) pid = 3;
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetProt() ) pid = 4;
+
   if (!infoRC->GetESDtrack()) return;  
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
-  if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
-  //if (mprim>1.4) return;
-  //if (mprim<0.5) return;
-  if (mprim > fCutsMC->GetMaxTPCSignal()) return;
-  if (mprim < fCutsMC->GetMinTPCSignal()) return;
-  if (infoRC->GetESDtrack()->GetTPCsignalN()<fCutsRC->GetMinTPCsignalN()) return;
-  //
-  Float_t ratio = infoRC->GetESDtrack()->GetTPCsignal()/infoMC->GetPrim();
-  Float_t sphi =  infoRC->GetESDtrack()->GetInnerParam()->GetSnp();
-  Float_t tphi =  sphi/TMath::Sqrt((1.-sphi)*(1.+sphi));
 
-  if (TMath::Abs(infoMC->GetParticle().GetPdgCode()) != GetMCPdgCode()) return;
-  //if (mcpt>0.5) {
-  if (mcpt > GetMCPtMin()) {
-    fTPCSignalNormTan->Fill(tantheta,ratio);    // only subset
-  }
+  Float_t dedx = infoRC->GetESDtrack()->GetTPCsignal();
+  Int_t ncls = infoRC->GetESDtrack()->GetTPCNcls();
 
-  //if (TMath::Abs(tantheta)<0.5){
-  if (TMath::Abs(tantheta) < GetMCAbsTanThetaMax()){
-    fTPCSignalNormSPhi->Fill(sphi,ratio);       // only subset
-    fTPCSignalNormTPhi->Fill(tphi,ratio);       // only subset
-  }
-  fTPCSignalNormTanSPhi->Fill(tantheta,sphi,ratio);    
-  fTPCSignalNormTanTPhi->Fill(tantheta,tphi,ratio);    
-  fTPCSignalNormTanSPt->Fill(tantheta,TMath::Sqrt(mcpt),ratio);
+  const AliExternalTrackParam *innerParam =  0;
+  if ((innerParam = infoRC->GetESDtrack()->GetInnerParam()) == 0) return;
+
+  Double_t pt = innerParam->Pt();
+  Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
+  Double_t p = pt/TMath::Cos(lam);
+  Double_t alpha = innerParam->GetAlpha();
+  Double_t y = innerParam->GetY();
+  Double_t z = innerParam->GetZ();
+  Double_t snp = innerParam->GetSnp();
+  Double_t tgl = innerParam->GetTgl();
+
+  Double_t vDeDxHisto[9] = {dedx,alpha,y,z,snp,tgl,ncls,pid,p};
+  fDeDxHisto->Fill(vDeDxHisto); 
 }
 
 //_____________________________________________________________________________
-Long64_t AliComparisonDEdx::Merge(TCollection* list) 
+void AliComparisonDEdx::ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
+{
+  // Fill dE/dx  comparison information
+  
+   AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+void AliComparisonDEdx::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
+{
+  // Fill dE/dx  comparison information
+  
+   AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+Long64_t AliComparisonDEdx::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
 
@@ -218,14 +219,7 @@ Long64_t AliComparisonDEdx::Merge(TCollection* list)
     AliComparisonDEdx* entry = dynamic_cast<AliComparisonDEdx*>(obj);
     if (entry == 0) continue;
 
-    fTPCSignalNormTan->Add(entry->fTPCSignalNormTan);
-    fTPCSignalNormSPhi->Add(entry->fTPCSignalNormSPhi);
-    fTPCSignalNormTPhi->Add(entry->fTPCSignalNormTPhi);
-    //
-    fTPCSignalNormTanSPhi->Add(entry->fTPCSignalNormTanSPhi);
-    fTPCSignalNormTanTPhi->Add(entry->fTPCSignalNormTanTPhi);
-    fTPCSignalNormTanSPt->Add(entry->fTPCSignalNormTanSPt);
-
+    fDeDxHisto->Add(entry->fDeDxHisto);
     count++;
   }
 
@@ -233,10 +227,17 @@ return count;
 }
 
 //_____________________________________________________________________________
-void AliComparisonDEdx::Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
+void AliComparisonDEdx::Exec(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
 {
   // Process comparison information
-  Process(infoMC,infoRC);
+
+  if(GetAnalysisMode() == 0) ProcessTPC(infoMC,infoRC);
+  else if(GetAnalysisMode() == 1) ProcessTPCITS(infoMC,infoRC);
+  else if(GetAnalysisMode() == 2) ProcessConstrained(infoMC,infoRC);
+  else {
+    printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
+    return;
+  }
 }
 
 //_____________________________________________________________________________
@@ -257,12 +258,10 @@ void AliComparisonDEdx::Analyse()
   // Analyze comparison information and store output histograms
   // in the folder "folderDEdx"
   //
-
   TH1::AddDirectory(kFALSE);
-  
-  AliComparisonDEdx * comp=this;
   TObjArray *aFolderObj = new TObjArray;
 
+  /*
   TH1F *hiss=0;
   TGraph2D * gr=0;
 
@@ -305,6 +304,7 @@ void AliComparisonDEdx::Analyse()
 
   gr->GetHistogram()->SetName("TPCdEdxMeanTanPt_2");
   aFolderObj->Add(gr->GetHistogram());
+  */
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
