@@ -60,6 +60,7 @@ private:
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
   void          Process(TH1 **h, TGraphErrors *g);
+  void          PrintStatus(ULong_t s);
 
   Int_t            fStatus;            // bit mask for controlling the task
   AliESDEvent      *fESD;              // ESD event
