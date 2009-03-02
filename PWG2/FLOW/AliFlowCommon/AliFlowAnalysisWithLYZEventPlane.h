@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliFlowAnalysisWithLYZEventPlane_H
-#define AliFlowAnalysisWithLYZEventPlane_H
+#ifndef ALIFLOWANALYSISWITHLYZEVENTPLANE_H
+#define ALIFLOWANALYSISWITHLYZEVENTPLANE_H
 
 class AliFlowVector;
 class AliFlowTrackSimple;
@@ -41,75 +41,75 @@ class AliFlowAnalysisWithLYZEventPlane {
   void      SetEventNumber(Int_t n)      { this->fEventNumber = n; }
   Int_t     GetEventNumber() const       { return this->fEventNumber; }
   void      SetQ2sum(Double_t d)         { this->fQ2sum = d; }
-  Double_t  GetQ2sum()                   { return this->fQ2sum; }
+  Double_t  GetQ2sum() const             { return this->fQ2sum; }
 
   //output
   TList*             GetHistList() const     {return this->fHistList; }
   AliFlowCommonHist* GetCommonHists() const  { return this->fCommonHists; }
-  void               SetCommonHists(AliFlowCommonHist* aCommonHist)  
+  void               SetCommonHists(AliFlowCommonHist* const aCommonHist)  
      { this->fCommonHists = aCommonHist; }
   AliFlowCommonHistResults* GetCommonHistsRes() const  
      { return this->fCommonHistsRes; }
-  void               SetCommonHistsRes(AliFlowCommonHistResults* aCommonHistResult) 
+  void               SetCommonHistsRes(AliFlowCommonHistResults* const aCommonHistResult) 
      { this->fCommonHistsRes = aCommonHistResult; }
 
   // !!!!! make getters and setters for all histograms
-  TProfile*  GetSecondReDtheta() {return this->fSecondReDtheta; } 
-  void       SetSecondReDtheta(TProfile* aSecondReDtheta) 
+  TProfile*  GetSecondReDtheta() const {return this->fSecondReDtheta; } 
+  void       SetSecondReDtheta(TProfile* const aSecondReDtheta) 
     {this->fSecondReDtheta = aSecondReDtheta; }
-  TProfile*  GetSecondImDtheta() {return this->fSecondImDtheta; }
-  void       SetSecondImDtheta(TProfile* aSecondImDtheta)
+  TProfile*  GetSecondImDtheta() const {return this->fSecondImDtheta; }
+  void       SetSecondImDtheta(TProfile* const aSecondImDtheta)
     {this->fSecondImDtheta = aSecondImDtheta; }
-  TProfile*  GetFirstr0theta()   {return this->fFirstr0theta; }
-  void       SetFirstr0theta(TProfile* aFirstr0theta)
+  TProfile*  GetFirstr0theta() const   {return this->fFirstr0theta; }
+  void       SetFirstr0theta(TProfile* const aFirstr0theta)
     {this->fFirstr0theta = aFirstr0theta; }
   
-  TProfile*  GetHistProVetaRP()    {return this->fHistProVetaRP;}
-  void       SetHistProVetaRP(TProfile* aHistProVetaRP)
+  TProfile*  GetHistProVetaRP() const   {return this->fHistProVetaRP;}
+  void       SetHistProVetaRP(TProfile* const aHistProVetaRP)
     {this->fHistProVetaRP =aHistProVetaRP; }
-  TProfile*  GetHistProVetaPOI()   {return this->fHistProVetaPOI;} 
-  void       SetHistProVetaPOI(TProfile* aHistProVetaPOI)
+  TProfile*  GetHistProVetaPOI() const  {return this->fHistProVetaPOI;} 
+  void       SetHistProVetaPOI(TProfile* const aHistProVetaPOI)
     {this->fHistProVetaPOI = aHistProVetaPOI; } 
-  TProfile*  GetHistProVPtRP()    {return this->fHistProVPtRP;}
-  void       SetHistProVPtRP(TProfile* aHistProVPtRP)
+  TProfile*  GetHistProVPtRP() const    {return this->fHistProVPtRP;}
+  void       SetHistProVPtRP(TProfile* const aHistProVPtRP)
     {this->fHistProVPtRP =aHistProVPtRP; } 
-  TProfile*  GetHistProVPtPOI()   {return this->fHistProVPtPOI;} 
-  void       SetHistProVPtPOI(TProfile* aHistProVPtPOI)
+  TProfile*  GetHistProVPtPOI() const   {return this->fHistProVPtPOI;} 
+  void       SetHistProVPtPOI(TProfile* const aHistProVPtPOI)
     {this->fHistProVPtPOI = aHistProVPtPOI; }      
-  TProfile*  GetHistProWr()      {return this->fHistProWr; }
-  void       SetHistProWr(TProfile* aHistProWr)
+  TProfile*  GetHistProWr() const       {return this->fHistProWr; }
+  void       SetHistProWr(TProfile* const aHistProWr)
     {this->fHistProWr = aHistProWr; }
-  TProfile*  GetHistProWrCorr()  {return this->fHistProWrCorr; }
-  void       SetHistProWrCorr(TProfile* aHistProWrCorr)
+  TProfile*  GetHistProWrCorr() const {return this->fHistProWrCorr; }
+  void       SetHistProWrCorr(TProfile* const aHistProWrCorr)
     {this->fHistProWrCorr = aHistProWrCorr; }
-  TH1F*      GetHistQsumforChi() {return this->fHistQsumforChi; }
-  void       SetHistQsumforChi(TH1F* aHistQsumforChi) 
+  TH1F*      GetHistQsumforChi() const {return this->fHistQsumforChi; }
+  void       SetHistQsumforChi(TH1F* const aHistQsumforChi) 
     {this->fHistQsumforChi = aHistQsumforChi; }
-  TH1F*      GetHistDeltaPhi()   {return this->fHistDeltaPhi; }  
-  void       SetHistDeltaPhi(TH1F* aHistDeltaPhi)
+  TH1F*      GetHistDeltaPhi()  const {return this->fHistDeltaPhi; }  
+  void       SetHistDeltaPhi(TH1F* const aHistDeltaPhi)
     {this->fHistDeltaPhi = aHistDeltaPhi; }
-  TH1F*      GetHistDeltaPhi2()  {return this->fHistDeltaPhi2; } 
-  void       SetHistDeltaPhi2(TH1F* aHistDeltaPhi2)
+  TH1F*      GetHistDeltaPhi2() const {return this->fHistDeltaPhi2; } 
+  void       SetHistDeltaPhi2(TH1F* const aHistDeltaPhi2)
     {this->fHistDeltaPhi2 = aHistDeltaPhi2; }
-  TH1F*      GetHistDeltaPhihere() {return this->fHistDeltaPhihere; }
-  void       SetHistDeltaPhihere(TH1F* aHistDeltaPhihere)
+  TH1F*      GetHistDeltaPhihere() const {return this->fHistDeltaPhihere; }
+  void       SetHistDeltaPhihere(TH1F* const aHistDeltaPhihere)
     {this->fHistDeltaPhihere = aHistDeltaPhihere; }
-  TH1F*      GetHistPhiEP()      {return this->fHistPhiEP; }   
-  void       SetHistPhiEP(TH1F* aHistPhiEP)
+  TH1F*      GetHistPhiEP() const     {return this->fHistPhiEP; }   
+  void       SetHistPhiEP(TH1F* const aHistPhiEP)
     {this->fHistPhiEP = aHistPhiEP; }  
-  TH1F*      GetHistPhiEPhere()  {return this->fHistPhiEPhere; }
-  void       SetHistPhiEPhere(TH1F* aHistPhiEPhere)
+  TH1F*      GetHistPhiEPhere() const {return this->fHistPhiEPhere; }
+  void       SetHistPhiEPhere(TH1F* const aHistPhiEPhere)
     {this->fHistPhiEPhere = aHistPhiEPhere; }       
-  TH1F*      GetHistPhiLYZ()     {return this->fHistPhiLYZ; }  
-  void       SetHistPhiLYZ(TH1F* aHistPhiLYZ)
+  TH1F*      GetHistPhiLYZ()  const   {return this->fHistPhiLYZ; }  
+  void       SetHistPhiLYZ(TH1F* const aHistPhiLYZ)
     {this->fHistPhiLYZ = aHistPhiLYZ; }       
-  TH1F*      GetHistPhiLYZ2()    {return this->fHistPhiLYZ2;}               
-  void       SetHistPhiLYZ2(TH1F* aHistPhiLYZ2)
+  TH1F*      GetHistPhiLYZ2() const   {return this->fHistPhiLYZ2;}               
+  void       SetHistPhiLYZ2(TH1F* const aHistPhiLYZ2)
     {this->fHistPhiLYZ2 = aHistPhiLYZ2; }
 
   //input
-  void       SetSecondRunList(TList* list) { this->fSecondRunList = list; }
-  TList*     GetSecondRunList()            { return this->fSecondRunList; }
+  void       SetSecondRunList(TList* const list) { this->fSecondRunList = list; }
+  TList*     GetSecondRunList()  const           { return this->fSecondRunList; }
 
  private:
 
