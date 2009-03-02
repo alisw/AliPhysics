@@ -48,7 +48,9 @@ class AliFlowEventSimple: public TObject {
   TObjArray* TrackCollection() const        { return this->fTrackCollection; }
  
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
-   
+  AliFlowVector GetQsub(Double_t etaMin=-0.9, Double_t etaMax=0.9, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  //for eta subevents
+  //add here more subevent options   
+
  private:
   TObjArray*              fTrackCollection;        // collection of tracks
   Int_t                   fNumberOfTracks;         // number of tracks
