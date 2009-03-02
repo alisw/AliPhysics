@@ -163,8 +163,8 @@ void AliTPCtaskPID::Init(){
   xmin[4] =50; xmax[4]=160;
   //
   // 
-  nbins[6]=40;
-  xmin[6]=1; xmax[6]=4;
+  nbins[6]=60;
+  xmin[6]=1; xmax[6]=6;
 
   nbins[5]=400;
   xmin[5]=20; xmax[5]=400;
@@ -174,7 +174,7 @@ void AliTPCtaskPID::Init(){
   fTPCsignalNorm = new THnSparseF("TPC signal Norm","TPC signal Norm",7,nbins,xmin,xmax);
   //
   nbins[5]=256;
-  xmin[5]=-0.001; xmax[5]=1.001;
+  xmin[5]=-0.1; xmax[5]=1.1;
   nbins[6]=10;
   xmin[6]=0; xmax[6]=10;
   fTPCr = new THnSparseF("TPC pid probability ","TPC pid probability",7,nbins,xmin,xmax);
@@ -308,6 +308,7 @@ void  AliTPCtaskPID::ProcessMCInfo(){
   //
   //
   //
+
   if (!fTPCsignal) Init();
   Int_t npart   = fMCinfo->GetNumberOfTracks();
   Int_t ntracks = fESD->GetNumberOfTracks(); 
@@ -347,7 +348,7 @@ void  AliTPCtaskPID::ProcessMCInfo(){
     for (Int_t iType=0;iType<5;iType++) {
       if (AliPID::ParticleCode(iType)==TMath::Abs(pdg)){
 	x[0]=iType;
-	if (pdg<0) x[0]+=5;
+	if (TDatabasePDG::Instance()->GetParticle(pdg)->Charge()<0) x[0]+=5;
       }
     }
     x[1]= mom;
@@ -356,7 +357,9 @@ void  AliTPCtaskPID::ProcessMCInfo(){
     x[4]=track->GetTPCsignalN();
     x[5]= dedx;
     x[6]= betheBloch;
+    //
     fTPCsignal->Fill(x);
+    //
     x[5]=dedx/betheBloch;
     fTPCsignalNorm->Fill(x);
     for (Int_t ipart2=0;ipart2<5;ipart2++){
