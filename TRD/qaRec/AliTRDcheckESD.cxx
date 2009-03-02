@@ -152,13 +152,15 @@ void AliTRDcheckESD::Exec(Option_t *){
 
   // Get MC information if available
   AliStack * fStack = 0x0;
-  if(HasMC() && !fMC){ 
-    AliWarning("MC event missing");
-    SetMC(kFALSE);
-  } else {
-    if(!(fStack = fMC->Stack())){
-      AliWarning("MC stack missing");
+  if(HasMC()){
+    if(!fMC){ 
+      AliWarning("MC event missing");
       SetMC(kFALSE);
+    } else {
+      if(!(fStack = fMC->Stack())){
+        AliWarning("MC stack missing");
+        SetMC(kFALSE);
+      }
     }
   }
   Bool_t TRDin(0), TRDout(0), TRDpid(0);
@@ -173,6 +175,7 @@ void AliTRDcheckESD::Exec(Option_t *){
 
     // track status
     ULong_t status = esdTrack->GetStatus();
+    //PrintStatus(status);
 
     // define TPC out tracks
     if(!Bool_t(status & AliESDtrack::kTPCout)) continue;
@@ -351,4 +354,26 @@ void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
     g->SetPoint(ip, ax->GetBinCenter(ib), eff);
     g->SetPointError(ip, 0., n2 ? eff*TMath::Sqrt(1./n1+1./n2) : 0.);
   }
+}  
+
+//____________________________________________________________________
+void AliTRDcheckESD::PrintStatus(ULong_t status)
+{
+  printf("ITS[i(%d) o(%d) r(%d)] TPC[i(%d) o(%d) r(%d) p(%d)] TRD[i(%d) o(%d) r(%d) p(%d) s(%d)] HMPID[o(%d) p(%d)]\n"
+    ,Bool_t(status & AliESDtrack::kITSin)
+    ,Bool_t(status & AliESDtrack::kITSout)
+    ,Bool_t(status & AliESDtrack::kITSrefit)
+    ,Bool_t(status & AliESDtrack::kTPCin)
+    ,Bool_t(status & AliESDtrack::kTPCout)
+    ,Bool_t(status & AliESDtrack::kTPCrefit)
+    ,Bool_t(status & AliESDtrack::kTPCpid)
+    ,Bool_t(status & AliESDtrack::kTRDin)
+    ,Bool_t(status & AliESDtrack::kTRDout)
+    ,Bool_t(status & AliESDtrack::kTRDrefit)
+    ,Bool_t(status & AliESDtrack::kTRDpid)
+    ,Bool_t(status & AliESDtrack::kTRDStop)
+    ,Bool_t(status & AliESDtrack::kHMPIDout)
+    ,Bool_t(status & AliESDtrack::kHMPIDpid)
+  );
 }
+
