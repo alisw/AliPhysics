@@ -20,16 +20,13 @@ $Log$
 //#define AliFlowAnalysisWithLYZEventPlane_cxx
  
 #include "Riostream.h"  //needed as include
-
-#include "TFile.h"
-#include "TList.h"
 #include "TComplex.h"   //needed as include
-#include "TCanvas.h"   //needed as include
-#include "TLegend.h"   //needed as include
-#include "TProfile.h"  //needed as include
-#include "TVector2.h"
+#include "TProfile.h"   //needed as include
 
 class TH1F;
+class TFile;
+class TList;
+class TVector2;
 
 #include "AliFlowLYZConstants.h"    //needed as include
 #include "AliFlowCommonConstants.h" //needed as include
