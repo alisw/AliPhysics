@@ -58,6 +58,11 @@ const char * pprRunName[] = {
   "kPythia6", "kPhojet"
 };
 
+enum Mag_t
+{
+  kNoField, k5kG, kFieldMax
+};
+
 const char * pprField[] = {
   "kNoField", "k5kG"
 };
@@ -70,7 +75,7 @@ void ProcessEnvironmentVars();
 
 // Geterator, field, beam energy
 static PDC06Proc_t   proc     = kPhojet;
-static AliMagF::BMap_t mag    = AliMagF::k5kG;
+static Mag_t         mag      = k5kG;
 static Float_t       energy   = 10000; // energy in CMS
 //========================//
 // Set Random Number seed //
@@ -237,7 +242,7 @@ void Config()
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
     field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
-  } else if (mag == AliMagF::k5kG) {
+  } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
     field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
   }
