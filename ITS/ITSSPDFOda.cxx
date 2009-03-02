@@ -1,3 +1,14 @@
+/*
+Contact: annalisa.mastroserio@cern.ch
+Link: tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/
+Run Type: DAQ_FO_UNIF_SCAN
+DA Type: LDC
+Number of events needed: Depending on scan type
+Input Files: spd_focalib_params, raw data
+Output Files: ./calibResults/ScanDCSconfigToFXS/* 
+Trigger types used: PHYSICS
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // This program can be compiled in two modes.                                 //
 //                                                                            //
@@ -48,10 +59,17 @@ int main(int argc, char **argv) {
   timer.Start();
   
   // directory structure, hard coded
-  char *saveDirNoisyToFXS    = "./calibResults/ScanNoisyToFXS";     //     may delete content
   char *saveDirDCSconfigToFXS= "./calibResults/ScanDCSconfigToFXS"; //     may delete content
   char *configFilesDir       = "./configFiles";                     //     may delete content
   char *saveDirIdsToFXS      = "./calibResults/IdsToFXS"; 
+
+  // make sure the directory structure is correct:
+  system("mkdir ./calibResults >& /dev/null");
+  system("mkdir ./calibResults/ScanDCSconfigToFXS >& /dev/null");
+  system("mkdir ./calibResults/IdsToFXS >& /dev/null");
+  system("mkdir ./configFiles >& /dev/null");
+
+
   // parameters config files
   TString thresholdsFileName = Form("%s/focalib_params.txt",configFilesDir); 
   
@@ -105,7 +123,6 @@ int main(int argc, char **argv) {
   
   Int_t evType =-1;
   AliITSOnlineSPDfoInfo *info[20]; Int_t ntriggers[20]; Int_t vDB[20]; Bool_t iseq[20];
-  Bool_t infodacs[6] = {kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,kFALSE}; // num of DAC params
   AliITSOnlineSPDfo *fomanager[20];
   TString s = "focalib";
   
@@ -143,7 +160,7 @@ int main(int argc, char **argv) {
     
     Int_t eventType;
     UInt_t eventNr=0;
-    Int_t entry=0;    
+      
     // main loop (infinite) 
     for(;;) {
       
@@ -215,7 +232,7 @@ int main(int argc, char **argv) {
             if(!fomanager[eqId]->GetNdacs()) fomanager[eqId]->SetNdacs(str->GetFOHnumDacs());
            
             TArrayS dacvalues(str->GetFOHnumDacs());
-            for(Int_t n = 0; n<str->GetFOHnumDacs(); n++) dacvalues.AddAt(str->GetFOHdacValue(n),n);
+            for(Int_t n = 0; n<(Int_t)str->GetFOHnumDacs(); n++) dacvalues.AddAt(str->GetFOHdacValue(n),n);
             
             TArrayS dacs = fomanager[eqId]->CreateDACArray(dacvalues, info[eqId]->GetDACIndexArray());
 	    
@@ -303,7 +320,7 @@ int main(int argc, char **argv) {
     // send a tared file of all the dcsConfig text files
     TString command = Form("cd %s; tar -cf dcsConfig.tar *",saveDirDCSconfigToFXS);
     //printf("\n\n%s\n\n",command.Data());
-    //system(command.Data());
+    system(command.Data());
     TString fileName = Form("%s/dcsConfig.tar",saveDirDCSconfigToFXS);
     TString iddcs = "SPD_dcsConfig";
     
