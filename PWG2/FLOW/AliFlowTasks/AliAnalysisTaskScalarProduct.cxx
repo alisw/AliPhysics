@@ -14,13 +14,12 @@
 **************************************************************************/
 
 #include "Riostream.h" //needed as include
-#include "TChain.h"
-#include "TTree.h"
-#include "TFile.h" //needed as include
-#include "TList.h"
 
-
+class TFile;
+class TList;
 class AliAnalysisTask;
+
+#include "TProfile.h"  //needed as include
 #include "AliAnalysisManager.h"
 #include "AliFlowEventSimple.h"
 
@@ -132,15 +131,31 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScalarProduct::Terminate(Option_t *) 
 {
-  // Called once at the end of the query -- do not call in case of CAF
-  //  fSP->Finish();
-  //  PostData(0,fListHistos);
-
+  // Called once at the end of the query
+  AliFlowAnalysisWithScalarProduct* fSPTerm = new AliFlowAnalysisWithScalarProduct() ;
   fListHistos = (TList*)GetOutputData(0);
-  // cout << "histgram list in Terminate" << endl;
-  if (fListHistos)  {
-    //    fListHistos->Print();
-  }	
-  else { cout << "histgram list pointer is empty" << endl; }
+  if (fListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+      (fListHistos->FindObject("AliFlowCommonHistSP"));
+    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+      (fListHistos->FindObject("AliFlowCommonHistResultsSP"));
+    TProfile* pHistProVetaRP  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_VetaRP_SP"));
+    TProfile* pHistProVetaPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_VetaPOI_SP"));
+    TProfile* pHistProVPtRP   = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_VPtRP_SP"));
+    TProfile* pHistProVPtPOI  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_VPtPOI_SP"));
+
+    if (pCommonHist && pCommonHistResults) {
+      fSPTerm -> SetCommonHists(pCommonHist);
+      fSPTerm -> SetCommonHistsRes(pCommonHistResults);
+      fSPTerm -> SetHistProVetaRP(pHistProVetaRP);
+      fSPTerm -> SetHistProVetaPOI(pHistProVetaPOI);
+      fSPTerm -> SetHistProVPtRP(pHistProVPtRP);
+      fSPTerm -> SetHistProVPtPOI(pHistProVPtPOI);
+      fSPTerm -> Finish();
+      PostData(0,fListHistos);
+    }
+  }
+  else { cout << "histgram list pointer is empty in Scalar Product" << endl; }
 
 }
