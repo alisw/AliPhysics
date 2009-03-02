@@ -196,7 +196,7 @@ AliTPCtrackerMI::AliTPCtrackerMI()
 		 fNtracks(0),
 		 fSeeds(0),
 		 fIteration(0),
-		 fParam(0),
+		 fkParam(0),
 		 fDebugStreamer(0)
 {
   //
@@ -222,7 +222,7 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->SetRow((i&0x00ff0000)>>16);
   track->SetSector(sec);
   //  Int_t index = i&0xFFFF;
-  if (sec>=fParam->GetNInnerSector()) track->SetRow(track->GetRow()+fParam->GetNRowLow()); 
+  if (sec>=fkParam->GetNInnerSector()) track->SetRow(track->GetRow()+fkParam->GetNRowLow()); 
   track->SetClusterIndex2(track->GetRow(), i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;
@@ -376,7 +376,7 @@ AliTracker(),
 		 fNtracks(0),
 		 fSeeds(0),
 		 fIteration(0),
-		 fParam(0),
+		 fkParam(0),
 		 fDebugStreamer(0)
 {
   //---------------------------------------------------------------------
@@ -389,7 +389,7 @@ AliTracker(),
   for (i=0; i<fkNIS; i++) fInnerSec[i].Setup(par,0);
   for (i=0; i<fkNOS; i++) fOuterSec[i].Setup(par,1);
 
-  fParam = par;  
+  fkParam = par;  
   Int_t nrowlow = par->GetNRowLow();
   Int_t nrowup = par->GetNRowUp();
 
@@ -430,7 +430,7 @@ AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
 		 fNtracks(0),
 		 fSeeds(0),
 		 fIteration(0),
-		 fParam(0),
+		 fkParam(0),
 		 fDebugStreamer(0)
 {
   //------------------------------------
@@ -438,7 +438,8 @@ AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
   //------------------------------------------------------------------
   fOutput=t.fOutput;
 }
-AliTPCtrackerMI & AliTPCtrackerMI::operator=(const AliTPCtrackerMI& /*r*/){
+AliTPCtrackerMI & AliTPCtrackerMI::operator=(const AliTPCtrackerMI& /*r*/)
+{
   //------------------------------
   // dummy 
   //--------------------------------------------------------------
@@ -459,7 +460,7 @@ AliTPCtrackerMI::~AliTPCtrackerMI() {
 }
 
 
-void AliTPCtrackerMI::FillESD(TObjArray* arr)
+void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 {
   //
   //
@@ -479,9 +480,9 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
 	  "Tr0.="<<pt<<
 	  "\n";       
       }
-      //      pt->PropagateTo(fParam->GetInnerRadiusLow());
+      //      pt->PropagateTo(fkParam->GetInnerRadiusLow());
       if (pt->GetKinkIndex(0)<=0){  //don't propagate daughter tracks 
-	pt->PropagateTo(fParam->GetInnerRadiusLow());
+	pt->PropagateTo(fkParam->GetInnerRadiusLow());
       }
  
       if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
@@ -587,14 +588,14 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
 
 
 
-Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
+Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   //
   // Use calibrated cluster error from OCDB
   //
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
-  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+  Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   Double_t angle = seed->GetSnp()*seed->GetSnp();
@@ -642,7 +643,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise1 = 0.0004/padlength;
 //       Float_t nel     = 0.268*amp;
 //       Float_t nprim   = 0.155*amp;
-//       ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
+//       ggg1[i]          = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
 //       glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau1[i]>1) glandau1[i]=1;
 //       glandau1[i]*=padlength*padlength/12.;      
@@ -652,7 +653,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise2   = 0.0004/padlength;
 //       nel       = 0.3*amp;
 //       nprim     = 0.133*amp;
-//       ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       ggg2[i]      = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
 //       glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau2[i]>1) glandau2[i]=1;
 //       glandau2[i]*=padlength*padlength/12.;
@@ -663,7 +664,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise3   = 0.0004/padlength;
 //       nel       = 0.3*amp;
 //       nprim     = 0.133*amp;
-//       ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       ggg3[i]      = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
 //       glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau3[i]>1) glandau3[i]=1;
 //       glandau3[i]*=padlength*padlength/12.;
@@ -680,7 +681,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //     return 1.;
 //   }
 //   Float_t snoise2;
-//   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+//   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
 //   Int_t ctype = cl->GetType();  
 //   Float_t padlength= GetPadPitchLength(seed->GetRow());
 //   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
@@ -737,14 +738,14 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 
 
 
-Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
+Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   //
   // Use calibrated cluster error from OCDB
   //
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
-  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+  Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   //
@@ -798,7 +799,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise1 = 0.0004/padlength;
 //       Float_t nel     = 0.268*amp;
 //       Float_t nprim   = 0.155*amp;
-//       ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
+//       ggg1[i]          = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
 //       glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau1[i]>1) glandau1[i]=1;
 //       glandau1[i]*=padlength*padlength/12.;      
@@ -808,7 +809,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise2   = 0.0004/padlength;
 //       nel       = 0.3*amp;
 //       nprim     = 0.133*amp;
-//       ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       ggg2[i]      = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
 //       glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau2[i]>1) glandau2[i]=1;
 //       glandau2[i]*=padlength*padlength/12.;
@@ -819,7 +820,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //       gnoise3   = 0.0004/padlength;
 //       nel       = 0.3*amp;
 //       nprim     = 0.133*amp;
-//       ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       ggg3[i]      = fkParam->GetDiffT()*fkParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
 //       glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
 //       if (glandau3[i]>1) glandau3[i]=1;
 //       glandau3[i]*=padlength*padlength/12.;
@@ -836,7 +837,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
 //     return 1.;
 //   }
 //   Float_t snoise2;
-//   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+//   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
 //   Int_t ctype = cl->GetType();  
 //   Float_t padlength= GetPadPitchLength(seed->GetRow());
 //   //
@@ -922,7 +923,7 @@ void AliTPCtrackerMI::RotateToLocal(AliTPCseed *seed)
 //_____________________________________________________________________________
 Double_t AliTPCtrackerMI::F1old(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
-                   Double_t x3,Double_t y3) 
+                   Double_t x3,Double_t y3) const
 {
   //-----------------------------------------------------------------
   // Initial approximation of the track curvature
@@ -943,7 +944,7 @@ Double_t AliTPCtrackerMI::F1old(Double_t x1,Double_t y1,
 //_____________________________________________________________________________
 Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
-                   Double_t x3,Double_t y3) 
+                   Double_t x3,Double_t y3) const
 {
   //-----------------------------------------------------------------
   // Initial approximation of the track curvature
@@ -969,7 +970,7 @@ Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
 
 Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
-                   Double_t x3,Double_t y3) 
+                   Double_t x3,Double_t y3) const 
 {
   //-----------------------------------------------------------------
   // Initial approximation of the track curvature
@@ -999,7 +1000,7 @@ Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
 //_____________________________________________________________________________
 Double_t AliTPCtrackerMI::F2old(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
-                   Double_t x3,Double_t y3) 
+                   Double_t x3,Double_t y3) const
 {
   //-----------------------------------------------------------------
   // Initial approximation of the track curvature times center of curvature
@@ -1018,7 +1019,7 @@ Double_t AliTPCtrackerMI::F2old(Double_t x1,Double_t y1,
 //_____________________________________________________________________________
 Double_t AliTPCtrackerMI::F3(Double_t x1,Double_t y1, 
                    Double_t x2,Double_t y2,
-                   Double_t z1,Double_t z2) 
+                   Double_t z1,Double_t z2) const
 {
   //-----------------------------------------------------------------
   // Initial approximation of the tangent of the track dip angle
@@ -1029,7 +1030,7 @@ Double_t AliTPCtrackerMI::F3(Double_t x1,Double_t y1,
 
 Double_t AliTPCtrackerMI::F3n(Double_t x1,Double_t y1, 
                    Double_t x2,Double_t y2,
-                   Double_t z1,Double_t z2, Double_t c) 
+                   Double_t z1,Double_t z2, Double_t c) const
 {
   //-----------------------------------------------------------------
   // Initial approximation of the tangent of the track dip angle
@@ -1093,7 +1094,7 @@ Int_t  AliTPCtrackerMI::LoadClusters (TTree *tree)
 }
 
 
-Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
+Int_t  AliTPCtrackerMI::LoadClusters(const TObjArray *arr)
 {
   //
   // load clusters to the memory
@@ -1108,7 +1109,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
     
     //  
     Int_t sec,row;
-    fParam->AdjustSectorRow(clrow->GetID(),sec,row);
+    fkParam->AdjustSectorRow(clrow->GetID(),sec,row);
     
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
       Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
@@ -1145,7 +1146,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
   return 0;
 }
 
-Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
+Int_t  AliTPCtrackerMI::LoadClusters(const TClonesArray *arr)
 {
   //
   // load clusters to the memory from one 
@@ -1186,11 +1187,11 @@ Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
     Int_t left=0;
     if (sec<fkNIS*2){
       left = sec/fkNIS;
-      fInnerSec[sec%fkNIS].InsertCluster(clust, count[sec][row], fParam);    
+      fInnerSec[sec%fkNIS].InsertCluster(clust, count[sec][row], fkParam);    
     }
     else{
       left = (sec-fkNIS*2)/fkNOS;
-      fOuterSec[(sec-fkNIS*2)%fkNOS].InsertCluster(clust, count[sec][row], fParam);
+      fOuterSec[(sec-fkNIS*2)%fkNOS].InsertCluster(clust, count[sec][row], fkParam);
     }
   }
 
@@ -1223,7 +1224,7 @@ Int_t  AliTPCtrackerMI::LoadClusters()
     br->GetEntry(i);
     //  
     Int_t sec,row;
-    fParam->AdjustSectorRow(clrow->GetID(),sec,row);
+    fkParam->AdjustSectorRow(clrow->GetID(),sec,row);
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
       Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
     }
@@ -1357,8 +1358,8 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   // 
   //
-  //if (!fParam->IsGeoRead()) fParam->ReadGeoMatrices();
-  TGeoHMatrix  *mat = fParam->GetClusterMatrix(cluster->GetDetector());
+  //if (!fkParam->IsGeoRead()) fkParam->ReadGeoMatrices();
+  TGeoHMatrix  *mat = fkParam->GetClusterMatrix(cluster->GetDetector());
   //TGeoHMatrix  mat;
   Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
   Double_t posC[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
@@ -1636,7 +1637,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   else
     {
       if (IsFindable(t))
-	  //      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength(0) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
+	  //      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fkParam->GetZLength(0) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
 	t.SetNFoundable(t.GetNFoundable()+1);
       else
 	return 0;
@@ -1691,19 +1692,19 @@ Bool_t AliTPCtrackerMI::GetTrackPoint(Int_t index, AliTrackPoint &p ) const
   Int_t sector = (index&0xff000000)>>24;
   //  Int_t row = (index&0x00ff0000)>>16;
   Float_t xyz[3];
-  //  xyz[0] = fParam->GetPadRowRadii(sector,row);
+  //  xyz[0] = fkParam->GetPadRowRadii(sector,row);
   xyz[0] = cl->GetX();
   xyz[1] = cl->GetY();
   xyz[2] = cl->GetZ();
   Float_t sin,cos;
-  fParam->AdjustCosSin(sector,cos,sin);
+  fkParam->AdjustCosSin(sector,cos,sin);
   Float_t x = cos*xyz[0]-sin*xyz[1];
   Float_t y = cos*xyz[1]+sin*xyz[0];
   Float_t cov[6];
   Float_t sigmaY2 = 0.027*cl->GetSigmaY2();
-  if (sector < fParam->GetNInnerSector()) sigmaY2 *= 2.07;
+  if (sector < fkParam->GetNInnerSector()) sigmaY2 *= 2.07;
   Float_t sigmaZ2 = 0.066*cl->GetSigmaZ2();
-  if (sector < fParam->GetNInnerSector()) sigmaZ2 *= 1.77;
+  if (sector < fkParam->GetNInnerSector()) sigmaZ2 *= 1.77;
   cov[0] = sin*sin*sigmaY2;
   cov[1] = -sin*cos*sigmaY2;
   cov[2] = 0.;
@@ -1713,13 +1714,13 @@ Bool_t AliTPCtrackerMI::GetTrackPoint(Int_t index, AliTrackPoint &p ) const
   p.SetXYZ(x,y,xyz[2],cov);
   AliGeomManager::ELayerID iLayer;
   Int_t idet;
-  if (sector < fParam->GetNInnerSector()) {
+  if (sector < fkParam->GetNInnerSector()) {
     iLayer = AliGeomManager::kTPC1;
     idet = sector;
   }
   else {
     iLayer = AliGeomManager::kTPC2;
-    idet = sector - fParam->GetNInnerSector();
+    idet = sector - fkParam->GetNInnerSector();
   }
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,idet);
   p.SetVolumeID(volid);
@@ -2319,7 +2320,7 @@ void AliTPCtrackerMI::UnsignClusters()
 
 
 
-void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fdensity)
+void AliTPCtrackerMI::SignClusters(const TObjArray * arr, Float_t fnumber, Float_t fdensity)
 {
   //
   //sign clusters to be "used"
@@ -2485,7 +2486,7 @@ void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fde
 }
 
 
-void  AliTPCtrackerMI::StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const
+void  AliTPCtrackerMI::StopNotActive(const TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const
 {
   // stop not active tracks
   // take th1 as threshold for number of founded to number of foundable on last 10 active rows
@@ -2589,7 +2590,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       }
     }
 
-    seed->PropagateTo(fParam->GetInnerRadiusLow());
+    seed->PropagateTo(fkParam->GetInnerRadiusLow());
     seed->UpdatePoints();
     AddCovariance(seed);
     MakeBitmaps(seed);
@@ -3792,7 +3793,7 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
 }
 
 
-AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track, Float_t r0, Float_t r1, Float_t r2)
+AliTPCseed *AliTPCtrackerMI::ReSeed(const AliTPCseed *track, Float_t r0, Float_t r1, Float_t r2)
 {
   //
   //
@@ -4059,7 +4060,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
 
 
 
-void  AliTPCtrackerMI::FindMultiMC(TObjArray * array, AliESDEvent */*esd*/, Int_t iter)
+void  AliTPCtrackerMI::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, Int_t iter)
 {
   //
   //  find multi tracks - THIS FUNCTION IS ONLY FOR DEBUG PURPOSES
@@ -4438,7 +4439,7 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
 
 
 
-void  AliTPCtrackerMI::FindCurling(TObjArray * array, AliESDEvent */*esd*/, Int_t iter)
+void  AliTPCtrackerMI::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, Int_t iter)
 {
   //
   //  find Curling tracks
@@ -4952,8 +4953,8 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 
       Float_t x[3] = { kink->GetPosition()[0],kink->GetPosition()[1],kink->GetPosition()[2]};
       Int_t index[4];
-      fParam->Transform0to1(x,index);
-      fParam->Transform1to2(x,index);
+      fkParam->Transform0to1(x,index);
+      fkParam->Transform1to2(x,index);
       row0 = GetRowNumber(x[0]); 
 
       if (kink->GetR()<100) continue;
@@ -5331,7 +5332,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   timer.Print();
 }
 
-void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
+void  AliTPCtrackerMI::FindV0s(const TObjArray * array, AliESDEvent *esd)
 {
   //
   //  find V0s
@@ -6523,7 +6524,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
     if (!pt) continue;
     if (!t.IsActive()) continue;
     // follow prolongation to the first layer
-    if ( (fSectors ==fInnerSec) || (t.GetFirstPoint()-fParam->GetNRowLow()>rfirst+1) )  
+    if ( (fSectors ==fInnerSec) || (t.GetFirstPoint()-fkParam->GetNRowLow()>rfirst+1) )  
       FollowProlongation(t, rfirst+1);
   }
 
@@ -6542,7 +6543,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
       if (!pt) continue;
       if (nr==80) pt->UpdateReference();
       if (!pt->IsActive()) continue;
-      //      if ( (fSectors ==fOuterSec) && (pt->fFirstPoint-fParam->GetNRowLow())<nr) continue;
+      //      if ( (fSectors ==fOuterSec) && (pt->fFirstPoint-fkParam->GetNRowLow())<nr) continue;
       if (pt->GetRelativeSector()>17) {
 	continue;
       }
@@ -6553,7 +6554,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
       AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i); 
       if (!pt) continue;
       if (!pt->IsActive()) continue; 
-      // if ((fSectors ==fOuterSec) && (pt->fFirstPoint-fParam->GetNRowLow())<nr) continue;
+      // if ((fSectors ==fOuterSec) && (pt->fFirstPoint-fkParam->GetNRowLow())<nr) continue;
       if (pt->GetRelativeSector()>17) {
 	continue;
       }
@@ -6733,8 +6734,8 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   //
   // 
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
-  Float_t zdrift = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
-  Int_t type = (seed->GetSector() < fParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
+  Float_t zdrift = TMath::Abs((fkParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
+  Int_t type = (seed->GetSector() < fkParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
   Double_t angulary  = seed->GetSnp();
   angulary = angulary*angulary/(1.-angulary*angulary);
   Double_t angularz  = seed->GetTgl()*seed->GetTgl()*(1.+angulary);
@@ -6743,14 +6744,14 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   Double_t sigmaz =  clparam->GetRMS0(1,type,zdrift,TMath::Sqrt(TMath::Abs(angularz)));
   seed->SetCurrentSigmaY2(sigmay*sigmay);
   seed->SetCurrentSigmaZ2(sigmaz*sigmaz);
-  // Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
-//   //  Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
+  // Float_t sd2 = TMath::Abs((fkParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fkParam->GetDiffL()*fkParam->GetDiffL();
+//   //  Float_t padlength =  fkParam->GetPadPitchLength(seed->fSector);
 //   Float_t padlength =  GetPadPitchLength(row);
 //   //
-//   Float_t sresy = (seed->GetSector() < fParam->GetNSector()/2) ? 0.2 :0.3;
+//   Float_t sresy = (seed->GetSector() < fkParam->GetNSector()/2) ? 0.2 :0.3;
 //   seed->SetCurrentSigmaY2(sd2+padlength*padlength*angulary/12.+sresy*sresy);  
 //   //
-//   Float_t sresz = fParam->GetZSigma();
+//   Float_t sresz = fkParam->GetZSigma();
 //   seed->SetCurrentSigmaZ2(sd2+padlength*padlength*angularz*angularz*(1+angulary)/12.+sresz*sresz);
   /*
   Float_t wy = GetSigmaY(seed);
@@ -6989,7 +6990,7 @@ Bool_t AliTPCtrackerMI::IsFindable(AliTPCseed & track){
   Float_t z = track.GetZ();
   
   if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*track.GetX()+kDeltaZ) && 
-      TMath::Abs(z)<fParam->GetZLength(0) && 
+      TMath::Abs(z)<fkParam->GetZLength(0) && 
       (TMath::Abs(track.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker()))
     return kTRUE;
   return kFALSE;      
