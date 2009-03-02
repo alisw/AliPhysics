@@ -33,8 +33,8 @@ public:
   virtual void   SetBBox();
 
   // To support two-level selection
-  virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
-  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
+  // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
+  // virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
 protected:
   AliEveJetPlane* fM; // Model object.

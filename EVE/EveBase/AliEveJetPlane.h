@@ -21,7 +21,7 @@
 #include <vector>
 
 //==============================================================================
-// 
+//
 // AliEveJetPlane
 //
 // Class for display of jets and tracks in eta-phi plane.

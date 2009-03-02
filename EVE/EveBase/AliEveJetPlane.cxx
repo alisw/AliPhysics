@@ -27,7 +27,7 @@
 //
 // Show jets and tracks in eta-phi plane.
 //
-// 
+//
 
 ClassImp(AliEveJetPlane)
 
@@ -89,10 +89,10 @@ AliEveJetPlane::~AliEveJetPlane()
 
 /******************************************************************************/
 
-void AliEveJetPlane::AddJet(AliAODJet* jet) 
+void AliEveJetPlane::AddJet(AliAODJet* jet)
 {
   // Add a jet for display.
-  
+
   fJets.push_back(*jet);
 }
 
@@ -147,17 +147,17 @@ void AliEveJetPlane::CreateArrows()
       phi = j->Phi();
       e   = j->E();
       h   = TMath::Log(e + 1.) * fEnergyScale;
-	
+
       x = eta*(fEtaScale);
       y = phi*(fPhiScale) - 350;
-      
+
       Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)*TMath::Power(10., fEnergyColorScale)/(TMath::Log(eMax + 1.))),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
-	
+
       TEveArrow *a = new TEveArrow(0, 0 , h, x, y, 0);
       a->SetSourceObject(&*j);
       a->SetElementName (Form("Jet %d", jetid));
-      a->SetElementTitle(Form("Jet 4-momentum: %f, %f, %f, %f \n Pt-Eta-Phi values: %f, %f, %f",  
+      a->SetElementTitle(Form("Jet 4-momentum: %f, %f, %f, %f \n Pt-Eta-Phi values: %f, %f, %f",
                               j->Px(), j->Py(), j->Pz(), e, j->Pt(), eta, phi ));
       a->SetPickable(kTRUE);
       a->SetMainColor(colIdx);
@@ -173,14 +173,14 @@ void AliEveJetPlane::CreateArrows()
   if (fRnrTracks)
   {
     UInt_t trackid = 0;
-    std::vector<AliAODTrack>::iterator k = fTracks.begin();  
+    std::vector<AliAODTrack>::iterator k = fTracks.begin();
     while (k != fTracks.end())
     {
       eta = k->Eta();
       phi = k->Phi();
       e   = k->E();
       h   = TMath::Log(e + 1.) * fEnergyScale;
-      
+
       if (e < 0)
       {
         Warning("CreateArrows()",
@@ -191,14 +191,14 @@ void AliEveJetPlane::CreateArrows()
 
       x = eta*(fEtaScale);
       y = phi*(fPhiScale) - 350;
-      
+
       Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)*TMath::Power(10., fEnergyColorScale)/(TMath::Log(eMax + 1.))),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
-	
+
       TEveArrow *a = new TEveArrow(0, 0 , h, x, y, 0);
       a->SetSourceObject(&*k);
       a->SetElementName (Form("Track %d", trackid));
-      a->SetElementTitle(Form("Jet 4-momentum: %f, %f, %f, %f \n Pt-Eta-Phi values: %f, %f, %f",  
+      a->SetElementTitle(Form("Track 4-momentum: %f, %f, %f, %f \n Pt-Eta-Phi values: %f, %f, %f",
                               k->Px(), k->Py(), k->Pz(), e, k->Pt(), eta, phi ));
       a->SetPickable(kTRUE);
       a->SetMainColor(colIdx);
@@ -221,20 +221,7 @@ void AliEveJetPlane::CreateArrows()
 
 /******************************************************************************/
 
-// Double_t AliEveJetPlane::EtaPhiDistance(AliVParticle *particle1, AliVParticle *particle2)
-// {
-// 
-// 	Double_t eta1, eta2, phi1, phi2, d;
-// 
-// 	eta1 = particle1.Eta();
-// 	eta2 = particle2.Eta();
-// 	phi1 = particle1.Phi();
-//         phi2 = particle2.Phi();
-// 
-// 	d = TMath::Sqrt(TMath::Power(eta2-eta1,2) + TMath::Power(phi2-phi1,2));
-// 
-// 	return d;
-// }
+
 
 
 /******************************************************************************/
@@ -243,37 +230,68 @@ void AliEveJetPlane::SelectionAdded(TEveElement* el)
 {
   // Slot called when EVE selection gets a new element.
 
-  if (HasChild(el))
+
+  if (fOneSelection)
   {
-    printf("Now selected %s\n", el->GetElementName());
+    if (HasChild(el))
+    {
+      printf("\n\nNOW SELECTED: %s\n", el->GetElementName());
 
-    TObject *src = el->GetSourceObject();
+      TObject *src = el->GetSourceObject();
 
-    AliAODTrack *t = dynamic_cast<AliAODTrack*>(src);
-    AliAODJet   *j = dynamic_cast<AliAODJet*>  (src);
+      AliAODTrack *k = dynamic_cast<AliAODTrack*>(src);
+      AliAODJet   *j = dynamic_cast<AliAODJet*>  (src);
 
-    printf ("Track %p --- Jet %p\n", (void*)t, (void*)j);
-    if (t) t->Print();
-    if (j) j->Print("");
+      //		printf ("Track %p --- Jet %p\n", (void*)t, (void*)j);
+      if (k) printf("Track 4-momentum: %f, %f, %f, %f \nPt-Eta-Phi values: %f, %f, %f \n",
+                    k->Px(), k->Py(), k->Pz(), k->E(), k->Pt(), k->Eta(), k->Phi() );
+
+      if (j) printf("Jet 4-momentum: %f, %f, %f, %f \nPt-Eta-Phi values: %f, %f, %f \n",
+                    j->Px(), j->Py(), j->Pz(), j->E(), j->Pt(), j->Eta(), j->Phi() );
+    }
   }
 
   TEveSelection *sel = gEve->GetSelection();
-  printf("ALL SELECTED: %d\n", sel->NumChildren());
-  for (List_i i = sel->BeginChildren(); i != sel->EndChildren(); ++i)
+  if (fTwoSelection && sel->NumChildren() == 2)
   {
-    if (HasChild(*i))
+    Int_t          numvps   = 0;
+    AliVParticle  *vpart[2] = { 0 };
+    TEveElement   *elmnt[2] = { 0 };
+
+    for (List_i i = sel->BeginChildren(); i != sel->EndChildren(); ++i)
     {
-      TEveElement *chld = *i;
-      printf("  Foo %s\n", chld->GetElementName());
+      if (HasChild(*i))
+      {
+        TEveElement  *chld = *i;
+        TObject      *src  = chld->GetSourceObject();
+	AliVParticle *p    = dynamic_cast<AliVParticle*>(src);
 
-      TObject *src = chld->GetSourceObject();
-      AliAODTrack *t = dynamic_cast<AliAODTrack*>(src);
-      AliAODJet   *j = dynamic_cast<AliAODJet*>  (src);
+        if (p != 0)
+        {
+          vpart[numvps] = p;
+          elmnt[numvps] = chld;
+          ++numvps;
+          if (numvps >= 2)
+            break;
+        }
+      }
+    }
 
-      printf ("  Track %p --- Jet %p\n", (void*)t, (void*)j);
+    Double_t eta0, eta1, phi0, phi1, d;
+
+    if (numvps == 2)
+    {
+      eta0 = vpart[0]->Eta();
+      eta1 = vpart[1]->Eta();
+      phi0 = vpart[0]->Phi();
+      phi1 = vpart[1]->Phi();
+
+      d = TMath::Sqrt(TMath::Power(eta1-eta0,2) + TMath::Power(phi1-phi0,2));
+      printf("\n\nNOW SELECTED: '%s' and '%s'\n",
+             elmnt[0]->GetElementName(), elmnt[1]->GetElementName());
+      printf("Eta-Phi Distance: %f\n", d);
     }
   }
-  printf("\n");
 }
 
 /******************************************************************************/
