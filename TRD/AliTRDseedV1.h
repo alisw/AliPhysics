@@ -31,12 +31,15 @@
 #include "AliRieman.h"
 #endif
 
+#ifndef ALITRDCLUSTER_H 
+#include "AliTRDcluster.h"
+#endif
+
 class TTreeSRedirector;
 
 class AliRieman;
 
 class AliTRDtrackingChamber;
-class AliTRDcluster;
 class AliTRDtrackV1;
 class AliTRDReconstructor;
 class AliTRDseedV1 : public TObject //TODO we should inherit 
@@ -50,9 +53,11 @@ public:
 
   // bits from 0-13 are reserved by ROOT (see TObject.h)
   enum ETRDtrackletStatus {
-    kOwner    = BIT(14) // owner of its clusters
-   ,kRowCross = BIT(15) // pad row cross tracklet
-   ,kCalib    = BIT(16) // calibrated tracklet
+    kOwner      = BIT(14) // owner of its clusters
+   ,kRowCross   = BIT(15) // pad row cross tracklet
+   ,kCalib      = BIT(16) // calibrated tracklet
+   ,kKink       = BIT(17) // kink prolongation tracklet
+   ,kStandAlone = BIT(18)
   };
 
   AliTRDseedV1(Int_t det = -1);
@@ -60,9 +65,9 @@ public:
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-  Bool_t	  AttachClustersIter(
+/*  Bool_t	  AttachClustersIter(
               AliTRDtrackingChamber *chamber, Float_t quality, 
-              Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
+              Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);*/
   Bool_t	  AttachClusters(
               AliTRDtrackingChamber *chamber, Bool_t tilt = kFALSE);
   void      Bootstrap(const AliTRDReconstructor *rec);
@@ -70,20 +75,23 @@ public:
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
   Bool_t    Fit(Bool_t tilt=kTRUE, Int_t errors = 2);
-  void      FitMI();
+//   void      FitMI();
   Bool_t    Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
-  Bool_t    IsOK() const             { return fN2 > 4;}
+  Bool_t    IsKink() const           { return TestBit(kKink);}
+  Bool_t    IsOK() const             { return fN2 > 4 && fNUsed < 4;}
   Bool_t    IsRowCross() const       { return TestBit(kRowCross);}
-  Bool_t    IsUsable(Int_t i) const  { return TESTBIT(fUsable, i);}
+  Bool_t    IsUsable(Int_t i) const  { return fClusters[i] && !fClusters[i]->IsUsed();}
+  Bool_t    IsStandAlone() const     { return TestBit(kStandAlone);}
 
   Float_t   GetC() const             { return fC; }
   Float_t   GetChi2() const          { return fChi2; }
   inline Float_t   GetChi2Z() const;
   inline Float_t   GetChi2Y() const;
+  inline Float_t   GetChi2Phi() const;
   static void      GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y);
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
@@ -122,7 +130,7 @@ public:
   Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
   Float_t   GetZfit(Int_t id) const { return fZfit[id];}
   Float_t   GetZref(Int_t id) const { return fZref[id];}
-  Long_t    GetUsabilityMap() const { return fUsable; }
+//   Long_t    GetUsabilityMap() const { return fUsable; }
 
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
@@ -135,6 +143,8 @@ public:
   void      SetCovRef(const Double_t *cov) { memcpy(&fRefCov[0], cov, 3*sizeof(Double_t));}
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
+  void      SetKink(Bool_t k)        { SetBit(kKink, k);}
+  void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
   void      SetTilt(Float_t tilt)    { fTilt = tilt; }
@@ -145,7 +155,7 @@ public:
   void      SetX0(Float_t x0)        { fX0 = x0; }
   void      SetYref(Int_t i, Float_t y) { fYref[i]     = y;}
   void      SetZref(Int_t i, Float_t z) { fZref[i]     = z;}
-  void      SetUsabilityMap(Long_t um)  { fUsable = um; }
+//   void      SetUsabilityMap(Long_t um)  { fUsable = um; }
   void      UpDate(const AliTRDtrackV1* trk);
   void      UpdateUsed();
   void      UseClusters();
@@ -164,9 +174,9 @@ private:
   Float_t          fDiffL;                  //! longitudinal diffusion coefficient
   Float_t          fDiffT;                  //! transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
-  Long_t           fUsable;                 //! bit map of usable clusters
+//  ULong_t          fUsable;                 //! bit map of usable clusters
   UChar_t          fN2;                     // number of clusters attached
-  UChar_t          fNUsed;                  // number of used usable clusters
+ UChar_t          fNUsed;                  // number of used usable clusters
   Short_t          fDet;                    // TRD detector
   Float_t          fTilt;                   // local tg of the tilt angle 
   Float_t          fPadLength;              // local pad length 
@@ -210,6 +220,15 @@ inline Float_t AliTRDseedV1::GetChi2Y() const
   Double_t cov[3]; GetCovAt(fX, cov);
   Double_t s2 = fRefCov[0]+cov[0];
   return s2 > 0. ? dy/s2 : 0.; 
+}
+
+//____________________________________________________________
+inline Float_t AliTRDseedV1::GetChi2Phi() const
+{
+  Double_t dphi = fYref[1]-fYfit[1]; dphi*=dphi;
+  Double_t cov[3]; GetCovAt(fX, cov);
+  Double_t s2 = fRefCov[2]+cov[2];
+  return s2 > 0. ? dphi/s2 : 0.; 
 }
 
 //____________________________________________________________

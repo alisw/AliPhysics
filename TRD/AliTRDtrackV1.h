@@ -44,6 +44,7 @@ public:
   enum ETRDtrackV1Status {
     kOwner   = BIT(14)
    ,kStopped = BIT(15) 
+   ,kKink    = BIT(16) 
   };
 
   AliTRDtrackV1();
@@ -78,8 +79,9 @@ public:
   UShort_t*      GetTrackletIndexes() { return &fTrackletIndex[0];}
   
   Bool_t         IsEqual(const TObject *inTrack) const;
-  Bool_t         IsOwner() const {return TestBit(kOwner);};
-  Bool_t         IsStopped() const {return TestBit(kStopped);};
+  Bool_t         IsKink() const    { return TestBit(kKink);}
+  Bool_t         IsOwner() const   { return TestBit(kOwner);};
+  Bool_t         IsStopped() const { return TestBit(kStopped);};
   Bool_t         IsElectron() const;
   
   void           MakeBackupTrack();
@@ -90,6 +92,7 @@ public:
   Bool_t         Rotate(Double_t angle, Bool_t absolute = kFALSE);
   void           SetBudget(Int_t i, Double_t b) {if(i>=0 && i<3) fBudget[i] = b;}
   void           SetEdep(Double32_t inDE){fDE = inDE;};
+  void           SetKink(Bool_t k)        { SetBit(kKink, k);}
   void           SetNumberOfClusters();
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};

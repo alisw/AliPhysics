@@ -99,7 +99,7 @@ AliTRDReconstructor::~AliTRDReconstructor()
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
-  if(TESTBIT(fSteerParam, kOwner)){
+  if(fSteerParam&kOwner){
     for(Int_t itask = 0; itask < kNtasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }

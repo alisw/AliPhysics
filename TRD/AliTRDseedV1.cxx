@@ -65,7 +65,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
-  ,fUsable(0)
+//   ,fUsable(0)
   ,fN2(0)
   ,fNUsed(0)
   ,fDet(det)
@@ -99,6 +99,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
+  SetStandAlone(kFALSE);
 }
 
 //____________________________________________________________________
@@ -113,7 +114,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
-  ,fUsable(0)
+//   ,fUsable(0)
   ,fN2(0)
   ,fNUsed(0)
   ,fDet(-1)
@@ -137,6 +138,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
     ref.Copy(*this);
   }
   SetBit(kOwner, kFALSE);
+  SetStandAlone(ref.IsStandAlone());
 }
 
 
@@ -193,7 +195,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fDiffL         = fDiffL;
   target.fDiffT         = fDiffT;
   target.fClusterIdx    = 0;
-  target.fUsable        = fUsable;
+//   target.fUsable        = fUsable;
   target.fN2            = fN2;
   target.fNUsed         = fNUsed;
   target.fDet           = fDet;
@@ -258,8 +260,8 @@ void AliTRDseedV1::Reset()
   //
   fExB=0.;fVD=0.;fT0=0.;fS2PRF=0.;
   fDiffL=0.;fDiffT=0.;
-  fClusterIdx=0;fUsable=0;
-  fN2=0;fNUsed=0;
+  fClusterIdx=0;//fUsable=0;
+  fN2=0; fNUsed=0;
   fDet=-1;fTilt=0.;fPadLength=0.;
   fMom=0.;
   fdX=0.;fX0=0.; fX=0.; fY=0.; fZ=0.;
@@ -304,14 +306,14 @@ void AliTRDseedV1::UpDate(const AliTRDtrackV1 *trk)
 void AliTRDseedV1::UpdateUsed()
 {
   //
-  // Update used seed
+  // Calculate number of used clusers in the tracklet
   //
 
   fNUsed = 0;
   for (Int_t i = kNTimeBins; i--; ) {
     if (!fClusters[i]) continue;
-    if(!TESTBIT(fUsable, i)) continue;
-    if((fClusters[i]->IsUsed())) fNUsed++;
+    if(fClusters[i]->IsUsed()) fNUsed++;
+    else if(fClusters[i]->IsShared() && IsStandAlone()) fNUsed++;
   }
 }
 
@@ -321,12 +323,35 @@ void AliTRDseedV1::UseClusters()
   //
   // Use clusters
   //
+  // In stand alone mode:
+  // Clusters which are marked as used or shared from another track are
+  // removed from the tracklet
+  //
+  // In barrel mode:
+  // - Clusters which are used by another track become shared
+  // - Clusters which are attached to a kink track become shared
+  //
   AliTRDcluster **c = &fClusters[0];
   for (Int_t ic=kNTimeBins; ic--; c++) {
     if(!(*c)) continue;
-    if(!((*c)->IsUsed())) (*c)->Use();
+    if(IsStandAlone()){
+      if((*c)->IsShared() || (*c)->IsUsed()){ 
+       (*c) = 0x0;
+        fIndexes[ic] = -1;
+        fN2--;
+	continue;
+      }
+    }
+    else{
+      if((*c)->IsUsed() || IsKink()){
+      	(*c)->SetShared();
+      	continue;
+      }
+    }
+    (*c)->Use();
   }
 }
+
 
 
 //____________________________________________________________________
@@ -669,134 +694,134 @@ void AliTRDseedV1::SetOwner()
   SetBit(kOwner);
 }
 
-//____________________________________________________________________
-Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr, AliTRDcluster *c)
-{
-  //
-  // Iterative process to register clusters to the seed.
-  // In iteration 0 we try only one pad-row and if quality not
-  // sufficient we try 2 pad-rows (about 5% of tracks cross 2 pad-rows)
-  //
-  // debug level 7
-  //
-  
-  if(!fReconstructor->GetRecoParam() ){
-    AliError("Seed can not be used without a valid RecoParam.");
-    return kFALSE;
-  }
-
-  AliTRDchamberTimeBin *layer = 0x0;
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7){
-    AliTRDtrackingChamber ch(*chamber);
-    ch.SetOwner(); 
-    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
-    cstreamer << "AttachClustersIter"
-      << "chamber.="   << &ch
-      << "tracklet.="  << this
-      << "\n";	
-  }
-
-  Float_t  tquality;
-  Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
-  Double_t kroadz = fPadLength * .5 + 1.;
-  
-  // initialize configuration parameters
-  Float_t zcorr = kZcorr ? fTilt * (fZfit[0] - fZref[0]) : 0.;
-  Int_t   niter = kZcorr ? 1 : 2;
-  
-  Double_t yexp, zexp;
-  Int_t ncl = 0;
-  // start seed update
-  for (Int_t iter = 0; iter < niter; iter++) {
-    ncl = 0;
-    for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
-      if(!(layer = chamber->GetTB(iTime))) continue;
-      if(!Int_t(*layer)) continue;
-      
-      // define searching configuration
-      Double_t dxlayer = layer->GetX() - fX0;
-      if(c){
-        zexp = c->GetZ();
-        //Try 2 pad-rows in second iteration
-        if (iter > 0) {
-          zexp = fZref[0] + fZref[1] * dxlayer - zcorr;
-          if (zexp > c->GetZ()) zexp = c->GetZ() + fPadLength*0.5;
-          if (zexp < c->GetZ()) zexp = c->GetZ() - fPadLength*0.5;
-        }
-      } else zexp = fZref[0] + (kZcorr ? fZref[1] * dxlayer : 0.);
-      yexp  = fYref[0] + fYref[1] * dxlayer - zcorr;
-      
-      // Get and register cluster
-      Int_t    index = layer->SearchNearestCluster(yexp, zexp, kroady, kroadz);
-      if (index < 0) continue;
-      AliTRDcluster *cl = (*layer)[index];
-      
-      fIndexes[iTime]  = layer->GetGlobalIndex(index);
-      fClusters[iTime] = cl;
-//       fY[iTime]        = cl->GetY();
-//       fZ[iTime]        = cl->GetZ();
-      ncl++;
-    }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fDet, ncl));
-    
-    if(ncl>1){	
-      // calculate length of the time bin (calibration aware)
-      Int_t irp = 0; Float_t x[2]={0., 0.}; Int_t tb[2] = {0,0};
-      for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
-        if(!fClusters[iTime]) continue;
-        x[irp]  = fClusters[iTime]->GetX();
-        tb[irp] = iTime;
-        irp++;
-        if(irp==2) break;
-      } 
-      Int_t dtb = tb[1] - tb[0];
-      fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
-
-      // update X0 from the clusters (calibration/alignment aware)
-      for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
-        if(!(layer = chamber->GetTB(iTime))) continue;
-        if(!layer->IsT0()) continue;
-        if(fClusters[iTime]){ 
-          fX0 = fClusters[iTime]->GetX();
-          break;
-        } else { // we have to infere the position of the anode wire from the other clusters
-          for (Int_t jTime = iTime+1; jTime < AliTRDtrackerV1::GetNTimeBins(); jTime++) {
-            if(!fClusters[jTime]) continue;
-            fX0 = fClusters[jTime]->GetX() + fdX * (jTime - iTime);
-            break;
-          }
-        }
-      }	
-      
-      // update YZ reference point
-      // TODO
-      
-      // update x reference positions (calibration/alignment aware)
+// //____________________________________________________________________
+// Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr, AliTRDcluster *c)
+// {
+//   //
+//   // Iterative process to register clusters to the seed.
+//   // In iteration 0 we try only one pad-row and if quality not
+//   // sufficient we try 2 pad-rows (about 5% of tracks cross 2 pad-rows)
+//   //
+//   // debug level 7
+//   //
+//   
+//   if(!fReconstructor->GetRecoParam() ){
+//     AliError("Seed can not be used without a valid RecoParam.");
+//     return kFALSE;
+//   }
+// 
+//   AliTRDchamberTimeBin *layer = 0x0;
+//   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7){
+//     AliTRDtrackingChamber ch(*chamber);
+//     ch.SetOwner(); 
+//     TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+//     cstreamer << "AttachClustersIter"
+//       << "chamber.="   << &ch
+//       << "tracklet.="  << this
+//       << "\n";	
+//   }
+// 
+//   Float_t  tquality;
+//   Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
+//   Double_t kroadz = fPadLength * .5 + 1.;
+//   
+//   // initialize configuration parameters
+//   Float_t zcorr = kZcorr ? fTilt * (fZfit[0] - fZref[0]) : 0.;
+//   Int_t   niter = kZcorr ? 1 : 2;
+//   
+//   Double_t yexp, zexp;
+//   Int_t ncl = 0;
+//   // start seed update
+//   for (Int_t iter = 0; iter < niter; iter++) {
+//     ncl = 0;
+//     for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
+//       if(!(layer = chamber->GetTB(iTime))) continue;
+//       if(!Int_t(*layer)) continue;
+//       
+//       // define searching configuration
+//       Double_t dxlayer = layer->GetX() - fX0;
+//       if(c){
+//         zexp = c->GetZ();
+//         //Try 2 pad-rows in second iteration
+//         if (iter > 0) {
+//           zexp = fZref[0] + fZref[1] * dxlayer - zcorr;
+//           if (zexp > c->GetZ()) zexp = c->GetZ() + fPadLength*0.5;
+//           if (zexp < c->GetZ()) zexp = c->GetZ() - fPadLength*0.5;
+//         }
+//       } else zexp = fZref[0] + (kZcorr ? fZref[1] * dxlayer : 0.);
+//       yexp  = fYref[0] + fYref[1] * dxlayer - zcorr;
+//       
+//       // Get and register cluster
+//       Int_t    index = layer->SearchNearestCluster(yexp, zexp, kroady, kroadz);
+//       if (index < 0) continue;
+//       AliTRDcluster *cl = (*layer)[index];
+//       
+//       fIndexes[iTime]  = layer->GetGlobalIndex(index);
+//       fClusters[iTime] = cl;
+// //       fY[iTime]        = cl->GetY();
+// //       fZ[iTime]        = cl->GetZ();
+//       ncl++;
+//     }
+//     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fDet, ncl));
+//     
+//     if(ncl>1){	
+//       // calculate length of the time bin (calibration aware)
+//       Int_t irp = 0; Float_t x[2]={0., 0.}; Int_t tb[2] = {0,0};
 //       for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 //         if(!fClusters[iTime]) continue;
-//         fX[iTime] = fX0 - fClusters[iTime]->GetX();
+//         x[irp]  = fClusters[iTime]->GetX();
+//         tb[irp] = iTime;
+//         irp++;
+//         if(irp==2) break;
 //       } 
-      
-      FitMI();
-    }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
-    
-    if(IsOK()){
-      tquality = GetQuality(kZcorr);
-      if(tquality < quality) break;
-      else quality = tquality;
-    }
-    kroadz *= 2.;
-  } // Loop: iter
-  if (!IsOK()) return kFALSE;
-
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=1) CookLabels();
-
-  // load calibration params
-  Calibrate();
-  UpdateUsed();
-  return kTRUE;	
-}
+//       Int_t dtb = tb[1] - tb[0];
+//       fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
+// 
+//       // update X0 from the clusters (calibration/alignment aware)
+//       for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
+//         if(!(layer = chamber->GetTB(iTime))) continue;
+//         if(!layer->IsT0()) continue;
+//         if(fClusters[iTime]){ 
+//           fX0 = fClusters[iTime]->GetX();
+//           break;
+//         } else { // we have to infere the position of the anode wire from the other clusters
+//           for (Int_t jTime = iTime+1; jTime < AliTRDtrackerV1::GetNTimeBins(); jTime++) {
+//             if(!fClusters[jTime]) continue;
+//             fX0 = fClusters[jTime]->GetX() + fdX * (jTime - iTime);
+//             break;
+//           }
+//         }
+//       }	
+//       
+//       // update YZ reference point
+//       // TODO
+//       
+//       // update x reference positions (calibration/alignment aware)
+// //       for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
+// //         if(!fClusters[iTime]) continue;
+// //         fX[iTime] = fX0 - fClusters[iTime]->GetX();
+// //       } 
+//       
+//       FitMI();
+//     }
+//     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
+//     
+//     if(IsOK()){
+//       tquality = GetQuality(kZcorr);
+//       if(tquality < quality) break;
+//       else quality = tquality;
+//     }
+//     kroadz *= 2.;
+//   } // Loop: iter
+//   if (!IsOK()) return kFALSE;
+// 
+//   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=1) CookLabels();
+// 
+//   // load calibration params
+//   Calibrate();
+//   UpdateUsed();
+//   return kTRUE;	
+// }
 
 //____________________________________________________________________
 Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
@@ -965,18 +990,6 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   // number of minimum numbers of clusters expected for the tracklet
   if (fN2 < kClmin){
     AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
-    fN2 = 0;
-    return kFALSE;
-  }
-
-  // update used clusters and select
-  fNUsed = 0;
-  for (Int_t it = 0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
-    if(fClusters[it] && fClusters[it]->IsUsed()) fNUsed++;
-    if(fClusters[it+kNtb] && fClusters[it+kNtb]->IsUsed()) fNUsed++;
-  }
-  if (fN2-fNUsed < kClmin){
-    //AliWarning(Form("Too many clusters already in use %d (from %d).", fNUsed, fN2));
     fN2 = 0;
     return kFALSE;
   }
@@ -1218,15 +1231,18 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
   fCov[2] = p[3]; // variance of dydx
   // the ref radial position is set at the minimum of 
   // the y variance of the tracklet
-  fX = -fCov[1]/fCov[2]; //fXref = fX0 - fXref;
+  fX   = -fCov[1]/fCov[2]; //fXref = fX0 - fXref;
+  fS2Y = fCov[0] +2.*fX*fCov[1] + fX*fX*fCov[2];
 
   // fit XZ
   if(IsRowCross()){ 
     // TODO pad row cross position estimation !!!
     //AliInfo(Form("Padrow cross in detector %d", fDet));
     fZfit[0] = .5*(zc[0]+zc[fN-1]); fZfit[1] = 0.;
+    fS2Z     = 0.02+1.55*fZref[1]; fS2Z *= fS2Z;
   } else {
     fZfit[0] = zc[0]; fZfit[1] = 0.;
+    fS2Z     = fPadLength*fPadLength/12.;
   }
 
 
@@ -1275,10 +1291,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
 }
 
 
-
-
-
-
+/*
 //_____________________________________________________________________________
 void AliTRDseedV1::FitMI()
 {
@@ -1424,12 +1437,12 @@ void AliTRDseedV1::FitMI()
       if(!fClusters[i]->IsInChamber()) continue;
       if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
       // Residual y
-      //yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] /*+ fTilt*(fZ[i] - fZref[0])*/;   
+      //yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] + fTilt*(fZ[i] - fZref[0]);   
       yres[i] = fY[i] - fTilt*(fZ[i] - (fZref[0] - fX[i]*fZref[1]));
-/*      if (TMath::Abs(fZ[i] - fZProb) > 2) {
-        if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
-        if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
-      }*/
+//       if (TMath::Abs(fZ[i] - fZProb) > 2) {
+//         if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
+//         if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
+      }
     }
   }
   
@@ -1528,8 +1541,7 @@ void AliTRDseedV1::FitMI()
   fYfit[1]   = -fYfit[1];
 
   UpdateUsed();
-}
-
+}*/
 
 //___________________________________________________________________
 void AliTRDseedV1::Print(Option_t *o) const
@@ -1539,7 +1551,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   //
 
   AliInfo(Form("Det[%3d] Tilt[%+6.2f] Pad[%5.2f]", fDet, fTilt, fPadLength));
-  AliInfo(Form("N[%2d] Nuse[%2d]", fN2, fNUsed));
+  AliInfo(Form("N[%2d] ", fN2));
   AliInfo(Form("x[%7.2f] y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fX0, fYfit[0], fZfit[0], fYfit[1], fZfit[1]));
   AliInfo(Form("Ref        y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fYref[0], fZref[0], fYref[1], fZref[1]))
 
@@ -1579,7 +1591,7 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
 //     if ( fZ[i] != inTracklet->GetZ(i) ) return kFALSE;
     if ( fIndexes[i] != inTracklet->fIndexes[i] ) return kFALSE;
   }
-  if ( fUsable != inTracklet->fUsable ) return kFALSE;
+//   if ( fUsable != inTracklet->fUsable ) return kFALSE;
 
   for (Int_t i=0; i < 2; i++){
     if ( fYfit[i] != inTracklet->fYfit[i] ) return kFALSE;

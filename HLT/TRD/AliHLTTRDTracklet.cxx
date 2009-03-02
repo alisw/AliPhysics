@@ -13,7 +13,6 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
   fTilt(-1),
   fPadLength(-1),
   fX0(-1),
-  fUsable(0),
   //fMeanz(-1),
   //fZProb(-1),
   //fN(-1),
@@ -45,7 +44,6 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(AliTRDseedV1 * inTracklet):
   fTilt(-1),
   fPadLength(-1),
   fX0(-1),
-  fUsable(0),
   //fMeanz(-1),
   //fZProb(-1),
   //fN(-1),
@@ -115,7 +113,6 @@ void AliHLTTRDTracklet::CopyDataMembers()
 //     fZ[i] = fTRDtracklet->GetZ(i);
     fIndexes[i] = fTRDtracklet->GetIndexes(i);
   }
-  fUsable = fTRDtracklet->GetUsabilityMap();
 
   for (Int_t i=0; i < 2; i++){
     fYfit[i] = fTRDtracklet->GetYfit(i);
@@ -165,7 +162,6 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
 //     outTracklet->SetX(i,fZ[i]);
     outTracklet->SetIndexes(i, fIndexes[i]);
   }
-  outTracklet->SetUsabilityMap(fUsable);
 
 //   for (Int_t i=0; i < 2; i++){
 //     outTracklet->SetYfit(i,fYfit[i]);
@@ -208,7 +204,6 @@ void AliHLTTRDTracklet::InitArrays()
 //     fZ[i] = -1;
     fIndexes[i] = -1;
   }
-  fUsable = 0;
 
   for (Int_t i=0; i < 2; i++){
     fYfit[i] = -1;

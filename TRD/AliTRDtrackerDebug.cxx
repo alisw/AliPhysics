@@ -290,7 +290,7 @@ void AliTRDtrackerDebug::ResidualsTrackletsTrack() const
     AliTRDseedV1 ts(tracklet[ip]);
     ts.SetYref(0, y0); ts.SetYref(1, dydx);
     ts.SetZref(0, z0); ts.SetZref(1, dzdx);
-    ts.FitMI();
+    ts.Fit(kTRUE);
 
     // save results for plotting
     Int_t plane   = tracklet[ip].GetPlane();

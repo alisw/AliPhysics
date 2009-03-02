@@ -44,7 +44,6 @@ class AliHLTTRDTracklet
 //  Float_t        fY[knTimebins];        //! Y position
 //  Float_t        fZ[knTimebins];        //! Z position
   Int_t          fIndexes[AliTRDseedV1::kNTimeBins];  //! Indexes
-  Long_t         fUsable;                //  Indication  - usable cluster
   Float_t        fYfit[2];              //  Y fit position +derivation
   //Float_t        fYfitR[2];             //  Y fit position +derivation
   Float_t        fZfit[2];              //  Z fit position

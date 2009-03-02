@@ -282,7 +282,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     // Do the back prolongation
     new(&track) AliTRDtrackV1(*seed);
     track.SetReconstructor(fReconstructor);
-
+    track.SetKink(Bool_t(seed->GetKinkIndex(0)));
     //Int_t   lbl         = seed->GetLabel();
     //track.SetSeedLabel(lbl);
 
@@ -319,13 +319,11 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       Int_t foundClr = track.GetNumberOfClusters();
       if (foundClr >= foundMin) {
         track.CookLabel(1. - fgkLabelFraction);
-        if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
+        //if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
 
         // Sign only gold tracks
         if (track.GetChi2() / track.GetNumberOfClusters() < 4) {
-          if ((seed->GetKinkIndex(0)      ==   0) && (track.Pt() <  1.5)){
-            //UseClusters(&track);
-          }
+          //if ((seed->GetKinkIndex(0)      ==   0) && (track.Pt() <  1.5)) UseClusters(&track);
         }
         Bool_t isGold = kFALSE;
   
@@ -638,6 +636,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     if(!ptrTracklet){
       ptrTracklet = new(&tracklet) AliTRDseedV1(ilayer);
       ptrTracklet->SetReconstructor(fReconstructor);
+      ptrTracklet->SetKink(t.IsKink());
       alpha = t.GetAlpha();
       Int_t sector = Int_t(alpha/AliTRDgeometry::GetAlpha() + (alpha>0. ? 0 : AliTRDgeometry::kNsector));
 
@@ -683,9 +682,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
         break;
       }
-      //ptrTracklet->UseClusters();
-    }// else ptrTracklet->Init(&t);
+      ptrTracklet->UpdateUsed();
+    }
     if(!ptrTracklet->IsOK()){
+      ptrTracklet->Reset();
       if(x < 1.) continue; //temporary
       if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1/*nClustersExpected*/;
       if(!AdjustSector(&t)) return -1/*nClustersExpected*/;
@@ -700,6 +700,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1/*nClustersExpected*/;
     
     // load tracklet to the tracker and the track
+    ptrTracklet->UseClusters();
     ptrTracklet->Fit(kFALSE); // no tilt correction
     ptrTracklet = SetTracklet(ptrTracklet);
     t.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
@@ -891,7 +892,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
   Int_t nPoints = 0;
   for(Int_t ilr = 0; ilr < AliTRDgeometry::kNlayer; ilr++){
     if(!tracklets[ilr].IsOK()) continue;
-    for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
       if(!tracklets[ilr].IsUsable(itb)) continue;
       cl = tracklets[ilr].GetClusters(itb);
       x = cl->GetX();
@@ -903,7 +904,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       uvt[0] = 2. * x * t;
       uvt[1] = 2. * x * t * tilt ;
       w = 2. * (y + tilt * (z - zVertex)) * t;
-      error = 2. * 0.2 * t;
+      error = 2. * TMath::Sqrt(cl->GetSigmaY2()) * t;
       fitter->AddPoint(uvt, w, error);
       nPoints++;
     }
@@ -985,7 +986,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
@@ -1002,7 +1003,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       w = 2. * (y + tilt*z) * t;
       // error definition changes for the different calls
       we = 2. * t;
-      we *= sigError ? tracklets[ipl].GetSigmaY() : 0.2;
+      we *= sigError ? TMath::Sqrt(cl->GetSigmaY2()) : 0.2;
       fitter->AddPoint(uvt, w, we);
       zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
       nPoints++;
@@ -1230,7 +1231,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
@@ -1247,7 +1248,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
       w = 2. * (y + tilt*z) * t;
       // error definition changes for the different calls
       we = 2. * t;
-      we *= sigError ? tracklets[ipl].GetSigmaY() : 0.2;
+      we *= sigError ? TMath::Sqrt(cl->GetSigmaY2()) : 0.2;
       fitter->AddPoint(uvt, w, we);
       zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
       nPoints++;
@@ -1970,7 +1971,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         for (Int_t jLayer = 0; jLayer < kNPlanes; jLayer++) {
           Int_t jseed = kNPlanes*trackIndex+jLayer;
           if(!sseed[jseed].IsOK()) continue;
-          if (TMath::Abs(sseed[jseed].GetYref(0) / sseed[jseed].GetX0()) < 0.15) findable++;
+          if (TMath::Abs(sseed[jseed].GetYref(0) / sseed[jseed].GetX0()) < 0.158) findable++;
         
           sseed[jseed].UpdateUsed();
           ncl   += sseed[jseed].GetN2();
@@ -1978,188 +1979,172 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           nlayers++;
         }
 
-  // Filter duplicated tracks
-  if (nused > 30){
-    //printf("Skip %d nused %d\n", trackIndex, nused);
-    fakeTrack[trackIndex] = kTRUE;
-    continue;
-  }
-  if (Float_t(nused)/ncl >= .25){
-    //printf("Skip %d nused/ncl >= .25\n", trackIndex);
-    fakeTrack[trackIndex] = kTRUE;
-    continue;
-  }
-        
-  // Classify tracks
-  Bool_t skip = kFALSE;
-  switch(jSieve){
-  case 0:
-    if(nlayers < 6) {skip = kTRUE; break;}
-    if(TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -5.){skip = kTRUE; break;}
-    break;
-  
-  case 1:
-    if(nlayers < findable){skip = kTRUE; break;}
-    if(TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -4.){skip = kTRUE; break;}
-    break;
-  
-  case 2:
-    if ((nlayers == findable) || (nlayers == 6)) { skip = kTRUE; break;}
-    if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -6.0){skip = kTRUE; break;}
-    break;
-  
-  case 3:
-    if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -5.){skip = kTRUE; break;}
-    break;
-  
-  case 4:
-    if (nlayers == 3){skip = kTRUE; break;}
-    //if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) - nused/(nlayers-3.0) < -15.0){skip = kTRUE; break;}
-    break;
-  }
-  if(skip){
-    candidates++;
-    //printf("REJECTED : %d [%d] nlayers %d trackQuality = %e nused %d\n", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused);
-    continue;
-  }
-  signedTrack[trackIndex] = kTRUE;
-            
-        
-  // Sign clusters
-  AliTRDcluster *cl = 0x0; Int_t clusterIndex = -1;
-  for (Int_t jLayer = 0; jLayer < kNPlanes; jLayer++) {
-    Int_t jseed = kNPlanes*trackIndex+jLayer;
-    if(!sseed[jseed].IsOK()) continue;
-    if(TMath::Abs(sseed[jseed].GetYfit(1) - sseed[jseed].GetYfit(1)) >= .2) continue; // check this condition with Marian
-    sseed[jseed].UseClusters();
-    if(!cl){
-      ic = 0;
-      while(!(cl = sseed[jseed].GetClusters(ic))) ic++;
-      clusterIndex =  sseed[jseed].GetIndexes(ic);
-    }
-  }
-  if(!cl) continue;
-
-        
-  // Build track parameters
-  AliTRDseedV1 *lseed =&sseed[trackIndex*6];
-/*  Int_t idx = 0;
-  while(idx<3 && !lseed->IsOK()) {
-    idx++;
-    lseed++;
-  }*/
-  Double_t x = lseed->GetX0();// - 3.5;
-  trackParams[0] = x; //NEW AB
-  trackParams[1] = lseed->GetYref(0); // lseed->GetYat(x);  
-  trackParams[2] = lseed->GetZref(0); // lseed->GetZat(x); 
-  trackParams[3] = TMath::Sin(TMath::ATan(lseed->GetYref(1)));
-  trackParams[4] = lseed->GetZref(1) / TMath::Sqrt(1. + lseed->GetYref(1) * lseed->GetYref(1));
-  trackParams[5] = lseed->GetC();
-  Int_t ich = 0; while(!(chamber = stack[ich])) ich++;
-  trackParams[6] = fGeom->GetSector(chamber->GetDetector());/* *alpha+shift;	// Supermodule*/
-
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
-    AliInfo(Form("Track %d [%d] nlayers %d trackQuality = %e nused %d, yref = %3.3f", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused, trackParams[1]));
-          
-    Int_t nclusters = 0;
-    AliTRDseedV1 *dseed[6];
-
-    // Build track label - what happens if measured data ???
-    Int_t labels[1000];
-    Int_t outlab[1000];
-    Int_t nlab = 0;
-
-    Int_t labelsall[1000];
-    Int_t nlabelsall = 0;
-    Int_t naccepted  = 0;
-
-    for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
-      Int_t jseed = kNPlanes*trackIndex+iLayer;
-      dseed[iLayer] = new AliTRDseedV1(sseed[jseed]);
-      dseed[iLayer]->SetOwner();
-      nclusters += sseed[jseed].GetN2();
-      if(!sseed[jseed].IsOK()) continue;
-      for(int ilab=0; ilab<2; ilab++){
-        if(sseed[jseed].GetLabels(ilab) < 0) continue;
-        labels[nlab] = sseed[jseed].GetLabels(ilab);
-        nlab++;
-      }
-
-      // Cooking label
-      for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
-        if(!sseed[jseed].IsUsable(itime)) continue;
-        naccepted++;
-        Int_t tindex = 0, ilab = 0;
-        while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
-          labelsall[nlabelsall++] = tindex;
-          ilab++;
+        // Filter duplicated tracks
+        if (nused > 30){
+          //printf("Skip %d nused %d\n", trackIndex, nused);
+          fakeTrack[trackIndex] = kTRUE;
+          continue;
         }
-      }
-    }
-    Freq(nlab,labels,outlab,kFALSE);
-    Int_t   label     = outlab[0];
-    Int_t   frequency = outlab[1];
-    Freq(nlabelsall,labelsall,outlab,kFALSE);
-    Int_t   label1    = outlab[0];
-    Int_t   label2    = outlab[2];
-    Float_t fakeratio = (naccepted - outlab[1]) / Float_t(naccepted);
+        if (Float_t(nused)/ncl >= .25){
+          //printf("Skip %d nused/ncl >= .25\n", trackIndex);
+          fakeTrack[trackIndex] = kTRUE;
+          continue;
+        }
 
-    //Int_t eventNrInFile = esd->GetEventNumberInFile();
-    //AliInfo(Form("Number of clusters %d.", nclusters));
-    Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
-    Int_t trackNumber = AliTRDtrackerDebug::GetTrackNumber();
-    Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
-    TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
-    cstreamer << "Clusters2TracksStack"
-        << "EventNumber="		<< eventNumber
-        << "TrackNumber="		<< trackNumber
-        << "CandidateNumber="	<< candidateNumber
-        << "Iter="				<< fSieveSeeding
-        << "Like="				<< fTrackQuality[trackIndex]
-        << "S0.="				<< dseed[0]
-        << "S1.="				<< dseed[1]
-        << "S2.="				<< dseed[2]
-        << "S3.="				<< dseed[3]
-        << "S4.="				<< dseed[4]
-        << "S5.="				<< dseed[5]
-        << "p0="				<< trackParams[0]
-        << "p1="				<< trackParams[1]
-        << "p2="				<< trackParams[2]
-        << "p3="				<< trackParams[3]
-        << "p4="				<< trackParams[4]
-        << "p5="				<< trackParams[5]
-        << "p6="				<< trackParams[6]
-        << "Label="				<< label
-        << "Label1="			<< label1
-        << "Label2="			<< label2
-        << "FakeRatio="			<< fakeratio
-        << "Freq="				<< frequency
-        << "Ncl="				<< ncl
-        << "NLayers="			<< nlayers
-        << "Findable="			<< findable
-        << "NUsed="				<< nused
-        << "\n";
-  }
+        // Classify tracks
+        Bool_t skip = kFALSE;
+        switch(jSieve){
+          case 0:
+            if(nlayers < 6) {skip = kTRUE; break;}
+            if(TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -5.){skip = kTRUE; break;}
+            break;
+
+          case 1:
+            if(nlayers < findable){skip = kTRUE; break;}
+            if(TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -4.){skip = kTRUE; break;}
+            break;
+
+          case 2:
+            if ((nlayers == findable) || (nlayers == 6)) { skip = kTRUE; break;}
+            if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -6.0){skip = kTRUE; break;}
+            break;
+
+          case 3:
+            if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) < -5.){skip = kTRUE; break;}
+            break;
+
+          case 4:
+            if (nlayers == 3){skip = kTRUE; break;}
+            //if (TMath::Log(1.E-9+fTrackQuality[trackIndex]) - nused/(nlayers-3.0) < -15.0){skip = kTRUE; break;}
+            break;
+        }
+        if(skip){
+          candidates++;
+          //printf("REJECTED : %d [%d] nlayers %d trackQuality = %e nused %d\n", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused);
+          continue;
+        }
+        signedTrack[trackIndex] = kTRUE;
+
+        // Build track parameters
+        AliTRDseedV1 *lseed =&sseed[trackIndex*6];
+      /*  Int_t idx = 0;
+        while(idx<3 && !lseed->IsOK()) {
+          idx++;
+          lseed++;
+        }*/
+        Double_t x = lseed->GetX0();// - 3.5;
+        trackParams[0] = x; //NEW AB
+        trackParams[1] = lseed->GetYref(0); // lseed->GetYat(x);  
+        trackParams[2] = lseed->GetZref(0); // lseed->GetZat(x); 
+        trackParams[3] = TMath::Sin(TMath::ATan(lseed->GetYref(1)));
+        trackParams[4] = lseed->GetZref(1) / TMath::Sqrt(1. + lseed->GetYref(1) * lseed->GetYref(1));
+        trackParams[5] = lseed->GetC();
+        Int_t ich = 0; while(!(chamber = stack[ich])) ich++;
+        trackParams[6] = fGeom->GetSector(chamber->GetDetector());/* *alpha+shift;	// Supermodule*/
+
+        if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
+          AliInfo(Form("Track %d [%d] nlayers %d trackQuality = %e nused %d, yref = %3.3f", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused, trackParams[1]));
+
+          Int_t nclusters = 0;
+          AliTRDseedV1 *dseed[6];
+
+          // Build track label - what happens if measured data ???
+          Int_t labels[1000];
+          Int_t outlab[1000];
+          Int_t nlab = 0;
+
+          Int_t labelsall[1000];
+          Int_t nlabelsall = 0;
+          Int_t naccepted  = 0;
+
+          for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
+            Int_t jseed = kNPlanes*trackIndex+iLayer;
+            dseed[iLayer] = new AliTRDseedV1(sseed[jseed]);
+            dseed[iLayer]->SetOwner();
+            printf("Layer[%d], NClusters[%d]\n", iLayer, sseed[jseed].GetN2());
+            nclusters += sseed[jseed].GetN2();
+            if(!sseed[jseed].IsOK()) continue;
+            for(int ilab=0; ilab<2; ilab++){
+              if(sseed[jseed].GetLabels(ilab) < 0) continue;
+              labels[nlab] = sseed[jseed].GetLabels(ilab);
+              nlab++;
+            }
+
+            // Cooking label
+            for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
+              if(!sseed[jseed].IsUsable(itime)) continue;
+              naccepted++;
+              Int_t tindex = 0, ilab = 0;
+              while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
+                labelsall[nlabelsall++] = tindex;
+                ilab++;
+              }
+            }
+          }
+          Freq(nlab,labels,outlab,kFALSE);
+          Int_t   label     = outlab[0];
+          Int_t   frequency = outlab[1];
+          Freq(nlabelsall,labelsall,outlab,kFALSE);
+          Int_t   label1    = outlab[0];
+          Int_t   label2    = outlab[2];
+          Float_t fakeratio = (naccepted - outlab[1]) / Float_t(naccepted);
+
+          //Int_t eventNrInFile = esd->GetEventNumberInFile();
+          //AliInfo(Form("Number of clusters %d.", nclusters));
+          Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+          Int_t trackNumber = AliTRDtrackerDebug::GetTrackNumber();
+          Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
+          TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+          cstreamer << "Clusters2TracksStack"
+              << "EventNumber="		<< eventNumber
+              << "TrackNumber="		<< trackNumber
+              << "CandidateNumber="	<< candidateNumber
+              << "Iter="				<< fSieveSeeding
+              << "Like="				<< fTrackQuality[trackIndex]
+              << "S0.="				<< dseed[0]
+              << "S1.="				<< dseed[1]
+              << "S2.="				<< dseed[2]
+              << "S3.="				<< dseed[3]
+              << "S4.="				<< dseed[4]
+              << "S5.="				<< dseed[5]
+              << "p0="				<< trackParams[0]
+              << "p1="				<< trackParams[1]
+              << "p2="				<< trackParams[2]
+              << "p3="				<< trackParams[3]
+              << "p4="				<< trackParams[4]
+              << "p5="				<< trackParams[5]
+              << "p6="				<< trackParams[6]
+              << "Label="				<< label
+              << "Label1="			<< label1
+              << "Label2="			<< label2
+              << "FakeRatio="			<< fakeratio
+              << "Freq="				<< frequency
+              << "Ncl="				<< ncl
+              << "NLayers="			<< nlayers
+              << "Findable="			<< findable
+              << "NUsed="				<< nused
+              << "\n";
+        }
+
+        AliTRDtrackV1 *track = MakeTrack(&sseed[trackIndex*kNPlanes], trackParams);
+        if(!track){
+          AliWarning("Fail to build a TRD Track.");
+          continue;
+        }
       
-  AliTRDtrackV1 *track = MakeTrack(&sseed[trackIndex*kNPlanes], trackParams);
-  if(!track){
-    AliWarning("Fail to build a TRD Track.");
-    continue;
-  }
-
-  //AliInfo("End of MakeTrack()");
-  AliESDtrack *esdTrack = new ((*esdTrackList)[ntracks0++]) AliESDtrack();
-  esdTrack->UpdateTrackParams(track, AliESDtrack::kTRDout);
-  esdTrack->SetLabel(track->GetLabel());
-  track->UpdateESDtrack(esdTrack);
-  // write ESD-friends if neccessary
-  if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0){
-    AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(*track);
-    calibTrack->SetOwner();
-    esdTrack->AddCalibObject(calibTrack);
-  }
-  ntracks1++;
-  AliTRDtrackerDebug::SetTrackNumber(AliTRDtrackerDebug::GetTrackNumber() + 1);
+        //AliInfo("End of MakeTrack()");
+        AliESDtrack *esdTrack = new ((*esdTrackList)[ntracks0++]) AliESDtrack();
+        esdTrack->UpdateTrackParams(track, AliESDtrack::kTRDout);
+        esdTrack->SetLabel(track->GetLabel());
+        track->UpdateESDtrack(esdTrack);
+        // write ESD-friends if neccessary
+        if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0){
+          AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(*track);
+          calibTrack->SetOwner();
+          esdTrack->AddCalibObject(calibTrack);
+        }
+        ntracks1++;
+        AliTRDtrackerDebug::SetTrackNumber(AliTRDtrackerDebug::GetTrackNumber() + 1);
       }
 
       jSieve++;
@@ -2389,6 +2374,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           tseed->SetReconstructor(fReconstructor);
           tseed->SetX0((*cIter) ? (*cIter)->GetX() : x_def[iLayer]);
           tseed->Init(GetRiemanFitter());
+          tseed->SetStandAlone(kTRUE);
         }
       
         Bool_t isFake = kFALSE;
@@ -2448,13 +2434,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         //AliInfo("Passed chi2 filter.");
       
         // try attaching clusters to tracklets
-        Int_t nUsedCl = 0;
         Int_t mlayers = 0;
         for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
-          if(!cseed[jLayer].AttachClustersIter(stack[jLayer], 5., kFALSE, c[iLayer])) continue;
-          nUsedCl += cseed[jLayer].GetNUsed();
-          if(nUsedCl > 25) break;
+          if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
+          cseed[jLayer].UpdateUsed();
+          if(!cseed[jLayer].IsOK()) continue;
           mlayers++;
         }
 
@@ -2470,7 +2455,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
             Int_t jLayer = planesExt[iLayer];
             if(!(chamber = stack[jLayer])) continue;
-            cseed[jLayer].AttachClustersIter(chamber, 1000.);
+            cseed[jLayer].AttachClusters(chamber, kTRUE);
           }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
@@ -2480,8 +2465,13 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         }
 
 
+        // Update Seeds and calculate Likelihood
         // fit tracklets and cook likelihood
-        FitTiltedRieman(&cseed[0], kTRUE);// Update Seeds and calculate Likelihood
+        FitTiltedRieman(&cseed[0], kTRUE);
+        for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
+          Int_t jLayer = planes[iLayer];
+          cseed[jLayer].Fit(kTRUE);
+        }
         Double_t like = CookLikelihood(&cseed[0], planes); // to be checked
       
         if (TMath::Log(1.E-9 + like) < fReconstructor->GetRecoParam() ->GetTrackLikelihood()){
@@ -2496,7 +2486,6 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         fSeedLayer[ntracks]  = config;/*sLayer;*/
       
         // attach clusters to the extrapolation seeds
-        Int_t nusedf   = 0; // debug value
         for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
           Int_t jLayer = planesExt[iLayer];
           if(!(chamber = stack[jLayer])) continue;
@@ -2505,10 +2494,11 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           if ((jLayer == 0) && !(cseed[1].IsOK())) continue;
           if ((jLayer == 5) && !(cseed[4].IsOK())) continue;
           AliTRDseedV1 pseed = cseed[jLayer];
-          if(!pseed.AttachClustersIter(chamber, 1000.)) continue;
+          if(!pseed.AttachClusters(chamber, kTRUE)) continue;
+          pseed.Fit(kTRUE);
           cseed[jLayer] = pseed;
-          nusedf += cseed[jLayer].GetNUsed(); // debug value
           FitTiltedRieman(cseed,  kTRUE);
+          cseed[jLayer].Fit(kTRUE);
         }
       
         // AliInfo("Extrapolation done.");
@@ -2597,8 +2587,6 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               << "Chi2TC="			<< chi2Vals[1]
               << "Nlayers="			<< mlayers
               << "NClusters="   << ncls
-              << "NUsedS="			<< nUsedCl
-              << "NUsed="				<< nusedf
               << "Like="				<< like
               << "S0.="				<< &cseed[0]
               << "S1.="				<< &cseed[1]
@@ -2658,11 +2646,19 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
+  AliTRDseedV1 *ptrTracklet = 0x0;
+  // Sign clusters
+  for (Int_t jLayer = 0; jLayer < AliTRDgeometry::kNlayer; jLayer++) {
+    ptrTracklet = &seeds[jLayer];
+    if(!ptrTracklet->IsOK()) continue;
+    if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+  }
+  // 
   if(fReconstructor->IsHLT()){ 
-    AliTRDseedV1 *ptrTracklet = 0x0;
     for(Int_t ip=0; ip<kNPlanes; ip++){
       track.UnsetTracklet(ip);
       ptrTracklet = SetTracklet(&seeds[ip]);
+      ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
     AliTRDtrackV1 *ptrTrack = SetTrack(&track);
@@ -2724,7 +2720,7 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
   //  layers : Array of propagation layers for a stack/supermodule
   //  cseed  : Array of 6 seeding tracklets which has to be improved
   // 
-  // Output :
+  // Output : 
   //   cssed : Improved seeds
   // 
   // Detailed description
@@ -2766,7 +2762,8 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
     for (Int_t jLayer = 5; jLayer > 1; jLayer--) {
       Int_t bLayer = sortindexes[jLayer];
       if(!(chamber = stack[bLayer])) continue;
-      bseed[bLayer].AttachClustersIter(chamber, squality[bLayer], kTRUE);
+      bseed[bLayer].AttachClusters(chamber, kTRUE);
+      bseed[bLayer].Fit(kTRUE);
       if(bseed[bLayer].IsOK()) nLayers++;
     }
 
@@ -2790,7 +2787,6 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
     << "\n";
     }
   } // Loop: iter
-  
   // we are sure that at least 2 tracklets are OK !
   return nLayers+2;
 }
@@ -2815,20 +2811,20 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
   // debug level 2
   //
 
-  Double_t sumdaf = 0, nLayers = 0;
+  Double_t chi2phi = 0, nLayers = 0;
   for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
-    sumdaf += TMath::Abs((tracklets[iLayer].GetYfit(1) - tracklets[iLayer].GetYref(1))/ tracklets[iLayer].GetS2Y());
+    chi2phi += tracklets[iLayer].GetChi2Phi();
     nLayers++;
   }
-  sumdaf /= Float_t (nLayers - 2.0);
+  chi2phi /= Float_t (nLayers - 2.0);
   
   Double_t likeChi2Z  = TMath::Exp(-chi2[2] * 0.14);			// Chi2Z 
   Double_t likeChi2TC = (fReconstructor->GetRecoParam() ->IsVertexConstrained()) ? 
   											TMath::Exp(-chi2[1] * 0.677) : 1;			// Constrained Tilted Riemann
   Double_t likeChi2TR = TMath::Exp(-chi2[0] * 0.78);			// Non-constrained Tilted Riemann
-  Double_t likeAF     = TMath::Exp(-sumdaf * 3.23);
-  Double_t trackLikelihood     = likeChi2Z * likeChi2TR * likeAF;
+  Double_t likeChi2Phi= TMath::Exp(-chi2phi * 3.23);
+  Double_t trackLikelihood     = likeChi2Z * likeChi2TR * likeChi2Phi;
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
@@ -2840,7 +2836,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
         << "LikeChi2Z="				<< likeChi2Z
         << "LikeChi2TR="			<< likeChi2TR
         << "LikeChi2TC="			<< likeChi2TC
-        << "LikeAF="					<< likeAF
+        << "LikeChi2Phi=" 		<< likeChi2Phi
         << "TrackLikelihood=" << trackLikelihood
         << "\n";
   }
