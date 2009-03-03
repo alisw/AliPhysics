@@ -398,21 +398,23 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     x= tt.GetX(); // the true one 
     dx = x0 - x;
     yt = y0 - dx*dydx;
+    zt = z0 - dx*dzdx;
     Bool_t rc = tt.IsRowCross(); 
     
     // add tracklet residuals for y and dydx
-    Float_t yf = tt.GetY();
-    dy = yt - yf; dz = 100.;
-    Float_t dphi   = (tt.GetYfit(1) - dydx);
-    dphi /= 1.- tt.GetYfit(1)*dydx;
+    Float_t dphi;
     tt.GetCovAt(x, cov);
     if(!rc){
+      dy    = yt - tt.GetY();
+      dphi  = (tt.GetYfit(1) - dydx);
+      dphi /= 1.- tt.GetYfit(1)*dydx;
+
       ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx, dy);
       if(cov[0]>0.) ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx, dy/TMath::Sqrt(cov[0]));
       ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx, dphi*TMath::RadToDeg());
     } else {
       // add tracklet residuals for z
-      dz = tt.GetZ() - (z0 - dx*dzdx) ;
+      dz = tt.GetZ() - zt;
       ((TH2I*)fContainer->At(kMCtrackletZ))->Fill(dzdx, dz);
       if(cov[2]>0.) ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx, dz/TMath::Sqrt(cov[2]));
     }
@@ -533,9 +535,9 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCcluster:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = 0.6;
+    y[0] = -50.; y[1] = 600.;
     ax->SetRangeUser(y[0], y[1]);
-    ax->SetTitle("Y_{cluster} #sigma/#mu [mm]");
+    ax->SetTitle("Y_{cluster} #sigma/#mu [#mum]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetRangeUser(-.3, .3);
     ax->SetTitle("tg(#phi)");
@@ -549,9 +551,9 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackletY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = 0.25;
+    y[0] = -50.; y[1] = 250.;
     ax->SetRangeUser(y[0], y[1]);
-    ax->SetTitle("Y_{tracklet} #sigma/#mu [mm]");
+    ax->SetTitle("Y_{tracklet} #sigma/#mu [#mum]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetRangeUser(-.2, .2);
     ax->SetTitle("tg(#phi)");
@@ -565,8 +567,8 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackletZ:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 1.);
-    ax->SetTitle("Z_{tracklet} #sigma/#mu [mm]");
+    ax->SetRangeUser(-50., 700.);
+    ax->SetTitle("Z_{tracklet} #sigma/#mu [#mum]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#theta)");
     g->Draw("apl");
@@ -588,9 +590,9 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = 0.25;
+    y[0] = -50.; y[1] = 200.;
     ax->SetRangeUser(y[0], y[1]);
-    ax->SetTitle("Y_{track} #sigma/#mu [mm]");
+    ax->SetTitle("Y_{track} #sigma/#mu [#mum]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetRangeUser(-.2, .2);
     ax->SetTitle("tg(#phi)");
@@ -605,8 +607,8 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackZOut:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 2.);
-    ax->SetTitle(Form("Z_{track}^{%s} #sigma/#mu [mm]", ifig==kMCtrackZIn ? "in" : "out"));
+    ax->SetRangeUser(-500., 2000.);
+    ax->SetTitle(Form("Z_{track}^{%s} #sigma/#mu [#mum]", ifig==kMCtrackZIn ? "in" : "out"));
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#theta)");
     g->Draw("apl");
@@ -704,11 +706,11 @@ Bool_t AliTRDresolution::PostProcess()
   //PROCESS MC RESIDUAL DISTRIBUTIONS
 
   // cluster y resolution
-  Process(kMCcluster, &f);
+  Process(kMCcluster, &f, 1.e4);
 
   // tracklet resolution
-  Process(kMCtrackletY, &f); // y
-  Process(kMCtrackletZ, &f); // z
+  Process(kMCtrackletY, &f, 1.e4); // y
+  Process(kMCtrackletZ, &f, 1.e4); // z
   Process(kMCtrackletPhi, &f); // phi
 
   // tracklet pulls
@@ -716,9 +718,9 @@ Bool_t AliTRDresolution::PostProcess()
   Process(kMCtrackletZPull, &f); // z
 
   // track resolution
-  Process(kMCtrackY, &f);    // y
-  Process(kMCtrackZIn, &f);  // z towards TPC
-  Process(kMCtrackZOut, &f); // z towards TOF
+  Process(kMCtrackY, &f, 1.e4);    // y
+  Process(kMCtrackZIn, &f, 1.e4);  // z towards TPC
+  Process(kMCtrackZOut, &f, 1.e4); // z towards TOF
 
   // track pulls
   Process(kMCtrackYPull, &f);    // y
@@ -966,7 +968,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
 //________________________________________________________
-Bool_t AliTRDresolution::Process(ETRDresolutionPlot ip, TF1 *f)
+Bool_t AliTRDresolution::Process(ETRDresolutionPlot ip, TF1 *f, Float_t k)
 {
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
   Bool_t kBUILD = kFALSE;
@@ -982,21 +984,20 @@ Bool_t AliTRDresolution::Process(ETRDresolutionPlot ip, TF1 *f)
   if(gm->GetN()) for(Int_t ip=gm->GetN(); ip--;) gm->RemovePoint(ip);
   if(!(gs=(TGraphErrors*)fGraphS->At(ip))) return kFALSE;
   if(gs->GetN()) for(Int_t ip=gs->GetN(); ip--;) gs->RemovePoint(ip);
+  Char_t pn[10]; sprintf(pn, "p%02d", ip);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t x = h2->GetXaxis()->GetBinCenter(ibin);
-    TH1D *h = h2->ProjectionY("py", ibin, ibin);
+    TH1D *h = h2->ProjectionY(pn, ibin, ibin);
     if(h->GetEntries()<100) continue;
     AdjustF1(h, f);
 
-//    if(IsVisual()){c->cd(); c->SetLogy();}
-    h->Fit(f, "Q", "", -0.5, 0.5);
-/*    if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}*/
+    h->Fit(f, "QN");
     
     Int_t ip = gm->GetN();
-    gm->SetPoint(ip, x, 10.*f->GetParameter(1));
-    gm->SetPointError(ip, 0., 10.*f->GetParError(1));
-    gs->SetPoint(ip, x, 10.*f->GetParameter(2));
-    gs->SetPointError(ip, 0., 10.*f->GetParError(2));
+    gm->SetPoint(ip, x, k*f->GetParameter(1));
+    gm->SetPointError(ip, 0., k*f->GetParError(1));
+    gs->SetPoint(ip, x, k*f->GetParameter(2));
+    gs->SetPointError(ip, 0., k*f->GetParError(2));
   }
 
   if(kBUILD) delete f;

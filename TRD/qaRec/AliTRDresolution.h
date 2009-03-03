@@ -60,7 +60,7 @@ public:
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
-  Bool_t  Process(ETRDresolutionPlot ip, TF1 *f=0x0);
+  Bool_t  Process(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
 
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
