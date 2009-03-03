@@ -44,8 +44,10 @@ Trigger types used: PHYSICS_EVENT
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 //#include "TProfile.h"
-int cqbx,cqby,clbx,clby,cbx,ccbx;
-float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx,cclx,ccmx;
+//int cqbx,cqby,clbx,clby,cbx,kCcbx;
+//float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx,cclx,ccmx;
+int kCcbx;
+float kCclx,kCcmx;
 /* Main routine
       Arguments: 
       1- monitoring data source
@@ -76,9 +78,9 @@ int main(int argc, char **argv) {
 
   while((c=getc(inp))!=EOF) {
     switch(c) {
-      case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
-      case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
-      case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
+      case 'a': {fscanf(inp, "%d", &kCcbx ); break;} //N of X bins hCFD1_CFD
+      case 'b': {fscanf(inp, "%f", &kCclx ); break;} //Low x hCFD1_CFD
+      case 'c': {fscanf(inp, "%f", &kCcmx ); break;} //High x hCFD1_CFD
     }
   }
   fclose(inp);
@@ -117,7 +119,7 @@ int main(int argc, char **argv) {
   TH1F *hCFD1minCFD[24]; 
 
    for(Int_t ic=0; ic<24; ic++) {
-      hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+      hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",kCcbx,kCclx,kCcmx);
     }
 
   // Allocation of histograms - end
