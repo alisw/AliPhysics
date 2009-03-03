@@ -176,20 +176,16 @@ if test ! "x$have_aliroot" = "xno" ; then
   
   # check for certain AliRoot libraries/files/features
   # libSTEERBase present since Aug 7 2007
-  # ###########################################
-  # temporary workaround for circular dependency libSTEERbase libRAWDatabase
-  # https://savannah.cern.ch/bugs/index.php?45935
-  # -lRAWDatabase added to all checks
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lRAWDatabase"
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEERBase
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lRAWDatabase"
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
   # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lRAWDatabase"
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=CDB
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
