@@ -53,6 +53,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fTrackFilter(0x0),
     fKinkFilter(0x0),
     fV0Filter(0x0),
+    fCascadeFilter(0x0),
     fHighPthreshold(0),
     fPtshape(0x0)
 {
@@ -64,6 +65,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fTrackFilter(0x0),
     fKinkFilter(0x0),
     fV0Filter(0x0),
+    fCascadeFilter(0x0),
     fHighPthreshold(0),
     fPtshape(0x0)
 {
@@ -101,7 +103,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // ESD Filter analysis task executed for each event
 
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-    AliESD* old = esd->GetAliESDOld();
+    AliESD*      old = esd->GetAliESDOld();
 
     // Fetch Stack for debuggging if available 
     AliStack *pStack = 0;
@@ -114,10 +116,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     Float_t posF[3];
     Double_t pos[3];
     Double_t p[3];
-    Double_t p_pos[3];
-    Double_t p_neg[3];
-    Double_t p_pos_atv0[3];
-    Double_t p_neg_atv0[3];
+    Double_t momPos[3]; 
+    Double_t momNeg[3];
+    Double_t momBach[3];
+    Double_t momPosAtV0vtx[3];
+    Double_t momNegAtV0vtx[3];
+    Double_t momBachAtCascadeVtx[3];
     Double_t covVtx[6];
     Double_t covTr[21];
     Double_t pid[10];
@@ -139,6 +143,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // Update the header
 
     AliAODHeader* header = AODEvent()->GetHeader();
+
     header->SetRunNumber(esd->GetRunNumber());
     if (old) {
 	header->SetBunchCrossNumber(0);
@@ -168,11 +173,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     Float_t diamcov[3]; esd->GetDiamondCovXY(diamcov);
     header->SetDiamond(diamxy,diamcov);
 //
-//    
+//
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
-    Int_t nVertices = nV0s + 2*nCascades /*could lead to two vertices, one V0 and the Xi */+ nKinks + 1 /* = prim. vtx*/;    
+    Int_t nVertices = nV0s + nCascades /*V0 wihtin cascade already counted*/+ nKinks + 1 /* = prim. vtx*/;
     Int_t nJets     = 0;
     Int_t nCaloClus = esd->GetNumberOfCaloClusters();
     Int_t nFmdClus  = 0;
@@ -180,17 +185,32 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     
     if (fDebug > 0) 
 	printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
+       
+    AODEvent()->ResetStd(nTracks, nVertices, nV0s, nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
 
-    AODEvent()->ResetStd(nTracks, nVertices, nV0s+nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
 
-    AliAODTrack *aodTrack = 0x0;
-    AliAODPid   *detpid   = 0x0;
-    Double_t timezero = 0; //TO BE FIXED
-    AliAODv0    *aodV0    = 0x0;
-
+    AliAODTrack   *aodTrack       = 0x0;
+    AliAODPid     *detpid         = 0x0;
+    Double_t      timezero        = 0;   //TO BE FIXED
+    AliAODVertex  *vV0FromCascade = 0x0;
+    AliAODv0      *aodV0          = 0x0;
+    AliAODcascade *aodCascade     = 0x0;
+    
     // RefArray to store the mapping between esd track number and newly created AOD-Track
-    TRefArray   *aodRefs = NULL;
-    if (nTracks > 0) aodRefs = new TRefArray(nTracks);
+    TRefArray   *aodTrackRefs = NULL;
+    if (nTracks > 0) aodTrackRefs = new TRefArray(nTracks);
+
+    // RefArray to store a mapping between esd V0 number and newly created AOD-Vertex V0
+    TRefArray   *aodV0VtxRefs = NULL;
+    if (nV0s > 0) aodV0VtxRefs = new TRefArray(nV0s);
+
+    // RefArray to store the mapping between esd V0 number and newly created AOD-V0
+    TRefArray   *aodV0Refs = NULL;
+    if (nV0s > 0) aodV0Refs = new TRefArray(nV0s);
+
+    
+
+
 
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
@@ -198,7 +218,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	usedTrack = new Bool_t[nTracks];
 	for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) usedTrack[iTrack]=kFALSE;
     }
-    // Array to take into account the V0s already added to the AOD
+    // Array to take into account the V0s already added to the AOD (V0 within cascades)
     Bool_t * usedV0 = NULL;
     if (nV0s>0) {
 	usedV0 = new Bool_t[nV0s];
@@ -219,8 +239,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     TClonesArray &tracks = *(AODEvent()->GetTracks());
     Int_t jTracks=0; 
     
+    // Access to the AOD container of Cascades
+    TClonesArray &cascades = *(AODEvent()->GetCascades());
+    Int_t jCascades=0;
+
     // Access to the AOD container of V0s
-    TClonesArray &V0s = *(AODEvent()->GetV0s());
+    TClonesArray &v0s = *(AODEvent()->GetV0s());
     Int_t jV0s=0;
     
     // Add primary vertex. The primary tracks will be defined
@@ -240,243 +264,382 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // Create vertices starting from the most complex objects
     Double_t chi2 = 0.;
     
-    // Cascades
+    // Cascades (Modified by A.Maire - February 2009)
     for (Int_t nCascade = 0; nCascade < nCascades; ++nCascade) {
-	AliESDcascade *cascade = esd->GetCascade(nCascade);
-	
-	cascade->GetXYZ(pos[0], pos[1], pos[2]);
 
-	if (!old) {
-	    chi2 = cascade->GetChi2Xi(); // = chi2/NDF since NDF = 2*2-3
-	    cascade->GetPosCovXi(covVtx);
-	} else {
-	    chi2 = -999.;
-	    for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
-	}
-	// Add the cascade vertex
-	AliAODVertex * vcascade = new(vertices[jVertices++]) AliAODVertex(pos,
-									  covVtx,
-									  chi2,
-									  primary,
-									  nCascade,
-									  AliAODVertex::kCascade);
+	if (fDebug > 1) 
+	printf("\n ******** Cascade number : %d/%d *********\n", nCascade, nCascades);
+
+	// 0- Preparation
+	//
+	AliESDcascade *esdCascade = esd->GetCascade(nCascade);
+		Int_t  idxPosFromV0Dghter  = esdCascade->GetPindex();
+		Int_t  idxNegFromV0Dghter  = esdCascade->GetNindex();
+		Int_t  idxBachFromCascade  = esdCascade->GetBindex();
 	
-	primary->AddDaughter(vcascade);
-	
-	// Add the V0 from the cascade. The ESD class have to be optimized...
-	// Now we have to search for the corresponding Vo in the list of V0s
-	// using the indeces of the positive and negative tracks
-	
-	Int_t posFromV0 = cascade->GetPindex();
-	Int_t negFromV0 = cascade->GetNindex();
-	
-      
-	AliESDv0 * v0 = 0x0;
-	Int_t indV0 = -1;
+	AliESDtrack  *esdCascadePos  = esd->GetTrack( idxPosFromV0Dghter);
+	AliESDtrack  *esdCascadeNeg  = esd->GetTrack( idxNegFromV0Dghter);
+	AliESDtrack  *esdCascadeBach = esd->GetTrack( idxBachFromCascade);
+
+	// Identification of the V0 within the esdCascade (via both daughter track indices)
+	AliESDv0 * currentV0   = 0x0;
+	Int_t      idxV0FromCascade = -1;
 	
 	for (Int_t iV0=0; iV0<nV0s; ++iV0) {
-	    
-	    v0 = esd->GetV0(iV0);
-	    Int_t posV0 = v0->GetPindex();
-	    Int_t negV0 = v0->GetNindex();
-	    
-	    if (posV0==posFromV0 && negV0==negFromV0) {
-		indV0 = iV0;
+	
+			 currentV0 = esd->GetV0(iV0);
+		Int_t posCurrentV0 = currentV0->GetPindex();
+		Int_t negCurrentV0 = currentV0->GetNindex();
+	
+		if (posCurrentV0==idxPosFromV0Dghter && negCurrentV0==idxNegFromV0Dghter) {
+		idxV0FromCascade = iV0;
 		break;
-	    }
+		}
 	}
-	
-	AliAODVertex * vV0FromCascade = 0x0;
-	
-	if (indV0>-1 && !usedV0[indV0] ) {
-	    
-	    // the V0 exists in the array of V0s and is not used
-	    
-	    usedV0[indV0] = kTRUE;
-	    
-	    v0->GetXYZ(pos[0], pos[1], pos[2]);
-	    if (!old) {
-		chi2 = v0->GetChi2V0();  // = chi2/NDF since NDF = 2*2-3			     
-		v0->GetPosCov(covVtx);
-	    } else {
-		chi2 = -999.;
-		for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
-	    }
 
-	    vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(pos,
-								     covVtx,
-								     chi2,
-								     vcascade,
-								     indV0,
-								     AliAODVertex::kV0);
-	} else {
-	    
-	    // the V0 doesn't exist in the array of V0s or was used
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
-//		 << " The V0 " << indV0 
-//		 << " doesn't exist in the array of V0s or was used!" << endl;
-	    
-	    cascade->GetXYZ(pos[0], pos[1], pos[2]);
-	    
-	    if (!old) {
-		chi2 = v0->GetChi2V0();
-		cascade->GetPosCov(covVtx);
-	    } else {
-		chi2 = -999.;
-		for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
-	    }
+	if(idxV0FromCascade < 0){
+		printf("Cascade - no matching for the V0 (index V0 = -1) ! Skip ... \n");
+		continue;
+	}// a priori, useless check, but safer ... in case of pb with tracks "out of bounds"
 
-	    vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(pos,
-								     covVtx,
-								     chi2, // = chi2/NDF since NDF = 2*2-3 (AM)
-								     vcascade,
-								     indV0,
-								     AliAODVertex::kV0);
-	    vcascade->AddDaughter(vV0FromCascade);
+	if (fDebug > 1) 
+		printf("Cascade %d - V0fromCascade ind : %d/%d\n", nCascade, idxV0FromCascade, nV0s);
+
+	AliESDv0 *esdV0FromCascade   = esd->GetV0(idxV0FromCascade);
+	
+
+	// 1 - Cascade selection 
+	
+	//	AliESDVertex *esdPrimVtx = new AliESDVertex(*(esd->GetPrimaryVertex()));
+	// 	TList cascadeObjects;
+	// 	cascadeObjects.AddAt(esdV0FromCascade, 0);
+	// 	cascadeObjects.AddAt(esdCascadePos,    1);
+	// 	cascadeObjects.AddAt(esdCascadeNeg,    2);
+	// 	cascadeObjects.AddAt(esdCascade,       3);
+	// 	cascadeObjects.AddAt(esdCascadeBach,   4);
+	// 	cascadeObjects.AddAt(esdPrimVtx,       5);
+	// 
+	// 	UInt_t selectCascade = 0;
+	// 	if (fCascadeFilter) {
+	// 	  // selectCascade = fCascadeFilter->IsSelected(&cascadeObjects); 
+	// 	  	// FIXME AliESDCascadeCuts to be implemented ...
+	// 
+	// 		// Here we may encounter a moot point at the V0 level 
+	// 		// between the cascade selections and the V0 ones :
+	// 		// the V0 selected along with the cascade (secondary V0) may 
+	// 		// usually be removed from the dedicated V0 selections (prim V0) ...
+	// 		// -> To be discussed !
+	// 
+	// 	  // this is a little awkward but otherwise the 
+	// 	  // list wants to access the pointer (delete it) 
+	// 	  // again when going out of scope
+	// 	  delete cascadeObjects.RemoveAt(5); // esdPrimVtx created via copy construct
+	// 	  esdPrimVtx = 0;
+	// 	  if (!selectCascade) 
+	// 	    continue;
+	// 	}
+	// 	else{
+	// 	  delete cascadeObjects.RemoveAt(5); // esdPrimVtx created via copy construct
+	// 	  esdPrimVtx = 0;
+	// 	}
+
+	// 2 - Add the cascade vertex
+	
+	esdCascade->GetXYZcascade(pos[0], pos[1], pos[2]);
+	esdCascade->GetPosCovXi(covVtx);
+	chi2 = esdCascade->GetChi2Xi(); 
+	
+	AliAODVertex *vCascade = new(vertices[jVertices++]) AliAODVertex( pos,
+									  covVtx,
+									  chi2, // FIXME = Chi2/NDF will be needed
+									  primary,
+									  nCascade, // id
+									  AliAODVertex::kCascade);
+	primary->AddDaughter(vCascade);
+
+	if (fDebug > 2) {
+		printf("---- Cascade / Cascade Vertex (AOD) : \n");
+		vCascade->Print();
 	}
+
+
+	// 3 - Add the bachelor track from the cascade
 	
-	// Add the positive tracks from the V0
-	
-	if (posFromV0>-1 && !usedTrack[posFromV0]) {
-	    
-	    usedTrack[posFromV0] = kTRUE;
-	    
-	    AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
-	    esdTrack->GetPxPyPz(p_pos);
-	    esdTrack->GetXYZ(pos);
-	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	if (!usedTrack[idxBachFromCascade]) {
+
+	esdCascadeBach->GetPxPyPz(momBach);
+	esdCascadeBach->GetXYZ(pos);
+	esdCascadeBach->GetCovarianceXYZPxPyPz(covTr);
+	esdCascadeBach->GetESDpid(pid);
+
+	    usedTrack[idxBachFromCascade] = kTRUE;
 	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) {
-		selectInfo = fTrackFilter->IsSelected(esdTrack);
-	    }
-	    
-	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
-	    vV0FromCascade->AddDaughter(aodTrack =
-					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-									   esdTrack->GetLabel(), 
-									   p_pos, 
-									   kTRUE,
-									   pos,
-									   kFALSE,
-									   covTr, 
-									   (Short_t)esdTrack->GetSign(),
-									   esdTrack->GetITSClusterMap(), 
-									   pid,
-									   vV0FromCascade,
-									   kTRUE,  // check if this is right
-									   vtx->UsesTrack(esdTrack->GetID()),
-									   AliAODTrack::kSecondary,
-									   selectInfo)
-					);
-	    aodRefs->AddAt(aodTrack, posFromV0);
-	    
-       if (esdTrack->GetSign() > 0) nPosTracks++;
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeBach);
+	    if(mcH)mcH->SelectParticle(esdCascadeBach->GetLabel());
+	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdCascadeBach->GetID(),
+							  esdCascadeBach->GetLabel(), 
+							  momBach, 
+							  kTRUE,
+							  pos,
+							  kFALSE, // Why kFALSE for "isDCA" ? FIXME
+							  covTr, 
+							  (Short_t)esdCascadeBach->GetSign(),
+							  esdCascadeBach->GetITSClusterMap(), 
+							  pid,
+							  vCascade,
+							  kTRUE,  // usedForVtxFit = kFALSE ? FIXME
+							  vtx->UsesTrack(esdCascadeBach->GetID()),
+							  AliAODTrack::kSecondary,
+							  selectInfo);
+	    aodTrackRefs->AddAt(aodTrack,idxBachFromCascade);
+	   
+	    if (esdCascadeBach->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
-	    aodTrack->SetFlags(esdTrack->GetStatus());
-            SetAODPID(esdTrack,aodTrack,detpid,timezero);
+	    aodTrack->SetFlags(esdCascadeBach->GetStatus());
+            SetAODPID(esdCascadeBach,aodTrack,detpid,timezero);
 	}
 	else {
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
-//		 << " track " << posFromV0 << " has already been used!" << endl;
+	    aodTrack = dynamic_cast<AliAODTrack*>( aodTrackRefs->At(idxBachFromCascade) );
 	}
-	
-	// Add the negative tracks from the V0
-	
-	if (negFromV0>-1 && !usedTrack[negFromV0]) {
-	    
-	    usedTrack[negFromV0] = kTRUE;
-	    
-	    AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
-	    esdTrack->GetPxPyPz(p_neg);
-	    esdTrack->GetXYZ(pos);
-	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
-	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);	    
-	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
-	    vV0FromCascade->AddDaughter(aodTrack =
-					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-									   esdTrack->GetLabel(),
-									   p_neg,
-									   kTRUE,
-									   pos,
-									   kFALSE,
-									   covTr, 
-									   (Short_t)esdTrack->GetSign(),
-									   esdTrack->GetITSClusterMap(), 
-									   pid,
-									   vV0FromCascade,
-									   kTRUE,  // check if this is right
-									   vtx->UsesTrack(esdTrack->GetID()),
-									   AliAODTrack::kSecondary,
-									   selectInfo)
-					);
-	    aodRefs->AddAt(aodTrack, negFromV0);
 
-       if (esdTrack->GetSign() > 0) nPosTracks++;
-	    aodTrack->ConvertAliPIDtoAODPID();
-	    aodTrack->SetFlags(esdTrack->GetStatus());	    
-            SetAODPID(esdTrack,aodTrack,detpid,timezero);
-	}
-	else {
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
-//		 << " track " << negFromV0 << " has already been used!" << endl;
-	}
-	
-	// add it to the V0 array as well
-	Double_t d0[2] = { -999., -99.};
-	// counting is probably wrong
-	new(V0s[jV0s++]) AliAODv0(vV0FromCascade, -999., -99., p_pos, p_neg, d0); // to be refined
+	vCascade->AddDaughter(aodTrack);
 
-	// Add the bachelor track from the cascade
+	if (fDebug > 4) {
+		printf("---- Cascade / bach dghter : \n");
+		aodTrack->Print();
+	}
 	
-	Int_t bachelor = cascade->GetBindex();
-	
-	if(bachelor>-1 && !usedTrack[bachelor]) {
-	    
-	    usedTrack[bachelor] = kTRUE;
-	    
-	    AliESDtrack *esdTrack = esd->GetTrack(bachelor);
-	    esdTrack->GetPxPyPz(p);
-	    esdTrack->GetXYZ(pos);
-	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
-	    UInt_t selectInfo = 0;
-	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);
 
-	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
-	    vcascade->AddDaughter(aodTrack =
-				  new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-								     esdTrack->GetLabel(),
-								     p,
-								     kTRUE,
-								     pos,
-								     kFALSE,
-								     covTr, 
-								     (Short_t)esdTrack->GetSign(),
-								     esdTrack->GetITSClusterMap(), 
-								     pid,
-								     vcascade,
-								     kTRUE,  // check if this is right
-								     vtx->UsesTrack(esdTrack->GetID()),
-								     AliAODTrack::kSecondary,
-								     selectInfo)
-				  );
-	    aodRefs->AddAt(aodTrack, bachelor);
-       if (esdTrack->GetSign() > 0) nPosTracks++;
-	    aodTrack->ConvertAliPIDtoAODPID();
-	    aodTrack->SetFlags(esdTrack->GetStatus());
-            SetAODPID(esdTrack,aodTrack,detpid,timezero);
-	}
-	else {
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
-//		 << " track " << bachelor << " has already been used!" << endl;
-	}
+	// 4 - Add the V0 from the cascade. 
+	// = V0vtx + both pos and neg daughter tracks + the aodV0 itself
+	//
+
+	if ( !usedV0[idxV0FromCascade] ) {
+	// 4.A - if VO structure hasn't been created yet
+		
+		// 4.A.1 - Create the V0 vertex of the cascade
 	
-	// Add the primary track of the cascade (if any)
+		esdV0FromCascade->GetXYZ(pos[0], pos[1], pos[2]);
+		esdV0FromCascade->GetPosCov(covVtx);
+		chi2 = esdV0FromCascade->GetChi2V0();  // = chi2/NDF since NDF = 2*2-3 ?
+			
+		vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(pos,
+									covVtx,
+									chi2,
+									vCascade,
+									idxV0FromCascade, //id of ESDv0
+									AliAODVertex::kV0);
+		// Note:
+		//    one V0 can be used by several cascades.
+		// So, one AOD V0 vtx can have several parent vtx.
+		// This is not directly allowed by AliAODvertex.
+		// Setting the parent vtx (here = param "vCascade") doesn't lead to a crash
+		// but to a problem of consistency within AODEvent.
+		// -> See below paragraph 4.B, for the proposed treatment of such a case.
+
+		// Add the vV0FromCascade to the aodVOVtxRefs
+		aodV0VtxRefs->AddAt(vV0FromCascade,idxV0FromCascade);
+		
+		
+		// 4.A.2 - Add the positive tracks from the V0
+		
+		esdCascadePos->GetPxPyPz(momPos);
+		esdCascadePos->GetXYZ(pos);
+		esdCascadePos->GetCovarianceXYZPxPyPz(covTr);
+		esdCascadePos->GetESDpid(pid);
+		
 	
+		if (!usedTrack[idxPosFromV0Dghter]) {
+		usedTrack[idxPosFromV0Dghter] = kTRUE;
+	
+		UInt_t selectInfo = 0;
+		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadePos);
+		if(mcH) mcH->SelectParticle(esdCascadePos->GetLabel());
+		aodTrack = new(tracks[jTracks++]) AliAODTrack(  esdCascadePos->GetID(),
+								esdCascadePos->GetLabel(), 
+								momPos, 
+								kTRUE,
+								pos,
+								kFALSE, // Why kFALSE for "isDCA" ? FIXME
+								covTr, 
+								(Short_t)esdCascadePos->GetSign(),
+								esdCascadePos->GetITSClusterMap(), 
+								pid,
+								vV0FromCascade,
+								kTRUE,  // usedForVtxFit = kFALSE ? FIXME
+								vtx->UsesTrack(esdCascadePos->GetID()),
+								AliAODTrack::kSecondary,
+								selectInfo);
+		aodTrackRefs->AddAt(aodTrack,idxPosFromV0Dghter);
+		
+		if (esdCascadePos->GetSign() > 0) nPosTracks++;
+		aodTrack->ConvertAliPIDtoAODPID();
+		aodTrack->SetFlags(esdCascadePos->GetStatus());
+		SetAODPID(esdCascadePos,aodTrack,detpid,timezero);
+		}
+		else {
+			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxPosFromV0Dghter));
+		}
+		vV0FromCascade->AddDaughter(aodTrack);
+	
+	
+		// 4.A.3 - Add the negative tracks from the V0
+		
+		esdCascadeNeg->GetPxPyPz(momNeg);
+		esdCascadeNeg->GetXYZ(pos);
+		esdCascadeNeg->GetCovarianceXYZPxPyPz(covTr);
+		esdCascadeNeg->GetESDpid(pid);
+		
+		
+		if (!usedTrack[idxNegFromV0Dghter]) {
+		usedTrack[idxNegFromV0Dghter] = kTRUE;
+	
+		UInt_t selectInfo = 0;
+		if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdCascadeNeg);
+		if(mcH)mcH->SelectParticle(esdCascadeNeg->GetLabel());
+		aodTrack = new(tracks[jTracks++]) AliAODTrack(  esdCascadeNeg->GetID(),
+								esdCascadeNeg->GetLabel(),
+								momNeg,
+								kTRUE,
+								pos,
+								kFALSE, // Why kFALSE for "isDCA" ? FIXME
+								covTr, 
+								(Short_t)esdCascadeNeg->GetSign(),
+								esdCascadeNeg->GetITSClusterMap(), 
+								pid,
+								vV0FromCascade,
+								kTRUE,  // usedForVtxFit = kFALSE ? FIXME
+								vtx->UsesTrack(esdCascadeNeg->GetID()),
+								AliAODTrack::kSecondary,
+								selectInfo);
+		
+		aodTrackRefs->AddAt(aodTrack,idxNegFromV0Dghter);
+		
+		if (esdCascadeNeg->GetSign() > 0) nPosTracks++;
+		aodTrack->ConvertAliPIDtoAODPID();
+		aodTrack->SetFlags(esdCascadeNeg->GetStatus());
+		SetAODPID(esdCascadeNeg,aodTrack,detpid,timezero);
+		}
+		else {
+			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxNegFromV0Dghter));
+		}
+	
+		vV0FromCascade->AddDaughter(aodTrack);
+	
+			
+		// 4.A.4 - Add the V0 from cascade to the V0 array
+
+		Double_t  dcaV0Daughters      = esdV0FromCascade->GetDcaV0Daughters();
+		Double_t  dcaV0ToPrimVertex   = esdV0FromCascade->GetD( esd->GetPrimaryVertex()->GetX(),
+								        esd->GetPrimaryVertex()->GetY(),
+								        esd->GetPrimaryVertex()->GetZ() );
+		esdV0FromCascade->GetPPxPyPz( momPosAtV0vtx[0],momPosAtV0vtx[1],momPosAtV0vtx[2] ); 
+		esdV0FromCascade->GetNPxPyPz( momNegAtV0vtx[0],momNegAtV0vtx[1],momNegAtV0vtx[2] ); 
+	
+		Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = DCA in (x,y) for Pos and ..[1] = Neg
+		dcaDaughterToPrimVertex[0] = TMath::Abs(esdCascadePos->GetD(	esd->GetPrimaryVertex()->GetX(),
+										esd->GetPrimaryVertex()->GetY(),
+										esd->GetMagneticField())        );
+		dcaDaughterToPrimVertex[1] = TMath::Abs(esdCascadeNeg->GetD(	esd->GetPrimaryVertex()->GetX(),
+										esd->GetPrimaryVertex()->GetY(),
+										esd->GetMagneticField())        );
+		
+		aodV0 = new(v0s[jV0s++]) AliAODv0( vV0FromCascade, 
+						   dcaV0Daughters,
+						   dcaV0ToPrimVertex, 
+						   momPosAtV0vtx, 
+						   momNegAtV0vtx, 
+						   dcaDaughterToPrimVertex); 
+		// set the aod v0 on-the-fly status
+		aodV0->SetOnFlyStatus(esdV0FromCascade->GetOnFlyStatus());
+
+		// Add the aodV0 to the aodVORefs
+		aodV0Refs->AddAt(aodV0,idxV0FromCascade);
+		
+	usedV0[idxV0FromCascade] = kTRUE;
+
+	} else { 
+	// 4.B - if V0 structure already used
+
+		// Note :
+		//    one V0 can be used by several cascades (frequent in PbPb evts) : 
+		// same V0 which used but attached to different bachelor tracks
+		// -> aodVORefs and aodV0VtxRefs are needed.
+		// Goal : avoid a redundancy of the info in "Vertices" and "v0s" clones array.
+	
+		vV0FromCascade = dynamic_cast<AliAODVertex*>( aodV0VtxRefs->At(idxV0FromCascade) );
+		aodV0          = dynamic_cast<AliAODv0*>    ( aodV0Refs   ->At(idxV0FromCascade) );
+		 
+		// - Treatment of the parent for such a "re-used" V0 :
+		// Insert the cascade that reuses the V0 vertex in the lineage chain
+		// Before : vV0 -> vCascade1 -> vPrimary
+		//  - Hyp : cascade2 uses the same V0 as cascade1
+		//  After :  vV0 -> vCascade2 -> vCascade1 -> vPrimary
+		
+		AliAODVertex *vCascadePreviousParent = dynamic_cast<AliAODVertex*> (vV0FromCascade->GetParent());
+			vV0FromCascade->SetParent(vCascade);
+			vCascade      ->SetParent(vCascadePreviousParent);
+
+		if(fDebug > 2)	
+			printf("---- Cascade / Lineage insertion\n"
+				"Parent of V0 vtx                 = Cascade vtx %p\n"
+				"Parent of the cascade vtx        = Cascade vtx %p\n"
+				"Parent of the parent cascade vtx = Cascade vtx %p\n", 
+						static_cast<void*> (vV0FromCascade->GetParent()),
+						static_cast<void*> (vCascade->GetParent()),
+						static_cast<void*> (vCascadePreviousParent->GetParent()) );
+		
+	}// end if V0 structure already used
+
+	if (fDebug > 2) {
+		printf("---- Cascade / V0 vertex: \n");
+		vV0FromCascade->Print();
+	}
+
+	if (fDebug > 4) {
+		printf("---- Cascade / pos dghter : \n");
+			aodTrack->Print();
+		printf("---- Cascade / neg dghter : \n");
+			aodTrack->Print();
+		printf("---- Cascade / aodV0 : \n");
+			aodV0->Print();
+	}
+
+	// In any case (used V0 or not), add the V0 vertex to the cascade one.
+	vCascade->AddDaughter(vV0FromCascade);	
+	
+		
+	// 5 - Add the primary track of the cascade (if any)
+
+
+	// 6 - Add the cascade to the AOD array of cascades
+
+	Double_t dcaBachToPrimVertexXY = TMath::Abs(esdCascadeBach->GetD(esd->GetPrimaryVertex()->GetX(),
+						 		 	 esd->GetPrimaryVertex()->GetY(),
+								 	 esd->GetMagneticField())        );
+
+	esdCascade->GetBPxPyPz(momBachAtCascadeVtx[0], momBachAtCascadeVtx[1], momBachAtCascadeVtx[3]);
+
+	aodCascade = new(cascades[jCascades++]) AliAODcascade(  vCascade,
+								esdCascade->Charge(),
+								esdCascade->GetDcaXiDaughters(),
+								-999.,
+		// DCAXiToPrimVtx -> needs to be calculated   ----|
+		// doesn't exist at ESD level;
+		// See AODcascade::DcaXiToPrimVertex(Double, Double, Double)
+								dcaBachToPrimVertexXY,
+								momBachAtCascadeVtx,
+								*aodV0);
+	
+	if (fDebug > 3) {
+		printf("---- Cascade / AOD cascade : \n\n");
+		aodCascade->PrintXi(primary->GetX(), primary->GetY(), primary->GetZ());
+	}
+
     } // end of the loop on cascades
+
+    cascades.Expand(jCascades);
+
 
     //
     // V0s
@@ -489,13 +652,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	AliESDv0 *v0 = esd->GetV0(nV0);
 	Int_t posFromV0 = v0->GetPindex();
 	Int_t negFromV0 = v0->GetNindex();
-	if (posFromV0 < 0 || negFromV0 < 0) continue;
-
+	
 	// V0 selection 
 	//
-	AliESDVertex *esdVtx = new AliESDVertex(*(esd->GetPrimaryVertex()));
-	AliESDtrack *esdV0Pos = esd->GetTrack(posFromV0);
-	AliESDtrack *esdV0Neg = esd->GetTrack(negFromV0);
+	AliESDVertex *esdVtx   = new AliESDVertex(*(esd->GetPrimaryVertex()));
+	AliESDtrack  *esdV0Pos = esd->GetTrack(posFromV0);
+	AliESDtrack  *esdV0Neg = esd->GetTrack(negFromV0);
 	TList v0objects;
 	v0objects.AddAt(v0,                      0);
 	v0objects.AddAt(esdV0Pos,                1);
@@ -538,23 +700,13 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	primary->AddDaughter(vV0);
 	
 
-	Float_t  dcaPosToPrimVertexXYZ[2]   = { 999., 999.}; // ..[0] = in XY plane and ..[1] = in Z
-	Float_t  dcaNegToPrimVertexXYZ[2]   = { 999., 999.}; // ..[0] = in XY plane and ..[1] = in Z
-	Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = Pos and ..[1] = Neg
-	
-	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
-	Double_t  dcaV0ToPrimVertex   = v0->GetD(esd->GetPrimaryVertex()->GetX(),esd->GetPrimaryVertex()->GetY(),esd->GetPrimaryVertex()->GetZ());
-	v0->GetPPxPyPz(p_pos_atv0[0],p_pos_atv0[1],p_pos_atv0[2]); 
-	v0->GetNPxPyPz(p_neg_atv0[0],p_neg_atv0[1],p_neg_atv0[2]); 
-
 	// Add the positive tracks from the V0
 	
-
-	esdV0Pos->GetPxPyPz(p_pos);
+	esdV0Pos->GetPxPyPz(momPos);
 	esdV0Pos->GetXYZ(pos);
 	esdV0Pos->GetCovarianceXYZPxPyPz(covTr);
 	esdV0Pos->GetESDpid(pid);
-	esdV0Pos->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
+	
 	if (!usedTrack[posFromV0]) {
 	    usedTrack[posFromV0] = kTRUE;
 	    UInt_t selectInfo = 0;
@@ -562,7 +714,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if(mcH)mcH->SelectParticle(esdV0Pos->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Pos->GetID(),
 							  esdV0Pos->GetLabel(), 
-							  p_pos, 
+							  momPos, 
 							  kTRUE,
 							  pos,
 							  kFALSE,
@@ -575,7 +727,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  vtx->UsesTrack(esdV0Pos->GetID()),
 							  AliAODTrack::kSecondary,
 							  selectInfo);
-	    aodRefs->AddAt(aodTrack,posFromV0);
+	    aodTrackRefs->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Pos->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
@@ -583,18 +735,17 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
             SetAODPID(esdV0Pos,aodTrack,detpid,timezero);
 	}
 	else {
-	    aodTrack = dynamic_cast<AliAODTrack*>(aodRefs->At(posFromV0));
+	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(posFromV0));
 	    //	    if (fDebug > 0) printf("-------------------Bo pos track from refArray pt %.3f \n",aodTrack->Pt());
 	}
 	vV0->AddDaughter(aodTrack);
     
 	// Add the negative tracks from the V0
 	
-	esdV0Neg->GetPxPyPz(p_neg);
+	esdV0Neg->GetPxPyPz(momNeg);
 	esdV0Neg->GetXYZ(pos);
 	esdV0Neg->GetCovarianceXYZPxPyPz(covTr);
 	esdV0Neg->GetESDpid(pid);
-	esdV0Neg->GetImpactParameters(dcaNegToPrimVertexXYZ[0],dcaNegToPrimVertexXYZ[1]);
 	
 	if (!usedTrack[negFromV0]) {
 	    usedTrack[negFromV0] = kTRUE;
@@ -603,7 +754,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if(mcH)mcH->SelectParticle(esdV0Neg->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Neg->GetID(),
 							  esdV0Neg->GetLabel(),
-							  p_neg,
+							  momNeg,
 							  kTRUE,
 							  pos,
 							  kFALSE,
@@ -617,7 +768,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  AliAODTrack::kSecondary,
 							  selectInfo);
 	    
-	    aodRefs->AddAt(aodTrack,negFromV0);
+	    aodTrackRefs->AddAt(aodTrack,negFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Neg->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
@@ -625,25 +776,46 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
             SetAODPID(esdV0Neg,aodTrack,detpid,timezero);
 	}
 	else {
-	    aodTrack = dynamic_cast<AliAODTrack*>(aodRefs->At(negFromV0));
+	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(negFromV0));
 	    //	    if (fDebug > 0) printf("-------------------Bo neg track from refArray pt %.3f \n",aodTrack->Pt());
 	}
 	vV0->AddDaughter(aodTrack);
- 	dcaDaughterToPrimVertex[0] = 
-	    TMath::Sqrt(dcaPosToPrimVertexXYZ[0]*dcaPosToPrimVertexXYZ[0]
-			+dcaPosToPrimVertexXYZ[1]*dcaPosToPrimVertexXYZ[1]);
-	dcaDaughterToPrimVertex[1] = 
-	    TMath::Sqrt(dcaNegToPrimVertexXYZ[0]*dcaNegToPrimVertexXYZ[0]
-			+dcaNegToPrimVertexXYZ[1]*dcaNegToPrimVertexXYZ[1]);
-	// add it to the V0 array as well
-	aodV0 = new(V0s[jV0s++]) 
-	    AliAODv0(vV0, dcaV0Daughters, dcaV0ToPrimVertex, p_pos_atv0, p_neg_atv0, dcaDaughterToPrimVertex); // to be refined
+
+
+	// Add the V0 the V0 array as well
+	
+	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
+	Double_t  dcaV0ToPrimVertex   = v0->GetD(esd->GetPrimaryVertex()->GetX(),
+						 esd->GetPrimaryVertex()->GetY(),
+						 esd->GetPrimaryVertex()->GetZ());
+	v0->GetPPxPyPz(momPosAtV0vtx[0],momPosAtV0vtx[1],momPosAtV0vtx[2]); 
+	v0->GetNPxPyPz(momNegAtV0vtx[0],momNegAtV0vtx[1],momNegAtV0vtx[2]); 
+	
+	Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = DCA in (x,y) for Pos and ..[1] = Neg
+	dcaDaughterToPrimVertex[0] = TMath::Abs(esdV0Pos->GetD(  esd->GetPrimaryVertex()->GetX(),
+						 		 esd->GetPrimaryVertex()->GetY(),
+								 	esd->GetMagneticField()) );
+	dcaDaughterToPrimVertex[1] = TMath::Abs(esdV0Neg->GetD(  esd->GetPrimaryVertex()->GetX(),
+						 		 esd->GetPrimaryVertex()->GetY(),
+								 	esd->GetMagneticField()) );
+	
+	aodV0 = new(v0s[jV0s++]) AliAODv0(vV0, 
+					dcaV0Daughters,
+					dcaV0ToPrimVertex,
+					momPosAtV0vtx,
+					momNegAtV0vtx,
+					dcaDaughterToPrimVertex);
+
 	// set the aod v0 on-the-fly status
 	aodV0->SetOnFlyStatus(v0->GetOnFlyStatus());
-    } 
-    V0s.Expand(jV0s);	 
-    // end of the loop on V0s
-    
+    }//End of loop on V0s 
+
+    v0s.Expand(jV0s);	 
+
+    if (fDebug > 0)   printf("   NAODCascades=%d / NAODV0s=%d\n", jCascades, jV0s);
+    // end of V0 parts
+
+
     // Kinks: it is a big mess the access to the information in the kinks
     // The loop is on the tracks in order to find the mother and daugther of each kink
     
@@ -726,7 +898,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       vtx->UsesTrack(esdTrack->GetID()),
 							       AliAODTrack::kPrimary,
 							       selectInfo);
-			aodRefs->AddAt(mother, imother);
+			aodTrackRefs->AddAt(mother, imother);
 			
 			if (esdTrackM->GetSign() > 0) nPosTracks++;
 			mother->SetFlags(esdTrackM->GetStatus());
@@ -783,7 +955,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       AliAODTrack::kSecondary,
 							       selectInfo);
 			
-			aodRefs->AddAt(daughter, idaughter);
+			aodTrackRefs->AddAt(daughter, idaughter);
 			
 			if (esdTrackD->GetSign() > 0) nPosTracks++;
 			daughter->SetFlags(esdTrackD->GetStatus());
@@ -843,7 +1015,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								AliAODTrack::kPrimary, 
 								selectInfo)
 			     );
-	aodRefs->AddAt(aodTrack, nTrack);
+	aodTrackRefs->AddAt(aodTrack, nTrack);
 	
 	if (esdTrack->GetSign() > 0) nPosTracks++;
 	aodTrack->SetFlags(esdTrack->GetStatus());
@@ -858,7 +1030,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     if (fDebug > 0) 
       printf("   NAODTRACKS=%d  NPOS=%d  NNEG=%d\n", jTracks, nPosTracks, jTracks - nPosTracks);
     // Do not shrink the array of tracks - other filters may add to it (M.G)
-//    tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
+    //   tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
   
     // Access to the AOD container of PMD clusters
     TClonesArray &pmdClusters = *(AODEvent()->GetPmdClusters());
@@ -930,8 +1102,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       if (matchedT && cluster->GetTrackMatched() >= 0) {	
 	for (Int_t im = 0; im < matchedT->GetSize(); im++) {
 	    Int_t iESDtrack = matchedT->At(im);;
-	    if (aodRefs->At(iESDtrack) != 0) {
-		caloCluster->AddTrackMatched((AliAODTrack*)aodRefs->At(iESDtrack));
+	    if (aodTrackRefs->At(iESDtrack) != 0) {
+		caloCluster->AddTrackMatched((AliAODTrack*)aodTrackRefs->At(iESDtrack));
 	    }
 	}
       }
@@ -987,10 +1159,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       //Printf("ERROR: AliMultiplicity could not be retrieved from ESD");
     }
 
-    delete [] usedTrack;
-    delete [] usedV0;
     delete [] usedKink;
-    delete    aodRefs;
+    delete [] usedV0;
+    delete [] usedTrack;    
+    delete    aodV0Refs;
+    delete    aodV0VtxRefs;
+    delete    aodTrackRefs;
 
     return;
 }

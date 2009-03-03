@@ -32,11 +32,12 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 
     virtual void ConvertESDtoAOD();
     // Setters
-    virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
-    virtual void SetKinkFilter (AliAnalysisFilter*  KinkF) {fKinkFilter  =  KinkF;}
-    virtual void SetV0Filter   (AliAnalysisFilter*    V0F) {fV0Filter    =    V0F;}
-    virtual void SetPthreshold (Double_t p)                {fHighPthreshold =  p;}
-    virtual void SetPshape     (TF1 *func)                 {fPtshape        = func;}
+    virtual void SetTrackFilter   (AliAnalysisFilter*   trackF) {fTrackFilter    =   trackF;}
+    virtual void SetKinkFilter    (AliAnalysisFilter*    KinkF) {fKinkFilter     =    KinkF;}
+    virtual void SetV0Filter      (AliAnalysisFilter*      V0F) {fV0Filter       =      V0F;}
+    virtual void SetCascadeFilter (AliAnalysisFilter* CascadeF) {fCascadeFilter  = CascadeF;}
+    virtual void SetPthreshold    (Double_t p)                  {fHighPthreshold =        p;}
+    virtual void SetPshape        (TF1 *func)                   {fPtshape        =     func;}
 
     virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero);
     void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero);
@@ -47,13 +48,15 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
 
     // Filtering
-    AliAnalysisFilter* fTrackFilter; //  Track Filter
-    AliAnalysisFilter* fKinkFilter;  //  Kink  Filter
-    AliAnalysisFilter* fV0Filter;    //  V0    Filter
+    AliAnalysisFilter* fTrackFilter;      //  Track   Filter
+    AliAnalysisFilter* fKinkFilter;       //  Kink    Filter
+    AliAnalysisFilter* fV0Filter;         //  V0      Filter
+    AliAnalysisFilter* fCascadeFilter;    //  Cascade Filter
     // PID
     Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
     TF1 *        fPtshape;           //  Pt spectrum distribution
-    ClassDef(AliAnalysisTaskESDfilter, 2); // Analysis task for standard ESD filtering
+
+    ClassDef(AliAnalysisTaskESDfilter, 3); // Analysis task for standard ESD filtering
 };
  
 #endif

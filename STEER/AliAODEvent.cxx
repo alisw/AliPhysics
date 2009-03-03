@@ -38,6 +38,7 @@ ClassImp(AliAODEvent)
 						      "tracks",
 						      "vertices",
 						      "v0s",
+						      "cascades",
 						      "tracklets",
 						      "jets",
 						      "emcalCells",
@@ -45,6 +46,7 @@ ClassImp(AliAODEvent)
 						      "caloClusters",
 						      "fmdClusters",
 						      "pmdClusters"
+						      
 };
 //______________________________________________________________________________
 AliAODEvent::AliAODEvent() :
@@ -56,6 +58,7 @@ AliAODEvent::AliAODEvent() :
   fTracks(0),
   fVertices(0),
   fV0s(0),
+  fCascades(0),
   fTracklets(0),
   fJets(0),
   fEmcalCells(0),
@@ -77,6 +80,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fTracks(new TClonesArray(*aod.fTracks)),
   fVertices(new TClonesArray(*aod.fVertices)),
   fV0s(new TClonesArray(*aod.fV0s)),
+  fCascades(new TClonesArray(*aod.fCascades)),
   fTracklets(new AliAODTracklets(*aod.fTracklets)),
   fJets(new TClonesArray(*aod.fJets)),
   fEmcalCells(new AliAODCaloCells(*aod.fEmcalCells)),
@@ -90,6 +94,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fTracks);
   AddObject(fVertices);
   AddObject(fV0s);
+  AddObject(fCascades);
   AddObject(fTracklets);
   AddObject(fJets);
   AddObject(fEmcalCells);
@@ -116,6 +121,7 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
     fTracks          = new TClonesArray(*aod.fTracks);
     fVertices        = new TClonesArray(*aod.fVertices);
     fV0s             = new TClonesArray(*aod.fV0s);
+    fCascades        = new TClonesArray(*aod.fCascades);
     fTracklets       = new AliAODTracklets(*aod.fTracklets);
     fJets            = new TClonesArray(*aod.fJets);
     fEmcalCells      = new AliAODCaloCells(*aod.fEmcalCells);
@@ -130,6 +136,7 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
     AddObject(fTracks);
     AddObject(fVertices);
     AddObject(fV0s);
+    AddObject(fCascades);
     AddObject(fTracklets);
     AddObject(fJets);
     AddObject(fEmcalCells);
@@ -191,6 +198,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODTrack", 0));
   AddObject(new TClonesArray("AliAODVertex", 0));
   AddObject(new TClonesArray("AliAODv0", 0));
+  AddObject(new TClonesArray("AliAODcascade", 0));
   AddObject(new AliAODTracklets());
   AddObject(new TClonesArray("AliAODJet", 0));
   AddObject(new AliAODCaloCells());
@@ -271,6 +279,7 @@ void AliAODEvent::GetStdContent()
   fTracks        = (TClonesArray*)fAODObjects->FindObject("tracks");
   fVertices      = (TClonesArray*)fAODObjects->FindObject("vertices");
   fV0s           = (TClonesArray*)fAODObjects->FindObject("v0s");
+  fCascades      = (TClonesArray*)fAODObjects->FindObject("cascades");
   fTracklets     = (AliAODTracklets*)fAODObjects->FindObject("tracklets");
   fJets          = (TClonesArray*)fAODObjects->FindObject("jets");
   fEmcalCells    = (AliAODCaloCells*)fAODObjects->FindObject("emcalCells");
@@ -283,13 +292,16 @@ void AliAODEvent::GetStdContent()
 //______________________________________________________________________________
 void AliAODEvent::ResetStd(Int_t trkArrSize, 
 			   Int_t vtxArrSize, 
-			   Int_t v0ArrSize, 
+			   Int_t v0ArrSize,
+			   Int_t cascadeArrSize,
 			   Int_t jetSize, 
 			   Int_t caloClusSize, 
 			   Int_t fmdClusSize, 
-			   Int_t pmdClusSize)
+			   Int_t pmdClusSize
+			   )
 {
   // deletes content of standard arrays and resets size 
+  
   fTracks->Delete();
   if (trkArrSize > fTracks->GetSize()) 
     fTracks->Expand(trkArrSize);
@@ -297,13 +309,17 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
   fVertices->Delete();
   if (vtxArrSize > fVertices->GetSize()) 
     fVertices->Expand(vtxArrSize);
- 
+  	 
   fV0s->Delete();
   if (v0ArrSize > fV0s->GetSize()) 
     fV0s->Expand(v0ArrSize);
-
+  
+  fCascades->Delete();
+  if (cascadeArrSize > fCascades->GetSize()) 
+    fCascades->Expand(cascadeArrSize);
+  
   fJets->Delete();
-  if (jetSize > fJets->GetSize()) 
+  if (jetSize > fJets->GetSize())
     fJets->Expand(jetSize);
 
   fCaloClusters->Delete();
@@ -332,6 +348,7 @@ void AliAODEvent::ClearStd()
   fTracks        ->Delete();
   fVertices      ->Delete();
   fV0s           ->Delete();
+  fCascades      ->Delete();
   fTracklets     ->DeleteContainer();
   fJets          ->Delete();
   fEmcalCells    ->DeleteContainer();

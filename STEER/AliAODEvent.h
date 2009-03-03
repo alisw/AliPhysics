@@ -22,6 +22,7 @@
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODv0.h"
+#include "AliAODcascade.h"
 #include "AliAODTracklets.h"
 #include "AliAODJet.h"
 #include "AliAODCaloCells.h"
@@ -39,6 +40,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODTracks,
 		       kAODVertices,
 		       kAODv0,
+		       kAODcascade,
 		       kAODTracklets,
 		       kAODJets,
 		       kAODEmcalCells,
@@ -52,8 +54,8 @@ class AliAODEvent : public AliVEvent {
   AliAODEvent();
   virtual ~AliAODEvent();
 
-  AliAODEvent(const AliAODEvent& aodevent);             
-  AliAODEvent& operator=(const AliAODEvent& aodevent);  
+  AliAODEvent(const AliAODEvent& aodevent);
+  AliAODEvent& operator=(const AliAODEvent& aodevent);
 
   void          AddObject(TObject *obj);
   void          RemoveObject(TObject *obj);
@@ -125,6 +127,13 @@ class AliAODEvent : public AliVEvent {
   Int_t         AddV0(const AliAODv0* v0)
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
 
+  // Cascades
+  TClonesArray  *GetCascades()            const { return fCascades; }
+  Int_t          GetNumberOfCascades()    const { return fCascades->GetEntriesFast(); }
+  AliAODcascade *GetCascade(Int_t nCasc)  const { return (AliAODcascade*)fCascades->UncheckedAt(nCasc); }
+  Int_t          AddCascade(const AliAODcascade* cascade)
+  {new((*fCascades)[fCascades->GetEntriesFast()]) AliAODcascade(*cascade); return fCascades->GetEntriesFast()-1;}
+
   // -- EMCAL and PHOS Cluster
   TClonesArray *GetCaloClusters()        const { return fCaloClusters; }
   Int_t         GetNCaloClusters()       const { return fCaloClusters->GetEntriesFast(); }
@@ -172,10 +181,12 @@ class AliAODEvent : public AliVEvent {
   void    ResetStd(Int_t trkArrSize = 0, 
 		   Int_t vtxArrSize = 0, 
 		   Int_t v0ArrSize = 0, 
+		   Int_t cascadeArrSize = 0,
 		   Int_t jetSize = 0, 
 		   Int_t caloClusSize = 0, 
 		   Int_t fmdClusSize = 0, 
-		   Int_t pmdClusSize = 0);
+		   Int_t pmdClusSize = 0
+		   );
   void    ClearStd();
   void    ReadFromTree(TTree *tree, Option_t* opt = "");
   void    WriteToTree(TTree* tree) const {tree->Branch(fAODObjects);}
@@ -193,6 +204,7 @@ class AliAODEvent : public AliVEvent {
   TClonesArray    *fTracks;       //! charged tracks
   TClonesArray    *fVertices;     //! vertices
   TClonesArray    *fV0s;          //! V0s
+  TClonesArray    *fCascades;     //! Cascades
   AliAODTracklets *fTracklets;    //! SPD tracklets
   TClonesArray    *fJets;         //! jets
   AliAODCaloCells *fEmcalCells;   //! EMCAL calorimenter cells
@@ -203,7 +215,7 @@ class AliAODEvent : public AliVEvent {
 
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent, 4);
+  ClassDef(AliAODEvent, 5);
 };
 
 #endif
