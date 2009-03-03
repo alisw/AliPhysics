@@ -712,11 +712,12 @@ int AliHLTSystem::DeinitTasks()
   // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
-  while (lnk && iResult>=0) {
+  while (lnk) {
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->Deinit();
+      int localRes=pTask->Deinit();
+      if (iResult>=0) iResult=localRes;
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s cleaned (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
