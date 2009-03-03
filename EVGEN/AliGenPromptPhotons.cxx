@@ -74,13 +74,13 @@
 
 ClassImp(AliGenPromptPhotons)
 
-TF1*    AliGenPromptPhotons::fDataPt        = NULL;
-TF1*    AliGenPromptPhotons::fWSzA          = NULL;
-TF1*    AliGenPromptPhotons::fWSzB          = NULL;
-TF1*    AliGenPromptPhotons::fTA            = NULL;
-TF1*    AliGenPromptPhotons::fTB            = NULL;
-TF1*    AliGenPromptPhotons::fTAxTB         = NULL;
-TF1*    AliGenPromptPhotons::fTAB           = NULL;
+TF1*    AliGenPromptPhotons::fgDataPt        = NULL;
+TF1*    AliGenPromptPhotons::fgWSzA          = NULL;
+TF1*    AliGenPromptPhotons::fgWSzB          = NULL;
+TF1*    AliGenPromptPhotons::fgTA            = NULL;
+TF1*    AliGenPromptPhotons::fgTB            = NULL;
+TF1*    AliGenPromptPhotons::fgTAxTB         = NULL;
+TF1*    AliGenPromptPhotons::fgTAB           = NULL;
 
 //_____________________________________________________________________________
 AliGenPromptPhotons::AliGenPromptPhotons()
@@ -126,62 +126,62 @@ AliGenPromptPhotons::~AliGenPromptPhotons()
   //
   // Standard destructor
   //
-    delete fDataPt;
-    delete fWSzA;
-    delete fWSzB;
-    delete fTA;
-    delete fTB;
-    delete fTAxTB;
-    delete fTAB;
+    delete fgDataPt;
+    delete fgWSzA;
+    delete fgWSzB;
+    delete fgTA;
+    delete fgTB;
+    delete fgTAxTB;
+    delete fgTAB;
 }
 
 //_____________________________________________________________________________
 void AliGenPromptPhotons::Init()
 {
 
-  fDataPt = new TF1("fDataPt",fitData,fPtMin,fPtMax,1);
-  fDataPt->SetParameter(0,fEnergyCMS);
+  fgDataPt = new TF1("fgDataPt",FitData,fPtMin,fPtMax,1);
+  fgDataPt->SetParameter(0,fEnergyCMS);
 
   const Double_t d=0.54;  // surface thickness (fm)
-  const Double_t RA=1.19*TMath::Power(fAProjectile,1./3.)-1.61/TMath::Power(fAProjectile,1./3.);
-  const Double_t eps=0.01; // cut WS at RAMAX: WS(RAMAX)/WS(0)=eps
-  const Double_t RAMAX=RA+d*TMath::Log((1.-eps+TMath::Exp(-RA/d))/eps);
+  const Double_t ra = 1.19*TMath::Power(fAProjectile,1./3.)-1.61/TMath::Power(fAProjectile,1./3.);
+  const Double_t eps=0.01; // cut WS at ramax: WS(ramax)/WS(0)=eps
+  const Double_t ramax=ra+d*TMath::Log((1.-eps+TMath::Exp(-ra/d))/eps);
 
-  TF1 fWSforNormA("fWSforNormA",&WSforNorm,0,RAMAX,2);
-  fWSforNormA.SetParameters(RA,d);
+  TF1 fWSforNormA("fWSforNormA",&WSforNorm,0,ramax,2);
+  fWSforNormA.SetParameters(ra,d);
   fWSforNormA.SetParNames("RA","d");
-  const Double_t CA=1./fWSforNormA.Integral(0.,RAMAX);
+  const Double_t ca=1./fWSforNormA.Integral(0.,ramax);
 
-  const Double_t RB=1.19*TMath::Power(fATarget,1./3.)-1.61/TMath::Power(fATarget,1./3.);
-  const Double_t RBMAX=RB+d*TMath::Log((1.-eps+TMath::Exp(-RB/d))/eps);
+  const Double_t rb=1.19*TMath::Power(fATarget,1./3.)-1.61/TMath::Power(fATarget,1./3.);
+  const Double_t rbmax=rb+d*TMath::Log((1.-eps+TMath::Exp(-rb/d))/eps);
 
-  TF1 fWSforNormB("fWSforNormB",&WSforNorm,0,RBMAX,2);
-  fWSforNormB.SetParameters(RB,d);
+  TF1 fWSforNormB("fWSforNormB",&WSforNorm,0,rbmax,2);
+  fWSforNormB.SetParameters(rb,d);
   fWSforNormB.SetParNames("RB","d");
-  const Double_t CB=1./fWSforNormB.Integral(0.,RBMAX);
+  const Double_t cb=1./fWSforNormB.Integral(0.,rbmax);
 
-  fWSzA = new TF1("fWSzA",WSz,0.,RAMAX,4);
-  fWSzA->SetParameter(0,RA);
-  fWSzA->SetParameter(1,d);
-  fWSzA->SetParameter(2,CA);
+  fgWSzA = new TF1("fgWSzA",WSz,0.,ramax,4);
+  fgWSzA->SetParameter(0,ra);
+  fgWSzA->SetParameter(1,d);
+  fgWSzA->SetParameter(2,ca);
 
-  fTA = new TF1("fTA",TA,0.,RAMAX,1);
-  fTA->SetParameter(0,RAMAX);
+  fgTA = new TF1("fgTA",TA,0.,ramax,1);
+  fgTA->SetParameter(0,ramax);
 
-  fWSzB = new TF1("fWSzB",WSz,0.,RBMAX,4);
-  fWSzB->SetParameter(0,RB);
-  fWSzB->SetParameter(1,d);
-  fWSzB->SetParameter(2,CB);
+  fgWSzB = new TF1("fgWSzB",WSz,0.,rbmax,4);
+  fgWSzB->SetParameter(0,rb);
+  fgWSzB->SetParameter(1,d);
+  fgWSzB->SetParameter(2,cb);
 
-  fTB = new TF1("fTB",TB,0.,TMath::Pi(),3);
-  fTB->SetParameter(0,RBMAX);
+  fgTB = new TF1("fgTB",TB,0.,TMath::Pi(),3);
+  fgTB->SetParameter(0,rbmax);
 
-  fTAxTB = new TF1("fTAxTB",TAxTB,0,RAMAX,2);
-  fTAxTB->SetParameter(0,RBMAX);
+  fgTAxTB = new TF1("fgTAxTB",TAxTB,0,ramax,2);
+  fgTAxTB->SetParameter(0,rbmax);
 
-  fTAB = new TF1("fTAB",TAB,0.,RAMAX+RBMAX,2);
-  fTAB->SetParameter(0,RAMAX);
-  fTAB->SetParameter(1,RBMAX);
+  fgTAB = new TF1("fgTAB",TAB,0.,ramax+rbmax,2);
+  fgTAB->SetParameter(0,ramax);
+  fgTAB->SetParameter(1,rbmax);
 
 }
 
@@ -216,14 +216,14 @@ void AliGenPromptPhotons::Generate()
 
     b=TMath::Sqrt(fMinImpactParam*fMinImpactParam+(fMaxImpactParam*fMaxImpactParam-fMinImpactParam*fMinImpactParam)*gRandom->Rndm());
 
-    Double_t dsdyPP=fDataPt->Integral(fPtMin,fPtMax); // pb, fm^2 = 1e10 pb
-    ww=dsdyPP*1.0e-10*(fYMax-fYMin)*fAProjectile*fATarget*fTAB->Eval(b);
+    Double_t dsdyPP=fgDataPt->Integral(fPtMin,fPtMax); // pb, fm^2 = 1e10 pb
+    ww=dsdyPP*1.0e-10*(fYMax-fYMin)*fAProjectile*fATarget*fgTAB->Eval(b);
     nGam=Int_t(ww);
     if(gRandom->Rndm() < (ww-(Float_t)nGam)) nGam++;
 
       if(nGam) {
         for(Int_t i=0; i<nGam; i++) {
-          pt=fDataPt->GetRandom();
+          pt=fgDataPt->GetRandom();
           Rndm(random,2);
           rapidity=(fYMax-fYMin)*random[0]+fYMin;
           phi=2.*TMath::Pi()*random[1];
@@ -261,7 +261,7 @@ void AliGenPromptPhotons::SetYRange(Float_t ymin, Float_t ymax) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::fitData(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::FitData(Double_t* x, Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - p_t (GeV).
@@ -310,9 +310,9 @@ Double_t AliGenPromptPhotons::WSforNorm(Double_t* x, Double_t* par) {
 // Thus me need 4 pi r**2 /(1+exp((r-RA)/d)) (1/fm)
 //---------------------------------------------------
   const Double_t r=x[0];
-  const Double_t R=par[0],d=par[1];
+  const Double_t bigR=par[0],d=par[1];
 
-  return 4.*TMath::Pi()*r*r/(1.+TMath::Exp((r-R)/d));
+  return 4.*TMath::Pi()*r*r/(1.+TMath::Exp((r-bigR)/d));
 }
 
 //**********************************************************************************
@@ -330,9 +330,9 @@ Double_t AliGenPromptPhotons::WSz(Double_t* x, Double_t* par) {
 //  as a function of z for fixed b (1/fm^3)
 //---------------------------------------------------
   const Double_t z=x[0];
-  const Double_t R=par[0],d=par[1],C=par[2],b=par[3];
+  const Double_t bigR=par[0],d=par[1],C=par[2],b=par[3];
 
-  return C/(1.+TMath::Exp((TMath::Sqrt(b*b+z*z)-R)/d));
+  return C/(1.+TMath::Exp((TMath::Sqrt(b*b+z*z)-bigR)/d));
 }
 
 //**********************************************************************************
@@ -346,11 +346,11 @@ Double_t AliGenPromptPhotons::TA(Double_t* x, Double_t* par) {
 // nuclear thickness function T_A(b) (1/fm^2)
 //---------------------------------------------------
   const Double_t b=x[0];
-  const Double_t RAMAX=par[0];
+  const Double_t ramax=par[0];
 
-  fWSzA->SetParameter(3,b);
+  fgWSzA->SetParameter(3,b);
 
-  return 2.*fWSzA->Integral(0.,TMath::Sqrt(RAMAX*RAMAX-b*b));
+  return 2.*fgWSzA->Integral(0.,TMath::Sqrt(ramax*ramax-b*b));
 }
 
 //**********************************************************************************
@@ -366,13 +366,13 @@ Double_t AliGenPromptPhotons::TB(Double_t* x, Double_t* par) {
 //  nuclear thickness function T_B(phi)=T_B(sqtr(s**2+b**2-2*s*b*cos(phi)))
 //---------------------------------------------------
   const Double_t phi=x[0];
-  const Double_t RBMAX=par[0],b=par[1],s=par[2];
+  const Double_t rbmax=par[0],b=par[1],s=par[2];
 
   const Double_t w=TMath::Sqrt(s*s+b*b-2.*s*b*TMath::Cos(phi));
 
-  fWSzB->SetParameter(3,w);
+  fgWSzB->SetParameter(3,w);
 
-  return 2.*fWSzB->Integral(0.,TMath::Sqrt(RBMAX*RBMAX-w*w));;
+  return 2.*fgWSzB->Integral(0.,TMath::Sqrt(rbmax*rbmax-w*w));;
 }
 
 //**********************************************************************************
@@ -387,21 +387,21 @@ Double_t AliGenPromptPhotons::TAxTB(Double_t* x, Double_t* par) {
 //  s * TA(s) * 2 * Integral(0,phiMax) TB(phi(s,b))
 //---------------------------------------------------
   const Double_t s  = x[0];
-  const Double_t RBMAX=par[0],b=par[1];
+  const Double_t rbmax=par[0],b=par[1];
 
   if(s==0.) return 0.;
 
-  fTB->SetParameter(1,b);
-  fTB->SetParameter(2,s);
+  fgTB->SetParameter(1,b);
+  fgTB->SetParameter(2,s);
 
   Double_t phiMax;
-  if(b<RBMAX && s<(RBMAX-b)) {
+  if(b<rbmax && s<(rbmax-b)) {
     phiMax=TMath::Pi();
   } else {
-    phiMax=TMath::ACos((s*s+b*b-RBMAX*RBMAX)/(2.*s*b));
+    phiMax=TMath::ACos((s*s+b*b-rbmax*rbmax)/(2.*s*b));
   }
 
-  return s*fTA->Eval(s)*2.*fTB->Integral(0.,phiMax);
+  return s*fgTA->Eval(s)*2.*fgTB->Integral(0.,phiMax);
 }
 
 // ---------------------------------------------------------------------------------
@@ -416,13 +416,13 @@ Double_t AliGenPromptPhotons::TAB(Double_t* x, Double_t* par) {
 // overlap function TAB(b) (1/fm**2)
 //---------------------------------------------------
   const Double_t b=x[0];
-  const Double_t RAMAX=par[0],RBMAX=par[1];
+  const Double_t ramax=par[0],rbmax=par[1];
 
-  Double_t sMin=0.,sMax=RAMAX;
-  if(b>RBMAX) sMin=b-RBMAX;
-  if(b<(RAMAX-RBMAX)) sMax=b+RBMAX;
+  Double_t sMin=0.,sMax=ramax;
+  if(b>rbmax) sMin=b-rbmax;
+  if(b<(ramax-rbmax)) sMax=b+rbmax;
 
-  fTAxTB->SetParameter(1,b);
+  fgTAxTB->SetParameter(1,b);
 
-  return fTAxTB->Integral(sMin,sMax);
+  return fgTAxTB->Integral(sMin,sMax);
 }

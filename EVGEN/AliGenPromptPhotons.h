@@ -58,7 +58,7 @@ class AliGenPromptPhotons : public AliGenerator
     virtual void SetAProjectile(Float_t a = 208) {fAProjectile = a;}
     virtual void SetATarget(Float_t a = 208)     {fATarget     = a;}
     virtual void SetEnergyCMS(Float_t energy = 5500.) {fEnergyCMS = energy;}
-    virtual void    SetImpactParameterRange(Float_t bmin = 0., Float_t bmax = 0.)
+    virtual void SetImpactParameterRange(Float_t bmin = 0., Float_t bmax = 0.)
 	{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
 
  protected:
@@ -68,7 +68,7 @@ class AliGenPromptPhotons : public AliGenerator
   Float_t fMinImpactParam;  // minimum impact parameter
   Float_t fMaxImpactParam;  // maximum impact parameter	
   
-  static Double_t fitData      (Double_t *xx, Double_t *par);
+  static Double_t FitData      (Double_t *xx, Double_t *par);
   static Double_t WSforNorm    (Double_t *xx, Double_t *par);
   static Double_t WSz          (Double_t *xx, Double_t *par);
   static Double_t TA           (Double_t *xx, Double_t *par);
@@ -76,13 +76,13 @@ class AliGenPromptPhotons : public AliGenerator
   static Double_t TAxTB        (Double_t *xx, Double_t *par);
   static Double_t TAB          (Double_t *xx, Double_t *par);
 
-  static TF1 *fDataPt;             // d^{2}#sigma^{pp}/(dp_t dy) from data fit 
-  static TF1 *fWSzA;               // Wood Saxon parameterisation for nucleus A 
-  static TF1 *fWSzB;               // Wood Saxon parameterisation for nucleus B 
-  static TF1 *fTA;                 // nuclear thickness function T_A(b) (1/fm**2) 
-  static TF1 *fTB;                 // nuclear thickness function T_B(phi)=T_B(sqtr(s**2+b**2-2*s*b*cos(phi))) 
-  static TF1 *fTAxTB;              // s * TA(s) * 2 * Integral(0,phiMax) TB(phi(s,b)) 
-  static TF1 *fTAB;                // overlap function T_AB(b) (1/fm**2) 
+  static TF1 *fgDataPt;             // d^{2}#sigma^{pp}/(dp_t dy) from data fit 
+  static TF1 *fgWSzA;               // Wood Saxon parameterisation for nucleus A 
+  static TF1 *fgWSzB;               // Wood Saxon parameterisation for nucleus B 
+  static TF1 *fgTA;                 // nuclear thickness function T_A(b) (1/fm**2) 
+  static TF1 *fgTB;                 // nuclear thickness function T_B(phi)=T_B(sqtr(s**2+b**2-2*s*b*cos(phi))) 
+  static TF1 *fgTAxTB;              // s * TA(s) * 2 * Integral(0,phiMax) TB(phi(s,b)) 
+  static TF1 *fgTAB;                // overlap function T_AB(b) (1/fm**2) 
   
  private:
 
