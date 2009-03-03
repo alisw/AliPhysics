@@ -40,8 +40,7 @@ file.
 \see http://agenda.cern.ch/fullAgenda.php?ida=a05212
 
 <pre>
-AliMpCDB::LoadMpSegmentation2(); 
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+TGeoManager::Import("geometry.root");
 gGeoManager->GetMasterVolume()->Draw();
 </pre>
 
@@ -55,8 +54,7 @@ scene, MUONGeometryViewingHelper.C is also available.
 \see  http://agenda.cern.ch/fullAgenda.php?ida=a05212
 
 <pre>
-AliMpCDB::LoadMpSegmentation2(); 
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+TGeoManager::Import("geometry.root");
 gGeoManager->CheckOverlaps(0.001);
 gGeoManager->PrintOverlaps();
 </pre>

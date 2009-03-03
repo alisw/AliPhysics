@@ -47,7 +47,7 @@ distribution (mean value and fluctuations) in the active gas.
 
 \section sim_s3  Tracking of particle in the magnetic field
 
-GEANT has two ways for tracking charged particles in the 
+GEANT has two integration methods for tracking charged particles in the 
 magnetic field: HELIX et RKUTA.
 HELIX is faster and works well if the gradient of magnetic 
 field is small. 
@@ -56,12 +56,14 @@ use RKUTA to get the optimal mass resolution of the
 spectrometer. The choice of HELIX or RKUTA is done in the
 config file when the magnetic field is defined:
 <pre>
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", TRACKING, FACTOR, MAXB, AliMagFMaps::k5kG);
-  gAlice->SetField(field);
+  TGeoGlobalMagField::Instance()
+    ->SetField(new AliMagF("Maps","Maps", INTEG, FACTOR_SOL, FACTOR_DIP, MAXB, AliMagF::k5kG));  
 </pre>  
-TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
-FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
-MAXB is the maximum magnetic field which is 10.T
+INTEG must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX)).
+FACTOR_SOL, FACTOR_DIP allow you to set the multiplicative factor for solenoid
+and dipole, respectively; just putting FACTOR_SOL=0 or FACTOR_DIP=0 will set the
+magnetic field for solenoid or dipole to 0. Default values are 1.0, 1.0. 
+MAXB is the maximum magnetic field which default value is 10.T
 
 \section sim_s4 Tailing effect
 
