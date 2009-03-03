@@ -21,14 +21,17 @@
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
-#include <TF1.h>
-#include <TH2.h>
 #include "AliAnalysisCuts.h"
 
 class AliESDEvent;
 class AliESDtrack;
 class AliLog;
 class TTree;
+class TH1;
+class TH1F;
+class TH2F;
+class TF1;
+class TCollection;
 
 class AliESDtrackCuts : public AliAnalysisCuts
 {
@@ -63,6 +66,7 @@ public:
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
+  void SetRequireITSStandAlone(Bool_t b)         {fCutRequireITSStandAlone = b;}
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)   {fCutAcceptKinkDaughters=b;}
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
@@ -91,6 +95,7 @@ public:
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
   Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
+  Bool_t  GetRequireITSStandAlone()  const   { return fCutRequireITSStandAlone; }
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
@@ -133,13 +138,13 @@ public:
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)
 
-	TH1* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
+	TH1F* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
 
 protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   
-  enum { kNCuts = 30 };
+  enum { kNCuts = 31 };
 
   //######################################################
   // esd track quality cuts
@@ -162,6 +167,7 @@ protected:
   Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
   Bool_t  fCutRequireITSRefit;        // require ITS refit
+  Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks
 
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
@@ -215,7 +221,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 5)
+  ClassDef(AliESDtrackCuts, 6)
 };
 
 

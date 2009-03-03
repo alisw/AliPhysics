@@ -25,6 +25,8 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TDirectory.h>
+#include <TH2F.h>
+#include <TF1.h>
 
 //____________________________________________________________________
 ClassImp(AliESDtrackCuts)
@@ -60,7 +62,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "trk-to-vtx min dca z absolute",
  "SPD cluster requirement",
  "SDD cluster requirement",
- "SSD cluster requirement"
+ "SSD cluster requirement",
+ "require ITS stand-alone"
 };
 
 //____________________________________________________________________
@@ -77,6 +80,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
   fCutRequireITSRefit(0),
+  fCutRequireITSStandAlone(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
@@ -118,6 +122,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMaxCovDiagonalElements();  				    
   SetRequireTPCRefit();
   SetRequireITSRefit();
+  SetRequireITSStandAlone(kFALSE);
   SetAcceptKinkDaughters();
   SetMaxNsigmaToVertex();
   SetMaxDCAToVertexXY();
@@ -153,6 +158,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
   fCutRequireITSRefit(0),
+  fCutRequireITSStandAlone(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
@@ -269,6 +275,7 @@ void AliESDtrackCuts::Init()
   fCutAcceptKinkDaughters = 0;
   fCutRequireTPCRefit = 0;
   fCutRequireITSRefit = 0;
+  fCutRequireITSStandAlone = 0;
 
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
@@ -369,6 +376,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
   target.fCutRequireTPCRefit = fCutRequireTPCRefit;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
+  target.fCutRequireITSStandAlone = fCutRequireITSStandAlone;
 
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
@@ -555,8 +563,8 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 }
 
 //____________________________________________________________________
-Bool_t
-AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
+Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) 
+{
   // 
   // figure out if the tracks survives all the track cuts defined
   //
@@ -704,7 +712,10 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   
   for (Int_t i = 0; i < 3; i++)
     cuts[27+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
-
+  
+  if (fCutRequireITSStandAlone && (status & AliESDtrack::kITSin == 0 || status & AliESDtrack::kTPCin))
+    cuts[30]=kTRUE;
+  
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
