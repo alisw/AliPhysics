@@ -33,6 +33,9 @@
 
 */
 
+#include <TAxis.h>
+#include <TH1D.h>
+
 // 
 #include "AliESDtrack.h"
 #include "AliRecInfoCuts.h" 

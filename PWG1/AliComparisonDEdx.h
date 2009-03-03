@@ -8,14 +8,17 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
+class TCanvas;
+class TH1F;
+class TH2F;
+class TNamed;
+class TString;
+
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent; 
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class TString;
-class TNamed;
-class TCanvas;
 
 #include "THnSparse.h"
 #include "AliComparisonObject.h"
