@@ -26,7 +26,7 @@ class AliTRDtrackInfo;
 class AliTRDresolution : public AliTRDrecoTask
 {
 public:
-  enum ETRDresolutionPlots{
+  enum ETRDresolutionPlot {
     kCluster          =  0 // cluster - track
     ,kTrackletY       =  1 // tracklet - track y pulls
     ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
@@ -60,11 +60,12 @@ public:
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
+  Bool_t  Process(ETRDresolutionPlot ip, TF1 *f=0x0);
 
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackletPhi(const AliTRDtrackV1 *t=0x0);
-  TH1*    PlotResolution(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotMC(const AliTRDtrackV1 *t=0x0);
 
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
@@ -77,7 +78,6 @@ private:
   AliTRDresolution& operator=(const AliTRDresolution&);
   void        AdjustF1(TH1 *h, TF1 *f);
 
-private:
   UChar_t             fStatus;          // steer parameter of the task
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
