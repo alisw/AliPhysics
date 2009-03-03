@@ -296,7 +296,7 @@ void AliEveTRDChamber::LoadClusters(AliTRDtrackingChamber *tc)
 
   Float_t g[3]; //global coordinates
   const AliTRDchamberTimeBin *tb = 0x0;
-  for(int itb=0; itb<AliTRDtrackingChamber::kNTimeBins; itb++){
+  for(int itb=0; itb<AliTRDseedV1::kNtb; itb++){
     tb = tc->GetTB(itb);
     if(!(Int_t(*tb))) continue;
     const AliTRDcluster *c= 0x0; Int_t ic = 0;
