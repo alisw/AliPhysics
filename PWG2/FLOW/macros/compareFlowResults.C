@@ -20,6 +20,7 @@ void compareFlowResults(TString type="ESD")
   //==================================================================================
   // set here which methods will be plotted by default for differential flow (Pt,RP):
   Bool_t plotMCPtRP    = kFALSE;
+  Bool_t plotSPPtRP    = kTRUE;
   Bool_t plotGFC2PtRP  = kTRUE;
   Bool_t plotGFC4PtRP  = kTRUE;
   Bool_t plotGFC6PtRP  = kTRUE;
@@ -32,6 +33,7 @@ void compareFlowResults(TString type="ESD")
   
   // set here which methods will be plotted by default for differential flow (Eta,RP):
   Bool_t plotMCEtaRP    = kFALSE;
+  Bool_t plotSPEtaRP    = kTRUE;
   Bool_t plotGFC2EtaRP  = kTRUE;
   Bool_t plotGFC4EtaRP  = kTRUE;
   Bool_t plotGFC6EtaRP  = kTRUE;
@@ -45,6 +47,7 @@ void compareFlowResults(TString type="ESD")
   
   // set here which methods will be plotted by default for differential flow (Pt,POI):
   Bool_t plotMCPtPOI    = kFALSE;
+  Bool_t plotSPPtPOI    = kTRUE;
   Bool_t plotGFC2PtPOI  = kTRUE;
   Bool_t plotGFC4PtPOI  = kTRUE;
   Bool_t plotGFC6PtPOI  = kTRUE;
@@ -58,6 +61,7 @@ void compareFlowResults(TString type="ESD")
   
   // set here which methods will be plotted by default for differential flow (Eta,POI):
   Bool_t plotMCEtaPOI    = kFALSE;
+  Bool_t plotSPEtaPOI    = kTRUE;
   Bool_t plotGFC2EtaPOI  = kTRUE;
   Bool_t plotGFC4EtaPOI  = kTRUE;
   Bool_t plotGFC6EtaPOI  = kTRUE;
@@ -72,39 +76,42 @@ void compareFlowResults(TString type="ESD")
  
   
   //==================================================================================  
-  // cosmetics: marker style and color for each method:
+  // cosmetics: marker style (see TMarker) and color (see TAttFill) for each method:
   // MC:
-  Int_t markerStyleMC = 20;//full circle
+  Int_t markerStyleMC = 20; // full circle
   Int_t markerColorMC = kRed;
+  // SP:
+  Int_t markerStyleSP = 3; // star
+  Int_t markerColorSP = kViolet-6;
   // GFC{2}
-  Int_t markerStyleGFC2 = 21;//full square
+  Int_t markerStyleGFC2 = 21; // full square
   Int_t markerColorGFC2 = kAzure-7;
   // GFC{4}
-  Int_t markerStyleGFC4 = 20;//full circle
+  Int_t markerStyleGFC4 = 20; // full circle
   Int_t markerColorGFC4 = kAzure+3;
   // GFC{6}
-  Int_t markerStyleGFC6 = 25;//open circle
+  Int_t markerStyleGFC6 = 25; // open circle
   Int_t markerColorGFC6 = kAzure-7;
   // GFC{8}
-  Int_t markerStyleGFC8 = 24;//open square
+  Int_t markerStyleGFC8 = 24; // open square
   Int_t markerColorGFC8 = kAzure+3;
   // QC{2}
-  Int_t markerStyleQC2 = 21;//full square
+  Int_t markerStyleQC2 = 21; // full square
   Int_t markerColorQC2 = kOrange-7;
   // QC{4}
-  Int_t markerStyleQC4 = 20;//full circle
+  Int_t markerStyleQC4 = 20; // full circle
   Int_t markerColorQC4 = kOrange+3;
   // QC{6}
-  Int_t markerStyleQC6 = 25;//open circle
+  Int_t markerStyleQC6 = 25; // open circle
   Int_t markerColorQC6 = kOrange-7;
   // QC{8}
-  Int_t markerStyleQC8 = 24;//open square
+  Int_t markerStyleQC8 = 24; // open square
   Int_t markerColorQC8 = kOrange+3;
   // LYZ2
-  Int_t markerStyleLYZ2 = 22;//full triangle
+  Int_t markerStyleLYZ2 = 22; // full triangle
   Int_t markerColorLYZ2 = kYellow+3;
   // LYZEP
-  Int_t markerStyleLYZEP = 26;//open triangle
+  Int_t markerStyleLYZEP = 26; // open triangle
   Int_t markerColorLYZEP = kYellow+3; 
   //==================================================================================
 
@@ -136,6 +143,10 @@ void compareFlowResults(TString type="ESD")
   TString inputFileNameMCEP = "outputMCEPanalysis";
   TFile* fileMCEP = NULL;
   fileMCEP = TFile::Open(((inputFileNameMCEP.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameSP = "outputSPanalysis";
+  TFile* fileSP = NULL;
+  fileSP = TFile::Open(((inputFileNameSP.Append(type)).Append(".root")).Data(), "READ"); 
   
   TString inputFileNameLYZ1 = "outputLYZ1analysis";
   TFile* fileLYZ1 = NULL;
@@ -188,7 +199,7 @@ void compareFlowResults(TString type="ESD")
   //                              INTEGRATED FLOW
   //==================================================================================
   //the number of different methods:
-  const Int_t nMethods=12;
+  const Int_t nMethods=13;
   
   //booking the histogram for the integrated flow results from all methods:
   TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
@@ -197,20 +208,21 @@ void compareFlowResults(TString type="ESD")
   intFlowAll->SetMarkerStyle(markerStyle);
   intFlowAll->SetMarkerColor(markerColor);
   (intFlowAll->GetXaxis())->SetBinLabel(1,"v_{2}{MC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(2,"v_{2}{2,GFC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(3,"v_{2}{2,QC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(4,"v_{2}{4,GFC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(5,"v_{2}{4,QC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(6,"v_{2}{6,GFC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(7,"v_{2}{6,QC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(8,"v_{2}{8,GFC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(9,"v_{2}{8,QC}");
-  (intFlowAll->GetXaxis())->SetBinLabel(10,"v_{2}{FQD}");
-  (intFlowAll->GetXaxis())->SetBinLabel(11,"v_{2}{LYZ}");
-  (intFlowAll->GetXaxis())->SetBinLabel(12,"v_{2}{LYZEP}");
+  (intFlowAll->GetXaxis())->SetBinLabel(2,"v_{2}{SP}");
+  (intFlowAll->GetXaxis())->SetBinLabel(3,"v_{2}{2,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(4,"v_{2}{2,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(5,"v_{2}{4,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(6,"v_{2}{4,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(7,"v_{2}{6,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(8,"v_{2}{6,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(9,"v_{2}{8,GFC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(10,"v_{2}{8,QC}");
+  (intFlowAll->GetXaxis())->SetBinLabel(11,"v_{2}{FQD}");
+  (intFlowAll->GetXaxis())->SetBinLabel(12,"v_{2}{LYZ}");
+  (intFlowAll->GetXaxis())->SetBinLabel(13,"v_{2}{LYZEP}");
   
   //booking the graph to store flow values and errors from all methods:  
-  Double_t x[nMethods] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5};
+  Double_t x[nMethods] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5};
   Double_t xError[nMethods] = {0.};
   Double_t flowValue[nMethods] = {0.};
   Double_t flowError[nMethods] = {0.};
@@ -240,6 +252,26 @@ void compareFlowResults(TString type="ESD")
     }
   }
   
+  //SP = Scalar Product
+  TList *pListSP = NULL;
+  AliFlowCommonHist *spCommonHist = NULL;
+  AliFlowCommonHistResults *spCommonHistRes = NULL; 
+  if(fileSP) {
+    fileSP->GetObject("cobjSP",pListSP); 
+    if(pListSP) {
+      spCommonHist    = dynamic_cast<AliFlowCommonHist*> (pListSP->FindObject("AliFlowCommonHistSP"));
+      spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListSP->FindObject("AliFlowCommonHistResultsSP"));
+      if(spCommonHistRes) {
+	flowValue[1] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[1] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[1] = (spCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[1] = (spCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[1] = (spCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[1] = (spCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+  
   //LYZ1 = Lee-Yang Zeros (1st run)
   TList *pListLYZ1 = NULL;
   AliFlowCommonHist *lyz1CommonHist = NULL;
@@ -250,12 +282,12 @@ void compareFlowResults(TString type="ESD")
       lyz1CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1->FindObject("AliFlowCommonHistLYZ1"));
       lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1"));
       if(lyz1CommonHistRes) {
-	flowValue[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	flowError[10] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[10] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[10] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[11] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[11] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[11] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[11] = (lyz1CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[11] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[11] = (lyz1CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -270,12 +302,12 @@ void compareFlowResults(TString type="ESD")
       lyz2CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2->FindObject("AliFlowCommonHistLYZ2"));
       lyz2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2->FindObject("AliFlowCommonHistResultsLYZ2"));
       if(lyz2CommonHistRes) {
-	flowValue[10] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	flowError[10] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[10] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[10] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[10] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[10] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[11] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[11] = (lyz2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[11] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[11] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[11] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[11] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -290,12 +322,12 @@ void compareFlowResults(TString type="ESD")
       lyzepCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZEP->FindObject("AliFlowCommonHistLYZEP"));
       lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZEP->FindObject("AliFlowCommonHistResultsLYZEP"));
       if(lyzepCommonHistRes) {
-	flowValue[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	flowError[11] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[11] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[11] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[12] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[12] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[12] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[12] = (lyzepCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[12] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[12] = (lyzepCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -310,12 +342,12 @@ void compareFlowResults(TString type="ESD")
       fqdCommonHist = dynamic_cast<AliFlowCommonHist*> (pListFQD->FindObject("AliFlowCommonHistFQD"));
       fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListFQD->FindObject("AliFlowCommonHistResultsFQD"));
       if(fqdCommonHistRes) {
-	flowValue[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	flowError[9] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[9] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[9] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[10] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[10] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[10] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[10] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[10] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[10] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -333,39 +365,39 @@ void compareFlowResults(TString type="ESD")
       gfcCommonHist = dynamic_cast<AliFlowCommonHist*> (pListGFC->FindObject("AliFlowCommonHistGFC"));
       gfcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
       if(gfcCommonHistRes2) {
-	flowValue[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
-	flowError[1] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[1] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[1] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[2] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
+	flowError[2] = (gfcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[2] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[2] = (gfcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[2] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[2] = (gfcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
       }
       gfcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
       if(gfcCommonHistRes4) {
-	flowValue[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
-	flowError[3] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[3] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[3] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[4] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
+	flowError[4] = (gfcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[4] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[4] = (gfcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[4] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[4] = (gfcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
       }
       gfcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
       if(gfcCommonHistRes6) {
-	flowValue[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
-	flowError[5] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[5] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[5] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[6] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
+	flowError[6] = (gfcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[6] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[6] = (gfcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[6] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[6] = (gfcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
       }
       gfcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC"));
       if(gfcCommonHistRes8)  {
-	flowValue[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
-	flowError[7] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[7] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[7] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[8] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
+	flowError[8] = (gfcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[8] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[8] = (gfcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[8] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[8] = (gfcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -387,42 +419,42 @@ void compareFlowResults(TString type="ESD")
       qcCommonHist2 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist2ndOrderQC"));
       qcCommonHistRes2 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
       if(qcCommonHistRes2)  {
-	flowValue[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
-	//flowError[2] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[2] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[2] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[3] = (qcCommonHistRes2->GetHistIntFlow())->GetBinContent(1);
+	//flowError[3] = (qcCommonHistRes2->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[3] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[3] = (qcCommonHistRes2->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[3] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[3] = (qcCommonHistRes2->GetHistIntFlowPOI())->GetBinError(1);
       }
       qcCommonHist4 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist4thOrderQC"));
       qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
       if(qcCommonHistRes4) {
-	flowValue[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
-	//flowError[4] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[4] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[4] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[5] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
+	//flowError[5] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[5] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[5] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[5] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[5] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
       }
       qcCommonHist6 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist6thOrderQC"));
       qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
       if(qcCommonHistRes6) {
-	flowValue[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
-	//flowError[6] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[6] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[6] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[7] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
+	//flowError[7] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[7] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[7] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[7] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[7] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinError(1);
       }
       qcCommonHist8 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist8thOrderQC"));
       qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
       if(qcCommonHistRes8)  {
-	flowValue[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
-	//flowError[8] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[8] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[8] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
+	flowValue[9] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
+	//flowError[9] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
+	flowValueRP[9] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[9] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[9] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[9] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }        
@@ -558,6 +590,7 @@ void compareFlowResults(TString type="ESD")
   
   //no-name:              
   TString *entryMC    = new TString("MC ...... ");
+  TString *entrySP    = new TString("SP ...... "); 
   TString *entryGFC   = new TString("GFC ..... "); 
   TString *entryQC2   = new TString("QC{2} ... ");
   TString *entryQC4   = new TString("QC{4} ... ");
@@ -569,6 +602,7 @@ void compareFlowResults(TString type="ESD")
   
   //RP: 
   TString *entryMCRP    = new TString("MC ...... ");
+  TString *entrySPRP    = new TString("SP ...... ");
   TString *entryGFCRP   = new TString("GFC ..... "); 
   TString *entryQC2RP   = new TString("QC{2} ... ");
   TString *entryQC4RP   = new TString("QC{4} ... ");
@@ -580,6 +614,7 @@ void compareFlowResults(TString type="ESD")
 
   //POI: 
   TString *entryMCPOI    = new TString("MC ...... ");
+  TString *entrySPPOI    = new TString("SP ...... ");
   TString *entryGFCPOI   = new TString("GFC ..... "); 
   TString *entryQC2POI   = new TString("QC{2} ... ");
   TString *entryQC4POI   = new TString("QC{4} ... ");
@@ -592,6 +627,8 @@ void compareFlowResults(TString type="ESD")
   //no-name:
   Double_t avMultMC=0.;
   Long_t nEvtsMC=0;
+  Double_t avMultSP=0.;
+  Long_t nEvtsSP=0;
   Double_t avMultGFC=0.;
   Long_t nEvtsGFC=0;
   Double_t avMultQC2=0., avMultQC4=0., avMultQC6=0., avMultQC8=0.;
@@ -606,6 +643,8 @@ void compareFlowResults(TString type="ESD")
   //RP:
   Double_t avMultMCRP=0.;
   Long_t nEvtsMCRP=0;
+  Double_t avMultSPRP=0.;
+  Long_t nEvtsSPRP=0;
   Double_t avMultGFCRP=0.;
   Long_t nEvtsGFCRP=0;
   Double_t avMultQC2RP=0., avMultQC4RP=0., avMultQC6RP=0., avMultQC8RP=0.;
@@ -620,6 +659,8 @@ void compareFlowResults(TString type="ESD")
   //POI:
   Double_t avMultMCPOI=0.;
   Long_t nEvtsMCPOI=0;
+  Double_t avMultSPPOI=0.;
+  Long_t nEvtsSPPOI=0;
   Double_t avMultGFCPOI=0.;
   Long_t nEvtsGFCPOI=0;
   Double_t avMultQC2POI=0., avMultQC4POI=0., avMultQC6POI=0., avMultQC8POI=0.;
@@ -660,6 +701,37 @@ void compareFlowResults(TString type="ESD")
    (*entryMCPOI)+=(Long_t)avMultMCPOI;
    entryMCPOI->Append(", N = ");
    (*entryMCPOI)+=(Long_t)nEvtsMCPOI;
+  }
+  
+  //SP:  
+  if(spCommonHist) {
+    avMultSP = (spCommonHist->GetHistMultInt())->GetMean();
+    nEvtsSP  = (spCommonHist->GetHistMultInt())->GetEntries();
+    avMultSPRP = (spCommonHist->GetHistMultInt())->GetMean();
+    nEvtsSPRP  = (spCommonHist->GetHistMultInt())->GetEntries();
+    avMultSPPOI = (spCommonHist->GetHistMultDiff())->GetMean();
+    nEvtsSPPOI  = (spCommonHist->GetHistMultDiff())->GetEntries();
+  }
+  
+  if(entrySP) {   
+    entrySP->Append("M = ");
+    (*entrySP)+=(Long_t)avMultSP;
+    entrySP->Append(", N = ");
+    (*entrySP)+=(Long_t)nEvtsSP;
+  }
+ 
+  if(entrySPRP) {   
+    entrySPRP->Append("M = ");
+    (*entrySPRP)+=(Long_t)avMultSPRP;
+    entrySPRP->Append(", N = ");
+    (*entrySPRP)+=(Long_t)nEvtsSPRP;
+  }
+  
+  if(entrySPPOI) {   
+   entrySPPOI->Append("M = ");
+   (*entrySPPOI)+=(Long_t)avMultSPPOI;
+   entrySPPOI->Append(", N = ");
+   (*entrySPPOI)+=(Long_t)nEvtsSPPOI;
   }
   
  //GFC:
@@ -937,6 +1009,7 @@ void compareFlowResults(TString type="ESD")
  if(textResults)
  {
   textResults->AddText(entryMC->Data());
+  textResults->AddText(entrySP->Data());
   textResults->AddText(entryGFC->Data());
   textResults->AddText(entryQC2->Data());
   textResults->AddText(entryQC4->Data());
@@ -951,6 +1024,7 @@ void compareFlowResults(TString type="ESD")
  if(textResultsRP)
  {
   textResultsRP->AddText(entryMCRP->Data());
+  textResultsRP->AddText(entrySPRP->Data());
   textResultsRP->AddText(entryGFCRP->Data());
   textResultsRP->AddText(entryQC2RP->Data());
   textResultsRP->AddText(entryQC4RP->Data());
@@ -964,6 +1038,7 @@ void compareFlowResults(TString type="ESD")
  if(textResultsPOI)
  {
   textResultsPOI->AddText(entryMCPOI->Data());
+  textResultsPOI->AddText(entrySPPOI->Data());
   textResultsPOI->AddText(entryGFCPOI->Data());
   textResultsPOI->AddText(entryQC2POI->Data());
   textResultsPOI->AddText(entryQC4POI->Data());
@@ -1403,6 +1478,33 @@ void compareFlowResults(TString type="ESD")
    nEvtsDiffFlowMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();      
   } 
  } 
+ 
+ //SP = Scalar Product
+ Double_t avMultDiffFlowSPRP=0.;
+ Double_t nEvtsDiffFlowSPRP=0;
+ Double_t avMultDiffFlowSPPOI=0.;
+ Double_t nEvtsDiffFlowSPPOI=0;
+ if(fileSP)
+ {
+  if(spCommonHistRes)
+  {
+   (spCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorSP);
+   (spCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleSP);
+   (spCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorSP);
+   (spCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleSP);
+   (spCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorSP);
+   (spCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleSP);
+   (spCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorSP);
+   (spCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleSP);
+  } 
+  if(spCommonHist)
+  {
+   avMultDiffFlowSPRP = (spCommonHist->GetHistMultInt())->GetMean();
+   nEvtsDiffFlowSPRP  = (spCommonHist->GetHistMultInt())->GetEntries();
+   avMultDiffFlowSPPOI = (spCommonHist->GetHistMultDiff())->GetMean();
+   nEvtsDiffFlowSPPOI  = (spCommonHist->GetHistMultDiff())->GetEntries();      
+  } 
+ } 
 
  //GFC = Generating Function Cumulants
  Double_t avMultDiffFlowGFC=0.;//to be removed
@@ -1646,6 +1748,11 @@ void compareFlowResults(TString type="ESD")
   { 
    (mcepCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
+  //SP 
+  if(plotSPPtRP && spCommonHistRes)
+  { 
+   (spCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
   //GFC
   if(plotGFC2PtRP && gfcCommonHistRes2)Pt
   { 
@@ -1700,6 +1807,7 @@ void compareFlowResults(TString type="ESD")
  
   //legend's entries:Pt
   TString *entryDiffMCPtRP    = new TString("MC ....... ");
+  TString *entryDiffSPPtRP    = new TString("SP ....... ");
   TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
   TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
   TString *entryDiffGFC6PtRP  = new TString("GFC{6} ... ");
@@ -1721,6 +1829,18 @@ void compareFlowResults(TString type="ESD")
    entryDiffMCPtRP->Append(", N = ");
    (*entryDiffMCPtRP)+=(Long_t)nEvtsDiffFlowMCRP; 
    legendDiffFlowPtRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffMCPtRP->Data(),"f");
+  }
+  
+  //SP
+  if(spCommonHistRes)
+  {
+   (spCommonHistRes->GetHistDiffFlowPtRP())->SetFillStyle(meshStyle);
+   (spCommonHistRes->GetHistDiffFlowPtRP())->SetFillColor(meshColor);
+   entryDiffSPPtRP->Append("M = ");
+   (*entryDiffSPPtRP)+=(Long_t)avMultDiffFlowSPRP;
+   entryDiffSPPtRP->Append(", N = ");
+   (*entryDiffSPPtRP)+=(Long_t)nEvtsDiffFlowSPRP; 
+   legendDiffFlowPtRP->AddEntry(spCommonHistRes->GetHistDiffFlowPtRP(),entryDiffSPPtRP->Data(),"p");
   }
 
   //GFC
@@ -1847,6 +1967,11 @@ void compareFlowResults(TString type="ESD")
   { 
    (mcepCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
   }
+  //SP 
+  if(plotSPEtaRP && spCommonHistRes)
+  { 
+   (spCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
   //GFC
   if(plotGFC2EtaRP && gfcCommonHistRes2)
   { 
@@ -1901,6 +2026,7 @@ void compareFlowResults(TString type="ESD")
   
   //legend's entries:
   TString *entryDiffMCEtaRP   = new TString("MC ....... ");
+  TString *entryDiffSPEtaRP   = new TString("SP ....... ");
   TString *entryDiffGFC2EtaRP = new TString("GFC{2} ... ");
   TString *entryDiffGFC4EtaRP = new TString("GFC{4} ... ");
   TString *entryDiffGFC6EtaRP = new TString("GFC{6} ... ");
@@ -1922,6 +2048,18 @@ void compareFlowResults(TString type="ESD")
    entryDiffMCEtaRP->Append(", N = ");
    (*entryDiffMCEtaRP)+=(Long_t)nEvtsDiffFlowMCRP; 
    legendDiffFlowEtaRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffMCEtaRP->Data(),"f");
+  }
+  
+  //SP
+  if(spCommonHistRes)
+  {
+   (spCommonHistRes->GetHistDiffFlowEtaRP())->SetFillStyle(meshStyle);
+   (spCommonHistRes->GetHistDiffFlowEtaRP())->SetFillColor(meshColor);
+   entryDiffSPEtaRP->Append("M = ");
+   (*entryDiffSPEtaRP)+=(Long_t)avMultDiffFlowSPRP;
+   entryDiffSPEtaRP->Append(", N = ");
+   (*entryDiffSPEtaRP)+=(Long_t)nEvtsDiffFlowSPRP; 
+   legendDiffFlowEtaRP->AddEntry(spCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffSPEtaRP->Data(),"p");
   }
  
   //GFC
@@ -2044,8 +2182,13 @@ void compareFlowResults(TString type="ESD")
  
   //MC 
   if(plotMCPtPOI && mcepCommonHistRes)
-  { kTRUE;
+  { 
    (mcepCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  //SP 
+  if(plotSPPtPOI && spCommonHistRes)
+  { 
+   (spCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   //GFC
   if(plotGFC2PtPOI && gfcCommonHistRes2)
@@ -2101,6 +2244,7 @@ void compareFlowResults(TString type="ESD")
  
   //legend's entries:
   TString *entryDiffMCPtPOI   = new TString("MC ....... ");
+  TString *entryDiffSPPtPOI   = new TString("SP ....... ");
   TString *entryDiffGFC2PtPOI = new TString("GFC{2} ... ");
   TString *entryDiffGFC4PtPOI = new TString("GFC{4} ... ");
   TString *entryDiffGFC6PtPOI = new TString("GFC{6} ... ");
@@ -2122,6 +2266,18 @@ void compareFlowResults(TString type="ESD")
    entryDiffMCPtPOI->Append(", N = ");
    (*entryDiffMCPtPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
    legendDiffFlowPtPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffMCPtPOI->Data(),"f");
+  }
+  
+  //SP
+  if(spCommonHistRes)
+  {
+   (spCommonHistRes->GetHistDiffFlowPtPOI())->SetFillStyle(meshStyle);
+   (spCommonHistRes->GetHistDiffFlowPtPOI())->SetFillColor(meshColor);
+   entryDiffSPPtPOI->Append("M = ");
+   (*entryDiffSPPtPOI)+=(Long_t)avMultDiffFlowSPPOI;
+   entryDiffSPPtPOI->Append(", N = ");
+   (*entryDiffSPPtPOI)+=(Long_t)nEvtsDiffFlowSPPOI; 
+   legendDiffFlowPtPOI->AddEntry(spCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffSPPtPOI->Data(),"p");
   }
 
   //GFC
@@ -2248,6 +2404,11 @@ void compareFlowResults(TString type="ESD")
   { 
    (mcepCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
   }
+  //SP 
+  if(plotSPEtaPOI && spCommonHistRes)
+  { 
+   (spCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
   //GFC
   if(plotGFC2EtaPOI && gfcCommonHistRes2)
   { 
@@ -2302,6 +2463,7 @@ void compareFlowResults(TString type="ESD")
  
   //legend's entries:
   TString *entryDiffMCEtaPOI    = new TString("MC ....... ");
+  TString *entryDiffSPEtaPOI    = new TString("SP ....... ");
   TString *entryDiffGFC2EtaPOI  = new TString("GFC{2} ... ");
   TString *entryDiffGFC4EtaPOI  = new TString("GFC{4} ... ");
   TString *entryDiffGFC6EtaPOI  = new TString("GFC{6} ... ");
@@ -2323,6 +2485,18 @@ void compareFlowResults(TString type="ESD")
    entryDiffMCEtaPOI->Append(", N = ");
    (*entryDiffMCEtaPOI)+=(Long_t)nEvtsDiffFlowMCPOI; 
    legendDiffFlowEtaPOI->AddEntry(mcepCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffMCEtaPOI->Data(),"f");
+  }
+  
+  //SP
+  if(spCommonHistRes)
+  {
+   (spCommonHistRes->GetHistDiffFlowEtaPOI())->SetFillStyle(meshStyle);
+   (spCommonHistRes->GetHistDiffFlowEtaPOI())->SetFillColor(meshColor);
+   entryDiffSPEtaPOI->Append("M = ");
+   (*entryDiffSPEtaPOI)+=(Long_t)avMultDiffFlowSPPOI;
+   entryDiffSPEtaPOI->Append(", N = ");
+   (*entryDiffSPEtaPOI)+=(Long_t)nEvtsDiffFlowSPPOI; 
+   legendDiffFlowEtaPOI->AddEntry(spCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffSPEtaPOI->Data(),"p");
   }
 
   //GFC
