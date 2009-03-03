@@ -112,8 +112,10 @@ void AliAnalysisTaskJets::Init()
     if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
 
     // Call configuration file
-    gROOT->LoadMacro(fConfigFile);
-    fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+    if (fConfigFile.Length()) {
+       gROOT->LoadMacro(fConfigFile);
+       fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+    }   
     // Initialise Jet Analysis
     fJetFinder->Init();
     // Write header information to local file
