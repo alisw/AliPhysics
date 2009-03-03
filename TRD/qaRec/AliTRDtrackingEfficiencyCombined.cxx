@@ -34,6 +34,7 @@
 #include "AliMagF.h"
 #include "AliPID.h"
 #include "AliTracker.h"
+#include "AliMathBase.h"
 #include "AliTrackReference.h"
 #include "AliAnalysisManager.h"
 
@@ -458,7 +459,7 @@ void AliTRDtrackingEfficiencyCombined::FillStreamTrackWOMC(AliTRDtrackInfo *trkI
     while((c = tracklet->NextCluster())) TRDlabels[nclusters++] = c->GetLabel(0);
   }
   // Determine Label and Frequency
-  AliTRDtrackerV1::Freq(nclusters, const_cast<const Int_t *>(&TRDlabels[0]), &sortlabels[0], kTRUE);
+  AliMathBase::Freq(nclusters, const_cast<const Int_t *>(&TRDlabels[0]), &sortlabels[0], kTRUE);
   Int_t TRDLabel = sortlabels[0];
   Int_t freqTRD = sortlabels[1];
   // find the track info object matching to the TRD track

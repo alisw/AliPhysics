@@ -105,9 +105,8 @@ public:
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
   void            SetReconstructor(const AliTRDReconstructor *rec){ fReconstructor = rec; }
   void            UnloadClusters();
-  void            UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;
-  
-  static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
+//   void            UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;
+//   static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
 
   class AliTRDLeastSquare{
   public:

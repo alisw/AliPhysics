@@ -21,8 +21,8 @@
 #endif
 
 
-#ifndef ALITRDSEED_H
-#include "AliTRDseed.h"
+#ifndef ALITRDSEEDV1_H
+#include "AliTRDseedV1.h"
 #endif
 
 class AliTRDCalDet;
@@ -32,9 +32,6 @@ class AliTRDtrackingChamber : public TObject
 {
 
 public:
-  enum{
-    kNTimeBins = AliTRDseed::knTimebins
-  };
   AliTRDtrackingChamber();
   virtual ~AliTRDtrackingChamber(){}
   
@@ -46,19 +43,20 @@ public:
   Double_t GetQuality();
   Bool_t   GetSeedingLayer(AliTRDchamberTimeBin *&layer, AliTRDgeometry *geo, const AliTRDReconstructor *rec);
   Float_t  GetX()        const {return fX0;}
-  AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}
+  AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < AliTRDseedV1::kNtb ? &fTB[tb] : 0x0;}
   void     InsertCluster(AliTRDcluster *c, Int_t index);
   
   void     Print(Option_t *opt = 0x0) const;
 
   void     SetDetector(Int_t det) { fDetector = det;}
   void     SetOwner();
+  void     Update();
 
 private:
   Int_t         fDetector;  // detector number
   Float_t       fX0;        // approximate position of the pad plane
   
-  AliTRDchamberTimeBin fTB[kNTimeBins];    // time bins 
+  AliTRDchamberTimeBin fTB[AliTRDseedV1::kNtb];    // time bins 
   
   
   ClassDef(AliTRDtrackingChamber, 1)  // TRD tracker container for one chamber

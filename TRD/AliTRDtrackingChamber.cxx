@@ -52,7 +52,7 @@ AliTRDtrackingChamber::AliTRDtrackingChamber()
 //_______________________________________________________
 void AliTRDtrackingChamber::Clear(const Option_t *opt)
 {
-  for(Int_t itb=0; itb<kNTimeBins; itb++) fTB[itb].Clear(opt);
+  for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++) fTB[itb].Clear(opt);
 }
 
 //_______________________________________________________
@@ -81,7 +81,7 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo, const AliTRDCalDet *cal
   Int_t nrows = pp->GetNrows();
   
   Int_t index[50], jtb = 0;
-  for(Int_t itb=0; itb<kNTimeBins; itb++){ 
+  for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++){ 
     if(!fTB[itb]) continue;
     fTB[itb].SetRange(z0, zl);
     fTB[itb].SetNRows(nrows);
@@ -116,7 +116,7 @@ Int_t AliTRDtrackingChamber::GetNClusters() const
 // Returns number of clusters in chamber
 //
   Int_t n = 0;
-  for(Int_t itb=0; itb<kNTimeBins; itb++){ 
+  for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++){ 
     n += Int_t(fTB[itb]);
   }
   return n;	
@@ -129,7 +129,7 @@ void AliTRDtrackingChamber::Bootstrap(const AliTRDReconstructor *rec)
 // Bootstrap each time bin
 //
   AliTRDchamberTimeBin *jtb = &fTB[0];
-  for(Int_t itb=0; itb<kNTimeBins; itb++, ++jtb){ 
+  for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++, ++jtb){ 
     (*jtb).Bootstrap(rec, fDetector);
   }
 }
@@ -141,7 +141,7 @@ void  AliTRDtrackingChamber::SetOwner()
 // Set ownership in time bins
 //
   AliTRDchamberTimeBin *jtb = &fTB[0];
-  for(Int_t itb=0; itb<kNTimeBins; itb++, ++jtb){ 
+  for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++, ++jtb){ 
     if(!(Int_t(*jtb))) continue;
     (*jtb).SetOwner();
   }
@@ -172,7 +172,7 @@ Double_t AliTRDtrackingChamber::GetQuality()
   Int_t ncl   = 0;
   Int_t nused = 0;
   Int_t nClLayer;
-  for(int itb=0; itb<kNTimeBins; itb++){
+  for(int itb=0; itb<AliTRDseedV1::kNtb; itb++){
     if(!(nClLayer = fTB[itb].GetNClusters())) continue;
     ncl += nClLayer;
     for(Int_t incl = 0; incl < nClLayer; incl++){
@@ -239,7 +239,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
     histogram[irs] = &hvals[irs*kMaxCols];
     sigmas[irs] = &svals[irs*kMaxCols];
   }
-  for(Int_t iTime = timeBinMin; iTime < kNTimeBins-timeBinMax; iTime++){
+  for(Int_t iTime = timeBinMin; iTime < AliTRDseedV1::kNtb-timeBinMax; iTime++){
     if(!(nClusters = fTB[iTime].GetNClusters())) continue;
     z0 = fTB[iTime].GetZ0();
     zl = fTB[iTime].GetDZ0();
@@ -362,7 +362,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
       col = cand[ican] % nCols;
       //temporary
       Int_t n = 0; Double_t x = 0., y = 0., z = 0.;
-      for(int itb=0; itb<kNTimeBins; itb++){
+      for(int itb=0; itb<AliTRDseedV1::kNtb; itb++){
         if(!(nClusters = fTB[itb].GetNClusters())) continue;
         for(Int_t incl = 0; incl < nClusters; incl++){
           c = fTB[itb].GetCluster(incl);	
@@ -413,5 +413,19 @@ void AliTRDtrackingChamber::Print(Option_t *opt) const
   AliInfo(Form("fDetector   = %d", fDetector));
   AliInfo(Form("fX0         = %7.3f", fX0));
   const AliTRDchamberTimeBin *itb = &fTB[0];
-  for(Int_t jtb=0; jtb<kNTimeBins; jtb++, itb++) (*itb).Print(opt);
+  for(Int_t jtb=0; jtb<AliTRDseedV1::kNtb; jtb++, itb++) (*itb).Print(opt);
 }
+
+
+//_______________________________________________________
+void AliTRDtrackingChamber::Update()
+{
+// Steer purging of used and shared clusters 
+
+  AliTRDchamberTimeBin *jtb = &fTB[0];
+  for(Int_t itb=AliTRDseedV1::kNtb; itb--; ++jtb){ 
+    if(!(Int_t(*jtb))) continue;
+    (*jtb).BuildIndices();
+  }
+}
+

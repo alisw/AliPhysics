@@ -74,7 +74,7 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalD
   AliTRDchamberTimeBin *tb = 0x0;
   AliTRDtrackingChamber **tc = &fChamber[0];
   for(Int_t ic = 0; (ic<AliTRDgeometry::kNdets) && (*tc); ic++, tc++){
-    for(Int_t itb=0; itb<AliTRDseed::knTimebins; itb++){
+    for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++){
       if(!(tb = (*tc)->GetTB(itb))) continue;
       tb->SetReconstructor(rec);
     }

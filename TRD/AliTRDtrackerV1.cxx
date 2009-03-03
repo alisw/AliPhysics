@@ -37,6 +37,7 @@
 #include <TTreeStream.h>
 
 #include "AliLog.h"
+#include "AliMathBase.h"
 #include "AliESDEvent.h"
 #include "AliGeomManager.h"
 #include "AliRieman.h"
@@ -227,7 +228,7 @@ TLinearFitter* AliTRDtrackerV1::GetTiltedRiemanFitterConstraint()
 //____________________________________________________________________	
 AliRieman* AliTRDtrackerV1::GetRiemanFitter()
 {
-  if(!fgRieman) fgRieman = new AliRieman(AliTRDtrackingChamber::kNTimeBins * AliTRDgeometry::kNlayer);
+  if(!fgRieman) fgRieman = new AliRieman(AliTRDseedV1::kNtb * AliTRDgeometry::kNlayer);
   return fgRieman;
 }
   
@@ -1697,23 +1698,23 @@ void AliTRDtrackerV1::UnloadClusters()
   AliTRDtrackerDebug::SetEventNumber(AliTRDtrackerDebug::GetEventNumber()  + 1);
 }
 
-//____________________________________________________________________
-void AliTRDtrackerV1::UseClusters(const AliKalmanTrack *t, Int_t) const
-{
-  const AliTRDtrackV1 *track = dynamic_cast<const AliTRDtrackV1*>(t);
-  if(!track) return;
-
-  AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
-    if(!(tracklet = track->GetTracklet(ily))) continue;
-    AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseed::knTimebins; ic--;){
-      if(!(c=tracklet->GetClusters(ic))) continue;
-      c->Use();
-    }
-  }
-}
-
+// //____________________________________________________________________
+// void AliTRDtrackerV1::UseClusters(const AliKalmanTrack *t, Int_t) const
+// {
+//   const AliTRDtrackV1 *track = dynamic_cast<const AliTRDtrackV1*>(t);
+//   if(!track) return;
+// 
+//   AliTRDseedV1 *tracklet = 0x0;
+//   for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+//     if(!(tracklet = track->GetTracklet(ily))) continue;
+//     AliTRDcluster *c = 0x0;
+//     for(Int_t ic=AliTRDseed::knTimebins; ic--;){
+//       if(!(c=tracklet->GetClusters(ic))) continue;
+//       c->Use();
+//     }
+//   }
+// }
+// 
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrackerV1::AdjustSector(AliTRDtrackV1 *track) 
@@ -1894,6 +1895,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 
   const AliTRDCalDet *cal = AliTRDcalibDB::Instance()->GetT0Det();
   AliTRDtrackingChamber *chamber = 0x0;
+  AliTRDtrackingChamber **ci = 0x0;
   AliTRDseedV1 sseed[kMaxTracksStack*6]; // to be initialized
   Int_t pars[4]; // MakeSeeds parameters
 
@@ -1901,6 +1903,13 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   //Double_t shift = .5 * alpha;
   Int_t configs[kNConfigs];
   
+  // Purge used clusters from the containers
+  ci = &stack[0];
+  for(Int_t ic = kNPlanes; ic--; ci++){
+    if(!(*ci)) continue;
+    (*ci)->Update();
+  }
+
   // Build initial seeding configurations
   Double_t quality = BuildSeedingConfigs(stack, configs);
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
@@ -1916,10 +1925,10 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   fSieveSeeding = 0;
 
   // Get stack index
-  Int_t ic = 0; AliTRDtrackingChamber **cIter = &stack[0];
-  while(ic<kNPlanes && !(*cIter)){ic++; cIter++;}
-  if(!(*cIter)) return ntracks2;
-  Int_t istack = fGeom->GetStack((*cIter)->GetDetector());
+  Int_t ic = 0; ci = &stack[0];
+  while(ic<kNPlanes && !(*ci)){ic++; ci++;}
+  if(!(*ci)) return ntracks2;
+  Int_t istack = fGeom->GetStack((*ci)->GetDetector());
 
   do{
     // Loop over seeding configurations
@@ -2045,49 +2054,8 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
           AliInfo(Form("Track %d [%d] nlayers %d trackQuality = %e nused %d, yref = %3.3f", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused, trackParams[1]));
 
-          Int_t nclusters = 0;
           AliTRDseedV1 *dseed[6];
-
-          // Build track label - what happens if measured data ???
-          Int_t labels[1000];
-          Int_t outlab[1000];
-          Int_t nlab = 0;
-
-          Int_t labelsall[1000];
-          Int_t nlabelsall = 0;
-          Int_t naccepted  = 0;
-
-          for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
-            Int_t jseed = kNPlanes*trackIndex+iLayer;
-            dseed[iLayer] = new AliTRDseedV1(sseed[jseed]);
-            dseed[iLayer]->SetOwner();
-            printf("Layer[%d], NClusters[%d]\n", iLayer, sseed[jseed].GetN2());
-            nclusters += sseed[jseed].GetN2();
-            if(!sseed[jseed].IsOK()) continue;
-            for(int ilab=0; ilab<2; ilab++){
-              if(sseed[jseed].GetLabels(ilab) < 0) continue;
-              labels[nlab] = sseed[jseed].GetLabels(ilab);
-              nlab++;
-            }
-
-            // Cooking label
-            for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
-              if(!sseed[jseed].IsUsable(itime)) continue;
-              naccepted++;
-              Int_t tindex = 0, ilab = 0;
-              while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
-                labelsall[nlabelsall++] = tindex;
-                ilab++;
-              }
-            }
-          }
-          Freq(nlab,labels,outlab,kFALSE);
-          Int_t   label     = outlab[0];
-          Int_t   frequency = outlab[1];
-          Freq(nlabelsall,labelsall,outlab,kFALSE);
-          Int_t   label1    = outlab[0];
-          Int_t   label2    = outlab[2];
-          Float_t fakeratio = (naccepted - outlab[1]) / Float_t(naccepted);
+          memcpy(dseed, lseed, 6*sizeof(AliTRDseedV1*));
 
           //Int_t eventNrInFile = esd->GetEventNumberInFile();
           //AliInfo(Form("Number of clusters %d.", nclusters));
@@ -2114,11 +2082,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
               << "p4="				<< trackParams[4]
               << "p5="				<< trackParams[5]
               << "p6="				<< trackParams[6]
-              << "Label="				<< label
-              << "Label1="			<< label1
-              << "Label2="			<< label2
-              << "FakeRatio="			<< fakeratio
-              << "Freq="				<< frequency
               << "Ncl="				<< ncl
               << "NLayers="			<< nlayers
               << "Findable="			<< findable
@@ -2544,32 +2507,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         //chi2Vals[2] = GetChi2ZTest(&cseed[0]);
         fTrackQuality[ntracks] = CalculateTrackLikelihood(&cseed[0], &chi2Vals[0]);
         //AliInfo("Hyperplane fit done\n");
-      
-        // finalize tracklets
-        Int_t labels[12];
-        Int_t outlab[24];
-        Int_t nlab = 0;
-        for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-          if (!cseed[iLayer].IsOK()) continue;
-      
-          if (cseed[iLayer].GetLabels(0) >= 0) {
-            labels[nlab] = cseed[iLayer].GetLabels(0);
-            nlab++;
-          }
-      
-          if (cseed[iLayer].GetLabels(1) >= 0) {
-            labels[nlab] = cseed[iLayer].GetLabels(1);
-            nlab++;
-          }
-        }
-        Freq(nlab,labels,outlab,kFALSE);
-        Int_t label     = outlab[0];
-        Int_t frequency = outlab[1];
-//         for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-//           cseed[iLayer].SetFreq(frequency);
-//           cseed[iLayer].SetChi2Z(chi2[1]);
-//         }
-            
+                  
         if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
           TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
           Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
@@ -2594,8 +2532,6 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               << "S3.="				<< &cseed[3]
               << "S4.="				<< &cseed[4]
               << "S5.="				<< &cseed[5]
-              << "Label="				<< label
-              << "Freq="				<< frequency
               << "FitterT.="			<< fitterT
               << "FitterTC.="			<< fitterTC
               << "\n";
@@ -3226,64 +3162,64 @@ Float_t AliTRDtrackerV1::CalculateReferenceX(AliTRDseedV1 *tracklets){
   return tracklets[startIndex].GetX0() + (2.5 - startIndex) * meanDistance - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 }
 
-//_____________________________________________________________________________
-Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
-          , Int_t *outlist, Bool_t down)
-{    
-  //
-  // Sort eleements according occurancy 
-  // The size of output array has is 2*n 
-  //
-
-  if (n <= 0) {
-    return 0;
-  }
-
-  Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
-  Int_t *sindexF = new Int_t[2*n];   
-  for (Int_t i = 0; i < n; i++) {
-    sindexF[i] = 0;
-  }
-
-  TMath::Sort(n,inlist,sindexS,down); 
-
-  Int_t last     = inlist[sindexS[0]];
-  Int_t val      = last;
-  sindexF[0]     = 1;
-  sindexF[0+n]   = last;
-  Int_t countPos = 0;
-
-  // Find frequency
-  for (Int_t i = 1; i < n; i++) {
-    val = inlist[sindexS[i]];
-    if (last == val) {
-      sindexF[countPos]++;
-    }
-    else {      
-      countPos++;
-      sindexF[countPos+n] = val;
-      sindexF[countPos]++;
-      last                = val;
-    }
-  }
-  if (last == val) {
-    countPos++;
-  }
-
-  // Sort according frequency
-  TMath::Sort(countPos,sindexF,sindexS,kTRUE);
-
-  for (Int_t i = 0; i < countPos; i++) {
-    outlist[2*i  ] = sindexF[sindexS[i]+n];
-    outlist[2*i+1] = sindexF[sindexS[i]];
-  }
-
-  delete [] sindexS;
-  delete [] sindexF;
-  
-  return countPos;
-
-}
+// //_____________________________________________________________________________
+// Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
+//           , Int_t *outlist, Bool_t down)
+// {    
+//   //
+//   // Sort eleements according occurancy 
+//   // The size of output array has is 2*n 
+//   //
+// 
+//   if (n <= 0) {
+//     return 0;
+//   }
+// 
+//   Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
+//   Int_t *sindexF = new Int_t[2*n];   
+//   for (Int_t i = 0; i < n; i++) {
+//     sindexF[i] = 0;
+//   }
+// 
+//   TMath::Sort(n,inlist,sindexS,down); 
+// 
+//   Int_t last     = inlist[sindexS[0]];
+//   Int_t val      = last;
+//   sindexF[0]     = 1;
+//   sindexF[0+n]   = last;
+//   Int_t countPos = 0;
+// 
+//   // Find frequency
+//   for (Int_t i = 1; i < n; i++) {
+//     val = inlist[sindexS[i]];
+//     if (last == val) {
+//       sindexF[countPos]++;
+//     }
+//     else {      
+//       countPos++;
+//       sindexF[countPos+n] = val;
+//       sindexF[countPos]++;
+//       last                = val;
+//     }
+//   }
+//   if (last == val) {
+//     countPos++;
+//   }
+// 
+//   // Sort according frequency
+//   TMath::Sort(countPos,sindexF,sindexS,kTRUE);
+// 
+//   for (Int_t i = 0; i < countPos; i++) {
+//     outlist[2*i  ] = sindexF[sindexS[i]+n];
+//     outlist[2*i+1] = sindexF[sindexS[i]];
+//   }
+// 
+//   delete [] sindexS;
+//   delete [] sindexF;
+//   
+//   return countPos;
+// 
+// }
 
 
 //____________________________________________________________________

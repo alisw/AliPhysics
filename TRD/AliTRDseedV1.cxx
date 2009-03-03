@@ -436,7 +436,7 @@ void AliTRDseedV1::CookLabels()
     }
   }
 
-  fLabels[2] = AliTRDtrackerV1::Freq(nlab,labels,out,kTRUE);
+  fLabels[2] = AliMathBase::Freq(nlab,labels,out,kTRUE);
   fLabels[0] = out[0];
   if ((fLabels[2]  > 1) && (out[3] > 1)) fLabels[1] = out[2];
 }
@@ -1286,7 +1286,6 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
 //     fCross[0] = fX0 - fCross[0];
 //   }
 
-  UpdateUsed();
   return kTRUE;
 }
 

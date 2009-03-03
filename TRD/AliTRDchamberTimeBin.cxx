@@ -246,7 +246,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   // Select clusters that belong to the Stack
   Int_t nClStack = 0;					// Internal counter
   for(Int_t i = 0; i < fN; i++){
-    if(fClusters[i]->IsUsed()){
+    if(fClusters[i]->IsUsed() || fClusters[i]->IsShared()){
       fClusters[i] = 0x0;
       fIndex[i] = 0xffff;
     } else nClStack++;
