@@ -13,6 +13,11 @@ Trigger types used: PHYSICS_EVENT
 */
 
 #define FILE_OUT "daCosmic.root"
+//
+//author Michal Oledzki
+//DA for old cosmic runs
+//
+//
 #define FILE_IN "inCosmic.dat"
 #include <daqDA.h>
 #include <event.h>
@@ -44,8 +49,6 @@ Trigger types used: PHYSICS_EVENT
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 //#include "TProfile.h"
-//int cqbx,cqby,clbx,clby,cbx,kCcbx;
-//float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx,cclx,ccmx;
 int kCcbx;
 float kCclx,kCcmx;
 /* Main routine
