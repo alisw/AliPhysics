@@ -41,7 +41,7 @@ void runProof(int dataType=0, const char *dataSource="ESD82XX_30K.txt") {
   gProof->AddIncludePath("./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
 
   gProof->Load("ConfigFemtoAnalysis.C++g");
-  gProof->Load("AliAnalysisTaskFemto.cxx++g");
+  //  gProof->Load("AliAnalysisTaskFemto.cxx++g");
 
   TChain *chain = 0x0;
 
