@@ -328,14 +328,14 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
   strncpy ( pHeader.fOrigin, pDetector, gkAliHLTFXSHeaderfOriginSize ) ; 
 
   // To take care if fileIDs which are longer than gkAliHLTFXSHeaderfOriginSize, write one 0 is cheaper than an if.
-  pHeader.fOrigin[gkAliHLTFXSHeaderfOriginSize] = 0;
+  pHeader.fOrigin[gkAliHLTFXSHeaderfOriginSize-1] = 0;
 
   // ** Fill file ID
   HLTInfo( "FXS Header FileID size max %i - actual %i .",gkAliHLTFXSHeaderfFileIDSize, strlen( pFileID ) );
   strncpy ( pHeader.fFileID, pFileID, gkAliHLTFXSHeaderfFileIDSize ) ; 
 
   // To take care if fileIDs which are longer than gkAliHLTFXSHeaderfFileIDSize, write one 0 is cheaper than an if.
-  pHeader.fFileID[gkAliHLTFXSHeaderfFileIDSize] = 0;
+  pHeader.fFileID[gkAliHLTFXSHeaderfFileIDSize-1] = 0;
 
   // ** Fill DDL number
 
