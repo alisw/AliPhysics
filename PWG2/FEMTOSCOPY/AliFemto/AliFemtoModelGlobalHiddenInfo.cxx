@@ -62,9 +62,9 @@ void                   AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(con
 {
   // set position from vector
   if (fGlobalEmissionPoint) {
-    fGlobalEmissionPoint->setX(aPos.x());
-    fGlobalEmissionPoint->setY(aPos.y());
-    fGlobalEmissionPoint->setZ(aPos.z());
+    fGlobalEmissionPoint->SetX(aPos.x());
+    fGlobalEmissionPoint->SetY(aPos.y());
+    fGlobalEmissionPoint->SetZ(aPos.z());
   }
   else {
     fGlobalEmissionPoint = new AliFemtoThreeVector();
@@ -74,11 +74,11 @@ void                   AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(con
 //_____________________________________________
 void                   AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz)
 {
-  // set position from components
+  // Set position from components
   if (fGlobalEmissionPoint) {
-    fGlobalEmissionPoint->setX(aRx);
-    fGlobalEmissionPoint->setY(aRy);
-    fGlobalEmissionPoint->setZ(aRz);
+    fGlobalEmissionPoint->SetX(aRx);
+    fGlobalEmissionPoint->SetY(aRy);
+    fGlobalEmissionPoint->SetZ(aRz);
   }
   else {
     fGlobalEmissionPoint = new AliFemtoThreeVector(aRx, aRy, aRz); 

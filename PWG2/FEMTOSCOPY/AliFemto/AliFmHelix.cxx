@@ -369,11 +369,11 @@ pair<double, double> AliFmHelix::PathLength(double r, double x, double y, bool /
   // path length
 	double x0 = fOrigin.x();
 	double y0 = fOrigin.y();
-	fOrigin.setX(x0-x);
-	fOrigin.setY(y0-y);
+	fOrigin.SetX(x0-x);
+	fOrigin.SetY(y0-y);
 	pair<double, double> result = this->PathLength(r);
-	fOrigin.setX(x0);
-	fOrigin.setY(y0);
+	fOrigin.SetX(x0);
+	fOrigin.SetY(y0);
 	return result;  
 }
 

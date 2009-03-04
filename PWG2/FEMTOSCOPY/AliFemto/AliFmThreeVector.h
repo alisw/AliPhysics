@@ -129,14 +129,14 @@ public:
     AliFmThreeVector<T>& operator=(const AliFmThreeVector<double>&);
 #endif
     
-    void setX(T);
-    void setY(T);
-    void setZ(T);
+    void SetX(T);
+    void SetY(T);
+    void SetZ(T);
 
-    void setPhi(T);
-    void setTheta(T);
-    void setMag(T);
-    void setMagnitude(T);
+    void SetPhi(T);
+    void SetTheta(T);
+    void SetMag(T);
+    void SetMagnitude(T);
     
     T   x()                        const;
     T   y()                        const;
@@ -156,7 +156,7 @@ public:
     T&  operator() (size_t);
     T&  operator[] (size_t);
     
-    T   massHypothesis(T mass)     const;
+    T   MassHypothesis(T mass)     const;
     
     AliFmThreeVector<T>  unit()       const;
     AliFmThreeVector<T>  orthogonal() const;
@@ -203,8 +203,8 @@ public:
     AliFmThreeVector<T>& operator+= (const AliFmThreeVector<double>&);
     AliFmThreeVector<T>& operator-= (const AliFmThreeVector<double>&);
 #endif
-  int             valid(double world = 1.e+5) const;
-    int               bad(double world = 1.e+5) const;
+    int             Valid(double world = 1.e+5) const;
+    int               Bad(double world = 1.e+5) const;
 protected:
     T    mX1, mX2, mX3;
 #ifdef __ROOT__
@@ -223,16 +223,16 @@ template<class T>
 inline AliFmThreeVector<T>::~AliFmThreeVector() {/* nop */}
 
 template<class T>
-inline void AliFmThreeVector<T>::setX(T ax) {mX1 = ax;}
+inline void AliFmThreeVector<T>::SetX(T ax) {mX1 = ax;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setY(T ay) {mX2 = ay;}
+inline void AliFmThreeVector<T>::SetY(T ay) {mX2 = ay;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setZ(T az) {mX3 = az;}
+inline void AliFmThreeVector<T>::SetZ(T az) {mX3 = az;}
 
 template<class T>
-void AliFmThreeVector<T>::setPhi(T aangle)
+void AliFmThreeVector<T>::SetPhi(T aangle)
 {
     double  r = magnitude();
     double th = theta();
@@ -242,7 +242,7 @@ void AliFmThreeVector<T>::setPhi(T aangle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setTheta(T aangle)
+void AliFmThreeVector<T>::SetTheta(T aangle)
 {
     double r  = magnitude();
     double ph = phi();
@@ -253,7 +253,7 @@ void AliFmThreeVector<T>::setTheta(T aangle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setMagnitude(T r)
+void AliFmThreeVector<T>::SetMagnitude(T r)
 {
     double th = theta();
     double ph = phi();
@@ -264,9 +264,9 @@ void AliFmThreeVector<T>::setMagnitude(T r)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setMag(T amag)
+void AliFmThreeVector<T>::SetMag(T amag)
 {
-    setMagnitude(amag);
+    SetMagnitude(amag);
 }
 
 template<class T>
@@ -315,7 +315,7 @@ inline AliFmThreeVector<T> AliFmThreeVector<T>::unit() const
 }
 
 template <class T>
-T AliFmThreeVector<T>::massHypothesis(T mass) const
+T AliFmThreeVector<T>::MassHypothesis(T mass) const
 {
     return ::sqrt((*this)*(*this) + mass*mass);
 }
@@ -734,11 +734,11 @@ AliFmThreeVector<T>::pseudoProduct(const AliFmThreeVector<double>& v) const
 #endif  // ST_NO_MEMBER_TEMPLATES
 template<class T>
 inline int
-AliFmThreeVector<T>::valid(double world) const  {return !bad(world);}
+AliFmThreeVector<T>::Valid(double world) const  {return !Bad(world);}
 
 template<class T>
 inline int
-AliFmThreeVector<T>::bad(double world) const
+AliFmThreeVector<T>::Bad(double world) const
 {
   for (int i=0;i<3;i++) {
 	  if (!finite((&mX1)[i])      ) return 10+i; 		
@@ -849,9 +849,9 @@ istream&  operator>>(istream& is, AliFmThreeVector<T>& v)
 {
     T  x, y, z;
     is >> x >> y >> z;
-    v.setX(x);
-    v.setY(y);
-    v.setZ(z);
+    v.SetX(x);
+    v.SetY(y);
+    v.SetZ(z);
     return is;
 }
 #endif /* ! __CINT__ */
