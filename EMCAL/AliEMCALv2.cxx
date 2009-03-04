@@ -44,6 +44,7 @@
 #include "AliHeader.h"
 #include "AliMC.h"
 #include "AliStack.h"
+#include "AliTrackReference.h"
 // for TRD1 case only; May 31,2006
 
 ClassImp(AliEMCALv2)
@@ -158,8 +159,8 @@ void AliEMCALv2::StepManager(void){
 
       if (fCurParent==-1 || tracknumber != fCurTrack) {
 	// Check parentage
-	//Int_t parent=tracknumber;
 	parent=tracknumber;
+
 	if (fCurParent != -1) {
 	  while (parent != fCurParent && parent != -1) {
 	    //TParticle *part=gAlice->GetMCApp()->Particle(parent);
@@ -184,6 +185,10 @@ void AliEMCALv2::StepManager(void){
 	    //TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
 	    part=gAlice->GetMCApp()->Particle(fCurParent);
 	    ienergy = part->Energy(); 
+
+	    //Add reference to parent in TR tree. 	
+	    AddTrackReference(tracknumber, AliTrackReference::kEMCAL);
+
 	  }
 	  while (parent != -1) {
 	    part=gAlice->GetMCApp()->Particle(parent);
@@ -218,7 +223,7 @@ void AliEMCALv2::StepManager(void){
           if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
           else if(strcmp(gMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
           else if(strcmp(gMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
-          else Fatal("StepManager()", "Wrong name of sensetive volume in 3X3 case : %s ", gMC->CurrentVolOffName(0));
+          else Fatal("StepManager()", "Wrong name of sensitive volume in 3X3 case : %s ", gMC->CurrentVolOffName(0));
 	}
       } else {
         gMC->CurrentVolOffID(5, supModuleNumber);
