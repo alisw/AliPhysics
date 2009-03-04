@@ -55,7 +55,7 @@ ClassImp(AliTRDseedV1)
 
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t det) 
-  :TObject()
+  :AliTRDtrackletBase()
   ,fReconstructor(0x0)
   ,fClusterIter(0x0)
   ,fExB(0.)
@@ -65,9 +65,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
-//   ,fUsable(0)
-  ,fN2(0)
-  ,fNUsed(0)
+  ,fN(0)
   ,fDet(det)
   ,fTilt(0.)
   ,fPadLength(0.)
@@ -104,7 +102,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
 
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
-  :TObject((TObject&)ref)
+  :AliTRDtrackletBase((AliTRDtrackletBase&)ref)
   ,fReconstructor(0x0)
   ,fClusterIter(0x0)
   ,fExB(0.)
@@ -114,9 +112,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
-//   ,fUsable(0)
-  ,fN2(0)
-  ,fNUsed(0)
+  ,fN(0)
   ,fDet(-1)
   ,fTilt(0.)
   ,fPadLength(0.)
@@ -195,9 +191,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fDiffL         = fDiffL;
   target.fDiffT         = fDiffT;
   target.fClusterIdx    = 0;
-//   target.fUsable        = fUsable;
-  target.fN2            = fN2;
-  target.fNUsed         = fNUsed;
+  target.fN             = fN;
   target.fDet           = fDet;
   target.fTilt          = fTilt;
   target.fPadLength     = fPadLength;
@@ -260,8 +254,8 @@ void AliTRDseedV1::Reset()
   //
   fExB=0.;fVD=0.;fT0=0.;fS2PRF=0.;
   fDiffL=0.;fDiffT=0.;
-  fClusterIdx=0;//fUsable=0;
-  fN2=0; fNUsed=0;
+  fClusterIdx=0;
+  fN=0;
   fDet=-1;fTilt=0.;fPadLength=0.;
   fMom=0.;
   fdX=0.;fX0=0.; fX=0.; fY=0.; fZ=0.;
@@ -309,12 +303,18 @@ void AliTRDseedV1::UpdateUsed()
   // Calculate number of used clusers in the tracklet
   //
 
-  fNUsed = 0;
+  Int_t nused = 0, nshared = 0;
   for (Int_t i = kNTimeBins; i--; ) {
     if (!fClusters[i]) continue;
-    if(fClusters[i]->IsUsed()) fNUsed++;
-    else if(fClusters[i]->IsShared() && IsStandAlone()) fNUsed++;
+    if(fClusters[i]->IsUsed()){ 
+      nused++;
+    } else if(fClusters[i]->IsShared()){
+      if(IsStandAlone()) nused++;
+      else nshared++;
+    }
   }
+  SetNUsed(nused);
+  SetNShared(nshared);
 }
 
 //_____________________________________________________________________________
@@ -336,16 +336,17 @@ void AliTRDseedV1::UseClusters()
     if(!(*c)) continue;
     if(IsStandAlone()){
       if((*c)->IsShared() || (*c)->IsUsed()){ 
-       (*c) = 0x0;
+        (*c) = 0x0;
         fIndexes[ic] = -1;
-        fN2--;
-	continue;
+        SetN(GetN()-1);
+        if((*c)->IsShared()) SetNShared(GetNShared()-1);
+        else SetNUsed(GetNUsed()-1);
+        continue;
       }
-    }
-    else{
+    } else {
       if((*c)->IsUsed() || IsKink()){
-      	(*c)->SetShared();
-      	continue;
+        (*c)->SetShared();
+        continue;
       }
     }
     (*c)->Use();
@@ -397,7 +398,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 
 
     // 2. take sharing into account
-    Float_t w = c->IsShared() ? .5 : 1.;
+    Float_t w = /*c->IsShared() ? .5 :*/ 1.;
     
     // 3. take into account large clusters TODO
     //w *= c->GetNPads() > 3 ? .8 : 1.;
@@ -499,8 +500,16 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
 }
 
 //____________________________________________________________________
-Float_t* AliTRDseedV1::GetProbability()
+Float_t* AliTRDseedV1::GetProbability(Bool_t force)
 {	
+  if(!force) return &fProb[0];
+  if(!CookPID()) return 0x0;
+  return &fProb[0];
+}
+
+//____________________________________________________________
+Bool_t AliTRDseedV1::CookPID()
+{
 // Fill probability array for tracklet from the DB.
 //
 // Parameters
@@ -515,19 +524,19 @@ Float_t* AliTRDseedV1::GetProbability()
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliError("No access to calibration data");
-    return 0x0;
+    return kFALSE;
   }
 
   if (!fReconstructor) {
     AliError("Reconstructor not set.");
-    return 0x0;
+    return kFALSE;
   }
 
   // Retrieve the CDB container class with the parametric detector response
   const AliTRDCalPID *pd = calibration->GetPIDObject(fReconstructor->GetPIDMethod());
   if (!pd) {
     AliError("No access to AliTRDCalPID object");
-    return 0x0;
+    return kFALSE;
   }
   //AliInfo(Form("Method[%d] : %s", fReconstructor->GetRecoParam() ->GetPIDMethod(), pd->IsA()->GetName()));
 
@@ -543,7 +552,7 @@ Float_t* AliTRDseedV1::GetProbability()
     fProb[ispec] = pd->GetProbability(ispec, fMom, &fdEdx[0], length, GetPlane());	
   }
 
-  return &fProb[0];
+  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -555,7 +564,7 @@ Float_t AliTRDseedV1::GetQuality(Bool_t kZcorr) const
 
   Float_t zcorr = kZcorr ? fTilt * (fZfit[0] - fZref[0]) : 0.;
   return 
-      .5 * TMath::Abs(18.0 - fN2)
+      .5 * TMath::Abs(18.0 - GetN())
     + 10.* TMath::Abs(fYfit[1] - fYref[1])
     + 5. * TMath::Abs(fYfit[0] - fYref[0] + zcorr)
     + 2. * TMath::Abs(fZfit[0] - fZref[0]) / fPadLength;
@@ -663,7 +672,7 @@ void AliTRDseedV1::Calibrate()
 
   Int_t col = 70, row = 7;
   AliTRDcluster **c = &fClusters[0];
-  if(fN2){ 
+  if(GetN()){ 
     Int_t ic = 0;
     while (ic<kNTimeBins && !(*c)){ic++; c++;} 
     if(*c){
@@ -970,7 +979,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   // We should consider here :
   //  1. How far is the chamber boundary
   //  2. How big is the mean
-  fN2 = 0;
+  Int_t n = 0;
   for (Int_t ir = 0; ir < nr; ir++) {
     Int_t jr = row + ir*lr; 
     if(kPRINT) printf("\tattach %d clusters for row %d\n", ncl[jr], jr);
@@ -983,16 +992,16 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   
       //printf("\tid[%2d] it[%d] idx[%d]\n", ic, it, fIndexes[it]);
   
-      fN2++;
+      n++;
     }
   }  
 
   // number of minimum numbers of clusters expected for the tracklet
-  if (fN2 < kClmin){
-    AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
-    fN2 = 0;
+  if (n < kClmin){
+    //AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", n, kClmin));
     return kFALSE;
   }
+  SetN(n);
 
   // Load calibration parameters for this tracklet  
   Calibrate();
@@ -1049,16 +1058,15 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
   fPadLength = pp->GetLengthIPad();
   //fSnp = fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);
   //fTgl = fZref[1];
-  fN2 = 0;// fMPads = 0.;
+  Int_t n = 0, nshare = 0, nused = 0;
   AliTRDcluster **cit = &fClusters[0];
   for(Int_t ic = kNTimeBins; ic--; cit++){
     if(!(*cit)) return;
-    fN2++;
-/*    fX[ic] = (*cit)->GetX() - fX0;
-    fY[ic] = (*cit)->GetY();
-    fZ[ic] = (*cit)->GetZ();*/
+    n++;
+    if((*cit)->IsShared()) nshare++;
+    if((*cit)->IsUsed()) nused++;
   }
-  //Update(); // 
+  SetN(n); SetNUsed(nused); SetNShared(nshare);
   Fit();
   CookLabels();
   GetProbability();
@@ -1550,7 +1558,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   //
 
   AliInfo(Form("Det[%3d] Tilt[%+6.2f] Pad[%5.2f]", fDet, fTilt, fPadLength));
-  AliInfo(Form("N[%2d] ", fN2));
+  AliInfo(Form("N[%2d] Nused[%2d] Nshared[%2d]", GetN(), GetNUsed(), GetNShared()));
   AliInfo(Form("x[%7.2f] y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fX0, fYfit[0], fZfit[0], fYfit[1], fZfit[1]));
   AliInfo(Form("Ref        y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fYref[0], fZref[0], fYref[1], fZref[1]))
 
@@ -1600,8 +1608,8 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   
 /*  if ( fMeanz != inTracklet->GetMeanz() ) return kFALSE;
   if ( fZProb != inTracklet->GetZProb() ) return kFALSE;*/
-  if ( fN2 != inTracklet->fN2 ) return kFALSE;
-  if ( fNUsed != inTracklet->fNUsed ) return kFALSE;
+  if ( fN != inTracklet->fN ) return kFALSE;
+  //if ( fNUsed != inTracklet->fNUsed ) return kFALSE;
   //if ( fFreq != inTracklet->GetFreq() ) return kFALSE;
   //if ( fNChange != inTracklet->GetNChange() ) return kFALSE;
    

@@ -7,12 +7,12 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  The TRD track seed                                                    //
+//  The TRD offline tracklet                                              //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TObject
-#include "TObject.h"
+#ifndef ALITRDTRACKLETBASE_H
+#include "AliTRDtrackletBase.h"
 #endif
 
 #ifndef ROOT_TMath
@@ -42,11 +42,11 @@ class AliRieman;
 class AliTRDtrackingChamber;
 class AliTRDtrackV1;
 class AliTRDReconstructor;
-class AliTRDseedV1 : public TObject //TODO we should inherit 
-{                                   // AliTRDtrackletBase
+class AliTRDseedV1 : public AliTRDtrackletBase
+{
 public:
   enum ETRDtrackletBuffers {    
-    kNtb = 32           // max clusters/pad row
+    kNtb = 31           // max clusters/pad row
    ,kNTimeBins = 2*kNtb // max number of clusters/tracklet
    ,kNSlices = 10       // max dEdx slices
   };
@@ -74,6 +74,7 @@ public:
   void      Calibrate();
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
+  Bool_t    CookPID();
   Bool_t    Fit(Bool_t tilt=kTRUE, Int_t errors = 2);
 //   void      FitMI();
   Bool_t    Init(AliTRDtrackV1 *track);
@@ -82,7 +83,7 @@ public:
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsKink() const           { return TestBit(kKink);}
-  Bool_t    IsOK() const             { return fN2 > 4 && fNUsed < 4;}
+  Bool_t    IsOK() const             { return GetN() > 4 && GetNUsed() < 4;}
   Bool_t    IsRowCross() const       { return TestBit(kRowCross);}
   Bool_t    IsUsable(Int_t i) const  { return fClusters[i] && !fClusters[i]->IsUsed();}
   Bool_t    IsStandAlone() const     { return TestBit(kStandAlone);}
@@ -99,6 +100,9 @@ public:
   Float_t   GetdX() const            { return fdX;}
   Float_t*  GetdEdx()                { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic) const;
+  Float_t   GetdYdX() const          { return fYfit[1]; } 
+  Float_t   GetdZdX() const          { return fZref[1]; }
+  Int_t     GetdY() const            { return Int_t(GetY()/0.014);}
   Int_t     GetDetector() const      { return fDet;}
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
@@ -106,20 +110,23 @@ public:
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNTimeBins ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
   Double_t  GetMomentum() const      { return fMom;}
-  Int_t     GetN() const             { return fN2;}
-  Int_t     GetN2() const            { return fN2;}
-  Int_t     GetNUsed() const         { return fNUsed;}
+  Int_t     GetN() const             { return (Int_t)fN&0x1f;}
+  Int_t     GetN2() const            { return GetN();}
+  Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
+  Int_t     GetNShared() const       { return Int_t((fN>>10)&0x1f);}
   Float_t   GetQuality(Bool_t kZcorr) const;
   Float_t   GetPadLength() const     { return fPadLength;}
   Int_t     GetPlane() const         { return AliTRDgeometry::GetLayer(fDet);    }
 
-  Float_t*  GetProbability();
+  Float_t*  GetProbability(Bool_t force=kFALSE);
+  inline Double_t  GetPID(Int_t is=-1) const;
   Float_t   GetS2Y() const           { return fS2Y;}
   Float_t   GetS2Z() const           { return fS2Z;}
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTgl() const           { return fZref[1];}
   Float_t   GetTilt() const          { return fTilt;}
+  UInt_t    GetTrackletWord() const  { return 0;}
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
   Float_t   GetY() const             { return fYfit[0] - fYfit[1] * fX;}
@@ -130,7 +137,8 @@ public:
   Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
   Float_t   GetZfit(Int_t id) const { return fZfit[id];}
   Float_t   GetZref(Int_t id) const { return fZref[id];}
-//   Long_t    GetUsabilityMap() const { return fUsable; }
+  Int_t     GetYbin() const         { return Int_t(GetY()/0.016);}
+  Int_t     GetZbin() const         { return Int_t(GetZ()/fPadLength);}
 
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
@@ -161,9 +169,13 @@ public:
   void      UseClusters();
 
 protected:
-  void Copy(TObject &ref) const;
+  void        Copy(TObject &ref) const;
 
 private:
+  inline void SetN(Int_t n);
+  inline void SetNUsed(Int_t n);
+  inline void SetNShared(Int_t n);
+
   const AliTRDReconstructor *fReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
   Int_t            fIndexes[kNTimeBins];    //! Indexes
@@ -175,8 +187,7 @@ private:
   Float_t          fDiffT;                  //! transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
 //  ULong_t          fUsable;                 //! bit map of usable clusters
-  UChar_t          fN2;                     // number of clusters attached
- UChar_t          fNUsed;                  // number of used usable clusters
+  UShort_t         fN;                     // number of clusters attached/used/shared
   Short_t          fDet;                    // TRD detector
   Float_t          fTilt;                   // local tg of the tilt angle 
   Float_t          fPadLength;              // local pad length 
@@ -201,7 +212,7 @@ private:
   Double_t         fRefCov[3];              // covariance matrix of the track in the yz plane
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
 
-  ClassDef(AliTRDseedV1, 5)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 6)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________
@@ -229,6 +240,14 @@ inline Float_t AliTRDseedV1::GetChi2Phi() const
   Double_t cov[3]; GetCovAt(fX, cov);
   Double_t s2 = fRefCov[2]+cov[2];
   return s2 > 0. ? dphi/s2 : 0.; 
+}
+
+//____________________________________________________________
+inline Double_t AliTRDseedV1::GetPID(Int_t is) const
+{
+  if(is<0) return fProb[AliPID::kElectron];
+  if(is<AliPID::kSPECIES) return fProb[is];
+  return 0.;
 }
 
 //____________________________________________________________
@@ -293,6 +312,31 @@ inline void AliTRDseedV1::ResetClusterIter(Bool_t forward)
     fClusterIdx=kNTimeBins;
   }
 }
+
+//____________________________________________________________
+inline void AliTRDseedV1::SetN(Int_t n)
+{
+  if(n<0 || n>= (1<<5)) return; 
+  fN &= ~0x1f;
+  fN |= n;
+}
+
+//____________________________________________________________
+inline void AliTRDseedV1::SetNUsed(Int_t n)
+{
+  if(n<0 || n>= (1<<5)) return; 
+  fN &= ~(0x1f<<5);
+  n <<= 5; fN |= n;
+}
+
+//____________________________________________________________
+inline void AliTRDseedV1::SetNShared(Int_t n)
+{
+  if(n<0 || n>= (1<<5)) return; 
+  fN &= ~(0x1f<<10);
+  n <<= 10; fN |= n;
+}
+
 
 #endif
 
