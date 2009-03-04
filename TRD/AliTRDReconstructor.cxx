@@ -161,9 +161,9 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   rawReader->Select("TRD");
 
   // New (fast) cluster finder
-  AliTRDclusterizer clusterer("clusterer","TRD clusterizer",this);
-  //clusterer.SetReconstructor(this);                 //     ^| "this" tells the digitsmanager that we are reading raw files
-  clusterer.OpenOutput(clusterTree);                  //        it is not strictly necessaray but will give a speed up
+  AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
+  clusterer.SetReconstructor(this);
+  clusterer.OpenOutput(clusterTree);
   clusterer.SetAddLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
   
@@ -185,8 +185,8 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
   AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
-  clusterer.SetReconstructor(this);                  //    ^| no this, because we are reading from digitsTree
-  clusterer.OpenOutput(clusterTree);                 //       it is necessary to NOT have the "this" here!
+  clusterer.SetReconstructor(this);
+  clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
 

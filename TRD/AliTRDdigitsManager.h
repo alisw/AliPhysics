@@ -20,7 +20,6 @@ class AliTRDSignalIndex;
 class AliTRDarrayADC;  
 class AliTRDarraySignal; 
 class AliTRDarrayDictionary;
-class AliTRDReconstructor;
 
 class AliTRDdigitsManager : public TObject {
 
@@ -28,7 +27,7 @@ class AliTRDdigitsManager : public TObject {
 
   enum { kNDict = 3 };
 
-  AliTRDdigitsManager(const AliTRDReconstructor *const rec = 0x0);  //if rec is given, we are reading raw data, so the TObjArrays may (and will) contain only one entry
+  AliTRDdigitsManager(Bool_t rawRec = kFALSE);  //if true digitsmanager uses only one entry in the TObjectArrays
   AliTRDdigitsManager(const AliTRDdigitsManager &m);
   virtual ~AliTRDdigitsManager();
   AliTRDdigitsManager &operator=(const AliTRDdigitsManager &m);
@@ -92,8 +91,7 @@ class AliTRDdigitsManager : public TObject {
   TTree              *fTreeD;              //  Tree with detector objects
   TBranch            *fBranch;             //  Branchaddress
   Int_t               fDets;               //  No of Detectors
-  Bool_t              fRawRec;             //  Reconstruct from raw data. If its kTRUE then the TObjArrays have only one entry.
-                                           //  If kFALSE then they have (AliTRDgeometry::Ndet()) entries (default).
+  Bool_t              fRawRec;             //  Reconstruct from raw files? If its kTRUE then the TObjArrays have only one entry.
 
   ClassDef(AliTRDdigitsManager,7)          //  Manages the TRD digits
 

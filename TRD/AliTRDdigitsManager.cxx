@@ -45,7 +45,7 @@ ClassImp(AliTRDdigitsManager)
   const Int_t AliTRDdigitsManager::fgkNDict = kNDict;
 
 //_____________________________________________________________________________
-AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDReconstructor *const rec)
+AliTRDdigitsManager::AliTRDdigitsManager(Bool_t rawRec)
   :TObject()
   ,fEvent(0)
   ,fTree(0)
@@ -56,13 +56,13 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDReconstructor *const rec)
   ,fTreeD(0)
   ,fBranch(0)
   ,fDets(AliTRDgeometry::Ndet())
-  ,fRawRec(kFALSE)
+  ,fRawRec(rawRec)
 {
   //
   // Default constructor
   //
   
-  if(rec)
+  if(fRawRec)
     {
       fDets=1;
       fRawRec=kTRUE;

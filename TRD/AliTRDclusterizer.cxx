@@ -66,9 +66,8 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTrackletTree(NULL)
-  ,fDigitsManager(new AliTRDdigitsManager(rec))
+  ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
-  ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fTransform(new AliTRDtransform(0))
   ,fLUTbin(0)
@@ -92,10 +91,13 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fCalPadStatusROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
+  ,fNoOfClusters(0)
 {
   //
   // AliTRDclusterizer default constructor
   //
+
+  SetBit(kAddLabels, kTRUE);
 
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
@@ -123,9 +125,8 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTrackletTree(NULL)
-  ,fDigitsManager(new AliTRDdigitsManager(rec))
+  ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
-  ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fTransform(new AliTRDtransform(0))
   ,fLUTbin(0)
@@ -149,10 +150,13 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,fCalPadStatusROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
+  ,fNoOfClusters(0)
 {
   //
   // AliTRDclusterizer constructor
   //
+
+  SetBit(kAddLabels, kTRUE);
 
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
@@ -177,7 +181,6 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fTrackletTree(NULL)
   ,fDigitsManager(NULL)
   ,fTrackletContainer(NULL)
-  ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fTransform(NULL)
   ,fLUTbin(0)
@@ -201,10 +204,13 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fCalPadStatusROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
+  ,fNoOfClusters(0)
 {
   //
   // AliTRDclusterizer copy constructor
   //
+
+  SetBit(kAddLabels, kTRUE);
 
   FillLUT();
 
@@ -272,7 +278,6 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fTrackletTree  = NULL;
   ((AliTRDclusterizer &) c).fDigitsManager = NULL;
   ((AliTRDclusterizer &) c).fTrackletContainer = NULL;
-  ((AliTRDclusterizer &) c).fAddLabels     = fAddLabels;
   ((AliTRDclusterizer &) c).fRawVersion    = fRawVersion;
   ((AliTRDclusterizer &) c).fTransform     = NULL;
   ((AliTRDclusterizer &) c).fLUTbin        = 0;
@@ -296,7 +301,7 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fCalPadStatusROC = NULL;
   ((AliTRDclusterizer &) c).fClusterROC    = 0;
   ((AliTRDclusterizer &) c).firstClusterROC= 0;
-
+  ((AliTRDclusterizer &) c).fNoOfClusters  = 0;
 }
 
 //_____________________________________________________________________________
@@ -556,8 +561,8 @@ Bool_t AliTRDclusterizer::MakeClusters()
   //
 
   // Propagate info from the digits manager
-  if (fAddLabels == kTRUE){
-    fAddLabels = fDigitsManager->UsesDictionaries();
+  if (TestBit(kAddLabels)){
+    SetBit(kAddLabels, fDigitsManager->UsesDictionaries());
   }
   
   Bool_t fReturn = kTRUE;
@@ -575,7 +580,7 @@ Bool_t AliTRDclusterizer::MakeClusters()
   
     Bool_t fR = kFALSE;
     if (indexes->HasEntry()){
-      if (fAddLabels){
+      if (TestBit(kAddLabels)){
         for (Int_t iDict = 0; iDict < AliTRDdigitsManager::kNDict; iDict++){
           AliTRDarrayDictionary *tracksIn = 0; //mod
           tracksIn = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(i,iDict);  //mod
@@ -625,11 +630,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   // Create the digits manager
   if (!fDigitsManager){
-    fDigitsManager = new AliTRDdigitsManager(fReconstructor);
+    fDigitsManager = new AliTRDdigitsManager(kTRUE);
     fDigitsManager->CreateArrays();
   }
 
-  fDigitsManager->SetUseDictionaries(fAddLabels);
+  fDigitsManager->SetUseDictionaries(TestBit(kAddLabels));
 
   // tracklet container for raw tracklet writing
   if (!fTrackletContainer && fReconstructor->IsWritingTracklets()) {
@@ -672,7 +677,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   delete input;
   input = NULL;
 
-  AliInfo(Form("Number of found clusters : %d", RecPoints()->GetEntriesFast())); 
+  AliInfo(Form("Number of found clusters : %d", fNoOfClusters)); 
   return kTRUE;
 
 }
@@ -809,6 +814,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
   
+  SetBit(kIsLUT, fReconstructor->GetRecoParam()->IsLUT());
+  SetBit(kIsHLT, fReconstructor->IsHLT());
+
   firstClusterROC = -1;
   fClusterROC     =  0;
 
@@ -846,7 +854,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 		    << "\n";
   }
 
-  if (fAddLabels) {
+  if (TestBit(kAddLabels)) {
     AddLabels(fDet,firstClusterROC,fClusterROC);
   }
 
@@ -947,12 +955,12 @@ Bool_t AliTRDclusterizer::FivePadCluster(MaxStruct &ThisMax, MaxStruct &Neighbou
 void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
 {
   //
-  // Creates a cluster at the given position and saves it in fRecPoint
+  // Creates a cluster at the given position and saves it in fRecPoints
   //
 
   // The position of the cluster in COL direction relative to the center pad (pad units)
   Double_t clusterPosCol = 0.0;
-  if (fReconstructor->GetRecoParam()->IsLUT()) {
+  if (TestBit(kIsLUT)) {
     // Calculate the position of the cluster by using the
     // lookup table method
     clusterPosCol = LUTposition(fLayer,Max.Signals[0]
@@ -982,37 +990,9 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
 
   // Count the number of pads in the cluster
   Int_t nPadCount = 1;
-  // Look to the right
-  Int_t ii = 1;
-  while (fDigits->GetData(Max.Row, Max.Col-ii, Max.Time) >= fSigThresh) {
-    nPadCount++;
-    ii++;
-    if (Max.Col < ii) break;
-  }
-  // Look to the left
-  ii = 1;
-  while (fDigits->GetData(Max.Row, Max.Col+ii, Max.Time) >= fSigThresh) {
-    nPadCount++;
-    ii++;
-    if (Max.Col+ii >= fColMax) break;
-  }
+  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
 
-  // Store the amplitudes of the pads in the cluster for later analysis
-  // and check whether one of these pads is masked in the database
-  Short_t signals[7] = { 0, 0, Max.Signals[0],
-			       Max.Signals[1], 
-			       Max.Signals[2], 0, 0 };
-  for(Int_t i = 0; i<2; i++)
-    {
-      if(Max.Col+i >= 3)
-	signals[i] = fDigits->GetData(Max.Row, Max.Col-3+i, Max.Time);
-      if(Max.Col+3-i < fColMax)
-	signals[6-i] = fDigits->GetData(Max.Row, Max.Col+3-i, Max.Time);
-    }
-  /*for (Int_t jPad = Max.Col-3; jPad <= Max.Col+3; jPad++) {
-    if ((jPad >= 0) && (jPad < fColMax))
-      signals[jPad-Max.Col+3] = TMath::Nint(fDigits->GetData(Max.Row,jPad,Max.Time));
-      }*/
+  if(!TestBit(kIsHLT))CalcAdditionalInfo(Max, signals, nPadCount);
 
   // Transform the local cluster coordinates into calibrated 
   // space point positions defined in the local tracking system.
@@ -1032,8 +1012,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   Bool_t out = kTRUE;
   if (fTransform->Transform(clusterXYZ,clusterRCT,((UInt_t) Max.Time),out,0)) {
 
-    // Add the cluster to the output array
-    // The track indices will be stored later 
+    Char_t  clusterTimeBin = ((Char_t) clusterRCT[2]);
     Float_t clusterPos[3];
     clusterPos[0] = clusterXYZ[0];
     clusterPos[1] = clusterXYZ[1];
@@ -1041,43 +1020,93 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
     Float_t clusterSig[2];
     clusterSig[0] = clusterXYZ[4];
     clusterSig[1] = clusterXYZ[5];
-    Double_t clusterCharge  = clusterXYZ[3];
-    Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
-
-    Int_t n = RecPoints()->GetEntriesFast();
-    AliTRDcluster *cluster = new((*RecPoints())[n]) AliTRDcluster(
-								  fDet,
-								  clusterCharge, clusterPos, clusterSig,
-								  0x0,
-								  ((Char_t) nPadCount),
-								  signals,
-								  ((UChar_t) Max.Col), ((UChar_t) Max.Row), ((UChar_t) Max.Time),
-								  clusterTimeBin, clusterPosCol,
-								  fVolid);
-    cluster->SetInChamber(!out);
-    cluster->SetFivePad(Max.FivePad);
-
+    Float_t clusterCharge  = clusterXYZ[3];
+    
+    AliTRDcluster cluster(
+			  fDet,
+			  clusterCharge, clusterPos, clusterSig,
+			  0x0,
+			  ((Char_t) nPadCount),
+			  signals,
+			  ((UChar_t) Max.Col), ((UChar_t) Max.Row), ((UChar_t) Max.Time),
+			  clusterTimeBin, clusterPosCol,
+			  fVolid);
+    
+    cluster.SetInChamber(!out);
+    cluster.SetFivePad(Max.FivePad);
+    
     UChar_t maskPosition = GetCorruption(Max.padStatus);
     if (maskPosition) { 
-      cluster->SetPadMaskedPosition(maskPosition);
-      cluster->SetPadMaskedStatus(GetPadStatus(Max.padStatus));
+      cluster.SetPadMaskedPosition(maskPosition);
+      cluster.SetPadMaskedStatus(GetPadStatus(Max.padStatus));
     }
-
+    
     // Temporarily store the Max.Row, column and time bin of the center pad
     // Used to later on assign the track indices
-    cluster->SetLabel(Max.Row, 0);
-    cluster->SetLabel(Max.Col, 1);
-    cluster->SetLabel(Max.Time,2);
-
+    cluster.SetLabel(Max.Row, 0);
+    cluster.SetLabel(Max.Col, 1);
+    cluster.SetLabel(Max.Time,2);
+    
+    AddClusterToArray(&cluster); //needs to be like that because HLT does things differently
+    
+    //AddCluster(Max,clusterXYZ,clusterTimeBin,signals,nPadCount,out,clusterPosCol);
     // Store the index of the first cluster in the current ROC
     if (firstClusterROC < 0) {
-      firstClusterROC = RecPoints()->GetEntriesFast() - 1;
+      firstClusterROC = fNoOfClusters;
     }
-
-    // Count the number of cluster in the current ROC
+    
+    fNoOfClusters++;
     fClusterROC++;
   }
 
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount)
+{
+  // Look to the right
+  Int_t ii = 1;
+  while (fDigits->GetData(Max.Row, Max.Col-ii, Max.Time) >= fSigThresh) {
+    nPadCount++;
+    ii++;
+    if (Max.Col < ii) break;
+  }
+  // Look to the left
+  ii = 1;
+  while (fDigits->GetData(Max.Row, Max.Col+ii, Max.Time) >= fSigThresh) {
+    nPadCount++;
+    ii++;
+    if (Max.Col+ii >= fColMax) break;
+  }
+
+  // Store the amplitudes of the pads in the cluster for later analysis
+  // and check whether one of these pads is masked in the database
+  signals[2]=Max.Signals[0];
+  signals[3]=Max.Signals[1];
+  signals[4]=Max.Signals[2];
+  for(Int_t i = 0; i<2; i++)
+    {
+      if(Max.Col+i >= 3)
+	signals[i] = fDigits->GetData(Max.Row, Max.Col-3+i, Max.Time);
+      if(Max.Col+3-i < fColMax)
+	signals[6-i] = fDigits->GetData(Max.Row, Max.Col+3-i, Max.Time);
+    }
+  /*for (Int_t jPad = Max.Col-3; jPad <= Max.Col+3; jPad++) {
+    if ((jPad >= 0) && (jPad < fColMax))
+      signals[jPad-Max.Col+3] = TMath::Nint(fDigits->GetData(Max.Row,jPad,Max.Time));
+      }*/
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::AddClusterToArray(AliTRDcluster *cluster)
+{
+  //
+  // Add a cluster to the array
+  //
+
+  Int_t n = RecPoints()->GetEntriesFast();
+  if(n!=fNoOfClusters)AliError(Form("fNoOfClusters != RecPoints()->GetEntriesFast %i != %i \n", fNoOfClusters, n));
+  new((*RecPoints())[n]) AliTRDcluster(*cluster);
 }
 
 //_____________________________________________________________________________
@@ -1392,7 +1421,6 @@ TClonesArray *AliTRDclusterizer::RecPoints()
     if(!(fRecPoints = AliTRDReconstructor::GetClusters())){
       // determine number of clusters which has to be allocated
       Float_t nclusters = fReconstructor->GetRecoParam()->GetNClusters();
-      if(fReconstructor->IsHLT()) nclusters /= AliTRDgeometry::kNsector;
 
       fRecPoints = new TClonesArray("AliTRDcluster", Int_t(nclusters));
     }

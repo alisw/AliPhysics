@@ -39,7 +39,10 @@ class AliTRDclusterizer : public TNamed
 
   // steering flags
   enum{
-    kOwner = BIT(14)
+    kIsHLT = BIT(12),    //  are we just in HLT?
+    kIsLUT = BIT(13),    //  are we using look up table for center of the cluster?
+    kOwner = BIT(14),    //  is the clusterizer owner of the clusters?
+    kAddLabels  = BIT(15)   //  Should clusters have MC labels?
   };
 
   struct MaxStruct
@@ -75,8 +78,8 @@ class AliTRDclusterizer : public TNamed
   virtual Bool_t   ReadDigits(TTree *digitsTree);
 
   virtual Bool_t   WriteClusters(Int_t det);
-          void     ResetRecPoints();
-  TClonesArray       *RecPoints();
+  void     ResetRecPoints();
+  virtual TClonesArray    *RecPoints();
           Bool_t   WriteTracklets(Int_t det);
 
   virtual Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -86,13 +89,14 @@ class AliTRDclusterizer : public TNamed
   virtual Bool_t   MakeClusters(Int_t det);
 
   virtual Bool_t   AddLabels(const Int_t idet, const Int_t firstClusterROC, const Int_t nClusterROC);
-  virtual Bool_t   SetAddLabels(const Bool_t kset) { fAddLabels = kset; return fAddLabels;  } // should we assign labels to clusters
+  virtual Bool_t   SetAddLabels(const Bool_t kset) { SetBit(kAddLabels, kset); return TestBit(kAddLabels);  } // should we assign labels to clusters
   virtual void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
+  Int_t            GetAddedClusters() {return fNoOfClusters;}
 
-  Bool_t           IsClustersOwner() const {return TestBit(kOwner);}
-  void             SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fRecPoints = 0x0;}
+  virtual Bool_t   IsClustersOwner() const {return TestBit(kOwner);}
+  void             SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
 
  protected:
 
@@ -112,8 +116,10 @@ class AliTRDclusterizer : public TNamed
   Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Short_t *const Signals);       //for const correctness reasons not const parameters are given separately
   Bool_t           FivePadCluster(MaxStruct &ThisMax, MaxStruct &NeighbourMax);
   void             CreateCluster(const MaxStruct &Max); 
+  inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
+  virtual void     AddClusterToArray(AliTRDcluster *cluster);
 
-  const AliTRDReconstructor *fReconstructor;       //! reconstructor
+  const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
   TClonesArray        *fRecPoints;           //! Array of clusters
@@ -124,7 +130,6 @@ class AliTRDclusterizer : public TNamed
 
   UInt_t              **fTrackletContainer;  //! tracklet container
 
-  Bool_t               fAddLabels;           //  Should clusters have MC labels?
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2
 
   AliTRDtransform     *fTransform;           //! Transforms the reconstructed space points
@@ -132,8 +137,8 @@ class AliTRDclusterizer : public TNamed
   Int_t                fLUTbin;              //  Number of bins of the LUT
   Double_t            *fLUT;                 //! The lookup table
 
-  AliTRDarrayADC      *fDigits;
-  AliTRDSignalIndex   *fIndexes;
+  AliTRDarrayADC      *fDigits;               // Array holding the digits
+  AliTRDSignalIndex   *fIndexes;              // Array holding the indexes to the digits
   Float_t              fADCthresh;            // ADC thresholds: There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
   Float_t              fMaxThresh;            // Threshold value for the maximum
   Float_t              fSigThresh;            // Threshold value for the digit signal
@@ -148,11 +153,12 @@ class AliTRDclusterizer : public TNamed
   Float_t              fCalGainFactorDetValue;// Calibration value for chamber wise noise
   AliTRDCalROC        *fCalNoiseROC;          // Calibration object with pad wise values for the noise
   Float_t              fCalNoiseDetValue;     // Calibration value for chamber wise noise
-  AliTRDCalSingleChamberStatus *fCalPadStatusROC; //// Calibration object with the pad status
+  AliTRDCalSingleChamberStatus *fCalPadStatusROC; // Calibration object with the pad status
   Int_t                fClusterROC;           // The index to the first cluster of a given ROC
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
+  Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
 
-  ClassDef(AliTRDclusterizer,6)              //  TRD clusterfinder
+  ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
 
 };
 
