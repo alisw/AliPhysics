@@ -128,7 +128,12 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 			fQACycles[iDet]    = 999999 ;
       fQAWriteExpert[iDet] = kTRUE ;
 		}
-	}	   
+	}	  
+  // set the default storage
+  TString sto(AliQA::GetQARefStorage()) ;
+    if (sto.IsNull()) 
+      AliFatal("QA reference storage not set do: AliQA::SetQARefStorage") ; 
+  SetDefaultStorage(sto.Data());
 }
 
 //_____________________________________________________________________________
@@ -160,6 +165,11 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
 		fQACycles[iDet]       = qas.fQACycles[iDet] ;	
     fQAWriteExpert[iDet] = qas.fQAWriteExpert[iDet] ;
   }
+  // set the default storage
+    TString sto(AliQA::GetQARefStorage()) ;
+    if (sto.IsNull()) 
+      AliFatal("QA reference storage not set do: AliQA::SetQARefStorage") ; 
+    SetDefaultStorage(sto.Data());
 }
 
 //_____________________________________________________________________________
