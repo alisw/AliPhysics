@@ -209,6 +209,19 @@ class AliHLTTrigger : public AliHLTProcessor
    * \param value  The new value to use for the description string.
    */
   void SetDescription(const char* value) { fDescription = value; }
+  
+  /**
+   * \returns true if the trigger description, trigger domain and readout list
+   *    should be cleared for each new event.
+   */
+  bool WillClearInfoForNewEvent() const { return fClearInfo; }
+  
+  /**
+   * Sets the flag indicating in the trigger description, trigger domain and
+   * readout list should be cleared for each new event.
+   * \param value  The new value to use for the flag.
+   */
+  void ClearInfoForNewEvent(bool value = true) { fClearInfo = value; }
 
  private:
  
@@ -247,6 +260,7 @@ class AliHLTTrigger : public AliHLTProcessor
   const AliHLTComponentEventData* fEventData; //! Event data for the current event. Only valid inside DoTrigger.
   AliHLTComponentTriggerData* fTriggerData; //! Trigger data for the current event. Only valid inside DoTrigger.
   bool fDecisionMade;  //! Flag indicating if the trigger decision has been made for this trigger yet.
+  bool fClearInfo;  //! Flag indicating if fDescription, fReadoutList and fTriggerDomain should be cleared for each new event.
   int fTriggerEventResult;  //! Result returned by PushBack method in the TriggerEvent method.
   TString fDescription;   //! The description to use for the trigger decision.
   AliHLTReadoutList fReadoutList; //! The DDL readout list object for the current event being processed.

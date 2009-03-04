@@ -151,6 +151,13 @@ bool AliHLTReadoutList::Empty() const
 }
 
 
+void AliHLTReadoutList::Clear(Option_t* /*option*/)
+{
+  // Resets all the DDL readout bits.
+  memset(fReadoutList.fList, 0x0, sizeof(fReadoutList.fList));
+}
+
+
 bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitIndex)
 {
   // Decodes the word index and bit index within that word for the readout list structure.

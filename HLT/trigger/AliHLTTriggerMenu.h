@@ -14,6 +14,7 @@
 #include "TClonesArray.h"
 #include "AliHLTTriggerMenuSymbol.h"
 #include "AliHLTTriggerMenuItem.h"
+#include "AliHLTTriggerDomain.h"
 
 /**
  * \class AliHLTTriggerMenu
@@ -41,6 +42,15 @@ class AliHLTTriggerMenu : public TObject
    * \param option  Can be "short" which will print the short format.
    */
   virtual void Print(Option_t* option = "") const;
+  
+  /**
+   * This method removes all items and symbols from the trigger menu.
+   * \note The name and default values are not changed. Only the items and symbol
+   *    lists are cleared.
+   * \param  option  This is passed onto the internal fSymbols and fItems TClonesArrays.
+   * The method is inherited from TObject.
+   */
+  virtual void Clear(Option_t* option = "");
 
   /**
    * Copy constructor performs a deep copy of the object.
@@ -142,11 +152,42 @@ class AliHLTTriggerMenu : public TObject
    */
   const TClonesArray& ItemsArray() const { return fItems; }
   
+  /**
+   * Sets the default trigger description to use if the global trigger does not
+   * fire and returns a negative result.
+   */
+  void DefaultDescription(const char* value) { fDefaultDescription = value; }
+  
+  /**
+   * Returns the default trigger description to use if the global trigger does not
+   * fire and returns a negative result.
+   */
+  const char* DefaultDescription() const { return fDefaultDescription.Data(); }
+  
+  /**
+   * Sets the default trigger domain to use if the global trigger does not
+   * fire and returns a negative result.
+   */
+  void DefaultTriggerDomain(const AliHLTTriggerDomain& value) { fDefaultDomain = value; }
+  
+  /**
+   * Returns the default trigger domain to use if the global trigger does not
+   * fire and returns a negative result.
+   */
+  const AliHLTTriggerDomain& DefaultTriggerDomain() const { return fDefaultDomain; }
+  
+  /**
+   * Returns the default trigger domain for modification.
+   */
+  AliHLTTriggerDomain& DefaultTriggerDomain() { return fDefaultDomain; }
+  
  private:
   
   TString fName;  /// Name of the trigger menu.
   TClonesArray fSymbols;  /// List of symbols used in trigger expressions.
   TClonesArray fItems;  /// List of trigger menu items.
+  TString fDefaultDescription; /// The default trigger description to use for negative global triggers.
+  AliHLTTriggerDomain fDefaultDomain;  /// The default trigger domain to use for negative global triggers.
   
   ClassDef(AliHLTTriggerMenu, 2) // Trigger menu for the global HLT trigger.
 };

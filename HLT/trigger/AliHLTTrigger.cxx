@@ -33,6 +33,7 @@ AliHLTTrigger::AliHLTTrigger() :
 	fEventData(NULL),
 	fTriggerData(NULL),
 	fDecisionMade(false),
+	fClearInfo(true),
 	fTriggerEventResult(0),
 	fDescription(),
 	fReadoutList(),
@@ -67,6 +68,14 @@ int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTCompon
   fTriggerData = &trigData;
   fDecisionMade = false;
   fTriggerEventResult = 0;
+  // Reset the description, readout list and trigger domain used by TriggerEvent
+  // if requested to do so.
+  if (fClearInfo)
+  {
+    fDescription = "";
+    fReadoutList.Clear();
+    fTriggerDomain.Clear();
+  }
   
   int result = DoTrigger();
   if (result != 0) return result;

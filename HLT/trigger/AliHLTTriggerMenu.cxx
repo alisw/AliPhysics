@@ -32,7 +32,9 @@ AliHLTTriggerMenu::AliHLTTriggerMenu() :
   TObject(),
   fName("Unknown"),
   fSymbols(AliHLTTriggerMenuSymbol::Class(), 100),
-  fItems(AliHLTTriggerMenuItem::Class(), 100)
+  fItems(AliHLTTriggerMenuItem::Class(), 100),
+  fDefaultDescription(),
+  fDefaultDomain()
 {
   // Default constructor.
 }
@@ -48,7 +50,9 @@ AliHLTTriggerMenu::AliHLTTriggerMenu(const AliHLTTriggerMenu& obj) :
   TObject(obj),
   fName(obj.fName),
   fSymbols(AliHLTTriggerMenuSymbol::Class(), obj.fSymbols.GetEntriesFast()),
-  fItems(AliHLTTriggerMenuItem::Class(), obj.fItems.GetEntriesFast())
+  fItems(AliHLTTriggerMenuItem::Class(), obj.fItems.GetEntriesFast()),
+  fDefaultDescription(obj.fDefaultDescription),
+  fDefaultDomain(obj.fDefaultDomain)
 {
   // Copy constructor performs a deep copy.
   
@@ -71,15 +75,18 @@ AliHLTTriggerMenu& AliHLTTriggerMenu::operator = (const AliHLTTriggerMenu& obj)
   {
     TObject::operator = (obj);
     fName = obj.fName;
-    fItems.Clear();
+    fSymbols.Clear();
     for (UInt_t i = 0; i < obj.NumberOfSymbols(); i++)
     {
       AddSymbol(*obj.Symbol(i));
     }
+    fItems.Clear();
     for (UInt_t i = 0; i < obj.NumberOfItems(); i++)
     {
       AddItem(*obj.Item(i));
     }
+    fDefaultDescription = obj.fDefaultDescription;
+    fDefaultDomain = obj.fDefaultDomain;
   }
   return *this;
 }
@@ -128,5 +135,15 @@ void AliHLTTriggerMenu::Print(Option_t* option) const
     Symbol(i)->Print("compact");
   }
   if (NumberOfSymbols() == 0) cout << "(none)" << endl;
+  cout << "Default trigger description: \"" << fDefaultDescription << "\"" << endl;
+  cout << "Default "; fDefaultDomain.Print();
 }
 
+
+void AliHLTTriggerMenu::Clear(Option_t* option)
+{
+  // Clears the internal symbol and items arrays.
+  
+  fSymbols.Clear(option);
+  fItems.Clear(option);
+}

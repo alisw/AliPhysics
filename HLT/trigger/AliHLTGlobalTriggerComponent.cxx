@@ -46,6 +46,8 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fDebugMode(false)
 {
   // Default constructor.
+  
+  ClearInfoForNewEvent(false);
 }
 
 
@@ -198,6 +200,10 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   fTrigger->FillFromMenu(*menu);
   fTrigger->ResetCounters(menu->NumberOfItems());
   
+  // Set the default values from the trigger menu.
+  SetDescription(menu->DefaultDescription());
+  SetTriggerDomain(menu->DefaultTriggerDomain());
+  
   return 0;
 }
 
@@ -247,11 +253,16 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // Calculate the global trigger result and trigger domain, then create and push
   // back the new global trigger decision object.
   TString description;
-  GetTriggerDomain().Clear();
-  bool triggerResult = fTrigger->CalculateTriggerDecision(GetTriggerDomain(), description);
-  SetDescription(description.Data());
+  AliHLTTriggerDomain triggerDomain;
+  bool triggerResult = fTrigger->CalculateTriggerDecision(triggerDomain, description);
   
-  AliHLTGlobalTriggerDecision decision(triggerResult, GetTriggerDomain(), GetDescription());
+  AliHLTGlobalTriggerDecision decision(
+      triggerResult,
+      // The following will cause the decision to be generated with default values
+      // (set in fTriggerDomain and fDescription) if the trigger result is false.
+      (triggerResult == true) ? triggerDomain : GetTriggerDomain(),
+      (triggerResult == true) ? description.Data() : GetDescription()
+    );
   decision.SetCounters(fTrigger->Counters());
   
   // Add the input objects used to the global decision.

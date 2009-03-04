@@ -208,6 +208,33 @@ void AliHLTGlobalTriggerConfig::AddItem(
 }
 
 
+void AliHLTGlobalTriggerConfig::SetDefaultTriggerDescription(const char* description)
+{
+  // Sets the default trigger decription.
+  
+  if (fgMenu == NULL) NewMenu("");
+  fgMenu->DefaultDescription(description);
+}
+
+
+void AliHLTGlobalTriggerConfig::SetDefaultTriggerDomain(const AliHLTTriggerDomain& domain)
+{
+  // Sets the default trigger domain.
+  
+  if (fgMenu == NULL) NewMenu("");
+  fgMenu->DefaultTriggerDomain(domain);
+}
+
+
+AliHLTTriggerDomain& AliHLTGlobalTriggerConfig::DefaultTriggerDomain()
+{
+  // Returns the default trigger domain for the current trigger menu.
+  
+  if (fgMenu == NULL) NewMenu("");
+  return fgMenu->DefaultTriggerDomain();
+}
+
+
 void AliHLTGlobalTriggerConfig::Print(Option_t* option) const
 {
   // Prints the contents of the current trigger menu being manipulated.

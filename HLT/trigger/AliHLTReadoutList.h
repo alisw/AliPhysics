@@ -111,6 +111,13 @@ class AliHLTReadoutList : public TObject
   bool Empty() const;
   
   /**
+   * Disables all bits in the readout list.
+   * \param  option  This parameter is ignored.
+   * The method is inherited from TObject.
+   */
+  virtual void Clear(Option_t* option = "");
+  
+  /**
    * Enables a specific DDL bit in the readout list.
    * \param ddlId  The ID number of the DDL to enable.
    */

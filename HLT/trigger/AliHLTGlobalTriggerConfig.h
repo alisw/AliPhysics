@@ -13,6 +13,7 @@
 
 class AliHLTComponentDataType;
 class AliHLTTriggerMenu;
+class AliHLTTriggerDomain;
 
 /**
  * \class AliHLTGlobalTriggerConfig
@@ -194,6 +195,28 @@ class AliHLTGlobalTriggerConfig
       const char* conditionExpr, const char* domainExpr,
       const char* description = NULL
     );
+  
+  /**
+   * Sets the default trigger description string that should be used by the global
+   * trigger component for trigger decisions that have a negative (false) trigger
+   * result.
+   * \param  description  The trigger description string to use.
+   */
+  static void SetDefaultTriggerDescription(const char* description);
+  
+  /**
+   * This method sets the default trigger domain to use by the global trigger
+   * component or trigger decisions that have a negative (false) trigger result.
+   * \param  domain  The new value of the default trigger domain.
+   */
+  static void SetDefaultTriggerDomain(const AliHLTTriggerDomain& domain);
+  
+  /**
+   * Fetches the default trigger domain that will be used by the global trigger
+   * component or trigger decisions that have a negative (false) trigger result.
+   * \returns The default trigger domain for the current trigger menu.
+   */
+  static AliHLTTriggerDomain& DefaultTriggerDomain();
   
  private:
   
