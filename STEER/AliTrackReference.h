@@ -26,6 +26,7 @@ public:
 		    kMUON  = 5,
 		    kHMPID = 6,
 		    kT0    = 7,
+			kEMCAL = 8,
 		    kFMD   = 12,
 		    kVZERO = 14
     };
