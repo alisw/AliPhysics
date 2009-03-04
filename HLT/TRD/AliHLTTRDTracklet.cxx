@@ -74,7 +74,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(AliTRDseedV1 * inTracklet):
 //============================================================================
 void AliHLTTRDTracklet::AddClusters()
 {
-  for (Int_t iTimeBin = 0; iTimeBin < AliTRDseedV1::kNTimeBins; iTimeBin++)
+  for (Int_t iTimeBin = 0; iTimeBin < AliTRDseedV1::kNclusters; iTimeBin++)
     {
 //       if (fClusters[iTimeBin])
 // 	HLTWarning("Trying to rewrite cluster in tracklet. Not good.");
@@ -107,7 +107,7 @@ void AliHLTTRDTracklet::CopyDataMembers()
   fPadLength = fTRDtracklet->GetPadLength();
   
   fX0 = fTRDtracklet->GetX0();
-  for (Int_t i = 0; i < AliTRDseedV1::kNTimeBins; i++){
+  for (Int_t i = 0; i < AliTRDseedV1::kNclusters; i++){
 //     fX[i] = fTRDtracklet->GetX(i);
 //     fY[i] = fTRDtracklet->GetY(i);
 //     fZ[i] = fTRDtracklet->GetZ(i);
@@ -156,7 +156,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
   outTracklet->SetPadLength(fPadLength);
   outTracklet->SetX0(fX0);
 
-  for (Int_t i=0; i < AliTRDseedV1::kNTimeBins; i++){
+  for (Int_t i=0; i < AliTRDseedV1::kNclusters; i++){
 //     outTracklet->SetX(i,fX[i]);
 //     outTracklet->SetX(i,fY[i]);
 //     outTracklet->SetX(i,fZ[i]);
@@ -174,7 +174,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
   outTracklet->SetC(fC);
   outTracklet->SetChi2(fChi2);
 
-  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNclusters; iCluster++){
     if (fClusters[iCluster]){
       AliTRDcluster *trdCluster = new AliTRDcluster();
       fClusters[iCluster]->ExportTRDCluster(trdCluster);
@@ -190,7 +190,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
 //============================================================================
 void AliHLTTRDTracklet::InitArrays()
 {
-  for (Int_t i=0; i < AliTRDseedV1::kNTimeBins; i++){
+  for (Int_t i=0; i < AliTRDseedV1::kNclusters; i++){
     fClusters[i] = NULL;
   }
 
@@ -198,7 +198,7 @@ void AliHLTTRDTracklet::InitArrays()
     fYref[i] = -1;
     fZref[i] = -1;
   }
-  for (Int_t i = 0; i < AliTRDseedV1::kNTimeBins; i++){
+  for (Int_t i = 0; i < AliTRDseedV1::kNclusters; i++){
 //     fX[i] = -1;
 //     fY[i] = -1;
 //     fZ[i] = -1;
@@ -225,7 +225,7 @@ void AliHLTTRDTracklet::Print(Bool_t printClusters)
   printf("      fDet %i; dMom %f; fdX %f fN %i\n", fDet, fMom, fdX, fN2);
 
   if(!printClusters) return;
-  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNclusters; iCluster++){
     printf(" [%i] ",iCluster);
     if (fClusters[iCluster]) fClusters[iCluster]->Print();
     else printf("      NULL\n");
@@ -241,7 +241,7 @@ void AliHLTTRDTracklet::ReadClustersFromMemory(void *input)
   AliHLTUInt8_t *iterPtr = (AliHLTUInt8_t*) input;
   AliHLTTRDCluster* hltCluster = NULL;
   
-  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNTimeBins; iCluster++){
+  for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNclusters; iCluster++){
     // if we had something in the fClusters[iCluster] before copying,
     // then this entry in the array should not be empty. Fill it.
     if (fClusters[iCluster]){

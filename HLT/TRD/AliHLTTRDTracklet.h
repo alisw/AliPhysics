@@ -30,7 +30,7 @@ class AliHLTTRDTracklet
   AliHLTUInt32_t fSize; // Size of the tracklet with clusters in the memory
   
   /* Defenitely need */
-  AliHLTTRDCluster *fClusters[AliTRDseedV1::kNTimeBins]; // Clusters
+  AliHLTTRDCluster *fClusters[AliTRDseedV1::kNclusters]; // Clusters
   Float_t        fYref[2];              //  Reference y
   Float_t        fZref[2];              //  Reference z
   //Float_t        fSigmaY;               //  "Robust" sigma in Y - constant fit
@@ -43,7 +43,7 @@ class AliHLTTRDTracklet
 //  Float_t        fX[knTimebins];        //! X position
 //  Float_t        fY[knTimebins];        //! Y position
 //  Float_t        fZ[knTimebins];        //! Z position
-  Int_t          fIndexes[AliTRDseedV1::kNTimeBins];  //! Indexes
+  Int_t          fIndexes[AliTRDseedV1::kNclusters];  //! Indexes
   Float_t        fYfit[2];              //  Y fit position +derivation
   //Float_t        fYfitR[2];             //  Y fit position +derivation
   Float_t        fZfit[2];              //  Z fit position
