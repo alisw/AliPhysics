@@ -19,8 +19,9 @@ public:
   virtual ~AliGenCosmicsParam() {}
   virtual void Generate();
   virtual void Init();
-  void SetParamMI() { fParamMI=kTRUE; fParamACORDE=kFALSE; return; }
-  void SetParamACORDE() { fParamMI=kFALSE; fParamACORDE=kTRUE; return; }
+  void SetParamMI() { fParamMI=kTRUE; fParamACORDE=kFALSE; fParamDataTPC=kFALSE; return; }
+  void SetParamACORDE() { fParamMI=kFALSE; fParamACORDE=kTRUE; fParamDataTPC=kFALSE; return; }
+  void SetParamDataTPC() { fParamDataTPC=kTRUE; fParamACORDE=kFALSE; fParamDataTPC=kFALSE; return; }
   void SetYOrigin(Float_t y=600.) { fYOrigin=y; return; }
   void SetMaxAngleWRTVertical(Float_t max=45.) { 
       if(max<0. || max>90.) AliFatal("angle must be in [0,pi/2]");
@@ -48,6 +49,7 @@ private:
 				     Float_t o[3],Float_t p[3]) const; 
   Bool_t fParamMI;              // parametrization from M.Ivanov
   Bool_t fParamACORDE;          // parametrization from AliGenACORDE 
+  Bool_t fParamDataTPC;         // parametrization from TPC Summer08 cosmics 
                                 // (parametrized at ALICE y)
   Float_t fYOrigin;             // y of muon origin
   Float_t fMaxAngleWRTVertical; // maximum angle between momentum and y axis
@@ -64,7 +66,7 @@ private:
   Bool_t fACORDE4ITS;           // acceptance cuts
   Bool_t fBottomScintillator;   // acceptance cuts
 
-  ClassDef(AliGenCosmicsParam,4) // parametrized cosmics generator
+  ClassDef(AliGenCosmicsParam,5) // parametrized cosmics generator
 };
 
 #endif

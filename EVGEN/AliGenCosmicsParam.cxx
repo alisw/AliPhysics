@@ -33,6 +33,7 @@ AliGenCosmicsParam::AliGenCosmicsParam():
 AliGenerator(),
 fParamMI(kFALSE),
 fParamACORDE(kFALSE),
+fParamDataTPC(kTRUE),
 fYOrigin(600.),
 fMaxAngleWRTVertical(-99.),
 fBkG(0.),
@@ -99,6 +100,12 @@ void AliGenCosmicsParam::Generate()
       ptot = (Double_t)dNdpACORDE->GetRandom();
       delete dNdpACORDE;
       dNdpACORDE = 0;
+    } else if(fParamDataTPC) { // extracted from cosmics in TPC (Summer 08) 
+      // sample total momentum only once (to speed up)
+      TF1 *dNdpTPC = new TF1("dNdpTPC","x/(1.+(x/3.)*(x/3.))^1.",fPMin,fPMax);
+      ptot = (Double_t)dNdpTPC->GetRandom();
+      delete dNdpTPC;
+      dNdpTPC = 0;
     }
 
     while(1) {
@@ -123,7 +130,7 @@ void AliGenCosmicsParam::Generate()
 	  }
 	  ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
 	  pt=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
-	} else if(fParamACORDE) { // extracted from AliGenACORDE events
+	} else if(fParamACORDE || fParamDataTPC) {
 	  Float_t theta,phi;
 	  while(1) {
 	    theta = gRandom->Gaus(0.5*TMath::Pi(),0.42);
@@ -138,7 +145,7 @@ void AliGenCosmicsParam::Generate()
 	  p[1] = pt*TMath::Sin(phi); 
 	  p[2] = ptot*TMath::Cos(theta);
 	} else {
-	  AliFatal("Parametrization not set: use SetParamMI or SetParamACORDE");
+	  AliFatal("Parametrization not set: use SetParamDataTPC, SetParamMI, or SetParamACORDE");
 	}
 	
 	
@@ -187,10 +194,12 @@ void AliGenCosmicsParam::Init()
   //
   if(TestBit(kPtRange)) 
     AliFatal("You cannot set the pt range for this generator! Only momentum range");
-  if(fPMin<8.) { 
-    fPMin=8.; 
+  Double_t pmin=8.; // fParamACORDE
+  if(fParamDataTPC) pmin=0.5;
+  if(fPMin<pmin) { 
+    fPMin=pmin; 
     if(TestBit(kMomentumRange)) 
-      AliWarning("Minimum momentum cannot be < 8 GeV/c"); 
+      AliWarning(Form("Minimum momentum cannot be < %f GeV/c",pmin)); 
   }
   if(fMaxAngleWRTVertical<0.) 
     AliFatal("You must use SetMaxAngleWRTVertical() instead of SetThetaRange(), SetPhiRange()");
