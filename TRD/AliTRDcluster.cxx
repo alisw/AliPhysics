@@ -293,7 +293,7 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const q, Doub
     if(q && xq){
       for(Int_t iq=0; iq<3; iq++) tq += q[iq]*TMath::Exp(-kTC*(x - xq[iq]));
     }
-    Float_t vdcorr = x/cp->TimeStruct(vd, x-.5*AliTRDgeometry::CamHght(), z);
+    Float_t vdcorr = x/cp->TimeStruct(vd, x+.5*AliTRDgeometry::CamHght(), z);
     x    = (td - tc - tq) * vdcorr;
   }
   return x;

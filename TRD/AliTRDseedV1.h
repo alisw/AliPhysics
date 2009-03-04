@@ -46,9 +46,9 @@ class AliTRDseedV1 : public AliTRDtrackletBase
 {
 public:
   enum ETRDtrackletBuffers {    
-    kNtb = 31           // max clusters/pad row
-   ,kNTimeBins = 2*kNtb // max number of clusters/tracklet
-   ,kNSlices = 10       // max dEdx slices
+    kNtb       = 31     // max clusters/pad row
+   ,kNclusters = 2*kNtb // max number of clusters/tracklet
+   ,kNslices   = 10     // max dEdx slices
   };
 
   // bits from 0-13 are reserved by ROOT (see TObject.h)
@@ -106,8 +106,8 @@ public:
   Int_t     GetDetector() const      { return fDet;}
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
-  AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNTimeBins ? 0x0 : fClusters[i];}
-  Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNTimeBins ? -1 : fIndexes[i];}
+  AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
+  Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
   Double_t  GetMomentum() const      { return fMom;}
   Int_t     GetN() const             { return (Int_t)fN&0x1f;}
@@ -178,7 +178,7 @@ private:
 
   const AliTRDReconstructor *fReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
-  Int_t            fIndexes[kNTimeBins];    //! Indexes
+  Int_t            fIndexes[kNclusters];    //! Indexes
   Float_t          fExB;                    //! tg(a_L) @ tracklet location
   Float_t          fVD;                     //! drift velocity @ tracklet location
   Float_t          fT0;                     //! time 0 @ tracklet location
@@ -191,7 +191,7 @@ private:
   Short_t          fDet;                    // TRD detector
   Float_t          fTilt;                   // local tg of the tilt angle 
   Float_t          fPadLength;              // local pad length 
-  AliTRDcluster   *fClusters[kNTimeBins];   // Clusters
+  AliTRDcluster   *fClusters[kNclusters];   // Clusters
   Float_t          fYref[2];                //  Reference y
   Float_t          fZref[2];                //  Reference z
   Float_t          fYfit[2];                //  Y fit position +derivation
@@ -206,7 +206,7 @@ private:
   Float_t          fS2Z;                    // estimated resolution in the z direction 
   Float_t          fC;                      // Curvature
   Float_t          fChi2;                   // Global chi2  
-  Float_t          fdEdx[kNSlices];         // dE/dx measurements for tracklet
+  Float_t          fdEdx[kNslices];         // dE/dx measurements for tracklet
   Float_t          fProb[AliPID::kSPECIES]; //  PID probabilities
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
   Double_t         fRefCov[3];              // covariance matrix of the track in the yz plane
@@ -268,7 +268,7 @@ inline AliTRDcluster* AliTRDseedV1::NextCluster()
 // Forward iterator
 
   fClusterIdx++; fClusterIter++;
-  while(fClusterIdx < kNTimeBins){
+  while(fClusterIdx < kNclusters){
     if(!(*fClusterIter)){ 
       fClusterIdx++; 
       fClusterIter++;
@@ -308,8 +308,8 @@ inline void AliTRDseedV1::ResetClusterIter(Bool_t forward)
     fClusterIter = &fClusters[0]; fClusterIter--; 
     fClusterIdx=-1;
   } else {
-    fClusterIter = &fClusters[kNTimeBins-1]; fClusterIter++; 
-    fClusterIdx=kNTimeBins;
+    fClusterIter = &fClusters[kNclusters-1]; fClusterIter++; 
+    fClusterIdx=kNclusters;
   }
 }
 

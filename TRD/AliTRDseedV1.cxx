@@ -83,13 +83,13 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   //
   // Constructor
   //
-  for(Int_t ic=kNTimeBins; ic--;) fIndexes[ic] = -1;
-  memset(fClusters, 0, kNTimeBins*sizeof(AliTRDcluster*));
+  for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
+  memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
   fYref[0] = 0.; fYref[1] = 0.; 
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
   fZfit[0] = 0.; fZfit[1] = 0.; 
-  memset(fdEdx, 0, kNSlices*sizeof(Float_t)); 
+  memset(fdEdx, 0, kNslices*sizeof(Float_t)); 
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
@@ -163,7 +163,7 @@ AliTRDseedV1::~AliTRDseedV1()
   //printf("I-AliTRDseedV1::~AliTRDseedV1() : Owner[%s]\n", IsOwner()?"YES":"NO");
 
   if(IsOwner()) {
-    for(int itb=0; itb<kNTimeBins; itb++){
+    for(int itb=0; itb<kNclusters; itb++){
       if(!fClusters[itb]) continue; 
       //AliInfo(Form("deleting c %p @ %d", fClusters[itb], itb));
       delete fClusters[itb];
@@ -206,13 +206,13 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fC             = fC;
   target.fChi2          = fChi2;
   
-  memcpy(target.fIndexes, fIndexes, kNTimeBins*sizeof(Int_t));
-  memcpy(target.fClusters, fClusters, kNTimeBins*sizeof(AliTRDcluster*));
+  memcpy(target.fIndexes, fIndexes, kNclusters*sizeof(Int_t));
+  memcpy(target.fClusters, fClusters, kNclusters*sizeof(AliTRDcluster*));
   target.fYref[0] = fYref[0]; target.fYref[1] = fYref[1]; 
   target.fZref[0] = fZref[0]; target.fZref[1] = fZref[1]; 
   target.fYfit[0] = fYfit[0]; target.fYfit[1] = fYfit[1]; 
   target.fZfit[0] = fZfit[0]; target.fZfit[1] = fZfit[1]; 
-  memcpy(target.fdEdx, fdEdx, kNSlices*sizeof(Float_t)); 
+  memcpy(target.fdEdx, fdEdx, kNslices*sizeof(Float_t)); 
   memcpy(target.fProb, fProb, AliPID::kSPECIES*sizeof(Float_t)); 
   memcpy(target.fLabels, fLabels, 3*sizeof(Int_t)); 
   memcpy(target.fRefCov, fRefCov, 3*sizeof(Double_t)); 
@@ -262,13 +262,13 @@ void AliTRDseedV1::Reset()
   fS2Y=0.; fS2Z=0.;
   fC=0.; fChi2 = 0.;
 
-  for(Int_t ic=kNTimeBins; ic--;) fIndexes[ic] = -1;
-  memset(fClusters, 0, kNTimeBins*sizeof(AliTRDcluster*));
+  for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
+  memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
   fYref[0] = 0.; fYref[1] = 0.; 
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
   fZfit[0] = 0.; fZfit[1] = 0.; 
-  memset(fdEdx, 0, kNSlices*sizeof(Float_t)); 
+  memset(fdEdx, 0, kNslices*sizeof(Float_t)); 
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
@@ -304,7 +304,7 @@ void AliTRDseedV1::UpdateUsed()
   //
 
   Int_t nused = 0, nshared = 0;
-  for (Int_t i = kNTimeBins; i--; ) {
+  for (Int_t i = kNclusters; i--; ) {
     if (!fClusters[i]) continue;
     if(fClusters[i]->IsUsed()){ 
       nused++;
@@ -332,7 +332,7 @@ void AliTRDseedV1::UseClusters()
   // - Clusters which are attached to a kink track become shared
   //
   AliTRDcluster **c = &fClusters[0];
-  for (Int_t ic=kNTimeBins; ic--; c++) {
+  for (Int_t ic=kNclusters; ic--; c++) {
     if(!(*c)) continue;
     if(IsStandAlone()){
       if((*c)->IsShared() || (*c)->IsUsed()){ 
@@ -377,9 +377,9 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 // 3. cluster size
 //
 
-  Int_t nclusters[kNSlices]; 
-  memset(nclusters, 0, kNSlices*sizeof(Int_t));
-  memset(fdEdx, 0, kNSlices*sizeof(Float_t));
+  Int_t nclusters[kNslices]; 
+  memset(nclusters, 0, kNslices*sizeof(Int_t));
+  memset(fdEdx, 0, kNslices*sizeof(Float_t));
 
   const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
@@ -427,7 +427,7 @@ void AliTRDseedV1::CookLabels()
   Int_t labels[200];
   Int_t out[200];
   Int_t nlab = 0;
-  for (Int_t i = 0; i < kNTimeBins; i++) {
+  for (Int_t i = 0; i < kNclusters; i++) {
     if (!fClusters[i]) continue;
     for (Int_t ilab = 0; ilab < 3; ilab++) {
       if (fClusters[i]->GetLabel(ilab) >= 0) {
@@ -674,7 +674,7 @@ void AliTRDseedV1::Calibrate()
   AliTRDcluster **c = &fClusters[0];
   if(GetN()){ 
     Int_t ic = 0;
-    while (ic<kNTimeBins && !(*c)){ic++; c++;} 
+    while (ic<kNclusters && !(*c)){ic++; c++;} 
     if(*c){
       col = (*c)->GetPadCol();
       row = (*c)->GetPadRow();
@@ -696,7 +696,7 @@ void AliTRDseedV1::SetOwner()
   //AliInfo(Form("own [%s] fOwner[%s]", own?"YES":"NO", fOwner?"YES":"NO"));
   
   if(TestBit(kOwner)) return;
-  for(int ic=0; ic<kNTimeBins; ic++){
+  for(int ic=0; ic<kNclusters; ic++){
     if(!fClusters[ic]) continue;
     fClusters[ic] = new AliTRDcluster(*fClusters[ic]);
   }
@@ -869,12 +869,12 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 
   // working variables
   const Int_t kNrows = 16;
-  AliTRDcluster *clst[kNrows][kNTimeBins];
+  AliTRDcluster *clst[kNrows][kNclusters];
   Double_t cond[4], dx, dy, yt, zt,
-    yres[kNrows][kNTimeBins];
-  Int_t idxs[kNrows][kNTimeBins], ncl[kNrows], ncls = 0;
+    yres[kNrows][kNclusters];
+  Int_t idxs[kNrows][kNclusters], ncl[kNrows], ncls = 0;
   memset(ncl, 0, kNrows*sizeof(Int_t));
-  memset(clst, 0, kNrows*kNTimeBins*sizeof(AliTRDcluster*));
+  memset(clst, 0, kNrows*kNclusters*sizeof(AliTRDcluster*));
 
   // Do cluster projection
   AliTRDcluster *c = 0x0;
@@ -910,8 +910,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
       yres[r][ncl[r]] = dy;
       ncl[r]++; ncls++;
 
-      if(ncl[r] >= kNTimeBins) {
-        AliWarning(Form("Cluster candidates reached limit %d. Some may be lost.", kNTimeBins));
+      if(ncl[r] >= kNclusters) {
+        AliWarning(Form("Cluster candidates reached limit %d. Some may be lost.", kNclusters));
         kBUFFER = kTRUE;
         break;
       }
@@ -1060,7 +1060,7 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
   //fTgl = fZref[1];
   Int_t n = 0, nshare = 0, nused = 0;
   AliTRDcluster **cit = &fClusters[0];
-  for(Int_t ic = kNTimeBins; ic--; cit++){
+  for(Int_t ic = kNclusters; ic--; cit++){
     if(!(*cit)) return;
     n++;
     if((*cit)->IsShared()) nshare++;
@@ -1135,7 +1135,6 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
   Double_t dzdx = fZref[1];
   Double_t yt, zt;
 
-  const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
   // calculation of tg^2(phi - a_L) and tg^2(a_L)
   Double_t tgg = (dydx-fExB)/(1.+dydx*fExB); tgg *= tgg;
   //Double_t exb2= fExB*fExB;
@@ -1146,7 +1145,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
   //Double_t convert = 1./TMath::Sqrt(12.);
   
   // book cluster information
-  Double_t qc[kNTimeBins], xc[kNTimeBins], yc[kNTimeBins], zc[kNTimeBins], sy[kNTimeBins];
+  Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
 
   Int_t ily = AliTRDgeometry::GetLayer(fDet);
   Int_t fN = 0;
@@ -1566,7 +1565,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   if(strcmp(o, "a")!=0) return;
 
   AliTRDcluster* const* jc = &fClusters[0];
-  for(int ic=0; ic<kNTimeBins; ic++, jc++) {
+  for(int ic=0; ic<kNclusters; ic++, jc++) {
     if(!(*jc)) continue;
     (*jc)->Print(o);
   }
@@ -1592,7 +1591,7 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   if ( fTilt != inTracklet->fTilt ) return kFALSE;
   if ( fPadLength != inTracklet->fPadLength ) return kFALSE;
   
-  for (Int_t i = 0; i < kNTimeBins; i++){
+  for (Int_t i = 0; i < kNclusters; i++){
 //     if ( fX[i] != inTracklet->GetX(i) ) return kFALSE;
 //     if ( fY[i] != inTracklet->GetY(i) ) return kFALSE;
 //     if ( fZ[i] != inTracklet->GetZ(i) ) return kFALSE;
@@ -1622,7 +1621,7 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   if ( fMom != inTracklet->fMom ) return kFALSE;
   if ( fdX != inTracklet->fdX ) return kFALSE;
   
-  for (Int_t iCluster = 0; iCluster < kNTimeBins; iCluster++){
+  for (Int_t iCluster = 0; iCluster < kNclusters; iCluster++){
     AliTRDcluster *curCluster = fClusters[iCluster];
     AliTRDcluster *inCluster = inTracklet->fClusters[iCluster];
     if (curCluster && inCluster){

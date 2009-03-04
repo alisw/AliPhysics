@@ -893,7 +893,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
   Int_t nPoints = 0;
   for(Int_t ilr = 0; ilr < AliTRDgeometry::kNlayer; ilr++){
     if(!tracklets[ilr].IsOK()) continue;
-    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!tracklets[ilr].IsUsable(itb)) continue;
       cl = tracklets[ilr].GetClusters(itb);
       x = cl->GetX();
@@ -987,7 +987,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
@@ -1232,7 +1232,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    for(Int_t itb = 0; itb < AliTRDseedV1::kNTimeBins; itb++){
+    for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
@@ -1708,7 +1708,7 @@ void AliTRDtrackerV1::UnloadClusters()
 //   for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
 //     if(!(tracklet = track->GetTracklet(ily))) continue;
 //     AliTRDcluster *c = 0x0;
-//     for(Int_t ic=AliTRDseed::knTimebins; ic--;){
+//     for(Int_t ic=AliTRDseed::kNclusters; ic--;){
 //       if(!(c=tracklet->GetClusters(ic))) continue;
 //       c->Use();
 //     }

@@ -865,7 +865,7 @@ TH1 *AliTRDcheckDetector::PlotChargeTracklet(const AliTRDtrackV1 *track){
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     Qtot = 0.;
-    for(Int_t ic = AliTRDseedV1::kNTimeBins; ic--;){
+    for(Int_t ic = AliTRDseedV1::kNclusters; ic--;){
       if(!(c = tracklet->GetClusters(ic))) continue;
       Qtot += TMath::Abs(c->GetQ());
     }

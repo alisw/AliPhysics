@@ -391,7 +391,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     // recalculate tracklet based on the MC info
     AliTRDseedV1 tt(*fTracklet);
-    tt.SetZref(0, z0);
+    tt.SetZref(0, z0 - (x0-tt.GetX0())*dzdx0);
     tt.SetZref(1, dzdx0); 
     tt.Fit(kTRUE);
     x= tt.GetX();y= tt.GetY();z= tt.GetZ();
@@ -402,7 +402,6 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     Bool_t rc = tt.IsRowCross(); 
     
     // add tracklet residuals for y and dydx
-    tt.GetCovAt(x, cov);
     if(!rc){
       dy    = yt-y;
 
@@ -410,13 +409,13 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       dphi /= 1.- dydx*dydx0;
 
       ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx0, dy);
-      if(cov[0]>0.) ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx0, dy/TMath::Sqrt(cov[0]));
+      if(tt.GetS2Y()>0.) ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx0, dy/TMath::Sqrt(tt.GetS2Y()));
       ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx0, dphi*TMath::RadToDeg());
     } else {
       // add tracklet residuals for z
       dz = zt-z;
       ((TH2I*)fContainer->At(kMCtrackletZ))->Fill(dzdx0, dz);
-      if(cov[2]>0.) ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx0, dz/TMath::Sqrt(cov[2]));
+      if(tt.GetS2Z()>0.) ((TH2I*)fContainer->At(kMCtrackletZPull))->Fill(dzdx0, dz/TMath::Sqrt(tt.GetS2Z()));
     }
   
     // Fill Debug stream for tracklet

@@ -160,7 +160,7 @@ void AliTRDcalibration::Exec(Option_t *)
       // normalisation
       Float_t normalisation = 6.67;
       Int_t detector = 0;
-      for(int ic=0; ic<AliTRDseedV1::kNTimeBins; ic++){
+      for(int ic=0; ic<AliTRDseedV1::kNclusters; ic++){
         if(!(fcl = tracklet->GetClusters(ic))) continue;
         nbclusters++;
         Int_t time = fcl->GetPadTime();

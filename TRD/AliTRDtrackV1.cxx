@@ -238,7 +238,7 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
   AliTRDcluster *c    = 0x0;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
-    for (Int_t ic = 0; ic < AliTRDseedV1::kNTimeBins; ic++) {
+    for (Int_t ic = 0; ic < AliTRDseedV1::kNclusters; ic++) {
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
       for (Int_t k = 0; k < 3; k++) { 
         label      = c->GetLabel(k);
@@ -338,7 +338,7 @@ AliTRDcluster* AliTRDtrackV1::GetCluster(Int_t id)
       continue;
     }
     AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseedV1::kNTimeBins; ic--;){
+    for(Int_t ic=AliTRDseedV1::kNclusters; ic--;){
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
 
       if(n<id){n++; continue;}
@@ -359,7 +359,7 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
       continue;
     }
     AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseedV1::kNTimeBins; ic--;){
+    for(Int_t ic=AliTRDseedV1::kNclusters; ic--;){
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
 
       if(n<id){n++; continue;}

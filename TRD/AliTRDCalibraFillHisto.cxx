@@ -945,7 +945,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     //////////////////////////////
     // Check no shared clusters
     //////////////////////////////
-    for(int ic=AliTRDseedV1::kNtb; ic<AliTRDseedV1::kNTimeBins; ic++){
+    for(int ic=AliTRDseedV1::kNtb; ic<AliTRDseedV1::kNclusters; ic++){
       if((cl = tracklet->GetClusters(ic)))  crossrow = 1;
     }
   }
@@ -1406,7 +1406,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   AliTRDcluster *cl                   = 0x0;
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNTimeBins) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
+    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
    
     Double_t     time  = cl->GetLocalTimeBin();
     if((time<=7) || (time>=21)) continue;
@@ -1471,7 +1471,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   //////////////////////////////////////////////
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNTimeBins) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
+    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
     //
     if(!(cl = tracklet->GetClusters(ic))) continue;
 
