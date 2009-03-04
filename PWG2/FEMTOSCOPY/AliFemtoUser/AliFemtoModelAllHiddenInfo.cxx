@@ -135,12 +135,12 @@ return fTrueMomentumChild2;
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumMother(AliFemtoLorentzVector *aMomMother)
 {
-  // set momentum from vector
+  // Set momentum from vector
   if (fTrueMomentumMother) {
-    fTrueMomentumMother->setX(aMomMother->px());
-    fTrueMomentumMother->setY(aMomMother->py());
-    fTrueMomentumMother->setZ(aMomMother->pz());
-    fTrueMomentumMother->setT(aMomMother->e());
+    fTrueMomentumMother->SetX(aMomMother->px());
+    fTrueMomentumMother->SetY(aMomMother->py());
+    fTrueMomentumMother->SetZ(aMomMother->pz());
+    fTrueMomentumMother->SetT(aMomMother->e());
   }
   else {
     fTrueMomentumMother = new AliFemtoLorentzVector(*aMomMother);
@@ -149,12 +149,12 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumMother(AliFemtoLorentzVector *aM
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumMother(const AliFemtoLorentzVector& aMomMother)
 {
-  // set momentum from vector and energy
+  // Set momentum from vector and energy
   if (fTrueMomentumMother) {
-    fTrueMomentumMother->setX(aMomMother.px());
-    fTrueMomentumMother->setY(aMomMother.py());
-    fTrueMomentumMother->setZ(aMomMother.pz());
-    fTrueMomentumMother->setT(aMomMother.e());
+    fTrueMomentumMother->SetX(aMomMother.px());
+    fTrueMomentumMother->SetY(aMomMother.py());
+    fTrueMomentumMother->SetZ(aMomMother.pz());
+    fTrueMomentumMother->SetT(aMomMother.e());
   }
   else {
     fTrueMomentumMother = new AliFemtoLorentzVector();
@@ -164,24 +164,24 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumMother(const AliFemtoLorentzVect
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumMother(Double_t aMotherPx, Double_t aMotherPy, Double_t aMotherPz, Double_t aMotherE)
 {
-  // set momentum from components and energy
+  // Set momentum from components and energy
   if (!fTrueMomentumMother) fTrueMomentumMother = new AliFemtoLorentzVector();
-    fTrueMomentumMother->setX(aMotherPx);
-    fTrueMomentumMother->setY(aMotherPy);
-    fTrueMomentumMother->setZ(aMotherPz);
-    fTrueMomentumMother->setT(aMotherE);
+    fTrueMomentumMother->SetX(aMotherPx);
+    fTrueMomentumMother->SetY(aMotherPy);
+    fTrueMomentumMother->SetZ(aMotherPz);
+    fTrueMomentumMother->SetT(aMotherE);
 }
 //_____________________________________________
 //   Mother Emissin Point
 //_____________________________________________
 void                   AliFemtoModelAllHiddenInfo::SetEmissionPointMother(AliFemtoLorentzVector *aPos)
 {
-  // set position from vector
+  // Set position from vector
   if (fEmissionPointMother) {
-    fEmissionPointMother->setX(aPos->px());
-    fEmissionPointMother->setY(aPos->py());
-    fEmissionPointMother->setZ(aPos->pz());
-    fEmissionPointMother->setT(aPos->e());
+    fEmissionPointMother->SetX(aPos->px());
+    fEmissionPointMother->SetY(aPos->py());
+    fEmissionPointMother->SetZ(aPos->pz());
+    fEmissionPointMother->SetT(aPos->e());
   }
   else {
     fEmissionPointMother = new AliFemtoLorentzVector(*aPos);
@@ -190,12 +190,12 @@ void                   AliFemtoModelAllHiddenInfo::SetEmissionPointMother(AliFem
 //_____________________________________________
 void                   AliFemtoModelAllHiddenInfo::SetEmissionPointMother(const AliFemtoLorentzVector& aPos)
 {
-  // set position from vector
+  // Set position from vector
   if (fEmissionPointMother) {
-    fEmissionPointMother->setX(aPos.px());
-    fEmissionPointMother->setY(aPos.py());
-    fEmissionPointMother->setZ(aPos.pz());
-    fEmissionPointMother->setT(aPos.e());
+    fEmissionPointMother->SetX(aPos.px());
+    fEmissionPointMother->SetY(aPos.py());
+    fEmissionPointMother->SetZ(aPos.pz());
+    fEmissionPointMother->SetT(aPos.e());
   }
   else {
     fEmissionPointMother = new AliFemtoLorentzVector();
@@ -205,12 +205,12 @@ void                   AliFemtoModelAllHiddenInfo::SetEmissionPointMother(const 
 //_____________________________________________
 void                   AliFemtoModelAllHiddenInfo::SetEmissionPointMother(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT)
 {
-  // set position from components
+  // Set position from components
   if (fEmissionPointMother) {
-    fEmissionPointMother->setX(aRx);
-    fEmissionPointMother->setY(aRy);
-    fEmissionPointMother->setZ(aRz);
-    fEmissionPointMother->setT(aT);
+    fEmissionPointMother->SetX(aRx);
+    fEmissionPointMother->SetY(aRy);
+    fEmissionPointMother->SetZ(aRz);
+    fEmissionPointMother->SetT(aT);
   }
   else {
     fEmissionPointMother = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
@@ -228,12 +228,12 @@ void                   AliFemtoModelAllHiddenInfo::SetPDGPidMother(Int_t aPidMot
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild1(AliFemtoLorentzVector *aMomChild1)
 {
-  // set momentum from vector
+  // Set momentum from vector
   if (fTrueMomentumChild1) {
-    fTrueMomentumChild1->setX(aMomChild1->px());
-    fTrueMomentumChild1->setY(aMomChild1->py());
-    fTrueMomentumChild1->setZ(aMomChild1->pz());
-    fTrueMomentumChild1->setT(aMomChild1->e());
+    fTrueMomentumChild1->SetX(aMomChild1->px());
+    fTrueMomentumChild1->SetY(aMomChild1->py());
+    fTrueMomentumChild1->SetZ(aMomChild1->pz());
+    fTrueMomentumChild1->SetT(aMomChild1->e());
   }
   else {
     fTrueMomentumChild1 = new AliFemtoLorentzVector(*aMomChild1);
@@ -242,12 +242,12 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild1(AliFemtoLorentzVector *aM
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild1(const AliFemtoLorentzVector& aMomChild1)
 {
-  // set momentum from vector and energy
+  // Set momentum from vector and energy
   if (fTrueMomentumChild1) {
-    fTrueMomentumChild1->setX(aMomChild1.px());
-    fTrueMomentumChild1->setY(aMomChild1.py());
-    fTrueMomentumChild1->setZ(aMomChild1.pz());
-    fTrueMomentumChild1->setT(aMomChild1.e());
+    fTrueMomentumChild1->SetX(aMomChild1.px());
+    fTrueMomentumChild1->SetY(aMomChild1.py());
+    fTrueMomentumChild1->SetZ(aMomChild1.pz());
+    fTrueMomentumChild1->SetT(aMomChild1.e());
   }
   else {
     fTrueMomentumChild1 = new AliFemtoLorentzVector();
@@ -257,24 +257,24 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild1(const AliFemtoLorentzVect
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild1(Double_t aChild1Px, Double_t aChild1Py, Double_t aChild1Pz, Double_t aChild1E)
 {
-  // set momentum from components and energy
+  // Set momentum from components and energy
   if (!fTrueMomentumChild1) fTrueMomentumChild1 = new AliFemtoLorentzVector();
-    fTrueMomentumChild1->setX(aChild1Px);
-    fTrueMomentumChild1->setY(aChild1Py);
-    fTrueMomentumChild1->setZ(aChild1Pz);
-    fTrueMomentumChild1->setT(aChild1E);
+    fTrueMomentumChild1->SetX(aChild1Px);
+    fTrueMomentumChild1->SetY(aChild1Py);
+    fTrueMomentumChild1->SetZ(aChild1Pz);
+    fTrueMomentumChild1->SetT(aChild1E);
 }
 //_____________________________________________
 //  Child2 momentum
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild2(AliFemtoLorentzVector *aMomChild2)
 {
-  // set momentum from vector
+  // Set momentum from vector
   if (fTrueMomentumChild2) {
-    fTrueMomentumChild2->setX(aMomChild2->px());
-    fTrueMomentumChild2->setY(aMomChild2->py());
-    fTrueMomentumChild2->setZ(aMomChild2->pz());
-    fTrueMomentumChild2->setT(aMomChild2->e());
+    fTrueMomentumChild2->SetX(aMomChild2->px());
+    fTrueMomentumChild2->SetY(aMomChild2->py());
+    fTrueMomentumChild2->SetZ(aMomChild2->pz());
+    fTrueMomentumChild2->SetT(aMomChild2->e());
   }
   else {
     fTrueMomentumChild2 = new AliFemtoLorentzVector(*aMomChild2);
@@ -283,12 +283,12 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild2(AliFemtoLorentzVector *aM
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild2(const AliFemtoLorentzVector& aMomChild2)
 {
-  // set momentum from vector and energy
+  // Set momentum from vector and energy
   if (fTrueMomentumChild2) {
-    fTrueMomentumChild2->setX(aMomChild2.px());
-    fTrueMomentumChild2->setY(aMomChild2.py());
-    fTrueMomentumChild2->setZ(aMomChild2.pz());
-    fTrueMomentumChild2->setT(aMomChild2.e());
+    fTrueMomentumChild2->SetX(aMomChild2.px());
+    fTrueMomentumChild2->SetY(aMomChild2.py());
+    fTrueMomentumChild2->SetZ(aMomChild2.pz());
+    fTrueMomentumChild2->SetT(aMomChild2.e());
   }
   else {
     fTrueMomentumChild2 = new AliFemtoLorentzVector();
@@ -298,12 +298,12 @@ void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild2(const AliFemtoLorentzVect
 //_____________________________________________
 void AliFemtoModelAllHiddenInfo::SetTrueMomentumChild2(Double_t aChild2Px, Double_t aChild2Py, Double_t aChild2Pz, Double_t aChild2E)
 {
-  // set momentum from components and energy
+  // Set momentum from components and energy
   if (!fTrueMomentumChild2) fTrueMomentumChild2 = new AliFemtoLorentzVector();
-    fTrueMomentumChild2->setX(aChild2Px);
-    fTrueMomentumChild2->setY(aChild2Py);
-    fTrueMomentumChild2->setZ(aChild2Pz);
-    fTrueMomentumChild2->setT(aChild2E);
+    fTrueMomentumChild2->SetX(aChild2Px);
+    fTrueMomentumChild2->SetY(aChild2Py);
+    fTrueMomentumChild2->SetZ(aChild2Pz);
+    fTrueMomentumChild2->SetT(aChild2E);
 }
 //_____________________________________________
 //  Child1 PID
