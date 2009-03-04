@@ -319,28 +319,28 @@ inline unsigned short   AliFemtoV0::IdPos() const { return fKeyPos; }
 inline unsigned short   AliFemtoV0::KeyPos() const { return fKeyPos; }
 
 inline void AliFemtoV0::SetdecayLengthV0(const float x){ fDecayLengthV0= x;}   
-inline void AliFemtoV0::SetdecayVertexV0X(const float x){ fDecayVertexV0.setX(x);}
-inline void AliFemtoV0::SetdecayVertexV0Y(const float x){ fDecayVertexV0.setY(x);}
-inline void AliFemtoV0::SetdecayVertexV0Z(const float x){ fDecayVertexV0.setZ(x);}
+inline void AliFemtoV0::SetdecayVertexV0X(const float x){ fDecayVertexV0.SetX(x);}
+inline void AliFemtoV0::SetdecayVertexV0Y(const float x){ fDecayVertexV0.SetY(x);}
+inline void AliFemtoV0::SetdecayVertexV0Z(const float x){ fDecayVertexV0.SetZ(x);}
 inline void AliFemtoV0::SetdecayVertexV0(const AliFemtoThreeVector v){ fDecayVertexV0 = v; }
 inline void AliFemtoV0::SetdcaV0Daughters(const float x){fDcaV0Daughters= x;} 
 inline void AliFemtoV0::SetdcaV0ToPrimVertex(const float x){fDcaV0ToPrimVertex= x;}   
 inline void AliFemtoV0::SetdcaPosToPrimVertex(const float x){fDcaPosToPrimVertex = x;} 
 inline void AliFemtoV0::SetdcaNegToPrimVertex(const float x){fDcaNegToPrimVertex = x;} 
 inline void AliFemtoV0::SetmomPos(const AliFemtoThreeVector v){fMomPos = v; }
-inline void AliFemtoV0::SetmomPosX(const float x){fMomPos.setX(x);}
-inline void AliFemtoV0::SetmomPosY(const float x){fMomPos.setY(x);}
-inline void AliFemtoV0::SetmomPosZ(const float x){fMomPos.setZ(x);}
+inline void AliFemtoV0::SetmomPosX(const float x){fMomPos.SetX(x);}
+inline void AliFemtoV0::SetmomPosY(const float x){fMomPos.SetY(x);}
+inline void AliFemtoV0::SetmomPosZ(const float x){fMomPos.SetZ(x);}
 inline void AliFemtoV0::SetmomNeg(const AliFemtoThreeVector v){fMomNeg = v; }
-inline void AliFemtoV0::SetmomNegX(const float x){fMomNeg.setX(x);}
-inline void AliFemtoV0::SetmomNegY(const float x){fMomNeg.setY(x);}
-inline void AliFemtoV0::SetmomNegZ(const float x){fMomNeg.setZ(x);}
+inline void AliFemtoV0::SetmomNegX(const float x){fMomNeg.SetX(x);}
+inline void AliFemtoV0::SetmomNegY(const float x){fMomNeg.SetY(x);}
+inline void AliFemtoV0::SetmomNegZ(const float x){fMomNeg.SetZ(x);}
 inline void AliFemtoV0::SetTrackTopologyMapPos(unsigned int word, const unsigned long& m){fTrackTopologyMapPos[word]=m;} 
 inline void AliFemtoV0::SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m){fTrackTopologyMapNeg[word]=m;} 
 inline void AliFemtoV0::SetmomV0(AliFemtoThreeVector v){fMomV0= v; }
-inline void AliFemtoV0::SetmomV0X(const float x){fMomV0.setX(x);}
-inline void AliFemtoV0::SetmomV0Y(const float x){fMomV0.setY(x);}
-inline void AliFemtoV0::SetmomV0Z(const float x){fMomV0.setZ(x);}
+inline void AliFemtoV0::SetmomV0X(const float x){fMomV0.SetX(x);}
+inline void AliFemtoV0::SetmomV0Y(const float x){fMomV0.SetY(x);}
+inline void AliFemtoV0::SetmomV0Z(const float x){fMomV0.SetZ(x);}
 
 inline void AliFemtoV0::SetalphaV0( float x){fAlphaV0= x;}
 inline void AliFemtoV0::SetptArmV0( float x){fPtArmV0 = x;}

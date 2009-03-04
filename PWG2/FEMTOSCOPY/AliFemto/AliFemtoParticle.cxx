@@ -181,9 +181,9 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const dou
   // I know there is a better way to do this...
   fTrack = new AliFemtoTrack(*hbtTrack);
   AliFemtoThreeVector temp = hbtTrack->P();
-  fFourMomentum.setVect(temp);
+  fFourMomentum.SetVect(temp);
   double ener = ::sqrt(temp.mag2()+mass*mass);
-  fFourMomentum.setE(ener);
+  fFourMomentum.SetE(ener);
 //  fMap[0] = hbtTrack->TopologyMap(0);
  // fMap[1] = hbtTrack->TopologyMap(1);
  // fNhits = hbtTrack->NHits();
@@ -191,12 +191,12 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const dou
   //CalculateNominalTpcExitAndEntrancePoints();
 
  
-  fPrimaryVertex.setX(0.);
-  fPrimaryVertex.setY(0.);
-  fPrimaryVertex.setZ(0.);
-  fSecondaryVertex.setX(0.);
-  fSecondaryVertex.setY(0.);
-  fSecondaryVertex.setZ(0.);
+  fPrimaryVertex.SetX(0.);
+  fPrimaryVertex.SetY(0.);
+  fPrimaryVertex.SetZ(0.);
+  fSecondaryVertex.SetX(0.);
+  fSecondaryVertex.SetY(0.);
+  fSecondaryVertex.SetZ(0.);
   /* TO JA ODZNACZYLEM NIE WIEM DLACZEGO
   CalculateTpcExitAndEntrancePoints(&fHelix,&fPrimaryVertex,
 				    &fSecondaryVertex,
@@ -244,9 +244,9 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
   //fMap[1]= 0;
   // I know there is a better way to do this...
   AliFemtoThreeVector temp = hbtV0->MomV0();
-  fFourMomentum.setVect(temp);
+  fFourMomentum.SetVect(temp);
   double ener = ::sqrt(temp.mag2()+mass*mass);
-  fFourMomentum.setE(ener);
+  fFourMomentum.SetE(ener);
   // Calculating TpcEntrancePoint for Positive V0 daugther
   fPrimaryVertex = hbtV0->PrimaryVertex();
   fSecondaryVertex = hbtV0->DecayVertexV0();
@@ -308,9 +308,9 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const doubl
   //fMap[1]= 0;
   // I know there is a better way to do this...
   AliFemtoThreeVector temp = hbtKink->Parent().P();
-  fFourMomentum.setVect(temp);
+  fFourMomentum.SetVect(temp);
   double ener = ::sqrt(temp.mag2()+mass*mass);
-  fFourMomentum.setE(ener);
+  fFourMomentum.SetE(ener);
 }
 
 //_____________________
@@ -339,9 +339,9 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& 
  // fMap[0]= 0;
   //fMap[1]= 0;
   AliFemtoThreeVector temp;// = hbtXi->mMofXi;
-  fFourMomentum.setVect(temp);
+  fFourMomentum.SetVect(temp);
   double ener = ::sqrt(temp.mag2()+mass*mass);
-  fFourMomentum.setE(ener);
+  fFourMomentum.SetE(ener);
   fHiddenInfo = 0;
 }
 //_____________________
@@ -492,12 +492,12 @@ double AliFemtoParticle::GetProtonPurity()
 //   // inner field cage
 //   //  static AliFemtoThreeVector ZeroVec(0.,0.,0.);
 //   AliFemtoThreeVector tZeroVec(0.,0.,0.);
-// //   tZeroVec.setX(tHelix->origin().x()-PrimVert->x());
-// //   tZeroVec.setY(tHelix->origin().y()-PrimVert->y());
-// //   tZeroVec.setZ(tHelix->origin().z()-PrimVert->z());
-//   tZeroVec.setX(SecVert->x()-PrimVert->x());
-//   tZeroVec.setY(SecVert->y()-PrimVert->y());
-//   tZeroVec.setZ(SecVert->z()-PrimVert->z());
+// //   tZeroVec.SetX(tHelix->origin().x()-PrimVert->x());
+// //   tZeroVec.SetY(tHelix->origin().y()-PrimVert->y());
+// //   tZeroVec.SetZ(tHelix->origin().z()-PrimVert->z());
+//   tZeroVec.SetX(SecVert->x()-PrimVert->x());
+//   tZeroVec.SetY(SecVert->y()-PrimVert->y());
+//   tZeroVec.SetZ(SecVert->z()-PrimVert->z());
 //   double dip, curv, phase;
 //   int h;
 //   curv = tHelix->Curvature();
@@ -540,21 +540,21 @@ double AliFemtoParticle::GetProtonPurity()
 //       IsNaN(tmpTpcEntrancePoint->z()) ){ 
 //     cout << "tmpTpcEntrancePoint NAN"<< endl; 
 //     cout << "tmpNominalTpcEntrancePoint = " <<tmpTpcEntrancePoint<< endl;
-//     tmpTpcEntrancePoint->setX(-9999.);
-//     tmpTpcEntrancePoint->setY(-9999.);
-//     tmpTpcEntrancePoint->setZ(-9999.);
+//     tmpTpcEntrancePoint->SetX(-9999.);
+//     tmpTpcEntrancePoint->SetY(-9999.);
+//     tmpTpcEntrancePoint->SetZ(-9999.);
 //   } 
     
 //   if (IsNaN(tmpTpcExitPoint->x()) || 
 //       IsNaN(tmpTpcExitPoint->y()) || 
 //       IsNaN(tmpTpcExitPoint->z()) ) {
-// //     cout << "tmpTpcExitPoint NAN set at (-9999,-9999,-9999)"<< endl; 
+// //     cout << "tmpTpcExitPoint NAN Set at (-9999,-9999,-9999)"<< endl; 
 // //     cout << "tmpTpcExitPoint X= " <<tmpTpcExitPoint->x()<< endl;
 // //     cout << "tmpTpcExitPoint Y= " <<tmpTpcExitPoint->y()<< endl;
 // //     cout << "tmpTpcExitPoint Z= " <<tmpTpcExitPoint->z()<< endl;
-//     tmpTpcExitPoint->setX(-9999.);
-//     tmpTpcExitPoint->setY(-9999.);
-//     tmpTpcExitPoint->setZ(-9999.);
+//     tmpTpcExitPoint->SetX(-9999.);
+//     tmpTpcExitPoint->SetY(-9999.);
+//     tmpTpcExitPoint->SetZ(-9999.);
 //   }
 
 
@@ -645,10 +645,10 @@ double AliFemtoParticle::GetProtonPurity()
 //       cout <<"***ERROR tPhi"<< endl;
 //     }  
 //     // calculate crossing plane
-//     tn.setX(cos(tPhi));
-//     tn.setY(sin(tPhi));       
-//     tr.setX(tRowRadius[ti]*cos(tPhi));
-//     tr.setY(tRowRadius[ti]*sin(tPhi));
+//     tn.SetX(cos(tPhi));
+//     tn.SetY(sin(tPhi));       
+//     tr.SetX(tRowRadius[ti]*cos(tPhi));
+//     tr.SetY(tRowRadius[ti]*sin(tPhi));
 //     // find crossing point
 //     tLength = hel.PathLength(tr,tn); 
 //     if (IsNaN(tLength)){
@@ -678,10 +678,10 @@ double AliFemtoParticle::GetProtonPurity()
 //     else{
 //       if(tmpSect[ti] != tSect){
 // 	// Try again on the other sector
-// 	tn.setX(cos(tPhi));
-// 	tn.setY(sin(tPhi));       
-// 	tr.setX(tRowRadius[ti]*cos(tPhi));
-// 	tr.setY(tRowRadius[ti]*sin(tPhi));
+// 	tn.SetX(cos(tPhi));
+// 	tn.SetY(sin(tPhi));       
+// 	tr.SetX(tRowRadius[ti]*cos(tPhi));
+// 	tr.SetY(tRowRadius[ti]*sin(tPhi));
 // 	// find crossing point
 // 	tLength = hel.PathLength(tr,tn);
 // 	tPoint = hel.At(tLength);
@@ -726,7 +726,7 @@ double AliFemtoParticle::GetProtonPurity()
 //       cout << "*******************ERROR***************************" << endl;
 //     }
 //     // If padrow ti not reached all other beyond are not reached
-//     // in this case set sector to -1
+//     // in this case Set sector to -1
 //     if (tmpSect[ti]==-1){
 //       for (int tj=ti; tj<45;tj++){
 // 	tmpSect[tj] = -1;

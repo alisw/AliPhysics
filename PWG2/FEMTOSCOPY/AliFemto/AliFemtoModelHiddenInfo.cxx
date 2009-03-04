@@ -80,11 +80,11 @@ Double_t                  AliFemtoModelHiddenInfo::GetMass() const
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(AliFemtoThreeVector *aMom)
 {
-  // set momentum from vector
+  // Set momentum from vector
   if (fTrueMomentum) {
-    fTrueMomentum->setX(aMom->x());
-    fTrueMomentum->setY(aMom->y());
-    fTrueMomentum->setZ(aMom->z());
+    fTrueMomentum->SetX(aMom->x());
+    fTrueMomentum->SetY(aMom->y());
+    fTrueMomentum->SetZ(aMom->z());
   }
   else {
     fTrueMomentum = new AliFemtoThreeVector(*aMom);
@@ -93,11 +93,11 @@ void                   AliFemtoModelHiddenInfo::SetTrueMomentum(AliFemtoThreeVec
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(const AliFemtoThreeVector& aMom)
 {
-  // set momentum from vector
+  // Set momentum from vector
   if (fTrueMomentum) {
-    fTrueMomentum->setX(aMom.x());
-    fTrueMomentum->setY(aMom.y());
-    fTrueMomentum->setZ(aMom.z());
+    fTrueMomentum->SetX(aMom.x());
+    fTrueMomentum->SetY(aMom.y());
+    fTrueMomentum->SetZ(aMom.z());
   }
   else {
     fTrueMomentum = new AliFemtoThreeVector();
@@ -107,21 +107,21 @@ void                   AliFemtoModelHiddenInfo::SetTrueMomentum(const AliFemtoTh
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz)
 {
-  // set momentum from components
+  // Set momentum from components
   if (!fTrueMomentum) fTrueMomentum = new AliFemtoThreeVector();
-    fTrueMomentum->setX(aPx);
-    fTrueMomentum->setY(aPy);
-    fTrueMomentum->setZ(aPz);
+    fTrueMomentum->SetX(aPx);
+    fTrueMomentum->SetY(aPy);
+    fTrueMomentum->SetZ(aPz);
 }
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPoint(AliFemtoLorentzVector *aPos)
 {
-  // set position from vector
+  // Set position from vector
   if (fEmissionPoint) {
-    fEmissionPoint->setX(aPos->px());
-    fEmissionPoint->setY(aPos->py());
-    fEmissionPoint->setZ(aPos->pz());
-    fEmissionPoint->setT(aPos->e());
+    fEmissionPoint->SetX(aPos->px());
+    fEmissionPoint->SetY(aPos->py());
+    fEmissionPoint->SetZ(aPos->pz());
+    fEmissionPoint->SetT(aPos->e());
   }
   else {
     fEmissionPoint = new AliFemtoLorentzVector(*aPos);
@@ -130,12 +130,12 @@ void                   AliFemtoModelHiddenInfo::SetEmissionPoint(AliFemtoLorentz
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPoint(const AliFemtoLorentzVector& aPos)
 {
-  // set position from vector
+  // Set position from vector
   if (fEmissionPoint) {
-    fEmissionPoint->setX(aPos.px());
-    fEmissionPoint->setY(aPos.py());
-    fEmissionPoint->setZ(aPos.pz());
-    fEmissionPoint->setT(aPos.e());
+    fEmissionPoint->SetX(aPos.px());
+    fEmissionPoint->SetY(aPos.py());
+    fEmissionPoint->SetZ(aPos.pz());
+    fEmissionPoint->SetT(aPos.e());
   }
   else {
     fEmissionPoint = new AliFemtoLorentzVector();
@@ -155,12 +155,12 @@ void                   AliFemtoModelHiddenInfo::SetMass(Double_t aMass)
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT)
 {
-  // set position from components
+  // Set position from components
   if (fEmissionPoint) {
-    fEmissionPoint->setX(aRx);
-    fEmissionPoint->setY(aRy);
-    fEmissionPoint->setZ(aRz);
-    fEmissionPoint->setT(aT);
+    fEmissionPoint->SetX(aRx);
+    fEmissionPoint->SetY(aRy);
+    fEmissionPoint->SetZ(aRz);
+    fEmissionPoint->SetT(aT);
   }
   else {
     fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 

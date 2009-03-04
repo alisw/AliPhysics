@@ -88,18 +88,18 @@ double AliFmPhysicalHelix::GeometricSignedDistance(double x, double y)
     // Geometric signed distance
     double thePath = this->PathLength(x,y);
     AliFmThreeVector<double> tDCA2dPosition = this->At(thePath);
-    tDCA2dPosition.setZ(0);
+    tDCA2dPosition.SetZ(0);
     AliFmThreeVector<double> position(x,y,0);
     AliFmThreeVector<double> tDCAVec = (tDCA2dPosition-position);
     AliFmThreeVector<double> momVec;
     // Deal with straight tracks
     if (this->fSingularity) {
 	momVec = this->At(1)- this->At(0);
-	momVec.setZ(0);
+	momVec.SetZ(0);
     }
     else {
 	momVec = this->MomentumAt(thePath,1./tesla); // Don't care about Bmag.  Helicity is what matters.
-	momVec.setZ(0);
+	momVec.SetZ(0);
     }
     
     double cross = tDCAVec.x()*momVec.y() - tDCAVec.y()*momVec.x();

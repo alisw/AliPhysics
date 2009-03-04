@@ -129,14 +129,14 @@ public:
     AliFmThreeVector<T>& operator=(const AliFmThreeVector<double>&);
 #endif
     
-    void setX(T);
-    void setY(T);
-    void setZ(T);
+    void SetX(T);
+    void SetY(T);
+    void SetZ(T);
 
-    void setPhi(T);
-    void setTheta(T);
-    void setMag(T);
-    void setMagnitude(T);
+    void SetPhi(T);
+    void SetTheta(T);
+    void SetMag(T);
+    void SetMagnitude(T);
     
     T   x()                        const;
     T   y()                        const;
@@ -156,14 +156,14 @@ public:
     T&  operator() (size_t);
     T&  operator[] (size_t);
     
-    T   massHypothesis(T mass)     const;
+    T   MassHypothesis(T mass)     const;
     
-    AliFmThreeVector<T>  unit()       const;
-    AliFmThreeVector<T>  orthogonal() const;
+    AliFmThreeVector<T>  Unit()       const;
+    AliFmThreeVector<T>  Orthogonal() const;
 
-    void  rotateX(T);
-    void  rotateY(T);
-    void  rotateZ(T);
+    void  RotateX(T);
+    void  RotateY(T);
+    void  RotateZ(T);
     
     AliFmThreeVector<T>  operator- ();
     AliFmThreeVector<T>  operator+ ();
@@ -223,16 +223,16 @@ template<class T>
 inline AliFmThreeVector<T>::~AliFmThreeVector() {/* nop */}
 
 template<class T>
-inline void AliFmThreeVector<T>::setX(T x) {mX1 = x;}
+inline void AliFmThreeVector<T>::SetX(T x) {mX1 = x;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setY(T y) {mX2 = y;}
+inline void AliFmThreeVector<T>::SetY(T y) {mX2 = y;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setZ(T z) {mX3 = z;}
+inline void AliFmThreeVector<T>::SetZ(T z) {mX3 = z;}
 
 template<class T>
-void AliFmThreeVector<T>::setPhi(T angle)
+void AliFmThreeVector<T>::SetPhi(T angle)
 {
     double  r = magnitude();
     double th = theta();
@@ -242,7 +242,7 @@ void AliFmThreeVector<T>::setPhi(T angle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setTheta(T angle)
+void AliFmThreeVector<T>::SetTheta(T angle)
 {
     double r  = magnitude();
     double ph = phi();
@@ -253,7 +253,7 @@ void AliFmThreeVector<T>::setTheta(T angle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setMagnitude(T r)
+void AliFmThreeVector<T>::SetMagnitude(T r)
 {
     double th = theta();
     double ph = phi();
@@ -264,9 +264,9 @@ void AliFmThreeVector<T>::setMagnitude(T r)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setMag(T mag)
+void AliFmThreeVector<T>::SetMag(T mag)
 {
-    setMagnitude(mag);
+    SetMagnitude(mag);
 }
 
 template<class T>
@@ -308,20 +308,20 @@ inline T AliFmThreeVector<T>::pseudoRapidity() const
 }
 
 template<class T>
-inline AliFmThreeVector<T> AliFmThreeVector<T>::unit() const
+inline AliFmThreeVector<T> AliFmThreeVector<T>::Unit() const
 {
     double tmp = mag(); if (tmp<=0.) tmp = 1e-20;
     return *this/tmp;
 }
 
 template <class T>
-T AliFmThreeVector<T>::massHypothesis(T mass) const
+T AliFmThreeVector<T>::MassHypothesis(T mass) const
 {
     return ::sqrt((*this)*(*this) + mass*mass);
 }
 
 template <class T>
-AliFmThreeVector<T> AliFmThreeVector<T>::orthogonal() const
+AliFmThreeVector<T> AliFmThreeVector<T>::Orthogonal() const
 {
     // Direct copy from CLHEP--it is probably better to
     // use your own dot/cross product code...
@@ -336,7 +336,7 @@ AliFmThreeVector<T> AliFmThreeVector<T>::orthogonal() const
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateX(T angle)
+void AliFmThreeVector<T>::RotateX(T angle)
 {
     // may in the future make use of the AliFmRotation class!
     double yPrime = cos(angle)*mX2 - sin(angle)*mX3;
@@ -347,7 +347,7 @@ void AliFmThreeVector<T>::rotateX(T angle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateY(T angle)
+void AliFmThreeVector<T>::RotateY(T angle)
 {
     // may in the future make use of the AliFmRotation class!
     double zPrime = cos(angle)*mX3 - sin(angle)*mX1;
@@ -358,7 +358,7 @@ void AliFmThreeVector<T>::rotateY(T angle)
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateZ(T angle)
+void AliFmThreeVector<T>::RotateZ(T angle)
 {
     // may in the future make use of the AliFmRotation class!
     double xPrime = cos(angle)*mX1 - sin(angle)*mX2;
@@ -849,9 +849,9 @@ istream&  operator>>(istream& is, AliFmThreeVector<T>& v)
 {
     T  x, y, z;
     is >> x >> y >> z;
-    v.setX(x);
-    v.setY(y);
-    v.setZ(z);
+    v.SetX(x);
+    v.SetY(y);
+    v.SetZ(z);
     return is;
 }
 #endif /* ! __CINT__ */

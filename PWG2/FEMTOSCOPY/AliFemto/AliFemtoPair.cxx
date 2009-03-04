@@ -334,7 +334,7 @@ void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
   // create dummy particle
   AliFemtoLorentzVector  l(0.0, 0.0, dummyPz) ; 
   double dummyMass = 1.0 ;
-  l.setE(l.vect().massHypothesis(dummyMass) );
+  l.SetE(l.vect().MassHypothesis(dummyMass) );
   // boost particles along the beam into a frame with velocity beta 
   AliFemtoLorentzVector l1boosted = l1.boost(l) ;
   AliFemtoLorentzVector l2boosted = l2.boost(l) ;
@@ -360,7 +360,7 @@ void AliFemtoPair::QYKPPF(double& qP, double& qT, double& q0) const
   // the center of gravity of the pair travels with l
   AliFemtoLorentzVector  l = l1 + l2 ; 
   l = -l ;
-  l.setE(-l.e()) ;
+  l.SetE(-l.e()) ;
   // boost particles  
   AliFemtoLorentzVector l1boosted = l1.boost(l) ;
   AliFemtoLorentzVector l2boosted = l2.boost(l) ;
@@ -647,7 +647,7 @@ double AliFemtoPair::KStarFlipped() const {
 
   AliFmThreeVectorD qwe = tP1.vect();
   qwe *= -1.; // flip it
-  tP1.setVect(qwe);
+  tP1.SetVect(qwe);
   
   AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
   double tMass = abs(tSum);
@@ -679,7 +679,7 @@ double AliFemtoPair::CVKFlipped() const{
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
   AliFmThreeVectorD qwe = tP1.vect();
   qwe *= -1.; // flip it
-  tP1.setVect(qwe);
+  tP1.SetVect(qwe);
   
   AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
   double tMass = abs(tSum);
@@ -707,8 +707,8 @@ double AliFemtoPair::PInv() const{
 double AliFemtoPair::QInvFlippedXY() const{
   // qinv with X and Y flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
-  tP1.setX(-1.*tP1.x());
-  tP1.setY(-1.*tP1.y());
+  tP1.SetX(-1.*tP1.x());
+  tP1.SetY(-1.*tP1.y());
   AliFemtoLorentzVector tDiff = (tP1-fTrack2->FourMomentum());
   return ( -1.* tDiff.m());
 }

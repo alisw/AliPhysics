@@ -110,20 +110,20 @@ public:
 
     const AliFmThreeVector<T>& vect() const;    
     
-    void setX(T);
-    void setY(T);
-    void setZ(T);
-    void setPx(T);
-    void setPy(T);
-    void setPz(T);
-    void setE(T);
-    void setT(T);
+    void SetX(T);
+    void SetY(T);
+    void SetZ(T);
+    void SetPx(T);
+    void SetPy(T);
+    void SetPz(T);
+    void SetE(T);
+    void SetT(T);
     
 #ifndef ST_NO_MEMBER_TEMPLATES
-    template <class X> void setVect(const AliFmThreeVector<X>&);
+    template <class X> void SetVect(const AliFmThreeVector<X>&);
 #else
-    void setVect(const AliFmThreeVector<float>&);
-    void setVect(const AliFmThreeVector<double>&);
+    void SetVect(const AliFmThreeVector<float>&);
+    void SetVect(const AliFmThreeVector<double>&);
 #endif   
 
     T perp()               const;
@@ -237,28 +237,28 @@ T AliFmLorentzVector<T>::mt() const
 }
 
 template<class T>
-void AliFmLorentzVector<T>::setPx(T ax) {mThreeVector.setX(ax);}
+void AliFmLorentzVector<T>::SetPx(T ax) {mThreeVector.SetX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::setPy(T ay) {mThreeVector.setY(ay);}
+void AliFmLorentzVector<T>::SetPy(T ay) {mThreeVector.SetY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::setPz(T az) {mThreeVector.setZ(az);}
+void AliFmLorentzVector<T>::SetPz(T az) {mThreeVector.SetZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::setX(T ax) {mThreeVector.setX(ax);}
+void AliFmLorentzVector<T>::SetX(T ax) {mThreeVector.SetX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::setY(T ay) {mThreeVector.setY(ay);}
+void AliFmLorentzVector<T>::SetY(T ay) {mThreeVector.SetY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::setZ(T az) {mThreeVector.setZ(az);}
+void AliFmLorentzVector<T>::SetZ(T az) {mThreeVector.SetZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::setT(T at) {mX4 = at;}
+void AliFmLorentzVector<T>::SetT(T at) {mX4 = at;}
 
 template<class T>
-void AliFmLorentzVector<T>::setE(T ae) {mX4 = ae;}
+void AliFmLorentzVector<T>::SetE(T ae) {mX4 = ae;}
 
 template<class T>
 T AliFmLorentzVector<T>::x() const {return mThreeVector.x();}
@@ -437,7 +437,7 @@ AliFmLorentzVector<T>::boost(const AliFmLorentzVector<X>& pframe) const
 
 template<class T>
 template<class X>
-void AliFmLorentzVector<T>::setVect(const AliFmThreeVector<X>& v)
+void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<X>& v)
 {
     mThreeVector = v;
 }
@@ -540,13 +540,13 @@ AliFmLorentzVector<T>::boost(const AliFmLorentzVector<double>& pframe) const
 }
 
 template<class T>
-void AliFmLorentzVector<T>::setVect(const AliFmThreeVector<float>& v)
+void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<float>& v)
 {
     mThreeVector = v;
 }
 
 template<class T>
-void AliFmLorentzVector<T>::setVect(const AliFmThreeVector<double>& v)
+void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<double>& v)
 {
     mThreeVector = v;
 }
@@ -721,10 +721,10 @@ istream&  operator>>(istream& is, AliFmLorentzVector<T>& v)
 {
     T  x, y, z, t;
     is >> x >> y >> z >> t;
-    v.setX(x);
-    v.setY(y);
-    v.setZ(z);
-    v.setT(t);
+    v.SetX(x);
+    v.SetY(y);
+    v.SetZ(z);
+    v.SetT(t);
     return is;
 }
 

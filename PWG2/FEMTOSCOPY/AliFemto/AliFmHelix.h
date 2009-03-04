@@ -171,7 +171,7 @@ inline int AliFmHelix::Bad(double WorldSize) const
     if (!::finite(fDipAngle    )) 	return   11;
     if (!::finite(fCurvature   )) 	return   12;
 
-    ierr = fOrigin.bad(WorldSize);
+    ierr = fOrigin.Bad(WorldSize);
     if (ierr)                           return    3+ierr*100;
 
     if (::fabs(fDipAngle)  >1.58)	return   21;

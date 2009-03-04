@@ -315,9 +315,9 @@ void AliFemtoTrack::SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC)
 void AliFemtoTrack::SetNominalTPCEntrancePoint(double *aXTPC)
 {
   // Store the nominal TPC entrance point
-  fNominalTpcEntrancePoint.setX(aXTPC[0]);
-  fNominalTpcEntrancePoint.setY(aXTPC[1]);
-  fNominalTpcEntrancePoint.setZ(aXTPC[2]);
+  fNominalTpcEntrancePoint.SetX(aXTPC[0]);
+  fNominalTpcEntrancePoint.SetY(aXTPC[1]);
+  fNominalTpcEntrancePoint.SetZ(aXTPC[2]);
 }
 
 void AliFemtoTrack::SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC)
@@ -327,7 +327,7 @@ void AliFemtoTrack::SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC)
 void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
 {
   // Store the nominal TPC exit point
-  fNominalTpcExitPoint.setX(aXTPC[0]);
-  fNominalTpcExitPoint.setY(aXTPC[1]);
-  fNominalTpcExitPoint.setZ(aXTPC[2]);
+  fNominalTpcExitPoint.SetX(aXTPC[0]);
+  fNominalTpcExitPoint.SetY(aXTPC[1]);
+  fNominalTpcExitPoint.SetZ(aXTPC[2]);
 }

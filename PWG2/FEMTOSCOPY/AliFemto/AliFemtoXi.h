@@ -195,22 +195,22 @@ inline unsigned short   AliFemtoXi::IdBac() const { return fKeyBac; }
 inline unsigned short   AliFemtoXi::KeyBac() const { return fKeyBac; }
 
 inline void AliFemtoXi::SetdecayLengthXi(const float x){ fDecayLengthXi= x;}   
-inline void AliFemtoXi::SetdecayVertexXiX(const float x){ fDecayVertexXi.setX(x);}
-inline void AliFemtoXi::SetdecayVertexXiY(const float x){ fDecayVertexXi.setY(x);}
-inline void AliFemtoXi::SetdecayVertexXiZ(const float x){ fDecayVertexXi.setZ(x);}
+inline void AliFemtoXi::SetdecayVertexXiX(const float x){ fDecayVertexXi.SetX(x);}
+inline void AliFemtoXi::SetdecayVertexXiY(const float x){ fDecayVertexXi.SetY(x);}
+inline void AliFemtoXi::SetdecayVertexXiZ(const float x){ fDecayVertexXi.SetZ(x);}
 inline void AliFemtoXi::SetdecayVertexXi(const AliFemtoThreeVector v){ fDecayVertexXi = v; }
 inline void AliFemtoXi::SetdcaXiDaughters(const float x){fDcaXiDaughters= x;} 
 inline void AliFemtoXi::SetdcaXiToPrimVertex(const float x){fDcaXiToPrimVertex= x;}   
 inline void AliFemtoXi::SetdcaBacToPrimVertex(const float x){ fDcaBachelorToPrimVertex = x;} 
 inline void AliFemtoXi::SetmomBac(const AliFemtoThreeVector v){fMomBachelor = v; }
-inline void AliFemtoXi::SetmomBacX(const float x){fMomBachelor.setX(x);}
-inline void AliFemtoXi::SetmomBacY(const float x){fMomBachelor.setY(x);}
-inline void AliFemtoXi::SetmomBacZ(const float x){fMomBachelor.setZ(x);}
+inline void AliFemtoXi::SetmomBacX(const float x){fMomBachelor.SetX(x);}
+inline void AliFemtoXi::SetmomBacY(const float x){fMomBachelor.SetY(x);}
+inline void AliFemtoXi::SetmomBacZ(const float x){fMomBachelor.SetZ(x);}
 inline void AliFemtoXi::SetTrackTopologyMapBac(unsigned int word, const unsigned long& m){fTopologyMapBachelor[word]=m;} 
 inline void AliFemtoXi::SetmomXi(AliFemtoThreeVector v){fMomXi= v; }
-inline void AliFemtoXi::SetmomXiX(const float x){fMomXi.setX(x);}
-inline void AliFemtoXi::SetmomXiY(const float x){fMomXi.setY(x);}
-inline void AliFemtoXi::SetmomXiZ(const float x){fMomXi.setZ(x);}
+inline void AliFemtoXi::SetmomXiX(const float x){fMomXi.SetX(x);}
+inline void AliFemtoXi::SetmomXiY(const float x){fMomXi.SetY(x);}
+inline void AliFemtoXi::SetmomXiZ(const float x){fMomXi.SetZ(x);}
 
 inline void AliFemtoXi::SetalphaXi( float x){fAlphaXi= x;}
 inline void AliFemtoXi::SetptArmXi( float x){fPtArmXi = x;}
