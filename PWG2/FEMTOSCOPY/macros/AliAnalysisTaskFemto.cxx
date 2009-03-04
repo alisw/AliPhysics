@@ -194,6 +194,16 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Terminate(Option_t *) {
   // Do the final processing
+  if (fManager) {
+    fManager->Finish();
+  }
+}
+//________________________________________________________________________
+void AliAnalysisTaskFemto:: FinishTaskOutput() {
+  // Do the final processing
+  if (fManager) {
+    fManager->Finish();
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader)
