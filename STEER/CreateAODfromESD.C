@@ -57,9 +57,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     esdTrackCutsL->SetDCAToVertex2D(kTRUE);
     esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
     esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+    // ITS stand-alone tracks
+    AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("AliESDtrackCuts", "ITS stand-alone");
+    esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
 
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
     trackFilter->AddCuts(esdTrackCutsL);
+    trackFilter->AddCuts(esdTrackCutsITSsa);
 
     // Cuts on V0s
     AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("AliESDv0Cuts", "Standard pp");
@@ -104,3 +108,4 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     mgr->PrintStatus();
     mgr->StartAnalysis("local", chain);
 }
+
