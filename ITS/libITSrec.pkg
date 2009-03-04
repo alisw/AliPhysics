@@ -33,10 +33,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSclusterTable.cxx \
 		AliITStrackSA.cxx \
 		AliITStrackerSA.cxx \
-		AliITSNeuralPoint.cxx \
-		AliITSNeuralTrack.cxx \
-		AliITSNeuralTracker.cxx \
-		AliITStrackerANN.cxx \
 		AliITSpidESD.cxx \
 		AliITSpidESD1.cxx \
 		AliITSpidESD2.cxx \
