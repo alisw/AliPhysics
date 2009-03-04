@@ -366,6 +366,7 @@ void AliTPCcalibDB::Update(){
      //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
+    fTransform->SetCurrentRun(AliCDBManager::Instance()->GetRun());
   }
 
   //
@@ -764,7 +765,7 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
   if (entry)  fTemperatureArray.AddAt(entry->GetObject(),run);
   fRunList[run]=1;  // sign as used
 
-  AliDCSSensor * press = GetPressureSensor(run);
+  AliDCSSensor * press = GetPressureSensor(run,0);
   AliTPCSensorTempArray * temp = GetTemperatureSensor(run);
   if (press && temp){
     AliTPCCalibVdrift * vdrift = new AliTPCCalibVdrift(temp, press,0);
@@ -812,10 +813,13 @@ TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
 AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   //
   // Get Pressure sensor
-  //
-  //
+  // run  = run number
+  // type = 0 - Cavern pressure
+  //        1 - Suface pressure
   // First try to get if trom map - if existing  (Old format of data storing)
   //
+
+
   TMap *map = GetGRPMap(run);  
   if (map){
     AliDCSSensor * sensor = 0;
