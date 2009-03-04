@@ -127,7 +127,8 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 			fQADataMaker[iDet] = NULL ;
 			fQACycles[iDet]    = 999999 ;
       fQAWriteExpert[iDet] = kTRUE ;
-		}
+    }
+  }
 }
 
 //_____________________________________________________________________________
