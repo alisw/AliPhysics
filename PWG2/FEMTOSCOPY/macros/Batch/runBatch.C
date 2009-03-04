@@ -58,7 +58,7 @@ void runBatch(const char *chainlistfile) {
   //ANALYSIS PART
   gSystem->SetIncludePath("-I$ROOTSYS/include  -I\"/usr/local/CERN/root/include\" -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I./ESD -I./AOD -I./ANALYSIS -I./PWG2AOD/AOD");
   gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
-  gROOT->LoadMacro("AliAnalysisTaskFemto.cxx+");
+  //  gROOT->LoadMacro("AliAnalysisTaskFemto.cxx+");
   //  const char *collectionfile = "wn.xml";
 
   //____________________________________________//
