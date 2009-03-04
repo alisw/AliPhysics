@@ -47,7 +47,8 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAOD.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx 
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx \
+      FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
@@ -102,7 +103,7 @@ DHDR:= PWG2femtoscopyLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/AOD
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/AOD 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

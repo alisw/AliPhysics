@@ -54,4 +54,6 @@
 #pragma link C++ class AliFemtoEventReaderAODChain+;
 #pragma link C++ class AliFemtoAODTrackCut+;
 
+#pragma link C++ class AliAnalysisTaskFemto+;
+
 #endif
