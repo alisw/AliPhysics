@@ -72,9 +72,13 @@ void runAODFilterMC()
       esdTrackCutsL->SetDCAToVertex2D(kTRUE);
       esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
       esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+
+      AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("AliESDtrackCuts", "ITS stand-alone");
+      esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
       
       AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
       trackFilter->AddCuts(esdTrackCutsL);
+      trackFilter->AddCuts(esdTrackCutsITSsa);
       
       AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
       esdfilter->SetTrackFilter(trackFilter);
@@ -105,3 +109,4 @@ void runAODFilterMC()
       mgr->StartAnalysis("proof",dataset,10000);
 
 }
+
