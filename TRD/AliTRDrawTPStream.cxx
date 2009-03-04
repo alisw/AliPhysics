@@ -29,7 +29,6 @@
 //                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "TString.h"
 #include "AliLog.h"
 
 #include "AliTRDrawStream.h"
@@ -115,6 +114,10 @@ AliTRDrawTPStream::~AliTRDrawTPStream()
 //---------------------------------------------------------------------
 Bool_t AliTRDrawTPStream::DecodeTPdata()
 {
+  //
+  // main function to decode test pattern data  
+  // fRawVMajorOpt version control different type of test pattern data
+  //
 
   if (fRawVMajorOpt == 7)
     {
@@ -137,6 +140,9 @@ Bool_t AliTRDrawTPStream::DecodeTPdata()
 //---------------------------------------------------------------------
 Bool_t AliTRDrawTPStream::DecodeConfigdata()
 {
+  //
+  // main function to decode trap configuration data 
+  //
 
     UInt_t packedConf[256];
     Int_t mcmPos, mcmsRead, lengthPacked;
@@ -160,13 +166,16 @@ Bool_t AliTRDrawTPStream::DecodeConfigdata()
 }
 
 //---------------------------------------------------------------------
-Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t *nWords)
+Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t * const nWords)
 {
+  //
+  // decode packed data words
+  //
 
     UInt_t vword = *word;
 
     Int_t  iLength;
-    UInt_t err, robNum, mcmNum, chipId, NoEndMarker;
+    UInt_t err, robNum, mcmNum, chipId, noEndMarker;
 
     iLength = 0;
     err = 0;
@@ -185,17 +194,17 @@ Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t *nWords)
       return -1;
 
     // read MCM data and store into array
-    NoEndMarker = 1;
+    noEndMarker = 1;
     do
     {
         word++;
         vword = *word;
 
-        NoEndMarker = ((vword != ENDM_CONF) && (vword != (ENDM_CONF | 1)) && (vword != 0x10001000));
+        noEndMarker = ((vword != ENDM_CONF) && (vword != (ENDM_CONF | 1)) && (vword != 0x10001000));
         *pData = vword;
         pData++;
         iLength++;
-    } while (NoEndMarker && (iLength < 256));
+    } while (noEndMarker && (iLength < 256));
 
     word++;       
     fpPos = word;
@@ -210,22 +219,25 @@ Int_t AliTRDrawTPStream::ReadPacked(UInt_t *word, UInt_t *pData, Int_t *nWords)
 //---------------------------------------------------------------------
 void AliTRDrawTPStream::PowerUp() // power up
 {
+  //
     // copy the reset values 
-    for (Int_t i=0; i< N_REGS; i++)
+    for (Int_t i=0; i< NREGS; i++)
     {
         fRegs[i] = fTrapReg[i].fResVal;
         fCnfPro[i] = 0;
     }
     // mark all DMEM cells as invalid
-    for (Int_t i=0; i< N_DMEM; i++) fDmemValid[i] = 0;
+    for (Int_t i=0; i< NDMEM; i++) fDmemValid[i] = 0;
     // mark all DBANK cells as empty
-    for (Int_t i=0; i< N_DBANK; i++) fDbankPro[i] = kDbankEmpty;
+    for (Int_t i=0; i< NDBANK; i++) fDbankPro[i] = kDbankEmpty;
 }
 
 
 //---------------------------------------------------------------------
-Int_t AliTRDrawTPStream::UnPackConfN(UInt_t *pData, Int_t maxLength)
+Int_t AliTRDrawTPStream::UnPackConfN(const UInt_t *pData, Int_t maxLength)
 {
+  //
+
     Int_t debug = 0; // the debug mode not completely ready
     Int_t step, bwidth, nwords, idx, err, exitFlag, bitcnt, werr;
     UInt_t caddr;
@@ -356,8 +368,9 @@ Int_t AliTRDrawTPStream::UnPackConfN(UInt_t *pData, Int_t maxLength)
 //---------------------------------------------------------------------
 void AliTRDrawTPStream::DumpCnf(Int_t slv)
 {
+  //
     UInt_t idx;
-    for (idx = 0; idx < N_REGS; idx++) // config. reg
+    for (idx = 0; idx < NREGS; idx++) // config. reg
        {
         if (slv >= 0)
           printf("%s\t0x%08x\t%3d %c\n", fTrapReg[idx].fName, (Int_t) fRegs[idx], slv, CnfStat(fCnfPro[idx]));
@@ -368,32 +381,34 @@ void AliTRDrawTPStream::DumpCnf(Int_t slv)
 
 
 //---------------------------------------------------------------------
-const Char_t * AliTRDrawTPStream::Addr2Name(UInt_t addr)
+const Char_t * AliTRDrawTPStream::Addr2Name(UInt_t addr) const
 {
+  //
     Int_t idx;
     idx = 0;
     if ( ( ( (addr >> 4) & 0xFFE) == 0x0C0) && ( ( (addr >> 2) & 1) == 1) )
     {
         addr = addr & 0x0C07;
     }
-    while ((idx < N_REGS) && (fTrapReg[idx].fAddr != addr) ) idx++;
-    if (idx < N_REGS)
+    while ((idx < NREGS) && (fTrapReg[idx].fAddr != addr) ) idx++;
+    if (idx < NREGS)
         return fTrapReg[idx].fName;
     idx = 0;
-    while ((idx < N_CMD) && (fCmdReg[idx].fAddr != addr)) idx++;
-    if (idx < N_CMD)
+    while ((idx < NCMD) && (fCmdReg[idx].fAddr != addr)) idx++;
+    if (idx < NCMD)
         return fCmdReg[idx].fName;
     idx = 0;
-    while ((idx < N_RO) && (fRoReg[idx].fAddr != addr)) idx++;
-    if (idx < N_RO)
+    while ((idx < NRO) && (fRoReg[idx].fAddr != addr)) idx++;
+    if (idx < NRO)
         return fRoReg[idx].fName;
     else
         return 0;
 }
 
 //---------------------------------------------------------------------
-Char_t AliTRDrawTPStream::CnfStat(UInt_t prop)
+Char_t AliTRDrawTPStream::CnfStat(UInt_t prop) const
 {
+  //
     if (prop == 0) return 'U';
     else
     if (prop == 1) return 'R';
@@ -406,6 +421,7 @@ Char_t AliTRDrawTPStream::CnfStat(UInt_t prop)
 //---------------------------------------------------------------------
 Int_t AliTRDrawTPStream::SetU(UInt_t addr, UInt_t newVal)
 {
+  //
     Int_t i;
     UInt_t maxVal = 0;
 
@@ -425,7 +441,7 @@ Int_t AliTRDrawTPStream::SetU(UInt_t addr, UInt_t newVal)
     else
     {
         i = Addr2Idx(addr);
-        if (i < N_REGS) // found
+        if (i < NREGS) // found
         {
             fCnfPro[i] = 2;
             if (fTrapReg[i].fNbits < 32) // create the max value from the number of bits
@@ -454,22 +470,23 @@ Int_t AliTRDrawTPStream::SetU(UInt_t addr, UInt_t newVal)
 }
 
 //---------------------------------------------------------------------
-Int_t AliTRDrawTPStream::AddrIsDmem(UInt_t addr)
+Int_t AliTRDrawTPStream::AddrIsDmem(UInt_t addr) const
 {
     addr = (addr >> 10);
     return (addr == 0x30);
 }
 
 //---------------------------------------------------------------------
-Int_t AliTRDrawTPStream::AddrIsDbank(UInt_t addr)
+Int_t AliTRDrawTPStream::AddrIsDbank(UInt_t addr) const
 {
     addr = (addr >> 8);
     return (addr == 0xF0);
 }
 
 //---------------------------------------------------------------------
-UInt_t AliTRDrawTPStream::Addr2Idx(UInt_t addr)
+UInt_t AliTRDrawTPStream::Addr2Idx(UInt_t addr) const
 {
+  //
     Int_t idx;
     idx = 0;
     // check if global const
@@ -478,7 +495,7 @@ UInt_t AliTRDrawTPStream::Addr2Idx(UInt_t addr)
         addr = addr & 0x0C07;
     }
     // searching
-    while ((idx < N_REGS) && (fTrapReg[idx].fAddr != addr)) idx++;
+    while ((idx < NREGS) && (fTrapReg[idx].fAddr != addr)) idx++;
        // printf("Addr = 0x%04x; Idx = %d\n",addr, idx); // debugging
     return idx;
 }
@@ -486,8 +503,9 @@ UInt_t AliTRDrawTPStream::Addr2Idx(UInt_t addr)
 //---------------------------------------------------------------------
 Bool_t AliTRDrawTPStream::FillConfig()
 {
+  // fill array with configuraiton information 
 
-  const SimpleRegs trapReg[N_REGS] = {
+  const SimpleRegs kTrapReg[NREGS] = {
     // Name         Address Nbits   Reset Value
     // Global state machine
     {"SML0",        0x0A00, 15,     0x4050},
@@ -944,7 +962,7 @@ Bool_t AliTRDrawTPStream::FillConfig()
     {"DMDELS",      0xD003, 4,      0x8}
   };
 
-  const CmdRegs cmdReg[N_CMD] = {
+  const CmdRegs kCmdReg[NCMD] = {
     // Name      Address
     {"SMCMD"   , 0x0A04},
     {"SMOFFON" , 0x0A05},
@@ -964,7 +982,7 @@ Bool_t AliTRDrawTPStream::FillConfig()
     {"NIICESS" , 0x0A37}
   };
 
-  const CmdRegs roReg[N_RO] = {
+  const CmdRegs kRoReg[NRO] = {
     // NI
     {"NCTRL"  , 0x0DC0},
     {"NFE"    , 0x0DC1},
@@ -999,14 +1017,14 @@ Bool_t AliTRDrawTPStream::FillConfig()
   };
 
 
-  for (Int_t i = 0; i < N_REGS; i++) {
-     fTrapReg[i] = trapReg[i];
+  for (Int_t i = 0; i < NREGS; i++) {
+     fTrapReg[i] = kTrapReg[i];
   }
-  for (Int_t i = 0; i < N_CMD; i++) {
-     fCmdReg[i] = cmdReg[i];
+  for (Int_t i = 0; i < NCMD; i++) {
+     fCmdReg[i] = kCmdReg[i];
   }
-  for (Int_t i = 0; i < N_RO; i++) {
-     fRoReg[i] = roReg[i];
+  for (Int_t i = 0; i < NRO; i++) {
+     fRoReg[i] = kRoReg[i];
   }
 
   return kTRUE;
