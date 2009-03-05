@@ -40,6 +40,8 @@ public:
 
   // parameter settings for reconstruction
   void SetRecoMode();
+  void SetRecoMode(Int_t recoMode, Float_t beamEnergy) 
+          {fRecoMode=recoMode; fBeamEnergy=beamEnergy;}
   static void SetRecoParam(AliZDCRecoParam * param){fRecoParam = param;}
   
   Int_t   GetRecoMode() {return fRecoMode;}
