@@ -2055,7 +2055,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           AliInfo(Form("Track %d [%d] nlayers %d trackQuality = %e nused %d, yref = %3.3f", itrack, trackIndex, nlayers, fTrackQuality[trackIndex], nused, trackParams[1]));
 
           AliTRDseedV1 *dseed[6];
-          memcpy(dseed, lseed, 6*sizeof(AliTRDseedV1*));
+          for(Int_t iseed = AliTRDgeometry::kNlayer; iseed--;) dseed[iseed] = new AliTRDseedV1(lseed[iseed]);
 
           //Int_t eventNrInFile = esd->GetEventNumberInFile();
           //AliInfo(Form("Number of clusters %d.", nclusters));

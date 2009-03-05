@@ -336,11 +336,11 @@ void AliTRDseedV1::UseClusters()
     if(!(*c)) continue;
     if(IsStandAlone()){
       if((*c)->IsShared() || (*c)->IsUsed()){ 
+        if((*c)->IsShared()) SetNShared(GetNShared()-1);
+        else SetNUsed(GetNUsed()-1);
         (*c) = 0x0;
         fIndexes[ic] = -1;
         SetN(GetN()-1);
-        if((*c)->IsShared()) SetNShared(GetNShared()-1);
-        else SetNUsed(GetNUsed()-1);
         continue;
       }
     } else {
