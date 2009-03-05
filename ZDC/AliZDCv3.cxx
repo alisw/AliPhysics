@@ -2466,14 +2466,19 @@ void AliZDCv3::StepManager()
     // Ch. debug
     //printf("\t *** det %d vol %d xdet(%f, %f)\n",vol[0], vol[1], xdet[0], xdet[1]);
     
+    
   // Store impact point and kinetic energy of the ENTERING particle
     
       if(gMC->IsTrackEntering()){
         //Particle energy
         gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
         hits[3] = p[3];
-        // Impact point on ZDC  
-        hits[4] = xdet[0];
+        // Impact point on ZDC
+	// X takes into account the LHC x-axis sign
+	// which is opposite to positive x on detcetor front face
+	// for side A detectors (ZNA and ZPA)  
+        if(vol[0]==4 || vol[0]==5) hits[4] = -xdet[0];
+	else hits[4] = -xdet[0];
         hits[5] = xdet[1];
 	hits[6] = 0;
         hits[7] = 0;
