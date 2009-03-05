@@ -9,7 +9,9 @@
 #endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
-		      const char *outFileName = "AliAODs.root") {
+		      const char *outFileName = "AliAODs.root",
+		      Bool_t bKineFilter = kTRUE) 
+{
   
     gSystem->Load("libTree");
     gSystem->Load("libGeom");
@@ -32,13 +34,26 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliESDInputHandler* inpHandler = new AliESDInputHandler();
     inpHandler->SetReadTags();
     mgr->SetInputEventHandler  (inpHandler);
-
     // Output
     AliAODHandler* aodHandler   = new AliAODHandler();
     aodHandler->SetOutputFileName(outFileName);
     mgr->SetOutputEventHandler(aodHandler);
 
-    // Task
+    // MC Truth
+    if(bKineFilter){
+	AliMCEventHandler* mcHandler = new AliMCEventHandler();
+	mgr->SetMCtruthEventHandler(mcHandler);
+    }
+
+
+    // Tasks
+    // Filtering of MC particles (decays conversions etc)
+    // this task is also needed to set the MCEventHandler
+    // to the AODHandler, this will not be needed when
+    // AODHandler goes to ANALYSISalice
+    AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Filter");
+    if (bKineFilter) mgr->AddTask(kinefilter);
+    
     // Barrel Tracks
     AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
     mgr->AddTask(filter);
@@ -56,7 +71,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     esdTrackCutsL->SetMaxDCAToVertexZ(3.0);
     esdTrackCutsL->SetDCAToVertex2D(kTRUE);
     esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
     // ITS stand-alone tracks
     AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("AliESDtrackCuts", "ITS stand-alone");
     esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
@@ -87,11 +102,18 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     mgr->AddTask(tagTask);
 
     // Pipelining
-    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    
+    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();    
     AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
+    
+    
     AliAnalysisDataContainer *coutputT
 	= mgr->CreateContainer("cTag",  TTree::Class(), AliAnalysisManager::kOutputContainer, "AOD.tag.root");
     
+    if(bKineFilter) {
+	mgr->ConnectInput  (kinefilter,     0, cinput1  );
+	mgr->ConnectOutput (kinefilter,     0, coutput1 );
+    }
+
     mgr->ConnectInput (filter, 0, cinput1 );
     mgr->ConnectOutput(filter, 0, coutput1);
 
