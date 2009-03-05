@@ -143,7 +143,7 @@ bool AliHLTReadoutList::Empty() const
 {
   // Returns true if the readout list has no DDLs enabled.
 
-  for (int i = 0; i < sizeof(fReadoutList.fList) / sizeof(fReadoutList.fList[0]); i++)
+  for (size_t i = 0; i < sizeof(fReadoutList.fList) / sizeof(fReadoutList.fList[0]); i++)
   {
     if (fReadoutList.fList[i] != 0x0) return false;
   }
