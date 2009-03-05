@@ -21,7 +21,7 @@ public:
   virtual void Init();
   void SetParamMI() { fParamMI=kTRUE; fParamACORDE=kFALSE; fParamDataTPC=kFALSE; return; }
   void SetParamACORDE() { fParamMI=kFALSE; fParamACORDE=kTRUE; fParamDataTPC=kFALSE; return; }
-  void SetParamDataTPC() { fParamDataTPC=kTRUE; fParamACORDE=kFALSE; fParamDataTPC=kFALSE; return; }
+  void SetParamDataTPC() { fParamMI=kFALSE; fParamACORDE=kFALSE; fParamDataTPC=kTRUE; return; }
   void SetYOrigin(Float_t y=600.) { fYOrigin=y; return; }
   void SetMaxAngleWRTVertical(Float_t max=45.) { 
       if(max<0. || max>90.) AliFatal("angle must be in [0,pi/2]");
