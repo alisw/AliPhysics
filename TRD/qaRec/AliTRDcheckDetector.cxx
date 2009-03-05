@@ -746,8 +746,9 @@ TH1 *AliTRDcheckDetector::PlotPHt(const AliTRDtrackV1 *track){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
     Int_t crossing = Int_t(tracklet->IsRowCross());
     Int_t detector = tracklet->GetDetector();
-    for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
-      if(!(c = tracklet->GetClusters(itime))) continue;
+    tracklet->ResetClusterIter();
+    while((c = tracklet->NextCluster())){
+      if(!c->IsInChamber()) continue;
       Int_t localtime        = c->GetLocalTimeBin();
       Double_t absolute_charge = TMath::Abs(c->GetQ());
       h->Fill(localtime, absolute_charge);
@@ -805,11 +806,14 @@ TH1 *AliTRDcheckDetector::PlotPHx(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   Double_t distance = 0;
+  Double_t x, y;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
     tracklet->ResetClusterIter();
     while((c = tracklet->NextCluster())){
-      distance = tracklet->GetX0() - c->GetX() + offset;
+      if(!c->IsInChamber()) continue;
+      tracklet->GetClusterXY(c, x, y);
+      distance = tracklet->GetX0() - (c->GetX() + 0.3) + offset;
       h->Fill(distance, TMath::Abs(c->GetQ()));
     }
   }  
