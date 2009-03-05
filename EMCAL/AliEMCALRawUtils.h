@@ -4,20 +4,7 @@
  * See cxx source for full Copyright notice     */
 
 /* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.3  2007/10/31 17:15:24  mvl
- * Fixed bug in raw data unpacking; Added pedestal to signal fit; Added logic to deal with high/low gain
- *
- * Revision 1.2  2007/09/03 20:55:35  jklay
- * EMCAL e-by-e reconstruction methods from Cvetan
- *
- * Revision 1.1  2007/03/17 19:56:38  mvl
- * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
- *
- *
- */
+
 //_________________________________________________________________________
 //  Utility Class for handling Raw data
 //  Does all transitions from Digits to Raw and vice versa, 
@@ -32,8 +19,9 @@
 //
 #include "TObject.h" // for ROOT types
 #include <TString.h>
-#include "AliCaloRawStream.h"
-
+//#include "AliCaloRawStream.h"
+class AliCaloRawStream;
+class AliAltroMapping;
 class TGraph;
 class TF1;
 class AliRawReader;
@@ -79,7 +67,7 @@ class AliEMCALRawUtils : public TObject {
   void SetOption(Option_t* opt) { fOption = opt; }
 
   // Signal shape functions
-  void FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time);
+  void FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time) const ;
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
 

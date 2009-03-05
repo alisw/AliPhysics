@@ -14,51 +14,28 @@
  **************************************************************************/
 
 /* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.10  2007/12/06 13:58:11  hristov
- * Additional pritection. Do not delete the mapping, it is owned by another class
- *
- * Revision 1.9  2007/12/06 02:19:51  jklay
- * incorporated fitting procedure from testbeam analysis into AliRoot
- *
- * Revision 1.8  2007/12/05 02:30:51  jklay
- * modification to read Altro mappings into AliEMCALRecParam and pass to AliEMCALRawUtils from AliEMCALReconstructor; add option to AliEMCALRawUtils to set old RCU format (for testbeam) or not
- *
- * Revision 1.7  2007/11/14 15:51:46  gustavo
- * Take out few unnecessary prints
- *
- * Revision 1.6  2007/11/01 01:23:51  mvl
- * Removed call to SetOldRCUFormat, which is only needed for testbeam data
- *
- * Revision 1.5  2007/11/01 01:20:33  mvl
- * Further improvement of peak finding; more robust fit
- *
- * Revision 1.4  2007/10/31 17:15:24  mvl
- * Fixed bug in raw data unpacking; Added pedestal to signal fit; Added logic to deal with high/low gain
- *
- * Revision 1.3  2007/09/27 08:36:46  mvl
- * More robust setting of fit range in FitRawSignal (P. Hristov)
- *
- * Revision 1.2  2007/09/03 20:55:35  jklay
- * EMCAL e-by-e reconstruction methods from Cvetan
- *
- * Revision 1.1  2007/03/17 19:56:38  mvl
- * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
- * */
 
+//_________________________________________________________________________
+//  Utility Class for handling Raw data
+//  Does all transitions from Digits to Raw and vice versa, 
+//  for simu and reconstruction
+//
+//  Note: the current version is still simplified. Only 
+//    one raw signal per digit is generated; either high-gain or low-gain
+//    Need to add concurrent high and low-gain info in the future
+//    No pedestal is added to the raw signal.
 //*-- Author: Marco van Leeuwen (LBL)
+
 #include "AliEMCALRawUtils.h"
   
 #include "TF1.h"
 #include "TGraph.h"
-#include "TSystem.h"
+class TSystem;
   
-#include "AliLog.h"
+class AliLog;
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliCaloAltroMapping.h"
+class AliCaloAltroMapping;
 #include "AliAltroBuffer.h"
 #include "AliRawReader.h"
 #include "AliCaloRawStream.h"
@@ -67,21 +44,21 @@
 #include "AliEMCALRecParam.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALDigitizer.h"
+class AliEMCALDigitizer;
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
   
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
- Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
+Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
 // some digitization constants
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
-Int_t    AliEMCALRawUtils::fgPedestalValue = 32;      // pedestal value for digits2raw
-Double_t AliEMCALRawUtils::fgFEENoise = 3.;            // 3 ADC channels of noise (sampled)
+Int_t    AliEMCALRawUtils::fgPedestalValue = 32;     // pedestal value for digits2raw
+Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise (sampled)
 
 AliEMCALRawUtils::AliEMCALRawUtils()
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
@@ -194,6 +171,7 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
 
 //____________________________________________________________________________
 AliEMCALRawUtils::~AliEMCALRawUtils() {
+  //dtor
 
 }
 
@@ -346,16 +324,15 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
   Int_t readOk = 1;
   Int_t lowGain = 0;
+  Int_t caloFlag = 0; // low, high gain, or TRU, or LED ref.
 
   while (readOk && in.GetModule() < 0) 
     readOk = in.Next();  // Go to first digit
 
-  Int_t col = 0;
-  Int_t row = 0;
-
   while (readOk) { 
 
     id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+    caloFlag = in.GetCaloFlag();
     lowGain = in.IsLowGain();
     Int_t maxTime = in.GetTime();  // timebins come in reverse order
     if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {
@@ -375,8 +352,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 	  AliWarning("Too many time bins");
 	  gSig->Set(in.GetTime());
       }
-      col = in.GetColumn();
-      row = in.GetRow();
       
       gSig->SetPoint(in.GetTime(), in.GetTime(), in.GetSignal()) ;
 
@@ -387,13 +362,16 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
     FitRaw(gSig, signalF, amp, time) ; 
     
-    if (amp > 0 && amp < 2000) {  //check both high and low end of
-				   //result, 2000 is somewhat arbitrary
-      AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-
-      AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
-    }
+    if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
+      if (amp > 0 && amp < 2000) {  //check both high and low end of
+	//result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
+	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	
+	AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
+      }
+	
+    }
+
     // Reset graph
     for (Int_t index = 0; index < gSig->GetN(); index++) {
       gSig->SetPoint(index, index, 0) ;  
@@ -448,7 +426,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time)
+void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time) const 
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
 
@@ -472,73 +450,73 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
     ped = 10; // put some small value as first guess
   }
 
-  Int_t max_found = 0;
-  Int_t i_max = 0;
+  Int_t maxFound = 0;
+  Int_t iMax = 0;
   Float_t max = -1;
-  Float_t max_fit = gSig->GetN();
-  Float_t min_after_sig = 9999;
-  Int_t tmin_after_sig = gSig->GetN();
-  Int_t n_ped_after_sig = 0;
-  Int_t plateau_width = 0;
-  Int_t plateau_start = 9999;
-  Float_t Cut = 0.3;
+  Float_t maxFit = gSig->GetN();
+  Float_t minAfterSig = 9999;
+  Int_t tminAfterSig = gSig->GetN();
+  Int_t nPedAfterSig = 0;
+  Int_t plateauWidth = 0;
+  Int_t plateauStart = 9999;
+  Float_t cut = 0.3;
 
   for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
     Double_t ttime, signal;
     gSig->GetPoint(i, ttime, signal) ; 
-    if (!max_found && signal > max) {
-      i_max = i;
+    if (!maxFound && signal > max) {
+      iMax = i;
       max = signal;
     }
     else if ( max > ped + fNoiseThreshold ) {
-      max_found = 1;
-      min_after_sig = signal;
-      tmin_after_sig = i;
+      maxFound = 1;
+      minAfterSig = signal;
+      tminAfterSig = i;
     }
-    if (max_found) {
-      if ( signal < min_after_sig) {
-        min_after_sig = signal;
-	tmin_after_sig = i;
+    if (maxFound) {
+      if ( signal < minAfterSig) {
+        minAfterSig = signal;
+	tminAfterSig = i;
       }
-      if (i > tmin_after_sig + 5) {  // Two close peaks; end fit at minimum
-        max_fit = tmin_after_sig;
+      if (i > tminAfterSig + 5) {  // Two close peaks; end fit at minimum
+        maxFit = tminAfterSig;
         break;
       }
-      if ( signal < Cut*max){   //stop fit at 30% amplitude(avoid the pulse shape falling edge)
-        max_fit = i;
+      if ( signal < cut*max){   //stop fit at 30% amplitude(avoid the pulse shape falling edge)
+        maxFit = i;
         break;
       }
       if ( signal < ped + fNoiseThreshold)
-        n_ped_after_sig++;
-      if (n_ped_after_sig >= 5) {  // include 5 pedestal bins after peak
-        max_fit = i;
+        nPedAfterSig++;
+      if (nPedAfterSig >= 5) {  // include 5 pedestal bins after peak
+        maxFit = i;
         break;
       }
     }
     //Add check on plateau
     if (signal >= fgkRawSignalOverflow - fNoiseThreshold) {
-      if(plateau_width == 0) plateau_start = i;
-      plateau_width++;
+      if(plateauWidth == 0) plateauStart = i;
+      plateauWidth++;
     }
   }
 
-  if(plateau_width > 0) {
-    for(int j = 0; j < plateau_width; j++) {
+  if(plateauWidth > 0) {
+    for(int j = 0; j < plateauWidth; j++) {
       //Note, have to remove the same point N times because after each
       //remove, the positions of all subsequent points have shifted down
-      gSig->RemovePoint(plateau_start);
+      gSig->RemovePoint(plateauStart);
     }
   }
 
   if ( max - ped > fNoiseThreshold ) { // else its noise 
     AliDebug(2,Form("Fitting max %d ped %d", max, ped));
-    signalF->SetRange(0,max_fit);
+    signalF->SetRange(0,maxFit);
 
     if(max-ped > 50) 
       signalF->SetParLimits(2,1,3);
 
     signalF->SetParameter(4, ped) ; 
-    signalF->SetParameter(1, i_max);
+    signalF->SetParameter(1, iMax);
     signalF->SetParameter(0, max);
     
     gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
@@ -568,14 +546,14 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   //
   Double_t signal ;
   Double_t tau =par[2];
-  Double_t N =par[3];
+  Double_t n =par[3];
   Double_t ped = par[4];
   Double_t xx = ( x[0] - par[1] + tau ) / tau ;
 
   if (xx <= 0) 
     signal = ped ;  
   else {  
-    signal = ped + par[0] * TMath::Power(xx , N) * TMath::Exp(N * (1 - xx )) ; 
+    signal = ped + par[0] * TMath::Power(xx , n) * TMath::Exp(n * (1 - xx )) ; 
   }
   return signal ;  
 }
