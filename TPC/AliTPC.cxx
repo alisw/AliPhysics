@@ -1413,11 +1413,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
   Stat_t ntracks = tH->GetEntries();
 
-  if( ntracks > 0){
 
-  //------------------------------------------- 
-  //  Only if there are any tracks...
-  //-------------------------------------------
 
     TObjArray **row;
     
@@ -1466,7 +1462,6 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
       
     delete [] row; // delete the array of pointers to TObjArray-s
         
-  } // ntracks >0
 
 } // end of Hits2DigitsSector
 
