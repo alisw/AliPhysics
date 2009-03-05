@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
+ *                                                                        *QARef
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -244,6 +244,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 
   fAlignObjArray(NULL),
   fCDBUri(),
+  fQARefUri(),
   fSpecCDBUri(), 
   fInitCDBCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
@@ -253,7 +254,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunQA(kTRUE),  
   fRunGlobalQA(kTRUE),
   fSameQACycle(kFALSE),
-
+  fInitQACalled(kFALSE), 
   fRunPlaneEff(kFALSE),
 
   fesd(NULL),
@@ -336,6 +337,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fAlignObjArray(rec.fAlignObjArray),
   fCDBUri(rec.fCDBUri),
+  fQARefUri(rec.fQARefUri),
   fSpecCDBUri(), 
   fInitCDBCalled(rec.fInitCDBCalled),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
@@ -345,6 +347,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
   fSameQACycle(rec.fSameQACycle),
+  fInitQACalled(rec.fInitQACalled),
   fRunPlaneEff(rec.fRunPlaneEff),
 
   fesd(NULL),
@@ -465,6 +468,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   delete fAlignObjArray; fAlignObjArray = NULL;
 
   fCDBUri        = "";
+  fQARefUri      = rec.fQARefUri;
   fSpecCDBUri.Delete();
   fInitCDBCalled               = rec.fInitCDBCalled;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
@@ -474,6 +478,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunQA                       = rec.fRunQA;  
   fRunGlobalQA                 = rec.fRunGlobalQA;
   fSameQACycle                 = rec.fSameQACycle;
+  fInitQACalled                = rec.fInitQACalled;
   fRunPlaneEff                 = rec.fRunPlaneEff;
 
   fesd     = NULL;
@@ -505,6 +510,67 @@ AliReconstruction::~AliReconstruction()
   fSpecCDBUri.Delete();
   delete fQAManager;
   AliCodeTimer::Instance()->Print();
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::InitQA()
+{
+  //Initialize the QA and start of cycle 
+  AliCodeTimerAuto("");
+  
+  if (fInitQACalled) return;
+  fInitQACalled = kTRUE;
+  
+  fQAManager = AliQAManager::QAManager("rec") ; 
+  if (fQAManager->IsDefaultStorageSet()) {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("Default QA reference storage has been already set !");
+    AliWarning(Form("Ignoring the default storage declared in AliReconstruction: %s",fQARefUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    fQARefUri = fQAManager->GetDefaultStorage()->GetURI();
+  } else {
+    if (fQARefUri.Length() > 0) {
+    	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliDebug(2, Form("Default QA reference storage is set to: %s", fQARefUri.Data()));
+    	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      } else {
+        fQARefUri="local://$ALICE_ROOT/QAref";
+        AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        AliWarning("Default QA refeference storage not yet set !!!!");
+        AliWarning(Form("Setting it now to: %s", fQARefUri.Data()));
+        AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    		
+      }
+    fQAManager->SetDefaultStorage(fQARefUri);
+  }
+  
+  if (fRunQA) {
+  fQAManager->SetActiveDetectors(fQADetectors) ; 
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
+    fQAManager->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
+    fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+  }
+  if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
+    fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
+  fQAManager->SetTasks(fQATasks) ; 
+  fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
+  }
+  if (fRunGlobalQA) {
+    Bool_t sameCycle = kFALSE ;
+    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
+    AliInfo(Form("Initializing the global QA data maker"));
+    if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
+      qadm->StartOfCycle(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
+      TObjArray **arr=qadm->Init(AliQA::kRECPOINTS);
+      AliTracker::SetResidualsArray(arr);
+      sameCycle = kTRUE ; 
+    }
+    if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
+      qadm->StartOfCycle(AliQA::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
+      qadm->Init(AliQA::kESDS);
+    }
+    AliSysInfo::AddStamp("InitQA");
+  }
 }
 
 //_____________________________________________________________________________
@@ -565,6 +631,15 @@ void AliReconstruction::SetDefaultStorage(const char* uri) {
 
 }
 
+//_____________________________________________________________________________
+void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
+  // Store the desired default CDB storage location
+  // Activate it later within the Run() method
+  
+  fQARefUri = uri;
+  AliQA::SetQARefStorage(fQARefUri.Data()) ;
+  
+}
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
@@ -1392,36 +1467,8 @@ void AliReconstruction::SlaveBegin(TTree*)
   
   //QA
   //Initialize the QA and start of cycle 
-  if (fRunQA) {
-    fQAManager = AliQAManager::QAManager("rec") ; 
-    fQAManager->SetActiveDetectors(fQADetectors) ; 
-    for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-      fQAManager->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
-      fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
-    }
-    if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
-      fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
-    fQAManager->SetTasks(fQATasks) ; 
-    fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
-  }
-  
-  if (fRunGlobalQA) {
-    Bool_t sameCycle = kFALSE ;
-    if (!fQAManager) 
-      fQAManager = AliQAManager::QAManager("rec") ; 
-    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
-    AliInfo(Form("Initializing the global QA data maker"));
-    if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
-      qadm->StartOfCycle(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
-      TObjArray **arr=qadm->Init(AliQA::kRECPOINTS);
-      AliTracker::SetResidualsArray(arr);
-      sameCycle = kTRUE ; 
-    }
-    if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
-      qadm->StartOfCycle(AliQA::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
-      qadm->Init(AliQA::kESDS);
-    }
-  }
+  if (fRunQA || fRunGlobalQA) 
+    InitQA() ; 
 
   //Initialize the Plane Efficiency framework
   if (fRunPlaneEff && !InitPlaneEff()) {

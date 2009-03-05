@@ -181,6 +181,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kFALSE),
   fCDBUri(""),
+  fQARefUri(""), 
   fSpecCDBUri(),
   fRun(-1),
   fSeed(0),
@@ -237,6 +238,43 @@ void AliSimulation::SetNumberOfEvents(Int_t nEvents)
 // set the number of events for one run
 
   fNEvents = nEvents;
+}
+
+//_____________________________________________________________________________
+void AliSimulation::InitQA()
+{
+  // activate a default CDB storage
+  // First check if we have any CDB storage set, because it is used 
+  // to retrieve the calibration and alignment constants
+  
+  if (fInitCDBCalled) return;
+  fInitCDBCalled = kTRUE;
+
+  fQAManager = AliQAManager::QAManager("sim") ; 
+  fQAManager->SetActiveDetectors(fQADetectors) ; 
+  fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
+  fQAManager->SetTasks(fQATasks) ; 	
+  
+  if (fQAManager->IsDefaultStorageSet()) {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("Default QA reference storage has been already set !");
+    AliWarning(Form("Ignoring the default storage declared in AliSimulation: %s",fQARefUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    fQARefUri = fQAManager->GetDefaultStorage()->GetURI();
+  } else {
+      if (fQARefUri.Length() > 0) {
+        AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        AliDebug(2, Form("Default QA reference storage is set to: %s", fQARefUri.Data()));
+        AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      } else {
+        fQARefUri="local://$ALICE_ROOT/QARef";
+        AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        AliWarning("Default QA reference storage not yet set !!!!");
+        AliWarning(Form("Setting it now to: %s", fQARefUri.Data()));
+        AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      }
+    fQAManager->SetDefaultStorage(fQARefUri);
+  }
 }
 
 //_____________________________________________________________________________
@@ -329,11 +367,20 @@ void AliSimulation::SetCDBLock() {
 
 //_____________________________________________________________________________
 void AliSimulation::SetDefaultStorage(const char* uri) {
-// Store the desired default CDB storage location
-// Activate it later within the Run() method
-
+  // Store the desired default CDB storage location
+  // Activate it later within the Run() method
+  
   fCDBUri = uri;
+  
+}
 
+//_____________________________________________________________________________
+void AliSimulation::SetQARefDefaultStorage(const char* uri) {
+  // Store the desired default CDB storage location
+  // Activate it later within the Run() method
+  
+  fQARefUri = uri;
+  AliQA::SetQARefStorage(fQARefUri.Data()) ;
 }
 
 //_____________________________________________________________________________

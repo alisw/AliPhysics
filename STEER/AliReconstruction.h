@@ -11,7 +11,7 @@
 // Clusters and tracks are created for all detectors and all events by       //
 // typing:                                                                   //
 //                                                                           //
-//   AliReconstruction rec;                                                  //
+//   AliReconstruction rec;                                                 QARef //
 //   rec.Run();                                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,6 +142,9 @@ public:
   void    SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
   Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
+  void    SetQARefDefaultStorage(const char* uri);
+  void    InitQA();
+
 
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
@@ -256,6 +259,7 @@ private:
   TObjArray* 	 fAlignObjArray;      //! array with the alignment objects to be applied to the geometry
 
   TString	 fCDBUri;	      //! Uri of the default CDB storage
+  TString	 fQARefUri;	    //! Uri of the default QA reference storage
   TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
   Bool_t 	 fInitCDBCalled;               //! flag to check if CDB storages are already initialized
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
@@ -269,6 +273,7 @@ private:
   Bool_t                fRunQA ;        // Run QA flag
   Bool_t                fRunGlobalQA;   // Run global QA flag
   Bool_t                fSameQACycle;   //! open a new QA data file or not
+  Bool_t                fInitQACalled;  //! control of QA intialisation
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 

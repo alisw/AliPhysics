@@ -115,7 +115,12 @@ public:
   void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQAManager->SetCycleLength(det, cycles) ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
-  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }
+  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }  
+  void        SetQARefDefaultStorage(const char* uri);
+  void        InitQA();
+
+
+  
 
   void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
   void WriteGRPEntry();
@@ -160,6 +165,7 @@ private:
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   TString 	 fCDBUri;	                     //! Uri of the default CDB storage
+  TString 	 fQARefUri;	                   //! Uri of the default QA reference storage
   TObjArray  fSpecCDBUri;                  //! Array with detector specific CDB storages
   Int_t 	   fRun; 		                     //! Run number, will be passed to CDB and gAlice!!
   Int_t 	   fSeed;                        //! Seed for random number generator 

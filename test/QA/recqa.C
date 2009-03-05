@@ -13,6 +13,6 @@ void recqa()
 	AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
 	//AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
    
-  AliQADataMakerSteer qas("rec") ; 
+  AliQADataMamanager qas("rec") ; 
   qas.Run(detectors.Data(), AliQA::kRECPOINTS);
 }

@@ -8,7 +8,7 @@ void sim(Int_t nev=1) {
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   simulator.SetRunQA("ALL:ALL") ; 
-  AliQA::SetQARefStorage("local://$ALICE_ROOT/QAref") ;
+  simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simulator.SetQACycles(det, nev+1) ;

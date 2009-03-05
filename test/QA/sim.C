@@ -9,7 +9,7 @@ void sim(Int_t nev=1) {
 			  Form("local://%s",gSystem->pwd()));
 
   simu.SetRunQA("ALL:ALL") ; 
-  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
+  simu.SetQARefDefaultStorage("local://$ALICE_ROOT/OCDB") ;
 
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simu.SetQACycles(det, 2) ;

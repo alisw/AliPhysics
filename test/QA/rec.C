@@ -12,7 +12,7 @@
 
   reco.SetRunQA("ALL:ALL") ;
 	  
-  AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
+  reco.SetQARefDefaultStorage("local://$ALICE_ROOT/OCDB") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 999) ;
