@@ -95,6 +95,7 @@
   gSystem->Exec("cp BackgroundFull/AliESDs.root Background/");
   gSystem->Exec("cp -a BackgroundFull/GRP Background/");
   gSystem->Exec("cp sim.C Background/");
+  gSystem->Exec("cp Config.C Background/");
   gSystem->ChangeDirectory("Background/");
   gSystem->Exec("aliroot -b -q 'sim.C(4)' > sim.log 2>&1");
   gSystem->ChangeDirectory("../");
@@ -128,6 +129,7 @@
   gSystem->Exec("cp Merged/*SDigits*.root Signal/");
   gSystem->Exec("cp Merged/galice.root Signal/");
   gSystem->Exec("cp Merged/Kinematics.root Signal/");
+  gSystem->Exec("cp -a Merged/GRP Signal/");
   gSystem->ChangeDirectory("Signal/");
   gSystem->Exec("aliroot -b -q 'sim.C(2)' > sim.log 2>&1");
   cout<<">>>>> SIGNAL RECONSTRUCTION <<<<<"<<endl;

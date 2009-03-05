@@ -15,6 +15,7 @@ void sim(Int_t embrun)
   if (embrun == 2) {
     sim.SetRunGeneration(kFALSE);
     sim.SetMakeSDigits("");
+    sim.SetMakeDigitsFromHits("");
   }
   else {
     sim.SetRunGeneration(kTRUE);
