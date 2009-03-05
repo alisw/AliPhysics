@@ -319,7 +319,9 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	}
 	delete res;
 
-	id.SetVersion(lastVersion + 1);
+	if (!id.HasVersion()){
+		id.SetVersion(lastVersion + 1);
+	}
 	id.SetSubVersion(0);
 
 	TString lastStorage = id.GetLastStorage();
