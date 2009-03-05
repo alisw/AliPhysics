@@ -610,15 +610,17 @@ void AliITSVertexer3D::PileupFromZ(){
     firstPeakCont+=fZHisto->GetBinContent(i);
     firstPeakPos+=fZHisto->GetBinContent(i)*fZHisto->GetBinCenter(i);
   }
-  firstPeakPos/=firstPeakCont;
-  Int_t ncontr2=0;
-  if(firstPeakCont>fMinTrackletsForPilup){     
-    Float_t secPeakPos;
-    ncontr2=AliITSVertexerZ::FindSecondPeak(fZHisto,binmin,binmax,secPeakPos);
-    if(ncontr2>=fMinTrackletsForPilup){ 
-      fIsPileup=kTRUE;
-      fZpuv=secPeakPos;
-      fNTrpuv=ncontr2;
+  if(firstPeakCont>0){ 
+    firstPeakPos/=firstPeakCont;
+    Int_t ncontr2=0;
+    if(firstPeakCont>fMinTrackletsForPilup){     
+      Float_t secPeakPos;
+      ncontr2=AliITSVertexerZ::FindSecondPeak(fZHisto,binmin,binmax,secPeakPos);
+      if(ncontr2>=fMinTrackletsForPilup){ 
+	fIsPileup=kTRUE;
+	fZpuv=secPeakPos;
+	fNTrpuv=ncontr2;
+      }
     }
   }
 }
