@@ -420,14 +420,16 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   
     // Fill Debug stream for tracklet
     if(fDebugLevel>=1){
+      Float_t s2y = tt.GetS2Y();
+      Float_t s2z = tt.GetS2Z();
       (*fDebugStream) << "MCtracklet"
         << "rc="    << rc
         << "x="     << x
         << "y="     << y
         << "z="     << z
         << "dydx="  << dydx
-        << "s2y="   << cov[0]
-        << "s2z="   << cov[2]
+        << "s2y="   << s2y
+        << "s2z="   << s2z
         << "\n";
     }
 
