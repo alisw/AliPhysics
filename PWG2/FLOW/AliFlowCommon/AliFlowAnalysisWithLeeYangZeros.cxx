@@ -325,9 +325,11 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	//get the first minimum r0
 	fHist1[theta]->FillGtheta();
 	dR0 = fHist1[theta]->GetR0();
-	    	   	   
+		    	   	   
 	//calculate integrated flow
-	if (dR0!=0) dVtheta = dJ01/dR0;
+	if (dR0!=0) { dVtheta = dJ01/dR0; }
+	else { cout<<"r0 is not found! Leaving LYZ analysis."<<endl; return kFALSE; }
+
 	//for estimating systematic error resulting from d0
 	Double_t dBinsize = (AliFlowLYZConstants::fgMax)/(AliFlowLYZConstants::kNbins);
 	Double_t dVplus = dJ01/(dR0+dBinsize);
@@ -346,7 +348,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 
     //get average value of fVtheta = fV
     dV /=iNtheta;
-       
+           
     //sigma2 and chi 
     Double_t  dSigma2 = 0;
     Double_t  dChi= 0;
@@ -535,6 +537,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 
     //calculate the average of fVtheta = fV
     dV /= iNtheta;
+    if (dV==0.) { cout<<"dV = 0! Leaving LYZ analysis."<<endl; return kFALSE; }
 
     //sigma2 and chi (for statistical error calculations)
     Double_t  dSigma2 = 0;
