@@ -20,46 +20,59 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-
 #include <TLorentzVector.h>
-#include <TMath.h>
-#include <TPDGCode.h>
-#include <TVirtualMC.h>
-
-#include "AliConst.h"
-#include "AliLog.h"
 #include "AliMC.h"
-#include "AliRun.h"
-#include "AliTPCDigitsArray.h"
-#include "AliTPCParam.h"
-#include "AliTPCParamSR.h"
-#include "AliTPCTrackHitsV2.h"
+
+
 #include "AliTPCLaser.h"
+
 
 ClassImp(AliTPCLaser)
  
 //_____________________________________________________________________________
 AliTPCLaser::AliTPCLaser(const char *name, const char *title) :
-  AliTPCv2(name, title) 
+  AliTPCv2(name, title),
+  fNelPerCollision(10),
+  fLaserPID(13), // muons
+  fCollisionsPerCm(20)
 {
-  // only use the AliTPCv2 constructor
+
 }
 //______________________________________________________________
 void AliTPCLaser::StepManager()
 {
-  // laser tracks are muons (PID=13) 
-  // stopped in the the inner containment vessel (PID=14) 
+  // laser tracks are particles with PID fLaserPID (default PID=13) 
+  // stopped in the the TPC inner containment vessel (14) 
 
-   TVirtualMC* mc = TVirtualMC::GetMC();
-   Int_t copy, vol;
-   vol = mc->CurrentVolID(copy);
-   // Debug
-   // printf("Vol name %s\n",mc->CurrentVolName());
-   if (mc->TrackPid() == 13 // muons
-       && vol == 14) {// 14 = TIIN (inner containment vessel)
-     mc->StopTrack();
-     return;
-   }
-   AliTPCv2::StepManager();   
+  if (gMC->TrackPid() != fLaserPID) {
+    // in this way we can prevent delta-electrons
+    gMC->StopTrack();
+    return;
+  }
+  
+  Int_t copy;
+  Int_t vol[2];
+  vol[0] = gMC->CurrentVolID(copy);
+  
+  if (gMC->TrackPid() == fLaserPID
+      && vol[0] == 14) {// 14 = TIIN (inner containment vessel)
+    gMC->StopTrack();
+    return;
+  }
+  
+  TLorentzVector p;
+  Float_t hits[5]={0,0,0,0,0};
+  gMC->TrackPosition(p);
+  hits[0]=p[0];
+  hits[1]=p[1];
+  hits[2]=p[2];
+  hits[3]=fNelPerCollision;
+  hits[4]=gMC->TrackTime();
+
+  Int_t index[3];  
+  vol[0]=fTPCParam->Transform0to1(hits,index);
+  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
+  
+  Double_t rnd = gMC->GetRandom()->Rndm();  
+  gMC->SetMaxStep(-TMath::Log(rnd)/fCollisionsPerCm);
 }

@@ -26,13 +26,28 @@
 class AliTPCLaser : public AliTPCv2 {
 
 public:
-  AliTPCLaser() {}
+  AliTPCLaser():AliTPCv2(),   
+    fNelPerCollision(10),
+    fLaserPID(13),
+    fCollisionsPerCm(20)  {}
   AliTPCLaser(const char *name, const char *title);
   virtual      ~AliTPCLaser() {}
-
-  virtual void  StepManager();
   
-  ClassDef(AliTPCLaser,1)  // For Laser
+  virtual void  StepManager();
+
+  virtual Int_t   GetNelPerCollision() const {return fNelPerCollision;}
+  virtual Int_t   GetLaserPID() const {return fLaserPID;}
+  virtual Float_t GetCollisionsPerCm() const {return fCollisionsPerCm;}
+
+  virtual void SetNelPerCollision(Int_t nel) {fNelPerCollision = nel;}
+  virtual void SetLaserPID(Int_t pid) {fLaserPID = pid;}
+  virtual void SetCollisionsPerCm(Int_t ncol) {fCollisionsPerCm = ncol;}
+  
+ private:
+  Int_t   fNelPerCollision;  // Fixed number of electrons per collision 
+  Int_t   fLaserPID;         // PID of laser  
+  Float_t fCollisionsPerCm;  // Number of primary interactions per cm
+  ClassDef(AliTPCLaser,2)  // For Laser
 };
 
 #endif
