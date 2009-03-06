@@ -2180,7 +2180,7 @@ void AliTOFv6T0::CreateMaterials()
   wmatg10[2]= we[2]*0.4;
   wmatg10[3]= we[3]*0.4;
   wmatg10[4]= we[4]*0.4;
-  AliDebug(1,Form("wg10  %d  %d  %d  %d  %d", wmatg10[0], wmatg10[1], wmatg10[2], wmatg10[3], wmatg10[4]));
+  AliDebug(1,Form("wg10  %f  %f  %f  %f  %f", wmatg10[0], wmatg10[1], wmatg10[2], wmatg10[3], wmatg10[4]));
   //Float_t densg10 = 1.7; //old value
   Float_t densg10 = 2.0; // (+17.8%)
 
