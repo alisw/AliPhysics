@@ -47,7 +47,9 @@ class AliTOFGeometry: public TObject{
 
   static  Float_t StripLength() { return fgkStripLength;};
 
-  static  Int_t TimeDiff()    { return fgkTimeDiff;};
+  static  Float_t DeadTime()       { return fgkDeadTime;};
+  static  Float_t MatchingWindow() { return fgkMatchingWindow;};
+
   static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
   static  Int_t NDDL()        { return kNDDL;};
@@ -132,7 +134,8 @@ class AliTOFGeometry: public TObject{
     kNCh         =    8  // Number of channels per Tdc
   };
 
-  static const Int_t fgkTimeDiff;      // Min signal separation (ps)
+  static const Float_t fgkDeadTime;       // Single channel dead time (ps)
+  static const Float_t fgkMatchingWindow; // Matching window (ps)
 
   static const Float_t fgkZlenA;       // length (cm) of the A module
   static const Float_t fgkZlenB;       // length (cm) of the B module
@@ -163,7 +166,7 @@ class AliTOFGeometry: public TObject{
   static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
   static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
 
-  ClassDef(AliTOFGeometry,6) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,7) // TOF Geometry base class
 };
 
 #endif

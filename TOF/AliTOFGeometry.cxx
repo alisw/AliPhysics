@@ -136,7 +136,6 @@ const Float_t AliTOFGeometry::fgkxTOF     = 372.00;// Inner radius of the TOF fo
 const Float_t AliTOFGeometry::fgkRmin     = 371.00;// Inner radius of the TOF (cm)
 const Float_t AliTOFGeometry::fgkRmax     = 400.05;// Outer radius of the TOF (cm)
 
-const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;  // Min signal separation (ps)
 const Float_t AliTOFGeometry::fgkXPad     = 2.5;    // Pad size in the x direction (cm)
 const Float_t AliTOFGeometry::fgkZPad     = 3.5;    // Pad size in the z direction (cm)
 
@@ -148,9 +147,12 @@ const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC
 const Float_t AliTOFGeometry::fgkPhiSec= 20;//sector Phi width (deg)
 
 const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-of-flight bin width [ps]
-const Float_t AliTOFGeometry::fgkToTBin = 48.8;     // time-over-threshold  bin width [ps]
+const Float_t AliTOFGeometry::fgkToTBin = 48.8;     // time-over-threshold bin width [ps]
 
-const Float_t AliTOFGeometry::fgkAngles[kNPlates][kMaxNstrip] ={
+const Float_t AliTOFGeometry::fgkDeadTime = 25E+03;        // Single channel dead time (ps)
+const Float_t AliTOFGeometry::fgkMatchingWindow = fgkTdcBin*TMath::Power(2,13); // Matching window  (ps)
+
+const Float_t AliTOFGeometry::fgkAngles[kNPlates][kMaxNstrip] = {
     { 43.99,  43.20,  42.40,  41.59,  40.77,  39.94,  39.11,  38.25,  37.40,  36.53,
       35.65,  34.76,  33.87,  32.96,  32.05,  31.13,  30.19,  29.24,  12.33,  0.00},
 
@@ -166,7 +168,7 @@ const Float_t AliTOFGeometry::fgkAngles[kNPlates][kMaxNstrip] ={
     {-12.33, -29.24, -30.19, -31.13, -32.05, -32.96, -33.87, -34.76, -35.65, -36.53,
      -37.40, -38.25, -39.11, -39.94, -40.77, -41.59, -42.40, -43.20, -43.99,  0.00}
   };
-const Float_t AliTOFGeometry::fgkHeights[kNPlates][kMaxNstrip]= {
+const Float_t AliTOFGeometry::fgkHeights[kNPlates][kMaxNstrip] = {
     {-8.2,  -7.5,  -8.2,  -7.7,  -8.1,  -7.6,  -7.7,  -7.7,  -7.7,  -7.7,
      -7.5,  -7.2,  -7.3,  -7.5,  -7.6,  -7.8,  -8.3,  -9.3,  -3.1,   0.0},
 
@@ -184,7 +186,7 @@ const Float_t AliTOFGeometry::fgkHeights[kNPlates][kMaxNstrip]= {
   };
 
 
-const Float_t AliTOFGeometry::fgkDistances[kNPlates][kMaxNstrip]= {
+const Float_t AliTOFGeometry::fgkDistances[kNPlates][kMaxNstrip] = {
     { 364.1,  354.9,  344.5,  335.4,  325.5,  316.6,  307.2,  298.0,  288.9,  280.0,
       271.3,  262.7,  254.0,  244.8,  236.1,  227.7,  219.1,  210.3,  205.7,    0.0},
 
@@ -1780,12 +1782,12 @@ Int_t AliTOFGeometry::GetIndex(Int_t *detId)
   //Retrieve calibration channel index 
   Int_t isector = detId[0];
   if (isector >= kNSectors){
-    printf("Wrong sector number in TOF (%d) !",isector);
+    printf("Wrong sector number in TOF (%d) !\n",isector);
     return -1;
   }
   Int_t iplate = detId[1];
   if (iplate >= kNPlates){
-    printf("Wrong plate number in TOF (%d) !",iplate);
+    printf("Wrong plate number in TOF (%d) !\n",iplate);
     return -1;
   }
   Int_t istrip = detId[2];
@@ -1809,7 +1811,7 @@ Int_t AliTOFGeometry::GetIndex(Int_t *detId)
     stripOffset = kNStripC+kNStripB+kNStripA+kNStripB;
     break;
   default:
-    printf("Wrong plate number in TOF (%d) !",iplate);
+    printf("Wrong plate number in TOF (%d) !\n",iplate);
     return -1;
   };
 

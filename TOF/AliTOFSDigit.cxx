@@ -186,7 +186,7 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
   //
   
   Int_t sameTime = -1;
-  Float_t tdcwindow=((Float_t)AliTOFGeometry::TimeDiff())/tdcbin;
+  Float_t tdcwindow = AliTOFGeometry::DeadTime()/tdcbin;
   for (Int_t i = 0; i < fNDigits; i++) {
     if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
       sameTime = i;
@@ -245,7 +245,7 @@ void AliTOFSDigit::Update(AliTOFSDigit* sdig)
     
     
     Int_t sameTime = -1;
-    Float_t tdcwindow=((Float_t)AliTOFGeometry::TimeDiff())/tdcbin;
+    Float_t tdcwindow = AliTOFGeometry::DeadTime()/tdcbin;
     for (Int_t i = 0; i < fNDigits; i++) {
       if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
 	sameTime = i;

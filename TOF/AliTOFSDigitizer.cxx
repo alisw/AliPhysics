@@ -498,6 +498,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 		if(isFired[indexOfPad]){ // the pad has fired
 		  Float_t timediff=geantTime-tofAfterSimul[indexOfPad];
 		  
+		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*1E-3) continue;
+
 		  if(timediff>=0.2) nlargeTofDiff++;
 		  
 		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/AliTOFGeometry::TdcBinWidth()); // TDC bin number (each bin -> 24.4 ps)
