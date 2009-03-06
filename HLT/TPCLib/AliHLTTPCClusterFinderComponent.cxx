@@ -268,7 +268,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   // see header file for class documentation
 
   if(fReader == NULL){
-    HLTFatal("Digit reader not initialized, aborting event.");
+    HLTFatal("Digit reader not initialized, skipping HLT TPC cluster reconstruction.");
     size=0;
     return 0;    
   }
