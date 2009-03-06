@@ -67,7 +67,8 @@ f4Prong(kTRUE),
 fDstar(kTRUE),
 fLikeSign(kFALSE),
 fTrackFilter(0x0),
-fTrackFilterSoftPi(0x0)
+fTrackFilterSoftPi(0x0),
+fFindVertexForDstar(kTRUE)
 {
   // Default constructor
 
@@ -96,7 +97,8 @@ f4Prong(source.f4Prong),
 fDstar(source.fDstar),
 fLikeSign(source.fLikeSign),
 fTrackFilter(source.fTrackFilter),
-fTrackFilterSoftPi(source.fTrackFilterSoftPi)
+fTrackFilterSoftPi(source.fTrackFilterSoftPi),
+fFindVertexForDstar(source.fFindVertexForDstar)
 {
   //
   // Copy constructor
@@ -130,6 +132,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fLikeSign = source.fLikeSign;
   fTrackFilter = source.fTrackFilter;
   fTrackFilterSoftPi = source.fTrackFilterSoftPi;
+  fFindVertexForDstar = source.fFindVertexForDstar;
 
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
@@ -399,19 +402,32 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	    if(iTrkSoftPi%1==0) AliDebug(1,Form("    1st loop on pi_s: track number %d of %d",iTrkSoftPi,nSeleTrks));  
 
+	    trackD0->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    if(trackD0->GetSigmaY2()<0. || trackD0->GetSigmaZ2()<0.) continue; // this is insipired by the AliITStrackV2::Invariant() checks
+
 	    // get track from tracks array
 	    trackPi = (AliESDtrack*)seleTrksArray.UncheckedAt(iTrkSoftPi);
-
 	    trackPi->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	    trackD0->PropagateToDCA(fV1,fBzkG,kVeryBig);
 
-	    // DCA between the two tracks
-	    dcaCasc = trackPi->GetDCA(trackD0,fBzkG,xdummy,ydummy);
-
-	    // Vertexing
 	    twoTrackArrayCasc->AddAt(trackPi,0);
 	    twoTrackArrayCasc->AddAt(trackD0,1);
-	    AliAODVertex *vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
+
+	    AliAODVertex *vertexCasc = 0;
+
+	    if(fFindVertexForDstar) {
+	      // DCA between the two tracks
+	      dcaCasc = trackPi->GetDCA(trackD0,fBzkG,xdummy,ydummy);
+	      // Vertexing
+	      vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
+	    } else {
+	      // assume Dstar decays at the primary vertex
+	      Double_t pos[3],cov[6],chi2perNDF;
+	      fV1->GetXYZ(pos);
+	      fV1->GetCovMatrix(cov);
+	      chi2perNDF = fV1->GetChi2toNDF();
+	      vertexCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
+	      dcaCasc = 0.;
+	    }
 	    if(!vertexCasc) { 
 	      twoTrackArrayCasc->Clear();
 	      trackPi=0; 
@@ -1195,6 +1211,11 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   }
   if(fDstar) {
+    if(fFindVertexForDstar) {
+      printf("    Reconstruct a secondary vertex for the D*\n");
+    } else {
+      printf("    Assume the D* comes from the primary vertex\n");
+    }
     printf("    |M-MD*| [GeV]    < %f\n",fDstarCuts[0]);
     printf("    |M_Kpipi-M_Kpi-(MD*-MD0)| [GeV]  < %f\n",fDstarCuts[1]);
     printf("    pTpisoft [GeV/c]    > %f\n",fDstarCuts[2]);

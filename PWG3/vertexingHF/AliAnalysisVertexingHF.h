@@ -62,6 +62,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t Get4Prong() { return f4Prong; }
   Bool_t GetDstar()  { return fDstar; }
   Bool_t GetLikeSign() { return fLikeSign; }
+  void SetFindVertexForDstar(Bool_t vtx=kTRUE) { fFindVertexForDstar=vtx; }
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
@@ -252,6 +253,7 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 7 = Mass Pi+Pi- = mass of the rho0
                         // 8 = PID cut (one K in the quadruplet)
 
+  Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
   //
   void AddDaughterRefs(AliAODVertex *v,AliVEvent *event,
 		       TObjArray *trkArray) const;
@@ -288,7 +290,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,8);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,9);  // Reconstruction of HF decay candidates
 };
 
 
