@@ -668,6 +668,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliTRDpadPlane *pp = fGeom->GetPadPlane(ilayer, stack);
         tracklet.SetTilt(TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle()));
         tracklet.SetPadLength(pp->GetLengthIPad());
+        tracklet.SetPadWidth(pp->GetWidthIPad());
         tracklet.SetDetector(chamber->GetDetector());
         tracklet.SetX0(x);
         tracklet.UpDate(&t);
@@ -2271,11 +2272,13 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   // Init chambers geometry
   Double_t hL[kNPlanes];       // Tilting angle
   Float_t padlength[kNPlanes]; // pad lenghts
+  Float_t padwidth[kNPlanes];  // pad widths
   AliTRDpadPlane *pp = 0x0;
   for(int iplane=0; iplane<kNPlanes; iplane++){
     pp                = fGeom->GetPadPlane(iplane, istack);
     hL[iplane]        = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
     padlength[iplane] = pp->GetLengthIPad();
+    padwidth[iplane] = pp->GetWidthIPad();
   }
   
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
@@ -2334,6 +2337,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           tseed->SetDetector((*cIter) ? (*cIter)->GetDetector() : -1);
           tseed->SetTilt(hL[iLayer]);
           tseed->SetPadLength(padlength[iLayer]);
+          tseed->SetPadWidth(padwidth[iLayer]);
           tseed->SetReconstructor(fReconstructor);
           tseed->SetX0((*cIter) ? (*cIter)->GetX() : x_def[iLayer]);
           tseed->Init(GetRiemanFitter());

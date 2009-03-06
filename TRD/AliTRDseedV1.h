@@ -115,7 +115,8 @@ public:
   Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
   Int_t     GetNShared() const       { return Int_t((fN>>10)&0x1f);}
   Float_t   GetQuality(Bool_t kZcorr) const;
-  Float_t   GetPadLength() const     { return fPadLength;}
+  Float_t   GetPadLength() const     { return fPad[0];}
+  Float_t   GetPadWidth() const      { return fPad[1];}
   Int_t     GetPlane() const         { return AliTRDgeometry::GetLayer(fDet);    }
 
   Float_t*  GetProbability(Bool_t force=kFALSE);
@@ -125,7 +126,7 @@ public:
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTgl() const           { return fZref[1];}
-  Float_t   GetTilt() const          { return fTilt;}
+  Float_t   GetTilt() const          { return fPad[2];}
   UInt_t    GetTrackletWord() const  { return 0;}
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
@@ -138,7 +139,7 @@ public:
   Float_t   GetZfit(Int_t id) const { return fZfit[id];}
   Float_t   GetZref(Int_t id) const { return fZref[id];}
   Int_t     GetYbin() const         { return Int_t(GetY()/0.016);}
-  Int_t     GetZbin() const         { return Int_t(GetZ()/fPadLength);}
+  Int_t     GetZbin() const         { return Int_t(GetZ()/fPad[0]);}
 
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
@@ -155,8 +156,9 @@ public:
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
-  void      SetTilt(Float_t tilt)    { fTilt = tilt; }
-  void      SetPadLength(Float_t len){ fPadLength = len;}
+  void      SetTilt(Float_t tilt)    { fPad[3] = tilt; }
+  void      SetPadLength(Float_t l)  { fPad[0] = l;}
+  void      SetPadWidth(Float_t w)   { fPad[1] = w;}
   void      SetDetector(Int_t d)     { fDet = d;  }
   void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
@@ -186,12 +188,10 @@ private:
   Float_t          fDiffL;                  //! longitudinal diffusion coefficient
   Float_t          fDiffT;                  //! transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
-//  ULong_t          fUsable;                 //! bit map of usable clusters
-  UShort_t         fN;                     // number of clusters attached/used/shared
+  UShort_t         fN;                      // number of clusters attached/used/shared
   Short_t          fDet;                    // TRD detector
-  Float_t          fTilt;                   // local tg of the tilt angle 
-  Float_t          fPadLength;              // local pad length 
   AliTRDcluster   *fClusters[kNclusters];   // Clusters
+  Float_t          fPad[3];                 // local pad definition : length/width/tilt 
   Float_t          fYref[2];                //  Reference y
   Float_t          fZref[2];                //  Reference z
   Float_t          fYfit[2];                //  Y fit position +derivation
