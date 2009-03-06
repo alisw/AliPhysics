@@ -25,3 +25,10 @@
 #pragma link C++ class AliFemtoCutMonitorTrackTPCncls;
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepQAPairCut;
 #pragma link C++ class AliFemtoShareQualityQAPairCut;
+//#pragma link C++ class AliFemtoEventReaderESDKine;
+//#pragma link C++ class AliFemtoEventReaderAllESDKine;
+#pragma link C++ class AliFemtoYlm;
+#pragma link C++ class AliFemtoCorrFctnDirectYlm;
+#pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
+#pragma link C++ class AliFemtoCorrFctnTPCNcls;
+#pragma link C++ class AliFemtoCutMonitorParticlePtPDG;

@@ -22,8 +22,15 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorTrackTPCncls.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityTPCEntranceSepQAPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityQAPairCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoYlm.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDirectYlm.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDirectYlm.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx
 
+#      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx \
+#      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderAllESDKine.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
 
