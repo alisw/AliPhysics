@@ -10,6 +10,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetLikeSignOn();
   vHF->Set4ProngOff();
   //vHF->SetDstarOff();
+  vHF->SetFindVertexForDstar(kTRUE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
   //--- set cuts for single-track selection
@@ -25,6 +26,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   trkFilter->AddCuts(esdTrackCuts);
   vHF->SetTrackFilter(trkFilter);
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCutsSoftPi->SetRequireITSRefit(kTRUE);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
