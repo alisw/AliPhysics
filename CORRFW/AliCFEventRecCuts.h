@@ -50,6 +50,9 @@ class AliCFEventRecCuts: public AliCFCutBase
   void SetVertexYResCut(Double_t yMax=1.e99){fVtxYResMax=yMax;} // cut values setter
   void SetVertexZResCut(Double_t zMax=1.e99){fVtxZResMax=zMax;} // cut values setter
 
+  void SetVertexNContributors(Int_t min, Int_t max) {fVtxNCtrbMin=min; fVtxNCtrbMax=max;}
+  void SetUseTPCVertex() {fVtxTPC=kTRUE;}
+
   Int_t    GetNTracksMin() const {return fNTracksMin;} // cut values getter
   Int_t    GetNTracksMax() const {return fNTracksMax;} // cut values getter
   Bool_t   GetRequireVtxCuts() const {return fRequireVtxCuts;} // cut value getter
@@ -68,15 +71,16 @@ class AliCFEventRecCuts: public AliCFCutBase
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
   enum{kNTracks=0,
-	 kVtxPosX,
-	 kVtxPosY,
-	 kVtxPosZ,
-	 kVtxResX,
-	 kVtxResY,
-	 kVtxResZ,
-	 kNCuts=7,
-	 kNStepQA=2
-	 };
+       kVtxPosX,
+       kVtxPosY,
+       kVtxPosZ,
+       kVtxResX,
+       kVtxResY,
+       kVtxResZ,
+       kVtxNCtrb,
+       kNCuts,
+       kNStepQA=2
+  };
   
  protected:
   void SelectionBitMap(TObject* obj);
@@ -97,6 +101,9 @@ class AliCFEventRecCuts: public AliCFCutBase
   Double_t fVtxXResMax ;//Maximum value of sigma_vtx in X
   Double_t fVtxYResMax ;//Maximum value of sigma_vtx in X
   Double_t fVtxZResMax ;//Maximum value of sigma_vtx in X
+  Int_t    fVtxNCtrbMin; //Min number of contributors to vertex
+  Int_t    fVtxNCtrbMax; //Max number of contributors to vertex
+  Bool_t   fVtxTPC;      //Flag for use of TPC vertex
 
   TBits *fBitMap ; //cut mask
 

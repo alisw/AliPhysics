@@ -45,6 +45,9 @@ AliCFEventRecCuts::AliCFEventRecCuts() :
   fVtxXResMax(1.e99),
   fVtxYResMax(1.e99),
   fVtxZResMax(1.e99),
+  fVtxNCtrbMin(0),
+  fVtxNCtrbMax((Int_t)1.e9),
+  fVtxTPC(0),
   fBitMap(0x0)
 {
   //
@@ -69,6 +72,9 @@ AliCFEventRecCuts::AliCFEventRecCuts(Char_t* name, Char_t* title) :
   fVtxXResMax(1.e99),
   fVtxYResMax(1.e99),
   fVtxZResMax(1.e99),
+  fVtxNCtrbMin(0),
+  fVtxNCtrbMax((Int_t)1.e9),
+  fVtxTPC(0),
   fBitMap(0x0)
  {
   //
@@ -93,6 +99,9 @@ AliCFEventRecCuts::AliCFEventRecCuts(const AliCFEventRecCuts& c) :
   fVtxXResMax(c.fVtxXResMax),
   fVtxYResMax(c.fVtxYResMax),
   fVtxZResMax(c.fVtxZResMax),
+  fVtxNCtrbMin(c.fVtxNCtrbMin),
+  fVtxNCtrbMax(c.fVtxNCtrbMax),
+  fVtxTPC(c.fVtxTPC),
   fBitMap(c.fBitMap)
 {
   //
@@ -160,6 +169,9 @@ AliCFEventRecCuts& AliCFEventRecCuts::operator=(const AliCFEventRecCuts& c)
     fVtxXResMax=c.fVtxXResMax;
     fVtxYResMax=c.fVtxYResMax;
     fVtxZResMax=c.fVtxZResMax;
+    fVtxNCtrbMin=c.fVtxNCtrbMin;
+    fVtxNCtrbMax=c.fVtxNCtrbMax;
+    fVtxTPC=c.fVtxTPC;
     fBitMap=c.fBitMap;
   }
 
@@ -215,14 +227,15 @@ void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     fBitMap->SetBitNumber(0,kFALSE); 
   
   if(fRequireVtxCuts){
-    const AliESDVertex* vtxESD = esd->GetVertex();
+    const AliESDVertex* vtxESD = fVtxTPC ? esd->GetPrimaryVertexTPC() : esd->GetPrimaryVertexSPD() ;
     if(!vtxESD){
       for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+      AliWarning("Cannot get vertex, skipping event");
       return;
     }
     // Require the vertex to have been reconstructed successfully
     if (strcmp(vtxESD->GetName(), "default")==0){
-      AliWarning(Form(" No reconstructed vertex found, skip event"));    
+      AliWarning(Form(" No reconstructed vertex found, skipping event"));    
       for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
       return;
     }    
@@ -238,6 +251,8 @@ void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     vtxRes[1] = vtxESD->GetYRes();
     vtxRes[2] = vtxESD->GetZRes();
  
+    Int_t nCtrb = vtxESD->GetNContributors();
+
     // Apply the cut
     
     if (vtxPos[0]>fVtxXMax || vtxPos[0]<fVtxXMin)
@@ -252,6 +267,9 @@ void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
       fBitMap->SetBitNumber(5,kFALSE); 
     if (vtxRes[2]==0 || vtxRes[2]>fVtxZResMax)
       fBitMap->SetBitNumber(6,kFALSE); 
+    if (nCtrb<fVtxNCtrbMin || nCtrb>fVtxNCtrbMax)
+      fBitMap->SetBitNumber(7,kFALSE);
+
   }  
   return;
 }
@@ -279,17 +297,18 @@ void AliCFEventRecCuts::FillHistograms(TObject* obj, Bool_t b)
   fhQA[kNTracks][index]->Fill(nTracks);
 
   //look at vertex parameters:
-  const AliESDVertex* vtxESD = esd->GetVertex();
+  const AliESDVertex* vtxESD = fVtxTPC ? esd->GetPrimaryVertexTPC() : esd->GetPrimaryVertexSPD();
   if(!vtxESD)return;
   // Require the vertex to have been reconstructed successfully
   if (strcmp(vtxESD->GetName(), "default")==0)return;
   // vertex position and uncertainties
-  fhQA[kVtxPosX][index]->Fill(vtxESD->GetXv());
-  fhQA[kVtxPosY][index]->Fill(vtxESD->GetYv());
-  fhQA[kVtxPosZ][index]->Fill(vtxESD->GetZv());
-  fhQA[kVtxResX][index]->Fill(vtxESD->GetXRes());
-  fhQA[kVtxResY][index]->Fill(vtxESD->GetYRes());
-  fhQA[kVtxResZ][index]->Fill(vtxESD->GetZRes());
+  fhQA[kVtxPosX] [index]->Fill(vtxESD->GetXv());
+  fhQA[kVtxPosY] [index]->Fill(vtxESD->GetYv());
+  fhQA[kVtxPosZ] [index]->Fill(vtxESD->GetZv());
+  fhQA[kVtxResX] [index]->Fill(vtxESD->GetXRes());
+  fhQA[kVtxResY] [index]->Fill(vtxESD->GetYRes());
+  fhQA[kVtxResZ] [index]->Fill(vtxESD->GetZRes());
+  fhQA[kVtxNCtrb][index]->Fill(vtxESD->GetNContributors());
   
 }
 
@@ -345,10 +364,10 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
     fhQA[kVtxPosX][i]	= new  TH1F(Form("%s_Vtx_Pos_X%s",GetName(),str),		"",100,-5.,5.);
     fhQA[kVtxPosY][i]	= new  TH1F(Form("%s_Vtx_Pos_Y%s",GetName(),str),		"",100,-5.,5.);
     fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",200,-50.,50.);
-
     fhQA[kVtxResX][i]	= new  TH1F(Form("%s_Vtx_Res_X%s",GetName(),str),		"",100,-1.,1.);
     fhQA[kVtxResY][i]	= new  TH1F(Form("%s_Vtx_Res_Y%s",GetName(),str),		"",100,-1.,1.);
     fhQA[kVtxResZ][i]	= new  TH1F(Form("%s_Vtx_Res_Z%s",GetName(),str),		"",100,-1.,1.);
+    fhQA[kVtxNCtrb][i]	= new  TH1F(Form("%s_Vtx_N_Ctrb%s",GetName(),str),		"",1000,0.,1000.);
  
     fhQA[kNTracks][i]	->SetXTitle("Number of ESD tracks");
     fhQA[kVtxPosX][i]	->SetXTitle("Vertex Position X (cm)");
@@ -357,7 +376,7 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
     fhQA[kVtxResX][i]	->SetXTitle("Vertex Resolution X (cm)");
     fhQA[kVtxResY][i]	->SetXTitle("Vertex Resolution Y (cm)");
     fhQA[kVtxResZ][i]	->SetXTitle("Vertex Resolution Z (cm)");
-
+    fhQA[kVtxNCtrb][i]	->SetXTitle("Number of contributors");
   }
 
   for(Int_t i=0; i<kNCuts; i++) fhQA[i][1]->SetLineColor(color);
