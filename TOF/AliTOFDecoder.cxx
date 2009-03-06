@@ -201,7 +201,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
   Short_t  currentBunchID = -1;
   Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)-1;
   Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)-1;
-  AliInfo(Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
+  AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
   if (!cdh)
     AliWarning("CDH not valid: deltaBunchID not reliable ");
 
@@ -805,10 +805,9 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
   AliTOFGeometry *geom = new AliTOFGeometry();
   Int_t indexDDL = ddl%4;
   Int_t iSector = Int_t(ddl/4);
-  //AliInfo(Form(" Sector = %i, DDL within sector = %i",iSector, indexDDL));
-  if (fVerbose){
+  if (fVerbose)
     AliInfo(Form(" Sector = %i, DDL within sector = %i",iSector, indexDDL));
-  }
+
   Int_t volume[5];
   volume[0]=iSector;
   Int_t minPlate=0, maxPlate=0, minStrip2=0, maxStrip2=0, minPadz=0, maxPadz=0, minPadx=0, maxPadx=0;
@@ -877,20 +876,20 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
 	  volume[2]=iStrip;
 	  volume[3]=iPadz;
 	  volume[4]=iPadx;
-	  if (fVerbose){
+	  if (fVerbose)
 	    AliInfo(Form(" volume[0] = %i, volume[1] = %i, volume[2] = %i, volume[3] = %i, volume[4] = %i",volume[0],volume[1],volume[2],volume[3],volume[4]));
-	  }
+
 	  if (indexDDL==0 || indexDDL==2){
 	    array[ichTOF]=geom->GetIndex(volume);
-	    if (fVerbose){
+	    if (fVerbose)
 	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
-	    }
+
 	  }
 	  else {
 	    array[ichTOF]=geom->GetIndex(volume);
-	    if (fVerbose){
+	    if (fVerbose)
 	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
-	    }
+
 	  }
 	  ichTOF++;
 	}
@@ -898,12 +897,9 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
     }
   }
   //AliInfo(Form("ichTOF = %i",ichTOF));
-  if ((((indexDDL==0 || indexDDL==2)&ichTOF)!=2160) || (((indexDDL==1 || indexDDL==3)&ichTOF)!=2208)){
+  if ((indexDDL%2==0 && ichTOF!=2160) ||
+      (indexDDL%2==1 && ichTOF!=2208)) {
     AliWarning(Form("Something strange occurred, number of entries in array different from expected! Please, check! ichTOF = %i",ichTOF));
   }
   return;
 }
-
-
-
-  
