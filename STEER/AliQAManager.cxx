@@ -720,7 +720,7 @@ Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 {
 	// Merge all the cycles from all detectors in one single file per run
 	TString cmd ;
-	if (runNumber == -1) 
+	if (runNumber != -1) 
 		cmd = Form(".! ls *%s*.%d.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
 	else 
 		cmd = Form(".! ls *%s*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
@@ -744,7 +744,11 @@ Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 	}
 
   TFileMerger merger ; 
-  TString outFileName(Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),runNumber)); 
+  TString outFileName ;
+  if (runNumber != -1) 
+    outFileName = Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),runNumber); 
+  else 
+    outFileName = Form("Merged.%s.Data.root",AliQA::GetQADataFileName()); 
   merger.OutputFile(outFileName.Data()) ; 
   for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
     TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), runNumber)); 
@@ -784,7 +788,11 @@ Bool_t AliQAManager::MergeResults(const Int_t runNumber) const
 	}
 	
 	TFileMerger merger ; 
-	TString outFileName(Form("Merged.%s.Result.%d.root", AliQA::GetQADataFileName(), runNumber));		
+  TString outFileName ;
+  if (runNumber != -1) 
+    outFileName = Form("Merged.%s.Result.%d.root",AliQA::GetQADataFileName(),runNumber); 
+  else 
+    outFileName = Form("Merged.%s.Result.root",AliQA::GetQADataFileName()); 
 	merger.OutputFile(outFileName.Data()) ; 
 	for (Int_t ifile = 0 ; ifile < index ; ifile++) {
 		TString file = fileList[ifile] ; 

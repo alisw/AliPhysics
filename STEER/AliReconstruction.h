@@ -144,7 +144,7 @@ public:
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
   void    SetQARefDefaultStorage(const char* uri);
   void    InitQA();
-
+  void    MergeQA(); 
 
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
@@ -274,6 +274,7 @@ private:
   Bool_t                fRunGlobalQA;   // Run global QA flag
   Bool_t                fSameQACycle;   //! open a new QA data file or not
   Bool_t                fInitQACalled;  //! control of QA intialisation
+  
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 

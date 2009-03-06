@@ -25,10 +25,10 @@ TString ClassName() { return "rawqa" ; }
 //________________________________qa______________________________________
 void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08") 
 {	
-	char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sd/OCDB/", year, year) ; 
+//	char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sd/OCDB/", year, year) ; 
+	char * kDefaultOCDBStorage = Form("local://$ALICE_ROOT/OCDB") ; 
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
-	AliQA::SetQARefStorage("local://$ALICE_ROOT/OCDB") ;
-	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
+	AliQA::SetQARefStorage("local://$ALICE_ROOT/QAref") ;
 	
 	UInt_t maxEvents = 99999 ;
 	if ( maxFiles < 0 ) {
@@ -38,7 +38,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	AliLog::SetGlobalDebugLevel(0) ; 
 	// connect to the grid 
 	TGrid * grid = 0x0 ; 
-       	grid = TGrid::Connect("alien://") ; 
+//       	grid = TGrid::Connect("alien://") ; 
 		
 	Bool_t detIn[AliDAQ::kNDetectors] = {kFALSE} ;
 	TString detNameOff[AliDAQ::kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF", "HMPID", "PHOS", "PHOS", "PMD", "MUON", "MUON", "FMD", "T0", "VZERO", "ZDC", "ACORDE", "TRG", "EMCAL", "DAQ_TEST", "HLT"} ; 
@@ -75,7 +75,6 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	if (local) 
 		in.open("tempo.txt", ifstream::in) ; 
 
-	AliQADataMakerSteer qas("rec") ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
@@ -84,6 +83,10 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	AliCDBManager* man = AliCDBManager::Instance();
 	man->SetDefaultStorage(kDefaultOCDBStorage) ;  
 	man->SetRun(runNumber) ; 
+	AliQAManager qam("rec") ; 
+  qam->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+  qam->SetRun(runNumber) ; 
+    
 	AliGeomManager::LoadGeometry();
 	for ( file = 0 ; file < maxFiles ; file++) {
 		if ( qas.GetCurrentEvent() >= maxEvents) 
@@ -112,6 +115,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 		AliTRDrawStreamBase::SetRawStreamVersion("TB");
 		while ( rawReader->NextEvent() ) {
 			man->SetRun(rawReader->GetRunNumber());
+			qam->SetRun(rawReader->GetRunNumber());
 			AliLog::Flush();
 			UChar_t * data ; 
 			while (rawReader->ReadNextData(data)) {
@@ -134,9 +138,9 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 				break ; 
 		}
 		if ( !detectors.IsNull() ) {
-			qas.SetMaxEvents(maxEvents) ; 	
-			detectorsW = qas.Run(detectors, rawReader) ;
-			qas.Reset() ;
+			qam.SetMaxEvents(maxEvents) ; 	
+			detectorsW = qam.Run(detectors, rawReader) ;
+			qam.Reset() ;
 		} else {
 			AliError("No valid detectors found") ; 
 		} 
@@ -144,7 +148,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 		eventsProcessed += qas.GetCurrentEvent() ; 
 	}
 	AliLog::Flush();
-	qas.Merge(runNumber) ; 
+	qam.Merge(runNumber) ; 
 	
 	AliLog::Flush();
 	// The summary 

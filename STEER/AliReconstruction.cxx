@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *QARef
+ *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -569,10 +569,23 @@ void AliReconstruction::InitQA()
       qadm->StartOfCycle(AliQA::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
       qadm->Init(AliQA::kESDS);
     }
-    AliSysInfo::AddStamp("InitQA");
   }
+    AliSysInfo::AddStamp("InitQA") ; 
 }
 
+//_____________________________________________________________________________
+void AliReconstruction::MergeQA()
+{
+  //Initialize the QA and start of cycle 
+  AliCodeTimerAuto("") ;
+  if ( ! fQAManager ) {
+    AliFatal("Hum... this should not happen") ; 
+  } else { 
+   fQAManager->Merge(AliCDBManager::Instance()->GetRun()) ; 
+  }
+  AliSysInfo::AddStamp("MergeQA") ; 
+}
+  
 //_____________________________________________________________________________
 void AliReconstruction::InitCDB()
 {
