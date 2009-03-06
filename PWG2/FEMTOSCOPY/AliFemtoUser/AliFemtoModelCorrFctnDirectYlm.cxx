@@ -118,8 +118,21 @@ TList* AliFemtoModelCorrFctnDirectYlm::GetOutputList()
   TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
   tOutputList->Clear();
 
-  tOutputList->Add(fCYlmTrue->GetOutputList());
-  tOutputList->Add(fCYlmFake->GetOutputList());
+  TList *tListCfTrue = fCYlmTrue->GetOutputList();
+    
+  TIter nextListCfTrue(tListCfTrue);
+  while (TObject *obj = nextListCfTrue()) {
+    tOutputList->Add(obj);
+  }
+
+  TList *tListCfFake = fCYlmFake->GetOutputList();
+    
+  TIter nextListCfFake(tListCfFake);
+  while (TObject *obj = nextListCfFake()) {
+    tOutputList->Add(obj);
+  }
+//   tOutputList->Add(fCYlmTrue->GetOutputList());
+//   tOutputList->Add(fCYlmFake->GetOutputList());
 
   return tOutputList;
 }
