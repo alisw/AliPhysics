@@ -98,6 +98,20 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
   printf("Creating Femto Analysis objects\n");
 
   SetFemtoManager(ConfigFemtoAnalysis());
+
+  TList *tOL;
+  fOutputList = fManager->Analysis(0)->GetOutputList();
+
+  for (unsigned int ian = 1; ian<fManager->AnalysisCollection()->size(); ian++) {
+    tOL = fManager->Analysis(ian)->GetOutputList();
+
+    TIter nextListCf(tOL);
+    while (TObject *obj = nextListCf()) {
+      fOutputList->Add(obj);
+    }
+
+    delete tOL;
+  }
 }
 
 //________________________________________________________________________
@@ -160,8 +174,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	  fManager->ProcessEvent();
 	}
     } 
+
     // Post the output histogram list
-    fOutputList = fManager->Analysis(0)->GetOutputList();
     PostData(0, fOutputList);
   }
   
@@ -186,7 +200,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	}
       }
     } 
-    fOutputList = fManager->Analysis(0)->GetOutputList();
+
+    // Post the output histogram list
     PostData(0, fOutputList);
   }
 }      
