@@ -648,6 +648,9 @@ void AliFemtoCorrFctnDirectYlm::Finish()
 void AliFemtoCorrFctnDirectYlm::Write()
 {
   // Write out output histograms
+  if ((!fcovnum) || (!fcovden))
+    PackCovariances();
+
   for (int ilm=0; ilm<fMaxJM; ilm++) {
     fnumsreal[ilm]->Write();
     fdensreal[ilm]->Write();
