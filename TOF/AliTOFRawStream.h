@@ -414,11 +414,15 @@ class AliTOFRawStream: public TObject {
     
   Int_t GetErrorFlag()  const {return fErrorFlag;};
 
+  Bool_t GetDecoderVersion() const {return fNewDecoderVersion;};
+
   void SetDDL(Int_t nDDL)            {fDDL = nDDL;};
   void SetTRM(Int_t nTRM)            {fTRM = nTRM;};
   void SetTDC(Int_t nTDC)            {fTDC = nTDC;};
   void SetTRMchain(Int_t nChain)     {fTRMchain = nChain;};
   void SetTDCchannel(Int_t nChannel) {fTDCchannel = nChannel;};
+
+  void SetDecoderVersion(Bool_t version) {fNewDecoderVersion = version;};
 
   TClonesArray *GetRawData() const {return fTOFrawData;};
 
@@ -435,6 +439,10 @@ class AliTOFRawStream: public TObject {
   Int_t GetLocalEventCounterTRM(Int_t trm) {return fLocalEventCounterTRM[trm];}; // getter for the TRM event counter
   Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];}; // getter for the chain event counter
   Int_t GetChainBunchID(Int_t trm, Int_t chain) {return fChainBunchID[trm][chain];}; // getter for the chain BC ID
+
+
+  void Raw2Digits(AliRawReader* rawReader, TClonesArray* digitsArray);
+  void Raw2SDigits(AliRawReader* rawReader, TClonesArray* sdigitsArray);
 
   static void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 				    Int_t iTDC, Int_t iCH, Int_t *volume);
@@ -538,6 +546,10 @@ class AliTOFRawStream: public TObject {
   //AliTOFCableLengthMap * fCableLengthMap; // Pointer to the map of Amphenol cable length
 
   Int_t fEventID; // event ID1 in the common data header
+
+  Bool_t fNewDecoderVersion;   // setting whether to use the new decoder version
+                               //  -true -> new version
+                               //  -false ->old version (default value!!)
 
   static const Int_t fgkddlBCshift[72]; // DDL BC shifts
   static Bool_t fgApplyBCCorrections; // switch to choose if apply or not the BC shift corrections

@@ -52,6 +52,8 @@
 #include "AliLog.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliDAQ.h"
+#include "AliRawReader.h"
 
 //#include "AliTOFDDLRawData.h"
 #include "AliTOFDigitizer.h"
@@ -62,6 +64,8 @@
 #include "AliTOFSDigitizer.h"
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
+#include "AliTOFrawData.h"
+#include "AliTOFRawStream.h"
 
 class AliTOFcluster;
 
@@ -574,10 +578,15 @@ void AliTOF::Hits2SDigits()
 //  AliInfo("Start...");
   
   AliRunLoader * rl = fLoader->GetRunLoader();
+  AliInfo("Initialized runLoader");
   AliTOFSDigitizer sd((rl->GetFileName()).Data());
-  ToAliDebug(1, sd.Print(""));
+  AliInfo("Initialized TOF sdigitizer");
+  //ToAliDebug(1, sd.Print(""));
+  AliInfo("ToAliDebug");
 
-  sd.Exec("") ;
+  sd.Exec("all") ;
+
+  AliInfo("I am sorting from AliTOF class");
 
 }
 
@@ -604,6 +613,7 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
 //___________________________________________________________________________
 AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager) const
 {
+  AliInfo("I am in the AliTOF::CreateDigitizer)");
   return new AliTOFDigitizer(manager);
 }
 
@@ -714,4 +724,283 @@ void AliTOF::CreateSDigitsArray() {
 //  needed for backward compatability with PPR test production
 //
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
+}
+//____________________________________________________________________________
+Bool_t AliTOF::Raw2SDigits(AliRawReader* rawReader)
+{
+  //
+  // Converts raw data to sdigits for TOF
+  //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  if(!GetLoader()->TreeS()) {MakeTree("S");  MakeBranch("S");}
+  //TClonesArray &aSDigits = *fSDigits;
+
+  AliTOFRawStream tofRawStream = AliTOFRawStream();
+  tofRawStream.Raw2SDigits(rawReader, fSDigits);
+
+  /*
+  //ofstream ftxt;
+  //if (fVerbose==2) ftxt.open("TOFsdigitsRead.txt",ios::app);
+  Int_t inholes = 0;
+
+  const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
+
+  TClonesArray staticRawData("AliTOFrawData",10000);
+  staticRawData.Clear();
+  TClonesArray * clonesRawData = &staticRawData;
+
+  Int_t dummy = -1;
+  Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
+  Int_t digit[2];
+  Int_t track = -1;
+  Int_t last = -1;
+
+  Int_t indexDDL = 0;
+  Int_t iRawData = 0;
+  for (indexDDL=0; indexDDL<kDDL; indexDDL++) {
+
+    rawReader->Reset();
+    //if (fDecoderVersion) {
+    //AliInfo("Using New Decoder \n"); 
+    //fTOFRawStream.LoadRawDataBuffers(indexDDL, 0);
+    //}
+    //else
+    fTOFRawStream.LoadRawData(indexDDL);
+
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
+    if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
+    for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+
+      AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+
+      //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
+
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+
+      dummy = detectorIndex[3];
+      detectorIndex[3] = detectorIndex[4];//padz
+      detectorIndex[4] = dummy;//padx
+
+      digit[0] = tofRawDatum->GetTOF();
+      digit[1] = tofRawDatum->GetTOT();
+
+      dummy = detectorIndex[3];
+      detectorIndex[3] = detectorIndex[4];//padx
+      detectorIndex[4] = dummy;//padz
+
+      // Do not reconstruct anything in the holes
+      if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+	if (detectorIndex[1]==2) { // plate with holes
+	  inholes++;
+	  continue;
+	}
+      }
+
+      last = fSDigits->GetEntriesFast();
+      new (aSDigits[last]) AliTOFSDigit(track, detectorIndex, digit);
+      //
+      if (fVerbose==2) {
+	if (indexDDL<10) ftxt << "  " << indexDDL;
+	else         ftxt << " " << indexDDL;
+	if (tofRawDatum->GetTRM()<10) ftxt << "  " << tofRawDatum->GetTRM();
+	else         ftxt << " " << tofRawDatum->GetTRM();
+	ftxt << "  " << tofRawDatum->GetTRMchain();
+	if (tofRawDatum->GetTDC()<10) ftxt << "  " << tofRawDatum->GetTDC();
+	else         ftxt << " " << tofRawDatum->GetTDC();
+	ftxt << "  " << tofRawDatum->GetTDCchannel();
+
+	if (detectorIndex[0]<10) ftxt  << "  ->  " << detectorIndex[0];
+	else              ftxt  << "  -> " << detectorIndex[0];
+	ftxt << "  " << detectorIndex[1];
+	if (detectorIndex[2]<10) ftxt << "  " << detectorIndex[2];
+	else              ftxt << " " << detectorIndex[2];
+	ftxt << "  " << detectorIndex[4];
+	if (detectorIndex[4]<10) ftxt << "  " << detectorIndex[3];
+	else              ftxt << " " << detectorIndex[3];
+
+	if (digit[1]<10)ftxt << "        " << digit[1];
+	else if (digit[1]>=10 && digit[1]<100) ftxt << "      " << digit[1];
+	else ftxt << "      " << digit[1];
+	if (digit[0]<10) ftxt << "      " << digit[0] << endl;
+	else if (digit[0]>=10 && digit[0]<100)   ftxt << "    " << digit[0] << endl;
+	else if (digit[0]>=100 && digit[0]<1000) ftxt << "    " << digit[0] << endl;
+	else ftxt << "   " << digit[3] << endl;
+      }
+      //
+      AliDebug(2, Form(" Raw data reading %2d -> %2d %1d %2d %1d %2d (%d, %d, %d)",
+		       last,
+		       detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
+		       digit[0], digit[1], digit[3]));
+
+    } // while loop
+
+    clonesRawData->Clear();
+
+  } // DDL Loop
+
+  //if (fVerbose==2) ftxt.close();
+
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
+
+  */
+  GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits
+  Int_t nSDigits = fSDigits->GetEntries();
+
+  ResetSDigits();
+
+  AliDebug(1, Form("Got %d TOF sdigits", nSDigits));
+  AliDebug(1, Form("Execution time to read TOF raw data and fill TOF sdigit tree : R:%.2fs C:%.2fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
+  return kTRUE;
+
+}
+
+//____________________________________________________________________________
+void AliTOF::Raw2Digits(AliRawReader* rawReader)
+{
+  //
+  // Converts raw data to digits for TOF
+  //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  if(!GetLoader()->TreeD()) {MakeTree("D");  MakeBranch("D");}
+  //TClonesArray &aDigits = *fDigits;
+
+  AliTOFRawStream tofRawStream = AliTOFRawStream();
+  tofRawStream.Raw2Digits(rawReader, fDigits);
+
+  /*
+  Int_t inholes = 0;
+
+  const Int_t kMaxNumberOfTracksPerDigit = 3;
+  const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
+
+  AliTOFRawStream fTOFRawStream = AliTOFRawStream();
+  fTOFRawStream.Clear();
+  fTOFRawStream.SetRawReader(rawReader);
+
+  //ofstream ftxt;
+  //if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
+
+  TClonesArray staticRawData("AliTOFrawData",10000);
+  staticRawData.Clear();
+  TClonesArray * clonesRawData = &staticRawData;
+
+  Int_t dummy = -1;
+  Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
+  Int_t digit[4];
+  Int_t tracks[kMaxNumberOfTracksPerDigit];
+  for (Int_t ii=0; ii<kMaxNumberOfTracksPerDigit; ii++)
+    tracks[ii] = -1;
+  Int_t last = -1;
+
+  Int_t indexDDL = 0;
+  Int_t iRawData = 0;
+  for (indexDDL=0; indexDDL<kDDL; indexDDL++) {
+
+    rawReader->Reset();
+    //if (fDecoderVersion) {
+    //AliInfo("Using New Decoder \n"); 
+    //fTOFRawStream.LoadRawDataBuffers(indexDDL, 0);
+    //}
+    //else
+    fTOFRawStream.LoadRawData(indexDDL);
+
+    clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
+    if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
+    for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+
+      AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+
+      //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
+
+      fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+
+      dummy = detectorIndex[3];
+      detectorIndex[3] = detectorIndex[4];//padz
+      detectorIndex[4] = dummy;//padx
+
+      digit[0] = tofRawDatum->GetTOF();
+      digit[1] = tofRawDatum->GetTOT();
+      digit[2] = tofRawDatum->GetTOT();
+      digit[3] = -1;//tofRawDatum->GetTOF(); //tofND
+
+      dummy = detectorIndex[3];
+      detectorIndex[3] = detectorIndex[4];//padx
+      detectorIndex[4] = dummy;//padz
+
+      // Do not reconstruct anything in the holes
+      if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+	if (detectorIndex[1]==2) { // plate with holes
+	  inholes++;
+	  continue;
+	}
+      }
+
+      last = fDigits->GetEntriesFast();
+      new (aDigits[last]) AliTOFdigit(tracks, detectorIndex, digit);
+      //
+      if (fVerbose==2) {
+	if (indexDDL<10) ftxt << "  " << indexDDL;
+	else         ftxt << " " << indexDDL;
+	if (tofRawDatum->GetTRM()<10) ftxt << "  " << tofRawDatum->GetTRM();
+	else         ftxt << " " << tofRawDatum->GetTRM();
+	ftxt << "  " << tofRawDatum->GetTRMchain();
+	if (tofRawDatum->GetTDC()<10) ftxt << "  " << tofRawDatum->GetTDC();
+	else         ftxt << " " << tofRawDatum->GetTDC();
+	ftxt << "  " << tofRawDatum->GetTDCchannel();
+
+	if (detectorIndex[0]<10) ftxt  << "  ->  " << detectorIndex[0];
+	else              ftxt  << "  -> " << detectorIndex[0];
+	ftxt << "  " << detectorIndex[1];
+	if (detectorIndex[2]<10) ftxt << "  " << detectorIndex[2];
+	else              ftxt << " " << detectorIndex[2];
+	ftxt << "  " << detectorIndex[4];
+	if (detectorIndex[4]<10) ftxt << "  " << detectorIndex[3];
+	else              ftxt << " " << detectorIndex[3];
+
+	if (digit[1]<10)ftxt << "        " << digit[1];
+	else if (digit[1]>=10 && digit[1]<100) ftxt << "      " << digit[1];
+	else ftxt << "      " << digit[1];
+	if (digit[0]<10) ftxt << "      " << digit[0] << endl;
+	else if (digit[0]>=10 && digit[0]<100)   ftxt << "    " << digit[0] << endl;
+	else if (digit[0]>=100 && digit[0]<1000) ftxt << "    " << digit[0] << endl;
+	else ftxt << "   " << digit[3] << endl;
+      }
+      //
+      AliDebug(2, Form(" Raw data reading %2d -> %2d %1d %2d %1d %2d (%d, %d, %d)",
+		       last,
+		       detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
+		       digit[0], digit[1], digit[3]));
+
+    } // while loop
+
+    clonesRawData->Clear();
+
+  } // DDL Loop
+
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
+
+  //if (fVerbose==2) ftxt.close();
+  */
+
+  GetLoader()->TreeD()->Fill(); GetLoader()->WriteDigits("OVERWRITE");//write out digits
+  Int_t nDigits = fDigits->GetEntries();
+
+  ResetDigits();
+
+  AliDebug(1, Form("Got %d TOF digits", nDigits));
+  AliDebug(1, Form("Execution time to read TOF raw data and fill TOF digit tree : R:%.2fs C:%.2fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }

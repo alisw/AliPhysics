@@ -71,11 +71,13 @@ public:
   virtual void    Hits2SDigits();
   virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const; 
-  virtual void    Digits2Reco() {};
-          void    Digits2Raw ();
-          void    Raw2Digits (){};
-  virtual void    ResetHits();
-  virtual void    ResetDigits();
+  virtual void    Digits2Reco () {};
+          void    Digits2Raw  ();
+	  void    Raw2Digits  () {};
+	  void    Raw2Digits  (AliRawReader* rawReader);
+	  Bool_t  Raw2SDigits (AliRawReader* rawReader);
+  virtual void    ResetHits   ();
+  virtual void    ResetDigits ();
   virtual void    ResetSDigits();
   TClonesArray *SDigits() const {return fSDigits;}
   TClonesArray *ReconParticles() const {return fReconParticles;}
