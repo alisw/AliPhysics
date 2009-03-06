@@ -156,9 +156,9 @@ public:
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
-  void      SetTilt(Float_t tilt)    { fPad[3] = tilt; }
   void      SetPadLength(Float_t l)  { fPad[0] = l;}
   void      SetPadWidth(Float_t w)   { fPad[1] = w;}
+  void      SetTilt(Float_t tilt)    { fPad[2] = tilt; }
   void      SetDetector(Int_t d)     { fDet = d;  }
   void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
