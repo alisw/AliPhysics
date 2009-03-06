@@ -131,6 +131,29 @@ Bool_t AliTRDrecoTask::Load(const Char_t *filename)
   return kTRUE;
 }
 
+//________________________________________________________
+Bool_t AliTRDrecoTask::Save(TObjArray *results){
+  //
+  // Store the output graphs in a ROOT file
+  // Input TObject array will not be written as Key to the file,
+  // only content itself
+  //
+
+  TDirectory *cwd = gDirectory;
+  if(!TFile::Open(Form("TRD.Result%s.root", GetName()), "RECREATE")) return kFALSE;
+
+  TIterator *iter = results->MakeIterator();
+  TObject *inObject = 0x0, *outObject = 0x0;
+  while((inObject = iter->Next())){
+    outObject = inObject->Clone();
+    outObject->Write(0x0, TObject::kSingleKey);
+  }
+  delete iter;
+  gFile->Close(); delete gFile;
+  cwd->cd(); 
+  return kTRUE;
+}
+
 //_______________________________________________________
 Bool_t AliTRDrecoTask::PostProcess()
 {

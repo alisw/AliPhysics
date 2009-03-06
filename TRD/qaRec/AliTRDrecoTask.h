@@ -46,6 +46,7 @@ public:
   virtual TObjArray* Histos() {return fContainer;}
 
   virtual Bool_t Load(const Char_t *filename);
+  virtual Bool_t Save(TObjArray *res);
   virtual Bool_t PostProcess();
   virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
