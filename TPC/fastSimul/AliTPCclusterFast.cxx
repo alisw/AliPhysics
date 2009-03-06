@@ -10,8 +10,8 @@
  AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
 
  //
- AliTPCtrackFast::Simul("trackerSimul.root",10); 
- AliTPCclusterFast::Simul("cluterSimul.root",20000); 
+ AliTPCtrackFast::Simul("trackerSimul.root",100); 
+// AliTPCclusterFast::Simul("cluterSimul.root",20000); 
 */
 
 #include "TObject.h"
@@ -21,7 +21,7 @@
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "TH1.h"
-#include "TH2F.h"
+#include "THnSparse.h"
 #include "TClonesArray.h"
 #include "TTreeStream.h"
 
@@ -78,13 +78,18 @@ public:
 class AliTPCtrackFast: public TObject {
 public:
   AliTPCtrackFast();
+  void Add(AliTPCtrackFast &track2);
   void MakeTrack();
   void UpdatedEdxHisto();
   void MakeHisto();
   static void Simul(const char* simul, Int_t ntracks);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
-  Double_t  CookdEdx(Double_t *amp, Double_t f0,Float_t f1);
+  //
+  Double_t  CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t corr = kTRUE);
+  Double_t  CookdEdxDmax(Double_t f0,Float_t f1,Float_t gain,Float_t thr, Float_t noise, Bool_t corr=kTRUE);
+  //
+  Double_t  CookdEdx(Int_t npoints, Double_t *amp, Double_t f0,Float_t f1);
   //
   Float_t fMNprim;     // mean number of primary electrons
   Float_t fAngleY;     // y angle - tan(y)
@@ -94,11 +99,17 @@ public:
   TClonesArray *fCl;   // array of clusters  
   //
   Bool_t   fInit;      // initialization flag
-  TH2F    *fHistoNtotFrac[6];    // histograms of trunc mean Ntot
-  TH2F    *fHistoQtotFrac[6];    // histograms of trunc mean Qtot
-  TH2F    *fHistoNQtotFrac[6];   // histograms of trunc mean Qtot/Ntot
+  THnSparse    *fHistoNtot;    // histograms of trunc mean Ntot
+  THnSparse    *fHistoQtot;    // histograms of trunc mean Qtot
+  THnSparse    *fHistoQNtot;   // histograms of trunc mean Qtot/Ntot
   //
+  THnSparse    *fHistoDtot;    // histograms of trunc mean digit tot
+  THnSparse    *fHistoDmax;    // histograms of trunc mean digit max
+  THnSparse    *fHistoDtotRaw;    // histograms of trunc mean digit tot
+  THnSparse    *fHistoDmaxRaw;    // histograms of trunc mean digit max
 
+  //
+  //
   ClassDef(AliTPCtrackFast,2)  // container for
 };
 
@@ -122,45 +133,111 @@ AliTPCtrackFast::AliTPCtrackFast():
   fAngleZ(0),
   fN(0),
   fCl(0),
-  fInit(kFALSE)
+  fInit(kFALSE),
+  fHistoNtot(0),
+  fHistoQtot(0),
+  fHistoQNtot(0),
+  fHistoDtot(0),
+  fHistoDmax(0),
+  fHistoDtotRaw(0),
+  fHistoDmaxRaw(0)
 {
   //
   //
   //
-  for (Int_t i=0;i<6;i++){
-    fHistoNtotFrac[i]=0;
-    fHistoQtotFrac[i]=0;
-    fHistoNQtotFrac[i]=0;
-  }
+}
+
+void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
+  if (!track2.fInit) return;
+  
+  fHistoNtot->Add(track2.fHistoNtot);    // histograms of trunc mean Ntot
+  fHistoQtot->Add(track2.fHistoQtot);    // histograms of trunc mean Qtot
+  fHistoQNtot->Add(track2.fHistoQNtot);   // histograms of trunc mean Qtot/Ntot
+  //
+  fHistoDtot->Add(track2.fHistoDtot);    // histograms of trunc mean digit tot
+  fHistoDmax->Add(track2.fHistoDmax);    // histograms of trunc mean digit max
+  fHistoDtotRaw->Add(track2.fHistoDtotRaw);    // histograms of trunc mean digit tot
+  fHistoDmaxRaw->Add(track2.fHistoDmaxRaw);    // histograms of trunc mean digit max
 }
 
 void AliTPCtrackFast::MakeHisto(){
   //
   // make default histo
   //
+  // dEdx histogram THnSparse
+  // 0 - value
+  // 1 - fMNprim - number of generated primaries
+  // 2 - fNpoints
+  // 3 - fFraction
+  // 4 - fDiff
+  // 5 - fAngleY
+  // 6 - fAngleZ
+  
+  Double_t xmin[7],  xmax[7];
+  Int_t    nbins[7];
   if (fInit) return;
-  char hname[1000];
-  for (Int_t i=0;i<6;i++){
-    sprintf(hname,"dNdxall/dNdxprim_%f",0.5+i/5.);
-    fHistoNtotFrac[i]= new TH2F(hname,hname,10,10,30,100,1,8);
-    sprintf(hname,"dQdxall/dNdxprim_%f",0.5+i/5.);
-    fHistoQtotFrac[i]= new TH2F(hname,hname,10,10,30,100,1,8);
-    sprintf(hname,"dQdxall/dNdxall_%f",0.5+i/5.);
-    fHistoNQtotFrac[i]= new TH2F(hname,hname,10,10,30,100,0.5,1.5);
-  }
+  //
+  nbins[1] = 10; xmin[1]=10;  xmax[1]=30;    // fMNprim
+  nbins[2] = 8;  xmin[2]=80;  xmax[2]=160;   // fNPoints
+  nbins[3] = 6;  xmin[3]=0.45; xmax[3]=1.05;     // trunc mean fraction
+
+  nbins[4] = 5;  xmin[4]=0.0; xmax[4]=0.4;   // fDiff
+  nbins[5] = 10; xmin[5]=0;   xmax[5]=2;     // fAngleY
+  nbins[6] = 10; xmin[6]=0;   xmax[6]=2;     // fAngleZ
+  //
+  nbins[0] =100; xmin[0]=2; xmax[0]=8;
+  fHistoNtot = new THnSparseF("dNdxall/dNdxprim","dNdxall/dNdxprim", 4, nbins, xmin,xmax);
+  nbins[0] =100; xmin[0]=2; xmax[0]=8;
+  fHistoQtot = new THnSparseF("dQdx/dNdxprim","dQdxall/dNdxprim", 4, nbins, xmin,xmax);
+  nbins[0] =100; xmin[0]=0.5; xmax[0]=1.5;
+  fHistoQNtot = new THnSparseF("dQdx/dNdxprim","dQdxprim/dNdxprim", 4, nbins, xmin,xmax);
+  //
+  nbins[0] =100; xmin[0]=0.05; xmax[0]=8;
+  fHistoDtot = new THnSparseF("dQtotdx/dNdxprim","dQtotdx/dNdx", 7, nbins, xmin,xmax);
+  fHistoDmax = new THnSparseF("dQmaxdx/dNdxprim","dQmaxdx/dNdx", 7, nbins, xmin,xmax);
+  fHistoDtotRaw = new THnSparseF("raw dQtotdx/dNdxprim","raw dQtotdx/dNdx", 7, nbins, xmin,xmax);
+  fHistoDmaxRaw = new THnSparseF("raw dQmaxdx/dNdxprim","raw dQmaxdx/dNdx", 7, nbins, xmin,xmax);
   fInit=kTRUE;
 }
 
 void  AliTPCtrackFast::UpdatedEdxHisto(){
   //
-  //fill defualt histo
+  //fill default histo
   //
   if (!fInit) MakeHisto();
-  for (Int_t i=0;i<6;i++){
-    Float_t frac = 0.5+i/5.;
-    fHistoNtotFrac[i]->Fill(fMNprim, CookdEdxNtot(0,frac)/fMNprim);
-    fHistoQtotFrac[i]->Fill(fMNprim, CookdEdxNtot(0,frac)/fMNprim);
-    fHistoNQtotFrac[i]->Fill(fMNprim, CookdEdxQtot(0,frac)/CookdEdxNtot(0,frac));
+  Double_t x[7];
+  x[1] = fMNprim;
+  x[2] = fN;
+  //
+  x[4] = fDiff;
+  x[5] = TMath::Abs(fAngleY);
+  x[6] = TMath::Abs(fAngleZ);
+
+  for (Int_t i=0;i<7;i++){
+    Float_t frac = 0.5+Float_t(i)*0.1;
+    x[3] = frac;
+    Double_t cNtot = CookdEdxNtot(0.01,frac);
+    Double_t cQtot = CookdEdxQtot(0.01,frac);
+    // MC -using hits
+    x[0] = cNtot/fMNprim;
+    fHistoNtot->Fill(x);
+    x[0] = cQtot/fMNprim;
+    fHistoQtot->Fill(x);
+    x[0] = cQtot/cNtot;
+    fHistoQNtot->Fill(x);
+    // MC - using digits 
+    Double_t dQtot = CookdEdxDtot(0.01,frac,1,2.5,1,kTRUE);
+    Double_t dQmax = CookdEdxDmax(0.01,frac,1,2.5,1,kTRUE);
+    Double_t dQrawtot = CookdEdxDtot(0.01,frac,1,2.5,1,kFALSE);
+    Double_t dQrawmax = CookdEdxDmax(0.01,frac,1,2.5,1,kFALSE);
+    x[0] = dQtot/fMNprim;
+    fHistoDtot->Fill(x);
+    x[0] = dQmax/fMNprim;
+    fHistoDmax->Fill(x);
+    x[0] = dQrawtot/fMNprim;
+    fHistoDtotRaw->Fill(x);
+    x[0] = dQrawmax/fMNprim;
+    fHistoDmaxRaw->Fill(x);
   }
 }
 
@@ -168,12 +245,17 @@ void AliTPCtrackFast::MakeTrack(){
   //
   //
   //
-  if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",fN);
+  if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",160);
   for (Int_t i=0;i<fN;i++){
-    Double_t posY = i*fAngleY;
-    Double_t posZ = i*fAngleZ;
-    AliTPCclusterFast * cluster = new ((*fCl)[i]) AliTPCclusterFast;
-    cluster->SetParam(fMNprim,fDiff,TMath::Nint(posY),TMath::Nint(posZ),fAngleY,fAngleZ); 
+    Double_t tY = i*fAngleY;
+    Double_t tZ = i*fAngleZ;
+    AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
+    if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
+    //
+    Double_t posY = tY-TMath::Nint(tY);
+    Double_t posZ = tZ-TMath::Nint(tZ);
+    cluster->SetParam(fMNprim,fDiff,posY,posZ,fAngleY,fAngleZ); 
+    //
     cluster->GenerElectrons();
     cluster->Digitize();
   }
@@ -183,35 +265,72 @@ void AliTPCtrackFast::MakeTrack(){
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
   //
   Double_t amp[160];
-  Double_t index[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fNtot;
   }
-  return CookdEdx(amp,f0,f1);
+  return CookdEdx(fN,amp,f0,f1);
 }
 
 Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
   //
   Double_t amp[160];
-  Double_t index[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fQtot;
   }
-  return CookdEdx(amp,f0,f1);
+  return CookdEdx(fN,amp,f0,f1);
 }
 
-Double_t  AliTPCtrackFast::CookdEdx(Double_t *amp,Double_t f0,Float_t f1){
+Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr){
+  //
+  //
+  //
+  Double_t amp[160];
+  Int_t over=0;
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Float_t camp = cluster->GetQtot(gain,thr,noise);
+    if (camp==0) continue;
+    Float_t corr =  1;
+    if (doCorr) corr = cluster->GetQtotCorr(0.5,0.5,gain,thr);
+    amp[over]=camp/corr;
+    over++;
+  }
+  return CookdEdx(over,amp,f0,f1);
+
+}
+
+Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr){
+  //
+  //
+  //
+  Double_t amp[160];
+  Int_t over=0;
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Float_t camp = cluster->GetQmax(gain,thr,noise);
+    if (camp==0) continue;    
+    Float_t corr =  1;
+    if (doCorr) corr = cluster->GetQmaxCorr(0.5,0.5);
+    amp[over]=camp/corr;
+    over++;
+  }
+  return CookdEdx(over,amp,f0,f1);
+
+}
+
+
+Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Float_t f1){
   //
   //
   //
   Int_t index[160];
-  TMath::Sort(fN,amp,index,kFALSE);
+  TMath::Sort(npoints,amp,index,kFALSE);
   Float_t sum0=0, sum1=0,sum2=0;
-  for (Int_t i=0;i<fN;i++){
-    if (i<fN*f0) continue;
-    if (i>fN*f1) continue;
+  for (Int_t i=0;i<npoints;i++){
+    if (i<npoints*f0) continue;
+    if (i>npoints*f1) continue;
     sum0++;
     sum1+= amp[index[i]];
     sum2+= amp[index[i]];
@@ -233,7 +352,7 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
-    fast.fN  = 80+gRandom->Rndm()*80;
+    fast.fN  = TMath::Nint(80.+gRandom->Rndm()*80.);
     fast.MakeTrack();
     if (itr%100==0) printf("%d\n",itr);
     cstream<<"simulTrack"<<
@@ -271,6 +390,9 @@ Double_t AliTPCclusterFast::GetNsec(){
   const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
   const Double_t W=20.77E-9;
   Float_t RAN = gRandom->Rndm();
+  //Double_t edep = TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO);
+  //edep = TMath::Min(edep, EEND);
+  //return TMath::Nint(edep/W);
   return TMath::Nint(TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO)/W);
 }
 
@@ -535,7 +657,7 @@ Double_t  AliTPCclusterFast::GaussGamma4(Double_t x, Double_t s0, Double_t p1){
   Double_t exp1 = (8*s0*s0-4.*p1*x)/(p1*p1);
   exp1 = TMath::Exp(exp1);
   Double_t erf1 = 1+TMath::Erf((-4*s0/p1+x/s0)/TMath::Sqrt(2));
-  Double_t xp14 = TMath::Power(TMath::Abs((x/p1)),4);
+  //  Double_t xp14 = TMath::Power(TMath::Abs((x/p1)),4);
   return exp1*erf1;
 
  
