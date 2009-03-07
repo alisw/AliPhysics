@@ -99,6 +99,9 @@ class AliFlowAnalysisWithQCumulants{
   void SetQCorrelations(TProfile* const QCorr) {this->fQCorrelations = QCorr;};
   TProfile* GetQCorrelations() const {return this->fQCorrelations;};
   
+  void SetQCorrelationsW(TProfile* const QCorrW) {this->fQCorrelationsW = QCorrW;};
+  TProfile* GetQCorrelationsW() const {return this->fQCorrelationsW;};
+  
   void SetQProduct(TProfile* const qp) {this->fQProduct = qp;};
   TProfile* GetQProduct() const {return this->fQProduct;};
   
@@ -165,6 +168,49 @@ class AliFlowAnalysisWithQCumulants{
   void SetFour1n1n1n1nPerEtaBinPOI(TProfile* const pb4PerEtaBin1n1n1n1nPOI) {this->f4PerEtaBin1n1n1n1nPOI = pb4PerEtaBin1n1n1n1nPOI;};
   TProfile* GetFour1n1n1n1nPerEtaBinPOI() const {return this->f4PerEtaBin1n1n1n1nPOI;}; 
   
+  
+  
+  void SetTwo1n1nWPerPtBinPOI(TProfile* const pb2WPerPtBin1n1nPOI) {this->f2WPerPtBin1n1nPOI = pb2WPerPtBin1n1nPOI;};
+  TProfile* GetTwo1n1nWPerPtBinPOI() const {return this->f2WPerPtBin1n1nPOI;};
+  
+  void SetTwo2n2nWPerPtBinPOI(TProfile* const pb2WPerPtBin2n2nPOI) {this->f2WPerPtBin2n2nPOI = pb2WPerPtBin2n2nPOI;};
+  TProfile* GetTwo2n2nWPerPtBinPOI() const {return this->f2WPerPtBin2n2nPOI;};
+  
+  void SetThree2n1n1nWPerPtBinPOI(TProfile* const pb3WPerPtBin2n1n1nPOI) {this->f3WPerPtBin2n1n1nPOI = pb3WPerPtBin2n1n1nPOI;};
+  TProfile* GetThree2n1n1nWPerPtBinPOI() const {return this->f3WPerPtBin2n1n1nPOI;};
+  
+  void SetThree1n1n2nWPerPtBinPOI(TProfile* const pb3WPerPtBin1n1n2nPOI) {this->f3WPerPtBin1n1n2nPOI = pb3WPerPtBin1n1n2nPOI;};
+  TProfile* GetThree1n1n2nWPerPtBinPOI() const {return this->f3WPerPtBin1n1n2nPOI;};
+  
+  void SetFour1n1n1n1nWPerPtBinPOI(TProfile* const pb4WPerPtBin1n1n1n1nPOI) {this->f4WPerPtBin1n1n1n1nPOI = pb4WPerPtBin1n1n1n1nPOI;};
+  TProfile* GetFour1n1n1n1nWPerPtBinPOI() const {return this->f4WPerPtBin1n1n1n1nPOI;}
+  
+  
+  
+  void SetTwo1n1nWPerEtaBinPOI(TProfile* const pb2WPerEtaBin1n1nPOI) {this->f2WPerEtaBin1n1nPOI = pb2WPerEtaBin1n1nPOI;};
+  TProfile* GetTwo1n1nWPerEtaBinPOI() const {return this->f2WPerEtaBin1n1nPOI;};
+  
+  void SetFour1n1n1n1nWPerEtaBinPOI(TProfile* const pb4WPerEtaBin1n1n1n1nPOI) {this->f4WPerEtaBin1n1n1n1nPOI = pb4WPerEtaBin1n1n1n1nPOI;};
+  TProfile* GetFour1n1n1n1nWPerEtaBinPOI() const {return this->f4WPerEtaBin1n1n1n1nPOI;}
+  
+  void SetTwo1n1nWPerPtBinRP(TProfile* const pb2WPerPtBin1n1nRP) {this->f2WPerPtBin1n1nRP = pb2WPerPtBin1n1nRP;};
+  TProfile* GetTwo1n1nWPerPtBinRP() const {return this->f2WPerPtBin1n1nRP;};
+  
+  void SetFour1n1n1n1nWPerPtBinRP(TProfile* const pb4WPerPtBin1n1n1n1nRP) {this->f4WPerPtBin1n1n1n1nRP = pb4WPerPtBin1n1n1n1nRP;};
+  TProfile* GetFour1n1n1n1nWPerPtBinRP() const {return this->f4WPerPtBin1n1n1n1nRP;}
+  
+  void SetTwo1n1nWPerEtaBinRP(TProfile* const pb2WPerEtaBin1n1nRP) {this->f2WPerEtaBin1n1nRP = pb2WPerEtaBin1n1nRP;};
+  TProfile* GetTwo1n1nWPerEtaBinRP() const {return this->f2WPerEtaBin1n1nRP;};
+  
+  void SetFour1n1n1n1nWPerEtaBinRP(TProfile* const pb4WPerEtaBin1n1n1n1nRP) {this->f4WPerEtaBin1n1n1n1nRP = pb4WPerEtaBin1n1n1n1nRP;};
+  TProfile* GetFour1n1n1n1nWPerEtaBinRP() const {return this->f4WPerEtaBin1n1n1n1nRP;}
+  
+  
+  
+  
+  
+  
+  
   void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
   TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
   
@@ -199,6 +245,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fQvectorForEachEventX;     //profile containing the x-components of Q-vectors from all events (to be removed)  
   TProfile*                  fQvectorForEachEventY;     //profile containing the y-components of Q-vectors from all events (to be removed)   
   TProfile*                  fQCorrelations;            //multi-particle correlations calculated from Q-vectors 
+  TProfile*                  fQCorrelationsW;           //weighted multi-particle correlations calculated from Q-vectors 
   TProfile*                  fQProduct;                 //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   
   TProfile*                  fDirectCorrelations;       //multi-particle correlations calculated with nested loop  
@@ -262,6 +309,28 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  f3PerEtaBin2n1n1nPOI;      //<<3'>>_{2n|n,n} per eta-bin
   TProfile*                  f3PerEtaBin1n1n2nPOI;      //<<3'>>_{n,n|2n} per eta-bin
   TProfile*                  f4PerEtaBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin  
+  
+  
+  
+  
+  
+  TProfile*                  f2WPerPtBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin
+  TProfile*                  f2WPerPtBin2n2nPOI;        //<<2'>>_{2n|2n} per eta-bin
+  TProfile*                  f3WPerPtBin2n1n1nPOI;      //<<3'>>_{2n|n,n} per eta-bin
+  TProfile*                  f3WPerPtBin1n1n2nPOI;      //<<3'>>_{n,n|2n} per eta-bin
+  TProfile*                  f4WPerPtBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin    
+  
+  TProfile*                  f2WPerEtaBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin 
+  TProfile*                  f4WPerEtaBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin
+  
+  TProfile*                  f2WPerPtBin1n1nRP;        //<<2'>>_{n|n} per eta-bin 
+  TProfile*                  f4WPerPtBin1n1n1n1nRP;    //<<4'>>_{n,n|n,n} per eta-bin
+  
+  TProfile*                  f2WPerEtaBin1n1nRP;        //<<2'>>_{n|n} per eta-bin 
+  TProfile*                  f4WPerEtaBin1n1n1n1nRP;    //<<4'>>_{n,n|n,n} per eta-bin
+  
+  
+  
  
   AliFlowCommonHist*         fCommonHists2nd;           //common control histograms (taking into account only the events with 2 and more particles) 
   AliFlowCommonHist*         fCommonHists4th;           //common control histograms (taking into account only the events with 4 and more particles) 

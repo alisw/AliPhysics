@@ -221,6 +221,9 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //multi-particle correlations calculated from Q-vectors
   TProfile *QCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelations"));
   
+  //weighted multi-particle correlations calculated from Q-vectors
+  TProfile *QCorrelationsW = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelationsW"));
+  
   //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   TProfile *QProduct = dynamic_cast<TProfile*>(fListHistos->FindObject("fQProduct"));
   
@@ -251,6 +254,41 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   TProfile *binnedEta3p2n1n1nPOI =  dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f3PerEtaBin2n1n1nPOI"));
   TProfile *binnedEta3p1n1n2nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f3PerEtaBin1n1n2nPOI"));
   TProfile *binnedEta4p1n1n1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4PerEtaBin1n1n1n1nPOI"));  
+  
+  
+  
+  //average 2-, 3- and 4-particle correlations per pt-bin 
+  TProfile *binnedWPt2p1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2WPerPtBin1n1nPOI"));
+  TProfile *binnedWPt2p2n2nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2WPerPtBin2n2nPOI"));
+  TProfile *binnedWPt3p2n1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f3WPerPtBin2n1n1nPOI"));
+  TProfile *binnedWPt3p1n1n2nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f3WPerPtBin1n1n2nPOI"));
+  TProfile *binnedWPt4p1n1n1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4WPerPtBin1n1n1n1nPOI"));
+  
+  cout<<endl;
+  cout<<"ab"<<endl;
+  cout<<binnedWPt4p1n1n1n1nPOI->GetName()<<endl;
+  cout<<endl;
+  
+  
+  
+   TProfile *binnedWEta2p1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2WPerEtaBin1n1nPOI"));
+  
+  TProfile *binnedWEta4p1n1n1n1nPOI = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4WPerEtaBin1n1n1n1nPOI"));
+  
+  
+  TProfile *binnedWPt2p1n1nRP = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2WPerPtBin1n1nRP"));
+  
+  TProfile *binnedWPt4p1n1n1n1nRP = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4WPerPtBin1n1n1n1nRP"));
+  
+  TProfile *binnedWEta2p1n1nRP = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2WPerEtaBin1n1nRP"));
+  
+  TProfile *binnedWEta4p1n1n1n1nRP = dynamic_cast<TProfile*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4WPerEtaBin1n1n1n1nRP"));
+  
+  
+  
+  
+  
+  
     
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
@@ -284,6 +322,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetQvectorForEachEventY(qvectorForEachEventY);
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   fQCA->SetQCorrelations(QCorrelations);
+  fQCA->SetQCorrelationsW(QCorrelationsW);
   fQCA->SetQProduct(QProduct);
   fQCA->SetQVectorComponents(QVectorComponents);
  
@@ -311,6 +350,31 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetThree1n1n2nPerEtaBinPOI(binnedEta3p1n1n2nPOI);
   fQCA->SetFour1n1n1n1nPerEtaBinPOI(binnedEta4p1n1n1n1nPOI);    
  
+ 
+ 
+ 
+ 
+  fQCA->SetTwo1n1nWPerPtBinPOI(binnedWPt2p1n1nPOI);
+  fQCA->SetTwo2n2nWPerPtBinPOI(binnedWPt2p2n2nPOI);
+  fQCA->SetThree2n1n1nWPerPtBinPOI(binnedWPt3p2n1n1nPOI);
+  fQCA->SetThree1n1n2nWPerPtBinPOI(binnedWPt3p1n1n2nPOI);
+  fQCA->SetFour1n1n1n1nWPerPtBinPOI(binnedWPt4p1n1n1n1nPOI);
+  
+  fQCA->SetTwo1n1nWPerEtaBinPOI(binnedWEta2p1n1nPOI);
+  fQCA->SetFour1n1n1n1nWPerEtaBinPOI(binnedWEta4p1n1n1n1nPOI);
+  
+  fQCA->SetTwo1n1nWPerPtBinRP(binnedWPt2p1n1nRP);
+  fQCA->SetFour1n1n1n1nWPerPtBinRP(binnedWPt4p1n1n1n1nRP);
+  
+  fQCA->SetTwo1n1nWPerEtaBinRP(binnedWEta2p1n1nRP);
+  fQCA->SetFour1n1n1n1nWPerEtaBinRP(binnedWEta4p1n1n1n1nRP);
+  
+  
+  
+  
+  
+  
+  
   fQCA->SetDirectCorrelations(DirectCorrelations);
  
   fQCA->Finish();
@@ -319,7 +383,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
  }
  else
  {
-  cout<<" WARNING: histogram list pointer is empty (QC, Task::T)"<<endl;
+  cout<<" WARNING: histogram list pointer is empty (QC, Task::Terminate())"<<endl;
   cout<<endl;
  }
 }
