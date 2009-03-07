@@ -58,6 +58,7 @@ AliQCumulantsFunctions::AliQCumulantsFunctions():
  fAvMult(NULL),
  fQVector(NULL),
  fQCorr(NULL),
+ fQCorrW(NULL),
  fQProd(NULL),
  fDirect(NULL),
  fbinPt2p1n1nRP(NULL),
@@ -80,6 +81,25 @@ AliQCumulantsFunctions::AliQCumulantsFunctions():
  fbinEta3p2n1n1nPOI(NULL),
  fbinEta3p1n1n2nPOI(NULL),
  fbinEta4p1n1n1n1nPOI(NULL),  
+ 
+ 
+ 
+ fbinWPt2p1n1nPOI(NULL),
+ fbinWPt2p2n2nPOI(NULL),
+ fbinWPt3p2n1n1nPOI(NULL),
+ fbinWPt3p1n1n2nPOI(NULL),
+ fbinWPt4p1n1n1n1nPOI(NULL),
+ 
+ fbinWEta2p1n1nPOI(NULL),
+ fbinWEta4p1n1n1n1nPOI(NULL),
+ 
+ fbinWPt2p1n1nRP(NULL),
+ fbinWPt4p1n1n1n1nRP(NULL),
+  
+ fbinWEta2p1n1nRP(NULL),
+ fbinWEta4p1n1n1n1nRP(NULL),
+ 
+ 
  fch2nd(NULL),//ch = common histogram (control)
  fch4th(NULL),
  fch6th(NULL),
@@ -97,7 +117,13 @@ AliQCumulantsFunctions::~AliQCumulantsFunctions()
  //destructor
 }
 
-AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, AliFlowCommonHist *ch2nd, AliFlowCommonHist *ch4th, AliFlowCommonHist *ch6th, AliFlowCommonHist *ch8th, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QCorrW, TProfile *QProd, TProfile *Direct, TProfile *binPt2p1n1nRP, TProfile *binPt2p2n2nRP, TProfile *binPt3p2n1n1nRP, TProfile *binPt3p1n1n2nRP, TProfile *binPt4p1n1n1n1nRP, TProfile *binEta2p1n1nRP, TProfile *binEta2p2n2nRP, TProfile *binEta3p2n1n1nRP, TProfile *binEta3p1n1n2nRP, TProfile *binEta4p1n1n1n1nRP, TProfile *binPt2p1n1nPOI, TProfile *binPt2p2n2nPOI, TProfile *binPt3p2n1n1nPOI, TProfile *binPt3p1n1n2nPOI, TProfile *binPt4p1n1n1n1nPOI, TProfile *binEta2p1n1nPOI, TProfile *binEta2p2n2nPOI, TProfile *binEta3p2n1n1nPOI, TProfile *binEta3p1n1n2nPOI, TProfile *binEta4p1n1n1n1nPOI, TProfile *binWPt2p1n1nPOI, TProfile *binWPt2p2n2nPOI, TProfile *binWPt3p2n1n1nPOI, TProfile *binWPt3p1n1n2nPOI, TProfile *binWPt4p1n1n1n1nPOI, 
+
+ TProfile *binWEta2p1n1nPOI, TProfile *binWEta4p1n1n1n1nPOI,  TProfile *binWPt2p1n1nRP, TProfile *binWPt4p1n1n1n1nRP,  TProfile *binWEta2p1n1nRP, TProfile *binWEta4p1n1n1n1nRP,
+
+
+ 
+   AliFlowCommonHist *ch2nd, AliFlowCommonHist *ch4th, AliFlowCommonHist *ch6th, AliFlowCommonHist *ch8th, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntRes(intRes),
  fDiffRes2nd(diffRes2nd),
  fDiffRes4th(diffRes4th),
@@ -105,6 +131,7 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
  fAvMult(AvMult),
  fQVector(QVector),
  fQCorr(QCorr),
+ fQCorrW(QCorrW),
  fQProd(QProd),
  fDirect(Direct),
  fbinPt2p1n1nRP(binPt2p1n1nRP),
@@ -127,6 +154,25 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
  fbinEta3p2n1n1nPOI(binEta3p2n1n1nPOI),
  fbinEta3p1n1n2nPOI(binEta3p1n1n2nPOI),
  fbinEta4p1n1n1n1nPOI(binEta4p1n1n1n1nPOI), 
+ 
+ 
+ 
+ fbinWPt2p1n1nPOI(binWPt2p1n1nPOI),
+ fbinWPt2p2n2nPOI(binWPt2p2n2nPOI),
+ fbinWPt3p2n1n1nPOI(binWPt3p2n1n1nPOI),
+ fbinWPt3p1n1n2nPOI(binWPt3p1n1n2nPOI),
+ fbinWPt4p1n1n1n1nPOI(binWPt4p1n1n1n1nPOI),
+ 
+ fbinWEta2p1n1nPOI(binWEta2p1n1nPOI),
+ fbinWEta4p1n1n1n1nPOI(binWEta4p1n1n1n1nPOI),
+ 
+ fbinWPt2p1n1nRP(binWPt2p1n1nRP),
+ fbinWPt4p1n1n1n1nRP(binWPt4p1n1n1n1nRP),
+  
+ fbinWEta2p1n1nRP(binWEta2p1n1nRP),
+ fbinWEta4p1n1n1n1nRP(binWEta4p1n1n1n1nRP),
+ 
+ 
  fch2nd(ch2nd),
  fch4th(ch4th),
  fch6th(ch6th),
@@ -155,12 +201,18 @@ void AliQCumulantsFunctions::Calculate()
  //number of events
  Double_t nEvts = fAvMult->GetBinEntries(1);
  
- //2-, 4- and 6-particle azimuthal correlation:
+ //2-, 4-, 6- and 8-particle azimuthal correlation:
  Double_t two   = fQCorr->GetBinContent(1);  //<<2>>_{n|n}
  Double_t four  = fQCorr->GetBinContent(11); //<<4>>_{n,n|n,n}
  Double_t six   = fQCorr->GetBinContent(24); //<<6>>_{n,n,n|n,n,n}
  Double_t eight = fQCorr->GetBinContent(31); //<<8>>_{n,n,n,n|n,n,n,n}
-  
+ 
+ // weighted 2-, 4-, 6- and 8-particle azimuthal correlation:
+ Double_t twoW   = fQCorrW->GetBinContent(1);  //<<2>>_{n|n}
+ Double_t fourW  = fQCorrW->GetBinContent(21); //<<4>>_{n,n|n,n}
+ //Double_t sixW   = fQCorr->GetBinContent(24); //<<6>>_{n,n,n|n,n,n}
+ //Double_t eightW = fQCorr->GetBinContent(31); //<<8>>_{n,n,n,n|n,n,n,n}
+
  //errors of 2-, 4- and 6-particle azimuthal correlation:
  Double_t twoErr   = fQCorr->GetBinError(1);  //sigma_{<<2>>_{n|n}} 
  Double_t fourErr  = fQCorr->GetBinError(11); //sigma_{<<4>>_{n,n|n,n}} 
@@ -183,10 +235,10 @@ void AliQCumulantsFunctions::Calculate()
  //fCovar->SetBinContent(6,cov68); 
  
  //2nd, 4th and 6th order Q-cumulant and theirs errors:
- Double_t secondOrderQCumulant = two;                //c_n{2} 
+ Double_t secondOrderQCumulant = twoW;                //c_n{2} 
  Double_t secondOrderQCumulantError = twoErr;        //sigma_{c_n{2}}
   
- Double_t fourthOrderQCumulant = four-2.*pow(two,2.);//c_n{4}
+ Double_t fourthOrderQCumulant = fourW-2.*pow(twoW,2.);//c_n{4}
  Double_t fourthOrderQCumulantError = 0.;            //sigma_{c_n{4}}
  
  if(16.*pow(two,2.)*pow(twoErr,2.)+pow(fourErr,2.)-8.*two*cov24>0.)
@@ -269,6 +321,7 @@ void AliQCumulantsFunctions::Calculate()
  
 
 
+
 //---------------------------------------------------------------------------------------------------------
 //differential flow (RP)
 Int_t nBinsPtRP = fbinPt2p1n1nRP->GetNbinsX();
@@ -288,7 +341,10 @@ for(Int_t bb=1;bb<nBinsPtRP+1;bb++)
  {
   //cout<<"bin = "<<bb<<" : "<<(fch2nd->GetHistPtDiff())->GetBinContent(bb)<<endl;
   //cout<<endl;
-  secondOrderQCumulantDiffFlowPtRP = fbinPt2p1n1nRP->GetBinContent(bb);
+  secondOrderQCumulantDiffFlowPtRP = fbinPt2p1n1nRP->GetBinContent(bb); // without weights
+ 
+  //secondOrderQCumulantDiffFlowPtRP = fbinWPt2p1n1nRP->GetBinContent(bb); // with weights
+   
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlowPtRP/vn2);
   //common histogram:
   fchr2nd->FillDifferentialFlowPtRP(bb,secondOrderQCumulantDiffFlowPtRP/vn2, 0.);//to be improved (errors) && bb or bb+1
@@ -303,7 +359,8 @@ for(Int_t bb=1;bb<nBinsPtRP+1;bb++)
  //QC{4]
  if(fbinPt4p1n1n1n1nRP->GetBinEntries(bb)>0.&&vn4!=0.)
  {
-  fourthOrderQCumulantDiffFlowPtRP = fbinPt4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinPt2p1n1nRP->GetBinContent(bb)*pow(vn2,2.);
+  fourthOrderQCumulantDiffFlowPtRP = fbinPt4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinPt2p1n1nRP->GetBinContent(bb)*pow(vn2,2.); // without weights
+  //fourthOrderQCumulantDiffFlowPtRP = fbinWPt4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinWPt2p1n1nRP->GetBinContent(bb)*pow(vn2,2.); // with weights
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlowPtRP/pow(vn4,3.));
   //common histogram:
   fchr4th->FillDifferentialFlowPtRP(bb,-1.*fourthOrderQCumulantDiffFlowPtRP/pow(vn4,3.), 0.);//to be improved (errors)
@@ -360,21 +417,26 @@ for(Int_t bb=1;bb<nBinsEtaRP+1;bb++)
 {
  if(fbinEta2p1n1nRP->GetBinEntries(bb)>0.&&vn2!=0)
  {
-  secondOrderQCumulantDiffFlowEtaRP = fbinEta2p1n1nRP->GetBinContent(bb);
+  secondOrderQCumulantDiffFlowEtaRP = fbinEta2p1n1nRP->GetBinContent(bb); // without weights
+  //secondOrderQCumulantDiffFlowEtaRP = fbinWEta2p1n1nRP->GetBinContent(bb); // with weights
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlowEtaRP/vn2);
   //common histogram:
   fchr2nd->FillDifferentialFlowEtaRP(bb,secondOrderQCumulantDiffFlowEtaRP/vn2, 0.);//to be improved (errors)
  }
  if(fbinEta4p1n1n1n1nRP->GetBinEntries(bb)>0.&&vn4!=0.)
  {
-  fourthOrderQCumulantDiffFlowEtaRP = fbinEta4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinEta2p1n1nRP->GetBinContent(bb)*pow(vn2,2.);
+  fourthOrderQCumulantDiffFlowEtaRP = fbinEta4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinEta2p1n1nRP->GetBinContent(bb)*pow(vn2,2.); // without weights
+  //fourthOrderQCumulantDiffFlowEtaRP = fbinWEta4p1n1n1n1nRP->GetBinContent(bb)-2.*fbinWEta2p1n1nRP->GetBinContent(bb)*pow(vn2,2.); // with weights
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlowEtaRP/pow(vn4,3.));
   //common histogram:
   fchr4th->FillDifferentialFlowEtaRP(bb,-1.*fourthOrderQCumulantDiffFlowEtaRP/pow(vn4,3.), 0.);//to be improved (errors)
  }
 }    
 //---------------------------------------------------------------------------------------------------       
-        
+     
+     
+           
+                 
         
         
                       
@@ -393,11 +455,14 @@ Double_t dVn4thPOI=0.,dSd4thPOI=0.,dDiffvn4thPOI=0.,dYield4thPOI=0.,dSum4thPOI=0
 for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
 {
  //QC{2}
- if(fbinPt2p1n1nPOI->GetBinEntries(bb)>0.&&vn2!=0)
+ if(fbinWPt2p1n1nPOI->GetBinEntries(bb)>0.&&vn2!=0)
  {
   //cout<<"bin = "<<bb<<" : "<<(fch2nd->GetHistPtDiff())->GetBinContent(bb)<<endl;
   //cout<<endl;
-  secondOrderQCumulantDiffFlowPtPOI = fbinPt2p1n1nPOI->GetBinContent(bb);
+  //secondOrderQCumulantDiffFlowPtPOI = fbinPt2p1n1nPOI->GetBinContent(bb); // without weights
+  
+  
+  secondOrderQCumulantDiffFlowPtPOI = fbinWPt2p1n1nPOI->GetBinContent(bb); // with weights
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlowPtPOI/vn2);
   //common histogram:
   fchr2nd->FillDifferentialFlowPtPOI(bb,secondOrderQCumulantDiffFlowPtPOI/vn2, 0.);//to be improved (errors) && bb or bb+1
@@ -410,9 +475,10 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
   //-------------------------------------------------------------
  }
  //QC{4]
- if(fbinPt4p1n1n1n1nPOI->GetBinEntries(bb)>0.&&vn4!=0.)
+ if(fbinWPt4p1n1n1n1nPOI->GetBinEntries(bb)>0.&&vn4!=0.)
  {
-  fourthOrderQCumulantDiffFlowPtPOI = fbinPt4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinPt2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.);
+  //fourthOrderQCumulantDiffFlowPtPOI = fbinPt4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinPt2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.); // without weights
+  fourthOrderQCumulantDiffFlowPtPOI = fbinWPt4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinWPt2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.); // with weights
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlowPtPOI/pow(vn4,3.));
   //common histogram:
   fchr4th->FillDifferentialFlowPtPOI(bb,-1.*fourthOrderQCumulantDiffFlowPtPOI/pow(vn4,3.), 0.);//to be improved (errors)
@@ -460,27 +526,32 @@ cout<<"**************************************"<<endl;
 cout<<"**************************************"<<endl;
 cout<<endl;  
 
+
 //Eta:
 Double_t secondOrderQCumulantDiffFlowEtaPOI = 0.;
 Double_t fourthOrderQCumulantDiffFlowEtaPOI = 0.;
 
 for(Int_t bb=1;bb<nBinsEtaPOI+1;bb++)
 {
- if(fbinEta2p1n1nPOI->GetBinEntries(bb)>0.&&vn2!=0)
+ if(fbinWEta2p1n1nPOI->GetBinEntries(bb)>0.&&vn2!=0)
  {
-  secondOrderQCumulantDiffFlowEtaPOI = fbinEta2p1n1nPOI->GetBinContent(bb);
+  //secondOrderQCumulantDiffFlowEtaPOI = fbinEta2p1n1nPOI->GetBinContent(bb); // without weights
+  secondOrderQCumulantDiffFlowEtaPOI = fbinWEta2p1n1nPOI->GetBinContent(bb); // with weights
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlowEtaPOI/vn2);
   //common histogram:
   fchr2nd->FillDifferentialFlowEtaPOI(bb,secondOrderQCumulantDiffFlowEtaPOI/vn2, 0.);//to be improved (errors)
  }
- if(fbinEta4p1n1n1n1nPOI->GetBinEntries(bb)>0.&&vn4!=0.)
+ if(fbinWEta4p1n1n1n1nPOI->GetBinEntries(bb)>0.&&vn4!=0.)
  {
-  fourthOrderQCumulantDiffFlowEtaPOI = fbinEta4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinEta2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.);
+  //fourthOrderQCumulantDiffFlowEtaPOI = fbinEta4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinEta2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.); // without weights
+  fourthOrderQCumulantDiffFlowEtaPOI = fbinWEta4p1n1n1n1nPOI->GetBinContent(bb)-2.*fbinWEta2p1n1nPOI->GetBinContent(bb)*pow(vn2,2.); // with weights
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlowEtaPOI/pow(vn4,3.));
   //common histogram:
   fchr4th->FillDifferentialFlowEtaPOI(bb,-1.*fourthOrderQCumulantDiffFlowEtaPOI/pow(vn4,3.), 0.);//to be improved (errors)
  }
 }      
+
+
 
 //---------------------------------------------------------------------------------------------------------       
         
@@ -527,33 +598,41 @@ if(bNestedLoopsResults)
  cout<<endl;
  cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
  cout<<endl;
- cout<<"<2>_{n|n} from Q-vectors                = "<<fQCorr->GetBinContent(1)<<endl;
- cout<<"<2>_{n|n} from nested loops             = "<<fDirect->GetBinContent(1)<<endl;
+ cout<<"<w1 w2 cos(n*(phi1-phi2))> from Q-vectors               = "<<fQCorrW->GetBinContent(1)<<endl;
+ cout<<"<w1 w2 cos(n*(phi1-phi2))> from nested loops            = "<<fDirect->GetBinContent(1)<<endl;
  cout<<endl;
- cout<<"<2>_{2n|2n} from Q-vectors              = "<<fQCorr->GetBinContent(2)<<endl;
- cout<<"<2>_{2n|2n} from nested loops           = "<<fDirect->GetBinContent(2)<<endl;
+ cout<<"<w1^2 w2^2 cos(2n*(phi1-phi2))> from Q-vectors          = "<<fQCorrW->GetBinContent(2)<<endl;
+ cout<<"<w1^2 w2^2 cos(2n*(phi1-phi2))> from nested loops       = "<<fDirect->GetBinContent(2)<<endl;
  cout<<endl;
- cout<<"<2>_{3n|3n} from Q-vectors              = "<<fQCorr->GetBinContent(3)<<endl;
- cout<<"<2>_{3n|3n} from nested loops           = "<<fDirect->GetBinContent(3)<<endl;
+ cout<<"<w1^3 w2^3 cos(3n*(phi1-phi2))> from Q-vectors          = "<<fQCorrW->GetBinContent(3)<<endl;
+ cout<<"<w1^3 w2^3 cos(3n*(phi1-phi2))> from nested loops       = "<<fDirect->GetBinContent(3)<<endl;
  cout<<endl;
- cout<<"<2>_{4n|4n} from Q-vectors              = "<<fQCorr->GetBinContent(4)<<endl;
- cout<<"<2>_{4n|4n} from nested loops           = "<<fDirect->GetBinContent(4)<<endl;
+ cout<<"<w1^4 w2^4 cos(4n*(phi1-phi2))> from Q-vectors          = "<<fQCorrW->GetBinContent(4)<<endl;
+ cout<<"<w1^4 w2^4 cos(4n*(phi1-phi2))> from nested loops       = "<<fDirect->GetBinContent(4)<<endl;
  cout<<endl;
- cout<<"<3>_{2n,n,n} from Q-vectors             = "<<fQCorr->GetBinContent(6)<<endl;
- cout<<"<3>_{2n,n,n} from nested loops          = "<<fDirect->GetBinContent(6)<<endl;
+ cout<<"<w1^3 w2 cos(n*(phi1-phi2))> from Q-vectors             = "<<fQCorrW->GetBinContent(5)<<endl;
+ cout<<"<w1^3 w2 cos(n*(phi1-phi2))> from nested loops          = "<<fDirect->GetBinContent(5)<<endl;
  cout<<endl;
- cout<<"<3>_{3n,2n,n} from Q-vectors            = "<<fQCorr->GetBinContent(7)<<endl;
- cout<<"<3>_{3n,2n,n} from nested loops         = "<<fDirect->GetBinContent(7)<<endl;
- cout<<endl; 
+ cout<<"<w1 w2 w3^2 cos(n*(phi1-phi2))> from Q-vectors          = "<<fQCorrW->GetBinContent(6)<<endl;
+ cout<<"<w1 w2 w3^2 cos(n*(phi1-phi2))> from nested loops       = "<<fDirect->GetBinContent(6)<<endl;
+ cout<<endl;
+ cout<<"<w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))> from Q-vectors    = "<<fQCorrW->GetBinContent(11)<<endl;
+ cout<<"<w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))> from nested loops = "<<fDirect->GetBinContent(11)<<endl;
+ cout<<endl;
+ 
+ cout<<"<w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))> from Q-vectors    = "<<fQCorrW->GetBinContent(21)<<endl;
+ cout<<"<w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))> from nested loops = "<<fDirect->GetBinContent(21)<<endl;
+ cout<<endl;;
+ 
+ 
+ /*
  cout<<"<3>_{4n,2n,2n} from Q-vectors           = "<<fQCorr->GetBinContent(8)<<endl;
  cout<<"<3>_{4n,2n,2n} from nested loops        = "<<fDirect->GetBinContent(8)<<endl;
  cout<<endl;
  cout<<"<3>_{4n,3n,n} from Q-vectors            = "<<fQCorr->GetBinContent(9)<<endl;
  cout<<"<3>_{4n,3n,n} from nested loops         = "<<fDirect->GetBinContent(9)<<endl;
  cout<<endl;
- cout<<"<4>_{n,n|n,n} from Q-vectors            = "<<fQCorr->GetBinContent(11)<<endl;
- cout<<"<4>_{n,n|n,n} from nested loops         = "<<fDirect->GetBinContent(11)<<endl;
- cout<<endl;
+ 
  cout<<"<4>_{2n,n|2n,n} from Q-vectors          = "<<fQCorr->GetBinContent(12)<<endl;
  cout<<"<4>_{2n,n|2n,n} from nested loops       = "<<fDirect->GetBinContent(12)<<endl;
  cout<<endl;
@@ -619,22 +698,29 @@ if(bNestedLoopsResults)
 
  cout<<endl; 
  cout<<"nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
+ */
+ 
+ 
  cout<<"0.5 < Pt < 0.6 GeV"<<endl;                                
  cout<<endl;                                       
- cout<<"<2'>_{n|n} from Q-vectors                = "<<fbinPt2p1n1nPOI->GetBinContent(6)<<endl;
- cout<<"<2'>_{n|n} from nested loops             = "<<fDirect->GetBinContent(41)<<endl;
+ cout<<"<2'>_{n|n} from Q-vectors                = "<<fbinWPt2p1n1nPOI->GetBinContent(6)<<endl;
+ cout<<"<2'>_{n|n} from nested loops             = "<<fDirect->GetBinContent(101)<<endl;
+ cout<<endl;  
+ cout<<"<w2 w3 w4 cos(n(psi1+phi2-phi3-phi4))> from Q-vectors    = "<<fbinWPt4p1n1n1n1nPOI->GetBinContent(6)<<endl;
+ cout<<"<w2 w3 w4 cos(n(psi1+phi2-phi3-phi4))> from nested loops = "<<fDirect->GetBinContent(121)<<endl;   
+ 
+
+ 
+ /*
  cout<<endl;                                       
  cout<<"<2'>_{2n|2n} from Q-vectors              = "<<fbinPt2p2n2nPOI->GetBinContent(6)<<endl;
  cout<<"<2'>_{2n|2n} from nested loops           = "<<fDirect->GetBinContent(42)<<endl;                                        
- cout<<endl;  
- cout<<"<3'>_{2n|n,n} from Q-vectors             = "<<fbinPt3p2n1n1nPOI->GetBinContent(6)<<endl;
- cout<<"<3'>_{2n|n,n} from nested loops          = "<<fDirect->GetBinContent(46)<<endl;                   
+                 
  cout<<endl;              
  cout<<"<3'>_{n,n|2n} from Q-vectors             = "<<fbinPt3p1n1n2nPOI->GetBinContent(6)<<endl;
  cout<<"<3'>_{n,n|2n} from nested loops          = "<<fDirect->GetBinContent(47)<<endl;                                 
  cout<<endl;                                                                   
- cout<<"<4'>_{n,n|n,n} from Q-vectors            = "<<fbinPt4p1n1n1n1nPOI->GetBinContent(6)<<endl;
- cout<<"<4'>_{n,n|n,n} from nested loops         = "<<fDirect->GetBinContent(51)<<endl;                                                                                   
+                                                                                  
  cout<<endl;   
  cout<<"<5'>_{2n,n|n,n,n} from Q-vectors         = "<<endl;
  cout<<"<5'>_{2n,n|n,n,n} from nested loops      = "<<fDirect->GetBinContent(56)<<endl;                                                                                   
@@ -646,7 +732,10 @@ if(bNestedLoopsResults)
  cout<<"<7'>_{2n,n,n|n,n,n,n} from nested loops  = "<<fDirect->GetBinContent(66)<<endl;                                                                                   
  cout<<endl;         
  cout<<"<8'>_{n,n,n,n|n,n,n,n} from Q-vectors    = "<<endl;
- cout<<"<8'>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirect->GetBinContent(71)<<endl;                                                                                   
+ cout<<"<8'>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirect->GetBinContent(71)<<endl;       
+ 
+ */              
+                                                                                                                                                                                                                                                                                                     
  cout<<endl;   
 }//end of if(bNestedLoopsResults)                                              
 

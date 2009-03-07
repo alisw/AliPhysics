@@ -44,6 +44,8 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithQCumulants.h"
 #include "AliQCumulantsFunctions.h"
+#include "TArrayD.h"
+
 
 #include "TRandom.h"
 
@@ -79,6 +81,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fQvectorForEachEventX(NULL),//to be removed
  fQvectorForEachEventY(NULL),//to be removed
  fQCorrelations(NULL),
+ fQCorrelationsW(NULL),
  fQProduct(NULL),
  fDirectCorrelations(NULL),
  fPtReq1nRP(NULL),
@@ -129,6 +132,29 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f3PerEtaBin2n1n1nPOI(NULL),
  f3PerEtaBin1n1n2nPOI(NULL),
  f4PerEtaBin1n1n1n1nPOI(NULL), 
+ 
+ 
+ 
+ 
+ f2WPerPtBin1n1nPOI(NULL),
+ f2WPerPtBin2n2nPOI(NULL),
+ f3WPerPtBin2n1n1nPOI(NULL),
+ f3WPerPtBin1n1n2nPOI(NULL),
+ f4WPerPtBin1n1n1n1nPOI(NULL),
+ 
+ f2WPerEtaBin1n1nPOI(NULL),
+ f4WPerEtaBin1n1n1n1nPOI(NULL),
+ 
+ f2WPerPtBin1n1nRP(NULL),
+ f4WPerPtBin1n1n1n1nRP(NULL),
+ 
+ f2WPerEtaBin1n1nRP(NULL),
+ f4WPerEtaBin1n1n1n1nRP(NULL),
+ 
+ 
+ 
+ 
+ 
  fCommonHists2nd(NULL),
  fCommonHists4th(NULL),
  fCommonHists6th(NULL),
@@ -200,7 +226,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  //final results for integrated flow from Q-cumulants
  fIntFlowResultsQC = new TH1D("fIntFlowResultsQC","Integrated Flow from Q-cumulants",4,0,4);
  //fIntFlowResults->SetXTitle("");
- //fIntFlowResultsQC->SetYTitle("Integrated Flow");
+ //fIntFlowResultsQC->SetYTitle("IntegFALSrated Flow");
  fIntFlowResultsQC->SetLabelSize(0.06);
  //fIntFlowResultsQC->SetTickLength(1);
  fIntFlowResultsQC->SetMarkerStyle(25);
@@ -291,6 +317,62 @@ void AliFlowAnalysisWithQCumulants::Init()
  
  fHistList->Add(fQCorrelations);
  
+ 
+ 
+ 
+ //weighted multi-particle correlations calculated from Q-vectors
+ fQCorrelationsW = new TProfile("fQCorrelationsW","weighted multi-particle correlations from Q-vectors",100,0,100,"s");
+ //fQCorrelationsW->SetXTitle("correlations");
+ //fQCorrelationsW->SetYTitle("");
+ fQCorrelationsW->SetTickLength(-0.01,"Y");
+ fQCorrelationsW->SetMarkerStyle(25);
+ fQCorrelationsW->SetLabelSize(0.03);
+ fQCorrelationsW->SetLabelOffset(0.01,"Y");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(1,"<w_{1}w_{2}cos(n(#phi_{1}-#phi_{2}))>");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(2,"<w_{1}^{2}w_{2}^{2}cos(2n(#phi_{1}-#phi_{2}))>");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(3,"<w_{1}^{3}w_{2}^{3}cos(3n(#phi_{1}-#phi_{2}))>");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(4,"<w_{1}^{4}w_{2}^{4}cos(4n(#phi_{1}-#phi_{2}))>");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(5,"<w_{1}^{3}w_{2}cos(n(#phi_{1}-#phi_{2}))>");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(6,"<w_{1}^{2}w_{2}w_{3}cos(n(#phi_{1}-#phi_{2}))>");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(11,"<w_{1}w_{2}w_{3}^{2}cos(n(2#phi_{1}-#phi_{2}-#phi_{3}))>");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(21,"<w_{1}w_{2}w_{3}w_{4}cos(n(#phi_{1}+#phi_{2}-#phi_{3}-#phi_{4}))>");
+ 
+ /*
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(7,"<<3>>_{3n|2n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(8,"<<3>>_{4n|2n,2n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(9,"<<3>>_{4n|3n,n}");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(11,"<<4>>_{n,n|n,n}"); 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(12,"<<4>>_{2n,n|2n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(13,"<<4>>_{2n,2n|2n,2n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(14,"<<4>>_{3n|n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(15,"<<4>>_{3n,n|3n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(16,"<<4>>_{3n,n|2n,2n}"); 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(17,"<<4>>_{4n|2n,n,n}");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(19,"<<5>>_{2n|n,n,n,n}"); 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(20,"<<5>>_{2n,2n|2n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(21,"<<5>>_{3n,n|2n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(22,"<<5>>_{4n|n,n,n,n}");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(24,"<<6>>_{n,n,n|n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(25,"<<6>>_{2n,n,n|2n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(26,"<<6>>_{2n,2n|n,n,n,n}");
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(27,"<<6>>_{3n,n|n,n,n,n}");
+ 
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(29,"<<7>>_{2n,n,n|n,n,n,n}");
+
+ (fQCorrelationsW->GetXaxis())->SetBinLabel(31,"<<8>>_{n,n,n,n|n,n,n,n}");
+ */
+ 
+ fHistList->Add(fQCorrelationsW);
+ 
+ 
+ 
+ 
  //average products
  fQProduct = new TProfile("fQProduct","average of products",6,0,6,"s");
  fQProduct->SetTickLength(-0.01,"Y");
@@ -307,8 +389,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  fQProduct->SetYTitle("");
  fHistList->Add(fQProduct);
  
- //multi-particle correlations calculated with nested loops (0..40 integrated flow; 40..80 differential flow)
- fDirectCorrelations = new TProfile("fDirectCorrelations","multi-particle correlations with nested loops",80,0,80,"s");
+ //weighted multi-particle correlations calculated with nested loops (0..100 integrated flow; 100..200 differential flow)
+ fDirectCorrelations = new TProfile("fDirectCorrelations","multi-particle correlations with nested loops",200,0,200,"s");
  fDirectCorrelations->SetXTitle("");
  fDirectCorrelations->SetYTitle("correlations");
  fHistList->Add(fDirectCorrelations);
@@ -553,6 +635,74 @@ void AliFlowAnalysisWithQCumulants::Init()
  f4PerEtaBin1n1n1n1nPOI->SetXTitle("#eta");
  fDiffFlowList->Add(f4PerEtaBin1n1n1n1nPOI);
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //f2WPerPtBin1n1nPOI
+ f2WPerPtBin1n1nPOI = new TProfile("f2WPerPtBin1n1nPOI","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f2WPerPtBin1n1nPOI->SetXTitle("#pt");
+ fDiffFlowList->Add(f2WPerPtBin1n1nPOI);
+ 
+ //f2WPerPtBin2n2nPOI
+ f2WPerPtBin2n2nPOI = new TProfile("f2WPerPtBin2n2nPOI","<2'>_{2n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f2WPerPtBin2n2nPOI->SetXTitle("#Pt");
+ fDiffFlowList->Add(f2WPerPtBin2n2nPOI);
+ 
+ //f3WPerPtBin2n1n1nPOI
+ f3WPerPtBin2n1n1nPOI = new TProfile("f3WPerPtBin2n1n1nPOI","<3'>_{2n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f3WPerPtBin2n1n1nPOI->SetXTitle("#Pt");
+ fDiffFlowList->Add(f3WPerPtBin2n1n1nPOI);
+ 
+ //f3WPerPtBin1n1n2nPOI
+ f3WPerPtBin1n1n2nPOI = new TProfile("f3WPerPtBin1n1n2POI","<3'>_{n,n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f3WPerPtBin1n1n2nPOI->SetXTitle("#Pt");
+ fDiffFlowList->Add(f3WPerPtBin1n1n2nPOI);
+ 
+ //f4WPerPtBin1n1n1n1nPOI
+ f4WPerPtBin1n1n1n1nPOI = new TProfile("f4WPerPtBin1n1n1n1nPOI","<4'>_{n,n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f4WPerPtBin1n1n1n1nPOI->SetXTitle("#Pt");
+ fDiffFlowList->Add(f4WPerPtBin1n1n1n1nPOI);
+ 
+ 
+ //f2WPerEtaBin1n1nPOI
+ f2WPerEtaBin1n1nPOI = new TProfile("f2WPerEtaBin1n1nPOI","<2'>_{n|n}",fnBinsEta,fEtaMin,fEtaMax,"s");
+ f2WPerEtaBin1n1nPOI->SetXTitle("#eta");
+ fDiffFlowList->Add(f2WPerEtaBin1n1nPOI);
+ 
+ //f4WPerEtaBin1n1n1n1nPOI
+ f4WPerEtaBin1n1n1n1nPOI = new TProfile("f4WPerEtaBin1n1n1n1nPOI","<4'>_{n,n|n,n}",fnBinsEta,fEtaMin,fEtaMax,"s");
+ f4WPerEtaBin1n1n1n1nPOI->SetXTitle("#eta");
+ fDiffFlowList->Add(f4WPerEtaBin1n1n1n1nPOI);
+ 
+ 
+ //f2WPerPtBin1n1nRP
+ f2WPerPtBin1n1nRP = new TProfile("f2WPerPtBin1n1nRP","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f2WPerPtBin1n1nRP->SetXTitle("#pt");
+ fDiffFlowList->Add(f2WPerPtBin1n1nRP);
+ 
+ //f4WPerPtBin1n1n1n1nRP
+ f4WPerPtBin1n1n1n1nRP = new TProfile("f4WPerPtBin1n1n1n1nRP","<4'>_{n,n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
+ f4WPerPtBin1n1n1n1nRP->SetXTitle("#Pt");
+ fDiffFlowList->Add(f4WPerPtBin1n1n1n1nRP);
+ 
+ 
+ //f2WPerEtaBin1n1nRP
+ f2WPerEtaBin1n1nRP = new TProfile("f2WPerEtaBin1n1nRP","<2'>_{n|n}",fnBinsEta,fEtaMin,fEtaMax,"s");
+ f2WPerEtaBin1n1nRP->SetXTitle("#eta");
+ fDiffFlowList->Add(f2WPerEtaBin1n1nRP);
+ 
+ //f4WPerEtaBin1n1n1n1nRP
+ f4WPerEtaBin1n1n1n1nRP = new TProfile("f4WPerEtaBin1n1n1n1nRP","<4'>_{n,n|n,n}",fnBinsEta,fEtaMin,fEtaMax,"s");
+ f4WPerEtaBin1n1n1n1nRP->SetXTitle("#eta");
+ fDiffFlowList->Add(f4WPerEtaBin1n1n1n1nRP);
+ 
+ 
+ 
+ 
  //common control histogram (2nd order)
  fCommonHists2nd = new AliFlowCommonHist("AliFlowCommonHist2ndOrderQC");
  fHistList->Add(fCommonHists2nd);  
@@ -627,112 +777,29 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  Int_t n = 2; // int flow harmonic (to be improved)
  
- Double_t dPhi = 0.;
- Double_t dPt  = 0.;
- Double_t dEta = 0.;
- 
- Int_t nBinsPhi = 0;
-
  //needed for debugging: (to be improved - add explanation here) 
  //Bool_t bNestedLoops=kTRUE;
  //if(!(bNestedLoops)||(nPrim>0&&nPrim<12))
  //{
- //if(nPrim>0&&nPrim<12)
+ //if(nPrim>0&&nPrim<10)
  //{
  
  
-  
-    
- //---------------------------------------------------------------------------------------------------------
- // weights:
- Bool_t useWeights = fUsePhiWeights||fUsePtWeights||fUseEtaWeights;
- 
- TH1F *phiWeights = NULL; // histogram with phi weights
- TH1D *ptWeights  = NULL; // histogram with pt weights
- TH1D *etaWeights = NULL; // histogram with eta weights
-
- // to be improved: will in general weights be different for Q-vectors evaluated in different harmonics ???
- Double_t wPhi = 1.; // phi weight
- Double_t wPt  = 1.; // pt weight
- Double_t wEta = 1.; // eta weight
- 
- Double_t dSumOfWeights         = 0.;  
- Double_t dSumOfWeightsToPower2 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 2)
- Double_t dSumOfWeightsToPower3 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 3)
- Double_t dSumOfWeightsToPower4 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 4)
- Double_t dSumOfWeightsToPower5 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 5)
- Double_t dSumOfWeightsToPower6 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 6)
- Double_t dSumOfWeightsToPower7 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 7)
- Double_t dSumOfWeightsToPower8 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 8) 
-   
- if(useWeights)
- {
-  if(!fWeightsList)
-  {
-   cout<<" WARNING: fWeightsList is NULL pointer. "<<endl;
-   exit(0);
-  }
-  if(fUsePhiWeights) 
-  {
-   phiWeights = dynamic_cast<TH1F *>(fWeightsList->FindObject("phi_weights"));
-   if(!phiWeights)
-   {
-    cout<<" WARNING: couldn't access the histogram with phi weights. "<<endl;
-    exit(0);
-   } 
-  } 
-  if(fUsePtWeights) 
-  { 
-   ptWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("pt_weights"));
-   if(!ptWeights) 
-   {
-    cout<<" WARNING: couldn't access the histogram with pt weights. "<<endl;
-    exit(0);
-   } 
-  } 
-  if(fUseEtaWeights) 
-  {
-   etaWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("eta_weights"));
-   if(!etaWeights) 
-   {
-    cout<<" WARNING: couldn't access the histogram with eta weights. "<<endl;
-    exit(0);
-   }
-  } 
- } 
- //---------------------------------------------------------------------------------------------------------
-
- 
-  
-   
-     
  
  //---------------------------------------------------------------------------------------------------------
  // non-weighted and weighted Q-vectors of an event built-up from RP particles evaluated in harmonics n, 2n, 3n and 4n:
  AliFlowVector afvQvector1n, afvQvector2n, afvQvector3n, afvQvector4n;
- AliFlowVector afvQvector1nWeighted;
 
  // non-weighted Q-vector in harmonic n: 
  afvQvector1n.Set(0.,0.);
  afvQvector1n.SetMult(0);
  afvQvector1n = anEvent->GetQ(1*n); 
-
- // weighted Q-vector in harmonic n:   
- afvQvector1nWeighted = anEvent->GetQ(1*n,fWeightsList,fUsePhiWeights,fUsePtWeights,fUseEtaWeights);
- dSumOfWeights = afvQvector1nWeighted.GetMult(); // to be improved (the name of this method)
- dSumOfWeightsToPower2 = afvQvector1nWeighted.GetSumOfWeightsToPower2();
- dSumOfWeightsToPower3 = afvQvector1nWeighted.GetSumOfWeightsToPower3();
- dSumOfWeightsToPower4 = afvQvector1nWeighted.GetSumOfWeightsToPower4();
- dSumOfWeightsToPower5 = afvQvector1nWeighted.GetSumOfWeightsToPower5();
- dSumOfWeightsToPower6 = afvQvector1nWeighted.GetSumOfWeightsToPower6();
- dSumOfWeightsToPower7 = afvQvector1nWeighted.GetSumOfWeightsToPower7();
- dSumOfWeightsToPower8 = afvQvector1nWeighted.GetSumOfWeightsToPower8();
  
  // non-weighted Q-vector in harmonic 2n: 
  afvQvector2n.Set(0.,0.);
  afvQvector2n.SetMult(0);
  afvQvector2n = anEvent->GetQ(2*n); // to be improved: weights   
-                      
+          
  // non-weighted Q-vector in harmonic 3n:                                                                 
  afvQvector3n.Set(0.,0.);
  afvQvector3n.SetMult(0);
@@ -855,30 +922,25 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // 2-particle
  Double_t two1n1n = 0., two2n2n = 0., two3n3n = 0., two4n4n = 0.; 
  
- if(nRP>1)
+ if(dMult>1)
  {
   //fill the common control histogram (2nd order): 
   fCommonHists2nd->FillControlHistograms(anEvent); 
   
-  if(pow(dSumOfWeights,2.)-dSumOfWeightsToPower2 != 0)
-  {
-   two1n1n = (pow(afvQvector1nWeighted.Mod(),2.)-dSumOfWeightsToPower2)/(pow(dSumOfWeights,2.)-dSumOfWeightsToPower2); // <2>_{n|n} = <cos(n*(phi1-phi2))>
-  }
- 
-  // to be improved: Eqs. with weights needed for two2n2n, two3n3n and two4n4n 
+  two1n1n = (pow(afvQvector1n.Mod(),2.)-dMult)/(dMult*(dMult-1.)); // <2>_{n|n} = <cos(n*(phi1-phi2))>
   two2n2n = (pow(afvQvector2n.Mod(),2.)-dMult)/(dMult*(dMult-1.)); // <2>_{2n|2n} = <cos(2n*(phi1-phi2))>
   two3n3n = (pow(afvQvector3n.Mod(),2.)-dMult)/(dMult*(dMult-1.)); // <2>_{3n|3n} = <cos(3n*(phi1-phi2))>
   two4n4n = (pow(afvQvector4n.Mod(),2.)-dMult)/(dMult*(dMult-1.)); // <2>_{4n|4n} = <cos(4n*(phi1-phi2))>
     
-  fQCorrelations->Fill(0.,two1n1n,pow(dSumOfWeights,2.)-dSumOfWeightsToPower2); // OK    
-  fQCorrelations->Fill(1.,two2n2n,dMult*(dMult-1.)); // to be improved
-  fQCorrelations->Fill(2.,two3n3n,dMult*(dMult-1.)); // to be improved
-  fQCorrelations->Fill(3.,two4n4n,dMult*(dMult-1.)); // to be improved
+  fQCorrelations->Fill(0.,two1n1n,dMult*(dMult-1.));  
+  fQCorrelations->Fill(1.,two2n2n,dMult*(dMult-1.)); 
+  fQCorrelations->Fill(2.,two3n3n,dMult*(dMult-1.)); 
+  fQCorrelations->Fill(3.,two4n4n,dMult*(dMult-1.)); 
   
-  f2pDistribution->Fill(two1n1n,pow(dSumOfWeights,2.)-dSumOfWeightsToPower2); // OK
+  f2pDistribution->Fill(two1n1n,dMult*(dMult-1.)); 
  }
  
- //3-particle
+ // 3-particle
  Double_t three2n1n1n=0., three3n2n1n=0., three4n2n2n=0., three4n3n1n=0.;
  if(dMult>2)
  {
@@ -1009,17 +1071,359 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 
+ //---------------------------------------------------------------------------------------------------------
+ // weights:
+ Bool_t useWeights = fUsePhiWeights||fUsePtWeights||fUseEtaWeights;
+
+ TH1F *phiWeights = NULL; // histogram with phi weights
+ TH1D *ptWeights  = NULL; // histogram with pt weights
+ TH1D *etaWeights = NULL; // histogram with eta weights
+   
+ if(useWeights)
+ {
+  if(!fWeightsList)
+  {
+   cout<<" WARNING: fWeightsList is NULL pointer. "<<endl;
+   exit(0);
+  }
+  if(fUsePhiWeights) 
+  {
+   phiWeights = dynamic_cast<TH1F *>(fWeightsList->FindObject("phi_weights"));
+   if(!phiWeights)
+   {
+    cout<<" WARNING: couldn't access the histogram with phi weights. "<<endl;
+    exit(0);
+   } 
+  } 
+  if(fUsePtWeights) 
+  { 
+   ptWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("pt_weights"));
+   if(!ptWeights) 
+   {
+    cout<<" WARNING: couldn't access the histogram with pt weights. "<<endl;
+    exit(0);
+   } 
+  } 
+  if(fUseEtaWeights) 
+  {
+   etaWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("eta_weights"));
+   if(!etaWeights) 
+   {
+    cout<<" WARNING: couldn't access the histogram with eta weights. "<<endl;
+    exit(0);
+   }
+  } 
+ } 
+  
+ Int_t nBinsPhi = 0;
+ 
+ Double_t dBinWidthPt=0.;
+ Double_t dPtMin=0.;
+ Double_t dBinWidthEta=0.;
+ Double_t dEtaMin=0.;
+ 
+ if(fWeightsList)
+  {
+   if(fUsePhiWeights)
+   {
+    phiWeights = dynamic_cast<TH1F *>(fWeightsList->FindObject("phi_weights"));
+    if(phiWeights) nBinsPhi = phiWeights->GetNbinsX();
+   }          
+   if(fUsePtWeights)
+   {
+    ptWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("pt_weights"));
+    if(ptWeights)
+    {
+     dBinWidthPt = ptWeights->GetBinWidth(1); // assuming that all bins have the same width
+     dPtMin = (ptWeights->GetXaxis())->GetXmin();
+    } 
+   }       
+   if(fUseEtaWeights)
+   {
+    etaWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("eta_weights"));
+    if(etaWeights)
+    {
+     dBinWidthEta = etaWeights->GetBinWidth(1); // assuming that all bins have the same width
+     dEtaMin = (etaWeights->GetXaxis())->GetXmin();
+    } 
+   }          
+  } // end of if(weightsList)
+ 
+ Double_t wPhi = 1.; // phi weight
+ Double_t wPt  = 1.; // pt weight
+ Double_t wEta = 1.; // eta weight
+ 
+ Double_t dPhi = 0.;
+ Double_t dPt  = 0.;
+ Double_t dEta = 0.;
+
+ 
+ //..................................................................................
+ // variables I need to calculate in loop bellow:
+ Double_t dQnkX[4][8] = {{0.}}; // sum_{i=1}^{M} w_i^k cos(n phi_i)
+ Double_t dQnkY[4][8] = {{0.}}; // sum_{i=1}^{M} w_i^k sin(n phi_i)
+ 
+ Double_t dSnk[4][8] = {{0.}}; //(sum_{i=1}^{M} w_i^k)^n
+ 
+ //Ms
+
+ //..................................................................................
+
+ 
+ 
+  for(Int_t i=0;i<nPrim;i++) // loop over all particles
+  { 
+   fTrack=anEvent->GetTrack(i);   
+   if(fTrack)
+   {
+    if(fTrack->UseForIntegratedFlow()) 
+    {
+     dPhi = fTrack->Phi();
+     dPt  = fTrack->Pt();
+     dEta = fTrack->Eta();
+     
+     // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
+     if(phiWeights && nBinsPhi)
+     {
+      wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+     }
+     // determine v'(pt) weight:    
+     if(ptWeights && dBinWidthPt)
+     {
+      wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
+     }            
+     // determine v'(eta) weight:    
+     if(etaWeights && dBinWidthEta)
+     {
+      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
+     } 
+
+     // (Q_{n,k})_x, (Q_{n,k})_x and S_{n,k}
+     for(Int_t nn=0;nn<4;nn++)
+     {
+      for(Int_t k=0;k<8;k++)
+      {
+       dQnkX[nn][k]+=pow(wPhi*wPt*wEta,k+1)*TMath::Cos(2*(nn+1)*dPhi);
+       dQnkY[nn][k]+=pow(wPhi*wPt*wEta,k+1)*TMath::Sin(2*(nn+1)*dPhi);
+       dSnk[nn][k]+=pow(wPhi*wPt*wEta,k+1);
+      } 
+     }
+     
+     
+    } // end of if (pTrack->UseForIntegratedFlow())
+   } // end of if (pTrack)
+   else {cerr << "no particle!!!"<<endl;}
+  } // loop over particles
+  
+  for(Int_t nn=0;nn<4;nn++)
+  {
+   for(Int_t k=0;k<8;k++)
+   {
+    dSnk[nn][k]=pow(dSnk[nn][k],nn+1);
+   }  
+  }
+  
+ 
+ //---------------------------------------------------------------------------------------------------------
+
+ 
+ 
+ 
+ // Ms
+ //..................................................................................
+ Double_t dM11 = dSnk[1][0]-dSnk[0][1]; // dM11 = sum_{i,j=1,i!=j}^M w_i w_j
+ Double_t dM22 = dSnk[1][1]-dSnk[0][3]; // dM22 = sum_{i,j=1,i!=j}^M w_i^2 w_j^2
+ Double_t dM33 = dSnk[1][2]-dSnk[0][5]; // dM33 = sum_{i,j=1,i!=j}^M w_i^3 w_j^3
+ Double_t dM44 = dSnk[1][3]-dSnk[0][7]; // dM44 = sum_{i,j=1,i!=j}^M w_i^4 w_j^4
+ Double_t dM31 = dSnk[0][2]*dSnk[0][0]-dSnk[0][3]; // dM31 = sum_{i,j=1,i!=j}^M w_i^3 w_j
+ Double_t dM211 = dSnk[0][1]*dSnk[1][0]-2.*dSnk[0][2]*dSnk[0][0]-dSnk[1][1]+2.*dSnk[0][3]; // dM211 = sum_{i,j,k=1,i!=j!=k}^M w_i^2 w_j w_k
+ Double_t dM1111 = dSnk[3][0]-6.*dM211-4.*dM31-3.*dM22-dSnk[0][3]; // dM1111 = sum_{i,j,k,l=1,i!=j!=k!=l}^M w_i w_j w_k w_l
+ //..................................................................................
+     
+ 
+  
+
+    
+ 
+ 
+ 
+ 
+ 
+ //---------------------------------------------------------------------------------------------------------
+ //
+ //                                        ***********************************************
+ //                                        **** weighted multi-particle correlations: ****
+ //                                        ***********************************************
+ //
+ // Remark 1: weighted multi-particle correlations calculated with Q-vectors are stored in fQCorrelationsW.
+ // Remark 2: binning of fQCorrelationsW is organized as follows: 
+ 
+ // binning
+ //..............................................................................................
+ // 1st bin: weighted <2>_{n|n}   = <w1   w2   cos( n*(phi1-phi2))>
+ // 2nd bin: weighted <2>_{2n|2n} = <w1^2 w2^2 cos(2n*(phi1-phi2))>
+ // 3rd bin: weighted <2>_{3n|3n} = <w1^3 w2^3 cos(3n*(phi1-phi2))>
+ // 4th bin: weighted <2>_{4n|4n} = <w1^4 w2^4 cos(4n*(phi1-phi2))>
+ // 5th bin: weighted <2>_{n|n} = <w1^3 w2 cos(n*(phi1-phi2))>
+ // 6th bin: weighted <2>_{n|n} = <w1 w2 w3^2 cos(n*(phi1-phi2))>
+ 
+ // 11th bin: weighted <3>_{2n|n,n} = <w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))> 
+ 
+ // 21st bin: weighted <4>_{n,n|n,n} = <w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))>
+ //..............................................................................................
+ 
+ 
+ 
+ 
+ 
+ 
+ //.............................................................................................. 
+ // weighted 2-particle correlations:
+ Double_t two1n1nW1W1=0., two2n2nW2W2=0., two3n3nW3W3=0., two4n4nW4W4=0., two1n1nW3W1=0., two1n1nW2W1W1=0.;
+ 
+ if(nRP>1) // nRP = number of particles used to determine the reaction plane
+ { 
+  if(dM11 != 0)
+  {
+   two1n1nW1W1 = (pow(dQnkX[0][0],2)+pow(dQnkY[0][0],2)-dSnk[0][1])/dM11; // <2>_{n|n}=<w1 w2 cos(n*(phi1-phi2))>
+   fQCorrelationsW->Fill(0.,two1n1nW1W1,dM11);
+  }
+  if(dM22 != 0)
+  {
+   two2n2nW2W2 = (pow(dQnkX[1][1],2)+pow(dQnkY[1][1],2)-dSnk[0][3])/dM22; // <2>_{2n|2n}=<w1^2 w2^2 cos(2n*(phi1-phi2))>
+   fQCorrelationsW->Fill(1.,two2n2nW2W2,dM22); 
+  }
+  if(dM33 != 0)
+  {
+   two3n3nW3W3 = (pow(dQnkX[2][2],2)+pow(dQnkY[2][2],2)-dSnk[0][5])/dM33; // <2>_{2n|2n}=<w1^3 w2^3 cos(3n*(phi1-phi2))>
+   fQCorrelationsW->Fill(2.,two3n3nW3W3,dM33);
+  }
+  if(dM44 != 0)
+  {
+   two4n4nW4W4 = (pow(dQnkX[3][3],2)+pow(dQnkY[3][3],2)-dSnk[0][7])/dM44; // <2>_{2n|2n}=<w1^4 w2^4 cos(4n*(phi1-phi2))>
+   fQCorrelationsW->Fill(3.,two4n4nW4W4,dM44);  
+  } 
+  if(dM31 != 0)
+  {
+   two1n1nW3W1 = (dQnkX[0][2]*dQnkX[0][0]+dQnkY[0][2]*dQnkY[0][0]-dSnk[0][3])/dM31; // <2>_{n|n}=<w1^3 w2 cos(n*(phi1-phi2))>
+   fQCorrelationsW->Fill(4.,two1n1nW3W1,dM31);  
+  } 
+  if(dM211 != 0)
+  {
+   two1n1nW2W1W1 = (dSnk[0][1]*dM11*two1n1nW1W1-2.*dM31*two1n1nW3W1)/dM211; // <2>_{n|n}=<w1^2 w2 w3 cos(n*(phi1-phi2))>
+   fQCorrelationsW->Fill(5.,two1n1nW2W1W1,dM211);  
+  } 
+ } // end of if(nRP>1)
+ //..............................................................................................
+
+ 
+ //..............................................................................................
+ // weighted 3-particle correlations:
+ Double_t three2n1n1nW2W1W1=0.;
+ 
+ if(nRP>2) // nRP = number of particles used to determine the reaction plane
+ { 
+  if(dM211 != 0)
+  {
+   three2n1n1nW2W1W1 = (pow(dQnkX[0][0],2.)*dQnkX[1][1]+2.*dQnkX[0][0]*dQnkY[0][0]*dQnkY[1][1]-pow(dQnkY[0][0],2.)*dQnkX[1][1]-2.*dM31*two1n1nW3W1-dM22*two2n2nW2W2-dSnk[0][3])/dM211;
+   fQCorrelationsW->Fill(10.,three2n1n1nW2W1W1,dM211);
+  } 
+ } // end of if(nRP>2) 
+ //..............................................................................................
+ 
+ 
+ 
+ //..............................................................................................
+ // weighted 4-particle correlations:
+ Double_t four1n1n1n1nW1W1W1W1=0.;
+ 
+ if(nRP>3) // nRP = number of particles used to determine the reaction plane
+ { 
+  if(dM1111 != 0)
+  {
+   four1n1n1n1nW1W1W1W1 = (pow(pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.),2) - 2.*dM211*three2n1n1nW2W1W1 - 4.*dM211*two1n1nW2W1W1 -  4.*dM31*two1n1nW3W1  -  dM22*two2n2nW2W2  -  2.*dM22 -  dSnk[0][3])/dM1111;
+   fQCorrelationsW->Fill(20.,four1n1n1n1nW1W1W1W1,dM1111);
+  } 
+ } // end of if(nRP>3) 
+ //..............................................................................................
+     
+       
+ //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  //--------------------------------------------------------------------------------------------------------- 
  // DIFFERENTIAL FLOW
  
  Double_t dQ1nx = afvQvector1n.X();
  Double_t dQ1ny = afvQvector1n.Y();
- Double_t dQ1nxW = afvQvector1nWeighted.X();
- Double_t dQ1nyW = afvQvector1nWeighted.Y();
+ Double_t dQ1nxW = dQnkX[0][0];
+ Double_t dQ1nyW = dQnkY[0][0];
  Double_t dQ2nx = afvQvector2n.X();
  Double_t dQ2ny = afvQvector2n.Y();
  
- Double_t dBinWidthPt=0.,dBinWidthEta=0.;
+ //Double_t dBinWidthPt=0.,dBinWidthEta=0.;
  if(fnBinsPt)
  { 
   dBinWidthPt=1.*(fPtMax-fPtMin)/fnBinsPt;
@@ -1038,7 +1442,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  TProfile *mPerBinPtRP = new TProfile("mPerBinPtRP","#sum_{i=1}^{m} w_{i}''",fnBinsPt,fPtMin,fPtMax,"s");
  TProfile *mPerBinEtaRP = new TProfile("mPerBinEtaRP","#sum_{i=1}^{m} w_{i}''",fnBinsEta,fEtaMin,fEtaMax,"s");
-  
+ 
  for(Int_t i=0;i<nPrim;i++) // loop over all particles
  { 
   fTrack=anEvent->GetTrack(i);
@@ -1048,7 +1452,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    dPhi = fTrack->Phi();
    dPt  = fTrack->Pt();
    dEta = fTrack->Eta();
-   // pt:
+   // pt (without weights):
    fPtReq1nRP->Fill(dPt,cos(n*dPhi),1.);
    fPtImq1nRP->Fill(dPt,sin(n*dPhi),1.);
    fPtReq2nRP->Fill(dPt,cos(2.*n*dPhi),1.);
@@ -1101,13 +1505,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   mPtRP = fPtReq1nRP->GetBinEntries(bin);          
   dSumOfWeightsUpTomPtRP = (mPerBinPtRP->GetBinContent(bin))*(mPerBinPtRP->GetBinEntries(bin));
   
-  if(mPtRP*dSumOfWeights-dSumOfWeightsUpTomPtRP)
+  if(mPtRP*dSnk[0][0]-dSumOfWeightsUpTomPtRP)
   {
    //twoDiffPt1n1nRP = (qxPtRP*dQ1nx+qyPtRP*dQ1ny-mPtRP)/(mPtRP*(dMult-1.)); // OK without weights
    //f2PerPtBin1n1nRP->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nRP,mPtRP*(dMult-1.));//<2'>_{n|n} // OK without weights
    
-   twoDiffPt1n1nRP = (qxPtRP*dQ1nxW+qyPtRP*dQ1nyW-dSumOfWeightsUpTomPtRP)/(mPtRP*dSumOfWeights-dSumOfWeightsUpTomPtRP); // OK without weights
-   f2PerPtBin1n1nRP->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nRP,mPtRP*dSumOfWeights-dSumOfWeightsUpTomPtRP);//<2'>_{n|n} // OK without weights
+   twoDiffPt1n1nRP = (qxPtRP*dQ1nxW+qyPtRP*dQ1nyW-dSumOfWeightsUpTomPtRP)/(mPtRP*dSnk[0][0]-dSumOfWeightsUpTomPtRP); // OK without weights
+   f2PerPtBin1n1nRP->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nRP,mPtRP*dSnk[0][0]-dSumOfWeightsUpTomPtRP);//<2'>_{n|n} // OK without weights
   } 
    
   if(mPtRP>0&&dMult>1)
@@ -1139,6 +1543,1194 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  mPerBinPtRP->Reset();
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ /*
+ 
+ 
+ 
+  //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //Pt POI
+ TProfile *req1nW2PrimePrimePtPOI = new TProfile("req1nW2PrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{2} cos(n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *imq1nW2PrimePrimePtPOI = new TProfile("imq1nW2PrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{2} sin(n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *req2nW1PrimePrimePtPOI = new TProfile("req2nW1PrimePrimePtPOI","#sum_{i=1}^{m''} w_{i} cos(2n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *imq2nW1PrimePrimePtPOI = new TProfile("imq2nW1PrimePrimePtPOI","#sum_{i=1}^{m''} w_{i} sin(2n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ 
+ TProfile *sumOfW1upTomPrimePrimePtPOI = new TProfile("sumOfW1upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *sumOfW2upTomPrimePrimePtPOI = new TProfile("sumOfW2upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{2}''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *sumOfW3upTomPrimePrimePtPOI = new TProfile("sumOfW3upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{3}''",fnBinsPt,fPtMin,fPtMax,"s");
+ 
+ //eta POI
+ TProfile *req1nW2PrimePrimeEtaPOI = new TProfile("req1nW2PrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{2} cos(n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *imq1nW2PrimePrimeEtaPOI = new TProfile("imq1nW2PrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{2} sin(n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *req2nW1PrimePrimeEtaPOI = new TProfile("req2nW1PrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i} cos(2n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *imq2nW1PrimePrimeEtaPOI = new TProfile("imq2nW1PrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i} sin(2n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ 
+ TProfile *sumOfW1upTomPrimePrimeEtaPOI = new TProfile("sumOfW1upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *sumOfW2upTomPrimePrimeEtaPOI = new TProfile("sumOfW2upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{2}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *sumOfW3upTomPrimePrimeEtaPOI = new TProfile("sumOfW3upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{3}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ 
+  
+ //POI:
+ //Double_t qxPrimePtPOI=0.,qyPrimePtPOI=0.,q2xPrimePtPOI=0.,q2yPrimePtPOI=0.,mPrimePtPOI=0.;//add comments for these variables (deleteMe)
+ 
+ for(Int_t i=0;i<nPrim;i++) // loop over all particles (to be improved: do the calculations for RPs and POIs in the same loop) 
+ { 
+  fTrack=anEvent->GetTrack(i);
+  if(fTrack)
+  {
+   if(fTrack->UseForDifferentialFlow()) // checking if particle is POI 
+   {
+    if(fTrack->UseForIntegratedFlow()) // checking if particle is both POI and RP 
+    {
+     // get azimuthal angle, momentum and pseudorapidity of a particle:
+     dPhi = fTrack->Phi();
+     dPt  = fTrack->Pt();
+     dEta = fTrack->Eta();
+     // phi weights:
+     if(fUsePhiWeights) 
+     {
+      nBinsPhi = phiWeights->GetNbinsX();
+      if(nBinsPhi) 
+      {
+       wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+      }
+     } 
+     // pt weights:
+     if(fUsePtWeights)
+     {          
+      if(dBinWidthPt) 
+      {
+       wPt = ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/dBinWidthPt)));
+      }
+     }             
+     // eta weights:
+     if(fUseEtaWeights)
+     {    
+      if(dBinWidthEta)
+      {
+       wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/dBinWidthEta))); 
+      }
+     }
+     // pt:
+     fPtReq1nPrimePrimePOI->Fill(dPt,cos(n*dPhi),1.); 
+     fPtImq1nPrimePrimePOI->Fill(dPt,sin(n*dPhi),1.);
+     fPtReq2nPrimePrimePOI->Fill(dPt,cos(2.*n*dPhi),1.);
+     fPtImq2nPrimePrimePOI->Fill(dPt,sin(2.*n*dPhi),1.);
+     // eta:
+     fEtaReq1nPrimePrimePOI->Fill(dEta,cos(n*dPhi),1.); 
+     fEtaImq1nPrimePrimePOI->Fill(dEta,sin(n*dPhi),1.);
+     fEtaReq2nPrimePrimePOI->Fill(dEta,cos(2.*n*dPhi),1.);
+     fEtaImq2nPrimePrimePOI->Fill(dEta,sin(2.*n*dPhi),1.);
+     // weighted pt:
+     req1nW2PrimePrimePtPOI->Fill(dPt,cos(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     imq1nW2PrimePrimePtPOI->Fill(dPt,sin(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     req2nW1PrimePrimePtPOI->Fill(dPt,cos(2.*n*dPhi),wPhi*wPt*wEta);
+     imq2nW1PrimePrimePtPOI->Fill(dPt,sin(2.*n*dPhi),wPhi*wPt*wEta);
+     sumOfW1upTomPrimePrimePtPOI->Fill(dPt,wPhi*wPt*wEta,1.);
+     sumOfW2upTomPrimePrimePtPOI->Fill(dPt,pow(wPhi*wPt*wEta,2),1.);
+     sumOfW3upTomPrimePrimePtPOI->Fill(dPt,pow(wPhi*wPt*wEta,3),1.);
+     // weighted eta:
+     req1nW2PrimePrimeEtaPOI->Fill(dEta,cos(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     imq1nW2PrimePrimeEtaPOI->Fill(dEta,sin(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     req2nW1PrimePrimeEtaPOI->Fill(dEta,cos(2.*n*dPhi),wPhi*wPt*wEta);
+     imq2nW1PrimePrimeEtaPOI->Fill(dEta,sin(2.*n*dPhi),wPhi*wPt*wEta);
+     sumOfW1upTomPrimePrimeEtaPOI->Fill(dEta,wPhi*wPt*wEta,1.);
+     sumOfW2upTomPrimePrimeEtaPOI->Fill(dEta,pow(wPhi*wPt*wEta,2),1.);
+     sumOfW3upTomPrimePrimeEtaPOI->Fill(dEta,pow(wPhi*wPt*wEta,3),1.);
+    }else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP  
+     {
+      // get azimuthal angle, momentum and pseudorapidity of a particle:
+      dPhi = fTrack->Phi();
+      dPt  = fTrack->Pt();
+      dEta = fTrack->Eta();
+      // pt:
+      fPtReq1nPrimePOI->Fill(dPt,cos(n*dPhi),1.); 
+      fPtImq1nPrimePOI->Fill(dPt,sin(n*dPhi),1.);
+      fPtReq2nPrimePOI->Fill(dPt,cos(2.*n*dPhi),1.);
+      fPtImq2nPrimePOI->Fill(dPt,sin(2.*n*dPhi),1.);
+      // eta:
+      fEtaReq1nPrimePOI->Fill(dEta,cos(n*dPhi),1.); 
+      fEtaImq1nPrimePOI->Fill(dEta,sin(n*dPhi),1.);
+      fEtaReq2nPrimePOI->Fill(dEta,cos(2.*n*dPhi),1.);
+      fEtaImq2nPrimePOI->Fill(dEta,sin(2.*n*dPhi),1.);
+     } // end of else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP 
+   } // end of if(fTrack->UseForDifferentialFlow()) // checking if particle is POI
+  } // end of if(fTrack}      
+ } // end of for(Int_t i=0;i<nPrim;i++) 
+ 
+ //Pt POI
+ //PrimePrime 
+ Double_t qxPrimePrimePtPOIHere=0.,qyPrimePrimePtPOIHere=0.,q2xPrimePrimePtPOIHere=0.,q2yPrimePrimePtPOIHere=0.;//add comments for these variable
+ Double_t qxW2PrimePrimePtPOI=0.,qyW2PrimePrimePtPOI=0.,q2xW1PrimePrimePtPOI=0.,q2yW1PrimePrimePtPOI=0.;//add comments for these variable
+ Double_t dS11mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t dS12mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t dS13mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t mPrimePrimePtPOIHere=0.; // to be improved (name)
+
+ Double_t dM1pp11PtPOI=0.; // to be improved (name)
+ Double_t dM0pp111PtPOIPtPOI=0.; // to be improved (name)
+ Double_t dM0pp12PtPOIPtPOI=0.;
+ Double_t dM2pp1PtPOIPtPOI=0.;
+ Double_t dM1pp2PtPOIPtPOI=0.;
+ Double_t dM0pp3PtPOIPtPOI=0.;
+ 
+ //Prime 
+ Double_t qxPrimePtPOIHere=0.,qyPrimePtPOIHere=0.;
+ Double_t mPrimePtPOIHere=0.;
+ Double_t dM0p111PtPOIPtPOI=0.; // to be improved (name)
+ 
+ 
+ //Eta POI
+ //PrimePrime 
+ Double_t qxPrimePrimeEtaPOIHere=0.,qyPrimePrimeEtaPOIHere=0.,q2xPrimePrimeEtaPOIHere=0.,q2yPrimePrimeEtaPOIHere=0.;//add comments for these variable
+ Double_t qxW2PrimePrimeEtaPOI=0.,qyW2PrimePrimeEtaPOI=0.,q2xW1PrimePrimeEtaPOI=0.,q2yW1PrimePrimeEtaPOI=0.;//add comments for these variable
+ Double_t dS11mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t dS12mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t dS13mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t mPrimePrimeEtaPOIHere=0.; // to be improved (name)
+
+ Double_t dM1pp11EtaPOI=0.; // to be improved (name)
+ Double_t dM0pp111PtPOIEtaPOI=0.; // to be improved (name)
+ Double_t dM0pp12PtPOIEtaPOI=0.;
+ Double_t dM2pp1PtPOIEtaPOI=0.;
+ Double_t dM1pp2PtPOIEtaPOI=0.;
+ Double_t dM0pp3PtPOIEtaPOI=0.;
+ 
+ //Prime 
+ Double_t qxPrimeEtaPOIHere=0.,qyPrimeEtaPOIHere=0.;
+ Double_t mPrimeEtaPOIHere=0.;
+ Double_t dM0p111PtPOIEtaPOI=0.; // to be improved (name)
+ 
+ 
+ 
+ 
+ 
+ for(Int_t bin=1;bin<(fnBinsPt+1);bin++) // loop over pt-bins 
+ {     
+  // q'':                    
+  qxPrimePrimePtPOIHere = (fPtReq1nPrimePrimePOI->GetBinContent(bin))*(fPtReq1nPrimePrimePOI->GetBinEntries(bin));
+  qyPrimePrimePtPOIHere = (fPtImq1nPrimePrimePOI->GetBinContent(bin))*(fPtImq1nPrimePrimePOI->GetBinEntries(bin)); 
+  q2xPrimePrimePtPOIHere = (fPtReq2nPrimePrimePOI->GetBinContent(bin))*(fPtReq2nPrimePrimePOI->GetBinEntries(bin));  
+  q2yPrimePrimePtPOIHere = (fPtImq2nPrimePrimePOI->GetBinContent(bin))*(fPtImq2nPrimePrimePOI->GetBinEntries(bin)); 
+  
+  
+  qxW2PrimePrimePtPOI = (req1nW2PrimePrimePtPOI->GetBinContent(bin))*(req1nW2PrimePrimePtPOI->GetBinEntries(bin));
+  qyW2PrimePrimePtPOI = (imq1nW2PrimePrimePtPOI->GetBinContent(bin))*(imq1nW2PrimePrimePtPOI->GetBinEntries(bin));
+  
+  q2xW1PrimePrimePtPOI = (req2nW1PrimePrimePtPOI->GetBinContent(bin))*(req2nW1PrimePrimePtPOI->GetBinEntries(bin));
+  q2yW1PrimePrimePtPOI = (imq2nW1PrimePrimePtPOI->GetBinContent(bin))*(imq2nW1PrimePrimePtPOI->GetBinEntries(bin));
+  
+  dS11mPrimePrimePtPOI = (sumOfW1upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW1upTomPrimePrimePtPOI->GetBinEntries(bin));
+  dS12mPrimePrimePtPOI = (sumOfW2upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW2upTomPrimePrimePtPOI->GetBinEntries(bin));
+  dS13mPrimePrimePtPOI = (sumOfW3upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW3upTomPrimePrimePtPOI->GetBinEntries(bin));
+
+  mPrimePrimePtPOIHere = sumOfW1upTomPrimePrimePtPOI->GetBinEntries(bin); // to be improved
+      
+  dM1pp11PtPOI=dS11mPrimePrimePtPOI*(dSnk[1][0]-dSnk[0][1])-2.*dS12mPrimePrimePtPOI*dSnk[0][0]+2.*dS13mPrimePrimePtPOI;
+  dM1pp2PtPOIPtPOI=dS11mPrimePrimePtPOI*dSnk[0][1]-dS13mPrimePrimePtPOI;
+  dM2pp1PtPOIPtPOI=dS12mPrimePrimePtPOI*dSnk[0][0]-dS13mPrimePrimePtPOI;
+  dM0pp3PtPOIPtPOI=mPrimePrimePtPOIHere*dSnk[0][2]-dS13mPrimePrimePtPOI;
+  dM0pp12PtPOIPtPOI=mPrimePrimePtPOIHere*dSnk[0][0]*dSnk[0][1]-dM2pp1PtPOIPtPOI-dM1pp2PtPOIPtPOI-dM0pp3PtPOIPtPOI-dS13mPrimePrimePtPOI;
+  dM0pp111PtPOIPtPOI=mPrimePrimePtPOIHere*dSnk[2][0]-3.*dM1pp11PtPOI-3.*dM0pp12PtPOIPtPOI-3.*dM2pp1PtPOIPtPOI-3.*dM1pp2PtPOIPtPOI-dM0pp3PtPOIPtPOI-dS13mPrimePrimePtPOI;
+  
+  // q':
+  qxPrimePtPOIHere = (fPtReq1nPrimePOI->GetBinContent(bin))*(fPtReq1nPrimePOI->GetBinEntries(bin));
+  qyPrimePtPOIHere = (fPtImq1nPrimePOI->GetBinContent(bin))*(fPtImq1nPrimePOI->GetBinEntries(bin));
+  
+  mPrimePtPOIHere = fPtReq1nPrimePOI->GetBinEntries(bin); // to be improved
+  dM0p111PtPOIPtPOI=mPrimePtPOIHere*(dSnk[2][0]-3.*dSnk[0][1]*dSnk[0][0]+2.*dSnk[0][2]);
+ 
+  // 2-p
+  Double_t two1n1nWPerPtBinPOI=0.; // the needed one
+  if(mPrimePrimePtPOIHere*dSnk[0][0]-dS11mPrimePrimePtPOI)
+  {
+   two1n1nWPerPtBinPOI = (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]-dS11mPrimePrimePtPOI)/(mPrimePrimePtPOIHere*dSnk[0][0]-dS11mPrimePrimePtPOI); 
+  
+   f2WPerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,two1n1nWPerPtBinPOI,(mPrimePrimePtPOIHere*dSnk[0][0]-dS11mPrimePrimePtPOI)); // <2'>_{n|n} 
+  }
+ 
+  // 2-p
+  Double_t two1n1nW1ppW1W1=0.; // <w1 w2 w3 cos(n(phi2-phi3))> // OK!!!
+  if(dM1pp11PtPOI)
+  {
+   two1n1nW1ppW1W1 = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*dS11mPrimePrimePtPOI-2.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0]) - dS11mPrimePrimePtPOI*dSnk[0][1]+2.*dS13mPrimePrimePtPOI)/dM1pp11PtPOI; // CORRECT !!! <w1 w2 w3 cos(n(phi2-phi3))>
+  }
+  
+  // 2-p
+  Double_t two1npp1nW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp12PtPOIPtPOI)
+  {
+   two1npp1nW1W2PtPOI = (dSnk[0][1]*(qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0])-(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-dM1pp2PtPOIPtPOI-(qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2])+dS13mPrimePrimePtPOI)/dM0pp12PtPOIPtPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1-phi2))>
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW2ppW1PtPOI=0.; // <w1^2 w2 cos(n(psi1-phi2))> // OK !!!
+  if(dM2pp1PtPOIPtPOI)
+  {
+   two1npp1nW2ppW1PtPOI = ((qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-dS13mPrimePrimePtPOI)/dM2pp1PtPOIPtPOI; // CORRECT !!! <w1^2 w2 cos(n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two2npp2nW1ppW2PtPOI=0.; // <w1 w2^2 cos(2n(psi1-phi2))> OK !!!
+  if(dM1pp2PtPOIPtPOI)
+  {
+   two2npp2nW1ppW2PtPOI = ((q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])-dS13mPrimePrimePtPOI)/dM1pp2PtPOIPtPOI; // CORRECT !!! <w1 w2^2 cos(2n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW3PtPOI=0.; // <w2^3 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp3PtPOIPtPOI)
+  {
+   two1npp1nW3PtPOI = (qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2]-dS13mPrimePrimePtPOI)/dM0pp3PtPOIPtPOI; // CORRECT !!! <w2^3 cos(n(psi1-phi2))>
+  }
+   
+  // 3-p 
+  Double_t three2npp1n1nW1ppW1W1PtPOI=0.; // <w1 w2 w3 cos(n(2psi1-phi2-phi3))> // OK!!!
+  if(dM1pp11PtPOI)
+  {
+   three2npp1n1nW1ppW1W1PtPOI = (q2xW1PrimePrimePtPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimePtPOI*dQnkX[0][0]*dQnkY[0][0]-2.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-(q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])+2.*dS13mPrimePrimePtPOI)/dM1pp11PtPOI; // CORRECT !!! <w1 w2 w3 cos(n(2psi1-phi2-phi3))> 
+  }
+  
+  // 3-p 
+  Double_t three1npp1n2nW0ppW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1+phi2-2*phi3))> // OK!!!
+  if(dM0pp12PtPOIPtPOI)
+  {
+   three1npp1n2nW0ppW1W2PtPOI = (qxPrimePrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])-(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-(q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])-(qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2])+2.*dS13mPrimePrimePtPOI)/dM0pp12PtPOIPtPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1+phi2-2.*phi3))>
+  }
+ 
+ 
+ 
+ */
+ 
+ 
+  /*
+  // 4-p RPpart
+  Double_t four1npp1n1n1nW1W1W1=0.; // <w1 w2 w3 cos(n(psi1+phi1-phi2-phi3))>
+  if(dM0pp111PtPOIPtPOI)
+  {   
+    four1npp1n1n1nW1W1W1 = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11PtPOI*two1n1nW1ppW1W1   -   dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOIPtPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOIPtPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOIPtPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOIPtPOI   -  dM1pp2PtPOIPtPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOIPtPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimePtPOI)/(dM0pp111PtPOIPtPOI);
+     
+  }
+  
+  */
+ 
+ 
+ 
+ /*
+ // 4- POIpart
+ Double_t four1npp1n1n1nW1W1W1POI=0.;
+ if(dM0p111PtPOIPtPOI>0&&mPrimePtPOIHere>0&&nRP>0)
+ {
+  four1npp1n1n1nW1W1W1POI =       (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimePtPOIHere*dQnkX[0][2]+qyPrimePtPOIHere*dQnkY[0][2])
+  
+  -  qxPrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/dM0p111PtPOIPtPOI;
+  
+  
+   
+  
+ }
+ */
+ /*
+ 
+ // 4-p RP and POI in all combinations (full, partial and no overlap)
+ Double_t four1npp1n1n1nW1W1W1PtPOIAndRPPt=0.;
+ 
+ if(dM0pp111PtPOIPtPOI+dM0p111PtPOIPtPOI)
+ {
+ four1npp1n1n1nW1W1W1PtPOIAndRPPt = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11PtPOI*two1n1nW1ppW1W1   -   dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOIPtPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOIPtPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOIPtPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOIPtPOI   -  dM1pp2PtPOIPtPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOIPtPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimePtPOI + 
+     
+     
+     +  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimePtPOIHere*dQnkX[0][2]+qyPrimePtPOIHere*dQnkY[0][2])
+  
+  -  qxPrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOIPtPOI+dM0p111PtPOIPtPOI);
+ 
+ 
+    f4WPerPtBin1n1n1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,four1npp1n1n1nW1W1W1PtPOIAndRPPt,dM0pp111PtPOIPtPOI+dM0p111PtPOIPtPOI);
+ }
+  }
+ 
+ delete req1nW2PrimePrimePtPOI;
+ delete imq1nW2PrimePrimePtPOI;
+ delete req2nW1PrimePrimePtPOI;
+ delete imq2nW1PrimePrimePtPOI;
+ delete sumOfW1upTomPrimePrimePtPOI;
+ delete sumOfW2upTomPrimePrimePtPOI;
+ delete sumOfW3upTomPrimePrimePtPOI;
+ 
+ 
+ 
+ 
+ 
+ */
+ 
+ 
+ 
+ 
+ 
+ 
+ /*
+
+ // eta POI
+ for(Int_t bin=1;bin<(fnBinsEta+1);bin++) // loop over Eta-bins 
+ {     
+  // q'':                    
+  qxPrimePrimeEtaPOIHere = (fEtaReq1nPrimePrimePOI->GetBinContent(bin))*(fEtaReq1nPrimePrimePOI->GetBinEntries(bin));
+  qyPrimePrimeEtaPOIHere = (fEtaImq1nPrimePrimePOI->GetBinContent(bin))*(fEtaImq1nPrimePrimePOI->GetBinEntries(bin)); 
+  q2xPrimePrimeEtaPOIHere = (fEtaReq2nPrimePrimePOI->GetBinContent(bin))*(fEtaReq2nPrimePrimePOI->GetBinEntries(bin));  
+  q2yPrimePrimeEtaPOIHere = (fEtaImq2nPrimePrimePOI->GetBinContent(bin))*(fEtaImq2nPrimePrimePOI->GetBinEntries(bin)); 
+  
+  
+  qxW2PrimePrimeEtaPOI = (req1nW2PrimePrimeEtaPOI->GetBinContent(bin))*(req1nW2PrimePrimeEtaPOI->GetBinEntries(bin));
+  qyW2PrimePrimeEtaPOI = (imq1nW2PrimePrimeEtaPOI->GetBinContent(bin))*(imq1nW2PrimePrimeEtaPOI->GetBinEntries(bin));
+  
+  q2xW1PrimePrimeEtaPOI = (req2nW1PrimePrimeEtaPOI->GetBinContent(bin))*(req2nW1PrimePrimeEtaPOI->GetBinEntries(bin));
+  q2yW1PrimePrimeEtaPOI = (imq2nW1PrimePrimeEtaPOI->GetBinContent(bin))*(imq2nW1PrimePrimeEtaPOI->GetBinEntries(bin));
+  
+  dS11mPrimePrimeEtaPOI = (sumOfW1upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW1upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+  dS12mPrimePrimeEtaPOI = (sumOfW2upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW2upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+  dS13mPrimePrimeEtaPOI = (sumOfW3upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW3upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+
+  mPrimePrimeEtaPOIHere = sumOfW1upTomPrimePrimeEtaPOI->GetBinEntries(bin); // to be improved
+      
+  dM1pp11EtaPOI=dS11mPrimePrimeEtaPOI*(dSnk[1][0]-dSnk[0][1])-2.*dS12mPrimePrimeEtaPOI*dSnk[0][0]+2.*dS13mPrimePrimeEtaPOI;
+  dM1pp2PtPOIEtaPOI=dS11mPrimePrimeEtaPOI*dSnk[0][1]-dS13mPrimePrimeEtaPOI;
+  dM2pp1PtPOIEtaPOI=dS12mPrimePrimeEtaPOI*dSnk[0][0]-dS13mPrimePrimeEtaPOI;
+  dM0pp3PtPOIEtaPOI=mPrimePrimeEtaPOIHere*dSnk[0][2]-dS13mPrimePrimeEtaPOI;
+  dM0pp12PtPOIEtaPOI=mPrimePrimeEtaPOIHere*dSnk[0][0]*dSnk[0][1]-dM2pp1PtPOIEtaPOI-dM1pp2PtPOIEtaPOI-dM0pp3PtPOIEtaPOI-dS13mPrimePrimeEtaPOI;
+  dM0pp111PtPOIEtaPOI=mPrimePrimeEtaPOIHere*dSnk[2][0]-3.*dM1pp11EtaPOI-3.*dM0pp12PtPOIEtaPOI-3.*dM2pp1PtPOIEtaPOI-3.*dM1pp2PtPOIEtaPOI-dM0pp3PtPOIEtaPOI-dS13mPrimePrimeEtaPOI;
+  
+  // q':
+  qxPrimeEtaPOIHere = (fEtaReq1nPrimePOI->GetBinContent(bin))*(fEtaReq1nPrimePOI->GetBinEntries(bin));
+  qyPrimeEtaPOIHere = (fEtaImq1nPrimePOI->GetBinContent(bin))*(fEtaImq1nPrimePOI->GetBinEntries(bin));
+  
+  mPrimeEtaPOIHere = fEtaReq1nPrimePOI->GetBinEntries(bin); // to be improved
+  dM0p111PtPOIEtaPOI=mPrimeEtaPOIHere*(dSnk[2][0]-3.*dSnk[0][1]*dSnk[0][0]+2.*dSnk[0][2]);
+ 
+  // 2-p
+  Double_t two1n1nWPerEtaBinPOI=0.; // the needed one
+  if(mPrimePrimeEtaPOIHere*dSnk[0][0]-dS11mPrimePrimeEtaPOI)
+  {
+   two1n1nWPerEtaBinPOI = (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]-dS11mPrimePrimeEtaPOI)/(mPrimePrimeEtaPOIHere*dSnk[0][0]-dS11mPrimePrimeEtaPOI); 
+  
+   f2WPerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,two1n1nWPerEtaBinPOI,(mPrimePrimeEtaPOIHere*dSnk[0][0]-dS11mPrimePrimeEtaPOI)); // <2'>_{n|n} 
+  }
+ 
+  // 2-p
+  Double_t two1n1nW1ppW1W1=0.; // <w1 w2 w3 cos(n(phi2-phi3))> // OK!!!
+  if(dM1pp11EtaPOI)
+  {
+   two1n1nW1ppW1W1 = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*dS11mPrimePrimeEtaPOI-2.*(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0]) - dS11mPrimePrimeEtaPOI*dSnk[0][1]+2.*dS13mPrimePrimeEtaPOI)/dM1pp11EtaPOI; // CORRECT !!! <w1 w2 w3 cos(n(phi2-phi3))>
+  }
+  
+  // 2-p
+  Double_t two1npp1nW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp12PtPOIEtaPOI)
+  {
+   two1npp1nW1W2PtPOI = (dSnk[0][1]*(qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0])-(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-dM1pp2PtPOIEtaPOI-(qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2])+dS13mPrimePrimeEtaPOI)/dM0pp12PtPOIEtaPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1-phi2))>
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW2ppW1PtPOI=0.; // <w1^2 w2 cos(n(psi1-phi2))> // OK !!!
+  if(dM2pp1PtPOIEtaPOI)
+  {
+   two1npp1nW2ppW1PtPOI = ((qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-dS13mPrimePrimeEtaPOI)/dM2pp1PtPOIEtaPOI; // CORRECT !!! <w1^2 w2 cos(n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two2npp2nW1ppW2PtPOI=0.; // <w1 w2^2 cos(2n(psi1-phi2))> OK !!!
+  if(dM1pp2PtPOIEtaPOI)
+  {
+   two2npp2nW1ppW2PtPOI = ((q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])-dS13mPrimePrimeEtaPOI)/dM1pp2PtPOIEtaPOI; // CORRECT !!! <w1 w2^2 cos(2n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW3PtPOI=0.; // <w2^3 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp3PtPOIEtaPOI)
+  {
+   two1npp1nW3PtPOI = (qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2]-dS13mPrimePrimeEtaPOI)/dM0pp3PtPOIEtaPOI; // CORRECT !!! <w2^3 cos(n(psi1-phi2))>
+  }
+   
+  // 3-p 
+  Double_t three2npp1n1nW1ppW1W1PtPOI=0.; // <w1 w2 w3 cos(n(2psi1-phi2-phi3))> // OK!!!
+  if(dM1pp11EtaPOI)
+  {
+   three2npp1n1nW1ppW1W1PtPOI = (q2xW1PrimePrimeEtaPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimeEtaPOI*dQnkX[0][0]*dQnkY[0][0]-2.*(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-(q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])+2.*dS13mPrimePrimeEtaPOI)/dM1pp11EtaPOI; // CORRECT !!! <w1 w2 w3 cos(n(2psi1-phi2-phi3))> 
+  }
+  
+  // 3-p 
+  Double_t three1npp1n2nW0ppW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1+phi2-2*phi3))> // OK!!!
+  if(dM0pp12PtPOIEtaPOI)
+  {
+   three1npp1n2nW0ppW1W2PtPOI = (qxPrimePrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])-(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-(q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])-(qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2])+2.*dS13mPrimePrimeEtaPOI)/dM0pp12PtPOIEtaPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1+phi2-2.*phi3))>
+  }
+ 
+  */
+ 
+ 
+  /*
+  // 4-p RPpart
+  Double_t four1npp1n1n1nW1W1W1=0.; // <w1 w2 w3 cos(n(psi1+phi1-phi2-phi3))>
+  if(dM0pp111PtPOIEtaPOI)
+  {   
+    four1npp1n1n1nW1W1W1 = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11EtaPOI*two1n1nW1ppW1W1   -   dM1pp11EtaPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOIEtaPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOIEtaPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOIEtaPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOIEtaPOI   -  dM1pp2PtPOIEtaPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOIEtaPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimeEtaPOI)/(dM0pp111PtPOIEtaPOI);
+     
+  }
+  
+  */
+ 
+ 
+ 
+ /*
+ // 4- POIpart
+ Double_t four1npp1n1n1nW1W1W1POI=0.;
+ if(dM0p111PtPOIEtaPOI>0&&mPrimeEtaPOIHere>0&&nRP>0)
+ {
+  four1npp1n1n1nW1W1W1POI =       (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimeEtaPOIHere*dQnkX[0][2]+qyPrimeEtaPOIHere*dQnkY[0][2])
+  
+  -  qxPrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/dM0p111PtPOIEtaPOI;
+  
+  
+   
+  
+ }
+ */
+ 
+ 
+ /*
+ 
+ // 4-p RP and POI in all combinations (full, partial and no overlap)
+ Double_t four1npp1n1n1nW1W1W1PtPOIAndRPEta=0.;
+ 
+ if(dM0pp111PtPOIEtaPOI+dM0p111PtPOIEtaPOI)
+ {
+ four1npp1n1n1nW1W1W1PtPOIAndRPEta = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11EtaPOI*two1n1nW1ppW1W1   -   dM1pp11EtaPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOIEtaPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOIEtaPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOIEtaPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOIEtaPOI   -  dM1pp2PtPOIEtaPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOIEtaPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimeEtaPOI + 
+     
+     
+     +  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimeEtaPOIHere*dQnkX[0][2]+qyPrimeEtaPOIHere*dQnkY[0][2])
+  
+  -  qxPrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOIEtaPOI+dM0p111PtPOIEtaPOI);
+ 
+ 
+    f4WPerEtaBin1n1n1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,four1npp1n1n1nW1W1W1PtPOIAndRPEta,dM0pp111PtPOIEtaPOI+dM0p111PtPOIEtaPOI);
+ }
+  }
+ 
+ delete req1nW2PrimePrimeEtaPOI;
+ delete imq1nW2PrimePrimeEtaPOI;
+ delete req2nW1PrimePrimeEtaPOI;
+ delete imq2nW1PrimePrimeEtaPOI;
+ delete sumOfW1upTomPrimePrimeEtaPOI;
+ delete sumOfW2upTomPrimePrimeEtaPOI;
+ delete sumOfW3upTomPrimePrimeEtaPOI;
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 
+ 
+ 
+ */
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
+ 
+ 
+ 
+ // pt POI
+ TProfile *req1nW2PrimePrimePtPOI = new TProfile("req1nW2PrimePrimePtRP","#sum_{i=1}^{m''} w_{i}^{2} cos(n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *imq1nW2PrimePrimePtPOI = new TProfile("imq1nW2PrimePrimePtRP","#sum_{i=1}^{m''} w_{i}^{2} sin(n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *req2nW1PrimePrimePtPOI = new TProfile("req2nW1PrimePrimePtRP","#sum_{i=1}^{m''} w_{i} cos(2n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *imq2nW1PrimePrimePtPOI = new TProfile("imq2nW1PrimePrimePtRP","#sum_{i=1}^{m''} w_{i} sin(2n(#phi_{i}))''",fnBinsPt,fPtMin,fPtMax,"s");
+ 
+ TProfile *sumOfW1upTomPrimePrimePtPOI = new TProfile("sumOfW1upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *sumOfW2upTomPrimePrimePtPOI = new TProfile("sumOfW2upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{2}''",fnBinsPt,fPtMin,fPtMax,"s");
+ TProfile *sumOfW3upTomPrimePrimePtPOI = new TProfile("sumOfW3upTomPrimePrimePtPOI","#sum_{i=1}^{m''} w_{i}^{3}''",fnBinsPt,fPtMin,fPtMax,"s");
+ 
+ // eta POI 
+ TProfile *req1nW2PrimePrimeEtaPOI = new TProfile("req1nW2PrimePrimeEtaRP","#sum_{i=1}^{m''} w_{i}^{2} cos(n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *imq1nW2PrimePrimeEtaPOI = new TProfile("imq1nW2PrimePrimeEtaRP","#sum_{i=1}^{m''} w_{i}^{2} sin(n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *req2nW1PrimePrimeEtaPOI = new TProfile("req2nW1PrimePrimeEtaRP","#sum_{i=1}^{m''} w_{i} cos(2n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *imq2nW1PrimePrimeEtaPOI = new TProfile("imq2nW1PrimePrimeEtaRP","#sum_{i=1}^{m''} w_{i} sin(2n(#phi_{i}))''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ 
+ TProfile *sumOfW1upTomPrimePrimeEtaPOI = new TProfile("sumOfW1upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *sumOfW2upTomPrimePrimeEtaPOI = new TProfile("sumOfW2upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{2}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+ TProfile *sumOfW3upTomPrimePrimeEtaPOI = new TProfile("sumOfW3upTomPrimePrimeEtaPOI","#sum_{i=1}^{m''} w_{i}^{3}''",fnBinsEta,fEtaMin,fEtaMax,"s");
+   
+    
+      
+ //POI:
+ //Double_t qxPrimePtPOI=0.,qyPrimePtPOI=0.,q2xPrimePtPOI=0.,q2yPrimePtPOI=0.,mPrimePtPOI=0.;//add comments for these variables (deleteMe)
+ 
+ for(Int_t i=0;i<nPrim;i++) // loop over all particles (to be improved: do the calculations for RPs and POIs in the same loop) 
+ { 
+  fTrack=anEvent->GetTrack(i);
+  if(fTrack)
+  {
+   if(fTrack->UseForDifferentialFlow()) // checking if particle is POI 
+   {
+    if(fTrack->UseForIntegratedFlow()) // checking if particle is both POI and RP 
+    {
+     // get azimuthal angle, momentum and pseudorapidity of a particle:
+     dPhi = fTrack->Phi();
+     dPt  = fTrack->Pt();
+     dEta = fTrack->Eta();
+     // phi weights:
+     if(fUsePhiWeights) 
+     {
+      nBinsPhi = phiWeights->GetNbinsX();
+      if(nBinsPhi) 
+      {
+       wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+      }
+     } 
+     // pt weights:
+     if(fUsePtWeights)
+     {          
+      if(dBinWidthPt) 
+      {
+       wPt = ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/dBinWidthPt)));
+      }
+     }             
+     // eta weights:
+     if(fUseEtaWeights)
+     {    
+      if(dBinWidthEta)
+      {
+       wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/dBinWidthEta))); 
+      }
+     }
+     // pt:
+     fPtReq1nPrimePrimePOI->Fill(dPt,cos(n*dPhi),1.); 
+     fPtImq1nPrimePrimePOI->Fill(dPt,sin(n*dPhi),1.);
+     fPtReq2nPrimePrimePOI->Fill(dPt,cos(2.*n*dPhi),1.);
+     fPtImq2nPrimePrimePOI->Fill(dPt,sin(2.*n*dPhi),1.);
+     // weighted pt:
+     req1nW2PrimePrimePtPOI->Fill(dPt,cos(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     imq1nW2PrimePrimePtPOI->Fill(dPt,sin(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     req2nW1PrimePrimePtPOI->Fill(dPt,cos(2.*n*dPhi),wPhi*wPt*wEta);
+     imq2nW1PrimePrimePtPOI->Fill(dPt,sin(2.*n*dPhi),wPhi*wPt*wEta);
+     sumOfW1upTomPrimePrimePtPOI->Fill(dPt,wPhi*wPt*wEta,1.);
+     sumOfW2upTomPrimePrimePtPOI->Fill(dPt,pow(wPhi*wPt*wEta,2),1.);
+     sumOfW3upTomPrimePrimePtPOI->Fill(dPt,pow(wPhi*wPt*wEta,3),1.);
+     
+     // eta:
+     fEtaReq1nPrimePrimePOI->Fill(dEta,cos(n*dPhi),1.); 
+     fEtaImq1nPrimePrimePOI->Fill(dEta,sin(n*dPhi),1.);
+     fEtaReq2nPrimePrimePOI->Fill(dEta,cos(2.*n*dPhi),1.);
+     fEtaImq2nPrimePrimePOI->Fill(dEta,sin(2.*n*dPhi),1.);
+     // weighted eta:
+     req1nW2PrimePrimeEtaPOI->Fill(dEta,cos(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     imq1nW2PrimePrimeEtaPOI->Fill(dEta,sin(n*dPhi),pow(wPhi*wPt*wEta,2.));
+     req2nW1PrimePrimeEtaPOI->Fill(dEta,cos(2.*n*dPhi),wPhi*wPt*wEta);
+     imq2nW1PrimePrimeEtaPOI->Fill(dEta,sin(2.*n*dPhi),wPhi*wPt*wEta);
+     sumOfW1upTomPrimePrimeEtaPOI->Fill(dEta,wPhi*wPt*wEta,1.);
+     sumOfW2upTomPrimePrimeEtaPOI->Fill(dEta,pow(wPhi*wPt*wEta,2),1.);
+     sumOfW3upTomPrimePrimeEtaPOI->Fill(dEta,pow(wPhi*wPt*wEta,3),1.);
+
+    }else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP  
+     {
+      // get azimuthal angle, momentum and pseudorapidity of a particle:
+      dPhi = fTrack->Phi();
+      dPt  = fTrack->Pt();
+      dEta = fTrack->Eta();
+      // pt:
+      fPtReq1nPrimePOI->Fill(dPt,cos(n*dPhi),1.); 
+      fPtImq1nPrimePOI->Fill(dPt,sin(n*dPhi),1.);
+      fPtReq2nPrimePOI->Fill(dPt,cos(2.*n*dPhi),1.);
+      fPtImq2nPrimePOI->Fill(dPt,sin(2.*n*dPhi),1.);
+
+      // eta:
+      fEtaReq1nPrimePOI->Fill(dEta,cos(n*dPhi),1.); 
+      fEtaImq1nPrimePOI->Fill(dEta,sin(n*dPhi),1.);
+      fEtaReq2nPrimePOI->Fill(dEta,cos(2.*n*dPhi),1.);
+      fEtaImq2nPrimePOI->Fill(dEta,sin(2.*n*dPhi),1.);
+
+     } // end of else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP 
+   } // end of if(fTrack->UseForDifferentialFlow()) // checking if particle is POI
+  } // end of if(fTrack}      
+ } // end of for(Int_t i=0;i<nPrim;i++) 
+ 
+ 
+ //PrimePrime Pt POI
+ Double_t qxPrimePrimePtPOIHere=0.,qyPrimePrimePtPOIHere=0.,q2xPrimePrimePtPOIHere=0.,q2yPrimePrimePtPOIHere=0.;//add comments for these variable
+ Double_t qxW2PrimePrimePtPOI=0.,qyW2PrimePrimePtPOI=0.,q2xW1PrimePrimePtPOI=0.,q2yW1PrimePrimePtPOI=0.;//add comments for these variable
+ Double_t dS11mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t dS12mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t dS13mPrimePrimePtPOI=0.; // to be improved (name)
+ Double_t mPrimePrimePtPOIHere=0.; // to be improved (name)
+
+ Double_t dM1pp11PtPOI=0.; // to be improved (name)
+ Double_t dM0pp111PtPOI=0.; // to be improved (name)
+ Double_t dM0pp12PtPOI=0.;
+ Double_t dM2pp1PtPOI=0.;
+ Double_t dM1pp2PtPOI=0.;
+ Double_t dM0pp3PtPOI=0.;
+ 
+ 
+ 
+ //Prime Pt POI
+ Double_t qxPrimePtPOIHere=0.,qyPrimePtPOIHere=0.;
+ Double_t mPrimePtPOIHere=0.;
+ 
+ Double_t dM0p111PtPOI=0.; // to be improved (name)
+ 
+ 
+ for(Int_t bin=1;bin<(fnBinsPt+1);bin++) // loop over pt-bins 
+ {     
+  // q'':                    
+  qxPrimePrimePtPOIHere = (fPtReq1nPrimePrimePOI->GetBinContent(bin))*(fPtReq1nPrimePrimePOI->GetBinEntries(bin));
+  qyPrimePrimePtPOIHere = (fPtImq1nPrimePrimePOI->GetBinContent(bin))*(fPtImq1nPrimePrimePOI->GetBinEntries(bin)); 
+  q2xPrimePrimePtPOIHere = (fPtReq2nPrimePrimePOI->GetBinContent(bin))*(fPtReq2nPrimePrimePOI->GetBinEntries(bin));  
+  q2yPrimePrimePtPOIHere = (fPtImq2nPrimePrimePOI->GetBinContent(bin))*(fPtImq2nPrimePrimePOI->GetBinEntries(bin)); 
+  
+  
+  qxW2PrimePrimePtPOI = (req1nW2PrimePrimePtPOI->GetBinContent(bin))*(req1nW2PrimePrimePtPOI->GetBinEntries(bin));
+  qyW2PrimePrimePtPOI = (imq1nW2PrimePrimePtPOI->GetBinContent(bin))*(imq1nW2PrimePrimePtPOI->GetBinEntries(bin));
+  
+  q2xW1PrimePrimePtPOI = (req2nW1PrimePrimePtPOI->GetBinContent(bin))*(req2nW1PrimePrimePtPOI->GetBinEntries(bin));
+  q2yW1PrimePrimePtPOI = (imq2nW1PrimePrimePtPOI->GetBinContent(bin))*(imq2nW1PrimePrimePtPOI->GetBinEntries(bin));
+  
+  dS11mPrimePrimePtPOI = (sumOfW1upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW1upTomPrimePrimePtPOI->GetBinEntries(bin));
+  dS12mPrimePrimePtPOI = (sumOfW2upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW2upTomPrimePrimePtPOI->GetBinEntries(bin));
+  dS13mPrimePrimePtPOI = (sumOfW3upTomPrimePrimePtPOI->GetBinContent(bin))*(sumOfW3upTomPrimePrimePtPOI->GetBinEntries(bin));
+
+  mPrimePrimePtPOIHere = sumOfW1upTomPrimePrimePtPOI->GetBinEntries(bin); // to be improved
+      
+  dM1pp11PtPOI=dS11mPrimePrimePtPOI*(dSnk[1][0]-dSnk[0][1])-2.*dS12mPrimePrimePtPOI*dSnk[0][0]+2.*dS13mPrimePrimePtPOI;
+  dM1pp2PtPOI=dS11mPrimePrimePtPOI*dSnk[0][1]-dS13mPrimePrimePtPOI;
+  dM2pp1PtPOI=dS12mPrimePrimePtPOI*dSnk[0][0]-dS13mPrimePrimePtPOI;
+  dM0pp3PtPOI=mPrimePrimePtPOIHere*dSnk[0][2]-dS13mPrimePrimePtPOI;
+  dM0pp12PtPOI=mPrimePrimePtPOIHere*dSnk[0][0]*dSnk[0][1]-dM2pp1PtPOI-dM1pp2PtPOI-dM0pp3PtPOI-dS13mPrimePrimePtPOI;
+  dM0pp111PtPOI=mPrimePrimePtPOIHere*dSnk[2][0]-3.*dM1pp11PtPOI-3.*dM0pp12PtPOI-3.*dM2pp1PtPOI-3.*dM1pp2PtPOI-dM0pp3PtPOI-dS13mPrimePrimePtPOI;
+  
+  // q':
+  qxPrimePtPOIHere = (fPtReq1nPrimePOI->GetBinContent(bin))*(fPtReq1nPrimePOI->GetBinEntries(bin));
+  qyPrimePtPOIHere = (fPtImq1nPrimePOI->GetBinContent(bin))*(fPtImq1nPrimePOI->GetBinEntries(bin));
+  
+  mPrimePtPOIHere = fPtReq1nPrimePOI->GetBinEntries(bin); // to be improved
+  dM0p111PtPOI=mPrimePtPOIHere*(dSnk[2][0]-3.*dSnk[0][1]*dSnk[0][0]+2.*dSnk[0][2]);
+ 
+  // 2-p
+  Double_t two1n1nWPerPtBinPOI=0.; // the needed one
+  if((mPrimePrimePtPOIHere+mPrimePtPOIHere)*dSnk[0][0]-dS11mPrimePrimePtPOI>0)
+  {
+   two1n1nWPerPtBinPOI = (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]
+   
+   + qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0]
+   
+   -dS11mPrimePrimePtPOI)/((mPrimePrimePtPOIHere+mPrimePtPOIHere)*dSnk[0][0]-dS11mPrimePrimePtPOI); 
+  
+   f2WPerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,two1n1nWPerPtBinPOI,(mPrimePrimePtPOIHere+mPrimePtPOIHere)*dSnk[0][0]-dS11mPrimePrimePtPOI); // <2'>_{n|n} 
+  }
+ 
+  // 2-p
+  Double_t two1n1nW1ppW1W1PtPOI=0.; // <w1 w2 w3 cos(n(phi2-phi3))> // OK!!!
+  if(dM1pp11PtPOI)
+  {
+   two1n1nW1ppW1W1PtPOI = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*dS11mPrimePrimePtPOI-2.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0]) - dS11mPrimePrimePtPOI*dSnk[0][1]+2.*dS13mPrimePrimePtPOI)/dM1pp11PtPOI; // CORRECT !!! <w1 w2 w3 cos(n(phi2-phi3))>
+  }
+  
+  // 2-p
+  Double_t two1npp1nW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp12PtPOI)
+  {
+   two1npp1nW1W2PtPOI = (dSnk[0][1]*(qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0])-(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-dM1pp2PtPOI-(qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2])+dS13mPrimePrimePtPOI)/dM0pp12PtPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1-phi2))>
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW2ppW1PtPOI=0.; // <w1^2 w2 cos(n(psi1-phi2))> // OK !!!
+  if(dM2pp1PtPOI)
+  {
+   two1npp1nW2ppW1PtPOI = ((qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-dS13mPrimePrimePtPOI)/dM2pp1PtPOI; // CORRECT !!! <w1^2 w2 cos(n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two2npp2nW1ppW2PtPOI=0.; // <w1 w2^2 cos(2n(psi1-phi2))> OK !!!
+  if(dM1pp2PtPOI)
+  {
+   two2npp2nW1ppW2PtPOI = ((q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])-dS13mPrimePrimePtPOI)/dM1pp2PtPOI; // CORRECT !!! <w1 w2^2 cos(2n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW3PtPOI=0.; // <w2^3 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp3PtPOI)
+  {
+   two1npp1nW3PtPOI = (qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2]-dS13mPrimePrimePtPOI)/dM0pp3PtPOI; // CORRECT !!! <w2^3 cos(n(psi1-phi2))>
+  }
+   
+  // 3-p 
+  Double_t three2npp1n1nW1ppW1W1PtPOI=0.; // <w1 w2 w3 cos(n(2psi1-phi2-phi3))> // OK!!!
+  if(dM1pp11PtPOI)
+  {
+   three2npp1n1nW1ppW1W1PtPOI = (q2xW1PrimePrimePtPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimePtPOI*dQnkX[0][0]*dQnkY[0][0]-2.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-(q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])+2.*dS13mPrimePrimePtPOI)/dM1pp11PtPOI; // CORRECT !!! <w1 w2 w3 cos(n(2psi1-phi2-phi3))> 
+  }
+  
+  // 3-p 
+  Double_t three1npp1n2nW0ppW1W2PtPOI=0.; // <w2 w3^2 cos(n(psi1+phi2-2*phi3))> // OK!!!
+  if(dM0pp12PtPOI)
+  {
+   three1npp1n2nW0ppW1W2PtPOI = (qxPrimePrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])-(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])-(q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])-(qxPrimePrimePtPOIHere*dQnkX[0][2]+qyPrimePrimePtPOIHere*dQnkY[0][2])+2.*dS13mPrimePrimePtPOI)/dM0pp12PtPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1+phi2-2.*phi3))>
+  }
+ 
+ 
+  /*
+  // 4-p RP
+  Double_t four1npp1n1n1nW1W1W1=0.; // <w1 w2 w3 cos(n(psi1+phi1-phi2-phi3))>
+  if(dM0pp111PtPOI)
+  {   
+    four1npp1n1n1nW1W1W1 = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11PtPOI*two1n1nW1ppW1W1PtPOI   -   dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOI   -  dM1pp2PtPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimePtPOI)/(dM0pp111PtPOI);
+     
+  }
+  
+  */
+ 
+ 
+ 
+ /*
+ // 4- POI
+ Double_t four1npp1n1n1nW1W1W1POI=0.;
+ if(dM0p111PtPOI>0&&mPrimePtPOIHere>0&&nRP>0)
+ {
+  four1npp1n1n1nW1W1W1POI =       (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimePtPOIHere*dQnkX[0][2]+qyPrimePtPOIHere*dQnkY[0][2])
+  
+  -  qxPrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/dM0p111PtPOI;
+  
+  
+   
+  
+ }
+ */
+ 
+ 
+ // 4-p RP and POI in all combinations (full, partial and no overlap)
+ Double_t four1npp1n1n1nW1W1W1PtPOIAndRP=0.;
+ 
+ if(dM0pp111PtPOI+dM0p111PtPOI)
+ {
+ four1npp1n1n1nW1W1W1PtPOIAndRP = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimePtPOIHere*dQnkX[0][0]+qyPrimePrimePtPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11PtPOI*two1n1nW1ppW1W1PtPOI   -   dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI  -   dM0pp12PtPOI*three1npp1n2nW0ppW1W2PtPOI   -   2.*dM0pp12PtPOI*two1npp1nW1W2PtPOI 
+     -  3.*dM2pp1PtPOI*two1npp1nW2ppW1PtPOI   -2.*dM1pp2PtPOI   -  dM1pp2PtPOI*two2npp2nW1ppW2PtPOI  -  dM0pp3PtPOI*two1npp1nW3PtPOI    -  dS13mPrimePrimePtPOI + 
+     
+     
+     +  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimePtPOIHere*dQnkX[0][0]+qyPrimePtPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimePtPOIHere*dQnkX[0][2]+qyPrimePtPOIHere*dQnkY[0][2])
+  
+  -  qxPrimePtPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOI+dM0p111PtPOI);
+ 
+ 
+    f4WPerPtBin1n1n1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,four1npp1n1n1nW1W1W1PtPOIAndRP,dM0pp111PtPOI+dM0p111PtPOI);
+ }
+  }
+ 
+ delete req1nW2PrimePrimePtPOI;
+ delete imq1nW2PrimePrimePtPOI;
+ delete req2nW1PrimePrimePtPOI;
+ delete imq2nW1PrimePrimePtPOI;
+ delete sumOfW1upTomPrimePrimePtPOI;
+ delete sumOfW2upTomPrimePrimePtPOI;
+ delete sumOfW3upTomPrimePrimePtPOI;
+ 
+ //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+ 
+ 
+ 
+  
+   
+    
+     
+ // ETA POI
+ 
+       
+ //PrimePrime Eta POI
+ Double_t qxPrimePrimeEtaPOIHere=0.,qyPrimePrimeEtaPOIHere=0.,q2xPrimePrimeEtaPOIHere=0.,q2yPrimePrimeEtaPOIHere=0.;//add comments for these variable
+ Double_t qxW2PrimePrimeEtaPOI=0.,qyW2PrimePrimeEtaPOI=0.,q2xW1PrimePrimeEtaPOI=0.,q2yW1PrimePrimeEtaPOI=0.;//add comments for these variable
+ Double_t dS11mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t dS12mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t dS13mPrimePrimeEtaPOI=0.; // to be improved (name)
+ Double_t mPrimePrimeEtaPOIHere=0.; // to be improved (name)
+
+ Double_t dM1pp11EtaPOI=0.; // to be improved (name)
+ Double_t dM0pp111EtaPOI=0.; // to be improved (name)
+ Double_t dM0pp12EtaPOI=0.;
+ Double_t dM2pp1EtaPOI=0.;
+ Double_t dM1pp2EtaPOI=0.;
+ Double_t dM0pp3EtaPOI=0.;
+ 
+ 
+ 
+ //Prime Eta POI
+ Double_t qxPrimeEtaPOIHere=0.,qyPrimeEtaPOIHere=0.;
+ Double_t mPrimeEtaPOIHere=0.;
+ 
+ Double_t dM0p111EtaPOI=0.; // to be improved (name)
+ 
+ 
+ for(Int_t bin=1;bin<(fnBinsEta+1);bin++) // loop over pt-bins 
+ {     
+  // q'':                    
+  qxPrimePrimeEtaPOIHere = (fEtaReq1nPrimePrimePOI->GetBinContent(bin))*(fEtaReq1nPrimePrimePOI->GetBinEntries(bin));
+  qyPrimePrimeEtaPOIHere = (fEtaImq1nPrimePrimePOI->GetBinContent(bin))*(fEtaImq1nPrimePrimePOI->GetBinEntries(bin)); 
+  q2xPrimePrimeEtaPOIHere = (fEtaReq2nPrimePrimePOI->GetBinContent(bin))*(fEtaReq2nPrimePrimePOI->GetBinEntries(bin));  
+  q2yPrimePrimeEtaPOIHere = (fEtaImq2nPrimePrimePOI->GetBinContent(bin))*(fEtaImq2nPrimePrimePOI->GetBinEntries(bin)); 
+  
+  
+  qxW2PrimePrimeEtaPOI = (req1nW2PrimePrimeEtaPOI->GetBinContent(bin))*(req1nW2PrimePrimeEtaPOI->GetBinEntries(bin));
+  qyW2PrimePrimeEtaPOI = (imq1nW2PrimePrimeEtaPOI->GetBinContent(bin))*(imq1nW2PrimePrimeEtaPOI->GetBinEntries(bin));
+  
+  q2xW1PrimePrimeEtaPOI = (req2nW1PrimePrimeEtaPOI->GetBinContent(bin))*(req2nW1PrimePrimeEtaPOI->GetBinEntries(bin));
+  q2yW1PrimePrimeEtaPOI = (imq2nW1PrimePrimeEtaPOI->GetBinContent(bin))*(imq2nW1PrimePrimeEtaPOI->GetBinEntries(bin));
+  
+  dS11mPrimePrimeEtaPOI = (sumOfW1upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW1upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+  dS12mPrimePrimeEtaPOI = (sumOfW2upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW2upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+  dS13mPrimePrimeEtaPOI = (sumOfW3upTomPrimePrimeEtaPOI->GetBinContent(bin))*(sumOfW3upTomPrimePrimeEtaPOI->GetBinEntries(bin));
+
+  mPrimePrimeEtaPOIHere = sumOfW1upTomPrimePrimeEtaPOI->GetBinEntries(bin); // to be improved
+      
+  dM1pp11EtaPOI=dS11mPrimePrimeEtaPOI*(dSnk[1][0]-dSnk[0][1])-2.*dS12mPrimePrimeEtaPOI*dSnk[0][0]+2.*dS13mPrimePrimeEtaPOI;
+  dM1pp2EtaPOI=dS11mPrimePrimeEtaPOI*dSnk[0][1]-dS13mPrimePrimeEtaPOI;
+  dM2pp1EtaPOI=dS12mPrimePrimeEtaPOI*dSnk[0][0]-dS13mPrimePrimeEtaPOI;
+  dM0pp3EtaPOI=mPrimePrimeEtaPOIHere*dSnk[0][2]-dS13mPrimePrimeEtaPOI;
+  dM0pp12EtaPOI=mPrimePrimeEtaPOIHere*dSnk[0][0]*dSnk[0][1]-dM2pp1EtaPOI-dM1pp2EtaPOI-dM0pp3EtaPOI-dS13mPrimePrimeEtaPOI;
+  dM0pp111EtaPOI=mPrimePrimeEtaPOIHere*dSnk[2][0]-3.*dM1pp11EtaPOI-3.*dM0pp12EtaPOI-3.*dM2pp1EtaPOI-3.*dM1pp2EtaPOI-dM0pp3EtaPOI-dS13mPrimePrimeEtaPOI;
+  
+  // q':
+  qxPrimeEtaPOIHere = (fEtaReq1nPrimePOI->GetBinContent(bin))*(fEtaReq1nPrimePOI->GetBinEntries(bin));
+  qyPrimeEtaPOIHere = (fEtaImq1nPrimePOI->GetBinContent(bin))*(fEtaImq1nPrimePOI->GetBinEntries(bin));
+  
+  mPrimeEtaPOIHere = fEtaReq1nPrimePOI->GetBinEntries(bin); // to be improved
+  dM0p111EtaPOI=mPrimeEtaPOIHere*(dSnk[2][0]-3.*dSnk[0][1]*dSnk[0][0]+2.*dSnk[0][2]);
+ 
+  // 2-p
+  Double_t two1n1nWPerEtaBinPOI=0.; // the needed one
+  if((mPrimePrimeEtaPOIHere+mPrimeEtaPOIHere)*dSnk[0][0]-dS11mPrimePrimeEtaPOI>0)
+  {
+   two1n1nWPerEtaBinPOI = (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]
+   
+   + qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0]
+   
+   -dS11mPrimePrimeEtaPOI)/((mPrimePrimeEtaPOIHere+mPrimeEtaPOIHere)*dSnk[0][0]-dS11mPrimePrimeEtaPOI); 
+  
+   f2WPerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,two1n1nWPerEtaBinPOI,(mPrimePrimeEtaPOIHere+mPrimeEtaPOIHere)*dSnk[0][0]-dS11mPrimePrimeEtaPOI); // <2'>_{n|n} 
+  }
+ 
+  // 2-p
+  Double_t two1n1nW1ppW1W1EtaPOI=0.; // <w1 w2 w3 cos(n(phi2-phi3))> // OK!!!
+  if(dM1pp11EtaPOI)
+  {
+   two1n1nW1ppW1W1EtaPOI = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*dS11mPrimePrimeEtaPOI-2.*(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0]) - dS11mPrimePrimeEtaPOI*dSnk[0][1]+2.*dS13mPrimePrimeEtaPOI)/dM1pp11EtaPOI; // CORRECT !!! <w1 w2 w3 cos(n(phi2-phi3))>
+  }
+  
+  // 2-p
+  Double_t two1npp1nW1W2EtaPOI=0.; // <w2 w3^2 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp12EtaPOI)
+  {
+   two1npp1nW1W2EtaPOI = (dSnk[0][1]*(qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0])-(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-dM1pp2EtaPOI-(qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2])+dS13mPrimePrimeEtaPOI)/dM0pp12EtaPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1-phi2))>
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW2ppW1EtaPOI=0.; // <w1^2 w2 cos(n(psi1-phi2))> // OK !!!
+  if(dM2pp1EtaPOI)
+  {
+   two1npp1nW2ppW1EtaPOI = ((qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-dS13mPrimePrimeEtaPOI)/dM2pp1EtaPOI; // CORRECT !!! <w1^2 w2 cos(n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two2npp2nW1ppW2EtaPOI=0.; // <w1 w2^2 cos(2n(psi1-phi2))> OK !!!
+  if(dM1pp2EtaPOI)
+  {
+   two2npp2nW1ppW2EtaPOI = ((q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])-dS13mPrimePrimeEtaPOI)/dM1pp2EtaPOI; // CORRECT !!! <w1 w2^2 cos(2n(psi1-phi2))> 
+  }
+  
+  // 2-p 
+  Double_t two1npp1nW3EtaPOI=0.; // <w2^3 cos(n(psi1-phi2))> // OK !!!
+  if(dM0pp3EtaPOI)
+  {
+   two1npp1nW3EtaPOI = (qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2]-dS13mPrimePrimeEtaPOI)/dM0pp3EtaPOI; // CORRECT !!! <w2^3 cos(n(psi1-phi2))>
+  }
+   
+  // 3-p 
+  Double_t three2npp1n1nW1ppW1W1EtaPOI=0.; // <w1 w2 w3 cos(n(2psi1-phi2-phi3))> // OK!!!
+  if(dM1pp11EtaPOI)
+  {
+   three2npp1n1nW1ppW1W1EtaPOI = (q2xW1PrimePrimeEtaPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimeEtaPOI*dQnkX[0][0]*dQnkY[0][0]-2.*(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-(q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])+2.*dS13mPrimePrimeEtaPOI)/dM1pp11EtaPOI; // CORRECT !!! <w1 w2 w3 cos(n(2psi1-phi2-phi3))> 
+  }
+  
+  // 3-p 
+  Double_t three1npp1n2nW0ppW1W2EtaPOI=0.; // <w2 w3^2 cos(n(psi1+phi2-2*phi3))> // OK!!!
+  if(dM0pp12EtaPOI)
+  {
+   three1npp1n2nW0ppW1W2EtaPOI = (qxPrimePrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])-(qxW2PrimePrimeEtaPOI*dQnkX[0][0]+qyW2PrimePrimeEtaPOI*dQnkY[0][0])-(q2xW1PrimePrimeEtaPOI*dQnkX[1][1]+q2yW1PrimePrimeEtaPOI*dQnkY[1][1])-(qxPrimePrimeEtaPOIHere*dQnkX[0][2]+qyPrimePrimeEtaPOIHere*dQnkY[0][2])+2.*dS13mPrimePrimeEtaPOI)/dM0pp12EtaPOI; // CORRECT !!! <w2 w3^2 cos(n(psi1+phi2-2.*phi3))>
+  }
+ 
+ 
+  /*
+  // 4-p RP
+  Double_t four1npp1n1n1nW1W1W1=0.; // <w1 w2 w3 cos(n(psi1+phi1-phi2-phi3))>
+  if(dM0pp111EtaPOI)
+  {   
+    four1npp1n1n1nW1W1W1 = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11EtaPOI*two1n1nW1ppW1W1EtaPOI   -   dM1pp11EtaPOI*three2npp1n1nW1ppW1W1EtaPOI  -   dM0pp12EtaPOI*three1npp1n2nW0ppW1W2EtaPOI   -   2.*dM0pp12EtaPOI*two1npp1nW1W2EtaPOI 
+     -  3.*dM2pp1EtaPOI*two1npp1nW2ppW1EtaPOI   -2.*dM1pp2EtaPOI   -  dM1pp2EtaPOI*two2npp2nW1ppW2EtaPOI  -  dM0pp3EtaPOI*two1npp1nW3EtaPOI    -  dS13mPrimePrimeEtaPOI)/(dM0pp111EtaPOI);
+     
+  }
+  
+  */
+ 
+ 
+ 
+ /*
+ // 4- POI
+ Double_t four1npp1n1n1nW1W1W1POI=0.;
+ if(dM0p111EtaPOI>0&&mPrimeEtaPOIHere>0&&nRP>0)
+ {
+  four1npp1n1n1nW1W1W1POI =       (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimeEtaPOIHere*dQnkX[0][2]+qyPrimeEtaPOIHere*dQnkY[0][2])
+  
+  -  qxPrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/dM0p111EtaPOI;
+  
+  
+   
+  
+ }
+ */
+ 
+ 
+ // 4-p RP and POI in all combinations (full, partial and no overlap)
+ Double_t four1npp1n1n1nW1W1W1EtaPOIAndRP=0.;
+ 
+ if(dM0pp111EtaPOI+dM0p111EtaPOI)
+ {
+ four1npp1n1n1nW1W1W1EtaPOIAndRP = (  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimePrimeEtaPOIHere*dQnkX[0][0]+qyPrimePrimeEtaPOIHere*dQnkY[0][0]) 
+     -  2.*dM1pp11EtaPOI*two1n1nW1ppW1W1EtaPOI   -   dM1pp11EtaPOI*three2npp1n1nW1ppW1W1EtaPOI  -   dM0pp12EtaPOI*three1npp1n2nW0ppW1W2EtaPOI   -   2.*dM0pp12EtaPOI*two1npp1nW1W2EtaPOI 
+     -  3.*dM2pp1EtaPOI*two1npp1nW2ppW1EtaPOI   -2.*dM1pp2EtaPOI   -  dM1pp2EtaPOI*two2npp2nW1ppW2EtaPOI  -  dM0pp3EtaPOI*two1npp1nW3EtaPOI    -  dS13mPrimePrimeEtaPOI + 
+     
+     
+     +  (  pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.)  )    *   (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])
+  
+  -  2.*dSnk[0][1]* (qxPrimeEtaPOIHere*dQnkX[0][0]+qyPrimeEtaPOIHere*dQnkY[0][0])  
+  
+  +  2.*(qxPrimeEtaPOIHere*dQnkX[0][2]+qyPrimeEtaPOIHere*dQnkY[0][2])
+  
+  -  qxPrimeEtaPOIHere*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimeEtaPOIHere*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111EtaPOI+dM0p111EtaPOI);
+ 
+ 
+    f4WPerEtaBin1n1n1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,four1npp1n1n1nW1W1W1EtaPOIAndRP,dM0pp111EtaPOI+dM0p111EtaPOI);
+ }
+  }
+ 
+ delete req1nW2PrimePrimeEtaPOI;
+ delete imq1nW2PrimePrimeEtaPOI;
+ delete req2nW1PrimePrimeEtaPOI;
+ delete imq2nW1PrimePrimeEtaPOI;
+ delete sumOfW1upTomPrimePrimeEtaPOI;
+ delete sumOfW2upTomPrimePrimeEtaPOI;
+ delete sumOfW3upTomPrimePrimeEtaPOI;
+      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+// QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQq
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  //Eta:
  Double_t twoDiffEta1n1nRP=0.,twoDiffEta2n2nRP=0.,threeDiffEta2n1n1nRP=0.,threeDiffEta1n1n2nRP=0.,fourDiffEta1n1n1n1nRP=0.;
  
@@ -1151,13 +2743,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   mEtaRP = fEtaReq1nRP->GetBinEntries(bin); 
   dSumOfWeightsUpTomEtaRP = (mPerBinEtaRP->GetBinContent(bin))*(mPerBinEtaRP->GetBinEntries(bin));
   
-  if(mEtaRP*dSumOfWeights-dSumOfWeightsUpTomEtaRP)
+  if(mEtaRP*dSnk[0][0]-dSumOfWeightsUpTomEtaRP)
   {
    //twoDiffEta1n1nRP = (qxEtaRP*dQ1nx+qyEtaRP*dQ1ny-mEtaRP)/(mEtaRP*(dMult-1.)); // OK without weights
    //f2PerEtaBin1n1nRP->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nRP,mEtaRP*(dMult-1.));//<2'>_{n|n} // OK without weights
    
-   twoDiffEta1n1nRP = (qxEtaRP*dQ1nxW+qyEtaRP*dQ1nyW-dSumOfWeightsUpTomEtaRP)/(mEtaRP*dSumOfWeights-dSumOfWeightsUpTomEtaRP); // OK without weights
-   f2PerEtaBin1n1nRP->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nRP,mEtaRP*dSumOfWeights-dSumOfWeightsUpTomEtaRP);//<2'>_{n|n} // OK without weights
+   twoDiffEta1n1nRP = (qxEtaRP*dQ1nxW+qyEtaRP*dQ1nyW-dSumOfWeightsUpTomEtaRP)/(mEtaRP*dSnk[0][0]-dSumOfWeightsUpTomEtaRP); // OK without weights
+   f2PerEtaBin1n1nRP->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nRP,mEtaRP*dSnk[0][0]-dSumOfWeightsUpTomEtaRP);//<2'>_{n|n} // OK without weights
   } 
    
   if(mEtaRP>0&&dMult>1)
@@ -1292,18 +2884,18 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   mPrimePrimePtPOI = fPtReq1nPrimePrimePOI->GetBinEntries(bin);
   dSumOfWeightsUpTomPrimePrimePtPOI = (mPrimePrimePerBinPtPOI->GetBinContent(bin))*(mPrimePrimePerBinPtPOI->GetBinEntries(bin));
                              
-  if((mPrimePrimePtPOI+mPrimePtPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimePtPOI)
+  if((mPrimePrimePtPOI+mPrimePtPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimePtPOI)
   {   
    //twoDiffPt1n1nPOI = (qxPrimePrimePtPOI*dQ1nx+qyPrimePrimePtPOI*dQ1ny-mPrimePrimePtPOI+qxPrimePtPOI*dQ1nx+qyPrimePtPOI*dQ1ny)/(mPrimePrimePtPOI*(dMult-1)+mPrimePtPOI*dMult); // OK without weights
   
-   twoDiffPt1n1nPOI = (qxPrimePrimePtPOI*dQ1nxW+qyPrimePrimePtPOI*dQ1nyW-dSumOfWeightsUpTomPrimePrimePtPOI+qxPrimePtPOI*dQ1nxW+qyPrimePtPOI*dQ1nyW)/((mPrimePrimePtPOI+mPrimePtPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimePtPOI); 
+   twoDiffPt1n1nPOI = (qxPrimePrimePtPOI*dQ1nxW+qyPrimePrimePtPOI*dQ1nyW-dSumOfWeightsUpTomPrimePrimePtPOI+qxPrimePtPOI*dQ1nxW+qyPrimePtPOI*dQ1nyW)/((mPrimePrimePtPOI+mPrimePtPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimePtPOI); 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
    //f2PerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nPOI,mPrimePrimePtPOI*(dMult-1)+mPrimePtPOI*dMult);//<2'>_{n|n} //OK without weights
    
-   f2PerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nPOI,(mPrimePrimePtPOI+mPrimePtPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimePtPOI); // <2'>_{n|n} 
+   f2PerPtBin1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt1n1nPOI,(mPrimePrimePtPOI+mPrimePtPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimePtPOI); // <2'>_{n|n} 
    
    twoDiffPt2n2nPOI = (q2xPrimePrimePtPOI*dQ2nx+q2yPrimePrimePtPOI*dQ2ny-mPrimePrimePtPOI+q2xPrimePtPOI*dQ2nx+q2yPrimePtPOI*dQ2ny)/(mPrimePrimePtPOI*(dMult-1)+mPrimePtPOI*dMult); // to be improved: didn't check how it changed with weights   
-   f2PerPtBin2n2nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt2n2nPOI,mPrimePrimePtPOI*(dMult-1)+mPrimePtPOI*dMult);//<2'>_{2n|2n} 
+   //f2PerPtBin2n2nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,twoDiffPt2n2nPOI,mPrimePrimePtPOI*(dMult-1)+mPrimePtPOI*dMult);//<2'>_{2n|2n} 
   }//end of if((mPrimePtPOI+mPrimePrimePtPOI>0)&&dMult>0)
   
   /*
@@ -1359,14 +2951,17 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   mPrimePrimeEtaPOI = fEtaReq1nPrimePrimePOI->GetBinEntries(bin);  
   dSumOfWeightsUpTomPrimePrimeEtaPOI = (mPrimePrimePerBinEtaPOI->GetBinContent(bin))*(mPrimePrimePerBinEtaPOI->GetBinEntries(bin));       
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-  if((mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimeEtaPOI)//to be improved (dMult>1 or dMult>0)
+  if((mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimeEtaPOI)//to be improved (dMult>1 or dMult>0)
   {   
    //twoDiffEta1n1nPOI = (qxPrimePrimeEtaPOI*dQ1nx+qyPrimePrimeEtaPOI*dQ1ny-mPrimePrimeEtaPOI+qxPrimeEtaPOI*dQ1nx+qyPrimeEtaPOI*dQ1ny)/(mPrimePrimeEtaPOI*(dMult-1)+mPrimeEtaPOI*dMult); // OK without weights 
    //f2PerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nPOI,mPrimePrimeEtaPOI*(dMult-1)+mPrimeEtaPOI*dMult);//<2'>_{n|n}  // OK without weights
   
-    twoDiffEta1n1nPOI = (qxPrimePrimeEtaPOI*dQ1nxW+qyPrimePrimeEtaPOI*dQ1nyW-dSumOfWeightsUpTomPrimePrimeEtaPOI+qxPrimeEtaPOI*dQ1nxW+qyPrimeEtaPOI*dQ1nyW)/((mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimeEtaPOI); 
-    f2PerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nPOI,(mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSumOfWeights-dSumOfWeightsUpTomPrimePrimeEtaPOI); // <2'>_{n|n}  
-    
+    twoDiffEta1n1nPOI = (qxPrimePrimeEtaPOI*dQ1nxW+qyPrimePrimeEtaPOI*dQ1nyW-dSumOfWeightsUpTomPrimePrimeEtaPOI+qxPrimeEtaPOI*dQ1nxW+qyPrimeEtaPOI*dQ1nyW)/((mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimeEtaPOI); 
+    f2PerEtaBin1n1nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta1n1nPOI,(mPrimePrimeEtaPOI+mPrimeEtaPOI)*dSnk[0][0]-dSumOfWeightsUpTomPrimePrimeEtaPOI); // <2'>_{n|n}  
+  }
+  
+  if(mPrimePrimeEtaPOI*(dMult-1)+mPrimeEtaPOI*dMult)
+  {    
    twoDiffEta2n2nPOI = (q2xPrimePrimeEtaPOI*dQ2nx+q2yPrimePrimeEtaPOI*dQ2ny-mPrimePrimeEtaPOI+q2xPrimeEtaPOI*dQ2nx+q2yPrimeEtaPOI*dQ2ny)/(mPrimePrimeEtaPOI*(dMult-1)+mPrimeEtaPOI*dMult);   
    f2PerEtaBin2n2nPOI->Fill(fEtaMin+(bin-1)*dBinWidthEta,twoDiffEta2n2nPOI,mPrimePrimeEtaPOI*(dMult-1)+mPrimeEtaPOI*dMult);//<2'>_{2n|2n} 
   }//end of if((mPrimeEtaPOI+mPrimePrimeEtaPOI>0)&&dMult>0)
@@ -1478,7 +3073,6 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
-/*
 
 
 
@@ -1503,115 +3097,135 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //                                          ********************** 
  //
  // Remark 1: multi-particle correlations calculated with nested loops are stored in fDirectCorrelations.
- // Remark 2: binning of fDirectCorrelations: bins 0..40 - correlations needed for integrated flow; bins 40..80 - correlations needed for differential flow (taking as an example bin 0.5 < pt < 0.6)
+ // Remark 2: binning of fDirectCorrelations: bins 0..100 - correlations needed for integrated flow; bins 100..200 - correlations needed for differential flow (taking as an example bin 0.5 < pt < 0.6)
  //
  // binning details of fDirectCorrelations (integrated flow):
- //
- // 1st bin: <2>_{n|n} = two1n1n
- // 2nd bin: <2>_{2n|2n} = two2n2n
- // 3rd bin: <2>_{3n|3n} = two3n3n
- // 4th bin: <2>_{4n|4n} = two4n4n
- // 5th bin: --  EMPTY --
- // 6th bin: <3>_{2n|n,n} = three2n1n1n
- // 7th bin: <3>_{3n|2n,n} = three3n2n1n
- // 8th bin: <3>_{4n|2n,2n} = three4n2n2n
- // 9th bin: <3>_{4n|3n,n} = three4n3n1n
- //10th bin: --  EMPTY --
- //11th bin: <4>_{n,n|n,n} = four1n1n1n1n
- //12th bin: <4>_{2n,n|2n,n} = four2n1n2n1n
- //13th bin: <4>_{2n,2n|2n,2n} = four2n2n2n2n
- //14th bin: <4>_{3n|n,n,n} = four3n1n1n1n
- //15th bin: <4>_{3n,n|3n,n} = four3n1n3n1n 
- //16th bin: <4>_{3n,n|2n,2n} = four3n1n2n2n
- //17th bin: <4>_{4n|2n,n,n} = four4n2n1n1n
- //18th bin: --  EMPTY --
- //19th bin: <5>_{2n|n,n,n,n} = five2n1n1n1n1n
- //20th bin: <5>_{2n,2n|2n,n,n} = five2n2n2n1n1n
- //21st bin: <5>_{3n,n|2n,n,n} = five3n1n2n1n1n
- //22nd bin: <5>_{4n|n,n,n,n} = five4n1n1n1n1n  
- //23rd bin: --  EMPTY --
- //24th bin: <6>_{n,n,n|n,n,n} = six1n1n1n1n1n1n
- //25th bin: <6>_{2n,n,n|2n,n,n} = six2n1n1n2n1n1n
- //26th bin: <6>_{2n,2n|n,n,n,n} = six2n2n1n1n1n1n
- //27th bin: <6>_{3n,n|n,n,n,n} = six3n1n1n1n1n1n
- //28th bin: --  EMPTY --
- //29th bin: <7>_{2n,n,n|n,n,n,n} = seven2n1n1n1n1n1n1n
- //30th bin: --  EMPTY --
- //31st bin: <8>_{n,n,n,n|n,n,n,n} = eight1n1n1n1n1n1n1n1n
+ //..........................................................................
+ // 1st bin: weighted <2>_{n|n}   = <w1   w2   cos( n*(phi1-phi2))>
+ // 2nd bin: weighted <2>_{2n|2n} = <w1^2 w2^2 cos(2n*(phi1-phi2))>
+ // 3rd bin: weighted <2>_{3n|3n} = <w1^3 w2^3 cos(3n*(phi1-phi2))>
+ // 4th bin: weighted <2>_{4n|4n} = <w1^4 w2^4 cos(4n*(phi1-phi2))>
+ // 5th bin: weighted <2>_{n|n} = <w1^3 w2 cos(n*(phi1-phi2))>
  
+ // 11th bin: weighted <3>_{2n|n,n} = <w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))>
+ //..........................................................................
+ 
+/*
  Double_t phi1=0., phi2=0., phi3=0., phi4=0., phi5=0., phi6=0., phi7=0., phi8=0.;
+ Double_t wPhi1=1., wPhi2=1., wPhi3=1., wPhi4=1., wPhi5=1., wPhi6=1., wPhi7=1., wPhi8=1.;
 
- //<2>_{k*n|k*n} (k=1,2,3 and 4)
+
+ Double_t tempLoop = 0.;
+ Int_t tempCounter = 0.;
+ 
+
  for(Int_t i1=0;i1<dMult;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
-   fDirectCorrelations->Fill(0.,cos(n*(phi1-phi2)),1);    //<2>_{n|n}
-   fDirectCorrelations->Fill(1.,cos(2.*n*(phi1-phi2)),1); //<2>_{2n|2n}
-   fDirectCorrelations->Fill(2.,cos(3.*n*(phi1-phi2)),1); //<2>_{3n|3n}
-   fDirectCorrelations->Fill(3.,cos(4.*n*(phi1-phi2)),1); //<2>_{4n|4n} 
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
+   // 2-p
+   fDirectCorrelations->Fill(0.,cos(n*(phi1-phi2)),wPhi1*wPhi2);                  // <w1   w2   cos( n*(phi1-phi2))>
+   fDirectCorrelations->Fill(1.,cos(2.*n*(phi1-phi2)),pow(wPhi1,2)*pow(wPhi2,2)); // <w1^2 w2^2 cos(2n*(phi1-phi2))>
+   fDirectCorrelations->Fill(2.,cos(3.*n*(phi1-phi2)),pow(wPhi1,3)*pow(wPhi2,3)); // <w1^3 w2^3 cos(3n*(phi1-phi2))>
+   fDirectCorrelations->Fill(3.,cos(4.*n*(phi1-phi2)),pow(wPhi1,4)*pow(wPhi2,4)); // <w1^4 w2^4 cos(4n*(phi1-phi2))> 
+   fDirectCorrelations->Fill(4.,cos(n*(phi1-phi2)),pow(wPhi1,3)*wPhi2); // <w1^3 w2 cos(n*(phi1-phi2))>
   }
  }  
-     
- //<3>_{2n|n,n}, <3>_{3n|2n,n}, <3>_{4n|2n,2n} and <3>_{4n|3n,n}
+ 
+
+*/
+
+/*
+
  for(Int_t i1=0;i1<dMult;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
+const Double_t ptmin2 = 0.0;
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
-    fDirectCorrelations->Fill(5.,cos(2*n*phi1-n*(phi2+phi3)),1);        //<3>_{2n|n,n}
-    fDirectCorrelations->Fill(6.,cos(3.*n*phi1-2.*n*phi2-n*phi3),1);    //<3>_{3n|2n,n}
-    fDirectCorrelations->Fill(7.,cos(4.*n*phi1-2.*n*phi2-2.*n*phi3),1); //<3>_{4n|2n,2n}
-    fDirectCorrelations->Fill(8.,cos(4.*n*phi1-3.*n*phi2-n*phi3),1);    //<3>_{4n|3n,n}
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
+    // 2-p
+    fDirectCorrelations->Fill(5.,cos(n*(phi1-phi2)),wPhi1*wPhi2*pow(wPhi3,2)); // <w1 w2 w3^2 cos(n*(phi1-phi2))>
+    
+    // 3-p
+    fDirectCorrelations->Fill(10.,cos(2.*n*phi1-n*(phi2+phi3)),pow(wPhi1,2)*wPhi2*wPhi3); // <w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))>
+    
+    
+    fDirectCorrelations->Fill(6.,cos(3.*n*phi1-2.*n*phi2-n*phi3),pow(wPhi1,3)*pow(wPhi2,2)*wPhi3);           //<3>_{3n|2n,n}
+    fDirectCorrelations->Fill(7.,cos(4.*n*phi1-2.*n*phi2-2.*n*phi3),pow(wPhi1,4)*pow(wPhi2,2)*pow(wPhi3,2)); //<3>_{4n|2n,2n}
+    fDirectCorrelations->Fill(8.,cos(4.*n*phi1-3.*n*phi2-n*phi3),pow(wPhi1,4)*pow(wPhi2,3)*wPhi3);           //<3>_{4n|3n,n}
+    
+    
    }
   }
  }
+ 
+ */
+ 
+ 
+
+ /*
   
  //<4>_{n,n|n,n}, <4>_{2n,n|2n,n}, <4>_{2n,2n|2n,2n}, <4>_{3n|n,n,n}, <4>_{3n,n|3n,n}, <4>_{3n,n|2n,2n} and <4>_{4n|2n,n,n} 
  for(Int_t i1=0;i1<dMult;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<dMult;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
-     fDirectCorrelations->Fill(10.,cos(n*phi1+n*phi2-n*phi3-n*phi4),1);            //<4>_{n,n|n,n}
-     fDirectCorrelations->Fill(11.,cos(2.*n*phi1+n*phi2-2.*n*phi3-n*phi4),1);      //<4>_{2n,n|2n,n}
-     fDirectCorrelations->Fill(12.,cos(2.*n*phi1+2*n*phi2-2.*n*phi3-2.*n*phi4),1); //<4>_{2n,2n|2n,2n}
-     fDirectCorrelations->Fill(13.,cos(3.*n*phi1-n*phi2-n*phi3-n*phi4),1);         //<4>_{3n|n,n,n}
-     fDirectCorrelations->Fill(14.,cos(3.*n*phi1+n*phi2-3.*n*phi3-n*phi4),1);      //<4>_{3n,n|3n,n}   
-     fDirectCorrelations->Fill(15.,cos(3.*n*phi1+n*phi2-2.*n*phi3-2.*n*phi4),1);   //<4>_{3n,n|2n,2n}
-     fDirectCorrelations->Fill(16.,cos(4.*n*phi1-2.*n*phi2-n*phi3-n*phi4),1);      //<4>_{4n|2n,n,n}
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
+     fDirectCorrelations->Fill(20.,cos(n*phi1+n*phi2-n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4); // <4>_{n,n|n,n} = <w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))>
+     
+    
+     fDirectCorrelations->Fill(11.,cos(2.*n*phi1+n*phi2-2.*n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4);      //<4>_{2n,n|2n,n}
+     fDirectCorrelations->Fill(12.,cos(2.*n*phi1+2*n*phi2-2.*n*phi3-2.*n*phi4),wPhi1*wPhi2*wPhi3*wPhi4); //<4>_{2n,2n|2n,2n}
+     fDirectCorrelations->Fill(13.,cos(3.*n*phi1-n*phi2-n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4);         //<4>_{3n|n,n,n}
+     fDirectCorrelations->Fill(14.,cos(3.*n*phi1+n*phi2-3.*n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4);      //<4>_{3n,n|3n,n}   
+     fDirectCorrelations->Fill(15.,cos(3.*n*phi1+n*phi2-2.*n*phi3-2.*n*phi4),wPhi1*wPhi2*wPhi3*wPhi4);   //<4>_{3n,n|2n,2n}
+     fDirectCorrelations->Fill(16.,cos(4.*n*phi1-2.*n*phi2-n*phi3-n*phi4),wPhi1*wPhi2*wPhi3*wPhi4);      //<4>_{4n|2n,n,n}
+    
     }  
    }
   }
  }
+ 
+ */
+ 
+ /*
  
  //<5>_{2n,n,n,n,n}, //<5>_{2n,2n|2n,n,n}, <5>_{3n,n|2n,n,n} and <5>_{4n|n,n,n,n}
  for(Int_t i1=0;i1<dMult;i1++)
@@ -1619,35 +3233,43 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   //cout<<"i1 = "<<i1<<endl;
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<dMult;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      for(Int_t i5=0;i5<dMult;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
-      fDirectCorrelations->Fill(18.,cos(2.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5),1);       //<5>_{2n,n|n,n,n}
-      fDirectCorrelations->Fill(19.,cos(2.*n*phi1+2.*n*phi2-2.*n*phi3-n*phi4-n*phi5),1); //<5>_{2n,2n|2n,n,n}
-      fDirectCorrelations->Fill(20.,cos(3.*n*phi1+n*phi2-2.*n*phi3-n*phi4-n*phi5),1);    //<5>_{3n,n|2n,n,n}
-      fDirectCorrelations->Fill(21.,cos(4.*n*phi1-n*phi2-n*phi3-n*phi4-n*phi5),1);       //<5>_{4n|n,n,n,n}
+      if(phiWeights) wPhi5 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi5*nBinsPhi/TMath::TwoPi())));
+      fDirectCorrelations->Fill(18.,cos(2.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5);       //<5>_{2n,n|n,n,n}
+      fDirectCorrelations->Fill(19.,cos(2.*n*phi1+2.*n*phi2-2.*n*phi3-n*phi4-n*phi5),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5); //<5>_{2n,2n|2n,n,n}
+      fDirectCorrelations->Fill(20.,cos(3.*n*phi1+n*phi2-2.*n*phi3-n*phi4-n*phi5),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5);    //<5>_{3n,n|2n,n,n}
+      fDirectCorrelations->Fill(21.,cos(4.*n*phi1-n*phi2-n*phi3-n*phi4-n*phi5),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5);       //<5>_{4n|n,n,n,n}
      }
     }  
    }
   }
  }
+ 
+ */
+ /*
  
  //<6>_{n,n,n,n,n,n}, <6>_{2n,n,n|2n,n,n}, <6>_{2n,2n|n,n,n,n} and <6>_{3n,n|n,n,n,n}
  for(Int_t i1=0;i1<dMult;i1++)
@@ -1655,35 +3277,42 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   //cout<<"i1 = "<<i1<<endl;
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<dMult;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      for(Int_t i5=0;i5<dMult;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
+const Double_t ptmin2 = 0.0;
+      if(phiWeights) wPhi5 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi5*nBinsPhi/TMath::TwoPi())));
       for(Int_t i6=0;i6<dMult;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
        phi6=fTrack->Phi(); 
-       fDirectCorrelations->Fill(23.,cos(n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6),1);       //<6>_{n,n,n|n,n,n}
-       fDirectCorrelations->Fill(24.,cos(2.*n*phi1+n*phi2+n*phi3-2.*n*phi4-n*phi5-n*phi6),1); //<6>_{2n,n,n|2n,n,n}
-       fDirectCorrelations->Fill(25.,cos(2.*n*phi1+2.*n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),1); //<6>_{2n,2n|n,n,n,n}
-       fDirectCorrelations->Fill(26.,cos(3.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),1);    //<6>_{3n,n|n,n,n,n}     
+       if(phiWeights) wPhi6 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi6*nBinsPhi/TMath::TwoPi())));
+       fDirectCorrelations->Fill(23.,cos(n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6);       //<6>_{n,n,n|n,n,n}
+       fDirectCorrelations->Fill(24.,cos(2.*n*phi1+n*phi2+n*phi3-2.*n*phi4-n*phi5-n*phi6),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6); //<6>_{2n,n,n|2n,n,n}
+       fDirectCorrelations->Fill(25.,cos(2.*n*phi1+2.*n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6); //<6>_{2n,2n|n,n,n,n}
+       fDirectCorrelations->Fill(26.,cos(3.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5-n*phi6),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6);    //<6>_{3n,n|n,n,n,n}     
       } 
      }
     }  
@@ -1691,43 +3320,53 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  }
 
+ */
+ /*
+ 
  //<7>_{2n,n,n|n,n,n,n}
  for(Int_t i1=0;i1<dMult;i1++)
  {
   //cout<<"i1 = "<<i1<<endl;
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<dMult;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      for(Int_t i5=0;i5<dMult;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
+      if(phiWeights) wPhi5 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi5*nBinsPhi/TMath::TwoPi())));
       for(Int_t i6=0;i6<dMult;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
        phi6=fTrack->Phi(); 
+       if(phiWeights) wPhi6 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi6*nBinsPhi/TMath::TwoPi())));
        for(Int_t i7=0;i7<dMult;i7++)
        {
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
         fTrack=anEvent->GetTrack(i7);
         phi7=fTrack->Phi(); 
-        fDirectCorrelations->Fill(28.,cos(2.*n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6-n*phi7),1);//<7>_{2n,n,n|n,n,n,n}
+        if(phiWeights) wPhi7 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi7*nBinsPhi/TMath::TwoPi())));
+        fDirectCorrelations->Fill(28.,cos(2.*n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6-n*phi7),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6*wPhi7);//<7>_{2n,n,n|n,n,n,n}
        } 
       } 
      }
@@ -1736,48 +3375,59 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  }
  
+ */
+ /*
+ 
  //<8>_{n,n,n,n|n,n,n,n}
  for(Int_t i1=0;i1<dMult;i1++)
  {
   cout<<"i1 = "<<i1<<endl;
   fTrack=anEvent->GetTrack(i1);
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<dMult;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<dMult;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<dMult;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      phi4=fTrack->Phi();
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      for(Int_t i5=0;i5<dMult;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
       phi5=fTrack->Phi();
+      if(phiWeights) wPhi5 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi5*nBinsPhi/TMath::TwoPi())));
       for(Int_t i6=0;i6<dMult;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
-       phi6=fTrack->Phi(); 
+       phi6=fTrack->Phi();
+       if(phiWeights) wPhi6 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi6*nBinsPhi/TMath::TwoPi()))); 
        for(Int_t i7=0;i7<dMult;i7++)
        {
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
         fTrack=anEvent->GetTrack(i7);
-        phi7=fTrack->Phi(); 
+        phi7=fTrack->Phi();
+        if(phiWeights) wPhi7 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi7*nBinsPhi/TMath::TwoPi()))); 
         for(Int_t i8=0;i8<dMult;i8++)
         {
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7)continue;
          fTrack=anEvent->GetTrack(i8);
-         phi8=fTrack->Phi();  
-         fDirectCorrelations->Fill(30.,cos(n*phi1+n*phi2+n*phi3+n*phi4-n*phi5-n*phi6-n*phi7-n*phi8),1);//<8>_{n,n,n,n|n,n,n,n}
+         phi8=fTrack->Phi();
+         if(phiWeights) wPhi8 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi8*nBinsPhi/TMath::TwoPi())));  
+         fDirectCorrelations->Fill(30.,cos(n*phi1+n*phi2+n*phi3+n*phi4-n*phi5-n*phi6-n*phi7-n*phi8),wPhi1*wPhi2*wPhi3*wPhi4*wPhi5*wPhi6*wPhi7*wPhi8);//<8>_{n,n,n,n|n,n,n,n}
         } 
        } 
       } 
@@ -1787,19 +3437,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
  }
  
+ */
+
+
+ /*
+
  // binning details of fDirectCorrelations (differential flow):
  //
- //41st bin: <2'>_{n|n}
- //42nd bin: <2'>_{2n|2n}
- //43rd bin: <2'>_{3n|3n}
- //44th bin: <2'>_{4n|4n}
- //46th bin: <3'>_{2n|n,n}
- //47th bin: <3'>_{n,n|2n}
- //51st bin: <4'>_{n,n|n,n}
- //56th bin: <5'>_{2n,n|n,n,n}
- //61st bin: <6'>_{n,n,n|n,n,n}
- //66th bin: <7'>_{2n,n,n|n,n,n,n}
- //71st bin: <8'>_{n,n,n,n|n,n,n,n}
+ //101st bin: <2'>_{n|n}
  
  
  //<2'>_{n|n}
@@ -1808,21 +3453,36 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   fTrack=anEvent->GetTrack(i1);
   if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
     //cout<<"1st = "<<i1<<"     "<< (anEvent->GetTrack(i1))->Eta() << " " << (anEvent->GetTrack(i1))->Pt()<<endl;
     //cout<<"2nd = "<<i2<<"     "<< (anEvent->GetTrack(i2))->Eta() << " " << (anEvent->GetTrack(i2))->Pt()<<endl; 
    //fill the fDirectCorrelations:    
-   fDirectCorrelations->Fill(40.,cos(1.*n*(phi1-phi2)),1);//<2'>_{n,n}
+   fDirectCorrelations->Fill(100.,cos(1.*n*(phi1-phi2)),wPhi2);//<2'>_{n,n}
+   fDirectCorrelations->Fill(103.,cos(1.*n*(phi1-phi2)),pow(wPhi1,2)*wPhi2);//<2'>_{n,n}
+   fDirectCorrelations->Fill(104.,cos(2.*n*(phi1-phi2)),wPhi1*pow(wPhi2,2));//<2'>_{n,n}
+   fDirectCorrelations->Fill(105.,cos(1.*n*(phi1-phi2)),pow(wPhi2,3));//<2'>_{n,n}
+   
+   
+   
    fDirectCorrelations->Fill(41.,cos(2.*n*(phi1-phi2)),1);//<2'>_{2n,2n}
    fDirectCorrelations->Fill(42.,cos(3.*n*(phi1-phi2)),1);//<2'>_{3n,3n}
-   fDirectCorrelations->Fill(43.,cos(4.*n*(phi1-phi2)),1);//<2'>_{4n,4n}     
+   fDirectCorrelations->Fill(43.,cos(4.*n*(phi1-phi2)),1);//<2'>_{4n,4n}   
+    
   }//end of for(Int_t i2=0;i2<nPrim;i2++)
  }//end of for(Int_t i1=0;i1<nPrim;i1++)
+ 
+ */  
+  
+ 
+ 
+ /*
  
  //<3'>_{2n|n,n}
  for(Int_t i1=0;i1<nPrim;i1++)
@@ -1830,77 +3490,84 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   fTrack=anEvent->GetTrack(i1);
   if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<nPrim;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
     phi3=fTrack->Phi();
-    //fill the fDirectCorrelations:           
-    fDirectCorrelations->Fill(45.,cos(n*(2.*phi1-phi2-phi3)),1);//<3'>_{2n|n,n}
-    fDirectCorrelations->Fill(46.,cos(n*(phi1+phi2-2.*phi3)),1);//<3'>_{n,n|2n}    
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
+    //fill the fDirectCorrelations:     
+    
+    // 2-p
+    fDirectCorrelations->Fill(101.,cos(n*(phi2-phi3)),wPhi1*wPhi2*wPhi3); // <w1 w2 w3 cos(n(phi2-phi3))>
+    fDirectCorrelations->Fill(102.,cos(n*(phi1-phi3)),pow(wPhi2,2.)*wPhi3); // <w2^2 w3 cos(n(psi1-phi2))>
+    
+    // 3-p            
+    fDirectCorrelations->Fill(110.,cos(n*(2.*phi1-phi2-phi3)),wPhi1*wPhi2*wPhi3); // <w1 w2 w3 cos(n(2psi1-phi2-phi3))>
+    fDirectCorrelations->Fill(111.,cos(n*(phi1+phi2-2.*phi3)),wPhi2*pow(wPhi3,2.)); // <w2 w3^2 cos(n(psi1+phi2-2.*phi3))>
+    
+    
+    //fDirectCorrelations->Fill(46.,cos(n*(phi1+phi2-2.*phi3)),1);//<3'>_{n,n|2n}    
    }//end of for(Int_t i3=0;i3<nPrim;i3++)  
   }//end of for(Int_t i2=0;i2<nPrim;i2++)  
  }//end of for(Int_t i1=0;i1<nPrim;i1++) 
+ 
+ 
+ */
+ 
+ 
+ /* 
   
  //<4'>_{n,n|n,n}
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
   if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  tempCounter++;
   phi1=fTrack->Phi();
+  if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
    phi2=fTrack->Phi();
+   if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
     phi3=fTrack->Phi();
+    if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
      if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
      phi4=fTrack->Phi();
+     if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      //fill the fDirectCorrelations:
-     fDirectCorrelations->Fill(50.,cos(n*(phi1+phi2-phi3-phi4)),1);//<4'>_{n,n|n,n} 
+     // 4-p            
+     fDirectCorrelations->Fill(120.,cos(n*(phi1+phi2-phi3-phi4)),wPhi2*wPhi3*wPhi4); // <w1 w2 w3 cos(n(psi1+phi1-phi2-phi3))> 
+     
+       tempLoop+=wPhi2*wPhi3*wPhi4;
+     
     }//end of for(Int_t i4=0;i4<nPrim;i4++)
    }//end of for(Int_t i3=0;i3<nPrim;i3++)
   }//end of for(Int_t i2=0;i2<nPrim;i2++) 
  }//end of for(Int_t i1=0;i1<nPrim;i1++)
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- */
- 
-
- 
- 
- 
- 
- 
- 
- 
- 
+  
+ */ 
  
  
  
@@ -1919,6 +3586,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  /*
+ 
+ 
+ 
+ 
  
  
  
@@ -2118,7 +3789,44 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  */
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
 //--------------------------------------------------------------------------------------------------------------------------------  
@@ -2131,7 +3839,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 void AliFlowAnalysisWithQCumulants::Finish()
 {
  //calculate the final results
- AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations, fQProduct,fDirectCorrelations,f2PerPtBin1n1nRP,f2PerPtBin2n2nRP,f3PerPtBin2n1n1nRP,f3PerPtBin1n1n2nRP,f4PerPtBin1n1n1n1nRP, f2PerEtaBin1n1nRP,f2PerEtaBin2n2nRP,f3PerEtaBin2n1n1nRP,f3PerEtaBin1n1n2nRP,f4PerEtaBin1n1n1n1nRP,f2PerPtBin1n1nPOI,f2PerPtBin2n2nPOI,f3PerPtBin2n1n1nPOI,f3PerPtBin1n1n2nPOI,f4PerPtBin1n1n1n1nPOI, f2PerEtaBin1n1nPOI,f2PerEtaBin2n2nPOI,f3PerEtaBin2n1n1nPOI,f3PerEtaBin1n1n2nPOI,f4PerEtaBin1n1n1n1nPOI,fCommonHists2nd,fCommonHists4th, fCommonHists6th, fCommonHists8th,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
+ AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations,fQCorrelationsW, fQProduct,fDirectCorrelations,f2PerPtBin1n1nRP,f2PerPtBin2n2nRP,f3PerPtBin2n1n1nRP,f3PerPtBin1n1n2nRP,f4PerPtBin1n1n1n1nRP, f2PerEtaBin1n1nRP,f2PerEtaBin2n2nRP,f3PerEtaBin2n1n1nRP,f3PerEtaBin1n1n2nRP,f4PerEtaBin1n1n1n1nRP,
+ 
+ f2PerPtBin1n1nPOI,f2PerPtBin2n2nPOI,f3PerPtBin2n1n1nPOI,f3PerPtBin1n1n2nPOI,f4PerPtBin1n1n1n1nPOI, f2PerEtaBin1n1nPOI,f2PerEtaBin2n2nPOI,f3PerEtaBin2n1n1nPOI,f3PerEtaBin1n1n2nPOI,f4PerEtaBin1n1n1n1nPOI,
+ f2WPerPtBin1n1nPOI,f2WPerPtBin2n2nPOI,f3WPerPtBin2n1n1nPOI,f3WPerPtBin1n1n2nPOI,f4WPerPtBin1n1n1n1nPOI,   
+ 
+ 
+ f2WPerEtaBin1n1nPOI, f4WPerEtaBin1n1n1n1nPOI,  f2WPerPtBin1n1nRP, f4WPerPtBin1n1n1n1nRP,  f2WPerEtaBin1n1nRP, f4WPerEtaBin1n1n1n1nRP,
+ 
+ 
+ fCommonHists2nd,fCommonHists4th, fCommonHists6th, fCommonHists8th,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
 
  finalResults.Calculate(); 
  
@@ -2173,7 +3890,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx       
 
- */        
+  */     
                            
 }
 
