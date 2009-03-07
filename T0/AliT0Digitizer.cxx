@@ -166,7 +166,9 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Int_t countE[24];
   Int_t volume, pmt, trCFD, trLED; 
   Float_t sl, qt;
-  Int_t  bestATDC, bestCTDC, qtCh;
+  Int_t  bestATDC=0;
+  Int_t  bestCTDC=0;
+  Int_t qtCh=0;
   Float_t time[24], besttime[24], timeGaus[24] ;
   //Q->T-> coefficients !!!! should be asked!!!
   Float_t timeDelayCFD[24];
@@ -195,9 +197,9 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     
     Float_t besttimeC=99999.;
     Float_t besttimeA=99999.;
-    Int_t pmtBestC=9999;
-    Int_t pmtBestA=9999;
-    Int_t timeDiff=999, meanTime=0;
+    Int_t pmtBestC=99999;
+    Int_t pmtBestA=99999;
+    Int_t timeDiff=99999, meanTime=99999;
     Int_t sumMult =0;   fSumMult=0;
     bestATDC = 99999;  bestCTDC = 99999;
  
@@ -208,7 +210,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     ftimeLED ->Reset();
     for (Int_t i0=0; i0<24; i0++)
       {
-	time[i0]=besttime[i0]=timeGaus[i0]=99999; countE[i0]=0;
+	time[i0]=besttime[i0]=timeGaus[i0]=999999; countE[i0]=0;
       }
     AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     AliLoader * pInStartLoader = inRL->GetLoader("T0Loader");
@@ -223,8 +225,10 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     if (brHits) {
       fT0->SetHitsAddressBranch(brHits);
     }else{
-      AliError("Branch T0 hit not found");
-      exit(111);
+      AliWarning("Branch T0 hit not found for this event");
+      // fT0->AddDigit(bestATDC,bestCTDC,meanTime,timeDiff,fSumMult, refpoint,
+      //	       ftimeCFD,fADC0,ftimeLED,fADC);
+      continue;      
     } 
     Int_t ntracks    = (Int_t) th->GetEntries();
     
