@@ -229,7 +229,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
   for (Int_t det = 0; det < 105; det++) {
     time = allData->At(det);
-    if (time >0) {
+    if (time >0 && time !=99999) {
       lookkey->SetKey(det);
       lookvalue = (AliT0LookUpValue*) fLookUp.GetValue((TObject*)lookkey);     
       if (lookvalue ) 
