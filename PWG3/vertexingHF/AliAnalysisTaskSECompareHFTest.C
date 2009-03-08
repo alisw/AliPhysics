@@ -4,35 +4,43 @@ void AliAnalysisTaskSECompareHFTest()
   // Test macro for the AliAnalysisTaskSE for heavy-flavour candidates
   // association with MC truth (using MC info in AOD)
   // A.Dainese, andrea.dainese@lnl.infn.it
+  // "grid" mode added by R.Bala, bala@to.infn.it
   //
-  TString mode="local"; // otherwise, "grid"
+  TString analysisMode = "grid"; // "local" or "grid"
+  TString inputMode    = "list"; // "list" or "xml"
+
 
   Bool_t useParFiles=kFALSE;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
+  if(analysisMode=="grid") TGrid::Connect("alien:",0,0,"t");
+
+
+
+
   TChain *chainAOD = 0;
   TChain *chainAODfriend = 0;
-
-  chainAOD = new TChain("aodTree");
-  chainAODfriend = new TChain("aodTree");
-
-  if(mode=="local") {
-    // Local files 
-    chainAOD->Add("./AliAOD.root");
-    chainAODfriend->Add("./AliAOD.VertexingHF.root");
+  
+  if(inputMode=="list") {
+    // Local files
+    chainAOD = new TChain("aodTree");
+    chainAODfriend = new TChain("aodTree");
+    // set the path to the files (can be local or on alien)
+    chainAOD->Add(      "alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.root");
+    chainAODfriend->Add("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.VertexingHF.root");
     // ... add more if needed
-  } else { // grid (NOT TESTED YET)
-    //Fetch files with AliEn
+  } else if(inputMode=="xml") {
     // xml: need to check the 1-to-1 correspondence
-    const char *collectionfileAOD = "CollectionAOD.xml";
-    const char *collectionfileAODfriend = "CollectionAODfriend.xml";
-    TGrid::Connect("alien://");
-    //Create an AliTagAnalysis Object and chain the tags
-    AliTagAnalysis   *tagAna = new AliTagAnalysis();
-    chainAOD = tagAna->GetChainFromCollection(collectionfileAOD,"aodTree");
-    chainAODfriend = tagAna->GetChainFromCollection(collectionfileAODfriend,"aodTree");
+    TString collectionfileAOD       = "collection_aod.xml";
+    TString collectionfileAODfriend = "collection_aodHF.xml";
+    TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD.Data());
+    TAlienCollection *collectionAODfriend = TAlienCollection::Open(collectionfileAODfriend.Data());
+    chainAOD = new TChain("aodTree");
+    chainAODfriend = new TChain("aodTree");
+    while(collectionAOD->Next())       chainAOD->Add(collectionAOD->GetTURL(""));
+    while(collectionAODfriend->Next()) chainAODfriend->Add(collectionAODfriend->GetTURL(""));
   }
 
   // attach the friend chain
@@ -45,7 +53,6 @@ void AliAnalysisTaskSECompareHFTest()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  //inputHandler->AddFriend("AliAOD.VertexingHF.root");//should not be needed
   mgr->SetInputEventHandler(inputHandler);
 
   
@@ -56,25 +63,22 @@ void AliAnalysisTaskSECompareHFTest()
   
   //
   // Create containers for input/output
-  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
-  /*  
-  // before v4-17-Release
   AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinput",TChain::Class(), 
-  						  AliAnalysisManager::kInputContainer);
-  mgr->ConnectInput(hfTask,0,cinput);
-  */
+							  AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "CmpHF.root");
+  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
+
   mgr->ConnectOutput(hfTask,1,coutput);
-  
+
   //
   // Run the analysis
   //    
   printf("CHAIN HAS %d ENTRIES\n",(Int_t)chainAOD->GetEntries());
   if(mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis(mode.Data(),chainAOD);
+    mgr->StartAnalysis("local",chainAOD);
   }
 
   return;
