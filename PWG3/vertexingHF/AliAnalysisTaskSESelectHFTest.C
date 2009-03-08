@@ -6,38 +6,45 @@ void AliAnalysisTaskSESelectHFTest()
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
 
+  TString analysisMode = "grid"; // "local" or "grid"
+  TString inputMode    = "list"; // "list" or "xml"
+
+
   Bool_t useParFiles=kFALSE;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
+  if(analysisMode=="grid") TGrid::Connect("alien:",0,0,"t");
 
-  // Local files 
-  TChain *chain = new TChain("aodTree");
-  chain->Add("./AliAOD.root");
 
-  // or:
-  /*
-  //Fetch files with AliEn :
-  const char *collectionfile = "CollectionTags.xml";
-  TGrid::Connect("alien://") ;
-  //Create an AliRunTagCuts and an AliEventTagCuts Object and impose some selection criteria
-  AliRunTagCuts      *runCuts   = new AliRunTagCuts();
-  AliEventTagCuts    *eventCuts = new AliEventTagCuts();
-  AliLHCTagCuts      *lhcCuts   = new AliLHCTagCuts();
-  AliDetectorTagCuts *detCuts   = new AliDetectorTagCuts();
-  eventCuts->SetMultiplicityRange(0,20000);
-  //Create an AliTagAnalysis Object and chain the tags
-  AliTagAnalysis   *tagAna = new AliTagAnalysis();
-  tagAna->SetType("AOD");
-  TAlienCollection *coll   = TAlienCollection::Open(collectionfile);
-  TGridResult      *tagResult = coll->GetGridResult("",0,0);
-  tagResult->Print();
-  tagAna->ChainGridTags(tagResult);
-  //Create a new aod chain and assign the chain that is returned by querying the tags
-  TChain* chain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts);
-  */
 
+
+  TChain *chainAOD = 0;
+  TChain *chainAODfriend = 0;
+  
+  if(inputMode=="list") {
+    // Local files
+    chainAOD = new TChain("aodTree");
+    chainAODfriend = new TChain("aodTree");
+    // set the path to the files (can be local or on alien)
+    chainAOD->Add(      "alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.root");
+    chainAODfriend->Add("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.VertexingHF.root");
+    // ... add more if needed
+  } else if(inputMode=="xml") {
+    // xml: need to check the 1-to-1 correspondence
+    TString collectionfileAOD       = "collection_aod.xml";
+    TString collectionfileAODfriend = "collection_aodHF.xml";
+    TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD.Data());
+    TAlienCollection *collectionAODfriend = TAlienCollection::Open(collectionfileAODfriend.Data());
+    chainAOD = new TChain("aodTree");
+    chainAODfriend = new TChain("aodTree");
+    while(collectionAOD->Next())       chainAOD->Add(collectionAOD->GetTURL(""));
+    while(collectionAODfriend->Next()) chainAODfriend->Add(collectionAODfriend->GetTURL(""));
+  }
+
+  // attach the friend chain
+  chainAOD->AddFriend(chainAODfriend);
 
   // Create the analysis manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("My Manager","My Manager");
@@ -46,7 +53,7 @@ void AliAnalysisTaskSESelectHFTest()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  inputHandler->AddFriend("AliAOD.VertexingHF.root");
+  //inputHandler->AddFriend("AliAOD.VertexingHF.root");
   mgr->SetInputEventHandler(inputHandler);
 
   // Output 
@@ -79,11 +86,10 @@ void AliAnalysisTaskSESelectHFTest()
   //
   // Run the analysis
   //    
-  printf("CHAIN HAS %d ENTRIES\n",(Int_t)chain->GetEntries());
+  printf("CHAIN HAS %d ENTRIES\n",(Int_t)chainAOD->GetEntries());
   if(mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
-    //mgr->StartAnalysis("grid",chain);
+    mgr->StartAnalysis("local",chainAOD);
   }
 
   return;
