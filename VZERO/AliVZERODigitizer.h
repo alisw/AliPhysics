@@ -36,7 +36,8 @@ class AliVZERODigitizer: public AliDigitizer {
    void ResetDigit();
   
    AliVZEROCalibData *GetCalibData() const;
-  
+   Int_t GetPMNumber(Int_t cell) const;
+
  protected:
  
    AliVZEROCalibData *fCalibData;  //! calibration data

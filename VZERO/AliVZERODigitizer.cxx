@@ -127,18 +127,19 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // Creates digits from hits
      
   Int_t       map[80];    // 48 values on V0C + 32 on V0A
+  Int_t       pmNumber[80];
   Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
   Float_t     time[80], time_ref[80], time2[64];
   Float_t     adc_gain[80]; 
   Float_t     adc_pedestal[64],adc_sigma[64];    
   fNdigits     =    0;  
-  Float_t     PMGain_smeared[64];  
+  Float_t     pmGain_smeared[64];  
   Float_t     cPM[80];
   
   // Smearing of the PM tubes intrinsic characteristics
   
   for(Int_t ii=0; ii<64; ii++) {
-      PMGain_smeared[ii] = gRandom->Gaus(fPMGain, fPMGain/5); }
+      pmGain_smeared[ii] = gRandom->Gaus(fPMGain, fPMGain/5); }
               
   // Retrieval of ADC gain values and pedestal information from local CDB 
   // I use only the first 64th values of the calibration array in CDB 
@@ -150,18 +151,18 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
    
   for(Int_t i=0; i<16; i++) { 
             adc_gain[i] = fCalibData->GetGain(i); 
-            cPM[i]      = fPhotoCathodeEfficiency * PMGain_smeared[i];}
+            cPM[i]      = fPhotoCathodeEfficiency * pmGain_smeared[i];}
   
   for(Int_t j=16; j<48; j=j+2) { 
             Int_t i=(j+17)/2;
             adc_gain[j]   = fCalibData->GetGain(i);	    
 	    adc_gain[j+1] = fCalibData->GetGain(i); 
-	    cPM[j]        = fPhotoCathodeEfficiency * PMGain_smeared[i];   
-	    cPM[j+1]      = fPhotoCathodeEfficiency * PMGain_smeared[i]; }
+	    cPM[j]        = fPhotoCathodeEfficiency * pmGain_smeared[i];   
+	    cPM[j+1]      = fPhotoCathodeEfficiency * pmGain_smeared[i]; }
 	    
   for(Int_t i=48; i<80; i++){ 
             adc_gain[i] = fCalibData->GetGain(i-16); 
-	    cPM[i]      = fPhotoCathodeEfficiency * PMGain_smeared[i-16];};
+	    cPM[i]      = fPhotoCathodeEfficiency * pmGain_smeared[i-16];};
   
   for(Int_t  i=0; i<64; i++){ adc_pedestal[i] = fCalibData->GetPedestal(i); 
                               adc_sigma[i]    = fCalibData->GetSigma(i); }; 
@@ -240,13 +241,15 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 // Now builds the scintillator cell response (80 cells i.e. 80 responses)
          
    for (Int_t i=0; i<80; i++) {    
-       Float_t q1 = Float_t ( map[i] )* cPM[i] * kQe;
-       Float_t noise = gRandom->Gaus(10.5,3.22);
-       Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
+        Float_t q1 = Float_t ( map[i] )* cPM[i] * kQe;
+        Float_t noise = gRandom->Gaus(10.5,3.22);
+        Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
         + noise*1e-3; 	
-       map[i] = Int_t( pmResponse * adc_gain[i]);
-       if(map[i] > (110/2)) {map[i] = Int_t(gRandom->Gaus(map[i], 110/6));}
-     }
+        map[i] = Int_t( pmResponse * adc_gain[i]);
+//	printf("cell=%d,  pmNumber=%d,  mip=%f \n",i,GetPMNumber(i), (1.0/fCalibData->GetMIPperADC(GetPMNumber(i))));
+        if(map[i] > (int(( 1.0/fCalibData->GetMIPperADC(GetPMNumber(i))/2 ) + 0.5)) )
+	          {map[i] = Int_t(gRandom->Gaus(map[i], (int(( 1.0/fCalibData->GetMIPperADC(GetPMNumber(i))/6 ) + 0.5)) ));}
+   }
       
 // Now transforms 80 cell responses into 64 photomultiplier responses
 // Also adds the ADC pedestals taken out of the calibration data base
@@ -334,4 +337,22 @@ AliVZEROCalibData* AliVZERODigitizer::GetCalibData() const
   return calibdata;
 
 }
+
+//____________________________________________________________________________
+Int_t AliVZERODigitizer::GetPMNumber(Int_t cell) const
+
+{
+   
+  Int_t pmNumber[80] = { 0,  1,  2,  3,  4,  5,  6,  7,
+                          8,  9, 10, 11, 12, 13, 14, 15, 
+			 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 
+			 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31,
+			 32, 33, 34, 35, 36, 37, 38, 39,
+		         40, 41, 42, 43, 44, 45, 46, 47, 
+			 48, 49, 50, 51, 52, 53, 54, 55,
+			 56, 57, 58, 59, 60, 61, 62, 63 };
+			      
+  return pmNumber[cell];	
+}
+
 
