@@ -33,8 +33,9 @@ public:
   // void DoXYZZ();
   void DoRnrJets();
   void DoRnrTracks();
-  void DoEnergyColorScale();
-  void DoEnergyScale();
+  void DoArrowJetScale();
+  void DoArrowTrackScale();
+	void DoEnergyScale();
   void DoOneSelection();
   void DoTwoSelection();
   void DoStaticDataWindow();
@@ -74,7 +75,8 @@ protected:
   TGCheckButton    *fRnrJets;          // Widget for flag RnrJets.
   TGCheckButton    *fRnrTracks;        // Widget for flag RnrTracks.
   TEveGValuator    *fEnergyScale;      // Widget for EnergyScale.
-  TEveGValuator    *fEnergyColorScale; // Widget for EnergyColorScale.
+  TEveGValuator    *fArrowJetScale;    // Widget for ArrowJetScale.
+  TEveGValuator    *fArrowTrackScale;  // Widget for ArrowTrackScale.
   TGButton         *fOneSelection, *fTwoSelection;  // Widgets for one/two selection flags.
   TGButton         *fInformationSetup; // Widget for InformationSetup.
 

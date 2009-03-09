@@ -62,8 +62,11 @@ public:
   Float_t GetEnergyScale() const { return fEnergyScale; }
   void    SetEnergyScale(Float_t s) { fEnergyScale = s; CreateArrows(); }
 
-  Float_t GetEnergyColorScale() const { return fEnergyColorScale; }
-  void    SetEnergyColorScale(Float_t s) { fEnergyColorScale = s; CreateArrows(); }
+  Float_t GetArrowJetScale() const { return fArrowJetScale; }
+  void    SetArrowJetScale(Float_t s) { fArrowJetScale = s; CreateArrows(); }
+	
+  Float_t GetArrowTrackScale() const { return fArrowTrackScale; }
+  void    SetArrowTrackScale(Float_t s) { fArrowTrackScale = s; CreateArrows(); }
 
   const AliAODJet& GetJet1() const { return *fJet1; }
   const AliAODJet& GetJet2() const { return *fJet2; }
@@ -94,8 +97,9 @@ protected:
   Float_t fEtaScale;          // Multiplier for eta.
   Float_t fPhiScale;          // Multiplier for phi.
   Float_t fEnergyScale;       // Multiplier for energy.
-  Float_t fEnergyColorScale;  // Multiplier for energy color.
-
+  Float_t fArrowJetScale;     // Multiplier for jet arrow dim.
+  Float_t fArrowTrackScale;   // Multiplier for track arrow dim.
+	
   Color_t fGridColor; // Color of coordinate grid.
 
   std::vector<AliAODJet>   fJets;   // Jets to display.

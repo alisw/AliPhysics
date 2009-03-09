@@ -53,7 +53,8 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
   fPhiScale(350/(TMath::Pi())),
   fEnergyScale(50.0),
 
-  fEnergyColorScale (0.),
+  fArrowJetScale (2.0),
+	fArrowTrackScale (0.7),
 
   fGridColor(5),
 
@@ -109,6 +110,8 @@ void AliEveJetPlane::CreateArrows()
 {
   // Create arrows according to current state.
 
+  TEveManager::TRedrawDisabler noRedraw(gEve);
+
   DestroyElements();
 
   // Finding the maximum energy
@@ -151,7 +154,7 @@ void AliEveJetPlane::CreateArrows()
       x = eta*(fEtaScale);
       y = phi*(fPhiScale) - 350;
 
-      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)*TMath::Power(10., fEnergyColorScale)/(TMath::Log(eMax + 1.))),nCol-2);
+      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)/(TMath::Log(eMax + 1.))),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
 
       TEveArrow *a = new TEveArrow(0, 0 , h, x, y, 0);
@@ -161,9 +164,9 @@ void AliEveJetPlane::CreateArrows()
                               j->Px(), j->Py(), j->Pz(), e, j->Pt(), eta, phi ));
       a->SetPickable(kTRUE);
       a->SetMainColor(colIdx);
-      a->SetTubeR(0.016);
-      a->SetConeR(0.049);
-      a->SetConeL(0.170);
+      a->SetTubeR(0.016*fArrowJetScale);
+      a->SetConeR(0.049*fArrowJetScale);
+      a->SetConeL(0.170*fArrowJetScale);
       AddElement(a);
 
       ++j; ++jetid;
@@ -192,7 +195,7 @@ void AliEveJetPlane::CreateArrows()
       x = eta*(fEtaScale);
       y = phi*(fPhiScale) - 350;
 
-      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)*TMath::Power(10., fEnergyColorScale)/(TMath::Log(eMax + 1.))),nCol-2);
+      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*TMath::Log(e + 1.)/(TMath::Log(eMax + 1.))),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
 
       TEveArrow *a = new TEveArrow(0, 0 , h, x, y, 0);
@@ -202,9 +205,9 @@ void AliEveJetPlane::CreateArrows()
                               k->Px(), k->Py(), k->Pz(), e, k->Pt(), eta, phi ));
       a->SetPickable(kTRUE);
       a->SetMainColor(colIdx);
-      a->SetTubeR(0.015);
-      a->SetConeR(0.040);
-      a->SetConeL(0.130);
+      a->SetTubeR(0.015*fArrowTrackScale);
+      a->SetConeR(0.040*fArrowTrackScale);
+      a->SetConeL(0.130*fArrowTrackScale);
       AddElement(a);
 
       ++k; ++trackid;
@@ -218,11 +221,6 @@ void AliEveJetPlane::CreateArrows()
     fSelConnected = kTRUE;
   }
 }
-
-/******************************************************************************/
-
-
-
 
 /******************************************************************************/
 

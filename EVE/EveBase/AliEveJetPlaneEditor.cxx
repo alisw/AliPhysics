@@ -37,7 +37,8 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   fRnrJets(0),
   fRnrTracks(0),
   fEnergyScale(0),
-  fEnergyColorScale(0),
+  fArrowJetScale(0),
+  fArrowTrackScale(0),
   fOneSelection(0), fTwoSelection(0),
   fInformationSetup(0)
 {
@@ -63,16 +64,25 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   fEnergyScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoEnergyScale()");
   AddFrame(fEnergyScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  fEnergyColorScale = new TEveGValuator(this, "Color scale:", 110, 0);
-  fEnergyColorScale->SetLabelWidth(labelW);
-  fEnergyColorScale->SetNELength(6);
-  fEnergyColorScale->Build();
-  fEnergyColorScale->SetLimits(-2, 2, 100, TGNumberFormat::kNESRealOne);
-  fEnergyColorScale->SetToolTip("Energy mapped to highest palette color.");
-  fEnergyColorScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoEnergyColorScale()");
-  AddFrame(fEnergyColorScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+  fArrowJetScale = new TEveGValuator(this, "Jet scale:", 110, 0);
+  fArrowJetScale->SetLabelWidth(labelW);
+  fArrowJetScale->SetNELength(6);
+  fArrowJetScale->Build();
+  fArrowJetScale->SetLimits(0.1, 3, 100, TGNumberFormat::kNESRealOne);
+  fArrowJetScale->SetToolTip("Scale for jet arrow dimensions.");
+  fArrowJetScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoArrowJetScale()");
+  AddFrame(fArrowJetScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  fOneSelection = new TGRadioButton(this, "&One AliEveTrack/Jet");
+  fArrowTrackScale = new TEveGValuator(this, "Track scale:", 110, 0);
+  fArrowTrackScale->SetLabelWidth(labelW);
+  fArrowTrackScale->SetNELength(6);
+  fArrowTrackScale->Build();
+  fArrowTrackScale->SetLimits(0.1, 3, 100, TGNumberFormat::kNESRealOne);
+  fArrowTrackScale->SetToolTip("Scale for track arrow dimensions.");
+  fArrowTrackScale->Connect("ValueSet(Double_t)", "AliEveJetPlaneEditor", this, "DoArrowTrackScale()");
+  AddFrame(fArrowTrackScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+	
+	fOneSelection = new TGRadioButton(this, "&One AliEveTrack/Jet");
   fTwoSelection = new TGRadioButton(this, "&Two AliEveTrack/Jet");
   AddFrame(fOneSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   AddFrame(fTwoSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
@@ -97,8 +107,9 @@ void AliEveJetPlaneEditor::SetModel(TObject* obj)
   fRnrJets->SetState(fM->GetRnrJets() ? kButtonDown : kButtonUp);
   fRnrTracks->SetState(fM->GetRnrTracks() ? kButtonDown : kButtonUp);
   fEnergyScale->SetValue(fM->GetEnergyScale());
-  fEnergyColorScale->SetValue(fM->GetEnergyColorScale());
-  fOneSelection->SetState(fM->GetOneSelection() ? kButtonDown : kButtonUp);
+  fArrowJetScale->SetValue(fM->GetArrowJetScale());
+  fArrowTrackScale->SetValue(fM->GetArrowTrackScale());
+	fOneSelection->SetState(fM->GetOneSelection() ? kButtonDown : kButtonUp);
   fTwoSelection->SetState(fM->GetTwoSelection() ? kButtonDown : kButtonUp);
 }
 
@@ -120,11 +131,19 @@ void AliEveJetPlaneEditor::DoRnrTracks()
   Update();
 }
 
-void AliEveJetPlaneEditor::DoEnergyColorScale()
+void AliEveJetPlaneEditor::DoArrowJetScale()
 {
-  // Slot for EnergyColorScale.
+  // Slot for JetScale.
 
-  fM->SetEnergyColorScale(fEnergyColorScale->GetValue());
+  fM->SetArrowJetScale(fArrowJetScale->GetValue());
+  Update();
+}
+
+void AliEveJetPlaneEditor::DoArrowTrackScale()
+{
+  // Slot for TrackScale.
+
+  fM->SetArrowTrackScale(fArrowTrackScale->GetValue());
   Update();
 }
 
