@@ -99,8 +99,8 @@ class AliFlowAnalysisWithQCumulants{
   void SetQCorrelations(TProfile* const QCorr) {this->fQCorrelations = QCorr;};
   TProfile* GetQCorrelations() const {return this->fQCorrelations;};
   
-  void SetQCorrelationsW(TProfile* const QCorrW) {this->fQCorrelationsW = QCorrW;};
-  TProfile* GetQCorrelationsW() const {return this->fQCorrelationsW;};
+  void SetWeightedQCorrelations(TProfile* const WQCorr) {this->fWeightedQCorrelations = WQCorr;};
+  TProfile* GetWeightedQCorrelations() const {return this->fWeightedQCorrelations;};
   
   void SetQProduct(TProfile* const qp) {this->fQProduct = qp;};
   TProfile* GetQProduct() const {return this->fQProduct;};
@@ -111,29 +111,11 @@ class AliFlowAnalysisWithQCumulants{
   void SetTwo1n1nPerPtBinRP(TProfile* const pb2PerPtBin1n1nRP) {this->f2PerPtBin1n1nRP = pb2PerPtBin1n1nRP;};
   TProfile* GetTwo1n1nPerPtBinRP() const {return this->f2PerPtBin1n1nRP;};
   
-  void SetTwo2n2nPerPtBinRP(TProfile* const pb2PerPtBin2n2nRP) {this->f2PerPtBin2n2nRP = pb2PerPtBin2n2nRP;};
-  TProfile* GetTwo2n2nPerPtBinRP() const {return this->f2PerPtBin2n2nRP;};
-  
-  void SetThree2n1n1nPerPtBinRP(TProfile* const pb3PerPtBin2n1n1nRP) {this->f3PerPtBin2n1n1nRP = pb3PerPtBin2n1n1nRP;};
-  TProfile* GetThree2n1n1nPerPtBinRP() const {return this->f3PerPtBin2n1n1nRP;};
-  
-  void SetThree1n1n2nPerPtBinRP(TProfile* const pb3PerPtBin1n1n2nRP) {this->f3PerPtBin1n1n2nRP = pb3PerPtBin1n1n2nRP;};
-  TProfile* GetThree1n1n2nPerPtBinRP() const {return this->f3PerPtBin1n1n2nRP;};
-  
   void SetFour1n1n1n1nPerPtBinRP(TProfile* const pb4PerPtBin1n1n1n1nRP) {this->f4PerPtBin1n1n1n1nRP = pb4PerPtBin1n1n1n1nRP;};
   TProfile* GetFour1n1n1n1nPerPtBinRP() const {return this->f4PerPtBin1n1n1n1nRP;}; 
 
   void SetTwo1n1nPerEtaBinRP(TProfile* const pb2PerEtaBin1n1nRP) {this->f2PerEtaBin1n1nRP = pb2PerEtaBin1n1nRP;};
   TProfile* GetTwo1n1nPerEtaBinRP() const {return this->f2PerEtaBin1n1nRP;};
-  
-  void SetTwo2n2nPerEtaBinRP(TProfile* const pb2PerEtaBin2n2nRP) {this->f2PerEtaBin2n2nRP = pb2PerEtaBin2n2nRP;};
-  TProfile* GetTwo2n2nPerEtaBinRP() const {return this->f2PerEtaBin2n2nRP;};
-  
-  void SetThree2n1n1nPerEtaBinRP(TProfile* const pb3PerEtaBin2n1n1nRP) {this->f3PerEtaBin2n1n1nRP = pb3PerEtaBin2n1n1nRP;};
-  TProfile* GetThree2n1n1nPerEtaBinRP() const {return this->f3PerEtaBin2n1n1nRP;};
-  
-  void SetThree1n1n2nPerEtaBinRP(TProfile* const pb3PerEtaBin1n1n2nRP) {this->f3PerEtaBin1n1n2nRP = pb3PerEtaBin1n1n2nRP;};
-  TProfile* GetThree1n1n2nPerEtaBinRP() const {return this->f3PerEtaBin1n1n2nRP;};
   
   void SetFour1n1n1n1nPerEtaBinRP(TProfile* const pb4PerEtaBin1n1n1n1nRP) {this->f4PerEtaBin1n1n1n1nRP = pb4PerEtaBin1n1n1n1nRP;};
   TProfile* GetFour1n1n1n1nPerEtaBinRP() const {return this->f4PerEtaBin1n1n1n1nRP;}; 
@@ -141,51 +123,20 @@ class AliFlowAnalysisWithQCumulants{
   void SetTwo1n1nPerPtBinPOI(TProfile* const pb2PerPtBin1n1nPOI) {this->f2PerPtBin1n1nPOI = pb2PerPtBin1n1nPOI;};
   TProfile* GetTwo1n1nPerPtBinPOI() const {return this->f2PerPtBin1n1nPOI;};
   
-  void SetTwo2n2nPerPtBinPOI(TProfile* const pb2PerPtBin2n2nPOI) {this->f2PerPtBin2n2nPOI = pb2PerPtBin2n2nPOI;};
-  TProfile* GetTwo2n2nPerPtBinPOI() const {return this->f2PerPtBin2n2nPOI;};
-  
-  void SetThree2n1n1nPerPtBinPOI(TProfile* const pb3PerPtBin2n1n1nPOI) {this->f3PerPtBin2n1n1nPOI = pb3PerPtBin2n1n1nPOI;};
-  TProfile* GetThree2n1n1nPerPtBinPOI() const {return this->f3PerPtBin2n1n1nPOI;};
-  
-  void SetThree1n1n2nPerPtBinPOI(TProfile* const pb3PerPtBin1n1n2nPOI) {this->f3PerPtBin1n1n2nPOI = pb3PerPtBin1n1n2nPOI;};
-  TProfile* GetThree1n1n2nPerPtBinPOI() const {return this->f3PerPtBin1n1n2nPOI;};
-  
   void SetFour1n1n1n1nPerPtBinPOI(TProfile* const pb4PerPtBin1n1n1n1nPOI) {this->f4PerPtBin1n1n1n1nPOI = pb4PerPtBin1n1n1n1nPOI;};
   TProfile* GetFour1n1n1n1nPerPtBinPOI() const {return this->f4PerPtBin1n1n1n1nPOI;}; 
   
   void SetTwo1n1nPerEtaBinPOI(TProfile* const pb2PerEtaBin1n1nPOI) {this->f2PerEtaBin1n1nPOI = pb2PerEtaBin1n1nPOI;};
   TProfile* GetTwo1n1nPerEtaBinPOI() const {return this->f2PerEtaBin1n1nPOI;};
   
-  void SetTwo2n2nPerEtaBinPOI(TProfile* const pb2PerEtaBin2n2nPOI) {this->f2PerEtaBin2n2nPOI = pb2PerEtaBin2n2nPOI;};
-  TProfile* GetTwo2n2nPerEtaBinPOI() const {return this->f2PerEtaBin2n2nPOI;};
-  
-  void SetThree2n1n1nPerEtaBinPOI(TProfile* const pb3PerEtaBin2n1n1nPOI) {this->f3PerEtaBin2n1n1nPOI = pb3PerEtaBin2n1n1nPOI;};
-  TProfile* GetThree2n1n1nPerEtaBinPOI() const {return this->f3PerEtaBin2n1n1nPOI;};
-  
-  void SetThree1n1n2nPerEtaBinPOI(TProfile* const pb3PerEtaBin1n1n2nPOI) {this->f3PerEtaBin1n1n2nPOI = pb3PerEtaBin1n1n2nPOI;};
-  TProfile* GetThree1n1n2nPerEtaBinPOI() const {return this->f3PerEtaBin1n1n2nPOI;};
-  
   void SetFour1n1n1n1nPerEtaBinPOI(TProfile* const pb4PerEtaBin1n1n1n1nPOI) {this->f4PerEtaBin1n1n1n1nPOI = pb4PerEtaBin1n1n1n1nPOI;};
   TProfile* GetFour1n1n1n1nPerEtaBinPOI() const {return this->f4PerEtaBin1n1n1n1nPOI;}; 
-  
-  
   
   void SetTwo1n1nWPerPtBinPOI(TProfile* const pb2WPerPtBin1n1nPOI) {this->f2WPerPtBin1n1nPOI = pb2WPerPtBin1n1nPOI;};
   TProfile* GetTwo1n1nWPerPtBinPOI() const {return this->f2WPerPtBin1n1nPOI;};
   
-  void SetTwo2n2nWPerPtBinPOI(TProfile* const pb2WPerPtBin2n2nPOI) {this->f2WPerPtBin2n2nPOI = pb2WPerPtBin2n2nPOI;};
-  TProfile* GetTwo2n2nWPerPtBinPOI() const {return this->f2WPerPtBin2n2nPOI;};
-  
-  void SetThree2n1n1nWPerPtBinPOI(TProfile* const pb3WPerPtBin2n1n1nPOI) {this->f3WPerPtBin2n1n1nPOI = pb3WPerPtBin2n1n1nPOI;};
-  TProfile* GetThree2n1n1nWPerPtBinPOI() const {return this->f3WPerPtBin2n1n1nPOI;};
-  
-  void SetThree1n1n2nWPerPtBinPOI(TProfile* const pb3WPerPtBin1n1n2nPOI) {this->f3WPerPtBin1n1n2nPOI = pb3WPerPtBin1n1n2nPOI;};
-  TProfile* GetThree1n1n2nWPerPtBinPOI() const {return this->f3WPerPtBin1n1n2nPOI;};
-  
   void SetFour1n1n1n1nWPerPtBinPOI(TProfile* const pb4WPerPtBin1n1n1n1nPOI) {this->f4WPerPtBin1n1n1n1nPOI = pb4WPerPtBin1n1n1n1nPOI;};
   TProfile* GetFour1n1n1n1nWPerPtBinPOI() const {return this->f4WPerPtBin1n1n1n1nPOI;}
-  
-  
   
   void SetTwo1n1nWPerEtaBinPOI(TProfile* const pb2WPerEtaBin1n1nPOI) {this->f2WPerEtaBin1n1nPOI = pb2WPerEtaBin1n1nPOI;};
   TProfile* GetTwo1n1nWPerEtaBinPOI() const {return this->f2WPerEtaBin1n1nPOI;};
@@ -204,12 +155,6 @@ class AliFlowAnalysisWithQCumulants{
   
   void SetFour1n1n1n1nWPerEtaBinRP(TProfile* const pb4WPerEtaBin1n1n1n1nRP) {this->f4WPerEtaBin1n1n1n1nRP = pb4WPerEtaBin1n1n1n1nRP;};
   TProfile* GetFour1n1n1n1nWPerEtaBinRP() const {return this->f4WPerEtaBin1n1n1n1nRP;}
-  
-  
-  
-  
-  
-  
   
   void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
   TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
@@ -245,93 +190,39 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fQvectorForEachEventX;     //profile containing the x-components of Q-vectors from all events (to be removed)  
   TProfile*                  fQvectorForEachEventY;     //profile containing the y-components of Q-vectors from all events (to be removed)   
   TProfile*                  fQCorrelations;            //multi-particle correlations calculated from Q-vectors 
-  TProfile*                  fQCorrelationsW;           //weighted multi-particle correlations calculated from Q-vectors 
+  TProfile*                  fWeightedQCorrelations;           //weighted multi-particle correlations calculated from Q-vectors 
   TProfile*                  fQProduct;                 //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   
   TProfile*                  fDirectCorrelations;       //multi-particle correlations calculated with nested loop  
-
-  //RP (Reaction Plane particles):  
-  TProfile*                  fPtReq1nRP;                //real part of q-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtImq1nRP;                //imaginary part of q-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtReq2nRP;                //real part of q-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fPtImq2nRP;                //imaginary part of q-vector evaluated in harmonic 2n for each pt-bin
-
-  TProfile*                  f2PerPtBin1n1nRP;          //<<2'>>_{n|n} per pt-bin
-  TProfile*                  f2PerPtBin2n2nRP;          //<<2'>>_{2n|2n} per pt-bin
-  TProfile*                  f3PerPtBin2n1n1nRP;        //<<3'>>_{2n|n,n} per pt-bin
-  TProfile*                  f3PerPtBin1n1n2nRP;        //<<3'>>_{n,n|2n} per pt-bin
-  TProfile*                  f4PerPtBin1n1n1n1nRP;      //<<4'>>_{n,n|n,n} per pt-bin
   
-  TProfile*                  fEtaReq1nRP;               //real part of q-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaImq1nRP;               //imaginary part of q-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaReq2nRP;               //real part of q-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fEtaImq2nRP;               //imaginary part of q-vector evaluated in harmonic 2n for each eta-bin
-
-  TProfile*                  f2PerEtaBin1n1nRP;         //<<2'>>_{n|n} per eta-bin
-  TProfile*                  f2PerEtaBin2n2nRP;         //<<2'>>_{2n|2n} per eta-bin
-  TProfile*                  f3PerEtaBin2n1n1nRP;       //<<3'>>_{2n|n,n} per eta-bin
-  TProfile*                  f3PerEtaBin1n1n2nRP;       //<<3'>>_{n,n|2n} per eta-bin
-  TProfile*                  f4PerEtaBin1n1n1n1nRP;     //<<4'>>_{n,n|n,n} per eta-bin  
-
-  //POI (Particles Of Interest): 
-  TProfile*                  fPtReq1nPrimePOI;          //real part of q'-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtImq1nPrimePOI;          //imaginary part of q'-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtReq2nPrimePOI;          //real part of q'-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fPtImq2nPrimePOI;          //imaginary part of q'-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fmPrimePerPtBin;           //number of particles selected both as POI and not as RP per each pt-bin
-  
-  TProfile*                  fPtReq1nPrimePrimePOI;     //real part of q''-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtImq1nPrimePrimePOI;     //imaginary part of q''-vector evaluated in harmonic n for each pt-bin
-  TProfile*                  fPtReq2nPrimePrimePOI;     //real part of q''-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fPtImq2nPrimePrimePOI;     //imaginary part of q''-vector evaluated in harmonic 2n for each pt-bin
-  TProfile*                  fmPrimePrimePerPtBin;      //number of particles selected both as RP and POI per each pt-bin
-  
-  TProfile*                  fEtaReq1nPrimePOI;         //real part of q'-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaImq1nPrimePOI;         //imaginary part of q'-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaReq2nPrimePOI;         //real part of q'-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fEtaImq2nPrimePOI;         //imaginary part of q'-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fmPrimePerEtaBin;          //number of particles selected both as POI and not as RP per each eta-bin
-   
-  TProfile*                  fEtaReq1nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaImq1nPrimePrimePOI;    //imaginary part of q''-vector evaluated in harmonic n for each eta-bin
-  TProfile*                  fEtaReq2nPrimePrimePOI;    //real part of q''-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fEtaImq2nPrimePrimePOI;    //imaginary part of q''-vector evaluated in harmonic 2n for each eta-bin
-  TProfile*                  fmPrimePrimePerEtaBin;     //number of particles selected both as RP and POI in each eta-bin
- 
+  // POI (Particles Of Interest):
+  // non-weighted correlations
   TProfile*                  f2PerPtBin1n1nPOI;         //<<2'>>_{n|n} per pt-bin
-  TProfile*                  f2PerPtBin2n2nPOI;         //<<2'>>_{2n|2n} per pt-bin
-  TProfile*                  f3PerPtBin2n1n1nPOI;       //<<3'>>_{2n|n,n} per pt-bin
-  TProfile*                  f3PerPtBin1n1n2nPOI;       //<<3'>>_{n,n|2n} per pt-bin
   TProfile*                  f4PerPtBin1n1n1n1nPOI;     //<<4'>>_{n,n|n,n} per pt-bin
 
   TProfile*                  f2PerEtaBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin
-  TProfile*                  f2PerEtaBin2n2nPOI;        //<<2'>>_{2n|2n} per eta-bin
-  TProfile*                  f3PerEtaBin2n1n1nPOI;      //<<3'>>_{2n|n,n} per eta-bin
-  TProfile*                  f3PerEtaBin1n1n2nPOI;      //<<3'>>_{n,n|2n} per eta-bin
   TProfile*                  f4PerEtaBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin  
-  
-  
-  
-  
-  
+  // weighted correlations
   TProfile*                  f2WPerPtBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin
-  TProfile*                  f2WPerPtBin2n2nPOI;        //<<2'>>_{2n|2n} per eta-bin
-  TProfile*                  f3WPerPtBin2n1n1nPOI;      //<<3'>>_{2n|n,n} per eta-bin
-  TProfile*                  f3WPerPtBin1n1n2nPOI;      //<<3'>>_{n,n|2n} per eta-bin
   TProfile*                  f4WPerPtBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin    
   
-  TProfile*                  f2WPerEtaBin1n1nPOI;        //<<2'>>_{n|n} per eta-bin 
-  TProfile*                  f4WPerEtaBin1n1n1n1nPOI;    //<<4'>>_{n,n|n,n} per eta-bin
+  TProfile*                  f2WPerEtaBin1n1nPOI;       //<<2'>>_{n|n} per eta-bin 
+  TProfile*                  f4WPerEtaBin1n1n1n1nPOI;   //<<4'>>_{n,n|n,n} per eta-bin
   
-  TProfile*                  f2WPerPtBin1n1nRP;        //<<2'>>_{n|n} per eta-bin 
-  TProfile*                  f4WPerPtBin1n1n1n1nRP;    //<<4'>>_{n,n|n,n} per eta-bin
+  // RP (Reaction Plane particles)
+  // non-weighted correlations
+  TProfile*                  f2PerPtBin1n1nRP;          //<<2'>>_{n|n} per pt-bin
+  TProfile*                  f4PerPtBin1n1n1n1nRP;      //<<4'>>_{n,n|n,n} per pt-bin
+
+  TProfile*                  f2PerEtaBin1n1nRP;         //<<2'>>_{n|n} per eta-bin
+  TProfile*                  f4PerEtaBin1n1n1n1nRP;     //<<4'>>_{n,n|n,n} per eta-bin  
+  // weighted correlations
+  TProfile*                  f2WPerPtBin1n1nRP;         //<<2'>>_{n|n} per eta-bin 
+  TProfile*                  f4WPerPtBin1n1n1n1nRP;     //<<4'>>_{n,n|n,n} per eta-bin
   
   TProfile*                  f2WPerEtaBin1n1nRP;        //<<2'>>_{n|n} per eta-bin 
   TProfile*                  f4WPerEtaBin1n1n1n1nRP;    //<<4'>>_{n,n|n,n} per eta-bin
   
-  
-  
- 
   AliFlowCommonHist*         fCommonHists2nd;           //common control histograms (taking into account only the events with 2 and more particles) 
   AliFlowCommonHist*         fCommonHists4th;           //common control histograms (taking into account only the events with 4 and more particles) 
   AliFlowCommonHist*         fCommonHists6th;           //common control histograms (taking into account only the events with 6 and more particles) 

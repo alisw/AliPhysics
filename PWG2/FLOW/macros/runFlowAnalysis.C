@@ -489,7 +489,6 @@ void LoadLibraries(const anaModes mode) {
     
     // Functions needed for various methods
     gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliQCumulantsFunctions.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
     

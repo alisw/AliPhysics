@@ -20,8 +20,6 @@ set(SRCS
       FLOW/AliFlowCommon/AliFlowAnalysisWithCumulants.cxx 
       FLOW/AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx 
       FLOW/AliFlowCommon/AliCumulantsFunctions.cxx
-      FLOW/AliFlowCommon/AliQCumulantsFunctions.cxx
-      FLOW/AliFlowCommon/AliAnalysisTaskFittingQDistribution.cxx
       FLOW/AliFlowCommon/AliFittingFunctionsForQDistribution.cxx
       FLOW/AliFlowCommon/AliFittingQDistribution.cxx
 )
