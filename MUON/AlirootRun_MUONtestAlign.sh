@@ -20,7 +20,10 @@ echo "Generating misalignment ..."
 
 aliroot -b >& testMisalign.out << EOF
 AliMpCDB::LoadMpSegmentation2();
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+TString configFileName = "$ALICE_ROOT/MUON/Config.C";
+gROOT->LoadMacro(configFileName.Data());
+gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+gAlice->GetMCApp()->Init();
 gGeoManager->Export("geometry.root");
 .L $ALICE_ROOT/MUON/MUONCheckMisAligner.C+
 MUONCheckMisAligner(0., 0.03, 0., 0.03, 0., 0.03, "FullMisAlignCDB");
@@ -92,6 +95,6 @@ MUONAlignment();
 EOF
 
 echo "Finished"  
-echo "... see results in test_align"
+echo "... see results in " $OUTDIR
 
 cd $CURDIR
