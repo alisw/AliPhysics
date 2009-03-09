@@ -23,17 +23,19 @@ public:
     kNclustersTrack     = 0,
     kNclustersTracklet   = 1,
     kNtrackletsTrack    = 2,
-    kNtrackletsCross    = 3,
-    kNtrackletsFindable = 4,
-    kNtracksEvent       = 5,
-    kNtracksSector      = 6,
-    kPH                 = 7,
-    kChi2               = 8,
-    kChargeCluster      = 9,
-    kChargeTracklet     = 10,
-    kNeventsTrigger     = 11,
-    kNeventsTriggerTracks=12,
-    kTriggerPurity      = 13
+    kNtrackletsSTA      = 3,
+    kNtrackletsBAR      = 4,
+    kNtrackletsCross    = 5,
+    kNtrackletsFindable = 6,
+    kNtracksEvent       = 7,
+    kNtracksSector      = 8,
+    kPH                 = 9,
+    kChi2               = 10,
+    kChargeCluster      = 11,
+    kChargeTracklet     = 12,
+    kNeventsTrigger     = 13,
+    kNeventsTriggerTracks=14,
+    kTriggerPurity      = 15
   };
 
   AliTRDcheckDetector();
@@ -69,6 +71,9 @@ private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
   AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
+  void MakePlotNTracklets();
+  void MakePlotPulseHeight();
+  Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names
   AliTRDReconstructor *fReconstructor; // TRD Reconstructor

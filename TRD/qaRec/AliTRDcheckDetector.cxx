@@ -4,11 +4,13 @@
 #include <TH1F.h>
 #include <TGaxis.h>
 #include <TGraph.h>
+#include <TLegend.h>
 #include <TMath.h>
 #include <TMap.h>
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TObjString.h>
+
 #include <TPad.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
@@ -46,6 +48,7 @@
 //                                                                        //
 //  Authors:                                                              //
 //    Anton Andronic <A.Andronic@gsi.de>                                  //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
 //    Markus Fasel <M.Fasel@gsi.de>                                       //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
@@ -145,18 +148,10 @@ Bool_t AliTRDcheckDetector::PostProcess(){
   //
   
   TH1 * h = 0x0;
-  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsTrack));
-  if(h->GetEntries()) h->Scale(100./h->Integral());
-
-  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsCross));
-  if(h->GetEntries()) h->Scale(100./h->Integral());
-
-  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksSector));
-  if(h->GetEntries()) h->Scale(100./h->Integral());
   
   // Calculate of the trigger clusters purity
-  h = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger));
-  TH1F *h1 = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks));
+  h = dynamic_cast<TH1F *>(fContainer->FindObject("hEventsTrigger"));
+  TH1F *h1 = dynamic_cast<TH1F *>(fContainer->FindObject("hEventsTriggerTracks"));
   h1->Divide(h);
   Float_t purities[20], val = 0;
   TString triggernames[20];
@@ -177,7 +172,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
   ax->SetRangeUser(-0.5, nTriggerClasses+.5);
   h->GetYaxis()->SetRangeUser(0,1);
 
-  fNRefFigures = 11;
+  fNRefFigures = 14;
 
   return kTRUE;
 }
@@ -187,102 +182,48 @@ Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
-  TObjArray *arr = 0x0;
-  TH1 *h = 0x0, *h1 = 0x0, *h2 = 0x0;
-  TGaxis *axis = 0x0;
   switch(ifig){
   case kNclustersTrack:
-    ((TH1F*)fContainer->At(kNclustersTrack))->Draw("pl");
+    ((TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
     return kTRUE;
   case kNclustersTracklet:
-    ((TH1F*)fContainer->At(kNclustersTracklet))->Draw("pc");
+    ((TH1F*)fContainer->FindObject("hNclTls"))->Draw("pc");
     return kTRUE;
   case kNtrackletsTrack:
-    h = (TH1F*)fContainer->At(kNtrackletsTrack);
-    if(!h->GetEntries()) break;
-    h->SetFillColor(kGreen);
-    h->SetBarOffset(.2);
-    h->SetBarWidth(.6);
-    h->Draw("bar1");
+    MakePlotNTracklets();
     return kTRUE;
   case kNtrackletsCross:
-    h = (TH1F*)fContainer->At(kNtrackletsCross);
-    if(!h->GetEntries()) break;
-    h->SetFillColor(kRed);
-    h->SetBarOffset(.2);
-    h->SetBarWidth(.6);
-    h->Draw("bar1");
+    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsCross"), kRed)) break;
     return kTRUE;
   case kNtrackletsFindable:
-    h = (TH1F*)fContainer->At(kNtrackletsFindable);
-    if(!h->GetEntries()) break;
-    h->Scale(100./h->Integral());
-    h->SetFillColor(kGreen);
-    h->SetBarOffset(.2);
-    h->SetBarWidth(.6);
-    h->Draw("bar1");
+    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsFindable"), kGreen)); break;
     return kTRUE;
   case kNtracksEvent:
-    ((TH1F*)fContainer->At(kNtracksEvent))->Draw("pl");
+    ((TH1F*)fContainer->FindObject("hNtrks"))->Draw("pl");
     return kTRUE;
   case kNtracksSector:
-    h = (TH1F*)fContainer->At(kNtracksSector);
-    if(!h->GetEntries()) break;
-    h->SetFillColor(kGreen);
-    h->SetBarOffset(.2);
-    h->SetBarWidth(.6);
-    h->Draw("bar1");
+    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtrksSector"), kGreen)) break;
     return kTRUE;
   case kChi2:
-    ((TH1F*)((TObjArray*)fContainer->At(kChi2))->At(0))->Draw("");
+    ((TH1F*)((TObjArray*)fContainer->FindObject("Chi2"))->At(0))->Draw("");
     return kTRUE;
   case kPH:
-    arr = (TObjArray*)fContainer->At(kPH);
-    h = (TH1F*)arr->At(0);
-    h->SetMarkerStyle(24);
-    h->SetMarkerColor(kBlack);
-    h->SetLineColor(kBlack);
-    h->Draw("e1");
-    // copy the second histogram in a new one with the same x-dimension as the phs with respect to time
-    h1 = (TH1F *)arr->At(1);
-    h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
-    for(Int_t ibin = h1->GetXaxis()->GetFirst(); ibin < h1->GetNbinsX(); ibin++) 
-      h2->SetBinContent(ibin, h1->GetBinContent(ibin));
-    h2->SetMarkerStyle(22);
-    h2->SetMarkerColor(kBlue);
-    h2->SetLineColor(kBlue);
-    h2->Draw("e1same");
-    gPad->Update();
-    // create axis according to the histogram dimensions of the original second histogram
-    axis = new TGaxis(gPad->GetUxmin(),
-                      gPad->GetUymax(),
-                      gPad->GetUxmax(),
-                      gPad->GetUymax(),
-                      -0.08, 4.88, 510,"-L");
-    axis->SetLineColor(kBlue);
-    axis->SetLabelColor(kBlue);
-    axis->SetTextColor(kBlue);
-    axis->SetTitle("x_{0}-x_{c} [cm]");
-    axis->Draw();
+    MakePlotPulseHeight();
     return kTRUE;
   case kChargeCluster:
-    ((TH1F*)fContainer->At(kChargeCluster))->Draw("c");
+    ((TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
     return kTRUE;
   case kChargeTracklet:
-    ((TH1F*)fContainer->At(kChargeTracklet))->Draw("c");
+    ((TH1F*)fContainer->FindObject("hQtrklt"))->Draw("c");
     return kTRUE;
   case kNeventsTrigger:
-    ((TH1F*)fContainer->At(kNeventsTrigger))->Draw("");
+    ((TH1F*)fContainer->FindObject("hEventsTrigger"))->Draw("");
     return kTRUE;
   case kNeventsTriggerTracks:
-    ((TH1F*)fContainer->At(kNeventsTriggerTracks))->Draw("");
+    ((TH1F*)fContainer->FindObject("hEventsTriggerTracks"))->Draw("");
     return kTRUE;
   case kTriggerPurity: 
-    h=(TH1F*)fContainer->At(kTriggerPurity);
-    h->SetBarOffset(.2);
-    h->SetBarWidth(.6);
-    h->SetFillColor(kGreen);
-    h->Draw("bar1");
+    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hTriggerPurity"), kGreen)) break;
     break;
   default:
     break;
@@ -298,7 +239,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
   //
   if(fContainer) return fContainer;
   
-  fContainer = new TObjArray(14);
+  fContainer = new TObjArray(20);
   //fContainer->SetOwner(kTRUE);
 
   // Register Histograms
@@ -323,6 +264,20 @@ TObjArray *AliTRDcheckDetector::Histos(){
     h->GetYaxis()->SetTitle("freq. [%]");
   } else h->Reset();
   fContainer->AddAt(h, kNtrackletsTrack);
+
+  if(!(h = (TH1F *)gROOT->FindObject("htlsSTA"))){
+    h = new TH1F("hNtlsSTA", "N_{tracklets} / track (Stand Alone)", AliTRDgeometry::kNlayer, 0.5, 6.5);
+    h->GetXaxis()->SetTitle("N^{tracklet}");
+    h->GetYaxis()->SetTitle("freq. [%]");
+  }
+  fContainer->AddAt(h, kNtrackletsSTA);
+
+  if(!(h = (TH1F *)gROOT->FindObject("htlsBAR"))){
+    h = new TH1F("hNtlsBAR", "N_{tracklets} / track (Barrel)", AliTRDgeometry::kNlayer, 0.5, 6.5);
+    h->GetXaxis()->SetTitle("N^{tracklet}");
+    h->GetYaxis()->SetTitle("freq. [%]");
+  }
+  fContainer->AddAt(h, kNtrackletsBAR);
 
   // 
   if(!(h = (TH1F *)gROOT->FindObject("hNtlsCross"))){
@@ -506,13 +461,25 @@ TH1 *AliTRDcheckDetector::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     AliWarning("No Track defined.");
     return 0x0;
   }
-  TH1 *h = 0x0;
+  TH1 *h = 0x0, *hMethod = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsTrack)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
+  Int_t status = fESD->GetStatus();
+/*  printf("in/out/refit/pid: TRD[%d|%d|%d|%d]\n", status &AliESDtrack::kTRDin ? 1 : 0, status &AliESDtrack::kTRDout ? 1 : 0, status &AliESDtrack::kTRDrefit ? 1 : 0, status &AliESDtrack::kTRDpid ? 1 : 0);*/
+  if((status & AliESDtrack::kTRDin) != 0){
+    // Full BarrelTrack
+    if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsBAR))))
+      AliWarning("Method: Barrel.  Histogram not processed!");
+  } else {
+    // Stand alone Track
+    if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA))))
+      AliWarning("Method: StandAlone.  Histogram not processed!");
+  }
   Int_t nTracklets = fTrack->GetNumberOfTracklets();
   h->Fill(nTracklets);
+  hMethod->Fill(nTracklets);
   if(fDebugLevel > 3){
     if(nTracklets == 1){
       // If we have one Tracklet, check in which layer this happens
@@ -720,6 +687,7 @@ TH1 *AliTRDcheckDetector::PlotChi2Norm(const AliTRDtrackV1 *track){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     nTracklets++;
   }
+  if(!nTracklets) return 0x0;
   h->Fill(fTrack->GetChi2()/nTracklets);
   return h;
 }
@@ -948,4 +916,100 @@ void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tr
   Float_t x = c->GetX();
   dist[0] = c->GetY() - tracklet->GetYat(x);
   dist[1] = c->GetZ() - tracklet->GetZat(x);
+}
+
+//________________________________________________________
+void AliTRDcheckDetector::MakePlotNTracklets(){
+  //
+  // Make nice bar plot of the number of tracklets in each method
+  //
+  TH1F *hBAR = (TH1F *)fContainer->FindObject("hNtlsBAR");
+  TH1F *hSTA = (TH1F *)fContainer->FindObject("hNtlsSTA");
+  TH1F *hCON = (TH1F *)fContainer->FindObject("hNtls");
+
+  hBAR->Scale(100./hCON->Integral());
+  hBAR->SetFillColor(kRed);
+  hBAR->SetBarWidth(0.2);
+  hBAR->SetBarOffset(0.2);
+  hBAR->SetTitle("");
+  hBAR->SetStats(kFALSE);
+  hBAR->GetYaxis()->SetRangeUser(0.,40.);
+  hBAR->GetYaxis()->SetTitleOffset(1.2);
+  hBAR->Draw("bar1");
+
+  hSTA->Scale(100./hCON->Integral());
+  hSTA->SetFillColor(kBlue);
+  hSTA->SetBarWidth(0.2);
+  hSTA->SetBarOffset(0.4);
+  hSTA->SetTitle("");
+  hSTA->SetStats(kFALSE);
+  hSTA->GetYaxis()->SetRangeUser(0.,40.);
+  hSTA->GetYaxis()->SetTitleOffset(1.2);
+  hSTA->Draw("bar1same");
+
+  hCON->Scale(100./hCON->Integral());
+  hCON->SetFillColor(kGreen);
+  hCON->SetBarWidth(0.2);
+  hCON->SetBarOffset(0.6);
+  hCON->SetStats(kFALSE);
+  hCON->GetYaxis()->SetRangeUser(0.,40.);
+  hCON->GetYaxis()->SetTitleOffset(1.2);
+  hCON->Draw("bar1same");
+
+  TLegend *leg = new TLegend(0.6, 0.75, 0.89, 0.89);
+  leg->AddEntry(hBAR, "Barrel", "f");
+  leg->AddEntry(hSTA, "Stand Alone", "f");
+  leg->AddEntry(hCON, "Convoluted", "f");
+
+  leg->Draw();
+  gPad->Update();
+}
+
+//________________________________________________________
+void AliTRDcheckDetector::MakePlotPulseHeight(){
+  //
+  // Create Plot of the Pluse Height Spectrum
+  //
+  TH1 *h, *h1, *h2;
+  TObjArray *arr = (TObjArray*)fContainer->FindObject("<PH>");
+  h = (TH1F*)arr->At(0);
+  h->SetMarkerStyle(24);
+  h->SetMarkerColor(kBlack);
+  h->SetLineColor(kBlack);
+  h->Draw("e1");
+//   copy the second histogram in a new one with the same x-dimension as the phs with respect to time
+  h1 = (TH1F *)arr->At(1);
+  h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
+  for(Int_t ibin = h1->GetXaxis()->GetFirst(); ibin < h1->GetNbinsX(); ibin++) 
+    h2->SetBinContent(ibin, h1->GetBinContent(ibin));
+  h2->SetMarkerStyle(22);
+  h2->SetMarkerColor(kBlue);
+  h2->SetLineColor(kBlue);
+  h2->Draw("e1same");
+  gPad->Update();
+//   create axis according to the histogram dimensions of the original second histogram
+  TGaxis *axis = new TGaxis(gPad->GetUxmin(),
+                    gPad->GetUymax(),
+                    gPad->GetUxmax(),
+                    gPad->GetUymax(),
+                    -0.08, 4.88, 510,"-L");
+  axis->SetLineColor(kBlue);
+  axis->SetLabelColor(kBlue);
+  axis->SetTextColor(kBlue);
+  axis->SetTitle("x_{0}-x_{c} [cm]");
+  axis->Draw();
+}
+
+//________________________________________________________
+Bool_t AliTRDcheckDetector::MakeBarPlot(TH1 *histo, Int_t color){
+  //
+  // Draw nice bar plots
+  //
+  if(!histo->GetEntries()) return kFALSE;
+  histo->Scale(100./histo->Integral());
+  histo->SetFillColor(color);
+  histo->SetBarOffset(.2);
+  histo->SetBarWidth(.6);
+  histo->Draw("bar1");
+  return kTRUE;
 }
