@@ -1927,11 +1927,33 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  
+ delete ptReq1nPrimePrime;
+ delete ptImq1nPrimePrime;
+ delete ptReq2nPrimePrime; 
+ delete ptImq2nPrimePrime;
+
+ delete req1nW2PrimePrimePt;
+ delete imq1nW2PrimePrimePt;
+ delete req2nW1PrimePrimePt;
+ delete imq2nW1PrimePrimePt;
  
+ delete sumOfW1upTomPrimePrimePt;
+ delete sumOfW2upTomPrimePrimePt;
+ delete sumOfW3upTomPrimePrimePt;
  
+ delete etaReq1nPrimePrime;
+ delete etaImq1nPrimePrime;
+ delete etaReq2nPrimePrime; 
+ delete etaImq2nPrimePrime;
  
+ delete req1nW2PrimePrimeEta;
+ delete imq1nW2PrimePrimeEta;
+ delete req2nW1PrimePrimeEta;
+ delete imq2nW1PrimePrimeEta;
  
- 
+ delete sumOfW1upTomPrimePrimeEta;
+ delete sumOfW2upTomPrimePrimeEta;
+ delete sumOfW3upTomPrimePrimeEta;
  
  
  
