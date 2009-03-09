@@ -1279,7 +1279,7 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   if (iPlate==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number!/n");
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number!\n");
   }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
