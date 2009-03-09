@@ -72,6 +72,24 @@ void AliHLTGlobalTriggerConfig::Clear()
 
 
 void AliHLTGlobalTriggerConfig::AddSymbol(
+    const char* name, const char* type, const char* defaultExpr
+  )
+{
+  // Adds a new constant symbol to the trigger menu.
+  
+  if (fgMenu == NULL) NewMenu("");
+  
+  AliHLTTriggerMenuSymbol entry;
+  entry.Name(name);
+  entry.Type(type);
+  entry.ObjectClass("");
+  entry.AssignExpression("");
+  entry.DefaultValue(defaultExpr);
+  fgMenu->AddSymbol(entry);
+}
+
+
+void AliHLTGlobalTriggerConfig::AddSymbol(
     const char* name, const char* type, const char* assignExpr,
     const char* defaultExpr, const char* className
   )

@@ -59,6 +59,19 @@ class AliHLTGlobalTriggerConfig
   static const AliHLTTriggerMenu* Menu() { return fgMenu; }
   
   /**
+   * Adds a new constant symbol to the current trigger menu.
+   * This is useful to add symbols that are used as constants in the trigger
+   * menu condition or merging expressions.
+   * \param  name  The name of the symbol. It must be a valid C++ variable name.
+   * \param  type  The data type of the symbol. It must be a valid C++ data type.
+   * \param  defaultExpr  The default value to use for the symbol. It must be a
+   *     valid C++ expression.
+   */
+  static void AddSymbol(
+      const char* name, const char* type, const char* defaultExpr
+    );
+  
+  /**
    * Adds a new symbol to the current trigger menu.
    * \param  name  The name of the symbol. It must be a valid C++ variable name.
    * \param  type  The data type of the symbol. It must be a valid C++ data type.
