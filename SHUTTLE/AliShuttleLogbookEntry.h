@@ -36,9 +36,8 @@ public:
 	virtual void Copy(TObject& c) const;
 
 	Int_t GetRun() const {return fRun;}
-	UInt_t GetStartTime() const  {TString tmp(GetRunParameter("DAQ_time_start")); return tmp.Atoi();}
-	UInt_t GetEndTime() const {TString tmp(GetRunParameter("DAQ_time_end")); return tmp.Atoi();}
-	UInt_t GetTimeCreated() const {TString tmp(GetRunParameter("time_created")); return tmp.Atoi();}
+	UInt_t GetStartTime() const  {TString tmp(GetRunParameter("time_created")); return tmp.Atoi();}
+	UInt_t GetEndTime() const {TString tmp(GetRunParameter("time_completed")); return tmp.Atoi();}
 	Bool_t GetECSSuccess() const {TString tmp(GetRunParameter("ecs_success")); return (Bool_t) tmp.Atoi();}
 	Bool_t GetDATestMode() const {return fDATestMode;}
 

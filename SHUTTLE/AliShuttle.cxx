@@ -2835,16 +2835,6 @@ UInt_t AliShuttle::GetCurrentEndTime() const
 	return fLogbookEntry ? fLogbookEntry->GetEndTime() : 0;
 }
 //______________________________________________________________________________________________
-UInt_t AliShuttle::GetCurrentTimeCreated() const
-{
-	//
-	// get current end time from logbook entry
-	//
-
-	return fLogbookEntry ? fLogbookEntry->GetTimeCreated() : 0;
-}
-
-//______________________________________________________________________________________________
 UInt_t AliShuttle::GetCurrentYear() const
 {
 	//
@@ -3553,7 +3543,7 @@ UInt_t AliShuttle::GetStartTimeDCSQuery()
 	//
 	// The call is delegated to AliShuttleInterface
 
-	return GetCurrentTimeCreated()-fConfig->GetDCSQueryOffset();
+	return GetCurrentStartTime()-fConfig->GetDCSQueryOffset();
 }
 //______________________________________________________________________________________________
 UInt_t AliShuttle::GetEndTimeDCSQuery()
