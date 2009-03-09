@@ -1,6 +1,9 @@
 #-*- Mode: Makefile -*-
 
-SRCS=SPECTRA/AliProtonAnalysis.cxx SPECTRA/AliProtonQAAnalysis.cxx
+SRCS= SPECTRA/AliProtonAnalysis.cxx \
+      SPECTRA/AliProtonQAAnalysis.cxx \
+      SPECTRA/AliAnalysisTaskCheckV0.cxx \
+      SPECTRA/AliAnalysisTaskStrange.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
