@@ -20,7 +20,6 @@
 #pragma link C++ class AliFlowLYZHist2+;
 
 #pragma link C++ class AliCumulantsFunctions+;
-#pragma link C++ class AliQCumulantsFunctions+;
 #pragma link C++ class AliFittingFunctionsForQDistribution+;
 #pragma link C++ class AliFlowLYZEventPlane+;
 

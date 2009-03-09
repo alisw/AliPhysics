@@ -20,7 +20,6 @@ SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx \
       FLOW/AliFlowCommon/AliFittingQDistribution.cxx \
       FLOW/AliFlowCommon/AliCumulantsFunctions.cxx \
-      FLOW/AliFlowCommon/AliQCumulantsFunctions.cxx \
       FLOW/AliFlowCommon/AliFittingFunctionsForQDistribution.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
