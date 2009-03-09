@@ -1,7 +1,10 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-    SPECTRA/AliProtonAnalysis.cxx SPECTRA/AliProtonQAAnalysis.cxx
+    SPECTRA/AliProtonAnalysis.cxx
+    SPECTRA/AliProtonQAAnalysis.cxx
+    SPECTRA/AliAnalysisTaskCheckV0.cxx
+    SPECTRA/AliAnalysisTaskStrange.cxx
 )
 
 # fill list of header files from list of source files

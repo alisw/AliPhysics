@@ -6,5 +6,7 @@
 
 #pragma link C++ class AliProtonAnalysis+;
 #pragma link C++ class AliProtonQAAnalysis+;
+#pragma link C++ class AliAnalysisTaskCheckV0+;
+#pragma link C++ class AliAnalysisTaskStrange+;
 
 #endif
