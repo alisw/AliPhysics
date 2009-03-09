@@ -38,11 +38,13 @@ class AliFlowEventSimple: public TObject {
   void Print(Option_t* option = "") const;      //method to print stats
   
   Int_t NumberOfTracks() const              { return this->fNumberOfTracks; }
-  void SetNumberOfTracks(Int_t nr)          { this->fNumberOfTracks = nr; }
-  Int_t GetEventNSelTracksIntFlow() const   { return this->fEventNSelTracksIntFlow; }
-  void SetEventNSelTracksIntFlow(Int_t nr)  { this->fEventNSelTracksIntFlow = nr; }
-  Double_t GetMCReactionPlaneAngle() const   { return this->fMCReactionPlaneAngle; }
-  void SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; }
+  void  SetNumberOfTracks(Int_t nr)         { this->fNumberOfTracks = nr; }
+  Int_t GetEventNSelTracksIntFlow() const   { return this->fEventNSelTracksRP; }
+  void  SetEventNSelTracksIntFlow(Int_t nr) { this->fEventNSelTracksRP = nr; }
+  Int_t GetEventNSelTracksRP() const        { return this->fEventNSelTracksRP; } //will replace GetEventNSelTracksIntFlow()
+  void  SetEventNSelTracksRP(Int_t nr)      { this->fEventNSelTracksRP = nr; }  //will replace SetEventNSelTracksIntFlow
+  Double_t GetMCReactionPlaneAngle() const  { return this->fMCReactionPlaneAngle; }
+  void  SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; }
  
   AliFlowTrackSimple* GetTrack(Int_t i);
   TObjArray* TrackCollection() const        { return this->fTrackCollection; }
@@ -54,12 +56,12 @@ class AliFlowEventSimple: public TObject {
  private:
   TObjArray*              fTrackCollection;        // collection of tracks
   Int_t                   fNumberOfTracks;         // number of tracks
-  Int_t                   fEventNSelTracksIntFlow; // number of tracks selected for integrated flow calculation
+  Int_t                   fEventNSelTracksRP;      // number of tracks that have passed the RP selection
   Double_t                fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
-  TParameter<Int_t>*      fNumberOfTracksWrap;         //! number of tracks in TBrowser
-  TParameter<Int_t>*      fEventNSelTracksIntFlowWrap; //! number of tracks selected for integrated flow calculation in TBrowser
+  TParameter<Int_t>*      fNumberOfTracksWrap;     //! number of tracks in TBrowser
+  TParameter<Int_t>*      fEventNSelTracksRPWrap;  //! number of tracks that have passed the RP selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;   //! the angle of the reaction plane from the MC truth in TBrowser
-  ClassDef(AliFlowEventSimple,1)                   // simplified event used in flow analysis 
+  ClassDef(AliFlowEventSimple,1)                       // simplified event used in flow analysis 
 };
 
 #endif

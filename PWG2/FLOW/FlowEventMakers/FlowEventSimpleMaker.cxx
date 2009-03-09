@@ -43,33 +43,33 @@ FlowEventSimpleMaker::~FlowEventSimpleMaker()
 }
 
 //-----------------------------------------------------------------------   
-AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts)
+AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* RPCuts, AliFlowTrackSimpleCuts* POICuts)
 {
   //fills the event from a TTree of kinematic.root files
   
   // number of times to use the same particle (trick to introduce nonflow)
   Int_t iLoops = 1;
   
-  //flags for particles passing int. and diff. flow cuts
-  Bool_t bPassedIntFlowCuts  = kFALSE;
-  Bool_t bPassedDiffFlowCuts = kFALSE;
+  //flags for particles passing RP and POI cuts
+  Bool_t bPassedRPCuts  = kFALSE;
+  Bool_t bPassedPOICuts = kFALSE;
   
   //track cut values
-  Double_t dPtMaxInt  = intCuts->GetPtMax();
-  Double_t dPtMinInt  = intCuts->GetPtMin();
-  Double_t dEtaMaxInt = intCuts->GetEtaMax();
-  Double_t dEtaMinInt = intCuts->GetEtaMin();
-  Double_t dPhiMaxInt = intCuts->GetPhiMax();
-  Double_t dPhiMinInt = intCuts->GetPhiMin();
-  Int_t iPIDInt       = intCuts->GetPID();
+  Double_t dPtMaxRP  = RPCuts->GetPtMax();
+  Double_t dPtMinRP  = RPCuts->GetPtMin();
+  Double_t dEtaMaxRP = RPCuts->GetEtaMax();
+  Double_t dEtaMinRP = RPCuts->GetEtaMin();
+  Double_t dPhiMaxRP = RPCuts->GetPhiMax();
+  Double_t dPhiMinRP = RPCuts->GetPhiMin();
+  Int_t iPIDRP       = RPCuts->GetPID();
   
-  Double_t dPtMaxDiff  = diffCuts->GetPtMax();
-  Double_t dPtMinDiff  = diffCuts->GetPtMin();
-  Double_t dEtaMaxDiff = diffCuts->GetEtaMax();
-  Double_t dEtaMinDiff = diffCuts->GetEtaMin();
-  Double_t dPhiMaxDiff = diffCuts->GetPhiMax();
-  Double_t dPhiMinDiff = diffCuts->GetPhiMin();
-  Int_t iPIDDiff       = diffCuts->GetPID();
+  Double_t dPtMaxPOI  = POICuts->GetPtMax();
+  Double_t dPtMinPOI  = POICuts->GetPtMin();
+  Double_t dEtaMaxPOI = POICuts->GetEtaMax();
+  Double_t dEtaMinPOI = POICuts->GetEtaMin();
+  Double_t dPhiMaxPOI = POICuts->GetPhiMax();
+  Double_t dPhiMinPOI = POICuts->GetPhiMin();
+  Int_t iPIDPOI       = POICuts->GetPID();
   
   Int_t iNumberOfInputTracks = anInput->GetEntries() ;
   //cerr<<"iNumberOfInputTracks = "<<iNumberOfInputTracks<<endl;
@@ -86,27 +86,27 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
   
   Int_t iGoodTracks = 0;
   Int_t itrkN = 0;
-  Int_t iSelParticlesDiff = 0;
-  Int_t iSelParticlesInt = 0;
+  Int_t iSelParticlesPOI = 0;
+  Int_t iSelParticlesRP  = 0;
   
   while (itrkN < iNumberOfInputTracks) {
     anInput->GetEntry(itrkN);   //get input particle
     //checking the cuts for int. and diff. flow
-    if (pParticle->Pt() > dPtMinInt && pParticle->Pt() < dPtMaxInt &&
-	pParticle->Eta() > dEtaMinInt && pParticle->Eta() < dEtaMaxInt &&
-	pParticle->Phi() > dPhiMinInt && pParticle->Phi() < dPhiMaxInt &&
-	TMath::Abs(pParticle->GetPdgCode()) == iPIDInt) { 
-      bPassedIntFlowCuts = kTRUE; 
+    if (pParticle->Pt() > dPtMinRP && pParticle->Pt() < dPtMaxRP &&
+	pParticle->Eta() > dEtaMinRP && pParticle->Eta() < dEtaMaxRP &&
+	pParticle->Phi() > dPhiMinRP && pParticle->Phi() < dPhiMaxRP &&
+	TMath::Abs(pParticle->GetPdgCode()) == iPIDRP) { 
+      bPassedRPCuts = kTRUE; 
     } 
     
-    if (pParticle->Pt() > dPtMinDiff && pParticle->Pt() < dPtMaxDiff &&
-	pParticle->Eta() > dEtaMinDiff && pParticle->Eta() < dEtaMaxDiff &&
-	pParticle->Phi() > dPhiMinDiff && pParticle->Phi() < dPhiMaxDiff &&
-	TMath::Abs(pParticle->GetPdgCode()) == iPIDDiff){ 
-      bPassedDiffFlowCuts = kTRUE; 
+    if (pParticle->Pt() > dPtMinPOI && pParticle->Pt() < dPtMaxPOI &&
+	pParticle->Eta() > dEtaMinPOI && pParticle->Eta() < dEtaMaxPOI &&
+	pParticle->Phi() > dPhiMinPOI && pParticle->Phi() < dPhiMaxPOI &&
+	TMath::Abs(pParticle->GetPdgCode()) == iPIDPOI){ 
+      bPassedPOICuts = kTRUE; 
     }
     
-    if (bPassedIntFlowCuts || bPassedDiffFlowCuts) {
+    if (bPassedRPCuts || bPassedPOICuts) {
       for(Int_t d=0;d<iLoops;d++) {
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt());
@@ -114,14 +114,15 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
 	pTrack->SetPhi(pParticle->Phi());
 	
 	//marking the particles used for int. flow:
-	if(bPassedIntFlowCuts && iSelParticlesInt < iN*iLoops) {  
-	  pTrack->SetForIntegratedFlow(kTRUE);
-	  iSelParticlesInt++;
+	if(bPassedRPCuts && iSelParticlesRP < iN*iLoops) {  
+	  //pTrack->SetForIntegratedFlow(kTRUE);
+	  pTrack->SetForPRSelection(kTRUE);
+	  iSelParticlesRP++;
 	}
 	//marking the particles used for diff. flow:
-	if(bPassedDiffFlowCuts) {
-	  pTrack->SetForDifferentialFlow(kTRUE);
-	  iSelParticlesDiff++;
+	if(bPassedPOICuts) {
+	  pTrack->SetForPOISelection(kTRUE);
+	  iSelParticlesPOI++;
 	}
 	//adding a particles which were used either for int. or diff. flow to the list
 	pEvent->TrackCollection()->Add(pTrack);
@@ -129,16 +130,16 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
       }//end of for(Int_t d=0;d<iLoops;d++)
     }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
     itrkN++;  
-    bPassedIntFlowCuts  = kFALSE;
-    bPassedDiffFlowCuts = kFALSE;
+    bPassedRPCuts  = kFALSE;
+    bPassedPOICuts = kFALSE;
   }//end of while (itrkN < iNumberOfInputTracks)
   
-  pEvent->SetEventNSelTracksIntFlow(iSelParticlesInt);  
+  pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for int. or for diff. flow
 
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout<<" # of selected tracks for int. flow  = "<<iSelParticlesInt<<endl;
-  cout<<" # of selected tracks for diff. flow = "<<iSelParticlesDiff<<endl;  
+  cout<<" # of selected tracks for RP  = "<<iSelParticlesRP<<endl;
+  cout<<" # of selected tracks for POI = "<<iSelParticlesPOI<<endl;  
 
   delete pParticle;
   return pEvent;
