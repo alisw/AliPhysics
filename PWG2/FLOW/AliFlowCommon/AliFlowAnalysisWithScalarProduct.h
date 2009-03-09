@@ -55,6 +55,8 @@ class AliFlowAnalysisWithScalarProduct {
    void      SetHistProUQPtPOI(TProfile* const aHistProUQPtPOI) {this->fHistProUQPtPOI = aHistProUQPtPOI;}
    TProfile* GetHistProQaQb() const {return this->fHistProQaQb;}
    void      SetHistProQaQb(TProfile* const aHistProQaQb) {this->fHistProQaQb = aHistProQaQb;}
+   TProfile* GetHistProM() const {return this->fHistProM;}
+   void      SetHistProM(TProfile* const aHistProM) {this->fHistProM = aHistProM;}
 
    AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists; }
    void SetCommonHists(AliFlowCommonHist* const someCommonHists) {this->fCommonHists = someCommonHists; }
@@ -76,6 +78,7 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile*  fHistProUQPtRP;    //uQ(pt) for RP
    TProfile*  fHistProUQPtPOI;   //uQ(pt) for POI
    TProfile*  fHistProQaQb;      //average of QaQb (for event plane resolution)
+   TProfile*  fHistProM;         //holds avarage of M-1 and Ma*Mb
    AliFlowCommonHist*        fCommonHists;    //control histograms
    AliFlowCommonHistResults* fCommonHistsRes; //results histograms
 

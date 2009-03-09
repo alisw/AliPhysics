@@ -52,6 +52,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fHistProUQPtRP(NULL),
    fHistProUQPtPOI(NULL),
    fHistProQaQb(NULL),
+   fHistProM(NULL),
    fCommonHists(NULL),
    fCommonHistsRes(NULL)
 {
@@ -127,6 +128,11 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistProQaQb->SetYTitle("<QaQb>");
   fHistList->Add(fHistProQaQb);
 
+  fHistProM = new TProfile("Flow_M_SP","Flow_M_SP",2,0.5, 2.5);
+  fHistProM -> SetYTitle("<*>");
+  fHistProM -> SetXTitle("<M-1>, <Ma*Mb>");
+  fHistList->Add(fHistProM);
+
   fCommonHists = new AliFlowCommonHist("AliFlowCommonHistSP");
   fHistList->Add(fCommonHists);
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsSP");
@@ -144,12 +150,14 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
     //fill control histograms     
     fCommonHists->FillControlHistograms(anEvent);
-         
+    
     //get the Q vector from the FlowEvent
     AliFlowVector vQ = anEvent->GetQ();
+    fHistProM -> Fill(1,vQ.GetMult()-1);
     //get Q vectors for the subevents
-    AliFlowVector vQa = anEvent->GetQsub(-0.9,0.);  //Random subevents?
-    AliFlowVector vQb = anEvent->GetQsub(0.,0.9);
+    AliFlowVector vQa = anEvent->GetQsub(-0.9,-0.1);  
+    AliFlowVector vQb = anEvent->GetQsub(0.1,0.9);
+    fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult());
     Double_t dQaQb = vQa*vQb; 
     fHistProQaQb -> Fill(0.,dQaQb);    
                 
@@ -213,6 +221,8 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
   Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Double_t dMmin1 = fHistProM->GetBinContent(1);  //average over M-1
+  Double_t dMaMb  = fHistProM->GetBinContent(2);  //average over Ma*Mb
   Double_t dQaQbAv  = fHistProQaQb->GetBinContent(1); //average over events
   Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
   if (dQaQbAv <= 0.){
@@ -223,9 +233,14 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     fCommonHistsRes->FillIntegratedFlowPOI(-0.,0.);
     cout<<"dV(POI) = -0. +- 0."<<endl;
   } else {
-    Double_t dQaQbSqrt = 2*TMath::Sqrt(dQaQbAv);
+    Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);
+    if (dMaMb>0.) { dQaQbSqrt *= dMmin1/(TMath::Sqrt(dMaMb)); }
+    else { dQaQbSqrt = 0.; }
+    cout<<"dMmin1/(TMath::Sqrt(dMaMb)) = "<<dMmin1/(TMath::Sqrt(dMaMb))<<endl; //TEST
+    cout<<"dQaQbSqrt = "<<dQaQbSqrt<<endl; //TEST
     Double_t dQaQbSqrtErr = (dQaQbSqrt/2)*(dQaQbErr/dQaQbAv);
-    Double_t dQaQbSqrtErrRel = dQaQbSqrtErr/dQaQbSqrt;
+    Double_t dQaQbSqrtErrRel = 0.;
+    if (dQaQbSqrt!=0.) {dQaQbSqrtErr/dQaQbSqrt; }
     Double_t dQaQbSqrtErrRel2 = dQaQbSqrtErrRel*dQaQbSqrtErrRel;
 
     //v as a function of eta for RP selection
@@ -236,9 +251,11 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
 
-      Double_t dv2pro     = duQpro/dQaQbSqrt;
+      Double_t dv2pro     = 0.;
+      if (dQaQbSqrt!=0.) { dv2pro = duQpro/dQaQbSqrt; }
       Double_t dv2errRel2 = duQerrRel2 + dQaQbSqrtErrRel2;
-      Double_t dv2errRel  = TMath::Sqrt(dv2errRel2);
+      Double_t dv2errRel  = 0.;
+      if (dv2errRel2>0.) { dv2errRel  = TMath::Sqrt(dv2errRel2); }
       Double_t dv2err     = dv2pro*dv2errRel; 
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowEtaRP(b, dv2pro, dv2err); 
@@ -252,9 +269,11 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
 
-      Double_t dv2pro     = duQpro/dQaQbSqrt;
+      Double_t dv2pro     = 0.;
+      if (dQaQbSqrt!=0.) { dv2pro = duQpro/dQaQbSqrt; }
       Double_t dv2errRel2 = duQerrRel2 + dQaQbSqrtErrRel2;
-      Double_t dv2errRel  = TMath::Sqrt(dv2errRel2);
+      Double_t dv2errRel  = 0.;
+      if (dv2errRel2>0.) { dv2errRel  = TMath::Sqrt(dv2errRel2); }
       Double_t dv2err     = dv2pro*dv2errRel; 
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowEtaPOI(b, dv2pro, dv2err); 
@@ -273,9 +292,11 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
 
-      Double_t dv2pro     = duQpro/dQaQbSqrt;
+      Double_t dv2pro     = 0.;
+      if (dQaQbSqrt!=0.) { dv2pro = duQpro/dQaQbSqrt; }
       Double_t dv2errRel2 = duQerrRel2 + dQaQbSqrtErrRel2;
-      Double_t dv2errRel  = TMath::Sqrt(dv2errRel2);
+      Double_t dv2errRel  = 0.;
+      if (dv2errRel2>0.) { dv2errRel  = TMath::Sqrt(dv2errRel2); }
       Double_t dv2err     = dv2pro*dv2errRel; 
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dv2err);
@@ -311,9 +332,11 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       if (duQpro != 0.) {duQerrRel = duQerr/duQpro;}
       Double_t duQerrRel2 = duQerrRel*duQerrRel;
 
-      Double_t dv2pro     = duQpro/dQaQbSqrt;
+      Double_t dv2pro     = 0.;
+      if (dQaQbSqrt!=0.) { dv2pro = duQpro/dQaQbSqrt; }
       Double_t dv2errRel2 = duQerrRel2 + dQaQbSqrtErrRel2;
-      Double_t dv2errRel  = TMath::Sqrt(dv2errRel2);
+      Double_t dv2errRel  = 0.;
+      if (dv2errRel2>0.) { dv2errRel  = TMath::Sqrt(dv2errRel2); }
       Double_t dv2err     = dv2pro*dv2errRel; 
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2pro, dv2err); 

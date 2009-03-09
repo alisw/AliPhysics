@@ -141,15 +141,17 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
     AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
       (fListHistos->FindObject("AliFlowCommonHistResultsSP"));
     TProfile* pHistProQaQb     = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_QaQb_SP"));
+    TProfile* pHistProM        = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_M_SP"));
     TProfile* pHistProUQetaRP  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQetaRP_SP"));
     TProfile* pHistProUQetaPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQetaPOI_SP"));
     TProfile* pHistProUQPtRP   = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQPtRP_SP"));
     TProfile* pHistProUQPtPOI  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQPtPOI_SP"));
-    if (pCommonHist && pCommonHistResults && pHistProQaQb && pHistProUQetaRP
-	&& pHistProUQetaPOI && pHistProUQPtRP && pHistProUQPtPOI) {
+    if (pCommonHist && pCommonHistResults && pHistProQaQb && pHistProM &&
+	pHistProUQetaRP	&& pHistProUQetaPOI && pHistProUQPtRP && pHistProUQPtPOI) {
       fSPTerm -> SetCommonHists(pCommonHist);
       fSPTerm -> SetCommonHistsRes(pCommonHistResults);
       fSPTerm -> SetHistProQaQb(pHistProQaQb);
+      fSPTerm -> SetHistProM(pHistProM);
       fSPTerm -> SetHistProUQetaRP(pHistProUQetaRP);
       fSPTerm -> SetHistProUQetaPOI(pHistProUQetaPOI);
       fSPTerm -> SetHistProUQPtRP(pHistProUQPtRP);
