@@ -52,6 +52,7 @@ class AliMUONGeometryTransformer : public TObject
 
     // IO
     //
+    Bool_t  LoadTransformations(); 
     Bool_t  LoadGeometryData(const TString& fileName);
     Bool_t  LoadGeometryData();
 
@@ -128,7 +129,6 @@ class AliMUONGeometryTransformer : public TObject
     TString ReadModuleTransforms(ifstream& in);
     TString ReadDetElemTransforms(ifstream& in);
     Bool_t  ReadTransformations(const TString& fileName);
-    Bool_t  LoadTransformations(); 
 
     void    WriteTransform(ofstream& out, const TGeoMatrix* transform) const;
     void    WriteModuleTransforms(ofstream& out) const;

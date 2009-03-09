@@ -243,14 +243,17 @@ void  AliMUONGeometryDetElement::Local2Global(
 
 //______________________________________________________________________________
 void AliMUONGeometryDetElement::SetLocalTransformation(
-                                                const TGeoHMatrix& transform)
+                                                const TGeoHMatrix& transform, 
+                                                Bool_t warn)
 { 
 /// Set local transformation;
 /// give warning if the global transformation is already defined.
  
-  if (fLocalTransformation) {
+  if ( fLocalTransformation ) {
     delete fLocalTransformation;
-    AliWarning("Local transformation already defined was deleted.");
+    if ( warn ) {
+      AliWarning("Local transformation already defined was deleted.");
+    }  
   }  
 
   fLocalTransformation = new TGeoHMatrix(transform);
@@ -258,14 +261,17 @@ void AliMUONGeometryDetElement::SetLocalTransformation(
 					      
 //______________________________________________________________________________
 void AliMUONGeometryDetElement::SetGlobalTransformation(
-                                                const TGeoHMatrix& transform)
+                                                const TGeoHMatrix& transform,
+                                                Bool_t warn)
 { 
 /// Set global transformation;
 /// give warning if the global transformation is already defined.
  
   if (fGlobalTransformation) {
     delete fGlobalTransformation;
-    AliWarning("Global transformation already defined was deleted.");
+    if ( warn ) {
+      AliWarning("Global transformation already defined was deleted.");
+    }  
   }  
 
   fGlobalTransformation = new TGeoHMatrix(transform);

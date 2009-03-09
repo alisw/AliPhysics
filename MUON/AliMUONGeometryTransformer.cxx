@@ -427,61 +427,6 @@ AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 }
 
 //______________________________________________________________________________
-Bool_t  
-AliMUONGeometryTransformer::LoadTransformations()
-{
-/// Load transformations for defined modules and detection elements
-/// using AliGeomManager
-
-  if ( ! AliGeomManager::GetGeometry() ) {
-    AliFatal("Geometry has to be laoded in AliGeomManager first.");
-    return false;
-  }   
-
-  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
-    AliMUONGeometryModuleTransformer* moduleTransformer 
-      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-
-    // Module symbolic name
-    TString symname = GetModuleSymName(moduleTransformer->GetModuleId());
-    
-    // Set matrix from physical node
-    TGeoHMatrix* matrix = AliGeomManager::GetMatrix(symname);
-    if ( ! matrix ) {
-      AliErrorStream() << "Geometry module matrix not found." << endl;
-      return false;
-    }  
-    moduleTransformer->SetTransformation(*matrix);
-    
-    // Loop over detection elements
-    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
-    TIter next(detElements->CreateIterator());    
-    AliMUONGeometryDetElement* detElement;
-    
-    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
-    {
-      // Det element  symbolic name
-      TString symnameDE = GetDESymName(detElement->GetId());
-    
-      // Set global matrix from physical node
-      TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symnameDE);
-      if ( ! globalMatrix ) {
-        AliErrorStream() << "Detection element matrix not found." << endl;
-        return false;
-      }  
-      detElement->SetGlobalTransformation(*globalMatrix);
-
-      // Set local matrix
-      TGeoHMatrix localMatrix = 
-        AliMUONGeometryBuilder::Multiply(
-	   (*matrix).Inverse(), (*globalMatrix) );
-      detElement->SetLocalTransformation(localMatrix);
-    }  
-  } 
-  return true;    
-}  
-
-//______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteTransform(ofstream& out,
                                    const TGeoMatrix* transform) const
 {
@@ -579,6 +524,61 @@ TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
 //
 // public functions
 //
+
+//______________________________________________________________________________
+Bool_t  
+AliMUONGeometryTransformer::LoadTransformations()
+{
+/// Load transformations for defined modules and detection elements
+/// using AliGeomManager
+
+  if ( ! AliGeomManager::GetGeometry() ) {
+    AliFatal("Geometry has to be laoded in AliGeomManager first.");
+    return false;
+  }   
+
+  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
+    AliMUONGeometryModuleTransformer* moduleTransformer 
+      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
+
+    // Module symbolic name
+    TString symname = GetModuleSymName(moduleTransformer->GetModuleId());
+    
+    // Set matrix from physical node
+    TGeoHMatrix* matrix = AliGeomManager::GetMatrix(symname);
+    if ( ! matrix ) {
+      AliErrorStream() << "Geometry module matrix not found." << endl;
+      return false;
+    }  
+    moduleTransformer->SetTransformation(*matrix);
+    
+    // Loop over detection elements
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
+    TIter next(detElements->CreateIterator());    
+    AliMUONGeometryDetElement* detElement;
+    
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
+      // Det element  symbolic name
+      TString symnameDE = GetDESymName(detElement->GetId());
+    
+      // Set global matrix from physical node
+      TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symnameDE);
+      if ( ! globalMatrix ) {
+        AliErrorStream() << "Detection element matrix not found." << endl;
+        return false;
+      }  
+      detElement->SetGlobalTransformation(*globalMatrix, false);
+
+      // Set local matrix
+      TGeoHMatrix localMatrix = 
+        AliMUONGeometryBuilder::Multiply(
+	   (*matrix).Inverse(), (*globalMatrix) );
+      detElement->SetLocalTransformation(localMatrix, false);
+    }  
+  } 
+  return true;    
+}  
 
 //______________________________________________________________________________
 Bool_t  

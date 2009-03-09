@@ -47,8 +47,8 @@ class AliMUONGeometryDetElement : public TObject
     void PrintGlobalTransform() const;
 
     // set methods
-    void SetLocalTransformation(const TGeoHMatrix& transform);
-    void SetGlobalTransformation(const TGeoHMatrix& transform);
+    void SetLocalTransformation(const TGeoHMatrix& transform, Bool_t warn = true);
+    void SetGlobalTransformation(const TGeoHMatrix& transform, Bool_t warn = true);
     void SetVolumePath(const TString& volumePath);
     
     // get methods

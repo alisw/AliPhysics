@@ -592,6 +592,15 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
   }  
 }
 
+//________________________________________________________________
+void AliMUONGeometryBuilder::UpdateInternalGeometry()
+{
+/// Update geometry after applying mis-alignment:
+/// reload transformations in geometry builder.
+
+  fGeometry->GetTransformer()->LoadTransformations();
+}
+
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName, 
                                          Bool_t rebuild, Bool_t writeEnvelopes)

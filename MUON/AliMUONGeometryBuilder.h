@@ -44,6 +44,7 @@ class AliMUONGeometryBuilder : public TObject
 
     void  InitGeometry();
     void  InitGeometry(const TString& svmapFileName);
+    void  UpdateInternalGeometry();
 
     void  WriteSVMaps();
     void  WriteSVMaps(const TString& fileName, 
