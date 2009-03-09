@@ -23,7 +23,7 @@ class FlowEventSimpleMaker {
   virtual  ~FlowEventSimpleMaker();   //destructor
   
   //TTree
-  AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts);   //use own cut class
+  AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* RPCuts, AliFlowTrackSimpleCuts* POICuts);   //use own cut class
     
  private:
   FlowEventSimpleMaker(const FlowEventSimpleMaker& anAnalysis);            //copy constructor
