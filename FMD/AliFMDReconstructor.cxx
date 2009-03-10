@@ -321,7 +321,12 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // 
   AliFMDDebug(2, ("Reconstructing from digits in a tree"));
   GetVertex(fESD);
-
+  
+  for(Int_t det = 1; det<=3;det++) {
+    fZS[det-1]       = kFALSE;
+    fZSFactor[det-1] = 0;
+  }
+  
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
