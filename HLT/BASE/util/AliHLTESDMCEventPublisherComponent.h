@@ -227,10 +227,10 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   TList *fpCurrentFileList;                  //! transient
   
   /** Event in current folder ( inside files ) */
-  UInt_t fCurrentEvent;                      //! see above
+  UInt_t fCurrentEvent;                      //  see above
 
   /** Number of event in current folder ( inside files ) */
-  UInt_t fNEventsInFolder;                   //! see above
+  UInt_t fNEventsInFolder;                   //  see above
 
   /** List containing TObjStrings 
    *  -> Contain paths to reconstructed data
@@ -238,16 +238,19 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   TList fFolderList;                         //! see above
 
   /** Data specification */
-  AliHLTUInt32_t fSpecification;             //! transient
+  AliHLTUInt32_t fSpecification;             //  see above
 
   /** Publish class AliESDEvent, containing normal ESD */
-  Bool_t fPublishESD;                        //! see above
+  Bool_t fPublishESD;                        //  see above
 
   /** Publish class AliESDEvent, containing normal HLTESD */
-  Bool_t fPublishHLTESD;                     //! see above
+  Bool_t fPublishHLTESD;                     //  see above
 
   /** Publish class AliMCEvent */
-  Bool_t fPublishMC;                         //! see above
+  Bool_t fPublishMC;                         //  see above
+
+  /** Fill AliMCEvent without TrackRefs, out of Fast Simulation */
+  Bool_t fFastMC;                            //  see above
 
   /** Pointer to ESD tree in current file */
   TTree* fpTreeESD;                          //! transient

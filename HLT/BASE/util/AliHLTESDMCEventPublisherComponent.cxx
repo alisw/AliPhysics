@@ -52,6 +52,7 @@ AliHLTESDMCEventPublisherComponent::AliHLTESDMCEventPublisherComponent()
   fPublishESD(kFALSE),
   fPublishHLTESD(kFALSE),
   fPublishMC(kFALSE),
+  fFastMC(kFALSE),
   fpTreeESD(NULL),
   fpTreeHLTESD(NULL),
   fpTreeE(NULL),
@@ -137,6 +138,10 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
 	fPublishHLTESD = kTRUE;
       else if ( !parameter.CompareTo("MC") )
 	fPublishMC = kTRUE;
+      else if ( !parameter.CompareTo("MCFAST") ) {
+	fPublishMC = kTRUE;
+	fFastMC = kTRUE;
+      }
       else {
 	HLTError("Wrong parameter %s for argument %s.", parameter.Data(), argument.Data());
 	iResult=-EINVAL;
@@ -210,8 +215,8 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
   if ( fPublishHLTESD )
     fMaxSize += sizeof(AliESDEvent);
   if ( fPublishMC )
-    fMaxSize += sizeof(AliMCEvent);
-
+    fMaxSize += sizeof(AliMCEvent) + 1500;
+  
   if ( fEvents.GetSize() == 0) {
     HLTError("No Files have been added.");
     iResult=-EINVAL;
@@ -312,16 +317,18 @@ Int_t AliHLTESDMCEventPublisherComponent::InsertFiles(){
       else 
 	iResult = -ENOMEM;
 
-      FileDesc* pDescTrackRefs=new FileDesc( pathTrackRefs.Data(), kAliHLTDataTypeMCObject, kAliHLTVoidDataSpec, kFALSE);
-      if ( pDescTrackRefs )  
-	iResult = InsertFile( pCurrentFolder, pDescTrackRefs );
-      else 
-	iResult = -ENOMEM;
+      if ( ! fFastMC ) {
+	FileDesc* pDescTrackRefs=new FileDesc( pathTrackRefs.Data(), kAliHLTDataTypeMCObject, kAliHLTVoidDataSpec, kFALSE);
+	if ( pDescTrackRefs )  
+	  iResult = InsertFile( pCurrentFolder, pDescTrackRefs );
+	else 
+	  iResult = -ENOMEM;
+      }
     }
     
     // -- Add all files belonging to one eventfolder
     InsertEvent( pCurrentFolder );
-
+    
   } // while ( ( path = (TObjString*)next() ) ) {
   
   return iResult;
@@ -409,8 +416,8 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 	} // if ( !filename.CompareTo("Kinematics.root") ){
 
 	// -- Open TrackReferences
-	else if ( !filename.CompareTo("TrackRefs.root") ){
-
+	else if ( !fFastMC && !filename.CompareTo("TrackRefs.root") ) {
+	  
 	  if ( fNEventsInFolder != (UInt_t)(pFile->GetListOfKeys()->GetEntries()) ) {
 	    HLTError("Not all files contain the same number of events : %u and %d", 
 		     fNEventsInFolder, pFile->GetListOfKeys()->GetEntries() );
@@ -428,31 +435,34 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 	    }
 	  }
 	} // else if ( !filename.CompareTo("TrackRefs.root") ){
-
+	
 	flnk = flnk->Next();
 	
       } // while (flnk && iResult>=0) {
       
       if ( fpMC ) delete fpMC;
       fpMC = new AliMCEvent();
-
+      
       if ( fpTreeE && fpTreeK && fpTreeTR ) {
-
 	fpMC->ConnectTreeE(fpTreeE);
 	fpTreeE->GetEntry(fCurrentEvent);
 
 	fpMC->ConnectTreeK(fpTreeK);
 	fpMC->ConnectTreeTR(fpTreeTR);	
       }
+      else if( fpTreeE && fpTreeK && fFastMC ) {
+	fpMC->ConnectTreeE(fpTreeE);
+	fpTreeE->GetEntry(fCurrentEvent);
+
+	fpMC->ConnectTreeK(fpTreeK);
+      }
       else {
 	HLTError("Not all trees needed for MC Event have been created.");
 	iResult=-EFAULT;
       }
 
-      if ( iResult>=0 && fpMC ) {
+      if ( iResult>=0 && fpMC )
 	PushBack( fpMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline , fSpecification ); 
-      }
-
     } // if ( fPublishMC ) {
     
     // -- Next Event in Folder, 
