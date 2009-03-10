@@ -384,6 +384,10 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 					    Int_t det[5], dummy, index;
 					    Float_t cableTimeShift;
 					    
+					    /* temporarly disable warnings */
+					    AliLog::EType_t logLevel = (AliLog::EType_t)AliLog::GetGlobalLogLevel();
+					    AliLog::SetGlobalLogLevel(AliLog::kError);
+
 					    /* loop over EO indeces */
 					    for (Int_t iddl = 0; iddl < 72; iddl++)
 					      for (Int_t islot = 3; islot <= 12; islot++)
@@ -420,6 +424,10 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 						      }
 						      
 						    } /* loop over EO indeces */
+
+					    /* re-enable warnings */
+					    AliLog::SetGlobalLogLevel(logLevel);
+					    
 					  }
 
 					  else {  // computing delays if not in FDR runs
