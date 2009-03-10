@@ -317,9 +317,9 @@ public:
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
-  AliExternalTrackParam *fIp; // Track parameters at the first measured point (TPC)
-  AliExternalTrackParam *fTPCInner; // Track parameters at the first measured point (TPC) - first itteration
-  AliExternalTrackParam *fOp; // Track parameters at the last measured point (TPC or TRD) 
+  AliExternalTrackParam *fIp; // Track parameters estimated at the inner wall of TPC
+  AliExternalTrackParam *fTPCInner; // Track parameters estimated at the inner wall of TPC using the TPC stand-alone 
+  AliExternalTrackParam *fOp; // Track parameters estimated at the point of maximal radial coordinate reached during the tracking
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
 
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
