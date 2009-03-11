@@ -22,6 +22,8 @@
 
 #include <TVector3.h>
 #include <TDatabasePDG.h>
+#include <TClonesArray.h>
+#include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODVertex.h"
 #include "AliAODRecoDecayHF2Prong.h"
@@ -115,6 +117,52 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
   delete rd; rd=NULL;
 
   return minv;
+}
+//----------------------------------------------------------------------------
+Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
+				     TClonesArray *mcArray) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  if(pdgabs!=413) {
+    printf("Only D*+ implemented\n"); 
+    return -1;
+  }
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return -1;
+  }
+  
+  AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
+  Int_t lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray);
+
+  if(lab2Prong<0) return -1;
+
+  Int_t *dgLabels = new Int_t[GetNDaughters()];
+
+  // loop on daughters and write labels
+  for(Int_t i=0; i<GetNDaughters(); i++) {
+    AliVTrack *trk = (AliVTrack*)GetDaughter(i);
+    Int_t lab = trk->GetLabel();
+    if(lab==-1) { // this daughter is the 2prong
+      lab=lab2Prong;
+    } else if(lab<-1) {
+      printf("daughter with negative label\n");
+      continue;
+    }
+    dgLabels[i] = lab;
+  }
+
+  Int_t labMother = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels);
+
+  delete [] dgLabels; dgLabels=NULL;
+
+  return labMother;
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
