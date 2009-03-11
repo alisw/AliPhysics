@@ -13,38 +13,23 @@ void AliAnalysisTaskSESelectHFTest()
   Bool_t useParFiles=kFALSE;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/MakeAODInputChain.C");
   LoadLibraries(useParFiles);
 
   if(analysisMode=="grid") TGrid::Connect("alien:",0,0,"t");
 
 
 
-
   TChain *chainAOD = 0;
-  TChain *chainAODfriend = 0;
   
   if(inputMode=="list") {
     // Local files
-    chainAOD = new TChain("aodTree");
-    chainAODfriend = new TChain("aodTree");
-    // set the path to the files (can be local or on alien)
-    chainAOD->Add(      "alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.root");
-    chainAODfriend->Add("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/2/AliAOD.VertexingHF.root");
-    // ... add more if needed
+    //chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
+    chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/",2,2);
   } else if(inputMode=="xml") {
-    // xml: need to check the 1-to-1 correspondence
-    TString collectionfileAOD       = "collection_aod.xml";
-    TString collectionfileAODfriend = "collection_aodHF.xml";
-    TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD.Data());
-    TAlienCollection *collectionAODfriend = TAlienCollection::Open(collectionfileAODfriend.Data());
-    chainAOD = new TChain("aodTree");
-    chainAODfriend = new TChain("aodTree");
-    while(collectionAOD->Next())       chainAOD->Add(collectionAOD->GetTURL(""));
-    while(collectionAODfriend->Next()) chainAODfriend->Add(collectionAODfriend->GetTURL(""));
+    // xml
+    chainAOD = MakeAODInputChain("collection_aod.xml","collection_aodHF.xml");
   }
-
-  // attach the friend chain
-  chainAOD->AddFriend(chainAODfriend);
 
   // Create the analysis manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("My Manager","My Manager");
