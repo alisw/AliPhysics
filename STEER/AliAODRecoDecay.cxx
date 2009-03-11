@@ -22,8 +22,10 @@
 
 #include <TDatabasePDG.h>
 #include <TVector3.h>
+#include <TClonesArray.h>
 #include "AliLog.h"
 #include "AliVTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 
 ClassImp(AliAODRecoDecay)
@@ -471,6 +473,101 @@ Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,
   Double_t mass = TMath::Sqrt(energysum*energysum-psum2);
 
   return mass;
+}
+//----------------------------------------------------------------------------
+Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return -1;
+  }
+  
+  Int_t *dgLabels = new Int_t[GetNDaughters()];
+
+  // loop on daughters and write the labels
+  for(Int_t i=0; i<GetNDaughters(); i++) {
+    AliVTrack *trk = (AliVTrack*)GetDaughter(i);
+    dgLabels[i] = trk->GetLabel();
+  }
+
+  Int_t labMother = MatchToMC(pdgabs,mcArray,dgLabels);
+
+  delete [] dgLabels; dgLabels=NULL;
+
+  return labMother;
+}
+//----------------------------------------------------------------------------
+Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
+				 Int_t *dgLabels) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  if(!GetNDaughters()) {
+    AliError("No daughters available");
+    return -1;
+  }
+  
+  Int_t *labMom = new Int_t[GetNDaughters()];
+  Int_t i,lab,labMother,pdgMother;
+  AliAODMCParticle *part=0;
+
+  // loop on daughter labels
+  for(i=0; i<GetNDaughters(); i++) {
+    labMom[i]=-1;
+    lab = dgLabels[i];
+    if(lab<0) {
+      printf("daughter with negative label\n");
+      continue;
+    }
+    part = (AliAODMCParticle*)mcArray->At(lab);
+    if(!part) { 
+      printf("no MC particle\n");
+      continue;
+    }
+    while(part->GetMother()>=0) {
+      labMother=part->GetMother();
+      part = (AliAODMCParticle*)mcArray->At(labMother);
+      if(!part) {
+	printf("no MC mother particle\n");
+	break;
+      }
+      pdgMother = TMath::Abs(part->GetPdgCode());
+      if(pdgMother==pdgabs) {
+	labMom[i]=labMother;
+	break;
+      }
+    }
+  }
+
+  // check if the candidate is signal
+  Bool_t isSignal=kTRUE;
+  labMother=labMom[0];
+  // all labels have to be the same and !=-1
+  for(i=0; i<GetNDaughters(); i++) {
+    if(labMom[i]==-1 || labMom[i]!=labMother) isSignal=kFALSE;
+  }
+
+  delete [] labMom; labMom=NULL;
+
+  if(!isSignal) return -1;
+
+  // check that the mother decayed in <GetNDaughters()> prongs
+  part = (AliAODMCParticle*)mcArray->At(labMother);
+  Int_t ndg = TMath::Abs(part->GetDaughter(1)-part->GetDaughter(0))+1;
+
+  if(ndg!=GetNDaughters()) return -1;
+
+  return labMother;
 }
 //---------------------------------------------------------------------------
 void AliAODRecoDecay::Print(Option_t* /*option*/) const 

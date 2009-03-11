@@ -11,6 +11,7 @@
 
 #include <TMath.h>
 #include <TRef.h>
+#include <TClonesArray.h>
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliVTrack.h"
@@ -45,6 +46,13 @@ class AliAODRecoDecay : public AliVTrack {
   Short_t  Charge() const {return fCharge;}
   Short_t  GetCharge() const {return fCharge;}
   void     SetCharge(Short_t charge=0) {fCharge=charge;}
+
+  // Match to MC signal:
+  // check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const;
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t *dgLabels) const;
 
   // PID
   void      SetPID(Int_t nprongs,Double_t *pid);
@@ -348,3 +356,4 @@ inline void AliAODRecoDecay::GetPIDProng(Int_t ip,Double_t *pid) const
 
 
 #endif
+
