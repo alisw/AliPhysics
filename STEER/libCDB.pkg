@@ -6,7 +6,8 @@ AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx \
 AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx \
 AliDCSGenDB.cxx AliSplineFit.cxx TTreeStream.cxx \
 AliPreprocessor.cxx AliShuttleInterface.cxx \
-AliGRPDCS.cxx
+AliGRPDCS.cxx \
+AliCDBHandler.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -18,7 +19,8 @@ AliCDBStorage.h AliCDBLocal.h AliCDBDump.h AliCDBGrid.h \
 AliDCSValue.h AliDCSSensor.h AliDCSSensorArray.h \
 AliDCSGenDB.h AliSplineFit.h TTreeStream.h \
 AliPreprocessor.h  AliShuttleInterface.h \
-AliGRPDCS.h
+AliGRPDCS.h \
+AliCDBHandler.h
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase -lMinuit

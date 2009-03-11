@@ -48,6 +48,8 @@ class AliCDBManager: public TObject {
 	void SetDefaultStorage(const char* dbString);
 	void SetDefaultStorage(const AliCDBParam* param);
 	void SetDefaultStorage(AliCDBStorage *storage);
+	void SetDefaultStorage(const char* runType, const char* simType);
+	void SetDefaultStorageFromRun(Int_t run);
 
 	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
@@ -98,6 +100,9 @@ class AliCDBManager: public TObject {
 	void SetLock(Bool_t lockFlag=kTRUE);
 	Bool_t GetLock() const {return fLock;}
 
+	void SetRaw(Bool_t rawFlag){fRaw=rawFlag;}
+	Bool_t GetRaw() const {return fRaw;}
+
 	void SetRun(Int_t run);
 	Int_t GetRun() const {return fRun;}
 
@@ -126,6 +131,10 @@ protected:
 
 	static TString fgkCondUri;	// URI of the Conditions data base folder
 	static TString fgkRefUri;	// URI of the Reference data base folder
+	static TString fgkMCIdealStorage;	// URI of the MC-Ideal Conditions data base folder form MC data
+	static TString fgkMCFullStorage;	// URI of the MC-Full Conditions data base folder form MC data
+	static TString fgkMCResidualStorage;	// URI of the MC-Residual Conditions data base folder form MC data
+	static TString fgkOCDBFolderXMLfile;	// alien path of the XML file for OCDB folder <--> Run range correspondance
 
 	AliCDBManager() ; 
 	AliCDBManager(const AliCDBManager & source);
@@ -164,6 +173,11 @@ protected:
 	Int_t fRun;			//! The run number
 	Bool_t fCache;			//! The cache flag
 	Bool_t fLock; 	//! Lock flag, if ON default storage and run number cannot be reset
+
+	Bool_t fRaw;   // flag to say whether we are in the raw case
+	Int_t fStartRunLHCPeriod; // 1st run of the LHC period set
+	Int_t fEndRunLHCPeriod;   // last run of the LHC period set
+	TString fLHCPeriod;       // LHC period alien folder
 
 
 	ClassDef(AliCDBManager, 0);

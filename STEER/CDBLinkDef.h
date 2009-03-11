@@ -38,6 +38,7 @@
 #pragma link C++ class AliShuttleInterface+;
 
 #pragma link C++ class AliGRPDCS+;
+#pragma link C++ class AliCDBHandler+;
 
 #pragma link C++ class  TTreeDataElement+;
 #pragma link C++ class  TTreeStream+;

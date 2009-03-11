@@ -26,9 +26,13 @@
 #include "AliCDBGrid.h"
 #include "AliCDBEntry.h"
 #include "AliCDBMetaData.h"
+#include "AliCDBHandler.h"
 
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TSAXParser.h>
+#include <TFile.h>
+#include <TUUID.h>
 
 ClassImp(AliCDBParam)
 
@@ -37,6 +41,10 @@ ClassImp(AliCDBManager)
 //TODO OCDB and Reference folder should not be fully hardcoded but built from run number (or year/LHC period)
 TString AliCDBManager::fgkCondUri("alien://folder=/alice/cern.ch/user/a/aliprod/testCDB/CDB?user=aliprod");
 TString AliCDBManager::fgkRefUri("alien://folder=/alice/cern.ch/user/a/aliprod/testCDB/Reference?user=aliprod");
+TString AliCDBManager::fgkMCIdealStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
+TString AliCDBManager::fgkMCFullStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Full");
+TString AliCDBManager::fgkMCResidualStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+TString AliCDBManager::fgkOCDBFolderXMLfile("alien:///alice/data/OCDBFoldervsRunRange.xml");
 AliCDBManager* AliCDBManager::fgInstance = 0x0;
 
 //_____________________________________________________________________________
@@ -116,7 +124,11 @@ AliCDBManager::AliCDBManager():
   fRefParam(0),
   fRun(-1),
   fCache(kTRUE),
-  fLock(kFALSE)
+  fLock(kFALSE),
+  fRaw(kFALSE),
+  fStartRunLHCPeriod(-1),
+  fEndRunLHCPeriod(-1),
+  fLHCPeriod("")
 {
 // default constuctor
 	fFactories.SetOwner(1);
@@ -185,6 +197,7 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 // create AliCDBParam object from URI string
 
 	TIter iter(&fFactories);
+
         AliCDBStorageFactory* factory=0;
         while ((factory = (AliCDBStorageFactory*) iter.Next())) {
 		AliCDBParam* param = factory->CreateParameter(dbString);
@@ -310,29 +323,32 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 	return fDrainStorage->Put(entry);
 }
 
-//_____________________________________________________________________________
+//____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 	
 	AliInfo(Form("Setting Default storage to: %s",dbString));
-	AliCDBStorage* bckStorage = fDefaultStorage;
 
+	// checking whether we are in the raw case
+	TString dbStringTemp(dbString);
+	if (dbStringTemp == "raw://") fRaw = kTRUE;
+
+	AliCDBStorage* bckStorage = fDefaultStorage;
+	
 	fDefaultStorage = GetStorage(dbString);
 	
 	if(!fDefaultStorage) return;
-
+	
 	if(bckStorage && (fDefaultStorage != bckStorage)){
 		AliWarning("Existing default storage replaced: clearing cache!");
 		ClearCache();
 	}
-
+	
 	if (fStorageMap->Contains("default")) {
 		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
 	}
-
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
-
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
@@ -387,6 +403,75 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 }
 
 //_____________________________________________________________________________
+void AliCDBManager::SetDefaultStorage(const char* mcString, const char* simType) {
+// sets default storage for MC data
+// mcString MUST be "MC", 
+// simType can be "Ideal","Residual","Full"
+	
+	TString strmcString(mcString);
+	TString strsimType(simType);
+	TString dbString; 
+        if (strmcString != "MC"){
+		AliFatal("Method requires first string to be MC!");
+	}
+        else {
+		if (strsimType == "Ideal"){
+			dbString = fgkMCIdealStorage;
+		}
+		else if (strsimType == "Full"){
+			dbString = fgkMCFullStorage;
+		}
+		else if (strsimType == "Residual"){
+			dbString = fgkMCResidualStorage;
+		}
+		else {
+			AliFatal("Error in setting the storage for MC data, second argument MUST be either \"Ideal\" or \"Full\" or \"Residual\".");
+		}
+
+		SetDefaultStorage(dbString.Data());
+		if(!fDefaultStorage) AliFatal(Form("%s storage not there! Please check!",fLHCPeriod.Data()));
+	}
+}
+//_____________________________________________________________________________
+void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
+// set default storage from the run number - to be used only with raw data	
+
+	// if lock is ON, cannot activate more storages!
+	if(fLock) {
+		if (fDefaultStorage) {
+			AliFatal("Lock is ON, and default storage is already set: "
+				"cannot activate default storage from run number");
+		}
+	}	
+
+	// retrieve XML file from alien
+	TUUID uuid;
+	TString rndname = "/tmp/";
+	rndname += "OCDBFolderXML.";
+	rndname += uuid.AsString();
+	rndname += ".xml";
+	AliDebug(2, Form("file to be copied = %s", fgkOCDBFolderXMLfile.Data()));
+	if (!TFile::Cp(fgkOCDBFolderXMLfile.Data(), rndname.Data())) {
+		AliFatal(Form("Cannot make a local copy of OCDBFolder xml file in %s",rndname.Data()));
+	}
+	AliCDBHandler* saxcdb = new AliCDBHandler();
+	saxcdb->SetRun(run);
+	TSAXParser *saxParser = new TSAXParser();
+	saxParser->ConnectToHandler("AliCDBHandler", saxcdb);  
+	saxParser->ParseFile(rndname.Data()); 
+	AliInfo(Form(" LHC folder = %s", saxcdb->GetOCDBFolder().Data()));
+	AliInfo(Form(" LHC period start run = %d", saxcdb->GetStartRunRange()));
+	AliInfo(Form(" LHC period end run = %d", saxcdb->GetEndRunRange()));
+	fLHCPeriod = saxcdb->GetOCDBFolder();
+	fStartRunLHCPeriod = saxcdb->GetStartRunRange();
+	fEndRunLHCPeriod = saxcdb->GetEndRunRange();
+
+	SetDefaultStorage(fLHCPeriod.Data());
+	if(!fDefaultStorage) AliFatal(Form("%s storage not there! Please check!",fLHCPeriod.Data()));
+
+}
+
+//_____________________________________________________________________________
 void AliCDBManager::UnsetDefaultStorage() {
 // Unset default storage
 	
@@ -424,10 +509,12 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 // AliCDBManager::instance()->SetSpecificStorage("*/Align/*","local://DB_TPCAlign");
 // calibType must be a valid CDB path! (3 level folder structure)
 
+
 	if(!fDefaultStorage) {
 		AliError("Please activate a default storage first!");
 		return;
 	}
+
 
 	AliCDBPath aPath(calibType);
 	if(!aPath.IsValid()){
@@ -962,6 +1049,15 @@ void AliCDBManager::SetRun(Int_t run)
 	}	
 		
 	fRun = run;
+	if (fRaw){
+		// here the LHCPeriod xml file is parsed; the string containing the correct period is returned; the default storage is set
+		if (fStartRunLHCPeriod <= run && fEndRunLHCPeriod >= run){
+			AliInfo("LHCPeriod alien folder for current run already in memory");
+		}
+		else {
+			SetDefaultStorageFromRun(run);
+		}
+	}
 	ClearCache();
 	QueryCDB();
 }
