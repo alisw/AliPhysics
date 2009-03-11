@@ -6,6 +6,7 @@ void AliAnalysisTaskSECompareHFTest()
   // A.Dainese, andrea.dainese@lnl.infn.it
   // "grid" mode added by R.Bala, bala@to.infn.it
   //
+
   TString analysisMode = "grid"; // "local" or "grid"
   TString inputMode    = "list"; // "list" or "xml"
 
