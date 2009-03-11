@@ -78,7 +78,7 @@ SUBDIRS 		= BASE \
                           $(GLOBAL_DIR) \
 			  doc
 
-#$(JET_DIR) \
+#$(JET_DIR) 
 
 EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTinterface.pkg \
