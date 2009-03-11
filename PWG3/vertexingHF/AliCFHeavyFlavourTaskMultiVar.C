@@ -20,38 +20,40 @@ const Int_t    minclustersTPC = 50 ;
 
 Bool_t AliCFHeavyFlavourTaskMultiVar()
 {
+        TString analysisMode = "local"; // "local" or "grid"
+	TString inputMode    = "list"; // "list" or "xml"
+
+
+	Bool_t useParFiles=kFALSE;
+	
+   
+	//load the required libraries
+	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/MakeAODInputChain.C");
+	LoadLibraries(useParFiles);
+	
+        if(analysisMode=="grid") TGrid::Connect("alien:",0,0,"t");
+	
 	
 	TBenchmark benchmark;
 	benchmark.Start("AliCFHeavyFlavourTaskMultiVar");
 	
 	AliLog::SetGlobalDebugLevel(0);
-	
-	Load() ; //load the required libraries
-	
 
-	TChain * analysisChain ;
-	TChain * analysisChainFriend ;
-	
-	//here put your input data path
-	printf("\n\nRunning on local file, please check the path\n\n");
-	analysisChain = new TChain("aodTree");
-	analysisChainFriend = new TChain("aodTree");
-	for (Int_t i = 1; i<2; i++){
-		if (i != 4 && i != 5 && i != 6 && i != 10 && i != 11 && i != 14 && i != 15  && i != 16  && i != 18 && i != 20 && i != 21 && i != 24 && i != 26 && (i <30 || i > 43) && i!= 46 && i!=48 && i!=49 && i!=51 && i!=53 && i!=56 && i!=64 && i!=73 && i!=76 && i!=78 && i!=83 && i!=84 && i!=85 && i!=90 && i!=91 && i!=92){ 
 
-			TString fileName = "/home/zampolli/HF/FromRenu/Events/180002/";
-			TString aodHFFileName = "/home/zampolli/HF/FromRenu/Events/180002/";
-			fileName+=Form("%i/AliAOD.root",i);
-			printf(Form("file = %s \n", fileName.Data()));
-			aodHFFileName+=Form("%i/AliAOD.VertexingHF.root",i);
-			analysisChain->Add(fileName);
-			analysisChainFriend->Add(aodHFFileName);
-		}
-    	}
-			
-	analysisChain->AddFriend(analysisChainFriend);
-	Info("AliCFHeavyFlavourTaskMultiVar",Form("CHAIN HAS %d ENTRIES",(Int_t)analysisChain->GetEntries()));
+	TChain *chainAOD = 0;
 	
+	if(inputMode=="list") {
+	  // Local files
+	  //chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
+	  chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/",2,2);
+	} else if(inputMode=="xml") {
+	  // xml
+	  chainAOD = MakeAODInputChain("collection_aod.xml","collection_aodHF.xml");
+	}
+	
+	Info("AliCFHeavyFlavourTaskMultiVar",Form("CHAIN HAS %d ENTRIES",(Int_t)chainAOD->GetEntries()));
+
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVar","SETUP CONTAINER");
 	//the sensitive variables (6 in this example), their indices
@@ -246,7 +248,7 @@ Bool_t AliCFHeavyFlavourTaskMultiVar()
 	// output Correction Framework Container (for acceptance & efficiency calculations)
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
 	
-	//cinput0->SetData(analysisChain);
+	//cinput0->SetData(chainAOD);
 	
 	mgr->AddTask(task);
 	
@@ -265,30 +267,11 @@ Bool_t AliCFHeavyFlavourTaskMultiVar()
 	//RUN !!!
 	if (mgr->InitAnalysis()) {
 		mgr->PrintStatus();
-		mgr->StartAnalysis("local",analysisChain);
+		mgr->StartAnalysis("local",chainAOD);
 	}
 	
 	benchmark.Stop("AliCFHeavyFlavourTaskMultiVar");
 	benchmark.Show("AliCFHeavyFlavourTaskMultiVar");
 	
 	return kTRUE ;
-}
-
-void Load() {
-	
-	//load the required aliroot libraries
-	gSystem->Load("libANALYSIS") ;
-	gSystem->Load("libANALYSISalice") ;
-	gSystem->Load("libCORRFW.so") ;
-	gSystem->Load("libPWG3base.so");
-	gSystem->Load("libPWG3vertexingHF.so");
-
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libPhysics.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libESD.so");
-	gSystem->Load("libAOD.so"); 
-	
 }

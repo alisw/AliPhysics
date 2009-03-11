@@ -13,40 +13,40 @@ const Int_t    minclustersTPC = 50 ;
 Bool_t AliCFHeavyFlavourTask()
 {
 	
+        TString analysisMode = "local"; // "local" or "grid"
+	TString inputMode    = "list"; // "list" or "xml"
+
+
+	Bool_t useParFiles=kFALSE;
+	
+   
+	//load the required libraries
+	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/MakeAODInputChain.C");
+	LoadLibraries(useParFiles);
+	
+        if(analysisMode=="grid") TGrid::Connect("alien:",0,0,"t");
+	
+	
 	TBenchmark benchmark;
 	benchmark.Start("AliCFHeavyFlavourTask");
 	
 	AliLog::SetGlobalDebugLevel(0);
-	
-	//load the required libraries
-	Bool_t useParFiles=kFALSE;
-	gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
-	LoadLibraries(useParFiles);
 
-	
 
-	TChain * analysisChain ;
-	TChain * analysisChainFriend ;
+	TChain *chainAOD = 0;
 	
-	//here put your input data path
-	printf("\n\nRunning on local file, please check the path\n\n");
-	analysisChain = new TChain("aodTree");
-	analysisChainFriend = new TChain("aodTree");
-	//for (Int_t i = 0; i<99; i++){
-	//TString fileName = "/Events/180002/";  // set here your own path!
-	//TString aodHFFileName = "/Events/180002/";  // set here your own path!
-	//fileName+=Form("%i/AliAOD.root",i);
-	//printf(Form("file = %s \n", fileName.Data()));
-	//aodHFFileName+=Form("%i/AliAOD.VertexingHF.root",i);
-	//analysisChain->Add(fileName);
-	//analysisChainFriend->Add(aodHFFileName);
-	analysisChain->Add("AliAOD.root");
-	analysisChainFriend->Add("AliAOD.VertexingHF.root");
-	  //}
-			
-	analysisChain->AddFriend(analysisChainFriend);
-	Info("AliCFHeavyFlavourTask",Form("CHAIN HAS %d ENTRIES",(Int_t)analysisChain->GetEntries()));
-	
+	if(inputMode=="list") {
+	  // Local files
+	  //chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
+	  chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/analysis/out_lhcw/290001/",2,2);
+	} else if(inputMode=="xml") {
+	  // xml
+	  chainAOD = MakeAODInputChain("collection_aod.xml","collection_aodHF.xml");
+	}
+
+	Info("AliCFHeavyFlavourTask",Form("CHAIN HAS %d ENTRIES",(Int_t)chainAOD->GetEntries()));
+
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTask","SETUP CONTAINER");
 	//the sensitive variables (2 in this example), their indices
@@ -155,7 +155,7 @@ Bool_t AliCFHeavyFlavourTask()
 	// output Correction Framework Container (for acceptance & efficiency calculations)
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
 	
-//	cinput0->SetData(analysisChain);
+//	cinput0->SetData(chainAOD);
 	
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -167,7 +167,7 @@ Bool_t AliCFHeavyFlavourTask()
 	//RUN !!!
 	if (mgr->InitAnalysis()) {
 		mgr->PrintStatus();
-		mgr->StartAnalysis("local",analysisChain);
+		mgr->StartAnalysis("local",chainAOD);
 	}
 	
 	benchmark.Stop("AliCFHeavyFlavourTask");
