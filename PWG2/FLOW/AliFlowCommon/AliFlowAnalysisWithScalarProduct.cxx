@@ -180,7 +180,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
 	  TVector2 vQm = vQ;
 	  //subtrackt particle from the flowvector if used to define it
-	  if (pTrack->UseForIntegratedFlow()) {
+	  if (pTrack->InRPSelection()) {
 	    Double_t dQmX = vQm.X() - dUX;
 	    Double_t dQmY = vQm.Y() - dUY;
 	    vQm.Set(dQmX,dQmY);

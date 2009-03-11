@@ -1421,7 +1421,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    four1npp1n1n1nW1W1W1PtPOI = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])-2.*dM1pp11PtPOI*two1n1nW1ppW1W1PtPOI-dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI-dM0pp12PtPOI*three1npp1n2nW0ppW1W2PtPOI-2.*dM0pp12PtPOI*two1npp1nW1W2PtPOI-3.*dM2pp1PtPOI*two1npp1nW2ppW1PtPOI-2.*dM1pp2PtPOI-dM1pp2PtPOI*two2npp2nW1ppW2PtPOI-dM0pp3PtPOI*two1npp1nW3PtPOI-dS13mPrimePrimePtPOI+(pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])-2.*dSnk[0][1]* (qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])+2.*(qxPrimePtPOI*dQnkX[0][2]+qyPrimePtPOI*dQnkY[0][2])-qxPrimePtPOI*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOI*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOI+dM0p111PtPOI);
   
   
-
+ /*
  Double_t four1npp1n1n1nW1W1W1PtPOIb = 
           ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])
           -  q2xW1PrimePrimePtPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimePtPOI*dQnkX[0][0]*dQnkY[0][0]
@@ -1450,6 +1450,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    cout<<four1npp1n1n1nW1W1W1PtPOI<<endl;
    cout<<four1npp1n1n1nW1W1W1PtPOIb<<endl;   
    cout<<endl;
+   
+   */
  
    f4WPerPtBin1n1n1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,four1npp1n1n1nW1W1W1PtPOI,dM0pp111PtPOI+dM0p111PtPOI);
   } // end of if(dM0pp111PtPOI+dM0p111PtPOI)
