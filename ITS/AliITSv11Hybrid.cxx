@@ -5834,8 +5834,8 @@ void AliITSv11Hybrid::StepManager(){
     Int_t copy, lay = 0;
     Int_t id = gMC->CurrentVolID(copy);
 
-    Bool_t notSens;
-    while ((notSens = id != fIdSens[lay]) && (lay<fIdN)) ++lay;
+    Bool_t notSens = kFALSE;
+    while ((lay<fIdN)  && (notSens = id != fIdSens[lay])) ++lay;
     if (notSens) return;
 
     if(gMC->IsTrackExiting()) {

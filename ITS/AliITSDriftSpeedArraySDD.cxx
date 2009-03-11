@@ -31,17 +31,15 @@ ClassImp(AliITSDriftSpeedArraySDD)
 AliITSDriftSpeedArraySDD::AliITSDriftSpeedArraySDD():
 TObject(),
 fNEvents(0),
-fDriftSpeedSDD(){
+fDriftSpeedSDD(10){
   // default constructor
-  fDriftSpeedSDD.Expand(10);
 }
 //______________________________________________________________________
 AliITSDriftSpeedArraySDD::AliITSDriftSpeedArraySDD(Int_t numEv):
 TObject(),
 fNEvents(0),
-fDriftSpeedSDD(){
+fDriftSpeedSDD(numEv){
   // standard constructor
-  fDriftSpeedSDD.Expand(numEv);
 }
 //______________________________________________________________________
 void AliITSDriftSpeedArraySDD::AddDriftSpeed(AliITSDriftSpeedSDD* drSpeed){

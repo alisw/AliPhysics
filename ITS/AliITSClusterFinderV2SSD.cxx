@@ -764,7 +764,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 	
 	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
-	if( (pos[ip].GetQ()==0)||(neg[ip].GetQ()==0)) qbest*=2; // in case of bad strips on one side keep all charge from the other one
+        if( (pos[ip].GetQ()==0)||(neg[j].GetQ()==0)) qbest*=2;  // in case of bad strips on one side keep all charge from the other one
 	
 	{
 	  Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
@@ -802,7 +802,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  }
 
 	  if(pos[ip].GetQ()==0) cl2->SetType(3);
-	  if(neg[ip].GetQ()==0) cl2->SetType(4);
+	  if(neg[j].GetQ()==0) cl2->SetType(4);
 
 	  cused1[ip]++;
 	  cused2[j]++;
@@ -822,7 +822,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  }
 
 	  if(pos[ip].GetQ()==0) cl2->SetType(3);
-	  if(neg[ip].GetQ()==0) cl2->SetType(4);
+	  if(neg[j].GetQ()==0) cl2->SetType(4);
 
 	  cused1[ip]++;
 	  cused2[j]++;
