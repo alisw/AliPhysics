@@ -3730,15 +3730,14 @@ Int_t AliTRDtracker::Freq(Int_t n, const Int_t *inlist
   // The size of output array has is 2*n 
   //
 
-  if (n <= 0) {
-    return 0;
-  }
+  if (n <= 0) return 0;
 
-  Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
-  Int_t *sindexF = new Int_t[2*n];   
-  for (Int_t i = 0; i < n; i++) {
-    sindexF[i] = 0;
-  }
+  // Temporary array for sorting
+  Int_t *sindexS = new Int_t[n];   
+  Int_t *sindexF = new Int_t[2*n];
+  memset(outlist, 0, 2*n*sizeof(Int_t));
+  memset(sindexS, 0, n*sizeof(Int_t));
+  memset(sindexF, 0, 2*n*sizeof(Int_t));
 
   TMath::Sort(n,inlist,sindexS,down); 
  

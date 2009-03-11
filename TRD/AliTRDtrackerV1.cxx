@@ -2169,15 +2169,15 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
   // The overall chamber quality is given by the product of this 2 contributions.
   // 
 
-  Double_t chamberQ[kNPlanes];
+  Double_t chamberQ[kNPlanes]; memset(chamberQ, 0, kNPlanes*sizeof(Double_t));
   AliTRDtrackingChamber *chamber = 0x0;
   for(int iplane=0; iplane<kNPlanes; iplane++){
     if(!(chamber = stack[iplane])) continue;
     chamberQ[iplane] = (chamber = stack[iplane]) ?  chamber->GetQuality() : 0.;
   }
 
-  Double_t tconfig[kNConfigs];
-  Int_t planes[4];
+  Double_t tconfig[kNConfigs]; memset(tconfig, 0, kNConfigs*sizeof(Double_t));
+  Int_t planes[] = {0, 0, 0, 0};
   for(int iconf=0; iconf<kNConfigs; iconf++){
     GetSeedingConfig(iconf, planes);
     tconfig[iconf] = fgTopologicQA[iconf];
