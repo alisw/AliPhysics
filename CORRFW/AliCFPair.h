@@ -70,6 +70,7 @@ class AliCFPair : public AliVParticle {
   virtual Short_t    Charge() const {return 0;} // returns 0 because opposite charge tracks... maybe to extend to all kinds of pairs
   virtual Int_t      GetLabel() const {return fLabel;}
   virtual void       SetLabel(Int_t label) {fLabel=label;}
+  virtual void       SetMassHypothesis(Double_t massNeg, Double_t massPos) {fMassNeg=massNeg;fMassPos=massPos;}
   // PID
   virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
 
@@ -82,6 +83,8 @@ class AliCFPair : public AliVParticle {
   AliAODv0*    fAODV0;     // pointer to the AOD V0 if AliAODv0 is passed to the constructor
   Int_t        fLabel;     // associated MC label
   Int_t        fV0PDG;     // assumed V0 PDG
+  Double_t     fMassNeg;
+  Double_t     fMassPos;
   
   ClassDef(AliCFPair,0);
 };

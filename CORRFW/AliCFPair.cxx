@@ -40,7 +40,9 @@ AliCFPair::AliCFPair(AliVParticle* t1, AliVParticle* t2) :
   fESDV0(0x0),
   fAODV0(0x0),
   fLabel(-1),
-  fV0PDG(0)
+  fV0PDG(0),
+  fMassNeg(0.),
+  fMassPos(0.)
 {
   //  
   // 2-track ctor
@@ -54,7 +56,9 @@ AliCFPair::AliCFPair(AliESDv0* v0, AliESDEvent* esd) :
   fESDV0(v0),
   fAODV0(0x0),
   fLabel(-1),
-  fV0PDG(0)
+  fV0PDG(0),
+  fMassNeg(0.),
+  fMassPos(0.)
 {
   //  
   // V0 ctor
@@ -68,7 +72,9 @@ AliCFPair::AliCFPair(AliAODv0* v0) :
   fESDV0(0x0),
   fAODV0(v0),
   fLabel(-1),
-  fV0PDG(0)
+  fV0PDG(0),
+  fMassNeg(0.),
+  fMassPos(0.)
 {
   //  
   // V0 ctor
@@ -82,7 +88,9 @@ AliCFPair::AliCFPair(const AliCFPair& c) :
   fESDV0(c.fESDV0),
   fAODV0(c.fAODV0),
   fLabel(c.fLabel),
-  fV0PDG(c.fV0PDG)
+  fV0PDG(c.fV0PDG),
+  fMassNeg(c.fMassNeg),
+  fMassPos(c.fMassPos)
 {
   // 
   // Copy constructor.
@@ -102,6 +110,8 @@ AliCFPair& AliCFPair::operator=(const AliCFPair& c) {
     fAODV0 = c.fAODV0 ;
     fLabel = c.fLabel ;
     fV0PDG = c.fV0PDG ;
+    fMassNeg = c.fMassNeg ;
+    fMassPos = c.fMassPos;
   }
   return *this;
 }
@@ -279,7 +289,15 @@ Double32_t AliCFPair::M() const {
   }
   else if (fTrackNeg && fTrackPos) {
     Double32_t p  = P() ;
-    Double32_t e = fTrackNeg->E() + fTrackPos->E() ;
+    Double32_t e =0. ;
+    if (fMassNeg==0. && fMassPos==0.) {
+      e = fTrackNeg->E() + fTrackPos->E() ;
+    }
+    else {
+      e = 
+	TMath::Sqrt(TMath::Power(fTrackNeg->P(),2)+TMath::Power(fMassNeg,2)) + 
+	TMath::Sqrt(TMath::Power(fTrackPos->P(),2)+TMath::Power(fMassPos,2)) ;
+    }
     minv = TMath::Sqrt(e*e-p*p);
   }
   else Error("M","Could not find V0 nor track pointers");
