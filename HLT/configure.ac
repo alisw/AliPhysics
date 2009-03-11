@@ -940,6 +940,9 @@ AH_TEMPLATE([HLT_JET],[hlt jet library])
 
 if test ! "x$FASTJET" = "x" ; then
   enable_fastjet="yes"
+  AC_DEFINE(HAVE_FASTJET)
+  AC_DEFINE(WITHFASTJET)
+  CPPFLAGS_FASTJET="-I${FASTJET}/include"
 else
   enable_fastjet="no"
 fi
@@ -947,7 +950,7 @@ fi
 if test "x$enable_fastjet" = "xyes"; then
 	ALIJET_LIBS= CHECK_HLTMODULE([jet],
 		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN -I${FASTJET}/include],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR -L${FASTJET}/lib], [$ROOTLIBS $ADD_ROOTLIBS],
 		[AOD ESD ANALYSIS ANALYSISalice CGAL fastjet JETAN JETANMC], 
 		[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET -L${FASTJET}/lib], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
@@ -977,7 +980,7 @@ else
 fi
 
 AC_MSG_NOTICE([++ ------------------------------])
-AC_MSG_NOTICE([++ HAS _FASTJET  = $enable_fastjet])
+AC_MSG_NOTICE([++ HAVE_FASTJET  = $enable_fastjet])
 AC_MSG_NOTICE([++ MODULE ENABLE = $enable_module])
 AC_MSG_NOTICE([++ MODULE JET    = $enable_jet])
 AC_MSG_NOTICE([++ ALIJET_LIBS   = $ALIHLTMODULE_LIBS])

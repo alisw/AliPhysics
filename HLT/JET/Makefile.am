@@ -28,10 +28,12 @@ pkginclude_HEADERS		= $(MODULE_HDRS)
 ###################################################################
 
 # compiler flags
+
 AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 				  @HLTBASE_CPPFLAGS@ \
 		 		  @ALIROOT_CPPFLAGS@ \
 		                  @ROOTCFLAGS@ \
+				   -I${FASTJET}/include \
 				  $(foreach i, $(EINCLUDE),  \
 					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
 				  $(foreach i, $(EINCLUDE),  \
