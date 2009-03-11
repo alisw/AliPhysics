@@ -85,18 +85,19 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
   {
     mgr = (AliRsnPairMgr *) fPairMgrs.At(iMgr);
     if (!mgr) continue;
-    listTmp = new TList();
-    listTmp->SetName(mgr->GetName());
+    //listTmp = new TList();
+    //listTmp->SetName(mgr->GetName());
     for (Int_t i=0;i< mgr->GetPairs()->GetEntriesFast();i++)
     {
       def = (AliRsnPair *) mgr->GetPairs()->At(i);
       if (def)
       {
-        listTmp->Add(def->GenerateHistograms(mgr->GetName()));
+        //listTmp->Add(def->GenerateHistograms(mgr->GetName()));
+        def->GenerateHistograms(mgr->GetName(), fOutList);
         if (def->IsMixed()) fDoesMixing = kTRUE;
       }
     }
-    fOutList->Add(listTmp);
+    //fOutList->Add(listTmp);
   }
 
   TH1I *hUsed = new TH1I("hRsnUsed", "skipped and used events in this analysis", 2, 0, 2);

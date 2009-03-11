@@ -200,7 +200,7 @@ Double_t AliRsnDaughter::AngleTo(AliRsnDaughter *d, Bool_t outInDegrees)
 }
 
 //_____________________________________________________________________________
-void  AliRsnDaughter::AssignRealisticPID()
+void  AliRsnDaughter::RealisticPID()
 {
 //
 // Assign realistic PID from largest probability

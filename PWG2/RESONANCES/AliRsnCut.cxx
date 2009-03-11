@@ -323,6 +323,9 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       cut = IsBetween(daughter->PIDProb()[(AliRsnPID::EType)fIMin]);
       //cout << (AliRsnPID::EType)fIMin << ' ' << daughter->PIDProb()[(AliRsnPID::EType)fIMin] << ' ' << (cut?"OK":"NO") << endl;
       return cut;
+    case kAssignedPID:
+      pidType = daughter->AssignedPID();
+      return MatchesValue((Int_t)pidType);
     case kTruePID:
       pdg = TMath::Abs(mcinfo->PDG());
       cut = MatchesValue(pdg);
@@ -405,6 +408,8 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 
   switch (fType)
   {
+    case kTrueMultiplicity:
+      return IsBetween((Int_t) event->GetTrueMultiplicity());
     case kMultiplicity:
       return IsBetween((Int_t) event->GetMultiplicity());
     case kVz:
@@ -435,7 +440,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
   switch (fType)
   {
     case kMultiplicityDifference:
-      valueI = TMath::Abs(ev1->GetMultiplicity() - ev2->GetMultiplicity());
+      valueI = TMath::Abs(ev1->GetTrueMultiplicity() - ev2->GetTrueMultiplicity());
       return IsBetween((Int_t)valueI);
     case kMultiplicityRatio:
       mult1 = (Double_t)ev1->GetMultiplicity();

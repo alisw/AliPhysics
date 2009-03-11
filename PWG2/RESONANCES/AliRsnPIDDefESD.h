@@ -17,12 +17,10 @@
 
 class AliESDtrack;
 
-class AliRsnPIDDefESD : public TObject
-{
+class AliRsnPIDDefESD : public TObject {
   public:
 
-    enum EDetector
-    {
+    enum EDetector {
       kITS,
       kTPC,
       kTRD,
@@ -31,8 +29,7 @@ class AliRsnPIDDefESD : public TObject
       kDetectors
     };
 
-    enum EScheme
-    {
+    enum EScheme {
       kSchemeESD = 0,
       kSchemeITS,
       kSchemeTPC,
@@ -42,6 +39,7 @@ class AliRsnPIDDefESD : public TObject
       kSchemeTPCandTOF,
       kSchemeITSandTPCandTOF,
       kSchemeITSandTPCandTOFwithSP,
+      kSchemeITSandTPCorTOFwithSP,
       kSchemeLastPIDType
     };
 
@@ -56,7 +54,7 @@ class AliRsnPIDDefESD : public TObject
     void        ExcludeDet(EDetector det) {if (CheckBounds(det)) fUseDet[det] = kFALSE;}
     void        IncludeAll() { Int_t det; for (det = 0; det < kDetectors; det++) fUseDet[det] = kTRUE; }
     void        ExcludeAll() { Int_t det; for (det = 0; det < kDetectors; det++) fUseDet[det] = kFALSE; }
-    void        SetDivValue(EDetector det, Double_t value) {if (CheckBounds(det)) fDivValue[det] = value;}
+    void        SetDivValue(EDetector det, Double_t value,Bool_t userHigher=kTRUE);
     void        ComputeWeights(AliESDtrack *track, Double_t *weights);
     void        PrintStatus();
     const char* DetName(EDetector);
@@ -64,10 +62,12 @@ class AliRsnPIDDefESD : public TObject
   private:
 
     Bool_t   CheckBounds(EDetector det) { return (det >= kITS && det < kDetectors); }
+    Bool_t   CheckDivValue(EDetector det,Double_t value);
 
     Bool_t   fUseESDWeights;          // with this flag, ESD weights are used
     Bool_t   fUseDet[kDetectors];     // flag to switch off info from a detector
-    Double_t fDivValue[kDetectors];   // division value for detector weight acceptance (accepted above this value)
+    Double_t fDivValue[kDetectors];   // division value for detector weight acceptance
+    Double_t fUseHigher[kDetectors];  // accepted higher or lower then div value
 
     ClassDef(AliRsnPIDDefESD,1);
 };

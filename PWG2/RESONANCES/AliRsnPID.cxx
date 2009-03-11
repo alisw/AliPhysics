@@ -252,7 +252,7 @@ Bool_t AliRsnPID::ComputeProbs(AliRsnDaughter *daughter)
     daughter->SetPIDProb(i, prob[i]);
   }
 
-  daughter->AssignRealisticPID();
+  daughter->RealisticPID();
   Double_t assprob;
   AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
   AliRsnPID::EType type = daughter->PIDType(assprob);

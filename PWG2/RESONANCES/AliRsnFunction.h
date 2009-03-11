@@ -83,7 +83,7 @@ class AliRsnFunction : public TObject
     Double_t    FcnResolution(AliRsnPairParticle *pair, AliRsnPairDef *pd);
 
     EFcnType         fFcnType;                      // function type
-    
+
     Double_t         fRotAngle;                     // rotation angle (for "rotated" invMass)
 
     Bool_t           fUseBins;                      // flag to choose if binning is used

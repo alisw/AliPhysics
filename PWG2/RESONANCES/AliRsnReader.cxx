@@ -28,6 +28,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliESDtrackCuts.h"
+#include "AliMultiplicity.h"
 
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
@@ -328,6 +329,11 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   Int_t ntracks = esd->GetNumberOfTracks();
   if (!ntracks) return kFALSE;
 
+  // set SPD multiplicity
+  const AliMultiplicity* SPDMult = esd->GetMultiplicity();
+  Int_t nTracklets = SPDMult->GetNumberOfTracklets();
+  rsn->SetTrueMultiplicity(nTracklets);
+
   // if required with the flag, scans the event
   // and searches all split tracks (= 2 tracks with the same label);
   // for each pair of split tracks, only the better (best chi2) is kept
@@ -482,6 +488,7 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
   // get number of tracks
   Int_t ntracks = aod->GetNTracks();
   if (!ntracks) return kFALSE;
+  rsn->SetTrueMultiplicity(ntracks);
 
   // get primary vertex
   Double_t vertex[3];
@@ -591,6 +598,7 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
   vz = (Double_t)fvertex[2];
   rsn->SetPrimaryVertex(vx, vy, vz);
   rsn->SetPrimaryVertexMC(vx, vy, vz);
+  rsn->SetTrueMultiplicity(stack->GetNprimary());
 
   // store tracks from MC
   Int_t  i, index, labmum, nRef, nRefITS, nRefTPC, detectorID;
