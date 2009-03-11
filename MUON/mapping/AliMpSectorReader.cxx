@@ -438,7 +438,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
   // Process data
   //
     
-  AliMpVRowSegmentSpecial::PadRowVector  newPadRows;
+  TObjArray newPadRows;
   for (Int_t i=0; i<nofPadRows; i++) {
     
      // Create pad row
@@ -446,12 +446,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
      segment->AddPadRow(padRow);
      
      // Keep the new rows in a temporary vector
-#ifdef WITH_STL
-     newPadRows.push_back(padRow);
-#endif
-#ifdef WITH_ROOT
      newPadRows.Add(padRow);
-#endif
   }   
       
   TString nextKeyword;
@@ -481,12 +476,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
     for (Int_t i=0; i<nofPadRows; i++) {
     
       // Get pad row from the temporary vector
-#ifdef WITH_STL
-      AliMpPadRow* padRow = newPadRows[i];
-#endif
-#ifdef WITH_ROOT
       AliMpPadRow* padRow = (AliMpPadRow*)newPadRows[i];
-#endif
       
       // Find motif
       AliMpVMotif* motif = fSector->GetMotifMap()->FindMotif(motifId);

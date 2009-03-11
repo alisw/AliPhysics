@@ -17,19 +17,11 @@
 #ifndef ALI_MP_SECTOR_SEGMENTATION_H
 #define ALI_MP_SECTOR_SEGMENTATION_H
 
-#include "AliMpContainers.h"
-
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TExMap.h>
-#endif
-
-#ifdef WITH_STL
-#include <map>
-#endif
 
 class AliMpSector;
 class AliMpMotifPosition;
@@ -39,20 +31,6 @@ class AliMpArea;
 
 class AliMpSectorSegmentation : public AliMpVSegmentation
 {
-  public:
-#ifdef WITH_STL
-    /// Pad dimensions map type
-    typedef std::map<Int_t, TVector2>         PadDimensionsMap;
-    /// Pad dimensions map iterator type
-    typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
-#endif
-#ifdef WITH_ROOT
-    /// Pad dimensions map type
-    typedef  TExMap      PadDimensionsMap;
-    /// Pad dimensions map iterator type
-    typedef  TExMapIter  PadDimensionsMapCIterator;
-#endif
-
   public:
     AliMpSectorSegmentation(const AliMpSector* sector, Bool_t own = false);
     AliMpSectorSegmentation();
@@ -115,14 +93,12 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     /// Not implemented
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
-#ifdef WITH_ROOT
     static const Double_t   fgkS1;  ///< the separators used for conversion
     static const Double_t   fgkS2;  ///< of TVector2 to Long_t
     
     // methods
     Long_t    GetIndex(const TVector2& vector2) const;
     TVector2  GetVector(Long_t index) const;
-#endif
 
     // methods
     void  FillPadDimensionsMap();
@@ -136,13 +112,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     const AliMpSector*  fkSector;   ///< Sector
     Bool_t              fIsOwner;   ///< Sector ownership     
     AliMpPad*           fPadBuffer; ///< The pad buffer
-#ifdef WITH_STL
-    PadDimensionsMap    fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
-#endif    
-#ifdef WITH_ROOT
-    mutable PadDimensionsMap  fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
-#endif 
-
+    mutable TExMap      fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
     Int_t  fMaxIndexInX;  ///< maximum pad index in x    
     Int_t  fMaxIndexInY;  ///< maximum pad index in y    
 

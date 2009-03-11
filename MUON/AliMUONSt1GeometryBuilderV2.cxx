@@ -33,7 +33,6 @@
 
 #include "AliMpSegmentation.h"
 #include "AliMpDEManager.h"
-#include "AliMpContainers.h"
 #include "AliMpConstants.h"
 #include "AliMpCDB.h"
 #include "AliMpSector.h"
@@ -60,14 +59,7 @@
 #include <TVector2.h>
 #include <TVector3.h>
 #include <TVirtualMC.h>
-
-#ifdef WITH_STL
-  #include <vector>
-#endif
-
-#ifdef WITH_ROOT
-  #include "TArrayI.h"
-#endif
+#include <TArrayI.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONSt1GeometryBuilderV2)
@@ -1976,14 +1968,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
   
   GReal_t posX,posY,posZ;
   
-#ifdef WITH_STL  
-  vector<Int_t> alreadyDone;
-#endif
-
-#ifdef WITH_ROOT  
   TArrayI alreadyDone(20);
   Int_t nofAlreadyDone = 0;
-#endif  
 
   for (Int_t irow=0;irow<sector->GetNofRows();irow++){ // for each row
     AliMpRow* row = sector->GetRow(irow);
@@ -2035,12 +2021,6 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 
           Int_t motifPosId = seg->GetMotifPositionId(motifNum);
           
-#ifdef WITH_STL
-          if (find(alreadyDone.begin(),alreadyDone.end(),motifPosId)
-              != alreadyDone.end()) continue; // don't treat the same motif twice
-
-#endif
-#ifdef WITH_ROOT
           Bool_t isDone = false;
 	  Int_t i=0;
 	  while (i<nofAlreadyDone && !isDone) {
@@ -2048,7 +2028,6 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	    i++;
 	  }  
 	  if (isDone) continue; // don't treat the same motif twice
-#endif
 
           AliMUONSt1SpecialMotif spMot = *((AliMUONSt1SpecialMotif*)specialMap.GetValue(motifPosId));
 	  AliDebugStream(2) << chamber << " processing special motif: " << motifPosId << endl;  
@@ -2083,14 +2062,10 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
-#ifdef WITH_STL
-          alreadyDone.push_back(motifPosId);// mark this motif as done
-#endif
-#ifdef WITH_ROOT
           if (nofAlreadyDone == alreadyDone.GetSize()) 
 	     alreadyDone.Set(2*nofAlreadyDone); 
           alreadyDone.AddAt(motifPosId, nofAlreadyDone++);       	  
-#endif
+
 	  AliDebugStream(2) << chamber << " processed motifPosId: " << motifPosId << endl;
 	}		
 // COMMENT OUT END

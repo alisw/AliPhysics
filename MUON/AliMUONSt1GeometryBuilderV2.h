@@ -16,13 +16,7 @@
 
 #include "AliMUONVGeometryBuilder.h"
 
-#include "AliMpContainers.h"
-
 #include <TExMap.h>
-
-#ifdef WITH_STL
-  #include <map>
-#endif
 
 // typedef Float_t GReal_t; // for AliGeant3
 typedef Double_t GReal_t;  // for VirtualMC

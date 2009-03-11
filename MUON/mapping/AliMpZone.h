@@ -17,33 +17,14 @@
 #define ALI_MP_ZONE_H
 
 #include <TObject.h>
-
-#include "AliMpContainers.h"
-
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpSubZone;
 class AliMpVMotif;
 
 class AliMpZone : public TObject
 {
-  public:
-#ifdef WITH_STL
-    /// Sub zone vector type
-    typedef std::vector<AliMpSubZone*>  SubZoneVector;
-#endif
-#ifdef WITH_ROOT
-    /// Sub zone vector type
-    typedef TObjArray  SubZoneVector;
-#endif
-
   public:
     AliMpZone(Int_t id);
     AliMpZone();
@@ -67,7 +48,7 @@ class AliMpZone : public TObject
   private:
     // data members
     UInt_t        fID;           ///< ID
-    SubZoneVector fSubZones;     ///< subzones
+    TObjArray     fSubZones;     ///< subzones
     TVector2      fPadDimensions;///< pad dimensions
 
   ClassDef(AliMpZone,1)  // Zone

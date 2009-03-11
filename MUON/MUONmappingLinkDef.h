@@ -142,12 +142,3 @@
 #pragma link C++ class  AliMpPCBPainter+;
 #pragma link C++ class  AliMpDEVisu+;
 #pragma link C++ class  AliMpIteratorPainter+;
-
-#ifdef WITH_STL
-#pragma link C++ class  std::pair<Int_t, TVector2>+;
-#pragma link C++ class  std::pair<Int_t, AliMpMotifPosition*>+;
-#pragma link C++ class  std::pair<TString, AliMpVMotif*>+;
-#pragma link C++ class  std::pair<TString, AliMpMotifType*>+;
-#pragma link C++ class  std::pair<AliMpIntPair, AliMpConnection*>+;
-#pragma link C++ class  std::pair<AliMpIntPair, AliMpMotifPosition*>+;
-#endif

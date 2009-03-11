@@ -32,12 +32,9 @@
 ClassImp(AliMpGraphContext)
 /// \endcond
 
-AliMpGraphContext *AliMpGraphContext::fgInstance = 0;
-AliMpGraphContext::GraphContextVector AliMpGraphContext::fgStack;
-
-#ifdef WITH_ROOT
+AliMpGraphContext* AliMpGraphContext::fgInstance = 0;
+TObjArray          AliMpGraphContext::fgStack;
 Int_t              AliMpGraphContext::fgStackSize = 0;
-#endif
 
 //_____________________________________________________________________________
 AliMpGraphContext::AliMpGraphContext():
@@ -144,13 +141,7 @@ void AliMpGraphContext::Push() const
 
   AliMpGraphContext *save = new AliMpGraphContext(*this);
 
-#ifdef WITH_STL
-  fgStack.push_back(save);
-#endif
-
-#ifdef WITH_ROOT
   fgStack.AddAt(save, fgStackSize++);
-#endif
 }
 
 //_____________________________________________________________________________
@@ -158,17 +149,6 @@ void AliMpGraphContext::Pop()
 {
 /// Pop an object from the stack.
 
-#ifdef WITH_STL
-  // restore the last saved configuration
-  if (!fgStack.empty()){
-    AliMpGraphContext *obj = fgStack.back();
-    *this = *obj;
-    fgStack.pop_back();
-    delete obj;
-  }
-#endif
-
-#ifdef WITH_ROOT
   // restore the last saved configuration
   if ( fgStackSize ){
     AliMpGraphContext *obj 
@@ -177,5 +157,4 @@ void AliMpGraphContext::Pop()
     fgStack.RemoveAt(fgStackSize);
     delete obj;
   }
-#endif
 }

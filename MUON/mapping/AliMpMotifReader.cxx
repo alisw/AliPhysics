@@ -99,7 +99,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
   AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
 
-  PadMapType positions;
+  TExMap positions;
 
   char line[256];
   do {
@@ -119,14 +119,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
     int i,j;
     strline>>i>>j;
-#ifdef WITH_STL
-    positions[key].first=i;
-    positions[key].second=j;
-#endif
-#ifdef WITH_ROOT
     positions.Add( AliMpExMap::GetIndex(key), 
                    AliMpExMap::GetIndex(AliMpIntPair(i,j)) ); 
-#endif
   } while (!padPosStream.eof());
 
   const Int_t knbergpins = 
@@ -201,21 +195,6 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     
     gassiNum  = gassiChannel[numBerg-1];
 
-#ifdef WITH_STL
-    PadMapTypeIterator iter = positions.find(padName);
-    if (iter==positions.end()) {
-      AliWarningStream()
-        << "Problem: Pad number " << padNum
-        << " for motif type " << motifTypeId.Data() 
-	<< " found in the motifType stream, but not in the padPos stream" << endl;
-      continue;
-    }
-
-    ix= iter->second.first;
-    iy= iter->second.second;
-#endif
-
-#ifdef WITH_ROOT
     Long_t value = positions.GetValue(AliMpExMap::GetIndex(padName));
     if (!value) {
       AliWarningStream()
@@ -227,8 +206,6 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
     ix = AliMpExMap::GetPair(value).GetFirst();
     iy = AliMpExMap::GetPair(value).GetSecond();
-    
-#endif
 
     AliMpConnection* connection 
       = new AliMpConnection(padNum,numBerg,numKapton,gassiNum, AliMpIntPair(ix,iy));

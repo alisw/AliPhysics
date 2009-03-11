@@ -15,25 +15,17 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
-
 #include "AliMpStationType.h"
 #include "AliMpStation12Type.h"
 #include "AliMpPlaneType.h"
 #include "AliMpIntPair.h"
-#include "AliMpContainers.h"
 
-#ifdef WITH_ROOT
 #include <TExMap.h>
-#endif    
 #include <TString.h>
 #include <TVector2.h>
 #include <Riostream.h>
 
 #include <fstream>
-#ifdef WITH_STL
-#include <map>
-#endif    
 
 class AliMpMotifMap;
 class AliMpVMotif;
@@ -43,18 +35,6 @@ class AliMpDataStreams;
 
 class AliMpMotifReader : public TObject
 {
-  public:
-#ifdef WITH_STL
-    /// Map of int pair to string
-    typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
-    /// Map of int pair to string iterator
-    typedef PadMapType::iterator PadMapTypeIterator;
-#endif    
-#ifdef WITH_ROOT
-    /// Map of int pair to string
-    typedef TExMap PadMapType;
-#endif    
-
   public:
     AliMpMotifReader(const AliMpDataStreams& dataStreams,
                      AliMp::StationType station, 

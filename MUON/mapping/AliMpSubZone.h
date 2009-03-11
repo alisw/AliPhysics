@@ -15,32 +15,13 @@
 #define ALI_MP_SUB_ZONE_H
 
 #include <TObject.h>
-
-#include "AliMpContainers.h"
-
-#ifdef WITH_ROOT
 #include <TList.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpVMotif;
 class AliMpVRowSegment;
 
 class AliMpSubZone : public TObject
 {
-  public:
-#ifdef WITH_STL
-    /// Row segment vector type
-    typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
-#endif
-#ifdef WITH_ROOT
-    /// Row segment vector type
-    typedef TList  RowSegmentVector;
-#endif
-
   public:
     AliMpSubZone(AliMpVMotif* motif);
     AliMpSubZone();
@@ -63,7 +44,7 @@ class AliMpSubZone : public TObject
 
     // data members
     AliMpVMotif*     fMotif;   ///< the motif in this subzone
-    RowSegmentVector fSegments;///< contained row segments
+    TList fSegments;///< contained row segments
     
   ClassDef(AliMpSubZone,1)  // Zone segment
 };

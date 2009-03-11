@@ -15,21 +15,13 @@
 
 #include <TNamed.h>
 
-#include "AliMpContainers.h"
-
 #include "AliMpDirection.h"
 #include "AliMpPlaneType.h"
 #include "AliMpIntPair.h"
 
 #include <TString.h>
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpZone;
 class AliMpRow;
@@ -42,20 +34,6 @@ class TArrayI;
 
 class AliMpSector : public TNamed
 {
-  public:
-#ifdef WITH_STL
-    /// Row vector type
-    typedef std::vector<AliMpRow*> RowVector;
-    /// Zone vector type
-    typedef std::vector<AliMpZone*> ZoneVector;
-#endif
-#ifdef WITH_ROOT
-    /// Row vector type
-    typedef TObjArray  RowVector;
-    /// Zone vector type
-    typedef TObjArray  ZoneVector;
-#endif
-
   public:
     AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
                 AliMp::Direction direction, const TVector2& offset);
@@ -125,8 +103,8 @@ class AliMpSector : public TNamed
     // data members        
     TString    fID;       ///< sector ID
     TVector2   fOffset;   ///< sector position
-    ZoneVector fZones;    ///< zones
-    RowVector  fRows;     ///< rows
+    TObjArray  fZones;    ///< zones
+    TObjArray  fRows;     ///< rows
     AliMpMotifMap*   fMotifMap;         ///< motif map
     AliMp::Direction fDirection;        ///< the direction of constant pad size
     TVector2         fMinPadDimensions; ///< minimum pad dimensions

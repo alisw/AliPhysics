@@ -88,9 +88,7 @@ AliMpNeighboursPadIterator::~AliMpNeighboursPadIterator()
 {
 /// Destructor
 
-#ifdef WITH_ROOT
   fPads.Delete();
-#endif
 }
 
 // operators
@@ -102,7 +100,6 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
 /// Assignment operator.                                                     \n
 /// If the right hand iterator isn't of a good type
 /// the current operator is invalidated                                      \n
-/// Not provided for WITH_ROOT option.
 
   // check assignment to self
   if (this == &right) return *this;
@@ -110,15 +107,7 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
   // base class assignment
   AliMpVPadIterator::operator=(right);
 
-#ifdef WITH_STL
-  fkSegmentation = right.fkSegmentation;
-  fCenterPad     = right.fCenterPad;
-  fPads          = right.fPads;
-  fIndex         = right.fIndex;
-#endif
-#ifdef WITH_ROOT
   AliFatal("Not allowed assignment for TObjArray");
-#endif
 
   return *this;
 } 
@@ -142,9 +131,8 @@ Bool_t AliMpNeighboursPadIterator::IsNeighbour(const AliMpPad& pad) const
 
 }
 
-#ifdef WITH_STL
 //______________________________________________________________________________
-AliMpNeighboursPadIterator::PadVector 
+TObjArray* 
 AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                           const AliMpIntPair& direction) const
 {
@@ -153,44 +141,7 @@ AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
 /// starting from \a from and moving by \a direction
 
     AliMpPad current = from;
-    PadVector ans;
-    Bool_t cont=kTRUE;
-    do {
-        if (IsNeighbour(current))
-            ans.push_back(current);
-        else
-            cont=kFALSE;
-        TVector2 nextPos = current.Position() + TVector2(
-          current.Dimensions().X()*(AliMpConstants::LengthStep()+1.)*direction.GetFirst(),
-          current.Dimensions().Y()*(AliMpConstants::LengthStep()+1.)*direction.GetSecond());
-        current = fkSegmentation->PadByPosition(nextPos, false);
-    } while (cont);
-    return ans;
-}
-
-//______________________________________________________________________________
-void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
-                                                 const PadVector& from) const
-{
-/// Add pads from pad vector to the total set 
-/// only if they are not yet included
-
-    setTotal.insert(from.begin(),from.end());
-}    
-
-#endif
-#ifdef WITH_ROOT
-//______________________________________________________________________________
-AliMpNeighboursPadIterator::PadVector* 
-AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
-                                          const AliMpIntPair& direction) const
-{
-/// Fill  a new vector with all pads which have common
-/// parts with the pad located at \a fCenterPad, in a given line
-/// starting from \a from and moving by \a direction
-
-    AliMpPad current = from;
-    PadVector* ans = new PadVector();
+    TObjArray* ans = new TObjArray();
     Bool_t cont=kTRUE;
     do {
         if (IsNeighbour(current))
@@ -206,8 +157,8 @@ AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
 }
 
 //______________________________________________________________________________
-void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
-                                                 PadVector* from) const
+void  AliMpNeighboursPadIterator::UpdateTotalSet(TObjArray& setTotal, 
+                                                 TObjArray* from) const
 {
 /// Add pads from pad vector to the total set 
 /// only if they are not yet included and deletes the pad vector
@@ -232,8 +183,6 @@ void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal,
     delete from;
 } 
 
-#endif
-
 //______________________________________________________________________________
 void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
 {
@@ -245,16 +194,11 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     
     AliMpPad from;
     AliMpIntPair direction;
-#ifdef WITH_STL
-    PadVector found;
-#endif
-#ifdef WITH_ROOT
-    PadVector* found;
-#endif
+    TObjArray* found;
     
     // repare a unique simple associative container
     // --> no doublons, rapid insersion
-    PadSet setTotal;
+    TObjArray setTotal;
 
   /////////////  Left side
   
@@ -323,25 +267,12 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     // fill the fIndices vector with the set (-->pass from a rapid insertion,
     // to rapid and indexed access, for the rest of the job)
 
-#ifdef WITH_STL
-    fPads.clear();
-    // include the center pad if requiered
-    if (includeCenter) fPads.push_back(fCenterPad);
-    //fPads.insert(fPads.end(),setTotal.begin(),setTotal.end());
-    
-    PadSetCIterator it;
-    for (it = setTotal.begin(); it != setTotal.end(); it++)
-      fPads.push_back((*it));
-#endif
-
-#ifdef WITH_ROOT
     fPads.Delete();
     // include the center pad if requiered
     if (includeCenter) fPads.Add(new AliMpPad(fCenterPad));
 
     for (Int_t i = 0; i<setTotal.GetEntriesFast(); i++)
       fPads.Add(setTotal.At(i));
-#endif
 }
 
 //______________________________________________________________________________
@@ -360,12 +291,7 @@ void AliMpNeighboursPadIterator::First()
 /// Reset the iterator, so that it points to the first available
 /// pad in the sector
 
-#ifdef WITH_STL
-    if ((fkSegmentation != 0) && (fPads.size() != 0)) 
-#endif
-#ifdef WITH_ROOT
     if ((fkSegmentation != 0) && (fPads.GetEntriesFast() != 0)) 
-#endif
       fIndex=0; 
     else 
       fIndex=fgkInvalidIndex;
@@ -381,12 +307,7 @@ void AliMpNeighboursPadIterator::Next()
 
   if (!IsValid()) return;
   
-#ifdef WITH_STL
-  if (fIndex < fPads.size()-1) 
-#endif
-#ifdef WITH_ROOT
   if (Int_t(fIndex) < fPads.GetEntriesFast()-1) 
-#endif
     fIndex++; 
   else 
     Invalidate();
@@ -408,12 +329,7 @@ AliMpPad AliMpNeighboursPadIterator::CurrentItem() const
   if (!IsValid())
     return AliMpPad::Invalid();
   else
-#ifdef WITH_STL
-    return fPads[fIndex];
-#endif
-#ifdef WITH_ROOT
     return *((AliMpPad*)fPads[fIndex]);
-#endif
 }
 
 //______________________________________________________________________________

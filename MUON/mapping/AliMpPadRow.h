@@ -15,33 +15,15 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
-
 #include "AliMpXDirection.h"
 
-#ifdef WITH_ROOT
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpVPadRowSegment;
 class AliMpMotif;
 
 class AliMpPadRow : public TObject
 {
-  public:
-#ifdef WITH_STL
-    /// Pad row segment vector type
-    typedef std::vector<AliMpVPadRowSegment*>  PadRowSegmentVector;
-#endif
-#ifdef WITH_ROOT
-    /// Pad row segment vector type
-    typedef TObjArray  PadRowSegmentVector;
-#endif
-
   public:
     AliMpPadRow(AliMp::XDirection direction);
     AliMpPadRow();
@@ -72,7 +54,7 @@ class AliMpPadRow : public TObject
     AliMp::XDirection   fDirection; ///< the pad row x direction
     Int_t               fID;        ///< the pad row ID
     Double_t            fOffsetX;   ///< the x position of the border
-    PadRowSegmentVector fSegments;  ///< the pad row segments
+    TObjArray           fSegments;  ///< the pad row segments
 
   ClassDef(AliMpPadRow,1)  // Pad row
 };

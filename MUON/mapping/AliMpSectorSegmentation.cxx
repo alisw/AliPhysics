@@ -55,10 +55,8 @@
 ClassImp(AliMpSectorSegmentation)
 /// \endcond
 
-#ifdef WITH_ROOT
 const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
 const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
-#endif
 
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(
@@ -112,7 +110,6 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 // private methods
 //
 
-#ifdef WITH_ROOT
 //______________________________________________________________________________
 Long_t AliMpSectorSegmentation::GetIndex(const TVector2& vector2) const
 {
@@ -129,7 +126,6 @@ TVector2  AliMpSectorSegmentation::GetVector(Long_t index) const
   return TVector2( TMath::Floor(index/fgkS1)/fgkS2,
                    (index - TMath::Floor(index/fgkS1)*fgkS1)/fgkS2 );
 }  
-#endif
 
 //______________________________________________________________________________
 void AliMpSectorSegmentation::FillPadDimensionsMap()
@@ -143,10 +139,6 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
     if (!AliMpConstants::IsEqual(zone->GetPadDimensions(), TVector2())) {
 
       // regular zone
-#ifdef WITH_STL
-      fPadDimensionsMap[zoneID*10] = zone->GetPadDimensions();
-#endif
-#ifdef WITH_ROOT
      AliDebugStream(3)
        << "Filling fPadDimensions[" << zoneID*10 << "] = ("
        << zone->GetPadDimensions().X() << ", "
@@ -154,7 +146,6 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
 
      fPadDimensionsMap.Add((Long_t)(zoneID*10), 
                             GetIndex(zone->GetPadDimensions()));
-#endif
     }
     else {
       // special zone
@@ -165,10 +156,6 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
 	
 	for (Int_t k=0; k<motif->GetNofPadDimensions(); k++) {
 	  Int_t index = zoneID*10 +  subIndex++;
-#ifdef WITH_STL
-          fPadDimensionsMap[index] = motif->GetPadDimensions(k);
-#endif
-#ifdef WITH_ROOT
           AliDebugStream(3)
             << "Filling fPadDimensions[" << index << "] = ("
             << motif->GetPadDimensions(k).X() << ", "
@@ -177,7 +164,6 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
 
           fPadDimensionsMap.Add((Long_t)(index), 
                             GetIndex(motif->GetPadDimensions(k)));
-#endif
 	}
       }	  
     }	  
@@ -639,16 +625,7 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
     return 0;
   }  
 
-#ifdef WITH_STL
-  PadDimensionsMapCIterator it;
-  for (it = fPadDimensionsMap.begin(); it != fPadDimensionsMap.end(); ++it) {
-    if (AliMpConstants::IsEqual(it->second, pad.Dimensions()))
-      return it->first;
-  }
-#endif
-
-#ifdef WITH_ROOT
-  PadDimensionsMapCIterator it(&fPadDimensionsMap);
+  TExMapIter it(&fPadDimensionsMap);
   Long_t key, value;
   while ( it.Next(key, value) ) {
     TVector2 dimensions =  GetVector(value);
@@ -657,8 +634,6 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
   } 
   
   AliError(Form("fPadDimensionsMap size is %d",fPadDimensionsMap.GetSize()));
-  
-#endif
 
   // Should never happen
   AliErrorStream() 
@@ -672,15 +647,8 @@ AliMpSectorSegmentation::PadDimensions(Int_t zone, Bool_t warning) const
 {
 /// Return the pad dimensions for the zone with the specified zone index.
 
-#ifdef WITH_STL
-  PadDimensionsMapCIterator it = fPadDimensionsMap.find(zone);
-  if (it != fPadDimensionsMap.end()) return it->second;
-#endif
-
-#ifdef WITH_ROOT
   Long_t value = fPadDimensionsMap.GetValue(zone);
   if (value) return GetVector(value);
-#endif
 
   if (warning) Warning("PadDimensions(zone)", "not found");
   return TVector2();
@@ -739,17 +707,7 @@ void AliMpSectorSegmentation::PrintZones() const
 
   cout << "Zones: " << endl;
 
-#ifdef WITH_STL
-  PadDimensionsMapCIterator it;
-  for (it = fPadDimensionsMap.begin(); it != fPadDimensionsMap.end(); ++it) {
-    cout << "    zone: " <<   setw(4) << it->first;
-    cout << "    pad dimensions: ( " 
-         << it->second.X() << ", " << it->second.Y() << ")" << endl; 
-  }
-#endif
-
-#ifdef WITH_ROOT
-  PadDimensionsMapCIterator it(&fPadDimensionsMap);
+  TExMapIter it(&fPadDimensionsMap);
   Long_t key, value;
   while ( it.Next(key, value) ) {
     //cout << "Iterating over: " << key << ", " << value << endl;
@@ -759,6 +717,5 @@ void AliMpSectorSegmentation::PrintZones() const
     cout << "    pad dimensions: ( " 
          << dimensions.X() << ", " << dimensions.Y() << ")" << endl; 
   }
-#endif
 }
 

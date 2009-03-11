@@ -15,11 +15,10 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
-
 #include "AliMpIntPair.h"
+
 #ifndef ROOT_TObjArray
-#  include "TObjArray.h"
+#  include <TObjArray.h>
 #endif
 
 #include <TString.h>

@@ -21,20 +21,7 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
-
-#ifdef WITH_STL
-#include "AliMpIntPair.h"
-#endif
-
-#ifdef WITH_ROOT
 #include "AliMpExMap.h"
-#endif
-
-#ifdef WITH_STL
-#include <map>
-#include <iterator>
-#endif
 
 class AliMpVMotif;
 class AliMpMotifType;
@@ -47,36 +34,6 @@ class TVector2;
 
 class AliMpMotifMap : public TObject
 {
-  public:
-#ifdef WITH_STL
-    /// Motif map type
-    typedef std::map<TString, AliMpVMotif*> MotifMap;
-    /// Motif map iterator type
-    typedef MotifMap::const_iterator        MotifMapIterator;
-    /// Motif type map type
-    typedef std::map<TString, AliMpMotifType*> MotifTypeMap;
-    /// Motif type map iterator type
-    typedef MotifTypeMap::const_iterator       MotifTypeMapIterator;
-    /// Motif position map to int type
-    typedef std::map<Int_t, AliMpMotifPosition*>  MotiPositionMap;
-    /// Motif position map to int iterator type
-    typedef MotiPositionMap::const_iterator       MotifPositionMapIterator;
-    /// Motif position map to int pair type
-    typedef std::map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
-    /// Motif position map to int pair iterator type
-    typedef MotifPositionMap2::const_iterator           MotifPositionMap2Iterator;
-#endif    
-#ifdef WITH_ROOT
-    /// Motif map type
-    typedef AliMpExMap MotifMap;
-    /// Motif type map type
-    typedef AliMpExMap MotifTypeMap;
-    /// Motif position map to int type
-    typedef AliMpExMap MotifPositionMap;
-    /// Motif position map to int pair iterator type
-    typedef AliMpExMap MotifPositionMap2;
-#endif    
-
   public:
     AliMpMotifMap();
     AliMpMotifMap(TRootIOCtor* ioCtor);
@@ -123,15 +80,10 @@ class AliMpMotifMap : public TObject
     void  PrintMotifPositions2() const;
  
     // data members
-    MotifMap           fMotifs;         ///< motifs map
-    MotifTypeMap       fMotifTypes;     ///< motifs types map
-#ifdef WITH_STL
-    std::map<Int_t, AliMpMotifPosition*> fMotifPositions; ///< motif positions map by Id
-#endif
-#ifdef WITH_ROOT
-    MotifPositionMap   fMotifPositions; ///< motifs positions map
-#endif
-    MotifPositionMap2  fMotifPositions2;///< motifs positions map
+    AliMpExMap   fMotifs;         ///< motifs map
+    AliMpExMap   fMotifTypes;     ///< motifs types map
+    AliMpExMap   fMotifPositions; ///< motifs positions map
+    AliMpExMap   fMotifPositions2;///< motifs positions map
 
   ClassDef(AliMpMotifMap,1)  // motif map
 };

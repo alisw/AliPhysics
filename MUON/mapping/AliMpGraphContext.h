@@ -16,31 +16,14 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
+#include "AliMpExMap.h"
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
-#include "AliMpExMap.h"
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class MPainter;
 
 class AliMpGraphContext : public TObject
 {
- public:
-#ifdef WITH_STL
-  /// GraphContextVector type
-  typedef std::vector<AliMpGraphContext*> GraphContextVector;
-#endif
-#ifdef WITH_ROOT
-  /// GraphContextVector type
-  typedef TObjArray GraphContextVector;
-#endif
-
  public:
   void Push() const;
   void Pop();
@@ -92,11 +75,9 @@ class AliMpGraphContext : public TObject
   AliMpGraphContext();
 
   ///< static data members
-  static AliMpGraphContext *fgInstance; ///< the global instance
-  static GraphContextVector fgStack;    ///< the object stack
-#ifdef WITH_ROOT
-  static Int_t fgStackSize;  ///< the object stack size
-#endif
+  static AliMpGraphContext* fgInstance; ///< the global instance
+  static TObjArray          fgStack;    ///< the object stack
+  static Int_t              fgStackSize;///< the object stack size
 
   //data members
   Int_t    fColor;          ///< color to use

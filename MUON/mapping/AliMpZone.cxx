@@ -71,13 +71,7 @@ void AliMpZone::AddSubZone(AliMpSubZone* subZone)
 {
 /// Add row segment.
 
-#ifdef WITH_STL
-  fSubZones.push_back(subZone);
-#endif
-
-#ifdef WITH_ROOT
   fSubZones.Add(subZone);
-#endif
 }  
   
 //_____________________________________________________________________________
@@ -99,13 +93,7 @@ Int_t AliMpZone::GetNofSubZones() const
 {
 /// Return number of row segments.
 
-#ifdef WITH_STL
-  return fSubZones.size();
-#endif
-
-#ifdef WITH_ROOT
   return fSubZones.GetEntriesFast();
-#endif
 }  
 
 //_____________________________________________________________________________
@@ -118,11 +106,5 @@ AliMpSubZone* AliMpZone::GetSubZone(Int_t i) const
     return 0;
   }
   
-#ifdef WITH_STL
-  return fSubZones[i];  
-#endif
-
-#ifdef WITH_ROOT
   return (AliMpSubZone*)fSubZones[i];  
-#endif
 }

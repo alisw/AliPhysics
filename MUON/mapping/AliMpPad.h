@@ -15,30 +15,13 @@
 
 #include <TObject.h>
 
-#include "AliMpContainers.h"
 #include "AliMpIntPair.h"
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TClonesArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpPad : public TObject
 {
- public:
-#ifdef WITH_STL
-  /// Int pair vector type
-  typedef std::vector<AliMpIntPair> IntPairVector;
-#endif
-#ifdef WITH_ROOT
-  /// Int pair vector type
-  typedef AliMpIntPair  IntPairVector;
-#endif
-
  public:
   AliMpPad(const AliMpIntPair& location, const AliMpIntPair& indices,
            const TVector2& position, const TVector2& dimensions,
@@ -94,10 +77,8 @@ class AliMpPad : public TObject
   static const Int_t  fgkMaxNofLocations; ///< \brief maximum number of pad locations
                                           /// in the collection
   // data members
-  IntPairVector*  fLocations;      ///<  collection of pad locations 
-#ifdef WITH_ROOT
+  AliMpIntPair*   fLocations;      ///<  collection of pad locations 
   UInt_t          fNofLocations;   ///<  number of locations in fLocations
-#endif
   AliMpIntPair    fLocation;       ///<  pad location
   AliMpIntPair    fIndices;        ///<  pad indices
   TVector2        fPosition;       ///<  the pad position (in cm)

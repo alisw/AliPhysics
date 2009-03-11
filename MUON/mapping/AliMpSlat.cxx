@@ -64,9 +64,8 @@ AliMpSlat::AliMpSlat(TRootIOCtor* ioCtor)
     /// Empty ctor.
     ///
   AliDebug(1,Form("this=%p Empty ctor",this));
-#ifdef WITH_ROOT    
+
     fPCBs.SetOwner(kTRUE);
-#endif    
     fManuMap.SetOwner(kFALSE);
 }
 
@@ -88,9 +87,8 @@ AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
     /// Normal ctor
     ///
   AliDebug(1,Form("this=%p id=%s",this,id));			
-#ifdef WITH_ROOT    
+
     fPCBs.SetOwner(kTRUE);
-#endif    
     fManuMap.SetOwner(kFALSE);
 }
 
@@ -101,14 +99,8 @@ AliMpSlat::~AliMpSlat()
   /// Dtor.
   ///
   AliDebug(1,Form("this=%p fId=%s",this,fId.Data()));			
-#ifdef WITH_ROOT    
+
   fPCBs.Delete();
-#else
-  for ( UInt_t i = 0; i < fPCBs.size(); ++i )
-  {
-    delete fPCBs[i];
-  }
-#endif    
 }
 
 //_____________________________________________________________________________
@@ -132,11 +124,7 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
   }
   Double_t xOffset = DX()*2;
   AliMpPCB* pcb = pcbType.Clone(manuList,ixOffset,xOffset);
-#ifdef WITH_ROOT
   fPCBs.AddLast(pcb);
-#else
-  fPCBs.push_back(pcb);
-#endif  
   fDY = TMath::Max(pcb->DY(),fDY);
   fDX += pcb->DX();
   fNofPadsX += pcb->GetNofPadsX();
@@ -147,7 +135,6 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
 		AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
 		Int_t manuID = mp->GetID();
     // Before inserting a new key, check if it's already there
-//#ifdef WITH_ROOT
     TObject* there = fManuMap.GetValue(manuID);
     if ( there == 0 )
     {
@@ -159,10 +146,7 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
     {
       AliError(Form("ManuID %d is duplicated for PCB %s",manuID,pcbType.GetID()));      
     }
-//#else
-//  fManuMap[manuID] = mp;
-//#endif  
-	}
+  }
   fPosition.Set(DX(),DY());
   fNofPads += pcb->NofPads();
 }
@@ -204,19 +188,7 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
   ///
   /// Returns the motifPosition referenced by it manuID
   ///
-//#ifdef WITH_ROOT
   return static_cast<AliMpMotifPosition*>(fManuMap.GetValue(manuID));
-//#else
-//  std::map<int,AliMpMotifPosition*>::const_iterator it = fManuMap.find(manuID);
-//  if ( it != fManuMap.end() )
-//      {
-//	      return it->second;
-//      }
-//  else
-//  {
-//    return 0;
-//  }
-//#endif      
 }
 
 //_____________________________________________________________________________
@@ -372,7 +344,6 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
   Int_t nofElectronicCards(GetNofElectronicCards());
   assert(nofElectronicCards>0);
   ecn.Set(nofElectronicCards);
-//#ifdef WITH_ROOT
   TIter next(fManuMap.CreateIterator());
   AliMpMotifPosition* mp;
   Int_t n(0);
@@ -382,9 +353,6 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
     ++n;
   }
   assert(n==nofElectronicCards);
-//#else
-  // missing here
-//#endif      
 }
 
 //_____________________________________________________________________________
@@ -473,13 +441,8 @@ AliMpSlat::GetPCB(Int_t i) const
   ///
   /// Returns the i-th PCB of this slat.
   ///
-#ifdef WITH_ROOT
   if ( i >= fPCBs.GetEntriesFast() ) return 0;
   return (AliMpPCB*)fPCBs[i];
-#else
-  if ( i >= Int_t(fPCBs.size()) ) return 0;
-  return fPCBs[i];
-#endif  
 }
 
 //_____________________________________________________________________________
@@ -489,11 +452,7 @@ AliMpSlat::GetSize() const
   ///
   /// Returns the number of PCB in this slat.
   ///
-#ifdef WITH_ROOT
   return fPCBs.GetEntriesFast();
-#else
-  return fPCBs.size();
-#endif  
 }
 
 //_____________________________________________________________________________

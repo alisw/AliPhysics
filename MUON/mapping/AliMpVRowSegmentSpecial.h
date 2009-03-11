@@ -14,20 +14,12 @@
 #ifndef ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 #define ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 
-#include "AliMpContainers.h"
-
 #include "AliMpVRowSegment.h"
 #include "AliMpVMotif.h"
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TArrayI.h>
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpRow;
 class AliMpPadRow;
@@ -36,24 +28,6 @@ class AliMpIntPair;
 
 class AliMpVRowSegmentSpecial : public AliMpVRowSegment
 {
-  public:
-#ifdef WITH_STL
-    /// Pad row vector type
-    typedef std::vector<AliMpPadRow*>  PadRowVector;
-    /// Motif vector type
-    typedef std::vector<AliMpVMotif*>  MotifVector;
-    /// Motif position Id vector type
-    typedef std::vector<Int_t>         MotifPositionIdVector;
-#endif
-#ifdef WITH_ROOT
-    /// Pad row vector type
-    typedef  TObjArray  PadRowVector;
-    /// Motif vector type
-    typedef  TObjArray  MotifVector;
-    /// Motif position Id vector type
-    typedef  TArrayI    MotifPositionIdVector;
-#endif
-
   public:
     AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX);
     AliMpVRowSegmentSpecial();
@@ -128,22 +102,17 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     /// Not implemented
     AliMpVRowSegmentSpecial&  operator = (const AliMpVRowSegmentSpecial& right);
 
-#ifdef WITH_ROOT
     // static data members
     static const Int_t  fgkMaxNofMotifPositionIds; ///< dimension of fMotifPositionIds
-#endif    
 
     // data members
-    AliMpRow*     fRow;     ///< the row containing this segment 
-    Double_t      fOffsetX; ///< \brief the x position of the border that touches a standard
-                            /// row segment
-    PadRowVector  fPadRows; ///< pad rows vector
-    MotifVector   fMotifs;  ///< motifs vector
-    MotifPositionIdVector  fMotifPositionIds; ///< motifs position Ids vector
-
-#ifdef WITH_ROOT
-    Int_t  fNofMotifPositionIds; ///< number of motif positions Ids
-#endif    
+    AliMpRow*   fRow;     ///< the row containing this segment 
+    Double_t    fOffsetX; ///< \brief the x position of the border that touches a standard
+                          /// row segment
+    TObjArray   fPadRows; ///< pad rows vector
+    TObjArray   fMotifs;  ///< motifs vector
+    TArrayI     fMotifPositionIds;    ///< motifs position Ids vector
+    Int_t       fNofMotifPositionIds; ///< number of motif positions Ids
     
   ClassDef(AliMpVRowSegmentSpecial,1)  //Row segment
 };

@@ -13,12 +13,6 @@
 #ifndef ALI_MP_SLAT_H
 #define ALI_MP_SLAT_H
 
-#include <TObject.h>
-
-#ifndef ROOT_TString
-#  include "TString.h"
-#endif
-
 #ifndef ALI_MP_PAD_H
 #  include "AliMpPad.h"
 #endif
@@ -31,17 +25,24 @@
 #  include "AliMpPlaneType.h"
 #endif
 
-#include "AliMpContainers.h"
-#include "AliMpExMap.h"
+#ifndef ALI_MP_EX_MAP_H
+  #include "AliMpExMap.h"
+#endif
+
+#ifndef ROOT_TObject
+  #include <TObject.h>
+#endif
+
+#ifndef ROOT_TString
+#  include "TString.h"
+#endif
+
+#ifndef ROOT_TObjArray
+#  include "TObjArray.h"
+#endif
 
 class TArrayI;
 
-#ifdef WITH_ROOT
-#  include "TObjArray.h"
-#else
-#  include <vector>
-//#  include <map>
-#endif
 
 class AliMpMotifPosition;
 class AliMpPCB;
@@ -147,11 +148,7 @@ class AliMpSlat : public TObject
   Int_t fNofPadsX; ///< Actual number of pads in x direction
   Int_t fMaxNofPadsY; ///< Maximum number of pads in y direction
   mutable AliMpExMap fManuMap; ///< map of int to AliMpMotifPosition*
-#ifdef WITH_ROOT
   TObjArray fPCBs; ///< array of AliMpPCB*
-#else  
-  std::vector<AliMpPCB*> fPCBs; ///< array of AliMpPCB*
-#endif
   TVector2 fPosition; ///< Position of the slat center.
   Int_t fNofPads; ///< number of pads in this slat
   

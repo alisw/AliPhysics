@@ -42,9 +42,7 @@
 ClassImp(AliMpVRowSegmentSpecial)
 /// \endcond
 
-#ifdef WITH_ROOT
 const Int_t  AliMpVRowSegmentSpecial::fgkMaxNofMotifPositionIds = 20;
-#endif    
 
 //______________________________________________________________________________
 AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX)
@@ -53,10 +51,8 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX
     fOffsetX(offsetX),
     fPadRows(),
     fMotifs(),
-    fMotifPositionIds()
-#ifdef WITH_ROOT
-    ,fNofMotifPositionIds(0)
-#endif    
+    fMotifPositionIds(),
+    fNofMotifPositionIds(0)
 {
 /// Standard constructor  
 }
@@ -68,16 +64,12 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial()
     fOffsetX(0.),
     fPadRows(),
     fMotifs(),
-    fMotifPositionIds()
-#ifdef WITH_ROOT
-    ,fNofMotifPositionIds(0)
-#endif    
+    fMotifPositionIds(),
+    fNofMotifPositionIds(0)
 {
 /// Default constructor  
 
-#ifdef WITH_ROOT
    fMotifPositionIds.Set(fgkMaxNofMotifPositionIds);
-#endif    
 }
 
 //______________________________________________________________________________
@@ -189,15 +181,8 @@ Bool_t AliMpVRowSegmentSpecial::HasMotif(const AliMpVMotif* motif) const
 /// Return true if the specified motif is already in fMotifs vector,
 /// returns false otherwise.
 
-#ifdef WITH_STL
-  for (UInt_t i=0; i<fMotifs.size(); i++)
-    if (fMotifs[i] == motif) return true;
-#endif
-
-#ifdef WITH_ROOT
   for (Int_t i=0; i<fMotifs.GetEntriesFast(); i++)
     if (fMotifs[i] == (const TObject*)motif) return true;
-#endif
 
   return false;	 
 }
@@ -207,13 +192,7 @@ Int_t AliMpVRowSegmentSpecial::GetNofPadRows() const
 {
 /// Return number of pad rows.
 
-#ifdef WITH_STL
-  return fPadRows.size();
-#endif
-
-#ifdef WITH_ROOT
   return fPadRows.GetEntriesFast();
-#endif
 }  
 
 //______________________________________________________________________________
@@ -221,13 +200,7 @@ AliMpPadRow* AliMpVRowSegmentSpecial::GetPadRow(Int_t i) const
 {
 /// Return number of pad rows.
 
-#ifdef WITH_STL
-  return fPadRows[i];
-#endif
-
-#ifdef WITH_ROOT
   return (AliMpPadRow*)fPadRows[i];
-#endif
 }  
 
 //
@@ -242,13 +215,7 @@ void  AliMpVRowSegmentSpecial::AddPadRow(AliMpPadRow* padRow)
   padRow->SetOffsetX(fOffsetX);
   padRow->SetID(GetNofPadRows());
 
-#ifdef WITH_STL
-  fPadRows.push_back(padRow);
-#endif
-
-#ifdef WITH_ROOT
   fPadRows.Add(padRow);
-#endif
 }  
 
 //______________________________________________________________________________
@@ -264,12 +231,6 @@ void AliMpVRowSegmentSpecial::UpdateMotifVector()
       AliMpVMotif* motif = padRow->GetPadRowSegment(j)->GetMotif();            
 
       if (!HasMotif(motif)) {
-#ifdef WITH_STL
-        fMotifs.push_back(motif);	 
-        fMotifPositionIds.push_back(
-          padRow->GetPadRowSegment(j)->GetMotifPositionId());
-#endif
-#ifdef WITH_ROOT
         fMotifs.Add(motif);
 	
 	// resize array if needed
@@ -279,7 +240,6 @@ void AliMpVRowSegmentSpecial::UpdateMotifVector()
         fMotifPositionIds.AddAt(
           padRow->GetPadRowSegment(j)->GetMotifPositionId(),
 	  fNofMotifPositionIds++);
-#endif
       }
     }  
   }
@@ -398,12 +358,7 @@ Int_t  AliMpVRowSegmentSpecial::GetNofMotifs() const
 { 
 /// Return the number of different motifs present in this row segment.
 
-#ifdef WITH_STL
-  return fMotifs.size();
-#endif
-#ifdef WITH_ROOT
   return fMotifs.GetEntriesFast();
-#endif
 }  
 
 //______________________________________________________________________________
@@ -411,12 +366,7 @@ AliMpVMotif* AliMpVRowSegmentSpecial::GetMotif(Int_t i) const
 {
 /// Return the i-th motif present in this row segment.
 
-#ifdef WITH_STL
-   return fMotifs[i]; 
-#endif
-#ifdef WITH_ROOT
    return (AliMpVMotif*)fMotifs[i]; 
-#endif
 }
 
 //______________________________________________________________________________

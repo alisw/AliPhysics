@@ -13,19 +13,11 @@
 #ifndef ALI_MP_ROW_H
 #define ALI_MP_ROW_H
 
-#include "AliMpContainers.h"
-
 #include "AliMpVIndexed.h"
 #include "AliMpDirection.h"
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TList.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class AliMpVRowSegment;
 class AliMpVPadIterator;
@@ -34,16 +26,6 @@ class AliMpMotifMap;
 
 class AliMpRow : public AliMpVIndexed
 {
-  public:
-#ifdef WITH_STL
-    /// Row segment vector type
-    typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
-#endif
-#ifdef WITH_ROOT
-    /// Row segment vector type
-    typedef TList  RowSegmentVector;
-#endif
-
   public:
     AliMpRow(Int_t id, AliMpMotifMap* motifMap);
     AliMpRow();
@@ -88,7 +70,7 @@ class AliMpRow : public AliMpVIndexed
     // data members
     UInt_t            fID;      ///< row ID
     Double_t          fOffsetY; ///< the y position of the centre of motifs
-    RowSegmentVector  fSegments;///< row segments
+    TList             fSegments;///< row segments
     AliMpMotifMap*    fMotifMap;///< the motif map associated with its sector
 
   ClassDef(AliMpRow,1)  // Row

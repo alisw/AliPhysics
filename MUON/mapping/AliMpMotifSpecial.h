@@ -13,40 +13,16 @@
 #ifndef ALI_MP_MOTIF_SPECIAL_H
 #define ALI_MP_MOTIF_SPECIAL_H
 
-#include "AliMpContainers.h"
-
 #include "AliMpVMotif.h"
-#ifdef WITH_ROOT
 #include "AliMpExMap.h"
-#endif
 
 #include <TVector2.h>
-#ifdef WITH_ROOT
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#endif
 
 class TString;
 
 class AliMpMotifSpecial : public AliMpVMotif
 {
- public:
-#ifdef WITH_STL
-  /// Dimensions map type
-  typedef std::vector< TVector2 > DimensionsMap;
-  /// Dimensions map iterator type
-  typedef std::vector< TVector2 > DimensionsMap2;
-#endif    
-#ifdef WITH_ROOT
-  /// Dimensions map type
-  typedef AliMpExMap DimensionsMap;
-  /// Dimensions map iterator type
-  typedef TObjArray  DimensionsMap2;
-#endif    
-
  public:
   AliMpMotifSpecial(const TString &id, AliMpMotifType *motifType);
   AliMpMotifSpecial(TRootIOCtor* ioCtor);
@@ -76,9 +52,9 @@ class AliMpMotifSpecial : public AliMpVMotif
   Int_t VectorIndex(const AliMpIntPair& indices) const;
 
   // data members
-  TVector2        fDimensions;           ///< motif dimensions
-  DimensionsMap   fPadDimensionsVector;  ///< the vector of pad dimensions
-  DimensionsMap2  fPadDimensionsVector2; ///< the vector of different pad dimensions
+  TVector2     fDimensions;           ///< motif dimensions
+  AliMpExMap   fPadDimensionsVector;  ///< the vector of pad dimensions
+  TObjArray    fPadDimensionsVector2; ///< the vector of different pad dimensions
 
   ClassDef(AliMpMotifSpecial,2) // A motif with its ID
 };

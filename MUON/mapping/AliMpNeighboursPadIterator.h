@@ -13,41 +13,16 @@
 #ifndef ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 #define ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 
-#include "AliMpContainers.h"
-
 #include "AliMpVPadIterator.h"
 #include "AliMpPad.h"
 
-#ifdef WITH_ROOT
 #include <TObjArray.h>
-#endif
-
-#ifdef WITH_STL
-#include <vector>
-#include <set>
-#endif
 
 class AliMpVSegmentation;
 class AliMpIntPair;
 
 class AliMpNeighboursPadIterator : public AliMpVPadIterator
 {
-  public:
-#ifdef WITH_STL
-    /// Pad vector type
-    typedef std::vector<AliMpPad>  PadVector;
-    /// Pad set type
-    typedef std::set<AliMpPad>     PadSet;
-    /// Pad set iterator type
-    typedef PadSet::const_iterator PadSetCIterator;
-#endif
-#ifdef WITH_ROOT
-    /// Pad vector type
-    typedef TObjArray  PadVector;
-    /// Pad set type
-    typedef TObjArray  PadSet;
-#endif
-
   public:
     AliMpNeighboursPadIterator();
     AliMpNeighboursPadIterator(const AliMpVSegmentation* segmentation,
@@ -72,25 +47,18 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
     static const UInt_t   fgkInvalidIndex; ///< invalid index number
 
     // private methods
-    Bool_t    IsNeighbour(const AliMpPad& pad) const;
-#ifdef WITH_STL
-    PadVector PadVectorLine(const AliMpPad& from,
-                            const AliMpIntPair& direction) const;
-    void      UpdateTotalSet(PadSet& setTotal, const PadVector& from) const;
-#endif
-#ifdef WITH_ROOT
-    PadVector* PadVectorLine(const AliMpPad& from,
+    Bool_t     IsNeighbour(const AliMpPad& pad) const;
+    TObjArray* PadVectorLine(const AliMpPad& from,
                              const AliMpIntPair& direction) const;
-    void      UpdateTotalSet(PadSet& setTotal, PadVector* from) const;
-#endif
-    void      FillPadsVector(Bool_t includeCenter);
-    Bool_t    IsValid() const;
+    void       UpdateTotalSet(TObjArray& setTotal, TObjArray* from) const;
+    void       FillPadsVector(Bool_t includeCenter);
+    Bool_t     IsValid() const;
 
     // private data members
     const AliMpVSegmentation* fkSegmentation; ///< \brief The segmentation
                            ///  segmentation over which to iterate
     AliMpPad   fCenterPad; ///< Pad arround which we iterate
-    PadVector  fPads;      ///< The list of pad arround fCenterIndices
+    TObjArray  fPads;      ///< The list of pad arround fCenterIndices
     UInt_t     fIndex;     ///< Current index inside the fPads vector
 
   ClassDef(AliMpNeighboursPadIterator,1) // iterator over motif's pads

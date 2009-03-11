@@ -13,6 +13,15 @@
 #ifndef ALIMPPCB_H
 #define ALIMPPCB_H
 
+#ifndef ALI_MP_VPAD_ITERATOR_H
+#  include "AliMpVPadIterator.h"
+#endif
+
+#ifndef ALI_MP_AREA_H
+#  include "AliMpArea.h"
+#endif
+
+
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
@@ -21,26 +30,12 @@
 #  include "TString.h"
 #endif
 
-#  ifndef ROOT_TArraI
-#    include "TArrayI.h"
-#  endif
-
-#include "AliMpContainers.h"
-
-#ifdef WITH_ROOT
-#  ifndef ROOT_TObjArray
-#    include "TObjArray.h"
-#  endif
-#else
-#  include <vector>
+#ifndef ROOT_TArraI
+#  include "TArrayI.h"
 #endif
 
-#ifndef ALI_MP_VPAD_ITERATOR_H
-#  include "AliMpVPadIterator.h"
-#endif
-
-#ifndef ALI_MP_AREA_H
-#  include "AliMpArea.h"
+#ifndef ROOT_TObjArray
+#  include "TObjArray.h"
 #endif
 
 class AliMpSlatMotifMap;
@@ -160,11 +155,7 @@ class AliMpPCB : public TObject
   Int_t fIxmax; ///< max pad index in x
   Int_t fIymin; ///< min pad index in y
   Int_t fIymax; ///< max pad index in y
-#ifdef WITH_ROOT
   TObjArray fMotifPositions; ///< array of motifs
-#else  
-  std::vector<AliMpMotifPosition*> fMotifPositions; ///< array of motif positions
-#endif
   Int_t fNofPads; ///< number of pads in this PCB
   AliMpSlatMotifMap* fMotifMap; ///< to keep track of things to avoid duplications of motif and motiftypes, and get proper deletion
   
