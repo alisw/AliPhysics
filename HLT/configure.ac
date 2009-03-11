@@ -936,6 +936,59 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIGLOBAL_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_JET],[hlt jet library])
+
+if test ! "x$FASTJET" = "x" ; then
+  enable_fastjet="yes"
+else
+  enable_fastjet="no"
+fi
+
+if test "x$enable_fastjet" = "xyes"; then
+	ALIJET_LIBS= CHECK_HLTMODULE([jet],
+		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN -I${FASTJET}/include],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[AOD ESD ANALYSIS ANALYSISalice CGAL fastjet JETAN JETANMC], 
+		[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET -L${FASTJET}/lib], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+else
+	ALIJET_LIBS= CHECK_HLTMODULE([jet],
+		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[AOD ESD ANALYSIS ANALYSISalice JETAN JETANMC], 
+		[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+fi
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_jet=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_jet="yes"
+else
+  enable_jet=$enable_module
+fi
+
+if test "x$enable_jet" = "xyes" ; then 
+  AC_DEFINE(HLT_JET)
+  ALIJET_LIBS="$ALIHLTMODULE_LIBS"
+else
+  enable_module=$enable_jet
+fi
+
+AC_MSG_NOTICE([++ ------------------------------])
+AC_MSG_NOTICE([++ HAS _FASTJET  = $enable_fastjet])
+AC_MSG_NOTICE([++ MODULE ENABLE = $enable_module])
+AC_MSG_NOTICE([++ MODULE JET    = $enable_jet])
+AC_MSG_NOTICE([++ ALIJET_LIBS   = $ALIHLTMODULE_LIBS])
+AC_MSG_NOTICE([++ ------------------------------])
+
+AM_CONDITIONAL(EN_HLT_JET, test x$enable_jet = xyes)
+AC_MSG_CHECKING([whether to compile Jet library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIJET_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_ITS],[hlt its library])
 
 ALIITS_LIBS=
@@ -1245,6 +1298,11 @@ fi
 AC_MSG_NOTICE([compile global library: $enable_global])
 if test "x$enable_global" = "xyes"; then 
   AC_CONFIG_FILES([global/Makefile])
+fi
+
+AC_MSG_NOTICE([compile jet library: $enable_jet])
+if test "x$enable_jet" = "xyes"; then 
+  AC_CONFIG_FILES([JET/Makefile])
 fi
 
 AC_MSG_NOTICE([compile comp library: $enable_comp])

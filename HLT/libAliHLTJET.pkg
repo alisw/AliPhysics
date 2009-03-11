@@ -1,0 +1,55 @@
+#-*- Mode: Makefile -*-
+# $Id: libAliHLTJET.pkg 28356 2008-08-30 08:52:32Z hristov $
+
+CLASS_HDRS   		    :=	AliHLTJETAgent.h \
+				AliHLTJETConeJetComponent.h
+
+CLASS_HDRS_FJ 	            := 	AliHLTJETFastJetComponent.h	
+
+###############################################################################
+
+include $(MODDIR)/JET/jet.conf
+
+###############################################################################
+
+MODULE_SRCS	            :=	$(CLASS_HDRS:.h=.cxx) 
+
+MODULE_HDRS    	            := 	$(CLASS_HDRS) 
+
+MODULE_DHDR  		    := 	
+
+EINCLUDE                    :=	HLT/BASE \
+				HLT/JET \
+				JETAN \
+				STEER
+
+LIBRARY_DEP  		    :=	-lHLTbase -lAliHLTUtil \
+				-lESD -lSTEER -lSTEERBase -lAOD -lESD \
+				-lANALYSIS -lANALYSISalice \
+				-lJETAN -lJETANMC \
+				-L$(shell root-config --libdir) -lEG 
+
+###############################################################################
+include $(MODDIR)/hlt.conf
+
+SRCS                        := 	$(patsubst %,JET/%,$(MODULE_SRCS))
+CINTHDRS                    := 	$(patsubst %,JET/%,$(CLASS_HDRS)) 
+HDRS                        := 	$(patsubst %,JET/%,$(MODULE_HDRS))
+DHDR                        :=  $(patsubst %,JET/%,$(MODULE_DHDR))
+CINTAUTOLINK                := 	$(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+# For : Creating HLT/tgt_linuxx8664gcc/G__AliHLTJET.cxx
+# Added ${HLTCXXFLAGS_FASTJET} to CINTFLAGS
+# but 
+# Added ${HLTCXXFLAGS_FASTJET} to EDEFINE
+# would be sufficient
+
+# For : Compiling HLT/tgt_linuxx8664gcc/G__AliHLTJET.cxx 
+# Added ${HLTCXXFLAGS_FASTJET} to EDEFINE
+
+EDEFINE                     :=  ${HLTDEFS} ${HLTDEF_FASTJET} ${HLTCXXFLAGS_FASTJET} 
+PACKCXXFLAGS                := 	${HLTCXXFLAGS} ${HLTCXXFLAGS_FASTJET}
+PACKCFLAGS                  :=	${HLTCLFAGS}
+PACKDCXXFLAGS               := 	${HLTDCXXFLAGS}
+PACKSOFLAGS                 := 	${HLTSOFLAGS_FASTJET} $(HLTSOFLAGS) 
+###############################################################################

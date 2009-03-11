@@ -57,6 +57,10 @@ if EN_HLT_GLOBAL
 GLOBAL_DIR=global
 endif
 
+if EN_HLT_JET
+JET_DIR=JET
+endif
+
 
 SUBDIRS 		= BASE \
 			  $(ALIROOT_DEP) \
@@ -72,6 +76,7 @@ SUBDIRS 		= BASE \
                           $(ITS_DIR) \
                           $(EMCAL_DIR) \
                           $(GLOBAL_DIR) \
+                          $(JET_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
@@ -94,6 +99,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTITS.pkg \
 			  libAliHLTEMCAL.pkg \
 			  libAliHLTGlobal.pkg \
+			  libAliHLTJet.pkg \
 			  exa/sample-component1.C \
 			  exa/monitoring.C \
 			  hlt.conf \
