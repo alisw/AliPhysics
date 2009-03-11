@@ -27,10 +27,16 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TNtupleD.h>
+#include <TObjArray.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
+#include "AliDetectorRecoParam.h"
+#include "AliCDBManager.h"
+
 #include "AliLog.h"
 #include "AliQADataMakerRec.h"
 #include "AliESDEvent.h"
@@ -212,7 +218,7 @@ void AliQADataMakerRec::Exec(AliQA::TASKINDEX_t task, TObject * data)
 TObjArray **  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
-
+  InitRecoParams() ;
 	TObjArray ** rv = NULL ; 
   
 	if (cycles > 0)
@@ -257,7 +263,8 @@ void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t r
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
-	fRun = run ;
+  InitRecoParams() ;
+  fRun = run ;
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	
@@ -268,6 +275,32 @@ void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t r
 	} else if ( task == AliQA::kESDS ) {
 		fESDsQAList = list ; 
 	}
+}
+
+//____________________________________________________________________________
+void AliQADataMakerRec::InitRecoParams() 
+{
+  if (!fRecoParam) {
+    AliInfo(Form("Loading reconstruction parameter objects for detector %s", GetName()));
+    AliCDBPath path(GetName(),"Calib","RecoParam");
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(!entry) {
+      fRecoParam = NULL ; 
+      AliWarning(Form("Couldn't find RecoParam entry in OCDB for detector %s",GetName()));
+    }
+    else {
+      TObject * recoParamObj = entry->GetObject() ; 
+      if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+        // The detector has only onse set of reco parameters
+        // Registering it in AliRecoParam
+        AliInfo(Form("Single set of reconstruction parameters found for detector %s",GetName()));
+        dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+        fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamObj) ;
+      } else { 
+        AliError(Form("No valid RecoParam object found in the OCDB for detector %s",GetName()));
+      }
+    }
+  }
 }
 
 //____________________________________________________________________________

@@ -18,6 +18,7 @@ class TNtupleD ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
+class AliDetectorRecoParam ;
 #include "AliQADataMaker.h"
 #include "AliQA.h"
 
@@ -57,6 +58,7 @@ protected:
 
 	virtual void   InitDigits()                        {AliWarning("Call not valid") ; }
 	virtual void   InitESDs()                          {AliInfo("To be implemented by detectors");}
+  virtual void   InitRecoParams() ; 
 	virtual void   InitHits()                          {AliWarning("Call not valid") ; }
 	//virtual void   InitRecParticles()                {AliInfo("To be implemented by detectors");}
 	virtual void   InitRecPoints()                     {AliInfo("To be implemented by detectors");}
