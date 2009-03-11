@@ -998,16 +998,27 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       // Do position normalization - relative distance to 
       // center of pad- time bin
       // Work in progress
-      corrPos = parcl->QnormPos(ipad,type, cluster->GetPad(),
-				cluster->GetTimeBin(), cluster->GetZ(),
-				cluster->GetSigmaY2(),cluster->GetSigmaZ2(),
-				cluster->GetMax(),cluster->GetQ());
+      //      corrPos = parcl->QnormPos(ipad,type, cluster->GetPad(),
+      // 				cluster->GetTimeBin(), cluster->GetZ(),
+      // 				cluster->GetSigmaY2(),cluster->GetSigmaZ2(),
+      // 				cluster->GetMax(),cluster->GetQ());
+      AliTPCTrackerPoint * point = GetTrackPoint(irow);
+      Float_t              ty = TMath::Abs(point->GetAngleY());
+      Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
+      
+      if (type==1) corrPos = 
+	parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+			      TMath::Nint(cluster->GetTimeBin()),ty,tz,0.5,0.2,1.6);
+      if (type==0) corrPos = 
+	parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+			      TMath::Nint(cluster->GetTimeBin()),ty,tz,0.5,0.2,cluster->GetQ(),2.5,1.6);
     }
 
     if (padNorm==1){
       //taken from OCDB
       if (type==0 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadTnorm)[ipad];
       if (type==1 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadMnorm)[ipad];
+
     }
     if (padNorm==2){
       corrPadType  =param->GetPadPitchLength(cluster->GetDetector(),cluster->GetRow());
