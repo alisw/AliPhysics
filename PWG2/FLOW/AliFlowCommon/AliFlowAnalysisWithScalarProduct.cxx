@@ -224,7 +224,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Double_t dMmin1 = fHistProM->GetBinContent(1);  //average over M-1
   Double_t dMaMb  = fHistProM->GetBinContent(2);  //average over Ma*Mb
   Double_t dQaQbAv  = fHistProQaQb->GetBinContent(1); //average over events
-  Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
+  //  Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
   if (dQaQbAv <= 0.){
     //set v to -0
     fCommonHistsRes->FillIntegratedFlowRP(-0.,0.);
@@ -236,9 +236,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);
     if (dMaMb>0.) { dQaQbSqrt *= dMmin1/(TMath::Sqrt(dMaMb)); }
     else { dQaQbSqrt = 0.; }
-    Double_t dQaQbSqrtErr = (dQaQbSqrt/2)*(dQaQbErr/dQaQbAv);
+    //    Double_t dQaQbSqrtErr = (dQaQbSqrt/2)*(dQaQbErr/dQaQbAv);
     Double_t dQaQbSqrtErrRel = 0.;
-    if (dQaQbSqrt!=0.) {dQaQbSqrtErr/dQaQbSqrt; }
+    //  if (dQaQbSqrt!=0.) {dQaQbSqrtErr/dQaQbSqrt; }
     Double_t dQaQbSqrtErrRel2 = dQaQbSqrtErrRel*dQaQbSqrtErrRel;
 
     //v as a function of eta for RP selection
