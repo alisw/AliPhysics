@@ -651,7 +651,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     
     
     //v as a function of Pt for RP selection
-    TH1F* fHistPtInt = fCommonHists->GetHistPtInt(); //for calculating integrated flow
+    TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); //for calculating integrated flow
     Double_t dVRP = 0.;
     Double_t dSum = 0.;
     Double_t dErrV =0.;
@@ -685,12 +685,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dErrdifcomb); 
       //calculate integrated flow for RP selection
-      if (fHistPtInt){
-	Double_t dYieldPt = fHistPtInt->GetBinContent(b);
+      if (fHistPtRP){
+	Double_t dYieldPt = fHistPtRP->GetBinContent(b);
 	dVRP += dv2pro*dYieldPt;
 	dSum +=dYieldPt;
 	dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
-      } else { cout<<"fHistPtInt is NULL"<<endl; }
+      } else { cout<<"fHistPtRP is NULL"<<endl; }
     } //loop over bins b
 
     if (dSum != 0.) {
@@ -704,7 +704,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 
              
     //v as a function of Pt for POI selection 
-    TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff(); //for calculating integrated flow
+    TH1F* fHistPtPOI = fCommonHists->GetHistPtPOI(); //for calculating integrated flow
     Double_t dVPOI = 0.;
     dSum = 0.;
     dErrV =0.;
@@ -739,12 +739,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2pro, dErrdifcomb); 
       //calculate integrated flow for POI selection
-      if (fHistPtDiff){
-	Double_t dYieldPt = fHistPtDiff->GetBinContent(b);
+      if (fHistPtPOI){
+	Double_t dYieldPt = fHistPtPOI->GetBinContent(b);
 	dVPOI += dv2pro*dYieldPt;
 	dSum +=dYieldPt;
 	dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
-      } else { cout<<"fHistPtDiff is NULL"<<endl; }
+      } else { cout<<"fHistPtPOI is NULL"<<endl; }
     } //loop over bins b
 
     if (dSum != 0.) {
@@ -912,7 +912,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	      dEta = pTrack->Eta();
 	      dPt = pTrack->Pt();
 	      dPhi = pTrack->Phi();
-	      if (pTrack->UseForIntegratedFlow()) { // RP selection
+	      if (pTrack->InRPSelection()) { // RP selection
 		dCosTermRP = cos(m*dOrder*(dPhi-dTheta));
 		cNumerRP = dCosTermRP*(TComplex::Exp(cExpo));
 		if (cNumerRP.Rho()==0) {cerr<<"WARNING: modulus of cNumerRP is zero in SecondFillFromFlowEvent"<<endl;}
@@ -920,7 +920,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 		if (fHist2RP[theta]) {
 		  fHist2RP[theta]->Fill(dEta,dPt,cNumerRP); }
 	      }
-	      if (pTrack->UseForDifferentialFlow()) { //POI selection
+	      if (pTrack->InPOISelection()) { //POI selection
 		dCosTermPOI = cos(m*dOrder*(dPhi-dTheta));
 		cNumerPOI = dCosTermPOI*(TComplex::Exp(cExpo));
 		if (cNumerPOI.Rho()==0) {cerr<<"WARNING: modulus of cNumerPOI is zero in SecondFillFromFlowEvent"<<endl;}
@@ -990,7 +990,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent
     {
       AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ; 
       if (pTrack){
-	if (pTrack->UseForIntegratedFlow()) {
+	if (pTrack->InRPSelection()) {
 	  Double_t dPhi = pTrack->Phi();
 	  Double_t dGIm = aR * dWgt*cos(dOrder*(dPhi - aTheta));
 	  TComplex cGi(1., dGIm);
@@ -1030,7 +1030,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEven
     {
       AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ;  
       if (pTrack){
-	if (pTrack->UseForIntegratedFlow()) {
+	if (pTrack->InRPSelection()) {
 	  Double_t dPhi = pTrack->Phi();
 	  Double_t dCosTerm = dWgt*cos(dOrder*(dPhi - dTheta));
 	  //GetGr0theta
@@ -1056,12 +1056,12 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEven
 	Double_t dCosTerm = cos(dOrder*(dPhi-dTheta));
 	TComplex cCosTermComplex(1.,aR0*dCosTerm);
 	//RP selection
-	if (pTrack->UseForIntegratedFlow()) {
+	if (pTrack->InRPSelection()) {
 	  TComplex cNumerRP = cG*dCosTerm/cCosTermComplex;  //PG Eq. 9
 	  fHist2RP[theta]->Fill(dEta,dPt,cNumerRP);  
 	}
 	//POI selection
-	if (pTrack->UseForDifferentialFlow()) {
+	if (pTrack->InPOISelection()) {
 	  TComplex cNumerPOI = cG*dCosTerm/cCosTermComplex;  //PG Eq. 9
 	  fHist2POI[theta]->Fill(dEta,dPt,cNumerPOI);  
 	}

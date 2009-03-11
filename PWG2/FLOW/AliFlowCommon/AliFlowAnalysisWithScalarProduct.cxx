@@ -191,11 +191,11 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  Double_t dPt = pTrack->Pt();
 	  Double_t dEta = pTrack->Eta();
 	  //fill the profile histograms
-	  if (pTrack->UseForIntegratedFlow()) {
+	  if (pTrack->InRPSelection()) {
 	    fHistProUQetaRP -> Fill(dEta,dUQ);
 	    fHistProUQPtRP -> Fill(dPt,dUQ);
 	  }
-	  if (pTrack->UseForDifferentialFlow()) {
+	  if (pTrack->InPOISelection()) {
 	    fHistProUQetaPOI -> Fill(dEta,dUQ);
 	    fHistProUQPtPOI -> Fill(dPt,dUQ);
 	  }  
@@ -236,8 +236,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);
     if (dMaMb>0.) { dQaQbSqrt *= dMmin1/(TMath::Sqrt(dMaMb)); }
     else { dQaQbSqrt = 0.; }
-    cout<<"dMmin1/(TMath::Sqrt(dMaMb)) = "<<dMmin1/(TMath::Sqrt(dMaMb))<<endl; //TEST
-    cout<<"dQaQbSqrt = "<<dQaQbSqrt<<endl; //TEST
     Double_t dQaQbSqrtErr = (dQaQbSqrt/2)*(dQaQbErr/dQaQbAv);
     Double_t dQaQbSqrtErrRel = 0.;
     if (dQaQbSqrt!=0.) {dQaQbSqrtErr/dQaQbSqrt; }
@@ -280,7 +278,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     } //loop over bins b
     
     //v as a function of Pt for RP selection
-    TH1F* fHistPtInt = fCommonHists->GetHistPtInt(); //for calculating integrated flow
+    TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); //for calculating integrated flow
     Double_t dVRP = 0.;
     Double_t dSum = 0.;
     Double_t dErrV =0.;
@@ -301,12 +299,12 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dv2err);
       //calculate integrated flow for RP selection
-      if (fHistPtInt){
-	Double_t dYieldPt = fHistPtInt->GetBinContent(b);
+      if (fHistPtRP){
+	Double_t dYieldPt = fHistPtRP->GetBinContent(b);
 	dVRP += dv2pro*dYieldPt;
 	dSum +=dYieldPt;
 	dErrV += dYieldPt*dYieldPt*dv2err*dv2err;
-      } else { cout<<"fHistPtDiff is NULL"<<endl; }
+      } else { cout<<"fHistPtRP is NULL"<<endl; }
     } //loop over bins b
 
     if (dSum != 0.) {
@@ -320,7 +318,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     cout<<"dV(RP) = "<<dVRP<<" +- "<<dErrV<<endl;
        
     //v as a function of Pt for POI selection 
-    TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff(); //for calculating integrated flow
+    TH1F* fHistPtPOI = fCommonHists->GetHistPtPOI(); //for calculating integrated flow
     Double_t dVPOI = 0.;
     dSum = 0.;
     dErrV =0.;
@@ -342,12 +340,12 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
       fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2pro, dv2err); 
 
       //calculate integrated flow for POI selection
-      if (fHistPtDiff){
-	Double_t dYieldPt = fHistPtDiff->GetBinContent(b);
+      if (fHistPtPOI){
+	Double_t dYieldPt = fHistPtPOI->GetBinContent(b);
 	dVPOI += dv2pro*dYieldPt;
 	dSum +=dYieldPt;
 	dErrV += dYieldPt*dYieldPt*dv2err*dv2err;
-      } else { cout<<"fHistPtDiff is NULL"<<endl; }
+      } else { cout<<"fHistPtPOI is NULL"<<endl; }
     } //loop over bins b
 
     if (dSum != 0.) {

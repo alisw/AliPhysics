@@ -42,7 +42,7 @@ class AliFlowAnalysisWithMCEventPlane {
    void      WriteHistograms(TString* outputFileName);
    void      WriteHistograms(TString outputFileName);
    void      Init();                             //defines variables and histograms
-   void      Make(AliFlowEventSimple* anEvent);   //calculates variables and fills histograms
+   void      Make(AliFlowEventSimple* anEvent);  //calculates variables and fills histograms
    void      Finish();                           //saves histograms
    
    void      SetDebug(Bool_t kt)          { this->fDebug = kt ; }
@@ -54,34 +54,35 @@ class AliFlowAnalysisWithMCEventPlane {
    // Output 
    TList*    GetHistList() const          { return this->fHistList ; }  
    AliFlowCommonHist* GetCommonHists() const  { return this->fCommonHists; }
-   void               SetCommonHists(AliFlowCommonHist* aCommonHist)  
+   void      SetCommonHists(AliFlowCommonHist* aCommonHist)  
      { this->fCommonHists = aCommonHist; }
-   AliFlowCommonHistResults*  GetCommonHistsRes() const  
-     { return this->fCommonHistsRes; }
+   AliFlowCommonHistResults*  GetCommonHistsRes() const { return this->fCommonHistsRes; }
    void      SetCommonHistsRes(AliFlowCommonHistResults* aCommonHistResult) 
      { this->fCommonHistsRes = aCommonHistResult; }
    
    //histograms
-   TProfile* GetHistProFlow()             {return this->fHistProFlow; }  
-   void      SetHistProFlow(TProfile* aHistProFlow)   
-     {this->fHistProFlow = aHistProFlow; }
    TH1F*     GetHistRP()                  {return this->fHistRP; } 
    void      SetHistRP(TH1F* aHistRP)     {this->fHistRP = aHistRP; }
    
-   TProfile* GetHistProIntFlow()                          {return this->fHistProIntFlow; } 
-   void      SetHistProIntFlow(TProfile* aHistProIntFlow) {this->fHistProIntFlow = aHistProIntFlow; }
+   TProfile* GetHistProIntFlow()          {return this->fHistProIntFlow; } 
+   void      SetHistProIntFlow(TProfile* aHistProIntFlow) 
+     {this->fHistProIntFlow = aHistProIntFlow; }
    
-   TProfile* GetHistProDiffFlowPtRP()                               {return this->fHistProDiffFlowPtRP; } 
-   void      SetHistProDiffFlowPtRP(TProfile* aHistProDiffFlowPtRP) {this->fHistProDiffFlowPtRP = aHistProDiffFlowPtRP; } 
+   TProfile* GetHistProDiffFlowPtRP()     {return this->fHistProDiffFlowPtRP; } 
+   void      SetHistProDiffFlowPtRP(TProfile* aHistProDiffFlowPtRP) 
+     {this->fHistProDiffFlowPtRP = aHistProDiffFlowPtRP; } 
    
-   TProfile* GetHistProDiffFlowEtaRP()                                {return this->fHistProDiffFlowEtaRP; } 
-   void      SetHistProDiffFlowEtaRP(TProfile* aHistProDiffFlowEtaRP) {this->fHistProDiffFlowEtaRP = aHistProDiffFlowEtaRP; } 
+   TProfile* GetHistProDiffFlowEtaRP()    {return this->fHistProDiffFlowEtaRP; } 
+   void      SetHistProDiffFlowEtaRP(TProfile* aHistProDiffFlowEtaRP) 
+     {this->fHistProDiffFlowEtaRP = aHistProDiffFlowEtaRP; } 
    
-   TProfile* GetHistProDiffFlowPtPOI()                               {return this->fHistProDiffFlowPtPOI; } 
-   void      SetHistProDiffFlowPtPOI(TProfile* aHistProDiffFlowPtPOI) {this->fHistProDiffFlowPtPOI = aHistProDiffFlowPtPOI; } 
+   TProfile* GetHistProDiffFlowPtPOI()    {return this->fHistProDiffFlowPtPOI; } 
+   void      SetHistProDiffFlowPtPOI(TProfile* aHistProDiffFlowPtPOI) 
+     {this->fHistProDiffFlowPtPOI = aHistProDiffFlowPtPOI; } 
    
-   TProfile* GetHistProDiffFlowEtaPOI()                                {return this->fHistProDiffFlowEtaPOI; } 
-   void      SetHistProDiffFlowEtaPOI(TProfile* aHistProDiffFlowEtaPOI) {this->fHistProDiffFlowEtaPOI = aHistProDiffFlowEtaPOI; }    
+   TProfile* GetHistProDiffFlowEtaPOI()   {return this->fHistProDiffFlowEtaPOI; } 
+   void      SetHistProDiffFlowEtaPOI(TProfile* aHistProDiffFlowEtaPOI) 
+     {this->fHistProDiffFlowEtaPOI = aHistProDiffFlowEtaPOI; }    
 
  private:
  
@@ -101,14 +102,11 @@ class AliFlowAnalysisWithMCEventPlane {
     
    AliFlowCommonHist* fCommonHists;              //
    AliFlowCommonHistResults* fCommonHistsRes;    //
-
-   TProfile*    fHistProFlow;       //
-   TH1F*        fHistRP;            //
    
-   TProfile*    fHistProIntFlow;     //profile used to calculate the integrated flow of RP particles
-   TProfile*    fHistProDiffFlowPtRP;  //profile used to calculate the differential flow (Pt) of RP particles 
-   TProfile*    fHistProDiffFlowEtaRP; //profile used to calculate the differential flow (Eta) of RP particles 
-   
+   TH1F*        fHistRP;                //reaction plane
+   TProfile*    fHistProIntFlow;        //profile used to calculate the integrated flow of RP particles
+   TProfile*    fHistProDiffFlowPtRP;   //profile used to calculate the differential flow (Pt) of RP particles 
+   TProfile*    fHistProDiffFlowEtaRP;  //profile used to calculate the differential flow (Eta) of RP particles 
    TProfile*    fHistProDiffFlowPtPOI;  //profile used to calculate the differential flow (Pt) of POI particles 
    TProfile*    fHistProDiffFlowEtaPOI; //profile used to calculate the differential flow (Eta) of POI particles    
    

@@ -487,12 +487,12 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // running over data 
  
  Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = nRP + nPOI + rest  
- Int_t nRP = anEvent->GetEventNSelTracksIntFlow(); // nRP = number of particles used to determine the reaction plane
+ Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = number of particles used to determine the reaction plane
  
  Int_t n = 2; // int flow harmonic (to be improved)
  
  //needed for debugging: (to be improved - add explanation here) 
- //Bool_t bNestedLoops=kTRUE;
+ //Bool_t bNestedLoops=kFALSE;
  //if(!(bNestedLoops)||(nPrim>0&&nPrim<12))
  //{
  //if(nPrim>0&&nPrim<10)
@@ -903,7 +903,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    fTrack=anEvent->GetTrack(i);   
    if(fTrack)
    {
-    if(fTrack->UseForIntegratedFlow()) 
+    if(fTrack->InRPSelection()) 
     {
      dPhi = fTrack->Phi();
      dPt  = fTrack->Pt();
@@ -936,7 +936,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
       } 
      }
      
-    } // end of if (pTrack->UseForIntegratedFlow())
+    } // end of if (pTrack->InRPSelection())
    } // end of if (pTrack)
    else {cerr << "no particle!!!"<<endl;}
   } // loop over particles
@@ -1134,9 +1134,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   fTrack=anEvent->GetTrack(i);
   if(fTrack)
   {
-   if(fTrack->UseForDifferentialFlow()) // checking if particle is POI 
+   if(fTrack->InPOISelection()) // checking if particle is POI 
    {
-    if(fTrack->UseForIntegratedFlow()) // checking if particle is both POI and RP 
+    if(fTrack->InRPSelection()) // checking if particle is both POI and RP 
     {
      // get azimuthal angle, momentum and pseudorapidity of a particle:
      dPhi = fTrack->Phi();
@@ -1195,7 +1195,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
      sumOfW2upTomPrimePrimeEta->Fill(dEta,pow(wPhi*wPt*wEta,2),1.);
      sumOfW3upTomPrimePrimeEta->Fill(dEta,pow(wPhi*wPt*wEta,3),1.);
 
-    }else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP  
+    }else if(!(fTrack->InRPSelection())) // checking if particles is POI and not RP  
      {
       // get azimuthal angle, momentum and pseudorapidity of a particle:
       dPhi = fTrack->Phi();
@@ -1213,10 +1213,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
       etaReq2nPrime->Fill(dEta,cos(2.*n*dPhi),1.);
       etaImq2nPrime->Fill(dEta,sin(2.*n*dPhi),1.);
 
-     } // end of else if(!(fTrack->UseForIntegratedFlow())) // checking if particles is POI and not RP 
-   } // end of if(fTrack->UseForDifferentialFlow()) // checking if particle is POI 
+     } // end of else if(!(fTrack->InRPSelection())) // checking if particles is POI and not RP 
+   } // end of if(fTrack->InPOISelection()) // checking if particle is POI 
      
-   if(fTrack->UseForIntegratedFlow()) // checking if particles is only RP:
+   if(fTrack->InRPSelection()) // checking if particles is only RP:
    {
     dPhi = fTrack->Phi();
     dPt  = fTrack->Pt();
@@ -1274,7 +1274,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     sumOfW1upTomEta->Fill(dEta,wPhi*wPt*wEta,1.);
     sumOfW2upTomEta->Fill(dEta,pow(wPhi*wPt*wEta,2),1.);
     sumOfW3upTomEta->Fill(dEta,pow(wPhi*wPt*wEta,3),1.);
-   } // end of if(fTrack->UseForIntegratedFlow()) // checking if particles is only RP:
+   } // end of if(fTrack->InRPSelection()) // checking if particles is only RP:
   } // end of if(fTrack}      
  } // end of for(Int_t i=0;i<nPrim;i++) 
  
@@ -1324,8 +1324,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   dM2pp1PtPOI=dS12mPrimePrimePtPOI*dSnk[0][0]-dS13mPrimePrimePtPOI;
   dM0pp3PtPOI=mPrimePrimePtPOI*dSnk[0][2]-dS13mPrimePrimePtPOI;
   dM0pp12PtPOI=mPrimePrimePtPOI*dSnk[0][0]*dSnk[0][1]-dM2pp1PtPOI-dM1pp2PtPOI-dM0pp3PtPOI-dS13mPrimePrimePtPOI;
-  dM0pp111PtPOI=mPrimePrimePtPOI*dSnk[2][0]-3.*dM1pp11PtPOI-3.*dM0pp12PtPOI-3.*dM2pp1PtPOI-3.*dM1pp2PtPOI-dM0pp3PtPOI-dS13mPrimePrimePtPOI;
+ 
+  // recursive formula (OK)
+  // dM0pp111PtPOI=mPrimePrimePtPOI*dSnk[2][0]-3.*dM1pp11PtPOI-3.*dM0pp12PtPOI-3.*dM2pp1PtPOI-3.*dM1pp2PtPOI-dM0pp3PtPOI-dS13mPrimePrimePtPOI;
   
+  // direct formula (OK)
+  dM0pp111PtPOI = mPrimePrimePtPOI*(dSnk[2][0]-3.*dSnk[0][0]*dSnk[0][1]+2.*dSnk[0][2])-3.*(dS11mPrimePrimePtPOI*(dSnk[1][0]-dSnk[0][1])+2.*(dS13mPrimePrimePtPOI-dS12mPrimePrimePtPOI*dSnk[0][0]));
+           
   // q':
   qxPrimePtPOI = (ptReq1nPrime->GetBinContent(bin))*(ptReq1nPrime->GetBinEntries(bin));
   qyPrimePtPOI = (ptImq1nPrime->GetBinContent(bin))*(ptImq1nPrime->GetBinEntries(bin));
@@ -1409,11 +1414,42 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }
   */
  
-  // 4-p RP and POI in all combinations (full, partial and no overlap)
+  // recursive formula for 4-p RP and POI in all combinations (full, partial and no overlap) (OK)
   Double_t four1npp1n1n1nW1W1W1PtPOI=0.;
   if(dM0pp111PtPOI+dM0p111PtPOI)
   {
-  four1npp1n1n1nW1W1W1PtPOI = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])-2.*dM1pp11PtPOI*two1n1nW1ppW1W1PtPOI-dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI-dM0pp12PtPOI*three1npp1n2nW0ppW1W2PtPOI-2.*dM0pp12PtPOI*two1npp1nW1W2PtPOI-3.*dM2pp1PtPOI*two1npp1nW2ppW1PtPOI-2.*dM1pp2PtPOI-dM1pp2PtPOI*two2npp2nW1ppW2PtPOI-dM0pp3PtPOI*two1npp1nW3PtPOI-dS13mPrimePrimePtPOI+(pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])-2.*dSnk[0][1]* (qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])+2.*(qxPrimePtPOI*dQnkX[0][2]+qyPrimePtPOI*dQnkY[0][2])-qxPrimePtPOI*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOI*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOI+dM0p111PtPOI);
+   four1npp1n1n1nW1W1W1PtPOI = ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])-2.*dM1pp11PtPOI*two1n1nW1ppW1W1PtPOI-dM1pp11PtPOI*three2npp1n1nW1ppW1W1PtPOI-dM0pp12PtPOI*three1npp1n2nW0ppW1W2PtPOI-2.*dM0pp12PtPOI*two1npp1nW1W2PtPOI-3.*dM2pp1PtPOI*two1npp1nW2ppW1PtPOI-2.*dM1pp2PtPOI-dM1pp2PtPOI*two2npp2nW1ppW2PtPOI-dM0pp3PtPOI*two1npp1nW3PtPOI-dS13mPrimePrimePtPOI+(pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])-2.*dSnk[0][1]* (qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])+2.*(qxPrimePtPOI*dQnkX[0][2]+qyPrimePtPOI*dQnkY[0][2])-qxPrimePtPOI*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])+qyPrimePtPOI*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1]))/(dM0pp111PtPOI+dM0p111PtPOI);
+  
+  
+
+ Double_t four1npp1n1n1nW1W1W1PtPOIb = 
+          ((pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])
+          -  q2xW1PrimePrimePtPOI*(dQnkX[0][0]*dQnkX[0][0]-dQnkY[0][0]*dQnkY[0][0])+2.*q2yW1PrimePrimePtPOI*dQnkX[0][0]*dQnkY[0][0]
+          -  qxPrimePrimePtPOI*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePrimePtPOI*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])
+          -  2.*dSnk[0][1]*(qxPrimePrimePtPOI*dQnkX[0][0]+qyPrimePrimePtPOI*dQnkY[0][0])
+          -  2.*(pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*dS11mPrimePrimePtPOI
+          +  7.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])
+          -  1.*(qxW2PrimePrimePtPOI*dQnkX[0][0]+qyW2PrimePrimePtPOI*dQnkY[0][0])
+          +  1.*(q2xW1PrimePrimePtPOI*dQnkX[1][1]+q2yW1PrimePrimePtPOI*dQnkY[1][1])
+          +  2.*(qxPrimePrimePtPOI*dQnkX[0][2]+qyPrimePrimePtPOI*dQnkY[0][2])
+          +  2.*dS11mPrimePrimePtPOI*dSnk[0][1]
+          -  6.*dS13mPrimePrimePtPOI                         
+          +  (pow(dQnkX[0][0],2.)+pow(dQnkY[0][0],2.))*(qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])
+          -  2.*dSnk[0][1]*(qxPrimePtPOI*dQnkX[0][0]+qyPrimePtPOI*dQnkY[0][0])
+          -  qxPrimePtPOI*(dQnkX[0][0]*dQnkX[1][1]+dQnkY[0][0]*dQnkY[1][1])-qyPrimePtPOI*(dQnkY[0][0]*dQnkX[1][1]-dQnkX[0][0]*dQnkY[1][1])
+          +  2.*(qxPrimePrimePtPOI*dQnkX[0][2]+qyPrimePrimePtPOI*dQnkY[0][2]))/(dM0pp111PtPOI+dM0p111PtPOI);
+  
+   
+   
+   
+   
+   
+   
+   cout<<endl;
+   cout<<"ab"<<endl;
+   cout<<four1npp1n1n1nW1W1W1PtPOI<<endl;
+   cout<<four1npp1n1n1nW1W1W1PtPOIb<<endl;   
+   cout<<endl;
  
    f4WPerPtBin1n1n1n1nPOI->Fill(fPtMin+(bin-1)*dBinWidthPt,four1npp1n1n1nW1W1W1PtPOI,dM0pp111PtPOI+dM0p111PtPOI);
   } // end of if(dM0pp111PtPOI+dM0p111PtPOI)
@@ -2099,14 +2135,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
+ Bool_t nestedLoops = kFALSE;
 
 
 
-
- /*
-
- //if(bNestedLoops)to be improved
- //{ to be improved               
+ 
+ if(nestedLoops) // to be improved
+ {                
  //-------------------------------------------------------------------------------------------------------------------------------- 
  //
  //                                          **********************
@@ -2128,8 +2163,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //..........................................................................
  
 
- Double_t phi1=0., phi2=0., phi3=0., phi4=0., phi5=0., phi6=0., phi7=0., phi8=0.;
- Double_t wPhi1=1., wPhi2=1., wPhi3=1., wPhi4=1., wPhi5=1., wPhi6=1., wPhi7=1., wPhi8=1.;
+ Double_t phi1=0., phi2=0., phi3=0., phi4=0.;
+ // phi5=0., phi6=0., phi7=0., phi8=0.;
+ Double_t wPhi1=1., wPhi2=1., wPhi3=1., wPhi4=1.;
+ // wPhi5=1., wPhi6=1., wPhi7=1., wPhi8=1.;
 
 
 
@@ -2166,7 +2203,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
-
+ /*
 
  for(Int_t i1=0;i1<dMult;i1++)
  {
@@ -2200,7 +2237,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    }
   }
  }
- 
+ */
 
  
  
@@ -2248,7 +2285,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  
-
+ /*
  
  //<5>_{2n,n,n,n,n}, //<5>_{2n,2n|2n,n,n}, <5>_{3n,n|2n,n,n} and <5>_{4n|n,n,n,n}
  for(Int_t i1=0;i1<dMult;i1++)
@@ -2464,20 +2501,20 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //101st bin: <2'>_{n|n}
  
  
- /*
+ 
  
  //<2'>_{n|n}
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
+   if(!(fTrack->InRPSelection()))continue;//RP condition
    phi2=fTrack->Phi();
    if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
     //cout<<"1st = "<<i1<<"     "<< (anEvent->GetTrack(i1))->Eta() << " " << (anEvent->GetTrack(i1))->Pt()<<endl;
@@ -2497,7 +2534,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }//end of for(Int_t i2=0;i2<nPrim;i2++)
  }//end of for(Int_t i1=0;i1<nPrim;i1++)
 
- */ 
+ 
   
  
  
@@ -2507,21 +2544,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
+   if(!(fTrack->InRPSelection()))continue;//RP condition
    phi2=fTrack->Phi();
    if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<nPrim;i3++)
    {
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition
+    if(!(fTrack->InRPSelection()))continue;//RP condition
     phi3=fTrack->Phi();
     if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     //fill the fDirectCorrelations:     
@@ -2544,13 +2581,13 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  */
  
  
- /*
+
  
  //<4'>_{n,n|n,n}
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   tempCounter++;
   phi1=fTrack->Phi();
   if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
@@ -2558,21 +2595,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+   if(!(fTrack->InRPSelection()))continue;//RP condition   
    phi2=fTrack->Phi();
    if(phiWeights) wPhi2 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi2*nBinsPhi/TMath::TwoPi())));
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+    if(!(fTrack->InRPSelection()))continue;//RP condition   
     phi3=fTrack->Phi();
     if(phiWeights) wPhi3 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi3*nBinsPhi/TMath::TwoPi())));
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
-     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+     if(!(fTrack->InRPSelection()))continue;//RP condition  
      phi4=fTrack->Phi();
      if(phiWeights) wPhi4 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi4*nBinsPhi/TMath::TwoPi())));
      //fill the fDirectCorrelations:
@@ -2586,7 +2623,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }//end of for(Int_t i2=0;i2<nPrim;i2++) 
  }//end of for(Int_t i1=0;i1<nPrim;i1++)
   
- */
+ 
  
  
  
@@ -2615,31 +2652,31 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+   if(!(fTrack->InRPSelection()))continue;//RP condition   
    phi2=fTrack->Phi();
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+    if(!(fTrack->InRPSelection()))continue;//RP condition   
     phi3=fTrack->Phi();
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
-     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+     if(!(fTrack->InRPSelection()))continue;//RP condition  
      phi4=fTrack->Phi();//
      for(Int_t i5=0;i5<nPrim;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
-      if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+      if(!(fTrack->InRPSelection()))continue;//RP condition  
       phi5=fTrack->Phi();    
       //fill the fDirectCorrelations:if(bNestedLoops)
       fDirectCorrelations->Fill(55.,cos(2.*n*phi1+n*phi2-n*phi3-n*phi4-n*phi5),1);//<5'>_{2n,n|n,n,n}
@@ -2653,37 +2690,37 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+   if(!(fTrack->InRPSelection()))continue;//RP condition   
    phi2=fTrack->Phi();
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+    if(!(fTrack->InRPSelection()))continue;//RP condition   
     phi3=fTrack->Phi();
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
-     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+     if(!(fTrack->InRPSelection()))continue;//RP condition  
      phi4=fTrack->Phi();
      for(Int_t i5=0;i5<nPrim;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
-      if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+      if(!(fTrack->InRPSelection()))continue;//RP condition  
       phi5=fTrack->Phi();    
       for(Int_t i6=0;i6<nPrim;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
-       if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+       if(!(fTrack->InRPSelection()))continue;//RP condition  
        phi6=fTrack->Phi();  
        //fill the fDirectCorrelations:
        fDirectCorrelations->Fill(60.,cos(n*(phi1+phi2+phi3-phi4-phi5-phi6)),1);//<6'>_{n,n,n|n,n,n}
@@ -2698,43 +2735,43 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+   if(!(fTrack->InRPSelection()))continue;//RP condition   
    phi2=fTrack->Phi();
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+    if(!(fTrack->InRPSelection()))continue;//RP condition   
     phi3=fTrack->Phi();
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
-     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+     if(!(fTrack->InRPSelection()))continue;//RP condition  
      phi4=fTrack->Phi();
      for(Int_t i5=0;i5<nPrim;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
-      if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+      if(!(fTrack->InRPSelection()))continue;//RP condition  
       phi5=fTrack->Phi();    
       for(Int_t i6=0;i6<nPrim;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
-       if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+       if(!(fTrack->InRPSelection()))continue;//RP condition  
        phi6=fTrack->Phi();
        for(Int_t i7=0;i7<nPrim;i7++)
        {
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
         fTrack=anEvent->GetTrack(i7);
-        if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+        if(!(fTrack->InRPSelection()))continue;//RP condition  
         phi7=fTrack->Phi();   
         //fill the fDirectCorrelations:
         fDirectCorrelations->Fill(65.,cos(2.*n*phi1+n*phi2+n*phi3-n*phi4-n*phi5-n*phi6-n*phi7),1);//<7'>_{2n,n,n|n,n,n,n}
@@ -2750,49 +2787,49 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   fTrack=anEvent->GetTrack(i1);
-  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->UseForDifferentialFlow())))continue;//POI condition
+  if(!((fTrack->Pt()>=0.5&&fTrack->Pt()<0.6)&&(fTrack->InPOISelection())))continue;//POI condition
   phi1=fTrack->Phi();
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
    fTrack=anEvent->GetTrack(i2);
-   if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+   if(!(fTrack->InRPSelection()))continue;//RP condition   
    phi2=fTrack->Phi();
    for(Int_t i3=0;i3<nPrim;i3++)
    { 
     if(i3==i1||i3==i2)continue;
     fTrack=anEvent->GetTrack(i3);
-    if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition   
+    if(!(fTrack->InRPSelection()))continue;//RP condition   
     phi3=fTrack->Phi();
     for(Int_t i4=0;i4<nPrim;i4++)
     {
      if(i4==i1||i4==i2||i4==i3)continue;
      fTrack=anEvent->GetTrack(i4);
-     if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+     if(!(fTrack->InRPSelection()))continue;//RP condition  
      phi4=fTrack->Phi();
      for(Int_t i5=0;i5<nPrim;i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
       fTrack=anEvent->GetTrack(i5);
-      if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+      if(!(fTrack->InRPSelection()))continue;//RP condition  
       phi5=fTrack->Phi();    
       for(Int_t i6=0;i6<nPrim;i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5)continue;
        fTrack=anEvent->GetTrack(i6);
-       if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+       if(!(fTrack->InRPSelection()))continue;//RP condition  
        phi6=fTrack->Phi();
        for(Int_t i7=0;i7<nPrim;i7++)
        {
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6)continue;
         fTrack=anEvent->GetTrack(i7);
-        if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+        if(!(fTrack->InRPSelection()))continue;//RP condition  
         phi7=fTrack->Phi();
         for(Int_t i8=0;i8<nPrim;i8++)
         {
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7)continue;
          fTrack=anEvent->GetTrack(i8);
-         if(!(fTrack->UseForIntegratedFlow()))continue;//RP condition  
+         if(!(fTrack->InRPSelection()))continue;//RP condition  
          phi8=fTrack->Phi();           
          //fill the fDirectCorrelations:
          fDirectCorrelations->Fill(70.,cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)),1);//<8'>_{n,n,n,n|n,n,n,n}
@@ -2818,7 +2855,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
  
  
- 
+ }// end of if (nestedLoops)
  
  
  
@@ -2863,12 +2900,12 @@ void AliFlowAnalysisWithQCumulants::Finish()
  
  //--------------------------------------------------------------------------------------------------------- 
  // avarage multiplicity
- Double_t AvMPOI = (fCommonHists2nd->GetHistMultDiff())->GetMean(); // to be improved 
- Double_t AvMRP  = (fCommonHists2nd->GetHistMultInt())->GetMean(); // to be improved 
+ Double_t AvMPOI = (fCommonHists2nd->GetHistMultPOI())->GetMean(); // to be improved 
+ Double_t AvMRP  = (fCommonHists2nd->GetHistMultRP())->GetMean(); // to be improved 
 
  // number of events
- Double_t nEvtsPOI = (fCommonHists2nd->GetHistMultDiff())->GetEntries(); // to be improved
- Double_t nEvtsRP  = (fCommonHists2nd->GetHistMultInt())->GetEntries(); // to be improved
+ Double_t nEvtsPOI = (fCommonHists2nd->GetHistMultPOI())->GetEntries(); // to be improved
+ Double_t nEvtsRP  = (fCommonHists2nd->GetHistMultRP())->GetEntries(); // to be improved
  //---------------------------------------------------------------------------------------------------------
  
  //---------------------------------------------------------------------------------------------------------
@@ -3007,7 +3044,7 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
   // -------------------------------------------------------------------
   // integrated flow (weighted, POI, Pt, 2nd order):
   dDiffvn2ndPOIW=(fCommonHistsResults2nd->GetHistDiffFlowPtPOI())->GetBinContent(bb);
-  dYield2ndPOIW=(fCommonHists2nd->GetHistPtDiff())->GetBinContent(bb);
+  dYield2ndPOIW=(fCommonHists2nd->GetHistPtPOI())->GetBinContent(bb);
   dVn2ndPOIW+=dDiffvn2ndPOIW*dYield2ndPOIW;
   dSum2ndPOIW+=dYield2ndPOIW;
   // -------------------------------------------------------------------
@@ -3022,7 +3059,7 @@ for(Int_t bb=1;bb<nBinsPtPOI+1;bb++)
   // -------------------------------------------------------------------
   //integrated flow (POI, Pt, 4th order):
   dDiffvn4thPOIW=(fCommonHistsResults4th->GetHistDiffFlowPtPOI())->GetBinContent(bb);
-  dYield4thPOIW=(fCommonHists4th->GetHistPtDiff())->GetBinContent(bb);
+  dYield4thPOIW=(fCommonHists4th->GetHistPtPOI())->GetBinContent(bb);
   dVn4thPOIW+=dDiffvn4thPOIW*dYield4thPOIW;
   dSum4thPOIW+=dYield4thPOIW;
   // -------------------------------------------------------------------
@@ -3114,7 +3151,7 @@ for(Int_t bb=1;bb<nBinsPtRP+1;bb++)
   // -------------------------------------------------------------------
   // integrated flow (weighted, RP, Pt, 2nd order):
   dDiffvn2ndRPW=(fCommonHistsResults2nd->GetHistDiffFlowPtRP())->GetBinContent(bb);
-  dYield2ndRPW=(fCommonHists2nd->GetHistPtInt())->GetBinContent(bb);
+  dYield2ndRPW=(fCommonHists2nd->GetHistPtRP())->GetBinContent(bb);
   dVn2ndRPW+=dDiffvn2ndRPW*dYield2ndRPW;
   dSum2ndRPW+=dYield2ndRPW;
   // -------------------------------------------------------------------
@@ -3129,7 +3166,7 @@ for(Int_t bb=1;bb<nBinsPtRP+1;bb++)
   // -------------------------------------------------------------------
   //integrated flow (RP, Pt, 4th order):
   dDiffvn4thRPW=(fCommonHistsResults4th->GetHistDiffFlowPtRP())->GetBinContent(bb);
-  dYield4thRPW=(fCommonHists4th->GetHistPtInt())->GetBinContent(bb);
+  dYield4thRPW=(fCommonHists4th->GetHistPtRP())->GetBinContent(bb);
   dVn4thRPW+=dDiffvn4thRPW*dYield4thRPW;
   dSum4thRPW+=dYield4thRPW;
   // -------------------------------------------------------------------
@@ -3195,7 +3232,127 @@ for(Int_t bb=1;bb<nBinsEtaRP+1;bb++)
  
  
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Bool_t nestedLoops = kFALSE;
+ if(nestedLoops)
+ {
+ //needed for direct correlations (obtained from nested loops)
+ cout<<endl;
+ cout<<endl;
+ cout<<"   **** cross-checking the formulas ****"<<endl;
+ cout<<"   ****     for integrated flow     ****"<<endl;
+ cout<<"(selected only events for which 0 < M < 12 "<<endl;
+ cout<<"  from dataset in /data/alice2/ante/AOD)   "<<endl;
+
+ cout<<endl;
+ //cout<<"   nEvts = "<<nEvts<<", AvM = "<<AvM<<endl;
+ cout<<endl;
+ cout<<"<w1 w2 cos(n*(phi1-phi2))> from Q-vectors               = "<<fWeightedQCorrelations->GetBinContent(1)<<endl;
+ cout<<"<w1 w2 cos(n*(phi1-phi2))> from nested loops            = "<<fDirectCorrelations->GetBinContent(1)<<endl;
+ cout<<endl;
+ cout<<"<w1^2 w2^2 cos(2n*(phi1-phi2))> from Q-vectors          = "<<fWeightedQCorrelations->GetBinContent(2)<<endl;
+ cout<<"<w1^2 w2^2 cos(2n*(phi1-phi2))> from nested loops       = "<<fDirectCorrelations->GetBinContent(2)<<endl;
+ cout<<endl;
+ cout<<"<w1^3 w2^3 cos(3n*(phi1-phi2))> from Q-vectors          = "<<fWeightedQCorrelations->GetBinContent(3)<<endl;
+ cout<<"<w1^3 w2^3 cos(3n*(phi1-phi2))> from nested loops       = "<<fDirectCorrelations->GetBinContent(3)<<endl;
+ cout<<endl;
+ cout<<"<w1^4 w2^4 cos(4n*(phi1-phi2))> from Q-vectors          = "<<fWeightedQCorrelations->GetBinContent(4)<<endl;
+ cout<<"<w1^4 w2^4 cos(4n*(phi1-phi2))> from nested loops       = "<<fDirectCorrelations->GetBinContent(4)<<endl;
+ cout<<endl;
+ cout<<"<w1^3 w2 cos(n*(phi1-phi2))> from Q-vectors             = "<<fWeightedQCorrelations->GetBinContent(5)<<endl;
+ cout<<"<w1^3 w2 cos(n*(phi1-phi2))> from nested loops          = "<<fDirectCorrelations->GetBinContent(5)<<endl;
+ cout<<endl;
+ cout<<"<w1 w2 w3^2 cos(n*(phi1-phi2))> from Q-vectors          = "<<fWeightedQCorrelations->GetBinContent(6)<<endl;
+ cout<<"<w1 w2 w3^2 cos(n*(phi1-phi2))> from nested loops       = "<<fDirectCorrelations->GetBinContent(6)<<endl;
+ cout<<endl;
+ cout<<"<w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))> from Q-vectors    = "<<fWeightedQCorrelations->GetBinContent(11)<<endl;
+ cout<<"<w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))> from nested loops = "<<fDirectCorrelations->GetBinContent(11)<<endl;
+ cout<<endl;
+ 
+ cout<<"<w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))> from Q-vectors    = "<<fWeightedQCorrelations->GetBinContent(21)<<endl;
+ cout<<"<w1 w2 w3 w4 cos(n*(phi1+phi2-phi3-phi4))> from nested loops = "<<fDirectCorrelations->GetBinContent(21)<<endl;
+ cout<<endl;;
+ 
+ 
  /*
+ cout<<"<3>_{4n,2n,2n} from Q-vectors           = "<<fQCorrelations->GetBinContent(8)<<endl;
+ cout<<"<3>_{4n,2n,2n} from nested loops        = "<<fDirectCorrelations->GetBinContent(8)<<endl;
+ cout<<endl;
+ cout<<"<3>_{4n,3n,n} from Q-vectors            = "<<fQCorrelations->GetBinContent(9)<<endl;
+ cout<<"<3>_{4n,3n,n} from nested loops         = "<<fDirectCorrelations->GetBinContent(9)<<endl;
+ cout<<endl;
+ 
+ cout<<"<4>_{2n,n|2n,n} from Q-vectors          = "<<fQCorrelations->GetBinContent(12)<<endl;
+ cout<<"<4>_{2n,n|2n,n} from nested loops       = "<<fDirectCorrelations->GetBinContent(12)<<endl;
+ cout<<endl;
+ cout<<"<4>_{2n,2n|2n,2n} from Q-vectors        = "<<fQCorrelations->GetBinContent(13)<<endl;
+ cout<<"<4>_{2n,2n|2n,2n} from nested loops     = "<<fDirectCorrelations->GetBinContent(13)<<endl;
+ cout<<endl;
+ cout<<"<4>_{3n|n,n,n} from Q-vectors           = "<<fQCorrelations->GetBinContent(14)<<endl;
+ cout<<"<4>_{3n|n,n,n} from nested loops        = "<<fDirectCorrelations->GetBinContent(14)<<endl;
+ cout<<endl;
+ cout<<"<4>_{3n,n|3n,n} from Q-vectors          = "<<fQCorrelations->GetBinContent(15)<<endl;
+ cout<<"<4>_{3n,n|3n,n} from nested loops       = "<<fDirectCorrelations->GetBinContent(15)<<endl;
+ cout<<endl;
+ cout<<"<4>_{3n,n|2n,2n} from Q-vectors         = "<<fQCorrelations->GetBinContent(16)<<endl;
+ cout<<"<4>_{3n,n|2n,2n} from nested loops      = "<<fDirectCorrelations->GetBinContent(16)<<endl;
+ cout<<endl; 
+ cout<<"<4>_{4n|2n,n,n} from Q-vectors          = "<<fQCorrelations->GetBinContent(17)<<endl;
+ cout<<"<4>_{4n|2n,n,n} from nested loops       = "<<fDirectCorrelations->GetBinContent(17)<<endl;
+ cout<<endl;
+ cout<<"<5>_{2n,n|n,n,n} from Q-vectors         = "<<fQCorrelations->GetBinContent(19)<<endl;
+ cout<<"<5>_{2n,n|n,n,n} from nested loops      = "<<fDirectCorrelations->GetBinContent(19)<<endl;
+ cout<<endl;
+ cout<<"<5>_{2n,2n|2n,n,n} from Q-vectors       = "<<fQCorrelations->GetBinContent(20)<<endl;
+ cout<<"<5>_{2n,2n|2n,n,n} from nested loops    = "<<fDirectCorrelations->GetBinContent(20)<<endl;
+ cout<<endl;
+ cout<<"<5>_{3n,n|2n,n,n} from Q-vectors        = "<<fQCorrelations->GetBinContent(21)<<endl;
+ cout<<"<5>_{3n,n|2n,n,n} from nested loops     = "<<fDirectCorrelations->GetBinContent(21)<<endl;
+ cout<<endl;
+ cout<<"<5>_{4n|n,n,n,n} from Q-vectors         = "<<fQCorrelations->GetBinContent(22)<<endl;
+ cout<<"<5>_{4n|n,n,n,n} from nested loops      = "<<fDirectCorrelations->GetBinContent(22)<<endl;
+ cout<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from Q-vectors        = "<<fQCorrelations->GetBinContent(24)<<endl;
+ cout<<"<6>_{n,n,n|n,n,n} from nested loops     = "<<fDirectCorrelations->GetBinContent(24)<<endl;
+ cout<<endl; 
+ cout<<"<6>_{2n,n,n|2n,n,n} from Q-vectors      = "<<fQCorrelations->GetBinContent(25)<<endl;
+ cout<<"<6>_{2n,n,n|2n,n,n} from nested loops   = "<<fDirectCorrelations->GetBinContent(25)<<endl;
+ cout<<endl;
+ cout<<"<6>_{2n,2n|n,n,n,n} from Q-vectors      = "<<fQCorrelations->GetBinContent(26)<<endl;
+ cout<<"<6>_{2n,2n|n,n,n,n} from nested loops   = "<<fDirectCorrelations->GetBinContent(26)<<endl;
+ cout<<endl; 
+ cout<<"<6>_{3n,n|n,n,n,n} from Q-vectors       = "<<fQCorrelations->GetBinContent(27)<<endl;
+ cout<<"<6>_{3n,n|n,n,n,n} from nested loops    = "<<fDirectCorrelations->GetBinContent(27)<<endl;
+ cout<<endl; 
+ cout<<"<7>_{2n,n,n|n,n,n,n} from Q-vectors     = "<<fQCorrelations->GetBinContent(29)<<endl;
+ cout<<"<7>_{2n,n,n|n,n,n,n} from nested loops  = "<<fDirectCorrelations->GetBinContent(29)<<endl;
+ cout<<endl; 
+ cout<<"<8>_{n,n,n,n|n,n,n,n} from Q-vectors    = "<<fQCorrelations->GetBinContent(31)<<endl;
+ cout<<"<8>_{n,n,n,n|n,n,n,n} from nested loops = "<<fDirectCorrelations->GetBinContent(31)<<endl;
+ cout<<endl; 
+ 
+ */
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
  cout<<"0.5 < Pt < 0.6 GeV"<<endl;                                
  cout<<endl;                                       
  cout<<"<w2 cos(n(psi1-phi2))> from Q-vectors                    = "<<f2WPerPtBin1n1nPOI->GetBinContent(6)<<endl;
@@ -3207,17 +3364,16 @@ for(Int_t bb=1;bb<nBinsEtaRP+1;bb++)
  cout<<"<w2 w3 w4 cos(n(psi1+phi2-phi3-phi4))> from nested loops = "<<fDirectCorrelations->GetBinContent(121)<<endl;   
  cout<<endl; 
  
+ }//end of if(nestedLoops)
  
  
  
  
-  */
  
  
  
- /*
-   
-    
+ 
+  /*  
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  //                   !!!! to be removed !!!!  
  
@@ -3251,8 +3407,7 @@ for(Int_t bb=1;bb<nBinsEtaRP+1;bb++)
  }  
  
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx       
-
-  */     
+ */    
                            
 }
 

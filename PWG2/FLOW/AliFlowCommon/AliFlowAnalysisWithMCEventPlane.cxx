@@ -50,7 +50,6 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistList(NULL),
    fCommonHists(NULL),
    fCommonHistsRes(NULL),
-   fHistProFlow(NULL),
    fHistRP(NULL),
    fHistProIntFlow(NULL),
    fHistProDiffFlowPtRP(NULL),
@@ -115,38 +114,33 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsMCEP");
   fHistList->Add(fCommonHistsRes);
   
-  fHistProFlow = new TProfile("FlowPro_VPt_MCEP","FlowPro_VPt_MCEP",iNbinsPt,dPtMin,dPtMax);
-  fHistProFlow->SetXTitle("P_{t}");
-  fHistProFlow->SetYTitle("v_{2}");
-  fHistList->Add(fHistProFlow);
-
   fHistRP = new TH1F("Flow_RP_MCEP","Flow_RP_MCEP",100,0.,3.14);
   fHistRP->SetXTitle("Reaction Plane Angle");
   fHistRP->SetYTitle("Counts");
   fHistList->Add(fHistRP);
   
-  fHistProIntFlow = new TProfile("fHistProIntFlow","fHistProIntFlow",1,0.,1.);
+  fHistProIntFlow = new TProfile("FlowPro_V_MCEP","FlowPro_V_MCEP",1,0.,1.);
   fHistProIntFlow->SetLabelSize(0.06);
   (fHistProIntFlow->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
   fHistProIntFlow->SetYTitle("");
   fHistList->Add(fHistProIntFlow);
  
-  fHistProDiffFlowPtRP = new TProfile("fHistProDiffFlowPtRP","fHistProDiffFlowPtRP",iNbinsPt,dPtMin,dPtMax);
+  fHistProDiffFlowPtRP = new TProfile("FlowPro_VPtRP_MCEP","FlowPro_VPtRP_MCEP",iNbinsPt,dPtMin,dPtMax);
   fHistProDiffFlowPtRP->SetXTitle("P_{t}");
   fHistProDiffFlowPtRP->SetYTitle("");
   fHistList->Add(fHistProDiffFlowPtRP);  
   
-  fHistProDiffFlowEtaRP = new TProfile("fHistProDiffFlowEtaRP","fHistProDiffFlowEtaRP",iNbinsEta,dEtaMin,dEtaMax);
+  fHistProDiffFlowEtaRP = new TProfile("FlowPro_VetaRP_MCEP","FlowPro_VetaRP_MCEP",iNbinsEta,dEtaMin,dEtaMax);
   fHistProDiffFlowEtaRP->SetXTitle("#eta");
   fHistProDiffFlowEtaRP->SetYTitle("");
   fHistList->Add(fHistProDiffFlowEtaRP);
   
-  fHistProDiffFlowPtPOI = new TProfile("fHistProDiffFlowPtPOI","fHistProDiffFlowPtPOI",iNbinsPt,dPtMin,dPtMax);
+  fHistProDiffFlowPtPOI = new TProfile("FlowPro_VPtPOI_MCEP","FlowPro_VPtPOI_MCEP",iNbinsPt,dPtMin,dPtMax);
   fHistProDiffFlowPtPOI->SetXTitle("P_{t}");
   fHistProDiffFlowPtPOI->SetYTitle("");
   fHistList->Add(fHistProDiffFlowPtPOI);  
   
-  fHistProDiffFlowEtaPOI = new TProfile("fHistProDiffFlowEtaPOI","fHistProDiffFlowEtaPOI",iNbinsEta,dEtaMin,dEtaMax);
+  fHistProDiffFlowEtaPOI = new TProfile("FlowPro_VetaPOI_MCEP","FlowPro_VetaPOI_MCEP",iNbinsEta,dEtaMin,dEtaMax);
   fHistProDiffFlowEtaPOI->SetXTitle("#eta");
   fHistProDiffFlowEtaPOI->SetYTitle("");
   fHistList->Add(fHistProDiffFlowEtaPOI);          
@@ -191,10 +185,10 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
       {
 	AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ; 
 	if (pTrack){
-	  if (pTrack->UseForIntegratedFlow()){
+	  if (pTrack->InRPSelection()){
             dPhi = pTrack->Phi();
-            dv2 = TMath::Cos(2*(dPhi-aRP));
-	    dPt = pTrack->Pt();
+            dv2  = TMath::Cos(2*(dPhi-aRP));
+	    dPt  = pTrack->Pt();
 	    dEta = pTrack->Eta();
             //no-name int. flow (to be improved):
             fHistProIntFlow->Fill(0.,dv2);
@@ -203,12 +197,12 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
             //differential flow (Eta, RP):
             fHistProDiffFlowEtaRP->Fill(dEta,dv2,1.);
           }
-	  if (pTrack->UseForDifferentialFlow()) {
+	  if (pTrack->InPOISelection()) {
 	    dPhi = pTrack->Phi();
 	    //if (dPhi<0.) dPhi+=2*TMath::Pi();
 	    //calculate flow v2:
-	    dv2 = TMath::Cos(2*(dPhi-aRP));
-	    dPt = pTrack->Pt();
+	    dv2  = TMath::Cos(2*(dPhi-aRP));
+	    dPt  = pTrack->Pt();
 	    dEta = pTrack->Eta();
 	    //differential flow (Pt, POI):
             fHistProDiffFlowPtPOI->Fill(dPt,dv2,1.);
@@ -240,7 +234,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   cout<<"dV{MC} is       "<<dV<<" +- "<<dErrV<<endl;
   
   //RP:
-  TH1F* fHistPtRP = fCommonHists->GetHistPtInt(); // to be improved (change "int" and "diff" to RP and POI in common control histos)
+  TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); 
   Double_t dYieldPtRP = 0.;
   Double_t dVRP = 0.;
   Double_t dErrVRP = 0.;
@@ -282,7 +276,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   }
                                                                                                                                    
   //POI:
-  TH1F* fHistPtPOI = fCommonHists->GetHistPtDiff(); // to be improved (change "int" and "diff" to RP and POI in common control histos)
+  TH1F* fHistPtPOI = fCommonHists->GetHistPtPOI(); 
   Double_t dYieldPtPOI = 0.;
   Double_t dVPOI = 0.;
   Double_t dErrVPOI = 0.;
@@ -292,10 +286,8 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   Double_t dv2proEtaPOI = 0.;
   Double_t dErrdifcombEtaPOI = 0.;   
   //Pt:
-  if(fHistProFlow && fHistProDiffFlowPtPOI) {//to be removed (fHistProFlow)
+  if(fHistProDiffFlowPtPOI) {
     for(Int_t b=1;b<iNbinsPt;b++){
-      //dv2pro = fHistProFlow->GetBinContent(b);//to be removed
-      //dErrdifcomb = fHistProFlow->GetBinError(b);//to be removed
       dv2proPtPOI = fHistProDiffFlowPtPOI->GetBinContent(b);
       dErrdifcombPtPOI = fHistProDiffFlowPtPOI->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
       //fill TH1D
@@ -332,7 +324,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   }   
   
   cout<<endl;     	      	  
-  cout<<".....finished"<<endl;
+  //cout<<".....finished"<<endl;
 }
 
  
