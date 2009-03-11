@@ -63,6 +63,34 @@ const char* AliPID::fgkParticleName[AliPID::kSPECIESN+1] = {
   "unknown"
 };
 
+const char* AliPID::fgkParticleShortName[AliPID::kSPECIESN+1] = {
+  "e",
+  "mu",
+  "pi",
+  "K",
+  "p",
+  "photon",
+  "pi0",
+  "n",
+  "K0",
+  "eleCon",
+  "unknown"
+};
+
+const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESN+1] = {
+  "e",
+  "#mu",
+  "#pi",
+  "K",
+  "p",
+  "#gamma",
+  "#pi_{0}",
+  "n",
+  "K_{0}",
+  "eleCon",
+  "unknown"
+};
+
 const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
   ::kElectron, 
   ::kMuonMinus, 

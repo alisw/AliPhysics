@@ -39,6 +39,10 @@ class AliPID : public TObject {
     {return fgkParticleMass[iType];};
   static const char*   ParticleName(Int_t iType) 
     {return fgkParticleName[iType];};
+  static const char*   ParticleShortName(Int_t iType) 
+    {return fgkParticleShortName[iType];};
+  static const char*   ParticleLatexName(Int_t iType) 
+    {return fgkParticleLatexName[iType];};
   static Int_t         ParticleCode(Int_t iType) 
     {return fgkParticleCode[iType];};
 
@@ -76,9 +80,11 @@ class AliPID : public TObject {
 
   static /*const*/ Float_t fgkParticleMass[kSPECIESN+1]; // particle masses
   static const char*   fgkParticleName[kSPECIESN+1]; // particle names
+  static const char*   fgkParticleShortName[kSPECIESN+1]; // particle names
+  static const char*   fgkParticleLatexName[kSPECIESN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESN+1]; // particle codes
 
-  ClassDef(AliPID, 1)    // particle id probability densities
+  ClassDef(AliPID, 2)    // particle id probability densities
 };
 
 
