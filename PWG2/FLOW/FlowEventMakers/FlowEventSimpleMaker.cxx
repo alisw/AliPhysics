@@ -116,7 +116,7 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
 	//marking the particles used for int. flow:
 	if(bPassedRPCuts && iSelParticlesRP < iN*iLoops) {  
 	  //pTrack->SetForIntegratedFlow(kTRUE);
-	  pTrack->SetForPRSelection(kTRUE);
+	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
 	}
 	//marking the particles used for diff. flow:

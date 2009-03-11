@@ -39,8 +39,8 @@ class AliFlowEventSimple: public TObject {
   
   Int_t NumberOfTracks() const              { return this->fNumberOfTracks; }
   void  SetNumberOfTracks(Int_t nr)         { this->fNumberOfTracks = nr; }
-  Int_t GetEventNSelTracksIntFlow() const   { return this->fEventNSelTracksRP; }
-  void  SetEventNSelTracksIntFlow(Int_t nr) { this->fEventNSelTracksRP = nr; }
+  //Int_t GetEventNSelTracksIntFlow() const   { return this->fEventNSelTracksRP; }
+  //void  SetEventNSelTracksIntFlow(Int_t nr) { this->fEventNSelTracksRP = nr; }
   Int_t GetEventNSelTracksRP() const        { return this->fEventNSelTracksRP; } //will replace GetEventNSelTracksIntFlow()
   void  SetEventNSelTracksRP(Int_t nr)      { this->fEventNSelTracksRP = nr; }  //will replace SetEventNSelTracksIntFlow
   Double_t GetMCReactionPlaneAngle() const  { return this->fMCReactionPlaneAngle; }

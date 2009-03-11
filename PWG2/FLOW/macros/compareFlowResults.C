@@ -674,12 +674,12 @@ void compareFlowResults(TString type="ESD")
   
   //MC:  
   if(mcepCommonHist) {
-    avMultMC = (mcepCommonHist->GetHistMultInt())->GetMean();
-    nEvtsMC  = (mcepCommonHist->GetHistMultInt())->GetEntries();
-    avMultMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
-    nEvtsMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
-    avMultMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
-    nEvtsMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();
+    avMultMC = (mcepCommonHist->GetHistMultRP())->GetMean();
+    nEvtsMC  = (mcepCommonHist->GetHistMultRP())->GetEntries();
+    avMultMCRP = (mcepCommonHist->GetHistMultRP())->GetMean();
+    nEvtsMCRP  = (mcepCommonHist->GetHistMultRP())->GetEntries();
+    avMultMCPOI = (mcepCommonHist->GetHistMultPOI())->GetMean();
+    nEvtsMCPOI  = (mcepCommonHist->GetHistMultPOI())->GetEntries();
   }
   
   if(entryMC) {   
@@ -705,12 +705,12 @@ void compareFlowResults(TString type="ESD")
   
   //SP:  
   if(spCommonHist) {
-    avMultSP = (spCommonHist->GetHistMultInt())->GetMean();
-    nEvtsSP  = (spCommonHist->GetHistMultInt())->GetEntries();
-    avMultSPRP = (spCommonHist->GetHistMultInt())->GetMean();
-    nEvtsSPRP  = (spCommonHist->GetHistMultInt())->GetEntries();
-    avMultSPPOI = (spCommonHist->GetHistMultDiff())->GetMean();
-    nEvtsSPPOI  = (spCommonHist->GetHistMultDiff())->GetEntries();
+    avMultSP = (spCommonHist->GetHistMultRP())->GetMean();
+    nEvtsSP  = (spCommonHist->GetHistMultRP())->GetEntries();
+    avMultSPRP = (spCommonHist->GetHistMultRP())->GetMean();
+    nEvtsSPRP  = (spCommonHist->GetHistMultRP())->GetEntries();
+    avMultSPPOI = (spCommonHist->GetHistMultPOI())->GetMean();
+    nEvtsSPPOI  = (spCommonHist->GetHistMultPOI())->GetEntries();
   }
   
   if(entrySP) {   
@@ -736,12 +736,12 @@ void compareFlowResults(TString type="ESD")
   
  //GFC:
  if(gfcCommonHist) {
-   avMultGFC = (gfcCommonHist->GetHistMultInt())->GetMean();
-   nEvtsGFC  = (gfcCommonHist->GetHistMultInt())->GetEntries();
-   avMultGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();
-   nEvtsGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
-   avMultGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
-   nEvtsGFCPOI  = (gfcCommonHist->GetHistMultDiff())->GetEntries();
+   avMultGFC = (gfcCommonHist->GetHistMultRP())->GetMean();
+   nEvtsGFC  = (gfcCommonHist->GetHistMultRP())->GetEntries();
+   avMultGFCRP = (gfcCommonHist->GetHistMultRP())->GetMean();
+   nEvtsGFCRP  = (gfcCommonHist->GetHistMultRP())->GetEntries();
+   avMultGFCPOI = (gfcCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsGFCPOI  = (gfcCommonHist->GetHistMultPOI())->GetEntries();
  }
  
  if(entryGFC) { 
@@ -766,12 +766,12 @@ void compareFlowResults(TString type="ESD")
  
  //QC:
  if(qcCommonHist2) {
-   avMultQC2 = (qcCommonHist2->GetHistMultInt())->GetMean();
-   nEvtsQC2  = (qcCommonHist2->GetHistMultInt())->GetEntries();
-   avMultQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
-   nEvtsQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
-   avMultQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
-   nEvtsQC2POI  = (qcCommonHist2->GetHistMultDiff())->GetEntries();
+   avMultQC2 = (qcCommonHist2->GetHistMultRP())->GetMean();
+   nEvtsQC2  = (qcCommonHist2->GetHistMultRP())->GetEntries();
+   avMultQC2RP = (qcCommonHist2->GetHistMultRP())->GetMean();
+   nEvtsQC2RP  = (qcCommonHist2->GetHistMultRP())->GetEntries();
+   avMultQC2POI = (qcCommonHist2->GetHistMultPOI())->GetMean();
+   nEvtsQC2POI  = (qcCommonHist2->GetHistMultPOI())->GetEntries();
  }
  
  if(entryQC2)
@@ -800,12 +800,12 @@ void compareFlowResults(TString type="ESD")
 
  if(qcCommonHist4)
  {
-  avMultQC4 = (qcCommonHist4->GetHistMultInt())->GetMean();
-  nEvtsQC4  = (qcCommonHist4->GetHistMultInt())->GetEntries();
-  avMultQC4RP = (qcCommonHist4->GetHistMultInt())->GetMean();
-  nEvtsQC4RP  = (qcCommonHist4->GetHistMultInt())->GetEntries();
-  avMultQC4POI = (qcCommonHist4->GetHistMultDiff())->GetMean();
-  nEvtsQC4POI  = (qcCommonHist4->GetHistMultDiff())->GetEntries();
+  avMultQC4 = (qcCommonHist4->GetHistMultRP())->GetMean();
+  nEvtsQC4  = (qcCommonHist4->GetHistMultRP())->GetEntries();
+  avMultQC4RP = (qcCommonHist4->GetHistMultRP())->GetMean();
+  nEvtsQC4RP  = (qcCommonHist4->GetHistMultRP())->GetEntries();
+  avMultQC4POI = (qcCommonHist4->GetHistMultPOI())->GetMean();
+  nEvtsQC4POI  = (qcCommonHist4->GetHistMultPOI())->GetEntries();
  }
  
  if(entryQC4)
@@ -834,12 +834,12 @@ void compareFlowResults(TString type="ESD")
    
  if(qcCommonHist6)
  {
-  avMultQC6 = (qcCommonHist6->GetHistMultInt())->GetMean();
-  nEvtsQC6  = (qcCommonHist6->GetHistMultInt())->GetEntries();
-  avMultQC6RP = (qcCommonHist6->GetHistMultInt())->GetMean();
-  nEvtsQC6RP  = (qcCommonHist6->GetHistMultInt())->GetEntries();
-  avMultQC6POI = (qcCommonHist6->GetHistMultDiff())->GetMean();
-  nEvtsQC6POI  = (qcCommonHist6->GetHistMultDiff())->GetEntries();
+  avMultQC6 = (qcCommonHist6->GetHistMultRP())->GetMean();
+  nEvtsQC6  = (qcCommonHist6->GetHistMultRP())->GetEntries();
+  avMultQC6RP = (qcCommonHist6->GetHistMultRP())->GetMean();
+  nEvtsQC6RP  = (qcCommonHist6->GetHistMultRP())->GetEntries();
+  avMultQC6POI = (qcCommonHist6->GetHistMultPOI())->GetMean();
+  nEvtsQC6POI  = (qcCommonHist6->GetHistMultPOI())->GetEntries();
  }
  
  if(entryQC6)
@@ -868,12 +868,12 @@ void compareFlowResults(TString type="ESD")
    
  if(qcCommonHist8)
  {
-  avMultQC8 = (qcCommonHist8->GetHistMultInt())->GetMean();
-  nEvtsQC8  = (qcCommonHist8->GetHistMultInt())->GetEntries();
-  avMultQC8RP = (qcCommonHist8->GetHistMultInt())->GetMean();
-  nEvtsQC8RP  = (qcCommonHist8->GetHistMultInt())->GetEntries();
-  avMultQC8POI = (qcCommonHist8->GetHistMultDiff())->GetMean();
-  nEvtsQC8POI  = (qcCommonHist8->GetHistMultDiff())->GetEntries();    
+  avMultQC8 = (qcCommonHist8->GetHistMultRP())->GetMean();
+  nEvtsQC8  = (qcCommonHist8->GetHistMultRP())->GetEntries();
+  avMultQC8RP = (qcCommonHist8->GetHistMultRP())->GetMean();
+  nEvtsQC8RP  = (qcCommonHist8->GetHistMultRP())->GetEntries();
+  avMultQC8POI = (qcCommonHist8->GetHistMultPOI())->GetMean();
+  nEvtsQC8POI  = (qcCommonHist8->GetHistMultPOI())->GetEntries();    
  }
   
  if(entryQC8)
@@ -903,12 +903,12 @@ void compareFlowResults(TString type="ESD")
  //FQD:
  if(fqdCommonHist)
  {
-  avMultFQD = (fqdCommonHist->GetHistMultInt())->GetMean();
-  nEvtsFQD  = (fqdCommonHist->GetHistMultInt())->GetEntries();
-  avMultFQDRP = (fqdCommonHist->GetHistMultInt())->GetMean();
-  nEvtsFQDRP  = (fqdCommonHist->GetHistMultInt())->GetEntries();
-  avMultFQDPOI = (fqdCommonHist->GetHistMultDiff())->GetMean();
-  nEvtsFQDPOI  = (fqdCommonHist->GetHistMultDiff())->GetEntries();
+  avMultFQD = (fqdCommonHist->GetHistMultRP())->GetMean();
+  nEvtsFQD  = (fqdCommonHist->GetHistMultRP())->GetEntries();
+  avMultFQDRP = (fqdCommonHist->GetHistMultRP())->GetMean();
+  nEvtsFQDRP  = (fqdCommonHist->GetHistMultRP())->GetEntries();
+  avMultFQDPOI = (fqdCommonHist->GetHistMultPOI())->GetMean();
+  nEvtsFQDPOI  = (fqdCommonHist->GetHistMultPOI())->GetEntries();
  } 
  
  if(entryFQD)
@@ -938,12 +938,12 @@ void compareFlowResults(TString type="ESD")
  //LYZ1:
  if(lyz1CommonHist)
  {
-  avMultLYZ1 = (lyz1CommonHist->GetHistMultInt())->GetMean();
-  nEvtsLYZ1  = (lyz1CommonHist->GetHistMultInt())->GetEntries();
-  avMultLYZ1RP = (lyz1CommonHist->GetHistMultInt())->GetMean();
-  nEvtsLYZ1RP  = (lyz1CommonHist->GetHistMultInt())->GetEntries();
-  avMultLYZ1POI = (lyz1CommonHist->GetHistMultDiff())->GetMean();
-  nEvtsLYZ1POI  = (lyz1CommonHist->GetHistMultDiff())->GetEntries();
+  avMultLYZ1 = (lyz1CommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1  = (lyz1CommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1RP = (lyz1CommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1RP  = (lyz1CommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1POI = (lyz1CommonHist->GetHistMultPOI())->GetMean();
+  nEvtsLYZ1POI  = (lyz1CommonHist->GetHistMultPOI())->GetEntries();
  }
  
  if(entryLYZ1) 
@@ -973,12 +973,12 @@ void compareFlowResults(TString type="ESD")
  //LYZEP:
  if(lyzepCommonHist)
  {
-  avMultLYZEP = (lyzepCommonHist->GetHistMultInt())->GetMean();
-  nEvtsLYZEP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
-  avMultLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
-  nEvtsLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
-  avMultLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
-  nEvtsLYZEPPOI  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();    
+  avMultLYZEP = (lyzepCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZEP  = (lyzepCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZEPRP = (lyzepCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZEPRP  = (lyzepCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZEPPOI = (lyzepCommonHist->GetHistMultPOI())->GetMean();
+  nEvtsLYZEPPOI  = (lyzepCommonHist->GetHistMultPOI())->GetEntries();    
  }
  
  if(entryLYZEP)
@@ -1472,10 +1472,10 @@ void compareFlowResults(TString type="ESD")
   } 
   if(mcepCommonHist)
   {
-   avMultDiffFlowMCRP = (mcepCommonHist->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowMCRP  = (mcepCommonHist->GetHistMultInt())->GetEntries();
-   avMultDiffFlowMCPOI = (mcepCommonHist->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowMCPOI  = (mcepCommonHist->GetHistMultDiff())->GetEntries();      
+   avMultDiffFlowMCRP = (mcepCommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowMCRP  = (mcepCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowMCPOI = (mcepCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowMCPOI  = (mcepCommonHist->GetHistMultPOI())->GetEntries();      
   } 
  } 
  
@@ -1499,10 +1499,10 @@ void compareFlowResults(TString type="ESD")
   } 
   if(spCommonHist)
   {
-   avMultDiffFlowSPRP = (spCommonHist->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowSPRP  = (spCommonHist->GetHistMultInt())->GetEntries();
-   avMultDiffFlowSPPOI = (spCommonHist->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowSPPOI  = (spCommonHist->GetHistMultDiff())->GetEntries();      
+   avMultDiffFlowSPRP = (spCommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowSPRP  = (spCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowSPPOI = (spCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowSPPOI  = (spCommonHist->GetHistMultPOI())->GetEntries();      
   } 
  } 
 
@@ -1561,10 +1561,10 @@ void compareFlowResults(TString type="ESD")
   }
   if(gfcCommonHist)
   {
-   avMultDiffFlowGFCRP = (gfcCommonHist->GetHistMultInt())->GetMean();   
-   nEvtsDiffFlowGFCRP  = (gfcCommonHist->GetHistMultInt())->GetEntries();
-   avMultDiffFlowGFCPOI = (gfcCommonHist->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowGFCPOI  = (gfcCommonHist->GetHistMultDiff())->GetEntries();   
+   avMultDiffFlowGFCRP = (gfcCommonHist->GetHistMultRP())->GetMean();   
+   nEvtsDiffFlowGFCRP  = (gfcCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowGFCPOI = (gfcCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowGFCPOI  = (gfcCommonHist->GetHistMultPOI())->GetEntries();   
   } 
  }
   
@@ -1602,10 +1602,10 @@ void compareFlowResults(TString type="ESD")
   }
   if(qcCommonHist2)
   {
-   avMultDiffFlowQC2RP = (qcCommonHist2->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowQC2RP  = (qcCommonHist2->GetHistMultInt())->GetEntries();
-   avMultDiffFlowQC2POI = (qcCommonHist2->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowQC2POI  = (qcCommonHist2->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowQC2RP = (qcCommonHist2->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowQC2RP  = (qcCommonHist2->GetHistMultRP())->GetEntries();
+   avMultDiffFlowQC2POI = (qcCommonHist2->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowQC2POI  = (qcCommonHist2->GetHistMultPOI())->GetEntries();
   }
   //QC{4}
   if(qcCommonHistRes4)
@@ -1621,10 +1621,10 @@ void compareFlowResults(TString type="ESD")
   }
   if(qcCommonHist4)
   {
-   avMultDiffFlowQC4RP = (qcCommonHist4->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowQC4RP  = (qcCommonHist4->GetHistMultInt())->GetEntries();
-   avMultDiffFlowQC4POI = (qcCommonHist4->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowQC4POI  = (qcCommonHist4->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowQC4RP = (qcCommonHist4->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowQC4RP  = (qcCommonHist4->GetHistMultRP())->GetEntries();
+   avMultDiffFlowQC4POI = (qcCommonHist4->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowQC4POI  = (qcCommonHist4->GetHistMultPOI())->GetEntries();
   }
   //QC{6}
   if(qcCommonHistRes6)
@@ -1640,10 +1640,10 @@ void compareFlowResults(TString type="ESD")
   }
   if(qcCommonHist6)
   {
-   avMultDiffFlowQC6RP = (qcCommonHist6->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowQC6RP  = (qcCommonHist6->GetHistMultInt())->GetEntries();
-   avMultDiffFlowQC6POI = (qcCommonHist6->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowQC6POI  = (qcCommonHist6->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowQC6RP = (qcCommonHist6->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowQC6RP  = (qcCommonHist6->GetHistMultRP())->GetEntries();
+   avMultDiffFlowQC6POI = (qcCommonHist6->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowQC6POI  = (qcCommonHist6->GetHistMultPOI())->GetEntries();
   }
   //QC{8}
   if(qcCommonHistRes8)
@@ -1659,10 +1659,10 @@ void compareFlowResults(TString type="ESD")
   }
   if(qcCommonHist8)
   {
-   avMultDiffFlowQC8RP = (qcCommonHist8->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowQC8RP  = (qcCommonHist8->GetHistMultInt())->GetEntries();
-   avMultDiffFlowQC8POI = (qcCommonHist8->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowQC8POI  = (qcCommonHist8->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowQC8RP = (qcCommonHist8->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowQC8RP  = (qcCommonHist8->GetHistMultRP())->GetEntries();
+   avMultDiffFlowQC8POI = (qcCommonHist8->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowQC8POI  = (qcCommonHist8->GetHistMultPOI())->GetEntries();
   }
  } 
 
@@ -1686,10 +1686,10 @@ void compareFlowResults(TString type="ESD")
   } 
   if(lyz2CommonHist)
   {
-   avMultDiffFlowLYZ2RP = (lyz2CommonHist->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowLYZ2RP  = (lyz2CommonHist->GetHistMultInt())->GetEntries();
-   avMultDiffFlowLYZ2POI = (lyz2CommonHist->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowLYZ2POI  = (lyz2CommonHist->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowLYZ2RP = (lyz2CommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowLYZ2RP  = (lyz2CommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowLYZ2POI = (lyz2CommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowLYZ2POI  = (lyz2CommonHist->GetHistMultPOI())->GetEntries();
   } 
  } 
 
@@ -1713,10 +1713,10 @@ void compareFlowResults(TString type="ESD")
   } 
   if(lyzepCommonHist)
   {
-   avMultDiffFlowLYZEPRP = (lyzepCommonHist->GetHistMultInt())->GetMean();
-   nEvtsDiffFlowLYZEPRP  = (lyzepCommonHist->GetHistMultInt())->GetEntries();
-   avMultDiffFlowLYZEPPOI = (lyzepCommonHist->GetHistMultDiff())->GetMean();
-   nEvtsDiffFlowLYZEPPOI  = (lyzepCommonHist->GetHistMultDiff())->GetEntries();
+   avMultDiffFlowLYZEPRP = (lyzepCommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowLYZEPRP  = (lyzepCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowLYZEPPOI = (lyzepCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowLYZEPPOI  = (lyzepCommonHist->GetHistMultPOI())->GetEntries();
   } 
  } 
 

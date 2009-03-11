@@ -39,13 +39,13 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kFALSE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
-Bool_t LYZEP = kTRUE;
-Bool_t GFC   = kFALSE;
-Bool_t QC    = kFALSE;
-Bool_t FQD   = kFALSE;
-Bool_t MCEP  = kFALSE;
+Bool_t LYZEP = kFALSE;
+Bool_t GFC   = kTRUE;
+Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
+Bool_t MCEP  = kTRUE;
 
 // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
@@ -97,11 +97,11 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runAliAnalysisTaskFlow(Int_t mode=mPROOF, const Char_t* data="/PWG2/akisiel/Therminator_midcentral_AOD", Int_t nRuns=44, Int_t offset=0)
 
 // Data at Nikhef
-void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = 64, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
 
 // Data on my mac
-//void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t mode=mLocal, Int_t nRuns = -1, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 //void runAliAnalysisTaskFlow(Int_t mode=mLocalPAR, Int_t nRuns = 55, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0) 
 
 {
