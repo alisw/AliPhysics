@@ -14,6 +14,7 @@
 
 #include <TRef.h>
 #include <TRefArray.h>
+#include <TClonesArray.h>
 #include "AliAODVertex.h"
 #include "AliAODRecoDecayHF2Prong.h"
 
@@ -45,6 +46,8 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   Double_t InvMassD0() const {return (Charge()>0 ? Get2Prong()->InvMassD0() : Get2Prong()->InvMassD0bar());}
   Double_t InvMassDstarKpipi() const;
   Double_t DeltaInvMass() const {return (InvMassDstarKpipi()-InvMassD0());}
+
+  Int_t MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,TClonesArray *mcArray) const;
 
  protected:
 

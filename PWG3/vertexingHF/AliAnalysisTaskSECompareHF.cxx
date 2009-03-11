@@ -32,6 +32,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSECompareHF.h"
@@ -125,7 +126,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   // heavy flavor candidates association to MC truth
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-
+ 
   // load D0->Kpi candidates                                                   
   TClonesArray *inputArrayD0toKpi =
     (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
@@ -133,6 +134,16 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     printf("AliAnalysisTaskSECompareHF::UserExec: D0toKpi branch not found!\n");
     return;
   }
+
+  /*
+  // load D*+ candidates                                                   
+  TClonesArray *inputArrayDstar =
+    (TClonesArray*)aod->GetList()->FindObject("Dstar");
+  if(!inputArrayDstar) {
+    printf("AliAnalysisTaskSECompareHF::UserExec: Dstar branch not found!\n");
+    return;
+  }
+  */
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -155,17 +166,12 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   }
   
     
-
   // loop over D0->Kpi candidates
   Int_t nInD0toKpi = inputArrayD0toKpi->GetEntriesFast();
   printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
-  Int_t lab0,lab1,labMother,labD0daugh0,labD0daugh1,pdgMother,pdgD0;
-  
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArrayD0toKpi->UncheckedAt(iD0toKpi);
-    labD0daugh0=-1; 
-    labD0daugh1=-1;
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()) {
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
@@ -173,75 +179,31 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     }
     Int_t okD0=0,okD0bar=0; 
     if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-      // get daughter AOD tracks
-      AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
-      AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
+      Int_t labD0 = d->MatchToMC(421,mcArray);
+      if(labD0>=0) {
+	AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0);
+	Int_t pdgD0 = partD0->GetPdgCode();
+	Double_t invmass = (pdgD0==421 ? d->InvMassD0() : d->InvMassD0bar());
+	fHistMass->Fill(invmass);
+	// Post the data already here
+	PostData(1,fOutput);
 
-      lab0 = trk0->GetLabel();
-      lab1 = trk1->GetLabel();
-
-
-      AliAODMCParticle *part0 = (AliAODMCParticle*)mcArray->At(lab0);
-      if(!part0) { 
-	printf("no MC particle\n");
-	continue;
+	fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
       }
-      while(part0->GetMother()>=0) {
-	labMother=part0->GetMother();
-	part0 = (AliAODMCParticle*)mcArray->At(labMother);
-	if(!part0) {
-	  printf("no MC mother particle\n");
-	  break;
-	}
-	pdgMother = TMath::Abs(part0->GetPdgCode());
-	if(pdgMother==421) {
-	  labD0daugh0=labMother;
-	  break;
-	}
-      }
-
-      AliAODMCParticle *part1 = (AliAODMCParticle*)mcArray->At(lab1);
-      if(!part1) {
-	printf("no MC particle\n");
-	continue;
-      }
-      while(part1->GetMother()>=0) {
-	labMother=part1->GetMother();
-	part1 = (AliAODMCParticle*)mcArray->At(labMother);
-	if(!part1) {
-	  printf("no MC mother particle\n");
-	  break;
-	}
-	pdgMother = TMath::Abs(part1->GetPdgCode());
-	if(pdgMother==421) {
-	  labD0daugh1=labMother;
-	  break;
-	}
-      }
-
-      // check if the candidate is signal
-      if(labD0daugh0>=0 && labD0daugh1>=0 && labD0daugh0==labD0daugh1) {
-
-	AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0daugh0);
-	// check that the D0 decays in 2 prongs
-	if (TMath::Abs(partD0->GetDaughter(1)-partD0->GetDaughter(0))==1) {
-
-	  pdgD0 = partD0->GetPdgCode();
-	  Double_t invmass = (pdgD0==421 ? d->InvMassD0() : d->InvMassD0bar());
-	  fHistMass->Fill(invmass);
-
-	  // Post the data already here
-	  PostData(1,fOutput);
-
-	  fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
-	}
-      }
-
-
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } // end loop on D0->Kpi
 
+
+  // SIMPLE EXAMPLE OF D*+ MATCHING
+  /*
+  // loop over D*+ candidates
+  for (Int_t iDstar = 0; iDstar < inputArrayDstar->GetEntries(); iDstar++) {
+    AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)inputArrayDstar->UncheckedAt(iDstar);
+    Int_t labDstar = c->MatchToMC(413,421,mcArray);
+    if(labDstar>=0) printf("GOOD MATCH FOR D*+\n"); 
+  }
+  */
 
   return;
 }
