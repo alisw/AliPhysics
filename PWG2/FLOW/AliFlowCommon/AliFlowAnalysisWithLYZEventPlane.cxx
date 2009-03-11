@@ -280,12 +280,12 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 	  Double_t dEta = pTrack->Eta();
 	  //calculate flow v2:
 	  Double_t dv2 = dWR * TMath::Cos(2*(dPhi-dRP));
-	  if (pTrack->UseForIntegratedFlow()) {
+	  if (pTrack->InRPSelection()) {
 	    //fill histograms for RP selection
 	    fHistProVetaRP -> Fill(dEta,dv2); 
 	    fHistProVPtRP  -> Fill(dPt,dv2); 
 	  }
-	  if (pTrack->UseForDifferentialFlow()) {
+	  if (pTrack->InPOISelection()) {
 	    //fill histograms for POI selection
 	    fHistProVetaPOI -> Fill(dEta,dv2); 
 	    fHistProVPtPOI  -> Fill(dPt,dv2); 
@@ -440,7 +440,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   } //loop over bins b
     
   //v as a function of Pt for RP selection
-  TH1F* fHistPtInt = fCommonHists->GetHistPtInt(); //for calculating integrated flow
+  TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); //for calculating integrated flow
   Double_t dVRP = 0.;
   Double_t dSum = 0.;
   Double_t dErrV =0.;
@@ -475,12 +475,12 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     //fill TH1D
     fCommonHistsRes->FillDifferentialFlowPtRP(b, dv2pro, dErrdifcomb);
     //calculate integrated flow for RP selection
-    if (fHistPtInt){
-      Double_t dYieldPt = fHistPtInt->GetBinContent(b);
+    if (fHistPtRP){
+      Double_t dYieldPt = fHistPtRP->GetBinContent(b);
       dVRP += dv2pro*dYieldPt;
       dSum +=dYieldPt;
       dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
-    } else { cout<<"fHistPtDiff is NULL"<<endl; }
+    } else { cout<<"fHistPtRP is NULL"<<endl; }
  
   } //loop over bins b
 
@@ -496,7 +496,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
 
        
   //v as a function of Pt for POI selection 
-  TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff(); //for calculating integrated flow
+  TH1F* fHistPtPOI = fCommonHists->GetHistPtPOI(); //for calculating integrated flow
   Double_t dVPOI = 0.;
   dSum = 0.;
   dErrV =0.;
@@ -537,12 +537,12 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2pro, dErrdifcomb); 
 
     //calculate integrated flow for POI selection
-    if (fHistPtDiff){
-      Double_t dYieldPt = fHistPtDiff->GetBinContent(b);
+    if (fHistPtPOI){
+      Double_t dYieldPt = fHistPtPOI->GetBinContent(b);
       dVPOI += dv2pro*dYieldPt;
       dSum +=dYieldPt;
       dErrV += dYieldPt*dYieldPt*dErrdifcomb*dErrdifcomb;
-    } else { cout<<"fHistPtDiff is NULL"<<endl; }
+    } else { cout<<"fHistPtPOI is NULL"<<endl; }
   } //loop over bins b
 
   if (dSum != 0.) {

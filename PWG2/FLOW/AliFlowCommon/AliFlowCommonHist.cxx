@@ -42,14 +42,14 @@ ClassImp(AliFlowCommonHist)
 
 AliFlowCommonHist::AliFlowCommonHist():TNamed(),
   fHistMultOrig(NULL),
-  fHistMultInt(NULL),
-  fHistMultDiff(NULL),
-  fHistPtInt(NULL),
-  fHistPtDiff(NULL),
-  fHistPhiInt(NULL),
-  fHistPhiDiff(NULL),
-  fHistEtaInt(NULL),
-  fHistEtaDiff(NULL),
+  fHistMultRP(NULL),
+  fHistMultPOI(NULL),
+  fHistPtRP(NULL),
+  fHistPtPOI(NULL),
+  fHistPhiRP(NULL),
+  fHistPhiPOI(NULL),
+  fHistEtaRP(NULL),
+  fHistEtaPOI(NULL),
   fHistProMeanPtperBin(NULL),
   fHistQ(NULL),
   fHistList(NULL)
@@ -62,14 +62,14 @@ AliFlowCommonHist::AliFlowCommonHist():TNamed(),
 AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   TNamed(),
   fHistMultOrig(new TH1F(*a.fHistMultOrig)),
-  fHistMultInt(new TH1F(*a.fHistMultInt)),
-  fHistMultDiff(new TH1F(*a.fHistMultDiff)),
-  fHistPtInt(new TH1F(*a.fHistPtInt)),
-  fHistPtDiff(new TH1F(*a.fHistPtDiff)),
-  fHistPhiInt(new TH1F(*a.fHistPhiInt)),
-  fHistPhiDiff(new TH1F(*a.fHistPhiDiff)),
-  fHistEtaInt(new TH1F(*a.fHistEtaInt)),
-  fHistEtaDiff(new TH1F(*a.fHistEtaDiff)),
+  fHistMultRP(new TH1F(*a.fHistMultRP)),
+  fHistMultPOI(new TH1F(*a.fHistMultPOI)),
+  fHistPtRP(new TH1F(*a.fHistPtRP)),
+  fHistPtPOI(new TH1F(*a.fHistPtPOI)),
+  fHistPhiRP(new TH1F(*a.fHistPhiRP)),
+  fHistPhiPOI(new TH1F(*a.fHistPhiPOI)),
+  fHistEtaRP(new TH1F(*a.fHistEtaRP)),
+  fHistEtaPOI(new TH1F(*a.fHistEtaPOI)),
   fHistProMeanPtperBin(new TProfile(*a.fHistProMeanPtperBin)),
   fHistQ(new TH1F(*a.fHistQ)),
   fHistList(NULL)
@@ -78,14 +78,14 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
   fHistList = new TList();
   fHistList-> Add(fHistMultOrig);        
-  fHistList-> Add(fHistMultInt);        
-  fHistList-> Add(fHistMultDiff);       
-  fHistList-> Add(fHistPtInt);          
-  fHistList-> Add(fHistPtDiff);         
-  fHistList-> Add(fHistPhiInt);          
-  fHistList-> Add(fHistPhiDiff);         
-  fHistList-> Add(fHistEtaInt);          
-  fHistList-> Add(fHistEtaDiff);         
+  fHistList-> Add(fHistMultRP);        
+  fHistList-> Add(fHistMultPOI);       
+  fHistList-> Add(fHistPtRP);          
+  fHistList-> Add(fHistPtPOI);         
+  fHistList-> Add(fHistPhiRP);          
+  fHistList-> Add(fHistPhiPOI);         
+  fHistList-> Add(fHistEtaRP);          
+  fHistList-> Add(fHistEtaPOI);         
   fHistList-> Add(fHistProMeanPtperBin); 
   fHistList-> Add(fHistQ);           
   //  TListIter next = TListIter(a.fHistList);
@@ -115,14 +115,14 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
   AliFlowCommonHist::AliFlowCommonHist(const char *anInput,const char *title):TNamed(anInput,title),
    fHistMultOrig(NULL),
-   fHistMultInt(NULL),
-   fHistMultDiff(NULL),
-   fHistPtInt(NULL),
-   fHistPtDiff(NULL),
-   fHistPhiInt(NULL),
-   fHistPhiDiff(NULL),
-   fHistEtaInt(NULL),
-   fHistEtaDiff(NULL),
+   fHistMultRP(NULL),
+   fHistMultPOI(NULL),
+   fHistPtRP(NULL),
+   fHistPtPOI(NULL),
+   fHistPhiRP(NULL),
+   fHistPhiPOI(NULL),
+   fHistEtaRP(NULL),
+   fHistEtaPOI(NULL),
    fHistProMeanPtperBin(NULL),
    fHistQ(NULL),
    fHistList(NULL)
@@ -161,57 +161,57 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistMultOrig ->SetXTitle("Original Multiplicity");
   fHistMultOrig ->SetYTitle("Counts");
 
-  sName = "Control_Flow_MultInt_";
+  sName = "Control_Flow_MultRP_";
   sName +=anInput;
-  fHistMultInt = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
-  fHistMultInt ->SetXTitle("Multiplicity for integrated flow");
-  fHistMultInt ->SetYTitle("Counts");
+  fHistMultRP = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
+  fHistMultRP ->SetXTitle("Multiplicity for RP selection");
+  fHistMultRP ->SetYTitle("Counts");
 
-  sName = "Control_Flow_MultDiff_";
+  sName = "Control_Flow_MultPOI_";
   sName +=anInput;
-  fHistMultDiff = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
-  fHistMultDiff ->SetXTitle("Multiplicity for differential flow");
-  fHistMultDiff ->SetYTitle("Counts");
+  fHistMultPOI = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
+  fHistMultPOI ->SetXTitle("Multiplicity for POI selection");
+  fHistMultPOI ->SetYTitle("Counts");
 
   //Pt
-  sName = "Control_Flow_PtInt_";
+  sName = "Control_Flow_PtRP_";
   sName +=anInput;
-  fHistPtInt = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
-  fHistPtInt ->SetXTitle("P_{t} (GeV/c) for integrated flow");
-  fHistPtInt ->SetYTitle("Counts");
+  fHistPtRP = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
+  fHistPtRP ->SetXTitle("P_{t} (GeV/c) for RP selection");
+  fHistPtRP ->SetYTitle("Counts");
 
-  sName = "Control_Flow_PtDiff_";
+  sName = "Control_Flow_PtPOI_";
   sName +=anInput;
-  fHistPtDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
+  fHistPtPOI = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   //binning has to be the same as for fHistProVPt! use to get Nprime!
-  fHistPtDiff ->SetXTitle("P_{t} (GeV/c) for differential flow");
-  fHistPtDiff ->SetYTitle("Counts");
+  fHistPtPOI ->SetXTitle("P_{t} (GeV/c) for POI selection");
+  fHistPtPOI ->SetYTitle("Counts");
 
   //Phi
-  sName = "Control_Flow_PhiInt_";
+  sName = "Control_Flow_PhiRP_";
   sName +=anInput;
-  fHistPhiInt = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
-  fHistPhiInt ->SetXTitle("#phi for integrated flow");
-  fHistPhiInt ->SetYTitle("Counts");
+  fHistPhiRP = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
+  fHistPhiRP ->SetXTitle("#phi for RP selection");
+  fHistPhiRP ->SetYTitle("Counts");
 
-  sName = "Control_Flow_PhiDiff_";
+  sName = "Control_Flow_PhiPOI_";
   sName +=anInput;
-  fHistPhiDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
-  fHistPhiDiff ->SetXTitle("#phi for differential flow");
-  fHistPhiDiff ->SetYTitle("Counts");
+  fHistPhiPOI = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
+  fHistPhiPOI ->SetXTitle("#phi for POI selection");
+  fHistPhiPOI ->SetYTitle("Counts");
 
   //Eta
-  sName = "Control_Flow_EtaInt_";
+  sName = "Control_Flow_EtaRP_";
   sName +=anInput;
-  fHistEtaInt = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
-  fHistEtaInt ->SetXTitle("#eta for integrated flow");
-  fHistEtaInt ->SetYTitle("Counts");
+  fHistEtaRP = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
+  fHistEtaRP ->SetXTitle("#eta for RP selection");
+  fHistEtaRP ->SetYTitle("Counts");
 
-  sName = "Control_Flow_EtaDiff_";
+  sName = "Control_Flow_EtaPOI_";
   sName +=anInput;
-  fHistEtaDiff = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
-  fHistEtaDiff ->SetXTitle("#eta for differential flow");
-  fHistEtaDiff ->SetYTitle("Counts");
+  fHistEtaPOI = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
+  fHistEtaPOI ->SetXTitle("#eta for POI selection");
+  fHistEtaPOI ->SetYTitle("Counts");
 
   //Mean Pt per pt bin 
   sName = "Control_FlowPro_MeanPtperBin_";
@@ -230,14 +230,14 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
   fHistList-> Add(fHistMultOrig);        
-  fHistList-> Add(fHistMultInt);        
-  fHistList-> Add(fHistMultDiff);       
-  fHistList-> Add(fHistPtInt);          
-  fHistList-> Add(fHistPtDiff);         
-  fHistList-> Add(fHistPhiInt);          
-  fHistList-> Add(fHistPhiDiff);         
-  fHistList-> Add(fHistEtaInt);          
-  fHistList-> Add(fHistEtaDiff);         
+  fHistList-> Add(fHistMultRP);        
+  fHistList-> Add(fHistMultPOI);       
+  fHistList-> Add(fHistPtRP);          
+  fHistList-> Add(fHistPtPOI);         
+  fHistList-> Add(fHistPhiRP);          
+  fHistList-> Add(fHistPhiPOI);         
+  fHistList-> Add(fHistEtaRP);          
+  fHistList-> Add(fHistEtaPOI);         
   fHistList-> Add(fHistProMeanPtperBin); 
   fHistList-> Add(fHistQ);           
 
@@ -252,14 +252,14 @@ AliFlowCommonHist::~AliFlowCommonHist()
 {
   //deletes histograms
   delete fHistMultOrig;      
-  delete fHistMultInt;       
-  delete fHistMultDiff;      
-  delete fHistPtInt;         
-  delete fHistPtDiff;       
-  delete fHistPhiInt;        
-  delete fHistPhiDiff;       
-  delete fHistEtaInt;        
-  delete fHistEtaDiff;
+  delete fHistMultRP;       
+  delete fHistMultPOI;      
+  delete fHistPtRP;         
+  delete fHistPtPOI;       
+  delete fHistPhiRP;        
+  delete fHistPhiPOI;       
+  delete fHistEtaRP;        
+  delete fHistEtaPOI;
   delete fHistProMeanPtperBin;
   delete fHistQ;
   delete fHistList;
@@ -294,40 +294,40 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
   vQ.Set(dQX,dQY);
   fHistQ->Fill(vQ.Mod());
 
-  Int_t iMultInt = 0;
-  Int_t iMultDiff = 0;
+  Int_t iMultRP = 0;
+  Int_t iMultPOI = 0;
   
   AliFlowTrackSimple* pTrack = NULL;     
 
   for (Int_t i=0;i<iNumberOfTracks;i++) {
     pTrack = anEvent->GetTrack(i);
     if (pTrack ) {
-      if (pTrack->UseForIntegratedFlow()){
+      if (pTrack->InRPSelection()){
 	dPt = pTrack->Pt();
-	fHistPtInt->Fill(dPt);
+	fHistPtRP->Fill(dPt);
 	dPhi = pTrack->Phi();
 	if (dPhi<0.) dPhi+=2*TMath::Pi();
-	fHistPhiInt->Fill(dPhi);
+	fHistPhiRP->Fill(dPhi);
 	dEta = pTrack->Eta();
-	fHistEtaInt->Fill(dEta);
-	iMultInt++;
+	fHistEtaRP->Fill(dEta);
+	iMultRP++;
       }
-      if (pTrack->UseForDifferentialFlow()){
+      if (pTrack->InPOISelection()){
 	dPt = pTrack->Pt();
-	fHistPtDiff->Fill(dPt);
+	fHistPtPOI->Fill(dPt);
 	dPhi = pTrack->Phi();
 	if (dPhi<0.) dPhi+=2*TMath::Pi();
-	fHistPhiDiff->Fill(dPhi);
+	fHistPhiPOI->Fill(dPhi);
 	dEta = pTrack->Eta();
-	fHistEtaDiff->Fill(dEta);
+	fHistEtaPOI->Fill(dEta);
 	fHistProMeanPtperBin->Fill(dPt,dPt);
-	iMultDiff++;
+	iMultPOI++;
       }
     } //track
   } //loop over tracks
   
-  fHistMultInt->Fill(iMultInt);
-  fHistMultDiff->Fill(iMultDiff);
+  fHistMultRP->Fill(iMultRP);
+  fHistMultPOI->Fill(iMultPOI);
 
   return kTRUE; 
 }
@@ -336,8 +336,8 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
 
 Double_t AliFlowCommonHist::GetEntriesInPtBinRP(Int_t aBin)
 {
-  //get entries in bin aBin from fHistPtDiff
-  Double_t dEntries = fHistPtInt->GetBinContent(aBin);
+  //get entries in bin aBin from fHistPtRP
+  Double_t dEntries = fHistPtRP->GetBinContent(aBin);
 
   return dEntries;
 
@@ -347,8 +347,8 @@ Double_t AliFlowCommonHist::GetEntriesInPtBinRP(Int_t aBin)
 
 Double_t AliFlowCommonHist::GetEntriesInPtBinPOI(Int_t aBin)
 {
-  //get entries in bin aBin from fHistPtDiff
-  Double_t dEntries = fHistPtDiff->GetBinContent(aBin);
+  //get entries in bin aBin from fHistPtPOI
+  Double_t dEntries = fHistPtPOI->GetBinContent(aBin);
 
   return dEntries;
 
@@ -358,8 +358,8 @@ Double_t AliFlowCommonHist::GetEntriesInPtBinPOI(Int_t aBin)
 
 Double_t AliFlowCommonHist::GetEntriesInEtaBinRP(Int_t aBin)
 {
-  //get entries in bin aBin from fHistPtDiff
-  Double_t dEntries = fHistEtaInt->GetBinContent(aBin);
+  //get entries in bin aBin from fHistPtRP
+  Double_t dEntries = fHistEtaRP->GetBinContent(aBin);
 
   return dEntries;
 
@@ -369,8 +369,8 @@ Double_t AliFlowCommonHist::GetEntriesInEtaBinRP(Int_t aBin)
 
 Double_t AliFlowCommonHist::GetEntriesInEtaBinPOI(Int_t aBin)
 {
-  //get entries in bin aBin from fHistPtDiff
-  Double_t dEntries = fHistEtaDiff->GetBinContent(aBin);
+  //get entries in bin aBin from fHistPtPOI
+  Double_t dEntries = fHistEtaPOI->GetBinContent(aBin);
 
   return dEntries;
 

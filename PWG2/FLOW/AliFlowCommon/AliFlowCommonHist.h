@@ -34,24 +34,24 @@ class AliFlowCommonHist: public TNamed {
   Bool_t FillControlHistograms(AliFlowEventSimple* anEvent);
   void Browse(TBrowser *b); 
   //make get methods here
-  Double_t GetEntriesInPtBinRP(Int_t iBin);   //gets entries from fHistPtInt
-  Double_t GetEntriesInPtBinPOI(Int_t iBin);  //gets entries from fHistPtDiff
-  Double_t GetEntriesInEtaBinRP(Int_t iBin);  //gets entries from fHistEtaInt
-  Double_t GetEntriesInEtaBinPOI(Int_t iBin); //gets entries from fHistEtaDiff
+  Double_t GetEntriesInPtBinRP(Int_t iBin);   //gets entries from fHistPtRP
+  Double_t GetEntriesInPtBinPOI(Int_t iBin);  //gets entries from fHistPtPOI
+  Double_t GetEntriesInEtaBinRP(Int_t iBin);  //gets entries from fHistEtaRP
+  Double_t GetEntriesInEtaBinPOI(Int_t iBin); //gets entries from fHistEtaPOI
   Double_t GetMeanPt(Int_t iBin);             //gets the mean pt for this bin from fHistProMeanPtperBin   
 
-  TH1F*     GetHistMultOrig()               {return fHistMultOrig;  } ;  
-  TH1F*     GetHistMultInt()                {return fHistMultInt; } ;  
-  TH1F*     GetHistMultDiff()               {return fHistMultDiff; } ;  
-  TH1F*     GetHistPtInt()                  {return fHistPtInt; } ;  
-  TH1F*     GetHistPtDiff()                 {return fHistPtDiff; } ;   
-  TH1F*     GetHistPhiInt()                 {return fHistPhiInt; } ;  
-  TH1F*     GetHistPhiDiff()                {return fHistPhiDiff; } ;  
-  TH1F*     GetHistEtaInt()                 {return fHistEtaInt; } ;  
-  TH1F*     GetHistEtaDiff()                {return fHistEtaDiff;  } ;   
-  TProfile* GetHistProMeanPtperBin()        {return fHistProMeanPtperBin; } ;
-  TH1F*     GetHistQ()                      {return fHistQ; } ;            
-  TList*    GetHistList()                   {return fHistList;} ;  
+  TH1F*     GetHistMultOrig()        {return fHistMultOrig;  } ;  
+  TH1F*     GetHistMultRP()          {return fHistMultRP; } ;  
+  TH1F*     GetHistMultPOI()         {return fHistMultPOI; } ;  
+  TH1F*     GetHistPtRP()            {return fHistPtRP; } ;  
+  TH1F*     GetHistPtPOI()           {return fHistPtPOI; } ;   
+  TH1F*     GetHistPhiRP()           {return fHistPhiRP; } ;  
+  TH1F*     GetHistPhiPOI()          {return fHistPhiPOI; } ;  
+  TH1F*     GetHistEtaRP()           {return fHistEtaRP; } ;  
+  TH1F*     GetHistEtaPOI()          {return fHistEtaPOI;  } ;   
+  TProfile* GetHistProMeanPtperBin() {return fHistProMeanPtperBin; } ;
+  TH1F*     GetHistQ()               {return fHistQ; } ;            
+  TList*    GetHistList()            {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
   //method to print stats
@@ -65,15 +65,15 @@ class AliFlowCommonHist: public TNamed {
   //define histograms here
   //control histograms
   TH1F*     fHistMultOrig;        //multiplicity before selection
-  TH1F*     fHistMultInt;         //multiplicity for integrated flow
-  TH1F*     fHistMultDiff;        //multiplicity for differential flow
-  TH1F*     fHistPtInt;           //pt distribution for integrated flow
-  TH1F*     fHistPtDiff;          //pt distribution for differential flow
-  TH1F*     fHistPhiInt;          //phi distribution for integrated flow
-  TH1F*     fHistPhiDiff;         //phi distribution for differential flow
-  TH1F*     fHistEtaInt;          //eta distribution for integrated flow
-  TH1F*     fHistEtaDiff;         //eta distribution for differential flow
-  TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for differential flow)
+  TH1F*     fHistMultRP;          //multiplicity for RP selection
+  TH1F*     fHistMultPOI;         //multiplicity for POI selection
+  TH1F*     fHistPtRP;            //pt distribution for RP selection
+  TH1F*     fHistPtPOI;           //pt distribution for POI selection
+  TH1F*     fHistPhiRP;           //phi distribution for RP selection
+  TH1F*     fHistPhiPOI;          //phi distribution for POI selection
+  TH1F*     fHistEtaRP;           //eta distribution for RP selection
+  TH1F*     fHistEtaPOI;          //eta distribution for POI selection
+  TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for POI selection)
   TH1F*     fHistQ;               //Qvector distribution
 
   TList*    fHistList;            //list to hold all histograms  

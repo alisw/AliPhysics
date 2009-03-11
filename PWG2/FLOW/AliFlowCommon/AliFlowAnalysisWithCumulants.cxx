@@ -519,7 +519,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  //running over data:
  Int_t nPrim = anEvent->NumberOfTracks(); //total multiplicity
  
- Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow(); //selected multiplicity (particles used for int. flow)
+ Int_t nEventNSelTracksRP = anEvent->GetEventNSelTracksRP(); //selected multiplicity (particles used for int. flow)
  
  Int_t n = 2; // int flow harmonic (to be improved)
  
@@ -572,7 +572,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  } 
  //---------------------------------------------------------------------------------------------------------
   
- if(nEventNSelTracksIntFlow>9) //generating function formalism applied here make sense only for selected multiplicity >= 10 
+ if(nEventNSelTracksRP>9) //generating function formalism applied here make sense only for selected multiplicity >= 10 
  { 
  //fill the common control histograms
  fCommonHists->FillControlHistograms(anEvent);   
@@ -588,7 +588,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    }   
   }
 
- Int_t nSelTracksIntFlow = 0; //cross-checking the selected multiplicity
+ Int_t nSelTracksRP = 0; //cross-checking the selected multiplicity
   
  Double_t dPhi = 0.;
  Double_t dPt  = 0.;
@@ -598,9 +598,9 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  for(Int_t i=0;i<nPrim;i++)
  {
   fTrack=anEvent->GetTrack(i);
-  if(fTrack && fTrack->UseForIntegratedFlow())
+  if(fTrack && fTrack->InRPSelection())
   {
-   nSelTracksIntFlow++;
+   nSelTracksRP++;
    // get azimuthal angle, momentum and pseudorapidity of a particle:
    dPhi = fTrack->Phi();
    dPt  = fTrack->Pt();
@@ -635,7 +635,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    {
     for(Int_t q=0;q<fgkQmax;q++)
     {
-     genfunG[p][q]*=(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlow)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax));
+     genfunG[p][q]*=(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nEventNSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax));
     }
    }
    // calculate <w^2> 
@@ -653,9 +653,9 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  } 
  
  //storing the selected multiplicity (if fAvMultIntFlow is not filled here then you had wrongly selected the particles used for integrated flow)
- if(nSelTracksIntFlow==nEventNSelTracksIntFlow)
+ if(nSelTracksRP==nEventNSelTracksRP)
  {
-  fAvMultIntFlowGFC->Fill(0.,nSelTracksIntFlow,1);
+  fAvMultIntFlowGFC->Fill(0.,nSelTracksRP,1);
  }
  
  // calculating Q-vector of event (needed for errors)
@@ -678,7 +678,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   fTrack=anEvent->GetTrack(i);
   if(fTrack)
   {
-   if(fTrack->UseForIntegratedFlow() && fTrack->UseForDifferentialFlow())
+   if(fTrack->InRPSelection() && fTrack->InPOISelection())
    {
     fPtBinPOINoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
     fEtaBinPOINoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
@@ -687,17 +687,17 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
      for(Int_t q=0;q<fgkQmax;q++)
      {
       //real part (Pt)
-      fDiffFlowPtPOIGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowPtPOIGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Pt)
-      fDiffFlowPtPOIGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowPtPOIGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
       //real part (Eta)
-      fDiffFlowEtaPOIGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowEtaPOIGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Eta)
-      fDiffFlowEtaPOIGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowEtaPOIGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
      }
     }
    } 
-   else if(fTrack->UseForDifferentialFlow() && !(fTrack->UseForIntegratedFlow()))
+   else if(fTrack->InPOISelection() && !(fTrack->InRPSelection()))
    {
     fPtBinPOINoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
     fEtaBinPOINoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
@@ -717,7 +717,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
     }
    }
    //RP:
-   if(fTrack->UseForIntegratedFlow())       
+   if(fTrack->InRPSelection())       
    {
     fPtBinRPNoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
     fEtaBinRPNoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
@@ -726,16 +726,16 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
      for(Int_t q=0;q<fgkQmax;q++)
      {
       //real part (Pt)
-      fDiffFlowPtRPGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowPtRPGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Pt)
-      fDiffFlowPtRPGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowPtRPGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
       //real part (Eta)
-      fDiffFlowEtaRPGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowEtaRPGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Eta)
-      fDiffFlowEtaRPGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowEtaRPGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
      }
     }
-   }//end of if(fTrack->UseForIntegratedFlow())                   
+   }//end of if(fTrack->InRPSelection())                   
   }//end of if(fTrack)  
  }//ending the second loop over data    
  
@@ -745,55 +745,55 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  //sixteen 2D profiles for differential flow          
  for(Int_t i=0;i<nPrim;i++){
   fTrack=anEvent->GetTrack(i);
-  if (fTrack && fTrack->UseForDifferentialFlow()){
+  if (fTrack && fTrack->InPOISelection()){
    //for(Int_t p=0;p<fgkPmax;p++){
     for(Int_t q=0;q<fgkQmax;q++){
      //real part
-     fDiffFlowGenFunRe0->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[0][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(0.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe0->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[0][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(0.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm0->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[0][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(0.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+     fDiffFlowGenFunIm0->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[0][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(0.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe1->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[1][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(1.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe1->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[1][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(1.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm1->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[1][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(1.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);             
+     fDiffFlowGenFunIm1->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[1][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(1.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);             
     //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe2->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[2][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(2.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe2->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[2][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(2.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm2->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[2][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(2.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
+     fDiffFlowGenFunIm2->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[2][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(2.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe3->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[3][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(3.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe3->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[3][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(3.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm3->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[3][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(3.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
+     fDiffFlowGenFunIm3->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[3][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(3.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe4->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[4][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(4.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe4->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[4][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(4.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm4->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[4][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(4.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
+     fDiffFlowGenFunIm4->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[4][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(4.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe5->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[5][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(5.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe5->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[5][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(5.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm5->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[5][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(5.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
+     fDiffFlowGenFunIm5->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[5][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(5.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);  
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe6->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[6][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(6.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe6->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[6][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(6.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm6->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[6][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(6.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunIm6->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[6][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(6.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //-----------------------------------------------------------------------
      //real part
-     fDiffFlowGenFunRe7->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[7][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(7.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+     fDiffFlowGenFunRe7->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[7][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(7.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
      //imaginary part
-     fDiffFlowGenFunIm7->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[7][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(7.+1.)/nSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);    
+     fDiffFlowGenFunIm7->Fill(fTrack->Pt()/fBinWidth,(Double_t)q,genfunG[7][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(7.+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);    
    }
    //}
   }  
  }//ending the second loop over data            
  */
       
- }//end of if(nEventNSelTracksIntFlow>9)                   
+ }//end of if(nEventNSelTracksRP>9)                   
  
 
  
@@ -813,7 +813,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   //running over data
   Int_t nPrimOE = anEvent->NumberOfTracks();//total multiplicity 
   
-  Int_t nEventNSelTracksIntFlowOE = anEvent->GetEventNSelTracksIntFlow();
+  Int_t nEventNSelTracksRPOE = anEvent->GetEventNSelTracksRP();
   
   Double_t genfunG4[fgkPmax4][fgkQmax4];
   Double_t genfunG6[fgkPmax6][fgkQmax6];
@@ -840,49 +840,49 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   } 
    
   //multiplicities: 
-  if(nEventNSelTracksIntFlowOE>15) fAvMultIntFlow16GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
-  if(nEventNSelTracksIntFlowOE>7) fAvMultIntFlow8GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
-  if(nEventNSelTracksIntFlowOE>5) fAvMultIntFlow6GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);
-  if(nEventNSelTracksIntFlowOE>3) fAvMultIntFlow4GFC->Fill(0.,nEventNSelTracksIntFlowOE,1);  
+  if(nEventNSelTracksRPOE>15) fAvMultIntFlow16GFC->Fill(0.,nEventNSelTracksRPOE,1);
+  if(nEventNSelTracksRPOE>7) fAvMultIntFlow8GFC->Fill(0.,nEventNSelTracksRPOE,1);
+  if(nEventNSelTracksRPOE>5) fAvMultIntFlow6GFC->Fill(0.,nEventNSelTracksRPOE,1);
+  if(nEventNSelTracksRPOE>3) fAvMultIntFlow4GFC->Fill(0.,nEventNSelTracksRPOE,1);  
   
   //first loop over data: evaluating the generating function G[p][q] for integrated flow 
   for(Int_t i=0;i<nPrimOE;i++)
   {
    fTrack=anEvent->GetTrack(i);
-   if(fTrack && fTrack->UseForIntegratedFlow())
+   if(fTrack && fTrack->InRPSelection())
    {
     for(Int_t p=0;p<fgkPmax16;p++)
     {
      for(Int_t q=0;q<fgkQmax16;q++)
      {
-      if(nEventNSelTracksIntFlowOE>15)
+      if(nEventNSelTracksRPOE>15)
       {
-       genfunG16[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax16));
+       genfunG16[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksRPOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax16));
       }       
       if(p<fgkPmax8 && q<fgkQmax8)
       {
-       if(nEventNSelTracksIntFlowOE>7)
+       if(nEventNSelTracksRPOE>7)
        { 
-        genfunG8[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax8));
+        genfunG8[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksRPOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax8));
        }
        if(p<fgkPmax6 && q<fgkQmax6)
        {
-        if(nEventNSelTracksIntFlowOE>5) 
+        if(nEventNSelTracksRPOE>5) 
         {
-         genfunG6[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax6));
+         genfunG6[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksRPOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax6));
         }
         if(p<fgkPmax4 && q<fgkQmax4)
         {
-         if(nEventNSelTracksIntFlowOE>3)
+         if(nEventNSelTracksRPOE>3)
          {
-          genfunG4[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksIntFlowOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax4));
+          genfunG4[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/nEventNSelTracksRPOE)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax4));
          } 
         }
        }
       }
      } 
     }  
-   }//end of if(fTrack && fTrack->UseForIntegratedFlow())
+   }//end of if(fTrack && fTrack->InRPSelection())
   }//ending the loop over data
  
  //storing the value of G[p][q] in 2D profile in order to get automatically the avarage <G[p][q]>
@@ -890,16 +890,16 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  {
   for(Int_t q=0;q<fgkQmax16;q++)
   {
-   if(nEventNSelTracksIntFlowOE>15) fIntFlowGenFun16->Fill((Double_t)p,(Double_t)q,genfunG16[p][q],1);
+   if(nEventNSelTracksRPOE>15) fIntFlowGenFun16->Fill((Double_t)p,(Double_t)q,genfunG16[p][q],1);
    if(p<fgkPmax8 && q<fgkQmax8)
    {
-    if(nEventNSelTracksIntFlowOE>7) fIntFlowGenFun8->Fill((Double_t)p,(Double_t)q,genfunG8[p][q],1);
+    if(nEventNSelTracksRPOE>7) fIntFlowGenFun8->Fill((Double_t)p,(Double_t)q,genfunG8[p][q],1);
     if(p<fgkPmax6 && q<fgkQmax6)
     {
-     if(nEventNSelTracksIntFlowOE>5) fIntFlowGenFun6->Fill((Double_t)p,(Double_t)q,genfunG6[p][q],1);
+     if(nEventNSelTracksRPOE>5) fIntFlowGenFun6->Fill((Double_t)p,(Double_t)q,genfunG6[p][q],1);
      if(p<fgkPmax4 && q<fgkQmax4)
      {
-      if(nEventNSelTracksIntFlowOE>3) fIntFlowGenFun4->Fill((Double_t)p,(Double_t)q,genfunG4[p][q],1);
+      if(nEventNSelTracksRPOE>3) fIntFlowGenFun4->Fill((Double_t)p,(Double_t)q,genfunG4[p][q],1);
      }
     }
    } 

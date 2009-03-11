@@ -687,28 +687,28 @@ void AliCumulantsFunctions::Calculate()
  Double_t dSumOfYieldRP=0.;
  for (Int_t b=1;b<fgknBinsPt+1;b++)
  { 
-  if(fch->GetHistPtInt())
+  if(fch->GetHistPtRP())
   {  
-   dSumOfYieldRP+=(fch->GetHistPtInt())->GetBinContent(b);
+   dSumOfYieldRP+=(fch->GetHistPtRP())->GetBinContent(b);
    if(fchr2nd->GetHistDiffFlowPtRP())
    {
-    dV2RP+=((fchr2nd->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
-    dV2RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtRP())->GetBinError(b),2.);  
+    dV2RP+=((fchr2nd->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtRP())->GetBinContent(b);
+    dV2RPError+=pow((fch->GetHistPtRP())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtRP())->GetBinError(b),2.);  
    }
    if(fchr4th->GetHistDiffFlowPtRP())
    {
-    dV4RP+=((fchr4th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
-    dV4RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+    dV4RP+=((fchr4th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtRP())->GetBinContent(b);
+    dV4RPError+=pow((fch->GetHistPtRP())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
    }
    if(fchr6th->GetHistDiffFlowPtRP())
    {
-    dV6RP+=((fchr6th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
-    dV6RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+    dV6RP+=((fchr6th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtRP())->GetBinContent(b);
+    dV6RPError+=pow((fch->GetHistPtRP())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
    }
    if(fchr8th->GetHistDiffFlowPtRP())
    {
-    dV8RP+=((fchr8th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtInt())->GetBinContent(b);
-    dV8RPError+=pow((fch->GetHistPtInt())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
+    dV8RP+=((fchr8th->GetHistDiffFlowPtRP())->GetBinContent(b))*(fch->GetHistPtRP())->GetBinContent(b);
+    dV8RPError+=pow((fch->GetHistPtRP())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtRP())->GetBinError(b),2.);
    }      
   } 
  }
@@ -741,7 +741,7 @@ void AliCumulantsFunctions::Calculate()
  cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8RP<<" +/- "<<pow(dV8RPError,0.5)<<endl;
 
  cout<<endl;
- cout<<"      nEvts = "<<(fch->GetHistMultInt())->GetEntries()<<", AvM = "<<(fch->GetHistMultInt())->GetMean()<<endl; 
+ cout<<"      nEvts = "<<(fch->GetHistMultRP())->GetEntries()<<", AvM = "<<(fch->GetHistMultRP())->GetMean()<<endl; 
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
 
@@ -1221,28 +1221,28 @@ void AliCumulantsFunctions::Calculate()
  Double_t dSumOfYieldPOI=0.;
  for (Int_t b=1;b<fgknBinsPt+1;b++)
  { 
-  if(fch->GetHistPtDiff())
+  if(fch->GetHistPtPOI())
   {  
-   dSumOfYieldPOI+=(fch->GetHistPtDiff())->GetBinContent(b);
+   dSumOfYieldPOI+=(fch->GetHistPtPOI())->GetBinContent(b);
    if(fchr2nd->GetHistDiffFlowPtPOI())
    {
-    dV2POI+=((fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
-    dV2POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtPOI())->GetBinError(b),2.);  
+    dV2POI+=((fchr2nd->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtPOI())->GetBinContent(b);
+    dV2POIError+=pow((fch->GetHistPtPOI())->GetBinContent(b),2.)*pow((fchr2nd->GetHistDiffFlowPtPOI())->GetBinError(b),2.);  
    }
    if(fchr4th->GetHistDiffFlowPtPOI())
    {
-    dV4POI+=((fchr4th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
-    dV4POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
+    dV4POI+=((fchr4th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtPOI())->GetBinContent(b);
+    dV4POIError+=pow((fch->GetHistPtPOI())->GetBinContent(b),2.)*pow((fchr4th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }
    if(fchr6th->GetHistDiffFlowPtPOI())
    {
-    dV6POI+=((fchr6th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
-    dV6POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
+    dV6POI+=((fchr6th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtPOI())->GetBinContent(b);
+    dV6POIError+=pow((fch->GetHistPtPOI())->GetBinContent(b),2.)*pow((fchr6th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }
    if(fchr8th->GetHistDiffFlowPtPOI())
    {
-    dV8POI+=((fchr8th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtDiff())->GetBinContent(b);
-    dV8POIError+=pow((fch->GetHistPtDiff())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
+    dV8POI+=((fchr8th->GetHistDiffFlowPtPOI())->GetBinContent(b))*(fch->GetHistPtPOI())->GetBinContent(b);
+    dV8POIError+=pow((fch->GetHistPtPOI())->GetBinContent(b),2.)*pow((fchr8th->GetHistDiffFlowPtPOI())->GetBinError(b),2.);
    }      
   } 
  }
@@ -1275,7 +1275,7 @@ void AliCumulantsFunctions::Calculate()
  cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8POI<<" +/- "<<pow(dV8POIError,0.5)<<endl;
 
  cout<<endl;
- cout<<"      nEvts = "<<(fch->GetHistMultDiff())->GetEntries()<<", AvM = "<<(fch->GetHistMultDiff())->GetMean()<<endl; 
+ cout<<"      nEvts = "<<(fch->GetHistMultPOI())->GetEntries()<<", AvM = "<<(fch->GetHistMultPOI())->GetMean()<<endl; 
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
  cout<<endl;
