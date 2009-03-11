@@ -95,6 +95,7 @@ AliTPCClusterParam::SetInstance(param);
 #include <TVectorD.h>
 #include <TObjArray.h>
 #include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
 
 ClassImp(AliTPCClusterParam)
 
@@ -1501,6 +1502,195 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   if (TMath::Abs(result)>0.05) return 0;
   return result;
 }
+
+
+
+Double_t  AliTPCClusterParam::GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1){
+  //
+  // 2 D gaus convoluted with angular effect
+  // See in mathematica: 
+  //Simplify[Integrate[Exp[-(x0-k0*xd)*(x0-k0*xd)/(2*s0*s0)-(x1-k1*xd)*(x1-k1*xd)/(2*s1*s1)]/(s0*s1),{xd,-1/2,1/2}]]
+  // 
+  //TF1 f1("f1","AliTPCClusterParam::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
+  //TF2 f2("f2","AliTPCClusterParam::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
+  //
+  const Float_t kEpsilon = 0.0001;
+  if ((TMath::Abs(k0)+TMath::Abs(k1))<kEpsilon*(s0+s1)){
+    // small angular effect
+    Double_t val = (TMath::Gaus(x0,0,s0)*TMath::Gaus(x1,0,s1))/(s0*s1*2.*TMath::Pi());
+    return val;
+  }
+  Double_t sigma2 = k1*k1*s0*s0+k0*k0*s1*s1;
+  Double_t exp0 = TMath::Exp(-(k1*x0-k0*x1)*(k1*x0-k0*x1)/(2*sigma2));
+  //
+  Double_t sigmaErf =  2*s0*s1*TMath::Sqrt(2*sigma2);			     
+  Double_t erf0 = TMath::Erf( (k0*s1*s1*(k0-2*x0)+k1*s0*s0*(k1-2*x1))/sigmaErf);
+  Double_t erf1 = TMath::Erf( (k0*s1*s1*(k0+2*x0)+k1*s0*s0*(k1+2*x1))/sigmaErf);
+  Double_t norm = 1./TMath::Sqrt(sigma2);
+  norm/=2.*TMath::Sqrt(2.*TMath::Pi());
+  Double_t val  = norm*exp0*(erf0+erf1);
+  return val;
+}
+
+
+Double_t  AliTPCClusterParam::GaussConvolutionTail(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau){
+  //
+  // 2 D gaus convoluted with angular effect and exponential tail in z-direction
+  // tail integrated numerically 
+  // Integral normalized to one
+  // Mean at 0
+  // 
+  // TF1 f1t("f1t","AliTPCClusterParam::GaussConvolutionTail(0,x,0,0,0.5,0.5,0.9)",-5,5)
+  Double_t sum =1, mean=0;
+  // the COG of exponent
+  for (Float_t iexp=0;iexp<5;iexp+=0.2){
+    mean+=iexp*TMath::Exp(-iexp/tau);
+    sum +=TMath::Exp(-iexp/tau);
+  }
+  mean/=sum;
+  //
+  sum = 1;
+  Double_t val = GaussConvolution(x0,x1+mean, k0, k1 , s0,s1);
+  for (Float_t iexp=0;iexp<5;iexp+=0.2){
+    val+=GaussConvolution(x0,x1+mean-iexp, k0, k1 , s0,s1)*TMath::Exp(-iexp/tau);
+    sum+=TMath::Exp(-iexp/tau);
+  }
+  return val/sum;
+}
+
+Double_t  AliTPCClusterParam::GaussConvolutionGamma4(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau){
+  //
+  // 2 D gaus convoluted with angular effect and exponential tail in z-direction
+  // tail integrated numerically 
+  // Integral normalized to one
+  // Mean at 0
+  // 
+  // TF1 f1g4("f1g4","AliTPCClusterParam::GaussConvolutionGamma4(0,x,0,0,0.5,0.2,1.6)",-5,5)
+  // TF2 f2g4("f2g4","AliTPCClusterParam::GaussConvolutionGamma4(y,x,0,0,0.5,0.2,1.6)",-5,5,-5,5)
+  Double_t sum =0, mean=0;
+  // the COG of G4
+  for (Float_t iexp=0;iexp<5;iexp+=0.2){
+    Double_t g4 = TMath::Exp(-4.*iexp/tau)*TMath::Power(iexp/tau,4.);
+    mean+=iexp*g4;
+    sum +=g4;
+  }
+  mean/=sum;
+  //
+  sum = 0;
+  Double_t val = 0;
+  for (Float_t iexp=0;iexp<5;iexp+=0.2){ 
+    Double_t g4 = TMath::Exp(-4.*iexp/tau)*TMath::Power(iexp/tau,4.);
+    val+=GaussConvolution(x0,x1+mean-iexp, k0, k1 , s0,s1)*g4;
+    sum+=g4;
+  }
+  return val/sum;
+}
+
+Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t tau){
+  //
+  //
+  // cpad      - pad (y) coordinate
+  // ctime     - time(z) coordinate
+  // ky        - dy/dx
+  // kz        - dz/dx
+  // rmsy0     - RF width in pad units
+  // rmsz0     - RF width in pad units
+  // tau       - correction for the assymetric TRF shape - decay length 
+
+  // Response function aproximated by convolution of gaussian with angular effect (integral=1)
+  //  
+  // Gaus width sy and sz is determined by RF width and diffusion 
+  // Integral of Q is equal 1
+  // Q max is calculated at position cpad, ctime
+  // Example function:         
+  //  TF1 f1("f1", "AliTPCClusterParam::QmaxCorrection(0,0.5,x,0,0,0.5,0.6)",0,1000) 
+  //
+  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
+  Double_t padLength= param->GetPadPitchLength(sector,row);
+  Double_t padWidth = param->GetPadPitchWidth(sector);
+  // diffusion in pad units
+  Double_t diffT=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffT()/padWidth;
+  Double_t diffL=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffL()/padWidth;
+  //
+  // transform angular effect to pad units
+  Double_t pky   = ky*padLength/padWidth;
+  Double_t pkz   = kz*padLength/padWidth;
+  // position in pad unit
+  Double_t py = (cpad+0.5)-TMath::Nint(cpad+0.5);
+  Double_t pz = (ctime+0.5)-TMath::Nint(ctime+0.5);
+  //
+  //
+  Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT);
+  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL); 
+  return GaussConvolutionGamma4(py,pz, pky,pkz,sy,sz,tau);
+}
+
+Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t qtot, Float_t thr, Float_t tau){
+  //
+  //
+  // cpad      - pad (y) coordinate
+  // ctime     - time(z) coordinate
+  // ky        - dy/dx
+  // kz        - dz/dx
+  // rmsy0     - RF width in pad units
+  // rmsz0     - RF width in pad units
+  // qtot      - the sum of signal in cluster - without thr correction
+  // thr       - threshold
+  // tau       - correction for the assymetric TRF shape - decay length 
+
+  // Response function aproximated by convolution of gaussian with angular effect (integral=1)
+  //  
+  // Gaus width sy and sz is determined by RF width and diffusion 
+  // Integral of Q is equal 1
+  // Q max is calculated at position cpad, ctime
+  //          
+  //  
+  //
+  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
+  Double_t padLength= param->GetPadPitchLength(sector,row);
+  Double_t padWidth = param->GetPadPitchWidth(sector);
+  //
+  // diffusion in pad units
+  Double_t diffT=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffT()/padWidth;
+  Double_t diffL=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffL()/padWidth;
+  //
+  // transform angular effect to pad units
+  Double_t pky   = ky*padLength/padWidth;
+  Double_t pkz   = kz*padLength/padWidth;
+  // position in pad unit
+  //  
+  Double_t py = (cpad+0.5)-TMath::Nint(cpad+0.5);
+  Double_t pz = (ctime+0.5)-TMath::Nint(ctime+0.5);
+  //
+  Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT);
+  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL); 
+  //
+  //
+  //
+  Double_t sumAll=0,sumThr=0;
+  //
+  Double_t corr =1;
+  Double_t qnorm=qtot;
+  for (Float_t iy=-2;iy<=2;iy++)
+    for (Float_t iz=-2;iz<=2;iz++){
+      Double_t val = GaussConvolutionGamma4(py-iy,pz-iz, pky,pkz, sy,sz,tau);      
+      Double_t qlocal =qnorm*val;
+      if (TMath::Abs(iy)<2&&TMath::Abs(iz)<2){
+      	sumThr+=qlocal;   // using Virtual charge in cluster finder
+      }
+      else{
+	if (qlocal>thr) sumThr+=qlocal;
+      }
+      sumAll+=qlocal;
+    }
+  if (sumAll>0&&sumThr>0) corr=(sumThr)/sumAll;
+  //
+  return corr;
+}
+
+
+
+
 
 
 
