@@ -87,6 +87,7 @@ public:
   //virtual Int_t        AddTrack(const AliVParticle *t) = 0;
   virtual Int_t        GetNumberOfTracks() const = 0;
   virtual Int_t        GetNumberOfV0s() const = 0;
+  virtual Int_t        GetNumberOfCascades() const = 0;
 
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
