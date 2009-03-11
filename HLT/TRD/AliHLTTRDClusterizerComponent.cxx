@@ -42,7 +42,7 @@ using namespace std;
 #include "AliGeomManager.h"
 #include "AliTRDReconstructor.h"
 #include "AliCDBManager.h"
-#include "AliTRDclusterizerHLT.h"
+#include "AliHLTTRDClusterizer.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDcluster.h"
@@ -71,8 +71,7 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   fCDB(NULL),
   fMemReader(NULL),
   fReconstructor(NULL),
-  fGeometryFileName(""),
-  fUseHLTClusters(kFALSE)
+  fGeometryFileName("")
 {
   // Default constructor
 
@@ -86,41 +85,6 @@ AliHLTTRDClusterizerComponent::~AliHLTTRDClusterizerComponent()
   // Work is Done in DoDeInit()
 }
 
-/**
- * Convert AliTRDcluster to AliHLTTRDCluster 
- * Add HLTCluster to the output, defined by pointer
- * Fill block desctiptors 
- * Return size of the added to ouput objects
- */
-//============================================================================
-UInt_t AliHLTTRDClusterizerComponent::AddToOutput(TClonesArray* inClusterArray, AliHLTUInt8_t* outBlockPtr)
-{
-  AliTRDcluster* cluster = 0;
-  AliHLTUInt32_t addedSize = 0;
-  //  == OUTdatatype pointer
-  AliHLTTRDCluster * outPtr = (AliHLTTRDCluster*)outBlockPtr;
-  
-  if (inClusterArray){
-    Int_t nbEntries  = inClusterArray->GetEntries();
-    for (Int_t iCluster = 0; iCluster<nbEntries; iCluster++){
-      //cout << "Geting cluster #" << iCluster << endl;
-      UInt_t blockSize=0;
-      
-      cluster = dynamic_cast<AliTRDcluster*>(inClusterArray->At(iCluster));
-
-      AliHLTTRDCluster *hltCluster = new (outPtr) AliHLTTRDCluster(cluster);
-      //cout << Form("cluster added at 0x%x (%i)\n",outPtr,outPtr);
-
-      blockSize = sizeof(*hltCluster);
-
-      addedSize += blockSize;
-      outBlockPtr += blockSize;
-      outPtr = (AliHLTTRDCluster*)outBlockPtr;
-    }
-  }
-  return addedSize;
-  
-}
 
 const char* AliHLTTRDClusterizerComponent::GetComponentID()
 {
@@ -161,8 +125,6 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   Int_t iRawDataVersion = 2;
   int i = 0;
   char* cpErr;
-  Bool_t bWriteClusters = kFALSE;
-  
 
   Int_t iRecoParamType = -1; // default will be the low flux
 
@@ -264,19 +226,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  fGeometryFileName = argv[i+1];
 	  HLTInfo("GeomFile storage is %s", fGeometryFileName.c_str() );	  
 	  i += 2;
-	  
 	}      
-      else if ( strcmp( argv[i], "-writeClusters" ) == 0)
-	{
-	  bWriteClusters = kTRUE;
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-useHLTClusters" ) == 0)
-	{
-	  fUseHLTClusters = kTRUE;
-	  i++;
-	  HLTInfo("Using AliHLTCluster to pass data further in the chain");
-	}
       else{
 	HLTError("Unknown option '%s'", argv[i] );
 	return EINVAL;
@@ -319,16 +269,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(fRecoParam);
   fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
-  if (bWriteClusters)
-    {
-      HLTInfo("Writing clusters. I.e. output is a TTree with clusters");
-      fReconstructor->SetOption("cw,sl_cf_0");
-    }
-  else
-    {
-      HLTInfo("Not writing clusters. I.e. output is a TClonesArray of clusters");
-      fReconstructor->SetOption("!cw,sl_cf_0");
-    }
+  HLTInfo("Not writing clusters. I.e. output is a TClonesArray of clusters");
+  fReconstructor->SetOption("hlt,!cw,sl_cf_0");
   
   
   // init the raw data type to be used...
@@ -380,11 +322,10 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   
   fMemReader = new AliRawReaderMemory;
 
-  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
+  fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");
   fClusterizer->SetReconstructor(fReconstructor);
-
+  fClusterizer->SetAddLabels(kFALSE);
   fClusterizer->SetRawVersion(iRawDataVersion);
-  fClusterizer->InitClusterTree();
   return 0;
 }
 
@@ -428,7 +369,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   HLTDebug( "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   AliHLTUInt32_t totalSize = 0, offset = 0;
-  Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
 
   //implement a usage of the following
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
@@ -483,7 +423,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       fMemReader->SetEquipmentID( id ); 
       
-      fClusterizer->ResetTree();  
+      fClusterizer->SetMemBlock(outputPtr);
       Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
       if (iclustered == kTRUE)
 	{
@@ -497,70 +437,35 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       // put the tree into output
       //fcTree->Print();
-      if (bWriteClusters)
-	{
-	  TTree *fcTree = fClusterizer->GetClusterTree();
-	  if (fcTree)
+      
+      AliHLTUInt32_t addedSize = fClusterizer->GetAddedSize();
+	if (addedSize > 0){
+	  // Using low-level interface 
+	  // with interface classes
+	  totalSize += addedSize;
+	  if ( totalSize > size )
 	    {
-	      Int_t nbEntries = fcTree->GetEntriesFast();
-	      if (nbEntries > 0){
-		HLTDebug("fcTree: Entries - %i; Size - %i",nbEntries,sizeof(fcTree));
-		PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, spec);
-	      }
-	      
+	      HLTError("Too much data; Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
+		       totalSize, size );
+	      return EMSGSIZE;
 	    }
-	  fClusterizer->RecPoints()->Delete();
-	  
-	}
-      else
-	{
-	  TClonesArray *clustersArray = fClusterizer->RecPoints();
-	  fClusterizer->SetClustersOwner(kFALSE);
-	  if (clustersArray){
-	    Int_t nbEntries = clustersArray->GetEntriesFast();
-	    if (nbEntries > 0){
-	      if (fUseHLTClusters){
-		// Using low-level interface 
-                // with interface classes
-		AliHLTUInt32_t addedSize = AddToOutput(clustersArray, outputPtr);
-		totalSize += addedSize;
-		if ( totalSize > size )
-		  {
-		    HLTError("Too much data; Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
-			     totalSize, size );
-		    return EMSGSIZE;
-		  }
 		
-		// Fill block 
-		AliHLTComponentBlockData bd;
-		FillBlockData( bd );
-		bd.fOffset = offset;
-		bd.fSize = addedSize;
-		//bd.fSpecification = spec;
-		bd.fSpecification = gkAliEventTypeData;
-		bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
-		outputBlocks.push_back( bd );
-		HLTDebug( "Block ; size %i; dataType %s; spec 0x%x ",
-			  bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
-
-	      }
-	      else{
-		// Using high-level interface
-                // pass TClonesArray with streamers
-		clustersArray->BypassStreamer(kFALSE);
-		HLTDebug("clustersArray: Entries - %i; Size - %i",clustersArray->GetEntriesFast(),sizeof(clustersArray));
-		PushBack(clustersArray, AliHLTTRDDefinitions::fgkClusterDataType, spec);
-		//PrintObject(clustersArray);
-	      }
+	  // Fill block 
+	  AliHLTComponentBlockData bd;
+	  FillBlockData( bd );
+	  bd.fOffset = offset;
+	  bd.fSize = addedSize;
+	  //bd.fSpecification = spec;
+	  bd.fSpecification = gkAliEventTypeData;
+	  bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
+	  outputBlocks.push_back( bd );
+	  HLTDebug( "Block ; size %i; dataType %s; spec 0x%x ",
+		    bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
 	      
-	      clustersArray->Delete();
-	    }
-	    delete clustersArray;
-	  }
-	  else 
-	    HLTWarning("Array of clusters is empty!");
 	}
-    }//  for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
+	else 
+	  HLTWarning("Array of clusters is empty!");
+    }
   fReconstructor->SetClusters(0x0);
 
   size = totalSize;

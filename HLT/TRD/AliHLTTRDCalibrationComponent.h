@@ -61,23 +61,20 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 					 AliHLTUInt32_t& size,
 					 vector<AliHLTComponent_BlockData>& outputBlocks);
 /* 	virtual Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData); */
-	virtual Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+//	virtual Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 	
 	using AliHLTCalibrationProcessor::ProcessCalibration;
-	using AliHLTCalibrationProcessor::ShipDataToFXS;
+//	using AliHLTCalibrationProcessor::ShipDataToFXS;
 
-	Bool_t fUseHLTTracks;
-	Int_t ReadTracks(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size);
-	
     private:
 	/** copy constructor prohibited */
 	AliHLTTRDCalibrationComponent(const AliHLTTRDCalibrationComponent&);
 	/** assignment operator prohibited */
 	AliHLTTRDCalibrationComponent& operator=(const AliHLTTRDCalibrationComponent&);
 	TObjArray* FormOutput();
+
 	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-	
+	// Can be greater than 100 (%)	
 	unsigned fOutputPercentage; // Output volume in percentage of the input
 	string fStrorageDBpath; // Default path for OCDB
 	AliCDBManager *fCDB; //! Pointer to OCDB

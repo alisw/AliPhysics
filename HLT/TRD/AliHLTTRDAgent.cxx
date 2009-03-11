@@ -33,7 +33,6 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 
 // component headers
 #include "AliHLTTRDClusterizerComponent.h"
-#include "AliHLTTRDTrackerComponent.h"
 #include "AliHLTTRDTrackerV1Component.h"
 #include "AliHLTTRDCalibrationComponent.h"
 #include "AliHLTTRDEsdWriterComponent.h"
@@ -86,7 +85,6 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTTRDClusterizerComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackerComponent);
   pHandler->AddComponent(new AliHLTTRDTrackerV1Component);
   pHandler->AddComponent(new AliHLTTRDCalibrationComponent);
   pHandler->AddComponent(new AliHLTTRDEsdWriterComponent);

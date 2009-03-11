@@ -25,6 +25,7 @@
 #include "AliESDtrack.h"
 #include "TTree.h"
 #include "AliHLTTRDDefinitions.h"
+#include "AliHLTTRDUtils.h"			\
 
 /** global instance for component registration */
 AliHLTTRDEsdWriterComponent gTRDEsdWriter;
@@ -36,6 +37,7 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
   :
   AliHLTRootFileWriterComponent(),
   fTree(NULL),
+  fOutputPercentage(100),
   fESD(NULL)
 {
   // see header file for class documentation
@@ -49,6 +51,7 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent(const AliHLTTRDEsdWrite
   :
   AliHLTRootFileWriterComponent(),
   fTree(NULL),
+  fOutputPercentage(100),
   fESD(NULL)
 {
 }
@@ -104,40 +107,35 @@ int AliHLTTRDEsdWriterComponent::CloseWriter()
   return iResult;
 }
 
-int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*evtData*/,
-					    const AliHLTComponentBlockData* /*blocks*/, 
-					    AliHLTComponentTriggerData& trigData )
+int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
+					    const AliHLTComponentBlockData*  blocks, 
+					    AliHLTComponentTriggerData& /*trigData*/ )
 {
-  // see header file for class documentation
-  int iResult=0;
-  TTree* pTree=fTree;
+int result=0;
 
-  AliHLTUInt32_t fDblock_Specification = 0;
-
-  //implement a usage of the following
-  //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
-  //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
-  //   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::TRDEsdWriter::DumpEvent", "Trigger data received", 
-	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
-
-  //AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkTRDSAEsdDataType );
-  AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkTRDSATracksDataType );
-  if (dblock != 0)
+for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ )
     {
-      fDblock_Specification = dblock->fSpecification;
-    }
-  else
-    {
-      Logging( kHLTLogWarning, "HLT::TRDEsdWriter::DumpEvent", "DATAIN", "First Input Block not found! 0x%x", dblock);
-      return -1;
+    // HLTDebug("i am a debug message"); // y does it not print out debug messages???
+    /*HLTInfo("Block # %i/%i; Event 0x%08LX (%Lu)",
+		    iBlock, evtData.fBlockCnt,
+		    evtData.fEventID, evtData.fEventID);*/
+    
+
+    TClonesArray* tracksArray = NULL;
+    const AliHLTComponentBlockData &block = blocks[iBlock];
+    tracksArray = new TClonesArray("AliTRDtrackV1");
+    
+    //HLTInfo("BLOCK fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x, fDataType %s", block.fPtr, block.fOffset, block.fSize, block.fSpecification, DataType2Text(block.fDataType).c_str()); //HLTInfo instead of HLTDebug, because debug gives no output... -> strange
+
+    AliHLTTRDUtils::ReadTracks(tracksArray, block.fPtr, block.fSize); 
+
+    // give out number of tracklets in tracksArray
+    Int_t nbEntries = tracksArray->GetEntries();
+    HLTInfo(" %i TRDtracks in tracksArray", nbEntries); 
+    
     }
 
-  int ibForce = 1;
-  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkTRDSATracksDataType, "AliESDtrack", ibForce);
-  Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "1stBLOCK", "Pointer = 0x%x", tobjin);
-
-  AliESDtrack* track = (AliESDtrack *)tobjin;
+ /*  AliESDtrack* track = (AliESDtrack *)tobjin;
   if (!track)
     {
       Logging( kHLTLogWarning, "HLT::TRDEsdWriter::DumpEvent", "DATAIN", "First Input Block not a ESDtrack! 0x%x", tobjin);
@@ -164,14 +162,62 @@ int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*ev
 
   Logging( kHLTLogInfo, "HLT::TRDEsdWriter::DumpEvent", "Fill", "Ntracks: %d", nTracks);	  
   pTree->Fill();
-  fESD->Reset();
+  fESD->Reset(); */
 
-  return iResult;
+  return result;
 }
 
-int AliHLTTRDEsdWriterComponent::ScanArgument(int argc, const char** argv)
+// int AliHLTTRDEsdWriterComponent::ScanArgument(int argc, const char** argv)
+// {
+//   // see header file for class documentation
+//   int iResult=AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
+//   return iResult;
+// }
+
+int AliHLTTRDEsdWriterComponent::DoEvent(	const AliHLTComponent_EventData& /*evtData*/,
+						const AliHLTComponent_BlockData* /*blocks*/,
+						AliHLTComponent_TriggerData& /*trigData*/,
+						AliHLTUInt8_t* /*outputPtr*/,
+						AliHLTUInt32_t& /*size*/,
+						vector<AliHLTComponent_BlockData>& /*outputBlocks*/)
 {
-  // see header file for class documentation
-  int iResult=AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
-  return iResult;
+HLTDebug("ignor me");
+return 0;
+
+}
+
+Int_t AliHLTTRDEsdWriterComponent::ScanArgument( int argc, const char** argv )
+{
+  // perform initialization. We check whether our relative output size is specified in the arguments.
+  int i = 0;
+  char* cpErr;
+  HLTDebug("argv[%d] == %s", i, argv[i] );
+      if ( !strcmp( argv[i], "output_percentage" ) )
+	{
+	  if ( i+1>=argc )
+	    {
+	      HLTError("Missing output_percentage parameter");
+	      return ENOTSUP;
+	    }
+	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
+	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
+	  if ( *cpErr )
+	    {
+	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
+	      return EINVAL;
+	    }
+	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
+	
+    }
+    //AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
+
+  return 0;
+}
+
+
+void AliHLTTRDEsdWriterComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+{
+  // Get the output data size
+  constBase = 0;
+  inputMultiplier = ((double)fOutputPercentage)/100.0;
 }

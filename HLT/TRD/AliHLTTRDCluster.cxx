@@ -1,20 +1,18 @@
 #include "AliHLTTRDCluster.h"
 
-
 /**
  * Default Constructor
  */
 //============================================================================
 AliHLTTRDCluster::AliHLTTRDCluster():
-  fSize(sizeof(AliHLTTRDCluster)),
   fX(0),
   fY(0),
   fZ(0),
+  fQ(0),
   fIsInChamber(kFALSE),
   fIsShared(kFALSE),
   fDetector(-1),
   fLocalTimeBin(0),
-  fQ(0),
   fClusterMasking(0),
   fPadCol(0),
   fPadRow(0),
@@ -27,15 +25,14 @@ AliHLTTRDCluster::AliHLTTRDCluster():
  */
 //============================================================================
 AliHLTTRDCluster::AliHLTTRDCluster(AliTRDcluster * inCluster):
-  fSize (sizeof(AliHLTTRDCluster)),
   fX (inCluster->GetX()),
   fY (inCluster->GetY()),
   fZ (inCluster->GetZ()),
+  fQ (inCluster->GetQ()),
   fIsInChamber(inCluster->IsInChamber()),
   fIsShared (inCluster->IsShared()),
   fDetector (inCluster->GetDetector()),
   fLocalTimeBin (inCluster->GetLocalTimeBin()),
-  fQ (inCluster->GetQ()),
   fClusterMasking (inCluster->IsMasked()),
   fPadCol (inCluster->GetPadCol()),
   fPadRow (inCluster->GetPadRow()),
@@ -56,11 +53,11 @@ void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster *outCluster)
   outCluster->SetX(fX);
   outCluster->SetY(fY);
   outCluster->SetZ(fZ);
+  outCluster->SetQ(fQ);
   outCluster->SetInChamber(fIsInChamber);
   outCluster->SetShared(fIsShared);
   outCluster->SetDetector(fDetector);
   outCluster->SetLocalTimeBin(fLocalTimeBin);
-  outCluster->SetQ(fQ);
   outCluster->SetClusterMasking(fClusterMasking);
 
   outCluster->SetPadCol(fPadCol);
@@ -78,7 +75,7 @@ void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster *outCluster)
 //============================================================================
 void AliHLTTRDCluster::Print()
 {
-  //printf("   --hltCluster-- addr 0x%x(%i); fSize %i\n", this, (int)this, this->GetSize());
+  //printf("   --hltCluster-- addr 0x%x(%i); sizeof(*this) %i\n", this, (int)this, this->GetSize());
   //printf("     fX %f; fY %f; fZ %f\n",fX,fY,fZ);
   
 }

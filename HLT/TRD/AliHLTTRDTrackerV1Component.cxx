@@ -29,6 +29,7 @@ using namespace std;
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDCluster.h"
 #include "AliHLTTRDTrack.h"
+#include "AliHLTTRDUtils.h"
 
 #include "TFile.h"
 #include "TChain.h"
@@ -63,8 +64,6 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fStrorageDBpath("local://$ALICE_ROOT/OCDB"),
   fCDB(NULL),
   fGeometryFileName(""),
-  fUseHLTClusters(kFALSE),
-  fUseHLTTracks(kFALSE),
   fTracker(NULL),
   fRecoParam(NULL),
   fReconstructor(NULL)
@@ -112,41 +111,6 @@ AliHLTComponent* AliHLTTRDTrackerV1Component::Spawn()
   return new AliHLTTRDTrackerV1Component;
 };
 
-/**
- * Convert AliTRDtrackV1 to AliHLTTRDTrack 
- * Add HLTTrack to the output, defined by pointer
- * Fill block desctiptors 
- * Return size of the added to ouput objects
- */
-//============================================================================
-AliHLTUInt32_t AliHLTTRDTrackerV1Component::AddToOutput(TClonesArray* inTrackArray, AliHLTUInt8_t* output)
-{
-  cout << "\nWriting tracks to the Memory\n ============= \n";
-  AliTRDtrackV1* track = 0;
-  AliHLTUInt32_t addedSize = 0;
-  AliHLTUInt8_t *iterPtr = output;
-  AliHLTTRDTrack * outPtr = (AliHLTTRDTrack*)iterPtr;
-  
-  if (inTrackArray){
-    Int_t nbTracks  = inTrackArray->GetEntries();
-    for (Int_t iTrack = 0; iTrack<nbTracks; iTrack++){
-      AliHLTUInt32_t trackSize=0;
-      
-      track = dynamic_cast<AliTRDtrackV1*>(inTrackArray->At(iTrack));
-      //track->Print();
-      
-      AliHLTTRDTrack *hltTrack = new (outPtr) AliHLTTRDTrack(track);
-      trackSize = hltTrack->GetSize();
-      addedSize += trackSize;
-      HLTDebug("addedSize %i, trackSize %i", addedSize, trackSize);
-      
-      iterPtr += trackSize;
-      outPtr = (AliHLTTRDTrack*)iterPtr;
-    }
-  }
-  return addedSize;
-  
-}
 
 int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 {
@@ -261,29 +225,11 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  iMagneticField = 0;
 	  i++;
 	}
-      else if ( strcmp( argv[i], "-writeClusters" ) == 0)
-	{
-	  bWriteClusters = kTRUE;
-	  HLTDebug("input clusters are expected to be in a TTree.");
-	  i++;
-	}
       else if ( strcmp( argv[i], "-offlineMode" ) == 0)
 	{
 	  bHLTMode=kFALSE;
 	  HLTDebug("Using standard offline tracking.");
 	  i++;
-	}
-      else if ( strcmp( argv[i], "-useHLTClusters" ) == 0)
-	{
-	  fUseHLTClusters = kTRUE;
-	  i++;
-	  HLTInfo("expecting AliHLTCluster as input");
-	}
-      else if ( strcmp( argv[i], "-useHLTTracks" ) == 0)
-	{
-	  fUseHLTTracks = kTRUE;
-	  i++;
-	  HLTInfo("Using AliHLTTrack to pass data further in the chain");
 	}
       else {
 	HLTError("Unknown option '%s'", argv[i] );
@@ -464,8 +410,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 					  vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   // Process an event
-  Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
-
+  
   HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   
   AliHLTUInt32_t totalSize = 0, offset = 0;
@@ -500,19 +445,20 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 		    DataType2Text(inputDataType).c_str());
       
       
-      TTree *clusterTree = 0x0;
-      TClonesArray* clusterArray = 0x0;
-      ReadAndLoadClusters(clusterTree, clusterArray, &block);
+      TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
+      AliHLTTRDUtils::ReadClusters(clusterArray, block.fPtr, block.fSize);
+      HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
+      fTracker->LoadClusters(clusterArray);
+
+      
       
       // maybe it is not so smart to create it each event? clear is enough ?
       AliESDEvent *esd = new AliESDEvent();
       esd->CreateStdContent();
       fTracker->Clusters2Tracks(esd);
 
-      //here transport the esd tracks further
       Int_t nTracks = esd->GetNumberOfTracks();
-      Int_t nTRDTracks = esd->GetNumberOfTrdTracks();
-      HLTInfo("Number of tracks  == %d == Number of TRD tracks %d", nTracks, nTRDTracks);  
+      HLTInfo("Number of tracks  == %d ==", nTracks);  
 
       TClonesArray* trdTracks = fTracker->GetListOfTracks();
    
@@ -534,102 +480,14 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
       AliTRDReconstructor::SetClusters(0x0);
       delete esd;
-      if (bWriteClusters)
-	delete clusterTree;
-      else{
-	//clusterArray->Delete();
-	delete clusterArray;
       }
       
-    }
   size = totalSize;
   HLTDebug("Event is done. size written to the output is %i", size);
-  //  CALLGRIND_STOP_INSTRUMENTATION();
   return 0;
 }
 
 
-/**
- * ReadClusters from the component input and load them to the tracker
- */
-//============================================================================
-void AliHLTTRDTrackerV1Component::ReadAndLoadClusters(TTree *inClusterTree, 
-						      TClonesArray *inClusterArray, const AliHLTComponentBlockData *inBlock)
-{
-  Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
-  const AliHLTComponentBlockData &block = *inBlock;
-
-
-  TObject *tobjin = 0x0;
-  int ibForce = 0; // almost obsolet
-
-  if (bWriteClusters){
-    tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TTree", ibForce);
-    HLTDebug("1stBLOCK; Pointer = 0x%x", tobjin);
-    inClusterTree = (TTree*)tobjin;
-    if (inClusterTree)
-      {
-	HLTDebug("CLUSTERS; Pointer to TTree = 0x%x Name = %s", inClusterTree, inClusterTree->GetName());
-	HLTDebug("TTree of clusters: nbEntries = %i", inClusterTree->GetEntriesFast());
-	fTracker->LoadClusters(inClusterTree);
-      }
-    else
-      {
-	HLTError("First Input Block is not a TTree 0x%x", tobjin);
-      }
-  }
-  else if (fUseHLTClusters)
-    {
-      inClusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
-      ReadClusters(inClusterArray, block.fPtr, block.fSize);
-      HLTDebug("TClonesArray of clusters: nbEntries = %i", inClusterArray->GetEntriesFast());
-      fTracker->LoadClusters(inClusterArray);
-    }
-  else
-    {
-      tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TClonesArray", ibForce);
-      HLTDebug("1stBLOCK; Pointer = 0x%x", tobjin);
-      inClusterArray = (TClonesArray*)tobjin;
-      if (inClusterArray)
-	{
-	  HLTDebug("CLUSTERS; Pointer to TClonesArray = 0x%x Name = %s", inClusterArray, inClusterArray->GetName());
-	  HLTDebug("TClonesArray of clusters: nbEntries = %i", inClusterArray->GetEntriesFast());
-	  fTracker->LoadClusters(inClusterArray);
-	}
-      else
-	{
-	  HLTError("First Input Block not a TClonesArray 0x%x", tobjin);
-	}
-    }
-}
-
-/**
- * Read cluster to the TClonesArray from the memory 
- */
-//============================================================================
-Int_t AliHLTTRDTrackerV1Component::ReadClusters(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size)
-{
-  //HLTDebug("\nReading clusters from the Memory\n ============= \n");
-  AliHLTTRDCluster * curCluster;
-  UInt_t clusterSize = sizeof(AliHLTTRDCluster), curSize = 0;
-  Int_t i=0;
-  
-  curCluster = (AliHLTTRDCluster*) inputPtr;
-  while (curSize + clusterSize <= size)
-    {
-      //  HLTDebug(" fX = %f; fY = %f; fZ = %f", curCluster->fX, curCluster->fY, curCluster->fZ);
-
-      AliTRDcluster* curTRDCluster = new((*outArray)[i]) AliTRDcluster();
-      curCluster->ExportTRDCluster(curTRDCluster);
-      //      HLTDebug(" fX = %f; fY = %f; fZ = %f", curTRDCluster->GetX(), curTRDCluster->GetY(), curTRDCluster->GetZ());
-      curSize += clusterSize; 
-      i++;
-      curCluster++;
-      //cout << " current readed size is " << curSize << "/" << size << endl;
-    }
-  
-  return i;
-}
 /**
  * Transport tracks to the next component
  * Return Numbers of bytes written to the output
@@ -642,10 +500,10 @@ AliHLTUInt32_t AliHLTTRDTrackerV1Component::TransportTracks(TClonesArray *inTrac
   if (nbTracks>0)
     {
       HLTDebug("We have an output array: pointer to inTracksArray = 0x%x, nbEntries = %i", inTracksArray, nbTracks);
-      if (fUseHLTTracks){
-	// Using low-level interface 
+      
+      	// Using low-level interface 
 	// with interface classes
-	AliHLTUInt32_t addedSize = AddToOutput(inTracksArray, output);
+	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddTracksToOutput(inTracksArray, output);
 	
 	// Fill block 
 	AliHLTComponentBlockData bd;
@@ -660,14 +518,8 @@ AliHLTUInt32_t AliHLTTRDTrackerV1Component::TransportTracks(TClonesArray *inTrac
 	HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
 	
 	return addedSize;
+      
       }
-      else{
-	inTracksArray->BypassStreamer(kFALSE);
-	PushBack(inTracksArray, AliHLTTRDDefinitions::fgkTRDSATracksDataType);
-	return 0;
-      }
-	  
-    }
   return 0;
   
 }

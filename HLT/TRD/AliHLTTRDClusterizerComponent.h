@@ -13,7 +13,7 @@
 
 #include "AliHLTProcessor.h"
 class AliCDBManager;
-class AliTRDclusterizerHLT;
+class AliHLTTRDClusterizer;
 class AliRawReaderMemory;
 class TFile;
 class AliTRDrecoParam;
@@ -65,8 +65,6 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 	/** assignment operator prohibited */
 	AliHLTTRDClusterizerComponent& operator=(const AliHLTTRDClusterizerComponent&);
 
-	UInt_t AddToOutput(TClonesArray* inClusterArray, AliHLTUInt8_t* outBlockPtr);
-
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
 
@@ -74,7 +72,7 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 
 	string fStrorageDBpath; // Default path for OCDB
 
-	AliTRDclusterizerHLT *fClusterizer; //! Offline derived HLT clusterizer
+	AliHLTTRDClusterizer *fClusterizer; //! Offline derived HLT clusterizer
 	AliTRDrecoParam *fRecoParam; //! Offline reco params
 	AliCDBManager *fCDB; //! Pointer to OCDB
 	AliRawReaderMemory *fMemReader; //! Input raw data reader
@@ -82,7 +80,6 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 	
 
 	string fGeometryFileName; // Path to geometry file 
-	Bool_t fUseHLTClusters; // Use or not AliHLTCluster interface
 	
 	ClassDef(AliHLTTRDClusterizerComponent, 0)
 

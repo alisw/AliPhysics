@@ -39,6 +39,7 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
    * Spawn function.
    * @return new class instance
    */
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn() {return new AliHLTTRDEsdWriterComponent;}
 
  protected:
@@ -53,7 +54,7 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
   virtual int DumpEvent( const AliHLTComponentEventData& evtData,
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData );
-
+			 
   using AliHLTRootFileWriterComponent::DumpEvent;
 
   /**
@@ -65,6 +66,8 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
    *         -EPROTO parameter for argument missing <br>
    */
   int ScanArgument(int argc, const char** argv);
+  
+  
 
  private:
   /** not a valid copy constructor, defined according to effective C++ style */
@@ -88,10 +91,21 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
 
   /** the ESD tree */
   TTree* fTree; //! transient value
+  
+  /** output percentage descared*/
+  Int_t fOutputPercentage; 
 
   /** the ESD */
   AliESDEvent* fESD; //! transient value
 
+  int DoEvent(	const AliHLTComponent_EventData& evtData,
+						const AliHLTComponent_BlockData* blocks,
+						AliHLTComponent_TriggerData& /*trigData*/,
+						AliHLTUInt8_t* /*outputPtr*/,
+						AliHLTUInt32_t& /*size*/,
+						vector<AliHLTComponent_BlockData>& /*outputBlocks*/);
+  						
   ClassDef(AliHLTTRDEsdWriterComponent, 1)
+
 };
 #endif

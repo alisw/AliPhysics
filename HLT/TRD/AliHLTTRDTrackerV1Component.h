@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTRDTrackerComponent.h
+/** @file   AliHLTTRDTrackerV1Component.h
     @author Timm Steinbeck, Matthias Richter
     @date   
     @brief  Declaration of a TRDTracker component. */
@@ -21,7 +21,7 @@ class AliTRDrecoParam;
 class AliTRDReconstructor;
 
 /**
- * @class AliHLTTRDTrackerComponent
+ * @class AliHLTTRDTrackerV1Component
  * @brief A TRDTrackerV1 HLT processing component. 
  *
  * Uses the second generation TRD tracker AliTRDtrackerV1
@@ -43,9 +43,6 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 	AliHLTComponent* Spawn();
 	
     protected:
-	AliHLTUInt32_t AddToOutput (TClonesArray* inTrackArray, AliHLTUInt8_t* output);
-	Int_t ReadClusters (TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size);
-	void ReadAndLoadClusters(TTree *inClusterTree, TClonesArray *inClusterArray, const AliHLTComponentBlockData *inBlock);
 	AliHLTUInt32_t TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
 				       vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec);
 	
@@ -77,9 +74,7 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 	AliCDBManager *fCDB; //! Pointer to OCDB
 
 	string fGeometryFileName; // Path to geometry file 
-	Bool_t   fUseHLTClusters;
-	Bool_t   fUseHLTTracks;
-
+	
 	AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
 	AliTRDrecoParam *fRecoParam; //! Offline reco params
 	AliTRDReconstructor * fReconstructor;
