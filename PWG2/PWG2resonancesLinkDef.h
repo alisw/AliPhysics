@@ -24,7 +24,9 @@
 #pragma link C++ class AliRsnPairDef+;
 #pragma link C++ class AliRsnHistoDef+;
 
+#pragma link C++ class AliRsnFunctionDef+;
 #pragma link C++ class AliRsnFunction+;
+#pragma link C++ class AliRsnFunctionNew+;
 
 #pragma link C++ class AliRsnPair+;
 #pragma link C++ class AliRsnPairMgr+;

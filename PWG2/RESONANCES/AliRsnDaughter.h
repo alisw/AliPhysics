@@ -45,6 +45,7 @@ class AliRsnDaughter : public AliVParticle
     // 4-momentum
     virtual Double_t E()  const {return TMath::Sqrt(fMass*fMass + P2());}
     virtual Double_t E(Double_t mass) {SetM(mass); return E();}
+    virtual Double_t E(AliRsnPID::EType pid) {AssignPID(pid); return E();}
     virtual Double_t M()  const {return fMass;}
     virtual Double_t P2() const {return Px()*Px() + Py()*Py() + Pz()*Pz();}
     virtual Double_t P()  const {return TMath::Sqrt(P2());}
@@ -104,8 +105,10 @@ class AliRsnDaughter : public AliVParticle
     void                    SetPIDProb(Int_t i, Double_t value) {if (i>=0&&i<AliRsnPID::kSpecies)fPIDProb[i]=value;}
     void                    SetPIDWeight(Int_t i, Double_t value) {if (i>=0&&i<AliRsnPID::kSpecies)fPIDWeight[i]=value;}
     static void             SetPIDMethod(EPIDMethod method) {fgPIDMethod = method;}
-    void                    AssignRealisticPID();
+    void                    RealisticPID();
+    void                    AssignPID(AliRsnPID::EType pid) {fAssignedPID = pid; fMass = AliRsnPID::ParticleMass(pid);}
     AliRsnPID::EType        PIDType(Double_t &prob) const;
+    AliRsnPID::EType        AssignedPID() {return fAssignedPID;}
 
     // check that contains a given ESD flag
     void    SetFlags(ULong_t flags) {fFlags = flags;}
@@ -159,6 +162,7 @@ class AliRsnDaughter : public AliVParticle
     Int_t              fITSnum;   // number of ITS clusters
     Int_t              fTPCnum;   // number of TPC clusters
 
+    AliRsnPID::EType   fAssignedPID;                    // PID assigned to define mass
     AliRsnPID::EType   fRealisticPID;                   // PID from Bayesian probs (largest one)
     Double_t           fPIDProb[AliRsnPID::kSpecies];   // PID probabilities (Bayesian comp.)
     Double_t           fPIDWeight[AliRsnPID::kSpecies]; // PID weights

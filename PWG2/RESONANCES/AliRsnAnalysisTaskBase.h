@@ -31,7 +31,7 @@ class AliRsnAnalysisTaskBase : public AliAnalysisTask
     AliRsnAnalysisTaskBase(const char *name = "AliRsnAnalysisTaskBase");
     AliRsnAnalysisTaskBase(const AliRsnAnalysisTaskBase& copy):AliAnalysisTask(copy),
         fNumOfEvents(0),fUseAutoHandler(kTRUE),
-        fRsnInput(1),fReader(),fPID(),fAnalysisMgr(0x0) {}
+        fReader(),fPID(),fAnalysisMgr(0x0) {}
     AliRsnAnalysisTaskBase& operator= (const AliRsnAnalysisTaskBase&) {return *this;}
     virtual ~AliRsnAnalysisTaskBase() {/* Does nothing*/}
 
@@ -40,6 +40,8 @@ class AliRsnAnalysisTaskBase : public AliAnalysisTask
       kAOD = 0,
       kESD,
       kESDMC,
+      kESDTPC,
+      kESDMCTPC,
       kMC,
       kRSN,
       kLastIndex
@@ -63,9 +65,9 @@ class AliRsnAnalysisTaskBase : public AliAnalysisTask
     void SetAnalysisMgr(AliAnalysisManager* theValue) { fAnalysisMgr = theValue; }
     AliAnalysisManager* GetAnalysisMgr() const { return fAnalysisMgr; }
 
-    AliESDInputHandler* GetESDHandler(const Int_t& theValue=0) const { return fESDEH[theValue]; }
-    AliMCEventHandler* GetMCHandler(const Int_t& theValue=0) const { return fMCEH[theValue]; }
-    AliAODInputHandler* GetAODHandler(const Int_t& theValue=0) const { return fAODEH[theValue]; }
+    AliESDInputHandler* GetESDHandler(const Int_t& theValue=0) const { return fRsnESDEH[theValue]; }
+    AliMCEventHandler* GetMCHandler(const Int_t& theValue=0) const { return fRsnMCEH[theValue]; }
+    AliAODInputHandler* GetAODHandler(const Int_t& theValue=0) const { return fRsnAODEH[theValue]; }
 
     AliRsnReader *GetReader() { return &fReader; }
     AliRsnPID *GetPID() { return &fPID;}
@@ -74,27 +76,25 @@ class AliRsnAnalysisTaskBase : public AliAnalysisTask
 
     Long64_t      fNumOfEvents;       // number of events
 
-    TChain        *fChain[2];         // input chain
+    TChain       *fChain[2];          // input chain
     EInputType    fInputType[2];      // input type
     Bool_t        fUseAutoHandler;    // flag if should create handler
 
-    AliRsnEvent   *fRSN[2];           // RsnMV event
-    AliESDEvent   *fESD[2];           // ESD event
-    AliMCEvent    *fMC[2];            // ESD event
-    AliAODEvent   *fAOD[2];           // AOD event
+    AliRsnEvent   *fRSN[2];           // RSN (internal format) event
+    AliESDEvent   *fRsnESD[2];        // ESD event
+    AliMCEvent    *fRsnMC[2];         // ESD event
+    AliAODEvent   *fRsnAOD[2];        // AOD event
 
-    AliESDInputHandler   *fESDEH[2];  // ESD event handler
-    AliMCEventHandler    *fMCEH[2];   // ESD event handler
-    AliAODInputHandler   *fAODEH[2];  // AOD event handler
+    AliESDInputHandler   *fRsnESDEH[2];  // ESD event handler
+    AliMCEventHandler    *fRsnMCEH[2];   // ESD event handler
+    AliAODInputHandler   *fRsnAODEH[2];  // AOD event handler
 
-
-    TObjArray     fRsnInput;          // array of rsn input (reader,pid,...)
-    AliRsnReader  fReader;            // Reader
-    AliRsnPID     fPID;               // PID
+    AliRsnReader  fReader;               // Reader
+    AliRsnPID     fPID;                  // PID
 
     AliAnalysisManager *fAnalysisMgr; // pointer to current AnalysisMgr
 
-    virtual void  UseAutoHandler(const Bool_t& theValue);
+    virtual void  UseAutoHandler(const Bool_t& theValue) {fUseAutoHandler = theValue;}
 
     virtual void  ConnectInputDataByInputType(EInputType type ,Short_t inputIndex=0);
     virtual void  ConnectRSN(Short_t inputIndex);
@@ -107,6 +107,7 @@ class AliRsnAnalysisTaskBase : public AliAnalysisTask
     virtual AliRsnEvent*  GetRsnFromESD(const Short_t &index=0);
     virtual AliRsnEvent*  GetRsnFromESDMC(const Short_t &index=0);
     virtual AliRsnEvent*  GetRsnFromRSN(const Short_t &index=0);
+    virtual AliRsnEvent*  GetRsnFromMC(const Short_t &index=0);
 
 
     ClassDef(AliRsnAnalysisTaskBase, 1)

@@ -38,8 +38,7 @@
 ClassImp(AliRsnPIDDefESD)
 
 //_____________________________________________________________________________
-AliRsnPIDDefESD::AliRsnPIDDefESD() : fUseESDWeights(kTRUE)
-{
+AliRsnPIDDefESD::AliRsnPIDDefESD() : fUseESDWeights(kTRUE) {
 //
 // Default constructor.
 // By default, it is set for using ESD weights,
@@ -50,14 +49,14 @@ AliRsnPIDDefESD::AliRsnPIDDefESD() : fUseESDWeights(kTRUE)
   for (i = 0; i < kDetectors; i++) {
     fUseDet[i] = kTRUE;
     fDivValue[i] = 0.0;
+    fUseHigher[i] = kTRUE;
   }
 }
 
 //_____________________________________________________________________________
 AliRsnPIDDefESD::AliRsnPIDDefESD(const AliRsnPIDDefESD& copy) :
-  TObject(copy),
-  fUseESDWeights(copy.fUseESDWeights)
-{
+    TObject(copy),
+    fUseESDWeights(copy.fUseESDWeights) {
 //
 // Copy constructor.
 // Implemented to manage passing of this object to functions
@@ -67,12 +66,12 @@ AliRsnPIDDefESD::AliRsnPIDDefESD(const AliRsnPIDDefESD& copy) :
   for (i = 0; i < kDetectors; i++) {
     fUseDet[i] = copy.fUseDet[i];
     fDivValue[i] = copy.fDivValue[i];
+    fUseHigher[i] = copy.fUseHigher[i];
   }
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue)
-{
+void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue) {
 //
 // Set one of the predefined schemes
 //
@@ -143,6 +142,16 @@ void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue)
       SetDivValue(kTPC, 0.0);
       SetDivValue(kTOF, divValue);
       break;
+    case kSchemeITSandTPCorTOFwithSP:
+      fUseESDWeights = kFALSE;
+      ExcludeAll();
+      IncludeDet(kITS);
+      IncludeDet(kTPC);
+      IncludeDet(kTOF);
+      SetDivValue(kITS, divValue, kFALSE);
+      SetDivValue(kTPC, divValue, kFALSE);
+      SetDivValue(kTOF, divValue, kTRUE);
+      break;
     default:
       AliWarning("PID scheme unrecognized. Set to ESD");
       fUseESDWeights = kTRUE;
@@ -150,8 +159,7 @@ void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue)
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights)
-{
+void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights) {
 //
 // Computes the global PID weights using the given ranges
 //
@@ -171,7 +179,8 @@ void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights)
 
   Int_t i, j;
   for (i = 0; i < kDetectors; i++) {
-    if (!fUseDet[i] || pt < fDivValue[i]) {
+//     if (!fUseDet[i] || pt < fDivValue[i])
+    if (!fUseDet[i] || !CheckDivValue((EDetector)i,pt)) {
       for (j = 0; j < AliRsnPID::kSpecies; j++) {
         w[i][j] = 1.0;
       }
@@ -184,8 +193,7 @@ void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights)
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::PrintStatus()
-{
+void AliRsnPIDDefESD::PrintStatus() {
 //
 // Print informations about this object configurations
 //
@@ -194,22 +202,20 @@ void AliRsnPIDDefESD::PrintStatus()
 
   if (fUseESDWeights) {
     AliInfo("Using ESD weights");
-  }
-  else {
+  } else {
     AliInfo("NOT using ESD weights");
   }
 
   Int_t i;
   for (i = 0; i < kDetectors; i++) {
-    AliInfo(Form("Detector name: %s -- accepted: %s -- divValue = %3.1f", DetName((EDetector)i), (fUseDet[i]?"YES":"NO"), fDivValue[i]));
+    AliInfo(Form("Detector name: %s -- accepted: %s -- divValue = %3.1f useHigher = %s", DetName((EDetector)i), (fUseDet[i]?"YES":"NO"), fDivValue[i],(fUseHigher[i]?"YES":"NO")));
   }
 
   AliInfo("===== PIDDef status messages -- END");
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPIDDefESD::DetName(EDetector det)
-{
+const char* AliRsnPIDDefESD::DetName(EDetector det) {
 //
 // Detector name for messages
 //
@@ -222,4 +228,33 @@ const char* AliRsnPIDDefESD::DetName(EDetector det)
     case kHMPID: return "HMPID";
     default: return "undef";
   }
+}
+
+//_____________________________________________________________________________
+void AliRsnPIDDefESD::SetDivValue(EDetector det, Double_t value, Bool_t userHigher) {
+//
+// Sets div.value properties for detector
+//
+  if (CheckBounds(det)) {
+    fDivValue[det] = value;
+    fUseHigher[det] = userHigher;
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnPIDDefESD::CheckDivValue(EDetector det,Double_t value) {
+//
+// Sets div.value properties for detector
+//
+  if (CheckBounds(det)) {
+    if (fUseHigher[det]) {
+      if (value > fDivValue[det]) return kTRUE;
+      else return kFALSE;
+    } else {
+      if (value < fDivValue[det]) return kTRUE;
+      else return kFALSE;
+    }
+  }
+
+  return kTRUE;
 }

@@ -74,6 +74,8 @@ class AliRsnEvent : public TNamed
     void     SetPrimaryVertexMC(Double_t x, Double_t y, Double_t z) {fPVxMC=x;fPVyMC=y;fPVzMC=z;}
 
     // Multiplicity
+    void  SetTrueMultiplicity(Int_t value) {fTrueMult = value;}
+    Int_t GetTrueMultiplicity() {return fTrueMult;}
     Int_t GetMultiplicity() const {return fMult;}
     Int_t GetNCharged(Char_t sign);
 
@@ -109,6 +111,7 @@ class AliRsnEvent : public TNamed
     Double_t        fPVzMC;               // vertex in MC
 
     TClonesArray   *fTracks;              // collection of particles
+    Int_t           fTrueMult;            // true multiplicity taken from source event
 
     AliRsnPIDIndex *fNoPID;               // array index only for charged tracks
     AliRsnPIDIndex *fPerfectPID;          // array index for perfect PID

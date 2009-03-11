@@ -155,6 +155,7 @@ void AliRsnPair::LoopPair
   AliRsnDaughter *daughter1 = 0;
   AliRsnDaughter *daughter2 = 0;
   AliRsnFunction *fcn = 0;
+  //AliRsnFunctionNew *fnew = 0;
 
   Bool_t isLikeSign = fPairDef->IsLikeSign();
   Int_t j, startj = 0;
@@ -164,6 +165,8 @@ void AliRsnPair::LoopPair
         // get track #1
         daughter1 = (AliRsnDaughter *) ev1->GetTrack(a1->At(i));
         if (!daughter1) continue;
+        // assign PID and mass of particle of type #1
+        daughter1->AssignPID(fPairDef->GetType(0));
         // cuts on track #1
         if (!CutPass(daughter1)) continue;
         // get track #2
@@ -177,6 +180,8 @@ void AliRsnPair::LoopPair
         {
             daughter2 = (AliRsnDaughter *) ev2->GetTrack(a2->At(j));
             if (!daughter2) continue;
+            // assign PID and mass of particle of type #2
+            daughter2->AssignPID(fPairDef->GetType(0));
             // cuts on track #2
             if (!CutPass(daughter2)) continue;
             // make pair
@@ -189,6 +194,11 @@ void AliRsnPair::LoopPair
             while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
                 fcn->Fill(&pairParticle, fPairDef);
             }
+            /*
+            while ( (fnew = (AliRsnFunction*)nextFcn()) ) {
+              fnew->Fill(&pairParticle, fPairDef);
+            }
+            */
         }
     }
 }
@@ -338,6 +348,19 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
   Int_t size = fFunctions.GetEntries();
   new (fFunctions[size]) AliRsnFunction(*fcn);
 }
+
+/*
+//_____________________________________________________________________________
+void AliRsnPair::AddFunction(AliRsnFunctionDef *fcn)
+{
+//
+// Adds a new computing function
+//
+
+  Int_t size = fFunctions.GetEntries();
+  new (fFunctions[size]) AliRsnFunctionNew(fcn);
+}
+*/
 
 //________________________________________________________________________________________
 Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)
