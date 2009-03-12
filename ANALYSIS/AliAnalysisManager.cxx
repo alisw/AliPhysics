@@ -1312,5 +1312,5 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
 // Set the input event handler and create a container for it.
    fOutputEventHandler   = handler;
    fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
-   Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonInputContainer() to access it.");
+   Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonOutputContainer() to access it.");
 }
