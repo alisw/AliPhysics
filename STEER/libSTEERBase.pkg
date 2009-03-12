@@ -4,6 +4,7 @@ SRCS = AliVParticle.cxx \
        AliVTrack.cxx \
        AliVVertex.cxx \
        AliVEvent.cxx \
+       AliMixedEvent.cxx \
        AliVHeader.cxx \
        AliVEventHandler.cxx \
        AliVEventPool.cxx \
