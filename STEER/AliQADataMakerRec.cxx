@@ -290,7 +290,16 @@ void AliQADataMakerRec::InitRecoParams()
     }
     else {
       TObject * recoParamObj = entry->GetObject() ; 
-      if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+      if (dynamic_cast<TObjArray*>(recoParamObj)) {
+        // The detector has only one set of reco parameters
+        AliInfo(Form("Array of reconstruction parameters found for detector %s",GetName()));
+        TObjArray *recoParamArray = dynamic_cast<TObjArray*>(recoParamObj) ;
+        for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
+          fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
+          if (fRecoParam->IsDefault()) break;
+        }
+      }
+      else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
         // The detector has only onse set of reco parameters
         // Registering it in AliRecoParam
         AliInfo(Form("Single set of reconstruction parameters found for detector %s",GetName()));
@@ -300,6 +309,7 @@ void AliQADataMakerRec::InitRecoParams()
         AliError(Form("No valid RecoParam object found in the OCDB for detector %s",GetName()));
       }
     }
+    AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
   }
 }
 
