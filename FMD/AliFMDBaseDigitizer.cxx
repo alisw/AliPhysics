@@ -319,7 +319,15 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 {
   // Add edep contribution from (detector,ring,sector,strip) to cache
   AliFMDParameters* param = AliFMDParameters::Instance();
-
+  AliFMDDebug(10, ("Adding contribution %7.5f for FMD%d%c[%2d,%3d] "
+		  " from %d tracks (%s)", 
+		  edep,
+		  detector, 
+		  ring,
+		  sector, 
+		  strip, 
+		  nTrack, 
+		  (isPrimary ? "primary" : "secondary")));
   // Check if strip is `dead' 
   if (param->IsDead(detector, ring, sector, strip)) { 
     AliFMDDebug(5, ("FMD%d%c[%2d,%3d] is marked as dead", 
@@ -341,18 +349,25 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 		    detector, ring, sector, strip));
       
   // Sum energy deposition
+  Int_t oldN  =  entry.fN;
   entry.fEdep += edep;
   entry.fN    += nTrack;
   if (isPrimary) entry.fNPrim += nTrack;
   if (fStoreTrackRefs) { 
-    Int_t oldN = entry.fLabels.fN;
-    entry.fLabels.Set(entry.fN);
-    for (Int_t i = 0; i < nTrack; i++) 
+    if (entry.fLabels.fN < entry.fN) {
+      AliFMDDebug(15, ("== New label array size %d, was %d, added %d", 
+		       entry.fN, entry.fLabels.fN, nTrack));
+      entry.fLabels.Set(entry.fN);
+    }
+    for (Int_t i = 0; i < nTrack; i++) {
+      AliFMDDebug(15, ("=> Setting track label # %d", oldN+i));
       entry.fLabels[oldN + i] = tracknos[i];
+      AliFMDDebug(15, ("<= Setting track label # %d", oldN+i));
+    }
   }
-  AliFMDDebug(15, ("Adding contribution %f to FMD%d%c[%2d,%3d] (%f) track %d", 
-		   edep, detector, ring, sector, strip,
-		   entry.fEdep, (nTrack > 0 ? tracknos[0] : -1)));
+  AliFMDDebug(15,("Adding contribution %f to FMD%d%c[%2d,%3d] (%f) track %d", 
+		  edep, detector, ring, sector, strip,
+		  entry.fEdep, (nTrack > 0 ? tracknos[0] : -1)));
   
 }
 
@@ -551,14 +566,14 @@ AliFMDBaseDigitizer::AddDigit(UShort_t        detector,
 			      Short_t         count2, 
 			      Short_t         count3,
 			      Short_t         count4,
-			      UShort_t        /* ntot */, 
+			      UShort_t        ntot, 
 			      UShort_t        /* nprim */,
 			      const TArrayI&  refs) const
 {
   // Add a digit or summable digit
-  
   fFMD->AddDigitByFields(detector, ring, sector, strip, 
-			 count1, count2, count3, count4, refs);
+			 count1, count2, count3, count4, 
+			 ntot, fStoreTrackRefs ? refs.fArray : 0);
 }
 
 //____________________________________________________________________

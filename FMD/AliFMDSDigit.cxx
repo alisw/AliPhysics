@@ -98,7 +98,7 @@ AliFMDSDigit::AliFMDSDigit(UShort_t       detector,
 			   Short_t        count4,
 			   UShort_t       npart,
 			   UShort_t       nprim,
-			   const TArrayI& refs)
+			   Int_t*         refs)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fEdep(edep),
     fCount1(count1),
@@ -122,7 +122,8 @@ AliFMDSDigit::AliFMDSDigit(UShort_t       detector,
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word) -1 if not used
   //    count3    ADC count (a 10-bit word) -1 if not used
-  for (Int_t i = 0; i < refs.fN; i++) AddTrack(refs.fArray[i]);
+  if (!refs) return;
+  for (Int_t i = 0; i < npart; i++) AddTrack(refs[i]);
 }
 
 //____________________________________________________________________

@@ -50,7 +50,8 @@ public:
 	      Short_t        count2=-1, 
 	      Short_t        count3=-1, 
 	      Short_t        count4=-1, 
-	      const TArrayI& refs=TArrayI());
+	      UShort_t       nrefs=0,
+	      Int_t*         refs=0);
   /** 
    * DTOR 
    */

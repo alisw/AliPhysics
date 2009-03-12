@@ -15,9 +15,9 @@
 #ifndef ALIFMDBASEDIGIT_H
 # include <AliFMDBaseDigit.h>
 #endif
-#ifndef ROOT_TArrayI
-# include <TArrayI.h>
-#endif
+// #ifndef ROOT_TArrayI
+// # include <TArrayI.h>
+// #endif
 
 //____________________________________________________________________
 /** @class AliFMDSDigit AliFMDDigit.h <FMD/AliFMDDigit.h>
@@ -54,7 +54,7 @@ public:
 	       Short_t        count4=-1,
 	       UShort_t       npart=0,
 	       UShort_t       nprim=0, 
-	       const TArrayI& refs=TArrayI());
+	       Int_t*         refs=0);
   /** 
    * DTOR 
    */

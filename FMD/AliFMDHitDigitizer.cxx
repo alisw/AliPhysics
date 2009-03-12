@@ -266,7 +266,7 @@ AliFMDHitDigitizer::Exec(Option_t* /*option*/)
     }
     
     // Read in the event
-    AliFMDDebug(5, ("Now digitizing (Hits->%s) event # %d", 
+    AliFMDDebug(1, ("Now digitizing (Hits->%s) event # %d", 
 		    (fOutput == kDigits ? "digits" : "sdigits"), event));
     thisLoader->GetEvent(event);
     
@@ -424,6 +424,15 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
       }
     
       // Extract parameters 
+      AliFMDDebug(15,("Adding contribution %7.5f for FMD%d%c[%2d,%3d] "
+		      " for trackno %6d (%s)", 
+		      fmdHit->Edep(),
+		      fmdHit->Detector(), 
+		      fmdHit->Ring(),
+		      fmdHit->Sector(), 
+		      fmdHit->Strip(), 
+		      trackno, 
+		      (isPrimary ? "primary" : "secondary")));
       AddContribution(fmdHit->Detector(),
 		      fmdHit->Ring(),
 		      fmdHit->Sector(),
@@ -474,7 +483,8 @@ AliFMDHitDigitizer::AddDigit(UShort_t        detector,
 		    detector, ring, sector, strip, 
 		    count1, count2, count3, count4));
     AliFMDBaseDigitizer::AddDigit(detector, ring, sector, strip, 0,
-				  count1, count2, count3, count4, 0, 0, refs);
+				  count1, count2, count3, count4, 
+				  ntotal, nprim, refs);
     return;
   }
   if (edep <= 0) { 
@@ -494,7 +504,7 @@ AliFMDHitDigitizer::AddDigit(UShort_t        detector,
 		   count1, count2, count3, count4, nprim, ntotal, refs.fN));
   fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
 			  count1, count2, count3, count4, 
-			  ntotal, nprim, refs);
+			  ntotal, nprim, fStoreTrackRefs ? refs.fArray : 0);
 }
 
 //____________________________________________________________________

@@ -96,6 +96,7 @@ AliFMDEdepMap::Reset()
     fData[i].fEdep  = 0; 
     fData[i].fN     = 0; 
     fData[i].fNPrim = 0;
+    fData[i].fLabels.Reset();
   };
 }
 
@@ -105,10 +106,10 @@ AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val)
 {
   // Reset to val
   for (Int_t i = 0; i < fTotal; i++) { 
-    fData[i].fEdep  = val.fEdep; 
-    fData[i].fN     = val.fN; 
-    fData[i].fNPrim = val.fNPrim;
-    fData[i].fLabels.Set(0);
+    fData[i].fEdep   = val.fEdep; 
+    fData[i].fN      = val.fN; 
+    fData[i].fNPrim  = val.fNPrim;
+    fData[i].fLabels = val.fLabels;
   };
 }
 
