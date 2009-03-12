@@ -121,7 +121,7 @@ TObjArray *  AliTRDSensorArray::GetList ()
 	// return TObjArray with a list of AliTRDSensorArray corresponding to each
 	// group of sensor 
 	
-	TObjArray * list = new TObjArray (22);
+	TObjArray * list = new TObjArray (20);
 	list->SetOwner (kTRUE);
 	AliTRDSensorArray * aH = 0x0;
 	
@@ -198,9 +198,6 @@ TObjArray *  AliTRDSensorArray::GetList ()
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvDriftUmon%03d", 	"trd_hvDriftUmon",  
 				    -1, (TClonesArray*)listSensor540.Clone ());
-	list->Add (aH);
-	aH = new AliTRDSensorArray ("trd_adcClkPhase", 		"trd_adcClkPhase", 
-				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	                          
 	return list;
