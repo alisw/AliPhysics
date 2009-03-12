@@ -118,6 +118,7 @@ public:
   void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }  
   void        SetQARefDefaultStorage(const char* uri);
   void        InitQA();
+  void        SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }
 
 
   
@@ -181,9 +182,9 @@ private:
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
-  AliQAManager * fQAManager ;                      // steering object to run QA
+  AliQAManager * fQAManager ;                           // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
-  AliRecoParam::EventSpecie_t fEventSpecie ;                   // type of event (see AliRecoParam::EventSpecie_t)
+  AliRecoParam::EventSpecie_t fEventSpecie ;            // type of event (see AliRecoParam::EventSpecie_t)
 
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
