@@ -1013,7 +1013,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
 	   }
 	   if (FPEDFXS ) {
               AliTPCCalROC *rocFPED=FPEDFXS->GetCalROC(sector);
-              if ( FPEDFXS )  FPED->SetCalROC(rocFPED,sector);
+              if ( rocFPED )  FPED->SetCalROC(rocFPED,sector);
 	   }
 	   if (maskedFXS) {
               AliTPCCalROC *rocMasked=maskedFXS->GetCalROC(sector);
