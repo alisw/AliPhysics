@@ -18,7 +18,6 @@ class TTree;
 class AliTPCDigitsArray;
 class AliTPCLoader;
 class AliTPCParam;
-class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
 class AliTPCTrackHitsV2; // M.I.
 class AliRawReader;
 class TTreeSRedirector;

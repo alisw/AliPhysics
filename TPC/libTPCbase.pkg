@@ -20,10 +20,9 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
 	AliTPCCalibTCF.cxx AliTPCAltroEmulator.cxx  AliTPCeventInfo.cxx \
         AliTransform.cxx AliTPCTransform.cxx AliTPCAlign.cxx AliTPCGoofieValues.cxx \
 	AliTPCdataQA.cxx AliTPCQAChecker.cxx AliTPCConfigDA.cxx AliExternalComparison.cxx \
-	AliTPCkalmanTime.cxx AliTPCPointCorrection.cxx AliESDcosmic.cxx
+	AliTPCkalmanTime.cxx AliESDcosmic.cxx AliTPCPointCorrection.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)
-HDRS:= $(filter-out AliTPCTrackHitsInterfaces.h, $(HDRS))
 
 DHDR:= TPCbaseLinkDef.h
 
