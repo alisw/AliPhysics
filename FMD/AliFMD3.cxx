@@ -66,7 +66,7 @@ AliFMD3::AliFMD3(AliFMDRing* inner, AliFMDRing* outer)
     fFiducialHoles(4)
 {
   // Constructor. 
-  Double_t off = -0.39615-0.10185; // -0.25;
+  Double_t off = 0; // -0.39615-0.10185; // -0.25;
   if (off != 0) 
     AliWarning(Form("Z position of FMD3 rings may be off by %fcm!", off));
 
