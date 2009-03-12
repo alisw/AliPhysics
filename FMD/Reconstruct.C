@@ -23,33 +23,31 @@
 
 /** Do reconstruction */
 void 
-Reconstruct()
+Reconstruct(bool raw=false)
 {
-  // Debug the FMD.
-  AliLog::SetModuleDebugLevel("FMD", 1);
-
   // To reconstruct raw data from FDR-I, please enable below lines: 
   // AliFMDParameters::Instance()->UseRcuTrailer(false);
   // AliFMDParameters::Instance()->UseCompleteHeader(false);
- 
-  // TFile* magF = TFile::Open("mag.root", "READ");
-  // AliMagF* mag = static_cast<AliMagF*>(magF->Get("mag"));
-  // if (!mag) return;
-  // AliTracker::SetFieldMap(mag, true);
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetRun(0);
 
   AliReconstruction rec;   
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  rec.SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
   rec.SetRunReconstruction("FMD");
   rec.SetRunTracking(""); 
   rec.SetFillESD("FMD"); 
   rec.SetRunQA(":");
-  rec.SetInput("raw.root");
-  // rec.SetRecoParam("TOF", new AliTOFRecoParam());
-  
-  rec.Run(); 
+  if (raw) rec.SetInput("raw.root");
+
+  AliLog::SetModuleDebugLevel("FMD", 2);
+
+  TStopwatch timer;
+  timer.Start();
+  rec.Run();
+  timer.Stop();
+  timer.Print();
+
 }
 
 //

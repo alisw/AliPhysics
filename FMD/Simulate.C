@@ -24,13 +24,16 @@ void
 Simulate(Int_t n=1)
 {
   AliSimulation sim;
-  AliLog::SetModuleDebugLevel("FMD", 2);
-  sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
+  sim.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  sim.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  sim.SetConfigFile("./Config.C");
   sim.SetMakeSDigits("FMD");
   sim.SetMakeDigits("FMD"); 
   sim.SetWriteRawData("FMD", "raw.root"); 
-  // sim.SetMakeDigitsFromHits("FMD"); 
-  sim.SetRunQA("FMD:ALL");
+  sim.SetRunQA(":");
+
+  AliLog::SetModuleDebugLevel("FMD", 2);
+
   TStopwatch w; 
   w.Start(); 
   sim.Run(n);  
