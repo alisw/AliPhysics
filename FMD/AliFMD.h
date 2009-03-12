@@ -441,7 +441,8 @@ public:
 					 Short_t        count2=-1, 
 					 Short_t        count3=-1, 
 					 Short_t        count4=-1, 
-					 const TArrayI& refs=TArrayI());
+					 UShort_t       nrefs=0,
+					 Int_t*		refs=0);
   /** Add a digit to the Digit tree 
       @param digits
       - digits[0]  [UShort_t] Detector #
@@ -477,7 +478,7 @@ public:
 					  Short_t        count4=-1, 
 					  UShort_t       ntot=0, 
 					  UShort_t       nprim=0,
-					  const TArrayI& refs=TArrayI());
+					  Int_t*         refs=0);
   /** @}*/
 
   /** @{ */
