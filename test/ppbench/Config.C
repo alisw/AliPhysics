@@ -291,7 +291,7 @@ void Config()
     Int_t   iZDC    = 1;
     Int_t   iEMCAL  = 1;
     Int_t   iVZERO  = 1;
-    Int_t   iACORDE    = 0;
+    Int_t   iACORDE = 1;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
