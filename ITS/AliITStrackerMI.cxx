@@ -4194,7 +4194,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
     if (btrack0->GetSign()>0 && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
     AliITStrackMI *trackc0 = (AliITStrackMI*)trackarrayc.At(itrack0);
     //
-    for (Int_t iesd1=0;iesd1<ntracks;iesd1++){
+    for (Int_t iesd1=iesd0+1;iesd1<ntracks;iesd1++){
       Int_t itrack1 = itsmap[iesd1];
       if (forbidden[itrack1]) continue;
 
@@ -5508,4 +5508,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-
