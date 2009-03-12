@@ -2478,7 +2478,7 @@ void AliZDCv3::StepManager()
 	// which is opposite to positive x on detcetor front face
 	// for side A detectors (ZNA and ZPA)  
         if(vol[0]==4 || vol[0]==5) hits[4] = -xdet[0];
-	else hits[4] = -xdet[0];
+	else hits[4] = xdet[0];
         hits[5] = xdet[1];
 	hits[6] = 0;
         hits[7] = 0;
