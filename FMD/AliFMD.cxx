@@ -708,7 +708,8 @@ AliFMD::AddDigitByFields(UShort_t       detector,
 			 Short_t        count2,
 			 Short_t        count3, 
 			 Short_t        count4,
-			 const TArrayI& refs)
+			 UShort_t	nrefs,
+			 Int_t*		refs)
 {
   // add a real digit - as coming from data
   // 
@@ -723,14 +724,14 @@ AliFMD::AddDigitByFields(UShort_t       detector,
   //    count3    ADC count (a 10-bit word), or -1 if not used
   TClonesArray& a = *(DigitsArray());
   
-  new (a[fNdigits++]) 
-    AliFMDDigit(detector, ring, sector, strip, 
-		count1, count2, count3, count4, refs);
   AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]"
 		   "=(%d,%d,%d,%d) with %d tracks",
 		   fNdigits-1, a.GetEntriesFast(),
 		   detector, ring, sector, strip, 
-		   count1, count2, count3, count4, refs.fN));
+		   count1, count2, count3, count4, nrefs));
+  new (a[fNdigits++]) 
+    AliFMDDigit(detector, ring, sector, strip, 
+		count1, count2, count3, count4, nrefs, refs);
   
 }
 
@@ -777,7 +778,7 @@ AliFMD::AddSDigitByFields(UShort_t       detector,
 			  Short_t        count4, 
 			  UShort_t       ntot, 
 			  UShort_t       nprim,
-			  const TArrayI& refs)
+			  Int_t*	 refs)
 {
   // add a summable digit
   // 
@@ -795,6 +796,11 @@ AliFMD::AddSDigitByFields(UShort_t       detector,
   TClonesArray& a = *(SDigitsArray());
   // AliFMDDebug(0, ("Adding sdigit # %d", fNsdigits));
   
+  AliFMDDebug(15, ("Adding sdigit # %5d/%5d for FMD%d%c[%2d,%3d]"
+		   "=(%d,%d,%d,%d) with %d tracks %d primaries %d (%p)",
+		   fNsdigits-1, a.GetEntriesFast(),
+		   detector, ring, sector, strip, 
+		   count1, count2, count3, count4, ntot, nprim, refs));
   new (a[fNsdigits++]) 
     AliFMDSDigit(detector, ring, sector, strip, edep, 
 		 count1, count2, count3, count4, ntot, nprim, refs);
