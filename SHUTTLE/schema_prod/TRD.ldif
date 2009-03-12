@@ -25,7 +25,6 @@ dcsAlias: trd_gasO2
 dcsAlias: trd_gasH2O
 dcsAlias: trd_gasCO2
 dcsAlias: trd_gasOverpressure
-dcsAlias: trd_adcClkPhase
 dcsAlias: trd_goofieVelocity
 dcsAlias: trd_chamberStatus[000..029]
 dcsAlias: trd_chamberStatus[240..299]

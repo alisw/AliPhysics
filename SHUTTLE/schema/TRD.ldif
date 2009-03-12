@@ -27,7 +27,6 @@ dcsAlias: trd_hvAnodeImon[000..539]
 dcsAlias: trd_hvDriftImon[000..539]
 dcsAlias: trd_hvAnodeUmon[000..539]
 dcsAlias: trd_hvDriftUmon[000..539]
-dcsAlias: trd_adcClkPhase
 dcsPort: 1337
 multiSplit: 4000
 dcsHost: aldcs052.cern.ch
