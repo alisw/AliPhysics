@@ -20,6 +20,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
  public:
   AliTRDtrackletMCM(UInt_t trackletWord = 0);
   AliTRDtrackletMCM(UInt_t trackletWword, Int_t hcid);
+  AliTRDtrackletMCM(UInt_t trackletWword, Int_t hcid, Int_t rob, Int_t mcm);
   AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs);
   ~AliTRDtrackletMCM();
 

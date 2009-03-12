@@ -48,6 +48,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDSensorArray.cxx \
       AliTRDalignment.cxx \
       AliTRDmcmTracklet.cxx \
+      AliTRDtrapConfig.cxx \
       AliTRDmcmSim.cxx \
       AliTRDmcm.cxx \
       AliTRDtrigParam.cxx \

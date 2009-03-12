@@ -544,11 +544,11 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		}
 
 		// Simulate process in MCM
-		//		mcm[entry]->Filter();     // Apply filter
-		//		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
-		mcm[entry]->CopyArrays();
-		mcm[entry]->GeneratefZSM1Dim();
-		mcm[entry]->RestoreZeros();
+		mcm[entry]->Filter();     // Apply filter
+		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+//jkl		mcm[entry]->CopyArrays();
+//jkl		mcm[entry]->GeneratefZSM1Dim();
+//jkl		mcm[entry]->RestoreZeros();
 
 		if (tracklet_on) {
 		    mcm[entry]->Tracklet(); 
@@ -563,7 +563,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		    }
 		} else { // no tracklets: write raw-data already in this loop 
 		    // Write MCM data to buffer
-		    Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw, fEventCounter );
+		    Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw, fEventCounter );
 		    if( tempNw < 0 ) {
 				of += tempNw;
 				nw += maxSize - nw;
@@ -593,7 +593,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		      	Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm; 
 		      
 		      	// Write MCM data to buffer
-		      	Int_t tempNw =  mcm[entry]->ProduceRawStreamV2( &buf[nw], maxSize - nw, fEventCounter );
+		      	Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw, fEventCounter );
 		      	if( tempNw < 0 ) {
 			  		of += tempNw;
 			  		nw += maxSize - nw;
@@ -891,11 +891,11 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
 	}
 
 	// Simulate process in MCM
-	//	mcm[entry]->Filter();     // Apply filter
-	//	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
-	mcm[entry]->CopyArrays();
-	mcm[entry]->GeneratefZSM1Dim();
-	mcm[entry]->RestoreZeros();
+	mcm[entry]->Filter();     // Apply filter
+	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+//jkl	mcm[entry]->CopyArrays();
+//jkl	mcm[entry]->GeneratefZSM1Dim();
+//jkl	mcm[entry]->RestoreZeros();
 
 	if (tracklet_on) {
 	    mcm[entry]->Tracklet(); 

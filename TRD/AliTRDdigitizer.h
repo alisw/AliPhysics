@@ -81,7 +81,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength
                                , Double_t &lRow, Double_t &lCol, Double_t &lTime);
           Int_t        ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow);
-	  void         ZS(AliTRDarrayADC *digits);
+	  void         RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det = 0);
 
  protected:
 

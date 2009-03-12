@@ -52,6 +52,18 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
     fGeo = new AliTRDgeometry();
 }
 
+AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob, Int_t mcm) :
+  AliTRDtrackletBase(),
+  fGeo(0x0),
+  fHCId(hcid),
+  fTrackletWord(trackletWord), 
+  fMCM(mcm),
+  fROB(rob),
+  fLabel(-1)
+{ 
+    fGeo = new AliTRDgeometry();
+}
+
 AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
   AliTRDtrackletBase(rhs),
   fGeo(0x0),

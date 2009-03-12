@@ -1310,8 +1310,8 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
     } // for: col
   } // for: row
 
-  // Do the Zero Suppression
-  ZS(digits);
+  // Run the digital processing in the MCM
+  RunDigitalProcessing(digits, det);
 
   return kTRUE;
 
@@ -1546,7 +1546,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
       AliDebug(2,Form("No digits for det=%d",det));
       continue;
     }
-
+    
     // Convert the merged sdigits to digits
     if (!Signal2ADC(det,digitsIn)) {
       continue;
@@ -1565,6 +1565,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     CompressOutputArrays(det);
 
   } // for: detector numbers
+
 
   return kTRUE;
 
@@ -1778,78 +1779,31 @@ Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lCol)
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::ZS(AliTRDarrayADC *digits)
+void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
 {
   //
-  // Apply the ZS
+  // Run the digital processing in the TRAP
   //
 
-  // Create the temporary digits container
-  AliTRDarrayADC *tempDigits;
-  tempDigits = new AliTRDarrayADC();
-  Int_t dim4 = digits->GetNrow();
-  Int_t dim5 = digits->GetNcol()+2;  
-  Int_t dim6 = digits->GetNtime();
-  Int_t lim  = dim5-1;
-
-  tempDigits->Allocate(dim4,dim5,dim6);
-
-  for(Int_t row=0;row<dim4;row++)
-    {
-      for(Int_t col=0;col<dim5;col++)
-	{
-	  for(Int_t time=0;time<dim6;time++)
-	    {
-	      if(col==0||col==lim)
-		{
-		  tempDigits->SetData(row,col,time,0);
-		}
-	      else
-		{
-		  tempDigits->SetData(row,col,time,digits->GetData(row,col-1,time));         
-		}	    
-	    }
-	}
-    }
+  AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
 
   //Create and initialize the mcm object 
-  AliTRDmcmSim* mcmfast; 
-  mcmfast = new AliTRDmcmSim(); 
-  mcmfast->StartfastZS(dim5,dim6);
+  AliTRDmcmSim* mcmfast = new AliTRDmcmSim(); 
 
   //Call the methods in the mcm class using the temporary array as input  
-  for(Int_t row=0;row<dim4;row++)
+  for(Int_t rob = 0; rob < digits->GetNrow() / 4; rob++)
+  {
+    for(Int_t mcm = 0; mcm < 16; mcm++)
     {
-      for(Int_t col=0;col<dim5;col++)
-	{
-	  for(Int_t time=0;time<dim6;time++)
-	    {
-	      mcmfast->SetData(col,time,tempDigits->GetData(row,col,time));
-	    }
-	}
+      mcmfast->Init(det, rob, mcm); 
+      mcmfast->SetData(digits);
       mcmfast->Filter();
+      if (feeParam->GetTracklet())
+        mcmfast->Tracklet();
       mcmfast->ZSMapping();
-      mcmfast->FlagDigitsArray(tempDigits,row);
-      mcmfast->StartfastZS(dim5,dim6); 
+      mcmfast->WriteData(digits);
     }
+  }
 
-  //Modify the digits array to indicate suppressed values
-  for(Int_t irow=0; irow<dim4;irow++)
-    {
-      for(Int_t icol=1; icol<lim;icol++) 
-	{
-	  for(Int_t itime=0; itime<dim6;itime++)
-	    {
-	      if(tempDigits->GetData(irow,icol,itime)==-1) // If supressed in temporary array
-	        {
-	          digits->SetData(irow,icol-1,itime,-1); // Supressed values indicated by -1 in the digits array
-	        }
-	    }
-	}
-    }
-
-  // Delete objects
   delete mcmfast;
-  delete tempDigits;
-
 }
