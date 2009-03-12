@@ -173,12 +173,7 @@ Config()
 {
   //____________________________________________________________________
   // This part for configuration    
-  // EG_t  eg   = test50;
-  // EG_t  eg   = kParam_fmd;
-  // EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
-  // EG_t  eg   = kFMDFlat;
   EG_t  eg   = kPythia6;
-  // EG_t  eg   = kFMD2Flat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   AliMagF::BMap_t mag  = AliMagF::k5kG;
@@ -233,8 +228,8 @@ Config()
       //
       gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/liblhapdf.so");
       gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6.so");
-      // gSystem->Load("libEGPythia6.so"); //<- For non-debian (sigh!)
-      gSystem->Load("EGPythia6.so");
+      gSystem->Load("libEGPythia6.so"); //<- For non-debian (sigh!)
+      // gSystem->Load("EGPythia6.so");
       gSystem->Load("libgeant321");
     
       // 
@@ -367,7 +362,7 @@ Config()
   //__________________________________________________________________
   // Field (L3 0.4 T)
   AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
-  field->SetL3ConstField(0); //Using const. field in the barrel
+  // field->SetL3ConstField(0); //Using const. field in the barrel
   TGeoGlobalMagField::Instance()->SetField(field);
 
   rl->CdGAFile();
@@ -394,13 +389,13 @@ Config()
   Bool_t usePMD   = kFALSE; 
   Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
-  Bool_t useT0    = kFALSE; 
+  Bool_t useT0    = kTRUE; 
   Bool_t useTOF   = kFALSE; 
   Bool_t useTPC   = kFALSE;
   Bool_t useTRD   = kFALSE; 
   Bool_t useZDC   = kFALSE; 
   Bool_t useEMCAL = kFALSE; 
-  Bool_t useVZERO = kFALSE;
+  Bool_t useVZERO = kTRUE;
 
   cout << "\t* Creating the detectors ..." << endl;
   // ================= Alice BODY parameters =========================
@@ -1291,7 +1286,7 @@ GeneratorFactory(EG_t eg, Rad_t rad)
     break;
   case kFMD2Flat: 
     {
-      AliGenBox* gener = new AliGenBox(10);
+      AliGenBox* gener = new AliGenBox(100);
       gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
