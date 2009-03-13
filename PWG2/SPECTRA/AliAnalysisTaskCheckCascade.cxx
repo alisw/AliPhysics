@@ -14,7 +14,7 @@
 
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
-//            This task is for QAing the Cascades from the ESD
+//            This task is for QAing the Cascades from ESD and AOD 
 //            Origin : Antonin Maire Fev2008, antonin.maire@ires.in2p3.fr
 //	      Modified : A.M Juillet 2008
 //-----------------------------------------------------------------
