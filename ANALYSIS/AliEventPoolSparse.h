@@ -67,7 +67,7 @@ class AliEventPoolSparse : public AliVEventPool {
   TTreeFormula * GetLHCCut() const {return fLHCCut;}
   TTreeFormula * GetDetCut() const {return fDetCut;}
   TTreeFormula * GetEventCut() const {return fEvCut;}
-  Int_t BinNumber() {return fBinNumber;}
+  Int_t BinNumber() const {return fBinNumber;}
 	  
  protected:
 

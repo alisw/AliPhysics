@@ -33,7 +33,7 @@ class AliEventPoolLoop : public AliVEventPool
     virtual void  GetCurrentBin(Float_t* /*bin*/);
     virtual Int_t GetDimension();
     virtual void  Init();
-    virtual Int_t BinNumber() {return fNIteration;}
+    virtual Int_t BinNumber() const {return fNIteration;}
 	    
  private:
     AliEventPoolLoop(const AliEventPoolLoop& obj);

@@ -26,7 +26,7 @@ class AliVEventPool : public TNamed
     virtual void   GetCurrentBin(Float_t* /*bin*/) = 0;
     virtual Int_t  GetDimension()                  = 0;
     virtual void   Init()                          = 0;
-    virtual Int_t  BinNumber()                     = 0;
+    virtual Int_t  BinNumber() const               = 0;
     // Basic functionality
     virtual void SetChain(TChain* chain) {fChain = chain;}
     AliVEventPool(const AliVEventPool& obj);
