@@ -7,14 +7,14 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
-  //vHF->SetLikeSignOn();
+  vHF->SetLikeSignOn();
   vHF->Set4ProngOff();
   //vHF->SetDstarOff();
-  vHF->SetFindVertexForDstar(kTRUE);
+  vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
-  //--- set cuts for single-track selection
-  
+
+  //--- set cuts for single-track selection  
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(5);
