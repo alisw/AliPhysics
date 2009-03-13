@@ -45,28 +45,39 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
   void StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const; 
   Int_t FindTrackLowChiSquare() const;
-  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); SetSixPoints(kTRUE); return rc;}
+  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
-  void SetSixPoints(Bool_t sp = kFALSE){fSixPoints = sp;}
-  Bool_t GetSixPoints() const {return fSixPoints;}
-  void SetOuterStartLayer(Int_t osl = 0) {if(osl>(AliITSgeomTGeo::GetNLayers()-2)) osl=AliITSgeomTGeo::GetNLayers()-2; fOuterStartLayer = osl;}
+
+  void SetOutwardFinding() {fInwardFlag=kFALSE;}
+  void SetInwardFinding() {fInwardFlag=kTRUE;}
+  void SetOuterStartLayer(Int_t osl = 0) {
+    if(osl>(AliITSgeomTGeo::GetNLayers()-2)) AliWarning("Minimum Number of layers is 2. OuterStartLayer set to Nlayers-2");
+    fOuterStartLayer = TMath::Min(AliITSgeomTGeo::GetNLayers()-2,osl);
+  }
   Int_t GetOuterStartLayer() const {return fOuterStartLayer;}
+  void SetInnerStartLayer(Int_t isl = 5) {
+    if(isl<1) AliWarning("Minimum Number of layers is 2. InnerStartLayer set to 1");
+    fInnerStartLayer = TMath::Max(1,isl);
+  }
+  Int_t GetInnerStartLayer() const {return fInnerStartLayer;}
+
   void SetSAFlag(Bool_t fl){fITSStandAlone=fl;}  // StandAlone flag setter
   Bool_t GetSAFlag() const {return fITSStandAlone;} // StandAlone flag getter
   void SetFixedWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void SetCalculatedWindowSizes(Int_t n=10, Float_t phimin=0.002, Float_t phimax=0.0145, Float_t lambdamin=0.003, Float_t lambdamax=0.008);
 
+  void SetMinNPoints(Int_t np){fMinNPoints=np;}
+  Int_t GetMinNPoints() const {return fMinNPoints;}
   void SetMinimumChargeSDDSSD(Float_t minq=0.){fMinQ=minq;}
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
-
  protected:
 
   //Initialization
   void Init();
   void ResetForFinding();
   void UpdatePoints();
-
+  Bool_t SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex);
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,
                      Double_t x3,Double_t y3);
 
@@ -113,14 +124,16 @@ class AliITStrackerSA : public AliITStrackerMI {
   TObjArray *fListOfTracks;   //! container for found tracks 
   TObjArray *fListOfSATracks; //! container for found SA tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
-  Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
-  Int_t fOuterStartLayer;     // Search for tracks with <6 points: outer layer to start from
+  Bool_t fInwardFlag;       // set to kTRUE for inward track finding
+  Int_t fOuterStartLayer;     // Outward search for tracks with <6 points: outer layer to start from
+  Int_t fInnerStartLayer;     // Inward search for tracks with <6 points: inner layer to start from
+  Int_t fMinNPoints;        // minimum number of clusters for a track
   Float_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,8)
+  ClassDef(AliITStrackerSA,9)
 };
 
 #endif

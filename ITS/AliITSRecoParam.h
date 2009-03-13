@@ -227,8 +227,16 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetMinFractionOfBadInRoad(Float_t frac=0) { fMinFractionOfBadInRoad=frac; return; }
   Float_t GetMinFractionOfBadInRoad() const { return fMinFractionOfBadInRoad; }
 
+  void   SetOutwardFindingSA() {fInwardFlagSA=kFALSE;}
+  void   SetInwardFindingSA() {fInwardFlagSA=kTRUE;}
+  Bool_t GetInwardFindingSA() const {return fInwardFlagSA;}
   void   SetOuterStartLayerSA(Int_t lay) { fOuterStartLayerSA=lay; return; }
   Int_t  GetOuterStartLayerSA() const { return fOuterStartLayerSA; }
+  void   SetInnerStartLayerSA(Int_t lay) { fInnerStartLayerSA=lay; return; }
+  Int_t  GetInnerStartLayerSA() const { return fInnerStartLayerSA; }
+  void   SetMinNPointsSA(Int_t np) { fMinNPointsSA=np; return; }
+  Int_t  GetMinNPointsSA() const { return fMinNPointsSA;}
+
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
@@ -442,7 +450,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseSingleBadChannelsFromOCDB; // enable using OCDB info on bad single SPD pixels and SDD anodes (MI)
   Float_t fMinFractionOfBadInRoad; // to decide whether to skip the layer (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
-  Int_t fOuterStartLayerSA;      // outer ITS layer to start track in SA
+  Int_t fInwardFlagSA;           // flag for inward track finding in SA
+  Int_t fOuterStartLayerSA;      // outer ITS layer to start track in SA outward
+  Int_t fInnerStartLayerSA;      // inner ITS layer to start track in SA inward
+  Int_t fMinNPointsSA;           // min. number of ITS clusters for a SA track
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
   Int_t fNLoopsSA;               // number of loops in tracker SA
   Double_t fMinPhiSA;               // minimum phi value for SA windows
@@ -476,7 +487,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 
-  ClassDef(AliITSRecoParam,16) // ITS reco parameters
+  ClassDef(AliITSRecoParam,17) // ITS reco parameters
 };
 
 #endif

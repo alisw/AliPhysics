@@ -141,7 +141,14 @@ AliTracker* AliITSReconstructor::CreateTracker() const
     sat->SetDetTypeRec(fDetTypeRec);
     if(GetRecoParam()->GetTrackerSAOnly()) sat->SetSAFlag(kTRUE);
     if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
-    sat->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
+    if(GetRecoParam()->GetInwardFindingSA()){
+      sat->SetInwardFinding();
+      sat->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
+    }else{
+      sat->SetOutwardFinding();
+      sat->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
+    }
+    sat->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
   }
 
   Int_t pidOpt = GetRecoParam()->GetPID();
