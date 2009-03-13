@@ -1492,8 +1492,9 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     AliVTrack *track = (AliVTrack*)event->GetTrack(i);
 
     // TEMPORARY: check that the cov matrix is there
-    Double_t cov[21];
-    if(!track->GetCovarianceXYZPxPyPz(cov)) continue;
+    Double_t covtest[21];
+    if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+    //
 
     if(fInputAOD) {
       AliAODTrack *aodt = (AliAODTrack*)track;
