@@ -897,7 +897,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
 
   ok3Prong=kFALSE;
-  if(!secVert) return 0x0; 
+  if(!secVert || !vertexp1n1 || !vertexp2n1) return 0x0; 
 
   Double_t px[3],py[3],pz[3],d0[3],d0err[3];
   Double_t momentum[3];
@@ -1001,7 +1001,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   // G.E.Bruno, R.Romita
 
   ok4Prong=kFALSE;
-  if(!secVert) return 0x0; 
+  if(!secVert || !vertexp1n1 || !vertexp1n1p2) return 0x0; 
 
   Double_t px[4],py[4],pz[4],d0[4],d0err[4];//d0z[3];
 
