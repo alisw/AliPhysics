@@ -1,12 +1,12 @@
-#ifndef ALIANALYSISTASKESDCHECKCASCADE_H
-#define ALIANALYSISTASKESDCHECKCASCADE_H
+#ifndef ALIANALYSISTASKCHECKCASCADE_H
+#define ALIANALYSISTASKCHECKCASCADE_H
 
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
 //            (AliAnalysisTaskCheckCascade)
-//            This task is for QAing the Cascades from the ESD
+//            This task is for QAing the Cascades from ESD and AOD
 //              Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
 //            Adapted to Cascade : A.M Mar2008, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
