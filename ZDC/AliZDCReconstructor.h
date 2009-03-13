@@ -45,7 +45,12 @@ public:
   static void SetRecoParam(AliZDCRecoParam * param){fRecoParam = param;}
   
   Int_t   GetRecoMode() {return fRecoMode;}
+  Float_t GetBeamEnergy() {return fBeamEnergy;}
+  
   static const AliZDCRecoParam* GetRecoParam(){return fRecoParam;}
+
+  void  SetPedSubMode(Int_t pedsubMode) {fPedSubMode=pedsubMode;}
+  Int_t GetPedSubMode() {return fPedSubMode;}
   
   // OCDB objects for reconstruction
   AliCDBStorage   *SetStorage(const char* uri);
@@ -71,7 +76,9 @@ private:
   Int_t           fRecoMode;	// =0->p-p, =1->A-A
   Float_t         fBeamEnergy;	// beam energy
 
-  ClassDef(AliZDCReconstructor, 5)   // class for the ZDC reconstruction
+  Int_t           fPedSubMode;	// =0->mean values, =1->from correlations
+
+  ClassDef(AliZDCReconstructor, 6)   // class for the ZDC reconstruction
 };
 
 #endif
