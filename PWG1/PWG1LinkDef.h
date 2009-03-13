@@ -31,5 +31,6 @@
 #pragma link C++ class AliGenInfoTask+;
 #pragma link C++ class AliMCTrackingTestTask+;
 #pragma link C++ class AliTPCtaskPID+;
+#pragma link C++ class AliTPCtaskQA+;
 
 #endif
