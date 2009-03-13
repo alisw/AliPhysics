@@ -38,8 +38,8 @@ class AliAODv0;
 #include <iostream>
 
 #include "TList.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "TCanvas.h"
 #include "TMath.h"
 
