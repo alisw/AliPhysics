@@ -310,12 +310,12 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   //Calculate offset to crystal surface.
   //See fCrystalShift code in AliPHOSGeometry::Init()).
 
-  Float_t * inthermo = geoEMCA->GetInnerThermoHalfSize() ;
-  Float_t * strip = geoEMCA->GetStripHalfSize() ;
-  Float_t* splate = geoEMCA->GetSupportPlateHalfSize();
-  Float_t * crystal = geoEMCA->GetCrystalHalfSize() ;
-  Float_t * pin = geoEMCA->GetAPDHalfSize() ;
-  Float_t * preamp = geoEMCA->GetPreampHalfSize() ;
+  const Float_t * inthermo = geoEMCA->GetInnerThermoHalfSize() ;
+  const Float_t * strip    = geoEMCA->GetStripHalfSize() ;
+  const Float_t * splate   = geoEMCA->GetSupportPlateHalfSize();
+  const Float_t * crystal  = geoEMCA->GetCrystalHalfSize() ;
+  const Float_t * pin      = geoEMCA->GetAPDHalfSize() ;
+  const Float_t * preamp   = geoEMCA->GetPreampHalfSize() ;
   crystalShift = -inthermo[1]+strip[1]+splate[1]+crystal[1]-geoEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
 
   if(IsEmc()) {

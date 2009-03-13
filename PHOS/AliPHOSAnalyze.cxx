@@ -164,7 +164,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 
   Int_t nx = phosgeom->GetNPhi() ;
   Int_t nz = phosgeom->GetNZ() ;
-  Float_t * cri= phosgeom->GetEMCAGeometry()->GetCrystalHalfSize() ;
+  const Float_t * cri= phosgeom->GetEMCAGeometry()->GetCrystalHalfSize() ;
   Float_t x = nx*cri[0] ;
   Float_t z = nz*cri[2] ;
   Int_t nxCPV = (Int_t) (nx*phosgeom->GetPadSizePhi()/(2.*cri[0])) ;

@@ -28,60 +28,58 @@ public:
 
   virtual ~AliPHOSEMCAGeometry(void) {}
 
-  Float_t * GetStripHalfSize() {return fStripHalfSize ;}
-  Float_t   GetStripWallWidthOut() const {return fStripWallWidthOut ;}
-  Float_t * GetAirCellHalfSize() {return fAirCellHalfSize ;}
-  Float_t * GetWrappedHalfSize() {return fWrappedHalfSize ;}
-  Float_t   GetAirGapLed() const {return fAirGapLed ;}
-  Float_t * GetCrystalHalfSize() {return fCrystalHalfSize ;}
-  Float_t * GetSupportPlateHalfSize() { return fSupportPlateHalfSize ;}
-  Float_t * GetSupportPlateInHalfSize()  {return fSupportPlateInHalfSize ;}
-  Float_t   GetSupportPlateThickness(void)   const { return fSupportPlateThickness ; }    
+  const Float_t * GetStripHalfSize()          const {return fStripHalfSize ;         }
+  Float_t   GetStripWallWidthOut()      const {return fStripWallWidthOut ;     }
+  const Float_t * GetAirCellHalfSize()        const {return fAirCellHalfSize ;       }
+  const Float_t * GetWrappedHalfSize()        const {return fWrappedHalfSize ;       }
+  Float_t   GetAirGapLed()              const {return fAirGapLed ;             }
+  const Float_t * GetCrystalHalfSize()        const {return fCrystalHalfSize ;       }
+  const Float_t * GetSupportPlateHalfSize()   const {return fSupportPlateHalfSize ;  }
+  const Float_t * GetSupportPlateInHalfSize() const {return fSupportPlateInHalfSize ;}
+  Float_t   GetSupportPlateThickness()  const { return fSupportPlateThickness ;}    
 
-  Float_t * GetPreampHalfSize() {return fPreampHalfSize ;}
-  Float_t * GetAPDHalfSize(void) {return fPinDiodeHalfSize ; }
-  Float_t * GetOuterThermoParams(void) {return  fOuterThermoParams ; }
-  Float_t * GetCoolerHalfSize(void)  {return fCoolerHalfSize ;}
-  Float_t * GetAirGapHalfSize(void)  {return fAirGapHalfSize; }
-  Float_t * GetInnerThermoHalfSize(void) {return  fInnerThermoHalfSize ; }
-  Float_t * GetAlCoverParams() {return fAlCoverParams ; }
-  Float_t * GetFiberGlassHalfSize() {return fFiberGlassHalfSize ; }
-  Float_t * GetWarmAlCoverHalfSize() {return fWarmAlCoverHalfSize ;}
-  Float_t * GetWarmThermoHalfSize() {return fWarmThermoHalfSize ;}
-  Float_t * GetTSupport1HalfSize() {return fTSupport1HalfSize ;}
-  Float_t * GetTSupport2HalfSize() {return fTSupport2HalfSize ;}
-  Float_t * GetTCables1HalfSize() {return fTCables1HalfSize ; }
-  Float_t * GetTCables2HalfSize() {return fTCables2HalfSize ; }
-  Float_t   GetTSupportDist() const {return fTSupportDist ; }
-  Float_t * GetFrameXHalfSize() {return fFrameXHalfSize ;}
-  Float_t * GetFrameZHalfSize() {return fFrameZHalfSize ;}
-  Float_t * GetFrameXPosition() {return fFrameXPosition ;}
-  Float_t * GetFrameZPosition() {return fFrameZPosition ;}
-  Float_t * GetFGupXHalfSize()  {return fFGupXHalfSize ; }
-  Float_t * GetFGupXPosition()  {return fFGupXPosition ; }
-  Float_t * GetFGupZHalfSize()  {return fFGupZHalfSize ; }
-  Float_t * GetFGupZPosition()  {return fFGupZPosition ; }
-  Float_t * GetFGlowXHalfSize()  {return fFGlowXHalfSize ; }
-  Float_t * GetFGlowXPosition()  {return fFGlowXPosition ; }
-  Float_t * GetFGlowZHalfSize()  {return fFGlowZHalfSize ; }
-  Float_t * GetFGlowZPosition()  {return fFGlowZPosition ; }
-  Float_t * GetFEEAirHalfSize()  {return fFEEAirHalfSize ; }
-  Float_t * GetFEEAirPosition()  {return fFEEAirPosition ; }
-  Float_t * GetEMCParams() {return fEMCParams ;}
+  const Float_t * GetPreampHalfSize()         const {return fPreampHalfSize ;        }
+  const Float_t * GetAPDHalfSize()            const {return fPinDiodeHalfSize ;      }
+  const Float_t * GetOuterThermoParams()      const {return  fOuterThermoParams ;    }
+  const Float_t * GetCoolerHalfSize()         const {return fCoolerHalfSize ;        }
+  const Float_t * GetAirGapHalfSize()         const {return fAirGapHalfSize;         }
+  const Float_t * GetInnerThermoHalfSize()    const {return  fInnerThermoHalfSize ;  }
+  const Float_t * GetAlCoverParams()          const {return fAlCoverParams ;         }
+  const Float_t * GetFiberGlassHalfSize()     const {return fFiberGlassHalfSize ;    }
+  const Float_t * GetWarmAlCoverHalfSize()    const {return fWarmAlCoverHalfSize ;   }
+  const Float_t * GetWarmThermoHalfSize()     const {return fWarmThermoHalfSize ;    }
+  const Float_t * GetTSupport1HalfSize()      const {return fTSupport1HalfSize ;     }
+  const Float_t * GetTSupport2HalfSize()      const {return fTSupport2HalfSize ;     }
+  const Float_t * GetTCables1HalfSize()       const {return fTCables1HalfSize ;      }
+  const Float_t * GetTCables2HalfSize()       const {return fTCables2HalfSize ;      }
+  Float_t   GetTSupportDist()           const {return fTSupportDist ;          }
+  const Float_t * GetFrameXHalfSize()         const {return fFrameXHalfSize ;        }
+  const Float_t * GetFrameZHalfSize()         const {return fFrameZHalfSize ;        }
+  const Float_t * GetFrameXPosition()         const {return fFrameXPosition ;        }
+  const Float_t * GetFrameZPosition()         const {return fFrameZPosition ;        }
+  const Float_t * GetFGupXHalfSize()          const {return fFGupXHalfSize ;         }
+  const Float_t * GetFGupXPosition()          const {return fFGupXPosition ;         }
+  const Float_t * GetFGupZHalfSize()          const {return fFGupZHalfSize ;         }
+  const Float_t * GetFGupZPosition()          const {return fFGupZPosition ;         }
+  const Float_t * GetFGlowXHalfSize()         const {return fFGlowXHalfSize ;        }
+  const Float_t * GetFGlowXPosition()         const {return fFGlowXPosition ;        }
+  const Float_t * GetFGlowZHalfSize()         const {return fFGlowZHalfSize ;        }
+  const Float_t * GetFGlowZPosition()         const {return fFGlowZPosition ;        }
+  const Float_t * GetFEEAirHalfSize()         const {return fFEEAirHalfSize ;        }
+  const Float_t * GetFEEAirPosition()         const {return fFEEAirPosition ;        }
+  const Float_t * GetEMCParams()              const {return fEMCParams ;             }
 
-  Float_t    GetIPtoCrystalSurface(void)          const { 
-    return fIPtoCrystalSurface ; }
-  Float_t    GetIPtoOuterCoverDistance(void)      const { 
-    return fIPtoOuterCoverDistance ; }
-  Float_t    GetCrystalSize(Int_t index)  const {return 2.*fCrystalHalfSize[index] ; }
+  Float_t    GetIPtoCrystalSurface()     const {return fIPtoCrystalSurface ;   }
+  Float_t    GetIPtoOuterCoverDistance() const {return fIPtoOuterCoverDistance;}
+  Float_t    GetCrystalSize(Int_t index) const {return 2.*fCrystalHalfSize[index] ; }
 
   Int_t     GetNCellsXInStrip() const { return fNCellsXInStrip;}
   Int_t     GetNCellsZInStrip() const { return fNCellsZInStrip;}
-  Int_t     GetNStripX()        const { return fNStripX ; }
-  Int_t     GetNStripZ()        const { return fNStripZ ; }
-  Int_t     GetNTSuppots()      const { return fNTSupports; }
-  Int_t     GetNPhi()           const { return fNPhi ; }
-  Int_t     GetNZ()             const { return fNZ ; }
+  Int_t     GetNStripX()        const { return fNStripX ;      }
+  Int_t     GetNStripZ()        const { return fNStripZ ;      }
+  Int_t     GetNTSuppots()      const { return fNTSupports;    }
+  Int_t     GetNPhi()           const { return fNPhi ;         }
+  Int_t     GetNZ()             const { return fNZ ;           }
  
 private:
 
@@ -106,7 +104,6 @@ private:
   Float_t fInnerThermoHalfSize[3] ;    // geometry parameter
   Float_t fAlCoverParams[4] ;          // geometry parameter
   Float_t fFiberGlassHalfSize[3] ;     // geometry parameter
-
 
   Float_t fInnerThermoWidthX ;         // geometry parameter
   Float_t fInnerThermoWidthY ;         // geometry parameter
@@ -162,19 +159,19 @@ private:
   Float_t fFEEAirHalfSize[3] ;         // geometry parameter
   Float_t fFEEAirPosition[3] ;         // geometry parameter
   Float_t fEMCParams[4] ;              // geometry parameter
-  Float_t fIPtoOuterCoverDistance ;       // Distances from interaction point to outer cover 
-  Float_t fIPtoCrystalSurface ;           // Distances from interaction point to Xtal surface
+  Float_t fIPtoOuterCoverDistance ;    // Distances from interaction point to outer cover 
+  Float_t fIPtoCrystalSurface ;        // Distances from interaction point to Xtal surface
 
-  Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate for Strip   
+  Float_t fSupportPlateThickness ;     // Thickness of the Aluminium support plate for Strip   
 
-  Int_t  fNCellsXInStrip ;              // Number of cells in a strip unit in X
-  Int_t  fNCellsZInStrip ;              // Number of cells in a strip unit in Z
+  Int_t  fNCellsXInStrip ;             // Number of cells in a strip unit in X
+  Int_t  fNCellsZInStrip ;             // Number of cells in a strip unit in Z
   Int_t  fNStripX ;                    // Number of strip units in X
   Int_t  fNStripZ ;                    // Number of strip units in Z
   Int_t  fNTSupports ;                 // geometry parameter
   Int_t  fNPhi ;                       // Number of crystal units in X (phi) direction
   Int_t  fNZ ;                         // Number of crystal units in Z direction
-  ClassDef(AliPHOSEMCAGeometry,1)         // EMCA geometry class 
+  ClassDef(AliPHOSEMCAGeometry,1)      // EMCA geometry class 
 
 } ;
 

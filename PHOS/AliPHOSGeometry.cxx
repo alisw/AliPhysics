@@ -114,7 +114,7 @@ void AliPHOSGeometry::Init(void)
   
   fPHOSAngle = new Float_t[fNModules] ;
   
-  Float_t * emcParams = fGeometryEMCA->GetEMCParams() ;
+  const Float_t * emcParams = fGeometryEMCA->GetEMCParams() ;
   
   fPHOSParams[0] =  TMath::Max((Double_t)fGeometryCPV->GetCPVBoxSize(0)/2., 
  			       (Double_t)(emcParams[0] - (emcParams[1]-emcParams[0])*
@@ -126,12 +126,12 @@ void AliPHOSGeometry::Init(void)
   fIPtoUpperCPVsurface = fGeometryEMCA->GetIPtoOuterCoverDistance() - fGeometryCPV->GetCPVBoxSize(1) ;
 
   //calculate offset to crystal surface
-  Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
-  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
-  Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
-  Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
-  Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
-  Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
+  const Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
+  const Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
+  const Float_t * splate = fGeometryEMCA->GetSupportPlateHalfSize();
+  const Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
+  const Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
+  const Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
   fCrystalShift=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
   fCryCellShift=crystal[1]-(fGeometryEMCA->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
  
