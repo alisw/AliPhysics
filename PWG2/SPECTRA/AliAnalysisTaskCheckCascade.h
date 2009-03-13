@@ -13,6 +13,7 @@
 
 class TList;
 class TH1F;
+class TH2F;
  
 
 #include "TString.h"
