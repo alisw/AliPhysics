@@ -68,6 +68,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fScTS(0),	  
   fScTriggerNumber(0),
   fIsScEventGood(kFALSE),
+  fNChannelsOn(48),
   fNConnCh(-1),
   fCabledSignal(-1)
 {
@@ -75,7 +76,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fRawReader->Reset();
   fRawReader->Select("ZDC");
   //
-  for(Int_t i=0; i<48; i++){
+  for(Int_t i=0; i<fNChannelsOn; i++){
     for(Int_t j=0; j<5; j++) fMapADC[i][j]=-1;
   }
 
@@ -114,12 +115,13 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fScTS(stream.GetScTS()),	  
   fScTriggerNumber(stream.fScTriggerNumber),
   fIsScEventGood(stream.fIsScEventGood),
+  fNChannelsOn(stream.fNChannelsOn),
   fNConnCh(stream.fNConnCh),
   fCabledSignal(stream.GetCabledSignal())
 {
   // Copy constructor
   for(Int_t j=0; j<2; j++) fSector[j] = stream.GetSector(j);	 
-  for(Int_t i=0; i<48; i++){
+  for(Int_t i=0; i<fNChannelsOn; i++){
     for(Int_t j=0; j<5; j++) fMapADC[i][j] = stream.fMapADC[i][j];
   }
 }
@@ -146,7 +148,8 @@ void AliZDCRawStream::ReadChMap()
   // Reading channel map
   printf("\n\t Reading ADC mapping from OCDB\n");
   AliZDCChMap * chMap = GetChMap();
-  for(Int_t i=0; i<48; i++){
+  chMap->Print("");
+  for(Int_t i=0; i<fNChannelsOn; i++){
     fMapADC[i][0] = chMap->GetADCModule(i);
     fMapADC[i][1] = chMap->GetADCChannel(i);
     fMapADC[i][2] = -1;
@@ -162,7 +165,7 @@ void AliZDCRawStream::ReadCDHHeader()
   // Reading CDH 
   const AliRawDataHeader* header = fRawReader->GetDataHeader();
   if(!header) {
-      AliError("\t No CDH in raw data streaming\n");
+      AliError(" No CDH in raw data streaming");
       fRawReader->AddMajorErrorLog(kCDHError);
       return;
   }
@@ -194,46 +197,46 @@ void AliZDCRawStream::ReadCDHHeader()
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
     if((status & 0x000f) == 0x0001){
-      AliWarning("CDH -> DARC trg0 overlap error\n");
+      AliWarning("CDH -> DARC trg0 overlap error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0002){
-      AliWarning("CDH -> DARC trg0 missing error\n");
+      AliWarning("CDH -> DARC trg0 missing error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0004){
-      AliWarning("CDH -> DARC data parity error\n");
+      AliWarning("CDH -> DARC data parity error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0008){
-      AliWarning("CDH -> DARC ctrl parity error\n");
+      AliWarning("CDH -> DARC ctrl parity error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
     if((status & 0x00f0) == 0x0010){
-      AliWarning("CDH -> DARC trg unavailable\n");
+      AliWarning("CDH -> DARC trg unavailable");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x00f0) == 0x0020){
-      AliWarning("CDH -> DARC FEE error\n");
+      AliWarning("CDH -> DARC FEE error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
     if((status & 0x0f00) == 0x0200){
-      AliWarning("CDH -> DARC L1 time violation\n");
+      AliWarning("CDH -> DARC L1 time violation");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x0f00) == 0x0400){
-      AliWarning("CDH -> DARC L2 time-out\n");
+      AliWarning("CDH -> DARC L2 time-out");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x0f00) == 0x0800){
-      AliWarning("CDH -> DARC prepulse time violation\n");
+      AliWarning("CDH -> DARC prepulse time violation");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
     if((status & 0xf000) == 0x1000){
-      AliWarning("CDH -> DARC other error\n");
+      AliWarning("CDH -> DARC other error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
   }
@@ -266,7 +269,7 @@ Bool_t AliZDCRawStream::Next()
     fNConnCh=0;
   }
   
-  // *** End of event
+  // *** End of ZDC event
   if(fBuffer == 0xcafefade){
     //printf("\n-> AliZDCRawStream::Next() ***** End of ZDC event *****\n\n");
     return kFALSE;
@@ -303,11 +306,11 @@ Bool_t AliZDCRawStream::Next()
     if(fPosition>fDataOffset){
       if((fBuffer&0xff000000) == 0xff000000){
         if(fPosition==(fDataOffset+1)){ 
-	   printf("\n\n\t Reading ZDC mapping from StartOfData event\n");
+	   printf("\n\n\t AliZDCRawStream -> Reading mapping from StartOfData event\n");
 	   fNConnCh=0;	
         }
 	else{
-	  //printf("\n\t End of ZDC StartOfData event\n\n");
+	  printf("\n\t AliZDCRawStream -> End of ZDC StartOfData event\n\n");
           //printf("AliZDCRawStream: fSODReading after SOD reading set to %d\n", fSODReading);
 	  return kFALSE;
 	}
@@ -315,7 +318,7 @@ Bool_t AliZDCRawStream::Next()
       else if((fBuffer&0x80000000)>>31 == 1){
         // Mapping identification
 	fADCModule = ((fBuffer & 0x7f000000)>>24);
-	fModType = ((fBuffer & 0xfff00)>>8);
+	fModType = ((fBuffer & 0x7ff00)>>8);
 	fADCNChannels = (fBuffer & 0xff);
 	//
 	//printf("  ******** GEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
@@ -384,15 +387,15 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==23 || fCabledSignal==47) fMapADC[fNConnCh][4]=2;
 	  }
 	  //
-	  //if(fNConnCh<48) printf("AliZDCRawStream: datum %d mod. %d ch. %d signal %d, det %d, tow %d\n",
+	  //if(fNConnCh<fNChannelsOn) printf("                    %d mod %d ch %d code %d det %d sec %d\n",
 	  //   fNConnCh,fADCModule,fADCChannel,fBuffer&0xffff,fMapADC[fNConnCh][3],fMapADC[fNConnCh][4]);
 	  //
 	  fNConnCh++;
-	  if(fNConnCh>=48){
+	  if(fNConnCh>=fNChannelsOn){
 	    // Protection manually set since it returns:
 	    // RawData48 mod. 3 ch. 2048 signal 515
 	    // to be checked with Pietro!!!!!!!!!!!!!!!!!!!!!!!
-	    //AliWarning("\t AliZDCRawStream -> ERROR: no. of cabled channels > 48!!!\n");
+	    //AliWarning(" No. of cabled channels > fNChannelsOn!!!");
             fPosition++;
 	    return kTRUE;
 	  }
@@ -412,7 +415,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadfaceOffset){
     if(fBuffer != 0xdeadface){
-      AliError("AliZDCRawStream -> NO deadface after DARC data\n");
+      AliError(" NO deadface after DARC data");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -430,7 +433,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadbeefOffset){
     if(fBuffer != 0xdeadbeef){
-      AliError("AliZDCRawStream -> NO deadbeef after DARC global data\n");
+      AliError(" NO deadbeef after DARC global data");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -463,7 +466,7 @@ Bool_t AliZDCRawStream::Next()
     // the event is corrupted (i.e., 2 gates arrived before trigger)
     else if(fPosition==fDataOffset+1){
       if((fBuffer & 0x07000000) != 0x02000000){
-        AliWarning("ZDC ADC -> The not valid datum is NOT followed by an ADC header!\n");
+        AliWarning("ZDC ADC -> The not valid datum is NOT followed by an ADC header!");
         fRawReader->AddMajorErrorLog(kZDCDataError);
       }
     }
@@ -499,14 +502,14 @@ Bool_t AliZDCRawStream::Next()
 	  return kFALSE;
 	}
 	//
-	/*for(Int_t ci=0; ci<48; ci++){
-	  printf("  %d mod. %d ch. %d detector %d sector %d\n",ci,fMapADC[ci][0],
+	/*for(Int_t ci=0; ci<fNChannelsOn; ci++){
+	  printf("  %d mod %d ch %d det %d sec %d\n",ci,fMapADC[ci][0],
           fMapADC[ci][1], fMapADC[ci][3], fMapADC[ci][4]);
 	}*/
 		
 	// Scan of the map to assign the correct volumes
 	Int_t foundMapEntry = kFALSE;
-	for(Int_t k=0; k<48; k++){
+	for(Int_t k=0; k<fNChannelsOn; k++){
 	   if(fADCModule==fMapADC[k][0] && fADCChannel==fMapADC[k][1]){
 	     fSector[0] = fMapADC[k][3];
 	     fSector[1] = fMapADC[k][4];
@@ -515,8 +518,7 @@ Bool_t AliZDCRawStream::Next()
 	   } 
 	}
 	if(foundMapEntry==kFALSE){
-	  AliWarning(Form("AliZDCRawStream -> No valid entry found in ADC mapping\n"));
-	  AliWarning(Form("\t for raw data %d ADCmod. %d ch. %d gain %d\n",
+	  AliWarning(Form(" No valid entry found in ADC mapping for raw data %d ADCmod. %d ch. %d gain %d\n",
 	      fPosition,fADCModule,fADCChannel,fADCGain));
 	}
 	//
@@ -525,17 +527,17 @@ Bool_t AliZDCRawStream::Next()
 	
 	// Final checks
 	if(fSector[0]<1 || fSector[0]>5){
-          AliError(Form("      AliZDCRawStream -> No valid detector assignment: %d\n",fSector[0]));
+          AliError(Form(" No valid detector assignment: %d",fSector[0]));
           fRawReader->AddMajorErrorLog(kInvalidSector);
 	}
 	//
 	if(fSector[1]<0 || fSector[1]>5){
-          AliError(Form("      AliZDCRawStream -> No valid sector assignment: %d\n",fSector[1]));
+          AliError(Form(" No valid sector assignment: %d",fSector[1]));
           fRawReader->AddMajorErrorLog(kInvalidSector);
 	}
 	//
 	if(fADCModule<0 || fADCModule>3){
-          AliError(Form("      AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
+          AliError(Form(" No valid ADC module: %d",fADCModule));
           fRawReader->AddMajorErrorLog(kInvalidADCModule);
         }
 
@@ -564,12 +566,12 @@ void AliZDCRawStream::DecodeScaler()
   // Decoding scaler event
   
   if(!fBuffer & 0x04000000){
-    AliWarning("	AliZDCRawStream -> Scaler header corrupted\n");
+    AliWarning(" Scaler header corrupted");
     fIsScEventGood = kFALSE; 
   }
   Int_t scNwords = (Int_t) fScNWords;
   if(fPosition==scNwords && fBuffer != 0x0){
-    AliWarning("	AliZDCRawStream -> Scaler trailer corrupted\n");
+    AliWarning(" Scaler trailer corrupted");
     fIsScEventGood = kFALSE; 
   }
   fIsScEventGood = kTRUE;

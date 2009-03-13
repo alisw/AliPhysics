@@ -50,6 +50,7 @@ class AliZDCRawStream: public TObject {
     AliCDBStorage *SetStorage(const char* uri);
     AliZDCChMap   *GetChMap() const;
     
+    Int_t  GetNChannelsOn()	       const {return fNChannelsOn;}
     Int_t  GetCabledSignal()           const {return fCabledSignal;}
     Int_t  GetADCModFromMap(Int_t i)   const {return fMapADC[i][0];}
     Int_t  GetADCChFromMap(Int_t i)    const {return fMapADC[i][1];}
@@ -69,7 +70,8 @@ class AliZDCRawStream: public TObject {
     UInt_t GetScGeo() const {return fScGeo;}	    
     UInt_t GetScTS() const {return fScTS;}	    
     UInt_t GetTriggerNumber() const {return fScTriggerNumber;}
-
+    
+    void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
     void SetMapADCMod(Int_t iraw, Int_t imod) {fMapADC[iraw][0]=imod;}
     void SetMapADCCh(Int_t iraw, Int_t ich)   {fMapADC[iraw][1]=ich;}
@@ -153,11 +155,12 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsScEventGood;   // true if scaler event is good
     
     // Channel mapping 
+    Int_t  fNChannelsOn;   // No. of signals/ADC ch. used
     Int_t  fNConnCh;       // current mapped ch.
     Int_t  fCabledSignal;  // physics signal (from enum)
     Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 8)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 9)    // class for reading ZDC raw digits
 };
 
 #endif

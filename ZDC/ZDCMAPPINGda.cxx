@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   monitorDeclareTable(const_cast<char**>(tableSOD));
   
   int status = 0;
-  int kNChannels = 48;
+  int const kNChannels = 48;
 
   /* log start of process */
   printf("\nZDC MAPPING program started\n");  
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
 	      fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
 	        ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
 	      //
-	      //printf("ZDCMAPPINGda.cxx -> %d mod %d ch %d, code %d det %d, sec %d\n",
+	      //printf("ZDCMAPPINGda.cxx -> %d mod %d ch %d code %d det %d sec %d\n",
 	      //   ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
 	      //
 	      ich++;
