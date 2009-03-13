@@ -4,8 +4,8 @@
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskESDCheckCascade class
-//            (AliAnalysisTaskESDCheckCascade)
+//                 AliAnalysisTaskCheckCascade class
+//            (AliAnalysisTaskCheckCascade)
 //            This task is for QAing the Cascades from the ESD
 //              Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
 //            Adapted to Cascade : A.M Mar2008, antonin.maire@ires.in2p3.fr
@@ -13,28 +13,28 @@
 
 class TList;
 class TH1F;
-class AliESDEvent;
+ 
 
-#include "AliAnalysisTask.h"
+#include "TString.h"
 
-class AliAnalysisTaskESDCheckCascade : public AliAnalysisTask {
+#include "AliAnalysisTaskSE.h"
+
+class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskESDCheckCascade();
-  AliAnalysisTaskESDCheckCascade(const char *name);
-  virtual ~AliAnalysisTaskESDCheckCascade() {}
+  AliAnalysisTaskCheckCascade();
+  AliAnalysisTaskCheckCascade(const char *name);
+  virtual ~AliAnalysisTaskCheckCascade() {}
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
- private:
-  AliESDInputHandler *fesdH;		//! InputHandler object
-  AliMCEvent  *fMCevent;		//! MC event object
-  AliESDEvent *fESD;			//! ESD object
+  void SetCollidingSystem(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
+  void SetAnalysisType   (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   
- 
-   	
+ private:
+  	TString fAnalysisType;				// "ESD" or "AOD" analysis type	
+	Short_t fCollidingSystems;			// 0 = pp collisions or 1 = AA collisions
 	
 
 		TList	*fListHistCascade;		//! List of Cascade histograms
@@ -107,13 +107,19 @@ class AliAnalysisTaskESDCheckCascade : public AliAnalysisTask {
 	TH1F	*fHistPhi;				//! phi distrib. of all the cascade candidates
 	
 	TH2F	*f2dHistArmenteros;			//! alpha(casc. cand.) Vs PtArm(casc. cand.)
-	TH2F	*f2dHistEffMassXiVsEffMassLambda;	//! Xi- Eff mass Vs V0 Eff mass, under Xi- hyp.
-	TH2F	*f2dHistXiRadiusVsEffMassXi;		//! transv. casc. decay radius Vs Xi- Eff mass, under Xi- hyp.
+	
+	TH2F	*f2dHistEffMassLambdaVsEffMassXiMinus;	//! Xi- Eff mass Vs V0 Eff mass, under Xi- hyp.
+	TH2F	*f2dHistEffMassXiVsEffMassOmegaMinus;	//! Xi- Eff mass Vs Omega- Eff mass, for negative cascades
+	TH2F	*f2dHistEffMassLambdaVsEffMassXiPlus;	//! Xi+ Eff mass Vs V0 Eff mass, under Xi+ hyp.
+	TH2F	*f2dHistEffMassXiVsEffMassOmegaPlus;	//! Xi+ Eff mass Vs Omega+ Eff mass, for positive cascades
+	
+	TH2F	*f2dHistXiRadiusVsEffMassXiMinus;	//! transv. casc. decay radius Vs Xi- Eff mass, under Xi- hyp.
+	TH2F	*f2dHistXiRadiusVsEffMassXiPlus;	//! transv. casc. decay radius Vs Xi+ Eff mass, under Xi+ hyp.
 
-  AliAnalysisTaskESDCheckCascade(const AliAnalysisTaskESDCheckCascade&);            // not implemented
-  AliAnalysisTaskESDCheckCascade& operator=(const AliAnalysisTaskESDCheckCascade&); // not implemented
+  AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
+  AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskESDCheckCascade, 2);
+  ClassDef(AliAnalysisTaskCheckCascade, 3);
 };
 
 #endif
