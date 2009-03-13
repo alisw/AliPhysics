@@ -436,7 +436,7 @@ else if(runType=="STANDALONE_EMD" && strcmp(beamType,"Pb-Pb")==0){
         }
         Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
         //
-        Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
+        Float_t fitValEMD[6]; Float_t equalCoeff[4][5];
         Float_t calibVal[4];
         for(Int_t j=0; j<10; j++){	   
           if(j<6){
