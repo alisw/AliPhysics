@@ -37,12 +37,12 @@ class AliZDCLaserCalib: public TNamed {
   void  SetfPMWidth(Int_t i, Float_t ival) {fPMWidth[i] = ival;}
   
  protected:
-  Int_t fDetector[22];// detector code
-  Int_t fSector[22];  // sector in detector (=5 for reference PMs)
-  Float_t fPMValue[22]; // ADC spectrum mean value
-  Float_t fPMWidth[22]; // ADC spectrum width
+  Int_t fDetector[24];// detector code
+  Int_t fSector[24];  // sector in detector (=5 for reference PMs)
+  Float_t fPMValue[24]; // ADC spectrum mean value
+  Float_t fPMWidth[24]; // ADC spectrum width
   //
-  ClassDef(AliZDCLaserCalib,3)    // ZDC LASER calibration data
+  ClassDef(AliZDCLaserCalib,4)    // ZDC LASER calibration data
 };
 
 #endif

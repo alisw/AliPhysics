@@ -41,7 +41,7 @@ TNamed()
   SetName(namst.Data());
   SetTitle(namst.Data());
   Reset();
-  for(Int_t i=0; i<22; i++){
+  for(Int_t i=0; i<24; i++){
     fDetector[i] = 0;
     fSector[i] = 0;
     fPMValue[i] = 0.;
@@ -93,10 +93,10 @@ AliZDCLaserCalib::~AliZDCLaserCalib()
 void AliZDCLaserCalib::Reset()
 {
   // Reset
-  memset(fDetector,0,22*sizeof(Float_t));
-  memset(fSector,0,22*sizeof(Float_t));
-  memset(fPMValue,0,22*sizeof(Float_t));
-  memset(fPMWidth,0,22*sizeof(Float_t));
+  memset(fDetector,0,24*sizeof(Float_t));
+  memset(fSector,0,24*sizeof(Float_t));
+  memset(fPMValue,0,24*sizeof(Float_t));
+  memset(fPMWidth,0,24*sizeof(Float_t));
 }                                                                                       
 
 
@@ -105,7 +105,7 @@ void  AliZDCLaserCalib::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n\n ******************* AliZDCLaserCalib object *******************\n");
-   for(Int_t i=0; i<22; i++){
+   for(Int_t i=0; i<24; i++){
      printf("  Detector %d, sector %d, PMValue = %1.1f +/- %1.1f\n",
      	fDetector[i], fSector[i],fPMValue[i],fPMWidth[i]);
    }
