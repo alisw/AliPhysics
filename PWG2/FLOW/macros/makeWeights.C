@@ -30,8 +30,8 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  file = TFile::Open(((((inputFileName.Append(method.Data())).Append("analysis")).Append(type.Data())).Append(".root")).Data(), "READ"); 
  
  // using pt weights linear or quadratic in pt:
- Bool_t useLinearPt    = kFALSE;
- Bool_t useQuadraticPt = kTRUE;
+ Bool_t useLinearPt    = kTRUE;
+ Bool_t useQuadraticPt = kFALSE;
  if(useLinearPt && useQuadraticPt)
  {
   cout<<" WARNING: you can use pt weights linear or quadratic in pt, but not at the same time. "<<endl;
@@ -82,22 +82,22 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  if(commonHist)
  {
   // azimuthal acceptance:
-  (commonHist->GetHistPhiInt())->SetName("phi_weights");
-  (commonHist->GetHistPhiInt())->SetTitle("phi_weights: correction for non-uniform acceptance");
-  (commonHist->GetHistPhiInt())->SetYTitle("weights");
-  (commonHist->GetHistPhiInt())->SetXTitle("#phi"); 
-  nBinsPhi = (commonHist->GetHistPhiInt())->GetNbinsX();
-  nParticles = (commonHist->GetHistPhiInt())->Integral();
+  (commonHist->GetHistPhiRP())->SetName("phi_weights");
+  (commonHist->GetHistPhiRP())->SetTitle("phi_weights: correction for non-uniform acceptance");
+  (commonHist->GetHistPhiRP())->SetYTitle("weights");
+  (commonHist->GetHistPhiRP())->SetXTitle("#phi"); 
+  nBinsPhi = (commonHist->GetHistPhiRP())->GetNbinsX();
+  nParticles = (commonHist->GetHistPhiRP())->Integral();
   if(nBinsPhi) nParticlesPerBin = nParticles/nBinsPhi; 
   // loop over phi bins:
   for(Int_t b=1;b<nBinsPhi+1;b++)
   {
-   nParticlesInBin = (commonHist->GetHistPhiInt())->GetBinContent(b);
+   nParticlesInBin = (commonHist->GetHistPhiRP())->GetBinContent(b);
    // calculate the phi weight wPhi for each bin:
    if(nParticlesInBin) wPhi = nParticlesPerBin/nParticlesInBin;
-   (commonHist->GetHistPhiInt())->SetBinContent(b,wPhi);
+   (commonHist->GetHistPhiRP())->SetBinContent(b,wPhi);
   }
-  listWeights->Add(commonHist->GetHistPhiInt());
+  listWeights->Add(commonHist->GetHistPhiRP());
  }else{cout<<" WARNING: the common control histos from the 1st run were not accessed."<<endl;} 
  
  // common results histos:
