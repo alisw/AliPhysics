@@ -30,8 +30,8 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
-  void SetCollidingSystem(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
-  void SetAnalysisType   (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
+  void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
+  void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   
  private:
   	TString fAnalysisType;				// "ESD" or "AOD" analysis type	

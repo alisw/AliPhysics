@@ -29,12 +29,12 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetCollidingSystems(Short_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   
  private:
   TString      fAnalysisType;                   //  ESD or AOD
-  Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb
+  Short_t      fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb
   TList       *fListHist;                       //! List of histograms
   TH1F        *fHistPrimaryVertexPosX;          //! Primary vertex position in X
   TH1F        *fHistPrimaryVertexPosY;          //! Primary vertex position in Y
