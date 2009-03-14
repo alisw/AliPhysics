@@ -255,7 +255,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
   Double_t tPrimaryVtxCov[3];
   Int_t nv0s = 0;
   nv0s = lEvent->GetNumberOfV0s();
-  Printf("Strange analysis task: There are %d v0s in this event",nv0s);
+  //  Printf("Strange analysis task: There are %d v0s in this event",nv0s);
 
   Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
   Double_t lChi2V0 = 0;
