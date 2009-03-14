@@ -18,11 +18,7 @@ OBJS          = $(SRCS:.cxx=.o)
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
-else
 	@$(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $@
-endif
 	@chmod a+x $@
 	@echo "done"
 
