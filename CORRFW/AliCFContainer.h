@@ -55,6 +55,7 @@ class AliCFContainer : public AliCFFrame
   virtual TH2D* ShowSlice( Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax, Int_t istep) const;
   virtual TH3D* ShowSlice( Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax, Int_t istep) const;
   virtual AliCFContainer*  MakeSlice (Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const ;
+  virtual AliCFContainer*  MakeSlice (Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax, Int_t nStep, Int_t* steps) const ;
   virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
   virtual void  SetGrid(Int_t step, AliCFVGrid* grid) {fGrid[step]=grid;}

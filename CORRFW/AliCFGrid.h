@@ -57,7 +57,7 @@ class AliCFGrid : public AliCFVGrid
   virtual TH3D* Slice( Int_t /*ivar1*/, Int_t /*ivar2*/, Int_t /*ivar3*/, Double_t */*varMin*/, Double_t */*varMax*/) const 
   {AliWarning("not implemented"); return 0x0;}
 
-  virtual void UseAxisRange(Bool_t b) const {AliWarning("Not implemented because this class is obsolete");}
+  virtual void UseAxisRange(Bool_t /*b*/) const {AliWarning("Not implemented because this class is obsolete");}
 
   //basic operations
 

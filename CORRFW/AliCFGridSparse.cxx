@@ -167,6 +167,10 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 //___________________________________________________________________
 AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const
 {
+  //
+  // projects the grid on the nVars dimensions defined in vars.
+  // axis ranges can be defined in arrays varMin, varMax
+  //
 
   // binning for new grid
   Int_t* bins = new Int_t[nVars];
@@ -179,9 +183,13 @@ AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, Int_t* vars, Double_t* va
 
   //set the range in the THnSparse to project
   THnSparse* clone = ((THnSparse*)fData->Clone());
-  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
-    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  if (varMin && varMax) {
+    for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
+      clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+    }
   }
+  else AliInfo("Keeping same axis ranges");
+
   out->SetGrid(clone->Projection(nVars,vars));
   return out;
 }

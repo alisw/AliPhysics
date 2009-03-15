@@ -264,17 +264,31 @@ TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t 
 AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax) const
 {
   //
-  // Makes a slice along the "nVars" variables defined in the array vars[nVars].
+  // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for all the container steps.
+  // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar]
+  // The function returns a new container of nVars variables.
+  //
+  Int_t* steps = new Int_t[fNStep];
+  for (Int_t iStep=0;iStep<fNStep;iStep++) steps[iStep]=iStep;
+  return MakeSlice(nVars,vars,varMin,varMax,fNStep,steps);
+}
+
+//____________________________________________________________________
+AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax, Int_t nSteps, Int_t* steps) const
+{
+  //
+  // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for the given "nSteps" defined in "steps[nSteps]".
   // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar]
   // The function returns a new container of nVars variables.
   //
 
   if (nVars < 1 || nVars > fNVar)   AliError("Bad number of dimensions required for the slice");
+  if (nSteps< 1 || nSteps> fNStep)  AliError("Bad number of steps required for the slice");
 
   //define new binning for new container
   Int_t* bins=new Int_t[nVars];
   for (Int_t iVar=0; iVar<nVars; iVar++) bins[iVar] = fNVarBins[vars[iVar]];
-  AliCFContainer* out = new AliCFContainer(fName,fTitle,fNStep,nVars,bins);
+  AliCFContainer* out = new AliCFContainer(fName,fTitle,nSteps,nVars,bins);
 
   //set the bin limits
   for (Int_t iVar=0; iVar<nVars; iVar++) {
@@ -284,9 +298,9 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* va
     delete array;
   }
 
-  //set grid for each step
+  //set grid for the given steps
   AliInfo(Form("Making a slice in %d dimension(s)",nVars));
-  for (Int_t iStep=0; iStep<fNStep; iStep++) out->SetGrid(iStep,fGrid[iStep]->Project(nVars,vars,varMin,varMax));
+  for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,fGrid[steps[iStep]]->Project(nVars,vars,varMin,varMax));
 
   delete bins;
   return out;
