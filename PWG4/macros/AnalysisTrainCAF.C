@@ -1,5 +1,5 @@
 //______________________________________________________________________________
-void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG4/kleinb/LHC08v_jetjet15-50")
+void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG4/kleinb/LHC08r_jetjet50")
 {
 // Example of running analysis train in CAF. To run in debug mode:
 //  - export ROOTSYS=debug  on your local client
@@ -19,8 +19,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     Int_t iAODhandler    = 1;
     Int_t iESDfilter     = 1;  // Only active if iAODanalysis=0
     Int_t iJETAN         = 1;
-    Int_t iJETANAOD      = 0;
-    Int_t iJETANMC       = 1;
+    Int_t iJETANESD      = 0;
+    Int_t iJETANMC       = 0;
     Int_t iDIJETAN       = 0;
     Int_t iPWG4SPECTRUM  = 1;
     Int_t iPWG4UE        = 0;
@@ -31,7 +31,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
        iESDfilter = 0;
        iMUONfilter = 0;
     }    
-    if (iJETANAOD) iESDfilter=1;
+    if (iJETAN) iESDfilter=1;
     if (iESDfilter) iAODhandler=1;
 
     // Dataset from CAF
@@ -47,8 +47,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iAODanalysis) printf("=  AOD analysis on dataset: %s\n", dataset.Data());
     else              printf("=  ESD analysis on dataset: %s\n", dataset.Data());
     if (iESDfilter)   printf("=  ESD filter                                                    =\n");
-    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
-    if (iJETANAOD)    printf("=  Jet analysis from AOD                                        =\n");
+    if (iJETAN)       printf("=  Jet analysis from AOD                                         =\n");
+    if (iJETANESD)    printf("=  Jet analysis from ESD                                         =\n");
     if (iJETANMC)     printf("=  Jet analysis from Kinematics                                  =\n");
     if (iDIJETAN)     printf("=  DiJet analysis                                                =\n");
     if (iPWG4SPECTRUM)printf("=  PWG4 Jet spectrum analysis                                    =\n");
@@ -72,8 +72,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // TProof::Reset("alicecaf"); 
     // One may enable a different ROOT version on CAF
 
-    //    const char* proofNode = "alicecaf";
-    const char* proofNode = "localhost";
+    const char* proofNode = "alicecaf";
 
 
 
@@ -109,7 +108,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
 
       // --- Enable the JETAN Package
-      if (iJETAN||iJETANMC) {
+      if (iJETAN||iJETANESD||iJETANMC) {
 	gProof->UploadPackage("${ALICE_ROOT}/JETAN.par");
 	gProof->EnablePackage("JETAN");
       }   
@@ -129,7 +128,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
 
       // --- Enable the JETAN Package
-      if (iJETAN||iJETANMC||iJETANAOD) gSystem->Load("libJETAN");
+      if (iJETAN||iJETANESD||iJETANMC) gSystem->Load("libJETAN");
       // --- Enable particle correlation analysis
       if (iPWG4UE||iPWG4SPECTRUM)gSystem->Load("libPWG4JetTasks");  
     }
@@ -199,63 +198,26 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
        mgr->ConnectInput  (esdfilter,  0, cinput  );
        mgr->ConnectOutput (esdfilter,  0, cout_aod );
     }   
-    // Jet analysis
+    // Jet analysis from the AOD
     AliAnalysisDataContainer *c_aodjet = 0;
-    if (iJETAN && !iAODanalysis) {
-       AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
-       jetana->SetDebugLevel(10);
-       jetana->SetConfigFile("${ALICE_ROOT}/JETAN/ConfigJetAnalysis.C");
-       mgr->AddTask(jetana);
-       // Output histograms list for jet analysis                       
-       AliAnalysisDataContainer *cout_jet = mgr->CreateContainer("jethist", TList::Class(),
-								 AliAnalysisManager::kOutputContainer,Form("jethist_%07d-%07d.root",nOffset,nOffset+nEvents));
-       // Dummy AOD output container for jet analysis (no client yet)
-       c_aodjet = mgr->CreateContainer("cAODjet", TTree::Class(),
-                           AliAnalysisManager::kExchangeContainer);
-       // Connect to data containers
-       mgr->ConnectInput  (jetana,     0, cinput  );
-       mgr->ConnectOutput (jetana,     0, c_aodjet );
-       // mgr->ConnectOutput (jetana,     0, cout_aod );
-       mgr->ConnectOutput (jetana,     1, cout_jet );
+    if (iJETAN) {
+       gROOT->LoadMacro("AddTaskJets.C");
+       AliAnalysisTaskJets *jetanaAOD = AddTaskJets("AOD","UA1");
     }   
-    // JETANALYSIS from the AOD
-    if (iJETANAOD) {
-       AliAnalysisTaskJets *jetanaAOD = new AliAnalysisTaskJets("AODJetAnalysis");
-       jetanaAOD->SetDebugLevel(10);
-       jetanaAOD->SetNonStdBranch("jetsAOD");    
-       jetanaAOD->SetConfigFile("${ALICE_ROOT}/JETAN/ConfigJetAnalysisAOD.C");
-       mgr->AddTask(jetanaAOD);
-       // Output histograms list for jet analysis                       
-       AliAnalysisDataContainer *cout_jetAOD = mgr->CreateContainer("jethistAOD", TList::Class(),
-								    AliAnalysisManager::kOutputContainer, Form("jethistAOD_%07d-%07d.root",nOffset,nOffset+nEvents));
-       // Dummy AOD output container for jet analysis (no client yet)
-       c_aodjet0 = mgr->CreateContainer("cAODjet0", TTree::Class(),
-                           AliAnalysisManager::kExchangeContainer);
-       // Connect to data containers
-       mgr->ConnectInput  (jetanaAOD,     0, cout_aod  );
-       mgr->ConnectOutput (jetanaAOD,     0, c_aodjet0 );
-       // mgr->ConnectOutput (jetana,     0, cout_aod );
-       mgr->ConnectOutput (jetanaAOD,     1, cout_jetAOD );
+    // JETANALYSIS from the ESD
+    if (iJETANESD && !iAODanalysis) {
+       gROOT->LoadMacro("AddTaskJets.C");
+       AliAnalysisTaskJets *jetanaESD = AddTaskJets("ESD","UA1");
+       jetanaESD->SetDebugLevel(10);
+       jetanaESD->SetNonStdBranch("jetsESD");    
     }   
     // Jet analysisMC
     AliAnalysisDataContainer *c_aodjetMC = 0;
     if (iJETANMC && useMC) {
-       AliAnalysisTaskJets *jetanaMC = new AliAnalysisTaskJets("JetAnalysisMC");
+       gROOT->LoadMacro("AddTaskJets.C");
+       AliAnalysisTaskJets *jetanaMC = AddTaskJets("MC","UA1");
        jetanaMC->SetDebugLevel(10);
-       jetanaMC->SetConfigFile("${ALICE_ROOT}/JETAN/ConfigJetAnalysisMC.C");
        jetanaMC->SetNonStdBranch("jetsMC");
-       mgr->AddTask(jetanaMC);
-       // Output histograms list for jet analysis                       
-       AliAnalysisDataContainer *cout_jetMC = mgr->CreateContainer("jethistMC", TList::Class(),
-								   AliAnalysisManager::kOutputContainer,Form("jethistMC_%07d-%07d.root",nOffset,nOffset+nEvents));
-       // Dummy AOD output container for jet analysis (no client yet)
-       c_aodjetMC = mgr->CreateContainer("cAODjetMC", TTree::Class(),
-                           AliAnalysisManager::kExchangeContainer);
-       // Connect to data containers
-       mgr->ConnectInput  (jetanaMC,     0, cinput  );
-       mgr->ConnectOutput (jetanaMC,     0, c_aodjetMC );
-       // mgr->ConnectOutput (jetanaMC,     0, cout_aod );
-       mgr->ConnectOutput (jetanaMC,     1, cout_jetMC );
     }   
     // Dijet analysis
     if(iDIJETAN){
