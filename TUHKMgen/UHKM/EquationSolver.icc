@@ -1,0 +1,121 @@
+/*                                                                            
+                                                                            
+        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
+                           November. 2, 2006                                
+
+*/ 
+//This equation solver class is taken from GEANT4 and modified!!
+ 
+
+template <class Function>
+Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
+  const Double_t precision = 3.0e-8;
+
+  // Check the interval before start
+  if(fA > fB || Abs(fA-fB) <= fTolerance) {
+    std::cerr << "NAEquationSolver::Brent: The interval must be properly set." << std::endl;
+    return false;
+  }
+  Double_t fa = theFunction(fA);
+  Double_t fb = theFunction(fB);
+  if(fa*fb > 0.0) {
+    std::cerr << "NAEquationSolver::Brent: The interval must include a root." << std::endl;
+    return false;
+  }
+    
+  Double_t c = fB;
+  Double_t fc = fb;
+  Double_t d = 0.0;
+  //Double_t fd = 0.0;
+  Double_t e = 0.0;
+  //Double_t fe = 0.0;
+    
+  for(Int_t i=0; i < fMaxIter; i++) {
+    // Rename a,b,c and adjust bounding interval d
+    if(fb*fc > 0.0) {
+      c = fA;
+      fc = fa;
+      d = fB - fA;
+      e = d;
+    }
+    if(Abs(fc) < Abs(fb)) {
+      fA = fB;
+      fB = c;
+      c = fA;
+      fa = fb;
+      fb = fc;
+      fc = fa;
+    }
+    Double_t Tol1 = 2.0*precision*Abs(fB) + 0.5*fTolerance;
+    Double_t xm = 0.5*(c-fB);
+    if(Abs(xm) <= Tol1 || fb == 0.0) {
+      fRoot = fB;
+      return true;
+    }
+    // Inverse quadratic interpolation
+    if(Abs(e) >= Tol1 && Abs(fa) > Abs(fb)) {
+      Double_t s = fb/fa;
+      Double_t p = 0.0;
+      Double_t q = 0.0;
+      if(fA == c) {
+        p = 2.0*xm*s;
+        q = 1.0 - s;
+      } 
+      else {
+        q = fa/fc;
+        Double_t r = fb/fc;
+        p = s*(2.0*xm*q*(q-r)-(fB-fA)*(r-1.0));
+        q = (q-1.0)*(r-1.0)*(s-1.0);
+      }
+      // Check bounds
+      if(p > 0.0) q = -q;
+      p = Abs(p);
+      Double_t min1 = 3.0*xm*q-Abs(Tol1*q);
+      Double_t min2 = Abs(e*q);
+      if (2.0*p < Min(min1,min2)) {
+        // Interpolation
+        e = d;
+        d = p/q;
+      } 
+      else {
+        // Bisection
+        d = xm;
+        e = d;
+      }
+    } 
+    else {
+      // Bounds decreasing too slowly, use bisection
+      d = xm;
+      e = d;
+    }
+    // Move last guess to a 
+    fA = fB;
+    fa = fb;
+    if (Abs(d) > Tol1) fB += d;
+    else {
+      if (xm >= 0.0) fB += Abs(Tol1);
+      else fB -= Abs(Tol1);
+    }
+    fb = theFunction(fB);
+  }
+  std::cerr << "NAEquationSolver::Brent: Number of iterations exceeded." << std::endl;
+  return false;
+}
+
+template <class Function>   
+void NAEquationSolver<Function>::SetIntervalLimits(const Double_t Limit1, const Double_t Limit2) {
+  if(Abs(Limit1-Limit2) <= fTolerance) {
+    std::cerr << "NAEquationSolver::SetIntervalLimits: Interval must be wider than tolerance." << std::endl;
+    return;
+  }
+  if(Limit1 < Limit2) {
+    fA = Limit1;
+    fB = Limit2;
+  } 
+  else {
+    fA = Limit2;
+    fB = Limit1;
+  }
+  return;
+}

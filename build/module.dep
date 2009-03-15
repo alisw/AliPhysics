@@ -30,6 +30,7 @@ STRUCT/module.mk:	STRUCT/libSTRUCT.pkg
 TEPEMGEN/module.mk:	TEPEMGEN/libTEPEMGEN.pkg
 TFluka/module.mk:	TFluka/libTFluka.pkg
 THydjet/module.mk:	THydjet/libTHydjet.pkg
+TUHKMgen/module.mk:	TUHKMgen/libTUHKMgen.pkg
 THbtp/module.mk:	THbtp/libTHbtp.pkg
 THerwig/module.mk:	THerwig/libTHerwig.pkg
 THijing/module.mk:	THijing/libTHijing.pkg
