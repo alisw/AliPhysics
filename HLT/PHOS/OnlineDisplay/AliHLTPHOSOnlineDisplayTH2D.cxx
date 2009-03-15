@@ -30,10 +30,10 @@ using namespace std;
 // #define PZ_MIN 60
 // #define PZ_MAX 380
 
-#define PX_MIN 55
-#define PX_MAX 420
-#define PZ_MIN 34
-#define PZ_MAX 251
+#define PXMIN 55
+#define PXMAX 420
+#define PZMIN 34
+#define PZMAX 251
 
 
 AliHLTPHOSOnlineDisplayTH2D::AliHLTPHOSOnlineDisplayTH2D()
@@ -93,7 +93,7 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
   int tmpZBin = 0;
   int tmpXBin = 0;
 
-  for(int gain = 0; gain < N_GAINS; gain++)
+  for(int gain = 0; gain < NGAINS; gain++)
     {
       if(event == 61)
 	{
@@ -119,12 +119,12 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 	  cout << "px = " << px << "pz =" << pz << endl;
 	  cout << __FILE__ << ":" <<__LINE__ << " ObjectInfo IS !!" <<  GetObjectInfo(px, pz)  << endl;
 
-	  fgRawDataCanvasPtr[gain]->Divide(Z_ROWS, X_COLS); 
+	  fgRawDataCanvasPtr[gain]->Divide(ZROWS, XCOLS); 
 	  int cnt = 0;
     
 	  for(int z= 1; z > -2; z--)
 	    {
-	      for(int x=-1; x < X_COLS -1; x ++)
+	      for(int x=-1; x < XCOLS -1; x ++)
 		{
 		  fOnlineDisplayPtr->Gain2Text(gain,gainLabel);
 
@@ -140,7 +140,7 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 
 
 		  cnt ++;
-		  fgRawDataPlotsPtr[cnt][gain] = new TH1D(label, label, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
+		  fgRawDataPlotsPtr[cnt][gain] = new TH1D(label, label, ALTROMAXSAMPLES, 0, ALTROMAXSAMPLES -1);
 		  fgRawDataCanvasPtr[gain]->cd(cnt);	 
 		  fgRawDataPlotsPtr[cnt][gain]->SetFillColor(1);
 		  fgRawDataPlotsPtr[cnt][gain]->Reset();   
@@ -170,7 +170,7 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 
 
 
-	  fgRawDataPlotsSinglePtr[gain] = new TH1D(label, label, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
+	  fgRawDataPlotsSinglePtr[gain] = new TH1D(label, label, ALTROMAXSAMPLES, 0, ALTROMAXSAMPLES -1);
 	  fgRawDataPlotsSinglePtr[gain]->SetFillColor(1);
 	  fgRawDataPlotsSinglePtr[gain]->Reset();   
 	  Int_t nSamples = fOnlineDisplayPtr->fgEventTabPtr->GetRawData(fgRawDataPlotsSinglePtr[gain], tmpXBin, tmpZBin, gain); 
@@ -194,8 +194,8 @@ int
 AliHLTPHOSOnlineDisplayTH2D::GetXBin(Int_t px)
 {
   float tmpBinRange = GetXaxis()->GetLast() -  GetXaxis()->GetFirst();
-  float tmpPixelRange =   PX_MAX  -   PX_MIN;
-  float tmpPixRelative = (px - PX_MIN)/tmpPixelRange ;
+  float tmpPixelRange =   PXMAX  -   PXMIN;
+  float tmpPixRelative = (px - PXMIN)/tmpPixelRange ;
   int xBin = ((int)((tmpPixRelative)*tmpBinRange) +  (float)GetXaxis()->GetFirst());
   return xBin;
 }
@@ -204,8 +204,8 @@ int
 AliHLTPHOSOnlineDisplayTH2D::GetZBin(Int_t pz)
 {
   float tmpBinRange = GetYaxis()->GetLast() -  GetYaxis()->GetFirst();
-  float tmpPixelRange =   PZ_MAX  -   PZ_MIN;
-  float tmpPixRelative = (pz - PZ_MIN)/tmpPixelRange;
+  float tmpPixelRange =   PZMAX  -   PZMIN;
+  float tmpPixRelative = (pz - PZMIN)/tmpPixelRange;
   int zBin = (int)((1-tmpPixRelative)*tmpBinRange);
   return zBin;
 }

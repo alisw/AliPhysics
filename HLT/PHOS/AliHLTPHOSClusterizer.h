@@ -80,7 +80,7 @@ public:
     fEmcTimeGate(0),
     fDigitsInCluster(0),
     fDigitContainerPtr(0),
-    fMaxDigitIndexDiff(2*N_ZROWS_MOD)
+    fMaxDigitIndexDiff(2*NZROWSMOD)
   {
     //Copy constructor not implemented
   }

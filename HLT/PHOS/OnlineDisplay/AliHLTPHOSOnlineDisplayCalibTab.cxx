@@ -16,9 +16,9 @@ AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab()
   cout << "AliHLTPHOSOnlineDisplayCalibTab:ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
-AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
+AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAXHOSTS], int nHosts)
 {
-  for(int i=0; i<MAX_HOSTS; i++)
+  for(int i=0; i<MAXHOSTS; i++)
     {
        fgHomerReadersPtr[i] = 0;
     }
@@ -62,17 +62,17 @@ AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
       int tmpdcsx;
       int tmpdcsz;
 
-      for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
-	for(int z = 0; z <N_ZROWS_RCU; z ++)
+      for(int x = 0; x < NXCOLUMNSRCU; x ++)
+	for(int z = 0; z <NZROWSRCU; z ++)
 	  {
 	    {
-	      for(int gain = 0; gain < N_GAINS; gain ++)
+	      for(int gain = 0; gain < NGAINS; gain ++)
 		{
-		  tmpx = moduleID*N_XCOLUMNS_MOD + (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU + x;
-		  tmpz = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;
+		  tmpx = moduleID*NXCOLUMNSMOD + (accCellEnergiesPtr->fRcuX)*NXCOLUMNSRCU + x;
+		  tmpz = (accCellEnergiesPtr->fRcuZ)*NZROWSRCU +z;
 
-		  tmpdcsx =  (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU + x  ;
-		  tmpdcsz =  (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;  
+		  tmpdcsx =  (accCellEnergiesPtr->fRcuX)*NXCOLUMNSRCU + x  ;
+		  tmpdcsz =  (accCellEnergiesPtr->fRcuZ)*NZROWSRCU +z;  
 
 		  //	  if(tmpx < 140 && (tmpz < 6 || tmpz > 50)  )
 		  //	  if(tmpx < 132 && (tmpz  > 52)  )
@@ -130,17 +130,17 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 
   // fgLegoPlotHGPtr = new TH2D("a Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
   fgLegoPlotHGPtr = new TH2D("a Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
-			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-                             N_ZROWS_MOD,               0, N_ZROWS_MOD);
-  fgLegoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
+			     NXCOLUMNSMOD*NMODULES , 0, NXCOLUMNSMOD*NMODULES,  
+                             NZROWSMOD,               0, NZROWSMOD);
+  fgLegoPlotHGPtr->SetMaximum( MAXBINVALUE);
   fgLegoPlotHGPtr->Reset();
   //  fgLegoPlotHGPtr->GetXaxis()->SetRange(128, 128 + 64);
 
 
   fgLegoPlotLGPtr = new TH2D("b Homer","HLT: #pi^{0} 5 - 30Gev LG, Low gain",  
-			     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
-			     N_ZROWS_MOD,          0, N_ZROWS_MOD);
-  fgLegoPlotLGPtr->SetMaximum( MAX_BIN_VALUE); 
+			     NXCOLUMNSMOD* NMODULES , 0, NXCOLUMNSMOD* NMODULES,  
+			     NZROWSMOD,          0, NZROWSMOD);
+  fgLegoPlotLGPtr->SetMaximum( MAXBINVALUE); 
   fgLegoPlotLGPtr->Reset();
   //  fgLegoPlotLGPtr->GetXaxis()->SetRange(128, 128 + 64);
 
@@ -150,49 +150,49 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 					 kLHintsExpandY, 2, 2, 15, 1);
 
 
-  for(int gain = 0; gain< N_GAINS; gain ++)
+  for(int gain = 0; gain< NGAINS; gain ++)
     {
       sprintf(tmpHistoName, "TAB a HLT gain %d", gain);
       fgCalibHistPtr[gain] = new TH2D(tmpHistoName, tmpHistoName,  
-				      N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES , 
-				      N_ZROWS_MOD,         0, N_ZROWS_MOD);
+				      NXCOLUMNSMOD*NMODULES , 0, NXCOLUMNSMOD*NMODULES , 
+				      NZROWSMOD,         0, NZROWSMOD);
       fgCalibHistPtr[gain]->Reset(); 
-      fgCalibHistPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+      fgCalibHistPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
       
       
       sprintf(tmpHistoName, "TAB b Calibration Data HLT: #pi^{0} 5 - 30GeV gain %d", gain);
       
       fgHitsHistPtr[gain] = new TH2I(tmpHistoName, tmpHistoName,  
-				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
-      //      fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
+				    NXCOLUMNSMOD* NMODULES , 0, NXCOLUMNSMOD*NMODULES,  
+				    NZROWSMOD,          0, NZROWSMOD);
+      //      fgHitsHistPtr[gain]->SetMaximum( MAXBINVALUE); 
       fgHitsHistPtr[gain]->Reset();
-      fgHitsHistPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+      fgHitsHistPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
      
       sprintf(tmpHistoName, "Average Energy gain %d", gain);
       fgAveragePtr[gain] = new TH2D(tmpHistoName,tmpHistoName,  
-				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
-      //    fgAveragePtr[gain]->SetMaximum( MAX_BIN_VALUE); 
+				    NXCOLUMNSMOD* NMODULES , 0, NXCOLUMNSMOD*NMODULES,  
+				    NZROWSMOD,          0, NZROWSMOD);
+      //    fgAveragePtr[gain]->SetMaximum( MAXBINVALUE); 
       fgAveragePtr[gain]->Reset();
-      fgAveragePtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+      fgAveragePtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
 
       //sprintf(tmpHistoName, "Dead Channel Map gain%d", gain);
       sprintf(tmpHistoName,  "Dead Channel Map gain%d", gain);
       fDeadCannelMapPtr[gain] = new TH2D(tmpHistoName,tmpHistoName,  
-				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
-      //    fDeadCannelMapPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
+				    NXCOLUMNSMOD* NMODULES , 0, NXCOLUMNSMOD*NMODULES,  
+				    NZROWSMOD,          0, NZROWSMOD);
+      //    fDeadCannelMapPtr[gain]->SetMaximum( MAXBINVALUE); 
  
       fDeadCannelMapPtr[gain]->Reset();
-      fDeadCannelMapPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+      fDeadCannelMapPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
 
 
       
       sprintf(tmpHistoName, "DCS view gain %d", gain);
       fgDCSViewPtr[gain] = new TH2D(tmpHistoName, tmpHistoName, 
-				    N_ZROWS_MOD, 0, N_ZROWS_MOD,  
-				    N_XCOLUMNS_MOD, 0, N_XCOLUMNS_MOD);
+				    NZROWSMOD, 0, NZROWSMOD,  
+				    NXCOLUMNSMOD, 0, NXCOLUMNSMOD);
     }
 
 
@@ -271,61 +271,61 @@ AliHLTPHOSOnlineDisplayCalibTab::UpdateDisplay()
   fgCanvasHGPtr =  fEc7->GetCanvas();
   fgCanvasHGPtr->cd();
 
-  fgCalibHistPtr[HIGH_GAIN]->Draw("LEGO2Z");
+  fgCalibHistPtr[HIGHGAIN]->Draw("LEGO2Z");
   fgCanvasHGPtr->Update();
   fgCanvasLGPtr = fEc8->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgCalibHistPtr[LOW_GAIN]->Draw("LEGO2Z");
+  fgCalibHistPtr[LOWGAIN]->Draw("LEGO2Z");
   fgCanvasLGPtr->Update();
   fgCanvasHGPtr =  fEc9->GetCanvas();
 
   fgCanvasHGPtr->cd();
-  fgHitsHistPtr[HIGH_GAIN]->Draw("SCAT");
+  fgHitsHistPtr[HIGHGAIN]->Draw("SCAT");
   fgCanvasHGPtr->Update();
   fgCanvasLGPtr = fEc10->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgHitsHistPtr[LOW_GAIN]->Draw("SCAT");
+  fgHitsHistPtr[LOWGAIN]->Draw("SCAT");
   fgCanvasLGPtr->Update();
   fgCanvasHGPtr =  fEc11->GetCanvas();
   fgCanvasHGPtr->cd();
 
-  fgCalibHistPtr[HIGH_GAIN]->Draw("COLZ");
+  fgCalibHistPtr[HIGHGAIN]->Draw("COLZ");
   fgCanvasHGPtr->Update();
   fgCanvasLGPtr = fEc12->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgCalibHistPtr[LOW_GAIN]->Draw("COLZ");
+  fgCalibHistPtr[LOWGAIN]->Draw("COLZ");
   fgCanvasLGPtr->Update();
 
 
   fgCanvasLGPtr = fEc13->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgAveragePtr[HIGH_GAIN]->Draw("COLZ");
+  fgAveragePtr[HIGHGAIN]->Draw("COLZ");
   fgCanvasLGPtr->Update();
 
   fgCanvasHGPtr = fEc14->GetCanvas();
   fgCanvasHGPtr->cd();
-  fgAveragePtr[LOW_GAIN]->Draw("COLZ");
+  fgAveragePtr[LOWGAIN]->Draw("COLZ");
   fgCanvasHGPtr->Update();
 
   fgCanvasLGPtr = fEc15->GetCanvas();
   fgCanvasLGPtr->cd();
-  fDeadCannelMapPtr[HIGH_GAIN]->Draw("COL");
+  fDeadCannelMapPtr[HIGHGAIN]->Draw("COL");
   fgCanvasLGPtr->Update();
 
   fgCanvasHGPtr = fEc16->GetCanvas();
   fgCanvasHGPtr->cd();
-  fDeadCannelMapPtr[LOW_GAIN]->Draw("COL");
+  fDeadCannelMapPtr[LOWGAIN]->Draw("COL");
   fgCanvasHGPtr->Update();
 
 
   fgCanvasLGPtr = fEc17->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgDCSViewPtr[HIGH_GAIN]->Draw("COLZ");
+  fgDCSViewPtr[HIGHGAIN]->Draw("COLZ");
   fgCanvasLGPtr->Update();
 
   fgCanvasHGPtr = fEc18->GetCanvas();
   fgCanvasHGPtr->cd();
-  fgDCSViewPtr[LOW_GAIN]->Draw("COLZ");
+  fgDCSViewPtr[LOWGAIN]->Draw("COLZ");
   fgCanvasHGPtr->Update();
   
 

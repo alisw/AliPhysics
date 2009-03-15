@@ -35,11 +35,11 @@ AliHLTPHOSRcuAltroPatternTest::AliHLTPHOSRcuAltroPatternTest(const AliHLTUInt8_t
 {
   fReferenceAltroPattern = new  AliHLTPHOSPattern(pattern, length);
 
-  for(int z=0; z < N_ZROWS_RCU; z++)
+  for(int z=0; z < NZROWSRCU; z++)
     {
-      for(int x=0; x < N_XCOLUMNS_RCU; x++)
+      for(int x=0; x < NXCOLUMNSRCU; x++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      fNEqual[z][x][gain] = 0;
 	      fNNotEqual[z][x][gain] = 0;
@@ -111,7 +111,7 @@ AliHLTPHOSRcuAltroPatternTest::countPatterns(const AliHLTPHOSPattern *pattern) c
 }
 
 
-//   const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
+//   const int  GetPattern(int *pattern,  const int maxlengths =  ALTROMAXSAMPLES) const;
 //   const int GetPatternLength() const {return  fPatternLength;}; 
 
 /* Counts the total number of differen patterns dtetected across all channels
@@ -123,22 +123,22 @@ AliHLTPHOSRcuAltroPatternTest::countPatterns(const AliHLTPHOSPattern *pattern) c
  * @return the number of different patterns detected across all channels
  */
 
-//   const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
+//   const int  GetPattern(int *pattern,  const int maxlengths =  ALTROMAXSAMPLES) const;
 //   const int GetPatternLength() const {return  fPatternLength;}; 
 int 
 AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool /*doprintpattern*/)
 {
   fCnt ++;
 
-  int tmpPatternArray[ALTRO_MAX_SAMPLES];
+  int tmpPatternArray[ALTROMAXSAMPLES];
   int tmplength = fReferenceAltroPattern->GetPattern(tmpPatternArray, length);
   AliHLTPHOSPattern *tmpPattern =  new AliHLTPHOSPattern(tmpPatternArray, tmplength); 
   
-  for(int z=0; z < N_ZROWS_RCU; z++)
+  for(int z=0; z < NZROWSRCU; z++)
     {
-      for(int x=0; x < N_XCOLUMNS_RCU; x++)
+      for(int x=0; x < NXCOLUMNSRCU; x++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      if(fPerChannelPatterns[z][x][gain] != 0)
 		{
@@ -172,11 +172,11 @@ AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool /*d
 void                          
 AliHLTPHOSRcuAltroPatternTest::PrintStatistics() const
 {
-  for(int z=0; z < N_ZROWS_RCU; z++)
+  for(int z=0; z < NZROWSRCU; z++)
     {
-      for(int x=0; x < N_XCOLUMNS_RCU; x++)
+      for(int x=0; x < NXCOLUMNSRCU; x++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      int tmp = countPatterns(fPerChannelPatterns[z][x][gain]);
 	      if(tmp > 2)

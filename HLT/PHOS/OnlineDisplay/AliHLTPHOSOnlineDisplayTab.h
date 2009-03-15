@@ -11,13 +11,13 @@
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSBase.h"
 
-//#define X_RANGE_START 120
-//#define X_RANGE_LENGTH 80
+//#define XRANGESTART 120
+//#define XRANGELENGTH 80
 
-#define X_RANGE_START 128
-#define X_RANGE_LENGTH 64
+#define XRANGESTART 128
+#define XRANGELENGTH 64
 
-#define X_RANGE_END  X_RANGE_START + X_RANGE_LENGTH
+#define XRANGEEND  XRANGESTART + XRANGELENGTH
 
 
 using namespace PhosHLTConst;
@@ -49,7 +49,7 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
   Bool_t fgAccumulate;
   Bool_t fgSyncronize;
   AliHLTHOMERReader* fgHomerReaderPtr;
-  AliHLTHOMERReader* fgHomerReadersPtr[MAX_HOSTS];
+  AliHLTHOMERReader* fgHomerReadersPtr[MAXHOSTS];
   int DoGetNextEvent();
   int fgEvntCnt;
   int fgNHosts;

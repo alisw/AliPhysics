@@ -132,7 +132,7 @@ int  AliHLTPHOSRcuAltroPatternTestComponent::DoEvent( const AliHLTComponentEvent
 	  tmpRawPtr = fShmPtr->GetRawData(tmpSamples); 
 	  
 	  
-	  if( (tmpZ > N_ZROWS_RCU) || (tmpX > N_XCOLUMNS_RCU) || (tmpGain > N_GAINS))
+	  if( (tmpZ > NZROWSRCU) || (tmpX > NXCOLUMNSRCU) || (tmpGain > NGAINS))
 	    {
 	      cout <<" ERROR parameters out of range z = "<< tmpZ <<" x = "<< tmpX<< " gain = " << tmpGain<<" nSamples = " <<  tmpSamples  <<endl;
 	    }
@@ -285,9 +285,9 @@ AliHLTPHOSRcuAltroPatternTestComponent::DoInit(int argc, const char** argv )
     }
   else
     {
-      int tmpPattern[ALTRO_MAX_SAMPLES]; 
-      ScanPatternFromFile(patternFilename, tmpPattern, ALTRO_MAX_SAMPLES) ;
-      fPatternTestPtr = new  AliHLTPHOSRcuAltroPatternTest(fModuleID, fRcuX, fRcuZ, tmpPattern, ALTRO_MAX_SAMPLES);
+      int tmpPattern[ALTROMAXSAMPLES]; 
+      ScanPatternFromFile(patternFilename, tmpPattern, ALTROMAXSAMPLES) ;
+      fPatternTestPtr = new  AliHLTPHOSRcuAltroPatternTest(fModuleID, fRcuX, fRcuZ, tmpPattern, ALTROMAXSAMPLES);
     }
 
   //  return iResult; 
@@ -311,7 +311,7 @@ AliHLTPHOSRcuAltroPatternTestComponent::ScanPatternFromFile(const char *filename
   //  int tmpPattern[ALTRO_MAX_SAMPLES];
   int dummy = 0;
   int res = 0;
-  for(int i=0; i<ALTRO_MAX_SAMPLES; i++)
+  for(int i=0; i<ALTROMAXSAMPLES; i++)
     {
        res = fscanf(fp,"w 0x%X 0x%X\n", &dummy, &pattern[i]);
       //      cout << tmpPattern[i] << endl;

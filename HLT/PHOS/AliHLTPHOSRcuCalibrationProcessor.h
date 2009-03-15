@@ -25,9 +25,9 @@ class TH2D;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 //class AliHLTPHOSUtilities;
 
-#define XBIN_LOW  0
-#define XBIN_UP   1023
-#define N_BINS    1023
+#define XBINLOW  0
+#define XBINUP   1023
+#define NBINS    1023
 
 class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
 //class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSRcuProcessor
@@ -56,17 +56,17 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
   void ScanTimeString(char *timeString);
   char fHistoOutDir[512];
 
-  TH1F *fEnergyHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    /**<Array to store energy distribution per channel for one rcu*/
-  TH1F *fTimingHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    /**<Array to store timing distribution per channel for one rcu*/
-  //  TH1D *fDeadChannelMapHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
-  TH2D *fDeadChannelMapHistogramPtrs[N_GAINS];
+  TH1F *fEnergyHistogramPtrs[NXCOLUMNSRCU][NZROWSRCU][NGAINS];    /**<Array to store energy distribution per channel for one rcu*/
+  TH1F *fTimingHistogramPtrs[NXCOLUMNSRCU][NZROWSRCU][NGAINS];    /**<Array to store timing distribution per channel for one rcu*/
+  //  TH1D *fDeadChannelMapHistogramPtrs[NXCOLUMNSRCU][NZROWSRCU][NGAINS];
+  TH2D *fDeadChannelMapHistogramPtrs[NGAINS];
 
-  Float_t fEnergyAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Accumulated energy divided by  hits*/
-  Double_t fAccumulatedValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];   /**<Array to store accumulated energy per channel for one rcu during run*/
-  Float_t fTimingAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Avereage TOF*/
-  AliHLTUInt32_t fHits[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
-  AliHLTUInt32_t fDeadChannelMap[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
-  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];        /**<temporary variable to store raw samples from a single altro channel*/
+  Float_t fEnergyAverageValues[NXCOLUMNSRCU][NZROWSRCU][NGAINS];  /**<Accumulated energy divided by  hits*/
+  Double_t fAccumulatedValues[NXCOLUMNSRCU][NZROWSRCU][NGAINS];   /**<Array to store accumulated energy per channel for one rcu during run*/
+  Float_t fTimingAverageValues[NXCOLUMNSRCU][NZROWSRCU][NGAINS];  /**<Avereage TOF*/
+  AliHLTUInt32_t fHits[NXCOLUMNSRCU][NZROWSRCU][NGAINS]; //comment
+  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSRCU][NZROWSRCU][NGAINS]; //comment
+  Double_t fTmpChannelData[ALTROMAXSAMPLES];        /**<temporary variable to store raw samples from a single altro channel*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct fCellAccEnergy; //comment
   AliHLTUInt8_t fModuleID; /**<ID of the module this component read data from (0-4)*/
   AliHLTUInt8_t fRcuX;     /**<X position of RCU the data from this Equippment comes from (0 or 1)*/

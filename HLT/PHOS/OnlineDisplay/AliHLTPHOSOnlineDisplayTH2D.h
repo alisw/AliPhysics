@@ -22,9 +22,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#define Z_ROWS 3
-#define X_COLS 3
-#define N_HISTOGRAMS  Z_ROWS*X_COLS +4
+#define ZROWS 3
+#define XCOLS 3
+#define NHISTOGRAMS  ZROWS*XCOLS +4
 
 #include <TH2D.h>
 #include <TCanvas.h>
@@ -65,11 +65,12 @@ public:
 private:
   AliHLTPHOSOnlineDisplayTH2D(); 
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
-  TCanvas  *fgRawDataCanvasPtr[N_GAINS];
-  TH1D     *fgRawDataPlotsPtr[N_HISTOGRAMS][N_GAINS]; 
-  TCanvas  *fgRawDataCanvasSinglePtr[N_GAINS];
-  TH1D     *fgRawDataPlotsSinglePtr[N_GAINS]; 
+  TCanvas  *fgRawDataCanvasPtr[NGAINS];
+  TH1D     *fgRawDataPlotsPtr[NHISTOGRAMS][NGAINS]; 
+  TCanvas  *fgRawDataCanvasSinglePtr[NGAINS];
+  TH1D     *fgRawDataPlotsSinglePtr[NGAINS]; 
   
+
   int fRunNumber;
   //  bool fIsSetRunNumber;
 

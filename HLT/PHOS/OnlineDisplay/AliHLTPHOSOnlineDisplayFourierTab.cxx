@@ -21,7 +21,7 @@
 #include "AliHLTPHOSRcuFFTDataStruct.h"
 #include "TStyle.h"
 
-#define SAMPLING_FREQUENCY 10
+#define SAMPLINGFREQUENCY 10
 
 using namespace std;
 
@@ -39,7 +39,7 @@ AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab()
 
 
 AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
-								     AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab(), fEvtCnt(0)
+								     AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAXHOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab(), fEvtCnt(0)
 {     
 
   // gStyle->SetOptLogy();
@@ -50,14 +50,14 @@ AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSO
   fOnlineDisplayPtr =  onlineDisplayPtr;
   fFourierPtr = new AliHLTPHOSFourier();
 
-  for(int gain = 0; gain < N_GAINS; gain ++ )
+  for(int gain = 0; gain < NGAINS; gain ++ )
     {
       fFourierHistoNew[gain] = 0;
       fFourierHistoOld[gain] = 0;
       fFourierHistoAccumulated[gain] = 0;
     }
 
-  for(int i=0; i<MAX_HOSTS; i++)
+  for(int i=0; i<MAXHOSTS; i++)
     {
        fgHomerReadersPtr[i] = 0;
     }
@@ -175,13 +175,13 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
   int linewidth = 0;
   // double  linewidth = 1.2;
 
-  for(int gain = 0; gain < N_GAINS; gain ++ )
+  for(int gain = 0; gain < NGAINS; gain ++ )
     {
       if( fFourierHistoNew[gain] == 0)
 	{
 	  sprintf(tmptitle, "PSD averaged over all %s channels: Most recent event", Gain2Text(gain, ' ')); 
 	  sprintf(tmpname,  "PSD_averaged_over_all_%s_channels__most_recent_event", Gain2Text(gain, '_'));  
-	  fFourierHistoNew[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLING_FREQUENCY/2);
+	  fFourierHistoNew[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLINGFREQUENCY/2);
 	  fFourierHistoNew[gain]->GetXaxis()->SetTitle("f/MHz");
 	  fFourierHistoNew[gain]->GetYaxis()->SetTitle("Power (arbitrary units)"); 
 	  fFourierHistoNew[gain]->SetLineWidth(linewidth);
@@ -191,7 +191,7 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
 	{
 	  sprintf(tmptitle, "PSD averaged over all %s channels: Previous event", Gain2Text(gain, ' ')); 
 	  sprintf(tmpname,  "PSD_averaged_over_all_%s_channels__previous_event", Gain2Text(gain, '_')); 
-	  fFourierHistoOld[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLING_FREQUENCY/2);
+	  fFourierHistoOld[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLINGFREQUENCY/2);
 	  fFourierHistoOld[gain]->GetXaxis()->SetTitle("f/MHz");
 	  fFourierHistoOld[gain]->GetYaxis()->SetTitle("Power (arbitrary units)"); 
 	  fFourierHistoOld[gain]->SetLineWidth(linewidth);
@@ -201,7 +201,7 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
 	{
 	  sprintf(tmptitle, "PSD averaged over all %s channels: All events", Gain2Text(gain, ' ')); 
 	  sprintf(tmpname,  "PSD_averaged_over_all_%s_channels__All_events", Gain2Text(gain, '_')); 
-	  fFourierHistoAccumulated[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLING_FREQUENCY/2);
+	  fFourierHistoAccumulated[gain] = new TH1D(tmpname, tmptitle,  (size/2) +1, 0, SAMPLINGFREQUENCY/2);
 	  fFourierHistoAccumulated[gain]->GetXaxis()->SetTitle("f/MHz");
 	  fFourierHistoAccumulated[gain]->GetYaxis()->SetTitle("Power (arbitrary units)"); 
 	  fFourierHistoAccumulated[gain]->SetLineWidth(linewidth);
@@ -228,7 +228,7 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
 void
 AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
 {
-  for(int gain=0; gain < N_GAINS; gain++)
+  for(int gain=0; gain < NGAINS; gain++)
     {
       char gainLabel[100];
       char label[256];
@@ -237,12 +237,12 @@ AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
       fOnlineDisplayPtr->Gain2Text(gain,gainLabel);
       sprintf(label, "PHOS Fourier transform %s", gainLabel);
       fgLegoPlotPtr[gain] = new AliHLTPHOSOnlineDisplayTH2D(fOnlineDisplayPtr, label, label, 
-      							    N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-      							    N_ZROWS_MOD,   0, N_ZROWS_MOD);   
-	   //    fgLegoPlotPtr[gain]->SetGain(HIGH_GAIN);
+      							    NXCOLUMNSMOD*NMODULES , 0, NXCOLUMNSMOD*NMODULES,  
+      							    NZROWSMOD,   0, NZROWSMOD);   
+	   //    fgLegoPlotPtr[gain]->SetGain(HIGHGAIN);
       fgLegoPlotPtr[gain]->SetMaximum(1023);
       fgLegoPlotPtr[gain]->Reset();
-      fgLegoPlotPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+      fgLegoPlotPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
  
    }
   
@@ -289,63 +289,63 @@ AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
 void
 AliHLTPHOSOnlineDisplayFourierTab::UpdateDisplay()
 {
-  if( fFourierHistoNew[HIGH_GAIN])
+  if( fFourierHistoNew[HIGHGAIN])
     {
-      fgCanvasPtr[HIGH_GAIN] =  fEc1->GetCanvas();
-      fgCanvasPtr[HIGH_GAIN]->cd();
+      fgCanvasPtr[HIGHGAIN] =  fEc1->GetCanvas();
+      fgCanvasPtr[HIGHGAIN]->cd();
       gPad->SetLogy();
-      //  fgLegoPlotPtr[HIGH_GAIN]->Draw("LGZ");
-      fFourierHistoNew[HIGH_GAIN]->Draw();
-      fgCanvasPtr[HIGH_GAIN]->Update();
+      //  fgLegoPlotPtr[HIGHGAIN]->Draw("LGZ");
+      fFourierHistoNew[HIGHGAIN]->Draw();
+      fgCanvasPtr[HIGHGAIN]->Update();
     }
 
-  if( fFourierHistoNew[LOW_GAIN])
+  if( fFourierHistoNew[LOWGAIN])
     {
-      fgCanvasPtr[LOW_GAIN] = fEc2->GetCanvas();
-      fgCanvasPtr[LOW_GAIN]->cd();
+      fgCanvasPtr[LOWGAIN] = fEc2->GetCanvas();
+      fgCanvasPtr[LOWGAIN]->cd();
       gPad->SetLogy();
-      //  fgLegoPlotPtr[LOW_GAIN]->Draw("HGZ");
-      fFourierHistoNew[LOW_GAIN]->Draw();
-      fgCanvasPtr[LOW_GAIN]->Update();
+      //  fgLegoPlotPtr[LOWGAIN]->Draw("HGZ");
+      fFourierHistoNew[LOWGAIN]->Draw();
+      fgCanvasPtr[LOWGAIN]->Update();
     }
-  if( fFourierHistoOld[HIGH_GAIN])
+  if( fFourierHistoOld[HIGHGAIN])
     {
-      fgCanvasPtr[HIGH_GAIN] =  fEc3->GetCanvas();
-      fgCanvasPtr[HIGH_GAIN]->cd();
+      fgCanvasPtr[HIGHGAIN] =  fEc3->GetCanvas();
+      fgCanvasPtr[HIGHGAIN]->cd();
       gPad->SetLogy();
-      // fgLegoPlotPtr[HIGH_GAIN]->Draw("Low gain");
-      fFourierHistoOld[HIGH_GAIN]->Draw();
-      fgCanvasPtr[HIGH_GAIN]->Update();
-    }
-
-  if( fFourierHistoOld[LOW_GAIN])
-    {
-      fgCanvasPtr[LOW_GAIN] = fEc4->GetCanvas();
-      fgCanvasPtr[LOW_GAIN]->cd();
-      //fgLegoPlotPtr[LOW_GAIN]->Draw("High gain");
-      gPad->SetLogy();
-      fFourierHistoOld[LOW_GAIN]->Draw();
-      fgCanvasPtr[LOW_GAIN]->Update();
+      // fgLegoPlotPtr[HIGHGAIN]->Draw("Low gain");
+      fFourierHistoOld[HIGHGAIN]->Draw();
+      fgCanvasPtr[HIGHGAIN]->Update();
     }
 
-  if( fFourierHistoAccumulated[HIGH_GAIN])
+  if( fFourierHistoOld[LOWGAIN])
     {
-      fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
-      fgCanvasPtr[HIGH_GAIN]->cd();
+      fgCanvasPtr[LOWGAIN] = fEc4->GetCanvas();
+      fgCanvasPtr[LOWGAIN]->cd();
+      //fgLegoPlotPtr[LOWGAIN]->Draw("High gain");
       gPad->SetLogy();
-      fFourierHistoAccumulated[HIGH_GAIN]->Draw();
-      //  fgLegoPlotPtr[HIGH_GAIN]->Draw("CONTZ");
-      fgCanvasPtr[HIGH_GAIN]->Update();
+      fFourierHistoOld[LOWGAIN]->Draw();
+      fgCanvasPtr[LOWGAIN]->Update();
     }
 
-  if( fFourierHistoAccumulated[LOW_GAIN])
+  if( fFourierHistoAccumulated[HIGHGAIN])
     {
-      fgCanvasPtr[LOW_GAIN] = fEc6->GetCanvas();
-      fgCanvasPtr[LOW_GAIN]->cd();
+      fgCanvasPtr[HIGHGAIN] =  fEc5->GetCanvas();
+      fgCanvasPtr[HIGHGAIN]->cd();
       gPad->SetLogy();
-      //  fgLegoPlotPtr[LOW_GAIN]->Draw("CONTZ");
-      fFourierHistoAccumulated[LOW_GAIN]->Draw();
-      fgCanvasPtr[LOW_GAIN]->Update();
+      fFourierHistoAccumulated[HIGHGAIN]->Draw();
+      //  fgLegoPlotPtr[HIGHGAIN]->Draw("CONTZ");
+      fgCanvasPtr[HIGHGAIN]->Update();
+    }
+
+  if( fFourierHistoAccumulated[LOWGAIN])
+    {
+      fgCanvasPtr[LOWGAIN] = fEc6->GetCanvas();
+      fgCanvasPtr[LOWGAIN]->cd();
+      gPad->SetLogy();
+      //  fgLegoPlotPtr[LOWGAIN]->Draw("CONTZ");
+      fFourierHistoAccumulated[LOWGAIN]->Draw();
+      fgCanvasPtr[LOWGAIN]->Update();
     }
   
 }
@@ -354,12 +354,12 @@ AliHLTPHOSOnlineDisplayFourierTab::UpdateDisplay()
 const  char* 
 AliHLTPHOSOnlineDisplayFourierTab::Gain2Text(const int gain, const char delimeter)
 {
-  if(gain ==  LOW_GAIN)
+  if(gain ==  LOWGAIN)
     {
       sprintf(fGainText, "low%cgain", delimeter);
 
     }
-  else if(gain ==  HIGH_GAIN)
+  else if(gain ==  HIGHGAIN)
     {
       sprintf(fGainText, "high%cgain", delimeter);
     }

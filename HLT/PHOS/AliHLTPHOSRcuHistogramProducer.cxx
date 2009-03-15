@@ -127,25 +127,25 @@ AliHLTPHOSRcuHistogramProducer::Init()
   int geomx;
   int geomz;
 
-  for(int gain=0; gain< N_GAINS; gain++)
+  for(int gain=0; gain< NGAINS; gain++)
     {
       sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
-      //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
+      //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, NBINS, XBINLOW, XBINUP);
       fDeadChannelMapHistogramPtrs[gain] = new TH2D(tmpHistoName, tmpHistoName,  
-				      N_XCOLUMNS_RCU , 0, N_XCOLUMNS_RCU , 
-				      N_ZROWS_RCU,         0, N_ZROWS_RCU);
+				      NXCOLUMNSRCU , 0, NXCOLUMNSRCU , 
+				      NZROWSRCU,         0, NZROWSRCU);
       fDeadChannelMapHistogramPtrs[gain]->Reset(); 
       //     fgCalibHistPtr[gain]->GetXaxis()->SetRange(128, 128 + 64);
     }
 
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < NXCOLUMNSRCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < NZROWSRCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
-	      geomx = x + N_XCOLUMNS_RCU*fRcuX;
-	      geomz = z + N_ZROWS_RCU*fRcuZ;
+	      geomx = x + NXCOLUMNSRCU*fRcuX;
+	      geomz = z + NZROWSRCU*fRcuZ;
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
 	      fTimingAverageValues[x][z][gain] = 0; 
@@ -153,7 +153,7 @@ AliHLTPHOSRcuHistogramProducer::Init()
 	      fDeadChannelMap[x][z][gain]      = 0;
 	      sprintf(tmpHistoName, "Edistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
 	      //	      fEnergyHistogramPtrs[x][z][gain] = 0;
-	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
+	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, NBINS, XBINLOW, XBINUP);
 	      sprintf(tmpHistoName, "TOFdistribution_module%d_x%d_z%d_gain%d", (int)fModuleID,  geomx, geomz, gain);
 	      
 	      //	      fTimingHistogramPtrs[x][z][gain] = 0;
@@ -162,7 +162,7 @@ AliHLTPHOSRcuHistogramProducer::Init()
 	      //	      fDeadChannelMapHistogramPtrs[x][z][gain] = new TH1D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
 
 
-	      fTimingHistogramPtrs[x][z][gain] = new TH1F(tmpHistoName , tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
+	      fTimingHistogramPtrs[x][z][gain] = new TH1F(tmpHistoName , tmpHistoName, NBINS, XBINLOW, XBINUP);
 	      fCellAccEnergy.fAccumulatedEnergies[x][z][gain] = 0;
 	      fCellAccEnergy.fHits[x][z][gain] = 0;
 	      fCellAccEnergy.fDeadChannelMap[x][z][gain] = 0;
@@ -229,11 +229,11 @@ void
 AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
 {
   //comment
-  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  NXCOLUMNSRCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < NZROWSRCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      fDeadChannelMapHistogramPtrs[gain]->SetBinContent(x ,z , fCellAccEnergy.fDeadChannelMap[x][z][gain]);
 	    }
@@ -247,11 +247,11 @@ void
 AliHLTPHOSRcuHistogramProducer::Reset()
 {
   //See header file for documentation
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < NXCOLUMNSRCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < NZROWSRCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
@@ -262,7 +262,7 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 	} 
     }
   
-  for(int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
+  for(int i = 0; i <ALTROMAXSAMPLES;  i++)
     {
       fTmpChannelData[i] = 0;
     }
@@ -322,11 +322,11 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 
   //  cout <<"printing histograms"<< endl;
 
-  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  NXCOLUMNSRCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < NZROWSRCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < NGAINS; gain ++)
 	    {
 	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();

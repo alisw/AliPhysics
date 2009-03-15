@@ -130,7 +130,7 @@ AliHLTPHOSFourier::CheckSignal(const Int_t *data, const int length)
       cout << "FourierAna::CheckSignal min = "<< tmpMin << "  max =  " << tmpMax << endl;
     }
   
-  if( (tmpMax >= MAX_BIN_VALUE) || tmpMin < 1 )
+  if( (tmpMax >= MAXBINVALUE) || tmpMin < 1 )
     {
       cout << "ERROR, FourierAna::CheckSignal failed, signal out of range, min= "<< tmpMin << "max = " << tmpMax << endl;
       return false;
@@ -150,7 +150,7 @@ AliHLTPHOSFourier::Init()
   fFFTInputArray = new double[fFixedDataSize];
   fFFTOutputArray = new double[fFixedDataSize];
   
-  for(int gain = 0; gain < N_GAINS; gain ++)
+  for(int gain = 0; gain < NGAINS; gain ++)
     {
       fFFTOupuStruct.fDataLength = fFixedDataSize;
  
@@ -160,7 +160,7 @@ AliHLTPHOSFourier::Init()
 	  fFFTOutputArray[k] = 0;
 
 	}
-      for(int i=0; i <  ALTRO_MAX_SAMPLES  ; i++)
+      for(int i=0; i <  ALTROMAXSAMPLES  ; i++)
 	{
 	  fFFTOupuStruct.fGlobalAccumulatedPSD[gain][i] = 0;
 	  fFFTOupuStruct.fGlobalLastPSD[gain][i] = 0;

@@ -104,11 +104,11 @@ AliHLTPHOSMapper::InitAltroMapping()
 void
 AliHLTPHOSMapper::InitDDLSpecificationMapping()
 {
-  fSpecificationMapPtr = new fDDLSpecificationMap[PhosHLTConst::N_MODULES*PhosHLTConst::N_RCUS_PER_MODULE];
-  for(Int_t ddl = 0; ddl < PhosHLTConst::N_MODULES*PhosHLTConst::N_RCUS_PER_MODULE; ddl++)
+  fSpecificationMapPtr = new fDDLSpecificationMap[PhosHLTConst::NMODULES*PhosHLTConst::NRCUSPERMODULE];
+  for(Int_t ddl = 0; ddl < PhosHLTConst::NMODULES*PhosHLTConst::NRCUSPERMODULE; ddl++)
     {
       
-      fSpecificationMapPtr[ddl].fModId = ddl/PhosHLTConst::N_RCUS_PER_MODULE;
+      fSpecificationMapPtr[ddl].fModId = ddl/PhosHLTConst::NRCUSPERMODULE;
       
       if(ddl%4 == 0)
 	{
@@ -133,8 +133,8 @@ AliHLTPHOSMapper::InitDDLSpecificationMapping()
 	  fSpecificationMapPtr[ddl].fRcuZ = 1;
 	}
       
-      fSpecificationMapPtr[ddl].fRcuZOffset = N_ZROWS_RCU*(fSpecificationMapPtr[ddl].fRcuZ);
-      fSpecificationMapPtr[ddl].fRcuXOffset = N_XCOLUMNS_RCU*(fSpecificationMapPtr[ddl].fRcuX);
+      fSpecificationMapPtr[ddl].fRcuZOffset = NZROWSRCU*(fSpecificationMapPtr[ddl].fRcuZ);
+      fSpecificationMapPtr[ddl].fRcuXOffset = NXCOLUMNSRCU*(fSpecificationMapPtr[ddl].fRcuX);
     }
 }
 

@@ -46,7 +46,7 @@ class AliHLTPHOSRcuAltroPatternTestComponent:public AliHLTPHOSRcuProcessor
   AliHLTPHOSRcuAltroPatternTestComponent(const AliHLTPHOSRcuAltroPatternTestComponent &);
   AliHLTPHOSRcuAltroPatternTestComponent & operator = (const AliHLTPHOSRcuAltroPatternTestComponent &);
   AliHLTPHOSRcuAltroPatternTest *fPatternTestPtr;
-  void ScanPatternFromFile(const char *filename, int *pattern, const int lengt = ALTRO_MAX_SAMPLES) const;
+  void ScanPatternFromFile(const char *filename, int *pattern, const int lengt = ALTROMAXSAMPLES) const;
   AliHLTPHOSSharedMemoryInterface *fShmPtr; // Interface to read altro channel data from shared memory
   unsigned long fNTotalPatterns;   /**<The total number of patterns analyzed*/
   unsigned long fNWrongPatterns;   /**<The total number of incorrect patterns found*/

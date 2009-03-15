@@ -52,7 +52,7 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():
   //  fPHOSRadius = geom->GetIPtoCrystalSurface();
   fPHOSRadius = geom->GetIPtoCrystalSurface();
 
-  for(int i = 0; i < N_MODULES; i++)
+  for(int i = 0; i < NMODULES; i++)
     {
 //       fRotParametersCos[i] = cos((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
 //       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
@@ -109,13 +109,13 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSRecPointDataStruct* recPoint
   
   Int_t module = recPointPtr->fModule;
 
-  tempPosX = kCRYSTAL_SIZE*(recPointPtr->fX-N_XCOLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
+  tempPosX = kCRYSTALSIZE*(recPointPtr->fX-NXCOLUMNSMOD/2) + kCRYSTALSIZE/2;
 
   positionPtr[0] = tempPosX*fRotParametersSin[module] + fPHOSRadius*fRotParametersCos[module];
 
   positionPtr[1] = tempPosX*fRotParametersCos[module] - fPHOSRadius*fRotParametersSin[module];
  
-  positionPtr[2] = kCRYSTAL_SIZE*(recPointPtr->fZ-N_ZROWS_MOD/2) + kCRYSTAL_SIZE/2;
+  positionPtr[2] = kCRYSTALSIZE*(recPointPtr->fZ-NZROWSMOD/2) + kCRYSTALSIZE/2;
 
 }
 
@@ -124,11 +124,11 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* posi
 { 
   //Get global position from local postion and module number
   //See header file for documentation
-  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersCos[module] + fPHOSRadius*fRotParametersSin[module];
+  positionPtr[0] = kCRYSTALSIZE*(locPositionPtr[0]-NXCOLUMNSMOD/2)*fRotParametersCos[module] + fPHOSRadius*fRotParametersSin[module];
 
-  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersSin[module] - fPHOSRadius*fRotParametersCos[module];
+  positionPtr[1] = kCRYSTALSIZE*(locPositionPtr[0]-NXCOLUMNSMOD/2)*fRotParametersSin[module] - fPHOSRadius*fRotParametersCos[module];
   
-  positionPtr[2] = kCRYSTAL_SIZE*(locPositionPtr[1]-N_ZROWS_MOD);
+  positionPtr[2] = kCRYSTALSIZE*(locPositionPtr[1]-NZROWSMOD);
 
 }
 

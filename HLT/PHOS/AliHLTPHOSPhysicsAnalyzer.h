@@ -45,7 +45,7 @@ class TH1F;
 class AliHLTPHOSRecPointDataStruct;
 class AliHLTPHOSRecPointContainerStruct;
 
-const Float_t kCRYSTAL_SIZE = 2.25;
+const Float_t kCRYSTALSIZE = 2.25;
 
 /**
  * @class AliHLTPHOSPhysicsAnalyzer

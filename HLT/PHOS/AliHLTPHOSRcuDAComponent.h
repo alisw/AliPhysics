@@ -88,7 +88,7 @@ protected:
   Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
   /** Reset the energy and timing arrays */
-  void ResetArrays(Float_t e[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS], Float_t t[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]);
+  void ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS], Float_t t[NXCOLUMNSMOD][NZROWSMOD][NGAINS]);
 
   //  int fCnt; ///TODO, remove this
 

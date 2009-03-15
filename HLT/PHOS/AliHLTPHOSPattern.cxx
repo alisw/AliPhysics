@@ -135,16 +135,16 @@ AliHLTPHOSPattern::CheckPatternLength(const int nSamples, const int nPresamples)
 {
   bool iRet = true;
 
-  if( nSamples  > ALTRO_MAX_SAMPLES)
+  if( nSamples  > ALTROMAXSAMPLES)
     {
       cout << "Warning: attemp to set pattern array of length " << nSamples << " wich is out of range" <<endl;
-      cout <<"Max length of pattern array is " << ALTRO_MAX_SAMPLES  <<endl;
+      cout <<"Max length of pattern array is " << ALTROMAXSAMPLES  <<endl;
       iRet = false;
     }
-  else if(nPresamples >  ALTRO_MAX_PRESAMPLES)
+  else if(nPresamples >  ALTROMAXPRESAMPLES)
     {
       cout << "ERROR: attemp to set teh number of  " << nPresamples << " wich is out of range" <<endl;
-      cout <<"Max length of pattern array is " << ALTRO_MAX_PRESAMPLES  <<endl;
+      cout <<"Max length of pattern array is " << ALTROMAXPRESAMPLES  <<endl;
       iRet = false;
     }
 
@@ -155,7 +155,7 @@ AliHLTPHOSPattern::CheckPatternLength(const int nSamples, const int nPresamples)
 void 
 AliHLTPHOSPattern::SetPattern(const int *pattern, const int length)
 {
-  for(int i=0; i< ALTRO_MAX_SAMPLES; i++)
+  for(int i=0; i< ALTROMAXSAMPLES; i++)
      {
        fVal[i] = 0;
      }
@@ -165,9 +165,9 @@ AliHLTPHOSPattern::SetPattern(const int *pattern, const int length)
        fVal[i] = pattern[i];
      }
 
-  if(length > ALTRO_MAX_SAMPLES)
+  if(length > ALTROMAXSAMPLES)
     {
-      fPatternLength = ALTRO_MAX_SAMPLES;
+      fPatternLength = ALTROMAXSAMPLES;
     }
   else
     {

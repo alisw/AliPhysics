@@ -135,7 +135,7 @@ private:
   {
     fDigitStructPtr->fX = coordinates[0];
     fDigitStructPtr->fZ = coordinates[1];
-    if(coordinates[2] == HIGH_GAIN)
+    if(coordinates[2] == HIGHGAIN)
       fDigitStructPtr->fAmplitude = channelData->fEnergy*fHighGainFactors[coordinates[0]][coordinates[1]];
     else
       fDigitStructPtr->fAmplitude = channelData->fEnergy*fLowGainFactors[coordinates[0]][coordinates[1]];
@@ -161,13 +161,13 @@ private:
   AliHLTPHOSMapper* fMapperPtr;                                  //COMMENT
 
   /** High gain energy conversion factors */
-  Float_t fHighGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];         //COMMENT
+  Float_t fHighGainFactors[NXCOLUMNSMOD][NZROWSMOD];         //COMMENT
 
   /** Low gain energy conversion factors */
-  Float_t fLowGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];          //COMMENT
+  Float_t fLowGainFactors[NXCOLUMNSMOD][NZROWSMOD];          //COMMENT
 
   /** Bad channel mask */
-  Float_t fBadChannelMask[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
+  Float_t fBadChannelMask[NXCOLUMNSMOD][NZROWSMOD][NGAINS]; //COMMENT
 
   ClassDef(AliHLTPHOSDigitMaker, 1); 
 

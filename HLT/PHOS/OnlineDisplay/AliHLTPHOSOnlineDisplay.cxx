@@ -51,12 +51,12 @@ AliHLTPHOSOnlineDisplayFourierTab*   AliHLTPHOSOnlineDisplay::fgFourierTabPtr   
 AliHLTPHOSOnlineDisplayCalibTab*     AliHLTPHOSOnlineDisplay::fgCalibTabPtr       = 0;
 AliHLTPHOSOnlineDisplay*             AliHLTPHOSOnlineDisplay::fgInstancePtr       = 0;          /**<The one an only instance of PhosOnlineDisplay*/
 HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReaderPtr    = 0;          /**<Homer reader that fetches events from the HLT online stream*/
-HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
+HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAXHOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
 Bool_t                               AliHLTPHOSOnlineDisplay::fgAccumulate        = kFALSE ;    /**<If set to kFALSE reset fgLegoplot between event, kTRUE adds current energies to previous plot*/
 Bool_t                               AliHLTPHOSOnlineDisplay::fgSyncronize        = kFALSE ;
 unsigned int                         AliHLTPHOSOnlineDisplay::fgNHosts            = 0;
 unsigned int                         AliHLTPHOSOnlineDisplay::fgNPorts            = 0;
-char*                                AliHLTPHOSOnlineDisplay::fgHosts[MAX_HOSTS];
+char*                                AliHLTPHOSOnlineDisplay::fgHosts[MAXHOSTS];
 short unsigned int*                  AliHLTPHOSOnlineDisplay::fgPorts             = 0; 
 TGTab*                               AliHLTPHOSOnlineDisplay::fTab                = 0;
 
@@ -155,7 +155,7 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 int
 AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 {
-  for(int i=0; i< MAX_HOSTS; i++)
+  for(int i=0; i< MAXHOSTS; i++)
     {
       fgHosts[i] = new char[256];
     }
@@ -226,7 +226,7 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 		    }
 		  else
 		    {
-		      fgPorts[fgNPorts] =  DEFAULT_EVENT_PORT;	
+		      fgPorts[fgNPorts] =  DEFAULTEVENTPORT;	
 		      cout << "B setting port to   " << fgPorts[fgNPorts]  <<endl; 
 		      fgNPorts ++;
 		      portIsSet = kTRUE;
@@ -270,13 +270,13 @@ void
 AliHLTPHOSOnlineDisplay::Gain2Text(const int gain,  char *txt) const
 {
 
-  if(gain == LOW_GAIN)
+  if(gain == LOWGAIN)
     {
       
       sprintf(txt,"Low Gain");
     }
 
-  else if(gain == HIGH_GAIN)
+  else if(gain == HIGHGAIN)
     {
       sprintf(txt,"High Gain");
     }

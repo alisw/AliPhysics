@@ -36,7 +36,7 @@ using namespace PhosHLTConst;
 //#define N_SAMPLES 70
 //#define N_SAMPLES 140
 //#define MAX_HISTOGRAMS 25
-#define MAX_HISTOGRAMS 320
+#define MAXHISTOGRAMS 320
 
 class TCanvas;
 
@@ -72,13 +72,13 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   static unsigned int fgNHosts;
   static unsigned int fgNPorts;
   static AliHLTHOMERReader* fgHomerReaderPtr;
-  static AliHLTHOMERReader* fgHomerReadersPtr[MAX_HOSTS];
-  static char  *fgHosts[MAX_HOSTS];
+  static AliHLTHOMERReader* fgHomerReadersPtr[MAXHOSTS];
+  static char  *fgHosts[MAXHOSTS];
   static short unsigned    *fgPorts;
   static Bool_t fgAccumulate;
   static Bool_t fgSyncronize;
   TCanvas  *fgRawDataCanvas;
-  TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
+  TH1D     *fgRawDataPlotsPtr[MAXHISTOGRAMS];
   
   // int fRunNumber;
   //  bool fIsSetRunNumber;

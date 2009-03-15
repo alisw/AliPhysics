@@ -167,11 +167,11 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   fOutPtr->fRcuX     = fRcuX;
   fOutPtr->fRcuZ     = fRcuZ;
 
-  for(int x=0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x=0; x < NXCOLUMNSRCU; x ++)
     {
-      for(int z=0; z < N_ZROWS_RCU; z ++)
+      for(int z=0; z < NZROWSRCU; z ++)
 	{
-	  for(int gain =0;  gain < N_GAINS; gain ++)
+	  for(int gain =0;  gain < NGAINS; gain ++)
 	    {
 	      fOutPtr->fAccumulatedEnergies[x][z][gain] = innPtr.fAccumulatedEnergies[x][z][gain];
 	      fOutPtr->fHits[x][z][gain] = innPtr.fHits[x][z][gain];

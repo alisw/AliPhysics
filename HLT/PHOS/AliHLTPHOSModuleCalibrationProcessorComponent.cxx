@@ -164,8 +164,8 @@ Int_t AliHLTPHOSModuleCalibrationProcessorComponent::ProcessCalibration(const Al
   Int_t zOffset = 0;
   Int_t module = -1;
 
-  Float_t energyArray[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
-  Float_t timeArray[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
+  Float_t energyArray[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
+  Float_t timeArray[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
 
   while(iter != 0)
     {
@@ -182,8 +182,8 @@ Int_t AliHLTPHOSModuleCalibrationProcessorComponent::ProcessCalibration(const Al
 	  fPHOSDAPtr = new AliPHOSRcuDA1(module,0);
 	}
       
-      xOffset = cellDataPtr->fRcuX*N_XCOLUMNS_RCU;
-      zOffset = cellDataPtr->fRcuZ*N_ZROWS_RCU;
+      xOffset = cellDataPtr->fRcuX*NXCOLUMNSRCU;
+      zOffset = cellDataPtr->fRcuZ*NZROWSRCU;
       
       fShmPtr->SetMemory(cellDataPtr);
       currentChannel = fShmPtr->NextChannel();
@@ -197,11 +197,11 @@ Int_t AliHLTPHOSModuleCalibrationProcessorComponent::ProcessCalibration(const Al
 	  energyArray[tmpX+xOffset][tmpZ+zOffset][tmpGain] = currentChannel->fEnergy;
 	  timeArray[tmpX+xOffset][tmpZ+zOffset][tmpGain] = currentChannel->fTime;
 	}
-//       for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+//       for(Int_t x = 0; x < NXCOLUMNSRCU; x++)
 // 	{
-// 	  for(Int_t z = 0; z < N_ZROWS_RCU; z++)
+// 	  for(Int_t z = 0; z < NZROWSRCU; z++)
 // 	    {
-// 	      for(Int_t gain = 0; gain < N_GAINS; gain++)
+// 	      for(Int_t gain = 0; gain < NGAINS; gain++)
 // 		{
 // 		  energyArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fEnergy;
 // 		  timeArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fTime;
@@ -250,13 +250,13 @@ AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS( const AliHLTCompon
   cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP0.3" << endl;
   cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP1" << endl;
 
-  for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+  for(Int_t x = 0; x < NXCOLUMNSRCU; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_RCU; z++)
+      for(Int_t z = 0; z < NZROWSRCU; z++)
 	{
 	  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP2" << endl;
 	  PushToFXS( (TObject*) fPHOSDAPtr->GetHgLgRatioHistogram(x, z), "PHOS", filename);
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
+	  for(Int_t gain = 0; gain < NGAINS; gain++)
 	    {
 	      cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP3" << endl; 
 	      PushToFXS( (TObject*) fPHOSDAPtr->GetTimeEnergyHistogram(x, z, gain), "PHOS", filename);
@@ -268,13 +268,13 @@ AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS( const AliHLTCompon
 }  
 
 void
-AliHLTPHOSModuleCalibrationProcessorComponent::ResetArrays(Float_t e[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS], Float_t t[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS])
+AliHLTPHOSModuleCalibrationProcessorComponent::ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS], Float_t t[NXCOLUMNSMOD][NZROWSMOD][NGAINS])
 {
-  for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+  for(Int_t x = 0; x < NXCOLUMNSRCU; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_RCU; z++)
+      for(Int_t z = 0; z < NZROWSRCU; z++)
 	{
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
+	  for(Int_t gain = 0; gain < NGAINS; gain++)
 	    {
 	      e[x][z][gain] = 0;
 	      t[x][z][gain] = 0;

@@ -24,14 +24,14 @@
 
 //#include "PhosConst.h"
 
-#define PHOS_CRYSTALS	(PHOS_MODS*PHOS_ROWS*PHOS_COLS)  // Total number of PHOS crystals
+#define PHOSCRYSTALS	(PHOS_MODS*PHOS_ROWS*PHOS_COLS)  // Total number of PHOS crystals
 
 //#define unsigned long int PHOS_CHANNELS	(PHOS_GAINS*PHOS_CRYSTALS) // Total number of PHOS channels
 //#define unsigned long int MP_MAP_FILE_NAME	"phosmp.map" // Shared memory map file name
 //#define unsigned long int MP_MAP_FILE_SIZE	(PHOS_CHANNELS*1024*8) // Shared memory map file size
 //#define unsigned long int MP_RESULT_DIR	"mp_result" // Directory to store result to
 
-#define  PHOS_CHANNELS	(PHOS_GAINS*PHOS_CRYSTALS) // Total number of PHOS channels
+#define  PHOSCHANNELS	(PHOS_GAINS*PHOS_CRYSTALS) // Total number of PHOS channels
 #define  MP_MAP_FILE_NAME	"phosmp.map" // Shared memory map file name
 #define  MP_MAP_FILE_SIZE	(PHOS_CHANNELS*1024*8) // Shared memory map file size
 #define  MP_RESULT_DIR	"mp_result" // Directory to store result to

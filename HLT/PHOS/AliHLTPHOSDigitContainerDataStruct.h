@@ -54,7 +54,7 @@ struct AliHLTPHOSDigitContainerDataStruct
   UInt_t fPHOSModule;                                  //COMMENT
 
   /** Array of digits in container */
-  AliHLTPHOSDigitDataStruct fDigitDataStruct[N_XCOLUMNS_RCU*N_ZROWS_RCU*N_GAINS];    //COMMENT
+  AliHLTPHOSDigitDataStruct fDigitDataStruct[NXCOLUMNSRCU*NZROWSRCU*NGAINS];    //COMMENT
 
 };
 

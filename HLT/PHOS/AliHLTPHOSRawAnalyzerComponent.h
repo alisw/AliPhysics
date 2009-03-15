@@ -58,16 +58,16 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
 
 
-  //  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
-  UInt_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
+  //  Double_t fTmpChannelData[ALTROMAXSAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
+  UInt_t fTmpChannelData[ALTROMAXSAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
 
-  Double_t fMaxValues[N_MODULES][N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
+  Double_t fMaxValues[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS]; /**<array to store cell energies*/
 
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;  //comment
   AliHLTPHOSMapper *fMapperPtr; //Mapping from harware address to geometrical address
   AliHLTPHOSSanityInspector *fSanityInspectorPtr; //comment
   Bool_t fUseBaselineSubtraction; //comment
-  Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
+  Float_t fBaselines[NXCOLUMNSRCU][NZROWSRCU][NGAINS]; //comment
 
   AliAltroDecoder *fDecoderPtr;           // decoder for altro payload
   AliAltroData    *fAltroDataPtr;         // container for altro payload
@@ -89,7 +89,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   Bool_t fDoSelectiveReadOut;  //Added by OD
 
   /** Threshold for selective readout ( zero suppression threshold) */
-  Float_t fSelectiveReadOutThresholds[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //Added by OD
+  Float_t fSelectiveReadOutThresholds[NXCOLUMNSMOD][NZROWSMOD][NGAINS]; //Added by OD
 
   /** The selected HW addresses */
   AliHLTUInt16_t *fSelectedChannelsList;  //! transient Added by OD

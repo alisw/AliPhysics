@@ -13,9 +13,9 @@ using namespace PhosHLTConst;
 struct AliHLTPHOSRcuFFTDataStruct
 {
   int fDataLength;
-  Double_t fGlobalAccumulatedPSD[N_GAINS][ALTRO_MAX_SAMPLES];
-  Double_t fGlobalLastPSD[N_GAINS][ALTRO_MAX_SAMPLES];
-  //  Double_t fDummy[64][64][N_GAINS];
+  Double_t fGlobalAccumulatedPSD[NGAINS][ALTROMAXSAMPLES];
+  Double_t fGlobalLastPSD[NGAINS][ALTROMAXSAMPLES];
+  //  Double_t fDummy[64][64][NGAINS];
 
 };
 

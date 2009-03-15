@@ -98,8 +98,8 @@ AliHLTPHOSRcuProperties::ScanArguments(int argc, const char** argv)
 void 
 AliHLTPHOSRcuProperties::InitializeCoordinates(AliHLTUInt16_t /*equippmentID*/)
 {
-  fRcuID =  (fkEquippmentID - 1792)%N_RCUS_PER_MODULE;
-  fModID = (fkEquippmentID  -1792 - fRcuID)/N_RCUS_PER_MODULE;
+  fRcuID =  (fkEquippmentID - 1792)%NRCUSPERMODULE;
+  fModID = (fkEquippmentID  -1792 - fRcuID)/NRCUSPERMODULE;
  
   if( fRcuID  == 0)
     {
@@ -125,8 +125,8 @@ AliHLTPHOSRcuProperties::InitializeCoordinates(AliHLTUInt16_t /*equippmentID*/)
       fRcuZ = 1;
     }
 
-  fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
-  fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
+  fRcuZOffset =  NZROWSRCU*fRcuZ;
+  fRcuXOffset =  NXCOLUMNSRCU*fRcuX;
   fIsInitialized = true;
 }
 

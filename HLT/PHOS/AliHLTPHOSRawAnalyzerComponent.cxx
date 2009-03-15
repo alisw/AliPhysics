@@ -59,7 +59,7 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
   fAltroBunchPtr = new AliAltroBunch();
   fDecoderPtr = new AliAltroDecoder();
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
-  fSelectedChannelsList = new AliHLTUInt16_t[N_XCOLUMNS_RCU*N_ZROWS_RCU*N_GAINS];
+  fSelectedChannelsList = new AliHLTUInt16_t[NXCOLUMNSRCU*NZROWSRCU*NGAINS];
 }
 
 
@@ -148,7 +148,7 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, doub
 void 
 AliHLTPHOSRawAnalyzerComponent::FillDataArray(UInt_t *data, const AliAltroData */*altrodataptr*/, const int /*channel*/)
 {
-  ResetDataPtr(0, ALTRO_MAX_SAMPLES);
+  ResetDataPtr(0, ALTROMAXSAMPLES);
   bool islastbunch = true;
 
   while( fAltroDataPtr->NextBunch(fAltroBunchPtr) == true)
@@ -392,7 +392,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 void
 AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* /*cellDataPtr*/)
 {
-  ResetDataPtr(0, ALTRO_MAX_SAMPLES);
+  ResetDataPtr(0, ALTROMAXSAMPLES);
 } // end Reset
 
 
@@ -442,12 +442,12 @@ AliHLTPHOSRawAnalyzerComponent::SetSelectiveReadOutThresholds(const char* filepa
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
   TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
 
-  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < NXCOLUMNSMOD; x++)
     {
-      for(int z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < NZROWSMOD; z++)
 	{
-	  fSelectiveReadOutThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
-	  fSelectiveReadOutThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;
+	  fSelectiveReadOutThresholds[x][z][LOWGAIN] = lgHist->GetBinContent(x, z) * nSigmas;
+	  fSelectiveReadOutThresholds[x][z][HIGHGAIN] = hgHist->GetBinContent(x, z) * nSigmas;
 	}
     }
 }

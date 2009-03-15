@@ -33,8 +33,8 @@ class AliHLTPHOSRcuAltroPatternTest : public AliHLTPHOSBase
 //   const int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0); 
 //   const int countPatterns(const AliHLTPHOSPattern *pattern) const;
 //   const int countAllPatterns(const int length, const bool printpatterns = true);
-  int ValidateAltroPattern(const int *inputPattern,  const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0) const;
-  int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0); 
+  int ValidateAltroPattern(const int *inputPattern,  const int length =  ALTROMAXSAMPLES, const int presamples = 0) const;
+  int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTROMAXSAMPLES, const int presamples = 0); 
   int countPatterns(const AliHLTPHOSPattern *pattern) const;
   int countAllPatterns(const int length, const bool printpatterns = true);
   void PrintStatistics() const;
@@ -50,13 +50,13 @@ class AliHLTPHOSRcuAltroPatternTest : public AliHLTPHOSBase
   //  void PrintPattern() const;
   //  bool Compare(const AliHLTPHOSPattern);
 
-  unsigned long  fNEqual[N_ZROWS_RCU][N_XCOLUMNS_RCU][N_GAINS];
-  unsigned long  fNNotEqual[N_ZROWS_RCU][N_XCOLUMNS_RCU][N_GAINS];
+  unsigned long  fNEqual[NZROWSRCU][NXCOLUMNSRCU][NGAINS];
+  unsigned long  fNNotEqual[NZROWSRCU][NXCOLUMNSRCU][NGAINS];
   const AliHLTUInt8_t fModuleID;    /**<ID of the module this component read data from (0-4)*/
   const AliHLTUInt8_t fRcuX;        /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   const AliHLTUInt8_t fRcuZ;        /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTPHOSPattern *fReferenceAltroPattern; /**<The pattern stored in the altro*/
-  AliHLTPHOSPattern *fPerChannelPatterns[N_ZROWS_RCU][N_XCOLUMNS_RCU][N_GAINS]; /**<Pattern actually read back from the electronics*/
+  AliHLTPHOSPattern *fPerChannelPatterns[NZROWSRCU][NXCOLUMNSRCU][NGAINS]; /**<Pattern actually read back from the electronics*/
   
   unsigned long fCnt; //REMOVE !!
 

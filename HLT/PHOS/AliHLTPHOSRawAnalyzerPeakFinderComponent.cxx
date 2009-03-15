@@ -82,7 +82,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 Bool_t 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector()
 {
-  return LoadPFVector(PF_DEFAULT_STARTINDEX,  PF_DEFAULT_N_SAMPLES, DEFAULT_TAU, DEFAULT_FS );
+  return LoadPFVector(PFDEFAULTSTARTINDEX,  PFDEFAULTNSAMPLES, DEFAULTTAU, DEFAULTFS );
 }
 
 
@@ -90,10 +90,10 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector()
 Bool_t 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamples, int tau, int fs)
 {
-  char tmpPFPath[PF_MAX_PATH_LENGTH];
+  char tmpPFPath[PFMAXPATHLENGTH];
   Double_t * tmpAVector = new Double_t[nSamples];
   Double_t * tmpTVector = new Double_t[nSamples]; 
-  sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PF_VECTOR_DIR, startIndex, nSamples, tau, fs);
+  sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PFVECTORDIR, startIndex, nSamples, tau, fs);
   FILE *fp;
   fp = fopen(tmpPFPath, "r");
   

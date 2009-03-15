@@ -58,14 +58,14 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
 
   fShmPtr = new AliHLTPHOSSharedMemoryInterfacev2();
 
-  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < NXCOLUMNSMOD; x++)
     {
-      for(int z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < NZROWSMOD; z++)
 	{
 	  fHighGainFactors[x][z] = 0.005;
 	  fLowGainFactors[x][z] = 0.08;
-	  fBadChannelMask[x][z][HIGH_GAIN] = 1;
-	  fBadChannelMask[x][z][LOW_GAIN] = 1; 
+	  fBadChannelMask[x][z][HIGHGAIN] = 1;
+	  fBadChannelMask[x][z][LOWGAIN] = 1; 
 	}
     }	  
   fMapperPtr = new AliHLTPHOSMapper();
@@ -109,10 +109,10 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
       	{
 	  tmpchannel = currentchannel;
 	  
-	  if(coord1[2] == HIGH_GAIN) // We got a completely new crystal
+	  if(coord1[2] == HIGHGAIN) // We got a completely new crystal
 	    {
 
-	      if(currentchannel->fEnergy < MAX_BIN_VALUE) // Make sure we don't have signal overflow
+	      if(currentchannel->fEnergy < MAXBINVALUE) // Make sure we don't have signal overflow
 		{
 
 		  AddDigit(currentchannel, coord1);
@@ -168,7 +168,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 	}
       else  //Reversed ordered (low gain before high gain)
 	{
-	  if(coord1[2] == LOW_GAIN) // We got a new channel!
+	  if(coord1[2] == LOWGAIN) // We got a new channel!
 	    {
 	      currentchannelLG = currentchannel; // Ok, let's back up the low gain channel and look for the fancy high gain one
 	      currentchannel = fShmPtr->NextChannel();
@@ -179,7 +179,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		  
 		  if(coord1[0] == coord2[0] && coord1[1] == coord2[1]) // Aha! Found the high gain channel
 		    {
-		      if(currentchannel->fEnergy < MAX_BIN_VALUE)  // To overflow or not to overflow?
+		      if(currentchannel->fEnergy < MAXBINVALUE)  // To overflow or not to overflow?
 			{
 
 			  AddDigit(currentchannel, coord2);
@@ -226,9 +226,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalHighGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < NXCOLUMNSMOD; x++)
     {
-      for(int z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < NZROWSMOD; z++)
 	{
 	  fHighGainFactors[x][z] = factor;
 	}
@@ -239,9 +239,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < NXCOLUMNSMOD; x++)
     {
-      for(int z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < NZROWSMOD; z++)
 	{
 	  fLowGainFactors[x][z] = factor;
 	}
@@ -251,25 +251,25 @@ AliHLTPHOSDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 void
 AliHLTPHOSDigitMaker::SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut)
 {
- for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+ for(int x = 0; x < NXCOLUMNSMOD; x++)
     {
-      for(int z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < NZROWSMOD; z++)
 	{
 	  if(badChannelHGHist->GetBinContent(x, z) < qCut && badChannelHGHist->GetBinContent(x, z) > 0)
 	    {
-	      fBadChannelMask[x][z][HIGH_GAIN] = 1;
+	      fBadChannelMask[x][z][HIGHGAIN] = 1;
 	    }
 	  else
 	    {
-	      fBadChannelMask[x][z][HIGH_GAIN] = 0;
+	      fBadChannelMask[x][z][HIGHGAIN] = 0;
 	    }
 	  if(badChannelLGHist->GetBinContent(x, z) < qCut && badChannelLGHist->GetBinContent(x, z) > 0)
 	    {
-	      fBadChannelMask[x][z][LOW_GAIN] = 0;
+	      fBadChannelMask[x][z][LOWGAIN] = 0;
 	    }
 	  else
 	    {
-	      fBadChannelMask[x][z][LOW_GAIN] = 0;
+	      fBadChannelMask[x][z][LOWGAIN] = 0;
 	    }
 	}
     }

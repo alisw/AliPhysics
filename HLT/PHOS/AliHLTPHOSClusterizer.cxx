@@ -38,7 +38,7 @@
 #include "AliHLTPHOSDigitContainerDataStruct.h"
 #include "TClonesArray.h"
 #include "AliPHOSDigit.h"
-#ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
+#ifndef HAVENOT__PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
 #include "AliPHOSRecoParam.h"
 #else
 #include "AliPHOSRecoParamEmc.h"
@@ -58,7 +58,7 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(2*N_ZROWS_MOD)
+  fMaxDigitIndexDiff(2*NZROWSMOD)
 {
   //See header file for documentation
   fEmcClusteringThreshold = 0.2;

@@ -31,7 +31,7 @@ class AliHLTPHOSOnlineDisplayFourierTab : public AliHLTPHOSOnlineDisplayTab
 {
  public:
   virtual ~AliHLTPHOSOnlineDisplayFourierTab();
-  AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, AliHLTHOMERReader *fgHomerReaderPtr, AliHLTHOMERReader *fgHomerReadersPtr[MAX_HOSTS], int nHosts);
+  AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, AliHLTHOMERReader *fgHomerReaderPtr, AliHLTHOMERReader *fgHomerReadersPtr[MAXHOSTS], int nHosts);
   Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
   void UpdateDisplay();
   int GetNextEvent();
@@ -45,20 +45,20 @@ class AliHLTPHOSOnlineDisplayFourierTab : public AliHLTPHOSOnlineDisplayTab
   //  TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4;
   //  TGCompositeFrame    *fSubF1, *fSubF2;
   TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3;
-  TCanvas *fgCanvasPtr[N_GAINS];
-  AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[N_GAINS];
+  TCanvas *fgCanvasPtr[NGAINS];
+  AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS];
 
-  TH1D *fFourierHistoNew[N_GAINS];
-  TH1D *fFourierHistoOld[N_GAINS];
-  TH1D *fFourierHistoAccumulated[N_GAINS];
+  TH1D *fFourierHistoNew[NGAINS];
+  TH1D *fFourierHistoOld[NGAINS];
+  TH1D *fFourierHistoAccumulated[NGAINS];
 
-  // TRootEmbeddedCanvas *fFourierHistoAccumulatedEC[N_GAINS];
-  // TRootEmbeddedCanvas *fFourierHistoOldEC[N_GAINS];
-  // TRootEmbeddedCanvas *fFourierHistoAccumulatedEC[N_GAINS];
+  // TRootEmbeddedCanvas *fFourierHistoAccumulatedEC[NGAINS];
+  // TRootEmbeddedCanvas *fFourierHistoOldEC[NGAINS];
+  // TRootEmbeddedCanvas *fFourierHistoAccumulatedEC[NGAINS];
 
-  //  int *fChannelData[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
-  // Int_t fNChannelSamples[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
-  // Int_t fChannelEnergy[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  //  int *fChannelData[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
+  // Int_t fNChannelSamples[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
+  // Int_t fChannelEnergy[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
   const  char* Gain2Text(const int gain, const char delimeter);
 
  protected:

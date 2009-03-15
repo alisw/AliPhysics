@@ -24,63 +24,63 @@
 
 namespace PhosHLTConst
 {
-  const int MAX_HOSTS = 20;
-  const int DEFAULT_EVENT_PORT = 42001;
-  const int MAX_BIN_VALUE = 1023;
-  const int HIGH_GAIN    =   1;
-  const int LOW_GAIN     =   0;
+  const int MAXHOSTS = 20;
+  const int DEFAULTEVENTPORT = 42001;
+  const int MAXBINVALUE = 1023;
+  const int HIGHGAIN    =   1;
+  const int LOWGAIN     =   0;
 
-  const int ALTRO_MAX_SAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
-  const int ALTRO_MAX_PRESAMPLES = 15;        
- //  const int ALTRO_MAX_TRALER_SIZE = 7;  
-  //  const int  DDL_BLOCK_SIZE = 5;
+  const int ALTROMAXSAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
+  const int ALTROMAXPRESAMPLES = 15;        
+ //  const int ALTROMAXTRALERSIZE = 7;  
+  //  const int  DDLBLOCKSIZE = 5;
 
-  const int N_ZROWS_RCU     =   28;                    /**<Number of rows per module*/       
-  const int N_XCOLUMNS_RCU  =   32; 
-  const int N_ZROWS_MOD      =  56;                    /**<Number of rows per module*/       
-  const int N_XCOLUMNS_MOD   =  64;                 /**<Number of columns per module*/ 
-  const int N_GAINS         =   2;                             /**<Number of gains per ALTRO channel*/
-  const int N_DATATYPES     =   10;    
+  const int NZROWSRCU     =   28;                    /**<Number of rows per module*/       
+  const int NXCOLUMNSRCU  =   32; 
+  const int NZROWSMOD      =  56;                    /**<Number of rows per module*/       
+  const int NXCOLUMNSMOD   =  64;                 /**<Number of columns per module*/ 
+  const int NGAINS         =   2;                             /**<Number of gains per ALTRO channel*/
+  const int NDATATYPES     =   10;    
 
-  const int  PF_MAX_PATH_LENGTH = 256;
+  const int  PFMAXPATHLENGTH = 256;
 
 #ifndef __CINT__
-  const unsigned char PF_VECTOR_DIR[] = "/HLT/PHOS/PFVectors";
+  const unsigned char PFVECTORDIR[] = "/HLT/PHOS/PFVectors";
 #endif
 
-  const int PF_DEFAULT_N_SAMPLES = 70;
-  const int PF_DEFAULT_STARTINDEX = 0;
+  const int PFDEFAULTNSAMPLES = 70;
+  const int PFDEFAULTSTARTINDEX = 0;
 
-  const int DEFAULT_TAU = 2;    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
-  const int  DEFAULT_FS = 10;   /**<Assume that the signal is samples with 10 MHZ samle rate*/
+  const int DEFAULTTAU = 2;    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
+  const int  DEFAULTFS = 10;   /**<Assume that the signal is samples with 10 MHZ samle rate*/
 
-  const int MODULE_0     = 0;
-  const int MODULE_1     = 1;
-  const int MODULE_2     = 2;
-  const int MODULE_3     = 3;
-  const int MODULE_4     = 4;
+  const int MODULE0     = 0;
+  const int MODULE1     = 1;
+  const int MODULE2     = 2;
+  const int MODULE3     = 3;
+  const int MODULE4     = 4;
 
-  const int CSPS_PER_FEE    = 32;
-  const int RCU_0       = 0;
-  const int RCU_1       = 1;
-  const int RCU_2       = 2;
-  const int RCU_3       = 3;
+  const int CSPSPERFEE    = 32;
+  const int RCU0       = 0;
+  const int RCU1       = 1;
+  const int RCU2       = 2;
+  const int RCU3       = 3;
 
-  const int Z_0         = 0;
-  const int Z_1         = 1;
-  const int X_0         = 0;
-  const int X_1         = 1;
+  const int Z0         = 0;
+  const int Z1         = 1;
+  const int X0         = 0;
+  const int X1         = 1;
 
-  const int N_MODULES    =      5;                             /**<Number of modules of the PHOS detector*/
-  const int N_RCUS       =      4;                             /**<Number of RCUs per Module*/
+  const int NMODULES    =      5;                             /**<Number of modules of the PHOS detector*/
+  const int NRCUS       =      4;                             /**<Number of RCUs per Module*/
  
-  //              N_RCUS_PER_MODULE
-  const int N_RCUS_PER_MODULE =  4 ;                            /**<Number of RCUs per Module*/
-  const int N_RCUS_PER_TOTAL =  N_MODULES*N_RCUS_PER_MODULE;   /**<Total number of RCUs for PHOS*/
-  const int N_FEECS         =  14;                             /**<Number of Frontend cards per branch*/
-  const int N_ALTROS        =   4;                             /**<Number of ALTROs per frontend card*/
-  const int N_ALTROCHANNELS =  16;
-  const int N_BRANCHES      =   2;      
+  //              NRCUSPERMODULE
+  const int NRCUSPERMODULE =  4 ;                            /**<Number of RCUs per Module*/
+  const int NRCUSPERTOTAL =  NMODULES*NRCUSPERMODULE;   /**<Total number of RCUs for PHOS*/
+  const int NFEECS         =  14;                             /**<Number of Frontend cards per branch*/
+  const int NALTROS        =   4;                             /**<Number of ALTROs per frontend card*/
+  const int NALTROCHANNELS =  16;
+  const int NBRANCHES      =   2;      
 }
 
 
