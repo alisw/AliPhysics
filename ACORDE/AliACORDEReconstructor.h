@@ -12,6 +12,7 @@
 
 #include "AliReconstructor.h"
 #include "AliLog.h"
+#include "AliACORDERecoParam.h"
 
 class AliACORDECalibData;
 class AliESDACORDE;
@@ -40,17 +41,21 @@ public:
 
   AliACORDECalibData *GetCalibData() const; 
 
+  AliACORDERecoParam *GetRecoParam() const;
+
+
 protected:
-//NO PODEMOS USARLOS X Q NO EXISTEN
+
   AliESDACORDE*        fESDACORDE;      // ACORDE ESD object  
-  
+  AliACORDERecoParam* fAcordeRecoParam; // Pointer to the ACORDE's RecoParam
+
 private:
   AliACORDEReconstructor(const AliACORDEReconstructor& reconstructor);
   AliACORDEReconstructor& operator = (const AliACORDEReconstructor& reconstructor);
   
   AliACORDECalibData* fCalibData;      //! calibration data
  
-  ClassDef(AliACORDEReconstructor, 0)  // class for the ACORDE reconstruction
+  ClassDef(AliACORDEReconstructor, 1)  // class for the ACORDE reconstruction
 };
 
 #endif

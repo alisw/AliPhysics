@@ -70,8 +70,9 @@ AliACORDECalibData::AliACORDECalibData(const AliACORDECalibData& calibda) :
   // there are 60 modules. Note that number of first module is 1 (one)
   for(int t=0; t<60; t++) 
   {
-  fEfficiencies[t] =calibda.GetEfficiency(t+1);
-  fRates[t] = calibda.GetRate(t+1);
+  	fEfficiencies[t] =calibda.GetEfficiency(t+1);
+  	fRates[t] = calibda.GetRate(t+1);
+	fModulesActivity[t] = calibda.GetModuleActivity(t+1);
   }
 }
 //_______________________________________________________________
@@ -108,8 +109,9 @@ AliACORDECalibData &AliACORDECalibData::operator =(const AliACORDECalibData& cal
   // there are 60 modules. Note that number of first module is 1 (one)
   for(int t=0; t<60; t++) 
   {
-  fEfficiencies[t] =calibda.GetEfficiency(t+1);
-  fRates[t] = calibda.GetRate(t+1);
+  	fEfficiencies[t] =calibda.GetEfficiency(t+1);
+  	fRates[t] = calibda.GetRate(t+1);
+	fModulesActivity[t] = calibda.GetModuleActivity(t+1);
   }
   return *this;
 }
@@ -148,3 +150,10 @@ void AliACORDECalibData::SetRates(Float_t* Rt)
    if(Rt) for (int t=0;t<60; t++) fRates[t] = Rt[t];
 else for (int t=0;t<60; t++) fRates[t] = 0.0;
 }
+
+void AliACORDECalibData::SetModulesActivity(Float_t* Mac)
+{
+	if(Mac) for (int t=0;t<60;t++) fModulesActivity[t] = Mac[t];
+	else for (int t=0;t<60;t++) fModulesActivity[t] = 0.0;
+}
+

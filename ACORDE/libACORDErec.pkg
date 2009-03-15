@@ -1,7 +1,9 @@
 #-*-Mode: Makefile-*-
 
 SRCS = AliACORDEReconstructor.cxx \
-       AliACORDEQADataMakerRec.cxx
+       AliACORDEQADataMakerRec.cxx \
+       AliACORDERecoParam.cxx
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:=ACORDErecLinkDef.h

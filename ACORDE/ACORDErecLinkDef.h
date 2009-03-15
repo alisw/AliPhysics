@@ -10,6 +10,8 @@
  
 #pragma link C++ class  AliACORDEReconstructor+;
 #pragma link C++ class  AliACORDEQADataMakerRec+;
+#pragma link C++ class  AliACORDERecoParam+;
+
  
 #endif
 

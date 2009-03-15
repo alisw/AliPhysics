@@ -32,8 +32,8 @@ public:
 
   virtual Double_t * Check(AliQA::ALITASK_t index) ;
   virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
-//  Double_t CheckEntries(TObjArray * list) const ;/*--> to be implemented*/
 
+  Double_t CheckAcordeRefHits(TObjArray *AcordeList, TObjArray *AcordeRef) const;
 
 private:
 

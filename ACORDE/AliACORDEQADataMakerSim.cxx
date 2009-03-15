@@ -111,80 +111,43 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 
 	TClonesArray * hits = new TClonesArray("AliACORDEhit",1000);
 	TBranch * branch = hitTree->GetBranch("ACORDE");
-	if (!branch)
-	{
+	if (!branch) {
 		AliWarning("ACORDE branch in Hit Tree not found");
-	}else
-	{
-		if (branch)
-		{
-			branch->SetAddress(&hits);
-		}else
-		{
-			AliError("Branch ACORDE hit not found");
-			exit(111);
-		}
-		Int_t ntracks = (Int_t)hitTree->GetEntries();
-		if (ntracks<=0) return;
-		for(Int_t track=0;track<ntracks;track++)
-		{
+	} else {
+    branch->SetAddress(&hits);
+		for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
 			branch->GetEntry(track);
-			Int_t nhits = hits->GetEntriesFast();
-			for(Int_t ihit=1;ihit<=nhits;ihit++)
-			{
+			for(Int_t ihit=0 ; ihit < hits->GetEntriesFast() ; ihit++) {
 				AliACORDEhit *AcoHit = (AliACORDEhit*) hits->UncheckedAt(ihit);
-				if(!AcoHit)
-				{
+				if(!AcoHit) {
 					AliError("The unchecked hit doesn't exist");
-					break;
+					continue ;
 				}
 				GetHitsData(0)->Fill(AcoHit->GetModule()-1);
-			}
-		}
-	}
-
+      }
+    }
+  }
 }
 //____________________________________________________________________________
 void AliACORDEQADataMakerSim::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
-
-
-        TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
-        TBranch * branch = digitsTree->GetBranch("ACORDEdigit");
-        if (!branch)
-        {
-                AliWarning("ACORDE branch in Digits Tree not found");
-        }else
-        {
-                if (branch)
-                {
-                        branch->SetAddress(&digits);
-                }else
-                {
-                        AliError("Branch ACORDE digit not found");
-                        exit(111);
-                }
-                Int_t ntracks = (Int_t)digitsTree->GetEntries();
-                if (ntracks<=0) return;
-                printf("Entries in DigitsTree:%d\n",ntracks);
-                for(Int_t track=0;track<ntracks;track++)
-                {
-                        branch->GetEntry(track);
-                        Int_t ndigits = digits->GetEntriesFast();
-                        for(Int_t idigit=0;idigit<ndigits;idigit++)
-                        {
-                                AliACORDEdigit *AcoDigit = (AliACORDEdigit*) digits->UncheckedAt(idigit);
-                                if (!AcoDigit)
-                                {
-                                        AliError("The unchecked digit doesn't exist");
-                                        break;
-                                }
-                                GetDigitsData(0)->Fill(AcoDigit->GetModule()-1);
-                        }
-                }
-
-
+  TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
+  TBranch * branch = digitsTree->GetBranch("ACORDEdigit");
+  if (!branch) {
+    AliWarning("ACORDE branch in Digits Tree not found");
+  } else {
+    branch->SetAddress(&digits);
+    for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
+      branch->GetEntry(track);
+      for(Int_t idigit = 0 ; idigit < digits->GetEntriesFast() ; idigit++) {
+        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) digits->UncheckedAt(idigit);
+        if (!AcoDigit) {
+          AliError("The unchecked digit doesn't exist");
+          continue ;
         }
-
+        GetDigitsData(0)->Fill(AcoDigit->GetModule()-1);
+      }
+    }
+  }
 }

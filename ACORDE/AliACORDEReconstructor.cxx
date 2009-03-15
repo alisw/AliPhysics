@@ -25,24 +25,31 @@
 #include "AliACORDERawStream.h"
 #include "AliESDEvent.h"
 #include "AliACORDEdigit.h"
+#include "AliACORDERecoParam.h"
 
 ClassImp(AliACORDEReconstructor)
 
 AliACORDEReconstructor:: AliACORDEReconstructor():
   AliReconstructor(),
   fESDACORDE(0x0),
+  fAcordeRecoParam(0x0),
   fCalibData(0x0)
 {
   // Default constructor  
   // Get calibration data
 
-  fCalibData = GetCalibData(); 
+  fCalibData = GetCalibData();
+  fAcordeRecoParam = GetRecoParam();
 }
 
-//FALTA IMPLEMENTAR_______________________________________________________________________
+//_______________________________________________________________________
 AliACORDECalibData *AliACORDEReconstructor::GetCalibData() const
 {
-  // TO BE IMPLEMENTED !!
+  return 0x0;
+}
+//____________________________________________________________________________
+AliACORDERecoParam *AliACORDEReconstructor::GetRecoParam() const
+{
   return 0x0;
 }
 //_____________________________________________________________________________
@@ -59,7 +66,6 @@ AliACORDEReconstructor& AliACORDEReconstructor::operator =
 AliACORDEReconstructor::~AliACORDEReconstructor()
 {
 // destructor
-//NECESITAS esta clase
   delete fESDACORDE; 
 }
 
@@ -67,7 +73,6 @@ AliACORDEReconstructor::~AliACORDEReconstructor()
 void AliACORDEReconstructor::Init()
 {
 // initializer
-//NECESITAS esta clase
     fESDACORDE  = new AliESDACORDE;
 }
 
