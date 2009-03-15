@@ -447,19 +447,21 @@ void correct(){
 void mergeJetAnaOutput(){
   // This is used to merge the analysis-output from different 
   // data samples/pt_hard bins
-  // in case the eventweigth was set to xsection/ntrials already this
-  // is not needed. Both methods only work in cse we do not mix different 
+  // in case the eventweigth was set to xsection/ntrials already, this
+  // is not needed. Both methods only work in case we do not mix different 
   // pt_hard bins, and do not have overlapping bins
 
   const Int_t nBins = 2;
   // LHC08q jetjet100: Mean = 1.42483e-03, RMS = 6.642e-05
   // LHC08r jetjet50: Mean = 2.44068e-02, RMS = 1.144e-03
   // LHC08v jetjet15-50: Mean = 2.168291 , RMS = 7.119e-02
-  const Float_t xsection[nBins] = {2.168291,2.44068e-02};
+  // const Float_t xsection[nBins] = {2.168291,2.44068e-02};
+  Float_t xsection[nBins] = {0,0};
   Float_t nTrials[nBins] = {0,0};
   Float_t sf[nBins] = {0,0};
 
-  const char *cFile[nBins] = {"pwg4spec_15-50_all.root","pwg4spec_50_all.root"};
+  const char *cFile[nBins] = {"pwg4spec_0000000-1000000_LHC08v_jetjet15-50.root",
+			      "pwg4spec_0000000-1000000_LHC08r_jetjet50.root"};
 
 
   TList *lIn[nBins];
@@ -468,6 +470,8 @@ void mergeJetAnaOutput(){
     fIn[ib] = TFile::Open(cFile[ib]);
     lIn[ib] = (TList*)fIn[ib]->Get("pwg4spec");
     TH1* hTrials = (TH1F*)lIn[ib]->FindObject("fh1PtHard_Trials");
+    TProfile* hXsec = (TProfile*)lIn[ib]->FindObject("fh1Xsec");
+    xsection[ib] = hXsec->GetBinContent(1);
     nTrials[ib] = hTrials->Integral();
     sf[ib] = xsection[ib]/ nTrials[ib];
   }
