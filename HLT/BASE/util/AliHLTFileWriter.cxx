@@ -457,7 +457,7 @@ int AliHLTFileWriter::ScheduleBlock(int blockno, const AliHLTEventID_t& eventID,
   // see header file for class documentation
   int iResult=0;
   if (fpBurstBuffer==NULL ||
-      fBurstBlocks.size()==0 && pDesc->fSize>fBurstBufferSize) {
+      (fBurstBlocks.size()==0 && pDesc->fSize>fBurstBufferSize) ) {
     return WriteBlock(blockno, eventID, pDesc);
   }
   AliHLTComponentBlockData bd=*pDesc;

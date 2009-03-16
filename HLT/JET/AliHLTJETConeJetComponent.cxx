@@ -232,9 +232,8 @@ Int_t AliHLTJETConeJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
   }
 
  
-  // ** PushBack ** \\
-  // ----------- ** \\
-  // ** PushBack ** \\
+  // ** PushBack ** 
+
 
   return 0;
 }

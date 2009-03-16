@@ -245,7 +245,7 @@ void AliHLTTPCNoiseMapComponent::InitializeHistograms(UInt_t minSlice, UInt_t ma
   
 }
 
-int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/){
+int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
   // see header file for class documentation
  
  

@@ -476,7 +476,7 @@ Bool_t AliHLTGlobalTrackMerger::InvertS( Double_t A[], Int_t N )
 	x = 1 / x;
 	for( Int_t step=1; step<=N-j; ik+=++step ){ // ik==Ai1
 	  Double_t sum = 0;
-	  for( Double_t *jk=j1; jk!=jj; sum += (*(jk++)) * (*(ik++)) );
+	  for( Double_t *jk=j1; jk!=jj; sum += (*(jk++)) * (*(ik++)) ) {}
 	  *ik = (*ik - sum) * x; // ik == Aij
 	}
       }else{
