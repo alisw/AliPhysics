@@ -50,7 +50,12 @@ public:
   {
     return AliPreprocessor::GetFile(system,id,source);
   }  
-  
+
+  /// Publish AliPreprocessor::GetFromOCDB function
+    AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3) {
+      return AliPreprocessor::GetFromOCDB(pathLevel2,pathLevel3);      
+    }
+
   /// Whether we can be used (e.g. whether we were properly initialized)
   Bool_t IsValid() const { return fIsValid; }
   
