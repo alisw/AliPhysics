@@ -32,6 +32,7 @@ ClassImp(AliMixedEvent)
 
 AliMixedEvent::AliMixedEvent() :
     AliVEvent(),
+    fEventList(), 
     fNEvents(0),       
     fNumberOfTracks(0),
     fNTracksCumul(0)
@@ -41,7 +42,12 @@ AliMixedEvent::AliMixedEvent() :
 
 
 AliMixedEvent::AliMixedEvent(const AliMixedEvent& Evnt) :
-    AliVEvent(Evnt) { } // Copy constructor
+    AliVEvent(Evnt),
+    fEventList(), 
+    fNEvents(0),       
+    fNumberOfTracks(0),
+    fNTracksCumul(0)
+{ } // Copy constructor
 
 AliMixedEvent& AliMixedEvent::operator=(const AliMixedEvent& vEvnt)
 { if (this!=&vEvnt) { 
