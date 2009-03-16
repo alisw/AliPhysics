@@ -15,7 +15,8 @@ class TArrayI;
 class AliRawReader;
 class AliPHOSCalibData ;
 
-class AliPHOSRawDecoder {
+class AliPHOSRawDecoder : public TObject 
+{
 
 public:
 
@@ -73,7 +74,7 @@ protected:
   AliPHOSCalibData * fCalibData ;   //! Calibration database if avalable
 
 
-  ClassDef(AliPHOSRawDecoder,3)
+  ClassDef(AliPHOSRawDecoder,4)
 };
 
 #endif

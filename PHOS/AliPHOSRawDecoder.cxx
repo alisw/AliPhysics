@@ -50,18 +50,60 @@ ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),fPedestalRMS(0.),
-  fAmpOffset(0),fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0), 
-  fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fCalibData(0)
+  TObject(),
+  fRawReader(0),
+  fCaloStream(0),
+  fPedSubtract(kFALSE),
+  fEnergy(-111),
+  fTime(-111),
+  fQuality(0.),
+  fPedestalRMS(0.),
+  fAmpOffset(0),
+  fAmpThreshold(0),
+  fModule(-1),
+  fColumn(-1),
+  fRow(-1),
+  fNewModule(-1),
+  fNewColumn(-1),
+  fNewRow(-1),
+  fNewAmp(0),
+  fNewTime(0), 
+  fLowGainFlag(kFALSE),
+  fNewLowGainFlag(kFALSE),
+  fOverflow(kFALSE),
+  fSamples(0),
+  fTimes(0),
+  fCalibData(0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),fPedestalRMS(0.),
-  fAmpOffset(0),fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0),
-  fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fCalibData(0)
+  TObject(),
+  fRawReader(0),
+  fCaloStream(0),
+  fPedSubtract(kFALSE),
+  fEnergy(-111),
+  fTime(-111),
+  fQuality(0.),
+  fPedestalRMS(0.),
+  fAmpOffset(0),
+  fAmpThreshold(0),
+  fModule(-1),
+  fColumn(-1),
+  fRow(-1),
+  fNewModule(-1),
+  fNewColumn(-1),
+  fNewRow(-1),
+  fNewAmp(0),
+  fNewTime(0), 
+  fLowGainFlag(kFALSE),
+  fNewLowGainFlag(kFALSE),
+  fOverflow(kFALSE),
+  fSamples(0),
+  fTimes(0),
+  fCalibData(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -85,15 +127,30 @@ AliPHOSRawDecoder::~AliPHOSRawDecoder()
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
-  fRawReader(phosDecoder.fRawReader),fCaloStream(phosDecoder.fCaloStream),
+  TObject(),
+  fRawReader(phosDecoder.fRawReader),
+  fCaloStream(phosDecoder.fCaloStream),
   fPedSubtract(phosDecoder.fPedSubtract),
-  fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),fQuality(phosDecoder.fQuality),fPedestalRMS(phosDecoder.fPedestalRMS),
-  fAmpOffset(phosDecoder.fAmpOffset),fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
-  fRow(phosDecoder.fRow),fNewModule(phosDecoder.fNewModule),fNewColumn(phosDecoder.fNewColumn),
-  fNewRow(phosDecoder.fNewRow),fNewAmp(phosDecoder.fNewAmp),fNewTime(phosDecoder.fNewTime),
-  fLowGainFlag(phosDecoder.fLowGainFlag),fNewLowGainFlag(phosDecoder.fNewLowGainFlag),
-  fOverflow(phosDecoder.fOverflow),fSamples(phosDecoder.fSamples),
-  fTimes(phosDecoder.fTimes),fCalibData(phosDecoder.fCalibData) 
+  fEnergy(phosDecoder.fEnergy),
+  fTime(phosDecoder.fTime),
+  fQuality(phosDecoder.fQuality),
+  fPedestalRMS(phosDecoder.fPedestalRMS),
+  fAmpOffset(phosDecoder.fAmpOffset),
+  fAmpThreshold(phosDecoder.fAmpThreshold),
+  fModule(phosDecoder.fModule),
+  fColumn(phosDecoder.fColumn),
+  fRow(phosDecoder.fRow),
+  fNewModule(phosDecoder.fNewModule),
+  fNewColumn(phosDecoder.fNewColumn),
+  fNewRow(phosDecoder.fNewRow),
+  fNewAmp(phosDecoder.fNewAmp),
+  fNewTime(phosDecoder.fNewTime),
+  fLowGainFlag(phosDecoder.fLowGainFlag),
+  fNewLowGainFlag(phosDecoder.fNewLowGainFlag),
+  fOverflow(phosDecoder.fOverflow),
+  fSamples(phosDecoder.fSamples),
+  fTimes(phosDecoder.fTimes),
+  fCalibData(phosDecoder.fCalibData) 
 {
   //Copy constructor.
 }
