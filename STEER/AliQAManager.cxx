@@ -31,6 +31,9 @@
 #include <TKey.h>
 #include <TFile.h>
 #include <TFileMerger.h>
+#include <TGrid.h>
+#include <TGridCollection.h>
+#include <TGridResult.h>
 #include <TPluginManager.h>
 #include <TROOT.h>
 #include <TString.h>
@@ -714,7 +717,67 @@ Bool_t AliQAManager::Merge(const Int_t runNumber) const
  return rv ; 
 }
 	
-	
+//______________________________________________________________________
+Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile, const char * outFile) 
+{
+  // merges files listed in a xml collection 
+  // usage Merge(collection, outputFile))
+  //              collection: is a xml collection  
+  
+  Bool_t rv = kFALSE ; 
+  
+  if ( strstr(collectionFile, ".xml") == 0 ) {
+    AliError("Input collection file must be an \".xml\" file\n") ; 
+    return kFALSE ; 
+  }
+    
+ if ( !gGrid ) 
+   TGrid::Connect("alien://"); 
+ if ( !gGrid ) 
+   return kFALSE ; 
+ 
+  // Open the file collection 
+  printf("*** Create Collection       ***\n");
+  printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
+  printf("***  Coll   = |%s|             \n",collectionFile);              	
+  
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",collectionFile));
+  TGridResult* result = collection->GetGridResult("", 0, 0);
+  
+  Int_t index = 0  ;
+  const char * turl ;
+  TFileMerger merger ; 
+  if (!outFile) {
+    TString tempo(collectionFile) ; 
+    if ( subFile) 
+      tempo.ReplaceAll(".xml", subFile) ; 
+    else 
+      tempo.ReplaceAll(".xml", "_Merged.root") ; 
+    outFile = tempo.Data() ; 
+  }
+  merger.OutputFile(outFile) ; 
+  
+  while ( (turl = result->GetKey(index, "turl")) ) {
+    char * file ;
+    if ( subFile )
+      file = Form("%s#%s", turl, subFile) ; 
+    else 
+      file = Form("%s", turl) ; 
+    
+    AliInfo(Form("%s\n", file)) ; 
+    merger.AddFile(file) ; 
+    index++ ;  
+  }
+  
+  if (index) 
+    merger.Merge() ; 
+  
+  AliInfo(Form("Files merged into %s\n", outFile)) ;
+  
+  rv = kFALSE;
+  return rv ;
+}
+
 //_____________________________________________________________________________
 Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 {
