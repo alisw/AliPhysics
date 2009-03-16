@@ -266,7 +266,7 @@ void AliZDC::Hits2SDigits()
     ResetHits();
 
     // Tracks loop
-    Int_t sector[2]; Float_t trackTime;
+    Int_t sector[2]; Float_t trackTime = 0.;
     for(Int_t itrack = 0; itrack < ntracks; itrack++) {
       treeH->GetEntry(itrack);
       for(AliZDCHit* zdcHit = (AliZDCHit*)FirstHit(-1); zdcHit;

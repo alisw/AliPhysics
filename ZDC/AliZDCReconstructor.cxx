@@ -73,8 +73,8 @@ void AliZDCReconstructor::SetRecoMode()
   // Setting reconstruction mode
 
   // Initialization of the GRP entry 
-  AliGRPObject* grpData;
   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = 0x0;
   if(entry){
     TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
     if(m){
@@ -422,7 +422,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* ZN1AD
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb!!!!!!!!!!!!
   //  Variables calculated to comply with ESD structure
-  Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
+  Int_t nDetSpecNLeft=0, nDetSpecPLeft=0, nDetSpecNRight=0, nDetSpecPRight=0;
   if(fBeamEnergy!=0){
    nDetSpecNLeft = (Int_t) (calibSumZN1[0]/fBeamEnergy);
    nDetSpecPLeft = (Int_t) (calibSumZP1[0]/fBeamEnergy);
@@ -540,7 +540,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, Float_t* ZN1
   
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb
-  Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
+  Int_t nDetSpecNLeft=0, nDetSpecPLeft=0, nDetSpecNRight=0, nDetSpecPRight=0;
   if(fBeamEnergy!=0){
     nDetSpecNLeft = (Int_t) (calibSumZN1[0]/fBeamEnergy);
     nDetSpecPLeft = (Int_t) (calibSumZP1[0]/fBeamEnergy);
