@@ -16,7 +16,7 @@ class AliMisAligner : public TObject {
 
   public:
     AliMisAligner();
-    virtual TClonesArray* MakeAlObjsArray() const =0;
+    virtual TClonesArray* MakeAlObjsArray() =0;
     virtual AliCDBMetaData* GetCDBMetaData() const =0;
     void SetMisalType(const char* misalType)
     {
