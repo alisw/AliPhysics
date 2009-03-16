@@ -713,7 +713,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   for (Int_t i = 0; i < 3; i++)
     cuts[27+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
   
-  if (fCutRequireITSStandAlone && (status & AliESDtrack::kITSin == 0 || status & AliESDtrack::kTPCin))
+  if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
     cuts[30]=kTRUE;
   
   Bool_t cut=kFALSE;
