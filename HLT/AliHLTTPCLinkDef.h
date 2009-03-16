@@ -42,7 +42,6 @@
 #pragma link C++ class  AliHLTTPCSliceTrackerComponent+;
 #pragma link C++ class  AliHLTTPCGlobalMergerComponent+;
 #pragma link C++ class  AliHLTTPCEsdWriterComponent+;
-#pragma link C++ class  AliHLTTPCCACell+;
 #pragma link C++ class  AliHLTTPCCADisplay+;
 #pragma link C++ class  AliHLTTPCCAHit+;
 #pragma link C++ class  AliHLTTPCCAOutTrack+;
@@ -51,7 +50,6 @@
 #pragma link C++ class  AliHLTTPCCATrackerComponent+;
 #pragma link C++ class  AliHLTTPCCATracker+;
 #pragma link C++ class  AliHLTTPCCATrack+;
-#pragma link C++ class  AliHLTTPCCATrackPar+;
 #pragma link C++ class  AliHLTTPCCompDataCompressorHelper+;
 #pragma link C++ class  AliHLTTPCCompDumpComponent+;
 #pragma link C++ class  AliHLTTPCCompModelAnalysis+;

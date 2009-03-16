@@ -1,6 +1,6 @@
 # -*- mode: cmake -*-
 
-set(SRCS
+Set(SRCS
 EveHLT/AliEveHOMERManager.cxx
 EveHLT/AliEveHOMERManagerEditor.cxx
 EveHLT/AliEveHOMERSource.cxx

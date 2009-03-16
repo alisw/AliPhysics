@@ -2,11 +2,15 @@
 
 set(SRCS
 		   analysis/AliFMDAnaParameters.cxx	
+		   analysis/AliFMDAnaCalibEnergyDistribution.cxx
+		   analysis/AliFMDAnaCalibBackgroundCorrection.cxx
 	           analysis/AliFMDAnalysisTaskESDReader.cxx	
 	           analysis/AliFMDAnalysisTaskSharing.cxx       
 		   analysis/AliFMDAnalysisTaskDensity.cxx       
 		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx
 		   analysis/AliFMDAnalysisTaskCollector.cxx
+		   analysis/AliFMDAnalysisTaskDndeta.cxx
+		   analysis/AliFMDAnalysisTaskSE.cxx
 )
 
 # fill list of header files from list of source files

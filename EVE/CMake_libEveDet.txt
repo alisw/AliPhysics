@@ -1,6 +1,6 @@
 # -*- mode: cmake -*-
 
-set(SRCS
+Set(SRCS
 EveDet/AliEveEMCALData.cxx
 EveDet/AliEveEMCALSModule.cxx
 EveDet/AliEveEMCALSModuleData.cxx

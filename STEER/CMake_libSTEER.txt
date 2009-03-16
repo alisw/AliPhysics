@@ -24,6 +24,7 @@ AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx
 AliReconstructor.cxx 
 AliGeomManager.cxx 
 AliAlignObj.cxx AliAlignObjParams.cxx AliAlignObjMatrix.cxx 
+AliMisAligner.cxx
 AliTriggerInput.cxx 
 AliTriggerDetector.cxx 
 AliTriggerConfiguration.cxx 

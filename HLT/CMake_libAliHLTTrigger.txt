@@ -1,11 +1,25 @@
 # -*- mode: cmake -*-
 
 set(SRCS
+trigger/AliHLTTrigger.cxx
+trigger/AliHLTTriggerDecision.cxx
+trigger/AliHLTTriggerDomain.cxx
+trigger/AliHLTDomainEntry.cxx
+trigger/AliHLTReadoutList.cxx
+trigger/AliHLTTriggerMenu.cxx
+trigger/AliHLTTriggerMenuItem.cxx
+trigger/AliHLTTriggerMenuSymbol.cxx
+trigger/AliHLTGlobalTriggerDecision.cxx
+trigger/AliHLTGlobalTrigger.cxx
+trigger/AliHLTGlobalTriggerConfig.cxx
+trigger/AliHLTGlobalTriggerComponent.cxx
+trigger/AliHLTTriggerAgent.cxx
 trigger/AliHLTEventSummary.cxx
 trigger/AliHLTEventSummaryProducerComponent.cxx
 trigger/AliHLTRunSummary.cxx
 trigger/AliHLTRunSummaryProducerComponent.cxx
 trigger/AliHLTTriggerSelectiveReadoutComponent.cxx
+trigger/AliHLTTriggerMonitoringComponent.cxx
 )
 
 # fill list of header files from list of source files

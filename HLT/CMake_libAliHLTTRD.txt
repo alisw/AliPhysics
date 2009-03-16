@@ -3,11 +3,15 @@
 set(SRCS
 TRD/AliHLTTRDClusterizerComponent.cxx
 TRD/AliHLTTRDDefinitions.cxx
-TRD/AliHLTTRDTrackerComponent.cxx
 TRD/AliHLTTRDTrackerV1Component.cxx
-TRD/AliTRDclusterizerHLT.cxx
+TRD/AliHLTTRDClusterizer.cxx
 TRD/AliHLTTRDEsdWriterComponent.cxx
 TRD/AliHLTTRDCalibrationComponent.cxx
+TRD/AliHLTTRDCluster.cxx
+TRD/AliHLTTRDTracklet.cxx
+TRD/AliHLTTRDTrack.cxx
+TRD/AliHLTTRDAgent.cxx
+TRD/AliHLTTRDUtils.cxx
 )
 
 # fill list of header files from list of source files

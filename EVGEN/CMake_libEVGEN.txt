@@ -46,6 +46,9 @@ AliDecayerPolarized.cxx
 AliGenCorrHF.cxx
 AliGenCosmicsParam.cxx
 AliGenKrypton.cxx
+AliGenThermalPhotons.cxx
+AliGenPromptPhotons.cxx
+AliGenPileup.cxx
 )
 
 # fill list of header files from list of source files

@@ -4,8 +4,9 @@
 #
 set(SRCS
          mapping/AliMpPlaneType.cxx 
+         mapping/AliMpCathodType.cxx
          mapping/AliMpStationType.cxx 
-         mapping/AliMpCathodType.cxx 
+         mapping/AliMpStation12Type.cxx
 	 mapping/AliMpArea.cxx  
 	 mapping/AliMpConstants.cxx  
 	 mapping/AliMpFiles.cxx  
@@ -102,6 +103,7 @@ set(SRCS ${SRCS}
 	 mapping/AliMpCDB.cxx 
          mapping/AliMpFrtCrocusConstants.cxx
          mapping/AliMpManuStore.cxx
+         mapping/AliMpFastSegmentation.cxx
 )
 
 # Category graphics

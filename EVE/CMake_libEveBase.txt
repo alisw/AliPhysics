@@ -1,6 +1,9 @@
 # -*- mode: cmake -*-
 
-set(SRCS
+Set(SRCS
+EveBase/AliEveCascade.cxx
+EveBase/AliEveCascadeEditor.cxx
+EveBase/AliEveCascadeListEditor.cxx
 EveBase/AliEveCosmicRayFitter.cxx
 EveBase/AliEveCosmicRayFitterEditor.cxx
 EveBase/AliEveEventManager.cxx
@@ -13,6 +16,7 @@ EveBase/AliEveMacro.cxx
 EveBase/AliEveMacroEditor.cxx
 EveBase/AliEveMacroExecutor.cxx
 EveBase/AliEveMacroExecutorWindow.cxx
+EveBase/AliEveTrack.cxx
 EveBase/AliEveTrackCounter.cxx
 EveBase/AliEveTrackCounterEditor.cxx
 EveBase/AliEveTrackFitter.cxx

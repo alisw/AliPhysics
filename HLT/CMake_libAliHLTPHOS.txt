@@ -13,12 +13,13 @@ PHOS/AliHLTPHOSPulseGenerator.cxx
 PHOS/AliHLTPHOSRawAnalyzer.cxx
 PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx
 PHOS/AliHLTPHOSRawAnalyzerComponent.cxx
+PHOS/AliHLTPHOSRawAnalyzerComponentv2.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrude.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx
+PHOS/AliHLTPHOSRawAnalyzerCrudeComponentv2.cxx
 PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx
 PHOS/AliHLTPHOSRawAnalyzerLMS.cxx
 PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
-PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx
 PHOS/AliHLTPHOSRcuHistogramProducer.cxx
 PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx
 PHOS/AliHLTPHOSRcuProcessor.cxx
@@ -30,6 +31,7 @@ PHOS/AliHLTPHOSDigitMakerComponent.cxx
 PHOS/AliHLTPHOSConfig.cxx
 PHOS/AliHLTPHOSAltroConfig.cxx
 PHOS/AliHLTPHOSSharedMemoryInterface.cxx
+PHOS/AliHLTPHOSSharedMemoryInterfacev2.cxx
 PHOS/AliHLTPHOSClusterAnalyser.cxx
 PHOS/AliHLTPHOSClusterAnalyserComponent.cxx
 PHOS/AliHLTPHOSESDMaker.cxx
@@ -43,35 +45,16 @@ PHOS/AliHLTPHOSModuleCalibrationProcessorComponent.cxx
 PHOS/AliHLTPHOSRcuDAComponent.cxx
 PHOS/AliHLTPHOSRcuProperties.cxx
 PHOS/AliHLTPHOSUtilities.cxx
+PHOS/AliHLTPHOSFourier.cxx
+PHOS/AliHLTPHOSFourierComponent.cxx
+PHOS/AliHLTPHOSHistogramProducer.cxx
+PHOS/AliHLTPHOSHistogramProducerComponent.cxx
+PHOS/AliHLTPHOSMonitorTriggerComponent.cxx
 )
 
 # fill list of header files from list of source files
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
-
-Set(HDRS "${HDRS}"
-PHOS/AliHLTPHOSCommonDefs.h
-PHOS/AliHLTPHOSConstants.h
-PHOS/AliHLTPHOSRecPointDataStruct.h
-PHOS/AliHLTPHOSRawAnalyzer.h
-PHOS/AliHLTPHOSDefinitions.h
-#PHOS/AliHLTPHOSModuleCellEnergyDataStruct.h
-PHOS/AliHLTPHOSRcuCellEnergyDataStruct.h
-PHOS/AliHLTPHOSValidCellDataStruct.h
-PHOS/AliHLTPHOSDataHeaderStruct.h
-PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h
-PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h
-PHOS/AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h
-PHOS/AliHLTPHOSRcuCellAverageEnergyDataStruct.h
-PHOS/AliHLTPHOSRecPointDataStruct.h
-PHOS/AliHLTPHOSRecPointContainerStruct.h
-PHOS/AliHLTPHOSDigitContainerDataStruct.h
-PHOS/AliHLTPHOSRcuDigitContainerDataStruct.h
-PHOS/AliHLTPHOSDigitDataStruct.h
-PHOS/AliHLTPHOSCaloClusterDataStruct.h
-PHOS/AliHLTPHOSCaloClusterContainerStruct.h
-)
 
 AddLibrary(AliHLTPHOS "${SRCS}" "${HDRS}")
 

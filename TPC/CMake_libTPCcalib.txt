@@ -18,6 +18,9 @@ set(SRCS
   AliTPCLaserTrack.cxx
   AliTPCcalibCalib.cxx
   AliTPCcalibTime.cxx
+  AliTPCcalibUnlinearity.cxx
+  AliTPCcalibPID.cxx
+  AliTPCkalmandEdx.cxx
 )
 
 # fill list of header files from list of source files

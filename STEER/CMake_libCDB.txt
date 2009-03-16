@@ -8,6 +8,7 @@ AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx
 AliDCSGenDB.cxx AliSplineFit.cxx TTreeStream.cxx 
 AliPreprocessor.cxx AliShuttleInterface.cxx 
 AliGRPDCS.cxx
+AliCDBHandler.cxx
 )
 
 # fill list of header files from list of source files

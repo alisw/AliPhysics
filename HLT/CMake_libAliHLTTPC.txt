@@ -47,16 +47,6 @@ TPCLib/AliHLTTPCGlobalMergerComponent.cxx
 TPCLib/AliHLTTPCEsdWriterComponent.cxx
 TPCLib/AliHLTTPCHistogramHandlerComponent.cxx
 TPCLib/AliHLTTPCClusterConverterComponent.cxx
-TPCLib/tracking-ca/AliHLTTPCCACell.cxx
-TPCLib/tracking-ca/AliHLTTPCCADisplay.cxx
-TPCLib/tracking-ca/AliHLTTPCCAHit.cxx
-TPCLib/tracking-ca/AliHLTTPCCAOutTrack.cxx
-TPCLib/tracking-ca/AliHLTTPCCAParam.cxx
-TPCLib/tracking-ca/AliHLTTPCCARow.cxx
-TPCLib/tracking-ca/AliHLTTPCCATrackerComponent.cxx
-TPCLib/tracking-ca/AliHLTTPCCATracker.cxx
-TPCLib/tracking-ca/AliHLTTPCCATrack.cxx
-TPCLib/tracking-ca/AliHLTTPCCATrackPar.cxx
 TPCLib/comp/AliHLTTPCCompDataCompressorHelper.cxx
 TPCLib/comp/AliHLTTPCCompDumpComponent.cxx
 TPCLib/comp/AliHLTTPCCompModelAnalysis.cxx
@@ -84,6 +74,30 @@ TPCLib/AliHLTTPCClusterDumpComponent.cxx
 TPCLib/AliHLTTPCCalibTracksComponent.cxx
 TPCLib/AliHLTTPCHWCFDataReverterComponent.cxx
 TPCLib/AliHLTTPCLog.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrack.cxx
+TPCLib/tracking-ca/AliHLTTPCCATracker.cxx
+TPCLib/tracking-ca/AliHLTTPCCAOutTrack.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrackParam.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrackConvertor.cxx
+TPCLib/tracking-ca/AliHLTTPCCAParam.cxx
+TPCLib/tracking-ca/AliHLTTPCCARow.cxx
+TPCLib/tracking-ca/AliHLTTPCCAGrid.cxx
+TPCLib/tracking-ca/AliHLTTPCCAHitArea.cxx
+TPCLib/tracking-ca/AliHLTTPCCAGBHit.cxx
+TPCLib/tracking-ca/AliHLTTPCCAMCPoint.cxx
+TPCLib/tracking-ca/AliHLTTPCCAGBTrack.cxx
+TPCLib/tracking-ca/AliHLTTPCCAGBTracker.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrackerComponent.cxx
+TPCLib/tracking-ca/AliHLTTPCCANeighboursFinder.cxx
+TPCLib/tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
+TPCLib/tracking-ca/AliHLTTPCCAStartHitsFinder.cxx
+TPCLib/tracking-ca/AliHLTTPCCAUsedHitsInitialiser.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrackletConstructor.cxx
+TPCLib/tracking-ca/AliHLTTPCCATrackletSelector.cxx
+TPCLib/tracking-ca/AliHLTTPCCADisplay.cxx
+TPCLib/tracking-ca/AliHLTTPCCAMCTrack.cxx
+TPCLib/tracking-ca/AliHLTTPCCAPerformance.cxx
+TPCLib/tracking-ca/AliTPCtrackerCA.cxx 
 )
 
 # fill list of header files from list of source files

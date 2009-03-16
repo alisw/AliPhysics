@@ -24,6 +24,11 @@ set(SRCS
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityTPCEntranceSepQAPairCut.cxx 
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityQAPairCut.cxx 
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoYlm.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDirectYlm.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDirectYlm.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx
 )
 
 # fill list of header files from list of source files

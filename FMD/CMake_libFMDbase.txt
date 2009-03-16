@@ -22,6 +22,7 @@ AliFMD3.cxx
 AliFMDPreprocessor.cxx
 AliFMDQAChecker.cxx
 AliFMDGeometryBuilder.cxx
+AliFMDSurveyToAlignObjs.cxx	
 )
 
 # fill list of header files from list of source files

@@ -1,13 +1,13 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-      FLOW/AliFlowEventSimpleMaker.cxx 
-      FLOW/AliAnalysisTaskScalarProduct.cxx 
-      FLOW/AliAnalysisTaskMCEventPlane.cxx 
-      FLOW/AliAnalysisTaskLYZEventPlane.cxx 
-      FLOW/AliAnalysisTaskCumulants.cxx 
-      FLOW/AliAnalysisTaskQCumulants.cxx 
-      FLOW/AliAnalysisTaskLeeYangZeros.cxx
+  FLOW/AliFlowTasks/AliFlowEventSimpleMaker.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskScalarProduct.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskMCEventPlane.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskLYZEventPlane.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskCumulants.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskQCumulants.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskLeeYangZeros.cxx
       FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx 
       FLOW/AliFlowTasks/AliAnalysisTaskFlowEvent.cxx
 )

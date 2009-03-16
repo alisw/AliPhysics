@@ -5,6 +5,7 @@ set(SRCS
   AliVTrack.cxx
   AliVVertex.cxx
   AliVEvent.cxx
+  AliMixedEvent.cxx
   AliVHeader.cxx
   AliVEventHandler.cxx
   AliVEventPool.cxx
@@ -20,7 +21,7 @@ set(SRCS
   AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx
   AliTrackReference.cxx AliSysInfo.cxx
   AliMCEvent.cxx AliMCParticle.cxx
-  AliMagF.cxx AliMagF.cxx AliMagWrapCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx
+  AliMagF.cxx AliMagWrapCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx
   AliCodeTimer.cxx
   AliPDG.cxx
   AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
