@@ -446,7 +446,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::FindXStrips(
 		}
 		else if (startPos - 1 >= 0 and ((xStrips >> (startPos - 1)) & 0x1) == 0x1)
 		{
-			pos[1] = startPos + 1;
+			pos[1] = startPos - 1;
 		}
 		else
 		{
