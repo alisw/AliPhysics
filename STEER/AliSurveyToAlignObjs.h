@@ -31,6 +31,7 @@ class AliSurveyToAlignObjs : public TObject {
   virtual void Run() = 0;
   Bool_t StoreAlignObjToFile(const char* filename, const char* det);
   Bool_t StoreAlignObjToCDB(const char* cdbFolder, const char* det);
+  TClonesArray* GetAlignObjsArray() {return fAlignObjArray;}
   virtual   ~AliSurveyToAlignObjs();
   //
  protected:
