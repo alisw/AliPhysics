@@ -5,6 +5,7 @@
 
 SIMULATION=1 # will perform simulation
 RECONSTRUCTION=1 # will perform reconstruction
+RAW=1 # will reconstruct from raw data
 CHECKS=1 # will perform checks
 SLASHTMP=1 #will use /tmp to put the temporary raw data 
 NEVENTS=100 # will simulate 100 events
@@ -25,7 +26,7 @@ DUMPEVENT=5 # event to be dump on files
  
 EXIT=0
 
-while getopts "SRX:srxn:tg:p:d:c:" option
+while getopts "SRZX:srxzn:tg:p:d:c:" option
 do
   case $option in
     R ) RECONSTRUCTION=1;;
@@ -34,10 +35,12 @@ do
     CHECKS=1
     DUMPEVENT=$OPTARG
     ;;
+    Z ) RAW=1;;
     r ) RECONSTRUCTION=0;;
     s ) SIMULATION=0;;
     x ) CHECKS=0;;
     t ) SLASHTMP=0;;
+    z ) RAW=0;;
     c ) SIMCONFIG=$OPTARG;;
     d ) OUTDIR=$OPTARG;;
     n ) NEVENTS=$OPTARG;;
@@ -62,6 +65,7 @@ if [ $# -gt 0 ] || [ "$EXIT" -eq 1 ]; then
   echo "       -S (-s) perform (or not) simulation (default is do it, i.e -S)"
   echo "       -R (-r) perform (or not) reconstruction (default is do it, i.e. -R)"
   echo "       -X event (-x) perform (or not) checks and dumps (default is do it for event $DUMPEVENT, i.e. -X $DUMPEVENT)"
+  echo "       -Z (-z) perform reconstruction from raw data (from digits) (default is from raw data, i.e. -Z)"
   echo "       -n nevents (int) number of events to simulate (default $NEVENTS)"
   echo "       -t will use OUTDIR as a tmp directory to generate raw data  "
   echo "       -g seed (uint) seed to be used in simulation (default $SEED)"
@@ -78,6 +82,9 @@ if [ "$SIMULATION" -eq 1 ]; then
 fi
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 echo "Reconstruction options to be used : $RECOPTIONS"
+if [ "$RAW" -eq 0 ]; then
+echo "Will reconstruct from digits only (not from raw data)"
+fi
 fi
 echo "Output directory will be : $OUTDIR"
 
@@ -139,12 +146,19 @@ if [ "$SIMULATION" -eq 1 ]; then
   echo "Running simulation  ..."
 
   aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) >& $OUTDIR/testSim.out 
-  
-  echo "Moving generated files to $SIMDIR"
-  mkdir $OUTDIR/$SIMDIR
-  mv $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
-  mv $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
 
+  mkdir $OUTDIR/$SIMDIR
+
+  if [ "$RAW" -eq 1 ]; then
+    echo "Moving generated files to $SIMDIR"
+    mv $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
+    mv $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
+  else  
+    echo "Copying generated files to $SIMDIR"
+    cp $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
+    cp $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
+  fi
+  
 fi
 
 ###############################################################################
@@ -155,14 +169,26 @@ fi
 
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 
-  rm -f galice.root AliESD*.root *QA*.root
-
+  if [ "$RAW" -eq 1 ]; then
+    rm -f galice.root 
+  fi  
+  
+  rm -f AliESD*.root *QA*.root
+  
   echo "Running reconstruction  ..."
 
   cd $OUTDIR
   
-  aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
+  if [ "$RAW" -eq 1 ]; then
+  
+    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
 
+  else
+
+    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
+  
+  fi
+  
 fi
 
 ###############################################################################
