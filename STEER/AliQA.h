@@ -90,8 +90,7 @@ public:
   static void            SetQARefStorage(const char * name) ; 
   static void            SetQARefDataDirName(AliRecoParam::EventSpecie_t es) { fgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
   static void            SetQARefDataDirName(Int_t es) { fgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
-  void                   Show() const ; 
-  void                   Show(DETECTORINDEX_t det) const ;
+  void                   Show(DETECTORINDEX_t det = kNULLDET) const ;
   void                   ShowAll() const ;
   void                   ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk=kNULLTASK, AliRecoParam::EventSpecie_t es=AliRecoParam::kDefault) const ;
   void                   UnSet(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;

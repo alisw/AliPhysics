@@ -735,26 +735,15 @@ void AliQA::SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::Event
 }
 
 //_______________________________________________________________
-void AliQA::Show() const 
-{ 
-  // dispplay the QA status word
-
-  for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
-    const Bool_t what = IsEventSpecieSet(ies) ;
-    if ( what )
-      ShowStatus(fDet, fTask, AliRecoParam::Convert(ies)) ; 
-  }
-}
-
-//_______________________________________________________________
 void AliQA::Show(DETECTORINDEX_t det) const 
 { 
   // dispplay the QA status word
-  
+  if ( det == kNULLDET) 
+    det = fDet ;  
   for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
     const Bool_t what = IsEventSpecieSet(ies) ;
     if ( what )
-      ShowStatus(fDet, kNULLTASK, AliRecoParam::Convert(ies)) ; 
+      ShowStatus(det, kNULLTASK, AliRecoParam::Convert(ies)) ; 
   }
 }
 
