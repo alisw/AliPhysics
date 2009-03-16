@@ -127,7 +127,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // Creates digits from hits
      
   Int_t       map[80];    // 48 values on V0C + 32 on V0A
-  Int_t       pmNumber[80];
+//  Int_t       pmNumber[80];
   Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
   Float_t     time[80], time_ref[80], time2[64];
   Float_t     adc_gain[80]; 
