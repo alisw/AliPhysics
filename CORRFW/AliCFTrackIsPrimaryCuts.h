@@ -22,7 +22,12 @@
 // ESD and AOD data.
 // It mainly consists of a IsSelected function that returns a boolean.
 // This function checks whether the considered track passes a set of cuts:
-// - distance to main vertex in units of sigma (resolution)
+// - min. and max. distance to main vertex in transverse plane (xy)
+// - min. and max. longitudinal distance to main vertex (z)
+// - min. and max. distance to main vertex as ellpise in xy - z plane
+// - all above cuts on absolute values or in units of sigma (resolution)
+// - min. and max. distance to main vertex in units of sigma (resolution)
+// - max. transverse (xy) and longitudinal (z) impact parameter resolution
 // - require that the dca calculation doesn't fail
 // - accept or not accept daughter tracks of kink decays
 //
@@ -42,6 +47,7 @@
 #include "AliCFCutBase.h"
 #include "AliAODTrack.h"
 #include <TH2.h>
+#include "AliESDtrackCuts.h"
 class TBits;
 class AliESDtrack ;
 
@@ -57,13 +63,21 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void GetSigmaToVertex(AliESDtrack* esdTrack); // calculates nSigma to PV for an AliESDtrack
 
   // cut value setter
-  void SetMaxNSigmaToVertex(Double_t sigma=1.e+03)	{fNSigmaToVertexMax = sigma;}
-  void SetRequireSigmaToVertex(Bool_t b=kFALSE)	{fRequireSigmaToVertex=b;}
-  void SetAcceptKinkDaughters(Bool_t b=kTRUE)	{fAcceptKinkDaughters=b;}
-  void SetAODType(Char_t type=AliAODTrack::kUndef) {fAODType = type;}
+  void SetMinDCAToVertexXY(Float_t dist=0.)             {fMinDCAToVertexXY = dist;}
+  void SetMinDCAToVertexZ(Float_t dist=0.)              {fMinDCAToVertexZ = dist;}
+  void SetMaxDCAToVertexXY(Float_t dist=1e10)           {fMaxDCAToVertexXY = dist;}
+  void SetMaxDCAToVertexZ(Float_t dist=1e10)            {fMaxDCAToVertexZ = dist;}
+  void SetDCAToVertex2D(Bool_t b=kFALSE)                {fDCAToVertex2D = b;}
+  void SetAbsDCAToVertex(Bool_t b=kTRUE)                {fAbsDCAToVertex = b;}
+  void SetMinNSigmaToVertex(Double_t sigmaMin=0.)	{fNSigmaToVertexMin = sigmaMin;}
+  void SetMaxNSigmaToVertex(Double_t sigmaMax=1.e+10)	{fNSigmaToVertexMax = sigmaMax;}
+  void SetMaxSigmaDCAxy(Double_t sigmaMax=1.e+10)	{fSigmaDCAxy = sigmaMax;}
+  void SetMaxSigmaDCAz(Double_t sigmaMax=1.e+10)	{fSigmaDCAz = sigmaMax;}
+  void SetRequireSigmaToVertex(Bool_t b=kFALSE)	        {fRequireSigmaToVertex=b;}
+  void SetAcceptKinkDaughters(Bool_t b=kTRUE)	        {fAcceptKinkDaughters=b;}
+  void SetAODType(Char_t type=AliAODTrack::kUndef)      {fAODType = type;}
 
   // QA histograms
   void DrawHistograms();
@@ -83,10 +97,12 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
     kDcaZ,			// controll histogram: dca along z axis
     kDcaXYnorm,			// controll histogram: normalised dca in xy plane
     kDcaZnorm,			// controll histogram: normalised dca along z axis
+    kSigmaDcaXY,		// controll histogram: impact parameter resolution in transverse plane
+    kSigmaDcaZ,			// controll histogram: impact parameter resolution along z axis
     kCutAODType,                // cut on AliAODTrack::fType
-    kNCuts=4,			// number of single selections
+    kNCuts=9,			// number of single selections
     kNStepQA=2,			// number of QA steps (before/after the cuts)
-    kNHist=7			// number of QA histograms
+    kNHist=9			// number of QA histograms
   };
 
  private:
@@ -95,8 +111,17 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-  Double_t fNSigmaToVertex;		// track distance to main vertex in units of sigma
+
+  Double_t fMinDCAToVertexXY;		// cut value: min distance to main vertex in transverse plane
+  Double_t fMinDCAToVertexZ;		// cut value: min longitudinal distance to main vertex
+  Double_t fMaxDCAToVertexXY;		// cut value: max distance to main vertex in transverse plane
+  Double_t fMaxDCAToVertexZ;		// cut value: max longitudinal distance to main vertex
+  Bool_t   fDCAToVertex2D;		// flag: cut on ellipse in xy - z plane
+  Bool_t   fAbsDCAToVertex;		// flag: cut on absolute values or in units of sigma
+  Double_t fNSigmaToVertexMin;		// cut value: min distance to main vertex in units of sigma
   Double_t fNSigmaToVertexMax;		// cut value: max distance to main vertex in units of sigma
+  Double_t fSigmaDCAxy;			// cut value: impact parameter resolution in xy plane
+  Double_t fSigmaDCAz;			// cut value: impact parameter resolution in z direction
   Bool_t   fRequireSigmaToVertex;	// require calculable distance to main vertex
   Char_t   fAODType;                    // type of AOD track (undef, primary, secondary, orphan)
                                         // applicable at AOD level only !
@@ -119,6 +144,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Int_t fhNBinsDcaZ;			// number of bins+1: dca along beam axis
   Int_t fhNBinsDcaXYnorm;		// number of bins+1: normalised dca in transverse plane
   Int_t fhNBinsDcaZnorm;		// number of bins+1: normalised dca along beam axis
+  Int_t fhNBinsSigmaDcaXY;		// number of bins+1: impact parameter resolution in transverse plane
+  Int_t fhNBinsSigmaDcaZ;		// number of bins+1: impact parameter resolution along beam axis
 
   Double_t *fhBinLimNSigma; //[fhNBinsNSigma] bin limits: dca in units of sigma
   Double_t *fhBinLimRequireSigma;//[fhNBinsRequireSigma] bin limits: require successful calcuation
@@ -127,6 +154,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Double_t *fhBinLimDcaZ; //[fhNBinsDcaZ] bin limits: dca along beam axis
   Double_t *fhBinLimDcaXYnorm; //[fhNBinsDcaXYnorm] bin limits: normalised dca in transverse plane
   Double_t *fhBinLimDcaZnorm;//[fhNBinsDcaZnorm] bin limits: normalised dca along beam axis
+  Double_t *fhBinLimSigmaDcaXY; //[fhNBinsSigmaDcaXY] bin limits: impact parameter in transverse plane
+  Double_t *fhBinLimSigmaDcaZ; //[fhNBinsSigmaDcaZ] bin limits: impact parameter along beam axis
 
   ClassDef(AliCFTrackIsPrimaryCuts,3);
 };
