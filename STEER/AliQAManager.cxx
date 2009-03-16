@@ -28,7 +28,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TAlienCollection.h>
 #include <TKey.h>
 #include <TFile.h>
 #include <TFileMerger.h>
@@ -742,7 +741,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
   printf("***  Coll   = |%s|             \n",collectionFile);              	
   
-  TGridCollection * collection = TAlienCollection::Open(collectionFile);
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",collectionFile));
   TGridResult* result = collection->GetGridResult("", 0, 0);
   
   Int_t index = 0  ;
