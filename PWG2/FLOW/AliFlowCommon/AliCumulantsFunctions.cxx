@@ -623,7 +623,6 @@ void AliCumulantsFunctions::Calculate()
     {
       v4ptRP[b]=-ptRPDiffCumulant4[b]/pow(-cumulant[1],.75);
       if (dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.)>0.&&ptBinRPNoOfParticles[b]>0.) // to be improved
-      if (ptBinRPNoOfParticles[b]>0.)
       {
        if(chiQ[1]>0)
        {
