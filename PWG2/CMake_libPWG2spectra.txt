@@ -4,7 +4,7 @@ set(SRCS
     SPECTRA/AliProtonAnalysis.cxx
     SPECTRA/AliProtonQAAnalysis.cxx
     SPECTRA/AliAnalysisTaskCheckV0.cxx
-    SPECTRA/AliAnalysisTaskCascade.cxx
+  SPECTRA/AliAnalysisTaskCheckCascade.cxx
     SPECTRA/AliAnalysisTaskStrange.cxx
 )
 

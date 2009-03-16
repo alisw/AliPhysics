@@ -19,6 +19,10 @@ set(SRCS
 	AliComparisonDEdx.cxx 
 	AliComparisonDCA.cxx 
 	AliComparisonObject.cxx
+	AliGenInfoTask.cxx
+	AliMCTrackingTestTask.cxx
+	AliTPCtaskPID.cxx
+	AliTPCtaskQA.cxx 
 )
 
 # fill list of header files from list of source files

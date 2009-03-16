@@ -49,6 +49,7 @@ FEMTOSCOPY/AliFemto/AliFemtoEventReaderAOD.cxx
 FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx
 FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx
 FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx
+FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx
 )
 
 # fill list of header files from list of source files

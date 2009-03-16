@@ -11,6 +11,7 @@ set(SRCS
                  muon/AliAODDimuon.cxx 
                  muon/AliAODEventInfo.cxx 
                  muon/AliESDMuonTrackCuts.cxx 
+                 muon/AliAnalysisTaskSingleMuESD.cxx
 )
 
 # fill list of header files from list of source files
