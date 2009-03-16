@@ -67,7 +67,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn(""), fAnalysisType(0),
-     fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
+     fNEvents(0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
 }
