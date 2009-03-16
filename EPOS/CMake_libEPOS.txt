@@ -1,0 +1,43 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+epos167/epostimer.cxx
+TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
+)
+
+set(FSRCS
+epos167/epos-app-158.f
+epos167/epos-bas-168.f
+epos167/epos-con-161.f
+epos167/epos-dky-165.f
+epos167/epos-dro-168.f
+epos167/epos-ems-165.f
+epos167/epos-fra-163.f
+epos167/epos-ico-158.f
+epos167/epos-yyy-168.f
+epos167/epos-ids-165.f
+epos167/epos-int-168.f
+epos167/epos-jps-164.f
+epos167/epos-omg-160.f
+epos167/epos-par-129.f
+epos167/epos-sem-165.f
+epos167/epos-rsh-165.f
+epos167/epos-qsh-165.f
+epos167/epos-tim-155.f
+epos167/epos-uti-165.f
+epos167/epos-xan-154.f
+epos167/epos-xpr-165.f
+epos167/eposm.f
+epos167/eposu.f
+)
+
+Set(HDRS
+TEpos.h
+AliGenEpos.h
+AliGenEposEventHeader.h
+)
+
+Set(SRCS ${SRCS} ${FSRCS})
+
+AddLibrary(EPOS "${SRCS}" "${HDRS}")
+
