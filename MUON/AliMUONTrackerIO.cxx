@@ -71,8 +71,12 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
   }
   
   TString datastring;
-  datastring.ReadFile(in);
-    
+  ostringstream stream;
+  char line[1024];
+  while ( in.getline(line,1024) )
+  	stream << line << "\n";
+  datastring = TString(stream.str().c_str());
+  
   in.close();
 
   return DecodePedestals(datastring,pedStore);
