@@ -304,7 +304,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Int_t label = fMC->GetLabel();
   Double_t x, y, z, pt, dydx, dzdx;
   Float_t p, pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
-  Double_t covR[3], cov[3];
+  Double_t covR[3]/*, cov[3]*/;
 
   if(fDebugLevel>=1){
     Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
@@ -750,11 +750,11 @@ Bool_t AliTRDresolution::PostProcess()
     h->Fit(&fgl, "NQ", "", -5., 20.);
 
     Float_t invpt = ax->GetBinCenter(ip);
-    Int_t ip = gm->GetN();
-    gm->SetPoint(ip, invpt, fgl.GetParameter(1));
-    gm->SetPointError(ip, 0., fgl.GetParError(1));
-    gs->SetPoint(ip, invpt, fgl.GetParameter(2)*invpt);
-    gs->SetPointError(ip, 0., fgl.GetParError(2));
+    Int_t jp = gm->GetN();
+    gm->SetPoint(jp, invpt, fgl.GetParameter(1));
+    gm->SetPointError(jp, 0., fgl.GetParError(1));
+    gs->SetPoint(jp, invpt, fgl.GetParameter(2)*invpt);
+    gs->SetPointError(jp, 0., fgl.GetParError(2));
     // fgl.GetParameter(4) // Landau MPV
     // fgl.GetParameter(5) // Landau Sigma
   }
@@ -967,7 +967,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
 //________________________________________________________
-Bool_t AliTRDresolution::Process(ETRDresolutionPlot ip, TF1 *f, Float_t k)
+Bool_t AliTRDresolution::Process(ETRDresolutionPlot plot, TF1 *f, Float_t k)
 {
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
   Bool_t kBUILD = kFALSE;
@@ -977,13 +977,13 @@ Bool_t AliTRDresolution::Process(ETRDresolutionPlot ip, TF1 *f, Float_t k)
   }
 
   TH2I *h2 = 0x0;
-  if(!(h2 = (TH2I *)(fContainer->At(ip)))) return kFALSE;
+  if(!(h2 = (TH2I *)(fContainer->At(plot)))) return kFALSE;
   TGraphErrors *gm = 0x0, *gs = 0x0;
-  if(!(gm=(TGraphErrors*)fGraphM->At(ip))) return kFALSE;
+  if(!(gm=(TGraphErrors*)fGraphM->At(plot))) return kFALSE;
   if(gm->GetN()) for(Int_t ip=gm->GetN(); ip--;) gm->RemovePoint(ip);
-  if(!(gs=(TGraphErrors*)fGraphS->At(ip))) return kFALSE;
+  if(!(gs=(TGraphErrors*)fGraphS->At(plot))) return kFALSE;
   if(gs->GetN()) for(Int_t ip=gs->GetN(); ip--;) gs->RemovePoint(ip);
-  Char_t pn[10]; sprintf(pn, "p%02d", ip);
+  Char_t pn[10]; sprintf(pn, "p%02d", plot);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t x = h2->GetXaxis()->GetBinCenter(ibin);
     TH1D *h = h2->ProjectionY(pn, ibin, ibin);

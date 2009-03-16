@@ -196,7 +196,7 @@ Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
     if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsCross"), kRed)) break;
     return kTRUE;
   case kNtrackletsFindable:
-    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsFindable"), kGreen)); break;
+    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsFindable"), kGreen)) break;
     return kTRUE;
   case kNtracksEvent:
     ((TH1F*)fContainer->FindObject("hNtrks"))->Draw("pl");

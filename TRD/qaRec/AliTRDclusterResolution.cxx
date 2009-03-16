@@ -577,7 +577,7 @@ void AliTRDclusterResolution::ProcessCharge()
   Double_t q, n = 0., entries;
   ax = h2->GetXaxis();
   for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
-    Double_t q = TMath::Exp(ax->GetBinCenter(ix));
+    q = TMath::Exp(ax->GetBinCenter(ix));
     if(q<20. || q>250.) continue; // ?!
 
     h1 = h2->ProjectionY("py", ix, ix);
