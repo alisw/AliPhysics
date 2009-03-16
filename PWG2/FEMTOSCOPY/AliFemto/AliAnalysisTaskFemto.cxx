@@ -34,6 +34,7 @@ extern AliFemtoManager *ConfigFemtoAnalysis();
     AliAnalysisTask(name,""), 
     fESD(0), 
     fAOD(0),
+    fStack(0),
     fOutputList(0), 
     fReader(0x0),
     fManager(0x0),
@@ -44,6 +45,34 @@ extern AliFemtoManager *ConfigFemtoAnalysis();
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0, TList::Class());
+}
+
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask){
+  // copy constructor
+  fESD = aFemtoTask.fESD; 
+  fAOD = aFemtoTask.fAOD; 
+  fStack = aFemtoTask.fStack;
+  fOutputList = aFemtoTask.fOutputList;   
+  fReader = aFemtoTask.fReader;       
+  fManager = aFemtoTask.fManager;      
+  fAnalysisType = aFemtoTask.fAnalysisType; 
+}
+
+
+AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto& aFemtoTask){
+  // assignment operator
+  if (this == &aFemtoTask)
+    return *this;
+
+  fESD = aFemtoTask.fESD; 
+  fAOD = aFemtoTask.fAOD; 
+  fStack = aFemtoTask.fStack;
+  fOutputList = aFemtoTask.fOutputList;   
+  fReader = aFemtoTask.fReader;       
+  fManager = aFemtoTask.fManager;      
+  fAnalysisType = aFemtoTask.fAnalysisType; 
+
+  return *this;
 }
 
 //________________________________________________________________________
@@ -128,7 +157,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
     AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     
-    AliGenHijingEventHeader *hdh;
+    AliGenHijingEventHeader *hdh = 0;
     if(mctruth) {
       fStack = mctruth->MCEvent()->Stack();
 
