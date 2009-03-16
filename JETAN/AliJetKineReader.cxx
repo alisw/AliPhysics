@@ -56,7 +56,10 @@ AliJetKineReader::AliJetKineReader():
 AliJetKineReader::~AliJetKineReader()
 {
   // Destructor
-  delete fAliHeader;
+    if (fAliHeader) {
+	delete fAliHeader;
+	fAliHeader = 0;
+    }
 }
 
 //____________________________________________________________________________
