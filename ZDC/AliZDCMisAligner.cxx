@@ -14,7 +14,7 @@ AliZDCMisAligner::AliZDCMisAligner() : AliMisAligner()
 }
 
 //_______________________________________________________________________________________
-TClonesArray* AliZDCMisAligner::MakeAlObjsArray() const {
+TClonesArray* AliZDCMisAligner::MakeAlObjsArray() {
 
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;

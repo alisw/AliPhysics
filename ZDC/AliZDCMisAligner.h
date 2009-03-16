@@ -17,7 +17,7 @@ class AliZDCMisAligner : public AliMisAligner {
 
   public:
     AliZDCMisAligner();
-    TClonesArray* MakeAlObjsArray() const;
+    TClonesArray* MakeAlObjsArray();
     AliCDBMetaData* GetCDBMetaData() const;
 
   private:
