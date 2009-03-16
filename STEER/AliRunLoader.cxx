@@ -154,6 +154,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  TNamed(fgkRunLoaderName,fgkRunLoaderName),
  fLoaders(new TObjArray()),
  fEventFolder(topfolder),
+ fRun(-1),
  fCurrentEvent(0),
  fGAFile(0x0),
  fHeader(0x0),
