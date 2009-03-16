@@ -110,18 +110,18 @@ private:
     virtual void      ReorderAndExpandTreeTR();
     
 private:
-    AliStack         *fStack;           //! Current pointer to stack
-    TClonesArray     *fMCParticles;     //! Pointer to list of particles
-    TRefArray        *fMCParticleMap;   //! Map of MC Particles
-    AliHeader        *fHeader;          //! Current pointer to header
-    TClonesArray     *fTRBuffer;        //! Track reference buffer    
-    TClonesArray     *fTrackReferences; //! Array of track references
-    TTree            *fTreeTR;          //! Pointer to Track Reference Tree
-    TTree            *fTmpTreeTR;       //! Temporary tree TR to read old format
-    TFile            *fTmpFileTR;       //! Temporary file with TreeTR to read old format
-    Int_t             fNprimaries;      //! Number of primaries
-    Int_t             fNparticles;      //! Number of particles
-    ClassDef(AliMCEvent, 0)  // AliVEvent realisation for MC data
+    AliStack         *fStack;           // Current pointer to stack
+    TClonesArray     *fMCParticles;     // Pointer to list of particles
+    TRefArray        *fMCParticleMap;   // Map of MC Particles
+    AliHeader        *fHeader;          // Current pointer to header
+    TClonesArray     *fTRBuffer;        // Track reference buffer    
+    TClonesArray     *fTrackReferences; // Array of track references
+    TTree            *fTreeTR;          // Pointer to Track Reference Tree
+    TTree            *fTmpTreeTR;       // Temporary tree TR to read old format
+    TFile            *fTmpFileTR;       // Temporary file with TreeTR to read old format
+    Int_t             fNprimaries;      // Number of primaries
+    Int_t             fNparticles;      // Number of particles
+    ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
 };
 
 
