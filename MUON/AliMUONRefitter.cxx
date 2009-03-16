@@ -163,7 +163,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(UInt_t trackId)
 //_____________________________________________________________________________
 AliMUONTrack* AliMUONRefitter::RetrackFromClusters(UInt_t trackId)
 {
-  /// refit track "trackId" form the clusters (i.e. do not re-clusterize)
+  /// refit track "trackId" from the clusters (i.e. do not re-clusterize)
   /// it is the responsability of the user to delete the returned track
   
   if (!fkESDInterface) {
@@ -213,7 +213,7 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clust
   
   // re-clusterize
   TIter next(fkESDInterface->CreateDigitIterator(trackId, clusterId));
-  fClusterServer->UseDigits(next);
+  fClusterServer->UseDigits(next,fkESDInterface->GetDigits());
   fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
   return clusterStore;
@@ -247,7 +247,7 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t clusterId)
   
   // re-clusterize
   TIter next(fkESDInterface->CreateDigitIteratorInCluster(clusterId));
-  fClusterServer->UseDigits(next);
+  fClusterServer->UseDigits(next,fkESDInterface->GetDigits());
   fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
   return clusterStore;
@@ -307,7 +307,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
     
     // re-clusterize current cluster
     TIter nextDigit(fkESDInterface->CreateDigitIterator(trackId, cluster->GetUniqueID()));
-    fClusterServer->UseDigits(nextDigit);
+    fClusterServer->UseDigits(nextDigit,fkESDInterface->GetDigits());
     Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea(),fkRecoParam);
     
     // check that re-clusterizing succeeded

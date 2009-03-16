@@ -16,6 +16,7 @@
 #include "TObject.h"
 #endif
 
+class AliMUONVDigitStore;
 class AliMUONVClusterStore;
 class AliMUONVTriggerTrackStore;
 class AliMUONRecoParam;
@@ -35,7 +36,7 @@ public:
 			   const AliMUONRecoParam* recoParam = 0x0) = 0;
   
   /// Specify an iterator to loop over the digits needed to perform our job.
-  virtual void UseDigits(TIter& next) = 0;
+  virtual void UseDigits(TIter& next, AliMUONVDigitStore* digitStore = 0x0) = 0;
   
   /// Use trigger tracks. Return kFALSE if not used.
   virtual Bool_t UseTriggerTrackStore(AliMUONVTriggerTrackStore* /*trackStore*/) { return kFALSE; }

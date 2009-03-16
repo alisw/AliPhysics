@@ -311,7 +311,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
       } // loop on digits
       
       TIter nextDigitTrackCut(digitStoreTrackCut.CreateIterator());
-      clusterServer->UseDigits(nextDigitTrackCut);
+      clusterServer->UseDigits(nextDigitTrackCut,&digitStoreTrackCut);
       
       for (Int_t ch = firstChamber; ch <= lastChamber; ++ch ){
         clusterServer->Clusterize(ch, clusterStore, AliMpArea(),recoParam);

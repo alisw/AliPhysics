@@ -66,7 +66,7 @@ ClassImp(AliMUONTracker)
 //_____________________________________________________________________________
 AliMUONTracker::AliMUONTracker(const AliMUONRecoParam* recoParam,
                                AliMUONVClusterServer* clusterServer,
-                               const AliMUONVDigitStore& digitStore,
+                               AliMUONVDigitStore& digitStore,
                                const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit)
@@ -97,7 +97,7 @@ fkRecoParam(recoParam)
   else
   {
     TIter next(fkDigitStore.CreateIterator());
-    fClusterServer->UseDigits(next);
+    fClusterServer->UseDigits(next,&digitStore);
     
     SetupClusterServer(*fClusterServer);
   }

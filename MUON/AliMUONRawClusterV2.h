@@ -73,7 +73,12 @@ class AliMUONRawClusterV2 : public AliMUONVCluster {
            /// Return chi2 of cluster
   virtual Double_t GetChi2() const {return fChi2;}
   
-  /// Return true as the function Compare() is implemented
+           /// Set the corresponding MC track number
+  virtual void     SetMCLabel(Int_t label) {fMCLabel = label;}
+           /// Return the corresponding MC track number
+  virtual Int_t    GetMCLabel() const {return fMCLabel;}
+  
+           /// Return true as the function Compare() is implemented
   Bool_t       IsSortable() const {return kTRUE;}
   Int_t        Compare(const TObject *obj) const;
   
@@ -95,8 +100,10 @@ private:
   /// Indices of digits attached to the cluster
   UInt_t   *fDigitsId;	//[fNDigits] Indices of digits attached to the cluster
   
+  Int_t fMCLabel;       ///< Point to the corresponding MC track
   
-  ClassDef(AliMUONRawClusterV2,1)  //Cluster class for MUON
+  
+  ClassDef(AliMUONRawClusterV2,2)  //Cluster class for MUON
 };
 
 #endif

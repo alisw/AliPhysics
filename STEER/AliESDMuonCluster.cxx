@@ -40,7 +40,8 @@ AliESDMuonCluster::AliESDMuonCluster()
 : TObject(),
   fCharge(0.),
   fChi2(0.),
-  fPads(0x0)
+  fPads(0x0),
+  fLabel(-1)
 {
   /// default constructor
   fXYZ[0] = fXYZ[1] = fXYZ[2] = 0.;
@@ -52,7 +53,8 @@ AliESDMuonCluster::AliESDMuonCluster (const AliESDMuonCluster& cluster)
 : TObject(cluster),
   fCharge(cluster.fCharge),
   fChi2(cluster.fChi2),
-  fPads(0x0)
+  fPads(0x0),
+  fLabel(cluster.fLabel)
 {
   /// Copy constructor
   fXYZ[0] = cluster.fXYZ[0];
@@ -87,6 +89,7 @@ AliESDMuonCluster& AliESDMuonCluster::operator=(const AliESDMuonCluster& cluster
   
   fCharge = cluster.fCharge;
   fChi2 = cluster.fChi2;
+  fLabel = cluster.fLabel;
   
   delete fPads;
   if (cluster.fPads) {
@@ -163,7 +166,7 @@ void AliESDMuonCluster::Print(Option_t */*option*/) const
   cout<<Form("  position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0)",
 	     GetX(),GetY(),GetZ(),GetErrX(),GetErrY())<<endl;
   
-  cout<<Form("  charge=%5.2f, chi2=%5.2f", GetCharge(), GetChi2())<<endl;
+  cout<<Form("  charge=%5.2f, chi2=%5.2f, MClabel=%d", GetCharge(), GetChi2(), GetLabel())<<endl;
   
   if (PadsStored()) {
     cout<<"  pad infos:"<<endl;

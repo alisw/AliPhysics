@@ -55,7 +55,7 @@ AliMUONTrack::AliMUONTrack()
     fMatchTrigger(-1),
     floTrgNum(-1),
     fChi2MatchTrigger(0.),
-    fTrackID(0),
+    fTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
     fLocalTrigger(0)
@@ -79,7 +79,7 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDis
     fMatchTrigger(-1),
     floTrgNum(-1),    
     fChi2MatchTrigger(0.),
-    fTrackID(0),
+    fTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
     fLocalTrigger(0)
@@ -311,7 +311,7 @@ void AliMUONTrack::Reset()
   fMatchTrigger = -1;
   floTrgNum = -1;
   fChi2MatchTrigger = 0.;
-  fTrackID = 0;
+  fTrackID = -1;
   fHitsPatternInTrigCh = 0;
   fLocalTrigger = 0;
   delete fTrackParamAtCluster; fTrackParamAtCluster = 0x0;
@@ -1053,15 +1053,11 @@ Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool
       // check DE Id
       if (cluster1->GetDetElemId() != cluster2->GetDetElemId()) continue;
       
-      // non bending direction
+      // check local chi2
       dX = cluster1->GetX() - cluster2->GetX();
-      chi2 = dX * dX / (cluster1->GetErrX2() + cluster2->GetErrX2());
-      if (chi2 > chi2Max) continue;
-      
-      // bending direction
       dY = cluster1->GetY() - cluster2->GetY();
-      chi2 = dY * dY / (cluster1->GetErrY2() + cluster2->GetErrY2());
-      if (chi2 > chi2Max) continue;
+      chi2 = dX * dX / (cluster1->GetErrX2() + cluster2->GetErrX2()) + dY * dY / (cluster1->GetErrY2() + cluster2->GetErrY2());
+      if (chi2 > 2. * chi2Max) continue; // 2 because 2 quantities in chi2
       
       compatibleCluster[cluster1->GetChamberId()] = kTRUE;
       nMatchClusters++;
@@ -1114,7 +1110,8 @@ void AliMUONTrack::Print(Option_t*) const
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
       ", LoTrgNum=" << setw(3) << GetLoTrgNum()  << 
     ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger();
-  cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh) << endl;
+  cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh);
+  cout << Form(" MClabel=%d",fTrackID) << endl;
   if (fTrackParamAtCluster) fTrackParamAtCluster->First()->Print("FULL");
 }
 
@@ -1133,5 +1130,49 @@ void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY,
   fLocalTrigger += loLpt    << 22;
   fLocalTrigger += loHpt    << 24;
 
+}
+
+//__________________________________________________________________________
+void AliMUONTrack::FindMCLabel()
+{
+  /// Determine the MC label from the label of the attached clusters and fill fMCLabel data member:
+  /// More than 50% of clusters, including 1 before and 1 after the dipole, must share the same label
+  
+  Int_t nClusters = GetNClusters();
+  Int_t halfCluster = nClusters/2;
+  
+  // reset MC label
+  fTrackID = -1;
+  
+  // loop over first clusters (if nClusters left < (nClusters-halfCluster) the conditions cannot be fulfilled)
+  for (Int_t iCluster1 = 0; iCluster1 < nClusters-halfCluster; iCluster1++) {
+    AliMUONVCluster* cluster1 = ((AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(iCluster1))->GetClusterPtr();
+    
+    // if the first cluster is not on station 1 or 2 the conditions cannot be fulfilled
+    if (cluster1->GetChamberId() > 3) return;
+    
+    Int_t label1 = cluster1->GetMCLabel();
+    if (label1 < 0) continue;
+    
+    Int_t nIdenticalLabel = 1;
+    
+    // Loop over next clusters
+    for (Int_t iCluster2 = iCluster1+1; iCluster2 < nClusters; iCluster2++) {
+      AliMUONVCluster* cluster2 = ((AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(iCluster2))->GetClusterPtr();
+      
+      if (cluster2->GetMCLabel() != label1) continue;
+      
+      nIdenticalLabel++;
+      
+      // stop as soon as conditions are fulfilled
+      if (nIdenticalLabel > halfCluster && cluster2->GetChamberId() > 5) {
+        fTrackID = label1;
+	return;
+      }
+      
+    }
+    
+  }
+  
 }
 

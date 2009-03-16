@@ -20,6 +20,8 @@ class AliESDMuonPad;
 class AliMUONGeometryTransformer;
 class AliMUONTriggerTrackToTrackerClusters;
 class AliMUONVClusterFinder;
+class AliMUONCluster;
+class AliMpVSegmentation;
 class AliMpExMap;
 class TClonesArray;
 
@@ -36,7 +38,7 @@ public:
                    const AliMpArea& area,
                    const AliMUONRecoParam* recoParam = 0x0);
   
-  void UseDigits(TIter& next);
+  void UseDigits(TIter& next, AliMUONVDigitStore* digitStore = 0x0);
   
   void Print(Option_t* opt="") const;
 
@@ -55,7 +57,10 @@ private:
 
   TClonesArray* PadArray(Int_t detElemId, Int_t cathode) const;
   
+  Int_t FindMCLabel(const AliMUONCluster& cluster, Int_t detElemId, const AliMpVSegmentation* seg[2]) const;
+  
 private:
+  AliMUONVDigitStore* fDigitStore; //!< the digit store (not owner)
   AliMUONVClusterFinder* fClusterFinder; //!< the cluster finder (owner)
   const AliMUONGeometryTransformer& fkTransformer; //!< the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads

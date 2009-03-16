@@ -665,7 +665,6 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   track.SetMatchTrigger(esdTrack.GetMatchTrigger());
   track.SetLoTrgNum(-1);
   track.SetChi2MatchTrigger(esdTrack.GetChi2MatchTrigger());
-  track.SetTrackID(0);
   track.SetHitsPatternInTrigCh(esdTrack.GetHitsPatternInTrigCh());
   track.SetLocalTrigger(esdTrack.LoCircuit(), esdTrack.LoStripX(), esdTrack.LoStripY(),
 			esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt());
@@ -731,6 +730,9 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
     
   }
   
+  // set the MC label from ESD track
+  track.SetMCLabel(esdTrack.GetLabel());
+  
   delete cluster;
   delete cStore;
   
@@ -778,6 +780,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUON
   cluster.SetErrXY(esdCluster.GetErrX(),esdCluster.GetErrY());
   cluster.SetCharge(esdCluster.GetCharge());
   cluster.SetChi2(esdCluster.GetChi2());
+  cluster.SetMCLabel(esdCluster.GetLabel());
   
   if (esdCluster.PadsStored()) {
     Int_t nPads = esdCluster.GetNPads();
@@ -830,6 +833,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   esdTrack.SetUniqueID(track.GetUniqueID());
   esdTrack.SetChi2(track.GetGlobalChi2());
   esdTrack.SetNHit(track.GetNClusters());
+  esdTrack.SetLabel(track.GetMCLabel());
   
   // set param at first cluster
   AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track.GetTrackParamAtCluster())->First());
@@ -925,6 +929,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCl
   esdCluster.SetErrXY(cluster.GetErrX(), cluster.GetErrY());
   esdCluster.SetCharge(cluster.GetCharge());
   esdCluster.SetChi2(cluster.GetChi2());
+  esdCluster.SetLabel(cluster.GetMCLabel());
   
   if (digits) { // transfert all data if required
     

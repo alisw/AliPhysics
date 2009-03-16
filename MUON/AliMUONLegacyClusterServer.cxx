@@ -128,7 +128,7 @@ AliMUONLegacyClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trac
 
 //_____________________________________________________________________________
 void
-AliMUONLegacyClusterServer::UseDigits(TIter&)
+AliMUONLegacyClusterServer::UseDigits(TIter&, AliMUONVDigitStore*)
 {
   /// Give the iterator to our delegate if we have one, of issue and error
   

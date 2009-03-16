@@ -35,7 +35,7 @@ public:
                            const AliMpArea& area,
                            const AliMUONRecoParam* recoParam = 0x0);
   
-  virtual void UseDigits(TIter& next);
+  virtual void UseDigits(TIter& next, AliMUONVDigitStore* digitStore = 0x0);
 
   /// Use trigger tracks. Return kFALSE if not used.
   virtual Bool_t UseTriggerTrackStore(AliMUONVTriggerTrackStore* trackStore);

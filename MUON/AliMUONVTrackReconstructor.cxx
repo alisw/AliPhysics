@@ -1001,6 +1001,7 @@ void AliMUONVTrackReconstructor::ImproveTracks()
 void AliMUONVTrackReconstructor::Finalize()
 {
   /// Recompute track parameters and covariances at each attached cluster from those at the first one
+  /// Set the label pointing to the corresponding MC track
   
   AliMUONTrack *track;
   
@@ -1008,6 +1009,8 @@ void AliMUONVTrackReconstructor::Finalize()
   while (track) {
     
     FinalizeTrack(*track);
+    
+    track->FindMCLabel();
     
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
     

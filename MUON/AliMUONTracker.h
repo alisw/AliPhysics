@@ -34,7 +34,7 @@ class AliMUONTracker : public AliTracker
 
   AliMUONTracker(const AliMUONRecoParam* recoParam,
                  AliMUONVClusterServer* clusterServer,
-                 const AliMUONVDigitStore& digitStore,
+                 AliMUONVDigitStore& digitStore,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
                  const AliMUONTriggerCircuit* triggerCircuit=0);

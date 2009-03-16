@@ -355,7 +355,8 @@ void AliMUONRecoCheck::MakeTrackRefs()
     track.SetTrackParamAtVertex(&trackParamAtVertex);
     
     // store the track
-    track.SetTrackID(iTrackRef);
+    track.SetUniqueID(iTrackRef);
+    track.SetMCLabel(iTrackRef);
     tmpTrackRefStore->Add(track);
   }
   
@@ -472,7 +473,8 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
       iHit1++;
     }
     
-    newTrack.SetTrackID(track->GetTrackID());
+    newTrack.SetUniqueID(track->GetUniqueID());
+    newTrack.SetMCLabel(track->GetMCLabel());
     newTrack.SetTrackParamAtVertex(track->GetTrackParamAtVertex());
     fTrackRefStore->Add(newTrack);
     

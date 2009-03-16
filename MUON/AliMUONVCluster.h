@@ -77,6 +77,11 @@ class AliMUONVCluster : public TObject {
            /// Return chi2 of cluster
   virtual Double_t GetChi2() const = 0;
   
+           /// Set the corresponding MC track number
+  virtual void     SetMCLabel(Int_t label) = 0;
+	   /// Return the corresponding MC track number
+  virtual Int_t    GetMCLabel() const = 0;
+  
   virtual void     Print(Option_t *option = "") const;
   
   

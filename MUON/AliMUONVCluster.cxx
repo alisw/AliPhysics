@@ -64,8 +64,8 @@ void AliMUONVCluster::Print(Option_t *option) const
   cout<<Form("clusterID=%u (ch=%d, det=%d, index=%d)",
 	     cId,GetChamberId(),GetDetElemId(),GetClusterIndex(cId))<<endl;
   
-  cout<<Form("position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0), charge=%5.2f, chi2=%5.2f",
-	     GetX(),GetY(),GetZ(),GetErrX(),GetErrY(),GetCharge(),GetChi2())<<endl;
+  cout<<Form("position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0), charge=%5.2f, chi2=%5.2f, MClabel=%d",
+	     GetX(),GetY(),GetZ(),GetErrX(),GetErrY(),GetCharge(),GetChi2(),GetMCLabel())<<endl;
   
   if (strcmp(option,"FULL") == 0) {
     cout<<"nDigits="<<nDigits<<" digitID=(";

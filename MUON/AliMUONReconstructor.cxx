@@ -528,7 +528,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     CreateClusterServer();
     
     TIter next(DigitStore()->CreateIterator());
-    fClusterServer->UseDigits(next);
+    fClusterServer->UseDigits(next,DigitStore());
 
     AliMpArea area;
     

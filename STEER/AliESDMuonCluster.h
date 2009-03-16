@@ -68,6 +68,11 @@ public:
   void          AddPad(const AliESDMuonPad &pad);
   Bool_t        PadsStored() const;
   
+  /// Set the corresponding MC track number
+  void  SetLabel(Int_t label) {fLabel = label;}
+  /// Return the corresponding MC track number
+  Int_t GetLabel() const {return fLabel;}
+  
   void     Print(Option_t */*option*/ = "") const;
   
   
@@ -79,8 +84,10 @@ protected:
   
   mutable TClonesArray* fPads; ///< Array of pads attached to the cluster
   
+  Int_t fLabel; ///< point to the corresponding MC track
   
-  ClassDef(AliESDMuonCluster, 2) // MUON ESD cluster class
+  
+  ClassDef(AliESDMuonCluster, 3) // MUON ESD cluster class
 };
 
 #endif

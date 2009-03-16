@@ -95,11 +95,6 @@ class AliMUONTrack : public TObject
 
   Int_t CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
   
-  /// return track number in TrackRefs
-  Int_t GetTrackID() const {return fTrackID;}
-  /// set track number in TrackRefs
-  void  SetTrackID(Int_t trackID) {fTrackID = trackID;}
-
   /// return pointer to track parameters at vertex (can be 0x0)
   AliMUONTrackParam* GetTrackParamAtVertex() {return fTrackParamAtVertex;}
   void               SetTrackParamAtVertex(const AliMUONTrackParam* trackParam);
@@ -126,6 +121,12 @@ class AliMUONTrack : public TObject
   /// high pt decision local trigger 
   Int_t LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
 
+  void  FindMCLabel();
+  /// set the corresponding MC track number
+  void  SetMCLabel(Int_t label) {fTrackID = label;}
+  /// return the corresponding MC track number
+  Int_t GetMCLabel() const {return fTrackID;}
+  
   void RecursiveDump(void) const; // Recursive dump (with associated clusters)
 
   virtual void Print(Option_t* opt="") const;
@@ -158,7 +159,7 @@ class AliMUONTrack : public TObject
   Int_t floTrgNum; ///< the number of the corresponding loTrg, -1 if no matching
   Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
   
-  Int_t fTrackID; ///< track ID = track number in TrackRefs
+  Int_t fTrackID; ///< Point to the corresponding MC track
   
   AliMUONTrackParam* fTrackParamAtVertex; //!< Track parameters at vertex
   

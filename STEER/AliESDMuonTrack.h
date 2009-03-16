@@ -173,7 +173,11 @@ public:
   Double_t Y() const { return (Pz()/E() != 1.) ? TMath::ATanH(Pz()/E()) : FLT_MAX; }
   Short_t  Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
   const Double_t *PID() const { return (Double_t*)0x0; }
-  Int_t GetLabel() const {return -1;} // Dummy
+  
+  /// Set the corresponding MC track number
+  void  SetLabel(Int_t label) {fLabel = label;}
+  /// Return the corresponding MC track number
+  Int_t GetLabel() const {return fLabel;}
   
 protected:
   // parameters at vertex
@@ -228,7 +232,9 @@ protected:
   
   mutable TClonesArray* fClusters; ///< Array of clusters attached to the track
   
-  ClassDef(AliESDMuonTrack,10) // MUON ESD track class 
+  Int_t fLabel;                    ///< point to the corresponding MC track
+  
+  ClassDef(AliESDMuonTrack,11) // MUON ESD track class 
 };
 
 #endif 

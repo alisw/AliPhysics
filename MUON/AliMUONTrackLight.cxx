@@ -234,7 +234,7 @@ TParticle* AliMUONTrackLight::FindRefTrack(
       
     if (compTrack) {
       compPart++;
-      Int_t trackID = trackRef->GetTrackID();
+      Int_t trackID = trackRef->GetMCLabel();
       this->SetTrackPythiaLine(trackID);
       part = stack->Particle(trackID);
       fTrackPDGCode = part->GetPdgCode();

@@ -67,7 +67,8 @@ namespace
 //_____________________________________________________________________________
 AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder* clusterFinder,
                                                        const AliMUONGeometryTransformer& transformer)
-: AliMUONVClusterServer(), 
+: AliMUONVClusterServer(),
+  fDigitStore(0x0),
   fClusterFinder(clusterFinder),
   fkTransformer(transformer),
   fPads(),
@@ -150,12 +151,12 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
       
       if ( ok ) 
       {      
-        if ( fClusterFinder->NeedSegmentation() )
-        {
-          const AliMpVSegmentation* seg[2] = 
+	const AliMpVSegmentation* seg[2] = 
         { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0),
           AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1)
         };
+        if ( fClusterFinder->NeedSegmentation() )
+        {
           fClusterFinder->Prepare(detElemId,pads,deArea,seg);
         }
         else
@@ -203,10 +204,13 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
           rawCluster->SetXYZ(xg, yg, zg);
           rawCluster->SetErrXY(recoParam->GetDefaultNonBendingReso(chamberId),recoParam->GetDefaultBendingReso(chamberId));
           
-          AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
+	  // Set MC label
+	  if (fDigitStore) rawCluster->SetMCLabel(FindMCLabel(*cluster, detElemId, seg));
+	  
+          AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e) label %d",
                           detElemId,rawCluster->GetNDigits(),rawCluster->GetCharge(),
                           cluster->Position().X(),cluster->Position().Y(),0.0,
-                          xg,yg,zg));
+                          xg,yg,zg,rawCluster->GetMCLabel()));
         }
       }
     }
@@ -299,10 +303,12 @@ AliMUONSimpleClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trac
 
 //_____________________________________________________________________________
 void 
-AliMUONSimpleClusterServer::UseDigits(TIter& next)
+AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStore)
 {
   /// Convert digitStore into two arrays of AliMUONPads
-
+  
+  fDigitStore = digitStore;
+  
   fPads[0]->Clear();
   fPads[1]->Clear();
   
@@ -333,6 +339,75 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next)
     mpad.SetUniqueID(d->GetUniqueID());
     new ((*padArray)[padArray->GetLast()+1]) AliMUONPad(mpad);      
   }
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONSimpleClusterServer::FindMCLabel(const AliMUONCluster& cluster, Int_t detElemId, const AliMpVSegmentation* seg[2]) const
+{
+  /// Find the label of the most contributing MC track (-1 in case of failure)
+  /// The data member fDigitStore must be set
+  
+  // --- get the digit (if any) located at the cluster position on both cathods ---
+  Int_t nTracks[2] = {0, 0};
+  AliMUONVDigit* digit[2] = {0x0, 0x0};
+  for (Int_t iCath = 0; iCath < 2; iCath++) {
+    AliMpPad pad = seg[AliMp::GetCathodType(iCath)]->PadByPosition(cluster.Position(), kFALSE);
+    if (pad.IsValid()) {
+      digit[iCath] = fDigitStore->FindObject(detElemId, pad.GetLocation().GetFirst(), pad.GetLocation().GetSecond(), iCath);
+      if (digit[iCath]) nTracks[iCath] = digit[iCath]->Ntracks();
+    }
+  }
+  
+  if (nTracks[0] + nTracks[1] == 0) return -1;
+  
+  // --- build the list of contributing tracks and of the associated charge ---
+  Int_t* trackId = new Int_t[nTracks[0] + nTracks[1]];
+  Float_t* trackCharge = new Float_t[nTracks[0] + nTracks[1]];
+  Int_t nTracksTot = 0;
+  
+  // fill with contributing tracks on first cathod
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks[0]; iTrack1++) {
+    trackId[iTrack1] = digit[0]->Track(iTrack1);
+    trackCharge[iTrack1] = digit[0]->TrackCharge(iTrack1);
+  }
+  nTracksTot = nTracks[0];
+  
+  // complement with contributing tracks on second cathod
+  for (Int_t iTrack2 = 0; iTrack2 < nTracks[1]; iTrack2++) {
+    Int_t trackId2 = digit[1]->Track(iTrack2);
+    // check if track exist
+    Bool_t trackExist = kFALSE;
+    for (Int_t iTrack1 = 0; iTrack1 < nTracks[0]; iTrack1++) {
+      if (trackId2 == trackId[iTrack1]) {
+	// complement existing track
+	trackCharge[iTrack1] += digit[1]->TrackCharge(iTrack2);
+	trackExist = kTRUE;
+	break;
+      }
+    }
+    // add the new track
+    if (!trackExist) {
+      trackId[nTracksTot] = trackId2;
+      trackCharge[nTracksTot] = digit[1]->TrackCharge(iTrack2);
+      nTracksTot++;
+    }
+  }
+  
+  // --- Find the most contributing track ---
+  Int_t mainTrackId = -1;
+  Float_t maxCharge = 0.;
+  for (Int_t iTrack = 0; iTrack < nTracksTot; iTrack++) {
+    if (trackCharge[iTrack] > maxCharge) {
+      mainTrackId = trackId[iTrack];
+      maxCharge = trackCharge[iTrack];
+    }
+  }
+  
+  delete[] trackId;
+  delete[] trackCharge;
+  
+  return mainTrackId;
 }
 
 //_____________________________________________________________________________

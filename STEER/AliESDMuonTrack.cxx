@@ -68,7 +68,8 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
   fNHit(0),
-  fClusters(0x0)
+  fClusters(0x0),
+  fLabel(-1)
 {
   //
   // Default constructor
@@ -111,7 +112,8 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fMuonClusterMap(muonTrack.fMuonClusterMap),
   fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
   fNHit(muonTrack.fNHit),
-  fClusters(0x0)
+  fClusters(0x0),
+  fLabel(muonTrack.fLabel)
 {
   //
   // Copy constructor
@@ -180,7 +182,9 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   fHitsPatternInTrigCh    = muonTrack.fHitsPatternInTrigCh;
  
   fMuonClusterMap	  = muonTrack.fMuonClusterMap;
-  
+
+  fLabel                  = muonTrack.fLabel;
+
   // necessary to make a copy of the objects and not only the pointers in TClonesArray
   delete fClusters;
   if (muonTrack.fClusters) {
@@ -261,6 +265,7 @@ void AliESDMuonTrack::Reset()
   fNHit = 0;
   delete fClusters; fClusters = 0x0;
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0.;
+  fLabel = -1;
 }
 
 //_____________________________________________________________________________

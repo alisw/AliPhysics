@@ -175,7 +175,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
           // Update some sdigit information that could not be known
           // by the DisIntegrate method
           d->SetHit(ihit);
-          d->AddTrack(iTrack,d->Charge());
+          d->AddTrack(hit->GetTrack(),d->Charge());
           tdlist.Add(d);
         }
         ++ihit;

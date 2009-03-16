@@ -129,7 +129,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     pos[2] = esdMuTrack->GetZ();
     
     aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuTrack->GetUniqueID(), // ID
-						  0, // label
+						  esdMuTrack->GetLabel(), // label
 						  p, // momentum
 						  kTRUE, // cartesian coordinate system
 						  pos, // position
