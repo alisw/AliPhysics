@@ -945,8 +945,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     //////////////////////////////
     // Check no shared clusters
     //////////////////////////////
-    for(int ic=AliTRDseedV1::kNtb; ic<AliTRDseedV1::kNclusters; ic++){
-      if((cl = tracklet->GetClusters(ic)))  crossrow = 1;
+    for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+      if((cl = tracklet->GetClusters(icc)))  crossrow = 1;
     }
   }
   

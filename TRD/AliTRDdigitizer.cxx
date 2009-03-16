@@ -284,8 +284,6 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
   ((AliTRDdigitizer &) d).fSDigits            = fSDigits;
   ((AliTRDdigitizer &) d).fMergeSignalOnly    = fMergeSignalOnly;
-                                       
-  AliTRDdigitizer& target = (AliTRDdigitizer &) d;
 
 }
 

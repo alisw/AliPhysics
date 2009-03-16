@@ -422,7 +422,7 @@ void AliTRDrawData::AssignStackMask(UInt_t *buf, Int_t nStack){
 }
 
 //_____________________________________________________________________________  
-Int_t AliTRDrawData::AddStackIndexWords(UInt_t *buf, Int_t nStack, Int_t nMax){
+Int_t AliTRDrawData::AddStackIndexWords(UInt_t *buf, Int_t /*nStack*/, Int_t nMax){
     // 
     // This function add stack index words and stack header when there is data for the stack
     //
@@ -496,6 +496,11 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
 
 	Bool_t tracklet_on = fFee->GetTracklet();     // **new**   
+
+	// To avoid compiler warning
+        if (newSM) {
+          ;;
+	}
 
 	// Check the nCol and nRow.
   	if ((nCol == 144) && (nRow == 16 || nRow == 12)) {

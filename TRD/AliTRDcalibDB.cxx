@@ -943,6 +943,8 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod met
     return dynamic_cast<const AliTRDCalPID *>(GetCachedCDBObject(kIDPIDLQ));
   case AliTRDpidUtil::kNN: 
     return dynamic_cast<const AliTRDCalPID *>(GetCachedCDBObject(kIDPIDNN));
+  case AliTRDpidUtil::kESD:
+    return 0x0; // To avoid compiler warnings 
   }
 
   return 0x0;
@@ -1158,3 +1160,4 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   }
 
 }
+

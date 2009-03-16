@@ -91,7 +91,7 @@ class AliTRDcalibDB : public TObject {
   // Related functions, these depend on calibration data
          Int_t                        PadResponse(Double_t signal, Double_t dist
                                                 , Int_t layer, Double_t *pad) const;
-  
+
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
