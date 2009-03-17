@@ -131,45 +131,25 @@ void AliAnalysisTaskFlowEvent::ConnectInputData(Option_t *)
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-    // Disable all branches and enable only the needed ones
-    if (fAnalysisType == "MC") {
-      // we want to process only MC
-      tree->SetBranchStatus("*", kFALSE);
-
+  } 
+  else {
+    if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" || fAnalysisType == "MC") {
       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
       if (!esdH) {
 	Printf("ERROR: Could not get ESDInputHandler");
-      } else {
-	fESD = esdH->GetEvent();
-      }
-    }
-    else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
-      tree->SetBranchStatus("*", kFALSE);
-      tree->SetBranchStatus("Tracks.*", kTRUE);
-
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } else
-	fESD = esdH->GetEvent();
+      } 
+      else {fESD = esdH->GetEvent();}
     }
     else if (fAnalysisType == "AOD") {
       AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
       if (!aodH) {
 	Printf("ERROR: Could not get AODInputHandler");
       }
-      else {
-	fAOD = aodH->GetEvent();
-      }
+      else { fAOD = aodH->GetEvent();}
     }
     else {
       Printf("!!!!!Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
       exit(1);
-      
     }
   }
 }
