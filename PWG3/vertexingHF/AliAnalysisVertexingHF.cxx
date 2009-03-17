@@ -460,15 +460,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    }
 	    twoTrackArrayCasc->Clear();
 	    trackPi=0; 
-	    delete ioCascade; ioCascade=NULL;
+	    if(ioCascade) {delete ioCascade; ioCascade=NULL;}
 	    delete vertexCasc; vertexCasc=NULL;
 	  } // end loop on soft pi tracks
 
 	  if(trackD0) {delete trackD0; trackD0=NULL;}
 
 	}
-
-	delete io2Prong; io2Prong=NULL;
+	if(io2Prong) {delete io2Prong; io2Prong=NULL;}
       }      
 
       twoTrackArray1->Clear(); 
@@ -849,6 +848,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   the2Prong->SetOwnPrimaryVtx(primVertexAOD);
   UShort_t id[2]={(UShort_t)postrack->GetID(),(UShort_t)negtrack->GetID()};
   the2Prong->SetProngIDs(2,id);
+  delete primVertexAOD; primVertexAOD=NULL;
 
   
   // select D0->Kpi
@@ -866,7 +866,6 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   // remove the primary vertex (was used only for selection)
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     the2Prong->UnsetOwnPrimaryVtx();
-    delete primVertexAOD; primVertexAOD=NULL;
   }
   
   // get PID info from ESD
@@ -952,6 +951,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   UShort_t id[3]={(UShort_t)postrack1->GetID(),(UShort_t)negtrack->GetID(),(UShort_t)postrack2->GetID()};
   the3Prong->SetProngIDs(3,id);
 
+  delete primVertexAOD; primVertexAOD=NULL;
 
   // select D+->Kpipi, Ds->KKpi, Lc->pKpi
   if(f3Prong) {
@@ -965,7 +965,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     the3Prong->UnsetOwnPrimaryVtx();
-    delete primVertexAOD; primVertexAOD=NULL;
   }
 
   // get PID info from ESD
@@ -1026,12 +1025,15 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   px[3] = momentum[0]; py[3] = momentum[1]; pz[3] = momentum[2];
 
   // invariant mass cut for rho or D0 (try to improve coding here..)
-  //Bool_t okMassCut=kFALSE;
-  //if(!okMassCut) if(SelectInvMass(2,3,px,py,pz)) okMassCut=kTRUE;
-  //if(!okMassCut) {
-  //  if(fDebug) printf(" candidate didn't pass mass cut\n");
-  //  return 0x0;
-  // }
+  Bool_t okMassCut=kFALSE;
+  if(!okMassCut && fD0to4ProngsCuts[8]==0.){      //no PID, to be implemented with PID
+    if(SelectInvMass(4,4,px,py,pz)) okMassCut=kTRUE;
+  }
+  if(!okMassCut) {
+    //if(fDebug) printf(" candidate didn't pass mass cut\n");
+    //printf(" candidate didn't pass mass cut\n");
+    return 0x0;
+  }
 
   // primary vertex to be used by this candidate
   AliAODVertex *primVertexAOD  = PrimaryVertex(fourTrackArray,event);
@@ -1064,24 +1066,13 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   UShort_t id[4]={(UShort_t)postrack1->GetID(),(UShort_t)negtrack1->GetID(),(UShort_t)postrack2->GetID(),(UShort_t)negtrack2->GetID()};
   the4Prong->SetProngIDs(4,id);
 
-  // invariant mass cut for rho or D0 (try to improve coding here..)
-  Bool_t okMassCut=kFALSE;
-  if(!okMassCut && fD0to4ProngsCuts[8]==0.){      //no PID, to be implemented with PID
-    if(SelectInvMass(4,4,px,py,pz)) okMassCut=kTRUE;
-  }
-  if(!okMassCut) {
-    //if(fDebug) printf(" candidate didn't pass mass cut\n");
-    //printf(" candidate didn't pass mass cut\n");
-    return 0x0;
-  }
-
+  delete primVertexAOD; primVertexAOD=NULL;
 
   Int_t checkD0,checkD0bar;
   ok4Prong=the4Prong->SelectD0(fD0to4ProngsCuts,checkD0,checkD0bar);
 
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     the4Prong->UnsetOwnPrimaryVtx();
-    delete primVertexAOD; primVertexAOD=NULL;
   }
 
  
@@ -1141,7 +1132,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(TObjArray *trkArray,
 	if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraintOnlyFitter")) 
 	  vertexer->SetOnlyFitter();
       }
-      Int_t skipped[10];
+      Int_t skipped[1000];
       Int_t nTrksToSkip=0,id;
       AliExternalTrackParam *t = 0;
       for(Int_t i=0; i<nTrks; i++) {
@@ -1150,6 +1141,20 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(TObjArray *trkArray,
 	if(id<0) continue;
 	skipped[nTrksToSkip++] = id;
       }
+      // TEMPORARY FIX
+      // For AOD, skip also tracks without covariance matrix
+      if(fInputAOD) {
+	Double_t covtest[21];
+	for(Int_t j=0; j<event->GetNumberOfTracks(); j++) {
+	  AliVTrack *vtrack = (AliVTrack*)event->GetTrack(j);
+	  if(!vtrack->GetCovarianceXYZPxPyPz(covtest)) {
+	    id = (Int_t)t->GetID();
+	    if(id<0) continue;
+	    skipped[nTrksToSkip++] = id;
+	  }
+	}
+      }
+      //
       vertexer->SetSkipTracks(nTrksToSkip,skipped);
       vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
       

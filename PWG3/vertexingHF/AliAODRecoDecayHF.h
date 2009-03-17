@@ -31,13 +31,13 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
    
 
   // primary vertex
-  void SetOwnPrimaryVtx(AliAODVertex *vtx2) {fOwnPrimaryVtx = vtx2;}
+  void SetOwnPrimaryVtx(const AliAODVertex *vtx2) { UnsetOwnPrimaryVtx(); fOwnPrimaryVtx = new AliAODVertex(*vtx2);}
   void CheckOwnPrimaryVtx() const 
     {if(!fOwnPrimaryVtx) printf("fOwnPrimaryVtx not set"); return;}
   AliAODVertex* GetOwnPrimaryVtx() const {return fOwnPrimaryVtx;}
   void GetOwnPrimaryVtx(Double_t vtx[3]) const 
     {CheckOwnPrimaryVtx();fOwnPrimaryVtx->GetPosition(vtx);}
-  void UnsetOwnPrimaryVtx() {fOwnPrimaryVtx=0; return;}
+  void UnsetOwnPrimaryVtx() {if(fOwnPrimaryVtx) {delete fOwnPrimaryVtx; fOwnPrimaryVtx=0;} return;}
 
   // kinematics & topology
   Double_t DecayLength() const 
