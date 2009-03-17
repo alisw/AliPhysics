@@ -708,12 +708,14 @@ Bool_t AliQAManager::IsSelected(const char * det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::Merge(const Int_t runNumber) const
+Bool_t AliQAManager::Merge(Int_t runNumber) const
 {
-	// Merge data from all the cycles from all detectors in one single file per run
+	// Merge data from all detectors from a given run in one single file 
 	// Merge the QA results from all the data chunks in one run 
+ if ( runNumber == -1)
+   runNumber = fRunNumber ; 
  Bool_t rv = MergeData(runNumber) ; 
- rv *= MergeResults(runNumber) ;
+ //rv *= MergeResults(runNumber) ; // not needed for the time being
  return rv ; 
 }
 	
@@ -741,7 +743,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
   printf("***  Coll   = |%s|             \n",collectionFile);              	
   
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",collectionFile));
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\")",collectionFile));
   TGridResult* result = collection->GetGridResult("", 0, 0);
   
   Int_t index = 0  ;
@@ -781,45 +783,16 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
 //_____________________________________________________________________________
 Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 {
-	// Merge all the cycles from all detectors in one single file per run
-	TString cmd ;
-	if (runNumber != -1) 
-		cmd = Form(".! ls *%s*.%d.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
-	else 
-		cmd = Form(".! ls *%s*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
-	gROOT->ProcessLine(cmd.Data()) ;
-	ifstream in("tempo.txt") ; 
-	const Int_t runMax = 10 ;  
-	TString file[AliQA::kNDET*runMax] ;
-	
-	Int_t index = 0 ; 
-	while ( 1 ) {
-		in >> file[index] ; 
-		if ( !in.good() ) 
-			break ; 
-		AliInfo(Form("index = %d file = %s", index, (file[index]).Data())) ; 
-		index++ ;
-	}
-	
-	if ( index == 0 ) { 
-		AliError(Form("run number %d not found", runNumber)) ; 
-		return kFALSE ; 
-	}
-
+	// Merge QA data from all detectors for a given run in one single file 
+  
   TFileMerger merger ; 
-  TString outFileName ;
-  if (runNumber != -1) 
-    outFileName = Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),runNumber); 
-  else 
-    outFileName = Form("Merged.%s.Data.root",AliQA::GetQADataFileName()); 
+  TString outFileName = Form("Merged.%s.Data.root",AliQA::GetQADataFileName()) ;
   merger.OutputFile(outFileName.Data()) ; 
-  for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
-    TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), runNumber)); 
-    TString tmp(file[ifile]) ; 
-    if (tmp.Contains(pattern)) {
-      merger.AddFile(tmp) ; 
-    }
-	}
+  for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+    char * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQA::GetDetName(iDet), AliQA::GetQADataFileName(), runNumber)); 
+    if (file) 
+      merger.AddFile(file) ; 
+  }
   merger.Merge() ; 
 	return kTRUE ; 
 }
@@ -828,6 +801,7 @@ Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 Bool_t AliQAManager::MergeResults(const Int_t runNumber) const
 {
 	// Merge the QA result from all the data chunks in a run 
+  // to be revised whwn it will be used (see MergeData)
 	TString cmd ;
 	cmd = Form(".! ls %s*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
 	gROOT->ProcessLine(cmd.Data()) ;
