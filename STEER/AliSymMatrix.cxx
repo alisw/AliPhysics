@@ -222,16 +222,16 @@ Bool_t AliSymMatrix::InvertChol()
 void AliSymMatrix::InvertChol(AliSymMatrix* pmchol) 
 {
   // Invert matrix using Choleski decomposition, provided the Cholseki's L matrix
-  Int_t i,j,k;
+  //
   Double_t sum;
   AliSymMatrix& mchol = *pmchol;
   //
   // Invert decomposed triangular L matrix (Lower triangle is filled)
-  for (i=0;i<fNrowIndex;i++) { 
+  for (int i=0;i<fNrowIndex;i++) { 
     mchol(i,i) =  1.0/mchol(i,i);
-    for (j=i+1;j<fNrowIndex;j++) { 
+    for (int j=i+1;j<fNrowIndex;j++) { 
       sum = 0.0; 
-      for (k=i;k<j;k++) sum -= mchol(j,k)*mchol(k,i);
+      for (int k=i;k<j;k++) sum -= mchol(j,k)*mchol(k,i);
       mchol(j,i) = sum/mchol(j,j);
     } 
   }
@@ -264,6 +264,7 @@ Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert)
   AliSymMatrix *pmchol = DecomposeChol();
   if (!pmchol) {
     printf("SolveChol failed\n");
+    //    Print("l");
     return kFALSE;
   }
   AliSymMatrix& mchol = *pmchol;
@@ -475,3 +476,5 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
 
   return nRank;
 }
+
+
