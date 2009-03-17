@@ -53,7 +53,6 @@ public:
   //
 private:
   AliTPCkalmandEdx&  operator=(const AliTPCkalmandEdx&);// not implemented
-  AliTPCkalmandEdx(const AliTPCkalmandEdx&); //not implemented
   ClassDef(AliTPCkalmandEdx,1);
 };
 
