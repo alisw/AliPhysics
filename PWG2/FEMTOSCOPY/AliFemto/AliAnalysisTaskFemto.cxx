@@ -47,7 +47,16 @@ extern AliFemtoManager *ConfigFemtoAnalysis();
   DefineOutput(0, TList::Class());
 }
 
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask){
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
+    AliAnalysisTask(aFemtoTask), 
+    fESD(0), 
+    fAOD(0),
+    fStack(0),
+    fOutputList(0), 
+    fReader(0x0),
+    fManager(0x0),
+    fAnalysisType(0)
+{
   // copy constructor
   fESD = aFemtoTask.fESD; 
   fAOD = aFemtoTask.fAOD; 

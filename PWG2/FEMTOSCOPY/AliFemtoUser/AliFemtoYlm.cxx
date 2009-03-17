@@ -23,6 +23,7 @@ AliFemtoYlm::~AliFemtoYlm() {}
 
 
 AliFemtoYlm::AliFemtoYlm(const AliFemtoYlm& aYlm){
+  fgPrefshift = aYlm.fgPrefshift;
   InitializeYlms();
 }
 
