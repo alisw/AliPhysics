@@ -20,16 +20,27 @@ void HLTJetReconstruction(Int_t nEvents=1) {
 
   // this is just a tool to switch the logging systems
   AliHLTLogging log;
-  log.SwitchAliLog(1);
+  log.SwitchAliLog(0);
 
   AliHLTSystem gHLT;
   gHLT.SetGlobalLoggingLevel(0x7F);
   gHLT.LoadComponentLibraries("libAliHLTUtil.so");
   gHLT.LoadComponentLibraries("libAliHLTJET.so");  
 
+  gHLT.LoadComponentLibraries("libESD.so");  
+  gHLT.LoadComponentLibraries("libSTEER.so");  
+  gHLT.LoadComponentLibraries("libSTEERBase.so");  
+  gHLT.LoadComponentLibraries("libAOD.so");  
+  gHLT.LoadComponentLibraries("libANALYSIS.so");  
+  gHLT.LoadComponentLibraries("libANALYSISalice.so");  
+  gHLT.LoadComponentLibraries("libJETAN.so");  
+  gHLT.LoadComponentLibraries("libJETANMC.so");  
+
+  // ----------------------------//
   // -                         - //
   // -- Publisher  Components -- //
   // -                         - //
+  // ----------------------------//
 
   arg.Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/v4-16-Rev-01/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_500ev");
 
@@ -39,19 +50,34 @@ void HLTJetReconstruction(Int_t nEvents=1) {
   
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="ESDMCEventPublisher";
-  
+
+  // ----------------------------//
   // -                         - //
   // -- Processing Components -- //
   // -                         - //
-  AliHLTConfiguration jetFinder("JETConeJet", "JETConeJetFinder",
+  // ----------------------------//
+
+  // -- ConeJetFinder
+  /*
+    AliHLTConfiguration jetFinder("JETConeJet", "JETConeJetFinder",
+    "ESDMCEventPublisher","");
+
+    if (!writerInput.IsNull()) writerInput+=" ";
+    writerInput+="JETConeJet";
+  */
+
+  // -- FasTJetFinder
+  AliHLTConfiguration jetFinder("JETFastJet", "JETFastJetFinder",
 				"ESDMCEventPublisher","");
 
   if (!writerInput.IsNull()) writerInput+=" ";
-  writerInput+="JETConeJet";
+  writerInput+="JETFastJet";
 
+  // ----------------------------//
   // -                         - //
   // --    Sink Components    -- //
   // -                         - //
+  // ----------------------------//
 
   // -- The RootFileWriter 
   AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", 
