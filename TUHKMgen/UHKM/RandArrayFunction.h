@@ -69,12 +69,6 @@
 //========================================================================================
 
 class RandArrayFunction {
- private:
-  std::vector<Double_t> fIntegralPdf;
-  Int_t                 fNBins;
-  Double_t              fOneOverNbins;
-  Int_t                 fInterpolationType;
-
  public:
   RandArrayFunction(const Double_t *aProbFunc, Int_t theProbSize, Int_t interpolationType = 0);
   RandArrayFunction(Int_t probSize, Int_t interpolationType = 0);
@@ -91,6 +85,12 @@ class RandArrayFunction {
   void     UseFlatDistribution();
   Double_t MapRandom(Double_t rand)const;
   Double_t StandardRand()const;
+
+  std::vector<Double_t> fIntegralPdf;
+  Int_t                 fNBins;
+  Double_t              fOneOverNbins;
+  Int_t                 fInterpolationType;
+
 };
 
 inline Double_t RandArrayFunction::StandardRand() const {

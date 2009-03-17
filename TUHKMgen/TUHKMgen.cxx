@@ -35,6 +35,13 @@ ClassImp(TUHKMgen)
 TUHKMgen::TUHKMgen() : 
   TGenerator("UHKM","UHKM"),
   fInitialState(0x0),
+  fAllocator(),
+  fSourceList(),
+  fSecondariesList(),
+  fNPprim(0),
+  fNPsec(0),
+  fHydjetParams(),
+  fStableFlagged(0),
   fUseCharmParticles(kFALSE),
   fMinWidth(0.0),
   fMaxWidth(10.0),
@@ -204,7 +211,7 @@ void TUHKMgen::SetAllParametersLHC()
   SetPyquenIanglu(0);            // small gluon angular distribution
 }
 
-TObjArray* TUHKMgen::ImportParticles(Option_t *option)
+TObjArray* TUHKMgen::ImportParticles(Option_t *)
 {
   cout << "TObjArray* TUHKMgen::ImportParticles(Option_t) IN" << endl;
   fParticles->Clear();
@@ -221,9 +228,8 @@ TObjArray* TUHKMgen::ImportParticles(Option_t *option)
     Int_t im2 = -1;
     Int_t id1 = -1;
     Int_t id2 = -1;
-    Int_t id3 = -1;
 
-    Int_t nd = it->GetNDaughters();
+    //    Int_t nd = it->GetNDaughters();
     
     Int_t type = it->GetType();  // 0-hydro, 1-jets
 
@@ -273,13 +279,12 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles,Option_t* option)
     TVector3 mom(it->Mom().Vect());
     Float_t m1 = it->TableMass();
     Int_t im1 = it->GetMother();
-    Int_t nd = 0;
+    //    Int_t nd = 0;
     Int_t im2 = -1;
     Int_t id1 = -1;
     Int_t id2 = -1;
-    Int_t id3 = -1;
     
-    nd = it->GetNDaughters();
+    //    nd = it->GetNDaughters();
 
     Int_t type = it->GetType();  // 0-hydro, 1-jets
     
@@ -327,7 +332,7 @@ void TUHKMgen::Initialize()
   cout << "TUHKMgen::Initialize() OUT" << endl;
 }
 
-void TUHKMgen::Print() 
+void TUHKMgen::Print(const Option_t*) const
 {
   cout << "TUHKMgen::Print() method not implemented yet!!" << endl;
 }

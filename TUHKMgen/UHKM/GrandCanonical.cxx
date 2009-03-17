@@ -19,22 +19,24 @@
 #include "UKUtility.h"
 #endif
 
-GrandCanonical::GrandCanonical() {
-  fInitialized = kFALSE;
-  fNMax = -1111;
-  fTemperature = -1111;
-  fBaryonPotential = -1111;
-  fStrangePotential = -1111;
-  fElectroPotential = -1111;
+GrandCanonical::GrandCanonical():
+  fTemperature(-1111),
+  fBaryonPotential(-1111),
+  fStrangePotential(-1111),
+  fElectroPotential(-1111),
+  fNMax(-1111),
+  fInitialized(kFALSE)
+{
 }
 
-GrandCanonical::GrandCanonical(Int_t nmax, Double_t temperature, Double_t baryonPotential, Double_t strangePotential, Double_t electroPotential) {
-  fNMax = nmax;
-  fTemperature = temperature;
-  fBaryonPotential = baryonPotential;
-  fStrangePotential = strangePotential;
-  fElectroPotential = electroPotential;
-  fInitialized = kTRUE;
+GrandCanonical::GrandCanonical(Int_t nmax, Double_t temperature, Double_t baryonPotential, Double_t strangePotential, Double_t electroPotential):
+  fTemperature(temperature),
+  fBaryonPotential(baryonPotential),
+  fStrangePotential(strangePotential),
+  fElectroPotential(electroPotential),
+  fNMax(nmax),
+  fInitialized(kTRUE)
+{
 }
 
 GrandCanonical::~GrandCanonical() {}

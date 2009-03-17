@@ -2,11 +2,12 @@
 #include "StrangeDensity.h"
 #endif
 
-NAStrangeDensity::NAStrangeDensity() {
-  fTemperature = 0.*GeV;
-  fBaryonPotential = 0.*GeV;
-  fStrangePotential = 0.*GeV;
-  fNMax = 5;
+NAStrangeDensity::NAStrangeDensity():
+  fTemperature(0.*GeV),
+  fBaryonPotential(0.*GeV),
+  fStrangePotential(0.*GeV),
+  fNMax(5)
+{
 }
 // compute hadron system strangeness density
 Double_t NAStrangeDensity::StrangenessDensity(DatabasePDG* database) {

@@ -23,28 +23,6 @@
 using namespace std;
 
 class TUHKMgen : public TGenerator {
- protected:
-  InitialStateHydjet *fInitialState;
-  ParticleAllocator fAllocator;
-  List_t fSourceList;
-  List_t fSecondariesList;
-  Int_t  fNPprim;
-  Int_t  fNPsec;
-  InitialParamsHydjet_t fHydjetParams;       // list of parameters for the initial state
-  // details for the PDG database
-  Char_t fParticleFilename[256];               // particle list filename
-  Char_t fDecayFilename[256];                  // decay table filename
-  Int_t fStableFlagPDG[500];                   // array of PDG codes flagged to be stable
-  Bool_t fStableFlagStatus[500];               // array of decay flag status
-  Int_t fStableFlagged;                        // number of toggled decay flags
-  Bool_t fUseCharmParticles;                   // flag to turn on/off the use of charm particles
-  Double_t fMinWidth;                          // minimum decay width for the particles to be used from the PDG database
-  Double_t fMaxWidth;                          // maximum ----
-  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
-  Double_t fMaxMass;                           // maximum ----
-
-  void SetAllParameters();
-
  public:   
   TUHKMgen();
   virtual      ~TUHKMgen();
@@ -180,7 +158,33 @@ class TUHKMgen : public TGenerator {
   Double_t GetMinimumMass()      {return fMinMass;}
   Double_t GetMaximumMass()      {return fMaxMass;}
   
-  void Print();
+  void Print(const Option_t* opt="") const;
+
+ protected:
+  InitialStateHydjet *fInitialState;
+  ParticleAllocator fAllocator;
+  List_t fSourceList;
+  List_t fSecondariesList;
+  Int_t  fNPprim;
+  Int_t  fNPsec;
+  InitialParamsHydjet_t fHydjetParams;       // list of parameters for the initial state
+  // details for the PDG database
+  Char_t fParticleFilename[256];               // particle list filename
+  Char_t fDecayFilename[256];                  // decay table filename
+  Int_t fStableFlagPDG[500];                   // array of PDG codes flagged to be stable
+  Bool_t fStableFlagStatus[500];               // array of decay flag status
+  Int_t fStableFlagged;                        // number of toggled decay flags
+  Bool_t fUseCharmParticles;                   // flag to turn on/off the use of charm particles
+  Double_t fMinWidth;                          // minimum decay width for the particles to be used from the PDG database
+  Double_t fMaxWidth;                          // maximum ----
+  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
+  Double_t fMaxMass;                           // maximum ----
+
+  void SetAllParameters();
+
+ private:
+  TUHKMgen(const TUHKMgen&);
+  TUHKMgen& operator=(const TUHKMgen&);
 
   ClassDef(TUHKMgen, 3)  //Interface to FASTMC Event Generator
 };

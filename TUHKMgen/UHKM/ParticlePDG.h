@@ -22,24 +22,6 @@
 const Int_t kMaxDecayChannels = 20;
 
 class ParticlePDG {
- private:
-  Char_t        fName[9];
-  Int_t         fPDG;
-  Double_t      fMass;
-  Double_t      fWidth;
-  Double_t      fSpin;                         // J
-  Double_t      fIsospin;                      // I
-  Double_t      fIsospinZ;                     // I3
-  Double_t      fLightQuarkNumber;             // u, d quark number
-  Double_t      fAntiLightQuarkNumber;         // u-, d- quark number
-  Double_t      fStrangeQuarkNumber;           // s quark number
-  Double_t      fAntiStrangeQuarkNumber;       // s- quark number
-  Double_t      fCharmQuarkNumber;             // c quark number
-  Double_t      fAntiCharmQuarkNumber;         // c- quark number
-  Int_t         fNDecayChannels;
-  Bool_t        fStable;                       // flag to turn on/off decay
-  DecayChannel* fDecayChannels[kMaxDecayChannels];
-   
  public:
   ParticlePDG();
   ParticlePDG(Char_t* name, Int_t pdg, Double_t mass, Double_t width);
@@ -95,6 +77,27 @@ class ParticlePDG {
     else
       return 0x0;
   }
+
+ private:
+  ParticlePDG(const ParticlePDG&);
+  ParticlePDG& operator=(const ParticlePDG&);
+
+  Char_t        fName[9];
+  Int_t         fPDG;
+  Double_t      fMass;
+  Double_t      fWidth;
+  Double_t      fSpin;                         // J
+  Double_t      fIsospin;                      // I
+  Double_t      fIsospinZ;                     // I3
+  Double_t      fLightQuarkNumber;             // u, d quark number
+  Double_t      fAntiLightQuarkNumber;         // u-, d- quark number
+  Double_t      fStrangeQuarkNumber;           // s quark number
+  Double_t      fAntiStrangeQuarkNumber;       // s- quark number
+  Double_t      fCharmQuarkNumber;             // c quark number
+  Double_t      fAntiCharmQuarkNumber;         // c- quark number
+  Int_t         fNDecayChannels;
+  Bool_t        fStable;                       // flag to turn on/off decay
+  DecayChannel* fDecayChannels[kMaxDecayChannels];   
 };
 
 #endif

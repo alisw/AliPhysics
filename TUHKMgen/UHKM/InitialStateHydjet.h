@@ -105,14 +105,8 @@ struct InitialParamsHydjet_t {
 };
 
 class InitialStateHydjet : public InitialState {
- private:
-  Double_t fVolEff;                           // the effective volume
-
  public:
-  InitialParamsHydjet_t fParams;             // the list of initial state parameters  
-  
- public:
-  InitialStateHydjet() {};
+  InitialStateHydjet() : fParams(), fVolEff(0){};
   ~InitialStateHydjet() {};
   
   void SetVolEff(Double_t value) {fVolEff = value;}
@@ -132,6 +126,12 @@ class InitialStateHydjet : public InitialState {
   Double_t SimpsonIntegrator(Double_t, Double_t, Double_t);
   Double_t SimpsonIntegrator2(Double_t, Double_t);
   Double_t MidpointIntegrator2(Double_t, Double_t);
+ public:
+  InitialParamsHydjet_t fParams;             // the list of initial state parameters  
+  
+ private:
+  Double_t fVolEff;                           // the effective volume
+
 };
 
 #endif

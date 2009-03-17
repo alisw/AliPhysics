@@ -25,19 +25,21 @@ using std::strcpy;
 using std::ifstream;
 using std::ios;
 
-DatabasePDG::DatabasePDG() {
-  fNParticles = 0;
+DatabasePDG::DatabasePDG():
+  fNParticles(0),
+  fUseCharmParticles(kTRUE),
+  fMinimumWidth(0.),
+  fMaximumWidth(10.),
+  fMinimumMass(0.),
+  fMaximumMass(10.)
+{
+  
   strcpy(fParticleFilename, "particles.data");
   strcpy(fDecayFilename, "tabledecay.txt");
   for(Int_t i=0; i<kMaxParticles; i++) {
     fParticles[i] = new ParticlePDG();
     fStatus[i] = kFALSE;
   }
-  fUseCharmParticles = kTRUE;
-  fMinimumWidth = 0.;
-  fMaximumWidth = 10.;
-  fMinimumMass = 0.;
-  fMaximumMass = 10.;
 }
 
 DatabasePDG::~DatabasePDG() {

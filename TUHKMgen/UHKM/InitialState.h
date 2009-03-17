@@ -17,8 +17,6 @@
 #endif
 
 class InitialState {
- protected:
-   DatabasePDG *fDatabase;
  public:
   InitialState() : fDatabase(new DatabasePDG()) {};
   virtual ~InitialState() {
@@ -54,6 +52,11 @@ class InitialState {
   virtual Double_t GetWeakDecayLimit() = 0;
     
   virtual void Evolve(List_t &source, List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
+ protected:
+   DatabasePDG *fDatabase;
+ private:
+   InitialState(const InitialState&);
+   InitialState& operator=(const InitialState&);
 };
 
 #endif

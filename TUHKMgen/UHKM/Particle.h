@@ -22,22 +22,6 @@
 //class ParticlePDG;
 
 class Particle {
- protected:
-  TLorentzVector   fPosition;
-  TLorentzVector   fMomentum;
-  TLorentzVector   fLastMotherDecayCoor;
-  TLorentzVector   fLastMotherDecayMom;
-  ParticlePDG     *fParticleProperties;
-  Double_t         fLastInteractionTime;
-  Int_t            fInteractionNumber;
-  Int_t            fLastMotherPdg;
-  Int_t            fType; //0-hydro, 1-jets
-  Int_t            fIndex;                    // index (0 based) of particle in the final particle list which will contain both primaries and secondaries
-  Int_t            fMotherIndex;              // index of the mother (-1 if its a primary particle)
-  Int_t            fNDaughters;               // number of daughter particles (0 if the particle had not decayed)
-  Int_t            fDaughterIndex[3];         // array of indexes for the daughter particles (the indexes are -1 for non-existing daughters)
-  static Int_t     fLastIndex;                // the last index assigned
-
  public:
   Particle(const TLorentzVector &, const TLorentzVector &);
   Particle(ParticlePDG *pdg = 0);
@@ -134,6 +118,21 @@ class Particle {
   void SetType(Int_t value){fType = value;}
   Int_t GetType()const{return fType;}
 
+ protected:
+  TLorentzVector   fPosition;
+  TLorentzVector   fMomentum;
+  TLorentzVector   fLastMotherDecayCoor;
+  TLorentzVector   fLastMotherDecayMom;
+  ParticlePDG     *fParticleProperties;
+  Double_t         fLastInteractionTime;
+  Int_t            fInteractionNumber;
+  Int_t            fLastMotherPdg;
+  Int_t            fType; //0-hydro, 1-jets
+  Int_t            fIndex;                    // index (0 based) of particle in the final particle list which will contain both primaries and secondaries
+  Int_t            fMotherIndex;              // index of the mother (-1 if its a primary particle)
+  Int_t            fNDaughters;               // number of daughter particles (0 if the particle had not decayed)
+  Int_t            fDaughterIndex[3];         // array of indexes for the daughter particles (the indexes are -1 for non-existing daughters)
+  static Int_t     fLastIndex;                // the last index assigned
 
 };
 

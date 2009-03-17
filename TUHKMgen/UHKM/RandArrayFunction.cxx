@@ -11,16 +11,20 @@
 //This class is taken from the GEANT4 tool kit  and changed!!!!!
 
 
-RandArrayFunction::RandArrayFunction(const Double_t *aProbFunc, Int_t theProbSize, Int_t intType)
-  : fNBins(theProbSize), 
-    fInterpolationType(intType)
+RandArrayFunction::RandArrayFunction(const Double_t *aProbFunc, Int_t theProbSize, Int_t intType):
+  fIntegralPdf(),
+  fNBins(theProbSize),
+  fOneOverNbins(0),
+  fInterpolationType(intType)
 {
   PrepareTable(aProbFunc);
 }
 
-RandArrayFunction::RandArrayFunction(Int_t theProbSize, Int_t intType)
-  : fNBins(theProbSize), 
-    fInterpolationType(intType)
+RandArrayFunction::RandArrayFunction(Int_t theProbSize, Int_t intType):
+  fIntegralPdf(),
+  fNBins(theProbSize), 
+  fOneOverNbins(0),
+  fInterpolationType(intType)
 {}
 
 void RandArrayFunction::PrepareTable(const Double_t* aProbFunc) {

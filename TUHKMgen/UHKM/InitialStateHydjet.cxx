@@ -102,9 +102,9 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     
     //get number of particles in jets
     Int_t numbJetPart = HYPART.njp;
-    Double_t  Bgen = HYFPAR.bgen;
-    Int_t  Njet = HYJPAR.njet;
-    Int_t  Nbcol = HYFPAR.nbcol;
+//     Double_t  Bgen = HYFPAR.bgen;
+//     Int_t  Njet = HYJPAR.njet;
+//     Int_t  Nbcol = HYFPAR.nbcol;
 
  // std::cout<<"in InitialStateHydjet::Initialize bgen "<<Bgen<<" njet "<<Njet<<" "<<" Nbcol "<<Nbcol<<std::endl;
  // std::cout<<"in InitialStateHydjet::Initialize numb jet part"<<numbJetPart<<std::endl;
@@ -144,7 +144,6 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     
     TLorentzVector partPos, partMom, n1, p0;
     TVector3 vec3;
-    const TLorentzVector zeroVec;
     //set maximal hadron energy
     const Double_t eMax = 5.;  
     //-------------------------------------

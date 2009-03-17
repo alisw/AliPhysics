@@ -21,21 +21,6 @@
 const Int_t kMaxParticles = 500;
 
 class DatabasePDG {
- private:
-  Int_t fNParticles;                        // no. of particles in database
-  ParticlePDG *fParticles[kMaxParticles];   // array of particle pointers
-  Bool_t fStatus[kMaxParticles];            // status of each particle
-  Char_t fParticleFilename[256];            // particle list filename
-  Char_t fDecayFilename[256];               // decay channels filename
-  Bool_t fUseCharmParticles;                // flag for using (or not) charm particles
-  Double_t fMinimumWidth;                   // minimum allowed width for resonances
-  Double_t fMaximumWidth;                   // maximum allowed width for resonances
-  Double_t fMinimumMass;                    // minimum allowed mass for resonances
-  Double_t fMaximumMass;                    // maximum allowed mass for resonances
-
-  Bool_t LoadParticles();
-  Bool_t LoadDecays();
-  void SortParticles();                     // put the good status particles at the beggining of the list
  public:
   DatabasePDG();
   ~DatabasePDG();
@@ -87,6 +72,25 @@ class DatabasePDG {
   Int_t GetNAllowedChannels(ParticlePDG *particle, Double_t motherMass);
   void SetStable(Int_t pdg, Bool_t value) {GetPDGParticle(pdg)->SetStable(value);}
   Bool_t GetStableStatus(Int_t pdg) {return GetPDGParticle(pdg)->GetStableStatus();}
+
+ private:
+  DatabasePDG(const DatabasePDG&);
+  DatabasePDG& operator=(const DatabasePDG&);
+
+  Int_t fNParticles;                        // no. of particles in database
+  ParticlePDG *fParticles[kMaxParticles];   // array of particle pointers
+  Bool_t fStatus[kMaxParticles];            // status of each particle
+  Char_t fParticleFilename[256];            // particle list filename
+  Char_t fDecayFilename[256];               // decay channels filename
+  Bool_t fUseCharmParticles;                // flag for using (or not) charm particles
+  Double_t fMinimumWidth;                   // minimum allowed width for resonances
+  Double_t fMaximumWidth;                   // maximum allowed width for resonances
+  Double_t fMinimumMass;                    // minimum allowed mass for resonances
+  Double_t fMaximumMass;                    // maximum allowed mass for resonances
+
+  Bool_t LoadParticles();
+  Bool_t LoadDecays();
+  void SortParticles();                     // put the good status particles at the beggining of the list
 };
 
 #endif

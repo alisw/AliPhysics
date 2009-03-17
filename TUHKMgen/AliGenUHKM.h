@@ -17,30 +17,6 @@ class TParticle;
 
 class AliGenUHKM : public AliGenMC
 {
- protected:
-  Int_t       fTrials;         // Number of trials
-  TUHKMgen    *fUHKMgen;       // UHKM
-
-  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
-  // details for the PDG database
-  Char_t fParticleFilename[256];            // particle list filename
-  Char_t fDecayFilename[256];               // decay table filename
-  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
-  Bool_t fStableFlagStatus[500];            // array of decay flag status
-  Int_t fStableFlagged;                     // number of toggled decay flags
-  Bool_t fUseCharmParticles;                   // flag to turn on/off the use of charm particles
-  Double_t fMinWidth;                          // minimum decay width for the particles to be used from the PDG database
-  Double_t fMaxWidth;                          // maximum ----
-  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
-  Double_t fMaxMass;                           // maximum ----
-
-  void SetAllParameters();
-  void CheckPDGTable();
-  
- private:
-  void Copy(TObject &rhs) const;
-  AliGenUHKM & operator = (const AliGenUHKM &);
-
  public:
   AliGenUHKM();
   AliGenUHKM(Int_t npart);
@@ -154,6 +130,31 @@ class AliGenUHKM : public AliGenMC
   Double_t GetMaximumWidth() {return fMaxWidth;}
   Double_t GetMinimumMass() {return fMinMass;}
   Double_t GetMaximumMass() {return fMaxMass;}
+
+ protected:
+  Int_t       fTrials;         // Number of trials
+  TUHKMgen    *fUHKMgen;       // UHKM
+
+  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
+  // details for the PDG database
+  Char_t fParticleFilename[256];            // particle list filename
+  Char_t fDecayFilename[256];               // decay table filename
+  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
+  Bool_t fStableFlagStatus[500];            // array of decay flag status
+  Int_t fStableFlagged;                     // number of toggled decay flags
+  Bool_t fUseCharmParticles;                   // flag to turn on/off the use of charm particles
+  Double_t fMinWidth;                          // minimum decay width for the particles to be used from the PDG database
+  Double_t fMaxWidth;                          // maximum ----
+  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
+  Double_t fMaxMass;                           // maximum ----
+
+  void SetAllParameters();
+  void CheckPDGTable();
+  
+ private:
+  void Copy(TObject &rhs) const;
+  AliGenUHKM(const AliGenUHKM&);
+  AliGenUHKM & operator = (const AliGenUHKM &);
 
   ClassDef(AliGenUHKM, 6) // AliGenerator interface to UHKM
 };

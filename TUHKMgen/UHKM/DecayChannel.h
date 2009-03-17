@@ -19,12 +19,6 @@ const Int_t kMaxDaughters = 3;
 const Int_t kNonsensePDG = 1000000000;
 
 class DecayChannel {
- private:
-  Int_t    fMotherPDG;
-  Double_t fBranchingRatio;
-  Int_t    fNDaughters;
-  Int_t    fDaughtersPDG[kMaxDaughters];
-  
  public:
   DecayChannel();                                                                           // default constructor
   DecayChannel(const DecayChannel &copy);                                                   // copy constructor
@@ -40,6 +34,12 @@ class DecayChannel {
   Int_t    GetNDaughters()                        {return fNDaughters;}
   Int_t*   GetDaughters()                         {return fDaughtersPDG;}
   Int_t    GetDaughterPDG(Int_t i);                                                         // i --> must be the zero-based index of daughter
+
+ private:
+  Int_t    fMotherPDG;
+  Double_t fBranchingRatio;
+  Int_t    fNDaughters;
+  Int_t    fDaughtersPDG[kMaxDaughters];  
 };
 
 #endif

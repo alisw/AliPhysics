@@ -18,26 +18,29 @@
 using std::cout;
 using std::endl;
 
-DecayChannel::DecayChannel() {
-  fMotherPDG = kNonsensePDG;
-  fBranchingRatio = 0.0;
-  fNDaughters = 0;
+DecayChannel::DecayChannel() :
+  fMotherPDG(kNonsensePDG),
+  fBranchingRatio(0.0),
+  fNDaughters(0)
+{
   for(Int_t i=0; i<kMaxDaughters; i++)
     fDaughtersPDG[i] = kNonsensePDG;
 }
 
-DecayChannel::DecayChannel(const DecayChannel &copy) {
-  fMotherPDG = copy.fMotherPDG;
-  fBranchingRatio = copy.fBranchingRatio;
-  fNDaughters = copy.fNDaughters;
+DecayChannel::DecayChannel(const DecayChannel &copy):
+  fMotherPDG(copy.fMotherPDG),
+  fBranchingRatio(copy.fBranchingRatio),
+  fNDaughters(copy.fNDaughters)
+{
   for(Int_t i=0; i<fNDaughters; i++)
     fDaughtersPDG[i] = copy.fDaughtersPDG[i];
 }
 
-DecayChannel::DecayChannel(Int_t mother, Double_t branching, Int_t nDaughters, Int_t *daughters) {
-  fMotherPDG = mother;
-  fBranchingRatio = branching;
-  fNDaughters = 0;
+DecayChannel::DecayChannel(Int_t mother, Double_t branching, Int_t nDaughters, Int_t *daughters):
+  fMotherPDG(mother),
+  fBranchingRatio(branching),
+  fNDaughters(0)
+{
   for(Int_t i=0; i<nDaughters; i++) {
     if(i >= kMaxDaughters) {
       cout << "ERROR in DecayChannel explicit constructor: " << endl;

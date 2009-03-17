@@ -30,17 +30,6 @@
 #endif
 
 class NAStrangeDensity {
-
- private:
-  //input
-  Double_t fTemperature;
-  Double_t fBaryonPotential;	
-  Double_t fStrangePotential;
-  Int_t fNMax;   //number of terms for summation, if nMax = 1 then
-                //Maxwell-Boltzmann distribution will be recovered	
-
-  Double_t ParticleNumberDensity(ParticlePDG* particle);
-
  public:
   NAStrangeDensity();
   ~NAStrangeDensity(){};
@@ -55,6 +44,16 @@ class NAStrangeDensity {
   }
   // compute hadron system strangeness density
   Double_t StrangenessDensity(DatabasePDG* database);
+
+ private:
+  //input
+  Double_t fTemperature;
+  Double_t fBaryonPotential;	
+  Double_t fStrangePotential;
+  Int_t fNMax;   //number of terms for summation, if nMax = 1 then
+                //Maxwell-Boltzmann distribution will be recovered	
+
+  Double_t ParticleNumberDensity(ParticlePDG* particle);
 };
 
 #endif

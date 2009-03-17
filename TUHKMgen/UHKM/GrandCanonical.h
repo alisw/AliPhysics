@@ -17,19 +17,6 @@
 #endif
 
 class GrandCanonical {
-
- private:
-
-  Double_t    fTemperature;     
-  Double_t    fBaryonPotential;	
-  Double_t    fStrangePotential;
-  Double_t    fElectroPotential;
-
-  //  Number of terms for summation, if fNMax = 1 then 
-  //  Maxwell-Boltzmann distribution will be recovered
-  Int_t       fNMax;
-  Bool_t fInitialized;
-
  public:
   GrandCanonical();
   GrandCanonical(Int_t nmax, Double_t temperature, Double_t baryonPotential, Double_t strangePotential, Double_t electroPotential);
@@ -60,6 +47,18 @@ class GrandCanonical {
   Double_t ParticleNumberDensity(ParticlePDG* particle);
   // compute the particle energy density 
   Double_t ParticleEnergyDensity(ParticlePDG* particle); 
+
+ private:
+
+  Double_t    fTemperature;     
+  Double_t    fBaryonPotential;	
+  Double_t    fStrangePotential;
+  Double_t    fElectroPotential;
+
+  //  Number of terms for summation, if fNMax = 1 then 
+  //  Maxwell-Boltzmann distribution will be recovered
+  Int_t       fNMax;
+  Bool_t fInitialized;
 };
 
 #endif

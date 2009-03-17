@@ -14,43 +14,57 @@
 #include "Particle.h"
 #endif
 
-Particle::Particle(ParticlePDG *prop)
-  : fParticleProperties(prop),
-    fLastInteractionTime(0.),
-    fInteractionNumber(0),
-    fLastMotherPdg(0),
-    fType(0),
-    fIndex(-1),
-    fMotherIndex(-1),
-    fNDaughters(0)
+Particle::Particle(ParticlePDG *prop): 
+  fPosition(),
+  fMomentum(),
+  fLastMotherDecayCoor(),
+  fLastMotherDecayMom(),
+  fParticleProperties(prop),
+  fLastInteractionTime(0.),
+  fInteractionNumber(0),
+  fLastMotherPdg(0),
+  fType(0),
+  fIndex(-1),
+  fMotherIndex(-1),
+  fNDaughters(0)
 {
   for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
 Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, 
-		   const TLorentzVector &mom, Double_t lit, Int_t lin, Int_t type)
-  : fPosition(pos), fMomentum(mom), fIndex(-1), fMotherIndex(-1), fNDaughters(0)
+		   const TLorentzVector &mom, Double_t lit, Int_t lin, Int_t type):
+  fPosition(pos),
+  fMomentum(mom),
+  fLastMotherDecayCoor(),
+  fLastMotherDecayMom(),
+  fParticleProperties(prop),
+  fLastInteractionTime(lit),
+  fInteractionNumber(lin),
+  fLastMotherPdg(0),
+  fType(type),
+  fIndex(-1),
+  fMotherIndex(-1),
+  fNDaughters(0)
 {
-  fLastInteractionTime = lit;
-  fInteractionNumber = lin;
-  fParticleProperties = prop;
-  fType =  type;
   for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
 Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, const TLorentzVector &mom,
                    Double_t t, Int_t n, Int_t ty, Int_t motherPdg, const TLorentzVector &mPos, 
-		   const TLorentzVector &mMom)
-  : fPosition(pos), fMomentum(mom),
-    fLastMotherDecayCoor(mPos),
-    fLastMotherDecayMom(mMom),
-    fIndex(-1), fMotherIndex(-1), fNDaughters(0)
+		   const TLorentzVector &mMom):
+  fPosition(pos),
+  fMomentum(mom),
+  fLastMotherDecayCoor(mPos),
+  fLastMotherDecayMom(mMom),
+  fParticleProperties(prop),
+  fLastInteractionTime(t),
+  fInteractionNumber(n),
+  fLastMotherPdg(motherPdg),
+  fType(ty),
+  fIndex(-1),
+  fMotherIndex(-1),
+  fNDaughters(0)
 {
-  fParticleProperties = prop;
-  fLastInteractionTime = t;
-  fInteractionNumber = n;
-  fType = ty;
-  fLastMotherPdg = motherPdg;
   for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
