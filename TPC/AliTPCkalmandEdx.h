@@ -51,6 +51,9 @@ public:
   TVectorD   fSampleStat[3];    // sample statistic
   Int_t      fCounter[3];       // counter of samples
   //
+private:
+  AliTPCkalmandEdx&  operator=(const AliTPCkalmandEdx&);// not implemented
+  AliTPCkalmandEdx(const AliTPCkalmandEdx&); //not implemented
   ClassDef(AliTPCkalmandEdx,1);
 };
 

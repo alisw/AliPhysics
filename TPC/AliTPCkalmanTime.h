@@ -20,6 +20,9 @@ public:
   TMatrixD * fState;           // state vector
   TMatrixD * fCovariance;      // covariance
   Double_t   fTime;            // current time
+private:
+  AliTPCkalmanTime&  operator=(const AliTPCkalmanTime&);// not implemented
+  AliTPCkalmanTime(const AliTPCkalmanTime&); //not implemented
   ClassDef(AliTPCkalmanTime,1);
 };
 

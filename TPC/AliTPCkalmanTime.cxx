@@ -190,7 +190,7 @@ void AliTPCkalmanTime::TestMC(const char * fname){
   const Double_t kp1=1;
   const Int_t    klength=10*24*60*60;       // 10 days mesurement
   const Double_t ksigmap0=0.001/(24*60*60.); // 0.005 change in one day
-  const Int_t    deltat=5*60.;               // 5 minutes step
+  const Int_t    deltat=5*60;                // 5 minutes step
   const Double_t kmessError=0.0005;
   AliTPCkalmanTime testKalman;
 
