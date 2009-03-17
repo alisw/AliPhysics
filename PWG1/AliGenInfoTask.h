@@ -20,6 +20,7 @@ class TParticle;
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent;
+class AliESDfriend;
 class AliMCEvent;
 class AliComparisonObject;
 
@@ -33,6 +34,7 @@ class AliGenInfoTask : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  virtual void   FinishTaskOutput();
   //
   //
   void ProcessMCInfo();
@@ -53,11 +55,14 @@ class AliGenInfoTask : public AliAnalysisTask {
   AliMCInfo *GetTrack(Int_t index, Bool_t force=kFALSE);
   AliESDRecInfo *GetRecTrack(Int_t index, Bool_t force=kFALSE);
   Bool_t     AddComparisonObject(AliComparisonObject *pObj);
+  void             RegisterDebugOutput(const char *path);
+  void         SetDebugOuputhPath(const char * name){fDebugOutputPath=name;}
  protected:
   AliGenInfoTask(const AliGenInfoTask& /*info*/);
   AliGenInfoTask& operator=(const AliGenInfoTask& /*info*/) { return *this;}
   AliMCEvent  * fMCinfo;     //! MC event handler
   AliESDEvent * fESD;             //! current esd event
+  AliESDfriend * fESDfriend;             //! current esd event
   //
   TObjArray   *fCompList;        // comparison object list
   //
@@ -71,6 +76,7 @@ class AliGenInfoTask : public AliAnalysisTask {
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
   Int_t  fStreamLevel;                  //  debug stream level 
   Int_t  fDebugLevel;                   //  debug level
+  TString      fDebugOutputPath; // debug output path
   ClassDef(AliGenInfoTask, 1); // Analysis task base class for tracks
 };
 
