@@ -20,9 +20,9 @@ UHKM/UKUtility.cxx
 )
 
 set(FSRCS
-PYQUEN/progs_fortran.f \
-PYQUEN/pythia-6.4.11.f \
-PYQUEN/jetset_73.f \
+PYQUEN/progs_fortran.f
+PYQUEN/pythia-6.4.11.f
+PYQUEN/jetset_73.f
 PYQUEN/pyquen1_5.f
 )
 
