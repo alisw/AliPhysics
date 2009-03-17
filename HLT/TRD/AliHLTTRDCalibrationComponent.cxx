@@ -208,12 +208,13 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
                           DataType2Text(inputDataType).c_str());
                 continue;
             }
-            else
+            else {
                 HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
                          iBlock, evtData.fBlockCnt-1,
                          evtData.fEventID, evtData.fEventID,
                          DataType2Text(inputDataType).c_str());
-
+	    }
+	    
             TClonesArray* tracksArray = NULL;
             tracksArray = new TClonesArray("AliTRDtrackV1");
             HLTDebug("BLOCK fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x, fDataType %s", block.fPtr, block.fOffset, block.fSize, block.fSpecification, DataType2Text(block.fDataType).c_str());

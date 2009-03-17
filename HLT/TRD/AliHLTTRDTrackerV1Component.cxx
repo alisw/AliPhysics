@@ -438,11 +438,12 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 		    DataType2Text(inputDataType).c_str());
 	  continue;
 	}
-      else 
-	HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
-		    iBlock, evtData.fBlockCnt-1,
-		    evtData.fEventID, evtData.fEventID, 
-		    DataType2Text(inputDataType).c_str());
+      else {
+	  HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
+		   iBlock, evtData.fBlockCnt-1,
+		   evtData.fEventID, evtData.fEventID, 
+		   DataType2Text(inputDataType).c_str());
+      }
       
       
       TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
@@ -464,8 +465,10 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
    
       if (trdTracks)
 	totalSize += TransportTracks(trdTracks, outputPtr, outputBlocks, offset, dBlockSpecification);
-      else 
-	HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
+      else {
+	  HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
+      }
+      
       HLTDebug("totalSize: %i", totalSize);
       
 //       if ( totalSize > allocSize )
