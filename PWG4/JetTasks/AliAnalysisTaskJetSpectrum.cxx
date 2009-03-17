@@ -88,7 +88,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   // Default constructor
     for(int ij  = 0;ij<kMaxJets;++ij){
       fh1E[ij] =  fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-      fh2PtFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] = 0;
+      fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] =  fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] = 0;
       fh3PtRecGenHard[ij] =  fh3PtRecGenHard_NoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPt_NoGen[ij] =fh3GenEtaPhiPt_NoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
     }
     for(int ic = 0;ic < kMaxCorrelation;ic++){
@@ -130,7 +130,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   // Default constructor
   for(int ij  = 0;ij<kMaxJets;++ij){
     fh1E[ij] = fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-    fh2PtFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] = 0;
+    fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] = fh2Frag[ij] = fh2FragLn[ij] = fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] = 0;
 
     fh3PtRecGenHard[ij] =  fh3PtRecGenHard_NoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPt_NoGen[ij] =fh3GenEtaPhiPt_NoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
   }
@@ -263,7 +263,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     }
   }
 
-  const Int_t nBinPhi = 90;
+  const Int_t nBinPhi = 30;
   Double_t binLimitsPhi[nBinPhi+1];
   for(Int_t iPhi = 0;iPhi<=nBinPhi;iPhi++){
     if(iPhi==0){
@@ -305,8 +305,19 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     fh2PtFGen[ij] = new TH2F(Form("fh2PtFGen_j%d",ij),"Pt Found vs. gen;p_{T,rec} (GeV/c);p_{T,gen} (GeV/c)",
 			     nBinPt,binLimitsPt,nBinPt,binLimitsPt);
 
+    fh2PhiFGen[ij] = new TH2F(Form("fh2PhiFGen_j%d",ij),"#phi Found vs. gen;#phi_{rec};phi_{gen}",
+			     nBinPhi,binLimitsPhi,nBinPhi,binLimitsPhi);
 
+    fh2EtaFGen[ij] = new TH2F(Form("fh2EtaFGen_j%d",ij),"#eta Found vs. gen;#eta_{rec};eta_{gen}",
+			     nBinEta,binLimitsEta,nBinEta,binLimitsEta);
 
+    
+    fh2PtGenDeltaPhi[ij] = new TH2F(Form("fh2PtGenDeltaPhi_j%d",ij),"delta phi vs. P_tgen;p_{T,gen} (GeV/c);#phi_{gen}-phi_{rec}",
+				    100,-1.0,1.0,nBinPt,binLimitsPt);
+    fh2PtGenDeltaPhi[ij] = new TH2F(Form("fh2PtGenDeltaEta_j%d",ij),"delta eta vs. P_tgen;p_{T,gen} (GeV/c);#eta_{gen}-eta_{rec}",
+				    100,-1.0,1.0,nBinPt,binLimitsPt);
+
+    
 
 
 
@@ -332,7 +343,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 					nBinEta,binLimitsEta,nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
 
-    fh3GenEtaPhiPt_NoFound[ij] = new TH3F(Form("fh3GenEtaPhiPt_NoFound_j%d",ij),"No found for generated jet eta, phi, pt; #eta; #phi; p_{T,rec} (GeV/c)",
+    fh3GenEtaPhiPt_NoFound[ij] = new TH3F(Form("fh3GenEtaPhiPt_NoFound_j%d",ij),"No found for generated jet eta, phi, pt; #eta; #phi; p_{T,gen} (GeV/c)",
 					nBinEta,binLimitsEta,nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
 
@@ -349,7 +360,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
   fh2EGenZGen   = new TH2F("fh2EGenZGen", " ; E^{jet}_{gen} [GeV]; z^{lp}_{gen}", 100, 0., 250., 100, 0., 2.);
   fh2Efficiency = new TH2F("fh2Efficiency", "ERec/EGen;E^{jet}_{gen} [GeV];E^{jet}_{rec}/E^{jet}_{gen}", 100, 0., 250., 100, 0., 1.5);  
 
-  fh3EGenERecN  = new TH3F("fh3EGenERecN", "Efficiency vs. Jet Multiplicity", 100., 0., 250., 100, 0., 250., 51, 0., 50.);
+  fh3EGenERecN  = new TH3F("fh3EGenERecN", "Efficiency vs. Jet Multiplicity", 100, 0., 250., 100, 0., 250., 51, 0., 50.);
 
   // Response map  
   //arrays for bin limits
@@ -362,7 +373,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     if(ic==0) fhnCorrelation[ic]->SetTitle(Form("ResponseMap 0 <= npart <= %.0E",fgkJetNpartCut[ic]));
     else fhnCorrelation[ic]->SetTitle(Form("ResponseMap %.0E < npart <= %.0E",fgkJetNpartCut[ic-1],fgkJetNpartCut[ic]));
   }
-  const Int_t saveLevel = 1; // large save level more histos
+  const Int_t saveLevel = 3; // large save level more histos
   if(saveLevel>0){
     fHistList->Add(fh1Xsec);
     fHistList->Add(fh1Trials);
@@ -389,11 +400,15 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
       fHistList->Add(fh1PtGenIn[ij]);
       fHistList->Add(fh1PtGenOut[ij]);
       fHistList->Add(fh2PtFGen[ij]);
+      fHistList->Add(fh2PhiFGen[ij]);
+      fHistList->Add(fh2EtaFGen[ij]);
+      fHistList->Add(fh2PtGenDeltaEta[ij]);
+      fHistList->Add(fh2PtGenDeltaPhi[ij]);
+      fHistList->Add(fh3RecEtaPhiPt[ij]);
+      fHistList->Add(fh3GenEtaPhiPt[ij]);      
       if(saveLevel>2){
-	fHistList->Add(fh3RecEtaPhiPt[ij]);
 	fHistList->Add(fh3RecEtaPhiPt_NoGen[ij]);
 	fHistList->Add(fh3GenEtaPhiPt_NoFound[ij]);
-	fHistList->Add(fh3GenEtaPhiPt[ij]);      
       }
     }
   }
@@ -624,6 +639,10 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
       if(phiGen<0)phiGen+=TMath::Pi()*2.; 
       Double_t etaGen = genJets[ig].Eta();
       fh2PtFGen[ir]->Fill(ptRec,ptGen,eventW);
+      fh2PhiFGen[ir]->Fill(phiRec,phiGen,eventW);
+      fh2EtaFGen[ir]->Fill(etaRec,etaGen,eventW);
+      fh2PtGenDeltaEta[ir]->Fill(etaGen-etaRec,eventW);
+      fh2PtGenDeltaEta[ir]->Fill(phiGen-phiRec,eventW);
       fh3PtRecGenHard[ir]->Fill(ptRec,ptGen,ptHard,eventW);
       fh3PtRecGenHard_NoW[ir]->Fill(ptRec,ptGen,ptHard,1);
       /////////////////////////////////////////////////////
