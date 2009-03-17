@@ -6,7 +6,7 @@ TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
 
 HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h
 
-DHDR:=TEposLinkDef.h
+DHDR:=EPOSLinkDef.h
 
 EXPORT:=TEpos.h AliGenEpos.h AliGenEposEventHeader.h
 
