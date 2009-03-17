@@ -32,6 +32,8 @@
 
 // header file of the module preprocessor
 #include "AliHLTITSCompressRawDataSDDComponent.h"
+#include "AliHLTITSClusterFinderSPDComponent.h"
+#include "AliHLTITSClusterFinderSSDComponent.h"
 
 /** global instance for agent registration */
 AliHLTITSAgent gAliHLTITSAgent;
@@ -84,6 +86,8 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTITSCompressRawDataSDDComponent);
+  pHandler->AddComponent(new AliHLTITSClusterFinderSPDComponent);
+  pHandler->AddComponent(new AliHLTITSClusterFinderSSDComponent);
 
   return 0;
 }

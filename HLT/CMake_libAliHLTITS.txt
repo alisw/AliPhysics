@@ -5,6 +5,10 @@ ITS/AliHLTITStrack.cxx
 ITS/AliHLTITStracker.cxx
 ITS/AliHLTITSVertexerZ.cxx
 ITS/AliHLTITSclusterer.cxx
+ITS/AliHLTITSAgent.cxx
+ITS/AliHLTITSClusterFinderSPDComponent.cxx
+ITS/AliHLTITSClusterFinderSSDComponent.cxx
+ITS/AliHLTITSCompressRawDataSDDComponent.cxx
 )
 
 # fill list of header files from list of source files

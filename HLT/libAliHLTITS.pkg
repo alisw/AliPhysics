@@ -6,6 +6,8 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITSVertexerZ.h \
 		AliHLTITSclusterer.h \
 		AliHLTITSAgent.h\
+		AliHLTITSClusterFinderSPDComponent.h\
+		AliHLTITSClusterFinderSSDComponent.h\
 		AliHLTITSCompressRawDataSDDComponent.h	
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
