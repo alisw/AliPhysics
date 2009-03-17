@@ -62,6 +62,7 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t 
 //____________________________________________________________________
 AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
   AliCFGridSparse(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
+  fContainer(NULL),
   fSelNum(-1),
   fSelDen(-1)
 {
