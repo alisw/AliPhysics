@@ -204,9 +204,12 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
           rawCluster->SetXYZ(xg, yg, zg);
           rawCluster->SetErrXY(recoParam->GetDefaultNonBendingReso(chamberId),recoParam->GetDefaultBendingReso(chamberId));
           
-	  // Set MC label
-	  if (fDigitStore) rawCluster->SetMCLabel(FindMCLabel(*cluster, detElemId, seg));
-	  
+          // Set MC label
+          if (fDigitStore && fDigitStore->HasMCInformation()) 
+          {
+            rawCluster->SetMCLabel(FindMCLabel(*cluster, detElemId, seg));
+          }
+          
           AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e) label %d",
                           detElemId,rawCluster->GetNDigits(),rawCluster->GetCharge(),
                           cluster->Position().X(),cluster->Position().Y(),0.0,
@@ -218,7 +221,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   }
   
   AliDebug(1,Form("chamberId = %2d NofClusters after = %d",chamberId,fNCluster));
-
+  
   return nofAddedClusters;
 }
 

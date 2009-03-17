@@ -366,3 +366,19 @@ AliMUONDigitStoreV1::GetSize() const
   }  
   return n;
 }
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONDigitStoreV1::HasMCInformation() const
+{
+  /// As this class is legacy, don't care about looping and loosing a bit of
+  /// time...
+  TIter next(CreateIterator());
+  AliMUONVDigit* digit;
+  while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
+  {
+    if ( digit->HasMCInformation() ) return kTRUE;
+  }
+  return kFALSE;
+}
+

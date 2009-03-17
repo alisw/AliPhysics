@@ -101,6 +101,9 @@ public:
   /// Number of digits in a given detection element and a given cathode (2 for both cathodes)
   virtual Int_t GetSize(Int_t detElemId, Int_t cathode) const;
   
+  /// Whether we have any MC related information (e.g. at least one simulated digit)
+  virtual Bool_t HasMCInformation() const = 0;
+  
   ClassDef(AliMUONVDigitStore,1) // Digit container interface
 };
 

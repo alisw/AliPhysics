@@ -27,6 +27,8 @@ public:
   virtual AliMUONVDigit* CreateDigit(Int_t detElemId, Int_t manuId,
                                      Int_t manuChannel, Int_t cathode) const;
 
+  virtual Bool_t HasMCInformation() const { return kFALSE; }
+  
 protected:
     
     virtual AliMUONVDigit* AddConcreteDigit(TClonesArray& a, 

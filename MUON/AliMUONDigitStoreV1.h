@@ -66,6 +66,8 @@ public:
   
   virtual AliMUONVDigit* Remove(AliMUONVDigit& digit);
 
+  Bool_t HasMCInformation() const;
+  
 private:
 
   TObject** ChamberDigitsPtr(Int_t chamberId) const;
