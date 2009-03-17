@@ -185,7 +185,7 @@ void AliComparisonDEdx::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo *const
 }
 
 //_____________________________________________________________________________
-void AliComparisonDEdx::ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
+void AliComparisonDEdx::ProcessTPCITS(AliMCInfo* const /*infoMC*/, AliESDRecInfo *const /*infoRC*/)
 {
   // Fill dE/dx  comparison information
   
@@ -193,7 +193,7 @@ void AliComparisonDEdx::ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo *co
 }
 
 //_____________________________________________________________________________
-void AliComparisonDEdx::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo *const infoRC)
+void AliComparisonDEdx::ProcessConstrained(AliMCInfo* const /*infoMC*/, AliESDRecInfo *const /*infoRC*/)
 {
   // Fill dE/dx  comparison information
   

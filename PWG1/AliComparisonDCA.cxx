@@ -278,7 +278,7 @@ void AliComparisonDCA::ProcessTPCITS(AliMCInfo* const infoMC, AliESDRecInfo * co
   }
 }
 
-void AliComparisonDCA::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo * const infoRC)
+void AliComparisonDCA::ProcessConstrained(AliMCInfo* const /*infoMC*/, AliESDRecInfo * const /*infoRC*/)
 {
   // Fill DCA comparison information
   
