@@ -748,7 +748,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   
   Int_t index = 0  ;
   const char * turl ;
-  TFileMerger merger ; 
+  TFileMerger merger(kFALSE) ; 
   if (!outFile) {
     TString tempo(collectionFile) ; 
     if ( subFile) 
