@@ -41,6 +41,7 @@ class AliAnalysisTask;
 // Interface to Event generators to get Reaction Plane Angle
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
+#include "../EVGEN/AliGenGeVSimEventHeader.h"
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEventSimpleMaker.h"
@@ -59,6 +60,7 @@ class AliAnalysisTask;
 
 
 ClassImp(AliAnalysisTaskFlowEvent)
+  //extern void ConfigFlowAnalysis(AliAnalysisTaskFlowEvent*); 
 
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) : 
@@ -183,6 +185,8 @@ void AliAnalysisTaskFlowEvent::CreateOutputObjects()
     exit(1);
   }
 
+  //ConfigFlowAnalysis(this); 
+
   // Flow Event maker
   fEventMaker = new AliFlowEventSimpleMaker();
 }
@@ -201,19 +205,32 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (mcEvent) {
-      AliGenCocktailEventHeader *header = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
-      if (header) {
-	TList *lhd = header->GetHeaders();
-	if (lhd) {
-	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
-	  if (hdh) {
-	    fRP = hdh->ReactionPlaneAngle();
-	    //	    cout<<"The reactionPlane is: "<< fRP <<endl;
+      if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
+	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
+	if (headerC) {
+	  TList *lhd = headerC->GetHeaders();
+	  if (lhd) {
+	    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
+	    if (hdh) {
+	      fRP = hdh->ReactionPlaneAngle();
+	      //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
+	    }
 	  }
 	}
+	//else { cout<<"headerC is NULL"<<endl; }
+      }
+      else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
+	AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
+	if (headerG) {
+	  fRP = headerG->GetEventPlane();
+	  //cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
+	}
+	//else { cout<<"headerG is NULL"<<endl; }
       }
     }
+    //else {cout<<"No MC event!"<<endl; }
   }
+  //else {cout<<"No eventHandler!"<<endl; }
 
   // set the value of the monte carlo event plane for the flow event
   fEventMaker->SetMCReactionPlaneAngle(fRP);
