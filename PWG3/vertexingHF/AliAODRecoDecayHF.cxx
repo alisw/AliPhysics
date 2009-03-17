@@ -90,13 +90,15 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   AliAODRecoDecay(source),
-  fOwnPrimaryVtx(source.fOwnPrimaryVtx),
+  fOwnPrimaryVtx(0x0),
   fd0err(0x0),
   fProngID(0x0)
 {
   //
   // Copy constructor
   //
+  if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
+
   if(source.GetNProngs()>0) {
     fd0err = new Double_t[GetNProngs()];
     memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
@@ -116,7 +118,8 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
 
   AliAODRecoDecay::operator=(source);
 
-  fOwnPrimaryVtx = source.fOwnPrimaryVtx;
+  if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
+
   if(source.GetNProngs()>0) {
     fd0err = new Double_t[GetNProngs()];
     memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
