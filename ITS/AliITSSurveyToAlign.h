@@ -20,18 +20,20 @@ class AliAlignObjParams;
 class AliITSSurveyToAlign : public AliSurveyToAlignObjs {
 
  public:
-  AliITSSurveyToAlign(Int_t run = 0, Int_t repSDD = 845069, Int_t repVerSDD = 1,  Int_t repModSSD = 887877, Int_t repModVerSSD =2, Int_t repLaddSSD = 12345, Int_t repLaddVerSSD = 1);
-  AliITSSurveyToAlign(const AliITSSurveyToAlign& /* align */); // copy constructor
-  AliITSSurveyToAlign &operator = (const AliITSSurveyToAlign &align); //assignment operator
+  AliITSSurveyToAlign(Int_t run = 0, Int_t repSDD = 845069, Int_t repVerSDD = 1,  Int_t repModSSD = 887877, Int_t repModVerSSD =3, Int_t repLaddSSD = 980521, Int_t repLaddVerSSD = 1);
+  AliITSSurveyToAlign(const AliITSSurveyToAlign& align); // copy constructor
+  AliITSSurveyToAlign &operator = (const AliITSSurveyToAlign& /* align */); //assignment operator
   virtual ~AliITSSurveyToAlign();
 
-  virtual void Run();
-  void CreateAlignObjSPD();
+  void Run();
+  Bool_t CreateAlignObjs();
+  void CreateAlignObjDummySPD();
   void CreateAlignObjSDD();
   void CreateAlignObjDummySDD();
   void CreateAlignObjSSDModules();
   void CreateAlignObjDummySSDModules();
   void CreateAlignObjSSDLadders();
+  Bool_t ApplyAlignObjSSDLadders();
 
   //
  private:

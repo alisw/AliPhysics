@@ -120,8 +120,8 @@ AliITSSurveyToAlign::~AliITSSurveyToAlign() {
 void AliITSSurveyToAlign::Run() { 
   //
   // Runs the full chain
-  // User should call StoreAlignObj() or StoreAlignObjCDB() afterwards to 
-  // store output
+  // User should call StoreAlignObjToFile or StoreAlignObjToCDB afterwards to 
+  // store output (not included here to leave the choice between the two)
   //
 
   // Load ideal geometry from the OCDB
@@ -129,17 +129,46 @@ void AliITSSurveyToAlign::Run() {
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(fRun);
   AliGeomManager::LoadGeometry();
-  
-  CreateAlignObjSPD();
-  LoadSurveyFromAlienFile("ITS", fSDDrepNumber, fSDDrepVersion);
+
+  if(!CreateAlignObjs()) AliError("Construction of alignment objects from survey failed!");
+} 
+
+//______________________________________________________________________
+Bool_t AliITSSurveyToAlign::CreateAlignObjs() { 
+  // Fill the array of alignment objects with alignment objects
+  // from surveyfor all three subdetectors
+  //
+
+  //for SPD
+  CreateAlignObjDummySPD();
+
+  // for SDD
+  if(!LoadSurveyFromAlienFile("ITS", fSDDrepNumber, fSDDrepVersion)){
+      AliError("Loading of alignment objects from survey for SDD failed!");
+      return kFALSE;
+  }
   CreateAlignObjSDD();
-  LoadSurveyFromAlienFile("ITS", fSSDModuleRepNumber, fSSDModuleRepVersion);
-  CreateAlignObjSSDModules();
-  LoadSurveyFromAlienFile("ITS", fSSDLadderRepNumber, fSSDLadderRepVersion);
+
+  // for SSD ladders
+  if(!LoadSurveyFromAlienFile("ITS", fSSDLadderRepNumber, fSSDLadderRepVersion)){
+      AliError("Loading of alignment objects from survey for SSD ladders failed!");
+      return kFALSE;
+  }
   CreateAlignObjSSDLadders();
+
+  // for SSD modules
+  if(!ApplyAlignObjSSDLadders()) return kFALSE; // needed to build correctly the objects for SSD modules
+  if(!LoadSurveyFromAlienFile("ITS", fSSDModuleRepNumber, fSSDModuleRepVersion)){
+      AliError("Loading of alignment objects from survey for SSD modules failed!");
+      return kFALSE;
+  }
+  CreateAlignObjSSDModules();
+
+  return kTRUE;
 }
 
-void AliITSSurveyToAlign::CreateAlignObjSPD(){
+//______________________________________________________________________
+void AliITSSurveyToAlign::CreateAlignObjDummySPD(){
   // 
   // Create alignObjs for SPD
   //    For the moment, uses 0,0,0,0,0,0
@@ -156,6 +185,7 @@ void AliITSSurveyToAlign::CreateAlignObjSPD(){
 
 }
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjSDD(){
   //
   // Create alignment objects for SDD
@@ -233,6 +263,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDD(){
   }//module loop
 }
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjDummySDD(){
   // 
   // Create empty alignment objects
@@ -250,11 +281,11 @@ void AliITSSurveyToAlign::CreateAlignObjDummySDD(){
   }//module loop
 }
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjSSDModules(){
   //
-  // Create alignment objects for SDD
-  // Called by Run()
-  // Two sets of objects are made: 1 per module + 1 per ladder
+  // Create alignment objects for SSD modules
+  // Objects for SSD ladders must be applied to geometry first
   //
   Double_t sx, sz;
   const Float_t kMu2Cm = 1e-4;
@@ -313,9 +344,33 @@ void AliITSSurveyToAlign::CreateAlignObjSSDModules(){
   } //module loop
 }
 
+//______________________________________________________________________
+Bool_t AliITSSurveyToAlign::ApplyAlignObjSSDLadders(){
+  //
+  //   Apply alignment objects for SSD ladders to geometry, needed to correctly
+  //   build alignment objects for SSD modules
+  // 
+  TClonesArray* tobeApplied = new TClonesArray("AliAlignObjParams",72);
+  Int_t ii=0;
+  for(Int_t jj=0; jj<fAlignObjArray->GetEntriesFast(); jj++)
+  {
+      AliAlignObjParams* ap = dynamic_cast<AliAlignObjParams*> (fAlignObjArray->UncheckedAt(jj));
+      if(ap) 
+      {
+	  TString sName(ap->GetSymName());
+	  if(sName.Contains("SSD") && sName.Contains("Ladder"))
+	      (*tobeApplied)[ii++] = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(jj);
+      }
+  }
+  AliInfo(Form(" %d alignment objects for SSD ladders applied to geometry.",tobeApplied->GetEntriesFast()));
+
+  return(AliGeomManager::ApplyAlignObjsToGeom(*tobeApplied));
+}
+
+//______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
   //
-  //   Now do ladders  (Torino data)
+  //   Alignment objects from survey for SSD ladders (Torino data)
   // 
   const Float_t kLaddLen5 = 90.27;  // Layer 5: distance between mouting points
   const Float_t kLaddLen6 = 102.0;  // Layer 6: distance between mouting points
@@ -406,7 +461,7 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
   }  // Layer loop
 }
 
-
+//______________________________________________________________________
 void AliITSSurveyToAlign::CreateAlignObjDummySSDModules(){
   // 
   // Create empty alignment objects
@@ -424,6 +479,7 @@ void AliITSSurveyToAlign::CreateAlignObjDummySSDModules(){
 }
 
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::GetIdPosSDD(Int_t uid, Int_t layer, Int_t module, Int_t iPoint)
 {
   // 
@@ -457,6 +513,7 @@ void AliITSSurveyToAlign::GetIdPosSDD(Int_t uid, Int_t layer, Int_t module, Int_
 
 }
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_t &iLader, Int_t &iModul, Int_t &iPoint)
 {
   // 
@@ -514,6 +571,7 @@ void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_
 }
 
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Module)
 {
   // 
@@ -573,6 +631,7 @@ void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Modul
 }
 
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0)
 {
   Double_t Xid, Yid, Zid;
@@ -609,6 +668,7 @@ void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0)
 }
 
 
+//______________________________________________________________________
 void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &phi,Double_t &x0,Double_t &y0,Double_t &z0)
 {
   TMatrixD p1(6,6);
@@ -811,6 +871,5 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
   z0=x6;
   return;
 }
-
 
 
