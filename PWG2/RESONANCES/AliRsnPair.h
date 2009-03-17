@@ -21,8 +21,6 @@
 #include "AliRsnEvent.h"
 #include "AliRsnCutMgr.h"
 #include "AliRsnHistoDef.h"
-#include "AliRsnFunctionDef.h"
-#include "AliRsnFunctionNew.h"
 
 class AliRsnFunction;
 
@@ -45,7 +43,6 @@ class AliRsnPair : public TObject
     void    ProcessPair(AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
     void    AddFunction(AliRsnFunction *fcn);
-    //void    AddFunction(AliRsnFunctionDef *fcn);
     TList*  GenerateHistograms(TString prefix = "");
     void    GenerateHistograms(TString prefix, TList *tgt);
 
@@ -57,8 +54,6 @@ class AliRsnPair : public TObject
     TString GetPairName() const;
     TString GetPairHistName(AliRsnFunction *fcn, TString text = "") const;
     TString GetPairHistTitle(AliRsnFunction *fcn, TString text = "") const;
-    //TString GetPairHistName(AliRsnFunctionNew *fcn, TString text = "") const;
-    //TString GetPairHistTitle(AliRsnFunctionNew *fcn, TString text = "") const;
 
   private:
 

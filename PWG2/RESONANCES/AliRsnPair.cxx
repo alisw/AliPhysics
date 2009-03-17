@@ -155,7 +155,6 @@ void AliRsnPair::LoopPair
   AliRsnDaughter *daughter1 = 0;
   AliRsnDaughter *daughter2 = 0;
   AliRsnFunction *fcn = 0;
-  //AliRsnFunctionNew *fnew = 0;
 
   Bool_t isLikeSign = fPairDef->IsLikeSign();
   Int_t j, startj = 0;
@@ -349,18 +348,6 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
   new (fFunctions[size]) AliRsnFunction(*fcn);
 }
 
-/*
-//_____________________________________________________________________________
-void AliRsnPair::AddFunction(AliRsnFunctionDef *fcn)
-{
-//
-// Adds a new computing function
-//
-
-  Int_t size = fFunctions.GetEntries();
-  new (fFunctions[size]) AliRsnFunctionNew(fcn);
-}
-*/
 
 //________________________________________________________________________________________
 Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)

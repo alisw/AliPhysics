@@ -17,9 +17,7 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnReaderTaskSE.cxx \
       RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnHistoDef.cxx \
-      RESONANCES/AliRsnFunctionDef.cxx \
       RESONANCES/AliRsnFunction.cxx \
-      RESONANCES/AliRsnFunctionNew.cxx \
       RESONANCES/AliRsnPair.cxx \
       RESONANCES/AliRsnPairMgr.cxx \
       RESONANCES/AliRsnAnalysisTaskSEBase.cxx \

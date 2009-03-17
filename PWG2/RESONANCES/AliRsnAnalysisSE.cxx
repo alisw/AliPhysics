@@ -79,7 +79,7 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
   fOutList->SetOwner();
   AliRsnPair *def=0;
   AliRsnPairMgr *mgr=0;
-  TList *listTmp;
+  //TList *listTmp;
   fDoesMixing = kFALSE;
   for (Int_t iMgr=0 ;iMgr< fPairMgrs.GetEntries();iMgr++)
   {
@@ -173,9 +173,9 @@ void AliRsnAnalysisSE::ProcessEventAnalysis(AliRsnEvent *curEvent)
         pair->ProcessPair(curEvent, 0);
       }
       else {
-        Int_t i, iev;
-        for (i = 0; i < matched.GetSize(); i++) {
-          iev = matched[i];
+        Int_t j, iev;
+        for (j = 0; j < matched.GetSize(); j++) {
+          iev = matched[j];
           if (iev < 0) continue;
           AliRsnEvent *evmatch = fBuffer->GetEvent(iev);
           pair->ProcessPair(curEvent, evmatch);

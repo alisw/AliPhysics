@@ -49,6 +49,7 @@ AliRsnEvent::AliRsnEvent() :
     fPVyMC(0.0),
     fPVzMC(0.0),
     fTracks(0x0),
+    fTrueMult(0),
     fNoPID(0x0),
     fPerfectPID(0x0),
     fRealisticPID(0x0),
@@ -75,6 +76,7 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
     fPVyMC(event.fPVyMC),
     fPVzMC(event.fPVzMC),
     fTracks(0x0),
+    fTrueMult(event.fTrueMult),
     fNoPID(0x0),
     fPerfectPID(0x0),
     fRealisticPID(0x0),
@@ -123,6 +125,7 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
   // other data
   fPhiMean = event.fPhiMean;
   fMult = event.fMult;
+  fTrueMult = event.fTrueMult;
 
   // add tracks from array of argument
   Int_t errors = Fill(event.fTracks);
