@@ -40,6 +40,7 @@ AliRsnDaughter::AliRsnDaughter() :
   fNSigmaToVertex(-1.0),
   fITSnum(0),
   fTPCnum(0),
+  fAssignedPID(AliRsnPID::kUnknown),
   fRealisticPID(AliRsnPID::kUnknown),
   fMCInfo(0x0)
 {
@@ -74,6 +75,7 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
   fNSigmaToVertex(copy.fNSigmaToVertex),
   fITSnum(copy.fITSnum),
   fTPCnum(copy.fTPCnum),
+  fAssignedPID(copy.fAssignedPID),
   fRealisticPID(copy.fRealisticPID),
   fMCInfo(0x0)
 {
@@ -130,6 +132,7 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
   }
 
   fMass = copy.fMass;
+  fAssignedPID = copy.fAssignedPID;
   fRealisticPID = copy.fRealisticPID;
 
   // initialize particle object
