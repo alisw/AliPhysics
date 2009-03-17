@@ -33,7 +33,7 @@ public:
   virtual void Init() ; 	
   virtual void LocalInit() { Init() ; }
   virtual void UserExec(Option_t * opt = "") ;
-  const Float_t  GetPhotonId() const { return fPhotonId ; }
+  Float_t  GetPhotonId() const { return fPhotonId ; }
   void SetDebugLevel(Int_t level) { fDebug = level ; }
   void SetPhotonId(Float_t threshold) { fPhotonId = threshold ; }
   virtual void Terminate(Option_t * opt = "") ;
