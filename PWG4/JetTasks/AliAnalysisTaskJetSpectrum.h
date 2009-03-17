@@ -93,8 +93,12 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
 
     
     TH2F*         fh2PtFGen[kMaxJets];  //
+    TH2F*         fh2PhiFGen[kMaxJets];  //
+    TH2F*         fh2EtaFGen[kMaxJets];  //
     TH2F*         fh2Frag[kMaxJets];    // fragmentation function
     TH2F*         fh2FragLn[kMaxJets];  //
+    TH2F*         fh2PtGenDeltaPhi[kMaxJets];  
+    TH2F*         fh2PtGenDeltaEta[kMaxJets];  
 
     TH3F*         fh3PtRecGenHard[kMaxJets];  //                              
     TH3F*         fh3PtRecGenHard_NoW[kMaxJets];  //                  

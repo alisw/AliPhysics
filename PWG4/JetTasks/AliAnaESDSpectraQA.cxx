@@ -220,7 +220,9 @@ void AliAnaESDSpectraQA::Exec(Option_t *) {
       curTypeHists->PhiPtNPointTPC->Fill(phi,pt,track->GetTPCNcls());
       curTypeHists->PhiPtNPointITS->Fill(phi,pt,nPointITS);
       curTypeHists->PhiPtChisqC->Fill(phi,pt,chisqC);
-      curTypeHists->PhiPtChisqTPC->Fill(phi,pt,track->GetTPCchi2()/(track->GetTPCNclsF()-5));
+      if(track->GetTPCNclsF()>5){
+	curTypeHists->PhiPtChisqTPC->Fill(phi,pt,track->GetTPCchi2()/(track->GetTPCNclsF()-5));
+      }      
       curTypeHists->PhiPtDCAR->Fill(phi,pt,dca2D);
       curTypeHists->PhiPtDCAZ->Fill(phi,pt,dcaZ);
       curTypeHists->PhiPtSigmaToVertex->Fill(phi,pt,sigToVertex);
