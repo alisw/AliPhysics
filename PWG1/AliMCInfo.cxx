@@ -479,7 +479,6 @@ void AliMCInfo::Update(TParticle * part, TClonesArray * runArrayTR, Double_t pve
   //
   for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
     AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);         
-    Int_t label = trackRef->GetTrack();
     if (trackRef->DetectorId()== AliTrackReference::kTPC){     
       TClonesArray & arr = *(info->fTPCReferences);
       new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     

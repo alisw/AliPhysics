@@ -28,6 +28,10 @@
 #include "AliComparisonObject.h"
 #include "AliESDRecInfo.h"
 #include "AliTPCParamSR.h"
+#include "TSystem.h"
+#include "TTimeStamp.h"
+#include "TFile.h"
+#include "AliTPCseed.h"
 
 // STL includes
 #include <iostream>
@@ -48,7 +52,8 @@ AliGenInfoTask::AliGenInfoTask() :
   fRecTracksArray(0),  //clones array with filtered particles
   fDebugStreamer(0),
   fStreamLevel(0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fDebugOutputPath()
 {
   //
   // Default constructor (should not be used)
@@ -67,7 +72,8 @@ AliGenInfoTask::AliGenInfoTask(const AliGenInfoTask& /*info*/) :
   //
   fDebugStreamer(0),
   fStreamLevel(0),
-  fDebugLevel()
+  fDebugLevel(),
+  fDebugOutputPath()
 {
   //
   // Default constructor 
@@ -88,7 +94,8 @@ AliGenInfoTask::AliGenInfoTask(const char *name) :
   fRecTracksArray(0),  //clones array with filtered particles
   fDebugStreamer(0),
   fStreamLevel(0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fDebugOutputPath()
 {
   //
   // Normal constructor
@@ -134,6 +141,8 @@ void AliGenInfoTask::ConnectInputData(Option_t *)
     }
     else {
       fESD = esdH->GetEvent();
+      fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+      fESD->SetESDfriend(fESDfriend);
       //Printf("*** CONNECTED NEW EVENT ****");
     }  
   }
@@ -216,6 +225,8 @@ void AliGenInfoTask::Terminate(Option_t *) {
   fDebugStreamer = 0;
   return;
 }
+
+
 
 
 
@@ -314,6 +325,12 @@ void AliGenInfoTask::ProcessESDInfo(){
   //
   //
   static AliTPCParamSR param;
+  fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  if (!fESDfriend) {
+    //Printf("ERROR: fESDfriend not available");
+    return;
+  }
+  fESD->SetESDfriend(fESDfriend);
   //
   //
   if (!fESD) return;
@@ -328,31 +345,6 @@ void AliGenInfoTask::ProcessESDInfo(){
     recInfo->Update(mcinfo,&param,kTRUE);
   }
   //
-  //
-  //
-  Int_t ntracksMC = fMCinfo->GetNumberOfTracks();
-  for (Int_t imc=0; imc<ntracksMC; imc++){
-    AliMCInfo * mcinfo = GetTrack(imc,kFALSE);
-    if (!mcinfo) continue;
-    AliESDRecInfo *recInfo= GetRecTrack(imc,kFALSE);
-    if (recInfo) continue;
-    if (mcinfo->GetNTPCRef()<2) continue;
-    //
-    //
-    for (Int_t itrack=0; itrack<ntracks; itrack++){
-      AliESDtrack *track = fESD->GetTrack(itrack);
-      Int_t label = TMath::Abs(track->GetLabel());
-      if (label!=mcinfo->GetLabel()) continue;
-      
-      AliMCInfo * mcinfo2 = GetTrack(label,kFALSE);
-      if (!mcinfo2) continue;
-      AliESDRecInfo *recInfo= GetRecTrack(label,kTRUE);
-      recInfo->AddESDtrack(track,mcinfo2);
-      recInfo->Update(mcinfo2,&param,kTRUE);
-    }
-  }
-
-  
 
 
 } 
@@ -384,18 +376,34 @@ void AliGenInfoTask::DumpInfo(){
   //
   //
   //
+
   static AliESDRecInfo dummy;
   Int_t npart = fMCinfo->GetNumberOfTracks();
   for (Int_t ipart=0;ipart<npart;ipart++){
     AliMCInfo * mcinfo = GetTrack(ipart,kFALSE);
     if (!mcinfo) continue;
     AliESDRecInfo *recInfo= GetRecTrack(ipart,kFALSE);
+    //
+  //   AliTPCseed *tpctrack=0;
+//     if (recInfo) {
+//       AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(recInfo->GetESDtrack()->GetID());
+//       if (friendTrack) {
+// 	TObject *calibObject=0;
+// 	AliTPCseed *seed=0;
+// 	for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
+// 	  if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
+// 	    break;
+// 	tpctrack=seed;
+//       }
+//     }
+//     if (!tpctrack) continue;
     if (!recInfo) recInfo=&dummy; 
     TTreeSRedirector *pcstream = GetDebugStreamer();
     if (pcstream){
-      (*pcstream)<<"RC"<<
+      (*pcstream)<<"RC"<<	
 	"MC.="<<mcinfo<<
 	"RC.="<<recInfo<<
+	//	"tr.="<<tpctrack<<
 	"\n";
     }    
   }
@@ -423,3 +431,40 @@ Bool_t AliGenInfoTask::AcceptParticle(TParticle *part){
   return kTRUE;
 }
 
+
+
+void AliGenInfoTask::FinishTaskOutput()
+{
+  //
+  // According description in AliAnalisysTask this method is call
+  // on the slaves before sending data
+  //
+  Terminate("slave");
+  RegisterDebugOutput(fDebugOutputPath.Data());
+
+}
+
+
+
+void AliGenInfoTask::RegisterDebugOutput(const char *path){
+  //
+  // store  - copy debug output to the destination position
+  // currently ONLY for local copy
+  TString dsName;
+  dsName=GetName();
+  dsName+="Debug.root";
+  dsName.ReplaceAll(" ","");
+  TString dsName2=fDebugOutputPath.Data();
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+="/";;
+  dsName2+=gSystem->HostName();
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+="/";
+  dsName2+=gSystem->BaseName(gSystem->pwd());
+  dsName2+="/";
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+=dsName;
+  AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
+  printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
+  TFile::Cp(dsName.Data(),dsName2.Data());
+}
