@@ -2,9 +2,17 @@
 // $MpId: testReadMotifTypeSlat.C,v 1.1 2005/09/19 19:02:53 ivana Exp $
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
 #include "AliMpMotifReader.h"
-#include "Riostream.h"
 #include "AliMpMotifType.h"
+
+#include <Riostream.h>
+
 #endif
 
 Int_t test(AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
@@ -30,7 +38,11 @@ Int_t test(AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
 
 void testReadMotifTypeSlat()
 {
-  AliMpMotifReader r(AliMp::kStation345,AliMp::kNonBendingPlane); 
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpMotifReader r(dataStreams, AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane);
   // note that second parameter is not used for station345.
 
   Int_t n = 0;

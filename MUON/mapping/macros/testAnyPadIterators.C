@@ -3,6 +3,32 @@
 //
 // Test macro for reading  sector, and iterate over it
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpSectorSegmentation.h" 
+#include "AliMpMotifType.h"
+#include "AliMpMotifMap.h"
+#include "AliMpVMotif.h"
+#include "AliMpVPadIterator.h"
+#include "AliMpSectorPadIterator.h"
+#include "AliMpNeighboursPadIterator.h"
+#include "AliMpMotifPositionPadIterator.h"
+#include "AliMpConstants.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TMarker.h>
+#include <TH2.h>
+
+#endif
+
 class AliMpVPadIterator;
 void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
 {
@@ -24,54 +50,69 @@ void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
   }
 }
 
-void testAnyPadIterators(AliMp::StationType station = AliMp::kStation1,
-                         AliMp::PlaneType plane = AliMp::kBendingPlane, 
-		         Bool_t rootInput = false,
+void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane,
                          Int_t i=50, Int_t j=50)
 {
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
+  AliMpSectorSegmentation segmentation(sector);
     
   TCanvas *canv = new TCanvas("canv");
   canv->Divide(2,2);
-  //canv_1->Divide(2);
   
   canv->cd(1);
-  MarkPads(AliMpSectorPadIterator(sector), 150, 250, kFALSE);
+  AliMpSectorPadIterator its(sector);
+  MarkPads(its, 150, 250, kFALSE);
+
   canv->cd(2);
   AliMpVMotif* motif = sector->FindMotif(TVector2(30,3));
-
-  if (motif) {
+  if ( motif ) {
     AliMpMotifType* motifType = motif->GetMotifType();
-    MarkPads(AliMpMotifTypePadIterator(motifType),15,15);
-    cout<<"______________ MotifType " << motifType->GetID() 
-        <<"__________________________"<<endl;
-  } else cout<<"No motif found at given position..."<<endl;
+    AliMpMotifTypePadIterator itm(motifType);
+    MarkPads(itm,15,15);
+    cout << "______________ MotifType "  << motifType->GetID() 
+         << "__________________________" << endl;
+  } 
+  else 
+    cout << "No motif found at given position..." << endl;
   
   canv->cd(3);
-  //MarkPads(*AliMpPadIteratorPtr(AliMpSectorSegmentation(sector)->CreateIterator(AliMpIntPair(i,j)))
-  AliMpSectorSegmentation segm(sector);
-  AliMpPad pad = segm.PadByIndices(AliMpIntPair(i,j));
-  MarkPads(AliMpNeighboursPadIterator(&AliMpSectorSegmentation(sector),pad)
-           ,i+8,j+8);
+  AliMpPad pad = segmentation.PadByIndices(AliMpIntPair(i,j));
+  AliMpNeighboursPadIterator itn(&segmentation,pad);
+  MarkPads(itn,i+8,j+8);
   cout<<"________________ Neighbours __________________________"<<endl;
+  
   canv->cd(4);
   Int_t motifPosId = 20 | AliMpConstants::ManuMask(plane); 
-  if (plane == AliMp::kNonBendingPlane) motifPosId = 19;
+  if ( plane == AliMp::kNonBendingPlane ) motifPosId = 19;
   AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
-  if (motifPos){
-    //MarkPads(*AliMpPadIteratorPtr(motifPos->CreateIterator()),15,15);
-    MarkPads(AliMpMotifPositionPadIterator(motifPos),15,15);
+  if ( motifPos ){
+    AliMpMotifPositionPadIterator itmp(motifPos);
+    MarkPads(itmp,15,15);
     cout<<"_________________ MotifPosition _________________________"<<endl;
   }
 }
+
+void testAnyPadIterators()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testAnyPadIterators for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testAnyPadIterators(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

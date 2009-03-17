@@ -3,19 +3,38 @@
 //
 // Test macro for reading motif type data and iterate over them.
 
-void testMotifTypeIterators(AliMp::StationType station = AliMp::kStation1,
-                            AliMp::PlaneType plane = AliMp::kBendingPlane,
-	        	    Bool_t rootInput = false)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpMotifReader.h"
+#include "AliMpMotifType.h"
+#include "AliMpMotifTypePadIterator.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TMarker.h>
+#include <TH2.h>
+
+#include <vector>
+
+#endif
+
+void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
   TString names;
   TString names2;
   Int_t nv =0;
-  if ( station == AliMp::kStation1 )
+  if ( station == AliMq::kStation1 ) {
     if ( plane == AliMp::kBendingPlane ) 
       names ="ABCDEFGHI";
     else
       names = "ABCDEFGHIJKLMN";
-  else if ( station == AliMp::kStation2 ) 
+  }    
+  else if ( station == AliMq::kStation2 ) {
     if ( plane == AliMp::kBendingPlane ) {
       names ="ABCDEFGHIJKLMNOPQRSTUVWXY";
       names2 ="abcdefghimnptuvvvvv";
@@ -26,23 +45,25 @@ void testMotifTypeIterators(AliMp::StationType station = AliMp::kStation1,
       names2 ="abcdefgijklmnopqrstuwvvvvv";
       nv = 5;
     }  
+  }  
   Int_t nofMotifs = names.Length() + names2.Length(); 
   // cout << " nofMotifs: " << nofMotifs << endl;   
     
-  TH2C* histos[] = new TH2C* [nofMotifs];
-  TCanvas* canv[] = new TCanvas* [1+(nofMotifs-1)/4];
+  std::vector<TH2C*> histos;
+  std::vector<TCanvas*> cvs;
   Int_t i;
   for (i=0;i<1+(nofMotifs-1)/4;++i){
-    // canv[i] = new TCanvas(Form("canv%d",i),"Iterator viewing...");
-               // CINT limitation on DEC
-	       
     TString cname("canv"); cname += i;
-    canv[i] = new TCanvas(cname.Data(),"Iterator viewing...");
-    
-    canv[i]->Divide(2,2); 
+    TCanvas* canv = new TCanvas(cname.Data(),"Iterator viewing...");
+    canv->Divide(2,2); 
+    cvs.push_back(canv);
   }
     
-  AliMpMotifReader r(station, plane);
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpMotifReader r(dataStreams, AliMp::kStation12, station, plane);
   //r.SetVerboseLevel(2);
 
   for (i=0;i<nofMotifs;++i){
@@ -63,7 +84,7 @@ void testMotifTypeIterators(AliMp::StationType station = AliMp::kStation1,
    
     AliMpMotifType *mt = r.BuildMotifType(mname);
 
-    canv[i/4]->cd(1+ (i%4));
+    cvs[i/4]->cd(1+ (i%4));
     //histos[i] = new TH2C(Form("h%d",i),Form("Motif type %c",names[i]),
     //                     mt->GetNofPadsX(),-0.5,mt->GetNofPadsX()-0.5,
     //                     mt->GetNofPadsY(),-0.5,mt->GetNofPadsY()-0.5);
@@ -71,9 +92,10 @@ void testMotifTypeIterators(AliMp::StationType station = AliMp::kStation1,
 
     TString hname("h"); hname += i;
 
-    histos[i] = new TH2C(hname.Data(), mname.Data(),
+    TH2C* histo = new TH2C(hname.Data(), mname.Data(),
                          mt->GetNofPadsX(),-0.5,mt->GetNofPadsX()-0.5,
                          mt->GetNofPadsY(),-0.5,mt->GetNofPadsY()-0.5);
+    histos.push_back(histo);                         
 
     cout<<"Motif Type "<<mt->GetID()<<endl;
     cout<<"--------------------------------"<<endl;
@@ -84,12 +106,31 @@ void testMotifTypeIterators(AliMp::StationType station = AliMp::kStation1,
     for (it.First(); ! it.IsDone(); it.Next()) {
       cout << "Iterator " << num << ' '<< it.CurrentItem().GetIndices() << endl;
       ++num;
-      histos[i]->Fill(it.CurrentItem().GetIndices().GetFirst(),
-                      it.CurrentItem().GetIndices().GetSecond(),num);
+      histo->Fill(it.CurrentItem().GetIndices().GetFirst(),
+                  it.CurrentItem().GetIndices().GetSecond(),num);
     }
 
     //delete mt;
-    histos[i]->Draw("text");
-    canv[i/4]->Update();
+    histo->Draw("text");
+    cvs[i/4]->Update();
   }
 }
+void testMotifTypeIterators()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testMotifTypeIterators for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testMotifTypeIterators(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

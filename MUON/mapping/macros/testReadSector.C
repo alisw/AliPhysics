@@ -3,36 +3,35 @@
 //
 // Test macro for reading sector data.
 
-#include <iomanip>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
-void testReadSector(AliMp::StationType station = AliMp::kStation1,
-                    AliMp::PlaneType plane = AliMp::kBendingPlane, 
-	 	    Bool_t rootInput = false)
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpRow.h"
+#include "AliMpVRowSegment.h"
+#include "AliMpVMotif.h"
+#include "AliMpMotifMap.h"
+#include "AliMpConstants.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TH2.h>
+
+#endif
+
+void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    //reader.SetVerboseLevel(1);
-    sector=r.BuildSector();
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
 
-    // Write sector on Root file
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
-  
-    TFile f(filePath.Data(), "RECREATE");
-    sector->Write();
-    f.Close();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
-
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
-
-  cout << endl;
-
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
   // Sector geometry
   sector->PrintGeometry();
 
@@ -75,7 +74,7 @@ void testReadSector(AliMp::StationType station = AliMp::kStation1,
   for (Int_t i=0; i<2 ; i++) {
     TVector2 pos(0.5, 18.6 - i*2.);  // i=0 in motif 1001,
                                      // i=1 outside (below) motif 1001
-    AliMpMotif* motif = sector->FindMotif(pos);
+    AliMpVMotif* motif = sector->FindMotif(pos);
     cout << "In the position " << pos.X() << " " << pos.Y();
     
     if (motif)
@@ -111,6 +110,24 @@ void testReadSector(AliMp::StationType station = AliMp::kStation1,
   
   delete sector;
 }			       
-      
-
+     
+void testReadSector()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testReadSector for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testReadSector(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  
  

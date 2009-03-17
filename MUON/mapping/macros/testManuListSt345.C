@@ -18,7 +18,7 @@
 //
 // Macro to generate manu list per buspatch for station 3, 4 and 5
 // Christian Finck, Subatech
-//
+// 17/03/09  Not working
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

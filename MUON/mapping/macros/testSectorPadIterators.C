@@ -3,26 +3,39 @@
 //
 // Test macro for reading  sector, and iterate over it
 
-void testSectorPadIterators(AliMp::StationType station = AliMp::kStation1,
-                            AliMp::PlaneType plane = AliMp::kBendingPlane,
-	 	            Bool_t rootInput = false)
-{
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorPadIterator.h"
+#include "AliMpSectorReader.h"
+#include "AliMpArea.h"
+#include "AliMpVPadIterator.h"
+#include "AliMpVPainter.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TMarker.h>
+
+#endif
+
+void testSectorPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
   
   Int_t num=0;
   
-  TCanvas *can = new TCanvas("canv");
+  //new TCanvas("canv");
+  new TCanvas();
 
   const Double_t xmax=150;
   const Double_t ymax=250;
@@ -41,3 +54,23 @@ void testSectorPadIterators(AliMp::StationType station = AliMp::kStation1,
   
   delete sector;
 }
+
+void testSectorPadIterators()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testSectorPadIterators for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testSectorPadIterators(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

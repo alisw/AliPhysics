@@ -3,22 +3,45 @@
 //
 // Test macro for reading motif type data.
 
-void testReadMotifType(AliMp::StationType station = AliMp::kStation1,
-                       AliMp::PlaneType plane = AliMp::kBendingPlane,
-	     	       Bool_t rootInput = false)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpMotifReader.h"
+#include "AliMpVMotif.h"
+#include "AliMpMotifType.h"
+#include "AliMpMotifMap.h"
+#include "AliMpConstants.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TH2.h>
+
+#endif
+
+
+void testReadMotifType(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
-  AliMpMotifReader r(station, plane);
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpMotifReader r(dataStreams, AliMp::kStation12, station, plane);
   //r.SetVerboseLevel(2);
 
   TString names;
   TString names2;
   Int_t nv =0;
-  if ( station == AliMp::kStation1 )
+  if ( station == AliMq::kStation1 ) {
     if ( plane == AliMp::kBendingPlane ) 
       names ="ABCDEFGHI";
     else
       names = "ABCDEFGHIJKLMN";
-  else if ( station == AliMp::kStation2 ) 
+  }    
+  else if ( station == AliMq::kStation2 ) {
     if ( plane == AliMp::kBendingPlane ) {
       names ="ABCDEFGHIJKLMNOPQRSTUVWXY";
       names2 ="abcdefghimnptuv";
@@ -29,6 +52,7 @@ void testReadMotifType(AliMp::StationType station = AliMp::kStation1,
       names2 ="abcdefgijklmnopqrstuwv";
       nv = 5;
     }  
+  }  
     
   for (Int_t i=0;i<names.Length();++i){
      r.BuildMotifType(names[i])->Print("G");
@@ -49,3 +73,23 @@ void testReadMotifType(AliMp::StationType station = AliMp::kStation1,
       r.BuildMotifType(mtName)->Print("G");
   }
 }
+
+void testReadMotifType()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testReadMotifType for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testReadMotifType(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

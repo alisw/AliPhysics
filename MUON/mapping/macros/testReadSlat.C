@@ -2,15 +2,32 @@
 // $MpId: testReadSlat.C,v 1.4 2005/09/19 19:02:53 ivana Exp $
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "Riostream.h"
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSlatMotifMap.h"
+#include "AliMpSt345Reader.h"
 #include "AliMpSlat.h"
 #include "AliMpSt345Reader.h"
-#include "TObjArray.h"
-#include "TObjString.h"
+
+#include <Riostream.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+
 #endif
 
 void testReadSlat()
 {
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
+  AliMpSt345Reader r(dataStreams, motifMap);
+
   ifstream in("slats.list");
   char line[80];
   TObjArray slatsToTest;
@@ -27,8 +44,8 @@ void testReadSlat()
     TString slat( ((TObjString*)slatsToTest[i])->String());
     
     cout << "Trying to read " << slat << endl;
-    AliMpSlat* b = AliMpSt345Reader::ReadSlat(slat.Data(),AliMp::kBendingPlane);
-    AliMpSlat* nb = AliMpSt345Reader::ReadSlat(slat.Data(),AliMp::kNonBendingPlane);
+    AliMpSlat* b = r.ReadSlat(slat.Data(),AliMp::kBendingPlane);
+    AliMpSlat* nb = r.ReadSlat(slat.Data(),AliMp::kNonBendingPlane);
     if ( !b ) cout << " Missing BENDING !" << endl;
     if ( !nb ) cout << " Missing NONBENDING !" << endl;
     if ( b && nb )

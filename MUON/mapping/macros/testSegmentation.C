@@ -1,6 +1,8 @@
 // $Id$
 // $MpId: testSegmentation.C,v 1.1 2005/09/19 19:02:53 ivana Exp $
 
+// Obsolete ??
+
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"

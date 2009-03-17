@@ -4,23 +4,37 @@
 // Test macro for making an output file, where all mapping elements
 // indices & positions are written.
 
-void testPrintLimits(AliMp::StationType station = AliMp::kStation1,
-                     AliMp::PlaneType plane = AliMp::kBendingPlane, 
-		     Bool_t rootInput = false,
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpRow.h"
+#include "AliMpVRowSegment.h"
+#include "AliMpMotifMap.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpVPainter.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+
+#endif
+
+void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
 		     ostream& out=cout)
 {
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
+  
+  new TCanvas();
 
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
   painter->Draw("ZSSMP");
@@ -81,3 +95,23 @@ void testPrintLimits(AliMp::StationType station = AliMp::kStation1,
     }
   }
 }
+
+void testPrintLimits()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testPrintLimits for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testPrintLimits(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

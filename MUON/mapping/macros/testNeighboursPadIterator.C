@@ -3,27 +3,38 @@
 //
 // Test macro for reading  sector, and iterate over it
 
-void testNeighboursPadIterator(AliMp::StationType station = AliMp::kStation1,
-                               AliMp::PlaneType plane = AliMp::kBendingPlane, 
-		               Bool_t rootInput = false,
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorSegmentation.h"
+#include "AliMpSectorReader.h"
+#include "AliMpPad.h"
+#include "AliMpArea.h"
+#include "AliMpNeighboursPadIterator.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TMarker.h>
+
+#endif
+
+void testNeighboursPadIterator(AliMq::Station12Type station, AliMp::PlaneType plane,
                                Int_t i=50, Int_t j=50)
 {
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
-
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segm(sector);  
   
-  TCanvas *can = new TCanvas("canv");
+  new TCanvas("canv");
 
   const Double_t xmax=75;
   const Double_t ymax=120;
@@ -45,14 +56,33 @@ void testNeighboursPadIterator(AliMp::StationType station = AliMp::kStation1,
   AliMpVPadIterator* iter2
     = segm.CreateIterator(AliMpArea(pad.Position(),2.*pad.Dimensions()*1.1));
 
-  Int_t i=0;
+  Int_t counter = 0;
   for( iter2->First(); !iter2->IsDone() && i<10; iter2->Next()) {
-    Int_t ix = iter2->CurrentItem().GetIndices().GetFirst();
-    Int_t iy = iter2->CurrentItem().GetIndices().GetSecond();
-    cout<<"Iterator number "<< i << " at "<< iter2->CurrentItem().GetIndices() <<endl;
-    i++;
+    //Int_t ix = iter2->CurrentItem().GetIndices().GetFirst();
+    //Int_t iy = iter2->CurrentItem().GetIndices().GetSecond();
+    cout<<"Iterator number "<< counter++ << " at "<< iter2->CurrentItem().GetIndices() <<endl;
   }
   
   delete iter2;
   delete sector;
 }
+
+void testNeighboursPadIterator()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testNeighboursPadIterator for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testNeighboursPadIterator(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

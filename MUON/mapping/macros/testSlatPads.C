@@ -18,23 +18,28 @@
 ///         the list of slats' name to be tested, e.g. 112233NR3, etc...
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSlatMotifMap.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpArea.h"
 #include "AliMpSt345Reader.h"
-#include "AliMpSlatMotifMap.h"
-#include "AliMpPlaneType.h"
-#include "TObjArray.h"
-#include "TObjString.h"
-#include "Riostream.h"
-#include "TString.h"
 #include "AliMpIntPair.h"
-#include "TStopwatch.h"
-#include <fstream>
-#else
-#include "Riostream.h"
+
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TList.h>
+#include <TString.h>
+#include <TStopwatch.h>
+#include <Riostream.h>
+
 #endif
 
 //______________________________________________________________________________
@@ -217,8 +222,12 @@ void testSlatPads(const char* slatlist)
   
   in.close();
   
-  AliMpSlatMotifMap mm;
-  AliMpSt345Reader reader(mm);
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
+  AliMpSt345Reader reader(dataStreams, motifMap);
   
   for ( Int_t i = 0; i < slatsToTest.GetEntriesFast(); ++i )
   {

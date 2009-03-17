@@ -3,10 +3,36 @@
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
-void testAllIndices(AliMp::StationType station = AliMp::kStation1,
-                    AliMp::PlaneType plane = AliMp::kBendingPlane) 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpSectorSegmentation.h" 
+#include "AliMpVPainter.h" 
+#include "AliMpRow.h"
+#include "AliMpVRowSegment.h"
+#include "AliMpMotifMap.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpMotifType.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TH2.h>
+
+#endif
+
+void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane) 
 {
-  AliMpSectorReader r(station, plane);
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSectorReader r(dataStreams, station, plane);
 
   AliMpSector *sector=r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
@@ -26,11 +52,11 @@ void testAllIndices(AliMp::StationType station = AliMp::kStation1,
   TH2C* histo  = new TH2C("histo","Existing pads", 
                           nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
 
-  Int_t nx2 = 950/2;
-  Int_t ny2 = 950/2;
-  if (station == AliMp::kStation2) {
-    nx2 = 1200/2;
-    ny2 = 1200/2;
+  Int_t nx2 = 95/2;
+  Int_t ny2 = 95/2;
+  if (station == AliMq::kStation2) {
+    nx2 = 120/2;
+    ny2 = 120/2;
   }
   TH2F* histo2 = new TH2F("histo2","Existing positions",
                           nx2, 0, nx2*2, ny2, 0, ny2*2);
@@ -39,22 +65,22 @@ void testAllIndices(AliMp::StationType station = AliMp::kStation1,
   TCanvas* c2 = new TCanvas("c2","Only existing pads are filled");
   TCanvas* c3 = new TCanvas("c3","Positions");
   
-  for (Int_t irow=0;irow<sector->GetNofRows();irow++){
+  for ( Int_t irow=0; irow<sector->GetNofRows(); irow++ ) {
     AliMpRow* row = sector->GetRow(irow);
     
-    for (Int_t  iseg=0;iseg<row->GetNofRowSegments();iseg++){
+    for ( Int_t  iseg=0; iseg<row->GetNofRowSegments(); iseg++ ) {
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
       
-      for (Int_t imot=0;imot<seg->GetNofMotifs();imot++){
+      for ( Int_t imot=0; imot<seg->GetNofMotifs(); imot++) {
         AliMpMotifPosition* motifPos 
          = sector->GetMotifMap()->FindMotifPosition(seg->GetMotifPositionId(imot));
          
-        for (Int_t gassNum=0;gassNum<64;gassNum++){
+        for ( Int_t gassNum=0; gassNum<64; gassNum++ ) {
           if (motifPos->GetMotif()->GetMotifType()->FindConnectionByGassiNum(gassNum)){
           
             AliMpPad pad = segmentation.PadByLocation(AliMpIntPair(motifPos->GetID(),gassNum));
             if (pad != AliMpPad::Invalid()) {
-              histo->Fill (pad.GetIndices().GetFirst(),
+              histo->Fill(pad.GetIndices().GetFirst(),
                           pad.GetIndices().GetSecond());
               histo2->Fill(pad.Position().X(),
                            pad.Position().Y());
@@ -69,3 +95,23 @@ void testAllIndices(AliMp::StationType station = AliMp::kStation1,
   c3->cd();
   histo2->Draw("box");
 }
+
+void testAllIndices()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testAllIndices for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testAllIndices(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

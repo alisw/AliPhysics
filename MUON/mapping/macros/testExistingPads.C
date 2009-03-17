@@ -26,13 +26,9 @@
 #include <TCanvas.h>
 #include <TH2.h>
 
-#include <iomanip>
-#include <fstream>
-
 #endif
 
-void testExistingPads(AliMq::Station12Type station = AliMq::kStation1,
-                      AliMp::PlaneType plane = AliMp::kBendingPlane)
+void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
 {
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
@@ -90,3 +86,22 @@ void testExistingPads(AliMq::Station12Type station = AliMq::kStation1,
   
   delete fast;
 }
+
+void testExistingPads()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testExistingPads for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testExistingPads(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  

@@ -5,23 +5,29 @@
 // all pads up, down, right, left from this pad
 // (up to the plane border).
 
-void testPadsUpEtc(AliMp::StationType station = AliMp::kStation1,
-                   AliMp::PlaneType  plane = AliMp::kBendingPlane,
-		   Bool_t rootInput = false)
-{
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
-    
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorSegmentation.h"
+#include "AliMpSectorReader.h"
+
+#include <Riostream.h>
+
+#endif
+
+void testPadsUpEtc(AliMq::Station12Type station, AliMp::PlaneType  plane)
+{
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
   
   AliMpIntPair indices(85, 101);
@@ -70,3 +76,23 @@ void testPadsUpEtc(AliMp::StationType station = AliMp::kStation1,
     }
   }  
 }
+
+void testPadsUpEtc()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testPadsUpEtc for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testPadsUpEtc(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

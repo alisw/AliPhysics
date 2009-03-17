@@ -3,24 +3,36 @@
 //
 // Test macro for drawing sector data.
 
-void testGraphics(AliMp::StationType station = AliMp::kStation1,
-                  AliMp::PlaneType plane = AliMp::kBendingPlane,
-		  Bool_t rootInput = false) 
-{
-  AliMpSector *sector = 0;
-  if (!rootInput) {
-    AliMpSectorReader r(station, plane);
-    sector=r.BuildSector();
-  }
-  else  {
-    TString filePath = AliMpFiles::SectorFilePath(station,plane);
-    filePath.ReplaceAll("zones.dat", "sector.root"); 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
-    TFile f(filePath.Data(), "READ");
-    sector = (AliMpSector*)f.Get("Sector");
-  }  
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpRow.h"
+#include "AliMpVRowSegment.h"
+#include "AliMpMotifMap.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpVPainter.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+
+#endif
+
+void testGraphics(AliMq::Station12Type station, AliMp::PlaneType plane) 
+{
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSectorReader r(dataStreams, station, plane);
+  AliMpSector* sector = r.BuildSector();
     
-  AliMpVPainter *painter=AliMpVPainter::CreatePainter(sector);
+  AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 
   TCanvas* canvas  = new TCanvas();
   TCanvas* canvas2 = new TCanvas();
@@ -30,7 +42,7 @@ void testGraphics(AliMp::StationType station = AliMp::kStation1,
     c[i]->Divide(2,2);
   }  
 
- //first, paint the whole sector
+  //first, paint the whole sector
   canvas->cd();
   painter->Draw("");
   //now paint each rows
@@ -86,12 +98,13 @@ void testGraphics(AliMp::StationType station = AliMp::kStation1,
   // each motifs, in each row segments, ... with its name
   c[3]->cd(4);
   painter->Draw("ZSSMT");
+
   // now, draw a specific motif, in a whole canvas, and
   // print all its pad names
   Int_t id = sector->GetRow(5)->GetRowSegment(0)->GetMotifPositionId(0);
   AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(id);
-  motifPainter = AliMpVPainter::CreatePainter(motifPos);
-  TCanvas* onepad = new TCanvas("onepad","One motif");
+  AliMpVPainter* motifPainter = AliMpVPainter::CreatePainter(motifPos);
+  new TCanvas("onepad","One motif");
   motifPainter->Draw("PT");
   
   //////////////////////////////  
@@ -99,3 +112,23 @@ void testGraphics(AliMp::StationType station = AliMp::kStation1,
   canvas2->cd();
   painter->Draw("RSMCI");
 }
+
+void testGraphics()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testGraphics for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testGraphics(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  

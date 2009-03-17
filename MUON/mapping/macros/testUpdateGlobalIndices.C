@@ -3,13 +3,31 @@
 //
 // Tests updating global indices of motif positions from file.
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMpStation12Type.h"
+#include "AliMpPlaneType.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSector.h"
+#include "AliMpSectorReader.h"
+#include "AliMpMotifMap.h"
+#include "AliMpVPainter.h"
+
+#include <Riostream.h>
+#include <TCanvas.h>
+
+#endif
+
 void testUpdateGlobalIndices()
 {
-  AliMpSectorReader reader(AliMp::kStation1, AliMp::kNonBendingPlane);  
-  //reader.SetVerboseLevel(1);
-  
-  // Read data 
-  AliMpSector* sector = reader.BuildSector();
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStreams(dataMap);
+
+  AliMpSectorReader r(dataStreams, AliMq::kStation1, AliMp::kNonBendingPlane);
+  AliMpSector* sector = r.BuildSector();
 
   sector->GetMotifMap()->UpdateGlobalIndices("motif_map.dat");  
   

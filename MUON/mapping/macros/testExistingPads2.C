@@ -26,15 +26,12 @@
 #include "AliMpVPadIterator.h"
 
 #include <Riostream.h>
-
-#include <iomanip>
-#include <fstream>
+#include <TString.h>
 
 #endif
 
-void testExistingPads2(Bool_t useFastSegmentation = kTRUE,
-                       AliMq::Station12Type station = AliMq::kStation1,
-                       AliMp::PlaneType plane = AliMp::kBendingPlane) 
+void testExistingPads2(AliMq::Station12Type station, AliMp::PlaneType plane,
+                       Bool_t useFastSegmentation = kTRUE) 
 {
   // Read data
   AliMpDataProcessor mp;
@@ -51,8 +48,14 @@ void testExistingPads2(Bool_t useFastSegmentation = kTRUE,
     segmentation = new AliMpSectorSegmentation(sector);
     
   // Output files 
-  ofstream out1("testExistingPads.ixiy.out", ios::out);
-  ofstream out2("testExistingPads.iter.out", ios::out);
+  TString outName = "testExistingPads.";
+  outName += AliMq::Station12TypeName(station);
+  outName += AliMp::PlaneTypeName(plane);
+  TString out1Name = outName + ".ixiy.out";
+  TString out2Name = outName + ".iter.out";
+
+  ofstream out1(out1Name.Data(), ios::out);
+  ofstream out2(out2Name.Data(), ios::out);
   
   // First loop over indices
   cout << "Iterating via indices ..." << endl;
@@ -90,3 +93,23 @@ void testExistingPads2(Bool_t useFastSegmentation = kTRUE,
   
   delete segmentation;
 }
+
+void testExistingPads2()
+{
+  AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
+  AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
+  
+  for ( Int_t is = 0; is < 2; is++ ) {
+    for ( Int_t ip = 0; ip < 2; ip++ ) {
+    
+      cout << "Running testExistingPads2 for " 
+           << AliMq::Station12TypeName(station[is]) << "  "
+           << AliMp::PlaneTypeName(plane[ip])  << " ... " << endl;
+       
+      testExistingPads2(station[is], plane[ip]);
+    
+      cout << "... end running " << endl << endl;
+    }  
+  }   
+}  
+  
