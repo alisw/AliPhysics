@@ -146,6 +146,7 @@ class AliCheb3D: public TNamed
   void         DefineGrid(Int_t* npoints);
   Int_t        ChebFit();                                                                 // fit all output dimensions
   Int_t        ChebFit(int dmOut);
+  void         SetPrecision(float prec)                      {fPrec = prec;}
 #endif
   //
   template <class T>

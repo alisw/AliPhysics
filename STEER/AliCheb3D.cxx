@@ -785,7 +785,7 @@ void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
       xyz[ id2 ] = fBMin[id2] + sclB[it]*( fBMax[id2]-fBMin[id2] );
       //
       int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, Prec); // npoints for Bx,By,Bz
-      for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib]+2;
+      for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib];//+2;
       //
     }
   }
@@ -794,7 +794,7 @@ void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
 
 int* AliCheb3D::GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec)
 {
-  // estimate needed number of chebyshev coefs for given function desctiption in DimVar dimension
+  // estimate needed number of chebyshev coefs for given function description in DimVar dimension
   // The values for two other dimensions must be set beforehand
   //
   static int curNC[3];
@@ -813,7 +813,7 @@ int* AliCheb3D::GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float pr
   for (int i=0;i<3;i++) retNC[i] = -1;
   for (int i=0;i<3;i++) fArgsTmp[i] = xyz[i];
   //
-  for (curNP=5; curNP<kMaxPoint; curNP+=5) { 
+  for (curNP=3; curNP<kMaxPoint; curNP+=3) { 
     maxNCPrev = maxNC;
     //
     for (int i=0;i<curNP;i++) { // get function values on Cheb. nodes

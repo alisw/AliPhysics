@@ -417,3 +417,11 @@ Float_t AliCheb3DCalc::ChebEval1Deriv2(Float_t  x, const Float_t * array, int nc
   //
   return b0 - x*b1 - ddcf0/2;
 }
+
+//__________________________________________________________________________________________
+Int_t AliCheb3DCalc::GetMaxColsAtRow() const
+{
+  int nmax3d = 0; 
+  for (int i=fNElemBound2D;i--;) if (fCoefBound2D0[i]>nmax3d) nmax3d = fCoefBound2D0[i];
+  return nmax3d;
+}

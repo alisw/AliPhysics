@@ -42,6 +42,10 @@ class AliCheb3DCalc: public TNamed
   //
   void       InitRows(int nr);
   void       InitCols(int nc);
+  Int_t      GetNCoefs()                                                const {return fNCoefs;}
+  Int_t      GetNCols()                                                 const {return fNCols;}
+  Int_t      GetNRows()                                                 const {return fNRows;}
+  Int_t      GetMaxColsAtRow()                                          const;
   Int_t*     GetNColsAtRow()                                            const {return fNColsAtRow;}
   Int_t*     GetColAtRowBg()                                            const {return fColAtRowBg;}
   void       InitElemBound2D(int ne);
