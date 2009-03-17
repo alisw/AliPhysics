@@ -15,7 +15,7 @@
  
 /* $Id$    */ 
 //----------------------------------------------------------------------------- 
-/// \class AliITSAlignMille2Module
+/// class AliITSAlignMille2Module
 /// Alignment class for the ALICE ITS detector 
 /// 
 /// This class is used by AliITSAlignMille to build custom supermodules    
@@ -612,8 +612,7 @@ Int_t AliITSAlignMille2Module::SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatr
   Int_t idx=GetIndexFromVolumeID(volid);
   if (idx<0) return -1;
   TGeoHMatrix mo;
-  if (!AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo));
-  (*m)=mo;
+  if (!AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo)) (*m)=mo;
 
 #ifdef CORHW_
   // SPD y-shift by 81 mu
