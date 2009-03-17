@@ -101,7 +101,7 @@ AliITSSurveyToAlign::AliITSSurveyToAlign(const AliITSSurveyToAlign &align) :
 }
 
 //__________________________________________________________________________
-AliITSSurveyToAlign & AliITSSurveyToAlign::operator =(const AliITSSurveyToAlign & align) {
+AliITSSurveyToAlign & AliITSSurveyToAlign::operator =(const AliITSSurveyToAlign& /* align */) {
   //
   // assignment operator - dummy
   //

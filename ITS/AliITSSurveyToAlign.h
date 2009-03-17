@@ -21,7 +21,7 @@ class AliITSSurveyToAlign : public AliSurveyToAlignObjs {
 
  public:
   AliITSSurveyToAlign(Int_t run = 0, Int_t repSDD = 845069, Int_t repVerSDD = 1,  Int_t repModSSD = 887877, Int_t repModVerSSD =2, Int_t repLaddSSD = 12345, Int_t repLaddVerSSD = 1);
-  AliITSSurveyToAlign(const AliITSSurveyToAlign &align); // copy constructor
+  AliITSSurveyToAlign(const AliITSSurveyToAlign& /* align */); // copy constructor
   AliITSSurveyToAlign &operator = (const AliITSSurveyToAlign &align); //assignment operator
   virtual ~AliITSSurveyToAlign();
 
