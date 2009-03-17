@@ -46,7 +46,8 @@ public:
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   void  SetClusterIndex(Int_t i, Int_t idx) {fIndex[i]=idx;}
 
-  Double_t GetC() const {return AliExternalTrackParam::GetC(GetBz());}
+  Double_t GetC()           const {return AliExternalTrackParam::GetC(GetBz());}
+  Double_t GetC(Double_t b) const {return AliExternalTrackParam::GetC(b);}
 
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Bool_t PropagateTo(Double_t xr, Double_t rho=0.9e-3, Double_t x0=28.94);
