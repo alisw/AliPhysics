@@ -4,6 +4,7 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
+${CMAKE_SOURCE_DIR}/ANALYSIS
 ${CMAKE_SOURCE_DIR}/EMCAL
 ${CMAKE_SOURCE_DIR}/HLT
 ${CMAKE_SOURCE_DIR}/HLT/BASE
@@ -12,6 +13,7 @@ ${CMAKE_SOURCE_DIR}/HLT/BASE/interface
 ${CMAKE_SOURCE_DIR}/HLT/BASE/util
 ${CMAKE_SOURCE_DIR}/HLT/EMCAL
 ${CMAKE_SOURCE_DIR}/HLT/ITS
+${CMAKE_SOURCE_DIR}/HLT/JET
 ${CMAKE_SOURCE_DIR}/HLT/MUON
 ${CMAKE_SOURCE_DIR}/HLT/MUON/OfflineInterface
 ${CMAKE_SOURCE_DIR}/HLT/MUON/OnlineAnalysis
@@ -33,6 +35,7 @@ ${CMAKE_SOURCE_DIR}/HLT/tracking-ca
 ${CMAKE_SOURCE_DIR}/HLT/trigger
 ${CMAKE_SOURCE_DIR}/HLT/global
 ${CMAKE_SOURCE_DIR}/ITS
+${CMAKE_SOURCE_DIR}/JETAN
 ${CMAKE_SOURCE_DIR}/MUON
 ${CMAKE_SOURCE_DIR}/MUON/mapping
 ${CMAKE_SOURCE_DIR}/PHOS
@@ -90,6 +93,8 @@ Include(CMake_libHLTsim.txt)
 Include(CMake_libAliHLTPHOS.txt)
 
 Include(CMake_libAliHLTEMCAL.txt)
+
+Include(CMake_libAliHLTJET.txt)
 
 Include(CMake_bindHLTdumpraw.txt)
 
