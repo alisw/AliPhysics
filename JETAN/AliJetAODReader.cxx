@@ -94,7 +94,7 @@ void AliJetAODReader::OpenInputFiles()
   
   int nMax = fChain->GetEntries(); 
 
-  printf("\n AliJetAODReader: Total number of events in chain= %d \n",nMax);
+  if(fDebug>1)printf("\n AliJetAODReader::OpenInputFiles Total number of events in chain= %d \n",nMax);
   
   // set number of events in header
   if (fReaderHeader->GetLastEvent() == -1)
@@ -113,7 +113,7 @@ void AliJetAODReader::ConnectTree(TTree* tree, TObject* /*data*/) {
      fChain = (TChain*)      tree;
      
      Int_t nMax = fChain->GetEntries(); 
-     printf("\n AliJetAODReader: Total number of events in chain= %5d \n", nMax);
+     if(fDebug>1)printf("\n AliJetAODReader::ConnectTree Total number of events in chain= %5d \n", nMax);
      // set number of events in header
      if (fReaderHeader->GetLastEvent() == -1)
 	 fReaderHeader->SetLastEvent(nMax);
@@ -138,7 +138,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
   
   // get number of tracks in event (for the loop)
   Int_t nt = fAOD->GetNTracks();
-  printf("AOD tracks: %5d \t", nt);
+  if(fDebug>2)printf(" AliJetAODReader::FillMomentumArray AOD tracks: %5d \t", nt);
   
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
@@ -173,7 +173,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
     aodTrack++;
     fRef->Add(track);
   }
-  printf("Used AOD tracks: %5d \n", aodTrack);
+  if(fDebug>2)printf("Used AOD tracks: %5d \n", aodTrack);
   // set the signal flags
   fSignalFlag.Set(aodTrack,sflag);
   fCutFlag.Set(aodTrack,cflag);
