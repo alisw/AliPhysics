@@ -81,6 +81,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSAlignMille.cxx \
 		AliITSAlignMille2.cxx \
 		AliITSAlignMilleModule.cxx \
+		AliITSAlignMilleData.cxx \
 		AliITSAlignMille2Module.cxx \
 		AliITSRealignTracks.cxx \
 		AliITSQAChecker.cxx \

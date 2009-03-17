@@ -81,6 +81,7 @@ set(SRCS
 		AliITSPreprocessorSSD.cxx 
 		AliITSAlignMille.cxx 
 		AliITSAlignMilleModule.cxx 
+		AliITSAlignMilleData.cxx 
 		AliITSAlignMille2.cxx 
 		AliITSAlignMille2Module.cxx 
 		AliITSQAChecker.cxx 

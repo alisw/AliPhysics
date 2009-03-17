@@ -14,7 +14,7 @@
 //#include <TObject.h> 
 #include <TNamed.h> 
 
-#define ITSMILLE_NSENSVOL    2198
+#define ITSMILLENSENSVOL    2198
 
 class AliAlignObjParams; 
 class TGeoHMatrix; 
@@ -36,9 +36,9 @@ public:
   UShort_t  GetVolumeID() const {return fVolumeID;}  
   Int_t     GetNSensitiveVolumes() const {return fNSensVol;} 
   TGeoHMatrix *GetMatrix() const {return fMatrix;} 
-  UShort_t *GetSensitiveVolumeVolumeID() {return fSensVolVolumeID;}
+  const UShort_t *GetSensitiveVolumeVolumeID() const {return fSensVolVolumeID;}
 
-  Int_t     Set(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv=0, UShort_t *volidsv=NULL); // initialize a super module
+  Int_t     Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv=0, UShort_t *volidsv=NULL); // initialize a super module
   
   // util
   static Int_t GetIndexFromVolumeID(UShort_t volid);
@@ -49,9 +49,13 @@ public:
   Bool_t    IsIn(UShort_t volid) const;
   TGeoHMatrix *GetSensitiveVolumeMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeOrigGlobalMatrix(UShort_t voluid);
-  TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, Double_t *deltalocal); 
+  TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, const Double_t * const deltalocal); 
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a); 
-  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, Double_t *deltalocal); 
+  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t * const deltalocal); 
+  // forse non serve...
+  AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, const Double_t * const deltalocal); 
+  // mo' proviamo questo
+  AliAlignObjParams *GetSensitiveVolumeTotalMisalignment(UShort_t voluid, const Double_t * const deltalocal); 
   void      Print(Option_t*) const; 
 
 protected:
@@ -64,8 +68,8 @@ private:
   Int_t          fIndex; ///
   UShort_t       fVolumeID; ///
   // il symname e' il nome del TNamed...
-  Int_t          fSensVolIndex[ITSMILLE_NSENSVOL]; ///
-  UShort_t       fSensVolVolumeID[ITSMILLE_NSENSVOL]; ///
+  Int_t          fSensVolIndex[ITSMILLENSENSVOL]; ///
+  UShort_t       fSensVolVolumeID[ITSMILLENSENSVOL]; ///
   TGeoHMatrix   *fMatrix; /// ideal TGeoHMatrix of the supermodule
   TGeoHMatrix   *fSensVolMatrix; ///
   TGeoHMatrix   *fSensVolModifMatrix; ///

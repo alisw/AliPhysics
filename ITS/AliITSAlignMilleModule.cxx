@@ -27,7 +27,7 @@
 //----------------------------------------------------------------------------- 
  
 #include <TGeoManager.h> 
-#include <TGeoMatrix.h> 
+//#include <TGeoMatrix.h> 
  
 #include "AliITSAlignMilleModule.h" 
 #include "AliITSgeomTGeo.h" 
@@ -112,7 +112,7 @@ AliITSAlignMilleModule::~AliITSAlignMilleModule() {
   delete fTempAlignObj;
 } 
 //-------------------------------------------------------------
-Int_t AliITSAlignMilleModule::Set(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv, UShort_t *volidsv) 
+Int_t AliITSAlignMilleModule::Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv, UShort_t *volidsv) 
 {
   // initialize a custom supermodule
   // index, volid, symname and matrix must be given
@@ -180,7 +180,7 @@ Bool_t AliITSAlignMilleModule::IsIn(UShort_t voluid) const
   return kFALSE;
 }
 //-------------------------------------------------------------
-TGeoHMatrix *AliITSAlignMilleModule::GetSensitiveVolumeModifiedMatrix(UShort_t voluid, Double_t *deltalocal)
+TGeoHMatrix *AliITSAlignMilleModule::GetSensitiveVolumeModifiedMatrix(UShort_t voluid, const Double_t * const deltalocal)
 {
   // modify the original TGeoHMatrix of the sensitive module 'voluid' according
   // with a delta transform. applied to the supermodule matrix
@@ -199,9 +199,8 @@ TGeoHMatrix *AliITSAlignMilleModule::GetSensitiveVolumeModifiedMatrix(UShort_t v
   ang[2]=deltalocal[5]; // phi   (Z)
 
   // reset align object (may not be needed...)
-  fTempAlignObj->SetTranslation(0,0,0);
-  fTempAlignObj->SetRotation(0,0,0);
-
+  fTempAlignObj->SetVolUID(0);
+  fTempAlignObj->SetSymName("");
   fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
   fTempAlignObj->SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
@@ -228,7 +227,7 @@ TGeoHMatrix *AliITSAlignMilleModule::GetSensitiveVolumeModifiedMatrix(UShort_t v
   return fSensVolModifMatrix;
 }
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort_t voluid, Double_t *deltalocal)
+AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t * const deltalocal)
 {
   // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
   // of the mother volume. The misalignment is returned as AliAlignObjParams object
@@ -246,9 +245,8 @@ AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort
   ang[2]=deltalocal[5]; // phi   (Z)
 
   // reset align object (may not be needed...)
-  fTempAlignObj->SetTranslation(0,0,0);
-  fTempAlignObj->SetRotation(0,0,0);
-
+  fTempAlignObj->SetVolUID(0);
+  fTempAlignObj->SetSymName("");
   fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
   fTempAlignObj->SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
@@ -300,10 +298,32 @@ AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort
   fSensVolModifMatrix->MultiplyLeft( &dg.Inverse() );
   //printf("\n5: modif=finale\n");fSensVolModifMatrix->Print();
 
+  // 6) mo' fSensVolModif dovrebbe essere la Dsv(loc) t.c. G'sv = Gsv*Dsv(loc)
+  // per trasformarla in Dsv(loc rispetto al Gsv0, non modificato) dovrebbe essere:
+  // Dsv(loc) -> Dpre * Dsv(loc) * Dpre-1
+  //TGeoHMatrix dpre; // dpre = Gsv0-1*Gsv
+  //if (SensVolOrigGlobalMatrix(voluid, &dg)) return NULL;
+  //if (SensVolMatrix(voluid, &dpre)) return NULL;
+  //dpre.MultiplyLeft( &dg.Inverse() );
+  //fSensVolModifMatrix->Multiply( &dpre.Inverse() );
+  //fSensVolModifMatrix->MultiplyLeft( &dpre );
+  // direi che NON FUNZIONA!!!!
+
   // reset align object (may not be needed...)
+  fTempAlignObj->SetVolUID(0);
+  fTempAlignObj->SetSymName("");
   fTempAlignObj->SetTranslation(0,0,0);
   fTempAlignObj->SetRotation(0,0,0);
 
+  // correction for SPD y-shift
+  if (voluid>=2048 && voluid<4256) {
+    TGeoHMatrix deltay;
+    double dy[3]={0.,0.0081,0.};
+    deltay.SetTranslation(dy);
+    fSensVolModifMatrix->MultiplyLeft( &deltay );
+    fSensVolModifMatrix->Multiply( &deltay.Inverse() );
+  }
+  
   if (!fTempAlignObj->SetMatrix(*fSensVolModifMatrix)) return NULL;
   fTempAlignObj->SetVolUID(voluid);
   fTempAlignObj->SetSymName(AliGeomManager::SymName(voluid));
@@ -313,6 +333,232 @@ AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort
   return fTempAlignObj;
 }
 //-------------------------------------------------------------
+
+
+//-------------------------------------------------------------
+AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeTotalMisalignment(UShort_t voluid, const Double_t * const deltalocal)
+{
+  // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
+  // of the mother volume. The misalignment is returned as AliAlignObjParams object including
+  // the (evenctual) prealignment => no merging needed
+
+  if (!IsIn(voluid)) return NULL;
+  if (!gGeoManager) return NULL;
+  
+  // prepare the TGeoHMatrix
+  Double_t tr[3],ang[3];
+  tr[0]=deltalocal[0]; // in centimeter
+  tr[1]=deltalocal[1]; 
+  tr[2]=deltalocal[2];
+  ang[0]=deltalocal[3]; // psi   (X)  in deg
+  ang[1]=deltalocal[4]; // theta (Y)
+  ang[2]=deltalocal[5]; // phi   (Z)
+
+  // reset align object (may not be needed...)
+  fTempAlignObj->SetVolUID(0);
+  fTempAlignObj->SetSymName("");
+  fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
+  fTempAlignObj->SetTranslation(tr[0],tr[1],tr[2]);
+  AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
+
+  // Gsv = Gg * Gg-1 * Gsv   -> Lsv,g = Gg-1 * Gsv
+  // G'sv = Gg * Dg * Lsv,g === DGsv * Gsv 
+  //
+  // => Dsv = (G0sv-1 * Gg * Dg * Gg-1 * GMsv)  //
+  //
+
+  // prepare the Delta matrix Dg
+  TGeoHMatrix dg;
+  fTempAlignObj->GetMatrix(dg);
+  //dg.Print();
+
+  // 1) start setting fSensVolModif = Gsv
+  if (SensVolMatrix(voluid, fSensVolModifMatrix)) return NULL;
+  //printf("\n1: modif=orig del sensvol\n");fSensVolModifMatrix->Print();
+
+  // 2) set fSensVolModif = Gg-1 * Gsv
+  fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() );
+  //printf("\n2: modif=relative del sensvol\n");fSensVolModifMatrix->Print();
+ 
+  // 3) set fSensVolModif = Dg * Gg-1 * Gsv
+  fSensVolModifMatrix->MultiplyLeft( &dg );
+  //printf("\n3: modif= delta*relative\n");fSensVolModifMatrix->Print();
+  
+  // 4) set fSensVolModif = Gg * Dg * Gg-1 * Gsv
+  fSensVolModifMatrix->MultiplyLeft( fMatrix );
+  //printf("\n4: modif=quasi,manca il Gsv-1...\n");fSensVolModifMatrix->Print();
+
+  // 5) set fSensVolModif = G0sv-1 * Gg * Dg * Gg-1 * Gsv
+  // qui usa l'orig anziche' la prealigned...
+  if (SensVolOrigGlobalMatrix(voluid, &dg)) return NULL;
+  fSensVolModifMatrix->MultiplyLeft( &dg.Inverse() );
+  //printf("\n5: modif=finale\n");fSensVolModifMatrix->Print();
+
+  // reset align object (may not be needed...)
+  fTempAlignObj->SetVolUID(0);
+  fTempAlignObj->SetSymName("");
+  fTempAlignObj->SetTranslation(0,0,0);
+  fTempAlignObj->SetRotation(0,0,0);
+
+  // correction for SPD y-shift
+  if (voluid>=2048 && voluid<4256) {
+    TGeoHMatrix deltay;
+    double dy[3]={0.,0.0081,0.};
+    deltay.SetTranslation(dy);
+    fSensVolModifMatrix->MultiplyLeft( &deltay );
+    fSensVolModifMatrix->Multiply( &deltay.Inverse() );
+  }
+  if (!fTempAlignObj->SetMatrix(*fSensVolModifMatrix)) return NULL;
+  fTempAlignObj->SetVolUID(voluid);
+  fTempAlignObj->SetSymName(AliGeomManager::SymName(voluid));
+
+  
+  //fTempAlignObj->Print("");
+
+  return fTempAlignObj;
+}
+//-------------------------------------------------------------
+
+// //-------------------------------------------------------------
+// AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeTotalMisalignment(UShort_t voluid, Double_t *deltalocal)
+// {
+//   // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
+//   // of the mother volume. The misalignment is returned as AliAlignObjParams object including
+//   // the (evenctual) prealignment => no merging needed
+
+//   if (!IsIn(voluid)) return NULL;
+//   if (!gGeoManager) return NULL;
+  
+//   // prepare the TGeoHMatrix
+//   Double_t tr[3],ang[3];
+//   tr[0]=deltalocal[0]; // in centimeter
+//   tr[1]=deltalocal[1]; 
+//   tr[2]=deltalocal[2];
+//   ang[0]=deltalocal[3]; // psi   (X)  in deg
+//   ang[1]=deltalocal[4]; // theta (Y)
+//   ang[2]=deltalocal[5]; // phi   (Z)
+
+//   // reset align object (may not be needed...)
+//   fTempAlignObj->SetVolUID(0);
+//   fTempAlignObj->SetSymName("");
+//   fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
+//   fTempAlignObj->SetTranslation(tr[0],tr[1],tr[2]);
+//   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
+
+//   // Gsv = Gg * Gg-1 * Gsv   -> Lsv,g = Gg-1 * Gsv
+//   // G'sv = Gg * Dg * Lsv,g === DGsv * Gsv 
+//   //
+//   // => Dsv = (G0sv-1 * Gg * Dg * Gg-1 * GMsv)  //
+//   //
+
+//   // prepare the Delta matrix Dg
+//   TGeoHMatrix dg;
+//   fTempAlignObj->GetMatrix(dg);
+//   //dg.Print();
+
+//   // 1) start setting fSensVolModif = Gsv
+//   if (SensVolMatrix(voluid, fSensVolModifMatrix)) return NULL;
+//   //printf("\n1: modif=orig del sensvol\n");fSensVolModifMatrix->Print();
+
+//   // 2) set dg = Gg * Dg * Gg-1 
+//   dg.Multiply( &fMatrix->Inverse() );
+//   dg.MultiplyLeft( fMatrix );
+ 
+//   // 3) set dg = Gsv-1 * dg * Gsv locale nel sistema del SV preallineato
+//   dg.Multiply( fSensVolModifMatrix );
+//   dg.MultiplyLeft( &fSensVolModifMatrix->Inverse() );
+
+//   // calcola la deltaPre
+//   TGeoHMatrix hp;
+//   if (SensVolOrigGlobalMatrix(voluid, &hp)) return NULL;
+//   fSensVolModifMatrix->MultiplyLeft( &hp.Inverse() );
+
+//   // mo' fSensVolModifMatrix e' la deltapre ideale
+//   // col dg diventa la deltatot ideale
+//   fSensVolModifMatrix->Multiply( &dg );
+//   //fSensVolModifMatrix->MultiplyLeft( &dg );
+  
+//   // reset align object (may not be needed...)
+//   fTempAlignObj->SetVolUID(0);
+//   fTempAlignObj->SetSymName("");
+//   fTempAlignObj->SetTranslation(0,0,0);
+//   fTempAlignObj->SetRotation(0,0,0);
+
+//   // correction for SPD y-shift
+//   if (voluid>=2048 && voluid<4256) {
+//     TGeoHMatrix deltay;
+//     double dy[3]={0.,0.0081,0.};
+//     deltay.SetTranslation(dy);
+//     fSensVolModifMatrix->MultiplyLeft( &deltay );
+//     fSensVolModifMatrix->Multiply( &deltay.Inverse() );
+//   }
+//   if (!fTempAlignObj->SetMatrix(*fSensVolModifMatrix)) return NULL;
+//   fTempAlignObj->SetVolUID(voluid);
+//   fTempAlignObj->SetSymName(AliGeomManager::SymName(voluid));
+
+  
+//   //fTempAlignObj->Print("");
+
+//   return fTempAlignObj;
+// }
+// //-------------------------------------------------------------
+
+
+//-------------------------------------------------------------
+AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, const Double_t * const deltalocal)
+{
+  // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
+  // of the mother volume. The misalignment is returned as AliAlignObjParams object
+
+  if (!IsIn(voluid)) return NULL;
+  if (!gGeoManager) return NULL;
+  
+  // prepare the TGeoHMatrix
+  Double_t tr[3],ang[3];
+  tr[0]=deltalocal[0]; // in centimeter
+  tr[1]=deltalocal[1]; 
+  tr[2]=deltalocal[2];
+  ang[0]=deltalocal[3]; // psi   (X)  in deg
+  ang[1]=deltalocal[4]; // theta (Y)
+  ang[2]=deltalocal[5]; // phi   (Z)
+
+  // reset align object (may not be needed...)
+  fTempAlignObj->SetTranslation(0,0,0);
+  fTempAlignObj->SetRotation(0,0,0);
+
+  fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
+  fTempAlignObj->SetTranslation(tr[0],tr[1],tr[2]);
+  AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
+
+  // Gsv = Gg * Gg-1 * Gsv   -> Lsv,g = Gg-1 * Gsv
+  // G'sv = Gg * Dg * Lsv,g === DGsv * Gsv 
+  //
+  // => DGsv = (Gg * Dg * Gg-1)
+  //
+
+  // prepare the Delta matrix Dg
+  TGeoHMatrix dg;
+  fTempAlignObj->GetMatrix(dg);
+  //dg.Print();
+
+  dg.MultiplyLeft( fMatrix );
+  dg.Multiply( &fMatrix->Inverse() );
+
+  // reset align object (may not be needed...)
+  fTempAlignObj->SetTranslation(0,0,0);
+  fTempAlignObj->SetRotation(0,0,0);
+
+  fTempAlignObj->SetVolUID(voluid);
+  fTempAlignObj->SetSymName(AliGeomManager::SymName(voluid));
+
+  if (!fTempAlignObj->SetMatrix(dg)) return NULL;
+  
+  //fTempAlignObj->Print("");
+
+  return fTempAlignObj;
+}
+//-------------------------------------------------------------
+
 TGeoHMatrix *AliITSAlignMilleModule::GetSensitiveVolumeMatrix(UShort_t voluid)
 {
   // return TGeoHMatrix of the sens.vol. 'voluid' in the current geometry
@@ -350,7 +596,8 @@ Int_t AliITSAlignMilleModule::SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatri
   Int_t idx=GetIndexFromVolumeID(volid);
   if (idx<0) return -1;
   TGeoHMatrix mo;
-  if (!(AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo))) return -1;
+  if (!AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo)) return -1;
+
   (*m)=mo;
 
   // SPD y-shift by 81 mu

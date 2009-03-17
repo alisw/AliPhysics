@@ -14,8 +14,13 @@
 
 #include <TString.h>
 #include <TObject.h>
-#include <TArray.h>
 #include "AliTrackPointArray.h"
+
+// number of used objects
+#define ITSMILLENDETELEM    2198
+#define ITSMILLENPARCH         6
+#define ITSMILLENLOCAL         5
+#define ITSMILLENSTDEV         3       
 
 class AliMillepede;
 class AliAlignObjParams;
@@ -23,30 +28,7 @@ class TGeoManager;
 class TGeoHMatrix;
 class AliITSAlignMilleModule;
 class AliTrackFitterRieman;
-
-// number of used objects
-#define ITSMILLE_NDETELEM    2198
-#define ITSMILLE_NPARCH         6
-#define ITSMILLE_NLOCAL         5
-#define ITSMILLE_NSTDEV         3       
-
-
-struct MilleData {
-  /// structure to store data for 2 LocalEquations (X and Z)
-  Double_t measX;
-  Double_t sigmaX;
-  Int_t    idxlocX[ITSMILLE_NLOCAL];
-  Double_t derlocX[ITSMILLE_NLOCAL];
-  Int_t    idxgloX[ITSMILLE_NPARCH];  
-  Double_t dergloX[ITSMILLE_NPARCH];
-
-  Double_t measZ;
-  Double_t sigmaZ;
-  Int_t    idxlocZ[ITSMILLE_NLOCAL];
-  Double_t derlocZ[ITSMILLE_NLOCAL];
-  Int_t    idxgloZ[ITSMILLE_NPARCH];  
-  Double_t dergloZ[ITSMILLE_NPARCH];
-};
+class AliITSAlignMilleData;
 
 class AliITSAlignMille:public TObject
 {
@@ -86,8 +68,8 @@ public:
   Int_t     IsContained(UShort_t voluid) const;
   Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
-  Double_t* GetLocalIntersectionPoint() {return fPintLoc;}
-  Double_t* GetGlobalIntersectionPoint() {return fPintGlo;}
+  const Double_t* GetLocalIntersectionPoint() const {return fPintLoc;}
+  const Double_t* GetGlobalIntersectionPoint() const {return fPintGlo;}
   void      SetInitTrackParamsMeth(Int_t meth=1) {fInitTrackParamsMeth=meth;}
   AliTrackPointArray *SortTrack(AliTrackPointArray *atp);
   void      SetTemporaryExcludedModule(Int_t index) {fTempExcludedModule=index;}
@@ -104,38 +86,38 @@ public:
   void      GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls);
   void      PrintGlobalParameters();
   Double_t  GetParError(Int_t iPar);
-  Int_t     AddLocalEquation(MilleData &m);
-  void      SetLocalEquations(MilleData *m, Int_t neq);
+  Int_t     AddLocalEquation(AliITSAlignMilleData &m);
+  void      SetLocalEquations(AliITSAlignMilleData *m, Int_t neq);
   
   // fitting stuffs
-  AliTrackPointArray *GetCurrentTrack() {return fTrack;}
-  AliTrackPoint      *GetCurrentCluster() {return &fCluster;}
-  void      SetCurrentTrack(AliTrackPointArray *atp) {fTrack=atp;}
-  void      SetCurrentCluster(AliTrackPoint &atp) {fCluster=atp;}
+  AliTrackPointArray *GetCurrentTrack() const {return fTrack;}
+  const AliTrackPoint      *GetCurrentCluster() const {return &fCluster;}
+  void      SetCurrentTrack(AliTrackPointArray * const atp) {fTrack=atp;}
+  void      SetCurrentCluster(const AliTrackPoint &atp) {fCluster=atp;}
 
   // geometry stuffs
   Int_t     GetNModules() const {return fNModules;}
   Int_t     GetCurrentModuleIndex() const {return fCurrentModuleIndex;}
-  TGeoHMatrix *GetCurrentModuleHMatrix() {return fCurrentModuleHMatrix;}
-  Double_t *GetCurrentModuleTranslation() {return fCurrentModuleTranslation;}
+  TGeoHMatrix *GetCurrentModuleHMatrix() const {return fCurrentModuleHMatrix;}
+  const Double_t *GetCurrentModuleTranslation() const {return fCurrentModuleTranslation;}
   Int_t     GetCurrentModuleInternalIndex() const {return fCurrentModuleInternalIndex;}
-  Int_t    *GetModuleIndexArray() {return fModuleIndex;}
-  Int_t    *GetProcessedPoints() {return fProcessedPoints;}
+  const Int_t    *GetModuleIndexArray() const {return fModuleIndex;}
+  const Int_t    *GetProcessedPoints() const {return fProcessedPoints;}
   Int_t     GetTotBadLocEqPoints() const {return fTotBadLocEqPoints;}
   AliITSAlignMilleModule  *GetMilleModule(UShort_t voluid); // get pointer to the defined supermodule
-  AliITSAlignMilleModule  *GetCurrentModule();
-  UShort_t *GetModuleVolumeIDArray() {return fModuleVolumeID;}
+  AliITSAlignMilleModule  *GetCurrentModule() const;
+  const UShort_t *GetModuleVolumeIDArray() const {return fModuleVolumeID;}
 
   // debug stuffs
-  Double_t  *GetMeasLoc() { return fMeasLoc;}
-  Double_t  *GetSigmaLoc() { return fSigmaLoc;}
+  const Double_t  *GetMeasLoc() const { return fMeasLoc;}
+  const Double_t  *GetSigmaLoc() const { return fSigmaLoc;}
   Double_t   GetBField() const {return fBField;}
-  Double_t  *GetLocalInitParam() {return fLocalInitParam;}
+  const Double_t  *GetLocalInitParam() const {return fLocalInitParam;}
   Double_t   GetLocalDX() const {return fDerivativeXLoc;}
   Double_t   GetLocalDZ() const {return fDerivativeZLoc;}
   Double_t   GetParSigTranslations() const {return fParSigTranslations;}
   Double_t   GetParSigRotations() const {return fParSigRotations;}
-  Int_t      GetPreAlignmentQualityFactor(Int_t index); // if not prealign. return -1
+  Int_t      GetPreAlignmentQualityFactor(Int_t index) const; // if not prealign. return -1
   void       SetBug(Int_t bug) {fBug=bug;} // 1:SSD inversion sens.18-19
 
  private:
@@ -169,9 +151,9 @@ public:
   AliTrackPointArray *fTrack;       ///< pointer to current track 
   AliTrackPoint fCluster;           ///< current cluster
   Double_t     *fGlobalDerivatives;   ///< Array of global derivatives
-  Double_t      fLocalDerivatives[ITSMILLE_NLOCAL]; ///< Array of local deriv.
-  Double_t      fLocalInitParam[ITSMILLE_NLOCAL];   ///< Array with inital values for local parameters for current track
-  Double_t      fModuleInitParam[ITSMILLE_NPARCH];  ///< Array with inital values for current module parameters (init geometry)
+  Double_t      fLocalDerivatives[ITSMILLENLOCAL]; ///< Array of local deriv.
+  Double_t      fLocalInitParam[ITSMILLENLOCAL];   ///< Array with inital values for local parameters for current track
+  Double_t      fModuleInitParam[ITSMILLENPARCH];  ///< Array with inital values for current module parameters (init geometry)
   Double_t      fPintLoc[3]; ///
   Double_t      fPintLoc0[3]; ///
   Double_t      fPintGlo[3]; ///
@@ -206,9 +188,9 @@ public:
   Int_t         fCurrentSensVolIndex;   /// Current point (sens. vol.) index
   Double_t      fCurrentModuleTranslation[3]; ///
   Int_t         fNModules;  /// number of defined modules from config file
-  Int_t         fModuleIndex[ITSMILLE_NDETELEM*2]; ///
-  UShort_t      fModuleVolumeID[ITSMILLE_NDETELEM*2];  ///
-  Bool_t        fFreeParam[ITSMILLE_NDETELEM*2][ITSMILLE_NPARCH];  ///
+  Int_t         fModuleIndex[ITSMILLENDETELEM*2]; ///
+  UShort_t      fModuleVolumeID[ITSMILLENDETELEM*2];  ///
+  Bool_t        fFreeParam[ITSMILLENDETELEM*2][ITSMILLENPARCH];  ///
   Bool_t        fUseLocalShifts; /// 
   Bool_t        fUseSuperModules; /// 
   Bool_t        fUsePreAlignment; /// 
@@ -218,14 +200,14 @@ public:
   Int_t         fNSuperModules; /// number of custom supermodules in SM file
   TGeoHMatrix  *fCurrentModuleHMatrix; /// SuperModule matrix
   Bool_t        fIsConfigured; ///
-  Int_t         fPreAlignQF[ITSMILLE_NDETELEM*2]; ///
-  Double_t      fSensVolSigmaXfactor[ITSMILLE_NDETELEM*2]; ///
-  Double_t      fSensVolSigmaZfactor[ITSMILLE_NDETELEM*2]; ///
+  Int_t         fPreAlignQF[ITSMILLENDETELEM*2]; ///
+  Double_t      fSensVolSigmaXfactor[ITSMILLENDETELEM*2]; ///
+  Double_t      fSensVolSigmaZfactor[ITSMILLENDETELEM*2]; ///
   Int_t         fBug; /// tag for temporary bug correction
 
-  AliITSAlignMilleModule *fMilleModule[ITSMILLE_NDETELEM*2]; /// array of super modules to be aligned
+  AliITSAlignMilleModule *fMilleModule[ITSMILLENDETELEM*2]; /// array of super modules to be aligned
 
-  AliITSAlignMilleModule *fSuperModule[ITSMILLE_NDETELEM*2]; /// array of super modules defined in supermodule file
+  AliITSAlignMilleModule *fSuperModule[ITSMILLENDETELEM*2]; /// array of super modules defined in supermodule file
 
   AliITSAlignMille(const AliITSAlignMille& rhs);
   AliITSAlignMille& operator=(const AliITSAlignMille& rhs);
