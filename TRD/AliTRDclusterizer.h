@@ -66,37 +66,37 @@ class AliTRDclusterizer : public TNamed
   virtual         ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
 
-  virtual void     Copy(TObject &c) const;
+  void     Copy(TObject &c) const;
 
-  virtual Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
-  virtual Bool_t   OpenInput(Int_t nEvent = 0);
-  virtual Bool_t   OpenOutput();
-  virtual Bool_t   OpenOutput(TTree *clusterTree);
+  Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
+  Bool_t   OpenInput(Int_t nEvent = 0);
+  Bool_t   OpenOutput();
+  Bool_t   OpenOutput(TTree *clusterTree);
 
-  virtual Bool_t   ReadDigits();
-  virtual Bool_t   ReadDigits(AliRawReader *rawReader);
-  virtual Bool_t   ReadDigits(TTree *digitsTree);
+  Bool_t   ReadDigits();
+  Bool_t   ReadDigits(AliRawReader *rawReader);
+  Bool_t   ReadDigits(TTree *digitsTree);
 
-  virtual Bool_t   WriteClusters(Int_t det);
+  Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
-          Bool_t   WriteTracklets(Int_t det);
+  Bool_t   WriteTracklets(Int_t det);
 
-  virtual Bool_t   Raw2Clusters(AliRawReader *rawReader);
-  virtual Bool_t   Raw2ClustersChamber(AliRawReader *rawReader);
+  Bool_t   Raw2Clusters(AliRawReader *rawReader);
+  Bool_t   Raw2ClustersChamber(AliRawReader *rawReader);
 
-  virtual Bool_t   MakeClusters();
-  virtual Bool_t   MakeClusters(Int_t det);
+  Bool_t   MakeClusters();
+  Bool_t   MakeClusters(Int_t det);
 
-  virtual Bool_t   AddLabels(const Int_t idet, const Int_t firstClusterROC, const Int_t nClusterROC);
-  virtual Bool_t   SetAddLabels(const Bool_t kset) { SetBit(kAddLabels, kset); return TestBit(kAddLabels);  } // should we assign labels to clusters
-  virtual void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
+  Bool_t   AddLabels();
+  Bool_t   SetAddLabels(const Bool_t kset) { SetBit(kAddLabels, kset); return TestBit(kAddLabels);  } // should we assign labels to clusters
+  void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
   Int_t            GetAddedClusters() {return fNoOfClusters;}
 
-  virtual Bool_t   IsClustersOwner() const {return TestBit(kOwner);}
-  void             SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
+  Bool_t   IsClustersOwner() const {return TestBit(kOwner);}
+  virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
 
  protected:
 
@@ -104,10 +104,10 @@ class AliTRDclusterizer : public TNamed
 			     ,const Int_t nTimeTotal, const Int_t nexp);
   void             TailCancelation();
 
-  virtual Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
-          Double_t GetCOG(Double_t signal[5]) const; 
+  Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
+  Double_t GetCOG(Double_t signal[5]) const; 
   void             FillLUT();
-          Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
+  Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   
   void             SetPadStatus(const UChar_t status, UChar_t &encoding);
   UChar_t          GetPadStatus(UChar_t encoding) const;

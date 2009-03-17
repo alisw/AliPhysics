@@ -855,7 +855,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   }
 
   if (TestBit(kAddLabels)) {
-    AddLabels(fDet,firstClusterROC,fClusterROC);
+    AddLabels();
   }
 
   return kTRUE;
@@ -909,7 +909,7 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
       return kTRUE;
     }
     else if (status[1] && (!(status[0] || status[2])) && ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh))) {
-      Signals[1]=fMaxThresh;
+      Signals[1]=TMath::Nint(fMaxThresh);
       SetPadStatus(status[1], padStatus);
       return kTRUE;
     }
@@ -1110,7 +1110,7 @@ void AliTRDclusterizer::AddClusterToArray(AliTRDcluster *cluster)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizer::AddLabels(const Int_t idet, const Int_t firstClusterROC, const Int_t nClusterROC)
+Bool_t AliTRDclusterizer::AddLabels()
 {
   //
   // Add the track indices to the found clusters
@@ -1128,7 +1128,7 @@ Bool_t AliTRDclusterizer::AddLabels(const Int_t idet, const Int_t firstClusterRO
   Int_t iPad = 0;
 
   // Temporary array to collect the track indices
-  Int_t *idxTracks = new Int_t[kNtrack*nClusterROC];
+  Int_t *idxTracks = new Int_t[kNtrack*fClusterROC];
 
   // Loop through the dictionary arrays one-by-one
   // to keep memory consumption low
@@ -1136,10 +1136,10 @@ Bool_t AliTRDclusterizer::AddLabels(const Int_t idet, const Int_t firstClusterRO
   for (Int_t iDict = 0; iDict < kNdict; iDict++) {
 
     // tracksIn should be expanded beforehand!
-    tracksIn = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(idet,iDict);
+    tracksIn = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(fDet,iDict);
 
     // Loop though the clusters found in this ROC
-    for (iClusterROC = 0; iClusterROC < nClusterROC; iClusterROC++) {
+    for (iClusterROC = 0; iClusterROC < fClusterROC; iClusterROC++) {
 
       AliTRDcluster *cluster = (AliTRDcluster *)
                                RecPoints()->UncheckedAt(firstClusterROC+iClusterROC);
@@ -1159,7 +1159,7 @@ Bool_t AliTRDclusterizer::AddLabels(const Int_t idet, const Int_t firstClusterRO
 
   // Copy the track indices into the cluster
   // Loop though the clusters found in this ROC
-  for (iClusterROC = 0; iClusterROC < nClusterROC; iClusterROC++) {
+  for (iClusterROC = 0; iClusterROC < fClusterROC; iClusterROC++) {
 
     AliTRDcluster *cluster = (AliTRDcluster *)
       RecPoints()->UncheckedAt(firstClusterROC+iClusterROC);
