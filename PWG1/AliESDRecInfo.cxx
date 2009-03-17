@@ -130,11 +130,13 @@ AliESDRecInfo::~AliESDRecInfo()
   //  destructor
   //
   if (fESDtrack) { delete fESDtrack; fESDtrack=0;}
-  if (fTrackF)   { delete fTrackF;   fTrackF=0;}
+  if (fTrackF)   {   fTrackF=0;}
   if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
   if (fITStrack) { delete fITStrack; fITStrack=0;}
   if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
-  if (fTracks) { delete  fTracks;  fTracks=0;}
+  if (fTracks) { 
+    delete  fTracks;  fTracks=0;
+  }
 }
 
 
@@ -148,7 +150,7 @@ void AliESDRecInfo::Reset()
   fFake     =0;
   fReconstructed=0;
   if (fESDtrack) { delete fESDtrack; fESDtrack=0;}
-  if (fTrackF)   { delete fTrackF;   fTrackF=0;}
+  if (fTrackF)   { fTrackF=0;}
   if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
   if (fITStrack) { delete fITStrack; fITStrack=0;}
   if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
@@ -159,27 +161,30 @@ void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
   //
   // 
   //
+
   if (fESDtrack) delete fESDtrack;
   fESDtrack = (AliESDtrack*)track->Clone();
+  //AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(fESDtrack->GetID());
+
+
   if (track->GetFriendTrack()){
-    if (fTrackF) delete fTrackF;
-    fTrackF = (AliESDfriendTrack*)track->GetFriendTrack()->Clone();
+    fTrackF = (AliESDfriendTrack*)track->GetFriendTrack();
     Int_t icalib=0;
     TObject *cobject=0;
     //
     while (fTrackF->GetCalibObject(icalib)){
       cobject=fTrackF->GetCalibObject(icalib);
       if (dynamic_cast<AliTPCseed*>(cobject)){
-				if (fTPCtrack) delete fTPCtrack;
-				fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
+	if (fTPCtrack) delete fTPCtrack;
+	fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
       } else if (dynamic_cast<AliTRDtrackV1*>(cobject)){
-				if (fTRDtrack) delete fTRDtrack;
-				fTRDtrack = (AliTRDtrackV1*)(dynamic_cast<AliTRDtrackV1*>(cobject))->Clone();
+	if (fTRDtrack) delete fTRDtrack;
+	fTRDtrack = (AliTRDtrackV1*)(dynamic_cast<AliTRDtrackV1*>(cobject))->Clone();
       }
       icalib++;
     }
   }
-  
+  if (!fTPCtrack) fTPCtrack = new AliTPCseed; // add dummy track
 }
 
 
