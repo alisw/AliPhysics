@@ -154,14 +154,16 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   // For global radial position inside the beam pipe, alpha is the
   // azimuthal angle of the momentum projected on (x,y).
   //
-  // For global radial position outside the beam pipe, alpha is the
+  // For global radial position outside the ITS, alpha is the
   // azimuthal angle of the centre of the TPC sector in which the point
   // xyz lies
   //
   Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
-  if (radPos2 < 3.*3.) { // inside beam pipe
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS
+     
      fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
-  } else { // outside beam pipe
+  } else { // outside the ITS
      Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
      fAlpha = 
      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
