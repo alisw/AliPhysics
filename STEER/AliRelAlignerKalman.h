@@ -32,6 +32,7 @@ public:
 
     //User methods:
     Bool_t AddCosmicEvent( const AliESDEvent* pEvent );
+    Bool_t AddTrackParams( const AliExternalTrackParam* p1, const AliExternalTrackParam* p2 );
     
     void Print(Option_t* option="") const;
 

@@ -318,6 +318,15 @@ Bool_t AliRelAlignerKalman::AddESDtrack( const AliESDtrack* pTrack )
 }
 
 //______________________________________________________________________________
+Bool_t AliRelAlignerKalman::AddTrackParams( const AliExternalTrackParam* p1, const AliExternalTrackParam* p2 )
+{
+  //Update the estimate using new matching tracklets
+
+  if (!SetTrackParams(p1, p2)) return kFALSE;
+  return Update();
+}
+
+//______________________________________________________________________________
 Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
 {
   //Add an cosmic with separately tracked ITS and TPC parts, do trackmatching
@@ -690,6 +699,8 @@ Bool_t AliRelAlignerKalman::IsOutlier( const TVectorD& update, const TMatrixDSym
 //______________________________________________________________________________
 Bool_t AliRelAlignerKalman::IsPositiveDefinite( const TMatrixD& mat ) const
 {
+  //check for positive definiteness
+
   for (Int_t i=0; i<mat.GetNcols(); i++)
   {
     if (mat(i,i)<=0.) return kFALSE;
