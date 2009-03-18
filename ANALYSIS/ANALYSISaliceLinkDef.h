@@ -19,6 +19,7 @@
 
 #pragma link C++ class AliEventPoolSparse+;
 
+#pragma link C++ class AliMultiEventInputHandler+;
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
