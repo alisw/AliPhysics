@@ -147,6 +147,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer, Bool_t scalerEvent)
 
     // skip empty regaional board (not connected or with error reading)
     if (buffer[index] == fRegHeader->GetErrorWord()) {
+      fDDLTrigger->AddRegHeader(*fRegHeader);
       if (scalerEvent)
         index += kRegEmptyScalerSize;
       else 
