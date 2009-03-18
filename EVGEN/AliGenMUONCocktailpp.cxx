@@ -59,7 +59,15 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fMuonThetaMaxCut(180.),
      fMuonOriginCut(-999.),
      fNSucceded(0),
-     fNGenerated(0)
+     fNGenerated(0),
+     fSigmaJPsi(49.44e-6),
+     fSigmaPsiP(7.67e-6),
+     fSigmaUpsilon(0.989e-6),
+     fSigmaUpsilonP(0.502e-6),
+     fSigmaUpsilonPP(0.228e-6),
+     fSigmaCCbar(11.2e-3),
+     fSigmaBBbar(0.51e-3),
+     fSigmaSilent(kFALSE)
 {
 // Constructor
 }
@@ -100,57 +108,14 @@ void AliGenMUONCocktailpp::CreateCocktail()
 // Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV and 
 // corrected from feed down of higher resonances 
 
-    Double_t sigmajpsi = 49.44e-6;  
-    Double_t sigmapsiP = 7.67e-6;  
-    Double_t sigmaupsilon = 0.989e-6;  
-    Double_t sigmaupsilonP = 0.502e-6;  
-    Double_t sigmaupsilonPP = 0.228e-6;
-    Double_t sigmaccbar = 11.2e-3;
-    Double_t sigmabbbar = 0.51e-3;
+    Double_t sigmajpsi      = fSigmaJPsi;  
+    Double_t sigmapsiP      = fSigmaPsiP;  
+    Double_t sigmaupsilon   = fSigmaUpsilon;  
+    Double_t sigmaupsilonP  = fSigmaUpsilonP;  
+    Double_t sigmaupsilonPP = fSigmaUpsilonPP;
+    Double_t sigmaccbar     = fSigmaCCbar;
+    Double_t sigmabbbar     = fSigmaBBbar;
 
-    Bool_t showSIGJPSI = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGJPSI")) {
-      sigmajpsi = atof(gSystem->Getenv("COCKTAIL_SIGJPSI"));
-      AliInfo("Cross-section for JPsi set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGJPSI = kFALSE;
-    }
-    Bool_t showSIGPSIP = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGPSIP")) {
-      sigmapsiP = atof(gSystem->Getenv("COCKTAIL_SIGPSIP"));
-      AliInfo("Cross-section for Psi-prime set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGPSIP = kFALSE;
-    }
-    Bool_t showSIGUPSI = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGUPSI")) {
-      sigmaupsilon = atof(gSystem->Getenv("COCKTAIL_SIGUPSI"));
-      AliInfo("Cross-section for Upsilon 1S set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGUPSI = kFALSE;
-    }
-    Bool_t showSIGUPSIP = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGUPSIP")) {
-      sigmaupsilonP = atof(gSystem->Getenv("COCKTAIL_SIGUPSIP"));
-      AliInfo("Cross-section for Upsilon 2S set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGUPSIP = kFALSE;
-    }
-    Bool_t showSIGUPSIPP = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGUPSIPP")) {
-      sigmaupsilonPP = atof(gSystem->Getenv("COCKTAIL_SIGUPSIPP"));
-      AliInfo("Cross-section for Upsilon 3S set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGUPSIPP = kFALSE;
-    }
-    Bool_t showSIGCCBAR = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGCCBAR")) {
-      sigmaccbar = atof(gSystem->Getenv("COCKTAIL_SIGCCBAR"));
-      AliInfo("Cross-section for c-cbar set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGCCBAR = kFALSE;
-    }
-    Bool_t showSIGBBBAR = kTRUE;
-    if (gSystem->Getenv("COCKTAIL_SIGBBBAR")) {
-      sigmabbbar = atof(gSystem->Getenv("COCKTAIL_SIGBBBAR"));
-      AliInfo("Cross-section for b-bbar set from external value");
-      if (!gSystem->Getenv("COCKTAIL_SIGSHOW")) showSIGBBBAR = kFALSE;
-    }
-   
     AliInfo(Form("the parametrised resonances uses the decay mode %d",fDecayModeResonance));
 
 // Generation using CDF scaled distribution for pp@14TeV (from D. Stocco)
@@ -166,7 +131,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
 
     genjpsi->Init();  // generation in 4pi
     ratiojpsi = sigmajpsi / sigmaReaction * genjpsi->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax); // get weight
-    if (showSIGJPSI) {
+    if (!fSigmaSilent) {
       AliInfo(Form("jpsi prod. cross-section in pp(14 TeV) %5.3g b",sigmajpsi));
       AliInfo(Form("jpsi prod. probability per collision in acceptance %5.3g",ratiojpsi));
     }
@@ -188,7 +153,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
 
     genpsiP->Init();  // generation in 4pi
     ratiopsiP = sigmapsiP / sigmaReaction * genpsiP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (showSIGPSIP) {
+    if (!fSigmaSilent) {
       AliInfo(Form("psiP prod. cross-section in pp(14 TeV) %5.3g b",sigmapsiP));
       AliInfo(Form("psiP prod. probability per collision in acceptance %5.3g",ratiopsiP));
     }
@@ -209,7 +174,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     if (!gMC) genupsilon->SetDecayer(fDecayer);
     genupsilon->Init();  // generation in 4pi
     ratioupsilon = sigmaupsilon / sigmaReaction * genupsilon->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (showSIGUPSI) {
+    if (!fSigmaSilent) {
       AliInfo(Form("Upsilon 1S prod. cross-section in pp(14 TeV) %5.3g b",sigmaupsilon));
       AliInfo(Form("Upsilon 1S prod. probability per collision in acceptance %5.3g",ratioupsilon));
     }
@@ -230,7 +195,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     if (!gMC) genupsilonP->SetDecayer(fDecayer);  
     genupsilonP->Init();  // generation in 4pi
     ratioupsilonP = sigmaupsilonP / sigmaReaction * genupsilonP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (showSIGUPSIP) {
+    if (!fSigmaSilent) {
       AliInfo(Form("Upsilon 2S prod. cross-section in pp(14 TeV) %5.3g b",sigmaupsilonP));
       AliInfo(Form("Upsilon 2S prod. probability per collision in acceptance %5.3g",ratioupsilonP));
     }
@@ -252,7 +217,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     if (!gMC) genupsilonPP->SetDecayer(fDecayer);  
     genupsilonPP->Init();  // generation in 4pi
     ratioupsilonPP = sigmaupsilonPP / sigmaReaction * genupsilonPP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (showSIGUPSIPP) {
+    if (!fSigmaSilent) {
       AliInfo(Form("Upsilon 3S prod. cross-section in pp(14 TeV) %5.3g b",sigmaupsilonPP));
       AliInfo(Form("Upsilon 3S prod. probability per collision in acceptance %5.3g",ratioupsilonPP));
     }
@@ -272,7 +237,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     ratioccbar = sigmaccbar/sigmaReaction;
     if (!gMC) gencharm->SetDecayer(fDecayer);  
     gencharm->Init();
-    if (showSIGCCBAR) {
+    if (!fSigmaSilent) {
       AliInfo(Form("c-cbar prod. cross-section in pp(14 TeV) %5.3g b",sigmaccbar));
       AliInfo(Form("c-cbar prod. probability per collision in acceptance %5.3g",ratioccbar));
     }
@@ -287,7 +252,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     ratiobbbar = sigmabbbar/sigmaReaction;
     if (!gMC) genbeauty->SetDecayer(fDecayer);  
     genbeauty->Init();
-    if (showSIGBBBAR) {
+    if (!fSigmaSilent) {
       AliInfo(Form("b-bbar prod. cross-section in pp(14 TeV) %5.3g b",sigmabbbar));
       AliInfo(Form("b-bbar prod. probability per collision in acceptance %5.3g",ratiobbbar));
     }

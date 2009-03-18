@@ -38,6 +38,17 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     void    SetDecayer(AliDecayer* decayer){fDecayer = decayer;}
     void    SetDecayModeResonance(Decay_t decay){ fDecayModeResonance = decay;}
     void    SetDecayModePythia(Decay_t decay){ fDecayModePythia = decay;}
+
+    void    SetSigmaJPsi(Double_t sig)      { fSigmaJPsi = sig; }
+    void    SetSigmaPsiP(Double_t sig)      { fSigmaPsiP = sig; }
+    void    SetSigmaUpsilon(Double_t sig)   { fSigmaUpsilon = sig; }
+    void    SetSigmaUpsilonP(Double_t sig)  { fSigmaUpsilonP = sig; }
+    void    SetSigmaUpsilonPP(Double_t sig) { fSigmaUpsilonPP = sig; }
+    void    SetSigmaCCbar(Double_t sig)     { fSigmaCCbar = sig; }
+    void    SetSigmaBBbar(Double_t sig)     { fSigmaBBbar = sig; }
+
+    void    SetSigmaSilent() { fSigmaSilent = kTRUE; }
+
  protected:
 
     //
@@ -55,9 +66,16 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
     Int_t   fNSucceded;// Number of Succes in the (di)-muon generation in the acceptance
     Int_t   fNGenerated;// Number of generated cocktails
-    
+    Double_t fSigmaJPsi;      // cross-section JPsi resonance
+    Double_t fSigmaPsiP;      // cross-section Psi-prime resonance
+    Double_t fSigmaUpsilon;   // cross-section Upsilon resonance
+    Double_t fSigmaUpsilonP;  // cross-section Upsilon-prime resonance
+    Double_t fSigmaUpsilonPP; // cross-section Upsilon-double-prime resonance
+    Double_t fSigmaCCbar;     // cross-section correlated charm
+    Double_t fSigmaBBbar;     // cross-section correlated beauty
+    Bool_t   fSigmaSilent;    // hide values of cross-sections in output
 
-    ClassDef(AliGenMUONCocktailpp,2)  //  cocktail for physics in the Alice
+    ClassDef(AliGenMUONCocktailpp,3)  //  cocktail for physics in the Alice
 };
 
 #endif
