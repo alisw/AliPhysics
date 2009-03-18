@@ -23,6 +23,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testSectorFind(AliMq::Station12Type station, AliMp::PlaneType plane) 
 {
   AliMpDataProcessor mp;
@@ -33,7 +44,7 @@ void testSectorFind(AliMq::Station12Type station, AliMp::PlaneType plane)
   AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
   
-  new TCanvas();
+  CreateTCanvas("", "", station, plane);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
   painter->Draw("ZSSMP");
 
@@ -45,7 +56,7 @@ void testSectorFind(AliMq::Station12Type station, AliMp::PlaneType plane)
   }
 }
 
-void testSectorFind()
+void testSt12SectorFind()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

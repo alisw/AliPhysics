@@ -24,6 +24,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
 		     ostream& out=cout)
 {
@@ -34,6 +45,7 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
   AliMpSectorReader r(dataStreams, station, plane);
   AliMpSector* sector = r.BuildSector();
   
+  //new TCanvas(" ", " ", station, plane);  // BREAKS
   new TCanvas();
 
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
@@ -96,7 +108,7 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
   }
 }
 
-void testPrintLimits()
+void testSt12PrintLimits()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

@@ -23,6 +23,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
   TString names;
@@ -54,7 +65,7 @@ void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane
   Int_t i;
   for (i=0;i<1+(nofMotifs-1)/4;++i){
     TString cname("canv"); cname += i;
-    TCanvas* canv = new TCanvas(cname.Data(),"Iterator viewing...");
+    TCanvas* canv = CreateTCanvas(cname.Data(),"Iterator viewing...", station, plane);
     canv->Divide(2,2); 
     cvs.push_back(canv);
   }
@@ -115,7 +126,7 @@ void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane
     cvs[i/4]->Update();
   }
 }
-void testMotifTypeIterators()
+void testSt12MotifTypeIterators()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

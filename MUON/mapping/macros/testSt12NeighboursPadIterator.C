@@ -23,6 +23,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testNeighboursPadIterator(AliMq::Station12Type station, AliMp::PlaneType plane,
                                Int_t i=50, Int_t j=50)
 {
@@ -34,7 +45,7 @@ void testNeighboursPadIterator(AliMq::Station12Type station, AliMp::PlaneType pl
   AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segm(sector);  
   
-  new TCanvas("canv");
+  CreateTCanvas("canv ", "", station, plane);
 
   const Double_t xmax=75;
   const Double_t ymax=120;
@@ -67,7 +78,7 @@ void testNeighboursPadIterator(AliMq::Station12Type station, AliMp::PlaneType pl
   delete sector;
 }
 
-void testNeighboursPadIterator()
+void testSt12NeighboursPadIterator()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

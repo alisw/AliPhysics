@@ -94,7 +94,7 @@ void testExistingPads2(AliMq::Station12Type station, AliMp::PlaneType plane,
   delete segmentation;
 }
 
-void testExistingPads2()
+void testSt12ExistingPads2()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

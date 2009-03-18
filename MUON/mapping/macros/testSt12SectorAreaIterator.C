@@ -27,7 +27,19 @@
 
 class AliMpVPadIterator;
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax, 
+              AliMq::Station12Type station, AliMp::PlaneType plane,
               Bool_t print = kTRUE)
 {
 // Marks pads according their position.
@@ -58,7 +70,7 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
                 it.CurrentItem().GetIndices().GetSecond());   		
   }
   
-  TCanvas *canv2 = new TCanvas("canv2");
+  TCanvas* canv2 = CreateTCanvas("canv2 ", " ", station, plane);
   canv2->cd();
   //histo->SetMinimum(1.5);
   histo->Draw("box");
@@ -84,16 +96,17 @@ void testSectorAreaIterator(AliMq::Station12Type station, AliMp::PlaneType plane
     area = AliMpArea(TVector2(60.,60.),TVector2(60.,60.));
   AliMpVPadIterator* iter = segmentation.CreateIterator(area);
 
-  new TCanvas("Graph");
+  CreateTCanvas("Graph ", " ", station, plane);
   AliMpVPainter::CreatePainter(sector)->Draw("ZSSMP");
 
-  TCanvas* canv = new TCanvas("canv");
+  TCanvas* canv = CreateTCanvas("canv ", " ", station, plane);
   canv->Range(-1,-1,1,1);
   MarkPads(*iter, TMath::Abs(area.Position().X())+area.Dimensions().X(),
-                  TMath::Abs(area.Position().Y())+area.Dimensions().Y(), kTRUE);
+                  TMath::Abs(area.Position().Y())+area.Dimensions().Y(), 
+                  station, plane, kTRUE);
 }
      
-void testSectorAreaIterator()
+void testSt12SectorAreaIterator()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

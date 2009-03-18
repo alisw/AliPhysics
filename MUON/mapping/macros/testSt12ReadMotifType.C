@@ -74,7 +74,7 @@ void testReadMotifType(AliMq::Station12Type station, AliMp::PlaneType plane)
   }
 }
 
-void testReadMotifType()
+void testSt12ReadMotifType()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

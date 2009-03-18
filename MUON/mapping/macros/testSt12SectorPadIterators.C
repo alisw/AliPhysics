@@ -23,6 +23,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testSectorPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
   AliMpDataProcessor mp;
@@ -35,7 +46,7 @@ void testSectorPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane
   Int_t num=0;
   
   //new TCanvas("canv");
-  new TCanvas();
+  CreateTCanvas("", "", station, plane);
 
   const Double_t xmax=150;
   const Double_t ymax=250;
@@ -55,7 +66,7 @@ void testSectorPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane
   delete sector;
 }
 
-void testSectorPadIterators()
+void testSt12SectorPadIterators()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

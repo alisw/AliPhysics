@@ -23,6 +23,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testGraphics(AliMq::Station12Type station, AliMp::PlaneType plane) 
 {
   AliMpDataProcessor mp;
@@ -104,7 +115,7 @@ void testGraphics(AliMq::Station12Type station, AliMp::PlaneType plane)
   Int_t id = sector->GetRow(5)->GetRowSegment(0)->GetMotifPositionId(0);
   AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(id);
   AliMpVPainter* motifPainter = AliMpVPainter::CreatePainter(motifPos);
-  new TCanvas("onepad","One motif");
+  CreateTCanvas("onepad ","One motif ", station, plane);
   motifPainter->Draw("PT");
   
   //////////////////////////////  
@@ -113,7 +124,7 @@ void testGraphics(AliMq::Station12Type station, AliMp::PlaneType plane)
   painter->Draw("RSMCI");
 }
 
-void testGraphics()
+void testSt12Graphics()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

@@ -55,7 +55,7 @@ void testPadDimensions(AliMq::Station12Type station, AliMp::PlaneType plane)
    }
 }
 
-void testPadDimensions()
+void testSt12PadDimensions()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

@@ -28,6 +28,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
 {
   AliMpDataProcessor mp;
@@ -39,8 +50,9 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   AliMpSectorSegmentation* segmentation = new AliMpSectorSegmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 
-  TCanvas* c1 = new TCanvas("view",
-                            "AliMpSectorPainter::Draw() output (view per pad)");
+  TCanvas* c1 = CreateTCanvas("view ",
+                            "AliMpSectorPainter::Draw() output (view per pad) ",
+                            station, plane);
   painter->Draw("ZSSMP");
   c1->Update();
 
@@ -53,7 +65,8 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   TH2C* histo = new TH2C("histo","Existing pads", 
                           nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
 
-  TCanvas* c2 = new TCanvas("c2","Only existing pads are filled");
+  TCanvas* c2 = CreateTCanvas("c2 ","Only existing pads are filled ",
+                              station, plane);
 
   for (Int_t i=0; i<maxPadIndexX+1;i++){
     for (Int_t j=0;j<maxPadIndexY+1;++j){
@@ -70,7 +83,8 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   TH2C* histo2 = new TH2C("histo2","Existing pads2", 
                           nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
 
-  TCanvas* c3 = new TCanvas("c3","Only existing pads are filled");
+  TCanvas* c3 = CreateTCanvas("c3 ","Only existing pads are filled ",
+                              station, plane);
 
   AliMpFastSegmentation* fast = new AliMpFastSegmentation(segmentation);
   for (Int_t i=0; i<maxPadIndexX+1;i++){
@@ -87,7 +101,7 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   delete fast;
 }
 
-void testExistingPads()
+void testSt12ExistingPads()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

@@ -77,7 +77,7 @@ void testPadsUpEtc(AliMq::Station12Type station, AliMp::PlaneType  plane)
   }  
 }
 
-void testPadsUpEtc()
+void testSt12PadsUpEtc()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

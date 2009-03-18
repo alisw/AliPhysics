@@ -22,9 +22,21 @@
 
 #include <Riostream.h>
 #include <TCanvas.h>
+#include <TString.h>
 #include <TH2.h>
 
 #endif
+
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
 
 void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane) 
 {
@@ -38,8 +50,9 @@ void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane)
   AliMpSectorSegmentation segmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 
-  TCanvas* c1 = new TCanvas("view",
-                            "MSectorPainter::Draw() output (view per pad)");
+  TCanvas* c1 = CreateTCanvas("view ", 
+                              "MSectorPainter::Draw() output (view per pad) ", 
+                              station, plane);
   painter->Draw("ZSSMP");
   c1->Update();
 
@@ -62,8 +75,8 @@ void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane)
                           nx2, 0, nx2*2, ny2, 0, ny2*2);
 
   // Define canvas
-  TCanvas* c2 = new TCanvas("c2","Only existing pads are filled");
-  TCanvas* c3 = new TCanvas("c3","Positions");
+  TCanvas* c2 = CreateTCanvas("c2 ", "Only existing pads are filled ", station, plane);
+  TCanvas* c3 = CreateTCanvas("c3 ", "Positions ", station, plane);
   
   for ( Int_t irow=0; irow<sector->GetNofRows(); irow++ ) {
     AliMpRow* row = sector->GetRow(irow);
@@ -96,7 +109,7 @@ void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane)
   histo2->Draw("box");
 }
 
-void testAllIndices()
+void testSt12AllIndices()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

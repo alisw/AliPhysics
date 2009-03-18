@@ -29,6 +29,17 @@
 
 #endif
 
+TCanvas* CreateTCanvas(const TString& name, const TString& title,
+                       AliMq::Station12Type station, AliMp::PlaneType plane)
+{
+  TString newName(name);
+  TString newTitle(title);
+  TString unique = AliMq::Station12TypeName(station) + AliMp::PlaneTypeName(plane);
+  newName += unique;
+  newTitle += unique;
+  return new TCanvas(newName.Data(), newTitle.Data());
+}                     
+
 class AliMpVPadIterator;
 void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
 {
@@ -61,7 +72,7 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane,
   AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
     
-  TCanvas *canv = new TCanvas("canv");
+  TCanvas* canv = CreateTCanvas("canv ", "", station, plane);
   canv->Divide(2,2);
   
   canv->cd(1);
@@ -97,7 +108,7 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane,
   }
 }
 
-void testAnyPadIterators()
+void testSt12AnyPadIterators()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };

@@ -76,7 +76,7 @@ void testIndicesLimits(AliMq::Station12Type station,AliMp::PlaneType plane)
   delete sector;
 }			       
       
-void testIndicesLimits()
+void testSt12IndicesLimits()
 {
   AliMq::Station12Type  station[2] = { AliMq::kStation1, AliMq::kStation2 }; 
   AliMp::PlaneType      plane[2]   = { AliMp::kBendingPlane, AliMp::kNonBendingPlane };
