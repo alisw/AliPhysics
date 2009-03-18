@@ -176,11 +176,13 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
     }
     if(skipThis) continue;
 
+    // kITSrefit
+    if(fMode==0 && fITSrefit && !(track->GetStatus()&AliESDtrack::kITSrefit)) continue;
+
     if(!inputAOD) {  // ESD
       AliESDtrack* esdt = (AliESDtrack*)track;
       if(esdt->GetNcls(fMode) < fMinClusters) continue;
       if(fMode==0) {        // ITS mode
-	if(fITSrefit && !(esdt->GetStatus()&AliESDtrack::kITSrefit)) continue;
 	Double_t x,p[5],cov[15];
 	esdt->GetExternalParameters(x,p);
 	esdt->GetExternalCovariance(cov);
@@ -580,6 +582,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     } else { // neutral tracks (from a V0)
       track = new AliNeutralTrackParam(*(AliNeutralTrackParam*)trkArrayOrig.At(i));
     }
+
     // tgl cut
     if(TMath::Abs(track->GetTgl())>fMaxTgl) {
       AliDebug(1,Form(" rejecting track with tgl = %f",track->GetTgl()));
