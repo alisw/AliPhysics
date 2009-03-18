@@ -24,6 +24,7 @@
 //#pragma link C++ class  std::pair<std::string, std::string>+;
 
 #pragma link C++ namespace AliMp;
+#pragma link C++ namespace AliMq;
 #pragma link C++ enum   AliMp::Direction;
 #pragma link C++ enum   AliMp::XDirection;
 #pragma link C++ enum   AliMp::PlaneType;
