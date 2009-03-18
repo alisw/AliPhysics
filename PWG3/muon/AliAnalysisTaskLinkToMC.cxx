@@ -579,7 +579,7 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 	Double_t pid[10];
 	
 	// has to be changed once the muon pid is provided by the ESD
-	for (Int_t i = 0; i < 10; pid[i++] = 0.);
+	for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
 	pid[AliAODTrack::kMuon]=1.;
 	
 	AliAODHeader* header = AODEvent()->GetHeader();
