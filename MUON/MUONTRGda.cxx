@@ -3,27 +3,20 @@ MTR DA for online
 
 Contact: Franck Manso <manso@clermont.in2p3.fr>
 Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mtrda.html
-Reference run: 61898, 63698 (dead channels), 63701 (noisy channels)
-Run Type:  PHYSICS (noisy channels), STANDALONE (dead channels)
+Reference run: 61898
+Run Type:  PHYSICS
 DA Type: MON
-Number of events needed: 1000 events for noisy and dead channels
-Input Files: Rawdata file (DATE format)
-Input Files from DB:
-MtgGlobalCrate-<version>.dat
-MtgRegionalCrate-<version>.dat
-MtgLocalMask-<version>.dat
-MtgLocalLut-<version>.dat
-MtgCurrent.dat
-
-Output Files: local dir (not persistent) 
-ExportedFiles.dat
+Number of events needed: 1000 events
+Input files: MtgGlobalCrate.dat MtgRegionalCrate.dat MtgLocalMask.dat MtgLocalLut.dat MtgCurrent.dat DAConfig.dat
+Output Files: ExportedFiles.dat MtgGlobalCrate.dat
+Trigger types used: PHYSICS_EVENT CALIBRATION_EVENT
 */
 
 //////////////////////////////////////////////////////////////////////////////
 // Detector Algorithm for the MUON trigger configuration.                   //
 //                                                                          //
 // Calculates masks for the global trigger input, by looking at dead        //
-// channels in calibration runs and at noisy channels in physics runs.      //
+// channels in calibration events and at noisy channels in physics events.  //
 // Transfers trigger configuration files to the File Exchange Server and    //
 // writes them (if modified) into the trigger configuration data base.      //
 //                                                                          //
@@ -33,6 +26,8 @@ ExportedFiles.dat
 // Bogdan Vulpescu (LPC Clermont-Ferrand, vulpescu@clermont.in2p3.fr)       //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
+
+//#define OFFLINE
 
 extern "C" {
 #include <daqDA.h>
@@ -50,6 +45,7 @@ extern "C" {
 
 #include "AliMpConstants.h"
 #include "AliMUONRawStreamTrigger.h"
+#include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONDarcHeader.h"
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONVStore.h"
@@ -72,7 +68,7 @@ class AliDAConfig : TObject {
 public:
 
   AliDAConfig() : 
-    fDAConfigFileName("DAConfig.txt"),
+    fDAConfigFileName("DAConfig.dat"),
     fCurrentFileName("MtgCurrent.dat"), 
     fLastCurrentFileName("MtgLastCurrent.dat"), 
     fSodName(""),
@@ -108,6 +104,7 @@ public:
     fSkipEvents(0),
     fMaxEvents(65535),
     fWithWarnings(false),
+    fUseFastDecoder(false),
     fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1)
   {
     /// default constructor
@@ -194,6 +191,7 @@ public:
   Int_t GetSkipEvents() const { return fSkipEvents; }
 
   Bool_t WithWarnings() const { return fWithWarnings; }
+  Bool_t UseFastDecoder() const { return fUseFastDecoder; }
 
   Int_t GetGlobalInputs()      const { return kGlobalInputs; }
   Int_t GetGlobalInputLength() const { return kGlobalInputLength; }
@@ -243,6 +241,7 @@ public:
   void SetSkipEvents(Int_t val) { fSkipEvents = val; }
 
   void SetWithWarnings() { fWithWarnings = true; }
+  void SetUseFastDecoder() { fUseFastDecoder = true; }
 
   void IncGlobalFileVersion() { fGlobalFileVersion++; }
   void DecSkipEvents() { fSkipEvents--; }
@@ -296,6 +295,7 @@ private:
   Int_t   fSkipEvents;
   Int_t   fMaxEvents;
   Bool_t  fWithWarnings;
+  Bool_t  fUseFastDecoder;
 
   const Int_t fNLocalBoard;
 
@@ -365,6 +365,12 @@ Bool_t ReadDAConfig(AliDAConfig& cfg)
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
     if (tmp.Atoi() != 0) cfg.SetWithWarnings();
+    
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    if (tmp.Atoi() != 0) cfg.SetUseFastDecoder();
     
     return true;
 
@@ -528,11 +534,10 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     // setenv DATE_ROLE_NAME
     // setenv DATE_DETECTOR_CODE
 
-    // offline:
-    //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-
-    // offline: use a dummy FES (local directory)
-    //gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/FES");
+#ifdef OFFLINE
+    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+    gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/FES");
+#endif
 
     // update files
     Int_t status = 0;
@@ -558,7 +563,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     file = cfg.GetGlobalFileName();
     if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || initFES) {
-      status = daqDA_FES_storeFile(file.Data(), file.Data());
+      status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
 	return false;
@@ -570,7 +575,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     file = cfg.GetLocalMaskFileName();  
     if ((cfg.GetLocalMaskFileLastVersion() != cfg.GetLocalMaskFileVersion()) || initFES) {
       modified = true;
-      status = daqDA_FES_storeFile(file.Data(), file.Data());
+      status = daqDA_FES_storeFile(file.Data(), "LOCAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalMaskFileName());
 	return false;
@@ -582,7 +587,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     file = cfg.GetLocalLutFileName();
     if ((cfg.GetLocalLutFileLastVersion() != cfg.GetLocalLutFileVersion()) || initFES) {
       modified = true;
-      status = daqDA_FES_storeFile(file.Data(), file.Data());
+      status = daqDA_FES_storeFile(file.Data(), "LUT");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalLutFileName());
 	return false;
@@ -595,7 +600,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     // exported regional file whenever mask or/and Lut are modified
     file = cfg.GetRegionalFileName();
     if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
-      status = daqDA_FES_storeFile(file.Data(), file.Data());
+      status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
 	return false;
@@ -607,7 +612,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     out.close();
 
     // export Exported file to FES anyway
-    status = daqDA_FES_storeFile(fileExp.Data(), fileExp.Data());
+    status = daqDA_FES_storeFile(fileExp.Data(), "EXPORTED");
     if (status) {
       printf("Failed to export file: %s\n", fileExp.Data());
       return false;
@@ -632,8 +637,9 @@ Bool_t ImportFiles(AliDAConfig& cfg)
 
     Int_t status = 0;
 
-    // offline:
-    //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+#ifdef OFFLINE
+    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+#endif
 
     status = daqDA_DB_getFile(cfg.GetDAConfigFileName(), cfg.GetDAConfigFileName());
     if (status) {
@@ -642,13 +648,13 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     }
  
     ReadDAConfig(cfg);
-
+    
     status = daqDA_DB_getFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetCurrentFileName());
       return false;
     }
- 
+    
     ReadFileNames(cfg);
 
     status = daqDA_DB_getFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
@@ -723,8 +729,9 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 {
   /// update the global masks
   
-  // offline:
-  //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+#ifdef OFFLINE
+  gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+#endif
 
   Float_t rateN = 0.0, rateD = 0.0;
   UInt_t gmask[4], omask;
@@ -752,7 +759,8 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
       if (!withEvN && !withEvD) {
 	// - copy the bit from the old mask
 	gmask[ii] |= ((cfg.GetGlobalMasks()->GetGlobalMask(ii) >> ib) & 0x1) << ib;
-	printf("Mask not changed (just copy the old values)\n");
+	if (cfg.GetPrintLevel()) 
+	  printf("Mask not changed (just copy the old values)\n");
       }
       if (!withEvN && withEvD) {
 	if (!deadc) {
@@ -764,7 +772,8 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
-	  printf("Found dead  channel %1d:%02d (%4.2f) \n",ii,ib,rateD);
+	  if (cfg.GetPrintLevel()) 
+	    printf("Found dead  channel %1d:%02d (%4.2f) \n",ii,ib,rateD);
 	}
       }
       if (withEvN && !withEvD) {
@@ -777,7 +786,8 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
-	  printf("Found noisy channel %1d:%02d (%4.2f) \n",ii,ib,rateN);
+	  if (cfg.GetPrintLevel()) 
+	    printf("Found noisy channel %1d:%02d (%4.2f) \n",ii,ib,rateN);
 	}
       }
       if (withEvN && withEvD) {
@@ -790,10 +800,12 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
-	  if (noise)
-	    printf("Found noisy channel %1d:%02d (%4.2f) \n",ii,ib,rateN);
-	  if (deadc)
-	    printf("Found dead  channel %1d:%02d (%4.2f) \n",ii,ib,rateD);
+	  if (cfg.GetPrintLevel()) {
+	    if (noise)
+	      printf("Found noisy channel %1d:%02d (%4.2f) \n",ii,ib,rateN);
+	    if (deadc)
+	      printf("Found dead  channel %1d:%02d (%4.2f) \n",ii,ib,rateD);
+	  }
 	}
       }
     }
@@ -872,8 +884,11 @@ int main(Int_t argc, Char_t **argv)
     void* event;
 
     // containers
+    // old decoder
     AliMUONDDLTrigger*       ddlTrigger  = 0x0;
     AliMUONDarcHeader*       darcHeader  = 0x0;
+    // new (fast) decoder
+    const AliMUONRawStreamTriggerHP::AliHeader* darcHeaderHP = 0x0;
 
     TStopwatch timers;
 
@@ -888,12 +903,14 @@ int main(Int_t argc, Char_t **argv)
     
     ReadMaskFiles(cfg);
 
-    // offline: the run number extracted from the file name
-    //TString tmp(inputFile);
-    //Int_t pos = tmp.First("daq");
-    //tmp = tmp(pos+3,5);
-    //gSystem->Setenv("DATE_RUN_NUMBER",tmp.Data());
-    //gSystem->Exec("echo \"DATE_RUN_NUMBER = \" $DATE_RUN_NUMBER");
+#ifdef OFFLINE
+    // the run number extracted from the file name
+    TString tmp(inputFile);
+    Int_t pos = tmp.First("daq");
+    tmp = tmp(pos+3,5);
+    gSystem->Setenv("DATE_RUN_NUMBER",tmp.Data());
+    gSystem->Exec("echo \"DATE_RUN_NUMBER = \" $DATE_RUN_NUMBER");
+#endif
 
     if(!ExportFiles(cfg)) {
       printf("ExportFiles failed\n");
@@ -901,9 +918,10 @@ int main(Int_t argc, Char_t **argv)
     }
 
     // FET is triggered by CTP
+    Bool_t modeFET3 = kTRUE;
     if (GetFetMode(cfg) != 3) {
-      printf("FET is not in mode 3\n");
-      return -1;
+      printf("FET is not in mode 3. Only PHYSICS events will be analysed (noisy channels)\n");
+      modeFET3 = kFALSE;
     }
 
     // All 5 global cards are controlled by the Mts proxy
@@ -941,7 +959,7 @@ int main(Int_t argc, Char_t **argv)
 
     cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
-    UInt_t *globalInput;
+    UInt_t *globalInput = new UInt_t[4];
     Bool_t doUpdate = false;
     Int_t runNumber = 0;
     Int_t nEvents = 0;
@@ -949,9 +967,10 @@ int main(Int_t argc, Char_t **argv)
     while(1) 
     {
       if (nEvents >= cfg.GetMaxEvents()) break;
-      if (nEvents && nEvents % 100 == 0) 	
+      if (cfg.GetPrintLevel()) {
+	if (nEvents && nEvents % 1000 == 0) 	
 	  cout<<"Cumulated events " << nEvents << endl;
-
+      }
       // check shutdown condition 
       if (daqDA_checkShutdown()) 
 	  break;
@@ -987,7 +1006,7 @@ int main(Int_t argc, Char_t **argv)
 	cfg.SetAlgoNoisyInput(true);
 	doUpdate = true;
 	cfg.IncNoiseEvent();
-      } else if (eventType == CALIBRATION_EVENT) {
+      } else if (modeFET3 && eventType == CALIBRATION_EVENT) {
 	cfg.SetAlgoDeadcInput(true);
 	doUpdate = true;
 	cfg.IncDeadcEvent();
@@ -996,10 +1015,16 @@ int main(Int_t argc, Char_t **argv)
       }
       
       nEvents++;
-      if (cfg.GetPrintLevel()) printf("\nEvent # %d\n",nEvents);
+      if (cfg.GetPrintLevel() == 2) printf("\nEvent # %d\n",nEvents);
 
       // decoding MUON payload
-      AliMUONRawStreamTrigger* rawStream  = new AliMUONRawStreamTrigger(rawReader);
+      AliMUONVRawStreamTrigger   *rawStream   = 0x0;
+      if (cfg.UseFastDecoder()) {
+	rawStream = new AliMUONRawStreamTriggerHP(rawReader);
+      } else {
+	rawStream = new AliMUONRawStreamTrigger(rawReader);
+      }
+
       // ... without warnings from the decoder !!!
       if (!cfg.WithWarnings())
 	rawStream->DisableWarnings();
@@ -1007,14 +1032,20 @@ int main(Int_t argc, Char_t **argv)
       // loops over DDL 
       while((status = rawStream->NextDDL())) {
 
-	if (cfg.GetPrintLevel()) printf("iDDL %d\n", rawStream->GetDDL());
-
-	ddlTrigger = rawStream->GetDDLTrigger();
-	darcHeader = ddlTrigger->GetDarcHeader();
+	if (cfg.GetPrintLevel() == 2) printf("iDDL %d\n", rawStream->GetDDL());
 
 	if (rawStream->GetDDL() == 0) {
-	  if (cfg.GetPrintLevel()) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
-	  globalInput = darcHeader->GetGlobalInput();
+	  if (cfg.UseFastDecoder()) {
+	    darcHeaderHP = static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetHeaders();
+	    if (cfg.GetPrintLevel() == 2) printf("Global output (fast decoder) %x\n", (Int_t)darcHeaderHP->GetGlobalOutput());
+	    for (Int_t ig = 0; ig < cfg.GetGlobalInputs(); ig++) 
+	      globalInput[ig] = darcHeaderHP->GetGlobalInput(ig);
+	  } else {
+	    ddlTrigger = rawStream->GetDDLTrigger();
+	    darcHeader = ddlTrigger->GetDarcHeader();
+	    if (cfg.GetPrintLevel() == 2) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
+	    globalInput = darcHeader->GetGlobalInput();
+	  }
 	  StoreGlobalInput(cfg,globalInput);
 	}
 
@@ -1031,19 +1062,20 @@ int main(Int_t argc, Char_t **argv)
 
     timers.Stop();
 
-    cout << "MUONTRGda: DA enable: \t" << cfg.GetDAFlag() << endl;
-    cout << "MUONTRGda: Run number: \t" << runNumber << endl;
-    cout << "MUONTRGda: Nb of DATE events: \t" << nDateEvents << endl;
-    cout << "MUONTRGda: Nb of events used: \t" << nEvents << endl;
-    cout << "MUONTRGda: Nb of events used (noise): \t" << cfg.GetEventsN() << endl;
-    cout << "MUONTRGda: Nb of events used (deadc): \t" << cfg.GetEventsD() << endl;
-    cout << "MUONTRGda: Minumum nr of events for rate calculation: \t" << cfg.GetMinEvents() << endl;
-    cout << "MUONTRGda: Maximum nr of analyzed events: \t" << cfg.GetMaxEvents() << endl;
-    cout << "MUONTRGda: Skip events from start: \t" << cfg.GetSkipEvents() << endl;
-    cout << "MUONTRGda: Threshold for noisy inputs: \t" << 100*cfg.GetThrN() << "%" << endl;
-    cout << "MUONTRGda: Threshold for dead inputs: \t" << 100*cfg.GetThrD() << "%" << endl;
-    cout << "MUONTRGda: Print level: \t" << cfg.GetPrintLevel() << endl;
-    cout << "MUONTRGda: Show decoder warnings: \t" << cfg.WithWarnings() << endl;
+    cout << "MUONTRGda: DA enable: " << cfg.GetDAFlag() << endl;
+    cout << "MUONTRGda: Run number: " << runNumber << endl;
+    cout << "MUONTRGda: Nb of DATE events: " << nDateEvents << endl;
+    cout << "MUONTRGda: Nb of events used: " << nEvents << endl;
+    cout << "MUONTRGda: Nb of events used (noise): " << cfg.GetEventsN() << endl;
+    cout << "MUONTRGda: Nb of events used (deadc): " << cfg.GetEventsD() << endl;
+    cout << "MUONTRGda: Minumum nr of events for rate calculation: " << cfg.GetMinEvents() << endl;
+    cout << "MUONTRGda: Maximum nr of analyzed events: " << cfg.GetMaxEvents() << endl;
+    cout << "MUONTRGda: Skip events from start: " << cfg.GetSkipEvents() << endl;
+    cout << "MUONTRGda: Threshold for noisy inputs: " << 100*cfg.GetThrN() << "%" << endl;
+    cout << "MUONTRGda: Threshold for dead inputs: " << 100*cfg.GetThrD() << "%" << endl;
+    cout << "MUONTRGda: Print level: " << cfg.GetPrintLevel() << endl;
+    cout << "MUONTRGda: Show decoder warnings: " << cfg.WithWarnings() << endl;
+    cout << "MUONTRGda: Use the fast decoder: " << cfg.UseFastDecoder() << endl;
 
     printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
