@@ -444,10 +444,15 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
   AliMpIntPair localIndices 
     = motif->PadIndicesLocal(position-motifPos->Position());
     
+  if ( ! localIndices.IsValid() ) {
+    if (warning) Warning("PadByPosition","Position outside motif limits");
+    return AliMpPad::Invalid();
+  }
+    
   AliMpConnection* connect = 
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);
 
-   if (!connect){
+  if ( ! connect ) {
     if (warning) Warning("PadByPosition","Position outside motif limits");
     return AliMpPad::Invalid();
   }
