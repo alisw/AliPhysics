@@ -36,7 +36,6 @@ void MakeACORDEQAReferenceCalibData()
 
 
 	AliACORDECalibData *calibda = new AliACORDECalibData("QACalib");
-
 	Float_t ModulesActivity[60] = 
 	{
  		0.92,0.51,0.68,0.76,0.78,0.83,0.00,0.69,0.72,0.86,

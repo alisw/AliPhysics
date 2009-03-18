@@ -102,14 +102,14 @@ Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** li
 		acoHitsNorm =  hdata->GetBinContent(i)/hdata->GetMaximum();
 		if  (acoQARefDir)
 		{
-			AliWarning("Using the QA Reference data for ACORDE !!!");
+	//		AliWarning("Using the QA Reference data for ACORDE !!!");
 			test[specie] = CheckAcordeRefHits(list[specie],(TObjArray *)acoQARefDir->GetObject());
 			if ((test[specie] = 0.86) || (acoHitsNorm>0.50)) 
 			{
-				acoRefTest[specie]=0.78;printf("testMario: %f\n",acoRefTest[specie]);
+				acoRefTest[specie]=0.78;//printf("testMario: %f\n",acoRefTest[specie]);printf("histo:%f\n",hdata->GetMaximum());
 			}
 		}else{
-		AliWarning("Using the inner ACORDE QA Checker !!!");
+	//	AliWarning("Using the inner ACORDE QA Checker !!!");
 		if ( (acoHitsNorm>0.40) && (acoHitsNorm<=1) ) acoTest[specie] = 0.75;
 		if ( (acoHitsNorm>0.0020) && (acoHitsNorm<=0.40) ) acoTest[specie] = 0.251;
 		if ( (acoHitsNorm>0.0) && (acoHitsNorm<=0.0020) ) acoTest[specie] = 0.0010;
@@ -123,17 +123,18 @@ Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** li
       }
       if (count[specie] != 0) { 
         if (test[specie]==0) {
-          AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
+         // AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
           test[specie] = 0.5;  //upper limit value to set kWARNING flag for a task
         }
         else {
 	if (acoQARefDir) test[specie] = acoRefTest[specie];
 	else{
-	test[specie] = acoTest[specie];printf("testDyMa: %f\n",test[specie]);}
+	test[specie] = acoTest[specie];//printf("testDyMa: %f\n",test[specie]);
+	}
         }
       }
     }
-    AliInfo(Form("Test Result = %f", test[specie])) ; 
+   // AliInfo(Form("Test Result = %f", test[specie])) ; 
   }
   return test ; 
 }
@@ -141,11 +142,15 @@ Double_t AliACORDEQAChecker::CheckAcordeRefHits(TObjArray *AcordeList, TObjArray
 {
 	Double_t acoTest = 0;
 	TIter next(AcordeList);
-	TH1 * histo;
-	
-	while ( (histo = dynamic_cast<TH1 *>(next())) )
+	TH1 *histo;
+	for (Int_t i=0;i<60;i++)
 	{
-		if( histo->KolmogorovTest((TH1F *)AcordeRef->At(0))<0.8)  acoTest = 0.86;
+		while ( (histo = dynamic_cast<TH1 *>(next())) )
+		{	
+			if ( (histo->GetBinContent(i)/histo->GetMaximum())<1.0 ) acoTest = 0.86;
+//		if( histo->KolmogorovTest((TH1F *)AcordeRef->At(0))<0.8)  acoTest = 0.86;
+			//printf("href:%f\n",histo->GetMaximum());
+		}
 	}	
 	return acoTest;
 }

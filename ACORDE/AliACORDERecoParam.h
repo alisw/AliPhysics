@@ -56,7 +56,7 @@ class AliACORDERecoParam : public AliDetectorRecoParam
   virtual void PrintParameters() const;
 
   //Getters
- 
+/* 
   Bool_t   GetAcordeSingleMuonTrigger()    const  {return fAcordeSingleMuonTrigger;}
   Bool_t   GetAcordeMultiMuonTrigger()     const  {return fAcordeMultiMuonTrigger;}
   UInt_t   GetAcordeWord0()    const  {return fAcordeWord0;}
@@ -79,7 +79,8 @@ class AliACORDERecoParam : public AliDetectorRecoParam
   static   AliACORDERecoParam *GetPbPbparam();       // reco param for PbPb.
   static   AliACORDERecoParam *GetPPparam();         // reco param for PP
   static   AliACORDERecoParam *GetCosmicMuonParam(); // reco param for cosmic muons
- private:
+ 
+private:
 
   Bool_t fAcordeSingleMuonTrigger; // kTRUE if ACORDE triggered in Singe Muon Mode
   Bool_t fAcordeMultiMuonTrigger; // kTRUE if ACORDE triggered in Multi Muon Mode
@@ -87,7 +88,7 @@ class AliACORDERecoParam : public AliDetectorRecoParam
   UInt_t fAcordeWord1; // [31..60] Acorde's Modules in Single Muon Trigger
   UInt_t fAcordeWord2; // [1..30] Acorde's Modules in Multi Muon Trigger
   UInt_t fAcordeWord3; // [31..60] Acorde's Modules in Multi Muon Trigger
-
-  ClassDef(AliACORDERecoParam, 3)
+*/
+  ClassDef(AliACORDERecoParam, 4)
 };
 #endif

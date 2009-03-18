@@ -27,7 +27,7 @@ class AliACORDEQAChecker: public AliQACheckerBase {
 
 public:
   AliACORDEQAChecker() : AliQACheckerBase("ACORDE","ACORDE Quality Assurance Data Checker") {;}          // constructor
-  AliACORDEQAChecker(const AliACORDEQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // constructor   
+//  AliACORDEQAChecker(const AliACORDEQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // constructor   
   virtual ~AliACORDEQAChecker() {;} // destructor
 
   virtual Double_t * Check(AliQA::ALITASK_t index) ;

@@ -47,29 +47,30 @@ ClassImp(AliACORDERecoParam)
 
 //_____________________________________________________________________________
 AliACORDERecoParam::AliACORDERecoParam():
-  AliDetectorRecoParam(),
-  fAcordeSingleMuonTrigger(kFALSE),
-  fAcordeMultiMuonTrigger(kFALSE),
-  fAcordeWord0(0x00000000),
-  fAcordeWord1(0x00000000),
-  fAcordeWord2(0x00000000),
-  fAcordeWord3(0x00000000)       
+  AliDetectorRecoParam()
+//  fAcordeSingleMuonTrigger(kFALSE),
+//  fAcordeMultiMuonTrigger(kFALSE),
+//  fAcordeWord0(0x00000000),
+//  fAcordeWord1(0x00000000),
+//  fAcordeWord2(0x00000000),
+//  fAcordeWord3(0x00000000)       
 {
  	// ACORDE's RecoParam constructor
  
  	 SetNameTitle("ACORDE","ACORDE");
+	 AliInfo(Form("Empty object for ACORDE RecoParam"));
 }
 
 
 //____________________________________________________________________________
 AliACORDERecoParam::AliACORDERecoParam(const AliACORDERecoParam &p):
-  AliDetectorRecoParam(p),
-  fAcordeSingleMuonTrigger(p.fAcordeSingleMuonTrigger),
-  fAcordeMultiMuonTrigger(p.fAcordeMultiMuonTrigger),
-  fAcordeWord0(p.fAcordeWord0),
-  fAcordeWord1(p.fAcordeWord1),
-  fAcordeWord2(p.fAcordeWord2),
-  fAcordeWord3(p.fAcordeWord3)
+  AliDetectorRecoParam(p)
+//  fAcordeSingleMuonTrigger(p.fAcordeSingleMuonTrigger),
+//  fAcordeMultiMuonTrigger(p.fAcordeMultiMuonTrigger),
+//  fAcordeWord0(p.fAcordeWord0),
+//  fAcordeWord1(p.fAcordeWord1),
+//  fAcordeWord2(p.fAcordeWord2),
+//  fAcordeWord3(p.fAcordeWord3)
 {
 	// Copy of constructor
 }
@@ -83,13 +84,13 @@ AliACORDERecoParam& AliACORDERecoParam::operator=(const AliACORDERecoParam &p)
    	return *this;
   
   	AliDetectorRecoParam::operator=(p);
-  	fAcordeSingleMuonTrigger=p.fAcordeSingleMuonTrigger;
+/*  	fAcordeSingleMuonTrigger=p.fAcordeSingleMuonTrigger;
 	fAcordeMultiMuonTrigger=p.fAcordeMultiMuonTrigger;      
    	fAcordeWord0=p.fAcordeWord0;
 	fAcordeWord1=p.fAcordeWord1;
 	fAcordeWord2=p.fAcordeWord2;
 	fAcordeWord3=p.fAcordeWord3;
-   	
+  */ 	
 	return *this;
 }
 //_____________________________________________________________________________
@@ -99,6 +100,7 @@ AliACORDERecoParam::~AliACORDERecoParam()
 }
 
 //_____________________________________________________________________________
+/*
 AliACORDERecoParam *AliACORDERecoParam::GetPbPbparam()
 {
  
@@ -161,21 +163,26 @@ AliACORDERecoParam *AliACORDERecoParam::GetCosmicMuonParam()
         acordeRecoParam->fAcordeWord3 = 0xFFFFFFFF; // [31..60] ACORDE's modules in ACORDE_MULTI
         return acordeRecoParam;
 }
-
+*/
 //_____________________________________________________________________________
 void AliACORDERecoParam::PrintParameters() const
 {
   	// Printing of the used ACORDE reconstruction parameters
 
- 	AliInfo(Form("ACORDE's Single Muon Trigger Mode: %b", fAcordeSingleMuonTrigger));
-	AliInfo(Form("ACORDE's Multi Muon Trigger Mode: %b", fAcordeMultiMuonTrigger));
-	if(fAcordeSingleMuonTrigger==kTRUE)
-	{
-		AliInfo(Form("ACORDE's Trigger Mask: 0x%08x 0x%08x",fAcordeWord0,fAcordeWord1));
-	}
-	if(fAcordeMultiMuonTrigger==kTRUE)
-	{
-                AliInfo(Form("ACORDE's Trigger Mask: 0x%08x 0x%08x",fAcordeWord2,fAcordeWord3));
+ //	AliInfo(Form("ACORDE's Single Muon Trigger Mode: %b", fAcordeSingleMuonTrigger));
+//	AliInfo(Form("ACORDE's Multi Muon Trigger Mode: %b", fAcordeMultiMuonTrigger));
+//	if(fAcordeSingleMuonTrigger==kTRUE)
+//	{
+//		AliInfo(Form("ACORDE's Trigger Mask: 0x%08x 0x%08x",fAcordeWord0,fAcordeWord1));
+//	}
+//	if(fAcordeMultiMuonTrigger==kTRUE)
+//	{
+  //              AliInfo(Form("ACORDE's Trigger Mask: 0x%08x 0x%08x",fAcordeWord2,fAcordeWord3));
 
-	}
+//	}
+
+
+	AliInfo(Form("Empty object for ACORDE RecoParam"));
+
+
 }
