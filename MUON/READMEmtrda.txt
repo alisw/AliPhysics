@@ -10,9 +10,12 @@ Trigger MON (monitoring).
 
 \section da_s1 The Muon Trigger Calibration
 
-The main goal of the DA is the transfer of the modified configuration files to 
-the FES and to put them in the detector data base. In the current version, the 
-DA will modify only the global crate configuration.
+The main goal of the DA is to transfer the configuration files from the detector
+data base to the FES and to put them back to the detector data base in order to be
+used for the next run, in the case when the analysis of the events in the run finds 
+noisy/dead channels different from the ones already notified in the configuration 
+files at the start of the run. 
+In the current version, the DA will modify only the global crate configuration.
 
 The configuration files stored in the online DB are the following:
 
@@ -20,43 +23,39 @@ The configuration files stored in the online DB are the following:
 - MtgRegionalCrate-<version>.dat: contains the regional crate information
 - MtgLocalMask-<version>.dat:     contains the local mask
 - MtgLocalLut-<version>.dat:      contains the local LUT 
-- MtgCurrent.dat:                 contains the name list of the above files with their version 
-                                  and the flag for master/slave status on the DA
+- MtgCurrent.dat:                 contains the name list of the above files with 
+                                  their version and the flag for master/slave
+                                  status of the DA
+- DAConfig.dat                    configurable parameters for the DA
 
 The copy onto the FES for the modified global masks is done for any value of 
 the flag master/slave. The DA creates a file (ExportedFiles.dat) containing the 
 name of the files to be transfered by the shuttle. To be able to check the change 
 of version of one the files, another file is created containing the last current
 list of configuration files: MtgLastCurrent.dat. The Muon trigger electronics can 
-run with two types of calibration. New: the two types can be done in the same
-run containing a mixture of physics events with calibration events injected every 
-50 seconds.
+run with two types of calibration. The two types of analysis can be done in the same
+run containing a mixture of physics events and calibration events.
 
-\subsection da_ss1  ELECTRONICS_CALIBRATION_RUN (calibration)
+The SHUTTLE will process the files stored on the FES only in the PHYSICS mode. In STANDALONE
+mode the DA will work too, updating the files in the detector data base, but the SHUTTLE will
+not process them into the offline data base.
 
-This procedure allows to check dead channels. The FET pulses are injected to the 21 kchannels.
+\subsection da_ss1  Dead channels in the global trigger input (with CALIBRATION_EVENT)
 
-The typical ECS sequence for calib is :
+The FET pulses are injected to the 21 kchannels.
 
-- Switch ON the electronics LV
-- Load Configuration via the MTS package
-- Enable FET pulse 
+- The FET mode in MtgGlobalCrate.dat must be set to 0x3
 - Data taking (typically 1000 events)
 - The DA computes the occupancy of the global input entries, if a channel is not 
 responding in more than N% of the events (10% by default), it will be marked as dead 
 - The DA updates the global mask file accordingly, adds the file to the data base 
 and on the File Exchange Server at the beginning of the next run. 
 
-Then the SHUTTLE process the ASCII files and store the configuration on the OCDB.
+\subsection da_ss2  Noisy channels in global trigger input (with PHYSICS_EVENT)
 
-\subsection da_ss2  DETECTOR_CALIBRATION_RUN (pedestal)
+This events are used to check the noisy channels triggering at a rate which is 
+significantly higher than the expected rate from normal physics events.
 
-This procedure checks the noisy channels. Normal physics events are used.
-
-The typical ECS sequence for calibration is :
-
-- Switch ON the electronics LV
-- Load Configuration via the MTS package
 - Data taking (typically 1000 events)
 - The DA computes the occupancy of the global input entries, if a channel is 
 responding in more than N% of the events (10% by default), it will be marked as 
@@ -64,19 +63,24 @@ noisy
 - The DA updates the global mask file accordingly, adds the file to the data base 
 and on the the File Exchange Server at the beginning of the next run. 
 
-Then the SHUTTLE process the ASCII files and store the configuration on the OCDB.
+\subsection da_ss3 Mixed events (PHYSICS+CALIBRATION)
+
+- If the FET mode in MtgGlobalCrate is not set to 0x3, only PHYSICS events will be used to check for
+the noisy channels
+- The algorithm is selected according to the event type returned by the raw reader 
 
 \section da_s2 Using the DA Online
 
 With the help of the Control Panel a configuration file is added to the database
-(DAConfig.txt) which contains parameters for running the DA:
+(DAConfig.dat) which contains parameters for running the DA (typical values are shown):
 
-- the thresholds for calculating noisy/dead inputs
-- the minimum number of events necessary for calculating the input rates
-- the maximum number of events to be analyzed in one DA execution
-- the number of events to skip from the start of run
-- the verbosity level of the DA
-- enable warnings from the raw data decoder
+- the thresholds for calculating noisy/dead inputs (0.1/0.9)
+- the minimum number of events necessary for calculating the input rates (10)
+- the maximum number of events to be analyzed in one DA execution (1000000)
+- the number of events to skip from the start of run (0)
+- the verbosity level of the DA (0, minimum of messages, 1 more messages, 2 print every event)
+- enable warnings from the raw data decoder (0, do not show warnings)
+- switch between slow/fast payload decoder (0, use the slow decoder)
 
 This file it is not "version"-ed, so it will be not recorded in MtgCurrent.dat.
  
