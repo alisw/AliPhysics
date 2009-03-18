@@ -26,6 +26,7 @@
 #include <TClonesArray.h>
 #include <TFile.h> 
 #include <TH1F.h> 
+#include <TH2F.h> 
 #include <TDirectory.h>
 // --- Standard library ---
 
@@ -90,7 +91,7 @@ AliT0QADataMakerSim& AliT0QADataMakerSim::operator = (const AliT0QADataMakerSim&
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliT0QADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
@@ -108,23 +109,13 @@ void AliT0QADataMakerSim::StartOfDetectorCycle()
 void AliT0QADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
+  // create Hits histograms in Hits subdir
   TString timename;
-  TH1F *    fhHitsTime[24];
-  for (Int_t i=0; i<24; i++)
-    {
-      timename ="hHitTime";
-      timename += i;
-      if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2000,3000);
-      else  
-	fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12000,13000);
-	Add2HitsList( fhHitsTime[i],i);
-    }
-  /*
-  TH2F *fhHitsEffA = new TH2F("hHitsEffA", "Hits Efficiency A side", 25,-0.5,24.5, 100,12,13 );
-  Add2HitsList(fhHitsEffA,0);
-  TH2F *fhHitsEffC = new TH2F("hHitsEffC", "Hits Efficiency C side", 25,-0.5,24.5, 100,2,3 );
-  Add2HitsList(fhHitsEffC,1);
-  */
+  
+  TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency", 25, 0, 25, 100,12,15 );
+  Add2HitsList(fhHitsTimeA,0);
+  TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency", 25, 0, 25, 100,2,5 );
+  Add2HitsList(fhHitsTimeC,1);
 }
 
 //____________________________________________________________________________ 
@@ -132,42 +123,16 @@ void AliT0QADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
 
-  /*
+  
   TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigCFD,0);
   TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigLEDamp,1);
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigQTC,2);
-  TH1F * fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
-  Add2DigitsList( fhDigMean,23);
-  */
   
-  TString timename, ampname, qtcname;
-
-  TH1F *fhDigCFD[24]; TH1F * fhDigLEDamp[24]; TH1F *fhDigQTC[24];
-
-  for (Int_t i=0; i<24; i++)
-    {
-      timename ="hDigCFD";
-      ampname = "hDigLED";
-      qtcname = "hDigQTC";
-      timename += i;
-      ampname += i;
-      qtcname += i;
-      fhDigCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,5000);
-      Add2DigitsList( fhDigCFD[i],i);
-      fhDigLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,120000,150000);
-      Add2DigitsList( fhDigLEDamp[i],i+24);
-      fhDigQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,500);
-      Add2DigitsList( fhDigQTC[i],i+48);
-     }
   
-  TH1F* fhDigEff = new TH1F("hDigEff","digits efficiency", 25,-0.5,24.5);
-  Add2DigitsList( fhDigEff,72);
-  TH1F* fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
-  Add2DigitsList( fhDigMean,73);
-  
+   
 }
 
 //____________________________________________________________________________
@@ -200,10 +165,12 @@ void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
 	  AliT0hit  * startHit   = (AliT0hit*) hits->UncheckedAt(ihit);
 	  if (!startHit) {
  	    AliError("The unchecked hit doesn't exist");
-	    break;
+	    continue;
 	  }
 	  Int_t pmt=startHit->Pmt();
-	  GetHitsData(pmt-1)->Fill(startHit->Time()) ;
+	  Float_t time = 0.001 * startHit->Time();
+	  if(pmt<13)GetHitsData(1)->Fill(pmt,time) ;
+	  if(pmt>12)GetHitsData(0)->Fill(pmt,time) ;
 	}
     }
   }
@@ -220,7 +187,7 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
   TArrayI *digQT1 = new TArrayI(24);
   Int_t refpoint=0;
 
-   TBranch *brDigits=digitsTree->GetBranch("T0");
+  TBranch *brDigits=digitsTree->GetBranch("T0");
   AliT0digit *fDigits = new AliT0digit() ;
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
@@ -228,7 +195,6 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
     AliError(Form("EXEC Branch T0 digits not found"));
      return;
   }
-  
   digitsTree->GetEvent(0);
   digitsTree->GetEntry(0);
   brDigits->GetEntry(0);
@@ -241,9 +207,9 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
     {
       if (digCFD->At(i)>0) {
 	Int_t cfd=digCFD->At(i)- refpoint;
-	GetDigitsData(i) ->Fill(cfd);
-	GetDigitsData(i+24) -> Fill(digLED->At(i) - digCFD->At(i));
-	GetDigitsData(i+48) -> Fill(digQT1->At(i) - digQT0->At(i));
+	GetDigitsData(0) ->Fill(i,cfd);
+	GetDigitsData(1) -> Fill(i,(digLED->At(i) - digCFD->At(i)));
+	GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
       }
     }  
       
