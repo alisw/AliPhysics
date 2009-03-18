@@ -80,6 +80,8 @@ ClassImp(AliESDEvent)
 						       "AliMultiplicity",
 						       "PHOSTrigger",
 						       "EMCALTrigger",
+						       "SPDPileupVertices",
+						       "TrkPileupVertices",
 						       "Tracks",
 						       "MuonTracks",
 						       "PmdTracks",
@@ -110,6 +112,8 @@ AliESDEvent::AliESDEvent():
   fPHOSTrigger(0),
   fEMCALTrigger(0),
   fESDACORDE(0),
+  fSPDPileupVertices(0),
+  fTrkPileupVertices(0),
   fTracks(0),
   fMuonTracks(0),
   fPmdTracks(0),
@@ -147,6 +151,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
   fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
   fESDACORDE(new AliESDACORDE(*esd.fESDACORDE)),
+  fSPDPileupVertices(new TClonesArray(*esd.fSPDPileupVertices)),
+  fTrkPileupVertices(new TClonesArray(*esd.fTrkPileupVertices)),
   fTracks(new TClonesArray(*esd.fTracks)),
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
@@ -181,6 +187,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fSPDMult);
   AddObject(fPHOSTrigger);
   AddObject(fEMCALTrigger);
+  AddObject(fSPDPileupVertices);
+  AddObject(fTrkPileupVertices);
   AddObject(fTracks);
   AddObject(fMuonTracks);
   AddObject(fPmdTracks);
@@ -419,6 +427,8 @@ void AliESDEvent::ResetStdContent()
   }
   if(fPHOSTrigger)fPHOSTrigger->Reset(); 
   if(fEMCALTrigger)fEMCALTrigger->Reset(); 
+  if(fSPDPileupVertices)fSPDPileupVertices->Delete();
+  if(fTrkPileupVertices)fTrkPileupVertices->Delete();
   if(fTracks)fTracks->Delete();
   if(fMuonTracks)fMuonTracks->Delete();
   if(fPmdTracks)fPmdTracks->Delete();
@@ -473,6 +483,10 @@ void AliESDEvent::Print(Option_t *) const
 	   GetDiamondX(),GetDiamondY());
     printf("SPD Multiplicity. Number of tracklets %d \n",
            fSPDMult->GetNumberOfTracklets());
+  printf("Number of pileup primary vertices reconstructed with SPD %d\n", 
+        GetNumberOfPileupVerticesSPD());
+  printf("Number of pileup primary vertices reconstructed using the tracks %d\n",
+        GetNumberOfPileupVerticesTracks());
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
@@ -850,6 +864,20 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   return rc;
 }
 
+void  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx) 
+{
+    // Add a pileup primary vertex reconstructed with SPD
+    TClonesArray &ftr = *fSPDPileupVertices;
+    new(ftr[fSPDPileupVertices->GetEntriesFast()]) AliESDVertex(*vtx);
+}
+
+void  AliESDEvent::AddPileupVertexTracks(const AliESDVertex *vtx) 
+{
+    // Add a pileup primary vertex reconstructed with SPD
+    TClonesArray &ftr = *fTrkPileupVertices;
+    new(ftr[fTrkPileupVertices->GetEntriesFast()]) AliESDVertex(*vtx);
+}
+
 Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) 
 {
     // Add track
@@ -1039,6 +1067,8 @@ void AliESDEvent::GetStdContent()
   fSPDMult =       (AliMultiplicity*)fESDObjects->FindObject(fgkESDListName[kSPDMult]);
   fPHOSTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fgkESDListName[kPHOSTrigger]);
   fEMCALTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fgkESDListName[kEMCALTrigger]);
+  fSPDPileupVertices = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kSPDPileupVertices]);
+  fTrkPileupVertices = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrkPileupVertices]);
   fTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTracks]);
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
@@ -1096,6 +1126,8 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliMultiplicity());
   AddObject(new AliESDCaloTrigger());
   AddObject(new AliESDCaloTrigger());
+  AddObject(new TClonesArray("AliESDVertex",0));
+  AddObject(new TClonesArray("AliESDVertex",0));
   AddObject(new TClonesArray("AliESDtrack",0));
   AddObject(new TClonesArray("AliESDMuonTrack",0));
   AddObject(new TClonesArray("AliESDPmdTrack",0));

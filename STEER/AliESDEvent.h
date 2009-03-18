@@ -73,6 +73,8 @@ public:
 		       kSPDMult,
 		       kPHOSTrigger,
 		       kEMCALTrigger,
+		       kSPDPileupVertices,
+		       kTrkPileupVertices,
 		       kTracks,
 		       kMuonTracks,
 		       kPmdTracks,
@@ -210,6 +212,16 @@ public:
   Bool_t RemoveV0(Int_t i)     const;
   Bool_t RemoveTrack(Int_t i)  const;
 
+  const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
+    return (const AliESDVertex *)fSPDPileupVertices->UncheckedAt(i);
+  }
+  void  AddPileupVertexSPD(const AliESDVertex *vtx);
+
+  const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
+    return (const AliESDVertex *)fTrkPileupVertices->UncheckedAt(i);
+  }
+  void  AddPileupVertexTracks(const AliESDVertex *vtx);
+
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);
   }
@@ -295,6 +307,12 @@ public:
   void AddEMCALTriggerPosition(TArrayF array)  { fEMCALTrigger->AddTriggerPosition(array); }
   void AddEMCALTriggerAmplitudes(TArrayF array){ fEMCALTrigger->AddTriggerAmplitudes(array); }
 
+  Int_t GetNumberOfPileupVerticesSPD() const {
+     return fSPDPileupVertices->GetEntriesFast();
+  }
+  Int_t GetNumberOfPileupVerticesTracks() const {
+     return fTrkPileupVertices->GetEntriesFast();
+  }
   Int_t GetNumberOfTracks()     const {return fTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
   // fHLTConfMapTracks->GetEntriesFast();}
@@ -372,6 +390,8 @@ protected:
   AliESDCaloTrigger* fEMCALTrigger;    //! PHOS Trigger information
   AliESDACORDE    *fESDACORDE;        //! ACORDE ESD object caontaining bit pattern
 
+  TClonesArray *fSPDPileupVertices;//! Pileup primary vertices reconstructed by SPD 
+  TClonesArray *fTrkPileupVertices;//! Pileup primary vertices reconstructed using the tracks 
   TClonesArray *fTracks;           //! ESD tracks 
   TClonesArray *fMuonTracks;       //! MUON ESD tracks
   TClonesArray *fPmdTracks;        //! PMD ESD tracks
@@ -400,7 +420,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,9)  //ESDEvent class 
+  ClassDef(AliESDEvent,10)  //ESDEvent class 
 };
 #endif 
 
