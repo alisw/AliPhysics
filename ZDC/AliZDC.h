@@ -56,6 +56,10 @@ public:
   virtual AliTriggerDetector* CreateTriggerDetector() const
   	{return new AliZDCTrigger();}
 
+  
+  void  SetSpectatorsTrack() {fSpectatorTracked=0;}
+  Int_t const SpectatorsTracked() {return fSpectatorTracked;}
+
 private:
 
   AliZDC& operator = (const AliZDC&);
@@ -69,8 +73,10 @@ protected:
   AliZDCCalib*     fCalibData;		// Energy and equalization data for ZDC
 
   TString          fZDCCalibFName; 	// Name of the ZDC calibration data
+ 
+  Int_t fSpectatorTracked; // Are spectator tracked by generator?
   
-  ClassDef(AliZDC,7)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,8)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

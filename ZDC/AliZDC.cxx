@@ -59,7 +59,8 @@ AliZDC::AliZDC() :
   fNoShower(0),
   fPedCalib(0),
   fCalibData(0),
-  fZDCCalibFName("")
+  fZDCCalibFName(""),
+  fSpectatorTracked(1)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -79,7 +80,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fNoShower  (0),
   fPedCalib(0),
   fCalibData(0),
-  fZDCCalibFName("")
+  fZDCCalibFName(""),
+  fSpectatorTracked(1)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -119,7 +121,8 @@ AliDetector("ZDC","ZDC"),
 fNoShower(ZDC.fNoShower),
 fPedCalib(ZDC.fPedCalib),
 fCalibData(ZDC.fCalibData),
-fZDCCalibFName(ZDC.fZDCCalibFName)
+fZDCCalibFName(ZDC.fZDCCalibFName),
+fSpectatorTracked(ZDC.fSpectatorTracked)
 {
   // copy constructor
 }

@@ -41,6 +41,7 @@
 #include "AliZDCSDigit.h"
 #include "AliZDCDigit.h"
 #include "AliZDCFragment.h"
+#include "AliZDCv3.h"
 #include "AliZDCDigitizer.h"
 
 class AliCDBStorage;
@@ -156,10 +157,11 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     }
 
   // impact parameter and number of spectators
+  Int_t specTracked = 1;
   Float_t impPar = -1;
   Int_t specNTarg = 0, specPTarg = 0;
   Int_t specNProj = 0, specPProj = 0;
-  Float_t signalTime0 = 0;
+  Float_t signalTime0 = 0.;
 
   // loop over input streams
   for(Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
@@ -203,7 +205,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       }
       Float_t sdSignal = sdigit.GetLightPM();
       if(fIsSignalInADCGate == kFALSE){
-        AliWarning(Form("\t %f of ZDC signal 4 det.(%d, %d) out of ADC gate\n",
+        AliWarning(Form("\t Fraction %f of ZDC signal 4 det.(%d, %d) out of ADC gate\n",
 		fFracLostSignal,sdigit.GetSector(0),sdigit.GetSector(1)));
 	sdSignal = (1-fFracLostSignal)*sdSignal;
       }
@@ -225,32 +227,39 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     AliGenEventHeader* genHeader = header->GenEventHeader();
     if(!genHeader) continue;
     if(!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
-    impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
-    // 
-    specNProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
-    specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-    specNTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
-    specPTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-    printf("\n\t AliZDCDigitizer: b = %f fm\n"
-    " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
-    " \t    TARG.:  #spectator n %d, #spectator p %d\n", 
-    impPar, specNProj, specPProj, specNTarg, specPTarg);
+    
+    AliZDCv3 *ZDC = (AliZDCv3*)gAlice->GetDetector("ZDC");
+    specTracked = ZDC->SpectatorsTracked();
+    //printf("\n\t ZDC->SpectatorsTracked() = %d\n",specTracked);
+    //
+    if(specTracked==0){
+      impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter(); 
+      specNProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
+      specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
+      specNTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
+      specPTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
+      printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
+      " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
+      " \t    TARG.:  #spectator n %d, #spectator p %d\n\n", 
+      impPar, specNProj, specPProj, specNTarg, specPTarg);
+    }
+    
   }
 
   // Applying fragmentation algorithm and adding spectator signal
-  if(impPar >= 0) {
+  if(specTracked==0 && impPar) {
     Int_t freeSpecNProj, freeSpecPProj;
     Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
     Int_t freeSpecNTarg, freeSpecPTarg;
     Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
     SpectatorSignal(1, freeSpecNProj, pm);
-    printf("    AliZDCDigitizer -> Signal for %d PROJ free spectator n added\n",freeSpecNProj);
+    //printf("    AliZDCDigitizer -> Signal for %d PROJ free spectator n",freeSpecNProj);
     SpectatorSignal(2, freeSpecPProj, pm);
-    printf("    AliZDCDigitizer -> Signal for %d PROJ free spectator p added\n",freeSpecPProj);
+    //printf(" and %d free spectator p added\n",freeSpecPProj);
     SpectatorSignal(3, freeSpecNTarg, pm);
-    printf("    AliZDCDigitizer -> Signal for %d TARG free spectator n added\n",freeSpecNTarg);
+    //printf("    AliZDCDigitizer -> Signal for %d TARG free spectator n",freeSpecNTarg);
     SpectatorSignal(4, freeSpecPTarg, pm);
-    printf("    AliZDCDigitizer -> Signal for %d TARG free spectator p added\n",freeSpecPTarg);
+    //printf("and %d free spectator p added\n",freeSpecPTarg);
   }
 
 
