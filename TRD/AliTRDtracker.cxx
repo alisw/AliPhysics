@@ -736,7 +736,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     pt->SetPIDMethod(AliTRDtrack::kLQ);
     pt->CookPID(pidQ);
     seed->SetTRDpid(pt->GetPID());
-    seed->SetTRDpidQuality(pidQ);
+    seed->SetTRDntracklets(pidQ<<3);
 
     // update calibration
     if(calibra->GetHisto2d()) calibra->UpdateHistograms(pt);
@@ -3730,14 +3730,15 @@ Int_t AliTRDtracker::Freq(Int_t n, const Int_t *inlist
   // The size of output array has is 2*n 
   //
 
-  if (n <= 0) return 0;
+  if (n <= 0) {
+    return 0;
+  }
 
-  // Temporary array for sorting
-  Int_t *sindexS = new Int_t[n];   
-  Int_t *sindexF = new Int_t[2*n];
-  memset(outlist, 0, 2*n*sizeof(Int_t));
-  memset(sindexS, 0, n*sizeof(Int_t));
-  memset(sindexF, 0, 2*n*sizeof(Int_t));
+  Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
+  Int_t *sindexF = new Int_t[2*n];   
+  for (Int_t i = 0; i < n; i++) {
+    sindexF[i] = 0;
+  }
 
   TMath::Sort(n,inlist,sindexS,down); 
  

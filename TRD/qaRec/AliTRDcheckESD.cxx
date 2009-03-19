@@ -184,7 +184,7 @@ void AliTRDcheckESD::Exec(Option_t *){
     // TRD PID
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     // pid quality
-    esdTrack->GetTRDpidQuality();
+    //esdTrack->GetTRDntrackletsPID();
 
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
@@ -233,7 +233,7 @@ void AliTRDcheckESD::Exec(Option_t *){
       } else {
         TRDin=1;
         if(esdTrack->GetNcls(2)) TRDout=1;
-        if(esdTrack->GetTRDpidQuality()>=4) TRDpid=1;
+        if(esdTrack->GetTRDntrackletsPID()>=4) TRDpid=1;
       }
     } else { // track stopped in TPC 
       ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));

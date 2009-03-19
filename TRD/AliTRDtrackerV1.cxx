@@ -404,7 +404,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   if(quality) delete [] quality;
   
 
-  AliInfo(Form("Number of seeds: %d", nSeed));
+  AliInfo(Form("Number of TPC seeds: %d", nSeed));
   AliInfo(Form("Number of back propagated TRD tracks: %d", found));
       
   // run stand alone tracking
@@ -988,13 +988,13 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
+    tilt = tracklets[ipl].GetTilt();
     for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
-      tilt = tracklets[ipl].GetTilt();
       dx = x - xref;
       // Transformation
       t = 1./(x*x + y*y);
@@ -2169,15 +2169,15 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
   // The overall chamber quality is given by the product of this 2 contributions.
   // 
 
-  Double_t chamberQ[kNPlanes]; memset(chamberQ, 0, kNPlanes*sizeof(Double_t));
+  Double_t chamberQ[kNPlanes];
   AliTRDtrackingChamber *chamber = 0x0;
   for(int iplane=0; iplane<kNPlanes; iplane++){
     if(!(chamber = stack[iplane])) continue;
     chamberQ[iplane] = (chamber = stack[iplane]) ?  chamber->GetQuality() : 0.;
   }
 
-  Double_t tconfig[kNConfigs]; memset(tconfig, 0, kNConfigs*sizeof(Double_t));
-  Int_t planes[] = {0, 0, 0, 0};
+  Double_t tconfig[kNConfigs];
+  Int_t planes[4];
   for(int iconf=0; iconf<kNConfigs; iconf++){
     GetSeedingConfig(iconf, planes);
     tconfig[iconf] = fgTopologicQA[iconf];

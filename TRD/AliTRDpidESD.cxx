@@ -212,7 +212,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 
     // book PID to the track
     t->SetTRDpid(p);
-    t->SetTRDpidQuality(nPlanePID);
+    t->SetTRDntracklets(nPlanePID<<3);
   }
   
   return 0;

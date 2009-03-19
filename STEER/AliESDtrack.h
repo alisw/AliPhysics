@@ -205,8 +205,9 @@ public:
   void    SetTRDpid(const Double_t *p);
   
 // A.Bercuci
-  void    SetTRDpidQuality(UChar_t q){fTRDpidQuality = q;}
-  UChar_t GetTRDpidQuality() const {return fTRDpidQuality;}
+  void    SetTRDntracklets(UChar_t q){fTRDntracklets = q;}
+  UChar_t GetTRDntrackletsPID() const {return (fTRDntracklets>>3)&7;}
+  UChar_t GetTRDntracklets() const {return fTRDntracklets&7;}
 // end A.Bercuci
 
   void     SetNumberOfTRDslices(Int_t n);
@@ -407,7 +408,7 @@ protected:
   UChar_t fITSClusterMap;  // map of clusters, one bit per a layer
   UChar_t fTRDncls;        // number of clusters assigned in the TRD
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
-  UChar_t fTRDpidQuality;   // TRD PID quality according to number of planes. 6 is the best
+  UChar_t fTRDntracklets;  // number of TRD tracklets used for tracking/PID
 
   Int_t fTRDnSlices;     // number of slices used for PID in the TRD
   Double32_t *fTRDslices;  //[fTRDnSlices] 
@@ -417,7 +418,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,47)  //ESDtrack 
+  ClassDef(AliESDtrack,48)  //ESDtrack 
 };
 
 #endif 

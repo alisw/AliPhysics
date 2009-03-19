@@ -211,7 +211,7 @@ AliESDtrack::AliESDtrack() :
   fITSClusterMap(0),
   fTRDncls(0),
   fTRDncls0(0),
-  fTRDpidQuality(0),
+  fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0)
   
@@ -299,7 +299,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSClusterMap(track.fITSClusterMap),
   fTRDncls(track.fTRDncls),
   fTRDncls0(track.fTRDncls0),
-  fTRDpidQuality(track.fTRDpidQuality),
+  fTRDntracklets(track.fTRDntracklets),
   fTRDnSlices(track.fTRDnSlices),
   fTRDslices(0x0)
 {
@@ -398,7 +398,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fITSClusterMap(0),
   fTRDncls(0),
   fTRDncls0(0),
-  fTRDpidQuality(0),
+  fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0)
 {
@@ -516,7 +516,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fITSClusterMap(0),
   fTRDncls(0),
   fTRDncls0(0),
-  fTRDpidQuality(0),
+  fTRDntracklets(0),
   fTRDnSlices(0),
   fTRDslices(0x0)
 {
@@ -823,7 +823,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fITSClusterMap = source.fITSClusterMap; 
   fTRDncls   = source.fTRDncls;       
   fTRDncls0  = source.fTRDncls0;      
-  fTRDpidQuality  = source.fTRDpidQuality; 
+  fTRDntracklets  = source.fTRDntracklets; 
   return *this;
 }
 
@@ -994,7 +994,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
   fTRDLabel = 0;       
   fTRDQuality  = 0;
-  fTRDpidQuality = 0;
+  fTRDntracklets = 0;
   if(fTRDnSlices)
     delete[] fTRDslices;
   fTRDslices=0x0;

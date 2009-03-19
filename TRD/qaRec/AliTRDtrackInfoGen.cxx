@@ -251,7 +251,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     fTrackInfo->SetTrackId(esdTrack->GetID());
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     fTrackInfo->SetESDpid(p);
-    fTrackInfo->SetESDpidQuality(esdTrack->GetTRDpidQuality());
+    fTrackInfo->SetESDpidQuality(esdTrack->GetTRDntrackletsPID());
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
     // some other Informations which we may wish to store in order to find problematic cases

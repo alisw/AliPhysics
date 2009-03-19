@@ -504,7 +504,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     GetESDsData(28)->Fill(track->GetTRDBudget());
     GetESDsData(29)->Fill(track->GetTRDchi2());
     GetESDsData(30)->Fill(track->GetTRDTimBin(0));
-    GetESDsData(31)->Fill(track->GetTRDpidQuality());
+    GetESDsData(31)->Fill(track->GetTRDntrackletsPID());
     
     
     // dedx
@@ -523,7 +523,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     }
 
     // probabilities uniformity
-    if (track->GetTRDpidQuality() < 6) continue;
+    if (track->GetTRDntrackletsPID() < 6) continue;
     GetESDsData(35)->Fill(paramOut->GetZ()/paramOut->GetX());
     
     Int_t idx = 5 * sector + stack;

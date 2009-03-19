@@ -150,7 +150,7 @@ void AliTRDqaESDFriends::Exec(Option_t *)
     UInt_t status = track->GetStatus();
     if (!(status & AliESDtrack::kTRDrefit)) continue;
     if (!(status & AliESDtrack::kTRDpid)) continue;
-    if (track->GetTRDpidQuality() < 6) continue;
+    if (track->GetTRDntrackletsPID() < 6) continue;
 
     // standard selection
     AliESDfriend *fr = (AliESDfriend*)fESD->FindListObject("AliESDfriend");

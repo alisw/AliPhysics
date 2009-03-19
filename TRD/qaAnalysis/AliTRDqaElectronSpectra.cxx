@@ -226,7 +226,7 @@ void AliTRDqaElectronSpectra::Exec(Option_t *)
     UInt_t status = track->GetStatus();
     if (!(status & AliESDtrack::kTRDrefit)) continue;
     if (!(status & AliESDtrack::kTRDpid)) continue;
-    if (track->GetTRDpidQuality() < 6) continue;
+    if (track->GetTRDntrackletsPID() < 6) continue;
 
     Int_t sm = AliTRDqaAT::GetSector(paramOut->GetAlpha());
     Int_t stack = 5*sm + AliTRDqaAT::GetStack(paramOut);

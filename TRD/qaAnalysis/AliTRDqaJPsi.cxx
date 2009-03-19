@@ -225,7 +225,7 @@ void AliTRDqaJPsi::Exec(Option_t *)
     FillHist(track, step++);    
 
     if (!(status & AliESDtrack::kTRDpid)) continue;
-    if (track->GetTRDpidQuality() < 6) continue;
+    if (track->GetTRDntracklets() < 6) continue;
 
     cTracks[knSteps *charge + step]++;
     FillHist(track, step++);  

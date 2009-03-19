@@ -293,7 +293,7 @@ Bool_t AliTRDtrackV1::CookPID()
   for(int ip=0; ip<kNplane; ip++){
     if(fTrackletIndex[ip] == 0xffff) continue;
     if(!fTracklet[ip]->IsOK()) continue;
-    if(!(prob = fTracklet[ip]->GetProbability())) return kFALSE;
+    if(!(prob = fTracklet[ip]->GetProbability(kTRUE))) return kFALSE;
     
     Int_t nspec = 0; // quality check of tracklet dEdx
     for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
@@ -372,21 +372,20 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
 //_______________________________________________________________
 Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 {
-  //
-  // Get the predicted chi2
-  //
-  
-  Double_t x      = trklt->GetX0();
-  Double_t p[2]   = { trklt->GetYat(x)
-                    , trklt->GetZat(x) };
-  Double_t cov[3];
-  trklt->GetCovAt(x, cov);
-  
-  const Double_t *cc = GetCovariance();
-  Double_t dy = p[0]-GetY(); dy*=dy;
-  Double_t s2 = cov[0]+cc[0];
-  return s2 > 0. ? dy/s2 : 0.; 
-  //return AliExternalTrackParam::GetPredictedChi2(p, cov);
+// Compute chi2 between tracklet and track. The value is calculated at the radial position of the track
+// equal to the reference radial position of the tracklet (see AliTRDseedV1)
+// 
+// The chi2 estimator is computed according to the following formula
+// BEGIN_LATEX
+// #chi^{2}=(X_{trklt}-X_{track})(C_{trklt}+C_{track})^{-1}(X_{trklt}-X_{track})^{T}
+// END_LATEX
+// where X=(y z), the position of the track/tracklet in the yz plane
+// 
+
+  Double_t x = GetX();
+  Double_t p[2]   = { trklt->GetYat(x), trklt->GetZat(x)};
+  Double_t cov[3]; trklt->GetCovAt(x, cov);
+  return AliExternalTrackParam::GetPredictedChi2(p, cov);
 }
 
 //_______________________________________________________________
@@ -791,16 +790,20 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   Int_t nslices = fReconstructor->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
   track->SetNumberOfTRDslices(nslices);
 
+  Int_t n = 0;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
+    n++;
     if(!fTracklet[ip]->IsOK()) continue;
     fTracklet[ip]->CookdEdx(nslices);
     Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
   }
 
-  // copy PID to ESD
-  if(!fPIDquality) return;
-  track->SetTRDpid(fPID);
-  track->SetTRDpidQuality(fPIDquality);
+  if(!fPIDquality) track->SetTRDntracklets(n);
+  else {
+    track->SetTRDpid(fPID);
+    n |= (fPIDquality<<3);
+    track->SetTRDntracklets(n);
+  }
 }
