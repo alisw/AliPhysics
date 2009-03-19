@@ -221,10 +221,31 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
   Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
-  Double_t dMmin1 = fHistProM->GetBinContent(1);  //average over M-1
-  Double_t dMaMb  = fHistProM->GetBinContent(2);  //average over Ma*Mb
+
+  Double_t dMmin1    = fHistProM->GetBinContent(1);  //average over M-1
+  Double_t dMmin1Err = fHistProM->GetBinError(1);    //error on average over M-1
+  Double_t dMaMb    = fHistProM->GetBinContent(2);   //average over Ma*Mb
+  Double_t dMaMbErr = fHistProM->GetBinError(2);     //error on average over Ma*Mb
+
+  Double_t dMcorrection = 0.;     //correction factor for Ma != Mb
+  Double_t dMcorrectionErr = 0.;  
+  Double_t dMcorrectionErrRel = 0.; 
+  Double_t dMcorrectionErrRel2 = 0.; 
+
+  if (dMaMb != 0. && dMmin1 != 0.) {
+    dMcorrection    = dMmin1/(TMath::Sqrt(dMaMb)); 
+    dMcorrectionErr = dMcorrection*(dMmin1Err/dMmin1 + dMaMbErr/(2*dMaMb));
+    dMcorrectionErrRel = dMcorrectionErr/dMcorrection;
+    dMcorrectionErrRel2 = dMcorrectionErrRel*dMcorrectionErrRel;
+  }
+
   Double_t dQaQbAv  = fHistProQaQb->GetBinContent(1); //average over events
-  //  Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
+  Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
+  Double_t dQaQbErrRel = 0.;
+  if (dQaQbAv != 0.) {
+    dQaQbErrRel = dQaQbErr/dQaQbAv; }
+  Double_t dQaQbErrRel2 = dQaQbErrRel*dQaQbErrRel;
+
   if (dQaQbAv <= 0.){
     //set v to -0
     fCommonHistsRes->FillIntegratedFlowRP(-0.,0.);
@@ -234,13 +255,10 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     cout<<"dV(POI) = -0. +- 0."<<endl;
   } else {
     Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);
-    if (dMaMb>0.) { dQaQbSqrt *= dMmin1/(TMath::Sqrt(dMaMb)); }
+    if (dMaMb>0.) { dQaQbSqrt *= dMcorrection; }
     else { dQaQbSqrt = 0.; }
-    //    Double_t dQaQbSqrtErr = (dQaQbSqrt/2)*(dQaQbErr/dQaQbAv);
-    Double_t dQaQbSqrtErrRel = 0.;
-    //  if (dQaQbSqrt!=0.) {dQaQbSqrtErr/dQaQbSqrt; }
-    Double_t dQaQbSqrtErrRel2 = dQaQbSqrtErrRel*dQaQbSqrtErrRel;
-
+    Double_t dQaQbSqrtErrRel2 = dMcorrectionErrRel2 + (1/4)*dQaQbErrRel2;
+    
     //v as a function of eta for RP selection
     for(Int_t b=0;b<iNbinsEta;b++) {
       Double_t duQpro = fHistProUQetaRP->GetBinContent(b);
