@@ -405,7 +405,7 @@ AliDigitizer* AliZDC::CreateDigitizer(AliRunDigitizer* manager) const
   // Create the digitizer for ZDC
   AliZDCDigitizer *zdcDigitizer = new AliZDCDigitizer(manager);
   if(fSpectatorTracked==0) zdcDigitizer->SetSpectators2Track();
-  printf("\n**************************ZDC digitizer created with Spectators2Track = %d\n\n", fSpectatorTracked);
+  //printf("\n**************************ZDC digitizer created with Spectators2Track = %d\n\n", fSpectatorTracked);
   return zdcDigitizer;
 }
 
