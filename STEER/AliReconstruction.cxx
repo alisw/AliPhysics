@@ -236,6 +236,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 
   fRecoParam(),
 
+  fSPDTrackleter(NULL),
+
   fDiamondProfileSPD(NULL),
   fDiamondProfile(NULL),
   fDiamondProfileTPC(NULL),
@@ -328,6 +330,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fParentRawReader(NULL),
 
   fRecoParam(rec.fRecoParam),
+
+  fSPDTrackleter(NULL),
 
   fDiamondProfileSPD(rec.fDiamondProfileSPD),
   fDiamondProfile(rec.fDiamondProfile),
@@ -453,6 +457,8 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
     fQACycles[iDet] = rec.fQACycles[iDet];
     fQAWriteExpert[iDet] = rec.fQAWriteExpert[iDet] ;
   } 
+
+  delete fSPDTrackleter; fSPDTrackleter = NULL;
     
   delete fDiamondProfileSPD; fDiamondProfileSPD = NULL;
   if (rec.fDiamondProfileSPD) fDiamondProfileSPD = new AliESDVertex(*rec.fDiamondProfileSPD);
@@ -1616,6 +1622,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       }
     }
 
+    // For Plane Efficiency: run the SPD trackleter
+    if (fRunPlaneEff && fSPDTrackleter) {
+      if (!RunSPDTrackleting(fesd)) {
+        if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+    }
+
     // Muon tracking
     if (!fRunTracking.IsNull()) {
       if (fRunMuonTracking) {
@@ -2012,6 +2025,55 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
   eventNr++;
+  return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunSPDTrackleting(AliESDEvent*& esd)
+{
+// run the SPD trackleting (for SPD efficiency purpouses)
+
+  AliCodeTimerAuto("")
+
+  Double_t vtxPos[3] = {0, 0, 0};
+  Double_t vtxErr[3] = {0.0, 0.0, 0.0};
+/*
+  TArrayF mcVertex(3);
+  // if(MC)
+  if (fRunLoader->GetHeader() && fRunLoader->GetHeader()->GenEventHeader()) {
+    fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
+    for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
+  }
+*/
+  const AliESDVertex *vertex = esd->GetVertex();
+  if(!vertex){
+    AliWarning("Vertex not found");
+    return kFALSE;
+  }
+  vertex->GetXYZ(vtxPos);
+  vertex->GetSigmaXYZ(vtxErr);
+  if (fSPDTrackleter) {
+    AliInfo("running the SPD Trackleter for Plane Efficiency Evaluation");
+
+    // load clusters
+    fLoader[0]->LoadRecPoints("read");
+    TTree* tree = fLoader[0]->TreeR();
+    if (!tree) {
+      AliError("Can't get the ITS cluster tree");
+      return kFALSE;
+    }
+    fSPDTrackleter->LoadClusters(tree);
+    fSPDTrackleter->SetVertex(vtxPos, vtxErr);
+    // run trackleting
+    if (fSPDTrackleter->Clusters2Tracks(esd) != 0) {
+      AliError("AliITSTrackleterSPDEff Clusters2Tracks failed");
+     // fLoader[0]->UnloadRecPoints();
+      return kFALSE;
+    }
+//fSPDTrackleter->UnloadRecPoints();
+  } else {
+    AliWarning("SPDTrackleter not available");
+    return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -2699,6 +2761,9 @@ void AliReconstruction::CleanUp()
   delete fRunInfo;
   fRunInfo = NULL;
 
+  delete fSPDTrackleter;
+  fSPDTrackleter = NULL;
+
   delete ftVertexer;
   ftVertexer = NULL;
   
@@ -2872,10 +2937,10 @@ Bool_t AliReconstruction::FinishPlaneEff() {
  //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
  //
  Bool_t ret=kFALSE;
- //for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+ //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
  for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS
    //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-   if(fTracker[iDet]) {
+   if(fTracker[iDet] && fTracker[iDet]->GetPlaneEff()) {
       AliPlaneEff *planeeff=fTracker[iDet]->GetPlaneEff();
       TString name=planeeff->GetName();
       name+=".root";
@@ -2888,6 +2953,15 @@ Bool_t AliReconstruction::FinishPlaneEff() {
         ret*=planeeff->WriteHistosToFile(hname,"RECREATE");
       }
    }
+   if(fSPDTrackleter) {
+     AliPlaneEff *planeeff=fSPDTrackleter->GetPlaneEff();
+      TString name="AliITSPlaneEffSPDtracklet.root";
+      TFile* pefile = TFile::Open(name, "RECREATE");
+      ret=(Bool_t)planeeff->Write();
+      pefile->Close();
+      AliESDEvent *dummy=NULL;
+      ret=(Bool_t)fSPDTrackleter->PostProcess(dummy); // take care of writing other files
+   }
  }
  return ret;
 }
@@ -2896,7 +2970,7 @@ Bool_t AliReconstruction::InitPlaneEff() {
 //
  // Here execute all the necessary operations, before of the tracking phase,
  // for the evaluation of PlaneEfficiencies, in case required for some detectors.
- // E.g., read from a DataBase file a first evaluation of the PlaneEfficiency 
+ // E.g., read from a DataBase file a first evaluation of the PlaneEfficiency
  // which should be updated/recalculated.
  //
  // This Preliminary version will work only FOR ITS !!!!!
@@ -2905,7 +2979,17 @@ Bool_t AliReconstruction::InitPlaneEff() {
  //  Input: none
  //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
  //
- AliWarning(Form("Implementation of this method not yet done !! Method return kTRUE"));
+ AliWarning(Form("Implementation of this method not yet completed !! Method return kTRUE"));
+
+  fSPDTrackleter = NULL;
+  AliReconstructor* itsReconstructor = GetReconstructor(0);
+  if (itsReconstructor) {
+    fSPDTrackleter = itsReconstructor->CreateTrackleter(); // this is NULL unless required in RecoParam
+  }
+  if (fSPDTrackleter) { 
+    AliInfo("Trackleter for SPD has been created");
+  }
+
  return kTRUE;
 }
 

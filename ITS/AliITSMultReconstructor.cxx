@@ -71,6 +71,7 @@ ClassImp(AliITSMultReconstructor)
 
 //____________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor():
+TObject(),
 fClustersLay1(0),
 fClustersLay2(0),
 fDetectorIndexClustersLay1(0),

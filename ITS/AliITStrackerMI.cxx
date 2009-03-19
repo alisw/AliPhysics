@@ -229,7 +229,8 @@ fPlaneEff(0) {
   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 
   // only for plane efficiency evaluation
-  if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff()) {
+  if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
+      AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0) {
     Int_t iplane=AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff();
     if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane))
       AliWarning(Form("Evaluation of Plane Eff for layer %d will be attempted without removing it from tracker",iplane));
@@ -730,7 +731,8 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       fTrackToFollow.ResetCovariance(10.);
 
     //Refitting...
-    Bool_t pe=AliITSReconstructor::GetRecoParam()->GetComputePlaneEff();
+    Bool_t pe=(AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
+               AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0);
     AliDebug(2,Form("Refit LABEL %d  %d",t->GetLabel(),t->GetNumberOfClusters()));
     if (RefitAt(AliITSRecoParam::GetrInsideSPD1(),&fTrackToFollow,t,kTRUE,pe)) {
        AliDebug(2,"  refit OK");

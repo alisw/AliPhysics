@@ -198,6 +198,20 @@ class AliITSRecoParam : public AliDetectorRecoParam
       { fComputePlaneEff=eff; fHistoPlaneEff=his; return; }
   Bool_t GetComputePlaneEff() const { return fComputePlaneEff; }
   Bool_t GetHistoPlaneEff() const { return fHistoPlaneEff; }
+  void    SetUseTrackletsPlaneEff(Bool_t use=kTRUE) {fUseTrackletsPlaneEff=use; return;}
+  Bool_t  GetUseTrackletsPlaneEff() const {return fUseTrackletsPlaneEff;}
+  void    SetOptTrackletsPlaneEff(Bool_t mc=kFALSE,Bool_t bkg=kFALSE)
+           {fMCTrackletsPlaneEff=mc;fBkgTrackletsPlaneEff=bkg; return;}
+  Bool_t  GetMCTrackletsPlaneEff() const {return fMCTrackletsPlaneEff;}
+  Bool_t  GetBkgTrackletsPlaneEff() const {return fBkgTrackletsPlaneEff;}
+  void    SetTrackleterPhiWindowL1(Float_t w=0.10) {fTrackleterPhiWindowL1=w; return;}
+  Float_t GetTrackleterPhiWindowL1() const {return fTrackleterPhiWindowL1;}
+  void    SetTrackleterZetaWindowL1(Float_t w=0.6) {fTrackleterZetaWindowL1=w; return;}
+  Float_t GetTrackleterZetaWindowL1() const {return fTrackleterZetaWindowL1;}
+  void    SetUpdateOncePerEventPlaneEff(Bool_t use=kTRUE) {fUpdateOncePerEventPlaneEff=use; return;}
+  Bool_t  GetUpdateOncePerEventPlaneEff() const {return fUpdateOncePerEventPlaneEff;}
+  void    SetMinContVtxPlaneEff(Int_t n=3) {fMinContVtxPlaneEff=n; return;}
+  Int_t   GetMinContVtxPlaneEff() const {return fMinContVtxPlaneEff;}
   void   SetIPlanePlaneEff(Int_t i=0) {if(i<0 || i>=AliITSgeomTGeo::kNLayers) return; fIPlanePlaneEff=i; }
   Int_t  GetIPlanePlaneEff() const {return fIPlanePlaneEff;}
   void   SetReadPlaneEffFrom0CDB(Bool_t read=kTRUE) { fReadPlaneEffFromOCDB=read; }
@@ -236,7 +250,6 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t  GetInnerStartLayerSA() const { return fInnerStartLayerSA; }
   void   SetMinNPointsSA(Int_t np) { fMinNPointsSA=np; return; }
   Int_t  GetMinNPointsSA() const { return fMinNPointsSA;}
-
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
@@ -436,6 +449,13 @@ class AliITSRecoParam : public AliDetectorRecoParam
   // Plane Efficiency evaluation
   Bool_t fComputePlaneEff;  // flag to enable computation of PlaneEfficiency
   Bool_t fHistoPlaneEff;  // flag to enable auxiliary PlaneEff histograms (e.g. residual distributions)
+  Bool_t fUseTrackletsPlaneEff; // flag to enable estimate of SPD PlaneEfficiency using tracklets
+  Bool_t fMCTrackletsPlaneEff; // flag to enable the use of MC info for corrections (SPD PlaneEff using tracklets)
+  Bool_t fBkgTrackletsPlaneEff; // flag to evaluate background instead of normal use (SPD PlaneEff using tracklets)
+  Float_t fTrackleterPhiWindowL1; // Search window in phi for inner layer (1) (SPD PlaneEff using tracklets)
+  Float_t fTrackleterZetaWindowL1; // Search window in zeta for inner layer (1) (SPD PlaneEff using tracklets)
+  Bool_t fUpdateOncePerEventPlaneEff; // option to update chip efficiency once/event (to avoid doubles)
+  Int_t  fMinContVtxPlaneEff; // min number of contributors to ESD vtx for SPD PlaneEff using tracklets
   Int_t  fIPlanePlaneEff; // index of the plane (in the range [0,5])  to study the efficiency
   Bool_t fReadPlaneEffFromOCDB; // enable initial reading of Plane Eff statistics from OCDB
                                // The analized events would be used to increase the statistics
@@ -487,7 +507,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 
-  ClassDef(AliITSRecoParam,17) // ITS reco parameters
+  ClassDef(AliITSRecoParam,18) // ITS reco parameters
 };
 
 #endif

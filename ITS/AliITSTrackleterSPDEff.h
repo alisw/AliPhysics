@@ -9,8 +9,9 @@
 // 
 // AliITSTrackleterSPDEff - find SPD chips efficiencies by using tracklets.
 // 
-// This class has been derived from AliITSMultReconstructor (see
-// it for more details). It is the class for the Trackleter used to estimate
+// This class was originally derived from AliITSMultReconstructor (see
+// it for more details). Later on, the inheritance was changed to AliTracker
+// It is the class for the Trackleter used to estimate
 // SPD plane efficiency.
 // The trackleter prediction is built using the vertex and 1 cluster.
 
@@ -22,16 +23,29 @@
 //____________________________________________________________________
 
 class AliStack;
-#include "AliITSMultReconstructor.h"
+class TTree;
+class TH1F;
+class TH2F;
+#include "AliTracker.h"
 #include "AliITSPlaneEffSPD.h"
+#include "AliPlaneEff.h"
 
-class AliITSTrackleterSPDEff : public AliITSMultReconstructor 
+class AliITSTrackleterSPDEff : public  AliTracker
 {
 public:
   AliITSTrackleterSPDEff();
   virtual ~AliITSTrackleterSPDEff();
+  Int_t Clusters2Tracks(AliESDEvent *);
+  Int_t PostProcess(AliESDEvent *);
+
+  virtual Int_t PropagateBack(AliESDEvent*) {return 0;}
+  virtual Int_t RefitInward(AliESDEvent*) {return 0;}
+  Int_t LoadClusters(TTree* cl) {LoadClusterArrays(cl); return 0;} // see implementation in AliITSMultReconstructor
+  virtual void UnloadClusters() {return;}
+  virtual AliCluster *GetCluster(Int_t) const {return NULL;}
+
   // Main method to perform the trackleter and the SPD efficiency evaluation
-  void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes, AliStack* pStack=0x0, TTree* tRef=0x0);
+  void Reconstruct(AliStack* pStack=0x0, TTree* tRef=0x0);
 
   void SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b=kTRUE){  // method to study residual background:
     if(b) AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer)); 
@@ -40,13 +54,26 @@ public:
     else AliInfo("Nothing done: input argument (ilayer) either 0 or 1");   // given layer is applied. In such a way 
   }                                                                        // you remove all the true tracklets.
 
+  void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
+  void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
+  void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
+
   void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
   void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
   void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;} // as in the base class but 
+
+  Int_t GetNClustersLayer1() const {return fNClustersLay1;}
+  Int_t GetNClustersLayer2() const {return fNClustersLay2;}
+  Int_t GetNTracklets() const {return fNTracklets;}
+
+  Float_t* GetClusterLayer1(Int_t n) {return fClustersLay1[n];}
+  Float_t* GetClusterLayer2(Int_t n) {return fClustersLay2[n];}
+  Float_t* GetTracklet(Int_t n) {return fTracklets[n];}
 									      // for the inner layer
   void SetUpdateOncePerEventPlaneEff(Bool_t b = kTRUE) {fUpdateOncePerEventPlaneEff = b;}
   
-  AliITSPlaneEffSPD* GetPlaneEff() const {return fPlaneEffSPD;}  // return a pointer to the AliITSPlaneEffSPD
+  AliITSPlaneEffSPD* GetPlaneEffSPD() const {return fPlaneEffSPD;}  // return a pointer to the AliITSPlaneEffSPD
+  AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEffSPD;}   // return the pointer to AliPlaneEff
   
   void SetMC(Bool_t mc=kTRUE) {fMC=mc; fMC? InitPredictionMC() : DeletePredictionMC(); return;}  // switch on access to MC true 
   Bool_t GetMC() const {return fMC;}  // check the access to MC true
@@ -115,13 +142,52 @@ public:
   // write histograms into a root file on disk
   Bool_t WriteHistosToFile(TString filename="TrackleterSPDHistos.root",Option_t* option = "RECREATE");
   // switch on/off the extra histograms
-  void SetHistOn(Bool_t his=kTRUE) {AliITSMultReconstructor::SetHistOn(his); 
+  void SetHistOn(Bool_t his=kTRUE) {fHistOn=his; 
          if(GetHistOn()) {DeleteHistos(); BookHistos();} else DeleteHistos(); return;}
 
 protected:
   AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff& mr); // protected method: no copy allowed from outside
   AliITSTrackleterSPDEff& operator=(const AliITSTrackleterSPDEff& mr);
+//
+//// From AliITSMultReconstructor
+//
+  Float_t**     fClustersLay1;               // clusters in the 1st layer of ITS
+  Float_t**     fClustersLay2;               // clusters in the 2nd layer of ITS
 
+  Float_t**     fTracklets;            // tracklets
+  Bool_t*       fAssociationFlag;      // flag for the associations
+
+  Int_t         fNClustersLay1;        // Number of clusters (Layer1)
+  Int_t         fNClustersLay2;        // Number of clusters (Layer2)
+  Int_t         fNTracklets;           // Number of tracklets
+
+  // Following members are set via AliITSRecoParam
+  Bool_t        fOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
+  Float_t       fPhiWindow;                    // Search window in phi
+  Float_t       fZetaWindow;                   // Search window in eta
+  Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
+  Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
+
+  Bool_t        fHistOn;               // Option to define and fill the histograms
+
+  TH1F*         fhClustersDPhiAcc;     // Phi2 - Phi1 for tracklets
+  TH1F*         fhClustersDThetaAcc;   // Theta2 - Theta1 for tracklets
+  TH1F*         fhClustersDZetaAcc;    // z2 - z1projected for tracklets
+  TH1F*         fhClustersDPhiAll;     // Phi2 - Phi1 all the combinations
+  TH1F*         fhClustersDThetaAll;   // Theta2 - Theta1 all the combinations
+  TH1F*         fhClustersDZetaAll;    // z2 - z1projected all the combinations
+
+  TH2F*         fhDPhiVsDThetaAll;     // 2D plot for all the combinations
+  TH2F*         fhDPhiVsDThetaAcc;     // same plot for tracklets
+  TH2F*         fhDPhiVsDZetaAll;      // 2d plot for all the combination
+  TH2F*         fhDPhiVsDZetaAcc;      // same plot for tracklets
+
+  TH1F*         fhetaTracklets;        // Pseudorapidity distr. for tracklets
+  TH1F*         fhphiTracklets;        // Azimuthal (Phi) distr. for tracklets
+  TH1F*         fhetaClustersLay1;     // Pseudorapidity distr. for Clusters L. 1
+  TH1F*         fhphiClustersLay1;     // Azimuthal (Phi) distr. for Clusters L. 1
+//
+// 
   Bool_t*       fAssociationFlag1;    // flag for the associations (Layer 1)
   UInt_t*       fChipPredOnLay2;      // prediction for the chip traversed by the tracklet 
                                       // based on vtx and ClusterLay1 (to be used in extrapolation)
@@ -201,6 +267,8 @@ protected:
   void DeleteHistos(); //delete histos from memory
   // Method to apply a rotation by 180degree to all RecPoints (x->-x; y->-y) on a given layer
   void ReflectClusterAroundZAxisForLayer(Int_t ilayer); // to be used for backgnd estimation on real data 
+
+  void LoadClusterArrays(TTree* tree);
 
   ClassDef(AliITSTrackleterSPDEff,3)
 };

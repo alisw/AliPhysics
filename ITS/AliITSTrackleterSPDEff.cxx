@@ -36,21 +36,52 @@
 #include <Riostream.h>
 #include <TClonesArray.h>
 
-#include "AliITSMultReconstructor.h"
+#include "AliTracker.h"
 #include "AliITSTrackleterSPDEff.h"
 #include "AliITSgeomTGeo.h"
 #include "AliLog.h"
 #include "AliITSPlaneEffSPD.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
-
+#include "AliRunLoader.h"
+#include "AliITSReconstructor.h"
+#include "AliITSRecPoint.h"
 //____________________________________________________________________
 ClassImp(AliITSTrackleterSPDEff)
 
 
 //____________________________________________________________________
 AliITSTrackleterSPDEff::AliITSTrackleterSPDEff():
-AliITSMultReconstructor(),
+AliTracker(),
+//
+fClustersLay1(0),
+fClustersLay2(0),
+fTracklets(0),
+fAssociationFlag(0),
+fNClustersLay1(0),
+fNClustersLay2(0),
+fNTracklets(0),
+fOnlyOneTrackletPerC2(0),
+fPhiWindow(0),
+fZetaWindow(0),
+fPhiOverlapCut(0),
+fZetaOverlapCut(0),
+fHistOn(0),
+fhClustersDPhiAcc(0),
+fhClustersDThetaAcc(0),
+fhClustersDZetaAcc(0),
+fhClustersDPhiAll(0),
+fhClustersDThetaAll(0),
+fhClustersDZetaAll(0),
+fhDPhiVsDThetaAll(0),
+fhDPhiVsDThetaAcc(0),
+fhDPhiVsDZetaAll(0),
+fhDPhiVsDZetaAcc(0),
+fhetaTracklets(0),
+fhphiTracklets(0),
+fhetaClustersLay1(0),
+fhphiClustersLay1(0),
+//
 fAssociationFlag1(0),
 fChipPredOnLay2(0),
 fChipPredOnLay1(0),
@@ -64,7 +95,7 @@ fPlaneEffSPD(0),
 fReflectClusterAroundZAxisForLayer0(kFALSE),
 fReflectClusterAroundZAxisForLayer1(kFALSE),
 fMC(0),
-fUseOnlyPrimaryForPred(0),
+fUseOnlyPrimaryForPred(1),
 fUseOnlySecondaryForPred(0), 
 fUseOnlySameParticle(0),
 fUseOnlyDifferentParticle(0),
@@ -95,7 +126,15 @@ fhetaClustersLay2(0),
 fhphiClustersLay2(0)
 {
    // default constructor
-
+// from AliITSMultReconstructor
+  SetPhiWindow();
+  SetZetaWindow();
+  SetOnlyOneTrackletPerC2();
+  fClustersLay1       = new Float_t*[300000];
+  fClustersLay2       = new Float_t*[300000];
+  fTracklets          = new Float_t*[300000];
+  fAssociationFlag    = new Bool_t[300000];
+//
   SetPhiWindowL1();
   SetZetaWindowL1();
   SetOnlyOneTrackletPerC1();
@@ -106,6 +145,12 @@ fhphiClustersLay2(0)
   fChipUpdatedInEvent = new Bool_t[1200];
 
   for(Int_t i=0; i<300000; i++) {
+    // from AliITSMultReconstructor
+    fClustersLay1[i]       = new Float_t[6];
+    fClustersLay2[i]       = new Float_t[6];
+    fTracklets[i]          = new Float_t[5];
+    fAssociationFlag[i]    = kFALSE;
+    //
     fAssociationFlag1[i]   = kFALSE;
   }
   for(Int_t i=0;i<1200; i++) fChipUpdatedInEvent[i] = kFALSE;
@@ -115,7 +160,37 @@ fhphiClustersLay2(0)
   fPlaneEffSPD = new AliITSPlaneEffSPD();
 }
 //______________________________________________________________________
-AliITSTrackleterSPDEff::AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff &mr) : AliITSMultReconstructor(mr),
+AliITSTrackleterSPDEff::AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff &mr) :  
+AliTracker(mr),
+// from AliITSMultReconstructor
+fClustersLay1(mr.fClustersLay1),
+fClustersLay2(mr.fClustersLay2),
+fTracklets(mr.fTracklets),
+fAssociationFlag(mr.fAssociationFlag),
+fNClustersLay1(mr.fNClustersLay1),
+fNClustersLay2(mr.fNClustersLay2),
+fNTracklets(mr.fNTracklets),
+fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
+fPhiWindow(mr.fPhiWindow),
+fZetaWindow(mr.fZetaWindow),
+fPhiOverlapCut(mr.fPhiOverlapCut),
+fZetaOverlapCut(mr.fZetaOverlapCut),
+fHistOn(mr.fHistOn),
+fhClustersDPhiAcc(mr.fhClustersDPhiAcc),
+fhClustersDThetaAcc(mr.fhClustersDThetaAcc),
+fhClustersDZetaAcc(mr.fhClustersDZetaAcc),
+fhClustersDPhiAll(mr.fhClustersDPhiAll),
+fhClustersDThetaAll(mr.fhClustersDThetaAll),
+fhClustersDZetaAll(mr.fhClustersDZetaAll),
+fhDPhiVsDThetaAll(mr.fhDPhiVsDThetaAll),
+fhDPhiVsDThetaAcc(mr.fhDPhiVsDThetaAcc),
+fhDPhiVsDZetaAll(mr.fhDPhiVsDZetaAll),
+fhDPhiVsDZetaAcc(mr.fhDPhiVsDZetaAcc),
+fhetaTracklets(mr.fhetaTracklets),
+fhphiTracklets(mr.fhphiTracklets),
+fhetaClustersLay1(mr.fhetaClustersLay1),
+fhphiClustersLay1(mr.fhphiClustersLay1),
+//
 fAssociationFlag1(mr.fAssociationFlag1),
 fChipPredOnLay2(mr.fChipPredOnLay2),
 fChipPredOnLay1(mr.fChipPredOnLay1),
@@ -172,7 +247,18 @@ AliITSTrackleterSPDEff& AliITSTrackleterSPDEff::operator=(const AliITSTrackleter
 //______________________________________________________________________
 AliITSTrackleterSPDEff::~AliITSTrackleterSPDEff(){
   // Destructor
-
+// from AliITSMultReconstructor
+ // delete arrays
+  for(Int_t i=0; i<300000; i++) {
+    delete [] fClustersLay1[i];
+    delete [] fClustersLay2[i];
+    delete [] fTracklets[i];
+  }
+  delete [] fClustersLay1;
+  delete [] fClustersLay2;
+  delete [] fTracklets;
+  delete [] fAssociationFlag;
+//
   // delete histograms
   DeleteHistos();
 
@@ -201,23 +287,25 @@ AliITSTrackleterSPDEff::~AliITSTrackleterSPDEff(){
 }
 //____________________________________________________________________
 void
-AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t*, AliStack *pStack, TTree *tRef) {
+//AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t*, AliStack *pStack, TTree *tRef) {
+AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
   //
-  // - calls LoadClusterArray that finds the position of the clusters
-  //   (in global coord) 
-  // - convert the cluster coordinates to theta, phi (seen from the
-  //   interaction vertex). Find the extrapolation/interpolation point.
+  // - you have to take care of the following, before of using Reconstruct
+  //   1) call LoadClusters(TTree* cl) that finds the position of the clusters (in global coord)
+  //   and  convert the cluster coordinates to theta, phi (seen from the
+  //   interaction vertex). 
+  //   2) call SetVertex(vtxPos, vtxErr) which set the position of the vertex
+  // - Find the extrapolation/interpolation point.
   // - Find the chip corresponding to that
   // - Check if there is a cluster near that point  
   //
-
   // reset counters
-  fNClustersLay1 = 0;
-  fNClustersLay2 = 0;
   fNTracklets = 0; 
-  fNSingleCluster = 0; 
-  // loading the clusters 
-  LoadClusterArrays(clusterTree);
+  // retrieve the vertex position
+  Float_t vtx[3];
+  vtx[0]=(Float_t)GetX();
+  vtx[1]=(Float_t)GetY();
+  vtx[2]=(Float_t)GetZ();
   // to study residual background (i.e. contribution from TT' to measured efficiency) 
   if(fReflectClusterAroundZAxisForLayer0) ReflectClusterAroundZAxisForLayer(0);
   if(fReflectClusterAroundZAxisForLayer1) ReflectClusterAroundZAxisForLayer(1);
@@ -908,7 +996,7 @@ Bool_t AliITSTrackleterSPDEff::PrimaryTrackChecker(Int_t ipart,AliStack* stack) 
 //  AliStack::IsPhysicalPrimary() (note that there also Sigma0 are considered as 
 //  a stable particle: it has no effect on this analysis). 
 //  This method can be called only for MC events, where Kinematics is available.
-//  if fUseOnlyStableParticle is kTRUE (via SetseOnlyStableParticle) then it 
+//  if fUseOnlyStableParticle is kTRUE (via SetUseOnlyStableParticle) then it 
 //  returns kTRUE if also AliITSTrackleterSPDEff::DecayingTrackChecker() return 0.
 //  The latter (see below) try to verify if a primary particle is also "detectable".
 //
@@ -1340,7 +1428,7 @@ istream &operator>>(istream &is,AliITSTrackleterSPDEff &s){
 //______________________________________________________________________
 void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
 //
-// This Method write into an asci file (do not know why binary does not work)
+// This Method write into an either asci or root file 
 // the used cuts and the statistics  of the MC related quantities
 // The method SetMC() has to be called before 
 // Input TString filename: name of file for output (it deletes already existing 
@@ -1507,7 +1595,23 @@ Bool_t AliITSTrackleterSPDEff::SaveHists() {
 
   if (!GetHistOn()) return kFALSE;
 
-  AliITSMultReconstructor::SaveHists(); // this save the histograms of the base class
+//  AliITSMultReconstructor::SaveHists(); // this save the histograms of the base class
+  fhClustersDPhiAll->Write();
+  fhClustersDThetaAll->Write();
+  fhClustersDZetaAll->Write();
+  fhDPhiVsDThetaAll->Write();
+  fhDPhiVsDZetaAll->Write();
+
+  fhClustersDPhiAcc->Write();
+  fhClustersDThetaAcc->Write();
+  fhClustersDZetaAcc->Write();
+  fhDPhiVsDThetaAcc->Write();
+  fhDPhiVsDZetaAcc->Write();
+
+  fhetaTracklets->Write();
+  fhphiTracklets->Write();
+  fhetaClustersLay1->Write();
+  fhphiClustersLay1->Write();
 
   fhClustersDPhiInterpAll->Write();
   fhClustersDThetaInterpAll->Write();
@@ -1532,7 +1636,7 @@ Bool_t AliITSTrackleterSPDEff::WriteHistosToFile(TString filename, Option_t* opt
   // Also the histograms from the base class are saved 
   //
   if (!GetHistOn()) return kFALSE;
-  if (filename.IsNull() || filename.IsWhitespace()) {
+  if (filename.Data()=="") {
      AliWarning("WriteHistosToFile: null output filename!");
      return kFALSE;
   }
@@ -1552,6 +1656,40 @@ void AliITSTrackleterSPDEff::BookHistos() {
 // layers are computed in the interpolation phase
 //
   if (! GetHistOn()) { AliInfo("Call SetHistOn(kTRUE) first"); return;}
+//
+  fhClustersDPhiAcc   = new TH1F("dphiacc",  "dphi",  100,0.,0.1);
+  fhClustersDPhiAcc->SetDirectory(0);
+  fhClustersDThetaAcc = new TH1F("dthetaacc","dtheta",100,-0.1,0.1);
+  fhClustersDThetaAcc->SetDirectory(0);
+  fhClustersDZetaAcc = new TH1F("dzetaacc","dzeta",100,-1.,1.);
+  fhClustersDZetaAcc->SetDirectory(0);
+
+  fhDPhiVsDZetaAcc = new TH2F("dphiVsDzetaacc","",100,-1.,1.,100,0.,0.1);
+  fhDPhiVsDZetaAcc->SetDirectory(0);
+  fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",100,-0.1,0.1,100,0.,0.1);
+  fhDPhiVsDThetaAcc->SetDirectory(0);
+
+  fhClustersDPhiAll   = new TH1F("dphiall",  "dphi",  100,0.0,0.5);
+  fhClustersDPhiAll->SetDirectory(0);
+  fhClustersDThetaAll = new TH1F("dthetaall","dtheta",100,-0.5,0.5);
+  fhClustersDThetaAll->SetDirectory(0);
+  fhClustersDZetaAll = new TH1F("dzetaall","dzeta",100,-5.,5.);
+  fhClustersDZetaAll->SetDirectory(0);
+
+  fhDPhiVsDZetaAll = new TH2F("dphiVsDzetaall","",100,-5.,5.,100,0.,0.5);
+  fhDPhiVsDZetaAll->SetDirectory(0);
+  fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",100,-0.5,0.5,100,0.,0.5);
+  fhDPhiVsDThetaAll->SetDirectory(0);
+
+  fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
+  fhetaTracklets->SetDirectory(0);
+  fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100, 0., 2*TMath::Pi());
+  fhphiTracklets->SetDirectory(0);
+  fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
+  fhetaClustersLay1->SetDirectory(0);
+  fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100, 0., 2*TMath::Pi());
+  fhphiClustersLay1->SetDirectory(0);
+//
   fhClustersDPhiInterpAcc   = new TH1F("dphiaccInterp",  "dphi Interpolation phase",  100,0.,0.1);
   fhClustersDPhiInterpAcc->SetDirectory(0);
   fhClustersDThetaInterpAcc = new TH1F("dthetaaccInterp","dtheta Interpolation phase",100,-0.1,0.1);
@@ -1587,6 +1725,22 @@ void AliITSTrackleterSPDEff::DeleteHistos() {
 //
 // Private method to delete Histograms from memory 
 // it is called. e.g., by the destructor.
+//
+// form AliITSMultReconstructor
+  if(fhClustersDPhiAcc) {delete fhClustersDPhiAcc; fhClustersDPhiAcc=0;}
+  if(fhClustersDThetaAcc) {delete fhClustersDThetaAcc; fhClustersDThetaAcc=0;}
+  if(fhClustersDZetaAcc) {delete fhClustersDZetaAcc; fhClustersDZetaAcc=0;}
+  if(fhClustersDPhiAll) {delete fhClustersDPhiAll; fhClustersDPhiAll=0;}
+  if(fhClustersDThetaAll) {delete fhClustersDThetaAll; fhClustersDThetaAll=0;}
+  if(fhClustersDZetaAll) {delete fhClustersDZetaAll; fhClustersDZetaAll=0;}
+  if(fhDPhiVsDThetaAll) {delete fhDPhiVsDThetaAll; fhDPhiVsDThetaAll=0;}
+  if(fhDPhiVsDThetaAcc) {delete fhDPhiVsDThetaAcc; fhDPhiVsDThetaAcc=0;}
+  if(fhDPhiVsDZetaAll) {delete fhDPhiVsDZetaAll; fhDPhiVsDZetaAll=0;}
+  if(fhDPhiVsDZetaAcc) {delete fhDPhiVsDZetaAcc; fhDPhiVsDZetaAcc=0;}
+  if(fhetaTracklets) {delete fhetaTracklets; fhetaTracklets=0;}
+  if(fhphiTracklets) {delete fhphiTracklets; fhphiTracklets=0;}
+  if(fhetaClustersLay1) {delete fhetaClustersLay1; fhetaClustersLay1=0;}
+  if(fhphiClustersLay1) {delete fhphiClustersLay1; fhphiClustersLay1=0;}
 //
     if(fhClustersDPhiInterpAcc) {delete fhClustersDPhiInterpAcc; fhClustersDPhiInterpAcc=0;}
     if(fhClustersDThetaInterpAcc) {delete fhClustersDThetaInterpAcc; fhClustersDThetaInterpAcc=0;}
@@ -1720,3 +1874,115 @@ if(ilayer==1) {
 }
 return;
 }
+//____________________________________________________________________________
+Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *){
+// This method is used to find the tracklets. 
+// It is called from AliReconstruction
+// The vertex is supposed to be associated to the Tracker (i.e. to this) already
+// The cluster is supposed to be associated to the Tracker already
+// In case Monte Carlo is required, the appropriate linking to Stack and TrackRef is attempted 
+//
+  Int_t rc=1;
+  AliRunLoader* runLoader = AliRunLoader::Instance();
+  if (!runLoader) {
+    Error("Clusters2Tracks", "no run loader found");
+    return rc;
+  }
+  AliStack *pStack=0x0; TTree *tRefTree=0x0;
+  if(GetMC()) {
+    runLoader->LoadKinematics("read");
+    runLoader->LoadTrackRefs("read");
+    pStack= runLoader->Stack();
+    tRefTree= runLoader->TreeTR();
+  }
+  Reconstruct(pStack,tRefTree);
+  return 0;
+}
+//____________________________________________________________________________
+Int_t AliITSTrackleterSPDEff::PostProcess(AliESDEvent *){
+// 
+// It is called from AliReconstruction
+// 
+// 
+// 
+//
+  Int_t rc=0;
+  if(GetMC()) SavePredictionMC("TrackletsMCpred.root");
+  if(GetHistOn()) rc=(Int_t)WriteHistosToFile();
+  return rc;
+}
+//____________________________________________________________________
+void
+AliITSTrackleterSPDEff::LoadClusterArrays(TTree* itsClusterTree) {
+  // This method
+  // - gets the clusters from the cluster tree
+  // - convert them into global coordinates
+  // - store them in the internal arrays
+  // - count the number of cluster-fired chips
+
+  //AliDebug(1,"Loading clusters and cluster-fired chips ...");
+
+  fNClustersLay1 = 0;
+  fNClustersLay2 = 0;
+
+  TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+  TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+
+  itsClusterBranch->SetAddress(&itsClusters);
+
+  Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();
+  Float_t cluGlo[3]={0.,0.,0.};
+
+  // loop over the its subdetectors
+  for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+
+    if (!itsClusterTree->GetEvent(iIts))
+      continue;
+
+    Int_t nClusters = itsClusters->GetEntriesFast();
+
+    // number of clusters in each chip of the current module
+    Int_t layer = 0;
+
+    // loop over clusters
+    while(nClusters--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
+
+      layer = cluster->GetLayer();
+      if (layer>1) continue;
+
+      cluster->GetGlobalXYZ(cluGlo);
+      Float_t x = cluGlo[0];
+      Float_t y = cluGlo[1];
+      Float_t z = cluGlo[2];
+
+      if (layer==0) {
+        fClustersLay1[fNClustersLay1][0] = x;
+        fClustersLay1[fNClustersLay1][1] = y;
+        fClustersLay1[fNClustersLay1][2] = z;
+
+        for (Int_t i=0; i<3; i++)
+                fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
+        fNClustersLay1++;
+      }
+      if (layer==1) {
+        fClustersLay2[fNClustersLay2][0] = x;
+        fClustersLay2[fNClustersLay2][1] = y;
+        fClustersLay2[fNClustersLay2][2] = z;
+
+        for (Int_t i=0; i<3; i++)
+                fClustersLay2[fNClustersLay2][3+i] = cluster->GetLabel(i);
+        fNClustersLay2++;
+      }
+
+    }// end of cluster loop
+
+  } // end of its "subdetector" loop
+  if (itsClusters) {
+    itsClusters->Delete();
+    delete itsClusters;
+    itsClusters = 0;
+  }
+  AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
+}
+

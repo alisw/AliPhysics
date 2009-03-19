@@ -42,6 +42,7 @@
 #include "AliITSpidESD1.h"
 #include "AliITSpidESD2.h"
 #include "AliITSInitGeometry.h"
+#include "AliITSTrackleterSPDEff.h"
 
 
 ClassImp(AliITSReconstructor)
@@ -119,6 +120,27 @@ void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTr
   fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree);
 }
+//_____________________________________________________________________________
+AliTracker* AliITSReconstructor::CreateTrackleter() const
+{
+// create the SPD trackeleter (for SPD PlaneEfficiency evaluation)
+  if(!GetRecoParam()->GetComputePlaneEff() && !GetRecoParam()->GetUseTrackletsPlaneEff()) return NULL;
+  //Int_t trackerOpt = GetRecoParam()->GetTracker();
+  AliTracker* trackleter;
+  trackleter = new AliITSTrackleterSPDEff();
+  AliITSTrackleterSPDEff *spdtrackleter=(AliITSTrackleterSPDEff*)trackleter;
+  // here set cuts (from RecoParam)
+  if(GetRecoParam()->GetBkgTrackletsPlaneEff()) spdtrackleter->SetReflectClusterAroundZAxisForLayer(1,kTRUE);
+  if(GetRecoParam()->GetMCTrackletsPlaneEff()) spdtrackleter->SetMC();
+  spdtrackleter->SetHistOn();
+  spdtrackleter->SetPhiWindow(GetRecoParam()->GetTrackleterPhiWindow());
+  spdtrackleter->SetZetaWindow(GetRecoParam()->GetTrackleterZetaWindow());
+  spdtrackleter->SetPhiWindowL1(GetRecoParam()->GetTrackleterPhiWindowL1());
+  spdtrackleter->SetZetaWindowL1(GetRecoParam()->GetTrackleterZetaWindowL1());
+  if(GetRecoParam()->GetUpdateOncePerEventPlaneEff()) spdtrackleter->SetUpdateOncePerEventPlaneEff();
+  //spdtrackleter->(GetRecoParam()->GetMinContVtxPlaneEff()); // to be implemented
+  return trackleter;
+}
 
 //_____________________________________________________________________________
 AliTracker* AliITSReconstructor::CreateTracker() const
@@ -141,13 +163,13 @@ AliTracker* AliITSReconstructor::CreateTracker() const
     sat->SetDetTypeRec(fDetTypeRec);
     if(GetRecoParam()->GetTrackerSAOnly()) sat->SetSAFlag(kTRUE);
     if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
-    if(GetRecoParam()->GetInwardFindingSA()){
-      sat->SetInwardFinding();
-      sat->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
-    }else{
+	if(GetRecoParam()->GetInwardFindingSA()){
+       sat->SetInwardFinding();
+       sat->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
+	}else{
       sat->SetOutwardFinding();
       sat->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
-    }
+	}
     sat->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
   }
 

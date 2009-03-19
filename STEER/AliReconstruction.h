@@ -169,6 +169,7 @@ private:
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
+  Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd);
   Bool_t         CleanESD(AliESDEvent *esd);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
@@ -250,6 +251,7 @@ private:
   AliRecoParam   fRecoParam;                      // container for the reco-param objects for detectors
   AliLoader*     fLoader[kNDetectors];   //! detector loaders
   AliTracker*    fTracker[kNDetectors];  //! trackers
+  AliTracker*    fSPDTrackleter;           //! trackleter [for SPD Plane Efficiency purposes]
   AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks

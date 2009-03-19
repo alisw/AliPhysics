@@ -113,6 +113,13 @@ fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
 fComputePlaneEff(kFALSE),
 fHistoPlaneEff(kFALSE),
+fUseTrackletsPlaneEff(kFALSE),
+fMCTrackletsPlaneEff(kFALSE),
+fBkgTrackletsPlaneEff(kFALSE),
+fTrackleterPhiWindowL1(0.10),
+fTrackleterZetaWindowL1(0.6),
+fUpdateOncePerEventPlaneEff(kTRUE),
+fMinContVtxPlaneEff(3),
 fIPlanePlaneEff(0),
 fReadPlaneEffFromOCDB(kFALSE),
 fMinPtPlaneEff(0),
@@ -486,42 +493,60 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
 AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
 {
   //
-  // make special reconstruction parameters for Plane Efficiency study on layer i
+  // make special reconstruction parameters for Plane Efficiency study on layer i (0,5)
+  // 
+  // if i=-1, then the evaluation for both pixel layers is tried with the tracklet method
   //
-  if (i<0 || i>=AliITSgeomTGeo::kNLayers) {
-    printf("AliITSRecoParam::GetPlaneEffParam: index of ITS Plane not in the range [0,5]\n");
+ if (i<-1 || i>=AliITSgeomTGeo::kNLayers) {
+    printf("AliITSRecoParam::GetPlaneEffParam: index of ITS Plane nor in the range [0,5] neither =-1\n");
     printf("returning null pointer");
     return NULL;
   }
-  AliITSRecoParam *param;
-  param = GetHighFluxParam();
-  param->SetComputePlaneEff();
-  param->SetLayerToSkip(i);
-  param->SetIPlanePlaneEff(i);
-  // optimized setting for SPD0 (i==0)
-  if (i==0 || i==1) {
-    param->fMinPtPlaneEff = 0.200; // high pt particles
-    param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
-    param->fRequireClusterInOuterLayerPlaneEff = kTRUE; // cluster on SPD1 must be
-    //param->fOnlyConstraintPlaneEff = kTRUE;
+  if(i>=0) {  // Method using tracks (remove given plane from tracking)
+    AliITSRecoParam *param;
+    param = GetHighFluxParam();
+    param->SetComputePlaneEff();
+    param->SetLayerToSkip(i);
+    param->SetIPlanePlaneEff(i);
+    // optimized setting for SPD0 (i==0)
+    if (i==0 || i==1) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
+      param->fRequireClusterInOuterLayerPlaneEff = kTRUE; // cluster on SPD1 must be
+      //param->fOnlyConstraintPlaneEff = kTRUE;
+    }
+    if (i==2 || i==3) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
+      param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+      //param->fOnlyConstraintPlaneEff = kTRUE;
+    }
+    if (i==4) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 0; // at most 1 layer out of 5 without cluster
+      param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+      //param->fOnlyConstraintPlaneEff = kTRUE;
+    }
+    if (i==5) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+    }
+    //
+    return param;
   }
-  if (i==2 || i==3) {
-    param->fMinPtPlaneEff = 0.200; // high pt particles
-    param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
-    param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
-    //param->fOnlyConstraintPlaneEff = kTRUE;
+  else if (i==-1) { // Method using tracklets
+    AliITSRecoParam *param;
+    param = GetLowFluxParam();
+    param->SetIPlanePlaneEff(i);
+    param->SetComputePlaneEff(kTRUE,kFALSE);
+    param->SetUseTrackletsPlaneEff(kTRUE);
+    param->SetTrackleterPhiWindow(0.07);
+    param->SetTrackleterZetaWindow(0.4);
+    param->SetTrackleterPhiWindowL1(0.10);
+    param->SetTrackleterZetaWindowL1(0.6);
+    param->SetUpdateOncePerEventPlaneEff(kTRUE);
+    param->SetMinContVtxPlaneEff(3);
+    return param;
   }
-  if (i==4) {
-    param->fMinPtPlaneEff = 0.200; // high pt particles
-    param->fMaxMissingClustersPlaneEff = 0; // at most 1 layer out of 5 without cluster
-    param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
-    //param->fOnlyConstraintPlaneEff = kTRUE;
-  }
-  if (i==5) {
-    param->fMinPtPlaneEff = 0.200; // high pt particles
-  }
-  //
-  return param;
 }
 //_____________________________________________________________________________
 void AliITSRecoParam::SetLayersParameters() 

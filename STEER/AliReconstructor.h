@@ -40,6 +40,8 @@ public:
     {return NULL;}
   virtual AliTracker*  CreateTracker() const 
     {return NULL;}
+  virtual AliTracker*  CreateTrackleter() const 
+    {return NULL;}
 
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
 			       AliESDEvent* esd) const;

@@ -32,6 +32,7 @@ public:
 
   virtual AliTracker*  CreateTracker() const;
   virtual AliVertexer* CreateVertexer() const;
+  virtual AliTracker*  CreateTrackleter() const;
 
   virtual void         FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
 			       AliESDEvent* esd) const; 
