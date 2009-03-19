@@ -93,7 +93,7 @@ void AliHLTTRDTrack::AddTracklets()
 void AliHLTTRDTrack::CopyDataMembers()
 {
 
-  fPIDquality = fTRDtrack->GetPIDquality();
+  fPIDquality = fTRDtrack->GetNumberOfTrackletsPID();
   
   for(Int_t i = 0; i < AliPID::kSPECIES; i++)
     {
