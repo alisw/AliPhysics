@@ -403,8 +403,10 @@ void AliZDC::Hits2SDigits()
 AliDigitizer* AliZDC::CreateDigitizer(AliRunDigitizer* manager) const
 {
   // Create the digitizer for ZDC
-
-  return new AliZDCDigitizer(manager);
+  AliZDCDigitizer *zdcDigitizer = new AliZDCDigitizer(manager);
+  if(fSpectatorTracked==0) zdcDigitizer->SetSpectators2Track();
+  printf("\n**************************ZDC digitizer created with Spectators2Track = %d\n\n", fSpectatorTracked);
+  return zdcDigitizer;
 }
 
 //_____________________________________________________________________________

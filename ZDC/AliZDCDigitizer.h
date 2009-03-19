@@ -46,6 +46,8 @@ public:
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCPedestals *GetPedData() const; 
   AliZDCCalib     *GetCalibData() const; 
+  
+  void    SetSpectators2Track() {fSpectators2Track=kTRUE;}
 
 private:
 
@@ -69,7 +71,9 @@ private:
   
   AliZDCPedestals *fPedData; 	//! pedestal calibration data
   AliZDCCalib     *fCalibData; 	//! energy and equalization calibration data
+  
+  Bool_t  fSpectators2Track;    // should digitizer track spectators
        
-  ClassDef(AliZDCDigitizer, 8)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 9)     // digitizer for ZDC
 };    
 #endif

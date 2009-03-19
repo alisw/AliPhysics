@@ -57,7 +57,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(0), 
-  fCalibData(0)
+  fCalibData(0),
+  fSpectators2Track(kFALSE)
 {
 // Default constructor    
 
@@ -70,7 +71,8 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(GetPedData()), 
-  fCalibData(GetCalibData())
+  fCalibData(GetCalibData()),
+  fSpectators2Track(kFALSE)
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -92,7 +94,8 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fIsSignalInADCGate(digitizer.fIsSignalInADCGate),
   fFracLostSignal(digitizer.fFracLostSignal),
   fPedData(digitizer.fPedData),
-  fCalibData(digitizer.fCalibData)
+  fCalibData(digitizer.fCalibData),
+  fSpectators2Track(digitizer.fSpectators2Track)
 {
   // Copy constructor
 
@@ -157,7 +160,6 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     }
 
   // impact parameter and number of spectators
-  Int_t specTracked = 1;
   Float_t impPar = -1;
   Int_t specNTarg = 0, specPTarg = 0;
   Int_t specNProj = 0, specPProj = 0;
@@ -228,11 +230,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     if(!genHeader) continue;
     if(!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
     
-    AliZDCv3 *ZDC = (AliZDCv3*)gAlice->GetDetector("ZDC");
-    specTracked = ZDC->SpectatorsTracked();
-    //printf("\n\t ZDC->SpectatorsTracked() = %d\n",specTracked);
-    //
-    if(specTracked==0){
+    if(fSpectators2Track==kTRUE){
       impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter(); 
       specNProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
       specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
@@ -247,7 +245,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   }
 
   // Applying fragmentation algorithm and adding spectator signal
-  if(specTracked==0 && impPar) {
+  if(fSpectators2Track==kTRUE && impPar) {
     Int_t freeSpecNProj, freeSpecPProj;
     Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
     Int_t freeSpecNTarg, freeSpecPTarg;
