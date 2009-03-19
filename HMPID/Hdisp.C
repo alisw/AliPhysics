@@ -371,7 +371,11 @@ void RenderEsd(AliESDEvent *pEsd)
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);    Int_t ch=pTrk->GetHMPIDcluIdx(); //get track and chamber intersected by it
     ch/=1000000;
     Float_t xPc,yPc,xRa,yRa,thRa,phRa; 
-    pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);;
+    pTrk->GetHMPIDtrk(xPc,yPc,thRa,phRa);;
+    
+    xRa = xPc - (fParam->RadThick()+fParam->WinThick()+fParam->GapThick())*TMath::Cos(phRa)*TMath::Tan(thRa); //just linear extrapolation back to RAD
+    yRa = yPc - (fParam->RadThick()+fParam->WinThick()+fParam->GapThick())*TMath::Sin(phRa)*TMath::Tan(thRa);
+    
     if(ch<AliHMPIDParam::AliHMPIDParam::kMinCh||ch>AliHMPIDParam::kMaxCh) continue;//this track does not intersect any chamber
     Int_t npTrk = fRenTxC[ch]->SetNextPoint(xRa,yRa);                           //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
