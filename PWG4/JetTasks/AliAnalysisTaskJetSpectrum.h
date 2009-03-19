@@ -3,9 +3,15 @@
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
+// **************************************
+// Task used for the correction of determiantion of reconstructed jet spectra
+// Compares input (gen) and output (rec) jets   
+// *******************************************
+
 #include "AliAnalysisTaskSE.h"
-#include "THnSparse.h"
+#include  "THnSparse.h" // cannot forward declare ThnSparseF
+
 ////////////////
 class AliJetHeader;
 class AliESDEvent;
@@ -18,6 +24,7 @@ class TChain;
 class TH2F;
 class TH3F;
 class TProfile;
+
 
 
 class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
@@ -40,12 +47,12 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
-    virtual void SetBranchGen(char* c){fBranchGen = c;}
-    virtual void SetBranchRec(char* c){fBranchRec = c;}
+    virtual void SetBranchGen(const char* c){fBranchGen = c;}
+    virtual void SetBranchRec(const char* c){fBranchRec = c;}
 
     // Helper
-    static void GetClosestJets(AliAODJet *genJets,Int_t &nGenJets,
-			       AliAODJet *recJets,Int_t &nRecJets,
+    static void GetClosestJets(AliAODJet *genJets,const Int_t &nGenJets,
+			       AliAODJet *recJets,const Int_t &nRecJets,
 			       Int_t *iGenIndex,Int_t *iRecIndex,Int_t iDebug = 0);
 
   //
@@ -80,32 +87,32 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TProfile*     fh1Xsec;   // pythia cross section and trials
     TH1F*         fh1Trials; // trials are added
     TH1F*         fh1PtHard;  // Pt har of the event...       
-    TH1F*         fh1PtHard_NoW;  // Pt har of the event...       
-    TH1F*         fh1PtHard_Trials;  // Number of trials 
+    TH1F*         fh1PtHardNoW;  // Pt har of the event...       
+    TH1F*         fh1PtHardTrials;  // Number of trials 
     TH1F*         fh1NGenJets;
     TH1F*         fh1NRecJets;
     TH1F*         fh1E[kMaxJets];       // Jet Energy       
     TH1F*         fh1PtRecIn[kMaxJets];       // Jet pt for all      
     TH1F*         fh1PtRecOut[kMaxJets];      // Jet pt with corellated generated jet    
     TH1F*         fh1PtGenIn[kMaxJets];       // Detection efficiency for given p_T.gen
-    TH1F*         fh1PtGenOut[kMaxJets];      //
+    TH1F*         fh1PtGenOut[kMaxJets];      // gen pT of found jets
 
 
     
-    TH2F*         fh2PtFGen[kMaxJets];  //
-    TH2F*         fh2PhiFGen[kMaxJets];  //
-    TH2F*         fh2EtaFGen[kMaxJets];  //
+    TH2F*         fh2PtFGen[kMaxJets];   // correlation betwen genreated and found  jet pT
+    TH2F*         fh2PhiFGen[kMaxJets];  // correlation betwen genreated and found  jet phi
+    TH2F*         fh2EtaFGen[kMaxJets];  // correlation betwen genreated and found  jet eta
     TH2F*         fh2Frag[kMaxJets];    // fragmentation function
-    TH2F*         fh2FragLn[kMaxJets];  //
-    TH2F*         fh2PtGenDeltaPhi[kMaxJets];  
-    TH2F*         fh2PtGenDeltaEta[kMaxJets];  
+    TH2F*         fh2FragLn[kMaxJets];  // fragmetation in xi
+    TH2F*         fh2PtGenDeltaPhi[kMaxJets];  // difference between generated and found  jet phi
+    TH2F*         fh2PtGenDeltaEta[kMaxJets];  // difference between generated and found  jet eta
 
-    TH3F*         fh3PtRecGenHard[kMaxJets];  //                              
-    TH3F*         fh3PtRecGenHard_NoW[kMaxJets];  //                  
-    TH3F*         fh3RecEtaPhiPt[kMaxJets]; // 
-    TH3F*         fh3RecEtaPhiPt_NoGen[kMaxJets]; // 
-    TH3F*         fh3GenEtaPhiPt_NoFound[kMaxJets]; //                    
-    TH3F*         fh3GenEtaPhiPt[kMaxJets]; //                                                                                                        
+    TH3F*         fh3PtRecGenHard[kMaxJets];      // correlation beetwen pt hard, rec and gen                             
+    TH3F*         fh3PtRecGenHardNoW[kMaxJets];  // correlation beetwen pt hard, rec and gen no weight                                              
+    TH3F*         fh3RecEtaPhiPt[kMaxJets]; // correlation between eta phi and rec pt                                              
+    TH3F*         fh3RecEtaPhiPtNoGen[kMaxJets]; // correlation between eta phi and rec pt of jets without a partner                    
+    TH3F*         fh3GenEtaPhiPtNoFound[kMaxJets]; // correlation between eta phi and gen pt of jets without a partner
+    TH3F*         fh3GenEtaPhiPt[kMaxJets]; // correlation between eta phi and gen pt of jets without a partner                              
     // ========= Multiplicity dependence ======
 
     // ==========TODO , flavaor dependence ========                           
@@ -118,12 +125,12 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TList *fHistList; // Output list
     
     ///////// For 2 dimensional unfolding //////////////////
-    TH1F*         fh1JetMultiplicity;   
-    TH2F*         fh2ERecZRec;
-    TH2F*         fh2EGenZGen;
-    TH2F*         fh2Efficiency;
-    TH3F*         fh3EGenERecN;
-    THnSparseF*   fhnCorrelation[kMaxCorrelation];
+    TH1F*         fh1JetMultiplicity;   // JetMultiplicity
+    TH2F*         fh2ERecZRec;          // rec e and z
+    TH2F*         fh2EGenZGen;          // gen e and z
+    TH2F*         fh2Efficiency;        // 2 dimensional efficiency
+    TH3F*         fh3EGenERecN;         // correlation rec energy, gen energy N particles 
+    THnSparseF*   fhnCorrelation[kMaxCorrelation]; // 4d Correllation for unfolding
     ///////////////////////////////////////////////////////
 
 
