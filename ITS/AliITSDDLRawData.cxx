@@ -260,6 +260,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 	     if value >=128value = value - (1 << 7) (word is 7 bit long)
 
 	  */
+	  if(digarr[anode][tb]<4) continue; // not write <4 cnts above tL
 	  if(digarr[anode][tb]<8){
 	    bitinfo1[3] = 2;
 	    wordinfo1[2] = 2;

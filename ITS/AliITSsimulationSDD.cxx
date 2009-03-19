@@ -881,7 +881,7 @@ void AliITSsimulationSDD::Compress2D(){
 	  Int_t signalc = Convert10to8(signal);
 	  Int_t signale = Convert8to10(signalc);
 	  signalc-=tL; // subtract low threshold after 10 to 8 bit compression
-	  AddDigit(ian,itb,signalc,signale);  // store C 
+	  if(signalc>=4) AddDigit(ian,itb,signalc,signale);  // store C 
 	}
       }
     }
