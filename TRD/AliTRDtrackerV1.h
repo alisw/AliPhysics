@@ -3,7 +3,6 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
-
 /* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////////
@@ -73,10 +72,10 @@ public:
   AliCluster*     GetCluster(Int_t index) const;
   AliTRDseedV1*   GetTracklet(Int_t index) const;
   AliKalmanTrack* GetTrack(Int_t index) const;
-  TClonesArray*   GetListOfClusters() const {return fClusters;}
-  TClonesArray*   GetListOfTracklets() const {return fTracklets;}
-  TClonesArray*   GetListOfTracks() const {return fTracks;}
-  static Int_t     GetNTimeBins() {return fgNTimeBins;}
+  TClonesArray*   GetListOfClusters() const  { return fClusters;}
+  TClonesArray*   GetListOfTracklets() const { return fTracklets;}
+  TClonesArray*   GetListOfTracks() const    { return fTracks;}
+  static Int_t    GetNTimeBins()             { return fgNTimeBins;}
   static void     GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
   static void     GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
   static TLinearFitter*  GetTiltedRiemanFitter();
@@ -91,7 +90,7 @@ public:
  	static Double_t FitLine(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
  	static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
 
-  Bool_t          IsClustersOwner() const {return TestBit(kOwner);}
+  Bool_t          IsClustersOwner() const    { return TestBit(kOwner);}
   void            SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fClusters = 0x0;}
 
   Int_t           FollowBackProlongation(AliTRDtrackV1 &t);
@@ -106,7 +105,6 @@ public:
   void            SetReconstructor(const AliTRDReconstructor *rec){ fReconstructor = rec; }
   void            UnloadClusters();
 //   void            UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;
-//   static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
 
   class AliTRDLeastSquare{
   public:
@@ -137,6 +135,7 @@ protected:
   Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
   AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
   Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
+  Float_t        GetR4Layer(Int_t ly) const { return fR[ly];}
   Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
   AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
   AliTRDtrackV1* SetTrack(AliTRDtrackV1 *track);
@@ -154,20 +153,20 @@ private:
   Float_t     GetChi2Z(AliTRDseedV1 *tracklets) const;
 
 private:
-  const AliTRDReconstructor *fReconstructor;                 // reconstructor manager
-  AliTRDgeometry      *fGeom;                          // Pointer to TRD geometry
-  AliTRDtrackingSector fTrSec[kTrackingSectors];       // Array of tracking sectors;    
-
+  const AliTRDReconstructor *fReconstructor;            // reconstructor manager
+  AliTRDgeometry      *fGeom;                           // Pointer to TRD geometry
+  AliTRDtrackingSector fTrSec[kTrackingSectors];        // Array of tracking sectors;    
   TClonesArray        *fClusters;                       // List of clusters
   TClonesArray        *fTracklets;                      // List of tracklets
   TClonesArray        *fTracks;                         // List of tracks
-  
+  Float_t              fR[kNPlanes];                    //! rough radial position of each TRD layer
+
   // should go to the recoParam
-  static const Double_t    fgkMaxChi2;                     // Max increment in track chi2 
-  static const Float_t     fgkMinClustersInTrack;          // Min number of clusters in track
-  static const Float_t     fgkLabelFraction;               // Min fraction of same label
-  static const Double_t    fgkMaxSnp;                      // Maximal snp for tracking
-  static const Double_t    fgkMaxStep;                     // Maximal step for tracking  
+  static const Double_t    fgkMaxChi2;                  // Max increment in track chi2 
+  static const Float_t     fgkMinClustersInTrack;       // Min number of clusters in track
+  static const Float_t     fgkLabelFraction;            // Min fraction of same label
+  static const Double_t    fgkMaxSnp;                   // Maximal snp for tracking
+  static const Double_t    fgkMaxStep;                  // Maximal step for tracking  
 	
 	// stand alone tracking
 	static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
@@ -181,7 +180,7 @@ private:
 	static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
 	static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
 	
-	ClassDef(AliTRDtrackerV1, 2)                          //  TRD tracker development class
+	ClassDef(AliTRDtrackerV1, 3)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

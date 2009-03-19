@@ -42,6 +42,7 @@ class AliRieman;
 class AliTRDtrackingChamber;
 class AliTRDtrackV1;
 class AliTRDReconstructor;
+class AliTRDpadPlane;
 class AliTRDseedV1 : public AliTRDtrackletBase
 {
 public:
@@ -156,6 +157,7 @@ public:
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
+  void      SetPadPlane(AliTRDpadPlane *p);
   void      SetPadLength(Float_t l)  { fPad[0] = l;}
   void      SetPadWidth(Float_t w)   { fPad[1] = w;}
   void      SetTilt(Float_t tilt)    { fPad[2] = tilt; }

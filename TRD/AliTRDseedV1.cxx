@@ -710,6 +710,17 @@ void AliTRDseedV1::SetOwner()
   SetBit(kOwner);
 }
 
+//____________________________________________________________
+void AliTRDseedV1::SetPadPlane(AliTRDpadPlane *p)
+{
+// Shortcut method to initialize pad geometry.
+  if(!p) return;
+  SetTilt(TMath::Tan(TMath::DegToRad()*p->GetTiltingAngle()));
+  SetPadLength(p->GetLengthIPad());
+  SetPadWidth(p->GetWidthIPad());
+}
+
+
 // //____________________________________________________________________
 // Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr, AliTRDcluster *c)
 // {
@@ -1024,22 +1035,6 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   }  
   Int_t dtb = tb[1] - tb[0];
   fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
-
-  // update X0 from the clusters (calibration/alignment aware) TODO remove dependence on x0 !!
-  for (Int_t it = 0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
-    if(!(layer = chamber->GetTB(it))) continue;
-    if(!layer->IsT0()) continue;
-    if(fClusters[it]){ 
-      fX0 = fClusters[it]->GetX();
-      break;
-    } else { // we have to infere the position of the anode wire from the other clusters
-      for (Int_t jt = it+1; jt < AliTRDtrackerV1::GetNTimeBins(); jt++) {
-        if(!fClusters[jt]) continue;
-        fX0 = fClusters[jt]->GetX() + fdX * (jt - it);
-        break;
-      }
-    }
-  }	
 
   return kTRUE;
 }
@@ -1564,7 +1559,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   // Printing the seedstatus
   //
 
-  AliInfo(Form("Det[%3d] Pad[L[%5.2f] W[%5.2f] Tilt[%+6.2f]]", fDet, GetPadLength(), GetPadWidth(), GetTilt()));
+  AliInfo(Form("Det[%3d] X0[%7.2f] Pad[L[%5.2f] W[%5.2f] Tilt[%+6.2f]]", fDet, fX0, GetPadLength(), GetPadWidth(), GetTilt()));
   AliInfo(Form("N[%2d] Nused[%2d] Nshared[%2d] [%d]", GetN(), GetNUsed(), GetNShared(), fN));
 
   Double_t cov[3], x=GetX();

@@ -277,7 +277,7 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("!nn");
   cTrack.CookPID();
-  if(cTrack.GetPIDquality() < fMinNTracklets) return 0x0;
+  if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDLQ -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -336,7 +336,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
   fReconstructor -> SetOption("nn");
   cTrack.CookPID();
-  if(cTrack.GetPIDquality() < fMinNTracklets) return 0x0;
+  if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
 
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDNN -> Fill(FindBin(species, momentum), cTrack.GetPID(AliPID::kElectron));
@@ -367,7 +367,7 @@ TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
   if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
-  if(fTrack->GetPIDquality() < fMinNTracklets) return 0x0;
+  if(fTrack->GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");

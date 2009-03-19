@@ -40,7 +40,7 @@ ClassImp(AliTRDtrackV1)
 
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
-  ,fPIDquality(0)
+  ,fStatus(0)
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
@@ -65,7 +65,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
 
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
-  ,fPIDquality(ref.fPIDquality)
+  ,fStatus(ref.fStatus)
   ,fDE(ref.fDE)
   ,fReconstructor(ref.fReconstructor)
   ,fBackupTrack(0x0)
@@ -94,7 +94,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
 
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
-  ,fPIDquality(0)
+  ,fStatus(0)
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
@@ -144,7 +144,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15]
              , Double_t x, Double_t alpha) : AliKalmanTrack()
-  ,fPIDquality(0)
+  ,fStatus(0)
   ,fDE(0.)
   ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
@@ -283,34 +283,13 @@ Bool_t AliTRDtrackV1::CookPID()
   
   // Reset the a priori probabilities
   Double_t pid = 1. / AliPID::kSPECIES;
-  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
-    fPID[ispec] = pid;	
-  }
-  fPIDquality = 0;
-  
-  // steer PID calculation @ tracklet level
-  Float_t *prob = 0x0;
-  for(int ip=0; ip<kNplane; ip++){
-    if(fTrackletIndex[ip] == 0xffff) continue;
-    if(!fTracklet[ip]->IsOK()) continue;
-    if(!(prob = fTracklet[ip]->GetProbability(kTRUE))) return kFALSE;
-    
-    Int_t nspec = 0; // quality check of tracklet dEdx
-    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-      if(prob[ispec] < 0.) continue;
-      fPID[ispec] *= prob[ispec];
-      nspec++;
-    }
-    if(!nspec) continue;
-    
-    fPIDquality++;
-  }
-  
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fPID[ispec] = pid;	
+
+  UChar_t fPIDquality = SetNumberOfTrackletsPID(kTRUE);
   // no tracklet found for PID calculations
-  if(!fPIDquality) return kTRUE;
+  if(!fPIDquality) return kFALSE;
   
   // slot for PID calculation @ track level
-  
   
   // normalize probabilities
   Double_t probTotal = 0.0;
@@ -325,6 +304,57 @@ Bool_t AliTRDtrackV1::CookPID()
   for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) fPID[iSpecies] /= probTotal;
   
   return kTRUE;
+}
+
+//___________________________________________________________
+UChar_t AliTRDtrackV1::GetNumberOfTrackletsPID() const
+{
+// Retrieve number of tracklets used for PID calculation. 
+
+  UChar_t fPIDquality = 0;
+  Float_t *prob = 0x0;
+  for(int ip=0; ip<kNplane; ip++){
+    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(!fTracklet[ip]->IsOK()) continue;
+    if(!(prob = fTracklet[ip]->GetProbability(kFALSE))) return 0;
+    
+    Int_t nspec = 0; // quality check of tracklet dEdx
+    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
+      if(prob[ispec] < 0.) continue;
+      nspec++;
+    }
+    if(!nspec) continue;
+    
+    fPIDquality++;
+  }
+  return fPIDquality;
+}
+
+//___________________________________________________________
+UChar_t AliTRDtrackV1::SetNumberOfTrackletsPID(Bool_t recalc)
+{
+// Retrieve number of tracklets used for PID calculation. // Recalculated PID at tracklet level by quering the PID DB.
+
+  UChar_t fPIDquality = 0;
+  
+  // steer PID calculation @ tracklet level
+  Float_t *prob = 0x0;
+  for(int ip=0; ip<kNplane; ip++){
+    if(fTrackletIndex[ip] == 0xffff) continue;
+    if(!fTracklet[ip]->IsOK()) continue;
+    if(!(prob = fTracklet[ip]->GetProbability(recalc))) return 0;
+    
+    Int_t nspec = 0; // quality check of tracklet dEdx
+    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
+      if(prob[ispec] < 0.) continue;
+      fPID[ispec] *= prob[ispec];
+      nspec++;
+    }
+    if(!nspec) continue;
+    
+    fPIDquality++;
+  }
+  return fPIDquality;
 }
 
 //_______________________________________________________________
@@ -389,13 +419,19 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 }
 
 //_______________________________________________________________
+Int_t AliTRDtrackV1::GetSector() const
+{
+  return Int_t(GetAlpha()/AliTRDgeometry::GetAlpha() + (GetAlpha()>0. ? 0 : AliTRDgeometry::kNsector));
+}
+
+//_______________________________________________________________
 Bool_t AliTRDtrackV1::IsEqual(const TObject *o) const
 {
   if (!o) return kFALSE;
   const AliTRDtrackV1 *inTrack = dynamic_cast<const AliTRDtrackV1*>(o);
   if (!inTrack) return kFALSE;
   
-  if ( fPIDquality != inTrack->GetPIDquality() ) return kFALSE;
+  //if ( fPIDquality != inTrack->GetPIDquality() ) return kFALSE;
   
   for(Int_t i = 0; i < AliPID::kSPECIES; i++){
     if ( fPID[i] != inTrack->GetPID(i) ) return kFALSE;
@@ -629,11 +665,11 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
 //_____________________________________________________________________________
 void AliTRDtrackV1::Print(Option_t *o) const
 {
-  AliInfo(Form("PID q[%d] [%4.1f %4.1f %4.1f %4.1f %4.1f]", fPIDquality, 1.E2*fPID[0], 1.E2*fPID[1], 1.E2*fPID[2], 1.E2*fPID[3], 1.E2*fPID[4]));
+  AliInfo(Form("PID [%4.1f %4.1f %4.1f %4.1f %4.1f]", 1.E2*fPID[0], 1.E2*fPID[1], 1.E2*fPID[2], 1.E2*fPID[3], 1.E2*fPID[4]));
   AliInfo(Form("Material[%5.2f %5.2f %5.2f]", fBudget[0], fBudget[1], fBudget[2]));
 
   AliInfo(Form("x[%7.2f] t[%7.4f] alpha[%f] mass[%f]", GetX(), GetIntegratedLength(), GetAlpha(), fMass));
-  AliInfo(Form("Ntr[%1d] Ncl[%3d] lab[%3d]", GetNumberOfTracklets(), fN, fLab));
+  AliInfo(Form("Ntr[%1d] NtrPID[%1d] Ncl[%3d] lab[%3d]", GetNumberOfTracklets(), GetNumberOfTrackletsPID(), fN, fLab));
 
   if(strcmp(o, "a")!=0) return;
   printf("|X| = (");
@@ -800,10 +836,11 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
   }
 
-  if(!fPIDquality) track->SetTRDntracklets(n);
+  UChar_t nPID = GetNumberOfTrackletsPID();
+  if(!nPID) track->SetTRDntracklets(n);
   else {
     track->SetTRDpid(fPID);
-    n |= (fPIDquality<<3);
+    n |= (nPID<<3);
     track->SetTRDntracklets(n);
   }
 }

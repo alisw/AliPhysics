@@ -29,7 +29,7 @@ class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
 public:
-  enum ETRDtrackV1Size { 
+  enum ETRDtrackSize { 
     kNdet      = AliTRDgeometry::kNdet
    ,kNstacks   = AliTRDgeometry::kNstack*AliTRDgeometry::kNsector
    ,kNplane    = AliTRDgeometry::kNlayer
@@ -41,10 +41,31 @@ public:
   };
   
   // bits from 0-13 are reserved by ROOT (see TObject.h)
-  enum ETRDtrackV1Status {
-    kOwner   = BIT(14)
-   ,kStopped = BIT(15) 
-   ,kKink    = BIT(16) 
+  enum ETRDtrackStatus {
+    kOwner     = BIT(14)
+   ,kStopped   = BIT(15) 
+   ,kKink      = BIT(16) 
+  };
+
+  // propagation/update error codes (up to 4 bits)
+  enum ETRDtrackError {
+    kProlongation = 1
+   ,kPropagation
+   ,kAdjustSector
+   ,kSnp
+   ,kTrackletInit
+   ,kUpdate
+  };
+
+  // data/clusters/tracklet error codes (up to 4 bits/layer)
+  enum ETRDlayerError {
+    kGeometry = 1
+   ,kBoundary
+   ,kNoClusters
+   ,kNoAttach
+   ,kNoClustersTracklet
+   ,kNoFit
+   ,kChi2
   };
 
   AliTRDtrackV1();
@@ -66,10 +87,12 @@ public:
   inline Int_t   GetNumberOfTracklets() const;
   Double_t       GetPIDsignal() const   { return 0.;}
   Double_t       GetPID(Int_t is) const { return (is >=0 && is < AliPID::kSPECIES) ? fPID[is] : -1.;}
-  UChar_t        GetPIDquality() const  { return fPIDquality;}
+  UChar_t        GetNumberOfTrackletsPID() const;
   Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
+  inline UChar_t GetStatusTRD(Int_t ly=-1) const;
+  Int_t          GetSector() const;
   AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : 0x0;}
   Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;}
   AliExternalTrackParam*
@@ -83,7 +106,9 @@ public:
   Bool_t         IsOwner() const   { return TestBit(kOwner);};
   Bool_t         IsStopped() const { return TestBit(kStopped);};
   Bool_t         IsElectron() const;
-  
+  inline static Bool_t IsTrackError(ETRDtrackError error, UInt_t status);
+  inline static Bool_t IsLayerError(ETRDlayerError error, Int_t layer, UInt_t status);
+
   void           MakeBackupTrack();
   void           Print(Option_t *o="") const;
 
@@ -94,9 +119,11 @@ public:
   void           SetEdep(Double32_t inDE){fDE = inDE;};
   void           SetKink(Bool_t k)        { SetBit(kKink, k);}
   void           SetNumberOfClusters();
+  UChar_t        SetNumberOfTrackletsPID(Bool_t recalc);
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
-  void           SetPIDquality(UChar_t inPIDquality){fPIDquality = inPIDquality;};
+  void           SetPIDquality(UChar_t /*inPIDquality*/){/*fPIDquality = inPIDquality*/;};
+  inline void    SetStatus(UChar_t stat, Int_t ly=-1);
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
   void           SetTrackLow();
@@ -110,18 +137,18 @@ public:
   void           UpdateESDtrack(AliESDtrack *t);
 
 private:
-  UChar_t      fPIDquality;           //  No of planes used for PID calculation	
+  UInt_t       fStatus;                //  Bit map for the status of propagation
   UShort_t     fTrackletIndex[kNplane];//  Tracklets index in the tracker list
-  Double32_t   fPID[AliPID::kSPECIES];//  PID probabilities
-  Double32_t   fBudget[3];            //  Integrated material budget
-  Double32_t   fDE;                   //  Integrated delta energy
+  Double32_t   fPID[AliPID::kSPECIES]; //  PID probabilities
+  Double32_t   fBudget[3];             //  Integrated material budget
+  Double32_t   fDE;                    //  Integrated delta energy
   const AliTRDReconstructor *fReconstructor;//! reconstructor link 
-  AliTRDseedV1 *fTracklet[kNplane];   //  Tracklets array defining the track
-  AliTRDtrackV1 *fBackupTrack;        // Backup track
-  AliExternalTrackParam *fTrackLow;   // parameters of the track which enter TRD from below (TPC) 
+  AliTRDtrackV1 *fBackupTrack;         //! Backup track
+  AliTRDseedV1 *fTracklet[kNplane];    //  Tracklets array defining the track
+  AliExternalTrackParam *fTrackLow;    // parameters of the track which enter TRD from below (TPC) 
   AliExternalTrackParam *fTrackHigh;  // parameters of the track which enter TRD from above (HMPID, PHOS) 
 
-  ClassDef(AliTRDtrackV1, 4)          // new TRD track
+  ClassDef(AliTRDtrackV1, 5)          // TRD track - tracklet based
 };
 
 //____________________________________________________
@@ -152,6 +179,25 @@ inline Int_t AliTRDtrackV1::GetNumberOfTracklets() const
   return n;
 }
 
+//____________________________________________________
+inline UChar_t AliTRDtrackV1::GetStatusTRD(Int_t ly) const
+{
+  if(ly<kNplane) return (fStatus>>((ly+1)*4))&0xf;
+  return -1;
+}
+
+//____________________________________________________
+inline Bool_t AliTRDtrackV1::IsTrackError(ETRDtrackError error, UInt_t status)
+{
+  return (status&0xf)==UChar_t(error);
+}
+
+//____________________________________________________
+inline Bool_t AliTRDtrackV1::IsLayerError(ETRDlayerError error, Int_t ly, UInt_t status)
+{
+  if(ly>=kNplane || ly<0) return kFALSE;
+  return ((status>>((ly+1)*4))&0xf) == UChar_t(error);
+}
 
 //____________________________________________________
 inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
@@ -163,11 +209,18 @@ inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
   fReconstructor = rec;
 }
 
+//____________________________________________________
+inline void AliTRDtrackV1::SetStatus(UChar_t status, Int_t ly)
+{
+  if(ly<kNplane) fStatus|=((status&0xf)<<((ly+1)*4));
+  return;
+}
+
 
 //____________________________________________________________________________
 inline Float_t AliTRDtrackV1::StatusForTOF()
 {
-  //
+  // OBSOLETE
   // Defines the status of the TOF extrapolation
   //
 

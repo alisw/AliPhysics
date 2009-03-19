@@ -2881,5 +2881,39 @@ Bool_t AliTRDgeometry::IsHole(Int_t /*la*/, Int_t st, Int_t se) const
     return kTRUE; 
   }
   return kFALSE;
+}
 
+//_____________________________________________________________________________
+Bool_t AliTRDgeometry::IsOnBoundary(Int_t det, Float_t y, Float_t z, Float_t eps) const
+{
+  Int_t ly = GetLayer(det);
+  if ((ly <          0) || 
+      (ly >= fgkNlayer)) return kTRUE;
+	
+  Int_t stk = GetStack(det);
+  if ((stk <          0) || 
+      (stk >= fgkNstack)) return kTRUE;
+
+  AliTRDpadPlane *pp = (AliTRDpadPlane*) fPadPlaneArray->At(GetDetectorSec(ly, stk));
+  if(!pp) return kTRUE;
+
+  Double_t max  = pp->GetRow0();
+  Int_t n = pp->GetNrows();
+  Double_t min = max - 2 * pp->GetLengthOPad() 
+                 - (n-2) * pp->GetLengthIPad() 
+                 - (n-1) * pp->GetRowSpacing();
+  if(z < min+eps || z > max-eps){ 
+    //printf("z : min[%7.2f (%7.2f)] %7.2f max[(%7.2f) %7.2f]\n", min, min+eps, z, max-eps, max);
+    return kTRUE;
+  }
+  min  = pp->GetCol0();
+  n = pp->GetNcols();
+  max = min +2 * pp->GetWidthOPad() 
+       + (n-2) * pp->GetWidthIPad() 
+       + (n-1) * pp->GetColSpacing();
+  if(y < min+eps || y > max-eps){ 
+    //printf("y : min[%7.2f (%7.2f)] %7.2f max[(%7.2f) %7.2f]\n", min, min+eps, y, max-eps, max);
+    return kTRUE;
+  }
+  return kFALSE;
 }
