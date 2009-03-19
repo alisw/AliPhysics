@@ -1,9 +1,10 @@
-#ifndef AliAnalysisTaskCheckESD_H
-#define AliAnalysisTaskCheckESD_H
+#ifndef ALIANALYSISTASKCHECKESD_H
+#define ALIANALYSISTASKCHECKESD_H
 
-class TH1F;
-class TArrayI;
-class AliESDEvent;
+//------------------------------
+// Proof-enabled 
+// version of CheckESD.C
+//------------------------------
 
 #include "AliAnalysisTaskSE.h"
 
@@ -20,32 +21,32 @@ class AliAnalysisTaskCheckESD : public AliAnalysisTaskSE
 
   TH1F* CreateHisto(const char* name, const char* title, Int_t nBins, Double_t xMin, 
 			Double_t xMax, const char* xLabel = NULL, const char* yLabel = NULL);
-  TH1F* CreateEffHisto(TH1F* hGen, TH1F* hRec);
+  TH1F* CreateEffHisto(const TH1F* hGen, const TH1F* hRec);
   Bool_t FitHisto(TH1* histo, Double_t& res, Double_t& resError);
   
  private:
 
   TList* fListOfHistos;
 
-  TH1F * hGen;
-  TH1F* hRec;
-  TH1F* hResPtInv;
-  TH1F* hResPhi;
-  TH1F* hResTheta;
-  TH2F* hDEdxRight;
-  TH2F* hDEdxWrong;
-  TH1F* hResTOFRight;
-  TH1F* hResTOFWrong;
-  TH1F* hEPHOS;
-  TH1F* hEEMCAL;
-  TH1F* hPtMUON;
-  TH1F* hMassK0;
-  TH1F* hMassLambda;
-  TH1F* hMassLambdaBar;
-  TH1F* hMassXi;
-  TH1F* hMassOmega;
-  TH1F* hScalars;
-  TH1F* hArrayHist;  
+  TH1F * fGen;
+  TH1F* fRec;
+  TH1F* fResPtInv;
+  TH1F* fResPhi;
+  TH1F* fResTheta;
+  TH2F* fDEdxRight;
+  TH2F* fDEdxWrong;
+  TH1F* fResTOFRight;
+  TH1F* fResTOFWrong;
+  TH1F* fEPHOS;
+  TH1F* fEEMCAL;
+  TH1F* fPtMUON;
+  TH1F* fMassK0;
+  TH1F* fMassLambda;
+  TH1F* fMassLambdaBar;
+  TH1F* fMassXi;
+  TH1F* fMassOmega;
+  TH1F* fScalars;
+  TH1F* fArrayHist;  
    
   AliAnalysisTaskCheckESD(const AliAnalysisTaskCheckESD&); // not implemented
   AliAnalysisTaskCheckESD& operator=(const AliAnalysisTaskCheckESD&); // not implemented

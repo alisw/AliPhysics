@@ -15,17 +15,22 @@
 
 /* $Id$ */
 
+//------------------------------
+//
+// Proof-enabled 
+// version 
+// of CheckESD.C
+//
+//------------------------------
+
 #include "TChain.h"
 #include "TROOT.h"
 #include "TFile.h"
-#include "TError.h"
-#include "TH1.h"
-#include "TH2.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "TF1.h"
-#include "TArrayI.h"
 #include "TCanvas.h"
 #include "TVector3.h"
-#include "TPDGCode.h"
 #include "TParticle.h"
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
@@ -33,7 +38,6 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDCaloCluster.h"
 #include "AliRun.h"
-#include "AliHeader.h"
 #include "AliMCEvent.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
@@ -45,25 +49,25 @@ ClassImp(AliAnalysisTaskCheckESD)
 AliAnalysisTaskCheckESD::AliAnalysisTaskCheckESD():
 AliAnalysisTaskSE("AliAnalysisTaskCheckESD"),
   fListOfHistos(0),
-  hGen(0),
-  hRec(0),
-  hResPtInv(0),
-  hResPhi(0),
-  hResTheta(0),
-  hDEdxRight(0),
-  hDEdxWrong(0),
-  hResTOFRight(0),
-  hResTOFWrong(0),
-  hEPHOS(0),
-  hEEMCAL(0),
-  hPtMUON(0),
-  hMassK0(0),
-  hMassLambda(0),
-  hMassLambdaBar(0),
-  hMassXi(0),
-  hMassOmega(0),
-  hScalars(0),
-  hArrayHist(0)
+  fGen(0),
+  fRec(0),
+  fResPtInv(0),
+  fResPhi(0),
+  fResTheta(0),
+  fDEdxRight(0),
+  fDEdxWrong(0),
+  fResTOFRight(0),
+  fResTOFWrong(0),
+  fEPHOS(0),
+  fEEMCAL(0),
+  fPtMUON(0),
+  fMassK0(0),
+  fMassLambda(0),
+  fMassLambdaBar(0),
+  fMassXi(0),
+  fMassOmega(0),
+  fScalars(0),
+  fArrayHist(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -76,25 +80,25 @@ AliAnalysisTaskSE("AliAnalysisTaskCheckESD"),
 AliAnalysisTaskCheckESD::AliAnalysisTaskCheckESD(const char* name):
 AliAnalysisTaskSE(name),
   fListOfHistos(0),
-  hGen(0),
-  hRec(0),
-  hResPtInv(0),
-  hResPhi(0),
-  hResTheta(0),
-  hDEdxRight(0),
-  hDEdxWrong(0),
-  hResTOFRight(0),
-  hResTOFWrong(0),
-  hEPHOS(0),
-  hEEMCAL(0),
-  hPtMUON(0),
-  hMassK0(0),
-  hMassLambda(0),
-  hMassLambdaBar(0),
-  hMassXi(0),
-  hMassOmega(0),
-  hScalars(0),
-  hArrayHist(0)
+  fGen(0),
+  fRec(0),
+  fResPtInv(0),
+  fResPhi(0),
+  fResTheta(0),
+  fDEdxRight(0),
+  fDEdxWrong(0),
+  fResTOFRight(0),
+  fResTOFWrong(0),
+  fEPHOS(0),
+  fEEMCAL(0),
+  fPtMUON(0),
+  fMassK0(0),
+  fMassLambda(0),
+  fMassLambdaBar(0),
+  fMassXi(0),
+  fMassOmega(0),
+  fScalars(0),
+  fArrayHist(0)
 {
   // Constructor
   AliInfo("Constructor AliAnalysisTaskCheckESD");
@@ -118,7 +122,7 @@ TH1F * AliAnalysisTaskCheckESD::CreateHisto(const char* name, const char* title,
   return result;
 }
 
-TH1F * AliAnalysisTaskCheckESD::CreateEffHisto(TH1F* hGen, TH1F* hRec)
+TH1F *AliAnalysisTaskCheckESD::CreateEffHisto(const TH1F* hGen, const TH1F* hRec)
 {
   // create an efficiency histogram
   Int_t nBins = hGen->GetNbinsX();
@@ -130,12 +134,12 @@ TH1F * AliAnalysisTaskCheckESD::CreateEffHisto(TH1F* hGen, TH1F* hRec)
   hEff->GetYaxis()->SetTitle("#epsilon [%]");
   
   for (Int_t iBin = 0; iBin <= nBins; iBin++) {
-    Double_t nGen_eff = hGen->GetBinContent(iBin);
-    Double_t nRec_eff = hRec->GetBinContent(iBin);
-    if (nGen_eff > 0) {
-      Double_t eff = nRec_eff/nGen_eff;
+    Double_t nGenEff = hGen->GetBinContent(iBin);
+    Double_t nRecEff = hRec->GetBinContent(iBin);
+    if (nGenEff > 0) {
+      Double_t eff = nRecEff/nGenEff;
       hEff->SetBinContent(iBin, 100. * eff);
-      Double_t error = sqrt(eff*(1.-eff) / nGen_eff);
+      Double_t error = sqrt(eff*(1.-eff) / nGenEff);
       if (error == 0) error = 0.0001;
       hEff->SetBinError(iBin, 100. * error);			
     }
@@ -182,71 +186,71 @@ void AliAnalysisTaskCheckESD::UserCreateOutputObjects()
   Float_t minPt = 0.1;
   Float_t maxPt = 3.1;
   
-  hGen = CreateHisto("hGen", "generated tracks", nBinsPt, minPt, maxPt, "p_{t} [GeV/c]", "N");
-  hRec = CreateHisto("hRec", "reconstructed tracks", nBinsPt, minPt, maxPt, "p_{t} [GeV/c]", "N");
-  hResPtInv = CreateHisto("hResPtInv", "", 100, -10, 10, "(p_{t,rec}^{-1}-p_{t,sim}^{-1}) / p_{t,sim}^{-1} [%]", "N");
-  hResPhi = CreateHisto("hResPhi", "", 100, -20, 20, "#phi_{rec}-#phi_{sim} [mrad]", "N");
-  hResTheta = CreateHisto("hResTheta", "", 100, -20, 20, "#theta_{rec}-#theta_{sim} [mrad]", "N");
+  fGen = CreateHisto("hGen", "generated tracks", nBinsPt, minPt, maxPt, "p_{t} [GeV/c]", "N");
+  fRec = CreateHisto("hRec", "reconstructed tracks", nBinsPt, minPt, maxPt, "p_{t} [GeV/c]", "N");
+  fResPtInv = CreateHisto("hResPtInv", "", 100, -10, 10, "(p_{t,rec}^{-1}-p_{t,sim}^{-1}) / p_{t,sim}^{-1} [%]", "N");
+  fResPhi = CreateHisto("hResPhi", "", 100, -20, 20, "#phi_{rec}-#phi_{sim} [mrad]", "N");
+  fResTheta = CreateHisto("hResTheta", "", 100, -20, 20, "#theta_{rec}-#theta_{sim} [mrad]", "N");
   
   // dE/dx and TOF
-  hDEdxRight = new TH2F("hDEdxRight", "", 300, 0, 3, 100, 0, 400);
-  hDEdxRight->SetStats(kFALSE);
-  hDEdxRight->GetXaxis()->SetTitle("p [GeV/c]");
-  hDEdxRight->GetYaxis()->SetTitle("dE/dx_{TPC}");
-  hDEdxRight->SetMarkerStyle(kFullCircle);
-  hDEdxRight->SetMarkerSize(0.4);
-  hDEdxWrong = new TH2F("hDEdxWrong", "", 300, 0, 3, 100, 0, 400);
-  hDEdxWrong->SetStats(kFALSE);
-  hDEdxWrong->GetXaxis()->SetTitle("p [GeV/c]");
-  hDEdxWrong->GetYaxis()->SetTitle("dE/dx_{TPC}");
-  hDEdxWrong->SetMarkerStyle(kFullCircle);
-  hDEdxWrong->SetMarkerSize(0.4);
-  hDEdxWrong->SetMarkerColor(kRed);
+  fDEdxRight = new TH2F("hDEdxRight", "", 300, 0, 3, 100, 0, 400);
+  fDEdxRight->SetStats(kFALSE);
+  fDEdxRight->GetXaxis()->SetTitle("p [GeV/c]");
+  fDEdxRight->GetYaxis()->SetTitle("dE/dx_{TPC}");
+  fDEdxRight->SetMarkerStyle(kFullCircle);
+  fDEdxRight->SetMarkerSize(0.4);
+  fDEdxWrong = new TH2F("hDEdxWrong", "", 300, 0, 3, 100, 0, 400);
+  fDEdxWrong->SetStats(kFALSE);
+  fDEdxWrong->GetXaxis()->SetTitle("p [GeV/c]");
+  fDEdxWrong->GetYaxis()->SetTitle("dE/dx_{TPC}");
+  fDEdxWrong->SetMarkerStyle(kFullCircle);
+  fDEdxWrong->SetMarkerSize(0.4);
+  fDEdxWrong->SetMarkerColor(kRed);
   
-  hResTOFRight = CreateHisto("hResTOFRight", "", 100, -1000, 1000, "t_{TOF}-t_{track} [ps]", "N");
-  hResTOFWrong = CreateHisto("hResTOFWrong", "", 100, -1000, 1000, "t_{TOF}-t_{track} [ps]", "N");
-  hResTOFWrong->SetLineColor(kRed);
+  fResTOFRight = CreateHisto("hResTOFRight", "", 100, -1000, 1000, "t_{TOF}-t_{track} [ps]", "N");
+  fResTOFWrong = CreateHisto("hResTOFWrong", "", 100, -1000, 1000, "t_{TOF}-t_{track} [ps]", "N");
+  fResTOFWrong->SetLineColor(kRed);
   
   // calorimeters
-  hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 50, "E [GeV]", "N");
-  hEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 50, "E [GeV]", "N");
+  fEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 50, "E [GeV]", "N");
+  fEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 50, "E [GeV]", "N");
   
   // muons
-  hPtMUON = CreateHisto("hPtMUON", "MUON", 100, 0, 20, "p_{t} [GeV/c]", "N");
+  fPtMUON = CreateHisto("hPtMUON", "MUON", 100, 0, 20, "p_{t} [GeV/c]", "N");
   
   // V0s and cascades
-  hMassK0 = CreateHisto("hMassK0", "K^{0}", 100, 0.4, 0.6, "M(#pi^{+}#pi^{-}) [GeV/c^{2}]", "N");
-  hMassLambda = CreateHisto("hMassLambda", "#Lambda", 100, 1.0, 1.2, "M(p#pi^{-}) [GeV/c^{2}]", "N");
+  fMassK0 = CreateHisto("hMassK0", "K^{0}", 100, 0.4, 0.6, "M(#pi^{+}#pi^{-}) [GeV/c^{2}]", "N");
+  fMassLambda = CreateHisto("hMassLambda", "#Lambda", 100, 1.0, 1.2, "M(p#pi^{-}) [GeV/c^{2}]", "N");
   
-  hMassLambdaBar = CreateHisto("hMassLambdaBar", "#bar{#Lambda}", 100, 1.0, 1.2, "M(#bar{p}#pi^{+}) [GeV/c^{2}]", "N");
-  hMassXi = CreateHisto("hMassXi", "#Xi", 100, 1.2, 1.5, "M(#Lambda#pi) [GeV/c^{2}]", "N");
-  hMassOmega = CreateHisto("hMassOmega", "#Omega", 100, 1.5, 1.8, "M(#LambdaK) [GeV/c^{2}]", "N");
-  hScalars = new TH1F("hScalars","Container of scalars",8,0,8);
-  hArrayHist = new TH1F("hArrayHist","Container for Array",
+  fMassLambdaBar = CreateHisto("hMassLambdaBar", "#bar{#Lambda}", 100, 1.0, 1.2, "M(#bar{p}#pi^{+}) [GeV/c^{2}]", "N");
+  fMassXi = CreateHisto("hMassXi", "#Xi", 100, 1.2, 1.5, "M(#Lambda#pi) [GeV/c^{2}]", "N");
+  fMassOmega = CreateHisto("hMassOmega", "#Omega", 100, 1.5, 1.8, "M(#LambdaK) [GeV/c^{2}]", "N");
+  fScalars = new TH1F("hScalars","Container of scalars",8,0,8);
+  fArrayHist = new TH1F("hArrayHist","Container for Array",
 			(AliPID::kSPECIES+1)*AliPID::kSPECIES,0,(AliPID::kSPECIES+1)*AliPID::kSPECIES);
   
-  fListOfHistos->Add(hGen);
-  fListOfHistos->Add(hRec);
-  fListOfHistos->Add(hResPtInv);
-  fListOfHistos->Add(hResPhi);
-  fListOfHistos->Add(hResTheta);
-  fListOfHistos->Add(hDEdxRight);
-  fListOfHistos->Add(hDEdxWrong);
-  fListOfHistos->Add(hResTOFRight);
-  fListOfHistos->Add(hResTOFWrong);
-  fListOfHistos->Add(hEPHOS);
-  fListOfHistos->Add(hEEMCAL);
-  fListOfHistos->Add(hPtMUON);
-  fListOfHistos->Add(hMassK0);
-  fListOfHistos->Add(hMassLambda);
-  fListOfHistos->Add(hMassLambdaBar);
-  fListOfHistos->Add(hMassXi);
-  fListOfHistos->Add(hMassOmega);
-  fListOfHistos->Add(hScalars);
-  fListOfHistos->Add(hArrayHist);
+  fListOfHistos->Add(fGen);
+  fListOfHistos->Add(fRec);
+  fListOfHistos->Add(fResPtInv);
+  fListOfHistos->Add(fResPhi);
+  fListOfHistos->Add(fResTheta);
+  fListOfHistos->Add(fDEdxRight);
+  fListOfHistos->Add(fDEdxWrong);
+  fListOfHistos->Add(fResTOFRight);
+  fListOfHistos->Add(fResTOFWrong);
+  fListOfHistos->Add(fEPHOS);
+  fListOfHistos->Add(fEEMCAL);
+  fListOfHistos->Add(fPtMUON);
+  fListOfHistos->Add(fMassK0);
+  fListOfHistos->Add(fMassLambda);
+  fListOfHistos->Add(fMassLambdaBar);
+  fListOfHistos->Add(fMassXi);
+  fListOfHistos->Add(fMassOmega);
+  fListOfHistos->Add(fScalars);
+  fListOfHistos->Add(fArrayHist);
 }
 
-void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
+void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
 {
   // check the content of the ESD
   Double_t cutPtV0 = 0.3;
@@ -288,8 +292,8 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
       {
 	if (particle->Pt() > minPt) {
 	  selParticles.Add(particle);
-	  hScalars->Fill(0);
-	  hGen->Fill(particle->Pt());
+	  fScalars->Fill(0);
+	  fGen->Fill(particle->Pt());
 	}
 	break;
       }
@@ -297,7 +301,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     case kLambda0:
       {
 	if (particle->Pt() > cutPtV0) {
-	  hScalars->Fill(3);
+	  fScalars->Fill(3);
 	  selV0s.Add(particle);
 	}
 	break;
@@ -306,7 +310,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     case kOmegaMinus:
       {
 	if (particle->Pt() > cutPtCascade) {
-	  hScalars->Fill(6);
+	  fScalars->Fill(6);
 	  selCascades.Add(particle);
 	}
 	break;
@@ -337,16 +341,16 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     if (track->GetConstrainedChi2() > 1e9) continue;
     selParticles.Remove(particle);   // don't count multiple tracks
     
-    hScalars->Fill(1);
-    hRec->Fill(particle->Pt());
+    fScalars->Fill(1);
+    fRec->Fill(particle->Pt());
     if (track->GetLabel() < 0) { 
-      hScalars->Fill(2);
+      fScalars->Fill(2);
     }
 
     // resolutions
-    hResPtInv->Fill(100. * (TMath::Abs(track->GetSigned1Pt()) - 1./particle->Pt()) *particle->Pt());
-    hResPhi->Fill(1000. * (track->Phi() - particle->Phi()));
-    hResTheta->Fill(1000. * (track->Theta() - particle->Theta()));
+    fResPtInv->Fill(100. * (TMath::Abs(track->GetSigned1Pt()) - 1./particle->Pt()) *particle->Pt());
+    fResPhi->Fill(1000. * (track->Phi() - particle->Phi()));
+    fResTheta->Fill(1000. * (track->Theta() - particle->Theta()));
     
     // PID
     if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) continue;
@@ -367,24 +371,24 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
       }
 			
     }
-    hArrayHist->Fill(AliPID::kSPECIES*iGen + iRec);
+    fArrayHist->Fill(AliPID::kSPECIES*iGen + iRec);
     if (iGen == iRec) {
-      hScalars->Fill(5);
+      fScalars->Fill(5);
     }
 
     // dE/dx and TOF
     Double_t time[AliPID::kSPECIES];
     track->GetIntegratedTimes(time);
     if (iGen == iRec) {
-      hDEdxRight->Fill(particle->P(), track->GetTPCsignal());
+      fDEdxRight->Fill(particle->P(), track->GetTPCsignal());
       if ((track->GetStatus() & AliESDtrack::kTOFpid) != 0) {
-	hResTOFRight->Fill(track->GetTOFsignal() - time[iRec]);
+	fResTOFRight->Fill(track->GetTOFsignal() - time[iRec]);
       }
     }
     else {
-      hDEdxWrong->Fill(particle->P(), track->GetTPCsignal());
+      fDEdxWrong->Fill(particle->P(), track->GetTPCsignal());
       if ((track->GetStatus() & AliESDtrack::kTOFpid) != 0) {
-	hResTOFWrong->Fill(track->GetTOFsignal() - time[iRec]);
+	fResTOFWrong->Fill(track->GetTOFsignal() - time[iRec]);
       }
     }
   }
@@ -394,7 +398,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
     Double_t ptInv = TMath::Abs(muonTrack->GetInverseBendingMomentum());
     if (ptInv > 0.001) {
-      hPtMUON->Fill(1./ptInv);
+      fPtMUON->Fill(1./ptInv);
     }
   }
 
@@ -403,11 +407,11 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     AliESDv0* v0 = esd->GetV0(iV0);
     if (v0->GetOnFlyStatus()) continue;
     v0->ChangeMassHypothesis(kK0Short);
-    hMassK0->Fill(v0->GetEffMass());
+    fMassK0->Fill(v0->GetEffMass());
     v0->ChangeMassHypothesis(kLambda0);
-    hMassLambda->Fill(v0->GetEffMass());
+    fMassLambda->Fill(v0->GetEffMass());
     v0->ChangeMassHypothesis(kLambda0Bar);
-    hMassLambdaBar->Fill(v0->GetEffMass());
+    fMassLambdaBar->Fill(v0->GetEffMass());
     
     Int_t negLabel = TMath::Abs(esd->GetTrack(v0->GetNindex())->GetLabel());
     if (negLabel > mcEvent->GetNumberOfTracks()) continue;     // background
@@ -425,7 +429,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     particle = track->Particle();
     if (!selV0s.Contains(particle)) continue;
     selV0s.Remove(particle);
-    hScalars->Fill(4);
+    fScalars->Fill(4);
   }
 
   // loop over Cascades
@@ -433,9 +437,9 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     AliESDcascade* cascade = esd->GetCascade(iCascade);
     Double_t v0q;
     cascade->ChangeMassHypothesis(v0q,kXiMinus);
-    hMassXi->Fill(cascade->GetEffMass());
+    fMassXi->Fill(cascade->GetEffMass());
     cascade->ChangeMassHypothesis(v0q,kOmegaMinus);
-    hMassOmega->Fill(cascade->GetEffMass());
+    fMassOmega->Fill(cascade->GetEffMass());
     
     Int_t negLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())->GetLabel());
     if (negLabel > mcEvent->GetNumberOfTracks()) continue;     // background
@@ -463,14 +467,14 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t *option)
     particle = track->Particle();
     if (!selCascades.Contains(particle)) continue;
     selCascades.Remove(particle);
-    hScalars->Fill(7);
+    fScalars->Fill(7);
   }
   
   // loop over the clusters
   for (Int_t iCluster=0; iCluster<esd->GetNumberOfCaloClusters(); iCluster++) {
     AliESDCaloCluster * clust = esd->GetCaloCluster(iCluster);
-    if (clust->IsPHOS()) hEPHOS->Fill(clust->E());
-    if (clust->IsEMCAL()) hEEMCAL->Fill(clust->E());
+    if (clust->IsPHOS()) fEPHOS->Fill(clust->E());
+    if (clust->IsEMCAL()) fEEMCAL->Fill(clust->E());
   }
 	
   // Post output data.
@@ -521,41 +525,41 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     return;
   }
 	
-  hGen = dynamic_cast<TH1F*>(fListOfHistos->At(0));
-  hRec = dynamic_cast<TH1F*>(fListOfHistos->At(1));
-  hResPtInv = dynamic_cast<TH1F*>(fListOfHistos->At(2));
-  hResPhi = dynamic_cast<TH1F*>(fListOfHistos->At(3));
-  hResTheta = dynamic_cast<TH1F*>(fListOfHistos->At(4));
-  hDEdxRight = dynamic_cast<TH2F*>(fListOfHistos->At(5));
-  hDEdxWrong = dynamic_cast<TH2F*>(fListOfHistos->At(6));
-  hResTOFRight = dynamic_cast<TH1F*>(fListOfHistos->At(7));
-  hResTOFWrong = dynamic_cast<TH1F*>(fListOfHistos->At(8));
-  hEPHOS = dynamic_cast<TH1F*>(fListOfHistos->At(9));
-  hEEMCAL = dynamic_cast<TH1F*>(fListOfHistos->At(10));
-  hPtMUON = dynamic_cast<TH1F*>(fListOfHistos->At(11));
-  hMassK0 = dynamic_cast<TH1F*>(fListOfHistos->At(12));
-  hMassLambda = dynamic_cast<TH1F*>(fListOfHistos->At(13));
-  hMassLambdaBar = dynamic_cast<TH1F*>(fListOfHistos->At(14));
-  hMassXi = dynamic_cast<TH1F*>(fListOfHistos->At(15));
-  hMassOmega = dynamic_cast<TH1F*>(fListOfHistos->At(16));
-  hScalars = dynamic_cast<TH1F*>(fListOfHistos->At(17));
-  hArrayHist = dynamic_cast<TH1F*>(fListOfHistos->At(18));
+  fGen = dynamic_cast<TH1F*>(fListOfHistos->At(0));
+  fRec = dynamic_cast<TH1F*>(fListOfHistos->At(1));
+  fResPtInv = dynamic_cast<TH1F*>(fListOfHistos->At(2));
+  fResPhi = dynamic_cast<TH1F*>(fListOfHistos->At(3));
+  fResTheta = dynamic_cast<TH1F*>(fListOfHistos->At(4));
+  fDEdxRight = dynamic_cast<TH2F*>(fListOfHistos->At(5));
+  fDEdxWrong = dynamic_cast<TH2F*>(fListOfHistos->At(6));
+  fResTOFRight = dynamic_cast<TH1F*>(fListOfHistos->At(7));
+  fResTOFWrong = dynamic_cast<TH1F*>(fListOfHistos->At(8));
+  fEPHOS = dynamic_cast<TH1F*>(fListOfHistos->At(9));
+  fEEMCAL = dynamic_cast<TH1F*>(fListOfHistos->At(10));
+  fPtMUON = dynamic_cast<TH1F*>(fListOfHistos->At(11));
+  fMassK0 = dynamic_cast<TH1F*>(fListOfHistos->At(12));
+  fMassLambda = dynamic_cast<TH1F*>(fListOfHistos->At(13));
+  fMassLambdaBar = dynamic_cast<TH1F*>(fListOfHistos->At(14));
+  fMassXi = dynamic_cast<TH1F*>(fListOfHistos->At(15));
+  fMassOmega = dynamic_cast<TH1F*>(fListOfHistos->At(16));
+  fScalars = dynamic_cast<TH1F*>(fListOfHistos->At(17));
+  fArrayHist = dynamic_cast<TH1F*>(fListOfHistos->At(18));
   
-  Int_t nGen = Int_t(hScalars->GetBinContent(1));
-  Int_t nRec = Int_t(hScalars->GetBinContent(2));
-  Int_t nFake = Int_t(hScalars->GetBinContent(3));
-  Int_t nGenV0s = Int_t(hScalars->GetBinContent(4));
-  Int_t nRecV0s = Int_t(hScalars->GetBinContent(5));
-  Int_t nIdentified = Int_t(hScalars->GetBinContent(6));
-  Int_t nGenCascades = Int_t(hScalars->GetBinContent(7));
-  Int_t nRecCascades = Int_t(hScalars->GetBinContent(8));
+  Int_t nGen = Int_t(fScalars->GetBinContent(1));
+  Int_t nRec = Int_t(fScalars->GetBinContent(2));
+  Int_t nFake = Int_t(fScalars->GetBinContent(3));
+  Int_t nGenV0s = Int_t(fScalars->GetBinContent(4));
+  Int_t nRecV0s = Int_t(fScalars->GetBinContent(5));
+  Int_t nIdentified = Int_t(fScalars->GetBinContent(6));
+  Int_t nGenCascades = Int_t(fScalars->GetBinContent(7));
+  Int_t nRecCascades = Int_t(fScalars->GetBinContent(8));
   
   Int_t k = 1;
   
   Int_t identified[AliPID::kSPECIES+1][AliPID::kSPECIES];
   for(Int_t i = 0; i < (AliPID::kSPECIES+1); i++)
     for(Int_t j = 0; j < AliPID::kSPECIES; j++) {
-      identified[i][j] = Int_t(hArrayHist->GetBinContent(k));
+      identified[i][j] = Int_t(fArrayHist->GetBinContent(k));
       k++;
     }
   
@@ -565,7 +569,7 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     Warning("CheckESD", "low number of generated particles: %d", Int_t(nGen));
   }
 	
-  TH1F* hEff = CreateEffHisto(hGen, hRec);
+  TH1F* hEff = CreateEffHisto(fGen, fRec);
   
   Info("CheckESD", "%d out of %d tracks reconstructed including %d "
        "fake tracks", nRec, nGen, nFake);
@@ -585,13 +589,13 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     }
     // resolutions
     Double_t res, resError;
-    if (FitHisto(hResPtInv, res, resError)) {
+    if (FitHisto(fResPtInv, res, resError)) {
       Info("CheckESD", "relative inverse pt resolution = (%.1f +- %.1f) %%",res, resError);
       if (res > checkResPtInvHigh + checkResPtInvSigma*resError) {
 	Warning("CheckESD", "bad pt resolution: (%.1f +- %.1f) %%",res, resError);
       }
     }
-    if (FitHisto(hResPhi, res, resError)) {
+    if (FitHisto(fResPhi, res, resError)) {
       Info("CheckESD", "phi resolution = (%.1f +- %.1f) mrad", res, resError);
       if (res > checkResPhiHigh + checkResPhiSigma*resError) {
 	Warning("CheckESD", "bad phi resolution: (%.1f +- %.1f) mrad", 
@@ -599,7 +603,7 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
       }
     }
 
-    if (FitHisto(hResTheta, res, resError)) {
+    if (FitHisto(fResTheta, res, resError)) {
       Info("CheckESD", "theta resolution = (%.1f +- %.1f) mrad", 
 	   res, resError);
       if (res > checkResThetaHigh + checkResThetaSigma*resError) {
@@ -632,7 +636,7 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
       printf("\n");
     }
     
-    if (FitHisto(hResTOFRight, res, resError)) {
+    if (FitHisto(fResTOFRight, res, resError)) {
       Info("CheckESD", "TOF resolution = (%.1f +- %.1f) ps", res, resError);
       if (res > checkResTOFHigh + checkResTOFSigma*resError) {
 	Warning("CheckESD", "bad TOF resolution: (%.1f +- %.1f) ps", 
@@ -641,12 +645,12 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     }
     
     // calorimeters
-    if (hEPHOS->Integral() < checkPHOSNLow) {
+    if (fEPHOS->Integral() < checkPHOSNLow) {
       Warning("CheckESD", "low number of PHOS particles: %d", 
-	      Int_t(hEPHOS->Integral()));
+	      Int_t(fEPHOS->Integral()));
     } 	
     else {
-      Double_t mean = hEPHOS->GetMean();
+      Double_t mean = fEPHOS->GetMean();
       if (mean < checkPHOSEnergyLow) {
 	Warning("CheckESD", "low mean PHOS energy: %.1f GeV", mean);
       } else if (mean > checkPHOSEnergyHigh) {
@@ -654,12 +658,12 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
       }
     }
     
-    if (hEEMCAL->Integral() < checkEMCALNLow) {
+    if (fEEMCAL->Integral() < checkEMCALNLow) {
       Warning("CheckESD", "low number of EMCAL particles: %d", 
-	      Int_t(hEEMCAL->Integral()));
+	      Int_t(fEEMCAL->Integral()));
     } 
     else {
-      Double_t mean = hEEMCAL->GetMean();
+      Double_t mean = fEEMCAL->GetMean();
       if (mean < checkEMCALEnergyLow) {
 	Warning("CheckESD", "low mean EMCAL energy: %.1f GeV", mean);
       }
@@ -669,12 +673,12 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     }
 
     // muons
-    if (hPtMUON->Integral() < checkMUONNLow) {
+    if (fPtMUON->Integral() < checkMUONNLow) {
       Warning("CheckESD", "low number of MUON particles: %d", 
-	      Int_t(hPtMUON->Integral()));
+	      Int_t(fPtMUON->Integral()));
     }
     else {
-      Double_t mean = hPtMUON->GetMean();
+      Double_t mean = fPtMUON->GetMean();
       if (mean < checkMUONPtLow) {
 	Warning("CheckESD", "low mean MUON pt: %.1f GeV/c", mean);
       }
@@ -717,33 +721,33 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     new TCanvas;
     hEff->DrawCopy();
     new TCanvas;
-    hResPtInv->DrawCopy("E");
+    fResPtInv->DrawCopy("E");
     new TCanvas;
-    hResPhi->DrawCopy("E");
+    fResPhi->DrawCopy("E");
     new TCanvas;
-    hResTheta->DrawCopy("E");
+    fResTheta->DrawCopy("E");
     new TCanvas;
-    hDEdxRight->DrawCopy();
-    hDEdxWrong->DrawCopy("SAME");
+    fDEdxRight->DrawCopy();
+    fDEdxWrong->DrawCopy("SAME");
     new TCanvas;
-    hResTOFRight->DrawCopy("E");
-    hResTOFWrong->DrawCopy("SAME");
+    fResTOFRight->DrawCopy("E");
+    fResTOFWrong->DrawCopy("SAME");
     new TCanvas;
-    hEPHOS->DrawCopy("E");
+    fEPHOS->DrawCopy("E");
     new TCanvas;
-    hEEMCAL->DrawCopy("E");
+    fEEMCAL->DrawCopy("E");
     new TCanvas;
-    hPtMUON->DrawCopy("E");
+    fPtMUON->DrawCopy("E");
     new TCanvas;
-    hMassK0->DrawCopy("E");
+    fMassK0->DrawCopy("E");
     new TCanvas;
-    hMassLambda->DrawCopy("E");
+    fMassLambda->DrawCopy("E");
     new TCanvas;
-    hMassLambdaBar->DrawCopy("E");
+    fMassLambdaBar->DrawCopy("E");
     new TCanvas;
-    hMassXi->DrawCopy("E");
+    fMassXi->DrawCopy("E");
     new TCanvas;
-    hMassOmega->DrawCopy("E");
+    fMassOmega->DrawCopy("E");
   }
 
   // write the output histograms to a file
@@ -754,21 +758,21 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
       return;
     }
   hEff->Write();
-  hResPtInv->Write();
-  hResPhi->Write();
-  hResTheta->Write();
-  hDEdxRight->Write();
-  hDEdxWrong->Write();
-  hResTOFRight->Write();
-  hResTOFWrong->Write();
-  hEPHOS->Write();
-  hEEMCAL->Write();
-  hPtMUON->Write();
-  hMassK0->Write();
-  hMassLambda->Write();
-  hMassLambdaBar->Write();
-  hMassXi->Write();
-  hMassOmega->Write();
+  fResPtInv->Write();
+  fResPhi->Write();
+  fResTheta->Write();
+  fDEdxRight->Write();
+  fDEdxWrong->Write();
+  fResTOFRight->Write();
+  fResTOFWrong->Write();
+  fEPHOS->Write();
+  fEEMCAL->Write();
+  fPtMUON->Write();
+  fMassK0->Write();
+  fMassLambda->Write();
+  fMassLambdaBar->Write();
+  fMassXi->Write();
+  fMassOmega->Write();
   outputFile->Close();
   delete outputFile;
 
