@@ -58,7 +58,7 @@ public:
 
   
   void  SetSpectatorsTrack() {fSpectatorTracked=0;}
-  Int_t const SpectatorsTracked() {return fSpectatorTracked;}
+  Int_t SpectatorsTracked() const {return fSpectatorTracked;}
 
 private:
 
