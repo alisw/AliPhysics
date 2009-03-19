@@ -77,8 +77,8 @@ Int_t AliHMPIDTracker::IntTrkCha(Int_t ch,AliHMPIDtrack *pTrk,Float_t &xPc,Float
     Double_t p2[3],n2[3]; 
     pParam->Norm(ch,n2);
     pParam->Point(ch,p2,AliHMPIDParam::kPc);                                                     //point & norm  for entrance to PC plane
-    if(pTrk->Intersect(pTrk,p1,n1)==kFALSE) return -1;                                           //try to intersect track with the middle of radiator
-    if(pTrk->Intersect(pTrk,p2,n2)==kFALSE) return -1;   
+    if(pTrk->Intersect(p1,n1)==kFALSE) return -1;                                                //try to intersect track with the middle of radiator
+    if(pTrk->Intersect(p2,n2)==kFALSE) return -1;   
     pParam->Mars2LorsVec(ch,n1,theta,phi);                                                       //track angles at RAD
     pParam->Mars2Lors   (ch,p1,xRa,yRa);                                                         //TRKxRAD position
     pParam->Mars2Lors   (ch,p2,xPc,yPc);                                                         //TRKxPC position
@@ -151,7 +151,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     if(ipCh<0) continue;                                                                         //no intersection at all, go after next track
 
-    pTrk->SetHMPIDtrk(xRa,yRa,theta,phi);                                                        //store initial infos
+    pTrk->SetHMPIDtrk(xPc,yPc,theta,phi);                                                        //store initial infos
     pTrk->SetHMPIDcluIdx(ipCh,9999);                                                             //set chamber, index of cluster + cluster size
     
 // track intersects the chamber ipCh: find the MIP          
@@ -273,7 +273,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     }
     //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
-    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(ipCh),index,nmean);                           //search for Cerenkov angle of this track
+    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(ipCh),index,nmean,xRa,yRa);                   //search for Cerenkov angle of this track
     
     AliHMPIDPid pID;
     Double_t prob[5];

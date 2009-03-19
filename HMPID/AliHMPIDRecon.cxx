@@ -79,7 +79,7 @@ void AliHMPIDRecon::DeleteVars()const
   delete [] fPhotWei;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index,Double_t nmean)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index,Double_t nmean,Float_t xRa,Float_t yRa)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
@@ -95,8 +95,8 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
 
   InitVars(nClusTot);
   
-  Float_t xRa,yRa,th,ph;
-  pTrk->GetHMPIDtrk(xRa,yRa,th,ph);        //initialize this track: th and ph angles at middle of RAD 
+  Float_t xPc,yPc,th,ph;
+  pTrk->GetHMPIDtrk(xPc,yPc,th,ph);        //initialize this track: th and ph angles at middle of RAD 
   SetTrack(xRa,yRa,th,ph);
 
   fParam->SetRefIdx(nmean);

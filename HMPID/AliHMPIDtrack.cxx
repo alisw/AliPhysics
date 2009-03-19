@@ -201,8 +201,8 @@ Bool_t AliHMPIDtrack::PropagateTo(const AliCluster3D *c) {
   }
   return kTRUE;
 }//PropagateTo()
-
-Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const {
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3]) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   // Origin: K. Shileev (Kirill.Shileev@cern.ch)
   // Finds point of intersection (if exists) of the helix with the plane. 
@@ -216,10 +216,10 @@ Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) 
   //estimates initial helix length up to plane
   Double_t s=(pnt[0]-x0[0])*norm[0] + (pnt[1]-x0[1])*norm[1] + (pnt[2]-x0[2])*norm[2];
   Double_t dist=99999,distPrev=dist;
-  Double_t x[3],p[3]; 
+  Double_t p[3],x[3]; 
   while(TMath::Abs(dist)>0.00001){
     //calculates helix at the distance s from x0 ALONG the helix
-    Propagate(s,x,p,bz);
+    Propagate(s,x,p);
     //distance between current helix position and plane
     dist=(x[0]-pnt[0])*norm[0]+(x[1]-pnt[1])*norm[1]+(x[2]-pnt[2])*norm[2];  
     if(TMath::Abs(dist) >= TMath::Abs(distPrev)) {return kFALSE;}
@@ -232,35 +232,7 @@ Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) 
   return kTRUE;
 }//Intersect()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDtrack::Intersect(AliHMPIDtrack *pTrk,Double_t pnt[3], Double_t norm[3]) {
-  // Finds point of intersection (if exists) of the helix with the plane. 
-  // Stores result in fX and fP.   
-  // Arguments: planePoint,planeNorm - the plane defined by any plane's point 
-  // and vector, normal to the plane
-  // Returns: kTrue if helix intersects the plane, kFALSE otherwise.
- 
-  Double_t x0[3]; pTrk->GetXYZ(x0); //get track position in MARS
-  Double_t dist=99999,distPrev=dist;
-  Double_t x[3],p[3],
-  pntrad= TMath::Sqrt(pnt[0]*pnt[0]+pnt[1]*pnt[1]);
-  while(TMath::Abs(dist)> 0.000001){//0.00001){
-    //calculates helix at the distance s from x0 ALONG the helix
-    pTrk->PropagateTo(pntrad);pTrk->GetXYZ(x);pTrk->GetPxPyPz(p); 
-    //distance between current helix position and plane
-    dist=(x[0]-pnt[0])*norm[0]+(x[1]-pnt[1])*norm[1]+(x[2]-pnt[2])*norm[2];
-    pntrad=pntrad-dist*0.7;
-    //Printf("--- 111 --- dist %lf",dist);
-    if(TMath::Abs(2.0*dist) >= TMath::Abs(distPrev)) {return kFALSE;}
-    distPrev=dist;
-  }
-  //on exit pnt is intersection point,norm is track vector at that point, 
-  //Printf("--- 222 --- dist %lf",dist);
-//  Printf("");
-  for (Int_t i=0; i<3; i++) {pnt[i]=x[i]; norm[i]=p[i];}
-  return kTRUE;
-}//Intersect()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3], Double_t bz) const {
+void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3]) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   // Origin: K. Shileev (Kirill.Shileev@cern.ch)
   // Extrapolate track along simple helix in magnetic field
@@ -270,6 +242,9 @@ void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3], Double_
   // The momentum returned for straight-line tracks is meaningless !
   //+++++++++++++++++++++++++++++++++++++++++    
   GetXYZ(x);    
+  Double_t bField[3];
+  TGeoGlobalMagField::Instance()->Field(x,bField);
+  Double_t bz = bField[2];
   if (OneOverPt() < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
      Double_t unit[3]; GetDirection(unit);
      x[0]+=unit[0]*len;   
