@@ -4,8 +4,17 @@
 /* $Id$ */
 
 
-#ifndef AliFlowAnalysisWithLeeYangZeros_H
-#define AliFlowAnalysisWithLeeYangZeros_H
+#ifndef ALIFLOWANALYSISWITHLEEYANGZEROS_H
+#define ALIFLOWANALYSISWITHLEEYANGZEROS_H
+
+////////////////////////////////////////////////////////////////////
+// Description: Maker to analyze Flow by the LeeYangZeros method
+//              One needs to do two runs over the data; 
+//              First to calculate the integrated flow 
+//              and in the second to calculate the differential flow
+// Author: Naomi van der Kolk (kolk@nikhef.nl)
+////////////////////////////////////////////////////////////////////
+
 
 #include "AliFlowVector.h" //needed as include
 
@@ -27,11 +36,6 @@ class TString;
 class TList;
 class Riostream;
 
-
-// Description: Maker to analyze Flow by the LeeYangZeros method
-//              One needs to do two runs over the data; 
-//              First to calculate the integrated flow 
-//              and in the second to calculate the differential flow
  
 class AliFlowAnalysisWithLeeYangZeros {
 
@@ -44,7 +48,7 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t    Make(AliFlowEventSimple* anEvent);        //calculates variables and fills histograms
    Bool_t    Finish();                                 //saves histograms
    void      WriteHistograms(TString* outputFileName); //writes histograms locally
-   void      WriteHistograms(TString outputFileName); //writes histograms locally
+   void      WriteHistograms(TString outputFileName);  //writes histograms locally
    
    Double_t  GetQtheta(AliFlowVector aQ, Double_t aTheta);
    
@@ -60,62 +64,62 @@ class AliFlowAnalysisWithLeeYangZeros {
    void      SetEventNumber(Int_t n)      { this->fEventNumber = n; }
    Int_t     GetEventNumber() const       { return this->fEventNumber; }
    void      SetQ2sum(Double_t d)         { this->fQ2sum = d; }
-   Double_t  GetQ2sum()                   { return this->fQ2sum; }
+   Double_t  GetQ2sum() const             { return this->fQ2sum; }
 
    // Output 
    TList*             GetHistList() const      { return this->fHistList ; }     
    AliFlowCommonHist* GetCommonHists() const   { return this->fCommonHists; }
-   void               SetCommonHists(AliFlowCommonHist* aCommonHist)  
+   void               SetCommonHists(AliFlowCommonHist* const aCommonHist)  
      { this->fCommonHists = aCommonHist; }
    AliFlowCommonHistResults* GetCommonHistsRes() const  
      { return this->fCommonHistsRes; }
-   void               SetCommonHistsRes(AliFlowCommonHistResults* aCommonHistResult) 
+   void               SetCommonHistsRes(AliFlowCommonHistResults* const aCommonHistResult) 
      { this->fCommonHistsRes = aCommonHistResult; }
    //AliFlowLYZHist1* GetHist1() const             {return this->fHist1; } 
-   void               SetHist1(AliFlowLYZHist1* aLYZHist1[])  
+   void               SetHist1(AliFlowLYZHist1* const aLYZHist1[])  
      {for (Int_t i=0;i<5;i++) {this->fHist1[i] = aLYZHist1[i];} }
    //AliFlowLYZHist2* GetHist2() const             {return this->fHist2; } 
-   void               SetHist2RP(AliFlowLYZHist2* aLYZHist2RP[])  
+   void               SetHist2RP(AliFlowLYZHist2* const aLYZHist2RP[])  
      {for (Int_t i=0;i<5;i++) {this->fHist2RP[i] = aLYZHist2RP[i];} }
-   void               SetHist2POI(AliFlowLYZHist2* aLYZHist2POI[])  
+   void               SetHist2POI(AliFlowLYZHist2* const aLYZHist2POI[])  
      {for (Int_t i=0;i<5;i++) {this->fHist2POI[i] = aLYZHist2POI[i];} }
 
    TProfile*  GetHistProVtheta() const   {return this->fHistProVtheta; } 
-   void       SetHistProVtheta(TProfile* aHistProVtheta)     
+   void       SetHistProVtheta(TProfile* const aHistProVtheta)     
      { this->fHistProVtheta = aHistProVtheta; }
    TProfile*  GetHistProVetaRP() const     {return this->fHistProVetaRP; }  
-   void       SetHistProVetaRP(TProfile* aHistProVetaRP)         
+   void       SetHistProVetaRP(TProfile* const aHistProVetaRP)         
      {this->fHistProVetaRP = aHistProVetaRP; }
    TProfile*  GetHistProVetaPOI() const     {return this->fHistProVetaPOI; }  
-   void       SetHistProVetaPOI(TProfile* aHistProVetaPOI)         
+   void       SetHistProVetaPOI(TProfile* const aHistProVetaPOI)         
      {this->fHistProVetaPOI = aHistProVetaPOI; }
    TProfile*  GetHistProVPtRP() const      {return this->fHistProVPtRP;}
-   void       SetHistProVPtRP(TProfile* aHistProVPtRP)           
+   void       SetHistProVPtRP(TProfile* const aHistProVPtRP)           
      {this->fHistProVPtRP = aHistProVPtRP; }
    TProfile*  GetHistProVPtPOI() const      {return this->fHistProVPtPOI;}
-   void       SetHistProVPtPOI(TProfile* aHistProVPtPOI)           
+   void       SetHistProVPtPOI(TProfile* const aHistProVPtPOI)           
      {this->fHistProVPtPOI = aHistProVPtPOI; }
    TProfile*  GetHistProR0theta() const  {return this->fHistProR0theta; }
-   void       SetHistProR0theta(TProfile* aHistProR0theta)   
+   void       SetHistProR0theta(TProfile* const aHistProR0theta)   
      {this->fHistProR0theta = aHistProR0theta; }
    TProfile*  GetHistProReDenom() const  {return this->fHistProReDenom; } 
-   void       SetHistProReDenom(TProfile* aHistProReDenom)   
+   void       SetHistProReDenom(TProfile* const aHistProReDenom)   
      {this->fHistProReDenom = aHistProReDenom; }
    TProfile*  GetHistProImDenom() const  {return this->fHistProImDenom; }
-   void       SetHistProImDenom(TProfile* aHistProImDenom)   
+   void       SetHistProImDenom(TProfile* const aHistProImDenom)   
      {this->fHistProImDenom = aHistProImDenom; }
    TProfile*  GetHistProReDtheta() const {return this->fHistProReDtheta; } 
-   void       SetHistProReDtheta(TProfile* aHistProReDtheta) 
+   void       SetHistProReDtheta(TProfile* const aHistProReDtheta) 
      {this->fHistProReDtheta = aHistProReDtheta; }
    TProfile*  GetHistProImDtheta() const {return this->fHistProImDtheta; }
-   void       SetHistProImDtheta(TProfile* aHistProImDtheta) 
+   void       SetHistProImDtheta(TProfile* const aHistProImDtheta) 
      {this->fHistProImDtheta = aHistProImDtheta; }
-   TH1F*      GetHistQsumforChi() {return this->fHistQsumforChi; }
-   void       SetHistQsumforChi(TH1F* aHistQsumforChi) 
+   TH1F*      GetHistQsumforChi() const  {return this->fHistQsumforChi; }
+   void       SetHistQsumforChi(TH1F* const aHistQsumforChi) 
     {this->fHistQsumforChi = aHistQsumforChi; }
 
-   void       SetFirstRunList(TList* list) { this->fFirstRunList = list; }
-   TList*     GetFirstRunList()            { return this->fFirstRunList; }
+   void       SetFirstRunList(TList* const list) { this->fFirstRunList = list; }
+   TList*     GetFirstRunList() const            { return this->fFirstRunList; }
 
  private:
 
@@ -133,43 +137,43 @@ class AliFlowAnalysisWithLeeYangZeros {
 #ifndef __CINT__
    
    TVector2*  fQsum;         // flow vector sum              
-   Double_t  fQ2sum;        // flow vector sum squared                 
+   Double_t  fQ2sum;         // flow vector sum squared                 
       
 #endif /*__CINT__*/
 
-   Int_t        fEventNumber;       // event counter
+   Int_t        fEventNumber;     // event counter
         
-   Bool_t       fFirstRun ;         // flag for lyz analysis: true=first run over data, false=second run 
-   Bool_t       fUseSum ;           // flag for lyz analysis: true=use sum gen.function, false=use product gen.function
-   Bool_t       fDoubleLoop ;       // flag for studying non flow effects
-   Bool_t       fDebug ;            // flag for lyz analysis: more print statements
+   Bool_t       fFirstRun ;       // flag for lyz analysis: true=first run over data, false=second run 
+   Bool_t       fUseSum ;         // flag for lyz analysis: true=use sum gen.function, false=use product gen.function
+   Bool_t       fDoubleLoop ;     // flag for studying non flow effects
+   Bool_t       fDebug ;          // flag for lyz analysis: more print statements
 
-   TList*       fHistList;          //list to hold all output histograms 
-   TList*       fFirstRunList;      //list from first run output
+   TList*       fHistList;        //list to hold all output histograms 
+   TList*       fFirstRunList;    //list from first run output
         
-   TProfile*    fHistProVtheta;      
-   TProfile*    fHistProVetaRP;
-   TProfile*    fHistProVetaPOI;
-   TProfile*    fHistProVPtRP;
-   TProfile*    fHistProVPtPOI;
-   TProfile*    fHistProR0theta;     
-   TProfile*    fHistProReDenom;     
-   TProfile*    fHistProImDenom;     
-   TProfile*    fHistProReDtheta;    
-   TProfile*    fHistProImDtheta; 
-   TH1F*        fHistQsumforChi;                 //
+   TProfile*    fHistProVtheta;   //hist of V(theta)      
+   TProfile*    fHistProVetaRP;   //hist of v(eta) for RP selection
+   TProfile*    fHistProVetaPOI;  //hist of v(eta) for POI selection
+   TProfile*    fHistProVPtRP;    //hist of v(pt) for RP selection
+   TProfile*    fHistProVPtPOI;   //hist of v(pt) for POI selection
+   TProfile*    fHistProR0theta;  //hist of r0(theta)    
+   TProfile*    fHistProReDenom;  //hist of the real part of the denominator   
+   TProfile*    fHistProImDenom;  //hist of the imaginary part of the denominator 
+   TProfile*    fHistProReDtheta; //hist of the real part of D^theta   
+   TProfile*    fHistProImDtheta; //hist of the imaginary part of D^theta  
+   TH1F*        fHistQsumforChi;  //hist of sum of Q-vectors and the sum of the square of Q-vectors
   
     
   //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta
-  AliFlowLYZHist1* fHist1[5];       //
+  AliFlowLYZHist1* fHist1[5];     //array of hist1
 
   //class AliFlowLYZHist1 defines the histograms: fHistProReNumer, fHistProImNumer, fHistProReNumerPt,
   //fHistProImNumerPt, fHistProReNumer2D, fHistProImNumer2D.
-  AliFlowLYZHist2* fHist2RP[5];       //
-  AliFlowLYZHist2* fHist2POI[5];       //
+  AliFlowLYZHist2* fHist2RP[5];   //array of hist2
+  AliFlowLYZHist2* fHist2POI[5];  //array of hist2
 
-  AliFlowCommonHist*        fCommonHists;     //
-  AliFlowCommonHistResults* fCommonHistsRes;  //
+  AliFlowCommonHist*        fCommonHists;     //control histograms
+  AliFlowCommonHistResults* fCommonHistsRes;  //final results histograms
  
   ClassDef(AliFlowAnalysisWithLeeYangZeros,1)  // macro for rootcint
     };

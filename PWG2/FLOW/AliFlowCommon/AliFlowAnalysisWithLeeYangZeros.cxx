@@ -13,6 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//Description: Maker to analyze Flow using the LeeYangZeros method  
+//             Equation numbers are from Big Paper (BP): Nucl. Phys. A 727, 373 (2003)
+//             Practical Guide (PG):    J. Phys. G: Nucl. Part. Phys. 30, S1213 (2004)  
+//             Adapted from StFlowLeeYangZerosMaker.cxx           
+//             by Markus Oldenberg and Art Poskanzer, LBNL        
+//             with advice from Jean-Yves Ollitrault and Nicolas Borghini   
+//
+//Author: Naomi van der Kolk (kolk@nikhef.nl)
+/////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Riostream.h"                 //needed as include
 #include "TObject.h"                   //needed as include
@@ -36,17 +46,6 @@ class TComplex;
 class TProfile;
 class TH1F;
 class TH1D;
-
-
-//Description: Maker to analyze Flow using the LeeYangZeros method  
-//             Equation numbers are from Big Paper (BP): Nucl. Phys. A 727, 373 (2003)
-//             Practical Guide (PG):    J. Phys. G: Nucl. Part. Phys. 30, S1213 (2004)  
-//             Adapted from StFlowLeeYangZerosMaker.cxx           
-//             by Markus Oldenberg and Art Poskanzer, LBNL        
-//             with advice from Jean-Yves Ollitrault and Nicolas Borghini   
-//
-//Author: Naomi van der Kolk (kolk@nikhef.nl)
-
 
 
 ClassImp(AliFlowAnalysisWithLeeYangZeros)
@@ -972,7 +971,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
  
 
 //-----------------------------------------------------------------------   
-TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent, Double_t aR, Double_t aTheta) 
+TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* const anEvent, Double_t aR, Double_t aTheta) 
 {
   // Product Generating Function for LeeYangZeros method
   // PG Eq. 3 (J. Phys. G Nucl. Part. Phys 30 S1213 (2004))
@@ -1006,7 +1005,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent
 
 
 //-----------------------------------------------------------------------   
-TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEvent, Double_t aR0, Int_t theta) 
+TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* const anEvent, Double_t aR0, Int_t theta) 
 {
   // Sum for the denominator for diff. flow for the Product Generating Function for LeeYangZeros method
   // PG Eq. 9 (J. Phys. G Nucl. Part. Phys 30 S1213 (2004))
