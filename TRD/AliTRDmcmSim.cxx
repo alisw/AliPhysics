@@ -196,7 +196,7 @@ void AliTRDmcmSim::Reset()
   FilterTailInit(fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP)); //??? not really correct if gain filter is active
 }
 
-Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader *runloader, Int_t det, Int_t rob, Int_t mcm) 
+Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm) 
 {
   // loads the ADC data as obtained from the digitsManager for the specified MCM
 
@@ -329,7 +329,7 @@ Bool_t AliTRDmcmSim::CheckInitialized()
   return fInitialized;
 }
 
-void AliTRDmcmSim::Print(Option_t* option) const
+void AliTRDmcmSim::Print(Option_t* const option) const
 {
   // Prints the data stored and/or calculated for this MCM.
   // The output is controlled by option which can be a sequence of any of 
@@ -368,7 +368,7 @@ void AliTRDmcmSim::Print(Option_t* option) const
     printf("Found %i hits:\n", fNHits);
     for (Int_t iHit = 0; iHit < fNHits; iHit++) {
       printf("Hit %3i in timebin %2i, ADC %2i has charge %3i and position %3i\n",
-             iHit,  fHits[iHit].timebin, fHits[iHit].channel, fHits[iHit].qtot, fHits[iHit].ypos);
+             iHit,  fHits[iHit].fTimebin, fHits[iHit].fChannel, fHits[iHit].fQtot, fHits[iHit].fYpos);
     }
   }
 
@@ -380,7 +380,7 @@ void AliTRDmcmSim::Print(Option_t* option) const
   }
 }
 
-void AliTRDmcmSim::Draw(Option_t* option) 
+void AliTRDmcmSim::Draw(Option_t* const option) 
 {
   // Plots the data stored in a 2-dim. timebin vs. ADC channel plot.
   // The option selects what data is plotted and can be a sequence of 
@@ -420,8 +420,8 @@ void AliTRDmcmSim::Draw(Option_t* option)
     TGraph *grHits = new TGraph();
     for (Int_t iHit = 0; iHit < fNHits; iHit++) {
       grHits->SetPoint(iHit, 
-                       fHits[iHit].channel + 1 + fHits[iHit].ypos/256., 
-                       fHits[iHit].timebin);
+                       fHits[iHit].fChannel + 1 + fHits[iHit].fYpos/256., 
+                       fHits[iHit].fTimebin);
     }
     grHits->Draw("*");
   }
@@ -446,7 +446,7 @@ void AliTRDmcmSim::Draw(Option_t* option)
   }
 }
 
-void AliTRDmcmSim::SetData( Int_t iadc, Int_t *adc )
+void AliTRDmcmSim::SetData( Int_t iadc, Int_t* const adc )
 {
   //
   // Store ADC data into array of raw data
@@ -482,10 +482,12 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t it, Int_t adc )
   fADCF[iadc][it] = adc << fgkAddDigits;
 }
 
-void AliTRDmcmSim::SetData(AliTRDarrayADC *adcArray)
+void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray)
 {
+  // Set the ADC data from an AliTRDarrayADC
+
   if (!fInitialized) {
-    AliError("Called uninitialized! Aborting!");
+    AliError("Called uninitialized! Nothing done!");
     return;
   }
 
@@ -881,7 +883,7 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
   UShort_t aQ;
   UInt_t tmp;
   
-  UShort_t inp_volt = value & 0xFFF;    // 12 bits
+  UShort_t inpVolt = value & 0xFFF;    // 12 bits
       
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTBY) == 0) // bypass mode, active low
     return value;
@@ -891,8 +893,8 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
     aQ = AddUintClipping(fTailAmplLong[adc], fTailAmplShort[adc], 12);
 
     // calculate the difference between the input the generated signal
-    if (inp_volt > aQ) 
-      aDiff = inp_volt - aQ;
+    if (inpVolt > aQ) 
+      aDiff = inpVolt - aQ;
     else                
       aDiff = 0;
 
@@ -946,7 +948,7 @@ void AliTRDmcmSim::ZSMapping()
   Int_t **adc = fADCF;
 
   if( !CheckInitialized() ) {
-    AliError("got called uninitialized! Aborting!");    
+    AliError("got called uninitialized! Nothing done!");    
     return;
   }
 
@@ -1062,29 +1064,29 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
 
   if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)) && 
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0)))
-    fFitReg[adc].Q0 += qtot;
+    fFitReg[adc].fQ0 += qtot;
   
   if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1)) && 
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1)))
-    fFitReg[adc].Q1 += qtot;
+    fFitReg[adc].fQ1 += qtot;
   
   if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS) ) && 
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE)))
   {
-    fFitReg[adc].SumX  += timebin;
-    fFitReg[adc].SumX2 += timebin*timebin;
-    fFitReg[adc].Nhits++;
-    fFitReg[adc].SumY  += ypos;
-    fFitReg[adc].SumY2 += ypos*ypos;
-    fFitReg[adc].SumXY += timebin*ypos;
+    fFitReg[adc].fSumX  += timebin;
+    fFitReg[adc].fSumX2 += timebin*timebin;
+    fFitReg[adc].fNhits++;
+    fFitReg[adc].fSumY  += ypos;
+    fFitReg[adc].fSumY2 += ypos*ypos;
+    fFitReg[adc].fSumXY += timebin*ypos;
   }
 
   // register hits (MC info)
-  fHits[fNHits].channel = adc;
-  fHits[fNHits].qtot = qtot;
-  fHits[fNHits].ypos = ypos;
-  fHits[fNHits].timebin = timebin;
-  fHits[fNHits].label = label;
+  fHits[fNHits].fChannel = adc;
+  fHits[fNHits].fQtot = qtot;
+  fHits[fNHits].fYpos = ypos;
+  fHits[fNHits].fTimebin = timebin;
+  fHits[fNHits].fLabel = label;
   fNHits++;
 }
 
@@ -1097,19 +1099,19 @@ void AliTRDmcmSim::CalcFitreg()
 
   //???
   // TRAP parameters:
-  const uint16_t LUT_POS[128] = {   // move later to some other file
+  const uint16_t lutPos[128] = {   // move later to some other file
     0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  8,  8,  9,  9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
     16, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 26, 26, 26, 26,
     27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26,
     26, 26, 26, 25, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 18, 17, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  7};
   
   //??? to be clarified:
-  UInt_t adc_mask = 0xfffff;
+  UInt_t adcMask = 0xfffff;
   
-  UShort_t timebin, adcch, adc_left, adc_cent, adc_right, hit_qual, timebin1, timebin2, Qtot_tmp;
+  UShort_t timebin, adcch, adcLeft, adcCentral, adcRight, hitQual, timebin1, timebin2, qtotTemp;
   Short_t ypos, fromLeft, fromRight, found;
-  UShort_t Qtot[19]; // the last is dummy
-  UShort_t marked[6], Qmarked[6], worse1, worse2;
+  UShort_t qTotal[19]; // the last is dummy
+  UShort_t marked[6], qMarked[6], worse1, worse2;
   
   timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS); 
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0) 
@@ -1124,44 +1126,44 @@ void AliTRDmcmSim::CalcFitreg()
   fNHits = 0; 
   for (adcch = 0; adcch < fNADC-2; adcch++) // due to border channels
   {
-    fFitReg[adcch].Nhits = 0;
-    fFitReg[adcch].Q0    = 0;
-    fFitReg[adcch].Q1    = 0;
-    fFitReg[adcch].SumX  = 0;
-    fFitReg[adcch].SumY  = 0;
-    fFitReg[adcch].SumX2 = 0;
-    fFitReg[adcch].SumY2 = 0;
-    fFitReg[adcch].SumXY = 0;
+    fFitReg[adcch].fNhits = 0;
+    fFitReg[adcch].fQ0    = 0;
+    fFitReg[adcch].fQ1    = 0;
+    fFitReg[adcch].fSumX  = 0;
+    fFitReg[adcch].fSumY  = 0;
+    fFitReg[adcch].fSumX2 = 0;
+    fFitReg[adcch].fSumY2 = 0;
+    fFitReg[adcch].fSumXY = 0;
   }
   
   for (timebin = timebin1; timebin < timebin2; timebin++)
   {
-    // first find the hit candidates and store the total cluster charge in Qtot array
+    // first find the hit candidates and store the total cluster charge in qTotal array
     // in case of not hit store 0 there.
     for (adcch = 0; adcch < fNADC-2; adcch++) {
-      if ( ( (adc_mask >> adcch) & 7) == 7) //??? all 3 channels are present in case of ZS
+      if ( ( (adcMask >> adcch) & 7) == 7) //??? all 3 channels are present in case of ZS
       {
-        adc_left  = fADCF[adcch  ][timebin];
-        adc_cent  = fADCF[adcch+1][timebin];
-        adc_right = fADCF[adcch+2][timebin];
+        adcLeft  = fADCF[adcch  ][timebin];
+        adcCentral  = fADCF[adcch+1][timebin];
+        adcRight = fADCF[adcch+2][timebin];
         if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY) == 1) 
-          hit_qual = ( (adc_left * adc_right) < 
-                       (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT) * adc_cent) );
+          hitQual = ( (adcLeft * adcRight) < 
+                       (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT) * adcCentral) );
         else            
-          hit_qual = 1;
+          hitQual = 1;
         // The accumulated charge is with the pedestal!!!
-        Qtot_tmp = adc_left + adc_cent + adc_right;
-        if ( (hit_qual) &&
-             (Qtot_tmp >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT)) &&
-             (adc_left <= adc_cent) &&
-             (adc_cent > adc_right) )
-          Qtot[adcch] = Qtot_tmp;
+        qtotTemp = adcLeft + adcCentral + adcRight;
+        if ( (hitQual) &&
+             (qtotTemp >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT)) &&
+             (adcLeft <= adcCentral) &&
+             (adcCentral > adcRight) )
+          qTotal[adcch] = qtotTemp;
         else
-          Qtot[adcch] = 0;
-        //printf("ch %2d   Qtot %5d\n",adcch, Qtot[adcch]);
+          qTotal[adcch] = 0;
+        //printf("ch %2d   qTotal %5d\n",adcch, qTotal[adcch]);
       }
       else
-        Qtot[adcch] = 0; //jkl
+        qTotal[adcch] = 0; //jkl
     }
 
     fromLeft = -1;
@@ -1169,10 +1171,10 @@ void AliTRDmcmSim::CalcFitreg()
     found = 0;
     marked[4] = 19; // invalid channel
     marked[5] = 19; // invalid channel
-    Qtot[19] = 0;
+    qTotal[19] = 0;
     while ((adcch < 16) && (found < 3))
     {
-      if (Qtot[adcch] > 0)
+      if (qTotal[adcch] > 0)
       {
         fromLeft = adcch;
         marked[2*found+1]=adcch;
@@ -1186,7 +1188,7 @@ void AliTRDmcmSim::CalcFitreg()
     found = 0;
     while ((adcch > 2) && (found < 3))
     {
-      if (Qtot[adcch] > 0)
+      if (qTotal[adcch] > 0)
       {
         marked[2*found]=adcch;
         found++;
@@ -1199,11 +1201,11 @@ void AliTRDmcmSim::CalcFitreg()
     // here mask the hit candidates in the middle, if any
     if ((fromLeft >= 0) && (fromRight >= 0) && (fromLeft < fromRight))
       for (adcch = fromLeft+1; adcch < fromRight; adcch++)
-        Qtot[adcch] = 0;
+        qTotal[adcch] = 0;
     
     found = 0;
     for (adcch = 0; adcch < 19; adcch++)
-      if (Qtot[adcch] > 0) found++;
+      if (qTotal[adcch] > 0) found++;
     // NOT READY
 
     if (found > 4) // sorting like in the TRAP in case of 5 or 6 candidates!
@@ -1211,56 +1213,56 @@ void AliTRDmcmSim::CalcFitreg()
       if (marked[4] == marked[5]) marked[5] = 19;
       for (found=0; found<6; found++)
       {
-        Qmarked[found] = Qtot[marked[found]] >> 4;
-        //printf("ch_%d Qtot %d Qtots %d |",marked[found],Qtot[marked[found]],Qmarked[found]);
+        qMarked[found] = qTotal[marked[found]] >> 4;
+        //printf("ch_%d qTotal %d qTotals %d |",marked[found],qTotal[marked[found]],qMarked[found]);
       }
       //printf("\n");
       
       Sort6To2Worst(marked[0], marked[3], marked[4], marked[1], marked[2], marked[5],
-                    Qmarked[0],
-                    Qmarked[3],
-                    Qmarked[4],
-                    Qmarked[1],
-                    Qmarked[2],
-                    Qmarked[5],
+                    qMarked[0],
+                    qMarked[3],
+                    qMarked[4],
+                    qMarked[1],
+                    qMarked[2],
+                    qMarked[5],
                     &worse1, &worse2);
       // Now mask the two channels with the smallest charge
       if (worse1 < 19)
       {
-        Qtot[worse1] = 0;
+        qTotal[worse1] = 0;
         //printf("Kill ch %d\n",worse1);
       }
       if (worse2 < 19)
       {
-        Qtot[worse2] = 0;
+        qTotal[worse2] = 0;
         //printf("Kill ch %d\n",worse2);
       }
     }
     
     for (adcch = 0; adcch < 19; adcch++) {
-      if (Qtot[adcch] > 0) // the channel is marked for processing
+      if (qTotal[adcch] > 0) // the channel is marked for processing
       {
-        adc_left  = fADCF[adcch  ][timebin];
-        adc_cent  = fADCF[adcch+1][timebin];
-        adc_right = fADCF[adcch+2][timebin];
+        adcLeft  = fADCF[adcch  ][timebin];
+        adcCentral  = fADCF[adcch+1][timebin];
+        adcRight = fADCF[adcch+2][timebin];
         // hit detected, in TRAP we have 4 units and a hit-selection, here we proceed all channels!
         // subtract the pedestal TPFP, clipping instead of wrapping
         
-        Int_t TPFP = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP);
-//        printf("Hit found, time=%d, adcch=%d/%d/%d, adc values=%d/%d/%d, TPFP=%d, TPHT=%d\n",
-//               timebin, adcch, adcch+1, adcch+2, adc_left, adc_cent, adc_right, TPFP, 
+        Int_t regTPFP = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP);
+//        printf("Hit found, time=%d, adcch=%d/%d/%d, adc values=%d/%d/%d, regTPFP=%d, TPHT=%d\n",
+//               timebin, adcch, adcch+1, adcch+2, adcLeft, adcCentral, adcRight, regTPFP, 
 //               fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT));
 
-        if (adc_left  < TPFP) adc_left  = 0; else adc_left  -= TPFP;
-        if (adc_cent  < TPFP) adc_cent  = 0; else adc_cent  -= TPFP;
-        if (adc_right < TPFP) adc_right = 0; else adc_right -= TPFP;
+        if (adcLeft  < regTPFP) adcLeft  = 0; else adcLeft  -= regTPFP;
+        if (adcCentral  < regTPFP) adcCentral  = 0; else adcCentral  -= regTPFP;
+        if (adcRight < regTPFP) adcRight = 0; else adcRight -= regTPFP;
         // Calculate the center of gravity
-        ypos = 128*(adc_left - adc_right) / adc_cent;
+        ypos = 128*(adcLeft - adcRight) / adcCentral;
         if (ypos < 0) ypos = -ypos;
         // make the correction using the LUT
-        ypos = ypos + LUT_POS[ypos & 0x7F];
-        if (adc_left > adc_right) ypos = -ypos;
-        AddHitToFitreg(adcch, timebin, Qtot[adcch], ypos, -1);
+        ypos = ypos + lutPos[ypos & 0x7F];
+        if (adcLeft > adcRight) ypos = -ypos;
+        AddHitToFitreg(adcch, timebin, qTotal[adcch], ypos, -1);
       }
     }
   }
@@ -1271,23 +1273,23 @@ void AliTRDmcmSim::TrackletSelection()
   // Select up to 4 tracklet candidates from the fit registers  
   // and assign them to the CPUs.
 
-  UShort_t adc_idx, i, j, ntracks, tmp;
-  UShort_t track_p[18][2]; // store the adcch[0] and number of hits[1] for all tracklet candidates
+  UShort_t adcIdx, i, j, ntracks, tmp;
+  UShort_t trackletCand[18][2]; // store the adcch[0] and number of hits[1] for all tracklet candidates
 
   ntracks = 0;
-  for (adc_idx = 0; adc_idx < 18; adc_idx++) // ADCs
-    if ( (fFitReg[adc_idx].Nhits 
+  for (adcIdx = 0; adcIdx < 18; adcIdx++) // ADCs
+    if ( (fFitReg[adcIdx].fNhits 
           >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCL)) &&
-         (fFitReg[adc_idx].Nhits+fFitReg[adc_idx+1].Nhits
+         (fFitReg[adcIdx].fNhits+fFitReg[adcIdx+1].fNhits
           >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCT)))
     {
-      track_p[ntracks][0] = adc_idx;
-      track_p[ntracks][1] = fFitReg[adc_idx].Nhits+fFitReg[adc_idx+1].Nhits;
-      //printf("%d  %2d %4d\n", ntracks, track_p[ntracks][0], track_p[ntracks][1]);
+      trackletCand[ntracks][0] = adcIdx;
+      trackletCand[ntracks][1] = fFitReg[adcIdx].fNhits+fFitReg[adcIdx+1].fNhits;
+      //printf("%d  %2d %4d\n", ntracks, trackletCand[ntracks][0], trackletCand[ntracks][1]);
       ntracks++;
     };
 
-  // for (i=0; i<ntracks;i++) printf("%d %d %d\n",i,track_p[i][0], track_p[i][1]);
+  // for (i=0; i<ntracks;i++) printf("%d %d %d\n",i,trackletCand[i][0], trackletCand[i][1]);
 
   if (ntracks > 4)
   {
@@ -1296,16 +1298,16 @@ void AliTRDmcmSim::TrackletSelection()
     {
       for (i = j+1; i < ntracks; i++)
       {
-        if ( (track_p[j][1]  < track_p[i][1]) ||
-             ( (track_p[j][1] == track_p[i][1]) && (track_p[j][0] < track_p[i][0]) ) )
+        if ( (trackletCand[j][1]  < trackletCand[i][1]) ||
+             ( (trackletCand[j][1] == trackletCand[i][1]) && (trackletCand[j][0] < trackletCand[i][0]) ) )
         {
           // swap j & i
-          tmp = track_p[j][1];
-          track_p[j][1] = track_p[i][1];
-          track_p[i][1] = tmp;
-          tmp = track_p[j][0];
-          track_p[j][0] = track_p[i][0];
-          track_p[i][0] = tmp;
+          tmp = trackletCand[j][1];
+          trackletCand[j][1] = trackletCand[i][1];
+          trackletCand[i][1] = tmp;
+          tmp = trackletCand[j][0];
+          trackletCand[j][0] = trackletCand[i][0];
+          trackletCand[i][0] = tmp;
         }
       }
     }
@@ -1318,20 +1320,20 @@ void AliTRDmcmSim::TrackletSelection()
   {
     for (i = j+1; i < ntracks; i++)
     {
-      if (track_p[j][0] < track_p[i][0])
+      if (trackletCand[j][0] < trackletCand[i][0])
       {
         // swap j & i
-        tmp = track_p[j][1];
-        track_p[j][1] = track_p[i][1];
-        track_p[i][1] = tmp;
-        tmp = track_p[j][0];
-        track_p[j][0] = track_p[i][0];
-        track_p[i][0] = tmp;
+        tmp = trackletCand[j][1];
+        trackletCand[j][1] = trackletCand[i][1];
+        trackletCand[i][1] = tmp;
+        tmp = trackletCand[j][0];
+        trackletCand[j][0] = trackletCand[i][0];
+        trackletCand[i][0] = tmp;
       }
     }
   }
   for (i = 0; i < ntracks; i++)  // CPUs with tracklets.
-    fFitPtr[i] = track_p[i][0]; // pointer to the left channel with tracklet for CPU[i]
+    fFitPtr[i] = trackletCand[i][0]; // pointer to the left channel with tracklet for CPU[i]
   for (i = ntracks; i < 4; i++)  // CPUs without tracklets
     fFitPtr[i] = 31;            // pointer to the left channel with tracklet for CPU[i] = 31 (invalid)
 //  printf("found %i tracklet candidates\n", ntracks);
@@ -1353,12 +1355,12 @@ void AliTRDmcmSim::FitTracklet()
   // should come from trapConfig (DMEM) 
   AliTRDpadPlane *pp = fGeo->GetPadPlane(fDetector);
   Long64_t shift = ((Long64_t) 1 << 32);
-  UInt_t scale_y = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 160e-4)));
-  UInt_t scale_d = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 140e-4)));
+  UInt_t scaleY = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 160e-4)));
+  UInt_t scaleD = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 140e-4)));
   int padrow = fFeeParam->GetPadRowFromMCM(fRobPos, fMcmPos);
   int yoffs  = (fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, 19) - fFeeParam->GetNcol()/2) << (8 + decPlaces); 
   int ndrift = 20; //??? value in simulation?
-  int defl_cor = 0; // -370;
+  int deflCorr = 0; // -370;
   int minslope = -10000; // no pt-cut so far
   int maxslope =  10000; // no pt-cut so far
 
@@ -1392,16 +1394,16 @@ void AliTRDmcmSim::FitTracklet()
       mult = -mult;
 
       // Merging
-      nHits   = fit0->Nhits + fit1->Nhits; // number of hits
-      sumX    = fit0->SumX  + fit1->SumX;
-      sumX2   = fit0->SumX2 + fit1->SumX2;
+      nHits   = fit0->fNhits + fit1->fNhits; // number of hits
+      sumX    = fit0->fSumX  + fit1->fSumX;
+      sumX2   = fit0->fSumX2 + fit1->fSumX2;
       denom   = nHits*sumX2 - sumX*sumX;
 
       mult    = mult / denom; // exactly like in the TRAP program
-      q0      = fit0->Q0    + fit1->Q0;
-      q1      = fit0->Q1    + fit1->Q1;
-      sumY    = fit0->SumY  + fit1->SumY  + 256*fit1->Nhits;
-      sumXY   = fit0->SumXY + fit1->SumXY + 256*fit1->SumX;
+      q0      = fit0->fQ0    + fit1->fQ0;
+      q1      = fit0->fQ1    + fit1->fQ1;
+      sumY    = fit0->fSumY  + fit1->fSumY  + 256*fit1->fNhits;
+      sumXY   = fit0->fSumXY + fit1->fSumXY + 256*fit1->fSumX;
 
       slope   = nHits*sumXY - sumX * sumY;
       offset  = sumX2*sumY  - sumX * sumXY;
@@ -1411,7 +1413,7 @@ void AliTRDmcmSim::FitTracklet()
       offset  = temp >> 32; // take the upper 32 bits
 
       offset = offset + yoffs + (18 << (8 + decPlaces)); 
-      slope  = slope * ndrift + defl_cor;
+      slope  = slope * ndrift + deflCorr;
       offset = offset - (fFitPtr[cpu] << (8 + decPlaces));
       
       if ((slope < minslope) || (slope > maxslope))
@@ -1421,11 +1423,11 @@ void AliTRDmcmSim::FitTracklet()
       else
       {
         temp    = slope;
-        temp    = temp * scale_d;
+        temp    = temp * scaleD;
         slope   = (temp >> 32);
         
         temp    = offset;
-        temp    = temp * scale_y;
+        temp    = temp * scaleY;
         offset  = (temp >> 32);
         
         // rounding, like in the TRAP
@@ -1455,8 +1457,12 @@ void AliTRDmcmSim::FitTracklet()
 
 void AliTRDmcmSim::Tracklet()
 {
+  // Run the tracklet calculation by calling sequentially:
+  // CalcFitreg(); TrackletSelection(); FitTracklet()
+  // and store the tracklets 
+
   if (!fInitialized) {
-    AliError("Called uninitialized! Aborting!");
+    AliError("Called uninitialized! Nothing done!");
     return;
   }
 
@@ -1502,7 +1508,7 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
   // zero-suppressed valued are written as -1 to digits
 
   if (!fInitialized) {
-    AliError("Called uninitialized! Aborting!");
+    AliError("Called uninitialized! Nothing done!");
     return;
   }
 
@@ -1546,7 +1552,7 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
 
 // help functions, to be cleaned up
 
-UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits)
+UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const
 {
   // 
   // This function adds a and b (unsigned) and clips to 
@@ -1571,8 +1577,9 @@ UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits)
 void AliTRDmcmSim::Sort2(uint16_t  idx1i, uint16_t  idx2i, \
                             uint16_t  val1i, uint16_t  val2i, \
                             uint16_t *idx1o, uint16_t *idx2o, \
-                            uint16_t *val1o, uint16_t *val2o)
+                            uint16_t *val1o, uint16_t *val2o) const
 {
+  // sorting for tracklet selection
 
     if (val1i > val2i)
     {
@@ -1595,6 +1602,8 @@ void AliTRDmcmSim::Sort3(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, \
                             uint16_t *idx1o, uint16_t *idx2o, uint16_t *idx3o, \
                             uint16_t *val1o, uint16_t *val2o, uint16_t *val3o)
 {
+  // sorting for tracklet selection
+
     int sel;
 
 
@@ -1671,6 +1680,7 @@ void AliTRDmcmSim::Sort6To4(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, u
                                uint16_t *idx1o, uint16_t *idx2o, uint16_t *idx3o, uint16_t *idx4o, \
                                uint16_t *val1o, uint16_t *val2o, uint16_t *val3o, uint16_t *val4o)
 {
+  // sorting for tracklet selection
 
     uint16_t idx21s, idx22s, idx23s, dummy;
     uint16_t val21s, val22s, val23s;
@@ -1697,6 +1707,7 @@ void AliTRDmcmSim::Sort6To2Worst(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx
                                     uint16_t  val1i, uint16_t  val2i, uint16_t  val3i, uint16_t  val4i, uint16_t  val5i, uint16_t  val6i, \
                                     uint16_t *idx5o, uint16_t *idx6o)
 {
+  // sorting for tracklet selection
 
     uint16_t idx21s, idx22s, idx23s, dummy1, dummy2, dummy3, dummy4, dummy5;
     uint16_t val21s, val22s, val23s;

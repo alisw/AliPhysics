@@ -1,5 +1,5 @@
-#ifndef ALITRDMCMSIMNEW_H
-#define ALITRDMCMSIMNEW_H
+#ifndef ALITRDMCMSIM_H
+#define ALITRDMCMSIM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,7 +12,8 @@
 ///////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TClonesArray.h>
+
+class TClonesArray;
 
 class AliRunLoader;
 class AliTRDfeeParam;
@@ -31,7 +32,7 @@ class AliTRDmcmSim : public TObject {
           void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE );   // Initialize MCM by the position parameters
 	  void      Reset();                                   // clears filter registers and internal data
 
-	  Bool_t    LoadMCM(AliRunLoader *runloader, Int_t det, Int_t rob, Int_t mcm);
+	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
 
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
@@ -79,11 +80,11 @@ class AliTRDmcmSim : public TObject {
 	  void      TrackletSelection();
 	  void      FitTracklet();
 
-	  TClonesArray* GetTrackletArray() { return fTrackletArray; }
+	  TClonesArray* GetTrackletArray() const { return fTrackletArray; }
 
 	  // data display
-	  void      Print(Option_t* option="") const;   // print stored data to stdout
-	  void      Draw(Option_t *option ="");         // draw data (ADC data, hits and tracklets)
+	  void      Print(Option_t* const option="") const;   // print stored data to stdout
+	  void      Draw(Option_t* const option ="");         // draw data (ADC data, hits and tracklets)
 	  void      DumpData( char *f, char *target );  // Dump data stored (only for debugging)
 
  protected:
@@ -126,30 +127,30 @@ class AliTRDmcmSim : public TObject {
 
 	  // hit detection
 	  // individual hits can be stored as MC info
-	  struct Hit_t {
-	    Int_t channel;
-	    Int_t timebin;
-	    Int_t qtot;
-	    Int_t ypos;
-	    Int_t label;
-	  } fHits[fgkNHitsMC];                          // Array of detected hits (only available in MC)
+	  struct Hit_t {                                // Array of detected hits (only available in MC)
+	    Int_t fChannel;                             // ADC channel of the hit
+	    Int_t fTimebin;                             // timebin of the hit
+	    Int_t fQtot;                                // total charge of the hit
+	    Int_t fYpos;                                // calculated y-position
+	    Int_t fLabel;                               // label (only in MC)
+	  } fHits[fgkNHitsMC];
 	  Int_t fNHits;                                 // Number of detected hits
 
 	  // tracklet calculation
-	  struct FitReg_t {
-	    Int_t   Nhits;
-	    UInt_t Q0;
-	    UInt_t Q1;
-	    UInt_t SumX;
-	    Int_t SumY;
-	    UInt_t SumX2;
-	    UInt_t SumY2;
-	    Int_t SumXY;
-	  } *fFitReg;                                   // pointer to the 18 fit registers 
+	  struct FitReg_t {                             // pointer to the 18 fit registers 
+	    Int_t   fNhits;                             // number of hits
+	    UInt_t fQ0;                                 // charge accumulated in first window
+	    UInt_t fQ1;                                 // charge accumulated in second window
+	    UInt_t fSumX;                               // sum x
+	    Int_t fSumY;                                // sum y 
+	    UInt_t fSumX2;                              // sum x**2
+	    UInt_t fSumY2;                              // sum y**2
+	    Int_t fSumXY;                               // sum x*y
+	  } *fFitReg;
 
 	  //??? cleaning up
 	  void Sort2(UShort_t  idx1i, UShort_t  idx2i, UShort_t  val1i, UShort_t  val2i, 
-		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *val1o, UShort_t *val2o);
+		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *val1o, UShort_t *val2o) const;
 	  void Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, 
 		     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, 
 		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, 
@@ -162,7 +163,7 @@ class AliTRDmcmSim : public TObject {
 			     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
 			     UShort_t *idx5o, UShort_t *idx6o);
 
-	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits);  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
+	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
 
  private:
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented
