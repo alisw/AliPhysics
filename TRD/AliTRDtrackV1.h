@@ -55,6 +55,7 @@ public:
    ,kSnp
    ,kTrackletInit
    ,kUpdate
+   ,kUnknown      = 0xff
   };
 
   // data/clusters/tracklet error codes (up to 4 bits/layer)
@@ -182,8 +183,8 @@ inline Int_t AliTRDtrackV1::GetNumberOfTracklets() const
 //____________________________________________________
 inline UChar_t AliTRDtrackV1::GetStatusTRD(Int_t ly) const
 {
-  if(ly<kNplane) return (fStatus>>((ly+1)*4))&0xf;
-  return -1;
+  if(ly>=-1 && ly<kNplane) return (fStatus>>((ly+1)*4))&0xf;
+  return kUnknown;
 }
 
 //____________________________________________________
