@@ -2092,7 +2092,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           Int_t jseed = kNPlanes*trackIndex+jLayer;
           if(!sseed[jseed].IsOK()) continue;
           if (TMath::Abs(sseed[jseed].GetYref(0) / sseed[jseed].GetX0()) < 0.158) findable++;
-        
+          // TODO here we get a sig fault which should never happen !
           sseed[jseed].UpdateUsed();
           ncl   += sseed[jseed].GetN2();
           nused += sseed[jseed].GetNUsed();
@@ -2388,7 +2388,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   }
   
   // Init anode wire position for chambers
-  Double_t x0[kNPlanes] = {0., 0., 0., 0., 0., 0.},       // anode wire position
+  Double_t x0[kNPlanes] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2},       // anode wire position
            driftLength = .5*AliTRDgeometry::AmThick() - AliTRDgeometry::DrThick(); // drift length
   TGeoHMatrix *matrix = 0x0;
   Double_t loc[] = {AliTRDgeometry::AnodePos(), 0., 0.};
