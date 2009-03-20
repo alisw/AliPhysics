@@ -423,10 +423,18 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
           xtof = TMath::Sqrt(glob[0]*glob[0]+glob[1]*glob[1]);
         }
       }
-      if(xtof > (fgkMaxStep + track.GetX()) && !PropagateToX(track, xtof, fgkMaxStep)) continue;
-      if(!AdjustSector(&track)) continue;
-      if(TMath::Abs(track.GetSnp()) > fgkMaxSnp) continue;
-
+      if(xtof > (fgkMaxStep + track.GetX()) && !PropagateToX(track, xtof, fgkMaxStep)){ 
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
+        continue;
+      }
+      if(!AdjustSector(&track)){ 
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
+        continue;
+      }
+      if(TMath::Abs(track.GetSnp()) > fgkMaxSnp){ 
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
+        continue;
+      }
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
       // TODO obsolete - delete
       seed->SetTRDQuality(track.StatusForTOF()); 
