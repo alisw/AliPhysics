@@ -22,6 +22,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 
+#include "AliHLTMCEvent.h"
 
 /**
  * @class AliHLTESDMCEventPublisherComponent
@@ -34,12 +35,16 @@
  * Library: \b libAliHLTUtil.so     <br>
  * Input Data Types: none <br>
  * Output Data Types: according to arguments <br>
- *  - AliESDEvent -> kAliHLTDataTypeESDObject
- *     - HLTESD   -> kAliHLTDataOriginHLT
- *     - ESD      -> kAliHLTDataOriginOffline
+ *  - AliESDEvent    -> kAliHLTDataTypeESDObject
+ *     - HLTESD      -> kAliHLTDataOriginHLT
+ *     - ESD         -> kAliHLTDataOriginOffline
  *
- *  - AliMCEvent  -> kAliHLTDataTypeMCObject
- *                -> kAliHLTDataOriginOffline
+ *  - AliMCEvent     -> kAliHLTDataTypeMCObject
+ *                   -> kAliHLTDataOriginOffline
+ *
+ *  - AliHLTMCEvent  -> kAliHLTDataTypeMCObject
+ *                   -> kAliHLTDataOriginHLT
+ * 
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -47,7 +52,7 @@
  *      Can be one, all or some of :<br>
  *      - ESD<br>
  *      - HLTESD<br>
- *      - MC<br>
+ *      - MC (publishes both AliHLTMCEvent and AliMCEvent) <br>
  *
  * \li -datapath     <i> Path to list of data files     </i><br>
  *      - AliESDs.root<br>
@@ -280,6 +285,9 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   /* Ptr to current AliMCEvent, to be shipped out*/
   AliMCEvent* fpMC;                          //! transient
   
+  /* Ptr to current AliHLTMCEvent, to be shipped out*/
+  AliHLTMCEvent* fpHLTMC;                    //! transient
+
   ClassDef(AliHLTESDMCEventPublisherComponent, 0)
 };
 #endif

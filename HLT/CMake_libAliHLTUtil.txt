@@ -3,6 +3,7 @@
 set(SRCS
   BASE/util/AliHLTFilePublisher.cxx
   BASE/util/AliHLTFileWriter.cxx
+  BASE/util/AliHLTMCEvent.cxx
   BASE/util/AliHLTRootFilePublisherComponent.cxx
   BASE/util/AliHLTESDMCEventPublisherComponent.cxx
   BASE/util/AliHLTRootFileWriterComponent.cxx

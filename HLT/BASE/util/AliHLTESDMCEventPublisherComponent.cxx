@@ -60,7 +60,8 @@ AliHLTESDMCEventPublisherComponent::AliHLTESDMCEventPublisherComponent()
   fpTreeTR(NULL),
   fpESD(NULL),
   fpHLTESD(NULL),
-  fpMC(NULL) {
+  fpMC(NULL),
+  fpHLTMC(NULL) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -246,6 +247,11 @@ Int_t AliHLTESDMCEventPublisherComponent::DoDeinit() {
   if ( fpMC ) 
     delete fpMC;
   fpMC = NULL;
+
+  if ( fpHLTMC ) 
+    delete fpHLTMC;
+  fpHLTMC = NULL;
+
 
   CloseCurrentFileList();
   
@@ -461,8 +467,16 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 	iResult=-EFAULT;
       }
 
-      if ( iResult>=0 && fpMC )
+      // -- Fill AliHLTMCEvent 
+      if ( iResult>=0 && fpMC ) {
 	PushBack( fpMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline , fSpecification ); 
+
+	fpHLTMC = new AliHLTMCEvent(fpMC);
+	
+	if ( fpHLTMC )
+	  PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ); 
+      }
+
     } // if ( fPublishMC ) {
     
     // -- Next Event in Folder, 
