@@ -42,7 +42,11 @@ void HLTJetReconstruction(Int_t nEvents=1) {
   // -                         - //
   // ----------------------------//
 
-  arg.Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/v4-16-Rev-01/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_500ev");
+  arg.Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/HEAD_2009-03-17/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev");
+
+
+
+// jet/data/v4-16-Rev-01/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev");
 
   // -- The ESDMCEventPublisher 
   AliHLTConfiguration ESDMCEventPublisher("ESDMCEventPublisher", "ESDMCEventPublisher", 
@@ -58,21 +62,22 @@ void HLTJetReconstruction(Int_t nEvents=1) {
   // ----------------------------//
 
   // -- ConeJetFinder
+ 
+  AliHLTConfiguration jetFinder("JETConeJet", "JETConeJetFinder",
+				"ESDMCEventPublisher","");
+  
+  if (!writerInput.IsNull()) writerInput+=" ";
+  writerInput+="JETConeJet";
+  
+
+  // -- FastJetFinder
   /*
-    AliHLTConfiguration jetFinder("JETConeJet", "JETConeJetFinder",
-    "ESDMCEventPublisher","");
-
-    if (!writerInput.IsNull()) writerInput+=" ";
-    writerInput+="JETConeJet";
-  */
-
-  // -- FasTJetFinder
   AliHLTConfiguration jetFinder("JETFastJet", "JETFastJetFinder",
 				"ESDMCEventPublisher","");
 
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="JETFastJet";
-
+  */
   // ----------------------------//
   // -                         - //
   // --    Sink Components    -- //
