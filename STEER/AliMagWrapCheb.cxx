@@ -167,7 +167,7 @@ void AliMagWrapCheb::CopyFrom(const AliMagWrapCheb& src)
   if (src.fNParamsDip) {
     memcpy(fSegZDip   = new Float_t[fNZSegDip], src.fSegZDip, sizeof(Float_t)*fNZSegDip);
     memcpy(fSegYDip   = new Float_t[fNYSegDip], src.fSegYDip, sizeof(Float_t)*fNYSegDip);
-    memcpy(fSegXDip   = new Float_t[fNXSegDip], src.fSegZDip, sizeof(Float_t)*fNXSegDip);
+    memcpy(fSegXDip   = new Float_t[fNXSegDip], src.fSegXDip, sizeof(Float_t)*fNXSegDip);
     memcpy(fBegSegYDip= new Int_t[fNZSegDip], src.fBegSegYDip, sizeof(Int_t)*fNZSegDip);
     memcpy(fNSegYDip  = new Int_t[fNZSegDip], src.fNSegYDip, sizeof(Int_t)*fNZSegDip);
     memcpy(fBegSegXDip= new Int_t[fNYSegDip], src.fBegSegXDip, sizeof(Int_t)*fNYSegDip);
@@ -311,7 +311,12 @@ void AliMagWrapCheb::Print(Option_t *) const
   printf("Alice magnetic field parameterized by Chebyshev polynomials\n");
   printf("Segmentation for Solenoid (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZSol,fMaxZSol,fMaxRSol);
   //
-  if (fParamsSol) fParamsSol->Print();
+  if (fParamsSol) {
+    for (int i=0;i<fNParamsSol;i++) {
+      printf("SOL%4d ",i);
+      GetParamSol(i)->Print();
+    }
+  }
   /*
   for (int iz=0;iz<fNSegZSol;iz++) {
     AliCheb3D* param = GetParamSol( fSegZIdSol[iz] );
@@ -326,7 +331,13 @@ void AliMagWrapCheb::Print(Option_t *) const
   //
   printf("Segmentation for TPC field integral (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZTPCInt,fMaxZTPCInt,fMaxRTPCInt);
   //
-  if (fParamsTPCInt) fParamsTPCInt->Print();
+  if (fParamsTPCInt) {
+    for (int i=0;i<fNParamsTPCInt;i++) {
+      printf("TPC%4d ",i);
+      GetParamTPCInt(i)->Print();
+    }
+  }
+  //
   /*
   for (int iz=0;iz<fNSegZTPCInt;iz++) {
     AliCheb3D* param = GetParamTPCInt( fSegZIdTPCInt[iz] );
@@ -340,10 +351,13 @@ void AliMagWrapCheb::Print(Option_t *) const
   */
   //
   printf("Segmentation for Dipole (%+.2f<Z<%+.2f cm)\n",fMinZDip,fMaxZDip);
-  if (fParamsDip) fParamsDip->Print();
+  if (fParamsDip) {
+    for (int i=0;i<fNParamsDip;i++) {
+      printf("DIP%4d ",i);
+      GetParamDip(i)->Print();
+    }
+  }
   //
-  
-
 }
 
 
@@ -654,6 +668,7 @@ void AliMagWrapCheb::BuildTableDip()
 {
   // build lookup table for dipole
   //
+  if (fNParamsDip<1) return;
   TArrayF segY,segX;
   TArrayI begSegYDip,begSegXDip;
   TArrayI nsegYDip,nsegXDip;
