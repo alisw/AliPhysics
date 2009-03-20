@@ -448,11 +448,11 @@ extern "C" {
    */
   struct AliHLTComponentEventData
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTEventID_t fEventID;
-    AliHLTUInt32_t fEventCreation_s;
-    AliHLTUInt32_t fEventCreation_us;
-    AliHLTUInt32_t fBlockCnt;
+    AliHLTUInt32_t fStructSize;        /// Size of this structure in bytes.
+    AliHLTEventID_t fEventID;          /// 64 bit event ID number.
+    AliHLTUInt32_t fEventCreation_s;   /// Event creation time in seconds (Should be added to fEventCreation_us*1e6).
+    AliHLTUInt32_t fEventCreation_us;  /// Fractional event creation time in micro seconds.
+    AliHLTUInt32_t fBlockCnt;          /// The number of raw data blocks received by the component.
   };
 
   /**
@@ -462,9 +462,9 @@ extern "C" {
    */
   struct AliHLTComponentShmData
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fShmType;
-    AliHLTUInt64_t fShmID;
+    AliHLTUInt32_t fStructSize;  /// Size of this structure in bytes.
+    AliHLTUInt32_t fShmType;     /// The type code of the shared memory.
+    AliHLTUInt64_t fShmID;       /// The shared memory identifier.
   };
 
   /**
@@ -488,9 +488,9 @@ extern "C" {
    */
   struct AliHLTComponentDataType
   {
-    AliHLTUInt32_t fStructSize;
-    char fID[kAliHLTComponentDataTypefIDsize];                      ///
-    char fOrigin[kAliHLTComponentDataTypefOriginSize];              ///
+    AliHLTUInt32_t fStructSize;                            /// Size of this structure in bytes.
+    char fID[kAliHLTComponentDataTypefIDsize];             /// Data type identifier.
+    char fOrigin[kAliHLTComponentDataTypefOriginSize];     /// Subsystem or detector origin of the data.
   };
 
   /**
@@ -507,19 +507,19 @@ extern "C" {
    */
   struct AliHLTComponentBlockData
   {
-    /* size and version of the struct */
+    /** size and version of the struct */
     AliHLTUInt32_t fStructSize;
-    /* shared memory key, ignored by processing components */
+    /** shared memory key, ignored by processing components */
     AliHLTComponentShmData fShmKey;
-    /* offset of output data relative to the output buffer */
+    /** offset of output data relative to the output buffer */
     AliHLTUInt32_t fOffset;
-    /* start of the data for input data blocks, fOffset to be ignored*/
+    /** start of the data for input data blocks, fOffset to be ignored*/
     void* fPtr;
-    /* size of the data block */
+    /** size of the data block */
     AliHLTUInt32_t fSize;
-    /* data type of the data block */
+    /** data type of the data block */
     AliHLTComponentDataType fDataType;
-    /* data specification of the data block */
+    /** data specification of the data block */
     AliHLTUInt32_t fSpecification;
   };
 
@@ -529,9 +529,9 @@ extern "C" {
    */
   struct AliHLTComponentEventDoneData
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fDataSize;
-    void* fData;
+    AliHLTUInt32_t fStructSize;   /// Size of this structure in bytes.
+    AliHLTUInt32_t fDataSize;     /// Size of the data section (following this data member) in bytes.
+    void* fData;                  /// Start of the data section.
   };
 
   /**
@@ -551,9 +551,9 @@ extern "C" {
    */
   struct AliHLTRunDesc
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fRunNo;
-    AliHLTUInt32_t fRunType;
+    AliHLTUInt32_t fStructSize;   /// Size of this structure in bytes.
+    AliHLTUInt32_t fRunNo;        /// The run number for the current active run.
+    AliHLTUInt32_t fRunType;      /// The HLT run type.
   };
 
   /**
@@ -570,16 +570,16 @@ extern "C" {
    */
   struct AliHLTComponentStatistics
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fLevel;
-    AliHLTUInt32_t fId;
-    AliHLTUInt32_t fTime;
-    AliHLTUInt32_t fCTime;
-    AliHLTUInt32_t fInputBlockCount;
-    AliHLTUInt32_t fTotalInputSize;
-    AliHLTUInt32_t fOutputBlockCount;
-    AliHLTUInt32_t fTotalOutputSize;
-    AliHLTUInt32_t fComponentCycleTime;
+    AliHLTUInt32_t fStructSize;           /// Size of this structure in bytes.
+    AliHLTUInt32_t fLevel;                /// Indicates from which processing stage this information is from.
+    AliHLTUInt32_t fId;                   /// Unique identifier for the chain based on CRC code.
+    AliHLTUInt32_t fTime;                 /// Real wall time used to process the data (micro seconds).
+    AliHLTUInt32_t fCTime;                /// CPU time used to process the data (micro seconds).
+    AliHLTUInt32_t fInputBlockCount;      /// Number of input data blocks.
+    AliHLTUInt32_t fTotalInputSize;       /// Total size in bytes of input data.
+    AliHLTUInt32_t fOutputBlockCount;     /// Number of output data blocks.
+    AliHLTUInt32_t fTotalOutputSize;      /// Total size in bytes of output data.
+    AliHLTUInt32_t fComponentCycleTime;   /// Real wall time indicating the start of the data processing (micro seconds).
   };
 
   /**
@@ -596,6 +596,7 @@ extern "C" {
    */
   struct AliHLTComponentTableEntry
   {
+    /** Size of this structure in bytes. */
     AliHLTUInt32_t fStructSize;
     /** size of the array of parent ids */
     AliHLTUInt16_t fNofParents;
@@ -633,8 +634,8 @@ extern "C" {
    */
   struct AliHLTEventDDL
   {
-    AliHLTUInt32_t fCount;
-    AliHLTUInt32_t fList[gkAliHLTDDLListSize];
+    AliHLTUInt32_t fCount;                       /// Indicates the number of words in fList.
+    AliHLTUInt32_t fList[gkAliHLTDDLListSize];   /// The list of DDL enable/disable bits.
   };
 
   /**
@@ -642,11 +643,11 @@ extern "C" {
    */
   struct AliHLTEventTriggerData
   {
-    AliHLTUInt8_t  fAttributes[gkAliHLTBlockDAttributeCount]; 
-    AliHLTUInt64_t fHLTStatus; // Bit field 
-    AliHLTUInt32_t fCommonHeaderWordCnt;
-    AliHLTUInt32_t fCommonHeader[gkAliHLTCommonHeaderCount]; 
-    AliHLTEventDDL fReadoutList;
+    AliHLTUInt8_t  fAttributes[gkAliHLTBlockDAttributeCount];  /// List of data block attibutes.
+    AliHLTUInt64_t fHLTStatus; /// Bit field 
+    AliHLTUInt32_t fCommonHeaderWordCnt;  /// Number of words in fCommonHeader.
+    AliHLTUInt32_t fCommonHeader[gkAliHLTCommonHeaderCount];  /// The common header words.
+    AliHLTEventDDL fReadoutList;   /// The readout list structure.
   };
 
   /**
@@ -655,9 +656,9 @@ extern "C" {
    */
   struct AliHLTComponentTriggerData
   {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fDataSize;
-    void* fData;
+    AliHLTUInt32_t fStructSize;  /// Size of this structure in bytes.
+    AliHLTUInt32_t fDataSize;    /// Size of the data section (following this data member) in bytes.
+    void* fData;                 /// Start of the data section.
   };
 
   //////////////////////////////////////////////////////////////////////////
@@ -927,11 +928,11 @@ extern "C" {
   /** Header in front of the data payload, in order to sent data to the FXS. */
   struct AliHLTFXSHeader
   {
-    AliHLTUInt32_t fHeaderVersion;
-    AliHLTUInt32_t fRunNumber;
-    char fOrigin[gkAliHLTFXSHeaderfOriginSize];
-    char fFileID[gkAliHLTFXSHeaderfFileIDSize];
-    char fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize];
+    AliHLTUInt32_t fHeaderVersion;   /// HLT software version number.
+    AliHLTUInt32_t fRunNumber;       /// The current run number.
+    char fOrigin[gkAliHLTFXSHeaderfOriginSize];   /// The detector from which the FXS data is received.
+    char fFileID[gkAliHLTFXSHeaderfFileIDSize];   /// File identifier for the stored data.
+    char fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize];  /// The DDL bits.
   };  
 
   //////////////////////////////////////////////////////////////////////////
@@ -961,20 +962,16 @@ extern "C" {
     /** size of the structure */
     AliHLTUInt32_t fStructSize;
 
-    /** the component parameter given by the framework on creation
-     */
+    /** the component parameter given by the framework on creation */
     void* fParam;
 
-    /** allocated memory
-     */
+    /** allocated memory */
     void* (*fAllocMemoryFunc)( void* param, unsigned long size );
 
-    /** allocate an EventDoneData structure.
-     */
+    /** allocate an EventDoneData structure. */
     int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
 
-    /** logging callback
-     */
+    /** logging callback */
     AliHLTfctLogging fLoggingFunc;
   };
 #if 0

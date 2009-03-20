@@ -23,8 +23,6 @@
     @date   
     @brief  Implementation of data types. */
 
-#include "AliHLTDataTypes.h"
-
 // those types can not be implemented in the header files as rootcint
 // can not cope with the type id and origin defines.
 //
@@ -38,6 +36,8 @@
 //   }|kAliHLTDataOriginPrivate;
 // Mainly the compined type cast and utilization of the operator| is the problem.
 // An initializer function has been defined in order to work around this issue.
+
+#include "AliHLTDataTypes.h"
 
 /** multiple output data types */
 const char kAliHLTMultipleDataTypeIDstring[8] = {'M','U','L','T','I','P','L','E'};
