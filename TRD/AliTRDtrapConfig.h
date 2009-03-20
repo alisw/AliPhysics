@@ -2,6 +2,7 @@
 #define ALITRDTRAPCONFIG_H
 
 #include <TObject.h>
+#include <TString.h>
 #include <TClonesArray.h>
 
 class AliTRDtrapConfig : public TObject
@@ -444,7 +445,7 @@ class AliTRDtrapConfig : public TObject
 		  kDMDELS,      
 		  kLastReg };   // enum of all TRAP registers, to be used for access to them
 
-  inline const char* GetRegName(TrapReg_t reg)       { return fRegs[reg].name; }
+  inline const char* GetRegName(TrapReg_t reg)       { return fRegs[reg].name.Data(); }
   inline UShort_t    GetRegAddress(TrapReg_t reg)    { return fRegs[reg].addr; }
   inline UShort_t    GetRegNBits(TrapReg_t reg)      { return fRegs[reg].nbits; }
   inline UInt_t      GetRegResetValue(TrapReg_t reg) { return fRegs[reg].res_val; }
@@ -460,7 +461,7 @@ class AliTRDtrapConfig : public TObject
   static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
 
   struct SimpleReg_t {
-    char      *name;   // Name of the register
+    TString   name;   // Name of the register
     UShort_t  addr;    // Address in GIO of TRAP
     UShort_t  nbits;   // Number of bits, from 1 to 32
     UInt_t    res_val; // reset value
@@ -512,3 +513,5 @@ class AliTRDtrapConfig : public TObject
 };
 
 #endif
+
+
