@@ -61,8 +61,13 @@ public:
   void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions);
   Float_t GetVtxCutZ();
   Int_t GetNvtxBins();
-  Float_t GetMPV(Int_t det, Char_t ring);
-  Float_t GetSigma(Int_t det, Char_t ring);
+  Int_t GetNetaBins();
+  Float_t GetEtaMin();  
+  Float_t GetEtaMax();
+  Float_t GetMPV(Int_t det, Char_t ring, Float_t eta);
+  Float_t GetSigma(Int_t det, Char_t ring, Float_t eta);
+  Float_t Get2MIPWeight(Int_t det, Char_t ring, Float_t eta);
+  Float_t Get3MIPWeight(Int_t det, Char_t ring, Float_t eta);
   static const char* GetBackgroundPath() { return fgkBackgroundCorrection;}
   static const char* GetEdistPath()      { return fgkEnergyDists;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
@@ -87,7 +92,7 @@ protected:
   AliCDBEntry* GetEntry(const char* path, Bool_t fatal=kTRUE) const ;
   void InitBackground();
   void InitEnergyDists();
-  TH1F* GetEnergyDistribution(Int_t det, Char_t ring);
+  TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TObjArray* GetBackgroundArray();
   
   TAxis* GetRefAxis();

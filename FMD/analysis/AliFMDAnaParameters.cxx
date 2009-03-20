@@ -118,41 +118,107 @@ Int_t AliFMDAnaParameters::GetNvtxBins() {
   return fBackground->GetNvtxBins();
 }
 //____________________________________________________________________
-TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring) {
+TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta) {
   
-  return fEnergyDistribution->GetEnergyDistribution(det, ring);
+  return fEnergyDistribution->GetEnergyDistribution(det, ring, eta);
 }
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring) {
+Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring, Float_t eta) {
   
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
   }
   
-  TH1F* hEnergyDist       = GetEnergyDistribution(det,ring);
-  TF1*  landau            = hEnergyDist->GetFunction("landau");
-  Float_t sigma           = landau->GetParameter(2);
+  TH1F* hEnergyDist       = GetEnergyDistribution(det,ring, eta);
+  TF1*  fitFunc           = hEnergyDist->GetFunction("FMDfitFunc");
+  if(!fitFunc) {
+    AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
+    return 1024;
+  }
+  Float_t sigma           = fitFunc->GetParameter(2);
   return sigma;
 }
 
 
 //____________________________________________________________________
-Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring) {
+Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
   
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
   }
   
-  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring);
-  TF1*  landau          = hEnergyDist->GetFunction("landau");
-  Float_t MPV           = landau->GetParameter(1);
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
+  TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
+  if(!fitFunc) {
+    AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
+    return 1024;
+  }
+    
+  Float_t MPV           = fitFunc->GetParameter(1);
   return MPV;
 }
 //____________________________________________________________________
+Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
+  TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
+  if(!fitFunc) return 0;
+  Float_t TwoMIPweight    = fitFunc->GetParameter(3);
+  
+  
+  
+  if(TwoMIPweight < 1e-05)
+    TwoMIPweight = 0;
+  
+  return TwoMIPweight;
+}
+//____________________________________________________________________
+Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
+  TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
+  if(!fitFunc) return 0;
+  Float_t ThreeMIPweight    = fitFunc->GetParameter(4);
+  
+  if(ThreeMIPweight < 1e-05)
+    ThreeMIPweight = 0;
+  
+  Float_t TwoMIPweight    = fitFunc->GetParameter(3);
+  
+  if(TwoMIPweight < 1e-05)
+    ThreeMIPweight = 0;
+    
+  return ThreeMIPweight;
+}
+//____________________________________________________________________
+Int_t AliFMDAnaParameters::GetNetaBins() {
+  return GetBackgroundCorrection(1,'I',0)->GetNbinsX();
+  
+}
+//____________________________________________________________________
+Float_t AliFMDAnaParameters::GetEtaMin() {
 
+  return GetBackgroundCorrection(1,'I',0)->GetXaxis()->GetXmin();
+} 
+//____________________________________________________________________
+Float_t AliFMDAnaParameters::GetEtaMax() {
 
+return GetBackgroundCorrection(1,'I',0)->GetXaxis()->GetXmax();
+
+}
+//____________________________________________________________________
 
 TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det, 
 						   Char_t ring, 
