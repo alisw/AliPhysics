@@ -29,7 +29,7 @@ Run Type: PEDESTAL, CALIBRATION
 
 /*
 	-------------------------------------------------------------------------
-	2008-11-14 New version: MUONTRKda.cxx,v 1.15
+	2009-03-19 New version: MUONTRKda.cxx,v 1.16
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKda MUON tracking
@@ -117,7 +117,7 @@ Char_t gAliHistoFileName[256];
 // used for computing gain parameters 
 Int_t gAlinbpf1 = 6; // linear fit over nbf1 points
 
-Char_t gAliHistoFileNamegain[256]="MUONTRKda_gain.data";
+Char_t gAliHistoFileNamegain[256]="MUONTRKda_gain_data.root";
 Char_t gAliOutFolder[256]=".";
 Char_t gAlifilename[256];
 Char_t gAlifilenam[256]="MUONTRKda_gain"; 
@@ -1086,8 +1086,12 @@ int main(Int_t argc, Char_t **argv)
 					"RIO",
 					"TStreamerInfo()"); 
 
-  TFitter *minuitFit = new TFitter(NFITPARAMS);
-  TVirtualFitter::SetFitter(minuitFit);
+  // needed for Minuit plugin
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
+					"Minuit",
+					"TMinuitMinimizer",
+					"Minuit",
+					"TMinuitMinimizer(const char*)");
 
   // 	ofstream gAlifilcout;
 
@@ -1464,9 +1468,6 @@ int main(Int_t argc, Char_t **argv)
 
 
       delete gAliPedestalStore;
-
-      delete minuitFit;
-      TVirtualFitter::SetFitter(0);
 
       timers.Stop();
 
