@@ -22,7 +22,8 @@
 #include "AliFMDAnaParameters.h"
 #include "AliFMDGeometry.h"
 #include "AliGenEventHeader.h"
-
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 ClassImp(AliFMDAnalysisTaskDndeta)
 
 
@@ -153,7 +154,6 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
 {
   Int_t vtxbin   = fVertexString->GetString().Atoi();
   fNevents.Fill(vtxbin);
-  
   for(UShort_t det=1;det<=3;det++) {
     //TObjArray* detInputArray = (TObjArray*)fInputArray->At(det);
     TObjArray* detArray = (TObjArray*)fArray.At(det);
@@ -222,11 +222,13 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       continue;
     if(TMath::Abs(particle->Zv()) > pars->GetVtxCutZ())
       continue;
+    
     if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
       hPrimary->Fill(particle->Eta());
       Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
       Double_t vertexBinDouble = (particle->Zv() + pars->GetVtxCutZ()) / delta;
       Int_t    vertexBin       = (Int_t)vertexBinDouble;
+
       TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_vtxbin%d",vertexBin));
       hPrimVtxBin->Fill(particle->Eta());
       if(firstTrack) {

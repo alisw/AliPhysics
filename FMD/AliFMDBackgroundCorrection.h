@@ -73,6 +73,7 @@ public:
     TH2F    fPrimaryMapInner;
     TH2F    fPrimaryMapOuter;
     AliFMDFloatMap fHitMap;
+    AliFMDFloatMap fLastTrackByStrip;
     Int_t fPrim;
     Int_t fHits;
     Double_t fZvtxCut;

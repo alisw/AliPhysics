@@ -71,6 +71,7 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
   fPrimaryArray(),
   fHitArray(),
   fHitMap(),
+  fLastTrackByStrip(),
   fPrim(0),
   fHits(0),
   fZvtxCut(0),
@@ -81,9 +82,11 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
   fPrevSec(-1),
   fNbinsEta(100)
 {
-  AddLoad(kTracks); 
-  if(hits_not_trackref)
+
+  if(hits_not_trackref) {
     AddLoad(kHits);
+    AddLoad(kTracks); 
+  }
   else
     AddLoad(kTrackRefs);
   AddLoad(kKinematics); 
@@ -320,12 +323,13 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessHit(AliFMDHit* h,
 			       h->Track(),
 			       h->Q());
   
+  // std::cout<<"Length: "<<h->Length()<<std::endl;
+  // std::cout<<"Is stopped "<<h->IsStop()<<"    "<<kTRUE<<std::endl;
   return retval;
 }
 //_____________________________________________________________________
 Bool_t 
-AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrackRef(AliTrackReference* tr, 
-							   TParticle* p) 
+AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrackRef(AliTrackReference* tr, TParticle* p) 
 {
   if(!tr)
     return kTRUE;
@@ -352,20 +356,46 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
   
   
   
-  if(charge !=  0 && 
+  /*  if(charge !=  0 && 
      ((nTrack != fPrevTrack) || 
-      (det != fPrevDetector) || 
-      (ring != fPrevRing)    ||
-      (sec != fPrevSec))) {
-    fHitMap.operator()(det,ring,sec,strip) = 1;
-    fHits++;
+      (det != fPrevDetector))){ || 
+      (ring != fPrevRing))){    ||
+				  (sec != fPrevSec))) {*/
+  /*Float_t nstrips = (ring =='O' ? 256 : 512);
+  
+  
+  Float_t prevStripTrack = -1;
+  if(strip >0)
+    prevStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip-1);
+  
+  Float_t nextStripTrack = -1;
+  if(strip < (nstrips - 1))
+    nextStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip+1);
+  */
+  
+  Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,0,0);
+  // if(nTrack == fLastTrackByStrip.operator()(det,ring,sec,strip))
+  //  std::cout<<"Track # "<<nTrack<<"  failed the cut in "<<det<<"   "<<ring<<"   "<<sec<<"  "<<strip<<std::endl;
+  // else
+  //  std::cout<<"Track # "<<nTrack<<"  passed the cut in "<<det<<"   "<<ring<<"   "<<sec<<"  "<<strip<<std::endl;
+  if(charge != 0 && nTrack != thisStripTrack) {
     
+    fHitMap.operator()(det,ring,sec,strip) += 1;
+    fHits++;
+    Float_t nstrips = (ring =='O' ? 256 : 512);
+    fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)nTrack;
+    if(strip >0)
+      fLastTrackByStrip.operator()(det,ring,sec,strip-1) = (Float_t)nTrack;
+    if(strip < (nstrips - 1))
+      fLastTrackByStrip.operator()(det,ring,sec,strip+1) = (Float_t)nTrack;
+    
+    fPrevDetector = det;
+    fPrevRing     = ring;
+    fPrevSec      = sec;
+    fPrevTrack    = nTrack;
   }
   
-  fPrevDetector = det;
-  fPrevRing     = ring;
-  fPrevSec      = sec;
-  fPrevTrack    = nTrack;
+  
   
   return kTRUE;
 
@@ -374,6 +404,8 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
 //_____________________________________________________________________
 Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init() 
 {
+  fLastTrackByStrip.Reset(-1);
+  
   fPrimaryArray.SetOwner();
   fPrimaryArray.SetName("FMD_primary");
   
@@ -457,8 +489,6 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Begin(Int_t event )
     //(charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.01)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.01)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.01);
     if(primary && charge !=0) {
       
-      
-      
       fPrim++;
       
       fPrimaryMapInner.Fill(eta,phi);
@@ -506,7 +536,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::End()  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  
 	  if(fHitMap.operator()(det,ring,sec,strip) > 0) {
-	  
+	    //std::cout<<fHitMap.operator()(det,ring,sec,strip)<<std::endl;
 	    Double_t x,y,z;
 	    AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
 	    fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
@@ -522,7 +552,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::End()  {
 	    Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
 	    Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
 	    Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
-	    hHits->Fill(eta,phi);
+	    hHits->Fill(eta,phi,fHitMap.operator()(det,ring,sec,strip));
 	  }
 	  
 	}
@@ -533,6 +563,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::End()  {
   fPrimaryMapInner.Reset();
   fPrimaryMapOuter.Reset();
   fHitMap.Reset(0);
+  fLastTrackByStrip.Reset(-1);
   
   return retval;
 }

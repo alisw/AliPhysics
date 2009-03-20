@@ -56,28 +56,33 @@ void AliFMDAnalysisTaskCollector::CreateOutputObjects()
   printf("AnalysisTaskFMD::CreateOutPutData() \n");
   
   fOutputList = new TList();//(TList*)GetOutputData(0);
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   fArray     = new TObjArray();
   fArray->SetName("FMD");
   fArray->SetOwner();
   TH1F* hEdist = 0;
-  for(Int_t det =1; det<=3;det++)
-    {
-      TObjArray* detArray = new TObjArray();
-      detArray->SetName(Form("FMD%d",det));
-      fArray->AddAtAndExpand(detArray,det);
-      Int_t nRings = (det==1 ? 1 : 2);
-      for(Int_t ring = 0;ring<nRings;ring++)
-	{
-	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
-	  hEdist = new TH1F(Form("FMD%d%c",det,ringChar),Form("FMD%d%c",det,ringChar),100,0,3);
-	  hEdist->SetXTitle("#Delta E / E_{MIP}");
-	  fOutputList->Add(hEdist);
-	  detArray->AddAtAndExpand(hEdist,ring);
-	} 
-    }
-  
-  
+ 
+  for(Int_t nEta = 0; nEta <= pars->GetNetaBins()+1; nEta++) {
+    TObjArray* etaArray = new TObjArray();
+    fArray->AddAtAndExpand(etaArray,nEta);
+    for(Int_t det =1; det<=3;det++)
+      {
+	TObjArray* detArray = new TObjArray();
+	detArray->SetName(Form("FMD%d",det));
+	etaArray->AddAtAndExpand(detArray,det);
+	Int_t nRings = (det==1 ? 1 : 2);
+	for(Int_t ring = 0;ring<nRings;ring++)
+	  {
+	    Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	    hEdist = new TH1F(Form("FMD%d%c_etabin%d",det,ringChar,nEta),Form("FMD%d%c_etabin%d",det,ringChar,nEta),200,0,6);
+	    hEdist->SetXTitle("#Delta E / E_{MIP}");
+	    fOutputList->Add(hEdist);
+	    detArray->AddAtAndExpand(hEdist,ring);
+	  } 
+      }
+    
+  }
   
   fZvtxDist  = new TH1F("ZvtxDist","Vertex distribution",100,-30,30);
   fZvtxDist->SetXTitle("z vertex");
@@ -112,8 +117,8 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
   Double_t vertex[3];
   
   GetVertex(vertex);
-  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0)
-    return;
+  //if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0)
+  //  return;
   fZvtxDist->Fill(vertex[2]);
   
   if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
@@ -122,18 +127,29 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
   AliESDFMD* fmd = fESD->GetFMDData();
   if (!fmd) return;
   
+  
+  
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    
+    
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
-      TH1F* Edist = (TH1F*)detArray->At(ir);
+  
       Char_t   ring = (ir == 0 ? 'I' : 'O');
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
+      TH2F* hBg = pars->GetBackgroundCorrection(det,ring,0);
+      
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
+	  Float_t eta = fmd->Eta(det,ring,sec,strip);
+	  Int_t nEta = hBg->GetXaxis()->FindBin(eta);
+	 
+	  TObjArray* etaArray = (TObjArray*)fArray->At(nEta);
+	  TObjArray* detArray = (TObjArray*)etaArray->At(det);
+	  TH1F* Edist = (TH1F*)detArray->At(ir);
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
-	  if(mult == AliESDFMD::kInvalidMult) continue;
+	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
 	  Edist->Fill(mult);
 	  
 	}

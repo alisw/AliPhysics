@@ -54,8 +54,8 @@ void RunLocalFMDAnalysisSE(const Char_t* filename= "AliESDs.root", const Char_t*
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
-  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
-  cdb->SetRun(0);
+  // cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
+   cdb->SetRun(0);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init();

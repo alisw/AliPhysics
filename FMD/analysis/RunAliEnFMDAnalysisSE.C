@@ -63,7 +63,7 @@ void RunAliEnFMDAnalysisSE(const Char_t* collectionName="collection.xml", const 
   timer.Start();
   if (mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain, 3000);
+    mgr->StartAnalysis("local",chain, 2000);
   }   
   timer.Stop();
   timer.Print();
@@ -83,7 +83,11 @@ TChain* CreateChainSingle(const char* xmlfile, const char *treeName="esdTree")
 
   TChain* chain = new TChain(treeName);
   myCollection->Reset() ;
-  while ( myCollection->Next() ) chain->Add(myCollection->GetTURL("")) ;
+  Int_t nFiles = 0;
+  while ( myCollection->Next() && nFiles <20) { 
+    chain->Add(myCollection->GetTURL("")) ;
+    nFiles++;
+  }
   chain->ls();
   return chain;
 }

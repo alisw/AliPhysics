@@ -177,7 +177,21 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TH2F* hTmp       = (TH2F*)hMultInput->Clone("hMult_from_event");
       
       hTmp->Divide(hTmp,hBg,1,1);//,"B");
-      
+      /*for(Int_t i = 1; i<=hTmp->GetNbinsX();i++) {
+	for(Int_t j = 1; j<=hTmp->GetNbinsY();j++) {
+	  Float_t mult = hTmp->GetBinContent(i,j);
+	  if(mult == 0) continue;
+	  Float_t correction = hBg->GetBinContent(i,j);
+	  
+	  Float_t multcor = mult;
+	  if(correction != 0)
+	    multcor = multcor/correction;
+	  else
+	    std::cout<<"Warning! No correction for bin "<<i<<" , "<<j<<std::endl;
+	  
+	  hTmp->SetBinContent(i,j,multcor);
+	}
+	}*/
       hMultTotal->Add(hTmp);
       delete hTmp;
       

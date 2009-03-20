@@ -170,20 +170,48 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
-	  Float_t mult_cut = 0.1;
+	  Float_t eta = fESD->Eta(det,ring,sec,strip);
+	  Float_t mult_cut = 0.2;
 	  if(mult == 0 || mult == AliESDFMD::kInvalidMult) continue;
 	  //Particle number cut goes here...
 	  Float_t nParticles = 0;
-	  if(mult > mult_cut)
-	    nParticles = 1;
-	  Float_t eta = fESD->Eta(det,ring,sec,strip);
+	  if(fESD->GetUniqueID() == kTRUE) {
+	    //proton + proton
+	    if(mult > mult_cut) 
+	      nParticles = 1; 
+	  }
+	  else {
+	    
+	    //Pb+Pb
+	    Float_t mpv   = pars->GetMPV(det,ring,eta);
+	    Float_t sigma = pars->GetSigma(det,ring,eta);
+	    Float_t alpha = pars->Get2MIPWeight(det,ring,eta);
+	    Float_t beta  = pars->Get3MIPWeight(det,ring,eta);
+	    
+	    Float_t sumCor = TMath::Landau(mult,mpv,sigma,kTRUE)+
+	      alpha*TMath::Landau(mult,2*mpv+2*sigma*TMath::Log(2),2*sigma,kTRUE)+
+	      beta*TMath::Landau(mult,3*mpv+3*sigma*TMath::Log(3),3*sigma,kTRUE);
+	    Float_t weight = TMath::Landau(mult,mpv,sigma,kTRUE)+
+	      2*alpha*TMath::Landau(mult,2*mpv+2*sigma*TMath::Log(2),2*sigma,kTRUE)+
+	      3*beta*TMath::Landau(mult,3*mpv+3*sigma*TMath::Log(3),3*sigma,kTRUE);
+	    
+	    
+	    if(mult > 0){//mult_cut) {
+	      if(sumCor) nParticles = weight / sumCor;
+	      else nParticles = 1;
+	    }
+	    //std::cout<<sumCor<<"    "<<weight<<"    "<<"    "<<mult<<"  "<<nParticles<<std::endl;
+	    
+	  }
+	  
+	  
 	  Double_t x,y,z;
 	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
 	  Float_t phi = TMath::ATan2(y,x);
 	  if(phi<0)
 	    phi = phi+2*TMath::Pi();
 	  Float_t correction = GetAcceptanceCorrection(ring,strip);
-	  if(correction) mult = mult / correction;
+	  if(correction) nParticles = nParticles / correction;
 	  hMult->Fill(eta,phi,nParticles);
 	  
 	  

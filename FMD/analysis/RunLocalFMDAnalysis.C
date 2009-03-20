@@ -8,7 +8,7 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(cdbPath);
-  cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
+  // cdb->SetSpecificStorage("FMD/*","local://$ALICE_ROOT");
   cdb->SetRun(0);
   //AliFMDParameters* recopars = AliFMDParameters::Instance();
   // recopars->Init();
@@ -83,7 +83,7 @@ void RunLocalFMDAnalysis(const Char_t* filename= "AliESDs.root",
   TStopwatch timer;
   timer.Start();
   cout<<"Executing analysis"<<endl;
-  mgr->StartAnalysis("local",chain,1000);
+  mgr->StartAnalysis("local",chain);
   timer.Stop();
   timer.Print();
 }
