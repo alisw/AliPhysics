@@ -19,7 +19,9 @@ public:
    * Constructor
    * 
    */
-  AliFMDSurveyToAlignObjs() : AliSurveyToAlignObjs() {}
+  AliFMDSurveyToAlignObjs() : AliSurveyToAlignObjs(),
+			      fFMD1Delta(0),
+			      fFMD2Delta(0) {}
   /** 
    * Run the task.
    * 
