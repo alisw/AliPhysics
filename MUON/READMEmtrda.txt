@@ -83,7 +83,17 @@ With the help of the Control Panel a configuration file is added to the database
 - switch between slow/fast payload decoder (0, use the slow decoder)
 
 This file it is not "version"-ed, so it will be not recorded in MtgCurrent.dat.
- 
+
+Test configuration files:
+
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/DAConfig.dat">          DAConfig.dat         </a> 
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgGlobalCrate-1.dat">  MtgGlobalCrate-1.dat </a>
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgRegionalCrate-1.dat">MtgRegionalCrate-1.dat  </a>
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgLocalMask-1.dat">    MtgLocalMask-1.dat   </a>
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgLocalLut-1.dat">     MtgLocalLut-1.dat    </a>
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgSignature-1.dat">    MtgSignature-1.dat   </a>
+- <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgCurrent.dat">        MtgCurrent.dat       </a>
+
 \section da_s3 In case of trouble
 
 Please contact:
