@@ -107,9 +107,9 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Clear(const Option_t *) 
 { 
-  for(AliTRDcluster **cit = &fClusters[0]; (*cit); cit++){
-    if(IsOwner()) delete (*cit);
-    (*cit) = NULL;
+  for(Int_t it = 0; it<kMaxClustersLayer; it++){
+    if(IsOwner()) delete fClusters[it];
+    fClusters[it] = NULL;
   } 
   fN = 0; 
 }
