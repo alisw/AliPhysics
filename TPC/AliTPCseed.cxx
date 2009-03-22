@@ -571,7 +571,7 @@ Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t index)
 
 
 //_____________________________________________________________________________
-Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t onlyused) {
+Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t /* onlyused */) {
   //-----------------------------------------------------------------
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
