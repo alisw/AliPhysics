@@ -224,6 +224,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
 	  "cz="<<dz<<
+	  "cY="<<corrclY<<
 	  "cR="<<corrR<<
 	  "dxq="<<dxq<<
 	  "dyq="<<dyq<<
@@ -385,7 +386,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   AliExternalTrackParam *t = &trackIn;
   track->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   seed->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
-  seed->SetNumberOfClusters((nclIn+nclOut)*0.5);
+  seed->SetNumberOfClusters((nclIn+nclOut)/2);
   return kTRUE;
 }
 

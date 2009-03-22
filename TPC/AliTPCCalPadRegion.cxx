@@ -92,7 +92,7 @@ void       AliTPCCalPadRegion::SetObject(TObject* obj, UInt_t segment, UInt_t pa
     fObjects = new TObjArray(fgkNSegments * fgkNPadTypes);
     fObjects->SetOwner(kTRUE);
   }
-  if (fObjects->GetEntriesFast()<fgkNSegments * fgkNPadTypes){
+  if (fObjects->GetEntriesFast()<Int_t(fgkNSegments * fgkNPadTypes)){
     fObjects->Expand(fgkNSegments * fgkNPadTypes);
   }
   if (BoundsOk("SetObject", segment, padType)){ 
@@ -105,7 +105,7 @@ TObject*   AliTPCCalPadRegion::GetObject(UInt_t segment, UInt_t padType){
   //
   //
   //
-  if (fObjects->GetEntriesFast()<fgkNSegments * fgkNPadTypes){
+  if (fObjects->GetEntriesFast()<Int_t(fgkNSegments * fgkNPadTypes)){
     fObjects->Expand(fgkNSegments * fgkNPadTypes);
   }
   return fObjects->At(segment+fgkNSegments*padType); 

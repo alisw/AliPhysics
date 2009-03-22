@@ -105,6 +105,7 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fTriggerMaskAccept(calib.fTriggerMaskAccept),   //trigger mask - accept trigger
   fHasLaser(calib.fHasLaser),                    //flag the laser is overlayed with given event
   fRejectLaser(calib.fRejectLaser),                 //flag- reject laser
+  fTriggerClass(calib.fTriggerClass),
   fDebugLevel(calib.fDebugLevel)
 {
   //

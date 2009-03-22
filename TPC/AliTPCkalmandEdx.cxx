@@ -86,7 +86,8 @@ AliTPCkalmandEdx::AliTPCkalmandEdx(const AliTPCkalmandEdx & kalman):
   fNpad(kalman.fNpad),                  // number of pad types
   fNpar(kalman.fNpar),                // number of parameters
   fNelem(kalman.fNelem),                // number of elements
-  fSampleSize(kalman.fSampleSize)
+  fSampleSize(kalman.fSampleSize),
+  fInit(kalman.fInit)
 {
   //
   // copy constructor
