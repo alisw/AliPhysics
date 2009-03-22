@@ -112,6 +112,7 @@ public:
   static TGeoPNEntry* GetPNEntry(Int_t index);
   static TGeoPNEntry* GetPNEntry(ELayerID layerId, Int_t modId);
 
+  static void        ResetPNEntriesLUT();
   static void        InitAlignObjFromGeometry();
   static void        InitPNEntriesLUT();
   static void        InitNalignable();
@@ -126,7 +127,7 @@ public:
   static const char *  fgkDetectorName[fgkNDetectors] ; // name of detectors
   static Int_t       fgNalignable[fgkNDetectors];
 
-  ClassDef(AliGeomManager, 0);
+  ClassDef(AliGeomManager, 0); // Manager of geometry information for alignment
 };
 
 #endif

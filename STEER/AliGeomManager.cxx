@@ -130,7 +130,7 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
     AliInfoClass(Form("From now on using geometry from CDB base folder \"%s\"",
 		      AliCDBManager::Instance()->GetURI("Geometry/Align/Data")));
   }
-
+  ResetPNEntriesLUT();
   InitPNEntriesLUT();
   InitNalignable();
 }
@@ -140,7 +140,7 @@ void AliGeomManager::SetGeometry(TGeoManager * const geom)
 {
   // Load already active geometry
   if (!geom) AliFatalClass("Pointer to the active geometry is 0x0!");
-
+  ResetPNEntriesLUT();
   fgGeometry = geom;
   InitPNEntriesLUT();
   InitNalignable();
@@ -391,14 +391,16 @@ void  AliGeomManager::InitAlignObjFromGeometry()
   // Loop over all alignable volumes and extract
   // the corresponding alignment objects from
   // the TGeo geometry
-
-  if(fgAlignObjs[0]) return;
-
+  //
   for (Int_t iLayer = kFirstLayer; iLayer < AliGeomManager::kLastLayer; iLayer++) {
-    fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
+    if (!fgAlignObjs[iLayer-kFirstLayer]) {
+      fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
+      memset(fgAlignObjs[iLayer-kFirstLayer],0,LayerSize(iLayer)*sizeof(AliAlignObj*));
+    }
     for (Int_t iModule = 0; iModule < LayerSize(iLayer); iModule++) {
       UShort_t volid = LayerToVolUID(iLayer,iModule);
-      fgAlignObjs[iLayer-kFirstLayer][iModule] = new AliAlignObjParams("",volid,0,0,0,0,0,0,kTRUE);
+      if (!fgAlignObjs[iLayer-kFirstLayer][iModule]) fgAlignObjs[iLayer-kFirstLayer][iModule] = 
+						       new AliAlignObjParams("",volid,0,0,0,0,0,0,kTRUE);
       const char *symname = SymName(volid);
       if (!GetFromGeometry(symname, *fgAlignObjs[iLayer-kFirstLayer][iModule]))
 	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,symname));
@@ -1115,15 +1117,13 @@ void AliGeomManager::InitPNEntriesLUT()
   // The LUTs are static; they are created at the creation of the
   // AliGeomManager instance and recreated if the geometry has changed
   //
-  if (fgPNEntry[0]) return;
-
   if(!fgGeometry) {
     AliErrorClass("Impossible to initialize PNEntries LUT without an active geometry");
     return;
   }
 
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
-    fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
+    if (!fgPNEntry[iLayer]) fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
     for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
       fgPNEntry[iLayer][modnum] = fgGeometry->GetAlignableEntryByUID(LayerToVolUID(iLayer+1,modnum));
     }
@@ -1527,7 +1527,6 @@ void AliGeomManager::InitNalignable()
   
   Int_t nAlE = gGeoManager->GetNAlignable(); // total number of alignable entries
   TGeoPNEntry *pne = 0;
-  TString *pneName = 0;
   const char* detName;
   
   for (Int_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
@@ -1537,9 +1536,11 @@ void AliGeomManager::InitNalignable()
     for(Int_t iE = 0; iE < nAlE; iE++)
     {
       pne = gGeoManager->GetAlignableEntry(iE);
-      pneName = new TString(pne->GetName());
-      if(pneName->Contains(detName)) nAlDet++;
-      if(!strcmp(detName,"GRP")) if(pneName->Contains("ABSO") || pneName->Contains("DIPO") || pneName->Contains("FRAME") || pneName->Contains("PIPE") || pneName->Contains("SHIL")) nAlDet++;
+      TString pneName = pne->GetName();
+      if(pneName.Contains(detName)) nAlDet++;
+      if(!strcmp(detName,"GRP")) if(pneName.Contains("ABSO")  || pneName.Contains("DIPO") || 
+				    pneName.Contains("FRAME") || pneName.Contains("PIPE") || 
+				    pneName.Contains("SHIL")) nAlDet++;
     }
     fgNalignable[iDet] = nAlDet;
   }
@@ -1753,4 +1754,15 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, I
   return ApplyAlignObjsToGeom(*alignObjArray);
 }
 
-
+//_____________________________________________________________________________
+void AliGeomManager::ResetPNEntriesLUT()
+{
+  // cleans static arrays containing the information on currently loaded geometry
+  //
+  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
+    if (!fgPNEntry[iLayer]) continue;
+    for (Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++) fgPNEntry[iLayer][modnum] = 0;
+  }
+  //
+}
+  
