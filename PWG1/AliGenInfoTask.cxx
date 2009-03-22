@@ -45,6 +45,7 @@ AliGenInfoTask::AliGenInfoTask() :
   AliAnalysisTask(), 
   fMCinfo(0),     //! MC event handler
   fESD(0),
+  fESDfriend(0),
   fCompList(0),         //array of comparison objects
   fGenTracksArray(0),  //clones array with filtered particles
   fGenKinkArray(0),    //clones array with filtered Kinks
@@ -64,6 +65,7 @@ AliGenInfoTask::AliGenInfoTask(const AliGenInfoTask& /*info*/) :
   AliAnalysisTask(), 
   fMCinfo(0),     //! MC event handler
   fESD(0),
+  fESDfriend(0),
   fCompList(0),
   fGenTracksArray(0),  //clones array with filtered particles
   fGenKinkArray(0),    //clones array with filtered Kinks
@@ -87,6 +89,7 @@ AliGenInfoTask::AliGenInfoTask(const char *name) :
   AliAnalysisTask(name, "AliGenInfoTask"), 
   fMCinfo(0),     //! MC event handler
   fESD(0),
+  fESDfriend(0),
   fCompList(0),
   fGenTracksArray(0),  //clones array with filtered particles
   fGenKinkArray(0),    //clones array with filtered Kinks
@@ -446,7 +449,7 @@ void AliGenInfoTask::FinishTaskOutput()
 
 
 
-void AliGenInfoTask::RegisterDebugOutput(const char *path){
+void AliGenInfoTask::RegisterDebugOutput(const char */*path*/){
   //
   // store  - copy debug output to the destination position
   // currently ONLY for local copy
