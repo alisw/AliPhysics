@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include "AliITSRecoParam.h"
+#include "AliLog.h"
 
 /* $Id$ */
 
@@ -546,6 +547,10 @@ AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
     param->SetUpdateOncePerEventPlaneEff(kTRUE);
     param->SetMinContVtxPlaneEff(3);
     return param;
+  }
+  else {
+    AliErrorGeneral("AliITSRecoParam",Form("Unrecognised value of i %d\n",i));
+    return 0;
   }
 }
 //_____________________________________________________________________________
