@@ -395,12 +395,10 @@ void  AliGeomManager::InitAlignObjFromGeometry()
   for (Int_t iLayer = kFirstLayer; iLayer < AliGeomManager::kLastLayer; iLayer++) {
     if (!fgAlignObjs[iLayer-kFirstLayer]) {
       fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
-      memset(fgAlignObjs[iLayer-kFirstLayer],0,LayerSize(iLayer)*sizeof(AliAlignObj*));
     }
     for (Int_t iModule = 0; iModule < LayerSize(iLayer); iModule++) {
       UShort_t volid = LayerToVolUID(iLayer,iModule);
-      if (!fgAlignObjs[iLayer-kFirstLayer][iModule]) fgAlignObjs[iLayer-kFirstLayer][iModule] = 
-						       new AliAlignObjParams("",volid,0,0,0,0,0,0,kTRUE);
+      fgAlignObjs[iLayer-kFirstLayer][iModule] = new AliAlignObjParams("",volid,0,0,0,0,0,0,kTRUE);
       const char *symname = SymName(volid);
       if (!GetFromGeometry(symname, *fgAlignObjs[iLayer-kFirstLayer][iModule]))
 	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,symname));
