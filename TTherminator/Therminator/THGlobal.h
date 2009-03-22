@@ -36,15 +36,15 @@ using namespace std;
 #define PRINT_MESSAGE(_mes) cout << _mes << endl;
 
 #if _DEBUG_LEVEL_==0
-#define PRINT_DEBUG_3(_mes) 
-#define PRINT_DEBUG_2(_mes) 
-#define PRINT_DEBUG_1(_mes) 
+#define PRINT_DEBUG_3(_mes) {}
+#define PRINT_DEBUG_2(_mes) {}
+#define PRINT_DEBUG_1(_mes) {}
 #elif _DEBUG_LEVEL_==1
-#define PRINT_DEBUG_3(_mes) 
-#define PRINT_DEBUG_2(_mes) 
+#define PRINT_DEBUG_3(_mes) {}
+#define PRINT_DEBUG_2(_mes) {}
 #define PRINT_DEBUG_1(_mes) cerr << _mes << endl;
 #elif _DEBUG_LEVEL_==2
-#define PRINT_DEBUG_3(_mes) 
+#define PRINT_DEBUG_3(_mes) {}
 #define PRINT_DEBUG_2(_mes) cerr << _mes << endl;
 #define PRINT_DEBUG_1(_mes) cerr << _mes << endl;
 #elif _DEBUG_LEVEL_==3
