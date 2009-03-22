@@ -354,7 +354,7 @@ void     AliTPCPointCorrection::AddCorrectionSector(TObjArray & sideAPar, TObjAr
   //
   for (Int_t isec=0;isec<36;isec++){
     TMatrixD * mat1 = (TMatrixD*)(sideAPar.At(isec));
-    TMatrixD * mat1Covar = (TMatrixD*)(sideCPar.At(isec));
+    TMatrixD * mat1Covar = (TMatrixD*)(sideACov.At(isec));
     if (!mat1) continue;
     TMatrixD * mat0 = (TMatrixD*)(fArraySectorIntParam.At(isec));
     TMatrixD * mat0Covar = (TMatrixD*)(fArraySectorIntCovar.At(isec));
@@ -386,7 +386,7 @@ void     AliTPCPointCorrection::AddCorrectionSector(TObjArray & sideAPar, TObjAr
 }
 
 
-Double_t AliTPCPointCorrection::GetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz, Int_t quadrant){
+Double_t AliTPCPointCorrection::GetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t /*lz*/, Int_t quadrant){
   //
   // Get position correction for given sector
   //
@@ -433,7 +433,7 @@ Double_t AliTPCPointCorrection::SGetCorrectionSector(Int_t coord, Int_t sector, 
 
 
 
-Double_t AliTPCPointCorrection::GetCorrection(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz){
+Double_t AliTPCPointCorrection::GetCorrection(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t /*lz*/){
   //
   // Get position correction for given sector
   //

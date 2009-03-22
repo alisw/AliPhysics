@@ -20,7 +20,8 @@ class AliTPCseed;
 class TGraphErrors;
 class TTree;
 class THnSparse;
-
+class AliTPCPointCorrection;
+class TFile;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
@@ -33,20 +34,31 @@ public:
   AliTPCcalibAlign(const AliTPCcalibAlign &align);
   //
   virtual ~AliTPCcalibAlign();
+  void     Process(AliESDEvent *event);
   virtual void Process(AliTPCseed *track);
   virtual void Analyze();
   virtual void Terminate();  
   virtual Long64_t Merge(TCollection* list);
   //
-  virtual void EvalFitters();
+  //
+  void MakeReportDy(TFile *output); 
+  void MakeReportDyPhi(TFile *output);
+  //
+  void UpdatePointCorrection(AliTPCPointCorrection * correction);
+  //
+  virtual void EvalFitters(Int_t minPoints=20);
   TH1 * GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force=kFALSE);
-  void  MakeTree(const char *fname="alignTree.root");
+  void  MakeTree(const char *fname="alignTree.root", Int_t minPoints=20);
   TGraphErrors * MakeGraph(Int_t sec0, Int_t sec1, Int_t dsec, 
 			   Int_t i0, Int_t i1, FitType type); 
+  Int_t  RefitLinear(const AliTPCseed * seed, Int_t isec, Double_t *fitParam, Int_t refSector, TMatrixD &param, TMatrixD&covar, Double_t xRef, Bool_t both=kFALSE);
+  
   void ProcessTracklets(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,
 			const AliTPCseed * seed,
 			Int_t s1,Int_t s2);
+  
+  void UpdateAlignSector(const AliTPCseed * seed,Int_t isec); 
   inline Int_t GetIndex(Int_t s1,Int_t s2){return 72*s1+s2;}
   //
   inline const TMatrixD     * GetTransformation(Int_t s1,Int_t s2, Int_t fitType);
@@ -60,6 +72,8 @@ public:
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
   Int_t  AcceptTracklet(const AliExternalTrackParam &tp1,
 			const AliExternalTrackParam &tp2);
+  Int_t  AcceptTracklet(const Double_t *t1,
+			const Double_t *t2);
 
   void ProcessDiff(const AliExternalTrackParam &t1,
 		   const AliExternalTrackParam &t2,
@@ -73,7 +87,6 @@ public:
   void Add(AliTPCcalibAlign * align);
   Int_t *GetPoints() {return fPoints;}
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
-  void     Process(AliESDEvent *event){AliTPCcalibBase::Process(event);}
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2);
@@ -95,10 +108,29 @@ public:
   void SetInstance(AliTPCcalibAlign*param){fgInstance = param;}
   static void Constrain1Pt(AliExternalTrackParam &t1, const AliExternalTrackParam &t2, Bool_t noField);
   void SetNoField(Bool_t noField){ fNoField=noField;}
-private:
+
+  //
+  // Kalman fileter for sectors
+  //
+  void MakeSectorKalman();
+  void UpdateSectorKalman(Int_t sector, Int_t quadrant0, Int_t quadrant1,  TMatrixD *p0, TMatrixD *c0, TMatrixD *p1, TMatrixD *c1);
+  void UpdateSectorKalman(TMatrixD &par0, TMatrixD &cov0, TMatrixD &para1, TMatrixD &cov1);
+  Double_t GetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz); 
+  static Double_t SGetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz); 
+
+  //
+  // Kalman filter for full TPC
+  //
+  void MakeKalman();
+  void UpdateKalman(Int_t sector0, Int_t sector1,  TMatrixD &p0, TMatrixD &c0, TMatrixD &p1, TMatrixD &c1);
+  void UpdateKalman(TMatrixD &par0, TMatrixD &cov0, TMatrixD &para1, TMatrixD &cov1);
+  //
+  //private:
+  static Int_t CheckCovariance(TMatrixD &covar);
+public:
   
-  void FillHisto(const AliExternalTrackParam &t1,
-		 const AliExternalTrackParam &t2,
+  void FillHisto(const Double_t *t1,
+		 const Double_t *t2,
 		 Int_t s1,Int_t s2);
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
@@ -129,8 +161,29 @@ private:
   AliExternalComparison  *fCompTracklet;  //tracklet comparison
   //
   Int_t fPoints[72*72];        // number of points in the fitter 
-  Bool_t fNoField;            // flag - no field data
+  Bool_t fNoField;             // flag - no field data
+  // refernce x
+  Double_t fXIO;               // OROC-IROC boundary
+  Double_t fXmiddle;           // center of the TPC sector local X
+  Double_t fXquadrant;         // x quadrant
+  //
+  // Kalman filter for sector internal  alignemnt
+  //
+  TObjArray fArraySectorIntParam; // array of sector alignment parameters
+  TObjArray fArraySectorIntCovar; // array of sector alignment covariances 
+  //
+  // Kalman filter for global alignment
+  //
+  TMatrixD  *fSectorParamA;     // Kalman parameter   for A side
+  TMatrixD  *fSectorCovarA;     // Kalman covariance  for A side 
+  TMatrixD  *fSectorParamC;     // Kalman parameter   for A side
+  TMatrixD  *fSectorCovarC;     // Kalman covariance  for A side 
+
+
   static AliTPCcalibAlign*   fgInstance; //! Instance of this class (singleton implementation)
+private:
+  AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
+
   ClassDef(AliTPCcalibAlign,2)
 };
 
