@@ -2452,9 +2452,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         FitRieman(c, chi2);
       
         AliTRDseedV1 *tseed = &cseed[0];
-        AliTRDtrackingChamber **cIter = &stack[0];
-        for(int iLayer=0; iLayer<kNPlanes; iLayer++, tseed++, cIter++){
-          Int_t det = (*cIter) ? (*cIter)->GetDetector() : -1;
+        AliTRDtrackingChamber **cIter1 = &stack[0];
+        for(int iLayer=0; iLayer<kNPlanes; iLayer++, tseed++, cIter1++){
+          Int_t det = (*cIter1) ? (*cIter1)->GetDetector() : -1;
           tseed->SetDetector(det);
           tseed->SetTilt(hL[iLayer]);
           tseed->SetPadLength(padlength[iLayer]);
