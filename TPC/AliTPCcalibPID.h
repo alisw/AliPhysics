@@ -27,8 +27,12 @@ public:
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze();
-  void                   MakeReport();
-  //
+  void                   MakeReport(const char * outputpath);
+  void                   DrawRatioTot(Int_t ipad, const char* outputpath);
+  void                   DrawRatioMax(Int_t ipad, const char* outputpath);
+  void                   DrawRatiodEdx(Float_t demin, Float_t demax, const char* outputpath);
+  void                   DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const char *outputpath); //
+  void                   DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const char *outputpath);
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};
@@ -37,22 +41,26 @@ public:
   //
   THnSparseS *      GetHistQmax(){return fDeDxQmax;};
   THnSparseS *      GetHistQtot(){return fDeDxQtot;};
-  THnSparseS *      GetHistRatio(){return fDeDxRatio;};
-  THnSparseS *      GetHistShortMediumRatio(){return fDeDxShortMediumRatio;};
-  THnSparseS *      GetHistLongMediumRatio(){return fDeDxLongMediumRatio;};
+  THnSparseS *      GetHistRatioMaxTot(){return fDeDxRatioMaxTot;};
+  THnSparseS *      GetHistRatioQmax(){return fDeDxRatioQmax;};
+  THnSparseS *      GetHistRatioQtot(){return fDeDxRatioQtot;};
+  THnSparseS *      GetHistRatioTruncQmax(){return fDeDxRatioTruncQmax;};
+  THnSparseS *      GetHistRatioTruncQtot(){return fDeDxRatioTruncQtot;};
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};
   void SetUpperTrunc(Float_t upperTrunc){fUpperTrunc = upperTrunc;};
   void SetUseShapeNorm(Bool_t useShapeNorm){fUseShapeNorm = useShapeNorm;};
-  void SetUsePosNorm(Bool_t usePosNorm){fUsePosNorm = usePosNorm;};
+  void SetUsePosNorm(Int_t usePosNorm){fUsePosNorm = usePosNorm;};
   void SetPadNorm(Int_t padNorm){fUsePadNorm = padNorm;};
   void SetIsCosmic(Bool_t isCosmic){fIsCosmic = isCosmic;};
   //
   //
   static void       BinLogX(THnSparse * h, Int_t axisDim);   // method for correct histogram binning
-
-
+  void DumpTree(THnSparse * hndim, const char * outname);
+  void DumpTrees();
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 private:
   //
   // parameter specifications
@@ -61,7 +69,7 @@ private:
   Float_t fLowerTrunc;
   Float_t fUpperTrunc;
   Bool_t  fUseShapeNorm;
-  Bool_t  fUsePosNorm;
+  Int_t  fUsePosNorm;
   Int_t   fUsePadNorm;
   //
   Bool_t  fIsCosmic;
@@ -75,9 +83,15 @@ private:
   //
   THnSparseS * fDeDxQmax;               //  histogram which shows dEdx (Qmax) as a function of z,sin(phi),tan(theta),p,betaGamma
   THnSparseS * fDeDxQtot;               //  histogram which shows dEdx (Qtot) as a function of z,sin(phi),tan(theta),p,betaGamma
-  THnSparseS * fDeDxRatio;              //  histogram which shows dEdx ratio (Qmax/Qtot) as a function of z,sin(phi),tan(theta),p,betaGamma
-  THnSparseS * fDeDxShortMediumRatio;   //  histogram which shows dEdx ratio (QmaxShort/QmaxMedium) as a function of z,sin(phi),tan(theta),p,betaGamma
-  THnSparseS * fDeDxLongMediumRatio;    //  histogram which shows dEdx ratio (QmaxLong/QmaxMedium) as a function of z,sin(phi),tan(theta),p,betaGamma
+  //
+  // ratio histograms
+  //
+  THnSparseS * fDeDxRatioMaxTot;              //  histogram which shows dEdx ratio (Qmax/Qtot) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  THnSparseS * fDeDxRatioQmax;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  THnSparseS * fDeDxRatioQtot;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  THnSparseS * fDeDxRatioTruncQtot;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  THnSparseS * fDeDxRatioTruncQmax;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+
   //
   AliTPCcalibPID(const AliTPCcalibPID&); 
   AliTPCcalibPID& operator=(const AliTPCcalibPID&); 

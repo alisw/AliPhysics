@@ -32,8 +32,14 @@
   dy =          +dr(r,z)*tan(phi)
 
    
-
-  //  
+  .x ~/NimStyle.C
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  TFile fcalib("CalibObjects.root");
+  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+  AliTPCcalibUnlinearity * calibUnlin = ( AliTPCcalibUnlinearity *)array->FindObject("calibUnlinearity");
+  //
+  
 */
 
 
@@ -76,7 +82,6 @@
 #include "AliTPCTracklet.h"
 #include "TTimeStamp.h"
 #include "AliTPCcalibDB.h"
-#include "AliTPCcalibLaser.h"
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
 #include "TLinearFitter.h"
@@ -85,21 +90,28 @@
 
 
 #include "AliTPCcalibUnlinearity.h"
+#include "AliTPCPointCorrection.h"
 
-AliTPCcalibUnlinearity* AliTPCcalibUnlinearity::fgInstance = 0;
 
 ClassImp(AliTPCcalibUnlinearity)
 
 AliTPCcalibUnlinearity::AliTPCcalibUnlinearity():
   AliTPCcalibBase(),
-  fDiffHistoLine(0),
-  fDiffHistoPar(0),
+  fInit(kFALSE),
+  fDiffHistoLineY(0),
+  fDiffHistoParY(0),
+  fDiffHistoLineZ(0),
+  fDiffHistoParZ(0),
   fFittersOutR(38),
   fFittersOutZ(38),
   fParamsOutR(38),
   fParamsOutZ(38),
   fErrorsOutR(38),
-  fErrorsOutZ(38)
+  fErrorsOutZ(38),
+  fDistRPHIPlus(74),
+  fDistRPHIMinus(74),
+  fFitterQuadrantY(16*38),
+  fFitterQuadrantPhi(16*38)
 {
   //
   // Defualt constructor
@@ -108,41 +120,38 @@ AliTPCcalibUnlinearity::AliTPCcalibUnlinearity():
 
 AliTPCcalibUnlinearity::AliTPCcalibUnlinearity(const Text_t *name, const Text_t *title):
   AliTPCcalibBase(name,title),
-  fDiffHistoLine(0),
-  fDiffHistoPar(0),  
+  fInit(kFALSE),
+  fDiffHistoLineY(0),
+  fDiffHistoParY(0),  
+  fDiffHistoLineZ(0),
+  fDiffHistoParZ(0),  
   fFittersOutR(38),
   fFittersOutZ(38),
   fParamsOutR(38),
   fParamsOutZ(38),
   fErrorsOutR(38),
-  fErrorsOutZ(38)
+  fErrorsOutZ(38),
+  fDistRPHIPlus(74),
+  fDistRPHIMinus(74),
+  fFitterQuadrantY(16*38),
+  fFitterQuadrantPhi(16*38)
 {
   //
   // Non default constructor
   //
-  MakeFitters();
+  MakeHisto();
 }
 
 AliTPCcalibUnlinearity::~AliTPCcalibUnlinearity(){
   //
   //
   //
-  if (fDiffHistoLine) delete fDiffHistoLine;
-  if (fDiffHistoPar)  delete fDiffHistoPar;
+  if (fDiffHistoLineZ) delete fDiffHistoLineY;
+  if (fDiffHistoParZ)  delete fDiffHistoParY;
+  if (fDiffHistoLineZ) delete fDiffHistoLineZ;
+  if (fDiffHistoParZ)  delete fDiffHistoParZ;
 }
 
-
-AliTPCcalibUnlinearity* AliTPCcalibUnlinearity::Instance()
-{
-  //
-  // Singleton implementation
-  // Returns an instance of this class, it is created if neccessary
-  //
-  if (fgInstance == 0){
-    fgInstance = new AliTPCcalibUnlinearity();
-  }
-  return fgInstance;
-}
 
 
 
@@ -151,9 +160,11 @@ void AliTPCcalibUnlinearity::Process(AliTPCseed *seed) {
   //
   // 
   //  
+  if (!fInit) {
+    Init();   // work around for PROOF - initialize firs time used
+  }
   const Int_t  kdrow=10;
   const Int_t kMinCluster=35;
-  if (!fDiffHistoLine) MakeHisto();    
   if (!seed) return;
   if (TMath::Abs(fMagF)>0.01) return;   // use only data without field
   Int_t counter[72];
@@ -167,6 +178,9 @@ void AliTPCcalibUnlinearity::Process(AliTPCseed *seed) {
   //
   for (Int_t is=0; is<72;is++){
     if (counter[is]>kMinCluster) ProcessDiff(seed, is);
+    if (counter[is]>kMinCluster) {
+      AlignOROC(seed, is);
+    }
   }
 }
 
@@ -177,6 +191,7 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
   //
   const  Double_t kXmean=134;
   const Int_t     kdrow=10;
+  const Float_t kSagitaCut = 1;
   static TLinearFitter fy1(2,"pol1");
   static TLinearFitter fy2(3,"pol2");
   static TLinearFitter fz1(2,"pol1");
@@ -214,7 +229,6 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
     AliTPCclusterMI *c=track->GetClusterPointer(irow);
     if (!c) continue;
     if (c->GetDetector()!=isec) continue;
-    if (c->GetType()<0) continue;
     Double_t dx = c->GetX()-kXmean;
     Double_t y1 = py1[0]+py1[1]*dx;
     Double_t y2 = py2[0]+py2[1]*dx+py2[2]*dx*dx;
@@ -222,29 +236,24 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
     Double_t z1 = pz1[0]+pz1[1]*dx;
     Double_t z2 = pz2[0]+pz2[1]*dx+pz2[2]*dx*dx;
     //
+    Double_t edgeMinus= -y1+c->GetX()*TMath::Tan(TMath::Pi()/18.);
+    Double_t edgePlus =  y1+c->GetX()*TMath::Tan(TMath::Pi()/18.);
+    Int_t    npads = AliTPCROC::Instance()->GetNPads(isec,c->GetRow());
+    Float_t    dpad  = TMath::Min(c->GetPad(), npads-1- c->GetPad());
+    Float_t dy =c->GetY()-y1;
     //
-    Double_t x[10];
-    x[0]=isec;
-    x[1]=irow;
-    x[2]=c->GetY();
-    x[3]=c->GetZ();
-    x[4]=py1[1];
-    x[5]=pz1[1];
-    x[6]=py2[2]*150*150/4; // sagita 150 cm
+    // Corrections 
+    //    
+    AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
+    Double_t corrclY=0, corrtrY=0, corrR=0;
+    corrclY =  corr->RPhiCOGCorrection(isec,c->GetRow(), c->GetPad(),
+				       c->GetY(),c->GetY(), c->GetZ(), py1[1],c->GetMax(),2.5); 
+    corrtrY =  corr->RPhiCOGCorrection(isec,c->GetRow(), c->GetPad(),
+				       c->GetY(),y1, c->GetZ(), py1[1], c->GetMax(),2.5);     
+    corrR   = corr->CorrectionOutR0(kFALSE,kFALSE,c->GetX(),c->GetY(),c->GetZ(),isec);
     //
-    x[7]=c->GetY()-y1;
-    x[8]=c->GetZ()-z1;
-    fDiffHistoLine->Fill(x);
-    x[7]=c->GetY()-y2;
-    x[8]=c->GetZ()-z2;
-    fDiffHistoPar->Fill(x);   
-
-    if (TMath::Abs(py2[2]*150*150/4)<1 && TMath::Abs(pz2[2]*150*150/4)<1){
-      // Apply sagita cut
-      AddPoint(isec,irow,c->GetZ()-z1, c->GetY()-y1,
-	       py1[1],pz1[1],1-TMath::Abs(c->GetZ()/250.),1);
-    }
-	     
+    //
+    //
     if (fStreamLevel>1){
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
@@ -254,7 +263,14 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
 	  "time="<<fTime<<            //  time stamp of event
 	  "trigger="<<fTrigger<<      //  trigger
 	  "mag="<<fMagF<<             //  magnetic field	  
-	  "isec="<<isec<<
+	  "isec="<<isec<<             // current sector
+	  "npads="<<npads<<           // number of pads at given sector
+	  "dpad="<<dpad<<             // distance to edge pad
+	  //
+	  "crR="<<corrR<<              // radial correction
+	  "cclY="<<corrclY<<            // edge effect correction cl
+	  "ctrY="<<corrtrY<<            // edge effect correction using track
+	  //
 	  "Cl.="<<c<<
 	  "y1="<<y1<<
 	  "y2="<<y2<<
@@ -264,11 +280,267 @@ void AliTPCcalibUnlinearity::ProcessDiff(AliTPCseed *track, Int_t isec){
 	  "py2.="<<&py2<<
 	  "pz1.="<<&pz1<<
 	  "pz2.="<<&pz2<<
+	  "eP="<<edgePlus<<
+	  "eM="<<edgeMinus<<
 	  "\n";
+      }
+    }
+    if (TMath::Min(edgeMinus,edgePlus)<6){
+      AddPointRPHI(isec,c->GetX(),c->GetY(),c->GetZ(),y1,z1,py1[1],pz1[1],1);
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (TMath::Abs(dy)<2 && cstream){
+	(*cstream)<<"rphi"<<
+	  "isec="<<isec<<             // current sector
+	  "npads="<<npads<<           // number of pads at given sector
+	  "dpad="<<dpad<<             // distance to edge pad
+	  "eP="<<edgePlus<<           // distance to edge 
+	  "eM="<<edgeMinus<<          // distance to edge minus
+	  //
+	  "crR="<<corrR<<              // radial correction
+	  "cclY="<<corrclY<<            // edge effect correction cl
+	  "ctrY="<<corrtrY<<            // edge effect correction using track
+	  //
+	  "dy="<<dy<<                 // dy
+	  "Cl.="<<c<<
+	  "y1="<<y1<<
+	  "y2="<<y2<<
+	  "z1="<<z1<<
+	  "z2="<<z2<<
+	  "py1.="<<&py1<<
+	  "pz1.="<<&pz1<<
+	  "\n";
+      }
+    }
+    if (c->GetType()<0) continue;  // don't use edge rphi cluster
+    //
+    //
+    Double_t x[10];
+    x[0]=c->GetDetector();
+    x[1]=c->GetRow();
+    x[2]=c->GetY()/c->GetX();
+    x[3]=c->GetZ();
+    //
+    // apply sagita cut
+    //
+    if (TMath::Abs(py2[2]*150*150/4)<kSagitaCut && 
+	TMath::Abs(pz2[2]*150*150/4)<kSagitaCut){
+      //
+      x[4]=py1[1];
+      x[5]=c->GetY()-y1;
+      fDiffHistoLineY->Fill(x);
+      x[5]=c->GetY()-y2;
+      //fDiffHistoParY->Fill(x);
+      //
+      x[4]=pz1[1];
+      x[5]=c->GetY()-z1;
+      fDiffHistoLineZ->Fill(x);
+      x[5]=c->GetY()-z2;
+      //fDiffHistoParZ->Fill(x);      
+      // Apply sagita cut
+      AddPoint(isec,c->GetX(),c->GetY(),c->GetZ(),y1,z1,py1[1],pz1[1],1);
+    }
+	     
+  }
+}
+
+
+void AliTPCcalibUnlinearity::AlignOROC(AliTPCseed *track, Int_t isec){
+  //
+  // fit the tracklet in OROC sepatately in Quadrant
+  //
+  //
+  if (isec<36) return; 
+  const Int_t kMinClusterF=35;
+  const Int_t kMinClusterQ=10;
+  //
+  const  Int_t     kdrow1 =8;       // rows to skip at the end      
+  const  Int_t     kdrow0 =2;        // rows to skip at beginning  
+  const  Float_t   kedgey=3;
+  const  Float_t   kMaxDist=0.5;
+  const  Float_t   kMaxCorrY=0.1;
+  const  Float_t   kPRFWidth = 0.6;   //cut 2 sigma of PRF
+  //
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
+  const  Double_t kXmean=roc->GetPadRowRadii(isec,53);
+  //
+  // full track fit parameters
+  // 
+  TLinearFitter fyf(2,"pol1");
+  TLinearFitter fzf(2,"pol1");
+  TVectorD pyf(2), peyf(2),pzf(2), pezf(2);
+  Int_t nf=0;
+  //
+  // make full fit as reference
+  //
+  for (Int_t iter=0; iter<2; iter++){
+    fyf.ClearPoints();
+    for (Int_t irow=kdrow0;irow<159-kdrow1;irow++) {
+      AliTPCclusterMI *c=track->GetClusterPointer(irow);
+      if (!c) continue;
+      if (c->GetDetector()!=isec) continue;
+      if (c->GetRow()<kdrow0) continue;
+      Double_t dx = c->GetX()-kXmean;
+      Double_t x[2]={dx, dx*dx};
+      if (iter==0 &&c->GetType()<0) continue;
+      if (iter==1){	
+	Double_t yfit  =  pyf[0]+pyf[1]*dx;
+	Double_t dedge =  c->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(yfit);
+	if (TMath::Abs(c->GetY()-yfit)>kMaxDist) continue;
+	if (dedge<kedgey) continue;
+	Double_t corrtrY =  
+	  corr->RPhiCOGCorrection(isec,c->GetRow(), c->GetPad(),
+				  c->GetY(),yfit, c->GetZ(), pyf[1], c->GetMax(),2.5);
+	if (TMath::Abs(corrtrY)>kMaxCorrY) continue;
+      }
+      fyf.AddPoint(x,c->GetY(),0.1);
+      fzf.AddPoint(x,c->GetZ(),0.1);
+    }
+    nf = fyf.GetNpoints();
+    if (nf<kMinClusterF) return;   // not enough points - skip 
+    fyf.Eval(); 
+    fyf.GetParameters(pyf); 
+    fyf.GetErrors(peyf);
+    fzf.Eval(); 
+    fzf.GetParameters(pzf); 
+    fzf.GetErrors(pezf);
+  }
+  //
+  // Make Fitters and params for 3 fitters
+  //
+  TLinearFitter *fitters[4];
+  Int_t npoints[4];
+  TVectorD params[4];
+  TVectorD errors[4];
+  Double_t chi2C[4];
+  for (Int_t i=0;i<4;i++) {
+    fitters[i] = new TLinearFitter(2,"pol1");
+    npoints[i]=0;
+    params[i].ResizeTo(2);
+    errors[i].ResizeTo(2);
+  }
+  //
+  // Update fitters
+  //
+  for (Int_t irow=kdrow0;irow<159-kdrow1;irow++) {
+    AliTPCclusterMI *c=track->GetClusterPointer(irow);
+    if (!c) continue;
+    if (c->GetDetector()!=isec) continue;
+    if (c->GetRow()<kdrow0) continue;      
+    Double_t dx = c->GetX()-kXmean;
+    Double_t x[2]={dx, dx*dx};
+    Double_t yfit  =  pyf[0]+pyf[1]*dx;
+    Double_t dedge =  c->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(yfit);
+    if (TMath::Abs(c->GetY()-yfit)>kMaxDist) continue;
+    if (dedge<kedgey) continue;
+    Double_t corrtrY =  
+      corr->RPhiCOGCorrection(isec,c->GetRow(), c->GetPad(),
+			      c->GetY(),yfit, c->GetZ(), pyf[1], c->GetMax(),2.5);
+    if (TMath::Abs(corrtrY)>kMaxCorrY) continue;  
+    if (dx<0){
+      if (yfit<-kPRFWidth) fitters[0]->AddPoint(x,c->GetY(),0.1);
+      if (yfit>kPRFWidth) fitters[1]->AddPoint(x,c->GetY(),0.1);
+    }
+    if (dx>0){
+      if (yfit<-kPRFWidth) fitters[2]->AddPoint(x,c->GetY(),0.1);
+      if (yfit>kPRFWidth) fitters[3]->AddPoint(x,c->GetY(),0.1);
+    }
+  }
+
+  for (Int_t i=0;i<4;i++) {
+    npoints[i] = fitters[i]->GetNpoints();
+    if (npoints[i]>=kMinClusterQ){
+      fitters[i]->Eval();
+      Double_t chi2Fac = TMath::Sqrt(fitters[i]->GetChisquare()/(fitters[i]->GetNpoints()-2));
+      chi2C[i]=chi2Fac;
+      fitters[i]->GetParameters(params[i]);
+      fitters[i]->GetErrors(errors[i]);
+      // renormalize errors
+      errors[i][0]*=chi2Fac;
+      errors[i][1]*=chi2Fac;
+    }
+  }
+  //
+  // Fill fitters
+  //
+  for (Int_t i0=0;i0<4;i0++){
+    for (Int_t i1=0;i1<4;i1++){
+      if (i0==i1) continue;
+      if(npoints[i0]<kMinClusterQ) continue;
+      if(npoints[i1]<kMinClusterQ) continue;
+      Int_t index0=i0*4+i1;
+      Double_t xy[1];
+      Double_t xfi[1];
+      xy[0] = pyf[1];   
+      xfi[0] = pyf[1];
+      //
+      Double_t dy = params[i1][0]-params[i0][0];
+      Double_t sy = TMath::Sqrt(errors[i1][0]*errors[i1][0]+errors[i0][0]*errors[i0][0]);
+      Double_t dphi = params[i1][1]-params[i0][1];
+      Double_t sphi = TMath::Sqrt(errors[i1][1]*errors[i1][1]+errors[i0][1]*errors[i0][1]);
+      //
+      Int_t sector = isec-36;
+      //
+      if (TMath::Abs(dy/(sy+0.1))>5.) continue;          // 5 sigma cut
+      if (TMath::Abs(dphi/(sphi+0.004))>5.) continue;    // 5 sigma cut 
+      TLinearFitter * fitterY,*fitterPhi;
+      fitterY = (TLinearFitter*) fFitterQuadrantY.At(16*sector+index0);
+      if (TMath::Abs(dy/(sy+0.1))<5.)  fitterY->AddPoint(xy,dy,sy);
+      fitterY = (TLinearFitter*) fFitterQuadrantY.At(16*36+index0);
+      if (TMath::Abs(dy/(sy+0.1))<5.)  fitterY->AddPoint(xy,dy,sy);
+      //
+      fitterPhi = (TLinearFitter*) fFitterQuadrantPhi.At(16*sector+index0);
+      if (TMath::Abs(dphi/(sphi+0.001))<5.)  fitterPhi->AddPoint(xfi,dphi,sphi);
+      fitterPhi = (TLinearFitter*) fFitterQuadrantPhi.At(16*36+index0);
+      if (TMath::Abs(dphi/(sphi+0.001))<5.)  fitterPhi->AddPoint(xfi,dphi,sphi);
+    }
+  }
+  //
+  // Dump debug information
+  //
+  if (fStreamLevel>0){    
+    TTreeSRedirector *cstream = GetDebugStreamer();      
+    Int_t sector = isec-36;
+    if (cstream){      
+      for (Int_t i0=0;i0<4;i0++){
+	for (Int_t i1=i0;i1<4;i1++){
+	  if (i0==i1) continue;
+	  if(npoints[i0]<kMinClusterQ) continue;
+	  if(npoints[i1]<kMinClusterQ) continue;
+	  (*cstream)<<"fitQ"<<
+	    "run="<<fRun<<              //  run number
+	    "event="<<fEvent<<          //  event number
+	    "time="<<fTime<<            //  time stamp of event
+	    "trigger="<<fTrigger<<      //  trigger
+	    "mag="<<fMagF<<             //  magnetic field	  
+	    "sec="<<sector<<            // current sector from 0 to 36
+	    "isec="<<isec<<             //  current sector
+	    // full fit
+	    "nf="<<nf<<                 //  total number of points
+	    "pyf.="<<&pyf<<             //  full OROC fit y
+	    "pzf.="<<&pzf<<             //  full OROC fit z
+	    // quadrant fit
+	    "i0="<<i0<<                 // quadrant number
+	    "i1="<<i1<<                 
+	    "n0="<<npoints[i0]<<        // number of points
+	    "n1="<<npoints[i1]<<
+	    "p0.="<<&params[i0]<<       // parameters
+	    "p1.="<<&params[i1]<< 
+	    "e0.="<<&errors[i0]<<       // errors
+	    "e1.="<<&errors[i1]<<
+	    "chi0="<<chi2C[i0]<<       // chi2s
+	    "chi1="<<chi2C[i1]<<
+
+	    "\n";
+	}    
       }
     }
   }
 }
+
+
+
 
 
 void AliTPCcalibUnlinearity::MakeHisto(){
@@ -282,38 +554,53 @@ void AliTPCcalibUnlinearity::MakeHisto(){
   //
   axisName[0]="sector";
   xmin[0]=0; xmax[0]=72; nbins[0]=72;
-  //
+  //          
   axisName[1]="row";
-  xmin[1]=0; xmax[1]=159; nbins[1]=159;
+  xmin[1]=0; xmax[1]=96; nbins[1]=96;
   //
-  axisName[2]="ly";
-  xmin[2]=-50; xmax[2]=50; nbins[2]=10;
+  axisName[2]="tphi";            // tan phi - ly/lx 
+  xmin[2]=-0.17; xmax[2]=0.17; nbins[2]=5;
+  //  
+  axisName[3]="lz";              // global z        
+  xmin[3]=-250; xmax[3]=250; nbins[3]=10;
   //
-  axisName[3]="lz";
-  xmin[3]=-250; xmax[3]=250; nbins[3]=50;
+  axisName[4]="k";              // tangent - in angle
+  xmin[4]=-0.5; xmax[4]=0.5; nbins[4]=10;
   //
-  axisName[4]="p2";
-  xmin[4]=-0.6; xmax[4]=0.6; nbins[4]=12;
   //
-  axisName[5]="p3";
-  xmin[5]=-0.6; xmax[5]=0.6; nbins[5]=12;
+  axisName[5]="delta";          // delta
+  xmin[5]=-0.5; xmax[5]=0.5; nbins[5]=100;
   //
-  axisName[6]="p4";
-  xmin[6]=-2; xmax[6]=2; nbins[6]=20;
   //
-  axisName[7]="dy";
-  xmin[7]=-0.5; xmax[7]=0.5; nbins[7]=100;
+  fDiffHistoLineY = new THnSparseF("hnDistHistoLineY","hnDistHistoLineY",6,nbins,xmin,xmax);
+  fDiffHistoParY = new THnSparseF("hnDistHistoParY","hnDistHistoParY",6,nbins,xmin,xmax);
+  fDiffHistoLineZ = new THnSparseF("hnDistHistoLineZ","hnDistHistoLineZ",6,nbins,xmin,xmax);
+  fDiffHistoParZ = new THnSparseF("hnDistHistoParZ","hnDistHistoParZ",6,nbins,xmin,xmax);
+ //  for (Int_t i=0; i<8;i++){
+//     fDiffHistoLineY->GetAxis(i)->SetName(axisName[i].Data());
+//     fDiffHistoParY->GetAxis(i)->SetName(axisName[i].Data());
+//     fDiffHistoLineY->GetAxis(i)->SetTitle(axisName[i].Data());
+//     fDiffHistoParY->GetAxis(i)->SetTitle(axisName[i].Data());
+//     fDiffHistoLineZ->GetAxis(i)->SetName(axisName[i].Data());
+//     fDiffHistoParZ->GetAxis(i)->SetName(axisName[i].Data());
+//     fDiffHistoLineZ->GetAxis(i)->SetTitle(axisName[i].Data());
+//     fDiffHistoParZ->GetAxis(i)->SetTitle(axisName[i].Data());
+//   }
+  
   //
-  axisName[8]="dz";
-  xmin[8]=-0.5; xmax[8]=0.5; nbins[8]=100;
+  // 
   //
-  fDiffHistoLine = new THnSparseF("DistHistoLine","DistHistoLine",9,nbins,xmin,xmax);
-  fDiffHistoPar = new THnSparseF("DistHistoPar","DistHistoPar",9,nbins,xmin,xmax);
-  for (Int_t i=0; i<9;i++){
-    fDiffHistoLine->GetAxis(i)->SetName(axisName[i].Data());
-    fDiffHistoPar->GetAxis(i)->SetName(axisName[i].Data());
-    fDiffHistoLine->GetAxis(i)->SetTitle(axisName[i].Data());
-    fDiffHistoPar->GetAxis(i)->SetTitle(axisName[i].Data());
+  char hname[1000];
+  TH2F * his=0;
+  for (Int_t isec=0;isec<74;isec++){
+    sprintf(hname,"DeltaRPhiPlus_Sector%d",isec);
+    his = new TH2F(hname,hname,100,1,4,100,-0.5,0.5);
+    his->SetDirectory(0);
+    fDistRPHIPlus.AddAt(his,isec);
+    sprintf(hname,"DeltaRPhiMinus_Sector%d",isec);
+    his = new TH2F(hname,hname,100,1,4,100,-0.5,0.5);
+    his->SetDirectory(0);
+    fDistRPHIMinus.AddAt(his,isec);
   }
 }
 
@@ -329,13 +616,77 @@ void AliTPCcalibUnlinearity::Terminate(){
   AliTPCcalibBase::Terminate();
 }
 
+Long64_t AliTPCcalibUnlinearity::Merge(TCollection *list) {
+  //
+  // merge results
+  //
+  TIterator* iter = list->MakeIterator();
+  AliTPCcalibUnlinearity* cal = 0;
+  //
+  while ((cal = (AliTPCcalibUnlinearity*)iter->Next())) {
+    if (!cal->InheritsFrom(AliTPCcalibUnlinearity::Class())) {
+      return -1;
+    }    
+    Add(cal);
+  }
+  return 0;  
+}
 
-void AliTPCcalibUnlinearity::DumpTree(){
+void    AliTPCcalibUnlinearity::Add(AliTPCcalibUnlinearity * calib){
+  //
+  //
+  //
+  if (!fInit) Init();
+  if (fDiffHistoLineY && calib->fDiffHistoLineY){
+    fDiffHistoLineY->Add(calib->fDiffHistoLineY);
+  }
+  if (fDiffHistoParY && calib->fDiffHistoParY){
+    fDiffHistoParY->Add(calib->fDiffHistoParY);
+  }
+  if (fDiffHistoLineZ && calib->fDiffHistoLineZ){
+    fDiffHistoLineZ->Add(calib->fDiffHistoLineZ);
+  }
+  if (fDiffHistoParZ && calib->fDiffHistoParZ){
+    fDiffHistoParZ->Add(calib->fDiffHistoParZ);
+  }
+  for (Int_t isec=0;isec<38;isec++){
+    TLinearFitter *f0r = (TLinearFitter*)fFittersOutR.At(isec);
+    TLinearFitter *f1r = (TLinearFitter*)(calib->fFittersOutR.At(isec));
+    if (f0r&&f1r) f0r->Add(f1r);
+    TLinearFitter *f0z = (TLinearFitter*)fFittersOutZ.At(isec);
+    TLinearFitter *f1z = (TLinearFitter*)(calib->fFittersOutZ.At(isec));
+    if (f0z&&f1z) f0z->Add(f1z);
+  }
+
+  for (Int_t isec=0;isec<16*38;isec++){
+    TLinearFitter *f0y = (TLinearFitter*)fFitterQuadrantY.At(isec);
+    TLinearFitter *f1y = (TLinearFitter*)(calib->fFitterQuadrantY.At(isec));
+    if (f0y&&f1y) f0y->Add(f1y);
+    TLinearFitter *f0phi = (TLinearFitter*)fFitterQuadrantPhi.At(isec);
+    TLinearFitter *f1phi = (TLinearFitter*)(calib->fFitterQuadrantPhi.At(isec));
+    if (f0phi&&f1phi) f0phi->Add(f1phi);
+  }
+  
+  
+  for (Int_t isec=0;isec<74;isec++){
+    TH2F * h0p= (TH2F*)(fDistRPHIPlus.At(isec));
+    TH2F * h1p= (TH2F*)(calib->fDistRPHIPlus.At(isec));
+    if (h0p&&h1p) h0p->Add(h1p);
+    TH2F * h0m= (TH2F*)(fDistRPHIMinus.At(isec));
+    TH2F * h1m= (TH2F*)(calib->fDistRPHIMinus.At(isec));
+    if (h0m&&h1m) h0m->Add(h1m);
+  }
+
+ 
+}
+
+
+
+void AliTPCcalibUnlinearity::DumpTree(const char *fname){
   //
   //
   // 
-  if (fStreamLevel==0) return;
-  TTreeSRedirector *cstream = GetDebugStreamer();
+  TTreeSRedirector *cstream =new TTreeSRedirector(fname);
   if (!cstream) return;
   //  
   THnSparse *his=0;  
@@ -344,7 +695,7 @@ void AliTPCcalibUnlinearity::DumpTree(){
   Int_t *bins = new Int_t[10];
   //
   for (Int_t ihis=0; ihis<2; ihis++){
-    his =  (ihis==0)? fDiffHistoLine:fDiffHistoPar;
+    his =  (ihis==0)? fDiffHistoLineY:fDiffHistoParY;
     if (!his) continue;
     //
     Int_t ndim = his->GetNdimensions();
@@ -364,10 +715,11 @@ void AliTPCcalibUnlinearity::DumpTree(){
 	"\n";      
     }
   }
+  delete cstream;
 }
 
 
-void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Double_t dz, Double_t dy, Double_t p2, Double_t p3, Double_t dr, Int_t npoints){
+void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Double_t cx, Double_t cy, Double_t cz, Double_t ty, Double_t tz,  Double_t ky, Double_t kz, Int_t npoints){
   //
   //
   // Simple distortion fit in outer sectors
@@ -376,24 +728,17 @@ void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Double_t dz, Doub
   //       - Decay length 10 and 5 cm
   //       - Decay amplitude - Z dependent 
   //
-  /*
-  chainUnlin->SetAlias("side","(-1+((sector%36)<18)*2)");
-  chainUnlin->SetAlias("sa","sin(pi*sector*20/180)");
-  chainUnlin->SetAlias("ca","cos(pi*sector*20/180)");
-  chainUnlin->SetAlias("dzt","dz*side");
-  chainUnlin->SetAlias("dr","(1-abs(lz/250))");
-  chainUnlin->SetAlias("dout","(159-row)*1.5");
-  chainUnlin->SetAlias("din","row*0.75");
-  chainUnlin->SetAlias("eout10","exp(-(dout)/10.)");
-  chainUnlin->SetAlias("eout5","exp(-(dout)/5.)");  
-  */
-
+ 
   Double_t side   = (-1+((sector%36)<18)*2); // A side +1   C side -1
-  Double_t dzt    = dz*side;
-  Double_t dout   = (159-row)*1.5;  // distance to the last pad row - (valid only for long pads)
-  if (dout>30) return; // use only edge pad rows
-  dr-=0.5;             // dr shifted to the middle - reduce numerical instabilities
-
+  Double_t dzt    = (cz-tz)*side;
+  Double_t radius = TMath::Sqrt(cx*cx+cy*cy);  
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Double_t xout = roc->GetPadRowRadiiUp(roc->GetNRows(37)-1);
+  Double_t dout = xout-radius;
+  if (dout>30) return;
+  //drift
+  Double_t dr   = 0.5 - TMath::Abs(cz/250.);
+  Double_t dy = cy-ty;
   Double_t eout10 = TMath::Exp(-dout/10.);
   Double_t eout5 = TMath::Exp(-dout/5.);
   //
@@ -410,19 +755,19 @@ void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Double_t dz, Doub
   xxxZ[4]=dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
   xxxZ[5]=dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
-  xxxR[0]=p2*eoutp;                //fstring+="eoutp++";  
-  xxxR[1]=p2*eoutm;               //fstring+="eoutm++";  
-  xxxR[2]=p2*dr*eoutp;            //fstring+="dr*eoutp++";  
-  xxxR[3]=p2*dr*eoutm;            //fstring+="dr*eoutm++";  
-  xxxR[4]=p2*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
-  xxxR[5]=p2*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
+  xxxR[0]=ky*eoutp;                //fstring+="eoutp++";  
+  xxxR[1]=ky*eoutm;               //fstring+="eoutm++";  
+  xxxR[2]=ky*dr*eoutp;            //fstring+="dr*eoutp++";  
+  xxxR[3]=ky*dr*eoutm;            //fstring+="dr*eoutm++";  
+  xxxR[4]=ky*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
+  xxxR[5]=ky*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
-  xxxRZ[0]=p3*eoutp;                //fstring+="eoutp++";  
-  xxxRZ[1]=p3*eoutm;               //fstring+="eoutm++";  
-  xxxRZ[2]=p3*dr*eoutp;            //fstring+="dr*eoutp++";  
-  xxxRZ[3]=p3*dr*eoutm;            //fstring+="dr*eoutm++";  
-  xxxRZ[4]=p3*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
-  xxxRZ[5]=p3*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
+  xxxRZ[0]=kz*eoutp;                //fstring+="eoutp++";  
+  xxxRZ[1]=kz*eoutm;               //fstring+="eoutm++";  
+  xxxRZ[2]=kz*dr*eoutp;            //fstring+="dr*eoutp++";  
+  xxxRZ[3]=kz*dr*eoutm;            //fstring+="dr*eoutm++";  
+  xxxRZ[4]=kz*dr*dr*eoutp;         //fstring+="dr*dr*eoutp++";  
+  xxxRZ[5]=kz*dr*dr*eoutm;         //fstring+="dr*dr*eoutm++";    
   //
   TLinearFitter * fitter=0;
   Double_t err=0.1;
@@ -450,12 +795,36 @@ void AliTPCcalibUnlinearity::AddPoint(Int_t sector, Int_t row, Double_t dz, Doub
     }
   }
 }
+void AliTPCcalibUnlinearity::AddPointRPHI(Int_t sector, Double_t cx, Double_t cy, Double_t cz, Double_t ty, Double_t tz,  Double_t /*ky*/, Double_t /*kz*/, Int_t npoints){
+  //
+  //
+  //
+  Float_t kMaxDz = 0.5;  // cut on z in cm
+  Double_t dy = cy-ty;
+  Double_t dz = cz-tz;
+  if (TMath::Abs(dz)>kMaxDz) return;
+  Double_t edgeMinus= -ty+cx*TMath::Tan(TMath::Pi()/18.);
+  Double_t edgePlus =  ty+cx*TMath::Tan(TMath::Pi()/18.);
+  //
+  TH2F * his =0;
+  his = (TH2F*)fDistRPHIPlus.At(sector);
+  his->Fill(edgePlus,dy,npoints);
+  his = (TH2F*)((sector<36)? fDistRPHIPlus.At(72):fDistRPHIPlus.At(73));
+  his->Fill(edgePlus,dy,npoints);
+  his = (TH2F*)fDistRPHIMinus.At(sector);
+  his->Fill(edgeMinus,dy,npoints);
+  his = (TH2F*)((sector<36)? fDistRPHIMinus.At(72):fDistRPHIMinus.At(73));
+  his->Fill(edgeMinus,dy,npoints);
+}
 
 
-void AliTPCcalibUnlinearity::MakeFitters(){
+
+void AliTPCcalibUnlinearity::Init(){
   //
   //
   //
+  //
+  MakeHisto();
   // Make outer fitters
   TLinearFitter * fitter = 0;
   for (Int_t ifit=0; ifit<38; ifit++){
@@ -466,6 +835,15 @@ void AliTPCcalibUnlinearity::MakeFitters(){
     fitter->StoreData(kFALSE);
     fFittersOutZ.AddAt(fitter,ifit);
   }
+  for (Int_t ifit=0; ifit<16*38;ifit++){
+    fitter = new TLinearFitter(2,"hyp1");
+    fitter->StoreData(kFALSE);
+    fFitterQuadrantY.AddAt(fitter,ifit);
+    fitter = new TLinearFitter(2,"hyp1");
+    fitter->StoreData(kFALSE);
+    fFitterQuadrantPhi.AddAt(fitter,ifit);    
+  }  
+  fInit= kTRUE;
 }
 
 void AliTPCcalibUnlinearity::EvalFitters(){
@@ -495,97 +873,6 @@ void AliTPCcalibUnlinearity::EvalFitters(){
   }
 }
 
-Double_t AliTPCcalibUnlinearity::GetDr(Int_t sector, Double_t dout, Double_t dr){
-  //
-  //
-  //
-  TVectorD * vec = GetParamOutR(sector);
-  if (!vec) return 0;
-  dr-=0.5;        // dr=0 at the middle drift length
-  Double_t eout10 = TMath::Exp(-dout/10.);
-  Double_t eout5 = TMath::Exp(-dout/5.);		    
-  Double_t eoutp  = (eout10+eout5)*0.5;
-  Double_t eoutm  = (eout10-eout5)*0.5;
-
-  Double_t result=0;
-  result+=(*vec)[1]*eoutp;
-  result+=(*vec)[2]*eoutm;
-  result+=(*vec)[3]*eoutp*dr;
-  result+=(*vec)[4]*eoutm*dr;
-  result+=(*vec)[5]*eoutp*dr*dr;
-  result+=(*vec)[6]*eoutm*dr*dr;
-  return result;
-}
-
-
-Double_t AliTPCcalibUnlinearity::GetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz){
-  //
-  //
-  //
-  Double_t alpha    = TMath::ATan2(gy,gx);
-  if (alpha<0)  alpha+=TMath::Pi()*2;
-  Int_t lsector = Int_t(18*alpha/(TMath::Pi()*2));
-  alpha = (lsector+0.5)*TMath::Pi()/9.;
-  //
-  Double_t r[3];
-  r[0]=gx; r[1]=gy;
-  Double_t cs=TMath::Cos(-alpha), sn=TMath::Sin(-alpha), x=r[0];
-  r[0]=x*cs - r[1]*sn; r[1]=x*sn + r[1]*cs;
-  //
-  AliTPCROC * roc = AliTPCROC::Instance();
-  Double_t xout = roc->GetPadRowRadiiUp(roc->GetNRows(37)-1);
-  Double_t dout = xout-r[0];
-  if (dout<0) return 0;
-  Double_t dr   = 1-TMath::Abs(gz/250.);
-  if (gz<0) lsector+=18;
-  if (stype==0) lsector = (gz>0) ? 36:37;
-  if (stype<0) return lsector;  // 
-  return GetDr(lsector,dout,dr);
-}
-
-
-Double_t AliTPCcalibUnlinearity::GetDz(Int_t sector, Double_t dout, Double_t dr){
-  //
-  //
-  //
-  TVectorD * vec = GetParamOutZ(sector);
-  if (!vec) return 0;
-  dr-=0.5; // 0 at the middle
-  Double_t eout10 = TMath::Exp(-dout/10.);
-  Double_t eout5 = TMath::Exp(-dout/5.);
-  Double_t eoutp  = (eout10+eout5)*0.5;
-  Double_t eoutm  = (eout10-eout5)*0.5;
-
-  
-  Double_t result=0;
-  result+=(*vec)[1]*eoutp;
-  result+=(*vec)[2]*eoutm;
-  result+=(*vec)[3]*eoutp*dr;
-  result+=(*vec)[4]*eoutm*dr;
-  result+=(*vec)[5]*eoutp*dr*dr;
-  result+=(*vec)[6]*eoutm*dr*dr;
-  return result;
-}
-
-
-Double_t      AliTPCcalibUnlinearity::SGetDr(Int_t sector, Double_t dout, Double_t dr){
-  //
-  //
-  //
-  return fgInstance->GetDr(sector,dout,dr);
-}
-Double_t      AliTPCcalibUnlinearity::SGetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz){
-  //
-  //
-  //
-  return fgInstance->GetGDr(stype,gx,gy,gz);
-}
-Double_t      AliTPCcalibUnlinearity::SGetDz(Int_t sector, Double_t dout, Double_t dr){
-  //
-  //
-  //
-  return fgInstance->GetDz(sector,dout,dr);
-}
 
 
 
@@ -619,10 +906,12 @@ void AliTPCcalibUnlinearity::ProcessTree(TTree * tree, Long64_t nmaxPoints){
     if (i%10000==0) printf("%d\n",(Int_t)i);
     Int_t row= cl->GetRow();
     if (cl->GetDetector()>36) row+=64;
+    calib->AddPointRPHI(cl->GetDetector(),cl->GetX(),cl->GetY(),cl->GetZ(),
+		      ty,tz,(*vy)[1],(*vz)[1],1);
+
     if (cl->GetType()<0) continue; 
     Double_t dy = cl->GetY()-ty;
     Double_t dz = cl->GetZ()-tz;
-    Double_t dr = 1-TMath::Abs(cl->GetZ()/250);
     //
     //
     if (TMath::Abs(dy)>0.25) continue;
@@ -631,8 +920,10 @@ void AliTPCcalibUnlinearity::ProcessTree(TTree * tree, Long64_t nmaxPoints){
     if (TMath::Abs((*vy2)[2]*150*150/4)>1) continue;
     if (TMath::Abs((*vz2)[2]*150*150/4)>1) continue;
       // Apply sagita cut
-    calib->AddPoint(cl->GetDetector(), row, dz, dy,
-		    (*vy)[1],(*vz)[1], dr, 1);
+    if (cl->GetType()>=0) {
+      calib->AddPoint(cl->GetDetector(),cl->GetX(),cl->GetY(),cl->GetZ(),
+		      ty,tz,(*vy)[1],(*vz)[1],1);
+    }
   }
   }
 }

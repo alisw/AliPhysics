@@ -20,6 +20,7 @@ class TList;
 class AliESDEvent;
 class AliESDtrack;
 class TLinearFitter;
+class AliTPCClusterParam;
 
  
 class AliTPCcalibUnlinearity:public AliTPCcalibBase {
@@ -31,38 +32,38 @@ public:
   virtual void Process(AliTPCseed *track);
   virtual void Analyze(){return;}
   virtual void Terminate();
-  virtual Long64_t Merge(TCollection* list){return 0;}
+  virtual Long64_t Merge(TCollection* list);
+  void    Add(AliTPCcalibUnlinearity * calib);
   //
   void ProcessTree(TTree * tree, Long64_t nmaxPoints);
-  void AddPoint(Int_t sector, Int_t row, Double_t dz, Double_t dy, Double_t p2, Double_t p3, Double_t dr, Int_t npoints=1);
+  void AddPoint(Int_t sector, Double_t cx, Double_t cy, Double_t cz, Double_t ty, Double_t tz,  Double_t ky, Double_t kz, Int_t npoints=1);
+  void AddPointRPHI(Int_t sector, Double_t cx, Double_t cy, Double_t cz, Double_t ty, Double_t tz,  Double_t ky, Double_t kz, Int_t npoints=1);
   //
   void MakeHisto();
   void ProcessDiff(AliTPCseed *track, Int_t isec);
-  void DumpTree();
-  void MakeFitters();
+  void AlignOROC(AliTPCseed *track, Int_t isec);
+  //
+  void DumpTree(const char *fname="unlinResidual.root");
+  void Init();
   void EvalFitters();
   TLinearFitter * GetFitterOutR(Int_t sector) {return (TLinearFitter*)fFittersOutR.At(sector);}
   TLinearFitter * GetFitterOutZ(Int_t sector) {return (TLinearFitter*)fFittersOutZ.At(sector);}
   TVectorD * GetParamOutR(Int_t sector) {return (TVectorD*)fParamsOutR.At(sector);}
   TVectorD * GetParamOutZ(Int_t sector) {return (TVectorD*)fParamsOutZ.At(sector);}
   //
-  Double_t      GetDr(Int_t sector, Double_t dout, Double_t dr);
-  Double_t      GetDz(Int_t sector, Double_t dout, Double_t dr);
-  Double_t      GetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz);
-  //
-  static Double_t      SGetDr(Int_t sector, Double_t dout, Double_t dr);
-  static Double_t      SGetDz(Int_t sector, Double_t dout, Double_t dr);
-  static Double_t      SGetGDr(Int_t stype,Float_t gx, Float_t gy,Float_t gz);
-
-  static AliTPCcalibUnlinearity* Instance();
-  void SetInstance(AliTPCcalibUnlinearity*param){fgInstance = param;}
   //TMatrixD * GetNormCovariance(Int_t sector, Int_t type);
   //TMatrixD * GetNormCovariance(Int_t sector, Int_t type);
   static void MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * param, Int_t maxPoints);
+  void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
 public:
-  THnSparse * fDiffHistoLine;    // matrix with cluster residuals - linear fit
-  THnSparse * fDiffHistoPar;     // matrix with cluster residuals - parabolic fit
+  Bool_t      fInit;              // initialization flag
+  THnSparse * fDiffHistoLineY;    // matrix with cluster residuals - linear fit
+  THnSparse * fDiffHistoParY;     // matrix with cluster residuals - parabolic fit
+  THnSparse * fDiffHistoLineZ;    // matrix with cluster residuals - linear fit
+  THnSparse * fDiffHistoParZ;     // matrix with cluster residuals - parabolic fit
   //
+  // Outer residula fit
   //
   TObjArray   fFittersOutR;      // Unlinearity fitters for radial distortion  - outer field cage
   TObjArray   fFittersOutZ;      // Unlinearity fitters for z      distortion  - outer field cage
@@ -71,13 +72,20 @@ public:
   TObjArray   fErrorsOutR;       // Parameters  for radial distortion  - outer field cage
   TObjArray   fErrorsOutZ;      // Parameters  for z      distortion  - outer field cage
   //
-
+  // R-phi residual histogram
+  //
+  TObjArray   fDistRPHIPlus;     // edge effect histograms  - plus  direction 
+  TObjArray   fDistRPHIMinus;    // edge effect histograms  - minus direction
+  //
+  // Quadrant fitters
+  //
+   TObjArray   fFitterQuadrantY;        //qudrant misalignemnt fit Y
+   TObjArray   fFitterQuadrantPhi;      //qudrant misalignemnt fit Phi
 private:
   AliTPCcalibUnlinearity(const AliTPCcalibUnlinearity&); 
   AliTPCcalibUnlinearity& operator=(const AliTPCcalibUnlinearity&); 
- static AliTPCcalibUnlinearity*   fgInstance; //! Instance of this class (singleton implementation)
  
-  ClassDef(AliTPCcalibUnlinearity, 1); 
+  ClassDef(AliTPCcalibUnlinearity, 4); 
 };
 
 #endif
