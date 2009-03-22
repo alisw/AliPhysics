@@ -20,6 +20,7 @@ class AliTPCTransform:public AliTransform {
 public:
   AliTPCTransform();
   AliTPCTransform(const AliTPCTransform& transform);
+  
   virtual ~AliTPCTransform();
   virtual void Transform(Double_t *x,Int_t *i,UInt_t time,
 			 Int_t coordinateType);
@@ -35,6 +36,7 @@ public:
   void SetCurrentRun(Int_t run){fCurrentRun=run;}
   void SetCurrentTimeStamp(Int_t timeStamp){fCurrentTimeStamp=timeStamp;}
 private:
+  AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Double_t fCoss[18];  // cache the transformation
   Double_t fSins[18];  // cache the transformation
   Double_t fPrimVtx[3];// position of the primary vertex - needed for TOF correction
