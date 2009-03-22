@@ -35,7 +35,7 @@
 // #include <iostream>
 // #include <cmath>
 #ifndef _GNU_SOURCE
-#warning Using private implementation of sincos
+//#warning Using private implementation of sincos
 extern "C" 
 {
   /** Function to caculate @f$ \sin(a), \cos(a)@f$ in one go.  Note,

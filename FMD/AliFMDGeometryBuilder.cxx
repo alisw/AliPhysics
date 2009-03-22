@@ -801,7 +801,7 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   // See also AliFMDGeometryBuilder::DetectorGeometry 
   // 
   if (!fmd2 || !innerTop || !innerBot || !outerTop || !outerBot) return 0;
-  AliFMDRing* r          = fmd2->GetOuter();
+  AliFMDRing* ring          = fmd2->GetOuter();
   Double_t    z             = fmd2->GetOuterZ();  
   Double_t    framelr       = 32.01;  // fmd2->GetOuterHoneyHighR()+0.5;
   Double_t    framehr       = 33.611; // fmd2->GetOuterHoneyHighR()+1.8;
@@ -809,8 +809,8 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   // Double_t    backth        = 0.3;
   Double_t    backth        = 0.03;
   Double_t    framelz       = -(2.38 
-				- r->GetModuleDepth() 
-				- r->GetModuleSpacing() / 2);
+				- ring->GetModuleDepth() 
+				- ring->GetModuleSpacing() / 2);
   // Double_t    framelz       = -0.8;
   // Double_t    framehz       = framelz + backth + framel;
   Double_t    coverlr       = 4.3; // fmd2->GetInner()->GetLowR()+1;

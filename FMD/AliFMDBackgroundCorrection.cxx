@@ -70,6 +70,8 @@ AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG(Bool_t hits_not_trackre
   AliFMDInput("galice.root"),
   fPrimaryArray(),
   fHitArray(),
+  fPrimaryMapInner(),
+  fPrimaryMapOuter(),
   fHitMap(),
   fLastTrackByStrip(),
   fPrim(0),

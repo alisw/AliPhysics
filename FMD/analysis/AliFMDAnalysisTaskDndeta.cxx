@@ -82,11 +82,11 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   TH1F* hPrimVertexBin = 0;
   
   
-  TH2F* hBg = pars->GetBackgroundCorrection(1, 'I', 0);
+  TH2F* hBgTmp   = pars->GetBackgroundCorrection(1, 'I', 0);
   TH1F* hPrimary = new TH1F("hMultvsEta","hMultvsEta",
-			    hBg->GetNbinsX(),
-			    hBg->GetXaxis()->GetXmin(),
-			    hBg->GetXaxis()->GetXmax());
+			    hBgTmp->GetNbinsX(),
+			    hBgTmp->GetXaxis()->GetXmin(),
+			    hBgTmp->GetXaxis()->GetXmax());
   hPrimary->Sumw2();
   fOutputList->Add(hPrimary);
   Int_t nVtxbins = pars->GetNvtxBins();
@@ -125,9 +125,9 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
    
     hPrimVertexBin = new TH1F(Form("primmult_vtxbin%d",i),
 			      Form("primmult_vtxbin%d",i),
-			      hBg->GetNbinsX(),
-			      hBg->GetXaxis()->GetXmin(),
-			      hBg->GetXaxis()->GetXmax());
+			      hBgTmp->GetNbinsX(),
+			      hBgTmp->GetXaxis()->GetXmin(),
+			      hBgTmp->GetXaxis()->GetXmax());
     hPrimVertexBin->Sumw2();
     fOutputList->Add(hPrimVertexBin);
     
