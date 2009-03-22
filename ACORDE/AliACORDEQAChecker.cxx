@@ -138,7 +138,7 @@ Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** li
   }
   return test ; 
 }
-Double_t AliACORDEQAChecker::CheckAcordeRefHits(TObjArray *AcordeList, TObjArray *AcordeRef) const
+Double_t AliACORDEQAChecker::CheckAcordeRefHits(TObjArray *AcordeList, TObjArray * /*AcordeRef */) const
 {
 	Double_t acoTest = 0;
 	TIter next(AcordeList);
