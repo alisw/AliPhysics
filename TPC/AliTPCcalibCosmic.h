@@ -11,7 +11,7 @@ class TH1F;
 class TList;
 class AliESDEvent;
 class AliESDtrack;
-class AliExternalComparison;
+class THnSparse;
 
 #include "TTreeStream.h"
 
@@ -25,9 +25,10 @@ public:
   virtual void      Process(AliESDEvent *event);
   virtual Long64_t  Merge(TCollection *li);
   virtual void      Analyze();
+  void              Add(const AliTPCcalibCosmic* cosmic);
   //
-  void ProcessTree(TTree * tree, AliExternalComparison *comp=0);
   //
+  void              Init();
   void              FindPairs(AliESDEvent *event);
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
@@ -36,9 +37,10 @@ public:
   AliExternalTrackParam *MakeCombinedTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
 
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
-  void SetComparison(AliExternalComparison * comp) { fComp=comp;}
-  AliExternalComparison *GetComparison() { return fComp;}
-  
+  //
+  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, Int_t ncl0, Int_t ncl1);
+
+
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};
@@ -50,15 +52,24 @@ public:
   Double_t          GetMIPvalue(){return fMIPvalue;};
   //
   static void       BinLogX(TH1 * h);   // method for correct histogram binning
+  static void       BinLogX(THnSparse * h, Int_t axisDim);   // method for correct histogram binning
 
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+  
+  //
+  // Performance histograms
+  //
+  THnSparse   *fHistoDelta[6];  // histograms of tracking performance delta
+  THnSparse   *fHistoPull[6];   // histograms of tracking performance pull
+  THnSparse   *fHistodEdx[6];   // histograms of dEdx perfomance
 
 private:
-
+  
   void              FillAcordeHist(AliESDtrack *upperTrack);
 
-  AliExternalComparison * fComp;  //  comparison histogram
+  
+
   TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
   TH1F  *fClusters;               //  histogram showing the number of clusters per track
   TH2F  *fModules;                //  2d histogram of tracks which are propagated to the ACORDE scintillator array

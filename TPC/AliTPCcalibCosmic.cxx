@@ -48,6 +48,7 @@
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TF1.h"
+#include "THnSparse.h"
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
@@ -56,7 +57,6 @@
 #include "AliESDfriend.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
-#include "AliExternalComparison.h"
 
 #include "AliTracker.h"
 #include "AliMagF.h"
@@ -75,7 +75,6 @@ ClassImp(AliTPCcalibCosmic)
 
 AliTPCcalibCosmic::AliTPCcalibCosmic() 
   :AliTPCcalibBase(),
-   fComp(0),
    fHistNTracks(0),
    fClusters(0),
    fModules(0),
@@ -89,12 +88,16 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fCutMinDir(-0.99)   // direction vector products
 {  
   AliInfo("Default Constructor");    
+  for (Int_t ihis=0; ihis<6;ihis++){
+    fHistoDelta[ihis]=0;
+    fHistoPull[ihis]=0;
+    fHistodEdx[ihis]    =0;
+  }
 }
 
 
 AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title) 
   :AliTPCcalibBase(),
-   fComp(0),
    fHistNTracks(0),
    fClusters(0),
    fModules(0),
@@ -117,7 +120,7 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
   fDeDx = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",500,0.01,100.,500,2.,1000);
   BinLogX(fDeDx);
   fDeDxMIP =  new TH1F("DeDxMIP","MIP region; TPC signal (a.u.);counts ",500,2.,1000);
-
+  Init();
   AliInfo("Non Default Constructor");  
   //
 }
@@ -126,9 +129,133 @@ AliTPCcalibCosmic::~AliTPCcalibCosmic(){
   //
   //
   //
-  delete fComp;
+  for (Int_t ihis=0; ihis<6;ihis++){
+    delete fHistoDelta[ihis];
+    delete fHistoPull[ihis];
+    //delete fHistodEdx[ihis];
+  }
 }
 
+
+void AliTPCcalibCosmic::Init(){
+  //
+  // init component
+  // Make performance histograms
+  //
+
+  // tracking performance bins
+  // 0 - delta of interest
+  // 1 - min (track0, track1) number of clusters
+  // 2 - R  - vertex radius
+  // 3 - P1 - mean z
+  // 4 - P2 - snp(phi)    at inner wall of TPC
+  // 5 - P3 - tan(theta)  at inner wall of TPC
+  // 6 - P4 - 1/pt mean
+  // 7 - pt - pt mean
+  // 8 - alpha
+
+  Double_t xminTrack[9], xmaxTrack[9];
+  Int_t binsTrack[9];
+  TString axisName[9];
+  //
+  binsTrack[0] =100;
+  axisName[0]  ="#Delta";
+  //
+  binsTrack[1] =8;
+  xminTrack[1] =80; xmaxTrack[1]=160;
+  axisName[1]  ="N_{cl}";
+  //
+  binsTrack[2] =10;
+  xminTrack[2] =0; xmaxTrack[2]=90;  // 
+  axisName[2]  ="dca_{r} (cm)";
+  //
+  binsTrack[3] =25;
+  xminTrack[3] =-250; xmaxTrack[3]=250;  // 
+  axisName[3]  ="z (cm)";
+  //
+  binsTrack[4] =10;
+  xminTrack[4] =-0.8; xmaxTrack[4]=0.8;  // 
+  axisName[4]  ="sin(#phi)";
+  //
+  binsTrack[5] =10;
+  xminTrack[5] =-1; xmaxTrack[5]=1;  // 
+  axisName[5]  ="tan($theta)";
+  //
+  binsTrack[6] =10;
+  xminTrack[6] =0; xmaxTrack[6]=2;  // 
+  axisName[6]  ="1/pt (1/GeV)";
+  //
+  binsTrack[7] =10;
+  xminTrack[7] =0.2; xmaxTrack[7]=50;  // 
+  axisName[7]  ="pt (1/GeV)";
+  //
+  binsTrack[8] =32;
+  xminTrack[8] =0; xmaxTrack[8]=TMath::Pi();  // 
+  axisName[8]  ="alpha";
+  //
+  // delta y
+  xminTrack[0] =-1; xmaxTrack[0]=1;  // 
+  fHistoDelta[0] = new THnSparseS("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[0] = new THnSparseS("#Delta_{Y} (unit)","#Delta_{Y} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta z
+  xminTrack[0] =-1; xmaxTrack[0]=1;  // 
+  fHistoDelta[1] = new THnSparseS("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[1] = new THnSparseS("#Delta_{Z} (unit)","#Delta_{Z} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta P2
+  xminTrack[0] =-10; xmaxTrack[0]=10;  // 
+  fHistoDelta[2] = new THnSparseS("#Delta_{#phi} (mrad)","#Delta_{#phi} (mrad)", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[2] = new THnSparseS("#Delta_{#phi} (unit)","#Delta_{#phi} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta P3
+  xminTrack[0] =-10; xmaxTrack[0]=10;  // 
+  fHistoDelta[3] = new THnSparseS("#Delta_{#theta} (mrad)","#Delta_{#theta} (mrad)", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[3] = new THnSparseS("#Delta_{#theta} (unit)","#Delta_{#theta} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta P4
+  xminTrack[0] =-0.2; xmaxTrack[0]=0.2;  // 
+  fHistoDelta[4] = new THnSparseS("#Delta_{1/pt} (1/GeV)","#Delta_{1/pt} (1/GeV)", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[4] = new THnSparseS("#Delta_{1/pt} (unit)","#Delta_{1/pt} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  
+  //
+  // delta Pt
+  xminTrack[0] =-0.5; xmaxTrack[0]=0.5;  // 
+  fHistoDelta[5] = new THnSparseS("#Delta_{pt}/p_{t}","#Delta_{pt}/p_{t}", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fHistoPull[5] = new THnSparseS("#Delta_{pt}/p_{t} (unit)","#Delta_{pt}/p_{t} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  //
+  for (Int_t ivar=0;ivar<6;ivar++){
+    for (Int_t ivar2=0;ivar2<6;ivar2++){      
+      fHistoDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fHistoDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+      fHistoPull[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fHistoPull[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+      BinLogX(fHistoDelta[ivar],7);
+      BinLogX(fHistoPull[ivar],7);
+    }
+  }
+}
+
+
+void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
+  //
+  //
+  //
+  for (Int_t ivar=0; ivar<6;ivar++){
+    if (fHistoDelta[ivar] && cosmic->fHistoDelta[ivar]){
+      fHistoDelta[ivar]->Add(cosmic->fHistoDelta[ivar]);
+    }
+    if (fHistoPull[ivar] && cosmic->fHistoPull[ivar]){
+      fHistoPull[ivar]->Add(cosmic->fHistoPull[ivar]);
+    }
+  }
+}
 
 
 
@@ -160,6 +287,67 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   cosmicESD.ProcessEvent(event);
   if (cstream) cosmicESD.DumpToTree();
       
+  
+}
+
+
+void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, Int_t ncl0, Int_t ncl1){
+  //
+  //
+  //
+  const Double_t kpullCut    = 10;
+  Double_t x[9];
+  Double_t xyz0[3];
+  Double_t xyz1[3];
+  par0->GetXYZ(xyz0);
+  par1->GetXYZ(xyz1);
+  Double_t radius0 = TMath::Sqrt(xyz0[0]*xyz0[0]+xyz0[1]*xyz0[1]);
+  Double_t radius1 = TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
+  inner0->GetXYZ(xyz0);
+  Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
+  // bin parameters
+  x[1] = TMath::Min(ncl0,ncl1);
+  x[2] = (radius0+radius1)*0.5;
+  x[3] = (inner0->GetZ()+inner1->GetZ())*0.5;
+  x[4] = (inner0->GetSnp()-inner1->GetSnp())*0.5;
+  x[5] = (inner0->GetTgl()-inner1->GetTgl())*0.5;
+  x[6] = (1/par0->Pt()+1/par1->Pt())*0.5;
+  x[7] = (par0->Pt()+par1->Pt())*0.5;
+  x[8] = alpha;
+  // deltas
+  Double_t delta[6];
+  Double_t sigma[6];
+  delta[0] = (par0->GetY()+par1->GetY());
+  delta[1] = (par0->GetZ()-par1->GetZ());
+  delta[2] = (par0->GetAlpha()-par1->GetAlpha()-TMath::Pi());
+  delta[3] = (par0->GetTgl()+par1->GetTgl());
+  delta[4] = (par0->GetParameter()[4]+par1->GetParameter()[4]);
+  delta[5] = (par0->Pt()-par1->Pt())/((par0->Pt()+par1->Pt())*0.5);
+  //
+  sigma[0] = TMath::Sqrt(par0->GetSigmaY2()+par1->GetSigmaY2());
+  sigma[1] = TMath::Sqrt(par0->GetSigmaZ2()+par1->GetSigmaZ2());
+  sigma[2] = TMath::Sqrt(par0->GetSigmaSnp2()+par1->GetSigmaSnp2());
+  sigma[3] = TMath::Sqrt(par0->GetSigmaTgl2()+par1->GetSigmaTgl2());
+  sigma[4] = TMath::Sqrt(par0->GetSigma1Pt2()+par1->GetSigma1Pt2());
+  sigma[5] = sigma[4]*((par0->Pt()+par1->Pt())*0.5);
+  //
+  Bool_t isOK = kTRUE;
+  for (Int_t ivar=0;ivar<6;ivar++){
+    if (sigma[ivar]==0) isOK=kFALSE;
+    x[0]= delta[ivar]/sigma[ivar];
+    if (TMath::Abs(x[0])>kpullCut) isOK = kFALSE;
+  }
+  //
+
+  if (isOK) for (Int_t ivar=0;ivar<6;ivar++){
+    x[0]= delta[ivar]/TMath::Sqrt(2);
+    if (ivar==2 || ivar ==3) x[0]*=1000;
+    fHistoDelta[ivar]->Fill(x);
+    if (sigma[ivar]>0){
+      x[0]= delta[ivar]/sigma[ivar];
+      fHistoPull[ivar]->Fill(x);
+    }
+  }
   
 }
 
@@ -307,10 +495,6 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       Bool_t isPair = IsPair(&param0,&param1);
       //
       if (isPair) FillAcordeHist(track0);
-      if (fComp){
-	Bool_t acceptComp =   fComp->AcceptPair(&param0,&param1);
-	if (acceptComp) fComp->Process(&param0,&param1);
-      }
       //
       // combined track params 
       //
@@ -330,6 +514,11 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	Bool_t isCrossO = op0->GetZ()*op1->GetZ()<0;
 	Double_t alpha0 = TMath::ATan2(dir0[1],dir0[0]);
 	Double_t alpha1 = TMath::ATan2(dir1[1],dir1[0]);
+	//
+	//
+	//
+	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0->GetNumberOfClusters(), seed1->GetNumberOfClusters());
+
 	if (cstream) {
 	  (*cstream) << "Track0" <<
 	    "run="<<fRun<<              //  run number
@@ -455,9 +644,8 @@ Long64_t AliTPCcalibCosmic::Merge(TCollection *li) {
     fHistPt->Add(cal->GetHistPt());
     fDeDx->Add(cal->GetHistDeDx());
     fDeDxMIP->Add(cal->GetHistMIP());
-  
+    Add(cal);
   }
-  //if (fComp && cal->fComp) fComp->Add(cal->fComp);
   return 0;
   
 }
@@ -518,6 +706,29 @@ void AliTPCcalibCosmic::CalculateBetheParams(TH2F */*hist*/, Double_t * /*initia
   // Not implemented yet
   //
   return;
+
+}
+
+
+void AliTPCcalibCosmic::BinLogX(THnSparse *h, Int_t axisDim) {
+
+  // Method for the correct logarithmic binning of histograms
+
+  TAxis *axis = h->GetAxis(axisDim);
+  int bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  Double_t to = axis->GetXmax();
+  Double_t *new_bins = new Double_t[bins + 1];
+
+  new_bins[0] = from;
+  Double_t factor = pow(to/from, 1./bins);
+
+  for (int i = 1; i <= bins; i++) {
+   new_bins[i] = factor * new_bins[i-1];
+  }
+  axis->Set(bins, new_bins);
+  delete new_bins;
 
 }
 
@@ -656,71 +867,6 @@ void AliTPCcalibCosmic::UpdateTrack(AliExternalTrackParam &track1, const AliExte
       covar1[track1.GetIndex(ipar, jpar)]=covOut(ipar,jpar);
     }
   }
-}
-
-void AliTPCcalibCosmic::ProcessTree(TTree * chainTracklet, AliExternalComparison *comp){
-  //
-  // Process the debug streamer tree
-  // Possible to modify selection criteria
-  //
-  TTreeSRedirector * cstream = new TTreeSRedirector("cosmicdump.root");
-  //AliTPCcalibCosmic *cosmic = this;
-  //
-  AliExternalTrackParam * tr0 = 0;
-  AliExternalTrackParam * tr1 = 0;  
-  Int_t npoints =0;
-  {
-    Int_t entries=chainTracklet->GetEntries();
-    for (Int_t i=0; i< entries; i++){
-      chainTracklet->GetBranch("Tr0.")->SetAddress(&tr0);
-      chainTracklet->GetBranch("Tr1.")->SetAddress(&tr1);
-      chainTracklet->GetEntry(i);
-      if (!tr0) continue;
-      if (!tr1) continue;
-      if (tr0->GetY()==0) continue;
-      if (tr1->GetY()==0) continue;
-      // make a local copy
-      AliExternalTrackParam par0(*tr0);
-      AliExternalTrackParam par1(*tr1);
-      AliExternalTrackParam par1R(*tr1);
-      par1R.Rotate(par1.GetAlpha()+TMath::Pi());
-      AliExternalTrackParam *par1T = MakeTrack(tr0,tr1);
-      if (0) {
-	printf("%d\t%d\t\n",i, npoints);
-	par1R.Print();
-	par1T->Print();
-      }
-      AliExternalTrackParam par0U=par0;
-      AliExternalTrackParam par1U=*par1T;
-      //
-      UpdateTrack(par0U,*par1T);
-      UpdateTrack(par1U,par0);
-      //
-      //
-      if (i%100==0) printf("%d\t%d\tt\n",i, npoints);
-      Bool_t accept =   comp->AcceptPair(&par0,par1T);  
-
-      if (1||fStreamLevel>0){
-	(*cstream)<<"Tracklet"<<
-	  "accept="<<accept<<
-	  "tr0.="<<&par0<<       //original track  up
-	  "tr1.="<<&par1<<       //original track  down
-	  "tr1R.="<<&par1R<<     //track1 rotated to  0 frame 
-	  "tr1T.="<<par1T<<      //track1 transformed to the track 0 frame 
-	  //
-	  "tr0U.="<<&par0U<<     //track 0 updated with track 1
-	  "tr1U.="<<&par1U<<     //track 1 updated with track 0 
-	  "\n";
-      }
-      //
-      if (accept) {
-	npoints++;
-	if (comp) comp->Process(&par0,par1T);
-      }
-      delete par1T;
-    }
-  }
-  delete cstream;
 }
 
 
