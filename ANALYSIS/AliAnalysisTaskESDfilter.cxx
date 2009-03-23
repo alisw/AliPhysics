@@ -1042,7 +1042,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       Int_t nLabel = 0;
       Int_t *label = 0x0;
       Double_t posPmd[3] = { pmdTrack->GetClusterX(), pmdTrack->GetClusterY(), pmdTrack->GetClusterZ()};
-      Double_t pidPmd[9] = { 0., 0., 0., 0., 0., 0., 0., 0., 0. }; // to be revised!
+      Double_t pidPmd[13] = { 0.}; // to be revised!
       // type not set!
       // assoc cluster not set
       new(pmdClusters[jPmdClusters++]) AliAODPmdCluster(iPmd, nLabel, label, pmdTrack->GetClusterADC(), posPmd, pidPmd);

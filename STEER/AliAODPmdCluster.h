@@ -23,7 +23,7 @@ class AliAODPmdCluster : public AliAODCluster {
 		   Int_t *label,
 		   Double_t energy,
 		   Double_t x[3],
-		   Double_t pid[9],
+		   Double_t pid[13],
 		   Char_t ttype=kUndef,
 		   UInt_t selectInfo=0,
 		   AliAODPmdCluster* assoc=NULL);
@@ -33,7 +33,7 @@ class AliAODPmdCluster : public AliAODCluster {
 		   Int_t *label,
 		   Float_t energy,
 		   Float_t x[3],
-		   Float_t pid[9],
+		   Float_t pid[13],
 		   Char_t ttype=kUndef,
 		   UInt_t selectInfo=0,
 		   AliAODPmdCluster* assoc=NULL);
