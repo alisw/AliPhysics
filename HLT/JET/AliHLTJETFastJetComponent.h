@@ -20,8 +20,10 @@
 #include "AliFastJetFinder.h"
 #include "AliFastJetHeader.h"
 
-#include "AliJetKineReader.h"
-#include "AliJetKineReaderHeader.h"
+#include "AliHLTJETReader.h"
+#include "AliHLTJETReaderHeader.h"
+
+#include "AliHLTJETTrackCuts.h"
 
 /**
  * @class AliHLTJETFastJetComponent
@@ -127,15 +129,21 @@ private:
    * ---------------------------------------------------------------------------------
    */
   
-  /** pointer to the jet finder object*/
-  AliFastJetFinder*        fJetFinder;                         //!transient
-
-  AliFastJetHeader*        fJetHeader;                         //!transient
+  /** pointer to the jet finder object */
+  AliFastJetFinder          *fJetFinder;                      //!transient
   
-  AliJetKineReader*        fJetReader;                         //!transient
+  /** Ptr to the jet finder header */ 
+  AliFastJetHeader          *fJetHeader;                      //!transient
   
-  AliJetKineReaderHeader*  fJetReaderHeader;                   //!transient
+  /** Ptr to jet reader */ 
+  AliHLTJETReader           *fJetReader;                      //!transient
 
+  /** Ptr to jet reader header */ 
+  AliHLTJETReaderHeader     *fJetReaderHeader;                //!transient
+
+  /** Ptr to track cuts */ 
+  AliHLTJETTrackCuts        *fJetTrackCuts;                   //!transient
+  
   ClassDef(AliHLTJETFastJetComponent, 0)
     
 };

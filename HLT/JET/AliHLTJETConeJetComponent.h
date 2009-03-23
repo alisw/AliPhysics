@@ -17,6 +17,11 @@
 
 #include "AliHLTProcessor.h"
 
+#include "AliHLTJETReader.h"
+#include "AliHLTJETReaderHeader.h"
+
+#include "AliHLTJETTrackCuts.h"
+
 /**
  * @class AliHLTJETConeJetComponent
  * Component to run the ConeJet jetfinder
@@ -120,15 +125,21 @@ private:
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
+#if 0  
+  /** Ptr to the jet finder */
+  AliHLTJETConeJetFinder    *fJetFinder;                      //!transient
+
+  /** Ptr to the jet finder header */
+  AliHLTJETConeJetHeader    *fJetHeader;                      //!transient
+#endif
+  /** Ptr to jet reader */ 
+  AliHLTJETReader           *fJetReader;                      //!transient
   
-  /** pointer to the jet finder object*/
-  /*  AliConeJetFinder*        fJetFinder;                         //!transient
+  /** Ptr to jet reader header */ 
+  AliHLTJETReaderHeader     *fJetReaderHeader;                //!transient
 
-  AliConeJetHeader*        fJetHeader;                         //!transient
-  */
-  //  AliJetKineReader*        fJetReader;                         //!transient
-
-  //  AliJetKineReaderHeader*  fJetReaderHeader;                   //!transient
+  /** Ptr to track cuts */ 
+  AliHLTJETTrackCuts        *fJetTrackCuts;                   //!transient
 
   ClassDef(AliHLTJETConeJetComponent, 0)
     

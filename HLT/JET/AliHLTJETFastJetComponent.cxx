@@ -33,16 +33,6 @@ using namespace std;
 
 #include "AliHLTJETFastJetComponent.h" 
 
-//#include "AliJetESDReader.h"
-//#include "AliJetESDReaderHeader.h"
-
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-
-#include "AliMCEvent.h"
-#include "AliHeader.h"
-#include "AliStack.h"
-
 #include "TString.h"
 #include "TObjString.h"
 
@@ -61,7 +51,8 @@ AliHLTJETFastJetComponent::AliHLTJETFastJetComponent()
   fJetFinder(NULL),
   fJetHeader(NULL),
   fJetReader(NULL),
-  fJetReaderHeader(NULL) {
+  fJetReaderHeader(NULL),
+  fJetTrackCuts(NULL) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -92,6 +83,7 @@ void AliHLTJETFastJetComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   // see header file for class documentation
   list.clear(); 
   list.push_back( kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline );
+  list.push_back( kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT );
   list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline );
   list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT );
 }
@@ -128,25 +120,30 @@ AliHLTComponent* AliHLTJETFastJetComponent::Spawn() {
 Int_t AliHLTJETFastJetComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
 
-  if ( fJetFinder || fJetReader || fJetHeader || fJetReader )
+  if ( fJetFinder || fJetHeader || fJetReader || fJetReader || fJetTrackCuts)
     return -EINPROGRESS;
 
+  // -- Jet Track Cuts
+  // -------------------------------------------
+  if ( ! (fJetTrackCuts = new AliHLTJETTrackCuts()) ) {
+    HLTError("Error initializing Track Cuts");
+    return -EINPROGRESS;
+  }
 
+  // fJetTrackCuts->Set ...
+  
   // -- Jet Reader Header
   // -------------------------------------------
-  if ( ! (fJetReaderHeader = new AliJetKineReaderHeader()) ) {
+  if ( ! (fJetReaderHeader = new AliHLTJETReaderHeader()) ) {
     HLTError("Error initializing Jet Reader Header");
     return -EINPROGRESS;
   }
-  
-  fJetReaderHeader->SetComment("MC full Kinematics");
-  fJetReaderHeader->SetFastSimTPC(kFALSE);
-  fJetReaderHeader->SetFastSimEMCAL(kFALSE);
-  fJetReaderHeader->SetPtCut(0.);
+
+  fJetReaderHeader->SetAnalysisCuts( dynamic_cast<AliAnalysisCuts*>(fJetTrackCuts) );
 
   // -- Jet Reader
   // -------------------------------------------
-  if ( ! (fJetReader = new AliJetKineReader()) ) {
+  if ( ! (fJetReader = new AliHLTJETReader()) ) {
     HLTError("Error initializing Jet Reader");
     return -EINPROGRESS;
   }
@@ -177,23 +174,13 @@ Int_t AliHLTJETFastJetComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
   // -------------------------------------------
   fJetFinder->Init();
 
-
-#if 0
-  fJetReaderHeader = new AliJetESDReaderHeader();
-  fJetReaderHeader->SetComment("Testing");
-  fJetReaderHeader->SetFirstEvent(0);
-  fJetReaderHeader->SetLastEvent(4);
-  fJetReader = new AliJetESDReader();
-  fJetReader->SetReaderHeader(fJetReaderHeader);
-#endif
-  
   return 0;
 }
 
 // #################################################################################
 Int_t AliHLTJETFastJetComponent::DoDeinit() {
   // see header file for class documentation
-
+  /*
   if ( fJetFinder )
     delete fJetFinder;
   fJetFinder = NULL;
@@ -210,6 +197,12 @@ Int_t AliHLTJETFastJetComponent::DoDeinit() {
     delete fJetReaderHeader;
   fJetReaderHeader = NULL;
 
+  if ( fJetTrackCuts )
+    delete fJetTrackCuts;
+  fJetTrackCuts = NULL;
+
+
+  */
   return 0;
 }
 
@@ -218,53 +211,57 @@ Int_t AliHLTJETFastJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
 					  AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
+  Int_t iResult = 0;
+
   const TObject* iter = NULL;
-  
-  for ( iter=GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline); iter != NULL; iter=GetNextInputObject() ) {
 
-    // ADD MC Object
+  // -- Start-Of-Run
+  // -----------------
+  if ( GetFirstInputObject(kAliHLTDataTypeSOR) && !iResult ) {
+    HLTInfo("On-line SOR Event");
+  }
+  
+  // -- ADD MC Object -- Off-line
+  // ------------------------------
+  for ( iter=GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline); iter != NULL && !iResult; iter=GetNextInputObject() ) {
+    HLTInfo("Off-line MC Event");
+  }
+  // -- ADD MC Object -- On-line
+  // ------------------------------
+  for ( iter=GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT); iter != NULL && !iResult; iter=GetNextInputObject() ) {
+    HLTInfo("On-line MC Event");
     
-    // -- Set Input Event
-    fJetFinder->GetReader()->SetInputEvent( NULL, NULL, const_cast<TObject*>(iter) );    
+    // -- Set input event
+    fJetReader->SetInputEvent( NULL, NULL, const_cast<TObject*>(iter) );    
 
-    AliMCEvent* foo = ( AliMCEvent* ) iter;
-    cout << foo->GetNumberOfTracks() << " -- "
-         << foo->Stack() << " -- "
-         << foo->Header()->Stack() << " -- "
-         << foo->Header() << endl;
-
-    AliStack* stack =  foo->Stack();
-    cout << "N tracks" << stack->GetNtrack() << endl;
-
-    for (Int_t iterStack = 0; iterStack < stack->GetNtrack(); iterStack++) {
-      cout << iterStack << " -- " << stack->Particle(iterStack) << endl;
-
-    }
-    // -- Process Event
-    //    fJetFinder->ProcessEvent();
+    // -- Process one event
+    if ( ! (fJetFinder->ProcessEvent()) )
+      iResult = -1;
   }
 
+  // -- ADD ESD Object -- Off-line
+  // -------------------------------
+  for ( iter=GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline); iter != NULL && !iResult; iter=GetNextInputObject() ) {
+    HLTInfo("Off-line ESD Event");
+  }
+
+  // -- ADD ESD Object -- On-line
+  // ------------------------------
+  for ( iter=GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT); iter != NULL && !iResult; iter=GetNextInputObject() ) {
+    HLTInfo("On-line ESD Event");
+  }
+
+  // -- End-Of-Run
+  // ---------------
+  if ( GetFirstInputObject(kAliHLTDataTypeEOR) && !iResult ) {
+    HLTInfo("On-line EOR Event");
+    
+    // -- Finish Event ?
+    // fJetFinder->FinishRun();
+  }
   
-  if ( GetFirstInputObject(kAliHLTDataTypeEOR) ) {
-    //fJetFinder->FinishRun();
-  }
-
-
-
-  for ( iter=GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline); iter != NULL; iter=GetNextInputObject() ) {
-    // ADD ESD Object -- Offline
-
-    printf ("  ---   ESD-Offline  ---  \n");
-  }
-
-  for ( iter=GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT); iter != NULL; iter=GetNextInputObject() ) {
-    // ADD ESD Object -- HLT
-    printf ("  ---   ESD-HLT  ---  \n");
-  }
-
- 
-  // ** PushBack ** \\
-
+  // -- PushBack
+  // -------------
 
   return 0;
 }

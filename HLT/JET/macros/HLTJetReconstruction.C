@@ -20,12 +20,13 @@ void HLTJetReconstruction(Int_t nEvents=1) {
 
   // this is just a tool to switch the logging systems
   AliHLTLogging log;
-  log.SwitchAliLog(0);
+  log.SwitchAliLog(1);
 
   AliHLTSystem gHLT;
-  gHLT.SetGlobalLoggingLevel(0x7F);
-  gHLT.LoadComponentLibraries("libAliHLTUtil.so");
-  gHLT.LoadComponentLibraries("libAliHLTJET.so");  
+  gHLT.SetGlobalLoggingLevel(0x3F);
+
+  gHLT.LoadComponentLibraries("libCGAL.so");
+  gHLT.LoadComponentLibraries("libfastjet.so");
 
   gHLT.LoadComponentLibraries("libESD.so");  
   gHLT.LoadComponentLibraries("libSTEER.so");  
@@ -34,7 +35,9 @@ void HLTJetReconstruction(Int_t nEvents=1) {
   gHLT.LoadComponentLibraries("libANALYSIS.so");  
   gHLT.LoadComponentLibraries("libANALYSISalice.so");  
   gHLT.LoadComponentLibraries("libJETAN.so");  
-  gHLT.LoadComponentLibraries("libJETANMC.so");  
+
+  gHLT.LoadComponentLibraries("libAliHLTUtil.so");
+  gHLT.LoadComponentLibraries("libAliHLTJET.so");  
 
   // ----------------------------//
   // -                         - //
@@ -44,9 +47,7 @@ void HLTJetReconstruction(Int_t nEvents=1) {
 
   arg.Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/HEAD_2009-03-17/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev");
 
-
-
-// jet/data/v4-16-Rev-01/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev");
+  // jet/data/v4-16-Rev-01/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev");
 
   // -- The ESDMCEventPublisher 
   AliHLTConfiguration ESDMCEventPublisher("ESDMCEventPublisher", "ESDMCEventPublisher", 
@@ -62,22 +63,21 @@ void HLTJetReconstruction(Int_t nEvents=1) {
   // ----------------------------//
 
   // -- ConeJetFinder
- 
   AliHLTConfiguration jetFinder("JETConeJet", "JETConeJetFinder",
 				"ESDMCEventPublisher","");
   
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="JETConeJet";
   
-
   // -- FastJetFinder
   /*
-  AliHLTConfiguration jetFinder("JETFastJet", "JETFastJetFinder",
-				"ESDMCEventPublisher","");
-
-  if (!writerInput.IsNull()) writerInput+=" ";
-  writerInput+="JETFastJet";
+    AliHLTConfiguration jetFinder("JETFastJet", "JETFastJetFinder",
+    "ESDMCEventPublisher","");
+    
+    if (!writerInput.IsNull()) writerInput+=" ";
+    writerInput+="JETFastJet";
   */
+
   // ----------------------------//
   // -                         - //
   // --    Sink Components    -- //

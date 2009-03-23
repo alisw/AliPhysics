@@ -2,6 +2,9 @@
 # $Id: libAliHLTJET.pkg 28356 2008-08-30 08:52:32Z hristov $
 
 CLASS_HDRS   		    :=	AliHLTJETAgent.h \
+				AliHLTJETTrackCuts.h \
+				AliHLTJETReader.h \
+				AliHLTJETReaderHeader.h \
 				AliHLTJETConeJetComponent.h
 
 CLASS_HDRS_FJ 	            := 	AliHLTJETFastJetComponent.h	
@@ -19,7 +22,9 @@ MODULE_HDRS    	            := 	$(CLASS_HDRS)
 MODULE_DHDR  		    := 	
 
 EINCLUDE                    :=	HLT/BASE \
+				HLT/BASE/util \
 				HLT/JET \
+				ANALYSIS \
 				JETAN \
 				STEER
 
