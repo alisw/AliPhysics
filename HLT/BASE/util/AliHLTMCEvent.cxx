@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTMCEvent.h
+/** @file   AliHLTMCEvent.cxx
     @author Jochen Thaeder
     @date   
     @brief  Container class for an AliMCEvent
@@ -32,10 +32,13 @@
 using namespace std;
 #endif
 
+
+
 #include "AliHLTMCEvent.h"
 #include "AliStack.h"
 
 #include "TParticlePDG.h"
+#include "TDatabasePDG.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMCEvent)
@@ -48,11 +51,11 @@ ClassImp(AliHLTMCEvent)
   
 // #################################################################################
 AliHLTMCEvent::AliHLTMCEvent()
-  :
+  : 
   fNParticles(0),
   fCurrentParticleIndex(-1),
   fCurrentParticle(NULL),
-  fStack( new TClonesArray("TParticle", 1000 ) ) {
+  fStack( new TClonesArray("TParticle", 1000) ) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -67,10 +70,11 @@ AliHLTMCEvent::AliHLTMCEvent( Int_t iNumberTracks)
   fNParticles(0),
   fCurrentParticleIndex(-1),
   fCurrentParticle(NULL),
-  fStack( new TClonesArray("TParticle", iNumberTracks ) ) {
+  fStack( new TClonesArray("TParticle", iNumberTracks) ) {
   // see header file for class documentation
 
 }
+
 // #################################################################################
 AliHLTMCEvent::AliHLTMCEvent( AliMCEvent *pMCEvent )
   :
@@ -115,7 +119,6 @@ TParticle* AliHLTMCEvent::NextParticle() {
   // see header file for class documentation
 
   fCurrentParticleIndex++;
-  
   return Particle( fCurrentParticleIndex );
 }
 
@@ -153,6 +156,7 @@ void AliHLTMCEvent::FillMCEvent( AliMCEvent *pMCEvent ) {
     TParticle *particle = stack->Particle(iterStack);
     if ( !particle) {
       printf( "Error reading particle %i out of %i \n", iterStack,stack->GetNtrack() );
+      HLTError( "Error reading particle %i out of %i \n", iterStack,stack->GetNtrack() );
       continue;
     }
 
@@ -160,23 +164,6 @@ void AliHLTMCEvent::FillMCEvent( AliMCEvent *pMCEvent ) {
     // -- Apply cuts         --> Do be done better XXX
     // ----------------
 
-    TParticlePDG * foo = particle->GetPDG();
-    printf (" Particle2 -- %i - (PHI:%f - ETA:%f - PT:%f) \n",
-	    iterStack, 
-	    particle->Phi(), particle->Eta(), particle->Pt() );
-
-    if ( foo )
-      printf (" Particle3 -- %i - (MASS:%f - CHARGE:%f - PDGCODE:%i) \n",
-	      iterStack,
-	      foo->Mass(), foo->Charge(), foo->PdgCode() );
-    else
-      printf (" Particle3 -- %i - (MASS:xx - CHARGE:xx - PDGCODE:xx) \n",
-	      iterStack);
-
-    // -- only charged particles
-    //if ( !(particle->GetPDG()->Charge()) )
-    //continue;
-  
     // -- primary
     if ( !(stack->IsPhysicalPrimary(iterStack)) )
       continue;
@@ -185,6 +172,20 @@ void AliHLTMCEvent::FillMCEvent( AliMCEvent *pMCEvent ) {
     if ( particle->GetNDaughters() != 0 )
       continue;
 
+    // -- particle in DB
+    TParticlePDG * particlePDG = particle->GetPDG();
+    if ( ! particlePDG ) {
+      particlePDG = TDatabasePDG::Instance()->GetParticle( particle->GetPdgCode() );
+
+      if ( ! particlePDG ) {
+	HLTError("Particle %i not in PDG database", particle->GetPdgCode() );
+	continue;
+      }
+    }
+  
+    // -- only charged particles
+    //  if ( !(particle->GetPDG()->Charge()) )
+    //continue;
 
     // -- Add particle after cuts
     AddParticle ( particle );

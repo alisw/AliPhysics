@@ -216,7 +216,7 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
   if ( fPublishHLTESD )
     fMaxSize += sizeof(AliESDEvent);
   if ( fPublishMC )
-    fMaxSize += sizeof(AliMCEvent) + 1500;
+    fMaxSize += sizeof(AliMCEvent) + 15000;
   
   if ( fEvents.GetSize() == 0) {
     HLTError("No Files have been added.");

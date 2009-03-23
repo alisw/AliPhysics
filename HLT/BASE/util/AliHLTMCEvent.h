@@ -1,6 +1,6 @@
 //-*- Mode: C++ -*-
 
-// $Id: AliHLTEventStatistics.h 25559 2008-05-02 13:49:18Z richterm $
+// $Id:  $
 
 #ifndef ALIHLTMCEVENT_H
 #define ALIHLTMCEVENT_H
@@ -19,6 +19,7 @@
 #include "TParticle.h"
 #include "TClonesArray.h"
 
+#include "AliHLTLogging.h"
 #include "AliMCEvent.h"
 
 /**
@@ -34,7 +35,7 @@
  *
  */
 
-class AliHLTMCEvent : public TObject {
+class AliHLTMCEvent : public TObject, public AliHLTLogging  {
   
 public:
 
