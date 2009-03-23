@@ -54,6 +54,7 @@
 #include <TSystem.h>
 #include <TPDGCode.h>
 #include <TObjArray.h>
+#include <TH3.h>
 #include <TH2.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -233,31 +234,47 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 //________________________________________________________
 TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 {
+// Plot normalized residuals for tracklets to track. 
+// 
+// We start from the result that if X=N(|m|, |Cov|)
+// BEGIN_LATEX
+// (Cov^{-1})^{1/2}X = N((Cov^{-1})^{1/2}*|m|, |1|)
+// END_LATEX
+// in our case X=(y_trklt - y_trk z_trklt - z_trk) and |Cov| = |Cov_trklt| + |Cov_trk| at the radial 
+// reference position. 
   if(track) fTrack = track;
   if(!fTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = ((TH2I*)fContainer->At(kTrackletY)))){
+  if(!(h = ((TH2I*)fContainer->At(kTracklet)))){
     AliWarning("No output histogram defined.");
     return 0x0;
   }
 
-  Double_t cov[3], covR[3];
-  Float_t x, y0, dx, dy, dydx;
+  Double_t cov[3], covR[3], sqr[3], inv[3];
+  Float_t x, dx, dy, dz;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t il=AliTRDgeometry::kNlayer; il--;){
     if(!(fTracklet = fTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK()) continue;
-    y0   = fTracklet->GetYref(0);
-    dydx = fTracklet->GetYref(1);
     x    = fTracklet->GetX();
     dx   = fTracklet->GetX0() - x;
-    dy   = y0-dx*dydx - fTracklet->GetY();
+    // compute dy^2 and dz^2
+    dy   = fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - fTracklet->GetY();
+    dz   = fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - fTracklet->GetZ();
+    // compute covariance matrix
     fTracklet->GetCovAt(x, cov);
     fTracklet->GetCovRef(covR);
-    h->Fill(dydx, dy/*/TMath::Sqrt(cov[0] + covR[0])*/);
+    cov[0] += covR[0]; cov[1] += covR[1]; cov[2] += covR[2]; 
+    // compute square root matrix
+    if(AliTRDseedV1::GetCovInv(cov, inv)==0.) continue;
+    if(AliTRDseedV1::GetCovSqrt(inv, sqr)<0.) continue;
+    
+    Double_t y = sqr[0]*dy+sqr[1]*dz;
+    Double_t z = sqr[1]*dy+sqr[2]*dz;
+    ((TH3*)h)->Fill(y, z, fTracklet->GetYref(1));
   }
   return h;
 }
@@ -503,12 +520,12 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     b->SetFillStyle(3002);b->SetFillColor(kGreen);
     b->SetLineColor(0); b->Draw();
     return kTRUE;
-  case kTrackletY:
+  case kTracklet:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 3.);
-    ax->SetTitle("Tracklet-Track Y-Pulls #sigma/#mu [mm]");
+    ax->SetTitle("Tracklet-Track YZ-Pulls #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
@@ -694,7 +711,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process(kCluster, &f);
 
   // Tracklet y residuals
-  Process(kTrackletY, &f);
+  Process3D(kTracklet, &f);
 
   // Tracklet phi residuals
   Process(kTrackletPhi, &f);
@@ -824,13 +841,13 @@ TObjArray* AliTRDresolution::Histos()
   fContainer->AddAt(h, kCluster);
 
   // tracklet to track residuals [2]
-  if(!(h = (TH2I*)gROOT->FindObject("hTrkltY"))){
-    h = new TH2I("hTrkltY", "Tracklets-Track Residuals (Y)", 21, -.33, .33, 100, -.5, .5);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
+  if(!(h = (TH3I*)gROOT->FindObject("hTrklt"))){
+    h = new TH3I("hTrklt", "Tracklets-Track Residuals", 100, -.5, .5, 100, -.5, .5, 21, -.33, .33);
+    h->GetXaxis()->SetTitle("#Delta y [cm]");
+    h->GetYaxis()->SetTitle("#Delta z [cm]");
+    h->GetZaxis()->SetTitle("tg(#phi)");
   } else h->Reset();
-  fContainer->AddAt(h, kTrackletY);
+  fContainer->AddAt(h, kTracklet);
 
   // tracklet to track residuals angular [2]
   if(!(h = (TH2I*)gROOT->FindObject("hTrkltPhi"))){
@@ -987,6 +1004,43 @@ Bool_t AliTRDresolution::Process(ETRDresolutionPlot plot, TF1 *f, Float_t k)
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t x = h2->GetXaxis()->GetBinCenter(ibin);
     TH1D *h = h2->ProjectionY(pn, ibin, ibin);
+    if(h->GetEntries()<100) continue;
+    AdjustF1(h, f);
+
+    h->Fit(f, "QN");
+    
+    Int_t ip = gm->GetN();
+    gm->SetPoint(ip, x, k*f->GetParameter(1));
+    gm->SetPointError(ip, 0., k*f->GetParError(1));
+    gs->SetPoint(ip, x, k*f->GetParameter(2));
+    gs->SetPointError(ip, 0., k*f->GetParError(2));
+  }
+
+  if(kBUILD) delete f;
+  return kTRUE;
+}
+
+//________________________________________________________
+Bool_t AliTRDresolution::Process3D(ETRDresolutionPlot plot, TF1 *f, Float_t k)
+{
+  if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
+  Bool_t kBUILD = kFALSE;
+  if(!f){ 
+    f = new TF1("f1", "gaus", -.5, .5);
+    kBUILD = kTRUE;
+  }
+
+  TH3I *h3 = 0x0;
+  if(!(h3 = (TH3I*)(fContainer->At(plot)))) return kFALSE;
+  TGraphErrors *gm = 0x0, *gs = 0x0;
+  if(!(gm=(TGraphErrors*)fGraphM->At(plot))) return kFALSE;
+  if(gm->GetN()) for(Int_t ip=gm->GetN(); ip--;) gm->RemovePoint(ip);
+  if(!(gs=(TGraphErrors*)fGraphS->At(plot))) return kFALSE;
+  if(gs->GetN()) for(Int_t ip=gs->GetN(); ip--;) gs->RemovePoint(ip);
+  Char_t pn[10]; sprintf(pn, "p%02d", plot);
+  for(Int_t ibin = 1; ibin <= h3->GetNbinsX(); ibin++){
+    Double_t x = h3->GetXaxis()->GetBinCenter(ibin);
+    TH1D *h = h3->ProjectionZ(pn, ibin, ibin);
     if(h->GetEntries()<100) continue;
     AdjustF1(h, f);
 

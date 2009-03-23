@@ -649,56 +649,47 @@ Double_t AliTRDseedV1::GetCovSqrt(Double_t *c, Double_t *d)
 {
 // Helper function to calculate the square root of the covariance matrix. 
 // The input matrix is stored in the vector c and the result in the vector d. 
-// Both arrays have to be initialized by the user with at least 3 elements
+// Both arrays have to be initialized by the user with at least 3 elements. Return negative in case of failure.
 // 
 // For calculating the square root of the inverse 
 // covariance matrix we use the following relation:
 // BEGIN_LATEX
 // A^{1/2} = VD^{1/2}V^{-1}
 // END_LATEX
-// with V being the matrix with the n eigenvectors as columns. Thus the matrix D is diagonal.
+// with V being the matrix with the n eigenvectors as columns. 
+// Thus the following are true:
+//   - matrix D is diagonal with the diagonal given by the eigenvalues of A (A being symmetric)
+//   - V = V^{-1}
 //
 // Author A.Bercuci <A.Bercuci@gsi.de>
 // Date   Mar 19 2009
 
-  Double_t D[2], // diagonalization of the covariance
-           L[2], // eigenvalues
-           V[2]; // eigenvectors
+  Double_t L[2], // eigenvalues
+           V[3]; // eigenvectors
   // the secular equation and its solution :
   // (c[0]-L)(c[2]-L)-c[1]^2 = 0
   // L^2 - L*Tr(c)+DET(c) = 0
   // L12 = [Tr(c) +- sqrt(Tr(c)^2-4*DET(c))]/2
   Double_t Tr = c[0]+c[2],           // trace
           DET = c[0]*c[2]-c[1]*c[1]; // determinant
+  if(TMath::Abs(DET)<1.e-20) return -1.;
   Double_t DD = TMath::Sqrt(Tr*Tr - 4*DET);
   L[0] = .5*(Tr + DD);
   L[1] = .5*(Tr - DD);
-  // the V matrix is
-  // |1   1|
-  // |v0 v1|
-  V[0] = (L[0]-c[0])/c[1];
-  V[1] = (L[1]-c[0])/c[1];
-  printf("L12[%f %f]\n", L[0], L[1]);
-  printf("V0[%f] V1[%f]\n", V[0], V[1]);
-  DET = 1./(V[1]-V[0]);
-  // the inverse of the V matrix is
-  //   1    |v1  -v0|
-  //(v1-v0) |-1    1|
-  // the diagonal matrix elements are
-  D[0] = c[0]*V[1]+c[1]*(V[1]-1.)-c[2]; D[0]*=DET;
-  D[1] = -c[0]*V[0]*V[0]-c[1]*V[0]*(V[1]-1.)+c[2]*V[1]; D[1]*=DET; 
+  if(L[0]<0. || L[1]<0.) return -1.;
 
-  Double_t tmp = -c[0]*V[0]+c[1]*(1.-V[1])+c[2];
-  printf("D11[%f] D12[%f]\n", D[0], tmp);
-  tmp = c[0]*V[0]*V[1]+c[1]*(V[1]*V[1]-V[0])-c[2]*V[1];
-  printf("D21[%f] D22[%f]\n", tmp, D[1]);
-
-  d[0] = (D[0]*V[1]-D[1])*DET;
-  d[1] = (D[0]*V[0]+D[1])*DET;
-  d[2] = (D[0]*V[0]*V[0]+D[1]*V[1])*DET;
-  tmp  = D[0]*V[0]*V[1]-D[1]*V[1];
-  printf("d11[%f] d12[%f]\n", d[0], d[1]);
-  printf("d21[%f] d22[%f]\n", tmp, d[2]);
+  // the sym V matrix
+  // | v00   v10|
+  // | v10   v11|
+  Double_t tmp = (L[0]-c[0])/c[1];
+  V[0] = TMath::Sqrt(1./(tmp*tmp+1));
+  V[1] = tmp*V[0];
+  V[2] = V[1]*c[1]/(L[1]-c[2]);
+  // the VD^{1/2}V is: 
+  L[0] = TMath::Sqrt(L[0]); L[1] = TMath::Sqrt(L[1]);
+  d[0] = V[0]*V[0]*L[0]+V[1]*V[1]*L[1];
+  d[1] = V[0]*V[1]*L[0]+V[1]*V[2]*L[1];
+  d[2] = V[1]*V[1]*L[0]+V[2]*V[2]*L[1];
 
   return 1.;
 }

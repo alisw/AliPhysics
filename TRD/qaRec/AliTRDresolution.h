@@ -28,7 +28,7 @@ class AliTRDresolution : public AliTRDrecoTask
 public:
   enum ETRDresolutionPlot {
     kCluster          =  0 // cluster - track
-    ,kTrackletY       =  1 // tracklet - track y pulls
+    ,kTracklet        =  1 // tracklet - track y pulls
     ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
     ,kMCcluster       =  3 // cluster - mc residuals/systematics
     ,kMCtrackletY     =  4 // tracklet - mc y resolution/systematics
@@ -61,6 +61,7 @@ public:
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
   Bool_t  Process(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process3D(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
 
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
