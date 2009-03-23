@@ -35,7 +35,6 @@
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDReconstructor.h"
 
 ClassImp(AliTRDdigitsManager)
 

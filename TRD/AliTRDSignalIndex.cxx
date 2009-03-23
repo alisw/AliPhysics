@@ -321,21 +321,6 @@ void AliTRDSignalIndex::ClearAll()
 }
 
 //_____________________________________________________________________________
-void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t /*tbin*/)
-{
-  //
-  // This function is now obsolate, it will be deleted in future. 
-  //
-  // Store the index row-column-tbin as an interesting one
-  // The RC index is updated to!!!
-  // This is to be used in the TRD clusterizer!
-  //
- 
-  AddIndexRC(row, col);
-
-}
-
-//_____________________________________________________________________________
 void AliTRDSignalIndex::AddIndexRC(const Int_t row, const Int_t col)
 {
   //
@@ -373,14 +358,14 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
   }
   else {
     if(fSortedWasInit || !fHasEntry)
-      {
+      { //we already reached the end of the array
         ResetCounters();
 	row = fCurrRow;
 	col = fCurrCol;
 	return kFALSE;
       }
     else
-      {
+      { //we have not created the sorted array up to now, let's do so
 	InitSortedIndex();
 	return NextRCIndex(row, col);
       }

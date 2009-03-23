@@ -29,57 +29,56 @@ class AliTRDSignalIndex : public TObject
   virtual ~AliTRDSignalIndex();
   AliTRDSignalIndex &operator=(const AliTRDSignalIndex &d); 
 
-  virtual void     Copy(TObject &d) const;
-  virtual void     Allocate(const Int_t nrow, const Int_t ncol, const Int_t ntime);
+  void     Copy(TObject &d) const;
+  void     Allocate(const Int_t nrow, const Int_t ncol, const Int_t ntime);
 
-  virtual void     Reset();
-  virtual void     ResetContentConditional(const Int_t nrow, const Int_t ncol, const Int_t ntime);
-  virtual void     ResetContent();
-  virtual void     ResetCounters();
-  virtual void     ResetTbinCounter() { }
+  void     Reset();
+  void     ResetContentConditional(const Int_t nrow, const Int_t ncol, const Int_t ntime);
+  void     ResetContent();
+  void     ResetCounters();
+  void     ResetTbinCounter() { }
 
-          void     ResetArrays();
+  void     ResetArrays();
 
-  virtual void     AddIndexTBin(Int_t row, Int_t col, Int_t tbin);
-          void     AddIndexRC(const Int_t row, const Int_t col);
+  void     AddIndexRC(const Int_t row, const Int_t col);
 
-          // Get the next pad (row and column) and return kTRUE on success
-          Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
-          // Get the next timebin of a pad (row and column) and return kTRUE on success
-          Bool_t   NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin); 
-          // Get the next active timebin and return kTRUE on success
-          Bool_t   NextTbinIndex(Int_t &tbin); 
+  // Get the next pad (row and column) and return kTRUE on success
+  Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
+  // Get the next timebin of a pad (row and column) and return kTRUE on success
+  Bool_t   NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin); 
+  // Get the next active timebin and return kTRUE on success
+  Bool_t   NextTbinIndex(Int_t &tbin); 
 
-          Int_t    GetCurrentRow() const  { return fCurrRow; }
-          Int_t    GetCurrentCol() const  { return fCurrCol; }
-          Int_t    GetCurrentTbin() const { return fCurrTbin; }
+  Int_t    GetCurrentRow() const  { return fCurrRow; }
+  Int_t    GetCurrentCol() const  { return fCurrCol; }
+  Int_t    GetCurrentTbin() const { return fCurrTbin; }
 
-	  Bool_t   IsBoolIndex(Int_t row, Int_t col) const {return fBoolIndex[row*fNcols+col];};
-          void     InitSortedIndex();
+  Bool_t   IsBoolIndex(Int_t row, Int_t col) const {return fBoolIndex[row*fNcols+col];};
+  void     InitSortedIndex();
 
-	  // Clear the array, actually destroy and recreate w/o allocating
-          void     ClearAll(); 
-          // Return kTRUE if array allocated and there is no need to call allocate
-          Bool_t   IsAllocated() const    { if (!fBoolIndex)    return kFALSE; 
-                                            if (fMaxLimit <= 0) return kFALSE; 
-                                            else                return kTRUE;}
+  // Clear the array, actually destroy and recreate w/o allocating
+  void     ClearAll(); 
+  // Return kTRUE if array allocated and there is no need to call allocate
+  Bool_t   IsAllocated() const    { if (!fBoolIndex)    return kFALSE; 
+                                    if (fMaxLimit <= 0) return kFALSE; 
+                                    else                return kTRUE;}
 
-          void     SetSM(const Int_t ix)        { fSM      =    ix; }
-          void     SetStack(const Int_t ix)     { fStack   =    ix; }
-          void     SetLayer(const Int_t ix)     { fLayer   =    ix; }
-          void     SetDetNumber(const Int_t ix) { fDet     =    ix; }
+  void     SetSM(const Int_t ix)        { fSM      =    ix; }
+  void     SetStack(const Int_t ix)     { fStack   =    ix; }
+  void     SetLayer(const Int_t ix)     { fLayer   =    ix; }
+  void     SetDetNumber(const Int_t ix) { fDet     =    ix; }
   
-  virtual Int_t    GetDetNumber() const   { return fDet;      } // Get Det number
-  virtual Int_t    GetLayer() const       { return fLayer;    } // Layer position of the chamber in TRD
-  virtual Int_t    GetStack() const       { return fStack;    } // Stack position of the chamber in TRD
-  virtual Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
-          Short_t *GetArray() const       { return fSortedIndex; } // Get the array pointer for god knows what reason
+  Int_t    GetDetNumber() const   { return fDet;      } // Get Det number
+  Int_t    GetLayer() const       { return fLayer;    } // Layer position of the chamber in TRD
+  Int_t    GetStack() const       { return fStack;    } // Stack position of the chamber in TRD
+  Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
+  Short_t *GetArray() const       { return fSortedIndex; } // Get the array pointer for god knows what reason
 
-  virtual Bool_t   HasEntry() const       { return fHasEntry; } // Return status if has an entry
+  Bool_t   HasEntry() const       { return fHasEntry; } // Return status if has an entry
 
-  virtual Int_t    GetNrow() const        { return fNrows;    } // Get Nrows
-  virtual Int_t    GetNcol() const        { return fNcols;    } // Get Ncols
-  virtual Int_t    GetNtime() const       { return fNtbins;   } // Get Ntbins
+  Int_t    GetNrow() const        { return fNrows;    } // Get Nrows
+  Int_t    GetNcol() const        { return fNcols;    } // Get Ncols
+  Int_t    GetNtime() const       { return fNtbins;   } // Get Ntbins
 
  private:
 
