@@ -102,7 +102,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
-  fRefCov[0] = 1.; fRefCov[1] = 0.; fRefCov[2] = 1.;
+  memset(fRefCov, 0, 3*sizeof(Double_t));
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
@@ -279,7 +279,7 @@ void AliTRDseedV1::Reset()
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
-  fRefCov[0] = 1.; fRefCov[1] = 0.; fRefCov[2] = 1.;
+  memset(fRefCov, 0, 3*sizeof(Double_t));
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
@@ -630,11 +630,12 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   Double_t sz2    = GetPadLength()*GetPadLength()/12.;
 
   // insert systematic uncertainties
-  Double_t sys[15];
-  fReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
-  sy2 += sys[0];
-  sz2 += sys[1];
-
+  if(fReconstructor){
+    Double_t sys[15]; memset(sys, 0, 15*sizeof(Double_t));
+    fReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
+    sy2 += sys[0];
+    sz2 += sys[1];
+  }
   // rotate covariance matrix
   Double_t t2 = GetTilt()*GetTilt();
   Double_t correction = 1./(1. + t2);
@@ -643,6 +644,84 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   cov[2] = (t2*sy2+sz2)*correction;
 }
 
+//____________________________________________________________
+Double_t AliTRDseedV1::GetCovSqrt(Double_t *c, Double_t *d)
+{
+// Helper function to calculate the square root of the covariance matrix. 
+// The input matrix is stored in the vector c and the result in the vector d. 
+// Both arrays have to be initialized by the user with at least 3 elements
+// 
+// For calculating the square root of the inverse 
+// covariance matrix we use the following relation:
+// BEGIN_LATEX
+// A^{1/2} = VD^{1/2}V^{-1}
+// END_LATEX
+// with V being the matrix with the n eigenvectors as columns. Thus the matrix D is diagonal.
+//
+// Author A.Bercuci <A.Bercuci@gsi.de>
+// Date   Mar 19 2009
+
+  Double_t D[2], // diagonalization of the covariance
+           L[2], // eigenvalues
+           V[2]; // eigenvectors
+  // the secular equation and its solution :
+  // (c[0]-L)(c[2]-L)-c[1]^2 = 0
+  // L^2 - L*Tr(c)+DET(c) = 0
+  // L12 = [Tr(c) +- sqrt(Tr(c)^2-4*DET(c))]/2
+  Double_t Tr = c[0]+c[2],           // trace
+          DET = c[0]*c[2]-c[1]*c[1]; // determinant
+  Double_t DD = TMath::Sqrt(Tr*Tr - 4*DET);
+  L[0] = .5*(Tr + DD);
+  L[1] = .5*(Tr - DD);
+  // the V matrix is
+  // |1   1|
+  // |v0 v1|
+  V[0] = (L[0]-c[0])/c[1];
+  V[1] = (L[1]-c[0])/c[1];
+  printf("L12[%f %f]\n", L[0], L[1]);
+  printf("V0[%f] V1[%f]\n", V[0], V[1]);
+  DET = 1./(V[1]-V[0]);
+  // the inverse of the V matrix is
+  //   1    |v1  -v0|
+  //(v1-v0) |-1    1|
+  // the diagonal matrix elements are
+  D[0] = c[0]*V[1]+c[1]*(V[1]-1.)-c[2]; D[0]*=DET;
+  D[1] = -c[0]*V[0]*V[0]-c[1]*V[0]*(V[1]-1.)+c[2]*V[1]; D[1]*=DET; 
+
+  Double_t tmp = -c[0]*V[0]+c[1]*(1.-V[1])+c[2];
+  printf("D11[%f] D12[%f]\n", D[0], tmp);
+  tmp = c[0]*V[0]*V[1]+c[1]*(V[1]*V[1]-V[0])-c[2]*V[1];
+  printf("D21[%f] D22[%f]\n", tmp, D[1]);
+
+  d[0] = (D[0]*V[1]-D[1])*DET;
+  d[1] = (D[0]*V[0]+D[1])*DET;
+  d[2] = (D[0]*V[0]*V[0]+D[1]*V[1])*DET;
+  tmp  = D[0]*V[0]*V[1]-D[1]*V[1];
+  printf("d11[%f] d12[%f]\n", d[0], d[1]);
+  printf("d21[%f] d22[%f]\n", tmp, d[2]);
+
+  return 1.;
+}
+
+//____________________________________________________________
+Double_t AliTRDseedV1::GetCovInv(Double_t *c, Double_t *d)
+{
+// Helper function to calculate the inverse of the covariance matrix.
+// The input matrix is stored in the vector c and the result in the vector d. 
+// Both arrays have to be initialized by the user with at least 3 elements
+// The return value is the determinant or 0 in case of singularity.
+//
+// Author A.Bercuci <A.Bercuci@gsi.de>
+// Date   Mar 19 2009
+
+  Double_t Det = c[0]*c[2] - c[1]*c[1];
+  if(TMath::Abs(Det)<1.e-20) return 0.;
+  Double_t InvDet = 1./Det;
+  d[0] = c[2]*InvDet;
+  d[1] =-c[1]*InvDet;
+  d[2] = c[0]*InvDet;
+  return Det;
+}
 
 //____________________________________________________________________
 void AliTRDseedV1::Calibrate()

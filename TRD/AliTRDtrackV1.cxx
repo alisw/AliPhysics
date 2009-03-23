@@ -226,7 +226,8 @@ AliTRDtrackV1::~AliTRDtrackV1()
 Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
 {
   // set MC label for this track
-  
+  if(!GetNumberOfClusters()) return kFALSE;
+
   Int_t s[kMAXCLUSTERSPERTRACK][2];
   for (Int_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
     s[i][0] = -1;
@@ -266,7 +267,6 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
     max   = s[i][1]; 
     label = s[i][0];
   }
-  
   if ((1. - Float_t(max)/GetNumberOfClusters()) > wrong) label = -label;
   
   SetLabel(label); 

@@ -97,7 +97,9 @@ public:
   static void      GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y);
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
-  void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov[0], 3*sizeof(Double_t));}
+  void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 3*sizeof(Double_t));}
+  static Double_t GetCovSqrt(Double_t *c, Double_t *d);
+  static Double_t GetCovInv(Double_t *c, Double_t *d);
   Float_t   GetdX() const            { return fdX;}
   Float_t*  GetdEdx()                { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic) const;
