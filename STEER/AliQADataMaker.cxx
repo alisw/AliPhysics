@@ -130,7 +130,10 @@ TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const
 {
   // clones a histogram 
   char * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
-  return dynamic_cast<TH1 *>(hist->Clone(name)) ; 
+  TH1 * hClone = dynamic_cast<TH1 *>(hist->Clone(name)) ; 
+  if ( hist->TestBit(AliQA::GetExpertBit()) )
+       hClone->SetBit(AliQA::GetExpertBit()) ; 
+  return hClone ; 
 }
 
 //____________________________________________________________________________

@@ -95,9 +95,9 @@ AliQAManager::AliQAManager() :
 			fLoader[iDet]      = NULL ;
 			fQADataMaker[iDet] = NULL ;
 			fQACycles[iDet]    = 999999 ;
-      fQAWriteExpert[iDet] = kTRUE ;
 		}
 	}	
+  SetWriteExpert() ; 
 }
 
 //_____________________________________________________________________________
@@ -129,9 +129,9 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 			fLoader[iDet]      = NULL ;
 			fQADataMaker[iDet] = NULL ;
 			fQACycles[iDet]    = 999999 ;
-      fQAWriteExpert[iDet] = kTRUE ;
     }
   }
+  SetWriteExpert() ; 
 }
 
 //_____________________________________________________________________________
@@ -610,14 +610,13 @@ void  AliQAManager::InitQADataMaker(UInt_t run, TObjArray * detArray)
 			} else {
         if (fQAWriteExpert[iDet])
           qadm->SetWriteExpert() ; 
-				AliDebug(1, Form("Data Maker found for %s", qadm->GetName())) ; 
+				AliDebug(1, Form("Data Maker found for %s %d", qadm->GetName(), qadm->WriteExpert())) ; 
 				// skip non active detectors
 				if (detArray) {
 					AliModule* det = static_cast<AliModule*>(detArray->FindObject(AliQA::GetDetName(iDet))) ;
 					if (!det || !det->IsActive())  
 						continue ;
 				}
-				if (fQAWriteExpert[iDet]) qadm->SetWriteExpert() ; 
 	      // Set default reco params
         Bool_t sameCycle = kFALSE ; 
 				for (UInt_t taskIndex = 0; taskIndex < AliQA::kNTASKINDEX; taskIndex++) {
@@ -1193,4 +1192,12 @@ void AliQAManager::SetRecoParam(const Int_t det, const AliDetectorRecoParam *par
   GetQADataMaker(det)->SetRecoParam(par) ; 
 }
 
-
+//_____________________________________________________________________________
+void AliQAManager::SetWriteExpert()
+{
+  // enable the writing of QA expert data
+  for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  	if (IsSelected(AliQA::GetDetName(iDet))) 
+      fQAWriteExpert[iDet] = kTRUE ;
+  }
+}  

@@ -72,7 +72,7 @@ public:
 	void        SetRecoParam(const Int_t det, const AliDetectorRecoParam *par) ;
 	void        SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 	void        SetTasks(TString tasks) { fTasks = tasks ; }
-
+  void        SetWriteExpert() ; 
 private: 
 	Bool_t			  DoIt(const AliQA::TASKINDEX_t taskIndex) ;
 	AliLoader   * GetLoader(Int_t iDet) ; 

@@ -257,6 +257,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunGlobalQA(kTRUE),
   fSameQACycle(kFALSE),
   fInitQACalled(kFALSE), 
+  fWriteQAExpertData(kTRUE), 
   fRunPlaneEff(kFALSE),
 
   fesd(NULL),
@@ -352,6 +353,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunGlobalQA(rec.fRunGlobalQA),
   fSameQACycle(rec.fSameQACycle),
   fInitQACalled(rec.fInitQACalled),
+  fWriteQAExpertData(rec.fWriteQAExpertData), 
   fRunPlaneEff(rec.fRunPlaneEff),
 
   fesd(NULL),
@@ -485,6 +487,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunGlobalQA                 = rec.fRunGlobalQA;
   fSameQACycle                 = rec.fSameQACycle;
   fInitQACalled                = rec.fInitQACalled;
+  fWriteQAExpertData           = rec.fWriteQAExpertData;
   fRunPlaneEff                 = rec.fRunPlaneEff;
 
   fesd     = NULL;
@@ -528,6 +531,9 @@ void AliReconstruction::InitQA()
   fInitQACalled = kTRUE;
   
   fQAManager = AliQAManager::QAManager("rec") ; 
+  if (fWriteQAExpertData)
+    fQAManager->SetWriteExpert() ; 
+ 
   if (fQAManager->IsDefaultStorageSet()) {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning("Default QA reference storage has been already set !");

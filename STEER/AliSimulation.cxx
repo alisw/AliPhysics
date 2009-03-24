@@ -195,6 +195,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fQAManager(NULL), 
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
+  fWriteQAExpertData(kTRUE), 
   fRunHLT("default"),
   fWriteGRPEntry(kTRUE)
 {
@@ -253,7 +254,9 @@ void AliSimulation::InitQA()
   fQAManager = AliQAManager::QAManager("sim") ; 
   fQAManager->SetActiveDetectors(fQADetectors) ; 
   fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
-  fQAManager->SetTasks(fQATasks) ; 	
+  fQAManager->SetTasks(fQATasks) ;
+ 	if (fWriteQAExpertData)
+    fQAManager->SetWriteExpert() ; 
   
   if (fQAManager->IsDefaultStorageSet()) {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

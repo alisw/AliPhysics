@@ -119,9 +119,7 @@ public:
   void        SetQARefDefaultStorage(const char* uri);
   void        InitQA();
   void        SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }
-
-
-  
+  void        SetWriteQAExpert() { fWriteQAExpertData = kTRUE ; }
 
   void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
   void WriteGRPEntry();
@@ -185,6 +183,7 @@ private:
   AliQAManager * fQAManager ;                           // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
   AliRecoParam::EventSpecie_t fEventSpecie ;            // type of event (see AliRecoParam::EventSpecie_t)
+  Bool_t               fWriteQAExpertData ;             //! decides wheter or not to write experts QA data; true by default
 
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
