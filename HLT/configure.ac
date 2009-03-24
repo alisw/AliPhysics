@@ -939,30 +939,29 @@ AC_SUBST([ALIGLOBAL_LIBS])
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_JET],[hlt jet library])
 
-if test ! "x$FASTJET" = "x" ; then
-  enable_fastjet="yes"
-  AC_DEFINE(HAVE_FASTJET)
-  AC_DEFINE(WITHFASTJET)
-  CPPFLAGS_FASTJET="-I${FASTJET}/include"
+ALIFASTJET_HEADER=
+ALIFASTJET_INCFLAGS=
+ALIFASTJET_LIBS=
+ALIFASTJET_LDFLAGS=
+AC_ARG_WITH(fastjet, [installation path of the FASTJET package],
+		     [ test "x$with_fastjet" != "xno" && export FASTJET=$with_fastjet],
+		     [ test -n $FASTJET && with_fastjet=$FASTJET ])
+
+if test "x$with_fastjet" != "x" && test "x$with_fastjet" != "xno" ; then
+  ALIFASTJET_INCFLAGS="-I${with_fastjet}/include"
+  ALIFASTJET_HEADER="PseudoJet.hh"
+  ALIFASTJET_LDFLAGS="-L${with_fastjet}/lib"
+  ALIFASTJET_LIBS="CGAL fastjet"
 else
-  enable_fastjet="no"
+  with_fastjet=no
 fi
 
-if test "x$enable_fastjet" = "xyes"; then
-	ALIJET_LIBS= CHECK_HLTMODULE([jet],
-		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN -I${FASTJET}/include],
-		[], [-L$ROOTLIBDIR -L${FASTJET}/lib], [$ROOTLIBS $ADD_ROOTLIBS],
-		[AOD ESD ANALYSIS ANALYSISalice CGAL fastjet JETAN JETANMC], 
-		[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET -L${FASTJET}/lib], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
-else
-	ALIJET_LIBS= CHECK_HLTMODULE([jet],
-		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[AOD ESD ANALYSIS ANALYSISalice JETAN JETANMC], 
-		[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
-fi
+CHECK_HLTMODULE([jet],
+	[$ALIFASTJET_HEADER], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN $ALIFASTJET_INCFLAGS],
+	[$ALIFASTJET_LIBS], [-L$ROOTLIBDIR $ALIFASTJET_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS],
+	[AOD ESD ANALYSIS ANALYSISalice JETAN JETANMC], 
+	[-L$ROOTLIBDIR $ALIROOT_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET],
+	[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -973,19 +972,21 @@ else
   enable_jet=$enable_module
 fi
 
-if test "x$enable_jet" = "xyes" ; then 
+if test "x$enable_jet" = "xyes" ; then
   AC_DEFINE(HLT_JET)
   ALIJET_LIBS="$ALIHLTMODULE_LIBS"
+  
+  if test "x$with_fastjet" != "xno"; then
+     AC_DEFINE(HAVE_FASTJET)
+     AC_DEFINE(WITHFASTJET)
+     ALIJET_LIBS="$ALIJET_LIBS -L$FASTJET_LDFLAGS"
+  fi
+  AC_MSG_CHECKING([compilation with FASTJET package])
+  AC_MSG_RESULT($with_fastjet)
+
 else
   enable_module=$enable_jet
 fi
-
-AC_MSG_NOTICE([++ ------------------------------])
-AC_MSG_NOTICE([++ HAVE_FASTJET  = $enable_fastjet])
-AC_MSG_NOTICE([++ MODULE ENABLE = $enable_module])
-AC_MSG_NOTICE([++ MODULE JET    = $enable_jet])
-AC_MSG_NOTICE([++ ALIJET_LIBS   = $ALIHLTMODULE_LIBS])
-AC_MSG_NOTICE([++ ------------------------------])
 
 AM_CONDITIONAL(EN_HLT_JET, test x$enable_jet = xyes)
 AC_MSG_CHECKING([whether to compile Jet library])

@@ -76,6 +76,7 @@ SUBDIRS 		= BASE \
                           $(ITS_DIR) \
                           $(EMCAL_DIR) \
                           $(GLOBAL_DIR) \
+			  $(JET_DIR)
 			  doc
 
 #$(JET_DIR) 
