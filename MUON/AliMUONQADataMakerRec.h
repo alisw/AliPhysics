@@ -70,11 +70,20 @@ private:
     kTriggerIDisplay           = 14, ///< Trigger chamber currents display histogram index
     kTriggerHVDisplay          = 18, ///< Trigger chamber HV display histogram index
     
-    kTrackerNumberOfClustersPerChamber    = 100, ///< Tracker: # of clusters per chamber
+    kTrackerNumberOfClustersPerChamber    = 100, ///< Tracker: number of clusters per chamber
+    kTrackerClusterMultiplicityPerChMean  = 101, ///< cluster size per Ch: mean
+    kTrackerClusterMultiplicityPerChSigma = 102, ///< cluster size per Ch: dispersion
+    kTrackerClusterChargePerChMean        = 103, ///< cluster charge per Ch: mean
+    kTrackerClusterChargePerChSigma       = 104, ///< cluster charge per Ch: dispersion
+    
     kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
     kTrackerClusterChargePerChamber       = 300, ///< Tracker: cluster charge per chamber
-				
-    kTrackerNumberOfClustersPerDE    = 1000, ///< Tracker : number of clusters per DE		
+    kTrackerClusterHitMapPerChamber       = 400, ///< Tracker: cluster position distribution per chamber
+    
+    kTrackerNumberOfClustersPerDE        = 1000, ///< Tracker : number of clusters per DE		
+    kTrackerClusterMultiplicityPerDEMean = 1001, ///< cluster size per DE: mean
+    kTrackerClusterChargePerDEMean       = 1002, ///< cluster charge per DE: mean
+    
     kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
     kTrackerClusterChargePerDE       = 5000  ///< Tracker : cluster charge per DE
   };
