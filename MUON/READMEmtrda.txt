@@ -8,7 +8,7 @@ The detector algorithm is implemented for the Muon Trigger in the AliRoot
 framework. The main code is located in MUONTRGda.cxx and it runs in the MUON 
 Trigger MON (monitoring).
 
-\section da_s1 The Muon Trigger Calibration
+\section mtrda_s1 The Muon Trigger Calibration
 
 The main goal of the DA is to transfer the configuration files from the detector
 data base to the FES and to put them back to the detector data base in order to be
@@ -40,7 +40,7 @@ The SHUTTLE will process the files stored on the FES only in the PHYSICS mode. I
 mode the DA will work too, updating the files in the detector data base, but the SHUTTLE will
 not process them into the offline data base.
 
-\subsection da_ss1  Dead channels in the global trigger input (with CALIBRATION_EVENT)
+\subsection mtrda_ss1  Dead channels in the global trigger input (with CALIBRATION_EVENT)
 
 The FET pulses are injected to the 21 kchannels.
 
@@ -51,7 +51,7 @@ responding in more than N% of the events (10% by default), it will be marked as 
 - The DA updates the global mask file accordingly, adds the file to the data base 
 and on the File Exchange Server at the beginning of the next run. 
 
-\subsection da_ss2  Noisy channels in global trigger input (with PHYSICS_EVENT)
+\subsection mtrda_ss2  Noisy channels in global trigger input (with PHYSICS_EVENT)
 
 This events are used to check the noisy channels triggering at a rate which is 
 significantly higher than the expected rate from normal physics events.
@@ -63,13 +63,13 @@ noisy
 - The DA updates the global mask file accordingly, adds the file to the data base 
 and on the the File Exchange Server at the beginning of the next run. 
 
-\subsection da_ss3 Mixed events (PHYSICS+CALIBRATION)
+\subsection mtrda_ss3 Mixed events (PHYSICS+CALIBRATION)
 
 - If the FET mode in MtgGlobalCrate is not set to 0x3, only PHYSICS events will be used to check for
 the noisy channels
 - The algorithm is selected according to the event type returned by the raw reader 
 
-\section da_s2 Using the DA Online
+\section mtrda_s2 Using the DA Online
 
 With the help of the Control Panel a configuration file is added to the database
 (DAConfig.dat) which contains parameters for running the DA (typical values are shown):
@@ -94,7 +94,7 @@ Test configuration files:
 - <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgSignature-1.dat">    MtgSignature-1.dat   </a>
 - <a href="http://aliceinfo.cern.ch/static/Offline/dimuon/data/MtgCurrent.dat">        MtgCurrent.dat       </a>
 
-\section da_s3 In case of trouble
+\section mtrda_s3 In case of trouble
 
 Please contact:
 
