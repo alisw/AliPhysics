@@ -10,6 +10,7 @@
 #include "AliEveEventManager.h"
 #include "AliEveMacroExecutor.h"
 #include <TEveManager.h>
+#include <TEveViewer.h>
 
 #include <AliRunLoader.h>
 #include <AliRun.h>
@@ -690,6 +691,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // !!! MT this is somewhat brutal; at least optionally, one could be
   // a bit gentler, checking for objs owning their external refs and having
   // additinal parents.
+  gEve->GetViewers()->DeleteAnnotations();
   fTransients->DestroyElements();
   for (TEveElement::List_i i = fTransientLists->BeginChildren();
        i != fTransientLists->EndChildren(); ++i)
