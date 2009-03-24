@@ -30,11 +30,11 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
  public:
   virtual ~AliHLTPHOSOnlineDisplayTab();
   AliHLTPHOSOnlineDisplayTab();
-  virtual void InitDisplay(TGTab *tabPtr) = 0;
+
   void PrintBlockInfo(AliHLTHOMERReader *homeReaderPtr, int i);
   int GetEventInfo(AliHLTHOMERReader *homeReaderPtr, int i);
   virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr) = 0;
- 
+  virtual void InitDisplay(TGTab *tabPtr) = 0; 
   
   void SetRunNumber(const int runnumber) 
   {
@@ -43,6 +43,7 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
   };
   
+
 
 
  protected:
@@ -55,6 +56,10 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
   int fgNHosts;
 
   int fRunNumber;
+
+
+
+
 };
 
 

@@ -22,12 +22,12 @@
 
 //#include <TGTab.h>
 // #include <TRootEmbeddedCanvas.h>
-// #include "AliHLTPHOSOnlineDisplayTab.h"
+#include "AliHLTPHOSOnlineDisplayTab.h"
 // #include <TCanvas.h>
 // #include <TH2D.h>
 // #include <TH1D.h>
 // #include "AliHLTPHOSOnlineDisplayTH2D.h"
-// #include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConstants.h"
 
 #define NZRCUCOORD 2
 #define NXRCUCOORD 2
@@ -35,13 +35,11 @@
 using namespace PhosHLTConst;
 
 class TGTab;
-class TRootEmbeddedCanvas;p
-class AliHLTPHOSOnlineDisplayTab;
+class TRootEmbeddedCanvas;
 class TCanvas;
 class TH2D;
 class TH1D;
 class AliHLTPHOSOnlineDisplayTH2D;
-class AliHLTPHOSConstants;
 class AliHLTPHOSGetEventButton;
 class AliHLTHOMERReader;
 class AliHLTPHOSRcuCellEnergyDataStruct;
@@ -54,11 +52,16 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
  public:
  
   virtual ~AliHLTPHOSOnlineDisplayEventTab();
- 
-  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, 
-				  AliHLTHOMERReader *fgHomerReaderPtr, 
-				  AliHLTHOMERReader *fgHomerReadersPtr[MAXHOSTS], 
-				  int nHosts, const int runnumber = -1);
+
+
+  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay * onlineDisplayPtr, TGTab  *tabPtr, 
+				  AliHLTHOMERReader * homerSyncPtr, 
+				  AliHLTHOMERReader * homerPtrs[MAXHOSTS], 
+				  int nHosts,  int runnumber = -1);
+//   AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, 
+// 				  AliHLTHOMERReader *fgHomerReaderPtr, 
+// 				  AliHLTHOMERReader *fgHomerReadersPtr[MAXHOSTS], 
+// 				  int nHosts, const int runnumber = -1);
     //    {
 
  
@@ -78,7 +81,7 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   void UpdateDisplay();
   int GetNextEvent();
   virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
-  void FindFourierBlocks(AliHLTHOMERReader *homeReaderPtr);
+  void FindFourierBlocks(AliHLTHOMERReader *homeReaderPtr) const;
 
   void ResetDisplay();
   TGTab               *fTab;
@@ -97,14 +100,13 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
  private:
   AliHLTPHOSOnlineDisplayEventTab();
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
-  void InitDisplay(TGTab *tabPtr) const {};
-  void InitDisplay(const TGTab * const tabPtr, const int runnumber);
-
+  void InitDisplay(TGTab *tabPtr){};
+  void InitDisplay(TGTab * tabPtr, int runnumber);
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
   AliHLTPHOSSharedMemoryInterface *fShmPtr;   
 
-  AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab&);
-  AliHLTPHOSOnlineDisplayEventTab & operator=(const AliHLTPHOSOnlineDisplayEventTab);
+//   AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab& v);
+//   AliHLTPHOSOnlineDisplayEventTab & operator=(const AliHLTPHOSOnlineDisplayEventTab v){}
 
 
   ///int fEvent

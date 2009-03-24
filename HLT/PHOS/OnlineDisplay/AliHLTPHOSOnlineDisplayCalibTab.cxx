@@ -1,8 +1,30 @@
 // $Id$
 
+/**************************************************************************
+ * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
+ *                                                                        *
+ * Authors: Per Thomas Hille for the ALICE                                *
+ * offline/HLT Project. Contributors are mentioned in the code where      *
+ * appropriate.                                                           *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 #include  "AliHLTPHOSOnlineDisplayCalibTab.h"
 #include <iostream>
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
+#include "AliHLTPHOSGetEventButton.h"
+
+#include "TRootEmbeddedCanvas.h"
+#include "TH2D.h"
+#include "TH2I.h"
+#include "TCanvas.h"
 #include "AliHLTPHOSGetEventButton.h"
 
 //#include "TStyle.h"
@@ -10,14 +32,15 @@
 using namespace std;
 
 
-
 AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab()
 {
+  // See header file for documentation
   cout << "AliHLTPHOSOnlineDisplayCalibTab:ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
 AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAXHOSTS], int nHosts)
 {
+  // See header file for documentation
   for(int i=0; i<MAXHOSTS; i++)
     {
        fgHomerReadersPtr[i] = 0;
@@ -37,13 +60,14 @@ AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr,
 
 AliHLTPHOSOnlineDisplayCalibTab::~AliHLTPHOSOnlineDisplayCalibTab()
 {
-
+  // See header file for documentation
 
 }
 
 void
 AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
 {
+  // See header file for documentation
   //  gStyle->SetOptLogy();
   //  gStyle->SetOptStat(true);
 
@@ -108,6 +132,7 @@ AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
 int 
 AliHLTPHOSOnlineDisplayCalibTab::GetNextEvent()
 {
+  // See header file for documentation
   ResetDisplay();
   DoGetNextEvent();
   UpdateDisplay();
@@ -115,14 +140,15 @@ AliHLTPHOSOnlineDisplayCalibTab::GetNextEvent()
 }
 
 void
-AliHLTPHOSOnlineDisplayCalibTab::ResetDisplay()
+AliHLTPHOSOnlineDisplayCalibTab::ResetDisplay() const
 {
-
+  // See header file for documentation
 }
 
 void 
 AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 {
+  // See header file for documentation
   //  gStyle->SetOptLogy();
   //  gStyle->SetOptStat(true); 
 
@@ -265,6 +291,7 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 void 
 AliHLTPHOSOnlineDisplayCalibTab::UpdateDisplay()
 {
+  // See header file for documentation
   // gStyle->SetOptLogy();
   //  gStyle->SetOptStat(true);
  

@@ -37,6 +37,8 @@ using namespace std;
 
 // MT Crap
 #include <TMath.h>
+#include "AliHLTPHOSOnlineDisplayTH2D.h"
+
 //#include <TEveManager.h>
 //#include <TEveBoxSet.h>
 
@@ -48,9 +50,9 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 }
 
 
-AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay * const onlineDisplayPtr, TGTab  *tabPtr, 
-								 const AliHLTHOMERReader * const homerSyncPtr, AliHLTHOMERReader * const homerPtrs[MAXHOSTS], 
-								 int nHosts,  const int runnumber) :  AliHLTPHOSOnlineDisplayTab()
+AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay * onlineDisplayPtr, TGTab  *tabPtr, 
+								 AliHLTHOMERReader * homerSyncPtr, AliHLTHOMERReader * homerPtrs[MAXHOSTS], 
+								 int nHosts,  int runnumber) :  AliHLTPHOSOnlineDisplayTab()
 {
   //comment
   /*
@@ -98,7 +100,7 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
        fgHomerReadersPtr[i] = 0;
     }
 
-  fgHomerReaderPtr = homerSyncPtr;
+  fgHomerReaderPtr = const_cast<AliHLTHOMERReader*>(homerSyncPtr);
   
   for(int i=0; i<nHosts; i++)
     {
@@ -298,7 +300,7 @@ AliHLTPHOSOnlineDisplayEventTab::ResetDisplay()
 
 
 void
-AliHLTPHOSOnlineDisplayEventTab::InitDisplay(const TGTab  * const tabPtr, const int runnumber)
+AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  * tabPtr, int runnumber)
 {
   //  gStyle->SetOptLogy();
   ///  gStyle->SetOptStat(true);
@@ -327,7 +329,7 @@ AliHLTPHOSOnlineDisplayEventTab::InitDisplay(const TGTab  * const tabPtr, const 
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
 					 kLHintsExpandY, 2, 2, 15, 1);
 
-  TGCompositeFrame *tf = tabPtr->AddTab("Event display");
+  TGCompositeFrame * tf = tabPtr->AddTab("Event display");
   fSubTab1 = new TGTab(tf, 100, 100);
   TGCompositeFrame *tf2 = fSubTab1->AddTab("LEGO");  
   fSubF1 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);

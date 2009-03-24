@@ -5,7 +5,7 @@
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors: Oystein Djuvsland                                     *
- s*                                                                        *
+ *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *

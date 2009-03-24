@@ -1,5 +1,21 @@
 // $Id$
 
+/**************************************************************************
+ * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
+ *                                                                        *
+ * Authors: Per Thomas Hille for the ALICE                                *
+ * offline/HLT Project. Contributors are mentioned in the code where      *
+ * appropriate.                                                           *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 #include "AliHLTPHOSOnlineDisplayFourierTab.h"
 #include <iostream>
 #include "TGFrame.h"
@@ -15,7 +31,7 @@
 #include "AliHLTPHOSOnlineDisplay.h"
 #include "AliHLTPHOSSharedMemoryInterface.h"
 #include "AliHLTPHOSFourier.h"
-
+#include "AliHLTPHOSOnlineDisplayTH2D.h"
 
 
 #include "AliHLTPHOSRcuFFTDataStruct.h"
@@ -34,14 +50,15 @@ using namespace std;
 
 AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab()
 {
+  // See header file for documentation
   cout << "ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
 
-AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
-								     AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAXHOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab(), fEvtCnt(0)
+AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSOnlineDisplay * const onlineDisplayPtr, TGTab  *tabPtr, 
+								     const AliHLTHOMERReader * homerSyncPtr, const AliHLTHOMERReader * const homerPtrs[MAXHOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab(), fEvtCnt(0)
 {     
-
+  // See header file for documentation
   // gStyle->SetOptLogy();
   // gStyle->SetOptStat(false);
   
@@ -62,11 +79,11 @@ AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSO
        fgHomerReadersPtr[i] = 0;
     }
 
-  fgHomerReaderPtr = homerSyncPtr;
+  fgHomerReaderPtr = const_cast<AliHLTHOMERReader*>(homerSyncPtr);
   
   for(int i=0; i<nHosts; i++)
     {
-      fgHomerReadersPtr[i] = homerPtrs[i] ;
+      fgHomerReadersPtr[i] = const_cast<AliHLTHOMERReader*>(homerPtrs[i]);
 
     }
 
@@ -76,8 +93,9 @@ AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSO
 
 
 AliHLTPHOSOnlineDisplayFourierTab::~AliHLTPHOSOnlineDisplayFourierTab()
-{
 
+{
+  // See header file for documentation
 }
 
 
@@ -85,6 +103,7 @@ AliHLTPHOSOnlineDisplayFourierTab::~AliHLTPHOSOnlineDisplayFourierTab()
 int
 AliHLTPHOSOnlineDisplayFourierTab::GetNextEvent()
 {
+  // See header file for documentation
   //  ResetDisplay();
   DoGetNextEvent();
   //  FillHistograms();
@@ -98,9 +117,9 @@ AliHLTPHOSOnlineDisplayFourierTab::GetNextEvent()
 
 
 void 
-AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
-{  
-
+AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData(AliHLTHOMERReader * const homeReaderPtr)
+{ 
+  // See header file for documentation
   AliHLTPHOSValidCellDataStruct *currentChannel =0;
   cout << "AliHLTPHOSOnlineDisplayFourierTab::ReadBlockDat, Reading block data, therere are " <<  homeReaderPtr->GetBlockCnt() << " blocks " <<endl;
   //  unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
@@ -166,6 +185,7 @@ AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData(AliHLTHOMERReader *homeReaderPt
 void 
 AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStruct psd, const int size)
 {
+  // See header file for documentation
   //  gStyle->SetOptLogy();
   //  gStyle->SetOptStat(false);
 
@@ -228,6 +248,7 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
 void
 AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
 {
+  // See header file for documentatino
   for(int gain=0; gain < NGAINS; gain++)
     {
       char gainLabel[100];
@@ -289,6 +310,7 @@ AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
 void
 AliHLTPHOSOnlineDisplayFourierTab::UpdateDisplay()
 {
+  // See header file for documentation
   if( fFourierHistoNew[HIGHGAIN])
     {
       fgCanvasPtr[HIGHGAIN] =  fEc1->GetCanvas();
@@ -354,6 +376,7 @@ AliHLTPHOSOnlineDisplayFourierTab::UpdateDisplay()
 const  char* 
 AliHLTPHOSOnlineDisplayFourierTab::Gain2Text(const int gain, const char delimeter)
 {
+  // See header file for documentation
   if(gain ==  LOWGAIN)
     {
       sprintf(fGainText, "low%cgain", delimeter);
