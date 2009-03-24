@@ -1,12 +1,12 @@
 // @(#) $Id$
 // Original: AliHLTTrackSegmentData.h,v 1.7 2005/03/31 04:48:59 cvetan 
 
+#ifndef ALIHLTTPCTRACKSEGMENTDATA_H
+#define ALIHLTTPCTRACKSEGMENTDATA_H
+
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
-
-#ifndef _ALIHLTTPCTRACKSEGMENTDATA_H_
-#define _ALIHLTTPCTRACKSEGMENTDATA_H_
 
 #include "AliHLTTPCRootTypes.h"
 
@@ -18,41 +18,59 @@
  */
 struct AliHLTTPCTrackSegmentData
     {
-	Float_t fX;
-	Float_t fY;
-	Float_t fZ;
-        Float_t fLastX;
-        Float_t fLastY;
-        Float_t fLastZ;
-	Double_t fPt;
-	Double_t fPsi;
-        Double_t fTgl;
-	Double_t fY0err;
-        Double_t fZ0err;
-        Double_t fPterr;
-	Double_t fPsierr;
-        Double_t fTglerr;
-        Int_t fCharge;
+      /** x coordinate of the first point assigned to track segment */
+      Float_t fX;                                                          ///
+      /** y coordinate of the first point assigned to track segment */
+      Float_t fY;                                                          ///
+      /** z coordinate of the first point assigned to track segment */
+      Float_t fZ;                                                          ///
+      /** x coordinate of the last point assigned to track segment */
+      Float_t fLastX;                                                      ///
+      /** y coordinate of the last point assigned to track segment */
+      Float_t fLastY;                                                      ///
+      /** z coordinate of the last point assigned to track segment */
+      Float_t fLastZ;                                                      ///
+      /** transvers momentum at first point */
+      Double_t fPt;                                                        ///
+      /** local sine of the track momentum azimuthal angle at first point */
+      Double_t fPsi;                                                       ///
+      /** tangent of the track momentum dip angle at first point */
+      Double_t fTgl;                                                       ///
+      /** error at first point */
+      Double_t fY0err;                                                     ///
+      /** error at first point */
+      Double_t fZ0err;                                                     ///
+      /** error at first point */
+      Double_t fPterr;                                                     ///
+      /** error at first point */
+      Double_t fPsierr;                                                    ///
+      /** error at first point */
+      Double_t fTglerr;                                                    ///
+      /** total charge */
+      Int_t fCharge;                                                       ///
 #ifdef INCLUDE_TPC_HOUGH
 #ifdef ROWHOUGHPARAMS
       /* needed for PDC */
-        UInt_t  fWeight;
-        Int_t  fTrackID;
-        Int_t  fRowRange1;
-        Int_t  fRowRange2;
-        Int_t  fSector;
-        Float_t  fPID;
-        Float_t  fBinX;
-        Float_t  fBinY;
-        Float_t  fBinXSize;
-        Float_t  fBinYSize;
+      UInt_t  fWeight;                // hough tracking parameters, deprecated
+      Int_t  fTrackID;                // hough tracking parameters, deprecated
+      Int_t  fRowRange1;              // hough tracking parameters, deprecated
+      Int_t  fRowRange2;              // hough tracking parameters, deprecated
+      Int_t  fSector;                 // hough tracking parameters, deprecated
+      Float_t  fPID;                  // hough tracking parameters, deprecated
+      Float_t  fBinX;                 // hough tracking parameters, deprecated
+      Float_t  fBinY;                 // hough tracking parameters, deprecated
+      Float_t  fBinXSize;             // hough tracking parameters, deprecated
+      Float_t  fBinYSize;             // hough tracking parameters, deprecated
 #endif
 #endif // INCLUDE_TPC_HOUGH
-	UInt_t  fNPoints;
+      /** number of points attached in the following array */
+      UInt_t  fNPoints;                                                    ///
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-	UInt_t  fPointIDs[1];
+      /** array of assigned points */
+      UInt_t  fPointIDs[1];                                                ///
 #else
-	UInt_t  fPointIDs[0];
+      /** array of assigned points */
+      UInt_t  fPointIDs[0];                                                ///
 #endif
     };
 
@@ -67,27 +85,43 @@ typedef struct AliHLTTPCTrackSegmentData AliHLTTPCTrackSegmentData;
  */
 struct AliHLTTPCTrackSegmentDataV1
     {
-	Float_t fX;
-	Float_t fY;
-	Float_t fZ;
-        Float_t fLastX;
-        Float_t fLastY;
-        Float_t fLastZ;
-	Double_t fPt;
-	Double_t fPsi;
-        Double_t fTgl;
-	Double_t fPterr;
-	Double_t fPsierr;
-        Double_t fTglerr;
-        Int_t fCharge;
-	UInt_t  fNPoints;
+      /** x coordinate of the first point assigned to track segment */
+      Float_t fX;                                                          ///
+      /** y coordinate of the first point assigned to track segment */
+      Float_t fY;                                                          ///
+      /** z coordinate of the first point assigned to track segment */
+      Float_t fZ;                                                          ///
+      /** x coordinate of the last point assigned to track segment */
+      Float_t fLastX;                                                      ///
+      /** y coordinate of the last point assigned to track segment */
+      Float_t fLastY;                                                      ///
+      /** z coordinate of the last point assigned to track segment */
+      Float_t fLastZ;                                                      ///
+      /** transvers momentum at first point */
+      Double_t fPt;                                                        ///
+      /** local sine of the track momentum azimuthal angle at first point */
+      Double_t fPsi;                                                       ///
+      /** tangent of the track momentum dip angle at first point */
+      Double_t fTgl;                                                       ///
+      /** error at first point */
+      Double_t fPterr;                                                     ///
+      /** error at first point */
+      Double_t fPsierr;                                                    ///
+      /** error at first point */
+      Double_t fTglerr;                                                    ///
+      /** total charge */
+      Int_t fCharge;                                                       ///
+      /** number of points attached in the following array */
+      UInt_t  fNPoints;                                                    ///
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-	UInt_t  fPointIDs[1];
+      /** array of assigned points */
+      UInt_t  fPointIDs[1];                                                ///
 #else
-	UInt_t  fPointIDs[0];
+      /** array of assigned points */
+      UInt_t  fPointIDs[0];                                                ///
 #endif
     };
 
-typedef struct AliHLTTPCTrackSegmentDataV0 AliHLTTPCTrackSegmentDataV0;
+typedef struct AliHLTTPCTrackSegmentDataV1 AliHLTTPCTrackSegmentDataV1;
 
 #endif /* _ALIHLTTPCTRACKSEGMENTDATA_H_ */
