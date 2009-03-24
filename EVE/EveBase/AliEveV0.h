@@ -6,18 +6,28 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #ifndef AliEveV0_H
 #define AliEveV0_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
+//------------------------------------------------------------------------------
+// AliEveV0
+//------------------------------------------------------------------------------
+//
+// Representation of a reconstructed V0.
+//
+//
+//------------------------------------------------------------------------------
+// AliEveV0List
+//------------------------------------------------------------------------------
+//
+// Container for AliEveV0s.
+//
+// Allows runtime selection by pT and DCA of daughters, radius of V0
+// creation and PID priobabilities
 
-/***********************************************************************
-* This code defines the reconstructed v0 visualized with EVE
-*
-* Ludovic Gaudichet (gaudichet@to.infn.it)
-************************************************************************/
+//==============================================================================
 
 #include "AliEveTrack.h"
 #include <TEveVSDStructs.h>
@@ -78,27 +88,27 @@ public:
   Int_t GetESDIndex() const { return fESDIndex; }
   void  SetESDIndex(Int_t ind) { fESDIndex = ind;}
 
-  virtual const Text_t* GetName() const    { return Form("ESDv0_%i",fESDIndex); }
-  virtual const Text_t* GetTitle() const   { return Form("ESDv0_%i",fESDIndex); }
+  virtual const Text_t* GetName()  const { return Form("ESDv0_%i",fESDIndex); }
+  virtual const Text_t* GetTitle() const { return Form("ESDv0_%i",fESDIndex); }
 
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
-  AliEveTrack* GetNegTrack() { return fNegTrack; }
-  AliEveTrack* GetPosTrack() { return fPosTrack; }
+  AliEveTrack* GetNegTrack() const { return fNegTrack; }
+  AliEveTrack* GetPosTrack() const { return fPosTrack; }
 
-  TEveLine*  GetPointingLine() { return fPointingLine; }
+  TEveLine*  GetPointingLine() const { return fPointingLine; }
 
 protected:
   TEveVector fRecBirthV;    // Reconstucted birth point of neutral particle
   TEveVector fRecDecayV;    // Point of closest approach
-  TEveVector fRecDecayP;
+  TEveVector fRecDecayP;    // Reconstructed momentum of decayed particle.
 
-  AliEveTrack        *fNegTrack;
-  AliEveTrack        *fPosTrack;
+  AliEveTrack        *fNegTrack; // Representation of negative track.
+  AliEveTrack        *fPosTrack; // Representation of positive track.
 
-  TEveTrackPropagator *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle; // Track propagator for neg/pos track.
 
-  TEveLine         *fPointingLine;
+  TEveLine         *fPointingLine; // Representation of pointing line.
 
   Int_t             fESDIndex;    // Index in ESD V0 array.
   Bool_t            fOnFlyStatus; // Reconstructed during tracking.
@@ -154,45 +164,45 @@ public:
   void   FilterByCheckedPidMinProb(Int_t rFlag, Int_t rDaughter, Int_t rPid, Float_t rProb);
   void   SetNegCheckedPid(Int_t rNegCheckedPid) {fNegCheckedPid = rNegCheckedPid;}
   void   SetPosCheckedPid(Int_t rPosCheckedPid) {fPosCheckedPid = rPosCheckedPid;}
-  Int_t  GetNegCheckedPid() {return fNegCheckedPid;}
-  Int_t  GetPosCheckedPid() {return fPosCheckedPid;}
+  Int_t  GetNegCheckedPid() const { return fNegCheckedPid; }
+  Int_t  GetPosCheckedPid() const { return fPosCheckedPid; }
 
   void   SetNegCheckedProb(Float_t rNegCheckedProb) {fNegCheckedProb = rNegCheckedProb;}
   void   SetPosCheckedProb(Float_t rPosCheckedProb) {fPosCheckedProb = rPosCheckedProb;}
-  Float_t  GetNegCheckedProb() {return fNegCheckedProb;}
-  Float_t  GetPosCheckedProb() {return fPosCheckedProb;}
+  Float_t  GetNegCheckedProb() const { return fNegCheckedProb; }
+  Float_t  GetPosCheckedProb() const { return fPosCheckedProb; }
 
   void   FilterByInvariantMass(Float_t minPt, Float_t maxPt, Int_t nPdgCode, Int_t pPdgCode);
 
 protected:
-  TString              fTitle;
+  TString              fTitle;    // Title of the object.
 
-  TEveTrackPropagator *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle; // Track propagator to be passed do conteined V0s.
 
-  Bool_t               fRnrDaughters;
-  Bool_t               fRnrV0vtx;
-  Bool_t               fRnrV0path;
+  Bool_t               fRnrDaughters; // Flag - display daughter tracks.
+  Bool_t               fRnrV0vtx;     // Flag - display V0 vertex.
+  Bool_t               fRnrV0path;    // Flag - display V0 path.
 
-  Color_t              fNegColor;
-  Color_t              fPosColor;
+  Color_t              fNegColor;     // Color for negative tracks.
+  Color_t              fPosColor;     // Color for positive tracks.
 
-  Float_t              fMinRCut;
-  Float_t              fMaxRCut;
+  Float_t              fMinRCut;      // Minimum radius cut.
+  Float_t              fMaxRCut;      // Maximum radius cut.
 
-  Float_t              fMinDaughterDCA;
-  Float_t              fMaxDaughterDCA;
+  Float_t              fMinDaughterDCA; // Minimum daughter DCA cut.
+  Float_t              fMaxDaughterDCA; // Maximum daughter DCA cut.
 
-  Float_t              fMinPt;
-  Float_t              fMaxPt;
+  Float_t              fMinPt;          // Minimum Pt cut.
+  Float_t              fMaxPt;          // Maximum Pt cut.
 
-  Int_t                fNegCheckedPid;
-  Int_t                fPosCheckedPid;
+  Int_t                fNegCheckedPid;  // BORIS ?
+  Int_t                fPosCheckedPid;  // BORIS ?
 
-  Float_t              fNegCheckedProb;
-  Float_t              fPosCheckedProb;
+  Float_t              fNegCheckedProb; // BORIS ?
+  Float_t              fPosCheckedProb; // BORIS ?
 
-  Float_t              fMinInvariantMass;
-  Float_t              fMaxInvariantMass;
+  Float_t              fMinInvariantMass; // Minimum invariant mass cut.
+  Float_t              fMaxInvariantMass; // Maximum invariant mass cut.
 
 private:
   void Init();

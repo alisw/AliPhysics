@@ -20,12 +20,8 @@
 
 #include <vector>
 
-
-/***********************************************************************
-*
-*  AliEveV0 class
-*
-************************************************************************/
+//______________________________________________________________________________
+// Representation of a reconstructed V0.
 
 ClassImp(AliEveV0)
 
@@ -164,11 +160,15 @@ void AliEveV0::MakeV0()
 }
 
 
-/***********************************************************************
-*
-*  AliEveV0List class
-*
-************************************************************************/
+//==============================================================================
+//==============================================================================
+
+//______________________________________________________________________________
+//
+// Container for AliEveV0s.
+//
+// Allows runtime selection by pT and DCA of daughters, radius of V0
+// creation and PID priobabilities
 
 ClassImp(AliEveV0List)
 
@@ -348,6 +348,7 @@ void AliEveV0List::FilterByPt(Float_t minPt, Float_t maxPt)
 //______________________________________________________________________________
 void AliEveV0List::FilterByCheckedPidMinProb(Int_t rFlag,Int_t rDaughter, Int_t rPid, Float_t rProb)
 {
+  // Select visibility of elements based on one of the V0 daughters PID
 
   if (!rDaughter){
     fNegCheckedPid  = rPid;
@@ -358,7 +359,6 @@ void AliEveV0List::FilterByCheckedPidMinProb(Int_t rFlag,Int_t rDaughter, Int_t 
     fPosCheckedProb = rProb;
   }
 
-  // Select visibility of elements based on one of the V0 daughters PID
   for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
   {
     AliEveV0* v0 = (AliEveV0*) *i;
