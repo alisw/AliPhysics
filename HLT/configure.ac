@@ -74,7 +74,8 @@ if test "x$have_root" = "x1"; then
   #   libTreePlayer.so
   # - from Jan 07 libESD also depends on libXMLIO
   # - libSTEER depends on libProofPlayer since Oct 2007 (after v4-07-Release)
-  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO Thread Proof ProofPlayer'
+  # - libCDB.so depends on libXMLParser since Mar 11 2009 r 31411
+  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO Thread Proof ProofPlayer XMLParser'
   for CHECKLIB in $ROOT_CHECKLIBS ; do
     LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
     LIBS="$save_LIBS $ROOTLIBS $ADD_ROOTLIBS"
