@@ -83,6 +83,11 @@ public:
    */
   TParticle* NextParticle();
 
+  /** Get Index of current particle 
+   *  @return Index of current particle
+   */
+  Int_t GetIndex() { return fCurrentParticleIndex; }
+
   /*
    * ---------------------------------------------------------------------------------
    *                                     Setter
