@@ -76,6 +76,9 @@ AliJetFinder::~AliJetFinder()
   delete fOut;
   // reset and delete control plots
   if (fPlots) delete fPlots;
+  if ( fLeading )
+      delete fLeading;
+  fLeading = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////

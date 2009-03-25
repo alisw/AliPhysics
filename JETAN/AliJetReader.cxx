@@ -66,29 +66,29 @@ AliJetReader::AliJetReader():
 AliJetReader::~AliJetReader()
 {
   // Destructor
-  if (fMomentumArray) {
-      fMomentumArray->Delete();
-      delete fMomentumArray;
-  }
-  
-  if (fUnitArray) {
-      delete fUnitArray;
-  }
-  
-  if (fUnitArrayNoCuts) {
-    fUnitArrayNoCuts->Delete();
-    delete fUnitArrayNoCuts;
-  }
-
-  if (fFillUnitArray) {
-    fFillUnitArray->Delete();
-    delete fFillUnitArray;
-  }
-
-  if (fArrayMC) {
-    fArrayMC->Delete();
-    delete fArrayMC;
-  }
+    if (fMomentumArray) {
+	fMomentumArray->Delete();
+	delete fMomentumArray;
+    }
+    
+    if (fUnitArray) {
+	fUnitArray->Delete();
+	delete fUnitArray;
+    }
+    
+    if (fUnitArrayNoCuts) {
+	fUnitArrayNoCuts->Delete();
+	delete fUnitArrayNoCuts;
+    }
+    
+    if (fFillUnitArray) {
+	delete fFillUnitArray;
+    }
+    
+    if (fArrayMC) {
+	fArrayMC->Delete();
+	delete fArrayMC;
+    }
 }
 
 
