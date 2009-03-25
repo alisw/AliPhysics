@@ -2,6 +2,7 @@
 # $Id$
 
 TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
+		tracking-ca/AliHLTTPCCATracklet.h \
 		tracking-ca/AliHLTTPCCATracker.h \
 		tracking-ca/AliHLTTPCCAOutTrack.h  \
 		tracking-ca/AliHLTTPCCATrackParam.h \
