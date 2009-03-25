@@ -74,6 +74,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fLimitGenJetEta(kFALSE),
   fAnalysisType(0),
   fExternalWeight(1),    
+  fRecEtaWindow(0.5),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -93,7 +94,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   // Default constructor
     for(int ij  = 0;ij<kMaxJets;++ij){
       fh1E[ij] =  fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-      fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] =  fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] = 0;
+      fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] =  fh2Frag[ij] = fh2FragLn[ij] =   fh2PtRecDeltaR[ij] = fh2PtGenDeltaR[ij] =  fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] = 0;
       fh3PtRecGenHard[ij] =  fh3PtRecGenHardNoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPtNoGen[ij] =fh3GenEtaPhiPtNoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
     }
     for(int ic = 0;ic < kMaxCorrelation;ic++){
@@ -116,6 +117,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   fLimitGenJetEta(kFALSE),
   fAnalysisType(0),
   fExternalWeight(1),    
+  fRecEtaWindow(0.5),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -135,7 +137,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   // Default constructor
   for(int ij  = 0;ij<kMaxJets;++ij){
     fh1E[ij] = fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-    fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] = fh2Frag[ij] = fh2FragLn[ij] = fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] = 0;
+    fh2PtFGen[ij] = fh2PhiFGen[ij] = fh2EtaFGen[ij] = fh2Frag[ij] = fh2FragLn[ij] = fh2PtGenDeltaPhi[ij] =  fh2PtGenDeltaEta[ij] =   fh2PtRecDeltaR[ij] = fh2PtGenDeltaR[ij] =0;
 
     fh3PtRecGenHard[ij] =  fh3PtRecGenHardNoW[ij] = fh3RecEtaPhiPt[ij] = fh3RecEtaPhiPtNoGen[ij] =fh3GenEtaPhiPtNoFound[ij] =  fh3GenEtaPhiPt[ij] = 0;
   }
@@ -261,16 +263,15 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
       binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2;
     }
   }
-  const Int_t nBinEta = 22;
-  Double_t binLimitsEta[nBinEta+1];
-  for(Int_t iEta = 0;iEta<=nBinEta;iEta++){
-    if(iEta==0){
-      binLimitsEta[iEta] = -2.2;
-    }
-    else{
-      binLimitsEta[iEta] = binLimitsEta[iEta-1] + 0.2;
-    }
-  }
+  
+  const Int_t nBinEta = 26;
+  Double_t binLimitsEta[nBinEta+1] = {
+    -1.6,-1.4,-1.2,-1.0,
+    -0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,
+    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
+    1.0, 1.2, 1.4, 1.6
+  };
+
 
   const Int_t nBinPhi = 30;
   Double_t binLimitsPhi[nBinPhi+1];
@@ -311,6 +312,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     fh1PtGenOut[ij] = new TH1F(Form("fh1PtGenOut_j%d",ij),"found p_T output jets;p_{T,gen}",nBinPt,binLimitsPt);
 
 
+
     fh2PtFGen[ij] = new TH2F(Form("fh2PtFGen_j%d",ij),"Pt Found vs. gen;p_{T,rec} (GeV/c);p_{T,gen} (GeV/c)",
 			     nBinPt,binLimitsPt,nBinPt,binLimitsPt);
 
@@ -327,6 +329,10 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 				    nBinPt,binLimitsPt,100,-1.0,1.0);
 
     
+    fh2PtRecDeltaR[ij] = new TH2F(Form("fh2PtRecDeltaR_j%d",ij),"#Delta{R} to lower energy jets j > i;p_{T,rec,j};#Delta R", 
+				  nBinPt,binLimitsPt,60,0,6.0);
+    fh2PtGenDeltaR[ij] = new TH2F(Form("fh2PtGenDeltaR_j%d",ij),"#Delta{R} to lower energy jets j > i;p_{T,gen,j};#Delta R", 
+				  nBinPt,binLimitsPt,60,0,6.0);
 
 
 
@@ -413,6 +419,8 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
       fHistList->Add(fh2EtaFGen[ij]);
       fHistList->Add(fh2PtGenDeltaEta[ij]);
       fHistList->Add(fh2PtGenDeltaPhi[ij]);
+      fHistList->Add(fh2PtRecDeltaR[ij]);
+      fHistList->Add(fh2PtGenDeltaR[ij]);
       fHistList->Add(fh3RecEtaPhiPt[ij]);
       fHistList->Add(fh3GenEtaPhiPt[ij]);      
       if(saveLevel>2){
@@ -639,6 +647,9 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
     fh1E[ir]->Fill(recJets[ir].E(),eventW);
     fh1PtRecIn[ir]->Fill(ptRec,eventW);
     fh3RecEtaPhiPt[ir]->Fill(etaRec,phiRec,ptRec,eventW);
+    for(int irr = ir+1;irr<nRecJets;irr++){
+      fh2PtRecDeltaR[ir]->Fill(recJets[irr].Pt(),recJets[ir].DeltaR(&recJets[irr]));
+    }
     // Fill Correlation
     Int_t ig = iGenIndex[ir];
     if(ig>=0 && ig<nGenJets){
@@ -648,26 +659,27 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
       Double_t ptGen  = genJets[ig].Pt();
       Double_t phiGen = genJets[ig].Phi();
       if(phiGen<0)phiGen+=TMath::Pi()*2.; 
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       Double_t etaGen = genJets[ig].Eta();
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+
+      // 
+      // we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
+      // 
+
+      if(TMath::Abs(etaRec)<fRecEtaWindow){
+
       fh2PtFGen[ir]->Fill(ptRec,ptGen,eventW);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       fh2PhiFGen[ir]->Fill(phiRec,phiGen,eventW);
       fh2EtaFGen[ir]->Fill(etaRec,etaGen,eventW);
       fh2PtGenDeltaEta[ir]->Fill(ptGen,etaGen-etaRec,eventW);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       fh2PtGenDeltaPhi[ir]->Fill(ptGen,phiGen-phiRec,eventW);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       fh3PtRecGenHard[ir]->Fill(ptRec,ptGen,ptHard,eventW);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       fh3PtRecGenHardNoW[ir]->Fill(ptRec,ptGen,ptHard,1);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
       /////////////////////////////////////////////////////
       Double_t eRec = recJets[ir].E();
       Double_t eGen = genJets[ig].E();
+
+
       fh2Efficiency->Fill(eGen, eRec/eGen);
-      if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
       if (eGen>=0. && eGen<=250.){
         Double_t eLeading = -1;
@@ -675,7 +687,7 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
         Int_t nPart=0;
         // loop over tracks
         for (Int_t it = 0; it< nTracks; it++){
-          if (fAOD->GetTrack(it)->E() > eGen) continue;
+	  //	  if (fAOD->GetTrack(it)->E() > eGen) continue; // CKB. Not allowed! cannot cut on gen properties in real events!
           Double_t phiTrack = fAOD->GetTrack(it)->Phi();
           if (phiTrack<0) phiTrack+=TMath::Pi()*2.;            
           Double_t etaTrack = fAOD->GetTrack(it)->Eta();
@@ -687,7 +699,8 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
             eLeading  = fAOD->GetTrack(it)->E();
             ptleading = fAOD->GetTrack(it)->Pt();            
           }
-          if (fAOD->GetTrack(it)->Pt()>0.03*eGen && fAOD->GetTrack(it)->E()<=eGen && r<0.7)
+	  //          if (fAOD->GetTrack(it)->Pt()>0.03*eGen && fAOD->GetTrack(it)->E()<=eGen && r<0.7) // CKB cannot cut on gen properties 
+          if (fAOD->GetTrack(it)->Pt()>0.03*eRec && fAOD->GetTrack(it)->E()<=eRec && r<0.7)
             nPart++;
         }
 	if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
@@ -699,13 +712,16 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
         fh1JetMultiplicity->Fill(nPart);
         fh3EGenERecN->Fill(eGen, eRec, nPart); 
 	for(int ic = 0;ic <kMaxCorrelation;ic++){
-	  if (nPart<=fgkJetNpartCut[ic]){
+	  if (nPart<=fgkJetNpartCut[ic]){ // is this corrected for CKB
 	    fhnCorrelation[ic]->Fill(var);
 	    break;
 	  }
 	}
       }
-    }  
+
+    }// if etarec in window
+
+    } 
     ////////////////////////////////////////////////////  
     else{
       fh3RecEtaPhiPtNoGen[ir]->Fill(etaRec,phiRec,ptRec,eventW);
@@ -722,6 +738,9 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
     Double_t etaGen = genJets[ig].Eta();
     fh3GenEtaPhiPt[ig]->Fill(etaGen,phiGen,ptGen,eventW);
     fh1PtGenIn[ig]->Fill(ptGen,eventW);
+    for(int igg = ig+1;igg<nGenJets;igg++){
+      fh2PtGenDeltaR[ig]->Fill(genJets[igg].Pt(),genJets[ig].DeltaR(&genJets[igg]));
+    }
     Int_t ir = iRecIndex[ig];
     if(ir>=0&&ir<nRecJets){
       fh1PtGenOut[ig]->Fill(ptGen,eventW);
@@ -791,7 +810,7 @@ void AliAnalysisTaskJetSpectrum::GetClosestJets(AliAODJet *genJets,const Int_t &
   if(nRecJets==0)return;
   if(nGenJets==0)return;
 
-  const Float_t maxDist = 1.0;
+  const Float_t maxDist = 0.5;
   // find the closest distance to the generated
   for(int ig = 0;ig<nGenJets;++ig){
     Float_t dist = maxDist;

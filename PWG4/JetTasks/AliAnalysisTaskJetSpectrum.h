@@ -46,6 +46,7 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
+    virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
     virtual void SetBranchGen(const char* c){fBranchGen = c;}
     virtual void SetBranchRec(const char* c){fBranchRec = c;}
@@ -58,7 +59,7 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
   //
 
     enum {kAnaMC =  0x1};
-    enum {kMaxJets =  5};
+    enum {kMaxJets =  4};
     enum {kMaxCorrelation =  3};
 
  private:
@@ -78,11 +79,12 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TString       fBranchGen;  // AOD brnach for genereated
     TString       fConfigGen;  // Name of the Config file (if any)
 
-    Bool_t        fUseAODInput;
-    Bool_t        fUseExternalWeightOnly;
-    Bool_t        fLimitGenJetEta;
-    Int_t         fAnalysisType;
-    Float_t       fExternalWeight;    
+    Bool_t        fUseAODInput;           // use AOD input
+    Bool_t        fUseExternalWeightOnly; // use only external weight
+    Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
+    Int_t         fAnalysisType;          // Analysis type 
+    Float_t       fExternalWeight;        // external weight
+    Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
 
     TProfile*     fh1Xsec;   // pythia cross section and trials
     TH1F*         fh1Trials; // trials are added
@@ -97,8 +99,6 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TH1F*         fh1PtGenIn[kMaxJets];       // Detection efficiency for given p_T.gen
     TH1F*         fh1PtGenOut[kMaxJets];      // gen pT of found jets
 
-
-    
     TH2F*         fh2PtFGen[kMaxJets];   // correlation betwen genreated and found  jet pT
     TH2F*         fh2PhiFGen[kMaxJets];  // correlation betwen genreated and found  jet phi
     TH2F*         fh2EtaFGen[kMaxJets];  // correlation betwen genreated and found  jet eta
@@ -106,6 +106,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TH2F*         fh2FragLn[kMaxJets];  // fragmetation in xi
     TH2F*         fh2PtGenDeltaPhi[kMaxJets];  // difference between generated and found  jet phi
     TH2F*         fh2PtGenDeltaEta[kMaxJets];  // difference between generated and found  jet eta
+    TH2F*         fh2PtRecDeltaR[kMaxJets];     // distance of rec jet i to j > i p_T,j
+    TH2F*         fh2PtGenDeltaR[kMaxJets];     // distance of jet i to j > i vs p_T,j
 
     TH3F*         fh3PtRecGenHard[kMaxJets];      // correlation beetwen pt hard, rec and gen                             
     TH3F*         fh3PtRecGenHardNoW[kMaxJets];  // correlation beetwen pt hard, rec and gen no weight                                              
