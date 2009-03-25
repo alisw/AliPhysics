@@ -2,7 +2,7 @@
 
 SRCS          =  AliPHOSGeoUtils.cxx AliPHOSEMCAGeometry.cxx  \
                  AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
-                 AliPHOSSupportGeometry.cxx
+                 AliPHOSSupportGeometry.cxx AliPHOSFastAltroFit.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
