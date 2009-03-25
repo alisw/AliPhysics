@@ -227,8 +227,8 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
   Int_t padrow = fFeeParam->GetPadRowFromMCM(rob, mcm);
   Int_t padcol = 0;
   for (Int_t ch = 0; ch < fNADC; ch++) {
+    padcol = GetCol(ch);
     for (Int_t tb = 0; tb < fNTimeBin; tb++) {
-      padcol = fFeeParam->GetPadColFromADC(rob, mcm, ch);
       if (padcol < 0) {
         fADCR[ch][tb] = 0;
         fADCF[ch][tb] = 0;
@@ -494,20 +494,20 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray)
   Int_t firstAdc = 0;
   Int_t lastAdc = fNADC-1;
 
-  if (GetCol(firstAdc) > 143) {
+  while (GetCol(firstAdc) < 0) {
     for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
       fADCR[firstAdc][iTimeBin] = fSimParam->GetADCbaseline() << fgkAddDigits;
       fADCF[firstAdc][iTimeBin] = fSimParam->GetADCbaseline() << fgkAddDigits;
     }
-    firstAdc = 1;
+    firstAdc++;
   }
 
-  if (GetCol(lastAdc) < 0) {
+  while (GetCol(lastAdc) < 0) {
     for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
       fADCR[lastAdc][iTimeBin] = fSimParam->GetADCbaseline() << fgkAddDigits;
       fADCF[lastAdc][iTimeBin] = fSimParam->GetADCbaseline() << fgkAddDigits;
     }
-    lastAdc = fNADC - 2;
+    lastAdc--;
   }
 
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
@@ -552,7 +552,11 @@ Int_t AliTRDmcmSim::GetCol( Int_t iadc )
 
   if( !CheckInitialized() ) return -1;
 
-  return fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, iadc);
+  Int_t col = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, iadc);
+  if (col < 0 || col >= fFeeParam->GetNcol()) 
+    return -1;
+  else 
+    return col;
 }
 
 Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize, UInt_t iEv)
@@ -1515,11 +1519,11 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
   Int_t firstAdc = 0;
   Int_t lastAdc = fNADC - 1;
 
-  if (GetCol(firstAdc) > 143)
-    firstAdc = 1;
+  while (GetCol(firstAdc) < 0)
+    firstAdc++;
 
-  if (GetCol(lastAdc) < 0) 
-    lastAdc = fNADC - 2;
+  while (GetCol(lastAdc) < 0) 
+    lastAdc--;
 
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF) != 0) // store unfiltered data
   {
@@ -1730,4 +1734,3 @@ void AliTRDmcmSim::Sort6To2Worst(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx
 //    printf("idx21s=%d, idx23as=%d, idx22s=%d, idx23bs=%d, idx5o=%d, idx6o=%d\n",
 //            idx21s,    idx23as,    idx22s,    idx23bs,    *idx5o,    *idx6o);
 }
-

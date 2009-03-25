@@ -237,7 +237,7 @@ Int_t AliTRDfeeParam::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
   // http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
   //
 
-  if (iadc < 0 || iadc > 19 ) return -100;
+  if (iadc < 0 || iadc > fgkNadcMcm ) return -100;
   Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
   Int_t padcol = mcmcol*fgkNcolMcm + fgkNcolMcm + 1 - iadc;
   // if( padcol < 0 || padcol >= fgkNcol ) return -1;   // thisi s commented because of reson above KO
@@ -428,3 +428,5 @@ void AliTRDfeeParam::SetArgon()
   fTFc2   = 0.07;
 
 }
+
+
