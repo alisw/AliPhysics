@@ -20,6 +20,7 @@ ELIBS    := EveBase EveDet EveHLT \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
   EMCALbase EMCALsim EMCALrec BCM \
   STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER MONITOR \
+  ANALYSIS ANALYSISalice \
   THijing \
   hijing THbtp TEPEMGEN \
   FASTSIM microcern \

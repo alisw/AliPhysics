@@ -221,13 +221,12 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 void esd_tracks_alianalcuts_demo()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
-  gSystem->Load("libANALYSIS");
 
-  AliAnalysisTrackCuts atc;
+  AliESDtrackCuts atc;
   atc.SetPtRange(0.1, 5);
   atc.SetRapRange(-1, 1);
 
-  esd_tracks_from_array(atc.GetAcceptedParticles(esd), esd);
+  esd_tracks_from_array(atc.GetAcceptedTracks(esd), esd);
 }
 
 /******************************************************************************/
