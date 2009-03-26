@@ -239,7 +239,7 @@ Float_t AliTRDcluster::GetSumS() const
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const q, Double_t *const xq, Double_t z)
+Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, Double_t *const /*xq*/, Double_t z)
 {
 //
 // (Re)Calculate cluster position in the x direction in local chamber coordinates (with respect to the anode wire 
