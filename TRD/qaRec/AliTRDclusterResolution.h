@@ -14,54 +14,43 @@ class AliTRDclusterResolution : public AliTRDrecoTask
 public:
   enum EAxisBinning { // bins in z and x direction
     kNTB = 25
-    ,kND = 5
-    ,kN  = kND*kNTB
+   ,kND = 5
+   ,kN  = kND*kNTB
   };
   enum EResultContainer { // results container type
     kQRes   = 0
-    ,kCenter= 1
-    ,kSigm  = 2
-    ,kMean  = 3
+   ,kCenter= 1
+   ,kSigm  = 2
+   ,kMean  = 3
   };
   enum ECheckBits { // force setting the ExB
-    kExB       = BIT(23)
-  };
-  enum ESteeringBits { // steering bits for task
-    kSaveAs         = 0
-    ,kProcCharge    = 1
-    ,kProcCenterPad = 2
-    ,kProcSigma     = 3
-    ,kProcMean      = 4
+    kSaveAs    = BIT(22)
+   ,kExB       = BIT(23)
   };
   AliTRDclusterResolution(const char *name="ClErrParam");
   virtual ~AliTRDclusterResolution();
 
-  void    ConnectInputData(Option_t *);
-  void    CreateOutputObjects();
-  void    Exec(Option_t *);
-  Int_t   GetDetector() const { return fDet; }
+  void          ConnectInputData(Option_t *);
+  void          CreateOutputObjects();
+  void          Exec(Option_t *);
+  Int_t         GetDetector() const { return fDet; }
   inline Float_t GetExB() const;
   inline Float_t GetVdrift() const;
-  Bool_t  GetRefFigure(Int_t ifig);
-  Bool_t  HasProcessCharge() const {return TESTBIT(fStatus, kProcCharge);}
-  Bool_t  HasProcessCenterPad() const {return TESTBIT(fStatus, kProcCenterPad);}
-  Bool_t  HasExB() const { return TestBit(kExB);}
-  Bool_t  HasProcessMean() const {return TESTBIT(fStatus, kProcMean);}
-  Bool_t  HasProcessSigma() const {return TESTBIT(fStatus, kProcSigma);}
+  Bool_t        GetRefFigure(Int_t ifig);
+  Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fStatus, bit);}
+  Bool_t        HasExB() const { return TestBit(kExB);}
 
-  TObjArray*  Histos(); 
+  TObjArray*    Histos(); 
 
-  Bool_t  IsVisual() const {return Bool_t(fCanvas);}
-  Bool_t  IsSaveAs() const {return TESTBIT(fStatus, kSaveAs);}
+  Bool_t        IsVisual() const {return Bool_t(fCanvas);}
+  Bool_t        IsSaveAs() const {return TestBit(kSaveAs);}
 
-  Bool_t  PostProcess();
-  Bool_t  SetExB(Int_t det=-1, Int_t c = 70, Int_t r = 7);
-  void    SetVisual();
-  void    SetProcessCharge(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kProcCharge) : CLRBIT(fStatus, kProcCharge);}
-  void    SetProcessCenterPad(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kProcCenterPad) : CLRBIT(fStatus, kProcCenterPad);}
-  void    SetProcessMean(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kProcMean) : CLRBIT(fStatus, kProcMean);}
-  void    SetProcessSigma(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kProcSigma) : CLRBIT(fStatus, kProcSigma);}
-  void    SetSaveAs(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kSaveAs) : CLRBIT(fStatus, kSaveAs);}
+  Bool_t        PostProcess();
+  Bool_t        SetExB(Int_t det=-1, Int_t c = 70, Int_t r = 7);
+  void          SetVisual();
+  void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fStatus, bit) : CLRBIT(fStatus, bit);}
+  void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
+  inline void   ResetProcess();
 
   void    Terminate(Option_t *){};
 
@@ -84,6 +73,7 @@ private:
   Short_t    fDet;     // detector (-1 for all)
   Float_t    fExB;     // tg of the Lorentz angle
   Float_t    fVdrift;  // mean drift velocity
+  static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
   ClassDef(AliTRDclusterResolution, 1)  // cluster resolution
 };
@@ -105,5 +95,15 @@ inline Float_t AliTRDclusterResolution::GetVdrift() const
   }
   return fVdrift;
 }
+
+//___________________________________________________
+inline void AliTRDclusterResolution::ResetProcess()
+{
+  CLRBIT(fStatus, kQRes);
+  CLRBIT(fStatus, kCenter);
+  CLRBIT(fStatus, kSigm);
+  CLRBIT(fStatus, kMean);
+}
+
 #endif
 

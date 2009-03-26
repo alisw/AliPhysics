@@ -195,7 +195,7 @@
 
 ClassImp(AliTRDclusterResolution)
 
-
+const Float_t AliTRDclusterResolution::fgkTimeBinLength = 1./ AliTRDCommonParam::Instance()->GetSamplingFrequency();
 //_______________________________________________________
 AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   : AliTRDrecoTask(name, "Cluster Error Parametrization")
@@ -209,28 +209,17 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fExB(0.)
   ,fVdrift(0.)
 {
-  // ideal equidistant binning
-  //fAt = new TAxis(kNTB, -0.075, (kNTB-.5)*.15);
-
-  // equidistant binning for scaled for X0-MC (track ref)
-  fAt = new TAxis(kNTB, -0.075+.088, (kNTB-.5)*.15+.088);
-  
-  // non-equidistant binning after vdrift correction
-//   const Double_t x[kNTB+1] = {
-// 0.000000, 0.185084, 0.400490, 0.519701, 0.554653, 0.653150, 0.805063, 0.990261,
-// 1.179610, 1.356406, 1.524094, 1.685499, 1.843083, 1.997338, 2.148077, 2.298274,
-// 2.448656, 2.598639, 2.747809, 2.896596, 3.045380, 3.195000, 3.340303, 3.461688,
-// 3.540094, 3.702677};
-//   fAt = new TAxis(kNTB, x);
-
+  // time drift axis
+  fAt = new TAxis(kNTB, 0., kNTB*fgkTimeBinLength);
+  // z axis spans the drift cell 2.5 mm
   fAd = new TAxis(kND, 0., .25);
 
   // By default register all analysis
   // The user can switch them off in his steering macro
-  SetProcessCharge();
-  SetProcessCenterPad();
-  SetProcessMean();
-  SetProcessSigma();
+  SetProcess(kQRes);
+  SetProcess(kCenter);
+  SetProcess(kMean);
+  SetProcess(kSigm);
 }
 
 //_______________________________________________________
@@ -343,7 +332,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   Int_t ih = 0;
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     for(Int_t it=1; it<=fAt->GetNbins(); it++){
-      arr->AddAt(h2 = new TH2I(Form("h_d%02dt%02d", id, it), Form("d_{wire}(%3.1f-%3.1f)[mm] x_{drift}(%5.2f-%5.2f)[mm]", 10.*fAd->GetBinCenter(id)- 5.*fAd->GetBinWidth(id), 10.*fAd->GetBinCenter(id)+ 5.*fAd->GetBinWidth(id), 10.*fAt->GetBinCenter(it)- 5.*fAt->GetBinWidth(it), 10.*fAt->GetBinCenter(it)+ 5.*fAt->GetBinWidth(it)), 35, -.35, .35, 100, -.5, .5), ih++);
+      arr->AddAt(h2 = new TH2I(Form("hr_d%02dt%02d", id, it), Form("d_{wire}(%3.1f-%3.1f)[mm] t_{drift}(%3.1f-%3.1f)[#mus]", 10.*fAd->GetBinLowEdge(id), 10.*fAd->GetBinUpEdge(id), fAt->GetBinLowEdge(it), fAt->GetBinUpEdge(it)), 35, -.35, .35, 100, -.5, .5), ih++);
       h2->SetXTitle("tg#phi");
       h2->SetYTitle("#Delta y[cm]");
       h2->SetZTitle("entries");
@@ -355,7 +344,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   ih = 0;
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     for(Int_t it=1; it<=fAt->GetNbins(); it++){
-      arr->AddAt(h2 = new TH2I(Form("h_d%02dt%02d", id, it), Form("d_{wire}(%3.1f-%3.1f)[mm] x_{drift}(%5.2f-%5.2f)[mm]", 10.*fAd->GetBinCenter(id)- 5.*fAd->GetBinWidth(id), 10.*fAd->GetBinCenter(id)+ 5.*fAd->GetBinWidth(id), 10.*fAt->GetBinCenter(it)- 5.*fAt->GetBinWidth(it), 10.*fAt->GetBinCenter(it)+ 5.*fAt->GetBinWidth(it)), 35, -.35, .35, 100, -.5, .5), ih++);
+      arr->AddAt(h2 = new TH2I(Form("hs_d%02dt%02d", id, it), Form("d_{wire}(%3.1f-%3.1f)[mm] t_{drift}(%3.1f-%3.1f)[#mus]", 10.*fAd->GetBinLowEdge(id), 10.*fAd->GetBinUpEdge(id), fAt->GetBinLowEdge(it), fAt->GetBinUpEdge(it)), 35, -.35, .35, 100, -.5, .5), ih++);
       h2->SetXTitle("tg#phi-h*tg(#theta)");
       h2->SetYTitle("#Delta y[cm]");
       h2->SetZTitle("entries");
@@ -408,9 +397,9 @@ void AliTRDclusterResolution::Exec(Option_t *)
       h2->Fill(cli->GetYDisplacement(), dy);
     }
 
-    Int_t it = fAt->FindBin(cli->GetDriftLength());
+    Int_t it = fAt->FindBin((t+.5)*fgkTimeBinLength);
     if(it==0 || it == fAt->GetNbins()+1){
-      AliWarning(Form("Drift length %f outside allowed range", cli->GetDriftLength()));
+      AliWarning(Form("Drift time %f outside allowed range", t));
       continue;
     }
     Int_t id = fAd->FindBin(cli->GetAnisochronity());
@@ -482,7 +471,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
     }
     arr->AddAt(h2, 0);
     h2->SetXTitle("d [mm]");
-    h2->SetYTitle("x_{drift} [cm]");
+    h2->SetYTitle("t_{drift} [#mus]");
     h2->SetZTitle("#sigma_{x} [cm]");
     arr->AddAt(h2 = (TH2F*)h2->Clone("hSY"), 1);
     h2->SetZTitle("#sigma_{y} [cm]");
@@ -508,16 +497,16 @@ Bool_t AliTRDclusterResolution::PostProcess()
   printf("ExB[%e] ExB2[%e]\n", fExB, exb2);
 
   // process resolution dependency on charge
-  if(HasProcessCharge()) ProcessCharge();
+  if(HasProcess(kQRes)) ProcessCharge();
   
   // process resolution dependency on y displacement
-  if(HasProcessCenterPad()) ProcessCenterPad();
+  if(HasProcess(kCenter)) ProcessCenterPad();
 
   // process resolution dependency on drift legth and drift cell width
-  if(HasProcessSigma()) ProcessSigma();
+  if(HasProcess(kSigm)) ProcessSigma();
 
   // process systematic shift on drift legth and drift cell width
-  if(HasProcessMean()) ProcessMean();
+  if(HasProcess(kMean)) ProcessMean();
 
   return kTRUE;
 }

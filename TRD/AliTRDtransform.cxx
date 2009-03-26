@@ -234,9 +234,12 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
   Int_t row = i[0];
   Int_t col = i[1];
 
-  // Parameters to adjust the X position
-  const Double_t kX0shift = 2.52 + 0.04273; //[cm]
-  const Double_t kT0shift = 3.19e-3;        //[us]
+  // Parameters to adjust the X position of clusters
+  const Double_t kX0shift = AliTRDgeometry::AnodePos(); //[cm]
+  // TRF rising time (fitted)
+  // It should be absorbed by the t0. For the moment t0 is 0 for simulations.
+  // A.Bercuci (Mar 26 2009)
+  const Double_t kT0shift = 0.189;        //[us]
 
   if (!fMatrix) {
 
@@ -260,7 +263,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // T0 correction
     Double_t timeT0Cal   = time - t0;
     // Calculate the X-position,
-    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency + kT0shift) * vdrift; 
+    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency - kT0shift) * vdrift; 
 
     // Length of the amplification region
     Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
@@ -276,7 +279,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // Invert the X-position,
     // apply ExB correction to the Y-position
     // and move to the Z-position relative to the middle of the chamber
-    posLocal[0] = -xLocal;
+    posLocal[0] = kX0shift-xLocal;
     posLocal[1] =  (fPadPlane->GetColPos(col) + (0.5 + x[0]) * colSize) - driftLength * exbCorr;
     posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
 
@@ -295,7 +298,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     }
 
     // Output values
-    x[0] = posTracking[0] + kX0shift;
+    x[0] = posTracking[0];
     x[1] = posTracking[1];
     x[2] = posTracking[2];
     x[3] = clusterCharge;

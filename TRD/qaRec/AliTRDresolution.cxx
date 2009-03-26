@@ -319,7 +319,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
-  Double_t x, y, z, pt, dydx, dzdx;
+  Double_t xAnode, x, y, z, pt, dydx, dzdx;
   Float_t p, pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
   Double_t covR[3]/*, cov[3]*/;
 
@@ -353,6 +353,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     //radial shift with respect to the MC reference (radial position of the pad plane)
     x= fTracklet->GetX();
     if(!fMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) continue;
+    xAnode  = fTracklet->GetX0();
+
     // MC track position at reference radial position
     dx  = x0 - x;
     if(fDebugLevel>=1){
@@ -371,8 +373,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     Float_t zt = z0 - dx*dzdx0;
     p = pt0*(1.+dzdx0*dzdx0); // pt -> p
 
-    // add Kalman residuals for y, z and pt
-    dx = fTracklet->GetX0() - x;
+    // Kalman position at reference radial position
+    dx = xAnode - x;
     y  = fTracklet->GetYref(0) - dx*fTracklet->GetYref(1);
     dy = yt - y;
     z  = fTracklet->GetZref(0) - dx*fTracklet->GetZref(1);
@@ -408,7 +410,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     // recalculate tracklet based on the MC info
     AliTRDseedV1 tt(*fTracklet);
-    tt.SetZref(0, z0 - (x0-tt.GetX0())*dzdx0);
+    tt.SetZref(0, z0 - (x0-xAnode)*dzdx0);
     tt.SetZref(1, dzdx0); 
     tt.Fit(kTRUE);
     x= tt.GetX();y= tt.GetY();z= tt.GetZ();
@@ -481,7 +483,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       clInfo->SetGlobalPosition(yt, zt, dydx0, dzdx0);
       clInfo->SetResolution(dy);
       clInfo->SetAnisochronity(d);
-      clInfo->SetDriftLength(dx-.5*AliTRDgeometry::CamHght());
+      clInfo->SetDriftLength(((c->GetPadTime()+0.5)*.1)*1.5);
+      //dx-.5*AliTRDgeometry::CamHght());
       clInfo->SetTilt(tilt);
 
       // Fill Debug Tree

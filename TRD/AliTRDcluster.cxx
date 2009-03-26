@@ -277,26 +277,30 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const q, Doub
   Double_t fFreq = cp->GetSamplingFrequency();
   //drift time corresponding to the center of the time bin
   Double_t td = (fPadTime + .5)/fFreq; // [us] 
-  if(td < t0+2.5) return 0.; // do not calculate radial posion of clusters in the amplification region
-
   // correction for t0
   td -= t0;
+  // calculate radial posion of clusters in the drift region
+  if(td < .2 || td > 2.4) return 0.; 
+  // correction for TRF rising time 0.2us
+  td -= 0.189;
 
-  Double_t x = vd*td, xold=0.;
-  Float_t tc0   = 0.244, // TRF rising time 0.2us
-          dtcdx = 0.009, // diffusion contribution to the rising time of the signal
-          kTC   = 0.;    // tail cancellation residual
-  while(TMath::Abs(x-xold)>1.e-3){ // convergence on 10um level 
-    xold = x;
-    Float_t tc  = tc0 - dtcdx*x; 
-    Float_t tq  = 0.;
-    if(q && xq){
-      for(Int_t iq=0; iq<3; iq++) tq += q[iq]*TMath::Exp(-kTC*(x - xq[iq]));
-    }
-    Float_t vdcorr = x/cp->TimeStruct(vd, x+.5*AliTRDgeometry::CamHght(), z);
-    x    = (td - tc - tq) * vdcorr;
+  // invert drift time function
+  Double_t xM= AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght(),
+           x = vd*td + .5*AliTRDgeometry::CamHght(), 
+           t = cp->TimeStruct(vd, x, z), dx1=0.,dx2;
+  while(TMath::Abs(td-t)>1.e-4){ // convergence on 100ps
+    dx2 = vd*(td-t);
+    if(TMath::Abs(TMath::Abs(dx2)-TMath::Abs(dx1))<1.e-6){
+      x+=.5*dx2;
+      break;
+    } else x+=dx2;
+
+    if(x<0. || x>xM) return 0.;
+    t = cp->TimeStruct(vd, x, z);
+    dx1 = dx2;
   }
-  return x;
+
+  return x-.5*AliTRDgeometry::CamHght();
 }
 
 //_____________________________________________________________________________

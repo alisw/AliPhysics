@@ -459,12 +459,11 @@ void AliTRDseedV1::GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y
 
   // drift velocity correction TODO to be moved to the clusterizer
   const Float_t cx[] = {
-    -9.6280e-02, 1.3091e-01,-1.7415e-02,-9.9221e-02,-1.2040e-01,-9.5493e-02,
-    -5.0041e-02,-1.6726e-02, 3.5756e-03, 1.8611e-02, 2.6378e-02, 3.3823e-02,
-     3.4811e-02, 3.5282e-02, 3.5386e-02, 3.6047e-02, 3.5201e-02, 3.4384e-02,
-     3.2864e-02, 3.1932e-02, 3.2051e-02, 2.2539e-02,-2.5154e-02,-1.2050e-01,
-    -1.2050e-01
-  };
+    0.0000e+00, 6.0869e-02, -7.0366e-02, -1.4700e-01, -1.6228e-01, -1.3282e-01,
+    -8.7548e-02, -5.3547e-02, -3.2318e-02, -1.7403e-02, -9.6158e-03, -2.7985e-03,
+    -1.1035e-03, -5.1325e-04, 3.9906e-04, 7.6908e-04, 2.5395e-04, -1.7090e-04,
+    -1.8659e-03, -9.8477e-04, -2.2940e-03, -1.3164e-02, -6.6807e-02, -1.5843e-01,
+    0.0000e+00,   };
 
   // PRF correction TODO to be replaced by the gaussian 
   // approximation with full error parametrization and // moved to the clusterizer
@@ -651,14 +650,14 @@ Double_t AliTRDseedV1::GetCovSqrt(Double_t *c, Double_t *d)
 // The input matrix is stored in the vector c and the result in the vector d. 
 // Both arrays have to be initialized by the user with at least 3 elements. Return negative in case of failure.
 // 
-// For calculating the square root of the inverse 
-// covariance matrix we use the following relation:
+// For calculating the square root of the symmetric matrix c
+// the following relation is used:
 // BEGIN_LATEX
-// A^{1/2} = VD^{1/2}V^{-1}
+// C^{1/2} = VD^{1/2}V^{-1}
 // END_LATEX
 // with V being the matrix with the n eigenvectors as columns. 
-// Thus the following are true:
-//   - matrix D is diagonal with the diagonal given by the eigenvalues of A (A being symmetric)
+// In case C is symmetric the followings are true:
+//   - matrix D is diagonal with the diagonal given by the eigenvalues of C
 //   - V = V^{-1}
 //
 // Author A.Bercuci <A.Bercuci@gsi.de>
@@ -1247,7 +1246,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
     
     // uncalibrated cluster correction 
     // TODO remove
-    Double_t x, y; GetClusterXY(c, x, y);
+    Double_t x, y; 
+    GetClusterXY(c, x, y);
+    //x = c->GetX(); y = c->GetY();
     xc[n]   = fX0 - x;
     yc[n]   = y;
     zc[n]   = c->GetZ();
