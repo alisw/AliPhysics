@@ -155,7 +155,7 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
   //
 
   AliMUONDigitStoreV1 digitStore;
-  TriggerDigits(triggerStore,digitStore);
+  fkDigitMaker.TriggerToDigitsStore(triggerStore,digitStore);
 
 
   TIter itTrack(trackStore.CreateIterator());
@@ -172,7 +172,7 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
 
     AliMUONTriggerTrack *matchedTriggerTrack = MatchTriggerTrack(track, trackParam, triggerTrackStore, triggerStore);
 
-    UShort_t pattern = GetHitPattern(trackParam, matchedTriggerTrack, digitStore);
+    UShort_t pattern = GetHitPattern(matchedTriggerTrack, digitStore, &trackParam);
     track->SetHitsPatternInTrigCh(pattern);
   }
 }
@@ -319,9 +319,9 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 
 
 //______________________________________________________________________________
-UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam &trackParam,
-					       AliMUONTriggerTrack* matchedTriggerTrack,
-					       AliMUONVDigitStore& digitStore) const
+UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
+					       AliMUONVDigitStore& digitStore,
+					       AliMUONTrackParam* trackParam) const
 {
   //
   /// Get hit pattern on trigger chambers for the current track
@@ -342,13 +342,15 @@ UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam &trackParam,
 
 
   // Calculate hit pattern from tracker track propagation
-  // if hit pattern from trigger track failed
+  // if hit pattern from trigger track failed and track parameters are provided
+
+  if(!trackParam) return 0;
 
   for(Int_t ch=0; ch<4; ++ch)
   {
     Int_t iChamber = kNTrackingCh+ch;
-    AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(iChamber));
-    FindPadMatchingTrack(digitStore, trackParam, isMatch, iChamber);
+    AliMUONTrackExtrap::ExtrapToZCov(trackParam, AliMUONConstants::DefaultChamberZ(iChamber));
+    FindPadMatchingTrack(digitStore, *trackParam, isMatch, iChamber);
     for(Int_t cath=0; cath<2; ++cath)
     {
       if(isMatch[cath]) SetBit(pattern, cath, ch);
@@ -396,44 +398,6 @@ AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
   AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut); // Extrap to muon filter end
   AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
   return;
-}
-
-
-//______________________________________________________________________________
-Bool_t 
-AliMUONTrackHitPattern::TriggerDigits(const AliMUONVTriggerStore& triggerStore,
-                                      AliMUONVDigitStore& digitStore) const
-{
-  //
-  /// make (S)Digit for trigger
-  //
-  
-  digitStore.Clear();
-  
-  AliMUONLocalTrigger* locTrg;
-  TIter next(triggerStore.CreateLocalIterator());
-  
-  while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) ) 
-  {
-    if (locTrg->IsNull()) continue;
-   
-    TArrayS xyPattern[2];
-    locTrg->GetXPattern(xyPattern[0]);
-    locTrg->GetYPattern(xyPattern[1]);
-
-    // do we need this ? (Ch.F.)
-//     for(Int_t cath=0; cath<2; ++cath)
-//     {
-//       for(Int_t ch=0; ch<4; ++ch)
-//       {
-//         if(xyPattern[cath][ch]==0) continue;
-//       }
-//     }
-    
-    Int_t nBoard = locTrg->LoCircuit();
-    fkDigitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
-  }
-  return kTRUE;
 }
 
 

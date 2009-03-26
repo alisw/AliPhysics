@@ -239,6 +239,8 @@ void AliMUONRecoParam::SetCosmicParam()
   fSigmaCutForTracking = 20.;
   fSigmaCutForImprovement = 20.;
   fSigmaCutForTrigger = 8.;
+  fStripCutForTrigger = 1.5;
+  fMaxStripAreaForTrigger = 3.;
   fMaxNormChi2MatchTrigger = 16.;
   fPercentOfFullClusterInESD = 100.;
   fCombinedClusterTrackReco = kFALSE;

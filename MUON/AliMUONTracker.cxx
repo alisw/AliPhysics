@@ -53,7 +53,9 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONDigitStoreV1.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONDigitMaker.h"
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TTree.h>
@@ -302,6 +304,11 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
   UInt_t ghostId = 0xFFFFFFFF - 1;
   Bool_t matched = kFALSE;
   AliMUONTriggerTrack *triggerTrack;
+
+  // Needed to calculate the hit pattern for ghosts
+  AliMUONDigitStoreV1 digitStore;
+  fkDigitMaker->TriggerToDigitsStore(*fTriggerStore,digitStore);
+
   TIter itTriggerTrack(fTriggerTrackStore->CreateIterator());
   while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack()) ) ) {
     
@@ -315,7 +322,9 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
     }
     if (matched) continue;
     
-    AliMUONESDInterface::MUONToESD(*locTrg, esdTrack, ghostId);
+    UShort_t pattern = fTrackHitPatternMaker->GetHitPattern(triggerTrack, digitStore);
+
+    AliMUONESDInterface::MUONToESD(*locTrg, esdTrack, ghostId, pattern);
     
     esd->AddMuonTrack(&esdTrack);
     ghostId -= 1;

@@ -55,6 +55,9 @@ class AliMUONDigitMaker : public TObject
   Int_t TriggerDigits(Int_t nBoard, TArrayS* xyPattern, 
                       AliMUONVDigitStore& digitStore) const;
 
+  Bool_t TriggerToDigitsStore(const AliMUONVTriggerStore& triggerStore, 
+			      AliMUONVDigitStore& digitStore) const;
+
         /// Set flag to generates scaler event
   void  SetScalerEvent() { fScalerEvent = kTRUE; }
 

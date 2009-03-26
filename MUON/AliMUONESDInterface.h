@@ -121,7 +121,7 @@ public: // static methods
   // MUON objects --> ESDMuon objects conversion
   static void MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3],
 			const AliMUONVDigitStore* digits = 0x0, const AliMUONLocalTrigger* locTrg = 0x0);
-  static void MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId);
+  static void MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId, UShort_t hitPattern);
   static void MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCluster& esdCluster, const AliMUONVDigitStore* digits = 0x0);
   static void MUONToESD(const AliMUONVDigit& digit, AliESDMuonPad& esdPad);
   

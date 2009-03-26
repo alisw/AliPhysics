@@ -580,6 +580,34 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
   return kTRUE;
 }
 
+//______________________________________________________________________________
+Bool_t 
+AliMUONDigitMaker::TriggerToDigitsStore(const AliMUONVTriggerStore& triggerStore,
+					AliMUONVDigitStore& digitStore) const
+{
+  //
+  /// make (S)Digit for trigger
+  //
+  
+  digitStore.Clear();
+  
+  AliMUONLocalTrigger* locTrg;
+  TIter next(triggerStore.CreateLocalIterator());
+  
+  while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) ) 
+  {
+    if (locTrg->IsNull()) continue;
+   
+    TArrayS xyPattern[2];
+    locTrg->GetXPattern(xyPattern[0]);
+    locTrg->GetYPattern(xyPattern[1]);
+
+    Int_t nBoard = locTrg->LoCircuit();
+    TriggerDigits(nBoard, xyPattern, digitStore);
+  }
+  return kTRUE;
+}
+
 //____________________________________________________________________
 Bool_t AliMUONDigitMaker::UsingFastTrackerDecoder() const
 {

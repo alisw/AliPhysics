@@ -818,7 +818,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   
   // empty MUON track -> produce a ghost ESDMuon track if trigger info are available otherwise produce an empty track
   if (track.GetNClusters() == 0) {
-    if (locTrg) MUONToESD(*locTrg, esdTrack, track.GetUniqueID());
+    if (locTrg) MUONToESD(*locTrg, esdTrack, track.GetUniqueID(), track.GetHitsPatternInTrigCh());
     else {
       cout<<"W-AliMUONESDInterface::MUONToESD: will produce an empty ESDMuon track"<<endl;
       esdTrack.Reset();
@@ -887,7 +887,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId)
+void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId, UShort_t hitPattern)
 {
   /// Build ghost ESDMuon track containing only informations about trigger track
   
@@ -904,7 +904,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuo
 			    locTrg.LoHpt());
   esdTrack.SetLocalTrigger(muonTrack.GetLocalTrigger());
   esdTrack.SetChi2MatchTrigger(0.);
-  esdTrack.SetHitsPatternInTrigCh(0);
+  esdTrack.SetHitsPatternInTrigCh(hitPattern);
   esdTrack.SetTriggerX1Pattern(locTrg.GetX1Pattern());
   esdTrack.SetTriggerY1Pattern(locTrg.GetY1Pattern());
   esdTrack.SetTriggerX2Pattern(locTrg.GetX2Pattern());

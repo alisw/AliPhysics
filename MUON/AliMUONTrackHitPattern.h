@@ -45,16 +45,13 @@ public:
 					 const AliMUONVTriggerTrackStore& triggerTrackStore,
 					 const AliMUONVTriggerStore& triggerStore) const;
     
-  UShort_t GetHitPattern(AliMUONTrackParam& trackParam,
-			 AliMUONTriggerTrack* matchedTriggerTrack,
-			 AliMUONVDigitStore& digitStore) const;
+  UShort_t GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
+			 AliMUONVDigitStore& digitStore,
+			 AliMUONTrackParam* trackParam=0x0) const;
 
 protected:
   void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
   
-  Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore, 
-		       AliMUONVDigitStore& digitStore) const;
-
   void InitMembers();
   
   void SetBit(UShort_t& pattern, Int_t cathode, Int_t chamber) const;
