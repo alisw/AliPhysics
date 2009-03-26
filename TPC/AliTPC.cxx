@@ -1479,6 +1479,11 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   //-----------------------------------------------------------------
  
   Float_t zerosup = fTPCParam->GetZeroSup();
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor(); 
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise(); 
+  AliTPCCalROC * gainROC = gainTPC->GetCalROC(isec);  // pad gains per given sector
+  AliTPCCalROC * noiseROC = noiseTPC->GetCalROC(isec);  // noise per given sector
+
 
   fCurrentIndex[1]= isec;
   
@@ -1532,8 +1537,12 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
     for(Int_t ip=0;ip<nofPads;ip++){
       gi++;
       Float_t q=total(ip,it);      
-      if(fDigitsSwitch == 0){
-	q+=GetNoise();
+      if(fDigitsSwitch == 0){	
+	Float_t gain = gainROC->GetValue(irow,ip);  // get gain for given - pad-row pad	
+	Float_t noisePad = noiseROC->GetValue(irow,ip);	
+	//
+	q*=gain;
+	q+=GetNoise()*noisePad;
         if(q <=fzerosup) continue; // do not fill zeros
         q = TMath::Nint(q);
         if(q >= fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat() - 1;  // saturation
