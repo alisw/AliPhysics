@@ -1,7 +1,7 @@
 /*
 Contact: henrik.tydesjo@cern.ch
 Link: tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/
-Run Type: DAQ_MIN_TH_SCAN,DAQ_MEAN_TH_SCAN,DAQ_UNIFORMITY_SCAN,DAQ_NOISY_PIX_SCAN,DAQ_PIX_DELAY_SCAN,DAQ_FO_UNIF_SCAN
+Run Type: DAQ_MIN_TH_SCAN,DAQ_MEAN_TH_SCAN,DAQ_UNIFORMITY_SCAN,DAQ_NOISY_PIX_SCAN,DAQ_PIX_DELAY_SCAN
 DA Type: LDC
 Number of events needed: Depending on scan type
 Input Files: spd_standal_params,spd_perm_noisy ,  ./calibResults/ScanNoisy/* ,  raw data
@@ -284,14 +284,16 @@ int main(int argc, char **argv) {
 	    rowStart[eqId]    = str->GetHrowStart();
 	    rowEnd[eqId]      = str->GetHrowEnd();
 	    rowValue[eqId]    = str->GetHrowValue();
-	    dacValue[eqId]    = str->GetHdacValue();
+	    dacValue[eqId]    = str->GetHdacValue(); // this will change below for MEANTH scan
+
 	    for (UInt_t hs=0; hs<6; hs++) {
 	      halfStaveScanned[eqId][hs] = str->GetHhalfStaveScanned(hs);
 	      dacHigh[eqId][hs]          = str->GetHdacHigh(hs);
 	      dacLow[eqId][hs]           = str->GetHdacLow(hs);
 	      TPAmp[eqId][hs]            = str->GetHTPAmp(hs);
 	      for (UInt_t chip=0; chip<10; chip++) {
-		chipPresent[eqId][hs][chip]      = str->GetHchipPresent(hs,chip);
+		chipPresent[eqId][hs][chip] = str->GetHchipPresent(hs,chip);
+		if (type[eqId]==MEANTH && chipPresent[eqId][hs][chip]) dacValue[eqId] = str->GetHdacLow(hs);
 	      }
 	    }
 	    for (UInt_t chip=0; chip<10; chip++) {
@@ -350,19 +352,9 @@ int main(int argc, char **argv) {
 	      }
 	      scanObj[eqId]->SetType(type[eqId]);
 	      scanObj[eqId]->SetDataFormat(dataFormat[eqId]);
-	      for (Int_t hs=0; hs<6; hs++) {
-	      
-		// remove later when the chip present is set correctly !!!!!!!!!!!!!!!!!!!!!!!!!!!
-		Bool_t halfStavePresent = str->GetHalfStavePresent(hs);
-		// remove later when the chip present is set correctly !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+	      for (Int_t hs=0; hs<6; hs++) {	      
 		for (UInt_t chip=0; chip<10; chip++) {
 		  scanObj[eqId]->SetChipPresent(hs,chip,chipPresent[eqId][hs][chip]);
-
-		  // remove later when the chip present is set correctly !!!!!!!!!!!!!!!!!!!!!!!!!!!
-		  if (halfStavePresent) scanObj[eqId]->SetChipPresent(hs,chip,kTRUE);
-		  // remove later when the chip present is set correctly !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 		}
 	      }
 	      scanObj[eqId]->SetRowStart(rowStart[eqId]);
