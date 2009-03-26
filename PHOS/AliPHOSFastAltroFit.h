@@ -31,7 +31,7 @@ public:
   void FastFit(Int_t* t, Int_t* y, Int_t n, Double_t sig, Double_t tau, Double_t ped);
 
   void GetFitResult(Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2,
-		 Int_t &fNDF);
+		    Int_t &fNDF) {};
   Double_t GetSig()    const {return fSig;}
   Double_t GetTau()    const {return fTau;}
   Double_t GetN()      const {return fN;}
