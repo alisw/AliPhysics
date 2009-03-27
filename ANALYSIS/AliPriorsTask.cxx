@@ -173,7 +173,7 @@ void AliPriorsTask::UserExec(Option_t *)
     if ((Int_t)id < (Int_t)AliPID::kSPECIES)   fRecId[id]++; 
     
     if(fNiterations == 0 ){
-      Int_t pdgcode = TMath::Abs(((fMCEvent->GetTrack(iTrack))->Particle())->GetPdgCode());
+      Int_t pdgcode = TMath::Abs(((fMCEvent->GetTrack(track->GetLabel()))->Particle())->GetPdgCode());
       switch(pdgcode){
       case 11  :         fMCId[AliPID::kElectron]++; break;
       case 13  :         fMCId[AliPID::kMuon]++;     break;
