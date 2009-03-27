@@ -38,9 +38,9 @@ public:
     virtual Double_t Phi()       const;
     virtual Double_t Theta()     const;
     
-    virtual Double_t Xv() const;
-    virtual Double_t Yv() const;
-    virtual Double_t Zv() const;
+    virtual Double_t Xv()        const;
+    virtual Double_t Yv()        const;
+    virtual Double_t Zv()        const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
 
     virtual Double_t E()          const;
@@ -51,10 +51,11 @@ public:
     
     virtual Short_t Charge()      const;
 
-    virtual Int_t      Label()       const;
-    virtual Int_t      GetLabel() const {return Label();} 
-    virtual TParticle* Particle() const  {return fParticle;}
-	    
+    virtual Int_t    Label()         const;
+    virtual Int_t    GetLabel()      const {return Label();}
+    virtual Int_t    PdgCode()       const {return fParticle->GetPdgCode();}
+    virtual TParticle* Particle() const {return fParticle;}
+    
     // PID
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
 
@@ -62,6 +63,10 @@ public:
     Int_t              GetNumberOfTrackReferences() {return fNTrackRef;}
     AliTrackReference* GetTrackReference(Int_t i)
       {return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
+
+    // "Trackable" criteria
+    Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth);
+    
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TRefArray *fTrackReferences;      // Reference array to track references
@@ -86,6 +91,7 @@ inline Double_t AliMCParticle::Zv()        const {return fParticle->Vz();}
 inline Bool_t   AliMCParticle::XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 inline Double_t AliMCParticle::E()         const {return fParticle->Energy();}
 inline Double_t AliMCParticle::Eta()       const {return fParticle->Eta();}
+
 
 inline Double_t AliMCParticle::M()         const
 {
