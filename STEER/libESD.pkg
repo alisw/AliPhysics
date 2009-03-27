@@ -7,7 +7,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDpid.cxx AliESDkink.cxx \
        AliESDCaloCluster.cxx AliESDMuonCluster.cxx AliESDMuonPad.cxx \
        AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx\
-       AliKalmanTrack.cxx AliExternalTrackParam.cxx AliNeutralTrackParam.cxx \
+       AliKalmanTrack.cxx AliNeutralTrackParam.cxx \
        AliVertexerTracks.cxx AliStrLine.cxx \
        AliESDV0Params.cxx \
        AliTrackPointArray.cxx \
@@ -26,7 +26,8 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDCaloCells.cxx \
        AliESDACORDE.cxx \
        AliTriggerIR.cxx \
-       AliESDVZEROfriend.cxx
+       AliESDVZEROfriend.cxx\
+       AliESDHandler.cxx	
 
 HDRS:= $(SRCS:.cxx=.h) 
 
