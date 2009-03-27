@@ -30,12 +30,6 @@ DHDR= TRDrecLinkDef.h
 
 EINCLUDE= RAW
 
-.PHONY default: TRD_clean_compiled_macros
-
-TRD_clean_compiled_macros:
-	@echo "***** Removing TRD QA macros *****"
-	$(MUTE)rm -rf $(HOME)/.trdQArec
-
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lTRDbase -lSTEER -lESD -lCDB -lSTEERBase \
