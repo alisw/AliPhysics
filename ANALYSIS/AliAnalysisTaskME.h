@@ -7,10 +7,11 @@
 /* $Id$ */
 
 #include "AliAnalysisTask.h"
+class AliVEvent;
 class AliAODEvent;
 class AliInputEventHandler;
 class TTree;
-class AliMultiAODInputHandler;
+class AliMultiEventInputHandler;
 
 
 
@@ -36,18 +37,18 @@ class AliAnalysisTaskME : public AliAnalysisTask
    virtual void AddAODBranch(const char* cname, void* addobj);
 // Getters
     virtual Int_t          DebugLevel()              {return fDebug;     }
-    virtual AliAODEvent*   GetEvent(Int_t iev);
+    virtual AliVEvent*     GetEvent(Int_t iev);
     virtual AliAODEvent*   AODEvent()                {return fOutputAOD; }
     virtual TTree*         OutputTree()              {return fTreeA;     }
     virtual Long64_t       Entry()                   {return fEntry;     }
     virtual const char*    CurrentFileName();
   protected:
-    Int_t                    fDebug;           //  Debug flag
-    Int_t                    fEntry;           //  Current entry in the chain
-    Bool_t                   fFreshBufferOnly; //  Flag for Exec call for fresh buffer only
-    AliMultiAODInputHandler* fInputHandler;    //! Input Handler
-    AliAODEvent*             fOutputAOD;       //! AOD out 
-    TTree*                   fTreeA;           //  AOD output Tree
+    Int_t                      fDebug;           //  Debug flag
+    Int_t                      fEntry;           //  Current entry in the chain
+    Bool_t                     fFreshBufferOnly; //  Flag for Exec call for fresh buffer only
+    AliMultiEventInputHandler* fInputHandler;    //! Input Handler
+    AliAODEvent*               fOutputAOD;       //! AOD out 
+    TTree*                     fTreeA;           //  AOD output Tree
     ClassDef(AliAnalysisTaskME, 1); // Analysis task for standard jet analysis
 };
  

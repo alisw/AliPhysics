@@ -25,8 +25,9 @@
 #include "AliAnalysisTaskME.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
+#include "AliVEvent.h"
 #include "AliAODHandler.h"
-#include "AliMultiAODInputHandler.h"
+#include "AliMultiEventInputHandler.h"
 #include "AliLog.h"
 
 
@@ -99,16 +100,16 @@ void AliAnalysisTaskME::ConnectInputData(Option_t* /*option*/)
 //
 //  Multi AOD
 //
-    fInputHandler = dynamic_cast<AliMultiAODInputHandler*> 
+    fInputHandler = dynamic_cast<AliMultiEventInputHandler*> 
 	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if (fInputHandler == 0) {
-	AliFatal("Event Handler has to be MultiAODInputHandler !");
+	AliFatal("Event Handler has to be MultiEventInputHandler !");
     } else {
 	// Check that we have an event pool
 	if (!fInputHandler->GetEventPool()) {
 	    fInputHandler->SetEventPool(AliAnalysisManager::GetAnalysisManager()->GetEventPool());
 	    if (!fInputHandler->GetEventPool()) 
-		AliFatal("MultiAODInputHandler has no EventPool connected !");
+		AliFatal("MultiEventInputHandler has no EventPool connected !");
 	}
     }
 }
@@ -149,11 +150,11 @@ void AliAnalysisTaskME::Exec(Option_t* option)
     if (fInputHandler->IsBufferReady()) {
 	if ((fFreshBufferOnly && fInputHandler->IsFreshBuffer()) || !fFreshBufferOnly)
 	{
-	    outputHandler->SetFillAOD(kTRUE);
+	    if (outputHandler) outputHandler->SetFillAOD(kTRUE);
 	    UserExec(option);
 	    PostData(0, fTreeA);
 	} else {
-	    outputHandler->SetFillAOD(kFALSE);
+	    if (outputHandler) outputHandler->SetFillAOD(kFALSE);
 	}
     } else {
 	AliInfo(Form("Waiting for buffer to be ready !\n"));
@@ -178,7 +179,7 @@ void AliAnalysisTaskME::AddAODBranch(const char* cname, void* addobj)
     }
 }
 
-AliAODEvent*  AliAnalysisTaskME::GetEvent(Int_t iev)
+AliVEvent*  AliAnalysisTaskME::GetEvent(Int_t iev)
 {
     // Get an event from the input handler
     return (fInputHandler->GetEvent(iev));

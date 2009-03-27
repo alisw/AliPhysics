@@ -5,7 +5,7 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisTaskPhiCorr.h"
-#include "AliMultiAODInputHandler.h"
+#include "AliMultiEventInputHandler.h"
 
 ClassImp(AliAnalysisTaskPhiCorr)
 
@@ -51,8 +51,8 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
     
     for (Int_t iev = 0; iev < nev; iev++) {
 	for (Int_t jev = (iev + 1); jev < nev; jev++) {
-	    AliAODEvent* aod1 = GetEvent(iev);
-	    AliAODEvent* aod2 = GetEvent(jev);
+	    AliAODEvent* aod1 = (AliAODEvent*)GetEvent(iev);
+	    AliAODEvent* aod2 = (AliAODEvent*)GetEvent(jev);
 	    
 	    Int_t ntracks1 =  aod1->GetNumberOfTracks();
 	    Int_t ntracks2 =  aod2->GetNumberOfTracks();
@@ -77,9 +77,11 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
     } // event loop
     
 //    Correlated 
-    AliAODEvent* aod = fInputHandler->GetLatestEvent();
-    
+    AliAODEvent* aod = (AliAODEvent*)fInputHandler->GetLatestEvent();
+
     Int_t ntracks = aod->GetNumberOfTracks();
+    printf("Number of tracks %5d: \n", ntracks);
+    
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
 	for (Int_t jTracks = (iTracks+1); jTracks < ntracks; jTracks++) {
 	      AliAODTrack* track1 = aod->GetTrack(iTracks);
@@ -91,7 +93,7 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
 	      fHistDphiCO->Fill(dphi);
 	} // tracks
     }
-    
+
   // Post output data.
   PostData(1, fHists);
 }      
@@ -102,7 +104,7 @@ void AliAnalysisTaskPhiCorr::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  TCanvas *c1 = new TCanvas("AliAnalysisTaskPt","Pt",10,10,510,510);
+  TCanvas *c1 = new TCanvas("AliAnalysisTaskPt","corr1",10,10,510,510);
   c1->cd(1)->SetLogy();
   fHistDphiUC->DrawCopy("E");
   fHistDphiCO->DrawCopy("Esame");
