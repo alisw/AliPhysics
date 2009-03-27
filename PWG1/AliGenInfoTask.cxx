@@ -379,6 +379,9 @@ void AliGenInfoTask::DumpInfo(){
   //
   //
   //
+  TParticle * particle= new TParticle;
+  TClonesArray * trefs = new TClonesArray("AliTrackReference");
+  //
 
   static AliESDRecInfo dummy;
   Int_t npart = fMCinfo->GetNumberOfTracks();
@@ -386,26 +389,22 @@ void AliGenInfoTask::DumpInfo(){
     AliMCInfo * mcinfo = GetTrack(ipart,kFALSE);
     if (!mcinfo) continue;
     AliESDRecInfo *recInfo= GetRecTrack(ipart,kFALSE);
-    //
-  //   AliTPCseed *tpctrack=0;
-//     if (recInfo) {
-//       AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(recInfo->GetESDtrack()->GetID());
-//       if (friendTrack) {
-// 	TObject *calibObject=0;
-// 	AliTPCseed *seed=0;
-// 	for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
-// 	  if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
-// 	    break;
-// 	tpctrack=seed;
-//       }
-//     }
-//     if (!tpctrack) continue;
     if (!recInfo) recInfo=&dummy; 
     TTreeSRedirector *pcstream = GetDebugStreamer();
+    
+    fMCinfo->GetParticleAndTR(ipart, particle, trefs);
+    Int_t counter=0;
+    Float_t length=0;
+    if (trefs!=0 && particle!=0){
+      length = GetTPCTrackLength(*trefs, particle , fESD->GetMagneticField(), counter, 3.0);
+    }
+
     if (pcstream){
       (*pcstream)<<"RC"<<	
 	"MC.="<<mcinfo<<
 	"RC.="<<recInfo<<
+	"length="<<length<<
+	"counter="<<counter<<
 	//	"tr.="<<tpctrack<<
 	"\n";
     }    
@@ -470,4 +469,73 @@ void AliGenInfoTask::RegisterDebugOutput(const char */*path*/){
   AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
   printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
   TFile::Cp(dsName.Data(),dsName2.Data());
+}
+
+
+Float_t  AliGenInfoTask::GetTPCTrackLength(const TClonesArray& trackRefs, TParticle*part, Float_t bz,  Int_t &counter, Float_t deadWidth){
+  //
+  // return track length in geometrically active volume of TPC.
+  // z nad rphi acceptance is included
+  // doesn't take into account dead channel and ExB  
+  // Intput:
+  // trackRefs
+  // bz - magnetic field
+  // deadWidth - dead zone in r-phi
+  // Additional output:
+  // counter   - number of circles
+  const Float_t kRMin = 90;
+  const Float_t kRMax = 245;
+  const Float_t kZMax = 250;
+  const Float_t kMinPt= 0.01; 
+  Float_t length =0;
+  Int_t nrefs = trackRefs.GetEntriesFast();
+  AliExternalTrackParam param;
+  Double_t cv[21];
+  for (Int_t i=0; i<21;i++) cv[i]=0;
+  counter=0;
+  //
+  //
+  AliTrackReference *ref0 = (AliTrackReference*)trackRefs.At(0);
+  Float_t direction = 0;
+  //
+  for (Int_t iref=1; iref<nrefs;iref++){
+    AliTrackReference *ref = (AliTrackReference*)trackRefs.At(iref);
+    if (!ref) continue;
+    if (!ref0 || ref0->DetectorId()!= AliTrackReference::kTPC){
+      ref0 = ref;
+      direction = ((ref0->X()*ref0->Px()+ref0->Y()*ref0->Py())>0)? 1.:-1.;
+      continue;
+    }
+    Float_t newdirection = ((ref->X()*ref->Px()+ref->Y()*ref->Py())>0)? 1.:-1.;
+    if (newdirection*direction<0) {
+      counter++;  //circle counter 
+      direction = newdirection;
+      continue;
+    }
+    if (counter>0) continue;
+    if (ref0->Pt()<kMinPt) break;
+    Float_t radius0 = TMath::Max(TMath::Min(ref0->R(),kRMax),kRMin);;
+    Float_t radius1 = TMath::Max(TMath::Min(ref->R(),kRMax),kRMin);
+    Double_t xyz[3]={ref0->X(),ref0->Y(),ref0->Z()};
+    Double_t pxyz[3]={ref0->Px(),ref0->Py(),ref0->Pz()};
+    Double_t alpha;
+       param.Set(xyz,pxyz,cv,TMath::Nint(part->GetPDG()->Charge()/3.));
+    
+    for (Float_t radius = radius0; radius<radius1; radius+=1){
+      param.GetXYZAt(radius, bz, xyz);
+      if (TMath::Abs(xyz[2])>kZMax) continue;
+      Float_t gradius = TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0]);
+      if (gradius>kRMax) continue;
+      alpha = TMath::ATan2(xyz[1],xyz[0]);
+      if (alpha<0) alpha+=TMath::TwoPi();
+      //
+      Int_t sector  = Int_t(9*alpha/TMath::Pi());
+      Float_t lalpha = alpha-((sector+0.5)*TMath::Pi()/9.);
+      Float_t dedge  = (TMath::Tan(TMath::Pi()/18.)-TMath::Abs(TMath::Tan(lalpha)))*gradius; 
+      if (dedge>deadWidth) length++;
+    }
+    if (ref->DetectorId()!= AliTrackReference::kTPC) break; 
+    ref0 = ref;
+  }
+  return length;
 }
