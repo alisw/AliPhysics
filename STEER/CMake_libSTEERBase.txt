@@ -25,6 +25,7 @@ set(SRCS
   AliCodeTimer.cxx
   AliPDG.cxx
   AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
+  AliExternalTrackParam.cxx
 )
 
 # fill list of header files from list of source files

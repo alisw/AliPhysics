@@ -8,7 +8,7 @@ set(SRCS
        AliESDpid.cxx AliESDkink.cxx 
        AliESDCaloCluster.cxx AliESDMuonCluster.cxx AliESDMuonPad.cxx 
        AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx
-       AliKalmanTrack.cxx AliExternalTrackParam.cxx AliNeutralTrackParam.cxx 
+       AliKalmanTrack.cxx AliNeutralTrackParam.cxx 
        AliVertexerTracks.cxx AliStrLine.cxx 
        AliESDV0Params.cxx 
        AliESDTagCreator.cxx 
