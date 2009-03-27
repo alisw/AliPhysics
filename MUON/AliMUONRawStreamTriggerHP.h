@@ -60,13 +60,10 @@ public:
 	virtual Int_t GetMaxDDL() const { return fgkMaxDDL; }
 	
 	/// Return maximum number of regional cards in the DDL.
-	virtual Int_t GetMaxReg() const { return (Int_t) fDecoder.RegionalsDecoded(); }
+	virtual Int_t GetMaxReg() const { return (Int_t) fDecoder.MaxRegionals(); }
 	
-	/// Return maximum allowed number of regional cards in the DDL.
-	virtual Int_t GetMaxRegAllowed() const { return (Int_t) fDecoder.MaxRegionals(); }
-	
-	/// Set the maximum allowed number of regional cards in the DDL.
-	virtual void SetMaxRegAllowed(Int_t reg);
+	/// Set the maximum number of regional cards in the DDL.
+	virtual void SetMaxReg(Int_t reg);
 	
 	/// Return maximum number of local cards in the DDL.
 	virtual Int_t GetMaxLoc() const { return (Int_t) fDecoder.MaxLocals(); }
@@ -672,9 +669,10 @@ private:
 		}
 		
 		/// Handler for new regional card structures.
-		void OnNewRegionalStruct(const AliMUONRegionalHeaderStruct* header,
-		                         const AliMUONRegionalScalarsStruct* scalars,
-		                         const void* data);
+		void OnNewRegionalStructV2(UInt_t iReg,
+		                           const AliMUONRegionalHeaderStruct* header,
+		                           const AliMUONRegionalScalarsStruct* scalars,
+		                           const void* data);
 		
 		/// Handler for new local card structures.
 		void OnLocalStruct(const AliMUONLocalInfoStruct* localStruct,
@@ -707,6 +705,8 @@ private:
 		UInt_t fRegEoWErrors;     //!< Number of end of regional word errors.
 		UInt_t fLocalEoWErrors;   //!< Number of end of local word errors.
 		Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
+		
+		static const AliMUONRegionalHeaderStruct fgkEmptyHeader;  //!< Empty header for skipped regional structures.
 	};
 	
 	AliMUONTriggerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
@@ -738,7 +738,8 @@ inline const AliMUONRawStreamTriggerHP::AliLocalStruct* AliMUONRawStreamTriggerH
 }
 
 
-inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnNewRegionalStruct(
+inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnNewRegionalStructV2(
+		UInt_t iReg,
 		const AliMUONRegionalHeaderStruct* header,
 		const AliMUONRegionalScalarsStruct* scalars,
 		const void* /*data*/
@@ -749,18 +750,16 @@ inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnNewRegionalStru
 	/// the appropriate counters.
 	
 	assert( header != NULL );
-	assert( fCurrentRegional != NULL );
-	assert( fRegionalsCount < (UInt_t)fRawStream->GetMaxReg() );
+	assert( iReg < fRegionalsCount );
 	
-	// Link the previous regional structure unless it is the first one.
-	if (fRegionalsCount > 0)
+	fCurrentRegional = fRegionals+iReg;
+	*fCurrentRegional = AliRegionalHeader(fCurrentLocal+1, header, scalars);
+	
+	// Link to the next regional structure unless this is the last one.
+	if (iReg+1 < fRegionalsCount)
 	{
 		fCurrentRegional->SetNext(fCurrentRegional+1);
 	}
-	
-	fCurrentRegional++;
-	*fCurrentRegional = AliRegionalHeader(fCurrentLocal+1, header, scalars);
-	fRegionalsCount++;
 }
 
 

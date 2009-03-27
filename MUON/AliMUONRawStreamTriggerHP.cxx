@@ -58,6 +58,14 @@ ClassImp(AliMUONRawStreamTriggerHP)
 
 const Int_t AliMUONRawStreamTriggerHP::fgkMaxDDL = 2;
 
+const AliMUONRegionalHeaderStruct
+AliMUONRawStreamTriggerHP::AliDecoderEventHandler::fgkEmptyHeader = {
+	AliMUONTriggerDDLDecoder<AliDecoderEventHandler>::RegionalErrorWord(),
+	0,
+	{0, 0},
+	0
+};
+
 
 AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP() :
 	AliMUONVRawStreamTrigger(),
@@ -349,7 +357,7 @@ AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
 }
 
 
-void AliMUONRawStreamTriggerHP::SetMaxRegAllowed(Int_t reg)
+void AliMUONRawStreamTriggerHP::SetMaxReg(Int_t reg)
 {
 	/// Set the maximum allowed number of regional cards in the DDL.
 	
@@ -582,6 +590,8 @@ void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::SetMaxStructs(
 	fRegionals = new AliRegionalHeader[maxRegionals];
 	fLocals = new AliLocalStruct[maxRegionals*maxLocals];
 	fEndOfLocals = fLocals;
+	
+	fRegionalsCount = maxRegionals;
 }
 
 
@@ -603,13 +613,21 @@ void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnNewBuffer(
 	fRegEoWErrors = 0;
 	fLocalEoWErrors = 0;
 	
-	// Reset the current pointers which will be used to track where we need to
-	// fill fRegionals and fLocals. We have to subtract one space because we
-	// will increment the pointer the first time in the OnNewRegionalStruct
-	// and OnLocalStruct methods.
-	fCurrentRegional = fRegionals-1;
+	// Reset the current local structure pointer which will be used to track
+	// where we need to fill fLocals. We have to subtract one space because we
+	// will increment the pointer the first time in the OnLocalStruct method.
 	fCurrentLocal = fLocals-1;
-	fRegionalsCount = 0;
+	
+	fCurrentRegional = NULL;
+	
+	// Reset and link up all the regional structures together.
+	for (UInt_t i = 0; i+1 < fRegionalsCount; i++)
+	{
+		fRegionals[i] = AliRegionalHeader(fLocals, &fgkEmptyHeader, NULL);
+		fRegionals[i].SetNext(&fRegionals[i+1]);
+	}
+	// Reset the last structure.
+	fRegionals[fRegionalsCount-1] = AliRegionalHeader(fLocals, &fgkEmptyHeader, NULL);
 }
 
 
