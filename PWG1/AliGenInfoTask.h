@@ -40,7 +40,8 @@ class AliGenInfoTask : public AliAnalysisTask {
   void ProcessMCInfo();
   void ProcessESDInfo();
   void ProcessComparison();
-  void DumpInfo();
+  void DumpInfo();  
+  static  Float_t GetTPCTrackLength(const TClonesArray& trackRefs, TParticle*part, Float_t bz,  Int_t &counter, Float_t deadWidth);
   //
   //
   // debug streamer part
