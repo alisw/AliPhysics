@@ -35,5 +35,7 @@ void StoreRespSDD(Int_t firstRun=0, Int_t lastRun=999999999 ){
 //   rd->SetLayer3CTimeZero(287);
 //   rd->SetLayer4ATimeZero(202);
 //   rd->SetLayer4CTimeZero(230);
+  for(Int_t iMod=240; iMod<500; iMod++) rd->SetDeltaVDrift(iMod,0.);
+
   AliCDBManager::Instance()->GetDefaultStorage()->Put(rd, idRespSDD, md);  
 }

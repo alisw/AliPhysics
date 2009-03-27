@@ -42,6 +42,7 @@ fADC2keV(fgkADC2keVDefault){
   // default constructor
   for(Int_t i=0; i<kNSDDmods;i++){
     fTimeZero[i]=fgkTimeOffsetDefault;
+    fDeltaVDrift[i]=0.;
   }  
 }
 //_________________________________________________________________________

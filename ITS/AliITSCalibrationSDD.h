@@ -147,7 +147,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetAMAt20MHz() {fAMAt20MHz=kTRUE;}
     virtual Bool_t IsAMAt20MHz() const {return fAMAt20MHz;}
 
-    virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
     void GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg);
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
       return nsigma*fNoiseAfterEl[anode];}
