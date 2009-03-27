@@ -89,7 +89,7 @@ class AliJetReader : public TObject
                                               // from the underlying event
   TArrayI                  fCutFlag;          // to flag if a particle passed the pt cut or not
   TClonesArray            *fUnitArray;        // array of digit position and energy 
-  TRefArray               *fRefArray;         // array of digit position and energy 
+  TRefArray               *fRefArray;         // ! array of digit position and energy 
   TClonesArray            *fUnitArrayNoCuts;  // array of digit position and energy 
   Bool_t                   fArrayInitialised; // To check that array of units is initialised  
   AliJetFillUnitArrayTracks        *fFillUAFromTracks;

@@ -35,7 +35,7 @@ class AliJetAODReader : public AliJetReader
  private:
   TChain                     *fChain;  //! chain for reconstructed tracks
   AliAODEvent                *fAOD;    //! pointer to aod
-  TRefArray                  *fRef;    // pointer to array of references to tracks
+  TRefArray                  *fRef;    //! pointer to array of references to tracks
   Int_t                       fDebug;  // Debug option
   Int_t                       fOpt;    // Detector to be used for jet reconstruction
   ClassDef(AliJetAODReader,1)
