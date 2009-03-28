@@ -74,7 +74,6 @@
 
 #pragma link C++ class  AliESDVZEROfriend+;
 
-#pragma link C++ class  AliESDHandler+;
 
 #endif
 

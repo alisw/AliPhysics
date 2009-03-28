@@ -26,8 +26,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDCaloCells.cxx \
        AliESDACORDE.cxx \
        AliTriggerIR.cxx \
-       AliESDVZEROfriend.cxx\
-       AliESDHandler.cxx	
+       AliESDVZEROfriend.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
