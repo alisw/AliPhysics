@@ -2,9 +2,9 @@
 
 set(SRCS
 JET/AliHLTJETAgent.cxx
-AliHLTJETTrackCuts.cxx
-AliHLTJETReader.cxx
-AliHLTJETReaderHeader.cxx
+JET/AliHLTJETTrackCuts.cxx
+JET/AliHLTJETReader.cxx
+JET/AliHLTJETReaderHeader.cxx
 JET/AliHLTJETConeJetComponent.cxx
 )
 
