@@ -53,7 +53,7 @@ AliEventPoolOTF::AliEventPoolOTF():
 
 AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     AliVEventPool(name, title),
-    fTagAnalysis(new AliTagAnalysis("AOD")),
+    fTagAnalysis(new AliTagAnalysis(title)),
     fRunCuts(new AliRunTagCuts()),
     fLHCCuts(new AliLHCTagCuts()),
     fDetectorCuts(new AliDetectorTagCuts()),

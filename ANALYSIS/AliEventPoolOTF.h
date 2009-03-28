@@ -22,7 +22,7 @@ class AliEventPoolOTF : public AliVEventPool
 {
  public:
     AliEventPoolOTF();
-    AliEventPoolOTF(const char* name, const char* title);
+    AliEventPoolOTF(const char* name, const char* title = "AOD");
 
     virtual ~AliEventPoolOTF() {;}
     // Interface
