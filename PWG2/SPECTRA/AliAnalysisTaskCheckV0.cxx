@@ -253,6 +253,8 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
     fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
     fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
+    Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
+
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
       {// This is the begining of the V0 loop
 	AliESDv0 *v0 = ((AliESDEvent*)lEvent)->GetV0(iV0);
@@ -275,16 +277,13 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  continue;
 	}
 
-	Float_t tDcaPosToPrimVertex[2];
-	if(pTrack) pTrack->GetImpactParameters(tDcaPosToPrimVertex[0],tDcaPosToPrimVertex[1]);
-	else { tDcaPosToPrimVertex[0]=999.;  tDcaPosToPrimVertex[1]=999.;}
-	lDcaPosToPrimVertex = TMath::Sqrt(tDcaPosToPrimVertex[0]*tDcaPosToPrimVertex[0]+tDcaPosToPrimVertex[1]*tDcaPosToPrimVertex[1]);
+	lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
+						      tPrimaryVtxPosition[1],
+						      lMagneticField) );
 
-	Float_t tDcaNegToPrimVertex[2];
-	if(nTrack) nTrack->GetImpactParameters(tDcaNegToPrimVertex[0],tDcaNegToPrimVertex[1]);
-	else { tDcaNegToPrimVertex[0]=999.;  tDcaNegToPrimVertex[1]=999.;}
-	lDcaNegToPrimVertex = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaNegToPrimVertex[1]);
-
+	lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],
+						      tPrimaryVtxPosition[1],
+						      lMagneticField) );
 
 	lOnFlyStatus = v0->GetOnFlyStatus();
 	lChi2V0 = v0->GetChi2V0();

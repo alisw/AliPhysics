@@ -278,13 +278,14 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
     fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
     fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
+    Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
+
     primaryVtx->GetCovMatrix(tPrimaryVtxCov); 
     AliAODVertex *primary = new AliAODVertex(tPrimaryVtxPosition, tPrimaryVtxCov, primaryVtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
   
     // V0 variables:
     // to get info from ESD files and fill AliAODVertex:
-    Float_t   tdcaPosToPrimVertexXYZ[2], tdcaNegToPrimVertexXYZ[2]; // ..[0] = Impact parameter in XY plane and ..[1] = Impact parameter in Z            
-    Double_t  tdcaDaughterToPrimVertex[2];                          // ..[0] = Pos and ..[1] = Neg
+    Double_t  tdcaDaughterToPrimVertex[2];                 // ..[0] = Pos and ..[1] = Neg
     Double_t  tMomPos[3];
     Double_t  tMomNeg[3];
     Double_t  tV0Position[3];
@@ -372,10 +373,13 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	lDcaV0Daughters    = v0->GetDcaV0Daughters();
 	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
-	if (pTrack) pTrack->GetImpactParameters(tdcaPosToPrimVertexXYZ[0],tdcaPosToPrimVertexXYZ[1]);
-	if (nTrack) nTrack->GetImpactParameters(tdcaNegToPrimVertexXYZ[0],tdcaNegToPrimVertexXYZ[1]);
-	tdcaDaughterToPrimVertex[0] = TMath::Sqrt(tdcaPosToPrimVertexXYZ[0]*tdcaPosToPrimVertexXYZ[0]+tdcaPosToPrimVertexXYZ[1]*tdcaPosToPrimVertexXYZ[1]);
-	tdcaDaughterToPrimVertex[1] = TMath::Sqrt(tdcaNegToPrimVertexXYZ[0]*tdcaNegToPrimVertexXYZ[0]+tdcaNegToPrimVertexXYZ[1]*tdcaNegToPrimVertexXYZ[1]);
+	if (pTrack) tdcaDaughterToPrimVertex[0] = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
+									  tPrimaryVtxPosition[1],
+									  lMagneticField) );
+
+	if (nTrack) tdcaDaughterToPrimVertex[1] = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
+									  tPrimaryVtxPosition[1],
+									  lMagneticField) );
 
 	v0->GetPPxPyPz(tMomPos[0],tMomPos[1],tMomPos[2]); 
 	v0->GetNPxPyPz(tMomNeg[0],tMomNeg[1],tMomNeg[2]); 
