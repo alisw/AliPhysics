@@ -6,6 +6,7 @@ set(SRCS
   AliPHOSCPVGeometry.cxx
   AliPHOSCPVBaseGeometry.cxx
   AliPHOSSupportGeometry.cxx
+  AliPHOSFastAltroFit.cxx
 )
 
 # fill list of header files from list of source files
