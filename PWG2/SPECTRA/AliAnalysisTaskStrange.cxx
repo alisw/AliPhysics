@@ -377,7 +377,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 									  tPrimaryVtxPosition[1],
 									  lMagneticField) );
 
-	if (nTrack) tdcaDaughterToPrimVertex[1] = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
+	if (nTrack) tdcaDaughterToPrimVertex[1] = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],
 									  tPrimaryVtxPosition[1],
 									  lMagneticField) );
 
