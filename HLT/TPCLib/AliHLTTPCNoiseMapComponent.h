@@ -25,26 +25,59 @@ class AliTPCCalPad;
 /**
  * @class AliHLTTPCNoiseMapComponent
  * 
- * Implementation of the component to fill histograms with TPC output and read
- * the noise map from HCDB by request.
+ * Implementation of a component to fill histograms with TPC raw output 
+ * and read the noise map from HCDB by request.
  * 
  * The component implements the interface methods of the @ref AliHLTProcessor.
- * It reads the data pad by pad and fills histograms per partition
+ * It reads the raw data pad by pad and fills histograms per partition
  * 
  * The component has the following component arguments:
- * 
- * -read-noisemap  Reads the noise map from the HCDB (and plots it in a histogram)
+ * <h2>General properties:</h2>
  *
- * It returns an AliTPCCalPad object that can be used 
- * for other plots (e.g. noise subtraction in histograms) 
+ * Component ID: \b TPCNoiseMap <br>
+ * Library: \b libAliHLTTPC.so     <br>
+ * Input Data Types: @ref kAliHLTDataTypeDDLRaw <br>
+ * Output Data Types: @ref kAliHLTDataTypeHistogram <br>
  *
- * It makes use of the class AliHLTTPCNoise (see header for usage).
+ * <h2>Mandatory arguments:</h2>
  *
- * -reset-histograms Resets histograms
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -read-noisemap      <i> teststring   </i> <br>
+ *      Reads the noise map from the HCDB (and plots it in a histogram)
  *
- * @ingroup alihlt_tpc
- */
- 
+ * \li -reset-histograms       <br>
+ *      Resets histograms
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -config1      <i> teststring   </i> <br>
+ *      a configuration argument with one parameter
+ * \li -config2                            <br>
+ *      a configuration argument without parameters
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component has two CDB entries in
+ * <tt>HLT/ConfigTPC/TPCNoiseMapComponent</tt>.
+ * It does not load any configuration from the global <tt>ConfigHLT</tt>
+ * folder.
+ * \li -TObjString object holding a string with the configuration parameters
+ *      explained above
+ *
+ * <h2>Performance:</h2>
+ * No clue
+ *
+ * <h2>Memory consumption:</h2>
+ * No clue
+ *
+ * <h2>Output size:</h2>
+ * Much data
+ *
+ * More detailed description.
+ *
+ * @ingroup alihlt_tpc_components
+ */ 
+
 class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
     
    public:

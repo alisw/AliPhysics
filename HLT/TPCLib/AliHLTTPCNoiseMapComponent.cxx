@@ -231,6 +231,12 @@ void AliHLTTPCNoiseMapComponent::InitializeHistograms(UInt_t minSlice, UInt_t ma
      fHistSideAMaxSignal = new TH2F(name1,name1,250,-250,250,250,-250,250);
      fHistSideATotSignal = new TH2F(name2,name2,250,-250,250,250,-250,250);
      fHistSideAPadRMS	 = new TH2F(name3,name3,250,-250,250,250,-250,250);
+     fHistSideAMaxSignal->SetXTitle("x [cm]");
+     fHistSideATotSignal->SetXTitle("x [cm]");
+     fHistSideAPadRMS->SetXTitle("x [cm]");	
+     fHistSideAMaxSignal->SetYTitle("y [cm]");
+     fHistSideATotSignal->SetYTitle("y [cm]");
+     fHistSideAPadRMS->SetYTitle("y [cm]");	
 
   } else {
      sprintf(name1, "fHistSideCMaxSignal_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition);
@@ -239,7 +245,13 @@ void AliHLTTPCNoiseMapComponent::InitializeHistograms(UInt_t minSlice, UInt_t ma
      fHistSideCMaxSignal = new TH2F(name1,name1,250,-250,250,250,-250,250);
      fHistSideCTotSignal = new TH2F(name2,name2,250,-250,250,250,-250,250);
      fHistSideCPadRMS	 = new TH2F(name3,name3,250,-250,250,250,-250,250);
-  }
+     fHistSideCMaxSignal->SetXTitle("x [cm]");
+     fHistSideCTotSignal->SetXTitle("x [cm]");
+     fHistSideCPadRMS->SetXTitle("x [cm]");     
+     fHistSideCMaxSignal->SetYTitle("y [cm]");
+     fHistSideCTotSignal->SetYTitle("y [cm]");
+     fHistSideCPadRMS->SetYTitle("y [cm]");	
+}
     
   fInitHist=kFALSE;
   
@@ -257,6 +269,12 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
     
+  /*if(fInitHist==kFALSE) {
+     fHistSideAMaxSignal->Reset();
+     fHistSideCMaxSignal->Reset();  
+  }*/
+
+  
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
 //     HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
@@ -295,14 +313,12 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     while(pDigitReader->NextChannel()) { // pad loop 
       
       fCurrentRow  = pDigitReader->GetRow();  
-      fCurrentRow += pDigitReader->GetRowOffset();
-      
+      fCurrentRow += pDigitReader->GetRowOffset();      
 
       AliHLTTPCTransform::Slice2Sector(minSlice,fCurrentRow,thissector,thisrow);
       AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,pDigitReader->GetPad(),0);
             
       if(minSlice>17) xyz[1] = (-1.0)*xyz[1];
-      else continue;
       
       AliHLTTPCTransform::Local2Global(xyz,minSlice);
       // temporarily the transformation Raw2Global will be broken down to 2 steps,
@@ -334,19 +350,13 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
      
      
       if(minSlice<18){
-	if(maxSignal>0)
-	  fHistSideAMaxSignal->Fill(xyz[0],xyz[1],maxSignal);	  
-	if(totalSignal>0)
-	  fHistSideATotSignal->Fill(xyz[0],xyz[1],totalSignal);     
-	if(rms>0)
-	  fHistSideAPadRMS->Fill(xyz[0],xyz[1],rms);
+	if(maxSignal>0)   fHistSideAMaxSignal->Fill(xyz[0],xyz[1],maxSignal);	  
+	if(totalSignal>0) fHistSideATotSignal->Fill(xyz[0],xyz[1],totalSignal);     
+	if(rms>0)	  fHistSideAPadRMS->Fill(xyz[0],xyz[1],rms);
       } else if(minSlice>17){
-	if(maxSignal>0)
-	  fHistSideCMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
-	if(totalSignal>0)
-	  fHistSideCTotSignal->Fill(xyz[0],xyz[1],totalSignal);	
-	if(rms>0)
-	  fHistSideCPadRMS->Fill(xyz[0],xyz[1],rms);
+	if(maxSignal>0)	  fHistSideCMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
+	if(totalSignal>0) fHistSideCTotSignal->Fill(xyz[0],xyz[1],totalSignal);	
+	if(rms>0)	  fHistSideCPadRMS->Fill(xyz[0],xyz[1],rms);
       } else continue;
       
       maxSignal     = 0.;
@@ -358,7 +368,9 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     pDigitReader->Reset();
     delete pDigitReader;
   } // end of for loop over data blocks
- 
+  
+  //HLTImportant("fHistSideAMaxSignal entries at the end of event: %d", fHistSideAMaxSignal->GetEntries());
+  
   if(fResetHistograms) ResetHistograms(); fResetHistograms = kFALSE;
   MakeHistosPublic();
  
