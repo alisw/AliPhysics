@@ -26,6 +26,7 @@
 #include "AliV0Reader.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
+#include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliKFVertex.h"
 
@@ -43,53 +44,55 @@ ClassImp(AliV0Reader)
 
 
 
-  AliV0Reader::AliV0Reader() :
-    TObject(),
-    fMCStack(NULL),
-    fMCTruth(NULL),
-    fChain(NULL),
-    fESDHandler(NULL),
-    fESDEvent(NULL),
-    fHistograms(NULL),
-    fCurrentV0IndexNumber(0),
-    fCurrentV0(NULL),
-    fCurrentNegativeKFParticle(NULL),
-    fCurrentPositiveKFParticle(NULL),
-    fCurrentMotherKFCandidate(NULL),
-    fCurrentNegativeESDTrack(NULL),
-    fCurrentPositiveESDTrack(NULL),
-    fNegativeTrackLorentzVector(NULL),
-    fPositiveTrackLorentzVector(NULL),
-    fMotherCandidateLorentzVector(NULL),
-    fCurrentXValue(0),
-    fCurrentYValue(0),
-    fCurrentZValue(0),
-    fPositiveTrackPID(0),
-    fNegativeTrackPID(0),
-    fNegativeMCParticle(NULL),
-    fPositiveMCParticle(NULL),
-    fMotherMCParticle(NULL),
-    fMotherCandidateKFMass(0),
-    fMotherCandidateKFWidth(0),
-    fUseKFParticle(kTRUE),
-    fUseESDTrack(kFALSE),
-    fDoMC(kFALSE),
-    fMaxR(10000),// 100 meter(outside of ALICE)
-    fEtaCut(0.),
-    fPtCut(0.),
-    fChi2CutConversion(0.),
-    fChi2CutMeson(0.),
-    fPIDProbabilityCutNegativeParticle(0),
-    fPIDProbabilityCutPositiveParticle(0),
-    fXVertexCut(0.),
-    fYVertexCut(0.),
-    fZVertexCut(0.),
-    fNSigmaMass(0.),
-    fUseImprovedVertex(kFALSE),
-    fCurrentEventGoodV0s(),
-    fPreviousEventGoodV0s()
+AliV0Reader::AliV0Reader() :
+TObject(),
+  fMCStack(NULL),
+  fMCTruth(NULL),
+  fChain(NULL),
+  fESDHandler(NULL),
+  fESDEvent(NULL),
+  fHistograms(NULL),
+  fCurrentV0IndexNumber(0),
+  fCurrentV0(NULL),
+  fCurrentNegativeKFParticle(NULL),
+  fCurrentPositiveKFParticle(NULL),
+  fCurrentMotherKFCandidate(NULL),
+  fCurrentNegativeESDTrack(NULL),
+  fCurrentPositiveESDTrack(NULL),
+  fNegativeTrackLorentzVector(NULL),
+  fPositiveTrackLorentzVector(NULL),
+  fMotherCandidateLorentzVector(NULL),
+  fCurrentXValue(0),
+  fCurrentYValue(0),
+  fCurrentZValue(0),
+  fPositiveTrackPID(0),
+  fNegativeTrackPID(0),
+  fNegativeMCParticle(NULL),
+  fPositiveMCParticle(NULL),
+  fMotherMCParticle(NULL),
+  fMotherCandidateKFMass(0),
+  fMotherCandidateKFWidth(0),
+  fUseKFParticle(kTRUE),
+  fUseESDTrack(kFALSE),
+  fDoMC(kFALSE),
+  fMaxR(10000),// 100 meter(outside of ALICE)
+  fEtaCut(0.),
+  fPtCut(0.),
+  fLineCutZRSlope(0.),
+  fLineCutZValue(0.),
+  fChi2CutConversion(0.),
+  fChi2CutMeson(0.),
+  fPIDProbabilityCutNegativeParticle(0),
+  fPIDProbabilityCutPositiveParticle(0),
+  fXVertexCut(0.),
+  fYVertexCut(0.),
+  fZVertexCut(0.),
+  fNSigmaMass(0.),
+  fUseImprovedVertex(kFALSE),
+  fCurrentEventGoodV0s(),
+  fPreviousEventGoodV0s()
 {
-
+	
 }
 
 
@@ -127,6 +130,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fMaxR(original.fMaxR),
   fEtaCut(original.fEtaCut),
   fPtCut(original.fPtCut),
+  fLineCutZRSlope(original.fLineCutZRSlope),
+  fLineCutZValue(original.fLineCutZValue),
   fChi2CutConversion(original.fChi2CutConversion),
   fChi2CutMeson(original.fChi2CutMeson),
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
@@ -139,7 +144,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
   fPreviousEventGoodV0s(original.fPreviousEventGoodV0s)
 {
-
+	
 }
 
 
@@ -151,171 +156,252 @@ AliV0Reader & AliV0Reader::operator = (const AliV0Reader & /*source*/)
 
 void AliV0Reader::Initialize(){
   //see header file for documentation
-
+	
   // Get the input handler from the manager
   fESDHandler = (AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(fESDHandler == NULL){
     //print warning here
   }
-  
+	
   // Get pointer to esd event from input handler
   fESDEvent = fESDHandler->GetEvent();
   if(fESDEvent == NULL){
     //print warning here
   }
-
+	
   //Get pointer to MCTruth
   fMCTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
   if(fMCTruth == NULL){
     //print warning here
   }
-
+	
   //Get pointer to the mc stack
   fMCStack = fMCTruth->MCEvent()->Stack();
   if(fMCStack == NULL){
     //print warning here
   }
-
+	
   AliKFParticle::SetField(fESDEvent->GetMagneticField());
-
+	
 }
 
 AliESDv0* AliV0Reader::GetV0(Int_t index){
   //see header file for documentation
-
+	
   fCurrentV0 = fESDEvent->GetV0(index);
   UpdateV0Information();
   return fCurrentV0;
 }
+
 Bool_t AliV0Reader::CheckForPrimaryVertex(){
   return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
 
+
+
 Bool_t AliV0Reader::NextV0(){
   //see header file for documentation
-
+	
   Bool_t iResult=kFALSE;
   while(fCurrentV0IndexNumber<fESDEvent->GetNumberOfV0s()){
     fCurrentV0 = fESDEvent->GetV0(fCurrentV0IndexNumber);
-    
+		
     //checks if on the fly mode is set
     if ( !fCurrentV0->GetOnFlyStatus() ){
-      fCurrentV0IndexNumber++;
       if(fHistograms != NULL){
-	fHistograms->FillHistogram("V0MassDebugCut1",GetMotherCandidateMass());
+	fHistograms->FillHistogram("ESD_CutGetOnFly_InvMass",GetMotherCandidateMass());
       }
+      fCurrentV0IndexNumber++;
       continue;
     }
-
-    if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) {//checks if we have a vertex
-      fCurrentV0IndexNumber++;
+    
+    //checks if we have a prim vertex
+    if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
       if(fHistograms != NULL){
-	fHistograms->FillHistogram("V0MassDebugCut2",GetMotherCandidateMass());
+	fHistograms->FillHistogram("ESD_CutNContributors_InvMass",GetMotherCandidateMass());
       }
+      fCurrentV0IndexNumber++;
       continue;
     }
-
+		
+    //Check the pid probability
     if(CheckPIDProbability(fPIDProbabilityCutNegativeParticle,fPIDProbabilityCutPositiveParticle)==kFALSE){
-      fCurrentV0IndexNumber++;
       if(fHistograms != NULL){
-	fHistograms->FillHistogram("V0MassDebugCut3",GetMotherCandidateMass());
+	fHistograms->FillHistogram("ESD_CutPIDProb_InvMass",GetMotherCandidateMass());
       }
+      fCurrentV0IndexNumber++;
       continue;
     }
-
+		
+		
     fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
- 
+		
+		
     if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
-      fCurrentV0IndexNumber++;
       if(fHistograms != NULL){
-	fHistograms->FillHistogram("V0MassDebugCut4",GetMotherCandidateMass());
+	fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
       }
+      fCurrentV0IndexNumber++;
+      continue;
+    }		
+		
+		
+    if((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue > GetXYRadius() ){ // cuts out regions where we do not reconstruct
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutLine_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }		
+		
+		
+    if(UpdateV0Information() == kFALSE){
+      fCurrentV0IndexNumber++;
       continue;
     }
-
-    UpdateV0Information();
-        
+		
     if(fUseKFParticle){
       if(fCurrentMotherKFCandidate->GetNDF()<=0){
-	fCurrentV0IndexNumber++;
 	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("V0MassDebugCut5",GetMotherCandidateMass());
+	  fHistograms->FillHistogram("ESD_CutNDF_InvMass",GetMotherCandidateMass());
 	}
+	fCurrentV0IndexNumber++;
 	continue;
       }
+			
+			
       Double_t chi2V0 = fCurrentMotherKFCandidate->GetChi2()/fCurrentMotherKFCandidate->GetNDF();
       if(chi2V0 > fChi2CutConversion || chi2V0 <=0){
-	fCurrentV0IndexNumber++;
 	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("V0MassDebugCut6",GetMotherCandidateMass());
+	  fHistograms->FillHistogram("ESD_CutChi2_InvMass",GetMotherCandidateMass());
 	}
-  	continue;
+	fCurrentV0IndexNumber++;
+	continue;
       }
-      
+			
+			
       if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut){
-	fCurrentV0IndexNumber++;
 	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("V0MassDebugCut7",GetMotherCandidateMass());
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
 	}
+	fCurrentV0IndexNumber++;
 	continue;
       }
-      
+			
+			
       if(fMotherCandidateLorentzVector->Pt()<fPtCut){
-	fCurrentV0IndexNumber++;
 	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("V0MassDebugCut8",GetMotherCandidateMass());
+	  fHistograms->FillHistogram("ESD_CutPt_InvMass",GetMotherCandidateMass());
 	}
+	fCurrentV0IndexNumber++;
 	continue;
       }
+			
+			
     }
     else if(fUseESDTrack){
       //TODO
     }
 
-    iResult=kTRUE;//means we have a v0 who survived all the cuts applied
+    fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
 
+    iResult=kTRUE;//means we have a v0 who survived all the cuts applied
+		
     fCurrentV0IndexNumber++;
-    
+		
     break;
   }
   return iResult; 
 }
 
-void AliV0Reader::UpdateV0Information(){
+Bool_t AliV0Reader::UpdateV0Information(){
   //see header file for documentation
-  
+
+  Bool_t iResult=kTRUE;		 				// for taking out not refitted, kinks and like sign tracks 
+
+  Bool_t switchTracks = kFALSE;
+	
+  fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+  fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+	
+  if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
+    iResult=kFALSE;
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
+    }
+  }
+	
+  if(fCurrentPositiveESDTrack->GetSign() == -1 && fCurrentNegativeESDTrack->GetSign() == 1){  // switch wrong signed tracks
+    fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+    fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+    switchTracks = kTRUE;
+  }
+
+  if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTPCrefit) || 
+      !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTPCrefit) ){
+    //  if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kITSrefit) || 
+    //      !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kITSrefit) ){
+	  
+    iResult=kFALSE;
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
+    }
+  }
+	
+	
+  if( fCurrentNegativeESDTrack->GetKinkIndex(0) > 0 || 
+      fCurrentPositiveESDTrack->GetKinkIndex(0) > 0) {			
+		
+    iResult=kFALSE;
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
+    }
+  }
+
+
+	
   if(fCurrentNegativeKFParticle != NULL){
     delete fCurrentNegativeKFParticle;
   }
-  fCurrentNegativeKFParticle = new AliKFParticle(*(fCurrentV0->GetParamN()),fNegativeTrackPID);
-  
+  if(switchTracks == kFALSE){
+    fCurrentNegativeKFParticle = new AliKFParticle(*(fCurrentV0->GetParamN()),fNegativeTrackPID);
+  }
+  else{
+    fCurrentNegativeKFParticle = new AliKFParticle(*(fCurrentV0->GetParamP()),fNegativeTrackPID);
+  }
+
   if(fCurrentPositiveKFParticle != NULL){
     delete fCurrentPositiveKFParticle;
   }
-  fCurrentPositiveKFParticle = new AliKFParticle(*(fCurrentV0->GetParamP()),fPositiveTrackPID);
+  if(switchTracks == kFALSE){
+    fCurrentPositiveKFParticle = new AliKFParticle(*(fCurrentV0->GetParamP()),fPositiveTrackPID);
+  }
+  else{
+    fCurrentPositiveKFParticle = new AliKFParticle(*(fCurrentV0->GetParamN()),fPositiveTrackPID);
+  }
     
   if(fCurrentMotherKFCandidate != NULL){
     delete fCurrentMotherKFCandidate;
   }
   fCurrentMotherKFCandidate = new AliKFParticle(*fCurrentNegativeKFParticle,*fCurrentPositiveKFParticle);
 
-  fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
-
-  fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
 
   if(fPositiveTrackPID==-11 && fNegativeTrackPID==11){
     fCurrentMotherKFCandidate->SetMassConstraint(0,fNSigmaMass);
   }
-
+	
+	
+	
+	
   if(fUseImprovedVertex == kTRUE){
     AliKFVertex primaryVertexImproved(*GetPrimaryVertex());
     primaryVertexImproved+=*fCurrentMotherKFCandidate;
     fCurrentMotherKFCandidate->SetProductionVertex(primaryVertexImproved);
   }
-
+	
   fCurrentMotherKFCandidate->GetMass(fMotherCandidateKFMass,fMotherCandidateKFWidth);
-
-
+	
+	
   if(fNegativeTrackLorentzVector != NULL){
     delete fNegativeTrackLorentzVector;
   }
@@ -325,7 +411,7 @@ void AliV0Reader::UpdateV0Information(){
   else if(fUseESDTrack){
     fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeESDTrack->Px(),fCurrentNegativeESDTrack->Py(),fCurrentNegativeESDTrack->Pz());
   }
-
+	
   if(fPositiveTrackLorentzVector != NULL){
     delete fPositiveTrackLorentzVector;
   }
@@ -335,7 +421,7 @@ void AliV0Reader::UpdateV0Information(){
   else if(fUseESDTrack){
     fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveESDTrack->Px(),fCurrentPositiveESDTrack->Py(),fCurrentPositiveESDTrack->Pz());
   }
-
+	
   if(fMotherCandidateLorentzVector != NULL){
     delete fMotherCandidateLorentzVector;
   }
@@ -345,11 +431,12 @@ void AliV0Reader::UpdateV0Information(){
   else if(fUseESDTrack){
     fMotherCandidateLorentzVector = new TLorentzVector(*fNegativeTrackLorentzVector + *fPositiveTrackLorentzVector);
   }
-
+	
   if(fPositiveTrackPID==-11 && fNegativeTrackPID==11){
     fMotherCandidateLorentzVector->SetXYZM(fMotherCandidateLorentzVector->Px() ,fMotherCandidateLorentzVector->Py(),fMotherCandidateLorentzVector->Pz(),0.); 
   }
     
+	
   if(fDoMC == kTRUE){
     fMotherMCParticle= NULL;
     fNegativeMCParticle = fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetNindex())->GetLabel()));
@@ -358,12 +445,19 @@ void AliV0Reader::UpdateV0Information(){
       fMotherMCParticle = fMCStack->Particle(fPositiveMCParticle->GetMother(0));
     }
   }
-  fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
+		
+  //  if(iResult==kTRUE){
+  //	fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate); // moved it to NextV0() after all the cuts are applied
+  //  }
+
+  return iResult;
 }
+
+
 
 Bool_t AliV0Reader::HasSameMCMother(){
   //see header file for documentation
-
+	
   Bool_t iResult = kFALSE;
   if(fDoMC == kTRUE){
     if(fNegativeMCParticle != NULL && fPositiveMCParticle != NULL){
@@ -378,17 +472,17 @@ Bool_t AliV0Reader::HasSameMCMother(){
 
 Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut){
   //see header file for documentation
-
+	
   Bool_t iResult=kFALSE;
-
+	
   Double_t *posProbArray = new Double_t[10];
   Double_t *negProbArray = new Double_t[10];
   AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
   AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
-  
+	
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
-
+	
   if(negProbArray!=NULL && posProbArray!=NULL){
     if(negProbArray[GetSpeciesIndex(-1)]>=negProbCut && posProbArray[GetSpeciesIndex(1)]>=posProbCut){
       iResult=kTRUE;
@@ -400,15 +494,15 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
 }
 
 void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
-
+	
   Double_t *posProbArray = new Double_t[10];
   Double_t *negProbArray = new Double_t[10];
   AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
   AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
-  
+	
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
-
+	
   if(negProbArray!=NULL && posProbArray!=NULL){
     negPIDProb = negProbArray[GetSpeciesIndex(-1)];
     posPIDProb = posProbArray[GetSpeciesIndex(1)];
@@ -419,19 +513,37 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
 
 void AliV0Reader::UpdateEventByEventData(){
   //see header file for documentation
-
+	
   if(fCurrentEventGoodV0s.size() >0 ){
-    fPreviousEventGoodV0s.clear();
-    fPreviousEventGoodV0s = fCurrentEventGoodV0s;
+    //    fPreviousEventGoodV0s.clear();
+    //    fPreviousEventGoodV0s = fCurrentEventGoodV0s;
+    if(fPreviousEventGoodV0s.size()>19){
+      for(UInt_t nCurrent=0;nCurrent<fCurrentEventGoodV0s.size();nCurrent++){
+	fPreviousEventGoodV0s.erase(fPreviousEventGoodV0s.begin());
+	fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
+      }
+    }
+    else{
+      for(UInt_t nCurrent=0;nCurrent<fCurrentEventGoodV0s.size();nCurrent++){
+	if(fPreviousEventGoodV0s.size()<20){
+	  fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
+	}
+	else{
+	  fPreviousEventGoodV0s.erase(fPreviousEventGoodV0s.begin());
+	  fPreviousEventGoodV0s.push_back(fCurrentEventGoodV0s.at(nCurrent));
+	}
+      }
+    }
   }
   fCurrentEventGoodV0s.clear();
-  
+	
   fCurrentV0IndexNumber=0;
 }
 
+
 Double_t AliV0Reader::GetNegativeTrackPhi() const{
   //see header file for documentation
-
+	
   Double_t offset=0;
   if(fNegativeTrackLorentzVector->Phi()> TMath::Pi()){
     offset = -2*TMath::Pi();
@@ -441,7 +553,7 @@ Double_t AliV0Reader::GetNegativeTrackPhi() const{
 
 Double_t AliV0Reader::GetPositiveTrackPhi() const{
   //see header file for documentation
-
+	
   Double_t offset=0;
   if(fPositiveTrackLorentzVector->Phi()> TMath::Pi()){
     offset = -2*TMath::Pi();
@@ -451,7 +563,7 @@ Double_t AliV0Reader::GetPositiveTrackPhi() const{
 
 Double_t AliV0Reader::GetMotherCandidatePhi() const{
   //see header file for documentation
-
+	
   Double_t offset=0;
   if(fMotherCandidateLorentzVector->Phi()> TMath::Pi()){
     offset = -2*TMath::Pi();
@@ -459,11 +571,26 @@ Double_t AliV0Reader::GetMotherCandidatePhi() const{
   return fMotherCandidateLorentzVector->Phi()+offset;
 }
 
+
+Double_t AliV0Reader::GetMotherCandidateRapidity() const{
+  //see header file for documentation
+	
+  Double_t rapidity=0;
+  if(fMotherCandidateLorentzVector->Energy() - fMotherCandidateLorentzVector->Pz() == 0 || fMotherCandidateLorentzVector->Energy() + fMotherCandidateLorentzVector->Pz() == 0) rapidity=0;
+  else rapidity = 0.5*(TMath::Log((fMotherCandidateLorentzVector->Energy() + fMotherCandidateLorentzVector->Pz()) / (fMotherCandidateLorentzVector->Energy()-fMotherCandidateLorentzVector->Pz())));
+  return rapidity;
+	
+}
+
+
+
+
+
 Int_t AliV0Reader::GetSpeciesIndex(Int_t chargeOfTrack){
   //see header file for documentation
-
+	
   Int_t iResult = 10; // Unknown particle
-
+	
   if(chargeOfTrack==-1){ //negative track
     switch(abs(fNegativeTrackPID)){
     case 11:       //electron
@@ -493,7 +620,7 @@ Int_t AliV0Reader::GetSpeciesIndex(Int_t chargeOfTrack){
     case 311:      //K0
       iResult = 8;
       break;
-      
+				
       //Put in here for kSPECIES::kEleCon  ????
     }
   }
@@ -526,7 +653,7 @@ Int_t AliV0Reader::GetSpeciesIndex(Int_t chargeOfTrack){
     case 311:      //K0
       iResult = 8;
       break;
-
+				
       //Put in here for kSPECIES::kEleCon  ????
     }
   }

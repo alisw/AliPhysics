@@ -81,7 +81,7 @@ class AliGammaConversionHistograms{
 
   
   ClassDef(AliGammaConversionHistograms,1)
-} ;
+};
 
 
 #endif

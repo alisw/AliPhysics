@@ -281,6 +281,12 @@ class AliV0Reader : public TObject {
   Double_t GetMotherCandidatePhi() const;
 
   /*
+   * Gets the Rapidity of the mother candidate.
+   */
+  Double_t GetMotherCandidateRapidity() const;
+
+
+  /*
    * Update data which need to be updated every event.
    */
   void UpdateEventByEventData();
@@ -301,6 +307,12 @@ class AliV0Reader : public TObject {
   Double_t GetPtCut() const{return fPtCut;}
 
   /*
+   * Gets the line cut values.
+   */
+  Double_t GetLineCutZRSlope() const{return fLineCutZRSlope;}
+  Double_t GetLineCutZValue() const{return fLineCutZValue;}
+  
+  /*
    * Gets the Chi2 cut value for the conversions.
    */
   Double_t GetChi2CutConversion() const{return fChi2CutConversion;}
@@ -309,6 +321,12 @@ class AliV0Reader : public TObject {
    * Gets the Chi2 cut value for the mesons.
    */
   Double_t GetChi2CutMeson() const{return fChi2CutMeson;}
+
+  Double_t GetPositiveTrackLength() const{return fCurrentPositiveESDTrack->GetIntegratedLength();}
+  Double_t GetNegativeTrackLength() const{return fCurrentNegativeESDTrack->GetIntegratedLength();}
+
+  Double_t GetPositiveNTPCClusters() const{return fCurrentPositiveESDTrack->GetTPCNcls();}
+  Double_t GetNegativeNTPCClusters() const{return fCurrentNegativeESDTrack->GetTPCNcls();}
 
   /*
    * Sets the MaxRCut value.
@@ -324,6 +342,12 @@ class AliV0Reader : public TObject {
    * Sets the PtCut value.
    */
   void SetPtCut(Double_t ptCut){fPtCut=ptCut;}
+
+  /*
+   * Sets the LineCut values.
+   */
+  void SetLineCutZRSlope(Double_t LineCutZRSlope){fLineCutZRSlope=LineCutZRSlope;}
+  void SetLineCutZValue(Double_t LineCutZValue){fLineCutZValue=LineCutZValue;}
 
   /*
    * Sets the Chi2Cut value for conversions.
@@ -378,7 +402,7 @@ class AliV0Reader : public TObject {
   /*
    * Updates the V0 information of the current V0.
    */
-  void UpdateV0Information();
+  Bool_t UpdateV0Information();
 
   /*
    * Resets the V0 index.
@@ -450,6 +474,8 @@ class AliV0Reader : public TObject {
   Double_t fMaxR;
   Double_t fEtaCut;
   Double_t fPtCut;
+  Double_t fLineCutZRSlope;
+  Double_t fLineCutZValue;
   Double_t fChi2CutConversion;
   Double_t fChi2CutMeson;
   Double_t fPIDProbabilityCutNegativeParticle;
@@ -465,7 +491,7 @@ class AliV0Reader : public TObject {
   vector<AliKFParticle> fCurrentEventGoodV0s;
   vector<AliKFParticle> fPreviousEventGoodV0s;
 
-  ClassDef(AliV0Reader,0)
+  ClassDef(AliV0Reader,1)
 };
 
 
