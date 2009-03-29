@@ -4,6 +4,7 @@ set(SRCS
 RCU/AliHLTAltroChannelSelectorComponent.cxx
 RCU/AliHLTAltroEncoder.cxx
 RCU/AliHLTAltroGenerator.cxx
+RCU/AliHLTAltroTimebinAverageComponent.cxx
 RCU/AliHLTRCUAgent.cxx
 )
 

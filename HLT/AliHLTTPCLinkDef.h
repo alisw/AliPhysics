@@ -17,6 +17,7 @@
 #pragma link C++ class  AliHLTTPCDigitReaderDecoder+;
 #pragma link C++ class  AliHLTTPCDigitDumpComponent+;
 #pragma link C++ class  AliHLTTPCZeroSuppressionComponent+;
+#pragma link C++ class  AliHLTTPCNoiseMap+;
 #pragma link C++ class  AliHLTTPCNoiseMapComponent+;
 #pragma link C++ class  AliHLTTPCVertex+;
 #pragma link C++ class  AliHLTTPCVertexArray+;
@@ -24,6 +25,11 @@
 #pragma link C++ class  AliHLTTPCTrackArray+;
 #pragma link C++ class  AliHLTTPCTrack+;
 #pragma link C++ class  AliHLTTPCDigitPublisherComponent+;
+#pragma link C++ class  AliHLTTPCOfflineClustererComponent+;
+#pragma link C++ class  AliHLTTPCOfflineTrackerComponent+;
+#pragma link C++ class  AliHLTTPCOfflineTrackerCalibComponent+;
+#pragma link C++ class  AliHLTTPCOfflineCalibrationComponent+;
+#pragma link C++ class  AliHLTTPCOfflineCluster+;
 #pragma link C++ class  AliHLTTPCClusters+;
 #pragma link C++ class  AliHLTTPCConfMapFit+;
 #pragma link C++ class  AliHLTTPCConfMapTrack+;
@@ -42,14 +48,8 @@
 #pragma link C++ class  AliHLTTPCSliceTrackerComponent+;
 #pragma link C++ class  AliHLTTPCGlobalMergerComponent+;
 #pragma link C++ class  AliHLTTPCEsdWriterComponent+;
-#pragma link C++ class  AliHLTTPCCADisplay+;
-#pragma link C++ class  AliHLTTPCCAHit+;
-#pragma link C++ class  AliHLTTPCCAOutTrack+;
-#pragma link C++ class  AliHLTTPCCAParam+;
-#pragma link C++ class  AliHLTTPCCARow+;
-#pragma link C++ class  AliHLTTPCCATrackerComponent+;
-#pragma link C++ class  AliHLTTPCCATracker+;
-#pragma link C++ class  AliHLTTPCCATrack+;
+#pragma link C++ class  AliHLTTPCHistogramHandlerComponent+;
+#pragma link C++ class  AliHLTTPCClusterConverterComponent+;
 #pragma link C++ class  AliHLTTPCCompDataCompressorHelper+;
 #pragma link C++ class  AliHLTTPCCompDumpComponent+;
 #pragma link C++ class  AliHLTTPCCompModelAnalysis+;
@@ -69,5 +69,38 @@
 #pragma link C++ class  AliHLTTPCRunStatistics+;
 #pragma link C++ class  AliHLTTPCRunStatisticsProducerComponent+;
 #pragma link C++ class  AliHLTTPCHWCFDataReverterComponent+;
+#pragma link C++ class  AliHLTTPCKryptonClusterFinder+;
+#pragma link C++ class  AliHLTTPCKryptonClusterFinderComponent+;
+#pragma link C++ class  AliHLTTPCClusterHistoComponent+;
+#pragma link C++ class  AliHLTTPCTrackHistoComponent+;
+#pragma link C++ class  AliHLTTPCTrackDumpComponent+;
+#pragma link C++ class  AliHLTTPCClusterDumpComponent+;
+#pragma link C++ class  AliHLTTPCCalibTracksComponent+;
+
+#pragma link C++ class  AliHLTTPCCATrack+;
+#pragma link C++ class  AliHLTTPCCATracklet+;
+#pragma link C++ class  AliHLTTPCCATracker+;
+#pragma link C++ class  AliHLTTPCCAOutTrack+;
+#pragma link C++ class  AliHLTTPCCATrackParam+;
+#pragma link C++ class  AliHLTTPCCATrackConvertor+;
+#pragma link C++ class  AliHLTTPCCAParam+;
+#pragma link C++ class  AliHLTTPCCARow+;
+#pragma link C++ class  AliHLTTPCCAGrid+;
+#pragma link C++ class  AliHLTTPCCAHitArea+;
+#pragma link C++ class  AliHLTTPCCAGBHit+;
+#pragma link C++ class  AliHLTTPCCAMCPoint+;
+#pragma link C++ class  AliHLTTPCCAGBTrack+;
+#pragma link C++ class  AliHLTTPCCAGBTracker+;
+#pragma link C++ class  AliHLTTPCCATrackerComponent+;
+#pragma link C++ class  AliHLTTPCCANeighboursFinder+;
+#pragma link C++ class  AliHLTTPCCANeighboursCleaner+;
+#pragma link C++ class  AliHLTTPCCAStartHitsFinder+;
+#pragma link C++ class  AliHLTTPCCAUsedHitsInitialiser+;
+#pragma link C++ class  AliHLTTPCCATrackletConstructor+;
+#pragma link C++ class  AliHLTTPCCATrackletSelector+;
+#pragma link C++ class  AliHLTTPCCADisplay+;
+#pragma link C++ class  AliHLTTPCCAMCTrack+;
+#pragma link C++ class  AliHLTTPCCAPerformance+;
+#pragma link C++ class  AliTPCtrackerCA+; 
 
 #endif

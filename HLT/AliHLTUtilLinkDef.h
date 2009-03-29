@@ -7,12 +7,17 @@
 #pragma link off all functions;
 #pragma link C++ class AliHLTFilePublisher+;
 #pragma link C++ class AliHLTFileWriter+;
+#pragma link C++ class AliHLTMCEvent+;
 #pragma link C++ class AliHLTRootFilePublisherComponent+;
+#pragma link C++ class AliHLTESDMCEventPublisherComponent+;
 #pragma link C++ class AliHLTRootFileWriterComponent+;
 #pragma link C++ class AliHLTRootFileStreamerComponent+;
 #pragma link C++ class AliHLTLoaderPublisherComponent+;
 #pragma link C++ class AliHLTRawReaderPublisherComponent+;
+#pragma link C++ class AliHLTOUTPublisherComponent+;
+#pragma link C++ class AliHLTEsdCollectorComponent+;
 #pragma link C++ class AliHLTDataGenerator+;
 #pragma link C++ class AliHLTBlockFilterComponent+;
+#pragma link C++ class AliHLTCompStatCollector+;
 #pragma link C++ class AliHLTAgentUtil+;
 #endif

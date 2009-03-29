@@ -12,7 +12,7 @@ set(SRCS
 	AliTPCcalibDB.cxx 
 	AliTPCAltroMapping.cxx AliTPCRawStream.cxx AliTPCRawStreamFast.cxx 
 	AliTPCLaserTracks.cxx AliTPCSensorTemp.cxx  AliTPCSensorTempArray.cxx 
-	AliTPCCalibPedestal.cxx AliTPCCalibPulser.cxx   AliTPCCalibCE.cxx 
+	AliTPCCalibRawBase.cxx AliTPCCalibPedestal.cxx AliTPCCalibPulser.cxx   AliTPCCalibCE.cxx 
         AliTPCPreprocessor.cxx   AliTPCPreprocessorOnline.cxx 
         AliTPCCalibViewer.cxx  AliTPCCalibViewerGUI.cxx 
         AliTPCGenDBTemp.cxx AliTPCGenDBConf.cxx 

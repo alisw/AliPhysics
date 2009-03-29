@@ -25,6 +25,7 @@ TPCLib/AliHLTTPCTrack.cxx
 TPCLib/offline/AliHLTTPCDigitPublisherComponent.cxx
 TPCLib/offline/AliHLTTPCOfflineClustererComponent.cxx
 TPCLib/offline/AliHLTTPCOfflineTrackerComponent.cxx
+TPCLib/offline/AliHLTTPCOfflineTrackerCalibComponent.cxx
 TPCLib/offline/AliHLTTPCOfflineCalibrationComponent.cxx
 TPCLib/offline/AliHLTTPCOfflineCluster.cxx
 TPCLib/AliHLTTPCClusters.cxx
@@ -75,6 +76,7 @@ TPCLib/AliHLTTPCCalibTracksComponent.cxx
 TPCLib/AliHLTTPCHWCFDataReverterComponent.cxx
 TPCLib/AliHLTTPCLog.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrack.cxx
+TPCLib/tracking-ca/AliHLTTPCCATracklet.cxx
 TPCLib/tracking-ca/AliHLTTPCCATracker.cxx
 TPCLib/tracking-ca/AliHLTTPCCAOutTrack.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrackParam.cxx

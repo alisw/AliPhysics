@@ -9,4 +9,8 @@
 #pragma link C++ class AliHLTITStracker+;
 #pragma link C++ class AliHLTITSVertexerZ+;
 #pragma link C++ class AliHLTITSclusterer+;
+#pragma link C++ class AliHLTITSAgent+;
+#pragma link C++ class AliHLTITSClusterFinderSPDComponent+;
+#pragma link C++ class AliHLTITSClusterFinderSSDComponent+;
+#pragma link C++ class AliHLTITSCompressRawDataSDDComponent+;
 #endif
