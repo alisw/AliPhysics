@@ -50,8 +50,7 @@ AliCFHeavyFlavourTaskMultiVar::AliCFHeavyFlavourTaskMultiVar() :
 	fHistEventsProcessed(0x0),
 	fCountMC(0),
 	fEvents(0),
-	fFillFromGenerated(kFALSE),
-	fSkipped(0)
+	fFillFromGenerated(kFALSE)
 {
 	//
 	//Default ctor
@@ -65,8 +64,7 @@ AliCFHeavyFlavourTaskMultiVar::AliCFHeavyFlavourTaskMultiVar(const Char_t* name)
 	fHistEventsProcessed(0x0),
 	fCountMC(0),
 	fEvents(0),
-	fFillFromGenerated(kFALSE),
-	fSkipped(0)
+	fFillFromGenerated(kFALSE)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -103,8 +101,7 @@ AliCFHeavyFlavourTaskMultiVar::AliCFHeavyFlavourTaskMultiVar(const AliCFHeavyFla
 	fHistEventsProcessed(c.fHistEventsProcessed),
 	fCountMC(c.fCountMC),
 	fEvents(c.fEvents),
-	fFillFromGenerated(c.fFillFromGenerated),
-	fSkipped(c.fSkipped)
+	fFillFromGenerated(c.fFillFromGenerated)
 {
 	//
 	// Copy Constructor
@@ -194,7 +191,7 @@ void AliCFHeavyFlavourTaskMultiVar::UserExec(Option_t *)
 		// if (!fCFManager->CheckParticleCuts(1  , vtx)) continue;  // 1 stands for AOD level
 		
 		// find associated MC particle
-		Int_t mcLabel = IsMcVtx(vtx) ;
+		Int_t mcLabel = vtx->MatchToMC(421,mcArray) ;
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
@@ -301,7 +298,6 @@ void AliCFHeavyFlavourTaskMultiVar::Terminate(Option_t*)
 	AliAnalysisTaskSE::Terminate();
 	
 	AliInfo(Form("Found %i MC particles that are D0 in MC in %d events",fCountMC,fEvents));
-	AliInfo(Form("Found %i reco D0 that are not decaying in K+pi in %d events",fSkipped,fEvents));
 	
 	// draw some example plots....
 	
@@ -456,109 +452,6 @@ void AliCFHeavyFlavourTaskMultiVar::UserCreateOutputObjects() {
 	fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
 }
 
-//___________________________________________________________________________
-Int_t AliCFHeavyFlavourTaskMultiVar::GetVtxLabel(Int_t* labels) {
-	//
-	// returns the label of the vertex, given the labels of the 2 daughter tracks
-	// returns -1 if the V0 is fake
-	//
-	
-	Int_t labD0daugh0=-1; 
-	Int_t labD0daugh1=-1;
-	Int_t labD0=-1;
-	Int_t labMother = -1;
-	Int_t pdgMother = -1;
-	
-	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
-
-	AliAODMCParticle *part0 = (AliAODMCParticle*)mcArray->At(labels[0]);
-	if(!part0) { 
-		printf("no MC particle\n");
-		return -1;
-	}
-
-	while(part0->GetMother()>=0) {
-		labMother=part0->GetMother();
-		part0 = (AliAODMCParticle*)mcArray->At(labMother);
-		if(!part0) {
-			printf("no MC mother particle\n");
-		}
-		pdgMother = TMath::Abs(part0->GetPdgCode());
-		AliDebug(2,Form("pdgMother from particle 0 = %d",pdgMother));
-		if(pdgMother==421) {
-			AliDebug(2,Form("found one particle (first daughter) coming from a D0"));
-			labD0daugh0=labMother;
-		}
-	}
-	
-	AliAODMCParticle *part1 = (AliAODMCParticle*)mcArray->At(labels[1]);
-	if(!part1) {
-		printf("no MC particle\n");
-		return -1;
-	}
-
-	while(part1->GetMother()>=0) {
-		labMother=part1->GetMother();
-		part1 = (AliAODMCParticle*)mcArray->At(labMother);
-		if(!part1) {
-			printf("no MC mother particle\n");
-		}
-		pdgMother = TMath::Abs(part1->GetPdgCode());
-		AliDebug(2,Form("pdgMother from particle 1 = %d",pdgMother));
-		if(pdgMother==421) {
-			AliDebug(2,Form("found one particle (second daughter) coming from a D0"));
-			labD0daugh1=labMother;
-		}
-	}
-	if ((labD0daugh0 >= 0) && (labD0daugh1 >= 0) && (labD0daugh0 == labD0daugh1)){
-		//AliDebug(2, Form("found particles from the same D0 mother"));
-		labD0 = labD0daugh0;
-		// check that the D0 decays in 2 prongs
-		AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(labD0);
-		if (TMath::Abs(part->GetDaughter(1)-part->GetDaughter(0))==1) {
-		       return labD0;
-		}
-		else {
-			fSkipped+=1;
-		}
-	}
-	
-	return -1;
-
-}
-
-//___________________________________________________________________________
-Int_t AliCFHeavyFlavourTaskMultiVar::IsMcVtx(AliAODRecoDecayHF2Prong* vtx) {
-	//
-	// check if the passed vertex is associated to a MC one, 
-	//   and returns the corresponding geant label.
-	// returns -1 if it is fake (i.e. label<0).
-	//
-
-	
-	AliAODTrack *trk0 = (AliAODTrack*)vtx->GetDaughter(0);
-	AliAODTrack *trk1 = (AliAODTrack*)vtx->GetDaughter(1);
-
-	if (!trk0 || ! trk1) {
-		AliDebug(2, "problems with the tracks while looking for mother");
-		//if (!trk0) AliDebug(2, "track 0 gives problems");
-		//if (!trk1) AliDebug(2, "track 1 gives problems");
-		return -1;
-	}
-
-	Int_t labels[2] = {-1,-1};
-	labels[0] = trk0->GetLabel();
-	labels[1] = trk1->GetLabel();
-
-	if (labels[0] < 0 || labels[1] < 0) {
-		AliDebug(2, "problems with the labels of the tracks while looking for mother");
-		return -1;
-	}
-	
-	return GetVtxLabel(&labels[0]) ;
-}
 //___________________________________________________________________________
 Double_t AliCFHeavyFlavourTaskMultiVar::CosThetaStar(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const {
 

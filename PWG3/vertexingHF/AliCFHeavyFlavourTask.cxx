@@ -192,7 +192,7 @@ void AliCFHeavyFlavourTask::UserExec(Option_t *)
 		
 		// check if associated MC v0 passes the cuts
 		// first get the label
-		Int_t mcLabel = IsMcVtx(rd) ;
+		Int_t mcLabel = rd->MatchToMC(421,mcArray);
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
@@ -309,108 +309,4 @@ void AliCFHeavyFlavourTask::UserCreateOutputObjects() {
 	OpenFile(1);
 	fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
 }
-
-//___________________________________________________________________________
-Int_t AliCFHeavyFlavourTask::GetVtxLabel(Int_t* labels) const {
-	//
-	// returns the label of the vertex, given the labels of the 2 daughter tracks
-	// returns -1 if the V0 is fake
-	//
-	
-	Int_t labD0daugh0=-1; 
-	Int_t labD0daugh1=-1;
-	Int_t labD0=-1;
-	Int_t labMother = -1;
-	Int_t pdgMother = -1;
-	
-	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
-	AliAODMCParticle *part0 = (AliAODMCParticle*)mcArray->At(labels[0]);
-	if(!part0) { 
-		printf("no MC particle\n");
-		return -1;
-	}
-
-	if(part0->GetMother()>=0) {
-		labMother=part0->GetMother();
-		part0 = (AliAODMCParticle*)mcArray->At(labMother);
-		if(!part0) {
-			printf("no MC mother particle\n");
-		} else {
-		        pdgMother = TMath::Abs(part0->GetPdgCode());
-		        AliDebug(2,Form("pdgMother from particle 0 = %d",pdgMother));
-		        if(pdgMother==421) {
-			        AliDebug(2,Form("found one particle (first daughter) coming from a D0"));
-			        labD0daugh0=labMother;
-                        }
-		}
-	}
-	
-	AliAODMCParticle *part1 = (AliAODMCParticle*)mcArray->At(labels[1]);
-	if(!part1) {
-		printf("no MC particle\n");
-		return -1;
-	}
-
-	if(part1->GetMother()>=0) {
-		labMother=part1->GetMother();
-		part1 = (AliAODMCParticle*)mcArray->At(labMother);
-		if(!part1) {
-			printf("no MC mother particle\n");
-		} else {
-		        pdgMother = TMath::Abs(part1->GetPdgCode());
-		        AliDebug(2,Form("pdgMother from particle 1 = %d",pdgMother));
-		        if(pdgMother==421) {
-			      AliDebug(2,Form("found one particle (second daughter) coming from a D0"));
-			      labD0daugh1=labMother;
-                        }
-		}
-	}
-	if ((labD0daugh0 >= 0) && (labD0daugh1 >= 0) && (labD0daugh0 == labD0daugh1)){
-		labD0 = labD0daugh0;
-		// check that the D0 decays in 2 prongs
-		AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(labD0);
-		if (TMath::Abs(part->GetDaughter(1)-part->GetDaughter(0))==1) {
-		       return labD0;
-		}
-	}
-	
-	return -1;
-
-}
-
-//___________________________________________________________________________
-Int_t AliCFHeavyFlavourTask::IsMcVtx(AliAODRecoDecayHF2Prong* rd) const {
-
-	//
-	// check if the passed vertex is associated to a MC one, 
-	// and returns the corresponding geant label.
-	// returns -1 if it is fake (i.e. label<0).
-	//
-
-	
-	AliAODTrack *trk0 = (AliAODTrack*)rd->GetDaughter(0);
-	AliAODTrack *trk1 = (AliAODTrack*)rd->GetDaughter(1);
-
-	if (!trk0 || ! trk1) {
-		AliInfo("problems with the tracks while looking for mother");
-		if (!trk0) AliDebug(3, "track 0 gives problems");
-		if (!trk1) AliDebug(3, "track 1 gives problems");
-		return -1;
-	}
-
-	Int_t labels[2] = {-1,-1};
-	labels[0] = trk0->GetLabel();
-	labels[1] = trk1->GetLabel();
-
-	if (labels[0] < 0 || labels[1] < 0) {
-		AliDebug(3, "problems with the labels of the tracks while looking for mother");
-		return -1;
-	}
-	
-	return GetVtxLabel(&labels[0]) ;
-}
-
-
 
