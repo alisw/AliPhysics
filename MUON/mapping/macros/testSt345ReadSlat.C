@@ -1,5 +1,4 @@
 // $Id$
-// $MpId: testReadSlat.C,v 1.4 2005/09/19 19:02:53 ivana Exp $
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -14,12 +13,11 @@
 #include "AliMpSt345Reader.h"
 
 #include <Riostream.h>
-#include <TObjArray.h>
-#include <TObjString.h>
+#include "slats.h"
 
 #endif
 
-void testReadSlat()
+void testSt345ReadSlat()
 {
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
@@ -28,20 +26,11 @@ void testReadSlat()
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
   AliMpSt345Reader r(dataStreams, motifMap);
 
-  ifstream in("slats.list");
-  char line[80];
-  TObjArray slatsToTest;
+  Int_t ok(0);
   
-  while ( in.getline(line,80) )
+  for ( Int_t i = 0; i < NSLATS; ++i )
   {
-    slatsToTest.AddLast(new TObjString(line));
-  }
-  
-  in.close();
-  
-  for ( Int_t i = 0; i < slatsToTest.GetEntriesFast(); ++i )
-  {
-    TString slat( ((TObjString*)slatsToTest[i])->String());
+    TString slat(slatTypeNames[i]);
     
     cout << "Trying to read " << slat << endl;
     AliMpSlat* b = r.ReadSlat(slat.Data(),AliMp::kBendingPlane);
@@ -58,13 +47,20 @@ void testReadSlat()
       {
         cout << "NOT THE SAME X-SIZE !" << endl;
       }
-      cout << "Bending : ";
+      cout << "Bending    : ";
       b->Print();
       cout << "NonBending : ";
       nb->Print();
+      ++ok;
     }
   }
   
-  slatsToTest.SetOwner(kTRUE);
-  slatsToTest.Delete();
+  if ( ok == NSLATS ) 
+  {
+    cout << "Successfully read " << ok << " slats" << endl;
+  }
+  else
+  {
+    cout << "Failed to read " << (NSLATS-ok) << " slats out of " << NSLATS << endl;
+  }
 }

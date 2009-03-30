@@ -32,6 +32,7 @@
 #include "AliMpArea.h"
 #include "AliMpSt345Reader.h"
 #include "AliMpIntPair.h"
+#include "slats.h"
 
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -39,7 +40,6 @@
 #include <TString.h>
 #include <TStopwatch.h>
 #include <Riostream.h>
-
 #endif
 
 //______________________________________________________________________________
@@ -82,7 +82,7 @@ Int_t Count(const AliMpSlat& slat)
   {
     for ( Int_t j = 0; j <= seg.MaxPadIndexY(); ++j )
     {
-      if ( seg.HasPad(AliMpIntPair(i,j)) ) 
+      if ( seg.HasPadByIndices(AliMpIntPair(i,j)) ) 
       {
         ++n;
       }
@@ -198,30 +198,8 @@ void XCheck(const AliMpSlat& slat)
 }
 
 //______________________________________________________________________________
-void testSlatPads(const char* slatlist)
+void testSt345Pads()
 {
-  ifstream in(slatlist);
-  char line[80];
-  TObjArray slatsToTest;
-  slatsToTest.SetOwner(kTRUE);
-  
-  TStopwatch timerCount;
-  TStopwatch timerIterate;
-  TStopwatch timerCT;
-  
-  timerCount.Start(true); timerCount.Stop();
-  timerIterate.Start(true); timerIterate.Stop();
-  timerCT.Start(true); timerCT.Stop();
-  
-  
-  while ( in.getline(line,80) )
-  {
-    if ( line[0] == '#' ) continue;
-    slatsToTest.AddLast(new TObjString(line));
-  }
-  
-  in.close();
-  
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
   AliMpDataStreams dataStreams(dataMap);
@@ -229,63 +207,87 @@ void testSlatPads(const char* slatlist)
   AliMpSlatMotifMap* motifMap = new AliMpSlatMotifMap();
   AliMpSt345Reader reader(dataStreams, motifMap);
   
-  for ( Int_t i = 0; i < slatsToTest.GetEntriesFast(); ++i )
+  Int_t ok(0);
+  
+  for ( Int_t i = 0; i < NSLATS; ++i ) 
   {
-    TString slatName( ((TObjString*)slatsToTest[i])->String());
+    Bool_t slatOK(kTRUE);
+    
+    TString slatName( slatTypeNames[i] );
     
     AliMpSlat* bending = reader.ReadSlat(slatName.Data(),AliMp::kBendingPlane);
     AliMpSlat* nonbending = reader.ReadSlat(slatName.Data(),AliMp::kNonBendingPlane);
   
-    timerCount.Start(false);
-    Int_t NumberOfBendingPads = Count(*bending);
-    Int_t NumberOfNonBendingPads = Count(*nonbending);
-    timerCount.Stop();
+    Int_t NumberOfBendingPads(0);
+    Int_t NumberOfNonBendingPads(0);
+    Int_t xcheck_b(0);
+    Int_t xcheck_nb(0);
+    Int_t nc_b(0);
+    Int_t nc_nb(0);
     
-    timerIterate.Start(false);
-    Int_t xcheck_b = Iterate(*bending);   
-    Int_t xcheck_nb = Iterate(*nonbending);
-    timerIterate.Stop();
+    if ( bending )
+    {
+      NumberOfBendingPads = Count(*bending);
+      xcheck_b = Iterate(*bending);   
+      nc_b = CircularTest(*bending);   
+    }
+    else
+    {
+      cout << "Could not read bending plane of slat " << slatName.Data() << endl;
+    }
     
-    timerCT.Start(false);
-    Int_t nc_b = CircularTest(*bending);   
-    Int_t nc_nb = CircularTest(*nonbending);
-    timerCT.Stop();
+    if ( nonbending ) 
+    {
+      NumberOfNonBendingPads = Count(*nonbending);
+      xcheck_nb = Iterate(*nonbending);
+      nc_nb = CircularTest(*nonbending);
+    }
+    else
+    {
+      cout << "Could not read bending plane of slat " << slatName.Data() << endl;
+    }
     
     cout << setw(10) << slatName
       << " BENDING : " << setw(5) << NumberOfBendingPads
       << " NONBENDING : " << setw(5) << NumberOfNonBendingPads
       << " CT for " << (nc_b+nc_nb) << " pads ";
+    
     if ( nc_b>0 && nc_nb>0 ) 
     {
       cout << "OK.";
     }
     else
     {
+      slatOK = kFALSE;
       cout << "FAILED.";
     }
     cout << endl;
 
-    XCheck(*nonbending);
-    XCheck(*bending);
+    if ( nonbending ) XCheck(*nonbending);
+    if ( bending ) XCheck(*bending);
 
     if ( xcheck_b != NumberOfBendingPads )
     {
       cout << setw(20) << " Bending : HasPad and Iterator give different results !" 
       << " " << NumberOfBendingPads << " vs " << xcheck_b << endl;
+      slatOK = kFALSE;
     }
     if ( xcheck_nb != NumberOfNonBendingPads )
     {
       cout << setw(20) << " NonBending : HasPad and Iterator give different results !"
       << " " << NumberOfNonBendingPads << " vs " << xcheck_nb << endl;
+      slatOK = kFALSE;
     }
-    
+
+    if (slatOK) ++ok;
    }
   
-  cout << "Count : "; 
-  timerCount.Print();
-  cout << "Iterate : ";
-  timerIterate.Print();
-  cout << "CT : ";
-  timerCT.Print();
-  
+  if ( ok == NSLATS ) 
+  {
+    cout << "Successfully tested " << ok << " slats" << endl;
+  }
+  else
+  {
+    cout << "Failed to read " << (NSLATS-ok) << " out of " << NSLATS << " slats" << endl;
+  }
 }

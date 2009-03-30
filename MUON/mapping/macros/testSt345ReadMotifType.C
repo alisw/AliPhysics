@@ -1,5 +1,9 @@
 // $Id$
-// $MpId: testReadMotifTypeSlat.C,v 1.1 2005/09/19 19:02:53 ivana Exp $
+
+///
+/// Tries to read all motif types for stations 3, 4, 5
+///
+/// 
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -36,7 +40,7 @@ Int_t test(AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
   return n;
 }
 
-void testReadMotifTypeSlat()
+void testSt345ReadMotifType()
 {
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
@@ -48,13 +52,13 @@ void testReadMotifTypeSlat()
   Int_t n = 0;
   
   n += test(r,'I',1,1);
-  n += test(r,'L',1,20);
-  n += test(r,'O',1,19);
+  n += test(r,'L',1,25);
+  n += test(r,'O',1,20);
   n += test(r,'P',1,4);
   n += test(r,'Q',1,4);
-  n += test(r,'R',1,42);
-  n += test(r,'Z',1,5);
+  n += test(r,'R',1,45);
+  n += test(r,'Z',1,8);
   
-  cout << "==== " << n << " motifTypes successfully read in" << endl;
+  cout << "Successfully read in " << n << " motifTypes" << endl;
 }  
 

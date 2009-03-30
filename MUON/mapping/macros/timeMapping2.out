@@ -1,0 +1,38 @@
+I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/OCDB
+W-AliCDBManager::Get: Run number explicitly set in query: CDB cache temporarily disabled!
+AliMpDCSNamer
+   ManuId2PCBIndex  R:0.0523s C:0.0600s (9676 slices)
+   ManuId2Sector  R:0.0344s C:0.0400s (7152 slices)
+AliMpDetElement
+   AddManu 
+         R:1.4517s C:1.4000s (16828 slices)
+        slat R:0.7501s C:0.7100s (9676 slices)
+        st12 R:0.5489s C:0.5300s (7152 slices)
+AliMpFastSegmentation
+   AliMpFastSegmentation 
+        AliMpSectorSegmentation R:0.0807s C:0.0800s (4 slices)
+        AliMpSlatSegmentation R:0.0973s C:0.0500s (38 slices)
+General
+   timeMapping2 Load mapping R:2.6892s C:2.6000s (1 slices)
+************************************
+*    Row   * pI.fMemRe *     sname *
+************************************
+*        0 *        62 *         0 *
+*        1 *       107 *         1 *
+************************************
+AliMpMotifMap
+   GetMotifPosition  R:0.0658s C:0.1000s (7152 slices)
+General
+   ByIndices 
+        HasPadByIndices-St12 R:0.1710s C:0.1600s (32 slices)
+        HasPadByIndices-St345 R:0.1198s C:0.1000s (280 slices)
+        PadByIndices-St12 R:0.5098s C:0.5000s (32 slices)
+        PadByIndices-St345 R:0.4567s C:0.4500s (280 slices)
+   ByLocation 
+        HasPadByLocation-St12 R:0.0730s C:0.0600s (7152 slices)
+        HasPadByLocation-St345 R:0.0979s C:0.1100s (9676 slices)
+        PadByLocation-St12 R:0.3791s C:0.3600s (7152 slices)
+        PadByLocation-St345 R:0.4947s C:0.4700s (9676 slices)
+   ByPosition 
+        PadByPosition-St12 R:7.0682s C:7.0700s (32 slices)
+        PadByPosition-St345 R:2.0758s C:2.1200s (280 slices)

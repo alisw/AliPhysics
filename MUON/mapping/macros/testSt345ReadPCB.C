@@ -1,5 +1,4 @@
 // $Id$
-// $MpId: testReadPCB.C,v 1.1 2005/09/19 19:02:53 ivana Exp $
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -17,7 +16,7 @@
 
 #endif
 
-void testReadPCB()
+void testSt345ReadPCB()
 {
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
@@ -27,15 +26,17 @@ void testReadPCB()
   AliMpSt345Reader r(dataStreams, motifMap);
 
   const char* pcbToTest[] = { "B1", "B2", "B3+", "B3-", "N1", "N2+", "N2-", 
-  "N3", "R1B", "R1N", "R2B", "R2N", "R3B", "R3N", "S2B", "S2N" };
+  "N3", "R1B", "R1N", "R2B", "R2N", "R3B", "R3N", "S2B-", "S2B+", "S2N" };
   
   Int_t N = sizeof(pcbToTest)/sizeof(const char*);
+  Int_t ok(0);
   
   for ( Int_t i = 0; i < N; ++i )
   {
     AliMpPCB* pcb = r.ReadPCB(pcbToTest[i]);
     if (pcb)
     {
+      ++ok;
       pcb->Print();
       for ( Int_t j = 0; j < pcb->GetSize(); ++j )
       {
@@ -49,4 +50,12 @@ void testReadPCB()
       cout << "Cannot read " << pcbToTest[i] << endl;
     }
   }  
+  if ( ok == N ) 
+  {
+    cout << "Successfully read " << ok << " PCBs" << endl;
+  }
+  else
+  {
+    cout << "Failed to read " << (N-ok) << " PCBs out of " << N << endl;
+  }
 }
