@@ -442,7 +442,7 @@ else if(runType=="STANDALONE_EMD" && strcmp(beamType,"Pb-Pb")==0){
           if(j<6){
             fscanf(file,"%f",&fitValEMD[j]);
             if(j<4){
-              calibVal[j] = 2.76/fitValEMD[j];
+              calibVal[j] = 2760./fitValEMD[j];
               eCalib->SetEnCalib(j,calibVal[j]);
             }
             else eCalib->SetEnCalib(j,fitValEMD[j]);
