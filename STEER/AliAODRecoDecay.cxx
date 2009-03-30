@@ -520,6 +520,7 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   Int_t *labMom = new Int_t[GetNDaughters()];
   Int_t i,lab,labMother,pdgMother;
   AliAODMCParticle *part=0;
+  Double_t pxSumDgs=0.,pySumDgs=0.,pzSumDgs=0.;
 
   // loop on daughter labels
   for(i=0; i<GetNDaughters(); i++) {
@@ -534,6 +535,13 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
       printf("no MC particle\n");
       continue;
     }
+    // keep sum of daughters' momenta, to check for mom conservation
+    pxSumDgs += part->Px();
+    pySumDgs += part->Py();
+    pzSumDgs += part->Pz();
+    // for the J/psi, check that the daughters are electrons
+    if(pdgabs==443 && TMath::Abs(part->GetPdgCode())!=11) continue;
+
     while(part->GetMother()>=0) {
       labMother=part->GetMother();
       part = (AliAODMCParticle*)mcArray->At(labMother);
@@ -561,12 +569,26 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
 
   if(!isSignal) return -1;
 
+  /*  
   // check that the mother decayed in <GetNDaughters()> prongs
-  part = (AliAODMCParticle*)mcArray->At(labMother);
   Int_t ndg = TMath::Abs(part->GetDaughter(1)-part->GetDaughter(0))+1;
-
   if(ndg!=GetNDaughters()) return -1;
+  AliAODMCParticle* p1=(AliAODMCParticle*)(mcArray->At(part->GetDaughter(1)));
+  AliAODMCParticle* p0=(AliAODMCParticle*)(mcArray->At(part->GetDaughter(0)));
+  printf("pdg %d  %d %d %d   %d %d\n",part->GetDaughter(1),part->GetDaughter(0),dgLabels[0],dgLabels[1],p0->GetPdgCode(),p1->GetPdgCode());
+  */
 
+  // the above works only for non-resonant decays,
+  // it's better to check for mom conservation
+  part = (AliAODMCParticle*)mcArray->At(labMother);
+  Double_t pxMother = part->Px();
+  Double_t pyMother = part->Py();
+  Double_t pzMother = part->Pz();
+  // within 1 MeV
+  if(TMath::Abs(pxMother-pxSumDgs) > 0.001 ||
+     TMath::Abs(pyMother-pySumDgs) > 0.001 ||
+     TMath::Abs(pzMother-pzSumDgs) > 0.001) return -1;
+ 
   return labMother;
 }
 //---------------------------------------------------------------------------
