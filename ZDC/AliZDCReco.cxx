@@ -174,8 +174,8 @@ void AliZDCReco::Print(Option_t *) const {
 	 " \t NDetSpecNRight = %d, NDetSpecPRight = %d, NspecnRight = %d,"
 	 " NspecpRight = %d, NpartRight = %d"
 	 " \t b = %f fm\n ", 
-	 fZN1Energy[0],fZP1Energy[0],fZEM1signal[0],fZEM2signal[0], 
-	 fZN2Energy[0], fZP2Energy[0],
+	 fZN1Energy[0]/1000.,fZP1Energy[0]/1000.,fZEM1signal[0]/1000.,fZEM2signal[0]/1000., 
+	 fZN2Energy[0]/1000., fZP2Energy[0]/1000.,
 	 fNDetSpecNLeft,fNDetSpecPLeft,fNTrueSpecNLeft,fNTrueSpecPLeft,fNPartLeft,
 	 fNDetSpecNRight,fNDetSpecPRight,fNTrueSpecNRight,fNTrueSpecPRight,fNPartRight,
 	 fImpPar);

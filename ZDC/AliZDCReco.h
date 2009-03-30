@@ -75,10 +75,10 @@ public:
 
 private:
   // Data members
-  Float_t fZN1Energy[2];	 // Energy detected in ZN1 (sum of 5 tower signals)
-  Float_t fZP1Energy[2];	 // Energy detected in ZP1 (sum of 5 tower signals)
-  Float_t fZN2Energy[2];	 // Energy detected in ZN2 (sum of 5 tower signals)
-  Float_t fZP2Energy[2];	 // Energy detected in ZP2 (sum of 5 tower signals)
+  Float_t fZN1Energy[2]; // Energy detected in ZN1 (sum of 5 tower signals)
+  Float_t fZP1Energy[2]; // Energy detected in ZP1 (sum of 5 tower signals)
+  Float_t fZN2Energy[2]; // Energy detected in ZN2 (sum of 5 tower signals)
+  Float_t fZP2Energy[2]; // Energy detected in ZP2 (sum of 5 tower signals)
   //
   Float_t fZN1EnTow[10]; // Energy in ZN1 towers
   Float_t fZP1EnTow[10]; // Energy in ZP1 towers
