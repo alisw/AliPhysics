@@ -84,7 +84,8 @@ AliCFTrackCutPid::AliCFTrackCutPid() :
   fNbins(101),
   fDetRestr(-1),
   fiPartRestr(-1),
-  fDetProbRestr(1)
+  fDetProbRestr(1),
+  fProbThreshold(0.)
 { 
   //
   //Default constructor 
@@ -119,7 +120,8 @@ AliCFTrackCutPid::AliCFTrackCutPid(const Char_t* name, const Char_t* title) :
   fNbins(101),
   fDetRestr(-1),
   fiPartRestr(-1),
-  fDetProbRestr(1)
+  fDetProbRestr(1),
+  fProbThreshold(0.)
 {
   //
   //Constructor
@@ -154,7 +156,8 @@ AliCFTrackCutPid::AliCFTrackCutPid(const AliCFTrackCutPid& c) :
   fNbins(c.fNbins),
   fDetRestr(c.fDetRestr),
   fiPartRestr(c.fiPartRestr),
-  fDetProbRestr(c.fDetProbRestr)
+  fDetProbRestr(c.fDetProbRestr),
+  fProbThreshold(c.fProbThreshold)
 {
   //
   //Copy constructor
@@ -198,6 +201,7 @@ AliCFTrackCutPid& AliCFTrackCutPid::operator=(const AliCFTrackCutPid& c)
     this->fDetRestr=c.fDetRestr;
     this->fiPartRestr=c.fiPartRestr;
     this->fDetProbRestr=c.fDetProbRestr;
+    this->fProbThreshold=c.fProbThreshold;
   
     for(Int_t i=0; i< kNdets ; i++ )   {
       this->fDets[i]=c.fDets[i];
@@ -480,9 +484,15 @@ Int_t AliCFTrackCutPid::Identify(Double_t pid[AliPID::kSPECIES]) const
     if(fIsQAOn) fhCombProb[iP]->Fill(probability[iP]);
   }
   
-  AliPID::EParticleType sel = getpid.GetMostProbable();
-  if(getpid.GetProbability(sel,fPriors)>fCut) iPart= (Int_t)sel;
-  AliDebug(2,Form("probabilities   : %f  %f  %f  %f  %f",probability[0],probability[1],probability[2],probability[3],probability[4]));
+
+  if (fProbThreshold > 0.) {
+    if (probability[fgParticleType] >= fProbThreshold) iPart=fgParticleType;
+  }
+  else {
+    AliPID::EParticleType sel = getpid.GetMostProbable();
+    if(getpid.GetProbability(sel,fPriors)>fCut) iPart= (Int_t)sel;
+    AliDebug(2,Form("probabilities   : %f  %f  %f  %f  %f",probability[0],probability[1],probability[2],probability[3],probability[4]));
+  }
 
   if(fCheckResponse && !Check(pid,iPart, fMinDiffResponse)) iPart=kCheckResp;
   if(fCheckSelection && !Check(probability,iPart,fMinDiffProbability)) iPart=kCheckProb;

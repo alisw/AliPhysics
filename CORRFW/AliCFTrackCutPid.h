@@ -60,6 +60,7 @@ class AliCFTrackCutPid : public AliCFCutBase
   void SetDetectorProbabilityRestriction(TString det, Int_t iPart, Double_t upperprob); 
   void SetHistogramAxis(Int_t nbins, Double_t xmin, Double_t xmax) {fNbins=nbins; fXmin = xmin; fXmax = xmax;}
   void SetAODmode(Bool_t isaod = kFALSE) {fgIsAOD=isaod;}  
+  void SetProbThreshold(Double_t value) {fProbThreshold=value;}
  
   //returns the track identification number  
   Int_t GetID(ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;  
@@ -108,6 +109,9 @@ class AliCFTrackCutPid : public AliCFCutBase
   Int_t fDetRestr;                                          // id of the detector for the restriction
   Int_t fiPartRestr;                                        // id of the particle for the restriction
   Double_t fDetProbRestr;                                   // probability restriction value
+  Double_t fProbThreshold;                                  // if different from 0, the assigned PID will be set to 
+                                                            // fgParticleType if the probability is larger than this threshold,
+                                                            // regardless it is the highest or not (!)
 
   Double_t fPriors[AliPID::kSPECIES];                       // a priori concentrations
   TF1 *fPriorsFunc[AliPID::kSPECIES];                       // momentum dependent priors
