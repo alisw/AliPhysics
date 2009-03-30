@@ -48,6 +48,7 @@ AliCFEventRecCuts::AliCFEventRecCuts() :
   fVtxNCtrbMin(0),
   fVtxNCtrbMax((Int_t)1.e9),
   fVtxTPC(0),
+  fVtxSPD(0),
   fBitMap(0x0)
 {
   //
@@ -75,6 +76,7 @@ AliCFEventRecCuts::AliCFEventRecCuts(Char_t* name, Char_t* title) :
   fVtxNCtrbMin(0),
   fVtxNCtrbMax((Int_t)1.e9),
   fVtxTPC(0),
+  fVtxSPD(0),
   fBitMap(0x0)
  {
   //
@@ -102,6 +104,7 @@ AliCFEventRecCuts::AliCFEventRecCuts(const AliCFEventRecCuts& c) :
   fVtxNCtrbMin(c.fVtxNCtrbMin),
   fVtxNCtrbMax(c.fVtxNCtrbMax),
   fVtxTPC(c.fVtxTPC),
+  fVtxSPD(c.fVtxSPD),
   fBitMap(c.fBitMap)
 {
   //
@@ -172,6 +175,7 @@ AliCFEventRecCuts& AliCFEventRecCuts::operator=(const AliCFEventRecCuts& c)
     fVtxNCtrbMin=c.fVtxNCtrbMin;
     fVtxNCtrbMax=c.fVtxNCtrbMax;
     fVtxTPC=c.fVtxTPC;
+    fVtxSPD=c.fVtxSPD;
     fBitMap=c.fBitMap;
   }
 
@@ -227,7 +231,10 @@ void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     fBitMap->SetBitNumber(0,kFALSE); 
   
   if(fRequireVtxCuts){
-    const AliESDVertex* vtxESD = fVtxTPC ? esd->GetPrimaryVertexTPC() : esd->GetPrimaryVertexSPD() ;
+    const AliESDVertex* vtxESD = 0x0;
+    if      (fVtxTPC) vtxESD = esd->GetPrimaryVertexTPC() ;
+    else if (fVtxSPD) vtxESD = esd->GetPrimaryVertexSPD() ;
+    else              vtxESD = esd->GetPrimaryVertexTracks() ;
     if(!vtxESD){
       for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
       AliWarning("Cannot get vertex, skipping event");
@@ -297,7 +304,10 @@ void AliCFEventRecCuts::FillHistograms(TObject* obj, Bool_t b)
   fhQA[kNTracks][index]->Fill(nTracks);
 
   //look at vertex parameters:
-  const AliESDVertex* vtxESD = fVtxTPC ? esd->GetPrimaryVertexTPC() : esd->GetPrimaryVertexSPD();
+  const AliESDVertex* vtxESD = 0x0;
+  if      (fVtxTPC) vtxESD = esd->GetPrimaryVertexTPC() ;
+  else if (fVtxSPD) vtxESD = esd->GetPrimaryVertexSPD() ;
+  else              vtxESD = esd->GetPrimaryVertexTracks() ;
   if(!vtxESD)return;
   // Require the vertex to have been reconstructed successfully
   if (strcmp(vtxESD->GetName(), "default")==0)return;

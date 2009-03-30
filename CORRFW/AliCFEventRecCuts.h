@@ -51,7 +51,8 @@ class AliCFEventRecCuts: public AliCFCutBase
   void SetVertexZResCut(Double_t zMax=1.e99){fVtxZResMax=zMax;} // cut values setter
 
   void SetVertexNContributors(Int_t min, Int_t max) {fVtxNCtrbMin=min; fVtxNCtrbMax=max;}
-  void SetUseTPCVertex() {fVtxTPC=kTRUE;}
+  void SetUseTPCVertex() {fVtxTPC=kTRUE ; fVtxSPD=kFALSE;} //default is vertex from tracks
+  void SetUseSPDVertex() {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} //default is vertex from tracks
 
   Int_t    GetNTracksMin() const {return fNTracksMin;} // cut values getter
   Int_t    GetNTracksMax() const {return fNTracksMax;} // cut values getter
@@ -103,7 +104,8 @@ class AliCFEventRecCuts: public AliCFCutBase
   Double_t fVtxZResMax ;//Maximum value of sigma_vtx in X
   Int_t    fVtxNCtrbMin; //Min number of contributors to vertex
   Int_t    fVtxNCtrbMax; //Max number of contributors to vertex
-  Bool_t   fVtxTPC;      //Flag for use of TPC vertex
+  Bool_t   fVtxTPC;  //Flag for use of TPC vertex
+  Bool_t   fVtxSPD;  //Flag for use of SPD vertex
 
   TBits *fBitMap ; //cut mask
 
