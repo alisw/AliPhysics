@@ -24,7 +24,7 @@ void DphiAnalysis()
     // Input 
     AliMultiAODInputHandler* inpHandler = new AliMultiAODInputHandler(2);
     // Pool
-    AliEventPoolOTF* pool = new AliEventPoolOTF("event pool", "event pool");
+    AliEventPoolOTF* pool = new AliEventPoolOTF("event pool", "AOD");
     pool->SetTagDirectory(".");
     pool->SetMultiplicityBin(0, 100, 1);
     pool->Init();
