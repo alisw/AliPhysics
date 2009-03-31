@@ -2,7 +2,7 @@
 #define ALITRDTRACKERV1_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */ 
+* See cxx source for full Copyright notice                               */ 
 /* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////////
@@ -26,9 +26,9 @@
 #endif
 
 /**************************************************************************
- * Class Status see source file                                           *
- **************************************************************************/
- 
+* Class Status see source file                                           *
+**************************************************************************/
+
 class TFile;
 class TTreeSRedirector;
 class TClonesArray;
@@ -86,9 +86,9 @@ public:
   static Float_t  FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Double_t zVertex);
   static Float_t  FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigError);
   
- 	static Double_t FitRiemanTilt(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
- 	static Double_t FitLine(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
- 	static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
+  static Double_t FitRiemanTilt(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
+  static Double_t FitLine(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
+  static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
 
   Bool_t          IsClustersOwner() const    { return TestBit(kOwner);}
   void            SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fClusters = 0x0;}
@@ -167,20 +167,21 @@ private:
   static const Float_t     fgkLabelFraction;            // Min fraction of same label
   static const Double_t    fgkMaxSnp;                   // Maximal snp for tracking
   static const Double_t    fgkMaxStep;                  // Maximal step for tracking  
-	
-	// stand alone tracking
-	static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
-	Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
-	Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
+  
+  // stand alone tracking
+  static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
+  Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
+  Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
   AliTRDchamberTimeBin *fSeedTB[kNSeedPlanes]; // seeding time bin planes
-	Int_t                fSieveSeeding;                   //! Seeding iterator
-	
+  Int_t                fSieveSeeding;                   //! Seeding iterator
+  
+  static const Double_t fgkX0[kNPlanes];                // default values for the position of anode wire
   static Int_t         fgNTimeBins;                     // Timebins per plane in track prolongation 
-	static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant
-	static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
-	static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
-	
-	ClassDef(AliTRDtrackerV1, 3)                          //  TRD tracker - tracklet based tracking
+  static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant
+  static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
+  static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
+  
+  ClassDef(AliTRDtrackerV1, 3)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

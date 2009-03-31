@@ -74,7 +74,9 @@ Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
   0.1112, 0.1112, 0.1112, 0.0786, 0.0786,
   0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
   0.0474, 0.0408, 0.0335, 0.0335, 0.0335
-};
+};  
+const Double_t AliTRDtrackerV1::fgkX0[kNPlanes]    = {
+  300.2, 312.8, 325.4, 338.0, 350.6, 363.2};
 Int_t AliTRDtrackerV1::fgNTimeBins = 0;
 AliRieman* AliTRDtrackerV1::fgRieman = 0x0;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRieman = 0x0;
@@ -106,8 +108,11 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   Double_t loc[] = {0., 0., 0.};
   Double_t glb[] = {0., 0., 0.};
   for(Int_t ily=kNPlanes; ily--;){
-    if(!(matrix = fGeom->GetClusterMatrix(AliTRDgeometry::GetDetector(ily, 2, 0)))){
-      AliFatal(Form("Could not get matrix for chamber @ 0 2 %d.", ily));
+    Int_t ism = 0;
+    while(!(matrix = fGeom->GetClusterMatrix(AliTRDgeometry::GetDetector(ily, 2, ism)))) ism++;
+    if(!matrix){
+      AliError(Form("Could not get transformation matrix for layer %d. Use default.", ily));
+      fR[ily] = fgkX0[ily];
       continue;
     }
     matrix->LocalToMaster(loc, glb);
@@ -195,40 +200,32 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
   if (!tracklet) return kFALSE;
 
   // get detector for this tracklet
-  Int_t  idet     = tracklet->GetDetector();
-    
+  Int_t det = tracklet->GetDetector();
+  Int_t sec = fGeom->GetSector(det);
+  Double_t alpha = (sec+.5)*AliTRDgeometry::GetAlpha(),
+           sinA  = TMath::Sin(alpha),
+           cosA  = TMath::Cos(alpha);
   Double_t local[3];
-  local[0] = tracklet->GetX0(); 
-  local[1] = tracklet->GetYfit(0);
-  local[2] = tracklet->GetZfit(0);
+  local[0] = tracklet->GetX(); 
+  local[1] = tracklet->GetY();
+  local[2] = tracklet->GetZ();
   Double_t global[3];
-  fGeom->RotateBack(idet, local, global);
-  p.SetXYZ(global[0],global[1],global[2]);
-  
+  fGeom->RotateBack(det, local, global);
+
+  Double_t cov2D[3]; Float_t cov[6];
+  tracklet->GetCovAt(local[0], cov2D);
+  cov[0] = cov2D[0]*sinA*sinA;
+  cov[1] =-cov2D[0]*sinA*cosA;
+  cov[2] =-cov2D[1]*sinA;
+  cov[3] = cov2D[0]*cosA*cosA;
+  cov[4] = cov2D[1]*cosA;
+  cov[5] = cov2D[2];
+  // store the global position of the tracklet and its covariance matrix in the track point 
+  p.SetXYZ(global[0],global[1],global[2], cov);
   
   // setting volume id
-  AliGeomManager::ELayerID iLayer = AliGeomManager::kTRD1;
-  switch (fGeom->GetLayer(idet)) {
-  case 0:
-    iLayer = AliGeomManager::kTRD1;
-    break;
-  case 1:
-    iLayer = AliGeomManager::kTRD2;
-    break;
-  case 2:
-    iLayer = AliGeomManager::kTRD3;
-    break;
-  case 3:
-    iLayer = AliGeomManager::kTRD4;
-    break;
-  case 4:
-    iLayer = AliGeomManager::kTRD5;
-    break;
-  case 5:
-    iLayer = AliGeomManager::kTRD6;
-    break;
-  };
-  Int_t    modId = fGeom->GetSector(idet) * fGeom->Nstack() + fGeom->GetStack(idet);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::ELayerID(AliGeomManager::kTRD1+fGeom->GetLayer(det));
+  Int_t    modId = fGeom->GetSector(det) * AliTRDgeometry::kNstack + fGeom->GetStack(det);
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer, modId);
   p.SetVolumeID(volid);
     
@@ -2388,7 +2385,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   }
   
   // Init anode wire position for chambers
-  Double_t x0[kNPlanes] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2},       // anode wire position
+  Double_t x0[kNPlanes],       // anode wire position
            driftLength = .5*AliTRDgeometry::AmThick() - AliTRDgeometry::DrThick(); // drift length
   TGeoHMatrix *matrix = 0x0;
   Double_t loc[] = {AliTRDgeometry::AnodePos(), 0., 0.};
@@ -2396,7 +2393,10 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   AliTRDtrackingChamber **cIter = &stack[0];
   for(int iLayer=kNPlanes; iLayer--; cIter++){
     if(!(*cIter)) continue;
-    if(!(matrix = fGeom->GetClusterMatrix((*cIter)->GetDetector()))) continue;
+    if(!(matrix = fGeom->GetClusterMatrix((*cIter)->GetDetector()))){ 
+      continue;
+      x0[iLayer] = fgkX0[iLayer];
+    }
     matrix->LocalToMaster(loc, glb);
     x0[iLayer] = glb[0];
   }
