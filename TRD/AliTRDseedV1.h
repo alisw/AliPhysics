@@ -112,7 +112,7 @@ public:
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
-  Double_t  GetMomentum() const      { return fMom;}
+  Float_t   GetMomentum() const      { return fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);}
   Int_t     GetN() const             { return (Int_t)fN&0x1f;}
   Int_t     GetN2() const            { return GetN();}
   Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
@@ -123,6 +123,7 @@ public:
   Int_t     GetPlane() const         { return AliTRDgeometry::GetLayer(fDet);    }
 
   Float_t*  GetProbability(Bool_t force=kFALSE);
+  Float_t   GetPt() const            { return fPt; }
   inline Double_t  GetPID(Int_t is=-1) const;
   Float_t   GetS2Y() const           { return fS2Y;}
   Float_t   GetS2Z() const           { return fS2Z;}
@@ -157,7 +158,7 @@ public:
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
   void      SetKink(Bool_t k)        { SetBit(kKink, k);}
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
-  void      SetMomentum(Double_t mom){ fMom = mom;}
+  void      SetPt(Double_t pt)       { fPt = pt;}
   void      SetOwner();
   void      SetPadPlane(AliTRDpadPlane *p);
   void      SetPadLength(Float_t l)  { fPad[0] = l;}
@@ -200,7 +201,7 @@ private:
   Float_t          fZref[2];                //  Reference z
   Float_t          fYfit[2];                //  Y fit position +derivation
   Float_t          fZfit[2];                //  Z fit position
-  Float_t          fMom;                    //  Momentum estimate @ tracklet [GeV/c]
+  Float_t          fPt;                     //  Momentum estimate @ tracklet [GeV/c]
   Float_t          fdX;                     // length of time bin
   Float_t          fX0;                     // anode wire position
   Float_t          fX;                      // radial position of the tracklet

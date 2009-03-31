@@ -77,7 +77,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fClusterIdx(0)
   ,fN(0)
   ,fDet(det)
-  ,fMom(0.)
+  ,fPt(0.)
   ,fdX(0.)
   ,fX0(0.)
   ,fX(0.)
@@ -123,7 +123,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fClusterIdx(0)
   ,fN(0)
   ,fDet(-1)
-  ,fMom(0.)
+  ,fPt(0.)
   ,fdX(0.)
   ,fX0(0.)
   ,fX(0.)
@@ -200,7 +200,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fClusterIdx    = 0;
   target.fN             = fN;
   target.fDet           = fDet;
-  target.fMom           = fMom;
+  target.fPt            = fPt;
   target.fdX            = fdX;
   target.fX0            = fX0;
   target.fX             = fX;
@@ -263,7 +263,7 @@ void AliTRDseedV1::Reset()
   fClusterIdx=0;
   fN=0;
   fDet=-1;
-  fMom=0.;
+  fPt=0.;
   fdX=0.;fX0=0.; fX=0.; fY=0.; fZ=0.;
   fS2Y=0.; fS2Z=0.;
   fC=0.; fChi2 = 0.;
@@ -293,7 +293,7 @@ void AliTRDseedV1::UpDate(const AliTRDtrackV1 *trk)
 
   Double_t fSnp = trk->GetSnp();
   Double_t fTgl = trk->GetTgl();
-  fMom = trk->GetP();
+  fPt = trk->Pt();
   fYref[1] = fSnp/(1. - fSnp*fSnp);
   fZref[1] = fTgl;
   SetCovRef(trk->GetCovariance());
@@ -459,10 +459,10 @@ void AliTRDseedV1::GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y
 
   // drift velocity correction TODO to be moved to the clusterizer
   const Float_t cx[] = {
-    0.0000e+00, 6.0869e-02, -7.0366e-02, -1.4700e-01, -1.6228e-01, -1.3282e-01,
-    -8.7548e-02, -5.3547e-02, -3.2318e-02, -1.7403e-02, -9.6158e-03, -2.7985e-03,
-    -1.1035e-03, -5.1325e-04, 3.9906e-04, 7.6908e-04, 2.5395e-04, -1.7090e-04,
-    -1.8659e-03, -9.8477e-04, -2.2940e-03, -1.3164e-02, -6.6807e-02, -1.5843e-01,
+    1.6402e-01, 7.2917e-02, -6.7848e-02, -1.4529e-01, -1.6279e-01, -1.3116e-01,
+    -8.2712e-02, -4.9453e-02, -2.9501e-02, -1.4543e-02, -6.1749e-03, 3.9221e-04,
+    1.9711e-03, 2.7388e-03, 2.9070e-03, 3.4183e-03, 2.8014e-03, 1.9351e-03,
+    4.9252e-04, 4.5742e-04, 1.2263e-04, -1.2219e-02, -6.9658e-02, -1.6681e-01,
     0.0000e+00,   };
 
   // PRF correction TODO to be replaced by the gaussian 
@@ -555,7 +555,7 @@ Bool_t AliTRDseedV1::CookPID()
   
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
-    fProb[ispec] = pd->GetProbability(ispec, fMom, &fdEdx[0], length, GetPlane());	
+    fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());	
   }
 
   return kTRUE;
@@ -1247,8 +1247,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Int_t errors)
     // uncalibrated cluster correction 
     // TODO remove
     Double_t x, y; 
-    GetClusterXY(c, x, y);
-    //x = c->GetX(); y = c->GetY();
+    //GetClusterXY(c, x, y);
+    x = c->GetX(); y = c->GetY();
     xc[n]   = fX0 - x;
     yc[n]   = y;
     zc[n]   = c->GetZ();
@@ -1696,7 +1696,7 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   //  if ( fChi2Z != inTracklet->GetChi2Z() ) return kFALSE;
 
   if ( fDet != inTracklet->fDet ) return kFALSE;
-  if ( fMom != inTracklet->fMom ) return kFALSE;
+  if ( fPt != inTracklet->fPt ) return kFALSE;
   if ( fdX != inTracklet->fdX ) return kFALSE;
   
   for (Int_t iCluster = 0; iCluster < kNclusters; iCluster++){

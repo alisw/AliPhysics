@@ -380,7 +380,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     z  = fTracklet->GetZref(0) - dx*fTracklet->GetZref(1);
     dz = zt - z;
     dzdx = fTracklet->GetTgl();
-    pt = fTracklet->GetMomentum()/(1.+dzdx*dzdx);
+    pt = fTracklet->GetPt();
     fTracklet->GetCovRef(covR);
 
     ((TH2I*)fContainer->At(kMCtrackY))->Fill(dydx0, dy);
@@ -461,8 +461,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
-      AliTRDseedV1::GetClusterXY(c,x,y);
-      //x = c->GetX(); y = c->GetY();
+      //AliTRDseedV1::GetClusterXY(c,x,y);
+      x = c->GetX(); y = c->GetY();
       z = c->GetZ();
       dx = x0 - x; 
       yt = y0 - dx*dydx0;
