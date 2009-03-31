@@ -25,6 +25,7 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCADisplay.h \
 		tracking-ca/AliHLTTPCCAMCTrack.h  \
 		tracking-ca/AliHLTTPCCAPerformance.h \
+		tracking-ca/AliHLTTPCCAMerger.h \
 		tracking-ca/AliTPCtrackerCA.h 
 #TRACKING_CA:=	
 
