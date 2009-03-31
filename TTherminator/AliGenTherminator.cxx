@@ -31,6 +31,7 @@ AliGenTherminator::AliGenTherminator():
   fEventNumber(0),
   fFileName(""),
   fFreezeOutModel(""),
+  fFOHSlocation(""),
   fTemperature(0.1656),
   fMiuI(-0.0009),
   fMiuS(0.0),
@@ -44,6 +45,15 @@ AliGenTherminator::AliGenTherminator():
   fBWDelay(0.0)
 {
   // Default constructor
+  fFOHSlocation = "";
+
+  fEnergyCMS = 5500.;
+  fAProjectile = 208;
+  fZProjectile = 82;
+  fProjectile = "A";
+  fATarget = 208;
+  fZTarget = 82;
+  fTarget = "A";
 }
 AliGenTherminator::AliGenTherminator(Int_t npart):
   AliGenMC(npart),
@@ -51,6 +61,7 @@ AliGenTherminator::AliGenTherminator(Int_t npart):
   fEventNumber(0),
   fFileName(""),
   fFreezeOutModel(""),
+  fFOHSlocation(""),
   fTemperature(0.1656),
   fMiuI(-0.0009),
   fMiuS(0.0),
@@ -65,6 +76,13 @@ AliGenTherminator::AliGenTherminator(Int_t npart):
 {
   // Constructor specifying the size of the particle table
   fNprimaries = 0;
+  fEnergyCMS = 5500.;
+  fAProjectile = 208;
+  fZProjectile = 82;
+  fProjectile = "A";
+  fATarget = 208;
+  fZTarget = 82;
+  fTarget = "A";
 }
 
 AliGenTherminator::~AliGenTherminator()
@@ -143,7 +161,7 @@ void AliGenTherminator::Generate()
       } // if has mother   
       Bool_t tFlag = (!hasDaughter);
       
-      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
+      //      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
       PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
 		origin[0],origin[1],origin[2],iparticle->T(),
@@ -188,8 +206,8 @@ void AliGenTherminator::Generate()
       } // if has mother   
       Bool_t tFlag = (hasDaughter);
       
-      printf("Found mother %i with true id %i\n", imo, imo>=0?idsOnStack[imo]:imo);
-      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
+//       printf("Found mother %i with true id %i\n", imo, imo>=0?idsOnStack[imo]:imo);
+//       printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
       PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
 		origin[0],origin[1],origin[2],iparticle->T(),
@@ -207,7 +225,7 @@ void AliGenTherminator::Generate()
       //      mother = (TParticle *) fParticles.At(nt);
       tFlag = (!hasDaughter);
       
-      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
+//       printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
       PushTrack(tFlag,imo,kf,
 		p[0],p[1],p[2],energy,
 		origin[0],origin[1],origin[2],iparticle->T(),
@@ -394,6 +412,8 @@ void AliGenTherminator::SetModel(const char *model)
 {
   // Set the freeze-out model to use
   fFreezeOutModel = model;
+  AliWarning(Form("Selected model %s", fFreezeOutModel.Data()));
+  AliWarning(Form("FOHSLocation is %s", fFOHSlocation.Data()));
 }
 
 void AliGenTherminator::SetLhyquidSet(const char *set)
@@ -406,8 +426,26 @@ void AliGenTherminator::SetLhyquidSet(const char *set)
     AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
     AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
     AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C0005/FO.txt"));
-    fFOHSlocation = aroot;
-    fFOHSlocation += "/TTherminator/data/LHC500C0005";
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C0005");
+  }
+  if (strstr(set, "LHC500C0510")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 5-10 percent"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C0510/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C0510");
+  }
+  if (strstr(set, "LHC500C1020")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 10-20 percent"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C1020/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C1020");
   }
   else if (strstr(set, "LHC500C2030")) {
     AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
@@ -415,14 +453,33 @@ void AliGenTherminator::SetLhyquidSet(const char *set)
     AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
     AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
     AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C2030/FO.txt"));
-    fFOHSlocation = aroot;
-    fFOHSlocation += "/TTherminator/data/LHC500C2030";
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C2030");
+  }
+  else if (strstr(set, "LHC500C3040")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 30-40 percent"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C3040/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C3040");
+  }
+  else if (strstr(set, "LHC500C4050")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 40-50 percent"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C4050/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC500C4050");
   }
   else {
     AliWarning(Form("Did not find Lhyquid set %s", set));
     AliWarning(Form("Reverting to default: current directory"));
-    fFOHSlocation = "";
+    fFOHSlocation += "";
   }
+
 }
 
 void AliGenTherminator::SetLhyquidInputDir(const char *inputdir)
