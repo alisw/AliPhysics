@@ -322,9 +322,10 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
       }      
       return kTRUE;   
    } else {
-     cout<<"Data for container "<<GetName()<<" can be published only by producer task "<<fProducer->GetName()<<endl;
-     //AliWarning(Form("Data for container %s can be published only by producer task %s", GetName(), fProducer->GetName()));   
-     return kFALSE;           
+     // Ignore data posting from other than the producer
+//      cout<<"Data for container "<<GetName()<<" can be published only by producer task "<<fProducer->GetName()<<endl;
+      //AliWarning(Form("Data for container %s can be published only by producer task %s", GetName(), fProducer->GetName()));   
+      return kFALSE;           
    }              
 }
 
