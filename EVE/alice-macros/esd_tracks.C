@@ -10,6 +10,35 @@
 // Use inner-tpc track params when its refit failed.
 Bool_t g_esd_tracks_use_ip_on_failed_its_refit = kFALSE;
 
+// Use magnetic-field as retrieved from GRP.
+Bool_t g_esd_tracks_true_field = kTRUE;
+
+// Use Runge-Kutta track stepper.
+Bool_t g_esd_tracks_rk_stepper = kFALSE;
+
+
+//==============================================================================
+
+void esd_track_propagator_setup(TEveTrackPropagator* trkProp,
+				Float_t magF, Float_t maxR)
+{
+  if (g_esd_tracks_true_field)
+  {
+    trkProp->SetMagFieldObj(new AliEveMagField);
+  }
+  else
+  {
+    trkProp->SetMagField(magF);
+  }
+  if (g_esd_tracks_rk_stepper)
+  {
+    trkProp->SetStepper(TEveTrackPropagator::kRungeKutta);
+  }
+  trkProp->SetMaxR(maxR);
+}
+
+//==============================================================================
+
 TString esd_track_title(AliESDtrack* t)
 {
   TString s;
@@ -51,6 +80,8 @@ TString esd_track_title(AliESDtrack* t)
   return s;
 }
 
+//==============================================================================
+
 void esd_track_add_param(AliEveTrack* track, AliExternalTrackParam* tp)
 {
   // Add additional track parameters as a path-mark to track.
@@ -67,6 +98,8 @@ void esd_track_add_param(AliEveTrack* track, AliExternalTrackParam* tp)
   pm.fP.Set(pbuf);
   track->AddPathMark(pm);
 }
+
+//==============================================================================
 
 TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
 {
@@ -117,15 +150,20 @@ TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
   return track;
 }
 
+
+//==============================================================================
+// esd_tracks()
+//==============================================================================
+
 TEveTrackList* esd_tracks()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(6);
-  TEveTrackPropagator* trkProp = cont->GetPropagator();
-  trkProp->SetMagField(0.1*esd->GetMagneticField());
-  trkProp->SetMaxR    (520);
+
+  esd_track_propagator_setup(cont->GetPropagator(),
+			     0.1*esd->GetMagneticField(), 520);
 
   gEve->AddElement(cont);
 
@@ -173,9 +211,10 @@ TEveElementList* esd_tracks_MI()
   return cont;
 }
 
-/******************************************************************************/
+
+//==============================================================================
 // esd_tracks_from_array()
-/******************************************************************************/
+//==============================================================================
 
 TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 {
@@ -186,9 +225,9 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(6);
-  TEveTrackPropagator* trkProp = cont->GetPropagator();
-  trkProp->SetMagField(0.1*esd->GetMagneticField());
-  trkProp->SetMaxR    (520);
+
+  esd_track_propagator_setup(cont->GetPropagator(),
+			     0.1*esd->GetMagneticField(), 520);
 
   gEve->AddElement(cont);
 
@@ -229,9 +268,10 @@ void esd_tracks_alianalcuts_demo()
   esd_tracks_from_array(atc.GetAcceptedTracks(esd), esd);
 }
 
-/******************************************************************************/
+
+//==============================================================================
 // esd_tracks_by_category
-/******************************************************************************/
+//==============================================================================
 
 Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
 {
@@ -299,50 +339,43 @@ TEveElementList* esd_tracks_by_category()
 
   tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
-  tl[0]->GetPropagator()->SetMagField(magF);
-  tl[0]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[0]->GetPropagator(), magF, maxR);
   tl[0]->SetMainColor(3);
   cont->AddElement(tl[0]);
 
   tl[1] = new TEveTrackList("3 < Sigma < 5");
   tc[1] = 0;
-  tl[1]->GetPropagator()->SetMagField(magF);
-  tl[1]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[1]->GetPropagator(), magF, maxR);
   tl[1]->SetMainColor(7);
   cont->AddElement(tl[1]);
 
   tl[2] = new TEveTrackList("5 < Sigma");
   tc[2] = 0;
-  tl[2]->GetPropagator()->SetMagField(magF);
-  tl[2]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[2]->GetPropagator(), magF, maxR);
   tl[2]->SetMainColor(46);
   cont->AddElement(tl[2]);
 
   tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
-  tl[3]->GetPropagator()->SetMagField(magF);
-  tl[3]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[3]->GetPropagator(), magF, maxR);
   tl[3]->SetMainColor(41);
   cont->AddElement(tl[3]);
 
   tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
-  tl[4]->GetPropagator()->SetMagField(magF);
-  tl[4]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[4]->GetPropagator(), magF, maxR);
   tl[4]->SetMainColor(48);
   cont->AddElement(tl[4]);
 
   tl[5] = new TEveTrackList("no TPC refit");
   tc[5] = 0;
-  tl[5]->GetPropagator()->SetMagField(magF);
-  tl[5]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[5]->GetPropagator(), magF, maxR);
   tl[5]->SetMainColor(kRed);
   cont->AddElement(tl[5]);
 
   tl[6] = new TEveTrackList("ITS stand-alone");
   tc[6] = 0;
-  tl[6]->GetPropagator()->SetMagField(magF);
-  tl[6]->GetPropagator()->SetMaxR    (maxR);
+  esd_track_propagator_setup(tl[6]->GetPropagator(), magF, maxR);
   tl[6]->SetMainColor(kMagenta - 9);
   cont->AddElement(tl[6]);
 

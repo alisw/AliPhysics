@@ -12,6 +12,35 @@
 
 #include "TParticlePDG.h"
 
+// Use magnetic-field as retrieved from GRP.
+Bool_t g_kine_tracks_true_field = kTRUE;
+
+// Use Runge-Kutta track stepper.
+Bool_t g_kine_tracks_rk_stepper = kFALSE;
+
+
+//==============================================================================
+
+void kine_track_propagator_setup(TEveTrackPropagator* trkProp)
+{
+  AliMagF* fld = AliEveEventManager::AssertMagField();
+
+  if (g_kine_tracks_true_field)
+  {
+    trkProp->SetMagFieldObj(new AliEveMagField(fld));
+  }
+  else
+  {
+    trkProp->SetMagField(-0.1*fld->SolenoidField());
+  }
+  if (g_kine_tracks_rk_stepper)
+  {
+    trkProp->SetStepper(TEveTrackPropagator::kRungeKutta);
+  }
+}
+
+//==============================================================================
+
 TEveTrackList*
 kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
 	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
@@ -32,9 +61,7 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   cont->SetMainColor(3);
   TEveTrackPropagator* trkProp = cont->GetPropagator();
 
-  AliMagF* fld = AliEveEventManager::AssertMagField();
-  // !!! Watch the '-', apparently different sign convention then for ESD.
-  trkProp->SetMagField(fld ? -0.1*fld->SolenoidField() : 0);
+  kine_track_propagator_setup(trkProp);
 
   gEve->AddElement(cont);
   Int_t count = 0;
@@ -223,8 +250,7 @@ kine_track(Int_t  label,
 
       TEveTrackPropagator* trkProp = tlist->GetPropagator();
 
-      AliMagF* fld = AliEveEventManager::AssertMagField();
-      trkProp->SetMagField(fld ? -0.1*fld->SolenoidField() : 0);
+      kine_track_propagator_setup(trkProp);
 
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
