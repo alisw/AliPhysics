@@ -99,6 +99,7 @@ TPCLib/tracking-ca/AliHLTTPCCATrackletSelector.cxx
 TPCLib/tracking-ca/AliHLTTPCCADisplay.cxx
 TPCLib/tracking-ca/AliHLTTPCCAMCTrack.cxx
 TPCLib/tracking-ca/AliHLTTPCCAPerformance.cxx
+TPCLib/tracking-ca/AliHLTTPCCAMerger.cxx
 TPCLib/tracking-ca/AliTPCtrackerCA.cxx 
 )
 
