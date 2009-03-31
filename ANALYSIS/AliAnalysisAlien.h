@@ -48,12 +48,15 @@ public:
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
+   virtual void        SetDefaultOutputs(Bool_t flag);
    virtual void        SetGridOutputDir(const char *name="output")       {fGridOutputDir = name;}
    virtual void        SetOutputArchive(const char *list="log_archive.zip:stdout,stderr root_archive.zip:*.root") {fOutputArchive = list;}
    virtual void        SetOutputFiles(const char *list)                  {fOutputFiles = list;}
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
+   virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
+   virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
@@ -86,6 +89,7 @@ private:
    Int_t            fSplitMaxInputFileNumber; // Maximum number of files to be processed per subjob
    Int_t            fMaxInitFailed;   // Maximum initial consecutive subjobs accepted to fail
    Int_t            fMasterResubmitThreshold; // Failed jobs will be resubmitted until this DONE ratio
+   Int_t            fNtestFiles;      // Number of files used in the testing case
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fArguments;       // Arguments for the executable script
@@ -106,9 +110,11 @@ private:
    TString          fInputFormat;     // Input format (xml-single)
    TString          fDatasetName;     // Dataset xml file to be created
    TString          fJDLName;         // JDL file to be generated
+   TString          fMergeExcludes;   // List of output files excluded from merging
+   TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 1)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 2)   // Class providing some AliEn utilities
 };
 #endif

@@ -28,7 +28,8 @@ enum EPluginRunMode {
    kUseESD   = BIT(19),
    kUseAOD   = BIT(20),
    kUseMC    = BIT(21),
-   kUsePars  = BIT(22)
+   kUsePars  = BIT(22),
+   kDefaultOutputs = BIT(23)
 };   
 
    AliAnalysisGrid() {}
@@ -57,12 +58,15 @@ enum EPluginRunMode {
    virtual void        SetGridWorkingDir(const char *name="workdir")     = 0;
    virtual void        SetGridDataDir(const char *name)                  = 0;
    virtual void        SetDataPattern(const char *pattern)               = 0;
+   virtual void        SetDefaultOutputs(Bool_t flag=kTRUE)              = 0;
    virtual void        SetGridOutputDir(const char *name="output")       = 0;
    virtual void        SetOutputArchive(const char *list="log_archive.zip:stdout,stderr root_archive.zip:*.root") = 0;
    virtual void        SetOutputFiles(const char *list)                  = 0;
    virtual void        SetInputFormat(const char *format="xml-single")   = 0;
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   = 0;
+   virtual void        SetMergeExcludes(const char *list)                = 0;
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      = 0;
+   virtual void        SetNtestFiles(Int_t nfiles)                       = 0;
    virtual void        SetJDLName(const char *name="analysis.jdl")       = 0;
    
  // Set run mode.  Can be "full", "test", "offline", "submit" or "merge"

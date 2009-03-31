@@ -32,6 +32,8 @@
 #include "TGridJDL.h"
 #include "TFileMerger.h"
 #include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisAlien.h"
 
 ClassImp(AliAnalysisAlien)
@@ -45,6 +47,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fSplitMaxInputFileNumber(0),
                   fMaxInitFailed(0),
                   fMasterResubmitThreshold(0),
+                  fNtestFiles(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -65,6 +68,8 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
+		            fMergeExcludes(),
+                  fCloseSE(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -81,6 +86,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fSplitMaxInputFileNumber(0),
                   fMaxInitFailed(0),
                   fMasterResubmitThreshold(0),
+                  fNtestFiles(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -101,6 +107,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
+                  fMergeExcludes(),
+                  fCloseSE(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -117,6 +125,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fSplitMaxInputFileNumber(other.fSplitMaxInputFileNumber),
                   fMaxInitFailed(other.fMaxInitFailed),
                   fMasterResubmitThreshold(other.fMasterResubmitThreshold),
+                  fNtestFiles(other.fNtestFiles),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fArguments(other.fArguments),
@@ -137,6 +146,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fInputFormat(other.fInputFormat),
                   fDatasetName(other.fDatasetName),
                   fJDLName(other.fJDLName),
+                  fMergeExcludes(other.fMergeExcludes),
+                  fCloseSE(other.fCloseSE),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -179,6 +190,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fSplitMaxInputFileNumber = other.fSplitMaxInputFileNumber;
       fMaxInitFailed           = other.fMaxInitFailed;
       fMasterResubmitThreshold = other.fMasterResubmitThreshold;
+      fNtestFiles              = other.fNtestFiles;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
       fArguments               = other.fArguments;
@@ -199,6 +211,8 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fInputFormat             = other.fInputFormat;
       fDatasetName             = other.fDatasetName;
       fJDLName                 = other.fJDLName;
+      fMergeExcludes           = other.fMergeExcludes;
+      fCloseSE                 = other.fCloseSE;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -253,6 +267,7 @@ Bool_t AliAnalysisAlien::Connect()
       return kFALSE;
    }  
    fUser = gGrid->GetUser();
+   fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    Info("Connect", "\n#####   Connected to AliEn as user %s. Setting analysis user to <%s>", fUser.Data(), fUser.Data());
    return kTRUE;
 }
@@ -404,7 +419,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    // Compose the 'find' command arguments
    TString command;
    TString options = "-x collection ";
-   if (TestBit(AliAnalysisGrid::kTest)) options += "-l 100 ";
+   if (TestBit(AliAnalysisGrid::kTest)) options += Form("-l %d ", fNtestFiles);
    TString conditions = "";
    
    TString file;
@@ -793,6 +808,7 @@ void AliAnalysisAlien::SetDefaults()
    fSplitMaxInputFileNumber    = 100;
    fMaxInitFailed              = 0;
    fMasterResubmitThreshold    = 0;
+   fNtestFiles                 = 10;
    fRunNumbers                 = "";
    fExecutable                 = "analysis.sh";
    fArguments                  = "";
@@ -812,6 +828,7 @@ void AliAnalysisAlien::SetDefaults()
    fOutputFiles                = "";  // Like "AliAODs.root histos.root"
    fInputFormat                = "xml-single";
    fJDLName                    = "analysis.jdl";
+   fMergeExcludes              = "";
 }   
 
 //______________________________________________________________________________
@@ -845,6 +862,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       output_file = str->GetString();
       Int_t index = output_file.Index("@");
       if (index > 0) output_file.Remove(index);
+      if (fMergeExcludes.Length() &&
+          fMergeExcludes.Contains(output_file.Data())) continue;
       command = Form("find %s/ *%s", output.Data(), output_file.Data());
       printf("command: %s\n", command.Data());
       TGridResult *res = gGrid->Command(command);
@@ -887,6 +906,17 @@ Bool_t AliAnalysisAlien::MergeOutputs()
 }   
 
 //______________________________________________________________________________
+void AliAnalysisAlien::SetDefaultOutputs(Bool_t flag)
+{
+// Use the output files connected to output containers from the analysis manager
+// rather than the files defined by SetOutputFiles
+   if (flag && !TObject::TestBit(AliAnalysisGrid::kDefaultOutputs))
+      Info("SetDefaultOutputs", "Plugin will use the output files taken from \
+      analysis manager");
+   TObject::SetBit(AliAnalysisGrid::kDefaultOutputs, flag);
+}
+      
+//______________________________________________________________________________
 void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
 {
 // Start remote grid analysis.
@@ -917,6 +947,26 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       return;
    }   
    CreateDataset(fDataPattern);
+   // Check if output files have to be taken from the analysis manager
+   if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (!mgr || !mgr->IsInitialized()) {
+         Error("StartAnalysis", "You need an initialized analysis manager for this");
+         return;
+      }
+      fOutputFiles = "";
+      TIter next(mgr->GetOutputs());
+      AliAnalysisDataContainer *output;
+      while ((output=(AliAnalysisDataContainer*)next())) {
+         const char *filename = output->GetFileName();
+	 if (!(strcmp(filename, "default"))) {
+	    if (!mgr->GetOutputEventHandler()) continue;
+	    filename = mgr->GetOutputEventHandler()->GetOutputFileName();
+	 }
+	 if (fOutputFiles.Length()) fOutputFiles += " ";
+	 fOutputFiles += filename;
+      }
+   }
    WriteAnalysisFile();   
    WriteAnalysisMacro();
    WriteExecutable();
@@ -965,7 +1015,8 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
    \n You may exit at any time and terminate the job later using the option <terminate> \
    \n ##################################################################################", jobID.Data());
-   gGrid->Shell();
+   //gGrid->Shell();
+   gSystem->Exec("aliensh");
 }
 
 //______________________________________________________________________________
