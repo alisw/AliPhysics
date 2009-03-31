@@ -126,7 +126,7 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
 
 
 //___________________________________________________________________________
-void AliTagAnalysis::ChainGridTags(TGridResult *res) {
+TChain * AliTagAnalysis::ChainGridTags(TGridResult *res) {
   //Loops overs the entries of the TGridResult
   //Chains the tags that are stored in the GRID
   ftagresult = res;
@@ -140,7 +140,8 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res) {
   for(Int_t i = 0; i < nEntries; i++) {
     alienUrl = ftagresult->GetKey(i,"turl");
     fChain->Add(alienUrl);
-  }//grid result loop  
+  }//grid result loop
+  return fChain;
 }
 
 

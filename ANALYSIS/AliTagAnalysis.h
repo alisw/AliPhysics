@@ -48,7 +48,7 @@ class AliTagAnalysis : public TObject {
   const char* GetType() {return fAnalysisType.Data();}
   Bool_t AddTagsFile(const char *alienUrl);
   void ChainLocalTags(const char *dirname);
-  void ChainGridTags(TGridResult *result);
+  TChain *ChainGridTags(TGridResult *result);
   
   TChain *QueryTags(AliRunTagCuts *runTagCuts, 
 		    AliLHCTagCuts *lhcTagCuts, 
