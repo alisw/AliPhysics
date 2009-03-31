@@ -1194,9 +1194,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   TString treename = type;" << endl;
          out << "   treename.ToLower();" << endl;
          out << "   treename += \"Tree\";" << endl;
-         out << "   printf(\"***************************************\");" << endl;
-         out << "   printf(\"    Getting chain of trees %s\\n\", treename);" << endl;
-         out << "   printf(\"***************************************\");" << endl;
+         out << "   printf(\"***************************************\\n\");" << endl;
+         out << "   printf(\"    Getting chain of trees %s\\n\", treename.Data());" << endl;
+         out << "   printf(\"***************************************\\n\");" << endl;
          out << "   TAlienCollection *coll = TAlienCollection::Open(xmlfile);" << endl;
          out << "   if (!coll) {" << endl;
          out << "      ::Error(\"CreateChain\", \"Cannot create an AliEn collection from %s\", xmlfile);" << endl;
