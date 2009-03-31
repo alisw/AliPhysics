@@ -367,7 +367,8 @@ void AliGenHijing::Generate()
 	      origin[0] = origin0[0]+iparticle->Vx()/10;
 	      origin[1] = origin0[1]+iparticle->Vy()/10;
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
-	      tof = kconv * iparticle->T() + sign * origin0[2] / 3.e10;
+//	      tof = kconv * iparticle->T() + sign * origin0[2] / 3.e10;
+	      tof = kconv * iparticle->T();
 	      if (fPileUpTimeWindow > 0.) tof += tInt;
 	      
 	      imo = -1;
