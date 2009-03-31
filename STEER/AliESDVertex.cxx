@@ -41,7 +41,8 @@ AliESDVertex::AliESDVertex() :
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(5.3*5.3),
-  fChi2(0)
+  fChi2(0),
+  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
 {
   //
   // Default Constructor, set everything to 0
@@ -59,7 +60,8 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigmaZ*sigmaZ),
-  fChi2(0)
+  fChi2(0),
+  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
 {
   //
   // Constructor for vertex Z from pixels
@@ -84,7 +86,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
   fCovXZ(covmatrix[3]),
   fCovYZ(covmatrix[4]),
   fCovZZ(covmatrix[5]),
-  fChi2(chi2)
+  fChi2(chi2),
+  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
 {
   //
   // Constructor for vertex in 3D from tracks
@@ -104,7 +107,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
-  fChi2(0)
+  fChi2(0),
+  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
 {
   //
   // Constructor for smearing of true position
@@ -124,7 +128,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
-  fChi2(0)
+  fChi2(0),
+  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
 {
   //
   // Constructor for Pb-Pb
@@ -147,7 +152,8 @@ AliESDVertex::AliESDVertex(const AliESDVertex &source):
   fCovXZ(source.fCovXZ),
   fCovYZ(source.fCovYZ),
   fCovZZ(source.fCovZZ),
-  fChi2(source.fChi2)
+  fChi2(source.fChi2),
+  fID(source.fID)
 {
   //
   // Copy constructor
@@ -171,6 +177,7 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
     fCovYZ = source.fCovYZ;
     fCovZZ = source.fCovZZ;
     fChi2 = source.fChi2;
+    fID = source.fID;
   }
   return *this;
 }

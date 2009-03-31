@@ -864,18 +864,24 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   return rc;
 }
 
-void  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx) 
+Char_t  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx) 
 {
     // Add a pileup primary vertex reconstructed with SPD
     TClonesArray &ftr = *fSPDPileupVertices;
-    new(ftr[fSPDPileupVertices->GetEntriesFast()]) AliESDVertex(*vtx);
+    Char_t n=Char_t(ftr.GetEntriesFast());
+    AliESDVertex *vertex = new(ftr[n]) AliESDVertex(*vtx);
+    vertex->SetID(n);
+    return n;
 }
 
-void  AliESDEvent::AddPileupVertexTracks(const AliESDVertex *vtx) 
+Char_t  AliESDEvent::AddPileupVertexTracks(const AliESDVertex *vtx) 
 {
     // Add a pileup primary vertex reconstructed with SPD
     TClonesArray &ftr = *fTrkPileupVertices;
-    new(ftr[fTrkPileupVertices->GetEntriesFast()]) AliESDVertex(*vtx);
+    Char_t n=Char_t(ftr.GetEntriesFast());
+    AliESDVertex *vertex = new(ftr[n]) AliESDVertex(*vtx);
+    vertex->SetID(n);
+    return n;
 }
 
 Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) 

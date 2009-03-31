@@ -74,6 +74,8 @@ public:
   void MakeMiniESDtrack();
   void SetID(Int_t id) { fID =id;}
   Int_t GetID() const { return fID;}
+  void SetVertexID(Char_t id) { fVertexID=id;}
+  Char_t GetVertexID() const { return fVertexID;}
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
@@ -414,11 +416,12 @@ protected:
   Double32_t *fTRDslices;  //[fTRDnSlices] 
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
+  Char_t  fVertexID; // ID of the primary vertex this track belongs to
 
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,48)  //ESDtrack 
+  ClassDef(AliESDtrack,49)  //ESDtrack 
 };
 
 #endif 

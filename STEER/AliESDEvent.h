@@ -215,12 +215,12 @@ public:
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
     return (const AliESDVertex *)fSPDPileupVertices->UncheckedAt(i);
   }
-  void  AddPileupVertexSPD(const AliESDVertex *vtx);
+  Char_t  AddPileupVertexSPD(const AliESDVertex *vtx);
 
   const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
     return (const AliESDVertex *)fTrkPileupVertices->UncheckedAt(i);
   }
-  void  AddPileupVertexTracks(const AliESDVertex *vtx);
+  Char_t  AddPileupVertexTracks(const AliESDVertex *vtx);
 
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);

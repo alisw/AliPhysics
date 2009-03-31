@@ -74,17 +74,22 @@ class AliESDVertex : public AliVertex {
 
   void     Reset() { SetToZero(); SetName("Vertex"); }
 
+  void     SetID(Char_t id) {fID=id;}
+  Char_t   GetID() const {return fID;}
+
  protected:
 
   Double32_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
   Double32_t fSNR[3];  // S/N ratio
   Double32_t fChi2;  // chi2 of vertex fit
 
+  Char_t fID;       // ID of this vertex within an ESD event
+
  private:
 
   void SetToZero();
 
-  ClassDef(AliESDVertex,6)  // Class for Primary Vertex
+  ClassDef(AliESDVertex,7)  // Class for Primary Vertex
 };
 
 #endif

@@ -213,8 +213,8 @@ AliESDtrack::AliESDtrack() :
   fTRDncls0(0),
   fTRDntracklets(0),
   fTRDnSlices(0),
-  fTRDslices(0x0)
-  
+  fTRDslices(0x0),
+  fVertexID(-2) // -2 means an orphan track 
 {
   //
   // The default ESD constructor 
@@ -301,7 +301,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDncls0(track.fTRDncls0),
   fTRDntracklets(track.fTRDntracklets),
   fTRDnSlices(track.fTRDnSlices),
-  fTRDslices(0x0)
+  fTRDslices(0x0),
+  fVertexID(track.fVertexID)
 {
   //
   //copy constructor
@@ -400,7 +401,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDncls0(0),
   fTRDntracklets(0),
   fTRDnSlices(0),
-  fTRDslices(0x0)
+  fTRDslices(0x0),
+  fVertexID(-2)  // -2 means an orphan track
 {
   //
   // ESD track from AliVTrack.
@@ -518,7 +520,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDncls0(0),
   fTRDntracklets(0),
   fTRDnSlices(0),
-  fTRDslices(0x0)
+  fTRDslices(0x0),
+  fVertexID(-2)  // -2 means an orphan track
 {
   //
   // ESD track from TParticle
@@ -824,6 +827,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTRDncls   = source.fTRDncls;       
   fTRDncls0  = source.fTRDncls0;      
   fTRDntracklets  = source.fTRDntracklets; 
+  fVertexID = source.fVertexID;
   return *this;
 }
 
@@ -1029,6 +1033,8 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // reset global track chi2
   fGlobalChi2 = 0;
+
+  fVertexID = -2; // an orphan track
 
   delete fFriendTrack; fFriendTrack = 0;
 } 
@@ -1804,6 +1810,7 @@ Double_t b, Double_t maxd, AliExternalTrackParam *cParam) {
   if (!fCp->Update(p,c)) {delete fCp; fCp=0; return kFALSE;}
   //----------------------------------------
 
+  fVertexID = vtx->GetID();
 
   if (!cParam) return kTRUE;
 
