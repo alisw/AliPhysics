@@ -1,0 +1,44 @@
+Generated on PCx86 Linux x86 (32-bit)
+Mathematica 6.0 for Linux x86 (32-bit) (April 20, 2007), MathID: 7105-78965-34419
+by chojnacki@nz41-25. on 13/6/2008 at 16:04
+---------------------------------------------------------------------------------
+LHYQUID ver                   : 2.78
+  HydroID                     : FBCE503E
+THERMODYNAMICS
+  thermodynamic funtions for  : 3D system, phase transition: QGP(lattice) to HG(SHARE)
+HYDRO INITIAL CONDITIONS
+  type of nuclei              : Pb + Pb
+  nuclear profile model       : gaussian fit to Glissando
+  pre-hydro evolution         : free-streaming
+    f-s initial time          : tau0 = 0.25 fm
+    f-s initial temperature   : T0 = 767.937 MeV
+  centrality class            : c  = 5 - 10 %
+  inelastic cross-section     : sigma = 63. mb
+  weight factor               : wf = 20. %
+  central temperature         : T0 = 500. MeV
+  T to rho Ansatz             : energy density, rho ~ E
+  Hubble flow                 : H0 = 0.001 fm-1
+HYDRO EQUATIONS
+  hydrodynamical equations    : 3D thermalization, boost invariant, z=0
+  equations integration range : r = <0., 15.>,  phi = <-180., 180.>,  t = <1., 15.>
+  grid points                 : r  = 80, phi = 61, t = 47
+---------------------------------------------------------------------------------
+  FreezeID                    : 502E67D6
+FREEZE-OUT PARAMITERS
+  freeze-out temperature      : TFO = 0.852941 TC = 145. MeV
+  freeze-out parametrization  : phi = <-180., 180.>, zeta = <0., 90.>
+  freeze-out grid points      : phiN = 91, zetaN = 91
+---------------------------------------------------------------------------------
+Exported Variables: 
+  LhyquidVer,
+  ChoiceTherm, ChoiceNucl, ChoiceFreeStr, ChoiceAnsatz, ChoiceEqn, TypeNucleus,
+  cmin, cmax, \[Sigma]in, wf, T0, H0, rmin, rmax, \[Phi]min, \[Phi]max, tminPH, tmin, tmax, rPts, \[Phi]Pts, tPts,
+  HydroID, FreezeID, PathHydro, PathFreeze,
+  OptIntOrd, OptPrcGl, OptAccGl,
+  TFO, \[Phi]minFO, \[Phi]maxFO, \[Zeta]minFO, \[Zeta]maxFO, \[Phi]N, \[Zeta]N,
+Exported Tables:
+  \[Phi]FOGrid, \[Zeta]FOGrid,
+  \[Alpha]HSArr, vHSArr, dHSArr, DpdHSArr, DzdHSArr  
+---------------------------------------------------------------------------------
+Exported to text files:
+  \[Alpha]HSArr, vHSArr, dHSArr, DpdHSArr, DzdHSArr
