@@ -67,7 +67,7 @@ class AliHLTTRDTracklet
 
   /* Defenitely need */
   Int_t            fDet;                    //  TRD detector
-  Float_t          fMom;                    //  Momentum estimate for  tracklet [GeV/c]
+  Float_t          fPt;                     //  Momentum estimate for  tracklet [GeV/c]
   Float_t          fdX;                     // length of time bin
 
   /* Probably need */

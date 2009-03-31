@@ -26,7 +26,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
   fChi2(-1),
   //fChi2Z(-1),
   fDet(-1),
-  fMom(-1),
+  fPt(-1),
   fdX(-1)
 {
   InitArrays();
@@ -57,7 +57,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(AliTRDseedV1 * inTracklet):
   fChi2(-1),
   //fChi2Z(-1),
   fDet(-1),
-  fMom(-1),
+  fPt(-1),
   fdX(-1)
 {
   InitArrays();
@@ -128,7 +128,7 @@ void AliHLTTRDTracklet::CopyDataMembers()
   //fChi2Z = fTRDtracklet->GetChi2Z();
   
   fDet = fTRDtracklet->GetDetector();
-  fMom = fTRDtracklet->GetMomentum();
+  fPt  = fTRDtracklet->GetPt();
   fdX = fTRDtracklet->GetdX();
 }
 
@@ -141,7 +141,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1 *outTracklet)
   outTracklet->Reset();
   /* ======= From AliTRDseedV1 ======== */
   outTracklet->SetDetector(fDet);
-  outTracklet->SetMomentum(fMom);
+  outTracklet->SetPt(fPt);
   outTracklet->SetDX(fdX);
   
   /* ======= From AliTRDseed ======== */
@@ -222,7 +222,7 @@ void AliHLTTRDTracklet::InitArrays()
 void AliHLTTRDTracklet::Print(Bool_t printClusters)
 {
   //printf("--hltTracklet-- addr 0x%p(%i); fSize %i\n", this, (int)this, fSize);
-  printf("      fDet %i; dMom %f; fdX %f fN %i\n", fDet, fMom, fdX, fN2);
+  printf("      fDet %i; fPt %f; fdX %f fN %i\n", fDet, fPt, fdX, fN2);
 
   if(!printClusters) return;
   for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNclusters; iCluster++){
