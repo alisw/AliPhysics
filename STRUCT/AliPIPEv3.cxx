@@ -374,7 +374,7 @@ void AliPIPEv3::CreateGeometry()
 //  cp1l = 405.
 //  Position at z = -46., 40., 150.
     TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.051, 4.00, 0.35), kMedAco);
-    voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 98.2 - 34.77));
+    voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 98.2 - 34.77 + 0.49));
 //    voCp1->AddNode(voCpSupC, 2, new TGeoTranslation(0., 0.,  kCP1Length / 2.- 191.5));
 //  Beam Pipe Protection Tube
 //
@@ -581,7 +581,7 @@ void AliPIPEv3::CreateGeometry()
     voCp3Mo->SetVisibility(0);
     TGeoVolumeAssembly* voCp3 = new TGeoVolumeAssembly("Cp3");
     voCp3->AddNode(voCp3Mo,  1, gGeoIdentity);
-    voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.6));
+    voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.6 - 0.49));
     dz = kCP3pos;
 
 //////////////////////////////////////////////
