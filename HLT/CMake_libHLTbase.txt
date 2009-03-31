@@ -38,6 +38,7 @@ BASE/AliHLTOUTHandlerDetectorDDL.cxx
 BASE/AliHLTMemoryFile.cxx
 BASE/AliHLTMessage.cxx
 BASE/AliHLTEventStatistics.cxx
+BASE/AliHLTBlockDataCollection.cxx
 BASE/AliHLTRunStatistics.cxx
 BASE/AliHLT_C_Component_WrapperInterface.cxx
 BASE/AliHLTDataTypes.cxx 
