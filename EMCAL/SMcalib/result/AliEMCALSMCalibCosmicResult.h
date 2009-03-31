@@ -1,20 +1,17 @@
-#ifndef ALIEMCALCOSMICRESULT_H
-#define ALIEMCALCOSMICRESULT_H
+#ifndef ALIEMCALSMCALIBCOSMICRESULT_H
+#define ALIEMCALSMCALIBCOSMICRESULT_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id: $ */
 
-#include <TObject.h>
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class for EMCAL cosmic calibration results                                //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
-class TString;
-
-static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
-static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
-
-static const int fgkEmCalStrips = 24; // number of strips per module for EMCAL (fgkEmCalCols/2)
-static const int fgkCalibParts = 3; // we do the calibrations in 3 different parts; 8 strips or 16 columns at a time
 
 /*
   Objects of this class read files with info on
@@ -31,6 +28,13 @@ static const int fgkCalibParts = 3; // we do the calibrations in 3 different par
 
 */
 
+
+
+#include <TObject.h>
+
+class TString;
+
+
 class AliEMCALSMCalibCosmicResult : public TObject {
 public:
 
@@ -38,10 +42,6 @@ public:
   AliEMCALSMCalibCosmicResult(const TString &smId); // ctor
   
   virtual ~AliEMCALSMCalibCosmicResult(); // dtor
-  /* I don't think we need the copy ctor and assignment operator but they tend to be required in ALICE
-  AliEMCALSMCalibCosmicResult(const AliEMCALSMCalibCosmicResult &);
-  AliEMCALSMCalibCosmicResult &operator = (const AliEMCALSMCalibCosmicResult &);
-  */
 
   // simple setters and getters: b)-d) above
   // first setters
@@ -84,28 +84,43 @@ public:
   void PrintLEDref();
   void PrintTemps();
  
-
+private:
+  AliEMCALSMCalibCosmicResult(const AliEMCALSMCalibCosmicResult &);
+  AliEMCALSMCalibCosmicResult &operator = (const AliEMCALSMCalibCosmicResult &);
 
 protected:
 
   TString fSMId; // assigned in ctor
-        
-  // small dim array values; assigned via Set methods above
-  int fRunNumber[fgkCalibParts];
-  int fStartTime[fgkCalibParts];
-  int fEndTime[fgkCalibParts];
+    
+  TTree *fTree;  //tree containing results from MIP and LED peak fitting  
+  TH2D  *fhref;	 // histograms of LED reference data
+  
+  float fMip;   // mean ADC of MIP for a given tower
+  float fLed;   // mean ADC of LED for a given tower	
+  int fCol;     // column index of tower
+  int fRow;	// row index of tower
+    
+  static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
+  static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
+  static const int fgkEmCalStrips = 24; // number of strips per module for EMCAL (fgkEmCalCols/2)
+  static const int fgkCalibParts = 3; // we do the calibrations in 3 different parts; 8 strips or 16 columns at a time
 
-  double fMinTemp[fgkCalibParts];
-  double fMaxTemp[fgkCalibParts];
-  double fMeanTemp[fgkCalibParts];
+  // small dim array values; assigned via Set methods above
+  int fRunNumber[fgkCalibParts];  //runnumber of calibration part
+  int fStartTime[fgkCalibParts];  //start time of calibration part
+  int fEndTime[fgkCalibParts];    //end time of calibration part
+
+  double fMinTemp[fgkCalibParts];  // min temperature of calibration part
+  double fMaxTemp[fgkCalibParts];  // max temperature of calibration part
+  double fMeanTemp[fgkCalibParts]; // mean temperature of calibration part
 
   // larger arrays; assigned via ReadXValues methods above
-  double fAPDVoltage[fgkEmCalCols][fgkEmCalRows];
-  double fMIPPeakADC[fgkEmCalCols][fgkEmCalRows];
-  double fLEDPeakADC[fgkEmCalCols][fgkEmCalRows];
-  double fLEDRefADC[fgkEmCalCols];
+  double fAPDVoltage[fgkEmCalCols][fgkEmCalRows];  // Adjusted APD bias voltage
+  double fMIPPeakADC[fgkEmCalCols][fgkEmCalRows];  // mean of MIP peak
+  double fLEDPeakADC[fgkEmCalCols][fgkEmCalRows];  // mean of LED peak
+  double fLEDRefADC[fgkEmCalCols];                 // LED reference 
 
-  ClassDef(AliEMCALSMCalibCosmicResult, 2) //SMCalibCosmicResult data reader
+  ClassDef(AliEMCALSMCalibCosmicResult, 1) //SMCalibCosmicResult data reader
 };
 
 #endif

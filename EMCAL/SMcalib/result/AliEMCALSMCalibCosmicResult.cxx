@@ -8,25 +8,16 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
 #include <TFile.h>
 #include "TH1.h"
 #include "TH2.h"
 #include "TProfile.h"
 #include "TF1.h"
-#include "TGraph.h"
-#include "TMath.h"
 #include "TTree.h"
 #include <Riostream.h>
 
 #include "AliEMCALSMCalibCosmicResult.h"
-
-TTree *tree;  
-TH2D  *href;
-
-float mMip;
-float mLed;
-int mCol;
-int mRow;
 
 ClassImp(AliEMCALSMCalibCosmicResult)
 
@@ -54,17 +45,19 @@ AliEMCALSMCalibCosmicResult::~AliEMCALSMCalibCosmicResult()
 
 void AliEMCALSMCalibCosmicResult::InitArrays()
 {
+  //initialize arrays
+  
   cout << "======== arrays are initialized ========"<< endl;
 
-  for (int j=0;j<fgkEmCalCols;j++) {
+  for (int j=0;j<48;j++) {
       fLEDRefADC[j]=-1; 
-      for (int i=0;i<fgkEmCalRows;i++) {
+      for (int i=0;i<24;i++) {
 	  fMIPPeakADC[j][i] = -1;
 	  fLEDPeakADC[j][i] = -1;
 	  fAPDVoltage[j][i] = -1;
    	}
   }
-  for (int j=0;j<fgkCalibParts;j++) {
+  for (int j=0;j<3;j++) {
       fMinTemp[j] =-1; 
       fMaxTemp[j] =-1; 
       fMeanTemp[j]=-1; 
@@ -74,8 +67,7 @@ void AliEMCALSMCalibCosmicResult::InitArrays()
 
 void AliEMCALSMCalibCosmicResult::ReadSMPart(int ipart)
 {
-
-  // open file and initialize histograms
+  // open file and get tree and histograms
 
   TString fin="./plots/results_part_";
   fin += ipart;
@@ -87,13 +79,13 @@ void AliEMCALSMCalibCosmicResult::ReadSMPart(int ipart)
   TH1D* hev = (TH1D*)f1->Get("ev");
   cout<<"Total number of events: "<< hev->GetEntries() << endl;
 
-  href  =(TH2D*) f1->Get("hLedRefStrip");
-  tree  =(TTree*) f1->Get("calib_tree");
+  fhref =(TH2D*) f1->Get("hLedRefStrip");
+  fTree =(TTree*) f1->Get("calib_tree");
  
-  tree->SetBranchAddress("col",&mCol);
-  tree->SetBranchAddress("row",&mRow);
-  tree->SetBranchAddress("mip",&mMip);
-  tree->SetBranchAddress("led",&mLed);
+  fTree->SetBranchAddress("col",&fCol);
+  fTree->SetBranchAddress("row",&fRow);
+  fTree->SetBranchAddress("mip",&fMip);
+  fTree->SetBranchAddress("led",&fLed);
 
 }
 
@@ -101,7 +93,8 @@ void AliEMCALSMCalibCosmicResult::ReadSMPart(int ipart)
 
 void  AliEMCALSMCalibCosmicResult::PrintAPD() 
 {
-
+  // print out APD bias values
+  
   for (Int_t col=0; col< fgkEmCalCols; col++){
     for (Int_t row=0; row< fgkEmCalRows; row++){
       printf(" %3.0f",fAPDVoltage[col][row]);
@@ -112,6 +105,7 @@ void  AliEMCALSMCalibCosmicResult::PrintAPD()
 
 void  AliEMCALSMCalibCosmicResult::PrintMIP() 
 {
+  // print out mean MIP values
 
   for (Int_t col=0; col< fgkEmCalCols; col++){
     for (Int_t row=0; row< fgkEmCalRows; row++){
@@ -123,7 +117,8 @@ void  AliEMCALSMCalibCosmicResult::PrintMIP()
 
 void  AliEMCALSMCalibCosmicResult::PrintLED() 
 {
-
+  //print out mean  LED values
+  
   for (Int_t col=0; col< fgkEmCalCols; col++){
     for (Int_t row=0; row< fgkEmCalRows; row++){
       printf(" %3.0f",fLEDPeakADC[col][row]);
@@ -134,6 +129,7 @@ void  AliEMCALSMCalibCosmicResult::PrintLED()
 
 void  AliEMCALSMCalibCosmicResult::PrintLEDref() 
 {
+  //print out LED reference
 
   for (Int_t col=0; col< fgkEmCalCols; col++){
       printf(" %3.0f",fLEDRefADC[col]);
@@ -144,8 +140,9 @@ void  AliEMCALSMCalibCosmicResult::PrintLEDref()
 
 void  AliEMCALSMCalibCosmicResult::PrintTemps() 
 {
-
-  for (Int_t part=0; part< fgkCalibParts; part++){
+  //print out temperature
+  
+  for (Int_t part=0; part< 3; part++){
       printf("min: %2.1f ,",fMinTemp[part]);
       printf("max: %2.1f ,",fMaxTemp[part]);
       printf("ave: %2.1f \n",fMeanTemp[part]);
@@ -158,18 +155,31 @@ void  AliEMCALSMCalibCosmicResult::PrintTemps()
 
 void  AliEMCALSMCalibCosmicResult::ReadLEDRefADCValues(int ipart)
 {
+  //read LED reference from histogram
+
   cout << "-------- read LED ref values SM part #: "<< ipart << " ---------"<< endl;
   
-  int nStripsPerPart = fgkEmCalStrips / fgkCalibParts; // 24/3 = 8
-  int firstStrip = ipart * nStripsPerPart;
-  int lastStrip  = firstStrip + nStripsPerPart;
+  int firstStrip = 0;
+  int lastStrip  = 0;
+  if (ipart==0) {
+  	firstStrip = 0;
+  	lastStrip  = 8;
+  }  
+  if (ipart==1) {
+  	firstStrip = 8;
+  	lastStrip  = 16;
+  }  
+  if (ipart==2) {
+  	firstStrip = 16;
+  	lastStrip  = 24;
+  }  
   
   char title[30];
   float stripmean[8];
   
   for (int j=firstStrip;j< lastStrip;j++) {
 	sprintf(title,"strip%d",j);
-  	TH1D* hLedAmp = (TH1D*)href->ProjectionY(title,j+1,j+1);
+  	TH1D* hLedAmp = (TH1D*)fhref->ProjectionY(title,j+1,j+1);
 	stripmean[j-firstStrip] = hLedAmp->GetMean();
 	cout << title << ", mean-Ref="<< hLedAmp->GetMean() << endl;
         //2 cols per strip
@@ -185,16 +195,18 @@ void  AliEMCALSMCalibCosmicResult::ReadLEDRefADCValues(int ipart)
 
 int  AliEMCALSMCalibCosmicResult::ReadMIPPeakADCValues(int th)
 {
+  // read MIP values from Tree
+
   cout << "--------- read MIP peak , threshold "<< th << " ---------"<< endl;
   
   int badMip=0;
 
-  for (int j=0;j<tree->GetEntries();j++)
+  for (int j=0;j<fTree->GetEntries();j++)
     {
-	tree->GetEntry(j);
-	if (mMip> th) 	fMIPPeakADC[mCol][mRow] = mMip;
-	else  {        	fMIPPeakADC[mCol][mRow] = -1;
- 			cout << "col:"<< mCol<< ", row:"<< mRow << ", mean =" << mMip << endl;  
+	fTree->GetEntry(j);
+	if (fMip> th) 	fMIPPeakADC[fCol][fRow] = fMip;
+	else  {        	fMIPPeakADC[fCol][fRow] = -1;
+ 			cout << "col:"<< fCol<< ", row:"<< fRow << ", mean =" << fMip << endl;  
 			badMip++; 
 	}
     }
@@ -206,16 +218,17 @@ int  AliEMCALSMCalibCosmicResult::ReadMIPPeakADCValues(int th)
 
 int  AliEMCALSMCalibCosmicResult::ReadLEDPeakADCValues(int th)
 {
+  // read LED values from Tree
   cout << "--------- read LED peaks, threshold "<< th << " ---------"<< endl;
   
   int bad=0;
 
-  for (int j=0;j<tree->GetEntries();j++)
+  for (int j=0;j<fTree->GetEntries();j++)
     {
-	tree->GetEntry(j);
-	if (mLed > th) 	fLEDPeakADC[mCol][mRow] = mLed;
-	else  {        	fLEDPeakADC[mCol][mRow] = -1;
- 			cout << "col:"<< mCol<< ", row:"<< mRow << ", mean =" << mLed << endl; 
+	fTree->GetEntry(j);
+	if (fLed > th) 	fLEDPeakADC[fCol][fRow] = fLed;
+	else  {        	fLEDPeakADC[fCol][fRow] = -1;
+ 			cout << "col:"<< fCol<< ", row:"<< fRow << ", mean =" << fLed << endl; 
 			bad++;  
 	}
     }
@@ -227,13 +240,15 @@ int  AliEMCALSMCalibCosmicResult::ReadLEDPeakADCValues(int th)
 
 int  AliEMCALSMCalibCosmicResult::ReadAPDVoltageValues(int ipart, const TString &fname)
 {
+  // read APD voltages from text file
   cout << "--------- read APD Bias for sm-part "<< ipart << " ---------"<< endl;
   cout << "--------- filename: "<< fname << " ---------"<< endl;
 
   FILE *f=fopen(fname.Data(),"r");
   
-  int nColsPerPart = fgkEmCalCols / fgkCalibParts; // 16
-  int offset = ipart * nColsPerPart;
+  int offset=0;
+  if (ipart==1) offset=16;
+  if (ipart==2) offset=32;
 
   int dat, row,col;
   float voltage; 
@@ -243,12 +258,12 @@ int  AliEMCALSMCalibCosmicResult::ReadAPDVoltageValues(int ipart, const TString 
      { 
        dat = fscanf(f,"%i %i %f",&col,&row,&voltage);
 
-       if (col< offset || col>(offset+nColsPerPart-1) ) continue;    
+       if (col< offset || col>(offset+15) ) continue;    
 
        // cout<<col<<" "<<row<<" v="<<voltage<<endl;
        
        fAPDVoltage[col][row] = voltage;
-       if (voltage>395) bad++; // 395 is our max voltage
+       if (voltage>395) bad++;
        
      }
      
@@ -258,7 +273,7 @@ int  AliEMCALSMCalibCosmicResult::ReadAPDVoltageValues(int ipart, const TString 
 
 void AliEMCALSMCalibCosmicResult::ReadTempSensors(int ipart, int run)
 {
-
+  // read temperature sensor data 
   cout << "--------- read Temp Sensors for sm-part "<< ipart << " ---------"<< endl;
   cout << "--------- and run number "<< run << " ---------"<< endl;
   
@@ -317,8 +332,7 @@ void AliEMCALSMCalibCosmicResult::ReadTempSensors(int ipart, int run)
 	min2  = h2->GetMinimum()      - tcorr[7];
 	mean2 = fit2->GetParameter(0) - tcorr[7];
   }
-    
-  
+      
   fMinTemp[ipart]  = (min1+min2)/2.0;
   fMaxTemp[ipart]  = (max1+max2)/2.0;
   fMeanTemp[ipart] = (mean1+mean2)/2.0;
