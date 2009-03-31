@@ -109,7 +109,7 @@ fSigmaXDeadZoneHit2(0),
 fSigmaZDeadZoneHit2(0),
 fXPassDeadZoneHits(0),
 fUseTGeoInTracker(3),
-fStepSizeTGeo(0.1),
+fStepSizeTGeo(5.),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
 fComputePlaneEff(kFALSE),
@@ -171,7 +171,7 @@ fUseCosmicRunShiftsSSD(kFALSE)
   SetLayersParameters();
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fLayersToSkip[i]=0;
   SetUseTGeoInTracker(3);
-  SetStepSizeTGeo(0.1);
+  SetStepSizeTGeo(5.);
   SetAllowSharedClusters(kTRUE);
   SetFindV0s(kTRUE);
   SetAddVirtualClustersInDeadZone(kFALSE);
