@@ -73,7 +73,6 @@
 #include "AliMUONTrackExtrap.h"
 
 #include "AliMpVSegmentation.h"
-#include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
 #endif
 

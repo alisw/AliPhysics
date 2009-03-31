@@ -43,16 +43,14 @@ public:
                               Bool_t includeVoid=kFALSE) const;
   const char* GetName() const;
   
-  Bool_t HasPad(const AliMpIntPair& indices) const;
-  
   Int_t MaxPadIndexX() const;
   Int_t MaxPadIndexY() const;
   Int_t NofPads() const { return fNofStrips; }
     
-  virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
+  virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel, 
                                  Bool_t warning) const;
   
-  virtual AliMpPad PadByIndices(const AliMpIntPair& indices,  
+  virtual AliMpPad PadByIndices(Int_t ix, Int_t iy,  
                                 Bool_t warning) const;
   
   virtual AliMpPad PadByPosition(const TVector2& position,

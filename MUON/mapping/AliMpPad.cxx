@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpPad.h"
+#include "AliMpEncodePair.h"
 #include "AliLog.h"
 
 #include <TClonesArray.h>
@@ -59,14 +60,15 @@ ostream& operator<<(ostream& out,const TVector2& v)
 
 
 //_____________________________________________________________________________
-AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
+AliMpPad::AliMpPad(Int_t manuId, Int_t channel,
+                   Int_t ix, Int_t iy,
                    const TVector2& position,const TVector2& dimensions,
                    Bool_t validity)
  : TObject(),
-   fLocations(0),
+   fLLocations(0),
    fNofLocations(0),
-   fLocation(location),
-   fIndices(indices),
+   fLLocation(AliMp::Pair(manuId, channel)),
+   fLIndices(AliMp::Pair(ix, iy)),
    fPosition(position),
    fDimensions(dimensions),
    fValidity(validity)
@@ -78,14 +80,34 @@ AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
 /// It is aimed to be used by MSegmentation methods, and never from outside....
 }
 
+//_____________________________________________________________________________
+AliMpPad::AliMpPad(Int_t manuId, Int_t channel,
+                   MpPair_t indices,
+                   const TVector2& position,const TVector2& dimensions,
+                   Bool_t validity)
+ : TObject(),
+   fLLocations(0),
+   fNofLocations(0),
+   fLLocation(AliMp::Pair(manuId, channel)),
+   fLIndices(indices),
+   fPosition(position),
+   fDimensions(dimensions),
+   fValidity(validity)
+{
+/// Standard constructor                                                   \n
+/// Be carefull : this constructor doesn't check the validity of
+/// the correspondance between location and indices.
+/// By default, validity is set true.
+/// It is aimed to be used by MSegmentation methods, and never from outside....
+}
 
 //_____________________________________________________________________________
 AliMpPad::AliMpPad()
   : TObject(),
-    fLocations(0),
+    fLLocations(0),
     fNofLocations(0),
-    fLocation(AliMpIntPair::Invalid()),
-    fIndices(AliMpIntPair::Invalid()),
+    fLLocation(0),
+    fLIndices(0),
     fPosition(-1.,-1.),
     fDimensions(0.,0.),
     fValidity(false) 
@@ -93,14 +115,13 @@ AliMpPad::AliMpPad()
 /// Default constructor - creates pad in invalid state
 }
 
-
 //_____________________________________________________________________________
 AliMpPad::AliMpPad(const AliMpPad& rhs)
   : TObject(rhs),
-    fLocations(0),
+    fLLocations(0),
     fNofLocations(0),
-    fLocation(AliMpIntPair::Invalid()),
-    fIndices(AliMpIntPair::Invalid()),
+    fLLocation(0),
+    fLIndices(0),
     fPosition(-1.,-1.),
     fDimensions(0.,0.),
     fValidity(false) 
@@ -115,7 +136,7 @@ AliMpPad::~AliMpPad()
 {
 /// Destructor
 
-  delete [] fLocations;
+  delete [] fLLocations;
 }
 
 //_____________________________________________________________________________
@@ -130,18 +151,18 @@ AliMpPad& AliMpPad::operator = (const AliMpPad& rhs)
   TObject::operator=(rhs);
 
   // assignment operator
-  fLocation   = rhs.fLocation;
-  fIndices    = rhs.fIndices;
+  fLLocation   = rhs.fLLocation;
+  fLIndices    = rhs.fLIndices;
   fPosition.Set(rhs.fPosition);
   fDimensions.Set(rhs.fDimensions);
   fValidity = rhs.fValidity;
   
-  fLocations = 0;
+  fLLocations = 0;
   fNofLocations = rhs.fNofLocations;
   if ( rhs.GetNofLocations() ) {
-    fLocations = new AliMpIntPair[fgkMaxNofLocations];
+    fLLocations = new MpPair_t[fgkMaxNofLocations];
     for ( UInt_t i=0; i<rhs.fNofLocations; i++ )
-      fLocations[i] = rhs.fLocations[i];
+      fLLocations[i] = rhs.fLLocations[i];
   }  			
 
   return *this;
@@ -169,8 +190,8 @@ Bool_t AliMpPad::operator == (const AliMpPad& rhs) const
         sameLocations = false;
   }
   
-  return    (fLocation   == rhs.fLocation) 
-         && (fIndices    == rhs.fIndices)
+  return    (fLLocation  == rhs.fLLocation) 
+         && (fLIndices   == rhs.fLIndices)
          && (fPosition   == rhs.fPosition) 
 	 && (fDimensions == rhs.fDimensions)
 	 && sameLocations;
@@ -189,11 +210,15 @@ Bool_t operator < (const AliMpPad& left, const AliMpPad& right)
 {
 /// Less operator
 
-  return left.GetIndices()<right.GetIndices();
+  if ( left.GetIx() < right.GetIx() ) return kTRUE;
+  if ( left.GetIx() > right.GetIx() ) return kFALSE;
+  if ( left.GetIy() < right.GetIy() ) return kTRUE;
+  return kFALSE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMpPad::AddLocation(const AliMpIntPair& location, Bool_t warn)
+Bool_t AliMpPad::AddLocation(Int_t localBoardId, Int_t localBoardChannel, 
+                             Bool_t warn)
 {
 /// Add location to the collection if not yet present and
 /// if collection is not yet full                                           \n
@@ -203,30 +228,64 @@ Bool_t AliMpPad::AddLocation(const AliMpIntPair& location, Bool_t warn)
   // Check maximum number limit
   if ( GetNofLocations() == fgkMaxNofLocations ) {
     if (warn) {
-      AliWarningStream() << "Cannot add location: "
-                         << location
+      AliWarningStream() << "Cannot add location: ("
+                         << localBoardId << "," << localBoardChannel << ")."
 			 << "  Maximum number has been reached." << endl;
     }
     return false;
   }  			 
 
   // Check if location is present
-  if ( HasLocation(location) ) {
+  if ( HasLocation(localBoardId, localBoardChannel) ) {
     if (warn) {
       AliWarningStream() << "Cannot add location: "
-                         << location
+                         << localBoardId << "," << localBoardChannel << ")."
 			 << "  Location is already present." << endl;
     }
     return false;
   } 
   
   // Add location
-  if ( ! fLocations)
-    fLocations = new AliMpIntPair[fgkMaxNofLocations];
+  if ( ! fLLocations)
+    fLLocations = new MpPair_t[fgkMaxNofLocations];
   
-  fLocations[fNofLocations++] = location;
+  fLLocations[fNofLocations++] 
+    = AliMp::Pair(localBoardId, localBoardChannel);
+
   return true;
 }
+
+//_____________________________________________________________________________
+Int_t  AliMpPad::GetManuId() const
+{
+/// Return pad manu Id 
+
+  return AliMp::PairFirst(fLLocation);
+}  
+
+//_____________________________________________________________________________
+Int_t  AliMpPad::GetManuChannel() const
+{
+/// Return pad manu channel
+
+  return AliMp::PairSecond(fLLocation);
+}  
+
+//_____________________________________________________________________________
+Int_t  AliMpPad::GetIx() const
+{
+/// Return pad index ix
+
+  return AliMp::PairFirst(fLIndices);
+}  
+
+//_____________________________________________________________________________
+Int_t  AliMpPad::GetIy() const
+{
+/// Return pad index iy
+
+  return AliMp::PairSecond(fLIndices);
+}  
 
 //_____________________________________________________________________________
 void AliMpPad::PrintOn(ostream& out) const
@@ -238,8 +297,10 @@ void AliMpPad::PrintOn(ostream& out) const
     return;
   }  
 
-  out << "Pad: Location " << fLocation 
-      << "  Indices "     << fIndices
+  out << "Pad: Location ";
+  AliMp::PairPut(out, fLLocation)
+      << "  Indices ";     
+  AliMp::PairPut(out,fLIndices)
       << "  Position "    << fPosition
       << "  Dimensions "  << fDimensions;
 
@@ -248,7 +309,7 @@ void AliMpPad::PrintOn(ostream& out) const
     out << "     Other locations: ";
 
     for (Int_t i=0; i<GetNofLocations(); i++) 
-        out << GetLocation(i) << "  ";
+        AliMp::PairPut(out,GetLocation(i)) << "  ";
   }
 }
 
@@ -266,30 +327,54 @@ Int_t  AliMpPad::GetNofLocations() const
 {
 /// Return number of other locations associated with this pad
 
-  if (!fLocations) return 0;
+  if (!fLLocations) return 0;
   
   return fNofLocations;
 }  
   
 
 //_____________________________________________________________________________
-AliMpIntPair AliMpPad::GetLocation(Int_t i) const
+MpPair_t AliMpPad::GetLocation(Int_t i) const
 {
 /// Return i-th other location associated with this pad
 
-  if ( !fLocations || i<0 || i>=GetNofLocations() ) 
-    return AliMpIntPair::Invalid();
+  if ( !fLLocations || i<0 || i>=GetNofLocations() ) 
+    return 0;
 
-  return fLocations[i];
+  return fLLocations[i];
 }  
 
 //_____________________________________________________________________________
-Bool_t AliMpPad::HasLocation(const AliMpIntPair& location) const
+Int_t AliMpPad::GetLocalBoardId(Int_t i) const
 {
-/// Return true if given location is present either as fLocation
+/// Return i-th other local board Id associated with this pad
+
+  if ( !fLLocations || i<0 || i>=GetNofLocations() ) 
+    return 0;
+
+  return AliMp::PairFirst(fLLocations[i]);
+}  
+
+//_____________________________________________________________________________
+Int_t AliMpPad::GetLocalBoardChannel(Int_t i) const
+{
+/// Return i-th other local board channel associated with this pad
+
+  if ( !fLLocations || i<0 || i>=GetNofLocations() ) 
+    return 0;
+
+  return AliMp::PairSecond(fLLocations[i]);
+}  
+
+//_____________________________________________________________________________
+Bool_t AliMpPad::HasLocation(Int_t localBoardId, Int_t localBoardChannel) const
+{
+/// Return true if given location is present either as fLLocation
 /// or in the collectio
 
-  if (fLocation == location) return true;
+  MpPair_t location = AliMp::Pair(localBoardId, localBoardChannel);
+
+  if (fLLocation == location) return true;
 
   for ( Int_t i=0; i<GetNofLocations(); i++ ) {
     if ( GetLocation(i) == location ) return true;

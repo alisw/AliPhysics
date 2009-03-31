@@ -35,7 +35,6 @@
 #include "AliMpExMapIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
-#include "AliMpIntPair.h"
 #include "AliMpPad.h"
 
 #include "AliESDEvent.h"
@@ -796,7 +795,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& 
   /// Transfert data from ESDMuon pad to MUON digit
   
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(esdPad.GetDetElemId(), esdPad.GetManuId());  
-  AliMpPad pad = seg->PadByLocation(AliMpIntPair(esdPad.GetManuId(), esdPad.GetManuChannel()), kFALSE);
+  AliMpPad pad = seg->PadByLocation(esdPad.GetManuId(), esdPad.GetManuChannel(), kFALSE);
   
   digit.Saturated(esdPad.IsSaturated());
   digit.Used(kFALSE);
@@ -804,7 +803,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& 
   digit.SetUniqueID(esdPad.GetUniqueID());
   digit.SetCharge(esdPad.GetCharge());
   digit.SetADC(esdPad.GetADC());
-  digit.SetPadXY(pad.GetIndices().GetFirst(), pad.GetIndices().GetSecond());
+  digit.SetPadXY(pad.GetIx(), pad.GetIy());
   
 }
 

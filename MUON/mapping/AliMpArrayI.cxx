@@ -47,7 +47,8 @@ AliMpArrayI::AliMpArrayI(Bool_t sort)
     fSort(sort),
     fNofValues(0),
     fValues(fgkDefaultSize),
-    fLimits(INT_MIN,INT_MAX)
+    fMinValue(INT_MAX),
+    fMaxValue(INT_MIN)
 {
 /// Standard & default constructor
 
@@ -59,7 +60,8 @@ AliMpArrayI::AliMpArrayI(TRootIOCtor* /*ioCtor*/)
     fSort(),
     fNofValues(),
     fValues(),
-    fLimits()
+    fMinValue(),
+    fMaxValue()
 {
 /// IO constructor
 }
@@ -122,8 +124,8 @@ Bool_t AliMpArrayI::Add(Int_t value, Bool_t warn)
   ++fNofValues;
   
   // Update linits
-  if ( value < fLimits.GetFirst() )  fLimits.SetFirst(value);
-  if ( value > fLimits.GetSecond() ) fLimits.SetSecond(value);
+  if ( value < fMinValue )  fMinValue = value;
+  if ( value > fMaxValue )  fMaxValue = value;;
   
   return true;
 }
@@ -180,7 +182,8 @@ void AliMpArrayI::Reset()
 
   fValues.Set(fgkDefaultSize);
   fNofValues = 0;
-  fLimits = AliMpIntPair(INT_MIN,INT_MAX);
+  fMinValue = INT_MAX;
+  fMaxValue = INT_MIN;
 } 
 
 //_____________________________________________________________________________
@@ -219,7 +222,7 @@ Bool_t AliMpArrayI::HasValue(Int_t value) const
 
   if ( ! fNofValues ) return false;
 
-  if ( value < fLimits.GetFirst() || value > fLimits.GetSecond() ) 
+  if ( value < fMinValue || value > fMaxValue ) 
     return false;
 
   for ( Int_t i=0; i<fNofValues; i++ )

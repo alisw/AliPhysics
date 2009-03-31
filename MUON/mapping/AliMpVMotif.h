@@ -13,13 +13,14 @@
 #ifndef ALI_MP_V_MOTIF_H
 #define ALI_MP_V_MOTIF_H
 
+#include "AliMpEncodePair.h"
+
 #include <TObject.h>
 #include <TString.h>
 #include <TVector2.h>
 
 class AliMpMotifType;
 class AliMpConnection;
-class AliMpIntPair;
 
 class AliMpVMotif : public TObject
 {
@@ -36,7 +37,9 @@ class AliMpVMotif : public TObject
                    /// Return the i-th pad dimensions
   virtual TVector2 GetPadDimensions(Int_t i) const=0;
                    /// Return the dimensions of the pad specified by localIndices
-  virtual TVector2 GetPadDimensions(const AliMpIntPair& localIndices) const=0;
+  virtual TVector2 GetPadDimensionsByIndices(MpPair_t localIndices) const=0;
+                   /// Return the dimensions of the pad specified by localIndices
+  virtual TVector2 GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const=0;
 
   // Geometry
                    /// Return dimensions
@@ -46,9 +49,11 @@ class AliMpVMotif : public TObject
   AliMpConnection *FindConnectionByLocalPos(const TVector2& localPos) const;
   virtual void Print(Option_t *option) const;
                    /// Return local position of the pad specified by local indices
-  virtual TVector2 PadPositionLocal(const AliMpIntPair& localIndices) const=0;
+  virtual TVector2 PadPositionLocal(MpPair_t localIndices) const=0;
+                   /// Return local position of the pad specified by local indices
+  virtual TVector2 PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const=0;
                    /// Return local indices of the pad specified by local position
-  virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const=0;
+  virtual MpPair_t PadIndicesLocal(const TVector2& localPos) const=0;
 
  private:
   /// Not implemented

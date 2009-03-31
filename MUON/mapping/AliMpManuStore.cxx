@@ -33,8 +33,8 @@
 #include "AliMpDataStreams.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
-#include "AliMpIntPair.h"
 #include "AliMpConstants.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -239,7 +239,7 @@ void  AliMpManuStore::ReplaceManu(Int_t detElemId, Int_t manuId, Int_t serialNb)
 /// As TExMap has no replcae function, we have to rebuild map once again.
 /// Not yet in use, declared private.
 
-  Long_t index = AliMpExMap::GetIndex(AliMpIntPair(detElemId, manuId));
+  Long_t index = AliMp::Pair(detElemId, manuId);
 
   TExMap newManuToSerialNbs;
   // Loop over map
@@ -337,18 +337,20 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
     Long_t key;
     Long_t value;
     while ( ( it2.Next(key, value) ) ) {
-      AliMpIntPair pair = AliMpExMap::GetPair(key);
+      Int_t pairFirst = AliMp::PairFirst(key);
       
-      if ( pair.GetFirst() != detElemId ) continue;
+      if ( pairFirst != detElemId ) continue;
       
-      AliDebugStream(3) 
-        << "Go to write " << key << " " << pair << " " << value << endl;
+      Int_t manuId = AliMp::PairSecond(key);
 
-      Int_t manuId = pair.GetSecond();
+      AliDebugStream(3) 
+        << "Go to write " << key << " " 
+        << pairFirst << " " << manuId << " " << value << endl;
+
       static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
 
       TString planeName = PlaneTypeName(AliMp::kBendingPlane);
-      if ( pair.GetSecond()> manuMask ) {
+      if ( manuId> manuMask ) {
         planeName = PlaneTypeName(AliMp::kNonBendingPlane);
         manuId -= manuMask;
       } 
@@ -392,7 +394,7 @@ Bool_t  AliMpManuStore::AddManu(Int_t detElemId, Int_t manuId, Int_t serialNb)
 {
 /// Add manu to the map
 
-  Long_t index = AliMpExMap::GetIndex(AliMpIntPair(detElemId, manuId));
+  Long_t index = AliMp::Pair(detElemId, manuId);
   
   AliDebugStream(2)
     << "Adding (" << detElemId << "," <<  manuId 
@@ -405,9 +407,8 @@ Bool_t  AliMpManuStore::AddManu(Int_t detElemId, Int_t manuId, Int_t serialNb)
     if ( fgWarnIfDoublon ) {
       AliWarningStream() 
         << "Serial number " << serialNb 
-        << " already present for (detElemId, manuId) = " << AliMpExMap::GetPair(value)
-        << ", it will nod be added for (" 
-        << detElemId << "," << manuId << ")" << endl;
+        << " already present for (detElemId, manuId) = " ;
+        AliMp::PairPut(AliWarningStream(), (MpPair_t) value) << endl;
      }
      return kFALSE;    
   }
@@ -423,20 +424,18 @@ Int_t AliMpManuStore::GetManuSerial(Int_t detElemId, Int_t manuId) const
 {
 /// Return manu serial number for given detElemId and manuId
 
-  Long_t index = AliMpExMap::GetIndex(AliMpIntPair(detElemId, manuId));
+  Long_t index = AliMp::Pair(detElemId, manuId);
   // cout << index << " " << fManuToSerialNbs.GetValue(index) << endl;
   
   return fManuToSerialNbs.GetValue(index);
 }  
 
 //______________________________________________________________________________
-AliMpIntPair  AliMpManuStore::GetDetElemIdManu(Int_t manuSerial) const
+MpPair_t  AliMpManuStore::GetDetElemIdManu(Int_t manuSerial) const
 {
 /// Return detElemId and manuId for given manu serial number 
+/// as encoded pair
 
-  Long_t value = fSerialNbToManus.GetValue(Long_t(manuSerial));
-  // cout << manuSerial << " " << value << endl;
-  
-  return AliMpExMap::GetPair(value);
+  return fSerialNbToManus.GetValue(Long_t(manuSerial));
 }  
 

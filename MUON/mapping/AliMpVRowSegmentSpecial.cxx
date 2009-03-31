@@ -127,35 +127,38 @@ AliMpVRowSegmentSpecial::FindPadRowSegment(Int_t motifPositionId) const
 }
 
 //______________________________________________________________________________
-AliMpIntPair 
+MpPair_t 
 AliMpVRowSegmentSpecial::FindRelativeLowIndicesOf(Int_t motifPositionId) const 
 { 
 /// Return the lowest pad indices where the motif of the given position ID
 /// exist in this segment.
 
-  AliMpIntPair ans(0,1000);
-  AliMpIntPair ans0 = ans;
+  Int_t ans0Ix = 0;
+  Int_t ans0Iy = 1000;
+  Int_t ansIx = 0;
+  Int_t ansIy = 1000;
+  
   Int_t maxNofPadsX=0;
   
   for (Int_t i=0; i<GetNofPadRows(); i++) {
     AliMpPadRow* padRow = GetPadRow(i);
 
     Int_t nofPadsX=0;
-    for (Int_t j=0; j<padRow->GetNofPadRowSegments(); j++) {
+    for ( Int_t j=0; j<padRow->GetNofPadRowSegments(); j++ ) {
       AliMpVPadRowSegment* padRowSegment = padRow->GetPadRowSegment(j);
       nofPadsX += padRowSegment->GetNofPads();
       if (padRowSegment->GetMotifPositionId() == motifPositionId) {
-         if (ans.GetFirst() < nofPadsX) ans.SetFirst(nofPadsX);
-         if (ans.GetSecond()>i) ans.SetSecond(i);
-                  // ans.First = max (nof pads of this pos ID)
-                  // ans.Second = min of pad row number
+         if ( ansIx < nofPadsX ) ansIx = nofPadsX;
+         if ( ansIy >i ) ansIy = i;
+                  // ansIx = max (nof pads of this pos ID)
+                  // ansIy = min of pad row number
       }
     }  
-    if (nofPadsX > maxNofPadsX) maxNofPadsX = nofPadsX;
+    if ( nofPadsX > maxNofPadsX ) maxNofPadsX = nofPadsX;
   }    
-  if (ans == ans0) return AliMpIntPair::Invalid();
+  if ( ansIx == ans0Ix && ansIy == ans0Iy ) return -1;
   
-  return AliMpIntPair(maxNofPadsX-ans.GetFirst(), ans.GetSecond());
+  return AliMp::Pair(maxNofPadsX-ansIx, ansIy);
 }
  
 //______________________________________________________________________________

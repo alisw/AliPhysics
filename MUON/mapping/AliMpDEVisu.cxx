@@ -359,7 +359,7 @@ void AliMpDEVisu::HandleMovement(Int_t eventType, Int_t eventX, Int_t eventY, TO
         return;
       }
       
-      Int_t manu = pad.GetLocation().GetFirst();
+      Int_t manu = pad.GetManuId();
       
       fNumberEntry->SetNumber(manu);
       

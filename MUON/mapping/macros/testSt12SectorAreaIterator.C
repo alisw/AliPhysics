@@ -66,8 +66,7 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
     marker->Draw();
 
     // fill pads indices in the histogram
-    histo->Fill(it.CurrentItem().GetIndices().GetFirst(),
-                it.CurrentItem().GetIndices().GetSecond());   		
+    histo->Fill(it.CurrentItem().GetIx(), it.CurrentItem().GetIy());   		
   }
   
   TCanvas* canv2 = CreateTCanvas("canv2 ", " ", station, plane);

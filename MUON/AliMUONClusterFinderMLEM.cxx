@@ -1586,19 +1586,19 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
   Bool_t same = kFALSE;
   if (TMath::Abs(dim0.Y()-dim1.Y()) < fgkDistancePrecision) same = kTRUE; // the same pad size on both planes 
 
-  AliMpIntPair cn;
+  Long_t cn;
   Bool_t check[2] = {kFALSE, kFALSE};
   Int_t nxy[2];
   nxy[0] = nxy[1] = 0;
   for (Int_t inb = 0; inb < 2; ++inb) {
     cn = cluster.NofPads(nonb[inb], 0, kTRUE);
-    if (inb == 0 && cn.GetFirst() == 2) check[inb] = kTRUE; // check non-bending plane
-    else if (inb == 1 && cn.GetSecond() == 2) check[inb] = kTRUE; // check bending plane
+    if (inb == 0 && AliMp::PairFirst(cn) == 2) check[inb] = kTRUE; // check non-bending plane
+    else if (inb == 1 && AliMp::PairSecond(cn) == 2) check[inb] = kTRUE; // check bending plane
     if (same) {
-      nxy[0] = TMath::Max (nxy[0], cn.GetFirst());
-      nxy[1] = TMath::Max (nxy[1], cn.GetSecond());
+      nxy[0] = TMath::Max (nxy[0], AliMp::PairFirst(cn));
+      nxy[1] = TMath::Max (nxy[1], AliMp::PairSecond(cn));
       if (inb == 0 && nxy[0] < 2) nonb[inb] = !nonb[inb];
-      else if (inb == 1 && cn.GetSecond() < 2) nonb[inb] = !nonb[inb];
+      else if (inb == 1 && AliMp::PairSecond(cn) < 2) nonb[inb] = !nonb[inb];
     }
   }
   if (same) {
@@ -1663,8 +1663,7 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
       //AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kTRUE);
       AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kFALSE);
       if (!mppad.IsValid()) continue; // non-existing pad
-      cn = mppad.GetIndices();
-      AliMUONPad muonPad(fDetElemId, nonb[inb], cn.GetFirst(), cn.GetSecond(), 
+      AliMUONPad muonPad(fDetElemId, nonb[inb], mppad.GetIx(), mppad.GetIy(), 
 			 mppad.Position().X(), mppad.Position().Y(), 
 			 mppad.Dimensions().X(), mppad.Dimensions().Y(), 0);
       if (inb == 0) muonPad.SetCharge(TMath::Min (amax[j]/100, 5.));
@@ -1697,10 +1696,10 @@ void AliMUONClusterFinderMLEM::PadsInXandY(AliMUONCluster& cluster,
        
   Bool_t mustMatch(kTRUE);
 
-  AliMpIntPair cn = cluster.NofPads(statusToTest,mustMatch);
+  Long_t cn = cluster.NofPads(statusToTest,mustMatch);
   
-  nInX = cn.GetFirst();
-  nInY = cn.GetSecond();
+  nInX = AliMp::PairFirst(cn);
+  nInY = AliMp::PairSecond(cn);
 }
 
 //_____________________________________________________________________________

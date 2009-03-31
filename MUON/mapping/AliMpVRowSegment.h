@@ -19,7 +19,6 @@
 
 class AliMpRow;
 class AliMpVMotif;
-class AliMpIntPair;
 
 class AliMpVRowSegment : public AliMpVIndexed
 {
@@ -70,8 +69,7 @@ class AliMpVRowSegment : public AliMpVIndexed
     /// Set global indices limits.
     virtual void      SetGlobalIndices(AliMpRow* rowBefore) = 0;
     /// Set global indices to i-th motif position and returns next index in x.
-    virtual Int_t     SetIndicesToMotifPosition(Int_t i, 
-                                       const AliMpIntPair& indices) = 0;
+    virtual Int_t     SetIndicesToMotifPosition(Int_t i, MpPair_t indices) = 0;
     
     //
     // get methods

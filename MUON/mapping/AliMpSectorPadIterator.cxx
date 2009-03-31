@@ -27,7 +27,6 @@
 
 
 #include "AliMpSectorPadIterator.h"
-#include "AliMpIntPair.h"
 #include "AliMpSector.h"
 #include "AliMpMotifType.h"
 

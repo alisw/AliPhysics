@@ -27,8 +27,8 @@
 #ifndef ALI_MP_DIRECTION_H
 #  include "AliMpDirection.h"
 #endif
-#ifndef ALI_MP_INT_PAIR_H
-#  include "AliMpIntPair.h"
+#ifndef ALI_MP_ENCODE_PAIR_H
+#  include "AliMpEncodePair.h"
 #endif
 
 #ifndef ROOT_TObjArray
@@ -102,10 +102,10 @@ public:
   Int_t Multiplicity(Int_t cathode) const;
 
   /// Compute number of pads in X and Y direction for a given cathode.  
-  AliMpIntPair NofPads(Int_t cathode, Int_t statusMask, Bool_t matchMask) const;
+  Long_t NofPads(Int_t cathode, Int_t statusMask, Bool_t matchMask) const;
   
   /// Number of pads in (X,Y) direction, whatever the cathode.
-  AliMpIntPair NofPads(Int_t statusMask, Bool_t matchMask=kTRUE) const;
+  Long_t NofPads(Int_t statusMask, Bool_t matchMask=kTRUE) const;
   
   /// Return true as the function Compare is implemented
   Bool_t IsSortable() const { return kTRUE; }

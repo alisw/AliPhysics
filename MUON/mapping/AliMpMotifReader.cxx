@@ -33,7 +33,7 @@
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpConnection.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -120,7 +120,10 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     int i,j;
     strline>>i>>j;
     positions.Add( AliMpExMap::GetIndex(key), 
-                   AliMpExMap::GetIndex(AliMpIntPair(i,j)) ); 
+                   AliMp::Pair(i,j) + 1 );
+              // we have to add 1 to the AliMp::Pair in order to 
+              // its value always != 0, as the TExMap returns 0 value
+              // if given key does not exists      
   } while (!padPosStream.eof());
 
   const Int_t knbergpins = 
@@ -204,11 +207,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
       continue;
     }
 
-    ix = AliMpExMap::GetPair(value).GetFirst();
-    iy = AliMpExMap::GetPair(value).GetSecond();
-
     AliMpConnection* connection 
-      = new AliMpConnection(padNum,numBerg,numKapton,gassiNum, AliMpIntPair(ix,iy));
+      = new AliMpConnection(padNum,numBerg,numKapton,gassiNum, --value);
     
     Bool_t ok = motifType->AddConnection(connection);
     
@@ -217,6 +217,9 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
       AliFatal("Could not add connection");
     }
                   
+    ix = AliMp::PairFirst(value);
+    iy = AliMp::PairSecond(value);
+    
     if (ix>=nofPadsX) nofPadsX=ix+1;
     if (iy>=nofPadsY) nofPadsY=iy+1;
 
@@ -256,7 +259,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   in >> i;
   while (!in.eof()){
     in >>j >>x >> y;
-    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x*scale/2.,y*scale/2.));
+    res->SetPadDimensions(i,j,TVector2(x*scale/2.,y*scale/2.));
     in >> i;
   }
   res->CalculateDimensions();

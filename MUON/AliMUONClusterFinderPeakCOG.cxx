@@ -34,6 +34,7 @@
 
 #include "AliMpPad.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -941,10 +942,10 @@ void AliMUONClusterFinderPeakCOG::PadsInXandY(AliMUONCluster& cluster,
        
   Bool_t mustMatch(kTRUE);
 
-  AliMpIntPair cn = cluster.NofPads(statusToTest,mustMatch);
+  Long_t cn = cluster.NofPads(statusToTest,mustMatch);
   
-  nInX = cn.GetFirst();
-  nInY = cn.GetSecond();
+  nInX = AliMp::PairFirst(cn);
+  nInY = AliMp::PairSecond(cn);
 }
 
 //_____________________________________________________________________________

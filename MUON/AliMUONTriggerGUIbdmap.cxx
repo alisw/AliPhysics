@@ -37,20 +37,22 @@
 
 #include "AliRunLoader.h"
 #include "AliMUONVDigit.h"
-#include "AliMpVSegmentation.h"
-#include "AliMpSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMpDEIterator.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONDigitStoreV1.h"
-#include "AliMpDEManager.h"
-
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIbdmap.h"
+
+#include "AliMpDEManager.h"
+#include "AliMpDEIterator.h"
+#include "AliMpEncodePair.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
+
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIbdmap)
@@ -883,8 +885,8 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 
     chamber = 11+i;
     
-    AliMpIntPair deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
-    TIter next(digitStore->CreateIterator(deRange.GetFirst(),deRange.GetSecond()));
+    MpPair_t deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
+    TIter next(digitStore->CreateIterator(AliMp::PairFirst(deRange),AliMp::PairSecond(deRange)));
     AliMUONVDigit *mdig;
     
     while ( ( mdig = static_cast<AliMUONVDigit*>(next())) )
@@ -910,7 +912,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	
 	seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));  
 	
-	pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	pad = seg->PadByIndices(ix,iy,kTRUE);
 	
 	//if (cathode == 0) printf("GUI x:  ix %d iy %d \n",ix,iy);
 	//if (cathode == 1) printf("GUI y:  ix %d iy %d \n",ix,iy);
@@ -1225,7 +1227,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
       for (Int_t ix = 0; ix <= maxX; ix++) {
 	for (Int_t iy = 0; iy <= maxY; iy++) {
 	  
-	  pad = seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+	  pad = seg->PadByIndices(ix,iy,kFALSE);
 	  
 	  if (!pad.IsValid()) continue;
 	  
@@ -1320,7 +1322,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
       for (Int_t ix = 0; ix <= maxX; ix++) {
 	for (Int_t iy = 0; iy <= maxY; iy++) {
 	  
-	  pad = seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+	  pad = seg->PadByIndices(ix,iy,kFALSE);
 	  
 	  if (!pad.IsValid()) continue;
 	  

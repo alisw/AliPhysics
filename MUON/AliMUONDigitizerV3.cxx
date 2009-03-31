@@ -35,7 +35,6 @@
 #include "AliMpConstants.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
-#include "AliMpIntPair.h"
 #include "AliMpPad.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
@@ -559,11 +558,11 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitSt
     do {
       ix = gRandom->Integer(maxIx+1);
       iy = gRandom->Integer(maxIy+1);
-      pad = seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+      pad = seg->PadByIndices(ix,iy,kFALSE);
     } while ( !pad.IsValid() );
 
-    Int_t manuId = pad.GetLocation().GetFirst();
-    Int_t manuChannel = pad.GetLocation().GetSecond();    
+    Int_t manuId = pad.GetManuId();
+    Int_t manuChannel = pad.GetManuChannel();    
 
     AliMUONVCalibParam* pedestals = fCalibrationData->Pedestals(detElemId,manuId);
     
@@ -677,11 +676,11 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore
 	pad[1] = seg1->PadByPosition(TVector2(x,y),kFALSE);
 
 	for ( Int_t cathode = 0; cathode < 2; ++cathode ){
-	  Int_t manuId = pad[cathode].GetLocation(0).GetFirst();
-	  Int_t manuChannel = pad[cathode].GetLocation(0).GetSecond();    
+	  Int_t manuId = pad[cathode].GetLocalBoardId(0);
+	  Int_t manuChannel = pad[cathode].GetLocalBoardChannel(0);    
 	  d[cathode] = digitStore.CreateDigit(detElemId,manuId,manuChannel,cathode);
-	  ix = pad[cathode].GetIndices().GetFirst();
-	  iy = pad[cathode].GetIndices().GetSecond();
+	  ix = pad[cathode].GetIx();
+	  iy = pad[cathode].GetIy();
 	  d[cathode]->SetPadXY(ix,iy);
 	  //d[cathode].SetSignal(1);
 	  //d[cathode].SetPhysicsSignal(0);

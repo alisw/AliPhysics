@@ -121,7 +121,7 @@ AliMpIteratorPainter::Paint(Option_t*)
     TVector2 bl = padPadPos - padPadDim;
     TVector2 ur = padPadPos + padPadDim;
     
-    Int_t manuId = pad->GetLocation().GetFirst();
+    Int_t manuId = pad->GetManuId();
 
     Style_t sty = gVirtualX->GetFillStyle();
 
@@ -146,7 +146,7 @@ AliMpIteratorPainter::Paint(Option_t*)
     gVirtualX->SetTextSize(10);
     gVirtualX->SetTextAlign(22);
     gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
-                    Form("%d",pad->GetLocation().GetSecond()));
+                    Form("%d",pad->GetManuChannel()));
     
     gVirtualX->SetTextSize(textSize);
     

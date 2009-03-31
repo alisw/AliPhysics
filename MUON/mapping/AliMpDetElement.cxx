@@ -310,7 +310,7 @@ AliMpDetElement::AddManu(Int_t manuId)
   
   for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
   {
-    if ( seg->PadByLocation(AliMpIntPair(manuId,i),kFALSE).IsValid() )
+    if ( seg->PadByLocation(manuId,i,kFALSE).IsValid() )
     {
       ++n;
       fTrackerChannels.Add((Long_t)AliMpPadUID::BuildUniqueID(fId,manuId,i),

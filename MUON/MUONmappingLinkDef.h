@@ -12,11 +12,9 @@
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
 #pragma link C++ class  AliMpPad+;
-#pragma link C++ class  AliMpPadPair+;
 #pragma link C++ class  AliMpVIndexed+;
 #pragma link C++ class  AliMpVSegmentation+;
 #pragma link C++ class  AliMpVPadIterator+;
-#pragma link C++ class  AliMpPadIteratorPtr+;
 #pragma link C++ class  AliMpDataProcessor+;
 #pragma link C++ class  AliMpDataStreams+;
 #pragma link C++ class  AliMpDataMap+;
@@ -63,7 +61,6 @@
 #pragma link C++ class  AliMpSectorAreaHPadIterator+;
 #pragma link C++ class  AliMpSectorAreaVPadIterator+;
 #pragma link C++ class  AliMpSectorSegmentation+;
-#pragma link C++ class  AliMpNeighboursPadIterator+;
 #pragma link C++ class  AliMpZone+;
 #pragma link C++ class  AliMpSubZone+;
 #pragma link C++ class  AliMpRow+;

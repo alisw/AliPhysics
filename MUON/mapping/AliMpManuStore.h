@@ -17,7 +17,7 @@
 
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 #include <TString.h>
 #include <TExMap.h>
@@ -46,8 +46,8 @@ class AliMpManuStore : public  TObject {
     Int_t  NofManus() const;
     Int_t  NofManus(Int_t detElemId) const;
 
-    Int_t  GetManuSerial(Int_t detElemId, Int_t manuId) const;
-    AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
+    Int_t    GetManuSerial(Int_t detElemId, Int_t manuId) const;
+    MpPair_t GetDetElemIdManu(Int_t manuSerial) const;
 
   private:
     AliMpManuStore(const AliMpDataStreams& dataStreams);

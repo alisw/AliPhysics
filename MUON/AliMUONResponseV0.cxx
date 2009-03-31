@@ -328,9 +328,9 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
       {
         // If we're above threshold, then we create a digit,
         // and fill it with relevant information, including electronics.
-        AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation().GetFirst(),
-                                           pad.GetLocation().GetSecond(),cath);
-        d->SetPadXY(pad.GetIndices().GetFirst(),pad.GetIndices().GetSecond());
+        AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetManuId(),
+                                           pad.GetManuChannel(),cath);
+        d->SetPadXY(pad.GetIx(),pad.GetIy());
         d->SetCharge(icharge);
         digits.Add(d);   
       }       

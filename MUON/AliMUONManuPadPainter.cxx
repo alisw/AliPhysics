@@ -155,7 +155,7 @@ AliMUONManuPadPainter::NameAtPosition(Double_t x, Double_t y) const
   
   if ( pad.IsValid() )
   {  
-    name = Form("%s%d",PathName().Data(),pad.GetLocation().GetSecond());
+    name = Form("%s%d",PathName().Data(),pad.GetManuChannel());
   }
   
   return name;
@@ -182,7 +182,7 @@ AliMUONManuPadPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex
   
   if ( pad.IsValid() ) 
   {
-    Double_t value = data.Channel(fDetElemId,fManuId,pad.GetLocation().GetSecond(),dataIndex);
+    Double_t value = data.Channel(fDetElemId,fManuId,pad.GetManuChannel(),dataIndex);
   
     return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
   }
@@ -210,8 +210,7 @@ AliMUONManuPadPainter::DrawHistogramClone(Double_t* values) const
   
   AliMUONTrackerDataHistogrammer tdh(*data,0,-1);
 
-  fHistogram = tdh.CreateChannelHisto(fDetElemId, fManuId,
-                                      pad.GetLocation().GetSecond());
+  fHistogram = tdh.CreateChannelHisto(fDetElemId, fManuId, pad.GetManuChannel());
   if (fHistogram) 
   {
     new TCanvas();
@@ -325,7 +324,7 @@ AliMUONManuPadPainter::PaintOutline(Int_t color, Int_t, Double_t x, Double_t y)
       // find pad to be drawn
       AliMpPad pad = PadByPosition(x,y);
       
-      Int_t id = AliMUONVDigit::BuildUniqueID(fDetElemId,fManuId,pad.GetLocation().GetSecond(),cathode);
+      Int_t id = AliMUONVDigit::BuildUniqueID(fDetElemId,fManuId,pad.GetManuChannel(),cathode);
 
       PaintPad(id);        
     }

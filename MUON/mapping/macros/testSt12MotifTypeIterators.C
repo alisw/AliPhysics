@@ -13,6 +13,7 @@
 #include "AliMpMotifReader.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifTypePadIterator.h"
+#include "AliMpEncodePair.h"
 
 #include <Riostream.h>
 #include <TCanvas.h>
@@ -115,10 +116,10 @@ void testMotifTypeIterators(AliMq::Station12Type station, AliMp::PlaneType plane
     AliMpMotifTypePadIterator it = AliMpMotifTypePadIterator(mt);
 
     for (it.First(); ! it.IsDone(); it.Next()) {
-      cout << "Iterator " << num << ' '<< it.CurrentItem().GetIndices() << endl;
+      cout << "Iterator " << num << ' ';
+      AliMp::PairPut(cout, it.CurrentItem().GetIndices()) << endl;
       ++num;
-      histo->Fill(it.CurrentItem().GetIndices().GetFirst(),
-                  it.CurrentItem().GetIndices().GetSecond(),num);
+      histo->Fill(it.CurrentItem().GetIx(), it.CurrentItem().GetIy(),num);
     }
 
     //delete mt;

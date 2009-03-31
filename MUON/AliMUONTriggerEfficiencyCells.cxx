@@ -683,7 +683,7 @@ Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* cdbStorage,
 	  AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));
 	Int_t nStrips=0;
 	for (Int_t iStrip = 0; iStrip < 16; ++iStrip) {
-	  AliMpPad pad = seg->PadByLocation(AliMpIntPair(iBoard,iStrip),kFALSE);
+	  AliMpPad pad = seg->PadByLocation(iBoard,iStrip,kFALSE);
 	  if (!pad.IsValid()) continue;
 	  nStrips++;
 	  padFired = (TH3F*)fFiredStrips->At(iCath);

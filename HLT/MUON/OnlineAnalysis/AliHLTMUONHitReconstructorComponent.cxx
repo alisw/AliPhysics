@@ -962,19 +962,19 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 				for (Int_t iX = 0; iX<= maxIX ; iX++)
 				for (Int_t iY = 0; iY<= maxIY ; iY++)
 				{
-					if (not seg->HasPad(AliMpIntPair(iX,iY))) continue;
+					if (not seg->HasPadByIndices(iX,iY)) continue;
 
-					AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY), kFALSE);
+					AliMpPad pad = seg->PadByIndices(iX,iY, kFALSE);
 					
 					// Getting Manu id
-					manuId = pad.GetLocation().GetFirst();
+					manuId = pad.GetManuId();
 					manuId &= 0x7FF; // 11 bits 
 					if(!calibData.Pedestals(detElemId, manuId)) continue;
 			
 					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
 					
 					// Getting channel id
-					channelId =  pad.GetLocation().GetSecond();
+					channelId =  pad.GetManuChannel();
 					channelId &= 0x3F; // 6 bits
 					
 					idManuChannel = buspatchId << 11;

@@ -25,7 +25,6 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpExMap.h"
-#include "AliMpIntPair.h"
 #include "AliMpExMapIterator.h"
 
 #include "AliLog.h"
@@ -57,27 +56,6 @@ const TString  AliMpExMap::fgkCharacterMap
 // static methods
 //
 
-//______________________________________________________________________________
-Long_t  AliMpExMap::GetIndex(const AliMpIntPair& pair)
-{
-/// Convert the pair of integers to integer.
-
-  if ( pair.GetFirst() >= 0xFFFF || pair.GetSecond() >= 0xFFFF ) 
-  {
-    AliFatalClass("Index out of limit");
-    return 0;
-  }
-  
-  return 1 + ( pair.GetFirst() | ( pair.GetSecond() << 16 ) );
-           
-//  if (pair.GetFirst() >= fgkSeparator1 || pair.GetSecond() >= fgkSeparator1) {
-//    AliFatalClass("Index out of limit.");
-//    exit(1); 
-//  }  
-//      
-//  return pair.GetFirst()*fgkSeparator1 + pair.GetSecond() + 1;
-}  
-
 //_____________________________________________________________________________
 Long_t  AliMpExMap::GetIndex(const TString& s)
 {
@@ -94,17 +72,6 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
   
   return index;
 }
-
-//______________________________________________________________________________
-AliMpIntPair  AliMpExMap::GetPair(Long_t index)
-{
-/// Convert the integer index to the pair of integers.
-
-//  return AliMpIntPair((index-1)/fgkSeparator1,(index-1)%fgkSeparator1);
-  return AliMpIntPair( 
-                       ( (index-1) & 0xFFFF ) ,
-                       ( (index-1) & 0xFFFF0000 ) >> 16 );
-}  
 
 //_____________________________________________________________________________
 TString  AliMpExMap::GetString(Long_t index)
@@ -177,6 +144,47 @@ AliMpExMap::~AliMpExMap()
 {
 /// Destructor 
 }
+
+//
+// private static methods
+//
+
+//______________________________________________________________________________
+Long_t  AliMpExMap::GetIndex(Int_t first, Int_t second)
+{
+/// Convert the pair of integers to integer.
+
+  if ( first >= 0xFFFF || second >= 0xFFFF ) 
+  {
+    AliFatalClass("Index out of limit");
+    return 0;
+  }
+  
+  return 1 + ( first | ( second << 16 ) );
+           
+//  if (pair.GetFirst() >= fgkSeparator1 || pair.GetSecond() >= fgkSeparator1) {
+//    AliFatalClass("Index out of limit.");
+//    exit(1); 
+//  }  
+//      
+//  return pair.GetFirst()*fgkSeparator1 + pair.GetSecond() + 1;
+}  
+
+//______________________________________________________________________________
+Int_t  AliMpExMap::GetPairFirst(Long_t index) 
+{
+/// Return first integer from index (encoded pair)
+
+  return (index-1) & 0xFFFF ;
+}  
+
+//______________________________________________________________________________
+Int_t  AliMpExMap::GetPairSecond(Long_t index)
+{
+/// Return second integer from index (encoded pair)
+
+  return ( (index-1) & 0xFFFF0000 ) >> 16 ;
+}  
 
 //
 // private methods
@@ -272,12 +280,12 @@ void AliMpExMap::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-void AliMpExMap::Add(const AliMpIntPair& key, TObject* object)
+void AliMpExMap::Add(Int_t keyFirst, Int_t keySecond, TObject* object)
 {
 /// Add object with its key to the map and arrays
   
-  fMap.Add(GetIndex(key), (Long_t)object);
-  AddKey(GetIndex(key));
+  fMap.Add(GetIndex(keyFirst, keySecond), (Long_t)object);
+  AddKey(GetIndex(keyFirst, keySecond));
   fObjects.Add(object);
 }
 
@@ -345,12 +353,12 @@ AliMpExMap::CreateIterator() const
 }
 
 //_____________________________________________________________________________
-TObject* AliMpExMap::GetValue(const AliMpIntPair& key) const
+TObject* AliMpExMap::GetValue(Int_t keyFirst, Int_t keySecond) const
 {
 /// Return the object associated with the given key if found,
 /// otherwise return 0
 
-  return reinterpret_cast<TObject*>(fMap.GetValue(GetIndex(key)));
+  return reinterpret_cast<TObject*>(fMap.GetValue(GetIndex(keyFirst, keySecond)));
 }
 
 //_____________________________________________________________________________

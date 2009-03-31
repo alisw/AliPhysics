@@ -15,7 +15,7 @@
 
 #include <TObject.h>
 
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 #ifndef ROOT_TObjArray
 #  include <TObjArray.h>
@@ -42,16 +42,18 @@ class AliMpMotifType : public TObject
     // find methods
     AliMpConnection *FindConnectionByPadNum(Int_t padNum) const;
     AliMpConnection *FindConnectionByLocalIndices(
-                         const AliMpIntPair& localIndices) const;
+                         MpPair_t localIndices) const;
+    AliMpConnection *FindConnectionByLocalIndices(
+                         Int_t localIx, Int_t localIy) const;
     AliMpConnection *FindConnectionByGassiNum(Int_t gassiNum) const;
     AliMpConnection *FindConnectionByKaptonNum(Int_t kaptonNum) const;
     AliMpConnection *FindConnectionByBergNum(Int_t bergNum) const;
     
-    AliMpIntPair FindLocalIndicesByPadNum(Int_t padNum) const;
-    AliMpIntPair FindLocalIndicesByGassiNum(Int_t gassiNum) const;
-    AliMpIntPair FindLocalIndicesByKaptonNum(Int_t kaptonNum) const;
-    AliMpIntPair FindLocalIndicesByBergNum(Int_t bergNum) const;
-    AliMpIntPair FindLocalIndicesByConnection(
+    MpPair_t FindLocalIndicesByPadNum(Int_t padNum) const;
+    MpPair_t FindLocalIndicesByGassiNum(Int_t gassiNum) const;
+    MpPair_t FindLocalIndicesByKaptonNum(Int_t kaptonNum) const;
+    MpPair_t FindLocalIndicesByBergNum(Int_t bergNum) const;
+    MpPair_t FindLocalIndicesByConnection(
                          const AliMpConnection* connection) const;
     
     // set methods
@@ -76,7 +78,8 @@ class AliMpMotifType : public TObject
     
     TString PadName(Int_t padNum) const;
 
-    Bool_t HasPadByLocalIndices(const AliMpIntPair& localIndices) const;
+    Bool_t HasPadByLocalIndices(MpPair_t localIndices) const;
+    Bool_t HasPadByLocalIndices(Int_t localIx, Int_t localIy) const;
 
     Bool_t HasPadByManuChannel(Int_t manuChannel) const;
 

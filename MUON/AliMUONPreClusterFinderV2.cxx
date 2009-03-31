@@ -120,7 +120,7 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   
   // Check neighbours
   TObjArray neighbours;
-  AliMpPad p = fkSegmentations[pad->Cathode()]->PadByIndices(AliMpIntPair(pad->Ix(),pad->Iy()),kTRUE);
+  AliMpPad p = fkSegmentations[pad->Cathode()]->PadByIndices(pad->Ix(),pad->Iy(),kTRUE);
   Int_t nn = fkSegmentations[pad->Cathode()]->GetNeighbours(p,neighbours);
   for (Int_t in = 0; in < nn; ++in) 
   {
@@ -131,8 +131,8 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
     
     while ( ( p2 = static_cast<AliMUONPad*>(next2()) ) )
     {
-        if ( !p2->IsUsed() && p2->Ix()==p1->GetIndices().GetFirst() 
-             && p2->Iy() == p1->GetIndices().GetSecond() &&
+        if ( !p2->IsUsed() && p2->Ix()==p1->GetIx() 
+             && p2->Iy() == p1->GetIy() &&
              p2->Cathode() == pad->Cathode() )
         {
           AddPad(cluster,p2);

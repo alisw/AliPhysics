@@ -24,6 +24,7 @@
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatSegmentation.h"
+#include "AliMpEncodePair.h"
 
 #include "Riostream.h"
 #include "TMath.h"
@@ -43,13 +44,13 @@ ClassImp(AliMpPCBPadIterator)
 
 //_____________________________________________________________________________
 AliMpPCBPadIterator::AliMpPCBPadIterator(const AliMpSlat* slat,
-                                                     const AliMpArea& area)
+                                         const AliMpArea& area)
 : AliMpVPadIterator(),
 fkSlat(slat),
 fSlatSegmentation(new AliMpSlatSegmentation(slat)),
-fMinIndices(),
-fMaxIndices(),
-fOffset(0,0),
+fMinIndices(0),
+fMaxIndices(0),
+fOffset(0),
 fCurrentPad(),
 fIsDone(kTRUE)
 {
@@ -131,15 +132,15 @@ AliMpPCBPadIterator::CropArea(const AliMpArea& area)
   Int_t iymax = first->Iymin() + TMath::CeilNint((ymax-first->Ymin())/first->PadSizeY()) - 1;
   
   
-  fMinIndices.Set(ixmin,iymin);
-  fMaxIndices.Set(ixmax,iymax);
+  fMinIndices = AliMp::Pair(ixmin,iymin);
+  fMaxIndices = AliMp::Pair(ixmax,iymax);
   
   AliDebug(3,Form("Paddified cropped area (%d,%d)->(%d,%d) %d,%d ; %d,%d",
                   ixmin,iymin,ixmax,iymax,
-                  fMinIndices.GetFirst(),fMinIndices.GetSecond(),
-                  fMaxIndices.GetFirst(),fMaxIndices.GetSecond()));
+                  AliMp::PairFirst(fMinIndices),AliMp::PairSecond(fMinIndices),
+                  AliMp::PairFirst(fMaxIndices),AliMp::PairSecond(fMaxIndices)));
   
-  return fMinIndices.IsValid() && fMaxIndices.IsValid();
+  return fMinIndices >= 0 && fMaxIndices >= 0;
 }
 
 //_____________________________________________________________________________
@@ -161,23 +162,21 @@ AliMpPCBPadIterator::First()
   ///
   
   AliDebug(3,Form("area = (%d,%d)->(%d,%d)",
-                  fMinIndices.GetFirst(),fMinIndices.GetSecond(),
-                  fMaxIndices.GetFirst(),fMaxIndices.GetSecond()));
+                  AliMp::PairFirst(fMinIndices),AliMp::PairSecond(fMinIndices),
+                  AliMp::PairFirst(fMaxIndices),AliMp::PairSecond(fMaxIndices)));
   fOffset = fMinIndices;
   fIsDone = kFALSE;
-  SetPad(fCurrentPad,fOffset);
-  if (!fCurrentPad.IsValid()) Next();
-  if ( !fCurrentPad.IsValid() ) 
+  SetPad(fCurrentPad,AliMp::PairFirst(fOffset),AliMp::PairSecond(fOffset));
+  if ( ! fCurrentPad.IsValid() ) Next();
+  if ( ! fCurrentPad.IsValid() ) 
   {
     // did not find any valid pad in there, bailing out.
     fIsDone = kTRUE;
     AliError(Form("Could not initiate iterator for slat %s. "
                   " Please check the area you gave : %d,%d to %d,%d",
                   fkSlat->GetName(),
-                  fMinIndices.GetFirst(),
-                  fMinIndices.GetSecond(),
-                  fMaxIndices.GetFirst(),
-                  fMaxIndices.GetSecond()));
+                  AliMp::PairFirst(fMinIndices),AliMp::PairSecond(fMinIndices),
+                  AliMp::PairFirst(fMaxIndices),AliMp::PairSecond(fMaxIndices)));
     return;
   }
 }
@@ -192,13 +191,13 @@ AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy)
   
   ++ix;
   
-  if ( ix > fMaxIndices.GetFirst() )
+  if ( ix > AliMp::PairFirst(fMaxIndices) )
   {
     // Go back leftmost position...
-    ix = fMinIndices.GetFirst();
+    ix = AliMp::PairFirst(fMinIndices);
     // ... and up
     ++iy;
-    if ( iy > fMaxIndices.GetSecond() )
+    if ( iy > AliMp::PairSecond(fMaxIndices) )
     {
       return false;
     }
@@ -214,7 +213,7 @@ AliMpPCBPadIterator::Invalidate()
   ///
   /// Invalidate the iterator.
   ///
-  fOffset = AliMpIntPair::Invalid();
+  fOffset = 0;
   fCurrentPad = AliMpPad::Invalid();
   fIsDone = kTRUE;
 }
@@ -245,10 +244,10 @@ AliMpPCBPadIterator::Next()
   
   AliMpPad pad(fCurrentPad);
   int n = 0;
-  Int_t ix(fOffset.GetFirst());
-  Int_t iy(fOffset.GetSecond());
+  Int_t ix(AliMp::PairFirst(fOffset));
+  Int_t iy(AliMp::PairSecond(fOffset));
   
-  while ( ( pad == fCurrentPad || !pad.IsValid() ) && n<100 )
+  while ( ( pad == fCurrentPad || ! pad.IsValid() ) && n<100 )
   {
     ++n;
     if (GetNextPosition(ix,iy)==kFALSE) 
@@ -256,7 +255,7 @@ AliMpPCBPadIterator::Next()
       Invalidate();
       return;
     } 
-    SetPad(pad,AliMpIntPair(ix,iy));
+    SetPad(pad,ix,iy);
   }
   if ( n>=100 )
   {
@@ -273,23 +272,23 @@ AliMpPCBPadIterator::Print(Option_t*) const
   cout << Form("fkSlat=%p fSlatSegmentation=%p (%s)",fkSlat,fSlatSegmentation,
                fkSlat->GetName()) << endl
   << Form("minIndices=(%d,%d) maxIndices=(%d,%d)",
-          fMinIndices.GetFirst(),fMinIndices.GetSecond(),
-          fMaxIndices.GetFirst(),fMaxIndices.GetSecond()) << endl
+          AliMp::PairFirst(fMinIndices),AliMp::PairSecond(fMinIndices),
+          AliMp::PairFirst(fMaxIndices),AliMp::PairSecond(fMaxIndices)) << endl
   << Form("currentOffset=(%d,%d) isdone=%d currentpad=",
-          fOffset.GetFirst(),fOffset.GetSecond(),IsDone()) << endl;
+          AliMp::PairFirst(fOffset),AliMp::PairSecond(fOffset)) << endl;
   fCurrentPad.Print();
 }
 
 //_____________________________________________________________________________
 void
-AliMpPCBPadIterator::SetPad(AliMpPad& pad, const AliMpIntPair& indices)
+AliMpPCBPadIterator::SetPad(AliMpPad& pad, Int_t ix, Int_t iy)
 {
   ///
   /// Sets the current pad.
   ///
-  pad = fSlatSegmentation->PadByIndices(indices,kFALSE);
+  pad = fSlatSegmentation->PadByIndices(ix, iy,kFALSE);
   if (pad.IsValid())
   {
-    fOffset = indices;
+    fOffset = AliMp::Pair(ix,iy);
   }
 }

@@ -91,10 +91,9 @@ void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane)
         for ( Int_t gassNum=0; gassNum<64; gassNum++ ) {
           if (motifPos->GetMotif()->GetMotifType()->FindConnectionByGassiNum(gassNum)){
           
-            AliMpPad pad = segmentation.PadByLocation(AliMpIntPair(motifPos->GetID(),gassNum));
+            AliMpPad pad = segmentation.PadByLocation(motifPos->GetID(),gassNum);
             if (pad != AliMpPad::Invalid()) {
-              histo->Fill(pad.GetIndices().GetFirst(),
-                          pad.GetIndices().GetSecond());
+              histo->Fill(pad.GetIx(), pad.GetIy());
               histo2->Fill(pad.Position().X(),
                            pad.Position().Y());
             }

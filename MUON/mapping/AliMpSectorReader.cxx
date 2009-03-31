@@ -43,7 +43,6 @@
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpConnection.h"
-#include "AliMpIntPair.h"
 #include "AliMpDirection.h"
 #include "AliMpConstants.h"
 
@@ -272,7 +271,7 @@ void AliMpSectorReader::ReadRowSegmentsData(istream& in,
     
     // Create row segment and add it to its zone, row   
     AliMpVRowSegment* rowSegment
-      = new AliMpRowSegment(row, motif, AliMpIntPair(offX, offY), nofMotifs, 
+      = new AliMpRowSegment(row, motif, offX, offY, nofMotifs, 
                         firstMotifPositionId, firstMotifPositionDId);
 			
     subZone->AddRowSegment(rowSegment);

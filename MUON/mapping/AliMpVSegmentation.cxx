@@ -58,21 +58,6 @@ AliMpVSegmentation::~AliMpVSegmentation()
 }
 
 //_____________________________________________________________________________
-AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1, 
-                                          const TVector2& position2) const
-{
-/// Return a pair of pads with specified position.
-/// If both pads are identical, the second pad in pair is set to invalid.
-
-  AliMpPad pad1 = PadByPosition(position1, false);
-  AliMpPad pad2 = PadByPosition(position2, false);
-				     
-  if (pad1 == pad2) pad2 = AliMpPad::Invalid();				     
-
-  return AliMpPadPair(pad1, pad2);
-}  
-
-//_____________________________________________________________________________
 Int_t 
 AliMpVSegmentation::GetNeighbours(const AliMpPad& pad, 
                                   TObjArray& neighbours,
@@ -185,92 +170,23 @@ AliMpVSegmentation::GetNeighbours(const AliMpPad& pad,
 //
 
 //_____________________________________________________________________________
-AliMpPadPair AliMpVSegmentation::PadsUp(const AliMpPad& pad) const
-{
-/// Return a pair of pads neighbouring up to the specified pad.
-/// If there is only one neighbouring pad,
-/// the second pad in pair is invalid.
-
-  TVector2 position1 
-    = pad.Position()+ TVector2((-1.)*AliMpConstants::LengthStep(), 
-	                       pad.Dimensions().Y()+ AliMpConstants::LengthStep());
-  TVector2 position2 
-    = pad.Position()+ TVector2(AliMpConstants::LengthStep(), 
-	                       pad.Dimensions().Y()+ AliMpConstants::LengthStep());
-			       
-  return FindPads(position1, position2);
-}
-
-//_____________________________________________________________________________
-AliMpPadPair AliMpVSegmentation::PadsDown(const AliMpPad& pad) const
-{
-/// Return a pair of pads neighbouring down to the specified pad.
-/// If there is only one neighbouring pad,
-/// the second pad in pair is invalid.
-
-  TVector2 position1 
-    = pad.Position()- TVector2(AliMpConstants::LengthStep(), 
-	                       pad.Dimensions().Y()+ AliMpConstants::LengthStep());
-
-  TVector2 position2
-    = pad.Position()- TVector2((-1.)*AliMpConstants::LengthStep(), 
-	                       pad.Dimensions().Y()+ AliMpConstants::LengthStep());
-				     
-  return FindPads(position1, position2);
-}
-
-//_____________________________________________________________________________
-AliMpPadPair AliMpVSegmentation::PadsLeft(const AliMpPad& pad) const
-{
-/// Return a pair of pads neighbouring left to the specified pad.
-/// If there is only one neighbouring pad,
-/// the second in pair is invalid.
-
-  TVector2 position1 
-    = pad.Position() - TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),
-			        AliMpConstants::LengthStep()); 
-  TVector2 position2
-    = pad.Position() - TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),
-			        (-1.)*AliMpConstants::LengthStep()); 
-
-  return FindPads(position1, position2);
-}
-
-//_____________________________________________________________________________
-AliMpPadPair AliMpVSegmentation::PadsRight(const AliMpPad& pad) const
-{
-/// Return a pair of pads neighbouring right to the specified pad.
-/// If there is only one neighbouring pad,
-/// the second in pair is invalid.
-
-  TVector2 position1 
-    = pad.Position() + TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),
-			        (-1.)*AliMpConstants::LengthStep()); 
-  TVector2 position2
-    = pad.Position() + TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),
-		                AliMpConstants::LengthStep()); 
-				     
-  return FindPads(position1, position2);
-}
-
-//_____________________________________________________________________________
 Bool_t 
-AliMpVSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+AliMpVSegmentation::HasPadByIndices(Int_t ix, Int_t iy) const
 {
   /// Default implementation. Must be overwritten if can be made more
   /// efficient in the child class
   
-  return (PadByIndices(indices,kFALSE) != AliMpPad::Invalid());
+  return ( PadByIndices(ix, iy, kFALSE) != AliMpPad::Invalid() );
 }
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpVSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+AliMpVSegmentation::HasPadByLocation(Int_t manuId, Int_t manuChannel) const
 {
   /// Default implementation. Must be overwritten if can be made more
   /// efficient in the child class
   
-  return (PadByLocation(location,kFALSE) != AliMpPad::Invalid());
+  return (PadByLocation(manuId, manuChannel, kFALSE) != AliMpPad::Invalid());
 }
 
 //_____________________________________________________________________________

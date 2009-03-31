@@ -26,6 +26,8 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpConnection.h"
+#include "AliMpEncodePair.h"
+
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -33,60 +35,73 @@ ClassImp(AliMpConnection)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
-		                 Int_t gassiNum, const AliMpIntPair& localIndices) 
+AliMpConnection::AliMpConnection(Int_t padNum, 
+                                 Int_t bergNum,
+                                 Int_t kaptonNum,
+		                 Int_t gassiNum, 
+                                 MpPair_t localIndices) 
   : TObject(),
-    fPadNum(padNum),
     fBergNum(bergNum),
     fKaptonNum(kaptonNum),
     fGassiNum(gassiNum),
+    fLocalIndices(localIndices),
     fOwner(0)
 {
 /// Standard constructor
 
-      SetUniqueID(localIndices.GetFirst() | ( localIndices.GetSecond() << 16 ));
-
-      AliDebug(1,Form("this=%p padNum=%d bergNum=%d kaptonNum=%d gassiNum=%d",
-                      this,padNum,bergNum,kaptonNum,gassiNum));
-
+  AliDebug(1,Form("this=%p padNum=%d bergNum=%d kaptonNum=%d gassiNum=%d",
+                   this,padNum,bergNum,kaptonNum,gassiNum));
+  SetUniqueID(padNum);
 }
 
 //_____________________________________________________________________________
+AliMpConnection::AliMpConnection(TRootIOCtor* /*ioCtor*/) 
+  : TObject(),
+    fBergNum(),
+    fKaptonNum(),
+    fGassiNum(),
+    fLocalIndices(),
+    fOwner()
+{
+/// Root IO constructor
+
+  AliDebug(1,Form("this=%p",this));
+}
+/*
+//_____________________________________________________________________________
 AliMpConnection::AliMpConnection() 
   : TObject(),
-    fPadNum(-1),
     fBergNum(-1),
     fKaptonNum(-1),
     fGassiNum(-1),
+    fLocalIndices(-1)
     fOwner(0)
 {
 /// Default constructor
-      AliDebug(1,Form("this=%p",this));
-}
 
+  AliDebug(1,Form("this=%p",this));
+}
+*/
 //_____________________________________________________________________________
 AliMpConnection::~AliMpConnection() 
 {
 /// Destructor  
+
   AliDebug(1,Form("this=%p"));
 }
 
-/*
 //_____________________________________________________________________________
-void
-AliMpConnection::SetLocalIndices(const AliMpIntPair& pair)
+Int_t  AliMpConnection::GetLocalIx() const
 {
-  SetUniqueID(pair.GetFirst() | ( pair.GetSecond() << 16 ));
-}
-*/
+/// Return local ix
 
-//_____________________________________________________________________________
-AliMpIntPair AliMpConnection::LocalIndices() const
+  return AliMp::PairFirst(fLocalIndices);
+}  
+
+Int_t  AliMpConnection::GetLocalIy() const
 {
-/// Return local indices 
+/// Return local iy
 
-  Int_t f = GetUniqueID() & 0xFFFF;
-  Int_t s = ( ( GetUniqueID() & 0xFFFF0000 ) >> 16);
-  return AliMpIntPair(f,s);
-}
+  return AliMp::PairSecond(fLocalIndices);
+}  
 

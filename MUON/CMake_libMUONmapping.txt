@@ -11,8 +11,7 @@ set(SRCS
 	 mapping/AliMpConstants.cxx  
 	 mapping/AliMpFiles.cxx  
 	 mapping/AliMpPad.cxx  
-	 mapping/AliMpPadIteratorPtr.cxx  
-	 mapping/AliMpPadPair.cxx  
+	 mapping/AliMpEncodePair.cxx
 	 mapping/AliMpVIndexed.cxx  
 	 mapping/AliMpVPadIterator.cxx  
 	 mapping/AliMpVSegmentation.cxx
@@ -39,7 +38,6 @@ set(SRCS ${SRCS}
 # Category sector
 #
 set(SRCS ${SRCS}
-	 mapping/AliMpNeighboursPadIterator.cxx  
 	 mapping/AliMpPadRow.cxx  
 	 mapping/AliMpPadRowLSegment.cxx  
 	 mapping/AliMpPadRowRSegment.cxx  

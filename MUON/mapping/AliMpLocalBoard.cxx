@@ -24,7 +24,7 @@
 
 #include "AliMpLocalBoard.h"
 #include "AliMpConstants.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -177,7 +177,7 @@ Int_t  AliMpLocalBoard::GetSwitch(Int_t index) const
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpLocalBoard::GetPosition() const
+MpPair_t AliMpLocalBoard::GetPosition() const
 {
 /// gives position of the local board in (line, col)
 
@@ -185,6 +185,6 @@ AliMpIntPair AliMpLocalBoard::GetPosition() const
     Int_t iLine = boardName[4] - '0';
     Int_t iCol = boardName[2] - '0';
 
-    return (AliMpIntPair(iLine, iCol));
+    return AliMp::Pair(iLine, iCol);
 }
 

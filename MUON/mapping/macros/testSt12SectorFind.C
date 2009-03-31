@@ -52,7 +52,7 @@ void testSectorFind(AliMq::Station12Type station, AliMp::PlaneType plane)
     cout<<"Verifying column "<<i<<"....."<<endl;
 
     for (Int_t j=0;j<230;++j)
-      segmentation.CircleTest(AliMpIntPair(i,j));    
+      segmentation.CircleTest(i,j);    
   }
 }
 

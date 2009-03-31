@@ -262,7 +262,7 @@ AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
     
     AliMp::CathodType cathodeType = de->GetCathodType(seg->PlaneType());
 
-    AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,channelId),kFALSE);
+    AliMpPad pad = seg->PadByLocation(manuId,channelId,kFALSE);
 
     if (!pad.IsValid())
     {
@@ -281,10 +281,9 @@ AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
       continue;
     }
     
-    digit->SetPadXY(pad.GetIndices().GetFirst(),
-                   pad.GetIndices().GetSecond());
+    digit->SetPadXY(pad.GetIx(),pad.GetIy());
     
-	  digit->SetADC(charge);
+    digit->SetADC(charge);
 
   }
   
@@ -542,7 +541,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
             Int_t offset = 0;
             if (iCath && localBoard->GetSwitch(6)) offset = -8;
             
-            AliMpPad pad = seg->PadByLocation(AliMpIntPair(nBoard,ibitxy+offset),kTRUE);
+            AliMpPad pad = seg->PadByLocation(nBoard,ibitxy+offset,kTRUE);
                         
             if (!pad.IsValid()) 
             {
@@ -551,8 +550,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
               continue;
             }
 
-            n = pad.GetLocation(0).GetFirst(); // always take first location so that digits are not inserted several times
-	    b = pad.GetLocation(0).GetSecond();
+            n = pad.GetLocalBoardId(0); // always take first location so that digits are not inserted several times
+	    b = pad.GetLocalBoardChannel(0);
 
 	    AliDebug(1,Form("Using localBoard %d ixy %d instead of %d,%d",
 			    n,b,nBoard,ibitxy));
@@ -566,8 +565,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
 		continue;
             }
             
-            Int_t padX = pad.GetIndices().GetFirst();
-            Int_t padY = pad.GetIndices().GetSecond();
+            Int_t padX = pad.GetIx();
+            Int_t padY = pad.GetIy();
             
             // fill digit
             digit->SetPadXY(padX,padY);

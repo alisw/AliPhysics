@@ -748,35 +748,35 @@ AliMUONPainterContourMaker::GenerateManuContour(const char* name,
       
       if ( connection ) 
       {
-        AliMpIntPair indices = connection->LocalIndices();
+        Int_t ix = connection->GetLocalIx();
+        Int_t iy = connection->GetLocalIy();
         Bool_t left(kTRUE);
         Bool_t right(kTRUE);
         Bool_t top(kTRUE);
         Bool_t bottom(kTRUE);
         
-        if ( !motifType->FindConnectionByLocalIndices(indices+AliMpIntPair(1,0)) )
+        if ( ! motifType->FindConnectionByLocalIndices(ix+1, iy) )
         {
           right = kFALSE;
         }
-        if ( !motifType->FindConnectionByLocalIndices(indices+AliMpIntPair(-1,0)) )
+        if ( ! motifType->FindConnectionByLocalIndices(ix-1, iy) )
         {
           left = kFALSE;
         }
-        if ( !motifType->FindConnectionByLocalIndices(indices+AliMpIntPair(0,1)) )
+        if ( ! motifType->FindConnectionByLocalIndices(ix, iy+1) )
         {
           top = kFALSE;
         }
-        if ( !motifType->FindConnectionByLocalIndices(indices+AliMpIntPair(0,-1)) )
+        if ( ! motifType->FindConnectionByLocalIndices(ix, iy-1) )
         {
           bottom = kFALSE;
         }
         
         AliDebug(3,Form("indices=(%3d,%3d) L %d R %d T %d B %d",
-                        indices.GetFirst(),indices.GetSecond(),
-                        left,right,top,bottom));
+                        ix,iy, left,right,top,bottom));
         
-        TVector2 position = motif->PadPositionLocal(indices);
-        TVector2 dimensions = motif->GetPadDimensions(indices);
+        TVector2 position = motif->PadPositionLocal(ix,iy);
+        TVector2 dimensions = motif->GetPadDimensionsByIndices(ix, iy);
 
         if ( !left  || !right || !top  || !bottom )
         {

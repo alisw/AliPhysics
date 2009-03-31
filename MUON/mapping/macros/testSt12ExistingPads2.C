@@ -63,20 +63,18 @@ void testExistingPads2(AliMq::Station12Type station, AliMp::PlaneType plane,
   if ( sector->GetDirection() == AliMp::kX )
     for (Int_t i=1; i<segmentation->MaxPadIndexX()+1; i++) {
       for (Int_t j=1; j<segmentation->MaxPadIndexY()+1; j++) {
-        AliMpIntPair indices(i,j);
-        if ( segmentation->HasPad(indices) ) 
+        if ( segmentation->HasPadByIndices(i,j) ) 
           out1 << std::setw(4) << ++counter1 << "  "
-	       << segmentation->PadByIndices(indices) << endl;;
+	       << segmentation->PadByIndices(i,j) << endl;;
       }
     }
 
   if ( sector->GetDirection() == AliMp::kY )
     for (Int_t j=1; j<segmentation->MaxPadIndexY()+1; j++) {
       for (Int_t i=1; i<segmentation->MaxPadIndexX()+1; i++) {
-        AliMpIntPair indices(i,j);
-        if ( segmentation->HasPad(indices) ) 
+        if ( segmentation->HasPadByIndices(i,j) ) 
           out1 << std::setw(4) << ++counter1 << "  "
-	       << segmentation->PadByIndices(indices) << endl;;
+	       << segmentation->PadByIndices(i,j) << endl;;
       }
     }
   

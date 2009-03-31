@@ -16,7 +16,7 @@
 #include <TString.h>
 
 #include "AliMpArrayI.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 class AliMpFrtCrocusConstants : public  TObject {
 
@@ -31,7 +31,7 @@ class AliMpFrtCrocusConstants : public  TObject {
     // get methods
     static Int_t  GetNofDsps();
     static Int_t  GetNofBusPatches();    
-    static AliMpIntPair GetLinkPortId(Int_t index);
+    static MpPair_t GetLinkPortId(Int_t index);
     
     // return VME top address
     static UInt_t GetTopAddress(Int_t id);

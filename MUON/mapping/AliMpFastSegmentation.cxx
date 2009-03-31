@@ -36,6 +36,8 @@
 #include "AliMpSector.h"
 #include "AliMpSlat.h"
 #include "AliMpVPadIterator.h"
+#include "AliMpEncodePair.h"
+
 #include <TArrayI.h>
 
 /// \cond CLASSIMP
@@ -116,11 +118,11 @@ fPosition()
 
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
-      if ( vseg->HasPadByLocation(AliMpIntPair(manuId,manuChannel)) )
+      if ( vseg->HasPadByLocation(manuId,manuChannel) )
       {
-        AliMpPad pad = vseg->PadByLocation(AliMpIntPair(manuId,manuChannel));
+        AliMpPad pad = vseg->PadByLocation(manuId,manuChannel);
         
-        fIxIy.Add(Encode(pad.GetIndices().GetFirst(),pad.GetIndices().GetSecond()),1+index);
+        fIxIy.Add(Encode(pad.GetIx(),pad.GetIy()),1+index);
       }
     }
   }
@@ -161,17 +163,18 @@ AliMpFastSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
 
 //_____________________________________________________________________________
 AliMpPad 
-AliMpFastSegmentation::PadByLocation(const AliMpIntPair& location, Bool_t warning) const
+AliMpFastSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel, 
+                                     Bool_t warning) const
 {
   /// Get the pad by location, using the manuid map.
   
-  Int_t index = fManuId.GetValue(Encode2(location.GetFirst()));
+  Int_t index = fManuId.GetValue(Encode2(manuId));
   
   if (!index) 
   {
     if (warning)
-		{
-			AliWarning(Form("Manu ID %d not found",location.GetFirst()));
+    {
+      AliWarning(Form("Manu ID %d not found",manuId));
       Print();
     }
     return AliMpPad::Invalid();
@@ -187,28 +190,27 @@ AliMpFastSegmentation::PadByLocation(const AliMpIntPair& location, Bool_t warnin
   }
   
   AliMpVMotif* motif = motifPos->GetMotif();
-  AliMpIntPair localIndices = 
-  motif->GetMotifType()->FindLocalIndicesByGassiNum(location.GetSecond());
+  MpPair_t localIndices 
+    =  motif->GetMotifType()->FindLocalIndicesByGassiNum(manuChannel);
 	
-  if (!localIndices.IsValid()) 
-	{
-		if (warning) 
-		{
-			AliWarning(Form("The pad number %d doesn't exists",
-			                location.GetSecond()));
+  if ( localIndices < 0 ) 
+  {
+    if (warning) 
+    {
+      AliWarning(Form("The pad number %d doesn't exists", manuChannel));
       Print();
-		}
-		return AliMpPad::Invalid();
-	}
+    }
+    return AliMpPad::Invalid();
+  }
 	
 #ifdef CHECK
-  AliMpPad pad1 = AliMpPad(location,
+  AliMpPad pad1 = AliMpPad(manuId, manuChannel,
                            motifPos->GlobalIndices(localIndices),
                            motifPos->Position() 
                            + motif->PadPositionLocal(localIndices) 
                            - fPosition,
-                           motif->GetPadDimensions(localIndices));  
-  AliMpPad pad2 = fHelper->PadByLocation(location,warning);
+                           motif->GetPadDimensionsByIndices(localIndices));  
+  AliMpPad pad2 = fHelper->PadByLocation(manuId, manuChannel,warning);
   if ( pad1 != pad2 ) 
   {
     Print();
@@ -218,12 +220,12 @@ AliMpFastSegmentation::PadByLocation(const AliMpIntPair& location, Bool_t warnin
   }
 #endif
   
-  return AliMpPad(location,
+  return AliMpPad(manuId, manuChannel,
                   motifPos->GlobalIndices(localIndices),
                   motifPos->Position() 
                   + motif->PadPositionLocal(localIndices) 
                   - fPosition,
-                  motif->GetPadDimensions(localIndices));  
+                  motif->GetPadDimensionsByIndices(localIndices));  
 }
 
 //_____________________________________________________________________________
@@ -236,18 +238,17 @@ AliMpFastSegmentation::InternalMotifPosition(Int_t index) const
 
 //_____________________________________________________________________________
 AliMpPad 
-AliMpFastSegmentation::PadByIndices (const AliMpIntPair& indices, Bool_t warning) const
+AliMpFastSegmentation::PadByIndices (Int_t ix, Int_t iy, Bool_t warning) const
 {
   /// Get pad by indices
   
-  Int_t index = fIxIy.GetValue(Encode(indices.GetFirst(),indices.GetSecond()));
+  Int_t index = fIxIy.GetValue(Encode(ix, iy));
   
   if ( !index )
   {
     if (warning)
     {
-      AliWarning(Form("ManuID not found for pad indices (%d,%d)",
-                      indices.GetFirst(),indices.GetSecond()));	  
+      AliWarning(Form("ManuID not found for pad indices (%d,%d)", ix, iy));	  
       Print();
     }
     return AliMpPad::Invalid();
@@ -264,39 +265,38 @@ AliMpFastSegmentation::PadByIndices (const AliMpIntPair& indices, Bool_t warning
 	
   AliMpVMotif* motif = motifPos->GetMotif();
   AliMpMotifType* motifType = motif->GetMotifType();
-  AliMpIntPair localIndices(indices-motifPos->GetLowIndicesLimit());
+  MpPair_t localIndices(AliMp::Pair(ix, iy) - motifPos->GetLowIndicesLimit());
   AliMpConnection* connection = motifType->FindConnectionByLocalIndices(localIndices);
   
   if (!connection)
-	{
-		if ( warning )
-		{
-			AliWarning(Form("No connection for pad indices (%d,%d)",
-			                indices.GetFirst(),indices.GetSecond()));
+  {
+    if ( warning )
+    {
+      AliWarning(Form("No connection for pad indices (%d,%d)", ix, iy));
     }
     return AliMpPad::Invalid();
-	}
+  }
 	
 #ifdef CHECK
-  AliMpPad pad2 = fHelper->PadByIndices(indices,warning);
-  AliMpPad pad1 = AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
-                          indices,
+  AliMpPad pad2 = fHelper->PadByIndices(ix, iy, warning);
+  AliMpPad pad1 = AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
+                          ix, iy,
                           motifPos->Position()
                           + motif->PadPositionLocal(localIndices)
                           - fPosition,
-                          motif->GetPadDimensions(localIndices));
+                          motif->GetPadDimensionsByIndices(localIndices));
   
   
   
   assert(pad1==pad2);
 #endif
   
-  return AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
-                  indices,
+  return AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
+                  ix, iy,
                   motifPos->Position()
                   + motif->PadPositionLocal(localIndices)
                   - fPosition,
-                  motif->GetPadDimensions(localIndices));
+                  motif->GetPadDimensionsByIndices(localIndices));
   
 }
 
@@ -350,18 +350,18 @@ AliMpFastSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpFastSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+AliMpFastSegmentation::HasPadByIndices(Int_t ix, Int_t iy) const
 {
   /// Whether there is a pad at the given indices
-  Int_t index = fIxIy.GetValue(Encode(indices.GetFirst(),indices.GetSecond()));
+  Int_t index = fIxIy.GetValue(Encode(ix, iy));
   
   if ( !index ) return kFALSE;
   
   AliMpMotifPosition* mp = InternalMotifPosition(index);
   
-  Bool_t r1 = mp->HasPadByIndices(indices);
+  Bool_t r1 = mp->HasPadByIndices(AliMp::Pair(ix, iy));
 #ifdef CHECK
-  Bool_t r2 = fHelper->HasPadByIndices(indices);
+  Bool_t r2 = fHelper->HasPadByIndices(ix, iy);
   
   assert(r1==r2);
 #endif
@@ -370,19 +370,19 @@ AliMpFastSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpFastSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+AliMpFastSegmentation::HasPadByLocation(Int_t manuId, Int_t manuChannel) const
 {
   /// Whether there is a pad at the given location (de,manuid)
   
-  Int_t index = fManuId.GetValue(Encode2(location.GetFirst()));
+  Int_t index = fManuId.GetValue(Encode2(manuId));
   
   if (!index) return kFALSE;
   
   AliMpMotifPosition* mp = InternalMotifPosition(index);
   
-  Bool_t r1 = mp->HasPadByManuChannel(location.GetSecond());
+  Bool_t r1 = mp->HasPadByManuChannel(manuChannel);
 #ifdef CHECK
-  Bool_t r2 = fHelper->HasPadByLocation(location);
+  Bool_t r2 = fHelper->HasPadByLocation(manuId, manuChannel);
   
   assert(r1==r2);
 #endif
@@ -442,7 +442,7 @@ AliMpFastSegmentation::MotifPosition(Int_t manuId) const
     it->First();
     AliMpPad pad = it->CurrentItem();
     delete it;
-    AliWarning(Form("DE %04d Manu ID %04d not found",pad.GetLocation().GetFirst(),manuId));
+    AliWarning(Form("DE %04d Manu ID %04d not found",pad.GetManuId(),manuId));
     return 0x0;
   }
 

@@ -30,6 +30,7 @@
 #include "AliMpDetElement.h"
 #include "AliMpConstants.h"
 #include "AliMpCathodType.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -245,13 +246,14 @@ Int_t AliMpDEManager::GetNofDEInChamber(Int_t chamberId, Bool_t warn)
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpDEManager::GetDetElemIdRange(Int_t chamberId)
+MpPair_t AliMpDEManager::GetDetElemIdRange(Int_t chamberId)
 {
 /// Return the detection element Id range for given chamberId
+/// es encoded pair
  
-  if ( ! IsValidChamberId(chamberId) ) return AliMpIntPair::Invalid();
+  if ( ! IsValidChamberId(chamberId) ) return 0;
 
-  return AliMpIntPair(
+  return AliMp::Pair(
            (chamberId+1)*fgkCoefficient,
            (chamberId+1)*fgkCoefficient + GetNofDEInChamber(chamberId) - 1);
   

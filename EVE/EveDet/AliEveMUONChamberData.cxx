@@ -15,6 +15,7 @@
 #include <mapping/AliMpSector.h>
 #include <mapping/AliMpPad.h>
 #include <mapping/AliMpSegmentation.h>
+#include <mapping/AliMpVSegmentation.h>
 
 #include <TVector2.h>
 
@@ -229,7 +230,7 @@ void AliEveMUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t 
   const AliMpVSegmentation* vseg = AliMpSegmentation::Instance()
     ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 
-  AliMpPad pad = vseg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+  AliMpPad pad = vseg->PadByIndices(ix,iy,kTRUE);
 
   locP[0] = pad.Position().X();
   locP[1] = pad.Position().Y();

@@ -34,6 +34,7 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -46,12 +47,12 @@ ClassImp(AliMpRowSegment)
 
 //_____________________________________________________________________________
 AliMpRowSegment::AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif, 
-                                 AliMpIntPair padOffset, 
+                                 Int_t padOffsetX, Int_t padOffsetY,
                                  Int_t nofMotifs,
                                  Int_t motifPositionId, Int_t motifPositionDId)
   : AliMpVRowSegment(),
     fNofMotifs(nofMotifs),
-    fPadOffset(padOffset),
+    fLPadOffset(AliMp::Pair(padOffsetX,padOffsetY)),
     fOffset(TVector2()),
     fRow(row),
     fMotif(motif),
@@ -61,14 +62,14 @@ AliMpRowSegment::AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif,
 /// Standard constructor
  
   // Keep pad offset in the low indices limits
-  SetLowIndicesLimit(padOffset);
+  SetLowIndicesLimit(fLPadOffset);
 }
 
 //_____________________________________________________________________________
 AliMpRowSegment::AliMpRowSegment() 
   : AliMpVRowSegment(),
     fNofMotifs(0),
-    fPadOffset(AliMpIntPair()),
+    fLPadOffset(0),
     fOffset(TVector2()),
     fRow(0),
     fMotif(0),
@@ -84,7 +85,7 @@ AliMpRowSegment::~AliMpRowSegment()
 /// Destructor  
 }
 
-//
+//
 // private methods  
 //
 
@@ -274,21 +275,22 @@ void   AliMpRowSegment::SetOffset(const TVector2& offset)
 
   AliMpMotifTypePadIterator iter(fMotif->GetMotifType());
   iter.First();
-  AliMpIntPair localPos = iter.CurrentItem().GetIndices();
+
+  Int_t ix = iter.CurrentItem().GetIx();
+  Int_t iy = iter.CurrentItem().GetIy();
      
   Double_t offsetX 
      = offset.X() 
-       + 2.*fPadOffset.GetFirst() * fMotif->GetPadDimensions(localPos).X() 
+       + 2.*AliMp::PairFirst(fLPadOffset) * fMotif->GetPadDimensionsByIndices(ix, iy).X() 
        + fMotif->Dimensions().X(); 
 
   Double_t offsetY 
     = offset.Y()
-      + fPadOffset.GetSecond() * fMotif->GetPadDimensions(localPos).Y(); 
+      + AliMp::PairSecond(fLPadOffset) * fMotif->GetPadDimensionsByIndices(ix, iy).Y(); 
 
   fOffset = TVector2(offsetX, offsetY);
 }
 
-#include <Riostream.h>
 //_____________________________________________________________________________
 void AliMpRowSegment::SetGlobalIndices(AliMpRow* /*rowBefore*/)
 {
@@ -311,26 +313,25 @@ void AliMpRowSegment::SetGlobalIndices(AliMpRow* /*rowBefore*/)
        Fatal("SetGlobalIndices", 
              "Indices of motif positions have to be set first.");
             
-     if ( mPos->GetLowIndicesLimit().GetFirst() < ixl ) 
-       ixl = mPos->GetLowIndicesLimit().GetFirst();
+     if ( mPos->GetLowLimitIx() < ixl ) 
+       ixl = mPos->GetLowLimitIx();
        
-     if ( mPos->GetLowIndicesLimit().GetSecond() < iyl ) 
-       iyl = mPos->GetLowIndicesLimit().GetSecond();
+     if ( mPos->GetLowLimitIy() < iyl ) 
+       iyl = mPos->GetLowLimitIy();
 
-     if ( mPos->GetHighIndicesLimit().GetFirst() > ixh ) 
-       ixh = mPos->GetHighIndicesLimit().GetFirst();
+     if ( mPos->GetHighLimitIx() > ixh ) 
+       ixh = mPos->GetHighLimitIx();
        
-     if ( mPos->GetHighIndicesLimit().GetSecond() > iyh ) 
-       iyh = mPos->GetHighIndicesLimit().GetSecond();
+     if ( mPos->GetHighLimitIy() > iyh ) 
+       iyh = mPos->GetHighLimitIy();
   }     
 
-  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
-  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
+  SetLowIndicesLimit(ixl, iyl);
+  SetHighIndicesLimit(ixh, iyh);
 }  
 
 //_____________________________________________________________________________
-Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i, 
-                                 const AliMpIntPair& indices)
+Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i, MpPair_t indices)
 {
 /// Set global indices to i-th motif position and returns next index
 /// in x.
@@ -340,18 +341,18 @@ Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i,
     = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(i));
 
   // Low limit
-  AliMpIntPair low = indices + AliMpIntPair(0, GetLowIndicesLimit().GetSecond());
+  MpPair_t low = indices + AliMp::Pair(0, GetLowLimitIy());
   motifPosition->SetLowIndicesLimit(low);
 	  
   // High limit
   AliMpMotifType* motifType = motifPosition->GetMotif()->GetMotifType();    
-  AliMpIntPair high
-    = motifPosition->GetLowIndicesLimit() 
-      + AliMpIntPair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);
+  MpPair_t high
+    = motifPosition->GetLowIndicesLimit()
+      + AliMp::Pair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);
   motifPosition->SetHighIndicesLimit(high);
 
   // Return next index in x
-  return high.GetFirst()+1;
+  return AliMp::PairFirst(high)+1;
   // return motifType->GetNofPadsX();
 }
 

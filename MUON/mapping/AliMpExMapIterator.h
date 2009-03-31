@@ -17,7 +17,6 @@
 #endif
 
 class AliMpExMap;
-class AliMpIntPair;
 class TString;
 class TExMapIter;
 
@@ -25,6 +24,8 @@ class TExMapIter;
 class AliMpExMapIterator : public TIterator
 {
 public:
+  friend class AliMpExMap;
+
   AliMpExMapIterator(const AliMpExMap& theMap);
   AliMpExMapIterator(const AliMpExMapIterator& rhs);
   AliMpExMapIterator& operator=(const AliMpExMapIterator& rhs);
@@ -39,7 +40,7 @@ public:
 
   // Iterating with retrieving a key
   TObject*  Next(Int_t& key);
-  TObject*  Next(AliMpIntPair& key);
+  TObject*  Next(Int_t& keyFirst, Int_t& keySecond);
   TObject*  Next(TString& key);
   
   virtual void Reset(); 

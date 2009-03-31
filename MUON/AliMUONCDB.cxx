@@ -118,7 +118,7 @@ void getBoundaries(const AliMUONVStore& store, Int_t dim,
         
     for ( Int_t manuChannel = 0; manuChannel < value->Size(); ++manuChannel )
     {
-      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
       if (!pad.IsValid()) continue;
       
       for ( Int_t i = 0; i < dim; ++i ) 
@@ -297,7 +297,7 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
     
     for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
     {
-      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
       if (!pad.IsValid()) continue;
 
       ++n;
@@ -872,7 +872,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
     
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
-      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
       
       if (pad.IsValid()) 
       {
@@ -886,7 +886,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
           AliMpPad* p = static_cast<AliMpPad*>(tmp.UncheckedAt(i));
           Int_t x;
 //          Bool_t ok =
-          calibParam->PackValues(p->GetLocation().GetFirst(),p->GetLocation().GetSecond(),x);
+          calibParam->PackValues(p->GetManuId(),p->GetManuChannel(),x);
 //          if (!ok)
 //          {
 //            AliError("Could not pack value. Something is seriously wrong. Please check");

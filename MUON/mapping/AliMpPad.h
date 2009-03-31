@@ -13,9 +13,9 @@
 #ifndef ALI_MP_PAD_H
 #define ALI_MP_PAD_H
 
-#include <TObject.h>
+#include "AliMpEncodePair.h"
 
-#include "AliMpIntPair.h"
+#include <TObject.h>
 
 #include <TVector2.h>
 #include <TClonesArray.h>
@@ -23,9 +23,15 @@
 class AliMpPad : public TObject
 {
  public:
-  AliMpPad(const AliMpIntPair& location, const AliMpIntPair& indices,
+  AliMpPad(Int_t manuId, Int_t channel,
+           Int_t ix, Int_t iy,
            const TVector2& position, const TVector2& dimensions,
 	   Bool_t validity = true);
+  AliMpPad(Int_t manuId, Int_t channel,
+           MpPair_t indices,
+           const TVector2& position, const TVector2& dimensions,
+	   Bool_t validity = true);
+
   AliMpPad();
   AliMpPad(const AliMpPad& src);
   virtual ~AliMpPad();
@@ -52,15 +58,22 @@ class AliMpPad : public TObject
   //
   // set methods
   //
-  Bool_t  AddLocation(const AliMpIntPair& location, Bool_t warn = true);
+  Bool_t  AddLocation(Int_t localBoardId, Int_t localBoardChannel, 
+                      Bool_t warn = true);
 
   //
   // get methods
   //
-               /// Return pad location
-  AliMpIntPair GetLocation() const {return fLocation;}
-               /// Return pad indices
-  AliMpIntPair GetIndices()  const {return fIndices;}
+               /// Return pad location as encoded pair (manuId, manuChannel)
+  MpPair_t     GetLocation() const { return fLLocation; }
+  Int_t        GetManuId() const;
+  Int_t        GetManuChannel() const;
+  
+               /// Return pad indices as encoded pair (ix, iy)
+  MpPair_t     GetIndices()  const { return fLIndices; }
+  Int_t        GetIx() const;
+  Int_t        GetIy() const;
+  
                /// Return the pad position (in cm)
   TVector2     Position()    const {return fPosition  ;}
                /// Return the pad dimensions (in cm)
@@ -69,23 +82,27 @@ class AliMpPad : public TObject
   Bool_t       IsValid()     const {return fValidity  ;}
   
   Int_t        GetNofLocations() const;
-  AliMpIntPair GetLocation(Int_t i) const;
-  Bool_t       HasLocation(const AliMpIntPair& location) const; 
+  MpPair_t     GetLocation(Int_t i) const;  
+  Int_t        GetLocalBoardId(Int_t i) const;
+  Int_t        GetLocalBoardChannel(Int_t i) const;
+
+  Bool_t       HasLocation(Int_t localBoardId, Int_t localBoardChannel) const; 
 
  private:
+
   // static data members
   static const Int_t  fgkMaxNofLocations; ///< \brief maximum number of pad locations
                                           /// in the collection
   // data members
-  AliMpIntPair*   fLocations;      ///<  collection of pad locations 
+  MpPair_t*       fLLocations;     ///<  collection of pad locations - encoded pair (localBoardId, localBoardChannel) 
   UInt_t          fNofLocations;   ///<  number of locations in fLocations
-  AliMpIntPair    fLocation;       ///<  pad location
-  AliMpIntPair    fIndices;        ///<  pad indices
+  MpPair_t        fLLocation;      ///<  pad location as encoded pair (manuId, manuChannel) 
+  MpPair_t        fLIndices;       ///<  pad indices as encoded pair (ix, iy)  
   TVector2        fPosition;       ///<  the pad position (in cm)
   TVector2        fDimensions;     ///<  the pad dimensions (in cm)
   Bool_t          fValidity;       ///<  validity
 
-  ClassDef(AliMpPad,2) //utility class for the motif type
+  ClassDef(AliMpPad,3) //utility class for the motif type
 };
 
 ostream& operator << (ostream &out, const AliMpPad& op);

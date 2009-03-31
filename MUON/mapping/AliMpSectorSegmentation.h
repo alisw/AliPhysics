@@ -26,7 +26,6 @@
 class AliMpSector;
 class AliMpMotifPosition;
 class AliMpVPadIterator;
-class AliMpIntPair;
 class AliMpArea;
 
 class AliMpSectorSegmentation : public AliMpVSegmentation
@@ -39,27 +38,23 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     // factory methods  
     virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
     virtual AliMpVPadIterator* CreateIterator() const;
-    
-    AliMpVPadIterator* CreateIterator(const AliMpPad& centerPad,
-                                      Bool_t includeCenter=kFALSE) const;
 
     virtual Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
                                Bool_t includeSelf = kFALSE,
                                Bool_t includeVoid = kFALSE) const;
     
     // methods  
-    virtual AliMpPad PadByLocation(const AliMpIntPair& location,
+    virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel,
                                Bool_t warning = kTRUE) const;
-    virtual AliMpPad PadByIndices (const AliMpIntPair& indices, 
+    virtual AliMpPad PadByIndices (Int_t ix, Int_t iy, 
                                Bool_t warning = kTRUE) const;
     virtual AliMpPad PadByPosition(const TVector2& position ,
                                Bool_t warning = kTRUE) const;
     virtual AliMpPad PadByDirection(const TVector2& startPosition, 
                                Double_t distance) const;
  
-    virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
-    virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
-    virtual Bool_t HasPad(const AliMpIntPair& indices) const;
+    virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
+    virtual Bool_t HasPadByLocation(Int_t manuId, Int_t manuChannel) const;
   
     virtual Int_t  MaxPadIndexX() const;
     virtual Int_t  MaxPadIndexY() const;
@@ -82,7 +77,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;
 
     TVector2 GetMinPadDimensions() const;
-    Bool_t CircleTest(const AliMpIntPair& indices) const;
+    Bool_t CircleTest(Int_t ix, Int_t iy) const;
     void   PrintZones() const;
    
     const AliMpSector* GetSector() const;
@@ -94,7 +89,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
     static const Double_t   fgkS1;  ///< the separators used for conversion
-    static const Double_t   fgkS2;  ///< of TVector2 to Long_t
+    static const Double_t   fgkS2;  ///< of TVector2 to MpPair_t
     
     // methods
     Long_t    GetIndex(const TVector2& vector2) const;
@@ -102,7 +97,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 
     // methods
     void  FillPadDimensionsMap();
-    AliMpMotifPosition*  FindMotifPosition(const AliMpIntPair& indices) const;
+    AliMpMotifPosition*  FindMotifPosition(Int_t ix, Int_t iy) const;
     virtual AliMpPad PadByXDirection(const TVector2& startPosition, 
                                      Double_t maxX) const;
     virtual AliMpPad PadByYDirection(const TVector2& startPosition, 

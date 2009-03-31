@@ -325,7 +325,7 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
     Int_t detElemId = d->DetElemId();
     const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->
       GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy));
+    AliMpPad pad = seg->PadByIndices(ix,iy);
     
     TClonesArray* padArray = PadArray(detElemId,cathode);
     if (!padArray)
@@ -357,7 +357,7 @@ AliMUONSimpleClusterServer::FindMCLabel(const AliMUONCluster& cluster, Int_t det
   for (Int_t iCath = 0; iCath < 2; iCath++) {
     AliMpPad pad = seg[AliMp::GetCathodType(iCath)]->PadByPosition(cluster.Position(), kFALSE);
     if (pad.IsValid()) {
-      digit[iCath] = fDigitStore->FindObject(detElemId, pad.GetLocation().GetFirst(), pad.GetLocation().GetSecond(), iCath);
+      digit[iCath] = fDigitStore->FindObject(detElemId, pad.GetManuId(), pad.GetManuChannel(), iCath);
       if (digit[iCath]) nTracks[iCath] = digit[iCath]->Ntracks();
     }
   }

@@ -172,8 +172,8 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 
   TVector2 position(ms->Dimensions());
   AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,position);
-  mp->SetLowIndicesLimit(AliMpIntPair(fIxmin,fIymin));
-  mp->SetHighIndicesLimit(AliMpIntPair(fIxmax,fIymax));
+  mp->SetLowIndicesLimit(fIxmin,fIymin);
+  mp->SetHighIndicesLimit(fIxmax,fIymax);
   fMotifPositions.AddLast(mp);
 }
 
@@ -289,8 +289,8 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
   Int_t ixmax = ixmin + mt->GetNofPadsX() - 1;
   Int_t iymax = iymin + mt->GetNofPadsY() - 1;
 
-  mp->SetLowIndicesLimit(AliMpIntPair(ixmin,iymin));
-  mp->SetHighIndicesLimit(AliMpIntPair(ixmax,iymax));
+  mp->SetLowIndicesLimit(ixmin,iymin);
+  mp->SetHighIndicesLimit(ixmax,iymax);
 
   fMotifPositions.AddLast(mp);
 
@@ -353,7 +353,7 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
       return 0;
   }
 
-  AliMpIntPair shift(-fIxmin+ixOffset,0);
+  MpPair_t shift = AliMp::Pair(-fIxmin+ixOffset,0);
 
   // Then change the internal MotifPositions wrt manu id
   // and position (offset in x).
@@ -364,17 +364,17 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
       TVector2 pos(mp->Position());
       pos += TVector2(xOffset,0);
       mp->SetPosition(pos);
-      AliMpIntPair offset(ixOffset,0);
-      AliMpIntPair low(mp->GetLowIndicesLimit());
+      MpPair_t offset = AliMp::Pair(ixOffset,0);
+      MpPair_t low = mp->GetLowIndicesLimit();
       low += shift;
       mp->SetLowIndicesLimit(low);
-      AliMpIntPair high(mp->GetHighIndicesLimit());
+      MpPair_t high = mp->GetHighIndicesLimit();
       high += shift;
       mp->SetHighIndicesLimit(high);
     }
   
-  pcb->fIxmin += shift.GetFirst();
-  pcb->fIxmax += shift.GetFirst();
+  pcb->fIxmin += AliMp::PairFirst(shift);
+  pcb->fIxmax += AliMp::PairFirst(shift);
   pcb->fXoffset = xOffset;
 
   pcb->fActiveXmin += xOffset;
@@ -494,7 +494,7 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
   for (Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
     {
       AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
-      if ( mp->HasPadByIndices(AliMpIntPair(ix,iy)) )
+      if ( mp->HasPadByIndices(AliMp::Pair(ix,iy)) )
       {
         return mp;
       }
@@ -516,9 +516,10 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
     
     TVector2 localPos( TVector2(x,y) - mp->Position() );
     
-    AliMpIntPair localIndices(mp->GetMotif()->PadIndicesLocal(localPos));
+    MpPair_t localIndices(mp->GetMotif()->PadIndicesLocal(localPos));
     
-    if ( localIndices.IsValid() && mp->GetMotif()->GetMotifType()->HasPadByLocalIndices(localIndices) )
+    if ( localIndices >= 0 && 
+         mp->GetMotif()->GetMotifType()->HasPadByLocalIndices(localIndices) )
     {
       return mp;
     }

@@ -14,7 +14,6 @@
 #define ALI_MP_MOTIF_TYPE_PAD_ITERATOR_H
 
 #include "AliMpVPadIterator.h"
-#include "AliMpIntPair.h"
 
 class AliMpMotifType;
 
@@ -38,12 +37,14 @@ class AliMpMotifTypePadIterator : public AliMpVPadIterator
 
   private:
     // private methods
-    AliMpIntPair FindFirstPadInLine(AliMpIntPair indices) const;
-    Bool_t IsValid() const;
+    Bool_t  FindFirstPadInLine(Int_t ix, Int_t iy, 
+                               Int_t& newIx, Int_t& newIy) const;
+    Bool_t  IsValid() const;
 
     // private data members
     const AliMpMotifType* fkMotifType;///< the motif type over which iterate
-    AliMpIntPair fCurrentPosition;    ///< the current position inside the motif type
+    Int_t fCurrentIx;    ///< the current ix position inside the motif type
+    Int_t fCurrentIy;    ///< the current iy position inside the motif type
 
  ClassDef(AliMpMotifTypePadIterator,2) // iterator over motif's pads
 };

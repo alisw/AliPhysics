@@ -36,6 +36,7 @@
 #include "AliMpMotifType.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatPadIterator.h"
+#include "AliMpEncodePair.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpSlatSegmentation)
@@ -156,18 +157,6 @@ AliMpSlatSegmentation::GetName() const
 }
 
 //_____________________________________________________________________________
-Bool_t
-AliMpSlatSegmentation::HasPad(const AliMpIntPair& indices) const
-{
-  ///
-  /// Test if this slat has a pad located at the position referenced
-  /// by the integer indices.
-  ///
-  
-  return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
-}
-
-//_____________________________________________________________________________
 Int_t 
 AliMpSlatSegmentation::MaxPadIndexX() const
 {
@@ -200,7 +189,7 @@ AliMpSlatSegmentation::NofPads() const
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpSlatSegmentation::PadByLocation(const AliMpIntPair& location, 
+AliMpSlatSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel, 
                                      Bool_t warning) const
 {
   ///
@@ -211,44 +200,42 @@ AliMpSlatSegmentation::PadByLocation(const AliMpIntPair& location,
   ///
   /// AliMpPad::Invalid() is returned if there's no pad at the given location.
   ///
-  Int_t manuID = location.GetFirst();
-	
-  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(manuID);
+  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(manuId);
 	
   if (!motifPos)
-	{
-		if (warning)
-		{
-			AliWarning(Form("Manu ID %d not found in slat %s",
-			                 manuID, fkSlat->GetID()));
+  {
+    if (warning)
+    {
+      AliWarning(Form("Manu ID %d not found in slat %s",
+                       manuId, fkSlat->GetID()));
     }
     return AliMpPad::Invalid();
-	}
+  }
   AliMpVMotif* motif = motifPos->GetMotif();
-  AliMpIntPair localIndices = 
-    motif->GetMotifType()->FindLocalIndicesByGassiNum(location.GetSecond());
+  MpPair_t localIndices = 
+    motif->GetMotifType()->FindLocalIndicesByGassiNum(manuChannel);
 	
-  if (!localIndices.IsValid()) 
-	{
-		if (warning) 
-		{
-			AliWarning(Form("The pad number %d doesn't exists",
-			                location.GetSecond()));
-		}
-		return AliMpPad::Invalid();
-	}
+  if ( localIndices < 0 ) 
+  {
+    if (warning) 
+    {
+      AliWarning(Form("The pad number %d doesn't exists",
+                 manuChannel));
+    }
+    return AliMpPad::Invalid();
+  }
 	
-  return AliMpPad(location,
+  return AliMpPad(manuId, manuChannel,
                   motifPos->GlobalIndices(localIndices),
                   motifPos->Position() 
                   + motif->PadPositionLocal(localIndices) 
                   - fkSlat->Position(),
-                  motif->GetPadDimensions(localIndices));  
+                  motif->GetPadDimensionsByIndices(localIndices));  
 }
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices, 
+AliMpSlatSegmentation::PadByIndices(Int_t ix, Int_t iy, 
                                     Bool_t warning) const
 {
   ///
@@ -263,39 +250,38 @@ AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices,
   /// is exactly as the one in AliMpSectorSegmentation.
   /// See if we can merge them somehow.
 	
-  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(indices.GetFirst(),
-																									 indices.GetSecond());
+  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(ix,iy);
+  
   if (!motifPos)
-	{
-		if ( warning ) 
-		{
-			AliWarning(Form("No motif found containing pad location (%d,%d)",
-			                 indices.GetFirst(),indices.GetSecond()));	  
-		}
-		return AliMpPad::Invalid();
-	}
+  {
+    if ( warning ) 
+    {
+      AliWarning(Form("No motif found containing pad location (%d,%d)",ix,iy));	  
+    }
+    return AliMpPad::Invalid();
+  }
 	
   AliMpVMotif* motif = motifPos->GetMotif();
   AliMpMotifType* motifType = motif->GetMotifType();
-  AliMpIntPair localIndices(indices-motifPos->GetLowIndicesLimit());
-  AliMpConnection* connection = motifType->FindConnectionByLocalIndices(localIndices);
+  MpPair_t localIndices = AliMp::Pair(ix,iy) - motifPos->GetLowIndicesLimit();
+  AliMpConnection* connection 
+    = motifType->FindConnectionByLocalIndices(localIndices);
   
   if (!connection)
-	{
-		if ( warning )
-		{
-			AliWarning(Form("No connection for pad location (%d,%d)",
-			                indices.GetFirst(),indices.GetSecond()));
+  {
+    if ( warning )
+    {
+      AliWarning(Form("No connection for pad location (%d,%d)",ix,iy));
     }
     return AliMpPad::Invalid();
-	}
-	
-  return AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
-                  indices,
+  }
+
+  return AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
+                  ix, iy,
                   motifPos->Position()
                   + motif->PadPositionLocal(localIndices)
                   - fkSlat->Position(),
-                  motif->GetPadDimensions(localIndices));
+                  motif->GetPadDimensionsByIndices(localIndices));
 }
 
 //_____________________________________________________________________________
@@ -331,8 +317,7 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 	
   AliMpVMotif* motif =  motifPos->GetMotif();  
   blPos -= motifPos->Position();
-  AliMpIntPair localIndices 
-    = motif->PadIndicesLocal(blPos);
+  MpPair_t localIndices = motif->PadIndicesLocal(blPos);
 	
   AliMpConnection* connect = 
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);
@@ -341,19 +326,19 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 	{
 		if (warning) 
 		{
-			AliWarning(Form("Slat %s localIndices (%d,%d) outside motif %s limits",
-                      fkSlat->GetID(),localIndices.GetFirst(),
-                      localIndices.GetSecond(),motif->GetID().Data()));
+		      AliWarning(Form("Slat %s localIndices (%d,%d) outside motif %s limits",
+                      fkSlat->GetID(),AliMp::PairFirst(localIndices),
+                      AliMp::PairSecond(localIndices),motif->GetID().Data()));
 		}
 		return AliMpPad::Invalid();
 	}
   
-  return AliMpPad(AliMpIntPair(motifPos->GetID(),connect->GetManuChannel()),
+  return AliMpPad(motifPos->GetID(),connect->GetManuChannel(),
                   motifPos->GlobalIndices(localIndices),
                   motifPos->Position()
                   + motif->PadPositionLocal(localIndices)
                   - fkSlat->Position(),
-                  motif->GetPadDimensions(localIndices));  
+                  motif->GetPadDimensionsByIndices(localIndices));  
 }
 
 //_____________________________________________________________________________
@@ -385,27 +370,26 @@ AliMpSlatSegmentation::Slat() const
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpSlatSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+AliMpSlatSegmentation::HasPadByIndices(Int_t ix, Int_t iy) const
 {
   /// Tell whether we have a pad at indices=(ix,iy)
   
-  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(indices.GetFirst(),
-                                                           indices.GetSecond());
+  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(ix, iy);
   
-  if (motifPos) return motifPos->HasPadByIndices(indices);
+  if (motifPos) return motifPos->HasPadByIndices(AliMp::Pair(ix, iy));
   
   return kFALSE;
 }
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpSlatSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+AliMpSlatSegmentation::HasPadByLocation(Int_t manuId, Int_t manuChannel) const
 {
   /// Tell whether we have a pad at location=(manuId,manuChannel)
   
-  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(location.GetFirst());
+  AliMpMotifPosition* motifPos = Slat()->FindMotifPosition(manuId);
   
-  if ( motifPos ) return motifPos->HasPadByManuChannel(location.GetSecond());
+  if ( motifPos ) return motifPos->HasPadByManuChannel(manuChannel);
   
   return kFALSE;  
 }

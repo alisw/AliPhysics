@@ -164,7 +164,7 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	  // pad location
 	  const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->
 	    GetMpSegmentation(digit->DetElemId(),AliMp::GetCathodType(digit->Cathode()));
-	  AliMpPad pad = seg->PadByIndices(AliMpIntPair(digit->PadX(), digit->PadY()));
+	  AliMpPad pad = seg->PadByIndices(digit->PadX(), digit->PadY());
 	  
 	  // calibration parameters
 	  AliMUONVCalibParam* ped = calibData->Pedestals(digit->DetElemId(), digit->ManuId());

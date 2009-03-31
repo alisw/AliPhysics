@@ -18,7 +18,6 @@
 #include "AliMpStationType.h"
 #include "AliMpStation12Type.h"
 #include "AliMpPlaneType.h"
-#include "AliMpIntPair.h"
 
 #include <TExMap.h>
 #include <TString.h>

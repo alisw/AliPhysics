@@ -158,11 +158,11 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
         ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
 
     AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
-    Int_t ix = pad.GetIndices().GetFirst();
-    Int_t iy = pad.GetIndices().GetSecond();
+    Int_t ix = pad.GetIx();
+    Int_t iy = pad.GetIy();
     
-    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation(0).GetFirst(),
-                                       pad.GetLocation(0).GetSecond(),
+    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
+                                       pad.GetLocalBoardChannel(0),
                                        cath);
     d->SetPadXY(ix,iy);
 
@@ -170,7 +170,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 
     if(fTriggerEfficiency){
       if(cath==0){
-	Int_t nboard = pad.GetLocation(0).GetFirst();
+	Int_t nboard = pad.GetLocalBoardId(0);
 	fTriggerEfficiency->IsTriggered(detElemId, nboard, 
 					isTrig[0], isTrig[1]);
       }
@@ -197,8 +197,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 	    Int_t ixNeigh = ( cath == 0 ) ? ix : xList[i];
 	    Int_t iyNeigh = ( cath == 0 ) ? yList[i] : iy;
 	    
-	    AliMpIntPair pairNeigh = AliMpIntPair(ixNeigh,iyNeigh);
-	    AliMpPad padNeigh = seg->PadByIndices(pairNeigh,kFALSE);
+	    AliMpPad padNeigh = seg->PadByIndices(ixNeigh,iyNeigh,kFALSE);
 	    if(padNeigh.IsValid()){ // existing neighbourg		
 		
 		Int_t dix=-(ixNeigh-ix);
@@ -217,8 +216,8 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 		else qp = 0;
 		
 		if (qp == 1) { // this digit is fired    
-		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocation(0).GetFirst(),
-                                                padNeigh.GetLocation(0).GetSecond(),
+		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocalBoardId(0),
+                                                padNeigh.GetLocalBoardChannel(0),
                                                 cath);
 		    
 		    dNeigh->SetPadXY(ixNeigh,iyNeigh);      

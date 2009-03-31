@@ -21,7 +21,6 @@
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
 #include "AliMpStation12Type.h"
-#include "AliMpIntPair.h"
 
 class AliMpDetElement;
 class AliMpDataStreams;

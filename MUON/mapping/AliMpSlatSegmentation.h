@@ -50,16 +50,14 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   const char* GetName() const;
   
-  Bool_t HasPad(const AliMpIntPair& indices) const;
-
   Int_t MaxPadIndexX() const;
   Int_t MaxPadIndexY() const;
   Int_t NofPads() const;
   
-  virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
+  virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel, 
 			 Bool_t warning) const;
 
-  virtual AliMpPad PadByIndices(const AliMpIntPair& indices,  
+  virtual AliMpPad PadByIndices(Int_t ix, Int_t iy,  
 			Bool_t warning) const;
 
   virtual AliMpPad PadByPosition(const TVector2& position,
@@ -77,9 +75,9 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   TVector2 Dimensions() const;
   
-  virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
+  virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
   
-  virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
+  virtual Bool_t HasPadByLocation(Int_t manuId, Int_t manuChannel) const;
 
   virtual Int_t GetNofElectronicCards() const;
   

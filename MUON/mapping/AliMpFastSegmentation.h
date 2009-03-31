@@ -47,11 +47,11 @@ public:
                               Bool_t includeSelf=kFALSE,
                               Bool_t includeVoid=kFALSE) const;
   
-  virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
-  virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
+  virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
+  virtual Bool_t HasPadByLocation(Int_t manuId, Int_t manuChannel) const;
   
-  virtual AliMpPad PadByLocation(const AliMpIntPair& location, Bool_t warning = true) const;
-  virtual AliMpPad PadByIndices (const AliMpIntPair& indices, Bool_t warning = true) const;
+  virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel, Bool_t warning = true) const;
+  virtual AliMpPad PadByIndices (Int_t ix, Int_t iy, Bool_t warning = true) const;
   virtual AliMpPad PadByPosition(const TVector2& position, Bool_t warning = true) const;
   
   virtual Int_t  MaxPadIndexX() const;

@@ -13,8 +13,6 @@
 #ifndef ALI_MP_ARRAY_I_H
 #define ALI_MP_ARRAY_I_H
 
-#include "AliMpIntPair.h"
-
 #include <TObject.h>
 #include <TArrayI.h>
 
@@ -52,9 +50,10 @@ class AliMpArrayI : public TObject
     Bool_t   fSort;       ///< Option to sort the values
     Int_t    fNofValues;  ///< Number of values in the array
     TArrayI  fValues;     ///< Array of values 
-    AliMpIntPair fLimits; ///< The minimum and maximum values in the array
+    Int_t    fMinValue;   ///< The minimum value in the array
+    Int_t    fMaxValue;   ///< The maximum value in the array
 
-  ClassDef(AliMpArrayI,1)  // Helper class for sorted integer array
+  ClassDef(AliMpArrayI,2)  // Helper class for sorted integer array
 };
 
 #endif //ALI_MP_EX_MAP_H

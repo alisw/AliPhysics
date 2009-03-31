@@ -105,10 +105,10 @@ void AliMpRowSegmentRSpecial::SetGlobalIndicesLow()
     
   // Set low indices limit to continue indices of the
   // preceding row segment  
-  Int_t ix = rowSegment->GetHighIndicesLimit().GetFirst() + 1;
-  Int_t iy = rowSegment->GetLowIndicesLimit().GetSecond();
+  Int_t ix = rowSegment->GetHighLimitIx() + 1;
+  Int_t iy = rowSegment->GetLowLimitIy();
   
-  SetLowIndicesLimit(AliMpIntPair(ix, iy));
+  SetLowIndicesLimit(ix, iy);
 }
 
 //
@@ -219,8 +219,7 @@ TVector2 AliMpRowSegmentRSpecial::Position() const
 }
 
 //______________________________________________________________________________
-Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i, 
-                                         const AliMpIntPair& indices)
+Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i, MpPair_t indices)
 {
 /// Set global indices to i-th motif position and returns next index in x.
 
@@ -228,7 +227,7 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
   SetGlobalIndicesLow();
 
   // Check for consistence
-  if (GetLowIndicesLimit().GetFirst() != indices.GetFirst()) 
+  if ( GetLowLimitIx() != AliMp::PairFirst(indices) ) 
     AliFatal("Inconsistent indices");
 
   // Get motif position
@@ -236,13 +235,13 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
     = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(i));
     
   // Set limits only once
-  if ( motifPosition->GetHighIndicesLimit().IsValid() ) 
-    return indices.GetFirst();; 
+  if ( motifPosition->IsHighLimitValid() ) 
+    return AliMp::PairFirst(indices); 
 
   // Low limit
   //
-  Int_t ixl = GetLowIndicesLimit().GetFirst();
-  Int_t iyl = GetLowIndicesLimit().GetSecond();
+  Int_t ixl = GetLowLimitIx();
+  Int_t iyl = GetLowLimitIy();
 
   // Find the most down pad row segment with this motifPositionId.
   AliMpVPadRowSegment* padRowSegment = FindPadRowSegment(GetMotifPositionId(i));
@@ -250,23 +249,23 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
   iyl += padRowID; 
 
   // Add pads offset of this motif position in the row segment
-  for (Int_t im=0; im<i; im++) {
+  for ( Int_t im=0; im<i; im++ ) {
     AliMpVPadRowSegment* rs = GetPadRow(padRowID)->GetPadRowSegment(im);
     if ( rs->GetMotifPositionId() == GetMotifPositionId(i) ) break; 
     ixl += rs->GetNofPads();
   }  
-  motifPosition->SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+  motifPosition->SetLowIndicesLimit(ixl, iyl);
 
   // High limit	
   //     
   AliMpMotifType* motifType = motifPosition->GetMotif()->GetMotifType();  
-  AliMpIntPair high 
+  MpPair_t high 
     = motifPosition->GetLowIndicesLimit()
-      + AliMpIntPair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);            
+      + AliMp::Pair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);            
   motifPosition->SetHighIndicesLimit(high);
 
   // No increment index needed (this is always the last element)
-  return indices.GetFirst();
+  return AliMp::PairFirst(indices);
 }
 
 //______________________________________________________________________________
@@ -281,7 +280,7 @@ void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
     = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(0));
     
   // Low ix
-  Int_t ixl = firstMotifPosition->GetLowIndicesLimit().GetFirst();
+  Int_t ixl = firstMotifPosition->GetLowLimitIx();
               // We have to take the motif position limit
 	      // as it can overlap over more rows and the indices
 	      // of the right border of the precedent normal segment
@@ -294,7 +293,7 @@ void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
   Int_t iyl = AliMpConstants::StartPadIndex();
   if (rowBefore) {
     //if (constPadSizeDirection == kY) {
-      iyl = rowBefore->GetHighIndicesLimit().GetSecond()+1;
+      iyl = rowBefore->GetHighLimitIy()+1;
     //} 
     /*
     else {
@@ -302,7 +301,7 @@ void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
       AliMpMotifPosition* motPos =  rowBefore->FindMotifPosition(seg, ixl);
       if (!motPos) 
         Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
-      iyl = motPos->GetHighIndicesLimit().GetSecond()+1;
+      iyl = motPos->GetHighLimitIy()+1;
     }
     */
   }  
@@ -310,8 +309,8 @@ void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
   // High iy
   Int_t iyh = iyl + GetNofPadRows() - 1;
   
-  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
-  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
+  SetLowIndicesLimit(ixl, iyl);
+  SetHighIndicesLimit(ixh, iyh);
 }  
 
 

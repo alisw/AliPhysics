@@ -29,7 +29,7 @@
 #include "AliMpMotif.h"
 
 #include "AliMpConstants.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 #include "AliMpMotifType.h"
 
 /// \cond CLASSIMP
@@ -63,16 +63,24 @@ AliMpMotif::~AliMpMotif()
 
 
 //_____________________________________________________________________________
-TVector2 AliMpMotif::GetPadDimensions(const AliMpIntPair& localIndices) const
+TVector2 AliMpMotif::GetPadDimensionsByIndices(MpPair_t localIndices) const
 {
   /// Give the dimension of the specified pad in the motif
 
-  if (GetMotifType()->HasPadByLocalIndices(localIndices))
+  if ( GetMotifType()->HasPadByLocalIndices(localIndices) )
     return fPadDimensions;
   else {
-    Warning("GetPadDimensions","indices outside range");
+    Warning("GetPadDimensionsByIndices","indices outside range");
     return TVector2(0.,0.);
   }
+}
+
+//_____________________________________________________________________________
+TVector2 AliMpMotif::GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const
+{
+  /// Give the dimension of the specified pad in the motif
+
+  return GetPadDimensionsByIndices(AliMp::Pair(ixLocal, iyLocal));
 }
 
 //_____________________________________________________________________________
@@ -85,18 +93,28 @@ TVector2 AliMpMotif::Dimensions() const
 }
 
 //_____________________________________________________________________________
-TVector2 AliMpMotif::PadPositionLocal(const AliMpIntPair& localIndices) const 
+TVector2 AliMpMotif::PadPositionLocal(MpPair_t localIndices) const 
+{
+  /// Give the local position of the pad number (ix,iy)
+  /// (0,0 is the center of the motif)
+
+  return PadPositionLocal(AliMp::PairFirst(localIndices), 
+                          AliMp::PairSecond(localIndices));
+}
+
+//_____________________________________________________________________________
+TVector2 AliMpMotif::PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const 
 {
   /// Give the local position of the pad number (ix,iy)
   /// (0,0 is the center of the motif)
 
   TVector2 dim=Dimensions();
-  return TVector2((2.*localIndices.GetFirst()+1.)*fPadDimensions.X()-dim.X(),
-		  (2.*localIndices.GetSecond()+1.)*fPadDimensions.Y()-dim.Y());
+  return TVector2((2.*ixLocal+1.)*fPadDimensions.X()-dim.X(),
+		  (2.*iyLocal+1.)*fPadDimensions.Y()-dim.Y());
 }
 
 //_____________________________________________________________________________
-AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
+MpPair_t AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
 {
   /// Return the pad indices from a given local position
   /// or (-1,-1) if this position doesn't correspond to any valid
@@ -109,15 +127,16 @@ AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
   if ( lowerLeft.X() < - AliMpConstants::LengthTolerance() || 
        lowerLeft.Y() < - AliMpConstants::LengthTolerance() ) 
     {
-      return AliMpIntPair::Invalid();
+      return -1;
     }
 
   Int_t ix = (Int_t)(lowerLeft.X()/(2.*fPadDimensions.X()));
   Int_t iy = (Int_t)(lowerLeft.Y()/(2.*fPadDimensions.Y()));
   
-  if (!GetMotifType()->FindConnectionByLocalIndices(AliMpIntPair(ix,iy)))
+  if ( ! GetMotifType()->FindConnectionByLocalIndices(ix,iy) )
   {
-    return AliMpIntPair::Invalid();
+    return -1;
   }
-  return AliMpIntPair(ix,iy);
+  
+  return AliMp::Pair(ix,iy);
 }

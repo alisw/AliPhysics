@@ -69,16 +69,17 @@ AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const
 }  
 
 //______________________________________________________________________________
-Bool_t AliMpMotifPosition::HasPadByIndices(const AliMpIntPair& indices) const
+Bool_t AliMpMotifPosition::HasPadByIndices(MpPair_t indices) const
 {
 /// Return true if pad with the specified indices exists in 
 /// this motif position.
 
-  if (!HasIndices(indices)) return kFALSE;
+  if ( ! HasIndices(indices) ) return kFALSE;
   
   if (fMotif->GetMotifType()->IsFull()) return kTRUE;
   
-  return fMotif->GetMotifType()->HasPadByLocalIndices(indices-GetLowIndicesLimit());
+  return fMotif->GetMotifType()->HasPadByLocalIndices(
+                                    indices - GetLowIndicesLimit());
 }
 
 //______________________________________________________________________________
@@ -118,10 +119,10 @@ AliMpMotifPosition::Print(Option_t* option) const
        << GetMotif()->GetID()
        << " at (" << Position().X() << "," 
        << Position().Y() << ") "
-       << " iMin=(" << GetLowIndicesLimit().GetFirst()
-       << "," << GetLowIndicesLimit().GetSecond()
-       << ") iMax=(" << GetHighIndicesLimit().GetFirst()
-       << "," << GetHighIndicesLimit().GetSecond()
+       << " iMin=(" << GetLowLimitIx()
+       << "," << GetLowLimitIy()
+       << ") iMax=(" << GetHighLimitIx()
+       << "," << GetHighLimitIy()
        << ")" << std::endl;
 
   if ( option && option[0] == 'M' )

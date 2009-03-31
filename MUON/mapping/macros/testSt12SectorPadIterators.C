@@ -16,6 +16,7 @@
 #include "AliMpArea.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpVPainter.h"
+#include "AliMpEncodePair.h"
 
 #include <Riostream.h>
 #include <TCanvas.h>
@@ -54,11 +55,12 @@ void testSectorPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane
   AliMpSectorPadIterator it = AliMpSectorPadIterator(sector);
 
   for (it.First(); ! it.IsDone(); it.Next()) {
-    AliMpIntPair indices = it.CurrentItem().GetIndices();
-    cout<<"Iterator number "<< num << " at "<< indices <<endl;
+    Long_t indices = it.CurrentItem().GetIndices();
+    cout<<"Iterator number "<< num << " at ";
+    AliMp::PairPut(cout, indices) <<  endl;
     num++;
-    TMarker* marker = new TMarker( (Double_t)indices.GetFirst() /xmax,
-                                   (Double_t)indices.GetSecond()/ymax,
+    TMarker* marker = new TMarker( (Double_t)AliMp::PairFirst(indices) /xmax,
+                                   (Double_t)AliMp::PairSecond(indices)/ymax,
                                    2);
     marker->Draw();
   }

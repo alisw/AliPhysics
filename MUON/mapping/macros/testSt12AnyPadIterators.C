@@ -18,9 +18,9 @@
 #include "AliMpVMotif.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpSectorPadIterator.h"
-#include "AliMpNeighboursPadIterator.h"
 #include "AliMpMotifPositionPadIterator.h"
 #include "AliMpConstants.h"
+#include "AliMpEncodePair.h"
 
 #include <Riostream.h>
 #include <TCanvas.h>
@@ -51,18 +51,20 @@ void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
   Int_t num=0;
 
   for (it.First(); ! it.IsDone(); it.Next()){
-    AliMpIntPair indices = it.CurrentItem().GetIndices();
-    if (print) cout<<"Iterator number "<< num << " at "<< indices <<endl;
+    Long_t indices = it.CurrentItem().GetIndices();
+    if (print) {
+      cout<<"Iterator number "<< num << " at ";
+      AliMp::PairPut(cout, indices) <<  endl;
+    }  
     num++;
-    TMarker* marker = new TMarker( (Double_t)indices.GetFirst() /xmax,
-                                   (Double_t)indices.GetSecond()/ymax,
+    TMarker* marker = new TMarker( (Double_t)AliMp::PairFirst(indices) /xmax,
+                                   (Double_t)AliMp::PairSecond(indices)/ymax,
                                    2);
     marker->Draw();
   }
 }
 
-void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane,
-                         Int_t i=50, Int_t j=50)
+void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
 {
   AliMpDataProcessor mp;
   AliMpDataMap* dataMap = mp.CreateDataMap("data");
@@ -90,12 +92,6 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane,
   } 
   else 
     cout << "No motif found at given position..." << endl;
-  
-  canv->cd(3);
-  AliMpPad pad = segmentation.PadByIndices(AliMpIntPair(i,j));
-  AliMpNeighboursPadIterator itn(&segmentation,pad);
-  MarkPads(itn,i+8,j+8);
-  cout<<"________________ Neighbours __________________________"<<endl;
   
   canv->cd(4);
   Int_t motifPosId = 20 | AliMpConstants::ManuMask(plane); 

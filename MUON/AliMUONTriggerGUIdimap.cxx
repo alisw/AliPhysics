@@ -477,7 +477,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
       
       const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode-1));
       
-      AliMpPad mpad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      AliMpPad mpad = seg2->PadByIndices(ix,iy,kTRUE);
       
       // get the pad position and dimensions
       Float_t xlocal1 = mpad.Position().X();

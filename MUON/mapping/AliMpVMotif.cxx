@@ -28,7 +28,7 @@
 
 #include "AliMpVMotif.h"
 #include "AliMpMotifType.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 #include "AliMpConnection.h"
 
 #include <Riostream.h>
@@ -71,8 +71,8 @@ AliMpVMotif::FindConnectionByLocalPos(const TVector2& localPos) const
   /// Return the local indices from the local
   /// (x,y) position
 
-  AliMpIntPair padIndices=PadIndicesLocal(localPos);
-  if (padIndices.GetFirst()>=0)
+  MpPair_t padIndices = PadIndicesLocal(localPos);
+  if ( padIndices > 0 )
     return fMotifType->FindConnectionByLocalIndices(padIndices);
   else
     return 0;
@@ -98,9 +98,8 @@ void AliMpVMotif::Print(Option_t *option) const
     cout<<"-----------------------------------"<<endl;
     for (Int_t j=fMotifType->GetNofPadsY()-1;j>=0;j--){
       for (Int_t i=0;i<fMotifType->GetNofPadsX();i++){
-	AliMpIntPair indices = AliMpIntPair(i,j);
-	if (fMotifType->FindConnectionByLocalIndices(indices)){
-	  TVector2 pos = PadPositionLocal(indices);
+	if (fMotifType->FindConnectionByLocalIndices(i,j)){
+	  TVector2 pos = PadPositionLocal(i,j);
 	  cout<<setw(11)<<Form("(%.1f,%.1f)",pos.X(),pos.Y());
 	}
       }
@@ -109,4 +108,24 @@ void AliMpVMotif::Print(Option_t *option) const
   } else fMotifType->Print(option);
 }
 
+/*
+//_____________________________________________________________________________
+void AliMpVMotif::PadLIndicesLocal(const TVector2& localPos, 
+                                  Int_t& ixLocal, Int_t& iyLocal) const
+{
+  /// Fill the pad indices ix from a given local position
+  /// or (-1,-1) if this position doesn't correspond to any valid
+  /// connection
 
+  MpPair_t indices = PadIndicesLocal(localPos);
+  
+  if ( indices < 0 ) {
+    ixLocal = -1;
+    iyLocal = -1;
+  }
+  else {
+    ixLocal = AliMp::PairFirst(indices);
+    iyLocal = AliMp::PairSecond(indices);
+  }  
+}
+*/

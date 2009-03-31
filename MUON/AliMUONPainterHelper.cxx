@@ -321,8 +321,8 @@ AliMUONPainterHelper::GeneratePadStore(Int_t detElemId)
       Double_t x,y,z;
       Local2Global(detElemId,localPosition.X(),localPosition.Y(),0,
                    x,y,z);
-      Int_t manuId = pad.GetLocation().GetFirst();
-      Int_t manuChannel = pad.GetLocation().GetSecond();
+      Int_t manuId = pad.GetManuId();
+      Int_t manuChannel = pad.GetManuChannel();
       AliMUONVCalibParam* param = fPadStore->Get(detElemId,manuId);
       param->SetValueAsDouble(manuChannel,0,x);
       param->SetValueAsDouble(manuChannel,1,y);

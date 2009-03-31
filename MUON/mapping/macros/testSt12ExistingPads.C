@@ -71,8 +71,7 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   for (Int_t i=0; i<maxPadIndexX+1;i++){
     for (Int_t j=0;j<maxPadIndexY+1;++j){
 
-      AliMpIntPair indices(i,j);
-      if (segmentation->HasPad(indices)) histo->Fill(i,j);
+      if ( segmentation->HasPadByIndices(i,j) ) histo->Fill(i,j);
     }
   }
 
@@ -90,8 +89,7 @@ void testExistingPads(AliMq::Station12Type station,AliMp::PlaneType plane)
   for (Int_t i=0; i<maxPadIndexX+1;i++){
     for (Int_t j=0;j<maxPadIndexY+1;++j){
 
-      AliMpIntPair indices(i,j);
-      if (fast->HasPad(indices)) histo2->Fill(i,j);
+      if ( fast->HasPadByIndices(i,j) ) histo2->Fill(i,j);
     }
   }
 

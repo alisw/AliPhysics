@@ -17,7 +17,7 @@
 
 #include "AliMpDirection.h"
 #include "AliMpPlaneType.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 #include <TString.h>
 #include <TVector2.h>
@@ -75,7 +75,7 @@ class AliMpSector : public TNamed
 
     TVector2        GetMinPadDimensions() const;
     TVector2        GetMaxPadDimensions() const;
-    AliMpIntPair    GetMaxPadIndices() const;
+    MpPair_t        GetMaxPadIndices() const;
     Int_t           GetNofPads() const;
 
     AliMpMotifMap*  GetMotifMap() const;
@@ -109,10 +109,10 @@ class AliMpSector : public TNamed
     AliMp::Direction fDirection;        ///< the direction of constant pad size
     TVector2         fMinPadDimensions; ///< minimum pad dimensions
     TVector2         fMaxPadDimensions; ///< miximum pad dimensions
-    AliMpIntPair     fMaxPadIndices;    ///< maximum pad indices    
+    MpPair_t         fLMaxPadIndices;   ///< maximum pad indices    
     Int_t            fNofPads;          ///<  total number of pads
 
-  ClassDef(AliMpSector,1)  // Sector
+  ClassDef(AliMpSector,2)  // Sector
 };
 
 // inline functions
@@ -130,8 +130,8 @@ inline TVector2   AliMpSector::GetMaxPadDimensions() const
 { return fMaxPadDimensions; }
 
 /// Return maximum pad indices
-inline AliMpIntPair  AliMpSector::GetMaxPadIndices() const
-{ return fMaxPadIndices; }
+inline MpPair_t  AliMpSector::GetMaxPadIndices() const
+{ return fLMaxPadIndices; }
 
 /// Return total number of pads
 inline Int_t  AliMpSector::GetNofPads() const

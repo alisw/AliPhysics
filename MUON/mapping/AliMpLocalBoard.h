@@ -15,7 +15,8 @@
 
 #include <TNamed.h>
 
-#include  "AliMpArrayI.h"
+#include "AliMpArrayI.h"
+#include "AliMpEncodePair.h"
 
 class TString;
 
@@ -85,7 +86,7 @@ class AliMpLocalBoard : public TNamed
 
     
     /// given position (line, col)
-    AliMpIntPair GetPosition() const;
+    MpPair_t GetPosition() const;
 
     // Id to be copy to or from
     

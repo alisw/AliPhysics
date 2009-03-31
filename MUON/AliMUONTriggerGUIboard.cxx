@@ -183,8 +183,7 @@ void AliMUONTriggerGUIboard::MakeGeometry()
   for (Int_t ich = 0; ich < kNMT; ich++) {
     if (fNPadsX[ich]) {
       pad = (AliMpPad*)fPadsX[ich]->At(0);
-      AliMpIntPair loc = pad->GetLocation(0);
-      fIdCircuit = loc.GetFirst();
+      fIdCircuit = pad->GetLocalBoardId(0);
       break;
     }
   }
@@ -211,17 +210,15 @@ void AliMUONTriggerGUIboard::MakeGeometry()
   Int_t padyIy = -1, padyIx1 = +999, padyIx2 = -999;
   for (Int_t ip = 0; ip < fNPadsX[0]; ip++) {
     pad = (AliMpPad*)fPadsX[0]->At(ip);
-    AliMpIntPair ind = pad->GetIndices();
-    padxIx = ind.GetFirst();
-    padxIy1 = TMath::Min(padxIy1,ind.GetSecond());
-    padxIy2 = TMath::Max(padxIy2,ind.GetSecond());
+    padxIx = pad->GetIx();
+    padxIy1 = TMath::Min(padxIy1,pad->GetIy());
+    padxIy2 = TMath::Max(padxIy2,pad->GetIy());
   }
   for (Int_t ip = 0; ip < fNPadsY[0]; ip++) {
     pad = (AliMpPad*)fPadsY[0]->At(ip);
-    AliMpIntPair ind = pad->GetIndices();
-    padyIy = ind.GetSecond();
-    padyIx1 = TMath::Min(padyIx1,ind.GetFirst());
-    padyIx2 = TMath::Max(padyIx2,ind.GetFirst());
+    padyIy = pad->GetIy();
+    padyIx1 = TMath::Min(padyIx1,pad->GetIx());
+    padyIx2 = TMath::Max(padyIx2,pad->GetIx());
   }
   fXSix  = padxIx;
   fXSiy1 = padxIy1;

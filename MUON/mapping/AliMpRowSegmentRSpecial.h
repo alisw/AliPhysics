@@ -20,7 +20,6 @@
 class AliMpRow;
 class AliMpPadRow;
 class AliMpVPadRowSegment;
-class AliMpIntPair;
 
 class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
 {
@@ -40,8 +39,7 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
 
     // set methods
     virtual void   SetGlobalIndices(AliMpRow* rowBefore);
-    virtual Int_t  SetIndicesToMotifPosition(Int_t i, 
-                             const AliMpIntPair& indices);
+    virtual Int_t  SetIndicesToMotifPosition(Int_t i, MpPair_t indices);
 
   protected:
     // methods

@@ -36,7 +36,7 @@
 #include "AliMUONRegionalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
 #include "AliMpCDB.h"
@@ -1010,8 +1010,8 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       
       AliMUONVDigitStore* store = SDigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
-      fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
+      MpPair_t pair = AliMpDEManager::GetDetElemIdRange(chamber);
+      fIterator = store->CreateIterator(AliMp::PairFirst(pair), AliMp::PairSecond(pair), cathode);
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kSDigitIteratorByChamberAndCathode;
       fDataX = chamber;
@@ -1052,8 +1052,8 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       
       AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
-      fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
+      MpPair_t pair = AliMpDEManager::GetDetElemIdRange(chamber);
+      fIterator = store->CreateIterator(AliMp::PairFirst(pair), AliMp::PairSecond(pair), cathode);
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kDigitIteratorByChamberAndCathode;
       fDataX = chamber;

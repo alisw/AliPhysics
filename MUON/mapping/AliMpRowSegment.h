@@ -19,12 +19,12 @@
 
 class AliMpRow;
 class AliMpVMotif;
-class AliMpIntPair;
 
 class AliMpRowSegment : public AliMpVRowSegment
 {
   public:
-    AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif, AliMpIntPair padOffset, 
+    AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif, 
+                Int_t padOffsetX, Int_t padOffsetY, 
                 Int_t nofMotifs, Int_t motifPositionId, Int_t motifPositionDId);
     AliMpRowSegment();
     virtual ~AliMpRowSegment();
@@ -47,8 +47,7 @@ class AliMpRowSegment : public AliMpVRowSegment
     // set methods
     virtual void      SetOffset(const TVector2& offset);
     virtual void      SetGlobalIndices(AliMpRow* rowBefore);
-    virtual Int_t     SetIndicesToMotifPosition(Int_t i, 
-                                const AliMpIntPair& indices);
+    virtual Int_t     SetIndicesToMotifPosition(Int_t i, MpPair_t indices);
 
     // get methods
     virtual AliMpRow*     GetRow() const;
@@ -71,7 +70,7 @@ class AliMpRowSegment : public AliMpVRowSegment
 
     // data members
     Int_t         fNofMotifs;  ///< number of motifs
-    AliMpIntPair  fPadOffset;  ///< the offset in nof pads 
+    MpPair_t      fLPadOffset; ///< the offset in nof pads 
     TVector2      fOffset;     ///< \brief the position of the centre of the first motif
                                /// (x wtr to left border, y wtr to row center)
     AliMpRow*     fRow;        ///< the row containing this segment 

@@ -25,17 +25,20 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 //-----------------------------------------------------------------------------
 
-#include <cstdlib>
 #include "AliMpMotifType.h"
 #include "AliMpExMapIterator.h"
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpConnection.h"
 #include "AliMpConstants.h"
-#include "AliLog.h"
 #include "AliMpFiles.h"
-#include "TSystem.h"
+#include "AliMpEncodePair.h"
 
+#include "AliLog.h"
+
+#include <TSystem.h>
 #include <Riostream.h>
+
+#include <cstdlib>
 
 /// \cond CLASSIMP
 ClassImp(AliMpMotifType)
@@ -186,8 +189,8 @@ AliMpMotifType::AddConnection(AliMpConnection* connection)
   
   if (!connection) return kFALSE;
   
-  Int_t ix = connection->LocalIndices().GetFirst();
-  Int_t iy = connection->LocalIndices().GetSecond();
+  Int_t ix = connection->GetLocalIx();
+  Int_t iy = connection->GetLocalIy();
   
   Int_t manuChannel = connection->GetManuChannel();
   
@@ -198,7 +201,8 @@ AliMpMotifType::AddConnection(AliMpConnection* connection)
   
     Int_t index = ix + iy*AliMpConstants::ManuNofChannels();
     
-    AliMpConnection* c = FindConnectionByLocalIndices(connection->LocalIndices());
+    AliMpConnection* c = FindConnectionByLocalIndices(
+                             connection->GetLocalIndices());
     
     if (c)
     {
@@ -238,13 +242,20 @@ AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 
 //______________________________________________________________________________
 AliMpConnection*
-AliMpMotifType::FindConnectionByLocalIndices(const AliMpIntPair& localIndices) const
+AliMpMotifType::FindConnectionByLocalIndices(MpPair_t localIndices) const
 {
   /// Retrieve the AliMpConnection pointer from its position (in pad unit)
 
-  Int_t ix = localIndices.GetFirst();
-  Int_t iy = localIndices.GetSecond();
-  
+  return FindConnectionByLocalIndices(AliMp::PairFirst(localIndices),
+                                      AliMp::PairSecond(localIndices));
+}
+
+//______________________________________________________________________________
+AliMpConnection*
+AliMpMotifType::FindConnectionByLocalIndices(Int_t ix, Int_t iy) const
+{
+  /// Retrieve the AliMpConnection pointer from its position (in pad unit)
+
   if ( ix < fNofPadsX && iy < fNofPadsY && ix >= 0 && iy >= 0 )
   {  
     Int_t index = ix + iy*fMaxNofPads;
@@ -307,80 +318,77 @@ AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 
 
 //______________________________________________________________________________
-AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(const AliMpConnection* connection) const
+MpPair_t AliMpMotifType::FindLocalIndicesByConnection(const AliMpConnection* connection) const
 {
   /// Reurn the pad position from the connection pointer.
 
-  return connection->LocalIndices();
+  return connection->GetLocalIndices();
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
+MpPair_t AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 {
   /// Retrieve the AliMpConnection pointer from its pad num
   
   AliMpConnection* connection = FindConnectionByPadNum(padNum);
   
-  if (connection)
-  {
-    return connection->LocalIndices();
-  }
-  else
-    return AliMpIntPair::Invalid();
+  if ( ! connection) return -1;
+  
+  return connection->GetLocalIndices();
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
+MpPair_t AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 {
   /// Return the connection for the given gassiplex number
   
   AliMpConnection* connection = FindConnectionByGassiNum(gassiNum);
   
-  if (connection)
-  {
-    return connection->LocalIndices();
-  }
-  else
-    return AliMpIntPair::Invalid();
+  if ( ! connection) return -1;
+
+  return connection->GetLocalIndices();
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
+MpPair_t AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 {
   /// Give the connection related to the given kapton number
 
   AliMpConnection* connection = FindConnectionByKaptonNum(kaptonNum);
   
-  if (connection)
-  {
-    return connection->LocalIndices();
-  }
-  else
-    return AliMpIntPair::Invalid();
+  if ( ! connection) return -1;
+
+  return connection->GetLocalIndices();
 }
 
 //______________________________________________________________________________
-AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
+MpPair_t AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 {
   /// Retrieve the connection from a Berg connector number
   
   AliMpConnection* connection = FindConnectionByBergNum(bergNum);
   
-  if (connection)
-  {
-    return connection->LocalIndices();
-  }
-  else
-    return AliMpIntPair::Invalid();
+  if ( ! connection) return -1;
+
+  return connection->GetLocalIndices();
 }
 
 //______________________________________________________________________________
 Bool_t 
-AliMpMotifType::HasPadByLocalIndices(const AliMpIntPair& localIndices) const
+AliMpMotifType::HasPadByLocalIndices(MpPair_t localIndices) const
 {
   /// Return true if the pad indexed by \a localIndices has a connection
     
   return ( FindConnectionByLocalIndices(localIndices) != 0x0 );
+}
+
+//______________________________________________________________________________
+Bool_t 
+AliMpMotifType::HasPadByLocalIndices(Int_t localIx, Int_t localIy) const
+{
+  /// Return true if the pad indexed by \a localIndices has a connection
+    
+  return ( FindConnectionByLocalIndices(localIx, localIy) != 0x0 );
 }
 
 //______________________________________________________________________________
@@ -424,7 +432,7 @@ void AliMpMotifType::Print(Option_t *option) const
 
   for (Int_t j=fNofPadsY-1;j>=0;j--){
     for (Int_t i=0;i<fNofPadsX;i++){
-      AliMpConnection *connexion = FindConnectionByLocalIndices(AliMpIntPair(i,j));
+      AliMpConnection *connexion = FindConnectionByLocalIndices(i,j);
       TString str;
       if (connexion){
         AliDebug(1,Form("i,j=%2d,%2d connexion=%p",i,j,connexion));
@@ -496,7 +504,7 @@ AliMpMotifType::Save(const char* motifName) const
   {
     for ( Int_t iy = 0; iy < GetNofPadsY(); ++iy ) 
     {
-      AliMpConnection* con = FindConnectionByLocalIndices(AliMpIntPair(ix,iy));
+      AliMpConnection* con = FindConnectionByLocalIndices(ix,iy);
       if (con)
       {
         motifFile << con->GetBergNum() << "\t1\t" << con->GetPadNum() << "\t-" << endl;

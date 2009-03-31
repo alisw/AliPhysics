@@ -18,6 +18,7 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
+#include "AliMpEncodePair.h"
 
 #include <Riostream.h>
 #include <TCanvas.h>
@@ -39,19 +40,19 @@ void testIndicesLimits(AliMq::Station12Type station,AliMp::PlaneType plane)
   // Loop over rows
   for (Int_t i=0; i<sector->GetNofRows(); i++) {
     AliMpRow* row = sector->GetRow(i);
-    cout << i
-         << "th row limits: "
-	 << row->GetLowIndicesLimit() << "  "
-	 << row->GetHighIndicesLimit() << endl;
-    
+
+    cout << i << "th row limits: "; 
+    AliMp::PairPut(cout, row->GetLowIndicesLimit())  <<  "  "; 
+    AliMp::PairPut(cout, row->GetHighIndicesLimit()) <<  endl;
+
     // Loop over row segments
     for (Int_t j=0; j<row->GetNofRowSegments(); j++) {
       AliMpVRowSegment* rowSegment = row->GetRowSegment(j);
       cout << "   "
            << j
-           << "th row segment limits: "
-	   << rowSegment->GetLowIndicesLimit() << "  "
-	   << rowSegment->GetHighIndicesLimit() << endl;
+           << "th row segment limits: ";
+           AliMp::PairPut(cout, rowSegment->GetLowIndicesLimit())  <<  "  "; 
+           AliMp::PairPut(cout, rowSegment->GetHighIndicesLimit()) <<  endl;
       
       // Loop over motif positions
       for (Int_t k=0; k<rowSegment->GetNofMotifs(); k++) {
@@ -59,11 +60,11 @@ void testIndicesLimits(AliMq::Station12Type station,AliMp::PlaneType plane)
         AliMpMotifPosition* mPos = 
 	  sector->GetMotifMap()->FindMotifPosition(mposID);     
         if (mPos) {
-          cout << "      "
-               << mPos->GetID()
-               << " motif position limits: "
-	       << mPos->GetLowIndicesLimit() << "  "
-	       << mPos->GetHighIndicesLimit() << endl;
+         cout << "      "
+              << mPos->GetID()
+              << " motif position limits: ";
+              AliMp::PairPut(cout, mPos->GetLowIndicesLimit())  <<  "  "; 
+              AliMp::PairPut(cout, mPos->GetHighIndicesLimit()) <<  endl;
 	}
 	else {
 	  cerr << "Motif position "

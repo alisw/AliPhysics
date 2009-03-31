@@ -114,12 +114,11 @@ Int_t  AliMpFrtCrocusConstants::GetIdFromBotAddress(UInt_t add)
 
 
 //______________________________________________________________________________
-AliMpIntPair  AliMpFrtCrocusConstants::GetLinkPortId(Int_t index) 
+MpPair_t  AliMpFrtCrocusConstants::GetLinkPortId(Int_t index) 
 {  
 /// Return the linkPort/dspId by index
 
-  if (index >= fgkNofBusPatches)
-    return AliMpIntPair(-1,-1);
+  if ( index >= fgkNofBusPatches ) return -1;
   
   Int_t dspId;
   if (index < fgkOffset)
@@ -127,7 +126,7 @@ AliMpIntPair  AliMpFrtCrocusConstants::GetLinkPortId(Int_t index)
   else
     dspId = 1;  
   
-  return AliMpIntPair(dspId, fgkLinkPorts[index]);
+  return AliMp::Pair(dspId, fgkLinkPorts[index]);
  
 }
 

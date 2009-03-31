@@ -27,6 +27,10 @@
  *  @{
  *  \namespace AliMp
  *  \brief The namespace for mapping enums and related functions 
+ *
+ *  \namespace AliMq
+ *  \brief The special namespace only for St12StationType
+ *
  */
 
 /** @defgroup basic mp_basic

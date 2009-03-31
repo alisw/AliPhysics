@@ -36,6 +36,7 @@
 #include "AliMpDetElement.h"
 #include "AliMpDCSNamer.h"
 #include "AliMpManuIterator.h"
+#include "AliMpEncodePair.h"
 #include <Riostream.h>
 #include <TClass.h>
 #include <TMath.h>
@@ -1078,9 +1079,9 @@ AliMUONTrackerData::GetDEManu(const AliMUONVCalibParam& param,
   {
     // we (probably) get a manu serial number
     Int_t serial = param.ID0();
-    AliMpIntPair pair = AliMpManuStore::Instance()->GetDetElemIdManu(serial);
-    detElemId = pair.GetFirst();
-    manuId = pair.GetSecond();
+    MpPair_t pair = AliMpManuStore::Instance()->GetDetElemIdManu(serial);
+    detElemId = AliMp::PairFirst(pair);
+    manuId = AliMp::PairSecond(pair);
     if ( !detElemId ) 
     {
       AliError(Form("DE %d manuId %d from serial %d is not correct !",

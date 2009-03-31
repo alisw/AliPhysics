@@ -32,7 +32,6 @@
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
-#include "AliMpIntPair.h"
 #include "AliMpManuIterator.h"
 #include "Riostream.h"
 #endif

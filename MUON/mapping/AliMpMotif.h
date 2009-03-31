@@ -14,6 +14,7 @@
 #define ALI_MP_MOTIF_H
 
 #include "AliMpVMotif.h"
+#include "AliMpEncodePair.h"
 
 #include <TObject.h>
 #include <TVector2.h>
@@ -30,14 +31,16 @@ class AliMpMotif : public AliMpVMotif
   // Access methods
   virtual Int_t    GetNofPadDimensions() const;
   virtual TVector2 GetPadDimensions(Int_t /*i*/ = 0) const;
-  virtual TVector2 GetPadDimensions(const AliMpIntPair& localIndices) const;
+  virtual TVector2 GetPadDimensionsByIndices(MpPair_t localIndices) const;
+  virtual TVector2 GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const;
 
   // Geometry
   virtual TVector2 Dimensions() const;
 
   // Other methods
-  virtual TVector2 PadPositionLocal(const AliMpIntPair& localIndices) const;
-  virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const;
+  virtual TVector2 PadPositionLocal(MpPair_t localIndices) const;
+  virtual TVector2 PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const;
+  virtual MpPair_t PadIndicesLocal(const TVector2& localPos) const;
 
  private:
   // methods

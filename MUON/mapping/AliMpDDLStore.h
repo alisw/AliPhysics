@@ -18,7 +18,6 @@
 #define ALI_MP_DDL_STORE_H
 
 #include "AliMpExMap.h"
-#include "AliMpIntPair.h"
 #include "AliMpRegionalTrigger.h"
 #include <TObject.h>
 #include <TObjArray.h>
@@ -62,10 +61,8 @@ class AliMpDDLStore : public  TObject {
     
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
-    
 
-    /// Get link port and DSP from busPatch id
-    AliMpIntPair  GetLinkPortId(Int_t busPatchId) const;
+    Long_t GetLinkPortId(Int_t busPatchId) const;
 
     /// Print info of all manus
     void PrintAllManu() const;

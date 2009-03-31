@@ -29,12 +29,15 @@ class AliMpMotifSpecial : public AliMpVMotif
   virtual ~AliMpMotifSpecial();
 
   // Access methods
-  virtual TVector2 GetPadDimensions(const AliMpIntPair& localIndices) const;
+  virtual TVector2 GetPadDimensionsByIndices(MpPair_t localIndices) const;
+  virtual TVector2 GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const;
   virtual Int_t    GetNofPadDimensions() const;
   virtual TVector2 GetPadDimensions(Int_t i) const;
 
   // Set methods
-  void SetPadDimensions(const AliMpIntPair& localIndices,
+  void SetPadDimensions(MpPair_t localIndices,
+                        const TVector2& dimensions);
+  void SetPadDimensions(Int_t ixLocal, Int_t iyLocal,
                         const TVector2& dimensions);
   
   // Geometry
@@ -42,14 +45,13 @@ class AliMpMotifSpecial : public AliMpVMotif
   virtual TVector2 Dimensions() const;
 
   // Other methods
-  virtual TVector2     PadPositionLocal(const AliMpIntPair& localIndices) const;
-  virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const;
+  virtual TVector2     PadPositionLocal(MpPair_t  localIndices) const;
+  virtual TVector2     PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const;
+  virtual MpPair_t     PadIndicesLocal(const TVector2& localPos) const;
 
  private:
   /// Not implemented
   AliMpMotifSpecial();
-  // methods
-  Int_t VectorIndex(const AliMpIntPair& indices) const;
 
   // data members
   TVector2     fDimensions;           ///< motif dimensions

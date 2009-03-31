@@ -18,6 +18,7 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpVPainter.h"
+#include "AliMpEncodePair.h"
 
 #include <Riostream.h>
 #include <TCanvas.h>
@@ -51,7 +52,7 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
   painter->Draw("ZSSMP");
 
-  AliMpIntPair low,high;
+  Long_t low,high;
   TVector2 rlow,rhigh;
 
   for (Int_t irow=0;irow<sector->GetNofRows();irow++){
@@ -65,8 +66,10 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
     rhigh = TVector2(row->Position().X()+row->Dimensions().X(),
                      row->Position().Y()+row->Dimensions().Y());
     out<<"_______________________________________________________________"<<endl;
-    out<<"Row "<<irow<<" between "<<low<<" and "<<high
-       <<"-->("<<rlow.X()<<','<<rlow.Y()<<") and ("
+    out<<"Row "<<irow<<" between ";
+    AliMp::PairPut(out, low)  <<  " and "; 
+    AliMp::PairPut(out, high) 
+       <<  "-->(" <<rlow.X()<<','<<rlow.Y()<<") and ("
        <<rhigh.X()<<','<<rhigh.Y()<<')'<<endl;
     out<<"_______________________________________________________________"<<endl;
   
@@ -81,7 +84,9 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
       rhigh = TVector2(seg->Position().X()+seg->Dimensions().X(),
                        seg->Position().Y()+seg->Dimensions().Y());
       out<<"-----------------------------------------------------------"<<endl;
-      out<<"     Segment "<<iseg<<" between "<<low<<" and "<<high
+      out<<"     Segment "<<iseg<<" between ";
+      AliMp::PairPut(out, low)  <<  " and "; 
+      AliMp::PairPut(out, high) 
          <<"-->("<<rlow.X()<<','<<rlow.Y()<<") and ("
          <<rhigh.X()<<','<<rhigh.Y()<<')'<<endl;
       out<<"-----------------------------------------------------------"<<endl;
@@ -100,7 +105,9 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
                   motifPos->Position().Y()-motif->Dimensions().Y());
         rhigh = TVector2(motifPos->Position().X()+motif->Dimensions().X(),
                    motifPos->Position().Y()+motif->Dimensions().Y());
-        out<<"          Motif "<<imotif<<" between "<<low<<" and "<<high
+        out<<"          Motif "<<imotif<<" between ";
+        AliMp::PairPut(out, low)  <<  " and "; 
+        AliMp::PairPut(out, high) 
            <<"-->("<<rlow.X()<<','<<rlow.Y()<<") and ("
            <<rhigh.X()<<','<<rhigh.Y()<<')'<<endl;
       }

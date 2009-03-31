@@ -33,7 +33,7 @@ class AliMpMotifPosition : public AliMpVIndexed
   // get methods
   Int_t        GetID() const;
   AliMpVMotif* GetMotif() const;
-  Bool_t       HasPadByIndices(const AliMpIntPair& indices) const;
+  Bool_t       HasPadByIndices(MpPair_t indices) const;
   Bool_t       HasPadByManuChannel(Int_t manuChannel) const;
 
   // Geometry

@@ -87,7 +87,7 @@ AliMpVRowSegment*  AliMpRow::FindRowSegment(Int_t ix) const
     AliMpVRowSegment* segment = GetRowSegment(i);
 
     if (!dynamic_cast<AliMpVRowSegmentSpecial*>(segment) &&
-         segment->GetHighIndicesLimit().GetFirst() >= ix)
+         segment->GetHighLimitIx() >= ix)
 	 
      return segment;	 
   }   
@@ -113,7 +113,7 @@ AliMpRow::FindMotifPosition(AliMpVRowSegment* segment, Int_t ix) const
        return 0;
      }  
      
-     if (motifPosition->GetHighIndicesLimit().GetFirst()>=ix) 
+     if (motifPosition->GetHighLimitIx()>=ix) 
        return motifPosition;
   }
   
@@ -131,8 +131,7 @@ void AliMpRow::SetHighIndicesLimits(Int_t iy)
   for (Int_t j=0; j<GetNofRowSegments(); j++) {
      AliMpVRowSegment* rowSegment = GetRowSegment(j);       
      rowSegment
-       ->SetHighIndicesLimit(
-	    AliMpIntPair(rowSegment->GetHighIndicesLimit().GetFirst(),iy));
+       ->SetHighIndicesLimit(rowSegment->GetHighLimitIx(),iy);
 
     for (Int_t k=0; k<rowSegment->GetNofMotifs(); k++) {
 
@@ -141,8 +140,7 @@ void AliMpRow::SetHighIndicesLimits(Int_t iy)
 	= GetMotifMap()->FindMotifPosition(motifPositionId);
 
       motifPosition
-	->SetHighIndicesLimit(
-	     AliMpIntPair(motifPosition->GetHighIndicesLimit().GetFirst(), iy));
+	->SetHighIndicesLimit(motifPosition->GetHighLimitIx(), iy);
      
     }
   }  
@@ -247,7 +245,7 @@ void AliMpRow::SetMotifPositions()
         // set the initial value to of HighIndicesLimit() Invalid()
         // (this is used for calculation of indices in case of
         // special row segments)
-        motifPosition->SetHighIndicesLimit(AliMpIntPair::Invalid());
+        motifPosition->SetHighIndicesLimit(0, 0, false);
 
         //Bool_t warn = (rowSegment->GetNofMotifs()==1); 
         Bool_t warn = true;
@@ -275,14 +273,14 @@ void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection,
   for (Int_t j=0; j<GetNofRowSegments(); j++) {
      AliMpVRowSegment* rowSegment = GetRowSegment(j);
      
-     ix += rowSegment->GetLowIndicesLimit().GetFirst();
+     ix += rowSegment->GetLowLimitIx();
 
      for (Int_t k=0; k<rowSegment->GetNofMotifs(); k++) {
      
        // Find the y index value of the low edge
        if (rowBefore) {
          if (constPadSizeDirection == AliMp::kY) {
-           iy = rowBefore->GetHighIndicesLimit().GetSecond()+1;
+           iy = rowBefore->GetHighLimitIy()+1;
          } 
 	 else {
            AliMpVRowSegment* seg = rowBefore->FindRowSegment(ix);	
@@ -291,13 +289,13 @@ void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection,
              if (!motPos) 
 	       Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
 	   
-             iy = motPos->GetHighIndicesLimit().GetSecond()+1;
+             iy = motPos->GetHighLimitIy()+1;
 	   }  
          }
        } 
 
        // Set (ix, iy) to k-th motif position and update ix
-       ix = rowSegment->SetIndicesToMotifPosition(k, AliMpIntPair(ix, iy));
+       ix = rowSegment->SetIndicesToMotifPosition(k, AliMp::Pair(ix, iy));
     }
     rowSegment->SetGlobalIndices(rowBefore);    
   }
@@ -313,21 +311,21 @@ void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection,
     
     AliMpVRowSegment* rowSegment = GetRowSegment(i);
     
-    if ( rowSegment->GetLowIndicesLimit().GetFirst() < ixl ) 
-       ixl = rowSegment->GetLowIndicesLimit().GetFirst();
+    if ( rowSegment->GetLowLimitIx() < ixl ) 
+       ixl = rowSegment->GetLowLimitIx();
        
-    if ( rowSegment->GetLowIndicesLimit().GetSecond() < iyl ) 
-       iyl = rowSegment->GetLowIndicesLimit().GetSecond();
+    if ( rowSegment->GetLowLimitIy() < iyl ) 
+       iyl = rowSegment->GetLowLimitIy();
 
-    if ( rowSegment->GetHighIndicesLimit().GetFirst() > ixh ) 
-       ixh = rowSegment->GetHighIndicesLimit().GetFirst();
+    if ( rowSegment->GetHighLimitIx() > ixh ) 
+       ixh = rowSegment->GetHighLimitIx();
        
-    if ( rowSegment->GetHighIndicesLimit().GetSecond() > iyh ) 
-       iyh = rowSegment->GetHighIndicesLimit().GetSecond();
+    if ( rowSegment->GetHighLimitIy() > iyh ) 
+       iyh = rowSegment->GetHighLimitIy();
   }     
 
-  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
-  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
+  SetLowIndicesLimit(ixl, iyl);
+  SetHighIndicesLimit(ixh, iyh);
 }
 
 //_____________________________________________________________________________

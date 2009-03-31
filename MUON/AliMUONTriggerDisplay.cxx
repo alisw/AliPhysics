@@ -224,9 +224,9 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(1))};
 
     if(iLoc==0){
-      AliMpPad pad1 = seg[1]->PadByLocation(AliMpIntPair(iBoard,0),kFALSE);
+      AliMpPad pad1 = seg[1]->PadByLocation(iBoard,0,kFALSE);
       yWidthSlat = pad1.Dimensions().Y();
-      AliMpPad pad0 = seg[0]->PadByLocation(AliMpIntPair(iBoard,0),kFALSE);
+      AliMpPad pad0 = seg[0]->PadByLocation(iBoard,0,kFALSE);
       xOffsetLine = TMath::Abs(pad0.Position().X()) + pad0.Dimensions().X();
       xWidthCol = 2.* pad0.Dimensions().X();
     }
@@ -253,7 +253,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 	Int_t offset = 0;
 	if (cath && localBoard->GetSwitch(6)) offset = -8;
 
-	AliMpPad pad = seg[cath]->PadByLocation(AliMpIntPair(iBoard,iStrip+offset),kFALSE);
+	AliMpPad pad = seg[cath]->PadByLocation(iBoard,iStrip+offset,kFALSE);
 
 	if (!pad.IsValid()) continue;
 

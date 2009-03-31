@@ -32,20 +32,12 @@ ClassImp(AliMpVIndexed)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpVIndexed::AliMpVIndexed(const AliMpIntPair& lowLimit, 
-                             const AliMpIntPair& highLimit)
-  : TObject(),
-    fLowIndicesLimit(lowLimit),
-    fHighIndicesLimit(highLimit) 
-{
-/// Standard constructor
-}
-
-//_____________________________________________________________________________
 AliMpVIndexed::AliMpVIndexed()
   : TObject(),
-    fLowIndicesLimit(AliMpIntPair::Invalid()),
-    fHighIndicesLimit(AliMpIntPair::Invalid()) 
+    fLowLimit(0),
+    fHighLimit(0),
+    fLowValid(false),
+    fHighValid(false)
 {
 /// Default constructor
 }
@@ -56,25 +48,87 @@ AliMpVIndexed::~AliMpVIndexed()
 /// Destructor 
 }
 
-
 //_____________________________________________________________________________
-AliMpIntPair AliMpVIndexed::GlobalIndices(const AliMpIntPair& localIndices) const
+MpPair_t AliMpVIndexed::GlobalIndices(MpPair_t localIndices) const
 {
 /// Return the global indices corresponding to the given local indices.
 
-  return GetLowIndicesLimit()+localIndices;
-
+  return fLowLimit + localIndices;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMpVIndexed::HasIndices(const AliMpIntPair& indices) const
+Int_t  AliMpVIndexed::GlobalIx(Int_t localIx) const
+{
+/// Return the global indices ix corresponding to the given local indices
+
+  return GetLowLimitIx() + localIx;
+}  
+
+
+//_____________________________________________________________________________
+Int_t  AliMpVIndexed::GlobalIy(Int_t localIy) const
+{
+/// Return the global indices iy corresponding to the given local indices
+
+  return GetLowLimitIy() + localIy;
+}  
+
+//_____________________________________________________________________________
+void AliMpVIndexed::SetLowIndicesLimit(MpPair_t limit, Bool_t valid)
+{ 
+/// Set low indices limit
+
+  fLowLimit = limit; 
+  fLowValid = valid ; 
+}
+  
+//_____________________________________________________________________________
+void AliMpVIndexed::SetLowIndicesLimit(Int_t ix, Int_t iy, Bool_t valid)
+{ 
+/// Set low indices limit
+
+  fLowLimit = AliMp::Pair(ix, iy); 
+  fLowValid = valid; 
+}
+  
+//_____________________________________________________________________________
+void AliMpVIndexed::SetHighIndicesLimit(MpPair_t limit, Bool_t valid)
+{ 
+/// Set high indices limit
+
+  fHighLimit = limit; 
+  fHighValid = valid ; 
+}
+  
+//_____________________________________________________________________________
+void AliMpVIndexed::SetHighIndicesLimit(Int_t ix, Int_t iy, Bool_t valid)
+{ 
+/// Set high indices limit
+
+  fHighLimit = AliMp::Pair(ix, iy); 
+  fHighValid = valid; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliMpVIndexed::HasIndices(MpPair_t indices) const
 {
 /// Return true in the specified indices are within the limits.
   
-  return (indices.GetFirst()  >= fLowIndicesLimit.GetFirst() && 
-          indices.GetSecond() >= fLowIndicesLimit.GetSecond() && 
-          indices.GetFirst()  <= fHighIndicesLimit.GetFirst() && 
-          indices.GetSecond() <= fHighIndicesLimit.GetSecond() );
+  return ( AliMp::PairFirst(indices)  >= GetLowLimitIx() && 
+           AliMp::PairSecond(indices) >= GetLowLimitIy() && 
+           AliMp::PairFirst(indices)  <= GetHighLimitIx() && 
+           AliMp::PairSecond(indices) <= GetHighLimitIy() );
+}  
+
+//_____________________________________________________________________________
+Bool_t AliMpVIndexed::HasIndices(Int_t ix, Int_t iy) const
+{
+/// Return true in the specified indices are within the limits.
+  
+  return (ix  >= GetLowLimitIx() && 
+          iy  >= GetLowLimitIy() && 
+          ix  <= GetHighLimitIx() && 
+          iy  <= GetHighLimitIy() );
 }  
 
 //_____________________________________________________________________________
@@ -82,8 +136,85 @@ Bool_t AliMpVIndexed::HasValidIndices() const
 {
 /// Returns true if both indices limits have valid values.
   
-  return (fLowIndicesLimit.IsValid() && fHighIndicesLimit.IsValid() );
+  return ( fLowValid && fHighValid );
 }	   
+
+//_____________________________________________________________________________
+MpPair_t AliMpVIndexed::GetLowIndicesLimit() const
+{ 
+/// Return low indices limit
+
+  // if ( ! fLowValid )  return 0;
+
+  return fLowLimit; 
+}
+
+//_____________________________________________________________________________
+Int_t  AliMpVIndexed::GetLowLimitIx() const
+{ 
+/// Return low indices ix limit
+
+  // if ( ! fLowValid )  return 0;
+
+  return AliMp::PairFirst(fLowLimit); 
+}
+
+//_____________________________________________________________________________
+Int_t  AliMpVIndexed::GetLowLimitIy() const
+{ 
+/// Return low indices iy limit
+
+  // if ( ! fLowValid )  return 0;
+
+  return AliMp::PairSecond(fLowLimit); 
+}
+
+//_____________________________________________________________________________
+Bool_t AliMpVIndexed::IsLowLimitValid() const  
+{
+/// Return true, if low indices limit is set 
+
+  return fLowValid; 
+}
+
+//_____________________________________________________________________________
+MpPair_t AliMpVIndexed::GetHighIndicesLimit() const
+{ 
+/// Return high indices limit
+
+  // if ( ! fHighValid )  return 0;
+
+  return fHighLimit; 
+}
+
+//_____________________________________________________________________________
+Int_t  AliMpVIndexed::GetHighLimitIx() const
+{ 
+/// Return high indices ix limit
+
+  // if ( ! fHighValid )  return 0;
+
+  return AliMp::PairFirst(fHighLimit); 
+}
+
+//_____________________________________________________________________________
+Int_t  AliMpVIndexed::GetHighLimitIy() const
+{ 
+/// Return high indices iy limit
+
+  // if ( ! fHighValid )  return 0;
+
+  return AliMp::PairSecond(fHighLimit); 
+}
+
+//_____________________________________________________________________________
+Bool_t AliMpVIndexed::IsHighLimitValid() const  
+{
+/// Return true, if high indices limit is set 
+
+  return fHighValid; 
+}
+
 
 
   

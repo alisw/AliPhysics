@@ -24,7 +24,6 @@
 class AliMpRow;
 class AliMpPadRow;
 class AliMpVPadRowSegment;
-class AliMpIntPair;
 
 class AliMpVRowSegmentSpecial : public AliMpVRowSegment
 {
@@ -70,8 +69,7 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     /// Set global indices limits.
     virtual void   SetGlobalIndices(AliMpRow* rowBefore) = 0;
     /// Set global indices to i-th motif position and returns next index in x.
-    virtual Int_t  SetIndicesToMotifPosition(Int_t i, 
-                             const AliMpIntPair& indices) = 0;
+    virtual Int_t  SetIndicesToMotifPosition(Int_t i, MpPair_t indices) = 0;
 
     //
     // get methods
@@ -87,7 +85,7 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     virtual TVector2  MotifCenterSlow(Int_t motifPositionId) const = 0;
     AliMpPadRow*         FindPadRow(Double_t y) const;
     AliMpVPadRowSegment* FindPadRowSegment(Int_t motifPositionId) const;
-    AliMpIntPair         FindRelativeLowIndicesOf(Int_t motifPositionId) const;
+    MpPair_t             FindRelativeLowIndicesOf(Int_t motifPositionId) const;
     Int_t   MaxNofPadsInRow() const;
     Bool_t  HasMotif(const AliMpVMotif* motif) const;    
 

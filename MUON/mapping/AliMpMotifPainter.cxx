@@ -25,19 +25,19 @@
 // Authors: David Guez, IPN Orsay
 //-----------------------------------------------------------------------------
 
-#include <cstdlib>
 #include "AliMpMotifPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotif.h"
 #include "AliMpConnection.h"
-#include "AliMpIntPair.h"
 #include "AliLog.h"
 
 #include <TVirtualX.h>
 #include <TPad.h>
  
+#include <cstdlib>
+
 /// \cond CLASSIMP
 ClassImp(AliMpMotifPainter)
 /// \endcond
@@ -140,12 +140,12 @@ void AliMpMotifPainter::Paint(Option_t *option)
         case 'I':{
           switch (option[1]){
             case '+' :
-              str = Form("(%d,%d)",fMotifPos->GetHighIndicesLimit().GetFirst(),
-                         fMotifPos->GetHighIndicesLimit().GetSecond());
+              str = Form("(%d,%d)",fMotifPos->GetHighLimitIx(),
+                         fMotifPos->GetHighLimitIy());
               break;
             default:
-              str = Form("(%d,%d)",fMotifPos->GetLowIndicesLimit().GetFirst(),
-                         fMotifPos->GetLowIndicesLimit().GetSecond());
+              str = Form("(%d,%d)",fMotifPos->GetLowLimitIx(),
+                         fMotifPos->GetLowLimitIy());
       	  }
         }
           break;
@@ -166,15 +166,14 @@ void AliMpMotifPainter::Paint(Option_t *option)
       AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
       for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
         for (Int_t i=0;i<motifType->GetNofPadsX();i++){
-          AliMpIntPair indices(i,j);
           AliMpConnection* connect = 
-            motifType->FindConnectionByLocalIndices(indices);
+            motifType->FindConnectionByLocalIndices(i,j);
           if (connect){
             TVector2 realPadPos = 
-            GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
+            GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(i,j);
             TVector2 padPadPos,padPadDim;
             gr->RealToPad(realPadPos,
-                          fMotifPos->GetMotif()->GetPadDimensions(indices),
+                          fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j),
                           padPadPos,padPadDim);
             TVector2 bl = padPadPos - padPadDim;
             TVector2 ur = padPadPos + padPadDim;
@@ -262,13 +261,13 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
       
       for (Int_t j = 0; j < motifType->GetNofPadsY(); j++){
         
-        AliMpIntPair indices = AliMpIntPair(i,j);
-        AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(indices);
+        AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(i,j);
 
         if (connect){
           TVector2 realPadPos = 
-          GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
-          gr->RealToPad(realPadPos, fMotifPos->GetMotif()->GetPadDimensions(indices),
+          GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(i,j);
+          gr->RealToPad(realPadPos, 
+                        fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j),
                         padPadPos, padPadDim);
           
           TVector2 bl = padPadPos - padPadDim;
@@ -292,21 +291,21 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
             gVirtualX->SetFillColor(csty);
           } 
 
-	  if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
+	  if (!motifType->FindConnectionByLocalIndices(i,j-1))
           {
             gPad->PaintLine(bl.X()-xlw, bl.Y(), bl.X()+ padPadDim.X()*2 + xlw, bl.Y());
           }
           
-          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j+1)))
+          if (!motifType->FindConnectionByLocalIndices(i,j+1))
           {
             gPad->PaintLine(bl.X()-xlw, bl.Y() + padPadDim.Y()*2, bl.X()+ padPadDim.X()*2+xlw, bl.Y() +  padPadDim.Y()*2);
           }
-          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i-1,j)))
+          if (!motifType->FindConnectionByLocalIndices(i-1,j))
           {
             gPad->PaintLine(bl.X(), bl.Y(), bl.X(), bl.Y()+ padPadDim.Y()*2);                  
           }          
 
-          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i+1,j)))
+          if (!motifType->FindConnectionByLocalIndices(i+1,j))
           {
             gPad->PaintLine(bl.X()+padPadDim.X()*2, bl.Y(), bl.X()+padPadDim.X()*2, bl.Y()+ padPadDim.Y()*2);  
           } 

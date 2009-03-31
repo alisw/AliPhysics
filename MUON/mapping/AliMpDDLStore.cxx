@@ -46,6 +46,8 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpStringObjMap.h"
+#include "AliMpEncodePair.h"
+#include "AliMpIntPair.h"
 
 #include "AliLog.h"
 
@@ -820,9 +822,11 @@ Int_t AliMpDDLStore::GetBusPatchId(Int_t detElemId, Int_t manuId) const {
 
 
 //______________________________________________________________________________
-AliMpIntPair  AliMpDDLStore::GetLinkPortId(Int_t busPatchId) const {
+Long_t AliMpDDLStore::GetLinkPortId(Int_t busPatchId) const {
 
-  /// Return link port for a given frtId and global busPatchId
+    /// Get link port and DSP from busPatch id.
+    /// Return -1 if the value is not valid 
+    /// (the validity has to be tested in the client code)
 
     AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
     Int_t ddlId = busPatch->GetDdlId();
@@ -881,7 +885,7 @@ Int_t  AliMpDDLStore::GetNextDEfromLocalBoard(Int_t localBoardId, Int_t chamberI
 
     TString name(localBoard->GetName());
 
-    Int_t line = localBoard->GetPosition().GetFirst();
+    Int_t line = AliMp::PairFirst(localBoard->GetPosition());
     ++line;
 
     name.Replace(4,1,Form("%d", line));
@@ -903,7 +907,7 @@ Int_t  AliMpDDLStore::GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t cham
 
     TString name(localBoard->GetName());
 
-    Int_t line = localBoard->GetPosition().GetFirst();
+    Int_t line = AliMp::PairFirst(localBoard->GetPosition());
     --line;
 
     name.Replace(4,1,Form("%d", line));

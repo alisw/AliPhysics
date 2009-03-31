@@ -31,7 +31,6 @@
 #include "AliMpConstants.h"
 #include "AliMpDEStore.h"
 #include "AliMpDetElement.h"
-#include "AliMpIntPair.h"
 #include "AliMpPlaneType.h"
 #include "AliRawDataHeaderSim.h"
 #include "AliRunLoader.h"
@@ -385,7 +384,7 @@ AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore& digitStore)
       {
         // This is a poor's man way of knowing if that channel really exists.
         // Better and safer way (but much slower too) would be to check pad existence
-        // using AliMpVSegmentation::PadByLocation(AliMpIntPair(manuId,manuChannel))
+        // using AliMpVSegmentation::PadByLocation(manuId,manuChannel)
         continue;
       }
       else if ( mean < 1 || mean >  4095 ) 

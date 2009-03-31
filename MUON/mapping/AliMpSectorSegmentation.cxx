@@ -38,13 +38,12 @@
 #include "AliMpVMotif.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpConnection.h"
-#include "AliMpNeighboursPadIterator.h"
 #include "AliMpSectorAreaHPadIterator.h"
 #include "AliMpSectorAreaVPadIterator.h"
 #include "AliMpSectorPadIterator.h"
-#include "AliMpIntPair.h"
 #include "AliMpArea.h"
 #include "AliMpConstants.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -172,31 +171,31 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
 
 //______________________________________________________________________________
 AliMpMotifPosition* 
-AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
+AliMpSectorSegmentation::FindMotifPosition(Int_t ix, Int_t iy) const
 {
 /// Find the motif position which contains the given pad indices
 /// return 0 if not found
 
-  switch (fkSector->GetDirection()) {
+  switch ( fkSector->GetDirection() ) {
     case AliMp::kX : {
     // Case where all the pads have the same size along X direction
 
-      for (Int_t irow=0; irow<fkSector->GetNofRows(); ++irow) {
+      for ( Int_t irow=0; irow<fkSector->GetNofRows(); ++irow ) {
         AliMpRow* row = fkSector->GetRow(irow);
-        if (row->GetLowIndicesLimit().GetFirst()<=indices.GetFirst() &&
-            row->GetHighIndicesLimit().GetFirst()>=indices.GetFirst()) {
+        if ( row->GetLowLimitIx() <= ix &&
+             row->GetHighLimitIx()>= ix ) {
             
-           for (Int_t iseg=0;iseg<row->GetNofRowSegments();++iseg){
+          for ( Int_t iseg=0;iseg<row->GetNofRowSegments();++iseg ) {
             AliMpVRowSegment* seg = row->GetRowSegment(iseg);
-            if (seg->GetLowIndicesLimit().GetFirst()<=indices.GetFirst() &&
-                seg->GetHighIndicesLimit().GetFirst()>=indices.GetFirst()) {
+            if ( seg->GetLowLimitIx() <= ix &&
+                 seg->GetHighLimitIx() >= ix ) {
 
               AliMpMotifPosition* motifPos;
-              for (Int_t imot=0;imot<seg->GetNofMotifs();++imot) {
+              for ( Int_t imot=0;imot<seg->GetNofMotifs();++imot ) {
                 motifPos 
 		  = fkSector->GetMotifMap()
 		    ->FindMotifPosition(seg->GetMotifPositionId(imot));
-                if (motifPos && motifPos->HasPadByIndices(indices)) return motifPos;
+                if (motifPos && motifPos->HasPadByIndices(AliMp::Pair(ix,iy))) return motifPos;
               }
             }
           }
@@ -211,32 +210,32 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
       // look for the row which contains the indices
       AliMpRow* row=0;
       Int_t irow;
-      for (irow=0; irow<fkSector->GetNofRows(); ++irow) {
+      for ( irow=0; irow<fkSector->GetNofRows(); ++irow ) {
         row = fkSector->GetRow(irow);
         AliMpVRowSegment* lastSeg = row->GetRowSegment(row->GetNofRowSegments()-1);
-        if (lastSeg->GetLowIndicesLimit().GetSecond()<=indices.GetSecond() &&
-            lastSeg->GetHighIndicesLimit().GetSecond()>=indices.GetSecond()) break;
+        if ( lastSeg->GetLowLimitIy() <= iy &&
+             lastSeg->GetHighLimitIy() >= iy ) break;
         // NOTE : We use the last row segment in order to ensure that
         // we are not on a special motif
       }
-      if (irow==fkSector->GetNofRows()) return 0;
+      if ( irow==fkSector->GetNofRows() ) return 0;
       // look for the row segment, in the found row, which contains the indices
       AliMpVRowSegment* seg=0;
       Int_t iseg;
-      for (iseg=0;iseg<row->GetNofRowSegments();++iseg){
+      for ( iseg=0;iseg<row->GetNofRowSegments();++iseg ) {
         seg = row->GetRowSegment(iseg);
-        if (seg->HasIndices(indices)) break;
+        if (seg->HasIndices(AliMp::Pair(ix, iy))) break;
       }
-      if (iseg==row->GetNofRowSegments()) return 0;
+      if ( iseg==row->GetNofRowSegments() ) return 0;
   
       // look for the motif position which contains the indices
       AliMpMotifPosition* motifPos=0;
       Int_t imot=0;
-      for (imot=0;imot<seg->GetNofMotifs();++imot) {
+      for ( imot=0;imot<seg->GetNofMotifs();++imot ) {
         motifPos 
 	  = fkSector->GetMotifMap()
 	    ->FindMotifPosition(seg->GetMotifPositionId(imot));
-        if (motifPos && motifPos->HasPadByIndices(indices)) break;
+        if (motifPos && motifPos->HasPadByIndices(AliMp::Pair(ix, iy))) break;
       }      
       if (imot==seg->GetNofMotifs()) return 0;
    
@@ -259,7 +258,7 @@ AliMpSectorSegmentation::PadByXDirection(const TVector2& startPosition,
  
   // Search in X direction
   AliMpPad pad;
-  TVector2 position(startPosition);    
+  TVector2 position(startPosition);
   do {
     pad = PadByPosition(position, false);
     position += TVector2(stepX, 0.);
@@ -334,16 +333,6 @@ AliMpSectorSegmentation::CreateIterator() const
 }
 
 //______________________________________________________________________________
-AliMpVPadIterator* 
-AliMpSectorSegmentation::CreateIterator(const AliMpPad& centerPad,
-                                        Bool_t includeCenter) const
-{
-  /// Create the neighbours pad iterator.
-
-  return new AliMpNeighboursPadIterator(this, centerPad, includeCenter);
-}   
-  
-//______________________________________________________________________________
 Int_t 
 AliMpSectorSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
                                        Bool_t includeSelf,
@@ -355,44 +344,50 @@ AliMpSectorSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbour
 
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByLocation(const AliMpIntPair& location, 
+AliMpSectorSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel, 
                                        Bool_t warning) const
 {
 /// Find the pad which corresponds to the given location
   
-  if ((*fPadBuffer).GetLocation()==location) return (*fPadBuffer);
+  
+  
+  if ( fPadBuffer->GetManuId() == manuId &&
+       fPadBuffer->GetManuChannel() == manuChannel ) return (*fPadBuffer);
   
   AliMpMotifPosition* motifPos = 
-    fkSector->GetMotifMap()->FindMotifPosition(location.GetFirst());
+    fkSector->GetMotifMap()->FindMotifPosition(manuId);
   if (!motifPos){
     if (warning) Warning("PadByLocation","The pad motif position ID doesn't exists");
     return AliMpPad::Invalid();
   }
   
   AliMpVMotif* motif = motifPos->GetMotif();
-  AliMpIntPair localIndices = 
-    motif->GetMotifType()->FindLocalIndicesByGassiNum(location.GetSecond());
-  if (! localIndices.IsValid()) {
+  MpPair_t localIndices = 
+    motif->GetMotifType()->FindLocalIndicesByGassiNum(manuChannel);
+  if ( localIndices < 0 ) {
     if (warning) Warning("PadByLocation","The pad number doesn't exists");
     return AliMpPad::Invalid();
   }
   TVector2 delta = motif->PadPositionLocal(localIndices);
-  return (*fPadBuffer) = AliMpPad(location,
+
+  return (*fPadBuffer) = AliMpPad(manuId, manuChannel,
               motifPos->GlobalIndices(localIndices),
               motifPos->Position()+delta,
-              motif->GetPadDimensions(localIndices));
+              motif->GetPadDimensionsByIndices(localIndices));
 
 }
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
-                                      Bool_t warning ) const
+AliMpSectorSegmentation::PadByIndices(Int_t ix, Int_t iy, Bool_t warning ) const
 {
 /// Find the pad which corresponds to the given indices  
 
-  if ((*fPadBuffer).GetIndices()==indices) return (*fPadBuffer);    
-   
-  AliMpMotifPosition* motifPos = FindMotifPosition(indices);
+  
+  if ( fPadBuffer->GetIx() == ix &&
+       fPadBuffer->GetIy() == iy ) return (*fPadBuffer);    
+       
+  MpPair_t indices = AliMp::Pair(ix, iy);     
+  AliMpMotifPosition* motifPos = FindMotifPosition(ix, iy);
   if (!motifPos) {    
     if (warning) 
       Warning("PadByIndices","Pad indices not contained in any motif!");
@@ -401,7 +396,7 @@ AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
   
   // retrieve the local indices in the found motif
   AliMpVMotif* motif = motifPos->GetMotif();
-  AliMpIntPair localIndices = indices - motifPos->GetLowIndicesLimit();
+  MpPair_t localIndices = indices - motifPos->GetLowIndicesLimit();
   
   AliMpConnection* connection=
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);
@@ -414,10 +409,10 @@ AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
   TVector2 localPos = motif->PadPositionLocal(localIndices);
 
   return (*fPadBuffer) 
-    = AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetManuChannel()),
-               indices,
+    = AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
+               ix, iy,
                motifPos->Position()+localPos,
-               motif->GetPadDimensions(localIndices)); 
+               motif->GetPadDimensionsByIndices(localIndices)); 
 
 }
 //______________________________________________________________________________
@@ -427,8 +422,8 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
 {
 /// Find the pad which corresponds to the given position
 
-  if ((*fPadBuffer).Position().X()==position.X() && 
-      (*fPadBuffer).Position().Y()==position.Y()) return (*fPadBuffer);  
+  if (fPadBuffer->Position().X()==position.X() && 
+      fPadBuffer->Position().Y()==position.Y()) return (*fPadBuffer);  
 
   Int_t motifPosID = fkSector->FindMotifPositionId(position);
   AliMpMotifPosition* motifPos 
@@ -441,10 +436,10 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
   }
 
   AliMpVMotif* motif =  motifPos->GetMotif();  
-  AliMpIntPair localIndices 
+  MpPair_t localIndices 
     = motif->PadIndicesLocal(position-motifPos->Position());
-    
-  if ( ! localIndices.IsValid() ) {
+
+  if ( localIndices < 0 ) {
     if (warning) Warning("PadByPosition","Position outside motif limits");
     return AliMpPad::Invalid();
   }
@@ -458,10 +453,10 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
   }
   
   return (*fPadBuffer)
-    = AliMpPad(AliMpIntPair(motifPosID,connect->GetManuChannel()),
+    = AliMpPad(motifPosID, connect->GetManuChannel(),
                motifPos->GlobalIndices(localIndices),
                motifPos->Position()+motif->PadPositionLocal(localIndices),
-               motif->GetPadDimensions(localIndices));
+               motif->GetPadDimensionsByIndices(localIndices));
 
 }
 
@@ -489,11 +484,13 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpSectorSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
+AliMpSectorSegmentation::HasPadByIndices(Int_t ix, Int_t iy) const
 {
   ///  Whether or not we have a pad at indices=(ix,iy) 
   
-  AliMpMotifPosition* motifPos = FindMotifPosition(indices);
+  MpPair_t indices = AliMp::Pair(ix, iy);
+
+  AliMpMotifPosition* motifPos = FindMotifPosition(ix, iy);
   
   if (motifPos) return motifPos->HasPadByIndices(indices);
   
@@ -502,24 +499,16 @@ AliMpSectorSegmentation::HasPadByIndices(const AliMpIntPair& indices) const
 
 //_____________________________________________________________________________
 Bool_t 
-AliMpSectorSegmentation::HasPadByLocation(const AliMpIntPair& location) const
+AliMpSectorSegmentation::HasPadByLocation(Int_t manuId, Int_t manuChannel) const
 {
   /// Whether or not we have a pad at location=(manuId,manuChannel)
   
-  AliMpMotifPosition* motifPos = 
-  fkSector->GetMotifMap()->FindMotifPosition(location.GetFirst());
+  AliMpMotifPosition* motifPos 
+    = fkSector->GetMotifMap()->FindMotifPosition(manuId);
   
-  if ( motifPos ) return motifPos->HasPadByManuChannel(location.GetSecond());
+  if ( motifPos ) return motifPos->HasPadByManuChannel(manuChannel);
   
   return kFALSE;
-}
-
-//______________________________________________________________________________
-Bool_t AliMpSectorSegmentation::HasPad(const AliMpIntPair& indices) const
-{
-/// Does the pad specified by \a indices exist ?
-
-  return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
 }
 
 //______________________________________________________________________________
@@ -527,7 +516,7 @@ Int_t  AliMpSectorSegmentation::MaxPadIndexX() const
 {
 /// Return maximum pad index in x
 
-  return fkSector->GetMaxPadIndices().GetFirst();
+  return AliMp::PairFirst(fkSector->GetMaxPadIndices());
 }
 
 //______________________________________________________________________________
@@ -535,7 +524,7 @@ Int_t  AliMpSectorSegmentation::MaxPadIndexY() const
 {
 /// Return maximum pad index in y
 
-  return fkSector->GetMaxPadIndices().GetSecond();
+  return AliMp::PairSecond(fkSector->GetMaxPadIndices());
 }
 
 //______________________________________________________________________________
@@ -668,38 +657,46 @@ TVector2  AliMpSectorSegmentation::GetMinPadDimensions() const
 }  
 
 //______________________________________________________________________________
-Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
+Bool_t AliMpSectorSegmentation::CircleTest(Int_t ix, Int_t iy) const
 {
 /// Verify that all methods for retrieving pads are consistents between them.
 /// Return true if the pad with specified indices was found and verified,
 /// false otherwise.
 
-  if (!HasPad(indices)) return false;
+  if ( ! HasPadByIndices(ix, iy) ) return false;
 
   // Verify the indice->location->position->indice way
-  AliMpIntPair location = PadByIndices(indices).GetLocation();
-  TVector2 position = PadByLocation(location).Position();
-  AliMpIntPair retIndices = PadByPosition(position).GetIndices();
+  AliMpPad pad1 = PadByIndices(ix, iy);  
+  AliMpPad pad2 = PadByLocation(pad1.GetManuId(), pad1.GetManuChannel());
+  AliMpPad pad3 = PadByPosition(pad2.Position());
+                                      
+  MpPair_t retIndices = pad3.GetIndices();
     
-  if (retIndices != indices) {
-    cout << "Pad " << indices << " lead to inconsistency" << endl;
+  if ( retIndices != AliMp::Pair(ix, iy) ) {
+    cout << "Pad (" << ix << ',' << iy << ") lead to inconsistency" << endl;
     cout << "in indice->location->position->indice way..." << endl;
-    cout << "starting from " << indices << "-->" << location << "-->" 
-         << '(' << position.X() << ',' << position.Y() << ')'
-         << " and retIndices: " << retIndices << endl;
+    cout << "starting from indices " << pad1 << endl
+         << "--> location " << pad2 << endl
+         << "--> position " 
+         << '(' << pad3.Position().X() << ',' << pad3.Position().Y() << ')'
+         <<  endl << endl;
   }
     
     
-  // Verify the indice->position->location->indice way    
-  position = PadByIndices(indices).Position();
-  location = PadByPosition(position).GetLocation();
-  retIndices = PadByLocation(location).GetIndices();
+  // Verify the indice->position->location->indice way  
+  AliMpPad pad2bis = PadByPosition(pad1.Position());
+  AliMpPad pad3bis = PadByLocation(pad2bis.GetManuId(), pad2bis.GetManuChannel());
+  
+  retIndices = pad3bis.GetIndices();
 
-  if (retIndices != indices) {
-    cout << "Pad " << indices << " lead to inconsistency" << endl;
-    cout << "in indice->position->location->indice way..." <<endl;
-    cout << "starting from " << indices 
-         << " and retIndices: " << retIndices << endl;
+  if ( retIndices != AliMp::Pair(ix, iy) ) {
+    cout << "Pad (" << ix << ',' << iy << ") lead to inconsistency" << endl;
+    cout << "in indice->position->location->indice way..." << endl;
+    cout << "starting from indices " << pad1 << endl
+         << "--> position " 
+         << '(' << pad2bis.Position().X() << ',' << pad2bis.Position().Y() << ')' << endl
+         << "--> location " << pad3bis
+         << endl << endl;
   }
   
   return true;

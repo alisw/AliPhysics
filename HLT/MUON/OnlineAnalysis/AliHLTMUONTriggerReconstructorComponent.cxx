@@ -980,7 +980,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 						Int_t offset = 0;
 						if (iCathode && localBoard->GetSwitch(6)) offset = -8;
 						
-						AliMpPad pad = seg->PadByLocation(AliMpIntPair(boardId, bitxy+offset), kFALSE);
+						AliMpPad pad = seg->PadByLocation(boardId, bitxy+offset, kFALSE);
 					
 						if (! pad.IsValid())
 						{

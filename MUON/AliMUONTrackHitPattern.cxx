@@ -434,7 +434,7 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONVDigitStore& digitStor
       const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
         ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
       
-      AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
       Float_t xlocal1 = pad.Position().X();
       Float_t ylocal1 = pad.Position().Y();
       Float_t dpx = pad.Dimensions().X();
@@ -534,7 +534,7 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digi
 	const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
 	    ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
 
-	AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
 	Float_t xlocal1 = pad.Position().X();
 	Float_t ylocal1 = pad.Position().Y();
 	Float_t dpx = pad.Dimensions().X();
@@ -558,8 +558,7 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digi
 	yCoorAtPadZ=y;
 	if(cathode==kBending) trigDigitBendPlane = idigit;
 	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
-	    AliMpIntPair location = pad.GetLocation(loc);
-	    nboard[cathode][loc] = location.GetFirst();
+	    nboard[cathode][loc] = pad.GetLocalBoardId(loc);
 	}
 	for(Int_t loc=pad.GetNofLocations(); loc<fgkNlocations; loc++){
 	    nboard[cathode][loc]=-1;
@@ -689,8 +688,7 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
     if (seg){
 	AliMpPad pad = seg->PadByPosition(pos,kFALSE);
 	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
-	    AliMpIntPair location = pad.GetLocation(loc);
-	    localBoard[loc] = location.GetFirst();
+	    localBoard[loc] = pad.GetLocalBoardId(loc);
 	}
     }
 }

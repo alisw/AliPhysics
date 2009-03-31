@@ -27,6 +27,7 @@
 
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpMotifType.h"
+#include "AliMpEncodePair.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpMotifTypePadIterator)
@@ -36,7 +37,8 @@ ClassImp(AliMpMotifTypePadIterator)
 AliMpMotifTypePadIterator::AliMpMotifTypePadIterator():
     AliMpVPadIterator(),
     fkMotifType(0),
-    fCurrentPosition(AliMpIntPair::Invalid())
+    fCurrentIx(-1),
+    fCurrentIy(-1)
 {
 /// Default constructor, set the current position to "invalid"
 }
@@ -46,7 +48,8 @@ AliMpMotifTypePadIterator::AliMpMotifTypePadIterator(
                                 const AliMpMotifType* motifType)
   : AliMpVPadIterator(),
     fkMotifType(motifType),
-    fCurrentPosition(AliMpIntPair::Invalid())
+    fCurrentIx(-1),
+    fCurrentIy(-1)
 {
 /// Standard constructor, let *this to invalid position
 }
@@ -56,7 +59,8 @@ AliMpMotifTypePadIterator::AliMpMotifTypePadIterator(
                                 const AliMpMotifTypePadIterator& right)
   : AliMpVPadIterator(right),
     fkMotifType(right.fkMotifType),
-    fCurrentPosition(right.fCurrentPosition)
+    fCurrentIx(right.fCurrentIx),
+    fCurrentIy(right.fCurrentIy)
     
 {
 /// Copy constructor
@@ -85,7 +89,8 @@ AliMpMotifTypePadIterator::operator = (const AliMpMotifTypePadIterator& right)
   AliMpVPadIterator::operator=(right);
 
   fkMotifType = right.fkMotifType;
-  fCurrentPosition = right.fCurrentPosition;
+  fCurrentIx = right.fCurrentIx;
+  fCurrentIy = right.fCurrentIy;
 
   return *this;
 }  
@@ -95,20 +100,32 @@ AliMpMotifTypePadIterator::operator = (const AliMpMotifTypePadIterator& right)
 //
 
 //______________________________________________________________________________
-AliMpIntPair 
-AliMpMotifTypePadIterator::FindFirstPadInLine(AliMpIntPair indices) const
+Bool_t
+AliMpMotifTypePadIterator::FindFirstPadInLine(Int_t ix, Int_t iy, 
+                                              Int_t& newIx, Int_t& newIy) const
 {
 /// Find the indices of the first pad in the same line
 /// as the \a indices, and in column, at least equal, to the
 /// one of \a indices
 
-    if (!fkMotifType) return AliMpIntPair::Invalid();
+    if ( ! fkMotifType ) {
+      newIx = -1;
+      newIy = -1;
+      return false;
+    }  
 
-    while (indices.GetFirst() < fkMotifType->GetNofPadsX()) {
-        if (fkMotifType->HasPadByLocalIndices(indices)) return indices;
-        indices += AliMpIntPair(1,0);
+    while ( ix < fkMotifType->GetNofPadsX() ) {
+      if ( fkMotifType->HasPadByLocalIndices(ix, iy) ) {
+        newIx = ix;
+        newIy = iy;
+        return true;
+      }  
+      ix++;
     }
-    return AliMpIntPair::Invalid();
+    
+    newIx = -1;
+    newIy = -1;
+    return false;
 } 
 
 //______________________________________________________________________________
@@ -116,7 +133,7 @@ Bool_t AliMpMotifTypePadIterator::IsValid() const
 {
 /// Is the iterator in a valid position?
 
-    return fkMotifType!=0 && fCurrentPosition.IsValid();
+    return fkMotifType!=0 && fCurrentIx >=0 &&  fCurrentIy >=0;
 } 
 
 //
@@ -129,12 +146,14 @@ void AliMpMotifTypePadIterator::First()
 /// Reset the iterator, so that it points to the first available
 /// pad in the motif type
 
-    if (!fkMotifType) {
-        Invalidate();
-        return ;
+    if ( ! fkMotifType ) {
+      Invalidate();
+      return ;
     }
-    fCurrentPosition = AliMpIntPair(0,0);
-    if (fkMotifType->HasPadByLocalIndices(fCurrentPosition)) return;
+    
+    fCurrentIx = 0;
+    fCurrentIy = 0;
+    if ( fkMotifType->HasPadByLocalIndices(fCurrentIx, fCurrentIy) ) return;
     
     
     // if (0,0) is not available
@@ -150,18 +169,20 @@ void AliMpMotifTypePadIterator::Next()
 {
 /// Move the iterator to the next valid pad.
 
-    //if (!IsValid()) return *this;
-    if (!IsValid()) return;
+    if ( ! IsValid() ) return;
 
-    while (fCurrentPosition.GetSecond() < fkMotifType->GetNofPadsY()){
-        AliMpIntPair nextTry 
-	  = FindFirstPadInLine(fCurrentPosition + AliMpIntPair(1,0));
-        if (nextTry.IsValid()){
-            fCurrentPosition = nextTry;
-            return;
-        }
-        fCurrentPosition.SetFirst(-1);
-        fCurrentPosition.SetSecond(fCurrentPosition.GetSecond()+1);
+    while ( fCurrentIy < fkMotifType->GetNofPadsY() ) {
+      Int_t nextTryIx, nextTryIy;
+      Bool_t result 
+        = FindFirstPadInLine(fCurrentIx+1, fCurrentIy, nextTryIx, nextTryIy);
+
+      if ( result ){
+        fCurrentIx = nextTryIx;
+        fCurrentIy = nextTryIy;
+        return;
+      }
+      fCurrentIx = -1;
+      fCurrentIy++;
     }
     
     // if the loop is finished, there's not available pads at all...
@@ -174,7 +195,7 @@ Bool_t AliMpMotifTypePadIterator::IsDone() const
 {
 /// Is the iterator in the end ?
  
-  return !IsValid();
+  return ! IsValid();
 }
 
 //______________________________________________________________________________
@@ -182,11 +203,12 @@ AliMpPad AliMpMotifTypePadIterator::CurrentItem() const
 {
 /// Return current pad.
 
-    if (!fkMotifType)
-        return AliMpPad::Invalid();
+    if ( ! fkMotifType )
+      return AliMpPad::Invalid();
     else
-        return AliMpPad(AliMpIntPair::Invalid(),
-	                fCurrentPosition,TVector2(),TVector2());
+      return AliMpPad(0, 0,
+	              fCurrentIx, fCurrentIy,
+                      TVector2(),TVector2());
 }
 
 //______________________________________________________________________________
@@ -194,7 +216,7 @@ void AliMpMotifTypePadIterator::Invalidate()
 {
 /// Let the iterator point to the invalid position
 
-    fCurrentPosition = AliMpIntPair::Invalid();
-
+    fCurrentIx = -1;
+    fCurrentIy = -1;
 } 
 

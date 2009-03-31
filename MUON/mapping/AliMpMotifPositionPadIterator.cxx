@@ -29,6 +29,7 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
 #include "AliMpConnection.h"
+#include "AliMpEncodePair.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpMotifPositionPadIterator)
@@ -148,14 +149,16 @@ AliMpPad AliMpMotifPositionPadIterator::CurrentItem() const
     if (!fkMotifPos)
         return AliMpPad::Invalid();
     else {
-      AliMpIntPair ind = fIterator.CurrentItem().GetIndices();
+      MpPair_t ind = fIterator.CurrentItem().GetIndices();
       AliMpMotifType* mt = fkMotifPos->GetMotif()->GetMotifType();
       AliMpConnection* connect = 
         mt->FindConnectionByLocalIndices(ind);
-      return AliMpPad(AliMpIntPair(fkMotifPos->GetID(),connect->GetManuChannel()),
+      return AliMpPad(
+                  fkMotifPos->GetID(),connect->GetManuChannel(), 
                   fkMotifPos->GlobalIndices(ind),
-                  fkMotifPos->Position()+fkMotifPos->GetMotif()->PadPositionLocal(ind),
-                  fkMotifPos->GetMotif()->GetPadDimensions(ind));
+                  fkMotifPos->Position()+
+                  fkMotifPos->GetMotif()->PadPositionLocal(ind),
+                  fkMotifPos->GetMotif()->GetPadDimensionsByIndices(ind));
     }
 }
 

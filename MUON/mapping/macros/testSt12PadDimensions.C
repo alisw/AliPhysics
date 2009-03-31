@@ -34,18 +34,17 @@ void testPadDimensions(AliMq::Station12Type station, AliMp::PlaneType plane)
   for (Int_t i=1; i<segmentation.MaxPadIndexX()+1;i++) 
     for (Int_t j=1;j<segmentation.MaxPadIndexY()+1;++j) {
 
-      AliMpIntPair indices(i,j);
-      if (segmentation.HasPad(indices)) {
+       if ( segmentation.HasPadByIndices(i,j) ) {
 
         // Check pad dimensions
-	AliMpPad pad = segmentation.PadByIndices(indices);
+	AliMpPad pad = segmentation.PadByIndices(i,j);
 	TVector2 dimensions = segmentation.PadDimensions(segmentation.Zone(pad));
 	
 	if ( dimensions.X() != previousDimensions.X() || 
 	     dimensions.Y() != previousDimensions.Y() ) {
 
           // Print dimensions
-	  cout << "Pad: " << indices;
+	  cout << "Pad: " << "(" << i << "," << j << ")";
 	  cout << "  dimensions: (" << dimensions.X() << ", " << dimensions.Y() << ")" 
 	       << endl;
           

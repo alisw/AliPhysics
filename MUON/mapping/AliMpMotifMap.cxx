@@ -35,6 +35,7 @@
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
 
@@ -123,10 +124,10 @@ void  AliMpMotifMap::PrintMotifPosition2(
 {
 /// Print the motif position.
 
-  cout << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst() << "  "
-       << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() << "  "
-       << setw(3) << motifPosition->GetHighIndicesLimit().GetFirst()  << " " 
-       << setw(3) << motifPosition->GetHighIndicesLimit().GetSecond()  << " "
+  cout << setw(3) << motifPosition->GetLowLimitIx() << "  "
+       << setw(3) << motifPosition->GetLowLimitIy() << "  "
+       << setw(3) << motifPosition->GetHighLimitIx()  << " " 
+       << setw(3) << motifPosition->GetHighLimitIy()  << " "
        << motifPosition->GetID() << "  ";
 }
 
@@ -386,7 +387,9 @@ void AliMpMotifMap::FillMotifPositionMap2()
   AliMpMotifPosition* motifPosition(0x0);
   while ( ( motifPosition = static_cast<AliMpMotifPosition*>(next()) ) )
   {
-    fMotifPositions2.Add(motifPosition->GetLowIndicesLimit(), motifPosition);
+    fMotifPositions2.Add(motifPosition->GetLowLimitIx(),
+                         motifPosition->GetLowLimitIy(), 
+                         motifPosition);
   }
 }
 
@@ -418,8 +421,8 @@ void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
     while ( ( motifPosition = static_cast<AliMpMotifPosition*>(next()) ) )
     {
       out << setw(5) << motifPosition->GetID() << "     "
-	  << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst()  << " " 
-	  << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() 
+	  << setw(3) << motifPosition->GetLowLimitIx()  << " " 
+	  << setw(3) << motifPosition->GetLowLimitIy() 
          << endl;
     }
     out << endl;
@@ -450,7 +453,7 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
             << "Processing " 
             << motifPosition->GetID() << " " << offx << " " << offy << endl; 
 
-       motifPosition->SetLowIndicesLimit(AliMpIntPair(offx, offy));
+       motifPosition->SetLowIndicesLimit(offx, offy);
        
        Int_t offx2 
          = offx + motifPosition->GetMotif()->GetMotifType()->GetNofPadsX() - 1;
@@ -458,7 +461,7 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
        Int_t offy2 
          = offy + motifPosition->GetMotif()->GetMotifType()->GetNofPadsY() - 1;
        
-       motifPosition->SetHighIndicesLimit(AliMpIntPair(offx2, offy2));
+       motifPosition->SetHighIndicesLimit(offx2, offy2);
     }
     else {   
        AliWarningStream()

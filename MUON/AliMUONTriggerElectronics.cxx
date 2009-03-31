@@ -195,15 +195,13 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
       
       AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
 
-      AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
       
       for (Int_t i=0; i<pad.GetNofLocations(); i++) 
       {
-        AliMpIntPair location = pad.GetLocation(i);
+        Int_t nboard = pad.GetLocalBoardId(i);
         
-        Int_t nboard = location.GetFirst();
-        
-        Int_t ibitxy = location.GetSecond();
+        Int_t ibitxy = pad.GetLocalBoardChannel(i);
         
         AliMUONLocalTriggerBoard *b = fCrates->LocalBoard(nboard);
         

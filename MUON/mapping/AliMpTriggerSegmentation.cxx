@@ -77,7 +77,7 @@ AliMpTriggerSegmentation::AliMpTriggerSegmentation(
   {
     for ( Int_t iy = 0; iy <= MaxPadIndexY(); ++iy )
     {
-      if ( HasPad(AliMpIntPair(ix,iy)) )
+      if ( HasPadByIndices(ix,iy) )
       {
         ++fNofStrips;
       }
@@ -165,18 +165,6 @@ AliMpTriggerSegmentation::GetName() const
 }
 
 //_____________________________________________________________________________
-Bool_t
-AliMpTriggerSegmentation::HasPad(const AliMpIntPair& indices) const
-{
-  ///
-  /// Test if this slat has a pad located at the position referenced
-  /// by the integer indices.
-  ///
-  
-  return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
-}
-
-//_____________________________________________________________________________
 Int_t 
 AliMpTriggerSegmentation::MaxPadIndexX() const
 {
@@ -200,7 +188,7 @@ AliMpTriggerSegmentation::MaxPadIndexY() const
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location, 
+AliMpTriggerSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel, 
                                         Bool_t warning) const
 {
   ///
@@ -212,33 +200,31 @@ AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location,
   /// AliMpPad::Invalid() is returned if there's no pad at the given location.
   ///
   AliMpPad pad;
-  AliMpIntPair invloc;
   
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
     AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
-    AliMpPad pi = seg->PadByLocation(location,kFALSE);
+    AliMpPad pi = seg->PadByLocation(manuId,manuChannel,kFALSE);
     if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )
       {
 	// uses PadByIndices to get the complete list of locations
-	return PadByIndices(pi.GetIndices(),warning);
+	return PadByIndices(pi.GetIx(), pi.GetIy(), warning);
       }
     }
   }
   if ( warning && !pad.IsValid()  )
   {
-    AliWarning(Form("No pad found at location (%d,%d)",location.GetFirst(),
-                    location.GetSecond()));
+    AliWarning(Form("No pad found at location (%d,%d)", manuId, manuChannel));
   }
   return pad;
 }
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpTriggerSegmentation::PadByIndices(const AliMpIntPair& indices, 
-                                    Bool_t warning) const
+AliMpTriggerSegmentation::PadByIndices(Int_t ix, Int_t iy, 
+                                       Bool_t warning) const
 {
   ///
   /// Returns the pad specified by its integer indices.
@@ -250,29 +236,29 @@ AliMpTriggerSegmentation::PadByIndices(const AliMpIntPair& indices,
   ///  
  
   AliMpPad pad;
-  AliMpIntPair invloc;
-  
+
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
     AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
-    AliMpPad pi = seg->PadByIndices(indices,kFALSE);
+    AliMpPad pi = seg->PadByIndices(ix,iy,kFALSE);
     if ( pi.IsValid() ) 
     {      
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
-        pad.AddLocation(pi.GetLocation());
+        pad = AliMpPad(0, 0,
+                       pi.GetIndices(),
+                       pi.Position(),pi.Dimensions());
+        pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }
       else
       {
-        pad.AddLocation(pi.GetLocation());
+        pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }  
     }
   }
   if ( warning && !pad.IsValid()  )
   {
-    AliWarning(Form("No pad found at indices (%d,%d)",indices.GetFirst(),
-                    indices.GetSecond()));
+    AliWarning(Form("No pad found at indices (%d,%d)",ix, iy));
   }
   
   return pad;
@@ -291,7 +277,6 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   /// AliMpPad::Invalid() is returned if there's no pad at the given location.
   ///
   AliMpPad pad;
-  AliMpIntPair invloc;
   
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
@@ -301,12 +286,14 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
     {
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
-        pad.AddLocation(pi.GetLocation());
+        pad = AliMpPad(0, 0,
+                       pi.GetIndices(),
+                       pi.Position(),pi.Dimensions());
+        pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }
       else
       {
-        pad.AddLocation(pi.GetLocation());
+        pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }  
     }
   }

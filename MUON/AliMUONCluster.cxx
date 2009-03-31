@@ -22,9 +22,11 @@
 #include <TVirtualX.h>
 
 #include "AliMUONCluster.h"
+#include "AliMUONPad.h"
+
+#include "AliMpEncodePair.h"
 
 #include "AliLog.h"
-#include "AliMUONPad.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONCluster
@@ -504,43 +506,43 @@ AliMUONCluster::Multiplicity(Int_t cathode) const
 }
 
 //_____________________________________________________________________________
-AliMpIntPair
+Long_t
 AliMUONCluster::NofPads(Int_t statusMask, Bool_t matchMask) const
 {
   /// Number of pads satisfying (or not, depending matchMask) a
-  /// given mask
+  /// given mask 
   
   Int_t nx, ny;
   
   TVector2 dim0(MinPadDimensions(0,statusMask,matchMask));
   TVector2 dim1(MinPadDimensions(1,statusMask,matchMask));
   
-  AliMpIntPair npad0(NofPads(0,statusMask,matchMask));
-  AliMpIntPair npad1(NofPads(1,statusMask,matchMask));
+  Long_t npad0(NofPads(0,statusMask,matchMask));
+  Long_t npad1(NofPads(1,statusMask,matchMask));
   
   if ( TMath::Abs( (dim0-dim1).X() ) < 1E-3 )
   {
-    nx = TMath::Max( npad0.GetFirst(), npad1.GetFirst() );
+    nx = TMath::Max( AliMp::PairFirst(npad0), AliMp::PairFirst(npad1) );
   }
   else
   {
-    nx = dim0.X() < dim1.X() ? npad0.GetFirst() : npad1.GetFirst();
+    nx = dim0.X() < dim1.X() ? AliMp::PairFirst(npad0) : AliMp::PairFirst(npad1);
   }
   
   if ( TMath::Abs( (dim0-dim1).Y() ) < 1E-3 )
   {
-    ny = TMath::Max( npad0.GetSecond(), npad1.GetSecond() );
+    ny = TMath::Max( AliMp::PairSecond(npad0), AliMp::PairSecond(npad1) );
   }
   else
   {
-    ny = dim0.Y() < dim1.Y() ? npad0.GetSecond() : npad1.GetSecond();
+    ny = dim0.Y() < dim1.Y() ? AliMp::PairSecond(npad0) : AliMp::PairSecond(npad1);
   }
   
-  return AliMpIntPair(nx,ny);
+  return AliMp::Pair(nx,ny);
 }
 
 //_____________________________________________________________________________
-AliMpIntPair
+Long_t
 AliMUONCluster::NofPads(Int_t cathode,
                         Int_t statusMask, Bool_t matchMask) const
 {
@@ -550,7 +552,7 @@ AliMUONCluster::NofPads(Int_t cathode,
   Int_t n = Multiplicity(cathode);
   if (!n) 
   {
-    return AliMpIntPair(0,0);
+    return 0;
   }
   Double_t* x = new Double_t[n];
   Double_t* y = new Double_t[n];
@@ -573,7 +575,7 @@ AliMUONCluster::NofPads(Int_t cathode,
   delete[] x;
   delete[] y;
   
-  return AliMpIntPair(cx,cy);
+  return AliMp::Pair(cx,cy);
 }
 
 //_____________________________________________________________________________

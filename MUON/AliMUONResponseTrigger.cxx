@@ -114,8 +114,8 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
         ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
     
     AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
-    Int_t ix = pad.GetIndices().GetFirst();
-    Int_t iy = pad.GetIndices().GetSecond();
+    Int_t ix = pad.GetIx();
+    Int_t iy = pad.GetIy();
     
     AliDebug(1,Form("xhit,yhit=%e,%e lx,ly,lz=%e,%e,%e ix,iy=%d,%d",
                     xhit,yhit,x,y,z,ix,iy));
@@ -128,8 +128,8 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
                       xhit,yhit,x,y,z,ix,iy));
       continue;
     }
-    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation(0).GetFirst(),
-                                       pad.GetLocation(0).GetSecond(),cath);
+    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
+                                       pad.GetLocalBoardChannel(0),cath);
     d->SetPadXY(ix,iy);
 
     //FIXME : a trigger digit can have several locations. 
@@ -138,7 +138,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
 
     if(fTriggerEfficiency){
       if(cath==0){
-	Int_t nboard = pad.GetLocation(0).GetFirst();
+	Int_t nboard = pad.GetLocalBoardId(0);
 	fTriggerEfficiency->IsTriggered(detElemId, nboard, 
 					isTrig[0], isTrig[1]);
       }

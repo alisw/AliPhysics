@@ -15,56 +15,56 @@
 
 #include <TObject.h>
 
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 
 class AliMpVPadIterator;
 
 class AliMpVIndexed : public TObject
 {
  public:
-  AliMpVIndexed(const AliMpIntPair& lowLimit, const AliMpIntPair& highLimit);
   AliMpVIndexed();
   virtual ~AliMpVIndexed();
 
   // methods
           /// Create iterator over this element
   virtual AliMpVPadIterator* CreateIterator() const = 0;
-  virtual AliMpIntPair  GlobalIndices(const AliMpIntPair& localIndices) const;
+
+  virtual MpPair_t GlobalIndices(MpPair_t localIndices) const;
+  virtual Int_t  GlobalIx(Int_t localIx) const;
+  virtual Int_t  GlobalIy(Int_t localIy) const;
 
   // set methods
-  void SetLowIndicesLimit(const AliMpIntPair& limit);
-  void SetHighIndicesLimit(const AliMpIntPair& limit);
+  void SetLowIndicesLimit(MpPair_t limit, Bool_t valid = true);
+  void SetLowIndicesLimit(Int_t ix, Int_t iy, Bool_t valid = true);
+
+  void SetHighIndicesLimit(MpPair_t limit, Bool_t valid = true);
+  void SetHighIndicesLimit(Int_t ix, Int_t iy, Bool_t valid = true);
 
   // get methods
-  Bool_t    HasIndices(const AliMpIntPair& indices) const;
-  Bool_t    HasValidIndices() const;
-  AliMpIntPair  GetLowIndicesLimit() const;
-  AliMpIntPair  GetHighIndicesLimit() const;
+  Bool_t  HasIndices(MpPair_t indices) const;
+  Bool_t  HasIndices(Int_t ix, Int_t iy) const;
+  Bool_t  HasValidIndices() const;
+
+  MpPair_t  GetLowIndicesLimit() const;
+  Int_t     GetLowLimitIx() const;
+  Int_t     GetLowLimitIy() const;
+  Bool_t    IsLowLimitValid() const;
+
+  MpPair_t  GetHighIndicesLimit() const;
+  Int_t     GetHighLimitIx() const;
+  Int_t     GetHighLimitIy() const;
+  Bool_t    IsHighLimitValid() const;
+
 
  private:
   // data members 
-  AliMpIntPair   fLowIndicesLimit;  ///<  the lowest global pad indices 
-  AliMpIntPair   fHighIndicesLimit; ///<  the hihgest global pad indices 
+  MpPair_t  fLowLimit;  ///<  the lowest global pad indices 
+  MpPair_t  fHighLimit; ///<  the highest global pad indices 
+  Bool_t    fLowValid;  ///<  true, if low indices limit is set
+  Bool_t    fHighValid; ///<  true, if high indices imit is set
 
-  ClassDef(AliMpVIndexed,1) // A motif position
+  ClassDef(AliMpVIndexed,2) // A motif position
 };
 
-// inline functions
-
-/// Set low indices limit
-inline void AliMpVIndexed::SetLowIndicesLimit(const AliMpIntPair& limit)
-{ fLowIndicesLimit = limit; }
-  
-/// Set high indices limit
-inline void AliMpVIndexed::SetHighIndicesLimit(const AliMpIntPair& limit)
-{ fHighIndicesLimit = limit; }  
-  
-/// Return low indices limit
-inline AliMpIntPair AliMpVIndexed::GetLowIndicesLimit() const
-{ return fLowIndicesLimit; }
-
-/// Return high indices limit
-inline AliMpIntPair AliMpVIndexed::GetHighIndicesLimit() const
-{ return fHighIndicesLimit; }
 
 #endif //ALI_MP_V_INDEXED_H

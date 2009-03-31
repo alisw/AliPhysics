@@ -23,10 +23,10 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpExMapIterator.h"
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
-#include "AliMpExMap.h"
-#include "AliMpIntPair.h"
+
 #include <TClass.h>
 #include <TExMap.h>
 #include <TString.h>
@@ -135,7 +135,7 @@ AliMpExMapIterator::Next(Int_t& key)
 
 //_____________________________________________________________________________
 TObject* 
-AliMpExMapIterator::Next(AliMpIntPair& key)
+AliMpExMapIterator::Next(Int_t& keyFirst, Int_t& keySecond)
 {
 /// Return the next object in iteration and fill the key.
 /// The returned object must not be deleted by the user.  
@@ -143,7 +143,8 @@ AliMpExMapIterator::Next(AliMpIntPair& key)
   Long_t index;
   TObject* o(0x0);
   Next(index,o);
-  key = AliMpExMap::GetPair(index);
+  keyFirst = AliMpExMap::GetPairFirst(index);
+  keySecond = AliMpExMap::GetPairSecond(index);
   return o;
 }
 

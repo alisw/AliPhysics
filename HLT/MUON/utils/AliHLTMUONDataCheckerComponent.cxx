@@ -1813,7 +1813,7 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 					continue;
 				}
 				
-				AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId, channelId), warn);
+				AliMpPad pad = seg->PadByLocation(manuId, channelId, warn);
 				if (not pad.IsValid())
 				{
 					HLTError("Problem found with data block %d, fDataType = '%s',"
@@ -2458,7 +2458,7 @@ bool AliHLTMUONDataCheckerComponent::CheckChannelsBlock(
 			}
 			
 			AliMpPad pad = seg->PadByLocation(
-					AliMpIntPair(channel.fManu, channel.fChannelAddress),
+					channel.fManu, channel.fChannelAddress,
 					warn
 				);
 			if (not pad.IsValid())

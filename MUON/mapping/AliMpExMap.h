@@ -21,7 +21,6 @@
 #include <TArrayL.h>
 #include <TExMap.h>
 
-class AliMpIntPair;
 class AliMpExMapIterator;
 
 class TString;
@@ -39,20 +38,16 @@ class AliMpExMap : public TObject
     
     
     // static methods
-    // conversion between varius keys and Long_t
-    //
-    static Long_t  GetIndex(const AliMpIntPair& pair);
+    // conversion between String and Long_t
     static Long_t  GetIndex(const TString& s);
-
-    static AliMpIntPair  GetPair(Long_t index);
-    static TString       GetString(Long_t index);
+    static TString GetString(Long_t index);
 
     // methods from base class
     virtual void Clear(Option_t* opt="");
     virtual void Print(Option_t* opt="") const;
 
     // set methods
-    void Add(const AliMpIntPair& key, TObject* object);
+    void Add(Int_t keyFirst, Int_t keySecond, TObject* object);
     void Add(const TString& key, TObject* object);
     void Add(Int_t key, TObject* object);
 
@@ -63,7 +58,7 @@ class AliMpExMap : public TObject
     Int_t GetSize() const;
     Int_t GetCapacity() const;
     
-    TObject*    GetValue(const AliMpIntPair& key) const;
+    TObject*    GetValue(Int_t keyFirst, Int_t keySecond) const;
     TObject*    GetValue(const TString& key) const;
     TObject*    GetValue(Int_t key) const;
 
@@ -71,6 +66,12 @@ class AliMpExMap : public TObject
     
   private:  
     // methods
+
+    // conversion between Int_t pair key and Long_t
+    static Long_t  GetIndex(Int_t first, Int_t second);
+    static Int_t   GetPairFirst(Long_t index);
+    static Int_t   GetPairSecond(Long_t index);
+
     void FillMap();
     void AddKey(Long_t key);
     void Copy(TObject& dest) const;
@@ -80,7 +81,7 @@ class AliMpExMap : public TObject
     static const Bool_t   fgkDefaultOwnership; ///< Default ownership
 
     static const Int_t    fgkSeparator1; ///< \brief the separator used for conversion
-                                         ///  of AliMpIntPair to Int_t
+                                         ///  of Int_t pair to Int_t
     static const Int_t    fgkSeparator2; ///< \brief the separator used for conversion
                                          ///  of TString to Int_t
     static const TString  fgkCharacterMap; ///< \brief the string mapping characters 

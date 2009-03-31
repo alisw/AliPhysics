@@ -32,7 +32,7 @@
 #include "AliMpVRowSegment.h"
 #include "AliMpVMotif.h"
 #include "AliMpMotifMap.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 #include "AliMpConstants.h"
 
 #include "AliLog.h"
@@ -55,7 +55,7 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
     fDirection(direction),
     fMinPadDimensions(TVector2(1.e6, 1.e6)),
     fMaxPadDimensions(),
-    fMaxPadIndices(AliMpIntPair::Invalid()),
+    fLMaxPadIndices(0),
     fNofPads(0)
 {
 /// Standard constructor
@@ -82,7 +82,7 @@ AliMpSector::AliMpSector()
     fDirection(AliMp::kX),
     fMinPadDimensions(TVector2(0., 0.)),
     fMaxPadDimensions(),
-    fMaxPadIndices(AliMpIntPair::Invalid()),
+    fLMaxPadIndices(0),
     fNofPads(0)
 {
 /// Default constructor
@@ -164,7 +164,6 @@ void  AliMpSector::SetGlobalIndices()
 /// Set the indices limits to all indexed elements
 /// (row, row segment, motif positions).
 
-  AliMpIntPair indices(0,0); 
   AliMpRow* rowBefore=0;
   for (Int_t i=0; i<GetNofRows(); i++) {
     GetRow(i)->SetGlobalIndices(fDirection, rowBefore);
@@ -201,20 +200,20 @@ void  AliMpSector::SetMaxPadIndices()
 {
 /// Set maximum pad indices in x, y
 
-  if ( fMaxPadIndices != AliMpIntPair::Invalid() ) return;
+  if ( fLMaxPadIndices != 0 ) return;
   
   Int_t maxIndexInX = 0;
   Int_t maxIndexInY = 0;
   for (Int_t i=0; i<GetNofRows(); i++) {
 
-    Int_t ixh = GetRow(i)->GetHighIndicesLimit().GetFirst();
+    Int_t ixh = GetRow(i)->GetHighLimitIx();
     if ( ixh > maxIndexInX ) maxIndexInX = ixh;
 
-    Int_t iyh = GetRow(i)->GetHighIndicesLimit().GetSecond();
+    Int_t iyh = GetRow(i)->GetHighLimitIy();
     if ( iyh > maxIndexInY ) maxIndexInY = iyh;
   }  
   
-  fMaxPadIndices = AliMpIntPair(maxIndexInX, maxIndexInY);
+  fLMaxPadIndices = AliMp::Pair(maxIndexInX, maxIndexInY);
 }
 
 

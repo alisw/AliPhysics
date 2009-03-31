@@ -36,6 +36,8 @@
 #include "AliMpDEManager.h"
 #include "AliMUONMathieson.h"
 
+#include "AliMpEncodePair.h"
+
 #include "AliLog.h"
 
 #include <TClonesArray.h>
@@ -333,9 +335,9 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   //const Int_t kStatusToTest(1);
   const Int_t kStatusToTest(AliMUONClusterFinderMLEM::GetUseForFitFlag());
   
-  AliMpIntPair nofPads = cluster.NofPads(kStatusToTest);
-  Int_t nInX = nofPads.GetFirst();
-  Int_t nInY = nofPads.GetSecond();
+  Long_t nofPads = cluster.NofPads(kStatusToTest);
+  Int_t nInX = AliMp::PairFirst(nofPads);
+  Int_t nInY = AliMp::PairSecond(nofPads);
 
   if (fDebug) {
     Int_t npadOK = 0;

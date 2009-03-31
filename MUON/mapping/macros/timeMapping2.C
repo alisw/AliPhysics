@@ -33,8 +33,6 @@
 // on revision before 31082 (where AliMpVSegmentation did not have the HasPadBy...
 // methods).
 
-#define HASPAD
-
 //______________________________________________________________________________
 Int_t StationId(Int_t detElemId)
 {
@@ -84,12 +82,11 @@ void ByIndices(const AliMpVSegmentation* seg, Int_t detElemId)
     {
       for ( Int_t iy = 0; iy < seg->MaxPadIndexY(); ++iy )
       {
-        seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+        seg->PadByIndices(ix,iy,kFALSE);
       }
     }
   }
   
-#ifdef HASPAD        
   {
     AliCodeTimerAutoGeneral(Form("HasPadByIndices-St%d",stationId));
     
@@ -97,11 +94,10 @@ void ByIndices(const AliMpVSegmentation* seg, Int_t detElemId)
     {
       for ( Int_t iy = 0; iy < seg->MaxPadIndexY(); ++iy )
       {
-        seg->HasPadByIndices(AliMpIntPair(ix,iy));
+        seg->HasPadByIndices(ix,iy);
       }
     }
   }
-#endif        
 }
 
 //______________________________________________________________________________
@@ -115,20 +111,18 @@ void ByLocation(const AliMpVSegmentation* seg, Int_t detElemId, Int_t manuId)
   
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
-      seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      seg->PadByLocation(manuId,manuChannel,kFALSE);
     }
   }
 
-#ifdef HASPAD
   {
     AliCodeTimerAutoGeneral(Form("HasPadByLocation-St%d",stationId));
     
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
-      seg->HasPadByLocation(AliMpIntPair(manuId,manuChannel));
+      seg->HasPadByLocation(manuId,manuChannel);
     }
   }
-#endif      
   
 }
 

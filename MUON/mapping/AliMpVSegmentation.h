@@ -20,13 +20,11 @@
 
 #include <TObject.h>
 
-#include "AliMpPadPair.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
 
 class AliMpVPadIterator;
-class AliMpIntPair;
 class AliMpArea;
 class AliMpMotifPosition;
 
@@ -58,30 +56,21 @@ class AliMpVSegmentation : public TObject
                                 Bool_t includeVoid=kFALSE) const = 0;
 
             /// Find pad by location
-    virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
-                               Bool_t warning = true) const = 0;
+    virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel, 
+                                Bool_t warning = true) const = 0;
             /// Find pad by indices
-    virtual AliMpPad PadByIndices (const AliMpIntPair& indices,  
+    virtual AliMpPad PadByIndices (Int_t ix, Int_t iy,  
                                Bool_t warning = true) const = 0;
             /// Find pad by position
     virtual AliMpPad PadByPosition(const TVector2& position,
                                Bool_t warning = true) const = 0;
-
-    virtual AliMpPadPair PadsUp(const AliMpPad& pad) const;
-    virtual AliMpPadPair PadsDown(const AliMpPad& pad) const;
-    virtual AliMpPadPair PadsLeft(const AliMpPad& pad) const;
-    virtual AliMpPadPair PadsRight(const AliMpPad& pad) const;
-
             /// Return true if the pad with given indices exists.
             /// Compared with the PadByIndices method, this one can generally be implemented
             /// faster, as one does not have to create an AliMpPad object... 
-    virtual Bool_t HasPadByIndices(const AliMpIntPair& indices) const;
+    virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
   
             /// Return true if the pad with given location exists
-    virtual Bool_t HasPadByLocation(const AliMpIntPair& location) const;
-  
-            /// For backward compatibility
-    virtual Bool_t HasPad(const AliMpIntPair& indices) const { return HasPadByIndices(indices); }
+    virtual Bool_t HasPadByLocation(Int_t manuId, Int_t manuChannel) const;
   
             /// Return maximum pad index in X direction
     virtual Int_t  MaxPadIndexX() const = 0;
@@ -113,13 +102,8 @@ class AliMpVSegmentation : public TObject
     
             /// Return the position of the origine of the detection element
     virtual TVector2 Position() const = 0;
-  
-  
-  private:  
-    // methods
-    AliMpPadPair FindPads(const TVector2& position1, 
-                          const TVector2& position2) const;
 
+  
   ClassDef(AliMpVSegmentation,1)  // Segmentation
 };
 

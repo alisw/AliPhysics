@@ -39,6 +39,7 @@
 #include "AliMpLocalBoard.h"
 #include "AliMpConstants.h"
 #include "AliMpPad.h"
+#include "AliMpEncodePair.h"
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -146,8 +147,8 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
   Int_t zeroDown = localBoard->GetSwitch(AliMpLocalBoard::kZeroDown);
   Int_t zeroUp   = localBoard->GetSwitch(AliMpLocalBoard::kZeroUp);
  
-  Int_t iline = localBoard->GetPosition().GetFirst();
-  Int_t icol  = localBoard->GetPosition().GetSecond();
+  Int_t iline = AliMp::PairFirst(localBoard->GetPosition());
+  Int_t icol  = AliMp::PairSecond(localBoard->GetPosition());
   if ( iline == 5 ) --icol;
 
   //--- first plane 
@@ -186,7 +187,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
     Int_t icolUp = icol;
 
     // check if we need to move to another detElemId
-    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iLastStripMiddle+1),kFALSE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(icol-1,iLastStripMiddle+1,kFALSE);
 
     if (pad.IsValid()) { // upper strips within same detElemId
       iFirstStripUp = iLastStripMiddle;
@@ -226,7 +227,7 @@ void AliMUONTriggerCircuit::LoadYPos(AliMpLocalBoard* const localBoard)
     Int_t icolDo = icol;
     
     // check if we need to move to another detElemId      
-    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,iFirstStripMiddle-1),kFALSE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(icol-1,iFirstStripMiddle-1,kFALSE);
     if (pad.IsValid()) { // lower strips within same detElemId
       iFirstStripDo = iFirstStripMiddle - 8;
       iLastStripDo  = iFirstStripDo + 8;	      
@@ -270,7 +271,7 @@ void AliMUONTriggerCircuit::FillXstrips(const Int_t icol,
   Double_t xyGlobal[2] = {0.};
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
-    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(icol-1,istrip),kTRUE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(icol-1,istrip,kTRUE);
     if ( !pad.IsValid() ) {
       StdoutToAliError(cout << "Pad not found in seg " << endl;
                        fkCurrentSeg->Print();
@@ -311,8 +312,8 @@ void AliMUONTriggerCircuit::LoadXPos(AliMpLocalBoard* const localBoard)
   Int_t  iLastStrip    = 0;
   Bool_t doubling      = kFALSE;
   
-  Int_t iline  = localBoard->GetPosition().GetFirst();
-  Int_t icol   = localBoard->GetPosition().GetSecond();
+  Int_t iline = AliMp::PairFirst(localBoard->GetPosition());
+  Int_t icol  = AliMp::PairSecond(localBoard->GetPosition());
   if ( iline == 5 ) --icol;
 
   fCurrentDetElem = AliMpDDLStore::Instance()->GetDEfromLocalBoard(fCurrentLocalBoard, ichamber);
@@ -351,7 +352,7 @@ void AliMUONTriggerCircuit::FillYstrips(const Int_t iFirstStrip, const Int_t iLa
 
   for (Int_t istrip = iFirstStrip; istrip < iLastStrip; ++istrip) {
 
-    AliMpPad pad = fkCurrentSeg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
+    AliMpPad pad = fkCurrentSeg->PadByIndices(istrip,0,kTRUE);
 
     if ( !pad.IsValid() )
     {
@@ -427,8 +428,8 @@ Int_t AliMUONTriggerCircuit::FirstStrip(AliMpLocalBoard* localBoard)
   Int_t iFirstStrip = -1;
   Int_t boardNumber = atoi(localBoard->GetName()+6);
 
-  Int_t iline = localBoard->GetPosition().GetFirst();
-  Int_t icol  = localBoard->GetPosition().GetSecond();
+  Int_t iline = AliMp::PairFirst(localBoard->GetPosition());
+  Int_t icol  = AliMp::PairSecond(localBoard->GetPosition());
   if ( iline == 5 ) --icol;
 
   switch (boardNumber)

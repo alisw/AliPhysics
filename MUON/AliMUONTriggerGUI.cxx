@@ -32,7 +32,7 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpTriggerSegmentation.h"
-#include "AliMpIntPair.h"
+#include "AliMpEncodePair.h"
 #include "AliMpCDB.h"
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
@@ -1472,11 +1472,9 @@ void AliMUONTriggerGUI::InitBoards()
       manuIdPrev = 0;
       for (Int_t ix = 0; ix <= seg0->MaxPadIndexX(); ix++) {
 	for (Int_t iy = 0; iy <= seg0->MaxPadIndexY(); iy++) {
-	  AliMpIntPair indices(ix,iy);
-	  AliMpPad pad = seg0->PadByIndices(indices,kFALSE);
+	  AliMpPad pad = seg0->PadByIndices(ix,iy,kFALSE);
 	  if (pad.IsValid()) {
-	    AliMpIntPair loc = pad.GetLocation(0);
-	    Int_t manuId = loc.GetFirst();
+	    Int_t manuId = pad.GetLocalBoardId(0);
 	    if (manuId != manuIdPrev) {
 	      AliMpLocalBoard *mpboard = AliMpDDLStore::Instance()->GetLocalBoard(manuId);
 	      manuIdPrev = manuId;
@@ -1503,13 +1501,11 @@ void AliMUONTriggerGUI::InitBoards()
       manuIdPrev = 0;
       for (Int_t ix = 0; ix <= seg1->MaxPadIndexX(); ix++) {
 	for (Int_t iy = 0; iy <= seg1->MaxPadIndexY(); iy++) {
-	  AliMpIntPair indices(ix,iy);
-	  AliMpPad pad = seg1->PadByIndices(indices,kFALSE);
+	  AliMpPad pad = seg1->PadByIndices(ix,iy,kFALSE);
 	  if (pad.IsValid()) {
 	    Int_t nloc = pad.GetNofLocations();
 	    for (Int_t iloc = 0; iloc < nloc; iloc++) {
-	      AliMpIntPair loc = pad.GetLocation(iloc);
-	      Int_t manuId = loc.GetFirst();
+	      Int_t manuId = pad.GetLocalBoardId(iloc);
 	      if (manuId != manuIdPrev) {
 		manuIdPrev = manuId;
 		boardIdTmp = cIdtobId[manuId];
@@ -1646,7 +1642,7 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
       for (Int_t ix = 0; ix <= maxX; ix++) {
 	for (Int_t iy = 0; iy <= maxY; iy++) {
 	  
-	  pad = seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+	  pad = seg->PadByIndices(ix,iy,kFALSE);
 	  
 	  if (!pad.IsValid()) continue;
 	  
@@ -1702,7 +1698,7 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
       for (Int_t ix = 0; ix <= maxX; ix++) {
 	for (Int_t iy = 0; iy <= maxY; iy++) {
 	  
-	  pad = seg->PadByIndices(AliMpIntPair(ix,iy),kFALSE);
+	  pad = seg->PadByIndices(ix,iy,kFALSE);
 	  
 	  if (!pad.IsValid()) continue;
 	  
@@ -1788,9 +1784,9 @@ void AliMUONTriggerGUI::CreateDigitStore()
 	maxY = seg->MaxPadIndexY();
 	if (ix > maxX) printf("Index x > maximum!\n");
 	if (iy > maxY) printf("Index y > maximum!\n");
-        pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-	manuId = pad.GetLocation(0).GetFirst();
-	manuChannel = pad.GetLocation(0).GetSecond();
+        pad = seg->PadByIndices(ix,iy,kTRUE);
+	manuId = pad.GetLocalBoardId(0);
+	manuChannel = pad.GetLocalBoardChannel(0);
 
 	dig = fDigitStore->Add(detElemId,manuId,manuChannel,cathode,AliMUONVDigitStore::kAllow);
 	dig->SetCharge(charge);
@@ -1813,9 +1809,9 @@ void AliMUONTriggerGUI::CreateDigitStore()
 	maxY = seg->MaxPadIndexY();
 	if (ix > maxX) printf("Index x > maximum!\n");
 	if (iy > maxY) printf("Index y > maximum!\n");
-        pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-	manuId = pad.GetLocation(0).GetFirst();
-	manuChannel = pad.GetLocation(0).GetSecond();
+        pad = seg->PadByIndices(ix,iy,kTRUE);
+	manuId = pad.GetLocalBoardId(0);
+	manuChannel = pad.GetLocalBoardChannel(0);
 
 	dig = fDigitStore->Add(detElemId,manuId,manuChannel,cathode,AliMUONVDigitStore::kAllow);
 	dig->SetCharge(charge);
@@ -1844,8 +1840,8 @@ void AliMUONTriggerGUI::PrintDigitStore() const
 
     chamber = 11+i;
 
-    AliMpIntPair deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
-    TIter next(fDigitStore->CreateIterator(deRange.GetFirst(),deRange.GetSecond()));
+    MpPair_t deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
+    TIter next(fDigitStore->CreateIterator(AliMp::PairFirst(deRange),AliMp::PairSecond(deRange)));
     AliMUONVDigit *mdig;
 
     while ( ( mdig = static_cast<AliMUONVDigit*>(next())) )
@@ -1858,9 +1854,8 @@ void AliMUONTriggerGUI::PrintDigitStore() const
       charge = (Int_t)mdig->Charge();
 
       seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));  
-      pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-      AliMpIntPair ind = pad.GetIndices();
-
+      pad = seg->PadByIndices(ix,iy,kTRUE);
+ 
       printf("Digit: detElemId %4d cath %1d ix %2d iy %3d charge %1d \n",detElemId,cathode,ix,iy,charge);
       
     }
