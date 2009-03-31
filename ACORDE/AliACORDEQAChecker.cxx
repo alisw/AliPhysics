@@ -147,7 +147,7 @@ Double_t AliACORDEQAChecker::CheckAcordeRefHits(TObjArray *AcordeList, TObjArray
 	{
 		while ( (histo = dynamic_cast<TH1 *>(next())) )
 		{	
-			if ( (histo->GetBinContent(i)/histo->GetMaximum())<1.0 ) acoTest = 0.86;
+		  if (histo->GetMaximum() && ((histo->GetBinContent(i)/histo->GetMaximum())<1.0) ) acoTest = 0.86;
 //		if( histo->KolmogorovTest((TH1F *)AcordeRef->At(0))<0.8)  acoTest = 0.86;
 			//printf("href:%f\n",histo->GetMaximum());
 		}
