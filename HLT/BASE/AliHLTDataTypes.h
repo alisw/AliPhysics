@@ -371,6 +371,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 #define kAliHLTExternalTrackParamDataTypeID   {'T','C','A','E','X','T','T','R'}
 
+/** HLT Jet
+ * - Struct for jets based on AliHLTJETJets
+ * - varying origin
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTJetDataTypeID                  {'H','L','T','J','E','T','V','0'}
+
 using namespace std;
 
 extern "C" {
@@ -908,12 +915,18 @@ extern "C" {
    * barrel tracks and detector tracks get names 'DETTracks'
    * @ingroup alihlt_component_datatypes
    */	
-  extern const AliHLTComponentDataType kAliHLTDataTypeTrack;             // {HLTTRACK,"***"}
+  extern const AliHLTComponentDataType kAliHLTDataTypeTrack;              // {HLTTRACK,"***"}
 
   /** TClonesArray of AliExternalTrackParam
    * @ingroup alihlt_component_datatypes
    */	
-  extern const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam;// {TCAEXTTR,"***"}
+  extern const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam; // {TCAEXTTR,"***"}
+
+  /** Container containing jets (AliHLTJETJets)
+   * Containing TClonesArray of AliAODJets 
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeJet;                // {HLTJETV0,"***"}
 
   //////////////////////////////////////////////////////////////////////////
   //

@@ -155,6 +155,10 @@ const AliHLTComponentDataType kAliHLTDataTypeTrack = AliHLTComponentDataTypeInit
 const char kAliHLTExternalTrackParamDataTypeIDstring[8] = kAliHLTExternalTrackParamDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam = AliHLTComponentDataTypeInitializer(kAliHLTExternalTrackParamDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** Container of HLT Jets (AliHLTJETJets) */
+const char kAliHLTJetDataTypeIDstring[8] = kAliHLTJetDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeJet = AliHLTComponentDataTypeInitializer(kAliHLTJetDataTypeIDstring, kAliHLTDataOriginAny);
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|
