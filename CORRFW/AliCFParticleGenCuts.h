@@ -118,7 +118,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Bool_t     fRequireIsPrimary;   // require primary particle
   Bool_t     fRequireIsSecondary; // require secondary particle
   Bool_t     fRequirePdgCode;     // require check of the PDG code
-  Bool_t     fRequireAbsolutePdg; // use the PDG code absolute value
+  Bool_t     fRequireAbsolutePdg; // use the PDG code absolute value, used also for the decay channel
   Int_t      fPdgCode ;           // particle PDG code
   Double32_t fProdVtxXMin;        // min X of particle production vertex
   Double32_t fProdVtxYMin;        // min Y of particle production vertex
@@ -136,7 +136,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Double32_t fDecayLengthMax;     // max decay length (absolute)
   Double32_t fDecayRxyMin;        // min decay length in transverse plane wrt (0,0,0)
   Double32_t fDecayRxyMax;        // max decay length in transverse plane wrt (0,0,0)
-  TDecayChannel* fDecayChannel;   // decay channel 
+  TDecayChannel* fDecayChannel;   // decay channel : if fRequireAbsolutePdg, the antiparticle channel will be checked as well
 
   //QA histos
   TH1F*    fhCutStatistics;        // Histogram: statistics of what cuts the tracks did not survive

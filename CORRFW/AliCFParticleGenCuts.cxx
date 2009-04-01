@@ -314,6 +314,7 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
     Bool_t goodDecay = kTRUE ;
     Short_t nDaughters = mcPart->Particle()->GetNDaughters() ;
     if (nDaughters != fDecayChannel->NDaughters()) goodDecay = kFALSE ;
+    //now number of daughters is OK
     if (goodDecay) {
       // now check if decay channel is respected
       // first try
@@ -329,9 +330,26 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
 	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
 	}
       }
-    }
+      if (!goodDecay && fRequireAbsolutePdg) {
+	//now tries inverting the sign of the daughters in case the anti-particle is also looked at
+	// third try
+	goodDecay = kTRUE ;
+	for (Int_t iDaughter = 0; iDaughter<nDaughters; iDaughter++) {
+	  TParticle* daug = stack->Particle(mcPart->Particle()->GetDaughter(iDaughter)) ;
+	  if (daug->GetPdgCode() != -fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+	}
+	if (!goodDecay) {
+	  //fourth try inverting the order of the daughters
+	  goodDecay = kTRUE ;
+	  for (Int_t iDaughter = 0; iDaughter<nDaughters; iDaughter++) {
+	    TParticle* daug = stack->Particle(mcPart->Particle()->GetDaughter(nDaughters-(iDaughter+1))) ;
+	    if (daug->GetPdgCode() != -fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+	  }
+	}
+      } //end check anti-particle
+    } //end # daughters OK
     fCutValues->SetAt((Double32_t)goodDecay,kCutDecayChannel) ;
-  }
+  } //end require decay channel
   else fCutValues->SetAt((Double32_t)kTRUE,kCutDecayChannel);
   
   
