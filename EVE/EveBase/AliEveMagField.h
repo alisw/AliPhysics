@@ -24,6 +24,7 @@ public:
   AliEveMagField(AliMagF* mf=0);
   virtual ~AliEveMagField() {}
 
+  using TEveMagField::GetField;
   virtual TEveVector GetField(Float_t x, Float_t y, Float_t z) const;
 
 protected:
