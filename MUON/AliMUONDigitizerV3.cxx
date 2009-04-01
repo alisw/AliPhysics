@@ -647,8 +647,8 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore
 		const AliMpVSegmentation* seg
 		    = AliMpSegmentation::Instance()->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(0));
 		if (!seg) continue;
-		Float_t deltax = seg->Dimensions().X();
-		Float_t deltay = seg->Dimensions().Y();
+		Float_t deltax = seg->GetDimensionX();
+		Float_t deltay = seg->GetDimensionY();
 		GetTransformer()->Local2Global(currDetElemId, -deltax, -deltay, 0, xg01, yg01, zg);
 		GetTransformer()->Local2Global(currDetElemId,  deltax,  deltay, 0, xg02, yg02, zg);
 		Float_t xg1 = xg01, xg2 = xg02, yg1 = yg01, yg2 = yg02;
@@ -663,7 +663,7 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore
 		if(gx>=xg1 && gx<=xg2 && gy>=yg1 && gy<=yg2){
 		    detElemId = currDetElemId;
 		    GetTransformer()->Global2Local(detElemId, gx, gy, 0, x, y, z);
-		    pad[0] = seg->PadByPosition(TVector2(x,y),kFALSE);
+		    pad[0] = seg->PadByPosition(x,y,kFALSE);
 		    if(!pad[0].IsValid()) continue;
 		    isOk = kTRUE;
 		    break;
@@ -673,7 +673,7 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore
 
 	const AliMpVSegmentation* seg1
 	    = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(1));
-	pad[1] = seg1->PadByPosition(TVector2(x,y),kFALSE);
+	pad[1] = seg1->PadByPosition(x,y,kFALSE);
 
 	for ( Int_t cathode = 0; cathode < 2; ++cathode ){
 	  Int_t manuId = pad[cathode].GetLocalBoardId(0);

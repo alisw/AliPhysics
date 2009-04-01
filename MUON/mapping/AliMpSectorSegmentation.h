@@ -20,7 +20,6 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 
-#include <TVector2.h>
 #include <TExMap.h>
 
 class AliMpSector;
@@ -48,9 +47,9 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
                                Bool_t warning = kTRUE) const;
     virtual AliMpPad PadByIndices (Int_t ix, Int_t iy, 
                                Bool_t warning = kTRUE) const;
-    virtual AliMpPad PadByPosition(const TVector2& position ,
+    virtual AliMpPad PadByPosition(Double_t x, Double_t y,
                                Bool_t warning = kTRUE) const;
-    virtual AliMpPad PadByDirection(const TVector2& startPosition, 
+    virtual AliMpPad PadByDirection(Double_t startx, Double_t starty, 
                                Double_t distance) const;
  
     virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
@@ -68,17 +67,18 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     virtual AliMp::PlaneType   PlaneType() const;
     virtual AliMp::StationType StationType() const;
 
-    virtual TVector2 Dimensions() const;
-    virtual TVector2 Position() const;
+    virtual Double_t  GetDimensionX() const;
+    virtual Double_t  GetDimensionY() const;
+ 
+    virtual Double_t  GetPositionX() const;
+    virtual Double_t  GetPositionY() const;
   
     virtual void Print(Option_t* opt="") const;
     
-    virtual Int_t    Zone(const AliMpPad& pad, Bool_t warning = kTRUE) const;
-    virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;
+    Double_t GetMinPadDimensionX() const;
+    Double_t GetMinPadDimensionY() const;
 
-    TVector2 GetMinPadDimensions() const;
     Bool_t CircleTest(Int_t ix, Int_t iy) const;
-    void   PrintZones() const;
    
     const AliMpSector* GetSector() const;
   
@@ -88,30 +88,21 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     /// Not implemented
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
-    static const Double_t   fgkS1;  ///< the separators used for conversion
-    static const Double_t   fgkS2;  ///< of TVector2 to MpPair_t
-    
     // methods
-    Long_t    GetIndex(const TVector2& vector2) const;
-    TVector2  GetVector(Long_t index) const;
-
-    // methods
-    void  FillPadDimensionsMap();
     AliMpMotifPosition*  FindMotifPosition(Int_t ix, Int_t iy) const;
-    virtual AliMpPad PadByXDirection(const TVector2& startPosition, 
+    virtual AliMpPad PadByXDirection(Double_t startx, Double_t starty, 
                                      Double_t maxX) const;
-    virtual AliMpPad PadByYDirection(const TVector2& startPosition, 
+    virtual AliMpPad PadByYDirection(Double_t startx, Double_t starty, 
                                      Double_t maxY) const;
  
     // data members   
-    const AliMpSector*  fkSector;   ///< Sector
-    Bool_t              fIsOwner;   ///< Sector ownership     
-    AliMpPad*           fPadBuffer; ///< The pad buffer
-    mutable TExMap      fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
-    Int_t  fMaxIndexInX;  ///< maximum pad index in x    
-    Int_t  fMaxIndexInY;  ///< maximum pad index in y    
+    const AliMpSector*  fkSector;     ///< Sector
+    Bool_t              fIsOwner;     ///< Sector ownership     
+    AliMpPad*           fPadBuffer;   ///< The pad buffer
+    Int_t               fMaxIndexInX; ///< maximum pad index in x    
+    Int_t               fMaxIndexInY; ///< maximum pad index in y  
 
-  ClassDef(AliMpSectorSegmentation,2)  // Segmentation
+  ClassDef(AliMpSectorSegmentation,3)  // Segmentation
 };
 
 

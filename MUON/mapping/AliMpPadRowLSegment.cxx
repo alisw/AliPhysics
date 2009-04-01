@@ -70,7 +70,7 @@ Double_t AliMpPadRowLSegment::FirstPadCenterX() const
 /// Return the x coordinate of the first (the most right) pad center
 /// in the global coordinate system.
 
-  return GetOffsetX() - GetMotif()->GetPadDimensions().X();
+  return GetOffsetX() - GetMotif()->GetPadDimensionX();
 }  
 
 //_____________________________________________________________________________
@@ -80,7 +80,7 @@ Double_t AliMpPadRowLSegment::LastPadCenterX() const
 /// in the global coordinate system.                                         \n       
 /// !! numbering of pads is in (-x) direction
 
-  return GetOffsetX() - (2.*GetNofPads() - 1)*GetMotif()->GetPadDimensions().X();
+  return GetOffsetX() - (2.*GetNofPads() - 1)*GetMotif()->GetPadDimensionX();
 }
 
 //_____________________________________________________________________________
@@ -91,7 +91,7 @@ Double_t AliMpPadRowLSegment::FirstPadBorderX() const
 
   return GetOffsetX();
          // Also could be
-         // return FirstPadCenterX() + GetMotif()->GetPadDimensions().X();
+         // return FirstPadCenterX() + GetMotif()->GetPadDimensionX();
 }  
 
 //_____________________________________________________________________________
@@ -100,7 +100,7 @@ Double_t AliMpPadRowLSegment::LastPadBorderX() const
 /// Return the x coordinate of the left border of the last (the most left)
 /// pad in the global coordinate system.
 
-  return LastPadCenterX() - GetMotif()->GetPadDimensions().X();
+  return LastPadCenterX() - GetMotif()->GetPadDimensionX();
 }  
 
 //

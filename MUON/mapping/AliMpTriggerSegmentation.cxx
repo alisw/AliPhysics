@@ -133,12 +133,19 @@ AliMpTriggerSegmentation::GetNeighbours(const AliMpPad& /*pad*/,
 }
 
 //_____________________________________________________________________________
-TVector2
-AliMpTriggerSegmentation::Dimensions() const
+Double_t  
+AliMpTriggerSegmentation::GetDimensionX() const
 {
-/// Return dimensions
+/// Return slat x dimensions
+  return Slat()->GetDimensionX();
+}
 
-  return Slat()->Dimensions();
+//_____________________________________________________________________________
+Double_t  
+AliMpTriggerSegmentation::GetDimensionY() const
+{
+/// Return slat y dimensions
+  return Slat()->GetDimensionY();
 }
 
 //_____________________________________________________________________________
@@ -247,7 +254,8 @@ AliMpTriggerSegmentation::PadByIndices(Int_t ix, Int_t iy,
       {
         pad = AliMpPad(0, 0,
                        pi.GetIndices(),
-                       pi.Position(),pi.Dimensions());
+                       pi.GetPositionX(),pi.GetPositionY(),
+                       pi.GetDimensionX(), pi.GetDimensionY());
         pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }
       else
@@ -266,7 +274,7 @@ AliMpTriggerSegmentation::PadByIndices(Int_t ix, Int_t iy,
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpTriggerSegmentation::PadByPosition(const TVector2& position, 
+AliMpTriggerSegmentation::PadByPosition(Double_t x, Double_t y, 
                                      Bool_t warning) const
 {
   ///
@@ -281,14 +289,15 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
     AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
-    AliMpPad pi = seg->PadByPosition(position,kFALSE);
+    AliMpPad pi = seg->PadByPosition(x,y,kFALSE);
     if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )
       {
         pad = AliMpPad(0, 0,
                        pi.GetIndices(),
-                       pi.Position(),pi.Dimensions());
+                       pi.GetPositionX(),pi.GetPositionY(),
+                       pi.GetDimensionX(), pi.GetDimensionY());
         pad.AddLocation(pi.GetManuId(), pi.GetManuChannel());
       }
       else
@@ -299,8 +308,7 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   }
   if ( warning && !pad.IsValid()  )
   {
-    AliWarning(Form("No pad found at position (%e,%e)",position.X(),
-                    position.Y()));
+    AliWarning(Form("No pad found at position (%e,%e)",x,y));
   }
   
   return pad;  
@@ -338,12 +346,19 @@ AliMpTriggerSegmentation::GetNofElectronicCards() const
 }
 
 //_____________________________________________________________________________
-TVector2 
-AliMpTriggerSegmentation::Position() const 
-{ 
-  /// Return position of origin
-  
-  return Slat()->Position();
+Double_t  
+AliMpTriggerSegmentation::GetPositionX() const
+{
+  /// Return x position of origin
+  return Slat()->GetPositionX();
+}
+
+//_____________________________________________________________________________
+Double_t  
+AliMpTriggerSegmentation::GetPositionY() const
+{
+  /// Return y position of origin
+  return Slat()->GetPositionY();
 }
 
 //_____________________________________________________________________________

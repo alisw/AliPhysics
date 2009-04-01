@@ -240,10 +240,10 @@ void AliMUONTriggerGUIboard::MakeGeometry()
     minY = +9999; maxY = -9999;
     for (Int_t ix = 0; ix < fNPadsX[ich]; ix++) {
       pad = (AliMpPad*)fPadsX[ich]->At(ix);
-      xloc = pad->Position().X();
-      yloc = pad->Position().Y();
-      dx = pad->Dimensions().X();
-      dy = pad->Dimensions().Y();
+      xloc = pad->GetPositionX();
+      yloc = pad->GetPositionY();
+      dx = pad->GetDimensionX();
+      dy = pad->GetDimensionY();
       transformer.Local2Global((11+ich)*100+GetDetElemId(), xloc, yloc, 0, xglo, yglo, zglo);
       minX = TMath::Min(minX,(xglo-dx));
       maxX = TMath::Max(maxX,(xglo+dx));

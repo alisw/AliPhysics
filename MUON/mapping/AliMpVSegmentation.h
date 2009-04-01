@@ -1,3 +1,5 @@
+
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -29,7 +31,6 @@ class AliMpArea;
 class AliMpMotifPosition;
 
 class TArrayI;
-class TVector2;
 class TObjArray;
 
 class AliMpVSegmentation : public TObject
@@ -62,7 +63,7 @@ class AliMpVSegmentation : public TObject
     virtual AliMpPad PadByIndices (Int_t ix, Int_t iy,  
                                Bool_t warning = true) const = 0;
             /// Find pad by position
-    virtual AliMpPad PadByPosition(const TVector2& position,
+    virtual AliMpPad PadByPosition(Double_t x, Double_t y,
                                Bool_t warning = true) const = 0;
             /// Return true if the pad with given indices exists.
             /// Compared with the PadByIndices method, this one can generally be implemented
@@ -97,11 +98,15 @@ class AliMpVSegmentation : public TObject
             /// Return the station type
     virtual AliMp::StationType StationType() const = 0;
 
-            /// Return the half-sizes of the detection element
-    virtual TVector2 Dimensions() const = 0;
+            /// Return the x half-sizes of the detection element
+    virtual Double_t  GetDimensionX() const = 0;
+            /// Return the y half-sizes of the detection element
+    virtual Double_t  GetDimensionY() const = 0;
     
-            /// Return the position of the origine of the detection element
-    virtual TVector2 Position() const = 0;
+            /// Return the x position of the origin of the detection element
+    virtual Double_t  GetPositionX() const = 0;
+            /// Return the y position of the origin of the detection element
+    virtual Double_t  GetPositionY() const = 0;
 
   
   ClassDef(AliMpVSegmentation,1)  // Segmentation

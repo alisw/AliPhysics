@@ -46,7 +46,6 @@
 
 #include <TMath.h>
 #include <TString.h>
-#include <TVector2.h>
 #include <TCanvas.h>
 #include <TGButton.h>
 #include <TRootEmbeddedCanvas.h>
@@ -349,7 +348,7 @@ void AliMpDEVisu::HandleMovement(Int_t eventType, Int_t eventX, Int_t eventY, TO
       EventToReal(eventX,eventY,x,y);
       
       // get manu
-      AliMpPad pad = fkSegmentation->PadByPosition(TVector2(x,y), false);
+      AliMpPad pad = fkSegmentation->PadByPosition(x,y, false);
       
       if (!pad.IsValid()) {
        
@@ -505,32 +504,35 @@ void AliMpDEVisu::DrawQuadrant(Option_t* option, Bool_t popup)
 
 //______________________________________________________________________________
 void 
-AliMpDEVisu::EventToReal(Int_t eventX, Int_t eventY, Double_t& x, Double_t& y) const
+AliMpDEVisu::EventToReal(Int_t eventX, Int_t eventY, 
+                         Double_t& x, Double_t& y) const
 {
   /// estimate graphic pad sizes
 
-  static TVector2 ul(gPad->XtoPixel(0.01), gPad->YtoPixel(0.99));
-  static TVector2 br(gPad->XtoPixel(0.99), gPad->YtoPixel(0.01));
+  static Double_t ulx(gPad->XtoPixel(0.01)); 
+  static Double_t uly(gPad->YtoPixel(0.99));
+  static Double_t brx(gPad->XtoPixel(0.99));
+  static Double_t bry(gPad->YtoPixel(0.01));
 
-  static TVector2 padDim = br - ul;
+  static Double_t padDimX = brx - ulx;
+  static Double_t padDimY = bry - uly;
   
   // get DE dimension (half size)
-  TVector2 deDim(fkSegmentation->Dimensions()*2.0);
+  Double_t deDimX(fkSegmentation->GetDimensionX()*2.0);
+  Double_t deDimY(fkSegmentation->GetDimensionY()*2.0);
   
-  TVector2 padReal;
-  
-  if (AliMpDEManager::GetStationType(fCurrentDetElem) == AliMp::kStation345 )
+  if ( AliMpDEManager::GetStationType(fCurrentDetElem) == AliMp::kStation345 )
   {
     // origin at center
-    x = (eventX - ul.X() - padDim.X()/2.)/(padDim.X())*deDim.X(); 
-    y = (br.Y() - eventY - padDim.Y()/2.)/(padDim.Y())*deDim.Y(); 
+    x = (eventX - ulx - padDimX/2.)/(padDimX)*deDimX; 
+    y = (bry - eventY - padDimY/2.)/(padDimY)*deDimY; 
     
   } 
   else 
   {
     // origin at bottom left
-    x = (eventX - ul.X())/(padDim.X())*deDim.X(); 
-    y = (br.Y() - eventY)/(padDim.Y())*deDim.Y(); 
+    x = (eventX - ulx)/(padDimX)*deDimX; 
+    y = (bry - eventY)/(padDimY)*deDimY; 
   }
   
 }
@@ -822,10 +824,11 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
   {
     InfoManuMotif(motifPosFound);
 
-    TVector2 dimension(motifPosFound->Dimensions());
+    Double_t dimensionX(motifPosFound->GetDimensionX()); 
+    Double_t dimensionY(motifPosFound->GetDimensionY());
 
     Int_t h = 500;
-    Int_t w = Int_t(h*dimension.X()/dimension.Y());
+    Int_t w = Int_t(h*dimensionX/dimensionY);
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
       
     CreatePopupWindow(w,h,Form("Manu %d",fNumberEntry->GetIntNumber()),
@@ -877,11 +880,12 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 
     InfoManuMotif(motifPosFound);
 
-    TVector2 dimension(motifPosFound->Dimensions());
+    Double_t dimensionX(motifPosFound->GetDimensionX()); 
+    Double_t dimensionY(motifPosFound->GetDimensionY());
 
     // Create transient frame
     Int_t h = 400;
-    Int_t w = Int_t(h*dimension.X()/dimension.Y());
+    Int_t w = Int_t(h*dimensionX/dimensionY);
 
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
     
@@ -898,13 +902,14 @@ void AliMpDEVisu::InfoManuMotif(AliMpMotifPosition* motifPos)
 
    // log message
     Int_t manuId = fNumberEntry->GetIntNumber();
-    TVector2 dimension(motifPos->Dimensions());
+
     fLogMessage->AddLine(Form("PopupManuMotif: motif dimension: %5.2f, %5.2f", 
-			      dimension.X()*2., dimension.Y()*2.));
+			      motifPos->GetDimensionX()*2., 
+                              motifPos->GetDimensionY()*2.));
       
     fLogMessage->AddLine( Form("PopupManuMotif: pad dimension: %4.2f, %4.2f", 
-			       motifPos->GetMotif()->GetPadDimensions(0).X()*2.,  
-			       motifPos->GetMotif()->GetPadDimensions(0).Y()*2. ));
+			       motifPos->GetMotif()->GetPadDimensionX(0)*2.,  
+			       motifPos->GetMotif()->GetPadDimensionY(0)*2. ));
 
     fLogMessage->AddLine( Form("PopupManuMotif: manu: %d, serial number: %d, buspatch: %d",
                              manuId, 
@@ -933,8 +938,8 @@ void AliMpDEVisu::PopUpZoom(Int_t ix0, Int_t iy0, Int_t ix1, Int_t iy1)
   Int_t h = 500;//TMath::Abs(x1-x0);
   Int_t w = 500;//TMath::Abs(y1-y0);
 
-  AliMpArea area(TVector2((x0+x1)/2.0,(y0+y1)/2.0),
-                  TVector2(TMath::Abs(x1-x0)/2.0,TMath::Abs(y1-y0)/2.0));
+  AliMpArea area((x0+x1)/2.0,(y0+y1)/2.0,
+                 TMath::Abs(x1-x0)/2.0,TMath::Abs(y1-y0)/2.0);
 //  area.Print();
   
   if ( area.IsValid() )

@@ -53,7 +53,8 @@ AliMpRowSegment::AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif,
   : AliMpVRowSegment(),
     fNofMotifs(nofMotifs),
     fLPadOffset(AliMp::Pair(padOffsetX,padOffsetY)),
-    fOffset(TVector2()),
+    fOffsetX(0.),
+    fOffsetY(0.),
     fRow(row),
     fMotif(motif),
     fMotifPositionId(motifPositionId),
@@ -70,7 +71,8 @@ AliMpRowSegment::AliMpRowSegment()
   : AliMpVRowSegment(),
     fNofMotifs(0),
     fLPadOffset(0),
-    fOffset(TVector2()),
+    fOffsetX(0.),
+    fOffsetY(0.),
     fRow(0),
     fMotif(0),
     fMotifPositionId(0),
@@ -95,7 +97,7 @@ Double_t AliMpRowSegment::FirstMotifCenterX() const
 /// Return the x coordinate of the first motif center
 /// in the global coordinate system.
 
-  return fOffset.X();
+  return fOffsetX;
 }  
 
 //_____________________________________________________________________________
@@ -104,7 +106,7 @@ Double_t AliMpRowSegment::LastMotifCenterX() const
 /// Return the x coordinate of the last motif center
 /// in the global coordinate system.
 
-  return fOffset.X() + 2.*(fNofMotifs-1)*fMotif->Dimensions().X();
+  return fOffsetX + 2.*(fNofMotifs-1)*fMotif->DimensionX();
 }
 
 //_____________________________________________________________________________
@@ -122,7 +124,7 @@ Double_t AliMpRowSegment::MotifCenterX(Int_t motifPositionId) const
   // Find the position number in the segment  
   Int_t num = (motifPositionId - fMotifPositionId) *  fMotifPositionDId;
 
-  return fOffset.X() + num*(fMotif->Dimensions().X() * 2.0);
+  return fOffsetX + num*(fMotif->DimensionX() * 2.0);
 }
 
 //_____________________________________________________________________________
@@ -137,19 +139,19 @@ Double_t AliMpRowSegment::MotifCenterY(Int_t motifPositionId) const
     return 0;
   }
   
-  return GetRow()->Position().Y() + fOffset.Y();
+  return GetRow()->GetPositionY() + fOffsetY;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMpRowSegment::IsInside(const TVector2& position, Bool_t warn) const
+Bool_t AliMpRowSegment::IsInside(Double_t x, Double_t y, Bool_t warn) const
 {
 /// Check if the position is inside some motif of this row segment.
 
-  Double_t minY = GetRow()->Position().Y() + fOffset.Y() - fMotif->Dimensions().Y();
-  Double_t maxY = GetRow()->Position().Y() + fOffset.Y() + fMotif->Dimensions().Y();
+  Double_t minY = GetRow()->GetPositionY() + fOffsetY - fMotif->DimensionY();
+  Double_t maxY = GetRow()->GetPositionY() + fOffsetY + fMotif->DimensionY();
 
-  if ( position.X() < LeftBorderX() || position.X() > RightBorderX() ||
-       position.Y() < minY || position.Y() > maxY ) {
+  if ( x < LeftBorderX() || x > RightBorderX() ||
+       y < minY || y > maxY ) {
 
     if (warn)
       AliWarningStream() << "Outside row segment region" << endl;
@@ -169,7 +171,7 @@ Double_t  AliMpRowSegment::LeftBorderX() const
 /// Return the x coordinate of the left row segment border
 /// in the global coordinate system.
 
-  return FirstMotifCenterX() - fMotif->Dimensions().X();
+  return FirstMotifCenterX() - fMotif->DimensionX();
 }
 
 //_____________________________________________________________________________
@@ -178,7 +180,7 @@ Double_t  AliMpRowSegment::RightBorderX() const
 /// Return the x coordinate of the right row segment border
 /// in the global coordinate system.
 
-  return LastMotifCenterX() + fMotif->Dimensions().X();
+  return LastMotifCenterX() + fMotif->DimensionX();
 }
 
 //_____________________________________________________________________________
@@ -186,31 +188,31 @@ Double_t  AliMpRowSegment::HalfSizeY() const
 {
 /// Return the size in y of this row segment.
 
-  return fMotif->Dimensions().Y() + fOffset.Y();
+  return fMotif->DimensionY() + fOffsetY;
 }
 
 //_____________________________________________________________________________
-AliMpVMotif*  AliMpRowSegment::FindMotif(const TVector2& position) const
+AliMpVMotif*  AliMpRowSegment::FindMotif(Double_t x, Double_t y) const
 {
 /// Return the motif of this row; 
 
-  if (IsInside(position, false))
+  if ( IsInside(x, y, false) )
     return fMotif;
   else  
     return 0;
 }  
 
 //_____________________________________________________________________________
-Int_t AliMpRowSegment::FindMotifPositionId(const TVector2& position) const
+Int_t AliMpRowSegment::FindMotifPositionId(Double_t x, Double_t y) const
 {
 /// Return the motif position identified for the given
 /// geometric position.
 
-  if (!IsInside(position, false)) return 0;
+  if ( ! IsInside(x, y, false) ) return 0;
 
   // Find the position number in the segment  
   Int_t num 
-    = Int_t((position.X() - LeftBorderX()) / (fMotif->Dimensions().X() * 2.0));
+    = Int_t((x - LeftBorderX()) / (fMotif->DimensionX() * 2.0));
 
   // Calculate the position Id
   return fMotifPositionId + num*fMotifPositionDId;  
@@ -235,40 +237,52 @@ Bool_t AliMpRowSegment::HasMotifPosition(Int_t motifPositionId) const
 }
 
 //_____________________________________________________________________________
-TVector2 AliMpRowSegment::MotifCenter(Int_t motifPositionId) const
+void AliMpRowSegment::MotifCenter(Int_t motifPositionId,
+                                  Double_t& x, Double_t& y) const
 {
 /// Return the coordinates of the motif specified with
 /// the given position identifier.
 
-  return TVector2(MotifCenterX(motifPositionId), MotifCenterY(motifPositionId));
+  x = MotifCenterX(motifPositionId);
+  y = MotifCenterY(motifPositionId);
 }
 
 //_____________________________________________________________________________
-TVector2 AliMpRowSegment::Position() const
+Double_t AliMpRowSegment::GetPositionX() const
 {
-/// Return the position of the row segment centre.
+/// Return the x position of the row segment centre.
 
-  Double_t x = (LeftBorderX() + RightBorderX())/2.;		    
-  Double_t y = GetRow()->Position().Y();  
-    
-  return TVector2(x, y);   
+  return (LeftBorderX() + RightBorderX())/2.;		    
 }
 
+//_____________________________________________________________________________
+Double_t AliMpRowSegment::GetPositionY() const
+{
+/// Return the y position of the row segment centre.
+
+  return GetRow()->GetPositionY();  
+}
 
 //_____________________________________________________________________________
-TVector2 AliMpRowSegment::Dimensions() const
+Double_t AliMpRowSegment::GetDimensionX() const
 {
 /// Return the halflengths of the row segment in x, y.
 // ---
 
-  Double_t x = (RightBorderX() - LeftBorderX())/2.;		    
-  Double_t y = GetRow()->Dimensions().Y();  
-    
-  return TVector2(x, y);   
+  return (RightBorderX() - LeftBorderX())/2.;		    
 }
 
 //_____________________________________________________________________________
-void   AliMpRowSegment::SetOffset(const TVector2& offset)
+Double_t AliMpRowSegment::GetDimensionY() const
+{
+/// Return the halflengths of the row segment in x, y.
+// ---
+
+  return GetRow()->GetDimensionY();  
+}
+
+//_____________________________________________________________________________
+void   AliMpRowSegment::SetOffset(Double_t x, Double_t y)
 {
 /// Calculate offset from given offset and 
 /// stored offset in pads.
@@ -278,17 +292,15 @@ void   AliMpRowSegment::SetOffset(const TVector2& offset)
 
   Int_t ix = iter.CurrentItem().GetIx();
   Int_t iy = iter.CurrentItem().GetIy();
-     
-  Double_t offsetX 
-     = offset.X() 
-       + 2.*AliMp::PairFirst(fLPadOffset) * fMotif->GetPadDimensionsByIndices(ix, iy).X() 
-       + fMotif->Dimensions().X(); 
+  
+  Double_t dx, dy;
+  fMotif->GetPadDimensionsByIndices(ix, iy, dx, dy);  
 
-  Double_t offsetY 
-    = offset.Y()
-      + AliMp::PairSecond(fLPadOffset) * fMotif->GetPadDimensionsByIndices(ix, iy).Y(); 
+  fOffsetX 
+     = x + 2.*AliMp::PairFirst(fLPadOffset) * dx + fMotif->DimensionX(); 
 
-  fOffset = TVector2(offsetX, offsetY);
+  fOffsetY
+    = y + AliMp::PairSecond(fLPadOffset) * dy; 
 }
 
 //_____________________________________________________________________________

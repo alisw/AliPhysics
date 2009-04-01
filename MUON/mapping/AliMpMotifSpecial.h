@@ -16,8 +16,8 @@
 #include "AliMpVMotif.h"
 #include "AliMpExMap.h"
 
-#include <TVector2.h>
 #include <TObjArray.h>
+#include <TArrayD.h>
 
 class TString;
 
@@ -29,36 +29,52 @@ class AliMpMotifSpecial : public AliMpVMotif
   virtual ~AliMpMotifSpecial();
 
   // Access methods
-  virtual TVector2 GetPadDimensionsByIndices(MpPair_t localIndices) const;
-  virtual TVector2 GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const;
+  virtual void GetPadDimensionsByIndices(MpPair_t localIndices,
+                      Double_t& dx, Double_t& dy) const;
+  virtual void GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal,
+                      Double_t& dx, Double_t& dy) const;
+
   virtual Int_t    GetNofPadDimensions() const;
-  virtual TVector2 GetPadDimensions(Int_t i) const;
+  virtual Double_t GetPadDimensionX(Int_t i) const;
+  virtual Double_t GetPadDimensionY(Int_t i) const;
 
   // Set methods
-  void SetPadDimensions(MpPair_t localIndices,
-                        const TVector2& dimensions);
-  void SetPadDimensions(Int_t ixLocal, Int_t iyLocal,
-                        const TVector2& dimensions);
+  void SetPadDimensions(MpPair_t localIndices, 
+                        Double_t dx, Double_t dy);
+  void SetPadDimensions(Int_t ixLocal, Int_t iyLocal, 
+                        Double_t dx, Double_t dy);
   
   // Geometry
   void CalculateDimensions();
-  virtual TVector2 Dimensions() const;
+
+  virtual Double_t DimensionX() const;
+  virtual Double_t DimensionY() const;
 
   // Other methods
-  virtual TVector2     PadPositionLocal(MpPair_t  localIndices) const;
-  virtual TVector2     PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const;
-  virtual MpPair_t     PadIndicesLocal(const TVector2& localPos) const;
+  virtual void PadPositionLocal(MpPair_t localIndices,
+                      Double_t& posx, Double_t& posy  ) const;
+  virtual void PadPositionLocal(Int_t ixLocal, Int_t iyLocal,
+                      Double_t& posx, Double_t& posy  ) const;
+
+  virtual MpPair_t PadIndicesLocal(
+                      Double_t localPosX, Double_t localPosY) const;
 
  private:
   /// Not implemented
   AliMpMotifSpecial();
 
-  // data members
-  TVector2     fDimensions;           ///< motif dimensions
-  AliMpExMap   fPadDimensionsVector;  ///< the vector of pad dimensions
-  TObjArray    fPadDimensionsVector2; ///< the vector of different pad dimensions
+  // static data members
+  static Int_t fgkPadDimensions2Size; ///< The fPadDimensionsX/Y2 array size
 
-  ClassDef(AliMpMotifSpecial,2) // A motif with its ID
+  // data members
+  Double_t     fDimensionX; ///< motif x dimensions
+  Double_t     fDimensionY; ///< motif y dimensions
+  AliMpExMap   fPadDimensionsVector;  ///< the vector of pad dimensions
+  Int_t        fNofPadDimensions2; ///< number of different pad dimensions
+  TArrayD      fPadDimensions2X; ///< the vector of x of different pad dimensions
+  TArrayD      fPadDimensions2Y; ///< the vector of y of different pad dimensions
+
+  ClassDef(AliMpMotifSpecial,3) // A motif with its ID
 };
 
 #endif //ALI_MP_MOTIF_SPECIAL_H

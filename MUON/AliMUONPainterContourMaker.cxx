@@ -659,8 +659,7 @@ AliMUONPainterContourMaker::NameIt(const AliMpMotifPosition& motifPosition) cons
   
   for ( Int_t i = 0; i < motif->GetNofPadDimensions(); ++i )
   {
-    TVector2 padDim = motif->GetPadDimensions(i);
-    name += Form("/%7.3f-%7.3f:",padDim.X(),padDim.Y());
+    name += Form("/%7.3f-%7.3f:",motif->GetPadDimensionX(i),motif->GetPadDimensionY(i));
   }
   return name;
 }
@@ -775,15 +774,18 @@ AliMUONPainterContourMaker::GenerateManuContour(const char* name,
         AliDebug(3,Form("indices=(%3d,%3d) L %d R %d T %d B %d",
                         ix,iy, left,right,top,bottom));
         
-        TVector2 position = motif->PadPositionLocal(ix,iy);
-        TVector2 dimensions = motif->GetPadDimensionsByIndices(ix, iy);
+        Double_t posx, posy;
+        motif->PadPositionLocal(ix, iy, posx, posy);
+        
+        Double_t dx, dy;
+        motif->GetPadDimensionsByIndices(ix, iy, dx, dy);
 
         if ( !left  || !right || !top  || !bottom )
         {
           // the pad is on the edge
           Int_t id = AliMUONVDigit::BuildUniqueID(detElemId,manuId,
                                                   connection->GetManuChannel(),0);
-          ePads.AddLast(new AliMUONNeighbour(id,position,dimensions,left,right,top,bottom));
+          ePads.AddLast(new AliMUONNeighbour(id,TVector2(posx, posy),TVector2(dx, dy),left,right,top,bottom));
         }
       }
     }
@@ -800,12 +802,12 @@ AliMUONPainterContourMaker::GenerateManuContour(const char* name,
   
   // once we have the local contour, convert it to global
   
-  TVector2 pos(motifPosition->Position());
+  TVector2 pos(motifPosition->GetPositionX(), motifPosition->GetPositionY());
 
   if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345 ) 
   {
     const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(detElemId,manuId);
-    pos -= slat->Position();
+    pos -= TVector2(slat->GetPositionX(),slat->GetPositionY()) ;
   }
   globalContour->Offset(pos);
   TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fGlobalTransformations->GetValue(detElemId));

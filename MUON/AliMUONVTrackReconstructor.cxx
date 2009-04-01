@@ -426,9 +426,9 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   Double_t dY = TMath::Abs(trackParam.GetBendingSlope()) * kMaxDZ +
 		GetRecoParam()->GetMaxBendingDistanceToTrack() +
 		GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2);
-  TVector2 dimensions(dX, dY);
-  TVector2 position(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
-  AliMpArea area(position, dimensions);
+  AliMpArea area(extrapTrackParam.GetNonBendingCoor(), 
+                 extrapTrackParam.GetBendingCoor(),
+                 dX, dY);
   
   // ask to cluterize in the given area of the given chamber
   fClusterServer->Clusterize(chamber, clusterStore, area, GetRecoParam());

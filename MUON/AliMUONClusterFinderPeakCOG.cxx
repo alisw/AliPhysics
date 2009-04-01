@@ -320,7 +320,8 @@ AliMUONClusterFinderPeakCOG::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
       Int_t cath = pad->Cathode();
       Int_t cath1 = TMath::Even(cath);
       // Check for edge effect (missing pads on the _other_ cathode)
-      AliMpPad mpPad = fkSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
+      AliMpPad mpPad 
+        = fkSegmentation[cath1]->PadByPosition(pad->Position().X(),pad->Position().Y(),kFALSE);
       if (!mpPad.IsValid()) continue;
       //if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
       if (nFlags == 1 && pad->Charge() < 20) continue;
@@ -548,19 +549,21 @@ void AliMUONClusterFinderPeakCOG::BuildPixArrayOneCathode(AliMUONCluster& cluste
   if (cluster.Multiplicity(0) == 0) cath0 = 1;
   else if (cluster.Multiplicity(1) == 0) cath1 = 0;
 
-  TVector2 leftDown = cluster.Area(cath0).LeftDownCorner();
-  TVector2 rightUp = cluster.Area(cath0).RightUpCorner();
-  min[0] = leftDown.X();
-  min[1] = leftDown.Y();
-  max[0] = rightUp.X();
-  max[1] = rightUp.Y();
+  Double_t leftDownX, leftDownY;
+  cluster.Area(cath0).LeftDownCorner(leftDownX, leftDownY);
+  Double_t rightUpX, rightUpY; 
+  cluster.Area(cath0).RightUpCorner(rightUpX, rightUpY);
+  min[0] = leftDownX;
+  min[1] = leftDownY;
+  max[0] = rightUpX;
+  max[1] = rightUpY;
   if (cath1 != cath0) {
-    leftDown = cluster.Area(cath1).LeftDownCorner();
-    rightUp = cluster.Area(cath1).RightUpCorner();
-    min[0] = TMath::Max (min[0], leftDown.X());
-    min[1] = TMath::Max (min[1], leftDown.Y());
-    max[0] = TMath::Min (max[0], rightUp.X());
-    max[1] = TMath::Min (max[1], rightUp.Y());
+    cluster.Area(cath1).LeftDownCorner(leftDownX, leftDownY);
+    cluster.Area(cath1).RightUpCorner(rightUpX, rightUpY);
+    min[0] = TMath::Max (min[0], leftDownX);
+    min[1] = TMath::Max (min[1], leftDownY);
+    max[0] = TMath::Min (max[0], rightUpX);
+    max[1] = TMath::Min (max[1], rightUpY);
   }
 
   // Adjust limits

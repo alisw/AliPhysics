@@ -20,7 +20,6 @@
 #include "AliMpEncodePair.h"
 
 #include <TString.h>
-#include <TVector2.h>
 #include <TObjArray.h>
 
 class AliMpZone;
@@ -36,30 +35,30 @@ class AliMpSector : public TNamed
 {
   public:
     AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
-                AliMp::Direction direction, const TVector2& offset);
+                AliMp::Direction direction, 
+                Double_t offsetx, Double_t offsety);
     AliMpSector();
     virtual ~AliMpSector();
   
     // methods  
     virtual AliMpVPadIterator* CreateIterator() const;
+    
     void  SetRowSegmentOffsets();
     void  Initialize(); 
     void  PrintGeometry() const;
 
     // find methods   
-    AliMpRow*     FindRow(const TVector2& position) const;    
-    AliMpVMotif*  FindMotif(const TVector2& position) const;
-    Int_t         FindMotifPositionId(const TVector2& position) const;
+    Int_t  FindMotifPositionId(Double_t x, Double_t y) const;
 
     AliMpRow*          FindRow(Int_t motifPositionId) const;
     AliMpVRowSegment*  FindRowSegment(Int_t motifPositionId) const;
-    TVector2           FindPosition(Int_t motifPositionId) const;
 
-    AliMpZone*  FindZone(const TVector2& padDimensions) const;
 
     // geometry 
-    TVector2  Position() const;
-    TVector2  Dimensions() const;
+    Double_t  GetPositionX() const;
+    Double_t  GetPositionY() const;
+    Double_t  GetDimensionX() const;
+    Double_t  GetDimensionY() const;
    
     //
     // get methods
@@ -73,17 +72,20 @@ class AliMpSector : public TNamed
     AliMp::Direction  GetDirection() const;  
     AliMp::PlaneType  GetPlaneType() const;  
 
-    TVector2        GetMinPadDimensions() const;
-    TVector2        GetMaxPadDimensions() const;
-    MpPair_t        GetMaxPadIndices() const;
-    Int_t           GetNofPads() const;
+    Double_t    GetMinPadDimensionX() const;
+    Double_t    GetMinPadDimensionY() const;
+    Double_t    GetMaxPadDimensionX() const;
+    Double_t    GetMaxPadDimensionY() const;
+    MpPair_t    GetMaxPadIndices() const;
+    Int_t       GetNofPads() const;
 
     AliMpMotifMap*  GetMotifMap() const;
-    void            GetAllMotifPositionsIDs(TArrayI& ecn) const;
+
+    Int_t  GetNofMotifPositions() const;
+    void   GetAllMotifPositionsIDs(TArrayI& ecn) const;
     
     virtual void Print(Option_t* opt="") const;
     
-  Int_t GetNofMotifPositions() const;
     
   private:
     /// Not implemented
@@ -92,27 +94,35 @@ class AliMpSector : public TNamed
     AliMpSector&  operator = (const AliMpSector& right);
 
     // methods
-    AliMpVRowSegment* FindRowSegment(const TVector2& position) const;
+    AliMpRow*         FindRow(Double_t y) const;    
+    AliMpVRowSegment* FindRowSegment(Double_t x, Double_t y) const;
+
     void SetRowOffsets();
     void SetMotifPositions();
     void SetGlobalIndices();
     void SetMinMaxPadDimensions();
     void SetMaxPadIndices();
     void SetNofPads();
+    void SetDimensions();
 
     // data members        
     TString    fID;       ///< sector ID
-    TVector2   fOffset;   ///< sector position
+    Double_t   fOffsetX;  ///< sector x position
+    Double_t   fOffsetY;  ///< sector y position
+    Double_t   fDimensionX;  ///< sector x dimension
+    Double_t   fDimensionY;  ///< sector y dimension
     TObjArray  fZones;    ///< zones
     TObjArray  fRows;     ///< rows
     AliMpMotifMap*   fMotifMap;         ///< motif map
     AliMp::Direction fDirection;        ///< the direction of constant pad size
-    TVector2         fMinPadDimensions; ///< minimum pad dimensions
-    TVector2         fMaxPadDimensions; ///< miximum pad dimensions
+    Double_t         fMinPadDimensionX; ///< minimum pad x dimensions
+    Double_t         fMinPadDimensionY; ///< minimum pad y dimensions
+    Double_t         fMaxPadDimensionX; ///< miximum pad x dimensions
+    Double_t         fMaxPadDimensionY; ///< miximum pad y dimensions
     MpPair_t         fLMaxPadIndices;   ///< maximum pad indices    
     Int_t            fNofPads;          ///<  total number of pads
 
-  ClassDef(AliMpSector,2)  // Sector
+  ClassDef(AliMpSector,3)  // Sector
 };
 
 // inline functions
@@ -121,13 +131,21 @@ class AliMpSector : public TNamed
 inline AliMp::Direction AliMpSector::GetDirection() const 
 { return fDirection; }    
 
-/// Return minimum pad dimensions
-inline TVector2   AliMpSector::GetMinPadDimensions() const
-{ return fMinPadDimensions; }
+/// Return minimum x pad dimensions
+inline Double_t  AliMpSector::GetMinPadDimensionX() const
+{ return fMinPadDimensionX; }
 
-/// Return maxmum pad dimensions
-inline TVector2   AliMpSector::GetMaxPadDimensions() const
-{ return fMaxPadDimensions; }
+/// Return maximum y pad dimensions
+inline Double_t  AliMpSector::GetMinPadDimensionY() const
+{ return fMinPadDimensionY; }
+
+/// Return maximum x pad dimensions
+inline Double_t  AliMpSector::GetMaxPadDimensionX() const
+{ return fMaxPadDimensionX; }
+
+/// Return minimum y pad dimensions
+inline Double_t  AliMpSector::GetMaxPadDimensionY() const
+{ return fMaxPadDimensionY; }
 
 /// Return maximum pad indices
 inline MpPair_t  AliMpSector::GetMaxPadIndices() const

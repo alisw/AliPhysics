@@ -38,7 +38,8 @@ AliMpZone::AliMpZone(Int_t id)
   : TObject(),
     fID(id),
     fSubZones(),
-    fPadDimensions(TVector2())
+    fPadDimensionX(0.),
+    fPadDimensionY(0.)
 {
 /// Standard constructor
 }
@@ -48,7 +49,8 @@ AliMpZone::AliMpZone()
   : TObject(),
     fID(0),
     fSubZones(),
-    fPadDimensions(TVector2())
+    fPadDimensionX(0.),
+    fPadDimensionY(0.)
 {
 /// Default constructor
 }
@@ -86,6 +88,15 @@ AliMpSubZone* AliMpZone::FindSubZone(AliMpVMotif* motif) const
   }
   
   return 0;  
+}
+
+//_____________________________________________________________________________
+void AliMpZone::SetPadDimensions(Double_t dx, Double_t dy)
+{ 
+/// Set pad dimensions
+
+  fPadDimensionX = dx; 
+  fPadDimensionY = dy; 
 }
 
 //_____________________________________________________________________________

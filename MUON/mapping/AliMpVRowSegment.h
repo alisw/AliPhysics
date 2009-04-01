@@ -15,8 +15,6 @@
 
 #include "AliMpVIndexed.h"
 
-#include <TVector2.h>
-
 class AliMpRow;
 class AliMpVMotif;
 
@@ -43,29 +41,36 @@ class AliMpVRowSegment : public AliMpVIndexed
     //
 
     /// Find the motif in the given positions
-    virtual AliMpVMotif*  FindMotif(const TVector2& position) const = 0;    
+    virtual AliMpVMotif*  FindMotif(Double_t x, Double_t y) const = 0;    
     /// Find the motif position Id in the given positions
-    virtual Int_t     FindMotifPositionId(const TVector2& position) const = 0;
+    virtual Int_t     FindMotifPositionId(Double_t x, Double_t y) const = 0;
     /// Has the motif position with the given Id ?
     virtual Bool_t    HasMotifPosition(Int_t motifPositionId) const = 0;
-    /// Return the coordinates of the motif specified with the given motif position Id
-    virtual TVector2  MotifCenter(Int_t motifPositionId) const = 0;
+
+    /// Fill the coordinates of the motif specified with the given motif position Id
+    virtual void  MotifCenter(Int_t motifPositionId,
+                               Double_t& x, Double_t& y) const = 0;
 
     //
     // geometry
     //
     
-    /// Return the position of the row segment centre.
-    virtual TVector2  Position() const = 0;
-    /// Return the dimensions the row segment centre.
-    virtual TVector2  Dimensions() const = 0;
-    
+    /// Return the x position of the row segment centre.
+    virtual Double_t  GetPositionX() const = 0;
+    /// Return the y position of the row segment centre.
+    virtual Double_t  GetPositionY() const = 0;
+
+    /// Return the x dimension of the row segment centre.
+    virtual Double_t  GetDimensionX() const = 0;
+    /// Return the y dimension of the row segment centre.
+    virtual Double_t  GetDimensionY() const = 0;
+   
     //
     // set methods
     //
 
     /// Calculate offset
-    virtual void      SetOffset(const TVector2& offset) = 0;
+    virtual void      SetOffset(Double_t x, Double_t y) = 0;
     /// Set global indices limits.
     virtual void      SetGlobalIndices(AliMpRow* rowBefore) = 0;
     /// Set global indices to i-th motif position and returns next index in x.

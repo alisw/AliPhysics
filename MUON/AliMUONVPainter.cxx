@@ -566,7 +566,11 @@ AliMUONVPainter::GetBoundingBox(Double_t& x1, Double_t& y1,
                                 Double_t& x2, Double_t& y2) const
 {
   /// Get the bounding box = our area
-  AliMpArea area(Area().Position(),Area().Dimensions()*fBorderFactor);
+ 
+  AliMpArea area(Area().GetPositionX(), 
+                 Area().GetPositionY(),
+                 Area().GetDimensionX()*fBorderFactor, 
+                 Area().GetDimensionY()*fBorderFactor);
 
   x1 = area.LeftBorder();
   y1 = area.DownBorder();

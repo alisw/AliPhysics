@@ -72,7 +72,7 @@ TVector2 AliMpRowPainter::GetPosition() const
 {
 /// Get the owned object's position
 
-  return fRow->Position();
+  return TVector2(fRow->GetPositionX(), fRow->GetPositionY());
 }
 
 //_______________________________________________________________________
@@ -80,7 +80,7 @@ TVector2 AliMpRowPainter::GetDimensions() const
 {
 /// Get the owned object's dimensions
 
-  return fRow->Dimensions();
+  return TVector2(fRow->GetDimensionX(), fRow->GetDimensionY());
 }
 
 //_______________________________________________________________________
@@ -107,7 +107,8 @@ void AliMpRowPainter::Draw(Option_t *option)
 	AliMpVRowSegment *rowSegment = fRow->GetRowSegment(iRowSeg);
 	gr->Push();
 
-	gr->SetPadPosForReal(rowSegment->Position(),rowSegment->Dimensions());
+	gr->SetPadPosForReal(TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY()),
+                             TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY()));
 	DrawObject(rowSegment,option+1);
       
 	gr->Pop();

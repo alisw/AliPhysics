@@ -153,12 +153,19 @@ AliMpPad AliMpMotifPositionPadIterator::CurrentItem() const
       AliMpMotifType* mt = fkMotifPos->GetMotif()->GetMotifType();
       AliMpConnection* connect = 
         mt->FindConnectionByLocalIndices(ind);
+
+      Double_t posx, posy;
+      fkMotifPos->GetMotif()->PadPositionLocal(ind, posx, posy);
+      posx += fkMotifPos->GetPositionX();
+      posy += fkMotifPos->GetPositionY();
+        
+      Double_t dx, dy;
+      fkMotifPos->GetMotif()->GetPadDimensionsByIndices(ind, dx, dy);           
+
       return AliMpPad(
                   fkMotifPos->GetID(),connect->GetManuChannel(), 
                   fkMotifPos->GlobalIndices(ind),
-                  fkMotifPos->Position()+
-                  fkMotifPos->GetMotif()->PadPositionLocal(ind),
-                  fkMotifPos->GetMotif()->GetPadDimensionsByIndices(ind));
+                  posx, posy, dx, dy);
     }
 }
 

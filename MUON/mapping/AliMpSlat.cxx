@@ -57,7 +57,8 @@ AliMpSlat::AliMpSlat(TRootIOCtor* ioCtor)
   fMaxNofPadsY(0),
   fManuMap(ioCtor),
   fPCBs(),
-  fPosition(),
+  fPositionX(0.),
+  fPositionY(0.),
   fNofPads(0)
 {
     ///
@@ -80,7 +81,8 @@ AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
   fMaxNofPadsY(0),
   fManuMap(),
   fPCBs(),
-  fPosition(),
+  fPositionX(0.),
+  fPositionY(0.),
   fNofPads(0)
 {
     ///
@@ -147,18 +149,9 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
       AliError(Form("ManuID %d is duplicated for PCB %s",manuID,pcbType.GetID()));      
     }
   }
-  fPosition.Set(DX(),DY());
+  fPositionX = DX();
+  fPositionY = DY();
   fNofPads += pcb->NofPads();
-}
-
-//_____________________________________________________________________________
-TVector2
-AliMpSlat::Dimensions() const
-{
-  ///
-  /// Returns the half-sizes of the slat.
-  ///
-  return TVector2(DX(),DY());
 }
 
 //_____________________________________________________________________________
@@ -323,7 +316,7 @@ AliMpSlat::FindPCBIndexByMotifPositionID(Int_t manuId) const
 
 //_____________________________________________________________________________
 void
-AliMpSlat::ForcePosition(const TVector2& pos)
+AliMpSlat::ForcePosition(Double_t x, Double_t y)
 {
   ///
   /// Force the position to be different from (DX(),DY()).
@@ -331,7 +324,8 @@ AliMpSlat::ForcePosition(const TVector2& pos)
   /// Beware that this method must be called once all PCB have been added,
   /// as the Add() method resets the position.
   ///
-  fPosition = pos;
+  fPositionX = x;
+  fPositionY = y;
 }
 
 //_____________________________________________________________________________
@@ -463,7 +457,7 @@ AliMpSlat::Print(Option_t* option) const
   /// Prints the slat characteristics.
   ///
   cout << "SLAT " << GetID() <<  " 1/2 DIM = (" << DX() << "," << DY() << ")"
-  << " POS = " << Position().X() << "," << Position().Y()
+  << " POS = " << GetPositionX() << "," << GetPositionY()
 	<< " NPADSX = " << GetNofPadsX() 
   << " MAXNPADSY = " << GetMaxNofPadsY()
   << " NPCBs=" << GetSize() << endl;

@@ -981,8 +981,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					idManuChannel = (idManuChannel | manuId) << 6;
 					idManuChannel |= channelId;
 					
-					localX = pad.Position().X();
-					localY = pad.Position().Y();
+					localX = pad.GetPositionX();
+					localY = pad.GetPositionY();
 					localZ = 0.0;
 					
 					chamberGeometryTransformer.Local2Global(
@@ -990,8 +990,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 						realX,realY,realZ
 					);
 					
-					padSizeX = AliHLTFloat32_t( pad.Dimensions().X() );
-					padSizeY = AliHLTFloat32_t( pad.Dimensions().Y() );
+					padSizeX = AliHLTFloat32_t( pad.GetDimensionX() );
+					padSizeY = AliHLTFloat32_t( pad.GetDimensionY() );
 					
 					if (fUseIdealGain)
 					{

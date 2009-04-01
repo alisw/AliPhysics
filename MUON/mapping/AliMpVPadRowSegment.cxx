@@ -75,7 +75,7 @@ Double_t  AliMpVPadRowSegment::HalfSizeY() const
 {
 /// Return the size in y of this row segment.
 
-  return fMotif->GetPadDimensions().Y();
+  return fMotif->GetPadDimensionY();
 }
 
 //_____________________________________________________________________________

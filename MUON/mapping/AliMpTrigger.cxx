@@ -145,14 +145,6 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 }
 
 //_____________________________________________________________________________
-TVector2
-AliMpTrigger::Dimensions() const
-{
-  /// Returns the dimensions (half-sizes) of that slat (cm)
-  return TVector2(DX(),DY());
-}
-
-//_____________________________________________________________________________
 Double_t
 AliMpTrigger::DX() const
 {
@@ -295,14 +287,6 @@ AliMpTrigger::PlaneType() const
 {
   /// Bending or not
   return fPlaneType;
-}
-
-//_____________________________________________________________________________
-TVector2
-AliMpTrigger::Position() const
-{
-  /// Slat position (cm)
-  return TVector2(DX(),DY());
 }
 
 //_____________________________________________________________________________

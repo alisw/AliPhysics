@@ -113,7 +113,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
       = AliMpSegmentation::Instance()
         ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
     
-    AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
+    AliMpPad pad = seg->PadByPosition(x,y,kFALSE);
     Int_t ix = pad.GetIx();
     Int_t iy = pad.GetIy();
     

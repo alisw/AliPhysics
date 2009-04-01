@@ -16,7 +16,6 @@
 #include "AliMpVIndexed.h"
 #include "AliMpDirection.h"
 
-#include <TVector2.h>
 #include <TList.h>
 
 class AliMpVRowSegment;
@@ -39,15 +38,17 @@ class AliMpRow : public AliMpVIndexed
     Double_t  UpperBorderY() const;
     virtual AliMpVPadIterator* CreateIterator() const;
     
-    void      SetRowSegmentOffsets(const TVector2& offset);
+    void      SetRowSegmentOffsets(Double_t offsetx);
     Double_t  SetOffsetY(Double_t offsetY);
     void      SetMotifPositions();
     void      SetGlobalIndices(AliMp::Direction constPadSizeDirection, 
                                AliMpRow* rowBefore);
 
     // geometry
-    TVector2  Position() const;
-    TVector2  Dimensions() const;    
+    Double_t  GetPositionX() const;
+    Double_t  GetPositionY() const;
+    Double_t  GetDimensionX() const;
+    Double_t  GetDimensionY() const;
 
     // get methods
     UInt_t   GetID() const;

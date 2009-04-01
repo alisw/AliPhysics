@@ -123,15 +123,16 @@ void AliMpSectorAreaVPadIterator::MoveRight()
 {
 /// Increase the current row position and searches the first valid pad.
 
-  Double_t dx = fkSegmentation->GetMinPadDimensions().X();
+  Double_t dx = fkSegmentation->GetMinPadDimensionX();
 
   while ( !fCurrentPad.IsValid() && 
           fCurrentColumnPosition + dx < fkArea.RightBorder())
   {
     fCurrentColumnPosition += 2.*dx;
-    TVector2 position = TVector2(fCurrentColumnPosition, fkArea.DownBorder());
     
-    fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.UpBorder());
+    fCurrentPad 
+      = fkSegmentation->PadByDirection(fCurrentColumnPosition, fkArea.DownBorder(), 
+                                       fkArea.UpBorder());
   } 
 }
 
@@ -153,15 +154,17 @@ void AliMpSectorAreaVPadIterator::First()
   // Start position = left down corner of the area
   //
   fCurrentColumnPosition = fkArea.LeftBorder();
-  TVector2 position(fkArea.LeftDownCorner()); 
+
+  Double_t posx, posy;
+  fkArea.LeftDownCorner(posx, posy); 
   
-  fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.UpBorder());
+  fCurrentPad = fkSegmentation->PadByDirection(posx, posy, fkArea.UpBorder());
   
   MoveRight();
 
   // Set the column position to the center of pad
   //
-  if (fCurrentPad.IsValid()) fCurrentColumnPosition = fCurrentPad.Position().X();
+  if (fCurrentPad.IsValid()) fCurrentColumnPosition = fCurrentPad.GetPositionX();
 }
 
 //______________________________________________________________________________
@@ -173,11 +176,12 @@ void AliMpSectorAreaVPadIterator::Next()
   
   // Start position = up board of current pad + little step
   //
-  TVector2 position 
-    = fCurrentPad.Position() 
-    + TVector2(0., fCurrentPad.Dimensions().Y() + AliMpConstants::LengthStep());
-
-  fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.UpBorder());  
+  fCurrentPad 
+    = fkSegmentation->PadByDirection(
+        fCurrentPad.GetPositionX(), 
+        fCurrentPad.GetPositionY() + fCurrentPad.GetDimensionY() + 
+          AliMpConstants::LengthStep(), 
+        fkArea.UpBorder());  
   
   if (fCurrentPad.IsValid()) return;
 

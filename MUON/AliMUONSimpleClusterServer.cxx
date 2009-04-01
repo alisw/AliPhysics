@@ -57,10 +57,10 @@ namespace
   TString AsString(const AliMpArea& area)
   {
     return Form("(X,Y)=(%7.3f,%7.3f) (DX,DY)=(%7.3f,%7.3f)",
-                area.Position().X(),
-                area.Position().Y(),
-                area.Dimensions().Y(),
-                area.Dimensions().Y());
+                area.GetPositionX(),
+                area.GetPositionY(),
+                area.GetDimensionX(),  /// TBCL was Y !!!
+                area.GetDimensionY());
   }
 }
 
@@ -238,10 +238,10 @@ AliMUONSimpleClusterServer::Global2Local(Int_t detElemId, const AliMpArea& globa
   Double_t zg = AliMUONConstants::DefaultChamberZ(AliMpDEManager::GetChamberId(detElemId));
   
   fkTransformer.Global2Local(detElemId,
-                             globalArea.Position().X(),globalArea.Position().Y(),zg,
+                             globalArea.GetPositionX(),globalArea.GetPositionY(),zg,
                              xl,yl,zl);
   
-  localArea = AliMpArea(TVector2(xl,yl), globalArea.Dimensions());
+  localArea = AliMpArea(xl,yl, globalArea.GetDimensionX(), globalArea.GetDimensionY());
 }
 
 //_____________________________________________________________________________
@@ -335,8 +335,8 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
     }
     
     AliMUONPad mpad(detElemId,cathode,
-                    ix,iy,pad.Position().X(),pad.Position().Y(),
-                    pad.Dimensions().X(),pad.Dimensions().Y(),
+                    ix,iy,pad.GetPositionX(),pad.GetPositionY(),
+                    pad.GetDimensionX(),pad.GetDimensionY(),
                     d->Charge());
     if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE);
     mpad.SetUniqueID(d->GetUniqueID());
@@ -355,7 +355,8 @@ AliMUONSimpleClusterServer::FindMCLabel(const AliMUONCluster& cluster, Int_t det
   Int_t nTracks[2] = {0, 0};
   AliMUONVDigit* digit[2] = {0x0, 0x0};
   for (Int_t iCath = 0; iCath < 2; iCath++) {
-    AliMpPad pad = seg[AliMp::GetCathodType(iCath)]->PadByPosition(cluster.Position(), kFALSE);
+    AliMpPad pad 
+      = seg[AliMp::GetCathodType(iCath)]->PadByPosition(cluster.Position().X(), cluster.Position().Y(),kFALSE);
     if (pad.IsValid()) {
       digit[iCath] = fDigitStore->FindObject(detElemId, pad.GetManuId(), pad.GetManuChannel(), iCath);
       if (digit[iCath]) nTracks[iCath] = digit[iCath]->Ntracks();

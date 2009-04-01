@@ -54,9 +54,6 @@
 ClassImp(AliMpSectorSegmentation)
 /// \endcond
 
-const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
-const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
-
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(
                             const AliMpSector* sector, Bool_t own) 
@@ -64,7 +61,6 @@ AliMpSectorSegmentation::AliMpSectorSegmentation(
     fkSector(sector),
     fIsOwner(own),
     fPadBuffer(0),
-    fPadDimensionsMap(),
     fMaxIndexInX(0),
     fMaxIndexInY(0)
 {
@@ -74,7 +70,7 @@ AliMpSectorSegmentation::AliMpSectorSegmentation(
 
   fPadBuffer = new AliMpPad(AliMpPad::Invalid());
   
-  FillPadDimensionsMap();
+  //FillPadDimensionsMap();
 }
 
 //______________________________________________________________________________
@@ -83,7 +79,6 @@ AliMpSectorSegmentation::AliMpSectorSegmentation()
     fkSector(0),
     fIsOwner(false),
     fPadBuffer(0),
-    fPadDimensionsMap(),      
     fMaxIndexInX(0),
     fMaxIndexInY(0)
 {
@@ -108,66 +103,6 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 //
 // private methods
 //
-
-//______________________________________________________________________________
-Long_t AliMpSectorSegmentation::GetIndex(const TVector2& vector2) const
-{
-/// Convert the two vector to long.
-
-  return Long_t(TMath::Floor((vector2.X()*fgkS1 + vector2.Y())*fgkS2));
-}  
-
-//______________________________________________________________________________
-TVector2  AliMpSectorSegmentation::GetVector(Long_t index) const
-{
-/// Convert the long index to twovector.
-
-  return TVector2( TMath::Floor(index/fgkS1)/fgkS2,
-                   (index - TMath::Floor(index/fgkS1)*fgkS1)/fgkS2 );
-}  
-
-//______________________________________________________________________________
-void AliMpSectorSegmentation::FillPadDimensionsMap()
-{
-/// Fill the maps between zone ids and pad dimensions.
-
-  for (Int_t i=0; i<fkSector->GetNofZones(); i++) {
-    AliMpZone* zone   = fkSector->GetZone(i+1);
-    Int_t  zoneID = zone->GetID();
-    
-    if (!AliMpConstants::IsEqual(zone->GetPadDimensions(), TVector2())) {
-
-      // regular zone
-     AliDebugStream(3)
-       << "Filling fPadDimensions[" << zoneID*10 << "] = ("
-       << zone->GetPadDimensions().X() << ", "
-       << zone->GetPadDimensions().Y() << ")" << endl;
-
-     fPadDimensionsMap.Add((Long_t)(zoneID*10), 
-                            GetIndex(zone->GetPadDimensions()));
-    }
-    else {
-      // special zone
-      Int_t subIndex = 0;
-      for (Int_t j=0; j<zone->GetNofSubZones(); j++) {
-        AliMpSubZone* subZone = zone->GetSubZone(j);
-	AliMpVMotif*  motif = subZone->GetMotif();
-	
-	for (Int_t k=0; k<motif->GetNofPadDimensions(); k++) {
-	  Int_t index = zoneID*10 +  subIndex++;
-          AliDebugStream(3)
-            << "Filling fPadDimensions[" << index << "] = ("
-            << motif->GetPadDimensions(k).X() << ", "
-            << motif->GetPadDimensions(k).Y() << ") motif "
-	    << motif->GetID().Data() << "-" << k << endl;
-
-          fPadDimensionsMap.Add((Long_t)(index), 
-                            GetIndex(motif->GetPadDimensions(k)));
-	}
-      }	  
-    }	  
-  }      
-}
 
 //______________________________________________________________________________
 AliMpMotifPosition* 
@@ -247,27 +182,27 @@ AliMpSectorSegmentation::FindMotifPosition(Int_t ix, Int_t iy) const
 
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByXDirection(const TVector2& startPosition, 
+AliMpSectorSegmentation::PadByXDirection(Double_t startx, Double_t starty, 
                                          Double_t maxX) const
 {
 /// Find the first valid pad from starting position in the
 /// direction of pad lines up to distance dx.
 
   // Define step limits
-  Double_t  stepX = fkSector->GetMinPadDimensions().X();
+  Double_t  stepX = fkSector->GetMinPadDimensionX();
  
   // Search in X direction
   AliMpPad pad;
-  TVector2 position(startPosition);
+  Double_t posx = startx;
   do {
-    pad = PadByPosition(position, false);
-    position += TVector2(stepX, 0.);
+    pad = PadByPosition(posx, starty, false);
+    posx += stepX;
   }   
-  while ( !pad.IsValid() && 
-          position.X() - fkSector->GetMaxPadDimensions().X() < maxX ); 
+  while ( ! pad.IsValid() && 
+            posx - fkSector->GetMaxPadDimensionX() < maxX ); 
   
   // Invalidate pad if it is outside limits
-  if ( (pad.Position().X() - pad.Dimensions().X()) > maxX ) 
+  if ( ( pad.GetPositionX() - pad.GetDimensionX()) > maxX ) 
     pad = AliMpPad::Invalid();
 
   return pad;
@@ -275,27 +210,27 @@ AliMpSectorSegmentation::PadByXDirection(const TVector2& startPosition,
 
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByYDirection(const TVector2& startPosition, 
+AliMpSectorSegmentation::PadByYDirection(Double_t startx, Double_t starty, 
                                          Double_t maxY) const
 {
 /// Find the first valid pad from starting position in the
 /// direction of pad columns up to distance dx.
   
   // Define step limits
-  Double_t stepY = fkSector->GetMinPadDimensions().Y();
+  Double_t stepY = fkSector->GetMinPadDimensionY();
  
   // Search in Y direction
   AliMpPad pad;
-  TVector2 position(startPosition);    
+  Double_t posy = starty;
   do {
-    pad = PadByPosition(position, false);
-    position += TVector2(0., stepY);
+    pad = PadByPosition(startx, posy, false);
+    posy += stepY;
   }   
-  while ( !pad.IsValid() && 
-          position.Y() - fkSector->GetMaxPadDimensions().Y()< maxY ); 
+  while ( ! pad.IsValid() && 
+            posy - fkSector->GetMaxPadDimensionY()< maxY ); 
   
   // Invalidate pad if it is outside limits
-  if ((pad.Position().Y() - pad.Dimensions().Y()) > maxY) 
+  if (( pad.GetPositionY() - pad.GetDimensionY()) > maxY ) 
     pad = AliMpPad::Invalid();
 
   return pad;
@@ -348,9 +283,7 @@ AliMpSectorSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel,
                                        Bool_t warning) const
 {
 /// Find the pad which corresponds to the given location
-  
-  
-  
+ 
   if ( fPadBuffer->GetManuId() == manuId &&
        fPadBuffer->GetManuChannel() == manuChannel ) return (*fPadBuffer);
   
@@ -368,13 +301,18 @@ AliMpSectorSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel,
     if (warning) Warning("PadByLocation","The pad number doesn't exists");
     return AliMpPad::Invalid();
   }
-  TVector2 delta = motif->PadPositionLocal(localIndices);
+
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX();
+  posy += motifPos->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
 
   return (*fPadBuffer) = AliMpPad(manuId, manuChannel,
               motifPos->GlobalIndices(localIndices),
-              motifPos->Position()+delta,
-              motif->GetPadDimensionsByIndices(localIndices));
-
+              posx, posy, dx, dy);
 }
 //______________________________________________________________________________
 AliMpPad 
@@ -382,7 +320,6 @@ AliMpSectorSegmentation::PadByIndices(Int_t ix, Int_t iy, Bool_t warning ) const
 {
 /// Find the pad which corresponds to the given indices  
 
-  
   if ( fPadBuffer->GetIx() == ix &&
        fPadBuffer->GetIy() == iy ) return (*fPadBuffer);    
        
@@ -406,26 +343,30 @@ AliMpSectorSegmentation::PadByIndices(Int_t ix, Int_t iy, Bool_t warning ) const
     return AliMpPad::Invalid();
   }
 
-  TVector2 localPos = motif->PadPositionLocal(localIndices);
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX();
+  posy += motifPos->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
 
   return (*fPadBuffer) 
     = AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
-               ix, iy,
-               motifPos->Position()+localPos,
-               motif->GetPadDimensionsByIndices(localIndices)); 
-
+               ix, iy, posx, posy, dx, dy);
 }
+
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByPosition(const TVector2& position,
+AliMpSectorSegmentation::PadByPosition(Double_t x, Double_t y,
                                        Bool_t warning) const
 {
 /// Find the pad which corresponds to the given position
 
-  if (fPadBuffer->Position().X()==position.X() && 
-      fPadBuffer->Position().Y()==position.Y()) return (*fPadBuffer);  
+  if (fPadBuffer->GetPositionX()==x && 
+      fPadBuffer->GetPositionY()==y) return (*fPadBuffer);  
 
-  Int_t motifPosID = fkSector->FindMotifPositionId(position);
+  Int_t motifPosID = fkSector->FindMotifPositionId(x,y);
   AliMpMotifPosition* motifPos 
     = fkSector->GetMotifMap()
         ->FindMotifPosition(motifPosID);
@@ -437,7 +378,8 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
 
   AliMpVMotif* motif =  motifPos->GetMotif();  
   MpPair_t localIndices 
-    = motif->PadIndicesLocal(position-motifPos->Position());
+    = motif->PadIndicesLocal(x-motifPos->GetPositionX(),
+                             y-motifPos->GetPositionY());
 
   if ( localIndices < 0 ) {
     if (warning) Warning("PadByPosition","Position outside motif limits");
@@ -451,18 +393,24 @@ AliMpSectorSegmentation::PadByPosition(const TVector2& position,
     if (warning) Warning("PadByPosition","Position outside motif limits");
     return AliMpPad::Invalid();
   }
+
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX();
+  posy += motifPos->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
   
   return (*fPadBuffer)
     = AliMpPad(motifPosID, connect->GetManuChannel(),
                motifPos->GlobalIndices(localIndices),
-               motifPos->Position()+motif->PadPositionLocal(localIndices),
-               motif->GetPadDimensionsByIndices(localIndices));
-
+               posx, posy, dx, dy);
 }
 
 //______________________________________________________________________________
 AliMpPad 
-AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition, 
+AliMpSectorSegmentation::PadByDirection(Double_t startx, Double_t starty, 
                                         Double_t distance) const
 {
 /// Find the first valid pad from starting position in the
@@ -472,9 +420,9 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
 
   switch (fkSector->GetDirection()) {
   
-    case AliMp::kX: return PadByYDirection(startPosition, distance);
+    case AliMp::kX: return PadByYDirection(startx, starty, distance);
              ;;
-    case AliMp::kY: return PadByXDirection(startPosition, distance);
+    case AliMp::kY: return PadByXDirection(startx, starty, distance);
              ;;
   }
   
@@ -576,23 +524,36 @@ AliMpSectorSegmentation::PlaneType() const
   return GetSector()->GetPlaneType();
 }
 
-//______________________________________________________________________________
-TVector2
-AliMpSectorSegmentation::Dimensions() const
+//_____________________________________________________________________________
+Double_t  
+AliMpSectorSegmentation::GetDimensionX() const
 {
-/// Return sector dimensions
-
-  return GetSector()->Dimensions();
+/// Return sector x dimensions
+  return GetSector()->GetDimensionX();
 }
 
-//______________________________________________________________________________
-TVector2 
-AliMpSectorSegmentation::Position() const 
-{ 
-/// Return sector position
+//_____________________________________________________________________________
+Double_t  
+AliMpSectorSegmentation::GetDimensionY() const
+{
+/// Return sector y dimensions
+  return GetSector()->GetDimensionY();
+}
 
-  // return GetSector()->Position(); 
-  return TVector2(0.,0.);
+//_____________________________________________________________________________
+Double_t  
+AliMpSectorSegmentation::GetPositionX() const
+{
+/// Return x position 
+  return 0.;
+}
+
+//_____________________________________________________________________________
+Double_t  
+AliMpSectorSegmentation::GetPositionY() const
+{
+/// Return y position 
+  return 0.;
 }
 
 //______________________________________________________________________________
@@ -605,56 +566,22 @@ AliMpSectorSegmentation::Print(Option_t* opt) const
 }
 
 //______________________________________________________________________________
-Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
+Double_t AliMpSectorSegmentation::GetMinPadDimensionX() const
 {
-/// Return the zone index of the zone containing the specified pad.
-/// This zone index is different from the zone ID,
-/// as it is unique for each pad dimensions.
-/// It is composed in this way:
-///   zoneID*10 + specific index 
-/// Specific index is present only for zones containing special motifs.
+/// Return the x dimension of the smallest pad.
 
-  if (!pad.IsValid()) {
-    if (warning) Warning("Zone(AliMpPad)", "Invalid pad");
-    return 0;
-  }  
-
-  TExMapIter it(&fPadDimensionsMap);
-  Long_t key, value;
-  while ( it.Next(key, value) ) {
-    TVector2 dimensions =  GetVector(value);
-    if (AliMpConstants::IsEqual(dimensions, pad.Dimensions()))
-      return (Int_t)key;
-  } 
-  
-  AliError(Form("fPadDimensionsMap size is %d",fPadDimensionsMap.GetSize()));
-
-  // Should never happen
-  AliErrorStream() 
-    << "Zone(AliMpPad pad) not found, where pad is: " << pad << endl;
-  return 0;
+  return fkSector->GetMinPadDimensionX();
 }  
+
 
 //______________________________________________________________________________
-TVector2 
-AliMpSectorSegmentation::PadDimensions(Int_t zone, Bool_t warning) const
+Double_t AliMpSectorSegmentation::GetMinPadDimensionY() const
 {
-/// Return the pad dimensions for the zone with the specified zone index.
+/// Return the y dimension of the smallest pad.
 
-  Long_t value = fPadDimensionsMap.GetValue(zone);
-  if (value) return GetVector(value);
-
-  if (warning) Warning("PadDimensions(zone)", "not found");
-  return TVector2();
+  return fkSector->GetMinPadDimensionY();
 }  
 
-//______________________________________________________________________________
-TVector2  AliMpSectorSegmentation::GetMinPadDimensions() const
-{
-/// Returne the dimensions of the smallest pad.
-
-  return fkSector->GetMinPadDimensions();
-}  
 
 //______________________________________________________________________________
 Bool_t AliMpSectorSegmentation::CircleTest(Int_t ix, Int_t iy) const
@@ -668,7 +595,7 @@ Bool_t AliMpSectorSegmentation::CircleTest(Int_t ix, Int_t iy) const
   // Verify the indice->location->position->indice way
   AliMpPad pad1 = PadByIndices(ix, iy);  
   AliMpPad pad2 = PadByLocation(pad1.GetManuId(), pad1.GetManuChannel());
-  AliMpPad pad3 = PadByPosition(pad2.Position());
+  AliMpPad pad3 = PadByPosition(pad2.GetPositionX(),pad2.GetPositionY());
                                       
   MpPair_t retIndices = pad3.GetIndices();
     
@@ -678,13 +605,12 @@ Bool_t AliMpSectorSegmentation::CircleTest(Int_t ix, Int_t iy) const
     cout << "starting from indices " << pad1 << endl
          << "--> location " << pad2 << endl
          << "--> position " 
-         << '(' << pad3.Position().X() << ',' << pad3.Position().Y() << ')'
+         << '(' << pad3.GetPositionX() << ',' << pad3.GetPositionY() << ')'
          <<  endl << endl;
   }
     
-    
   // Verify the indice->position->location->indice way  
-  AliMpPad pad2bis = PadByPosition(pad1.Position());
+  AliMpPad pad2bis = PadByPosition(pad1.GetPositionX(),pad1.GetPositionY());
   AliMpPad pad3bis = PadByLocation(pad2bis.GetManuId(), pad2bis.GetManuChannel());
   
   retIndices = pad3bis.GetIndices();
@@ -694,30 +620,10 @@ Bool_t AliMpSectorSegmentation::CircleTest(Int_t ix, Int_t iy) const
     cout << "in indice->position->location->indice way..." << endl;
     cout << "starting from indices " << pad1 << endl
          << "--> position " 
-         << '(' << pad2bis.Position().X() << ',' << pad2bis.Position().Y() << ')' << endl
+         << '(' << pad2bis.GetPositionX() << ',' << pad2bis.GetPositionY() << ')' << endl
          << "--> location " << pad3bis
          << endl << endl;
   }
   
   return true;
 }
-
-//______________________________________________________________________________
-void AliMpSectorSegmentation::PrintZones() const
-{
-/// Print all zones and pads dimensions from the map.
-
-  cout << "Zones: " << endl;
-
-  TExMapIter it(&fPadDimensionsMap);
-  Long_t key, value;
-  while ( it.Next(key, value) ) {
-    //cout << "Iterating over: " << key << ", " << value << endl;
-    TVector2 dimensions =  GetVector(value);
-
-    cout << "    zone: " <<   setw(4) << key;
-    cout << "    pad dimensions: ( " 
-         << dimensions.X() << ", " << dimensions.Y() << ")" << endl; 
-  }
-}
-

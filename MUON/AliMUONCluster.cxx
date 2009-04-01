@@ -276,8 +276,8 @@ AliMUONCluster::Area() const
   }
 
   // then construct the area from those limits
-  return AliMpArea((lowerLeft+upperRight)/2,
-                   (upperRight-lowerLeft)/2);
+  return AliMpArea((lowerLeft+upperRight).X()/2,(lowerLeft+upperRight).Y()/2, 
+                   (upperRight-lowerLeft).X()/2, (upperRight-lowerLeft).Y()/2);
 }
 
 //_____________________________________________________________________________
@@ -306,8 +306,8 @@ AliMUONCluster::Area(Int_t cathode) const
   }
   
   // then construct the area from those limits
-  return AliMpArea((lowerLeft+upperRight)/2,
-                   (upperRight-lowerLeft)/2);
+  return AliMpArea((lowerLeft+upperRight).X()/2,(lowerLeft+upperRight).Y()/2,
+                   (upperRight-lowerLeft).X()/2, (upperRight-lowerLeft).Y()/2);
 }
 
 //_____________________________________________________________________________
@@ -702,21 +702,21 @@ AliMUONCluster::Compare(const TObject* obj) const
   AliMpArea carea(cluster->Area());
   AliMpArea area(Area());
 
-  if ( carea.Position().X() > area.Position().X() ) 
+  if ( carea.GetPositionX() > area.GetPositionX() ) 
   {
     return 1;
   }
-  else if ( carea.Position().X() < area.Position().X() ) 
+  else if ( carea.GetPositionX() < area.GetPositionX() ) 
   {
     return -1;
   }
   else 
   {
-    if ( carea.Position().Y() > area.Position().Y() ) 
+    if ( carea.GetPositionY() > area.GetPositionY() ) 
     {
       return 1;
     }
-    else if ( carea.Position().Y() < area.Position().Y() ) 
+    else if ( carea.GetPositionY() < area.GetPositionY() ) 
     {
       return -1;
     }

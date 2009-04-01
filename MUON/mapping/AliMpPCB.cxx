@@ -144,8 +144,8 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   fId(id), 
   fPadSizeX(-1.0), 
   fPadSizeY(-1.0),
-  fEnveloppeSizeX(ms->Dimensions().X()*2.0),
-  fEnveloppeSizeY(ms->Dimensions().Y()*2.0),
+  fEnveloppeSizeX(ms->DimensionX()*2.0),
+  fEnveloppeSizeY(ms->DimensionY()*2.0),
   fXoffset(0.0),
   fActiveXmin(0.0),
   fActiveXmax(fEnveloppeSizeX),
@@ -166,12 +166,13 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   /// so far ;-)
   ///
  
-    AliDebug(1,Form("this=%p (ctor special motif)",this));
+  AliDebug(1,Form("this=%p (ctor special motif)",this));
     
-    fMotifPositions.SetOwner(kTRUE);
+  fMotifPositions.SetOwner(kTRUE);
 
-  TVector2 position(ms->Dimensions());
-  AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,position);
+  Double_t posx = ms->DimensionX();
+  Double_t posy = ms->DimensionY();
+  AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,posx,posy);
   mp->SetLowIndicesLimit(fIxmin,fIymin);
   mp->SetHighIndicesLimit(fIxmax,fIymax);
   fMotifPositions.AddLast(mp);
@@ -242,7 +243,7 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
   
   if (!motif)
   {
-    motif = new AliMpMotif(id,mt,TVector2(PadSizeX()/2.0,PadSizeY()/2.0));
+    motif = new AliMpMotif(id,mt,PadSizeX()/2.0,PadSizeY()/2.0);
     AliDebug(1,Form("Adding motif %s to motifMap",id.Data()));
     fMotifMap->AddMotif(motif);
   }
@@ -251,44 +252,50 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
     AliDebug(1,Form("Got motif %s from motifMap",id.Data()));
   }
   
-  TVector2 position;
+  Double_t posx(0.);
+  Double_t posy(0.);
   Int_t ixmin(-1);
   Int_t iymin(-1);
   
   if ( ix >= 0 && iy >= 0 )
   {
-    position.Set(ix*PadSizeX(),iy*PadSizeY());
+    posx = ix*PadSizeX();
+    posy = iy*PadSizeY();
     ixmin = ix;
     iymin = iy;
   }
   else
   if ( ix >= 0 && iy < 0 )
   {
-    position.Set(ix*PadSizeX(),Ymax()+iy*PadSizeY());
+    posx = ix*PadSizeX();
+    posy = Ymax()+iy*PadSizeY();
     ixmin = ix;
     iymin = TMath::Nint(Ymax()/PadSizeY()) + iy;
   }
   else
   if ( ix < 0 && iy < 0 )
   {
-    position.Set(Xmax()+ix*PadSizeX(),Ymax()+iy*PadSizeY());
+    posx = Xmax()+ix*PadSizeX();
+    posy = Ymax()+iy*PadSizeY();
     ixmin = TMath::Nint(Xmax()/PadSizeX()) + ix;
     iymin = TMath::Nint(Ymax()/PadSizeY()) + iy;
   }
   else
   if ( ix < 0 && iy >=0 )
   {
-    position.Set(Xmax()+ix*PadSizeX(),iy*PadSizeY());
+    posx = Xmax()+ix*PadSizeX();
+    posy = iy*PadSizeY();
     ixmin = TMath::Nint(Xmax()/PadSizeX()) + ix;
     iymin = iy;
   }
 
-  position += motif->Dimensions();
+  posx += motif->DimensionX();
+  posy += motif->DimensionY();
+  AliMpMotifPosition* mp 
+    = new AliMpMotifPosition(-1,motif,posx, posy);
 
-  AliMpMotifPosition* mp = new AliMpMotifPosition(-1,motif,position);
-  Int_t ixmax = ixmin + mt->GetNofPadsX() - 1;
+  Int_t ixmax = ixmin + mt->GetNofPadsX() - 1;  
   Int_t iymax = iymin + mt->GetNofPadsY() - 1;
-
   mp->SetLowIndicesLimit(ixmin,iymin);
   mp->SetHighIndicesLimit(ixmax,iymax);
 
@@ -310,8 +317,7 @@ AliMpPCB::Area() const
 {
   /// Return the area of this PCB
 
-  return AliMpArea(TVector2( (Xmin()+Xmax())/2.0,DY()),
-                   TVector2( DX(), DY() ) );
+  return AliMpArea((Xmin()+Xmax())/2.0,DY(), DX(), DY() );
 }
 
 //_____________________________________________________________________________
@@ -361,9 +367,9 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
     {
       AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
       mp->SetID(manuids[i]);
-      TVector2 pos(mp->Position());
-      pos += TVector2(xOffset,0);
-      mp->SetPosition(pos);
+      Double_t posx = mp->GetPositionX() + xOffset;
+      Double_t posy = mp->GetPositionY();
+      mp->SetPosition(posx, posy);
       MpPair_t offset = AliMp::Pair(ixOffset,0);
       MpPair_t low = mp->GetLowIndicesLimit();
       low += shift;
@@ -415,9 +421,9 @@ AliMpPCB::Copy(TObject& o) const
   for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
     {
       AliMpMotifPosition* pos = (AliMpMotifPosition*)fMotifPositions[i];
-      AliMpMotifPosition* pcbpos = new AliMpMotifPosition(pos->GetID(),
-                                                          pos->GetMotif(),
-                                                          pos->Position());
+      AliMpMotifPosition* pcbpos 
+        = new AliMpMotifPosition(pos->GetID(), pos->GetMotif(),
+                                 pos->GetPositionX(), pos->GetPositionY());
       pcbpos->SetLowIndicesLimit(pos->GetLowIndicesLimit());
       pcbpos->SetHighIndicesLimit(pos->GetHighIndicesLimit());
       pcb.fMotifPositions.AddLast(pcbpos);
@@ -514,9 +520,11 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
   {
     AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
     
-    TVector2 localPos( TVector2(x,y) - mp->Position() );
+    Double_t localPosX = x - mp->GetPositionX(); 
+    Double_t localPosY = y - mp->GetPositionY();
     
-    MpPair_t localIndices(mp->GetMotif()->PadIndicesLocal(localPos));
+    MpPair_t localIndices(
+      mp->GetMotif()->PadIndicesLocal(localPosX, localPosY));
     
     if ( localIndices >= 0 && 
          mp->GetMotif()->GetMotifType()->HasPadByLocalIndices(localIndices) )
@@ -714,7 +722,9 @@ AliMpPCB::Save() const
   {
     AliMpMotifPosition* pos = GetMotifPosition(i);
     AliMpVMotif* motif = pos->GetMotif();
-    TVector2 lowerLeft(pos->Position()-pos->Dimensions());
+    
+    Double_t lowerLeftX = pos->GetPositionX()-pos->GetDimensionX();
+    Double_t lowerLeftY = pos->GetPositionY()-pos->GetDimensionY();
     TString id(motif->GetID());
     // id is supposed to be of the form %s-%e-%e, and we're only
     // interested in the %s part of it
@@ -727,8 +737,8 @@ AliMpPCB::Save() const
     TString motifName(id(0,index));
     lines.Add(new TObjString(Form("MOTIF %s %d %d",
                                   motifName.Data(),
-                                  TMath::Nint(lowerLeft.X()/fPadSizeX),
-                                  TMath::Nint(lowerLeft.Y()/fPadSizeY))));
+                                  TMath::Nint(lowerLeftX/fPadSizeX),
+                                  TMath::Nint(lowerLeftY/fPadSizeY))));
   }
 
   ofstream out(fileName.Data());

@@ -98,12 +98,11 @@ AliMUONPCBPainter::AliMUONPCBPainter(const AliMUONAttPainter& att,
     }
     
     Double_t x,y,z;
-    
     h->Local2Global(fDetElemId,
-                                                   pcb->X()-slat->Position().X(),
-                                                   pcb->Y()-slat->Position().Y(),
-                                                   0.0,
-                                                   x,y,z);
+                    pcb->X()-slat->GetPositionX(),
+                    pcb->Y()-slat->GetPositionY(),
+                    0.0,
+                    x,y,z);
     
     if (!contour)
     {

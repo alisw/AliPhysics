@@ -127,8 +127,8 @@ void AliEveMUONChamberData::Init(Int_t chamber)
 
       sector = AliMpSegmentation::Instance()->GetSector(detElemId,AliMp::kCath0);
 
-      position  = sector->Position();
-      dimension = sector->Dimensions(); // half length
+      position  = TVector2(sector->GetPositionX(), sector->GetPositionY());
+      dimension = TVector2(sector->GetDimensionX(), sector->GetDimensionY()); // half length
 
       locP[0] =  position.Px();
       locP[1] =  position.Py();
@@ -173,8 +173,8 @@ void AliEveMUONChamberData::Init(Int_t chamber)
 	continue;
       }
 
-      deltax = vseg->Dimensions().X();
-      deltay = vseg->Dimensions().Y();
+      deltax = vseg->GetDimensionX();
+      deltay = vseg->GetDimensionY();
       locP[0] =  -deltax;
       locP[1] =  -deltay;
       locD[0] =  +deltax;
@@ -232,10 +232,10 @@ void AliEveMUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t 
 
   AliMpPad pad = vseg->PadByIndices(ix,iy,kTRUE);
 
-  locP[0] = pad.Position().X();
-  locP[1] = pad.Position().Y();
-  locD[0] = pad.Dimensions().X();
-  locD[1] = pad.Dimensions().Y();
+  locP[0] = pad.GetPositionX();
+  locP[1] = pad.GetPositionY();
+  locD[0] = pad.GetDimensionX();
+  locD[1] = pad.GetDimensionY();
 
   locP[2] = 0.0;
   locD[2] = 0.0;

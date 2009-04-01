@@ -17,7 +17,6 @@
 
 #include <TObject.h>
 
-#include <TVector2.h>
 #include <TClonesArray.h>
 
 class AliMpPad : public TObject
@@ -25,16 +24,18 @@ class AliMpPad : public TObject
  public:
   AliMpPad(Int_t manuId, Int_t channel,
            Int_t ix, Int_t iy,
-           const TVector2& position, const TVector2& dimensions,
+           Double_t x,  Double_t y, 
+           Double_t dx,  Double_t dy,
 	   Bool_t validity = true);
   AliMpPad(Int_t manuId, Int_t channel,
            MpPair_t indices,
-           const TVector2& position, const TVector2& dimensions,
+           Double_t positionX,  Double_t positionY, 
+           Double_t dx,  Double_t dy,
 	   Bool_t validity = true);
 
   AliMpPad();
   AliMpPad(const AliMpPad& src);
-  virtual ~AliMpPad();
+  ~AliMpPad();
 
   //
   // operators  
@@ -46,8 +47,8 @@ class AliMpPad : public TObject
   //
   // methods
   //
-          void PrintOn(ostream& out) const;
-  virtual void Print(const char* /*option*/ = "") const;
+  void PrintOn(ostream& out) const;
+  void Print(const char* /*option*/ = "") const;
 
   //
   // static get methods
@@ -74,10 +75,16 @@ class AliMpPad : public TObject
   Int_t        GetIx() const;
   Int_t        GetIy() const;
   
-               /// Return the pad position (in cm)
-  TVector2     Position()    const {return fPosition  ;}
-               /// Return the pad dimensions (in cm)
-  TVector2     Dimensions()  const {return fDimensions;}
+               /// Return the pad x position (in cm)
+  Double_t     GetPositionX() const { return fPositionX; }
+               /// Return the pad x position (in cm)
+  Double_t     GetPositionY() const { return fPositionY; }
+  
+               /// Return the x pad dimension - half length (in cm)
+  Double_t     GetDimensionX()  const {return fDimensionX;}
+               /// Return the y pad dimension - half length (in cm)
+  Double_t     GetDimensionY()  const {return fDimensionY;}
+
                /// Return validity
   Bool_t       IsValid()     const {return fValidity  ;}
   
@@ -98,11 +105,13 @@ class AliMpPad : public TObject
   UInt_t          fNofLocations;   ///<  number of locations in fLocations
   MpPair_t        fLLocation;      ///<  pad location as encoded pair (manuId, manuChannel) 
   MpPair_t        fLIndices;       ///<  pad indices as encoded pair (ix, iy)  
-  TVector2        fPosition;       ///<  the pad position (in cm)
-  TVector2        fDimensions;     ///<  the pad dimensions (in cm)
+  Double_t        fPositionX;      ///<  the pad x position (in cm)
+  Double_t        fPositionY;      ///<  the pad y position (in cm)
+  Double_t        fDimensionX;     ///<  the pad x dimension - half length (in cm)
+  Double_t        fDimensionY;     ///<  the pad y dimension - half length(in cm)
   Bool_t          fValidity;       ///<  validity
 
-  ClassDef(AliMpPad,3) //utility class for the motif type
+  ClassDef(AliMpPad,4) //utility class for the motif type
 };
 
 ostream& operator << (ostream &out, const AliMpPad& op);

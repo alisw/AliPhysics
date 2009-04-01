@@ -30,7 +30,6 @@ class AliMpMotifMap;
 
 class TArrayI;
 class TString;
-class TVector2;
 
 class AliMpMotifMap : public TObject
 {
@@ -51,7 +50,7 @@ class AliMpMotifMap : public TObject
     // find methods
     AliMpVMotif*  FindMotif(const TString& motifID) const;
     AliMpVMotif*  FindMotif(const TString& motifID, const TString& motifTypeID, 
-                            const TVector2& padDimensions) const;
+                            Double_t padDimensionX, Double_t padDimensionY) const;
     AliMpMotifType*      FindMotifType(const TString& motifTypeID) const;
     AliMpMotifPosition*  FindMotifPosition(Int_t motifPositionID) const;
 

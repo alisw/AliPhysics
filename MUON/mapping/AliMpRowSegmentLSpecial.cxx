@@ -99,9 +99,10 @@ AliMpRowSegmentLSpecial::FindMostRightPadRowSegment(Int_t motifPositionId) const
 //
 
 //______________________________________________________________________________
-TVector2 AliMpRowSegmentLSpecial::MotifCenterSlow(Int_t motifPositionId) const
+void AliMpRowSegmentLSpecial::MotifCenterSlow(Int_t motifPositionId,
+                                              Double_t& x, Double_t& y) const
 {
-/// Return the coordinates of the motif specified with
+/// Fill the coordinates of the motif specified with
 /// the given position identifier.                                           \n
 /// !! Applicable only for motifs that have their most down pad in
 /// this row segment.
@@ -115,27 +116,25 @@ TVector2 AliMpRowSegmentLSpecial::MotifCenterSlow(Int_t motifPositionId) const
   // Check if the motifPositionId is present 
   if (!downPadRowSegment || !rightPadRowSegment) {
     AliErrorStream() << "Outside row segment region" << endl;
-    return 0;
+    return;
   }
 
   // Check if both pad row segments have the same motif 
   if (downPadRowSegment->GetMotif() != rightPadRowSegment->GetMotif()) {
     AliFatal("Outside row segment region");
-    return 0;
+    return;
   }
 
   // Get position of found row segment
-  Double_t x = rightPadRowSegment->RightBorderX();       
-  Double_t y = GetRow()->LowBorderY()  ;   
+  x = rightPadRowSegment->RightBorderX();       
+  y = GetRow()->LowBorderY()  ;   
   
   for (Int_t i=0; i<downPadRowSegment->GetPadRow()->GetID(); i++)
     y += GetPadRow(i)->HalfSizeY()*2.;
     
   // Add motifs dimensions
-  x -= downPadRowSegment->GetMotif()->Dimensions().X();
-  y += downPadRowSegment->GetMotif()->Dimensions().Y();
-  
-  return TVector2(x, y);
+  x -= downPadRowSegment->GetMotif()->DimensionX();
+  y += downPadRowSegment->GetMotif()->DimensionY();
 }
 
 //
@@ -210,16 +209,23 @@ Double_t  AliMpRowSegmentLSpecial::RightBorderX() const
 }
 
 //______________________________________________________________________________
-TVector2 AliMpRowSegmentLSpecial::Position() const
+Double_t AliMpRowSegmentLSpecial::GetPositionX() const
 {
-/// Return the position of the row segment centre.
+/// Return the x position of the row segment centre.
 /// The centre is defined as the centre of the rectangular
 /// row segment envelope.
 
-  Double_t x = GetOffsetX() - Dimensions().X();		    
-  Double_t y = GetRow()->Position().Y();  
-    
-  return TVector2(x, y);   
+  return GetOffsetX() - GetDimensionX();		    
+}
+
+//______________________________________________________________________________
+Double_t AliMpRowSegmentLSpecial::GetPositionY() const
+{
+/// Return the y position of the row segment centre.
+/// The centre is defined as the centre of the rectangular
+/// row segment envelope.
+
+  return GetRow()->GetPositionY();  
 }
 
 #include <Riostream.h>

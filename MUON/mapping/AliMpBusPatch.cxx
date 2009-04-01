@@ -179,11 +179,11 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
 
       // find PCB id
       if ( motifPos0 ) {
-        x = motifPos0->Position().X();
+        x = motifPos0->GetPositionX();
         length = kSlat0->GetPCB(0)->DX()*2.;
       }
       if ( motifPos1 ) {
-        x = motifPos1->Position().X();
+        x = motifPos1->GetPositionX();
         length = kSlat1->GetPCB(0)->DX()*2.;
       }
       

@@ -33,9 +33,9 @@ void testDE()
    cout << "   number of pads: " << kSegmentation->NofPads() << endl;   
       
     // Find pad by indices in this DE
-    AliMpIntPair indices(kSegmentation->MaxPadIndexX()/2 , 
-                         kSegmentation->MaxPadIndexY()/2);
-    AliMpPad pad = kSegmentation->PadByIndices(indices, false);
+    Int_t ix = kSegmentation->MaxPadIndexX()/2;
+    Int_t iy = kSegmentation->MaxPadIndexY()/2;
+    AliMpPad pad = kSegmentation->PadByIndices(ix, iy, false);
     
     cout << "   found pad: " << pad << endl << endl;
   }

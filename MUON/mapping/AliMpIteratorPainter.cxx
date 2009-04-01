@@ -62,8 +62,10 @@ AliMpIteratorPainter::AliMpIteratorPainter(AliMpVPadIterator *it)
   {
     AliMpPad pad = it->CurrentItem();
     fPads->AddLast(new AliMpPad(pad));
-    TVector2 lowerLeft(pad.Position()-pad.Dimensions());
-    TVector2 upperRight(pad.Position()+pad.Dimensions());
+    TVector2 lowerLeft(TVector2(pad.GetPositionX(),pad.GetPositionY())-
+                       TVector2(pad.GetDimensionX(),pad.GetDimensionY()));
+    TVector2 upperRight(TVector2(pad.GetPositionX(),pad.GetPositionY())+
+                        TVector2(pad.GetDimensionX(),pad.GetDimensionY()));
     xmin = TMath::Min(lowerLeft.X(),xmin);
     ymin = TMath::Min(lowerLeft.Y(),ymin);
     xmax = TMath::Max(upperRight.X(),xmax);
@@ -113,10 +115,11 @@ AliMpIteratorPainter::Paint(Option_t*)
     TVector2 padPadPos;
     TVector2 padPadDim;
     
-    gr->RealToPad(pad->Position(),
-                  pad->Dimensions(),
-                  padPadPos,
-                  padPadDim);
+    gr->RealToPad(TVector2(pad->GetPositionX(),
+                           pad->GetPositionY()),
+                  TVector2(pad->GetDimensionX(),
+                           pad->GetDimensionY()),
+                  padPadPos, padPadDim);
 
     TVector2 bl = padPadPos - padPadDim;
     TVector2 ur = padPadPos + padPadDim;

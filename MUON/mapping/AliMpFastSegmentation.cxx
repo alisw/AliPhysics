@@ -81,7 +81,8 @@ fHelper(vseg),
 fMotifPositions(),
 fIxIy(),
 fManuId(),
-fPosition()
+fPositionX(0.),
+fPositionY(0.)
 {
   /// Ctor. We adopt vseg.
   
@@ -93,7 +94,8 @@ fPosition()
     return;
   }
   
-  fPosition = vseg->Position();
+  fPositionX = vseg->GetPositionX();
+  fPositionY = vseg->GetPositionY();
   
   TArrayI manus;
   
@@ -204,12 +206,18 @@ AliMpFastSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel,
   }
 	
 #ifdef CHECK
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fPositionX;
+  posy += motifPos->GetPositionY() - fPositionY;
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+  
   AliMpPad pad1 = AliMpPad(manuId, manuChannel,
                            motifPos->GlobalIndices(localIndices),
-                           motifPos->Position() 
-                           + motif->PadPositionLocal(localIndices) 
-                           - fPosition,
-                           motif->GetPadDimensionsByIndices(localIndices));  
+                           posx, posy, dx, dy);
+
   AliMpPad pad2 = fHelper->PadByLocation(manuId, manuChannel,warning);
   if ( pad1 != pad2 ) 
   {
@@ -219,13 +227,17 @@ AliMpFastSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel,
     assert(pad1==pad2);
   }
 #endif
-  
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fPositionX;
+  posy += motifPos->GetPositionY() - fPositionY;
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+
   return AliMpPad(manuId, manuChannel,
                   motifPos->GlobalIndices(localIndices),
-                  motifPos->Position() 
-                  + motif->PadPositionLocal(localIndices) 
-                  - fPosition,
-                  motif->GetPadDimensionsByIndices(localIndices));  
+                  posx, posy, dx, dy);
 }
 
 //_____________________________________________________________________________
@@ -279,33 +291,39 @@ AliMpFastSegmentation::PadByIndices (Int_t ix, Int_t iy, Bool_t warning) const
 	
 #ifdef CHECK
   AliMpPad pad2 = fHelper->PadByIndices(ix, iy, warning);
+
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fPositionX;
+  posy += motifPos->GetPositionY() - fPositionY;
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+
   AliMpPad pad1 = AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
-                          ix, iy,
-                          motifPos->Position()
-                          + motif->PadPositionLocal(localIndices)
-                          - fPosition,
-                          motif->GetPadDimensionsByIndices(localIndices));
-  
-  
+                          ix, iy, posx, posy, dx, dy);
   
   assert(pad1==pad2);
 #endif
-  
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fPositionX;
+  posy += motifPos->GetPositionY() - fPositionY;
+ 
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+
   return AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
-                  ix, iy,
-                  motifPos->Position()
-                  + motif->PadPositionLocal(localIndices)
-                  - fPosition,
-                  motif->GetPadDimensionsByIndices(localIndices));
+                  ix, iy, posx, posy, dx, dy);
   
 }
 
 //_____________________________________________________________________________
 AliMpPad 
-AliMpFastSegmentation::PadByPosition(const TVector2& position, Bool_t warning ) const
+AliMpFastSegmentation::PadByPosition(Double_t x, Double_t y, Bool_t warning ) const
 {
   /// Forward to our helper
-  return fHelper->PadByPosition(position,warning);
+  return fHelper->PadByPosition(x, y, warning);
 }
 
 //_____________________________________________________________________________
@@ -406,19 +424,35 @@ AliMpFastSegmentation::PlaneType() const
 }
 
 //_____________________________________________________________________________
-TVector2 
-AliMpFastSegmentation::Dimensions() const
+Double_t  
+AliMpFastSegmentation::GetDimensionX() const
 {
   /// Forward to our helper
-  return fHelper->Dimensions();
+  return fHelper->GetDimensionX();
 }
 
 //_____________________________________________________________________________
-TVector2 
-AliMpFastSegmentation::Position() const
+Double_t  
+AliMpFastSegmentation::GetDimensionY() const
 {
   /// Forward to our helper
-  return fHelper->Position();
+  return fHelper->GetDimensionY();
+}
+
+//_____________________________________________________________________________
+Double_t  
+AliMpFastSegmentation::GetPositionX() const
+{
+  /// Forward to our helper
+  return fHelper->GetPositionX();
+}
+
+//_____________________________________________________________________________
+Double_t  
+AliMpFastSegmentation::GetPositionY() const
+{
+  /// Forward to our helper
+  return fHelper->GetPositionY();
 }
 
 //_____________________________________________________________________________

@@ -40,7 +40,6 @@
 #include "AliLog.h"
 
 #include <Riostream.h>
-#include <TVector2.h>
 #include <TArrayI.h>
 
 /// \cond CLASSIMP
@@ -92,8 +91,8 @@ void  AliMpMotifMap::PrintMotif(const AliMpVMotif* motif) const
 
   cout << motif->GetID().Data() << "  "
        << motif->GetMotifType()->GetID() << "    "
-       << motif->Dimensions().X() << " "
-       << motif->Dimensions().Y();
+       << motif->DimensionX() << " "
+       << motif->DimensionY();
 }
 
 //_____________________________________________________________________________
@@ -114,8 +113,8 @@ void  AliMpMotifMap::PrintMotifPosition(
 
   cout << " ID " << motifPosition->GetID() << "  "
        << " Motif ID " << motifPosition->GetMotif()->GetID() << "  " 
-       << " Pos (X,Y) = (" << motifPosition->Position().X() << ","
-       << motifPosition->Position().Y() << ")";
+       << " Pos (X,Y) = (" << motifPosition->GetPositionX() << ","
+       << motifPosition->GetPositionY() << ")";
 }
 
 //_____________________________________________________________________________
@@ -485,7 +484,8 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 //_____________________________________________________________________________
 AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID, 
                                       const TString& motifTypeID,
-			              const TVector2& padDimensions ) const
+			              Double_t padDimensionX, 
+                                      Double_t padDimensionY ) const
 {
 /// Find the motif with the specified ID and returns it
 /// only if its motif type and motif dimensions agree
@@ -502,10 +502,10 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
   }
 
   // check pad dimension in case of a normal motif
-  if (motif && 
-      dynamic_cast<AliMpMotif*>(motif) && 
-      ( motif->GetPadDimensions(0).X() != padDimensions.X() ||
-        motif->GetPadDimensions(0).Y() != padDimensions.Y())) { 
+  if ( motif && 
+       dynamic_cast<AliMpMotif*>(motif) && 
+       ( motif->GetPadDimensionX(0) != padDimensionX ||
+         motif->GetPadDimensionY(0) != padDimensionY ) ) { 
       
       AliFatal("Motif type has been already defined with different dimensions.");
       return 0;
@@ -513,9 +513,9 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
   } 
 
   // check case of a special motif
-  if (motif && 
-      (padDimensions.X() == 0. && padDimensions.Y() == 0.) &&
-      !dynamic_cast<AliMpMotifSpecial*>(motif)) {
+  if ( motif && 
+      ( padDimensionX == 0. && padDimensionY == 0.) &&
+       ! dynamic_cast<AliMpMotifSpecial*>(motif) ) {
 
       AliFatal("Motif type has been already defined with different dimensions.");
       return 0;

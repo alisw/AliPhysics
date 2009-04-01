@@ -15,8 +15,6 @@
 
 #include "AliMpVRowSegmentSpecial.h"
 
-#include <TVector2.h>
-
 class AliMpRow;
 class AliMpPadRow;
 class AliMpVPadRowSegment;
@@ -35,7 +33,8 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
     virtual Double_t  RightBorderX() const;
 
     // geometry
-    virtual TVector2  Position() const;
+    virtual Double_t  GetPositionX() const;
+    virtual Double_t  GetPositionY() const;
 
     // set methods
     virtual void   SetGlobalIndices(AliMpRow* rowBefore);
@@ -43,7 +42,8 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
 
   protected:
     // methods
-    virtual TVector2  MotifCenterSlow(Int_t motifPositionId) const;
+    virtual void  MotifCenterSlow(Int_t motifPositionId, 
+                                  Double_t& x, Double_t& y) const;
     
   private:
     // methods

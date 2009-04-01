@@ -236,11 +236,10 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
 	  
 	  if(plane == AliMp::kBendingPlane) {
 	    Global2Local(detElemId,hitX,hitY,hitZ,locX,locY,locZ);
-	    TVector2 hitPoint(locX,locY);
-	    AliMpPad pad = seg->PadByPosition(hitPoint,kFALSE);
+	    AliMpPad pad = seg->PadByPosition(locX,locY,kFALSE);
             if(pad.IsValid()){
-              Double_t locYCenter = pad.Position().Y();
-              Double_t locXCenter = pad.Position().X();
+              Double_t locYCenter = pad.GetPositionY();
+              Double_t locXCenter = pad.GetPositionX();
               const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
               transformer->Local2Global(detElemId,locXCenter,locYCenter,locZ,globXCenter,globYCenter,globZ);
               for(Int_t itime = 0; itime<para; itime++)
@@ -261,8 +260,7 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   Double_t x,y,z;
   Global2Local(detElemId,hitX,hitY,hitZ,x,y,z);
   x = GetAnod(x);
-  TVector2 hitPosition(x,y);
-  AliMpArea area(hitPosition,TVector2(dx,dy));
+  AliMpArea area(x,y,dx,dy);
   
   // Get pulse height from energy loss.
   Float_t qtot = IntPH(hit.Eloss());
@@ -293,7 +291,8 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
     if ( it->IsDone() )
     {
       // Exceptional case : iterator is built, but is invalid from the start.
-      AliMpPad pad = seg->PadByPosition(area.Position(),kFALSE);
+      AliMpPad pad = seg->PadByPosition(area.GetPositionX(),area.GetPositionY(),
+                                        kFALSE);
       if ( pad.IsValid() )
       {
         AliWarning(Form("Got an invalid iterator bug (area.Position() is within "
@@ -305,8 +304,8 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
         AliError(Form("Got an invalid iterator bug for detElemId %d cath %d."
                       "Might be a bad hit ? area.Position()=(%e,%e) "
                       "Dimensions()=(%e,%e)",
-                      detElemId,cath,area.Position().X(),area.Position().Y(),
-                      area.Dimensions().X(),area.Dimensions().Y()));
+                      detElemId,cath,area.GetPositionX(),area.GetPositionY(),
+                      area.GetDimensionX(),area.GetDimensionY()));
       }
       delete it;
       return;
@@ -317,8 +316,9 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
       // For each pad given by the iterator, compute the charge of that
       // pad, according to the Mathieson distribution.
       AliMpPad pad = it->CurrentItem();      
-      TVector2 lowerLeft(hitPosition-pad.Position()-pad.Dimensions());
-      TVector2 upperRight(lowerLeft + pad.Dimensions()*2.0);
+      TVector2 lowerLeft(TVector2(x,y)-TVector2(pad.GetPositionX(),pad.GetPositionY())-
+                         TVector2(pad.GetDimensionX(),pad.GetDimensionY()));
+      TVector2 upperRight(lowerLeft + TVector2(pad.GetDimensionX(),pad.GetDimensionY())*2.0);
       Float_t qp = TMath::Abs(fMathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
                                                 upperRight.X(),upperRight.Y()));
             

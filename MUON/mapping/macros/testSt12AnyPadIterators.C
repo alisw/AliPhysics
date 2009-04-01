@@ -80,9 +80,9 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
   canv->cd(1);
   AliMpSectorPadIterator its(sector);
   MarkPads(its, 150, 250, kFALSE);
-
+/*
   canv->cd(2);
-  AliMpVMotif* motif = sector->FindMotif(TVector2(30,3));
+  AliMpVMotif* motif = sector->FindMotif(30,3);
   if ( motif ) {
     AliMpMotifType* motifType = motif->GetMotifType();
     AliMpMotifTypePadIterator itm(motifType);
@@ -92,7 +92,7 @@ void testAnyPadIterators(AliMq::Station12Type station, AliMp::PlaneType plane)
   } 
   else 
     cout << "No motif found at given position..." << endl;
-  
+*/  
   canv->cd(4);
   Int_t motifPosId = 20 | AliMpConstants::ManuMask(plane); 
   if ( plane == AliMp::kNonBendingPlane ) motifPosId = 19;

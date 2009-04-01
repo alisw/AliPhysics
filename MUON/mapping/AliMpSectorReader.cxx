@@ -130,7 +130,7 @@ void  AliMpSectorReader::ReadSectorData(istream& in)
   AliDebugStream(2) << nofZones << " " <<  nofRows << endl;
 
   fSector = new AliMpSector("Not defined", nofZones, nofRows,direction,
-                            TVector2(offsetX, offsetY));
+                            offsetX, offsetY);
   
   TString nextKeyword;
   in >> nextKeyword;
@@ -159,7 +159,7 @@ void AliMpSectorReader::ReadZoneData(istream& in)
      << sizex << " " << sizey << endl;
   
   AliMpZone* zone =  fSector->GetZone(zoneID);
-  zone->SetPadDimensions(TVector2(sizex/2.,sizey/2.)); 
+  zone->SetPadDimensions(sizex/2.,sizey/2.); 
       
   TString nextKeyword;
   in >> nextKeyword;
@@ -211,7 +211,8 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
 
   AliMpMotifType* motifType = 0;
   AliMpVMotif* motif 
-    = motifMap->FindMotif(motifID, motifTypeID, zone->GetPadDimensions());
+    = motifMap->FindMotif(motifID, motifTypeID, 
+                          zone->GetPadDimensionX(), zone->GetPadDimensionY());
   if (!motif) {    
     motifType = motifMap->FindMotifType(motifTypeID);
     if (!motifType) {
@@ -219,8 +220,9 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
       motifMap->AddMotifType(motifType);
     }
     
-    if (zone->GetPadDimensions().X() != 0. && zone->GetPadDimensions().Y() != 0.) 
-      motif = new AliMpMotif(motifID, motifType, zone->GetPadDimensions());
+    if (zone->GetPadDimensionX() != 0. && zone->GetPadDimensionY() != 0.) 
+      motif = new AliMpMotif(motifID, motifType, 
+                     zone->GetPadDimensionX(), zone->GetPadDimensionY());
     else 
       motif = fMotifReader->BuildMotifSpecial(motifID, motifType);
       

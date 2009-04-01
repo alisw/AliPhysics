@@ -480,10 +480,10 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
       AliMpPad mpad = seg2->PadByIndices(ix,iy,kTRUE);
       
       // get the pad position and dimensions
-      Float_t xlocal1 = mpad.Position().X();
-      Float_t ylocal1 = mpad.Position().Y();
-      Float_t xlocal2 = mpad.Dimensions().X();
-      Float_t ylocal2 = mpad.Dimensions().Y();
+      Float_t xlocal1 = mpad.GetPositionX();
+      Float_t ylocal1 = mpad.GetPositionY();
+      Float_t xlocal2 = mpad.GetDimensionX();
+      Float_t ylocal2 = mpad.GetDimensionY();
       
       transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
       // (no transformation for pad dimensions)

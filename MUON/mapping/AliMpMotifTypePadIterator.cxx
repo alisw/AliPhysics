@@ -208,7 +208,7 @@ AliMpPad AliMpMotifTypePadIterator::CurrentItem() const
     else
       return AliMpPad(0, 0,
 	              fCurrentIx, fCurrentIy,
-                      TVector2(),TVector2());
+                      0., 0.,0., 0.);
 }
 
 //______________________________________________________________________________

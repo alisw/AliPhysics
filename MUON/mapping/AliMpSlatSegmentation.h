@@ -60,7 +60,7 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   virtual AliMpPad PadByIndices(Int_t ix, Int_t iy,  
 			Bool_t warning) const;
 
-  virtual AliMpPad PadByPosition(const TVector2& position,
+  virtual AliMpPad PadByPosition(Double_t x, Double_t y,
 			 Bool_t warning) const;
 
   virtual void Print(Option_t* opt) const;
@@ -73,7 +73,8 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
    
   virtual AliMp::StationType StationType() const;
   
-  TVector2 Dimensions() const;
+  virtual Double_t  GetDimensionX() const;
+  virtual Double_t  GetDimensionY() const;
   
   virtual Bool_t HasPadByIndices(Int_t ix, Int_t iy) const;
   
@@ -81,7 +82,8 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
 
   virtual Int_t GetNofElectronicCards() const;
   
-  virtual TVector2 Position() const;
+  virtual Double_t  GetPositionX() const;
+  virtual Double_t  GetPositionY() const;
   
   virtual Bool_t HasMotifPosition(Int_t manuId) const;
   

@@ -918,10 +918,10 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	//if (cathode == 1) printf("GUI y:  ix %d iy %d \n",ix,iy);
 	
 	// get the pad position and dimensions
-	Float_t xlocal1 = pad.Position().X();
-	Float_t ylocal1 = pad.Position().Y();
-	Float_t xlocal2 = pad.Dimensions().X();
-	Float_t ylocal2 = pad.Dimensions().Y();
+	Float_t xlocal1 = pad.GetPositionX();
+	Float_t ylocal1 = pad.GetPositionY();
+	Float_t xlocal2 = pad.GetDimensionX();
+	Float_t ylocal2 = pad.GetDimensionY();
 	
 	transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	// (no transformation for pad dimensions)
@@ -1232,10 +1232,10 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	  if (!pad.IsValid()) continue;
 	  
 	  // get the pad position and dimensions
-	  xlocal1 = pad.Position().X();
-	  ylocal1 = pad.Position().Y();
-	  xlocal2 = pad.Dimensions().X();
-	  ylocal2 = pad.Dimensions().Y();
+	  xlocal1 = pad.GetPositionX();
+	  ylocal1 = pad.GetPositionY();
+	  xlocal2 = pad.GetDimensionX();
+	  ylocal2 = pad.GetDimensionY();
 	  
 	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
@@ -1327,10 +1327,10 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	  if (!pad.IsValid()) continue;
 	  
 	  // get the pad position and dimensions
-	  xlocal1 = pad.Position().X();
-	  ylocal1 = pad.Position().Y();
-	  xlocal2 = pad.Dimensions().X();
-	  ylocal2 = pad.Dimensions().Y();
+	  xlocal1 = pad.GetPositionX();
+	  ylocal1 = pad.GetPositionY();
+	  xlocal2 = pad.GetDimensionX();
+	  ylocal2 = pad.GetDimensionY();
 	  
 	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)

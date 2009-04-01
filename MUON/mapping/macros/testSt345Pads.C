@@ -52,12 +52,13 @@ Int_t CircularTest(const AliMpSlat& slat)
   {
     for ( Int_t j = 0; j <= seg.MaxPadIndexY(); ++j )
     {
-      AliMpPad pad = seg.PadByIndices(AliMpIntPair(i,j),kFALSE);
+      AliMpPad pad = seg.PadByIndices(i,j,kFALSE);
       
       if ( pad.IsValid() )
       {
         ++n;
-        AliMpPad xcheck = seg.PadByPosition(pad.Position(),kFALSE);
+        AliMpPad xcheck 
+          = seg.PadByPosition(pad.GetPositionX(),pad.GetPositionY(),kFALSE);
         if ( pad != xcheck ) 
         {
           cout << "(ix,iy)=" << i << "," << j << " ";
@@ -82,7 +83,7 @@ Int_t Count(const AliMpSlat& slat)
   {
     for ( Int_t j = 0; j <= seg.MaxPadIndexY(); ++j )
     {
-      if ( seg.HasPadByIndices(AliMpIntPair(i,j)) ) 
+      if ( seg.HasPadByIndices(i,j) ) 
       {
         ++n;
       }
@@ -163,7 +164,7 @@ void XCheck(const AliMpSlat& slat)
   {
     for ( Int_t j = 0; j <= seg.MaxPadIndexY(); ++j )
     {
-      AliMpPad pad = seg.PadByIndices(AliMpIntPair(i,j),kFALSE);
+      AliMpPad pad = seg.PadByIndices(i,j,kFALSE);
       if ( pad.IsValid() )
       {
         l1.Add(new AliMpPad(pad));

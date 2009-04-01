@@ -118,7 +118,7 @@ void ByPosition(const AliMpVSegmentation* seg, Int_t detElemId, const TObjArray&
   
   while ( ( pad = static_cast<AliMpPad*>(next()) ) )
   {
-    seg->PadByPosition(pad->Position(),kFALSE);
+    seg->PadByPosition(pad->GetPositionX(),pad->GetPositionY(),kFALSE);
   }
 }
 

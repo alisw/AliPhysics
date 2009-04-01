@@ -75,9 +75,10 @@ fMotifPos(0x0)
   
   AliMpVMotif* motif = new AliMpMotif(motifType->GetID(),
                                       motifType,
-                                      TVector2(kdx,kdy));
+                                      kdx,kdy);
 
-  fMotifPos = new AliMpMotifPosition(-1,motif,motif->Dimensions());
+  fMotifPos = new AliMpMotifPosition(-1,motif,
+                                     motif->DimensionX(), motif->DimensionY());
 }
 
 //_______________________________________________________________________
@@ -99,7 +100,7 @@ TVector2 AliMpMotifPainter::GetPosition() const
 {
 /// Get the owned object's position
 
-  return fMotifPos->Position();
+  return TVector2(fMotifPos->GetPositionX(), fMotifPos->GetPositionY());
 }
 
 //_______________________________________________________________________
@@ -107,7 +108,7 @@ TVector2 AliMpMotifPainter::GetDimensions() const
 {
 /// Get the owned object's dimensions
 
-  return fMotifPos->Dimensions();
+  return TVector2(fMotifPos->GetDimensionX(), fMotifPos->GetDimensionY());
 }
 
 //_______________________________________________________________________
@@ -169,11 +170,17 @@ void AliMpMotifPainter::Paint(Option_t *option)
           AliMpConnection* connect = 
             motifType->FindConnectionByLocalIndices(i,j);
           if (connect){
+            Double_t localPosX, localPosY;
+            fMotifPos->GetMotif()->PadPositionLocal(i, j, localPosX, localPosY);
             TVector2 realPadPos = 
-            GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(i,j);
+            GetPosition()+TVector2(localPosX, localPosY);
+
+            Double_t dx, dy;
+            fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j, dx, dy);
+            
             TVector2 padPadPos,padPadDim;
             gr->RealToPad(realPadPos,
-                          fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j),
+                          TVector2(dx, dy),
                           padPadPos,padPadDim);
             TVector2 bl = padPadPos - padPadDim;
             TVector2 ur = padPadPos + padPadDim;
@@ -264,10 +271,17 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
         AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(i,j);
 
         if (connect){
+          Double_t localPosX, localPosY;
+          fMotifPos->GetMotif()->PadPositionLocal(i, j, localPosX, localPosY);
+
           TVector2 realPadPos = 
-          GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(i,j);
+          GetPosition()+TVector2(localPosX, localPosY);
+          
+          Double_t dx, dy;
+          fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j, dx, dy);
+          
           gr->RealToPad(realPadPos, 
-                        fMotifPos->GetMotif()->GetPadDimensionsByIndices(i,j),
+                        TVector2(dx, dy),
                         padPadPos, padPadDim);
           
           TVector2 bl = padPadPos - padPadDim;

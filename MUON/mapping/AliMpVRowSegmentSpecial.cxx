@@ -262,38 +262,34 @@ Double_t  AliMpVRowSegmentSpecial::HalfSizeY() const
 }
 
 //______________________________________________________________________________
-AliMpVMotif*  AliMpVRowSegmentSpecial::FindMotif(const TVector2& position) const
+AliMpVMotif*  AliMpVRowSegmentSpecial::FindMotif(Double_t x, Double_t y) const
 {
 /// Return the motif of this row; 
 
-  AliMpPadRow* padRow 
-    = FindPadRow(position.Y());
+  AliMpPadRow* padRow = FindPadRow(y);
   
-  if (!padRow) return 0;
+  if ( ! padRow ) return 0;
 
-  AliMpVPadRowSegment* padRowSegment 
-    = padRow->FindPadRowSegment(position.X());
+  AliMpVPadRowSegment* padRowSegment = padRow->FindPadRowSegment(x);
     
-  if (!padRowSegment) return 0;
+  if (! padRowSegment ) return 0;
 
   return padRowSegment->GetMotif();
 }  
 
 //______________________________________________________________________________
-Int_t AliMpVRowSegmentSpecial::FindMotifPositionId(const TVector2& position) const
+Int_t AliMpVRowSegmentSpecial::FindMotifPositionId(Double_t x, Double_t y) const
 {
 /// Return the motif position identified for the given
 /// geometric position.
 
-  AliMpPadRow* padRow 
-    = FindPadRow(position.Y());
+  AliMpPadRow* padRow = FindPadRow(y);
   
-  if (!padRow) return 0;
+  if ( ! padRow ) return 0;
 
-  AliMpVPadRowSegment* padRowSegment 
-    = padRow->FindPadRowSegment(position.X());
+  AliMpVPadRowSegment* padRowSegment = padRow->FindPadRowSegment(x);
     
-  if (!padRowSegment) return 0;
+  if ( ! padRowSegment ) return 0;
 
   return padRowSegment->GetMotifPositionId();
 }
@@ -311,7 +307,8 @@ Bool_t AliMpVRowSegmentSpecial::HasMotifPosition(Int_t motifPositionId) const
 }
 
 //______________________________________________________________________________
-TVector2 AliMpVRowSegmentSpecial::MotifCenter(Int_t motifPositionId) const
+void AliMpVRowSegmentSpecial::MotifCenter(Int_t motifPositionId,
+                                          Double_t& x, Double_t& y) const
 {
 /// Return the coordinates of the motif specified with
 /// the given position identifier.
@@ -319,25 +316,25 @@ TVector2 AliMpVRowSegmentSpecial::MotifCenter(Int_t motifPositionId) const
   // Try to get the motif position from the motif map first
   AliMpMotifPosition* motifPosition
     = GetRow()->GetMotifMap()->FindMotifPosition(motifPositionId);
-  if (motifPosition) return motifPosition->Position();
-
-  // Use slow method otherwise
-  return MotifCenterSlow(motifPositionId);
+    
+  if (motifPosition) { 
+    x = motifPosition->GetPositionX(), 
+    y = motifPosition->GetPositionY();
+  }
+  else {  
+    MotifCenterSlow(motifPositionId, x, y);
+  }
 }
 
 //______________________________________________________________________________
-TVector2 AliMpVRowSegmentSpecial::Dimensions() const
+Double_t AliMpVRowSegmentSpecial::GetDimensionX() const
 {
 /// Return the halflengths in x, y of the row segment rectangular envelope.
 
   Double_t x = 0.;		    
-  Double_t y = 0.;  
   for (Int_t i=0; i<GetNofPadRows(); i++) {    
     AliMpPadRow* padRow = GetPadRow(i); 
     
-    // Add all pad rows y halfsizes   
-    y += padRow->HalfSizeY();
-
     // Find the biggest pad rows x halfsize
     Double_t xx 
       = (padRow->GetPadRowSegment(0)->RightBorderX() -
@@ -345,7 +342,23 @@ TVector2 AliMpVRowSegmentSpecial::Dimensions() const
     if (xx > x) x = xx;		   
   }                  
     
-  return TVector2(x, y);   
+  return x;   
+}
+
+//______________________________________________________________________________
+Double_t AliMpVRowSegmentSpecial::GetDimensionY() const
+{
+/// Return the halflengths in x, y of the row segment rectangular envelope.
+
+  Double_t y = 0.;  
+  for (Int_t i=0; i<GetNofPadRows(); i++) {    
+    AliMpPadRow* padRow = GetPadRow(i); 
+    
+    // Add all pad rows y halfsizes   
+    y += padRow->HalfSizeY();
+  }                  
+    
+  return y;   
 }
 
 //______________________________________________________________________________

@@ -75,6 +75,7 @@
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TSystem.h>
+#include <TVector2.h>
 
 #include <cassert>
 
@@ -435,10 +436,11 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONVDigitStore& digitStor
         ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
       
       AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
-      Float_t xlocal1 = pad.Position().X();
-      Float_t ylocal1 = pad.Position().Y();
-      Float_t dpx = pad.Dimensions().X();
-      Float_t dpy = pad.Dimensions().Y();
+      Float_t xlocal1 = pad.GetPositionX();
+      Float_t ylocal1 = pad.GetPositionY();
+      Float_t dpx = pad.GetDimensionX();
+      Float_t dpy = pad.GetDimensionY();
+
       fkTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
       Float_t matchDist = MinDistanceFromPad(xpad, ypad, zpad, dpx, dpy, trackParam);
       if(matchDist>minMatchDist[cathode])continue;
@@ -535,10 +537,11 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digi
 	    ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
 
 	AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
-	Float_t xlocal1 = pad.Position().X();
-	Float_t ylocal1 = pad.Position().Y();
-	Float_t dpx = pad.Dimensions().X();
-	Float_t dpy = pad.Dimensions().Y();
+	Float_t xlocal1 = pad.GetPositionX();
+	Float_t ylocal1 = pad.GetPositionY();
+	Float_t dpx = pad.GetDimensionX();
+	Float_t dpy = pad.GetDimensionY();
+
 	fkTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
 	AliDebug(2, Form("\nDetElemId = %i  Cathode = %i  Pad = (%i,%i) = (%.2f,%.2f)  Dim = (%.2f,%.2f)  Track = (%.2f,%.2f)\n",currDetElemId,cathode,ix,iy,xpad,ypad,dpx,dpy,coor[0],coor[1]));
 	// searching track intersection with chambers (second approximation)
@@ -629,8 +632,8 @@ Int_t AliMUONTrackHitPattern::DetElemIdFromPos(Float_t x, Float_t y,
 	    ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 	if (!seg) continue;
 
-	Float_t deltax = seg->Dimensions().X();
-	Float_t deltay = seg->Dimensions().Y();
+	Float_t deltax = seg->GetDimensionX();
+	Float_t deltay = seg->GetDimensionY();
 	Float_t xlocal1 =  -deltax;
 	Float_t ylocal1 =  -deltay;
 	Float_t xlocal2 =  +deltax;
@@ -686,7 +689,7 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
 	AliMpSegmentation::Instance()
           ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
     if (seg){
-	AliMpPad pad = seg->PadByPosition(pos,kFALSE);
+	AliMpPad pad = seg->PadByPosition(pos.X(),pos.Y(),kFALSE);
 	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
 	    localBoard[loc] = pad.GetLocalBoardId(loc);
 	}

@@ -61,8 +61,9 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
                     << " " << it.CurrentItem() << endl;   
     
     // mark pads positions
-    TVector2 posi = it.CurrentItem().Position();
-    TMarker* marker = new TMarker( posi.X()/xmax, posi.Y()/ymax, 2);
+    Double_t posix = it.CurrentItem().GetPositionX();
+    Double_t posiy = it.CurrentItem().GetPositionY();
+    TMarker* marker = new TMarker( posix/xmax, posiy/ymax, 2);
     marker->Draw();
 
     // fill pads indices in the histogram
@@ -90,9 +91,9 @@ void testSectorAreaIterator(AliMq::Station12Type station, AliMp::PlaneType plane
 
   AliMpArea area;
   if ( station == AliMq::kStation1 )
-    area = AliMpArea(TVector2(45.,45.),TVector2(45.,45.));
+    area = AliMpArea(45.,45.,45.,45.);
   else   
-    area = AliMpArea(TVector2(60.,60.),TVector2(60.,60.));
+    area = AliMpArea(60.,60.,60.,60.);
   AliMpVPadIterator* iter = segmentation.CreateIterator(area);
 
   CreateTCanvas("Graph ", " ", station, plane);
@@ -100,8 +101,8 @@ void testSectorAreaIterator(AliMq::Station12Type station, AliMp::PlaneType plane
 
   TCanvas* canv = CreateTCanvas("canv ", " ", station, plane);
   canv->Range(-1,-1,1,1);
-  MarkPads(*iter, TMath::Abs(area.Position().X())+area.Dimensions().X(),
-                  TMath::Abs(area.Position().Y())+area.Dimensions().Y(), 
+  MarkPads(*iter, TMath::Abs(area.GetPositionX())+area.GetDimensionX(),
+                  TMath::Abs(area.GetPositionY())+area.GetDimensionY(), 
                   station, plane, kTRUE);
 }
      

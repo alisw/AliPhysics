@@ -357,7 +357,7 @@ AliMUONManuPadPainter::PadByPosition(Double_t x, Double_t y) const
   
   AliMUONPainterHelper::Instance()->Global2Local(fDetElemId,x,y,zg,xl,yl,zl);
   
-  return seg->PadByPosition(TVector2(xl,yl));
+  return seg->PadByPosition(xl,yl);
 }
 
 //_____________________________________________________________________________

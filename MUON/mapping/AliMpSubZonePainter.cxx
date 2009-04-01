@@ -82,7 +82,8 @@ Int_t AliMpSubZonePainter::DistancetoPrimitive(Int_t x, Int_t y)
     AliMpVRowSegment* seg = fSubZone->GetRowSegment(iseg);
 
     TVector2 pos,dim;
-    gr->RealToPad(seg->Position(),seg->Dimensions(),pos,dim);
+    gr->RealToPad(TVector2(seg->GetPositionX(), seg->GetPositionY()),
+                  TVector2(seg->GetDimensionX(),seg->GetDimensionY()),pos,dim);
 
     if ( IsInside(point,pos,dim) ){
       Double_t value = (point-pos).Mod();
@@ -110,22 +111,24 @@ TVector2 AliMpSubZonePainter::GetPosition() const
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
 
   // bl = bottom left position;
-  TVector2 bl = seg->Position()-seg->Dimensions();
+  TVector2 bl = TVector2(seg->GetPositionX(), seg->GetPositionY()) -
+                TVector2(seg->GetDimensionX(),seg->GetDimensionY());
   // ur = upper right position
-  TVector2 ur = seg->Position()+seg->Dimensions();
+  TVector2 ur = TVector2(seg->GetPositionX(), seg->GetPositionY()) +
+                TVector2(seg->GetDimensionX(),seg->GetDimensionY());
 
   for (Int_t iseg=1;iseg<fSubZone->GetNofRowSegments();++iseg){
     seg = fSubZone->GetRowSegment(iseg);
     // update the bottom-left corner
-    if (bl.X()>seg->Position().X()-seg->Dimensions().X())
-      bl.Set(seg->Position().X()-seg->Dimensions().X(),bl.Y());
-    if (bl.Y()>seg->Position().Y()-seg->Dimensions().Y())
-      bl.Set(bl.X(),seg->Position().Y()-seg->Dimensions().Y());
+    if (bl.X()>seg->GetPositionX()-seg->GetDimensionX())
+      bl.Set(seg->GetPositionX()-seg->GetDimensionX(),bl.Y());
+    if (bl.Y()>seg->GetPositionY()-seg->GetDimensionY())
+      bl.Set(bl.X(),seg->GetPositionY()-seg->GetDimensionY());
     // update the upper-right corner
-    if (ur.X()<seg->Position().X()+seg->Dimensions().X())
-      ur.Set(seg->Position().X()+seg->Dimensions().X(),ur.Y());
-    if (ur.Y()<seg->Position().Y()+seg->Dimensions().Y())
-      ur.Set(ur.X(),seg->Position().Y()+seg->Dimensions().Y());
+    if (ur.X()<seg->GetPositionX()+seg->GetDimensionX())
+      ur.Set(seg->GetPositionX()+seg->GetDimensionX(),ur.Y());
+    if (ur.Y()<seg->GetPositionY()+seg->GetDimensionY())
+      ur.Set(ur.X(),seg->GetPositionY()+seg->GetDimensionY());
   }
   return (ur+bl)/2.;
 }
@@ -139,22 +142,24 @@ TVector2 AliMpSubZonePainter::GetDimensions() const
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
 
   // bl = bottom left position;
-  TVector2 bl = seg->Position()-seg->Dimensions();
+  TVector2 bl = TVector2(seg->GetPositionX(), seg->GetPositionY()) - 
+                TVector2(seg->GetDimensionX(),seg->GetDimensionY());
   // ur = upper right position
-  TVector2 ur = seg->Position()+seg->Dimensions();
+  TVector2 ur = TVector2(seg->GetPositionX(), seg->GetPositionY()) + 
+                TVector2(seg->GetDimensionX(),seg->GetDimensionY());
 
   for (Int_t iseg=1;iseg<fSubZone->GetNofRowSegments();++iseg){
     seg = fSubZone->GetRowSegment(iseg);
     // update the bottom-left corner
-    if (bl.X()>seg->Position().X()-seg->Dimensions().X())
-      bl.Set(seg->Position().X()-seg->Dimensions().X(),bl.Y());
-    if (bl.Y()>seg->Position().Y()-seg->Dimensions().Y())
-      bl.Set(bl.X(),seg->Position().Y()-seg->Dimensions().Y());
+    if (bl.X()>seg->GetPositionX()-seg->GetDimensionX())
+      bl.Set(seg->GetPositionX()-seg->GetDimensionX(),bl.Y());
+    if (bl.Y()>seg->GetPositionY()-seg->GetDimensionY())
+      bl.Set(bl.X(),seg->GetPositionY()-seg->GetDimensionY());
     // update the upper-right corner
-    if (ur.X()<seg->Position().X()+seg->Dimensions().X())
-      ur.Set(seg->Position().X()+seg->Dimensions().X(),ur.Y());
-    if (ur.Y()<seg->Position().Y()+seg->Dimensions().Y())
-      ur.Set(ur.X(),seg->Position().Y()+seg->Dimensions().Y());
+    if (ur.X()<seg->GetPositionX()+seg->GetDimensionX())
+      ur.Set(seg->GetPositionX()+seg->GetDimensionX(),ur.Y());
+    if (ur.Y()<seg->GetPositionY()+seg->GetDimensionY())
+      ur.Set(ur.X(),seg->GetPositionY()+seg->GetDimensionY());
   }
   return (ur-bl)/2.;
 }
@@ -181,10 +186,10 @@ void AliMpSubZonePainter::Draw(Option_t *option)
 
 	for (Int_t iRowSeg=0;iRowSeg<fSubZone->GetNofRowSegments();++iRowSeg){
 	  gr->Push();
-	  AliMpVRowSegment *rowSegment = fSubZone->GetRowSegment(iRowSeg);
+	  AliMpVRowSegment* rowSegment = fSubZone->GetRowSegment(iRowSeg);
 
-	  gr->SetPadPosForReal(rowSegment->Position(),
-			       rowSegment->Dimensions());
+	  gr->SetPadPosForReal(TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY()),
+			       TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY()));
 	  gr->SetColor(GetColor());
 	  DrawObject(rowSegment,option+1);
       
@@ -215,7 +220,8 @@ void AliMpSubZonePainter::Paint(Option_t *option)
   for (Int_t iRowSeg=0;iRowSeg<fSubZone->GetNofRowSegments();++iRowSeg){
     AliMpVRowSegment *rowSegment = fSubZone->GetRowSegment(iRowSeg);
     TVector2 pos,dim;
-    gr->RealToPad(rowSegment->Position(),rowSegment->Dimensions(),
+    gr->RealToPad(TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY()),
+                  TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY()),
 		  pos,dim);
     gPad->PaintBox(pos.X()-dim.X(),pos.Y()-dim.Y(),
 		   pos.X()+dim.X(),pos.Y()+dim.Y());

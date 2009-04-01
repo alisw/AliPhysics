@@ -56,10 +56,10 @@ class AliMpSlat : public TObject
   AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMpSlat();
 
-  TVector2 Dimensions() const;
-  
-  /// Return position
-  TVector2 Position() const { return fPosition; }
+  /// Return x position
+  Double_t  GetPositionX() const { return fPositionX; }
+  /// Return y position
+  Double_t  GetPositionY() const { return fPositionY; }
   
   const char* GetName() const;
   
@@ -125,7 +125,7 @@ class AliMpSlat : public TObject
   /** This is normally only used by triggerSlats, as for ST345 slats,
     the position is DX(),DY() simply.
     */
-  void ForcePosition(const TVector2& pos);
+  void ForcePosition(Double_t x, Double_t y);
   
   /// Return the plane type
   AliMp::PlaneType PlaneType() const { return fPlaneType; }
@@ -149,10 +149,11 @@ class AliMpSlat : public TObject
   Int_t fMaxNofPadsY; ///< Maximum number of pads in y direction
   mutable AliMpExMap fManuMap; ///< map of int to AliMpMotifPosition*
   TObjArray fPCBs; ///< array of AliMpPCB*
-  TVector2 fPosition; ///< Position of the slat center.
+  Double_t fPositionX; ///< x Position of the slat center.
+  Double_t fPositionY; ///< y Position of the slat center.
   Int_t fNofPads; ///< number of pads in this slat
   
-  ClassDef(AliMpSlat,2) // A slat for stations 3,4,5
+  ClassDef(AliMpSlat,3) // A slat for stations 3,4,5
 };
 
 #endif

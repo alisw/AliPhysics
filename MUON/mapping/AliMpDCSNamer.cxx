@@ -684,9 +684,10 @@ AliMpDCSNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
   const AliMpMotifMap* motifMap = sector->GetMotifMap();
   const AliMpMotifPosition* motifPos = motifMap->FindMotifPosition(manuId);
 
-  TVector2 lowerLeft(motifPos->Position()-motifPos->Dimensions());
+  Double_t lowerLeftX 
+    = motifPos->GetPositionX()-motifPos->GetDimensionX();
   
-  Double_t x = lowerLeft.X()*10.0; // cm -> mm
+  Double_t x = lowerLeftX*10.0; // cm -> mm
   Int_t isector(-1);
 
   AliMq::Station12Type stationType = AliMpDEManager::GetStation12Type(detElemId);

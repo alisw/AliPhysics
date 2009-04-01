@@ -98,16 +98,16 @@ AliMUONManuPainter::AliMUONManuPainter(const AliMUONAttPainter& att,
       const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(detElemId,manuId);
       
       h->Local2Global(fDetElemId,
-                      mp->Position().X() -slat->Position().X(),
-                      mp->Position().Y() -slat->Position().Y(),
+                      mp->GetPositionX() -slat->GetPositionX(),
+                      mp->GetPositionY() -slat->GetPositionY(),
                       0,
                       x,y,z);
     }
     else if ( stationType != AliMp::kStationTrigger ) 
     {
       h->Local2Global(fDetElemId,
-                      mp->Position().X(),
-                      mp->Position().Y(),
+                      mp->GetPositionX(),
+                      mp->GetPositionY(),
                       0,
                       x,y,z);      
     }

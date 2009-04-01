@@ -445,7 +445,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 
   //reflectZ = false;
   reflectZ = true;
-  TVector2 offset = kSector2->Position();
+  TVector2 offset = TVector2(kSector2->GetPositionX(), kSector2->GetPositionY());
   where = TVector3(where.X()+offset.X(), where.Y()+offset.Y(), 0.); 
       // Add the half-pad shift of the non-bending plane wrt bending plane
       // (The shift is defined in the mapping as sector offset)
@@ -1983,10 +1983,11 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
       if ( value == 0 ){ //if this is a normal segment (ie. not part of <specialMap>)
       
         // create the cathode part
-        CreatePlaneSegment(segNum, seg->Dimensions(), seg->GetNofMotifs());
+        CreatePlaneSegment(segNum, TVector2(seg->GetDimensionX(),seg->GetDimensionY()), 
+                           seg->GetNofMotifs());
   
-        posX = where.X() + seg->Position().X();
-        posY = where.Y() + seg->Position().Y();
+        posX = where.X() + seg->GetPositionX();
+        posY = where.Y() + seg->GetPositionY();
         posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
         gMC->Gspos(PlaneSegmentName(segNum).Data(), 1, 
 	           QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
@@ -2004,8 +2005,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	  if ( sector->GetDirection() == AliMp::kX) copyNo += fgkDaughterCopyNoOffset;
   
           // Position
-          posX = where.X() + motifPos->Position().X() + fgkOffsetX;
-          posY = where.Y() + motifPos->Position().Y() + fgkOffsetY;
+          posX = where.X() + motifPos->GetPositionX() + fgkOffsetX;
+          posY = where.Y() + motifPos->GetPositionY() + fgkOffsetY;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
         }  
@@ -2041,8 +2042,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
           // place the hole for the motif, wrt the requested rotation angle
           Int_t rot = ( spMot.GetRotAngle()<0.1 ) ? reflZ:rotMat;
 
-          posX = where.X() + motifPos->Position().X() + spMot.GetDelta().X();
-          posY = where.Y() + motifPos->Position().Y() + spMot.GetDelta().Y();
+          posX = where.X() + motifPos->GetPositionX() + spMot.GetDelta().X();
+          posY = where.Y() + motifPos->GetPositionY() + spMot.GetDelta().Y();
           posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
           // Shift the hole for special motif 46 to avoid debording into S047
           if ( copyNo == 2070 ) {

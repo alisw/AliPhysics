@@ -259,7 +259,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   in >> i;
   while (!in.eof()){
     in >>j >>x >> y;
-    res->SetPadDimensions(i,j,TVector2(x*scale/2.,y*scale/2.));
+    res->SetPadDimensions(i,j,x*scale/2.,y*scale/2.);
     in >> i;
   }
   res->CalculateDimensions();

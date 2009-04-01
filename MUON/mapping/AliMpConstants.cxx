@@ -28,7 +28,6 @@
 #include "AliMpConstants.h"
 
 #include <TMath.h>
-#include <TVector2.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpConstants)
@@ -69,14 +68,14 @@ Bool_t  AliMpConstants::IsEqual(Double_t length1, Double_t length2)
   return TMath::Abs(length1 - length2) < fgkLengthTolerance;
 }  
 
-
 //_____________________________________________________________________________
-Bool_t  AliMpConstants::IsEqual(const TVector2& v1, const TVector2& v2)
+Bool_t  AliMpConstants::IsEqual(Double_t v1x, Double_t v1y, 
+                                Double_t v2x, Double_t v2y)
 {
 /// Compare x, y vector coordinates within the length tolerance.
 
-  return (  TMath::Abs(v1.X() - v2.X()) 
-          + TMath::Abs(v1.Y() - v2.Y())) < 2.*fgkLengthTolerance;
+  return (  TMath::Abs(v1x - v2x) 
+          + TMath::Abs(v1y - v2y)) < 2.*fgkLengthTolerance;
 }
 
 //_____________________________________________________________________________

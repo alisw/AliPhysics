@@ -15,8 +15,6 @@
 
 #include "AliMpVRowSegment.h"
 
-#include <TVector2.h>
-
 class AliMpRow;
 class AliMpVMotif;
 
@@ -35,17 +33,20 @@ class AliMpRowSegment : public AliMpVRowSegment
     virtual Double_t  HalfSizeY() const;
 
     // find methods
-    virtual AliMpVMotif*  FindMotif(const TVector2& position) const;    
-    virtual Int_t     FindMotifPositionId(const TVector2& position) const;
+    virtual AliMpVMotif*  FindMotif(Double_t x, Double_t y) const;    
+    virtual Int_t     FindMotifPositionId(Double_t x, Double_t y) const;
     virtual Bool_t    HasMotifPosition(Int_t motifPositionId) const;
-    virtual TVector2  MotifCenter(Int_t motifPositionId) const;
+    virtual void      MotifCenter(Int_t motifPositionId,
+                                  Double_t& x, Double_t& y) const;
 
     // geometry
-    virtual TVector2  Position() const;
-    virtual TVector2  Dimensions() const;
+    virtual Double_t  GetPositionX() const;
+    virtual Double_t  GetPositionY() const;
+    virtual Double_t  GetDimensionX() const;
+    virtual Double_t  GetDimensionY() const;
 
     // set methods
-    virtual void      SetOffset(const TVector2& offset);
+    virtual void      SetOffset(Double_t x, Double_t y);
     virtual void      SetGlobalIndices(AliMpRow* rowBefore);
     virtual Int_t     SetIndicesToMotifPosition(Int_t i, MpPair_t indices);
 
@@ -66,19 +67,21 @@ class AliMpRowSegment : public AliMpVRowSegment
     Double_t  LastMotifCenterX() const;
     Double_t  MotifCenterX(Int_t motifPositionId) const;
     Double_t  MotifCenterY(Int_t motifPositionId) const;
-    Bool_t    IsInside(const TVector2& position, Bool_t warn = true) const;
+    Bool_t    IsInside(Double_t x, Double_t y, Bool_t warn = true) const;
 
     // data members
     Int_t         fNofMotifs;  ///< number of motifs
     MpPair_t      fLPadOffset; ///< the offset in nof pads 
-    TVector2      fOffset;     ///< \brief the position of the centre of the first motif
-                               /// (x wtr to left border, y wtr to row center)
+    Double_t      fOffsetX;    ///< \brief the x position of the centre of the first motif
+                               /// wrt to left border
+    Double_t      fOffsetY;    ///< \brief the y position of the centre of the first motif
+                               /// wrt to row center
     AliMpRow*     fRow;        ///< the row containing this segment 
     AliMpVMotif*  fMotif;      ///< the motif 
     Int_t   fMotifPositionId;  ///< the first motif position id
     Int_t   fMotifPositionDId; ///< +1 if ids are increasing, -1 if decreasing
     
-  ClassDef(AliMpRowSegment,1)  // Row segment
+  ClassDef(AliMpRowSegment,2)  // Row segment
 };
 
 #endif //ALI_MP_ROW_SEGMENT_H

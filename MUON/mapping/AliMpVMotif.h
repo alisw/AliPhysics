@@ -17,7 +17,6 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <TVector2.h>
 
 class AliMpMotifType;
 class AliMpConnection;
@@ -32,28 +31,42 @@ class AliMpVMotif : public TObject
   // Access methods
   AliMpMotifType  *GetMotifType() const;
   TString          GetID() const;
+
                    /// Return the number of pad dimensions
   virtual Int_t    GetNofPadDimensions() const=0;
-                   /// Return the i-th pad dimensions
-  virtual TVector2 GetPadDimensions(Int_t i) const=0;
+                   /// Return the i-th pad x dimension
+  virtual Double_t GetPadDimensionX(Int_t i) const=0;
+                   /// Return the i-th pad y dimension
+  virtual Double_t GetPadDimensionY(Int_t i) const=0;
+
                    /// Return the dimensions of the pad specified by localIndices
-  virtual TVector2 GetPadDimensionsByIndices(MpPair_t localIndices) const=0;
+  virtual void GetPadDimensionsByIndices(MpPair_t localIndices,
+                   Double_t& dx, Double_t& dy) const=0;
                    /// Return the dimensions of the pad specified by localIndices
-  virtual TVector2 GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal) const=0;
+  virtual void GetPadDimensionsByIndices(Int_t ixLocal, Int_t iyLocal,
+                   Double_t& dx, Double_t& dy) const=0;
 
   // Geometry
-                   /// Return dimensions
-  virtual TVector2 Dimensions() const=0;
+                   /// Return x dimensions
+  virtual Double_t DimensionX() const=0;
+                   /// Return y dimensions
+  virtual Double_t DimensionY() const=0;
 
   // Other methods
-  AliMpConnection *FindConnectionByLocalPos(const TVector2& localPos) const;
-  virtual void Print(Option_t *option) const;
-                   /// Return local position of the pad specified by local indices
-  virtual TVector2 PadPositionLocal(MpPair_t localIndices) const=0;
-                   /// Return local position of the pad specified by local indices
-  virtual TVector2 PadPositionLocal(Int_t ixLocal, Int_t iyLocal) const=0;
+                   /// Fill local position of the pad specified by local indices
+  virtual void PadPositionLocal(MpPair_t localIndices,
+                      Double_t& posx, Double_t& posy  ) const=0;
+                   /// Fill local position of the pad specified by local indices
+  virtual void PadPositionLocal(Int_t ixLocal, Int_t iyLocal,
+                      Double_t& posx, Double_t& posy  ) const=0;
+
+  AliMpConnection *FindConnectionByLocalPos(
+                      Double_t localPosX, Double_t localPosY) const;
+
                    /// Return local indices of the pad specified by local position
-  virtual MpPair_t PadIndicesLocal(const TVector2& localPos) const=0;
+  virtual MpPair_t PadIndicesLocal(Double_t localPosX, Double_t localPosY) const=0;
+
+  virtual void Print(Option_t *option) const;
 
  private:
   /// Not implemented

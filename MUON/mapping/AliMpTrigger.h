@@ -25,10 +25,6 @@
 #  include "TObjArray.h"
 #endif
 
-#ifndef ROOT_TVector2
-#  include "TVector2.h"
-#endif
-
 #ifndef ALI_MP_PLANE_TYPE
 #  include "AliMpPlaneType.h"
 #endif
@@ -56,7 +52,10 @@ public:
   Double_t DX() const;
   Double_t DY() const;
   
-  TVector2 Position() const;
+  /// Return x position
+  Double_t  GetPositionX() const { return DX(); }
+  /// Return y position
+  Double_t  GetPositionY() const { return DY(); }
   
   AliMpSlat* GetLayer(int layer) const;
   AliMpVSegmentation* GetLayerSegmentation(int layer) const;
@@ -72,7 +71,10 @@ public:
 
   AliMp::PlaneType PlaneType() const;
   
-  TVector2 Dimensions() const;
+  // Return the x dimension (half-sizes) of that slat (cm)
+  Double_t  GetDimensionX() const { return DX(); }
+  // Return the y dimension (half-sizes) of that slat (cm)
+  Double_t  GetDimensionY() const { return DY(); }
   
 private:
     

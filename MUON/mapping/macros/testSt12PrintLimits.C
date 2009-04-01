@@ -61,10 +61,10 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
     AliMpRow* row = sector->GetRow(irow);
     low  = row->GetLowIndicesLimit();
     high = row->GetHighIndicesLimit();
-    rlow = TVector2(row->Position().X()-row->Dimensions().X(),
-                    row->Position().Y()-row->Dimensions().Y());
-    rhigh = TVector2(row->Position().X()+row->Dimensions().X(),
-                     row->Position().Y()+row->Dimensions().Y());
+    rlow = TVector2(row->GetPositionX()-row->GetDimensionX(),
+                    row->GetPositionY()-row->GetDimensionY());
+    rhigh = TVector2(row->GetPositionX()+row->GetDimensionX(),
+                     row->GetPositionY()+row->GetDimensionY());
     out<<"_______________________________________________________________"<<endl;
     out<<"Row "<<irow<<" between ";
     AliMp::PairPut(out, low)  <<  " and "; 
@@ -79,10 +79,10 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
       low  = seg->GetLowIndicesLimit();
       high = seg->GetHighIndicesLimit();
-      rlow = TVector2(seg->Position().X()-seg->Dimensions().X(),
-                      seg->Position().Y()-seg->Dimensions().Y());
-      rhigh = TVector2(seg->Position().X()+seg->Dimensions().X(),
-                       seg->Position().Y()+seg->Dimensions().Y());
+      rlow = TVector2(seg->GetPositionX()-seg->GetDimensionX(),
+                      seg->GetPositionY()-seg->GetDimensionY());
+      rhigh = TVector2(seg->GetPositionX()+seg->GetDimensionX(),
+                       seg->GetPositionY()+seg->GetDimensionY());
       out<<"-----------------------------------------------------------"<<endl;
       out<<"     Segment "<<iseg<<" between ";
       AliMp::PairPut(out, low)  <<  " and "; 
@@ -101,10 +101,10 @@ void testPrintLimits(AliMq::Station12Type station, AliMp::PlaneType  plane,
       
         low  = motifPos->GetLowIndicesLimit();
         high = motifPos->GetHighIndicesLimit();
-        rlow = TVector2(motifPos->Position().X()-motif->Dimensions().X(),
-                  motifPos->Position().Y()-motif->Dimensions().Y());
-        rhigh = TVector2(motifPos->Position().X()+motif->Dimensions().X(),
-                   motifPos->Position().Y()+motif->Dimensions().Y());
+        rlow = TVector2(motifPos->GetPositionX()-motif->DimensionX(),
+                  motifPos->GetPositionY()-motif->DimensionY());
+        rhigh = TVector2(motifPos->GetPositionX()+motif->DimensionX(),
+                   motifPos->GetPositionY()+motif->DimensionY());
         out<<"          Motif "<<imotif<<" between ";
         AliMp::PairPut(out, low)  <<  " and "; 
         AliMp::PairPut(out, high) 

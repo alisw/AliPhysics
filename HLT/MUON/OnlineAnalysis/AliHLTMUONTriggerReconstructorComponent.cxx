@@ -989,8 +989,8 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 						}
 						
 						// Get the global coodinates of the pad.
-						Float_t lx = pad.Position().X();
-						Float_t ly = pad.Position().Y();
+						Float_t lx = pad.GetPositionX();
+						Float_t ly = pad.GetPositionY();
 						Float_t gx, gy, gz;
 						detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
 						

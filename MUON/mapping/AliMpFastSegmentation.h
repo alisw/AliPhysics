@@ -28,10 +28,6 @@
 #  include "TExMap.h"
 #endif
 
-#ifndef ROOT_TVector2
-#  include "TVector2.h"
-#endif
-
 class AliMpMotifPosition;
 
 class AliMpFastSegmentation : public AliMpVSegmentation
@@ -52,7 +48,7 @@ public:
   
   virtual AliMpPad PadByLocation(Int_t manuId, Int_t manuChannel, Bool_t warning = true) const;
   virtual AliMpPad PadByIndices (Int_t ix, Int_t iy, Bool_t warning = true) const;
-  virtual AliMpPad PadByPosition(const TVector2& position, Bool_t warning = true) const;
+  virtual AliMpPad PadByPosition(Double_t x, Double_t y, Bool_t warning = true) const;
   
   virtual Int_t  MaxPadIndexX() const;
   virtual Int_t  MaxPadIndexY() const;
@@ -64,9 +60,11 @@ public:
   
   virtual AliMp::PlaneType PlaneType() const;
   
-  virtual TVector2 Dimensions() const;
+  virtual Double_t  GetDimensionX() const;
+  virtual Double_t  GetDimensionY() const;
     
-  virtual TVector2 Position() const;
+  virtual Double_t  GetPositionX() const;
+  virtual Double_t  GetPositionY() const;
 
   virtual AliMpMotifPosition* MotifPosition(Int_t manuId) const;
 
@@ -91,9 +89,10 @@ private:
   TObjArray fMotifPositions; ///< array of AliMpMotifPositions (not owner)
   mutable TExMap fIxIy; ///< map of (ix,iy) -> index in array above
   mutable TExMap fManuId; ///< map of (manuid) -> index in array above
-  TVector2 fPosition; ///< to compute pad positions
-  
-  ClassDef(AliMpFastSegmentation,1) // Variant implementation for AliMpVSegmentation
+  Double_t fPositionX; ///< to compute pad positions
+  Double_t fPositionY; ///< to compute pad positions
+ 
+  ClassDef(AliMpFastSegmentation,2) // Variant implementation for AliMpVSegmentation
 };
 
 #endif

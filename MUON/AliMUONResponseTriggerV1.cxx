@@ -157,7 +157,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
       = AliMpSegmentation::Instance()
         ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
 
-    AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
+    AliMpPad pad = seg->PadByPosition(x,y,kFALSE);
     Int_t ix = pad.GetIx();
     Int_t iy = pad.GetIy();
     
@@ -202,10 +202,10 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 		
 		Int_t dix=-(ixNeigh-ix);
 		Int_t diy=-(iyNeigh-iy);
-		Float_t xlocalNeigh = padNeigh.Position().X();
-		Float_t ylocalNeigh = padNeigh.Position().Y();
-		Float_t dpx = padNeigh.Dimensions().X();
-		Float_t dpy = padNeigh.Dimensions().Y();
+		Float_t xlocalNeigh = padNeigh.GetPositionX();
+		Float_t ylocalNeigh = padNeigh.GetPositionY();
+		Float_t dpx = padNeigh.GetDimensionX();
+		Float_t dpy = padNeigh.GetDimensionY();
 		Float_t distX = TMath::Abs((Float_t)dix) * ((Float_t)dix * dpx + xlocalNeigh - x);
 		Float_t distY = TMath::Abs((Float_t)diy) * ((Float_t)diy * dpy + ylocalNeigh - y);
 		Float_t dist = TMath::Sqrt(distX*distX+distY*distY);

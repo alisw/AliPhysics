@@ -363,7 +363,9 @@ AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
       Int_t cath = pad->Cathode();
       Int_t cath1 = TMath::Even(cath);
       // Check for edge effect (missing pads on the _other_ cathode)
-      AliMpPad mpPad = fkSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
+      AliMpPad mpPad =
+      fkSegmentation[cath1]->PadByPosition(pad->Position().X(),
+                                           pad->Position().Y(),kFALSE);
       if (!mpPad.IsValid()) continue;
       //if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
       if (nFlags == 1 && pad->Charge() < 20) continue;
@@ -536,7 +538,7 @@ AliMUONClusterFinderMLEM::CheckOverlaps()
                         cout << " Surface = " << pixelI->Size(0)*pixelI->Size(1)*4 << endl;
                         pixelJ->Print();
                         cout << " Surface = " << pixelJ->Size(0)*pixelJ->Size(1)*4 << endl;
-                        cout << " Area surface = " << area.Dimensions().X()*area.Dimensions().Y()*4 << endl;
+                        cout << " Area surface = " << area.GetDimensionX()*area.*4 << endl;
                         cout << "-------" << endl;
                         );
 	*/        
@@ -608,19 +610,22 @@ void AliMUONClusterFinderMLEM::BuildPixArrayOneCathode(AliMUONCluster& cluster)
   if (cluster.Multiplicity(0) == 0) cath0 = 1;
   else if (cluster.Multiplicity(1) == 0) cath1 = 0;
 
-  TVector2 leftDown = cluster.Area(cath0).LeftDownCorner();
-  TVector2 rightUp = cluster.Area(cath0).RightUpCorner();
-  min[0] = leftDown.X();
-  min[1] = leftDown.Y();
-  max[0] = rightUp.X();
-  max[1] = rightUp.Y();
+
+  Double_t leftDownX, leftDownY;
+  cluster.Area(cath0).LeftDownCorner(leftDownX, leftDownY);
+  Double_t rightUpX, rightUpY;
+  cluster.Area(cath0).RightUpCorner(rightUpX, rightUpY);
+  min[0] = leftDownX;
+  min[1] = leftDownY;
+  max[0] = rightUpX;
+  max[1] = rightUpY;;
   if (cath1 != cath0) {
-    leftDown = cluster.Area(cath1).LeftDownCorner();
-    rightUp = cluster.Area(cath1).RightUpCorner();
-    min[0] = TMath::Max (min[0], leftDown.X());
-    min[1] = TMath::Max (min[1], leftDown.Y());
-    max[0] = TMath::Min (max[0], rightUp.X());
-    max[1] = TMath::Min (max[1], rightUp.Y());
+    cluster.Area(cath1).LeftDownCorner(leftDownX, leftDownY);
+    cluster.Area(cath1).RightUpCorner(rightUpX, rightUpY);
+    min[0] = TMath::Max (min[0], leftDownX);
+    min[1] = TMath::Max (min[1], leftDownY);
+    max[0] = TMath::Min (max[0], rightUpX);
+    max[1] = TMath::Min (max[1], rightUpY);
   }
 
   // Adjust limits
@@ -1661,11 +1666,11 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
       if (inb == 0) pos.Set (pad->X() + idir * (pad->DX()+fgkDistancePrecision), pad->Y());
       else pos.Set (pad->X(), pad->Y() + idir * (pad->DY()+fgkDistancePrecision));
       //AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kTRUE);
-      AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos,kFALSE);
+      AliMpPad mppad = fkSegmentation[nonb[inb]]->PadByPosition(pos.X(), pos.Y(),kFALSE);
       if (!mppad.IsValid()) continue; // non-existing pad
       AliMUONPad muonPad(fDetElemId, nonb[inb], mppad.GetIx(), mppad.GetIy(), 
-			 mppad.Position().X(), mppad.Position().Y(), 
-			 mppad.Dimensions().X(), mppad.Dimensions().Y(), 0);
+			 mppad.GetPositionX(), mppad.GetPositionY(), 
+			 mppad.GetDimensionX(), mppad.GetDimensionY(), 0);
       if (inb == 0) muonPad.SetCharge(TMath::Min (amax[j]/100, 5.));
       //else muonPad.SetCharge(TMath::Min (amax[j]/15, fgkZeroSuppression));
       else muonPad.SetCharge(TMath::Min (amax[j]/15, 6.));

@@ -103,8 +103,8 @@ AliMpSlatPadIterator::Intersect(const AliMpArea& a, const AliMpArea& b) const
   Double_t xmax = TMath::Min(a.RightBorder(),b.RightBorder());
   Double_t ymin = TMath::Max(a.DownBorder(),b.DownBorder());
   Double_t ymax = TMath::Min(a.UpBorder(),b.UpBorder());
-  AliMpArea c( TVector2( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ),
-							 TVector2( (xmax-xmin)/2.0, (ymax-ymin)/2.0 ) );
+  AliMpArea c( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ,
+               (xmax-xmin)/2.0, (ymax-ymin)/2.0 );
 	
   AliDebug(4,Form("a intersect b = (%7.2f,%7.2f;%7.2f,%7.2f)",
 									c.LeftBorder(),c.DownBorder(),c.RightBorder(),c.UpBorder()));

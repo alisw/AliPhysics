@@ -84,7 +84,8 @@ Int_t AliMpZonePainter::DistancetoPrimitive(Int_t x, Int_t y)
       AliMpVRowSegment* seg = sub->GetRowSegment(iseg);
 
       TVector2 pos,dim;
-      gr->RealToPad(seg->Position(),seg->Dimensions(),pos,dim);
+      gr->RealToPad(TVector2(seg->GetPositionX(), seg->GetPositionY()),
+                    TVector2(seg->GetDimensionX(),seg->GetDimensionY()),pos,dim);
 
       if ( IsInside(point,pos,dim) ){
 	Double_t value = (point-pos).Mod();
@@ -121,15 +122,15 @@ TVector2 AliMpZonePainter::GetPosition() const
       AliMpVRowSegment* seg = sub->GetRowSegment(iseg);
 
       // update the bottom-left corner
-      if (bl.X()>seg->Position().X()-seg->Dimensions().X())
-	bl.Set(seg->Position().X()-seg->Dimensions().X(),bl.Y());
-      if (bl.Y()>seg->Position().Y()-seg->Dimensions().Y())
-	bl.Set(bl.X(),seg->Position().Y()-seg->Dimensions().Y());
+      if (bl.X()>seg->GetPositionX()-seg->GetDimensionX())
+	bl.Set(seg->GetPositionX()-seg->GetDimensionX(),bl.Y());
+      if (bl.Y()>seg->GetPositionY()-seg->GetDimensionY())
+	bl.Set(bl.X(),seg->GetPositionY()-seg->GetDimensionY());
       // update the upper-right corner
-      if (ur.X()<seg->Position().X()+seg->Dimensions().X())
-	ur.Set(seg->Position().X()+seg->Dimensions().X(),ur.Y());
-      if (ur.Y()<seg->Position().Y()+seg->Dimensions().Y())
-	ur.Set(ur.X(),seg->Position().Y()+seg->Dimensions().Y());
+      if (ur.X()<seg->GetPositionX()+seg->GetDimensionX())
+	ur.Set(seg->GetPositionX()+seg->GetDimensionX(),ur.Y());
+      if (ur.Y()<seg->GetPositionY()+seg->GetDimensionY())
+	ur.Set(ur.X(),seg->GetPositionY()+seg->GetDimensionY());
     } //iseg
   } //isub
   return (ur+bl)/2.;
@@ -152,15 +153,15 @@ TVector2 AliMpZonePainter::GetDimensions() const
       AliMpVRowSegment* seg = sub->GetRowSegment(iseg);
 
       // update the bottom-left corner
-      if (bl.X()>seg->Position().X()-seg->Dimensions().X())
-	bl.Set(seg->Position().X()-seg->Dimensions().X(),bl.Y());
-      if (bl.Y()>seg->Position().Y()-seg->Dimensions().Y())
-	bl.Set(bl.X(),seg->Position().Y()-seg->Dimensions().Y());
+      if (bl.X()>seg->GetPositionX()-seg->GetDimensionX())
+	bl.Set(seg->GetPositionX()-seg->GetDimensionX(),bl.Y());
+      if (bl.Y()>seg->GetPositionY()-seg->GetDimensionY())
+	bl.Set(bl.X(),seg->GetPositionY()-seg->GetDimensionY());
       // update the upper-right corner
-      if (ur.X()<seg->Position().X()+seg->Dimensions().X())
-	ur.Set(seg->Position().X()+seg->Dimensions().X(),ur.Y());
-      if (ur.Y()<seg->Position().Y()+seg->Dimensions().Y())
-	ur.Set(ur.X(),seg->Position().Y()+seg->Dimensions().Y());
+      if (ur.X()<seg->GetPositionX()+seg->GetDimensionX())
+	ur.Set(seg->GetPositionX()+seg->GetDimensionX(),ur.Y());
+      if (ur.Y()<seg->GetPositionY()+seg->GetDimensionY())
+	ur.Set(ur.X(),seg->GetPositionY()+seg->GetDimensionY());
     } //iseg
   } //isub
   return (ur-bl)/2.;
@@ -195,10 +196,10 @@ void AliMpZonePainter::Draw(Option_t *option)
 	  for (Int_t iRowSeg=0;iRowSeg<subZone->GetNofRowSegments();++iRowSeg){
 	    AliMpVRowSegment *rowSegment = subZone->GetRowSegment(iRowSeg);
 
-	    TVector2 bl = rowSegment->Position();
-	    bl-=rowSegment->Dimensions();
-	    TVector2 ur = rowSegment->Position();
-	    ur+=rowSegment->Dimensions();
+	    TVector2 bl = TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY());
+	    bl -= TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY());
+	    TVector2 ur = TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY());
+	    ur += TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY());
 	    
 	    if (bl.X()<blx) blx=bl.X();
 	    if (bl.Y()<bly) bly=bl.Y();
@@ -242,7 +243,8 @@ void AliMpZonePainter::Paint(Option_t *option)
     for (Int_t iRowSeg=0;iRowSeg<subZone->GetNofRowSegments();++iRowSeg){
       AliMpVRowSegment *rowSegment = subZone->GetRowSegment(iRowSeg);
       TVector2 pos,dim;
-      gr->RealToPad(rowSegment->Position(),rowSegment->Dimensions(),
+      gr->RealToPad(TVector2(rowSegment->GetPositionX(),rowSegment->GetPositionY()),
+                    TVector2(rowSegment->GetDimensionX(),rowSegment->GetDimensionY()),
 		    pos,dim);
       gPad->PaintBox(pos.X()-dim.X(),pos.Y()-dim.Y(),
 		     pos.X()+dim.X(),pos.Y()+dim.Y());

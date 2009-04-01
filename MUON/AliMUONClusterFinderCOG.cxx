@@ -114,7 +114,7 @@ AliMUONClusterFinderCOG::ComputePosition(AliMUONCluster& cluster)
     {
       AliMUONPad* pad = cluster.Pad(i);
       TVector2 padPosition = pad->Position();
-      AliMpArea area(pad->Position(),pad->Dimensions());
+      AliMpArea area(pad->X(), pad->Y(), pad->DX(), pad->DY());
       xmin = TMath::Min(area.LeftBorder(),xmin);
       xmax = TMath::Max(area.RightBorder(),xmax);
       ymin = TMath::Min(area.DownBorder(),ymin);

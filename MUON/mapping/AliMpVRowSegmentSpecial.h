@@ -49,23 +49,32 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     //
     // find methods
     //
-    virtual AliMpVMotif*  FindMotif(const TVector2& position) const;    
-    virtual Int_t     FindMotifPositionId(const TVector2& position) const;
+    virtual AliMpVMotif*  FindMotif(Double_t x, Double_t y) const;    
+    virtual Int_t     FindMotifPositionId(Double_t x, Double_t y) const;
     virtual Bool_t    HasMotifPosition(Int_t motifPositionId) const;
-    virtual TVector2  MotifCenter(Int_t motifPositionId) const;
+
+    virtual void  MotifCenter(Int_t motifPositionId,
+                              Double_t& x, Double_t& y) const;
 
     //
     // geometry
     //
-    /// Return the position of the row segment centre.
-    virtual TVector2  Position() const = 0;
-    virtual TVector2  Dimensions() const;
+    /// Return the x position of the row segment centre.
+    virtual Double_t  GetPositionX() const = 0;
+    /// Return the y position of the row segment centre.
+    virtual Double_t  GetPositionY() const = 0;
+
+
+    /// Return the x dimension of the row segment centre.
+    virtual Double_t  GetDimensionX() const;
+    /// Return the y dimension of the row segment centre.
+    virtual Double_t  GetDimensionY() const;
 
     //
     // set methods
     //
     /// Calculate offset
-    virtual void   SetOffset(const TVector2& /*offset*/) {}
+    virtual void   SetOffset(Double_t /*x*/, Double_t /*y*/) {}
     /// Set global indices limits.
     virtual void   SetGlobalIndices(AliMpRow* rowBefore) = 0;
     /// Set global indices to i-th motif position and returns next index in x.
@@ -82,7 +91,8 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
   protected:
     // methods
     /// Return the coordinates of the motif specified with the given motif position Id                                           \n
-    virtual TVector2  MotifCenterSlow(Int_t motifPositionId) const = 0;
+    virtual void  MotifCenterSlow(Int_t motifPositionId, 
+                                  Double_t& x, Double_t& y) const = 0;
     AliMpPadRow*         FindPadRow(Double_t y) const;
     AliMpVPadRowSegment* FindPadRowSegment(Int_t motifPositionId) const;
     MpPair_t             FindRelativeLowIndicesOf(Int_t motifPositionId) const;

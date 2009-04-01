@@ -278,7 +278,7 @@ void AliMUONTriggerCircuit::FillXstrips(const Int_t icol,
                        cout << " ix,iy=" << icol-1 << "," << istrip << endl;
                        );
     }
-    Float_t yDim = pad.Dimensions().Y(); // half size! 
+    Float_t yDim = pad.GetDimensionY(); // half size! 
 
     XYGlobal(pad,xyGlobal);
     
@@ -361,7 +361,7 @@ void AliMUONTriggerCircuit::FillYstrips(const Int_t iFirstStrip, const Int_t iLa
 			 cout << " ix,iy=" << istrip << "," << 0 << endl;
 			 );
     }
-    Float_t xDim = pad.Dimensions().X(); // half size!
+    Float_t xDim = pad.GetDimensionX(); // half size!
 
     XYGlobal(pad,xyGlobal);
     
@@ -389,8 +389,8 @@ void AliMUONTriggerCircuit::XYGlobal(const AliMpPad& pad,
 /// note: no need for transformation for pad dimensions
   
   // get the pad position and dimensions
-  Double_t xl1 = pad.Position().X();
-  Double_t yl1 = pad.Position().Y();
+  Double_t xl1 = pad.GetPositionX();
+  Double_t yl1 = pad.GetPositionY();
   Double_t zg1 = 0;
   
   // positions from local to global 

@@ -225,10 +225,10 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 
     if(iLoc==0){
       AliMpPad pad1 = seg[1]->PadByLocation(iBoard,0,kFALSE);
-      yWidthSlat = pad1.Dimensions().Y();
+      yWidthSlat = pad1.GetDimensionY();
       AliMpPad pad0 = seg[0]->PadByLocation(iBoard,0,kFALSE);
-      xOffsetLine = TMath::Abs(pad0.Position().X()) + pad0.Dimensions().X();
-      xWidthCol = 2.* pad0.Dimensions().X();
+      xOffsetLine = TMath::Abs(pad0.GetPositionX()) + pad0.GetDimensionX();
+      xWidthCol = 2.* pad0.GetDimensionX();
     }
 
     // Get ideal global position of DetElemId center
@@ -257,11 +257,11 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 
 	if (!pad.IsValid()) continue;
 
-	xWidth = pad.Dimensions().X();
-	yWidth = pad.Dimensions().Y();
-	xcPad = sign * (pad.Position().X() + xOffsetLine);
+	xWidth = pad.GetDimensionX();
+	yWidth = pad.GetDimensionY();
+	xcPad = sign * (pad.GetPositionX() + xOffsetLine);
 	if(line==4) xcPad += 0.75 * sign * xWidthCol;
-	ycPad = pad.Position().Y() + yOffsetLine;
+	ycPad = pad.GetPositionY() + yOffsetLine;
 
 	if(cath==iCath){
 	  x1 = xcPad - xWidth + kShiftX;

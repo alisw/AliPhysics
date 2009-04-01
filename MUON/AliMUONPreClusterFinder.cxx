@@ -178,7 +178,7 @@ AliMUONPreClusterFinder::GetNextPad(Int_t cathode) const
     AliMUONPad* pad;
     while ( ( pad = static_cast<AliMUONPad*>(next())) )
     {
-      AliMpArea padArea(pad->Position(),pad->Dimensions());
+      AliMpArea padArea(pad->X(), pad->Y(), pad->DX(), pad->DY());
       
       if (fArea.Overlap(padArea)) return pad;
 

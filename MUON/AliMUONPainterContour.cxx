@@ -64,10 +64,8 @@ fYmax(area.UpBorder())
   /// ctor
   fPolyLines->SetOwner(kTRUE);
   TPolyLine* line = new TPolyLine(5);
-  Double_t x = area.Position().X();
-  Double_t y = area.Position().Y();
-  Double_t dx = area.Dimensions().X();
-  Double_t dy = area.Dimensions().Y();
+  Double_t x, y, dx, dy;
+  area.GetParameters(x, y, dx, dy);
   line->SetPoint(0,x-dx,y-dy);
   line->SetPoint(1,x-dx,y+dy);
   line->SetPoint(2,x+dx,y+dy);
@@ -136,8 +134,8 @@ AliMUONPainterContour::Area() const
   /// Return the area covered by this contour (i.e. the area that
   /// contains all the poylines)
   
-  return AliMpArea( TVector2( (fXmax+fXmin)/2.0, (fYmax+fYmin)/2.0 ),
-                    TVector2( TMath::Abs(fXmax-fXmin)/2.0, TMath::Abs(fYmax-fYmin)/2.0 ) );
+  return AliMpArea( ( fXmax+fXmin)/2.0, (fYmax+fYmin)/2.0 ,
+                    TMath::Abs(fXmax-fXmin)/2.0, TMath::Abs(fYmax-fYmin)/2.0 );
 }
 
 //______________________________________________________________________________

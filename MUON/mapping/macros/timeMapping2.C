@@ -2,9 +2,6 @@
 
 /// An alternative macro to time the PadBy*** methods of AliMpVSegmentation 
 /// implementation(s) which can handle AliMpPad not derived from TObject.
-///
-/// By L. Aphecetche, Subatech
-/// Modified by I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -26,8 +23,6 @@
 #include <TObjArray.h>
 #include <TVector2.h>
 #include <TTree.h>
-
-#include <vector>
 
 // The line below should be commented if you want to try this macro
 // on revision before 31082 (where AliMpVSegmentation did not have the HasPadBy...
@@ -65,7 +60,7 @@ void ByPosition(const AliMpVSegmentation* seg, Int_t detElemId,
   std::vector<AliMpPad>::const_iterator it; 
   for ( it = pads.begin(); it != pads.end(); it++ ) 
   {
-    seg->PadByPosition(it->Position(),kFALSE);
+    seg->PadByPosition(it->GetPositionX(),it->GetPositionY(),kFALSE);
   }
 }
 

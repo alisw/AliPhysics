@@ -141,8 +141,8 @@ AliMUONGeometryTransformer::CreateDEAreas() const
     AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
     
     Double_t xl(0.0), yl(0.0), zl(0.0);
-    Double_t dx(seg->Dimensions().X());
-    Double_t dy(seg->Dimensions().Y());
+    Double_t dx(seg->GetDimensionX());
+    Double_t dy(seg->GetDimensionY());
     
     if ( stationType == AliMp::kStation12 ) 
     {
@@ -163,7 +163,8 @@ AliMUONGeometryTransformer::CreateDEAreas() const
         while ( !itp->IsDone() ) 
         {
           AliMpPad pad = itp->CurrentItem();
-          AliMpArea a(pad.Position(),pad.Dimensions());
+          AliMpArea a(pad.GetPositionX(),pad.GetPositionY(),
+                      pad.GetDimensionX(), pad.GetDimensionY());
           xmin = TMath::Min(xmin,a.LeftBorder());
           xmax = TMath::Max(xmax,a.RightBorder());
           ymin = TMath::Min(ymin,a.DownBorder());
@@ -186,7 +187,7 @@ AliMUONGeometryTransformer::CreateDEAreas() const
       Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
     }
     
-    fDEAreas->Add(detElemId,new AliMpArea(TVector2(xg,yg),TVector2(dx,dy)));
+    fDEAreas->Add(detElemId,new AliMpArea(xg,yg,dx,dy));
     
     it.Next();
   }

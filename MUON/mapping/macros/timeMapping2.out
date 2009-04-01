@@ -1,19 +1,19 @@
 I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/OCDB
 W-AliCDBManager::Get: Run number explicitly set in query: CDB cache temporarily disabled!
 AliMpDCSNamer
-   ManuId2PCBIndex  R:0.0547s C:0.0500s (9676 slices)
-   ManuId2Sector  R:0.0340s C:0.0400s (7152 slices)
+   ManuId2PCBIndex  R:0.0508s C:0.0200s (9676 slices)
+   ManuId2Sector  R:0.0333s C:0.0100s (7152 slices)
 AliMpDetElement
    AddManu 
-         R:1.2222s C:1.1300s (16828 slices)
-        slat R:0.6143s C:0.5500s (9676 slices)
-        st12 R:0.4522s C:0.4000s (7152 slices)
+         R:0.8576s C:0.8800s (16828 slices)
+        slat R:0.4115s C:0.4700s (9676 slices)
+        st12 R:0.3050s C:0.3200s (7152 slices)
 AliMpFastSegmentation
    AliMpFastSegmentation 
-        AliMpSectorSegmentation R:0.0538s C:0.0400s (4 slices)
-        AliMpSlatSegmentation R:0.0713s C:0.0600s (38 slices)
+        AliMpSectorSegmentation R:0.0372s C:0.0400s (4 slices)
+        AliMpSlatSegmentation R:0.0429s C:0.0500s (38 slices)
 General
-   timeMapping2 Load mapping R:2.3564s C:2.2400s (1 slices)
+   timeMapping2 Load mapping R:1.9410s C:1.8600s (1 slices)
 ************************************
 *    Row   * pI.fMemRe *     sname *
 ************************************
@@ -21,18 +21,18 @@ General
 *        1 *       107 *         1 *
 ************************************
 AliMpMotifMap
-   GetMotifPosition  R:0.0664s C:0.0600s (7152 slices)
+   GetMotifPosition  R:0.0658s C:0.0400s (7152 slices)
 General
    ByIndices 
-        HasPadByIndices-St12 R:0.1396s C:0.1700s (32 slices)
-        HasPadByIndices-St345 R:0.1047s C:0.1400s (280 slices)
-        PadByIndices-St12 R:0.3865s C:0.3700s (32 slices)
-        PadByIndices-St345 R:0.3665s C:0.3100s (280 slices)
+        HasPadByIndices-St12 R:0.1392s C:0.0700s (32 slices)
+        HasPadByIndices-St345 R:0.1130s C:0.1600s (280 slices)
+        PadByIndices-St12 R:0.2121s C:0.2600s (32 slices)
+        PadByIndices-St345 R:0.1927s C:0.1800s (280 slices)
    ByLocation 
-        HasPadByLocation-St12 R:0.0567s C:0.0400s (7152 slices)
-        HasPadByLocation-St345 R:0.0765s C:0.0500s (9676 slices)
-        PadByLocation-St12 R:0.2710s C:0.3000s (7152 slices)
-        PadByLocation-St345 R:0.3558s C:0.3500s (9676 slices)
+        HasPadByLocation-St12 R:0.0631s C:0.0500s (7152 slices)
+        HasPadByLocation-St345 R:0.0834s C:0.0400s (9676 slices)
+        PadByLocation-St12 R:0.1475s C:0.1200s (7152 slices)
+        PadByLocation-St345 R:0.2035s C:0.1700s (9676 slices)
    ByPosition 
-        PadByPosition-St12 R:6.9957s C:7.0200s (32 slices)
-        PadByPosition-St345 R:1.6446s C:1.6300s (280 slices)
+        PadByPosition-St12 R:3.2882s C:3.2800s (32 slices)
+        PadByPosition-St345 R:0.6711s C:0.5700s (280 slices)

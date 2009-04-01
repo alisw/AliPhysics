@@ -1647,10 +1647,10 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	  if (!pad.IsValid()) continue;
 	  
 	  // get the pad position and dimensions
-	  xlocal1 = pad.Position().X();
-	  ylocal1 = pad.Position().Y();
-	  xlocal2 = pad.Dimensions().X();
-	  ylocal2 = pad.Dimensions().Y();
+	  xlocal1 = pad.GetPositionX();
+	  ylocal1 = pad.GetPositionY();
+	  xlocal2 = pad.GetDimensionX();
+	  ylocal2 = pad.GetDimensionY();
 	  
 	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
@@ -1703,10 +1703,10 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	  if (!pad.IsValid()) continue;
 	  
 	  // get the pad position and dimensions
-	  xlocal1 = pad.Position().X();
-	  ylocal1 = pad.Position().Y();
-	  xlocal2 = pad.Dimensions().X();
-	  ylocal2 = pad.Dimensions().Y();
+	  xlocal1 = pad.GetPositionX();
+	  ylocal1 = pad.GetPositionY();
+	  xlocal2 = pad.GetDimensionX();
+	  ylocal2 = pad.GetDimensionY();
 	  
 	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)

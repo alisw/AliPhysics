@@ -317,17 +317,16 @@ AliMUONPainterHelper::GeneratePadStore(Int_t detElemId)
     {
       AliMpPad pad = it->CurrentItem();
       
-      TVector2 localPosition(pad.Position());
       Double_t x,y,z;
-      Local2Global(detElemId,localPosition.X(),localPosition.Y(),0,
+      Local2Global(detElemId,pad.GetPositionX(),pad.GetPositionY(),0,
                    x,y,z);
       Int_t manuId = pad.GetManuId();
       Int_t manuChannel = pad.GetManuChannel();
       AliMUONVCalibParam* param = fPadStore->Get(detElemId,manuId);
       param->SetValueAsDouble(manuChannel,0,x);
       param->SetValueAsDouble(manuChannel,1,y);
-      param->SetValueAsDouble(manuChannel,2,pad.Dimensions().X());
-      param->SetValueAsDouble(manuChannel,3,pad.Dimensions().Y());
+      param->SetValueAsDouble(manuChannel,2,pad.GetDimensionX());
+      param->SetValueAsDouble(manuChannel,3,pad.GetDimensionY());
       it->Next();
     }          
     delete it;
@@ -762,9 +761,9 @@ AliMUONPainterHelper::PadByExplodedPosition(Int_t detElemId, Int_t manuId,
 
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
   
-  AliDebug(1,Form("dx,dy=%7.3f,%7.3f",seg->Dimensions().X(),seg->Dimensions().Y()));
+  AliDebug(1,Form("dx,dy=%7.3f,%7.3f",seg->GetDimensionX(),seg->GetDimensionY()));
   
-  return seg->PadByPosition(TVector2(xl,yl));
+  return seg->PadByPosition(xl,yl);
 }
 
 //_____________________________________________________________________________

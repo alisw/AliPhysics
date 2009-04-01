@@ -14,12 +14,12 @@
 #define ALI_MP_AREA_H
 
 #include <TObject.h>
-#include <TVector2.h>
 
 class AliMpArea : public TObject
 {
  public:
-  AliMpArea(const TVector2& position, const TVector2& dimensions);
+  AliMpArea(Double_t x, Double_t y, 
+            Double_t dx, Double_t dy);
   AliMpArea(const AliMpArea& rhs);
   AliMpArea();
   virtual ~AliMpArea();
@@ -33,10 +33,10 @@ class AliMpArea : public TObject
   Double_t UpBorder() const;
   Double_t DownBorder() const;
 
-  TVector2 LeftDownCorner() const;
-  TVector2 LeftUpCorner() const;
-  TVector2 RightDownCorner() const;
-  TVector2 RightUpCorner() const;
+  void LeftDownCorner(Double_t& x, Double_t& y) const;
+  void LeftUpCorner(Double_t& x, Double_t& y) const;
+  void RightDownCorner(Double_t& x, Double_t& y) const;
+  void RightUpCorner(Double_t& x, Double_t& y) const;
 
   AliMpArea Intersect(const AliMpArea& area) const;
   Bool_t    Overlap(const AliMpArea& area) const;
@@ -45,18 +45,24 @@ class AliMpArea : public TObject
   void Print(Option_t* opt="") const;
 
   // get methods
-  TVector2  Position() const;
-  TVector2  Dimensions() const;    
+  void      GetParameters(Double_t& x, Double_t& y,
+                          Double_t& dx, Double_t& dy) const;
+  Double_t  GetPositionX() const;
+  Double_t  GetPositionY() const;
+  Double_t  GetDimensionX() const;    
+  Double_t  GetDimensionY() const;    
   Bool_t    IsValid() const;
   
   
  private:
   // data members
-  TVector2  fPosition;  ///<  position
-  TVector2  fDimensions;///<  dimensions (half lengths)
-  Bool_t    fValidity;  ///<  validity
+  Double_t  fPositionX;  ///<  x position
+  Double_t  fPositionY;  ///<  y position
+  Double_t  fDimensionX; ///<   x dimension (half lengths)
+  Double_t  fDimensionY; ///<   y dimension (half lengths)
+  Bool_t    fValidity;   ///<  validity
 
-  ClassDef(AliMpArea,1) //utility class for area iterators
+  ClassDef(AliMpArea,2) //utility class for area iterators
 };
 
 ostream& operator << (ostream &stream,const AliMpArea& area);
@@ -64,9 +70,13 @@ ostream& operator << (ostream &stream,const AliMpArea& area);
 // inline functions
 
                  /// Return position
-inline TVector2  AliMpArea::Position() const   { return fPosition; }
+inline Double_t  AliMpArea::GetPositionX() const   { return fPositionX; }
+                 /// Return position
+inline Double_t  AliMpArea::GetPositionY() const   { return fPositionY; }
                  /// Return dimensions
-inline TVector2  AliMpArea::Dimensions() const { return fDimensions; }    
+inline Double_t  AliMpArea::GetDimensionX() const { return fDimensionX; }    
+                 /// Return dimensions
+inline Double_t  AliMpArea::GetDimensionY() const { return fDimensionY; }    
                  /// Return validity
 inline Bool_t    AliMpArea::IsValid() const    { return fValidity; }
 

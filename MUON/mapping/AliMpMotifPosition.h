@@ -16,14 +16,12 @@
 #include "AliMpVIndexed.h"
 #include "AliMpVMotif.h"
 
-#include <TVector2.h>
-
 class AliMpVPadIterator;
 
 class AliMpMotifPosition : public AliMpVIndexed
 {
  public:
-  AliMpMotifPosition(Int_t id, AliMpVMotif* motif, TVector2 position);
+  AliMpMotifPosition(Int_t id, AliMpVMotif* motif, Double_t x, Double_t y);
   AliMpMotifPosition();
   virtual ~AliMpMotifPosition();
 
@@ -37,13 +35,15 @@ class AliMpMotifPosition : public AliMpVIndexed
   Bool_t       HasPadByManuChannel(Int_t manuChannel) const;
 
   // Geometry
-  TVector2 Position() const;
-  TVector2 Dimensions() const;
+  Double_t  GetPositionX() const;
+  Double_t  GetPositionY() const;
+  Double_t  GetDimensionX() const;
+  Double_t  GetDimensionY() const;
   
   // Sets the ID (which is the MANU ID)
   void SetID(Int_t id); 
   // Sets the position.
-  void SetPosition(const TVector2& pos);
+  void SetPosition(Double_t x, Double_t y);
 
   void Print(Option_t* option="") const;
 
@@ -55,11 +55,12 @@ class AliMpMotifPosition : public AliMpVIndexed
 
   // methods
   // data members 
-  Int_t         fID;       ///< identifier=manu id
-  AliMpVMotif*  fMotif;    ///< motif
-  TVector2      fPosition; ///< position
+  Int_t         fID;        ///< identifier=manu id
+  AliMpVMotif*  fMotif;     ///< motif
+  Double_t      fPositionX; ///< x position
+  Double_t      fPositionY; ///< y position
 
-  ClassDef(AliMpMotifPosition,1) // A motif position
+  ClassDef(AliMpMotifPosition,2) // A motif position
 };
 
 // inline functions
@@ -73,11 +74,17 @@ inline AliMpVMotif*  AliMpMotifPosition::GetMotif() const
 { return fMotif; }
  
 /// Return position
-inline TVector2 AliMpMotifPosition::Position() const
-{ return fPosition; }
+inline Double_t AliMpMotifPosition::GetPositionX() const
+{ return fPositionX; }
 
-/// Return dimensions
-inline TVector2 AliMpMotifPosition::Dimensions() const
-{ return fMotif->Dimensions(); }
+inline Double_t AliMpMotifPosition::GetPositionY() const
+{ return fPositionY; }
+
+/// Return position
+inline Double_t AliMpMotifPosition::GetDimensionX() const
+{ return fMotif->DimensionX(); }
+
+inline Double_t AliMpMotifPosition::GetDimensionY() const
+{ return fMotif->DimensionY(); }
 
 #endif //ALI_MP_MOTIF_POSITION_H

@@ -66,17 +66,18 @@ AliMpVMotif::~AliMpVMotif()
 
 //_____________________________________________________________________________
 AliMpConnection* 
-AliMpVMotif::FindConnectionByLocalPos(const TVector2& localPos) const
+AliMpVMotif::FindConnectionByLocalPos(Double_t localPosX, Double_t localPosY) const
 {
   /// Return the local indices from the local
   /// (x,y) position
 
-  MpPair_t padIndices = PadIndicesLocal(localPos);
+  MpPair_t padIndices = PadIndicesLocal(localPosX, localPosY);
   if ( padIndices > 0 )
     return fMotifType->FindConnectionByLocalIndices(padIndices);
   else
     return 0;
 }
+
 //_____________________________________________________________________________
 void AliMpVMotif::Print(Option_t *option) const
 {
@@ -99,33 +100,12 @@ void AliMpVMotif::Print(Option_t *option) const
     for (Int_t j=fMotifType->GetNofPadsY()-1;j>=0;j--){
       for (Int_t i=0;i<fMotifType->GetNofPadsX();i++){
 	if (fMotifType->FindConnectionByLocalIndices(i,j)){
-	  TVector2 pos = PadPositionLocal(i,j);
-	  cout<<setw(11)<<Form("(%.1f,%.1f)",pos.X(),pos.Y());
+          Double_t posx, posy;
+	  PadPositionLocal(i,j, posx, posy);
+	  cout<<setw(11)<<Form("(%.1f,%.1f)",posx,posy);
 	}
       }
       cout<<endl;
     }
   } else fMotifType->Print(option);
 }
-
-/*
-//_____________________________________________________________________________
-void AliMpVMotif::PadLIndicesLocal(const TVector2& localPos, 
-                                  Int_t& ixLocal, Int_t& iyLocal) const
-{
-  /// Fill the pad indices ix from a given local position
-  /// or (-1,-1) if this position doesn't correspond to any valid
-  /// connection
-
-  MpPair_t indices = PadIndicesLocal(localPos);
-  
-  if ( indices < 0 ) {
-    ixLocal = -1;
-    iyLocal = -1;
-  }
-  else {
-    ixLocal = AliMp::PairFirst(indices);
-    iyLocal = AliMp::PairSecond(indices);
-  }  
-}
-*/

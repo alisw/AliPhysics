@@ -100,8 +100,8 @@ AliMpPCBPainter::Draw(Option_t* option)
         AliMpMotifPosition* pos = fPCB->GetMotifPosition(i);
         
         gr->Push();
-        gr->SetPadPosForReal(pos->Position(),
-                             pos->Dimensions());
+        gr->SetPadPosForReal(TVector2(pos->GetPositionX(),pos->GetPositionY()),
+                             TVector2(pos->GetDimensionX(),pos->GetDimensionY()));
         gr->SetColor(gr->GetColor()+i);
         
         DrawObject(pos,option+1);

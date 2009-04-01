@@ -372,7 +372,7 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
     
     AliMpArea area(painter->Area());
     
-    if ( area.Dimensions().X() > 1.2*area.Dimensions().Y() ) 
+    if ( area.GetDimensionX() > 1.2*area.GetDimensionY() ) 
     {
       nx = 1;
       ny = 2;

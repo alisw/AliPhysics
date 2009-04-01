@@ -37,21 +37,25 @@ ClassImp(AliMpArea)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpArea::AliMpArea(const TVector2& position, const TVector2& dimensions)
+AliMpArea::AliMpArea(Double_t x, Double_t y, 
+                     Double_t dx, Double_t dy)
   : TObject(),
-    fPosition(position),
-    fDimensions(dimensions),
+    fPositionX(x),
+    fPositionY(y),
+    fDimensionX(dx),
+    fDimensionY(dy),
     fValidity(true) 
 {
 /// Standard constructor
 
   // Check dimensions
-  if (  fDimensions.X() < - AliMpConstants::LengthTolerance() || 
-        fDimensions.Y() < - AliMpConstants::LengthTolerance() || 
-      ( fDimensions.X() < AliMpConstants::LengthTolerance() && 
-        fDimensions.Y() < AliMpConstants::LengthTolerance() ) )
+  if (  fDimensionX < - AliMpConstants::LengthTolerance() || 
+        fDimensionY < - AliMpConstants::LengthTolerance() || 
+      ( fDimensionX < AliMpConstants::LengthTolerance() && 
+        fDimensionY < AliMpConstants::LengthTolerance() ) )
   {
-    fDimensions = TVector2();
+    fDimensionX = 0.;
+    fDimensionY = 0.;
     fValidity = false;
   }  
 }
@@ -59,8 +63,10 @@ AliMpArea::AliMpArea(const TVector2& position, const TVector2& dimensions)
 //_____________________________________________________________________________
 AliMpArea::AliMpArea()
   : TObject(),
-    fPosition(TVector2()),
-    fDimensions(TVector2()), 
+    fPositionX(0.),
+    fPositionY(0.),
+    fDimensionX(0.),
+    fDimensionY(0.),
     fValidity(false) 
 {
 /// Default constructor
@@ -69,8 +75,10 @@ AliMpArea::AliMpArea()
 //_____________________________________________________________________________
 AliMpArea::AliMpArea(const AliMpArea& rhs):
   TObject(rhs),
-  fPosition(rhs.fPosition),
-  fDimensions(rhs.fDimensions), 
+  fPositionX(rhs.fPositionX),
+  fPositionY(rhs.fPositionY),
+  fDimensionX(rhs.fDimensionX), 
+  fDimensionY(rhs.fDimensionY), 
   fValidity(rhs.fValidity) 
 {
 /// Copy constructor
@@ -97,8 +105,10 @@ AliMpArea& AliMpArea::operator = (const AliMpArea& right)
   // base class assignment
   TObject::operator=(right);
 
-  fPosition = right.fPosition;
-  fDimensions = right.fDimensions;
+  fPositionX = right.fPositionX;
+  fPositionY = right.fPositionY;
+  fDimensionX = right.fDimensionX;
+  fDimensionY = right.fDimensionY;
   fValidity = right.fValidity;
 
   return *this;
@@ -113,7 +123,7 @@ Double_t AliMpArea::LeftBorder() const
 {
 /// Return the position of the left edge.
 
-  return fPosition.X() - fDimensions.X();
+  return fPositionX - fDimensionX;
 }
 
 //_____________________________________________________________________________
@@ -121,7 +131,7 @@ Double_t AliMpArea::RightBorder() const
 {
 /// Return the position of right edge.
 
-  return fPosition.X() + fDimensions.X();
+  return fPositionX + fDimensionX;
 }
 
 //_____________________________________________________________________________
@@ -129,7 +139,7 @@ Double_t AliMpArea::UpBorder() const
 {
 /// Return the position of the up edge.
 
-  return fPosition.Y() + fDimensions.Y();
+  return fPositionY + fDimensionY;
 }
 
 //_____________________________________________________________________________
@@ -137,40 +147,44 @@ Double_t AliMpArea::DownBorder() const
 {
 /// Return the position of the down edge.
 
-  return fPosition.Y() - fDimensions.Y();
+  return fPositionY - fDimensionY;
 }
 
 //_____________________________________________________________________________
-TVector2 AliMpArea::LeftDownCorner() const
+void AliMpArea::LeftDownCorner(Double_t& x, Double_t& y) const
 {
 /// Return position of the left down corner.
 
-  return TVector2(LeftBorder(), DownBorder());
+  x = LeftBorder();
+  y = DownBorder();
 }  
 
 //_____________________________________________________________________________
-TVector2 AliMpArea::LeftUpCorner() const
+void AliMpArea::LeftUpCorner(Double_t& x, Double_t& y) const
 {
 /// Return position of the left up corner.
 
-  return TVector2(LeftBorder(), UpBorder());
+  x = LeftBorder();
+  y = UpBorder();
 }  
 
 //_____________________________________________________________________________
-TVector2 AliMpArea::RightDownCorner() const
+void AliMpArea::RightDownCorner(Double_t& x, Double_t& y) const
 {
 /// Return position of the right down corner.
 
-  return TVector2(RightBorder(), DownBorder());
+  x = RightBorder();
+  y = DownBorder();
 }  
 
 
 //_____________________________________________________________________________
-TVector2 AliMpArea::RightUpCorner() const
+void AliMpArea::RightUpCorner(Double_t& x, Double_t& y) const
 {
 /// Return position of the right up corner.
 
-  return TVector2(RightBorder(), UpBorder());
+  x = RightBorder();
+  y = UpBorder();
 }  
 
 //_____________________________________________________________________________
@@ -207,8 +221,8 @@ AliMpArea AliMpArea::Intersect(const AliMpArea& area) const
   Double_t ymin = TMath::Max(area.DownBorder(),DownBorder());
   Double_t ymax = TMath::Min(area.UpBorder(),UpBorder());
 
-  return AliMpArea( TVector2( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ),
-                    TVector2( (xmax-xmin)/2.0, (ymax-ymin)/2.0 ) );
+  return AliMpArea( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ,
+                    (xmax-xmin)/2.0, (ymax-ymin)/2.0 );
 }
 
 //_____________________________________________________________________________
@@ -254,14 +268,25 @@ AliMpArea::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
+void      
+AliMpArea::GetParameters(Double_t& x, Double_t& y,
+                         Double_t& dx, Double_t& dy) const
+{                         
+  x = fPositionX;
+  y = fPositionY;
+  dx = fDimensionX;
+  dy = fDimensionY;
+}  
+
+//_____________________________________________________________________________
 ostream& operator<< (ostream &stream,const AliMpArea& area)
 {
 /// Output streaming
 
   stream << "Area: position: (" 
-         << area.Position().X() << ", " << area.Position().Y() << ") " 
+         << area.GetPositionX() << ", " << area.GetPositionY() << ") " 
 	 << " dimensions: (" 
-         << area.Dimensions().X() << ", " << area.Dimensions().Y() << ") " 
+         << area.GetDimensionX() << ", " << area.GetDimensionY() << ") " 
   << " valid: " << (area.IsValid()==true ? "YES":"NO")
 	 << endl;
   return stream;

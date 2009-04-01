@@ -121,15 +121,16 @@ void AliMpSectorAreaHPadIterator::MoveUp()
 {
 /// Increase the current row position and searches the first valid pad.
 
-  Double_t dy = fkSegmentation->GetMinPadDimensions().Y();
+  Double_t dy = fkSegmentation->GetMinPadDimensionY();
 
-  while ( !fCurrentPad.IsValid() && 
-          fCurrentRowPosition + dy < fkArea.UpBorder())
+  while ( ! fCurrentPad.IsValid() && 
+            fCurrentRowPosition + dy < fkArea.UpBorder() )
   {
     fCurrentRowPosition += 2.*dy;
-    TVector2 position = TVector2(fkArea.LeftBorder(), fCurrentRowPosition);
     
-    fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.RightBorder());
+    fCurrentPad 
+      = fkSegmentation->PadByDirection(fkArea.LeftBorder(), fCurrentRowPosition, 
+                                       fkArea.RightBorder());
   } 
 }
 
@@ -143,23 +144,26 @@ void AliMpSectorAreaHPadIterator::First()
 /// Reset the iterator, so that it points to the first available
 /// pad in the area
 
-  if (!fkSegmentation) {
+  if ( ! fkSegmentation ) {
     Fatal("First", "Segmentation is not defined");
     return;
   }  
 
   // Start position = left down corner of the area
   //
+  
   fCurrentRowPosition = fkArea.DownBorder();
-  TVector2 position(fkArea.LeftDownCorner()); 
+   
+  Double_t posx, posy;
+  fkArea.LeftDownCorner(posx, posy); 
 
-  fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.RightBorder());
+  fCurrentPad = fkSegmentation->PadByDirection(posx, posy, fkArea.RightBorder());
 
   MoveUp();
   
   // Set the row position to the center of pad
   //
-  if (fCurrentPad.IsValid()) fCurrentRowPosition = fCurrentPad.Position().Y();
+  if (fCurrentPad.IsValid()) fCurrentRowPosition = fCurrentPad.GetPositionY();
 }
 
 //______________________________________________________________________________
@@ -167,17 +171,18 @@ void AliMpSectorAreaHPadIterator::Next()
 {
 /// Move the iterator to the next valid pad.
 
-  if (!IsValid()) return;
+  if ( ! IsValid() ) return;
   
   // Start position = right board of current pad + little step
-  //
-  TVector2 position 
-    = fCurrentPad.Position() 
-    + TVector2(fCurrentPad.Dimensions().X() + AliMpConstants::LengthStep(), 0.);
 
-  fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.RightBorder());  
+  fCurrentPad 
+    = fkSegmentation->PadByDirection(
+        fCurrentPad.GetPositionX() + fCurrentPad.GetDimensionX() + 
+          AliMpConstants::LengthStep(), 
+        fCurrentPad.GetPositionY(), 
+        fkArea.RightBorder());  
 
-  if (fCurrentPad.IsValid()) return;
+  if ( fCurrentPad.IsValid() ) return;
 
   MoveUp();
 }

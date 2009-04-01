@@ -128,8 +128,8 @@ fDetElemId(detElemId)
   {
     const AliMpSector* sector = h->GetSector(DetElemId(),planeType);
 
-    Double_t xl(sector->Dimensions().X());
-    Double_t yl(sector->Dimensions().Y());
+    Double_t xl(sector->GetDimensionX());
+    Double_t yl(sector->GetDimensionY());
     
     h->Local2Global(fDetElemId,xl,yl,0.0,x,y,z);
   }

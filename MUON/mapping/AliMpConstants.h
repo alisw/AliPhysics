@@ -16,8 +16,6 @@
 #include <TObject.h>
 #include "AliMpPlaneType.h"
 
-class TVector2;
-
 class AliMpConstants : public TObject
 {
  public:
@@ -26,7 +24,8 @@ class AliMpConstants : public TObject
 
   // static compare methods
   static Bool_t  IsEqual(Double_t length1, Double_t length2);
-  static Bool_t  IsEqual(const TVector2& v1, const TVector2& v2);
+  static Bool_t  IsEqual(Double_t v1x, Double_t v1y, 
+                         Double_t v2x, Double_t v2y);
 
   // static get methods
   static Double_t LengthTolerance();

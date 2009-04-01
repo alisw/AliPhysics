@@ -238,10 +238,13 @@ void AliMpRow::SetMotifPositions()
         // Get values 
 	Int_t motifPositionId = rowSegment->GetMotifPositionId(k);
 	AliMpVMotif* motif = rowSegment->GetMotif(k);
-	TVector2 position = rowSegment->MotifCenter(motifPositionId);
+        
+        Double_t posx, posy;
+	rowSegment->MotifCenter(motifPositionId, posx, posy);
        
         AliMpMotifPosition* motifPosition 
-	  = new AliMpMotifPosition(motifPositionId, motif, position);
+	  = new AliMpMotifPosition(motifPositionId, motif, posx, posy);
+
         // set the initial value to of HighIndicesLimit() Invalid()
         // (this is used for calculation of indices in case of
         // special row segments)
@@ -329,33 +332,41 @@ void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection,
 }
 
 //_____________________________________________________________________________
-TVector2  AliMpRow::Position() const
+Double_t  AliMpRow::GetPositionX() const
 {
 /// Return the position of the row centre.
 
-  Double_t x = (GetRowSegment(0)->LeftBorderX() +
-                GetRowSegment(GetNofRowSegments()-1)->RightBorderX())/2.;
-		    
-  Double_t y = fOffsetY;  
-    
-  return TVector2(x, y);   
+  return ( GetRowSegment(0)->LeftBorderX() +
+           GetRowSegment(GetNofRowSegments()-1)->RightBorderX() )/2.;
 }
 
 //_____________________________________________________________________________
-TVector2  AliMpRow::Dimensions() const
+Double_t  AliMpRow::GetPositionY() const
+{
+/// Return the position of the row centre.
+
+  return fOffsetY;  
+}
+
+//_____________________________________________________________________________
+Double_t  AliMpRow::GetDimensionX() const
 {
 /// Return the maximum halflengths of the row in x, y.
 
-  Double_t x = (GetRowSegment(GetNofRowSegments()-1)->RightBorderX() -
-                GetRowSegment(0)->LeftBorderX())/2.;
-                  
-  Double_t y = GetRowSegment(0)->HalfSizeY();  
-    
-  return TVector2(x, y);   
+  return ( GetRowSegment(GetNofRowSegments()-1)->RightBorderX() -
+           GetRowSegment(0)->LeftBorderX() )/2.;
 }
 
 //_____________________________________________________________________________
-void AliMpRow::SetRowSegmentOffsets(const TVector2& offset)
+Double_t  AliMpRow::GetDimensionY() const
+{
+/// Return the maximum halflengths of the row in x, y.
+
+  return GetRowSegment(0)->HalfSizeY();  
+}
+
+//_____________________________________________________________________________
+void AliMpRow::SetRowSegmentOffsets(Double_t offsetx)
 {
 /// Set the row segments offsets in X .
 
@@ -370,9 +381,9 @@ void AliMpRow::SetRowSegmentOffsets(const TVector2& offset)
      if (previous) 
       offsetX = previous->RightBorderX();
     else
-      offsetX = offset.X();  
+      offsetX = offsetx;  
   
-    rowSegment->SetOffset(TVector2(offsetX, 0.));
+    rowSegment->SetOffset(offsetX, 0.);
     previous = rowSegment;  
   }
 }

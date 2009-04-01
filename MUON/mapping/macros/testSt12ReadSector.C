@@ -38,6 +38,7 @@ void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
   cout << endl;
 
   // Find row test
+/*
   if (plane == AliMp::kBendingPlane)
     cout << "0th row low border " << sector->FindRow(TVector2(0., 0.))->GetID() << endl;
   if (plane == AliMp::kNonBendingPlane)
@@ -50,8 +51,10 @@ void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
   if (plane == AliMp::kNonBendingPlane)
     cout << "12th row up border " << sector->FindRow(TVector2(0., 84.84))->GetID() << endl;
   cout << endl;
-  
+*/ 
+ 
   // Find motif position test
+/*  
   Int_t ids[15] = { 19, 14, 9, 32, 36, 136, 187, 212, 207, 220, 1, 131, 239, 243, 250 };  
   for (Int_t i=0; i<15 ; i++) {
     Int_t id = ids[i];
@@ -69,8 +72,9 @@ void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
     }      
   }
   cout << endl;
-
+*/
   // Find motif by coordinates test
+/*
   for (Int_t i=0; i<2 ; i++) {
     TVector2 pos(0.5, 18.6 - i*2.);  // i=0 in motif 1001,
                                      // i=1 outside (below) motif 1001
@@ -82,8 +86,9 @@ void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
     else  
       cout << " motif not found " << endl;
   }
-
+*/
   // Find special motif test
+/*
   if (plane == AliMp::kNonBendingPlane) {
   
     Int_t ids[6] = { 20, 46, 47, 74, 75, 76 };
@@ -104,7 +109,7 @@ void testReadSector(AliMq::Station12Type station, AliMp::PlaneType plane)
     }
   }             
   cout << endl;
-
+*/
   // Motif map
   sector->GetMotifMap()->Print();    
   

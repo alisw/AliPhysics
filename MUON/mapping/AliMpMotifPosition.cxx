@@ -35,11 +35,12 @@ ClassImp(AliMpMotifPosition)
 
 //______________________________________________________________________________
 AliMpMotifPosition::AliMpMotifPosition(Int_t id, AliMpVMotif* motif, 
-                                       TVector2 position)
+                                       Double_t x, Double_t y)
   : AliMpVIndexed(),
     fID(id),
     fMotif(motif),
-    fPosition(position) 
+    fPositionX(x), 
+    fPositionY(y) 
 {
 /// Standard constructor
 }
@@ -49,7 +50,8 @@ AliMpMotifPosition::AliMpMotifPosition()
   : AliMpVIndexed(), 
     fID(0),
     fMotif(0),
-    fPosition(TVector2(0.,0.)) 
+    fPositionX(0.), 
+    fPositionY(0.) 
 {
 /// Default constructor
 }
@@ -102,11 +104,12 @@ AliMpMotifPosition::SetID(Int_t id)
 
 //_____________________________________________________________________________
 void
-AliMpMotifPosition::SetPosition(const TVector2& pos)
+AliMpMotifPosition::SetPosition(Double_t x, Double_t y)
 {
 /// Set position
 
-  fPosition = pos;
+  fPositionX = x;
+  fPositionY = y;
 }
 
 //_____________________________________________________________________________
@@ -117,8 +120,8 @@ AliMpMotifPosition::Print(Option_t* option) const
 
   cout << "MOTIFPOSITION " << GetID() << " MOTIF " 
        << GetMotif()->GetID()
-       << " at (" << Position().X() << "," 
-       << Position().Y() << ") "
+       << " at (" << GetPositionX() << "," 
+       << GetPositionY() << ") "
        << " iMin=(" << GetLowLimitIx()
        << "," << GetLowLimitIy()
        << ") iMax=(" << GetHighLimitIx()

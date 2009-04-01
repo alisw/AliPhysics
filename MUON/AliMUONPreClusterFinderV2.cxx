@@ -20,6 +20,7 @@
 #include "AliLog.h"
 #include "AliMUONCluster.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpPad.h"
 #include "TClonesArray.h"
 #include "TVector2.h"
 #include "AliMUONPad.h"

@@ -78,22 +78,24 @@ TVector2 AliMpSectorPainter::GetPosition() const
   AliMpRow* row = fSector->GetRow(0);
 
   // bl = bottom left position;
-  TVector2 bl = row->Position()-row->Dimensions();
+  TVector2 bl = TVector2(row->GetPositionX(), row->GetPositionY())-
+                TVector2(row->GetDimensionX(), row->GetDimensionY());
   // ur = upper right position
-  TVector2 ur = row->Position()+row->Dimensions();;
+  TVector2 ur = TVector2(row->GetPositionX(), row->GetPositionY())+
+                TVector2(row->GetDimensionX(), row->GetDimensionY());;
 
   for (Int_t irow=1;irow<fSector->GetNofRows();++irow){
     row = fSector->GetRow(irow);
     // update the bottom-left corner
-    if (bl.X()>row->Position().X()-row->Dimensions().X())
-      bl.Set(row->Position().X()-row->Position().X(),bl.Y());
-    if (bl.Y()>row->Position().Y()-row->Dimensions().Y())
-      bl.Set(bl.X(),row->Position().Y()-row->Dimensions().Y());
+    if (bl.X()>row->GetPositionX()-row->GetDimensionX())
+      bl.Set(row->GetPositionX()-row->GetPositionX(),bl.Y());
+    if (bl.Y()>row->GetPositionY()-row->GetDimensionY())
+      bl.Set(bl.X(),row->GetPositionY()-row->GetDimensionY());
     // update the upper-right corner
-    if (ur.X()<row->Position().X()+row->Dimensions().X())
-      ur.Set(row->Position().X()+row->Dimensions().X(),ur.Y());
-    if (ur.Y()<row->Position().Y()+row->Dimensions().Y())
-      ur.Set(ur.X(),row->Position().Y()+row->Dimensions().Y());
+    if (ur.X()<row->GetPositionX()+row->GetDimensionX())
+      ur.Set(row->GetPositionX()+row->GetDimensionX(),ur.Y());
+    if (ur.Y()<row->GetPositionY()+row->GetDimensionY())
+      ur.Set(ur.X(),row->GetPositionY()+row->GetDimensionY());
   }
   return (ur+bl)/2.;
 }
@@ -108,22 +110,24 @@ TVector2 AliMpSectorPainter::GetDimensions() const
 
 
   // bl = bottom left position
-  TVector2 bl = row->Position()-row->Dimensions();
+  TVector2 bl = TVector2(row->GetPositionX(), row->GetPositionY())-
+                TVector2(row->GetDimensionX(), row->GetDimensionY());
   // ur = upper right position
-  TVector2 ur = row->Position()+row->Dimensions();
+  TVector2 ur = TVector2(row->GetPositionX(), row->GetPositionY())+
+                TVector2(row->GetDimensionX(), row->GetDimensionY());
 
   for (Int_t irow=1;irow<fSector->GetNofRows();++irow){
     row = fSector->GetRow(irow);
     // update the bottom-left corner
-    if (bl.X()>row->Position().X()-row->Dimensions().X())
-      bl.Set(row->Position().X()-row->Dimensions().X(),bl.Y());
-    if (bl.Y()>row->Position().Y()-row->Dimensions().Y())
-      bl.Set(bl.X(),row->Position().Y()-row->Dimensions().Y());
+    if (bl.X()>row->GetPositionX()-row->GetDimensionX())
+      bl.Set(row->GetPositionX()-row->GetDimensionX(),bl.Y());
+    if (bl.Y()>row->GetPositionY()-row->GetDimensionY())
+      bl.Set(bl.X(),row->GetPositionY()-row->GetDimensionY());
     // update the upper-right corner
-    if (ur.X()<row->Position().X()+row->Dimensions().X())
-      ur.Set(row->Position().X()+row->Dimensions().X(),ur.Y());
-    if (ur.Y()<row->Position().Y()+row->Dimensions().Y())
-      ur.Set(ur.X(),row->Position().Y()+row->Dimensions().Y());
+    if (ur.X()<row->GetPositionX()+row->GetDimensionX())
+      ur.Set(row->GetPositionX()+row->GetDimensionX(),ur.Y());
+    if (ur.Y()<row->GetPositionY()+row->GetDimensionY())
+      ur.Set(ur.X(),row->GetPositionY()+row->GetDimensionY());
   }
   return (ur-bl)/2.;
 
@@ -160,8 +164,14 @@ void AliMpSectorPainter::Draw(Option_t *option)
 	  for (Int_t iRowSeg=0;iRowSeg<subZone->GetNofRowSegments();++iRowSeg){
 	    AliMpVRowSegment *rowSegment = subZone->GetRowSegment(iRowSeg);
 	    
-	    TVector2 bl = rowSegment->Position()-rowSegment->Dimensions();
-	    TVector2 ur = rowSegment->Position()+rowSegment->Dimensions();
+	    TVector2 bl = TVector2(rowSegment->GetPositionX(),
+                                   rowSegment->GetPositionY()) -
+                          TVector2(rowSegment->GetDimensionX(),
+                                   rowSegment->GetDimensionY());
+	    TVector2 ur = TVector2(rowSegment->GetPositionX(),
+                                   rowSegment->GetPositionY())+
+                          TVector2(rowSegment->GetDimensionX(),
+                                   rowSegment->GetDimensionY());
 	    
 	    if (bl.X()<blx) blx=bl.X();
 	    if (bl.Y()<bly) bly=bl.Y();
@@ -185,7 +195,8 @@ void AliMpSectorPainter::Draw(Option_t *option)
       for (Int_t iRow=0;iRow<fSector->GetNofRows();++iRow){
 	AliMpRow *row = fSector->GetRow(iRow);
 	gr->Push();
-	gr->SetPadPosForReal(row->Position(),row->Dimensions());
+	gr->SetPadPosForReal(TVector2(row->GetPositionX(), row->GetPositionY()),
+                             TVector2(row->GetDimensionX(), row->GetDimensionY()));
 	DrawObject(row,option+1);
 	gr->Pop();
       }
@@ -216,7 +227,8 @@ void AliMpSectorPainter::Paint(Option_t* /*option*/)
   for (iRow=0;iRow<fSector->GetNofRows();++iRow){
     AliMpRow *row = fSector->GetRow(iRow);
     TVector2 pos,dim;
-    gr->RealToPad(row->Position(),row->Dimensions(),pos,dim);
+    gr->RealToPad(TVector2(row->GetPositionX(), row->GetPositionY()),
+                  TVector2(row->GetDimensionX(), row->GetDimensionY()),pos,dim);
     gPad->PaintBox(pos.X()-dim.X(),pos.Y()-dim.Y(),
 		   pos.X()+dim.X(),pos.Y()+dim.Y());
     gPad->PaintLine(pos.X()-dim.X(),pos.Y()-dim.Y(),
@@ -236,12 +248,14 @@ void AliMpSectorPainter::Paint(Option_t* /*option*/)
 
   AliMpRow *row = fSector->GetRow(0);
   TVector2 pos,dim;
-  gr->RealToPad(row->Position(),row->Dimensions(),pos,dim);
+  gr->RealToPad(TVector2(row->GetPositionX(), row->GetPositionY()),
+                TVector2(row->GetDimensionX(), row->GetDimensionY()),pos,dim);
   gPad->PaintLine(pos.X()-dim.X(),pos.Y()-dim.Y(),
 		 pos.X()+dim.X(),pos.Y()-dim.Y());
   
   row = fSector->GetRow(fSector->GetNofRows()-1);
-  gr->RealToPad(row->Position(),row->Dimensions(),pos,dim);
+  gr->RealToPad(TVector2(row->GetPositionX(), row->GetPositionY()),
+                TVector2(row->GetDimensionX(), row->GetDimensionY()),pos,dim);
   gPad->PaintLine(pos.X()-dim.X(),pos.Y()+dim.Y(),
 		 pos.X()+dim.X(),pos.Y()+dim.Y());
 

@@ -94,8 +94,7 @@ void testAllIndices(AliMq::Station12Type station, AliMp::PlaneType plane)
             AliMpPad pad = segmentation.PadByLocation(motifPos->GetID(),gassNum);
             if (pad != AliMpPad::Invalid()) {
               histo->Fill(pad.GetIx(), pad.GetIy());
-              histo2->Fill(pad.Position().X(),
-                           pad.Position().Y());
+              histo2->Fill(pad.GetPositionX(), pad.GetPositionY());
             }
           }
         }

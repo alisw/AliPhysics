@@ -69,7 +69,7 @@ AliMUONTriggerTrackToTrackerClusters::DetElemId(Int_t chamber, Double_t x, Doubl
   
   AliMpDEIterator it;
   
-  AliMpArea a( TVector2(x,y), TVector2(ex,ey) );
+  AliMpArea a(x, y, ex, ey);
   
   it.First(chamber);
   

@@ -56,8 +56,8 @@ namespace
     Double_t xmax = TMath::Min(a.RightBorder(),b.RightBorder());
     Double_t ymin = TMath::Max(a.DownBorder(),b.DownBorder());
     Double_t ymax = TMath::Min(a.UpBorder(),b.UpBorder());
-    AliMpArea c( TVector2( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ),
-                 TVector2( (xmax-xmin)/2.0, (ymax-ymin)/2.0 ) );
+    AliMpArea c( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ,
+                 (xmax-xmin)/2.0, (ymax-ymin)/2.0 );
 	
     return c;
   }
@@ -193,8 +193,8 @@ AliMUONPad::AreOverlapping(const AliMUONPad& d1, const AliMUONPad& d2,
   ///   what we call an overlap, e.g. to consider 2 pads touching only by their
   ///   corners to be overlapping.
   
-  AliMpArea a1(d1.Position(),d1.Dimensions());
-  AliMpArea a2(d2.Position(),d2.Dimensions());
+  AliMpArea a1(d1.X(),d1.Y(),d1.DX(),d1.DY());
+  AliMpArea a2(d2.X(),d2.Y(),d2.DX(),d2.DY());
   
   if ( a1.LeftBorder() > a2.RightBorder() - precision.X() ||
        a1.RightBorder() < a2.LeftBorder() + precision.X() )
@@ -392,8 +392,8 @@ AliMpArea
 AliMUONPad::Overlap(const AliMUONPad& d1, const AliMUONPad& d2)
 {  
   /// Return the overlap region between two pads
-  AliMpArea a1(d1.Position(),d1.Dimensions());
-  AliMpArea a2(d2.Position(),d2.Dimensions());
+  AliMpArea a1(d1.X(),d1.Y(),d1.DX(),d1.DY());
+  AliMpArea a2(d2.X(),d2.Y(),d2.DX(),d2.DY());
   return Intersect(a1,a2);
 }
 

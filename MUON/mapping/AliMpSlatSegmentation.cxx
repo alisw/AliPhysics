@@ -86,7 +86,10 @@ AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
   ///
   /// Returns an iterator to loop over the pad contained within given area.
   ///
-  AliMpArea a(area.Position()+fkSlat->Position(),area.Dimensions());
+  AliMpArea a(area.GetPositionX()+fkSlat->GetPositionX(),
+              area.GetPositionY()+fkSlat->GetPositionY(),
+              area.GetDimensionX(), 
+              area.GetDimensionY());
   AliDebug(3,Form("Converted input area wrt to slat center : "
                   "%7.2f,%7.2f->%7.2f,%7.2f to wrt slat lower-left : "
                   "%7.2f,%7.2f->%7.2f,%7.2f ",
@@ -108,7 +111,7 @@ AliMpSlatSegmentation::CreateIterator() const
   /// with the proper region. Might be more efficient to write a dedicated
   /// iterator ? Test that idea.
   
-  AliMpArea area(TVector2(0.0,0.0),fkSlat->Dimensions());
+  AliMpArea area(0.0,0.0,fkSlat->DX(),fkSlat->DY());
   return CreateIterator(area);
 }
 
@@ -124,12 +127,19 @@ AliMpSlatSegmentation::GetNeighbours(const AliMpPad& pad,
 }
 
 //_____________________________________________________________________________
-TVector2
-AliMpSlatSegmentation::Dimensions() const
+Double_t  
+AliMpSlatSegmentation::GetDimensionX() const
 {
-  /// Return dimensions
+/// Return slat x dimensions
+  return Slat()->DX();
+}
 
-  return Slat()->Dimensions();
+//_____________________________________________________________________________
+Double_t  
+AliMpSlatSegmentation::GetDimensionY() const
+{
+/// Return slat y dimensions
+  return Slat()->DY();
 }
 
 //_____________________________________________________________________________
@@ -224,13 +234,18 @@ AliMpSlatSegmentation::PadByLocation(Int_t manuId, Int_t manuChannel,
     }
     return AliMpPad::Invalid();
   }
+
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fkSlat->GetPositionX();
+  posy += motifPos->GetPositionY() - fkSlat->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
 	
   return AliMpPad(manuId, manuChannel,
                   motifPos->GlobalIndices(localIndices),
-                  motifPos->Position() 
-                  + motif->PadPositionLocal(localIndices) 
-                  - fkSlat->Position(),
-                  motif->GetPadDimensionsByIndices(localIndices));  
+                  posx, posy, dx, dy);
 }
 
 //_____________________________________________________________________________
@@ -276,17 +291,21 @@ AliMpSlatSegmentation::PadByIndices(Int_t ix, Int_t iy,
     return AliMpPad::Invalid();
   }
 
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fkSlat->GetPositionX();
+  posy += motifPos->GetPositionY() - fkSlat->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+
   return AliMpPad(motifPos->GetID(),connection->GetManuChannel(),
-                  ix, iy,
-                  motifPos->Position()
-                  + motif->PadPositionLocal(localIndices)
-                  - fkSlat->Position(),
-                  motif->GetPadDimensionsByIndices(localIndices));
+                  ix, iy, posx, posy, dx, dy);
 }
 
 //_____________________________________________________________________________
 AliMpPad
-AliMpSlatSegmentation::PadByPosition(const TVector2& position, 
+AliMpSlatSegmentation::PadByPosition(Double_t x, Double_t y, 
                                      Bool_t warning) const
 {
   ///
@@ -297,48 +316,56 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
   /// AliMpPad::Invalid() is returned if there's no pad at the given location.
   ///
   
-  TVector2 blPos(position);
+  Double_t blPosX(x);
+  Double_t blPosY(y);
   
-  blPos += fkSlat->Position(); // position relative to bottom-left of the slat.
+  blPosX += fkSlat->GetPositionX();
+  blPosY += fkSlat->GetPositionY(); // position relative to bottom-left of the slat.
   
-  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(blPos.X(),blPos.Y());
+  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(blPosX,blPosY);
 	
   if (!motifPos)
-	{
-		if (warning) 
-		{
-			AliWarning(Form("Slat %s Position (%e,%e)/center (%e,%e)/bottom-left cm "
-                      " outside limits",fkSlat->GetID(),
-                      position.X(),position.Y(),
-                      blPos.X(),blPos.Y()));
-		}
-		return AliMpPad::Invalid();
-	}
+  {
+    if (warning) 
+    {
+      AliWarning(Form("Slat %s Position (%e,%e)/center (%e,%e)/bottom-left cm "
+                      " outside limits",fkSlat->GetID(),x,y,
+                      blPosX,blPosY));
+    }
+    return AliMpPad::Invalid();
+  }
 	
   AliMpVMotif* motif =  motifPos->GetMotif();  
-  blPos -= motifPos->Position();
-  MpPair_t localIndices = motif->PadIndicesLocal(blPos);
+
+  blPosX -= motifPos->GetPositionX();
+  blPosY -= motifPos->GetPositionY();
+  MpPair_t localIndices = motif->PadIndicesLocal(blPosX, blPosY);
 	
   AliMpConnection* connect = 
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);
 	
   if (!connect)
-	{
-		if (warning) 
-		{
-		      AliWarning(Form("Slat %s localIndices (%d,%d) outside motif %s limits",
+  {
+    if (warning) 
+    {
+      AliWarning(Form("Slat %s localIndices (%d,%d) outside motif %s limits",
                       fkSlat->GetID(),AliMp::PairFirst(localIndices),
                       AliMp::PairSecond(localIndices),motif->GetID().Data()));
-		}
-		return AliMpPad::Invalid();
-	}
-  
+    }
+    return AliMpPad::Invalid();
+  }
+
+  Double_t posx, posy;
+  motif->PadPositionLocal(localIndices, posx, posy);
+  posx += motifPos->GetPositionX() - fkSlat->GetPositionX();
+  posy += motifPos->GetPositionY() - fkSlat->GetPositionY();
+
+  Double_t dx, dy;
+  motif->GetPadDimensionsByIndices(localIndices, dx, dy);
+    
   return AliMpPad(motifPos->GetID(),connect->GetManuChannel(),
                   motifPos->GlobalIndices(localIndices),
-                  motifPos->Position()
-                  + motif->PadPositionLocal(localIndices)
-                  - fkSlat->Position(),
-                  motif->GetPadDimensionsByIndices(localIndices));  
+                  posx, posy, dx, dy);
 }
 
 //_____________________________________________________________________________
@@ -405,12 +432,20 @@ AliMpSlatSegmentation::GetNofElectronicCards() const
 }
 
 //_____________________________________________________________________________
-TVector2 
-AliMpSlatSegmentation::Position() const
+Double_t  
+AliMpSlatSegmentation::GetPositionX() const
 {
-  /// Return position of origin
-  
-  return Slat()->Position();
+/// Return x position of slat origin
+  return Slat()->GetPositionX();
+}
+
+//_____________________________________________________________________________
+Double_t  
+AliMpSlatSegmentation::GetPositionY() const
+{
+/// Return y position of slat origin
+
+  return Slat()->GetPositionY();
 }
 
 //_____________________________________________________________________________

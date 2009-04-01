@@ -80,7 +80,7 @@ void testExistingPads2(AliMq::Station12Type station, AliMp::PlaneType plane,
   
   // Second loop via pad area iterator
   cout << "Iterating via iterator ..." << endl;
-  AliMpArea area(TVector2(60.,60.), TVector2(60.,60.) );
+  AliMpArea area(60.,60.,60.,60.);
   AliMpVPadIterator* it = segmentation->CreateIterator(area);
   Int_t counter2 = 0;
   for (it->First(); ! it->IsDone(); it->Next()){

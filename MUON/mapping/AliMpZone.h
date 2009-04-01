@@ -17,7 +17,6 @@
 #define ALI_MP_ZONE_H
 
 #include <TObject.h>
-#include <TVector2.h>
 #include <TObjArray.h>
 
 class AliMpSubZone;
@@ -37,35 +36,38 @@ class AliMpZone : public TObject
     AliMpSubZone* FindSubZone(AliMpVMotif* motif) const;
     
     // set methods
-    void SetPadDimensions(const TVector2& padDimensions);
+    void SetPadDimensions(Double_t dx, Double_t dy);
     
     // access methods
     UInt_t    GetID() const;
     Int_t     GetNofSubZones() const;
     AliMpSubZone*  GetSubZone(Int_t i) const;
-    TVector2  GetPadDimensions() const;
+
+    Double_t  GetPadDimensionX() const;
+    Double_t  GetPadDimensionY() const;
 
   private:
     // data members
     UInt_t        fID;           ///< ID
     TObjArray     fSubZones;     ///< subzones
-    TVector2      fPadDimensions;///< pad dimensions
+    Double_t      fPadDimensionX;///< pad x dimension
+    Double_t      fPadDimensionY;///< pad y dimension
 
-  ClassDef(AliMpZone,1)  // Zone
+  ClassDef(AliMpZone,2)  // Zone
 };
 
 // inline functions
-
-/// Set pad dimensions
-inline  void AliMpZone::SetPadDimensions(const TVector2& padDimensions)
-{ fPadDimensions = padDimensions; }
 
 /// Return ID
 inline  UInt_t  AliMpZone::GetID() const 
 { return fID; }
 
-/// Return pad dimensions
-inline  TVector2  AliMpZone::GetPadDimensions() const 
-{ return fPadDimensions;}
+/// Return pad x dimensions
+inline  Double_t AliMpZone::GetPadDimensionX() const 
+{ return fPadDimensionX; }
+
+/// Return pad y dimensions
+inline  Double_t AliMpZone::GetPadDimensionY() const 
+{ return fPadDimensionY; }
 
 #endif //ALI_MP_ZONE_H
