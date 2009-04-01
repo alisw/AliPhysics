@@ -238,6 +238,39 @@ Float_t AliTRDcluster::GetSumS() const
 
 }
 
+//___________________________________________________________________________
+Float_t AliTRDcluster::GetXcorr(Int_t tb)
+{
+  // drift length correction [cm]
+  // TODO to be parametrized in term of drift velocity
+  // A.Bercuci (Mar 28 2009)
+
+  if(tb<0 || tb>=24) return 0.;
+  const Float_t cx[] = {
+    1.6402e-01, 7.2917e-02,-6.7848e-02,-1.4529e-01,-1.6279e-01,-1.3116e-01,
+   -8.2712e-02,-4.9453e-02,-2.9501e-02,-1.4543e-02,-6.1749e-03, 3.9221e-04,
+    1.9711e-03, 2.7388e-03, 2.9070e-03, 3.4183e-03, 2.8014e-03, 1.9351e-03,
+    4.9252e-04, 4.5742e-04, 1.2263e-04,-1.2219e-02,-6.9658e-02,-1.6681e-01};
+  return cx[tb];
+}
+
+//___________________________________________________________________________
+Float_t AliTRDcluster::GetYcorr(Int_t ly, Float_t y)
+{
+  // PRF correction TODO to be replaced by the gaussian 
+  // approximation with full error parametrization and // moved to the clusterizer
+  const Float_t cy[AliTRDgeometry::kNlayer][3] = {
+    { 4.014e-04, 8.605e-03, -6.880e+00},
+    {-3.061e-04, 9.663e-03, -6.789e+00},
+    { 1.124e-03, 1.105e-02, -6.825e+00},
+    {-1.527e-03, 1.231e-02, -6.777e+00},
+    { 2.150e-03, 1.387e-02, -6.783e+00},
+    {-1.296e-03, 1.486e-02, -6.825e+00}
+  }; 
+
+  return cy[ly][0] + cy[ly][1] * TMath::Sin(cy[ly][2] * y);
+}
+
 //_____________________________________________________________________________
 Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, Double_t *const /*xq*/, Double_t z)
 {

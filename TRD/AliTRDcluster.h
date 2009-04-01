@@ -57,6 +57,8 @@ public:
   Int_t    GetPadTime() const              { return fPadTime;       }
   Short_t *GetSignals()                    { return fSignals;       }
   Float_t  GetSumS() const;
+  static Float_t  GetXcorr(Int_t tb);
+  static Float_t  GetYcorr(Int_t ly, Float_t y);
   Float_t  GetXloc(Double_t t0, Double_t vd, Double_t *const q=0x0, Double_t *const xq=0x0, Double_t z = 0.2);
   Float_t  GetYloc(Double_t s2, Double_t W, Double_t xd, Double_t wt, Double_t *const y1=0x0, Double_t *const y2=0x0);
 

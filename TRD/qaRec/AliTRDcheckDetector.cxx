@@ -780,7 +780,9 @@ TH1 *AliTRDcheckDetector::PlotPHx(const AliTRDtrackV1 *track){
     tracklet->ResetClusterIter();
     while((c = tracklet->NextCluster())){
       if(!c->IsInChamber()) continue;
-      tracklet->GetClusterXY(c, x, y);
+      x = c->GetX()-AliTRDcluster::GetXcorr(c->GetLocalTimeBin());
+      y = c->GetY()-AliTRDcluster::GetYcorr(AliTRDgeometry::GetLayer(c->GetDetector()), c->GetCenter());
+
       distance = tracklet->GetX0() - (c->GetX() + 0.3) + offset;
       h->Fill(distance, TMath::Abs(c->GetQ()));
     }
