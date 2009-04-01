@@ -557,7 +557,7 @@ Double_t AliExternalTrackParam::BetheBlochSolid(Double_t bg) {
   // This is an approximation of the Bethe-Bloch formula, 
   // reasonable for solid materials. 
   // All the parameters are, in fact, for Si.
-  // The returned value is in [GeV]
+  // The returned value is in [GeV/(g/cm^2)]
   //------------------------------------------------------------------
 
   return BetheBlochGeant(bg);
@@ -568,7 +568,7 @@ Double_t AliExternalTrackParam::BetheBlochGas(Double_t bg) {
   // This is an approximation of the Bethe-Bloch formula, 
   // reasonable for gas materials.
   // All the parameters are, in fact, for Ne.
-  // The returned value is in [GeV]
+  // The returned value is in [GeV/(g/cm^2)]
   //------------------------------------------------------------------
 
   const Double_t rho = 0.9e-3;
