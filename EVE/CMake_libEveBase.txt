@@ -16,6 +16,7 @@ EveBase/AliEveMacro.cxx
 EveBase/AliEveMacroEditor.cxx
 EveBase/AliEveMacroExecutor.cxx
 EveBase/AliEveMacroExecutorWindow.cxx
+EveBase/AliEveMagField.cxx
 EveBase/AliEveTrack.cxx
 EveBase/AliEveTrackCounter.cxx
 EveBase/AliEveTrackCounterEditor.cxx
