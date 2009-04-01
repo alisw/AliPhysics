@@ -947,8 +947,11 @@ void AliTRDtrackerV1::FitRieman(AliTRDcluster **seedcl, Double_t chi2[2])
   //
   AliRieman *fitter = AliTRDtrackerV1::GetRiemanFitter();
   fitter->Reset();
-  for(Int_t i = 0; i < 4; i++)
-    fitter->AddPoint(seedcl[i]->GetX(), seedcl[i]->GetY(), seedcl[i]->GetZ(), 1, 10);
+  printf("\n");
+  for(Int_t i = 0; i < 4; i++){
+    printf("  {%f, %f, %f}\n", seedcl[i]->GetX(), seedcl[i]->GetY(), seedcl[i]->GetZ());
+    fitter->AddPoint(seedcl[i]->GetX(), seedcl[i]->GetY(), seedcl[i]->GetZ(), 1., 10.);
+  }
   fitter->Update();
   
   
@@ -2391,7 +2394,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   Double_t loc[] = {AliTRDgeometry::AnodePos(), 0., 0.};
   Double_t glb[] = {0., 0., 0.};
   AliTRDtrackingChamber **cIter = &stack[0];
-  for(int iLayer=kNPlanes; iLayer--; cIter++){
+  for(int iLayer=0; iLayer<kNPlanes; iLayer++,cIter++){
     if(!(*cIter)) continue;
     if(!(matrix = fGeom->GetClusterMatrix((*cIter)->GetDetector()))){ 
       continue;
