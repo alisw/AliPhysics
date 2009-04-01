@@ -294,7 +294,7 @@ void AliTRDseedV1::UpDate(const AliTRDtrackV1 *trk)
   Double_t fSnp = trk->GetSnp();
   Double_t fTgl = trk->GetTgl();
   fPt = trk->Pt();
-  fYref[1] = fSnp/(1. - fSnp*fSnp);
+  fYref[1] = fSnp/TMath::Sqrt(1. - fSnp*fSnp);
   fZref[1] = fTgl;
   SetCovRef(trk->GetCovariance());
 
@@ -449,38 +449,6 @@ void AliTRDseedV1::CookLabels()
   if ((fLabels[2]  > 1) && (out[3] > 1)) fLabels[1] = out[2];
 }
 
-
-//____________________________________________________________________
-void AliTRDseedV1::GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y)
-{
-// Return corrected position of the cluster taking into 
-// account variation of the drift velocity with drift length.
-
-
-  // drift velocity correction TODO to be moved to the clusterizer
-  const Float_t cx[] = {
-    1.6402e-01, 7.2917e-02, -6.7848e-02, -1.4529e-01, -1.6279e-01, -1.3116e-01,
-    -8.2712e-02, -4.9453e-02, -2.9501e-02, -1.4543e-02, -6.1749e-03, 3.9221e-04,
-    1.9711e-03, 2.7388e-03, 2.9070e-03, 3.4183e-03, 2.8014e-03, 1.9351e-03,
-    4.9252e-04, 4.5742e-04, 1.2263e-04, -1.2219e-02, -6.9658e-02, -1.6681e-01,
-    0.0000e+00,   };
-
-  // PRF correction TODO to be replaced by the gaussian 
-  // approximation with full error parametrization and // moved to the clusterizer
-  const Float_t cy[AliTRDgeometry::kNlayer][3] = {
-    { 4.014e-04, 8.605e-03, -6.880e+00},
-    {-3.061e-04, 9.663e-03, -6.789e+00},
-    { 1.124e-03, 1.105e-02, -6.825e+00},
-    {-1.527e-03, 1.231e-02, -6.777e+00},
-    { 2.150e-03, 1.387e-02, -6.783e+00},
-    {-1.296e-03, 1.486e-02, -6.825e+00}
-  }; 
-
-  Int_t ily = AliTRDgeometry::GetLayer(c->GetDetector());
-  x = c->GetX() - cx[c->GetLocalTimeBin()];
-  y = c->GetY() + cy[ily][0] + cy[ily][1] * TMath::Sin(cy[ily][2] * c->GetCenter());
-  return;
-}
 
 //____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
