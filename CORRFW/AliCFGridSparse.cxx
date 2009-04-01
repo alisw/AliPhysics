@@ -349,6 +349,8 @@ void AliCFGridSparse::SetElement(Int_t *bin, Float_t val)
   //
   // Sets grid element of bin indeces bin to val
   //
+  
+  AliWarning("Important: bins should be numbered from 1 to NBins");
   fData->SetBinContent(bin,val);
 }
 //____________________________________________________________________
