@@ -94,7 +94,6 @@ public:
   inline Float_t   GetChi2Z() const;
   inline Float_t   GetChi2Y() const;
   inline Float_t   GetChi2Phi() const;
-  static void      GetClusterXY(const AliTRDcluster *c, Double_t &x, Double_t &y);
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
   void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 3*sizeof(Double_t));}
