@@ -947,9 +947,7 @@ void AliTRDtrackerV1::FitRieman(AliTRDcluster **seedcl, Double_t chi2[2])
   //
   AliRieman *fitter = AliTRDtrackerV1::GetRiemanFitter();
   fitter->Reset();
-  printf("\n");
   for(Int_t i = 0; i < 4; i++){
-    printf("  {%f, %f, %f}\n", seedcl[i]->GetX(), seedcl[i]->GetY(), seedcl[i]->GetZ());
     fitter->AddPoint(seedcl[i]->GetX(), seedcl[i]->GetY(), seedcl[i]->GetZ(), 1., 10.);
   }
   fitter->Update();
