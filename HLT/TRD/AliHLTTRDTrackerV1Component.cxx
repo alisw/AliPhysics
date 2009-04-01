@@ -483,6 +483,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
       AliTRDReconstructor::SetClusters(0x0);
       delete esd;
+      clusterArray->Delete();
+      delete clusterArray;
+      
       }
       
   size = totalSize;
