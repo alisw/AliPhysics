@@ -12,6 +12,9 @@ EveBase/AliEveJetPlane.cxx
 EveBase/AliEveJetPlaneEditor.cxx
 EveBase/AliEveJetPlaneGL.cxx
 EveBase/AliEveKineTools.cxx
+EveBase/AliEveKink.cxx
+EveBase/AliEveKinkEditor.cxx
+EveBase/AliEveKinkListEditor.cxx
 EveBase/AliEveMacro.cxx
 EveBase/AliEveMacroEditor.cxx
 EveBase/AliEveMacroExecutor.cxx
