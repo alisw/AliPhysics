@@ -69,6 +69,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fDatasetName(),
                   fJDLName(),
 		            fMergeExcludes(),
+                  fIncludePath(),
                   fCloseSE(),
                   fInputFiles(0),
                   fPackages(0)
@@ -108,6 +109,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fDatasetName(),
                   fJDLName(),
                   fMergeExcludes(),
+                  fIncludePath(),
                   fCloseSE(),
                   fInputFiles(0),
                   fPackages(0)
@@ -147,6 +149,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fDatasetName(other.fDatasetName),
                   fJDLName(other.fJDLName),
                   fMergeExcludes(other.fMergeExcludes),
+                  fIncludePath(other.fIncludePath),
                   fCloseSE(other.fCloseSE),
                   fInputFiles(0),
                   fPackages(0)
@@ -212,6 +215,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fDatasetName             = other.fDatasetName;
       fJDLName                 = other.fJDLName;
       fMergeExcludes           = other.fMergeExcludes;
+      fIncludePath             = other.fIncludePath;
       fCloseSE                 = other.fCloseSE;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
@@ -229,6 +233,15 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       }   
    }
    return *this;
+}
+
+//______________________________________________________________________________
+void AliAnalysisAlien::AddIncludePath(const char *path)
+{
+// Add include path in the remote analysis macro.
+   TString p(path);
+   if (p.Contains("-I")) fIncludePath += Form("%s ", path);
+   else                  fIncludePath += Form("-I%s ", path);
 }
 
 //______________________________________________________________________________
@@ -1098,7 +1111,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl << endl;
          out << "// include path (remove if using par files)" << endl;
-         out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl << endl;
+         out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
+         if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl << endl;
       } else {
          out << "// Compile all par packages" << endl;
          TIter next(fPackages);

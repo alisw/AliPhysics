@@ -30,6 +30,7 @@ public:
    AliAnalysisAlien(const AliAnalysisAlien& other); 
    AliAnalysisAlien& operator=(const AliAnalysisAlien& other);
 // Setters   
+   virtual void        AddIncludePath(const char *path);
    virtual void        AddRunNumber(Int_t run);
    virtual void        AddDataFile(const char *lfn);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
@@ -111,6 +112,7 @@ private:
    TString          fDatasetName;     // Dataset xml file to be created
    TString          fJDLName;         // JDL file to be generated
    TString          fMergeExcludes;   // List of output files excluded from merging
+   TString          fIncludePath;     // Include path
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
