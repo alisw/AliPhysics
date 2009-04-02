@@ -550,7 +550,8 @@ Int_t AliTRDmcmSim::GetCol( Int_t iadc )
   // Return column id of the pad for the given ADC channel
   //
 
-  if( !CheckInitialized() ) return -1;
+  if( !CheckInitialized() ) 
+    return -1;
 
   Int_t col = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, iadc);
   if (col < 0 || col >= fFeeParam->GetNcol()) 
@@ -587,7 +588,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize, UInt_t iEv)
 
   if (nw < maxSize) {
     buf[nw++] = x;
-	//printf("\nMCM header: %X ",x);
+    //printf("\nMCM header: %X ",x);
   }
   else {
     of++;
@@ -608,7 +609,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize, UInt_t iEv)
 
     if (nw < maxSize) {
       buf[nw++] = x;
-	  //printf("ADC mask: %X nMask=%d ADC data: ",x,nActiveADC);
+      //printf("ADC mask: %X nMask=%d ADC data: ",x,nActiveADC);
     }
     else {
       of++;
@@ -649,7 +650,6 @@ Int_t AliTRDmcmSim::ProduceTrackletStream( UInt_t *buf, Int_t maxSize )
   // with -1 * number of overflowed words
   //
 
-  UInt_t  x;
   Int_t   nw  = 0;  // Number of written words
   Int_t   of  = 0;  // Number of overflowed words
     
@@ -658,16 +658,11 @@ Int_t AliTRDmcmSim::ProduceTrackletStream( UInt_t *buf, Int_t maxSize )
   // Produce tracklet data. A maximum of four 32 Bit words will be written per MCM 
   // fMCMT is filled continuously until no more tracklet words available
 
-  Int_t wd = 0;
-  while ( (wd < fMaxTracklets) && (fMCMT[wd] > 0) ){
-      x = fMCMT[wd];
-      if (nw < maxSize) {
-	buf[nw++] = x;
-      }
-      else {
-	of++;
-      }
-      wd++;
+  for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
+    if (nw < maxSize) 
+      buf[nw++] = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet])->GetTrackletWord();
+    else 
+      of++;
   }
   
   if( of != 0 ) return -of; else return nw;
@@ -947,7 +942,7 @@ void AliTRDmcmSim::ZSMapping()
                                                                  // (lookup table accept (I2,I1,I0)=(111)
                                                                  // or (110) or (101) or (100))
   Int_t eBIN = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIN); // TRAP default = 1 (no neighbor sensitivity)
-  Int_t ep   = AliTRDfeeParam::GetPFeffectPedestal();
+  Int_t ep   = 0; // fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP); //??? really subtracted here
 
   Int_t **adc = fADCF;
 
@@ -987,7 +982,6 @@ void AliTRDmcmSim::ZSMapping()
       fZSM1Dim[iadc] &= fZSM[iadc][it];
     }
   }
-
 }
 
 void AliTRDmcmSim::DumpData( char *f, char *target )
@@ -1260,7 +1254,11 @@ void AliTRDmcmSim::CalcFitreg()
         if (adcLeft  < regTPFP) adcLeft  = 0; else adcLeft  -= regTPFP;
         if (adcCentral  < regTPFP) adcCentral  = 0; else adcCentral  -= regTPFP;
         if (adcRight < regTPFP) adcRight = 0; else adcRight -= regTPFP;
+
         // Calculate the center of gravity
+        // checking for adcCentral != 0 (in case of "bad" configuration)
+        if (adcCentral == 0)
+          continue;
         ypos = 128*(adcLeft - adcRight) / adcCentral;
         if (ypos < 0) ypos = -ypos;
         // make the correction using the LUT
@@ -1453,7 +1451,7 @@ void AliTRDmcmSim::FitTracklet()
 
         // assemble and store the tracklet word
         fMCMT[cpu] = (qTotal << 24) | (padrow << 20) | (slope << 13) | offset;
-        new ((*fTrackletArray)[cpu]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
+        new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
       }
     }
   }
@@ -1485,15 +1483,15 @@ void AliTRDmcmSim::Tracklet()
   }
   else {
     TTree *trackletTree = dl->Tree();
-    if (!trackletTree)
+    if (!trackletTree) {
       dl->MakeTree();
-    trackletTree = dl->Tree();
+      trackletTree = dl->Tree();
+    }
 
     AliTRDtrackletMCM *trkl = 0x0;
     TBranch *trkbranch = trackletTree->GetBranch("mcmtrklbranch");
     if (!trkbranch)
       trkbranch = trackletTree->Branch("mcmtrklbranch", "AliTRDtrackletMCM", &trkl, 32000);
-//      trkbranch = trackletTree->Branch("mcmtrklbranch", &fTrackletArray, 32000, 2);
 
     for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
       trkl = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet]);
@@ -1734,3 +1732,5 @@ void AliTRDmcmSim::Sort6To2Worst(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx
 //    printf("idx21s=%d, idx23as=%d, idx22s=%d, idx23bs=%d, idx5o=%d, idx6o=%d\n",
 //            idx21s,    idx23as,    idx22s,    idx23bs,    *idx5o,    *idx6o);
 }
+
+

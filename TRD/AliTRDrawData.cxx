@@ -487,151 +487,105 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 
   	Int_t           nw = 0;                       // Number of written    words
   	Int_t           of = 0;                       // Number of overflowed words
+  	Int_t      *tempnw = 0x0;                     // Number of written    words for temp. buffer
+  	Int_t      *tempof = 0x0;                     // Number of overflowed words for temp. buffer
   	Int_t        layer = fGeo->GetLayer( det );   // Layer
   	Int_t        stack = fGeo->GetStack( det );   // Stack
   	Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  	Int_t         nRow = fGeo->GetRowMax( layer, stack, sect );
-  	Int_t         nCol = fGeo->GetColMax( layer );
-  	const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-	Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
+	const Int_t kCtype = fGeo->GetStack(det) == 2 ? 0 : 1;                       // Chamber type (0:C0, 1:C1)
 
-	Bool_t tracklet_on = fFee->GetTracklet();     // **new**   
-
-	// To avoid compiler warning
-        if (newSM) {
-          ;;
-	}
-
-	// Check the nCol and nRow.
-  	if ((nCol == 144) && (nRow == 16 || nRow == 12)) {
-    	kCtype = (nRow-12) / 4;
-  	} else {
-    	AliError(Form("This type of chamber is not supported (nRow=%d, nCol=%d).",nRow,nCol));
-    	return 0;
-  	}
+	Bool_t tracklet_on = fFee->GetTracklet();     // tracklet simulation active?
 
   	AliDebug(1,Form("Producing raw data for sect=%d layer=%d stack=%d side=%d",sect,layer,stack,side));
+        
+  	AliTRDmcmSim* mcm = new AliTRDmcmSim();
 
-  	AliTRDmcmSim** mcm = new AliTRDmcmSim*[(kCtype + 3)*(fGeo->MCMmax())];
+	UInt_t *tempBuffer = buf; // tempBuffer used to write ADC data
+	                          // different in case of tracklet writing
+	
+	if (tracklet_on) {
+	  tempBuffer = new UInt_t[maxSize];
+          tempnw = new Int_t(0);
+          tempof = new Int_t(0);
+        }
+        else {
+          tempnw = &nw;
+          tempof = &of;
+        }
 
-	//if (newEvent) ProduceSMIndexData(buf, nw);		// SM index words , Stack index words
+	WriteIntermediateWordsV2(tempBuffer,*tempnw,*tempof,maxSize,det,side);	//??? no tracklet or NZS
 
-	if (!tracklet_on) WriteIntermediateWordsV2(buf,nw,of,maxSize,det,side);	// no tracklet or NZS
- 
-  	
   	// scanning direction such, that tracklet-words are sorted in ascending z and then in ascending y order
   	// ROB numbering on chamber and MCM numbering on ROB increase with decreasing z and increasing y
-  	//for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
 	for (Int_t iRobRow = 0; iRobRow <= (kCtype + 3)-1; iRobRow++ ) {	// ROB number should be increasing
-    	Int_t iRob = iRobRow * 2 + side;
-    	// MCM on one ROB
-    	for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
-		Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
-		Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm;
-	
-		mcm[entry] = new AliTRDmcmSim();
-		mcm[entry]->Init( det, iRob, iMcm , newEvent);
-		//mcm[entry]->Init( det, iRob, iMcm);
-		if (newEvent == kTRUE) newEvent = kFALSE; // only one mcm is concerned with new event
-		Int_t padrow = mcm[entry]->GetRow();
-
-		// Copy ADC data to MCM simulator
-		for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-		    Int_t padcol = mcm[entry]->GetCol( iAdc );
-		    if ((padcol >=    0) && (padcol <  nCol)) {
-				for (Int_t iT = 0; iT < kNTBin; iT++) { 
-				  mcm[entry]->SetData( iAdc, iT, digits->GetData( padrow, padcol, iT) );
-				} 
-		    } 
-	    	else {  // this means it is out of chamber, and masked ADC
-				mcm[entry]->SetDataPedestal( iAdc );
-	   	 	}
-		}
-
-		// Simulate process in MCM
-		mcm[entry]->Filter();     // Apply filter
-		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
-//jkl		mcm[entry]->CopyArrays();
-//jkl		mcm[entry]->GeneratefZSM1Dim();
-//jkl		mcm[entry]->RestoreZeros();
-
-		if (tracklet_on) {
-		    mcm[entry]->Tracklet(); 
-		    Int_t tempNw =  mcm[entry]->ProduceTrackletStream( &buf[nw], maxSize - nw );
-		    //Int_t tempNw = 0;
-		    if( tempNw < 0 ) {
-				of += tempNw;
-				nw += maxSize - nw;
-				AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
-		    } else {
-				nw += tempNw;
-		    }
-		} else { // no tracklets: write raw-data already in this loop 
-		    // Write MCM data to buffer
-		    Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw, fEventCounter );
-		    if( tempNw < 0 ) {
-				of += tempNw;
-				nw += maxSize - nw;
-				AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
-		    } else {
-				nw += tempNw;
-		    }
-		    
-		    delete mcm[entry];
-		}
-
-		//mcm->DumpData( "trdmcmdata.txt", "RFZS" ); // debugging purpose
-    	}
+          Int_t iRob = iRobRow * 2 + side;
+          // MCM on one ROB
+          for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
+            Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
+            
+            mcm->Init(det, iRob, iMcm);
+            mcm->SetData(digits);     // no filtering done here (already done in digitizer)
+	    if (tracklet_on) {
+	      mcm->Tracklet();
+              Int_t tempNw = mcm->ProduceTrackletStream(&buf[nw], maxSize - nw);
+	      if(  tempNw < 0 ) {
+		of += tempNw;
+		nw += maxSize - nw;
+		AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+	      } else {
+		nw += tempNw;
+	      }
+	    }
+            mcm->ZSMapping();  // Calculate zero suppression mapping
+                               // at the moment it has to be rerun here
+            // Write MCM data to temp. buffer
+            Int_t tempNw = mcm->ProduceRawStream( &tempBuffer[*tempnw], maxSize - *tempnw, fEventCounter );
+            if ( tempNw < 0 ) {
+              *tempof += tempNw;
+              *tempnw += maxSize - nw;
+              AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+            } else {
+              *tempnw += tempNw;
+            }
+          }
 	}
 
-  	// if tracklets are switched on, raw-data can be written only after all tracklets
+        delete mcm;
+
+
+	// in case of tracklet writing copy temp data to final buffer
 	if (tracklet_on) {
-      	WriteIntermediateWordsV2(buf,nw,of,maxSize,det,side); 
-  
-      	// Scan for ROB and MCM
-      	for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
-	  	//Int_t iRob = iRobRow * 2 + side;
-	  	// MCM on one ROB
-	  		for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
-	      		Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
-	      
-		      	Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm; 
-		      
-		      	// Write MCM data to buffer
-		      	Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw, fEventCounter );
-		      	if( tempNw < 0 ) {
-			  		of += tempNw;
-			  		nw += maxSize - nw;
-			  		AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
-		      	} else {
-			  		nw += tempNw;
-		      	}
-	      
-		      delete mcm[entry];
-	  
-	  		}	
-      	}
+	  if (nw + *tempnw < maxSize) {
+	    memcpy(&buf[nw], tempBuffer, *tempnw * sizeof(UInt_t));
+	    nw += *tempnw;
+	  }
+	  else {
+	    AliError("Buffer overflow detected");
+	  }
 	}
 
-  	delete [] mcm;
-  
   	// Write end of raw data marker
   	if (nw+3 < maxSize) {
-    	buf[nw++] = kEndofrawdatamarker; 
-    	buf[nw++] = kEndofrawdatamarker; 
-    	buf[nw++] = kEndofrawdatamarker; 
-    	buf[nw++] = kEndofrawdatamarker; 
+          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
   	} else {
-    	of++;
+          of++;
   	}
   	
+        if (tracklet_on) {
+          delete [] tempBuffer;
+          delete tempof;
+          delete tempnw;
+        }
+
 	if (of != 0) {
-    	AliError("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
+          AliError("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
   	}
 
   	return nw;
 }
-
 
 //_____________________________________________________________________________
 Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side
@@ -1246,3 +1200,5 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   return digitsManager;
 
 }
+
+
