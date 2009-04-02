@@ -30,6 +30,7 @@
 #pragma link C++ class  AliTOFFormatDCS+;
 #pragma link C++ class  AliTOFFEEReader+;
 #pragma link C++ class  AliTOFCableLengthMap+;
+#pragma link C++ class  AliTOFNoiseConfigHandler+;
 
 
 #endif

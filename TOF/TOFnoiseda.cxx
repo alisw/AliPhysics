@@ -30,6 +30,7 @@ Trigger types used: PHYSICS_EVENT (for the time being)
 #include <AliTOFHitData.h>
 #include <AliTOFHitDataBuffer.h>
 #include <AliTOFDecoder.h>
+#include <AliTOFNoiseConfigHandler.h>
 
 //ROOT
 #include <TFile.h>
@@ -40,6 +41,7 @@ Trigger types used: PHYSICS_EVENT (for the time being)
 #include <TSystem.h>
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TSAXParser.h"
 
 /* Main routine
       Arguments: list of DATE raw data files
@@ -81,6 +83,29 @@ int main(int argc, char **argv) {
     printf("Failed to open file\n");
     return -1;
   }
+
+  /* retrieve config file */
+  int getConfigFile = daqDA_DB_getFile("TOFNoiseConfig.xml","TOFNoiseConfig.xml");
+  if (getConfigFile != 0){
+    printf("Failed to retrieve config file from DB! returning...\n");
+    return -1;
+  }
+
+  AliTOFNoiseConfigHandler* tofHandler = new AliTOFNoiseConfigHandler();
+  TSAXParser *parser = new TSAXParser();
+  parser->ConnectToHandler("AliTOFNoiseConfigHandler", tofHandler);  
+  if (parser->ParseFile("./TOFNoiseConfig.xml") != 0){
+	  printf("Failed parsing config file! retunring... \n");
+	  return -1;
+  }
+  Int_t debugFlag = tofHandler->GetDebugFlag();
+  Int_t acquisitionWindow = tofHandler->GetAcquisitionWindow();
+  if (acquisitionWindow == 0){
+	  printf("Problems with the acquisition window, set to zero! returning...\n");
+	  return -1;
+  }
+  printf("the debug flag is %i\n",debugFlag);
+  printf("the acquisition window is %i (ns)\n",acquisitionWindow);
 
   /* init some counters */
   int nevents_physics=0;
@@ -218,7 +243,7 @@ int main(int argc, char **argv) {
 	      //printf ("index = %i \n",index);
 	      htofNoise->Fill(index); //channel index start from 0, bin index from 1
 	      //debugging printings
-	      //printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]);
+	      if (debugFlag) printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]);
 	    }
 	  }
 	  /* reset buffer */
@@ -256,16 +281,27 @@ int main(int argc, char **argv) {
   delete geom;
   geom = 0x0;
 
-  Float_t time = nevents_physics*200*1E-9; // acquisition time in s
+  Int_t noisyChannels = 0;
+  Int_t checkedChannels = 0;
+  Float_t time = nevents_physics*acquisitionWindow*1E-9; // acquisition time in s
   //printf(" Noise run lasted %f s \n",time);
   for (Int_t ibin =1;ibin<=size;ibin++){
     Float_t cont = htofNoise->GetBinContent(ibin);
     if (cont!=-1) {
+      checkedChannels++;
       //printf(" content = %f \n", cont); 
       htofNoise->SetBinContent(ibin,cont/time);
       //printf(" scaled content = %f \n", cont/time);
+      if (cont != 0){
+	noisyChannels++;
+      }
     } 
   }  
+
+  if (debugFlag){
+	  printf("Number of checked channels = %i\n",checkedChannels);
+	  printf("Number of noisy channels = %i\n",noisyChannels);
+  }
 
   //write the Run level file   
   char filename[100];
