@@ -597,7 +597,8 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     }
 
-    // exported regional file whenever mask or/and Lut are modified
+    // exported regional file always (needed to initialise the PreProcessor)!
+    initFES = kTRUE;
     file = cfg.GetRegionalFileName();
     if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
       status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
