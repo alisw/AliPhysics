@@ -105,7 +105,7 @@ AliCFEffGrid &AliCFEffGrid::operator=(const AliCFEffGrid &eff)
 } 
 //____________________________________________________________________
 
-void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
+void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2, Option_t *option)
 {
   //
   // Calculate the efficiency matrix and its error between selection
@@ -119,7 +119,7 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
   num->SumW2();
   den->SumW2();
   this->SumW2();
-  this->Divide(num,den,1.,1.,"B");
+  this->Divide(num,den,1.,1.,option);
 
   Int_t nEmptyBinsNum=0;
   Int_t nEmptyBinsNumAndDen=0;
