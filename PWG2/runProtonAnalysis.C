@@ -1,27 +1,34 @@
-void runProtonAnalysis(const char* esdAnalysisType = "TPC",) {
+void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
+		       const char* pidMode = "Bayesian") {
   //Macro to run the proton analysis tested for local, proof & GRID.
-  //Local: Takes three arguments, the analysis mode, the type of the ESD 
-  //       analysis and the path where the tag and ESD or AOD files reside.
-  //Interactive: Takes three arguments, the analysis mode, the type of the ESD 
-  //             analysis and the name of the collection of tag files.
-  //Batch: Takes three arguments, the analysis mode, the type of the ESD 
-  //       analysis and the name of the collection file with the event list 
-  //       for each file.
-  //Proof: Takes four arguments, the analysis mode, the number of events,
-  //       the dataset name and the analysis type in case of ESD.
-  
+  //Local: Takes four arguments, the analysis mode, the type of the ESD 
+  //       analysis, the PID mode and the path where the tag and ESD or 
+  //       AOD files reside.
+  //Interactive: Takes four arguments, the analysis mode, the type of the ESD 
+  //             analysis, the PID mode and the name of the collection of tag 
+  //             files.
+  //Batch: Takes four arguments, the analysis mode, the type of the ESD 
+  //       analysis, the PID mode and the name of the collection file with 
+  //       the event list for each file.
+  //Proof: Takes five arguments, the analysis level, the analysis mode in 
+  //       case of ESD, the PID mode, the number of events and the dataset 
+  //       name and .  
   //Analysis mode can be: "MC", "ESD", "AOD"
   //ESD analysis type can be one of the three: "TPC", "Hybrid", "Global"
+  //PID mode can be one of the three: "Bayesian" (standard Bayesian approach) 
+  //   "Ratio" (ratio of measured over expected/theoretical dE/dx a la STAR) 
+  //   "Sigma" (N-sigma area around the fitted dE/dx vs P band)
   TStopwatch timer;
   timer.Start();
   
-  //runLocal("ESD",esdAnalysisType,"/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags");
-  //runInteractive("ESD",esdAnalysisType,"tag.xml");
-  //runBatch("ESD",esdAnalysisType,"wn.xml");  
-  runProof("MC",
-	   200000,
-	   "/COMMON/COMMON/LHC08c11_10TeV_0.5T",
-	   esdAnalysisType);
+  runLocal("ESD",
+	   esdAnalysisType,
+	   pidMode,
+	   "/home/pchrist/ALICE/Baryons/QA/Local");
+  //runInteractive("ESD",esdAnalysisType,pidMode,"tag.xml");
+  //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");  
+  /*runProof("ESD",esdAnalysisType,pidMode
+    200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",);*/
   
   timer.Stop();
   timer.Print();
@@ -30,10 +37,8 @@ void runProtonAnalysis(const char* esdAnalysisType = "TPC",) {
 //_________________________________________________//
 void runLocal(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
+	      const char* pidMode = 0x0,
 	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
-  TStopwatch timer;
-  timer.Start();
-
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
@@ -55,8 +60,8 @@ void runLocal(const char* mode = "ESD",
   gSystem->Load("libANALYSIS.so");
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
-  setupPar->UploadPackage("CORRFW.par");
-  gSystem->EnablePackage("CORRFW");
+  setupPar("CORRFW");
+  gSystem->Load("libCORRFW.so");
   setupPar("PWG2spectra");
   gSystem->Load("libPWG2spectra.so");
   //____________________________________________________//  
@@ -75,7 +80,10 @@ void runLocal(const char* mode = "ESD",
   chain->SetBranchStatus("*Calo*",0);
 
   //____________________________________________//
-  gROOT->LoadMacro("AliAnalysisTaskProtons.cxx++");
+  gROOT->LoadMacro("configProtonAnalysis.C");
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+							analysisType,
+							pidMode);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -85,45 +93,20 @@ void runLocal(const char* mode = "ESD",
     AliMCEventHandler *mc = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mc);
   }
-
+  
   //____________________________________________//
-  // 1st Proton task
+  //Create the proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
-  taskProtons->SetType(mode);
-  taskProtons->SetTriggerMode(AliAnalysisTaskProtons::kMB2);
-  switch(analysisType) {
-  case "TPC":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kTPC);
-    break;
-  case "Hybrid":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kHybrid);
-    break;
-  case "Global":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kGlobal);
-    break;
-  default:
-    break;
-  }
-  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
-  //Momentum dependent priors
-  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
-  TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
-  TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
-  TF1 *fitPions = (TF1 *)f->Get("fitPions");
-  TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
-  TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
-					    fitMuons,
-					    fitPions,
-					    fitKaons,
-					    fitProtons);*/
+  taskProtons->SetAnalysisObject(analysis);
   mgr->AddTask(taskProtons);
 
-  // Create containers for input/output                                                                              
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
-							    AliAnalysisManager::kOutputCont
+							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
 
   //____________________________________________//
@@ -132,17 +115,13 @@ void runLocal(const char* mode = "ESD",
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
-
-  timer.Stop();
-  timer.Print();
 }
 
 //_________________________________________________//
 void runInteractive(const char* mode = "ESD",
 		    const char* analysisType = 0x0,
+		    const char* pidMode = 0x0,
 		    const char* collectionName = "tag.xml") {
-  TStopwatch timer;
-  timer.Start();
   gSystem->Load("libProofPlayer.so");
 
   TString smode = mode;
@@ -169,8 +148,8 @@ void runInteractive(const char* mode = "ESD",
   gSystem->Load("libANALYSIS.so");
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
-  setupPar->UploadPackage("CORRFW.par");
-  gSystem->EnablePackage("CORRFW");
+  setupPar("CORRFW");
+  gSystem->Load("libCORRFW.so");
   setupPar("PWG2spectra");
   gSystem->Load("libPWG2spectra.so");
   //____________________________________________________//  
@@ -192,7 +171,10 @@ void runInteractive(const char* mode = "ESD",
   chain->SetBranchStatus("*Calo*",0);
   
   //____________________________________________//
-  gROOT->LoadMacro("AliAnalysisTaskProtons.cxx++");
+  gROOT->LoadMacro("configProtonAnalysis.C");
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+							analysisType,
+							pidMode);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -204,43 +186,18 @@ void runInteractive(const char* mode = "ESD",
   }
 
   //____________________________________________//
-  // 1st Proton task
+  //Create the proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
-  taskProtons->SetType(mode);
-  taskProtons->SetTriggerMode(AliAnalysisTaskProtons::kMB2);
-  switch(analysisType) {
-  case "TPC":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kTPC);
-    break;
-  case "Hybrid":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kHybrid);
-    break;
-  case "Global":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kGlobal);
-    break;
-  default:
-    break;
-  }
-  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
-  //Momentum dependent priors
-  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
-  TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
-  TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
-  TF1 *fitPions = (TF1 *)f->Get("fitPions");
-  TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
-  TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
-					    fitMuons,
-					    fitPions,
-					    fitKaons,
-					    fitProtons);*/
+  taskProtons->SetAnalysisObject(analysis);
   mgr->AddTask(taskProtons);
 
-  // Create containers for input/output                                                                               
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
-							    AliAnalysisManager::kOutputCont
+							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
   
   //____________________________________________//
@@ -249,18 +206,13 @@ void runInteractive(const char* mode = "ESD",
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
-
-  timer.Stop();
-  timer.Print();
 }
 
 //_________________________________________________//
 void runBatch(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
+	      const char* pidMode = 0x0,
 	      const char *collectionfile = "wn.xml") {
-  TStopwatch timer;
-  timer.Start();
-
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
@@ -286,8 +238,8 @@ void runBatch(const char* mode = "ESD",
   gSystem->Load("libANALYSIS.so");
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
-  setupPar->UploadPackage("CORRFW.par");
-  gSystem->EnablePackage("CORRFW");
+  setupPar("CORRFW");
+  gSystem->Load("libCORRFW.so");
   setupPar("PWG2spectra");
   gSystem->Load("libPWG2spectra.so");
   //____________________________________________________//  
@@ -300,7 +252,10 @@ void runBatch(const char* mode = "ESD",
   chain->SetBranchStatus("*Calo*",0);
 
   //____________________________________________//
-  gROOT->LoadMacro("AliAnalysisTaskProtons.cxx++");
+  gROOT->LoadMacro("configProtonAnalysis.C");
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+							analysisType,
+							pidMode);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -312,42 +267,18 @@ void runBatch(const char* mode = "ESD",
   }
   
   //____________________________________________//
-  // 1st Proton task
+  //Create the proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
-  taskProtons->SetType(mode);
-  taskProtons->SetTriggerMode(AliAnalysisTaskProtons::kMB2);
-  switch(analysisType) {
-  case "TPC":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kTPC);
-    break;
-  case "Hybrid":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kHybrid);
-    break;
-  case "Global":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kGlobal);
-    break;
-  default:
-    break;
-  }
-  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
-  //Momentum dependent priors
-  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
-  TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
-  TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
-  TF1 *fitPions = (TF1 *)f->Get("fitPions");
-  TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
-  TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
-					    fitMuons,
-					    fitPions,
-					    fitKaons,
-					    fitProtons);*/
+  taskProtons->SetAnalysisObject(analysis);
   mgr->AddTask(taskProtons);
 
-  // Create containers for input/output                                                                               
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
-                                                            TList::Class(),AliAnalysisManager::kOutputCont
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
 
   //____________________________________________//
@@ -356,19 +287,14 @@ void runBatch(const char* mode = "ESD",
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("grid",chain);
-
-  timer.Stop();
-  timer.Print();
 }
 
 //_________________________________________________//
 void runProof(const char* mode = "ESD",
+	      const char* analysisType = 0x0,
+	      const char* pidMode = 0x0,
 	      Int_t stats = 0, 
-	      const char* dataset = 0x0,
-	      const char* analysisType = 0x0) {
-  TStopwatch timer;
-  timer.Start();
-  
+	      const char* dataset = 0x0) {  
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
   if(analysisType) {
@@ -397,7 +323,10 @@ void runProof(const char* mode = "ESD",
   gProof->EnablePackage("PWG2spectra");
   
   //____________________________________________//
-  gProof->Load("AliAnalysisTaskProtons.cxx++");
+  gROOT->LoadMacro("configProtonAnalysis.C");
+  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,
+							analysisType,
+							pidMode);
   //____________________________________________//
 
   //____________________________________________//
@@ -410,44 +339,19 @@ void runProof(const char* mode = "ESD",
     mgr->SetMCtruthEventHandler(mc);
   }
   //____________________________________________//
-  // 1st Proton task
+  //Create the proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
-  taskProtons->SetType(mode);
-  taskProtons->SetTriggerMode(AliAnalysisTaskProtons::kMB2);
-  switch(analysisType) {
-  case "TPC":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kTPC);
-    break;
-  case "Hybrid":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kHybrid);
-    break;
-  case "Global":
-    taskProtons->SetAnalysisMode(AliAnalysisTaskProtons::kGlobal);
-    break;
-  default:
-    break;
-  }
-  taskProtons->SetAcceptedVertexDiamond(5.,5.,15.);
-  //Momentum dependent priors
-  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
-  TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
-  TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
-  TF1 *fitPions = (TF1 *)f->Get("fitPions");
-  TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
-  TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
-					    fitMuons,
-					    fitPions,
-					    fitKaons,
-					    fitProtons);*/
+  taskProtons->SetAnalysisObject(analysis);
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
-							    TList::Class(),
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
+                                                            TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    outputFilename.Data());
+                                                            outputFilename.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
@@ -467,9 +371,6 @@ void runProof(const char* mode = "ESD",
 
     mgr->StartAnalysis("proof",chain);
   }
-
-  timer.Stop();
-  timer.Print();
 }
 
 //_________________________________________________//
