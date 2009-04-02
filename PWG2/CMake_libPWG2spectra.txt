@@ -1,10 +1,12 @@
 # -*- mode: cmake -*-
 
 set(SRCS
+    SPECTRA/AliProtonAnalysisBase.cxx
     SPECTRA/AliProtonAnalysis.cxx
     SPECTRA/AliProtonQAAnalysis.cxx
+    SPECTRA/AliAnalysisTaskProtons.cxx
     SPECTRA/AliAnalysisTaskCheckV0.cxx
-  SPECTRA/AliAnalysisTaskCheckCascade.cxx
+    SPECTRA/AliAnalysisTaskCheckCascade.cxx
     SPECTRA/AliAnalysisTaskStrange.cxx
 )
 
