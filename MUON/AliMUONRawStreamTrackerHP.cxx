@@ -279,7 +279,7 @@ Bool_t AliMUONRawStreamTrackerHP::IsDone() const
 
 Bool_t AliMUONRawStreamTrackerHP::Next(
 		Int_t& busPatchId, UShort_t& manuId, UChar_t& manuChannel,
-		UShort_t& adc
+		UShort_t& adc, Bool_t skipParityErrors
 	)
 {
 	/// Advance one step in the iteration. Returns false if finished.
@@ -287,11 +287,15 @@ Bool_t AliMUONRawStreamTrackerHP::Next(
 	/// [out] \param manuId      This is filled with the MANU ID of the digit.
 	/// [out] \param manuChannel This is filled with the MANU channel ID of the digit.
 	/// [out] \param adc         This is filled with the ADC signal value of the digit.
+        /// [in] \param skipParityErrors If this is kTRUE, we'll skip the buspatches that
+        ///                              have some parity errors
 	/// \return kTRUE if we read another digit and kFALSE if we have read all the
 	///    digits already, i.e. at the end of the iteration.
 	
 	if (fkCurrentData == NULL) return kFALSE;
 	
+	fDecoder.SendDataOnParityError(skipParityErrors);
+
 retry:
 	// Check if we still have data to be returned for the current bus patch.
 	if (fkCurrentData != fkEndOfData)

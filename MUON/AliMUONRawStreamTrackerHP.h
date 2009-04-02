@@ -50,11 +50,16 @@ public:
 	/// Nothing is actually done in the AddErrorMessage method because we log
 	/// the error messages as we find them in AliDecoderEventHandler::OnError().
 	virtual void AddErrorMessage() { };
+
+	/// Advance one step in the iteration. Returns false if finished.
+	virtual Bool_t Next(Int_t& busPatchId,
+			    UShort_t& manuId, UChar_t& manuChannel,
+			    UShort_t& adc) { return Next(busPatchId,manuId,manuChannel,adc,kTRUE); }
 	
 	/// Advance one step in the iteration. Returns false if finished.
 	virtual Bool_t Next(Int_t& busPatchId,
-				UShort_t& manuId, UChar_t& manuChannel,
-				UShort_t& adc);
+			    UShort_t& manuId, UChar_t& manuChannel,
+			    UShort_t& adc, Bool_t skipParityErrors);
 	
 	/// Construct and return a pointer to the DDL payload object.
 	virtual AliMUONDDLTracker* GetDDLTracker() const;
