@@ -945,7 +945,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 {
   AliExternalTrackParam *track1;
   const Int_t knacc = (Int_t)fTrkArraySel.GetEntriesFast();
-  static TClonesArray linarray("AliStrLine",knacc);
+  AliStrLine **linarray = new AliStrLine* [knacc];
   for(Int_t i=0; i<knacc; i++){
     track1 = (AliExternalTrackParam*)fTrkArraySel.At(i);
     Double_t alpha=track1->GetAlpha();
@@ -958,7 +958,6 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
     sigmasq[2]=track1->GetSigmaZ2();
     TMatrixD ri(3,1);
     TMatrixD wWi(3,3);
-    //if(!TrackToPoint(track1,ri,wWi)) {printf("WARNING\n");continue;}
     if(!TrackToPoint(track1,ri,wWi)) {optUseWeights=kFALSE;printf("WARNING\n");}
     Double_t wmat[9];
     Int_t iel=0;
@@ -968,16 +967,31 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 	iel++;
       }    
     }
-    new(linarray[i]) AliStrLine(pos,sigmasq,wmat,dir);
+    linarray[i] = new AliStrLine(pos,sigmasq,wmat,dir);
   }
-  fVert=TrackletVertexFinder(&linarray,optUseWeights);
-  linarray.Clear("C");
+  fVert=TrackletVertexFinder(linarray,knacc,optUseWeights);
+  for(Int_t i=0; i<knacc; i++) delete linarray[i];
+  delete [] linarray;
 }
 //---------------------------------------------------------------------------
 AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights)
 {
-  // Calculate the point at minimum distance to prepared tracks 
+  // Calculate the point at minimum distance to prepared tracks (TClonesArray)
   const Int_t knacc = (Int_t)lines->GetEntriesFast();
+  AliStrLine** lines2 = new AliStrLine* [knacc];
+  for(Int_t i=0; i<knacc; i++){
+    lines2[i]= (AliStrLine*)lines->At(i);
+  }
+  AliESDVertex vert = TrackletVertexFinder(lines2,knacc,optUseWeights); 
+  delete [] lines2;
+  return vert;
+}
+
+//---------------------------------------------------------------------------
+AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const Int_t knacc, Int_t optUseWeights)
+{
+  // Calculate the point at minimum distance to prepared tracks (array of AliStrLine) 
+
   Double_t initPos[3]={0.,0.,0.};
 
   Double_t (*vectP0)[3]=new Double_t [knacc][3];
@@ -994,7 +1008,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
   }
 
   for(Int_t i=0; i<knacc; i++){
-    AliStrLine* line1 = (AliStrLine*)lines->At(i); 
+    AliStrLine *line1 = lines[i]; 
     Double_t p0[3],cd[3],sigmasq[3];
     Double_t wmat[9];
     if(!line1) printf("ERROR %d %d\n",i,knacc);
@@ -1075,6 +1089,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
   delete vectP1;
   return theVert;
 }
+
 //---------------------------------------------------------------------------
 Bool_t AliVertexerTracks::TrackToPoint(AliExternalTrackParam *t,
 				       TMatrixD &ri,TMatrixD &wWi,

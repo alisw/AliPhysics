@@ -30,6 +30,7 @@
 
 class AliVEvent;
 class AliESDEvent;
+class AliStrLine;
 
 class AliVertexerTracks : public TObject {
   
@@ -105,6 +106,7 @@ class AliVertexerTracks : public TObject {
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
   static AliESDVertex TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights=0);
+  static AliESDVertex TrackletVertexFinder(AliStrLine **lines, const Int_t knacc, Int_t optUseWeights=0);
   void     SetFieldkG(Double_t field=-999.) { fFieldkG=field; return; }
   Double_t GetFieldkG() const { 
     if(fFieldkG<-99.) AliFatal("Field value not set");
