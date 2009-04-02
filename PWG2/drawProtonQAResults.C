@@ -1373,8 +1373,11 @@ void drawVertexQA(TList *list) {
   c17->SetHighLightColor(10); c17->Divide(3,1);
   c17->cd(1)->SetLeftMargin(0.15); c17->cd(1)->SetBottomMargin(0.15);  
   c17->cd(1)->SetRightMargin(0.2);
+  c17->cd(1)->SetGridx(); c17->cd(1)->SetGridy();
+  gHistMCPrimaryMultiplicityTPC->SetTitle("TPC vertex");
   gHistMCPrimaryMultiplicityTPC->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicityTPC,gHistMCPrimaryMultiplicity);
+  gHistMCPrimaryMultiplicityTPC->SetMaximum(110.);
   gHistMCPrimaryMultiplicityTPC->Scale(100.);
   gHistMCPrimaryMultiplicityTPC->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicityTPC->SetMarkerColor(1);
@@ -1383,8 +1386,11 @@ void drawVertexQA(TList *list) {
   gHistMCPrimaryMultiplicityTPC->Draw("E");
   c17->cd(2)->SetLeftMargin(0.15); c17->cd(2)->SetBottomMargin(0.15);  
   c17->cd(2)->SetRightMargin(0.2);
+  c17->cd(2)->SetGridx(); c17->cd(2)->SetGridy();
+  gHistMCPrimaryMultiplicitySPD->SetTitle("SPD vertex");
   gHistMCPrimaryMultiplicitySPD->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicitySPD,gHistMCPrimaryMultiplicity);
+  gHistMCPrimaryMultiplicitySPD->SetMaximum(110.);
   gHistMCPrimaryMultiplicitySPD->Scale(100.);
   gHistMCPrimaryMultiplicitySPD->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicitySPD->SetMarkerColor(1);
@@ -1393,8 +1399,11 @@ void drawVertexQA(TList *list) {
   gHistMCPrimaryMultiplicitySPD->Draw("E");
   c17->cd(3)->SetLeftMargin(0.15); c17->cd(3)->SetBottomMargin(0.15);  
   c17->cd(3)->SetRightMargin(0.2);
+  c17->cd(3)->SetGridx(); c17->cd(3)->SetGridy();
+  gHistMCPrimaryMultiplicityTracks->SetTitle("Vertex from tracks");
   gHistMCPrimaryMultiplicityTracks->Divide(gHistMCPrimaryMultiplicity);
   SetError(gHistMCPrimaryMultiplicityTracks,gHistMCPrimaryMultiplicity);
+  gHistMCPrimaryMultiplicityTracks->SetMaximum(110.);
   gHistMCPrimaryMultiplicityTracks->Scale(100.);
   gHistMCPrimaryMultiplicityTracks->SetMarkerStyle(20);
   gHistMCPrimaryMultiplicityTracks->SetMarkerColor(1);

@@ -29,6 +29,7 @@ class AliESDtrack;
 class AliStack;
 class AliGenEventHeader;
 class AliESDVertex;
+class AliMCEvent;
 
 class AliProtonQAAnalysis : public TObject {
  public:
@@ -135,6 +136,9 @@ class AliProtonQAAnalysis : public TObject {
   TList *GetGlobalQAList() {return fGlobalQAList;}
 
   //Efficiency plots (reconstruction & PID)
+  void RunEfficiencyAnalysis(AliMCEvent *mcEvent, 
+			     AliESDEvent *esd,
+			     const AliESDVertex *vertex);
   void RunEfficiencyAnalysis(AliStack *stack, 
 			     AliESDEvent *esd,
 			     const AliESDVertex *vertex);
