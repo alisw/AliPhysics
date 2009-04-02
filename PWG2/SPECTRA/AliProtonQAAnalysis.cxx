@@ -27,6 +27,7 @@
 #include <TH1D.h>
 #include <TArrayI.h>
 #include <TParticle.h>
+#include <TClonesArray.h>
 
 #include "AliProtonQAAnalysis.h"
 
@@ -37,6 +38,7 @@
 #include <AliStack.h>
 #include <AliESDVertex.h>
 #include <AliGenEventHeader.h>
+#include <AliMCEvent.h>
 
 ClassImp(AliProtonQAAnalysis)
 
@@ -1851,28 +1853,36 @@ void AliProtonQAAnalysis::InitVertexQA() {
   Float_t xBins[24] = {0,1,2,4,6,8,10,15,20,30,40,50,75,100,
 		     200,300,400,500,750,1000,1500,2000,2500,3000};
   //MC primary multiplicity (vertex efficiency calculation)
+  TH1F *gHistMCPrimaryVz = new TH1F("gHistMCPrimaryVz",
+				    ";V_{z} (gen.) [cm];Entries",
+				    40,-20.,20.);
+  fQAVertexList->Add(gHistMCPrimaryVz);
   TH1F *gHistMCPrimaryMultiplicity = new TH1F("gHistMCPrimaryMultiplicity",
 					      ";N_{prim. gen.};Entries",
 					      23,xBins);
-  fQAVertexList->Add(gHistMCPrimaryMultiplicity);
+  //fQAVertexList->Add(gHistMCPrimaryMultiplicity);
   
   //TPC
+  TH1F *gHistTPCVz = new TH1F("gHistTPCVz",
+			      ";V_{z} (gen.) [cm];Entries",
+			      40,-20.,20.);
+  fQAVertexList->Add(gHistTPCVz);
   TH1F *gHistMCPrimaryMultiplicityTPC = new TH1F("gHistMCPrimaryMultiplicityTPC",
 						 "Vertex TPC;N_{prim. gen.};Entries",
 						 23,xBins);
-  fQAVertexList->Add(gHistMCPrimaryMultiplicityTPC);
-  TH2F *gHistTPCESDVx = new TH2F("gHistTPCESDVx",
+  //fQAVertexList->Add(gHistMCPrimaryMultiplicityTPC);
+  TH2F *gHistTPCESDVxN = new TH2F("gHistTPCESDVxN",
 				 "Primary vertex TPC;V_{x} [cm];N_{contributors}",
 				 100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistTPCESDVx);
-  TH2F *gHistTPCESDVy = new TH2F("gHistTPCESDVy",
+  fQAVertexList->Add(gHistTPCESDVxN);
+  TH2F *gHistTPCESDVyN = new TH2F("gHistTPCESDVyN",
 				 "Primary vertex TPC;V_{y} [cm];N_{contributors}",
 				 100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistTPCESDVy);
-  TH2F *gHistTPCESDVz = new TH2F("gHistTPCESDVz",
+  fQAVertexList->Add(gHistTPCESDVyN);
+  TH2F *gHistTPCESDVzN = new TH2F("gHistTPCESDVzN",
 				 "Primary vertex TPC;V_{z} [cm];N_{contributors}",
 				 100,-20.,20.,1000,0,5000);
-  fQAVertexList->Add(gHistTPCESDVz);
+  fQAVertexList->Add(gHistTPCESDVzN);
   TH1F *gHistTPCDiffVx = new TH1F("gHistTPCDiffVx",
 				  ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
 				  100,-10000.,10000.);
@@ -1899,22 +1909,26 @@ void AliProtonQAAnalysis::InitVertexQA() {
   fQAVertexList->Add(gHistTPCResolutionVz);
   
   //SPD
+  TH1F *gHistSPDVz = new TH1F("gHistSPDVz",
+			      ";V_{z} (gen.) [cm];Entries",
+			      40,-20.,20.);
+  fQAVertexList->Add(gHistSPDVz);
   TH1F *gHistMCPrimaryMultiplicitySPD = new TH1F("gHistMCPrimaryMultiplicitySPD",
 						 "Vertex SPD;N_{prim. gen.};Entries",
 						 23,xBins);
-  fQAVertexList->Add(gHistMCPrimaryMultiplicitySPD);
-  TH2F *gHistSPDESDVx = new TH2F("gHistSPDESDVx",
+  //fQAVertexList->Add(gHistMCPrimaryMultiplicitySPD);
+  TH2F *gHistSPDESDVxN = new TH2F("gHistSPDESDVxN",
 				 "Primary vertex SPD;V_{x} [cm];N_{contributors}",
 				 100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistSPDESDVx);
-  TH2F *gHistSPDESDVy = new TH2F("gHistSPDESDVy",
+  fQAVertexList->Add(gHistSPDESDVxN);
+  TH2F *gHistSPDESDVyN = new TH2F("gHistSPDESDVyN",
 				 "Primary vertex SPD;V_{y} [cm];N_{contributors}",
 				 100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistSPDESDVy);
-  TH2F *gHistSPDESDVz = new TH2F("gHistSPDESDVz",
+  fQAVertexList->Add(gHistSPDESDVyN);
+  TH2F *gHistSPDESDVzN = new TH2F("gHistSPDESDVzN",
 				 "Primary vertex SPD;V_{z} [cm];N_{contributors}",
 				 100,-20.,20.,1000,0,5000);
-  fQAVertexList->Add(gHistSPDESDVz);
+  fQAVertexList->Add(gHistSPDESDVzN);
   TH1F *gHistSPDDiffVx = new TH1F("gHistSPDDiffVx",
 				  ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
 				  100,-10000.,10000.);
@@ -1941,22 +1955,26 @@ void AliProtonQAAnalysis::InitVertexQA() {
   fQAVertexList->Add(gHistSPDResolutionVz);
   
   //Tracks
+  TH1F *gHistTracksVz = new TH1F("gHistTracksVz",
+				 ";V_{z} (gen.) [cm];Entries",
+				 40,-20.,20.);
+  fQAVertexList->Add(gHistTracksVz);
   TH1F *gHistMCPrimaryMultiplicityTracks = new TH1F("gHistMCPrimaryMultiplicityTracks",
 						    "Vertex Tracks;N_{prim. gen.};Entries",
 						    23,xBins);
-  fQAVertexList->Add(gHistMCPrimaryMultiplicityTracks);
-  TH2F *gHistTracksESDVx = new TH2F("gHistTracksESDVx",
-				    "Primary vertex Tracks;V_{x} [cm];N_{contributors}",
-				    100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistTracksESDVx);
-  TH2F *gHistTracksESDVy = new TH2F("gHistTracksESDVy",
+  //fQAVertexList->Add(gHistMCPrimaryMultiplicityTracks);
+  TH2F *gHistTracksESDVxN = new TH2F("gHistTracksESDVxN",
+				     "Primary vertex Tracks;V_{x} [cm];N_{contributors}",
+				     100,-10.,10.,1000,0,5000);
+  fQAVertexList->Add(gHistTracksESDVxN);
+  TH2F *gHistTracksESDVyN = new TH2F("gHistTracksESDVyN",
 				    "Primary vertex Tracks;V_{y} [cm];N_{contributors}",
 				    100,-10.,10.,1000,0,5000);
-  fQAVertexList->Add(gHistTracksESDVy);
-  TH2F *gHistTracksESDVz = new TH2F("gHistTracksESDVz",
+  fQAVertexList->Add(gHistTracksESDVyN);
+  TH2F *gHistTracksESDVzN = new TH2F("gHistTracksESDVzN",
 				    "Primary vertex Tracks;V_{z} [cm];N_{contributors}",
 				    100,-20.,20.,1000,0,5000);
-  fQAVertexList->Add(gHistTracksESDVz);
+  fQAVertexList->Add(gHistTracksESDVzN);
   TH1F *gHistTracksDiffVx = new TH1F("gHistTracksDiffVx",
 				     ";V_{x}(rec.) - V_{x}(true) [#mu m];Entries",
 				     100,-10000.,10000.);
@@ -2954,6 +2972,485 @@ void AliProtonQAAnalysis::InitQA() {
 }
 
 //____________________________________________________________________//
+void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliMCEvent *mcEvent, 
+						AliESDEvent *esd,
+						const AliESDVertex *vertex) {
+  //Run the reconstruction efficiency code (primaries & secondaries)
+  AliStack *stack = mcEvent->Stack();
+
+  Int_t nMCParticles = mcEvent->GetNumberOfTracks();
+  Int_t nMCLabelCounter = 0;
+  TArrayI labelMCArray(nMCParticles);
+  
+  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
+    AliMCParticle *mcTrack = mcEvent->GetTrack(iTracks);
+    if (!mcTrack) {
+      Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
+      continue;
+    }
+    if(TMath::Abs(mcTrack->Eta()) > 1.0) continue;//acceptance
+    if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt)) continue;
+    if(fAnalysisEtaMode) {
+      if((mcTrack->Eta() > fMaxY)|| (mcTrack->Eta() < fMinY)) continue;
+    }
+    else 
+      if((Rapidity(mcTrack->Px(),mcTrack->Py(),mcTrack->Pz()) > fMaxY)||(Rapidity(mcTrack->Px(),mcTrack->Py(),mcTrack->Pz()) < fMinY)) continue;
+    
+    // Loop over Track References
+    Bool_t LabelTPC = kFALSE;
+    AliTrackReference* trackRef = 0;
+    for (Int_t iTrackRef = 0; iTrackRef  < mcTrack->GetNumberOfTrackReferences(); iTrackRef++) {
+      trackRef = mcTrack->GetTrackReference(iTrackRef);
+      if(trackRef) {
+	Int_t detectorId = trackRef->DetectorId(); 
+	if (detectorId == AliTrackReference::kTPC) {	    
+	  LabelTPC = kTRUE;
+	  break;
+	}
+      }      
+    }
+
+    //findable tracks
+    if (LabelTPC) {
+      TParticle* particle = mcTrack->Particle();
+      Int_t pdgcode = particle->GetPdgCode();
+      if(TMath::Abs(pdgcode) != 2212) continue;
+      
+      labelMCArray.AddAt(iTracks,nMCLabelCounter);
+      nMCLabelCounter += 1;
+
+      if(iTracks <= stack->GetNprimary()) {
+	if(pdgcode == 2212) {
+	  if(fAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(0)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(0)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//protons
+	if(pdgcode == -2212) {
+	  if(fAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(1)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(1)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//antiprotons
+      }//primaries
+      else {
+	//secondaries
+	Int_t lPartMother = -1;
+	Int_t motherPDGCode = -1;
+	lPartMother = particle->GetFirstMother();
+	AliMCParticle *mcMotherTrack = mcEvent->GetTrack(lPartMother);
+	TParticle *motherParticle = mcMotherTrack->Particle();
+	if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+	
+	if(pdgcode == 2212) {
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fAnalysisEtaMode) 
+	      ((TH2D *)(fEfficiencyList->At(2)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fAnalysisEtaMode) 
+	      ((TH2D *)(fEfficiencyList->At(4)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//hadronic interactions
+	}//protons
+	if(pdgcode == -2212) {
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fAnalysisEtaMode) 
+	      ((TH2D *)(fEfficiencyList->At(3)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fAnalysisEtaMode) 
+	      ((TH2D *)(fEfficiencyList->At(5)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//hadronic interactions
+	}//antiprotons
+      }//secondaries
+    }//findable tracks
+  }//MC track loop
+
+  //ESD track loop
+  Bool_t iFound = kFALSE;
+  Int_t mcGoods = nMCLabelCounter;
+  for (Int_t k = 0; k < mcGoods; k++) {
+    Int_t mcLabel = labelMCArray.At(k);
+    iFound = kFALSE;
+
+    Int_t nGoodTracks = esd->GetNumberOfTracks();
+    TArrayI labelArray(nGoodTracks);
+    Int_t labelCounter = 0;
+    for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+      AliESDtrack* track = esd->GetTrack(iTracks);
+      if(!track) continue;
+            
+      //TPC only
+      if(fUseTPCOnly) {
+	AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+	if(!tpcTrack) continue;
+	
+	Int_t label = TMath::Abs(track->GetTPCLabel());
+	if(IsLabelUsed(labelArray,label)) continue;
+	labelArray.AddAt(label,labelCounter);
+	labelCounter += 1;
+	
+	if (mcLabel != TMath::Abs(label)) continue;
+	if(mcLabel != label) continue;
+	
+	TParticle *particle = stack->Particle(label);
+	if(!particle) continue;
+	Int_t pdgcode = particle->GetPdgCode();
+	if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+	if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+	if(fAnalysisEtaMode) {
+	  if((particle->Eta() > fMaxY)|| (particle->Eta() < fMinY)) continue;
+	}
+	else 
+	  if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+	
+	Double_t probability[5];
+	
+	if(fUseCutsInEfficiency) 
+	  if(!IsAccepted(esd,vertex,track)) continue;
+	
+	//reconstructed primary (anti)protons
+	if(pdgcode == 2212) {
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
+	  if(label <= stack->GetNprimary()) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//primaries
+	  if(label > stack->GetNprimary()) {
+	    Int_t lPartMother = -1;
+	    Int_t motherPDGCode = -1;
+	    lPartMother = particle->GetFirstMother();
+	    TParticle *motherParticle = stack->Particle(lPartMother);
+	    if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+	    
+	    if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(8)))->Fill(particle->Eta(),
+							 particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(8)))->Fill(Rapidity(particle->Px(),
+								  particle->Py(),
+								  particle->Pz()),
+							 particle->Pt());
+	    }//weak decays
+	    if((particle->GetUniqueID() == 13)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(10)))->Fill(particle->Eta(),
+							  particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(10)))->Fill(Rapidity(particle->Px(),
+								   particle->Py(),
+								   particle->Pz()),
+							  particle->Pt());
+	    }//hadronic interactions
+	  }//secondaries
+	}//initial protons
+	if(pdgcode == -2212) {	
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
+	  if(label <= stack->GetNprimary()) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//primaries
+	  if(label > stack->GetNprimary()) {
+	    Int_t lPartMother = -1;
+	    Int_t motherPDGCode = -1;
+	    lPartMother = particle->GetFirstMother();
+	    TParticle *motherParticle = stack->Particle(lPartMother);
+	    if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+	    
+	    if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(9)))->Fill(particle->Eta(),
+							 particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(9)))->Fill(Rapidity(particle->Px(),
+								  particle->Py(),
+								  particle->Pz()),
+							 particle->Pt());
+	    }//weak decays
+	    if((particle->GetUniqueID() == 13)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(11)))->Fill(particle->Eta(),
+							  particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(11)))->Fill(Rapidity(particle->Px(),
+								   particle->Py(),
+								   particle->Pz()),
+							  particle->Pt());
+	    }//hadronic interactions
+	  }//secondaries
+	}//initial antiprotons
+	
+	//pid
+	track->GetTPCpid(probability);
+	Double_t rcc = 0.0;
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  rcc += probability[i]*GetParticleFraction(i,particle->P());
+	if(rcc == 0.0) continue;
+	Double_t w[5];
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  w[i] = probability[i]*GetParticleFraction(i,particle->P())/rcc;
+	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
+	  if(TMath::Abs(pdgcode) == 2212) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//properly identified as proton
+	  else {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//contamination
+	}//identified as proton
+      }//TPC only tracks
+      else if(!fUseTPCOnly) {
+	Int_t label = TMath::Abs(track->GetLabel());
+	if(IsLabelUsed(labelArray,label)) continue;
+	labelArray.AddAt(label,labelCounter);
+	labelCounter += 1;
+	
+	if (mcLabel != TMath::Abs(label)) continue;
+	if(mcLabel != label) continue;
+	
+	TParticle *particle = stack->Particle(label);
+	if(!particle) continue;
+	Int_t pdgcode = particle->GetPdgCode();
+	if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+	if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+	if(fAnalysisEtaMode) {
+	  if((particle->Eta() > fMaxY)|| (particle->Eta() < fMinY)) continue;
+	}
+	else 
+	  if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+	
+	Double_t probability[5];
+
+	if(fUseCutsInEfficiency) 
+	  if(!IsAccepted(esd,vertex,track)) continue;
+	
+	//reconstructed primary (anti)protons
+	if(pdgcode == 2212) {
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
+	  if(label <= stack->GetNprimary()) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//primaries
+	  if(label > stack->GetNprimary()) {
+	    Int_t lPartMother = -1;
+	    Int_t motherPDGCode = -1;
+	    lPartMother = particle->GetFirstMother();
+	    TParticle *motherParticle = stack->Particle(lPartMother);
+	    if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+	    
+	    if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(8)))->Fill(particle->Eta(),
+							 particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(8)))->Fill(Rapidity(particle->Px(),
+								  particle->Py(),
+								  particle->Pz()),
+							 particle->Pt());
+	    }//weak decays
+	    if((particle->GetUniqueID() == 13)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(10)))->Fill(particle->Eta(),
+							  particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(10)))->Fill(Rapidity(particle->Px(),
+								   particle->Py(),
+								   particle->Pz()),
+							  particle->Pt());
+	    }//hadronic interactions
+	  }//secondaries
+	}//initial protons
+	if(pdgcode == -2212) {	
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
+	  if(label <= stack->GetNprimary()) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//primaries
+	  if(label > stack->GetNprimary()) {
+	    Int_t lPartMother = -1;
+	    Int_t motherPDGCode = -1;
+	    lPartMother = particle->GetFirstMother();
+	    TParticle *motherParticle = stack->Particle(lPartMother);
+	    if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+	    
+	    if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(9)))->Fill(particle->Eta(),
+							 particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(9)))->Fill(Rapidity(particle->Px(),
+								  particle->Py(),
+								  particle->Pz()),
+							 particle->Pt());
+	    }//weak decays
+	    if((particle->GetUniqueID() == 13)) {
+	      if(fAnalysisEtaMode)
+		((TH2D *)(fEfficiencyList->At(11)))->Fill(particle->Eta(),
+							  particle->Pt());
+	      else
+		((TH2D *)(fEfficiencyList->At(11)))->Fill(Rapidity(particle->Px(),
+								   particle->Py(),
+								   particle->Pz()),
+							  particle->Pt());
+	    }//hadronic interactions
+	  }//secondaries
+	}//initial antiprotons
+	
+	//pid
+	track->GetESDpid(probability);
+	Double_t rcc = 0.0;
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  rcc += probability[i]*GetParticleFraction(i,particle->P());
+	if(rcc == 0.0) continue;
+	Double_t w[5];
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  w[i] = probability[i]*GetParticleFraction(i,particle->P())/rcc;
+	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+	  if(fAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						      particle->Pt());
+	  else ((TH2D *)(fEfficiencyList->At(14)))->Fill(Rapidity(particle->Px(),
+								  particle->Py(),
+								  particle->Pz()),
+							 particle->Pt());
+	  if(TMath::Abs(pdgcode) == 2212) {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//properly identified as proton
+	  else {
+	    if(fAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//contamination
+	}//identified as proton
+      }//global tracking
+    }//track loop
+    labelArray.Reset();
+  }//loop over findable tracks
+
+  labelMCArray.Reset();
+}
+
+//____________________________________________________________________//
 void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack, 
 						AliESDEvent *esd,
 						const AliESDVertex *vertex) {
@@ -3411,7 +3908,7 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
   header->PrimaryVertex(primaryVertex);
 
   Int_t nPrimaries = stack->GetNprimary();
-  ((TH1F *)(fQAVertexList->At(0)))->Fill(nPrimaries);
+  ((TH1F *)(fQAVertexList->At(0)))->Fill(primaryVertex[2]);
 
   //TPC vertex
   const AliESDVertex *vertexTPC = esd->GetPrimaryVertexTPC();
@@ -3420,7 +3917,7 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
     return;
   }
   if(vertexTPC->GetNContributors() > 0) {
-    ((TH1F *)(fQAVertexList->At(1)))->Fill(nPrimaries);
+    ((TH1F *)(fQAVertexList->At(1)))->Fill(primaryVertex[2]);
     ((TH2F *)(fQAVertexList->At(2)))->Fill(vertexTPC->GetXv(),
 					   vertexTPC->GetNContributors());
     ((TH2F *)(fQAVertexList->At(3)))->Fill(vertexTPC->GetYv(),
@@ -3442,7 +3939,7 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
     return;
   }
   if(vertexSPD->GetNContributors() > 0) {
-    ((TH1F *)(fQAVertexList->At(11)))->Fill(nPrimaries);
+    ((TH1F *)(fQAVertexList->At(11)))->Fill(primaryVertex[2]);
     ((TH2F *)(fQAVertexList->At(12)))->Fill(vertexSPD->GetXv(),
 					    vertexSPD->GetNContributors());
     ((TH2F *)(fQAVertexList->At(13)))->Fill(vertexSPD->GetYv(),
@@ -3464,7 +3961,7 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
     return;
   }
   if(vertexTracks->GetNContributors() > 0) {
-    ((TH1F *)(fQAVertexList->At(21)))->Fill(nPrimaries);
+    ((TH1F *)(fQAVertexList->At(21)))->Fill(primaryVertex[2]);
     ((TH2F *)(fQAVertexList->At(22)))->Fill(vertexTracks->GetXv(),
 					    vertexTracks->GetNContributors());
     ((TH2F *)(fQAVertexList->At(23)))->Fill(vertexTracks->GetYv(),
