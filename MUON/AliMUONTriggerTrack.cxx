@@ -41,25 +41,27 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fthetax(0),
     fthetay(0),
     floTrgNum(0),
-    fGTPattern(0)
+    fGTPattern(0),
+    fHitsPatternInTrigCh(0)
 
 {
   /// default ctr
       AliDebug(1,Form("this=%p",this));
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t loTrgNum, Long_t theGTPattern)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t loTrgNum, Long_t theGTPattern, UShort_t hitsPatternInTrigCh)
     : TObject(),
       fx11(x11),
       fy11(y11),
       fthetax(thetax),
       fthetay(thetay),
       floTrgNum(loTrgNum),
-      fGTPattern(theGTPattern)
+      fGTPattern(theGTPattern),
+      fHitsPatternInTrigCh(fHitsPatternInTrigCh)
 {
 /// ctor from local trigger output
-        AliDebug(1,Form("this=%p x11=%f y11=%f thetax=%f thetay=%f loTrgNum=%d GTPattern=%ld",
-                        this,x11,y11,thetax,thetay,loTrgNum,theGTPattern));
+        AliDebug(1,Form("this=%p x11=%f y11=%f thetax=%f thetay=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
+                        this,x11,y11,thetax,thetay,loTrgNum,theGTPattern,fHitsPatternInTrigCh));
 
 }
 
@@ -78,7 +80,8 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
       fthetax(theMUONTriggerTrack.fthetax),
       fthetay(theMUONTriggerTrack.fthetay),
       floTrgNum(theMUONTriggerTrack.floTrgNum),
-      fGTPattern(theMUONTriggerTrack.fGTPattern)    
+      fGTPattern(theMUONTriggerTrack.fGTPattern),
+      fHitsPatternInTrigCh(theMUONTriggerTrack.fHitsPatternInTrigCh)  
 {
 ///
 /// copy ctor
@@ -106,6 +109,7 @@ theMUONTriggerTrack)
     fthetay = theMUONTriggerTrack.fthetay;
     floTrgNum = theMUONTriggerTrack.floTrgNum;
     fGTPattern = theMUONTriggerTrack.fGTPattern;
+    fHitsPatternInTrigCh = theMUONTriggerTrack.fHitsPatternInTrigCh;
 
     return *this;
 }
@@ -116,6 +120,6 @@ AliMUONTriggerTrack::Print(Option_t*) const
 {
 /// Printing
 
-  cout << Form("(X,Y)11=(%7.2f,%7.2f) Theta(X,Y)=(%7.2f,%7.2f) LocalBoard #%3d GlobalTriggerPattern %x",
-               fx11,fy11,fthetax,fthetay,floTrgNum,fGTPattern) << endl;
+  cout << Form("(X,Y)11=(%7.2f,%7.2f) Theta(X,Y)=(%7.2f,%7.2f) LocalBoard #%3d GlobalTriggerPattern %x HitsPatternInTrigCh %x",
+               fx11,fy11,fthetax,fthetay,floTrgNum,fGTPattern,fHitsPatternInTrigCh) << endl;
 }

@@ -17,11 +17,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Class to describe the MUON tracks
-//  in the Event Summary Data class
-//  This is where the results of reconstruction
-//  are stored for the muons
-//  Author: G.Martinez
+/// \class AliESDMuonTrack
+///  Class to describe the MUON tracks in the Event Summary Data class
+///  This is where the results of reconstruction are stored for the muons
+///
+/// \author G.Martinez
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +72,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fLabel(-1)
 {
   //
-  // Default constructor
+  /// Default constructor
   //
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0;
 }
@@ -116,8 +116,8 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fLabel(muonTrack.fLabel)
 {
   //
-  // Copy constructor
-  // Deep copy implemented
+  /// Copy constructor
+  /// Deep copy implemented
   //
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = muonTrack.fCovariances[i];
   
@@ -136,7 +136,7 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
 AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
 {
   // 
-  // Equal operator for a deep copy
+  /// Equal operator for a deep copy
   //
   if (this == &muonTrack)
     return *this;
@@ -201,9 +201,9 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
 
 void AliESDMuonTrack::Copy(TObject &obj) const {
   
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
+  /// This overwrites the virtual TOBject::Copy()
+  /// to allow run time copying without casting
+  /// in AliESDEvent
 
   if(this==&obj)return;
   AliESDMuonTrack *robj = dynamic_cast<AliESDMuonTrack*>(&obj);
@@ -271,7 +271,7 @@ void AliESDMuonTrack::Reset()
 //_____________________________________________________________________________
 void AliESDMuonTrack::GetCovariances(TMatrixD& cov) const
 {
-  // return covariance matrix of uncorrected parameters
+  /// return covariance matrix of uncorrected parameters
   cov.ResizeTo(5,5);
   for (Int_t i = 0; i < 5; i++)
     for (Int_t j = 0; j <= i; j++)
@@ -281,7 +281,7 @@ void AliESDMuonTrack::GetCovariances(TMatrixD& cov) const
 //_____________________________________________________________________________
 void AliESDMuonTrack::SetCovariances(const TMatrixD& cov)
 {
-  // set reduced covariance matrix of uncorrected parameters
+  /// set reduced covariance matrix of uncorrected parameters
   for (Int_t i = 0; i < 5; i++)
     for (Int_t j = 0; j <= i; j++)
       fCovariances[i*(i+1)/2 + j] = cov(i,j);
@@ -291,16 +291,16 @@ void AliESDMuonTrack::SetCovariances(const TMatrixD& cov)
 //_____________________________________________________________________________
 void AliESDMuonTrack::GetCovarianceXYZPxPyPz(Double_t cov[21]) const
 {
-  // return reduced covariance matrix of uncorrected parameters in (X,Y,Z,Px,Py,Pz) coordinate system
-  // 
-  // Cov(x,x) ... :   cov[0]
-  // Cov(y,x) ... :   cov[1]  cov[2]
-  // Cov(z,x) ... :   cov[3]  cov[4]  cov[5]
-  // Cov(px,x)... :   cov[6]  cov[7]  cov[8]  cov[9]
-  // Cov(py,x)... :   cov[10] cov[11] cov[12] cov[13] cov[14]
-  // Cov(pz,x)... :   cov[15] cov[16] cov[17] cov[18] cov[19] cov[20]
-  //
-  // Get ESD covariance matrix into a TMatrixD
+  /// return reduced covariance matrix of uncorrected parameters in (X,Y,Z,Px,Py,Pz) coordinate system
+  /// 
+  /// - Cov(x,x) ... :   cov[0]
+  /// - Cov(y,x) ... :   cov[1]  cov[2]
+  /// - Cov(z,x) ... :   cov[3]  cov[4]  cov[5]
+  /// - Cov(px,x)... :   cov[6]  cov[7]  cov[8]  cov[9]
+  /// - Cov(py,x)... :   cov[10] cov[11] cov[12] cov[13] cov[14]
+  /// - Cov(pz,x)... :   cov[15] cov[16] cov[17] cov[18] cov[19] cov[20]
+  ///
+  /// Get ESD covariance matrix into a TMatrixD
   TMatrixD covESD(5,5);
   GetCovariances(covESD);
 
@@ -340,7 +340,7 @@ void AliESDMuonTrack::GetCovarianceXYZPxPyPz(Double_t cov[21]) const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::Px() const
 {
-  // return p_x from track parameters
+  /// return p_x from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaX);
   Double_t bendingSlope    = TMath::Tan(fThetaY);
   Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : - FLT_MAX;
@@ -351,7 +351,7 @@ Double_t AliESDMuonTrack::Px() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::Py() const
 {
-  // return p_y from track parameters
+  /// return p_y from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaY);
   Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : - FLT_MAX;
   Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -361,7 +361,7 @@ Double_t AliESDMuonTrack::Py() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::Pz() const
 {
-  // return p_z from track parameters
+  /// return p_z from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaY);
   Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : - FLT_MAX;
   return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -370,7 +370,7 @@ Double_t AliESDMuonTrack::Pz() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::P() const
 {
-  // return p from track parameters
+  /// return p from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaX);
   Double_t bendingSlope    = TMath::Tan(fThetaY);
   Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : - FLT_MAX;
@@ -381,7 +381,7 @@ Double_t AliESDMuonTrack::P() const
 //_____________________________________________________________________________
 void AliESDMuonTrack::LorentzP(TLorentzVector& vP) const
 {
-  // return Lorentz momentum vector from track parameters
+  /// return Lorentz momentum vector from track parameters
   Double_t muonMass = M();
   Double_t nonBendingSlope = TMath::Tan(fThetaX);
   Double_t bendingSlope    = TMath::Tan(fThetaY);
@@ -396,7 +396,7 @@ void AliESDMuonTrack::LorentzP(TLorentzVector& vP) const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PxAtDCA() const
 {
-  // return p_x from track parameters
+  /// return p_x from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
   Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
   Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : - FLT_MAX;
@@ -407,7 +407,7 @@ Double_t AliESDMuonTrack::PxAtDCA() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PyAtDCA() const
 {
-  // return p_y from track parameters
+  /// return p_y from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaYAtDCA);
   Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : - FLT_MAX;
   Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -417,7 +417,7 @@ Double_t AliESDMuonTrack::PyAtDCA() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PzAtDCA() const
 {
-  // return p_z from track parameters
+  /// return p_z from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaYAtDCA);
   Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : - FLT_MAX;
   return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -426,7 +426,7 @@ Double_t AliESDMuonTrack::PzAtDCA() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PAtDCA() const
 {
-  // return p from track parameters
+  /// return p from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
   Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
   Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : - FLT_MAX;
@@ -437,7 +437,7 @@ Double_t AliESDMuonTrack::PAtDCA() const
 //_____________________________________________________________________________
 void AliESDMuonTrack::LorentzPAtDCA(TLorentzVector& vP) const
 {
-  // return Lorentz momentum vector from track parameters
+  /// return Lorentz momentum vector from track parameters
   Double_t muonMass = M();
   Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
   Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
@@ -452,7 +452,7 @@ void AliESDMuonTrack::LorentzPAtDCA(TLorentzVector& vP) const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PxUncorrected() const
 {
-  // return p_x from track parameters
+  /// return p_x from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
   Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
   Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : - FLT_MAX;
@@ -463,7 +463,7 @@ Double_t AliESDMuonTrack::PxUncorrected() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PyUncorrected() const
 {
-  // return p_y from track parameters
+  /// return p_y from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaYUncorrected);
   Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : - FLT_MAX;
   Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -473,7 +473,7 @@ Double_t AliESDMuonTrack::PyUncorrected() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PzUncorrected() const
 {
-  // return p_z from track parameters
+  /// return p_z from track parameters
   Double_t bendingSlope = TMath::Tan(fThetaYUncorrected);
   Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : - FLT_MAX;
   return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
@@ -482,7 +482,7 @@ Double_t AliESDMuonTrack::PzUncorrected() const
 //_____________________________________________________________________________
 Double_t AliESDMuonTrack::PUncorrected() const
 {
-  // return p from track parameters
+  /// return p from track parameters
   Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
   Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
   Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : - FLT_MAX;
@@ -493,7 +493,7 @@ Double_t AliESDMuonTrack::PUncorrected() const
 //_____________________________________________________________________________
 void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
 {
-  // return Lorentz momentum vector from track parameters
+  /// return Lorentz momentum vector from track parameters
   Double_t muonMass = M();
   Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
   Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
@@ -508,11 +508,11 @@ void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
 //_____________________________________________________________________________
 Int_t AliESDMuonTrack::GetMatchTrigger() const
 {
-  //  backward compatibility after replacing fMatchTrigger by fLocalTrigger
-  //  0 track does not match trigger
-  //  1 track match but does not pass pt cut
-  //  2 track match Low pt cut
-  //  3 track match High pt cut
+  ///  backward compatibility after replacing fMatchTrigger by fLocalTrigger
+  ///  - 0 track does not match trigger
+  ///  - 1 track match but does not pass pt cut
+  ///  - 2 track match Low pt cut
+  ///  - 3 track match High pt cut
 
   if (!LoCircuit()) {
     return 0;
@@ -529,7 +529,7 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
 //_____________________________________________________________________________
 Int_t AliESDMuonTrack::GetNClusters() const
 {
-  // return the number of clusters associated to the track
+  /// return the number of clusters associated to the track
   if (!fClusters) return 0;
   
   return fClusters->GetEntriesFast();
@@ -538,7 +538,7 @@ Int_t AliESDMuonTrack::GetNClusters() const
 //_____________________________________________________________________________
 TClonesArray& AliESDMuonTrack::GetClusters() const
 {
-  // return the array of clusters associated to the track
+  /// return the array of clusters associated to the track
   if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
   
   return *fClusters;
@@ -547,7 +547,7 @@ TClonesArray& AliESDMuonTrack::GetClusters() const
 //_____________________________________________________________________________
 void AliESDMuonTrack::AddCluster(const AliESDMuonCluster &cluster)
 {
-  // add a cluster to the TClonesArray of clusters associated to the track
+  /// add a cluster to the TClonesArray of clusters associated to the track
   if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
   
   new ((*fClusters)[fClusters->GetEntriesFast()]) AliESDMuonCluster(cluster);
@@ -556,9 +556,44 @@ void AliESDMuonTrack::AddCluster(const AliESDMuonCluster &cluster)
 //_____________________________________________________________________________
 Bool_t AliESDMuonTrack::ClustersStored() const
 {
-  // return kTRUE if the clusters associated to the track are registered
+  /// return kTRUE if the clusters associated to the track are registered
   if (GetNClusters() == 0) return kFALSE;
   
   return kTRUE;
 }
 
+//_____________________________________________________________________________
+void AliESDMuonTrack::SetFiredChamber(UShort_t& pattern, Int_t cathode, Int_t chamber)
+{
+  /// Turn on the bit corresponding to fired chameber
+  pattern |= (0x1 << ( 7 - ( 4*cathode + chamber )));
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::AddEffInfo(UShort_t& pattern, Int_t slatOrInfo, EAliTriggerChPatternFlag effType)
+{
+  /// Add efficiency flag and crossed RPC or info on rejected track
+  pattern |= effType << 8;
+  pattern |= slatOrInfo << 10;
+}
+
+//_____________________________________________________________________________
+Bool_t AliESDMuonTrack::IsChamberHit(UShort_t pattern, Int_t cathode, Int_t chamber)
+{ 
+  /// Check if chamber was was hit
+  return (pattern >> (7 - ( 4*cathode + chamber ))) & 0x1;
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetEffFlag(UShort_t pattern)
+{
+  /// Get Efficiency flag
+  return (pattern >> 8) & 0x03;
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetSlatOrInfo(UShort_t pattern) 
+{
+  /// Getting crossed slat or info
+  return (pattern >> 10) & 0x1F;
+}

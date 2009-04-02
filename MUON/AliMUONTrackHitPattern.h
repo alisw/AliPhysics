@@ -44,21 +44,18 @@ public:
 					 AliMUONTrackParam& trackParam,
 					 const AliMUONVTriggerTrackStore& triggerTrackStore,
 					 const AliMUONVTriggerStore& triggerStore) const;
-    
+
   UShort_t GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
-			 AliMUONVDigitStore& digitStore,
-			 AliMUONTrackParam* trackParam=0x0) const;
+			 AliMUONVDigitStore& digitStore) const;
+  
+  UShort_t GetHitPattern(AliMUONTrackParam* trackParam,
+			 AliMUONVDigitStore& digitStore) const;
 
 protected:
   void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
   
   void InitMembers();
   
-  void SetBit(UShort_t& pattern, Int_t cathode, Int_t chamber) const;
-  
-  void AddEffInfo(UShort_t& pattern, Int_t slat, Int_t effType) const;
-  
-
   // Methods for hit pattern from tracker track
   void FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
 			    const AliMUONTrackParam& trackParam,
@@ -109,13 +106,6 @@ private:
   static const Int_t fgkNchambers=4; //!<Number of chambers
   static const Int_t fgkNplanes=8;   //!<Number of planes
   static const Int_t fgkNlocations=4; //!<Number of locations
-
-  enum {
-    kNoEff,
-    kChEff,
-    kSlatEff,
-    kBoardEff
-  };
   
   ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };

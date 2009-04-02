@@ -22,7 +22,8 @@ class AliMUONTriggerTrack : public TObject
     virtual ~AliMUONTriggerTrack(); // Destructor
     AliMUONTriggerTrack (const AliMUONTriggerTrack& AliMUONTriggerTrack); // copy constructor
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
-    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t iloTrg, Long_t theGTPattern); 
+    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay,
+			Int_t iloTrg, Long_t theGTPattern, UShort_t hitsPatternInTrigCh=0); 
     
     // getters
     
@@ -53,7 +54,12 @@ class AliMUONTriggerTrack : public TObject
     /// Set Global trigger pattern  (do not work with static statement) 
     void SetGTPattern(UChar_t pat) {fGTPattern = pat;}    
     /// Return Global trigger pattern  (do not work with static statement) 
-    UChar_t GetGTPattern() const {return fGTPattern;}    
+    UChar_t GetGTPattern() const {return fGTPattern;}
+
+    /// set word telling which trigger chambers where hit by track
+    UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
+    /// set word telling which trigger chambers where hit by track
+    void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
     
     virtual void Print(Option_t* opt="") const;
     
@@ -64,9 +70,10 @@ protected:
   Float_t fthetax; ///< track theta angle in X   
   Float_t fthetay; ///< track theta angle in Y
   Int_t   floTrgNum; ///< local trigger number
-  UChar_t fGTPattern; ///< Global trigger pattern  (do not work with static statement) 
+  UChar_t fGTPattern; ///< Global trigger pattern  (do not work with static statement)
+  UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
 
-  ClassDef(AliMUONTriggerTrack, 4) // Reconstructed trigger track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTriggerTrack, 5) // Reconstructed trigger track in ALICE dimuon spectrometer
     };
 	
 #endif

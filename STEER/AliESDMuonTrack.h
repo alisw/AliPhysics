@@ -6,8 +6,8 @@
 
 /* $Id$ */
 
-//  Class to describe the MUON tracks
-//  in the Event Summary Data class
+/// \class AliESDMuonTrack
+/// \brief Class to describe the MUON tracks in the Event Summary Data class
 //  Author: G.Martinez
 
 
@@ -107,7 +107,7 @@ public:
   Int_t    LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }
   Int_t    LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
-  
+
   // Get and Set methods for the hit strips pattern in the trigger chambers
   UShort_t GetTriggerX1Pattern() const { return fX1Pattern; }
   UShort_t GetTriggerY1Pattern() const { return fY1Pattern; }
@@ -178,6 +178,41 @@ public:
   void  SetLabel(Int_t label) {fLabel = label;}
   /// Return the corresponding MC track number
   Int_t GetLabel() const {return fLabel;}
+
+  /// Additional methods to decode hit pattern
+  /// The hit pattern is a UShort_t with:
+  /// <pre>
+  ///   0    |   1 0 0 0 1  |  1 1  |   1  1  0  1  |   1  1  0  1   
+  ///        |              |       |               | 
+  /// unused |  RPC (0-17)  |  flag |  Bend plane   | Non-bend plane
+  ///        |      or      |       | Match chamber | Match chamber
+  ///        | further info |       |  11 12 13 14  |  11 12 13 14
+  ///        |    (20-24)   |       |               |
+  /// </pre>
+  enum EAliTriggerChPatternFlag {
+    kNoEff,    ///< Track is not good for chamber efficiency evaluation
+    kChEff,    ///< Track crosses different RPCs
+    kSlatEff,  ///< Track crosses the same RPC in all planes
+    kBoardEff  ///< Track crosses the same board in all planes
+  };
+  enum EAliTriggerChPatternInfo {
+    kCrossDifferentSlats  = 20, ///< The RPC cannot be univoquely determined
+    kTrackMatchesManyPads = 21, ///< Track not good for effciency calculation since it matches many pads
+    kTrackMatchesFewPads  = 22, ///< Track not good for effciency calculation since it matches pads in less than 3/4 chambers
+    kTrackOutsideGeometry = 23, ///< Problems in pattern determination since track extrapolation is outside trigger chambers
+    kTrackerTrackPattern  = 24  ///< The pattern was calculated from a tracker track not matching trigger track
+  };
+  /// Set hits pattern
+  static void SetFiredChamber(UShort_t& pattern, Int_t cathode, Int_t chamber);
+  /// Add efficiency flag and crossed RPC or info on rejected track
+  static void AddEffInfo(UShort_t& pattern, Int_t slatOrInfo, EAliTriggerChPatternFlag effType = kNoEff);
+  /// Chamber was hit
+  static Bool_t IsChamberHit(UShort_t pattern, Int_t cathode, Int_t chamber);
+  /// Get Efficiency flag
+  static Int_t GetEffFlag(UShort_t pattern);
+  /// Getting crossed slat or info
+  static Int_t GetSlatOrInfo(UShort_t pattern);
+
   
 protected:
   // parameters at vertex

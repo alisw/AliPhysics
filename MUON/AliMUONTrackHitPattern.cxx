@@ -23,14 +23,7 @@
 /// searching for matching trigger tracks and fired strips.
 ///
 /// To each track, a hit pattern for trigger chambers is set.
-/// The hit pattern is a UShort_t with 8 bits used:
-///                                                                      <pre>
-///            1  1  0  1    1  1  0  1
-///           |           |            |
-///            ----------- ------------
-/// chamber:  11 12 13 14 | 11 12 13 14
-/// cathode:    bending   | non-bending
-///                                                                      </pre>
+/// 
 /// The main method is:
 /// * ExecuteValidation
 ///
@@ -65,6 +58,7 @@
 
 #include "AliLog.h"
 #include "AliTracker.h"
+#include "AliESDMuonTrack.h"
 
 #include <Riostream.h>
 #include <TArrayS.h>
@@ -158,7 +152,18 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
   AliMUONDigitStoreV1 digitStore;
   fkDigitMaker.TriggerToDigitsStore(triggerStore,digitStore);
 
+  // Get the hit pattern for all trigger tracks
+  AliMUONTriggerTrack* triggerTrack;
+  TIter itTriggerTrack(triggerTrackStore.CreateIterator());
+  while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() ) ) ){
+    UShort_t pattern = GetHitPattern(triggerTrack, digitStore);
+    triggerTrack->SetHitsPatternInTrigCh(pattern);
+    AliDebug(1, Form("Hit pattern: hits 0x%x  slat %2i  board %3i  effFlag %i",
+		     pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern),
+		     triggerTrack->GetLoTrgNum(), AliESDMuonTrack::GetEffFlag(pattern)));
+  }
 
+  // Match tracker tracks with trigger tracks.
   TIter itTrack(trackStore.CreateIterator());
   AliMUONTrack* track;
 
@@ -173,7 +178,13 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
 
     AliMUONTriggerTrack *matchedTriggerTrack = MatchTriggerTrack(track, trackParam, triggerTrackStore, triggerStore);
 
-    UShort_t pattern = GetHitPattern(matchedTriggerTrack, digitStore, &trackParam);
+    // Copy trigger tracks hit pattern if there is matching,
+    // otherwise calculate the hit pattern directly from tracker track:
+    // the obtained pattern is good for check, but not good for efficiency determination.
+    UShort_t pattern = matchedTriggerTrack ?
+      matchedTriggerTrack->GetHitsPatternInTrigCh() : 
+      GetHitPattern(&trackParam, digitStore);
+
     track->SetHitsPatternInTrigCh(pattern);
   }
 }
@@ -321,31 +332,27 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 
 //______________________________________________________________________________
 UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
-					       AliMUONVDigitStore& digitStore,
-					       AliMUONTrackParam* trackParam) const
+					       AliMUONVDigitStore& digitStore) const
 {
   //
-  /// Get hit pattern on trigger chambers for the current track
+  /// Get hit pattern on trigger chambers for the current trigger track
+  //
+  UShort_t pattern = 0;
+  PerformTrigTrackMatch(pattern, matchedTriggerTrack, digitStore);
+  return pattern;
+}
+
+
+//______________________________________________________________________________
+UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam,
+					       AliMUONVDigitStore& digitStore) const
+{
+  //
+  /// Get hit pattern on trigger chambers for the current tracker track
   //
   UShort_t pattern = 0;
   Bool_t isMatch[2];
   const Int_t kNTrackingCh = AliMUONConstants::NTrackingCh();
-
-  Bool_t patternFromTrigTrack = kFALSE;
-
-
-  // Calculate hit pattern from trigger track
-  if(matchedTriggerTrack){
-    patternFromTrigTrack = PerformTrigTrackMatch(pattern, matchedTriggerTrack, digitStore);
-  }
-
-  if(patternFromTrigTrack) return pattern;
-
-
-  // Calculate hit pattern from tracker track propagation
-  // if hit pattern from trigger track failed and track parameters are provided
-
-  if(!trackParam) return 0;
 
   for(Int_t ch=0; ch<4; ++ch)
   {
@@ -354,35 +361,16 @@ UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTriggerTrack* matchedTrigg
     FindPadMatchingTrack(digitStore, *trackParam, isMatch, iChamber);
     for(Int_t cath=0; cath<2; ++cath)
     {
-      if(isMatch[cath]) SetBit(pattern, cath, ch);
+      if(isMatch[cath]) AliESDMuonTrack::SetFiredChamber(pattern, cath, ch);
     }
   }
+
+  // pattern obtained by propagation of tracker track
+  // when it does not match the trigger.
+  AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackerTrackPattern);
+
   return pattern;
 }
-
-
-//______________________________________________________________________________
-void AliMUONTrackHitPattern::SetBit(UShort_t& pattern, Int_t cathode, Int_t chamber) const
-{
-  //
-  /// Set hits pattern
-  //
-  const Int_t kMask[2][4]= {{0x80, 0x40, 0x20, 0x10},
-			    {0x08, 0x04, 0x02, 0x01}};
-  pattern |= kMask[cathode][chamber];
-}
-
-
-//______________________________________________________________________________
-void AliMUONTrackHitPattern::AddEffInfo(UShort_t& pattern, Int_t slat, Int_t effType) const
-{
-  //
-  /// Set info on efficiency calculation
-  //
-  pattern += effType << 8;
-  pattern += slat << 10;
-}
-
 
 //______________________________________________________________________________
 void 
@@ -568,18 +556,21 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digi
 	}
     }
 
-    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-	if(padsInCheckArea[cath]>2) {
-	  AliDebug(1, Form("padsInCheckArea[%i] = %i\n",cath,padsInCheckArea[cath]));
-	    return -500;
-	}
-    }
-
     if(isMatch[kBending] || isMatch[kNonBending]){
 	detElemId = foundDetElemId;
 	zRealMatch[ch] = foundZmatch;
 	coor[1] = yCoorAtPadZ;
     }
+
+    // If track matches many pads, it is not good for effciency determination.
+    // However we still want to calculate the hit pattern.
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+      if(padsInCheckArea[cath]>2) {
+	AliDebug(1, Form("padsInCheckArea[%i] = %i\n",cath,padsInCheckArea[cath]));
+	return -500;
+      }
+    }
+
     return trigDigitBendPlane;
 }
 
@@ -788,22 +779,28 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
     Int_t detElemIdFromTrack = DetElemIdFromPos(trackIntersectCh[currCh][0], trackIntersectCh[currCh][1], 11+currCh, 0);
     if(detElemIdFromTrack<0) {
       AliDebug(1, "Warning: trigger track outside trigger chamber\n");
+      isClearEvent = kFALSE;
+
+      // track is rejected since the extrapolated track
+      // does not match a slat (border effects)
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackOutsideGeometry);
       continue;
     }
 		
     triggeredDigits[currCh] = FindPadMatchingTrig(digitStore, detElemIdFromTrack, trackIntersectCh[currCh], isMatch, nboard, zRealMatch, y11);
 
     // if FindPadMatchingTrig = -500 => too many digits matching pad =>
-    //                               => Event not clear => Reject track
+    //                               => Event not clear => Do not use for efficiency calculation
     if(triggeredDigits[currCh]<-100){
       isClearEvent = kFALSE;
+      // track is rejected since it matches many pads
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesManyPads);
       AliDebug(1, Form("Warning: track = %p (%i) matches many pads. Rejected!\n",(void *)matchedTrigTrack, detElemIdFromTrack));
-      break;
     }
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       if(!isMatch[cath]) continue;
-      SetBit(pattern, cath, currCh);
+      AliESDMuonTrack::SetFiredChamber(pattern, cath, currCh);
       digitPerTrack[cath]++;
       trigScheme[cath][currCh]++;
       slatThatTriggered[cath][currCh] = detElemIdFromTrack;
@@ -814,13 +811,18 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
   } // end chamber loop
 
   for(Int_t cath=0; cath<fgkNcathodes; cath++){
-    if(digitPerTrack[cath]<3) isClearEvent = kFALSE;
-    if(!isClearEvent) AliDebug(1, Form("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath));
+    if(digitPerTrack[cath]<3) {
+      isClearEvent = kFALSE;
+      // track is rejected since the number of associated
+      // digits found is less than 3.
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesFewPads);
+      AliDebug(1, Form("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath));
+    }
   }
 
   if(!isClearEvent) return kFALSE;
 
-  Int_t goodForEff = kBoardEff;
+  AliESDMuonTrack::EAliTriggerChPatternFlag goodForEff = AliESDMuonTrack::kBoardEff;
 
   Int_t ineffSlat = -1;
   Int_t ineffDetElId = -1;
@@ -838,7 +840,9 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
       isCurrChIneff = kTRUE;
     }
     if(currSlat!=firstSlat) {
-      AddEffInfo(pattern, 20, kChEff);
+      AliESDMuonTrack::AddEffInfo(pattern,
+				  AliESDMuonTrack::kCrossDifferentSlats,
+				  AliESDMuonTrack::kChEff); // track crosses different slats
       return kTRUE;
     }
     Bool_t atLeastOneLoc=kFALSE;
@@ -851,9 +855,9 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
 	break;
       }
     }
-    if(!atLeastOneLoc) goodForEff = kSlatEff;
+    if(!atLeastOneLoc) goodForEff = AliESDMuonTrack::kSlatEff;
   } // end chamber loop
   
-  AddEffInfo(pattern, firstSlat, goodForEff);
+  AliESDMuonTrack::AddEffInfo(pattern, firstSlat, goodForEff);
   return kTRUE;
 }
