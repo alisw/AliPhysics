@@ -470,7 +470,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
       fAt->GetNbins(), fAt->GetXmin(), fAt->GetXmax());
     }
     arr->AddAt(h2, 0);
-    h2->SetXTitle("d [mm]");
+    h2->SetXTitle("d [cm]");
     h2->SetYTitle("t_{drift} [#mus]");
     h2->SetZTitle("#sigma_{x} [cm]");
     arr->AddAt(h2 = (TH2F*)h2->Clone("hSY"), 1);
@@ -480,8 +480,8 @@ Bool_t AliTRDclusterResolution::PostProcess()
     arr->SetOwner();
     arr->AddAt(h2 = (TH2F*)h2->Clone("hDX"), 0);
     h2->SetZTitle("dx [cm]");
-    arr->AddAt(h2 = (TH2F*)h2->Clone("hX0"), 1);
-    h2->SetZTitle("x0 [cm]");
+    arr->AddAt(h2 = (TH2F*)h2->Clone("hDY"), 1);
+    h2->SetZTitle("dy [cm]");
   } else {
     TObject *o = 0x0;
     TIterator *iter=fResults->MakeIterator();
@@ -877,15 +877,16 @@ void AliTRDclusterResolution::ProcessMean()
   }
   TGraphErrors *gm = new TGraphErrors();
   TF1 f("f", "gaus", -.5, .5);
-  TF1 line("l", Form("%6.4f*[0]+[1]*x", fExB), -.15, .15);
-  Double_t d(0.), x(0.), dx, x0;
+  TF1 line("l", "[0]+[1]*x", -.15, .15);
+  Double_t d(0.), x(0.), dx, dy;
   TAxis *ax = 0x0;
   TH1D *h1 = 0x0;
   TH2I *h2 = 0x0;
+  TH1 *hFrame=0x0;
 
   TObjArray *arrr = (TObjArray*)fResults->At(kMean);
   TH2F *hdx = (TH2F*)arrr->At(0);
-  TH2F *hx0 = (TH2F*)arrr->At(1);
+  TH2F *hdy = (TH2F*)arrr->At(1);
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     d = fAd->GetBinCenter(id); //[mm]
     printf(" Doing d = %5.3f [mm]\n", d);
@@ -903,7 +904,7 @@ void AliTRDclusterResolution::ProcessMean()
       for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
         Double_t dydx = ax->GetBinCenter(ix);
         h1 = h2->ProjectionY("py", ix, ix);
-        if(h1->GetEntries() < 50) continue;
+        if(h1->GetEntries() < 200) continue;
         //Adjust(&f, h1);
         h1->Fit(&f, "QN");
 
@@ -916,25 +917,34 @@ void AliTRDclusterResolution::ProcessMean()
       if(gm->GetN()<4) continue;
 
       gm->Fit(&line, "QN");
-      dx = line.GetParameter(1); // = (fVdrift + dVd)*(fT + tCorr);
-      x0 = line.GetParameter(0); // = tg(a_L)*dx
+      dx = line.GetParameter(1);
+      Double_t xs = line.GetParameter(0);
+      dy = xs + fExB*dx; // xs = dy - tg(a_L)*dx
       hdx->SetBinContent(id, it, dx);
-      hx0->SetBinContent(id, it, x0);
+      hdy->SetBinContent(id, it, dy);
 
       if(!fCanvas) continue;
       fCanvas->cd();
-      gm->Draw("apl"); line.Draw("same");
+      if(!hFrame){ 
+        hFrame=new TH1I("hFrame", "", 100, -.3, .3);
+        hFrame->SetMinimum(-.1);hFrame->SetMaximum(.1);
+        hFrame->SetXTitle("tg#phi-htg#theta");
+        hFrame->SetYTitle("#Deltay[cm]");
+        hFrame->SetLineColor(1);hFrame->SetLineWidth(1);
+        hFrame->Draw();
+      } else hFrame->Reset();
+      gm->Draw("pl"); line.Draw("same");
       fCanvas->Modified(); fCanvas->Update();
       if(IsSaveAs()) fCanvas->SaveAs(Form("Figures/ProcessMean_D%d_T%02d.gif", id, it));
       else gSystem->Sleep(100);
-      printf("    xd=%4.1f[cm] dx=%5.3e[cm] x0=%5.3e[cm]\n", x, dx, x0);
+      printf("    xd=%4.1f[cm] dx=%5.3e[cm] dy=%5.3e[cm] xs=%5.3e[cm]\n", x, dx, dy, xs);
     }
   }
 
   TH1D *h=hdx->ProjectionY("hdx_py"); h->Scale(1./hdx->GetNbinsX());
   printf("  const Float_t cx[] = {\n    ");
   for(Int_t ib=1; ib<=h->GetNbinsX(); ib++){
-    printf("%6.4e, ", h->GetBinContent(ib));
+    printf("%+6.4e, ", h->GetBinContent(ib));
     if(ib%6==0) printf("\n    ");
   }
   printf("  };\n");

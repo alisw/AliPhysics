@@ -666,7 +666,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     tracklets[ip] = t.GetTracklet(ip);
     t.UnsetTracklet(ip);
   } 
-  Bool_t kStoreIn = kTRUE;
+  Bool_t kStoreIn = kTRUE, kPropagateIn = kTRUE;
 
   // Loop through the TRD layers
   TGeoHMatrix *matrix = 0x0;
@@ -835,6 +835,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       break;
     }
   
+    if(kPropagateIn){
+      t.SetTrackLow(); 
+      kPropagateIn = kFALSE;
+    }
+
     // update Kalman with the TRD measurement
     Double_t chi2 = t.GetPredictedChi2(ptrTracklet);
     if(chi2>1e+10){

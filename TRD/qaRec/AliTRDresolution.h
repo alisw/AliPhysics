@@ -66,6 +66,7 @@ public:
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackletPhi(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTrackIn(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotMC(const AliTRDtrackV1 *t=0x0);
 
   void    SetRecoParam(AliTRDrecoParam *r);

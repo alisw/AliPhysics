@@ -302,6 +302,107 @@ TH1* AliTRDresolution::PlotTrackletPhi(const AliTRDtrackV1 *track)
   return h;
 }
 
+//________________________________________________________
+TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
+{
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  AliExternalTrackParam *tin = 0x0;
+  if(!(tin = fTrack->GetTrackLow())){
+    AliWarning("Track did not entered TRD fiducial volume.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  
+  Double_t x = tin->GetX();
+  AliTRDseedV1 *tracklet = 0x0;  
+  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    if(!(tracklet = fTrack->GetTracklet(ily))) continue;
+    break;
+  }
+  if(!tracklet || TMath::Abs(x-tracklet->GetX())>1.e-3){
+    AliWarning("Tracklet did not match TRD entrance.");
+    return 0x0;
+  }
+  const Int_t kNPAR(5);
+  Double_t parR[kNPAR]; memcpy(parR, tin->GetParameter(), kNPAR*sizeof(Double_t));
+  Double_t covR[3*kNPAR]; memcpy(covR, tin->GetCovariance(), 3*kNPAR*sizeof(Double_t));
+  Double_t cov[3]; tracklet->GetCovAt(x, cov);
+
+  // define sum covariances
+  TMatrixDSym COV(kNPAR);
+  Double_t *pc = &covR[0];
+  for(Int_t ir=0, idx=0; ir<kNPAR; ir++){
+    for(Int_t ic = 0; ic<=ir; ic++,pc++,idx++){ 
+      COV(ir,ic) = (*pc);
+      COV(ic,ir) = (*pc);
+      //printf("c%2d[%f] ", idx, *pc);
+    }
+    //printf("\n");
+  }
+  //COV.Print();
+
+  COV(0,0) += cov[0]; 
+  COV(1,0) += cov[1]; COV(0, 1) += cov[1];
+  COV(1,1) += cov[2];
+  Double_t dy = parR[0] - tracklet->GetY(); 
+  Double_t dz = parR[1] - tracklet->GetZ(); 
+
+  if(fDebugLevel>=1){
+    Double_t dydx = 1./TMath::Sqrt(1.-parR[2]*parR[2]),
+             pt   = 1./parR[4];
+    Double_t c0 = covR[0]+cov[0],
+             c1 = covR[1]+cov[1],
+             c2 = covR[2]+cov[2];
+    (*fDebugStream) << "trackIn"
+      << "x="       << x
+      << "dy="      << dy
+      << "dz="      << dz
+      << "dydx="    << dydx
+      << "dzdx="    << parR[3]
+      << "pt="      << pt
+      << "s2y="     << c0
+      << "cyz="     << c1
+      << "s2z="     << c2
+      << "\n";
+  }
+
+
+  if(!HasMCdata()) return h;
+  UChar_t s;
+  Float_t dx, pt0, x0=tracklet->GetX0(), y0, z0, dydx0, dzdx0;
+  if(!fMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) return h;
+  // translate to reference radial position
+  dx = x0 - x; y0 -= dx*dydx0; z0 -= dx*dzdx0;
+  // re-set covariance matrix
+  pc = &covR[0];
+  for(Int_t ir = 0; ir<kNPAR; ir++){
+    for(Int_t ic = 0; ic<=ir; ic++, pc++){ 
+      COV(ir,ic) = (*pc); COV(ic,ir) = (*pc);
+    }
+  }
+
+  // calculate delta
+  parR[0]-=y0;parR[1]-=z0;
+  parR[2]-=1./TMath::Sqrt(1.+dydx0*dydx0); parR[3]-=dzdx0;
+  parR[4]-=1./pt0;
+  // 
+  if(fDebugLevel>=1){
+    (*fDebugStream) << "trackInMC"
+      << "x="     << x
+      << "dp0="   << parR[0]
+      << "dp1="   << parR[1]
+      << "dp2="   << parR[2]
+      << "dp3="   << parR[3]
+      << "dp4="   << parR[4]
+      << "cov="   << &COV
+      << "\n";
+  }
+  return h;
+}
 
 //________________________________________________________
 TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
@@ -320,7 +421,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Int_t pdg = fMC->GetPDG(), det=-1;
   Int_t label = fMC->GetLabel();
   Double_t xAnode, x, y, z, pt, dydx, dzdx;
-  Float_t p, pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
+  Float_t pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
   Double_t covR[3]/*, cov[3]*/;
 
   if(fDebugLevel>=1){
@@ -371,7 +472,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     }
     Float_t yt = y0 - dx*dydx0;
     Float_t zt = z0 - dx*dzdx0;
-    p = pt0*(1.+dzdx0*dzdx0); // pt -> p
+    //p = pt0*TMath::Sqrt(1.+dzdx0*dzdx0); // pt -> p
 
     // Kalman position at reference radial position
     dx = xAnode - x;

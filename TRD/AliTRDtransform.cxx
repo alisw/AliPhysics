@@ -263,12 +263,12 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // T0 correction
     Double_t timeT0Cal   = time - t0;
     // Calculate the X-position,
-    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency - kT0shift) * vdrift; 
+    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency - kT0shift) * vdrift + AliTRDcluster::GetXcorr(TMath::Nint(timeT0Cal)); 
 
     // Length of the amplification region
-    Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
+    //Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
     // The drift distance
-    Double_t driftLength = TMath::Max(xLocal - 0.5*ampLength,0.0);
+    Double_t driftLength = TMath::Max(xLocal,0.0);
     // ExB correction
     Double_t exbCorr     = AliTRDCommonParam::Instance()->GetOmegaTau(vdrift);
 
@@ -280,8 +280,8 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // apply ExB correction to the Y-position
     // and move to the Z-position relative to the middle of the chamber
     posLocal[0] = kX0shift-xLocal;
-    posLocal[1] =  (fPadPlane->GetColPos(col) + (0.5 + x[0]) * colSize) - driftLength * exbCorr;
-    posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
+    posLocal[1] = (fPadPlane->GetColPos(col) + (0.5 + x[0]) * colSize) - driftLength * exbCorr;
+    posLocal[2] = (fPadPlane->GetRowPos(row) -  0.5  * rowSize) - fZShiftIdeal;
 
     // Go to tracking coordinates
     fMatrix->LocalToMaster(posLocal,posTracking);
