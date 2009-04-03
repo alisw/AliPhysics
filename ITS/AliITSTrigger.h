@@ -5,42 +5,39 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////
+//                                                                    //
+// Simulates generation of Fast-OR signals from SPD (if needed).      //
+// Processes the Fast-OR signals generated in AliITSsimulationSPD.    //
+// Provides inputs for AliCentralTrigger.                             //
+//                                                                    //
+// Version 2, Henrik Tydesjo, Feb 2009                                //
+// Version 1, D. Elia, C. Jorgensen, Mar 2006                         //
+// Version 0, J. Conrad, E. Lopez Torres, Oct 2005                    //
+//                                                                    //
+////////////////////////////////////////////////////////////////////////
+
 #include "AliTriggerDetector.h"
+#include "AliITSTriggerFOProcessor.h"
 
-class AliITSgeom;
+class AliITSTriggerConditions;
 
-////////////////////////////////////////////////////////////////////////
-//
-// Version 1
-// Modified by D. Elia, C. Jorgensen
-// March 2006
-//
-// Version 0
-// Written by J. Conrad, E. Lopez Torres
-// October 2005
-//
-// AliITSTrigger: implementation of the SPD Fast-OR based triggers.
-//
-////////////////////////////////////////////////////////////////////////
+class AliITSTrigger : public AliTriggerDetector {
 
-class AliITSTrigger : public AliTriggerDetector
-{
  public:
-                   AliITSTrigger();   // constructor
-        virtual   ~AliITSTrigger(){}  // destructor
-   virtual void    CreateInputs();
-   virtual void    Trigger();
+  AliITSTrigger();
+  AliITSTrigger(AliITSTriggerConditions* cond);
+  virtual ~AliITSTrigger() {}
 
-private:
+  virtual void    SetTriggerConditions(AliITSTriggerConditions* cond);
+  virtual void    CreateInputs();
+  virtual void    Trigger();
 
-   Int_t fGlobalFOThreshold;         // minimum number of FOs to fire Global FO trigger
-   Int_t fHighMultFOThreshold;       // minimum number of FOs to fire High Mult FO trigger
+ private:
+  AliITSTriggerFOProcessor fPITprocessor; //! used for processing of FO signals
 
-   void MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
-//   void GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
-   void GeometryTriggers();
+  ClassDef( AliITSTrigger, 2 )  // ITS SPD Trigger Detector class
 
-  ClassDef( AliITSTrigger, 1 )  // ITS SPD Trigger Detector class
 };
 
 #endif

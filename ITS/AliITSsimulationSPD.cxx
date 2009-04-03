@@ -288,7 +288,9 @@ void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod,Int_t,
    InitSimulationModule( GetModuleNumber() , event );
    // HitToSDigit(mod);
    HitToSDigitFast(mod);
-   RemoveDeadPixels(mod);
+  if (fDetType->GetSimuParam()->GetSPDAddNoisyFlag())   AddNoisyPixels();
+  if (fDetType->GetSimuParam()->GetSPDRemoveDeadFlag()) RemoveDeadPixels();
+
 //    cout << "After Remove in SDigitiseModule !!!!!" << endl; // dom
 //    cout << "Module " << mod->GetIndex() << " Event " << event << endl; // dom
    WriteSDigits();
@@ -357,7 +359,9 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod,Int_t,
    // HitToSDigit(mod);
    InitSimulationModule( mod->GetIndex(), event );
    HitToSDigitFast(mod);
-   RemoveDeadPixels(mod);
+   
+  if (fDetType->GetSimuParam()->GetSPDAddNoisyFlag())   AddNoisyPixels();
+  if (fDetType->GetSimuParam()->GetSPDRemoveDeadFlag()) RemoveDeadPixels();
 //    cout << "After Remove in DigitiseModule in module " << mod->GetIndex() << endl; // dom
    FrompListToDigits();
    ClearMap();
@@ -717,26 +721,29 @@ void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
    } // end for ix, iz
 }
 //______________________________________________________________________
-void AliITSsimulationSPD::RemoveDeadPixels(AliITSmodule *mod){
-   //    Removes dead pixels on each module (ladder)
-   // Inputs:
-   //    Module Index (0,239)
-   // Outputs:
-   //    none.
-   // Return:
-   //    none.
+void AliITSsimulationSPD::RemoveDeadPixels(){
+  // Removes dead pixels on each module (ladder)
+  // This should be called before going from sdigits to digits (FrompListToDigits)
+  Int_t mod = GetModuleNumber();
+  AliITSCalibrationSPD* calObj = (AliITSCalibrationSPD*) fDetType->GetCalibrationModel(mod);
 
- Int_t moduleNr = mod->GetIndex();
- AliITSCalibrationSPD* calObj = (AliITSCalibrationSPD*) GetCalibrationModel(moduleNr);
+  Int_t nrDead = calObj->GetNrBad();
+  for (Int_t i=0; i<nrDead; i++) {
+    GetMap()->DeleteHit(calObj->GetBadColAt(i), calObj->GetBadRowAt(i));
+  }
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::AddNoisyPixels() {
+  // Adds noisy pixels on each module (ladder)
+  // This should be called before going from sdigits to digits (FrompListToDigits)
+  Int_t mod = GetModuleNumber();
+  AliITSCalibrationSPD* calObj = (AliITSCalibrationSPD*) fDetType->GetSPDNoisyModel(mod);
 
- Int_t nrDead = calObj->GetNrBad();
-//  cout << "Module --> " << moduleNr << endl; // dom
-//  cout << "nr of dead " << nrDead << endl; // dom
- for (Int_t i=0; i<nrDead; i++) {
-   GetMap()->DeleteHit(calObj->GetBadColAt(i),calObj->GetBadRowAt(i));
-//    cout << "dead index " << i << endl; // dom
-//    cout << "col row --> " << calObj->GetDeadColAt(i) << " " << calObj->GetDeadRowAt(i) << endl; // dom
- }
+  Int_t nrNoisy = calObj->GetNrBad();
+  for (Int_t i=0; i<nrNoisy; i++) {
+    // adding 10 times the threshold will for sure make this pixel fire...
+    GetMap()->AddNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i), mod, 10*GetThreshold());
+  }
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::FrompListToDigits(){
@@ -783,7 +790,8 @@ void AliITSsimulationSPD::FrompListToDigits(){
            cout<<sig<<"+"<<electronics<<">threshold("<<ix<<","<<iz
                <<")="<<GetThreshold() <<endl;
        } // end if GetDebug
-       if (sig+electronics <= GetThreshold()) continue;
+      // if (sig+electronics <= GetThreshold()) continue;
+       if (GetMap()->GetSignal(iz,ix) <= GetThreshold()) continue;
        dig.SetCoord1(iz);
        dig.SetCoord2(ix);
        dig.SetSignal(1);
@@ -811,6 +819,8 @@ void AliITSsimulationSPD::FrompListToDigits(){
            cout<<iz<<","<<ix<<","<<*(GetMap()->GetpListItem(iz,ix))<<endl;
        } // end if GetDebug
        aliITS->AddSimDigit(0,&dig);
+       // simulate fo signal response for this pixel hit:
+       fDetType->ProcessSPDDigitForFastOr(fModule, dig.GetCoord1(), dig.GetCoord2());
    } //  for ix/iz
 }
 //______________________________________________________________________

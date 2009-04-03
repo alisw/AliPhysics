@@ -13,6 +13,7 @@
 
 class TTree;
 class AliITSDDLModuleMapSDD;
+class AliITSFOSignalsSPD;
 
 class AliITSDDLRawData:public TObject{
  public:
@@ -20,7 +21,7 @@ class AliITSDDLRawData:public TObject{
   virtual ~AliITSDDLRawData(){;}//destructor
   AliITSDDLRawData(const AliITSDDLRawData &source); // copy constructor
   AliITSDDLRawData& operator=(const AliITSDDLRawData &source); // ass. op.
-  Int_t RawDataSPD(TBranch* branch);
+  Int_t RawDataSPD(TBranch* branch, AliITSFOSignalsSPD* foSignals = NULL);
   // This method generates the files with the Silicon pixel detector data
   Int_t RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsdd); 
   // This method generates the files with the Silicon drift detector data
@@ -32,7 +33,7 @@ class AliITSDDLRawData:public TObject{
     fUseCompressedSDDFormat=opt;
   }
  private: 
-  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,UInt_t *buf);
+  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,UInt_t *buf, AliITSFOSignalsSPD* foSignals = NULL);
   //This method formats and stores in buf all the digits of a SPD module
   void  GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod,UInt_t *buf);
   void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
@@ -40,7 +41,7 @@ class AliITSDDLRawData:public TObject{
   void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SSD module
   void  WriteChipHeader(Int_t ChipAddr,Int_t halfStave,UInt_t &BaseWord);
-  void  WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord);
+  void  WriteChipTrailer(UInt_t *buf, Int_t ChipHitCount, Bool_t foBit, UInt_t &BaseWord);
   void  WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t &BaseWord);
   //The three previous  methods are used to store the data according to the 
   //Silicon pixel detector data format

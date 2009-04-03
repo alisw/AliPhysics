@@ -67,6 +67,12 @@ class AliITSSimuParam : public TObject {
   void   SetSPDSigmaDiffusionAsymmetry(Double_t ecc) {fSPDEccDiff=ecc;}   
   void   GetSPDSigmaDiffusionAsymmetry(Double_t &ecc) const {ecc=fSPDEccDiff;}
 
+  
+  void   SetSPDAddNoisyFlag(Bool_t value) {fSPDAddNoisyFlag = value;}
+  Bool_t GetSPDAddNoisyFlag() {return fSPDAddNoisyFlag;}
+  void   SetSPDRemoveDeadFlag(Bool_t value) {fSPDRemoveDeadFlag = value;}
+  Bool_t GetSPDRemoveDeadFlag() {return fSPDRemoveDeadFlag;}
+  
   void SetSDDElectronics(Int_t p1=1) {fSDDElectronics=p1;   }
   Int_t GetSDDElectronics()  const {return fSDDElectronics;}
 
@@ -205,7 +211,9 @@ class AliITSSimuParam : public TObject {
   Double_t fSPDCouplCol;    // SPD Coupling parameter along the cols
   Double_t fSPDCouplRow;    // SPD Coupling parameter along the rows
   Float_t  fSPDEccDiff;     // Eccentricity (i.e. asymmetry parameter) in the 
-                            // Gaussian diffusion for SPD
+                            // Gaussian diffusion for SPD  
+  Bool_t   fSPDAddNoisyFlag;     // Flag saying whether noisy pixels should be added to digits
+  Bool_t   fSPDRemoveDeadFlag;   // Flag saying whether dead pixels should be removed from digits
 
   Int_t    fSDDElectronics;  // SDD Electronics Pascal (1) or OLA (2)
   Float_t  fSDDDiffCoeff;    // SDD Diffusion Coefficient (scaling the time)
@@ -229,6 +237,6 @@ class AliITSSimuParam : public TObject {
   Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
   Float_t fT;   // The temperature of the Si in Degree K.
 
-  ClassDef(AliITSSimuParam,2);
+  ClassDef(AliITSSimuParam,3);
 };
 #endif

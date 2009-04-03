@@ -160,7 +160,9 @@ fTrackleterZetaWindow(1.00),
 fTrackleterRemoveClustersFromOverlaps(kFALSE),
 fTrackleterPhiOverlapCut(0.005),
 fTrackleterZetaOverlapCut(0.05),
-fUseCosmicRunShiftsSSD(kFALSE)
+fUseCosmicRunShiftsSSD(kFALSE),
+fSPDRemoveNoisyFlag(kTRUE),
+fSPDRemoveDeadFlag(kTRUE)
 {
   //
   // constructor

@@ -31,9 +31,11 @@
 #include "AliITSRawStreamSPD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSPD.h"
+#include "AliITSFOSignalsSPD.h"
 
 ClassImp(AliITSClusterFinderV2SPD)
 
+//__________________________________________________________________________
 AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
 fLastSPD1(AliITSgeomTGeo::GetModuleIndex(2,1,1)-1),
 fNySPD(256),
@@ -63,18 +65,16 @@ fHlSPD(3.48){
   }
 
 }
- 
-
+//__________________________________________________________________________
 void AliITSClusterFinderV2SPD::FindRawClusters(Int_t mod){
-
   //Find clusters V2
   SetModule(mod);
   FindClustersSPD(fDigits);
 
 }
-
+//__________________________________________________________________________
 void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader, TClonesArray** clusters){
-    //------------------------------------------------------------
+  //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
@@ -82,7 +82,7 @@ void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader, TClone
   FindClustersSPD(&inputSPD, clusters);
 
 }
-
+//__________________________________________________________________________
 Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,TClonesArray* clusters,Int_t maxBins,Int_t nzbins,Int_t iModule,Bool_t rawdata){
   
   //Cluster finder for SPD (from digits and from rawdata)
@@ -97,16 +97,35 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(iModule);
 
-  AliITSCalibrationSPD *cal =  
-       (AliITSCalibrationSPD*) fDetTypeRec->GetCalibrationModel(iModule); 
-  // Loop on bad pixels and reset them
-  for(Int_t ipix = 0; ipix<cal->GetNrBad(); ipix++){
-    Int_t row, col;
-    cal->GetBadPixel(ipix,row,col);
-    Int_t index = (row+1) * nzbins + (col+1);
-    bins[index].SetQ(0);
-    bins[index].SetMask(0xFFFFFFFE);
+   if (repa->GetSPDRemoveNoisyFlag()) {
+    // Loop on noisy pixels and reset them
+    AliITSCalibrationSPD *cal =  
+      (AliITSCalibrationSPD*) fDetTypeRec->GetCalibrationModel(iModule);
+    for(Int_t ipix = 0; ipix<cal->GetNrBad(); ipix++){
+      Int_t row, col;
+      cal->GetBadPixel(ipix,row,col);
+      printf(" module %d   row %d  col %d \n",iModule,row,col);
+      Int_t index = (row+1) * nzbins + (col+1);
+      
+      bins[index].SetQ(0);
+      bins[index].SetMask(0xFFFFFFFE);
+    }
   }
+  
+    if (repa->GetSPDRemoveDeadFlag()) {
+    // Loop on dead pixels and reset them
+    AliITSCalibrationSPD *cal =  
+      (AliITSCalibrationSPD*) fDetTypeRec->GetSPDDeadModel(iModule); 
+    if (cal->IsBad()) return 0; // if all ladder is dead, return to save time
+    for(Int_t ipix = 0; ipix<cal->GetNrBad(); ipix++){
+      Int_t row, col;
+      cal->GetBadPixel(ipix,row,col);
+      Int_t index = (row+1) * nzbins + (col+1);
+      bins[index].SetQ(0);
+      bins[index].SetMask(0xFFFFFFFE);
+    }
+  }
+  
   Int_t nclu=0;
   for(Int_t iBin =0; iBin < maxBins;iBin++){
     if(bins[iBin].IsUsed()) continue;
@@ -138,6 +157,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
       zmin=dig->GetCoord1();
       zmax=zmin;
     }
+     if(iModule == 24 || iModule == 25)  printf("\n");
     for (Int_t idx = 0; idx < nBins; idx++) {
       Int_t iy;
       Int_t iz; 
@@ -149,6 +169,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	AliITSdigitSPD* dig = (AliITSdigitSPD*)digits->UncheckedAt(idxBins[idx]);
 	iy = dig->GetCoord2();
 	iz = dig->GetCoord1();
+        //if(iModule == 24 || iModule == 25) printf(" ||  iy %d   iz %d  in Module %d \n",iy,iz,iModule);
       }
       if (ymin > iy) ymin = iy;
       if (ymax < iy) ymax = iy;
@@ -247,16 +268,15 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   return nclu;
   
 }
-
-
-
-
+//__________________________________________________________________________
 void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input, 
 					TClonesArray** clusters) 
 {
   //------------------------------------------------------------
-  // Actual SPD cluster finder for raw data
+  // SPD cluster finder for raw data (this method is called once per event)
+  // Now also fills fast-or fired map
   //------------------------------------------------------------
+  
   Int_t nClustersSPD = 0;
   Int_t kNzBins = fNzSPD + 2;
   Int_t kNyBins = fNySPD + 2;
@@ -284,23 +304,12 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
       memcpy(binsSPD,binsSPDInit,sizeof(AliBin)*kMaxBin);
     }
 
-    // fill the current digit into the bins array
-    Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
-    bins[index].SetIndex(index);
-    bins[index].SetMask(1);
-    bins[index].SetQ(1);
-  }
-
-  // get the FastOr bit map
-  fDetTypeRec->ResetFastOrFiredMap();
-  for(UInt_t eq=0; eq<20; eq++) {
-    for(UInt_t hs=0; hs<6; hs++) {
-      for(UInt_t chip=0; chip<10; chip++) {
-        if(input->GetFastOrSignal(eq,hs,chip)) {
-          UInt_t chipKey = input->GetOfflineChipKeyFromOnline(eq,hs,chip);
-          fDetTypeRec->SetFastOrFiredMap(chipKey);
-        }
-      }
+    if (next) {
+      // fill the current digit into the bins array
+      Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
+      bins[index].SetIndex(index);
+      bins[index].SetQ(1);
+      bins[index].SetMask(1);
     }
   }
 
@@ -309,13 +318,24 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
   
   // AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
   Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
+ 
+    // Fill the FastOr fired map
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t hs=0; hs<6; hs++) {
+      for (UInt_t chip=0; chip<10; chip++) {
+        if (input->GetFastOrSignal(eq,hs,chip)) {
+	  fDetTypeRec->SetFastOrFiredMapOnline(eq,hs,chip);
+        }
+      }
+    }
+  }
+  
 }
-
-
-
+//__________________________________________________________________________
 void AliITSClusterFinderV2SPD::FindClustersSPD(TClonesArray *digits) {
   //------------------------------------------------------------
-  // Actual SPD cluster finder
+  // SPD cluster finder for digits (this method is called for each module)
+  // Now also fills the fast-or fired map
   //------------------------------------------------------------
 
 
@@ -325,19 +345,36 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(TClonesArray *digits) {
   Int_t ndigits=digits->GetEntriesFast();
   AliBin *bins=new AliBin[kMAXBIN];
 
-  Int_t k;
-  AliITSdigitSPD *d=0;
-  for (k=0; k<ndigits; k++) {
-     d=(AliITSdigitSPD*)digits->UncheckedAt(k);
-     Int_t i=d->GetCoord2()+1;   //y
-     Int_t j=d->GetCoord1()+1;
-     Int_t index=i*kNzBins+j;
-     bins[index].SetIndex(k);
-     bins[index].SetMask(1);
+  Int_t idig;
+  AliITSdigitSPD *digit=0;
+  for (idig=0; idig<ndigits; idig++) {
+    digit=(AliITSdigitSPD*)digits->UncheckedAt(idig);
+    Int_t i=digit->GetCoord2()+1;   //y
+    Int_t j=digit->GetCoord1()+1;
+    Int_t index=i*kNzBins+j;
+
+    bins[index].SetIndex(idig);
+    bins[index].SetQ(1);
+    bins[index].SetMask(1);
   }
+
    
   Int_t nClustersSPD = ClustersSPD(bins,digits,0,kMAXBIN,kNzBins,fModule,kFALSE); 
   delete [] bins;
 
   AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  
+    //  Fill the FastOr fired map
+  AliITSFOSignalsSPD* foSignals = fDetTypeRec->GetFOSignals();
+  if (foSignals) {
+    UInt_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(fModule);
+    UInt_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(fModule);
+    for(UInt_t ch=0; ch<5; ch++) {
+      UInt_t chip = AliITSRawStreamSPD::GetOnlineChipFromOffline(fModule,ch*32);
+      if (foSignals->GetSignal(eq,hs,chip)) {
+	fDetTypeRec->SetFastOrFiredMapOnline(eq,hs,chip);
+      }
+    }
+  }
+  
 }

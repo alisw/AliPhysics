@@ -41,6 +41,14 @@ set(SRCS
                 AliITSQASPDDataMakerSim.cxx 
                 AliITSQASDDDataMakerSim.cxx 
                 AliITSQASSDDataMakerSim.cxx
+		AliITSFOEfficiencySPD.cxx
+		AliITSFOEfficiencySPDColumn.cxx
+		AliITSFONoiseSPD.cxx
+		AliITSFOGeneratorSPD.cxx
+		AliITSFOSignalsSPD.cxx
+		AliITSTriggerFOProcessor.cxx
+		AliITSTriggerConditions.cxx
+		AliITSTriggerAlgorithmConditions.cxx
 )
 
 # fill list of header files from list of source files

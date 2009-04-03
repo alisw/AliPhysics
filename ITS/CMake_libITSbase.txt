@@ -30,7 +30,6 @@ set(SRCS
 		AliITSresponseSPD.cxx
 		AliITSresponseSDD.cxx
 		AliITSCalibrationSPD.cxx
-		AliITSFastOrCalibrationSPD.cxx
 		AliITSCalibrationSDD.cxx
 		AliITSCalibrationSSD.cxx
                 AliITSChannelStatus.cxx

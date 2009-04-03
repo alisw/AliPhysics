@@ -37,6 +37,7 @@
 #include "AliBitPacking.h"
 #include "AliDAQ.h"
 #include "AliFstream.h"
+#include "AliITSFOSignalsSPD.h"
 
 ClassImp(AliITSDDLRawData)
 
@@ -260,7 +261,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 	     if value >=128value = value - (1 << 7) (word is 7 bit long)
 
 	  */
-	  if(digarr[anode][tb]<4) continue; // not write <4 cnts above tL
+	  //if(digarr[anode][tb]<4) continue; // not write <4 cnts above tL
 	  if(digarr[anode][tb]<8){
 	    bitinfo1[3] = 2;
 	    wordinfo1[2] = 2;
@@ -414,7 +415,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 //PIXEL 
 //
 
-void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl, UInt_t *buf){
+void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl, UInt_t *buf, AliITSFOSignalsSPD* foSignals){
   //This method packs the SPD digits in a proper 32 structure
   //Since data is zero suppressed,the coordinates for the chip having zero digits 
   //doesn't get listed in the galice.root file. However the SPD format requires 
@@ -424,25 +425,27 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
   Int_t chipHigh = AliITSRawStreamSPD::GetOnlineChipFromOffline(mod,159);
 
   if (chipLow>chipHigh) {chipLow  -= 4; chipHigh += 4;}
+  UInt_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(mod);
   UInt_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(mod);
 
   // create int map to later hold all digits sorted
   AliITSIntMap* digMap = new AliITSIntMap();
 
   UInt_t baseWord=0;
-  Int_t chipHitCount=0;  //Number of Hit in the current chip
-  Int_t previousChip=-1; //Previuos chip respect to the actual aone
+ 
   Int_t ndigits = ITSdigits->GetEntries(); //number of digits in the current module
   //cout<<"      Number of digits in the current module:"<<ndigits<<" module:"<<mod<<endl;
 
+  // _______________________________________________________________________
+  // Preprocess the digits - sort them in integer map (Henrik Tydesjo)
+  // Needed to have exact same order as in real raw data
   AliITSdigit *digs;
-  ofstream ftxt;
-  if(ndigits){
+ ofstream ftxt;
+  if (ndigits) {
     //loop over digits
-    if (fVerbose==2)
-      ftxt.open("SPDdigits.txt",ios::app);
-    for (Int_t digit=0;digit<ndigits;digit++){
-      digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
+    if (fVerbose==2) ftxt.open("SPDdigits.txt",ios::app);
+    for (Int_t digit=0; digit<ndigits; digit++) {
+      digs = (AliITSdigit*) ITSdigits->UncheckedAt(digit);
       /*---------------------------------------------------------------------------
        *     Each module contains 5 read out chips of 256 rows and 32 columns.
        *     So, the cell number in Z direction varies from 0 to 159.
@@ -450,9 +453,8 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
       Int_t iz=digs->GetCoord1();  // Cell number in Z direction 
       Int_t ix=digs->GetCoord2();  // Cell number in X direction
 
-      if(fVerbose==2)
-	ftxt<<"DDL:"<<ddl<<" Mod:"<<mod<<" Row:"<<ix<<" Col:"<<iz<<endl;
-      UInt_t dummyDDL,dummyHS,chip,col,row;
+      if(fVerbose==2) ftxt<<"DDL:"<<ddl<<" Mod:"<<mod<<" Row:"<<ix<<" Col:"<<iz<<endl;
+      UInt_t dummyDDL, dummyHS, chip, col, row;
       AliITSRawStreamSPD::OfflineToOnline(mod,iz,ix,dummyDDL,dummyHS,chip,col,row);
 
       //  insert digit into map...
@@ -461,60 +463,60 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
     }
   }
 
-  UInt_t nrHits = digMap->GetNrEntries();
-  if (nrHits>0) {
-    Int_t chip = 0;
-    for (UInt_t nHit=0; nHit<nrHits; nHit++) {
-      Int_t key = digMap->GetKeyIndex(nHit);
-      chip = key/(256*32);
-      Int_t col = 31 - (key%(256*32))/256;
-      Int_t row = digMap->GetValIndex(nHit);
+   // _______________________________________________________________________
+  // Procedure for writing raw data (Henrik Tydesjo)
+  // Reimplemented because of unreadability (5 Mar 2009)
+  // Now also with fast-or signals
+  Int_t  previousChip = chipLow-1;
+  Int_t  chip         = chipLow-1;
+  UInt_t chipHitCount = 0;
 
-      if(previousChip==-1) { // first hit
-	//loop over chip without digits 
-	//Even if there aren't digits for a given chip 
-	//the chip header and the chip trailer are stored
-	for (Int_t i=chipLow; i<chip; i++) {
-	  WriteChipHeader(i,hs,baseWord);
-	  WriteChipTrailer(buf,0,baseWord);
-	}
-	WriteChipHeader(chip,hs,baseWord);
-	WriteHit(buf,row,col,baseWord);
-	chipHitCount++;
-	previousChip=chip;
-      }//end if
-      else{
-	if(previousChip!=(Int_t)chip) {
-	  WriteChipTrailer(buf,chipHitCount,baseWord);
-	  chipHitCount=0;
-	  for(Int_t i=previousChip+1; i<chip; i++) {
-	    WriteChipHeader(i,hs,baseWord);
-	    WriteChipTrailer(buf,0,baseWord);
-	  }//end for
-	  WriteChipHeader(chip,hs,baseWord);
-	  previousChip=chip;
-	}//end if
-	chipHitCount++;
-	WriteHit(buf,row,col,baseWord);
-      }//end else
-    }//end for
-    //Even if there aren't digits for a given chip 
-    //the chip header and the chip trailer are stored
-    WriteChipTrailer(buf,chipHitCount,baseWord);
-    chipHitCount=0;
-    for(Int_t i=chip+1;i<=chipHigh;i++){
-      WriteChipHeader(i,hs,baseWord);
-      WriteChipTrailer(buf,0,baseWord);
-    }//end for
-  }//end if
-  else{
-    //In this module there aren't digits but
-    //the chip header and chip trailer are stored anyway
-    for(Int_t i=chipLow; i<=chipHigh; i++){
-      WriteChipHeader(i,hs,baseWord);
-      WriteChipTrailer(buf,0,baseWord);
-    }//end for
-  }//end else 
+
+  UInt_t nrHits = digMap->GetNrEntries();
+  for (UInt_t nHit=0; nHit<nrHits; nHit++) {
+
+    Int_t key  = digMap->GetKeyIndex(nHit);
+    chip = key/(256*32);
+    Int_t col  = 31 - (key%(256*32))/256;
+    Int_t row  = digMap->GetValIndex(nHit);
+
+    // add trailer for previous chip (if there was one...)
+    if (chip>previousChip && previousChip>chipLow-1) {
+      WriteChipTrailer(buf, chipHitCount, foSignals->GetSignal(eq,hs,previousChip), baseWord);
+    }
+
+    // add headers/trailers for chips without hits (if any)
+    for (Int_t ch=previousChip+1; ch<chip; ch++) {
+      WriteChipHeader(ch, hs, baseWord);
+      WriteChipTrailer(buf, 0, foSignals->GetSignal(eq,hs,ch), baseWord);
+    }
+
+    // if new chip, add header
+    if (chip>previousChip) {
+      WriteChipHeader(chip, hs, baseWord);
+      chipHitCount = 0;
+      previousChip = chip;
+    }
+
+    chipHitCount++;
+
+    // add pixel hit
+    WriteHit(buf,row,col,baseWord);
+
+  }
+
+  // add trailer for last chip (if there was one...)
+  if (chip>chipLow-1) {
+    WriteChipTrailer(buf, chipHitCount, foSignals->GetSignal(eq,hs,chip), baseWord);
+  }
+
+  // add REMAINING headers/trailers for chips without hits (if any)
+  for (Int_t ch=chip+1; ch<=chipHigh; ch++) {
+    WriteChipHeader(ch, hs, baseWord);
+    WriteChipTrailer(buf, 0, foSignals->GetSignal(eq,hs,ch), baseWord);
+  }
+  // _______________________________________________________________________
+
 
   delete digMap;
 
@@ -525,7 +527,7 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
+Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch, AliITSFOSignalsSPD* foSignals){
   //This method creates the Raw data files for SPD detectors
   const Int_t kSize=21000; //256*32*5=40960 max number of digits per module
   UInt_t buf[kSize];      //One buffer cell can contain 2 digits 
@@ -550,7 +552,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
       branch->GetEvent(moduleNumber);
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
-      GetDigitsSPD(digits,moduleNumber,ddl,buf);
+      GetDigitsSPD(digits, moduleNumber, ddl, buf, foSignals);
       outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
@@ -705,13 +707,15 @@ void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t halfStave,UInt_t &Ba
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord){
+void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf, Int_t ChipHitCount, Bool_t foBit, UInt_t &BaseWord){
   //This method writes a chip trailer
   //pixel fill word
   if((ChipHitCount%2)!=0){
     AliBitPacking::PackWord(0xC000,BaseWord,16,31);
   }
-  AliBitPacking::PackWord(ChipHitCount,BaseWord,0,13);
+  AliBitPacking::PackWord(ChipHitCount,BaseWord,0,11);
+  AliBitPacking::PackWord(0x0,BaseWord,12,12);
+  AliBitPacking::PackWord(foBit,BaseWord,13,13);
   AliBitPacking::PackWord(0x0,BaseWord,14,15);
   fIndex++;
   buf[fIndex]=BaseWord;

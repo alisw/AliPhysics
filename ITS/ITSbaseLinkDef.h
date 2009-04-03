@@ -50,7 +50,6 @@
 #pragma link C++ class  AliITSresponseSPD+;
 #pragma link C++ class  AliITSresponseSDD+;
 #pragma link C++ class  AliITSCalibrationSPD-;
-#pragma link C++ class  AliITSFastOrCalibrationSPD+;
 #pragma link C++ class  AliITSCalibrationSDD+;
 #pragma link C++ class  AliITSCalibrationSSD+;
 #pragma link C++ class  AliITSChannelStatus+;

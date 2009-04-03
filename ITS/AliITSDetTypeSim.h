@@ -15,6 +15,7 @@ $Id$
 #include <TObject.h>
 #include "AliITSLoader.h"
 #include "AliITSSimuParam.h"
+#include "AliITSFOGeneratorSPD.h"
 
 class TObjArray;
 class TClonesArray;
@@ -33,6 +34,8 @@ class AliITSNoiseSSDv2;
 class AliITSDDLModuleMapSDD;
 class AliITSCalibration;
 class AliITSgeom;
+class AliITSFOSignalsSPD;
+class AliITSTriggerConditions;
 
 class AliITSDetTypeSim : public TObject {
  public:
@@ -55,7 +58,11 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module) const;
 
     virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
+   virtual void SetSPDNoisyModel(Int_t iMod, AliITSCalibration *cal);
+
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
+    virtual AliITSCalibration* GetSPDNoisyModel(Int_t iMod) const;
+    virtual AliITSTriggerConditions* GetTriggerConditions();
 
     virtual void SetSimuParam(const AliITSSimuParam* spar){
       if(fSimuPar) delete fSimuPar;
@@ -100,6 +107,13 @@ class AliITSDetTypeSim : public TObject {
 	fkDigClassName[i]=name;}
     const Char_t* GetDigitClassName(Int_t i) const {return fkDigClassName[i];}
 
+    virtual void ResetFOSignals() {fFOGenerator.ResetSignals();}
+    virtual void ProcessSPDDigitForFastOr(UInt_t module, UInt_t colM, UInt_t rowM);
+    virtual void ProcessNoiseForFastOr() {fFOGenerator.ProcessNoise();}
+    virtual AliITSFOSignalsSPD* GetFOSignals() {return fFOGenerator.GetFOSignals();}
+    virtual void WriteFOSignals();
+
+
  protected:
     virtual void CreateCalibrationArray(); 
     virtual Bool_t GetCalibration();
@@ -125,6 +139,7 @@ class AliITSDetTypeSim : public TObject {
     TObjArray    *fSegmentation; //! [NDet]
     TObjArray    *fCalibration;  //! [NMod]
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
+    TObjArray    *fSPDNoisy;     //! [fgkDefaultNModulesSPD]
     Int_t         fNSDigits;     //! number of SDigits
     TClonesArray  fSDigits;      //! Summable digits
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
@@ -136,8 +151,10 @@ class AliITSDetTypeSim : public TObject {
     AliITSLoader* fLoader;          //! loader  
     Bool_t        fFirstcall;       //! flag
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
-    
-    ClassDef(AliITSDetTypeSim,9) // ITS Simulation structure
+    AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
+    AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
+       
+    ClassDef(AliITSDetTypeSim,10) // ITS Simulation structure
  
 };
 

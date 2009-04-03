@@ -106,6 +106,9 @@ class AliITSLoader: public AliLoader{
     virtual Int_t  WriteBackTracks(Option_t* opt=""){
         return GetBackTracksDataLoader()->GetBaseLoader(0)->WriteData(opt);}
 
+    virtual AliBaseLoader* GetFOSignalsLoader();
+
+        
     // Geometry. Geom is read from file, unless already loaded
     // readout from file can be forced if force=kTRUE
     AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 

@@ -101,8 +101,7 @@ class AliITS : public AliDetector {
     virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();}
     virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
    // Trigger
-    virtual AliTriggerDetector* CreateTriggerDetector() const
-       { return new AliITSTrigger(); }
+    virtual AliTriggerDetector* CreateTriggerDetector() const;
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void UpdateInternalGeometry();

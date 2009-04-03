@@ -51,8 +51,10 @@ public:
    void HitToSDigit(AliITSmodule *mod);
    // fill pList from hits, charge sharing, diffusion, coupling  (faster method optimized by Bjorne)
    void HitToSDigitFast(AliITSmodule *mod);
+   // Adds noisy pixels to pList
+   void AddNoisyPixels();   
    // Removes dead pixels from pList
-   void RemoveDeadPixels(AliITSmodule *mod);
+   void RemoveDeadPixels();
    // Take pList of signals and apply noise... create Digits
    void FrompListToDigits();
    // This set the Lorentz drift of Electrons and Holes: by deafult equal weights to Electrons and Holes

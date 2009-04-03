@@ -11,6 +11,7 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliRawReader.h"
 #include "AliITSRawStream.h"
 #include "AliITSRawStreamSPDErrorLog.h"
 
@@ -84,11 +85,13 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetHrowStart() const {return (UInt_t) ((fCalHeadWord[6]>>24) & 0x000000ff);}
     UInt_t GetHrowEnd() const {return (UInt_t) ((fCalHeadWord[6]>>16) & 0x000000ff);}
     UInt_t GetHrowValue() const {return (UInt_t) ((fCalHeadWord[6]>> 8) & 0x000000ff);}
+    UInt_t GetHrowSpan() const {return (UInt_t) ((fCalHeadWord[6]) & 0x000000ff);}    
     UInt_t GetHdacValue() const {return (Int_t) ((fCalHeadWord[6]) & 0x000000ff);}
     UInt_t GetHdacHigh(UInt_t hs) const;
     UInt_t GetHdacLow(UInt_t hs) const;
     UInt_t GetHTPAmp(UInt_t hs) const;
     Bool_t GetHminTHchipPresent(UInt_t chip) const;
+    UInt_t GetHglobalDBversion() const {return fCalHeadWord[16];}
     // use the methods below to extract the information from the fo calibration header:
     UInt_t GetFOHrouterNr() const {return GetHrouterNr();}
     UInt_t GetFOHtype() const {return GetHtype();}

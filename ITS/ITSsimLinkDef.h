@@ -56,7 +56,17 @@
 //#pragma link C++ class DisplayITSv11+;
 // Raw data
 
+
+#pragma link C++ class AliITSFOEfficiencySPD+;
+#pragma link C++ class AliITSFOEfficiencySPDColumn+;
+#pragma link C++ class AliITSFONoiseSPD+;
+#pragma link C++ class AliITSFOGeneratorSPD+;
+#pragma link C++ class AliITSFOSignalsSPD+;
+
 #pragma link C++ class AliITSTrigger+;
+#pragma link C++ class AliITSTriggerConditions+;
+#pragma link C++ class AliITSTriggerAlgorithmConditions+;
+#pragma link C++ class AliITSTriggerFOProcessor+;
 #pragma link C++ class AliITSQADataMakerSim+;
 #pragma link C++ class AliITSQASPDDataMakerSim+;
 #pragma link C++ class AliITSQASDDDataMakerSim+;

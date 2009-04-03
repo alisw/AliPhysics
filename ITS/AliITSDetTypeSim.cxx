@@ -64,6 +64,8 @@
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSDDLModuleMapSDD.h"
+#include "AliITSTriggerConditions.h"
+#include "AliBaseLoader.h"
 
 const Int_t AliITSDetTypeSim::fgkNdettypes = 3;
 const Int_t AliITSDetTypeSim::fgkDefaultNModulesSPD =  240;
@@ -79,6 +81,7 @@ fSimulation(),   // [NDet]
 fSegmentation(), // [NDet]
 fCalibration(),     // [NMod]
 fSSDCalibration(0),
+fSPDNoisy(0),
 fNSDigits(0),    //! number of SDigits
 fSDigits("AliITSpListItem",1000),   
 fNDigits(0),     //! number of Digits
@@ -89,7 +92,10 @@ fDDLMapSDD(0),
 fkDigClassName(), // String with digit class name.
 fLoader(0),      // local pointer to loader
 fFirstcall(kTRUE),
-fIsHLTmodeC(0){ // flag
+fIsHLTmodeC(0), // flag
+fFOGenerator(),
+fTriggerConditions(NULL)
+{ 
     // Default Constructor
     // Inputs:
     //    none.
@@ -138,6 +144,13 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     }
     fCalibration = 0;
     if(fSSDCalibration) delete fSSDCalibration;
+    if(fSPDNoisy){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+       fSPDNoisy->Delete();
+       delete fSPDNoisy;
+       fSPDNoisy = 0;
+      }
+    }
     if(fSimuPar) delete fSimuPar;
     if(fDDLMapSDD) delete fDDLMapSDD;
     if(fNDigits) delete [] fNDigits;
@@ -157,6 +170,7 @@ fSimulation(source.fSimulation),   // [NDet]
 fSegmentation(source.fSegmentation), // [NDet]
 fCalibration(source.fCalibration),     // [NMod]
 fSSDCalibration(source.fSSDCalibration),
+fSPDNoisy(source.fSPDNoisy),
 fNSDigits(source.fNSDigits),    //! number of SDigits
 fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
 fNDigits(source.fNDigits),     //! number of Digits
@@ -167,7 +181,9 @@ fDDLMapSDD(source.fDDLMapSDD),
 fkDigClassName(), // String with digit class name.
 fLoader(source.fLoader),      // local pointer to loader
 fFirstcall(source.fFirstcall),
-fIsHLTmodeC(source.fIsHLTmodeC)
+fIsHLTmodeC(source.fIsHLTmodeC),
+fFOGenerator(source.fFOGenerator),
+fTriggerConditions(source.fTriggerConditions) 
 {
     // Copy Constructor for object AliITSDetTypeSim not allowed
   for(Int_t i=0;i<fgkNdettypes;i++){
@@ -329,6 +345,19 @@ void AliITSDetTypeSim::SetCalibrationModel(Int_t iMod, AliITSCalibration *resp){
 	delete (AliITSCalibration*) fCalibration->At(iMod);
     fCalibration->AddAt(resp, iMod);
 }
+//_______________________________________________________________________
+void AliITSDetTypeSim::SetSPDNoisyModel(Int_t iMod, AliITSCalibration *cal){
+  //Set noisy pixel info for the SPD module iMod
+  if (fSPDNoisy==0) {
+    fSPDNoisy = new TObjArray(fgkDefaultNModulesSPD);
+    fSPDNoisy->SetOwner(kTRUE);
+    fSPDNoisy->Clear();
+  }
+
+  if (fSPDNoisy->At(iMod) != 0)
+    delete (AliITSCalibration*) fSPDNoisy->At(iMod);
+  fSPDNoisy->AddAt(cal,iMod);
+}
 //______________________________________________________________________
 void AliITSDetTypeSim::ResetCalibrationArray(){
     //resets response array
@@ -367,6 +396,15 @@ AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod) const {
     return (AliITSCalibration*)fSSDCalibration;
   }
 
+}
+//_______________________________________________________________________
+AliITSCalibration* AliITSDetTypeSim::GetSPDNoisyModel(Int_t iMod) const {
+  //Get SPD noisy calib for module iMod 
+  if(fSPDNoisy==0) {
+    AliWarning("fSPDNoisy is 0!");
+    return 0; 
+  }
+  return (AliITSCalibration*)fSPDNoisy->At(iMod);
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaults(){
@@ -418,7 +456,10 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
 
   AliCDBManager::Instance()->SetCacheFlag(isCacheActive);
 
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead", run);
+  AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead", run);
+  AliCDBEntry *noisySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy", run);
+  AliCDBEntry *foEffSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDFOEfficiency", run);
+  AliCDBEntry *foNoiSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDFONoise", run);
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", run);
   AliCDBEntry *drSpSDD = AliCDBManager::Instance()->Get("ITS/Calib/DriftSpeedSDD",run);
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD",run);
@@ -430,17 +471,29 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
   AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
 
-  if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-      !drSpSDD || !ddlMapSDD || !hltforSDD || !mapTSDD){
+if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD 
+     || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD 
+     || !drSpSDD || !ddlMapSDD || !hltforSDD || !mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
-  }  	
+  }  	  	
 	
 
-  TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
-  if(!isCacheActive)entrySPD->SetObject(NULL);
-  entrySPD->SetOwner(kTRUE);
+  TObjArray *calDeadSPD = (TObjArray*) deadSPD->GetObject();
+  if (!isCacheActive) deadSPD->SetObject(NULL);
+  deadSPD->SetOwner(kTRUE);
 
+  TObjArray *calNoisySPD = (TObjArray*) noisySPD->GetObject();
+  if (!isCacheActive) noisySPD->SetObject(NULL);
+  noisySPD->SetOwner(kTRUE);
+
+  AliITSFOEfficiencySPD *calFoEffSPD = (AliITSFOEfficiencySPD*) foEffSPD->GetObject();
+  if (!isCacheActive) foEffSPD->SetObject(NULL);
+  foEffSPD->SetOwner(kTRUE);
+
+  AliITSFONoiseSPD *calFoNoiSPD = (AliITSFONoiseSPD*) foNoiSPD->GetObject();
+  if (!isCacheActive) foNoiSPD->SetObject(NULL);
+  foNoiSPD->SetOwner(kTRUE);
    
   TObjArray *calSDD = (TObjArray *)entrySDD->GetObject();
   if(!isCacheActive)entrySDD->SetObject(NULL);
@@ -524,7 +577,10 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
 
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!isCacheActive){
-    delete entrySPD;
+    delete deadSPD;
+    delete noisySPD;
+    delete foEffSPD;
+    delete foNoiSPD;
     delete entrySDD;
     delete entryNoiseSSD;
     delete entryGainSSD;
@@ -538,23 +594,30 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   
   AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
 
-  if ((!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
-      || (!hltsdd) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
+ if ((!calDeadSPD) || (!calNoisySPD) || (!calFoEffSPD) || (!calFoNoiSPD) 
+      || (!calSDD) || (!drSp) || (!ddlsdd) || (!hltsdd) 
+      || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
   }
 
-  fNMod[0] = calSPD->GetEntries();
+
+  fNMod[0] = calDeadSPD->GetEntries();
   fNMod[1] = calSDD->GetEntries();
   //  fNMod[2] = noiseSSD->GetEntries();
   AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
 	       fNMod[0], fNMod[1], fNMod[2]));
   AliITSCalibration* cal;
   for (Int_t i=0; i<fNMod[0]; i++) {
-    cal = (AliITSCalibration*) calSPD->At(i);
+    cal = (AliITSCalibration*) calDeadSPD->At(i);
     SetCalibrationModel(i, cal);
+    cal = (AliITSCalibration*) calNoisySPD->At(i);
+    SetSPDNoisyModel(i, cal);
   }
 
+  fFOGenerator.SetEfficiency(calFoEffSPD); // this cal object is used only by the generator
+  fFOGenerator.SetNoise(calFoNoiSPD); // this cal object is used only by the generator
+  
   fDDLMapSDD->SetDDLMap(ddlsdd);
   fIsHLTmodeC=hltsdd->IsHLTmodeC();
 
@@ -893,5 +956,61 @@ void AliITSDetTypeSim::ReadOldSSDGain(const TObjArray *array,
 			iNCounter,
 			arrayNSide.At(iNCounter));
   }//loop over modules 
+}
+//______________________________________________________________________
+void AliITSDetTypeSim::ProcessSPDDigitForFastOr(UInt_t module, UInt_t colM, UInt_t rowM) {
+  // Processes wether a single fired pixel will give rise to a fast-or signal
+  fFOGenerator.ProcessPixelHitM(module,colM,rowM);
+}
+//_______________________________________________________________________
+AliITSTriggerConditions* AliITSDetTypeSim::GetTriggerConditions() {
+  // Get Pixel Trigger Conditions (separate method since it is used only when simulating trigger)
+  if (fTriggerConditions==NULL) { // read from db
+    fRunNumber = ((Int_t)AliCDBManager::Instance()->GetRun());
+    Bool_t origCacheStatus = AliCDBManager::Instance()->GetCacheFlag();
+    Bool_t isCacheActive;
+    if (fRunNumber<0) isCacheActive=kFALSE;
+    else              isCacheActive=kTRUE;
+    AliCDBManager::Instance()->SetCacheFlag(isCacheActive);
+    AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("ITS/Calib/PITConditions", fRunNumber);
+    if (!pitCond) {
+      AliError("Trigger conditions retrieval failed! ");
+      return NULL;
+    }
+    fTriggerConditions = (AliITSTriggerConditions*) pitCond->GetObject();
+    if (!isCacheActive) pitCond->SetObject(NULL);
+    pitCond->SetOwner(kTRUE);
+    if (!isCacheActive) {
+      delete pitCond;
+    }
+    AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
+    if (fTriggerConditions==NULL) {
+      AliWarning("fTriggerConditions is NULL!");
+    }
+  }
+  return fTriggerConditions;
+}
+//_______________________________________________________________________
+void AliITSDetTypeSim::WriteFOSignals() {
+  // write fo signals to event
+
+  if (!fLoader) {
+    AliError("ITS loader is NULL.");
+    return;
+  }
+
+  AliBaseLoader* foLoader = fLoader->GetFOSignalsLoader();
+  if (!foLoader) {
+    AliError("Base loader (FO) not retrieved.");
+    return;
+  }
+  
+  // make a new fo signals object - to have the loader own and delete as it wants later
+  AliITSFOSignalsSPD *foSignals = new AliITSFOSignalsSPD(*GetFOSignals());
+
+  foLoader->Post(foSignals);
+
+  foLoader->WriteData();
+
 }
 

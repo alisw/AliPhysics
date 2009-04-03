@@ -320,6 +320,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   //
 
+  void   SetSPDRemoveNoisyFlag(Bool_t value) {fSPDRemoveNoisyFlag = value;}
+  Bool_t GetSPDRemoveNoisyFlag() {return fSPDRemoveNoisyFlag;}
+  void   SetSPDRemoveDeadFlag(Bool_t value) {fSPDRemoveDeadFlag = value;}
+  Bool_t GetSPDRemoveDeadFlag() {return fSPDRemoveDeadFlag;}
+  
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
   enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
@@ -507,6 +512,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 
+   // SPD flags to specify whether noisy and dead pixels 
+  // should be removed at the local reconstruction step (default and safe way is true for both)
+  Bool_t  fSPDRemoveNoisyFlag;  // Flag saying whether noisy pixels should be removed
+  Bool_t  fSPDRemoveDeadFlag;   // Flag saying whether dead pixels should be removed
+
+  
   ClassDef(AliITSRecoParam,18) // ITS reco parameters
 };
 

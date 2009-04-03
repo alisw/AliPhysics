@@ -48,6 +48,12 @@
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliLog.h"
+#include "AliITSRawStreamSPD.h"
+#include "AliITSTriggerConditions.h"
+#include "AliITSFOSignalsSPD.h"
+#include "AliRunLoader.h"
+#include "AliDataLoader.h"
+#include "AliITSLoader.h"
 
 class AliITSDriftSpeedArraySDD;
 class AliITSMapSDD;
@@ -69,8 +75,9 @@ fSegmentation(0),
 fCalibration(0),
 fSSDCalibration(0),
 fSPDDead(0),
-fSPDFastOr(0),
+fTriggerConditions(0),
 fDigits(0),
+fFOSignals(0),
 fDDLMapSDD(0),
 fRespSDD(0),
 fAveGainSDD(0),
@@ -113,8 +120,9 @@ fSegmentation(rec.fSegmentation),
 fCalibration(rec.fCalibration),
 fSSDCalibration(rec.fSSDCalibration),
 fSPDDead(rec.fSPDDead),
-fSPDFastOr(rec.fSPDFastOr),
+fTriggerConditions(rec.fTriggerConditions),
 fDigits(rec.fDigits),
+fFOSignals(rec.fFOSignals),
 fDDLMapSDD(rec.fDDLMapSDD),
 fRespSDD(rec.fRespSDD),
 fAveGainSDD(rec.fAveGainSDD),
@@ -167,7 +175,14 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       delete fSPDDead;
       fSPDDead = 0;
     }
-  }  
+  } 
+  if(fTriggerConditions){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+      fTriggerConditions->Delete();
+      delete fTriggerConditions;
+      fTriggerConditions = 0;
+    }
+  } 
   if(fDigits){
     fDigits->Delete();
     delete fDigits;
@@ -283,36 +298,44 @@ AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod) const {
     AliWarning("fSPDDead is 0!");
     return 0; 
   }  
-
   return (AliITSCalibration*)fSPDDead->At(iMod);
 }
-
+//_______________________________________________________________________
+AliITSTriggerConditions* AliITSDetTypeRec::GetTriggerConditions() const {
+  //Get Pixel Trigger Conditions
+  if (fTriggerConditions==0) {
+    AliWarning("fTriggerConditions is 0!");
+  }
+  return fTriggerConditions;
+}
 //______________________________________________________________________
 void AliITSDetTypeRec::SetTreeAddressD(TTree* const treeD){
     // Set branch address for the tree of digits.
 
-    const char *det[4] = {"SPD","SDD","SSD","ITS"};
-    TBranch *branch;
-    const Char_t* digclass;
-    Int_t i;
-    char branchname[30];
+  const char *det[4] = {"SPD","SDD","SSD","ITS"};
+  TBranch *branch;
+  const Char_t* digclass;
+  Int_t i;
+  char branchname[30];
 
-    if(!treeD) return;
-    if (fDigits == 0x0) fDigits = new TObjArray(fgkNdettypes);
-    for (i=0; i<fgkNdettypes; i++) {
-        digclass = GetDigitClassName(i);
-	if(!(fDigits->At(i))) {
-            fDigits->AddAt(new TClonesArray(digclass,1000),i);
-        }else{
-            ResetDigits(i);
-        } 
-        if (fgkNdettypes==3) sprintf(branchname,"%sDigits%s",det[3],det[i]);
-        else  sprintf(branchname,"%sDigits%d",det[3],i+1);
-        if (fDigits) {
-            branch = treeD->GetBranch(branchname);
-            if (branch) branch->SetAddress(&((*fDigits)[i]));
-        } 
+  if(!treeD) return;
+  if (fDigits == 0x0) fDigits = new TObjArray(fgkNdettypes);
+  for (i=0; i<fgkNdettypes; i++) {
+    digclass = GetDigitClassName(i);
+    if(!(fDigits->At(i))) {
+      fDigits->AddAt(new TClonesArray(digclass,1000),i);
+    }
+    else{
+      ResetDigits(i);
     } 
+    if (fgkNdettypes==3) sprintf(branchname,"%sDigits%s",det[3],det[i]);
+    else  sprintf(branchname,"%sDigits%d",det[3],i+1);
+    if (fDigits) {
+      branch = treeD->GetBranch(branchname);
+      if (branch) branch->SetAddress(&((*fDigits)[i]));
+    }
+  } 
+
 }
 
 //_______________________________________________________________________
@@ -422,46 +445,47 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
   // Get SPD calibration objects from OCDB
   // dead pixel are not used for local reconstruction
 
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
+ 
+  AliCDBEntry *noisySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
-  AliCDBEntry *fastOrSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDFastOr");
-  if(!entrySPD || !deadSPD || !fastOrSPD ){
+  AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("ITS/Calib/PITConditions");
+  if(!noisySPD || !deadSPD || !pitCond ){
     AliFatal("SPD Calibration object retrieval failed! ");
     return kFALSE;
-  }  	
+  }
 
-  TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
-  if(!cacheStatus)entrySPD->SetObject(NULL);
-  entrySPD->SetOwner(kTRUE);
+  TObjArray *calNoisySPD = (TObjArray*) noisySPD->GetObject();
+  if (!cacheStatus) noisySPD->SetObject(NULL);
+  noisySPD->SetOwner(kTRUE);
  
-  TObjArray *caldeadSPD = (TObjArray *)deadSPD->GetObject();
-  if(!cacheStatus)deadSPD->SetObject(NULL);
+  TObjArray *calDeadSPD = (TObjArray*) deadSPD->GetObject();
+  if (!cacheStatus) deadSPD->SetObject(NULL);
   deadSPD->SetOwner(kTRUE);
 
-  AliITSFastOrCalibrationSPD *calfastOrSPD = (AliITSFastOrCalibrationSPD *)fastOrSPD->GetObject();
-  if(!cacheStatus)fastOrSPD->SetObject(NULL);
-  fastOrSPD->SetOwner(kTRUE);
+  AliITSTriggerConditions *calPitCond = (AliITSTriggerConditions*) pitCond->GetObject();
+  if (!cacheStatus) pitCond->SetObject(NULL);
+  pitCond->SetOwner(kTRUE);
 
   if(!cacheStatus){
-    delete entrySPD;
+    delete noisySPD;
     delete deadSPD;
-    delete fastOrSPD;
+    delete pitCond;
   }
-  if ((!calSPD) || (!caldeadSPD) || (!calfastOrSPD)){ 
+  if ((!calNoisySPD) || (!calDeadSPD) || (!calPitCond)){ 
     AliWarning("Can not get SPD calibration from calibration database !");
     return kFALSE;
   }
 
-  fNMod[0] = calSPD->GetEntries();
+  fNMod[0] = calNoisySPD->GetEntries();
 
   AliITSCalibration* cal;
   for (Int_t i=0; i<fNMod[0]; i++) {
-    cal = (AliITSCalibration*) calSPD->At(i);
+    cal = (AliITSCalibration*) calNoisySPD->At(i);
     SetCalibrationModel(i, cal);
-    cal = (AliITSCalibration*) caldeadSPD->At(i);
+    cal = (AliITSCalibration*) calDeadSPD->At(i);
     SetSPDDeadModel(i, cal);
   }
-  fSPDFastOr = calfastOrSPD;
+  fTriggerConditions = calPitCond;
 
   return kTRUE;
 }
@@ -756,24 +780,24 @@ void AliITSDetTypeRec::SetTreeAddressR(TTree* const treeR){
     //      none.
     // Return:
 
-    char branchname[30];
-    Char_t namedet[10]="ITS";
+   char branchname[30];
+   Char_t namedet[10]="ITS";
 
-    if(!treeR) return;
-    if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
-    TBranch *branch;
-    sprintf(branchname,"%sRecPoints",namedet);
-    branch = treeR->GetBranch(branchname);
-    if (branch) {
+   if(!treeR) return;
+   if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+   TBranch *branch;
+   sprintf(branchname,"%sRecPoints",namedet);
+   branch = treeR->GetBranch(branchname);
+   if (branch) {
       branch->SetAddress(&fRecPoints);
-    }else {
+    } 
+    else {
       sprintf(branchname,"%sRecPointsF",namedet);
       branch = treeR->GetBranch(branchname);
       if (branch) {
 	branch->SetAddress(&fRecPoints);
       }
-
-    }
+   }
 }
 //____________________________________________________________________
 void AliITSDetTypeRec::AddRecPoint(const AliITSRecPoint &r){
@@ -816,6 +840,30 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be used \n");    
   }
 
+  
+  // Reset Fast-OR fired map
+  ResetFastOrFiredMap();
+
+  if (all || det[0]) { // SPD present
+    // Get the FO signals for this event
+    AliRunLoader* runLoader = AliRunLoader::Instance();
+    AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
+    if (!itsLoader) {
+      AliError("ITS loader is NULL.");
+    }
+    else {
+      AliBaseLoader* foLoader = itsLoader->GetFOSignalsLoader();
+      if (!foLoader) {
+	AliError("FO signals base loader not retrieved.");
+      }
+      else {
+	foLoader->Load();
+	fFOSignals = (AliITSFOSignalsSPD*) foLoader->Get();
+      }
+    }
+  }
+
+  
   AliITSClusterFinder *rec     = 0;
   Int_t id,module,first=0;
   for(module=0;module<GetITSgeom()->GetIndexMax();module++){
@@ -829,19 +877,25 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
       ResetDigits();  // MvL: Not sure we neeed this when rereading anyways
       if (all) {
           treeD->GetEvent(lastentry+module);
-      }else {
-          treeD->GetEvent(lastentry+(module-first));
-      }
-      Int_t ndigits = itsDigits->GetEntriesFast();
-      if(ndigits>0){
-	rec->SetDetTypeRec(this);
-	rec->SetDigits(DigitsAddress(id));
-	//	rec->SetClusters(ClustersAddress(id));
-	rec->FindRawClusters(module);
-      } // end if
-      treeR->Fill();
-      ResetRecPoints();
-  } 
+        }
+    else {
+      treeD->GetEvent(lastentry+(module-first));
+    }
+    Int_t ndigits = itsDigits->GetEntriesFast();
+    if (ndigits>0 || id==0) { // for SPD we always want to call FindRawClusters (to process FO signals)
+      rec->SetDetTypeRec(this);
+      rec->SetDigits(DigitsAddress(id));
+      //	rec->SetClusters(ClustersAddress(id));
+      rec->FindRawClusters(module);
+    } // end if
+    treeR->Fill();
+    ResetRecPoints();
+  }
+  
+   // Remove PIT in-active chips from Fast-OR fired map
+  if (all || det[0]) { // SPD present
+    RemoveFastOrFiredInActive();
+  }
 }
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *opt){
@@ -859,6 +913,10 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   const char *all = strstr(opt,"All");
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                         strstr(opt,"SSD")};
+  
+  // Reset Fast-OR fired map
+  ResetFastOrFiredMap();
+  
   AliITSClusterFinder *rec     = 0;
   Int_t id=0;
 
@@ -903,6 +961,10 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   Info("DigitsToRecPoints", "total number of found recpoints in ITS: %d\n", 
        nClusters);
   
+  // Remove PIT in-active chips from Fast-OR fired map
+  if (all || det[0]) { // SPD present
+    RemoveFastOrFiredInActive();
+  }  
 }
 
 //______________________________________________________________________
@@ -975,6 +1037,27 @@ void AliITSDetTypeRec::ReadOldSSDGain(const TObjArray *array,
 			iNCounter,
 			arrayNSide.At(iNCounter));
   }//loop over modules 
+}
+//______________________________________________________________________
+void AliITSDetTypeRec::RemoveFastOrFiredInActive() {
+  // Removes the chips that were in-active in the pixel trigger (from fast-or fired map)
+  if (fTriggerConditions==NULL) {
+    AliError("Pixel trigger conditions are missing.");
+    return;
+  }
+  Int_t eq   = -1;
+  Int_t hs   = -1;
+  Int_t chip = -1;
+  while (fTriggerConditions->GetNextInActiveChip(eq,hs,chip)) {
+    UInt_t chipKey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+    fFastOrFiredMap.SetBitNumber(chipKey,kFALSE);
+  }
+}
+//______________________________________________________________________
+void AliITSDetTypeRec::SetFastOrFiredMapOnline(UInt_t eq, UInt_t hs, UInt_t chip) {
+  // Set fast-or fired map for this chip
+  Int_t chipKey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+  return SetFastOrFiredMap(chipKey);
 }
 
 

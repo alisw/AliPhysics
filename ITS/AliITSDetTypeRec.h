@@ -22,7 +22,6 @@ class AliITSgeom;
 class AliITSsegmentation;
 class AliITSCalibration;
 class AliITSCalibrationSSD;
-class AliITSFastOrCalibrationSPD;
 class AliITSresponseSDD;
 class AliITSClusterFinder;
 class AliITSRecPoint;
@@ -31,6 +30,8 @@ class AliITSGainSSDv2;
 class AliITSBadChannelsSSDv2;
 class AliITSDDLModuleMapSDD;
 class AliITSNoiseSSDv2;
+class AliITSTriggerConditions;
+class AliITSFOSignalsSPD;
 
 class AliITSDetTypeRec : public TObject {
   public:
@@ -53,10 +54,10 @@ class AliITSDetTypeRec : public TObject {
     virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
-    virtual AliITSFastOrCalibrationSPD* GetFastOrCalibrationSPD() const { return fSPDFastOr;}
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype) const;
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod) const;
+    virtual AliITSTriggerConditions* GetTriggerConditions() const;
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype) const;
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
     virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
@@ -78,6 +79,8 @@ class AliITSDetTypeRec : public TObject {
     TObjArray* GetDigits() const {return fDigits;} 
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
 
+        AliITSFOSignalsSPD* GetFOSignals() const {return fFOSignals;}
+    
     TBranch* MakeBranchInTree(TTree* const tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
 
     virtual void ResetDigits();
@@ -93,10 +96,12 @@ class AliITSDetTypeRec : public TObject {
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
 
+    void   SetFastOrFiredMapOnline(UInt_t eq, UInt_t hs, UInt_t chip);
     void   SetFastOrFiredMap(UInt_t chipKey){fFastOrFiredMap.SetBitNumber(chipKey);} 
     TBits  GetFastOrFiredMap() const {return fFastOrFiredMap;}
     void   ResetFastOrFiredMap(){fFastOrFiredMap.ResetAllBits();}
-
+    void   RemoveFastOrFiredInActive(); // (using Trigger Conditions)
+   
   private:
     // private methods
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
@@ -124,8 +129,9 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fCalibration;   //! [NMod]
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
-    AliITSFastOrCalibrationSPD *fSPDFastOr; // Map of FastOr configured chips
+    AliITSTriggerConditions *fTriggerConditions; //! PIT conditions object
     TObjArray    *fDigits;        //! [NMod][NDigits]
+    AliITSFOSignalsSPD *fFOSignals; //! Fast-Or signals (used when reconstructing from digits)
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
@@ -139,9 +145,9 @@ class AliITSDetTypeRec : public TObject {
     Bool_t fFirstcall;         //! flag
     Bool_t fLoadOnlySPDCalib;  //! flag for loading calibrations only fr SPD
 
-    TBits fFastOrFiredMap;     // Map of FastOr fired chips
+    TBits fFastOrFiredMap;     //! Map of FastOr fired chips (after processing of raw signals)
 
-    ClassDef(AliITSDetTypeRec,17) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,18) // ITS Reconstruction structure
 };
 
 #endif

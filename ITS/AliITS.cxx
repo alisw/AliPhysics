@@ -95,6 +95,7 @@ the AliITS class.
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliITSInitGeometry.h"
+#include "AliITSFOSignalsSPD.h"
 
 ClassImp(AliITS)
 
@@ -219,7 +220,7 @@ AliITS::~AliITS(){
     if (fDetTypeSim){
       delete fDetTypeSim;
       fDetTypeSim = 0;
-    }
+   }
 }
 //______________________________________________________________________
 AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)const{
@@ -254,8 +255,6 @@ void AliITS::Init(){
     if(gMC) for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
  
 }
-
-
 //______________________________________________________________________
 void AliITS::SetDefaults(){
     // sets the default segmentation, response, digit and raw cluster classes.
@@ -482,8 +481,6 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
   
   
 }
-
-
 //______________________________________________________________________
 void AliITS::FillModules(TTree *treeH, Int_t mask) {
     // fill the modules with the sorted by module hits; 
@@ -592,8 +589,7 @@ void AliITS::Hits2SDigits(){
 
    if(!fDetTypeSim) {
      Error("Hits2SDigits","fDetTypeSim is null!");
-     return;
-    
+     return; 
   } 
      
   SetDefaults();
@@ -684,6 +680,9 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
   Int_t nmodules;
   InitModules(size,nmodules);
   FillModules(evNumber,bgrev,nmodules,option,filename);
+ 
+  // Reset Fast-OR signals for this event
+  fDetTypeSim->ResetFOSignals();
 
   AliITSsimulation *sim      = 0;
   AliITSmodule     *mod      = 0;
@@ -706,6 +705,17 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
   } // end for module
   
   ClearModules();
+  
+  // Add random noise to FO signals
+  if (all || det[0]) { // SPD present
+    fDetTypeSim->ProcessNoiseForFastOr();
+  }
+
+  // Add Fast-OR signals to event (only one object per event)
+  if (all || det[0]) { // SPD present
+    fDetTypeSim->WriteFOSignals();
+  }
+
   
   fLoader->TreeD()->GetEntries();
   fLoader->TreeD()->AutoSave();
@@ -946,20 +956,35 @@ void AliITS::CheckLabels(Int_t lab[3]) const {
 
 //______________________________________________________________________
 void AliITS::SDigitsToDigits(Option_t *opt){
-    // Standard Summable digits to Digits function.
-    // Inputs:
-    //      none.
-    // Outputs:
-    //      none.
-    if(!fDetTypeSim) {
-      Error("SDigitsToSDigits","fDetTypeSim is 0!");
-      return;
-    }
-   
-    fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
-    SetDefaults();
-    fDetTypeSim->SDigitsToDigits(opt,(Char_t*)GetName());
+  // Standard Summable digits to Digits function.
+  // Inputs:
+  //      none.
+  // Outputs:
+  //      none.
+  if (!fDetTypeSim) {
+    AliError("fDetTypeSim is 0!");
+    return;
+  }
 
+  const char *all = strstr(opt,"All");
+  const char *det[3] ={strstr(opt,"SPD"),strstr(opt,"SDD"),
+		       strstr(opt,"SSD")};
+
+  // Reset Fast-OR signals for this event
+  fDetTypeSim->ResetFOSignals();
+
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  SetDefaults();
+  fDetTypeSim->SDigitsToDigits(opt,(Char_t*)GetName());
+
+  // Add random noise to FO signals
+  if (all || det[0]) { // SPD present
+    fDetTypeSim->ProcessNoiseForFastOr();
+  }
+  // Add Fast-OR signals to event (only one object per event)
+  if (all || det[0]) { // SPD present
+    fDetTypeSim->WriteFOSignals();
+  }
 }
 
 //______________________________________________________________________
@@ -1076,6 +1101,32 @@ void AliITS::Digits2Raw(){
       return;
   }
   fDetTypeSim->SetTreeAddressD(digits,(Char_t*)GetName());
+  
+   // Get the FO signals for this event
+  AliITSFOSignalsSPD* foSignals = NULL;
+  AliRunLoader* runLoader = AliRunLoader::Instance();
+  AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
+  if (!itsLoader) {
+    AliError("ITS loader is NULL.");
+  }
+  else {
+    AliBaseLoader* foLoader = itsLoader->GetFOSignalsLoader();
+    if (!foLoader) {
+      AliError("FO signals base loader not retrieved.");
+    }
+    else {
+      foLoader->Load();
+      foSignals = (AliITSFOSignalsSPD*) foLoader->Get();
+    }
+  }
+  Bool_t deleteFOsignalsLater = kFALSE;
+  if (!foSignals) {
+    AliError("FO signals not available. No FO bits will be written.");
+    foSignals = new AliITSFOSignalsSPD(); // make a temporary dummy signals object
+    deleteFOsignalsLater = kTRUE;
+  }
+  
+  
   AliITSDDLModuleMapSDD* ddlsdd=fDetTypeSim->GetDDLModuleMapSDD();
   Bool_t isHLTmodeC=fDetTypeSim->IsHLTmodeC();
   AliITSDDLRawData rawWriter;
@@ -1093,7 +1144,8 @@ void AliITS::Digits2Raw(){
     
   //SILICON PIXEL DETECTOR
   Info("Digits2Raw", "Formatting raw data for SPD");
-  rawWriter.RawDataSPD(digits->GetBranch("ITSDigitsSPD"));
+  rawWriter.RawDataSPD(digits->GetBranch("ITSDigitsSPD"),foSignals);
+  if(deleteFOsignalsLater) delete foSignals;
     
   //SILICON DRIFT DETECTOR
   Info("Digits2Raw", "Formatting raw data for SDD");
@@ -1115,7 +1167,7 @@ AliLoader* AliITS::MakeLoader(const char* topfoldername){
     fLoader = new AliITSLoader(GetName(),topfoldername);
     return fLoader;
 }
-
+//______________________________________________________________________
 Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 {
   //
@@ -1129,16 +1181,14 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     for (Int_t mod = 0; mod < size; mod++) modA[mod] = new TClonesArray("AliITSpListItem", 10000);
     
     AliLoader* loader =  (AliRunLoader::Instance())->GetLoader("ITSLoader");
-    if (!loader)
-    {
+    if (!loader){
 	Error("Open","Can not get ITS loader from Run Loader");
 	return kFALSE;
     }
 
     TTree* tree = 0;
     tree = loader->TreeS();
-    if (!tree)
-    {
+    if (!tree){
 	loader->MakeTree("S");
 	tree = loader->TreeS();
     }
@@ -1268,5 +1318,10 @@ void AliITS::UpdateInternalGeometry(){
   AliITSInitGeometry initgeom;
   AliITSgeom* geom = initgeom.CreateAliITSgeom(version,minor);
   SetITSgeom(geom);
+}
+//______________________________________________________________________
+AliTriggerDetector* AliITS::CreateTriggerDetector() const {
+  // create an AliITSTrigger object (and set trigger conditions as input)
+  return new AliITSTrigger(fDetTypeSim->GetTriggerConditions());
 }
 
