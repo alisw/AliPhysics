@@ -39,6 +39,7 @@ public TObject
   static Int_t GetNumberOfIndexes() {return fgkNumberOfIndexes;}; // get number of indexes
   AliTOFFEEConfig *GetFEEConfig() const {return fFEEConfig;}; // get FEE config
   Bool_t GetChannelEnabled(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fChannelEnabled[iIndex] : kFALSE;}; // get channel enabled
+  Int_t GetMatchingWindow(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fMatchingWindow[iIndex] : 0;}; // get matching window
   
   /* setters */
   
@@ -47,8 +48,10 @@ public TObject
   void DumpFEEConfig(); // dump FEE config
   Int_t ParseFEEConfig(); // parse FEE config
   void ResetChannelEnabledArray(); // reset channel enabled array
+  void Reset(); // reset channel enabled array
   Bool_t IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // is channel enabled
   Bool_t IsChannelEnabled(Int_t iIndex) const {return GetChannelEnabled(iIndex);}; // is channel enabled
+  Int_t GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // get matching window
   
  private:
 
@@ -61,6 +64,7 @@ public TObject
 
   AliTOFFEEConfig *fFEEConfig; // FEE config
   Bool_t fChannelEnabled[fgkNumberOfIndexes]; // channel enabled
+  Int_t fMatchingWindow[fgkNumberOfIndexes]; // matching window
 
   ClassDef(AliTOFFEEReader, 1);
 
