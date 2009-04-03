@@ -280,7 +280,6 @@ Bool_t AliAnalysisAlien::Connect()
       return kFALSE;
    }  
    fUser = gGrid->GetUser();
-   fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    Info("Connect", "\n#####   Connected to AliEn as user %s. Setting analysis user to <%s>", fUser.Data(), fUser.Data());
    return kTRUE;
 }
@@ -569,13 +568,21 @@ Bool_t AliAnalysisAlien::CreateJDL()
          arr = fOutputArchive.Tokenize(" ");
          TIter next(arr);
          while ((os=(TObjString*)next()))
-            fGridJDL->AddToOutputArchive(os->GetString().Data());
+         if (!os->GetString().Contains("@") && fCloseSE.Length())
+            fGridJDL->AddToOutputArchive(Form("%s@%s",os->GetString().Data(), fCloseSE.Data())); 
+         else
+            fGridJDL->AddToOutputArchive(os->GetString());
          delete arr;
       }      
       fGridJDL->SetOutputDirectory(Form("%s/%s/#alien_counter_03i#", workdir.Data(), fGridOutputDir.Data()));
       arr = fOutputFiles.Tokenize(" ");
       TIter next(arr);
-      while ((os=(TObjString*)next())) fGridJDL->AddToOutputSandbox(os->GetString());
+      while ((os=(TObjString*)next())) {
+         if (!os->GetString().Contains("@") && fCloseSE.Length())
+            fGridJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data())); 
+         else
+            fGridJDL->AddToOutputSandbox(os->GetString());
+      }   
       delete arr;
 //      fGridJDL->SetPrice((UInt_t)fPrice);
       fGridJDL->SetValue("Price", Form("\"%d\"", fPrice));
@@ -934,6 +941,27 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
 {
 // Start remote grid analysis.
    
+   // Check if output files have to be taken from the analysis manager
+   if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (!mgr || !mgr->IsInitialized()) {
+         Error("StartAnalysis", "You need an initialized analysis manager for this");
+         return;
+      }
+      fOutputFiles = "";
+      TIter next(mgr->GetOutputs());
+      AliAnalysisDataContainer *output;
+      while ((output=(AliAnalysisDataContainer*)next())) {
+         const char *filename = output->GetFileName();
+         if (!(strcmp(filename, "default"))) {
+            if (!mgr->GetOutputEventHandler()) continue;
+            filename = mgr->GetOutputEventHandler()->GetOutputFileName();
+         }
+         if (fOutputFiles.Length()) fOutputFiles += " ";
+         fOutputFiles += filename;
+      }
+   }
+   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    if (TestBit(AliAnalysisGrid::kOffline)) {
       Info("StartAnalysis","\n##### OFFLINE MODE ##### Files to be used in GRID are produced but not copied \
       \n                         there nor any job run. You can revise the JDL and analysis \
@@ -960,26 +988,6 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       return;
    }   
    CreateDataset(fDataPattern);
-   // Check if output files have to be taken from the analysis manager
-   if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      if (!mgr || !mgr->IsInitialized()) {
-         Error("StartAnalysis", "You need an initialized analysis manager for this");
-         return;
-      }
-      fOutputFiles = "";
-      TIter next(mgr->GetOutputs());
-      AliAnalysisDataContainer *output;
-      while ((output=(AliAnalysisDataContainer*)next())) {
-         const char *filename = output->GetFileName();
-	 if (!(strcmp(filename, "default"))) {
-	    if (!mgr->GetOutputEventHandler()) continue;
-	    filename = mgr->GetOutputEventHandler()->GetOutputFileName();
-	 }
-	 if (fOutputFiles.Length()) fOutputFiles += " ";
-	 fOutputFiles += filename;
-      }
-   }
    WriteAnalysisFile();   
    WriteAnalysisMacro();
    WriteExecutable();
@@ -999,7 +1007,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
          output_file = str->GetString();
          Int_t index = output_file.Index("@");
          if (index > 0) output_file.Remove(index);         
-         gSystem->Exec(Form("rm %s", output_file.Data()));
+         if (!gSystem->AccessPathName(output_file)) gSystem->Exec(Form("rm %s", output_file.Data()));
       }
       delete list;
       gSystem->Exec(Form("bash %s 2>stderr", fExecutable.Data()));
@@ -1110,9 +1118,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gSystem->Load(\"libAOD\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl << endl;
-         out << "// include path (remove if using par files)" << endl;
-         out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
-         if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl << endl;
       } else {
          out << "// Compile all par packages" << endl;
          TIter next(fPackages);
@@ -1120,6 +1125,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          while ((obj=next())) 
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
       }   
+      out << "// include path" << endl;
+      if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
+      out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TObjArray *list = fAdditionalLibs.Tokenize(" ");

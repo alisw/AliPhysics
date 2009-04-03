@@ -59,6 +59,7 @@ public:
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
+   virtual void        SetPreferedSE(const char *se)                     {fCloseSE = se;}
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
 //Utilities

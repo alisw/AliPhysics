@@ -69,6 +69,7 @@ enum EPluginRunMode {
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      = 0;
    virtual void        SetNtestFiles(Int_t nfiles)                       = 0;
    virtual void        SetJDLName(const char *name="analysis.jdl")       = 0;
+   virtual void        SetPreferedSE(const char *se)                     = 0;
    
  // Set run mode.  Can be "full", "test", "offline", "submit" or "merge"
    virtual void        SetRunMode(const char *mode="full");
