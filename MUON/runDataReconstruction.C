@@ -33,41 +33,38 @@
 #include "AliReconstruction.h"
 #include <TRandom.h>
 #include <TGrid.h>
+#include <TSystem.h>
 //#include <TObjectTable.h>
 #endif
-
-// Data file, OCDB on Grid
-TString input="alien:///alice/data/2008/LHC08b/000037057/raw/08000037057021.10.root";
-TString ocdbPath = "alien://folder=/alice/data/2008/LHC08b/OCDB";
-
-// Data file, OCDB locally
-//TString input="$ALICE_ROOT/MUON/test_out.100/raw.root";
-//TString ocdbPath = "local://$ALICE_ROOT/OCDB";
 
 TString caliboption1 = "NOGAIN";
 TString caliboption2 = "GAINCONSTANTCAPA";
 TString recoptions = "SAVEDIGITS";
 Int_t seed = 1234567;
 
-void runDataReconstruction(Int_t calib = 1)
+void runDataReconstruction(const char* input = "/Users/laurent/Alice/Data/Raw/09000067495031.10.root",
+                           const char* ocdbPath = "alien://folder=/alice/data/2009/OCDB",
+                           Int_t calib = 1)
 { 
   TGrid::Connect("alien://");
   
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(ocdbPath.Data());
+  man->SetDefaultStorage(ocdbPath);
 
-  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT/OCDB");
-  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT/OCDB");
-  
   gRandom->SetSeed(seed);
-  
-  // no magnetic field --> factor (4th parameter) = 0
-  TGeoGlobalMagField::Instance()->GetField()->SetFactorSol(0);
-  TGeoGlobalMagField::Instance()->GetField()->SetFactorDip(0);
 
+  TString socdb(ocdbPath);
+  if ( socdb.Contains("local://") )
+  {
+    // no magnetic field
+    AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+    TGeoGlobalMagField::Instance()->Lock();
+  }
+  
   AliReconstruction *MuonRec = new AliReconstruction();
   
-  MuonRec->SetInput(input.Data());
+  MuonRec->SetInput(gSystem->ExpandPathName(input));
   MuonRec->SetRunVertexFinder(kFALSE);
   MuonRec->SetRunLocalReconstruction("MUON");
   MuonRec->SetRunTracking("MUON");
@@ -75,18 +72,42 @@ void runDataReconstruction(Int_t calib = 1)
   MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(0);
   MuonRec->SetOption("MUON",recoptions.Data());
+  
+  // reconstruction parameters
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetCosmicParam();
-  muonRecoParam->BypassSt45(kTRUE,kFALSE);
-  muonRecoParam->RequestStation(2,kFALSE);
-	muonRecoParam->SetPadGoodnessMask(0x400BE80);
+  
+  // digit selection
+  muonRecoParam->SetPadGoodnessMask(0x400BE80);
   TString caliboption = caliboption1;
   if ( calib == 2 ) caliboption = caliboption2;
   muonRecoParam->SetCalibrationMode(caliboption.Data());
+  
+  // chamber resolution (incuding misalignment)
+  for (Int_t iCh=0; iCh<10; iCh++) {
+    muonRecoParam->SetDefaultNonBendingReso(iCh,0.4);
+    muonRecoParam->SetDefaultBendingReso(iCh,0.4);
+  }
+  muonRecoParam->SetMaxNonBendingDistanceToTrack(10.);
+  muonRecoParam->SetMaxBendingDistanceToTrack(10.);
+  
+  // cut on (non)bending slopes
+  //muonRecoParam->SetMaxNonBendingSlope(0.6);
+  //muonRecoParam->SetMaxBendingSlope(0.6);
+  
+  // tracking algorithm
+  muonRecoParam->MakeMoreTrackCandidates(kTRUE);
+  muonRecoParam->RequestStation(0, kFALSE);
+  muonRecoParam->RequestStation(2, kFALSE);
+  muonRecoParam->RequestStation(3, kFALSE);
+  muonRecoParam->RequestStation(4, kFALSE);
+  muonRecoParam->SetSigmaCutForTracking(7.);
+  muonRecoParam->ImproveTracks(kTRUE, 7.);
+  
   muonRecoParam->Print("FULL");
-	
-	AliMUONReconstructor::SetRecoParam(muonRecoParam);
-
-	MuonRec->SetRunQA("MUON:ALL");
+  
+  MuonRec->SetRecoParam("MUON",muonRecoParam);
+  
+  MuonRec->SetRunQA("MUON:ALL");
 
   MuonRec->Run();
   

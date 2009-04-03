@@ -13,15 +13,17 @@
 /// \brief  Declaration of the high performance decoder for muon trigger chamber raw streams.
 ///
 
-#include "AliMUONVRawStreamTracker.h"
+#ifndef ROOT_TObject
+#  include "TObject.h"
+#endif
 #include "AliMUONTrackerDDLDecoder.h"
 
 #include <cstring>
 
 class AliMUONDDLTracker;
+class AliRawReader;
 
-
-class AliMUONRawStreamTrackerHP : public AliMUONVRawStreamTracker
+class AliMUONRawStreamTrackerHP : public TObject
 {
 public:
 	class AliDspHeader;
@@ -36,8 +38,9 @@ public:
 	/// Default destructor.
 	virtual ~AliMUONRawStreamTrackerHP();
 	
-	// The following public methods are all inherited from AliMUONVRawStreamTracker:
-	
+  /// Get object for reading the raw data
+  virtual AliRawReader* GetReader();
+
 	/// Initialize iterator
 	virtual void First();
 	
@@ -58,9 +61,11 @@ public:
 	
 	/// Advance one step in the iteration. Returns false if finished.
 	virtual Bool_t Next(Int_t& busPatchId,
-			    UShort_t& manuId, UChar_t& manuChannel,
-			    UShort_t& adc, Bool_t skipParityErrors);
-	
+                      UShort_t& manuId,
+                      UChar_t& manuChannel,
+                      UShort_t& adc,
+                      Bool_t skipParityErrors);
+
 	/// Construct and return a pointer to the DDL payload object.
 	virtual AliMUONDDLTracker* GetDDLTracker() const;
 	
@@ -504,6 +509,33 @@ public:
 		return (dsp != NULL) ? dsp->GetBlockHeader() : NULL;
 	}
 
+  /// Set the raw reader
+  void SetReader(AliRawReader* reader);
+  
+  /// Enable error info logger
+  virtual void EnabbleErrorLogger() { fEnableErrorLogger = kTRUE; }
+  
+  /// Check if error info logger enable
+  virtual Bool_t IsErrorLogger() const {return fEnableErrorLogger; }
+    
+  /// Number of glitch errors since First() was called
+  Int_t NumberOfGlitchErrors() const { return fTotalNumberOfGlitchErrors; }
+
+  /// Number of padding errors since First() was called
+  Int_t NumberOfPaddingErrors() const { return fTotalNumberOfPaddingErrors; }
+
+  /// Number of parity errors since First() was called
+  Int_t NumberOfParityErrors() const { return fTotalNumberOfParityErrors; }
+
+  /// Whether we got glitch errors or not
+  Bool_t HasGlitchError() const { return NumberOfGlitchErrors() > 0; }
+
+  /// Whether we got padding errors or not
+  Bool_t HasPaddingError() const { return NumberOfPaddingErrors() > 0; }
+
+  /// Whether we got parity errors or not
+  Bool_t HasParityError() const { return NumberOfParityErrors() > 0; }
+
 private:
 
 	// Do not allow copying of this class.
@@ -512,11 +544,11 @@ private:
         /// Not implemented
 	AliMUONRawStreamTrackerHP& operator = (const AliMUONRawStreamTrackerHP& stream);
 	
+  Int_t GetMaxDDL() const { return fgkMaxDDL; }
+  
 	/// This is the custom event handler (callback interface) class which
 	/// unpacks raw data words and fills an internal buffer with decoded digits
 	/// as they are decoded by the high performance decoder.
-	/// Any errors are logged to the parent AliMUONVRawStreamTracker, so one
-	/// must set this pointer appropriately before decoding and DDL payload.
 	class AliDecoderEventHandler : public AliMUONTrackerDDLDecoderEventHandler
 	{
 	public:
@@ -528,9 +560,6 @@ private:
 		
 		/// Sets the internal arrays based on the maximum number of structures allowed.
 		void SetMaxStructs(UInt_t maxBlocks, UInt_t maxDsps, UInt_t maxBusPatches);
-		
-		/// Sets the raw stream object which should be the parent of this class.
-		void SetRawStream(AliMUONVRawStreamTracker* rawStream) { fRawStream = rawStream; }
 		
 		/// Return the number of blocks found in the payload.
 		UInt_t BlockCount() const { return fBlockCount; };
@@ -595,6 +624,12 @@ private:
 		/// Error handler.
 		void OnError(ErrorCode error, const void* location);
 	
+    /// Set reader
+    void SetReader(AliRawReader* reader) { fRawReader = reader; }
+    
+    /// Get reader
+    AliRawReader* GetReader() const { return fRawReader; }
+    
 	private:
 	
 		// Do not allow copying of this class.
@@ -603,7 +638,7 @@ private:
                 /// Not implemented
 		AliDecoderEventHandler& operator = (const AliDecoderEventHandler& /*obj*/);
 
-		AliMUONVRawStreamTracker* fRawStream; //!< Pointer to the parent raw stream object.
+    AliRawReader* fRawReader; //!< Pointer to the raw reader
 		const void* fBufferStart;   //!< Pointer to the start of the current DDL payload buffer.
 		UInt_t fBlockCount;  //!< Number of blocks filled in fBlocks.
 		AliBlockHeader* fBlocks;  //!< Array of blocks. [0..fMaxBlocks-1]
@@ -620,8 +655,13 @@ private:
 		UInt_t fGlitchErrors;   //!< Number of glitch errors found in DDL.
 		UInt_t fPaddingErrors;  //!< Number of padding errors found in DDL.
 		Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
+    UInt_t fMaxBlocks; //!< max number of blocks
+    UInt_t fMaxDsps; //!< max number of dsps per block
+    UInt_t fMaxBusPatches; //!< max number of buspatches per dsp
+
 	};
-	
+
+  Bool_t fEnableErrorLogger; //!< whether or not we log errors
 	AliMUONTrackerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
@@ -632,6 +672,11 @@ private:
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
 	mutable AliMUONDDLTracker* fDDLObject; //!< Temporary DDL object used by GetDDLTracker() for caching.
+  Int_t fTotalNumberOfGlitchErrors; //!< number of glitch errors since First() was called
+  Int_t fTotalNumberOfParityErrors; //!< number of glitch errors since First() was called
+  Int_t fTotalNumberOfPaddingErrors; //!< number of glitch errors since First() was called
+  
+  static const Int_t fgkMaxDDL; //!< max number of tracker DDLs
 
 	ClassDef(AliMUONRawStreamTrackerHP, 0) // High performance decoder for reading MUON raw digits from tracking chamber DDL data.
 };
@@ -658,7 +703,7 @@ inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBlock(
 	/// internal counter.
 
 	assert( header != NULL );
-	assert( fBlockCount < (UInt_t)fRawStream->GetMaxBlock() );
+	assert( fBlockCount < fMaxBlocks );
 	// Link the block unless it is the first one.
 	if (fBlockCount > 0) fCurrentBlock->SetNext(fCurrentBlock+1);
 	*(++fCurrentBlock) = AliBlockHeader(fCurrentDSP+1, header);
@@ -674,7 +719,7 @@ inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewDSP(
 	/// appropriate counters.
 	
 	assert( header != NULL );
-	assert( fCurrentBlock->GetDspCount() < (UInt_t)fRawStream->GetMaxDsp() );
+	assert( fCurrentBlock->GetDspCount() < fMaxDsps );
 	// Link the DSP unless it is the first one.
 	if (fCurrentBlock->GetDspCount() > 0) fCurrentDSP->SetNext(fCurrentDSP+1);
 	*(++fCurrentDSP) = AliDspHeader(fCurrentBlock, fCurrentBusPatch+1, header);
@@ -691,7 +736,7 @@ inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBusPatch(
 
 	assert( header != NULL );
 	assert( data != NULL );
-	assert( fCurrentDSP->GetBusPatchCount() < (UInt_t)fRawStream->GetMaxBus() );
+	assert( fCurrentDSP->GetBusPatchCount() < fMaxBusPatches );
 	// Link the bus patch unless it is the first one. 
 	if (fCurrentDSP->GetBusPatchCount() > 0) fCurrentBusPatch->SetNext(fCurrentBusPatch+1);
 	*(++fCurrentBusPatch) = AliBusPatch(

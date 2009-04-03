@@ -18,8 +18,8 @@ class TArrayS;
 class AliRawReader;
 class AliMUONLocalStruct;
 
-class AliMUONVRawStreamTracker;
-class AliMUONVRawStreamTrigger;
+class AliMUONRawStreamTrackerHP;
+class AliMUONRawStreamTriggerHP;
 
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
@@ -29,10 +29,10 @@ class AliMUONLogger;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(
-         Bool_t enableErrorLogger = kTRUE,
-         Bool_t useFastTrackerDecoder = kTRUE, Bool_t useFastTriggerDecoder = kTRUE
-     ); // Constructor
+  AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t a, Bool_t b);
+
+  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE); // Constructor
+
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   /// Code to indicate readout errors
@@ -50,13 +50,12 @@ class AliMUONDigitMaker : public TObject
 
   Int_t  ReadTrackerDDL(AliRawReader* rawReader);
   Int_t  ReadTriggerDDL(AliRawReader* rawReader);
-  Int_t  ReadTriggerDDLFast(AliRawReader* rawReader);
   
   Int_t TriggerDigits(Int_t nBoard, TArrayS* xyPattern, 
                       AliMUONVDigitStore& digitStore) const;
 
   Bool_t TriggerToDigitsStore(const AliMUONVTriggerStore& triggerStore, 
-			      AliMUONVDigitStore& digitStore) const;
+                              AliMUONVDigitStore& digitStore) const;
 
         /// Set flag to generates scaler event
   void  SetScalerEvent() { fScalerEvent = kTRUE; }
@@ -64,16 +63,11 @@ class AliMUONDigitMaker : public TObject
         /// Set flag whether or not we should generate digits for the trigger
   void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
-  Bool_t UsingFastTrackerDecoder() const;
-  Bool_t UsingFastTriggerDecoder() const;
-  void  SetFastTrackerDecoder(Bool_t useFastDecoder);
-  void  SetFastTriggerDecoder(Bool_t useFastDecoder);
-
   /// Return the raw stream object which decodes DDL raw data from tracking stations.
-  AliMUONVRawStreamTracker* GetRawStreamTracker() const { return fRawStreamTracker; }
+  AliMUONRawStreamTrackerHP* GetRawStreamTracker() const { return fRawStreamTracker; }
 
   /// Return the raw stream object which decodes DDL raw data from the trigger system.
-  AliMUONVRawStreamTrigger* GetRawStreamTrigger() const { return fRawStreamTrigger; }
+  AliMUONRawStreamTriggerHP* GetRawStreamTrigger() const { return fRawStreamTrigger; }
 
   void Print(Option_t* opt="") const;
 
@@ -85,21 +79,18 @@ private:
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
 private:
-  void CreateRawStreamTracker(Bool_t useFastDecoder);
-  void CreateRawStreamTrigger(Bool_t useFastDecoder);
-
   Bool_t fScalerEvent;       //!< flag to generates scaler event
   Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
   
-  AliMUONVRawStreamTracker* fRawStreamTracker; //!< pointer of raw stream for tracker
-  AliMUONVRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
+  AliMUONRawStreamTrackerHP* fRawStreamTracker; //!< pointer of raw stream for tracker
+  AliMUONRawStreamTriggerHP* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
   AliMUONVDigitStore* fDigitStore; //!< not owner
   AliMUONVTriggerStore* fTriggerStore; //!< not owner
 
   AliMUONLogger* fLogger; //!< to log messages
   
-  ClassDef(AliMUONDigitMaker,6) // MUON digit maker from rawdata
+  ClassDef(AliMUONDigitMaker,7) // MUON digit maker from rawdata
 };
 	
 #endif

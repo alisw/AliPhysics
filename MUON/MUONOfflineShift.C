@@ -43,7 +43,7 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliMUONPainterRegistry.h"
-#include "AliMUONTrackerCalibratedDataMaker.h"
+#include "AliMUONTrackerDataMaker.h"
 #include "AliMUONTrackerRawDataMaker.h"
 #include "AliMUONVTrackerData.h"
 #include "AliMpCDB.h"
@@ -85,11 +85,11 @@ Int_t DataMakerReading(const char* input,
   
   if ( strlen(cdbPath) > 0 ) 
   {
-    dm = new AliMUONTrackerCalibratedDataMaker(rawReader,cdbPath,calibMode,histogram,xmin,xmax);
+    dm = new AliMUONTrackerDataMaker(rawReader,cdbPath,calibMode,histogram,xmin,xmax);
   }
   else  
   {
-    dm = new AliMUONTrackerRawDataMaker(rawReader,histogram,fastDecoder);
+    dm = new AliMUONTrackerDataMaker(rawReader,histogram,fastDecoder);
   }
   
   AliMUONPainterRegistry::Instance()->Register(dm);

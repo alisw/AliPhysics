@@ -30,7 +30,7 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "0.95"; }
+  static const char* Version() { return "0.96"; }
   
   /// Return the SVN revision  and version number of the mchview application
   static const char* FullVersion() { return Form("mchview Version %s ($Id$)",Version()); }

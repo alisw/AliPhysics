@@ -68,14 +68,7 @@
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
 ///
-/// NOFASTTRKDECODER : makes the digit maker class use the non-high performance decoder
-///                  AliMUONPayloadTracker instead of  AliMUONTrackerDDLDecoder.
-///
-/// NOFASTTRGDECODER : makes the digit maker class use the non-high performance decoder
-///                  AliMUONPayloadTrigger instead of AliMUONTriggerDDLDecoder.
-///
-/// NOFASTDECODERS : makes the digit maker class use the non-high performance decoders
-///                  AliMUONPayloadTracker and AliMUONPayloadTrigger.
+/// ENABLEERRORLOGGING : enable error logging (this activates also warnings in RawStreamTracker)
 ///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
@@ -253,25 +246,15 @@ AliMUONReconstructor::CreateDigitMaker() const
   AliCodeTimerAuto("")
 
   TString option = GetOption();
-  Bool_t enableErrorLogging = kTRUE;
-  Bool_t useFastTrackerDecoder = kTRUE;
-  Bool_t useFastTriggerDecoder = kTRUE;
-  if (option.Contains("NOFASTTRKDECODER"))
+  
+  Bool_t enableErrorLogging = kFALSE;
+
+  if (option.Contains("ENABLEERRORLOGGING"))
   {
-    useFastTrackerDecoder = kFALSE;
+    enableErrorLogging = kTRUE;
   }
-  if (option.Contains("NOFASTTRGDECODER"))
-  {
-    useFastTriggerDecoder = kFALSE;
-  }
-  if (option.Contains("NOFASTDECODERS"))
-  {
-    useFastTrackerDecoder = kFALSE;
-    useFastTriggerDecoder = kFALSE;
-  }
-  fDigitMaker = new AliMUONDigitMaker(
-      enableErrorLogging, useFastTrackerDecoder, useFastTriggerDecoder
-    );
+
+  fDigitMaker = new AliMUONDigitMaker(enableErrorLogging);
   option.ToUpper();
   if ( option.Contains("SAVEDIGITS" ))
     {

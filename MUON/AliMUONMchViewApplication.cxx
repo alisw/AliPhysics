@@ -352,7 +352,15 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
-  rn->AddLine("0.9%");
+  rn->AddLine("0.96");
+  rn->AddLine("");
+  rn->AddLine("New features");
+  rn->AddLine("");
+  rn->AddLine("- Can now read raw data from memory (using the mem://@gdc: syntax)");
+  rn->AddLine("- Raw data decoder now automatically skips buspatches with parity errors");
+  rn->AddLine("");
+  
+  rn->AddLine("0.95");
   rn->AddLine("");
   rn->AddLine("New features");
   rn->AddLine("");

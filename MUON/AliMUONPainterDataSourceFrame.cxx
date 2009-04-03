@@ -25,9 +25,8 @@
 #include "AliMUONPainterRegistry.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrackerACFDataMaker.h"
-#include "AliMUONTrackerCalibratedDataMaker.h"
+#include "AliMUONTrackerDataMaker.h"
 #include "AliMUONTrackerOCDBDataMaker.h"
-#include "AliMUONTrackerRawDataMaker.h"
 #include "AliRawReader.h"
 #include <TGButton.h>
 #include <TGComboBox.h>
@@ -441,16 +440,25 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
   /// Create a new raw data source (using info from the widgets)
   
   TString uri(gSystem->ExpandPathName(fFilePath->GetText()));
+
+  TString name("RAW");
+  Bool_t fromMemory(kFALSE);
   
-  if ( gSystem->AccessPathName(uri.Data()) )
+  if ( uri.Contains(TRegexp("^mem")) )
   {
-    AliError(Form("File %s does not exist",uri.Data()));
-    fFilePath->SetText("");
-    return;
+    fromMemory = kTRUE;
+  }
+  else
+  {
+    if ( gSystem->AccessPathName(uri.Data()) )
+    {
+      AliError(Form("File %s does not exist",uri.Data()));
+      fFilePath->SetText("");
+      return;
+    }
   }
 
   TString calibMode("");
-  TString name("RAW");
   
   if ( fCalibrateGain->IsOn() ) 
   {
@@ -470,8 +478,9 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
     name = "CALZ";
   }
   
-  uri = Form("%s%s;%s;%s;%s;%s;%s",
+  uri = Form("%s%s%s;%s;%s;%s;%s;%s",
              ( fHistogramButton->IsOn() ? "H":""),
+             ( fromMemory ? "M" : ""),
              name.Data(),uri.Data(),
              ( strlen(fRawOCDBPath->GetText()) > 0 ? fRawOCDBPath->GetText() : " "),
              ( calibMode.Length() > 0 ? calibMode.Data() : " "),
@@ -565,17 +574,17 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
     
     // FIXME: where to get the reco params from in reality ?
     
-    reader = new AliMUONTrackerCalibratedDataMaker(recoParam,
-                                                   rawReader,
-                                                   ocdbPath.Data(),
-                                                   calibMode.Data(),
-                                                   histogram,
-                                                   sxmin.Atof(),
-                                                   sxmax.Atof());
+    reader = new AliMUONTrackerDataMaker(recoParam,
+                                         rawReader,
+                                         ocdbPath.Data(),
+                                         calibMode.Data(),
+                                         histogram,
+                                         sxmin.Atof(),
+                                         sxmax.Atof());
   }
   else
   {
-    reader = new AliMUONTrackerRawDataMaker(rawReader,histogram);
+    reader = new AliMUONTrackerDataMaker(rawReader,histogram);
   }
   
   reader->SetSource(filename.Data());
@@ -725,7 +734,8 @@ AliMUONPainterDataSourceFrame::OpenRecentSource()
   TString uri(t->GetText()->GetString());
   
   if ( uri.Contains(TRegexp("^RAW")) || uri.Contains(TRegexp("^HRAW")) || 
-       uri.Contains(TRegexp("^CAL")) || uri.Contains(TRegexp("^HCAL")) )
+       uri.Contains(TRegexp("^CAL")) || uri.Contains(TRegexp("^HCAL")) ||
+       uri.Contains(TRegexp("^MEM")) )
   {
     CreateRawDataSource(uri);
   }

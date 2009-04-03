@@ -29,7 +29,7 @@
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
 #include "AliMUONRegHeader.h"
-#include "AliMUONTrackerCalibratedDataMaker.h"
+#include "AliMUONTrackerDataMaker.h"
 #include "AliMUONTriggerDisplay.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
@@ -528,16 +528,14 @@ void AliMUONQADataMakerRec::InitRaws()
   Add2RawsList(hbp,kTrackerBusPatchOccupancy,!forExpert);
 
   const Bool_t histogram(kFALSE);
-  const Bool_t fastDecoder(kTRUE);
 
-  fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(GetRecoParam(),
-							    AliCDBManager::Instance()->GetRun(),
-							    0x0,
-							    AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
-							    "NOGAIN",
-							    histogram,
-							    0.0,0.0,
-							    fastDecoder);
+  fTrackerDataMaker = new AliMUONTrackerDataMaker(GetRecoParam(),
+                                                  AliCDBManager::Instance()->GetRun(),
+                                                  0x0,
+                                                  AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
+                                                  "NOGAIN",
+                                                  histogram,
+                                                  0.0,0.0);
 		
   fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
 	
@@ -941,7 +939,7 @@ void AliMUONQADataMakerRec::MakeRawsTracker(AliRawReader* rawReader)
 {
 	/// make QA for rawdata tracker
   	
-	((AliMUONTrackerCalibratedDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
+	((AliMUONTrackerDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
 	
 	fTrackerDataMaker->ProcessEvent();
 }
