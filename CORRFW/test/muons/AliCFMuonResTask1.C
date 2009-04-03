@@ -76,6 +76,16 @@ Bool_t AliCFMuonResTask1(
     else {
       analysisChain = new TChain("esdTree");
       analysisChain->Add("/scratch/lopez/PDC08jpsi/run2-300/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run3-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run4-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run5-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run7-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run8-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run9-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run10-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run11-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run12-1000/AliESDs.root");
+      analysisChain->Add("/scratch/lopez/PDC08jpsi/run13-1000/AliESDs.root");
    }
   }
   
@@ -187,12 +197,13 @@ Bool_t AliCFMuonResTask1(
   recList->AddLast(recKineCuts);
 
   // CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
-  printf("CREATE INTERFACE AND CUTS\n");
+
+   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* man = new AliCFManager() ;
   man->SetParticleContainer     (container);
-  man->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList);
-  man->SetParticleCutsList(AliCFManager::kPartRecCuts,recList);
 
+  man->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList);
+  man->SetParticleCutsList(AliCFManager::kPartAccCuts,recList);
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
@@ -237,7 +248,9 @@ Bool_t AliCFMuonResTask1(
 
   cinput0->SetData(analysisChain);
   mgr->AddTask(task);
-  mgr->ConnectInput(task,0,cinput0);
+
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
 
@@ -258,10 +271,9 @@ void Load() {
 
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
-
   gSystem->Load("libANALYSISalice") ;
 
-  //gSystem->Load("libCORRFW.so") ;
+//  gSystem->Load("libCORRFW.so") ;
   gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libCORRFW.so") ;
 
   //compile online the task class

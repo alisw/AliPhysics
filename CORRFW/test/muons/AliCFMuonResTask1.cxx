@@ -175,14 +175,14 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     part0 = stack->Particle(p0); 
    // selection of the rapidity for first muon
     AliMCParticle *mcpart0 = new AliMCParticle(part0);
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mcpart0)) continue;
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcpart0)) continue;
     Int_t pdg0 = part0->GetPdgCode();
 
     Int_t p1 = part->GetDaughter(1);
     part1 = stack->Particle(p1);
    // selection of the rapidity for second muon
     AliMCParticle *mcpart1 = new AliMCParticle(part1);
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mcpart1)) continue;
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcpart1)) continue;
     Int_t pdg1 = part1->GetPdgCode();
  
    // 0 mu- 1 mu+
@@ -195,7 +195,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 	pz0 = part0->Pz();
 	py0 = part0->Py();
 	px0 = part0->Px();
-	phi0 = part0->Phi(); // Warning in TParticle Phi = pi + ATan2(Py,Px) = [0,2pi] 
+	phi0 = part0->Phi(); 
 	phi0 = Phideg(phi0);    
 	rapmc0=Rap(e0,pz0);
 
@@ -258,9 +258,9 @@ void AliCFMuonResTask1::UserExec(Option_t *)
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
       (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fESD = esdH->GetEvent();
-
   Int_t mult1 = fESD->GetNumberOfMuonTracks() ;
 
+ 
     for (Int_t j = 0; j<mult1; j++) { 
 	AliESDMuonTrack* mu1 = new AliESDMuonTrack(*(fESD->GetMuonTrack(j)));
 	Float_t zr1 = mu1->Charge();
@@ -269,12 +269,12 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 	    Float_t pxr1 = mu1->Px();
 	    Float_t pyr1 = mu1->Py();
 	    Float_t pzr1 = mu1->Pz();
-	    Float_t phir1 = mu1->Phi(); // Warning in AliESDMuonTrack Phi = ATan2(Py,Px) = [-pi,pi]
-	    phir1 = phir1 * 57.296;
+	    Float_t phir1 = mu1->Phi(); 
+	    phir1=Phideg(phir1);
  	    Float_t er1 = mu1->E();
 	    Float_t rap1=Rap(er1,pzr1);
 	    // selection of the rapidity for first muon
-	    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mu1)) continue;
+	    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu1)) continue;
 
 	    for (Int_t jj = 0; jj<mult1; jj++) {
 		AliESDMuonTrack* mu2 = new AliESDMuonTrack(*(fESD->GetMuonTrack(jj)));
@@ -285,11 +285,11 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 		    Float_t pyr2 = mu2->Py();
 		    Float_t pzr2 = mu2->Pz();
 		    Float_t phir2 = mu2->Phi();
-		    phir2 = phir2 * 57.296;
+		    phir2 = Phideg(phir2);
 		    Float_t er2 = mu2->E();
 		    Float_t rap2=Rap(er2,pzr2);
 		    // selection of the rapidity for second muon
-		    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,mu2)) continue;
+		    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu2)) continue;
 
 		    Float_t prec = TMath::Sqrt((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2)+
 						(pzr1+pzr2)*(pzr1+pzr2));
@@ -314,7 +314,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 	    }      // second mu Loop
 	}          // mu- Selection
     }        
-
+ 
 //  ----------
   fHistEventsProcessed->Fill(0);
   PostData(1,fHistEventsProcessed) ;
@@ -346,7 +346,7 @@ const Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz)
 //________________________________________________________________________
 const Float_t AliCFMuonResTask1::Phideg(Float_t phi) 
 {
-// calculate Phi from TParticle in range [-180,180] 
+// calculate Phi in range [-180,180] 
     Float_t phideg;
     
 	phideg = phi-TMath::Pi();
