@@ -196,8 +196,10 @@ void AliTOFQADataMaker::InitRecPoints()
   h3->Sumw2() ;
   Add2RecPointsList(h3, 3, expert) ;
 
-  TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF phi-eta",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h4->Sumw2() ;
+  h4->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h4->GetYaxis()->SetTitle("48*sector+padx (phi)");
   Add2RecPointsList(h4, 4, expert) ;
 
 }
@@ -227,7 +229,7 @@ void AliTOFQADataMaker::InitESDs()
   h3->Sumw2() ;
   Add2ESDsList(h3, 3, expert) ;
 
-  TH1F * h4 = new TH1F("hTOFESDsPID",    "Fraction of matched TOF tracks with good PID glag", 100, 0., 1.) ;  
+  TH1F * h4 = new TH1F("hTOFESDsPID",    "Fraction of matched TOF tracks with good PID flag", 101, 0., 101.) ;  
   h4->Sumw2() ; 
   Add2ESDsList(h4, 4, expert) ;
 }
@@ -550,7 +552,8 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
     GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
   }
 
-  if(ntof>0)GetESDsData(4)->Fill(ntofpid/ntof) ;
+  Float_t ratio = (Float_t)ntofpid/(Float_t)ntof*100.;
+  if(ntof>0)GetESDsData(4)->Fill(ratio) ;
 
 }
 
