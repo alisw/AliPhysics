@@ -57,7 +57,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t theta
       fthetay(thetay),
       floTrgNum(loTrgNum),
       fGTPattern(theGTPattern),
-      fHitsPatternInTrigCh(fHitsPatternInTrigCh)
+      fHitsPatternInTrigCh(hitsPatternInTrigCh)
 {
 /// ctor from local trigger output
         AliDebug(1,Form("this=%p x11=%f y11=%f thetax=%f thetay=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
