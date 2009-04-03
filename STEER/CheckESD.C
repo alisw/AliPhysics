@@ -408,9 +408,9 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       AliESDcascade* cascade = esd->GetCascade(iCascade);
       Double_t v0q;
       cascade->ChangeMassHypothesis(v0q,kXiMinus);
-      hMassXi->Fill(cascade->GetEffMass());
+      hMassXi->Fill(cascade->GetEffMassXi());
       cascade->ChangeMassHypothesis(v0q,kOmegaMinus);
-      hMassOmega->Fill(cascade->GetEffMass());
+      hMassOmega->Fill(cascade->GetEffMassXi());
 
       Int_t negLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())
 				  ->GetLabel());

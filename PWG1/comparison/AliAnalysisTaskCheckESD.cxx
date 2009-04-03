@@ -437,9 +437,9 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
     AliESDcascade* cascade = esd->GetCascade(iCascade);
     Double_t v0q;
     cascade->ChangeMassHypothesis(v0q,kXiMinus);
-    fMassXi->Fill(cascade->GetEffMass());
+    fMassXi->Fill(cascade->GetEffMassXi());
     cascade->ChangeMassHypothesis(v0q,kOmegaMinus);
-    fMassOmega->Fill(cascade->GetEffMass());
+    fMassOmega->Fill(cascade->GetEffMassXi());
     
     Int_t negLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())->GetLabel());
     if (negLabel > mcEvent->GetNumberOfTracks()) continue;     // background
