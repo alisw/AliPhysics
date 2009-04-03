@@ -8,6 +8,7 @@ set(SRCS
     SPECTRA/AliAnalysisTaskCheckV0.cxx
     SPECTRA/AliAnalysisTaskCheckCascade.cxx
     SPECTRA/AliAnalysisTaskStrange.cxx
+    SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx
 )
 
 # fill list of header files from list of source files
