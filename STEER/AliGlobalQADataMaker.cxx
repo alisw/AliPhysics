@@ -132,7 +132,7 @@ void AliGlobalQADataMaker::InitESDs() {
     "TPC-ITS track-matching probability",                   // kTrk5
     "TPC-TOF track-matching probability"                    // kTrk6
   };
-  Add2ESDsList(new TH1F(name[0],name[0],100,-0.02,6.30),kTrk0);
+  Add2ESDsList(new TH1F(name[0],name[0],100, 0.,TMath::TwoPi()),kTrk0);
   Add2ESDsList(new TH1F(name[1],name[1],100,-2.00,2.00),kTrk1);
   Add2ESDsList(new TH1F(name[2],name[2],50,  0.20,5.00),kTrk2);
   Add2ESDsList(new TH1F(name[3],name[3],50,  0.20,5.00),kTrk3);
