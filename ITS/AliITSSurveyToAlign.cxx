@@ -24,17 +24,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "Riostream.h"
-#include "TFile.h"
-#include "TSystem.h"
 #include "TClonesArray.h"
 #include "TGeoManager.h"
-#include "TGeoMatrix.h"
 #include "TGeoPhysicalNode.h"
 #include "TMatrixD.h"
 #include "TMath.h"
 
 #include "AliITSSurveyToAlign.h"
-#include "AliSurveyObj.h"
 #include "AliSurveyPoint.h"
 #include "AliAlignObjParams.h"
 #include "AliGeomManager.h"
@@ -42,8 +38,6 @@
 #include "AliLog.h"
 
 #include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliCDBStorage.h"
 
 #include "AliITSgeomTGeo.h"
 
@@ -63,10 +57,10 @@ const Double_t AliITSSurveyToAlign::fgkLocL[6][3]={{-3.24,0.21905, 2.4},
 						   { 3.58,0.21905, 0. },
 						   { 3.24,0.21905, 2.4}};
 
+const Double_t kRadToDeg = 180./TMath::Pi();
 
 //________________________________________________________________________
 AliITSSurveyToAlign::AliITSSurveyToAlign(Int_t run, Int_t repSDD, Int_t repVerSDD, Int_t repModSSD, Int_t repModVerSSD, Int_t repLaddSSD, Int_t repLaddVerSSD) :
-  //TObject(),
   AliSurveyToAlignObjs(),
   fRun(run),
   fSDDrepNumber(repSDD),
@@ -85,7 +79,6 @@ AliITSSurveyToAlign::AliITSSurveyToAlign(Int_t run, Int_t repSDD, Int_t repVerSD
 
 //_________________________________________________________________________
 AliITSSurveyToAlign::AliITSSurveyToAlign(const AliITSSurveyToAlign &align) :
-  //  TObject(),
   AliSurveyToAlignObjs(align),
   fRun(align.fRun),
   fSDDrepNumber(align.fSDDrepNumber),
@@ -136,7 +129,7 @@ void AliITSSurveyToAlign::Run() {
 //______________________________________________________________________
 Bool_t AliITSSurveyToAlign::CreateAlignObjs() { 
   // Fill the array of alignment objects with alignment objects
-  // from surveyfor all three subdetectors
+  // from survey for all three subdetectors
   //
 
   //for SPD
@@ -244,9 +237,9 @@ void AliITSSurveyToAlign::CreateAlignObjSDD(){
 
       if(nModules==2) CalcShiftSDD(x0,y0,z0);
       if(nModules>2)   CalcShiftRotSDD(tet, psi, phi, x0, y0, z0);
-      tet*=(180/TMath::Pi());
-      psi*=(180/TMath::Pi());
-      phi*=(180/TMath::Pi());
+      tet*=kRadToDeg;
+      psi*=kRadToDeg;
+      phi*=kRadToDeg;
 
 //    printf("%s  %d  %f  %f  %f  %f  %f  %f\n",symname, uid, x0/10., y0/10., z0/10., psi, tet, phi);
 //      cout << "Allocate alignobjparams " << imod << endl;
@@ -323,7 +316,7 @@ void AliITSSurveyToAlign::CreateAlignObjSSDModules(){
     // Minus sign to change local coordinate convention 
     Float_t theta = -(pt2->GetZ() - pt1->GetZ())*kMu2Cm/kSensLength;
 
-    theta *= 180./TMath::Pi();
+    theta *= kRadToDeg;
     Int_t iLayMod = imod - 500;
     if (iLayer == 6)
       iLayMod -= 748;
@@ -374,19 +367,19 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
   // 
   const Float_t kLaddLen5 = 90.27;  // Layer 5: distance between mouting points
   const Float_t kLaddLen6 = 102.0;  // Layer 6: distance between mouting points
-  const Float_t Z0 = 2.927;         // Distance between V mounting point and Zloc = 0
+  const Float_t zLag = 2.927;         // Distance between V mounting point and Zloc = 0
                                     // = half ladder length - nom z-position of ladder from gGeoManager
   const Float_t kMu2Cm = 1e-4;
 
   TString ssdName = "ITS/SSD";
 
-  TObjArray *ladd_points = fSurveyPoints;  
-  if (ladd_points == 0 || ladd_points->GetEntries() == 0) {
+  TObjArray *ladderPoints = fSurveyPoints;  
+  if (ladderPoints == 0 || ladderPoints->GetEntries() == 0) {
     AliWarning("No SSD Ladder alignment points found. Skipping");
     return;
   }
-  if (ladd_points->GetEntries()!= 2*(34+38)) {
-    AliWarning(Form("Unexpected number of survey points %d, should be 144",ladd_points->GetEntries())); 
+  if (ladderPoints->GetEntries()!= 2*(34+38)) {
+    AliWarning(Form("Unexpected number of survey points %d, should be 144",ladderPoints->GetEntries())); 
   }
   Int_t iLadd = 0;
   for (Int_t ilayer =  4; ilayer <=  5; ilayer ++) {
@@ -400,30 +393,30 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
       ladName += "/Ladder";
       ladName += iLadder;
 
-      AliSurveyPoint *v_point =  (AliSurveyPoint*) ladd_points->FindObject(ladName+"/V");
-      AliSurveyPoint *q_point =  (AliSurveyPoint*) ladd_points->FindObject(ladName+"/Q");
-      if (v_point == 0) {
+      AliSurveyPoint *vPoint =  (AliSurveyPoint*) ladderPoints->FindObject(ladName+"/V");
+      AliSurveyPoint *qPoint =  (AliSurveyPoint*) ladderPoints->FindObject(ladName+"/Q");
+      if (vPoint == 0) {
 	AliWarning(Form("Cannot find V side point for ladder %s",ladName.Data()));
 	continue;
       }
-      if (q_point == 0) {
+      if (qPoint == 0) {
 	AliWarning(Form("Cannot find Q side point for ladder %s",ladName.Data()));
 	continue;
       }
 
-      TString tmp_str;
-      tmp_str.Insert(0,v_point->GetName(),3);
-      Int_t ladder = tmp_str.Atoi();
-      tmp_str="";
-      tmp_str.Insert(0,q_point->GetName(),3);
-      if (tmp_str.Atoi() != ladder) 
-	AliError(Form("Survey data file error. Expect pairs of V,Q points. Got ladders %d %d",ladder,tmp_str.Atoi()));
+      TString tmpStr;
+      tmpStr.Insert(0,vPoint->GetName(),3);
+      Int_t ladder = tmpStr.Atoi();
+      tmpStr="";
+      tmpStr.Insert(0,qPoint->GetName(),3);
+      if (tmpStr.Atoi() != ladder) 
+	AliError(Form("Survey data file error. Expect pairs of V,Q points. Got ladders %d %d",ladder,tmpStr.Atoi()));
 
       // Note: file gives meas-nom in local offline coordinates, 
       // ie. local z = - global z and local x = - global x (for ladder 508, i.e. top ladder)
-      Double_t dx_loc = v_point->GetX() * kMu2Cm;
-      Double_t dy_loc = v_point->GetY() * kMu2Cm;
-      Double_t dz_loc = v_point->GetZ() * kMu2Cm;
+      Double_t dxLoc = vPoint->GetX() * kMu2Cm;
+      Double_t dyLoc = vPoint->GetY() * kMu2Cm;
+      Double_t dzLoc = vPoint->GetZ() * kMu2Cm;
 
       // rot around z-axis
       Double_t phi = 0;  // Not measured
@@ -437,24 +430,24 @@ void AliITSSurveyToAlign::CreateAlignObjSSDLadders(){
       // Q side is C side is large local z
 
       if (ladder >= 600) {
-	theta = TMath::ATan((q_point->GetX() - v_point->GetX())*kMu2Cm/kLaddLen6);
-	psi = TMath::ATan((v_point->GetY() - q_point->GetY())*kMu2Cm/kLaddLen6);
+	theta = TMath::ATan((qPoint->GetX() - vPoint->GetX())*kMu2Cm/kLaddLen6);
+	psi = TMath::ATan((vPoint->GetY() - qPoint->GetY())*kMu2Cm/kLaddLen6);
       }
       else {
-	theta = TMath::ATan((q_point->GetX() - v_point->GetX())*kMu2Cm/kLaddLen5);
-	psi = TMath::ATan((v_point->GetY() - q_point->GetY())*kMu2Cm/kLaddLen5);
+	theta = TMath::ATan((qPoint->GetX() - vPoint->GetX())*kMu2Cm/kLaddLen5);
+	psi = TMath::ATan((vPoint->GetY() - qPoint->GetY())*kMu2Cm/kLaddLen5);
       } 
 
       // Move along ladder to local Z = 0 point
-      dx_loc += Z0*theta;
-      dy_loc -= Z0*psi;
+      dxLoc += zLag*theta;
+      dyLoc -= zLag*psi;
 
       // Convert to degrees
-      theta *= 180./TMath::Pi();
-      psi *= 180./TMath::Pi();
-      AliDebug(1,Form("ladname %f %f %f %f %f %f ",dx_loc,dy_loc,dz_loc,psi,theta,phi));  
+      theta *= kRadToDeg;
+      psi *= kRadToDeg;
+      AliDebug(1,Form("ladname %f %f %f %f %f %f ",dxLoc,dyLoc,dzLoc,psi,theta,phi));  
       
-      new((*fAlignObjArray)[500+1698+iLadd]) AliAlignObjParams(ladName,0,dx_loc,dy_loc,dz_loc,psi,theta,phi,kFALSE);
+      new((*fAlignObjArray)[500+1698+iLadd]) AliAlignObjParams(ladName,0,dxLoc,dyLoc,dzLoc,psi,theta,phi,kFALSE);
 
       iLadd++;
     }  // Ladder loop
@@ -514,7 +507,7 @@ void AliITSSurveyToAlign::GetIdPosSDD(Int_t uid, Int_t layer, Int_t module, Int_
 }
 
 //______________________________________________________________________
-void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_t &iLader, Int_t &iModul, Int_t &iPoint)
+void AliITSSurveyToAlign::ReadPointNameSDD(const char str[], Int_t &iLayer, Int_t &iLader, Int_t &iModul, Int_t &iPoint) const
 {
   // 
   //    Utility function used by CreateAlignObjSDD
@@ -578,13 +571,13 @@ void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Modul
   //    Utility function used by CreateAlignObjSDD
   // 
 
-  Double_t YmId;
-  Double_t ZmId;
+  Double_t ymId;
+  Double_t zmId;
 
-  Double_t YmMe;
-  Double_t ZmMe;
-  Double_t YmMeE;
-  Double_t ZmMeE;
+  Double_t ymMe;
+  Double_t zmMe;
+  Double_t ymMeE;
+  Double_t zmMeE;
 
   Double_t x0=fSDDidP[1][0];
   Double_t z0=fSDDidP[1][2]-0.52;
@@ -599,25 +592,25 @@ void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Modul
       fSDDmeP[i][0]-=x0;
       fSDDmeP[i][2]-=z0;
 				
-      YmId=fSDDidP[i][1];
-      ZmId=fSDDidP[i][2];
+      ymId=fSDDidP[i][1];
+      zmId=fSDDidP[i][2];
 			
       fSDDidP[i][2]=fSDDidP[i][0];
-      fSDDidP[i][0]=YmId;
-      fSDDidP[i][1]=ZmId;
+      fSDDidP[i][0]=ymId;
+      fSDDidP[i][1]=zmId;
 			
-      YmMe=fSDDmeP[i][1];
-      ZmMe=fSDDmeP[i][2];
+      ymMe=fSDDmeP[i][1];
+      zmMe=fSDDmeP[i][2];
 			
-      YmMeE=fSDDmeP[i][4];
-      ZmMeE=fSDDmeP[i][5];
+      ymMeE=fSDDmeP[i][4];
+      zmMeE=fSDDmeP[i][5];
 			
       fSDDmeP[i][2]=fSDDmeP[i][0];
-      fSDDmeP[i][0]=YmMe;
-      fSDDmeP[i][1]=ZmMe;
+      fSDDmeP[i][0]=ymMe;
+      fSDDmeP[i][1]=zmMe;
       fSDDmeP[i][5]=fSDDmeP[i][3];
-      fSDDmeP[i][3]=YmMeE;
-      fSDDmeP[i][4]=ZmMeE;
+      fSDDmeP[i][3]=ymMeE;
+      fSDDmeP[i][4]=zmMeE;
 			
 
       if(((Layer==3)&&(Module>2))||((Layer==4)&&(Module>3)))
@@ -632,31 +625,34 @@ void AliITSSurveyToAlign::ConvertToRSofModulesAndRotSDD(Int_t Layer, Int_t Modul
 
 
 //______________________________________________________________________
-void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0)
+void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0) const
 {
-  Double_t Xid, Yid, Zid;
-  Double_t Xme, Yme, Zme, sX2, sY2, sZ2;
+    // Calculates the 3 shifts for the present SDD module
+    // and sets the three reference arguments
+    //
+  Double_t xId, yId, zId;
+  Double_t xMe, yMe, zMe, sX2, sY2, sZ2;
   Double_t aX=0., bX=0.;
   Double_t aY=0., bY=0.;
   Double_t aZ=0., bZ=0.;
   for(Int_t iP1=0; iP1<6; iP1++)
     {
       if(!fSDDisMe[iP1]) continue;
-      Xid=fSDDidP[iP1][0];
-      Yid=fSDDidP[iP1][1];
-      Zid=fSDDidP[iP1][2];
-      Xme=fSDDmeP[iP1][0];
-      Yme=fSDDmeP[iP1][1];
-      Zme=fSDDmeP[iP1][2];
+      xId=fSDDidP[iP1][0];
+      yId=fSDDidP[iP1][1];
+      zId=fSDDidP[iP1][2];
+      xMe=fSDDmeP[iP1][0];
+      yMe=fSDDmeP[iP1][1];
+      zMe=fSDDmeP[iP1][2];
       sX2 =fSDDmeP[iP1][3]*fSDDmeP[iP1][3];
       sY2 =fSDDmeP[iP1][4]*fSDDmeP[iP1][4];
       sZ2 =fSDDmeP[iP1][5]*fSDDmeP[iP1][5];
       aX+=(1./sX2);
-      bX+=((Xme-Xid)/sX2); 
+      bX+=((xMe-xId)/sX2); 
       aY+=(1./sY2);
-      bY+=((Yme-Yid)/sY2); 
+      bY+=((yMe-yId)/sY2); 
       aZ+=(1./sZ2);
-      bZ+=((Zme-Zid)/sZ2); 
+      bZ+=((zMe-zId)/sZ2); 
     }
   Double_t x1 = bX/aX;
   Double_t x2 = bY/aY;
@@ -671,162 +667,115 @@ void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0)
 //______________________________________________________________________
 void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &phi,Double_t &x0,Double_t &y0,Double_t &z0)
 {
-  TMatrixD p1(6,6);
-  TMatrixD p2(6,6);
-  TMatrixD p3(6,6);
-  TMatrixD p4(6,6);
-  TMatrixD p5(6,6);
-  TMatrixD p6(6,6);
+    // Calculates the 3 shifts and 3 euler angles for the present SDD module
+    // and sets the six reference arguments
+    //
   TMatrixD pC(6,6);
 
-  Double_t a11 =0.;
-  Double_t a12 =0.;
-  Double_t a13 =0.;
-  Double_t a14 =0.;
-  Double_t a15 =0.;
-  Double_t a16 =0.;
+  Double_t a[6][6];
+  for(Int_t ii=0; ii<6; ii++){
+      for(Int_t jj=0; jj<6; jj++){
+	  a[ii][jj]=0.;
+      }
+  }
 
-  Double_t a21 =0.;
-  Double_t a22 =0.;
-  Double_t a23 =0.;
-  Double_t a24 =0.;
-  Double_t a25 =0.;
-  Double_t a26 =0.;
+  Double_t c[6];
+  for(Int_t ii=0; ii<6; ii++)
+      c[ii]=0.;
 
-  Double_t a31 =0.;
-  Double_t a32 =0.;
-  Double_t a33 =0.;
-  Double_t a34 =0.;
-  Double_t a35 =0.;
-  Double_t a36 =0.;
-
-  Double_t a41 =0.;
-  Double_t a42 =0.;
-  Double_t a43 =0.;
-  Double_t a44 =0.;
-  Double_t a45 =0.;
-  Double_t a46 =0.;
-
-  Double_t a51 =0.;
-  Double_t a52 =0.;
-  Double_t a53 =0.;
-  Double_t a54 =0.;
-  Double_t a55 =0.;
-  Double_t a56 =0.;
-
-  Double_t a61 =0.;
-  Double_t a62 =0.;
-  Double_t a63 =0.;
-  Double_t a64 =0.;
-  Double_t a65 =0.;
-  Double_t a66 =0.;
-
-  Double_t c1 =0.;
-  Double_t c2 =0.;
-  Double_t c3 =0.;
-  Double_t c4 =0.;
-  Double_t c5 =0.;
-  Double_t c6 =0.;
-
-  Double_t Xid, Yid, Zid;
-  Double_t Xme, Yme, Zme, sX2, sY2, sZ2;
+  Double_t xId, yId, zId;
+  Double_t xMe, yMe, zMe, sX2, sY2, sZ2;
 
   for(Int_t iP1=0; iP1<=6; iP1++)
     {
       if(!fSDDisMe[iP1]) continue;
 
-      Xid= fSDDidP[iP1][0];
-      Yid= fSDDidP[iP1][1];
-      Zid= fSDDidP[iP1][2];
+      //ideal x,y,z for fiducial mark iP1
+      xId= fSDDidP[iP1][0];
+      yId= fSDDidP[iP1][1];
+      zId= fSDDidP[iP1][2];
 
-      Xme= fSDDmeP[iP1][0];
-      Yme= fSDDmeP[iP1][1];
-      Zme= fSDDmeP[iP1][2];
+      //measured x,y,z for fiducial mark iP1
+      xMe= fSDDmeP[iP1][0];
+      yMe= fSDDmeP[iP1][1];
+      zMe= fSDDmeP[iP1][2];
 
+      //squared precisions of measured x,y,z for fiducial mark iP1
       sX2 = fSDDmeP[iP1][3]* fSDDmeP[iP1][3];
       sY2 = fSDDmeP[iP1][4]* fSDDmeP[iP1][4];
       sZ2 = fSDDmeP[iP1][5]* fSDDmeP[iP1][5];
 
-      a11+=(Zid*Zid/sX2+Xid*Xid/sZ2);
-      a12-=(Zid*Yid/sX2);
-      a13-=(Xid*Yid/sZ2);
-      a14-=(Zid/sX2);
-      a15 =0.;
-      a16+=(Xid/sZ2);
-      c1+=(Xid*(Zme-Zid)/sZ2-Zid*(Xme-Xid)/sX2); 
+      a[0][0]+=(zId*zId/sX2+xId*xId/sZ2);
+      a[0][1]-=(zId*yId/sX2);
+      a[0][2]-=(xId*yId/sZ2);
+      a[0][3]-=(zId/sX2);
+      a[0][4] =0.;
+      a[0][5]+=(xId/sZ2);
+      c[0]+=(xId*(zMe-zId)/sZ2-zId*(xMe-xId)/sX2); 
 
-      a21-=(Yid*Zid/sX2);
-      a22+=(Xid*Xid/sY2+Yid*Yid/sX2);
-      a23-=(Xid*Zid/sY2);
-      a24+=(Yid/sX2);
-      a25-=(Xid/sY2);
-      a26 =0.;
-      c2+=(Yid*(Xme-Xid)/sX2-Xid*(Yme-Yid)/sY2); 
+      a[1][0]-=(yId*zId/sX2);
+      a[1][1]+=(xId*xId/sY2+yId*yId/sX2);
+      a[1][2]-=(xId*zId/sY2);
+      a[1][3]+=(yId/sX2);
+      a[1][4]-=(xId/sY2);
+      a[1][5] =0.;
+      c[1]+=(yId*(xMe-xId)/sX2-xId*(yMe-yId)/sY2); 
 
-      a31-=(Yid*Xid/sZ2);
-      a32-=(Xid*Zid/sY2);
-      a33+=(Zid*Zid/sY2+Yid*Yid/sZ2);
-      a34 =0.;
-      a35+=(Zid/sY2);
-      a36-=(Yid/sZ2);
-      c3+=(Zid*(Yme-Yid)/sY2-Yid*(Zme-Zid)/sZ2); 
+      a[2][0]-=(yId*xId/sZ2);
+      a[2][1]-=(xId*zId/sY2);
+      a[2][2]+=(zId*zId/sY2+yId*yId/sZ2);
+      a[2][3] =0.;
+      a[2][4]+=(zId/sY2);
+      a[2][5]-=(yId/sZ2);
+      c[2]+=(zId*(yMe-yId)/sY2-yId*(zMe-zId)/sZ2); 
 
-      a41-=(Zid/sX2);
-      a42+=(Yid/sX2);
-      a43 =0.;
-      a44+=(1./sX2);
-      a45 =0.;
-      a46 =0.;
-      c4+=((Xme-Xid)/sX2); 
+      a[3][0]-=(zId/sX2);
+      a[3][1]+=(yId/sX2);
+      a[3][2] =0.;
+      a[3][3]+=(1./sX2);
+      a[3][4] =0.;
+      a[3][5] =0.;
+      c[3]+=((xMe-xId)/sX2); 
 
-      a51 =0.;
-      a52-=(Xid/sY2);
-      a53+=(Zid/sY2);
-      a54 =0.;
-      a55+=(1./sY2);
-      a56 =0.;
-      c5+=((Yme-Yid)/sY2); 
+      a[4][0] =0.;
+      a[4][1]-=(xId/sY2);
+      a[4][2]+=(zId/sY2);
+      a[4][3] =0.;
+      a[4][4]+=(1./sY2);
+      a[4][5] =0.;
+      c[4]+=((yMe-yId)/sY2); 
 
-      a61+=(Xid/sZ2);
-      a62 =0.;
-      a63-=(Yid/sZ2);
-      a64 =0.;
-      a65 =0.;
-      a66+=(1./sZ2);
-      c6+=((Zme-Zid)/sZ2); 
+      a[5][0]+=(xId/sZ2);
+      a[5][1] =0.;
+      a[5][2]-=(yId/sZ2);
+      a[5][3] =0.;
+      a[5][4] =0.;
+      a[5][5]+=(1./sZ2);
+      c[5]+=((zMe-zId)/sZ2); 
     }
 
   ///////////////////////////////////////////////////////////////
 
-  Double_t dataC[]={a11, a12, a13, a14, a15, a16, a21, a22, a23, a24, a25, a26,
-		    a31, a32, a33, a34, a35, a36, a41, a42, a43, a44, a45, a46,
-		    a51, a52, a53, a54, a55, a56, a61, a62, a63, a64, a65, a66};
-  Double_t data1[]={c1, a12, a13, a14, a15, a16, c2, a22, a23, a24, a25, a26,
-		    c3, a32, a33, a34, a35, a36, c4, a42, a43, a44, a45, a46,
-		    c5, a52, a53, a54, a55, a56, c6, a62, a63, a64, a65, a66};
-  Double_t data2[]={a11, c1, a13, a14, a15, a16, a21, c2, a23, a24, a25, a26,
-		    a31, c3, a33, a34, a35, a36, a41, c4, a43, a44, a45, a46,
-		    a51, c5, a53, a54, a55, a56, a61, c6, a63, a64, a65, a66};
-  Double_t data3[]={a11, a12, c1, a14, a15, a16, a21, a22, c2, a24, a25, a26,
-		    a31, a32, c3, a34, a35, a36, a41, a42, c4, a44, a45, a46,
-		    a51, a52, c5, a54, a55, a56, a61, a62, c6, a64, a65, a66};
-  Double_t data4[]={a11, a12, a13, c1, a15, a16, a21, a22, a23, c2, a25, a26,
-		    a31, a32, a33, c3, a35, a36, a41, a42, a43, c4, a45, a46,
-		    a51, a52, a53, c5, a55, a56, a61, a62, a63, c6, a65, a66};
-  Double_t data5[]={a11, a12, a13, a14, c1, a16, a21, a22, a23, a24, c2, a26,
-		    a31, a32, a33, a34, c3, a36, a41, a42, a43, a44, c4, a46,
-		    a51, a52, a53, a54, c5, a56, a61, a62, a63, a64, c6, a66};
-  Double_t data6[]={a11, a12, a13, a14, a15, c1, a21, a22, a23, a24, a25, c2,
-		    a31, a32, a33, a34, a35, c3, a41, a42, a43, a44, a45, c4,
-		    a51, a52, a53, a54, a55, c5, a61, a62, a63, a64, a65, c6};
+  pC.SetMatrixArray(&(a[0][0]));
+  TMatrixD p1(pC);
+  TMatrixD p2(pC);
+  TMatrixD p3(pC);
+  TMatrixD p4(pC);
+  TMatrixD p5(pC);
+  TMatrixD p6(pC);
 
-  p1.SetMatrixArray(data1);
-  p2.SetMatrixArray(data2);
-  p3.SetMatrixArray(data3);
-  p4.SetMatrixArray(data4);
-  p5.SetMatrixArray(data5);
-  p6.SetMatrixArray(data6);
-  pC.SetMatrixArray(dataC);
+  for(Int_t raw=0; raw<6; raw++)
+      p1[raw][0]=c[raw];
+  for(Int_t raw=0; raw<6; raw++)
+      p2[raw][1]=c[raw];
+  for(Int_t raw=0; raw<6; raw++)
+      p3[raw][2]=c[raw];
+  for(Int_t raw=0; raw<6; raw++)
+      p4[raw][3]=c[raw];
+  for(Int_t raw=0; raw<6; raw++)
+      p5[raw][4]=c[raw];
+  for(Int_t raw=0; raw<6; raw++)
+      p6[raw][5]=c[raw];
 
   // cout << "calculating determinants" << endl;
   Double_t det0=pC.Determinant();
@@ -871,5 +820,4 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
   z0=x6;
   return;
 }
-
 
