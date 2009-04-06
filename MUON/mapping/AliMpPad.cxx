@@ -107,6 +107,7 @@ AliMpPad::AliMpPad()
 //_____________________________________________________________________________
 AliMpPad::AliMpPad(const AliMpPad& rhs)
   : TObject(),
+    fLLocations(0),
     fNofLocations(0),
     fLLocation(0),
     fLIndices(0),

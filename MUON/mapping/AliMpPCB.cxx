@@ -370,7 +370,6 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
       Double_t posx = mp->GetPositionX() + xOffset;
       Double_t posy = mp->GetPositionY();
       mp->SetPosition(posx, posy);
-      MpPair_t offset = AliMp::Pair(ixOffset,0);
       MpPair_t low = mp->GetLowIndicesLimit();
       low += shift;
       mp->SetLowIndicesLimit(low);
