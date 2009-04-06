@@ -28,8 +28,6 @@ set(SRCS
   AliMUONTrackerOCDBDataMaker.cxx 
   AliMUONPainterEnv.cxx 
   AliMUONVTrackerDataMaker.cxx 
-  AliMUONTrackerRawDataMaker.cxx 
-  AliMUONTrackerCalibratedDataMaker.cxx 
   AliMUONMchViewApplication.cxx 
   AliMUONTrackerDataHistogrammer.cxx 
   AliMUONTrackerDataWrapper.cxx 

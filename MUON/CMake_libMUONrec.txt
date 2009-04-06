@@ -46,8 +46,7 @@ set(SRCS
        AliMUONLegacyClusterServer.cxx 
        AliMUONTriggerTrackToTrackerClusters.cxx 
        AliMUONVTrackerDataMaker.cxx 
-       AliMUONTrackerRawDataMaker.cxx 
-       AliMUONTrackerCalibratedDataMaker.cxx
+       AliMUONTrackerDataMaker.cxx
 )
 
 # fill list of header files from list of source files
