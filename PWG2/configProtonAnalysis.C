@@ -23,7 +23,19 @@ AliProtonQAAnalysis *GetProtonQAAnalysisObject(const char* analysisLevel = "ESD"
 					       const char* esdAnalysisType = "Hybrid",
 					       const char* pidMode = "Bayesian") {
   //Function to setup the AliProtonQAAnalysis object and return it
+  AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
+
   AliProtonQAAnalysis *analysis = new AliProtonQAAnalysis();
+  analysis->SetQAOn();
+  analysis->SetRunMCAnalysis();
+  //analysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
+  //analysis->SetMotherParticlePDGCode(3122);//3122: Lambda
+  analysis->SetQAYPtBins(baseAnalysis->GetNBinsX(),
+			 baseAnalysis->GetMinX(),
+			 baseAnalysis->GetMaxX(),
+			 baseAnalysis->GetNBinsY(),
+			 baseAnalysis->GetMinY(),
+			 baseAnalysis->GetMaxY());
 
   return analysis;
 }

@@ -86,7 +86,7 @@ void runLocal(const char* mode = "ESD",
 							pidMode);
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
   if(smode == "MC") {
@@ -177,7 +177,7 @@ void runInteractive(const char* mode = "ESD",
 							pidMode);
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
   if(smode == "MC") {
@@ -258,7 +258,7 @@ void runBatch(const char* mode = "ESD",
 							pidMode);
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
   if(smode == "MC") {
@@ -331,7 +331,7 @@ void runProof(const char* mode = "ESD",
 
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);
   if(smode == "MC") {
