@@ -103,10 +103,9 @@ void setDaughtersVisibility(const TString& volumeName, Bool_t visibility= kTRUE)
 
 void buildGeometry(Bool_t allVisible = kFALSE ) 
 {  
-/// Build the ideal geometry, make all volumes 
+/// Load geometry from the file, make all volumes invisible
 
-  AliMpCDB::LoadMpSegmentation2(); 
-  gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+  TGeoManager::Import("geometry.root");
   
   new TBrowser();
   
