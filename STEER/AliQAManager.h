@@ -51,6 +51,7 @@ public:
 	void        Increment() ;
 	void        InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
 	Bool_t      Merge(Int_t runNumber = -1) const ;  
+  void        MergeCustom() const ;
   Bool_t      MergeXML(const char * collection, const char * subFile = 0, const char * outFile = 0) ; 
   static      AliQAManager * QAManager(const Char_t * mode="", TMap *entryCache = NULL, Int_t run = -1) ;
 	void        Reset(const Bool_t sameCycle = kFALSE) ;  

@@ -780,6 +780,164 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
 }
 
 //_____________________________________________________________________________
+void AliQAManager::MergeCustom() const
+{
+	// Custom Merge of QA data from all detectors for all runs in one single file 
+  // search all the run numbers
+  // search all the run numbers
+  gROOT->ProcessLine(".! ls *QA*.root > QAtempo.txt") ;
+  TString QAfile ; 
+  FILE * QAfiles = fopen("QAtempo.txt", "r") ; 
+  Int_t index = 0 ; 
+  TList srunList ; 
+  TIter nextRun(&srunList) ; 
+  TObjString * srun = NULL ; 
+  Int_t loRun = 999999999 ; 
+  Int_t hiRun = 0 ; 
+  while ( QAfile.Gets(QAfiles) ) {
+    Bool_t runExist = kFALSE ; 
+    TString srunNew(QAfile(QAfile.Index("QA.")+3, QAfile.Index(".root")-(QAfile.Index("QA.")+3))) ; 
+    Int_t cuRun = srunNew.Atoi() ;
+    if (cuRun < loRun) 
+      loRun = cuRun ; 
+    if (cuRun > hiRun)
+      hiRun = cuRun ; 
+    while ( (srun = dynamic_cast<TObjString *> (nextRun())) ) {
+      if ( cuRun == (srun->String()).Atoi() ) {
+        runExist = kTRUE ; 
+        break ; 
+      } 
+    }
+    nextRun.Reset() ; 
+    if ( ! runExist ) 
+      srunList.Add(new TObjString(srunNew.Data()));
+  }
+  nextRun.Reset() ;    
+  Int_t runNumber = 0 ; 
+  TFile mergedFile(Form("Merged.%s.Data.root", AliQA::GetQADataFileName()), "RECREATE") ; 
+  TH1I * hisRun = new TH1I("hLMR", "List of merged runs", hiRun-loRun+10, loRun, hiRun+10) ; 
+  // create the structure into the merged file
+  for (Int_t iDet = 0; iDet < AliQA::kNDET ; iDet++) {
+    TDirectory * detDir = mergedFile.mkdir(AliQA::GetDetName(iDet)) ; 
+    for (Int_t taskIndex = 0; taskIndex < AliQA::kNTASKINDEX; taskIndex++) {
+      detDir->cd() ; 
+      TDirectory * taskDir = gDirectory->mkdir(AliQA::GetTaskName(taskIndex)) ; 
+      for (Int_t es = 0 ; es < AliRecoParam::kNSpecies ; es++) {
+        taskDir->cd() ; 
+        TDirectory * esDir = gDirectory->mkdir(AliRecoParam::GetEventSpecieName(es)) ;
+        esDir->cd() ; 
+        gDirectory->mkdir(AliQA::GetExpert()) ; 
+      }
+    }
+  }
+  while ( (srun = dynamic_cast<TObjString *> (nextRun())) ) {
+    runNumber = (srun->String()).Atoi() ; 
+    hisRun->Fill(runNumber) ; 
+    AliInfo(Form("Merging run number %d", runNumber)) ; 
+    // search all QA files for runNumber in the current directory
+    char * fileList[AliQA::kNDET] ;
+    index = 0 ; 
+    for (Int_t iDet = 0; iDet < AliQA::kNDET ; iDet++) {
+      char * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQA::GetDetName(iDet), AliQA::GetQADataFileName(), runNumber)); 
+      if (file) 
+        fileList[index++] = file ;
+    }
+    if ( index == 0 ) {
+      AliError("No QA data file found\n") ; 
+      return ; 
+    }
+    for ( Int_t i = 0 ; i < index ; i++) {
+      TFile * inFile = TFile::Open(fileList[i]) ;  
+      TList * listOfKeys =inFile->GetListOfKeys() ; 
+      TIter nextkey(listOfKeys) ; 
+      TObject * obj1 ; 
+      TString dirName("") ; 
+      while ( (obj1 = nextkey()) ) {
+        TDirectory * directoryDet = inFile->GetDirectory(obj1->GetName()) ; 
+        if ( directoryDet ) {
+//          AliInfo(Form("%s dir = %s", inFile->GetName(), directoryDet->GetName())) ; 
+          dirName += Form("%s/", directoryDet->GetName() ) ; 
+          directoryDet->cd() ;
+          TList * listOfTasks = directoryDet->GetListOfKeys() ; 
+          TIter nextTask(listOfTasks) ; 
+          TObject * obj2 ; 
+          while ( (obj2 = nextTask()) ) {
+            TDirectory * directoryTask = directoryDet->GetDirectory(obj2->GetName()) ; 
+            if ( directoryTask ) {
+              dirName += Form("%s", obj2->GetName()) ; 
+              //AliInfo(Form("%s", dirName.Data())) ; 
+              directoryTask->cd() ; 
+              TList * listOfEventSpecie = directoryTask->GetListOfKeys() ; 
+              TIter nextEventSpecie(listOfEventSpecie) ; 
+              TObject * obj3 ; 
+              while ( (obj3 = nextEventSpecie()) ) {
+                TDirectory * directoryEventSpecie = directoryTask->GetDirectory(obj3->GetName()) ; 
+                if ( directoryEventSpecie ) {
+                  dirName += Form("/%s/", obj3->GetName()) ; 
+//                  AliInfo(Form("%s\n", dirName.Data())) ; 
+                  directoryEventSpecie->cd() ; 
+                  // histograms are here
+                  TDirectory * mergedDirectory = mergedFile.GetDirectory(dirName.Data()) ;
+                  TList * listOfData = directoryEventSpecie->GetListOfKeys() ; 
+                  TIter nextData(listOfData) ; 
+                  TKey * key ; 
+                  while ( (key = dynamic_cast<TKey *>(nextData())) ) {
+                    TString className(key->GetClassName()) ; 
+                    if (  className.Contains("TH") || className.Contains("TProfile") ) {
+                      TH1 * histIn = dynamic_cast<TH1*> (key->ReadObj()) ; 
+                      TH1 * histOu = dynamic_cast<TH1*> (mergedDirectory->FindObjectAny(histIn->GetName())) ; 
+                      //AliInfo(Form("%s %x %x\n", key->GetName(), histIn, histOu)) ; 
+                      mergedDirectory->cd() ; 
+                      if ( ! histOu ) {
+                        histIn->Write() ; 
+                      } else {
+                        histOu->Add(histIn) ; 
+                        histOu->Write(histOu->GetName(), kOverwrite) ; 
+                      }
+                    }
+                    else if ( className.Contains("TDirectoryFile") ) {
+                      TDirectory * dirExpert = directoryEventSpecie->GetDirectory(key->GetName()) ; 
+                      dirExpert->cd() ; 
+                      TDirectory * mergedDirectoryExpert = mergedDirectory->GetDirectory(dirExpert->GetName()) ; 
+                      TList * listOfExpertData = dirExpert->GetListOfKeys() ; 
+                      TIter nextExpertData(listOfExpertData) ; 
+                      TKey * keykey ; 
+                      while ( (keykey = dynamic_cast<TKey *>(nextExpertData())) ) {
+                        TString classNameExpert(keykey->GetClassName()) ; 
+                        if (classNameExpert.Contains("TH")) {
+                          TH1 * histInExpert = dynamic_cast<TH1*> (keykey->ReadObj()) ; 
+                          TH1 * histOuExpert = dynamic_cast<TH1*> (mergedDirectory->FindObjectAny(histInExpert->GetName())) ; 
+                          mergedDirectoryExpert->cd() ; 
+                          if ( ! histOuExpert ) {
+                            histInExpert->Write() ; 
+                          } else {
+                            histOuExpert->Add(histInExpert) ; 
+                            histOuExpert->Write(histOuExpert->GetName(), kOverwrite) ; 
+                          }
+                        }
+                      }
+                    } else {
+                      AliError(Form("No merge done for this object %s in %s", key->GetName(), dirName.Data())) ; 
+                    }
+                  }
+                  dirName.ReplaceAll(Form("/%s/",obj3->GetName()), "") ; 
+                }
+              }
+              dirName.ReplaceAll(obj2->GetName(), "") ; 
+            }
+          }
+        }
+      }
+      inFile->Close() ; 
+    }
+  }
+  mergedFile.cd() ;
+  hisRun->Write() ; 
+  mergedFile.Close() ; 
+  srunList.Delete() ;   
+}
+
+//_____________________________________________________________________________
 Bool_t AliQAManager::MergeData(const Int_t runNumber) const
 {
 	// Merge QA data from all detectors for a given run in one single file 
