@@ -133,6 +133,19 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
     gener->SetTrackingFlag(1);
     gener->Init();
   }
+  if (!strcmp(option,"paramJpsi")) {
+    AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kJpsi);
+    gener->SetMomentumRange(0,999);
+    gener->SetPtRange(0,100.);
+    gener->SetPhiRange(0., 360.);
+    gener->SetCutOnChild(1);
+    gener->SetChildPhiRange(0.,360.);
+    gener->SetChildThetaRange(171.0,178.0);
+    gener->SetOrigin(0,0,0);
+    gener->SetForceDecay(kDiMuon);
+    gener->SetTrackingFlag(1);
+    gener->Init();
+  }
   if (!strcmp(option,"hijing")) { //Hijing generator from ConfigPPR in macros
     AliGenHijing *gener = new AliGenHijing(-1);
     // centre of mass energy 
