@@ -155,9 +155,9 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
 
   AliMUONTriggerIO tio;
   
-  Bool_t ok = tio.ReadConfig(GetFileName("LOCAL").Data(),
-                             GetFileName("REGIONAL").Data(),
-                             GetFileName("GLOBAL").Data(),
+  Bool_t ok = tio.ReadConfig(localFile ? GetFileName("LOCAL").Data() : "",
+                             regionalFile ? GetFileName("REGIONAL").Data() : "",
+                             globalFile ? GetFileName("GLOBAL").Data() : "",
                              fLocalMasks,fRegionalConfig,fGlobalConfig);
   
   if (!ok)

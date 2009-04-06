@@ -384,15 +384,15 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
 //_____________________________________________________________________________
 Bool_t 
 AliMUONTriggerIO::ReadConfig(const char* localFile,
-                            const char* regionalFile,
-                            const char* globalFile,
-                            AliMUONVStore* localMasks,
-                            AliMUONRegionalTriggerConfig* regionalConfig,
-                            AliMUONGlobalCrateConfig* globalConfig)
+                             const char* regionalFile,
+                             const char* globalFile,
+                             AliMUONVStore* localMasks,
+                             AliMUONRegionalTriggerConfig* regionalConfig,
+                             AliMUONGlobalCrateConfig* globalConfig)
 {
   /// Fill the various masks store from files
   
-  if ( !regionalFile ) 
+  if ( !regionalFile || strlen(regionalFile)==0 ) 
   {
     AliError("Must have a regional file name to proceeed");
     return kFALSE;
@@ -408,7 +408,7 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
     return kFALSE;
   }
   
-  if (localMasks && localFile)
+  if (localMasks && localFile && strlen(localFile) > 0 )
   {
     Int_t nLocal = ReadLocalMasks(localFile,*localMasks);
     AliDebug(1,Form("Read masks for %d local boards",nLocal));
