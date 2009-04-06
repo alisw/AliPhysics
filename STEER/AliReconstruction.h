@@ -11,7 +11,7 @@
 // Clusters and tracks are created for all detectors and all events by       //
 // typing:                                                                   //
 //                                                                           //
-//   AliReconstruction rec;                                                 QARef //
+//   AliReconstruction rec;                                                  //
 //   rec.Run();                                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
