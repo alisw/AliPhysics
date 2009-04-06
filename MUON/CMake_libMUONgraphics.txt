@@ -33,6 +33,15 @@ set(SRCS
   AliMUONTrackerDataWrapper.cxx 
   AliMUONTrackerDataCompareDialog.cxx 
   AliMUONTrackerACFDataMaker.cxx
+  AliMUONContourPainter.cxx
+  AliMUONPolygon.cxx
+  AliMUONContour.cxx
+  AliMUONContourMaker.cxx
+  AliMUONManuContourMaker.cxx
+  AliMUONSegment.cxx
+  AliMUONSegmentTree.cxx
+  AliMUONNode.cxx
+  AliMUONPointWithRef.cxx
 )
 
 # fill list of header files from list of source files
