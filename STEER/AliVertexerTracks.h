@@ -39,7 +39,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
 
-  AliESDVertex* FindPrimaryVertex(const AliVEvent *vEvent);
+  AliESDVertex* FindPrimaryVertex(AliVEvent *vEvent);
   AliESDVertex* FindPrimaryVertex(TObjArray *trkArrayOrig,UShort_t *idOrig);
   AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,UShort_t *id,
 					Bool_t optUseFitter=kTRUE,

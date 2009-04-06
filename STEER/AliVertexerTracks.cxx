@@ -124,7 +124,7 @@ AliVertexerTracks::~AliVertexerTracks()
   if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
+AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
 {
 //
 // Primary vertex for current ESD or AOD event
@@ -214,6 +214,17 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
     f->Close(); delete f; f = NULL;
     gSystem->Unlink("VertexerTracks.root");
     olddir->cd();
+  }
+
+  // set vertex ID for tracks used in the fit
+  // (only for ESD)
+  if(!inputAOD) {
+    Int_t nIndices = fCurrentVertex->GetNIndices();
+    UShort_t *indices = fCurrentVertex->GetIndices();
+    for(Int_t ind=0; ind<nIndices; ind++) {
+      AliESDtrack *esdt = (AliESDtrack*)vEvent->GetTrack(indices[ind]);
+      esdt->SetVertexID(-1);
+    }
   }
 
   return fCurrentVertex;
