@@ -293,6 +293,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseUnfoldingInClusterFinderSSD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSSD=use; return; }
   Bool_t GetUseUnfoldingInClusterFinderSSD() const { return fUseUnfoldingInClusterFinderSSD; }
 
+  void   SetUseSDDCorrectionMaps(Bool_t use=kTRUE) {fUseSDDCorrectionMaps=use;}
+  Bool_t GetUseSDDCorrectionMaps() const {return fUseSDDCorrectionMaps;}
   void   SetUseSDDClusterSizeSelection(Bool_t use=kTRUE) {fUseSDDClusterSizeSelection=use;}
   Bool_t GetUseSDDClusterSizeSelection() const {return fUseSDDClusterSizeSelection;}
   void   SetMinClusterChargeSDD(Float_t qcut=0.){fMinClusterChargeSDD=qcut;}
@@ -497,6 +499,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
+  Bool_t  fUseSDDCorrectionMaps; // flag for use of SDD maps in C.F.
   Bool_t  fUseSDDClusterSizeSelection; // cut on SDD cluster size
   Float_t fMinClusterChargeSDD; // cut on SDD cluster charge
 
@@ -518,7 +521,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fSPDRemoveDeadFlag;   // Flag saying whether dead pixels should be removed
 
   
-  ClassDef(AliITSRecoParam,18) // ITS reco parameters
+  ClassDef(AliITSRecoParam,19) // ITS reco parameters
 };
 
 #endif

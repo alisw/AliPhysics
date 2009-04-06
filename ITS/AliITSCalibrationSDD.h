@@ -108,10 +108,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       if(GetChannelGain(anode)==0) return kTRUE;
       else return kFALSE;
     }
-    void SetUseCorrectionMaps(Bool_t useAnodeMap, Bool_t useDriftMap){
-      fUseACorrMap=useAnodeMap;
-      fUseTCorrMap=useDriftMap;
-    }
     Float_t GetMapACell(Int_t i,Int_t j) const {
       if(i<256) return fMapAW0->GetCellContent(i,j);
       else return fMapAW1->GetCellContent(i-256,j);
@@ -181,9 +177,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     TArrayI  fBadChannels;                   //Array with bad anodes number (0-512) 
 
     
-    Bool_t fUseACorrMap;    // flag for the use of correction maps (anode)
-    Bool_t fUseTCorrMap;    // flag for the use of correction maps (drift)
-
     AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
     AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
     AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
@@ -196,7 +189,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,13) 
+    ClassDef(AliITSCalibrationSDD,17) 
     
     };
 #endif

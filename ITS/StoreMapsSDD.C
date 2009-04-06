@@ -24,24 +24,13 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
   }
   
 
-  AliCDBMetaData *md3 = new AliCDBMetaData();
-  md3->SetObjectClassName("AliITSMapSDD");
-  md3->SetResponsible("Elisabetta Crescio, Francesco Prino");
-  md3->SetBeamPeriod(0);
-  md3->SetAliRootVersion("Head 24 sept. 2007");
-  md3->SetComment("This is a test");
-
-  AliCDBMetaData *md4 = new AliCDBMetaData();
-  md4->SetObjectClassName("AliITSMapSDD");
-  md4->SetResponsible("Elisabetta Crescio, Francesco Prino");
-  md4->SetBeamPeriod(0);
-  md4->SetAliRootVersion("Head 24 sept. 2007");
-  md4->SetComment("This is a test");
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetObjectClassName("TObjArray");
+  md->SetResponsible("Francesco Prino");
+  md->SetBeamPeriod(0);
+  md->SetComment("Simulated data");
 
 
-  AliCDBId mapA("ITS/Calib/MapsAnodeSDD",firstRun,lastRun);
-  TObjArray anmap(520);
-  anmap.SetOwner(kFALSE);
 
   AliCDBId mapT("ITS/Calib/MapsTimeSDD",firstRun,lastRun);
   TObjArray tmap(520);
@@ -49,34 +38,36 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 
   TRandom3 *gran = new TRandom3();
   
+  AliITSMapSDD* mapTime0;
+  AliITSMapSDD* mapTime1;
   for(Int_t mod=0;mod<260;mod++){
     // maps
     Char_t name[20];
-    sprintf(name,"AnodeMap_%d_%d\n",mod,0);
-    AliITSMapSDD* mapAnodes0 = new AliITSMapSDD(name);
     sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
-    AliITSMapSDD* mapTime0 = new AliITSMapSDD(name);
-    sprintf(name,"AnodeMap_%d_%d\n",mod,1);
-    AliITSMapSDD* mapAnodes1 = new AliITSMapSDD(name);
-    sprintf(name,"DriftTimeMap_%d_%d\n",mod,1);
-    AliITSMapSDD* mapTime1 = new AliITSMapSDD(name);
-
-    for(Int_t nan = 0;nan<256;nan++){
+    Int_t nbinsan=1;
+    if(mod==10 || mod==240){
+      nbinsan=256;
+      sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
+      mapTime0 = new AliITSMap2DSDD(name,nbinsan,72);
+      sprintf(name,"DriftTimeMap_%d_%d\n",mod,1);
+      mapTime1 = new AliITSMap2DSDD(name,nbinsan,72);
+    }else{
+      sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
+      mapTime0 = new AliITSMap1DSDD(name,72);
+      sprintf(name,"DriftTimeMap_%d_%d\n",mod,1);
+      mapTime1 = new AliITSMap1DSDD(name,72);
+    }
+    for(Int_t nan = 0;nan< nbinsan;nan++){
       for(Int_t nt = 0;nt<36*2;nt++){
-	mapAnodes0->SetCellContent(nan,nt,gran->Gaus(0,20));
 	mapTime0->SetCellContent(nan,nt,gran->Gaus(0,20));
-	mapAnodes1->SetCellContent(nan,nt,gran->Gaus(0,20));
 	mapTime1->SetCellContent(nan,nt,gran->Gaus(0,20));		     
       }
     }
-    anmap.Add(mapAnodes0);
     tmap.Add(mapTime0);
-    anmap.Add(mapAnodes1);
     tmap.Add(mapTime1); 
     printf("Added module %d\n",mod);
   }
     
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&anmap, mapA, md3);
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&tmap, mapT, md4);
+  AliCDBManager::Instance()->GetDefaultStorage()->Put(&tmap, mapT, md);
 
 }

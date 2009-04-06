@@ -150,7 +150,6 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       if(modID==-1) continue;
       modID-=240; // to have SDD modules numbering from 0 to 260
       AliITSCalibrationSDD *cal = new AliITSCalibrationSDD("simulated");
-      cal->SetUseCorrectionMaps(0,0); // temporary disabling of maps
       cal->SetAMAt20MHz();            // for runs > 51275 with clock at 20 MHz
       numOfBadChannels[modID]=0;
       Int_t badch[kNumberOfChannels];

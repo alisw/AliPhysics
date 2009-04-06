@@ -26,37 +26,25 @@
 #include "TH2F.h"
 #include "AliITSMapSDD.h"
 
+const Int_t AliITSMapSDD::fgkNAnodePtsDefault = 1;
+const Int_t AliITSMapSDD::fgkNDriftPtsDefault = 72;
+
 ClassImp(AliITSMapSDD)
 //______________________________________________________________________
-AliITSMapSDD::AliITSMapSDD():TNamed("defaultmap","")
+AliITSMapSDD::AliITSMapSDD():
+TNamed("defaultmap",""),
+fNAnodePts(fgkNAnodePtsDefault),
+fNDriftPts(fgkNDriftPtsDefault)
 {
   // default constructor
-  for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
-    for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      fMap[iAn][iDr]=0;
-    }
-  }
 }
 //______________________________________________________________________
-AliITSMapSDD::AliITSMapSDD(Char_t *mapname):TNamed(mapname,"")
+AliITSMapSDD::AliITSMapSDD(Char_t *mapname):
+TNamed(mapname,""),
+fNAnodePts(fgkNAnodePtsDefault),
+fNDriftPts(fgkNDriftPtsDefault)
 {
   // standard constructor
-  for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
-    for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      fMap[iAn][iDr]=0;
-    }
-  }
-}
-
-//______________________________________________________________________
-void AliITSMapSDD::SetMap(TH2F* hmap){
-  // Fill map staring from 2D histo 
-  // with anodes on x axis and drift dist. on y axis
-  for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
-    for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      SetCellContent(iAn,iDr,hmap->GetBinContent(iAn+1,iDr+1));
-    }
-  }
 }
 //______________________________________________________________________
 Float_t AliITSMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
@@ -67,10 +55,10 @@ Float_t AliITSMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD 
   Int_t bina =(Int_t) seg->GetAnodeFromLocal(x,z);
   if(bina>nAnodes)  AliError("Wrong anode anumber!");
   if(bina>=nAnodesHybrid) bina-=nAnodesHybrid;
-  Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fgkNDrifPts;
+  Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fNDriftPts;
   Int_t bint = TMath::Abs((Int_t)(x/stept));
-  if(bint==fgkNDrifPts) bint-=1;
-  if(bint>=fgkNDrifPts) AliError("Wrong bin number along drift direction!");
+  if(bint==fNDriftPts) bint-=1;
+  if(bint>=fNDriftPts) AliError("Wrong bin number along drift direction!");
   return kMicronTocm*GetCellContent(bina,bint);
 }
 //______________________________________________________________________
@@ -78,9 +66,9 @@ TH2F* AliITSMapSDD::GetMapHisto() const{
   // Returns a TH2F histogram with map of residuals
   Char_t hname[50];
   sprintf(hname,"h%s",GetName());
-  TH2F* hmap=new TH2F(hname,"",fgkNAnodPts,-0.5,255.5,fgkNDrifPts,0.,35.);
-  for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
-    for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
+  TH2F* hmap=new TH2F(hname,"",fNAnodePts,-0.5,255.5,fNDriftPts,0.,35.);
+  for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
+    for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
       hmap->SetBinContent(iAn+1,iDr+1,GetCellContent(iAn,iDr));
     }
   }
@@ -92,8 +80,8 @@ TH1F* AliITSMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
   Char_t hname[50];
   sprintf(hname,"hd%s",GetName());
   TH1F* hd=new TH1F(hname,"",100,dmin,dmax);
-  for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
-    for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
+  for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
+    for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
       hd->Fill(GetCellContent(iAn,iDr));
     }
   }

@@ -43,8 +43,6 @@ fDeadChips(0),
 fDeadChannels(0),
 fIsBad(kFALSE),
 fBadChannels(),
-fUseACorrMap(0),
-fUseTCorrMap(0),
 fMapAW0(0),
 fMapAW1(0),
 fMapTW0(0),
@@ -70,7 +68,6 @@ fDrSpeed1(0)
     }
   }
   SetTemperature(fgkTemperatureDefault);
-  SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType();
  }
 //______________________________________________________________________
@@ -82,8 +79,6 @@ fDeadChips(0),
 fDeadChannels(0),
 fIsBad(kFALSE),
 fBadChannels(),
-fUseACorrMap(0),
-fUseTCorrMap(0),
 fMapAW0(0),
 fMapAW1(0),
 fMapTW0(0),
@@ -110,7 +105,6 @@ fDrSpeed1(0)
   }
 
   SetTemperature(fgkTemperatureDefault);
-  SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType(dataType);
  }
 //_____________________________________________________________________
@@ -146,15 +140,11 @@ void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, F
   //correction of coordinates using the maps stored in the DB
   Int_t nSide=seg->GetSideFromLocalX(x);
   devz=0;
-//   if(fUseACorrMap){
 //     if(nSide==0) devz=fMapAW0->GetCorrection(z,x,seg);
 //     else devz=fMapAW1->GetCorrection(z,x,seg);
-//   }
   devx=0;
-  if(fUseTCorrMap){
-    if(nSide==0) devx=fMapTW0->GetCorrection(z,x,seg);
-    else devx=fMapTW1->GetCorrection(z,x,seg);
-  }
+  if(nSide==0) devx=fMapTW0->GetCorrection(z,x,seg);
+  else devx=fMapTW1->GetCorrection(z,x,seg);
   return;
 }
 //______________________________________________________________________

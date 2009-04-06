@@ -151,6 +151,7 @@ fStoreLikeSignV0s(kFALSE),
 fUseUnfoldingInClusterFinderSPD(kFALSE),
 fUseUnfoldingInClusterFinderSDD(kTRUE),
 fUseUnfoldingInClusterFinderSSD(kTRUE),
+fUseSDDCorrectionMaps(kTRUE),
 fUseSDDClusterSizeSelection(kFALSE),
 fMinClusterChargeSDD(0.),
 fUseChargeMatchingInClusterFinderSSD(kTRUE),
@@ -489,6 +490,7 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
 
+  param->fUseSDDCorrectionMaps = kFALSE;
   
   return param;
 }

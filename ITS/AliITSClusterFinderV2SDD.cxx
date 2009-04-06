@@ -238,10 +238,12 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative
 	if (s==0) xdet=-xdet; // left side has positive local x
 	
-	Float_t corrx=0, corrz=0;
-	cal->GetCorrections(zdet,xdet,corrz,corrx,GetSeg());
-	zdet+=corrz;
-	xdet+=corrx;
+	if(repa->GetUseSDDCorrectionMaps()){
+	  Float_t corrx=0, corrz=0;
+	  cal->GetCorrections(zdet,xdet,corrz,corrx,GetSeg());
+	  zdet+=corrz;
+	  xdet+=corrx;
+	}
 
 	Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
 	mT2L->MasterToLocal(loc,trk);
