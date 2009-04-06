@@ -136,9 +136,16 @@ void AliAnaPi0::Init()
 		fhEtalon->SetYTitle("#alpha") ;
 		fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
 	}
+	
+}
 
-
-//create event containers
+//________________________________________________________________________________________________________________________________________________
+TList * AliAnaPi0::GetCreateOutputObjects()
+{  
+	// Create histograms to be saved in output file and 
+	// store them in fOutputContainer
+	
+	//create event containers
 	fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
 	
 	for(Int_t ic=0; ic<fNCentrBin; ic++){
@@ -154,15 +161,6 @@ void AliAnaPi0::Init()
 	printf("PHOS geometry initialized!\n");
 	fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
 #endif	
-	
-}
-
-//________________________________________________________________________________________________________________________________________________
-TList * AliAnaPi0::GetCreateOutputObjects()
-{  
-	// Create histograms to be saved in output file and 
-	// store them in fOutputContainer
-
 	
 	TList * outputContainer = new TList() ; 
 	outputContainer->SetName(GetName()); 
@@ -481,6 +479,12 @@ void AliAnaPi0::Terminate()
   //Do some calculations and plots from the final histograms.
  
   printf(" *** %s Terminate:", GetName()) ; 
+  
+  if (!fhRe1) {
+     Error("Terminate", "Remote output histograms not imported in AliAnaPi0 object");
+     return;
+  }
+      
   printf("        Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
  
   TCanvas  * cIM = new TCanvas("cIM", "", 400, 10, 600, 700) ;

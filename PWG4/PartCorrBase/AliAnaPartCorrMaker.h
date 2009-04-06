@@ -33,7 +33,7 @@ public:
 
   //Setter and getters
   TList * GetAODBranchList() ;
-  TList * GetOutputContainer()    const {return fOutputContainer ; }
+  TList * GetOutputContainer() ;
 
   Int_t GetAnaDebug() const  { return fAnaDebug ; }
   void SetAnaDebug(Int_t d)   { fAnaDebug = d ; }

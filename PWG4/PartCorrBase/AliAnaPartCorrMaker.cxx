@@ -135,6 +135,25 @@ TList * AliAnaPartCorrMaker::GetAODBranchList()
 }
 
 //________________________________________________________________________
+TList *AliAnaPartCorrMaker::GetOutputContainer()
+{
+// Fill the output list of histograms during the CreateOutputObjects stage.
+	if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
+			AliFatal("Analysis job list not initialized");
+			
+	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+		AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+		if(fMakeHisto){// Analysis with histograms as output on
+			//Fill container with appropriate histograms			
+			TList * templist =  ana -> GetCreateOutputObjects(); 
+				for(Int_t i = 0; i < templist->GetEntries(); i++)
+					fOutputContainer->Add(templist->At(i)) ;
+		}// Analysis with histograms as output on
+	}//Loop on analysis defined
+   return fOutputContainer;
+}
+
+//________________________________________________________________________
 void AliAnaPartCorrMaker::Init()
 {  
 	//Init container histograms and other common variables
@@ -148,13 +167,7 @@ void AliAnaPartCorrMaker::Init()
 		ana->SetReader(fReader); //SetReader for each analysis
 		ana->Init();
 		
-		if(fMakeHisto){// Analysis with histograms as output on
-			//Fill container with appropriate histograms			
-			TList * templist =  ana -> GetCreateOutputObjects(); 
-				for(Int_t i = 0; i < templist->GetEntries(); i++)
-					fOutputContainer->Add(templist->At(i)) ;
-		}// Analysis with histograms as output on
-	}//Loop on analysis defined
+		}//Loop on analysis defined
 }
 
 //____________________________________________________________________________
