@@ -20,5 +20,6 @@
 #pragma link C++ class AliAltroBunch+;
 #pragma link C++ class AliAltroRawStreamFast+;
 #pragma link C++ class AliRawHLTManager+;
+#pragma link C++ class AliAltroRawStreamV3+;
 
 #endif
