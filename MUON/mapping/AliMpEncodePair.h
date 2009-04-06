@@ -6,6 +6,10 @@
 
 // $Id$
 
+// The functions for encodind the pair of integers to another integer,
+// defined withing a namespace AliMp
+// Author Laurent Aphecetche
+
 #include <Rtypes.h>
 #include <Riosfwd.h>
 

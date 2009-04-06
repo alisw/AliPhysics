@@ -15,6 +15,12 @@
 
 // $Id$
 
+// AliMp::Pair functions: 
+// The functions for encoding the pair of integers to another integer,
+// defined withing a namespace AliMp.
+// The encoded pairs can be added and subtracted.
+// Author Laurent Aphecetche
+
 #include "AliMpEncodePair.h"
 
 #include <Riostream.h>
@@ -49,6 +55,8 @@ Int_t AliMp::PairSecond(MpPair_t pair)
 //_______________________________________________________________________
 ostream& AliMp::PairPut(ostream& stream, MpPair_t pair)
 {
+/// A special printing for encoded pair.
+
   if ( pair >= 0 ) {
     stream << '(' << AliMp::PairFirst(pair) 
            << ',' << AliMp::PairSecond(pair) << ')';

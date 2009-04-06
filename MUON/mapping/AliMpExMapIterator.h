@@ -23,9 +23,9 @@ class TExMapIter;
 //_____________________________________________________________________________
 class AliMpExMapIterator : public TIterator
 {
-public:
   friend class AliMpExMap;
 
+public:
   AliMpExMapIterator(const AliMpExMap& theMap);
   AliMpExMapIterator(const AliMpExMapIterator& rhs);
   AliMpExMapIterator& operator=(const AliMpExMapIterator& rhs);
@@ -50,8 +50,6 @@ public:
 private:
     
     Bool_t Next(Long_t& index, TObject*& object);
-
-private:
   
     TExMapIter* fIterator; ///< iterator we are wrapping
 

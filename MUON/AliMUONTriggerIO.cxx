@@ -426,7 +426,7 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
 
 //_____________________________________________________________________________
  Int_t 
- AliMUONTriggerIO::ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig)
+ AliMUONTriggerIO::ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig) const
 {
   /// read the global crate file
   /// the masks are disable bit for each crate, 8 per darc board

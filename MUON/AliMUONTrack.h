@@ -96,7 +96,7 @@ class AliMUONTrack : public TObject
   Int_t CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
   
   /// return pointer to track parameters at vertex (can be 0x0)
-  AliMUONTrackParam* GetTrackParamAtVertex() {return fTrackParamAtVertex;}
+  AliMUONTrackParam* GetTrackParamAtVertex() const {return fTrackParamAtVertex;}
   void               SetTrackParamAtVertex(const AliMUONTrackParam* trackParam);
 
   /// set word telling which trigger chambers where hit by track

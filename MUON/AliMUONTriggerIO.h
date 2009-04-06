@@ -63,7 +63,7 @@ public:
                     AliMUONGlobalCrateConfig* globalConfig) const;
 
   
-  Int_t  ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig);
+  Int_t  ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig) const;
 
   Bool_t WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig) const;
 
