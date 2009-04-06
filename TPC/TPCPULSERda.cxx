@@ -237,28 +237,32 @@ int main(int argc, char **argv) {
   //is initialised. This of course makes a problem if we would like to store different
   //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
   //the AMORE_DA_NAME env variable is overwritten.  
-  const char *role=gSystem->Getenv("DATE_ROLE_NAME");
-  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",role,FILE_ID));
+ 
+  //find processed sector
+  Char_t sideName='A';
+  Int_t sector = 0;
+  for ( Int_t roc = 0; roc < 72; roc++ ) {
+    if ( !calibPulser.GetCalRocT0(roc) ) continue;
+    if (mapping->GetSideFromRoc(roc)==1) sideName='C';
+    sector = mapping->GetSectorFromRoc(roc);
+  }
+  gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
   // 
   // end cheet
-  if ( role ){
-    TDatime time;
-    TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  TDatime time;
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
     
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    Int_t status=0;  
-    status+=amoreDA.Send("PulserT0",calibPulser.GetCalPadT0());
-    status+=amoreDA.Send("PulserQ",calibPulser.GetCalPadQ());
-    status+=amoreDA.Send("PulserRMS",calibPulser.GetCalPadRMS());
-    status+=amoreDA.Send("arrayTmean",calibPulser.GetMeanTimeSectorArray());
-    status+=amoreDA.Send("Info",&info);
-    if ( status!=0 )
-      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
-    // reset env var  
-    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
-  } else {
-    printf ("Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database\n");
-  }
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;  
+  statusDA+=amoreDA.Send("PulserT0",calibPulser.GetCalPadT0());
+  statusDA+=amoreDA.Send("PulserQ",calibPulser.GetCalPadQ());
+  statusDA+=amoreDA.Send("PulserRMS",calibPulser.GetCalPadRMS());
+  statusDA+=amoreDA.Send("arrayTmean",calibPulser.GetMeanTimeSectorArray());
+  statusDA+=amoreDA.Send("Info",&info);
+  if ( statusDA!=0 )
+    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  // reset env var  
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 
   return status;
 }

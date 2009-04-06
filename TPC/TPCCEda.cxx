@@ -246,25 +246,20 @@ int main(int argc, char **argv) {
   //is initialised. This of course makes a problem if we would like to store different
   //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
   //the AMORE_DA_NAME env variable is overwritten.  
-  const char *role=gSystem->Getenv("DATE_ROLE_NAME");
-  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",role,FILE_ID));
+  gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%s",FILE_ID));
   //
   // end cheet
-  if ( role ){
-    TDatime time;
-    TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    Int_t status=0;
-    status+=amoreDA.Send("CET0",calibCE.GetCalPadT0());
-    status+=amoreDA.Send("CEQ",calibCE.GetCalPadQ());
-    status+=amoreDA.Send("CERMS",calibCE.GetCalPadRMS());
-    status+=amoreDA.Send("Info",&info);
-    if ( status!=0 )
-      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
-    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
-  } else {
-    printf ("Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database\n");
-  }
+  TDatime time;
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("CET0",calibCE.GetCalPadT0());
+  statusDA+=amoreDA.Send("CEQ",calibCE.GetCalPadQ());
+  statusDA+=amoreDA.Send("CERMS",calibCE.GetCalPadRMS());
+  statusDA+=amoreDA.Send("Info",&info);
+  if ( statusDA!=0 )
+    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 
   return status;
 }
