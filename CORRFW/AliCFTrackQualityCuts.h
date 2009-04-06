@@ -21,10 +21,15 @@
 // ESD and AOD data.
 // It mainly consists of a IsSelected function that returns a boolean.
 // This function checks whether the considered track passes a set of cuts:
-// - number of clusters in the TPC
 // - number of clusters in the ITS
-// - chi2 / cluster in the TPC
+// - number of clusters in the TPC
+// - number of clusters in the TRD
+// - ratio of found / finable number of clusters in the TPC
+// - number of tracklets in the TRD
+// - number TRD tracklets used for pid
 // - chi2 / cluster in the ITS
+// - chi2 / cluster in the TPC
+// - chi2 / tracklet in the TRD
 // - covariance matrix diagonal elements
 // - track status (cf AliESDtrack.h)
 //
@@ -65,10 +70,13 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   void SetMinNClusterTPC(Int_t cluster=-1)		{fMinNClusterTPC = cluster;}
   void SetMinNClusterITS(Int_t cluster=-1)		{fMinNClusterITS = cluster;}
   void SetMinNClusterTRD(Int_t cluster=-1)		{fMinNClusterTRD = cluster;}
-  void SetMaxChi2PerClusterTPC(Double_t chi=1e99)	{fMaxChi2PerClusterTPC = chi;}
-  void SetMaxChi2PerClusterITS(Double_t chi=1e99)	{fMaxChi2PerClusterITS = chi;}
-  void SetMaxChi2PerClusterTRD(Double_t chi=1e99)	{fMaxChi2PerClusterTRD = chi;}
-  void SetMaxCovDiagonalElements(Float_t c1=1e99, Float_t c2=1e99, Float_t c3=1e99, Float_t c4=1e99, Float_t c5=1e99) 
+  void SetMinFoundClusterTPC(Double_t fraction=-1)	{fMinFoundClusterTPC = fraction;}
+  void SetMinNTrackletTRD(Int_t tracklet=-1)		{fMinNTrackletTRD = tracklet;}
+  void SetMinNTrackletTRDpid(Int_t tracklet=-1)		{fMinNTrackletTRDpid = tracklet;}
+  void SetMaxChi2PerClusterTPC(Double_t chi=1.e+09)	{fMaxChi2PerClusterTPC = chi;}
+  void SetMaxChi2PerClusterITS(Double_t chi=1.e+09)	{fMaxChi2PerClusterITS = chi;}
+  void SetMaxChi2PerTrackletTRD(Double_t chi=1.e+09)	{fMaxChi2PerTrackletTRD = chi;}
+  void SetMaxCovDiagonalElements(Float_t c1=1.e+09, Float_t c2=1.e+09, Float_t c3=1.e+09, Float_t c4=1.e+09, Float_t c5=1.e+09) 
 {fCovariance11Max=c1;fCovariance22Max=c2;fCovariance33Max=c3;fCovariance44Max=c4;fCovariance55Max=c5;}
   void SetStatus(ULong_t status=0) {fStatus = status ;}
 
@@ -86,6 +94,9 @@ class AliCFTrackQualityCuts : public AliCFCutBase
     kCutClusterTPC=0,	// number of clusters in TPC
     kCutClusterITS,	// number of clusters in ITS
     kCutClusterTRD,	// number of clusters in TRD
+    kCutMinFoundClusterTPC,	// ratio found / findable number of clusters in TPC
+    kCutTrackletTRD,	// number of tracklets in TRD
+    kCutTrackletTRDpid,	// tracklets for TRD pid
     kCutChi2TPC,	// chi2 per cluster in TPC
     kCutChi2ITS,	// chi2 per cluster in ITS
     kCutChi2TRD,	// chi2 per cluster in TRD
@@ -97,7 +108,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
     kCutStatus,         // track status
     kNCuts,		// number of single selections
     kNStepQA=2,		// number of QA steps (before/after the cuts)
-    kNHist=11		// number of QA histograms
+    kNHist=14		// number of QA histograms
   };
 
  private:
@@ -109,9 +120,12 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t fMinNClusterTPC;		// min number of clusters in TPC
   Double_t fMinNClusterITS;		// min number of clusters in ITS
   Double_t fMinNClusterTRD;		// min number of clusters in TRD
+  Double_t fMinFoundClusterTPC;		// min ratio found / findable number of clusters in TPC
+  Double_t fMinNTrackletTRD;		// min number of tracklets in TRD
+  Double_t fMinNTrackletTRDpid;		// min number of tracklets for TRD pid
   Double_t fMaxChi2PerClusterTPC;	// max chi2 per clusters in TPC
   Double_t fMaxChi2PerClusterITS;	// max chi2 per clusters in ITS
-  Double_t fMaxChi2PerClusterTRD;	// max chi2 per clusters in TRD
+  Double_t fMaxChi2PerTrackletTRD;	// max chi2 per clusters in TRD
 
   Double_t fCovariance11Max ;		// max covariance matrix element 11
   Double_t fCovariance22Max ;		// max covariance matrix element 22
@@ -131,6 +145,9 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Int_t fhNBinsClusterTPC;		// number of bins+1: cluster TPC
   Int_t fhNBinsClusterITS;		// number of bins+1: cluster ITS
   Int_t fhNBinsClusterTRD;		// number of bins+1: cluster TRD
+  Int_t fhNBinsFoundClusterTPC;		// number of bins+1: ratio found / findable number of clusters in TPC
+  Int_t fhNBinsTrackletTRD;		// number of bins+1: number of tracklets in TRD
+  Int_t fhNBinsTrackletTRDpid;		// number of bins+1: number of tracklets for TRD pid
   Int_t fhNBinsChi2TPC;			// number of bins+1: chi2 per cluster TPC
   Int_t fhNBinsChi2ITS;			// number of bins+1: chi2 per cluster ITS
   Int_t fhNBinsChi2TRD;			// number of bins+1: chi2 per cluster TRD
@@ -143,6 +160,9 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t *fhBinLimClusterTPC;	//[fhNBinsClusterTPC] bin limits: cluster TPC
   Double_t *fhBinLimClusterITS;	//[fhNBinsClusterITS] bin limits: cluster ITS
   Double_t *fhBinLimClusterTRD;	//[fhNBinsClusterTRD] bin limits: cluster TRD
+  Double_t *fhBinLimFoundClusterTPC;//[fhNBinsFoundClusterTPC] bin limits: ratio found / findable number of clusters in TPC
+  Double_t *fhBinLimTrackletTRD;//[fhNBinsTrackletsTRD] bin limits: number of tracklets in TRD
+  Double_t *fhBinLimTrackletTRDpid;//[fhNBinsTrackletsTRDpid] bin limits: number of tracklets for TRD pid
   Double_t *fhBinLimChi2TPC;	//[fhNBinsChi2TPC] bin limits: chi2 per cluster TPC
   Double_t *fhBinLimChi2ITS;	//[fhNBinsChi2ITS] bin limits: chi2 per cluster ITS
   Double_t *fhBinLimChi2TRD;	//[fhNBinsChi2TRD] bin limits: chi2 per cluster TRD

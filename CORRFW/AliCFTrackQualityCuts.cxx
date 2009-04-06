@@ -21,12 +21,15 @@
 // ESD and AOD data.
 // It mainly consists of a IsSelected function that returns a boolean.
 // This function checks whether the considered track passes a set of cuts:
-// - number of clusters in the TPC
 // - number of clusters in the ITS
+// - number of clusters in the TPC
 // - number of clusters in the TRD
-// - chi2 / cluster in the TPC
+// - ratio of found / finable number of clusters in the TPC
+// - number of tracklets in the TRD
+// - number TRD tracklets used for pid
 // - chi2 / cluster in the ITS
-// - chi2 / cluster in the TRD
+// - chi2 / cluster in the TPC
+// - chi2 / tracklet in the TRD
 // - successful TPC refit
 // - successful ITS refit
 // - covariance matrix diagonal elements
@@ -60,9 +63,12 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts() :
   fMinNClusterTPC(0),
   fMinNClusterITS(0),
   fMinNClusterTRD(0),
+  fMinFoundClusterTPC(0),
+  fMinNTrackletTRD(0),
+  fMinNTrackletTRDpid(0),
   fMaxChi2PerClusterTPC(0),
   fMaxChi2PerClusterITS(0),
-  fMaxChi2PerClusterTRD(0),
+  fMaxChi2PerTrackletTRD(0),
   fCovariance11Max(0),
   fCovariance22Max(0),
   fCovariance33Max(0),
@@ -75,6 +81,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts() :
   fhNBinsClusterTPC(0),
   fhNBinsClusterITS(0),
   fhNBinsClusterTRD(0),
+  fhNBinsFoundClusterTPC(0),
+  fhNBinsTrackletTRD(0),
+  fhNBinsTrackletTRDpid(0),
   fhNBinsChi2TPC(0),
   fhNBinsChi2ITS(0),
   fhNBinsChi2TRD(0),
@@ -86,6 +95,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts() :
   fhBinLimClusterTPC(0x0),
   fhBinLimClusterITS(0x0),
   fhBinLimClusterTRD(0x0),
+  fhBinLimFoundClusterTPC(0x0),
+  fhBinLimTrackletTRD(0x0),
+  fhBinLimTrackletTRDpid(0x0),
   fhBinLimChi2TPC(0x0),
   fhBinLimChi2ITS(0x0),
   fhBinLimChi2TRD(0x0),
@@ -106,9 +118,12 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(Char_t* name, Char_t* title) :
   fMinNClusterTPC(0),
   fMinNClusterITS(0),
   fMinNClusterTRD(0),
+  fMinFoundClusterTPC(0),
+  fMinNTrackletTRD(0),
+  fMinNTrackletTRDpid(0),
   fMaxChi2PerClusterTPC(0),
   fMaxChi2PerClusterITS(0),
-  fMaxChi2PerClusterTRD(0),
+  fMaxChi2PerTrackletTRD(0),
   fCovariance11Max(0),
   fCovariance22Max(0),
   fCovariance33Max(0),
@@ -121,6 +136,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(Char_t* name, Char_t* title) :
   fhNBinsClusterTPC(0),
   fhNBinsClusterITS(0),
   fhNBinsClusterTRD(0),
+  fhNBinsFoundClusterTPC(0),
+  fhNBinsTrackletTRD(0),
+  fhNBinsTrackletTRDpid(0),
   fhNBinsChi2TPC(0),
   fhNBinsChi2ITS(0),
   fhNBinsChi2TRD(0),
@@ -132,6 +150,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(Char_t* name, Char_t* title) :
   fhBinLimClusterTPC(0x0),
   fhBinLimClusterITS(0x0),
   fhBinLimClusterTRD(0x0),
+  fhBinLimFoundClusterTPC(0x0),
+  fhBinLimTrackletTRD(0x0),
+  fhBinLimTrackletTRDpid(0x0),
   fhBinLimChi2TPC(0x0),
   fhBinLimChi2ITS(0x0),
   fhBinLimChi2TRD(0x0),
@@ -152,9 +173,12 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(const AliCFTrackQualityCuts& c) :
   fMinNClusterTPC(c.fMinNClusterTPC),
   fMinNClusterITS(c.fMinNClusterITS),
   fMinNClusterTRD(c.fMinNClusterTRD),
+  fMinFoundClusterTPC(c.fMinFoundClusterTPC),
+  fMinNTrackletTRD(c.fMinNTrackletTRD),
+  fMinNTrackletTRDpid(c.fMinNTrackletTRDpid),
   fMaxChi2PerClusterTPC(c.fMaxChi2PerClusterTPC),
   fMaxChi2PerClusterITS(c.fMaxChi2PerClusterITS),
-  fMaxChi2PerClusterTRD(c.fMaxChi2PerClusterTRD),
+  fMaxChi2PerTrackletTRD(c.fMaxChi2PerTrackletTRD),
   fCovariance11Max(c.fCovariance11Max),
   fCovariance22Max(c.fCovariance22Max),
   fCovariance33Max(c.fCovariance33Max),
@@ -167,6 +191,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(const AliCFTrackQualityCuts& c) :
   fhNBinsClusterTPC(c.fhNBinsClusterTPC),
   fhNBinsClusterITS(c.fhNBinsClusterITS),
   fhNBinsClusterTRD(c.fhNBinsClusterTRD),
+  fhNBinsFoundClusterTPC(c.fhNBinsFoundClusterTPC),
+  fhNBinsTrackletTRD(c.fhNBinsTrackletTRD),
+  fhNBinsTrackletTRDpid(c.fhNBinsTrackletTRDpid),
   fhNBinsChi2TPC(c.fhNBinsChi2TPC),
   fhNBinsChi2ITS(c.fhNBinsChi2ITS),
   fhNBinsChi2TRD(c.fhNBinsChi2TRD),
@@ -178,6 +205,9 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(const AliCFTrackQualityCuts& c) :
   fhBinLimClusterTPC(c.fhBinLimClusterTPC),
   fhBinLimClusterITS(c.fhBinLimClusterITS),
   fhBinLimClusterTRD(c.fhBinLimClusterTRD),
+  fhBinLimFoundClusterTPC(c.fhBinLimFoundClusterTPC),
+  fhBinLimTrackletTRD(c.fhBinLimTrackletTRD),
+  fhBinLimTrackletTRDpid(c.fhBinLimTrackletTRDpid),
   fhBinLimChi2TPC(c.fhBinLimChi2TPC),
   fhBinLimChi2ITS(c.fhBinLimChi2ITS),
   fhBinLimChi2TRD(c.fhBinLimChi2TRD),
@@ -203,9 +233,12 @@ AliCFTrackQualityCuts& AliCFTrackQualityCuts::operator=(const AliCFTrackQualityC
     fMinNClusterTPC = c.fMinNClusterTPC ;
     fMinNClusterITS = c.fMinNClusterITS ;
     fMinNClusterTRD = c.fMinNClusterTRD ;
+    fMinFoundClusterTPC = c.fMinFoundClusterTPC ;
+    fMinNTrackletTRD = c.fMinNTrackletTRD ;
+    fMinNTrackletTRDpid = c.fMinNTrackletTRDpid ;
     fMaxChi2PerClusterTPC = c.fMaxChi2PerClusterTPC ;
     fMaxChi2PerClusterITS = c.fMaxChi2PerClusterITS ;
-    fMaxChi2PerClusterTRD = c.fMaxChi2PerClusterTRD ;
+    fMaxChi2PerTrackletTRD = c.fMaxChi2PerTrackletTRD ;
     fCovariance11Max = c.fCovariance11Max ;
     fCovariance22Max = c.fCovariance22Max ;
     fCovariance33Max = c.fCovariance33Max ;
@@ -218,6 +251,9 @@ AliCFTrackQualityCuts& AliCFTrackQualityCuts::operator=(const AliCFTrackQualityC
     fhNBinsClusterTPC = c.fhNBinsClusterTPC ;
     fhNBinsClusterITS = c.fhNBinsClusterITS ;
     fhNBinsClusterTRD = c.fhNBinsClusterTRD ;
+    fhNBinsFoundClusterTPC = c.fhNBinsFoundClusterTPC ;
+    fhNBinsTrackletTRD = c.fhNBinsTrackletTRD ;
+    fhNBinsTrackletTRDpid = c.fhNBinsTrackletTRDpid ;
     fhNBinsChi2TPC = c.fhNBinsChi2TPC ;
     fhNBinsChi2ITS = c.fhNBinsChi2ITS ;
     fhNBinsChi2TRD = c.fhNBinsChi2TRD ;
@@ -229,6 +265,9 @@ AliCFTrackQualityCuts& AliCFTrackQualityCuts::operator=(const AliCFTrackQualityC
     fhBinLimClusterTPC = c.fhBinLimClusterTPC ;
     fhBinLimClusterITS = c.fhBinLimClusterITS ;
     fhBinLimClusterTRD = c.fhBinLimClusterTRD ;
+    fhBinLimFoundClusterTPC = c.fhBinLimFoundClusterTPC ;
+    fhBinLimTrackletTRD = c.fhBinLimTrackletTRD ;
+    fhBinLimTrackletTRDpid = c.fhBinLimTrackletTRDpid ;
     fhBinLimChi2TPC = c.fhBinLimChi2TPC ;
     fhBinLimChi2ITS = c.fhBinLimChi2ITS ;
     fhBinLimChi2TRD = c.fhBinLimChi2TRD ;
@@ -265,6 +304,9 @@ AliCFTrackQualityCuts::~AliCFTrackQualityCuts()
   if(fhBinLimClusterTPC) delete fhBinLimClusterTPC;
   if(fhBinLimClusterITS) delete fhBinLimClusterITS;
   if(fhBinLimClusterTRD) delete fhBinLimClusterTRD;
+  if(fhBinLimFoundClusterTPC) delete fhBinLimFoundClusterTPC;
+  if(fhBinLimTrackletTRD) delete fhBinLimTrackletTRD;
+  if(fhBinLimTrackletTRDpid) delete fhBinLimTrackletTRDpid;
   if(fhBinLimChi2TPC) delete fhBinLimChi2TPC;
   if(fhBinLimChi2ITS) delete fhBinLimChi2ITS;
   if(fhBinLimChi2TRD) delete fhBinLimChi2TRD;
@@ -283,9 +325,12 @@ void AliCFTrackQualityCuts::Initialise()
   fMinNClusterTPC = 0;
   fMinNClusterITS = 0;
   fMinNClusterTRD = 0;
+  fMinFoundClusterTPC = 0;
+  fMinNTrackletTRD = 0;
+  fMinNTrackletTRDpid = 0;
   fMaxChi2PerClusterTPC = 0;
   fMaxChi2PerClusterITS = 0;
-  fMaxChi2PerClusterTRD = 0;
+  fMaxChi2PerTrackletTRD = 0;
   fCovariance11Max = 0;
   fCovariance22Max = 0;
   fCovariance33Max = 0;
@@ -296,9 +341,12 @@ void AliCFTrackQualityCuts::Initialise()
   SetMinNClusterTPC();
   SetMinNClusterITS();
   SetMinNClusterTRD();
+  SetMinFoundClusterTPC();
+  SetMinNTrackletTRD();
+  SetMinNTrackletTRDpid();
   SetMaxChi2PerClusterTPC();
   SetMaxChi2PerClusterITS();
-  SetMaxChi2PerClusterTRD();
+  SetMaxChi2PerTrackletTRD();
   SetMaxCovDiagonalElements();
   SetStatus();
 
@@ -313,7 +361,10 @@ void AliCFTrackQualityCuts::Initialise()
   //set default bining for QA histograms
   SetHistogramBins(kCutClusterTPC,165,-0.5,164.5);
   SetHistogramBins(kCutClusterITS,8,-0.5,7.5);
-  SetHistogramBins(kCutClusterTRD,100,-0.5,99.5);
+  SetHistogramBins(kCutClusterTRD,120,-0.5,119.5);
+  SetHistogramBins(kCutMinFoundClusterTPC,110,-0.05,1.05);
+  SetHistogramBins(kCutTrackletTRD,7,-0.5,6.5);
+  SetHistogramBins(kCutTrackletTRDpid,7,-0.5,6.5);
   SetHistogramBins(kCutChi2TPC,500,0.,10.);
   SetHistogramBins(kCutChi2ITS,500,0.,10.);
   SetHistogramBins(kCutChi2TRD,500,0.,10.);
@@ -369,23 +420,26 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   if (isAODTrack) aodTrack = dynamic_cast<AliAODTrack*>(obj);
 
   // get cut quantities
-  Int_t    fIdxInt[200];
   Int_t    nClustersTPC = 0;
   Int_t    nClustersITS = 0 ;
   Int_t    nClustersTRD = 0 ;
+  Int_t    nTrackletsTRD = 0 ;
   Float_t  chi2PerClusterTPC =  0 ;
   Float_t  chi2PerClusterITS = 0 ;
-  Float_t  chi2PerClusterTRD = 0 ;
+  Float_t  chi2PerTrackletTRD = 0 ;
   Double_t extCov[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  
+  Float_t fractionFoundClustersTPC = 0;
+
   if (isESDTrack) {
-    nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
-    nClustersITS = esdTrack->GetITSclusters(fIdxInt);
-    nClustersTRD = esdTrack->GetTRDclusters(fIdxInt);
+    nClustersTPC = esdTrack->GetTPCclusters(0x0);
+    nClustersITS = esdTrack->GetITSclusters(0x0);
+    nClustersTRD = esdTrack->GetTRDncls();
+    nTrackletsTRD = esdTrack->GetTRDntracklets();
     if (nClustersTPC != 0) chi2PerClusterTPC = esdTrack->GetTPCchi2() / Float_t(nClustersTPC);
     if (nClustersITS != 0) chi2PerClusterITS = esdTrack->GetITSchi2() / Float_t(nClustersITS);
-    if (nClustersTRD != 0) chi2PerClusterTRD = esdTrack->GetTRDchi2() / Float_t(nClustersTRD);
+    if (nTrackletsTRD != 0) chi2PerTrackletTRD = esdTrack->GetTRDchi2() / Float_t(nTrackletsTRD);
     esdTrack->GetExternalCovariance(extCov);
+    if (esdTrack->GetTPCNclsF() != 0) fractionFoundClustersTPC = float(nClustersTPC) / float(esdTrack->GetTPCNclsF());
   }
 
   // fill the bitmap
@@ -400,13 +454,22 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   if (nClustersTRD >= fMinNClusterTRD)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
+  if ((fMinFoundClusterTPC <= 0) || (nClustersTPC > 0 && (fractionFoundClustersTPC >= fMinFoundClusterTPC)))
+    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if (nTrackletsTRD >= fMinNTrackletTRD)
+    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if (esdTrack->GetTRDntrackletsPID() >= fMinNTrackletTRDpid)
+    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
   if (chi2PerClusterTPC <= fMaxChi2PerClusterTPC)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
   if (chi2PerClusterITS <= fMaxChi2PerClusterITS)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (chi2PerClusterTRD <= fMaxChi2PerClusterTRD)
+  if (chi2PerTrackletTRD <= fMaxChi2PerTrackletTRD)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
   if (extCov[0]  <= fCovariance11Max)
@@ -484,6 +547,24 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     fhNBinsClusterTRD=nbins+1;
     fhBinLimClusterTRD=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTRD[i]=bins[i];
+    break;
+
+  case kCutMinFoundClusterTPC:
+    fhNBinsFoundClusterTPC=nbins+1;
+    fhBinLimFoundClusterTPC=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimFoundClusterTPC[i]=bins[i];
+    break;
+
+  case kCutTrackletTRD:
+    fhNBinsTrackletTRD=nbins+1;
+    fhBinLimTrackletTRD=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrackletTRD[i]=bins[i];
+    break;
+
+  case kCutTrackletTRDpid:
+    fhNBinsTrackletTRDpid=nbins+1;
+    fhBinLimTrackletTRDpid=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrackletTRDpid[i]=bins[i];
     break;
 
   case kCutChi2TPC:
@@ -565,6 +646,24 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTRD[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
+  case kCutMinFoundClusterTPC:
+    fhNBinsFoundClusterTPC=nbins+1;
+    fhBinLimFoundClusterTPC=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimFoundClusterTPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
+    break;
+
+  case kCutTrackletTRD:
+    fhNBinsTrackletTRD=nbins+1;
+    fhBinLimTrackletTRD=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrackletTRD[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
+    break;
+
+  case kCutTrackletTRDpid:
+    fhNBinsTrackletTRDpid=nbins+1;
+    fhBinLimTrackletTRDpid=new Double_t[nbins+1];
+    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrackletTRDpid[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
+    break;
+
   case kCutChi2TPC:
     fhNBinsChi2TPC=nbins+1;
     fhBinLimChi2TPC=new Double_t[nbins+1];
@@ -626,44 +725,53 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
   fhCutStatistics->SetLineWidth(2);
   fhCutStatistics->GetXaxis()->SetBinLabel(1, "nClustersTPC");
   fhCutStatistics->GetXaxis()->SetBinLabel(2, "nClustersITS");
-  fhCutStatistics->GetXaxis()->SetBinLabel(3,  "nClustersTRD");
-  fhCutStatistics->GetXaxis()->SetBinLabel(4, "chi2PerClusterTPC");
-  fhCutStatistics->GetXaxis()->SetBinLabel(5, "chi2PerClusterITS");
-  fhCutStatistics->GetXaxis()->SetBinLabel(6, "chi2PerClusterTRD");
-  fhCutStatistics->GetXaxis()->SetBinLabel(7, "covElement11");
-  fhCutStatistics->GetXaxis()->SetBinLabel(8, "covElement22");
-  fhCutStatistics->GetXaxis()->SetBinLabel(9, "covElement33");
-  fhCutStatistics->GetXaxis()->SetBinLabel(10,"covElement44");
-  fhCutStatistics->GetXaxis()->SetBinLabel(11,"covElement55");
-  fhCutStatistics->GetXaxis()->SetBinLabel(12,"status");
+  fhCutStatistics->GetXaxis()->SetBinLabel(3, "nClustersTRD");
+  fhCutStatistics->GetXaxis()->SetBinLabel(4, "fractionClustersTPC");
+  fhCutStatistics->GetXaxis()->SetBinLabel(5, "ntrackletsTRD");
+  fhCutStatistics->GetXaxis()->SetBinLabel(6, "ntrackletsTRDpid");
+  fhCutStatistics->GetXaxis()->SetBinLabel(7, "chi2PerClusterTPC");
+  fhCutStatistics->GetXaxis()->SetBinLabel(8, "chi2PerClusterITS");
+  fhCutStatistics->GetXaxis()->SetBinLabel(9, "chi2PerTrackletTRD");
+  fhCutStatistics->GetXaxis()->SetBinLabel(10, "covElement11");
+  fhCutStatistics->GetXaxis()->SetBinLabel(11, "covElement22");
+  fhCutStatistics->GetXaxis()->SetBinLabel(12, "covElement33");
+  fhCutStatistics->GetXaxis()->SetBinLabel(13, "covElement44");
+  fhCutStatistics->GetXaxis()->SetBinLabel(14, "covElement55");
+  fhCutStatistics->GetXaxis()->SetBinLabel(15, "status");
 
   fhCutCorrelation = new TH2F(Form("%s_cut_correlation",GetName()), Form("%s cut  correlation",GetName()), kNCuts,0.5,kNCuts+0.5,kNCuts,0.5,kNCuts+0.5);
   fhCutCorrelation->SetLineWidth(2);
   fhCutCorrelation->GetXaxis()->SetBinLabel(1, "nClustersTPC");
   fhCutCorrelation->GetXaxis()->SetBinLabel(2, "nClustersITS");
   fhCutCorrelation->GetXaxis()->SetBinLabel(3, "nClustersTRD");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(4, "chi2PerClusterTPC");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(5, "chi2PerClusterITS");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(6, "chi2PerClusterTRD");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(7, "covElement11");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(8, "covElement22");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(9, "covElement33");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(10,"covElement44");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(11,"covElement55");
-  fhCutStatistics->GetXaxis()->SetBinLabel(12,"status");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(4, "fractionClustersTPC");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(5, "ntrackletsTRD");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(6, "ntrackletsTRDpid");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(7, "chi2PerClusterTPC");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(8, "chi2PerClusterITS");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(9, "chi2PerTrackletTRD");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(10, "covElement11");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(11, "covElement22");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(12, "covElement33");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(13, "covElement44");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(14, "covElement55");
+  fhCutStatistics->GetXaxis()->SetBinLabel(15, "status");
 
   fhCutCorrelation->GetYaxis()->SetBinLabel(1, "nClustersTPC");
   fhCutCorrelation->GetYaxis()->SetBinLabel(2, "nClustersITS");
   fhCutCorrelation->GetYaxis()->SetBinLabel(3, "nClustersTRD");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(4, "chi2PerClusterTPC");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(5, "chi2PerClusterITS");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(6, "chi2PerClusterTRD");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(7, "covElement11");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(8, "covElement22");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(9, "covElement33");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(10,"covElement44");
-  fhCutCorrelation->GetYaxis()->SetBinLabel(11,"covElement55");
-  fhCutCorrelation->GetXaxis()->SetBinLabel(12,"status");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(4, "fractionClustersTPC");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(5, "ntrackletsTRD");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(6, "ntrackletsTRDpid");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(7, "chi2PerClusterTPC");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(8, "chi2PerClusterITS");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(9, "chi2PerTrackletTRD");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(10, "covElement11");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(11, "covElement22");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(12, "covElement33");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(13, "covElement44");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(14, "covElement55");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(15, "status");
 
 
   // book QA histograms
@@ -675,9 +783,12 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     fhQA[kCutClusterTPC][i]	= new TH1F(Form("%s_nClustersTPC%s",GetName(),str)     ,"",fhNBinsClusterTPC-1,fhBinLimClusterTPC);
     fhQA[kCutClusterITS][i]	= new TH1F(Form("%s_nClustersITS%s",GetName(),str)     ,"",fhNBinsClusterITS-1,fhBinLimClusterITS);
     fhQA[kCutClusterTRD][i]	= new TH1F(Form("%s_nClustersTRD%s",GetName(),str)     ,"",fhNBinsClusterTRD-1,fhBinLimClusterTRD);
+    fhQA[kCutMinFoundClusterTPC][i]	= new TH1F(Form("%s_fractionClustersTPC%s",GetName(),str)     ,"",fhNBinsFoundClusterTPC-1,fhBinLimFoundClusterTPC);
+    fhQA[kCutTrackletTRD][i]	= new TH1F(Form("%s_ntrackletsTRD%s",GetName(),str)     ,"",fhNBinsTrackletTRD-1,fhBinLimTrackletTRD);
+    fhQA[kCutTrackletTRDpid][i]	= new TH1F(Form("%s_ntrackletsTRDpid%s",GetName(),str)     ,"",fhNBinsTrackletTRDpid-1,fhBinLimTrackletTRDpid);
     fhQA[kCutChi2TPC][i]	= new TH1F(Form("%s_chi2PerClusterTPC%s",GetName(),str),"",fhNBinsChi2TPC-1,fhBinLimChi2TPC);
     fhQA[kCutChi2ITS][i]	= new TH1F(Form("%s_chi2PerClusterITS%s",GetName(),str),"",fhNBinsChi2ITS-1,fhBinLimChi2ITS);
-    fhQA[kCutChi2TRD][i]	= new TH1F(Form("%s_chi2PerClusterTRD%s",GetName(),str),"",fhNBinsChi2TRD-1,fhBinLimChi2TRD);
+    fhQA[kCutChi2TRD][i]	= new TH1F(Form("%s_chi2PerTrackletTRD%s",GetName(),str),"",fhNBinsChi2TRD-1,fhBinLimChi2TRD);
     fhQA[kCutCovElement11][i]	= new TH1F(Form("%s_covMatrixDiagonal11%s",GetName(),str),"",fhNBinsCovariance11-1,fhBinLimCovariance11);
     fhQA[kCutCovElement22][i]	= new TH1F(Form("%s_covMatrixDiagonal22%s",GetName(),str),"",fhNBinsCovariance22-1,fhBinLimCovariance22);
     fhQA[kCutCovElement33][i]	= new TH1F(Form("%s_covMatrixDiagonal33%s",GetName(),str),"",fhNBinsCovariance33-1,fhBinLimCovariance33);
@@ -687,9 +798,12 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     fhQA[kCutClusterTPC][i]	->SetXTitle("n TPC clusters");
     fhQA[kCutClusterITS][i]	->SetXTitle("n ITS clusters");
     fhQA[kCutClusterTRD][i]	->SetXTitle("n TRD clusters");
+    fhQA[kCutMinFoundClusterTPC][i]->SetXTitle("fraction TPC clusters");
+    fhQA[kCutTrackletTRD][i] ->SetXTitle("n tracklets TRD");
+    fhQA[kCutTrackletTRDpid][i]->SetXTitle("n tracklets TRD pid");
     fhQA[kCutChi2TPC][i]	->SetXTitle("#chi^{2} per TPC cluster");
     fhQA[kCutChi2ITS][i]	->SetXTitle("#chi^{2} per ITS cluster");
-    fhQA[kCutChi2TRD][i]	->SetXTitle("#chi^{2} per TRD cluster");
+    fhQA[kCutChi2TRD][i]	->SetXTitle("#chi^{2} per TRD tracklet");
     fhQA[kCutCovElement11][i]	->SetXTitle("cov 11 : #sigma_{y}^{2} (cm^{2})");
     fhQA[kCutCovElement22][i]	->SetXTitle("cov 22 : #sigma_{z}^{2} (cm^{2})");
     fhQA[kCutCovElement33][i]	->SetXTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
@@ -723,30 +837,36 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
   // b = 0: fill histograms before cuts
   // b = 1: fill histograms after cuts
 
-  Int_t    fIdxInt[200];
   Int_t    nClustersTPC = 0;
   Int_t    nClustersITS = 0 ;
   Int_t    nClustersTRD = 0 ;
+  Int_t    nTrackletsTRD = 0 ;
   Float_t  chi2PerClusterTPC =  0 ;
   Float_t  chi2PerClusterITS = 0 ;
-  Float_t  chi2PerClusterTRD = 0 ;
+  Float_t  chi2PerTrackletTRD = 0 ;
   Double_t extCov[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  
+  Float_t fractionFoundClustersTPC = 0;
+
   if (isESDTrack) {
-    nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
-    nClustersITS = esdTrack->GetITSclusters(fIdxInt);
-    nClustersTRD = esdTrack->GetTRDclusters(fIdxInt);
+    nClustersTPC = esdTrack->GetTPCclusters(0x0);
+    nClustersITS = esdTrack->GetITSclusters(0x0);
+    nClustersTRD = esdTrack->GetTRDncls();
+    nTrackletsTRD = esdTrack->GetTRDntracklets();
     if (nClustersTPC != 0) chi2PerClusterTPC = esdTrack->GetTPCchi2() / Float_t(nClustersTPC);
     if (nClustersITS != 0) chi2PerClusterITS = esdTrack->GetITSchi2() / Float_t(nClustersITS);
-    if (nClustersTRD != 0) chi2PerClusterTRD = esdTrack->GetTRDchi2() / Float_t(nClustersTRD);
+    if (nTrackletsTRD != 0) chi2PerTrackletTRD = esdTrack->GetTRDchi2() / Float_t(nTrackletsTRD);
     esdTrack->GetExternalCovariance(extCov);
-  }
+    if (esdTrack->GetTPCNclsF() != 0) fractionFoundClustersTPC = float(nClustersTPC) / float(esdTrack->GetTPCNclsF());
+ }
   fhQA[kCutClusterTPC][b]->Fill((float)nClustersTPC);
   fhQA[kCutChi2TPC][b]->Fill(chi2PerClusterTPC);
   fhQA[kCutClusterITS][b]->Fill((float)nClustersITS);
   fhQA[kCutChi2ITS][b]->Fill(chi2PerClusterITS);
   fhQA[kCutClusterTRD][b]->Fill((float)nClustersTRD);
-  fhQA[kCutChi2TRD][b]->Fill(chi2PerClusterTRD);
+  fhQA[kCutChi2TRD][b]->Fill(chi2PerTrackletTRD);
+  if (b==0 || (b==1 && nClustersTPC>0)) fhQA[kCutMinFoundClusterTPC][b]->Fill((float)fractionFoundClustersTPC);
+  fhQA[kCutTrackletTRD][b]->Fill((float)nTrackletsTRD);
+  fhQA[kCutTrackletTRDpid][b]->Fill((float)esdTrack->GetTRDntrackletsPID());
   fhQA[kCutCovElement11][b]->Fill(extCov[0]);
   fhQA[kCutCovElement22][b]->Fill(extCov[2]);
   fhQA[kCutCovElement33][b]->Fill(extCov[5]);
