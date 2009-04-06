@@ -173,8 +173,8 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	  
 	  // fill pad info
 	  padInfo.SetPadId(digit->GetUniqueID());
-	  padInfo.SetPadXY(pad.Position().X(), pad.Position().Y());
-	  padInfo.SetPadDimXY(pad.Dimensions().X(), pad.Dimensions().Y());
+	  padInfo.SetPadXY(pad.GetPositionX(), pad.GetPositionY());
+	  padInfo.SetPadDimXY(pad.GetDimensionX(), pad.GetDimensionY());
 	  padInfo.SetPadCharge((Double_t)digit->Charge());
 	  padInfo.SetPadADC(digit->ADC());
 	  padInfo.SetSaturated(digit->IsSaturated());
