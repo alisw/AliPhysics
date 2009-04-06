@@ -84,22 +84,40 @@ class AliProtonAnalysisBase : public TObject {
   void    SetPointOnITSLayer4() {fPointOnITSLayer4Flag = kTRUE;}
   void    SetPointOnITSLayer5() {fPointOnITSLayer5Flag = kTRUE;}
   void    SetPointOnITSLayer6() {fPointOnITSLayer6Flag = kTRUE;}
+  Bool_t  IsUsedPointOnITSLayer1() {return fPointOnITSLayer1Flag;}
+  Bool_t  IsUsedPointOnITSLayer2() {return fPointOnITSLayer2Flag;}
+  Bool_t  IsUsedPointOnITSLayer3() {return fPointOnITSLayer3Flag;}
+  Bool_t  IsUsedPointOnITSLayer4() {return fPointOnITSLayer4Flag;}
+  Bool_t  IsUsedPointOnITSLayer5() {return fPointOnITSLayer5Flag;}
+  Bool_t  IsUsedPointOnITSLayer6() {return fPointOnITSLayer6Flag;}
   void    SetMinITSClusters(Int_t minITSClusters) {
     fMinITSClusters = minITSClusters;
     fMinITSClustersFlag = kTRUE;
   }
+  Int_t   GetMinITSClusters() {return fMinITSClusters;}
+  Bool_t  IsUsedMinITSClusters() {return fMinITSClustersFlag;}
+
   void    SetMaxChi2PerITSCluster(Double_t maxChi2PerITSCluster) {
     fMaxChi2PerITSCluster = maxChi2PerITSCluster;
     fMaxChi2PerITSClusterFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxChi2PerITSCluster() {return fMaxChi2PerITSClusterFlag;}
+  Double_t   GetMaxChi2PerITSCluster() {return fMaxChi2PerITSCluster;}
+
   void    SetMinTPCClusters(Int_t minTPCClusters) {
     fMinTPCClusters = minTPCClusters;
     fMinTPCClustersFlag = kTRUE;
   }
+  Bool_t  IsUsedMinTPCClusters() {return fMinTPCClustersFlag;}
+  Int_t   GetMinTPCClusters() {return fMinTPCClusters;}
+
   void    SetMaxChi2PerTPCCluster(Double_t maxChi2PerTPCCluster) {
     fMaxChi2PerTPCCluster = maxChi2PerTPCCluster;
     fMaxChi2PerTPCClusterFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxChi2PerTPCCluster() {return fMaxChi2PerTPCClusterFlag;}
+  Double_t   GetMaxChi2PerTPCCluster() {return fMaxChi2PerTPCCluster;}
+
   void    SetMaxCov11(Double_t maxCov11) {
     fMaxCov11 = maxCov11; fMaxCov11Flag = kTRUE;}
   void    SetMaxCov22(Double_t maxCov22) {
@@ -110,46 +128,88 @@ class AliProtonAnalysisBase : public TObject {
     fMaxCov44 = maxCov44; fMaxCov44Flag = kTRUE;}
   void    SetMaxCov55(Double_t maxCov55) {
     fMaxCov55 = maxCov55; fMaxCov55Flag = kTRUE;}
+  Bool_t  IsUsedMaxCov11() {return fMaxCov11Flag;}
+  Bool_t  IsUsedMaxCov22() {return fMaxCov22Flag;}
+  Bool_t  IsUsedMaxCov33() {return fMaxCov33Flag;}
+  Bool_t  IsUsedMaxCov44() {return fMaxCov44Flag;}
+  Bool_t  IsUsedMaxCov55() {return fMaxCov55Flag;}
+  Double_t   GetMaxCov11() {return fMaxCov11;}
+  Double_t   GetMaxCov22() {return fMaxCov22;}
+  Double_t   GetMaxCov33() {return fMaxCov33;}
+  Double_t   GetMaxCov44() {return fMaxCov44;}
+  Double_t   GetMaxCov55() {return fMaxCov55;}
+
   void    SetMaxSigmaToVertex(Double_t maxSigmaToVertex) {
     fMaxSigmaToVertex = maxSigmaToVertex;
     fMaxSigmaToVertexFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxSigmaToVertex() {return fMaxSigmaToVertexFlag;}
+  Double_t   GetMaxSigmaToVertex() {return fMaxSigmaToVertex;}
+
   void    SetMaxSigmaToVertexTPC(Double_t maxSigmaToVertex) {
     fMaxSigmaToVertexTPC = maxSigmaToVertex;
     fMaxSigmaToVertexTPCFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxSigmaToVertexTPC() {return fMaxSigmaToVertexTPCFlag;}
+  Double_t   GetMaxSigmaToVertexTPC() {return fMaxSigmaToVertexTPC;}
+
   void    SetMaxDCAXY(Double_t maxDCAXY) {
     fMaxDCAXY = maxDCAXY;
     fMaxDCAXYFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCAXY() {return fMaxDCAXYFlag;}
+  Double_t   GetMaxDCAXY() {return fMaxDCAXY;}
+
   void    SetMaxDCAXYTPC(Double_t maxDCAXY) {
     fMaxDCAXYTPC = maxDCAXY;
     fMaxDCAXYTPCFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCAXYTPC() {return fMaxDCAXYTPCFlag;}
+  Double_t   GetMaxDCAXYTPC() {return fMaxDCAXYTPC;}
+
   void    SetMaxDCAZ(Double_t maxDCAZ) {
     fMaxDCAZ = maxDCAZ;
     fMaxDCAZFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCAZ() {return fMaxDCAZFlag;}
+  Double_t   GetMaxDCAZ() {return fMaxDCAZ;}
+
   void    SetMaxDCAZTPC(Double_t maxDCAZ) {
     fMaxDCAZTPC = maxDCAZ;
     fMaxDCAZTPCFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCAZTPC() {return fMaxDCAZTPCFlag;}
+  Double_t   GetMaxDCAZTPC() {return fMaxDCAZTPC;}
+
   void    SetMaxDCA3D(Double_t maxDCA3D) {
     fMaxDCA3D = maxDCA3D;
     fMaxDCA3DFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCA3D() {return fMaxDCA3DFlag;}
+  Double_t   GetMaxDCA3D() {return fMaxDCA3D;}
+
   void    SetMaxDCA3DTPC(Double_t maxDCA3D) {
     fMaxDCA3DTPC = maxDCA3D;
     fMaxDCA3DTPCFlag = kTRUE;
   }
+  Bool_t  IsUsedMaxDCA3DTPC() {return fMaxDCA3DTPCFlag;}
+  Double_t   GetMaxDCA3DTPC() {return fMaxDCA3DTPC;}
+
   void    SetMaxConstrainChi2(Double_t maxConstrainChi2) {
     fMaxConstrainChi2 = maxConstrainChi2;
     fMaxConstrainChi2Flag = kTRUE;
   }
+  Bool_t  IsUsedMaxConstrainChi2() {return fMaxConstrainChi2Flag;}
+  Double_t   GetMaxConstrainChi2() {return fMaxConstrainChi2;}
+
   void    SetITSRefit() {fITSRefitFlag = kTRUE;}
+  Bool_t  IsUsedITSRefit() {return fITSRefitFlag;}
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
+  Bool_t  IsUsedTPCRefit() {return fTPCRefitFlag;}
   void    SetESDpid() {fESDpidFlag = kTRUE;}
+  Bool_t  IsUsedESDpid() {return fESDpidFlag;}
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
+  Bool_t  IsUsedTPCpid() {return fTPCpidFlag;}
 
   TCanvas *GetListOfCuts();
 
@@ -229,7 +289,7 @@ class AliProtonAnalysisBase : public TObject {
   //Debug
   Bool_t fDebugMode; //Enable the debug mode
 
-  ClassDef(AliProtonAnalysisBase,0);
+  ClassDef(AliProtonAnalysisBase,1);
 };
 
 #endif

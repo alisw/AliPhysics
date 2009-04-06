@@ -128,7 +128,7 @@ class AliProtonAnalysis : public TObject {
   AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
   AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
 
-  ClassDef(AliProtonAnalysis,0);
+  ClassDef(AliProtonAnalysis,1);
 };
 
 #endif
