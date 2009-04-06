@@ -41,7 +41,6 @@ AliCFDataGrid::AliCFDataGrid() :
   //
   // default constructor
   //
-  SumW2(); //errors saved
 }
 
 //____________________________________________________________________
@@ -53,7 +52,6 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) :
   //
   // default constructor
   //
-  SumW2(); //errors saved
 }
 
 //____________________________________________________________________
