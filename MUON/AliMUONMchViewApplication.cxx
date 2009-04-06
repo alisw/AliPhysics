@@ -20,6 +20,7 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONPainterDataSourceFrame.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
@@ -305,7 +306,7 @@ AliMUONMchViewApplication::ReadDir(TDirectory& dir)
       AliMUONVTrackerDataMaker* maker = dynamic_cast<AliMUONVTrackerDataMaker*>(object);
       if ( maker ) 
       {
-        AliMUONPainterRegistry::Instance()->Register(maker);
+        AliMUONPainterDataRegistry::Instance()->Register(maker);
       }
     }
     
@@ -318,7 +319,7 @@ AliMUONMchViewApplication::ReadDir(TDirectory& dir)
       if ( data ) 
       {
         AliMUONVTrackerDataMaker* maker = new AliMUONTrackerDataWrapper(data);
-        AliMUONPainterRegistry::Instance()->Register(maker);
+        AliMUONPainterDataRegistry::Instance()->Register(maker);
       }
     }
   }
@@ -352,6 +353,12 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("0.96a");
+  rn->AddLine("");
+  rn->AddLine("Internal reorganization of the contour computations, that lead to improved performance. ");
+  rn->AddLine("Improved enough to be able to remove completely the usage of the padstore.root file with precomputed contours.");
+  rn->AddLine("");
+  
   rn->AddLine("0.96");
   rn->AddLine("");
   rn->AddLine("New features");
@@ -446,7 +453,7 @@ AliMUONMchViewApplication::Save(const char* filename)
 {
   /// Save VTrackerDataMaker objects into file of given name
   
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
 
   TFile f(filename,"RECREATE");
   

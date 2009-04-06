@@ -21,8 +21,6 @@
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
 #include "AliMUONPainterMatrix.h"
-#include "AliMUONTrackerData.h"
-#include "AliMUONVTrackerDataMaker.h"
 #include "AliLog.h"
 #include <TGMenu.h>
 #include <TGWindow.h>
@@ -47,17 +45,12 @@ AliMUONPainterRegistry* AliMUONPainterRegistry::fgInstance(0x0);
 //_____________________________________________________________________________
 AliMUONPainterRegistry::AliMUONPainterRegistry() : TObject(), TQObject(),
 fPainterMatrices(new TObjArray),
-fDataMakers(new TObjArray),
 fHistoryMenu(0x0),
 fMenuBar(0x0),
-fHistoryCounter(0),
-fZombies(new TObjArray),
-fInteractiveReadOutConfig(0x0)
+fHistoryCounter(0)
 {
   /// ctor
   fPainterMatrices->SetOwner(kTRUE);
-  fDataMakers->SetOwner(kTRUE);
-  fZombies->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -65,116 +58,6 @@ AliMUONPainterRegistry::~AliMUONPainterRegistry()
 {
   /// dtor
   delete fPainterMatrices;
-  delete fDataMakers;
-  delete fInteractiveReadOutConfig;
-}
-
-//_____________________________________________________________________________
-void
-AliMUONPainterRegistry::CreateInteractiveReadOutConfig() const
-{
-  /// Create configuration of readout
-  fInteractiveReadOutConfig = new AliMUONTrackerData("IROC","IROC",1);
-  fInteractiveReadOutConfig->SetDimensionName(0,"Switch");
-    /// FIXME: should use a version of TrackerData w/ no storage for channels
-    /// (i.e. starting at the manu level, or even bus patch level ?)
-  AliMpManuIterator it;
-  Int_t detElemId;
-  Int_t manuId;
-  AliMUON2DMap store(true);
-
-  while ( it.Next(detElemId,manuId) )
-  {
-    AliMUONVCalibParam* param = new AliMUONCalibParamND(1,64,detElemId,manuId,1);
-    store.Add(param);
-  }
-  fInteractiveReadOutConfig->Add(store);
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackerDataMaker* 
-AliMUONPainterRegistry::DataMaker(Int_t i) const
-{
-  /// Get one data source
-  if ( i >= 0 && i <= fDataMakers->GetLast() )
-  {
-    return static_cast<AliMUONVTrackerDataMaker*>(fDataMakers->At(i));
-  }
-  else
-  {
-    AliError(Form("Index out of bounds : %d / %d",i,fDataMakers->GetLast()+1));
-    return 0x0;
-  }
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackerData* 
-AliMUONPainterRegistry::DataSource(Int_t i) const
-{
-  /// Get one data source
-  
-  AliMUONVTrackerDataMaker* maker = DataMaker(i);
-  if ( maker ) return maker->Data();
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterRegistry::DataMakerWasRegistered(const AliMUONVTrackerDataMaker* data)
-{
-  /// A new reader source was registered
-  Long_t param[] = { (Long_t)data };
-  
-  Emit("DataMakerWasRegistered(AliMUONVTrackerDataMaker*)",param);
-}
-
-//_____________________________________________________________________________
-void
-AliMUONPainterRegistry::DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* data)
-{
-  /// A data reader was unregistered
-  Long_t param[] = { (Long_t)data };
-  
-  Emit("DataMakerWasUnregistered(AliMUONVTrackerDataMaker*)",param);
-  
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterRegistry::DataSourceWasRegistered(const AliMUONVTrackerData* data)
-{
-  /// A new data source was registered
-  Long_t param[] = { (Long_t)data };
-  
-  Emit("DataSourceWasRegistered(AliMUONVTrackerData*)",param);
-}
-
-//_____________________________________________________________________________
-void
-AliMUONPainterRegistry::DataSourceWasUnregistered(const AliMUONVTrackerData* data)
-{
-  /// A data source was unregistered
-  Long_t param[] = { (Long_t)data };
-  
-  Emit("DataSourceWasUnregistered(AliMUONVTrackerData*)",param);
-  
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackerData*
-AliMUONPainterRegistry::DataSource(const char* name) const
-{
-  /// Find a data source by name
-  for ( Int_t i = 0; i < NumberOfDataMakers(); ++i )
-  {
-    AliMUONVTrackerData* data = DataMaker(i)->Data();
-    if ( data ) 
-    {
-      TString dname(data->GetName());
-      if ( dname == name ) return data;
-    }
-  }
-  return 0x0;
 }
 
 //_____________________________________________________________________________
@@ -218,17 +101,6 @@ AliMUONPainterRegistry::Instance()
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackerData*
-AliMUONPainterRegistry::InteractiveReadOutConfig() const
-{
-  /// Return an object that contains the parts of the detector selected
-  /// (using the mouse) to be part of the readout.
-
-  if (!fInteractiveReadOutConfig) CreateInteractiveReadOutConfig();
-  return fInteractiveReadOutConfig;
-}
-
-//_____________________________________________________________________________
 AliMUONPainterMatrix* 
 AliMUONPainterRegistry::PainterMatrix(Int_t i) const
 {
@@ -246,7 +118,7 @@ AliMUONPainterRegistry::PainterMatrix(Int_t i) const
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWantToShow(const AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
 {
   /// A given paintermatrix want to appear on screen
   Long_t param[] = { (Long_t)group };
@@ -300,7 +172,7 @@ AliMUONPainterRegistry::AddToHistory(AliMUONPainterMatrix* group)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasRegistered(const AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasRegistered(AliMUONPainterMatrix* group)
 {
   /// A new painter matrix was registered
   Long_t param[] = { (Long_t)group };
@@ -310,7 +182,7 @@ AliMUONPainterRegistry::PainterMatrixWasRegistered(const AliMUONPainterMatrix* g
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasUnregistered(const AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasUnregistered(AliMUONPainterMatrix* group)
 {
   /// A painter matrix was unregistered
   Long_t param[] = { (Long_t)group };
@@ -326,32 +198,8 @@ AliMUONPainterRegistry::Print(Option_t* opt) const
   TString sopt(opt);
   sopt.ToUpper();
   
-  cout << "Number of data readers = " << NumberOfDataMakers() << endl;
   cout << "Number of painter matrices = " << NumberOfPainterMatrices() << endl;
   
-  if ( sopt.Contains("FULL") || sopt.Contains("READER") )
-  {
-    TIter next(fDataMakers);
-    AliMUONVTrackerDataMaker* reader;
-    
-    while ( ( reader = static_cast<AliMUONVTrackerDataMaker*>(next()) ) )
-    {
-      reader->Print();
-    }
-  }
-  
-  if ( sopt.Contains("FULL") || sopt.Contains("DATA") )
-  {
-    TIter next(fDataMakers);
-    AliMUONVTrackerDataMaker* reader;
-    
-    while ( ( reader = static_cast<AliMUONVTrackerDataMaker*>(next()) ) )
-    {
-      AliMUONVTrackerData* data = reader->Data();
-      if ( data ) data->Print();
-    }
-  }
-
   if ( sopt.Contains("FULL") || sopt.Contains("MATRIX") )
   {
     TIter next(fPainterMatrices);
@@ -378,71 +226,11 @@ AliMUONPainterRegistry::Register(AliMUONPainterMatrix* group)
 }
 
 //_____________________________________________________________________________
-void
-AliMUONPainterRegistry::Register(AliMUONVTrackerDataMaker* reader)
-{
-  /// reader is adopted, i.e. the registry becomes the owner of it.
-  fDataMakers->AddLast(reader);
-  DataMakerWasRegistered(reader);
-  if ( reader->Data() ) DataSourceWasRegistered(reader->Data());
-}
-
-//_____________________________________________________________________________
-Int_t 
-AliMUONPainterRegistry::NumberOfDataMakers() const
-{
-  /// The number of data readers we handle
-  return fDataMakers->GetLast()+1;
-}
-
-//_____________________________________________________________________________
 Int_t 
 AliMUONPainterRegistry::NumberOfPainterMatrices() const
 {
   /// The number of painter matrices we handle
   return fPainterMatrices->GetLast()+1;
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterRegistry::DeleteZombies()
-{
-  /// Delete zombies
-  fZombies->Delete();
-}
-
-//_____________________________________________________________________________
-Bool_t 
-AliMUONPainterRegistry::Unregister(AliMUONVTrackerDataMaker* reader)
-{
-  /// Unregister some reader
-  
-  if (!reader) return kFALSE;
-  
-  if ( reader->Data() ) 
-  {
-    DataSourceWasUnregistered(reader->Data());
-    reader->Data()->Destroyed(); // we pretend it's deleted now, even
-    // if it will be only later on when zombie are killed, so that
-    // for instance painters depending on it will no longer try to access it
-  }
-
-  DataMakerWasUnregistered(reader);
-  
-  TObject* o = fDataMakers->Remove(reader);
-  
-  fZombies->Add(o); // for later deletion
-  
-//  if ( o ) 
-//  {
-//    delete o;
-//  }
-//  else
-//  {
-//    AliError(Form("Could not unregister data named %s title %s",reader->GetName(),
-//                  reader->GetTitle()));
-//  }
-  return ( o != 0x0 );
 }
 
 //_____________________________________________________________________________

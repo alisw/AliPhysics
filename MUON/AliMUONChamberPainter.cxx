@@ -18,7 +18,7 @@
 #include "AliMUONChamberPainter.h"
 
 #include "AliMUONDEPainter.h"
-#include "AliMUONPainterContour.h"
+#include "AliMUONContour.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVTrackerData.h"
@@ -87,7 +87,7 @@ fChamberId(chamberId)
   
   deIt.First(fChamberId);
   
-  AliMUONPainterContour* contour = h->GetContour(ContourName());
+  AliMUONContour* contour = h->GetContour(ContourName());
   TObjArray contourArray;
   
   while (!deIt.IsDone())
@@ -227,7 +227,7 @@ AliMUONChamberPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataInde
   
   Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
   
-  Contour()->PaintArea(color);
+  PaintArea(color);
 }
 
 //_____________________________________________________________________________

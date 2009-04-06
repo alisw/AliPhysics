@@ -22,7 +22,7 @@
 #include "AliMUONPainterDataSourceItem.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
-#include "AliMUONPainterRegistry.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrackerACFDataMaker.h"
 #include "AliMUONTrackerDataMaker.h"
@@ -85,7 +85,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
 {
   /// Ctor
   
-    AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+    AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
     
     reg->Connect("DataMakerWasRegistered(AliMUONVTrackerDataMaker*)",
                  "AliMUONPainterDataSourceFrame",
@@ -382,7 +382,7 @@ AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const
   
   if ( reader->IsValid() ) 
   {
-    AliMUONPainterRegistry::Instance()->Register(reader);
+    AliMUONPainterDataRegistry::Instance()->Register(reader);
     
     AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
     
@@ -415,7 +415,7 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& cdbPath,
   
   if ( reader->IsValid() ) 
   {
-    AliMUONPainterRegistry::Instance()->Register(reader);
+    AliMUONPainterDataRegistry::Instance()->Register(reader);
     
     AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
     
@@ -589,7 +589,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   
   reader->SetSource(filename.Data());
   
-  AliMUONPainterRegistry::Instance()->Register(reader);
+  AliMUONPainterDataRegistry::Instance()->Register(reader);
   
   AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
   

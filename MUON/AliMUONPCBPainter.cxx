@@ -24,7 +24,7 @@
 #include "AliMUONPCBPainter.h"
 
 #include "AliMUONManuPainter.h"
-#include "AliMUONPainterContour.h"
+#include "AliMUONContour.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVTrackerData.h"
@@ -65,51 +65,52 @@ AliMUONPCBPainter::AliMUONPCBPainter(const AliMUONAttPainter& att,
   fDetElemId(detElemId),
   fPCBIndex(pcbNumber)
 {
-    /// Ctor
-
-    SetAttributes(att);
-    
-    AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
-    
-    AliMp::PlaneType planeType = ( att.IsBendingPlane() ? AliMp::kBendingPlane : AliMp::kNonBendingPlane );
-    
-    const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(fDetElemId,planeType);
-    
-    SetID(detElemId,pcbNumber);
-    SetName(h->PCBName(pcbNumber));
-    SetPathName(h->PCBPathName(detElemId,pcbNumber));
-    
-    AliMpPCB* pcb = slat->GetPCB(fPCBIndex);
-    
-    AliMUONPainterContour* contour = h->GetContour(ContourName());
-    TObjArray contourArray;
-    
-    for ( Int_t imp = 0 ; imp < pcb->GetSize(); ++imp ) 
-    {
-      AliMpMotifPosition* mp = pcb->GetMotifPosition(imp);
-      AliDebug(1,Form("Adding manu %d to PCB %d of DE %d",
-                      mp->GetID(),fPCBIndex,fDetElemId));
-      AliMUONVPainter* painter = new AliMUONManuPainter(Attributes(),fDetElemId,mp->GetID());
-      Add(painter);
-      if (!contour)
-      {
-        contourArray.Add(painter->Contour());
-      }
-    }
-    
-    Double_t x,y,z;
-    h->Local2Global(fDetElemId,
-                    pcb->X()-slat->GetPositionX(),
-                    pcb->Y()-slat->GetPositionY(),
-                    0.0,
-                    x,y,z);
-    
+  /// Ctor
+  
+  SetAttributes(att);
+  
+  AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
+  
+  AliMp::PlaneType planeType = ( att.IsBendingPlane() ? AliMp::kBendingPlane : AliMp::kNonBendingPlane );
+  
+  const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(fDetElemId,planeType);
+  
+  SetID(detElemId,pcbNumber);
+  SetName(h->PCBName(pcbNumber));
+  SetPathName(h->PCBPathName(detElemId,pcbNumber));
+  
+  AliMpPCB* pcb = slat->GetPCB(fPCBIndex);
+  
+  AliMUONContour* contour = h->GetContour(ContourName());
+  TObjArray contourArray;
+  
+  for ( Int_t imp = 0 ; imp < pcb->GetSize(); ++imp ) 
+  {
+    AliMpMotifPosition* mp = pcb->GetMotifPosition(imp);
+    AliDebug(1,Form("Adding manu %d to PCB %d of DE %d",
+                    mp->GetID(),fPCBIndex,fDetElemId));
+    AliMUONVPainter* painter = new AliMUONManuPainter(Attributes(),fDetElemId,mp->GetID());
+    Add(painter);
     if (!contour)
     {
-      contour = h->MergeContours(contourArray,ContourName());
+      contourArray.Add(painter->Contour());
     }
-    
-    SetContour(contour);
+  }
+  
+  Double_t x,y,z;
+  
+  h->Local2Global(fDetElemId,
+                  pcb->X()-slat->GetPositionX(),
+                  pcb->Y()-slat->GetPositionY(),
+                  0.0,
+                  x,y,z);
+  
+  if (!contour)
+  {
+    contour = h->MergeContours(contourArray,ContourName());
+  }
+  
+  SetContour(contour);
 }
 
 //_____________________________________________________________________________
@@ -195,6 +196,6 @@ AliMUONPCBPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
   
   Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
   
-  Contour()->PaintArea(color);
+  PaintArea(color);
 }
 

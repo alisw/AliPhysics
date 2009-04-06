@@ -40,11 +40,13 @@
 #  include "AliMpPad.h"
 #endif
 
+#ifndef ROOT_TMap
+#  include "TMap.h"
+#endif
+
 class AliMUONAttPainter;
-class AliMUONPainterContour;
-class AliMUONPainterContourMaker;
+class AliMUONContour;
 class AliMUONPainterEnv;
-class AliMUONPainterPadStore;
 class AliMUONVCalibParam;
 class AliMUONVTrackerData;
 class AliMpExMap;
@@ -79,23 +81,16 @@ public:
   
   Int_t ColorFromValue(Double_t value, Double_t min, Double_t max) const;
   
-  Int_t FindPadID(const TArrayI& pads, Double_t x, Double_t y) const;
-    
   AliMp::CathodType GetCathodeType(Int_t detElemId, Int_t manuId) const;
 
-  AliMUONPainterContour* GenerateManuContour(Int_t detElemId, Int_t manuId,
+  AliMUONContour* GenerateManuContour(Int_t detElemId, Int_t manuId,
                                              AliMUONAttPainter viewType,
                                              const char* contourName);
 
-  void GetBoundaries(const TArrayI& pads, Double_t& xmin, Double_t& ymin,
-                     Double_t& xmax, Double_t& ymax) const;
-
-  AliMUONPainterContour* GetContour(const char* contourName) const;
+  AliMUONContour* GetContour(const char* contourName) const;
 
   /// Return a contour by name
-  AliMUONPainterContour* GetContour(const TString& contourName) const { return GetContour(contourName.Data()); }
-
-  AliMUONPainterContour* GetLocalManuContour(Int_t detElemId, Int_t manuId) const;
+  AliMUONContour* GetContour(const TString& contourName) const { return GetContour(contourName.Data()); }
 
   AliMpMotifPosition* GetMotifPosition(Int_t detElemId, Int_t manuId) const;
   
@@ -134,23 +129,12 @@ public:
   void Global2LocalReal(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
                         Double_t& xl, Double_t& yl, Double_t& zl) const;
 
-  AliMUONPainterContour* MergeContours(const TObjArray& contours, 
+  AliMUONContour* MergeContours(const TObjArray& contours, 
                                        const char* contourName);
   
   virtual void Print(Option_t* opt="") const;
   
-  void RegisterContour(AliMUONPainterContour* contour);
-  
-  /// Whether we were modified since our creation
-  Bool_t IsModified() const { return fIsModified; }
-  
-  /// Set the modified flag
-  void Modified(Bool_t value=kTRUE) { fIsModified = value; }
-
-  void Save();
-  
-  /// Return the pad store
-  const AliMUONPainterPadStore& PadStore() const { return *fPadStore; }
+  void RegisterContour(AliMUONContour* contour);
   
   TString FormatValue(const char* name, Double_t value) const;
   
@@ -166,22 +150,18 @@ private:
   
   void GenerateDefaultMatrices();
   void GenerateGeometry();
-  void GeneratePadStore();
-  void GeneratePadStore(Int_t detElemId);  
 
 private:
   static AliMUONPainterHelper* fgInstance; ///< global instance
   
-  AliMUONPainterPadStore* fPadStore; ///< the pad store
   Double_t fExplodeFactor[2]; ///< explosing factors for representation
   AliMpExMap* fExplodedGlobalTransformations; ///< global geometric transformations (exploded)
   AliMpExMap* fRealGlobalTransformations; ///< global geometric transformations (real)
-  Bool_t fIsModified; ///< whether we've been modified since creation
-  mutable AliMUONPainterContourMaker* fContourMaker; ///< the contour builder
   TObjArray* fPainterMatrices; ///< default matrices
   AliMUONPainterEnv* fEnv; ///< resources
+  TMap fAllContours; ///< all contours
   
-  ClassDef(AliMUONPainterHelper,1) // Helper class for painters
+  ClassDef(AliMUONPainterHelper,2) // Helper class for painters
 };
 
 #endif

@@ -19,7 +19,7 @@
 
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
-#include "AliMUONPainterRegistry.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONVTrackerDataMaker.h"
 #include "AliMUONVTrackerData.h"
 #include "AliLog.h"
@@ -61,7 +61,7 @@ namespace
       ok = reader->NextEvent();
       if ( reader->IsZombie() ) 
       {
-        AliMUONPainterRegistry::Instance()->DeleteZombies();
+        AliMUONPainterDataRegistry::Instance()->DeleteZombies();
         return 0x0;
       }
       if ( !reader->IsRunning() ) gSystem->Sleep(1000);
@@ -197,7 +197,7 @@ AliMUONPainterDataSourceItem::Remove()
   /// Remove
   
   MakeZombie();
-  AliMUONPainterRegistry::Instance()->Unregister(fDataMaker);
+  AliMUONPainterDataRegistry::Instance()->Unregister(fDataMaker);
 }
 
 //_____________________________________________________________________________

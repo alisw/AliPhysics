@@ -8,8 +8,6 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONChamberPainter.cxx \
   AliMUONManuPainter.cxx \
   AliMUONPainterPadStore.cxx \
-  AliMUONPainterContourMaker.cxx \
-  AliMUONPainterContour.cxx \
   AliMUONPainterMasterFrame.cxx \
   AliMUONPainterMatrixFrame.cxx \
   AliMUONManuPadPainter.cxx \
@@ -17,6 +15,7 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONPainterMatrix.cxx \
   AliMUONAttPainter.cxx \
   AliMUONPainterRegistry.cxx \
+  AliMUONPainterDataRegistry.cxx \
   AliMUONPainterHighlighter.cxx \
   AliMUONPainterPlotSelector.cxx \
   AliMUONPainterInterfaceHelper.cxx \
@@ -31,8 +30,17 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONTrackerDataHistogrammer.cxx \
   AliMUONTrackerDataWrapper.cxx \
   AliMUONTrackerDataCompareDialog.cxx \
-  AliMUONTrackerACFDataMaker.cxx
-  
+  AliMUONTrackerACFDataMaker.cxx \
+  AliMUONContourPainter.cxx \
+  AliMUONPolygon.cxx \
+  AliMUONContour.cxx \
+  AliMUONContourMaker.cxx \
+  AliMUONManuContourMaker.cxx \
+  AliMUONSegment.cxx \
+  AliMUONSegmentTree.cxx \
+  AliMUONNode.cxx \
+  AliMUONPointWithRef.cxx
+
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:= MUONgraphicsLinkDef.h

@@ -18,7 +18,7 @@
 #include "AliMUONBusPatchPainter.h"
 
 #include "AliMUONManuPainter.h"
-#include "AliMUONPainterContour.h"
+#include "AliMUONContour.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVTrackerData.h"
@@ -88,7 +88,7 @@ fBusPatchId(busPatchId)
   
   Int_t mask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
   
-  AliMUONPainterContour* bpContour = h->GetContour(ContourName());
+  AliMUONContour* bpContour = h->GetContour(ContourName());
   
   AliDebug(1,Form("BusPatchId %04d bending %d DE %4d bpContour(%s)=%p nofManus=%d",
                   fBusPatchId,att.IsBendingPlane(),detElemId,ContourName().Data(),bpContour,busPatch->GetNofManus()));
@@ -243,7 +243,7 @@ AliMUONBusPatchPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataInd
   
   Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
   
-  Contour()->PaintArea(color);
+  PaintArea(color);
 }
 
 //_____________________________________________________________________________

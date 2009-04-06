@@ -20,7 +20,7 @@
 #include "AliMUONBusPatchPainter.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONPCBPainter.h"
-#include "AliMUONPainterContour.h"
+#include "AliMUONContour.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVTrackerData.h"
@@ -138,7 +138,7 @@ fDetElemId(detElemId)
     AliFatal("Not implemented for trigger !!!");
   }
   
-  AliMUONPainterContour* contour = h->GetContour(ContourName());
+  AliMUONContour* contour = h->GetContour(ContourName());
   
   TObjArray contourArray;
     
@@ -282,7 +282,7 @@ AliMUONDEPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
   
   Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
   
-  Contour()->PaintArea(color);
+  PaintArea(color);
 }
 
 //_____________________________________________________________________________

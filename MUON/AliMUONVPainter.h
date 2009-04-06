@@ -30,7 +30,7 @@
 #endif
 #include <float.h>
 
-class AliMUONPainterContour;
+class AliMUONContour;
 class AliMUONPainterGroup;
 class AliMUONVTrackerData;
 class AliMpArea;
@@ -90,7 +90,7 @@ public:
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py);
   
   /// Return the contour representing the outline of this object
-  AliMUONPainterContour* Contour() const { return fContour; }
+  AliMUONContour* Contour() const { return fContour; }
 
   /// Get our name
   virtual const char* GetName() const { return Name().Data(); }
@@ -138,7 +138,7 @@ public:
   AliMUONPainterGroup* ResponderGroup() const { return fResponderGroup; }
 
   /// Set out contour
-  void SetContour(AliMUONPainterContour* contour);
+  void SetContour(AliMUONContour* contour);
   
   void SetData(const char* pattern, AliMUONVTrackerData* data, Int_t dataIndex);
 
@@ -172,6 +172,8 @@ public:
 
   virtual void PaintOutline(Int_t color=-1, Int_t width=-1, Double_t x=FLT_MAX, Double_t y=FLT_MAX);
 
+  virtual void PaintArea(Int_t fillColor);
+  
   virtual void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                          Double_t min, Double_t max);
     
@@ -297,7 +299,7 @@ private:
   TString fType; ///< our type (DE, Chamber, MANU, etc...)
   AliMUONVPainter* fMother;  ///< our mother
   AliMUONPainterGroup* fGroup; ///< our group
-  AliMUONPainterContour* fContour;  ///< our contour
+  AliMUONContour* fContour;  ///< our contour
   TMap* fPainterGroups; ///< map of groups
   TObjArray* fChildren; ///< our children
   AliMUONPainterGroup* fResponderGroup; ///< the responder group

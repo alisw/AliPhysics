@@ -18,7 +18,6 @@
 #include "AliMUONPainterHighlighter.h"
 
 #include "AliMUONVPainter.h"
-#include "AliMUONPainterContour.h"
 #include "AliLog.h"
 
 /// \class AliMUONPainterHighlighter

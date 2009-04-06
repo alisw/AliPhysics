@@ -46,7 +46,9 @@ public:
     virtual TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
                              Double_t x=FLT_MAX, Double_t y=FLT_MAX);
 
-    void PaintArea(const AliMUONVTrackerData& data,
+  using AliMUONVPainter::PaintArea;
+  
+  void PaintArea(const AliMUONVTrackerData& data,
                    Int_t dataIndex,
                    Double_t min,
                    Double_t max);
@@ -64,8 +66,8 @@ private:
     
   void BackupStyle();
   void RestoreStyle();
-  void PaintPad(Int_t padId) const;
   AliMpPad PadByPosition(Double_t x, Double_t y) const;
+  void PaintPad(const AliMpPad& pad) const;
   
 private:
   Int_t fDetElemId; ///< our detection element id

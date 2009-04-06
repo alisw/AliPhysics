@@ -41,6 +41,8 @@ public:
 
   virtual void Copy(TObject& object) const;
   
+  using AliMUONVPainter::PaintArea;
+  
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
     

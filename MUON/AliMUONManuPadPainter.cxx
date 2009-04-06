@@ -20,7 +20,6 @@
 #include "AliLog.h"
 #include "AliMUONPainterGroup.h"
 #include "AliMUONPainterHelper.h"
-#include "AliMUONPainterPadStore.h"
 #include "AliMUONTrackerDataHistogrammer.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
@@ -28,7 +27,6 @@
 #include "AliMpConnection.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
-#include "AliMpDetElement.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -118,7 +116,7 @@ AliMUONManuPadPainter::ComputeDataRange(const AliMUONVTrackerData& data,
                                         Double_t& dataMin, Double_t& dataMax) const
 {
   /// Compute data range spanned by this manu pads
-  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(fDetElemId);
+  const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(fDetElemId,fManuId);
   
   dataMin = FLT_MAX;
   dataMax = -FLT_MAX;
@@ -126,7 +124,7 @@ AliMUONManuPadPainter::ComputeDataRange(const AliMUONVTrackerData& data,
   for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); 
         ++manuChannel )
   {
-    if ( de->IsConnectedChannel(fManuId,manuChannel) )
+    if ( seg->HasPadByLocation(fManuId,manuChannel) )
     {
       Double_t value = data.Channel(fDetElemId, fManuId, manuChannel, dataIndex);
       dataMin = TMath::Min(value,dataMin);
@@ -210,7 +208,8 @@ AliMUONManuPadPainter::DrawHistogramClone(Double_t* values) const
   
   AliMUONTrackerDataHistogrammer tdh(*data,0,-1);
 
-  fHistogram = tdh.CreateChannelHisto(fDetElemId, fManuId, pad.GetManuChannel());
+  fHistogram = tdh.CreateChannelHisto(fDetElemId, fManuId,pad.GetManuChannel());
+
   if (fHistogram) 
   {
     new TCanvas();
@@ -234,22 +233,17 @@ AliMUONManuPadPainter::PaintArea(const AliMUONVTrackerData& data,
   AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
   
   BackupStyle();
-  
-  Int_t cathode = h->GetCathodeType(fDetElemId,fManuId);
-  
+    
   gVirtualX->SetLineColor(-1);
   gVirtualX->SetFillStyle(1);
   
+  const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(fDetElemId,fManuId);
+  
   for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
   {    
-    Int_t id = AliMUONVDigit::BuildUniqueID(fDetElemId,fManuId,i,cathode);
+    AliMpPad pad = seg->PadByLocation(fManuId,i,kFALSE);
     
-    TVector2 position;
-    TVector2 dimensions;
-    
-    h->PadStore().GetPadGeometry(id,position,dimensions);
-    
-    if ( dimensions.X() > 0 ) 
+    if ( pad.IsValid() )
     {
       Double_t value = data.Channel(fDetElemId,fManuId,i,dataIndex);
       
@@ -263,13 +257,11 @@ AliMUONManuPadPainter::PaintArea(const AliMUONVTrackerData& data,
                         fDetElemId,fManuId,i,value,min,max,
                         color));
       }
-      
+
       gVirtualX->SetFillColor(color);
       
-      TVector2 bl(position-dimensions);
-      TVector2 ur(position+dimensions);
+      PaintPad(pad);
       
-      gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
     }
   }
   
@@ -278,22 +270,20 @@ AliMUONManuPadPainter::PaintArea(const AliMUONVTrackerData& data,
                       
 //_____________________________________________________________________________
 void
-AliMUONManuPadPainter::PaintPad(Int_t padId) const
+AliMUONManuPadPainter::PaintPad(const AliMpPad& pad) const
 {
-  /// Paint a single pad
+  Double_t blx = pad.GetPositionX()-pad.GetDimensionX();
+  Double_t bly = pad.GetPositionY()-pad.GetDimensionY();
   
-  TVector2 position;
-  TVector2 dimensions;
-
-  AliMUONPainterHelper::Instance()->PadStore().GetPadGeometry(padId,position,dimensions);
-
-  if ( dimensions.X() > 0 ) 
-  {
-    TVector2 bl(position-dimensions);
-    TVector2 ur(position+dimensions);    
+  Double_t urx = pad.GetPositionX()+pad.GetDimensionX();
+  Double_t ury = pad.GetPositionY()+pad.GetDimensionY();
   
-    gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-  }
+  Double_t xe1,ye1,xe2,ye2,z;
+
+  AliMUONPainterHelper::Instance()->Local2Global(fDetElemId,blx,bly,0,xe1,ye1,z);
+  AliMUONPainterHelper::Instance()->Local2Global(fDetElemId,urx,ury,0,xe2,ye2,z);
+  
+  gPad->PaintBox(xe1,ye1,xe2,ye2);
 }
 
 //_____________________________________________________________________________
@@ -306,15 +296,9 @@ AliMUONManuPadPainter::PaintOutline(Int_t color, Int_t, Double_t x, Double_t y)
   
   Int_t lineColor = color >= 0 ? color : GetLineColor();
   
-  AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
-
-  AliDebug(1,Form("color=%d lineColor=%d x=%7.3f y=%7.3f",color,lineColor,x,y));
-  
   if ( lineColor > 0 )
   {
     BackupStyle();
-    
-    Int_t cathode = h->GetCathodeType(fDetElemId,fManuId);
     
     gVirtualX->SetLineColor(lineColor);
     gVirtualX->SetFillStyle(0);
@@ -324,17 +308,19 @@ AliMUONManuPadPainter::PaintOutline(Int_t color, Int_t, Double_t x, Double_t y)
       // find pad to be drawn
       AliMpPad pad = PadByPosition(x,y);
       
-      Int_t id = AliMUONVDigit::BuildUniqueID(fDetElemId,fManuId,pad.GetManuChannel(),cathode);
-
-      PaintPad(id);        
+      PaintPad(pad);        
     }
     else
     {
+      const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(fDetElemId,fManuId);
+
       for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
       {    
-        Int_t id = AliMUONVDigit::BuildUniqueID(fDetElemId,fManuId,i,cathode);
+        AliMpPad pad = seg->PadByLocation(fManuId,i,kFALSE);
+        
+        if (pad.IsValid()) PaintPad(pad);
       
-        PaintPad(id);        
+        PaintPad(pad);        
       }
     }
     RestoreStyle();

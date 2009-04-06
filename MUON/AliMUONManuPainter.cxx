@@ -1,3 +1,4 @@
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -18,7 +19,7 @@
 #include "AliMUONManuPainter.h"
 
 #include "AliMUONManuPadPainter.h"
-#include "AliMUONPainterContour.h"
+#include "AliMUONContour.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
@@ -74,62 +75,42 @@ AliMUONManuPainter::AliMUONManuPainter(const AliMUONAttPainter& att,
 {
     /// ctor
     
-    SetAttributes(att);
+  SetAttributes(att);
     
-    AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
+  AliMUONPainterHelper* h = AliMUONPainterHelper::Instance();
     
-    SetID(detElemId,manuId);
-    SetName(h->ManuName(manuId));
-    SetPathName(h->ManuPathName(detElemId,manuId));
+  SetID(detElemId,manuId);
+  SetName(h->ManuName(manuId));
+  SetPathName(h->ManuPathName(detElemId,manuId));
+  
+  
+  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+  
+  if ( stationType == AliMp::kStationTrigger ) 
+  {
+    AliError("Hu ho. Not supposed to be used for trigger !");
+    Invalidate();
+    return;    
+  }
     
-    AliMpMotifPosition* mp = h->GetMotifPosition(detElemId,manuId);
-    
-    if (!mp)
-    {
-      AliFatal(Form("Could not get manuId %04d from DE %04d",manuId,detElemId));
-    }
-    
-    Double_t x,y,z;
-    
-    AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-    
-    if ( stationType == AliMp::kStation345 ) 
-    {
-      const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(detElemId,manuId);
-      
-      h->Local2Global(fDetElemId,
-                      mp->GetPositionX() -slat->GetPositionX(),
-                      mp->GetPositionY() -slat->GetPositionY(),
-                      0,
-                      x,y,z);
-    }
-    else if ( stationType != AliMp::kStationTrigger ) 
-    {
-      h->Local2Global(fDetElemId,
-                      mp->GetPositionX(),
-                      mp->GetPositionY(),
-                      0,
-                      x,y,z);      
-    }
-    else
-    {
-      AliError("Hu ho. Not supposed to be used for trigger !");
-      Invalidate();
-      return;
-    }
-    
-    AliMUONPainterContour* contour = h->GetContour(ContourName());
-    
-    if (!contour)
-    {
-      contour = h->GenerateManuContour(fDetElemId,
-                                       fManuId,
-                                       Attributes(),
-                                       ContourName());
-    }
-    SetContour(contour);
-    
-    Add(new AliMUONManuPadPainter(*this,fDetElemId,fManuId));
+  AliMUONContour* contour = h->GetContour(ContourName());
+  
+  if (!contour)
+  {
+    contour = h->GenerateManuContour(fDetElemId,
+                                     fManuId,
+                                     Attributes(),
+                                     ContourName());
+  }
+
+  if (!contour)
+  {
+    AliFatal(Form("Could not get manuId %04d from DE %04d",manuId,detElemId));
+  }
+  
+  SetContour(contour);
+  
+  Add(new AliMUONManuPadPainter(*this,fDetElemId,fManuId));
 }
 
 //_____________________________________________________________________________
@@ -223,7 +204,7 @@ AliMUONManuPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
   
   Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
   
-  Contour()->PaintArea(color);
+  PaintArea(color);
 }
 
 //_____________________________________________________________________________

@@ -101,7 +101,8 @@ SRCS +=  \
 	 mapping/AliMpCDB.cxx \
          mapping/AliMpFrtCrocusConstants.cxx \
          mapping/AliMpManuStore.cxx \
-         mapping/AliMpFastSegmentation.cxx
+         mapping/AliMpFastSegmentation.cxx \
+         mapping/AliMpUID.cxx
 
 # Category graphics
 #

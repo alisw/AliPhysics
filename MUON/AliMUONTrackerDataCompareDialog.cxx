@@ -32,13 +32,13 @@
 ///
 
 #include "AliLog.h"
-#include "AliMpConstants.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
-#include "AliMUONPainterRegistry.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONTrackerData.h"
 #include "AliMUONTrackerDataWrapper.h"
 #include "AliMUONVTrackerData.h"
+#include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
 #include "AliMpManuIterator.h"
@@ -106,7 +106,7 @@ fCancel(new TGTextButton(fButtonFrame,"Cancel"))
   
   SetCleanup(kDeepCleanup);
   
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
   
   for ( Int_t i = 0; i < reg->NumberOfDataSources(); ++i ) 
   {
@@ -205,7 +205,7 @@ AliMUONTrackerDataCompareDialog::CompareData(const char* d1name,
 {
   /// Compare two data sources
   
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
   
   AliMUONVTrackerData* d1 = reg->DataSource(d1name);
   if (!d1)
@@ -249,7 +249,7 @@ AliMUONTrackerDataCompareDialog::CompareData(const char* d1name,
   
   AliMUONVTrackerDataMaker* dw = new AliMUONTrackerDataWrapper(d);
   
-  AliMUONPainterRegistry::Instance()->Register(dw);
+  AliMUONPainterDataRegistry::Instance()->Register(dw);
 }
 
 //______________________________________________________________________________

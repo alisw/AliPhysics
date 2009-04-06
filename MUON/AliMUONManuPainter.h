@@ -38,17 +38,19 @@ public:
 
   virtual void Copy(TObject& object) const;
   
-    virtual TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
-                             Double_t x=FLT_MAX, Double_t y=FLT_MAX);
-
-    void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
-                   Double_t min, Double_t max);
+  virtual TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
+                           Double_t x=FLT_MAX, Double_t y=FLT_MAX);
   
-    virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
-
-    virtual void FillManuList(TObjArray& manuList) const;
-    
-    virtual Bool_t IsIncluded() const;
+  using AliMUONVPainter::PaintArea;
+  
+  void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
+                 Double_t min, Double_t max);
+  
+  virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
+  
+  virtual void FillManuList(TObjArray& manuList) const;
+  
+  virtual Bool_t IsIncluded() const;
     
 private:
   Int_t fDetElemId; ///< our detection element id

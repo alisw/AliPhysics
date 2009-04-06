@@ -332,6 +332,15 @@ retry:
 			{
 				fkCurrentData = fkCurrentBusPatch->GetData();
 				fkEndOfData = fkCurrentData + fkCurrentBusPatch->GetDataCount();
+        if ( skipParityErrors ) 
+        {
+          Bool_t ok(kTRUE);
+          for ( Int_t i = 0; i < fkCurrentBusPatch->GetLength() && ok; ++ i )
+          {
+            ok = fkCurrentBusPatch->IsParityOk(i);
+          }
+          if (!ok) fkCurrentData = fkEndOfData;
+        }
 				goto retry;
 			}
 		}

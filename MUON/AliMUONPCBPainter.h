@@ -40,6 +40,8 @@ public:
   TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
                    Double_t, Double_t);
     
+  using AliMUONVPainter::PaintArea;
+  
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
   

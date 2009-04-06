@@ -17,18 +17,18 @@
 
 #include "AliMUONVPainter.h"
 
-#include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
-#include "AliMUONPainterRegistry.h"
-#include "AliMpManuUID.h"
+#include "AliMUONContour.h"
+#include "AliMUONContourPainter.h"
 #include "AliMUONObjectPair.h"
-#include "AliMUONPainterContour.h"
 #include "AliMUONPainterGroup.h"
 #include "AliMUONPainterHelper.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONTrackerDataHistogrammer.h"
 #include "AliMUONVTrackerData.h"
+#include "AliMpManuUID.h"
 #include <Riostream.h>
 #include <TCanvas.h>
 #include <TClass.h>
@@ -566,10 +566,9 @@ AliMUONVPainter::GetBoundingBox(Double_t& x1, Double_t& y1,
                                 Double_t& x2, Double_t& y2) const
 {
   /// Get the bounding box = our area
- 
-  AliMpArea area(Area().GetPositionX(), 
+  AliMpArea area(Area().GetPositionX(),
                  Area().GetPositionY(),
-                 Area().GetDimensionX()*fBorderFactor, 
+                 Area().GetDimensionX()*fBorderFactor,
                  Area().GetDimensionY()*fBorderFactor);
 
   x1 = area.LeftBorder();
@@ -754,8 +753,7 @@ AliMUONVPainter::Paint(Option_t*)
   
   if ( IsExcluded() )
   {
-    fContour->PaintArea(2);
-    fContour->PaintOutline(1,1);
+    AliMUONContourPainter::Paint(*fContour,1,1,2); // red fill with black thin outline
   }
 }
 
@@ -786,7 +784,7 @@ AliMUONVPainter::PaintOutline(Int_t color, Int_t width, Double_t /*x*/, Double_t
   Int_t c = color >= 0 ? color : GetLineColor();
   Int_t w = width >= 0 ? width : GetLineWidth();
   
-  fContour->PaintOutline(c,w);
+  AliMUONContourPainter::Paint(*fContour,c,w);
 }
 
 //_____________________________________________________________________________
@@ -873,7 +871,7 @@ AliMUONVPainter::SetAttributes(const AliMUONAttPainter& attributes)
 
 //_____________________________________________________________________________
 void 
-AliMUONVPainter::SetContour(AliMUONPainterContour* contour)
+AliMUONVPainter::SetContour(AliMUONContour* contour)
 {
   /// Set out contour
   if (!contour)
@@ -1328,7 +1326,7 @@ AliMUONVTrackerData*
 AliMUONVPainter::InteractiveReadOutConfig() const
 {
   /// get the interactive readout config object
-  return AliMUONPainterRegistry::Instance()->InteractiveReadOutConfig();
+  return AliMUONPainterDataRegistry::Instance()->InteractiveReadOutConfig();
 }
 
 //_____________________________________________________________________________
@@ -1392,3 +1390,9 @@ AliMUONVPainter::CreatePainter(const char* className,
   return rv;
 }
 
+//_____________________________________________________________________________
+void
+AliMUONVPainter::PaintArea(Int_t fillColor)
+{
+  AliMUONContourPainter::Paint(*(Contour()),-1,-1,fillColor);
+}

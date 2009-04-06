@@ -15,7 +15,6 @@
 
 class AliRawReader;
 
-
 class AliMUONRawStream: public TObject {
   public :
     AliMUONRawStream();

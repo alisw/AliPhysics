@@ -22,6 +22,7 @@
 #pragma link C++ class AliMUONTriggerGUIboard+;
 #pragma link C++ class AliMUONClusterInfo+;
 #pragma link C++ class AliMUONPadInfo+;
+#pragma link C++ class AliMUONContourMakerTest+;
 
 #endif
 

@@ -144,5 +144,5 @@ int main(int argc, char** argv)
   // --- Start the event loop ---
   theApp->Run(kTRUE);
 
-  AliMUONPainterHelper::Instance()->Save();
+  delete AliMUONPainterHelper::Instance(); // important to trigger the saving of the env. file
 }

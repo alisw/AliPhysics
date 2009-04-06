@@ -30,7 +30,7 @@
 #include "AliMUONPainterGroup.h"
 #include "AliMUONPainterInterfaceHelper.h"
 #include "AliMUONPainterMatrix.h"
-#include "AliMUONPainterRegistry.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONVPainter.h"
 #include "AliMUONVTrackerData.h"
 #include "AliLog.h"
@@ -62,7 +62,7 @@ fCurrentDimension(-1)
 
   fDataSourceNames = new TGButtonGroup(this,"Sources");
       
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
   
   reg->Connect("DataSourceWasRegistered(AliMUONVTrackerData*)",
                "AliMUONPainterPlotSelector",
@@ -142,7 +142,7 @@ AliMUONPainterPlotSelector::CreateDimensionButtons(const char* dataSourceName)
   
   AliDebug(1,Form("Creating dimension buttons for dataSource %s",dataSourceName));
   
-  AliMUONVTrackerData* data = AliMUONPainterRegistry::Instance()->DataSource(dataSourceName);
+  AliMUONVTrackerData* data = AliMUONPainterDataRegistry::Instance()->DataSource(dataSourceName);
 
   TGButtonGroup* bg = new TGButtonGroup(this,0,3,5,0,dataSourceName);
   

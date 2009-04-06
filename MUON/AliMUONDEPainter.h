@@ -37,6 +37,8 @@ public:
   /// Return the ID of this detection element
   Int_t DetElemId() const { return fDetElemId; }
   
+  using AliMUONVPainter::PaintArea;
+  
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
     

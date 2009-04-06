@@ -122,6 +122,7 @@
 #pragma link C++ class  AliMpFrtCrocusConstants+;
 #pragma link C++ class  AliMpManuStore+;
 #pragma link C++ class  AliMpFastSegmentation+;
+#pragma link C++ class  AliMpUID+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
