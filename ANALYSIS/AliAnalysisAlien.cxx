@@ -1111,17 +1111,47 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libGeom\");" << endl;
       out << "   gSystem->Load(\"libVMC\");" << endl;
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
+      out << "// Load analysis framework libraries" << endl;
       if (!fPackages) {
-         out << "// Load analysis framework libraries" << endl;
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;
          out << "   gSystem->Load(\"libESD\");" << endl;
          out << "   gSystem->Load(\"libAOD\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-         out << "   gSystem->Load(\"libANALYSISalice\");" << endl << endl;
+         out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
+         out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
       } else {
-         out << "// Compile all par packages" << endl;
          TIter next(fPackages);
          TObject *obj;
+         TString pkgname;
+         Bool_t hasSTEERBase = kFALSE;
+         Bool_t hasESD = kFALSE;
+         Bool_t hasAOD = kFALSE;
+         Bool_t hasANALYSIS = kFALSE;
+         Bool_t hasANALYSISalice = kFALSE;
+         Bool_t hasCORRFW = kFALSE;
+         while ((obj=next())) {
+            pkgname = obj->GetName();
+            if (pkgname.Contains("STEERBase")) hasSTEERBase = kTRUE;
+            if (pkgname.Contains("ESD"))       hasESD = kTRUE;
+            if (pkgname.Contains("AOD"))       hasAOD = kTRUE;
+            if (pkgname.Contains("ANALYSIS") && !pkgname.Contains("ANALYSISalice")) hasANALYSIS = kTRUE;
+            if (pkgname.Contains("ANALYSISalice")) hasANALYSISalice = kTRUE;
+            if (pkgname.Contains("CORRFW"))    hasCORRFW = kTRUE;
+         }   
+         if (!hasSTEERBase) out << "   gSystem->Load(\"libSTEERBase\");" << endl;
+         else out << "   if (!SetupPar(\"STEERBase\")) return;" << endl;
+         if (!hasESD)       out << "   gSystem->Load(\"libESD\");" << endl;
+         else out << "   if (!SetupPar(\"ESD\")) return;" << endl;
+         if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
+         else out << "   if (!SetupPar(\"AOD\")) return;" << endl;
+         if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
+         else out << "   if (!SetupPar(\"ANALYSIS\")) return;" << endl;
+         if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
+         else out << "   if (!SetupPar(\"ANALYSISalice\")) return;" << endl;
+         if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
+         else out << "   if (!SetupPar(\"CORRFW\")) return;" << endl << endl;
+         out << "// Compile other par packages" << endl;
+         next.Reset();
          while ((obj=next())) 
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
       }   
