@@ -3,9 +3,8 @@
 <!ELEMENT TOFConfig (Folder)>
 <!ELEMENT Folder EMPTY>
 <!ATTLIST Folder DebugFlag CDATA #REQUIRED>
-<!ATTLIST Folder AcquisitionWindow CDATA #REQUIRED>
 ]>
 <TOFConfig>
-<Folder DebugFlag="On" AcquisitionWindow="200">
+<Folder DebugFlag="On">
 </Folder>
 </TOFConfig>

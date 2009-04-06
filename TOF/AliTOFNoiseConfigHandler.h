@@ -38,11 +38,9 @@ public:
   void          OnCdataBlock(const char *name, Int_t len);
 
   Int_t GetDebugFlag() const {return fDebugFlag;}
-  Int_t GetAcquisitionWindow() const {return fAcquisitionWindow;}
 
  private:
   Int_t fDebugFlag;          // debug flag: 0-->off, 1-->on
-  Int_t fAcquisitionWindow;  // acquisition window width in ns
 
   ClassDef(AliTOFNoiseConfigHandler,0);    // The XML file handler for the OCDB
 };

@@ -53,6 +53,8 @@ class AliTOFPreprocessor : public AliPreprocessor
     Bool_t fStoreRefData;                    // Flag to decide storage of Ref Data
     Bool_t fFDRFlag;                         // Flag for FDR runs 
     AliTOFChannelOnlineStatusArray *fStatus; // Array with TOF channels' status
-    ClassDef(AliTOFPreprocessor, 0);
+    Int_t *fMatchingWindow;                  //[fNChannels]
+                                             // Array of matching windows (one per channel) - to be used in noise runs
+    ClassDef(AliTOFPreprocessor, 0);         
 };
 #endif

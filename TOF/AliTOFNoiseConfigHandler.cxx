@@ -39,8 +39,7 @@ ClassImp(AliTOFNoiseConfigHandler)
 //_____________________________________________________________________________
 AliTOFNoiseConfigHandler::AliTOFNoiseConfigHandler()
 	:TObject(),
-	 fDebugFlag(0),
-	 fAcquisitionWindow(0)
+	 fDebugFlag(0)
 {
 	//
 	// AliTOFNoiseConfigHandler default constructor
@@ -50,8 +49,7 @@ AliTOFNoiseConfigHandler::AliTOFNoiseConfigHandler()
 //_____________________________________________________________________________
 AliTOFNoiseConfigHandler::AliTOFNoiseConfigHandler(const AliTOFNoiseConfigHandler &sh)
 	:TObject(sh),
-	 fDebugFlag(sh.fDebugFlag),
-	 fAcquisitionWindow(sh.fAcquisitionWindow)
+	 fDebugFlag(sh.fDebugFlag)
 {
 	//
 	// AliTOFNoiseConfigHandler copy constructor
@@ -119,12 +117,8 @@ void AliTOFNoiseConfigHandler::OnStartElement(const char *name, const TList *att
 				fDebugFlag = 0;
 			}
 		}
-		if (attrName == "AcquisitionWindow"){
-			fAcquisitionWindow = (Int_t)(((TString)(attr->GetValue())).Atoi());
-		}
 	}	
 	AliDebug(2,Form("Debug Flag = %i",fDebugFlag)); 
-	AliDebug(2,Form("Acquisition Window = %i",fAcquisitionWindow)); 
 	return;
 }
 //_____________________________________________________________________________

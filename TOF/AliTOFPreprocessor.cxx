@@ -84,7 +84,8 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fNChannels(0),
   fStoreRefData(kTRUE),
   fFDRFlag(kFALSE),
-  fStatus(0)
+  fStatus(0),
+  fMatchingWindow(0)
 {
   // constructor
   AddRunType("PHYSICS");
@@ -743,6 +744,32 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	  return 20;
   }
 
+  Float_t noiseThr = 1;   // setting default threshold for noise to 1 Hz
+  // reading config map
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ConfigNoise");
+  if (!cdbEntry) {
+	  Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %d",noiseThr));
+  }
+  else {
+	  TMap *configMap = (TMap*)cdbEntry->GetObject();
+	  if (!configMap){
+		  Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %d", noiseThr));
+	  }
+	  else{
+		  TObjString *strNoiseThr = (TObjString*)configMap->GetValue("NoiseThr");
+		  if (strNoiseThr) {
+			  TString tmpstr = strNoiseThr->GetString();
+			  noiseThr = tmpstr.Atoi();
+		  }
+		  else {
+			  Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %i",noiseThr));
+		  }
+	  }
+  }
+
+  delete cdbEntry;
+  cdbEntry = 0x0;
+
   TH1::AddDirectory(0);
 
   Bool_t resultNoiseRef=kFALSE;
@@ -759,13 +786,20 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   TFile * daqFile=0x0;
   TH1F * h1=0x0;
   
-  //retrieving Noise data 
+  // useful counters
+  Int_t nNoise = 0;
+  Int_t nNoisyChannels = 0;
+  Int_t nNotNoisyChannels = 0;
+  Int_t nChannelsFromDA = 0;
+  Int_t nMatchingWindowNullNonZero = 0;
+  Int_t nMatchingWindowNullEqualZero = 0;
+
+  // retrieving Noise data 
   TList* listNoise = GetFileSources(kDAQ, "NOISE");
   if (listNoise !=0x0 && listNoise->GetEntries()!=0)
 	  {
 		  AliInfo("The following sources produced files with the id NOISE");
 		  listNoise->Print();
-		  Int_t nNoise = 0;
 		  for (Int_t jj=0;jj<listNoise->GetEntries();jj++){
 			  Int_t nNoiseSource = 0;
 			  TObjString * str = dynamic_cast<TObjString*> (listNoise->At(jj));
@@ -779,62 +813,51 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 				  h1 = (TH1F*) daqFile->Get("hTOFnoise");
 				  for (Int_t ibin=0;ibin<kSize;ibin++){
 					  if ((h1->GetBinContent(ibin+1))!=-1){
+						  nNoiseSource++;
+						  // checking the matching window for current channel
+						  if (fMatchingWindow[ibin] == 0){
+							  Log(Form("Matching window for channel %i null, but the channel has entries! skipping channel, BUT Please check!",ibin));
+							  if ((h1->GetBinContent(ibin+1))!=0) nMatchingWindowNullNonZero++;						
+							  if ((h1->GetBinContent(ibin+1))==0) nMatchingWindowNullEqualZero++;						
+							  continue;
+						  }
 						  if ((htofNoise->GetBinContent(ibin+1))==-1){
-							  htofNoise->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
+							  htofNoise->SetBinContent(ibin+1,h1->GetBinContent(ibin+1)/(fMatchingWindow[ibin]*1.E-9));
+							  if ((h1->GetBinContent(ibin+1))!= 0) AliDebug(2,Form("Channel = %i, Matching window = %i, Content = %f", ibin, fMatchingWindow[ibin], htofNoise->GetBinContent(ibin+1)));
 						  }
 						  else {
 							  Log(Form("Something strange occurred during Noise run, channel %i already read by another LDC, please check!",ibin));
 						  }
 					  }
 				  }
-				  // elaborating infos
-				  for (Int_t ich =0;ich<fNChannels;ich++){
-					  if (h1->GetBinContent(ich+1)==-1) continue;
-					  AliDebug(3,Form(" channel %i noise status before noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-					  //AliDebug(2,Form( " channel %i status before noise = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich)));
-					  
-					  /* check whether channel has been read out during current run.
-					   * if the status is bad it means it has not been read out.
-					   * in this case skip channel in order to leave its status 
-					   * unchanged */
-					  if ((fStatus->GetHWStatus(ich)) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
-						  continue;
-					  
-					  nNoise++;
-					  nNoiseSource++;
-					  if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 Hz
-						  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
-						  AliDebug(2,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-					  }
-					  else {
-						  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseOk); // good status for noise
-						  AliDebug(2,Form(" channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-					  }
-				  }
-				  
+
+				  Log(Form(" Number of channels processed during noise run from source %i = %i",jj, nNoiseSource));
 				  daqFile->Close();
 				  delete daqFile;
 				  delete h1;
-				  
+				  daqFile = 0x0;
+				  h1 = 0x0;
+
 			  }
-			  
 			  else{
 				  Log("The input data file from DAQ (noise) was not found, TOF exiting from Shuttle "); 
 				  delete listNoise;
+				  listNoise = 0x0;
 				  delete htofNoise;
 				  htofNoise = 0x0;
 				  if (fStatus){
 					  delete fStatus;
 					  fStatus = 0;
 				  }
+				  if (fMatchingWindow){
+					  delete [] fMatchingWindow;
+					  fMatchingWindow = 0;
+				  }
 				  return 13;//return error code for failure in retrieving Ref Data 
 			  }
-			  
-			  AliDebug(2,Form(" Number of channels processed during noise run from source %i = %i",jj, nNoiseSource));
-		  }
-		  AliDebug(2,Form(" Number of channels processed during noise run = %i",nNoise));
-		  delete listNoise;
+		  }		  
 	  }
+			  
   else{
 	  Log("The input data file list from DAQ (noise) was not found, TOF exiting from Shuttle "); 
 	  delete htofNoise;
@@ -843,10 +866,53 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 		  delete fStatus;
 		  fStatus = 0;
 	  }
+	  if (fMatchingWindow){
+		  delete [] fMatchingWindow;
+		  fMatchingWindow = 0;
+	  }
 	  return 13;//return error code for failure in retrieving Ref Data 
   }	
   
-  daqFile=0;
+  // elaborating infos to set NOISE status
+  for (Int_t ich =0;ich<fNChannels;ich++){
+	  if (htofNoise->GetBinContent(ich+1)== -1) continue;
+
+	  nChannelsFromDA++;
+
+	  AliDebug(3,Form(" channel %i noise status before noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+	  //AliDebug(2,Form( " channel %i status before noise = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich)));
+	  
+	  /* check whether channel has been read out during current run.
+	   * if the status is bad it means it has not been read out.
+	   * in this case skip channel in order to leave its status 
+	   * unchanged */
+
+	  if ((fStatus->GetHWStatus(ich)) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+		  continue;
+	  
+	  nNoise++;
+	  if (htofNoise->GetBinContent(ich+1) >= noiseThr){
+		  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
+		  AliDebug(3,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+		  nNoisyChannels++;
+	  }
+	  else {
+		  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseOk); // good status for noise
+		  AliDebug(3,Form(" channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+		  nNotNoisyChannels++;
+	  }
+  }
+  
+  Log(Form(" Number of channels processed by DA during noise run, independetly from TOFFEE = %i",nChannelsFromDA));
+  Log(Form(" Number of channels processed during noise run (that were ON according to TOFFEE) = %i",nNoise));
+  Log(Form(" Number of noisy channels found during noise run = %i",nNoisyChannels));
+  Log(Form(" Number of not noisy channels found during noise run = %i",nNotNoisyChannels));
+  Log(Form(" Number of channels with matching window NULL (so skipped), but Non Zero content = %i",nMatchingWindowNullNonZero));
+  Log(Form(" Number of channels with matching window NULL (so skipped), and Zero content = %i",nMatchingWindowNullEqualZero));
+
+  delete listNoise;
+  
+  //daqFile=0;
   
   //storing in OCDB
   
@@ -863,6 +929,10 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     if (fStatus){
 	    delete fStatus;
 	    fStatus = 0;
+    }
+    if (fMatchingWindow){
+	    delete [] fMatchingWindow;
+	    fMatchingWindow = 0;
     }
     return 14;//return error code for problems in storing Noise data 
   }
@@ -885,6 +955,10 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	      delete fStatus;
 	      fStatus = 0;
       }
+      if (fMatchingWindow){
+	      delete [] fMatchingWindow;
+	      fMatchingWindow = 0;
+      }
       return 12;//return error code for failure in storing Ref Data 
     }
   }
@@ -895,6 +969,11 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   if (fStatus){
     delete fStatus;
     fStatus = 0;
+  }
+
+  if (fMatchingWindow){
+	  delete [] fMatchingWindow;
+	  fMatchingWindow = 0;
   }
 
   return 0;
@@ -928,6 +1007,8 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
    * if stored FEE is different from current FEE set update flag.
    * if there is no stored FEE in OCDB set update flag */
   
+  fMatchingWindow = new Int_t[fNChannels];
+
   AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Status");
   if (!cdbEntry) {
 	  /* no CDB entry found. set update flag */
@@ -949,19 +1030,20 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  /* compare current FEE channel status with stored one 
 	   * if different set update flag and break loop */
 	  //AliDebug(2,Form( " channel %i status before FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+	  fMatchingWindow[iChannel] = feeReader.GetMatchingWindow(iChannel);
 	  if (feeReader.IsChannelEnabled(iChannel)) {
 		  hCurrentFEE.SetBinContent(iChannel + 1, 1);
 		  if (fStatus->GetHWStatus(iChannel)!=AliTOFChannelOnlineStatusArray::kTOFHWOk){
 			  updateOCDB = kTRUE;
 			  fStatus->SetHWStatus(iChannel,AliTOFChannelOnlineStatusArray::kTOFHWOk);
-			  AliDebug(2,Form( " changed into enabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+			  AliDebug(3,Form( " changed into enabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
 		  }
 	  }
 	  else {
 		  if (fStatus->GetHWStatus(iChannel)!=AliTOFChannelOnlineStatusArray::kTOFHWBad){
 			  updateOCDB = kTRUE;
 			  fStatus->SetHWStatus(iChannel,AliTOFChannelOnlineStatusArray::kTOFHWBad);
-			  AliDebug(2,Form( " changed into disabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+			  AliDebug(3,Form( " changed into disabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
 		  }
 	  }
   }

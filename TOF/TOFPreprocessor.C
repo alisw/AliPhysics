@@ -37,18 +37,22 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   // processing files. for the time being, the files are local.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
-  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20080310.163032.4000");
-  char filename[100];
-  char LDCname[5];
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20090401.182503.67577");
+
+  TString filename;
+  TString LDCname;
+  //char filename[100];
+  //char LDCname[5];
 
   for (Int_t iLDC=0;iLDC<2;iLDC++){
-    sprintf(filename,"$ALICE_ROOT/TOF/ShuttleInput/TOFoutPulserLDC_%02i.root",iLDC*2);
-    sprintf(LDCname,"LDC%i",iLDC*2);
+    filename.Form("$ALICE_ROOT/TOF/ShuttleInput/TOFoutPulserLDC_%02i.root",iLDC*2);
+    LDCname.Form("LDC%i",iLDC*2);
     shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "PULSER", LDCname, filename);
-    sprintf(filename,"$ALICE_ROOT/TOF/ShuttleInput/TOFoutNoiseLDC_%02i.root",iLDC*2);
-    sprintf(LDCname,"LDC%i",iLDC*2);
+    filename.Form("$ALICE_ROOT/TOF/ShuttleInput/TOFoutNoiseLDC_%02i.root",iLDC*2);
+    LDCname.Form("LDC%i",iLDC*2);
     shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "NOISE", LDCname, filename);
   }
+  
 
   // instantiation of the preprocessor
   AliPreprocessor* pp = new AliTOFPreprocessor(shuttle);

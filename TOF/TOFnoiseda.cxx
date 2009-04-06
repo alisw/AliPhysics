@@ -98,14 +98,10 @@ int main(int argc, char **argv) {
 	  printf("Failed parsing config file! retunring... \n");
 	  return -1;
   }
+
   Int_t debugFlag = tofHandler->GetDebugFlag();
-  Int_t acquisitionWindow = tofHandler->GetAcquisitionWindow();
-  if (acquisitionWindow == 0){
-	  printf("Problems with the acquisition window, set to zero! returning...\n");
-	  return -1;
-  }
+
   printf("the debug flag is %i\n",debugFlag);
-  printf("the acquisition window is %i (ns)\n",acquisitionWindow);
 
   /* init some counters */
   int nevents_physics=0;
@@ -229,9 +225,9 @@ int main(int argc, char **argv) {
 	      Volume[3] = Volume[4];
 	      Volume[4] = dummy;
 	      Int_t index = geom->GetIndex(Volume);
-	      Bool_t found =kFALSE;
 	      // to check array indexes
 	      /*
+	      Bool_t found =kFALSE;
 	      for (Int_t j=0;j<nchDDL;j++){
 		if (index==array[j]) {
 		  found = kTRUE;
@@ -283,7 +279,7 @@ int main(int argc, char **argv) {
 
   Int_t noisyChannels = 0;
   Int_t checkedChannels = 0;
-  Float_t time = nevents_physics*acquisitionWindow*1E-9; // acquisition time in s
+  Float_t time = nevents_physics; // acquisition time in number of events
   //printf(" Noise run lasted %f s \n",time);
   for (Int_t ibin =1;ibin<=size;ibin++){
     Float_t cont = htofNoise->GetBinContent(ibin);
