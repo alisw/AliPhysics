@@ -62,12 +62,12 @@ endif
 
 
 # only if no par file was loaded before
-ifeq ($(ALICEINC),-I.)
+#ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/JETAN   # some extra includes
   endif
-endif
+#endif
 
 CXXFLAGS += $(ALICEINC) -g
 
