@@ -19,6 +19,8 @@
 /// \file MUONOfflineShift.C
 /// \brief Macro to be used to check raw data during MUON offline shifts.
 ///  
+/// You NEED an access to the Grid to run this macro.
+///
 /// Basic usage is : 
 ///
 /// MUONOfflineShift("path_to_raw_file","basename of output file"); > log
@@ -36,15 +38,20 @@
 ///
 /// - basename.log, containing (for the moment) the occupancy numbers of the various detection elements
 ///
+/// Unless you really know what you're doing, please use this macro together with 
+/// the grid OCDB (i.e. don't set it to a local OCDB). There are now a lot of things
+/// that are grabbed from the OCDB that are run dependent...
+///
 /// \author Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+#include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrackerDataMaker.h"
-#include "AliMUONTrackerRawDataMaker.h"
 #include "AliMUONVTrackerData.h"
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
@@ -66,8 +73,7 @@ Int_t DataMakerReading(const char* input,
                        const char* calibMode="",
                        Bool_t histogram=kFALSE,
                        Double_t xmin = 0.0,
-                       Double_t xmax = 4096.0,
-                       Bool_t fastDecoder=kFALSE)
+                       Double_t xmax = 4096.0)
 {
   /// Run over the data and calibrate it if so required (if cdbPath != "")
   /// calibMode can be :
@@ -83,13 +89,18 @@ Int_t DataMakerReading(const char* input,
   
   AliMUONVTrackerDataMaker* dm(0x0);
   
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
+  AliMUONRecoParam* recoParam(0x0);
+  
+  if ( entry ) recoParam = static_cast<AliMUONRecoParam*>(entry->GetObject());
+  
   if ( strlen(cdbPath) > 0 ) 
   {
-    dm = new AliMUONTrackerDataMaker(rawReader,cdbPath,calibMode,histogram,xmin,xmax);
+    dm = new AliMUONTrackerDataMaker(recoParam,rawReader,cdbPath,calibMode,histogram,xmin,xmax);
   }
   else  
   {
-    dm = new AliMUONTrackerDataMaker(rawReader,histogram,fastDecoder);
+    dm = new AliMUONTrackerDataMaker(rawReader,histogram);
   }
   
   AliMUONPainterRegistry::Instance()->Register(dm);
@@ -198,45 +209,43 @@ void Occupancy(ostream& outfile)
 }
 
 //______________________________________________________________________________
-void MUONOfflineShift(const char* input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root", 
-                      const char* outputBase="21931.001.50",
-                      const char* ocdbPath="alien://folder=/alice/data/2008/LHC08a/OCDB")
+void MUONOfflineShift(const char* input="alien:///alice/data/2009/LHC09a/000067495/raw/09000067495031.10.root", 
+                      const char* outputBase="67495031.10",
+                      const char* ocdbPath="alien://folder=/alice/data/2009/OCDB")
 {
   /// Entry point of the macro. 
-  /// Example of syntax for an input file (from alien)
-  ///
-  /// alien::///alice/data/2007/LHC07w/000014493/raw/07000014493001.10.root
-  /// 
-  /// and for an OCDB path : 
-  ///
-  /// alien://folder=/alice/data/2007/LHC07w/OCDB
-  ///
 
-  TGrid::Connect("alien://");
-  
   AliCodeTimer::Instance()->Reset();
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetRun(0);
-  AliMpCDB::LoadDDLStore();
+  TGrid::Connect("alien://");
   
-  TStopwatch timer0;
+  AliRawReader* rawReader = AliRawReader::Create(input);
+  
+  rawReader->NextEvent();
+  
+  Int_t runNumber = rawReader->GetRunNumber();
+    
+  delete rawReader;
+  
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(runNumber);
+
+  AliMpCDB::LoadDDLStore();
+  AliMpCDB::LoadManuStore();
+  
   TStopwatch timer1;
   TStopwatch timer2;
   TStopwatch timer3;
   TStopwatch timer4;
   
-  Int_t n0 = DataMakerReading(input,timer0,"","",kTRUE,0,0,kFALSE); // using old decoder
+  Int_t n1 = DataMakerReading(input,timer1,"","",kTRUE,0,0);
 
-  Int_t n1 = DataMakerReading(input,timer1,"","",kTRUE,0,0,kTRUE); // using new decoder
+  Int_t n2 = DataMakerReading(input,timer2,ocdbPath,"NOGAIN");
 
-  Int_t n2 = DataMakerReading(input,timer2,ocdbPath,"NOGAIN",kTRUE);
+  Int_t n3 = DataMakerReading(input,timer3,ocdbPath,"GAINCONSTANTCAPA");
 
-  Int_t n3 = DataMakerReading(input,timer3,ocdbPath,"GAINCONSTANTCAPA",kTRUE);
+  Int_t n4 = DataMakerReading(input,timer4,ocdbPath,"GAIN");
 
-  Int_t n4 = DataMakerReading(input,timer4,ocdbPath,"GAIN",kTRUE);
-
-  Print("DataMakerReading(HRAW)",timer0,n0);  
   Print("DataMakerReading(HRAW)",timer1,n1);  
   Print("DataMakerReading(HCALZ)",timer2,n2);
   Print("DataMakerReading(HCALG)",timer3,n3);
