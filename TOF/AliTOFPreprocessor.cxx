@@ -816,7 +816,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 						  nNoiseSource++;
 						  // checking the matching window for current channel
 						  if (fMatchingWindow[ibin] == 0){
-							  Log(Form("Matching window for channel %i null, but the channel has entries! skipping channel, BUT Please check!",ibin));
+							  Log(Form("Matching window for channel %i null, but the channel was read by the LDC! skipping channel, BUT Please check!",ibin));
 							  if ((h1->GetBinContent(ibin+1))!=0) nMatchingWindowNullNonZero++;						
 							  if ((h1->GetBinContent(ibin+1))==0) nMatchingWindowNullEqualZero++;						
 							  continue;
