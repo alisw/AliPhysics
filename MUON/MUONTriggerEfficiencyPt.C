@@ -46,6 +46,7 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
+#include "AliCDBManager.h"
 
 // MUON includes
 #include "AliMUONDataInterface.h"
@@ -115,6 +116,10 @@ void MUONTriggerEfficiencyPt(const char* filenameSim="galice_sim.root",
     Double_t hptmuon=0;
     Double_t ptmu=0;
 
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    cdbManager->SetRun(0);
+
     AliMUONMCDataInterface diSim(filenameSim);
     AliMUONDataInterface diRec(filenameRec);
     
@@ -146,9 +151,9 @@ void MUONTriggerEfficiencyPt(const char* filenameSim="galice_sim.root",
 	if (ievent%500==0) printf("ievent = %d \n",ievent);
 // kine
 	
-	runLoader->GetRunLoader()->GetEvent(ievent);
-	runLoader->GetRunLoader()->LoadKinematics();
-	AliStack* stack = runLoader->GetRunLoader()->Stack();
+	runLoader->GetEvent(ievent);
+	runLoader->LoadKinematics();
+	AliStack* stack = runLoader->Stack();
 	
 	Int_t nparticles = (Int_t) stack->GetNtrack();        
 

@@ -61,7 +61,8 @@ void MUONTrigger(const char* filename)
     AliCDBManager* cdbManager = AliCDBManager::Instance();
     cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     
-    Int_t runnumber = cdbManager->GetRun();
+    Int_t runnumber = 0;
+    cdbManager->SetRun(runnumber);
     AliMpCDB::LoadDDLStore();
     
     AliMUONCalibrationData *CalibrationData = new AliMUONCalibrationData(runnumber);
@@ -73,7 +74,7 @@ void MUONTrigger(const char* filename)
     
     for(Int_t ievent = 0; ievent < nevents; ievent++) {
 	printf(">>> Event %i out of %i \n",ievent,nevents);
-	RunLoader->GetRunLoader()->GetEvent(ievent);
+	RunLoader->GetEvent(ievent);
 	
 	MUONLoader->LoadRecPoints("update");
 	MUONLoader->CleanRecPoints();
