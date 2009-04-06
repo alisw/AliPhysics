@@ -34,6 +34,7 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TProfile3D.h"
+#include "TBits.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
@@ -173,9 +174,27 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
  //fListHistos->Print();
 
  if(fListHistos)
- {	    
-  //final results (integrated flow)
-  TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsQC"));
+ {	
+  // with or without weights
+  TBits *useWeightsBits = dynamic_cast<TBits*>(fListHistos->FindObject("TBits"));
+         
+  //final results (no-name integrated flow without weights)
+  TH1D *intFlowResultsQC = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsQC"));
+  
+  //final results (no-name integrated flow with weights)
+  TH1D *intFlowResultsQCW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsQCW"));
+  
+  //final results (POIs integrated flow without weights)
+  TH1D *intFlowResultsPOIQC = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsPOIQC"));
+  
+  //final results (POIs integrated flow with weights)
+  TH1D *intFlowResultsPOIQCW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsPOIQCW"));
+  
+  //final results (RPs integrated flow without weights)
+  TH1D *intFlowResultsRPQC = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsRPQC"));
+  
+  //final results (RPs integrated flow with weights)
+  TH1D *intFlowResultsRPQCW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fIntFlowResultsRPQCW"));
   
   //final results (differential flow)
   TH1D *diffFlowResults2ndOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2ndOrderQC"));
@@ -222,7 +241,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   TProfile *qCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelations"));
   
   //weighted multi-particle correlations calculated from Q-vectors
-  TProfile *weightedQCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fWeightedQCorrelations"));
+  TProfile *qCorrelationsW = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelationsW"));
   
   //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   TProfile *QProduct = dynamic_cast<TProfile*>(fListHistos->FindObject("fQProduct"));
@@ -259,14 +278,131 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
   
-  //multi-particle correlations calculated with nested loop 
-  TProfile *DirectCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelations"));
+  // multi-particle correlations calculated with nested loop (needed for int. flow)
+  TProfile *directCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelations"));
+  
+  // multi-particle correlations calculated with nested loop (needed for weighted int. flow)
+  TProfile *directCorrelationsW = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelationsW"));
+  
+  // multi-particle correlations calculated with nested loop (needed for diff. flow)
+  TProfile *directCorrelationsDiffFlow = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelationsDiffFlow"));
+  
+  // multi-particle correlations calculated with nested loop (needed for int. flow)
+  TProfile *directCorrelationsDiffFlowW = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelationsDiffFlowW"));
+  
+  
+  
+  
+  
+  
+  // ...............................................................................................................................................
+  // non-weighted correlations for each (pt,eta) bin for POIs:
+  TProfile2D *twoPtEtaPOI   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2pPtEtaPOI"));
+  TProfile2D *fourPtEtaPOI  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaPOI"));
+  TProfile2D *sixPtEtaPOI   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaPOI"));
+  TProfile2D *eightPtEtaPOI = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaPOI"));
+ 
+  // non-weighted final results for differential flow for each for POIs:
+  // 3D (pt,eta)
+  TH2D *vn2ndPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtEtaPOI"));  
+  TH2D *vn4thPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtEtaPOI")); 
+  TH2D *vn6thPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtEtaPOI")); 
+  TH2D *vn8thPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtEtaPOI")); 
+  // 2D (pt)
+  TH1D *vn2ndPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtPOI"));  
+  TH1D *vn4thPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtPOI")); 
+  TH1D *vn6thPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtPOI")); 
+  TH1D *vn8thPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtPOI"));
+  // 2D (eta)
+  TH1D *vn2ndEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndEtaPOI"));  
+  TH1D *vn4thEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thEtaPOI")); 
+  TH1D *vn6thEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thEtaPOI")); 
+  TH1D *vn8thEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thEtaPOI"));
+  
+  // weighted correlations for each (pt,eta) bin for POIs:
+  TProfile2D *twoPtEtaPOIW   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2pPtEtaPOIW"));
+  TProfile2D *fourPtEtaPOIW  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaPOIW"));
+  TProfile2D *sixPtEtaPOIW   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaPOIW"));
+  TProfile2D *eightPtEtaPOIW = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaPOIW"));
+  
+  // weighted final results for differential flow for each for POIs:
+  // 3D (pt,eta)
+  TH2D *vn2ndPtEtaPOIW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtEtaPOIW"));  
+  TH2D *vn4thPtEtaPOIW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtEtaPOIW")); 
+  TH2D *vn6thPtEtaPOIW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtEtaPOIW")); 
+  TH2D *vn8thPtEtaPOIW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtEtaPOIW")); 
+  // 2D (pt)
+  TH1D *vn2ndPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtPOIW"));  
+  TH1D *vn4thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtPOIW")); 
+  TH1D *vn6thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtPOIW")); 
+  TH1D *vn8thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtPOIW"));
+  // 2D (eta)
+  TH1D *vn2ndEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndEtaPOIW"));  
+  TH1D *vn4thEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thEtaPOIW")); 
+  TH1D *vn6thEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thEtaPOIW")); 
+  TH1D *vn8thEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thEtaPOIW"));
+  
+  // non-weighted correlations for each (pt,eta) bin for RPs:
+  TProfile2D *twoPtEtaRP   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2pPtEtaRP"));
+  TProfile2D *fourPtEtaRP  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaRP"));
+  TProfile2D *sixPtEtaRP   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaRP"));
+  TProfile2D *eightPtEtaRP = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaRP"));
+ 
+  // non-weighted final results for differential flow for RPs:
+  // 3D (pt,eta)
+  TH2D *vn2ndPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtEtaRP"));  
+  TH2D *vn4thPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtEtaRP")); 
+  TH2D *vn6thPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtEtaRP")); 
+  TH2D *vn8thPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtEtaRP")); 
+  // 2D (pt)
+  TH1D *vn2ndPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtRP"));  
+  TH1D *vn4thPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtRP")); 
+  TH1D *vn6thPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtRP")); 
+  TH1D *vn8thPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtRP"));
+  // 2D (eta)
+  TH1D *vn2ndEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndEtaRP"));  
+  TH1D *vn4thEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thEtaRP")); 
+  TH1D *vn6thEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thEtaRP")); 
+  TH1D *vn8thEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thEtaRP"));
+  
+  // weighted correlations for each (pt,eta) bin for RPs:
+  TProfile2D *twoPtEtaRPW   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f2pPtEtaRPW"));
+  TProfile2D *fourPtEtaRPW  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaRPW"));
+  TProfile2D *sixPtEtaRPW   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaRPW"));
+  TProfile2D *eightPtEtaRPW = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(fListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaRPW"));
+  
+  // weighted final results for differential flow for RPs:
+  // 3D (pt,eta)
+  TH2D *vn2ndPtEtaRPW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtEtaRPW"));  
+  TH2D *vn4thPtEtaRPW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtEtaRPW")); 
+  TH2D *vn6thPtEtaRPW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtEtaRPW")); 
+  TH2D *vn8thPtEtaRPW = dynamic_cast<TH2D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtEtaRPW")); 
+  // 2D (pt)
+  TH1D *vn2ndPtRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndPtRPW"));  
+  TH1D *vn4thPtRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thPtRPW")); 
+  TH1D *vn6thPtRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thPtRPW")); 
+  TH1D *vn8thPtRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thPtRPW"));
+  // 2D (eta)
+  TH1D *vn2ndEtaRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn2ndEtaRPW"));  
+  TH1D *vn4thEtaRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn4thEtaRPW")); 
+  TH1D *vn6thEtaRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn6thEtaRPW")); 
+  TH1D *vn8thEtaRPW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(fListHistos->FindObject("Results")))->FindObject("fvn8thEtaRPW"));
+  // ...............................................................................................................................................
+  
+  
  
   //----------------------------------------------------
  
   fQCA = new AliFlowAnalysisWithQCumulants();  
  
-  fQCA->SetIntFlowResults(intFlowResults); 
+  fQCA->SetUseWeightsBits(useWeightsBits);
+  fQCA->SetIntFlowResults(intFlowResultsQC); 
+  fQCA->SetIntFlowResultsW(intFlowResultsQCW);
+  fQCA->SetIntFlowResultsPOI(intFlowResultsPOIQC); 
+  fQCA->SetIntFlowResultsPOIW(intFlowResultsPOIQCW); 
+  fQCA->SetIntFlowResultsRP(intFlowResultsRPQC); 
+  fQCA->SetIntFlowResultsRPW(intFlowResultsRPQCW); 
+
   fQCA->SetDiffFlowResults2nd(diffFlowResults2ndOrder);
   fQCA->SetDiffFlowResults4th(diffFlowResults4thOrder); 
   fQCA->SetCovariances(covariances); 
@@ -288,7 +424,7 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetQvectorForEachEventY(qvectorForEachEventY);
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   fQCA->SetQCorrelations(qCorrelations);
-  fQCA->SetWeightedQCorrelations(weightedQCorrelations);
+  fQCA->SetQCorrelationsW(qCorrelationsW);
   fQCA->SetQProduct(QProduct);
   fQCA->SetQVectorComponents(QVectorComponents);
  
@@ -316,8 +452,104 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   fQCA->SetTwo1n1nWPerEtaBinRP(binnedWEta2p1n1nRP);
   fQCA->SetFour1n1n1n1nWPerEtaBinRP(binnedWEta4p1n1n1n1nRP);
   
-  fQCA->SetDirectCorrelations(DirectCorrelations);
- 
+  // nested loops results:
+  fQCA->SetDirectCorrelations(directCorrelations);
+  fQCA->SetDirectCorrelationsW(directCorrelationsW);
+  fQCA->SetDirectCorrelationsDiffFlow(directCorrelationsDiffFlow);
+  fQCA->SetDirectCorrelationsDiffFlowW(directCorrelationsDiffFlowW);
+  
+  // non-weighted correlations for each (pt,eta) bin for POIs:
+  fQCA->Set2pPtEtaPOI(twoPtEtaPOI);
+  fQCA->Set4pPtEtaPOI(fourPtEtaPOI);
+  fQCA->Set6pPtEtaPOI(sixPtEtaPOI);
+  fQCA->Set8pPtEtaPOI(eightPtEtaPOI);
+  
+  // non-weighted final results for differential flow for POIs:
+  // 3D (pt,eta)
+  fQCA->Setvn2ndPtEtaPOI(vn2ndPtEtaPOI);   
+  fQCA->Setvn4thPtEtaPOI(vn4thPtEtaPOI);  
+  fQCA->Setvn6thPtEtaPOI(vn6thPtEtaPOI);  
+  fQCA->Setvn8thPtEtaPOI(vn8thPtEtaPOI);   
+  // 2D (pt)
+  fQCA->Setvn2ndPtPOI(vn2ndPtPOI);   
+  fQCA->Setvn4thPtPOI(vn4thPtPOI);  
+  fQCA->Setvn6thPtPOI(vn6thPtPOI);  
+  fQCA->Setvn8thPtPOI(vn8thPtPOI);   
+  // 2D (eta)
+  fQCA->Setvn2ndEtaPOI(vn2ndEtaPOI);   
+  fQCA->Setvn4thEtaPOI(vn4thEtaPOI);  
+  fQCA->Setvn6thEtaPOI(vn6thEtaPOI);  
+  fQCA->Setvn8thEtaPOI(vn8thEtaPOI);   
+  
+  // weighted correlations for each (pt,eta) bin for POIs:
+  fQCA->Set2pPtEtaPOIW(twoPtEtaPOIW);
+  fQCA->Set4pPtEtaPOIW(fourPtEtaPOIW);
+  fQCA->Set6pPtEtaPOIW(sixPtEtaPOIW);
+  fQCA->Set8pPtEtaPOIW(eightPtEtaPOIW);
+  
+  // weighted final results for differential flow for POIs:
+  // 3D (pt,eta)
+  fQCA->Setvn2ndPtEtaPOIW(vn2ndPtEtaPOIW);   
+  fQCA->Setvn4thPtEtaPOIW(vn4thPtEtaPOIW);  
+  fQCA->Setvn6thPtEtaPOIW(vn6thPtEtaPOIW);  
+  fQCA->Setvn8thPtEtaPOIW(vn8thPtEtaPOIW); 
+  // 2D (pt)
+  fQCA->Setvn2ndPtPOIW(vn2ndPtPOIW);   
+  fQCA->Setvn4thPtPOIW(vn4thPtPOIW);  
+  fQCA->Setvn6thPtPOIW(vn6thPtPOIW);  
+  fQCA->Setvn8thPtPOIW(vn8thPtPOIW);   
+  // 2D (eta)
+  fQCA->Setvn2ndEtaPOIW(vn2ndEtaPOIW);   
+  fQCA->Setvn4thEtaPOIW(vn4thEtaPOIW);  
+  fQCA->Setvn6thEtaPOIW(vn6thEtaPOIW);  
+  fQCA->Setvn8thEtaPOIW(vn8thEtaPOIW);     
+  
+  // non-weighted correlations for each (pt,eta) bin for RPs:
+  fQCA->Set2pPtEtaRP(twoPtEtaRP);
+  fQCA->Set4pPtEtaRP(fourPtEtaRP);
+  fQCA->Set6pPtEtaRP(sixPtEtaRP);
+  fQCA->Set8pPtEtaRP(eightPtEtaRP);
+  
+  // non-weighted final results for differential flow for RPs:
+  // 3D (pt,eta)
+  fQCA->Setvn2ndPtEtaRP(vn2ndPtEtaRP);   
+  fQCA->Setvn4thPtEtaRP(vn4thPtEtaRP);  
+  fQCA->Setvn6thPtEtaRP(vn6thPtEtaRP);  
+  fQCA->Setvn8thPtEtaRP(vn8thPtEtaRP);  
+  // 2D (pt)
+  fQCA->Setvn2ndPtRP(vn2ndPtRP);   
+  fQCA->Setvn4thPtRP(vn4thPtRP);  
+  fQCA->Setvn6thPtRP(vn6thPtRP);  
+  fQCA->Setvn8thPtRP(vn8thPtRP);   
+  // 2D (eta)
+  fQCA->Setvn2ndEtaRP(vn2ndEtaRP);   
+  fQCA->Setvn4thEtaRP(vn4thEtaRP);  
+  fQCA->Setvn6thEtaRP(vn6thEtaRP);  
+  fQCA->Setvn8thEtaRP(vn8thEtaRP);      
+  
+  // weighted correlations for each (pt,eta) bin for RPs:
+  fQCA->Set2pPtEtaRPW(twoPtEtaRPW);
+  fQCA->Set4pPtEtaRPW(fourPtEtaRPW);
+  fQCA->Set6pPtEtaRPW(sixPtEtaRPW);
+  fQCA->Set8pPtEtaRPW(eightPtEtaRPW);
+  
+  // weighted final results for differential flow for RPs:
+  // 3D (pt,eta)
+  fQCA->Setvn2ndPtEtaRPW(vn2ndPtEtaRPW);   
+  fQCA->Setvn4thPtEtaRPW(vn4thPtEtaRPW);  
+  fQCA->Setvn6thPtEtaRPW(vn6thPtEtaRPW);  
+  fQCA->Setvn8thPtEtaRPW(vn8thPtEtaRPW);  
+  // 2D (pt)
+  fQCA->Setvn2ndPtRPW(vn2ndPtRPW);   
+  fQCA->Setvn4thPtRPW(vn4thPtRPW);  
+  fQCA->Setvn6thPtRPW(vn6thPtRPW);  
+  fQCA->Setvn8thPtRPW(vn8thPtRPW);   
+  // 2D (eta)
+  fQCA->Setvn2ndEtaRPW(vn2ndEtaRPW);   
+  fQCA->Setvn4thEtaRPW(vn4thEtaRPW);  
+  fQCA->Setvn6thEtaRPW(vn6thEtaRPW);  
+  fQCA->Setvn8thEtaRPW(vn8thEtaRPW);  
+  
   fQCA->Finish();
   
   //----------------------------------------------------
