@@ -143,11 +143,15 @@ void AliGlobalQADataMaker::InitESDs() {
 
   {// V0 related QA
   const Char_t *name[]={
-    "K0s mass (GeV)",
-    "Lambda0 + Lambda0Bar mass (GeV)"
+    "On-the-fly K0s mass (GeV)",
+    "Offline K0s mass (GeV)",
+    "On-the-fly Lambda0 + Lambda0Bar mass (GeV)",
+    "Offline Lambda0 + Lambda0Bar mass (GeV)"
   };
-  Add2ESDsList(new TH1F(name[0],name[0],50,  0.4477,0.5477),kV0s0);
-  Add2ESDsList(new TH1F(name[1],name[1],50,  1.0657,1.1657),kV0s1);
+  Add2ESDsList(new TH1F(name[0],name[0],50,  0.4477,0.5477),kK0on);
+  Add2ESDsList(new TH1F(name[1],name[1],50,  0.4477,0.5477),kK0off);
+  Add2ESDsList(new TH1F(name[2],name[2],50,  1.0657,1.1657),kL0on);
+  Add2ESDsList(new TH1F(name[3],name[3],50,  1.0657,1.1657),kL0off);
   }
 
   {// PID related QA
@@ -258,15 +262,24 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
 
     v0.ChangeMassHypothesis(kK0Short);
     mass=v0.GetEffMass();
-    GetESDsData(kV0s0)->Fill(mass);
+    if (v0.GetOnFlyStatus())
+       GetESDsData(kK0on)->Fill(mass);
+    else
+       GetESDsData(kK0off)->Fill(mass);
 
     v0.ChangeMassHypothesis(kLambda0);
     mass=v0.GetEffMass();
-    GetESDsData(kV0s1)->Fill(mass);
+    if (v0.GetOnFlyStatus())
+       GetESDsData(kL0on)->Fill(mass);
+    else
+       GetESDsData(kL0off)->Fill(mass);
 
     v0.ChangeMassHypothesis(kLambda0Bar);
     mass=v0.GetEffMass();
-    GetESDsData(kV0s1)->Fill(mass);
+    if (v0.GetOnFlyStatus())
+       GetESDsData(kL0on)->Fill(mass);
+    else
+       GetESDsData(kL0off)->Fill(mass);
   }
 
 }

@@ -17,7 +17,7 @@ public:
   enum {
     kClr0,kClr1,kClr2,
     kTrk0,kTrk1,kTrk2,kTrk3,kTrk4,kTrk5,kTrk6,
-    kV0s0,kV0s1,
+    kK0on,kK0off,kL0on,kL0off,
     kPid0,kPid1,kPid2,
     kLast
   };
