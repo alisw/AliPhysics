@@ -39,7 +39,8 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONSegment.cxx \
   AliMUONSegmentTree.cxx \
   AliMUONNode.cxx \
-  AliMUONPointWithRef.cxx
+  AliMUONPointWithRef.cxx \
+  AliMUONContourMakerTest.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

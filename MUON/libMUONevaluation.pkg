@@ -11,9 +11,8 @@ SRCS:= AliMUONPairLight.cxx \
        AliMUONTriggerGUIdimap.cxx \
        AliMUONTriggerGUIboard.cxx \
        AliMUONClusterInfo.cxx \
-       AliMUONPadInfo.cxx \
-       AliMUONContourMakerTest.cxx
-
+       AliMUONPadInfo.cxx
+       
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONevaluationLinkDef.h
