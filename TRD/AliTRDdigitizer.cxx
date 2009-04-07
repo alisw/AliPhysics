@@ -1789,7 +1789,7 @@ void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
   AliTRDmcmSim* mcmfast = new AliTRDmcmSim(); 
 
   //Call the methods in the mcm class using the temporary array as input  
-  for(Int_t rob = 0; rob < digits->GetNrow() / 4; rob++)
+  for(Int_t rob = 0; rob < digits->GetNrow() / 2; rob++)
   {
     for(Int_t mcm = 0; mcm < 16; mcm++)
     {

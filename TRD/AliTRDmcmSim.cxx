@@ -200,8 +200,7 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
 {
   // loads the ADC data as obtained from the digitsManager for the specified MCM
 
-  if (!CheckInitialized())
-    Init(det, rob, mcm);
+  Init(det, rob, mcm);
 
   if (!runloader) {
     AliError("No Runloader given");
@@ -428,9 +427,7 @@ void AliTRDmcmSim::Draw(Option_t* const option)
 
   if (opt.Contains("T")) {
     TLine *trklLines = new TLine[4];
-    for (Int_t iTrkl = 0; iTrkl < 4; iTrkl++) {
-      if (fMCMT[iTrkl] == 0x10001000)
-        break;
+    for (Int_t iTrkl = 0; iTrkl < fTrackletArray->GetEntries(); iTrkl++) {
       AliTRDpadPlane *pp = fGeo->GetPadPlane(fDetector);
       AliTRDtrackletMCM *trkl = (AliTRDtrackletMCM*) (*fTrackletArray)[iTrkl];
       Float_t offset = pp->GetColPos(fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, 19)) + 19 * pp->GetWidthIPad();
@@ -1104,7 +1101,7 @@ void AliTRDmcmSim::CalcFitreg()
     26, 26, 26, 25, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 18, 17, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  7};
   
   //??? to be clarified:
-  UInt_t adcMask = 0xfffff;
+  UInt_t adcMask = 0xffffffff;
   
   UShort_t timebin, adcch, adcLeft, adcCentral, adcRight, hitQual, timebin1, timebin2, qtotTemp;
   Short_t ypos, fromLeft, fromRight, found;
@@ -1440,7 +1437,7 @@ void AliTRDmcmSim::FitTracklet()
           AliWarning("Overflow in slope");
         slope   = slope  &   0x7F; // 7 bit
 
-        if (offset > 0xfff || offset < 0xfff)
+        if (offset > 0xfff || offset < -0xfff)
           AliWarning("Overflow in offset");
         offset  = offset & 0x1FFF; // 13 bit
 

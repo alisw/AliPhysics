@@ -457,8 +457,11 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 {
   // return a pointer to an instance of this class
 
-  if (!fgInstance)
+  if (!fgInstance) {
     fgInstance = new AliTRDtrapConfig();
+    fgInstance->LoadConfig();
+  }
+
   return fgInstance;
 }
 
@@ -538,7 +541,7 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   // pedestal filter
   SetTrapReg(kFPNP, 4*10);
   SetTrapReg(kFPTC, 0);
-  SetTrapReg(kFPBY, 1);
+  SetTrapReg(kFPBY, 0); // bypassed!
   
   // gain filter
   for (Int_t adc = 0; adc < 20; adc++) {
@@ -550,9 +553,9 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   SetTrapReg(kFGBY, 0);  // bypassed!
 
   // tail cancellation
-  SetTrapReg(kFTAL, 270);
-  SetTrapReg(kFTLL, 348);
-  SetTrapReg(kFTLS, 449);
+  SetTrapReg(kFTAL, 267);
+  SetTrapReg(kFTLL, 356);
+  SetTrapReg(kFTLS, 387);
   SetTrapReg(kFTBY, 1);
 
   // tracklet calculation
@@ -564,18 +567,21 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   SetTrapReg(kTPFE, 20);
   SetTrapReg(kTPVBY, 0);
   SetTrapReg(kTPVT, 10);
-  SetTrapReg(kTPHT, 100);
-  SetTrapReg(kTPFP, 40);
-  SetTrapReg(kTPCL, 3);
-  SetTrapReg(kTPCT, 5);
+  SetTrapReg(kTPHT, 30);
+  SetTrapReg(kTPFP, 0);
+  SetTrapReg(kTPCL, 1);
+  SetTrapReg(kTPCT, 8);
   
   // event buffer
   SetTrapReg(kEBSF, 1);  // 0: store filtered; 1: store unfiltered
   // zs applied to data stored in event buffer (sel. by EBSF)
   SetTrapReg(kEBIS, 5 << 2); // single indicator threshold (plus two digits)
-  SetTrapReg(kEBIT, 5 << 2); // sum indicator threshold (plus two digits)
+  SetTrapReg(kEBIT, 20 << 2); // sum indicator threshold (plus two digits)
   SetTrapReg(kEBIL, 0xf0);   // lookup table
-  SetTrapReg(kEBIN, 1);      // no neighbour sensitivity
+  SetTrapReg(kEBIN, 0);      // neighbour sensitivity
+
+  // raw data
+  SetTrapReg(kNES, (0x0000 << 16) | 0x1000);
 
   return kTRUE;
 }
@@ -607,5 +613,3 @@ void AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t m
     }
   }
 }
-
-
