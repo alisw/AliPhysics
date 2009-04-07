@@ -308,8 +308,6 @@ Bool_t AliMUONRawStreamTrackerHP::Next(Int_t& busPatchId,
 	
 	if (fkCurrentData == NULL) return kFALSE;
 	
-	fDecoder.SendDataOnParityError(skipParityErrors);
-
 retry:
 	// Check if we still have data to be returned for the current bus patch.
 	if (fkCurrentData != fkEndOfData)
