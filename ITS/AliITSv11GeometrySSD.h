@@ -130,7 +130,7 @@ private:
   static const Double_t fgkSSDFlexFullLength;      // SSD Flex Full Length
   static const Double_t fgkSSDFlexLength[4];       // SSD Flex Components Length
   static const Double_t fgkSSDFlexWidth[2];        // SSD Flex Components Width
-  static const Double_t fgkSSDFlexHeight[2];       // SSD Flex Layers Heigth
+  static const Double_t fgkSSDFlexHeight[2];       // SSD Flex Layers Height
   static const Double_t fgkSSDFlexAngle;           // SSD Flex Angle 
   static const Double_t fgkSSDFlexHoleLength;      // SSD Flex Hole Length
   static const Double_t fgkSSDFlexHoleWidth;       // SSD Flex Hole Width
@@ -258,7 +258,7 @@ private:
   static const Double_t fgkSSDMountingBlockHoleTubeWidth[2];    // SSD Mounting Block Hole Tube Width   
   static const Double_t fgkSSDMountingBlockHoleRadius;          // SSD Mounting Block Hole radius  
   static const Double_t fgkSSDMountingBlockScrewHoleEdge;       // SSD Mounting Block Screw Hole Edge  
-  static const Double_t fgkSSDMountingBlockScrewHoleHeigth;     // SSD Mounting Block Screw Hole Height  
+  static const Double_t fgkSSDMountingBlockScrewHoleHeight;     // SSD Mounting Block Screw Hole Height  
   static const Double_t fgkSSDMountingBlockScrewHoleRadius[2];  // SSD Mounting Block Screw Hole Radii
   /////////////////////////////////////////////////////////////////////////
   // SSD Mounting Block Clip Parameters (lengths are in mm and angles in degrees)
@@ -272,10 +272,10 @@ private:
   // SSD Mounting Block Support Parameters (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////////////
   static const Double_t fgkMountingBlockSupportWidth[2]; // SSD Mounting Block Support Width
-  static const Double_t fgkMountingBlockSupportDownHeight; // SSD Mounting Block Support Down Heigth
+  static const Double_t fgkMountingBlockSupportDownHeight; // SSD Mounting Block Support Down Height
   static const Double_t fgkMountingBlockSupportRadius[2];  // SSD Mounting Block Support Radius
-  static const Double_t fgkMountingBlockSupportUpHeight[2]; // SSD Mounting Block Support Heigth
-  static const Double_t fgkLadderSupportHeigth;            // SSD Ladder Support Width
+  static const Double_t fgkMountingBlockSupportUpHeight[2]; // SSD Mounting Block Support Height
+  static const Double_t fgkLadderSupportHeight;            // SSD Ladder Support Width
   static const Double_t fgkLadderSupportRingLay5Position;  // SSD Ladder Support Ring Position Layer5 respect to ITS center
   static const Double_t fgkLadderSupportRingLay6Position;  // SSD Ladder Support Ring Position Layer6 respect to ITS center
   /////////////////////////////////////////////////////////////////////////////////
@@ -402,7 +402,7 @@ private:
   static const Double_t fgkSSDPatchPanel2RB24ITSDistance;   // Patch Panel RB24 Position 
   static const Double_t fgkSSDPatchPanel2RB26Radius; // Patch Panel Radius 
   static const Double_t fgkSSDPatchPanel2RB24Radius; // Patch Panel Radius
-  static const Double_t fgkSSDPatchPanelHeigth; // Patch Panel Height
+  static const Double_t fgkSSDPatchPanelHeight; // Patch Panel Height
   static const Double_t fgkSSDCableMaterialBudgetHeight; // SSD Cable Material Budget
   /////////////////////////////////////////////////////////////////////////
   // Private methods for private members generation
@@ -426,7 +426,7 @@ private:
   TGeoVolume* GetSSDEndFlex();			// Method generating EndFlex
   TGeoVolume* GetSSDMountingBlock();	// Method generating Mounting Block
   TGeoVolume* GetMountingBlockClip() const;   // Method generating Mounting Block Clip
-  TList* GetCoolingTubeList()const;			// Method generating list of Tubes
+  void CreateCoolingTubes();			// Create/set cooling tubes 
   TGeoVolume* GetSSDCoolingBlock(Int_t nedges); 
 									    // Method generating StiffenerFlex
   TGeoVolume* GetSSDChipCables(Double_t SSDChipCablesHeigth, Int_t nedges); 
@@ -555,12 +555,11 @@ private:
   /////////////////////////////////////////
   // Cooling Tube
   /////////////////////////////////////////
-  static const Int_t fgkcoolingtubenumber = 3;				// Coling Tube Number
-  TGeoHMatrix** fcoolingtubematrix[fgkcoolingtubenumber+1];  // Cooling Tube Matrix
-  TGeoVolume* fcoolingtube[fgkcoolingtubenumber];			// Ladder Cooling Tube 
-  static const Int_t fgkendladdercoolingtubenumber = 5;		// End Ladder Cooling Tube Number  	
+  TGeoHMatrix* fcoolingtubematrix[2];  // Cooling Tube Matrix
+  TGeoVolume* fcoolingtube;			// Ladder Cooling Tube 
+  static const Int_t fgkendladdercoolingtubenumber = 2;		// End Ladder Cooling Tube Number  	
   TGeoVolume* fendladdercoolingtube[fgkendladdercoolingtubenumber];	// End Ladder Cooling Tube
-  TGeoHMatrix** fendladdercoolingtubematrix[2];  //End ladder cooling tube matrix
+  TGeoHMatrix* fendladdercoolingtubematrix[fgkendladdercoolingtubenumber][2];  //End ladder cooling tube matrix
   /////////////////////////////////////////
   // End Ladder Components
   /////////////////////////////////////////
@@ -663,6 +662,6 @@ private:
   Int_t fColorEpoxy;          //  ===
   Int_t fColorWater;		  //  ===
   Int_t fColorG10;            //  ===
-ClassDef(AliITSv11GeometrySSD, 3)     // ITS v11 SSD geometry
+ClassDef(AliITSv11GeometrySSD, 4)     // ITS v11 SSD geometry
 };
 #endif
