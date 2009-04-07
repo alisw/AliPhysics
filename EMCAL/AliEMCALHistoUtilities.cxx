@@ -87,14 +87,22 @@ TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBro
   return list;
 }
 
-void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
+void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w, Double_t error)
 {
   //fill 1d histogram
   static TH1* hid=0;
+  static int  bin=0;
   if(l == 0) return;
+
   if(ind>=0 && ind < l->GetSize()){
     hid = (TH1*)l->At(ind);
-    hid->Fill(x,w);
+    if(error <= 0.0) { // standard way
+      hid->Fill(x,w);
+    } else{
+      bin = hid->FindBin(x);
+      hid->SetBinContent(bin,w);
+      hid->SetBinError(bin,error);
+    }
   }
 }
 
