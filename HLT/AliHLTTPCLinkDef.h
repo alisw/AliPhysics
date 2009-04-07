@@ -101,6 +101,7 @@
 #pragma link C++ class  AliHLTTPCCADisplay+;
 #pragma link C++ class  AliHLTTPCCAMCTrack+;
 #pragma link C++ class  AliHLTTPCCAPerformance+;
+#pragma link C++ class  AliHLTTPCCAGlobalMergerComponent+;
 #pragma link C++ class  AliTPCtrackerCA+; 
 
 #endif

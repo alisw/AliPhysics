@@ -8,8 +8,6 @@ set(SRCS
   AliMUONChamberPainter.cxx 
   AliMUONManuPainter.cxx 
   AliMUONPainterPadStore.cxx 
-  AliMUONPainterContourMaker.cxx 
-  AliMUONPainterContour.cxx 
   AliMUONPainterMasterFrame.cxx 
   AliMUONPainterMatrixFrame.cxx 
   AliMUONManuPadPainter.cxx 
@@ -17,6 +15,7 @@ set(SRCS
   AliMUONPainterMatrix.cxx 
   AliMUONAttPainter.cxx 
   AliMUONPainterRegistry.cxx 
+  AliMUONPainterDataRegistry.cxx
   AliMUONPainterHighlighter.cxx 
   AliMUONPainterPlotSelector.cxx 
   AliMUONPainterInterfaceHelper.cxx 
@@ -27,7 +26,6 @@ set(SRCS
   AliMUONPainterDataSourceItem.cxx 
   AliMUONTrackerOCDBDataMaker.cxx 
   AliMUONPainterEnv.cxx 
-  AliMUONVTrackerDataMaker.cxx 
   AliMUONMchViewApplication.cxx 
   AliMUONTrackerDataHistogrammer.cxx 
   AliMUONTrackerDataWrapper.cxx 
@@ -42,6 +40,7 @@ set(SRCS
   AliMUONSegmentTree.cxx
   AliMUONNode.cxx
   AliMUONPointWithRef.cxx
+  AliMUONContourMakerTest.cxx
 )
 
 # fill list of header files from list of source files

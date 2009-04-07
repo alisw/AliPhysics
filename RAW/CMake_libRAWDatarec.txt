@@ -11,6 +11,7 @@ set(SRCS
 	AliVMERawStream.cxx 
 	AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx
         AliRawReaderChain.cxx
+	AliAltroRawStreamV3.cxx
 )
 
 # fill list of header files from list of source files
