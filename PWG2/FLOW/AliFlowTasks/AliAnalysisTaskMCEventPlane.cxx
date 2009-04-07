@@ -15,6 +15,7 @@
 
 #include "Riostream.h" //needed as include
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TList.h"
 
 
@@ -138,13 +139,19 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
 
     TProfile *pHistProIntFlow = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_V_MCEP")); 
+      
+    TProfile2D *pHistProDiffFlowPtEtaRP = dynamic_cast<TProfile2D*> 
+      (fListHistos->FindObject("FlowPro_VPtEtaRP_MCEP")); 
                                
     TProfile *pHistProDiffFlowPtRP = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_VPtRP_MCEP")); 
      
     TProfile *pHistProDiffFlowEtaRP = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_VetaRP_MCEP"));
-      
+ 
+    TProfile2D *pHistProDiffFlowPtEtaPOI = dynamic_cast<TProfile2D*> 
+      (fListHistos->FindObject("FlowPro_VPtEtaPOI_MCEP")); 
+          
     TProfile *pHistProDiffFlowPtPOI = dynamic_cast<TProfile*> 
       (fListHistos->FindObject("FlowPro_VPtPOI_MCEP")); 
      
@@ -157,8 +164,10 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
       fMcTerm->SetCommonHists(pCommonHists);
       fMcTerm->SetCommonHistsRes(pCommonHistResults);
       fMcTerm->SetHistProIntFlow(pHistProIntFlow);
+      fMcTerm->SetHistProDiffFlowPtEtaRP(pHistProDiffFlowPtEtaRP);
       fMcTerm->SetHistProDiffFlowPtRP(pHistProDiffFlowPtRP);      
       fMcTerm->SetHistProDiffFlowEtaRP(pHistProDiffFlowEtaRP);  
+      fMcTerm->SetHistProDiffFlowPtEtaPOI(pHistProDiffFlowPtEtaPOI);
       fMcTerm->SetHistProDiffFlowPtPOI(pHistProDiffFlowPtPOI);      
       fMcTerm->SetHistProDiffFlowEtaPOI(pHistProDiffFlowEtaPOI);          
       fMcTerm->Finish();
