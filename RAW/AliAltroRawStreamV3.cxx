@@ -47,6 +47,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fBunchLength(-1),
   fBadChannel(kFALSE),
   fPayloadSize(-1),
+  fBunchDataPointer(NULL),
+  fBunchDataIndex(-1),
   fRCUTrailerData(NULL),
   fRCUTrailerSize(0),
   fFECERRA(0),
@@ -87,6 +89,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fBunchLength(stream.fBunchLength),
   fBadChannel(stream.fBadChannel),
   fPayloadSize(stream.fPayloadSize),
+  fBunchDataPointer(stream.fBunchDataPointer),
+  fBunchDataIndex(stream.fBunchDataIndex),
   fRCUTrailerData(stream.fRCUTrailerData),
   fRCUTrailerSize(stream.fRCUTrailerSize),
   fFECERRA(stream.fFECERRA),
@@ -123,6 +127,8 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
   fBunchLength       = stream.fBunchLength;
   fBadChannel        = stream.fBadChannel;
   fPayloadSize       = stream.fPayloadSize;
+  fBunchDataPointer  = stream.fBunchDataPointer;
+  fBunchDataIndex    = stream.fBunchDataIndex;
   fRCUTrailerData    = stream.fRCUTrailerData;
   fRCUTrailerSize    = stream.fRCUTrailerSize;
   fFECERRA           = stream.fFECERRA;
@@ -151,6 +157,8 @@ void AliAltroRawStreamV3::Reset()
   fBunchLength = fStartTimeBin = -1;
   fBadChannel = kFALSE;
   fPayloadSize = -1;
+  fBunchDataPointer = NULL;
+  fBunchDataIndex = -1;
 
   fRCUTrailerData = NULL;
   fRCUTrailerSize = 0;
@@ -195,22 +203,44 @@ Bool_t AliAltroRawStreamV3::NextChannel()
   // RCU signals readout error in this channel
   fCount = -1;
   fBadChannel = kFALSE;
+  fBunchDataIndex = 0;
 
   UInt_t word = 0;
   do {
     word = Get32bitWord(fPosition++);
-    if (fPosition >= fPayloadSize) return kFALSE;
+    if (fPosition > fPayloadSize) return kFALSE;
   }
-  while (((word >> 30) & 0x3) != 1);
+  while ((word >> 30) != 1);
 
   // check for readout errors
-  if ((word >> 29) & 0x1) {
-    fBadChannel = kTRUE;
-  }
+  fBadChannel = (word >> 29) & 0x1;
 
   // extract channel payload and hw address
-  if (!fBadChannel) fCount = (word >> 16) & 0x3FF; 
+  fCount = (word >> 16) & 0x3FF; 
   fHWAddress = word & 0xFFF;
+
+  // Now unpack the altro data
+  // Revert the order of the samples
+  // inside the bunch so that the
+  // first time is first in the samples
+  // array
+  Int_t isample = 0;
+  Int_t nwords = (fCount+2)/3;
+  for (Int_t iword = 0; iword < nwords; iword++) {
+    word = Get32bitWord(fPosition++);
+    if ((word >> 30) != 0) {
+      // Unexpected end of altro channel payload
+      AliWarning(Form("Unexpected end of payload in altro channel payload! Address=0x%x, word=0x%x",
+		      fHWAddress,word));
+      fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      fCount = -1;
+      fPosition--;
+      return kFALSE;
+    }
+    fBunchData[isample++] = (word >> 20) & 0x3FF;
+    fBunchData[isample++] = (word >> 10) & 0x3FF;
+    fBunchData[isample++] = word & 0x3FF;
+  }  
 
   return kTRUE;
 }
@@ -223,55 +253,27 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   // Updates the start/end time-bins
   // and the array with altro samples
   fBunchLength = fStartTimeBin = -1;
+  fBunchDataPointer = NULL;
 
-  if ((fCount <= 0) || fBadChannel) return kFALSE;
+  if ((fBunchDataIndex >= fCount) || fBadChannel) return kFALSE;
 
-  UInt_t word = Get32bitWord(fPosition++);
-  if ((word >> 30) != 0) {
-    // Unexpected end of altro channel payload
-    AliWarning(Form("Unexpected end of payload in altro channel bunch header! Address=0x%x, word=0x%x",
-		    fHWAddress,word));
-    fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
-    fPosition--;
-    fCount = -1;
-    return kFALSE;
-  }
-  fBunchLength = (word >> 20) & 0x3FF;
-  if (fBunchLength > fCount) {
+  fBunchLength = fBunchData[fBunchDataIndex];
+  if ((fBunchDataIndex + fBunchLength) > fCount) {
     // Too long bunch detected
-    AliWarning(Form("Too long bunch detected in Address=0x%x ! Exptected <= %d 10-bit words, found %d !",
-		    fCount,fBunchLength));
+    AliWarning(Form("Too long bunch detected in Address=0x%x ! Expected <= %d 10-bit words, found %d !",
+		    fHWAddress,fCount-fBunchDataIndex,fBunchLength));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
     fCount = fBunchLength = -1;
     return kFALSE;
   }
-
-  fCount -= fBunchLength;
-
+  fBunchDataIndex++;
   fBunchLength -= 2;
 
-  fStartTimeBin = (word >> 10) & 0x3FF;
+  fStartTimeBin = fBunchData[fBunchDataIndex++];
 
-  Int_t isample = 0;
+  fBunchDataPointer = &fBunchData[fBunchDataIndex];
 
-  fBunchData[isample++] = word & 0x3FF; // first sample
-
-  Int_t nwords = (fBunchLength+1)/3;
-  for (Int_t iword = 0; iword < nwords; iword++) {
-    word = Get32bitWord(fPosition++);
-    if ((word >> 30) != 0) {
-      // Unexpected end of altro channel payload
-      AliWarning(Form("Unexpected end of payload in altro channel payload! Address=0x%x, word=0x%x",
-		      fHWAddress,word));
-      fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
-      fCount = -1;
-      fPosition--;
-      return kTRUE;
-    }
-    fBunchData[isample++] = (word >> 20) & 0x3FF;
-    fBunchData[isample++] = (word >> 10) & 0x3FF;
-    fBunchData[isample++] = word & 0x3FF;
-  }
+  fBunchDataIndex += fBunchLength;
 
   return kTRUE;
 }

@@ -42,9 +42,9 @@ class AliAltroRawStreamV3: public TObject {
     Int_t  GetRCUId()          const { return fRCUId; }        // Provide current RCU identifier
  
     UInt_t GetStartTimeBin()   const { return fStartTimeBin; } // Provide the index if the first time-bin in current bunch
-    UInt_t GetEndTimeBin()     const { return fStartTimeBin+fBunchLength-1; } // Provide the index of the last time-bin in current bunch
+    UInt_t GetEndTimeBin()     const { return fStartTimeBin-fBunchLength+1; } // Provide the index of the last time-bin in current bunch
     Int_t  GetBunchLength()    const { return fBunchLength; }  // Provide the current bunch length
-    const UShort_t* GetSignals() const { return fBunchData; }  // Provide access to altro data itself
+    const UShort_t* GetSignals() const { return fBunchDataPointer; }  // Provide access to altro data itself
     Bool_t IsChannelBad()      const { return fBadChannel; }   // Is the channel data bad or not
 
 
@@ -127,7 +127,9 @@ class AliAltroRawStreamV3: public TObject {
     Bool_t           fBadChannel;   //
     Int_t            fPayloadSize;  //
 
-    UShort_t         fBunchData[kMaxNTimeBins];    // cache for the bunch data - altro samples
+    UShort_t         fBunchData[kMaxNTimeBins];    // cache for the decoded altro payload
+    UShort_t*        fBunchDataPointer;            // pointer to the current bunch samples
+    Int_t            fBunchDataIndex;              // current position in the payload
 
     UChar_t*         fRCUTrailerData; // pointer to RCU trailer data
     Int_t            fRCUTrailerSize; // size of RCU trailer data in bytes
