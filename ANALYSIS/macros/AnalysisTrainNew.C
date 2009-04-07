@@ -70,7 +70,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iMUONfilter)  printf("=  MUON filter                                                   =\n");
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
-   if (iPWG2spectra) printf("=  PWG2 proton, checkV0, strange analysis                        =\n");
+   if (iPWG2spectra) printf("=  PWG2 proton, checkCascade, checkV0, strange                   =\n");
    if (iPWG2femto)   printf("=  PWG2 femtoscopy                                               =\n");
    if (iPWG2flow)    printf("=  PWG2 flow                                                     =\n");
    if (iPWG2res)     printf("=  PWG2 resonances                                               =\n");
@@ -170,8 +170,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
        
    // Proton analysis
    if (iPWG2spectra) {
+      // protons
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskProtons.C");
       AliAnalysisTaskProtons *taskprotons = AddTaskProtons();
+      // cascades
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckCascade.C");
+      AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade();      
    }   
    
    // PWG4 hadron correlations
