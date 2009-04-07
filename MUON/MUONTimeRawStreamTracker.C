@@ -16,13 +16,12 @@
 
 /// \ingroup macros
 /// \file MUONTimeRawStreamTracker.C
-/// \brief Macro for checking the timing (speed) performace of the two different tracker decoders.
+/// \brief Macro for checking the timing (speed) performance of the tracker decoder.
 ///
 /// \author Artur Szostak <artursz@iafrica.com>
 ///
-/// This macro is used to check the timing (speed) performance of the existing
-/// offline decoder for the tracker DDLs and also for the new high performance
-/// decoder. It can be invoked as follows:
+/// This macro is used to check the timing (speed) performance of the 
+/// decoder for the tracker DDLs. It can be invoked as follows:
 /// 
 ///  $ aliroot
 /// .L $ALICE_ROOT/MUON/MUONTimeRawStreamTracker.C+
@@ -40,7 +39,6 @@
 #include "AliCodeTimer.h"
 
 // MUON includes
-#include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
@@ -171,52 +169,9 @@ void ReleaseBuffers(AliBufferInfo* list)
 }
 
 
-Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
+Double_t TimeDecoderBusPatchIteration(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
 {
-	/// Perform a timing using the old decoder.
-
-	AliRawReaderMemory rawReader;
-	AliMUONRawStreamTracker rawStream(&rawReader);
-	rawReader.NextEvent();
-
-	TStopwatch timer;
-	timer.Start(kTRUE);
-
-	UInt_t i = 0;
-	AliBufferInfo* current = list;
-	while (current != NULL)
-	{
-		rawReader.SetMemory(current->fBuffer, current->fBufferSize);
-		rawReader.SetEquipmentID(current->fEquipId);
-		rawReader.Reset();
-
-		Int_t busPatch;
-		UShort_t manuId, adc;
-		UChar_t manuChannel;
-
-		rawStream.First();
-
-		while ( rawStream.Next(busPatch,manuId,manuChannel,adc) )
-		{
-			if (i < maxBufferSize)
-			{
-				buffer[i].fManuId = manuId;
-				buffer[i].fAdc = adc;
-				buffer[i].fChannelId = manuChannel;
-				i++;
-			}
-		}
-
-		current = current->fNext;
-	}
-
-	return timer.RealTime();
-}
-
-
-Double_t TimeUsingNewDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
-{
-	/// Perform a timing using the new decoder.
+	/// Perform a timing using the new decoder using the "next bus patch" iteration
 
 	AliRawReaderMemory rawReader;
 	AliMUONRawStreamTrackerHP rawStream(&rawReader);
@@ -261,11 +216,10 @@ Double_t TimeUsingNewDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t m
 }
 
 
-Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
+Double_t TimeDecoderChannelIteration(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize, Bool_t skipParityErrors)
 {
-	/// Perform a timing using the new decoder but the old Next() method
-	/// as the interface.
-
+	/// Perform a timing using the "next channel" iteration
+  
 	AliRawReaderMemory rawReader;
 	AliMUONRawStreamTrackerHP rawStream(&rawReader);
 	rawReader.NextEvent();
@@ -287,7 +241,7 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buff
 
 		rawStream.First();
 
-		while ( rawStream.Next(busPatch,manuId,manuChannel,adc) )
+		while ( rawStream.Next(busPatch,manuId,manuChannel,adc,skipParityErrors) )
 		{
 			if (i < maxBufferSize)
 			{
@@ -304,43 +258,6 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buff
 	return timer.RealTime();
 }
 
-
-void Loop(const char* filename, Bool_t newDecoder)
-{
-  AliCodeTimerAutoGeneral(Form("Loop %s",(newDecoder ? "NEW":"OLD")));
-  
-  AliRawReader* reader = AliRawReader::Create(filename);
-  
-  AliMUONVRawStreamTracker* stream;
-  
-  if ( newDecoder ) 
-  {
-    stream = new AliMUONRawStreamTrackerHP(reader);
-  }
-  else
-  {
-    stream = new AliMUONRawStreamTracker(reader);
-  }
-
-  Int_t busPatch;
-  UShort_t manuId, adc;
-  UChar_t manuChannel;
-  
-  while ( reader->NextEvent() ) 
-  {
-    stream->First();
-    
-    while ( stream->Next(busPatch,manuId,manuChannel,adc) ) 
-    {
-      adc *= 2;
-    }
-  }
-  
-  delete stream;
-  delete reader;
-}
-
-
 void MUONTimeRawStreamTrackerDumb(TString fileName)
 {
   AliCodeTimer::Instance()->Reset();
@@ -352,13 +269,22 @@ void MUONTimeRawStreamTrackerDumb(TString fileName)
     cerr << "Cannot create reader from " << fileName.Data() << endl;
     return;
   }
-  delete reader;
   
-  // now start the timing per se
+  AliMUONRawStreamTrackerHP stream(reader);
   
-  Loop(fileName,kFALSE);
+  Int_t busPatch;
+  UShort_t manuId, adc;
+  UChar_t manuChannel;
   
-  Loop(fileName,kTRUE);
+  while ( reader->NextEvent() ) 
+  {
+    stream.First();
+    
+    while ( stream.Next(busPatch,manuId,manuChannel,adc) ) 
+    {
+      adc *= 2;
+    }
+  }
   
   AliCodeTimer::Instance()->Print();
 }
@@ -366,7 +292,7 @@ void MUONTimeRawStreamTrackerDumb(TString fileName)
 
 void MUONTimeRawStreamTracker(TString fileName = "./", Int_t maxEvent = 1000)
 {
-	/// Performs a timing of old and new decoders and reports this.
+	/// Performs a timing of decoder
 
 	AliBufferInfo* list = NULL;
 	UInt_t bufferCount = LoadFiles(list, fileName, maxEvent);
@@ -384,38 +310,38 @@ void MUONTimeRawStreamTracker(TString fileName = "./", Int_t maxEvent = 1000)
 		cerr << "ERROR: Out of memory, sorry. You should limit the number of events read in." << endl;
 		return;
 	}
-	Double_t oldTimes[100];
+	Double_t bpTimes[100];
 	for (Int_t i = 0; i < 100; i++)
 	{
-		cout << "Timing old decoder: timing iteration " << i+1 << " of 100" << endl;
-		oldTimes[i] = TimeUsingOldDecoder(list, buffer, maxBufferSize);
+		cout << "Timing decoder: bus patch iteration " << i+1 << " of 100" << endl;
+		bpTimes[i] = TimeDecoderBusPatchIteration(list, buffer, maxBufferSize);
 	}
-	Double_t newTimes[100];
+	Double_t channelTimes[100];
 	for (Int_t i = 0; i < 100; i++)
 	{
-		cout << "Timing new decoder: timing iteration " << i+1 << " of 100" << endl;
-		newTimes[i] = TimeUsingNewDecoder(list, buffer, maxBufferSize);
+		cout << "Timing decoder: channel iteration w/ parity check" << i+1 << " of 100" << endl;
+		channelTimes[i] = TimeDecoderChannelIteration(list, buffer, maxBufferSize,kTRUE);
 	}
-	Double_t newTimes2[100];
+	Double_t channelTimes2[100];
 	for (Int_t i = 0; i < 100; i++)
 	{
-		cout << "Timing new decoder with old interface: timing iteration " << i+1 << " of 100" << endl;
-		newTimes2[i] = TimeUsingNewDecoderOldInterface(list, buffer, maxBufferSize);
+		cout << "Timing decoder: channel iteration w/o parity check" << i+1 << " of 100" << endl;
+		channelTimes2[i] = TimeDecoderChannelIteration(list, buffer, maxBufferSize,kFALSE);
 	}
-
+  
 	ReleaseBuffers(list);
 	delete buffer;
 
-	Double_t oldTime = TMath::Mean(100, oldTimes) / Double_t(bufferCount);
-	Double_t oldTimeErr = TMath::RMS(100, oldTimes) / Double_t(bufferCount);
-	Double_t newTime = TMath::Mean(100, newTimes) / Double_t(bufferCount);
-	Double_t newTimeErr = TMath::RMS(100, newTimes) / Double_t(bufferCount);
-	Double_t newTime2 = TMath::Mean(100, newTimes2) / Double_t(bufferCount);
-	Double_t newTime2Err = TMath::RMS(100, newTimes2) / Double_t(bufferCount);
+	Double_t bpTime = TMath::Mean(100, bpTimes) / Double_t(bufferCount);
+	Double_t bpTimeErr = TMath::RMS(100, bpTimes) / Double_t(bufferCount);
+	Double_t channelTime = TMath::Mean(100, channelTimes) / Double_t(bufferCount);
+	Double_t channelTimeErr = TMath::RMS(100, channelTimes) / Double_t(bufferCount);
+	Double_t channelTime2 = TMath::Mean(100, channelTimes2) / Double_t(bufferCount);
+	Double_t channelTime2Err = TMath::RMS(100, channelTimes2) / Double_t(bufferCount);
 
 	cout << "Average processing time per DDL for:" << endl;
-	cout << "                   Old decoder = " << oldTime*1e6 << " +/- " << oldTimeErr*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
-	cout << "                   New decoder = " << newTime*1e6 << " +/- " << newTimeErr*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
-	cout << "New decoder with old interface = " << newTime2*1e6 << " +/- " << newTime2Err*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
+	cout << "   bus patch iteration                    = " << bpTime*1e6 << " +/- " << bpTimeErr*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
+	cout << "   channel iteration with parity check    = " << channelTime*1e6 << " +/- " << channelTimeErr*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
+	cout << "   channel iteration without parity check = " << channelTime2*1e6 << " +/- " << channelTime2Err*1e6/TMath::Sqrt(100) << " micro seconds" << endl;
 }
 
