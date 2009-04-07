@@ -67,6 +67,10 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile* GetHistProIntFlow()          {return this->fHistProIntFlow; } 
    void      SetHistProIntFlow(TProfile* aHistProIntFlow) 
      {this->fHistProIntFlow = aHistProIntFlow; }
+     
+   TProfile2D* GetHistProDiffFlowPtEtaRP()     {return this->fHistProDiffFlowPtEtaRP; } 
+   void      SetHistProDiffFlowPtEtaRP(TProfile2D* aHistProDiffFlowPtEtaRP) 
+     {this->fHistProDiffFlowPtEtaRP = aHistProDiffFlowPtEtaRP; }   
    
    TProfile* GetHistProDiffFlowPtRP()     {return this->fHistProDiffFlowPtRP; } 
    void      SetHistProDiffFlowPtRP(TProfile* aHistProDiffFlowPtRP) 
@@ -75,6 +79,10 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile* GetHistProDiffFlowEtaRP()    {return this->fHistProDiffFlowEtaRP; } 
    void      SetHistProDiffFlowEtaRP(TProfile* aHistProDiffFlowEtaRP) 
      {this->fHistProDiffFlowEtaRP = aHistProDiffFlowEtaRP; } 
+     
+   TProfile2D* GetHistProDiffFlowPtEtaPOI()     {return this->fHistProDiffFlowPtEtaPOI; } 
+   void      SetHistProDiffFlowPtEtaPOI(TProfile2D* aHistProDiffFlowPtEtaPOI) 
+     {this->fHistProDiffFlowPtEtaPOI = aHistProDiffFlowPtEtaPOI; }   
    
    TProfile* GetHistProDiffFlowPtPOI()    {return this->fHistProDiffFlowPtPOI; } 
    void      SetHistProDiffFlowPtPOI(TProfile* aHistProDiffFlowPtPOI) 
@@ -103,12 +111,14 @@ class AliFlowAnalysisWithMCEventPlane {
    AliFlowCommonHist* fCommonHists;              //
    AliFlowCommonHistResults* fCommonHistsRes;    //
    
-   TH1F*        fHistRP;                //reaction plane
-   TProfile*    fHistProIntFlow;        //profile used to calculate the integrated flow of RP particles
-   TProfile*    fHistProDiffFlowPtRP;   //profile used to calculate the differential flow (Pt) of RP particles 
-   TProfile*    fHistProDiffFlowEtaRP;  //profile used to calculate the differential flow (Eta) of RP particles 
-   TProfile*    fHistProDiffFlowPtPOI;  //profile used to calculate the differential flow (Pt) of POI particles 
-   TProfile*    fHistProDiffFlowEtaPOI; //profile used to calculate the differential flow (Eta) of POI particles    
+   TH1F*        fHistRP;                  // reaction plane
+   TProfile*    fHistProIntFlow;          // profile used to calculate the integrated flow of RP particles
+   TProfile2D*  fHistProDiffFlowPtEtaRP;  // profile used to calculate the differential flow (Pt,Eta) of RP particles
+   TProfile*    fHistProDiffFlowPtRP;     // profile used to calculate the differential flow (Pt) of RP particles 
+   TProfile*    fHistProDiffFlowEtaRP;    // profile used to calculate the differential flow (Eta) of RP particles 
+   TProfile2D*  fHistProDiffFlowPtEtaPOI; // profile used to calculate the differential flow (Pt,Eta) of POI particles
+   TProfile*    fHistProDiffFlowPtPOI;    // profile used to calculate the differential flow (Pt) of POI particles 
+   TProfile*    fHistProDiffFlowEtaPOI ;  // profile used to calculate the differential flow (Eta) of POI particles    
    
    ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
      };

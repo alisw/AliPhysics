@@ -18,6 +18,7 @@
 #include "Riostream.h"  //needed as include
 #include "TFile.h"      //needed as include
 #include "TProfile.h"   //needed as include
+#include "TProfile2D.h"   
 #include "TComplex.h"   //needed as include
 #include "TList.h"
 
@@ -52,8 +53,10 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fCommonHistsRes(NULL),
    fHistRP(NULL),
    fHistProIntFlow(NULL),
+   fHistProDiffFlowPtEtaRP(NULL),
    fHistProDiffFlowPtRP(NULL),
    fHistProDiffFlowEtaRP(NULL),
+   fHistProDiffFlowPtEtaPOI(NULL),
    fHistProDiffFlowPtPOI(NULL),
    fHistProDiffFlowEtaPOI(NULL)
 {
@@ -124,6 +127,11 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   (fHistProIntFlow->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
   fHistProIntFlow->SetYTitle("");
   fHistList->Add(fHistProIntFlow);
+  
+  fHistProDiffFlowPtEtaRP = new TProfile2D("FlowPro_VPtEtaRP_MCEP","FlowPro_VPtEtaRP_MCEP",iNbinsPt,dPtMin,dPtMax,iNbinsEta,dEtaMin,dEtaMax);
+  fHistProDiffFlowPtEtaRP->SetXTitle("P_{t}");
+  fHistProDiffFlowPtEtaRP->SetYTitle("#eta");
+  fHistList->Add(fHistProDiffFlowPtEtaRP);
  
   fHistProDiffFlowPtRP = new TProfile("FlowPro_VPtRP_MCEP","FlowPro_VPtRP_MCEP",iNbinsPt,dPtMin,dPtMax);
   fHistProDiffFlowPtRP->SetXTitle("P_{t}");
@@ -134,6 +142,11 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistProDiffFlowEtaRP->SetXTitle("#eta");
   fHistProDiffFlowEtaRP->SetYTitle("");
   fHistList->Add(fHistProDiffFlowEtaRP);
+  
+  fHistProDiffFlowPtEtaPOI = new TProfile2D("FlowPro_VPtEtaPOI_MCEP","FlowPro_VPtEtaPOI_MCEP",iNbinsPt,dPtMin,dPtMax,iNbinsEta,dEtaMin,dEtaMax);
+  fHistProDiffFlowPtEtaPOI->SetXTitle("P_{t}");
+  fHistProDiffFlowPtEtaPOI->SetYTitle("#eta");
+  fHistList->Add(fHistProDiffFlowPtEtaPOI);
   
   fHistProDiffFlowPtPOI = new TProfile("FlowPro_VPtPOI_MCEP","FlowPro_VPtPOI_MCEP",iNbinsPt,dPtMin,dPtMax);
   fHistProDiffFlowPtPOI->SetXTitle("P_{t}");
@@ -192,6 +205,8 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 	    dEta = pTrack->Eta();
             //no-name int. flow (to be improved):
             fHistProIntFlow->Fill(0.,dv2);
+            //differential flow (Pt, Eta, RP):
+            fHistProDiffFlowPtEtaRP->Fill(dPt,dEta,dv2,1.);
             //differential flow (Pt, RP):
             fHistProDiffFlowPtRP->Fill(dPt,dv2,1.);
             //differential flow (Eta, RP):
@@ -204,6 +219,8 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 	    dv2  = TMath::Cos(2*(dPhi-aRP));
 	    dPt  = pTrack->Pt();
 	    dEta = pTrack->Eta();
+	    //differential flow (Pt, Eta, POI):
+            fHistProDiffFlowPtEtaPOI->Fill(dPt,dEta,dv2,1.);
 	    //differential flow (Pt, POI):
             fHistProDiffFlowPtPOI->Fill(dPt,dv2,1.);
             //differential flow (Eta, POI):
