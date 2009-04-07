@@ -16,7 +16,6 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx \
 		AliGenAfterBurnerFlow.cxx \
 		AliGenSlowNucleons.cxx \
-	        AliGenGeVSimEventHeader.cxx\
 		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
 		AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx AliGenHBTosl.cxx \
 		AliGenReaderEMD.cxx AliDecayerPolarized.cxx AliGenCorrHF.cxx AliGenCosmicsParam.cxx \

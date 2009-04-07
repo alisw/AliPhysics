@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliGenGeVSimEventHeader.cxx 14845 2006-08-15 12:25:37Z morsch $ */
 
 
 //
