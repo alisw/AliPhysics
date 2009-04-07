@@ -961,7 +961,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
          fOutputFiles += filename;
       }
    }
-   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
+//   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    if (TestBit(AliAnalysisGrid::kOffline)) {
       Info("StartAnalysis","\n##### OFFLINE MODE ##### Files to be used in GRID are produced but not copied \
       \n                         there nor any job run. You can revise the JDL and analysis \
