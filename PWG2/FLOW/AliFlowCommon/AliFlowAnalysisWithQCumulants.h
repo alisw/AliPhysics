@@ -60,7 +60,9 @@ class AliFlowAnalysisWithQCumulants{
   
   virtual void CalculateFinalResultsForNoNameIntegratedFlow(Bool_t useWeights=kFALSE);
   virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(Bool_t useWeights, TString type);
-  virtual void CalculateFinalResultsForDifferentialFlow(TProfile2D *profilePtEta, TH2D *flowPtEta, TH1D *flowPt, TH1D *flowEta);
+  virtual void CalculateFinalResultsForDifferentialFlow(TH2D *flowPtEta, TH1D *flowPt, TH1D *flowEta, 
+                                                        TProfile2D *profile2ndPtEta, TProfile2D *profile4thPtEta = NULL, 
+                                                        TProfile2D *profile6thPtEta = NULL, TProfile2D *profile8thPtEta = NULL);
   
   virtual void PrintFinalResultsForIntegratedFlow(Bool_t useWeights=kTRUE, TString type="NONAME");
     
@@ -488,9 +490,6 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t                     fUseEtaWeights;            // eta weights
   Bool_t                     fUseWeights;               // use phi || pt || eta weights
   TBits*                     fUseWeightsBits;           // use phi || pt || eta weights 
-    
-  TProfile* tempDeleteMe; // to be removed
-  
   
   // ...................................................................................................................  
   // Q_{n,k} and S^M_{n,k}:        

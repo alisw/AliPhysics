@@ -125,29 +125,6 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fUseEtaWeights(kFALSE),
  fUseWeights(kFALSE), 
  fUseWeightsBits(NULL), 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- tempDeleteMe(NULL), // to be removed
- 
- 
-
-
-
-
-
-
-
 
  // ...................................................................................................................
  // Q_{n,k} and S^M_{n,k}:    
@@ -305,16 +282,6 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fvn8thEtaRPW(NULL)
  // ...................................................................................................................
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 {
  // constructor 
  fHistList = new TList();
@@ -364,22 +331,6 @@ void AliFlowAnalysisWithQCumulants::Init()
  fQvectorComponents->SetYTitle("");
  //fHistList->Add(fQvectorComponents);
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
  //final results for differential flow from 2nd order Q-cumulant
  fDiffFlowResults2ndOrderQC = new TH1D("fDiffFlowResults2ndOrderQC","Differential Flow from 2nd Order Q-cumulant",fnBinsPt,fPtMin,fPtMax);
  fDiffFlowResults2ndOrderQC->SetXTitle("p_{t} [GeV]");
@@ -480,12 +431,6 @@ void AliFlowAnalysisWithQCumulants::Init()
  // add fQCorrelationsW to the main list:
  fHistList->Add(fQCorrelationsW);
  //.........................................................................
- 
- 
- 
- 
- 
- 
  
  
  //average products
@@ -1162,10 +1107,7 @@ void AliFlowAnalysisWithQCumulants::Init()
  
  // add list fResultsList with final results to the main list 
  fHistList->Add(fResultsList); 
- 
- 
- 
- 
+
  
 }//end of Init()
 
@@ -3481,23 +3423,23 @@ void AliFlowAnalysisWithQCumulants::Finish()
  
  // differential flow (POI) without weights:
  // calculate final results for 2nd order differential flow of POIs without weights:
- this->CalculateFinalResultsForDifferentialFlow(f2pPtEtaPOI,fvn2ndPtEtaPOI,fvn2ndPtPOI,fvn2ndEtaPOI);
+ this->CalculateFinalResultsForDifferentialFlow(fvn2ndPtEtaPOI,fvn2ndPtPOI,fvn2ndEtaPOI,f2pPtEtaPOI);
  // calculate final results for 4th order differential flow of POIs without weights:
- this->CalculateFinalResultsForDifferentialFlow(f4pPtEtaPOI,fvn4thPtEtaPOI,fvn4thPtPOI,fvn4thEtaPOI);
+ this->CalculateFinalResultsForDifferentialFlow(fvn4thPtEtaPOI,fvn4thPtPOI,fvn4thEtaPOI,f2pPtEtaPOI,f4pPtEtaPOI);
  // calculate final results for 6th order differential flow of POIs without weights:
- // this->CalculateFinalResultsForDifferentialFlow(f6pPtEtaPOI,fvn6thPtEtaPOI,fvn6thPtPOI,fvn6thEtaPOI);
+ // this->CalculateFinalResultsForDifferentialFlow(fvn6thPtEtaPOI,fvn6thPtPOI,fvn6thEtaPOI,f2pPtEtaPOI,f4pPtEtaPOI,f6pPtEtaPOI);
  // calculate final results for 8th order differential flow of POIs without weights:
- // this->CalculateFinalResultsForDifferentialFlow(f8pPtEtaPOI,fvn8thPtEtaPOI,fvn8thPtPOI,fvn8thEtaPOI);
+ // this->CalculateFinalResultsForDifferentialFlow(fvn8thPtEtaPOI,fvn8thPtPOI,fvn8thEtaPOI,f2pPtEtaPOI,f4pPtEtaPOI,f6pPtEtaPOI,f8pPtEtaPOI);
  
  // differential flow (POI) with weights:
  // calculate final results for 2nd order differential flow of POIs with weights:
- if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f2pPtEtaPOIW,fvn2ndPtEtaPOIW,fvn2ndPtPOIW,fvn2ndEtaPOIW);
+ if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn2ndPtEtaPOIW,fvn2ndPtPOIW,fvn2ndEtaPOIW,f2pPtEtaPOIW);
  // calculate final results for 4th order differential flow of POIs without weights:
- if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f4pPtEtaPOIW,fvn4thPtEtaPOIW,fvn4thPtPOIW,fvn4thEtaPOIW);
+ if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn4thPtEtaPOIW,fvn4thPtPOIW,fvn4thEtaPOIW,f2pPtEtaPOIW,f4pPtEtaPOIW);
  // calculate final results for 6th order differential flow of POIs with weights:
- // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f6pPtEtaPOIW,fvn6thPtEtaPOIW,fvn6thPtPOIW,fvn6thEtaPOIW);
+ // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn6thPtEtaPOIW,fvn6thPtPOIW,fvn6thEtaPOIW,f2pPtEtaPOIW,f4pPtEtaPOIW,f6pPtEtaPOIW);
  // calculate final results for 8th order differential flow of POIs without weights:
- // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f8pPtEtaPOIW,fvn8thPtEtaPOIW,fvn8thPtPOIW,fvn8thEtaPOIW);
+ // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn8thPtEtaPOIW,fvn8thPtPOIW,fvn8thEtaPOIW,f2pPtEtaPOIW,f4pPtEtaPOIW,f6pPtEtaPOIW,f8pPtEtaPOIW);
   
  // integrated flow (POI) without weights:
  // calculate final results for integrated flow of POIs without weights:
@@ -3512,23 +3454,23 @@ void AliFlowAnalysisWithQCumulants::Finish()
  
  // differential flow (RP) without weights:
  // calculate final results for 2nd order differential flow of RPs without weights:
- this->CalculateFinalResultsForDifferentialFlow(f2pPtEtaRP,fvn2ndPtEtaRP,fvn2ndPtRP,fvn2ndEtaRP);
+ this->CalculateFinalResultsForDifferentialFlow(fvn2ndPtEtaRP,fvn2ndPtRP,fvn2ndEtaRP,f2pPtEtaRP);
  // calculate final results for 4th order differential flow of RPs without weights:
- this->CalculateFinalResultsForDifferentialFlow(f4pPtEtaRP,fvn4thPtEtaRP,fvn4thPtRP,fvn4thEtaRP);
+ this->CalculateFinalResultsForDifferentialFlow(fvn4thPtEtaRP,fvn4thPtRP,fvn4thEtaRP,f2pPtEtaRP,f4pPtEtaRP);
  // calculate final results for 6th order differential flow of RPs without weights:
- // this->CalculateFinalResultsForDifferentialFlow(f6pPtEtaRP,fvn6thPtEtaRP,fvn6thPtRP,fvn6thEtaRP);
+ // this->CalculateFinalResultsForDifferentialFlow(fvn6thPtEtaRP,fvn6thPtRP,fvn6thEtaRP,f2pPtEtaRP,f4pPtEtaRP,f6pPtEtaRP);
  // calculate final results for 8th order differential flow of RPs without weights:
- // this->CalculateFinalResultsForDifferentialFlow(f8pPtEtaRP,fvn8thPtEtaRP,fvn8thPtRP,fvn8thEtaRP);
+ // this->CalculateFinalResultsForDifferentialFlow(fvn8thPtEtaRP,fvn8thPtRP,fvn8thEtaRP,f2pPtEtaRP,f4pPtEtaRP,f6pPtEtaRP,f8pPtEtaRP);
  
  // differential flow (RP) with weights:
  // calculate final results for 2nd order differential flow of RPs with weights:
- if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f2pPtEtaRPW,fvn2ndPtEtaRPW,fvn2ndPtRPW,fvn2ndEtaRPW);
+ if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn2ndPtEtaRPW,fvn2ndPtRPW,fvn2ndEtaRPW,f2pPtEtaRPW);
  // calculate final results for 4th order differential flow of RPs without weights:
- if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f4pPtEtaRPW,fvn4thPtEtaRPW,fvn4thPtRPW,fvn4thEtaRPW);
+ if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn4thPtEtaRPW,fvn4thPtRPW,fvn4thEtaRPW,f2pPtEtaRPW,f4pPtEtaRPW);
  // calculate final results for 6th order differential flow of RPs with weights:
- // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f6pPtEtaRPW,fvn6thPtEtaRPW,fvn6thPtRPW,fvn6thEtaRPW);
+ // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn6thPtEtaRPW,fvn6thPtRPW,fvn6thEtaRPW,f2pPtEtaRPW,f4pPtEtaRPW,f6pPtEtaRPW);
  // calculate final results for 8th order differential flow of RPs without weights:
- // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(f8pPtEtaRPW,fvn8thPtEtaRPW,fvn8thPtRPW,fvn8thEtaRPW);
+ // if(fUseWeights) this->CalculateFinalResultsForDifferentialFlow(fvn8thPtEtaRPW,fvn8thPtRPW,fvn8thEtaRPW,f2pPtEtaRPW,f4pPtEtaRPW,f6pPtEtaRPW,f8pPtEtaRPW);
  
  // integrated flow (RP) without weights: 
  // calculate final results for integrated flow of RPs without weights:
@@ -3967,34 +3909,73 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
 //==================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TProfile2D *profilePtEta, TH2D *flowPtEta, TH1D *flowPt, TH1D *flowEta)
+void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
+                                                        TH2D *flowPtEta, TH1D *flowPt, TH1D *flowEta, 
+                                                        TProfile2D *profile2ndPtEta, TProfile2D *profile4thPtEta, 
+                                                        TProfile2D *profile6thPtEta, TProfile2D *profile8thPtEta)
 {
  // calculate and store the final results for integrated flow
  
  TString *namePtEta = new TString();
  TString *type = new TString();
- TString *order = new TString();
+ TString *order2nd = new TString();
+ TString *order4th = new TString();
+ TString *order6th = new TString();
+ TString *order8th = new TString(); 
  TString *w = new TString();
 
- *namePtEta = profilePtEta->GetName();
-
+ if(profile2ndPtEta) *namePtEta = profile2ndPtEta->GetName();
  if(namePtEta->Contains("POI")) *type = "POI";
  if(namePtEta->Contains("RP")) *type  = "RP";
- if(namePtEta->Contains("2")) *order  = "2";
- if(namePtEta->Contains("4")) *order  = "4";
- if(namePtEta->Contains("6")) *order  = "6";
- if(namePtEta->Contains("8")) *order  = "8";
  if(namePtEta->Contains("W")) *w      = "W";
+ if(namePtEta->Contains("2")) *order2nd  = "2";
  
- TProfile *profilePt = new TProfile(*(this->MakePtProjection(profilePtEta))); 
- TProfile *profileEta = new TProfile(*(this->MakeEtaProjection(profilePtEta))); 
+ if(profile4thPtEta) *namePtEta = profile4thPtEta->GetName();
+ if(namePtEta->Contains("4")) *order4th = "4";
+
+ if(profile6thPtEta) *namePtEta = profile6thPtEta->GetName();
+ if(namePtEta->Contains("6")) *order6th = "6";
  
- Int_t nBinsPt  = profilePt->GetNbinsX();
- Int_t nBinsEta = profileEta->GetNbinsX();
+ if(profile8thPtEta) *namePtEta = profile8thPtEta->GetName();
+ if(namePtEta->Contains("8")) *order8th = "8";
  
- Double_t dV2   = 0.;
- Double_t dV4  = 0.;
- Double_t dV6   = 0.;
+ TProfile *profile2ndPt = NULL;
+ TProfile *profile4thPt = NULL;
+ TProfile *profile6thPt = NULL;
+ TProfile *profile8thPt = NULL;
+
+ TProfile *profile2ndEta = NULL;
+ TProfile *profile4thEta = NULL;
+ TProfile *profile6thEta = NULL;
+ TProfile *profile8thEta = NULL;
+  
+ if(*order2nd == "2")
+ {
+  profile2ndPt  = new TProfile(*(this->MakePtProjection(profile2ndPtEta))); 
+  profile2ndEta = new TProfile(*(this->MakeEtaProjection(profile2ndPtEta))); 
+  if(*order4th == "4")
+  {
+   profile4thPt  = new TProfile(*(this->MakePtProjection(profile4thPtEta))); 
+   profile4thEta = new TProfile(*(this->MakeEtaProjection(profile4thPtEta))); 
+   if(*order6th == "6")
+   {
+    profile6thPt  = new TProfile(*(this->MakePtProjection(profile6thPtEta))); 
+    profile6thEta = new TProfile(*(this->MakeEtaProjection(profile6thPtEta))); 
+    if(*order8th == "8")
+    {
+     profile8thPt  = new TProfile(*(this->MakePtProjection(profile8thPtEta))); 
+     profile8thEta = new TProfile(*(this->MakeEtaProjection(profile8thPtEta))); 
+    }     
+   }    
+  } 
+ }
+ 
+ Int_t nBinsPt  = profile2ndPt->GetNbinsX();
+ Int_t nBinsEta = profile2ndEta->GetNbinsX();
+ 
+ Double_t dV2 = 0.;
+ Double_t dV4 = 0.;
+ Double_t dV6 = 0.;
  Double_t dV8 = 0.; 
  
  if(!(*w == "W"))
@@ -4062,23 +4043,29 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
   {
   
    // 2nd order: 
-   twoPrimePtEta = profilePtEta->GetBinContent(profilePtEta->GetBin(p,e));
+   twoPrimePtEta = profile2ndPtEta->GetBinContent(profile2ndPtEta->GetBin(p,e));
    secondOrderDiffFlowCumulantPtEta = twoPrimePtEta;
    if(dV2)
    {
     dv2PtEta = secondOrderDiffFlowCumulantPtEta/dV2;
-    flowPtEta->SetBinContent(p,e,dv2PtEta);   
+    if(*order2nd == "2") 
+    {
+     flowPtEta->SetBinContent(p,e,dv2PtEta);   
+    } 
    }
    
    // 4th order: 
-   if(*order == "4" || *order == "6" || *order == "8")
+   if(*order4th == "4" || *order6th == "6" || *order8th == "8")
    {
-    fourPrimePtEta = profilePtEta->GetBinContent(profilePtEta->GetBin(p,e));
+    fourPrimePtEta = profile4thPtEta->GetBinContent(profile4thPtEta->GetBin(p,e));
     fourthOrderDiffFlowCumulantPtEta = fourPrimePtEta - 2.*twoPrimePtEta*pow(dV2,2.); // to be improved (correlations instead of pow(dV2,2.))
     if(dV4)
     {
-     dv4PtEta = fourthOrderDiffFlowCumulantPtEta/pow(dV4,3);
-     flowPtEta->SetBinContent(p,e,dv4PtEta);
+     dv4PtEta = -fourthOrderDiffFlowCumulantPtEta/pow(dV4,3);
+     if(*order4th == "4")
+     {
+      flowPtEta->SetBinContent(p,e,dv4PtEta);
+     } 
     }
    }    
    
@@ -4091,20 +4078,22 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
  {
  
   // 2nd order: 
-  twoPrimePt = profilePt->GetBinContent(p);
+  twoPrimePt = profile2ndPt->GetBinContent(p);
   secondOrderDiffFlowCumulantPt = twoPrimePt;
   if(dV2)
   {
    dv2Pt = secondOrderDiffFlowCumulantPt/dV2;
-   flowPt->SetBinContent(p,dv2Pt);
-   
+   if(*order2nd == "2") 
+   {
+    flowPt->SetBinContent(p,dv2Pt);
+   }
    
    // common control histos: (to be improved fill only once. now they are filled first without weights and then with weights):
-   if(namePtEta->Contains("POI") && *order == "2")
+   if(namePtEta->Contains("POI") && *order2nd == "2")
    {
     fCommonHistsResults2nd->FillDifferentialFlowPtPOI(p,dv2Pt,0.); //to be improved (errors && bb or bb+1 ?)
    } 
-   else if(namePtEta->Contains("RP") && *order == "2")
+   else if(namePtEta->Contains("RP") && *order2nd == "2")
    {
     fCommonHistsResults2nd->FillDifferentialFlowPtRP(p,dv2Pt,0.); //to be improved (errors && bb or bb+1 ?)
    }
@@ -4112,22 +4101,24 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
   }
   
   // 4th order: 
-  if(*order == "4" || *order == "6" || *order == "8")
+  if(*order4th == "4" || *order6th == "6" || *order8th == "8")
   {
-   fourPrimePt = profilePt->GetBinContent(profilePt->GetBin(p));
+   fourPrimePt = profile4thPt->GetBinContent(profile4thPt->GetBin(p));
    fourthOrderDiffFlowCumulantPt = fourPrimePt - 2.*twoPrimePt*pow(dV2,2.); // to be improved (correlations instead of pow(dV2,2.))
    if(dV4)
    {
-    dv4Pt = fourthOrderDiffFlowCumulantPt/pow(dV4,3);
-    flowPt->SetBinContent(p,dv4Pt);
-    
+    dv4Pt = -fourthOrderDiffFlowCumulantPt/pow(dV4,3);
+    if(*order4th == "4") 
+    {
+     flowPt->SetBinContent(p,dv4Pt);
+    }
     
     // common control histos: (to be improved):
-    if(namePtEta->Contains("POI") && *order == "4")
+    if(namePtEta->Contains("POI") && *order4th == "4")
     {
      fCommonHistsResults4th->FillDifferentialFlowPtPOI(p,dv4Pt,0.); //to be improved (errors && bb or bb+1 ?)
     } 
-    else if(namePtEta->Contains("RP") && *order == "4" )
+    else if(namePtEta->Contains("RP") && *order4th == "4" )
     {
      fCommonHistsResults4th->FillDifferentialFlowPtRP(p,dv4Pt,0.); //to be improved (errors && bb or bb+1 ?)
     }
@@ -4143,20 +4134,22 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
  {
  
   // 2nd order: 
-  twoPrimeEta = profileEta->GetBinContent(e);
+  twoPrimeEta = profile2ndEta->GetBinContent(e);
   secondOrderDiffFlowCumulantEta = twoPrimeEta;
   if(dV2)
   {
    dv2Eta = secondOrderDiffFlowCumulantEta/dV2;
-   flowEta->SetBinContent(e,dv2Eta);
-   
+   if(*order2nd == "2") 
+   {
+    flowEta->SetBinContent(e,dv2Eta);
+   }
    
    // common control histos: (to be improved):
-   if(namePtEta->Contains("POI") && *order == "2")
+   if(namePtEta->Contains("POI") && *order2nd == "2")
    {
     fCommonHistsResults2nd->FillDifferentialFlowEtaPOI(e,dv2Eta,0.); //to be improved (errors && bb or bb+1 ?)
    } 
-   else if(namePtEta->Contains("RP") && *order == "2")
+   else if(namePtEta->Contains("RP") && *order2nd == "2")
    {
     fCommonHistsResults2nd->FillDifferentialFlowEtaRP(e,dv2Eta,0.); //to be improved (errors && bb or bb+1 ?)
    }
@@ -4164,22 +4157,24 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
   }
   
   // 4th order: 
-  if(*order == "4" || *order == "6" || *order == "8")
+  if(*order4th == "4" || *order6th == "6" || *order8th == "8")
   {
-   fourPrimeEta = profileEta->GetBinContent(profileEta->GetBin(e));
+   fourPrimeEta = profile4thEta->GetBinContent(profile4thEta->GetBin(e));
    fourthOrderDiffFlowCumulantEta = fourPrimeEta - 2.*twoPrimeEta*pow(dV2,2.); // to be improved (correlations instead of pow(dV2,2.))
    if(dV4)
    {
-    dv4Eta = fourthOrderDiffFlowCumulantEta/pow(dV4,3);
-    flowEta->SetBinContent(e,dv4Eta);
-    
+    dv4Eta = -fourthOrderDiffFlowCumulantEta/pow(dV4,3);
+    if(*order4th == "4")
+    {
+     flowEta->SetBinContent(e,dv4Eta);
+    }
     
     // common control histos: (to be improved):
-    if(namePtEta->Contains("POI") && *order == "4")
+    if(namePtEta->Contains("POI") && *order4th == "4")
     {
      fCommonHistsResults4th->FillDifferentialFlowEtaPOI(e,dv4Eta,0.); //to be improved (errors && bb or bb+1 ?)
     } 
-    else if(namePtEta->Contains("RP") && *order == "4")
+    else if(namePtEta->Contains("RP") && *order4th == "4")
     {
      fCommonHistsResults4th->FillDifferentialFlowEtaRP(e,dv4Eta,0.); //to be improved (errors && bb or bb+1 ?)
     }
@@ -4191,10 +4186,19 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(TPr
     
  delete namePtEta;
  delete type;
- delete order;
+ delete order2nd;
+ delete order4th;
+ delete order6th;
+ delete order8th;
  delete w;
- delete profilePt;
- delete profileEta;
+ delete profile2ndPt;
+ delete profile4thPt;
+ delete profile6thPt;
+ delete profile8thPt;
+ delete profile2ndEta;
+ delete profile4thEta;
+ delete profile6thEta;
+ delete profile8thEta;
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(Bool_t useWeights, TString type)
 
