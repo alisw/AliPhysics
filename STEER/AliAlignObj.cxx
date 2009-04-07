@@ -735,7 +735,7 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
     pn = pne->GetPhysicalNode();
     if(pn){
       if (pn->IsAligned())
-	AliWarning(Form("Volume %s has been already misaligned!",symname));
+	AliWarning(Form("Volume %s has been misaligned already!",symname));
       gprime = *pn->GetMatrix();
     }else{
       gprime = pne->GetGlobalOrig();
@@ -846,8 +846,8 @@ Bool_t AliAlignObj::GetLocalMatrix(TGeoHMatrix& m) const
     AliError(Form("Volume name or path %s not valid!",symname));
     return kFALSE;
   }
-  if (node->IsAligned())
-    AliWarning(Form("Volume %s has been already misaligned!",symname));
+//  if (node->IsAligned())
+//    AliWarning(Form("Volume %s has been misaligned already!",symname));
 
   GetMatrix(m);
   TGeoHMatrix gprime,gprimeinv;
@@ -891,7 +891,7 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
       return kFALSE;
     }
     if (gGeoManager->GetListOfPhysicalNodes()->FindObject(path)) {
-      AliError(Form("Volume %s has already been misaligned!",path));
+      AliError(Form("Volume %s has been misaligned already!",path));
       return kFALSE;
     }
     node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(path);
