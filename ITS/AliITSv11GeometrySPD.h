@@ -1,11 +1,11 @@
 #ifndef ALIITSV11GEOMETRYSPD_H
 #define ALIITSV11GEOMETRYSPD_H
 
-/* 
+/*
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice.
  */
-  
+
  // Implementation of the SPD v11 central geometry.
  // Contains also:
  //  - the materials/media used for its volumes;
@@ -31,7 +31,7 @@ class TGeoCompositeShape;
 class AliITSv11GeometrySPD : public AliITSv11Geometry
 {
  public:
- 
+
     // Default constructor
     AliITSv11GeometrySPD(/*Double_t gap = 0.0075*/);
     // Standard Constructor
@@ -64,9 +64,9 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     /* Services */
 
     // get names
-    virtual const char *GetSenstiveVolumeName1() const 
+    virtual const char *GetSenstiveVolumeName1() const
         {return "ITSSPDlay1-sensor";}
-    virtual const char *GetSenstiveVolumeName2() const 
+    virtual const char *GetSenstiveVolumeName2() const
         {return "ITSSPDlay2-sensor";}
     virtual const char *GetSenstiveVolumeName(Int_t lay) const
         {return (lay==1) ? GetSenstiveVolumeName1():GetSenstiveVolumeName2();}
@@ -83,7 +83,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     // print class in ascii form to stream
     virtual void PrintAscii(ostream *os) const;
     // read in class in ascii form from stream
-    virtual void ReadAscii(istream *is);	 
+    virtual void ReadAscii(istream *is);
 
     /* Parts of the geometry */
 
@@ -98,7 +98,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     //                 TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
     virtual  TGeoCompositeShape* CreateGroundingFoilShape(Int_t itype,
         Double_t &length,Double_t &width,Double_t thickness,TArrayD &sizes);
-    virtual TGeoVolume* CreateGroundingFoil(Bool_t isRight, TArrayD &sizes,
+    virtual TGeoVolumeAssembly* CreateGroundingFoil(Bool_t isRight, TArrayD &sizes,
                                         TGeoManager *mgr = gGeoManager);
     // the MCM (thin part + thick part with chips inside)
     virtual TGeoVolumeAssembly* CreateMCM(Bool_t isRight, TArrayD &sizes,
@@ -112,10 +112,10 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     // the Pixel Bus & extenders (old method which will be removed)
     virtual TGeoVolumeAssembly* CreatePixelBusAndExtensions(Bool_t zpos=kTRUE,
                                         TGeoManager *mgr = gGeoManager) const;
-                                        
+
     virtual TList* CreateConeModule(TGeoManager *mgr = gGeoManager) const;
     virtual void CreateCones(TGeoVolume *moth) const;
-    // a half-stave (put together ladders + MCM + bus, and add clips 
+    // a half-stave (put together ladders + MCM + bus, and add clips
     // if requested)
     virtual TGeoVolumeAssembly* CreateHalfStave(Bool_t isRight, Int_t layer,
                  Int_t idxCentral, Int_t idxSide,TArrayD &sizes/*,
@@ -144,15 +144,15 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
  private:
     // NOTE:
     // all of the member functions which define a component of the final SPD
-    // will need to be defined as private once the design is fixed and 
+    // will need to be defined as private once the design is fixed and
     // does not need any longer to be checked and debugged.
 
     /* Service methods for internal use only */
 
-    // compute shape of the SPD Sector given specific inputs 
+    // compute shape of the SPD Sector given specific inputs
     void SPDsectorShape(Int_t n,const Double_t *xc, const Double_t *yc,
                         const Double_t *r,const Double_t *ths,
-                        const Double_t *the, Int_t npr,Int_t &m, 
+                        const Double_t *the, Int_t npr,Int_t &m,
                         Double_t **xp, Double_t **yp) const;
     // compute a point o a line parallel to a given direction
     // and with a fixed distance from it
@@ -167,14 +167,14 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
 
     /* Data members */
 
-    static const Double_t fgkGapLadder;// thicknes of the empty (air) gap left 
-                               // between the ladder and the grounding 
+    static const Double_t fgkGapLadder;// thicknes of the empty (air) gap left
+                               // between the ladder and the grounding
                                // foil for alignment
     static const Double_t fgkGapHalfStave;//thickness of the empty (air) gap
                                           // left between HS and Carbon Suport
     Bool_t  fAddStave[6];      // [DEBUG] must be TRUE for all staves
-	                       // which will be mounted in the sector 
-                               // (used to check overlaps)		
+	                       // which will be mounted in the sector
+                               // (used to check overlaps)
     TArrayD fSPDsectorX0;      // X of first edge of sector plane for stave
     TArrayD fSPDsectorY0;      // Y of first edge of sector plane for stave
     TArrayD fSPDsectorX1;      // X of second edge of sector plane for stave
