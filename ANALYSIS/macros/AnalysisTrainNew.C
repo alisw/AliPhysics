@@ -176,6 +176,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       // cascades
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckCascade.C");
       AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade();      
+      // v0's
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckV0.C");
+      AliAnalysisTaskCheckV0 *taskcheckV0 = AddTaskCheckV0();
+      // strangeness
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskStrange.C");
+      AliAnalysisTaskStrange *taskstrange = AddTaskStrange();
    }   
    
    // PWG4 hadron correlations
