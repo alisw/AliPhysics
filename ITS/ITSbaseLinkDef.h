@@ -40,7 +40,7 @@
 #pragma link C++ class  AliITSMap+;
 #pragma link C++ class  AliITSMapA1+;
 #pragma link C++ class  AliITSMapA2+;
-#pragma link C++ class  AliITSMisalignMaker+;
+#pragma link C++ class  AliITSMisAligner+;
 #pragma link C++ class  AliITSsegmentation+;
 #pragma link C++ class  AliITSsegmentationSPD+;
 #pragma link C++ class  AliITSsegmentationSDD+;

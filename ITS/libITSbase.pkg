@@ -17,7 +17,7 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSMap.cxx \
 		AliITSMapA1.cxx \
 		AliITSMapA2.cxx \
-		AliITSMisalignMaker.cxx \
+		AliITSMisAligner.cxx \
 		AliITSpList.cxx \
 		AliITSpListItem.cxx \
 		AliITSsegmentation.cxx \
