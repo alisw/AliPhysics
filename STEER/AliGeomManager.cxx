@@ -111,6 +111,12 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
   // Load geometry either from a file
   // or from the corresponding CDB entry
 
+  if(fgGeometry->IsLocked()){
+      AliErrorClass("Cannot load a new geometry, the current one being locked. Setting internal geometry to null!!");
+      fgGeometry = NULL;
+      return;
+  }
+
   fgGeometry = NULL;
   if (geomFileName && (!gSystem->AccessPathName(geomFileName))) {
     fgGeometry = TGeoManager::Import(geomFileName);
