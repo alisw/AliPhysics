@@ -29,5 +29,6 @@
 #pragma link C++ class  AliCFPairIsPrimaryCuts+;
 #pragma link C++ class  AliCFPairPidCut+;
 #pragma link C++ class  AliCFV0TopoCuts+;
+#pragma link C++ class  AliCFUnfolding+;
 
 #endif
