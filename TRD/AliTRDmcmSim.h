@@ -12,6 +12,8 @@
 ///////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliTRDCommonParam.h"
+#include "AliTRDcalibDB.h"
 
 class TClonesArray;
 
@@ -23,6 +25,7 @@ class AliTRDcalibDB;
 class AliTRDgeometry;
 class AliTRDpadPlane;
 class AliTRDarrayADC;
+class AliTRDdigitsManager;
 
 class AliTRDmcmSim : public TObject {
  public:
@@ -37,8 +40,10 @@ class AliTRDmcmSim : public TObject {
 
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
-	  void      SetData(AliTRDarrayADC *adcArray);         // Set ADC data from adcArray
+	  void      SetData(AliTRDarrayADC *adcArray, 
+			    AliTRDdigitsManager *digitsManager = 0x0);         // Set ADC data from adcArray
           void      SetDataPedestal(Int_t iadc );              // Fill ADC data with pedestal values
+  static  void      SetApplyCut(Bool_t applyCut) { fgApplyCut = applyCut; }
 
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
           Int_t     GetRobPos() const { return fRobPos; };     // Returns ROB position (0-7)
@@ -46,6 +51,7 @@ class AliTRDmcmSim : public TObject {
           Int_t     GetRow() const    { return fRow;    };     // Returns Row number on chamber where the MCM is sitting
 	  Int_t     GetCol( Int_t iadc );                      // Get corresponding column (0-143) from for ADC channel iadc = [0:20]
 	  // for the ADC/Col mapping, see: http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
+  static  Bool_t    GetApplyCut() { return fgApplyCut; }
 
 	  void WriteData(AliTRDarrayADC *digits);
 
@@ -115,8 +121,11 @@ class AliTRDmcmSim : public TObject {
 	  AliTRDfeeParam    *fFeeParam;                 // FEE parameters
 	  AliTRDtrapConfig  *fTrapConfig;               // TRAP config
 	  AliTRDSimParam    *fSimParam;                 // Simulation parameters
+	  AliTRDCommonParam *fCommonParam;              // common parameters
 	  AliTRDcalibDB     *fCal;                      // Calibration interface
 	  AliTRDgeometry    *fGeo;                      // Geometry
+
+	  AliTRDdigitsManager *fDigitsManager;          // pointer to digits manager used for MC label calculation
 
 	  // internal filter registers
 	  UInt_t*   fPedAcc;                            // Accumulator for pedestal filter
@@ -169,6 +178,7 @@ class AliTRDmcmSim : public TObject {
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented
 	  AliTRDmcmSim &operator=(const AliTRDmcmSim &m);  // not implemented
 
+	  static Bool_t fgApplyCut;
 
   ClassDef(AliTRDmcmSim,4)
 };

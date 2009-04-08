@@ -46,11 +46,17 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDarrayADC.h"
+#include "AliTRDarrayDictionary.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliTRDmcmSim.h"
 
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
+
 ClassImp(AliTRDmcmSim)
+
+Bool_t AliTRDmcmSim::fgApplyCut = kTRUE;
 
 //_____________________________________________________________________________
 AliTRDmcmSim::AliTRDmcmSim() : TObject()
@@ -71,8 +77,10 @@ AliTRDmcmSim::AliTRDmcmSim() : TObject()
   ,fFeeParam(NULL)
   ,fTrapConfig(NULL)
   ,fSimParam(NULL)
+  ,fCommonParam(NULL)
   ,fCal(NULL)
   ,fGeo(NULL)
+  ,fDigitsManager(NULL)
   ,fPedAcc(NULL)
   ,fGainCounterA(NULL)
   ,fGainCounterB(NULL)
@@ -129,6 +137,7 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
     fFeeParam      = AliTRDfeeParam::Instance();
     fTrapConfig    = AliTRDtrapConfig::Instance();
     fSimParam      = AliTRDSimParam::Instance();
+    fCommonParam   = AliTRDCommonParam::Instance();
     fCal           = AliTRDcalibDB::Instance();
     fGeo           = new AliTRDgeometry();
   }
@@ -214,6 +223,7 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
   }
 
   trdLoader->LoadDigits();
+  fDigitsManager = 0x0;
   AliTRDdigitsManager *digMgr = new AliTRDdigitsManager();
   digMgr->SetSDigits(0);
   digMgr->CreateArrays();
@@ -244,7 +254,6 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
       }
     }
   }
-  digMgr->RemoveDigits(det);
   delete digMgr;
 
   return kTRUE;
@@ -479,7 +488,7 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t it, Int_t adc )
   fADCF[iadc][it] = adc << fgkAddDigits;
 }
 
-void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray)
+void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *digitsManager)
 {
   // Set the ADC data from an AliTRDarrayADC
 
@@ -487,6 +496,8 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray)
     AliError("Called uninitialized! Nothing done!");
     return;
   }
+
+  fDigitsManager = digitsManager;
 
   Int_t firstAdc = 0;
   Int_t lastAdc = fNADC-1;
@@ -1261,7 +1272,58 @@ void AliTRDmcmSim::CalcFitreg()
         // make the correction using the LUT
         ypos = ypos + lutPos[ypos & 0x7F];
         if (adcLeft > adcRight) ypos = -ypos;
-        AddHitToFitreg(adcch, timebin, qTotal[adcch], ypos, -1);
+
+        // label calculation
+        Int_t mcLabel = -1;
+        if (fDigitsManager) {
+          Int_t label[9] = { 0 }; // up to 9 different labels possible
+          Int_t count[9] = { 0 };
+          Int_t maxIdx = -1;
+          Int_t maxCount = 0;
+          Int_t nLabels = 0;
+          Int_t padcol[3]; 
+          padcol[0] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch);
+          padcol[1] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch+1);
+          padcol[2] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch+2);
+          Int_t padrow = fFeeParam->GetPadRowFromMCM(fRobPos, fMcmPos);
+          for (Int_t iDict = 0; iDict < 3; iDict++) {
+            if (!fDigitsManager->UsesDictionaries() || fDigitsManager->GetDictionary(fDetector, iDict) == 0) {
+              AliError("Cannot get dictionary");
+              continue;
+            }
+            AliTRDarrayDictionary *dict = (AliTRDarrayDictionary*) fDigitsManager->GetDictionary(fDetector, iDict);
+            if (dict->GetDim() == 0) {
+              AliError("Dictionary has dim. 0");
+              continue;
+            }
+            dict->Expand();
+            for (Int_t iPad = 0; iPad < 3; iPad++) {
+              if (padcol[iPad] < 0) 
+                continue;
+              Int_t currLabel = dict->GetData(padrow, padcol[iPad], timebin); //fDigitsManager->GetTrack(iDict, padrow, padcol, timebin, fDetector);
+//              printf("Read label: %4i for det: %3i, row: %i, col: %i, tb: %i\n", currLabel, fDetector, padrow, padcol[iPad], timebin);
+              for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
+                if (currLabel == label[iLabel]) {
+                  count[iLabel]++;
+                  if (count[iLabel] > maxCount) {
+                    maxCount = count[iLabel];
+                    maxIdx = iLabel;
+                  }
+                  currLabel = 0;
+                  break;
+                }
+              } 
+              if (currLabel > 0) {
+                label[nLabels++] = currLabel;
+              }
+            }
+          }
+          if (maxIdx >= 0)
+            mcLabel = label[maxIdx];
+        }
+
+        // add the hit to the fitregister
+        AddHitToFitreg(adcch, timebin, qTotal[adcch], ypos, mcLabel);
       }
     }
   }
@@ -1336,6 +1398,8 @@ void AliTRDmcmSim::TrackletSelection()
   for (i = ntracks; i < 4; i++)  // CPUs without tracklets
     fFitPtr[i] = 31;            // pointer to the left channel with tracklet for CPU[i] = 31 (invalid)
 //  printf("found %i tracklet candidates\n", ntracks);
+//  for (i = 0; i < 4; i++)
+//    printf("fitPtr[%i]: %i\n", i, fFitPtr[i]);
 }
 
 void AliTRDmcmSim::FitTracklet()
@@ -1356,12 +1420,34 @@ void AliTRDmcmSim::FitTracklet()
   Long64_t shift = ((Long64_t) 1 << 32);
   UInt_t scaleY = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 160e-4)));
   UInt_t scaleD = (UInt_t) (shift * (pp->GetWidthIPad() / (256 * 140e-4)));
+  Float_t scaleSlope = (256 / pp->GetWidthIPad()) * (1 << decPlaces);
+//  printf("scaleSlope: %f \n", scaleSlope);
   int padrow = fFeeParam->GetPadRowFromMCM(fRobPos, fMcmPos);
   int yoffs  = (fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, 19) - fFeeParam->GetNcol()/2) << (8 + decPlaces); 
   int ndrift = 20; //??? value in simulation?
-  int deflCorr = 0; // -370;
-  int minslope = -10000; // no pt-cut so far
-  int maxslope =  10000; // no pt-cut so far
+  Int_t deflCorr = -1 * (Int_t) (TMath::Tan(fCommonParam->GetOmegaTau(fCal->GetVdriftAverage(fDetector))) * fGeo->CdrHght() * scaleSlope); // -370;
+  Int_t tiltCorr = -1 * (Int_t) (pp->GetRowPos(padrow) / fGeo->GetTime0(fDetector % 6) * fGeo->CdrHght() * scaleSlope * 
+                                 TMath::Tan(pp->GetTiltingAngle() / 180. * TMath::Pi()));
+//  printf("vdrift av.: %f\n", fCal->GetVdriftAverage(fDetector));
+//  printf("chamber height: %f\n", fGeo->CdrHght());
+//  printf("omega tau: %f\n", fCommonParam->GetOmegaTau(fCal->GetVdriftAverage(fDetector)));
+//  printf("deflection correction: %i\n", deflCorr);
+  Float_t ptcut = 2.3;
+  AliMagF* fld = (AliMagF *) TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = 0;
+  if (fld) {
+    bz       = 0.1 * fld->SolenoidField();   // kGauss -> Tesla
+  }
+//  printf("Bz: %f\n", bz);
+  Float_t x0 = fGeo->GetTime0(fDetector % 6);
+  Float_t y0 = pp->GetColPos(fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, 10));
+  Float_t alphaMax = TMath::ASin( (TMath::Sqrt(TMath::Power(x0/100., 2) + TMath::Power(y0/100., 2)) * 
+                                   0.3 * TMath::Abs(bz) ) / (2 * ptcut));
+//  printf("alpha max: %f\n", alphaMax * 180/TMath::Pi());
+  Int_t minslope = -1 * (Int_t) (fGeo->CdrHght() * TMath::Tan(TMath::ATan(y0/x0) + alphaMax) * scaleSlope);
+  Int_t maxslope = -1 * (Int_t) (fGeo->CdrHght() * TMath::Tan(TMath::ATan(y0/x0) - alphaMax) * scaleSlope);
+//  printf("min y-defl: %i\n", minslope);
+//  printf("max y-defl: %i\n", maxslope);
 
   // local variables for calculation
   Long64_t mult, temp, denom; //???
@@ -1405,6 +1491,7 @@ void AliTRDmcmSim::FitTracklet()
       sumXY   = fit0->fSumXY + fit1->fSumXY + 256*fit1->fSumX;
 
       slope   = nHits*sumXY - sumX * sumY;
+//      printf("slope from fitreg: %i\n", slope);
       offset  = sumX2*sumY  - sumX * sumXY;
       temp    = mult * slope;
       slope   = temp >> 32; // take the upper 32 bits
@@ -1412,32 +1499,52 @@ void AliTRDmcmSim::FitTracklet()
       offset  = temp >> 32; // take the upper 32 bits
 
       offset = offset + yoffs + (18 << (8 + decPlaces)); 
-      slope  = slope * ndrift + deflCorr;
+//      printf("slope: %i, slope * ndrift: %i, deflCorr: %i, tiltCorr: %i\n", slope, slope * ndrift, deflCorr, tiltCorr);
+      slope  = slope * ndrift + deflCorr + tiltCorr;
       offset = offset - (fFitPtr[cpu] << (8 + decPlaces));
       
-      if ((slope < minslope) || (slope > maxslope))
+//      printf("Det: %3i, ROB: %i, MCM: %2i: deflection: %i, min: %i, max: %i ", fDetector, fRobPos, fMcmPos, slope, minslope, maxslope);
+      Bool_t rejected = kFALSE;
+      if (GetApplyCut() && ((slope < minslope) || (slope > maxslope)))
+        rejected = kTRUE;
+      if (rejected)
       {
+//        printf("rejected\n");
         fMCMT[cpu] = 0x10001000; //??? AliTRDfeeParam::GetTrackletEndmarker();
       }
       else
       {
+//        printf("accepted\n");
         temp    = slope;
         temp    = temp * scaleD;
         slope   = (temp >> 32);
-        
+//        printf("slope after scaling: %i\n", slope);
+
         temp    = offset;
         temp    = temp * scaleY;
         offset  = (temp >> 32);
         
         // rounding, like in the TRAP
         slope   = (slope  + rndAdd) >> decPlaces;
+//        printf("slope after shifting: %i\n", slope);
         offset  = (offset + rndAdd) >> decPlaces;
 
-        if (slope > 0x3f || slope < -0x3f)
-          AliWarning("Overflow in slope");
-        slope   = slope  &   0x7F; // 7 bit
+        if (slope > 63) { // wrapping in TRAP!
+          AliError(Form("Overflow in slope: %i, tracklet discarded!", slope));
+          fMCMT[cpu] = 0x10001000;
+          continue;
+        }
+        else if (slope < -64) {
+          AliError(Form("Underflow in slope: %i, tracklet discarded!", slope));
+          fMCMT[cpu] = 0x10001000;
+          continue;
+        }
+        else {
+          slope   = slope  &   0x7F; // 7 bit
+        }
+//        printf("slope after clipping: 0x%02x\n", slope);
 
-        if (offset > 0xfff || offset < -0xfff)
+        if (offset > 0xfff || offset < -0xfff) 
           AliWarning("Overflow in offset");
         offset  = offset & 0x1FFF; // 13 bit
 
@@ -1448,7 +1555,40 @@ void AliTRDmcmSim::FitTracklet()
 
         // assemble and store the tracklet word
         fMCMT[cpu] = (qTotal << 24) | (padrow << 20) | (slope << 13) | offset;
+
+        // calculate MC label
+        Int_t mcLabel = -1;
+        if (fDigitsManager) {
+          Int_t label[30] = {0}; // up to 30 different labels possible
+          Int_t count[30] = {0};
+          Int_t maxIdx = -1;
+          Int_t maxCount = 0;
+          Int_t nLabels = 0;
+          for (Int_t iHit = 0; iHit < fNHits; iHit++) {
+            if ((fHits[iHit].fChannel - fFitPtr[cpu] < 0) ||
+                (fHits[iHit].fChannel - fFitPtr[cpu] > 1))
+              continue;
+            Int_t currLabel = fHits[iHit].fLabel;
+            for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
+              if (currLabel == label[iLabel]) {
+                count[iLabel]++;
+                if (count[iLabel] > maxCount) {
+                  maxCount = count[iLabel];
+                  maxIdx = iLabel;
+                }
+                currLabel = 0;
+                break;
+              }
+            }
+            if (currLabel > 0) {
+              label[nLabels++] = currLabel;
+            }
+          }
+          if (maxIdx >= 0)
+            mcLabel = label[maxIdx];
+        }
         new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetLabel(mcLabel);
       }
     }
   }
@@ -1468,8 +1608,12 @@ void AliTRDmcmSim::Tracklet()
   fTrackletArray->Delete();
 
   CalcFitreg();
+  if (fNHits == 0)
+    return;
   TrackletSelection();
   FitTracklet();
+  if (fTrackletArray->GetEntriesFast() == 0) 
+    return;
 
   AliRunLoader *rl = AliRunLoader::Instance();
   AliDataLoader *dl = 0x0;
@@ -1668,7 +1812,7 @@ void AliTRDmcmSim::Sort3(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, \
         break;
 
         default: // the rest should NEVER happen!
-            printf("ERROR in Sort3!!!\n");
+            AliError("ERROR in Sort3!!!\n");
         break;
     }
 //    printf("output channels %d %d %d, charges %d %d %d \n",*idx1o, *idx2o, *idx3o, *val1o, *val2o, *val3o);
