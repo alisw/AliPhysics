@@ -1,12 +1,6 @@
 #include "TChain.h"
 #include "TTree.h"
-#include "TString.h"
 #include "TList.h"
-#include "TH2F.h"
-#include "TH1I.h"
-#include "TF1.h"
-#include "TCanvas.h"
-#include "TLorentzVector.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -17,15 +11,17 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
 
 #include "AliProtonQAAnalysis.h"
 #include "AliProtonAnalysisBase.h"
 #include "AliAnalysisTaskProtonsQA.h"
 
-// Analysis task used for the QA of the (anti)proton analysis
-// Author: Panos Cristakoglou
+//-----------------------------------------------------------------
+//                 AliAnalysisTakProtonsQA class
+//   This is the task to run the \bar{p}/p QA analysis
+//   Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
+//-----------------------------------------------------------------
 
 ClassImp(AliAnalysisTaskProtonsQA)
   

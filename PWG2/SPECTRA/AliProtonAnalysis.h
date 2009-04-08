@@ -21,7 +21,8 @@ class TH2D;
 class TH1F;
 class TList;
 
-#include "AliPID.h"
+//#include "AliPID.h"
+class AliPID;
 #include "AliCFContainer.h"
 class AliCFDataGrid;
 class AliAODEvent;
@@ -40,9 +41,9 @@ class AliProtonAnalysis : public TObject {
 		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   virtual ~AliProtonAnalysis();
 
-  void SetBaseAnalysis(AliProtonAnalysisBase *baseAnalysis) {
+  void SetBaseAnalysis(AliProtonAnalysisBase * const baseAnalysis) {
     fProtonAnalysisBase = baseAnalysis;}
-  AliProtonAnalysisBase *GetProtonAnalysisBaseObject() {
+  AliProtonAnalysisBase *GetProtonAnalysisBaseObject() const {
     return fProtonAnalysisBase;}
 
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,

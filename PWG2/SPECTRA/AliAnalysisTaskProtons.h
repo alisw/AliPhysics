@@ -1,9 +1,13 @@
-#ifndef AliAnalysisTaskProtons_cxx
-#define AliAnalysisTaskProtons_cxx
+#ifndef ALIANALYSISTASKPROTONS_H
+#define ALIANALYSISTASKPROTONS_H
 
-// Analysis task to run the \bar{p}/p analysis
-// Author: Panos Cristakoglou
-//class TString;
+//-------------------------------------------------------------------------
+//                 Class AliAnalysisTaskProton
+//   This is the task for the baryon (proton) analysis
+//
+//    Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
+//-------------------------------------------------------------------------
+
 class TList;
 class AliESDEvent;
 class AliAODEvent;
@@ -23,7 +27,7 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisObject(AliProtonAnalysis *analysis) {
+  void SetAnalysisObject(AliProtonAnalysis *const analysis) {
     fProtonAnalysis = analysis;}
   
  private:

@@ -19,24 +19,19 @@
 //   Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 #include <Riostream.h>
-#include <TFile.h>
-#include <TSystem.h>
-#include <TF1.h>
-#include <TH2D.h>
-#include <TH1D.h>
-#include <TH1I.h>
-#include <TParticle.h>
 #include <TCanvas.h>
 #include <TLatex.h>
-
-#include "AliProtonAnalysisBase.h"
+#include <TF1.h>
 
 #include <AliExternalTrackParam.h>
 #include <AliESDEvent.h>
-#include <AliLog.h>
 #include <AliPID.h>
-#include <AliESDVertex.h>
 #include <AliVertexerTracks.h>
+
+class AliLog;
+class AliESDVertex;
+
+#include "AliProtonAnalysisBase.h"
 
 ClassImp(AliProtonAnalysisBase)
 
@@ -870,7 +865,7 @@ void AliProtonAnalysisBase::SetdEdxBandInfo(const char *filename) {
 }
 
 //________________________________________________________________________
-Double_t AliProtonAnalysisBase::Bethe(Double_t bg) {
+Double_t AliProtonAnalysisBase::Bethe(Double_t bg) const {
   // This is the Bethe-Bloch function normalised to 1 at the minimum
   // We renormalize it based on the MC information
   // WARNING: To be revised soon!!!

@@ -27,19 +27,21 @@
 #include <TH1I.h>
 #include <TParticle.h>
 
-#include "AliProtonAnalysis.h"
-#include "AliProtonAnalysisBase.h"
-
 #include <AliExternalTrackParam.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
-#include <AliLog.h>
+//#include <AliLog.h>
 #include <AliPID.h>
 #include <AliStack.h>
 #include <AliCFContainer.h>
 #include <AliCFEffGrid.h>
 #include <AliCFDataGrid.h>
-#include <AliESDVertex.h>
+//#include <AliESDVertex.h>
+class AliLog;
+class AliESDVertex;
+
+#include "AliProtonAnalysis.h"
+#include "AliProtonAnalysisBase.h"
 
 ClassImp(AliProtonAnalysis)
 

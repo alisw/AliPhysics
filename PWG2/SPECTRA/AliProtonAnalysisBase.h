@@ -39,10 +39,10 @@ class AliProtonAnalysisBase : public TObject {
   void SetPIDMode(PIDMode pidmode) {fProtonPIDMode = pidmode;}
 
   const char *GetAnalysisLevel() {return fProtonAnalysisLevel.Data();}
-  AnalysisMode GetAnalysisMode() {return fProtonAnalysisMode;}
-  Bool_t GetEtaMode() {return fAnalysisEtaMode;}
-  TriggerMode GetTriggerMode() {return fTriggerMode;}
-  PIDMode GetPIDMode() {return fProtonPIDMode;}
+  AnalysisMode GetAnalysisMode() const {return fProtonAnalysisMode;}
+  Bool_t GetEtaMode() const {return fAnalysisEtaMode;}
+  TriggerMode GetTriggerMode() const {return fTriggerMode;}
+  PIDMode GetPIDMode() const {return fProtonPIDMode;}
 
   const  AliESDVertex *GetVertex(AliESDEvent *esd,
 				 AnalysisMode mode,
@@ -51,21 +51,21 @@ class AliProtonAnalysisBase : public TObject {
 				 Double_t gVz = 100.);
   void SetAcceptedVertexDiamond(Double_t gVx, Double_t gVy, Double_t gVz) {
     fVxMax = gVx; fVyMax = gVy; fVzMax = gVz;}
-  Double_t GetVxMax() {return fVxMax;}
-  Double_t GetVyMax() {return fVyMax;}
-  Double_t GetVzMax() {return fVzMax;}
+  Double_t GetVxMax() const {return fVxMax;}
+  Double_t GetVyMax() const {return fVyMax;}
+  Double_t GetVzMax() const {return fVzMax;}
 
   void SetPhaseSpace(Int_t nBinsX, Double_t gXmin, Double_t gXmax,
 		     Int_t nBinsY, Double_t gYmin, Double_t gYmax) {
     fNBinsX = nBinsX; fMinX = gXmin; fMaxX = gXmax;
     fNBinsY = nBinsY; fMinY = gYmin; fMaxY = gYmax;
   }
-  Int_t GetNBinsX() {return fNBinsX;}
-  Int_t GetNBinsY() {return fNBinsY;}
-  Double_t GetMinX() {return fMinX;}
-  Double_t GetMinY() {return fMinY;}
-  Double_t GetMaxX() {return fMaxX;}
-  Double_t GetMaxY() {return fMaxY;}
+  Int_t GetNBinsX() const {return fNBinsX;}
+  Int_t GetNBinsY() const {return fNBinsY;}
+  Double_t GetMinX() const {return fMinX;}
+  Double_t GetMinY() const {return fMinY;}
+  Double_t GetMaxX() const {return fMaxX;}
+  Double_t GetMaxY() const {return fMaxY;}
 
   static Bool_t IsEventTriggered(const AliESDEvent *esd,
                                  TriggerMode trigger = kMB2);
@@ -84,39 +84,39 @@ class AliProtonAnalysisBase : public TObject {
   void    SetPointOnITSLayer4() {fPointOnITSLayer4Flag = kTRUE;}
   void    SetPointOnITSLayer5() {fPointOnITSLayer5Flag = kTRUE;}
   void    SetPointOnITSLayer6() {fPointOnITSLayer6Flag = kTRUE;}
-  Bool_t  IsUsedPointOnITSLayer1() {return fPointOnITSLayer1Flag;}
-  Bool_t  IsUsedPointOnITSLayer2() {return fPointOnITSLayer2Flag;}
-  Bool_t  IsUsedPointOnITSLayer3() {return fPointOnITSLayer3Flag;}
-  Bool_t  IsUsedPointOnITSLayer4() {return fPointOnITSLayer4Flag;}
-  Bool_t  IsUsedPointOnITSLayer5() {return fPointOnITSLayer5Flag;}
-  Bool_t  IsUsedPointOnITSLayer6() {return fPointOnITSLayer6Flag;}
+  Bool_t  IsUsedPointOnITSLayer1() const {return fPointOnITSLayer1Flag;}
+  Bool_t  IsUsedPointOnITSLayer2() const {return fPointOnITSLayer2Flag;}
+  Bool_t  IsUsedPointOnITSLayer3() const {return fPointOnITSLayer3Flag;}
+  Bool_t  IsUsedPointOnITSLayer4() const {return fPointOnITSLayer4Flag;}
+  Bool_t  IsUsedPointOnITSLayer5() const {return fPointOnITSLayer5Flag;}
+  Bool_t  IsUsedPointOnITSLayer6() const {return fPointOnITSLayer6Flag;}
   void    SetMinITSClusters(Int_t minITSClusters) {
     fMinITSClusters = minITSClusters;
     fMinITSClustersFlag = kTRUE;
   }
-  Int_t   GetMinITSClusters() {return fMinITSClusters;}
-  Bool_t  IsUsedMinITSClusters() {return fMinITSClustersFlag;}
+  Int_t   GetMinITSClusters() const {return fMinITSClusters;}
+  Bool_t  IsUsedMinITSClusters() const {return fMinITSClustersFlag;}
 
   void    SetMaxChi2PerITSCluster(Double_t maxChi2PerITSCluster) {
     fMaxChi2PerITSCluster = maxChi2PerITSCluster;
     fMaxChi2PerITSClusterFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxChi2PerITSCluster() {return fMaxChi2PerITSClusterFlag;}
-  Double_t   GetMaxChi2PerITSCluster() {return fMaxChi2PerITSCluster;}
+  Bool_t  IsUsedMaxChi2PerITSCluster() const {return fMaxChi2PerITSClusterFlag;}
+  Double_t   GetMaxChi2PerITSCluster() const {return fMaxChi2PerITSCluster;}
 
   void    SetMinTPCClusters(Int_t minTPCClusters) {
     fMinTPCClusters = minTPCClusters;
     fMinTPCClustersFlag = kTRUE;
   }
-  Bool_t  IsUsedMinTPCClusters() {return fMinTPCClustersFlag;}
-  Int_t   GetMinTPCClusters() {return fMinTPCClusters;}
+  Bool_t  IsUsedMinTPCClusters() const {return fMinTPCClustersFlag;}
+  Int_t   GetMinTPCClusters() const {return fMinTPCClusters;}
 
   void    SetMaxChi2PerTPCCluster(Double_t maxChi2PerTPCCluster) {
     fMaxChi2PerTPCCluster = maxChi2PerTPCCluster;
     fMaxChi2PerTPCClusterFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxChi2PerTPCCluster() {return fMaxChi2PerTPCClusterFlag;}
-  Double_t   GetMaxChi2PerTPCCluster() {return fMaxChi2PerTPCCluster;}
+  Bool_t  IsUsedMaxChi2PerTPCCluster() const {return fMaxChi2PerTPCClusterFlag;}
+  Double_t   GetMaxChi2PerTPCCluster() const {return fMaxChi2PerTPCCluster;}
 
   void    SetMaxCov11(Double_t maxCov11) {
     fMaxCov11 = maxCov11; fMaxCov11Flag = kTRUE;}
@@ -128,102 +128,102 @@ class AliProtonAnalysisBase : public TObject {
     fMaxCov44 = maxCov44; fMaxCov44Flag = kTRUE;}
   void    SetMaxCov55(Double_t maxCov55) {
     fMaxCov55 = maxCov55; fMaxCov55Flag = kTRUE;}
-  Bool_t  IsUsedMaxCov11() {return fMaxCov11Flag;}
-  Bool_t  IsUsedMaxCov22() {return fMaxCov22Flag;}
-  Bool_t  IsUsedMaxCov33() {return fMaxCov33Flag;}
-  Bool_t  IsUsedMaxCov44() {return fMaxCov44Flag;}
-  Bool_t  IsUsedMaxCov55() {return fMaxCov55Flag;}
-  Double_t   GetMaxCov11() {return fMaxCov11;}
-  Double_t   GetMaxCov22() {return fMaxCov22;}
-  Double_t   GetMaxCov33() {return fMaxCov33;}
-  Double_t   GetMaxCov44() {return fMaxCov44;}
-  Double_t   GetMaxCov55() {return fMaxCov55;}
+  Bool_t  IsUsedMaxCov11() const {return fMaxCov11Flag;}
+  Bool_t  IsUsedMaxCov22() const {return fMaxCov22Flag;}
+  Bool_t  IsUsedMaxCov33() const {return fMaxCov33Flag;}
+  Bool_t  IsUsedMaxCov44() const {return fMaxCov44Flag;}
+  Bool_t  IsUsedMaxCov55() const {return fMaxCov55Flag;}
+  Double_t   GetMaxCov11() const {return fMaxCov11;}
+  Double_t   GetMaxCov22() const {return fMaxCov22;}
+  Double_t   GetMaxCov33() const {return fMaxCov33;}
+  Double_t   GetMaxCov44() const {return fMaxCov44;}
+  Double_t   GetMaxCov55() const {return fMaxCov55;}
 
   void    SetMaxSigmaToVertex(Double_t maxSigmaToVertex) {
     fMaxSigmaToVertex = maxSigmaToVertex;
     fMaxSigmaToVertexFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxSigmaToVertex() {return fMaxSigmaToVertexFlag;}
-  Double_t   GetMaxSigmaToVertex() {return fMaxSigmaToVertex;}
+  Bool_t  IsUsedMaxSigmaToVertex() const {return fMaxSigmaToVertexFlag;}
+  Double_t   GetMaxSigmaToVertex() const {return fMaxSigmaToVertex;}
 
   void    SetMaxSigmaToVertexTPC(Double_t maxSigmaToVertex) {
     fMaxSigmaToVertexTPC = maxSigmaToVertex;
     fMaxSigmaToVertexTPCFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxSigmaToVertexTPC() {return fMaxSigmaToVertexTPCFlag;}
-  Double_t   GetMaxSigmaToVertexTPC() {return fMaxSigmaToVertexTPC;}
+  Bool_t  IsUsedMaxSigmaToVertexTPC() const {return fMaxSigmaToVertexTPCFlag;}
+  Double_t   GetMaxSigmaToVertexTPC() const {return fMaxSigmaToVertexTPC;}
 
   void    SetMaxDCAXY(Double_t maxDCAXY) {
     fMaxDCAXY = maxDCAXY;
     fMaxDCAXYFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCAXY() {return fMaxDCAXYFlag;}
-  Double_t   GetMaxDCAXY() {return fMaxDCAXY;}
+  Bool_t  IsUsedMaxDCAXY() const {return fMaxDCAXYFlag;}
+  Double_t   GetMaxDCAXY() const {return fMaxDCAXY;}
 
   void    SetMaxDCAXYTPC(Double_t maxDCAXY) {
     fMaxDCAXYTPC = maxDCAXY;
     fMaxDCAXYTPCFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCAXYTPC() {return fMaxDCAXYTPCFlag;}
-  Double_t   GetMaxDCAXYTPC() {return fMaxDCAXYTPC;}
+  Bool_t  IsUsedMaxDCAXYTPC() const {return fMaxDCAXYTPCFlag;}
+  Double_t   GetMaxDCAXYTPC() const {return fMaxDCAXYTPC;}
 
   void    SetMaxDCAZ(Double_t maxDCAZ) {
     fMaxDCAZ = maxDCAZ;
     fMaxDCAZFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCAZ() {return fMaxDCAZFlag;}
-  Double_t   GetMaxDCAZ() {return fMaxDCAZ;}
+  Bool_t  IsUsedMaxDCAZ() const {return fMaxDCAZFlag;}
+  Double_t   GetMaxDCAZ() const {return fMaxDCAZ;}
 
   void    SetMaxDCAZTPC(Double_t maxDCAZ) {
     fMaxDCAZTPC = maxDCAZ;
     fMaxDCAZTPCFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCAZTPC() {return fMaxDCAZTPCFlag;}
-  Double_t   GetMaxDCAZTPC() {return fMaxDCAZTPC;}
+  Bool_t  IsUsedMaxDCAZTPC() const {return fMaxDCAZTPCFlag;}
+  Double_t   GetMaxDCAZTPC() const {return fMaxDCAZTPC;}
 
   void    SetMaxDCA3D(Double_t maxDCA3D) {
     fMaxDCA3D = maxDCA3D;
     fMaxDCA3DFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCA3D() {return fMaxDCA3DFlag;}
-  Double_t   GetMaxDCA3D() {return fMaxDCA3D;}
+  Bool_t  IsUsedMaxDCA3D() const {return fMaxDCA3DFlag;}
+  Double_t   GetMaxDCA3D() const {return fMaxDCA3D;}
 
   void    SetMaxDCA3DTPC(Double_t maxDCA3D) {
     fMaxDCA3DTPC = maxDCA3D;
     fMaxDCA3DTPCFlag = kTRUE;
   }
-  Bool_t  IsUsedMaxDCA3DTPC() {return fMaxDCA3DTPCFlag;}
-  Double_t   GetMaxDCA3DTPC() {return fMaxDCA3DTPC;}
+  Bool_t  IsUsedMaxDCA3DTPC() const {return fMaxDCA3DTPCFlag;}
+  Double_t   GetMaxDCA3DTPC() const {return fMaxDCA3DTPC;}
 
   void    SetMaxConstrainChi2(Double_t maxConstrainChi2) {
     fMaxConstrainChi2 = maxConstrainChi2;
     fMaxConstrainChi2Flag = kTRUE;
   }
-  Bool_t  IsUsedMaxConstrainChi2() {return fMaxConstrainChi2Flag;}
-  Double_t   GetMaxConstrainChi2() {return fMaxConstrainChi2;}
+  Bool_t  IsUsedMaxConstrainChi2() const {return fMaxConstrainChi2Flag;}
+  Double_t   GetMaxConstrainChi2() const {return fMaxConstrainChi2;}
 
   void    SetMinTPCdEdxPoints(Int_t mindEdxpoints) {
     fMinTPCdEdxPoints = mindEdxpoints;
     fMinTPCdEdxPointsFlag = kTRUE;
   }
-  Bool_t  IsUsedMinTPCdEdxPoints() {return fMinTPCdEdxPointsFlag;}
-  Int_t   GetMinTPCdEdxPoints() {return fMinTPCdEdxPoints;}
+  Bool_t  IsUsedMinTPCdEdxPoints() const {return fMinTPCdEdxPointsFlag;}
+  Int_t   GetMinTPCdEdxPoints() const {return fMinTPCdEdxPoints;}
   
   void    SetITSRefit() {fITSRefitFlag = kTRUE;}
-  Bool_t  IsUsedITSRefit() {return fITSRefitFlag;}
+  Bool_t  IsUsedITSRefit() const {return fITSRefitFlag;}
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
-  Bool_t  IsUsedTPCRefit() {return fTPCRefitFlag;}
+  Bool_t  IsUsedTPCRefit() const {return fTPCRefitFlag;}
   void    SetESDpid() {fESDpidFlag = kTRUE;}
-  Bool_t  IsUsedESDpid() {return fESDpidFlag;}
+  Bool_t  IsUsedESDpid() const {return fESDpidFlag;}
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
-  Bool_t  IsUsedTPCpid() {return fTPCpidFlag;}
+  Bool_t  IsUsedTPCpid() const {return fTPCpidFlag;}
 
   TCanvas *GetListOfCuts();
 
   //PID related functions
   Bool_t IsProton(AliESDtrack *track);
   void SetNSigma(Int_t nsigma) {fNSigma = nsigma;}  
-  Int_t GetNSigma() {return fNSigma;}
+  Int_t GetNSigma() const {return fNSigma;}
   void SetdEdxBandInfo(const char* filename);
   void SetPriorProbabilities(Double_t * const partFrac) {
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
@@ -233,18 +233,15 @@ class AliProtonAnalysisBase : public TObject {
 				    TF1 *const fkaon, 
 				    TF1 *const fproton) {
     fFunctionProbabilityFlag = kTRUE;
-    fElectronFunction = felectron; 
-    fMuonFunction = fmuon; 
-    fPionFunction = fpion;
-    fKaonFunction = fkaon;
-    fProtonFunction = fproton;
+    fElectronFunction = felectron; fMuonFunction = fmuon; 
+    fPionFunction = fpion; fKaonFunction = fkaon; fProtonFunction = fproton;
   }
-  Bool_t IsPriorProbabilityFunctionUsed() {return fFunctionProbabilityFlag;}
+  Bool_t IsPriorProbabilityFunctionUsed() const {return fFunctionProbabilityFlag;}
   Double_t GetParticleFraction(Int_t i, Double_t p);
-  Double_t Bethe(Double_t bg);
+  Double_t Bethe(Double_t bg) const;
 
   void SetDebugMode() {fDebugMode = kTRUE;}
-  Bool_t GetDebugMode() {return fDebugMode;}
+  Bool_t GetDebugMode() const {return fDebugMode;}
 
  private:
   AliProtonAnalysisBase(const AliProtonAnalysisBase&); // Not implemented
