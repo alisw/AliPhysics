@@ -25,6 +25,7 @@ AliCFPairQualityCuts.cxx
 AliCFPairIsPrimaryCuts.cxx
 AliCFPairPidCut.cxx
 AliCFV0TopoCuts.cxx
+AliCFUnfolding.cxx
 )
 
 # fill list of header files from list of source files
