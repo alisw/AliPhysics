@@ -67,7 +67,7 @@ AliMUONTrackReconstructor::~AliMUONTrackReconstructor()
 } 
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& clusterStore)
+Bool_t AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& clusterStore)
 {
   /// To make track candidates (assuming linear propagation if the flag fgkMakeTrackCandidatesFast is set to kTRUE):
   /// Start with segments station(1..) 4 or 5 then follow track in station 5 or 4.
@@ -116,10 +116,15 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& cluste
 	clusterFound = FollowLinearTrackInStation(*track, clusterStore, 7-istat);
       else clusterFound = FollowTrackInStation(*track, clusterStore, 7-istat);
       
-      // Remove track if no cluster found
+      // Remove track if no cluster found on a requested station
+      // or abort tracking if there are too many candidates
       if (!clusterFound && GetRecoParam()->RequestStation(7-istat)) {
         fRecTracksPtr->Remove(track);
   	fNRecTracks--;
+      }	else if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
+	AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	delete segments;
+	return kFALSE;
       }
       
     }
@@ -128,18 +133,18 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& cluste
     delete segments;
   }
   
-  fRecTracksPtr->Compress(); // this is essential before checking tracks
-  
   // Keep all different tracks or only the best ones as required
   if (GetRecoParam()->TrackAllTracks()) RemoveIdenticalTracks();
   else RemoveDoubleTracks();
   
   AliDebug(1,Form("Number of good candidates = %d",fNRecTracks));
   
+  return kTRUE;
+  
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore)
+Bool_t AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore)
 {
   /// To make extra track candidates (assuming linear propagation if the flag fgkMakeTrackCandidatesFast is set to kTRUE):
   /// clustering is supposed to be already done
@@ -148,6 +153,7 @@ void AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& cl
   /// Keep only best candidates or all of them according to the flag fgkTrackAllTracks.
   
   TClonesArray *segments;
+  AliMUONObjectPair *segment;
   AliMUONTrack *track;
   Int_t iCandidate = 0, iCurrentTrack, nCurrentTracks;
   Bool_t clusterFound;
@@ -161,20 +167,22 @@ void AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& cl
       // Make segments in the station
       segments = MakeSegmentsBetweenChambers(clusterStore, ich1, ich2);
       
+      /// Remove segments already attached to a track
+      RemoveUsedSegments(*segments);
+      
       // Loop over segments
-      for (Int_t iseg=0; iseg<segments->GetEntriesFast(); iseg++) 
+      for (Int_t iSegment=0; iSegment<segments->GetEntriesFast(); iSegment++)
       {
 	AliDebug(1,Form("Making primary candidate(1..) %d",++iCandidate));
+	segment = (AliMUONObjectPair*) segments->UncheckedAt(iSegment);
 	
 	// Transform segments to tracks and put them at the end of fRecTracksPtr
 	iCurrentTrack = fRecTracksPtr->GetLast()+1;
-	track = new ((*fRecTracksPtr)[iCurrentTrack]) AliMUONTrack((AliMUONObjectPair*)((*segments)[iseg]),GetRecoParam()->GetBendingVertexDispersion());
+	track = new ((*fRecTracksPtr)[iCurrentTrack]) AliMUONTrack(segment,GetRecoParam()->GetBendingVertexDispersion());
 	fNRecTracks++;
 	
 	// Look for compatible cluster(s) in the second chamber of station 5
-	if (GetRecoParam()->MakeTrackCandidatesFast())
-	  clusterFound = FollowLinearTrackInChamber(*track, clusterStore, 17-ich2);
-	else clusterFound = FollowTrackInChamber(*track, clusterStore, 17-ich2);
+	clusterFound = FollowLinearTrackInChamber(*track, clusterStore, 17-ich2);
 	
 	// skip the original track in case it has been removed
 	if (GetRecoParam()->TrackAllTracks() && clusterFound) iCurrentTrack++;
@@ -185,11 +193,16 @@ void AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& cl
 	  track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iCurrentTrack);
 	  
 	  // Look for compatible cluster(s) in the second chamber of station 4
-	  if (GetRecoParam()->MakeTrackCandidatesFast())
-	    FollowLinearTrackInChamber(*track, clusterStore, 13-ich1);
-	  else FollowTrackInChamber(*track, clusterStore, 13-ich1);
+	  FollowLinearTrackInChamber(*track, clusterStore, 13-ich1);
 	  
 	  iCurrentTrack++;
+	}
+	
+	// abort tracking if there are too many candidates
+	if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	  delete segments;
+	  return kFALSE;
 	}
 	
       }
@@ -199,18 +212,18 @@ void AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& cl
     }
   }
   
-  fRecTracksPtr->Compress(); // this is essential before checking tracks
-  
-  // Keep all different tracks or only the best ones as required
-  if (GetRecoParam()->TrackAllTracks()) RemoveIdenticalTracks();
-  else RemoveDoubleTracks();
+  // Keep only the best tracks if required
+  if (!GetRecoParam()->TrackAllTracks()) RemoveDoubleTracks();
+  else fRecTracksPtr->Compress();
   
   AliDebug(1,Form("Number of good candidates = %d",fNRecTracks));
+  
+  return kTRUE;
   
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
+Bool_t AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
 {
   /// Follow tracks in stations(1..) 3, 2 and 1
   AliDebug(1,"Enter FollowTracks");
@@ -243,14 +256,21 @@ void AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
       else Fit(*track, kFALSE, kFALSE, kTRUE);
       
       // remove track with absolute bending momentum out of limits
-      // or if the normalized chi2 is too high
-      Double_t bendingMomentum = TMath::Abs(1. / ((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First())->GetInverseBendingMomentum());
-      if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	  bendingMomentum > GetRecoParam()->GetMaxBendingMomentum() ||
-	  track->GetNormalizedChi2() > sigmaCut2) {
+      if (AliMUONTrackExtrap::IsFieldON()) {
+	Double_t bendingMomentum = TMath::Abs(1. / ((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First())->GetInverseBendingMomentum());
+	if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
+	    bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) {
+	  fRecTracksPtr->Remove(track);
+	  fNRecTracks--;
+	  continue;
+	}
+      }
+      
+      // remove track if the normalized chi2 is too high
+      if (track->GetNormalizedChi2() > sigmaCut2) {
 	fRecTracksPtr->Remove(track);
-  	fNRecTracks--;
-  	continue;
+	fNRecTracks--;
+	continue;
       }
       
       // save parameters from fit into smoothed parameters to complete track afterward
@@ -330,6 +350,12 @@ void AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
 	
       }
       
+      // abort tracking if there are too many candidates
+      if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
+	AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	return kFALSE;
+      }
+      
     }
     
     // Compress fRecTracksPtr for the next step
@@ -402,6 +428,8 @@ void AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
   }
   
   fRecTracksPtr->Compress();
+  
+  return kTRUE;
   
 }
 
@@ -1079,6 +1107,13 @@ Bool_t AliMUONTrackReconstructor::RecoverTrack(AliMUONTrack &trackCandidate, Ali
   // Calculate the track parameter covariance matrix
   Fit(trackCandidate, kFALSE, kFALSE, kTRUE);
   
+  // skip track with absolute bending momentum out of limits
+  if (AliMUONTrackExtrap::IsFieldON()) {
+    Double_t bendingMomentum = TMath::Abs(1. / ((AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First())->GetInverseBendingMomentum());
+    if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
+	bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) return kFALSE;
+  }
+  
   // Look for new cluster(s) in next station
   return FollowTrackInStation(trackCandidate,clusterStore,nextStation);
   
@@ -1249,18 +1284,19 @@ void TrackChi2(Int_t & /*nParam*/, Double_t * /*gradient*/, Double_t &chi2, Doub
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clusterStore)
+Bool_t AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clusterStore)
 {
   /// Complete tracks by adding missing clusters (if there is an overlap between
-  /// two detection elements, the track may have two clusters in the same chamber)
-  /// Re-fit track parameters and covariances
+  /// two detection elements, the track may have two clusters in the same chamber).
+  /// Re-fit track parameters and covariances.
+  /// Return kTRUE if one or more tracks have been complemented.
   AliDebug(1,"Enter ComplementTracks");
   
   Int_t chamberId, detElemId;
   Double_t chi2OfCluster, bestChi2OfCluster;
   Double_t sigmaCut2 = GetRecoParam()->GetSigmaCutForTracking() *
                        GetRecoParam()->GetSigmaCutForTracking();
-  Bool_t foundOneCluster, trackModified;
+  Bool_t foundOneCluster, trackModified, hasChanged = kFALSE;
   AliMUONVCluster* cluster;
   AliMUONTrackParam *trackParam, *nextTrackParam, copyOfTrackParam, trackParamAtCluster, bestTrackParamAtCluster;
   
@@ -1323,6 +1359,7 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
 	bestTrackParamAtCluster.SetRemovable(kTRUE);
 	track->AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));
 	trackModified = kTRUE;
+	hasChanged = kTRUE;
       }
       
       trackParam = nextTrackParam;
@@ -1333,6 +1370,8 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
     
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
   }
+  
+  return hasChanged;
   
 }
 

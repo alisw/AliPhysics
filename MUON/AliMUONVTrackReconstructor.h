@@ -69,13 +69,13 @@ class AliMUONVTrackReconstructor : public TObject {
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator
   
   /// Make track candidates from clusters in stations(1..) 4 and 5
-  virtual void MakeTrackCandidates(AliMUONVClusterStore& clusterStore) = 0;
+  virtual Bool_t MakeTrackCandidates(AliMUONVClusterStore& clusterStore) = 0;
   /// Make extra track candidates from clusters in stations(1..) 4 and 5
-  virtual void MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore) = 0;
+  virtual Bool_t MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore) = 0;
   /// Follow tracks in stations(1..) 3, 2 and 1
-  virtual void FollowTracks(AliMUONVClusterStore& clusterStore) = 0;
+  virtual Bool_t FollowTracks(AliMUONVClusterStore& clusterStore) = 0;
   /// Complement the reconstructed tracks
-  virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore) = 0;
+  virtual Bool_t ComplementTracks(const AliMUONVClusterStore& clusterStore) = 0;
   void ImproveTracks();
   /// Improve the given reconstructed track
   virtual void ImproveTrack(AliMUONTrack &track) = 0;
@@ -85,6 +85,7 @@ class AliMUONVTrackReconstructor : public TObject {
   
   TClonesArray* MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2);
 
+  void RemoveUsedSegments(TClonesArray& segments);
   void RemoveIdenticalTracks();
   void RemoveDoubleTracks();
   void RemoveConnectedTracks(Bool_t inSt345 = kFALSE);

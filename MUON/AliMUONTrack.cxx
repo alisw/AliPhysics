@@ -141,24 +141,31 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDis
   paramCov(3,2) = paramCov(2,3);
   paramCov(3,3) = ( firstCluster->GetErrY2() + lastCluster->GetErrY2() ) / dZ / dZ;
   // Inverse bending momentum (vertex resolution + bending slope resolution + 10% error on dipole parameters+field)
-  paramCov(4,4) = ( ( bendingVertexDispersion*bendingVertexDispersion +
-		    (z1 * z1 * lastCluster->GetErrY2() + z2 * z2 * firstCluster->GetErrY2()) / dZ / dZ) /
-		   bendingImpact / bendingImpact + 0.1 * 0.1) * inverseBendingMomentum * inverseBendingMomentum ;
-  paramCov(2,4) = - z2 * firstCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
-  paramCov(4,2) = paramCov(2,4);
-  paramCov(3,4) = - (z1 * lastCluster->GetErrY2() + z2 * firstCluster->GetErrY2()) * inverseBendingMomentum / bendingImpact / dZ / dZ;
-  paramCov(4,3) = paramCov(3,4);
-  
-  // Set covariances
+  if (AliMUONTrackExtrap::IsFieldON()) {
+    paramCov(4,4) = ( ( bendingVertexDispersion*bendingVertexDispersion +
+		       (z1 * z1 * lastCluster->GetErrY2() + z2 * z2 * firstCluster->GetErrY2()) / dZ / dZ) /
+		     bendingImpact / bendingImpact + 0.1 * 0.1) * inverseBendingMomentum * inverseBendingMomentum ;
+    paramCov(2,4) = - z2 * firstCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
+    paramCov(4,2) = paramCov(2,4);
+    paramCov(3,4) = - (z1 * lastCluster->GetErrY2() + z2 * firstCluster->GetErrY2()) * inverseBendingMomentum / bendingImpact / dZ / dZ;
+    paramCov(4,3) = paramCov(3,4);
+  } else paramCov(4,4) = inverseBendingMomentum*inverseBendingMomentum;
   trackParamAtFirstCluster.SetCovariances(paramCov);
   
   // Compute and set track parameters covariances at last cluster
-  paramCov(1,0) = - paramCov(1,0);
-  paramCov(0,1) = - paramCov(0,1);
-  paramCov(3,2) = - paramCov(3,2);
-  paramCov(2,3) = - paramCov(2,3);
-  paramCov(2,4) = z1 * lastCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
-  paramCov(4,2) = paramCov(2,4);
+  // Non bending plane
+  paramCov(0,0) = lastCluster->GetErrX2();
+  paramCov(0,1) = - lastCluster->GetErrX2() / dZ;
+  paramCov(1,0) = paramCov(0,1);
+  // Bending plane
+  paramCov(2,2) = lastCluster->GetErrY2();
+  paramCov(2,3) = - lastCluster->GetErrY2() / dZ;
+  paramCov(3,2) = paramCov(2,3);
+  // Inverse bending momentum (vertex resolution + bending slope resolution + 10% error on dipole parameters+field)
+  if (AliMUONTrackExtrap::IsFieldON()) {
+    paramCov(2,4) = z1 * lastCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
+    paramCov(4,2) = paramCov(2,4);
+  }
   trackParamAtLastCluster.SetCovariances(paramCov);
   
   // Add track parameters at clusters
@@ -971,33 +978,56 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrack::ClustersInCommon(AliMUONTrack* track, Bool_t inSt345) const
+Int_t AliMUONTrack::ClustersInCommon(AliMUONTrack* track) const
 {
   /// Returns the number of clusters in common between the current track ("this")
   /// and the track pointed to by "track".
-  /// If inSt345=kTRUE only stations 3, 4 and 5 are considered.
   if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return 0;
+  Int_t nCluster1 = this->GetNClusters();
+  Int_t nCluster2 = track->GetNClusters();
   Int_t clustersInCommon = 0;
   AliMUONTrackParam *trackParamAtCluster1, *trackParamAtCluster2;
   // Loop over clusters of first track
-  trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->First();
-  while (trackParamAtCluster1) {
-    if ((!inSt345) || (trackParamAtCluster1->GetClusterPtr()->GetChamberId() > 3)) {
-      // Loop over clusters of second track
-      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->First();
-      while (trackParamAtCluster2) {
-	if ((!inSt345) || (trackParamAtCluster2->GetClusterPtr()->GetChamberId() > 3)) {
-	  // Increment "clustersInCommon" if both trackParamAtCluster1 & 2 point to the same cluster
-	  if ((trackParamAtCluster1->GetClusterPtr()) == (trackParamAtCluster2->GetClusterPtr())) {
-	    clustersInCommon++;
-	    break;
-	  }
-	}
-	trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->After(trackParamAtCluster2);
-      } // trackParamAtCluster2
+  for(Int_t iCluster1 = 0; iCluster1 < nCluster1; iCluster1++) {
+    trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->UncheckedAt(iCluster1);
+    // Loop over clusters of second track
+    for(Int_t iCluster2 = 0; iCluster2 < nCluster2; iCluster2++) {
+      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->UncheckedAt(iCluster2);
+      // Increment "clustersInCommon" if both trackParamAtCluster1 & 2 point to the same cluster
+      if ((trackParamAtCluster1->GetClusterPtr()) == (trackParamAtCluster2->GetClusterPtr())) {
+	clustersInCommon++;
+	break;
+      }
     }
-    trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->After(trackParamAtCluster1);
-  } // trackParamAtCluster1
+  }
+  return clustersInCommon;
+}
+
+  //__________________________________________________________________________
+Int_t AliMUONTrack::ClustersInCommonInSt345(AliMUONTrack* track) const
+{
+  /// Returns the number of clusters in common on stations 3, 4 and 5
+  /// between the current track ("this") and the track pointed to by "track".
+  if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return 0;
+  Int_t nCluster1 = this->GetNClusters();
+  Int_t nCluster2 = track->GetNClusters();
+  Int_t clustersInCommon = 0;
+  AliMUONTrackParam *trackParamAtCluster1, *trackParamAtCluster2;
+  // Loop over clusters of first track
+  for(Int_t iCluster1 = 0; iCluster1 < nCluster1; iCluster1++) {
+    trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->UncheckedAt(iCluster1);
+    if (trackParamAtCluster1->GetClusterPtr()->GetChamberId() < 4) continue;
+    // Loop over clusters of second track
+    for(Int_t iCluster2 = 0; iCluster2 < nCluster2; iCluster2++) {
+      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->UncheckedAt(iCluster2);
+      if (trackParamAtCluster2->GetClusterPtr()->GetChamberId() < 4) continue;
+      // Increment "clustersInCommon" if both trackParamAtCluster1 & 2 point to the same cluster
+      if ((trackParamAtCluster1->GetClusterPtr()) == (trackParamAtCluster2->GetClusterPtr())) {
+	clustersInCommon++;
+	break;
+      }
+    }
+  }
   return clustersInCommon;
 }
 

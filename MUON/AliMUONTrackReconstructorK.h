@@ -29,10 +29,10 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
  protected:
 
   // Functions
-  virtual void MakeTrackCandidates(AliMUONVClusterStore& clusterStore);
-  virtual void MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore);
-  virtual void FollowTracks(AliMUONVClusterStore& clusterStore);
-  virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore);
+  virtual Bool_t MakeTrackCandidates(AliMUONVClusterStore& clusterStore);
+  virtual Bool_t MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore);
+  virtual Bool_t FollowTracks(AliMUONVClusterStore& clusterStore);
+  virtual Bool_t ComplementTracks(const AliMUONVClusterStore& clusterStore);
   virtual void ImproveTrack(AliMUONTrack &track);
   virtual void FinalizeTrack(AliMUONTrack &track);
   

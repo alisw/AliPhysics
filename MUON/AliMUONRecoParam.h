@@ -248,6 +248,16 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Get the default bending resolution of chamber iCh
   Double_t GetDefaultBendingReso(Int_t iCh) const {return (iCh >= 0 && iCh < 10) ? fDefaultBendingReso[iCh] : FLT_MAX;}
   
+  /// Set the maximum number of trigger tracks above which the tracking is cancelled
+  void SetMaxTriggerTracks(Int_t maxTriggerTracks) {fMaxTriggerTracks = maxTriggerTracks;}
+  /// Get the maximum number of trigger tracks above which the tracking is cancelled
+  Int_t GetMaxTriggerTracks() const {return fMaxTriggerTracks;}
+  
+  /// Set the maximum number of track candidates above which the tracking abort
+  void SetMaxTrackCandidates(Int_t maxTrackCandidates) {fMaxTrackCandidates = maxTrackCandidates;}
+  /// Get the maximum number of track candidates above which the tracking abort
+  Int_t GetMaxTrackCandidates() const {return fMaxTrackCandidates;}
+  
   virtual void Print(Option_t *option = "") const;
   
   
@@ -334,13 +344,16 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fRemoveConnectedTracksInSt12; ///< kTRUE to remove tracks sharing cluster in station 1 and 2
   
+  Int_t      fMaxTriggerTracks; ///< maximum number of trigger tracks above which the tracking is cancelled
+  Int_t      fMaxTrackCandidates; ///< maximum number of track candidates above which the tracking abort
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,11) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,12) // MUON reco parameters
 };
 
 #endif

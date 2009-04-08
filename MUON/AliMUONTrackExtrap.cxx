@@ -323,7 +323,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
     for (Int_t j=0; j<5; j++) {
       if (j==i) {
         dParam(j,0) = TMath::Sqrt(kParamCov(i,i));
-	if (j == 4) dParam(j,0) *= TMath::Sign(1.,-paramSave(4,0)); // variation always in the same direction
+	dParam(j,0) *= TMath::Sign(1.,paramSave(j,0)); // variation always in the same direction
       } else dParam(j,0) = 0.;
     }
     

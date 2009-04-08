@@ -77,22 +77,13 @@ void runDataReconstruction(const char* input = "/Users/laurent/Alice/Data/Raw/09
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetCosmicParam();
   
   // digit selection
-  muonRecoParam->SetPadGoodnessMask(0x400BE80);
   TString caliboption = caliboption1;
   if ( calib == 2 ) caliboption = caliboption2;
   muonRecoParam->SetCalibrationMode(caliboption.Data());
   
-  // chamber resolution (incuding misalignment)
-  for (Int_t iCh=0; iCh<10; iCh++) {
-    muonRecoParam->SetDefaultNonBendingReso(iCh,0.4);
-    muonRecoParam->SetDefaultBendingReso(iCh,0.4);
-  }
-  muonRecoParam->SetMaxNonBendingDistanceToTrack(10.);
-  muonRecoParam->SetMaxBendingDistanceToTrack(10.);
-  
   // cut on (non)bending slopes
-  //muonRecoParam->SetMaxNonBendingSlope(0.6);
-  //muonRecoParam->SetMaxBendingSlope(0.6);
+  muonRecoParam->SetMaxNonBendingSlope(0.6);
+  muonRecoParam->SetMaxBendingSlope(0.6);
   
   // tracking algorithm
   muonRecoParam->MakeMoreTrackCandidates(kTRUE);
@@ -100,8 +91,6 @@ void runDataReconstruction(const char* input = "/Users/laurent/Alice/Data/Raw/09
   muonRecoParam->RequestStation(2, kFALSE);
   muonRecoParam->RequestStation(3, kFALSE);
   muonRecoParam->RequestStation(4, kFALSE);
-  muonRecoParam->SetSigmaCutForTracking(7.);
-  muonRecoParam->ImproveTracks(kTRUE, 7.);
   
   muonRecoParam->Print("FULL");
   

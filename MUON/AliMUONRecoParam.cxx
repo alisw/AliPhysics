@@ -69,7 +69,9 @@ AliMUONRecoParam::AliMUONRecoParam()
   fBypassSt45(0),
   fPadGoodnessMask(0),
   fChargeSigmaCut(4.0),
-  fRemoveConnectedTracksInSt12(kFALSE)
+  fRemoveConnectedTracksInSt12(kFALSE),
+  fMaxTriggerTracks(0),
+  fMaxTrackCandidates(0)
 {
   /// Constructor
   
@@ -178,6 +180,8 @@ void AliMUONRecoParam::SetLowFluxParam()
   }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
+  fMaxTriggerTracks = 100;
+  fMaxTrackCandidates = 10000;
   
 }
 
@@ -218,6 +222,8 @@ void AliMUONRecoParam::SetHighFluxParam()
   }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
+  fMaxTriggerTracks = 100;
+  fMaxTrackCandidates = 10000;
   
 }
 
@@ -236,8 +242,8 @@ void AliMUONRecoParam::SetCosmicParam()
   fBendingVertexDispersion = 10.;
   fMaxNonBendingDistanceToTrack = 10.;
   fMaxBendingDistanceToTrack = 10.;
-  fSigmaCutForTracking = 20.;
-  fSigmaCutForImprovement = 20.;
+  fSigmaCutForTracking = 7.;
+  fSigmaCutForImprovement = 7.;
   fSigmaCutForTrigger = 8.;
   fStripCutForTrigger = 1.5;
   fMaxStripAreaForTrigger = 3.;
@@ -255,11 +261,14 @@ void AliMUONRecoParam::SetCosmicParam()
   fSaveFullClusterInESD = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;
-    fDefaultNonBendingReso[iCh] = 0.144;
-    fDefaultBendingReso[iCh] = 0.01;
+    fDefaultNonBendingReso[iCh] = 0.4;
+    fDefaultBendingReso[iCh] = 0.4;
   }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
+  fPadGoodnessMask = 0x400BE80;
+  fMaxTriggerTracks = 100;
+  fMaxTrackCandidates = 10000;
   
 }
 
@@ -435,6 +444,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout << "chamber bending resolution = |";
   for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultBendingReso[iCh]);
   cout << endl;
+  cout<<Form("maximum number of trigger tracks above which the tracking is cancelled = %d",fMaxTriggerTracks)<<endl;
+  cout<<Form("maximum number of track candidates above which the tracking abort = %d",fMaxTrackCandidates)<<endl;
   
   cout<<"\t-----------------------------------------------------"<<endl<<endl;
   
@@ -455,7 +466,7 @@ AliMUONRecoParam::SetDefaultLimits()
 	fPedMeanLimits[0] = 50;
 	fPedMeanLimits[1] = 1024;
 	
-	fPedSigmaLimits[0] = 0.1;
+	fPedSigmaLimits[0] = 0.6;
 	fPedSigmaLimits[1] = 100;
 
 	fGainA1Limits[0] = 0.1;

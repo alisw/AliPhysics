@@ -219,11 +219,9 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     fTrackReco->EventReconstructTrigger(*fkTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
   }
   
-  if ( ( GetRecoParam()->BypassSt4() || 
-				 GetRecoParam()->BypassSt5() ) && 
-			TriggerTrackStore()->GetSize() > 5 ) 
+  if ( TriggerTrackStore()->GetSize() > GetRecoParam()->GetMaxTriggerTracks() ) 
   {
-    // Hard cut to reject shower events
+    // cut to reject shower events
     
     AliCodeTimerAuto("MUON Shower events");
 

@@ -351,8 +351,6 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
       cout << " number of tracks: " << nTracks  <<endl;
     }
 
-    // set the magnetic field for track extrapolations
-    AliMUONTrackExtrap::SetField();
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 
@@ -601,14 +599,15 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   cout << "PtCutMin for muon tracks = " << PtCutMin << endl;
   cout << "PtCutMax for muon tracks = " << PtCutMax << endl;
   
-  hInvMassAll->Fit("gaus","q0");
-                   
-  TF1* f1 = hInvMassAll->GetFunction("gaus");
+  cout << "Entries (unlike sign dimuons) : " << hInvMassAll->GetEntries();
   
-  cout << "Entries (unlike sign dimuons) : " << hInvMassAll->GetEntries() 
-    << Form(". Rough sigma = %7.2f MeV/c2",f1->GetParameter(2)*1000.0) << endl;
+  if (hInvMassAll->GetEntries() > 0) {
+    hInvMassAll->Fit("gaus","q0");
+    TF1* f1 = hInvMassAll->GetFunction("gaus");
+    cout << Form(". Rough sigma = %7.2f MeV/c2",f1->GetParameter(2)*1000.0);
+  }
   
-  cout << "Entries (unlike sign dimuons) in the mass range  ["<<invMassMinInPeak<<";"<<invMassMaxInPeak<<"] : " << EventInMass <<endl;
+  cout << endl << "Entries (unlike sign dimuons) in the mass range  ["<<invMassMinInPeak<<";"<<invMassMaxInPeak<<"] : " << EventInMass <<endl;
   
   if (ptTrig==0x800) cout << "Unlike Pair - All Pt" ;   
   if (ptTrig==0x400) cout << "Unlike Pair - High Pt" ;   

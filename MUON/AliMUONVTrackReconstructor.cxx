@@ -138,20 +138,24 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   // Reset array of tracks
   ResetTracks();
   
-  // Look for candidates from clusters in stations(1..) 4 and 5
-  MakeTrackCandidates(clusterStore);
+  // Look for candidates from clusters in stations(1..) 4 and 5 (abort in case of failure)
+  if (!MakeTrackCandidates(clusterStore)) return;
   
-  // Look for extra candidates from clusters in stations(1..) 4 and 5
-  if (GetRecoParam()->MakeMoreTrackCandidates()) MakeMoreTrackCandidates(clusterStore);
+  // Look for extra candidates from clusters in stations(1..) 4 and 5 (abort in case of failure)
+  if (GetRecoParam()->MakeMoreTrackCandidates()) {
+    if (!MakeMoreTrackCandidates(clusterStore)) return;
+  }
   
   // Stop tracking if no candidate found
   if (fRecTracksPtr->GetEntriesFast() == 0) return;
   
-  // Follow tracks in stations(1..) 3, 2 and 1
-  FollowTracks(clusterStore);
+  // Follow tracks in stations(1..) 3, 2 and 1 (abort in case of failure)
+  if (!FollowTracks(clusterStore)) return;
   
   // Complement the reconstructed tracks
-  if (GetRecoParam()->ComplementTracks()) ComplementTracks(clusterStore);
+  if (GetRecoParam()->ComplementTracks()) {
+    if (ComplementTracks(clusterStore)) RemoveIdenticalTracks();
+  }
   
   // Improve the reconstructed tracks
   if (GetRecoParam()->ImproveTracks()) ImproveTracks();
@@ -252,22 +256,85 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
 }
 
   //__________________________________________________________________________
+void AliMUONVTrackReconstructor::RemoveUsedSegments(TClonesArray& segments)
+{
+  /// To remove pairs of clusters already attached to a track
+  AliDebug(1,"Enter RemoveUsedSegments");
+  Int_t nSegments = segments.GetEntriesFast();
+  Int_t nTracks = fRecTracksPtr->GetEntriesFast();
+  AliMUONObjectPair *segment;
+  AliMUONTrack *track;
+  AliMUONVCluster *cluster, *cluster1, *cluster2;
+  Bool_t foundCluster1, foundCluster2, removeSegment;
+  
+  // Loop over segments
+  for (Int_t iSegment=0; iSegment<nSegments; iSegment++) {
+    segment = (AliMUONObjectPair*) segments.UncheckedAt(iSegment);
+    
+    cluster1 = (AliMUONVCluster*) segment->First();
+    cluster2 = (AliMUONVCluster*) segment->Second();
+    removeSegment = kFALSE;
+    
+    // Loop over tracks
+    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+      track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack);
+      
+      // skip empty slot
+      if (!track) continue;
+      
+      foundCluster1 = kFALSE;
+      foundCluster2 = kFALSE;
+      
+      // Loop over clusters
+      Int_t nClusters = track->GetNClusters();
+      for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
+        cluster = ((AliMUONTrackParam*) track->GetTrackParamAtCluster()->UncheckedAt(iCluster))->GetClusterPtr();
+	
+	// check if both clusters are in that track
+	if (cluster == cluster1) foundCluster1 = kTRUE;
+	else if (cluster == cluster2) foundCluster2 = kTRUE;
+	
+	if (foundCluster1 && foundCluster2) {
+	  removeSegment = kTRUE;
+	  break;
+	}
+	
+      }
+      
+      if (removeSegment) break;
+      
+    }
+    
+    if (removeSegment) segments.RemoveAt(iSegment);
+      
+  }
+  
+  segments.Compress();
+  
+  // Printout for debug
+  AliDebug(1,Form("NSegments =  %d ", segments.GetEntriesFast()));
+}
+
+  //__________________________________________________________________________
 void AliMUONVTrackReconstructor::RemoveIdenticalTracks()
 {
   /// To remove identical tracks:
   /// Tracks are considered identical if they have all their clusters in common.
   /// One keeps the track with the larger number of clusters if need be
-  AliMUONTrack *track1, *track2, *trackToRemove;
+  AliMUONTrack *track1, *track2;
+  Int_t nTracks = fRecTracksPtr->GetEntriesFast();
   Int_t clustersInCommon, nClusters1, nClusters2;
-  Bool_t removedTrack1;
   // Loop over first track of the pair
-  track1 = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track1) {
-    removedTrack1 = kFALSE;
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
+    track1 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack1);
+    // skip empty slot
+    if (!track1) continue;
     nClusters1 = track1->GetNClusters();
     // Loop over second track of the pair
-    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-    while (track2) {
+    for (Int_t iTrack2 = iTrack1+1; iTrack2 < nTracks; iTrack2++) {
+      track2 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack2);
+      // skip empty slot
+      if (!track2) continue;
       nClusters2 = track2->GetNClusters();
       // number of clusters in common between two tracks
       clustersInCommon = track1->ClustersInCommon(track2);
@@ -276,27 +343,18 @@ void AliMUONVTrackReconstructor::RemoveIdenticalTracks()
         // decide which track to remove
         if (nClusters2 > nClusters1) {
 	  // remove track1 and continue the first loop with the track next to track1
-	  trackToRemove = track1;
-	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-          fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+          fRecTracksPtr->RemoveAt(iTrack1);
 	  fNRecTracks--;
-	  removedTrack1 = kTRUE;
 	  break;
 	} else {
 	  // remove track2 and continue the second loop with the track next to track2
-	  trackToRemove = track2;
-	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
-	  fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fRecTracksPtr->RemoveAt(iTrack2);
 	  fNRecTracks--;
         }
-      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+      }
     } // track2
-    if (removedTrack1) continue;
-    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
   } // track1
-  return;
+  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
 }
 
   //__________________________________________________________________________
@@ -307,46 +365,40 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
   /// which has the smaller number of clusters are in common with the other track.
   /// Among two identical tracks, one keeps the track with the larger number of clusters
   /// or, if these numbers are equal, the track with the minimum chi2.
-  AliMUONTrack *track1, *track2, *trackToRemove;
-  Int_t clustersInCommon, nClusters1, nClusters2;
-  Bool_t removedTrack1;
+  AliMUONTrack *track1, *track2;
+  Int_t nTracks = fRecTracksPtr->GetEntriesFast();
+  Int_t clustersInCommon2, nClusters1, nClusters2;
   // Loop over first track of the pair
-  track1 = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track1) {
-    removedTrack1 = kFALSE;
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
+    track1 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack1);
+    // skip empty slot
+    if (!track1) continue;
     nClusters1 = track1->GetNClusters();
     // Loop over second track of the pair
-    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-    while (track2) {
+    for (Int_t iTrack2 = iTrack1+1; iTrack2 < nTracks; iTrack2++) {
+      track2 = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iTrack2);
+      // skip empty slot
+      if (!track2) continue;
       nClusters2 = track2->GetNClusters();
       // number of clusters in common between two tracks
-      clustersInCommon = track1->ClustersInCommon(track2);
+      clustersInCommon2 = 2 * track1->ClustersInCommon(track2);
       // check for identical tracks
-      if (((nClusters1 < nClusters2) && (2 * clustersInCommon > nClusters1)) || (2 * clustersInCommon > nClusters2)) {
+      if (clustersInCommon2 > nClusters1 || clustersInCommon2 > nClusters2) {
         // decide which track to remove
         if ((nClusters1 > nClusters2) || ((nClusters1 == nClusters2) && (track1->GetGlobalChi2() <= track2->GetGlobalChi2()))) {
 	  // remove track2 and continue the second loop with the track next to track2
-	  trackToRemove = track2;
-	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
-	  fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fRecTracksPtr->RemoveAt(iTrack2);
 	  fNRecTracks--;
         } else {
 	  // else remove track1 and continue the first loop with the track next to track1
-	  trackToRemove = track1;
-	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-          fRecTracksPtr->Remove(trackToRemove);
-	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+          fRecTracksPtr->RemoveAt(iTrack1);
 	  fNRecTracks--;
-	  removedTrack1 = kTRUE;
 	  break;
         }
-      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+      }
     } // track2
-    if (removedTrack1) continue;
-    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
   } // track1
-  return;
+  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
 }
 
   //__________________________________________________________________________
@@ -370,7 +422,8 @@ void AliMUONVTrackReconstructor::RemoveConnectedTracks(Bool_t inSt345)
     while (track2) {
       nClusters2 = track2->GetNClusters();
       // number of clusters in common between two tracks
-      clustersInCommon = track1->ClustersInCommon(track2, inSt345);
+      if (inSt345) clustersInCommon = track1->ClustersInCommonInSt345(track2);
+      else clustersInCommon = track1->ClustersInCommon(track2);
       // check for identical tracks
       if (clustersInCommon > 0) {
         // decide which track to remove
@@ -618,6 +671,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
 	  extrapTrackParamAtCluster.SetRemovable(kFALSE);
 	else extrapTrackParamAtCluster.SetRemovable(kTRUE);
 	newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster,*cluster);
+	newTrack->SetGlobalChi2(trackCandidate.GetGlobalChi2()+chi2WithOneCluster);
 	fNRecTracks++;
 	
 	// Printout for debuging
@@ -643,6 +697,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
 	bestTrackParamAtCluster.SetRemovable(kFALSE);
       else bestTrackParamAtCluster.SetRemovable(kTRUE);
       trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));
+      trackCandidate.SetGlobalChi2(trackCandidate.GetGlobalChi2()+bestChi2WithOneCluster);
       
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -794,6 +849,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	    newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster1,*clusterCh1);
 	    extrapTrackParamAtCluster2.SetRemovable(kTRUE);
 	    newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster2,*clusterCh2);
+	    newTrack->SetGlobalChi2(newTrack->GetGlobalChi2()+chi2WithTwoClusters);
 	    fNRecTracks++;
 	    
 	    // Tag clusterCh1 as used
@@ -827,6 +883,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	    extrapTrackParamAtCluster2.SetRemovable(kFALSE);
 	  else extrapTrackParamAtCluster2.SetRemovable(kTRUE);
 	  newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster2,*clusterCh2);
+	  newTrack->SetGlobalChi2(newTrack->GetGlobalChi2()+chi2WithOneCluster);
 	  fNRecTracks++;
 	  
 	  // Printout for debuging
@@ -899,6 +956,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	    extrapTrackParamAtCluster1.SetRemovable(kFALSE);
 	  else extrapTrackParamAtCluster1.SetRemovable(kTRUE);
 	  newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster1,*clusterCh1);
+	  newTrack->SetGlobalChi2(newTrack->GetGlobalChi2()+chi2WithOneCluster);
 	  fNRecTracks++;
   	  
 	  // Printout for debuging
@@ -926,6 +984,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster1,*(bestTrackParamAtCluster1.GetClusterPtr()));
       bestTrackParamAtCluster2.SetRemovable(kTRUE);
       trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster2,*(bestTrackParamAtCluster2.GetClusterPtr()));
+      trackCandidate.SetGlobalChi2(trackCandidate.GetGlobalChi2()+bestChi2WithTwoClusters);
       
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -938,6 +997,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	bestTrackParamAtCluster1.SetRemovable(kFALSE);
       else bestTrackParamAtCluster1.SetRemovable(kTRUE);
       trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster1,*(bestTrackParamAtCluster1.GetClusterPtr()));
+      trackCandidate.SetGlobalChi2(trackCandidate.GetGlobalChi2()+bestChi2WithOneCluster);
       
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
