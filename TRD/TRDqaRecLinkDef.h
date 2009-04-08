@@ -21,6 +21,7 @@
 #pragma link C++ class  AliTRDpidChecker+;
 
 // reconstruction calibration tasks
+#pragma link C++ class  AliTRDmultiplicity+;
 #pragma link C++ class  AliTRDclusterResolution+;
 #pragma link C++ class  AliTRDalignmentTask+;
 #pragma link C++ class  AliTRDcalibration+;

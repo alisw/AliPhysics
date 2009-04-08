@@ -5,6 +5,7 @@
 //   tasks : "ALL" or one/more of the following:
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
+//     "MULT"  : TRD single track selection
 //     "RES"  : TRD tracking Resolution
 //     "CLRES": clusters Resolution
 //     "CAL"  : TRD calibration
@@ -70,6 +71,7 @@
 #include "TRD/qaRec/AliTRDpidRefMaker.h"
 #include "TRD/qaRec/AliTRDcheckDetector.h"
 #include "TRD/qaRec/AliTRDclusterResolution.h"
+#include "TRD/qaRec/AliTRDmultiplicity.h"
 #endif
 
 #include "run.h"
@@ -139,6 +141,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
   }
   // extra rules for calibration tasks
   if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kTrackingEff);
   if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kPIDChecker);
   if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
 
@@ -223,6 +226,16 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0)
     //Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+    
+    // TRD single track selection
+    if(TSTBIT(fSteerTask, kMultiplicity)){
+      mgr->AddTask(task = new AliTRDmultiplicity());
+      taskPtr[(Int_t)kMultiplicity] = task;
+      task->SetDebugLevel(0);
+      // Create containers for input/output
+      mgr->ConnectInput( task, 0, coutput1);
+      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+    }
   }
 
   //____________________________________________

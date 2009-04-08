@@ -7,7 +7,7 @@
 #define CLRBIT(n,i) ((n) &= ~BIT(i))
 
 #define NQATASKS 6
-#define NCALIBTASKS 4
+#define NCALIBTASKS 5
 const Int_t NTRDTASKS = NQATASKS+NCALIBTASKS;
 
 enum AliTRDrecoTasks{
@@ -21,6 +21,7 @@ enum AliTRDrecoTasks{
   ,kAlignment = 7
   ,kPIDRefMaker = 8
   ,kClErrParam = 9
+  ,kMultiplicity = 10
 };
 
 const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
@@ -34,6 +35,7 @@ const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
   ,"AliTRDalignmentTask"
   ,"AliTRDpidRefMaker"
   ,"AliTRDclusterResolution"
+  ,"AliTRDmultiplicity"
 };
 
 const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+2] = {
@@ -47,6 +49,7 @@ const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+2] = {
   ,"ALGN"
   ,"PIDR"
   ,"CLRES"
+  ,"MULT"
   ,"NOFR"
   ,"NOMC"
 };
