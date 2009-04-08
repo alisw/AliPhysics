@@ -172,19 +172,17 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   // We take all real primaries
 
 
-	    
   Int_t j=0;
   for (Int_t ip = 0; ip < np; ip++){
     AliMCParticle* mcpart =  mcE->GetTrack(ip);
     TParticle* part = mcpart->Particle();
-    
     Float_t xv = part->Vx();
     Float_t yv = part->Vy();
     Float_t zv = part->Vz();
     Float_t rv = TMath::Sqrt(xv * xv + yv * yv);
       
     Bool_t write = kFALSE;
-
+    
     if (ip < nprim) {
       // Select the primary event
       write = kTRUE;
@@ -197,12 +195,10 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	mother =  mcE->Stack()->Particle(imo);
 	imo =  mother->GetFirstMother();
       }
-      // Select according to pseudorapidity and production point 
-	if (imo < nprim && Select(mother, rv, zv)) 
-	  write = kTRUE;
+      // Select according to pseudorapidity and production point of primary ancestor
+      if (imo < nprim && Select(mcE->Stack()->Particle(imo), rv, zv))write = kTRUE;         
     } else if (part->GetUniqueID() == 5) {
       // Now look for pair production
-      continue;
       Int_t imo = part->GetFirstMother();
       if (imo < nprim) {
 	// Select, if the gamma is a primary
@@ -241,6 +237,35 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     }
   }
 
+
+    // check for charm daughters
+  static int  iTaken = 0;
+  static int  iAll = 0;
+  static int  iCharm = 0;
+  for (Int_t ip = 0; ip < np; ip++){
+    AliMCParticle* mcpart =  mcE->GetTrack(ip);
+    TParticle* part = mcpart->Particle();
+
+    //    if((TMath::Abs(part->GetPdgCode())/400)==1){
+    if((TMath::Abs(part->GetPdgCode()))==411){
+      // cases 
+      iCharm++;
+      Printf("Decay Mother %s",part->GetPDG()->GetName());
+      Int_t d0 =  part->GetFirstDaughter();
+      Int_t d1 =  part->GetLastDaughter();
+      if(d0>0&&d1>0){
+	for(int id = d0;id <= d1;id++){
+	  TParticle* daughter =  mcE->Stack()->Particle(id);
+	  Printf("Decay Daughter %s",daughter->GetPDG()->GetName());
+	  iAll++;
+	  if(mcH->IsParticleSelected(id))iTaken++;
+	}
+      }
+    }
+  }
+  Printf("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm);
+
+
   return;
 }
 
@@ -259,8 +284,12 @@ Bool_t AliAnalysisTaskMCParticleFilter::Select(TParticle* part, Float_t rv, Floa
   // larger for V0s in the TPC
   //  if (TMath::Abs(eta) < 2.5 && rv < 250. && TMath::Abs(zv)<255)return kTRUE;
 
+  if (TMath::Abs(eta) < 2.5 && rv < 170)return kTRUE;   
+
   // Andreas' Cuts
-  if (TMath::Abs(eta) < 1. && rv < 170)return kTRUE;   
+  //  if (TMath::Abs(eta) < 1. && rv < 170)return kTRUE;   
+
+
 
   // Muon arm
   if(eta > -4.2 && eta < -2.3 && zv > -500.)return kTRUE; // Muon arms
