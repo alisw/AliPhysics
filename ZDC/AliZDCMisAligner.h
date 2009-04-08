@@ -1,27 +1,30 @@
-#ifndef ALI_ZDC_MISALIGNER_H
-#define ALI_ZDC_MISALIGNER_H
+#ifndef ALIZDCMISALIGNER_H
+#define ALIZDCMISALIGNER_H
 
-#include "TNamed.h"
-#include "TString.h"
 #include "AliMisAligner.h"
-#include "AliCDBMetaData.h"
 
+// Class building the alignment objects for ZDC in the three
+// canonical scenarios "ideal", "residual" and "full".
+// It derives from AliMisAligner, thus providing the methods
+// MakeAlObjsArray (builds and returns the array of alignment objects)
+// and GetCDBMetaData (returns the metadata for the OCDB entry)
+//
+
+class TString;
+class TNamed;
 class TClonesArray;
 class AliCDBManager;
-
-  // Create a TClonesArray of misalignment objects for ZDC
-  // of ideal/residual/full type according to request by
-  // the steering macro
+class AliCDBMetaData;
 
 class AliZDCMisAligner : public AliMisAligner {
 
-  public:
-    AliZDCMisAligner();
-    TClonesArray* MakeAlObjsArray();
-    AliCDBMetaData* GetCDBMetaData() const;
+    public:
+	AliZDCMisAligner();
+	TClonesArray* MakeAlObjsArray();
+	AliCDBMetaData* GetCDBMetaData() const;
 
-  private:
-    ClassDef(AliZDCMisAligner,0);
+    private:
+	ClassDef(AliZDCMisAligner,0);
 };
 
 #endif
