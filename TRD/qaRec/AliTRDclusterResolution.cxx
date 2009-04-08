@@ -254,7 +254,7 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
   
   TList *l = 0x0;
   TObjArray *arr = 0x0;
-  TH2 *h2 = 0x0;
+  TH2 *h2 = 0x0;TH1 *h1 = 0x0;
   TGraphErrors *gm(0x0), *gs(0x0), *gp(0x0);
   switch(ifig){
   case kQRes:
@@ -281,20 +281,33 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
   case kSigm:
     if(!(arr = (TObjArray*)fResults->At(kSigm))) break;
     gPad->Divide(2, 1); l = gPad->GetListOfPrimitives();
-    for(Int_t ipad = 2; ipad--;){
-      if(!(h2 = (TH2F*)arr->At(ipad))) return kFALSE;
-      ((TVirtualPad*)l->At(ipad))->cd();
-      h2->Draw("lego2fb");
-    }
+    if(!(h2 = (TH2F*)arr->At(0))) return kFALSE;
+    ((TVirtualPad*)l->At(0))->cd();
+    h1 = h2->ProjectionY("hsx_pyy"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1->SetYTitle("<#sigma_{x}> [#mum]");
+    h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
+
+    if(!(h2 = (TH2F*)arr->At(1))) return kFALSE;
+    ((TVirtualPad*)l->At(1))->cd();
+    h1 = h2->ProjectionY("hsy_pyy"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1->SetYTitle("<#sigma_{y}> [#mum]");
+    h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
     return kTRUE;
   case kMean:
     if(!(arr = (TObjArray*)fResults->At(kMean))) break;
     gPad->Divide(2, 1);  l = gPad->GetListOfPrimitives();
-    for(Int_t ipad = 2; ipad--;){
-      if(!(h2 = (TH2F*)arr->At(ipad))) return kFALSE;
-      ((TVirtualPad*)l->At(ipad))->cd();
-      h2->Draw("lego2fb");
-    }
+    ((TVirtualPad*)l->At(0))->cd();
+    if(!(gm = (TGraphErrors*)arr->At(0))) return kFALSE;
+    gm->Draw("apl");
+    gm->GetHistogram()->SetXTitle("t_{drift} [#mus]");
+    gm->GetHistogram()->SetYTitle("dx [#mum]");
+
+    ((TVirtualPad*)l->At(1))->cd();
+    if(!(gm = (TGraphErrors*)arr->At(1))) return kFALSE;
+    gm->Draw("apl");
+    gm->GetHistogram()->SetXTitle("t_{drift} [#mus]");
+    gm->GetHistogram()->SetYTitle("dy [#mum]");
+
     return kTRUE;
   default:
     break;
@@ -476,11 +489,17 @@ Bool_t AliTRDclusterResolution::PostProcess()
     arr->AddAt(h2 = (TH2F*)h2->Clone("hSY"), 1);
     h2->SetZTitle("#sigma_{y} [cm]");
 
-    fResults->AddAt(arr = new TObjArray(2), kMean);
+    fResults->AddAt(arr = new TObjArray(4), kMean);
     arr->SetOwner();
-    arr->AddAt(h2 = (TH2F*)h2->Clone("hDX"), 0);
+    arr->AddAt(g = new TGraphErrors(), 0);
+    g->SetLineColor(kBlue); g->SetMarkerColor(kBlue);
+    g->SetMarkerStyle(24); 
+    arr->AddAt(g = new TGraphErrors(), 1);
+    g->SetLineColor(kRed); g->SetMarkerColor(kRed);
+    g->SetMarkerStyle(24); 
+    arr->AddAt(h2 = (TH2F*)h2->Clone("hDX"), 2);
     h2->SetZTitle("dx [cm]");
-    arr->AddAt(h2 = (TH2F*)h2->Clone("hDY"), 1);
+    arr->AddAt(h2 = (TH2F*)h2->Clone("hDY"), 3);
     h2->SetZTitle("dy [cm]");
   } else {
     TObject *o = 0x0;
@@ -717,15 +736,18 @@ void AliTRDclusterResolution::ProcessSigma()
   TAxis *ax = 0x0;
   TH1D *h1 = 0x0;
   TH2I *h2 = 0x0;
+  TH1 *hFrame=0x0;
+
   // init visualization
   TGraphErrors *ggs = 0x0;
-  TLine *line = 0x0;
+  TGraph *line = 0x0;
   if(fCanvas){
     ggs = new TGraphErrors();
-    line = new TLine();
+    line = new TGraph();
+    line->SetLineColor(kRed);line->SetLineWidth(2);
   }
 
-  Double_t d(0.), x(0.), sx, sy;
+  Double_t d(0.), x(0.), sx, sy, exb2=0.;//fExB*fExB;
   TObjArray *arrr = (TObjArray*)fResults->At(kSigm);
   TH2F *hsx = (TH2F*)arrr->At(0);
   TH2F *hsy = (TH2F*)arrr->At(1);
@@ -750,6 +772,7 @@ void AliTRDclusterResolution::ProcessSigma()
       ax = h2->GetXaxis();
       for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
         Float_t dydx = ax->GetBinCenter(ix);
+        //if(TMath::Abs(dydx)>0.18) continue;
         Double_t tgg = (dydx-fExB)/(1.+dydx*fExB);
         Double_t tgg2 = tgg*tgg;
         h1 = h2->ProjectionY("py", ix, ix);
@@ -766,105 +789,69 @@ void AliTRDclusterResolution::ProcessSigma()
         Int_t ip = ggs->GetN();
         ggs->SetPoint(ip, tgg2, s2);
         ggs->SetPointError(ip, 0., s2e);
-        //printf("%f, %f, %f, \n", tgg2, s2, s2e);
       }
       if(gs.Eval()) continue;
-      sx = gs.GetParameter(1); 
-      sy = gs.GetParameter(0);
-      hsx->SetBinContent(id, it, TMath::Sqrt(sx));
-      //hsx->SetBinError(id, it, sig.GetParError(1));
 
-      // s^2_y = s0^2_y + tg^2(a_L) * s^2_x 
-      hsy->SetBinContent(id, it, TMath::Sqrt(sy)/* - exb2*sig.GetParameter(1)*/);
+      // s^2_x = s0^2_x - x^2*tg^2(a_L)/12
+      sx = gs.GetParameter(1)/* - x*x*exb2/12.*/;
+      if(sx<0.) continue; 
+      hsx->SetBinContent(id, it, TMath::Sqrt(sx));
+      //hsx->SetBinError(id, it, .5*gs.GetParError(1)/TMath::Sqrt(sx));
+
+      // s^2_y  = s0^2_y + tg^2(a_L) * s^2_x
+      // s0^2_y = f(D_L)*x + s_PRF^2 
+      sy= gs.GetParameter(0)/*-exb2*sx*/;
+      if(sy <0.) continue;
+      hsy->SetBinContent(id, it, TMath::Sqrt(sy));
       //hsy->SetBinError(id, it, sig.GetParError(0)+exb2*exb2*sig.GetParError(1));
 
-      /*if(!fCanvas) */continue;
-      fCanvas->cd();
-      new(line) TLine(0, sy, .025, sy+.025*sx); 
-      line->SetLineColor(kRed);line->SetLineWidth(2);
-      ggs->Draw("apl"); line->Draw("");
+      if(!fCanvas) continue;
+      fCanvas->cd(); fCanvas->SetLogx(); //fCanvas->SetLogy();
+      if(!hFrame){ 
+        hFrame=new TH1I("hFrame", "", 100, 0., .3);
+        hFrame->SetMinimum(0.);hFrame->SetMaximum(.005);
+        hFrame->SetXTitle("tg^{2}(#phi-#alpha_{L})");
+        hFrame->SetYTitle("#sigma^{2}y[cm^{2}]");
+        hFrame->SetLineColor(1);hFrame->SetLineWidth(1);
+        hFrame->Draw();
+      } else hFrame->Reset();
+      Double_t xx = 0., dxx=.2/50;
+      for(Int_t ip=0;ip<50;ip++){ 
+        line->SetPoint(ip, xx,  gs.GetParameter(0)+xx*gs.GetParameter(1)); 
+        xx+=dxx;
+      }
+      ggs->Draw("pl"); line->Draw("l");
       fCanvas->Modified(); fCanvas->Update();
       if(IsSaveAs()) fCanvas->SaveAs(Form("Figures/ProcessSigma_D%d_T%02d.gif", id, it));
       else gSystem->Sleep(100);
 
-      printf("    xd=%4.1f[cm] sx=%5.3e[cm] sy=%5.3e[cm]\n", x, sx, sy);
+      printf("    xd=%4.1f[cm] sx=%5.3e[cm] sy=%5.3e[cm]\n", x, TMath::Sqrt(sx), TMath::Sqrt(sy));
     }
   }
-//   if(ggs) delete ggs; // TODO fix this memory leak !
-//   if(line) delete line;
 
-  // fit sy parallel to the drift
-  TF1 fsyD("fsy", "[0]+[1]*exp(1./(x+[2]))", 0.5, 3.5);
-  fsyD.SetParameter(0, .025);
-  fsyD.SetParameter(1, -8.e-4);
-  fsyD.SetParameter(2, -.25);
-  h1 = hsy->ProjectionY("hsy_pyy"); h1->Scale(1./hsy->GetNbinsX());
-  for(Int_t ib=1; ib<=h1->GetNbinsX(); ib++) h1->SetBinError(ib, 0.002);
-  h1->Fit(&fsyD, "Q", "", .5, 3.5);
-  printf("  const Float_t sy0 = %5.3e;\n", fsyD.GetParameter(0));
-  printf("  const Float_t sya = %5.3e;\n", fsyD.GetParameter(1));
-  printf("  const Float_t syb = %5.3e;\n", fsyD.GetParameter(2));
-  if(fCanvas){
-    fCanvas->cd();
-    h1->Draw("e1"); fsyD.Draw("same");
-    fCanvas->Modified(); fCanvas->Update();
-    if(IsSaveAs()) fCanvas->SaveAs("Figures/ProcessSigma_SY||.gif");
-    else gSystem->Sleep(1000);
+  printf("  const Double_t sx[%d][%d]={\n", kNTB-1, kND);
+  for(Int_t iy=1; iy<kNTB; iy++){
+    printf("    {");
+    for(Int_t ix=1; ix<kND; ix++){
+      printf("%5.3e, ", hsx->GetBinContent(ix, iy));
+    }
+    printf("%5.3e}", hsx->GetBinContent(kND, iy));
+    printf("%c\n", iy==(kNTB-1)?' ':',');
   }
+  printf("  };\n");
   
-
-  // fit sx parallel to the drift
-  TF1 fsxD("fsx", "gaus(0)+expo(3)", 0., 3.5);
-  h1 = hsx->ProjectionY("hsx_pyy"); 
-  h1->Scale(1./hsx->GetNbinsX());
-  for(Int_t ib=1; ib<=h1->GetNbinsX(); ib++) if(h1->GetBinContent(ib)>0.) h1->SetBinError(ib, 0.02);
-  h1->Fit(&f, "QN", "", 0., 1.3);
-  fsxD.SetParameter(0, 0.);
-  fsxD.SetParameter(1, f.GetParameter(1));
-  fsxD.SetParameter(2, f.GetParameter(2));
-  TF1 expo("fexpo", "expo", 0., 3.5);
-  h1->Fit(&expo, "QN");
-  fsxD.SetParameter(3, expo.GetParameter(0));
-  fsxD.SetParameter(4, expo.GetParameter(1));
-  h1->Fit(&fsxD, "Q");
-  printf("  const Float_t sxgc = %5.3e;\n", fsxD.GetParameter(0));
-  printf("  const Float_t sxgm = %5.3e;\n", fsxD.GetParameter(1));
-  printf("  const Float_t sxgs = %5.3e;\n", fsxD.GetParameter(2));
-  printf("  const Float_t sxe0 = %5.3e;\n", fsxD.GetParameter(3));
-  printf("  const Float_t sxe1 = %5.3e;\n", fsxD.GetParameter(4));
-  if(fCanvas){
-    fCanvas->cd();
-    h1->Draw("e1"); fsxD.Draw("same");
-    fCanvas->Modified(); fCanvas->Update();
-    if(IsSaveAs()) fCanvas->SaveAs("Figures/ProcessSigma_SX||.gif");
-    else gSystem->Sleep(1000);
+  printf("  const Double_t sy[%d][%d]={\n", kNTB-1, kND);
+  for(Int_t iy=1; iy<kNTB; iy++){
+    printf("    {");
+    for(Int_t ix=1; ix<kND; ix++){
+      printf("%5.3e, ", hsy->GetBinContent(ix, iy));
+    }
+    printf("%5.3e}", hsy->GetBinContent(kND, iy));
+    printf("%c\n", iy==(kNTB-1)?' ':',');
   }
+  printf("  };\n");
   
-  // fit sx perpendicular to the drift
-  Int_t nb = 0;
-  TAxis *ay = hsx->GetYaxis();
-  TH1D *hx = hsx->ProjectionX("hsx_px", 1,1);
-  TH1D *hAn = (TH1D*)hx->Clone("hAn"); hAn->Reset();
-  for(Int_t ib = 11; ib<24; ib++, nb++){
-    hx = hsx->ProjectionX("hsx_px", ib, ib);
-    for(Int_t id=1; id<=hx->GetNbinsX(); id++)
-      hx->SetBinContent(id, hx->GetBinContent(id)-fsxD.Eval(ay->GetBinCenter(ib))); 
-    hAn->Add(hx);
-  }
-  TF1 fsxA("fsxA", "pol2", 0., 0.25);
-  hAn->Scale(1./nb);
-  for(Int_t ib=1; ib<=hAn->GetNbinsX(); ib++) hAn->SetBinError(ib, 0.002);
-  hAn->Fit(&fsxA, "Q");
-  printf("  const Float_t sxd0 = %5.3e;\n", fsxA.GetParameter(0));
-  printf("  const Float_t sxd1 = %5.3e;\n", fsxA.GetParameter(1));
-  printf("  const Float_t sxd2 = %5.3e;\n", fsxA.GetParameter(2));
-  if(fCanvas){
-    fCanvas->cd();
-    hAn->Draw("e1"); fsxA.Draw("same");
-    fCanvas->Modified(); fCanvas->Update();
-    if(IsSaveAs()) fCanvas->SaveAs("Figures/ProcessSigma_SXL.gif");
-    else gSystem->Sleep(100);
-  }
+  return;
 }
 
 //_______________________________________________________
@@ -885,8 +872,8 @@ void AliTRDclusterResolution::ProcessMean()
   TH1 *hFrame=0x0;
 
   TObjArray *arrr = (TObjArray*)fResults->At(kMean);
-  TH2F *hdx = (TH2F*)arrr->At(0);
-  TH2F *hdy = (TH2F*)arrr->At(1);
+  TH2F *hdx = (TH2F*)arrr->At(2);
+  TH2F *hdy = (TH2F*)arrr->At(3);
   for(Int_t id=1; id<=fAd->GetNbins(); id++){
     d = fAd->GetBinCenter(id); //[mm]
     printf(" Doing d = %5.3f [mm]\n", d);
@@ -941,13 +928,44 @@ void AliTRDclusterResolution::ProcessMean()
     }
   }
 
-  TH1D *h=hdx->ProjectionY("hdx_py"); h->Scale(1./hdx->GetNbinsX());
-  printf("  const Float_t cx[] = {\n    ");
-  for(Int_t ib=1; ib<=h->GetNbinsX(); ib++){
-    printf("%+6.4e, ", h->GetBinContent(ib));
-    if(ib%6==0) printf("\n    ");
+  // dump to stdout correction map
+  printf("  const Double_t dx[%d][%d]={\n", kNTB-1, kND);
+  for(Int_t iy=1; iy<kNTB; iy++){
+    printf("    {");
+    for(Int_t ix=1; ix<kND; ix++){
+      printf("%+5.3e,", hdx->GetBinContent(ix, iy));
+    }
+    printf("%+5.3e}", hdx->GetBinContent(kND, iy));
+    printf("%c\n", iy==(kNTB-1)?' ':',');
   }
   printf("  };\n");
 
+  // Collapse the z direction
+  TAxis *ay = hdx->GetYaxis();
+  // radial systematics
+  TGraphErrors *g = (TGraphErrors*)arrr->At(0);
+  for(Int_t iy = 1; iy<kNTB; iy++){
+    Double_t m=0., rms=0.;
+    for(Int_t ix = 1; ix<=kND; ix++){
+      d = hdx->GetBinContent(ix, iy);
+      m += d; rms += (d*d);
+    }
+    m /= Int_t(kND); rms = TMath::Sqrt(rms/Int_t(kND)-m*m);
+    g->SetPoint(iy-1, ay->GetBinCenter(iy), 1.e4*m);
+    g->SetPointError(iy-1, 0., 1.e4*rms);
+  }
+
+  // r-phi systematics
+  g = (TGraphErrors*)arrr->At(1);
+  for(Int_t iy = 1; iy<kNTB; iy++){
+    Double_t m=0., rms=0.;
+    for(Int_t ix = 1; ix<=kND; ix++){
+      d = hdy->GetBinContent(ix, iy);
+      m += d; rms += (d*d);
+    }
+    m /= Int_t(kND); rms = TMath::Sqrt(rms/Int_t(kND)-m*m);
+    g->SetPoint(iy-1, ay->GetBinCenter(iy), 1.e4*m);
+    g->SetPointError(iy-1, 0., 1.e4*rms);
+  }
   // delete gm; TODO memory leak ?
 }
