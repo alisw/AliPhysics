@@ -19,8 +19,7 @@ class AliTrackFitterKalman : public AliTrackFitter {
 public:
   AliTrackFitterKalman() : 
      AliTrackFitter(), 
-     fMaxChi2(fgkMaxChi2),
-     fSeed(kFALSE) {}
+     fMaxChi2(fgkMaxChi2) {}
 
   AliTrackFitterKalman(AliTrackPointArray *array, Bool_t owner = kTRUE);
   virtual ~AliTrackFitterKalman() {}
@@ -34,7 +33,7 @@ public:
 
   Bool_t Begin(Int_t first, Int_t last);
   Bool_t AddPoint(const AliTrackPoint *p);
-  Bool_t Update() {fSeed=kFALSE; return kTRUE;}
+  Bool_t Update() {return kTRUE;}
 
 private:
   AliTrackFitterKalman(const AliTrackFitterKalman &kalman);
@@ -48,9 +47,8 @@ private:
   static const Double_t fgkMaxChi2;  // Default maximal allowed chi2 
 
   Double_t fMaxChi2;                 // A point is added if chi2 < fMaxChi2 
-  Bool_t   fSeed;                    // True, if the fitter is already "seeded" 
 
-  ClassDef(AliTrackFitterKalman,2)   // Kalman-Filter fit to a straight line
+  ClassDef(AliTrackFitterKalman,3)   // Kalman-Filter fit to a straight line
 
 };
 
