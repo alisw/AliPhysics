@@ -31,7 +31,12 @@ ClassImp(AliEventTagCuts)
 //___________________________________________________________________________
 AliEventTagCuts::AliEventTagCuts() :
   TObject(),
-  
+  fPeriodNumberMin(0), fPeriodNumberMax(0xFFFFFFFF), fPeriodNumberFlag(kFALSE),
+  fOrbitNumberMin(0), fOrbitNumberMax(0xFFFFFFFF), fOrbitNumberFlag(kFALSE),
+  fBunchCrossNumberMin(0), fBunchCrossNumberMax(0xFFFFFFFF), 
+  fBunchCrossNumberFlag(kFALSE),
+  fEventType(7), fEventTypeFlag(kFALSE),
+
   fNParticipantsMin(-1), fNParticipantsMax(10000),
   fNParticipantsFlag(kFALSE),
   fImpactParamMin(-1.0), fImpactParamMax(1000.0),
@@ -152,7 +157,14 @@ AliEventTagCuts::AliEventTagCuts() :
   fEventPlaneAngleMin(-10000000.0), fEventPlaneAngleMax(10000000.0), 
   fEventPlaneAngleFlag(kFALSE),
   fHBTRadiiMin(-1.0), fHBTRadiiMax(100000.0), 
-  fHBTRadiiFlag(kFALSE)
+  fHBTRadiiFlag(kFALSE),
+
+  fNumberOfFiredChipsLayer1Min(0), fNumberOfFiredChipsLayer1Max(100000),
+  fNumberOfFiredChipsLayer1Flag(kFALSE),
+  fNumberOfFiredChipsLayer2Min(0), fNumberOfFiredChipsLayer2Max(100000),
+  fNumberOfFiredChipsLayer2Flag(kFALSE),
+  fNumberOfSPDTrackletsMin(0), fNumberOfSPDTrackletsMax(100000),
+  fNumberOfSPDTrackletsFlag(kFALSE)
 {
   //Default constructor which calls the Reset method.
   Reset();
@@ -166,6 +178,12 @@ AliEventTagCuts::~AliEventTagCuts() {
 //___________________________________________________________________________
 void AliEventTagCuts::Reset() {
   //Sets dummy values to every private member.
+  fPeriodNumberFlag = kFALSE;
+  fOrbitNumberFlag = kFALSE;
+  fBunchCrossNumberFlag = kFALSE;
+  
+  fEventTypeFlag = kFALSE;
+
   fNParticipantsFlag = kFALSE;
   fImpactParamFlag = kFALSE;
 
@@ -229,7 +247,17 @@ void AliEventTagCuts::Reset() {
   fTopNeutralPtMinFlag = kFALSE;
   fEventPlaneAngleFlag = kFALSE;
   fHBTRadiiFlag = kFALSE;
-  
+
+  fNumberOfFiredChipsLayer1Flag = kFALSE;
+  fNumberOfFiredChipsLayer2Flag = kFALSE;
+  fNumberOfSPDTrackletsFlag = kFALSE;
+
+  fPeriodNumberMin = 0, fPeriodNumberMax = 0xFFFFFFFF;
+  fOrbitNumberMin = 0, fOrbitNumberMax = 0xFFFFFFFF;
+  fBunchCrossNumberMin = 0, fBunchCrossNumberMax = 0xFFFFFFFF;
+
+  fEventType = 7;
+
   fVxMin = -1000.0; fVxMax = 1000.0; 
   fVyMin = -1000.0; fVyMax = 1000.0;  
   fVzMin = -1000.0; fVzMax = 1000.0;
@@ -292,6 +320,72 @@ void AliEventTagCuts::Reset() {
   fTopNeutralPtMin = -1.0; 
   fEventPlaneAngleMin = -10000000.0; fEventPlaneAngleMax = 10000000.0; 
   fHBTRadiiMin = -1.0; fHBTRadiiMax = 100000.0; 
+
+  fNumberOfFiredChipsLayer1Min = 0, fNumberOfFiredChipsLayer1Max = 100000;
+  fNumberOfFiredChipsLayer2Min = 0, fNumberOfFiredChipsLayer2Max = 100000;
+  fNumberOfSPDTrackletsMin = 0, fNumberOfSPDTrackletsMax = 100000;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetEventType(UInt_t ntype) {
+  //Sets the event type
+  //and the corresponding flag to kTRUE if the cut is used.
+  fEventType = ntype;
+  fEventTypeFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNumberOfFiredChipsLayer1Range(Int_t low, Int_t high) {
+  //Sets the range for the number of fired chips of layer 1
+  //and the corresponding flag to kTRUE if the cut is used.
+  fNumberOfFiredChipsLayer1Min = low;
+  fNumberOfFiredChipsLayer1Max = high;
+  fNumberOfFiredChipsLayer1Flag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNumberOfFiredChipsLayer2Range(Int_t low, Int_t high) {
+  //Sets the range for the number of fired chips of layer 2
+  //and the corresponding flag to kTRUE if the cut is used.
+  fNumberOfFiredChipsLayer2Min = low;
+  fNumberOfFiredChipsLayer2Max = high;
+  fNumberOfFiredChipsLayer2Flag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNumberOfSPDTrackletsRange(Int_t low, Int_t high) {
+  //Sets the range for the number of fired chips of layer 1
+  //and the corresponding flag to kTRUE if the cut is used.
+  fNumberOfSPDTrackletsMin = low;
+  fNumberOfSPDTrackletsMax = high;
+  fNumberOfSPDTrackletsFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetPeriodNumberRange(UInt_t low, UInt_t high) {
+  //Sets the period number range
+  //and the corresponding flag to kTRUE if the cut is used.
+  fPeriodNumberMin = low;
+  fPeriodNumberMax = high; 
+  fPeriodNumberFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetOrbitNumberRange(UInt_t low, UInt_t high) {
+  //Sets the orbit number range
+  //and the corresponding flag to kTRUE if the cut is used.
+  fOrbitNumberMin = low;
+  fOrbitNumberMax = high; 
+  fOrbitNumberFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetBunchCrossNumberRange(UShort_t low, UShort_t high) {
+  //Sets the BC number range
+  //and the corresponding flag to kTRUE if the cut is used.
+  fBunchCrossNumberMin = low;
+  fBunchCrossNumberMax = high; 
+  fBunchCrossNumberFlag = kTRUE;
 }
 
 //___________________________________________________________________________
@@ -808,6 +902,35 @@ void AliEventTagCuts::SetHBTRadiiRange(Float_t low, Float_t high) {
 //___________________________________________________________________________
 Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
   //Returns true if the event is accepted otherwise false.
+  if(fEventTypeFlag)
+    if(EvTag->GetEventType() != fEventType)
+      return kFALSE;
+  
+  if(fNumberOfFiredChipsLayer1Flag)
+    if((EvTag->GetNumberOfFiredChipsLayer1() < fNumberOfFiredChipsLayer1Min) || (EvTag->GetNumberOfFiredChipsLayer1() > fNumberOfFiredChipsLayer1Max))
+      return kFALSE;
+
+  if(fNumberOfFiredChipsLayer2Flag)
+    if((EvTag->GetNumberOfFiredChipsLayer2() < fNumberOfFiredChipsLayer2Min) || (EvTag->GetNumberOfFiredChipsLayer2() > fNumberOfFiredChipsLayer2Max))
+      return kFALSE;
+
+  if(fNumberOfSPDTrackletsFlag)
+    if((EvTag->GetNumberOfSPDTracklets() < fNumberOfSPDTrackletsMin) || (EvTag->GetNumberOfSPDTracklets() > fNumberOfSPDTrackletsMax))
+      return kFALSE;
+
+  if(fPeriodNumberFlag)
+    if((EvTag->GetPeriodNumber() < fPeriodNumberMin) || (EvTag->GetPeriodNumber() > fPeriodNumberMax))
+      return kFALSE;
+
+  if(fOrbitNumberFlag)
+    if((EvTag->GetOrbitNumber() < fOrbitNumberMin) || (EvTag->GetOrbitNumber() > fOrbitNumberMax))
+      return kFALSE;
+
+  if(fBunchCrossNumberFlag)
+    if((EvTag->GetBunchCrossNumber() < fBunchCrossNumberMin) || (EvTag->GetBunchCrossNumber() > fBunchCrossNumberMax))
+      return kFALSE;
+
+
   if(fVzFlag)
     if((EvTag->GetVertexZ() < fVzMin) || (EvTag->GetVertexZ() > fVzMax))
       return kFALSE;
@@ -836,10 +959,10 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
     if((EvTag->GetVertexZError() < fPrimaryVertexZErrorMin) || (EvTag->GetVertexZError() > fPrimaryVertexZErrorMax))
       return kFALSE; 
   if(fTriggerMaskFlag)
-    if((EvTag->GetTriggerMask() != fTriggerMask))
+    if((EvTag->GetTriggerMask() & fTriggerMask) != fTriggerMask)
       return kFALSE; 
   if(fTriggerClusterFlag)
-    if((EvTag->GetTriggerMask() != fTriggerMask))
+    if((EvTag->GetTriggerCluster() != fTriggerCluster))
       return kFALSE; 
 
   if(fZDCNeutron1EnergyFlag)

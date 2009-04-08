@@ -28,7 +28,11 @@ ClassImp(AliEventTag)
 //______________________________________________________________________________
   AliEventTag::AliEventTag() : 
     TObject(),
-    fAliceEventId(0),
+    fPeriodNumber(0),
+    fOrbitNumber(0),
+    fBunchCrossNumber(0),
+    fFiredTriggerClasses(),
+    fEventType(0),
     fGUID(0),
     fPath(0),
     fsize(0),
@@ -91,18 +95,26 @@ ClassImp(AliEventTag)
     fMeanNeutralPt(-10.0),
     fMaxNeutralPt(-10.0),
     fEventPlaneAngle(-10.0),
-    fHBTRadii(-10.0)
+    fHBTRadii(-10.0),
+    fNumberOfFiredChipsLayer1(0),
+    fNumberOfFiredChipsLayer2(0),
+    fNumberOfSPDTracklets(0)
 {
   // AliEventTag default constructor
   for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = -10.0;
-
+  for(Int_t i1 = 0; i1 < 64; i1++) fVZEROADC[i1] = 0;
+  for(Int_t i2 = 0; i2 < 64; i2++) fVZEROTime[i2] = kFALSE;
 }
 
 
 //___________________________________________________________________________
 AliEventTag::AliEventTag(const AliEventTag & evTag) :
   TObject(evTag),
-  fAliceEventId(evTag.fAliceEventId),
+  fPeriodNumber(evTag.fPeriodNumber),
+  fOrbitNumber(evTag.fOrbitNumber),
+  fBunchCrossNumber(evTag.fBunchCrossNumber),
+  fFiredTriggerClasses(evTag.fFiredTriggerClasses),
+  fEventType(evTag.fEventType),
   fGUID(evTag.fGUID),
   fPath(evTag.fPath),
   fsize(evTag.fsize),
@@ -165,10 +177,15 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fMeanNeutralPt(evTag.fMeanNeutralPt),
   fMaxNeutralPt(evTag.fMaxNeutralPt),
   fEventPlaneAngle(evTag.fEventPlaneAngle),
-  fHBTRadii(evTag.fHBTRadii)
+  fHBTRadii(evTag.fHBTRadii),
+  fNumberOfFiredChipsLayer1(evTag.fNumberOfFiredChipsLayer1),
+  fNumberOfFiredChipsLayer2(evTag.fNumberOfFiredChipsLayer2),
+  fNumberOfSPDTracklets(evTag.fNumberOfSPDTracklets)
  {
   // EventTag copy constructor
   for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = evTag.fZDCEMEnergy[i];
+  for(Int_t i1 = 0; i1 < 64; i1++) fVZEROADC[i1] = 0;
+  for(Int_t i2 = 0; i2 < 64; i2++) fVZEROTime[i2] = kFALSE;
 }
 
 //___________________________________________________________________________
@@ -177,7 +194,11 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
   if (this != &evTag) {
     TObject::operator=(evTag);
     
-    SetEventId(evTag.GetEventId());
+    SetPeriodNumber(evTag.GetPeriodNumber());
+    SetOrbitNumber(evTag.GetOrbitNumber());
+    SetBunchCrossNumber(evTag.GetBunchCrossNumber());
+    SetFiredTriggerClasses(evTag.GetFiredTriggerClasses());
+    SetEventType(evTag.GetEventType());
     SetGUID(evTag.GetGUID());
     SetPath(evTag.GetPath());
     SetMD5(evTag.GetMD5());
@@ -241,6 +262,13 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetNeutralMaxPt(evTag.GetNeutralMaxPt());
     SetEventPlaneAngle(evTag.GetEventPlaneAngle());
     SetHBTRadii(evTag.GetHBTRadii());
+    SetNumberOfFiredChipsLayer1(evTag.GetNumberOfFiredChipsLayer1());
+    SetNumberOfFiredChipsLayer2(evTag.GetNumberOfFiredChipsLayer2());
+    SetNumberOfSPDTracklets(evTag.GetNumberOfSPDTracklets());
+    for(Int_t i1 = 0; i1 < 64; i1++) 
+      SetVZEROADC(i1,evTag.GetVZEROADC(i1));
+    for(Int_t i2 = 0; i2 < 64; i2++) 
+      SetVZEROTime(i2,evTag.GetVZEROTime(i2));
   }
   return *this;
 }

@@ -23,7 +23,13 @@ class AliEventTagCuts : public TObject {
   ~AliEventTagCuts();
   void Reset();
   
- //____________________________________________________//
+  //____________________________________________________//
+  void SetPeriodNumberRange(UInt_t n1, UInt_t n2);
+  void SetOrbitNumberRange(UInt_t n1, UInt_t n2);
+  void SetBunchCrossNumberRange(UShort_t n1, UShort_t n2);
+
+  void SetEventType(UInt_t ntype);
+
   void SetNParticipantsRange(Int_t low, Int_t high);
   void SetImpactParamRange(Float_t low, Float_t high);
 
@@ -89,10 +95,27 @@ class AliEventTagCuts : public TObject {
   void SetEventPlaneAngleRange(Float_t low, Float_t high);
   void SetHBTRadiiRange(Float_t low, Float_t high);
  
+  //First physics
+  void SetNumberOfFiredChipsLayer1Range(Int_t low, Int_t high);
+  void SetNumberOfFiredChipsLayer2Range(Int_t low, Int_t high);
+  void SetNumberOfSPDTrackletsRange(Int_t low, Int_t high);
+
   Bool_t IsAccepted(AliEventTag *EvTag) const;
 
   //____________________________________________________//
  private:
+  UInt_t fPeriodNumberMin, fPeriodNumberMax;                    //min/max value of the period number
+  Bool_t fPeriodNumberFlag;                                   // Shows whether this cut is used or not
+
+  UInt_t fOrbitNumberMin, fOrbitNumberMax;                    //min/max value of the orbit number
+  Bool_t fOrbitNumberFlag;                                   // Shows whether this cut is used or not
+
+  UShort_t fBunchCrossNumberMin, fBunchCrossNumberMax;                    //min/max value of the bunch crossing number
+  Bool_t fBunchCrossNumberFlag;                                   // Shows whether this cut is used or not
+
+  UInt_t fEventType;                                          //event type == 7 ==> PHYSICS_EVENT
+  Bool_t fEventTypeFlag;                                      // Shows whether this cut is used or not
+
   Int_t fNParticipantsMin, fNParticipantsMax;                 // # participants range
   Bool_t fNParticipantsFlag;                                  // Shows whether this cut is used or not
   Float_t fImpactParamMin, fImpactParamMax;                   // Impact parameter range
@@ -217,7 +240,15 @@ class AliEventTagCuts : public TObject {
   Float_t fHBTRadiiMin, fHBTRadiiMax;                         // HBT info
   Bool_t fHBTRadiiFlag;                                       // Shows whether this cut is used or not
 
-  ClassDef(AliEventTagCuts, 2)
+  Int_t fNumberOfFiredChipsLayer1Min, fNumberOfFiredChipsLayer1Max; //min/max number of fired chips - layer 1
+  Bool_t fNumberOfFiredChipsLayer1Flag;                       // Shows whether this cut is used or not
+  Int_t fNumberOfFiredChipsLayer2Min, fNumberOfFiredChipsLayer2Max; //min/max number of fired chips - layer 2
+  Bool_t fNumberOfFiredChipsLayer2Flag;                       // Shows whether this cut is used or not
+  Int_t fNumberOfSPDTrackletsMin, fNumberOfSPDTrackletsMax;   //min/max number of SPD tracklets
+  Bool_t fNumberOfSPDTrackletsFlag;                          // Shows whether this cut is used or not
+
+
+  ClassDef(AliEventTagCuts, 3)
 };
 
 #endif

@@ -428,7 +428,16 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     //AliInfo(Form("URL: %s - GUID: %s",fturl.Data(),fguid.Data()));
     //AliInfo(Form("====================================="));
 
-    evTag->SetEventId(iEventNumber+1);
+    //First physics data
+    const AliMultiplicity *spdMult = esd->GetMultiplicity();
+    evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
+    evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
+    evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    //evTag->SetEventId(iEventNumber+1);
+    evTag->SetPeriodNumber(esd->GetPeriodNumber());
+    evTag->SetOrbitNumber(esd->GetOrbitNumber());
+    evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
     evTag->SetGUID(fguid);
     if(fSession == "grid") {
       evTag->SetMD5(0);
@@ -751,7 +760,17 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     // Fill the event tags 
     if(ntrack != 0) meanPt = meanPt/ntrack;
     
-    evTag->SetEventId(iEventNumber+1);
+    //First physics data
+    const AliMultiplicity *spdMult = esd->GetMultiplicity();
+    evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
+    evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
+    evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    //evTag->SetEventId(iEventNumber+1);
+    evTag->SetPeriodNumber(esd->GetPeriodNumber());
+    evTag->SetOrbitNumber(esd->GetOrbitNumber());
+    evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
+
     evTag->SetGUID(fguid);
     evTag->SetMD5(fmd5);
     evTag->SetTURL(fturl);
@@ -1072,7 +1091,16 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     // Fill the event tags 
     if(ntrack != 0) meanPt = meanPt/ntrack;
     
-    evTag->SetEventId(iEventNumber+1);
+    //First physics data
+    const AliMultiplicity *spdMult = esd->GetMultiplicity();
+    evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
+    evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
+    evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    //evTag->SetEventId(iEventNumber+1);
+    evTag->SetPeriodNumber(esd->GetPeriodNumber());
+    evTag->SetOrbitNumber(esd->GetOrbitNumber());
+    evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
     evTag->SetPath(filepath);
  
     evTag->SetVertexX(vertexIn->GetXv());
@@ -1402,12 +1430,22 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
 	}
       }
     }//muon track loop
+
     
     // Fill the event tags 
     if(ntrack != 0)
       meanPt = meanPt/ntrack;
-    
-    evTag->SetEventId(iEventNumber+1);
+
+    //First physics data
+    const AliMultiplicity *spdMult = esd->GetMultiplicity();
+    evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
+    evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
+    evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    //evTag->SetEventId(iEventNumber+1);
+    evTag->SetPeriodNumber(esd->GetPeriodNumber());
+    evTag->SetOrbitNumber(esd->GetOrbitNumber());
+    evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
     if (vertexIn) {
       evTag->SetVertexX(vertexIn->GetXv());
       evTag->SetVertexY(vertexIn->GetYv());

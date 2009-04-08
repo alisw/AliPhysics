@@ -97,7 +97,6 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
     } else {
 	fturl = url->GetFile();
     }
-    evtTag->SetEventId(fInputHandler->GetReadEntry() + 1);
     evtTag->SetGUID(fguid);
     if(opt.Contains("grid")) {
 	evtTag->SetMD5(0);

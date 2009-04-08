@@ -332,7 +332,7 @@ void AliAODTagCreator::CreateTags(const char* type)
 	// Fill the event tag from the aod informatiom
 	FillEventTag(fAODEvent, evTag);
 	// Set the event and input file references
-	evTag->SetEventId(iEventNumber+1);
+	//evTag->SetEventId(iEventNumber+1);
 	evTag->SetGUID(fguid);
 	if(!strcmp(type,"grid")) {
 	    evTag->SetMD5(0);

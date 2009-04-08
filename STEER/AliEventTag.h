@@ -26,7 +26,13 @@ class AliEventTag : public TObject {
   AliEventTag &operator=(const AliEventTag &rhs);
   
   //____________________________________________________//
-  void SetEventId(Int_t Pid) {fAliceEventId = Pid;}
+  void SetPeriodNumber(UInt_t n) {fPeriodNumber = n;}
+  void SetOrbitNumber(UInt_t n) {fOrbitNumber = n;}
+  void SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber = n;}
+
+  void SetFiredTriggerClasses(TString names) {fFiredTriggerClasses = names;}
+  void SetEventType(UInt_t ntype) {fEventType = ntype;}
+
   void SetGUID(TString Pid) {fGUID = Pid;}
   void SetPath(TString Pid) {fPath = Pid;}
   void SetMD5(TString Pid) {fmd5 = Pid;}
@@ -93,8 +99,22 @@ class AliEventTag : public TObject {
   void SetEventPlaneAngle(Float_t f) {fEventPlaneAngle = f;}
   void SetHBTRadii(Float_t f) {fHBTRadii = f;}
 
+  //First physics
+  void SetNumberOfFiredChipsLayer1(Int_t n) {fNumberOfFiredChipsLayer1 = n;}
+  void SetNumberOfFiredChipsLayer2(Int_t n) {fNumberOfFiredChipsLayer2 = n;}
+  void SetNumberOfSPDTracklets(Int_t n) {fNumberOfSPDTracklets = n;}
+
+  void SetVZEROADC(Int_t n, UShort_t adc) {fVZEROADC[n] = adc;}
+  void SetVZEROTime(Int_t n, Bool_t time) {fVZEROTime[n] = time;}
+
   //____________________________________________________//
-  Int_t       GetEventId() const {return fAliceEventId;}
+  UInt_t GetPeriodNumber() const {return fPeriodNumber;}
+  UInt_t GetOrbitNumber() const {return fOrbitNumber;}
+  UShort_t GetBunchCrossNumber() const {return fBunchCrossNumber;}
+
+  TString GetFiredTriggerClasses() const {return fFiredTriggerClasses;}
+  UInt_t GetEventType() const {return fEventType;}
+
   const char *GetGUID() const {return fGUID.Data();}
   const char *GetPath() const {return fPath.Data();}
   const char *GetMD5() const {return fmd5.Data();}
@@ -160,9 +180,22 @@ class AliEventTag : public TObject {
   Float_t     GetEventPlaneAngle() const {return fEventPlaneAngle;}
   Float_t     GetHBTRadii() const {return fHBTRadii;}
 
+  //First physics
+  Int_t GetNumberOfFiredChipsLayer1() const {return fNumberOfFiredChipsLayer1;}
+  Int_t GetNumberOfFiredChipsLayer2() const {return fNumberOfFiredChipsLayer2;}
+  Int_t GetNumberOfSPDTracklets() const {return fNumberOfSPDTracklets;}
+
+  UShort_t GetVZEROADC(Int_t n) const {return fVZEROADC[n];}
+  UShort_t GetVZEROTime(Int_t n) const {return fVZEROTime[n];}
+
   //____________________________________________________//
  private:
-  Int_t     fAliceEventId;                  //The event id
+  UInt_t    fPeriodNumber;                  //The period number
+  UInt_t    fOrbitNumber;                   //The orbit number
+  UShort_t  fBunchCrossNumber;              //The BC number
+  TString   fFiredTriggerClasses;           //List of the fired trigger class names
+  UInt_t    fEventType;                     //event type == 7 ==> PHYSICS_EVENT
+
   TString   fGUID;		            //The unique identifier of the file
   TString   fPath;		            //The file's path (local storage)
   Long64_t  fsize;                          //the size of the file
@@ -228,7 +261,15 @@ class AliEventTag : public TObject {
   Float_t   fEventPlaneAngle;		    //event plane info
   Float_t   fHBTRadii;                      //HBT info
   
-  ClassDef(AliEventTag,10)  //(ClassName, ClassVersion)
+  //First physics
+  Int_t     fNumberOfFiredChipsLayer1;      //number of fired chips - layer 1
+  Int_t     fNumberOfFiredChipsLayer2;      //number of fired chips - layer 2
+  Int_t     fNumberOfSPDTracklets;          //number of SPD tracklets
+
+  UShort_t  fVZEROADC[64];                  //V0 raw adc values
+  Bool_t    fVZEROTime[64];                 //Flag if V0 TDC time measured
+
+  ClassDef(AliEventTag,11)  //(ClassName, ClassVersion)
     };
 //___________________________________________________________________________
 
