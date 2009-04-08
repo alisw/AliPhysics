@@ -117,8 +117,8 @@ class AliCFManager : public TNamed
  private:
   
   //number of steps
-  Int_t fNStepEvt; 
-  Int_t fNStepPart; 
+  Int_t fNStepEvt;  // number of steps in event selection
+  Int_t fNStepPart; // number of steps in particle selection
   //the correction grid
   AliCFContainer *fEvtContainer; //ptr to Evt-Level correction container
   //the correction grid
