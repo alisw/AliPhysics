@@ -7,7 +7,7 @@ AliAnalysisTaskProtons *AddTaskProtons(const char *analysisType="Hybrid",
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskProtons", "No analysis manager to connect to.");
+    ::Error("AddTaskProtons", "No analysis manager to connect to.");
     return NULL;
   }   
   
