@@ -5,7 +5,7 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTaskCheckCascade", "No analysis manager to connect to.");
+      ::Error("AddTaskCheckCascade", "No analysis manager to connect to.");
       return NULL;
    }   
 

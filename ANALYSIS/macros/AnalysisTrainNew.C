@@ -171,7 +171,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    // Proton analysis
    if (iPWG2spectra) {
       // protons
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskProtons.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskProtons.C");
       AliAnalysisTaskProtons *taskprotons = AddTaskProtons();
       // cascades
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckCascade.C");

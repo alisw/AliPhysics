@@ -5,7 +5,7 @@ AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems=0  /*0 = pp, 1 
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTaskCheckV0", "No analysis manager to connect to.");
+      ::Error("AddTaskCheckV0", "No analysis manager to connect to.");
       return NULL;
    }   
 

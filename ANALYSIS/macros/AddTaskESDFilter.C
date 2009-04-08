@@ -6,7 +6,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter()
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTaskESDFilter", "No analysis manager to connect to.");
+      ::Error("AddTaskESDFilter", "No analysis manager to connect to.");
       return NULL;
    }   
    
@@ -15,13 +15,13 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter()
    //===============================================================================
    TString type = mgr->GetInputEventHandler()->GetDataType();
    if (!type.Contains("ESD")) {
-      Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an ESD input handler.");
+      ::Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an ESD input handler.");
       return NULL;
    }   
    // Check if AOD output handler exist.
    AliAODHandler *aod_h = (AliAODHandler*)mgr->GetOutputEventHandler();
    if (!aod_h) {
-      Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an AOD output handler.");
+      ::Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an AOD output handler.");
       return NULL;
    }   
    

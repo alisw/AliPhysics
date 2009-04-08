@@ -6,7 +6,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskGammaHadronCorr()
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTaskGammaHadronCorr", "No analysis manager to connect to.");
+      ::Error("AddTaskGammaHadronCorr", "No analysis manager to connect to.");
       return NULL;
    }   
 
@@ -15,13 +15,13 @@ AliAnalysisTaskParticleCorrelation *AddTaskGammaHadronCorr()
    //===============================================================================
    TString type = mgr->GetInputEventHandler()->GetDataType();
    if (!type.Contains("ESD")) {
-      Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an ESD input handler.");
+      ::Error("AddTaskGammaHadronCorr", "This task needs the manager to have an ESD input handler.");
       return NULL;
    }   
    // Check if AOD output handler exist.
    AliAODHandler *aod_h = (AliAODHandler*)mgr->GetOutputEventHandler();
    if (!aod_h) {
-      Error("AddTaskESDFilter", "ESD filtering task needs the manager to have an AOD output handler.");
+      ::Error("AddTaskGammaHadronCorr", "This task needs the manager to have an AOD output handler.");
       return NULL;
    }   
    
