@@ -630,7 +630,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
    plugin->SetNtestFiles(1);
-   plugin->SetPreferedSE("ALICE::NIHAM::FILE");
+//   plugin->SetPreferedSE("ALICE::NIHAM::FILE");
 // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion(root_version);
@@ -686,7 +686,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
    plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
-   plugin->SetAnalysisMacro("testAnalysis.C");
+   plugin->SetAnalysisMacro("AnalysisTrainGrid.C");
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
    plugin->SetSplitMaxInputFileNumber(50);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
@@ -698,7 +698,9 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
 // Optionally modify the name of the generated JDL (default analysis.jdl)
-   plugin->SetJDLName("testAnalysis.jdl");
+   plugin->SetJDLName("AnalysisTrain.jdl");
+// Optionally modify the executable name (default analysis.sh)
+   plugin->SetExecutable("AnalysisTrain.sh");
 // Optionally modify job price (default 1)
    plugin->SetPrice(1);      
 // Optionally modify split mode (default 'se')    
