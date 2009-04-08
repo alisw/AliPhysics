@@ -121,7 +121,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     case "Bayesian":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kBayesian);
       //Momentum dependent priors
-      /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
+      /*TFile *f = TFile::Open("$ALICE_ROOT/PWG2/data/PriorProbabilities.root ");
 	TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
 	TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
 	TF1 *fitPions = (TF1 *)f->Get("fitPions");
@@ -140,8 +140,15 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     case "Ratio":
       baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kRatio);
       break;
-    case "Sigma":
-      baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma);
+    case "Sigma1":
+      baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma1);
+      baseAnalysis->SetNSigma(3);
+      baseAnalysis->SetdEdxBandInfo("$ALICE_ROOT/PWG2/data/protonsdEdxInfo.dat");
+      break;
+    case "Sigma2":
+      baseAnalysis->SetPIDMode(AliProtonAnalysisBase::kSigma2);
+      baseAnalysis->SetNSigma(3);
+      baseAnalysis->SetdEdxBandInfo("$ALICE_ROOT/PWG2/data/protonsdEdxInfo.dat");
       break;
     default:
       break;

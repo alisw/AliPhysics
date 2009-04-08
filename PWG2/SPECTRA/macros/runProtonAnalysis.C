@@ -15,9 +15,10 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
   //       name and .  
   //Analysis mode can be: "MC", "ESD", "AOD"
   //ESD analysis type can be one of the three: "TPC", "Hybrid", "Global"
-  //PID mode can be one of the three: "Bayesian" (standard Bayesian approach) 
+  //PID mode can be one of the four: "Bayesian" (standard Bayesian approach) 
   //   "Ratio" (ratio of measured over expected/theoretical dE/dx a la STAR) 
-  //   "Sigma" (N-sigma area around the fitted dE/dx vs P band)
+  //   "Sigma1" (N-sigma area around the fitted dE/dx vs P band)
+  //   "Sigma2" (same as previous but taking into account the No of TPC points)
   TStopwatch timer;
   timer.Start();
   
