@@ -18,7 +18,7 @@
   gInterpreter->ProcessLine("loadlibs()");
     
   cout << "Setting include path ..." << endl;
-  TString includePath = "-I${ALICE_ROOT}/include ";
+  TString includePath = "-I${ALICE_ROOT}/STEER ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/FASTSIM ";
   includePath        += "-I${ALICE_ROOT}/EVGEN ";

@@ -95,8 +95,16 @@ if [ "$SIMULATION" -eq 1 ]; then
 
 fi
 
-cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C \
-  $ALICE_ROOT/MUON/runReconstruction.C $ALICE_ROOT/MUON/runSimulation.C $OUTDIR
+# Copy *ALL* the macros we need in the output directory, not to mess
+# with our source dir in any way.
+cp $ALICE_ROOT/MUON/.rootrc \
+  $ALICE_ROOT/MUON/rootlogon.C \
+  $ALICE_ROOT/MUON/runReconstruction.C $ALICE_ROOT/MUON/runSimulation.C \
+  $ALICE_ROOT/MUON/UpdateCDBCTPConfig.C \
+  $ALICE_ROOT/MUON/MUONefficiency.C \
+  $ALICE_ROOT/MUON/MUONTriggerEfficiency.C \
+  $ALICE_ROOT/MUON/MUONCheck.C \
+  $OUTDIR
 
 cd $OUTDIR
 
@@ -127,7 +135,7 @@ if [ ! -f $ALICE_ROOT/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
   echo "Updating GRP CTP config  ..."
 
   aliroot -b >& $OUTDIR/updateCDBCTPConfig.out << EOF
-  .L $ALICE_ROOT/MUON/UpdateCDBCTPConfig.C+
+  .L UpdateCDBCTPConfig.C+
   UpdateCDBCTPConfig();
   .q
 EOF
@@ -204,7 +212,7 @@ if [ "$CHECKS" -eq 1 ]; then
     echo "Running efficiency  ..."
 
     aliroot -b >& $OUTDIR/testResults.out << EOF
-    .L $ALICE_ROOT/MUON/MUONefficiency.C+
+    .L MUONefficiency.C+
     // no argument assumes Upsilon but MUONefficiency(443) works on Jpsi
     MUONefficiency("$OUTDIR/$SIMDIR/galice.root");
     .q
@@ -214,7 +222,7 @@ EOF
 
       echo "Running Trigger efficiency  ..."
       aliroot -b >& $OUTDIR/testTriggerResults.out << EOF
-      .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
+      .L MUONTriggerEfficiency.C+
       MUONTriggerEfficiency("$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", 1);
       .q
 EOF
@@ -224,7 +232,7 @@ EOF
         echo "Running check ..."
         aliroot -b >& $OUTDIR/testCheck.out << EOF
         gSystem->Load("libMUONevaluation");
-        .L $ALICE_ROOT/MUON/MUONCheck.C+
+        .L MUONCheck.C+
         MUONCheck(0, $NEVENTS-1, "$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", "$OUTDIR/AliESDs.root"); 
         .q
 EOF
