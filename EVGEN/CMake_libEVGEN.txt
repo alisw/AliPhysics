@@ -35,7 +35,6 @@ AliGenSTRANGElib.cxx
 AliGenBeamGas.cxx
 AliGenAfterBurnerFlow.cxx
 AliGenSlowNucleons.cxx
-AliGenGeVSimEventHeader.cxx
 AliSlowNucleonModel.cxx
 AliSlowNucleonModelExp.cxx
 AliGenMUONCocktail.cxx
