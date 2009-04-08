@@ -3447,7 +3447,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
 
  // integrated flow (POI) with weights:
  // calculate final results for integrated flow of POIs with weights:
- this->CalculateFinalResultsForRPandPOIIntegratedFlow(kTRUE,"POI");
+ if(fUseWeights) this->CalculateFinalResultsForRPandPOIIntegratedFlow(kTRUE,"POI");
  
  
  //            **** RP ****
@@ -3478,7 +3478,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
 
  // integrated flow (RP) with weights: 
  // calculate final results for integrated flow of POIs with weights:
- this->CalculateFinalResultsForRPandPOIIntegratedFlow(kTRUE,"RP");
+ if(fUseWeights) this->CalculateFinalResultsForRPandPOIIntegratedFlow(kTRUE,"RP");
  
    
  
@@ -3777,13 +3777,12 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  // looping over pt bins:
  for(Int_t p=1;p<nBinsPt+1;p++)
  {
- 
   dvn2nd = flow2ndPt->GetBinContent(p);
   dvn4th = flow4thPt->GetBinContent(p);
   dvn6th = flow6thPt->GetBinContent(p);
   dvn8th = flow8thPt->GetBinContent(p);
 
-  dYield2nd = yield2ndPt->GetBinContent(p);
+  dYield2nd = yield2ndPt->GetBinContent(p);  
   dYield4th = yield4thPt->GetBinContent(p);
   dYield6th = yield6thPt->GetBinContent(p);
   dYield8th = yield8thPt->GetBinContent(p);
