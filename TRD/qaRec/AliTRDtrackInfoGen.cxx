@@ -173,26 +173,26 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   
   Bool_t *trackMap = 0x0;
   AliStack * mStack = 0x0;
+  Int_t nTracksMC = HasMCdata() ? fMC->GetNumberOfTracks() : 0, nTracksESD = fESD->GetNumberOfTracks();
   if(HasMCdata()){
     mStack = fMC->Stack();
     if(!mStack){
       puts("Error: Cannot get the Monte Carlo Stack");
       return;
     }
-    trackMap = new Bool_t[fMC->GetNumberOfTracks()];
-    memset(trackMap, 0, sizeof(Bool_t) * fMC->GetNumberOfTracks());
+    trackMap = new Bool_t[nTracksMC];
+    memset(trackMap, 0, sizeof(Bool_t) * nTracksMC);
   }
   
   Int_t nTRD = 0, nTPC = 0, nclsTrklt;
-  Int_t nTracks = fESD->GetNumberOfTracks();
   if(fDebugLevel>=1){ 
-    printf("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, HasMCdata() ? mStack->GetNtrack() : 0);
+    printf("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC);
   }
   AliESDtrack *esdTrack = 0x0;
   AliESDfriendTrack *esdFriendTrack = 0x0;
   TObject *calObject = 0x0;
   AliTRDtrackV1 *track = 0x0;
-  for(Int_t itrk = 0; itrk < nTracks; itrk++){
+  for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     esdTrack = fESD->GetTrack(itrk);
     if(fDebugLevel>=2) printf("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
     if(esdTrack->GetNcls(1)) nTPC++;
@@ -212,7 +212,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     Int_t label = -1;
     if(HasMCdata()){
       label = esdTrack->GetLabel();
-      if(label < fMC->GetNumberOfTracks()) trackMap[TMath::Abs(label)] = kTRUE; // register the track
+      if(label < nTracksMC) trackMap[TMath::Abs(label)] = kTRUE; // register the track
       //if (TMath::Abs(label) > mStack->GetNtrack()) continue; 
       AliMCParticle *mcParticle = 0x0; 
       if(!(mcParticle = fMC->GetTrack(TMath::Abs(label)))){
@@ -293,12 +293,11 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   if(HasMCdata()){
     if(fDebugLevel > 10){
       printf("Output of the MC track map:\n");
-      for(Int_t itk = 0; itk < fMC->GetNumberOfTracks();  itk++)
+      for(Int_t itk = 0; itk < nTracksMC;  itk++)
         printf("trackMap[%d] = %s\n", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE");
     }
   
-    for(Int_t itk = 0; itk < fMC->GetNumberOfTracks(); itk++){
-      if(fDebugLevel >=2 ) printf("Number of MC tracks: %d\n", fMC->GetNumberOfTracks());
+    for(Int_t itk = 0; itk < nTracksMC; itk++){
       if(trackMap[itk]) continue;
       AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(itk));
       Int_t fPdg = mcParticle->Particle()->GetPdgCode();
