@@ -382,14 +382,16 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
     
     Int_t nclsITS = track->GetNcls(0);
 
-    Bool_t itsrefit=kFALSE,tpcin=kFALSE;
+    Bool_t itsrefit=kFALSE,tpcin=kFALSE,itsin=kFALSE;
     if ((track->GetStatus() & AliESDtrack::kITSrefit)) itsrefit=kTRUE;
     if ((track->GetStatus() & AliESDtrack::kTPCin)) tpcin=kTRUE;     
+    if ((track->GetStatus() & AliESDtrack::kITSin)) itsin=kTRUE;     
     if(nclsITS>=5 && itsrefit) nITSrefit5++;
 
     if(tpcin) {
       GetESDsData(0)->Fill(nclsITS);
-    } else {
+    }
+    if(itsin && !tpcin){
       GetESDsData(2)->Fill(nclsITS);
     }
 
