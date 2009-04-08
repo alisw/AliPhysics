@@ -73,7 +73,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
  protected:
   AliTRDgtuParam *fGtuParam;	 //!
-  const AliTRDtrackletBase *fTracklet; // always points to a valid tracklet
+  AliTRDtrackletBase *fTracklet; // pointer to the underlying tracklet
 
   Int_t *fSubChannel;		//! [AliTRDgtuParam::GetNZChannels()]
   Bool_t fAssignedZ;		// tracklet assigned to a Z-channel

@@ -219,7 +219,7 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
     alpha = ( 2 * trk->GetdY() - (alpha >> fGtuParam->GetBitExcessAlpha()) + 1 ) >> 1;
     trk->SetAlpha(alpha);
 
-    Int_t yproj = trk->GetdY() * (fGtuParam->GetCiYProj(layer)); 
+    Int_t yproj = -1 * trk->GetdY() * (fGtuParam->GetCiYProj(layer)); //??? sign?
     yproj = ( ( ( (yproj >> fGtuParam->GetBitExcessYProj()) + trk->GetYbin() ) >> 2) + 1) >> 1;
     trk->SetYProj(yproj);
 
@@ -458,8 +458,12 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 
 	 Bool_t registerTrack = kTRUE;
 	 for (Int_t layerIdx = refLayerIdx; layerIdx > 0; layerIdx--) {
-	     if (track->IsTrackletInLayer(fGtuParam->GetRefLayer(layerIdx)))
+           if (track->IsTrackletInLayer(fGtuParam->GetRefLayer(layerIdx))) {
+             if ((track->GetTracklet(fGtuParam->GetRefLayer(layerIdx)))->GetSubChannel(zch) > 0) {
+               AliInfo("Not registered");
 		 registerTrack = kFALSE;
+             }
+           }
 	 }
 	 if (registerTrack) {
 	     track->SetZChannel(zch);

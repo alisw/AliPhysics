@@ -75,8 +75,8 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkNZChannels = 3; // No. of z-channels
   static const Int_t fgkNLinks = 12;	// No. of links
   static const Int_t fgkFixLayer = 2;	// which layer is fixed for the generation of the z-channel map
-  static const Int_t fgkDeltaY = 39;	// accepted deviation in y_proj, default: 9
-  static const Int_t fgkDeltaAlpha = 31; // accepted deviation in alpha, default: 11
+  static const Int_t fgkDeltaY = 19;	// accepted deviation in y_proj, default: 9
+  static const Int_t fgkDeltaAlpha = 21; // accepted deviation in alpha, default: 11
   static const Int_t fgkNRefLayers = 3;	 // no. of reference layers
 
   static const Float_t fgkBinWidthY; // bin width for y-position

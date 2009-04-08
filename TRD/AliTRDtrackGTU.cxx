@@ -88,7 +88,10 @@ AliTRDtrackletGTU* AliTRDtrackGTU::GetTracklet(Int_t layer)
 {
 // get a pointer to the tracklet in the layer specified
 
-  return ((AliTRDtrackletGTU*) (*fTracklets)[layer]);
+  if (IsTrackletInLayer(layer))
+    return ((AliTRDtrackletGTU*) (*fTracklets)[layer]);
+  else 
+    return 0x0;
 }
 
 Int_t AliTRDtrackGTU::GetNTracklets() const
@@ -161,10 +164,12 @@ Bool_t AliTRDtrackGTU::CookLabel()
 {
     TH1F *h = new TH1F("trkref", "trkref", 100000, 0, 100000);
     for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
+      if (!IsTrackletInLayer(iTracklet))
+        continue;
 	h->Fill( ((AliTRDtrackletGTU*) (*fTracklets)[iTracklet])->GetLabel());
     }
     if (h->GetEntries() > 0)
-	fLabel = h->GetMaximumBin();
+	fLabel = h->GetMaximumBin() - 1;
     else 
 	fLabel = -1;
     delete h;

@@ -42,7 +42,7 @@ AliTRDtrackletBase* AliTRDtrackletGTU::fgkDummyTracklet = new AliTRDtrackletWord
 AliTRDtrackletGTU::AliTRDtrackletGTU() :
   AliTRDtrackletBase(),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(fgkDummyTracklet), 
+  fTracklet(0x0), //fgkDummyTracklet), 
   fSubChannel(0x0),
   fAssignedZ(kFALSE),
   fAlpha(0),
@@ -118,6 +118,7 @@ AliTRDtrackletGTU::~AliTRDtrackletGTU()
   // dtor
   if (fSubChannel)
     delete [] fSubChannel; 
+  fTracklet = 0x0;
 }
 
 Int_t AliTRDtrackletGTU::Compare(const TObject *o) const {

@@ -55,6 +55,7 @@ AliTRDgtuSim::AliTRDgtuSim(AliRunLoader *rl)
   fTrackletTree(0x0)
 {
   fTrackletTree = new TTree("gtutracklets", "Tree with GTU tracklets");
+  fTrackletTree->SetDirectory(0);
 }
 
 AliTRDgtuSim::~AliTRDgtuSim() 
@@ -342,8 +343,10 @@ Bool_t AliTRDgtuSim::WriteTracksToTree(TList *ListOfTracks, Int_t /*event*/)
   if (ListOfTracks->GetEntries() <= 0) 
     return kTRUE;
 
-  if (!fTrackTree)
+  if (!fTrackTree) {
     fTrackTree = new TTree("gtutracks", "GTU tracks");
+    fTrackTree->SetDirectory(0);
+  }
 
   AliTRDtrackGTU *trk = 0x0;
   TBranch *branch = fTrackTree->GetBranch("TRDgtuTrack");

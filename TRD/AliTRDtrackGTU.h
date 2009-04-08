@@ -27,6 +27,7 @@ class AliTRDtrackGTU : public TObject {
   Int_t    GetPID() const { return fPID; }
   Int_t    GetSector() const { return fSector; }
   Int_t    GetStack() const { return fStack; }
+  Int_t GetLabel() const { return fLabel; }
 
   AliESDTrdTrack* CreateTrdTrack() const;
 
