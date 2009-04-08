@@ -324,7 +324,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");
   fClusterizer->SetReconstructor(fReconstructor);
-  fClusterizer->SetAddLabels(kFALSE);
+  fClusterizer->SetUseLabels(kFALSE);
   fClusterizer->SetRawVersion(iRawDataVersion);
   return 0;
 }
