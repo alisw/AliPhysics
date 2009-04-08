@@ -534,7 +534,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	// 4 prong candidates
-	if(f4Prong) {
+	if(f4Prong
+	   // track-to-track dca cuts already now
+	   && dcap1n1 < fD0to4ProngsCuts[1]
+	   && dcap2n1 < fD0to4ProngsCuts[1]) {
 
 	  // back to primary vertex
 	  postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -566,9 +569,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	    negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	    dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
-	    if(dcap1n2>dcaMax) { negtrack2=0; continue; }
+	    if(dcap1n2 > fD0to4ProngsCuts[1]) { negtrack2=0; continue; }
             dcap2n2 = postrack2->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
-            if(dcap2n2>dcaMax) { negtrack2=0; continue; }
+            if(dcap2n2 > fD0to4ProngsCuts[1]) { negtrack2=0; continue; }
 
 	    // Vertexing
 	    fourTrackArray->AddAt(postrack1,0);
