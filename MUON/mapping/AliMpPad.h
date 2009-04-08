@@ -101,8 +101,8 @@ class AliMpPad : public TObject
   static const Int_t  fgkMaxNofLocations; ///< \brief maximum number of pad locations
                                           /// in the collection
   // data members
-  MpPair_t*       fLLocations;     ///<  collection of pad locations - encoded pair (localBoardId, localBoardChannel) 
   UInt_t          fNofLocations;   ///<  number of locations in fLocations
+  MpPair_t*       fLLocations;     //[fNofLocations]  collection of pad locations - encoded pair (localBoardId, localBoardChannel) 
   MpPair_t        fLLocation;      ///<  pad location as encoded pair (manuId, manuChannel) 
   MpPair_t        fLIndices;       ///<  pad indices as encoded pair (ix, iy)  
   Double_t        fPositionX;      ///<  the pad x position (in cm)
