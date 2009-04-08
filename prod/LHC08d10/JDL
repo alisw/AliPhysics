@@ -1,0 +1,23 @@
+Executable = "aliroot_new";
+Jobtag={"comment:jet-jet pp, PYTHIA, no quenching"};
+
+Packages={"VO_ALICE@AliRoot::v4-16-Rev-03","VO_ALICE@GEANT3::v1-10","VO_ALICE@ROOT::v5-23-02","VO_ALICE@APISCONFIG::V2.4"};
+
+TTL = "72000";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/a/aliprod/prod2007/configs_pbpb_hijing/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/CheckESD.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/Config.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/rec.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/sim.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/simrun.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_new/tag.C"};
+
+OutputArchive={"log_archive:*.log,stdout,stderr,*.log@Alice::NIHAM::File","root_archive.zip:*.tag.root,galice.root,geometry.root,Kinematics.root,TrackRefs.root,AliESDs.root,AliESDfriends.root,pyxsec.root@Alice::Subatech::DPM"};
+
+OutputDir="/alice/cern.ch/user/c/conesa/production/output_pp_new/BJ/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+splitarguments="simrun.C --run $1 --event #alien_counter# --process kBeautyppwmiJet --ecms 14000 --trigger 0";
+split="production:1-100";
+
+Workdirectorysize={"4000MB"};
