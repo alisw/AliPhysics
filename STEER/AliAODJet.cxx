@@ -153,3 +153,20 @@ Double_t AliAODJet::DeltaR(const AliVParticle* part){
   Double_t dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
   return dR;
 }
+
+
+Int_t AliAODJet::Compare( const TObject* obj) const {
+
+  // 
+  // see header file for class documentation
+  //
+
+  if (this == obj)
+    return 0;
+  // check type
+  if ( Pt() < ((AliAODJet*)(obj))->Pt())
+    return 1;
+  else
+    return -1;
+}
+
