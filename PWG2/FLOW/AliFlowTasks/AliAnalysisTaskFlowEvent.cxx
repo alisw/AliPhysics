@@ -41,7 +41,7 @@ class AliAnalysisTask;
 // Interface to Event generators to get Reaction Plane Angle
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
-#include "../EVGEN/AliGenGeVSimEventHeader.h"
+#include "AliGenGeVSimEventHeader.h"
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEventSimpleMaker.h"
