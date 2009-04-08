@@ -27,7 +27,7 @@ class AliProtonAnalysisBase : public TObject {
  public:
   enum TriggerMode { kMB1 = 0, kMB2, kSPDFASTOR };
   enum AnalysisMode { kInvalid = -1, kTPC = 0, kHybrid, kGlobal };
-  enum PIDMode { kBayesian = 0, kRatio, kSigma };
+  enum PIDMode { kBayesian = 0, kRatio, kSigma1, kSigma2 };
 
   AliProtonAnalysisBase();
   virtual ~AliProtonAnalysisBase();
@@ -202,6 +202,13 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t  IsUsedMaxConstrainChi2() {return fMaxConstrainChi2Flag;}
   Double_t   GetMaxConstrainChi2() {return fMaxConstrainChi2;}
 
+  void    SetMinTPCdEdxPoints(Int_t mindEdxpoints) {
+    fMinTPCdEdxPoints = mindEdxpoints;
+    fMinTPCdEdxPointsFlag = kTRUE;
+  }
+  Bool_t  IsUsedMinTPCdEdxPoints() {return fMinTPCdEdxPointsFlag;}
+  Int_t   GetMinTPCdEdxPoints() {return fMinTPCdEdxPoints;}
+  
   void    SetITSRefit() {fITSRefitFlag = kTRUE;}
   Bool_t  IsUsedITSRefit() {return fITSRefitFlag;}
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
@@ -215,6 +222,9 @@ class AliProtonAnalysisBase : public TObject {
 
   //PID related functions
   Bool_t IsProton(AliESDtrack *track);
+  void SetNSigma(Int_t nsigma) {fNSigma = nsigma;}  
+  Int_t GetNSigma() {return fNSigma;}
+  void SetdEdxBandInfo(const char* filename);
   void SetPriorProbabilities(Double_t * const partFrac) {
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
   void SetPriorProbabilityFunctions(TF1 *const felectron, 
@@ -231,6 +241,7 @@ class AliProtonAnalysisBase : public TObject {
   }
   Bool_t IsPriorProbabilityFunctionUsed() {return fFunctionProbabilityFlag;}
   Double_t GetParticleFraction(Int_t i, Double_t p);
+  Double_t Bethe(Double_t bg);
 
   void SetDebugMode() {fDebugMode = kTRUE;}
   Bool_t GetDebugMode() {return fDebugMode;}
@@ -262,6 +273,7 @@ class AliProtonAnalysisBase : public TObject {
   Double_t fMaxDCAZ, fMaxDCAZTPC; //max DCA z
   Double_t fMaxDCA3D, fMaxDCA3DTPC; //max DCA 3D
   Double_t fMaxConstrainChi2; //max constrain chi2 - vertex
+  Int_t  fMinTPCdEdxPoints;//min number of TPC points used for the dE/dx
   Bool_t fMinTPCClustersFlag, fMinITSClustersFlag; //shows if this cut is used or not
   Bool_t fMaxChi2PerTPCClusterFlag, fMaxChi2PerITSClusterFlag; //shows if this cut is used or not
   Bool_t fMaxCov11Flag, fMaxCov22Flag, fMaxCov33Flag, fMaxCov44Flag, fMaxCov55Flag; //shows if this cut is used or not
@@ -276,9 +288,13 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t fPointOnITSLayer1Flag, fPointOnITSLayer2Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer3Flag, fPointOnITSLayer4Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer5Flag, fPointOnITSLayer6Flag; //shows if this cut is used or not
-  
+  Bool_t fMinTPCdEdxPointsFlag; //shows if this cut is used or not
+
   //pid
   Bool_t fFunctionProbabilityFlag; //flag: kTRUE if functions used
+  Int_t fNSigma; //N-sigma cut in the dE/dx band
+  Double_t fdEdxMean[24]; //mean values of the dE/dx distributions for the proton band - P slices
+  Double_t fdEdxSigma[24]; //sigma values of the dE/dx distributions for the proton band - P slices
   Double_t fPartFrac[10]; //prior probabilities
   TF1  *fElectronFunction; //momentum dependence of the prior probs
   TF1  *fMuonFunction; //momentum dependence of the prior probs

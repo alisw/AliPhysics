@@ -55,7 +55,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fMaxDCAXY(0), fMaxDCAXYTPC(0),
   fMaxDCAZ(0), fMaxDCAZTPC(0),
   fMaxDCA3D(0), fMaxDCA3DTPC(0),
-  fMaxConstrainChi2(0),
+  fMaxConstrainChi2(0), fMinTPCdEdxPoints(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), 
@@ -70,12 +70,18 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
+  fMinTPCdEdxPointsFlag(kFALSE),
   fFunctionProbabilityFlag(kFALSE), 
+  fNSigma(0),
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fDebugMode(kFALSE) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
+  for(Int_t i = 0; i < 5; i++) {
+    fdEdxMean[i] = 0.0;
+    fdEdxSigma[i] = 0.0;
+  }
 }
 
 //____________________________________________________________________//
@@ -392,6 +398,13 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
       return kFALSE;
       }
   }
+  if(fMinTPCdEdxPointsFlag) {
+    if(track->GetTPCsignalN() < fMinTPCdEdxPoints) {
+      if(fDebugMode)
+	Printf("IsAccepted: Track rejected because it has %d TPC points for the calculation of the energy loss (min. requested: %d)",track->GetTPCsignalN(),fMinTPCdEdxPoints);
+      return kFALSE;
+    }
+  }
   if(fITSRefitFlag) {
     if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
       if(fDebugMode)
@@ -606,7 +619,14 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   listOfCuts = "PID mode: "; 
   if(fProtonPIDMode == kBayesian) listOfCuts += "Bayesian PID";
   if(fProtonPIDMode == kRatio) listOfCuts += "Z = ln((dE/dx)_{exp.}/(dE/dx)_{theor.})"; 
-  if(fProtonPIDMode == kSigma) listOfCuts += "N__{#sigma} area"; 
+  if(fProtonPIDMode == kSigma1) {
+    listOfCuts += "N_{#sigma}(1) area: "; listOfCuts += fNSigma;
+    listOfCuts += " #sigma";
+  }
+  if(fProtonPIDMode == kSigma2) {
+    listOfCuts += "N_{#sigma}(2) area: "; listOfCuts += fNSigma;
+    listOfCuts += " #sigma";
+  }
   l.DrawLatex(0.1,0.58,listOfCuts.Data());
   listOfCuts = "Accepted vertex diamond: "; 
   l.DrawLatex(0.1,0.5,listOfCuts.Data());
@@ -754,7 +774,7 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
 Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   //Function that checks if a track is a proton
   Double_t probability[5];
-  Double_t gPt = 0.0, gP = 0.0;
+  Double_t gPt = 0.0, gP = 0.0, gEta = 0.0;
   Long64_t fParticleType = 0;
  
   //Bayesian approach for the PID
@@ -791,13 +811,80 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     return kFALSE;
   }
   //Definition of an N-sigma area around the dE/dx vs P band
-  else if(fProtonPIDMode == kSigma) {
-    Printf("The kSigma mode is not implemented yet!!!");
-    return kFALSE;
+  else if(fProtonPIDMode == kSigma1) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(tpcTrack) {
+      gPt = tpcTrack->Pt();
+      gP = tpcTrack->P();
+      gEta = tpcTrack->Eta();
+    }
+    //We start the P slices at >0.3GeV/c with a bining of 50MeV/c ==> Int_t(0.3001/0.05) = 6
+    Int_t nbinP = Int_t(gP/0.05) - 6;
+    Double_t tpcSignal = track->GetTPCsignal();
+    Double_t dEdxMean = fdEdxMean[nbinP];
+    Double_t dEdxSigma = fdEdxSigma[nbinP];
+    if((tpcSignal <= dEdxMean + fNSigma*dEdxSigma)&&
+       (tpcSignal <= dEdxMean + fNSigma*dEdxSigma))
+      return kTRUE;
+  }//kSigma1 PID method
+  //Another definition of an N-sigma area around the dE/dx vs P band
+  else if(fProtonPIDMode == kSigma2) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(tpcTrack) {
+      gPt = tpcTrack->Pt();
+      gP = tpcTrack->P();
+      gEta = tpcTrack->Eta();
+    }
+    //We start the P slices at >0.3GeV/c with a bining of 50MeV/c ==> Int_t(0.3001/0.05) = 6
+    Int_t nbinP = Int_t(gP/0.05) - 6;
+    Double_t tpcSignal = track->GetTPCsignal();
+    Double_t dEdxTheory = Bethe(gP/9.38270000000000048e-01);
+    Double_t dEdxSigma = fdEdxSigma[nbinP];
+    Double_t nsigma = TMath::Abs(tpcSignal - dEdxTheory)/(tpcSignal*(dEdxSigma/TMath::Sqrt(track->GetTPCsignalN())));
+    if(nsigma <= fNSigma) 
+      return kTRUE;
   }
 
   return kFALSE;
 }
 
+//________________________________________________________________________
+void AliProtonAnalysisBase::SetdEdxBandInfo(const char *filename) {
+  // This function is used in case the kSigma1 or kSigma2 PID mode is selected
+  // It takes as an argument the name of the ascii file (for the time being) 
+  // that is generated as a prior process.
+  // This ascii file has three columns: The min. P value (bins of 50MeV/c) 
+  // the mean and the sigma of the dE/dx distributions for protons coming 
+  // from a gaussian fit.
+  ifstream in;
+  in.open(filename);
+
+  Double_t gPtMin = 0.0;
+  Int_t iCounter = 0;
+  while(in.good()) {
+    in >> gPtMin >> fdEdxMean[iCounter] >> fdEdxSigma[iCounter];
+    if(fDebugMode)
+      Printf("Momentum bin: %d - Min momentum: %lf - mean(dE/dx): %lf - sigma(dE/dx): %lf",iCounter+1,gPtMin,fdEdxMean[iCounter],fdEdxSigma[iCounter]);
+    iCounter += 1;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliProtonAnalysisBase::Bethe(Double_t bg) {
+  // This is the Bethe-Bloch function normalised to 1 at the minimum
+  // We renormalize it based on the MC information
+  // WARNING: To be revised soon!!!
+  // This is just a temporary fix
+  Double_t normalization = 49.2;
+  Double_t bg2=bg*bg;
+  Double_t beta2 = bg2/(1.+ bg2);
+  Double_t bb = 8.62702e-2*(9.14550 - beta2 - TMath::Log(3.51000e-5 + 1./bg2))/beta2;
+  //
+  const Float_t kmeanCorrection =0.1;
+  Double_t meanCorrection =(1+(bb-1)*kmeanCorrection);
+  bb *= meanCorrection;
+
+  return normalization*bb; 
+}
 
 
