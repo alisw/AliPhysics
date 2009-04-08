@@ -100,9 +100,9 @@ void AliEveTRDDigits::ComputeRepresentation()
         if (q < threshold) continue;
 
         Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
-        Int_t  roc[3] = {ir, ic, 0}; 
-        Bool_t    out = kTRUE;
-        transform.Transform(&x[0], &roc[0], UInt_t(it), out, 0);
+        //Int_t  roc[3] = {ir, ic, 0}; 
+        //Bool_t    out = kTRUE;
+        //transform.Transform(&x[0], &roc[0], UInt_t(it), out, 0);
 
         scale = q < 512 ? q/512. : 1.;
         color  = 50+int(scale*50.);
@@ -426,7 +426,6 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
 
   AliTRDtrackerV1::SetNTimeBins(24);
 
-
   fRim = new AliRieman(trk->GetNumberOfClusters());
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
@@ -435,17 +434,19 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
     AddElement(new AliEveTRDTracklet(tracklet));
 
     AliTRDcluster *c = 0x0;
-    tracklet->ResetClusterIter(kFALSE);
-    while((c = tracklet->PrevCluster())){
+//     tracklet->ResetClusterIter(kFALSE);
+//     while((c = tracklet->PrevCluster())){
+    for(Int_t ic=AliTRDseedV1::kNtb; ic--;){
+      if(!(c=tracklet->GetClusters(ic))) continue;
       Float_t xc = c->GetX();
       Float_t yc = c->GetY();
       Float_t zc = c->GetZ();
       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
       yc -= tracklet->GetTilt()*(zc-zt);
-      fRim->AddPoint(xc, yc, zc, 1, 10);
+      fRim->AddPoint(xc, yc, zc, .05, 2.3);
     }
   }
-  fRim->Update();
+  if(trk->GetNumberOfTracklets()>1) fRim->Update();
   SetStatus(fTrackState);
 }
 
@@ -510,16 +511,17 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
       } else { 
         //printf("Rieman track\n");
         // if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, fPoints);
-        Float_t x = 0.;
+
+/*        Float_t x = 0.;
         for(Int_t ip = nc; ip--;){
           x = fPoints[ip].GetX();
           fPoints[ip].SetXYZ(x, fRim->GetYat(x), fRim->GetZat(x));
-        }
+        }*/
       }
     }
   
     Float_t global[3];
-    for(Int_t ip=0; ip<nc; ip++){
+    for(Int_t ip=0; ip<0/*nc*/; ip++){
       fPoints[ip].Rotate(-fAlpha).GetXYZ(global);
       SetPoint(ip, global[0], global[1], global[2]);
     }
