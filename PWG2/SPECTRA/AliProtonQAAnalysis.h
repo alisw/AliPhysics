@@ -14,16 +14,14 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TH1I.h"
 #include "TList.h"
 #include "TArrayI.h"
-
-#include "AliPID.h"
 
 class TF1;
 class TH1F;
 class TH3F;
 
+class AliPID;
 class AliESDEvent;
 class AliESDtrack;
 class AliStack;
@@ -37,16 +35,16 @@ class AliProtonQAAnalysis : public TObject {
   AliProtonQAAnalysis();
   virtual ~AliProtonQAAnalysis();
 
-  void SetBaseAnalysis(AliProtonAnalysisBase *baseAnalysis) {
+  void SetBaseAnalysis(AliProtonAnalysisBase *const baseAnalysis) {
     fProtonAnalysisBase = baseAnalysis;}
-  AliProtonAnalysisBase *GetProtonAnalysisBaseObject() {
+  AliProtonAnalysisBase *GetProtonAnalysisBaseObject() const {
     return fProtonAnalysisBase;}
 
   //Vertex QA
   void RunVertexQA(AliGenEventHeader *header,
 		   AliStack *stack,
 		   AliESDEvent *esd);
-  TList *GetVertexQAList() {return fQAVertexList;}
+  TList *GetVertexQAList() const {return fQAVertexList;}
 
   //QA histograms
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
@@ -55,7 +53,7 @@ class AliProtonQAAnalysis : public TObject {
 		     AliESDEvent *esd,
 		     const AliESDVertex *vertex);
   void SetRunQAAnalysis();
-  TList *GetGlobalQAList() {return fGlobalQAList;}
+  TList *GetGlobalQAList() const {return fGlobalQAList;}
 
   //Efficiency plots (reconstruction & PID)
   void RunEfficiencyAnalysis(AliMCEvent *mcEvent, 
@@ -68,7 +66,7 @@ class AliProtonQAAnalysis : public TObject {
     fRunEfficiencyAnalysis = kTRUE;
     fUseCutsInEfficiency = gUseCuts;
   }
-  TList *GetEfficiencyQAList() {return fEfficiencyList;}
+  TList *GetEfficiencyQAList() const {return fEfficiencyList;}
 
   //MC analysis
   void RunMCAnalysis(AliStack* stack);
@@ -81,13 +79,13 @@ class AliProtonQAAnalysis : public TObject {
     fMotherParticlePDGCodeFlag = kTRUE;
     fMotherParticlePDGCode = pdgCode;
   }
-  TList *GetPDGList() {return fPDGList;}
-  TList *GetMCProcessesList() {return fMCProcessesList;}
+  TList *GetPDGList() const {return fPDGList;}
+  TList *GetMCProcessesList() const {return fMCProcessesList;}
 
-  TList *GetAcceptedCutList() {return fAcceptedCutList;}
-  TList *GetRejectedCutList() {return fRejectedCutList;}
-  TList *GetAcceptedDCAList() {return fAcceptedDCAList;}
-  TList *GetRejectedDCAList() {return fRejectedDCAList;}
+  TList *GetAcceptedCutList() const {return fAcceptedCutList;}
+  TList *GetRejectedCutList() const {return fRejectedCutList;}
+  TList *GetAcceptedDCAList() const {return fAcceptedDCAList;}
+  TList *GetRejectedDCAList() const {return fRejectedDCAList;}
 
  private:
   AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
@@ -104,7 +102,7 @@ class AliProtonQAAnalysis : public TObject {
 		  AliESDtrack* track);
  
   Bool_t   IsLabelUsed(TArrayI array, Int_t label);
-  Int_t    ConvertPDGToInt(Int_t pdgCode);
+  Int_t    ConvertPDGToInt(Int_t pdgCode) const;
   
   AliProtonAnalysisBase *fProtonAnalysisBase;//base analysis object
 

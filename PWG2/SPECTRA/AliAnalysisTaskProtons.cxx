@@ -5,10 +5,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TH2F.h"
-#include "TH1I.h"
-#include "TF1.h"
 #include "TCanvas.h"
-#include "TLorentzVector.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -20,15 +17,17 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
 
 #include "AliProtonAnalysis.h"
 #include "AliProtonAnalysisBase.h"
 #include "AliAnalysisTaskProtons.h"
 
-// Analysis task to run the \bar{p}/p analysis
-// Author: Panos Cristakoglou
+//-----------------------------------------------------------------
+//                 AliAnalysisTakProtons class
+//   This is the task to run the \bar{p}/p analysis
+//   Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
+//-----------------------------------------------------------------
 
 ClassImp(AliAnalysisTaskProtons)
   

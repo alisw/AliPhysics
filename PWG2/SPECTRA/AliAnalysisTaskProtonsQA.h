@@ -1,8 +1,13 @@
-#ifndef AliAnalysisTaskProtonsQA_cxx
-#define AliAnalysisTaskProtonsQA_cxx
+#ifndef ALIANALYSISTASKPROTONSQA_H
+#define ALIANALYSISTASKPROTONSQA_H
 
-// Analysis task creating a the 2d y-p_t spectrum of p and antip
-// Author: Panos Cristakoglou
+//-------------------------------------------------------------------------
+//                 Class AliAnalysisTaskProtonQA
+//   This is the task for the baryon (proton) QA analysis
+//
+//    Origin: Panos Christakoglou | Panos.Christakoglou@cern.ch
+//-------------------------------------------------------------------------
+
 class TList;
 class AliESDEvent;
 class AliMCEvent;
@@ -21,7 +26,7 @@ class AliAnalysisTaskProtonsQA : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisObject(AliProtonQAAnalysis *analysis) {
+  void SetAnalysisObject(AliProtonQAAnalysis *const analysis) {
     fProtonQAAnalysis = analysis;}
 
  
