@@ -24,15 +24,22 @@ class AliTRDReconstructor: public AliReconstructor
 public:
   enum ETRDReconstructorSteer {
     kDigitsConversion= BIT(0)
-    ,kWriteClusters  = BIT(1)
-    ,kSeeding        = BIT(2)
-    ,kSteerPID       = BIT(3)
-    ,kEightSlices    = BIT(4)
-    ,kWriteTracklets = BIT(5)
-    ,kDriftGas       = BIT(6)
-    ,kHLT            = BIT(7)
-    ,kCosmic         = BIT(8)
-    ,kOwner          = BIT(14)
+    ,kTC             = BIT(1) // tail cancelation
+    ,kLUT            = BIT(2) // look up table for cluster position determination 
+    ,kGAUS           = BIT(3) // look up table for cluster position determination 
+    ,kClusterSharing = BIT(4) // Toggle cluster sharing
+    ,kSteerPID       = BIT(5)
+    ,kEightSlices    = BIT(6)
+    ,kWriteClusters  = BIT(7)
+    ,kWriteTracklets = BIT(8)
+    ,kDriftGas       = BIT(9)
+    ,kSeeding        = BIT(10)
+    ,kVertexConstrained = BIT(11) // Perform vertex constrained fit
+    ,kImproveTracklet   = BIT(12) // Improve tracklet in the SA TRD track finder 
+    ,kHLT            = BIT(13)
+    ,kCosmic         = BIT(14)
+    ,kOwner          = BIT(15)
+    ,kNsteer         = 15       // number of tasks
   };
   enum ETRDReconstructorTask {
     kRawReader    = 0
@@ -66,14 +73,21 @@ public:
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
   Int_t               GetStreamLevel(ETRDReconstructorTask task) const    { return fStreamLevel[task];} 
   inline void         GetTCParams(Double_t *par) const;
-  virtual Bool_t      HasDigitConversion() const                   { return fSteerParam&kDigitsConversion;  };
+  virtual Bool_t      HasDigitConversion() const { return fSteerParam&kDigitsConversion;  };
+  Bool_t              HasVertexConstrained() const { return fSteerParam&kVertexConstrained; }
+  Bool_t              HasImproveTracklets() const  { return fSteerParam&kImproveTracklet; }
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsCosmic() const           { return fSteerParam&kCosmic;}
   Bool_t              IsEightSlices() const      { return fSteerParam&kEightSlices;}
-
+  Bool_t              UseClusterSharing() const  { return fSteerParam&kClusterSharing;}
+  Bool_t              UseLUT() const             { return fSteerParam&kLUT;}
+  Bool_t              UseGAUS() const             { return fSteerParam&kGAUS;}
+  Bool_t              UseTailCancelation() const { return fSteerParam&kTC;}
+  
+  static void         Options(UInt_t steer=0, UChar_t *stream=0x0);
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
@@ -83,14 +97,18 @@ public:
   void                SetStreamLevel(Int_t level, ETRDReconstructorTask task= kTracker);
 
 private:
-  UChar_t           fStreamLevel[kNtasks];// stream level for each reconstruction task         
-  UInt_t            fSteerParam;          // steering flags
+  static Char_t    *fgSteerNames[kNsteer];//! steering names
+  static Char_t    *fgSteerFlags[kNsteer];//! steering flags
+  static Char_t    *fgTaskNames[kNtasks]; //! tasks names
+  static Char_t    *fgTaskFlags[kNtasks]; //! tasks flags
+  UChar_t           fStreamLevel[kNtasks];// stream level for each reconstruction task
+  UInt_t            fSteerParam;          // steering bits
   Double_t          fTCParams[8];         // Tail Cancellation parameters for drift gases 
   TTreeSRedirector *fDebugStream[kNtasks];// Debug Streamer container;
  
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
 
-  ClassDef(AliTRDReconstructor, 1)    //  Class for the TRD reconstruction
+  ClassDef(AliTRDReconstructor, 2)    //  Class for the TRD reconstruction
 
 };
 

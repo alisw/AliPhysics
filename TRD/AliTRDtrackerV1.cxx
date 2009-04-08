@@ -598,8 +598,10 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       kStoreIn = kFALSE;
     }
 
-    Double_t maxChi2 = t.GetPredictedChi2(tracklet);
-    if (maxChi2 < 1e+10 && t.Update(tracklet, maxChi2)){ 
+    Double_t cov[3]; tracklet->GetCovAt(x, cov);
+    Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
+    Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    if (chi2 < 1e+10 && t.Update(p, cov, chi2)){ 
       nClustersExpected += tracklet->GetN();
     }
   }
@@ -841,16 +843,21 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     }
 
     // update Kalman with the TRD measurement
-    Double_t chi2 = t.GetPredictedChi2(ptrTracklet);
-    if(chi2>1e+10){
+    Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
+    Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
+    Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    if(chi2>1e+10){ // TODO
       t.SetStatus(AliTRDtrackV1::kChi2, ily);
       continue; 
     }
-    if(!t.Update(ptrTracklet, chi2)) {
+    if(!t.Update(p, cov, chi2)) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kUpdate);
       break;
     }
+    // fill residuals ?!
+    AliTracker::FillResiduals(&t, p, cov, ptrTracklet->GetVolumeId());
+  
 
     // load tracklet to the tracker
     ptrTracklet->UpDate(&t);
@@ -1542,8 +1549,10 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     if (!AdjustSector(track)) break;
   
     //Update track
-    Double_t chi2 = track->GetPredictedChi2(ptrTracklet);
-    if(chi2<1e+10) track->Update(ptrTracklet, chi2);
+    Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
+    Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
+    Double_t chi2 = ((AliExternalTrackParam*)track)->GetPredictedChi2(p, cov);
+    if(chi2<1e+10) track->Update(p, cov, chi2);
     if(!up) continue;
 
 		//Reset material budget if 2 consecutive gold
@@ -2615,7 +2624,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               << "\n";
         }
               
-        if(fReconstructor->GetRecoParam()->HasImproveTracklets() && ImproveSeedQuality(stack, cseed) < 4){
+        if(fReconstructor->HasImproveTracklets() && ImproveSeedQuality(stack, cseed) < 4){
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
@@ -2629,7 +2638,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // do the final track fitting (Once with vertex constraint and once without vertex constraint)
         Double_t chi2Vals[3];
         chi2Vals[0] = FitTiltedRieman(&cseed[0], kFALSE);
-        if(fReconstructor->GetRecoParam()->IsVertexConstrained())
+        if(fReconstructor->HasVertexConstrained())
           chi2Vals[1] = FitTiltedRiemanConstraint(&cseed[0], GetZ()); // Do Vertex Constrained fit if desired
         else
           chi2Vals[1] = 1.;
@@ -2887,7 +2896,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
   chi2phi /= Float_t (nLayers - 2.0);
   
   Double_t likeChi2Z  = TMath::Exp(-chi2[2] * 0.14);			// Chi2Z 
-  Double_t likeChi2TC = (fReconstructor->GetRecoParam() ->IsVertexConstrained()) ? 
+  Double_t likeChi2TC = (fReconstructor->HasVertexConstrained()) ? 
   											TMath::Exp(-chi2[1] * 0.677) : 1;			// Constrained Tilted Riemann
   Double_t likeChi2TR = TMath::Exp(-chi2[0] * 0.78);			// Non-constrained Tilted Riemann
   Double_t likeChi2Phi= TMath::Exp(-chi2phi * 3.23);

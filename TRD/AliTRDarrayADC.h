@@ -31,6 +31,7 @@ class AliTRDarrayADC: public TObject
   Bool_t  HasData() const {return fNtime ? 1 : 0;};
   Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
                        {return fADC[(nrow*fNcol+ncol)*fNtime+ntime];};
+  inline void GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const;
   Short_t GetDataB(Int_t nrow, Int_t ncol, Int_t ntime) const;
   UChar_t GetPadStatus(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetPadStatus(Int_t nrow, Int_t ncol, Int_t ntime, UChar_t status);
@@ -56,4 +57,10 @@ class AliTRDarrayADC: public TObject
   ClassDef(AliTRDarrayADC,1) //ADC container class
     
 };
+
+inline void AliTRDarrayADC::GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const
+{
+  for(Int_t ic=n, idx = (r*fNcol+c)*fNtime+t; ic--; idx+=fNtime) vals[ic] = fADC[idx];
+}
+
 #endif 

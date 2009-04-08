@@ -66,12 +66,6 @@ AliTRDrecoParam::AliTRDrecoParam()
   //
   // Default constructor
   //
-  SetTailCancelation();
-  SetLUT();
-  SetClusterSharing(kFALSE);
-  SetVertexConstrained();
-  SetImproveTracklets(kFALSE);
-
   fSysCovMatrix[0] = 0.; // y direction (1 cm)
   fSysCovMatrix[1] = 0.; // z direction (1 cm)
   fSysCovMatrix[2] = 0.; // snp
@@ -117,12 +111,6 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   //
   // Copy constructor
   //
-  SetClusterSharing(ref.IsClusterSharing());
-  SetVertexConstrained(ref.IsVertexConstrained());
-  SetLUT(ref.IsLUT());
-  SetTailCancelation(ref.IsTailCancelation());
-  SetImproveTracklets(ref.HasImproveTracklets());
-
   memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
   memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
 }
@@ -149,7 +137,6 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
 
   AliTRDrecoParam *rec = new AliTRDrecoParam();
   rec->fkdNchdy = 4000.; // PbPb in TRD
-  rec->SetImproveTracklets(kTRUE);
 
   return rec;
 
@@ -166,11 +153,10 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   AliTRDrecoParam *par = new AliTRDrecoParam();
   par->fSysCovMatrix[0] = 1.; // y direction (1 cm)
   par->fSysCovMatrix[1] = 1.; // z direction (1 cm)
-  par->SetVertexConstrained(kFALSE);
-  par->fkChi2YSlope       = 0.11853;
-  par->fkChi2ZSlope       = 0.04527;
-	par->fkChi2YCut					= 1.;
-	par->fkPhiSlope					= 3.17954;
+  par->fkChi2YSlope     = 0.11853;
+  par->fkChi2ZSlope     = 0.04527;
+  par->fkChi2YCut       = 1.;
+  par->fkPhiSlope       = 3.17954;
   par->fkMaxTheta       = 2.1445;
   par->fkMaxPhi         = 2.7475;
   par->fkNMeanClusters  = 12.89;

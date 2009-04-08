@@ -37,11 +37,7 @@ class AliTRDtransform : public TObject {
   AliTRDtransform &operator=(const AliTRDtransform &t) { *(new(this) AliTRDtransform(t));
                                                           return *this; }
 
-  virtual Bool_t   Transform(Double_t *x
-                           , Int_t    *i
-                           , UInt_t    time
-                           , Bool_t   &out
-                           , Int_t     coordinateType);
+  virtual Bool_t   Transform(AliTRDcluster *c);
   virtual void     Recalibrate(AliTRDcluster *c, Bool_t setDet = kTRUE);
 
           void     SetDetector(Int_t det);

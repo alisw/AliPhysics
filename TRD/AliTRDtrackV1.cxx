@@ -400,7 +400,7 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
 }
 
 //_______________________________________________________________
-Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
+Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt, Double_t *cov) const
 {
 // Compute chi2 between tracklet and track. The value is calculated at the radial position of the track
 // equal to the reference radial position of the tracklet (see AliTRDseedV1)
@@ -412,9 +412,8 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 // where X=(y z), the position of the track/tracklet in the yz plane
 // 
 
-  Double_t x = GetX();
-  Double_t p[2]   = { trklt->GetYat(x), trklt->GetZat(x)};
-  Double_t cov[3]; trklt->GetCovAt(x, cov);
+  Double_t p[2]   = { trklt->GetY(), trklt->GetZ()};
+  trklt->GetCovAt(trklt->GetX(), cov);
   return AliExternalTrackParam::GetPredictedChi2(p, cov);
 }
 
@@ -774,45 +773,16 @@ void AliTRDtrackV1::UnsetTracklet(Int_t plane)
 
 
 //_______________________________________________________________
-Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
+Bool_t  AliTRDtrackV1::Update(Double_t *p, Double_t *cov, Double_t chi2)
 {
   //
-  // Update track and tracklet parameters 
+  // Update track 
   //
-  
-  Double_t x      = GetX();
-  Double_t p[2]   = { trklt->GetYat(x)
-                    , trklt->GetZat(x) };
-  Double_t cov[3]/*, covR[3], cov0[3]*/;
-
-//   printf("\tD[%3d] Ly[%d] Trk: x[%f] y[%f] z[%f]\n", trklt->GetDetector(), trklt->GetPlane(), GetX(), GetY(), GetZ());
-// //   
-//   Double_t xref = trklt->GetXref();
-//   trklt->GetCovAt(xref, covR);
-//   printf("xr=%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", xref, trklt->GetYat(xref), TMath::Sqrt(covR[0]), trklt->GetZat(xref), TMath::Sqrt(covR[2]), covR[1]);
-// 
-//   Double_t x0 = trklt->GetX0();
-//   trklt->GetCovAt(x0, cov0);
-//   printf("x0=%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", x0, trklt->GetYat(x0), TMath::Sqrt(cov0[0]), trklt->GetZat(x0), TMath::Sqrt(cov0[2]), cov0[1]);
-// 
-//   trklt->GetCovAt(x, cov);
-//   printf("x =%5.3f y=%f+-%f z=%f+-%f (covYZ=%f)\n", x, p[0], TMath::Sqrt(cov[0]), p[1], TMath::Sqrt(cov[2]), cov[1]);
-// 
-//   const Double_t *cc = GetCovariance();
-//   printf("yklm[0] = %f +- %f\n", GetY(), TMath::Sqrt(cc[0]));
-
-  trklt->GetCovAt(x, cov); 
   if(!AliExternalTrackParam::Update(p, cov)) return kFALSE;
-//   cc = GetCovariance();
-//   printf("yklm[1] = %f +- %f\n", GetY(), TMath::Sqrt(cc[0]));
 
-  AliTRDcluster *c = 0x0;
-  Int_t ic = 0; while(!(c = trklt->GetClusters(ic))) ic++;
-  AliTracker::FillResiduals(this, p, cov, c->GetVolumeId());
-  
   // Register info to track
   SetNumberOfClusters();
-  SetChi2(GetChi2() + chisq);
+  SetChi2(GetChi2() + chi2);
   return kTRUE;
 }
 

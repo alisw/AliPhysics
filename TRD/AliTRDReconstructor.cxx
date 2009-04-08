@@ -50,6 +50,53 @@
 ClassImp(AliTRDReconstructor)
 
 TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
+Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
+  "DigitsConversion       "
+ ,"Tail Cancellation      "
+ ,"Clusters LUT           "
+ ,"Clusters GAUSS         "
+ ,"Clusters Sharing       "
+ ,"NN PID                 "
+ ,"8 dEdx slices in ESD   "
+ ,"Write Clusters         "
+ ,"Write Online Tracklets "
+ ,"Drift Gas Argon        "
+ ,"Stand Alone Tracking   "
+ ,"Vertex Constrain       "
+ ,"Tracklet Improve       "
+ ,"HLT Mode              "
+ ,"Cosmic Reconstruction "
+};
+Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
+  "dc"// digits conversion [false]
+ ,"tc"// apply tail cancellation [true]
+ ,"lt"// look-up-table for cluster shape in the r-phi direction
+ ,"gs"// gauss cluster shape in the r-phi direction
+ ,"sh"// cluster sharing between tracks
+ ,"nn"// PID method in reconstruction (NN) [true]
+ ,"8s"// 8 dEdx slices in ESD [true] 
+ ,"cw"// write clusters [true]
+ ,"tw"// write online tracklets [false]
+ ,"ar"// drift gas [false] - do not update the number of exponentials in the TC !
+ ,"sa"// track seeding (stand alone tracking) [true]
+ ,"vc"// vertex constrain on stand alone track finder [false]
+ ,"ti"// improve tracklets in stand alone track finder [true]
+ ,"hlt"// HLT reconstruction [false]
+ ,"cos"// Cosmic Reconstruction [false]
+};
+Char_t* AliTRDReconstructor::fgTaskNames[kNtasks] = {
+  "RawReader"
+ ,"Clusterizer"
+ ,"Tracker"
+ ,"PID"
+};
+Char_t* AliTRDReconstructor::fgTaskFlags[kNtasks] = {
+  "rr"
+ ,"cl"
+ ,"tr"
+ ,"pd"
+};
+
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor()
   :AliReconstructor()
@@ -65,7 +112,15 @@ AliTRDReconstructor::AliTRDReconstructor()
   // PID method in reconstruction (NN) [nn]
   SETFLG(fSteerParam, kSteerPID);
   // number of dEdx slices in the ESD track [8s]
-  //SETFLG(fSteerParam, kEightSlices);
+  SETFLG(fSteerParam, kEightSlices);
+  // vertex constrain for stand alone track finder
+  SETFLG(fSteerParam, kVertexConstrained);
+  // improve tracklets for stand alone track finder
+  SETFLG(fSteerParam, kImproveTracklet);
+  // use look up table for cluster r-phi position
+  SETFLG(fSteerParam, kLUT);
+  // use tail cancellation
+  SETFLG(fSteerParam, kTC);
 
   memset(fStreamLevel, 0, kNtasks*sizeof(UChar_t));
   memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * kNtasks);
@@ -112,17 +167,7 @@ void AliTRDReconstructor::Init(){
   // Init Options
   //
   SetOption(GetOption());
-
-  AliInfo(Form("\tDigitsConversion       [dc] : %s", fSteerParam&kDigitsConversion?"yes":"no"));
-  AliInfo(Form("\tWrite Clusters         [cw] : %s", fSteerParam&kWriteClusters?"yes":"no"));
-  AliInfo(Form("\tWrite Online Tracklets [tw] : %s", fSteerParam&kWriteTracklets?"yes":"no"));
-  AliInfo(Form("\tDrift Gas Argon        [ar] : %s", fSteerParam&kDriftGas?"yes":"no"));
-  AliInfo(Form("\tStand Alone Tracking   [sa] : %s", fSteerParam&kSeeding?"yes":"no"));
-  AliInfo(Form("\tHLT         Tracking  [hlt] : %s", fSteerParam&kHLT?"yes":"no"));
-  AliInfo(Form("\tCosmic Reconstruction [cos] : %s", fSteerParam&kCosmic?"yes":"no"));
-  AliInfo(Form("\tNN PID                 [nn] : %s", fSteerParam&kSteerPID?"yes":"no"));
-  AliInfo(Form("\t8 dEdx slices in ESD   [8s] : %s", fSteerParam&kEightSlices?"yes":"no"));
-  AliInfo(Form("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]));
+  Options(fSteerParam, fStreamLevel);
 }
 
 //_____________________________________________________________________________
@@ -161,10 +206,10 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   rawReader->Select("TRD");
 
   // New (fast) cluster finder
-  AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
+  AliTRDclusterizer clusterer(fgTaskNames[kClusterizer], fgTaskNames[kClusterizer]);
   clusterer.SetReconstructor(this);
   clusterer.OpenOutput(clusterTree);
-  clusterer.SetAddLabels(kFALSE);
+  clusterer.SetUseLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
   
   if(IsWritingClusters()) return;
@@ -184,7 +229,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
 
   //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
-  AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
+  AliTRDclusterizer clusterer(fgTaskNames[kClusterizer], fgTaskNames[kClusterizer]);
   clusterer.SetReconstructor(this);
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
@@ -228,75 +273,41 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 {
 // Read option string into the steer param.
 //
-// Default steer param values
-//
-// digits conversion [dc] = false
-// drift gas [ar] = false - do not update the number of exponentials in the TC !
-// write clusters [cw] = true
-// write online tracklets [tw] = false
-// track seeding (stand alone tracking) [sa] = true
-// PID method in reconstruction (NN) [nn] = true
-// 8 dEdx slices in ESD [8s] = false 
-// HLT tracking [hlt] = false
-// Cosmic Reconstruction [cos] = false
-//
 
   AliReconstructor::SetOption(opt);
 
   TString s(opt);
   TObjArray *opar = s.Tokenize(",");
   for(Int_t ipar=0; ipar<opar->GetEntriesFast(); ipar++){
+    Bool_t PROCESSED = kFALSE;
     TString sopt(((TObjString*)(*opar)[ipar])->String());
-    if(sopt.Contains("dc")){
-      SETFLG(fSteerParam, kDigitsConversion);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kDigitsConversion);
-      continue;	
-    } else if(sopt.Contains("cw")){ 
-      SETFLG(fSteerParam, kWriteClusters);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kWriteClusters);
-      continue;
-    } else if(sopt.Contains("sa")){
-      SETFLG(fSteerParam, kSeeding);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kSeeding);
-      continue;
-    } else if(sopt.Contains("nn")){
-      SETFLG(fSteerParam, kSteerPID);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kSteerPID);
-      continue;
-    } else if(sopt.Contains("8s")){
-      SETFLG(fSteerParam, kEightSlices);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kEightSlices);
-      continue;
-    } else if(sopt.Contains("tw")){
-      SETFLG(fSteerParam, kWriteTracklets);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kWriteTracklets);
-      continue;	
-    } else if(sopt.Contains("ar")){
-      SETFLG(fSteerParam, kDriftGas);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kDriftGas);
-      continue;	
-    } else if(sopt.Contains("hlt")){
-      SETFLG(fSteerParam, kHLT);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kHLT);
-      continue;	
-    } else if(sopt.Contains("cos")){
-      SETFLG(fSteerParam, kCosmic);
-      if(sopt.Contains("!")) CLRFLG(fSteerParam, kCosmic);
-    } else if(sopt.Contains("sl")){
+    for(Int_t iopt=0; iopt<kNsteer; iopt++){
+      if(!sopt.Contains(fgSteerFlags[iopt])) continue;
+      SETFLG(fSteerParam, BIT(iopt));
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, BIT(iopt));
+      PROCESSED = kTRUE;
+      break;	
+    }
+    if(PROCESSED) continue;
+
+    if(sopt.Contains("sl")){
       TObjArray *stl = sopt.Tokenize("_");
       if(stl->GetEntriesFast() < 3) continue;
       TString taskstr(((TObjString*)(*stl)[1])->String());
       TString levelstring(((TObjString*)(*stl)[2])->String());
-      // Set the stream Level
       Int_t level = levelstring.Atoi();
-      ETRDReconstructorTask task = kTracker;
-      if(taskstr.CompareTo("raw") == 0) task = kRawReader;	
-      else if(taskstr.CompareTo("cl") == 0) task = kClusterizer;	
-      else if(taskstr.CompareTo("tr") == 0) task = kTracker;
-      else if(taskstr.CompareTo("pi") == 0) task = kPID;
-      SetStreamLevel(level, task);
-      continue;
-    }
+
+      // Set the stream Level
+      PROCESSED = kFALSE;
+      for(Int_t it=0; it<kNtasks; it++){
+        if(taskstr.CompareTo(fgTaskFlags[it]) != 0) continue;
+        SetStreamLevel(level, ETRDReconstructorTask(it));
+        PROCESSED = kTRUE;
+      }
+    } 
+    if(PROCESSED) continue;
+
+    AliWarning(Form("Unknown option flag %s.", sopt.Data()));
   }
 }
 
@@ -305,15 +316,26 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, ETRDReconstructorTask task
   //
   // Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
   //
-  TString taskname[4] = {"RawReader", "Clusterizer", "Tracker", "PID"};
   const Int_t minLevel[4] = {1, 1, 2, 1}; // the minimum debug level upon which a debug stream is created for different tasks
   //AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
   fStreamLevel[(Int_t)task] = level;
   // Initialize DebugStreamer if not yet done
   if(level >= minLevel[task] && !fDebugStream[task]){
     TDirectory *savedir = gDirectory;
-    fDebugStream[task] = new TTreeSRedirector(Form("TRD.%sDebug.root", taskname[task].Data()));
+    fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]));
     savedir->cd();
     SETFLG(fSteerParam, kOwner);
   }
 }
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::Options(UInt_t steer, UChar_t *stream)
+{
+  for(Int_t iopt=0; iopt<kNsteer; iopt++){
+    AliInfoGeneral("AliTRDReconstructor", Form(" %s[%s]%s", fgSteerNames[iopt], fgSteerFlags[iopt], steer ?(((steer>>iopt)&1)?" : ON":" : OFF"):""));
+  }
+  AliInfoGeneral("AliTRDReconstructor", " Debug Streaming"); 
+  for(Int_t it=0; it<kNtasks; it++) 
+    AliInfoGeneral("AliTRDReconstructor", Form(" %s [sl_%s] %d", fgTaskNames[it], fgTaskFlags[it], stream ? stream[it] : 0));
+}
+

@@ -201,7 +201,7 @@ void AliTRDtransform::SetDetector(Int_t det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &out, Int_t  /*coordinateType*/)
+Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
 {
   //
   // Transforms the local cluster coordinates into calibrated 
@@ -209,110 +209,54 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
   //
   // Here the calibration for T0, Vdrift and ExB is applied as well.
   //
-  // Input:
-  //   x[0] = COL-position relative to the center pad (pad units)
-  //   x[1] = cluster signal in left pad
-  //   x[2] = cluster signal in middle pad
-  //   x[3] = cluster signal in right pad
-  //   i[0] = ROW pad number
-  //   i[1] = COL pad number
-  //   time = time bin number (uncalibrated for t0)
-  //
-  // Output:
-  //   x[0] = X-positions in tracking CS
-  //   x[1] = Y-positions in tracking CS
-  //   x[2] = Z-positions in tracking CS
-  //   x[3] = total cluster charge
-  //   x[4] = error in Y-direction
-  //   x[5] = error in Z-direction
-  //   i[2] = time bin number (calibrated for t0)
-  //
+  // Input: Cluster in the local chamber coordinates
+  // Output: Tracking cluster
 
-  Double_t posLocal[3];
-  Double_t posTracking[3];
+  if (!fMatrix) return kFALSE;
 
-  Int_t row = i[0];
-  Int_t col = i[1];
 
-  // Parameters to adjust the X position of clusters
+  // Parameters to adjust the X position of clusters in the alignable volume
   const Double_t kX0shift = AliTRDgeometry::AnodePos(); //[cm]
-  // TRF rising time (fitted)
-  // It should be absorbed by the t0. For the moment t0 is 0 for simulations.
-  // A.Bercuci (Mar 26 2009)
-  const Double_t kT0shift = 0.189;        //[us]
 
-  if (!fMatrix) {
-
-    x[0] = 0.0;
-    x[1] = 0.0;
-    x[2] = 0.0;
-    x[3] = 0.0;
-    x[4] = 0.0;
-    x[5] = 0.0;
-    i[2] = 0;
-
-    return kFALSE;
-
-  }
-  else {
  
-    // Calibration values
-    Double_t vdrift      = fCalVdriftDetValue * fCalVdriftROC->GetValue(col,row);
-    Double_t t0          = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
+  // Retrieve calibration values
+  Int_t col = c->GetPadCol(), row = c->GetPadRow();
+  // drift velocity
+  Double_t vd  = fCalVdriftDetValue * fCalVdriftROC->GetValue(col,row);
+  // t0
+  Double_t t0  = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
+  // ExB correction
+  Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(vd);
 
-    // T0 correction
-    Double_t timeT0Cal   = time - t0;
-    // Calculate the X-position,
-    Double_t xLocal      = ((timeT0Cal + 0.5) / fSamplingFrequency - kT0shift) * vdrift + AliTRDcluster::GetXcorr(TMath::Nint(timeT0Cal)); 
+  Float_t x = c->GetXloc(t0, vd);
 
-    // Length of the amplification region
-    //Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
-    // The drift distance
-    Double_t driftLength = TMath::Max(xLocal,0.0);
-    // ExB correction
-    Double_t exbCorr     = AliTRDCommonParam::Instance()->GetOmegaTau(vdrift);
+  // pad response width with diffusion corrections
+  Double_t s2  = AliTRDcalibDB::Instance()->GetPRFWidth(fDetector, col, row); s2 *= s2; 
+  // Float_t dl, dt;
+  // AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
+  // s2 += dl*dl*x/(1.+2.*exb*exb);
+  s2 -= - 1.5e-1;
 
-    // Pad dimensions
-    Double_t rowSize     = fPadPlane->GetRowSize(row);
-    Double_t colSize     = fPadPlane->GetColSize(col);
+  // Pad dimensions
+  Double_t rs = fPadPlane->GetRowSize(row);
+  Double_t cs = fPadPlane->GetColSize(col);
+  Double_t y0 = fPadPlane->GetColPos(col) + .5*cs;
+  Double_t loc[] = {
+    kX0shift-x,                    // Invert the X-position,
+    c->GetYloc(y0, s2, cs) - x*exb,// apply ExB correction
+    fPadPlane->GetRowPos(row) - .5*rs - fZShiftIdeal // move the Z-position relative to the middle of the chamber
+  };
 
-    // Invert the X-position,
-    // apply ExB correction to the Y-position
-    // and move to the Z-position relative to the middle of the chamber
-    posLocal[0] = kX0shift-xLocal;
-    posLocal[1] = (fPadPlane->GetColPos(col) + (0.5 + x[0]) * colSize) - driftLength * exbCorr;
-    posLocal[2] = (fPadPlane->GetRowPos(row) -  0.5  * rowSize) - fZShiftIdeal;
+  // Go to tracking coordinates
+  Double_t trk[3];
+  fMatrix->LocalToMaster(loc, trk);
 
-    // Go to tracking coordinates
-    fMatrix->LocalToMaster(posLocal,posTracking);
-
-    // The total charge of the cluster
-    Double_t q0             = x[1];
-    Double_t q1             = x[2];
-    Double_t q2             = x[3];
-    Double_t clusterCharge  = q0 + q1 + q2; 
-    Double_t clusterSigmaY2 = 0.0;
-    if (clusterCharge > 0.0) {
-      clusterSigmaY2 = (q1 * (q0 + q2) + 4.0 * q0 * q2)
-    	             / (clusterCharge*clusterCharge);
-    }
-
-    // Output values
-    x[0] = posTracking[0];
-    x[1] = posTracking[1];
-    x[2] = posTracking[2];
-    x[3] = clusterCharge;
-    x[4] = colSize*colSize * (clusterSigmaY2 + 1.0/12.0);
-    x[5] = rowSize*rowSize / 12.0;                                       
-    i[2] = TMath::Nint(timeT0Cal);
-		
-    // For TRD tracking calibration awareness
-    out  = ((i[2] < 0) || (i[2] > Int_t(3.5 * fSamplingFrequency/vdrift))) ? kTRUE : kFALSE; 
-
-    return kTRUE;
-
-  }
-
+  // store tracking values
+  c->SetX(trk[0]);c->SetY(trk[1]);c->SetZ(trk[2]);
+  c->SetSigmaY2(s2);
+  c->SetSigmaZ2(fPadPlane->GetRowSize(row)*fPadPlane->GetRowSize(row)/12.);
+  
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -325,33 +269,6 @@ void AliTRDtransform::Recalibrate(AliTRDcluster *c, Bool_t setDet)
   // be used.
   //
 
-  if (setDet) {
-    SetDetector(c->GetDetector());
-  }
-
-  // Transform the local cluster coordinates into recalibrated 
-  // space point positions defined in the local tracking system.
-  // Here the calibration for T0, Vdrift and ExB is applied as well.
-  Double_t clusterXYZ[6];
-  clusterXYZ[0] = c->GetCenter();
-  clusterXYZ[1] = 0.0;
-  clusterXYZ[2] = 0.0;
-  clusterXYZ[3] = 0.0;
-  clusterXYZ[4] = 0.0;
-  clusterXYZ[5] = 0.0;
-  Int_t    clusterRCT[3];
-  clusterRCT[0] = c->GetPadRow();
-  clusterRCT[1] = c->GetPadCol();
-  clusterRCT[2] = 0;
-  Int_t time    = c->GetPadTime();
-  Bool_t out;
-  Transform(clusterXYZ,clusterRCT,((UInt_t) time), out, 0);
-
-  // Set the recalibrated coordinates
-  c->SetX(clusterXYZ[0]);
-  c->SetY(clusterXYZ[1]);
-  c->SetZ(clusterXYZ[2]);
-  c->SetLocalTimeBin(((Char_t) clusterRCT[2]));
-  c->SetInChamber(!out);
-
+  if (setDet) SetDetector(c->GetDetector());
+  Transform(c);
 }

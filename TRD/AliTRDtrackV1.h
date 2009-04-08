@@ -89,7 +89,7 @@ public:
   Double_t       GetPIDsignal() const   { return 0.;}
   Double_t       GetPID(Int_t is) const { return (is >=0 && is < AliPID::kSPECIES) ? fPID[is] : -1.;}
   UChar_t        GetNumberOfTrackletsPID() const;
-  Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
+  Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet, Double_t *cov) const;
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
   inline UChar_t GetStatusTRD(Int_t ly=-1) const;
@@ -132,8 +132,7 @@ public:
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   void           UnsetTracklet(Int_t plane);
-  Bool_t         Update(AliTRDseedV1 *tracklet, Double_t chi2);
-  //Bool_t         Update(const AliTRDcluster *c, Double_t chi2, Int_t index, Double_t h01){ return AliTRDtrack::Update(c,chi2,index,h01); };
+  Bool_t         Update(Double_t *p, Double_t *cov, Double_t chi2);
   Bool_t         Update(const AliCluster *, Double_t, Int_t)                        { return kFALSE; };
   void           UpdateESDtrack(AliESDtrack *t);
 

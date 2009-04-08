@@ -76,8 +76,7 @@ public:
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
   Bool_t    CookPID();
-  Bool_t    Fit(Bool_t tilt=kTRUE, Int_t errors = 2);
-//   void      FitMI();
+  Bool_t    Fit(Bool_t tilt=kFALSE, Bool_t zcorr=kFALSE);
   Bool_t    Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
@@ -131,6 +130,7 @@ public:
   Float_t   GetTgl() const           { return fZref[1];}
   Float_t   GetTilt() const          { return fPad[2];}
   UInt_t    GetTrackletWord() const  { return 0;}
+  UShort_t  GetVolumeId() const;
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
   Float_t   GetY() const             { return fYfit[0] - fYfit[1] * fX;}

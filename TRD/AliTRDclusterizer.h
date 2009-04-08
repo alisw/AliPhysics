@@ -39,10 +39,11 @@ class AliTRDclusterizer : public TNamed
 
   // steering flags
   enum{
-    kIsHLT = BIT(12),    //  are we just in HLT?
-    kIsLUT = BIT(13),    //  are we using look up table for center of the cluster?
-    kOwner = BIT(14),    //  is the clusterizer owner of the clusters?
-    kAddLabels  = BIT(15)   //  Should clusters have MC labels?
+    kOwner  = BIT(14)  //  toggle cluster ownership
+   ,kLabels = BIT(15)  //  toggle MC labels for clusters
+   ,kHLT    = BIT(16)  //  HLT mode
+   ,kLUT    = BIT(17)  //  using look up table for cluster's r-phi position
+   ,kGAUS   = BIT(18)  //  using gauss approx. for cluster's r-phi position
   };
 
   struct MaxStruct
@@ -51,13 +52,13 @@ class AliTRDclusterizer : public TNamed
     Int_t       Col;
     Int_t       Time;
     UChar_t     padStatus;
-    Short_t     Signals[3];
+    Short_t     Signals[7];
     Bool_t      FivePad;
   MaxStruct():Row(-1),Col(0),Time(0),padStatus(0),FivePad(kFALSE)
-      {}
+      {memset(Signals, 0, 7*sizeof(Short_t));}
     MaxStruct &operator=(const MaxStruct &a)
     {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus; FivePad=a.FivePad;
-     memcpy(Signals, a.Signals, 3*sizeof(Signals[0])); return *this;}
+     memcpy(Signals, a.Signals, 7*sizeof(Short_t)); return *this;}
   };
   
   AliTRDclusterizer(const AliTRDReconstructor *const rec = 0x0);
@@ -89,7 +90,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   MakeClusters(Int_t det);
 
   Bool_t   AddLabels();
-  Bool_t   SetAddLabels(const Bool_t kset) { SetBit(kAddLabels, kset); return TestBit(kAddLabels);  } // should we assign labels to clusters
+  Bool_t   SetUseLabels(const Bool_t kset) { SetBit(kLabels, kset); return TestBit(kLabels);  } // should we assign labels to clusters
   void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
@@ -98,16 +99,15 @@ class AliTRDclusterizer : public TNamed
   Bool_t   IsClustersOwner() const {return TestBit(kOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
 
- protected:
+protected:
 
   void             DeConvExp (const Double_t *const source, Double_t *const target
 			     ,const Int_t nTimeTotal, const Int_t nexp);
   void             TailCancelation();
 
   Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
-  Double_t GetCOG(Double_t signal[5]) const; 
-  void             FillLUT();
-  Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
+  //Double_t GetCOG(Double_t signal[5]) const; 
+  //Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   
   void             SetPadStatus(const UChar_t status, UChar_t &encoding);
   UChar_t          GetPadStatus(UChar_t encoding) const;
@@ -133,9 +133,6 @@ class AliTRDclusterizer : public TNamed
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2
 
   AliTRDtransform     *fTransform;           //! Transforms the reconstructed space points
-
-  Int_t                fLUTbin;              //  Number of bins of the LUT
-  Double_t            *fLUT;                 //! The lookup table
 
   AliTRDarrayADC      *fDigits;               // Array holding the digits
   AliTRDSignalIndex   *fIndexes;              // Array holding the indexes to the digits
