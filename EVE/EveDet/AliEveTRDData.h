@@ -95,13 +95,16 @@ private:
 
 
 class AliTRDseedV1;
+class AliTRDtrackletMCM;
 class AliEveTRDTracklet : public TEveLine
 {
 public:
   AliEveTRDTracklet(AliTRDseedV1 *trklt);
-//  ~AliEveTRDTracklet();
+  AliEveTRDTracklet(AliTRDtrackletMCM *tracklet);
+  ~AliEveTRDTracklet();
   AliEveTRDClusters* GetClusters() const {return fClusters;}
   void               Print(Option_t *o="") const; // *MENU*
+  void               ShowMCM(Option_t *opt = "RHT") const; // *MENU*
 private:
   AliEveTRDClusters *fClusters;  // clusters
 
