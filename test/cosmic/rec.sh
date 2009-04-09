@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #############################################################################
 # rec.sh. Front-end script to run reconstruction from the grid chunks
 # Usage:
@@ -36,7 +36,7 @@ PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
 aliensh -c "gbbox find $BASEDIR $PATTERN" | head --lines=-1 > collection.tmp
 
 [ $(stat -c%s collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
-rm -r collection.tmp2
+rm -f collection.tmp2
 for ifile in `cat collection.tmp | head --lines=500` ; do printf $ifile" "\|" "0" " >> collection.tmp2 ; done
 list=`cat collection.tmp2`
 rm -f collection.tmp2 
@@ -59,7 +59,7 @@ $DIALOG --clear --no-cancel \
 PROGRAM=`cat $tempfile`
  
 for filename in $CHUNKS; do
-     filename=${filename//\"/} 
+     filename=${filename//\"/}
      CHUNK=`basename $filename | cut -d "." -f 1,2`
 
      echo "Running AliRoot reconstruction for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK"."
