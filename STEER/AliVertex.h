@@ -48,6 +48,16 @@ class AliVertex : public AliVVertex {
     if(fNContributors>0 || (title.Contains("cosmics") && !title.Contains("failed"))) return 1;
     return 0;
   }
+  virtual Bool_t IsFromVertexer3D() const {
+    TString title = GetTitle();  
+    if(title.Contains("vertexer: 3D")) return kTRUE;
+    else return kFALSE;
+  }
+  virtual Bool_t IsFromVertexerZ() const {
+    TString title = GetTitle();  
+    if(title.Contains("vertexer: Z")) return kTRUE;
+    else return kFALSE;
+  }
 
   virtual void     Print(Option_t* option = "") const;
   virtual void     SetIndices(Int_t nindices,UShort_t *indices); 
