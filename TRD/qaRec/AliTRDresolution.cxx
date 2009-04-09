@@ -753,10 +753,10 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackPt:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 2.);
-    ax->SetTitle("#epsilon_{P_{t}}^{track} / #mu [%]");
+    ax->SetRangeUser(-.5, 2.5);
+    ax->SetTitle("#Deltap_{t}/p_{t}^{MC} [%]");
     ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("1/p_{t}");
+    ax->SetTitle("p_{t}^{MC} [GeV/c]");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
@@ -867,30 +867,30 @@ Bool_t AliTRDresolution::PostProcess()
   TAxis *ax = h2->GetXaxis();
   gm = (TGraphErrors*)fGraphM->At(kMCtrackPt);
   gs = (TGraphErrors*)fGraphS->At(kMCtrackPt);
-  TF1 fg("fg", "gaus", -1.5, 1.5);
-  TF1 fl("fl", "landau", -4., 15.);
-  TF1 fgl("fgl", "gaus(0)+landau(3)", -5., 20.);
+  TF1 fg("fg", "gaus", -1., 1.);
+  TF1 fl("fl", "landau", -1.5, 4.);
+  TF1 fgl("fgl", "gaus(0)+landau(3)", -1.5, 4.);
   for(Int_t ip=1; ip<=ax->GetNbins(); ip++){
     TH1D *h = h2->ProjectionY("ppt", ip, ip);
     if(h->GetEntries()<70) continue;
 
-    h->Fit(&fg, "QN", "", -1.5, 1.5);
+    h->Fit(&fg, "QN");
     fgl.SetParameter(0, fg.GetParameter(0));
     fgl.SetParameter(1, fg.GetParameter(1));
     fgl.SetParameter(2, fg.GetParameter(2));
-    h->Fit(&fl, "QN", "", -4., 15.);
+    h->Fit(&fl, "QN");
     fgl.SetParameter(3, fl.GetParameter(0));
     fgl.SetParameter(4, fl.GetParameter(1));
     fgl.SetParameter(5, fl.GetParameter(2));
 
-    h->Fit(&fgl, "NQ", "", -5., 20.);
+    h->Fit(&fgl, "NQ");
 
     Float_t invpt = ax->GetBinCenter(ip);
     Int_t jp = gm->GetN();
-    gm->SetPoint(jp, invpt, fgl.GetParameter(1));
-    gm->SetPointError(jp, 0., fgl.GetParError(1));
-    gs->SetPoint(jp, invpt, fgl.GetParameter(2)*invpt);
-    gs->SetPointError(jp, 0., fgl.GetParError(2));
+    gm->SetPoint(jp, 1./invpt, 1.e2*fg.GetParameter(1)*invpt);
+    gm->SetPointError(jp, 0., 1.e2*fg.GetParError(1)*invpt);
+    gs->SetPoint(jp, 1./invpt, 1.e2*fg.GetParameter(2)*invpt);
+    gs->SetPointError(jp, 0., 1.e2*fg.GetParError(2)*invpt);
     // fgl.GetParameter(4) // Landau MPV
     // fgl.GetParameter(5) // Landau Sigma
   }
@@ -1091,7 +1091,7 @@ TObjArray* AliTRDresolution::Histos()
 
   // Kalman track Pt resolution
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkPt"))){
-    h = new TH2I("hMCtrkPt", "Kalman Track Resolution (Pt)", 100, 0., 2., 150, -1., 10.);
+    h = new TH2I("hMCtrkPt", "Kalman Track Resolution (Pt)", 40, 0., 2., 150, -1.5, 4.);
     h->GetXaxis()->SetTitle("1/p_{t}");
     h->GetYaxis()->SetTitle("#Delta p_{t} [GeV/c]");
     h->GetZaxis()->SetTitle("entries");
