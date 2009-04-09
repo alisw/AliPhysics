@@ -1729,7 +1729,7 @@ void AliITSv11GeometrySSD::CreateBasicObjects(){
   /////////////////////////////////////////////////////////////
   // SSD Cooling Tube Support
   /////////////////////////////////////////////////////////////
-  Int_t edgesnumber = 16;
+  Int_t edgesnumber = 3;
   fcoolingtubesupport = GetCoolingTubeSupport(edgesnumber);	  
   /////////////////////////////////////////////////////////////
   // SSD Hybrid
@@ -2069,7 +2069,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
   ///////////////////////////////////////
   TVector3** vertexposition = new TVector3*[kvertexnumber];
 
-  Double_t Router = fgkCoolingTubeSupportRmin*CosD(2*phi/nedges);  //  Recalc inner radius so that tube fits inside 
+  Double_t Router = fgkCoolingTubeSupportRmin/CosD(phi/nedges);  //  Recalc inner radius so that tube fits inside  
   vertexposition[0] = new TVector3(Router*CosD(angle),
 								   Router*SinD(angle));
   vertexposition[1] = new TVector3(fgkCoolingTubeSupportRmax*CosD(angle),
