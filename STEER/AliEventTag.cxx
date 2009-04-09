@@ -98,12 +98,14 @@ ClassImp(AliEventTag)
     fHBTRadii(-10.0),
     fNumberOfFiredChipsLayer1(0),
     fNumberOfFiredChipsLayer2(0),
-    fNumberOfSPDTracklets(0)
+    fNumberOfSPDTracklets(0),
+    fMTotV0A(0),
+    fMTotV0C(0),
+    fNbPMV0A(0),
+    fNbPMV0C(0)
 {
   // AliEventTag default constructor
   for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = -10.0;
-  for(Int_t i1 = 0; i1 < 64; i1++) fVZEROADC[i1] = 0;
-  for(Int_t i2 = 0; i2 < 64; i2++) fVZEROTime[i2] = kFALSE;
 }
 
 
@@ -180,12 +182,14 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fHBTRadii(evTag.fHBTRadii),
   fNumberOfFiredChipsLayer1(evTag.fNumberOfFiredChipsLayer1),
   fNumberOfFiredChipsLayer2(evTag.fNumberOfFiredChipsLayer2),
-  fNumberOfSPDTracklets(evTag.fNumberOfSPDTracklets)
+  fNumberOfSPDTracklets(evTag.fNumberOfSPDTracklets),
+  fMTotV0A(evTag.fMTotV0A),
+  fMTotV0C(evTag.fMTotV0C),
+  fNbPMV0A(evTag.fNbPMV0A),
+  fNbPMV0C(evTag.fNbPMV0C)
  {
   // EventTag copy constructor
   for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = evTag.fZDCEMEnergy[i];
-  for(Int_t i1 = 0; i1 < 64; i1++) fVZEROADC[i1] = 0;
-  for(Int_t i2 = 0; i2 < 64; i2++) fVZEROTime[i2] = kFALSE;
 }
 
 //___________________________________________________________________________
@@ -265,10 +269,10 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetNumberOfFiredChipsLayer1(evTag.GetNumberOfFiredChipsLayer1());
     SetNumberOfFiredChipsLayer2(evTag.GetNumberOfFiredChipsLayer2());
     SetNumberOfSPDTracklets(evTag.GetNumberOfSPDTracklets());
-    for(Int_t i1 = 0; i1 < 64; i1++) 
-      SetVZEROADC(i1,evTag.GetVZEROADC(i1));
-    for(Int_t i2 = 0; i2 < 64; i2++) 
-      SetVZEROTime(i2,evTag.GetVZEROTime(i2));
+    SetMTotV0A(evTag.GetMTotV0A());
+    SetMTotV0C(evTag.GetMTotV0C());
+    SetNbPMV0A(evTag.GetNbPMV0A());
+    SetNbPMV0C(evTag.GetNbPMV0C());
   }
   return *this;
 }

@@ -104,8 +104,10 @@ class AliEventTag : public TObject {
   void SetNumberOfFiredChipsLayer2(Int_t n) {fNumberOfFiredChipsLayer2 = n;}
   void SetNumberOfSPDTracklets(Int_t n) {fNumberOfSPDTracklets = n;}
 
-  void SetVZEROADC(Int_t n, UShort_t adc) {fVZEROADC[n] = adc;}
-  void SetVZEROTime(Int_t n, Bool_t time) {fVZEROTime[n] = time;}
+  void SetMTotV0A(Int_t mult) {fMTotV0A = mult;}
+  void SetMTotV0C(Int_t mult) {fMTotV0C = mult;}
+  void SetNbPMV0A(Short_t npmt) {fNbPMV0A = npmt;}
+  void SetNbPMV0C(Short_t npmt) {fNbPMV0C = npmt;}
 
   //____________________________________________________//
   UInt_t GetPeriodNumber() const {return fPeriodNumber;}
@@ -185,8 +187,10 @@ class AliEventTag : public TObject {
   Int_t GetNumberOfFiredChipsLayer2() const {return fNumberOfFiredChipsLayer2;}
   Int_t GetNumberOfSPDTracklets() const {return fNumberOfSPDTracklets;}
 
-  UShort_t GetVZEROADC(Int_t n) const {return fVZEROADC[n];}
-  UShort_t GetVZEROTime(Int_t n) const {return fVZEROTime[n];}
+  Int_t GetMTotV0A() const {return fMTotV0A;}
+  Int_t GetMTotV0C() const {return fMTotV0C;}
+  Short_t GetNbPMV0A() const {return fNbPMV0A;}
+  Short_t GetNbPMV0C() const {return fNbPMV0C;}
 
   //____________________________________________________//
  private:
@@ -266,10 +270,12 @@ class AliEventTag : public TObject {
   Int_t     fNumberOfFiredChipsLayer2;      //number of fired chips - layer 2
   Int_t     fNumberOfSPDTracklets;          //number of SPD tracklets
 
-  UShort_t  fVZEROADC[64];                  //V0 raw adc values
-  Bool_t    fVZEROTime[64];                 //Flag if V0 TDC time measured
+  Int_t     fMTotV0A;                       //Total multiplicity in V0 A side
+  Int_t     fMTotV0C;                       //Total multiplicity in V0 C side
+  Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
+  Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,11)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,12)  //(ClassName, ClassVersion)
     };
 //___________________________________________________________________________
 

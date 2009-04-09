@@ -434,6 +434,12 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
 
+    AliESDVZERO *vzeroData = esd->GetVZEROData();
+    evTag->SetMTotV0A(vzeroData->GetMTotV0A());
+    evTag->SetMTotV0C(vzeroData->GetMTotV0C());
+    evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
+    evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
+
     //evTag->SetEventId(iEventNumber+1);
     evTag->SetPeriodNumber(esd->GetPeriodNumber());
     evTag->SetOrbitNumber(esd->GetOrbitNumber());
@@ -766,6 +772,12 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
 
+    AliESDVZERO *vzeroData = esd->GetVZEROData();
+    evTag->SetMTotV0A(vzeroData->GetMTotV0A());
+    evTag->SetMTotV0C(vzeroData->GetMTotV0C());
+    evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
+    evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
+
     //evTag->SetEventId(iEventNumber+1);
     evTag->SetPeriodNumber(esd->GetPeriodNumber());
     evTag->SetOrbitNumber(esd->GetOrbitNumber());
@@ -1096,6 +1108,12 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    AliESDVZERO *vzeroData = esd->GetVZEROData();
+    evTag->SetMTotV0A(vzeroData->GetMTotV0A());
+    evTag->SetMTotV0C(vzeroData->GetMTotV0C());
+    evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
+    evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
 
     //evTag->SetEventId(iEventNumber+1);
     evTag->SetPeriodNumber(esd->GetPeriodNumber());
@@ -1441,6 +1459,12 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
+
+    AliESDVZERO *vzeroData = esd->GetVZEROData();
+    evTag->SetMTotV0A(vzeroData->GetMTotV0A());
+    evTag->SetMTotV0C(vzeroData->GetMTotV0C());
+    evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
+    evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
 
     //evTag->SetEventId(iEventNumber+1);
     evTag->SetPeriodNumber(esd->GetPeriodNumber());
