@@ -107,7 +107,7 @@ void AliPHOSQADataMakerRec::InitESDs()
   h2->Sumw2() ;
   Add2ESDsList(h2, kESDNtot, !expert) ;
  
-  TH1F * h3 = new TH1F("hESDPhosEtot",      "ESDs total energy"                     , 100, 0,  1000.) ; 
+  TH1F * h3 = new TH1F("hESDPhosEtot",      "ESDs total energy"                     , 2000, 0,  200.) ; 
   h3->Sumw2() ;
   Add2ESDsList(h3, kESDEtot, !expert) ;  //Expert histo
  
@@ -159,25 +159,25 @@ void AliPHOSQADataMakerRec::InitRaws()
   Bool_t saveCorr = kTRUE ; 
   
   TH2I * h0 = new TH2I("hHighPHOSxyMod1","High Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h0,kHGmod1, !expert, !saveCorr) ;
+  Add2RawsList(h0,kHGmod1, expert, !saveCorr) ;
   TH2I * h1 = new TH2I("hHighPHOSxyMod2","High Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h1,kHGmod2, !expert, !saveCorr) ;
+  Add2RawsList(h1,kHGmod2, expert, !saveCorr) ;
   TH2I * h2 = new TH2I("hHighPHOSxyMod3","High Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h2,kHGmod3, !expert, !saveCorr) ;
+  Add2RawsList(h2,kHGmod3, expert, !saveCorr) ;
   TH2I * h3 = new TH2I("hHighPHOSxyMod4","High Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h3,kHGmod4, !expert, !saveCorr) ;
+  Add2RawsList(h3,kHGmod4, expert, !saveCorr) ;
   TH2I * h4 = new TH2I("hHighPHOSxyMod5","High Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h4,kHGmod5, !expert, !saveCorr) ;
+  Add2RawsList(h4,kHGmod5, expert, !saveCorr) ;
   TH2I * h5 = new TH2I("hLowPHOSxyMod1","Low Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h5,kLGmod1, !expert, !saveCorr) ;
+  Add2RawsList(h5,kLGmod1, expert, !saveCorr) ;
   TH2I * h6 = new TH2I("hLowPHOSxyMod2","Low Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h6,kLGmod2, !expert, !saveCorr) ;
+  Add2RawsList(h6,kLGmod2, expert, !saveCorr) ;
   TH2I * h7 = new TH2I("hLowPHOSxyMod3","Low Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h7,kLGmod3, !expert, !saveCorr) ;
+  Add2RawsList(h7,kLGmod3, expert, !saveCorr) ;
   TH2I * h8 = new TH2I("hLowPHOSxyMod4","Low Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h8,kLGmod4, !expert, !saveCorr) ;
+  Add2RawsList(h8,kLGmod4, expert, !saveCorr) ;
   TH2I * h9 = new TH2I("hLowPHOSxyMod5","Low Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h9,kLGmod5, !expert, !saveCorr) ;
+  Add2RawsList(h9,kLGmod5, expert, !saveCorr) ;
 
   TH1I * h10 = new TH1I("hLowPhosModules",    "Low Gain Hits in EMCA PHOS modules",       6, 0, 6) ;
   h10->Sumw2() ;
@@ -216,34 +216,34 @@ void AliPHOSQADataMakerRec::InitRaws()
 
   TH2F * h20 = new TH2F("hQualHGxyMod1","High Gain signal quality Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
   h20->SetOption("colz");
-  Add2RawsList(h20,kHGqualMod1, !expert, !saveCorr) ;
+  Add2RawsList(h20,kHGqualMod1, expert, !saveCorr) ;
   TH2F * h21 = new TH2F("hQualHGxyMod2","High Gain signal quality Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
   h21->SetOption("colz");
-  Add2RawsList(h21,kHGqualMod2, !expert, !saveCorr) ;
+  Add2RawsList(h21,kHGqualMod2, expert, !saveCorr) ;
   TH2F * h22 = new TH2F("hQualHGxyMod3","High Gain signal quality Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
   h22->SetOption("colz");
-  Add2RawsList(h22,kHGqualMod3, !expert, !saveCorr) ;
+  Add2RawsList(h22,kHGqualMod3, expert, !saveCorr) ;
   TH2F * h23 = new TH2F("hQualHGxyMod4","High Gain signal quality Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
   h23->SetOption("colz");
-  Add2RawsList(h23,kHGqualMod4, !expert, !saveCorr) ;
+  Add2RawsList(h23,kHGqualMod4, expert, !saveCorr) ;
   TH2F * h24 = new TH2F("hQualHGxyMod5","High Gain signal quality Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
   h24->SetOption("colz");
-  Add2RawsList(h24,kHGqualMod5, !expert, !saveCorr) ;
+  Add2RawsList(h24,kHGqualMod5, expert, !saveCorr) ;
   TH2F * h25 = new TH2F("hQualLGxyMod1","Low Gain signal quality Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
   h25->SetOption("colz");
-  Add2RawsList(h25,kLGqualMod1, !expert, !saveCorr) ;
+  Add2RawsList(h25,kLGqualMod1, expert, !saveCorr) ;
   TH2F * h26 = new TH2F("hQualLGxyMod2","Low Gain signal quality Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
   h26->SetOption("colz");
-  Add2RawsList(h26,kLGqualMod2, !expert, !saveCorr) ;
+  Add2RawsList(h26,kLGqualMod2, expert, !saveCorr) ;
   TH2F * h27 = new TH2F("hQualLGxyMod3","Low Gain signal quality Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
   h27->SetOption("colz");
-  Add2RawsList(h27,kLGqualMod3, !expert, !saveCorr) ;
+  Add2RawsList(h27,kLGqualMod3, expert, !saveCorr) ;
   TH2F * h28 = new TH2F("hQualLGxyMod4","Low Gain signal quality Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
   h28->SetOption("colz");
-  Add2RawsList(h28,kLGqualMod4, !expert, !saveCorr) ;
+  Add2RawsList(h28,kLGqualMod4, expert, !saveCorr) ;
   TH2F * h29 = new TH2F("hQualLGxyMod5","Low Gain signal quality Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
   h29->SetOption("colz");
-  Add2RawsList(h29,kLGqualMod5, !expert, !saveCorr) ;
+  Add2RawsList(h29,kLGqualMod5, expert, !saveCorr) ;
 
   TH1F * h30 = new TH1F("hLGpedRMS","Low Gain pedestal RMS",200,0.,20.) ;
   h30->Sumw2() ;
@@ -254,34 +254,34 @@ void AliPHOSQADataMakerRec::InitRaws()
 
   TH2F * h32 = new TH2F("hpedRMSHGxyMod1","High Gain pedestal RMS Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
   h32->SetOption("colz");
-  Add2RawsList(h32,kHGpedRMSMod1, !expert, !saveCorr) ;
+  Add2RawsList(h32,kHGpedRMSMod1, expert, !saveCorr) ;
   TH2F * h33 = new TH2F("hpedRMSHGxyMod2","High Gain pedestal RMS Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
   h33->SetOption("colz");
-  Add2RawsList(h33,kHGpedRMSMod2, !expert, !saveCorr) ;
+  Add2RawsList(h33,kHGpedRMSMod2, expert, !saveCorr) ;
   TH2F * h34 = new TH2F("hpedRMSHGxyMod3","High Gain pedestal RMS Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
   h34->SetOption("colz");
-  Add2RawsList(h34,kHGpedRMSMod3, !expert, !saveCorr) ;
+  Add2RawsList(h34,kHGpedRMSMod3, expert, !saveCorr) ;
   TH2F * h35 = new TH2F("hpedRMSHGxyMod4","High Gain pedestal RMS Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
   h35->SetOption("colz");
-  Add2RawsList(h35,kHGpedRMSMod4, !expert, !saveCorr) ;
+  Add2RawsList(h35,kHGpedRMSMod4, expert, !saveCorr) ;
   TH2F * h36 = new TH2F("hpedRMSHGxyMod5","High Gain pedestal RMS Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
   h36->SetOption("colz");
-  Add2RawsList(h36,kHGpedRMSMod5, !expert, !saveCorr) ;
+  Add2RawsList(h36,kHGpedRMSMod5, expert, !saveCorr) ;
   TH2F * h37 = new TH2F("hpedRMSLGxyMod1","Low Gain pedestal RMS Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
   h37->SetOption("colz");
-  Add2RawsList(h37,kLGpedRMSMod1, !expert, !saveCorr) ;
+  Add2RawsList(h37,kLGpedRMSMod1, expert, !saveCorr) ;
   TH2F * h38 = new TH2F("hpedRMSLGxyMod2","Low Gain pedestal RMS Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
   h38->SetOption("colz");
-  Add2RawsList(h38,kLGpedRMSMod2, !expert, !saveCorr) ;
+  Add2RawsList(h38,kLGpedRMSMod2, expert, !saveCorr) ;
   TH2F * h39 = new TH2F("hpedRMSLGxyMod3","Low Gain pedestal RMS Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
   h39->SetOption("colz");
-  Add2RawsList(h39,kLGpedRMSMod3, !expert, !saveCorr) ;
+  Add2RawsList(h39,kLGpedRMSMod3, expert, !saveCorr) ;
   TH2F * h40 = new TH2F("hpedRMSLGxyMod4","Low Gain pedestal RMS Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
   h40->SetOption("colz");
-  Add2RawsList(h40,kLGpedRMSMod4, !expert, !saveCorr) ;
+  Add2RawsList(h40,kLGpedRMSMod4, expert, !saveCorr) ;
   TH2F * h41 = new TH2F("hpedRMSLGxyMod5","Low Gain pedestal RMS Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
   h41->SetOption("colz");
-  Add2RawsList(h41,kLGpedRMSMod5, !expert, !saveCorr) ;
+  Add2RawsList(h41,kLGpedRMSMod5, expert, !saveCorr) ;
 
   /*
   TH1F * h42 = new TH1F("hLGpedMean","Low Gain pedestal Mean",200,0.,20.) ;
