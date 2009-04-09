@@ -1099,7 +1099,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
 
       TArrayI* matchedT = 	cluster->GetTracksMatched();
-      if (matchedT && cluster->GetTrackMatched() >= 0) {	
+      if (nTracks>0 && matchedT && cluster->GetTrackMatched() >= 0) {	
 	for (Int_t im = 0; im < matchedT->GetSize(); im++) {
 	    Int_t iESDtrack = matchedT->At(im);;
 	    if (aodTrackRefs->At(iESDtrack) != 0) {
