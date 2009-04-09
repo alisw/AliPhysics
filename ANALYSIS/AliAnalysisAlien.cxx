@@ -1152,8 +1152,15 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          else out << "   if (!SetupPar(\"CORRFW\")) return;" << endl << endl;
          out << "// Compile other par packages" << endl;
          next.Reset();
-         while ((obj=next())) 
+         while ((obj=next())) {
+            pkgname = obj->GetName();
+            if (pkgname.Contains("STEERBase") ||
+                pkgname.Contains("ESD") ||
+                pkgname.Contains("AOD") ||
+                pkgname.Contains("ANALYSIS") ||
+                pkgname.Contains("CORRFW")) continue;
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
+         }   
       }   
       out << "// include path" << endl;
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
@@ -1230,7 +1237,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   if (!chain || !chain->GetNtrees()) return NULL;" << endl;
          out << "   chain->ls();" << endl;
          out << "   return chain;" << endl;
-         out << "}" << endl;
+         out << "}" << endl << endl;
          if (gSystem->AccessPathName("ConfigureCuts.C")) {
             TString msg = "\n#####   You may want to provide a macro ConfigureCuts.C with a method:\n";
             msg += "   void ConfigureCuts(AliRunTagCuts *runCuts,\n";
@@ -1240,6 +1247,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             Info("WriteAnalysisMacro", msg.Data());
          }
       } else {
+         out <<"//________________________________________________________________________________" << endl;
          out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
          out << "{" << endl;
          out << "// Create a chain using url's from xml file" << endl;
@@ -1262,14 +1270,15 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      return NULL;" << endl;
          out << "   }" << endl;
          out << "   return chain;" << endl;
-         out << "}" << endl;
+         out << "}" << endl << endl;
       }   
       if (fPackages) {
+         out <<"//________________________________________________________________________________" << endl;
          out << "Bool_t SetupPar(const char *package) {" << endl;
          out << "// Compile the package and set it up." << endl;
          out << "   TString pkgdir = package;" << endl;
          out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
-         out << "   gSystem->Exec(Form(\"tar xvzf %s\", package));" << endl;
+         out << "   gSystem->Exec(Form(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
          out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
          out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
          out << "   // Check for BUILD.sh and execute" << endl;
@@ -1278,12 +1287,12 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      printf(\"*** Building PAR archive    ***\\n\");" << endl;
          out << "      printf(\"*******************************\\n\");" << endl;
          out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
-         out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", package);" << endl;
+         out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", pkgdir.Data());" << endl;
          out << "         gSystem->ChangeDirectory(cdir);" << endl;
          out << "         return kFALSE;" << endl;
          out << "      }" << endl;
          out << "   } else {" << endl;
-         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", package);" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
@@ -1294,7 +1303,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      printf(\"*******************************\\n\");" << endl;
          out << "      gROOT->Macro(\"PROOF-INF/SETUP.C\");" << endl;
          out << "   } else {" << endl;
-         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", package);" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", pkgdir.Data());" << endl;
          out << "      gSystem->ChangeDirectory(cdir);" << endl;
          out << "      return kFALSE;" << endl;
          out << "   }" << endl;
