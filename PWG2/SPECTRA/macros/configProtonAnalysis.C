@@ -26,10 +26,11 @@ AliProtonQAAnalysis *GetProtonQAAnalysisObject(const char* analysisLevel = "ESD"
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
   AliProtonQAAnalysis *analysis = new AliProtonQAAnalysis();
-  analysis->SetQAOn();
+  analysis->SetBaseAnalysis(baseAnalysis);
   analysis->SetRunMCAnalysis();
   //analysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
   //analysis->SetMotherParticlePDGCode(3122);//3122: Lambda
+  analysis->SetRunEfficiencyAnalysis(kFALSE);//use cuts in the eff. analysis
   analysis->SetQAYPtBins(baseAnalysis->GetNBinsX(),
 			 baseAnalysis->GetMinX(),
 			 baseAnalysis->GetMaxX(),
