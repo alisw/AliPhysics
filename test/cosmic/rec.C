@@ -17,12 +17,14 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  //man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/");
-  man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT/OCDB");
+//     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08d/OCDB/");
+    man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT/OCDB");
   
   // Example in case a specific CDB storage is needed
   //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT/OCDB");
+
+  AliQA::SetQARefStorage("local://$ALICE_ROOT/QAref") ;
 
   // Reconstruction settings
   AliReconstruction rec;
@@ -61,11 +63,6 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
   // TRD setting
   // Settings for the TRD Raw Reader
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
-  AliTRDrawStreamTB::SetNoErrorWarning();
-  AliTRDrawStreamTB::AllowCorruptedData();
-  AliTRDrawStreamTB::DisableStackNumberChecker();
-  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
-  AliTRDrawStreamTB::SetSubtractBaseline(10);
   
   // TRD reconstruction params
   AliTRDrecoParam *fTRDrecoParam = AliTRDrecoParam::GetCosmicTestParam();
@@ -135,7 +132,7 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
 
   //rec.SetEventRange(0,15);
 
-  rec.SetRunQA("ITS TPC:ESD RECPOINT");
+  rec.SetRunQA(":");
   rec.SetRunGlobalQA(kTRUE);
   AliLog::Flush();
   rec.Run();
