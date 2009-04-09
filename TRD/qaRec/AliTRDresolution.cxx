@@ -657,8 +657,8 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
-    ax->SetRangeUser(-.5, 2.);
-    ax->SetTitle("Tracklet-Track Phi-Residuals #sigma/#mu [rad]");
+    ax->SetRangeUser(-10., 50.);
+    ax->SetTitle("Tracklet-Track Phi-Residuals #sigma/#mu [mrad]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
@@ -713,7 +713,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case kMCtrackletPhi:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
-    y[0] = -.05; y[1] = .2;
+    y[0] = -10.; y[1] = 50.;
     ax->SetRangeUser(y[0], y[1]);
     ax->SetTitle("#Phi_{tracklet} #sigma/#mu [deg]");
     ax = g->GetHistogram()->GetXaxis();
@@ -833,7 +833,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process3D(kTracklet, &f);
 
   // Tracklet phi residuals
-  Process(kTrackletPhi, &f);
+  Process(kTrackletPhi, &f, 1.e3);
 
   if(!HasMCdata()) return kTRUE;
 
