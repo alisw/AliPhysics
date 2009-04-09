@@ -1,4 +1,4 @@
-void runProtonAnalysisQA(const char* analysisType = "Hybrid",
+void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
 			 const char* pidMode = "Bayesian") {
   //Macro to run the proton QA analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
@@ -26,9 +26,9 @@ void runProtonAnalysisQA(const char* analysisType = "Hybrid",
 	   esdAnalysisType,
 	   pidMode,
 	   "/home/pchrist/ALICE/Baryons/QA/Local");
-  //runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",analysisType);
-  //runInteractive("wn.xml",analysisType);
-  runBatch("wn.xml",analysisType);
+  //runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",esdAnalysisType);
+  //runInteractive("wn.xml",esdAnalysisType);
+  //runBatch("wn.xml",esdAnalysisType);
 
   timer.Stop();
   timer.Print();
@@ -38,7 +38,7 @@ void runProtonAnalysisQA(const char* analysisType = "Hybrid",
 void runLocal(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
-	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
+	      const char* path = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
   outputFilename1 += ".root"; //main QA file
   TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;

@@ -84,6 +84,8 @@ void PrintHelpMenu() {
  Printf("\nFunction compareEfficiencies: Takes as arguments the filenames produced by the drawEfficiency (see before - usually the name is Reconstruction-PID-Efficiency.root) and three booleans indicating whether the points for primaries, secondaries from weak decays and secondaries from hadronic interactions will be shown. The two files correspond to two different tracking methods (e.g. TPC, Hybrid, Global). It displays:");
   Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
   Printf("\t 2. Reconstruction efficiencies for primary and secondary (anti)protons as a function of Pt. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+
+  Printf("\nFunction drawCutParametersDistributions: Takes as an argument the third file created by the QA code (usually the name is Protons.QA.Histograms.<AnalysisMode>.root) and displays the distributions of accepted primaries (in blue) and secondaries (in orange) for the different cut parameters.");
   Printf("==================================================================\n\n\n");
 }
 
@@ -93,7 +95,7 @@ void drawCutStatistics(TList *list,
   //Function to display the statistics from the cuts
   //The histogram shows the influence of each cut on the primary
   //and secondary (anti)protons
-  const Int_t NQAHISTOSPERLIST = 26;
+  const Int_t NQAHISTOSPERLIST = 27;
 
   Double_t gEntriesQA2DList[12] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t gEntriesQAPrimaryProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQAPrimaryProtonsRejectedList[NQAHISTOSPERLIST];
@@ -143,7 +145,7 @@ void drawCutStatistics(TList *list,
 
   //_______________________________________________________//
   //Create the histograms
-  const Int_t nx = 26;
+  const Int_t nx = 27;
   char *fCutName[nx] = {"Tracks","",
 			"ITS Clusters",
 			"#chi^{2}/N_{ITS-Clusters}",
@@ -164,7 +166,8 @@ void drawCutStatistics(TList *list,
 			"ITS refit",
 			"TPC refit",
 			"ESD pid",
-			"TPC pid","",
+			"TPC pid",
+			"N_{points} (dE/dx)","",
 			"N_{Secondaries}/N_{total}","",""};
   char *fCutITSName[6] = {"SPD_{1}","SPD_{2}",
 			  "SDD_{1}","SDD_{2}",
@@ -407,10 +410,10 @@ void drawCutStatistics(TList *list,
   hEmptyITS->DrawCopy();
 
   for(Int_t i = 1; i < 7; i++) {
-    hPrimaryProtonsITS->SetBinContent(i,GetPercentage(gEntriesQAPrimaryProtonsAcceptedList[19+i],
-						      gEntriesQAPrimaryProtonsRejectedList[19+i]));
-    hSecondaryProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryProtonsAcceptedList[19+i],
-							gEntriesQASecondaryProtonsRejectedList[19+i]));
+    hPrimaryProtonsITS->SetBinContent(i,GetPercentage(gEntriesQAPrimaryProtonsAcceptedList[20+i],
+						      gEntriesQAPrimaryProtonsRejectedList[20+i]));
+    hSecondaryProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryProtonsAcceptedList[20+i],
+							gEntriesQASecondaryProtonsRejectedList[20+i]));
   }
   hPrimaryProtonsITS->DrawCopy("EHISTSAME");
   hSecondaryProtonsITS->DrawCopy("EHISTSAME");
@@ -425,10 +428,10 @@ void drawCutStatistics(TList *list,
   hEmptyITS->SetTitle("Antiprotons");
   hEmptyITS->DrawCopy();
   for(Int_t i = 1; i < 7; i++) {
-    hPrimaryAntiProtonsITS->SetBinContent(i,GetPercentage(gEntriesQAPrimaryAntiProtonsAcceptedList[19+i],
-							  gEntriesQAPrimaryAntiProtonsRejectedList[19+i]));
-    hSecondaryAntiProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryAntiProtonsAcceptedList[19+i],
-							    gEntriesQASecondaryAntiProtonsRejectedList[19+i]));
+    hPrimaryAntiProtonsITS->SetBinContent(i,GetPercentage(gEntriesQAPrimaryAntiProtonsAcceptedList[20+i],
+							  gEntriesQAPrimaryAntiProtonsRejectedList[20+i]));
+    hSecondaryAntiProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryAntiProtonsAcceptedList[20+i],
+							    gEntriesQASecondaryAntiProtonsRejectedList[20+i]));
   }
   hPrimaryAntiProtonsITS->DrawCopy("EHISTSAME");
   hSecondaryAntiProtonsITS->DrawCopy("EHISTSAME");
@@ -986,8 +989,8 @@ void GetQAEntries(TList *inputList, Double_t *entries) {
   for(Int_t i = 0; i < inputList->GetEntries(); i++) {
     TH1F *gHist = (TH1F *)inputList->At(i);
     entries[i] = gHist->GetEntries();
-    //cout<<"Histogram: "<<gHist->GetName()<<
-    //" - Entries: "<<entries[i]<<endl;
+    cout<<"Position: "<<i+1<<" - Histogram: "<<gHist->GetName()<<
+      " - Entries: "<<entries[i]<<endl;
     gHist = 0;
   }
 }
@@ -2383,4 +2386,403 @@ void compareEfficiencies(const char *filenameTPC,
   }
   c2->SaveAs("ReconstructionEfficiency-AntiProtons.gif");
 
+}
+
+//________________________________________________//
+void drawCutParametersDistributions(const char* filename = "Protons.QA.Histograms.root") {
+  //macro that takes as an input the third file 
+  //created by the proton QA analysis task 
+  //and draws the DCA distributions of protons 
+  //and antiprotons (both primary & secondaries)
+  const Int_t nEvents = 1;
+
+  TFile *f = TFile::Open(filename);
+
+  //cut list
+  TH1F *gCutListHistograms[100];
+  TList *listCut = (TList *)f->Get("acceptedCutList");
+  Int_t iCounter = 0;
+  cout<<"Cut list entries: "<<listCut->GetEntries()<<endl;
+  for(Int_t iEntry = 0; iEntry < listCut->GetEntries(); iEntry++) {
+    if(iCounter == 4) iCounter = 0;
+    iCounter += 1;
+    gCutListHistograms[iEntry] = (TH1F *)listCut->At(iEntry);
+    gCutListHistograms[iEntry]->Scale(1./nEvents);
+    if(iCounter < 3) {
+      gCutListHistograms[iEntry]->SetFillColor(4);
+      gCutListHistograms[iEntry]->SetMarkerColor(4);
+      gCutListHistograms[iEntry]->SetMarkerStyle(20);
+    }
+    else {
+      gCutListHistograms[iEntry]->SetFillColor(kOrange+1);
+      gCutListHistograms[iEntry]->SetMarkerColor(kOrange+1);
+      gCutListHistograms[iEntry]->SetMarkerStyle(29);
+    }
+    /*cout<<"Entry: "<<iEntry<<
+      " - Counter: "<<iCounter<<
+      " - Name: "<<gCutListHistograms[iEntry]->GetName()<<endl;*/
+  }
+
+  //DCA list
+  TH1F *gDCAListHistograms[20];
+  TList *listDCA = (TList *)f->Get("acceptedDCAList");
+  iCounter = 0;
+  cout<<"DCA list entries: "<<listDCA->GetEntries()<<endl;
+  for(Int_t iEntry = 0; iEntry < listDCA->GetEntries(); iEntry++) {
+    if(iCounter == 4) iCounter = 0;
+    iCounter += 1;
+    gDCAListHistograms[iEntry] = (TH1F *)listDCA->At(iEntry);
+    gDCAListHistograms[iEntry]->Scale(1./nEvents);
+    if(iCounter < 3) {
+      gDCAListHistograms[iEntry]->SetFillColor(4);
+      gDCAListHistograms[iEntry]->SetMarkerColor(4);
+      gDCAListHistograms[iEntry]->SetMarkerStyle(20);
+    }
+    else {
+      gDCAListHistograms[iEntry]->SetFillColor(kOrange+1);
+      gDCAListHistograms[iEntry]->SetMarkerColor(kOrange+1);
+      gDCAListHistograms[iEntry]->SetMarkerStyle(29);
+    }
+    /*cout<<"Entry: "<<iEntry<<
+      " - Counter: "<<iCounter<<
+      " - Name: "<<gDCAListHistograms[iEntry]->GetName()<<endl;*/
+  }
+
+  //_________________________________________________________//
+  TF1 *gDCA = new TF1("gDCA",
+		      "[0]*TMath::Power(1+TMath::Exp((x-[1])/[2]),-1)",
+		      0.1,100.0);
+  gDCA->SetParameter(0,1.74221e+07);
+  gDCA->SetParameter(1,-1.12221e+01);
+  gDCA->SetParameter(2,1.02726);
+  //_________________________________________________________//
+  TH2F *hEmpty = new TH2F("hEmpty","",300,-100,200,100,1e-01,1e+06);
+  hEmpty->GetYaxis()->SetTitle("Entries/Event");
+  hEmpty->GetYaxis()->SetNdivisions(10);
+  hEmpty->GetXaxis()->SetNdivisions(10);
+  hEmpty->SetStats(kFALSE);
+  //_________________________________________________________//
+
+  //Cut parameters
+  TCanvas *c1 = new TCanvas("c1","ITS Cluster map",0,0,650,350);
+  c1->SetFillColor(10); c1->GetFrame()->SetFillColor(10);
+  c1->SetHighLightColor(10); c1->Divide(2,1);
+  c1->cd(1)->SetBottomMargin(0.2); c1->cd(1)->SetLeftMargin(0.2);
+  c1->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("ITS layer");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[0]->Draw("ESAME");
+  gCutListHistograms[2]->Draw("ESAME");
+  c1->cd(2)->SetBottomMargin(0.2); c1->cd(2)->SetLeftMargin(0.2);
+  c1->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("ITS layer");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[1]->Draw("ESAME");
+  gCutListHistograms[3]->Draw("ESAME");
+  c1->SaveAs("ITSClusterMap.gif");
+
+  TCanvas *c2 = new TCanvas("c2","Number of ITS Clusters",50,50,650,350);
+  c2->SetFillColor(10); c2->GetFrame()->SetFillColor(10);
+  c2->SetHighLightColor(10); c2->Divide(2,1);
+  c2->cd(1)->SetBottomMargin(0.2); c2->cd(1)->SetLeftMargin(0.2);
+  c2->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{clusters}(ITS)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[4]->Draw("ESAME");
+  gCutListHistograms[6]->Draw("ESAME");
+  c2->cd(2)->SetBottomMargin(0.2); c2->cd(2)->SetLeftMargin(0.2);
+  c2->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{clusters}(ITS)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[5]->Draw("ESAME");
+  gCutListHistograms[7]->Draw("ESAME");
+  c2->SaveAs("NITSClusters.gif");
+
+  TCanvas *c3 = new TCanvas("c3","Chi2 per ITS cluster",100,100,650,350);
+  c3->SetFillColor(10); c3->GetFrame()->SetFillColor(10);
+  c3->SetHighLightColor(10); c3->Divide(2,1);
+  c3->cd(1)->SetBottomMargin(0.2); c3->cd(1)->SetLeftMargin(0.2);
+  c3->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#chi^{2}/N_{clusters}(ITS)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[8]->Draw("ESAME");
+  gCutListHistograms[10]->Draw("ESAME");
+  c3->cd(2)->SetBottomMargin(0.2); c3->cd(2)->SetLeftMargin(0.2);
+  c3->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#chi^{2}/N_{clusters}(ITS)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("AntiPpotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[9]->Draw("ESAME");
+  gCutListHistograms[11]->Draw("ESAME");
+  c3->SaveAs("Chi2PerITSCluster.gif");
+
+  TCanvas *c4 = new TCanvas("c4","Constrain chi2 - vertex",150,150,650,350);
+  c4->SetFillColor(10); c4->GetFrame()->SetFillColor(10);
+  c4->SetHighLightColor(10); c4->Divide(2,1);
+  c4->cd(1)->SetBottomMargin(0.2); c4->cd(1)->SetLeftMargin(0.2);
+  c4->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("log_{10}(#chi^{2}) (vertex)");
+  hEmpty->GetXaxis()->SetRangeUser(-10.0,10.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[12]->Draw("ESAME");
+  gCutListHistograms[14]->Draw("ESAME");
+  c4->cd(2)->SetBottomMargin(0.2); c4->cd(2)->SetLeftMargin(0.2);
+  c4->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("log_{10}(#chi^{2}) (vertex )");
+  hEmpty->GetXaxis()->SetRangeUser(-10.0,10.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[13]->Draw("ESAME");
+  gCutListHistograms[15]->Draw("ESAME");
+  c4->SaveAs("ConstrainChi2Vertex.gif");
+
+  TCanvas *c5 = new TCanvas("c5","Number of TPC Clusters",200,200,650,350);
+  c5->SetFillColor(10); c5->GetFrame()->SetFillColor(10);
+  c5->SetHighLightColor(10); c5->Divide(2,1);
+  c5->cd(1)->SetBottomMargin(0.2); c5->cd(1)->SetLeftMargin(0.2);
+  c5->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{clusters}(TPC");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,200.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[16]->Draw("ESAME");
+  gCutListHistograms[18]->Draw("ESAME");
+  c5->cd(2)->SetBottomMargin(0.2); c5->cd(2)->SetLeftMargin(0.2);
+  c5->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{clusters}(TPC");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,200.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[17]->Draw("ESAME");
+  gCutListHistograms[19]->Draw("ESAME");
+  c5->SaveAs("NTPCClusters.gif");
+
+  TCanvas *c6 = new TCanvas("c6","Chi2 per TPC cluster",250,250,650,350);
+  c6->SetFillColor(10); c6->GetFrame()->SetFillColor(10);
+  c6->SetHighLightColor(10); c6->Divide(2,1);
+  c6->cd(1)->SetBottomMargin(0.2); c6->cd(1)->SetLeftMargin(0.2);
+  c6->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#chi^{2}/N_{clusters}(TPC)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[20]->Draw("ESAME");
+  gCutListHistograms[22]->Draw("ESAME");
+  c6->cd(2)->SetBottomMargin(0.2); c6->cd(2)->SetLeftMargin(0.2);
+  c6->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#chi^{2}/N_{clusters}(TPC)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[21]->Draw("ESAME");
+  gCutListHistograms[23]->Draw("ESAME");
+  c6->SaveAs("Chi2PerTPCCluster.gif");
+
+  TCanvas *c7 = new TCanvas("c7","Covariance matrix 11",300,300,650,350);
+  c7->SetFillColor(10); c7->GetFrame()->SetFillColor(10);
+  c7->SetHighLightColor(10); c7->Divide(2,1);
+  c7->cd(1)->SetBottomMargin(0.2); c7->cd(1)->SetLeftMargin(0.2);
+  c7->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{y} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[24]->Draw("ESAME");
+  gCutListHistograms[26]->Draw("ESAME");
+  c7->cd(2)->SetBottomMargin(0.2); c7->cd(2)->SetLeftMargin(0.2);
+  c7->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{y} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[25]->Draw("ESAME");
+  gCutListHistograms[27]->Draw("ESAME");
+  c7->SaveAs("Cov11.gif");
+
+  TCanvas *c8 = new TCanvas("c8","Covariance matrix 22",350,350,650,350);
+  c8->SetFillColor(10); c8->GetFrame()->SetFillColor(10);
+  c8->SetHighLightColor(10); c8->Divide(2,1);
+  c8->cd(1)->SetBottomMargin(0.2); c8->cd(1)->SetLeftMargin(0.2);
+  c8->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{z} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[28]->Draw("ESAME");
+  gCutListHistograms[30]->Draw("ESAME");
+  c8->cd(2)->SetBottomMargin(0.2); c8->cd(2)->SetLeftMargin(0.2);
+  c8->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{z} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[29]->Draw("ESAME");
+  gCutListHistograms[31]->Draw("ESAME");
+  c8->SaveAs("Cov22.gif");
+
+  TCanvas *c9 = new TCanvas("c9","Covariance matrix 33",400,400,650,350);
+  c9->SetFillColor(10); c9->GetFrame()->SetFillColor(10);
+  c9->SetHighLightColor(10); c9->Divide(2,1);
+  c9->cd(1)->SetBottomMargin(0.2); c9->cd(1)->SetLeftMargin(0.2);
+  c9->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{sin(#phi)}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[32]->Draw("ESAME");
+  gCutListHistograms[34]->Draw("ESAME");
+  c9->cd(2)->SetBottomMargin(0.2); c9->cd(2)->SetLeftMargin(0.2);
+  c9->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{sin(#phi)}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[33]->Draw("ESAME");
+  gCutListHistograms[35]->Draw("ESAME");
+  c9->SaveAs("Cov33.gif");
+
+  TCanvas *c10 = new TCanvas("c10","Covariance matrix 44",450,450,650,350);
+  c10->SetFillColor(10); c10->GetFrame()->SetFillColor(10);
+  c10->SetHighLightColor(10); c10->Divide(2,1);
+  c10->cd(1)->SetBottomMargin(0.2); c10->cd(1)->SetLeftMargin(0.2);
+  c10->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{tan(#lambda)}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[36]->Draw("ESAME");
+  gCutListHistograms[38]->Draw("ESAME");
+  c10->cd(2)->SetBottomMargin(0.2); c10->cd(2)->SetLeftMargin(0.2);
+  c10->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{tan(#lambda)}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[37]->Draw("ESAME");
+  gCutListHistograms[39]->Draw("ESAME");
+  c10->SaveAs("Cov44.gif");
+
+  TCanvas *c11 = new TCanvas("c11","Covariance matrix 55",500,500,650,350);
+  c11->SetFillColor(10); c11->GetFrame()->SetFillColor(10);
+  c11->SetHighLightColor(10); c11->Divide(2,1);
+  c11->cd(1)->SetBottomMargin(0.2); c11->cd(1)->SetLeftMargin(0.2);
+  c11->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{1/P_{T}} [GeV/c]^{-1}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[40]->Draw("ESAME");
+  gCutListHistograms[42]->Draw("ESAME");
+  c11->cd(2)->SetBottomMargin(0.2); c11->cd(2)->SetLeftMargin(0.2);
+  c11->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("#sigma_{1/P_{T}} [GeV/c]^{-1}");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,4.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[41]->Draw("ESAME");
+  gCutListHistograms[43]->Draw("ESAME");
+  c11->SaveAs("Cov55.gif");
+
+  TCanvas *c12 = new TCanvas("c12","Number of TPC points (dE/dx)",550,550,650,350);
+  c12->SetFillColor(10); c12->GetFrame()->SetFillColor(10);
+  c12->SetHighLightColor(10); c12->Divide(2,1);
+  c12->cd(1)->SetBottomMargin(0.2); c12->cd(1)->SetLeftMargin(0.2);
+  c12->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{points} (TPC-dE/dx");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,200.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[56]->Draw("ESAME");
+  gCutListHistograms[58]->Draw("ESAME");
+  c12->cd(2)->SetBottomMargin(0.2); c12->cd(2)->SetLeftMargin(0.2);
+  c12->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{points} (TPC-dE/dx");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,200.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gCutListHistograms[57]->Draw("ESAME");
+  gCutListHistograms[59]->Draw("ESAME");
+  c12->SaveAs("Npoints-TPCdEdx.gif");
+
+
+  //DCA cut parameters  
+  TCanvas *c13 = new TCanvas("c13","DCA xy",600,600,650,350);
+  c13->SetFillColor(10); c13->GetFrame()->SetFillColor(10);
+  c13->SetHighLightColor(10); c13->Divide(2,1);
+  c13->cd(1)->SetBottomMargin(0.2); c13->cd(1)->SetLeftMargin(0.2);
+  c13->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("DCA_{xy} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[2]->Draw("ESAME");
+  //gDCAListHistograms[2]->Fit("gDCA","","esame",0.1,12);
+  gDCAListHistograms[0]->Draw("ESAME");
+  c13->cd(2)->SetBottomMargin(0.15); c13->cd(2)->SetLeftMargin(0.15);
+  c13->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("DCA_{xy} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[1]->Draw("ESAME");
+  gDCAListHistograms[3]->Draw("ESAME");
+  c13->SaveAs("DCAxy.gif");
+
+  TCanvas *c14 = new TCanvas("c14","DCA z",650,650,650,350);
+  c14->SetFillColor(10); c14->GetFrame()->SetFillColor(10);
+  c14->SetHighLightColor(10); c14->Divide(2,1);
+  c14->cd(1)->SetBottomMargin(0.2); c14->cd(1)->SetLeftMargin(0.2);
+  c14->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("DCA_{z} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[4]->Draw("ESAME");
+  gDCAListHistograms[6]->Draw("ESAME");
+  //gDCAListHistograms[6]->Fit("gDCA","","esame",0.1,12);
+  c14->cd(2)->SetBottomMargin(0.15); c14->cd(2)->SetLeftMargin(0.15);
+  c14->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("DCA_{z} [cm]");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,20.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[5]->Draw("ESAME");
+  gDCAListHistograms[7]->Draw("ESAME");
+  c14->SaveAs("DCAz.gif");
+
+  TCanvas *c15 = new TCanvas("c15","Sigma to vertex",700,700,650,350);
+  c15->SetFillColor(10); c15->GetFrame()->SetFillColor(10);
+  c15->SetHighLightColor(10); c15->Divide(2,1);
+  c15->cd(1)->SetBottomMargin(0.2); c15->cd(1)->SetLeftMargin(0.2);
+  c15->cd(1)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{#sigma}(Vertex)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Protons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[8]->DrawCopy("ESAME");
+  gDCAListHistograms[10]->DrawCopy("ESAME");
+  c15->cd(2)->SetBottomMargin(0.15); c15->cd(2)->SetLeftMargin(0.15);
+  c15->cd(2)->SetLogy();
+  hEmpty->GetXaxis()->SetTitle("N_{#sigma}(Vertex)");
+  hEmpty->GetXaxis()->SetRangeUser(0.0,7.0);
+  hEmpty->SetTitle("Antiprotons");
+  hEmpty->DrawCopy();
+  gDCAListHistograms[9]->DrawCopy("ESAME");
+  gDCAListHistograms[11]->DrawCopy("ESAME");
+  c15->SaveAs("NSigmaToVertex.gif");
+
+
+  f->Close();
 }

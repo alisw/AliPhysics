@@ -688,6 +688,10 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   if(fMaxChi2PerTPCClusterFlag) listOfCuts += fMaxChi2PerTPCCluster;
   else listOfCuts += "Not used";
   l.DrawLatex(0.1,0.5,listOfCuts.Data());
+  listOfCuts = "Minimum number of TPC points for the dE/dx: ";
+  if(fMinTPCdEdxPointsFlag) listOfCuts += fMinTPCdEdxPoints;
+  else listOfCuts += "Not used";
+  l.DrawLatex(0.1,0.3,listOfCuts.Data());
 
   c->cd(4)->SetFillColor(4);
   l.DrawLatex(0.3,0.9,"Tracking related cuts");
