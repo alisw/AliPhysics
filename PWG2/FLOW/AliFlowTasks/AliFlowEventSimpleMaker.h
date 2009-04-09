@@ -28,21 +28,21 @@ class AliFlowEventSimpleMaker {
 
   void SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; } 
   //TTree
-  AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* intCuts, AliFlowTrackSimpleCuts* diffCuts);   //use own cut class
+  AliFlowEventSimple* FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* rpCuts, AliFlowTrackSimpleCuts* poiCuts);   //use own cut class
   //AliMCEvent
   AliFlowEventSimple* FillTracks(AliMCEvent* anInput);   //use own cuts
-  AliFlowEventSimple* FillTracks(AliMCEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager ); //use CF(2x)
+  AliFlowEventSimple* FillTracks(AliMCEvent* anInput, AliCFManager* rpCFManager, AliCFManager* poiCFManager ); //use CF(2x)
   //AliESDEvent
   AliFlowEventSimple* FillTracks(AliESDEvent* anInput);   //use own cuts
-  AliFlowEventSimple* FillTracks(AliESDEvent* anInput,  AliCFManager* intCFManager, AliCFManager* diffCFManager); //use CF(2x)
+  AliFlowEventSimple* FillTracks(AliESDEvent* anInput,  AliCFManager* rpCFManager, AliCFManager* poiCFManager); //use CF(2x)
   //AliESDEvent & AliMCEvent
   AliFlowEventSimple* FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, Int_t anOption);  //use own cuts
-  AliFlowEventSimple* FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, AliCFManager* intCFManager, AliCFManager* diffCFManager, Int_t anOption);  //use CF(2x)
+  AliFlowEventSimple* FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, AliCFManager* rpCFManager, AliCFManager* poiCFManager, Int_t anOption);  //use CF(2x)
   // anOption = 0 : kine from ESD
   // anOption = 1 : kine from MC
   //AliAODEvent
   AliFlowEventSimple* FillTracks(AliAODEvent* anInput); //use own cuts
-  AliFlowEventSimple* FillTracks(AliAODEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager);  //use CF(2x)
+  AliFlowEventSimple* FillTracks(AliAODEvent* anInput, AliCFManager* rpCFManager, AliCFManager* poiCFManager);  //use CF(2x)
     
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
