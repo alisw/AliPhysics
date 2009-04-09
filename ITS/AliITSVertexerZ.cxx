@@ -378,7 +378,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
     niter++;
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
-  fCurrentVertex->SetTitle("vertexer: B");
+  fCurrentVertex->SetTitle("vertexer: Z");
   points.Clear();
   if(ncontr>fMinTrackletsForPilup){ 
     Float_t secPeakPos;
