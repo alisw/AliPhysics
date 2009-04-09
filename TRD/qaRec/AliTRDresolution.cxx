@@ -1008,16 +1008,16 @@ TObjArray* AliTRDresolution::Histos()
   } else h->Reset();
   fContainer->AddAt(h, kMCtrackletYPull);
 
-  // tracklet y resolution [0]
+  // tracklet z resolution [0]
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltZ"))){
-    h = new TH2I("hMCtrkltZ", "Tracklet Resolution (Z)", 50, -1., 1., 100, -.5, .5);
+    h = new TH2I("hMCtrkltZ", "Tracklet Resolution (Z)", 50, -1., 1., 100, -1., 1.);
     h->GetXaxis()->SetTitle("tg(#theta)");
     h->GetYaxis()->SetTitle("#Delta z [cm]");
     h->GetZaxis()->SetTitle("entries");
   } else h->Reset();
   fContainer->AddAt(h, kMCtrackletZ);
 
-  // tracklet y resolution [0]
+  // tracklet z resolution [0]
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkltZPull"))){
     h = new TH2I("hMCtrkltZPull", "Tracklet Pulls (Z)", 31, -1., 1., 100, -3.5, 3.5);
     h->GetXaxis()->SetTitle("tg(#theta)");
@@ -1046,7 +1046,7 @@ TObjArray* AliTRDresolution::Histos()
 
   // Kalman track y pulls
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkYPull"))){
-    h = new TH2I("hMCtrkYPull", "Kalman Track Pulls (Y)", 31, -.48, .48, 100, -3.5, 3.5);
+    h = new TH2I("hMCtrkYPull", "Kalman Track Pulls (Y)", 31, -.48, .48, 100, -4., 4.);
     h->GetXaxis()->SetTitle("tg(#phi)");
     h->GetYaxis()->SetTitle("#Delta y / #sigma_{y}");
     h->GetZaxis()->SetTitle("entries");

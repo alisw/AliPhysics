@@ -1156,6 +1156,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
       fX=(fX<0.)?0.:fX;
       Float_t dl = .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght();
       fX=(fX> dl)?dl:fX;
+      fX+=.055; // TODO to be understood
     }
 
     fZfit[0] = .5*(zc[0]+zc[kNclusters-1]); fZfit[1] = 0.;
