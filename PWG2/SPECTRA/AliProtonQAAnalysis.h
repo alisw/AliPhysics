@@ -56,9 +56,11 @@ class AliProtonQAAnalysis : public TObject {
   TList *GetGlobalQAList() const {return fGlobalQAList;}
 
   //Efficiency plots (reconstruction & PID)
-  void RunEfficiencyAnalysis(AliMCEvent *mcEvent, 
-			     AliESDEvent *esd,
-			     const AliESDVertex *vertex);
+  void RunReconstructionEfficiencyAnalysis(AliMCEvent *mcEvent, 
+					   AliESDEvent *esd,
+					   const AliESDVertex *vertex);
+  void RunPIDEfficiencyAnalysis(AliStack *stack, 
+				AliESDEvent *esd);
   void RunEfficiencyAnalysis(AliStack *stack, 
 			     AliESDEvent *esd,
 			     const AliESDVertex *vertex);
