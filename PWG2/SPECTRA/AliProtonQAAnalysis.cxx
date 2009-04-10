@@ -2808,9 +2808,9 @@ void AliProtonQAAnalysis::InitQA() {
 }
 
 //____________________________________________________________________//
-void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliMCEvent *const mcEvent, 
-						AliESDEvent *esd,
-						const AliESDVertex *vertex) {
+void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const mcEvent, 
+							      AliESDEvent *esd,
+							      const AliESDVertex *vertex) {
   //Run the reconstruction efficiency code (primaries & secondaries)
   AliStack *stack = mcEvent->Stack();
 
@@ -3074,39 +3074,7 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliMCEvent *const mcEvent,
 							  particle->Pt());
 	    }//hadronic interactions
 	  }//secondaries
-	}//initial antiprotons
-	
-	//pid
-	if(fProtonAnalysisBase->IsProton(track)) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
-	  if(TMath::Abs(pdgcode) == 2212) {
-	    if(fProtonAnalysisBase->GetEtaMode())
-	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
-							particle->Pt());
-	    else
-	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
-							particle->Pt());
-	  }//properly identified as proton
-	  else {
-	    if(fProtonAnalysisBase->GetEtaMode())
-	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
-							particle->Pt());
-	    else
-	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
-							particle->Pt());
-	  }//contamination
-	}//identified as proton
+	}//initial antiprotons	
       }//TPC only tracks
       else {
 	Int_t label = TMath::Abs(track->GetLabel());
@@ -3231,42 +3199,62 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliMCEvent *const mcEvent,
 	  }//secondaries
 	}//initial antiprotons
 	
-	//pid
-	if(fProtonAnalysisBase->IsProton(track)) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								  particle->Py(),
-								  particle->Pz()),
-							 particle->Pt());
-	  if(TMath::Abs(pdgcode) == 2212) {
-	    if(fProtonAnalysisBase->GetEtaMode())
-	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
-							particle->Pt());
-	    else
-	      ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
-							particle->Pt());
-	  }//properly identified as proton
-	  else {
-	    if(fProtonAnalysisBase->GetEtaMode())
-	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
-							particle->Pt());
-	    else
-	      ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								 particle->Py(),
-								 particle->Pz()),
-							particle->Pt());
-	  }//contamination
-	}//identified as proton
       }//global tracking
     }//track loop
     labelArray.Reset();
   }//loop over findable tracks
 
   labelMCArray.Reset();
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack, 
+						   AliESDEvent *esd) {
+  Int_t nGoodTracks = esd->GetNumberOfTracks();
+  TArrayI labelArray(nGoodTracks);
+  Int_t labelCounter = 0;
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+    AliESDtrack* track = esd->GetTrack(iTracks);
+    if(!track) continue;
+    
+    //TPC only
+    if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      if(!tpcTrack) continue;
+    }
+	
+    Int_t label = TMath::Abs(track->GetLabel());
+    if(IsLabelUsed(labelArray,label)) continue;
+    labelArray.AddAt(label,labelCounter);
+    labelCounter += 1;
+		
+    TParticle *particle = stack->Particle(label);
+    if(!particle) continue;
+    Int_t pdgcode = particle->GetPdgCode();
+    
+    //pid
+    if(fProtonAnalysisBase->IsProton(track)) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						  particle->Pt());
+      else ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+      if(TMath::Abs(pdgcode) == 2212) {
+	if(fProtonAnalysisBase->GetEtaMode())
+	  ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+						    particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+      }//properly identified as proton
+      else {
+	if(fProtonAnalysisBase->GetEtaMode())
+	  ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+						    particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+      }//contamination
+    }//identified as proton
+  }//ESD track loop
+  labelArray.Reset();
 }
 
 //____________________________________________________________________//
