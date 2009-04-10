@@ -1139,6 +1139,9 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
       
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+
+      CorrectThetaRange(thetax);
+      CorrectThetaRange(thetay);
       
       triggerTrack.SetX11(x11);
       triggerTrack.SetY11(y11);
@@ -1152,3 +1155,13 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
   } // end of loop on Local Trigger
 }
 
+//__________________________________________________________________________
+void AliMUONVTrackReconstructor::CorrectThetaRange(Float_t& theta)
+{
+  /// The angles of the trigger tracks, obtained with ATan2, 
+  /// have values around +pi and -pi. On the contrary, the angles 
+  /// used in the tracker tracks have values around 0.
+  /// This function sets the same range for the trigger tracks angles.
+  if (theta < -TMath::PiOver2()) theta += TMath::Pi();
+  else if(theta > TMath::PiOver2()) theta -= TMath::Pi();
+}
