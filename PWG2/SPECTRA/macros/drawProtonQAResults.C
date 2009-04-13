@@ -260,7 +260,7 @@ void drawCutStatistics(TList *list,
   for(Int_t i = 2; i < NQAHISTOSPERLIST-4; i++) 
     hSecondaryProtons->SetBinContent(i+1,GetPercentage(gEntriesQASecondaryProtonsAcceptedList[i-2],
 						       gEntriesQASecondaryProtonsRejectedList[i-2]));
-  hSecondaryProtons->SetBinContent(24,GetPercentage(gEntriesQA2DList[0],gEntriesQA2DList[2]));
+  hSecondaryProtons->SetBinContent(25,GetPercentage(gEntriesQA2DList[0],gEntriesQA2DList[2]));
 
   //1D for primary antiprotons
   //cout<<"_________________________________________________________"<<endl;
@@ -279,7 +279,7 @@ void drawCutStatistics(TList *list,
   for(Int_t i = 2; i < NQAHISTOSPERLIST-4; i++) 
     hSecondaryAntiProtons->SetBinContent(i+1,GetPercentage(gEntriesQASecondaryAntiProtonsAcceptedList[i-2],
 							   gEntriesQASecondaryAntiProtonsRejectedList[i-2]));
-  hSecondaryAntiProtons->SetBinContent(24,GetPercentage(gEntriesQA2DList[4],gEntriesQA2DList[6]));
+  hSecondaryAntiProtons->SetBinContent(25,GetPercentage(gEntriesQA2DList[4],gEntriesQA2DList[6]));
 
   TLatex *t1 = new TLatex();
   t1->SetTextSize(0.04);
@@ -1525,7 +1525,7 @@ void drawEfficiency(TList *list,
   //for protons and antiprotons vs y and pT
 
   TH2F *hEmpty = new TH2F("hEmptyReconstructionEfficiency","",
-			   100,-1.2,3.5,100,-10.0,130); 
+			   1000,-1.2,210.,100,-10.0,130); 
   hEmpty->SetStats(kFALSE); 
   hEmpty->GetYaxis()->SetTitle("#epsilon [%]");
   hEmpty->GetYaxis()->SetTitleOffset(1.3);
@@ -1742,7 +1742,8 @@ void drawEfficiency(TList *list,
   c16->cd(1)->SetBottomMargin(0.15); 
   c16->cd(1)->SetLeftMargin(0.15); 
   c16->cd(1)->SetGridx(); c16->cd(1)->SetGridy();
-  hEmpty->GetXaxis()->SetRangeUser(-1.0.,1.0);
+  hEmpty->GetXaxis()->SetRangeUser(gYESDIdProtons->GetXaxis()->GetXmin()-0.2,
+				   gYESDIdProtons->GetXaxis()->GetXmax()+0.2);
   hEmpty->GetXaxis()->SetTitle(gYESDContamProtons->GetXaxis()->GetTitle());
   hEmpty->DrawCopy();
   gYESDIdProtons->DrawCopy("ESAME");
@@ -1772,7 +1773,8 @@ void drawEfficiency(TList *list,
   c16->cd(2)->SetBottomMargin(0.15); 
   c16->cd(2)->SetLeftMargin(0.15); 
   c16->cd(2)->SetGridx(); c16->cd(2)->SetGridy();
-  hEmpty->GetXaxis()->SetRangeUser(0.0,1.2);
+  hEmpty->GetXaxis()->SetRangeUser(gPtESDIdProtons->GetXaxis()->GetXmin()-0.2,
+				   gPtESDIdProtons->GetXaxis()->GetXmax()+0.2);
   hEmpty->GetXaxis()->SetTitle(gPtESDContamProtons->GetXaxis()->GetTitle());
   hEmpty->DrawCopy();
   gPtESDIdProtons->DrawCopy("ESAME");
@@ -1780,8 +1782,8 @@ void drawEfficiency(TList *list,
 
   //N_points dependence
   //protons pid efficiency
-  TH1D *gNPointsESDIdProtons = (TH1D *)gHistESDIdYPtProtons->Project3D("y");
-  TH1D *gNPointsESDInitProtons = (TH1D *)gHistESDInitYPtProtons->Project3D("y");
+  TH1D *gNPointsESDIdProtons = (TH1D *)gHistESDIdYPtProtons->Project3D("z");
+  TH1D *gNPointsESDInitProtons = (TH1D *)gHistESDInitYPtProtons->Project3D("z");
   gNPointsESDIdProtons->Divide(gNPointsESDInitProtons);
   SetError(gNPointsESDIdProtons,gNPointsESDInitProtons);
   gNPointsESDIdProtons->Scale(100.);
@@ -1797,8 +1799,9 @@ void drawEfficiency(TList *list,
 
   c16->cd(3)->SetBottomMargin(0.15); 
   c16->cd(3)->SetLeftMargin(0.15); 
-  c16->cd(3)->SetGridx(); c16->cd(2)->SetGridy();
-  hEmpty->GetXaxis()->SetRangeUser(0.0,1.2);
+  c16->cd(3)->SetGridx(); c16->cd(3)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(gNPointsESDIdProtons->GetXaxis()->GetXmin(),
+				   gNPointsESDIdProtons->GetXaxis()->GetXmax()+10);
   hEmpty->GetXaxis()->SetTitle(gNPointsESDContamProtons->GetXaxis()->GetTitle());
   hEmpty->DrawCopy();
   gNPointsESDIdProtons->DrawCopy("ESAME");
@@ -1898,10 +1901,30 @@ void drawKineQA(const char *filename) {
   TFile *f = TFile::Open(filename);
   TList *acceptedList = (TList *)f->Get("acceptedCutList");
   TH3D *gHistEtaPhiNClustersPrimaryProtonsPass = (TH3D *)acceptedList->At(44);
+  gHistEtaPhiNClustersPrimaryProtonsPass->SetTitle("Primary protons");
   TH3D *gHistEtaPhiNClustersSecondaryProtonsPass = (TH3D *)acceptedList->At(46);
+  gHistEtaPhiNClustersSecondaryProtonsPass->SetTitle("Secondary protons");
   TH3D *gHistEtaPhiNClustersPrimaryAntiProtonsPass = (TH3D *)acceptedList->At(45);
+  gHistEtaPhiNClustersPrimaryAntiProtonsPass->SetTitle("Primary antiprotons");
   TH3D *gHistEtaPhiNClustersSecondaryAntiProtonsPass = (TH3D *)acceptedList->At(47);
-
+  gHistEtaPhiNClustersSecondaryAntiProtonsPass->SetTitle("Secondary antiprotons");
+  TH3D *gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass = (TH3D *)acceptedList->At(48);
+  gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->SetTitle("Primary protons");
+  TH3D *gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass = (TH3D *)acceptedList->At(50);
+  gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->SetTitle("Secondary protons");
+  TH3D *gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass = (TH3D *)acceptedList->At(49);
+  gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->SetTitle("Primary antiprotons");
+  TH3D *gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass = (TH3D *)acceptedList->At(51);
+  gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->SetTitle("Secondary antiprotons");
+  TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass = (TH3D *)acceptedList->At(52);
+  gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->SetTitle("Primary protons");
+  TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass = (TH3D *)acceptedList->At(54);
+  gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->SetTitle("Secondary protons");
+  TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass = (TH3D *)acceptedList->At(53);
+  gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->SetTitle("Primary antiprotons");
+  TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass = (TH3D *)acceptedList->At(55);
+  gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->SetTitle("Secondary antiprotons");
+  
   TList *rejectedList = (TList *)f->Get("rejectedCutList");
   TH3D *gHistEtaPhiNClustersPrimaryProtonsReject = (TH3D *)rejectedList->At(0);
   gHistEtaPhiNClustersPrimaryProtonsPass->Add(gHistEtaPhiNClustersPrimaryProtonsReject);
@@ -1911,6 +1934,22 @@ void drawKineQA(const char *filename) {
   gHistEtaPhiNClustersPrimaryAntiProtonsPass->Add(gHistEtaPhiNClustersPrimaryAntiProtonsReject);
   TH3D *gHistEtaPhiNClustersSecondaryAntiProtonsReject = (TH3D *)rejectedList->At(3);
   gHistEtaPhiNClustersSecondaryAntiProtonsPass->Add(gHistEtaPhiNClustersSecondaryAntiProtonsReject);
+  TH3D *gHistEtaPhiChi2PerTPCClusterPrimaryProtonsReject = (TH3D *)rejectedList->At(4);
+  gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->Add(gHistEtaPhiChi2PerTPCClusterPrimaryProtonsReject);
+  TH3D *gHistEtaPhiChi2PerTPCClusterSecondaryProtonsReject = (TH3D *)rejectedList->At(6);
+  gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->Add(gHistEtaPhiChi2PerTPCClusterSecondaryProtonsReject);
+  TH3D *gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsReject = (TH3D *)rejectedList->At(5);
+  gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->Add(gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsReject);
+  TH3D *gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsReject = (TH3D *)rejectedList->At(7);
+  gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->Add(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsReject);
+  TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject = (TH3D *)rejectedList->At(8);
+  gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->Add(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject);
+  TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject = (TH3D *)rejectedList->At(10);
+  gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->Add(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject);
+  TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject = (TH3D *)rejectedList->At(9);
+  gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->Add(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject);
+  TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsReject = (TH3D *)rejectedList->At(11);
+  gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->Add(gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsReject);
 
   //eta-phi
   TCanvas *c21 = new TCanvas("c21",
@@ -1981,6 +2020,98 @@ void drawKineQA(const char *filename) {
   ((TH2D *)(gHistEtaPhiNClustersSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
   c23->SaveAs("PhiNClusters.gif");
 
+  //eta-chi^2 per TPC cluster
+  TCanvas *c24 = new TCanvas("c24",
+			     "#eta-#chi^{2}/N_{clusters}(TPC)",
+			     300,300,600,600);
+  c24->SetHighLightColor(10); c24->Divide(2,2);
+  c24->cd(1)->SetLeftMargin(0.15); c24->cd(1)->SetBottomMargin(0.15);  
+  c24->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c24->cd(2)->SetLeftMargin(0.15); c24->cd(2)->SetBottomMargin(0.15);  
+  c24->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c24->cd(3)->SetLeftMargin(0.15); c24->cd(3)->SetBottomMargin(0.15);  
+  c24->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c24->cd(4)->SetLeftMargin(0.15); c24->cd(4)->SetBottomMargin(0.15);  
+  c24->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c24->SaveAs("EtaChi2PerTPCCluster.gif");
+
+  //phi-chi^2 per TPC cluster
+  TCanvas *c25 = new TCanvas("c25",
+			     "#phi-#chi^{2}/N_{clusters}(TPC)",
+			     400,400,600,600);
+  c25->SetHighLightColor(10); c25->Divide(2,2);
+  c25->cd(1)->SetLeftMargin(0.15); c25->cd(1)->SetBottomMargin(0.15);  
+  c25->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c25->cd(2)->SetLeftMargin(0.15); c25->cd(2)->SetBottomMargin(0.15);  
+  c25->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c25->cd(3)->SetLeftMargin(0.15); c25->cd(3)->SetBottomMargin(0.15);  
+  c25->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterPrimaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c25->cd(4)->SetLeftMargin(0.15); c25->cd(4)->SetBottomMargin(0.15);  
+  c25->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c25->SaveAs("PhiChi2PerTPCCluster.gif");
+
+   //eta-dE/dx Npoints (TPC)
+  TCanvas *c26 = new TCanvas("c26",
+			     "#eta-dEdx N_{points}(TPC)",
+			     500,500,600,600);
+  c26->SetHighLightColor(10); c26->Divide(2,2);
+  c26->cd(1)->SetLeftMargin(0.15); c26->cd(1)->SetBottomMargin(0.15);  
+  c26->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c26->cd(2)->SetLeftMargin(0.15); c26->cd(2)->SetBottomMargin(0.15);  
+  c26->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c26->cd(3)->SetLeftMargin(0.15); c26->cd(3)->SetBottomMargin(0.15);  
+  c26->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c26->cd(4)->SetLeftMargin(0.15); c26->cd(4)->SetBottomMargin(0.15);  
+  c26->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->Project3D("zx")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->Project3D("zx")))->DrawCopy("colz");
+  c26->SaveAs("EtadEdxNPointsTPC.gif");
+
+  //phi-dE/dx Npoints (TPC)
+  TCanvas *c27 = new TCanvas("c27",
+			     "#phi-dEdx N_{points}(TPC)",
+			     600,600,600,600);
+  c27->SetHighLightColor(10); c27->Divide(2,2);
+  c27->cd(1)->SetLeftMargin(0.15); c27->cd(1)->SetBottomMargin(0.15);  
+  c27->cd(1)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c27->cd(2)->SetLeftMargin(0.15); c27->cd(2)->SetBottomMargin(0.15);  
+  c27->cd(2)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c27->cd(3)->SetLeftMargin(0.15); c27->cd(3)->SetBottomMargin(0.15);  
+  c27->cd(3)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c27->cd(4)->SetLeftMargin(0.15); c27->cd(4)->SetBottomMargin(0.15);  
+  c27->cd(4)->SetRightMargin(0.2);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->Project3D("zy")))->SetStats(kFALSE);
+  ((TH2D *)(gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass->Project3D("zy")))->DrawCopy("colz");
+  c27->SaveAs("PhidEdxNPointsTPC.gif");
+  
   f->Close();
 }
 
