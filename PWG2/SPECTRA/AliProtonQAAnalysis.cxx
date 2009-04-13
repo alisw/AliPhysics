@@ -1161,7 +1161,7 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 					  ";;P_{T} [GeV/c];N_{points}",
 					  fNBinsY,fMinY,fMaxY,
 					  fNBinsPt,fMinPt,fMaxPt,
-					  100,0,200);
+					  50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDInitYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1175,7 +1175,7 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 					";;P_{T} [GeV/c];N_{points}",
 					fNBinsY,fMinY,fMaxY,
 					fNBinsPt,fMinPt,fMaxPt,
-					100,0,200);
+					50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1189,7 +1189,7 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 					   ";;P_{T} [GeV/c];N_{points}",
 					   fNBinsY,fMinY,fMaxY,
 					   fNBinsPt,fMinPt,fMaxPt,
-					   100,0,200);
+					   50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDRecIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1203,7 +1203,7 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 					    ";;P_{T} [GeV/c];N_{points}",
 					    fNBinsY,fMinY,fMaxY,
 					    fNBinsPt,fMinPt,fMaxPt,
-					    100,0,200);
+					    50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDContamYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -2976,22 +2976,12 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	}
 	else 
 	  if((fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
-	
-	//Double_t probability[5];
-	
+		
 	if(fUseCutsInEfficiency) 
 	  if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
 	
 	//reconstructed primary (anti)protons
 	if(pdgcode == 2212) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
 	  if(label <= stack->GetNprimary()) {
 	    if(fProtonAnalysisBase->GetEtaMode())
 	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
@@ -3032,14 +3022,6 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	  }//secondaries
 	}//initial protons
 	if(pdgcode == -2212) {	
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
 	  if(label <= stack->GetNprimary()) {
 	    if(fProtonAnalysisBase->GetEtaMode())
 	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
@@ -3107,14 +3089,6 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	
 	//reconstructed primary (anti)protons
 	if(pdgcode == 2212) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
 	  if(label <= stack->GetNprimary()) {
 	    if(fProtonAnalysisBase->GetEtaMode())
 	      ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
@@ -3155,14 +3129,6 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	  }//secondaries
 	}//initial protons
 	if(pdgcode == -2212) {	
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
 	  if(label <= stack->GetNprimary()) {
 	    if(fProtonAnalysisBase->GetEtaMode())
 	      ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
@@ -3201,8 +3167,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 							  particle->Pt());
 	    }//hadronic interactions
 	  }//secondaries
-	}//initial antiprotons
-	
+	}//initial antiprotons	
       }//global tracking
     }//track loop
     labelArray.Reset();
@@ -3237,6 +3202,14 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
     Int_t pdgcode = particle->GetPdgCode();
     
     Int_t nTPCpoints = track->GetTPCsignalN();
+
+    if(TMath::Abs(pdgcode) == 2212) {
+      if(fProtonAnalysisBase->GetEtaMode())
+	((TH3D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						  particle->Pt(),nTPCpoints);
+      else
+	((TH3D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt(),nTPCpoints);
+    }
 
     //pid
     if(fProtonAnalysisBase->IsProton(track)) {
@@ -3403,14 +3376,6 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
       
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
-	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						    particle->Pt());
-	else
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							     particle->Py(),
-							     particle->Pz()),
-						    particle->Pt());
 	if(label <= stack->GetNprimary()) {
 	  nESDProtons += 1;
 	  if(fProtonAnalysisBase->GetEtaMode())
@@ -3452,14 +3417,6 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 	}//secondaries
       }//initial protons
       if(pdgcode == -2212) {	
-	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						    particle->Pt());
-	else
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							     particle->Py(),
-							     particle->Pz()),
-						    particle->Pt());
 	if(label <= stack->GetNprimary()) {
 	  if(fProtonAnalysisBase->GetEtaMode())
 	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
@@ -3499,38 +3456,6 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 	  }//hadronic interactions
 	}//secondaries
       }//initial antiprotons
-      
-      //pid
-      if(fProtonAnalysisBase->IsProton(track)) {
-	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
-						    particle->Pt());
-	else
-	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							     particle->Py(),
-							     particle->Pz()),
-						    particle->Pt());
-	if(TMath::Abs(pdgcode) == 2212) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
-	}//properly identified as proton
-	else {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
-	}//contamination
-      }//identified as proton
     }//TPC only tracks
     else {
       if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
@@ -3546,14 +3471,6 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
       
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
-	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
-						    particle->Pt());
-	else
-	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							     particle->Py(),
-							     particle->Pz()),
-						    particle->Pt());
 	if(label <= stack->GetNprimary()) {
 	  nESDProtons += 1;
 	  if(fProtonAnalysisBase->GetEtaMode())
@@ -3642,37 +3559,6 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
 	  }//hadronic interactions
 	}//secondaries
       }//initial antiprotons
-      
-      //pid
-      if(fProtonAnalysisBase->IsProton(track)) {
-	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
-						    particle->Pt());
-	else ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-								particle->Py(),
-								particle->Pz()),
-						       particle->Pt());
-	if(TMath::Abs(pdgcode) == 2212) {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
-	}//properly identified as proton
-	else {
-	  if(fProtonAnalysisBase->GetEtaMode())
-	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
-						      particle->Pt());
-	  else
-	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),
-							       particle->Py(),
-							       particle->Pz()),
-						      particle->Pt());
-	}//contamination
-      }//identified as proton
     }//global tracking
   }//track loop
   
