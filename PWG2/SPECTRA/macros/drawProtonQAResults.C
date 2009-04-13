@@ -1708,28 +1708,32 @@ void drawEfficiency(TList *list,
   //______________//
   //PID efficiency//
   //______________//
-  TH2D *gHistESDInitYPtProtons = (TH2D *)list->At(12);
-  TH2D *gHistESDIdYPtProtons = (TH2D *)list->At(13);
-  TH2D *gHistESDRecIdYPtProtons = (TH2D *)list->At(14);
-  TH2D *gHistESDContamYPtProtons = (TH2D *)list->At(15);
+  TH3D *gHistESDInitYPtProtons = (TH3D *)list->At(12);
+  TH3D *gHistESDIdYPtProtons = (TH3D *)list->At(13);
+  TH3D *gHistESDRecIdYPtProtons = (TH3D *)list->At(14);
+  TH3D *gHistESDContamYPtProtons = (TH3D *)list->At(15);
 
   TCanvas *c16 = new TCanvas("c16",
 			     "(Anti)Proton PID efficiency vs y and pT",
 			     750,750,700,400);
-  c16->SetHighLightColor(10); c16->Divide(2,1);
+  c16->SetHighLightColor(10); c16->Divide(3,1);
 
   //rapidity dependence
   //protons pid efficiency
-  TH1D *gYESDIdProtons = (TH1D *)gHistESDIdYPtProtons->ProjectionX("gYESDIdProtons",0,gHistESDIdYPtProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYESDInitProtons = (TH1D *)gHistESDInitYPtProtons->ProjectionX("gYESDInitProtons",0,gHistESDInitYPtProtons->GetXaxis()->GetNbins(),"e");
+  //TH1D *gYESDIdProtons = (TH1D *)gHistESDIdYPtProtons->ProjectionX("gYESDIdProtons",0,gHistESDIdYPtProtons->GetXaxis()->GetNbins(),"e");
+  //TH1D *gYESDInitProtons = (TH1D *)gHistESDInitYPtProtons->ProjectionX("gYESDInitProtons",0,gHistESDInitYPtProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYESDIdProtons = (TH1D *)gHistESDIdYPtProtons->Project3D("x");
+  TH1D *gYESDInitProtons = (TH1D *)gHistESDInitYPtProtons->Project3D("x");
   gYESDIdProtons->Divide(gYESDInitProtons);
   SetError(gYESDIdProtons,gYESDInitProtons);
   gYESDIdProtons->Scale(100.);
   gYESDIdProtons->SetMarkerStyle(kFullCircle);
 
   //protons pid contamination
-  TH1D *gYESDContamProtons = (TH1D *)gHistESDContamYPtProtons->ProjectionX("gYESDContamProtons",0,gHistESDContamYPtProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->ProjectionX("gYESDRecIdProtons",0,gHistESDRecIdYPtProtons->GetXaxis()->GetNbins(),"e");
+  //TH1D *gYESDContamProtons = (TH1D *)gHistESDContamYPtProtons->ProjectionX("gYESDContamProtons",0,gHistESDContamYPtProtons->GetXaxis()->GetNbins(),"e");
+  //TH1D *gYESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->ProjectionX("gYESDRecIdProtons",0,gHistESDRecIdYPtProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYESDContamProtons = (TH1D *)gHistESDContamYPtProtons->Project3D("x");
+  TH1D *gYESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->Project3D("x");
   gYESDContamProtons->Divide(gYESDRecIdProtons);
   SetError(gYESDContamProtons,gYESDRecIdProtons);
   gYESDContamProtons->Scale(100.);
@@ -1746,16 +1750,20 @@ void drawEfficiency(TList *list,
 
   //pT dependence
   //protons pid efficiency
-  TH1D *gPtESDIdProtons = (TH1D *)gHistESDIdYPtProtons->ProjectionY("gPtESDIdProtons",0,gHistESDIdYPtProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtESDInitProtons = (TH1D *)gHistESDInitYPtProtons->ProjectionY("gPtESDInitProtons",0,gHistESDInitYPtProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *gPtESDIdProtons = (TH1D *)gHistESDIdYPtProtons->ProjectionY("gPtESDIdProtons",0,gHistESDIdYPtProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *gPtESDInitProtons = (TH1D *)gHistESDInitYPtProtons->ProjectionY("gPtESDInitProtons",0,gHistESDInitYPtProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtESDIdProtons = (TH1D *)gHistESDIdYPtProtons->Project3D("y");
+  TH1D *gPtESDInitProtons = (TH1D *)gHistESDInitYPtProtons->Project3D("y");
   gPtESDIdProtons->Divide(gPtESDInitProtons);
   SetError(gPtESDIdProtons,gPtESDInitProtons);
   gPtESDIdProtons->Scale(100.);
   gPtESDIdProtons->SetMarkerStyle(kFullCircle);
 
   //protons pid contamination
-  TH1D *gPtESDContamProtons = (TH1D *)gHistESDContamYPtProtons->ProjectionY("gPtESDContamProtons",0,gHistESDContamYPtProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->ProjectionY("gPtESDRecIdProtons",0,gHistESDRecIdYPtProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *gPtESDContamProtons = (TH1D *)gHistESDContamYPtProtons->ProjectionY("gPtESDContamProtons",0,gHistESDContamYPtProtons->GetYaxis()->GetNbins(),"e");
+  //TH1D *gPtESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->ProjectionY("gPtESDRecIdProtons",0,gHistESDRecIdYPtProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtESDContamProtons = (TH1D *)gHistESDContamYPtProtons->Project3D("y");
+  TH1D *gPtESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->Project3D("y");
   gPtESDContamProtons->Divide(gPtESDRecIdProtons);
   SetError(gPtESDContamProtons,gPtESDRecIdProtons);
   gPtESDContamProtons->Scale(100.);
@@ -1765,10 +1773,36 @@ void drawEfficiency(TList *list,
   c16->cd(2)->SetLeftMargin(0.15); 
   c16->cd(2)->SetGridx(); c16->cd(2)->SetGridy();
   hEmpty->GetXaxis()->SetRangeUser(0.0,1.2);
-  hEmpty->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+  hEmpty->GetXaxis()->SetTitle(gPtESDContamProtons->GetXaxis()->GetTitle());
   hEmpty->DrawCopy();
   gPtESDIdProtons->DrawCopy("ESAME");
   gPtESDContamProtons->DrawCopy("ESAME");
+
+  //N_points dependence
+  //protons pid efficiency
+  TH1D *gNPointsESDIdProtons = (TH1D *)gHistESDIdYPtProtons->Project3D("y");
+  TH1D *gNPointsESDInitProtons = (TH1D *)gHistESDInitYPtProtons->Project3D("y");
+  gNPointsESDIdProtons->Divide(gNPointsESDInitProtons);
+  SetError(gNPointsESDIdProtons,gNPointsESDInitProtons);
+  gNPointsESDIdProtons->Scale(100.);
+  gNPointsESDIdProtons->SetMarkerStyle(kFullCircle);
+
+  //protons pid contamination
+  TH1D *gNPointsESDContamProtons = (TH1D *)gHistESDContamYPtProtons->Project3D("z");
+  TH1D *gNPointsESDRecIdProtons = (TH1D *)gHistESDRecIdYPtProtons->Project3D("z");
+  gNPointsESDContamProtons->Divide(gNPointsESDRecIdProtons);
+  SetError(gNPointsESDContamProtons,gNPointsESDRecIdProtons);
+  gNPointsESDContamProtons->Scale(100.);
+  gNPointsESDContamProtons->SetMarkerStyle(kOpenCircle);
+
+  c16->cd(3)->SetBottomMargin(0.15); 
+  c16->cd(3)->SetLeftMargin(0.15); 
+  c16->cd(3)->SetGridx(); c16->cd(2)->SetGridy();
+  hEmpty->GetXaxis()->SetRangeUser(0.0,1.2);
+  hEmpty->GetXaxis()->SetTitle(gNPointsESDContamProtons->GetXaxis()->GetTitle());
+  hEmpty->DrawCopy();
+  gNPointsESDIdProtons->DrawCopy("ESAME");
+  gNPointsESDContamProtons->DrawCopy("ESAME");
 
   c16->SaveAs("PIDEfficiency-Protons.gif");
 
@@ -1791,6 +1825,8 @@ void drawEfficiency(TList *list,
   gYESDContamProtons->Write();
   gPtESDIdProtons->Write();
   gPtESDContamProtons->Write();
+  gNPointsESDIdProtons->Write();
+  gNPointsESDContamProtons->Write();
   fout->Close();
 }
 

@@ -51,18 +51,19 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
   baseAnalysis->SetAnalysisLevel(analysisLevel);
   if(analysisLevel == "ESD") {  
     baseAnalysis->SetTriggerMode(AliProtonAnalysisBase::kMB2);
+    baseAnalysis->SetMinTPCClusters(110);
+    baseAnalysis->SetMaxChi2PerTPCCluster(2.2);
+    baseAnalysis->SetMaxCov11(0.5);
+    baseAnalysis->SetMaxCov22(0.5);
+    baseAnalysis->SetMaxCov33(0.5);
+    baseAnalysis->SetMaxCov44(0.5);
+    baseAnalysis->SetMaxCov55(0.5);
+    baseAnalysis->SetMinTPCdEdxPoints(80);
     switch(esdAnalysisType) {
     case "TPC":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kTPC);
       baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
       baseAnalysis->SetTPCpid();
-      baseAnalysis->SetMinTPCClusters(100);
-      baseAnalysis->SetMaxChi2PerTPCCluster(2.2);
-      baseAnalysis->SetMaxCov11(0.5);
-      baseAnalysis->SetMaxCov22(0.5);
-      baseAnalysis->SetMaxCov33(0.5);
-      baseAnalysis->SetMaxCov44(0.5);
-      baseAnalysis->SetMaxCov55(0.5);
       baseAnalysis->SetMaxSigmaToVertexTPC(2.0);
       //baseAnalysis->SetMaxDCAXYTPC(1.5);
       //baseAnalysis->SetMaxDCAZTPC(1.5);
@@ -71,13 +72,6 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kHybrid);
       baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
       baseAnalysis->SetTPCpid();
-      baseAnalysis->SetMinTPCClusters(110);
-      baseAnalysis->SetMaxChi2PerTPCCluster(2.2);
-      baseAnalysis->SetMaxCov11(0.5);
-      baseAnalysis->SetMaxCov22(0.5);
-      baseAnalysis->SetMaxCov33(0.5);
-      baseAnalysis->SetMaxCov44(0.5);
-      baseAnalysis->SetMaxCov55(0.5);
       baseAnalysis->SetMaxSigmaToVertex(2.0);
       /*baseAnalysis->SetMaxDCAXY(1.5);
 	baseAnalysis->SetMaxDCAZ(1.5);*/
@@ -87,18 +81,11 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       //baseAnalysis->SetPointOnITSLayer3();
       baseAnalysis->SetPointOnITSLayer2();
       baseAnalysis->SetPointOnITSLayer1();
-      baseAnalysis->SetMinITSClusters(5);
+      baseAnalysis->SetMinITSClusters(4);
       break;
     case "Global":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kGlobal);
       baseAnalysis->SetPhaseSpace(20, -1.0, 1.0, 48, 0.3, 1.5);
-      baseAnalysis->SetMinTPCClusters(110);
-      baseAnalysis->SetMaxChi2PerTPCCluster(2.2);
-      baseAnalysis->SetMaxCov11(0.5);
-      baseAnalysis->SetMaxCov22(0.5);
-      baseAnalysis->SetMaxCov33(0.5);
-      baseAnalysis->SetMaxCov44(0.5);
-      baseAnalysis->SetMaxCov55(0.5);
       baseAnalysis->SetMaxSigmaToVertex(2.0);
       //baseAnalysis->SetMaxDCAXY(2.0);
       //baseAnalysis->SetMaxDCAZ(2.0);

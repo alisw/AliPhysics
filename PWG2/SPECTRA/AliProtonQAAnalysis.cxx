@@ -1157,10 +1157,11 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   
   
   //ESD reconstructed tracks that were initially protons for the PID efficiency
-  TH2D *gHistESDInitYPtProtons = new TH2D("gHistESDInitYPtProtons",
-					  ";;P_{T} [GeV/c]",
+  TH3D *gHistESDInitYPtProtons = new TH3D("gHistESDInitYPtProtons",
+					  ";;P_{T} [GeV/c];N_{points}",
 					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt);
+					  fNBinsPt,fMinPt,fMaxPt,
+					  100,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDInitYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1170,10 +1171,11 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDInitYPtProtons);
   
   //ESD reconstructed tracks that were initially protons and were identified as protons for the PID efficiency
-  TH2D *gHistESDIdYPtProtons = new TH2D("gHistESDIdYPtProtons",
-					";;P_{T} [GeV/c]",
+  TH3D *gHistESDIdYPtProtons = new TH3D("gHistESDIdYPtProtons",
+					";;P_{T} [GeV/c];N_{points}",
 					fNBinsY,fMinY,fMaxY,
-					fNBinsPt,fMinPt,fMaxPt);
+					fNBinsPt,fMinPt,fMaxPt,
+					100,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1183,10 +1185,11 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDIdYPtProtons);
  
   //ESD reconstructed tracks that were identified as protons for the PID contamination
-  TH2D *gHistESDRecIdYPtProtons = new TH2D("gHistESDRecIdYPtProtons",
-					   ";;P_{T} [GeV/c]",
+  TH3D *gHistESDRecIdYPtProtons = new TH3D("gHistESDRecIdYPtProtons",
+					   ";;P_{T} [GeV/c];N_{points}",
 					   fNBinsY,fMinY,fMaxY,
-					   fNBinsPt,fMinPt,fMaxPt);
+					   fNBinsPt,fMinPt,fMaxPt,
+					   100,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDRecIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1196,10 +1199,11 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDRecIdYPtProtons);
 
   //ESD reconstructed tracks that were identified as protons but were initially not protons for the PID contamination
-  TH2D *gHistESDContamYPtProtons = new TH2D("gHistESDContamYPtProtons",
-					    ";;P_{T} [GeV/c]",
+  TH3D *gHistESDContamYPtProtons = new TH3D("gHistESDContamYPtProtons",
+					    ";;P_{T} [GeV/c];N_{points}",
 					    fNBinsY,fMinY,fMaxY,
-					    fNBinsPt,fMinPt,fMaxPt);
+					    fNBinsPt,fMinPt,fMaxPt,
+					    100,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDContamYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -3232,25 +3236,27 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
     if(!particle) continue;
     Int_t pdgcode = particle->GetPdgCode();
     
+    Int_t nTPCpoints = track->GetTPCsignalN();
+
     //pid
     if(fProtonAnalysisBase->IsProton(track)) {
       if(fProtonAnalysisBase->GetEtaMode())
-	((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
-						  particle->Pt());
-      else ((TH2D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+	((TH3D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						  particle->Pt(),nTPCpoints);
+      else ((TH3D *)(fEfficiencyList->At(14)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt(),nTPCpoints);
       if(TMath::Abs(pdgcode) == 2212) {
 	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
-						    particle->Pt());
+	  ((TH3D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+						    particle->Pt(),nTPCpoints);
 	else
-	  ((TH2D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+	  ((TH3D *)(fEfficiencyList->At(13)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt(),nTPCpoints);
       }//properly identified as proton
       else {
 	if(fProtonAnalysisBase->GetEtaMode())
-	  ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
-						    particle->Pt());
+	  ((TH3D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+						    particle->Pt(),nTPCpoints);
 	else
-	  ((TH2D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt());
+	  ((TH3D *)(fEfficiencyList->At(15)))->Fill(fProtonAnalysisBase->Rapidity(particle->Px(),particle->Py(),particle->Pz()),particle->Pt(),nTPCpoints);
       }//contamination
     }//identified as proton
   }//ESD track loop
