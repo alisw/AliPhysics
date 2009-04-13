@@ -22,11 +22,8 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  runLocal("ESD",
-	   esdAnalysisType,
-	   pidMode,
-	   "/home/pchrist/ALICE/Baryons/QA/Local");
-  //runProof("ESD",esdAnalysisType,pidMode,200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T");
+  //runLocal("ESD",esdAnalysisType,pidMode,"/home/pchrist/ALICE/Baryons/QA/Local");
+  runProof("ESD",esdAnalysisType,pidMode,100000,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");
   //runInteractive("ESD",esdAnalysisType,pidMode,"wn.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");
 
@@ -224,7 +221,9 @@ void runInteractive(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+                                                           TChain::Class(),
+                                                           AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -426,6 +425,7 @@ void runProof(const char* mode = "ESD",
   gProof->EnablePackage("PWG2spectra");
   
   //____________________________________________//
+  //gProof->Load("configProtonAnalysis.C");
   gROOT->LoadMacro("configProtonAnalysis.C");
   AliProtonQAAnalysis *analysis = GetProtonQAAnalysisObject(mode,
 							    analysisType,
@@ -445,7 +445,9 @@ void runProof(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+                                                           TChain::Class(),
+                                                           AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
