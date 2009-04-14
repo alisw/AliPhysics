@@ -62,13 +62,12 @@ public:
   virtual void            Process(AliTPCseed* seed);
   virtual void            Terminate();
   virtual void            Analyze();
-  void                    SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
   //
   // Tracks and cluster manipulation
   //
-  Float_t         GetMaxNorm(AliTPCclusterMI * cl);
-  Float_t         GetQNorm(AliTPCclusterMI * cl);
-  Float_t         GetGain(AliTPCclusterMI* cl);
+  Float_t         GetGain(AliTPCclusterMI *cl);
+  Float_t         GetMaxNorm(AliTPCclusterMI * cl,  Float_t ky, Float_t kz);
+  Float_t         GetQNorm(AliTPCclusterMI * cl,  Float_t ky, Float_t kz);
   void            AddTrack(AliTPCseed* seed);
   void            DumpTrack(AliTPCseed* track);
   Bool_t          GetDedx(AliTPCseed* track, Int_t padType,  Int_t*rows,
@@ -78,25 +77,8 @@ public:
   void            AddCluster(AliTPCclusterMI* cluster, Float_t momenta, Float_t mdedx, Int_t padType, Float_t xcenter, TVectorD &dedxQ, TVectorD & dedxM, Float_t fraction, Float_t fraction2, Float_t dedge, TVectorD& parY, TVectorD& parZ, TVectorD& meanPos);
   void            AddTracklet(UInt_t sector, UInt_t padType,TVectorD &dedxQ, TVectorD &dedxM,TVectorD& parY, TVectorD& parZ, TVectorD& meanPos);
 
-  void            AddCluster(AliTPCclusterMI* cluster);
   void            Add(AliTPCcalibTracksGain* cal);
 
-  //
-  // Debug stream analyze part
-  //
-  static TVectorD * MakeQPosNorm(TTree * chain, Int_t ipad, Bool_t isMax, Int_t maxPoints=1000000, Int_t verbose=0);
-  
-  static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000, Int_t verbose=0);
-
-  //
-  // Histogram part
-  //
-  TH1F  * GetQM(Int_t sector=-1){return (TH1F*)(sector<0 ?  fArrayQM->At(72): fArrayQM->At(sector));}
-  TH1F  * GetQT(Int_t sector=-1){return (TH1F*)(sector<0 ?  fArrayQT->At(72): fArrayQT->At(sector));}
-  TProfile* GetProfileQM(Int_t sector){return (TProfile*)(sector<0 ? fProfileArrayQM->At(36): fProfileArrayQM->At(sector));}
-  TProfile* GetProfileQT(Int_t sector){return (TProfile*)(sector<0 ? fProfileArrayQT->At(36): fProfileArrayQT->At(sector));}
-  TProfile2D* GetProfileQM2D(Int_t sector){return (TProfile2D*)(sector<0 ? fProfileArrayQM2D->At(36): fProfileArrayQM2D->At(sector));}
-  TProfile2D* GetProfileQT2D(Int_t sector){return (TProfile2D*)(sector<0 ? fProfileArrayQT2D->At(36): fProfileArrayQT2D->At(sector));}
   //
   // Get Derived results - gain maps
   //
@@ -126,21 +108,12 @@ public:
   //
   static Double_t GetPadLength(Double_t lx);
   static Int_t    GetPadType(Double_t lx);  
-  static Bool_t   GetRowPad(Double_t lx, Double_t ly, Int_t& row, Int_t& pad); // just for debugging
   //
   //
   AliTPCcalibTracksCuts* fCuts;            // cuts that are used for sieving the tracks used for calibration
-  AliTPCCalPad *fGainMap;                //  gain map to be applied
   //
+  // kalman fit - alignment of dEdx
   //
-  // Simple Profiles and histograms - per chambers + 1 total
-  //
-  TObjArray*        fArrayQM;                // Qmax normalized
-  TObjArray*        fArrayQT;                // Qtot normalized 
-  TObjArray*        fProfileArrayQM;         // Qmax normalized  versus local X
-  TObjArray*        fProfileArrayQT;         // Qtot normalized  versus local X 
-  TObjArray*        fProfileArrayQM2D;       // Qmax normalized  versus local X and phi
-  TObjArray*        fProfileArrayQT2D;       // Qtot normalized  versus local X and phi
   //
   // Fitters
   //
@@ -164,14 +137,12 @@ public:
   TLinearFitter*    fDFitter1T;          // fitting of the atenuation, angular correction
   TLinearFitter*    fDFitter2T;          // fitting of the atenuation, angular correction
   //
-  AliTPCFitPad*     fSingleSectorFitter;   // just for debugging
+  AliTPCFitPad*     fSingleSectorFitter;   // just for debugging  
   //
   // Conters
   //
   UInt_t          fTotalTracks;         // just for debugging
   UInt_t          fAcceptedTracks;      // just for debugging
-  AliTPCCalPad*   fDebugCalPadRaw;      // just for debugging
-  AliTPCCalPad*   fDebugCalPadCorr;     // just for debugging
   UInt_t          fNShortClusters[36];   // number of clusters registered on short pads
   UInt_t          fNMediumClusters[36];  // number of clusters registered on medium pads
   UInt_t          fNLongClusters[36];    // number of clusters registered on long pads

@@ -166,6 +166,7 @@
 
 
 
+#include "AliTPCcalibTracksGain.h"
 
 
 #include <TPDGCode.h>
@@ -178,7 +179,6 @@
 #include "AliTPCClusterParam.h"
 #include "AliTrackPointArray.h"
 #include "TCint.h"
-#include "AliTPCcalibTracksGain.h"
 #include <TH1.h>
 #include <TH3F.h>
 #include <TLinearFitter.h>
@@ -202,6 +202,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCClusterParam.h"
+#include "AliTPCcalibDB.h"
 //
 #include "AliTracker.h"
 #include "AliESD.h"
@@ -244,16 +245,6 @@ AliTPCParamSR* AliTPCcalibTracksGain::fgTPCparam = new AliTPCParamSR();
 AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
   AliTPCcalibBase(),
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
-  fGainMap(0),                //  gain map to be applied
-  //
-  // Simple Array of histograms
-  // 
-  fArrayQM(0),                // Qmax normalized
-  fArrayQT(0),                // Qtot normalized 
-  fProfileArrayQM(0),         // Qmax normalized  versus local X
-  fProfileArrayQT(0),         // Qtot normalized  versus local X 
-  fProfileArrayQM2D(0),       // Qmax normalized  versus local X and phi
-  fProfileArrayQT2D(0),       // Qtot normalized  versus local X and phi
   //
   // Fitters
   //
@@ -280,9 +271,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
   // Counters
   //
   fTotalTracks(0),         // just for debugging
-  fAcceptedTracks(0),      // just for debugging
-  fDebugCalPadRaw(0),      // just for debugging
-  fDebugCalPadCorr(0)     // just for debugging
+  fAcceptedTracks(0)      // just for debugging
 
 {
    //
@@ -293,16 +282,6 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   AliTPCcalibBase(obj),
   fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
-  fGainMap(new AliTPCCalPad(*(obj.fGainMap))),                //  gain map to be applied
-  fArrayQM(0),                // Qmax normalized
-  fArrayQT(0),                // Qtot normalized 
-  //
-  // Simple Histograms
-  //
-  fProfileArrayQM(obj.fProfileArrayQM),         // Qmax normalized  versus local X
-  fProfileArrayQT(obj.fProfileArrayQT),         // Qtot normalized  versus local X 
-  fProfileArrayQM2D(obj.fProfileArrayQM2D),       // Qmax normalized  versus local X and phi
-  fProfileArrayQT2D(obj.fProfileArrayQT2D),       // Qtot normalized  versus local X and phi
   //
   // Fitters
   //
@@ -327,9 +306,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   // Counters
   //
   fTotalTracks(obj.fTotalTracks),         // just for debugging
-  fAcceptedTracks(obj.fAcceptedTracks),      // just for debugging
-  fDebugCalPadRaw(obj.fDebugCalPadRaw),      // just for debugging
-  fDebugCalPadCorr(obj.fDebugCalPadCorr)     // just for debugging
+  fAcceptedTracks(obj.fAcceptedTracks)      // just for debugging
 
 {
    //
@@ -344,14 +321,11 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
 
    if (this != &rhs) {
       TNamed::operator=(rhs);
-      fDebugCalPadRaw = new AliTPCCalPad(*(rhs.fDebugCalPadRaw));
-      fDebugCalPadCorr = new AliTPCCalPad(*(rhs.fDebugCalPadCorr));
       fSimpleFitter = new AliTPCFitPad(*(rhs.fSimpleFitter));
       fSqrtFitter = new AliTPCFitPad(*(rhs.fSqrtFitter));
       fLogFitter = new AliTPCFitPad(*(rhs.fLogFitter));
       fSingleSectorFitter = new AliTPCFitPad(*(rhs.fSingleSectorFitter));
       fCuts = new AliTPCcalibTracksCuts(*(rhs.fCuts));
-      fGainMap = new AliTPCCalPad(*(rhs.fGainMap));
    }
    return *this;
 }
@@ -359,16 +333,6 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts) :
   AliTPCcalibBase(),
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
-  fGainMap(0),                //  gain map to be applied
-  fArrayQM(0),                // Qmax normalized
-  fArrayQT(0),                // Qtot normalized 
-  //
-  // Simple Histograms
-  //
-  fProfileArrayQM(0),         // Qmax normalized  versus local X
-  fProfileArrayQT(0),         // Qtot normalized  versus local X 
-  fProfileArrayQM2D(0),       // Qmax normalized  versus local X and phi
-  fProfileArrayQT2D(0),       // Qtot normalized  versus local X and phi
   //
   // Fitters
   //
@@ -393,9 +357,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
   // Counters
   //
   fTotalTracks(0),         // just for debugging
-  fAcceptedTracks(0),      // just for debugging
-  fDebugCalPadRaw(0),      // just for debugging
-  fDebugCalPadCorr(0)     // just for debugging
+  fAcceptedTracks(0)      // just for debugging
   
 {
    //
@@ -441,47 +403,17 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    fDFitter2T->StoreData(kFALSE);   
    //
    //
-   // Add profile histograms -JUST for visualization - Not used for real calibration
-   // 
-   //
-   fArrayQM=new TObjArray(73);                // Qmax normalized
-   fArrayQT=new TObjArray(73);                // Qtot normalized 
-   fProfileArrayQM   = new TObjArray(37);         // Qmax normalized  versus local X
-   fProfileArrayQT   = new TObjArray(37);         // Qtot normalized  versus local X 
-   fProfileArrayQM2D = new TObjArray(37);         // Qmax normalized  versus local X and phi
-   fProfileArrayQT2D = new TObjArray(37);         // Qtot normalized  versus local X and phi
-   char hname[1000];
-   for (Int_t i=0; i<73; i++){
-     sprintf(hname,"QM_%d",i);
-     fArrayQM->AddAt(new TH1F(hname,hname,200,0,1000),i);
-     sprintf(hname,"QT_%d",i);
-     fArrayQT->AddAt(new TH1F(hname,hname,200,0,1000),i);
-   }
-
-   for (Int_t i=0; i<37;i++){
-     sprintf(hname,"QMvsx_%d",i);
-     fProfileArrayQM->AddAt(new TProfile(hname,hname,50,89,250),i);
-     sprintf(hname,"QTvsx_%d",i);
-     fProfileArrayQT->AddAt(new TProfile(hname,hname,50,89,250),i);
-     sprintf(hname,"QM2D_%d",i);
-     fProfileArrayQM2D->AddAt(new TProfile2D(hname,hname,50,89,250,10,-0.15,0.15),i);
-     sprintf(hname,"QT2D_%d",i);
-     fProfileArrayQT2D->AddAt(new TProfile2D(hname,hname,50,89,250,10,-0.15,0.15),i);
-   }
-   //
    // just for debugging -counters
    //
    fTotalTracks     = 0;
    fAcceptedTracks  = 0;
-   fDebugCalPadRaw  = new AliTPCCalPad("DebugCalPadRaw", "All clusters simply added up before correction");
-   fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");   
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t i = 0; i < 36; i++) {
       fNShortClusters[i]  = 0;
       fNMediumClusters[i] = 0;
       fNLongClusters[i]   = 0;
    }
- }
+}
 
 AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    //
@@ -494,9 +426,10 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    if (fLogFitter) delete fLogFitter;
    if (fSingleSectorFitter) delete fSingleSectorFitter;
 
-   if (fDebugCalPadRaw) delete fDebugCalPadRaw;
-   if (fDebugCalPadCorr) delete fDebugCalPadCorr;
 }
+
+
+
 
 void AliTPCcalibTracksGain::Terminate(){
    //
@@ -569,9 +502,6 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    if (!fSingleSectorFitter) fSingleSectorFitter = new AliTPCFitPad(8, "hyp7", "");
 
 
-   // just for debugging
-   if (!fDebugCalPadRaw) fDebugCalPadRaw  = new AliTPCCalPad("DebugCalPadRaw", "All clusters simply added up before correction");
-    if (!fDebugCalPadCorr) fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");
    
    TIterator* iter = list->MakeIterator();
    AliTPCcalibTracksGain* cal = 0;
@@ -587,40 +517,39 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    return 0;
 }
 
-Float_t  AliTPCcalibTracksGain::GetGain(AliTPCclusterMI* cl){
+Float_t  AliTPCcalibTracksGain::GetGain(AliTPCclusterMI *cluster){
   //
-  // Return local gain at cluster position
+  // get gain
   //
-  Float_t factor = 1;
-  if(!fGainMap) return factor;
-
-  AliTPCCalROC * roc = fGainMap->GetCalROC(cl->GetDetector());
-  Int_t irow = cl->GetRow();
-  if (roc){
-    if (irow < 63) { // IROC
-      factor = roc->GetValue(irow, TMath::Nint(cl->GetPad()));
-    } else {         // OROC
-      factor = roc->GetValue(irow - 63, TMath::Nint(cl->GetPad()));
-    }
+  Float_t gainPad= 1;
+  AliTPCCalPad * gainMap =  AliTPCcalibDB::Instance()->GetDedxGainFactor();
+  if (gainMap) {
+    AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
+    gainPad  = roc->GetValue(cluster->GetRow(), TMath::Nint(cluster->GetPad()));
   }
-  if (factor<0.1) factor=0.1;
-  return factor;
+  return gainPad;
 }
 
-
-Float_t   AliTPCcalibTracksGain::GetMaxNorm(AliTPCclusterMI * cl){
+Float_t   AliTPCcalibTracksGain::GetMaxNorm(AliTPCclusterMI * cluster, Float_t ky, Float_t kz){
   //
   // Get normalized amplituded if the gain map provided
   //
-  return cl->GetMax()/GetGain(cl);
+  AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
+  Float_t maxNorm =
+    parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+			  cluster->GetTimeBin(),ky,kz,0.5,0.5,1.6);
+
+  return GetGain(cluster)*maxNorm;
 }
 
 
-Float_t   AliTPCcalibTracksGain::GetQNorm(AliTPCclusterMI * cl){
+Float_t   AliTPCcalibTracksGain::GetQNorm(AliTPCclusterMI * cluster,  Float_t ky, Float_t kz){
   //
   // Get normalized amplituded if the gain map provided
   //
-  return cl->GetQ()/GetGain(cl);
+  AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
+  Float_t totNorm = parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 			      cluster->GetTimeBin(),ky,kz,0.5,0.5,cluster->GetQ(),2.5,1.6);
+  return GetGain(cluster)*totNorm;
 }
 
 
@@ -651,41 +580,6 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
   if (cal->fDFitter1T->GetNpoints()>0) fDFitter1T->Add(cal->fDFitter1T);
   if (cal->fDFitter2T->GetNpoints()>0) fDFitter2T->Add(cal->fDFitter2T);
    //
-   //
-   // histograms
-   //
-   for (Int_t i=0; i<73; i++){
-     TH1F *his,*hism; 
-     his = (TH1F*)fArrayQM->At(i);
-     hism =  (TH1F*)cal->fArrayQM->At(i);
-     if (his && hism) his->Add(hism);
-     his =  (TH1F*)fArrayQT->At(i);
-     hism =  (TH1F*)cal->fArrayQT->At(i);
-     if (his && hism) his->Add(hism);
-   }
-   //
-   //
-   for (Int_t i=0; i<37; i++){
-     TProfile *his,*hism; 
-     his = (TProfile*)fProfileArrayQM->At(i);
-     hism = (TProfile*)cal->fProfileArrayQM->At(i);
-     if (his && hism) his->Add(hism);
-     his = (TProfile*)fProfileArrayQT->At(i);
-     hism = (TProfile*)cal->fProfileArrayQT->At(i);
-     if (his && hism) his->Add(hism);
-   }
-   //
-   //
-   for (Int_t i=0; i<37; i++){
-     TProfile2D *his,*hism; 
-     his = (TProfile2D*)fProfileArrayQM2D->At(i);
-     hism = (TProfile2D*)cal->fProfileArrayQM2D->At(i);
-     if (his && hism) his->Add(hism);
-     his = (TProfile2D*)fProfileArrayQT2D->At(i);
-     hism = (TProfile2D*)cal->fProfileArrayQT2D->At(i);
-     if (his && hism) his->Add(hism);
-   }
-   //
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t iSegment = 0; iSegment < 36; iSegment++) {
       fNShortClusters[iSegment] += cal->fNShortClusters[iSegment];
@@ -696,8 +590,6 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    // just for debugging, remove me
    fTotalTracks += cal->fTotalTracks;
    fAcceptedTracks += cal->fAcceptedTracks;
-   fDebugCalPadRaw->Add(cal->fDebugCalPadRaw);
-   fDebugCalPadCorr->Add(cal->fDebugCalPadCorr);
 
 }
 
@@ -708,66 +600,14 @@ void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
    //
    
    DumpTrack(seed);   
-   //
-   // simple histograming part
-   for (Int_t i=0; i<159; i++){
-     AliTPCclusterMI* cluster = seed->GetClusterPointer(i);
-     if (cluster) AddCluster(cluster);
-   }
 }
    
-void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster){
-  //
-  // Adding cluster information to the simple histograms
-  // No correction, fittings are applied   
-
-
-  Float_t kThreshold=5;
-  if (cluster->GetX()<=0) return;
-  if (cluster->GetQ()<=kThreshold) return;
-  //
-
-  Int_t sector = cluster->GetDetector();
-  TH1F  * his;
-  his = GetQT(sector);
-  if (his) his->Fill(GetQNorm(cluster));
-  his = GetQT(-1);
-  if (his) his->Fill(GetQNorm(cluster));
-  his = GetQM(sector);
-  if (his) his->Fill(GetMaxNorm(cluster));
-  his = GetQM(-1);
-  if (his) his->Fill(GetMaxNorm(cluster));
-  //
-  sector = sector%36;
-  TProfile *prof;
-  prof = GetProfileQT(sector);
-  if (prof) prof->Fill(cluster->GetX(),GetQNorm(cluster));
-  prof = GetProfileQT(-1);
-  if (prof) prof->Fill(cluster->GetX(),GetQNorm(cluster));
-  prof = GetProfileQM(sector);
-  if (prof) prof->Fill(cluster->GetX(),GetMaxNorm(cluster));
-  prof = GetProfileQM(-1);
-  if (prof) prof->Fill(cluster->GetX(),GetMaxNorm(cluster));
-  //  
-  Float_t phi = cluster->GetY()/cluster->GetX();
-  TProfile2D *prof2;
-  prof2 = GetProfileQT2D(sector);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,GetQNorm(cluster));
-  prof2 = GetProfileQT2D(-1);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,GetQNorm(cluster));
-  prof2 = GetProfileQM2D(sector);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,GetMaxNorm(cluster));
-  prof2 = GetProfileQM2D(-1);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,GetMaxNorm(cluster));
-
-  //
-}
 
 
 
 void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momenta*/, Float_t/* mdedx*/, Int_t padType,
 				       Float_t xcenter, TVectorD& dedxQ, TVectorD& /*dedxM*/, Float_t /*fraction*/, Float_t fraction2, Float_t dedge,
-				       TVectorD& /*parY*/, TVectorD& /*parZ*/, TVectorD& meanPos) {
+				       TVectorD& parY, TVectorD& parZ, TVectorD& meanPos) {
    //
    // Adds cluster to the appropriate fitter for later analysis.
    // The charge used for the fit is the maximum charge for this specific cluster or the
@@ -825,27 +665,18 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momen
    xx[4] = xx[0] * xx[1];
    xx[5] = TMath::Abs(cluster->GetZ()) - TMath::Abs(meanPos[4]);
    xx[6] = xx[5] * xx[5];
-   //
-   // Update profile histograms
-   //
 
    //
    // Update fitters
    //
    Int_t segment = cluster->GetDetector() % 36;
-   Double_t q = fgkUseTotalCharge ? ((Double_t)(GetQNorm(cluster))) : ((Double_t)(GetMaxNorm(cluster)));  // note: no normalization to pad size!
-
-   // just for debugging
-   Int_t row = 0;
-   Int_t pad = 0;
-   GetRowPad(cluster->GetX(), cluster->GetY(), row, pad);
-   fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
-   
+   Double_t q = fgkUseTotalCharge ? 
+     ((Double_t)(cluster->GetQ()/GetQNorm(cluster,parY[1], parZ[1]))) : ((Double_t)(cluster->GetMax()/GetMaxNorm(cluster,parY[1], parZ[1])));  
+      
    // correct charge by normalising to mean charge per track
    q /= dedxQ[kinorm];
 
    // just for debugging
-   fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
 
    Double_t sqrtQ = TMath::Sqrt(q);
    Double_t logQ = fgkM * TMath::Log(1 + q / fgkM);
@@ -1160,35 +991,6 @@ Int_t AliTPCcalibTracksGain::GetPadType(Double_t lx) {
    return -1;
 }
 
-// ONLY FOR DEBUGGING PURPOSES - REMOVE ME WHEN NOT NEEDED ANYMORE
-Bool_t AliTPCcalibTracksGain::GetRowPad(Double_t lx, Double_t ly, Int_t& row, Int_t& pad) {
-   //
-   // Calculate the row and pad number when the local coordinates are given.
-   // Returns kFALSE if the position is out of range, otherwise return kTRUE.
-   // WARNING: This function is preliminary and probably isn't very accurate!!
-   //
-   
-   Double_t irocLow = fgTPCparam->GetPadRowRadiiLow(0) - fgTPCparam->GetInnerPadPitchLength()/2;
-   //Double_t irocUp = fgTPCparam->GetPadRowRadiiLow(fgTPCparam->GetNRowLow()-1) + fgTPCparam->GetInnerPadPitchLength()/2;
-   Double_t orocLow1 = fgTPCparam->GetPadRowRadiiUp(0) - fgTPCparam->GetOuter1PadPitchLength()/2;
-   //Double_t orocUp1 = fgTPCparam->GetPadRowRadiiUp(fgTPCparam->GetNRowUp1()-1) + fgTPCparam->GetOuter1PadPitchLength()/2;
-   Double_t orocLow2 = fgTPCparam->GetPadRowRadiiUp(fgTPCparam->GetNRowUp1()) - fgTPCparam->GetOuter2PadPitchLength()/2;
-   //Double_t orocUp2 = fgTPCparam->GetPadRowRadiiUp(fgTPCparam->GetNRowUp()-1) + fgTPCparam->GetOuter2PadPitchLength()/2;
-
-   if (GetPadType(lx) == 0) {
-      row = (Int_t)((lx - irocLow) / fgTPCparam->GetInnerPadPitchLength());
-      pad = (Int_t)((ly + fgTPCparam->GetYInner(row)) / fgTPCparam->GetInnerPadPitchWidth());
-   } else if (GetPadType(lx) == 1) {
-      row = (Int_t)((lx - orocLow1) / fgTPCparam->GetOuter1PadPitchLength());
-      pad = (Int_t)((ly + fgTPCparam->GetYOuter(row)) / fgTPCparam->GetOuterPadPitchWidth());
-   } else if (GetPadType(lx) == 2) {
-      row = fgTPCparam->GetNRowUp1() + (Int_t)((lx - orocLow2) / fgTPCparam->GetOuter2PadPitchLength());
-      pad = (Int_t)((ly + fgTPCparam->GetYOuter(row)) / fgTPCparam->GetOuterPadPitchWidth());
-   }
-   else return kFALSE;
-   return kTRUE;
-}
-
 void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
    //
    //  Dump track information to the debug stream
@@ -1286,34 +1088,34 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
   fitZ.StoreData(kFALSE);
   //
   //   
-   Int_t firstRow = 0, lastRow = 0;
-   Int_t minRow = 100;
-   Float_t xcenter = 0;
-   const Float_t ktany = TMath::Tan(TMath::DegToRad() * 10);
-   const Float_t kedgey = 4.;
-   if (padType == 0) {
-      firstRow = 0;
-      lastRow = fgTPCparam->GetNRowLow();
-      xcenter = 108.47;
+  Int_t firstRow = 0, lastRow = 0;
+  Int_t minRow = 100;
+  Float_t xcenter = 0;
+  const Float_t ktany = TMath::Tan(TMath::DegToRad() * 10);
+  const Float_t kedgey = 4.;
+  if (padType == 0) {
+    firstRow = 0;
+    lastRow = fgTPCparam->GetNRowLow();
+    xcenter = 108.47;
+  }
+  if (padType == 1) {
+    firstRow = fgTPCparam->GetNRowLow();
+    lastRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp1();
+    xcenter = 166.60;
    }
-   if (padType == 1) {
-      firstRow = fgTPCparam->GetNRowLow();
-      lastRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp1();
-      xcenter = 166.60;
-   }
-   if (padType == 2) {
-      firstRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp1();
-      lastRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp();
-      xcenter = 222.6;
-   }
-   minRow = (lastRow - firstRow) / 2;
-   //
-   //
-   Int_t nclusters = 0;
-   Int_t nclustersNE = 0; // number of not edge clusters
-   Int_t lastSector = -1;
-   Float_t amplitudeQ[100];
-   Float_t amplitudeM[100];
+  if (padType == 2) {
+    firstRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp1();
+    lastRow = fgTPCparam->GetNRowLow() + fgTPCparam->GetNRowUp();
+    xcenter = 222.6;
+  }
+  minRow = (lastRow - firstRow) / 2;
+  //
+  //
+  Int_t nclusters = 0;
+  Int_t nclustersNE = 0; // number of not edge clusters
+  Int_t lastSector = -1;
+  Float_t amplitudeQ[100];
+  Float_t amplitudeM[100];
    Int_t rowIn[100];
    Int_t index[100];
    //
@@ -1327,8 +1129,8 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
          Int_t detector = cluster->GetDetector() ;
          if (lastSector == -1) lastSector = detector;
          if (lastSector != detector) continue;
-         amplitudeQ[nclusters] = GetQNorm(cluster);
-         amplitudeM[nclusters] = GetMaxNorm(cluster);
+         amplitudeQ[nclusters] = cluster->GetQ()/GetQNorm(cluster,parY[1], parZ[1]);
+         amplitudeM[nclusters] = cluster->GetMax()/GetMaxNorm(cluster,parY[1], parZ[1]);
          rowIn[nclusters] = iCluster;
          nclusters++;
          Double_t dx = cluster->GetX() - xcenter;
@@ -1423,6 +1225,11 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
       Float_t fraction2 = Float_t(inonEdge) / Float_t(nclustersNE);
 
       AddCluster(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
+      
+      Double_t qNorm = GetQNorm(cluster,parY[1], parZ[1]);
+      Double_t mNorm = GetMaxNorm(cluster,parY[1], parZ[1]);
+
+
       Float_t gain = GetGain(cluster);
       if (cstream) (*cstream) << "dEdx" <<
 	"run="<<fRun<<              //  run number
@@ -1431,21 +1238,23 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
 	"trigger="<<fTrigger<<      //  trigger
 	"mag="<<fMagF<<             //  magnetic field	      
 
-		     "Cl.=" << cluster <<           // cluster of interest
-		     "gain="<<gain<<                // gain at cluster position
-		     "P=" << momenta <<             // track momenta
-		     "dedx=" << mdedx <<            // mean dedx - corrected for angle
-		     "IPad=" << padType <<          // pad type 0..2
-		     "xc=" << xcenter <<            // x center of chamber
-		     "dedxQ.=" << &dedxQ <<         // dedxQ  - total charge
-		     "dedxM.=" << &dedxM <<         // dedxM  - maximal charge
-		     "fraction=" << fraction <<     // fraction - order in statistic (0,1)
-		     "fraction2=" << fraction2 <<   // fraction - order in statistic (0,1)
-		     "dedge=" << dedge <<           // distance to the edge
-		     "parY.=" << &parY <<           // line fit
-		     "parZ.=" << &parZ <<           // line fit
-		     "meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
-		     "\n";
+	"Cl.=" << cluster <<           // cluster of interest
+	"gain="<<gain<<                // gain at cluster position
+	"mNorm="<<mNorm<<              // Q max normalization
+	"qNorm="<<qNorm<<              // Q tot normalization
+	"P=" << momenta <<             // track momenta
+	"dedx=" << mdedx <<            // mean dedx - corrected for angle
+	"IPad=" << padType <<          // pad type 0..2
+	"xc=" << xcenter <<            // x center of chamber
+	"dedxQ.=" << &dedxQ <<         // dedxQ  - total charge
+	"dedxM.=" << &dedxM <<         // dedxM  - maximal charge
+	"fraction=" << fraction <<     // fraction - order in statistic (0,1)
+	"fraction2=" << fraction2 <<   // fraction - order in statistic (0,1)
+	"dedge=" << dedge <<           // distance to the edge
+	"parY.=" << &parY <<           // line fit
+	"parZ.=" << &parZ <<           // line fit
+	"meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
+	"\n";
    }
    
    if (cstream) (*cstream) << "dEdxT" <<
@@ -1599,195 +1408,4 @@ void   AliTPCcalibTracksGain::Analyze(){
 
 }
 
-
-
-TVectorD *  AliTPCcalibTracksGain::MakeQPosNorm(TTree * chain0, Int_t ipad, Bool_t isMax, Int_t maxPoints, Int_t verbose){
-  //
-  // Input parameters
-  // chain0 - the tree with information  -Debug stream
-  // ipad   - 0 IROC
-  //        - 1 OROC medium
-  //        - 2 OROC LONG
-  // isMax  - kFALSE - total charge param
-  //          kTRUE  - Max charge param
-  //
-  // maxPoints - number of points for fit
-  //
-  // verbose -
-  //
-  /* e.g 
-    ipad=0
-    isMax=kTRUE;
-    maxPoints=1000000;
-  */
-  // Make Q normalization as function of following parameters
-  // 1 - dp   - relative pad position 
-  // 2 - dt   - relative time position
-  // 3 - di   - drift length (norm to 1);
-  // 4 - dq0  - Tot/Max charge
-  // 5 - dq1  - Max/Tot charge
-  // 6 - sy   - sigma y - shape
-  // 7 - sz   - sigma z - shape
-  //
-  // Coeficient of Taylor expansion fitted
-  // Fit parameters returned as TVectorD
-  // Fit parameters to be used in corresponding correction function
-  // in AliTPCclusterParam 
-  //
-  //
-  TStatToolkit toolkit;
-  Double_t chi2;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  Int_t npoints;
-  TCut cutA("dedge>3&&fraction2<0.7");
-  chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
-  chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
-  chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
-  chain0->SetAlias("dq0","(0.2*(Cl.fQ+2)/(Cl.fMax+2))");
-  chain0->SetAlias("dq1","(5*(Cl.fMax+2)/(Cl.fQ+2))");
-  chain0->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
-  chain0->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
-  //
-  TString fstring="";    
-  fstring+="dp++";                               //1
-  fstring+="dt++";                               //2
-  fstring+="dp*dp++";                             //3
-  fstring+="dt*dt++";                             //4
-  fstring+="dt*dt*dt++";                             //5
-  fstring+="dp*dt++";                            //6
-  fstring+="dp*dt*dt++";                          //7
-  fstring+="(dq0)++";                            //8
-  fstring+="(dq1)++";                            //9
-  //
-  //
-  fstring+="dp*dp*(di)++";                        //10
-  fstring+="dt*dt*(di)++";                        //11
-  fstring+="dp*dp*sy++";                          //12
-  fstring+="dt*sz++";                          //13
-  fstring+="dt*dt*sz++";                          //14
-  fstring+="dt*dt*dt*sz++";                          //15
-  //
-  fstring+="dp*dp*1*sy*sz++";                     //16
-  fstring+="dt*sy*sz++";                       //17
-  fstring+="dt*dt*sy*sz++";                       //18
-  fstring+="dt*dt*dt*sy*sz++";                       //19
-  //
-  fstring+="dp*dp*(dq0)++";                       //20
-  fstring+="dt*1*(dq0)++";                       //21
-  fstring+="dt*dt*(dq0)++";                       //22
-  fstring+="dt*dt*dt*(dq0)++";                       //23
-  //
-  fstring+="dp*dp*(dq1)++";                       //24
-  fstring+="dt*(dq1)++";                       //25
-  fstring+="dt*dt*(dq1)++";                       //26
-  fstring+="dt*dt*dt*(dq1)++";                       //27
-  
-  TString var;
-  if (isMax)  var = "Cl.fMax/gain/dedxM.fElements[2]";
-  if (!isMax) var = "Cl.fQ/gain/dedxQ.fElements[2]";
-  TString cutP="IPad==";
-  cutP+=ipad;
-  //
-  TString *strq0 = toolkit.FitPlane(chain0,var.Data(),fstring.Data(), cutP.Data()+cutA, chi2,npoints,fitParam,covMatrix,-1,0,maxPoints);
-  //
-  //
-  if (verbose){
-    printf("Chi2/npoints = %f",TMath::Sqrt(chi2/npoints));
-    printf("\nFit function\n:%s\n",strq0->Data());
-  }
-  TVectorD *vec = new TVectorD(fitParam);
-  return vec;
-}
-
-void  AliTPCcalibTracksGain::MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints, Int_t verbose){
-  //
-  // Fill the content of the of the AliTPCclusterParam
-  // with fitted values of corrections 
-  //
-  param->fPosQTnorm[0] = MakeQPosNorm(chain,0,kTRUE,maxPoints,verbose);
-  param->fPosQTnorm[1] = MakeQPosNorm(chain,1,kTRUE,maxPoints,verbose);
-  param->fPosQTnorm[2] = MakeQPosNorm(chain,1,kTRUE,maxPoints,verbose);
-  //
-  param->fPosQMnorm[0] = MakeQPosNorm(chain,0,kFALSE,maxPoints,verbose);
-  param->fPosQMnorm[1] = MakeQPosNorm(chain,1,kFALSE,maxPoints,verbose);
-  param->fPosQMnorm[2] = MakeQPosNorm(chain,2,kFALSE,maxPoints,verbose);
-}
-
-
-
-/*
-  
- Position correction fit:
- //
-TStatToolkit toolkit;
-Double_t chi2;
-TVectorD fitParam;
-TMatrixD covMatrix;
-Int_t npoints;
-//
-TCut cutA("dedge>3&&fraction2<0.7");
-chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
-chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
-chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
-chain0->SetAlias("dq0","(0.2*(Cl.fQ+2)/(Cl.fMax+2))");
-chain0->SetAlias("dq1","(5*(Cl.fMax+2)/(Cl.fQ+2))");
-chain0->SetAlias("sy","(0.2/sqrt(0.01^2+Cl.fSigmaY2))");
-chain0->SetAlias("sz","(0.2/sqrt(0.01^2+Cl.fSigmaZ2))");
-
-TString fstring="";  
-
-fstring+="dp++";                               //1
-fstring+="dt++";                               //2
-fstring+="dp*dp++";                             //3
-fstring+="dt*dt++";                             //4
-fstring+="dt*dt*dt++";                             //5
-fstring+="dp*dt++";                            //6
-fstring+="dp*dt*dt++";                          //7
-fstring+="(dq0)++";                            //8
-fstring+="(dq1)++";                            //9
-//
-//
-fstring+="dp*dp*(di)++";                        //10
-fstring+="dt*dt*(di)++";                        //11
-fstring+="dp*dp*sy++";                          //12
-fstring+="dt*sz++";                          //13
-fstring+="dt*dt*sz++";                          //14
-fstring+="dt*dt*dt*sz++";                          //15
-//
-fstring+="dp*dp*1*sy*sz++";                     //16
-fstring+="dt*sy*sz++";                       //17
-fstring+="dt*dt*sy*sz++";                       //18
-fstring+="dt*dt*dt*sy*sz++";                       //19
-//
-fstring+="dp*dp*(dq0)++";                       //20
-fstring+="dt*1*(dq0)++";                       //21
-fstring+="dt*dt*(dq0)++";                       //22
-fstring+="dt*dt*dt*(dq0)++";                       //23
-
-fstring+="dp*dp*(dq1)++";                       //24
-fstring+="dt*(dq1)++";                       //25
-fstring+="dt*dt*(dq1)++";                       //26
-fstring+="dt*dt*dt*(dq1)++";                       //27
-
-
- TString *strq0 = toolkit.FitPlane(chain0,"Cl.fMax/gain/dedxM.fElements[2]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
- TString *strqt0 = toolkit.FitPlane(chain0,"Cl.fQ/gain/dedxQ.fElements[2]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
-
- chain0->SetAlias("qcorM0",strq0->Data());
- chain0->SetAlias("qcorT0",strqt0->Data());
-//chain0->SetAlias("mmqcorM0","min(max(qcorM0,0.75),1.15)");
- chain0->Draw("(Cl.fMax/gain/dedxM.fElements[2]):min(max(qcorM0,0.75),1.15)","IPad==0"+cutA,"prof",100000)
-
- fraction05 - 
-     sigma                  0.2419
-     sigma fit              0.2302
-     sigma fit with shape   0.2257
- fraction 07    
-     qtot sigma                  0.322
-     qmax sigma                  0.292
-     qmax sigma fit              0.2702
-     qmax sigma fit+ratio        0.2638
-
-*/
 

@@ -28,8 +28,8 @@
 #pragma link C++ class AliTPCcalibCosmic+;
 #pragma link C++ class AliTPCLaserTrack+;
 #pragma link C++ class AliTPCcalibTime+;
+#pragma link C++ class AliTPCcalibTimeGain+;
 #pragma link C++ class AliTPCcalibUnlinearity+;
-#pragma link C++ class AliTPCkalmandEdx+;
 #pragma link C++ class AliTPCcalibPID+;
 
 #endif
