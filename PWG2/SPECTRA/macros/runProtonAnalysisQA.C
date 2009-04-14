@@ -37,14 +37,18 @@ void runLocal(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      const char* path = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += "."; outputFilename1 += pidMode; 
   outputFilename1 += ".root"; //main QA file
   TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += "."; outputFilename2 += pidMode; 
   outputFilename2 += ".root"; //MC process QA
   TString outputFilename3 = "Protons.QA.Histograms."; 
   outputFilename3 += analysisType;
+  outputFilename3 += "."; outputFilename2 += pidMode; 
   outputFilename3 += ".root"; //Accepted cut distributions
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
+  outputFilename4 += "."; outputFilename2 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
@@ -156,14 +160,18 @@ void runInteractive(const char* mode = "ESD",
 		    const char* pidMode = 0x0,
 		    const char* collectionName = "tag.xml") {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += "."; outputFilename1 += pidMode; 
   outputFilename1 += ".root"; //main QA file
   TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += "."; outputFilename2 += pidMode; 
   outputFilename2 += ".root"; //MC process QA
   TString outputFilename3 = "Protons.QA.Histograms."; 
   outputFilename3 += analysisType;
+  outputFilename3 += "."; outputFilename3 += pidMode; 
   outputFilename3 += ".root"; //Accepted cut distributions
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
+  outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
@@ -278,14 +286,18 @@ void runBatch(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      const char *collectionfile = "wn.xml") {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += "."; outputFilename1 += pidMode; 
   outputFilename1 += ".root"; //main QA file
   TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += "."; outputFilename2 += pidMode; 
   outputFilename2 += ".root"; //MC process QA
   TString outputFilename3 = "Protons.QA.Histograms."; 
   outputFilename3 += analysisType;
+  outputFilename3 += "."; outputFilename3 += pidMode; 
   outputFilename3 += ".root"; //Accepted cut distributions
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
+  outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
@@ -393,14 +405,18 @@ void runProof(const char* mode = "ESD",
 	      Int_t stats = 0, 
 	      const char* dataset = 0x0) {
   TString outputFilename1 = "Protons.QA."; outputFilename1 += analysisType;
+  outputFilename1 += "."; outputFilename1 += pidMode; 
   outputFilename1 += ".root"; //main QA file
   TString outputFilename2 = "Protons.MC.QA."; outputFilename2 += analysisType;
+  outputFilename2 += "."; outputFilename2 += pidMode; 
   outputFilename2 += ".root"; //MC process QA
   TString outputFilename3 = "Protons.QA.Histograms."; 
   outputFilename3 += analysisType;
+  outputFilename3 += "."; outputFilename3 += pidMode; 
   outputFilename3 += ".root"; //Accepted cut distributions
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
+  outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
