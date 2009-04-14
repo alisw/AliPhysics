@@ -14,9 +14,11 @@
 
 #include <TObject.h>
 #include <TVectorD.h>
+#include <TMatrixD.h>
 
 class TTree;
 class TObjArray;
+class TH1;
 //_____________________________________________________________________________
 class AliTPCClusterParam : public TObject {
  public:
@@ -34,10 +36,16 @@ class AliTPCClusterParam : public TObject {
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
   void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+  void SetQnormGauss(Int_t ipad, Int_t itype,  TH1  * norm); 
+  void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val); 
+  Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const; 
+  void ResetQnormCorr(); 
   //
   // Charge parameterization
   //
   Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
+  Float_t QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);
+
 
   Float_t QnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt);
   static Float_t SQnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){ return fgInstance->QnormPos(ipad,isMax,pad,time,z,sy2,sz2,qm,qt);;}
@@ -104,6 +112,7 @@ class AliTPCClusterParam : public TObject {
   //
   //
   static Float_t SQnorm(Int_t ipad, Int_t itype,Float_t dr, Float_t ty, Float_t tz) {return fgInstance->Qnorm(ipad, itype, dr,ty,tz);}
+  static Float_t SQnormHis(Int_t ipad, Int_t itype,Float_t dr, Float_t ty, Float_t tz) {return fgInstance->QnormHis(ipad, itype, dr,ty,tz);}
 
   //
   // Analytical position angular correction
@@ -111,8 +120,8 @@ class AliTPCClusterParam : public TObject {
   static Double_t  GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
   static Double_t  GaussConvolutionTail(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau);
   static Double_t  GaussConvolutionGamma4(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau);
-  static Double_t QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t tau);
-  static Double_t QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t qtot, Float_t thr,Float_t tau);
+  static Double_t QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t effLength=0, Float_t effDiff=1);
+  static Double_t QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t qtot, Float_t thr,  Float_t effLength=0, Float_t effDiff=1);
 
 
 
@@ -156,6 +165,8 @@ class AliTPCClusterParam : public TObject {
   // charge normalization parametrization
   //
   TObjArray *fQNorm;              // q norm paramters
+  TMatrixD  *fQNormCorr;          // q norm correction for analytica  correction
+  TObjArray *fQNormHis;           // q norm correction for analytical correction 
   //
   TVectorD  *fPosQTnorm[3];       // q position normalization
   TVectorD  *fPosQMnorm[3];       // q position normalization
@@ -169,7 +180,7 @@ class AliTPCClusterParam : public TObject {
   //
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
-  ClassDef(AliTPCClusterParam,3)    //  TPC Cluster parameter class
+  ClassDef(AliTPCClusterParam,6)    //  TPC Cluster parameter class
 };
 
 #endif

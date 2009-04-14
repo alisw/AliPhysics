@@ -915,7 +915,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Bool_t posNorm, Int_t padNorm, Int_t returnVal){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Int_t posNorm, Int_t padNorm, Int_t returnVal){
  
   //
   // calculates dedx using the cluster
@@ -1002,7 +1002,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       }
     }
     
-    if (posNorm){
+    if (posNorm>0){
       //
       // Do position normalization - relative distance to 
       // center of pad- time bin
@@ -1011,16 +1011,29 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       // 				cluster->GetTimeBin(), cluster->GetZ(),
       // 				cluster->GetSigmaY2(),cluster->GetSigmaZ2(),
       // 				cluster->GetMax(),cluster->GetQ());
+      // scaled response function
+      Float_t yres0 = parcl->GetRMS0(0,ipad,0,0)/param->GetPadPitchWidth(cluster->GetDetector());
+      Float_t zres0 = parcl->GetRMS0(1,ipad,0,0)/param->GetZWidth();
+      //
+      
       AliTPCTrackerPoint * point = GetTrackPoint(irow);
       Float_t              ty = TMath::Abs(point->GetAngleY());
       Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
       
       if (type==1) corrPos = 
 	parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
-			      TMath::Nint(cluster->GetTimeBin()),ty,tz,0.5,0.2,1.6);
+			      cluster->GetTimeBin(),ty,tz,yres0,zres0,0.4);
       if (type==0) corrPos = 
 	parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
-			      TMath::Nint(cluster->GetTimeBin()),ty,tz,0.5,0.2,cluster->GetQ(),2.5,1.6);
+			      cluster->GetTimeBin(),ty,tz,yres0,zres0,cluster->GetQ(),2.5,0.4);
+      if (posNorm==3){
+	Float_t dr    = (250.-TMath::Abs(cluster->GetZ()))/250.;
+	Double_t signtgl = (cluster->GetZ()*point->GetAngleZ()>0)? 1:-1;
+	Double_t p2 = TMath::Abs(TMath::Sin(TMath::ATan(ty)));
+	Float_t corrHis = parcl->QnormHis(ipad,type,dr,p2,TMath::Abs(point->GetAngleZ())*signtgl);
+	if (corrHis>0) corrPos*=corrHis;
+      }
+
     }
 
     if (padNorm==1){
@@ -1043,6 +1056,143 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     amp[ncl]/=corrPadType;
     amp[ncl]/=corrPos;
     amp[ncl]/=corrNorm; 
+    //
+    ncl++;
+  }
+
+  if (type>3) return ncl; 
+  TMath::Sort(ncl,amp, indexes, kFALSE);
+
+  if (ncl<10) return 0;
+  
+  Float_t suma=0;
+  Float_t suma2=0;  
+  Float_t sumn=0;
+  Int_t icl0=TMath::Nint(ncl*low);
+  Int_t icl1=TMath::Nint(ncl*up);
+  for (Int_t icl=icl0; icl<icl1;icl++){
+    suma+=amp[indexes[icl]];
+    suma2+=amp[indexes[icl]]*amp[indexes[icl]];
+    sumn++;
+  }
+  Float_t mean =suma/sumn;
+  Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  if (returnVal==1) return rms;
+  if (returnVal==2) return ncl;
+  return mean;
+}
+
+Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal){
+ 
+  //
+  // calculates dedx using the cluster
+  // low    -  up specify trunc mean range  - default form 0-0.7
+  // type   -  1 - max charge  or 0- total charge in cluster 
+  //           //2- max no corr 3- total+ correction
+  // i1-i2  -  the pad-row range used for calculation
+  //           
+  // posNorm   - usage of pos normalization 
+  // returnVal - 0 return mean
+  //           - 1 return RMS
+  //           - 2 return number of clusters
+  //           
+  // normalization parametrization taken from AliTPCClusterParam
+  //
+  AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
+  AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
+  if (!parcl)  return 0;
+  if (!param) return 0;
+  Int_t row0 = param->GetNRowLow();
+  Int_t row1 = row0+param->GetNRowUp1();
+
+  Float_t amp[160];
+  Int_t   indexes[160];
+  Int_t   ncl=0;
+  //
+  //
+  Float_t gainGG      = 1;  // gas gain factor -always enabled
+  Float_t gainPad     = 1;  // gain map  - used always
+  Float_t corrPos     = 1;  // local position correction - if posNorm enabled
+  Float_t corrNorm    = 1;  // normalization factor - set Q to channel 50
+  //   
+  //
+  //
+  if (AliTPCcalibDB::Instance()->GetParameters()){
+    gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
+  }
+
+  const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
+  const Float_t kedgey =3.;
+  //
+  //
+  for (Int_t irow=i1; irow<i2; irow++){
+    AliTPCclusterMI* cluster = GetClusterPointer(irow);
+    if (!cluster) continue;
+    if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
+    Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
+    Int_t  ipad= 0;
+    if (irow>=row0) ipad=1;
+    if (irow>=row1) ipad=2;    
+    //
+    //
+    //
+    AliTPCCalPad * gainMap =  AliTPCcalibDB::Instance()->GetDedxGainFactor();
+    if (gainMap) {
+      //
+      // Get gainPad - pad by pad calibration
+      //
+      Float_t factor = 1;      
+      AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
+      if (irow < row0) { // IROC
+	factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()));
+      } else {         // OROC
+	factor = roc->GetValue(irow - row0, TMath::Nint(cluster->GetPad()));
+      }
+      if (factor>0.5) gainPad=factor;
+    }
+    
+    //
+    // Do position normalization - relative distance to 
+    // center of pad- time bin
+    
+    AliTPCTrackerPoint * point = GetTrackPoint(irow);
+    Float_t              ty = TMath::Abs(point->GetAngleY());
+    Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
+    Float_t yres0 = parcl->GetRMS0(0,ipad,0,0)/param->GetPadPitchWidth(cluster->GetDetector());
+    Float_t zres0 = parcl->GetRMS0(1,ipad,0,0)/param->GetZWidth();
+
+    yres0 *=parcl->GetQnormCorr(ipad, type,0);
+    zres0 *=parcl->GetQnormCorr(ipad, type,1);
+    Float_t effLength=parcl->GetQnormCorr(ipad, type,4)*0.5;
+    Float_t effDiff  =(parcl->GetQnormCorr(ipad, type,2)+parcl->GetQnormCorr(ipad, type,3))*0.5;
+    //
+    if (type==1) {
+      corrPos = parcl->GetQnormCorr(ipad, type,5)*
+	parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+			      cluster->GetTimeBin(),ty,tz,yres0,zres0,effLength,effDiff);
+      Float_t drm   = 0.5-TMath::Abs(cluster->GetZ()/250.);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,0)*drm);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,1)*ty*ty);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,2)*tz*tz);
+      //
+    }
+    if (type==0) {
+      corrPos = parcl->GetQnormCorr(ipad, type,5)*
+	parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+			      cluster->GetTimeBin(),ty,tz,yres0,zres0,cluster->GetQ(),2.5,effLength,effDiff);
+      
+      Float_t drm   = 0.5-TMath::Abs(cluster->GetZ()/250.);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,0)*drm);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,1)*ty*ty);
+      corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,2)*tz*tz);
+      //
+    }
+
+    //
+    amp[ncl]=charge;
+    amp[ncl]/=gainGG;
+    amp[ncl]/=gainPad;
+    amp[ncl]/=corrPos;
     //
     ncl++;
   }

@@ -91,7 +91,10 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
   for (Int_t ihis=0; ihis<6;ihis++){
     fHistoDelta[ihis]=0;
     fHistoPull[ihis]=0;
-    fHistodEdx[ihis]    =0;
+  }
+  for (Int_t ihis=0; ihis<4;ihis++){
+    fHistodEdxMax[ihis]    =0;
+    fHistodEdxTot[ihis]    =0;
   }
 }
 
@@ -132,8 +135,18 @@ AliTPCcalibCosmic::~AliTPCcalibCosmic(){
   for (Int_t ihis=0; ihis<6;ihis++){
     delete fHistoDelta[ihis];
     delete fHistoPull[ihis];
-    //delete fHistodEdx[ihis];
   }
+  for (Int_t ihis=0; ihis<4;ihis++){
+    delete fHistodEdxTot[ihis];
+    delete fHistodEdxMax[ihis];
+  }
+
+  delete fHistNTracks;            //  histogram showing number of ESD tracks per event
+  delete fClusters;               //  histogram showing the number of clusters per track
+  delete fModules;                //  2d histogram of tracks which are propagated to the ACORDE scintillator array
+  delete fHistPt;                 //  Pt histogram of reconstructed tracks
+  delete fDeDx;                   //  dEdx spectrum showing the different particle types
+  delete fDeDxMIP;                //  TPC signal close to the MIP region of muons 0.4 < p < 0.45 GeV
 }
 
 
@@ -179,15 +192,15 @@ void AliTPCcalibCosmic::Init(){
   //
   binsTrack[5] =10;
   xminTrack[5] =-1; xmaxTrack[5]=1;  // 
-  axisName[5]  ="tan($theta)";
+  axisName[5]  ="tan(#theta)";
   //
   binsTrack[6] =10;
   xminTrack[6] =0; xmaxTrack[6]=2;  // 
   axisName[6]  ="1/pt (1/GeV)";
   //
-  binsTrack[7] =10;
+  binsTrack[7] =40;
   xminTrack[7] =0.2; xmaxTrack[7]=50;  // 
-  axisName[7]  ="pt (1/GeV)";
+  axisName[7]  ="pt (GeV)";
   //
   binsTrack[8] =32;
   xminTrack[8] =0; xmaxTrack[8]=TMath::Pi();  // 
@@ -230,14 +243,38 @@ void AliTPCcalibCosmic::Init(){
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
   fHistoPull[5] = new THnSparseS("#Delta_{pt}/p_{t} (unit)","#Delta_{pt}/p_{t} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
   //
+
+  for (Int_t idedx=0;idedx<4;idedx++){
+    xminTrack[0] =0.5; xmaxTrack[0]=1.5;  // 
+    binsTrack[1] =40;
+    xminTrack[1] =10; xmaxTrack[1]=160;
+
+    fHistodEdxMax[idedx] = new THnSparseS(Form("dEdx_{MaxUp}/dEdx_{MaxDown}_Pad%d",idedx),
+					  Form("dEdx_{MaxUp}/dEdx_{MaxDown}_Pad%d",idedx), 
+					  9, binsTrack,xminTrack, xmaxTrack);
+    fHistodEdxTot[idedx] = new THnSparseS(Form("dEdx_{TotUp}/dEdx_{TotDown}_Pad%d",idedx),
+					  Form("dEdx_{TotUp}/dEdx_{TotDown}_Pad%d",idedx), 
+					  9, binsTrack,xminTrack, xmaxTrack);
+  }
+  
+
+
   for (Int_t ivar=0;ivar<6;ivar++){
-    for (Int_t ivar2=0;ivar2<6;ivar2++){      
+    for (Int_t ivar2=0;ivar2<9;ivar2++){      
       fHistoDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
       fHistoDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
       fHistoPull[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
       fHistoPull[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
       BinLogX(fHistoDelta[ivar],7);
       BinLogX(fHistoPull[ivar],7);
+      if (ivar<4){
+	fHistodEdxMax[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+	fHistodEdxMax[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+	fHistodEdxTot[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+	fHistodEdxTot[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+	BinLogX(fHistodEdxMax[ivar],7);
+	BinLogX(fHistodEdxTot[ivar],7);
+      }
     }
   }
 }
@@ -253,6 +290,14 @@ void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
     }
     if (fHistoPull[ivar] && cosmic->fHistoPull[ivar]){
       fHistoPull[ivar]->Add(cosmic->fHistoPull[ivar]);
+    }
+  }
+  for (Int_t ivar=0; ivar<4;ivar++){
+    if (fHistodEdxMax[ivar] && cosmic->fHistodEdxMax[ivar]){
+      fHistodEdxMax[ivar]->Add(cosmic->fHistodEdxMax[ivar]);
+    }
+    if (fHistodEdxTot[ivar] && cosmic->fHistodEdxTot[ivar]){
+      fHistodEdxTot[ivar]->Add(cosmic->fHistodEdxTot[ivar]);
     }
   }
 }
@@ -291,10 +336,14 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
 }
 
 
-void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, Int_t ncl0, Int_t ncl1){
+void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1){
   //
   //
   //
+  Int_t kMinCldEdx =20;
+  Int_t ncl0 = seed0->GetNumberOfClusters();
+  Int_t ncl1 = seed1->GetNumberOfClusters();
+
   const Double_t kpullCut    = 10;
   Double_t x[9];
   Double_t xyz0[3];
@@ -348,6 +397,39 @@ void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExt
       fHistoPull[ivar]->Fill(x);
     }
   }
+
+  //						
+  // Fill dedx performance
+  //
+  for (Int_t ipad=0; ipad<4;ipad++){
+    //
+    //
+    //
+    Int_t row0=0;
+    Int_t row1=160;
+    if (ipad==0) row1=63;
+    if (ipad==1) {row0=63; row1=63+64;}
+    if (ipad==2) {row0=128;}
+    Int_t   nclUp       = TMath::Nint(seed0->CookdEdxAnalytical(0.01,0.7,0,row0,row1,2));
+    Int_t   nclDown     = TMath::Nint(seed1->CookdEdxAnalytical(0.01,0.7,0,row0,row1,2));
+    Int_t   minCl       = TMath::Min(nclUp,nclDown);
+    if (minCl<kMinCldEdx) continue;
+    x[1] = minCl;
+    //
+    Float_t dEdxTotUp   = seed0->CookdEdxAnalytical(0.01,0.7,0,row0,row1);
+    Float_t dEdxTotDown = seed1->CookdEdxAnalytical(0.01,0.7,0,row0,row1);
+    Float_t dEdxMaxUp   = seed0->CookdEdxAnalytical(0.01,0.7,1,row0,row1);
+    Float_t dEdxMaxDown = seed1->CookdEdxAnalytical(0.01,0.7,1,row0,row1);
+    //
+    if (dEdxTotDown<=0) continue;
+    if (dEdxMaxDown<=0) continue;
+    x[0]=dEdxTotUp/dEdxTotDown;
+    fHistodEdxTot[ipad]->Fill(x);
+    x[0]=dEdxMaxUp/dEdxMaxDown;
+    fHistodEdxMax[ipad]->Fill(x);
+  }
+
+
   
 }
 
@@ -517,7 +599,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	//
 	//
 	//
-	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0->GetNumberOfClusters(), seed1->GetNumberOfClusters());
+	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1);
 
 	if (cstream) {
 	  (*cstream) << "Track0" <<

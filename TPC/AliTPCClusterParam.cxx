@@ -91,6 +91,7 @@ AliTPCClusterParam::SetInstance(param);
 #include <TVectorF.h>
 #include <TLinearFitter.h>
 #include <TH1F.h>
+#include <TH3F.h>
 #include <TProfile2D.h>
 #include <TVectorD.h>
 #include <TObjArray.h>
@@ -147,6 +148,8 @@ AliTPCClusterParam::AliTPCClusterParam():
   TObject(),
   fRatio(0),
   fQNorm(0),
+  fQNormCorr(0),
+  fQNormHis(0),
   fQpadTnorm(0),           // q pad normalization - Total charge
   fQpadMnorm(0)            // q pad normalization - Max charge
   //
@@ -165,6 +168,8 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   TObject(param),
   fRatio(0),
   fQNorm(0),
+  fQNormCorr(0),
+  fQNormHis(0),
   fQpadTnorm(new TVectorD(*(param.fQpadTnorm))),           // q pad normalization - Total charge
   fQpadMnorm(new TVectorD(*(param.fQpadMnorm)))            // q pad normalization - Max charge
 
@@ -174,6 +179,7 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   //
   memcpy(this, &param,sizeof(AliTPCClusterParam));
   if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+  if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
   //
   if (param.fPosQTnorm[0]){
     fPosQTnorm[0] = new TVectorD(*(param.fPosQTnorm[0]));
@@ -204,6 +210,7 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
   if (this != &param) {
     memcpy(this, &param,sizeof(AliTPCClusterParam));
     if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+    if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
     if (param.fPosQTnorm[0]){
       fPosQTnorm[0] = new TVectorD(*(param.fPosQTnorm[0]));
       fPosQTnorm[1] = new TVectorD(*(param.fPosQTnorm[1]));
@@ -232,7 +239,10 @@ AliTPCClusterParam::~AliTPCClusterParam(){
   // destructor
   //
   if (fQNorm) fQNorm->Delete();
+  if (fQNormCorr) delete fQNormCorr;
+  if (fQNormHis) fQNormHis->Delete();
   delete fQNorm;
+  delete fQNormHis;
   if (fPosQTnorm[0]){
     delete fPosQTnorm[0];
     delete fPosQTnorm[1];
@@ -1318,7 +1328,7 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
   // type - 0 Qtot 1 Qmax
   // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
   //
-  //expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
+  //expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++++dr*dr++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
 
   if (fQNorm==0) return 0;
   TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
@@ -1341,6 +1351,33 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
 
 
 
+Float_t AliTPCClusterParam::QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_t p2, Float_t p3){
+  // get Q normalization
+  // type - 0 Qtot 1 Qmax
+  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
+  //
+
+  if (fQNormHis==0) return 0;
+  TH3F * norm = (TH3F*)fQNormHis->At(4*itype+ipad);
+  if (!norm) return 1;
+  p2=TMath::Abs(p2);
+  dr=TMath::Min(dr,Float_t(norm->GetXaxis()->GetXmax()-norm->GetXaxis()->GetBinWidth(0)));
+  dr=TMath::Max(dr,Float_t(norm->GetXaxis()->GetXmin()+norm->GetXaxis()->GetBinWidth(0)));
+  //
+  p2=TMath::Min(p2,Float_t(norm->GetYaxis()->GetXmax()-norm->GetYaxis()->GetBinWidth(0)));
+  p2=TMath::Max(p2,Float_t(norm->GetYaxis()->GetXmin()+norm->GetYaxis()->GetBinWidth(0)));
+  //
+  p3=TMath::Min(p3,Float_t(norm->GetZaxis()->GetXmax()-norm->GetZaxis()->GetBinWidth(0)));
+  p3=TMath::Max(p3,Float_t(norm->GetZaxis()->GetXmin()+norm->GetZaxis()->GetBinWidth(0)));
+  //
+  Double_t res = norm->GetBinContent(norm->FindBin(dr,p2,p3));
+  if (res==0) res = norm->GetBinContent(norm->FindBin(0.5,0.5,0.5));  // This is just hack - to be fixed entries without 
+
+  return res;
+}
+
+
+
 void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
   //
   // set normalization
@@ -1352,6 +1389,50 @@ void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
   if (fQNorm==0) fQNorm = new TObjArray(6);
   fQNorm->AddAt(new TVectorD(*norm), itype*3+ipad);
 }
+
+void AliTPCClusterParam::ResetQnormCorr(){
+  //
+  //
+  //
+  if (!fQNormCorr) fQNormCorr= new TMatrixD(12,6);
+  for (Int_t irow=0;irow<12; irow++)
+    for (Int_t icol=0;icol<6; icol++){
+      (*fQNormCorr)(irow,icol)=1.;             // default - no correction
+      if (irow>5) (*fQNormCorr)(irow,icol)=0.; // default - no correction
+    } 
+}
+
+void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val){
+  //
+  // ipad        - pad type
+  // itype       - 0- qtot 1-qmax
+  // corrType    - 0 - s0y corr     - eff. PRF corr
+  //             - 1 - s0z corr     - eff. TRF corr
+  //             - 2 - d0y          - eff. diffusion correction y
+  //             - 3 - d0z          - eff. diffusion correction
+  //             - 4 - eff length   - eff.length - wire pitch + x diffsion
+  //             - 5 - pad type normalization
+  if (!fQNormCorr) {
+    ResetQnormCorr();
+  }
+  //
+  // eff shap parameterization matrix
+  //
+  // rows
+  // itype*3+ipad  - itype=0 qtot itype=1 qmax ipad=0
+  // 
+  if (itype<2) (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // multiplicative correction
+  if (itype>=2) (*fQNormCorr)(itype*3+ipad, corrType)+= val;  // additive       correction  
+}
+
+Double_t  AliTPCClusterParam::GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const{
+  //
+  // see AliTPCClusterParam::SetQnormCorr
+  //
+  if (!fQNormCorr) return 0;
+  return  (*fQNormCorr)(itype*3+ipad, corrType);
+}
+
 
 Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){
   //
@@ -1586,7 +1667,7 @@ Double_t  AliTPCClusterParam::GaussConvolutionGamma4(Double_t x0, Double_t x1, D
   return val/sum;
 }
 
-Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t tau){
+Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t effPad, Float_t effDiff){
   //
   //
   // cpad      - pad (y) coordinate
@@ -1594,8 +1675,9 @@ Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cp
   // ky        - dy/dx
   // kz        - dz/dx
   // rmsy0     - RF width in pad units
-  // rmsz0     - RF width in pad units
-  // tau       - correction for the assymetric TRF shape - decay length 
+  // rmsz0     - RF width in time bin  units
+  // effLength - contibution of PRF and diffusion
+  // effDiff   - overwrite diffusion
 
   // Response function aproximated by convolution of gaussian with angular effect (integral=1)
   //  
@@ -1608,13 +1690,19 @@ Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cp
   AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
   Double_t padLength= param->GetPadPitchLength(sector,row);
   Double_t padWidth = param->GetPadPitchWidth(sector);
-  // diffusion in pad units
-  Double_t diffT=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffT()/padWidth;
-  Double_t diffL=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffL()/padWidth;
+  Double_t zwidth   = param->GetZWidth();
+  Double_t effLength= padLength+(param->GetWWPitch(0)+TMath::Sqrt(ctime*zwidth)*param->GetDiffT())*effPad;
+
+  // diffusion in pad, time bin  units
+  Double_t diffT=TMath::Sqrt(ctime*zwidth)*param->GetDiffT()/padWidth;
+  Double_t diffL=TMath::Sqrt(ctime*zwidth)*param->GetDiffL()/zwidth;
+  diffT*=effDiff;  //
+  diffL*=effDiff;  //
   //
   // transform angular effect to pad units
-  Double_t pky   = ky*padLength/padWidth;
-  Double_t pkz   = kz*padLength/padWidth;
+  //
+  Double_t pky   = ky*effLength/padWidth;
+  Double_t pkz   = kz*effLength/zwidth;
   // position in pad unit
   Double_t py = (cpad+0.5)-TMath::Nint(cpad+0.5);
   Double_t pz = (ctime+0.5)-TMath::Nint(ctime+0.5);
@@ -1622,10 +1710,12 @@ Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cp
   //
   Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT);
   Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL); 
-  return GaussConvolutionGamma4(py,pz, pky,pkz,sy,sz,tau);
+  //return GaussConvolutionGamma4(py,pz, pky,pkz,sy,sz,tau);
+  Double_t length = padLength*TMath::Sqrt(1+ky*ky+kz*kz);
+  return GaussConvolution(py,pz, pky,pkz,sy,sz)*length;
 }
 
-Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t qtot, Float_t thr, Float_t tau){
+Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t qtot, Float_t thr, Float_t effPad, Float_t effDiff){
   //
   //
   // cpad      - pad (y) coordinate
@@ -1633,10 +1723,11 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
   // ky        - dy/dx
   // kz        - dz/dx
   // rmsy0     - RF width in pad units
-  // rmsz0     - RF width in pad units
+  // rmsz0     - RF width in time bin  units
   // qtot      - the sum of signal in cluster - without thr correction
   // thr       - threshold
-  // tau       - correction for the assymetric TRF shape - decay length 
+  // effLength - contibution of PRF and diffusion
+  // effDiff   - overwrite diffusion
 
   // Response function aproximated by convolution of gaussian with angular effect (integral=1)
   //  
@@ -1649,14 +1740,18 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
   AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
   Double_t padLength= param->GetPadPitchLength(sector,row);
   Double_t padWidth = param->GetPadPitchWidth(sector);
+  Double_t zwidth   = param->GetZWidth();
+  Double_t effLength= padLength+(param->GetWWPitch(0)+TMath::Sqrt(ctime*zwidth)*param->GetDiffT())*effPad;
   //
   // diffusion in pad units
-  Double_t diffT=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffT()/padWidth;
-  Double_t diffL=TMath::Sqrt(ctime*param->GetZWidth())*param->GetDiffL()/padWidth;
+  Double_t diffT=TMath::Sqrt(ctime*zwidth)*param->GetDiffT()/padWidth;
+  Double_t diffL=TMath::Sqrt(ctime*zwidth)*param->GetDiffL()/zwidth;
+  diffT*=effDiff;  //
+  diffL*=effDiff;  //
   //
-  // transform angular effect to pad units
-  Double_t pky   = ky*padLength/padWidth;
-  Double_t pkz   = kz*padLength/padWidth;
+  // transform angular effect to pad units 
+  Double_t pky   = ky*effLength/padWidth;
+  Double_t pkz   = kz*effLength/zwidth;
   // position in pad unit
   //  
   Double_t py = (cpad+0.5)-TMath::Nint(cpad+0.5);
@@ -1671,21 +1766,25 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
   //
   Double_t corr =1;
   Double_t qnorm=qtot;
-  for (Float_t iy=-2;iy<=2;iy++)
-    for (Float_t iz=-2;iz<=2;iz++){
-      Double_t val = GaussConvolutionGamma4(py-iy,pz-iz, pky,pkz, sy,sz,tau);      
+  for (Float_t iy=-3;iy<=3;iy+=1.)
+    for (Float_t iz=-4;iz<=4;iz+=1.){
+      //      Double_t val = GaussConvolutionGamma4(py-iy,pz-iz, pky,pkz, sy,sz,tau);      
+      Double_t val = GaussConvolution(py-iy,pz-iz, pky,pkz, sy,sz);      
       Double_t qlocal =qnorm*val;
-      if (TMath::Abs(iy)<2&&TMath::Abs(iz)<2){
-      	sumThr+=qlocal;   // using Virtual charge in cluster finder
+      if (TMath::Abs(iy)<1.5&&TMath::Abs(iz)<1.5){
+      	sumThr+=qlocal;   // Virtual charge used in cluster finder
       }
       else{
-	if (qlocal>thr) sumThr+=qlocal;
+	if (qlocal>thr && TMath::Abs(iz)<2.5&&TMath::Abs(iy)<2.5) sumThr+=qlocal;
       }
       sumAll+=qlocal;
     }
-  if (sumAll>0&&sumThr>0) corr=(sumThr)/sumAll;
+  if (sumAll>0&&sumThr>0) {
+    corr=(sumThr)/sumAll;
+  }
   //
-  return corr;
+  Double_t length = padLength*TMath::Sqrt(1+ky*ky+kz*kz);
+  return corr*length;
 }
 
 

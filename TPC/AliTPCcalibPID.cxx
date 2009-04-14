@@ -171,16 +171,16 @@ AliTPCcalibPID::AliTPCcalibPID(const Text_t *name, const Text_t *title)
   fIsCosmic  = kTRUE;
   //
   //                  dE/dx,  z, phi, theta,    p,  bg, ncls, tracklet type
-  Int_t binsQA[8]    = {150, 10,  10,    10,   50, 50,  8,    5};
-  Double_t xminQA[8] = {0.,  0,    0,     0, 0.01, 0.1, 60,   0};
-  Double_t xmaxQA[8] = {10., 1,  0.6,   1.5,   50, 500, 160,  5};
+  Int_t binsQA[8]    = {300, 20,  10,    20,   50, 50,  8,    5};
+  Double_t xminQA[8] = {0.2,  -1,    0,  -1.5, 0.01, 0.1, 60,   0};
+  Double_t xmaxQA[8] = {10.,  1,  0.9,   1.5,   50, 500, 160,  5};
   //
   //
   //
   //                  dE/dx,  z, phi, theta, dEdx, dEdx*dl, ncls, tracklet type
-  Int_t    binsRA[9] = {100, 10,  10,    10,   25,  25,      4,    5};
-  Double_t xminRa[9] = {0.5, 0,    0,     0,  0.2, 0.2,     60,    0};
-  Double_t xmaxRa[9] = {4.0, 1,  0.6,   1.5,    5,   5,    160,    5};
+  Int_t    binsRA[9] = {100, 20,  10,    20,   25,  25,      4,    5};
+  Double_t xminRa[9] = {0.5, -1,    0,  -1.5,  0.2, 0.2,     60,    0};
+  Double_t xmaxRa[9] = {2,  1,  0.9,   1.5,    5,   5,    160,    5};
   
   // z,sin(phi),tan(theta),p,betaGamma,ncls
   fDeDxQmax  = new THnSparseS("fDeDxQmax","Qmax;(z,sin(phi),tan(theta),p,betaGamma,ncls,type); TPC signal Qmax (a.u.)",8,binsQA,xminQA,xmaxQA);
@@ -192,11 +192,13 @@ AliTPCcalibPID::AliTPCcalibPID(const Text_t *name, const Text_t *title)
   fDeDxRatioQmax = new THnSparseS("fDeDxRatioQmax","Q_{mtracklet}/Q_{mtrack};(z,sin(phi),tan(theta),dEdx,dEdx*dl,ncls,type,qtupe); TPC signal Tracklet/Track (a.u.)",8,binsRA,xminRa,xmaxRa);
   fDeDxRatioQtot = new THnSparseS("fDeDxRatioQtot","Q_{ttracklet}/Q_{ttrack};(z,sin(phi),tan(theta),dEdx,dEdx*dl,ncls,type,qtupe); TPC signal Tracklet/Track (a.u.)",8,binsRA,xminRa,xmaxRa);
   fDeDxRatioTruncQmax = new THnSparseS("fDeDxRatioTrunQmax","Q_{max}/Q_{maxtrunc};(z,sin(phi),tan(theta),dEdx,dEdx*dl,ncls,type,qtupe); TPC signal Full/Trunc. (a.u.)",8,binsRA,xminRa,xmaxRa);
+
+
   fDeDxRatioTruncQtot = new THnSparseS("fDeDxRatioTruncQtot","Q_{tot}/Q_{tottrunc};(z,sin(phi),tan(theta),dEdx,dEdx*dl,ncls,type,qtupe); TPC signal Full/Trunc (a.u.)",8,binsRA,xminRa,xmaxRa);
 
 
-  BinLogX(fDeDxQmax,4); BinLogX(fDeDxQmax,5);
-  BinLogX(fDeDxQtot,4); BinLogX(fDeDxQtot,5);
+  BinLogX(fDeDxQmax,4); BinLogX(fDeDxQmax,5);BinLogX(fDeDxQmax,0);
+  BinLogX(fDeDxQtot,4); BinLogX(fDeDxQtot,5);BinLogX(fDeDxQmax,0);
   //
   BinLogX(fDeDxRatioMaxTot,4); BinLogX(fDeDxRatioMaxTot,5);
   BinLogX(fDeDxRatioQmax,4); BinLogX(fDeDxRatioQmax,5);
@@ -218,7 +220,21 @@ AliTPCcalibPID::~AliTPCcalibPID(){
   //
   //
   //
-  
+  delete fHistNTracks;            //  histogram showing number of ESD tracks per event
+  delete fClusters;               //  histogram showing the number of clusters per track
+  delete fPileUp;                 //  histogram which shows correlation between time mismatch and dEdx signal
+  delete fLandau;                 //  histogran which shows Landau distribution for the three pad geometries
+  //
+  delete fDeDxQmax;               //  histogram which shows dEdx (Qmax) as a function of z,sin(phi),tan(theta),p,betaGamma
+  delete fDeDxQtot;               //  histogram which shows dEdx (Qtot) as a function of z,sin(phi),tan(theta),p,betaGamma
+  //
+  // ratio histograms
+  //
+  delete fDeDxRatioMaxTot;              //  histogram which shows dEdx ratio (Qmax/Qtot) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  delete fDeDxRatioQmax;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  delete fDeDxRatioQtot;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  delete fDeDxRatioTruncQtot;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*dl
+  delete fDeDxRatioTruncQmax;   // dEdx ratio (tracklet/track) as a function of z,sin(phi),tan(theta),dEdx,dEdx*d
 }
 
 
@@ -249,8 +265,8 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
     if (!track) continue;
     
     
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = track->GetOuterParam();
+    AliExternalTrackParam * trackIn  = (AliExternalTrackParam *)track->GetInnerParam();
+    AliExternalTrackParam * trackOut = (AliExternalTrackParam *)track->GetOuterParam();
     if (!trackIn) continue;
     if (!trackOut) continue;
 
@@ -286,13 +302,8 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
     if (seed) {
       if (meanP > 30 && TMath::Abs(trackIn->GetSnp()) < 0.2) fClusters->Fill(track->GetTPCNcls());
       // calculate dEdx
-      // (Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Bool_t shapeNorm,Bool_t posNorm, Int_t padNorm, Int_t returnVal)
-      //Double_t TPCsignalTot    = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,0,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
       Double_t TPCsignalMax    = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
       //
-      //Double_t TPCsignalShort  = seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,63,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-      //Double_t TPCsignalMedium = seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,63,63+64,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-      //Double_t TPCsignalLong   = seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,63+64,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
       //
       //Double_t driftMismatch = seed->GetDriftTimeMismatch(0,0.95,0.5);
       Double_t driftMismatch = 0;
@@ -307,38 +318,46 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	fLandau->Fill(0.1,0.6);
       }
       //var. of interest, z,sin(phi),tan(theta),p,betaGamma,ncls
-      Double_t snpIn = TMath::Abs(trackIn->GetSnp());
-      Double_t snpOut = TMath::Abs(trackOut->GetSnp());
-      Double_t tglIn = TMath::Abs(trackIn->GetTgl());
-      Double_t tglOut = TMath::Abs(trackOut->GetTgl());
-      Double_t driftIn = 1 - (TMath::Abs(trackIn->GetZ()))/250.;
-      Double_t driftOut = 1 - (TMath::Abs(trackIn->GetZ()))/250.;
+      Double_t snpIn   = TMath::Abs(trackIn->GetSnp());
+      Double_t snpOut  = TMath::Abs(trackOut->GetSnp());
+      Double_t tglIn   = trackIn->GetTgl();
+      Double_t tglOut  = trackOut->GetTgl();
+      Double_t driftIn = trackIn->GetZ()/250.;
+      Double_t driftOut= trackIn->GetZ()/250.;
       //
       // dEdx in region
       //
       Float_t dEdxTot[5],dEdxTotFull[5];
       Float_t dEdxMax[5],dEdxMaxFull[5];
-      Int_t   ncl[5];
+      Float_t   ncl[5];
       for (Int_t itype=0; itype<5;itype++){
 	Int_t row0=0, row1 =159;
 	if (itype==1) {row0=0;      row1 = 63;};
 	if (itype==2) {row0= 64;    row1=63+64;}
 	if (itype==3) {row0= 63+64; row1=159;}
-	dEdxTot[itype]= (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,0,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-	dEdxMax[itype]= (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-	// non trucated dEdx
-	dEdxTotFull[itype]= (1/fMIP)*seed->CookdEdxNorm(0.0,0.99,0,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-	dEdxMaxFull[itype]= (1/fMIP)*seed->CookdEdxNorm(0.0,0.99,1,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+	if (fUsePosNorm==0){
+	  dEdxTot[itype]= (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,0,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+	  dEdxMax[itype]= (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+	  // non trucated dEdx
+	  dEdxTotFull[itype]= (1/fMIP)*seed->CookdEdxNorm(0.0,0.99,0,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+	  dEdxMaxFull[itype]= (1/fMIP)*seed->CookdEdxNorm(0.0,0.99,1,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+	}else{
+	  dEdxTot[itype]= (1/fMIP)*seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1);
+	  dEdxMax[itype]= (1/fMIP)*seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1);
+	  // non trucated dEdx
+	  dEdxTotFull[itype]= (1/fMIP)*seed->CookdEdxAnalytical(0.0,0.99,0,row0,row1);
+	  dEdxMaxFull[itype]= (1/fMIP)*seed->CookdEdxAnalytical(0.0,0.99,1,row0,row1);
+	}
 
-
-	ncl[itype]=TMath::Nint(seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,row0,row1,fUseShapeNorm,fUsePosNorm,fUsePadNorm,2));
+	ncl[itype]=(seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1,2));
       }
       //
       //
       //
       Float_t wmeanTot=0, wmeanMax=0, sumW=0;
       Double_t length[3] = {0.75,1,1.5};
-
+      //       //
+      
       for (Int_t ipad=0; ipad<3; ipad++){
 	if (ncl[1+ipad]<3) continue;
 	Double_t weight = Double_t(ncl[1+ipad])*TMath::Sqrt(length[ipad]);
@@ -353,10 +372,10 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
       for (Int_t itype=0;itype<5;itype++){
 	//
 	Float_t snp=(TMath::Abs(snpIn)+TMath::Abs(snpOut))*0.5;
-	Float_t tgl=(TMath::Abs(tglIn)+TMath::Abs(tglOut))*0.5;
+	Float_t tgl=(tglIn+tglOut)*0.5;
 	Float_t drift = (driftIn+driftOut)*0.5;
-	if (itype==1) {snp = TMath::Abs(snpIn); tgl = TMath::Abs(tglIn); drift= driftIn;};
-	if (itype==3) {snp = TMath::Abs(snpOut); tgl = TMath::Abs(tglOut);drift=driftOut;};
+	if (itype==1) {snp = TMath::Abs(snpIn); tgl = tglIn; drift= driftIn;};
+	if (itype==3) {snp = TMath::Abs(snpOut); tgl = tglOut;drift=driftOut;};
 	if (ncl[itype]<kMinClustersTracklet) continue;
 	Float_t deltaL = TMath::Sqrt(1+snp*snp+tgl*tgl);
 	//
@@ -393,6 +412,7 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	  TVectorD vQRM(9,vecRatioTrackletMax);
 	  TVectorD vQRTT(9,vecRatioTrackletTruncTot);
 	  TVectorD vQRTM(9,vecRatioTrackletTruncMax);
+	  TVectorF  vNcl(5,ncl);
 	  (*cstream) << "dEdx" <<
 	    "run="<<fRun<<              //  run number
 	    "event="<<fEvent<<          //  event number
@@ -400,6 +420,10 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	    "trigger="<<fTrigger<<      //  trigger
 	    "mag="<<fMagF<<             //  magnetic field	      
 	    "track.="<<seed<<           //  original seed
+	    "trin.="<<trackIn<<           //  inner param
+	    "trout.="<<trackOut<<         //  outer param
+	    "ncl.="<<&vNcl<<            //  number of clusters
+	    "itype="<<itype<<
 	    //
 	    "vQT.="<<&vQT<<             // trunc mean - total charge
 	    "vQM.="<<&vQM<<	        // trunc mean - max charge 
@@ -492,8 +516,8 @@ void AliTPCcalibPID::MakeReport(const char *outputpath) {
     DrawRatioMax(ipad,outputpath);
   }
   DrawRatiodEdx(0.5,3,outputpath);
-  DrawResolBGQtot(140,160,outputpath);
-  DrawResolBGQmax(140,160,outputpath);
+  DrawResolBGQtot(140,160,1,40,outputpath);
+  DrawResolBGQmax(140,160,1,40,outputpath);
   return;
 }
 
@@ -507,7 +531,7 @@ void  AliTPCcalibPID::DrawRatioTot(Int_t ipad, const char* outputpath){
   //  Int_t kmicolors[10]={1,2,3,4,6,7,8,9,10,11};
   Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
   AliTPCcalibPID * pid = this;
-  TCanvas *canvas= new TCanvas(Form("QtotRatio%d)",ipad),Form("QtotRatio%d)",ipad));
+  TCanvas *canvas= new TCanvas(Form("QtotRatio%d)",ipad),Form("QtotRatio%d)",ipad),600,800);
   canvas->Divide(3,2);
   pid->GetHistRatioQtot()->GetAxis(7)->SetRange(ipad+2,ipad+2);
   canvas->cd(1);
@@ -584,7 +608,7 @@ void  AliTPCcalibPID::DrawRatioMax(Int_t ipad, const char* outputpath){
   //  Int_t kmicolors[10]={1,2,3,4,6,7,8,9,10,11};
   Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
   AliTPCcalibPID * pid = this;
-  TCanvas *canvas= new TCanvas(Form("QmaxRatio%d)",ipad),Form("QmaxRatio%d)",ipad));
+  TCanvas *canvas= new TCanvas(Form("QmaxRatio%d)",ipad),Form("QmaxRatio%d)",ipad),600,800);
   canvas->Divide(3,2);
   pid->GetHistRatioQmax()->GetAxis(7)->SetRange(ipad+2,ipad+2);
   canvas->cd(1);
@@ -660,7 +684,7 @@ void AliTPCcalibPID::DrawRatiodEdx(Float_t demin, Float_t demax, const char* out
   //  Int_t kmicolors[10]={1,2,3,4,6,7,8,9,10,11};
   Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
   AliTPCcalibPID * pid = this;
-  TCanvas *canvas= new TCanvas("QRatiodEdx","QRatiodEdx");
+  TCanvas *canvas= new TCanvas("QRatiodEdx","QRatiodEdx",600,800);
   canvas->Divide(2,4);
   canvas->SetLogx(kTRUE);
   TH1 * hprofP=0;
@@ -674,7 +698,7 @@ void AliTPCcalibPID::DrawRatiodEdx(Float_t demin, Float_t demax, const char* out
     hprofP  = (TH1*) (pid->GetHistRatioQmax()->Projection(0,5)->ProfileX());
     hprofP->SetXTitle("dEdx_{track}");
     hprofP->SetYTitle("dEdx_{tracklet}/dEdx_{track}");
-    hprofP->SetTitle(Form("Q_{max} dEdx_{tracklet}/dEdx_{track} type %d",0));
+    hprofP->SetTitle(Form("Q_{max} dEdx_{tracklet}/dEdx_{track} type %d",ipad));
     hprofP->SetMarkerStyle(kmimarkers[0]);     
     hprofP->SetMaximum(1.1);
     hprofP->SetMinimum(0.9);
@@ -684,7 +708,7 @@ void AliTPCcalibPID::DrawRatiodEdx(Float_t demin, Float_t demax, const char* out
     hprofP  = (TH1*) (pid->GetHistRatioQtot()->Projection(0,5)->ProfileX());
     hprofP->SetXTitle("dEdx_{track}");
     hprofP->SetYTitle("dEdx_{tracklet}/dEdx_{track}");
-    hprofP->SetTitle(Form("Q_{tot} dEdx_{tracklet}/dEdx_{track} type %d",0));
+    hprofP->SetTitle(Form("Q_{tot} dEdx_{tracklet}/dEdx_{track} type %d",ipad));
     hprofP->SetMarkerStyle(kmimarkers[0]);     
     hprofP->SetMaximum(1.1);
     hprofP->SetMinimum(0.9);
@@ -692,13 +716,13 @@ void AliTPCcalibPID::DrawRatiodEdx(Float_t demin, Float_t demax, const char* out
   }
   //
   //
-  canvas->SaveAs(Form("%s/QratiodEdx%d.eps",outputpath));
-  canvas->SaveAs(Form("%s/QratiodEdx%d.gif",outputpath));
+  canvas->SaveAs(Form("%s/QratiodEdx.eps",outputpath));
+  canvas->SaveAs(Form("%s/QratiodEdx.gif",outputpath));
 }
 
 
 
-void AliTPCcalibPID::DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const char *outputpath){
+void AliTPCcalibPID::DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp, const char *outputpath, Bool_t resol){
   //
   // 
   //
@@ -713,7 +737,8 @@ void AliTPCcalibPID::DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const
   // set cut
   pid->GetHistQtot()->GetAxis(6)->SetRangeUser(minClusters,maxClusters);
   pid->GetHistQtot()->GetAxis(5)->SetRangeUser(1,10000);
-  TCanvas *canvas= new TCanvas("dEdxResolQ_{Tot}","dEdxResolQ_{Tot}");
+  pid->GetHistQtot()->GetAxis(4)->SetRangeUser(minp,maxp);
+  TCanvas *canvas= new TCanvas("dEdxResolQ_{Tot}","dEdxResolQ_{Tot}",800,600);
   canvas->Divide(2,3);
   //
   //
@@ -724,9 +749,17 @@ void AliTPCcalibPID::DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const
     if (ipad==4) pid->GetHistQtot()->GetAxis(7)->SetRange(1,1);
     his = (TH2*)(pid->GetHistQtot()->Projection(0,5));
     his->FitSlicesY(0,0,-1,0,"QNR",&arr);
-    hmean = (TH1*)arr.At(1);
-    hsigma = (TH1*)arr.At(2)->Clone();    
-    hsigma->Divide(hmean);
+    if (resol){
+      hmean = (TH1*)arr.At(1);
+      hsigma = (TH1*)arr.At(2)->Clone();    
+      hsigma->SetMaximum(0.11);
+      hsigma->SetMinimum(0.4);    
+      hsigma->Divide(hmean);
+    }else{
+      hsigma = (TH1*)arr.At(1)->Clone();
+      hsigma->SetMaximum(2);
+      hsigma->SetMinimum(0.5);
+    }
     arr.SetOwner(kTRUE);
     arr.Delete();
     delete his;
@@ -740,15 +773,18 @@ void AliTPCcalibPID::DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const
       hsigma->SetName(Form("#sigma_{dEdx}/dEdx_{tot} Full"));
     }
     hsigma->SetMarkerStyle(kmimarkers[0]);
-    hsigma->SetMaximum(0.15);
-    hsigma->SetMinimum(0.0);
     hsigma->Draw();
   }
-  canvas->SaveAs(Form("%s/dEdxResolMax.eps",outputpath));
-  canvas->SaveAs(Form("%s/dEdxResolMax.gif",outputpath));
+  if (resol){
+    canvas->SaveAs(Form("%s/dEdxResolTot.eps",outputpath));
+    canvas->SaveAs(Form("%s/dEdxResolTot.gif",outputpath));
+  }else {
+    canvas->SaveAs(Form("%s/dEdxBGTot.eps",outputpath));
+    canvas->SaveAs(Form("%s/dEdxBGTot.gif",outputpath));
+  }
 }
 
-void AliTPCcalibPID::DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const char *outputpath){
+void AliTPCcalibPID::DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp, const char *outputpath, Bool_t resol){
   //
   // Int_t minClusters=140;  Int_t maxClusters=200; const char *outputpath="picPID06"
   //
@@ -761,8 +797,9 @@ void AliTPCcalibPID::DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const
   //
   // set cut
   pid->GetHistQmax()->GetAxis(6)->SetRangeUser(minClusters,maxClusters);
+  pid->GetHistQmax()->GetAxis(4)->SetRangeUser(minp,maxp);
   pid->GetHistQmax()->GetAxis(5)->SetRangeUser(1,10000);
-  TCanvas *canvas= new TCanvas("dEdxResolQ_{Max}","dEdxResolQ_{Max}");
+  TCanvas *canvas= new TCanvas("dEdxResolQ_{Max}","dEdxResolQ_{Max}",800,600);
   canvas->Divide(2,3);
   //
   //
@@ -773,9 +810,17 @@ void AliTPCcalibPID::DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const
     if (ipad==4) pid->GetHistQmax()->GetAxis(7)->SetRange(1,1);
     his = (TH2*)(pid->GetHistQmax()->Projection(0,5));
     his->FitSlicesY(0,0,-1,0,"QNR",&arr);
-    hmean = (TH1*)arr.At(1);
-    hsigma = (TH1*)arr.At(2)->Clone();
-    hsigma->Divide(hmean);
+    if (resol){
+      hmean = (TH1*)arr.At(1);
+      hsigma = (TH1*)arr.At(2)->Clone();
+      hsigma->SetMaximum(0.11);
+      hsigma->SetMinimum(0.4);
+      hsigma->Divide(hmean);
+    }else{
+      hsigma = (TH1*)arr.At(1)->Clone();      
+      hsigma->SetMaximum(2.);
+      hsigma->SetMinimum(0.5);
+    }
     arr.SetOwner(kTRUE);
     arr.Delete();
     delete his;
@@ -788,12 +833,18 @@ void AliTPCcalibPID::DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const
       hsigma->SetName(Form("#sigma_{dEdx}/dEdx_{max} Full"));
     }
     hsigma->SetMarkerStyle(kmimarkers[0]);
-    hsigma->SetMaximum(0.15);
-    hsigma->SetMinimum(0.0);
     hsigma->Draw();
   }
-  canvas->SaveAs(Form("%s/dEdxResolMax.eps",outputpath));
-  canvas->SaveAs(Form("%s/dEdxResolMax.gif",outputpath));
+
+  if (resol){
+    canvas->SaveAs(Form("%s/dEdxResolMax.eps",outputpath));
+    canvas->SaveAs(Form("%s/dEdxResolMax.gif",outputpath));
+  }else {
+    canvas->SaveAs(Form("%s/dEdxBGMax.eps",outputpath));
+    canvas->SaveAs(Form("%s/dEdxBGMax.gif",outputpath));
+  }
+
+
 }
 
 
@@ -803,6 +854,9 @@ void AliTPCcalibPID::DumpTree(THnSparse * hndim, const char * outname){
   // make a tree
   // the tree will be written to the file - outname
   //
+  //
+  
+
   TTreeSRedirector *pcstream = new TTreeSRedirector(outname);
   //
   //
@@ -811,19 +865,44 @@ void AliTPCcalibPID::DumpTree(THnSparse * hndim, const char * outname){
   Int_t *bins = new Int_t[10];
   //
   //
+  const Float_t rmsy0=0.5, rmsz0=1;
+  //
   Int_t ndim = hndim->GetNdimensions();
   //
+  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
   for (Long64_t i = 0; i < hndim->GetNbins(); ++i) {
     value = hndim->GetBinContent(i, bins);
     for (Int_t idim = 0; idim < ndim; idim++) {
       position[idim] = hndim->GetAxis(idim)->GetBinCenter(bins[idim]);
     }      
+    Int_t sector=36;
+    Int_t row=0;
+    if (TMath::Abs(position[7]-1.5)<0.1) sector=0;  // inner sector
+    if (TMath::Abs(position[7]-3.5)<0.1) row=96;    // long pads
+
     Double_t ty = TMath::Tan(TMath::ASin(position[2]));
     Double_t tz = position[3]*TMath::Sqrt(1+ty*ty);
+    Double_t padLength= param->GetPadPitchLength(sector,row);
+    Double_t padWidth = param->GetPadPitchWidth(sector);
+    Double_t zwidth   = param->GetZWidth();
+    Double_t zlength=250-TMath::Abs(position[1])*250.;
+    // diffusion in pad, time bin  units
+    Double_t diffT=TMath::Sqrt(zlength)*param->GetDiffT()/padWidth;
+    Double_t diffL=TMath::Sqrt(zlength)*param->GetDiffL()/zwidth;
     //
+    // transform angular effect to pad units
+    Double_t pky   = ty*padLength/padWidth;
+    Double_t pkz   = tz*padLength/zwidth;
+    //
+    //
+    Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT+pky*pky/12.);
+    Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL+pkz*pkz/12.);
+    Int_t ipad = TMath::Nint(position[7]-1.5);
+     //
     (*pcstream)<<"Dump"<<
       "bincont="<<value<<      // bin content
       "val="<<position[0]<<    // parameter difference
+      "ipad="<<ipad<<          // pad type
       "dr="<<position[1]<<     //drift
       "ty="<<ty<<              //phi
       "tz="<<tz<<              //theta      
@@ -834,6 +913,12 @@ void AliTPCcalibPID::DumpTree(THnSparse * hndim, const char * outname){
       "ncl="<<position[6]<<    //ncl
       "type="<<position[7]<<   //tracklet
       "tot="<<position[8]<<    //is tot 
+      "sy="<<sy<<              // sigma y
+      "sz="<<sz<<              // sigma z
+      "pky="<<pky<<            // ky - angle in pad units
+      "pkz="<<pkz<<            // kz - angle in pad units
+      "diy="<<diffT<<
+      "diz="<<diffL<<
       "\n";
   }
   delete pcstream;

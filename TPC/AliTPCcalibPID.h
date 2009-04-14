@@ -31,8 +31,8 @@ public:
   void                   DrawRatioTot(Int_t ipad, const char* outputpath);
   void                   DrawRatioMax(Int_t ipad, const char* outputpath);
   void                   DrawRatiodEdx(Float_t demin, Float_t demax, const char* outputpath);
-  void                   DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, const char *outputpath); //
-  void                   DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, const char *outputpath);
+  void                   DrawResolBGQtot(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp,  const char *outputpath, Bool_t resol=kTRUE); //
+  void                   DrawResolBGQmax(Int_t minClusters, Int_t maxClusters, Float_t minp, Float_t maxp, const char *outputpath, Bool_t resol=kTRUE);
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};

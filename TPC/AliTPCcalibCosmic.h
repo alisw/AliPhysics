@@ -38,7 +38,7 @@ public:
 
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
-  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, Int_t ncl0, Int_t ncl1);
+  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1);
 
 
   //
@@ -62,7 +62,8 @@ public:
   //
   THnSparse   *fHistoDelta[6];  // histograms of tracking performance delta
   THnSparse   *fHistoPull[6];   // histograms of tracking performance pull
-  THnSparse   *fHistodEdx[6];   // histograms of dEdx perfomance
+  THnSparse   *fHistodEdxMax[4];   // histograms of dEdx perfomance - max charge
+  THnSparse   *fHistodEdxTot[4];   // histograms of dEdx perfomance - tot charge
 
 private:
   
@@ -89,7 +90,7 @@ private:
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 
-  ClassDef(AliTPCcalibCosmic, 1); 
+  ClassDef(AliTPCcalibCosmic, 2); 
 };
 
 #endif
