@@ -1,6 +1,6 @@
-void drawProtonQAResults(const char *analysisType = "TPC") {
+void drawProtonQAResults(const char *analysisType = "TPC",
+			 const char *pidMode = "Bayesian") {
   //Macro to visualize the results of the proton QA task
-  //TCanvas objects: 20
   gStyle->SetPalette(1,0);
   gStyle->SetCanvasColor(41);
   gStyle->SetFrameFillColor(10);
@@ -8,11 +8,17 @@ void drawProtonQAResults(const char *analysisType = "TPC") {
   PrintHelpMenu();
   
   TString filename1 = "Protons.QA.";
-  filename1 += analysisType; filename1 += ".root";
+  filename1 += analysisType; 
+  filename1 += "."; filename1 += pidMode;
+  filename1 += ".root";
   TString filename2 = "Protons.MC.QA.";
-  filename2 += analysisType; filename2 += ".root";
+  filename2 += analysisType; 
+  filename2 += "."; filename2 += pidMode;
+  filename2 += ".root";
   TString filename3 = "Protons.Efficiency.";
-  filename3 += analysisType; filename3 += ".root";
+  filename3 += analysisType; 
+  filename3 += "."; filename3 += pidMode;
+  filename3 += ".root";
   
   TFile *fQA = TFile::Open(filename1.Data());
   TList *listGlobalQA = (TList *)fQA->Get("globalQAList");

@@ -1462,7 +1462,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   fAcceptedCutList->Add(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsPass);//eta-phi of secondary accepted ESD antiprotons
   //eta-phi-number of TPC points for the dE/dx
   TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass = new TH3D("gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass",
-								  "Accepted primary protons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								  "Accepted primary protons;#eta;#phi;N_{points}(TPC)",
 								  fNBinsY,fMinY,fMaxY,
 								  100,0,360,
 								  100,0,200);
@@ -1470,7 +1470,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fAcceptedCutList->Add(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsPass);//eta-phi of primary accepted ESD protons
   TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass = new TH3D("gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass",
-								      "Accepted primary antiprotons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								      "Accepted primary antiprotons;#eta;#phi;N_{points}(TPC)",
 								      fNBinsY,fMinY,fMaxY,
 								      100,0,360,
 								      100,0,200);
@@ -1478,7 +1478,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
   fAcceptedCutList->Add(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsPass);//eta-phi of primary accepted ESD antiprotons
   TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass = new TH3D("gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass",
-								    "Accepted secondary protons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								    "Accepted secondary protons;#eta;#phi;N_{points}(TPC)",
 								    fNBinsY,fMinY,fMaxY,
 								    100,0,360,
 								    100,0,200);
@@ -1486,7 +1486,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fAcceptedCutList->Add(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsPass);//eta-phi of secondary accepted ESD protons
   TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass = new TH3D("gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsPass",
-									"Accepted secondary antiprotons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+									"Accepted secondary antiprotons;#eta;#phi;N_{points}(TPC)",
 									fNBinsY,fMinY,fMaxY,
 									100,0,360,
 									100,0,200);
@@ -1581,7 +1581,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   fRejectedCutList->Add(gHistEtaPhiChi2PerTPCClusterSecondaryAntiProtonsReject);//eta-phi of secondary rejected ESD antiprotons
   //eta-phi-number of TPC points for the dE/dx
   TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject = new TH3D("gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject",
-								  "Rejected primary protons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								  "Rejected primary protons;#eta;#phi;N_{points}(TPC)",
 								  fNBinsY,fMinY,fMaxY,
 								  100,0,360,
 								  100,0,200);
@@ -1589,7 +1589,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject->GetXaxis()->SetTitleColor(1);
   fRejectedCutList->Add(gHistEtaPhiTPCdEdxNPointsPrimaryProtonsReject);//eta-phi of primary rejected ESD protons
   TH3D *gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject = new TH3D("gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject",
-								      "Rejected primary antiprotons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								      "Rejected primary antiprotons;#eta;#phi;N_{points}(TPC)",
 								      fNBinsY,fMinY,fMaxY,
 								      100,0,360,
 								      100,0,200);
@@ -1597,7 +1597,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
   fRejectedCutList->Add(gHistEtaPhiTPCdEdxNPointsPrimaryAntiProtonsReject);//eta-phi of primary rejected ESD antiprotons
   TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject = new TH3D("gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject",
-								    "Rejected secondary protons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+								    "Rejected secondary protons;#eta;#phi;N_{points}(TPC)",
 								    fNBinsY,fMinY,fMaxY,
 								    100,0,360,
 								    100,0,200);
@@ -1605,7 +1605,7 @@ void AliProtonQAAnalysis::InitCutLists() {
   gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject->GetXaxis()->SetTitleColor(1);
   fRejectedCutList->Add(gHistEtaPhiTPCdEdxNPointsSecondaryProtonsReject);//eta-phi of secondary rejected ESD protons
   TH3D *gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsReject = new TH3D("gHistEtaPhiTPCdEdxNPointsSecondaryAntiProtonsReject",
-									"Rejected secondary antiprotons;#eta;#phi;#chi^{2}/N_{clusters}(TPC)",
+									"Rejected secondary antiprotons;#eta;#phi;N_{points}(TPC)",
 									fNBinsY,fMinY,fMaxY,
 									100,0,360,
 									100,0,200);
