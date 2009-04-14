@@ -44,7 +44,7 @@
 ClassImp(AliTPCExBFirst)
 
 const Double_t AliTPCExBFirst::fgkEM=1.602176487e-19/9.10938215e-31;
-const Double_t AliTPCExBFirst::fgkDriftField=40.e3;
+const Double_t AliTPCExBFirst::fgkDriftField=-40.e3;
 
 AliTPCExBFirst::AliTPCExBFirst()
   : fDriftVelocity(0),

@@ -29,7 +29,7 @@
 ClassImp(AliTPCExBExact)
 
 const Double_t AliTPCExBExact::fgkEM=1.602176487e-19/9.10938215e-31;
-const Double_t AliTPCExBExact::fgkDriftField=40.e3;
+const Double_t AliTPCExBExact::fgkDriftField=-40.e3;
 
 AliTPCExBExact::AliTPCExBExact()
   : fDriftVelocity(0),
