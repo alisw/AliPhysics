@@ -59,6 +59,7 @@
 #include "AliITSPlaneEffSPD.h"
 #include "AliITSPlaneEffSDD.h"
 #include "AliITSPlaneEffSSD.h"
+#include "AliITSV0Finder.h"
 #include "AliITStrackerMI.h"
 
 ClassImp(AliITStrackerMI)
@@ -452,7 +453,7 @@ void AliITStrackerMI::FillClusterArray(TObjArray* array) const {
   return;
 }
 //------------------------------------------------------------------------
-static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t) {
+Int_t AliITStrackerMI::CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t) {
   //--------------------------------------------------------------------
   // Correction for the material between the TPC and the ITS
   //--------------------------------------------------------------------
@@ -465,7 +466,7 @@ static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t) {
       if (!t->PropagateToTGeo(AliITSRecoParam::Getrcd(),1))       return 0;// TPC central drum
       if (!t->PropagateToTGeo(AliITSRecoParam::Getriw()+0.001,1)) return 0;// TPC inner wall
   } else {
-    Error("CorrectForTPCtoITSDeadZoneMaterial","Track is already in the dead zone !");
+    printf("CorrectForTPCtoITSDeadZoneMaterial: Track is already in the dead zone !\n");
     return 0;
   }
   
@@ -605,6 +606,8 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 
   if(event->GetNumberOfV0s()>0) UpdateTPCV0(event);
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) FindV02(event);
+  //if(event->GetNumberOfV0s()>0) AliITSV0Finder::UpdateTPCV0(event,this);
+  //if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) AliITSV0Finder::FindV02(event,this);
   fAfterV0 = kTRUE;
   //
   itsTracks.Delete();
@@ -697,7 +700,10 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
   // The clusters must be loaded !
   //--------------------------------------------------------------------
   fTrackingPhase="RefitInward";
+
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) RefitV02(event);
+  //if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) AliITSV0Finder::RefitV02(event,this);
+
   Int_t nentr=event->GetNumberOfTracks();
   Info("RefitInward", "Number of ESD tracks: %d\n", nentr);
 
@@ -3818,6 +3824,7 @@ Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
   }
   return res;
 }
+
 //------------------------------------------------------------------------
 void AliITStrackerMI::UpdateTPCV0(const AliESDEvent *event){
   //
@@ -4641,6 +4648,7 @@ void AliITStrackerMI::RefitV02(const AliESDEvent *event)
     }    
   }
 }
+
 //------------------------------------------------------------------------
 void AliITStrackerMI::BuildMaterialLUT(TString material) {
   //--------------------------------------------------------------------

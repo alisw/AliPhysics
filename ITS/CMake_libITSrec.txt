@@ -16,6 +16,7 @@ set(SRCS
 		AliITStrackerV2.cxx 
 		AliITStrackMI.cxx 
 		AliITStrackerMI.cxx 
+		AliITSV0Finder.cxx
 		AliITSVertexer.cxx 
 		AliITSVertexerIons.cxx 
 		AliITSVertexerCosmics.cxx 

@@ -65,6 +65,11 @@ public:
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEff;}   // return the pointer to AliPlaneEff
   void SetDetTypeRec(const AliITSDetTypeRec *detTypeRec) {fkDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
+  TObjArray* GetTrackHypothesys() {return &fTrackHypothesys;}
+  TObjArray* GetBestHypothesys()  {return &fBestHypothesys;}
+  TObjArray* GetOriginal()        {return &fOriginal;}
+  TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
+  static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t);
 
   class AliITSdetector { 
   public:
@@ -200,17 +205,20 @@ public:
   };
   AliITStrackerMI::AliITSlayer    & GetLayer(Int_t layer) const;
   AliITStrackerMI::AliITSdetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
+  Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
+  void SetCurrentEsdTrack(Int_t i) {fCurrentEsdTrack=i;}
+  void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
 
 protected:
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
-  Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
+  
   void FindV02(AliESDEvent *event);  //try to find V0
   void RefitV02(const AliESDEvent *event);  //try to refit  V0's
   void UpdateTPCV0(const AliESDEvent *event);  //try to update, or reject TPC  V0s
+  
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness();
-  void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackMI();
      new(&fBestTrack) AliITStrackMI(fTrackToFollow);
