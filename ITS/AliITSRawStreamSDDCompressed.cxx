@@ -73,12 +73,13 @@ ClassImp(AliITSRawStreamSDDCompressed)
 //______________________________________________________________________
 AliITSRawStreamSDDCompressed::AliITSRawStreamSDDCompressed(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
-fDDLModuleMap(0),
-fData(0),
-fCarlosId(-1),
-fChannel(0),
-fJitter(0),
-fDDL(0)
+  fDDLModuleMap(0),
+  fData(0),
+  fCarlosId(-1),
+  fChannel(0),
+  fJitter(0),
+  fDDL(0),
+  fADCEncoded(0)
 {
 // create an object to read ITS SDD raw digits
   for(Int_t im=0;im<kSDDModules;im++){
@@ -93,13 +94,14 @@ fDDL(0)
 
 //______________________________________________________________________
 AliITSRawStreamSDDCompressed::AliITSRawStreamSDDCompressed(const AliITSRawStreamSDDCompressed& rs) :
-AliITSRawStream(rs.fRawReader),
-fDDLModuleMap(rs.fDDLModuleMap),
-fData(0),
-fCarlosId(-1),
-fChannel(0),
-fJitter(0),
-fDDL(0)
+  AliITSRawStream(rs.fRawReader),
+  fDDLModuleMap(rs.fDDLModuleMap),
+  fData(0),
+  fCarlosId(-1),
+  fChannel(0),
+  fJitter(0),
+  fDDL(0),
+  fADCEncoded(0)
 {
   // copy constructor
   AliError("Copy constructor should not be used.");
@@ -154,6 +156,7 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
   UInt_t maskAnode=255<<18; // 8 bits  (18-25) for Nanode   in data word
   UInt_t maskTb=255<<10;    // 8 bits  (10-27) for Ntimebin in data word
   UInt_t maskADC=1023;      // 10 bits (0-9)   for ADC      in data word
+  UInt_t maskCode=7;        // 3 bits (0-2)    for ADC range in encoded-ADC case
     
   while(kTRUE){
     if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
@@ -177,7 +180,15 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       fChannel=(fData&maskSide)>>26;
       fCoord1=(fData&maskAnode)>>18;
       fCoord2=(fData&maskTb)>>10;
-      Int_t sig8bit=fData&maskADC;
+      Int_t sig8bit;
+      if(fADCEncoded){
+	UInt_t code=fData&maskCode;
+	if (code < 2 || code > 7) AliError("Wrong ADC code value");
+	UInt_t adcmask=(1<<code)-1;
+	sig8bit=((fData&(adcmask<<3))>>3) + (1<<code);
+      }else{      
+	sig8bit=fData&maskADC;
+      }
       sig8bit+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
       fSignal=DecompAmbra(sig8bit);
       fCompletedModule=kFALSE;

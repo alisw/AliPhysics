@@ -34,6 +34,9 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual UInt_t   GetDataWord() const {return fData;}
 
+    virtual void SetADCEncoded(Bool_t fl=kTRUE){
+      fADCEncoded=fl;
+    }
     virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){
       if(!fDDLModuleMap) fDDLModuleMap=new AliITSDDLModuleMapSDD();
       fDDLModuleMap->SetDDLMap(ddlsdd);
@@ -65,9 +68,12 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     Int_t            fJitter;          // jitter between L0 and pascal stop (x25ns)
     Int_t            fLowThresholdArray[kSDDModules][2]; // array with low thresholds for all modules
 
-    Int_t            fDDL;        //current ddl number
+    Int_t            fDDL;        // current ddl number
+    Bool_t           fADCEncoded;  // flag for data format
+                                  // kTRUE -> ADC encoded in 5+3 bits
+                                  // kFALSE -> ADC decoded (8 bits)
 
-    ClassDef(AliITSRawStreamSDDCompressed, 1) // class for reading ITS SDD raw digits
+    ClassDef(AliITSRawStreamSDDCompressed, 2) // class for reading ITS SDD raw digits
 };
 
 #endif
