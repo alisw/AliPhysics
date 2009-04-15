@@ -81,6 +81,10 @@ void PrintHelpMenu() {
   Printf("\t 1. The phi vs eta correlation plots for primary and secondary (anti)protons.");
   Printf("\t 2. The Nclusters TPC vs eta correlation plots for primary and secondary (anti)protons.");
   Printf("\t 3. The Nclusters TPC vs phi correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 4. The chi^2 per TPC cluster vs eta correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 5. The chi^2 per TPC cluster vs phi correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 6. The Npoints TPC (dE/dx) vs eta correlation plots for primary and secondary (anti)protons.");
+  Printf("\t 7. The Npoints TPC (dE/dx) vs phi correlation plots for primary and secondary (anti)protons.");
 
  Printf("\nFunction drawEfficiencies: Takes as arguments the filename produced by the drawEfficiency (see before - usually the name is Reconstruction-PID-Efficiency.root) and three booleans indicating whether the points for primaries, secondaries from weak decays and secondaries from hadronic interactions will be shown.It displays:");
   Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
@@ -90,6 +94,11 @@ void PrintHelpMenu() {
  Printf("\nFunction compareEfficiencies: Takes as arguments the filenames produced by the drawEfficiency (see before - usually the name is Reconstruction-PID-Efficiency.root) and three booleans indicating whether the points for primaries, secondaries from weak decays and secondaries from hadronic interactions will be shown. The two files correspond to two different tracking methods (e.g. TPC, Hybrid, Global). It displays:");
   Printf("\t 1. Reconstruction efficiencies for primary and secondary (anti)protons as a function of either eta or y. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
   Printf("\t 2. Reconstruction efficiencies for primary and secondary (anti)protons as a function of Pt. The secondaries are categorized by the MC process as originating from a weak decay or from a hadronic interaction.");
+
+  Printf("\nFunction draw2DEfficiency: Takes as an argument the analysis and the PID mode along with the desired projection of the 3D plots. It draws the PID efficiency as a function of the different parameters.");
+  Printf("\t yx: Efficiency vs pT vs eta");
+  Printf("\t zx: Efficiency vs Npoints TPC for the dE/dx vs eta");
+  Printf("\t zy: Efficiency vs Npoints TPC for the dE/dx vs pT");
 
   Printf("\nFunction drawCutParametersDistributions: Takes as an argument the third file created by the QA code (usually the name is Protons.QA.Histograms.<AnalysisMode>.root) and displays the distributions of accepted primaries (in blue) and secondaries (in orange) for the different cut parameters.");
   Printf("==================================================================\n\n\n");
@@ -2958,4 +2967,62 @@ void drawCutParametersDistributions(const char* filename = "Protons.QA.Histogram
 
 
   f->Close();
+}
+
+//________________________________________________//
+void draw2DEfficiency(const char *analysisMode = "TPC",
+		      const char *pidMode = "Bayesian",
+		      const char* projection = "yx") {
+  gStyle->SetPalette(1,0);
+  gStyle->SetCanvasColor(41);
+  gStyle->SetFrameFillColor(10);
+
+  TString filename = "Protons.Efficiency.";filename += analysisMode; 
+  filename += "."; filename += pidMode; filename += ".root";
+  TFile *f = TFile::Open(filename.Data());
+  TList *list = (TList *)f->Get("efficiencyList");
+
+  TH3D *gHistESDInitYPtProtons = (TH3D *)list->At(12);
+  TH2D *gInit = (TH2D *)gHistESDInitYPtProtons->Project3D(projection);
+  TH3D *gHistESDIdYPtProtons = (TH3D *)list->At(13);
+  TH2D *gId = (TH2D *)gHistESDIdYPtProtons->Project3D(projection);
+  gId->Divide(gInit);
+  gId->Scale(100.);
+  gId->GetZaxis()->SetTitle("#epsilon [%]");
+
+  TH2F *h = new TH2F("h","",100,-1,1,10000,0,210);
+  h->SetStats(kFALSE);
+
+  switch(projection) {
+    case "yx":
+      gId->GetZaxis()->SetRangeUser(90,100);
+      h->GetXaxis()->SetRangeUser(-0.6,0.6);
+      h->GetYaxis()->SetRangeUser(0.4,1.0);
+      h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
+      h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
+      break;
+    case "zx":
+      gId->GetZaxis()->SetRangeUser(0,100);
+      h->GetXaxis()->SetRangeUser(-0.6,0.6);
+      h->GetYaxis()->SetRangeUser(0.,210.0);
+      h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
+      h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
+      break;
+    case "zy":
+      gId->GetZaxis()->SetRangeUser(0,100);
+      h->GetXaxis()->SetRangeUser(0.4,1.0);
+      h->GetYaxis()->SetRangeUser(0.,210.);
+      h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
+      h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
+      break;
+  default:
+    break;
+  }
+
+  TCanvas *c = new TCanvas();
+  c->SetRightMargin(0.15);
+  h->DrawCopy();
+  gId->DrawCopy("colzsame");
+
+
 }

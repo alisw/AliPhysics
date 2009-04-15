@@ -3178,7 +3178,8 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 
 //____________________________________________________________________//
 void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack, 
-						   AliESDEvent *esd) {
+						   AliESDEvent *esd,
+						   const AliESDVertex *vertex) {
   Int_t nGoodTracks = esd->GetNumberOfTracks();
   TArrayI labelArray(nGoodTracks);
   Int_t labelCounter = 0;
@@ -3203,6 +3204,9 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
     
     Int_t nTPCpoints = track->GetTPCsignalN();
 
+    if(fUseCutsInEfficiency) 
+      if(!fProtonAnalysisBase->IsAccepted(esd,vertex,track)) continue;
+	
     if(TMath::Abs(pdgcode) == 2212) {
       if(fProtonAnalysisBase->GetEtaMode())
 	((TH3D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
