@@ -169,7 +169,7 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     }else{
 	Printf("survey array contains %d entries", surveyArray->GetEntriesFast());
     }
-    (AliGeomManager::GetGeometry())->UnlockGeometry();
+    //(AliGeomManager::GetGeometry())->UnlockGeometry();
 
     AddAlignObj("ITS",fWholeITS[0],fWholeITS[1],fWholeITS[2],fWholeITS[3],fWholeITS[4],fWholeITS[5],"fixed");
 
@@ -1072,3 +1072,4 @@ TString AliITSMisAligner::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const {
   return name;
 }
 */
+

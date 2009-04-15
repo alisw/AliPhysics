@@ -343,8 +343,8 @@ Bool_t AliITSSurveyToAlign::ApplyAlignObjSSDLadders(){
   //   Apply alignment objects for SSD ladders to geometry, needed to correctly
   //   build alignment objects for SSD modules
   // 
-  TClonesArray* tobeApplied = new TClonesArray("AliAlignObjParams",72);
-  Int_t ii=0;
+  Int_t applied=0;
+
   for(Int_t jj=0; jj<fAlignObjArray->GetEntriesFast(); jj++)
   {
       AliAlignObjParams* ap = dynamic_cast<AliAlignObjParams*> (fAlignObjArray->UncheckedAt(jj));
@@ -352,12 +352,15 @@ Bool_t AliITSSurveyToAlign::ApplyAlignObjSSDLadders(){
       {
 	  TString sName(ap->GetSymName());
 	  if(sName.Contains("SSD") && sName.Contains("Ladder"))
-	      (*tobeApplied)[ii++] = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(jj);
+	  {
+	      if(!ap->ApplyToGeometry()) return kFALSE;
+	      applied++;
+	  }
       }
   }
-  AliInfo(Form(" %d alignment objects for SSD ladders applied to geometry.",tobeApplied->GetEntriesFast()));
+  AliInfo(Form(" %d alignment objects for SSD ladders applied to geometry.",applied));
 
-  return(AliGeomManager::ApplyAlignObjsToGeom(*tobeApplied));
+  return kTRUE;
 }
 
 //______________________________________________________________________
@@ -820,4 +823,3 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
   z0=x6;
   return;
 }
-
