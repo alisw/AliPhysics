@@ -36,7 +36,6 @@ class AliTPCClusterParam : public TObject {
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
   void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
-  void SetQnormGauss(Int_t ipad, Int_t itype,  TH1  * norm) {}
   void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val); 
   Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const; 
   void ResetQnormCorr(); 
