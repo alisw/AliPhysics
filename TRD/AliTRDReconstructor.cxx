@@ -288,6 +288,11 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       PROCESSED = kTRUE;
       break;	
     }
+    // extra rules
+    if(sopt.Contains("gs") && !sopt.Contains("!")){
+      CLRFLG(fSteerParam, kLUT); PROCESSED = kTRUE;
+    }
+
     if(PROCESSED) continue;
 
     if(sopt.Contains("sl")){

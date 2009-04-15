@@ -232,9 +232,9 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
 
   // pad response width with diffusion corrections
   Double_t s2  = AliTRDcalibDB::Instance()->GetPRFWidth(fDetector, col, row); s2 *= s2; 
-  // Float_t dl, dt;
-  // AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
-  // s2 += dl*dl*x/(1.+2.*exb*exb);
+  Float_t dl, dt;
+  AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
+  s2 += dl*dl*x/(1.+2.*exb*exb);
   s2 -= - 1.5e-1;
 
   // Pad dimensions

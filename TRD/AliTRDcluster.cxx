@@ -513,7 +513,7 @@ Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *c
   if(y1) (*y1)*=W;
   if(y2) (*y2)*=W;
 
-  return y0-fCenter*W;
+  return y0+fCenter*W;
 }
 
 //_____________________________________________________________________________
@@ -545,9 +545,13 @@ Bool_t AliTRDcluster::IsEqual(const TObject *o) const
 //_____________________________________________________________________________
 void AliTRDcluster::Print(Option_t *o) const
 {
-  AliInfo(Form("Det[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%5.1f] Stat[in(%c) use(%c) sh(%c)]", 
+  AliInfo(Form("Det[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%5.1f] FLAG[in(%c) use(%c) sh(%c)] Y[%s]", 
     fDetector, GetX(), GetY(), GetZ(), fQ, 
-    IsInChamber() ? 'y' : 'n', IsUsed() ? 'y' : 'n', IsShared() ? 'y' : 'n'));
+    IsInChamber() ? 'y' : 'n', 
+    IsUsed() ? 'y' : 'n', 
+    IsShared() ? 'y' : 'n',
+    IsRPhiMethod(kGAUS)?"GAUS":(IsRPhiMethod(kLUT)?"LUT":"COG")
+  ));
 
   if(strcmp(o, "a")!=0) return;
   AliInfo(Form("LChC[c(%3d) r(%2d) t(%2d)] t-t0[%2d] Npad[%d] cen[%5.3f] mask[%d]", fPadCol, fPadRow, fPadTime, fLocalTimeBin, fNPads, fCenter, fClusterMasking)); 
