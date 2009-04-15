@@ -102,7 +102,7 @@ fhMinRegAvePt(0x0),
 fhMinRegSumPt(0x0),            
 fhMinRegMaxPtPart(0x0),
 fhMinRegSumPtvsMult(0x0),
-fhdNdEta_PhiDist(0x0),        
+fhdNdEtaPhiDist(0x0),        
 fhFullRegPartPtDistVsEt(0x0), 
 fhTransRegPartPtDistVsEt(0x0),
 fhRegionSumPtMaxVsEt(0x0),
@@ -361,7 +361,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
     
     Double_t deltaPhi = jetVect[0].DeltaPhi(partVect)+k270rad;
     if( deltaPhi > 2.*TMath::Pi() )  deltaPhi-= 2.*TMath::Pi();
-    fhdNdEta_PhiDist->Fill( deltaPhi );
+    fhdNdEtaPhiDist->Fill( deltaPhi );
     fhFullRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
     
     Int_t region = IsTrackInsideRegion( jetVect, &partVect );  
@@ -570,11 +570,11 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
       Double_t r = TMath::Sqrt( (jet->Eta()-track1->Eta())*(jet->Eta()-track1->Eta()) +
                                dphi*dphi );
       if( r < fConeRadius ) {
-        Double_t Pt   = jet->E()+track1->Pt();  // Scalar sum of Pt
+        Double_t fPt   = jet->E()+track1->Pt();  // Scalar sum of Pt
         // recalculating the centroid
-        Double_t eta = jet->Eta()*jet->E()/Pt + track1->Eta()/Pt;
-        Double_t phi = jet->Phi()*jet->E()/Pt + track1->Phi()/Pt;
-        jet->SetPtEtaPhiE( 1., eta, phi, Pt );
+        Double_t eta = jet->Eta()*jet->E()/fPt + track1->Eta()/fPt;
+        Double_t phi = jet->Phi()*jet->E()/fPt + track1->Phi()/fPt;
+        jet->SetPtEtaPhiE( 1., eta, phi, fPt );
         tracks.Remove( track1 );
       }
     }
@@ -717,11 +717,11 @@ void  AliAnalysisTaskUE::CreateHistos()
   fhMinRegSumPtvsMult->Sumw2();
   fListOfHistos->Add( fhMinRegSumPtvsMult );     // At(7);
   
-  fhdNdEta_PhiDist  = new TH1F("hdNdEta_PhiDist",   "Charge particle density |#eta|< 1 vs #Delta#phi",  120, 0.,   2.*TMath::Pi());
-  fhdNdEta_PhiDist->SetXTitle("#Delta#phi");
-  fhdNdEta_PhiDist->SetYTitle("dN_{ch}/d#etad#phi");
-  fhdNdEta_PhiDist->Sumw2();
-  fListOfHistos->Add( fhdNdEta_PhiDist );        // At(8)
+  fhdNdEtaPhiDist  = new TH1F("hdNdEtaPhiDist",   "Charge particle density |#eta|< 1 vs #Delta#phi",  120, 0.,   2.*TMath::Pi());
+  fhdNdEtaPhiDist->SetXTitle("#Delta#phi");
+  fhdNdEtaPhiDist->SetYTitle("dN_{ch}/d#etad#phi");
+  fhdNdEtaPhiDist->Sumw2();
+  fListOfHistos->Add( fhdNdEtaPhiDist );        // At(8)
   
   // Can be use to get part pt distribution for differente Jet Pt bins
   fhFullRegPartPtDistVsEt = new TH2F("hFullRegPartPtDistVsEt", "dN/dP_{T} |#eta|<1 vs Leading Jet P_{T}",  
@@ -826,7 +826,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
       return;
     }
     fhEleadingPt         = (TH1F*)fListOfHistos->At(1);
-    fhdNdEta_PhiDist     = (TH1F*)fListOfHistos->At(8);
+    fhdNdEtaPhiDist     = (TH1F*)fListOfHistos->At(8);
     fhRegionSumPtMaxVsEt = (TH1F*)fListOfHistos->At(11);
     fhRegionSumPtMinVsEt = (TH1F*)fListOfHistos->At(12);
     fhRegionMultMaxVsEt  = (TH1F*)fListOfHistos->At(14);
@@ -895,9 +895,9 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     gPad->SetLogy();
     
     c2->cd(2);
-    fhdNdEta_PhiDist->SetMarkerStyle(20);
-    fhdNdEta_PhiDist->SetMarkerColor(2);
-    fhdNdEta_PhiDist->DrawCopy("p");
+    fhdNdEtaPhiDist->SetMarkerStyle(20);
+    fhdNdEtaPhiDist->SetMarkerColor(2);
+    fhdNdEtaPhiDist->DrawCopy("p");
     gPad->SetLogy();
     
     c2->cd(3);      

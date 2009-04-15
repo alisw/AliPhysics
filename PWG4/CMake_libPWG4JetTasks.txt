@@ -5,6 +5,7 @@ set(SRCS
        JetTasks/AliAnalysisTaskJetSpectrum.cxx
        JetTasks/AliAnalysisHelperJetTasks.cxx
        JetTasks/AliAnaESDSpectraQA.cxx
+       JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx
        JetTasks/AliJetSpectrumUnfolding.cxx
 )
 
