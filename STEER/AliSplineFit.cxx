@@ -171,7 +171,7 @@ Double_t   AliSplineFit::Eval(Double_t x, Int_t deriv) const{
   //
   Double_t dx   = x-fX[index];
   Double_t dxc  = fX[index+1]-fX[index];
-  if (dxc<=0)    return 0;
+  if (dxc<=0)    return fY0[index];
   Double_t y0   = fY0[index];
   Double_t y1   = fY1[index];
   Double_t y01  = fY0[index+1];
