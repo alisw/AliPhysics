@@ -1,7 +1,18 @@
 //type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
 //const TString type = "ESD"; 
-void compareFlowResults(TString type="ESD")
+
+enum libModes {mLocal,mLocalSource};
+//mLocal: Analyze data on your computer using aliroot
+//mLocalSource: Analyze data on your computer using root + source files
+
+//void compareFlowResults(TString type="",Int_t mode=mLocalSource)
+void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 { 
+
+  // load needed libraries:                       
+  LoadLibraries(mode);
+
+
   //==================================================================================
   //             set here which plots will be shown by default
   //==================================================================================
@@ -16,7 +27,7 @@ void compareFlowResults(TString type="ESD")
   Bool_t plotDiffFlowEtaPOI = kTRUE;   //differential flow (Eta,POI)
   //==================================================================================
   
- 
+  
   //==================================================================================
   // set here which methods will be plotted by default for differential flow (Pt,RP):
   Bool_t plotMCPtRP    = kFALSE;
@@ -207,28 +218,8 @@ void compareFlowResults(TString type="ESD")
   // LYZEP
   Int_t binLYZEPPOI = 13; 
   //==================================================================================
-                        
-                                                                        
-  //==================================================================================  
-  //load needed libraries:
-  gSystem->AddIncludePath("-I$ROOTSYS/include");
-  gSystem->Load("libTree.so");
-
-  // for AliRoot
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libPWG2flowCommon.so");
-  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
-  
-  // for root load histrogram classes
-  // output histosgrams
-  //  gROOT->LoadMacro("code/AliFlowCommonHist.cxx+");
-  //  gROOT->LoadMacro("code/AliFlowCommonHistResults.cxx+");
-  //  gROOT->LoadMacro("code/AliFlowLYZHist1.cxx+");
-  //  gROOT->LoadMacro("code/AliFlowLYZHist2.cxx+");  
-  //==================================================================================
-  
-  
+ 
+                                        
   //==================================================================================
   //                         accessing output files
   //==================================================================================
@@ -2757,3 +2748,55 @@ void compareFlowResults(TString type="ESD")
  //=====================================================================================
 
 }
+
+void LoadLibraries(const libModes mode) {
+  
+  //--------------------------------------
+  // Load the needed libraries most of them already loaded by aliroot
+  //--------------------------------------
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libPhysics.so");
+  
+  //----------------------------------------------------------
+  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
+  if (mode==mLocal) {
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+
+  //==================================================================================  
+  //load needed libraries:
+  gSystem->AddIncludePath("-I$ROOTSYS/include");
+  gSystem->Load("libTree.so");
+
+  // for AliRoot
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libPWG2flowCommon.so");
+  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+  
+  }
+  
+  else if (mode==mLocalSource) {
+ 
+    // In root inline compile
+
+    
+    // Output histosgrams
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
+       
+    cout << "finished loading macros!" << endl;  
+    
+  }  
+  
+}
+
+

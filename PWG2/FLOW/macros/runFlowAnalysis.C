@@ -226,7 +226,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   //------------------------------------------------------------------------
   
   
-  //standard code
+  //standard code to read files in directory
   Int_t fCount = 0;
   TString execDir(gSystem->pwd());
   TString targetDir(dir);
@@ -319,6 +319,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
 	      //fill and save the flow event	      
 	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
 	                    
+	      // do flow analysis for various methods
 	      if(MCEP) mcep->Make(fEvent);
 	      if(QC) qc->Make(fEvent);
 	      if(GFC) gfc->Make(fEvent);
