@@ -15,66 +15,107 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliMisAligner.h"
+#include "AliHMPIDMisAligner.h"
+#include "AliITSMisAligner.h"
+#include "AliPMDMisAligner.h"
+#include "AliT0MisAligner.h"
+#include "AliTPCMisAligner.h"
+#include "AliVZEROMisAligner.h"
 #include "AliZDCMisAligner.h"
 #include <TString.h>
 #endif
 
-void MakeAlignmentObjs(const char* detList="ALL", const char* CDBstorage = "local://$HOME/ResidualMisAlignment", const char* outDir="", const char* misalType="residual", Bool_t partialGeom=kFALSE){
-  // Make residual misalignment objects for all detectors
-  // Pass different "CDBstorage" argument if needed (e.g. to fill
-  // conditions' data base on alien) or set it to null string to have
-  // the objects saved locally on file 
-  // This macro defines the default name and place for the detector-macros
-  // in charge of producing the residual misalignment objects as 
-  // $ALICE_ROOT/DET/MakeDETResidualMisAlignment.C
+void MakeAlignmentObjs(const char* detList="ALL", const char* ocdbOrDir = "local://$HOME/ResidualMisAlignment", const char* misalType="residual", Bool_t partialGeom=kFALSE){
+  // Make alignment objects for all detectors listed in "detList"
+  // for the misalignment scenario passed as argument "misalType".
+  // "ocdbUriDirPath" argument is used as URI for an OCDB if it contains
+  // either the string "local;//" or the string "alien://folder=",
+  // otherwise it is used as the path of the directory where to
+  // put the files containing the alignment objects.
+  // The geometry used is the one produced with $ALICE_ROOT/macros/Config.C
+  // unless "partialGeom" is set to true (=> $ALICE_ROOT/test/fpprod/Config.C).
   //
 
   const char* macroName = "MakeAlignmentObjs";
-  TString cdbStorage(CDBstorage);
-  TString oDir(outDir);
-  if(cdbStorage.IsNull() && oDir.IsNull())
+  Bool_t toOCDB = kFALSE;
+  TString fileName("");
+  TString ocdbUriDirPath(ocdbOrDir);
+  if(ocdbUriDirPath.IsNull() || ocdbUriDirPath.IsWhitespace())
   {
-    Error(macroName, "Output undefined! Set either the CDB storage or the output directory!");
+    Error(macroName, "Output undefined! Set it either to a valid OCDB storage or to the output directory!");
     return;
+  }else if(ocdbUriDirPath.Contains("local://") || ocdbUriDirPath.Contains("alien://folder=")){
+      // else ocdbUriDirPath is to be interpreted as an OCDB URI
+      toOCDB=kTRUE;
+      Printf("Objects will be saved in the OCDB %s",ocdbUriDirPath.Data());  
+  }else{ // else ocdbUriDirPath is to be interpreted as a directory path
+      Printf("Objects will be saved in the file %s",ocdbUriDirPath.Data());  
   }
-  TString fileName;
-
+      
   TMap misAligners;
   TString modList(detList);
   if(modList=="ALL") modList="ACORDE EMCAL FMD HMPID ITS MUON PMD PHOS T0 TRD TPC TOF VZERO ZDC";
   Info(macroName, "Processing detectors: %s \n", modList.Data());
   Printf("Creating %s misalignment for detectors: %s \n", misalType, modList.Data());
+  if(modList.Contains("EMCAL")){
+    AliEMCALMisAligner* misAlignerEMCAL = new AliEMCALMisAligner();
+    misAligners.Add(new TObjString("EMCAL"), misAlignerEMCAL);
+  }
+  if(modList.Contains("HMPID")){
+    AliHMPIDMisAligner* misAlignerHMPID = new AliHMPIDMisAligner();
+    misAligners.Add(new TObjString("HMPID"), misAlignerHMPID);
+  }
+  if(modList.Contains("ITS")){
+    AliITSMisAligner* misAlignerITS = new AliITSMisAligner();
+    misAligners.Add(new TObjString("ITS"), misAlignerITS);
+  }
+  if(modList.Contains("PMD")){
+    AliPMDMisAligner* misAlignerPMD = new AliPMDMisAligner();
+    misAligners.Add(new TObjString("PMD"), misAlignerPMD);
+  }
+  if(modList.Contains("T0")){
+    AliT0MisAligner* misAlignerT0 = new AliT0MisAligner();
+    misAligners.Add(new TObjString("T0"), misAlignerT0);
+  }
+  if(modList.Contains("TPC")){
+    AliTPCMisAligner* misAlignerTPC = new AliTPCMisAligner();
+    misAligners.Add(new TObjString("TPC"), misAlignerTPC);
+  }
+  if(modList.Contains("VZERO")){
+    AliVZEROMisAligner* misAlignerVZERO = new AliVZEROMisAligner();
+    misAligners.Add(new TObjString("VZERO"), misAlignerVZERO);
+  }
   if(modList.Contains("ZDC")){
     AliZDCMisAligner* misAlignerZDC = new AliZDCMisAligner();
     misAligners.Add(new TObjString("ZDC"), misAlignerZDC);
   }
 
-  // Load geometry from CDB; update geometry before loading it if we are going to load
-  // the alignment objects to the CDB
+  // Load geometry from OCDB; update geometry before loading it if we are going to load
+  // the alignment objects to the OCDB
   AliCDBManager* cdb = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliCDBStorage* storage = 0;
   
-  if(cdbStorage.IsNull()){ //if we produce the objects into a file
-    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
-  }else{ // if we produce the objects in a CDB storage
+  if(!toOCDB){ //if we produce the objects into a file
+    AliGeomManager::LoadGeometry(); //load geom from default OCDB storage
+  }else{ // if we produce the objects in a OCDB storage
     // update geometry in it
-    Info(macroName, "Updating geometry in CDB storage %s",cdbStorage.Data());
+    Info(macroName, "Updating geometry in OCDB storage %s",ocdbUriDirPath.Data());
     gROOT->ProcessLine(".L $ALICE_ROOT/GRP/UpdateCDBIdealGeom.C");
     if(partialGeom){
-      UpdateCDBIdealGeom(cdbStorage.Data(),"$ALICE_ROOT/test/fpprod/Config.C");
+      UpdateCDBIdealGeom(ocdbUriDirPath.Data(),"$ALICE_ROOT/test/fpprod/Config.C");
     }else{
-      UpdateCDBIdealGeom(cdbStorage.Data(),"$ALICE_ROOT/macros/Config.C");
+      UpdateCDBIdealGeom(ocdbUriDirPath.Data(),"$ALICE_ROOT/macros/Config.C");
     }
-    // load the same geometry from given CDB storage
+    // load the same geometry from given OCDB storage
     AliCDBPath path("GRP","Geometry","Data");
-    storage = cdb->GetStorage(cdbStorage.Data());
+    storage = cdb->GetStorage(ocdbUriDirPath.Data());
     AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
-    if(!entry) Fatal(macroName,"Couldn't load geometry data from CDB!");
+    if(!entry) Fatal(macroName,"Couldn't load geometry data from OCDB!");
     entry->SetOwner(0);
     TGeoManager* geom = (TGeoManager*) entry->GetObject();
-    if (!geom) Fatal(macroName,"Couldn't find TGeoManager in the specified CDB entry!");
+    if (!geom) Fatal(macroName,"Couldn't find TGeoManager in the specified OCDB entry!");
     AliGeomManager::SetGeometry(geom);
   }
   
@@ -91,23 +132,15 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* CDBstorage = "loca
   TIter iter(detArray);
 
   while((ostr = (TObjString*) iter.Next())){
-    TString str(ostr->String());
-    if(!oDir.IsNull())
-    {
-      fileName = oDir;
-      fileName += str.Data();
-      fileName += misalType;
-      fileName += "MisAlignment.root";
-    }
-    TString arName(str.Data());
+    TString str(ostr->String()); // DET
+    TString arName(str.Data());  // name of the array in case saved into the file
     arName += "AlignObjs";
     
     AliMisAligner* misAligner = dynamic_cast<AliMisAligner*> (misAligners.GetValue(str));
     misAligner->SetMisalType(misalType);
     objsArray = misAligner->MakeAlObjsArray();
-    //Printf("objsArray has %d entries",objsArray->GetEntriesFast());
-    //objsArray->Print();
-    if(!cdbStorage.IsNull())
+
+    if(toOCDB)
     {
       strId=str;
       strId+="/Align/Data";
@@ -117,6 +150,10 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* CDBstorage = "loca
       storage->Put(objsArray, id, md);
     }else{
       // save on file
+      fileName = ocdbUriDirPath;
+      fileName += str.Data();
+      fileName += misalType;
+      fileName += "MisAlignment.root";
       TFile file(fileName.Data(),"RECREATE");
       if(!file){
 	Error(macroName,"cannot open file for output\n");
