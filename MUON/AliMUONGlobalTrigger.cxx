@@ -146,7 +146,7 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
 }
 
 //-----------------------------------------------------------
-void AliMUONGlobalTrigger::SetFromGlobalInput(UInt_t *globalInput)
+void AliMUONGlobalTrigger::SetFromGlobalInput(const UInt_t *globalInput)
 {
   /// Global trigger board input
   /// 4 words each of 32 bits

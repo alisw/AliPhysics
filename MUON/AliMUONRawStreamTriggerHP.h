@@ -138,7 +138,7 @@ public:
 		/// Return first word
 		UInt_t   GetWord()               const {return GetDarcHeader();}
 		/// Return global input
-		Int_t    GetGlobalInput(Int_t n) const {return fGlobalHeader->fInput[n];}
+		UInt_t   GetGlobalInput(Int_t n) const {return fGlobalHeader->fInput[n];}
 		/// Return global output
 		UChar_t  GetGlobalOutput() const {return AliMUONTriggerDDLDecoderEventHandler::GetGlobalOutput(fGlobalHeader);}
 		/// Return global config

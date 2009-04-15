@@ -322,6 +322,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
       {
           AliMUONGlobalTrigger globalTrigger;
           globalTrigger.SetFromGlobalResponse(darcHeader->GetGlobalOutput());
+          globalTrigger.SetFromGlobalInput(darcHeader->GetGlobalHeader()->fInput);
           fTriggerStore->SetGlobal(globalTrigger);
       }
     }
