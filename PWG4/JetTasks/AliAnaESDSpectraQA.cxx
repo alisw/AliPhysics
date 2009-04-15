@@ -176,14 +176,14 @@ void AliAnaESDSpectraQA::Exec(Option_t *) {
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
   printf("nTracks %d\n", nTracks);
-  static Int_t Mult = 0;
-  Mult = 0;   // Need extra init bc of static
+  static Int_t fMult = 0;
+  fMult = 0;   // Need extra init bc of static
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     AliESDtrack *track = fESD->GetTrack(iTrack);
     hists *curTypeHists = 0;
 
     if (fTrackCuts->AcceptTrack(track)) {
-      Mult++;
+      fMult++;
 
       Float_t dca2D, dcaZ;
       track->GetImpactParameters(dca2D,dcaZ);

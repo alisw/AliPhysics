@@ -141,7 +141,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fhMinRegMaxPtPart;        //!
     TH1F*  fhMinRegSumPtvsMult;      //!
     
-    TH1F*  fhdNdEta_PhiDist;         //!
+    TH1F*  fhdNdEtaPhiDist;         //!
     TH2F*  fhFullRegPartPtDistVsEt;  //!
     TH2F*  fhTransRegPartPtDistVsEt; //!
     

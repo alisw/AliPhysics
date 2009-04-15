@@ -260,7 +260,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
     }
   }
   
@@ -316,22 +316,22 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
     fh2PtFGen[ij] = new TH2F(Form("fh2PtFGen_j%d",ij),"Pt Found vs. gen;p_{T,rec} (GeV/c);p_{T,gen} (GeV/c)",
 			     nBinPt,binLimitsPt,nBinPt,binLimitsPt);
 
-    fh2PhiFGen[ij] = new TH2F(Form("fh2PhiFGen_j%d",ij),"#phi Found vs. gen;#phi_{rec};phi_{gen}",
+    fh2PhiFGen[ij] = new TH2F(Form("fh2PhiFGen_j%d",ij),"#phi Found vs. gen;#phi_{rec};#phi_{gen}",
 			     nBinPhi,binLimitsPhi,nBinPhi,binLimitsPhi);
 
-    fh2EtaFGen[ij] = new TH2F(Form("fh2EtaFGen_j%d",ij),"#eta Found vs. gen;#eta_{rec};eta_{gen}",
+    fh2EtaFGen[ij] = new TH2F(Form("fh2EtaFGen_j%d",ij),"#eta Found vs. gen;#eta_{rec};#eta_{gen}",
 			     nBinEta,binLimitsEta,nBinEta,binLimitsEta);
 
     
-    fh2PtGenDeltaPhi[ij] = new TH2F(Form("fh2PtGenDeltaPhi_j%d",ij),"delta phi vs. P_{T,gen};p_{T,gen} (GeV/c);#phi_{gen}-phi_{rec}",
+    fh2PtGenDeltaPhi[ij] = new TH2F(Form("fh2PtGenDeltaPhi_j%d",ij),"delta phi vs. P_{T,gen};p_{T,gen} (GeV/c);#phi_{gen}-#phi_{rec}",
 				    nBinPt,binLimitsPt,100,-1.0,1.0);
-    fh2PtGenDeltaEta[ij] = new TH2F(Form("fh2PtGenDeltaEta_j%d",ij),"delta eta vs. p_{T,gen};p_{T,gen} (GeV/c);#eta_{gen}-eta_{rec}",
+    fh2PtGenDeltaEta[ij] = new TH2F(Form("fh2PtGenDeltaEta_j%d",ij),"delta eta vs. p_{T,gen};p_{T,gen} (GeV/c);#eta_{gen}-#eta_{rec}",
 				    nBinPt,binLimitsPt,100,-1.0,1.0);
 
     
-    fh2PtRecDeltaR[ij] = new TH2F(Form("fh2PtRecDeltaR_j%d",ij),"#Delta{R} to lower energy jets j > i;p_{T,rec,j};#Delta R", 
+    fh2PtRecDeltaR[ij] = new TH2F(Form("fh2PtRecDeltaR_j%d",ij),"#DeltaR to lower energy jets j > i;p_{T,rec,j};#Delta R", 
 				  nBinPt,binLimitsPt,60,0,6.0);
-    fh2PtGenDeltaR[ij] = new TH2F(Form("fh2PtGenDeltaR_j%d",ij),"#Delta{R} to lower energy jets j > i;p_{T,gen,j};#Delta R", 
+    fh2PtGenDeltaR[ij] = new TH2F(Form("fh2PtGenDeltaR_j%d",ij),"#DeltaR to lower energy jets j > i;p_{T,gen,j};#Delta R", 
 				  nBinPt,binLimitsPt,60,0,6.0);
 
 
@@ -363,7 +363,7 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 
 
 
-    fh3GenEtaPhiPt[ij] = new TH3F(Form("fh3GenEtaPhiPt_j%d",ij),"Gen eta, phi, pt; #eta; #phi; p_{T,rec} (GeV/c)",
+    fh3GenEtaPhiPt[ij] = new TH3F(Form("fh3GenEtaPhiPt_j%d",ij),"Gen eta, phi, pt; #eta; #phi; p_{T,} (GeV/c)",
 				 nBinEta,binLimitsEta,nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   }
@@ -532,7 +532,23 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
 
     nTrials = pythiaGenHeader->Trials();
     ptHard  = pythiaGenHeader->GetPtHard();
-
+    int iProcessType = pythiaGenHeader->ProcessType();
+    // 11 f+f -> f+f
+    // 12 f+barf -> f+barf
+    // 13 f+barf -> g+g
+    // 28 f+g -> f+g
+    // 53 g+g -> f+barf
+    // 68 g+g -> g+g
+    /*
+    if (fDebug > 10)Printf("%d iProcessType %d",__LINE__, iProcessType);
+    //    if(iProcessType != 13 && iProcessType != 68){ // allow only glue
+    if(iProcessType != 11 && iProcessType != 12 && iProcessType != 53){ // allow only quark
+    //    if(iProcessType != 28){ // allow only -> f+g
+      PostData(1, fHistList);
+      return;
+    }
+    */
+    if (fDebug > 10)Printf("%d iProcessType %d",__LINE__, iProcessType);
 
     if(fDebug>20)AliAnalysisHelperJetTasks::PrintStack(mcEvent);
 
@@ -675,9 +691,13 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
       fh3PtRecGenHard[ir]->Fill(ptRec,ptGen,ptHard,eventW);
       fh3PtRecGenHardNoW[ir]->Fill(ptRec,ptGen,ptHard,1);
       /////////////////////////////////////////////////////
+
+      //      Double_t eRec = recJets[ir].E();
+      //      Double_t eGen = genJets[ig].E();
+      // CKB use p_T not Energy 
+      // TODO recname variabeles and histos
       Double_t eRec = recJets[ir].E();
       Double_t eGen = genJets[ig].E();
-
 
       fh2Efficiency->Fill(eGen, eRec/eGen);
 
@@ -688,19 +708,17 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
         // loop over tracks
         for (Int_t it = 0; it< nTracks; it++){
 	  //	  if (fAOD->GetTrack(it)->E() > eGen) continue; // CKB. Not allowed! cannot cut on gen properties in real events!
-          Double_t phiTrack = fAOD->GetTrack(it)->Phi();
-          if (phiTrack<0) phiTrack+=TMath::Pi()*2.;            
-          Double_t etaTrack = fAOD->GetTrack(it)->Eta();
-          Float_t deta  = etaRec - etaTrack;
-          Float_t dphi  = TMath::Abs(phiRec - phiTrack);
-          Float_t r = TMath::Sqrt(deta*deta + dphi*dphi);        
           // find leading particle
-          if (r<0.4 && fAOD->GetTrack(it)->E()>eLeading){
+	  //  if (r<0.4 && fAOD->GetTrack(it)->E()>eLeading){
+	  // TODO implement esd filter flag to be the same as in the jet finder 
+	  // allow also for MC particles...
+	  Float_t r = recJets[ir].DeltaR(fAOD->GetTrack(it));
+	  if (r<0.4 && fAOD->GetTrack(it)->Pt()>ptleading){
             eLeading  = fAOD->GetTrack(it)->E();
             ptleading = fAOD->GetTrack(it)->Pt();            
           }
 	  //          if (fAOD->GetTrack(it)->Pt()>0.03*eGen && fAOD->GetTrack(it)->E()<=eGen && r<0.7) // CKB cannot cut on gen properties 
-          if (fAOD->GetTrack(it)->Pt()>0.03*eRec && fAOD->GetTrack(it)->E()<=eRec && r<0.7)
+          if (fAOD->GetTrack(it)->Pt()>0.03*eRec && fAOD->GetTrack(it)->Pt()<=eRec && r<0.7)
             nPart++;
         }
 	if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
