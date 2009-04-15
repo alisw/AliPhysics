@@ -172,8 +172,8 @@ int main(int argc, char **argv) {
       Int_t dummy = -1;
       Int_t Volume[5];
       AliTOFHitData *HitData;
-      AliTOFHitDataBuffer *DataBuffer;
-      AliTOFHitDataBuffer *PackedDataBuffer;
+      AliTOFHitDataBuffer DataBuffer;
+      AliTOFHitDataBuffer PackedDataBuffer;
       AliTOFRawStream *rawStreamTOF = new AliTOFRawStream(rawReader);
       //      rawReader->ReadHeader();
       rawStreamTOF->ResetBuffers();
@@ -187,8 +187,8 @@ int main(int argc, char **argv) {
 	PackedDataBuffer = rawStreamTOF->GetPackedDataBuffer(iDDL);
 	
 	/* get buffer entries */
-	Int_t nDBEntries = DataBuffer->GetEntries();
-	Int_t nPDBEntries = PackedDataBuffer->GetEntries();
+	Int_t nDBEntries = DataBuffer.GetEntries();
+	Int_t nPDBEntries = PackedDataBuffer.GetEntries();
 	nPDBEntriesToT+=nPDBEntries;
 	nDBEntriesToT+=nDBEntries;
 	
@@ -198,11 +198,11 @@ int main(int argc, char **argv) {
 	//  rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
 	//}
 	/* reset buffer */
-	DataBuffer->Reset();
+	DataBuffer.Reset();
 	
 	/* read data buffer hits */
 	for (Int_t iHit = 0; iHit < nPDBEntries; iHit++){
-	  HitData = PackedDataBuffer->GetHit(iHit);
+	  HitData = PackedDataBuffer.GetHit(iHit);
 	  /* add volume information */
 	  HitData->SetDDLID(iDDL);
 	  rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
 	    
 	  }
 	  /* reset buffer */
-	  PackedDataBuffer->Reset();
+	  PackedDataBuffer.Reset();
 	}
       }
       //printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT);
