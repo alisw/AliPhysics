@@ -73,7 +73,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fDebugMode(kFALSE) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
-  for(Int_t i = 0; i < 5; i++) {
+  for(Int_t i = 0; i < 24; i++) {
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
   }
@@ -823,7 +823,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     Double_t dEdxMean = fdEdxMean[nbinP];
     Double_t dEdxSigma = fdEdxSigma[nbinP];
     if((tpcSignal <= dEdxMean + fNSigma*dEdxSigma)&&
-       (tpcSignal <= dEdxMean + fNSigma*dEdxSigma))
+       (tpcSignal >= dEdxMean - fNSigma*dEdxSigma))
       return kTRUE;
   }//kSigma1 PID method
   //Another definition of an N-sigma area around the dE/dx vs P band

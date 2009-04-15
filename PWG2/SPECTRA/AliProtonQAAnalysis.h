@@ -60,7 +60,8 @@ class AliProtonQAAnalysis : public TObject {
 					   AliESDEvent *esd,
 					   const AliESDVertex *vertex);
   void RunPIDEfficiencyAnalysis(AliStack *stack, 
-				AliESDEvent *esd);
+				AliESDEvent *esd,
+			     const AliESDVertex *vertex);
   void RunEfficiencyAnalysis(AliStack *stack, 
 			     AliESDEvent *esd,
 			     const AliESDVertex *vertex);

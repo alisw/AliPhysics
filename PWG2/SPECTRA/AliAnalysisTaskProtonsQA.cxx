@@ -145,7 +145,7 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
     if(vertex) {
       fProtonQAAnalysis->RunQAAnalysis(stack, fESD, vertex);
       fProtonQAAnalysis->RunMCAnalysis(stack);
-      fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD);
+      fProtonQAAnalysis->RunPIDEfficiencyAnalysis(stack, fESD, vertex);
       fProtonQAAnalysis->RunReconstructionEfficiencyAnalysis(fMC, fESD, vertex);
     }//accepted vertex
   }//triggered event
