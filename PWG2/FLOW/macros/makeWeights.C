@@ -12,17 +12,18 @@
 // 3. cumulant order can be: 2nd, 4th, 6th or 8th.                                                   
 //==========================================================================================
 
-void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder="4th")
+
+enum libModes {mLocal,mLocalSource};
+//mLocal: Analyze data on your computer using aliroot
+//mLocalSource: Analyze data on your computer using root + source files
+
+
+//void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
+void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocal)
 {
  // load needed libraries:
- gSystem->AddIncludePath("-I$ROOTSYS/include");
- gSystem->Load("libTree.so");
+  LoadLibraries(mode);
 
- // for AliRoot
- gSystem->AddIncludePath("-I$ALICE_ROOT/include");
- gSystem->Load("libANALYSIS.so");
- gSystem->Load("libPWG2flowCommon.so");
- cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
 
  // open the output file from the first run of the specified method:
  TString inputFileName = "output";
@@ -158,6 +159,56 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  delete listWeights;
  delete outputFile; 
 }  
+
+
+void LoadLibraries(const libModes mode) {
+  
+  //--------------------------------------
+  // Load the needed libraries most of them already loaded by aliroot
+  //--------------------------------------
+  gSystem->Load("libTree.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libPhysics.so");
+  
+  //----------------------------------------------------------
+  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
+  if (mode==mLocal) {
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+    
+    //==================================================================================  
+    //load needed libraries:
+    gSystem->AddIncludePath("-I$ROOTSYS/include");
+    gSystem->Load("libTree.so");
+    
+    // for AliRoot
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libPWG2flowCommon.so");
+    cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+    
+  }
+  
+  else if (mode==mLocalSource) {
+    
+    // In root inline compile
+    
+    // Output histosgrams
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
+    
+    cout << "finished loading macros!" << endl;  
+    
+  }  
+  
+}
 
 
 

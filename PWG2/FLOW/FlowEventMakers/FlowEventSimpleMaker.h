@@ -28,7 +28,9 @@ class FlowEventSimpleMaker {
  private:
   FlowEventSimpleMaker(const FlowEventSimpleMaker& anAnalysis);            //copy constructor
   FlowEventSimpleMaker& operator=(const FlowEventSimpleMaker& anAnalysis); //assignment operator
-          
+  Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
+  Int_t     fCount;   // counter for the number of events processed
+         
   ClassDef(FlowEventSimpleMaker,0)    // macro for rootcint
 };
       
