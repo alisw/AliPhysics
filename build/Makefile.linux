@@ -46,7 +46,7 @@ endif
 endif
 endif
 CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
-FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
+FFLAGS         = $(CLIBFOPT) $(FOPT) -fPIC -fno-second-underscore
 
 ifneq (,$(findstring g95,$(F77)))
 FFLAGS	      +=-DFORTRAN_G95
