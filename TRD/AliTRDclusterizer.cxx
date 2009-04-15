@@ -820,14 +820,14 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     while(fIndexes->NextRCIndex(curr.Row, curr.Col)){
       //printf("\nCHECK r[%2d] c[%3d] t[%d]\n", curr.Row, curr.Col, curr.Time);
       if(IsMaximum(curr, curr.padStatus, &curr.Signals[0])){
-        //printf("\tMAX s[%d %d %d %d %d %d %d]\n", curr.Signals[0], curr.Signals[1], curr.Signals[2], curr.Signals[3], curr.Signals[4], curr.Signals[5],  curr.Signals[6]);
+        //printf("\tMAX s[%d %d %d]\n", curr.Signals[0], curr.Signals[1], curr.Signals[2]);
         if(last.Row>-1){
           if(curr.Time==last.Time && curr.Row==last.Row && curr.Col==last.Col+2) FivePadCluster(last, curr);
           CreateCluster(last);
         }
         last=curr; curr.FivePad=kFALSE;
       }
-      //printf("\t--- s[%d %d %d %d %d %d %d]\n", curr.Signals[0], curr.Signals[1], curr.Signals[2], curr.Signals[3], curr.Signals[4], curr.Signals[5],  curr.Signals[6]);
+      //printf("\t--- s[%d %d %d]\n", curr.Signals[0], curr.Signals[1], curr.Signals[2]);
     }
   }
   if(last.Row>-1) CreateCluster(last);
@@ -853,11 +853,12 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   // Returns true if this row,col,time combination is a maximum. 
   // Gives back the padStatus and the signals of the center pad and the two neighbouring pads.
   //
-  fDigits->GetData(Max.Row, Max.Col-3, Max.Time, 7, &Signals[0]);
-  if(Signals[3] < fMaxThresh) return kFALSE;
+
+  Signals[1] = fDigits->GetData(Max.Row, Max.Col, Max.Time);
+  if(Signals[1] < fMaxThresh) return kFALSE;
 
   Float_t  noiseMiddleThresh = fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.Col, Max.Row);
-  if (Signals[3] < noiseMiddleThresh) return kFALSE;
+  if (Signals[1] < noiseMiddleThresh) return kFALSE;
 
   if (Max.Col + 1 >= fColMax || Max.Col < 1) return kFALSE;
 
@@ -867,30 +868,33 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
    ,fCalPadStatusROC->GetStatus(Max.Col+1, Max.Row)
   };
 
+  Signals[0] = fDigits->GetData(Max.Row, Max.Col-1, Max.Time);
+  Signals[2] = fDigits->GetData(Max.Row, Max.Col+1, Max.Time);  
+
   if(!(status[0] | status[1] | status[2])) {//all pads are good
-    if ((Signals[4] <= Signals[3]) && (Signals[2] <  Signals[3])) {
-      if ((Signals[4] >= fSigThresh) || (Signals[2] >= fSigThresh)) {
+    if ((Signals[2] <= Signals[1]) && (Signals[0] <  Signals[1])) {
+      if ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh)) {
         Float_t  noiseSumThresh = fMinLeftRightCutSigma
           * fCalNoiseDetValue
           * fCalNoiseROC->GetValue(Max.Col, Max.Row);
-        if ((Signals[2]+Signals[3]+Signals[4]) < noiseSumThresh) return kFALSE;
+        if ((Signals[2]+Signals[0]+Signals[1]) < noiseSumThresh) return kFALSE;
         padStatus = 0;
         return kTRUE;
       }
     }
   } else { // at least one of the pads is bad, and reject candidates with more than 1 problematic pad
-    if (status[2] && (!(status[0] || status[1])) && Signals[3] > Signals[2] && Signals[2] >= fSigThresh) { 
-      Signals[4]=0;
+    if (status[2] && (!(status[0] || status[1])) && Signals[1] > Signals[0] && Signals[0] >= fSigThresh) { 
+      Signals[2]=0;
       SetPadStatus(status[2], padStatus);
       return kTRUE;
     } 
-    else if (status[0] && (!(status[1] || status[2])) && Signals[3] >= Signals[4] && Signals[4] >= fSigThresh) {
-      Signals[2]=0;
+    else if (status[0] && (!(status[1] || status[2])) && Signals[1] >= Signals[2] && Signals[2] >= fSigThresh) {
+      Signals[0]=0;
       SetPadStatus(status[0], padStatus);
       return kTRUE;
     }
-    else if (status[1] && (!(status[0] || status[2])) && ((Signals[4] >= fSigThresh) || (Signals[2] >= fSigThresh))) {
-      Signals[3]=TMath::Nint(fMaxThresh);
+    else if (status[1] && (!(status[0] || status[2])) && ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh))) {
+      Signals[1]=TMath::Nint(fMaxThresh);
       SetPadStatus(status[1], padStatus);
       return kTRUE;
     }
@@ -915,22 +919,19 @@ Bool_t AliTRDclusterizer::FivePadCluster(MaxStruct &ThisMax, MaxStruct &Neighbou
       return kFALSE;
   }
   
-  //if (fSignalsThisMax[1] >= 0){ //TR: mod
-  
   const Float_t kEpsilon = 0.01;
-  Double_t padSignal[5] = {
-    ThisMax.Signals[2], ThisMax.Signals[3], ThisMax.Signals[4],
-    NeighbourMax.Signals[3], NeighbourMax.Signals[4]
-  };
+  Double_t padSignal[5] = {ThisMax.Signals[0], ThisMax.Signals[1], ThisMax.Signals[2],
+      NeighbourMax.Signals[1], NeighbourMax.Signals[2]};
   
   // Unfold the two maxima and set the signal on 
   // the overlapping pad to the ratio
   Float_t ratio = Unfold(kEpsilon,fLayer,padSignal);
-  ThisMax.Signals[4] = TMath::Nint(ThisMax.Signals[4]*ratio);
-  NeighbourMax.Signals[2] = TMath::Nint(NeighbourMax.Signals[2]*(1-ratio));
+  ThisMax.Signals[2] = TMath::Nint(ThisMax.Signals[2]*ratio);
+  NeighbourMax.Signals[0] = TMath::Nint(NeighbourMax.Signals[0]*(1-ratio));
   ThisMax.FivePad=kTRUE;
   NeighbourMax.FivePad=kTRUE;
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -940,7 +941,12 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   // Creates a cluster at the given position and saves it in fRecPoints
   //
 
-  AliTRDcluster cluster(fDet, ((UChar_t) Max.Col), ((UChar_t) Max.Row), ((UChar_t) Max.Time), Max.Signals, fVolid);
+  Int_t nPadCount = 1;
+  Short_t signals[7] = { 0, 0, Max.Signals[0], Max.Signals[1], Max.Signals[2], 0, 0 };
+  if(!TestBit(kHLT)) CalcAdditionalInfo(Max, signals, nPadCount);
+
+  AliTRDcluster cluster(fDet, ((UChar_t) Max.Col), ((UChar_t) Max.Row), ((UChar_t) Max.Time), signals, fVolid);
+  cluster.SetNPads(nPadCount);
   if(TestBit(kLUT)) cluster.SetRPhiMethod(AliTRDcluster::kLUT);
   else if(TestBit(kGAUS)) cluster.SetRPhiMethod(AliTRDcluster::kGAUS);
   else cluster.SetRPhiMethod(AliTRDcluster::kCOG);
@@ -952,11 +958,6 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
     cluster.SetPadMaskedPosition(maskPosition);
     cluster.SetPadMaskedStatus(GetPadStatus(Max.padStatus));
   }
-  // set number of pads in the cluster
-  Int_t nPadCount = 1;
-  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
-  if(!TestBit(kHLT)) CalcAdditionalInfo(Max, signals, nPadCount);
-  cluster.SetNPads(nPadCount);
 
   // Transform the local cluster coordinates into calibrated 
   // space point positions defined in the local tracking system.
@@ -967,6 +968,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   cluster.SetLabel(Max.Row, 0);
   cluster.SetLabel(Max.Col, 1);
   cluster.SetLabel(Max.Time,2);
+
   //needed for HLT reconstruction
   AddClusterToArray(&cluster); 
 

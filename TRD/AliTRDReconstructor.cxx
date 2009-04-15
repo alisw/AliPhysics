@@ -70,7 +70,7 @@ Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
 Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
   "dc"// digits conversion [false]
  ,"tc"// apply tail cancellation [true]
- ,"lt"// look-up-table for cluster shape in the r-phi direction
+ ,"lut"// look-up-table for cluster shape in the r-phi direction
  ,"gs"// gauss cluster shape in the r-phi direction
  ,"sh"// cluster sharing between tracks
  ,"nn"// PID method in reconstruction (NN) [true]

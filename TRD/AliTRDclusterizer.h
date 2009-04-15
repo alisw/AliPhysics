@@ -52,13 +52,13 @@ class AliTRDclusterizer : public TNamed
     Int_t       Col;
     Int_t       Time;
     UChar_t     padStatus;
-    Short_t     Signals[7];
+    Short_t     Signals[3];
     Bool_t      FivePad;
   MaxStruct():Row(-1),Col(0),Time(0),padStatus(0),FivePad(kFALSE)
-      {memset(Signals, 0, 7*sizeof(Short_t));}
+      {memset(Signals, 0, 3*sizeof(Short_t));}
     MaxStruct &operator=(const MaxStruct &a)
     {Row=a.Row; Col=a.Col; Time=a.Time; padStatus=a.padStatus; FivePad=a.FivePad;
-     memcpy(Signals, a.Signals, 7*sizeof(Short_t)); return *this;}
+     memcpy(Signals, a.Signals, 3*sizeof(Short_t)); return *this;}
   };
   
   AliTRDclusterizer(const AliTRDReconstructor *const rec = 0x0);
