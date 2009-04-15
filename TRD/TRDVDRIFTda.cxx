@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
-  //Instance of AliCDBManager: needed by AliTRDRawStreamV2
+  //Instance of AliCDBManager: needed by AliTRDrawStream
   //AliCDBManager *man = AliCDBManager::Instance();
   //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetRun(0);

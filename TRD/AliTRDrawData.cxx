@@ -37,7 +37,6 @@
 #include "AliTRDarrayADC.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDrawOldStream.h"
-#include "AliTRDRawStreamV2.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
@@ -955,11 +954,6 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
 
-  //AliTRDrawOldStream input(rawReader);
-  //   AliTRDRawStreamV2 input(rawReader);
-  //   input.SetRawVersion( fFee->GetRAWversion() );
-  //   input.Init();
-
   AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
   AliTRDrawStreamBase &input = *pinput;
   input.SetRawVersion( fFee->GetRAWversion() ); //<= ADDED by MinJung
@@ -1126,8 +1120,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
 
-  //AliTRDrawOldStream input(rawReader);
-  AliTRDRawStreamV2 input(rawReader);
+  AliTRDrawOldStream input(rawReader);
   input.SetRawVersion( fFee->GetRAWversion() );
   input.Init();
 
