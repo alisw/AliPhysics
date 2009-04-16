@@ -2125,6 +2125,12 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
   vertex->GetSigmaXYZ(vtxErr);
 
   esd->SetPrimaryVertexSPD(vertex);
+  AliESDVertex *vpileup = NULL;
+  Int_t novertices = 0;
+  vpileup = vertexer->GetAllVertices(novertices);
+  if(novertices>1){
+    for (Int_t kk=1; kk<novertices; kk++)esd->AddPileupVertexSPD(&vpileup[kk]);
+  }
   // if SPD multiplicity has been determined, it is stored in the ESD
   AliMultiplicity *mult = vertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);

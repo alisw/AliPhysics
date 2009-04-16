@@ -33,7 +33,12 @@ class AliVertexer : public TObject {
       { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
       fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; }
     void SetVtxStart(AliESDVertex *vtx);
-
+    // the following method can be implemented in daughter classes 
+    // (e.g. in AliITSVertexer3D). It is intended to tag pile-up events
+    // novertices is the total number of vertices (1 means no pileup)
+    // The returned pointer points to an array of AliESDVertx opbjects
+    // with size=novertices
+    virtual  AliESDVertex* GetAllVertices(Int_t &novertices) const {novertices = 0; return NULL;}
     const Double_t* GetNominalPos() const {return fNominalPos;}
 
  protected:
