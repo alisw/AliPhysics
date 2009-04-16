@@ -72,7 +72,7 @@ AliHLTUInt32_t AliHLTTRDUtils::AddTracksToOutput(TClonesArray* inTrackArray, Ali
       AliHLTTRDTrack *hltTrack = new (outPtr) AliHLTTRDTrack(track);
       trackSize = hltTrack->GetSize();
       addedSize += trackSize;
-      HLTDebug("addedSize %i, trackSize %i", addedSize, trackSize);
+      //HLTDebug("addedSize %i, trackSize %i", addedSize, trackSize);
       
       iterPtr += trackSize;
       outPtr = (AliHLTTRDTrack*)iterPtr;
@@ -96,11 +96,11 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadClusters(TClonesArray *outArray, void* inputP
   curCluster = (AliHLTTRDCluster*) inputPtr;
   while (curSize + clusterSize <= size)
     {
-      //  HLTDebug(" fX = %f; fY = %f; fZ = %f", curCluster->fX, curCluster->fY, curCluster->fZ);
+      //HLTDebug(" fX = %f; fY = %f; fZ = %f", curCluster->fX, curCluster->fY, curCluster->fZ);
 
       AliTRDcluster* curTRDCluster = new((*outArray)[i]) AliTRDcluster();
       curCluster->ExportTRDCluster(curTRDCluster);
-      //      HLTDebug(" fX = %f; fY = %f; fZ = %f", curTRDCluster->GetX(), curTRDCluster->GetY(), curTRDCluster->GetZ());
+      //HLTDebug(" fX = %f; fY = %f; fZ = %f", curTRDCluster->GetX(), curTRDCluster->GetY(), curTRDCluster->GetZ());
       curSize += clusterSize; 
       i++;
       curCluster++;
@@ -115,7 +115,7 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadTracks(TClonesArray *outArray, void* inputPtr
   AliHLTUInt8_t* iterPtr = (AliHLTUInt8_t* )inputPtr;
   
   //cout << "\nReading tracks from the Memory\n ============= \n";
-  HLTDebug ("\nReading tracks from the Memory\n ============= \n");
+  //HLTDebug ("\nReading tracks from the Memory\n ============= \n");
   AliHLTTRDTrack * hltTrack;
   AliHLTUInt32_t trackSize = 0, curSize = 0;
   Int_t counter=0;
@@ -123,10 +123,10 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadTracks(TClonesArray *outArray, void* inputPtr
   while (curSize < size)
     {
       hltTrack = (AliHLTTRDTrack*) iterPtr;
-      HLTDebug("curSize %i, size %i",curSize, size);
+      //HLTDebug("curSize %i, size %i",curSize, size);
       
       trackSize = hltTrack->GetSize();
-      HLTDebug("GetSize() %i", trackSize);
+      //HLTDebug("GetSize() %i", trackSize);
 
       hltTrack->ReadTrackletsFromMemory(iterPtr + sizeof(AliHLTTRDTrack));
 

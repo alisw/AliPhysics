@@ -52,8 +52,8 @@ using namespace std;
 #ifdef HAVE_VALGRIND_CALLGRIND_H
 #include <valgrind/callgrind.h>
 #else
-#define CALLGRIND_START_INSTRUMENTATION() do { } while (0)
-#define CALLGRIND_STOP_INSTRUMENTATION() do { } while (0)
+#define CALLGRIND_START_INSTRUMENTATION do { } while (0)
+#define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
 #endif
 
 #include <cstdlib>
@@ -270,8 +270,13 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fReconstructor->SetRecoParam(fRecoParam);
   fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
   HLTInfo("Not writing clusters. I.e. output is a TClonesArray of clusters");
-  fReconstructor->SetOption("hlt,!cw,sl_cf_0");
+  TString recoOptions="hlt,!cw,sl_cf_0,!gs,!lut";
+  switch(iRecoDataType){
+  case 0: recoOptions += ",tc"; break;
+  case 1: recoOptions += ",!tc"; break;
+  }
   
+  fReconstructor->SetOption(recoOptions.Data());
   
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 
@@ -381,7 +386,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
       if (evtData.fEventID == 1)
-	CALLGRIND_START_INSTRUMENTATION();
+	CALLGRIND_START_INSTRUMENTATION;
       
       const AliHLTComponentBlockData &block = blocks[i];
       offset = totalSize;

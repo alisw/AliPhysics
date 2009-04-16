@@ -52,8 +52,8 @@ using namespace std;
 #ifdef HAVE_VALGRIND_CALLGRIND_H
 #include <valgrind/callgrind.h>
 #else
-#define CALLGRIND_START_INSTRUMENTATION() do { } while (0)
-#define CALLGRIND_STOP_INSTRUMENTATION() do { } while (0)
+#define CALLGRIND_START_INSTRUMENTATION do { } while (0)
+#define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
 #endif
 
 ClassImp(AliHLTTRDTrackerV1Component);
@@ -419,7 +419,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
   vector<AliHLTComponent_DataType> expectedDataTypes;
   GetInputDataTypes(expectedDataTypes);
   if (evtData.fEventID == 1)
-    CALLGRIND_START_INSTRUMENTATION();
+    CALLGRIND_START_INSTRUMENTATION;
   for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ ) 
     {
       const AliHLTComponentBlockData &block = blocks[iBlock];
