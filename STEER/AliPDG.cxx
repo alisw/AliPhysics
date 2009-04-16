@@ -151,6 +151,8 @@ void AliPDG::AddParticlesToPdgDataBase()
 			 0,1,"Ion",ionCode);
   }
 
+  pdgDB->AddAntiParticle("Anti Deuteron", - ionCode);
+
   ionCode = kion+10030;
   if(!pdgDB->GetParticle(ionCode)){
     pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
