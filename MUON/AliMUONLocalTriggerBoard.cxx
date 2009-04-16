@@ -1055,23 +1055,17 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
     Int_t deviation=0;
     Int_t iStripY=0;
     Int_t iStripX=0;
-    Bool_t xOutput=kFALSE;
-    Bool_t yOutput=kFALSE;
-
-   for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
-   for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
-
-   if (fMinDev[4]==1 && !deviation) xOutput=kFALSE;  // no trigger in X
-   else xOutput=kTRUE;                               // trigger in X
-   if (fCoordY[4]==1 && iStripY==15) yOutput=kFALSE; // no trigger in Y
-   else yOutput=kTRUE;                               // trigger in Y
+    Bool_t xOutput = IsTrigX();
+    Bool_t yOutput = IsTrigY();
 
    if (xOutput) {
       for (Int_t i=0; i<5; i++) iStripX += static_cast<int>( fMinDevStrip[i] << i );
+      for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
       fDev      = deviation;
       fStripX11 = iStripX;
    }
    if (yOutput) {
+     for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
       fStripY11 = iStripY;
       fTrigY    = fCoordY[4];
    }
@@ -1318,3 +1312,33 @@ void AliMUONLocalTriggerBoard::Response()
    LocalTrigger();
 }
 
+//___________________________________________
+Bool_t AliMUONLocalTriggerBoard::IsTrigY() const
+{
+  /// Return the response of non-bending plane
+  Int_t iStripY = 0;
+  Bool_t output = kFALSE;
+
+  for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
+
+  if (fCoordY[4]==1 && iStripY==15) output=kFALSE; // no trigger in Y
+  else output=kTRUE;                               // trigger in Y
+   
+  return output;
+}
+
+//___________________________________________
+Bool_t AliMUONLocalTriggerBoard::IsTrigX() const
+{
+  /// Return the response of bending plane
+
+  Int_t deviation = 0;
+  Bool_t output = kFALSE;
+
+  for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
+
+  if (fMinDev[4]==1 && !deviation) output=kFALSE;  // no trigger in X
+  else output=kTRUE;                               // trigger in X
+
+  return output;
+}

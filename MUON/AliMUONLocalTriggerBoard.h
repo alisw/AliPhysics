@@ -118,8 +118,12 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
                        /// Return Sign of Deviation 
       virtual Int_t    GetSdev() const {return fMinDev[4];}
       
-                       /// Return Sign of Deviation 
+                       /// Return Trigger in Y
       virtual Int_t    GetTrigY() const {return fTrigY;}
+
+      virtual Bool_t   IsTrigY() const;
+
+      virtual Bool_t   IsTrigX() const;
       
    protected:
 
