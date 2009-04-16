@@ -492,7 +492,8 @@ void AliCumulantsFunctions::Calculate()
   //3D profiles (for pt)
   for(Int_t b=0;b<fgknBinsPt;b++)
   {
-   ptBinRPNoOfParticles[b]=fPtBinRPNoOfParticles->GetBinEntries(b);
+   ptBinRPNoOfParticles[b]=fPtBinRPNoOfParticles->GetBinEntries(b+1);
+     
    for(Int_t p=0;p<fgkPmax;p++)
    {
     for(Int_t q=0;q<fgkQmax;q++)
@@ -565,7 +566,7 @@ void AliCumulantsFunctions::Calculate()
   
   for (Int_t b=0;b<fgknBinsPt;b++)
   {
-   ptRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptDRP[b][0]-5.*ptDRP[b][1]+(10./3.)*ptDRP[b][2]-(5./4.)*ptDRP[b][3]+(1./5.)*ptDRP[b][4]);
+   ptRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptDRP[b][0]-5.*ptDRP[b][1]+(10./3.)*ptDRP[b][2]-(5./4.)*ptDRP[b][3]+(1./5.)*ptDRP[b][4]); 
    ptRPDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*ptDRP[b][0]+(107./6.)*ptDRP[b][1]-(13./1.)*ptDRP[b][2]+(61./12.)*ptDRP[b][3]-(5./6.)*ptDRP[b][4]);
    ptRPDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*ptDRP[b][0]-59.*ptDRP[b][1]+49.*ptDRP[b][2]-(41./2.)*ptDRP[b][3]+(7./2.)*ptDRP[b][4]);
    ptRPDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*ptDRP[b][0]+156.*ptDRP[b][1]-144.*ptDRP[b][2]+66.*ptDRP[b][3]-12.*ptDRP[b][4]);
@@ -605,11 +606,10 @@ void AliCumulantsFunctions::Calculate()
        //common histogram:
        fchr2nd->FillDifferentialFlow(b+1,v2ptRP[b],sdRPDiff2pt[b]);
        
-       
+  
        //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowPtRP(b+1,v2ptRP[b],sdRPDiff2pt[b]);       
+       fchr2nd->FillDifferentialFlowPtRP(b+1,v2ptRP[b],sdRPDiff2pt[b]);      
        //abTempDeleteMe
-       
        
       } else {
          //cout<<"v'_2/2{2} = Im"<<endl;
@@ -1130,8 +1130,11 @@ void AliCumulantsFunctions::Calculate()
 
   //cout<<"number of pt bins: "<<fgknBinsPt<<endl;
   //cout<<"****************************************"<<endl;
-  for (Int_t b=0;b<fgknBinsPt;b++){ 
+   
+    
+    for (Int_t b=0;b<fgknBinsPt;b++){ 
     //cout<<"pt bin: "<<b*fBinWidthPt<<"-"<<(b+1)*fBinWidthPt<<" GeV"<<endl;
+    
     
     //v'_{2/2}{2}
     if(cumulant[0]>0)
@@ -1151,12 +1154,12 @@ void AliCumulantsFunctions::Calculate()
        
        
        //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowPtPOI(b+1,v2pt[b],sdDiff2pt[b]);       
+       fchr2nd->FillDifferentialFlowPtPOI(b+1,v2pt[b],sdDiff2pt[b]);        
        //abTempDeleteMe
        
        
       } else {
-         //cout<<"v'_2/2{2} = Im"<<endl;
+        //cout<<"v'_2/2{2} = Im"<<endl;
       }
     }else{
       //cout<<"v'_2/2{2} = Im"<<endl;
