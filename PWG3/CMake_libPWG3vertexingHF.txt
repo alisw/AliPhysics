@@ -13,6 +13,10 @@ set(SRCS
        vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx
        vertexingHF/AliMultiDimVector.cxx
        vertexingHF/AliSignificanceCalculator.cxx
+       vertexingHF/AliAnalysisBtoJPSItoEle.cxx
+       vertexingHF/AliAnalysisTaskSEBtoJPSItoEle.cxx
+       vertexingHF/AliBtoJPSItoEleCDFfitFCN.cxx
+       vertexingHF/AliBtoJPSItoEleCDFfitHandler.cxx
 )
 
 # fill list of header files from list of source files
