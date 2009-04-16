@@ -13,7 +13,7 @@ class TSystem;
 
 // to decrease the compilable code size comment this define. This will exclude the routines 
 // used for the calculation and saving of the coefficients. 
-//#define _INC_CREATION_ALICHEB3D_
+#define _INC_CREATION_ALICHEB3D_
 
 // when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
 // to be on the surface 
@@ -64,6 +64,7 @@ class AliCheb3DCalc: public TNamed
     T        Eval(const T  *par)                                        const {
     // evaluate Chebyshev parameterization for 3D function.
     // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
+    if (!fNRows) return 0.;
     int ncfRC;
     for (int id0=fNRows;id0--;) {
       int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
