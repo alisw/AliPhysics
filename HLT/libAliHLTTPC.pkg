@@ -19,7 +19,6 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCANeighboursFinder.h \
 		tracking-ca/AliHLTTPCCANeighboursCleaner.h \
 		tracking-ca/AliHLTTPCCAStartHitsFinder.h \
-		tracking-ca/AliHLTTPCCAUsedHitsInitialiser.h \
 		tracking-ca/AliHLTTPCCATrackletConstructor.h \
 		tracking-ca/AliHLTTPCCATrackletSelector.h \
 		tracking-ca/AliHLTTPCCADisplay.h \
