@@ -228,7 +228,7 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
  
   TH1D *proj1D=0;
   Int_t nbins =fNVarBins[ivar];
-  Float_t *bins = new Float_t[nbins+1];    
+  Double_t *bins = new Double_t[nbins+1];    
   for(Int_t ibin =0;ibin<nbins+1;ibin++){
     bins[ibin] = fVarBinLimits[ibin+fOffset[ivar]];
   }
@@ -269,9 +269,9 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   TH2D *proj2D=0;
 
   Int_t nbins1 =fNVarBins[ivar1];
-  Float_t *bins1 = new Float_t[nbins1+1];    
+  Double_t *bins1 = new Double_t[nbins1+1];    
   Int_t nbins2 =fNVarBins[ivar2];
-  Float_t *bins2 = new Float_t[nbins2+1];    
+  Double_t *bins2 = new Double_t[nbins2+1];    
   for(Int_t ibin1 =0;ibin1<nbins1+1;ibin1++){
     bins1[ibin1] = fVarBinLimits[ibin1+fOffset[ivar1]];
   }
@@ -323,9 +323,9 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   Int_t nbins2 =fNVarBins[ivar2];
   Int_t nbins3 =fNVarBins[ivar3];
   
-  Float_t *bins1 = new Float_t[nbins1+1];         
-  Float_t *bins2 = new Float_t[nbins2+1];     
-  Float_t *bins3 = new Float_t[nbins3+1];     
+  Double_t *bins1 = new Double_t[nbins1+1];         
+  Double_t *bins2 = new Double_t[nbins2+1];     
+  Double_t *bins3 = new Double_t[nbins3+1];     
   
   for(Int_t ibin =0;ibin<nbins1+1;ibin++){
     bins1[ibin] = fVarBinLimits[ibin+fOffset[ivar1]];
