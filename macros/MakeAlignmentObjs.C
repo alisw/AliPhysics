@@ -49,7 +49,14 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* ocdbOrDir = "local
       toOCDB=kTRUE;
       Printf("Objects will be saved in the OCDB %s",ocdbUriDirPath.Data());  
   }else{ // else ocdbUriDirPath is to be interpreted as a directory path
-      Printf("Objects will be saved in the file %s",ocdbUriDirPath.Data());  
+      gSystem->ExpandPathName(ocdbUriDirPath);
+      if(gSystem->AccessPathName(ocdbUriDirPath.Data()))
+      {
+	  Printf("Directory \"%s\" where to save files does not yet exist! ... exiting!",ocdbUriDirPath.Data());
+	  return;
+      }else{
+	  Printf("Files with alignment objects will be saved in the directory %s",ocdbUriDirPath.Data());  
+      }
   }
       
   TMap misAligners;
@@ -151,6 +158,7 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* ocdbOrDir = "local
     }else{
       // save on file
       fileName = ocdbUriDirPath;
+      fileName += "/";
       fileName += str.Data();
       fileName += misalType;
       fileName += "MisAlignment.root";
@@ -159,7 +167,7 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* ocdbOrDir = "local
 	Error(macroName,"cannot open file for output\n");
 	return;
       }
-      Info(macroName,"Saving alignment objects to the file %s", fileName);
+      Info(macroName,"Saving alignment objects to the file %s", fileName.Data());
       file.cd();
       file.WriteObject(objsArray,arName.Data(),"kSingleKey");
       file.Close();
