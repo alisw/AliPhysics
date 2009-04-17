@@ -10,6 +10,7 @@ class TList;
 class AliESDEvent;
 
 #include "AliAnalysisTaskME.h"
+#include "AliMixedEvent.h"
 
 class AliAnalysisTaskPhiCorr : public AliAnalysisTaskME {
  public:
@@ -24,7 +25,8 @@ class AliAnalysisTaskPhiCorr : public AliAnalysisTaskME {
   TList       *fHists;      // List with histos
   TH1F        *fHistDphiCO; // Pt spectrum
   TH1F        *fHistDphiUC; // Pt spectrum
-   
+  AliMixedEvent fMixedEvent;
+  
   AliAnalysisTaskPhiCorr(const AliAnalysisTaskPhiCorr&); // not implemented
   AliAnalysisTaskPhiCorr& operator=(const AliAnalysisTaskPhiCorr&); // not implemented
   

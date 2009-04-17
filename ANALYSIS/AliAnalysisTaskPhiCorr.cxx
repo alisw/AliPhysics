@@ -48,53 +48,34 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
     // Uncorrelated tracks
     Int_t nev = fInputHandler->GetBufferSize();
     Float_t wgt = 1./(nev*(nev-1));
+    fMixedEvent.Reset();
     
     for (Int_t iev = 0; iev < nev; iev++) {
-	for (Int_t jev = (iev + 1); jev < nev; jev++) {
-	    AliAODEvent* aod1 = (AliAODEvent*)GetEvent(iev);
-	    AliAODEvent* aod2 = (AliAODEvent*)GetEvent(jev);
-	    
-	    Int_t ntracks1 =  aod1->GetNumberOfTracks();
-	    Int_t ntracks2 =  aod2->GetNumberOfTracks();
-	    
-	    printf("Number of tracks %5d:%5d %5d:%5d\n", iev, ntracks1, jev, ntracks2);
-	    
-	    for (Int_t iTracks = 0; iTracks < ntracks1; iTracks++) {
-		for (Int_t jTracks = 0; jTracks < ntracks2; jTracks++) {
-		    
-		    
-		    AliAODTrack* track1 = aod1->GetTrack(iTracks);
-		    AliAODTrack* track2 = aod2->GetTrack(jTracks);
-		    
-		    Float_t phi1 = track1->Phi();
-		    Float_t phi2 = track2->Phi();
-		    Float_t dphi = TMath::Abs(phi1 - phi2);
-		    if (dphi > TMath::Pi()) dphi = 2. * TMath::Pi() - dphi;
-		    fHistDphiUC->Fill(dphi, wgt);
-		} // tracks
-	    } // tracks 
-	} // event loop
-    } // event loop
-    
-//    Correlated 
-    AliAODEvent* aod = (AliAODEvent*)fInputHandler->GetLatestEvent();
-
-    Int_t ntracks = aod->GetNumberOfTracks();
-    printf("Number of tracks %5d: \n", ntracks);
-    
-    for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-	for (Int_t jTracks = (iTracks+1); jTracks < ntracks; jTracks++) {
-	      AliAODTrack* track1 = aod->GetTrack(iTracks);
-	      AliAODTrack* track2 = aod->GetTrack(jTracks);
-	      Float_t phi1 = track1->Phi();
-	      Float_t phi2 = track2->Phi();
-	      Float_t dphi = TMath::Abs(phi1 - phi2);
-	      if (dphi > TMath::Pi()) dphi = 2. * TMath::Pi() - dphi;
-	      fHistDphiCO->Fill(dphi);
-	} // tracks
+	AliAODEvent* aod = (AliAODEvent*) GetEvent(iev);
+	fMixedEvent.AddEvent(aod);
     }
+    fMixedEvent.Init();
+    Int_t ntrack = fMixedEvent.GetNumberOfTracks();
+    if (ntrack > 1) {
+      for (Int_t itr = 0; itr < ntrack -1; itr++) {
+	for (Int_t jtr = itr+1; jtr < ntrack; jtr++) {
+	  AliVParticle* track1 = fMixedEvent.GetTrack(itr);
+	  AliVParticle* track2 = fMixedEvent.GetTrack(jtr);
+	  Int_t iev1 =  fMixedEvent.EventIndex(itr);
+	  Int_t iev2 =  fMixedEvent.EventIndex(jtr);
 
-  // Post output data.
+	  Float_t phi1 = track1->Phi();
+	  Float_t phi2 = track2->Phi();
+	  Float_t dphi = TMath::Abs(phi1 - phi2);
+	  if (dphi > TMath::Pi()) dphi = 2. * TMath::Pi() - dphi;
+	  if (iev1 != iev2) {
+	    fHistDphiUC->Fill(dphi, wgt);
+	  } else {
+	    fHistDphiCO->Fill(dphi, 0.5);	    
+	  }
+	} // tarcks
+      } // tracks
+    } // more than 1 
   PostData(1, fHists);
 }      
 
@@ -104,8 +85,8 @@ void AliAnalysisTaskPhiCorr::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  TCanvas *c1 = new TCanvas("AliAnalysisTaskPt","corr1",10,10,510,510);
+  TCanvas *c1 = new TCanvas("AliAnalysisTaskPt","Pt",10,10,510,510);
   c1->cd(1)->SetLogy();
-  fHistDphiUC->DrawCopy("E");
-  fHistDphiCO->DrawCopy("Esame");
+  fHistDphiCO->DrawCopy("E");
+  fHistDphiUC->DrawCopy("Esame");
 }
