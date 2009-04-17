@@ -27,6 +27,9 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCAPerformance.h \
 		tracking-ca/AliHLTTPCCAMerger.h \
 		tracking-ca/AliHLTTPCCAGlobalMergerComponent.h \
+		tracking-ca/AliHLTTPCCAClusterData.h \
+		tracking-ca/AliHLTTPCCASliceData.h \
+		tracking-ca/AliHLTTPCCASliceOutput.h \
 		tracking-ca/AliTPCtrackerCA.h 
 #TRACKING_CA:=	
 
