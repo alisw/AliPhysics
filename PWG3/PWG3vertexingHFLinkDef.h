@@ -18,6 +18,7 @@
 #pragma link C++ class AliCFHeavyFlavourTaskMultiVar+;
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
+#pragma link C++ class AliHFMassFitter+;
 #pragma link C++ class AliAnalysisBtoJPSItoEle+;
 #pragma link C++ class AliAnalysisTaskSEBtoJPSItoEle+;
 #pragma link C++ class AliBtoJPSItoEleCDFfitFCN+;
