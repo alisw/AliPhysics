@@ -21,6 +21,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <TMath.h>
 #include "TClass.h"
 
@@ -479,7 +480,7 @@ Bool_t AliTRDrawData::ShiftWords(UInt_t *buf, Int_t nStart, Int_t nWords, Int_t 
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE, Bool_t newSM = kFALSE){
+Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t /*newEvent = kFALSE*/, Bool_t /*newSM = kFALSE*/){
 	//
 	// This function can be used for both ZS and NZS data
 	//
