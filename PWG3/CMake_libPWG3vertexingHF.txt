@@ -13,6 +13,7 @@ set(SRCS
        vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx
        vertexingHF/AliMultiDimVector.cxx
        vertexingHF/AliSignificanceCalculator.cxx
+       vertexingHF/AliHFMassFitter.cxx
        vertexingHF/AliAnalysisBtoJPSItoEle.cxx
        vertexingHF/AliAnalysisTaskSEBtoJPSItoEle.cxx
        vertexingHF/AliBtoJPSItoEleCDFfitFCN.cxx
