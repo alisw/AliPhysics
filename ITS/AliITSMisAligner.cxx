@@ -90,8 +90,6 @@ AliITSMisAligner::AliITSMisAligner():
 	fSPDLadderShiftB[ii]=0.;
 	fSDDLadderShift1[ii]=0.;
 	fSDDLadderShift2[ii]=0.;
-	fSSDLadderShift1[ii]=0.;
-	fSSDLadderShift2[ii]=0.;
     }
 }
 
@@ -127,7 +125,7 @@ AliITSMisAligner &AliITSMisAligner::operator= (const AliITSMisAligner &mAligner)
     //
     // assignment operator
     //
-    fRnd = mAligner.fRnd,
+    fRnd = mAligner.fRnd;
     fInd = 0;
     fAlignObjArray = mAligner.fAlignObjArray;
     fStrSPD = "ITS/SPD";
@@ -169,7 +167,6 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     }else{
 	Printf("survey array contains %d entries", surveyArray->GetEntriesFast());
     }
-    //(AliGeomManager::GetGeometry())->UnlockGeometry();
 
     AddAlignObj("ITS",fWholeITS[0],fWholeITS[1],fWholeITS[2],fWholeITS[3],fWholeITS[4],fWholeITS[5],"fixed");
 
@@ -191,27 +188,32 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     AddAlignObj(3,-1,fSDDLadder[0],fSDDLadder[1],fSDDLadder[2],fSDDLadder[3],
 	    fSDDLadder[4],fSDDLadder[5],fSDDLadderShift2[0],fSDDLadderShift2[1],fSDDLadderShift2[2],fSDDLadderShift2[3],fSDDLadderShift2[4],fSDDLadderShift2[5],fUnifSDDLadder); // all SDD2 ladders
 
-    // all SSD ladders
+    // all SSD ladders as from survey, + shift and smearing in the "residual" and "full" case
     for(Int_t ii=0; ii<surveyArray->GetEntriesFast(); ii++)
     {
 	AliAlignObjParams* aop = dynamic_cast<AliAlignObjParams*> (surveyArray->UncheckedAt(ii));
-//	if(!aop){
-//	    Printf("Unexpected missing object at %d!", ii);
-//	    continue;
-//	}
 	TString sName(aop->GetSymName());
 
-	// First we shift all SSD ladders by the same quantity to reproduce a barrel shift
-	ShiftAlignObj(*aop,fSSDBarrel[0],fSSDBarrel[1],fSSDBarrel[2],fSSDBarrel[3],fSSDBarrel[4],fSSDBarrel[5]);
-	if(sName.Contains("SSD4") && !sName.Contains("Sensor")){
-	    // we correct with the factor 1.13 for the fact that, in the inner SSD layer, z lever arm is 45.135cm instead of 51cm
-	    SmearAlignObj(*aop,fSSDLadder[0],fSSDLadder[1],fSSDLadder[2],fSSDLadder[3]*1.13,fSSDLadder[4]*1.13,fSSDLadder[5]);
+	if(sName.Contains("SSD") && !sName.Contains("Sensor"))
+	{
+
+	    if(!(TString(GetMisalType())=="ideal"))
+	    {
+		// First we shift all SSD ladders by the same quantity to reproduce a barrel shift
+		ShiftAlignObj(*aop,fSSDBarrel[0],fSSDBarrel[1],fSSDBarrel[2],fSSDBarrel[3],fSSDBarrel[4],fSSDBarrel[5]);
+
+		// Then we smear according to the sigmas given by the misalignment scenario
+		if(sName.Contains("SSD4")){
+		    // we correct with the factor 1.13 for the fact that, in the inner SSD layer, z lever arm is 45.135cm instead of 51cm
+		    SmearAlignObj(*aop,fSSDLadder[0],fSSDLadder[1],fSSDLadder[2],fSSDLadder[3]*1.13,fSSDLadder[4]*1.13,fSSDLadder[5]);
+		}else if(sName.Contains("SSD5")){
+		    SmearAlignObj(*aop,fSSDLadder[0],fSSDLadder[1],fSSDLadder[2],fSSDLadder[3],fSSDLadder[4],fSSDLadder[5]);
+		}
+	    }
+
 	    new((*fAlignObjArray)[fInd++]) AliAlignObjParams(*aop);
-	}else if(sName.Contains("SSD5") && !sName.Contains("Sensor")){
-	    SmearAlignObj(*aop,fSSDLadder[0],fSSDLadder[1],fSSDLadder[2],fSSDLadder[3],fSSDLadder[4],fSSDLadder[5]);
-	    new((*fAlignObjArray)[fInd++]) AliAlignObjParams(*aop);
+	    aop->ApplyToGeometry(); // this we need to correctly build objects for SSD ladders below
 	}
-	aop->ApplyToGeometry();
     }
 
     //=****************************************
@@ -230,7 +232,8 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
 	TString sName(aop->GetSymName());
 	if(sName.Contains("SSD") && sName.Contains("Sensor"))
 	{
-	    SmearAlignObj(*aop,fSSDModule[0],fSSDModule[1],fSSDModule[2],fSSDModule[3],fSSDModule[4],fSSDModule[5]);
+	    if(!(TString(GetMisalType())=="ideal"))
+		SmearAlignObj(*aop,fSSDModule[0],fSSDModule[1],fSSDModule[2],fSSDModule[3],fSSDModule[4],fSSDModule[5]);
 	    new((*fAlignObjArray)[fInd++]) AliAlignObjParams(*aop);
 	}
     }
@@ -311,7 +314,7 @@ void AliITSMisAligner::SetSPDMisAlignment()
 	// misalignment at the level of SPD barrel and half-barrels left to zero
 	SetSPDBarrelSigmas(0., 0., 0., 0., 0., 0.); 
 	SetSPDHBSigmas(0., 0., 0., 0., 0., 0.); 
-	
+
 	// misalignment at the level of SPD sectors (source: A.Pepato)
 	SetSPDSectorSigmas( 0.0050/5., //  50 micron (~tangetial, i.e. rphi)
 		0.0100/5., // 100 micron (~radial)
@@ -329,7 +332,7 @@ void AliITSMisAligner::SetSPDMisAlignment()
 		0.0050/7.*kRadToDeg/4., // so as to have 50 micron difference at the two extremes
 		0.0050/0.7*kRadToDeg/4.);// so as to have 50 micron difference at the two extremes
 	fUnifSPDHS=kFALSE;
-	
+
 	// misalignment at the level of ladders (SPD) (source: R.Santoro)
 	SetSPDLadderSigmas( 0.0010/5., // 10 micron
 		0.0050/5., // 50 micron
@@ -373,7 +376,7 @@ void AliITSMisAligner::SetSPDMisAlignment()
 		0.0050/7.*kRadToDeg, // so as to have 50 micron difference at the two extremes
 		0.0050/0.7*kRadToDeg); // so as to have 50 micron difference at the two extremes
 	fUnifSPDHS=kTRUE;
-	
+
 	// misalignment at the level of ladders (SPD) (source: R.Santoro)
 	SetSPDLadderSigmas( 0.0010, // 10 micron
 		0.0030, // 50 micron
@@ -382,7 +385,7 @@ void AliITSMisAligner::SetSPDMisAlignment()
 		0.0001*kRadToDeg, // 0.1 mrad
 		0.0001*kRadToDeg); // 0.1 mrad
 	fUnifSPDLadder=kTRUE;
-	
+
 
 	// misalignment at the level of SPD barrel, half-barrels, and at the level
 	// of SPD sectors
@@ -418,7 +421,7 @@ void AliITSMisAligner::SetSDDMisAlignment()
 	// misalignment at the level of SDD and SSD layers(source: B.Giraudo)
 	SetSDDLayerSigmas(0., 0., 0., 0., 0., 0.);
 	SetSDDBarrelSigmas(0., 0., 0., 0., 0., 0.);
-	
+
 	// misalignment at the level of half-staves (SPD) (source: S.Moretto)
 	SetSDDLadderSigmas( 0.0005, // 5 micron
 		0.0005, // 5 micron
@@ -472,34 +475,34 @@ void AliITSMisAligner::SetSDDMisAlignment()
 	fUnifSDDModule=kTRUE;
     }
 
-  fSDDLadderShift1[0] = GetUnif(-fSDDBarrel[0],fSDDBarrel[0]);
-  fSDDLadderShift1[1] = GetUnif(-fSDDBarrel[1],fSDDBarrel[1]);
-  fSDDLadderShift1[2] = GetUnif(-fSDDBarrel[2],fSDDBarrel[2]);
-  fSDDLadderShift1[3] = GetUnif(-fSDDBarrel[3],fSDDBarrel[3]);
-  fSDDLadderShift1[4] = GetUnif(-fSDDBarrel[4],fSDDBarrel[4]);
-  fSDDLadderShift1[5] = GetUnif(-fSDDBarrel[5],fSDDBarrel[5]);
-  
-  for(Int_t ii=0; ii<6; ii++)
-      fSDDLadderShift2[ii] = fSDDLadderShift1[ii];
+    fSDDLadderShift1[0] = GetUnif(-fSDDBarrel[0],fSDDBarrel[0]);
+    fSDDLadderShift1[1] = GetUnif(-fSDDBarrel[1],fSDDBarrel[1]);
+    fSDDLadderShift1[2] = GetUnif(-fSDDBarrel[2],fSDDBarrel[2]);
+    fSDDLadderShift1[3] = GetUnif(-fSDDBarrel[3],fSDDBarrel[3]);
+    fSDDLadderShift1[4] = GetUnif(-fSDDBarrel[4],fSDDBarrel[4]);
+    fSDDLadderShift1[5] = GetUnif(-fSDDBarrel[5],fSDDBarrel[5]);
 
-  //  layer SDD1
-  fSDDLadderShift1[0] += GetUnif(-fSDDLayer[0],fSDDLayer[0]);
-  fSDDLadderShift1[1] += GetUnif(-fSDDLayer[1],fSDDLayer[1]);
-  fSDDLadderShift1[2] += GetUnif(-fSDDLayer[2],fSDDLayer[2]);
-  fSDDLadderShift1[3] += GetUnif(-fSDDLayer[3],fSDDLayer[3]);
-  fSDDLadderShift1[4] += GetUnif(-fSDDLayer[4],fSDDLayer[4]);
-  fSDDLadderShift1[5] += GetUnif(-fSDDLayer[5],fSDDLayer[5]);
+    for(Int_t ii=0; ii<6; ii++)
+	fSDDLadderShift2[ii] = fSDDLadderShift1[ii];
 
-  //  layer SDD2
-  fSDDLadderShift2[0] += GetUnif(-fSDDLayer[0],fSDDLayer[0]);
-  fSDDLadderShift2[1] += GetUnif(-fSDDLayer[1],fSDDLayer[1]);
-  fSDDLadderShift2[2] += GetUnif(-fSDDLayer[2],fSDDLayer[2]);
-  fSDDLadderShift2[3] += GetUnif(-fSDDLayer[3],fSDDLayer[3]);
-  fSDDLadderShift2[4] += GetUnif(-fSDDLayer[4],fSDDLayer[4]);
-  fSDDLadderShift2[5] += GetUnif(-fSDDLayer[5],fSDDLayer[5]);
+    //  layer SDD1
+    fSDDLadderShift1[0] += GetUnif(-fSDDLayer[0],fSDDLayer[0]);
+    fSDDLadderShift1[1] += GetUnif(-fSDDLayer[1],fSDDLayer[1]);
+    fSDDLadderShift1[2] += GetUnif(-fSDDLayer[2],fSDDLayer[2]);
+    fSDDLadderShift1[3] += GetUnif(-fSDDLayer[3],fSDDLayer[3]);
+    fSDDLadderShift1[4] += GetUnif(-fSDDLayer[4],fSDDLayer[4]);
+    fSDDLadderShift1[5] += GetUnif(-fSDDLayer[5],fSDDLayer[5]);
+
+    //  layer SDD2
+    fSDDLadderShift2[0] += GetUnif(-fSDDLayer[0],fSDDLayer[0]);
+    fSDDLadderShift2[1] += GetUnif(-fSDDLayer[1],fSDDLayer[1]);
+    fSDDLadderShift2[2] += GetUnif(-fSDDLayer[2],fSDDLayer[2]);
+    fSDDLadderShift2[3] += GetUnif(-fSDDLayer[3],fSDDLayer[3]);
+    fSDDLadderShift2[4] += GetUnif(-fSDDLayer[4],fSDDLayer[4]);
+    fSDDLadderShift2[5] += GetUnif(-fSDDLayer[5],fSDDLayer[5]);
 
 }
-	
+
 //_______________________________________________________________________________________
 void AliITSMisAligner::SetSSDMisAlignment() 
 {
@@ -514,7 +517,7 @@ void AliITSMisAligner::SetSSDMisAlignment()
 	SetSSDLadderSigmas(0.,0.,0.,0.,0.,0.);
 	// zero misalignment at the level of SSD modules
 	SetSSDModuleSigmas(0.,0.,0.,0.,0.,0.);
-	
+
     }else if(TString(GetMisalType())=="residual"){
 
 	// zero misalignment at the level of SSD barrel
@@ -549,7 +552,7 @@ void AliITSMisAligner::SetSSDMisAlignment()
 		GetUnif(-0.0020/90.*kRadToDeg,0.0020), // so as to have 20 micron difference at the two extremes
 		GetUnif(-0.0020/90.*kRadToDeg,0.0020), // so as to have 20 micron difference at the two extremes
 		GetUnif(-0.0020/40.*kRadToDeg,0.0020));  // so as to have 20 micron difference at the two extremes
-	
+
 	// misalignment at the level of SSD ladders (source: M. Van Leeuwen)
 	// values set so that overall maximum displacement (combined effect of shift and rotation
 	// of the ladder) for any point of the ladder cannot exceed 20um in x, 100 um in y, 50um in z
@@ -573,35 +576,6 @@ void AliITSMisAligner::SetSSDMisAlignment()
 	fUnifSSDModule=kTRUE;
     }
 
-
-  fSSDLadderShift1[0] = GetUnif(-fSSDBarrel[0],fSSDBarrel[0]);
-  fSSDLadderShift1[1] = GetUnif(-fSSDBarrel[1],fSSDBarrel[1]);
-  fSSDLadderShift1[2] = GetUnif(-fSSDBarrel[2],fSSDBarrel[2]);
-  fSSDLadderShift1[3] = GetUnif(-fSSDBarrel[3],fSSDBarrel[3]);
-  fSSDLadderShift1[4] = GetUnif(-fSSDBarrel[4],fSSDBarrel[4]);
-  fSSDLadderShift1[5] = GetUnif(-fSSDBarrel[5],fSSDBarrel[5]);
-  
-  /*
-  for(Int_t ii=0; ii<6; ii++)
-      fSSDLadderShift2[ii] = fSSDLadderShift1[ii];
-
-  //  layer SSD1
-  fSSDLadderShift1[0] += GetUnif(-fSSDLayer[0],fSSDLayer[0]);
-  fSSDLadderShift1[1] += GetUnif(-fSSDLayer[1],fSSDLayer[1]);
-  fSSDLadderShift1[2] += GetUnif(-fSSDLayer[2],fSSDLayer[2]);
-  fSSDLadderShift1[3] += GetUnif(-fSSDLayer[3],fSSDLayer[3]);
-  fSSDLadderShift1[4] += GetUnif(-fSSDLayer[4],fSSDLayer[4]);
-  fSSDLadderShift1[5] += GetUnif(-fSSDLayer[5],fSSDLayer[5]);
-
-  //  layer SSD2
-  fSSDLadderShift2[0] += GetUnif(-fSSDLayer[0],fSSDLayer[0]);
-  fSSDLadderShift2[1] += GetUnif(-fSSDLayer[1],fSSDLayer[1]);
-  fSSDLadderShift2[2] += GetUnif(-fSSDLayer[2],fSSDLayer[2]);
-  fSSDLadderShift2[3] += GetUnif(-fSSDLayer[3],fSSDLayer[3]);
-  fSSDLadderShift2[4] += GetUnif(-fSSDLayer[4],fSSDLayer[4]);
-  fSSDLadderShift2[5] += GetUnif(-fSSDLayer[5],fSSDLayer[5]);
-  */
-
 }
 
 //_______________________________________________________________________________________
@@ -610,466 +584,474 @@ AliCDBMetaData* AliITSMisAligner::GetCDBMetaData() const {
     // the array of alignment objects for ITS misalignment
     // Presently "responsible" and "comment" are filled.
     //
-  AliCDBMetaData* md = new AliCDBMetaData();
-  md->SetResponsible("Andrea Dainese");
+    AliCDBMetaData* md = new AliCDBMetaData();
+    md->SetResponsible("A. Dainese, M. Van Leeuwen, R. Grosso");
 
-  if(TString(GetMisalType())=="ideal")
-    md->SetComment("Alignment objects for ITS ideal misalignment");
-  if(TString(GetMisalType())=="residual")
-    md->SetComment("Alignment objects for ITS residual misalignment");
-  if(TString(GetMisalType())=="full")
-    md->SetComment("Alignment objects for ITS full misalignment");
-  return md;
+    if(TString(GetMisalType())=="ideal")
+	md->SetComment(
+		Form("Alignment objects for ITS ideal misalignment. It includes:"
+		    "\n                                 survey of whole ITS;"
+		    "\n                                 survey of SSD ladders and modules"));
+    if(TString(GetMisalType())=="residual")
+	md->SetComment(
+		Form("Alignment objects for ITS residual misalignment. It includes:"
+		    "\n                                 survey of whole ITS;"
+		    "\n                                 survey of SSD ladders and modules"));
+    if(TString(GetMisalType())=="full")
+	md->SetComment(
+		Form("Alignment objects for ITS full misalignment. It includes:"
+		    "\n                                 survey of whole ITS;"
+		    "\n                                 survey of SSD ladders and modules"));
+    return md;
 }
 
 //________________________________________________________________________
 Bool_t AliITSMisAligner::AddAlignObj(char* name,Double_t dx,Double_t dy,Double_t dz,
-				Double_t dpsi,Double_t dtheta,Double_t dphi,const char* distrib) {
-  //
-  // misalignment by symname
-  //
-  Double_t vx=0.,vy=0.,vz=0.,vpsi=0.,vtheta=0.,vphi=0.;
+	Double_t dpsi,Double_t dtheta,Double_t dphi,const char* distrib) {
+    //
+    // misalignment by symname
+    //
+    Double_t vx=0.,vy=0.,vz=0.,vpsi=0.,vtheta=0.,vphi=0.;
 
-  TString sdistrib(distrib);
+    TString sdistrib(distrib);
 
-  if(sdistrib==TString("gaussian")) {
-    vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
-    vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
-    vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
-    vpsi   = AliMathBase::TruncatedGaus(0.,dpsi/3.,  dpsi );
-    vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
-    vphi   = AliMathBase::TruncatedGaus(0.,dphi/3.,  dphi);
-  }else if(sdistrib==TString("uniform")){ 
-    vx = fRnd.Uniform(-dx,dx);
-    vy = fRnd.Uniform(-dy,dy);
-    vz = fRnd.Uniform(-dz,dz);
-    vpsi = fRnd.Uniform(-dpsi,dpsi);
-    vtheta = fRnd.Uniform(-dtheta,dtheta);
-    vphi = fRnd.Uniform(-dphi,dphi);
-  }else if(sdistrib==TString("fixed")){
-    vx=dx;
-    vy=dy;
-    vz=dz;
-    vpsi=dpsi;
-    vtheta=dtheta;
-    vphi=dphi;
-  }else{
-    AliFatal(Form("Invalid string \"%s\" specifying the misalignment type for the volume \"%s\""));
-  }
-
-  new((*fAlignObjArray)[fInd]) AliAlignObjParams(name,0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
-
-  AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
-  itsalobj->ApplyToGeometry();
-
-  fInd++;
-
-  return kTRUE;
-}
-
-
-//________________________________________________________________________
-Bool_t AliITSMisAligner::AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_t dz,
-				 Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
-  //
-  // misalignment at the level of sensitive alignable volumes (SPD ladders/ SDD,SSD modules)
-  // done for all ladders/modules of the given layer
-  //
-  lay+=1; // layers are numbered from 1 to 6 in AliGeomManager
-
-  printf("LAYER %d  MODULES %d\n",lay,AliGeomManager::LayerSize(lay));
-
-  for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(lay); iModule++) {
-
-    Double_t vx,vy,vz,vpsi,vtheta,vphi;
-    
-    if(!unif) {
-      vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
-      vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
-      vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
-      vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
-      vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
-      vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
-    } else {
-      vx = fRnd.Uniform(-dx,dx);
-      vy = fRnd.Uniform(-dy,dy);
-      vz = fRnd.Uniform(-dz,dz);
-      vpsi = fRnd.Uniform(-dpsi,dpsi);
-      vtheta = fRnd.Uniform(-dtheta,dtheta);
-      vphi = fRnd.Uniform(-dphi,dphi);
-    }
-    
-    UShort_t volid = AliGeomManager::LayerToVolUID(lay,iModule);
-    const char *symname = AliGeomManager::SymName(volid);
-    
-    new((*fAlignObjArray)[fInd]) AliAlignObjParams(symname,volid,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
-    fInd++; 
-  }
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliITSMisAligner::AddAlignObj(Int_t lay,Int_t ladd,Double_t dx,Double_t dy,Double_t dz,
-				       Double_t dpsi,Double_t dtheta,Double_t dphi,
-				       Double_t xShift,Double_t yShift,Double_t zShift,
-				       Double_t psiShift,Double_t thetaShift,Double_t phiShift,
-				       Bool_t unif) {
-  //
-  // misalignment at the level of half-staves/ladders (ladd=-1 means that all ladders are scanned)
-  //
-  Double_t vx,vy,vz,vpsi,vtheta,vphi;
-  Double_t tr[3],rot[3];  
-  
-  Int_t laddMin = ladd;
-  Int_t laddMax = laddMin+1;
-  if (ladd<0) {
-    laddMin = 0;
-    laddMax = fgkNLadders[lay];
-  }
-
-  for (Int_t iLadd=laddMin; iLadd<laddMax; iLadd++) {
-
-    Int_t nHS = 1; 
-    if (lay<2) nHS = 2;
-    for (Int_t iHalfStave=0; iHalfStave<nHS; iHalfStave++) {
-      
-      if(!unif) {
+    if(sdistrib==TString("gaussian")) {
 	vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
 	vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
 	vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
-	vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
+	vpsi   = AliMathBase::TruncatedGaus(0.,dpsi/3.,  dpsi );
 	vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
-	vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
-      } else {
+	vphi   = AliMathBase::TruncatedGaus(0.,dphi/3.,  dphi);
+    }else if(sdistrib==TString("uniform")){ 
 	vx = fRnd.Uniform(-dx,dx);
 	vy = fRnd.Uniform(-dy,dy);
 	vz = fRnd.Uniform(-dz,dz);
 	vpsi = fRnd.Uniform(-dpsi,dpsi);
 	vtheta = fRnd.Uniform(-dtheta,dtheta);
 	vphi = fRnd.Uniform(-dphi,dphi);
-      }
+    }else if(sdistrib==TString("fixed")){
+	vx=dx;
+	vy=dy;
+	vz=dz;
+	vpsi=dpsi;
+	vtheta=dtheta;
+	vphi=dphi;
+    }else{
+	AliFatal(Form("Invalid string \"%s\" specifying the misalignment type for the volume \"%s\""));
+    }
 
-      TString name(GetHalfStaveLadderSymbName(lay,iLadd,iHalfStave));
+    new((*fAlignObjArray)[fInd]) AliAlignObjParams(name,0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
 
-      // first apply half-stave / ladder level misalignment
-      AliAlignObjParams aaop(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE); // set them as local
-      aaop.GetPars(tr,rot); // global
+    AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
+    itsalobj->ApplyToGeometry();
 
-      // then, apply layer-level misalignment (only for SDD and SSD)
-      if(lay>1) {
+    fInd++;
+
+    return kTRUE;
+}
+
+
+//________________________________________________________________________
+Bool_t AliITSMisAligner::AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_t dz,
+	Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
+    //
+    // misalignment at the level of sensitive alignable volumes (SPD ladders/ SDD,SSD modules)
+    // done for all ladders/modules of the given layer
+    //
+    lay+=1; // layers are numbered from 1 to 6 in AliGeomManager
+
+    printf("LAYER %d  MODULES %d\n",lay,AliGeomManager::LayerSize(lay));
+
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(lay); iModule++) {
+
+	Double_t vx,vy,vz,vpsi,vtheta,vphi;
+
+	if(!unif) {
+	    vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
+	    vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
+	    vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
+	    vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
+	    vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
+	    vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
+	} else {
+	    vx = fRnd.Uniform(-dx,dx);
+	    vy = fRnd.Uniform(-dy,dy);
+	    vz = fRnd.Uniform(-dz,dz);
+	    vpsi = fRnd.Uniform(-dpsi,dpsi);
+	    vtheta = fRnd.Uniform(-dtheta,dtheta);
+	    vphi = fRnd.Uniform(-dphi,dphi);
+	}
+
+	UShort_t volid = AliGeomManager::LayerToVolUID(lay,iModule);
+	const char *symname = AliGeomManager::SymName(volid);
+
+	new((*fAlignObjArray)[fInd]) AliAlignObjParams(symname,volid,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
+	fInd++; 
+    }
+
+    return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliITSMisAligner::AddAlignObj(Int_t lay,Int_t ladd,Double_t dx,Double_t dy,Double_t dz,
+	Double_t dpsi,Double_t dtheta,Double_t dphi,
+	Double_t xShift,Double_t yShift,Double_t zShift,
+	Double_t psiShift,Double_t thetaShift,Double_t phiShift,
+	Bool_t unif) {
+    //
+    // misalignment at the level of half-staves/ladders (ladd=-1 means that all ladders are scanned)
+    //
+    Double_t vx,vy,vz,vpsi,vtheta,vphi;
+    Double_t tr[3],rot[3];  
+
+    Int_t laddMin = ladd;
+    Int_t laddMax = laddMin+1;
+    if (ladd<0) {
+	laddMin = 0;
+	laddMax = fgkNLadders[lay];
+    }
+
+    for (Int_t iLadd=laddMin; iLadd<laddMax; iLadd++) {
+
+	Int_t nHS = 1; 
+	if (lay<2) nHS = 2;
+	for (Int_t iHalfStave=0; iHalfStave<nHS; iHalfStave++) {
+
+	    if(!unif) {
+		vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
+		vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
+		vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
+		vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
+		vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
+		vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
+	    } else {
+		vx = fRnd.Uniform(-dx,dx);
+		vy = fRnd.Uniform(-dy,dy);
+		vz = fRnd.Uniform(-dz,dz);
+		vpsi = fRnd.Uniform(-dpsi,dpsi);
+		vtheta = fRnd.Uniform(-dtheta,dtheta);
+		vphi = fRnd.Uniform(-dphi,dphi);
+	    }
+
+	    TString name(GetHalfStaveLadderSymbName(lay,iLadd,iHalfStave));
+
+	    // first apply half-stave / ladder level misalignment
+	    AliAlignObjParams aaop(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE); // set them as local
+	    aaop.GetPars(tr,rot); // global
+
+	    // then, apply layer-level misalignment (only for SDD and SSD)
+	    if(lay>1) {
+		tr[0] += xShift;
+		tr[1] += yShift;
+		tr[2] += zShift;
+		rot[0] += psiShift;
+		rot[1] += thetaShift;
+		rot[2] += phiShift;
+	    }
+	    new((*fAlignObjArray)[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
+
+	    AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
+	    itsalobj->ApplyToGeometry();
+	    fInd++;
+	}
+    }
+
+    return kTRUE;
+}
+
+
+//________________________________________________________________________
+Bool_t AliITSMisAligner::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
+	Double_t dx,Double_t dy,Double_t dz,
+	Double_t dpsi,Double_t dtheta,Double_t dphi,
+	Double_t xShift,Double_t yShift,Double_t zShift,
+	Double_t psiShift,Double_t thetaShift,Double_t phiShift,Bool_t unif) {
+    //
+    // misalignment at the level of SPD sectors and half-barrels
+    // 
+
+    if ((sectMin<1) || (sectMax>10)) return kFALSE;
+    Double_t vx,vy,vz,vpsi,vtheta,vphi;
+    Double_t tr[3],rot[3];  
+
+    for (Int_t iSect = sectMin-1; iSect<sectMax; iSect++) {
+
+	// first, apply sector level misalignment    
+	if(!unif) {
+	    vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
+	    vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
+	    vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
+	    vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
+	    vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
+	    vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
+	} else {
+	    vx = fRnd.Uniform(-dx,dx);
+	    vy = fRnd.Uniform(-dy,dy);
+	    vz = fRnd.Uniform(-dz,dz);
+	    vpsi = fRnd.Uniform(-dpsi,dpsi);
+	    vtheta = fRnd.Uniform(-dtheta,dtheta);
+	    vphi = fRnd.Uniform(-dphi,dphi);
+	}
+
+	TString name(GetSymbName(0));
+	name += fStrSector;
+	name += iSect;
+
+
+	AliAlignObjParams aaop(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE); // set them as local
+	aaop.GetPars(tr,rot); // global
+
+	// then, apply half-barrel level misalignment
 	tr[0] += xShift;
 	tr[1] += yShift;
 	tr[2] += zShift;
 	rot[0] += psiShift;
 	rot[1] += thetaShift;
 	rot[2] += phiShift;
-      }
-      new((*fAlignObjArray)[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
 
-      AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
-      itsalobj->ApplyToGeometry();
-      fInd++;
+	new((*fAlignObjArray)[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
+
+	AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
+	itsalobj->ApplyToGeometry();
+	fInd++;
     }
-  }
-  
-  return kTRUE;
-}
-
-
-//________________________________________________________________________
-Bool_t AliITSMisAligner::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
-				       Double_t dx,Double_t dy,Double_t dz,
-				       Double_t dpsi,Double_t dtheta,Double_t dphi,
-				       Double_t xShift,Double_t yShift,Double_t zShift,
-				       Double_t psiShift,Double_t thetaShift,Double_t phiShift,Bool_t unif) {
-  //
-  // misalignment at the level of SPD sectors and half-barrels
-  // 
-
-  if ((sectMin<1) || (sectMax>10)) return kFALSE;
-  Double_t vx,vy,vz,vpsi,vtheta,vphi;
-  Double_t tr[3],rot[3];  
-
-  for (Int_t iSect = sectMin-1; iSect<sectMax; iSect++) {
-
-    // first, apply sector level misalignment    
-    if(!unif) {
-	vx = AliMathBase::TruncatedGaus(0.,dx/3.,dx); // mean, sigma, max absolute value 
-	vy = AliMathBase::TruncatedGaus(0.,dy/3.,dy);
-	vz = AliMathBase::TruncatedGaus(0.,dz/3.,dz);
-	vpsi = AliMathBase::TruncatedGaus(0.,dpsi/3.,dpsi);
-	vtheta = AliMathBase::TruncatedGaus(0.,dtheta/3.,dtheta);
-	vphi = AliMathBase::TruncatedGaus(0.,dphi/3.,dphi);
-    } else {
-      vx = fRnd.Uniform(-dx,dx);
-      vy = fRnd.Uniform(-dy,dy);
-      vz = fRnd.Uniform(-dz,dz);
-      vpsi = fRnd.Uniform(-dpsi,dpsi);
-      vtheta = fRnd.Uniform(-dtheta,dtheta);
-      vphi = fRnd.Uniform(-dphi,dphi);
-    }
-
-    TString name(GetSymbName(0));
-    name += fStrSector;
-    name += iSect;
-
-
-    AliAlignObjParams aaop(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE); // set them as local
-    aaop.GetPars(tr,rot); // global
-
-    // then, apply half-barrel level misalignment
-    tr[0] += xShift;
-    tr[1] += yShift;
-    tr[2] += zShift;
-    rot[0] += psiShift;
-    rot[1] += thetaShift;
-    rot[2] += phiShift;
-
-    new((*fAlignObjArray)[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
-
-    AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlignObjArray->UncheckedAt(fInd);
-    itsalobj->ApplyToGeometry();
-    fInd++;
-  }
-  return kTRUE;
+    return kTRUE;
 }
 
 //________________________________________________________________________
 const char* AliITSMisAligner::GetSymbName(Int_t layer) const {
-  //
-  // be careful : SPD0 and SPD1 are not physically separated 
-  //
-  TString name;
-  switch (layer) {
-  case 0:
-  case 1: name = fStrSPD; name += layer; break;
-  case 2:
-  case 3: name = fStrSDD; name += layer; break;
-  case 4:
-  case 5: name = fStrSSD; name += layer; break;
-  default: AliFatal("Wrong layer index");
-  }
-  return name.Data();
+    //
+    // be careful : SPD0 and SPD1 are not physically separated 
+    //
+    TString name;
+    switch (layer) {
+	case 0:
+	case 1: name = fStrSPD; name += layer; break;
+	case 2:
+	case 3: name = fStrSDD; name += layer; break;
+	case 4:
+	case 5: name = fStrSSD; name += layer; break;
+	default: AliFatal("Wrong layer index");
+    }
+    return name.Data();
 }
 
 //________________________________________________________________________
 const char* AliITSMisAligner::GetSymbName(Int_t layer, Int_t ladder, Int_t det) const {
-  //
-  // symname from layer, ladder, detector
-  //
-  TString symname(GetHalfStaveLadderSymbName(layer,ladder,det));
-  if(layer<=2){
-    symname+="Ladder";
-  }else if(layer<=6){
-    symname+="Sensor";
-  }else{
-    AliError("Invalid layer!");
-    return 0;
-  }
-  symname+=det;
-  return symname.Data();
+    //
+    // symname from layer, ladder, detector
+    //
+    TString symname(GetHalfStaveLadderSymbName(layer,ladder,det));
+    if(layer<=2){
+	symname+="Ladder";
+    }else if(layer<=6){
+	symname+="Sensor";
+    }else{
+	AliError("Invalid layer!");
+	return 0;
+    }
+    symname+=det;
+    return symname.Data();
 }
 
 //________________________________________________________________________
 const char* AliITSMisAligner::GetSymbName(Int_t layer,Int_t ladd) const {
-  //
-  // Get logical names at the level of staves / ladders
-  //
-  TString name(GetSymbName(layer));
-  if (layer==0) { // SPD1
+    //
+    // Get logical names at the level of staves / ladders
+    //
+    TString name(GetSymbName(layer));
+    if (layer==0) { // SPD1
 
-    int sector = ladd/2;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*2;
-    name += fStrStave;
-    name += stave;
-  }
-  else if (layer==1) { // SPD2
+	int sector = ladd/2;
+	name += fStrSector;
+	name += sector;
+	int stave = ladd-sector*2;
+	name += fStrStave;
+	name += stave;
+    }
+    else if (layer==1) { // SPD2
 
-    int sector = ladd/4;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*4;
-    name += fStrStave;
-    name += stave;
-  }
-  else if (layer>=2 && layer<=5) { // SDD and SSD
-    name += fStrLadder;
-    name += ladd;
-  }
-  else {
-    AliFatal("Wrong layer index");
-  }
-  return name.Data();
+	int sector = ladd/4;
+	name += fStrSector;
+	name += sector;
+	int stave = ladd-sector*4;
+	name += fStrStave;
+	name += stave;
+    }
+    else if (layer>=2 && layer<=5) { // SDD and SSD
+	name += fStrLadder;
+	name += ladd;
+    }
+    else {
+	AliFatal("Wrong layer index");
+    }
+    return name.Data();
 }
 
 //________________________________________________________________________
 const char* AliITSMisAligner::GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,Int_t halfStave) const {
-  //
-  // Get logical names at the level of half-staves (SPD) or ladders (SDD and SSD)
-  //
-  TString name(GetSymbName(layer));
-  if (layer==0) { // SPD1
+    //
+    // Get logical names at the level of half-staves (SPD) or ladders (SDD and SSD)
+    //
+    TString name(GetSymbName(layer));
+    if (layer==0) { // SPD1
 
-    int sector = ladd/2;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*2;
-    name += fStrStave;
-    name += stave;
-    name += fStrHalfStave;
-    name += halfStave;
-  }
-  else if (layer==1) { // SPD2
+	int sector = ladd/2;
+	name += fStrSector;
+	name += sector;
+	int stave = ladd-sector*2;
+	name += fStrStave;
+	name += stave;
+	name += fStrHalfStave;
+	name += halfStave;
+    }
+    else if (layer==1) { // SPD2
 
-    int sector = ladd/4;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*4;
-    name += fStrStave;
-    name += stave;
-    name += fStrHalfStave;
-    name += halfStave;
-  }
-  else if (layer>=2 && layer<=5) { // SDD and SSD
-    name += fStrLadder;
-    name += ladd;
-  } 
-  else {
-    AliFatal("Wrong layer index");
-  }
-  return name.Data();
+	int sector = ladd/4;
+	name += fStrSector;
+	name += sector;
+	int stave = ladd-sector*4;
+	name += fStrStave;
+	name += stave;
+	name += fStrHalfStave;
+	name += halfStave;
+    }
+    else if (layer>=2 && layer<=5) { // SDD and SSD
+	name += fStrLadder;
+	name += ladd;
+    } 
+    else {
+	AliFatal("Wrong layer index");
+    }
+    return name.Data();
 }
 
 //________________________________________________________________________
 const char* AliITSMisAligner::GetParentSymName(const char* symname) {
-  //
-  // symnane of parent volume
-  //
-  TString parent(symname);
-  // Give the symname of 
-  if(parent.BeginsWith('/')) parent.Remove(TString::kLeading,'/');
-  if(parent.EndsWith("/")) parent.Remove(TString::kTrailing,'/');
-  
-  if(!parent.CountChar('/')) AliErrorClass("Not a valid symbolic name");
+    //
+    // symnane of parent volume
+    //
+    TString parent(symname);
+    // Give the symname of 
+    if(parent.BeginsWith('/')) parent.Remove(TString::kLeading,'/');
+    if(parent.EndsWith("/")) parent.Remove(TString::kTrailing,'/');
 
-  Int_t layer,level;
-  GetLayerAndLevel(symname,layer,level);
-  if(level==1) return "ITS";
-  
-  parent.Remove(parent.Last('/'));
-  
-  if((layer==0 || layer==1) && level==2){
+    if(!parent.CountChar('/')) AliErrorClass("Not a valid symbolic name");
+
+    Int_t layer,level;
+    GetLayerAndLevel(symname,layer,level);
+    if(level==1) return "ITS";
+
     parent.Remove(parent.Last('/'));
-    parent[7]='0';
-  }
-    
-  return parent.Data(); 
+
+    if((layer==0 || layer==1) && level==2){
+	parent.Remove(parent.Last('/'));
+	parent[7]='0';
+    }
+
+    return parent.Data(); 
 }
 
 //________________________________________________________________________
 Bool_t AliITSMisAligner::GetLayerAndLevel(const char* symname, Int_t &layer, Int_t &level) {
-  //
-  // given the symbolic name set layer and level
-  //
-  const char* basename[6] = {"ITS/SPD0/Sector","ITS/SPD1/Sector","ITS/SDD2/Ladder","ITS/SDD3/Ladder","ITS/SSD4/Ladder","ITS/SSD5/Ladder"};
-  TString strSym(symname);
-  if(strSym=="ITS"){
-    level=0;
-    layer=-1;
-    return kTRUE;
-  }
-  Int_t i;
-  for(i=0; i<6; i++){
-    if(strSym.BeginsWith(basename[i])) break;
-  }
+    //
+    // given the symbolic name set layer and level
+    //
+    const char* basename[6] = {"ITS/SPD0/Sector","ITS/SPD1/Sector","ITS/SDD2/Ladder","ITS/SDD3/Ladder","ITS/SSD4/Ladder","ITS/SSD5/Ladder"};
+    TString strSym(symname);
+    if(strSym=="ITS"){
+	level=0;
+	layer=-1;
+	return kTRUE;
+    }
+    Int_t i;
+    for(i=0; i<6; i++){
+	if(strSym.BeginsWith(basename[i])) break;
+    }
 
-  if(i>=6){
-    AliErrorClass(Form("%s is not a valid symbolic name for an ITS alignable volume",strSym.Data()));
-    return kFALSE;
-  }
-  
-  layer=i;
-  //The part above could be replaced by just
-  // TString seventh = strSym[7];
-  // layer = seventh.Atoi();
-  // if we don't need to check the validity of the symname
-  
-  level=1;
-  switch(layer){
-    case 0:
-    case 1:
-      if(strSym.Contains("Stave")) level=2;
-      if(strSym.Contains("Ladder")) level=3;
-      break;
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-      if(strSym.Contains("Sensor")) level=2;
-  }
-  
-  return kTRUE;
+    if(i>=6){
+	AliErrorClass(Form("%s is not a valid symbolic name for an ITS alignable volume",strSym.Data()));
+	return kFALSE;
+    }
+
+    layer=i;
+    //The part above could be replaced by just
+    // TString seventh = strSym[7];
+    // layer = seventh.Atoi();
+    // if we don't need to check the validity of the symname
+
+    level=1;
+    switch(layer){
+	case 0:
+	case 1:
+	    if(strSym.Contains("Stave")) level=2;
+	    if(strSym.Contains("Ladder")) level=3;
+	    break;
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	    if(strSym.Contains("Sensor")) level=2;
+    }
+
+    return kTRUE;
 }
 
 //________________________________________________________________________
 Int_t AliITSMisAligner::GetNSisters(const char* symname) {
-  //
-  // number of volumes on same level
-  //
-  Int_t layer,level;
-  if(!GetLayerAndLevel(symname,layer,level)) return -1;
-  if(level==0) return -1;
-  if(level==1) return GetNLadders(layer);
-  if(level==2) return GetNDetectors(layer);
-  AliErrorClass(Form("Invalid layer and level"));
-  return -1;
+    //
+    // number of volumes on same level
+    //
+    Int_t layer,level;
+    if(!GetLayerAndLevel(symname,layer,level)) return -1;
+    if(level==0) return -1;
+    if(level==1) return GetNLadders(layer);
+    if(level==2) return GetNDetectors(layer);
+    AliErrorClass(Form("Invalid layer and level"));
+    return -1;
 }
 
 //________________________________________________________________________
 Int_t AliITSMisAligner::GetNDaughters(const char* symname) {
-  //
-  // number of daughter volumes
-  // 
-  Int_t layer,level;
-  if(!GetLayerAndLevel(symname,layer,level)) return -1;
-  if(level==0) {
-    Int_t nLadders = 0;
-    for(Int_t lay=0; lay<6; lay++) nLadders += GetNLadders(lay);
-    return nLadders;
-  }
-  if(level==1) return GetNDetectors(layer);
-  if(level==2){
-    AliWarningClass(Form("Volume %s is a sensitive volume and has no alignable dauthers",symname));
+    //
+    // number of daughter volumes
+    // 
+    Int_t layer,level;
+    if(!GetLayerAndLevel(symname,layer,level)) return -1;
+    if(level==0) {
+	Int_t nLadders = 0;
+	for(Int_t lay=0; lay<6; lay++) nLadders += GetNLadders(lay);
+	return nLadders;
+    }
+    if(level==1) return GetNDetectors(layer);
+    if(level==2){
+	AliWarningClass(Form("Volume %s is a sensitive volume and has no alignable dauthers",symname));
+	return -1;
+    }
+    AliErrorClass(Form("Invalid layer and level"));
     return -1;
-  }
-  AliErrorClass(Form("Invalid layer and level"));
-  return -1;
 }
 
 /*
 //________________________________________________________________________
 TString AliITSMisAligner::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const {
 
-  // Get logical names at the level of SPD ladders / SDD and SSD modules
+// Get logical names at the level of SPD ladders / SDD and SSD modules
 
-  Int_t halfStave = mod/2;
-  TString name = GetHalfStaveLadderSymbName(layer,ladd,halfStave);
+Int_t halfStave = mod/2;
+TString name = GetHalfStaveLadderSymbName(layer,ladd,halfStave);
 
-  if (layer<2) { // SPD
-    name += fStrLadder;
-    name += mod;
-  } 
-  else if (layer>=2 && layer<=5) { // SDD and SSD
-    name += fStrSensor;
-    name += mod;
-  }
-  else {
-    AliFatal("Wrong layer index");
-  }
-  return name;
+if (layer<2) { // SPD
+name += fStrLadder;
+name += mod;
+} 
+else if (layer>=2 && layer<=5) { // SDD and SSD
+name += fStrSensor;
+name += mod;
+}
+else {
+AliFatal("Wrong layer index");
+}
+return name;
 }
 */
-

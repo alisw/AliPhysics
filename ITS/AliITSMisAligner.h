@@ -216,8 +216,6 @@ class AliITSMisAligner : public AliMisAligner{
 	Double_t fSPDLadderShiftB[6]; // for bottom half-barrel ladders
 	Double_t fSDDLadderShift1[6];
 	Double_t fSDDLadderShift2[6];
-	Double_t fSSDLadderShift1[6];
-	Double_t fSSDLadderShift2[6];
 
 	// Choice between uniform (kTRUE) or gaussian (kFALSE) distribution in the smearing
 	Bool_t fUnifSPDSector, fUnifSPDHS, fUnifSDDLadder, fUnifSSDLadder, fUnifSPDLadder, fUnifSDDModule, fUnifSSDModule;
