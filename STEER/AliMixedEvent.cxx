@@ -86,7 +86,8 @@ AliVParticle* AliMixedEvent::GetTrack(Int_t i) const
 {
     // Return track # i
     Int_t iEv  = TMath::BinarySearch(fNEvents, fNTracksCumul, i);
-
+    while((iEv < (fNEvents - 1)) && (fNTracksCumul[iEv] == fNTracksCumul[iEv+1])) {iEv++;}
+    
     Int_t irel = i - fNTracksCumul[iEv];
     AliVEvent* evt = (AliVEvent*) (fEventList.At(iEv));
     return (evt->GetTrack(irel));
