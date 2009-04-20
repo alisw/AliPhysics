@@ -1229,7 +1229,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
 }
 
 
-void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
+void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 //
 // Connect the ESDEvent to a tree
 //
@@ -1317,7 +1317,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
   if(esdEvent){   
       // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
-    if (connectedList) {
+
+    
+    if (connectedList && (strcmp(opt, "reconnect"))) {
       // If connected use the connected list if objects
       fESDObjects->Delete();
       fESDObjects = connectedList;
@@ -1328,7 +1330,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
 
     // Connect to tree
     // prevent a memory leak when reading back the TList
-
+    if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
+    
     if(!fUseOwnList){
       delete fESDObjects;
       fESDObjects = 0;
