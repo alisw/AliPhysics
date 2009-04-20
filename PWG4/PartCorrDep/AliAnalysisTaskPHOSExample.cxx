@@ -15,7 +15,7 @@
 
 /* $Id: */
 
-//_________________________________________________________________________
+//_________________________________________________________________________∫
 // A basic analysis task to analyse photon detected by PHOS
 // A basic analysis task to analyse photon detected by PHOS
 // A basic analysis task to analyse photon detected by PHOS
@@ -26,22 +26,19 @@
 //////////////////////////////////////////////////////////////////////////////
 //Root system
 #include <TCanvas.h>
-#include <TH1.h>
+#include <TH1D.h>
 #include <TROOT.h>
-#include <TLegend.h> 
 #include <TNtuple.h>
 #include <TVector3.h> 
-#include <TTree.h>
 
 //Analysis system
 #include "AliAnalysisTaskPHOSExample.h" 
-#include "AliAnalysisManager.h"
 #include "AliESDEvent.h" 
 #include "AliESDCaloCluster.h" 
 #include "AliAODEvent.h"
 #include "AliAODPhoton.h"
 #include "AliLog.h"
-#include "AliESDVertex.h"
+
 
 //______________________________________________________________________________
 AliAnalysisTaskPHOSExample::AliAnalysisTaskPHOSExample() : 

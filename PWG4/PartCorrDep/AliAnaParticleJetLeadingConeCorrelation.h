@@ -24,7 +24,6 @@ class AliAODTrack;
 class AliAODCaloCluster;
 class AliCaloTrackReader;
 class AliNeutralMesonSelection;
-class AliLog;
 class AliAODPWG4ParticleCorrelation ;
 
 #include "AliAnaPartCorrBaseClass.h"
@@ -101,6 +100,9 @@ public:
   void SetJetCTSRatioCutRange(Double_t ratiomin, Double_t ratiomax)
   {fJetCTSRatioMaxCut =ratiomax;  fJetCTSRatioMinCut = ratiomin ; }
   
+  Bool_t OnlyIsolated() const {return fSelectIsolated ; }
+  void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
+    
  private:
   
   Double_t CalculateJetRatioLimit(const Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
@@ -167,7 +169,8 @@ public:
   TString    fJetNamePtThres[5];   // String name of pt th to append to histos
   Double_t   fPtTriggerSelectionCut; // Jet pt to change to low pt jets analysis
   UInt_t     fSelect  ;   //kTRUE: Selects all jets, no limits.
-  
+  Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
+
   //Histograms
   //Leading particle distributions
   TList *  fOutCont ; //! Container for histograms

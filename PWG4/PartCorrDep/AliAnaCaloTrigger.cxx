@@ -29,7 +29,6 @@
 //Aliroot
 #include "AliAnaCaloTrigger.h" 
 #include "AliStack.h"
-#include "AliLog.h"
 #include "AliESDCaloCluster.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
@@ -40,7 +39,6 @@ AliAnaCaloTrigger::AliAnaCaloTrigger() :
   fCalorimeter("PHOS"),
   fNtTrigger22(0), 
   fNtTriggerNN(0)
-
 {
   // Default Constructor.
 
@@ -53,7 +51,6 @@ AliAnaCaloTrigger::AliAnaCaloTrigger(const char *name) :
   fCalorimeter("PHOS"),
   fNtTrigger22(0), 
   fNtTriggerNN(0)
-
 {
   // Constructor.
   // Output slot 
@@ -93,10 +90,10 @@ AliAnaCaloTrigger & AliAnaCaloTrigger::operator = (const AliAnaCaloTrigger & sou
 AliAnaCaloTrigger::~AliAnaCaloTrigger()
 {
   // dtor
-	if(fOutputContainer){
-		fOutputContainer->Clear() ; 
-		delete fOutputContainer ;
-	}
+  if(fOutputContainer){
+    fOutputContainer->Clear() ; 
+    delete fOutputContainer ;
+  }
 }
 
 
@@ -125,116 +122,116 @@ void AliAnaCaloTrigger::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliAnaCaloTrigger::UserExec(Option_t *) 
 {
-	// Processing of one event
+  // Processing of one event
+  
+  if ( !((Entry()-1)%100) ) 
+    printf(" Processing event # %lld\n",  Entry()) ; 
+  AliESDEvent* esd = (AliESDEvent*)InputEvent();
+  
+  //Get MC data, if available
+  AliStack* stack = 0x0; 
+  if(MCEvent())
+    stack = MCEvent()->Stack();
+  
+  // Get trigger information of fCalorimeter 
+  TArrayF * triggerAmplitudes = 0x0 ;
+  TArrayF * triggerPosition   = 0x0 ;
+  Int_t numberOfCaloClusters  =  esd->GetNumberOfCaloClusters() ;
+  
+  if(fCalorimeter == "PHOS"){
+    triggerAmplitudes      = esd->GetPHOSTriggerAmplitudes();
+    triggerPosition        = esd->GetPHOSTriggerPosition();
+  }
+  else if(fCalorimeter == "EMCAL"){
+    triggerAmplitudes    = esd->GetEMCALTriggerAmplitudes();
+    triggerPosition      = esd->GetEMCALTriggerPosition();
+  }
+  
+  if( triggerAmplitudes && triggerPosition ){
+    // trigger amplitudes
+    const Float_t ka22    = static_cast<Float_t>(triggerAmplitudes->At(0)) ; 
+    const Float_t ka22O   = static_cast<Float_t>(triggerAmplitudes->At(1)) ; 
+    const Float_t kaNN    = static_cast<Float_t>(triggerAmplitudes->At(2)) ; 
+    const Float_t kaNNO   = static_cast<Float_t>(triggerAmplitudes->At(3)) ; 
+    
+    // trigger position
+    const Float_t kx22  =  static_cast<Float_t>(triggerPosition->At(0)) ; 
+    const Float_t ky22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
+    const Float_t kz22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
+    const Float_t kxNN  =  static_cast<Float_t>(triggerPosition->At(3)) ; 
+    const Float_t kyNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
+    const Float_t kzNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
+    
+    //printf("ka22 %f, ka220 %f, kaNN %f, kaNN0 %f\n",ka22,ka22O,kaNN,kaNNO);
+    //printf("kx22 %f, ky22 %f, kz22 %f, kxNN %f, kyNN %f, kzNN %f \n",kx22,ky22,kz22,kxNN,kyNN,kzNN);
+    
+    Float_t enMax       = 0. ;
+    Float_t phEnMax     = 0. ;
+    Float_t etaMax      = 0.5 ;
+    Float_t phiMax      = 0. ; 
+    Float_t phEtaMax    = 0.5 ;
+    Float_t phPhiMax    = 0. ; 
+    
+    TVector3 vpos22(kx22, ky22, kz22) ;
+    TVector3 vposNN(kxNN, kyNN, kzNN) ;
+    Float_t eta22 = vpos22.Eta() ; 
+    Float_t phi22 = vpos22.Phi() * TMath::RadToDeg() + 360. ; 
+    Float_t etaNN = vposNN.Eta() ; 
+    Float_t phiNN = vposNN.Phi() * TMath::RadToDeg() + 360. ; 
+    
+    
+    Int_t      icaloCluster = 0 ; 
+    Int_t      labelmax     = -1 ;
+    // loop over the Calorimeters Clusters
+    
+    for(icaloCluster = 0 ; icaloCluster < numberOfCaloClusters ; icaloCluster++) {
+      
+      AliESDCaloCluster * cluster = esd->GetCaloCluster(icaloCluster) ;
+      
+      if (cluster && ( (fCalorimeter == "PHOS" && cluster->IsPHOS())  ||  
+		       (fCalorimeter == "EMCAL" && cluster->IsEMCAL()))) {
 	
-	if ( !((Entry()-1)%100) ) 
-		printf(" Processing event # %lld\n",  Entry()) ; 
-	AliESDEvent* esd = (AliESDEvent*)InputEvent();
+	Float_t cluEnergy = cluster->E() ; 
+	Float_t pos[3] ;
+	TVector3 vpos ;
 	
-	//Get MC data, if available
-	AliStack* stack = 0x0; 
-	if(MCEvent())
-		stack = MCEvent()->Stack();
+	cluster->GetPosition( pos ) ;
 	
-	// Get trigger information of fCalorimeter 
-	TArrayF * triggerAmplitudes = 0x0 ;
-	TArrayF * triggerPosition   = 0x0 ;
-	Int_t numberOfCaloClusters  =  esd->GetNumberOfCaloClusters() ;
-	
-	if(fCalorimeter == "PHOS"){
-		triggerAmplitudes      = esd->GetPHOSTriggerAmplitudes();
-		triggerPosition        = esd->GetPHOSTriggerPosition();
+	if ( cluEnergy > enMax) { 
+	  enMax    = cluEnergy ; 
+	  vpos.SetXYZ(pos[0], pos[1], pos[2]) ; 
+	  etaMax   = vpos.Eta() ; 
+	  phiMax   = vpos.Phi() ; 
+	  labelmax = cluster->GetLabel();
 	}
-	else if(fCalorimeter == "EMCAL"){
-		triggerAmplitudes    = esd->GetEMCALTriggerAmplitudes();
-		triggerPosition      = esd->GetEMCALTriggerPosition();
+	
+	Double_t * pid = cluster->GetPid() ;
+	
+	if(pid[AliPID::kPhoton] > 0.9) {
+	  if ( cluEnergy > phEnMax) { 
+	    phEnMax   = cluEnergy ; 
+	    vpos.SetXYZ(pos[0], pos[1], pos[2]) ; 
+	    phEtaMax = vpos.Eta() ; 
+	    phPhiMax = vpos.Phi() ; 
+	  }
 	}
-	
-	if( triggerAmplitudes && triggerPosition ){
-		// trigger amplitudes
-		const Float_t ka22    = static_cast<Float_t>(triggerAmplitudes->At(0)) ; 
-		const Float_t ka22O   = static_cast<Float_t>(triggerAmplitudes->At(1)) ; 
-		const Float_t kaNN    = static_cast<Float_t>(triggerAmplitudes->At(2)) ; 
-		const Float_t kaNNO   = static_cast<Float_t>(triggerAmplitudes->At(3)) ; 
-		
-		// trigger position
-		const Float_t kx22  =  static_cast<Float_t>(triggerPosition->At(0)) ; 
-		const Float_t ky22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
-		const Float_t kz22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
-		const Float_t kxNN  =  static_cast<Float_t>(triggerPosition->At(3)) ; 
-		const Float_t kyNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
-		const Float_t kzNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
-		
-		//printf("ka22 %f, ka220 %f, kaNN %f, kaNN0 %f\n",ka22,ka22O,kaNN,kaNNO);
-		//printf("kx22 %f, ky22 %f, kz22 %f, kxNN %f, kyNN %f, kzNN %f \n",kx22,ky22,kz22,kxNN,kyNN,kzNN);
-		
-		Float_t enMax       = 0. ;
-		Float_t phEnMax     = 0. ;
-		Float_t etaMax      = 0.5 ;
-		Float_t phiMax      = 0. ; 
-		Float_t phEtaMax    = 0.5 ;
-		Float_t phPhiMax    = 0. ; 
-		
-		TVector3 vpos22(kx22, ky22, kz22) ;
-		TVector3 vposNN(kxNN, kyNN, kzNN) ;
-		Float_t eta22 = vpos22.Eta() ; 
-		Float_t phi22 = vpos22.Phi() * TMath::RadToDeg() + 360. ; 
-		Float_t etaNN = vposNN.Eta() ; 
-		Float_t phiNN = vposNN.Phi() * TMath::RadToDeg() + 360. ; 
-		
-		
-		Int_t      icaloCluster = 0 ; 
-		Int_t      labelmax     = -1 ;
-		// loop over the Calorimeters Clusters
-		
-		for(icaloCluster = 0 ; icaloCluster < numberOfCaloClusters ; icaloCluster++) {
-			
-			AliESDCaloCluster * cluster = esd->GetCaloCluster(icaloCluster) ;
-			
-			if (cluster && ( (fCalorimeter == "PHOS" && cluster->IsPHOS())  ||  
-							(fCalorimeter == "EMCAL" && cluster->IsEMCAL()))) {
-				
-				Float_t cluEnergy = cluster->E() ; 
-				Float_t pos[3] ;
-				TVector3 vpos ;
-				
-				cluster->GetPosition( pos ) ;
-				
-				if ( cluEnergy > enMax) { 
-					enMax    = cluEnergy ; 
-					vpos.SetXYZ(pos[0], pos[1], pos[2]) ; 
-					etaMax   = vpos.Eta() ; 
-					phiMax   = vpos.Phi() ; 
-					labelmax = cluster->GetLabel();
-				}
-				
-				Double_t * pid = cluster->GetPid() ;
-				
-				if(pid[AliPID::kPhoton] > 0.9) {
-					if ( cluEnergy > phEnMax) { 
-						phEnMax   = cluEnergy ; 
-						vpos.SetXYZ(pos[0], pos[1], pos[2]) ; 
-						phEtaMax = vpos.Eta() ; 
-						phPhiMax = vpos.Phi() ; 
-					}
-				}
-			}//if cluster
-			
-		    Float_t ptGen = -1;
-			if(stack && labelmax < stack->GetNtrack() && labelmax >= 0 ){
-				TParticle * particle = stack->Particle(labelmax); 
-				ptGen = particle->Energy();
-			}
-			
-			fNtTrigger22->Fill(ka22, ka22O, ptGen, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
-			fNtTriggerNN->Fill(kaNN, kaNNO, ptGen, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
-		
-		}//CaloCluster loop
-		
-	}//If trigger arrays filled
-	
-	PostData(1, fOutputContainer);
-	
+      }//if cluster
+      
+      Float_t ptGen = -1;
+      if(stack && labelmax < stack->GetNtrack() && labelmax >= 0 ){
+	TParticle * particle = stack->Particle(labelmax); 
+	ptGen = particle->Energy();
+      }
+      
+      fNtTrigger22->Fill(ka22, ka22O, ptGen, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
+      fNtTriggerNN->Fill(kaNN, kaNNO, ptGen, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
+      
+    }//CaloCluster loop
+    
+  }//If trigger arrays filled
+  
+  PostData(1, fOutputContainer);
+  
 }
 
 //______________________________________________________________________________

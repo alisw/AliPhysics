@@ -17,43 +17,43 @@ class TH2F;
 class AliAODPWG4ParticleCorrelation ;
 
 class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
-
-public: 
+  
+ public: 
   
   AliAnaParticleHadronCorrelation() ; // default ctor
   AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
   virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
-
+  
   TList * GetCreateOutputObjects();
-
+  
   Double_t GetDeltaPhiMaxCut() const {return fDeltaPhiMaxCut ; }
   Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
   void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
   {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
-
+  
   Bool_t OnlyIsolated() const {return fSelectIsolated ; }
   void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
   
   void InitParameters();
-
+  
   void Print(const Option_t * opt) const;
- 
+  
   void MakeChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TSeqCollection* pl, const Bool_t bFillHisto) ;
   void MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TSeqCollection* pl, const Bool_t bFillHisto)  ;
-
+  
   void MakeAnalysisFillAOD()  ;
   
   void MakeAnalysisFillHistograms() ; 
-
+  
   Bool_t SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) const ;
-
-  private:
+  
+ private:
   
   Double_t   fDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Hadron
   Double_t   fDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Hadron
   Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
-   	
+  
   //Histograms
   TH2F * fhPhiCharged  ; //! Phi distribution of selected charged particles
   TH2F * fhPhiNeutral   ;  //! Phi distribution of selected neutral particles

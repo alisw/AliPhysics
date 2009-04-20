@@ -14,53 +14,57 @@
 //
 //-- Author: Gustavo Conesa (INFN-LNF)
 
-#include "TH2F.h" 
+// --- Root system ---
+class TH2F;
+class TH1F;
+
+// --- Analysis system --- 
 #include "AliAnaPartCorrBaseClass.h"
  
 class AliAnaExample : public AliAnaPartCorrBaseClass {
-       
-  public: 
-       
-       AliAnaExample() ; // default ctor
-       AliAnaExample(const AliAnaExample & g) ; // cpy ctor
-       AliAnaExample & operator = (const AliAnaExample & g) ;//cpy assignment
-       virtual ~AliAnaExample() {;} //virtual dtor
-              
-       TList * GetCreateOutputObjects();
-       
-       void InitParameters();
-       
-       void Print(const Option_t * opt) const;
-       
-       void MakeAnalysisFillAOD()  ;
-       
-       void MakeAnalysisFillHistograms() ; 
- 
-       Int_t GetPdg() const {return fPdg ;}
-       void SetPdg( Int_t pdg ) {fPdg = pdg; }
-
-       TString GetDetector() const {return fDetector ;}
-       void SetDetector( TString calo ) {fDetector = calo; }
-
-       void Terminate();
-
+  
+ public: 
+  
+  AliAnaExample() ; // default ctor
+  AliAnaExample(const AliAnaExample & g) ; // cpy ctor
+  AliAnaExample & operator = (const AliAnaExample & g) ;//cpy assignment
+  virtual ~AliAnaExample() {;} //virtual dtor
+  
+  TList * GetCreateOutputObjects();
+  
+  void InitParameters();
+  
+  void Print(const Option_t * opt) const;
+  
+  void MakeAnalysisFillAOD()  ;
+  
+  void MakeAnalysisFillHistograms() ; 
+  
+  Int_t GetPdg() const {return fPdg ;}
+  void SetPdg( Int_t pdg ) {fPdg = pdg; }
+  
+  TString GetDetector() const {return fDetector ;}
+  void SetDetector( TString calo ) {fDetector = calo; }
+  
+  void Terminate();
+  
  private:
-       
-       Int_t  fPdg ; //identified particle id
-       TString fDetector ; //detector selection
-       //Histograms
-       //CaloClusters 
-       TH1F * fhPt; //! pT distribution
-       TH1F * fhPhi; //! phi distribution
-       TH1F * fhEta; //! eta distribution
-       TH2F * fh2Pt; //!pT distribution, reconstructed vs generated
-       TH2F * fh2Phi; //! phi distribution, reconstructed vs generated
-       TH2F * fh2Eta; //! eta distribution, reconstructed vs generated
-       //Calo Cells
-       TH1F * fhNCells; //! Number of towers/crystals with signal
-       TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
-       ClassDef(AliAnaExample,1)
- } ;
+  
+  Int_t  fPdg ; //identified particle id
+  TString fDetector ; //detector selection
+  //Histograms
+  //CaloClusters 
+  TH1F * fhPt; //! pT distribution
+  TH1F * fhPhi; //! phi distribution
+  TH1F * fhEta; //! eta distribution
+  TH2F * fh2Pt; //!pT distribution, reconstructed vs generated
+  TH2F * fh2Phi; //! phi distribution, reconstructed vs generated
+  TH2F * fh2Eta; //! eta distribution, reconstructed vs generated
+  //Calo Cells
+  TH1F * fhNCells; //! Number of towers/crystals with signal
+  TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
+  ClassDef(AliAnaExample,1)
+    } ;
 
 
 #endif //ALIANAEXAMPLE_H

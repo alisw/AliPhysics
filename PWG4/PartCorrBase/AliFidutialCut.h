@@ -19,7 +19,6 @@ class TLorentzVector ;
 
 //--- AliRoot system ---
 
-class AliLog ;
 
 class AliFidutialCut : public TObject {
 
@@ -102,27 +101,26 @@ public:
    
    //Detector acceptance cuts
    Bool_t     fEMCALFidutialCut ; // Apply fidutial cuts to EMCAL clusters
-  Bool_t     fPHOSFidutialCut ;// Apply fidutial cuts to PHOS clusters
-  Bool_t     fCTSFidutialCut ;//Apply fidutial cuts to  CTS tracks
-  
-  TArrayF * fCTSFidCutMinEta ; //Take particles in CTS with eta > fCTSFidCutMinEta
-  TArrayF * fCTSFidCutMinPhi ; //Take particles in CTS with phi > fCTSFidCutMinPhi
-  TArrayF * fCTSFidCutMaxEta ; //Take particles in CTS with eta < fCTSFidCutMaxEta
-  TArrayF * fCTSFidCutMaxPhi ; //Take particles in CTS with phi > fCTSFidCutMaxPhi
-  
-  TArrayF * fEMCALFidCutMinEta ; //Take particles in EMCAL with eta > fEMCALFidCutMinEta
-  TArrayF * fEMCALFidCutMinPhi ; //Take particles in EMCAL with phi > fEMCALFidCutMinPhi
-  TArrayF * fEMCALFidCutMaxEta ; //Take particles in EMCAL with eta < fEMCALFidCutMaxEta
-  TArrayF * fEMCALFidCutMaxPhi ; //Take particles in EMCAL with phi > fEMCALFidCutMaxPhi
-  
-  TArrayF * fPHOSFidCutMinEta ; //Take particles in PHOS with eta > fPHOSFidCutMinEta
-  TArrayF * fPHOSFidCutMinPhi ; //Take particles in PHOS with phi > fPHOSFidCutMinPhi
-  TArrayF * fPHOSFidCutMaxEta ; //Take particles in PHOS with eta < fPHOSFidCutMaxEta
-  TArrayF * fPHOSFidCutMaxPhi ; //Take particles in PHOS with phi > fPHOSFidCutMaxPhi
-
+   Bool_t     fPHOSFidutialCut ;// Apply fidutial cuts to PHOS clusters
+   Bool_t     fCTSFidutialCut ;//Apply fidutial cuts to  CTS tracks
+   
+   TArrayF * fCTSFidCutMinEta ; //Take particles in CTS with eta > fCTSFidCutMinEta
+   TArrayF * fCTSFidCutMinPhi ; //Take particles in CTS with phi > fCTSFidCutMinPhi
+   TArrayF * fCTSFidCutMaxEta ; //Take particles in CTS with eta < fCTSFidCutMaxEta
+   TArrayF * fCTSFidCutMaxPhi ; //Take particles in CTS with phi > fCTSFidCutMaxPhi
+   
+   TArrayF * fEMCALFidCutMinEta ; //Take particles in EMCAL with eta > fEMCALFidCutMinEta
+   TArrayF * fEMCALFidCutMinPhi ; //Take particles in EMCAL with phi > fEMCALFidCutMinPhi
+   TArrayF * fEMCALFidCutMaxEta ; //Take particles in EMCAL with eta < fEMCALFidCutMaxEta
+   TArrayF * fEMCALFidCutMaxPhi ; //Take particles in EMCAL with phi > fEMCALFidCutMaxPhi
+   
+   TArrayF * fPHOSFidCutMinEta ; //Take particles in PHOS with eta > fPHOSFidCutMinEta
+   TArrayF * fPHOSFidCutMinPhi ; //Take particles in PHOS with phi > fPHOSFidCutMinPhi
+   TArrayF * fPHOSFidCutMaxEta ; //Take particles in PHOS with eta < fPHOSFidCutMaxEta
+   TArrayF * fPHOSFidCutMaxPhi ; //Take particles in PHOS with phi > fPHOSFidCutMaxPhi
   
   ClassDef(AliFidutialCut,1)
-} ;
+    } ;
 
 
 #endif //ALIFIDUTIALCUT_H

@@ -25,79 +25,78 @@
 
 //-- Analysis system
 #include "AliAODPWG4ParticleCorrelation.h"
-#include "AliAODJet.h"
 
 ClassImp(AliAODPWG4ParticleCorrelation)
 
 
 //______________________________________________________________________________
-AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
-    AliAODPWG4Particle(), fIsolated(kFALSE),
-    fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
-    fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
-    fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
-    fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0)
+ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
+   AliAODPWG4Particle(), fIsolated(kFALSE),
+   fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
+   fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
+   fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
+   fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0)
 {
   // constructor
 }
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
-    AliAODPWG4Particle(), fIsolated(kFALSE),
-    fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
-    fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
-    fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),
-    fLeadingDetector(""),  fLeading(), fCorrJet(),
-    fCorrBkg(), fRefJet(0)
+  AliAODPWG4Particle(), fIsolated(kFALSE),
+  fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
+  fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
+  fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),
+  fLeadingDetector(""),  fLeading(), fCorrJet(),
+  fCorrBkg(), fRefJet(0)
 {
   // constructor
-    SetMomentum(new TLorentzVector(px, py, pz, e));
+  SetMomentum(new TLorentzVector(px, py, pz, e));
 }
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
-    AliAODPWG4Particle(p), fIsolated(kFALSE),
-    fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
-    fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
-    fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
-    fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0)
+  AliAODPWG4Particle(p), fIsolated(kFALSE),
+  fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
+  fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
+  fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
+  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0)
 {
   // constructor
 }
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
-    AliAODPWG4Particle(p), fIsolated(kFALSE),
-    fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
-    fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
-    fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
-    fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0)
+  AliAODPWG4Particle(p), fIsolated(kFALSE),
+  fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
+  fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
+  fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
+  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0)
 {
   // constructor
-
+  
 }
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::~AliAODPWG4ParticleCorrelation() 
 {
   // destructor
-    delete fRefTracks;
-    delete fRefClusters;
-    delete fRefIsolationConeTracks;
-    delete fRefIsolationConeClusters;
-    delete fRefBackgroundTracks;
-    delete fRefBackgroundClusters;
-
+  delete fRefTracks;
+  delete fRefClusters;
+  delete fRefIsolationConeTracks;
+  delete fRefIsolationConeClusters;
+  delete fRefBackgroundTracks;
+  delete fRefBackgroundClusters;
+  
 }
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& part) :
-    AliAODPWG4Particle(part), fIsolated(part.fIsolated),
-    fRefTracks(), fRefClusters(),
-    fRefIsolationConeTracks(), fRefIsolationConeClusters(),
-    fRefBackgroundTracks(), fRefBackgroundClusters(),   
-    fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
-    fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet)
+  AliAODPWG4Particle(part), fIsolated(part.fIsolated),
+  fRefTracks(), fRefClusters(),
+  fRefIsolationConeTracks(), fRefIsolationConeClusters(),
+  fRefBackgroundTracks(), fRefBackgroundClusters(),   
+  fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
+  fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet)
 {
   // Copy constructor
   fRefTracks                = new TRefArray(*part.fRefTracks);
@@ -114,27 +113,27 @@ AliAODPWG4ParticleCorrelation& AliAODPWG4ParticleCorrelation::operator=(const Al
   // Assignment operator
   if(this!=&part) {
   
-	fIsolated = part.fIsolated;
-	fRefJet   = part.fRefJet ;
-	fLeadingDetector =part.fLeadingDetector;
-	fLeading  = part.fLeading;
-	fCorrJet  = part.fCorrJet ;
-	fCorrBkg  = part.fCorrBkg;
-
-	if( fRefTracks )               delete fRefTracks ;
-	if( fRefClusters)              delete fRefClusters ;
-	if( fRefIsolationConeTracks )  delete fRefIsolationConeTracks ;
-	if( fRefIsolationConeClusters) delete fRefIsolationConeClusters ;
-	if( fRefBackgroundTracks )     delete fRefBackgroundTracks ;
-	if( fRefBackgroundClusters )   delete fRefBackgroundClusters ;
-
-	fRefTracks                = new TRefArray(*part.fRefTracks);
-	fRefClusters              = new TRefArray(*part.fRefClusters);
-	fRefIsolationConeTracks   = new TRefArray(*part.fRefIsolationConeTracks);
-	fRefIsolationConeClusters = new TRefArray(*part.fRefIsolationConeClusters);
-	fRefBackgroundTracks      = new TRefArray(*part.fRefBackgroundTracks);
-	fRefBackgroundClusters    = new TRefArray(*part.fRefBackgroundClusters);  
-  
+    fIsolated = part.fIsolated;
+    fRefJet   = part.fRefJet ;
+    fLeadingDetector =part.fLeadingDetector;
+    fLeading  = part.fLeading;
+    fCorrJet  = part.fCorrJet ;
+    fCorrBkg  = part.fCorrBkg;
+    
+    if( fRefTracks )               delete fRefTracks ;
+    if( fRefClusters)              delete fRefClusters ;
+    if( fRefIsolationConeTracks )  delete fRefIsolationConeTracks ;
+    if( fRefIsolationConeClusters) delete fRefIsolationConeClusters ;
+    if( fRefBackgroundTracks )     delete fRefBackgroundTracks ;
+    if( fRefBackgroundClusters )   delete fRefBackgroundClusters ;
+    
+    fRefTracks                = new TRefArray(*part.fRefTracks);
+    fRefClusters              = new TRefArray(*part.fRefClusters);
+    fRefIsolationConeTracks   = new TRefArray(*part.fRefIsolationConeTracks);
+    fRefIsolationConeClusters = new TRefArray(*part.fRefIsolationConeClusters);
+    fRefBackgroundTracks      = new TRefArray(*part.fRefBackgroundTracks);
+    fRefBackgroundClusters    = new TRefArray(*part.fRefBackgroundClusters);  
+    
   }
   
   return *this;
