@@ -34,6 +34,7 @@ class AliTRDpidChecker : public AliTRDrecoTask
     ,kMomentumBin    =  6     // momentum distribution
     ,kThresh         =  7     // threshold in efficiency
     ,kNTracklets     =  8     // Number of tracklets per track
+    ,kNPlots         =  9     // Number of plots for this tasks 
   };
 public:
   AliTRDpidChecker();

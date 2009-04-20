@@ -38,8 +38,8 @@ const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
   ,"AliTRDmultiplicity"
 };
 
-const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+2] = {
-  "ALL"
+const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+1] = {
+  "GEN"
   ,"DET"
   ,"EFF"
   ,"EFFC"
@@ -50,9 +50,30 @@ const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+2] = {
   ,"PIDR"
   ,"CLRES"
   ,"MULT"
-  ,"NOFR"
-  ,"NOMC"
+  ,"ALL"
 };
 
+#define NTPCPERFORMANCE 6
+#define NTPCCALIBRATION 0
+const Int_t NTPCTASKS = NTPCPERFORMANCE+NTPCCALIBRATION;
+
+Char_t *fgkTPCtaskClassName[NTPCTASKS] = {
+  "AliPerformanceTask"
+  ,"AliPerformanceEff"
+  ,"AliPerformanceRes"
+  ,"AliPerformanceTPC"
+  ,"AliPerformanceDEdx"
+  ,"AliPerformanceDCA"
+};
+
+const Char_t *fgkTPCtaskOpt[NTPCTASKS+1] = {
+  "GEN"
+  ,"EFF"
+  ,"RES"
+  ,"TPC"
+  ,"DEDX"
+  ,"DCA"
+  ,"ALL"
+};
 #endif
 

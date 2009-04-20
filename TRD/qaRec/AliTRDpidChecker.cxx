@@ -95,7 +95,7 @@ TObjArray * AliTRDpidChecker::Histos(){
   if(fContainer) return fContainer;
 
   Int_t xBins = AliPID::kSPECIES*fMomentumAxis->GetNbins(); 
-  fContainer = new TObjArray(); fContainer->Expand(7);
+  fContainer = new TObjArray(); fContainer->Expand(kNPlots);
 
   const Float_t epsilon = 1./(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1
 

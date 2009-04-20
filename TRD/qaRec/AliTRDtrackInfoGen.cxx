@@ -155,15 +155,15 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   // Run the Analysis
   //
   if(!fESD){
-    puts("Error: ESD not found");
+    AliError("Failed retrieving ESD event");
     return;
   }
   if(!fESDfriend){
-    puts("Error: ESD friend not found");
+    AliError("Failed retrieving ESD friend event");
     return;
   }
   if(HasMCdata() && !fMC){
-    puts("Error: Monte Carlo Event not available");
+    AliError("Failed retrieving MC event");
     return;
   }
   fContainer->Delete();
@@ -177,7 +177,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   if(HasMCdata()){
     mStack = fMC->Stack();
     if(!mStack){
-      puts("Error: Cannot get the Monte Carlo Stack");
+      AliError("Failed retrieving MC Stack");
       return;
     }
     trackMap = new Bool_t[nTracksMC];
@@ -209,14 +209,20 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
 
     // read MC info
     Int_t fPdg = -1;
-    Int_t label = -1;
+    Int_t label = -1; UInt_t alab=-1;
     if(HasMCdata()){
-      label = esdTrack->GetLabel();
-      if(label < nTracksMC) trackMap[TMath::Abs(label)] = kTRUE; // register the track
-      //if (TMath::Abs(label) > mStack->GetNtrack()) continue; 
+      label = esdTrack->GetLabel(); 
+      alab = TMath::Abs(label);
+      // register the track
+      if(alab < UInt_t(nTracksMC)){ 
+        trackMap[alab] = kTRUE; 
+      } else { 
+        AliError(Form("MC label[%d] outside scope for ESD[%d].", label, itrk));
+        continue; 
+      }
       AliMCParticle *mcParticle = 0x0; 
-      if(!(mcParticle = fMC->GetTrack(TMath::Abs(label)))){
-        printf("E - AliTRDtrackInfoGen::Exec() : MC particle missing for ESD label %d\n", label);
+      if(!(mcParticle = fMC->GetTrack(alab))){
+        AliError(Form("MC particle label[%d] missing for ESD[%d].", label, itrk));
         continue;
       }
       fPdg = mcParticle->Particle()->GetPdgCode();
@@ -225,7 +231,6 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
         if(ref->LocalX() > xTPC) break;
-        //printf("\ttrackRef[%2d] @ %7.3f\n", iref, ref->LocalX());
         iref++;
       }
 
@@ -350,10 +355,6 @@ void AliTRDtrackInfoGen::Terminate(Option_t *)
   //
   // Stays empty because we are only interested in the tree
   //
-  if(fDebugLevel>=1) printf("Terminate:\n");
-  //TFile *f =((TFile*)gROOT->FindObject("TRD.TrackInfo.root"));
-  //f->cd(); f->Write(); f->Close();
-
   if(fDebugStream){ 
     delete fDebugStream;
     fDebugStream = 0x0;
