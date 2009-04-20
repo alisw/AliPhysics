@@ -27,9 +27,7 @@ class AliTRDpadPlane;
 
 //class AliTRDtransform : public AliTransform {
 class AliTRDtransform : public TObject {
-
- public:
-
+public:
   AliTRDtransform();
   AliTRDtransform(Int_t det);
   AliTRDtransform(const AliTRDtransform &t);
@@ -42,29 +40,29 @@ class AliTRDtransform : public TObject {
 
           void     SetDetector(Int_t det);
 
- protected:
+protected:
+  AliTRDgeometry     *fGeo;                 //  TRD geometry
+  Int_t               fDetector;            //  Detector number
 
-  AliTRDgeometry          *fGeo;                 //  TRD geometry
-  Int_t                    fDetector;            //  Detector number
+  AliTRDCommonParam  *fParam;               //  TRD common parameters
 
-  AliTRDCommonParam       *fParam;               //  TRD common parameters
+  AliTRDcalibDB      *fCalibration;         //  TRD calibration interface object
+  AliTRDCalROC       *fCalVdriftROC;        //  Pad wise Vdrift calibration object
+  AliTRDCalROC       *fCalT0ROC;            //  Pad wise T0 calibration object
+  AliTRDCalROC       *fCalPRFROC;           //  Pad wise PRF calibration object
+  const AliTRDCalDet *fCalVdriftDet;        //  ROC wise Vdrift calibration object
+  const AliTRDCalDet *fCalT0Det;            //  ROC wise T0 calibration object
+  Double_t            fCalVdriftDetValue;   //  ROC wise Vdrift calibration value
+  Double_t            fCalT0DetValue;       //  ROC wise T0 calibration value
 
-        AliTRDcalibDB     *fCalibration;         //  TRD calibration interface object
-        AliTRDCalROC      *fCalVdriftROC;        //  Pad wise Vdrift calibration object
-        AliTRDCalROC      *fCalT0ROC;            //  Pad wise T0 calibration object
-  const AliTRDCalDet      *fCalVdriftDet;        //  ROC wise Vdrift calibration object
-  const AliTRDCalDet      *fCalT0Det;            //  ROC wise T0 calibration object
-  Double_t                 fCalVdriftDetValue;   //  ROC wise Vdrift calibration value
-  Double_t                 fCalT0DetValue;       //  ROC wise T0 calibration value
+  Double_t            fSamplingFrequency;   //  ADC sampling frequency
 
-  Double_t                 fSamplingFrequency;   //  ADC sampling frequency
+  AliTRDpadPlane     *fPadPlane;            //  The current pad plane object
+  Double_t            fZShiftIdeal;         //  Needed to define Z-position relative to middle of chamber
 
-  AliTRDpadPlane          *fPadPlane;            //  The current pad plane object
-  Double_t                 fZShiftIdeal;         //  Needed to define Z-position relative to middle of chamber
+  TGeoHMatrix        *fMatrix;              //  Transformation matrix for a given chamber
 
-  TGeoHMatrix             *fMatrix;              //  Transformation matrix for a given chamber
-
-  ClassDef(AliTRDtransform,1)                    //  Transforms clusters
+  ClassDef(AliTRDtransform, 2)              //  Transforms clusters
 
 };
 

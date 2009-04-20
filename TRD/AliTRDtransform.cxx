@@ -50,6 +50,7 @@ AliTRDtransform::AliTRDtransform()
   ,fCalibration(0x0)
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
+  ,fCalPRFROC(0x0)
   ,fCalVdriftDet(0x0)
   ,fCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
@@ -76,6 +77,7 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   ,fCalibration(0x0)
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
+  ,fCalPRFROC(0x0)
   ,fCalVdriftDet(0x0)
   ,fCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
@@ -124,6 +126,7 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   ,fCalibration(0x0)
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
+  ,fCalPRFROC(0x0)
   ,fCalVdriftDet(0x0)
   ,fCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
@@ -184,6 +187,7 @@ void AliTRDtransform::SetDetector(Int_t det)
   // Get the calibration objects for the pad-by-pad calibration
   fCalVdriftROC      = fCalibration->GetVdriftROC(det);
   fCalT0ROC          = fCalibration->GetT0ROC(det);
+  fCalPRFROC         = fCalibration->GetPRFROC(det);
 
   // Get the detector wise defined calibration values
   fCalVdriftDetValue = fCalVdriftDet->GetValue(det);
@@ -231,7 +235,7 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
   Float_t x = c->GetXloc(t0, vd);
 
   // pad response width with diffusion corrections
-  Double_t s2  = AliTRDcalibDB::Instance()->GetPRFWidth(fDetector, col, row); s2 *= s2; 
+  Double_t s2  = fCalPRFROC->GetValue(col, row); s2 *= s2; 
   Float_t dl, dt;
   AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
   s2 += dl*dl*x/(1.+2.*exb*exb);
