@@ -30,12 +30,18 @@
 #include "TCanvas.h"
 #include "TPad.h"
 #include "TROOT.h"
+#include "TClonesArray.h"
+#include "TObjString.h"
 
 //---- AliRoot system ----
 #include "AliAnaPi0.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
 #include "AliStack.h"
+#include "AliFidutialCut.h"
+#include "TParticle.h"
+#include "AliAODCaloCluster.h"
+#include "AliVEvent.h"
 
 #ifdef __PHOSGEO__
 	#include "AliPHOSGeoUtils.h"
@@ -65,48 +71,48 @@ fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
 fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi)
 {
-	// cpy ctor
-	//Do not need it
+  // cpy ctor
+  //Do not need it
 }
 
 //________________________________________________________________________________________________________________________________________________
 AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
 {
-	// assignment operator
-	
-	if(this == &ex)return *this;
-	((AliAnaPartCorrBaseClass *)this)->operator=(ex);
-	
-	fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
-	fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
-	fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
-	fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; 
-	fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
-	fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
-	fhPrimAccY = ex.fhPrimAccY  ;  fhPrimPhi = ex.fhPrimPhi  ;  fhPrimAccPhi = ex.fhPrimAccPhi ;
-	
-	return *this;
-	
+  // assignment operator
+  
+  if(this == &ex)return *this;
+  ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
+  
+  fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
+  fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
+  fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
+  fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; 
+  fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
+  fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
+  fhPrimAccY = ex.fhPrimAccY  ;  fhPrimPhi = ex.fhPrimPhi  ;  fhPrimAccPhi = ex.fhPrimAccPhi ;
+  
+  return *this;
+  
 }
 
 //________________________________________________________________________________________________________________________________________________
 AliAnaPi0::~AliAnaPi0() {
-	// Remove event containers
-	if(fEventsList){
-		for(Int_t ic=0; ic<fNCentrBin; ic++){
-			for(Int_t iz=0; iz<fNZvertBin; iz++){
-				for(Int_t irp=0; irp<fNrpBin; irp++){
-					fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp]->Delete() ;
-					delete fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] ;
-				}
-			}
-		}
-		delete[] fEventsList; 
-		fEventsList=0 ;
+  // Remove event containers
+  if(fEventsList){
+    for(Int_t ic=0; ic<fNCentrBin; ic++){
+      for(Int_t iz=0; iz<fNZvertBin; iz++){
+	for(Int_t irp=0; irp<fNrpBin; irp++){
+	  fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp]->Delete() ;
+	  delete fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] ;
 	}
-	
+      }
+    }
+    delete[] fEventsList; 
+    fEventsList=0 ;
+  }
+  
 #ifdef __PHOSGEO__
-    if(fPHOSGeo) delete fPHOSGeo ;
+  if(fPHOSGeo) delete fPHOSGeo ;
 #endif	
 }
 
@@ -115,369 +121,367 @@ void AliAnaPi0::InitParameters()
 {
 //Init parameters when first called the analysis
 //Set default parameters
-	SetInputAODName("photons");
-	fNCentrBin = 1;
-	fNZvertBin = 1;
-	fNrpBin    = 1;
-    fNPID      = 9;
-	fNmaxMixEv = 10;
-	fZvtxCut   = 40;
-	fCalorimeter  = "PHOS";
+  SetInputAODName("photons");
+  fNCentrBin = 1;
+  fNZvertBin = 1;
+  fNrpBin    = 1;
+  fNPID      = 9;
+  fNmaxMixEv = 10;
+  fZvtxCut   = 40;
+  fCalorimeter  = "PHOS";
 }
 //________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::Init()
 {  
-//Init some data members needed in analysis
-
-//Histograms binning and range
-	if(!fhEtalon){                                                   //  p_T      alpha   d m_gg    
-		fhEtalon = new TH3D("hEtalon","Histo with binning parameters",50,0.,25.,10,0.,1.,200,0.,1.) ; 
-		fhEtalon->SetXTitle("P_{T} (GeV)") ;
-		fhEtalon->SetYTitle("#alpha") ;
-		fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
-	}
-	
+  //Init some data members needed in analysis
+  
+  //Histograms binning and range
+  if(!fhEtalon){                                                   //  p_T      alpha   d m_gg    
+    fhEtalon = new TH3D("hEtalon","Histo with binning parameters",50,0.,25.,10,0.,1.,200,0.,1.) ; 
+    fhEtalon->SetXTitle("P_{T} (GeV)") ;
+    fhEtalon->SetYTitle("#alpha") ;
+    fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
+  }
+  
 }
 
 //________________________________________________________________________________________________________________________________________________
 TList * AliAnaPi0::GetCreateOutputObjects()
 {  
-	// Create histograms to be saved in output file and 
-	// store them in fOutputContainer
+  // Create histograms to be saved in output file and 
+  // store them in fOutputContainer
+  
+  //create event containers
+  fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
 	
-	//create event containers
-	fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
-	
-	for(Int_t ic=0; ic<fNCentrBin; ic++){
-		for(Int_t iz=0; iz<fNZvertBin; iz++){
-			for(Int_t irp=0; irp<fNrpBin; irp++){
-				fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] = new TList() ;
-			}
-		}
-	}
-	
-		//If Geometry library loaded, do geometry selection during analysis.
-#ifdef __PHOSGEO__
-	printf("PHOS geometry initialized!\n");
-	fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
-#endif	
-	
-	TList * outputContainer = new TList() ; 
-	outputContainer->SetName(GetName()); 
-	
-	fhRe1=new TH3D*[fNCentrBin*fNPID] ;
-	fhRe2=new TH3D*[fNCentrBin*fNPID] ;
-	fhRe3=new TH3D*[fNCentrBin*fNPID] ;
-	fhMi1=new TH3D*[fNCentrBin*fNPID] ;
-	fhMi2=new TH3D*[fNCentrBin*fNPID] ;
-	fhMi3=new TH3D*[fNCentrBin*fNPID] ;
-	
-	char key[255] ;
-	char title[255] ;
-	
-	for(Int_t ic=0; ic<fNCentrBin; ic++){
-		for(Int_t ipid=0; ipid<fNPID; ipid++){
-					
-			//Distance to bad module 1
-			sprintf(key,"hRe_cen%d_pid%d_dist1",ic,ipid) ;
-			sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			
-			fhEtalon->Clone(key);
-			fhRe1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhRe1[ic*fNPID+ipid]->SetName(key) ;
-			fhRe1[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhRe1[ic*fNPID+ipid]) ;
-			
-			sprintf(key,"hMi_cen%d_pid%d_dist1",ic,ipid) ;
-			sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			fhMi1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhMi1[ic*fNPID+ipid]->SetName(key) ;
-			fhMi1[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhMi1[ic*fNPID+ipid]) ;
-			
-			//Distance to bad module 2
-			sprintf(key,"hRe_cen%d_pid%d_dist2",ic,ipid) ;
-			sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			fhRe2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhRe2[ic*fNPID+ipid]->SetName(key) ;
-			fhRe2[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhRe2[ic*fNPID+ipid]) ;
-			
-			sprintf(key,"hMi_cen%d_pid%d_dist2",ic,ipid) ;
-			sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			fhMi2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhMi2[ic*fNPID+ipid]->SetName(key) ;
-			fhMi2[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhMi2[ic*fNPID+ipid]) ;
-			
-			//Distance to bad module 3
-			sprintf(key,"hRe_cen%d_pid%d_dist3",ic,ipid) ;
-			sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			fhRe3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhRe3[ic*fNPID+ipid]->SetName(key) ; 
-			fhRe3[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhRe3[ic*fNPID+ipid]) ;
-			
-			sprintf(key,"hMi_cen%d_pid%d_dist3",ic,ipid) ;
-			sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-			fhMi3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
-			fhMi3[ic*fNPID+ipid]->SetName(key) ;
-			fhMi3[ic*fNPID+ipid]->SetTitle(title) ;
-			outputContainer->Add(fhMi3[ic*fNPID+ipid]) ;
-		}
+  for(Int_t ic=0; ic<fNCentrBin; ic++){
+    for(Int_t iz=0; iz<fNZvertBin; iz++){
+      for(Int_t irp=0; irp<fNrpBin; irp++){
+	fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] = new TList() ;
+      }
     }
-	
-	
-	fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
-					  fNZvertBin,0.,1.*fNZvertBin,fNrpBin,0.,1.*fNrpBin) ;
-	outputContainer->Add(fhEvents) ;
-
-	//Histograms filled only if MC data is requested 	
-	if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
-		if(fhEtalon->GetXaxis()->GetXbins() && fhEtalon->GetXaxis()->GetXbins()->GetSize()){ //Variable bin size
-			fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
-			fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",fhEtalon->GetXaxis()->GetNbins(),
-								   fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
-		}
-		else{
-			fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
-			fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",
-								   fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
-		}
-		outputContainer->Add(fhPrimPt) ;
-		outputContainer->Add(fhPrimAccPt) ;
-		
-		fhPrimY = new TH1D("hPrimaryRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
-		outputContainer->Add(fhPrimY) ;
-		
-		fhPrimAccY = new TH1D("hPrimAccRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
-		outputContainer->Add(fhPrimAccY) ;
-		
-		fhPrimPhi = new TH1D("hPrimaryPhi","Azimithal of primary pi0",180,0.,360.) ; 
-		outputContainer->Add(fhPrimPhi) ;
-		
-		fhPrimAccPhi = new TH1D("hPrimAccPhi","Azimithal of primary pi0 with accepted daughters",180,-0.,360.) ; 
-		outputContainer->Add(fhPrimAccPhi) ;
-	}
-	
-	//Save parameters used for analysis
-	TString parList ; //this will be list of parameters used for this analysis.
-	char onePar[255] ;
-	sprintf(onePar,"--- AliAnaPi0 ---\n") ;
-	parList+=onePar ;	
-	sprintf(onePar,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
-	parList+=onePar ;
-	sprintf(onePar,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
-	parList+=onePar ;
-	sprintf(onePar,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
-	parList+=onePar ;
-	sprintf(onePar,"Depth of event buffer: %d \n",fNmaxMixEv) ;
-	parList+=onePar ;
-	sprintf(onePar,"Number of different PID used:  %d \n",fNPID) ;
-	parList+=onePar ;
-	sprintf(onePar,"Cuts: \n") ;
-	parList+=onePar ;
-	sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
-	parList+=onePar ;
-	sprintf(onePar,"Calorimeter: %s \n",fCalorimeter.Data()) ;
-	parList+=onePar ;
-	
-	TObjString *oString= new TObjString(parList) ;
-	outputContainer->Add(oString);
-	
-	return outputContainer;
+  }
+  
+  //If Geometry library loaded, do geometry selection during analysis.
+#ifdef __PHOSGEO__
+  printf("PHOS geometry initialized!\n");
+  fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
+#endif	
+  
+  TList * outputContainer = new TList() ; 
+  outputContainer->SetName(GetName()); 
+  
+  fhRe1=new TH3D*[fNCentrBin*fNPID] ;
+  fhRe2=new TH3D*[fNCentrBin*fNPID] ;
+  fhRe3=new TH3D*[fNCentrBin*fNPID] ;
+  fhMi1=new TH3D*[fNCentrBin*fNPID] ;
+  fhMi2=new TH3D*[fNCentrBin*fNPID] ;
+  fhMi3=new TH3D*[fNCentrBin*fNPID] ;
+  
+  char key[255] ;
+  char title[255] ;
+  
+  for(Int_t ic=0; ic<fNCentrBin; ic++){
+    for(Int_t ipid=0; ipid<fNPID; ipid++){
+      
+      //Distance to bad module 1
+      sprintf(key,"hRe_cen%d_pid%d_dist1",ic,ipid) ;
+      sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      
+      fhEtalon->Clone(key);
+      fhRe1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhRe1[ic*fNPID+ipid]->SetName(key) ;
+      fhRe1[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhRe1[ic*fNPID+ipid]) ;
+      
+      sprintf(key,"hMi_cen%d_pid%d_dist1",ic,ipid) ;
+      sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      fhMi1[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhMi1[ic*fNPID+ipid]->SetName(key) ;
+      fhMi1[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhMi1[ic*fNPID+ipid]) ;
+      
+      //Distance to bad module 2
+      sprintf(key,"hRe_cen%d_pid%d_dist2",ic,ipid) ;
+      sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      fhRe2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhRe2[ic*fNPID+ipid]->SetName(key) ;
+      fhRe2[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhRe2[ic*fNPID+ipid]) ;
+      
+      sprintf(key,"hMi_cen%d_pid%d_dist2",ic,ipid) ;
+      sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      fhMi2[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhMi2[ic*fNPID+ipid]->SetName(key) ;
+      fhMi2[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhMi2[ic*fNPID+ipid]) ;
+      
+      //Distance to bad module 3
+      sprintf(key,"hRe_cen%d_pid%d_dist3",ic,ipid) ;
+      sprintf(title,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      fhRe3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhRe3[ic*fNPID+ipid]->SetName(key) ; 
+      fhRe3[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhRe3[ic*fNPID+ipid]) ;
+      
+      sprintf(key,"hMi_cen%d_pid%d_dist3",ic,ipid) ;
+      sprintf(title,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
+      fhMi3[ic*fNPID+ipid]=(TH3D*)fhEtalon->Clone(key) ;
+      fhMi3[ic*fNPID+ipid]->SetName(key) ;
+      fhMi3[ic*fNPID+ipid]->SetTitle(title) ;
+      outputContainer->Add(fhMi3[ic*fNPID+ipid]) ;
+    }
+  }
+  
+  
+  fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
+		    fNZvertBin,0.,1.*fNZvertBin,fNrpBin,0.,1.*fNrpBin) ;
+  outputContainer->Add(fhEvents) ;
+  
+  //Histograms filled only if MC data is requested 	
+  if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
+    if(fhEtalon->GetXaxis()->GetXbins() && fhEtalon->GetXaxis()->GetXbins()->GetSize()){ //Variable bin size
+      fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
+      fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",fhEtalon->GetXaxis()->GetNbins(),
+			     fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
+    }
+    else{
+      fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
+      fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",
+			     fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXmin(),fhEtalon->GetXaxis()->GetXmax()) ;
+    }
+    outputContainer->Add(fhPrimPt) ;
+    outputContainer->Add(fhPrimAccPt) ;
+    
+    fhPrimY = new TH1D("hPrimaryRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
+    outputContainer->Add(fhPrimY) ;
+    
+    fhPrimAccY = new TH1D("hPrimAccRapidity","Rapidity of primary pi0",100,-5.,5.) ; 
+    outputContainer->Add(fhPrimAccY) ;
+    
+    fhPrimPhi = new TH1D("hPrimaryPhi","Azimithal of primary pi0",180,0.,360.) ; 
+    outputContainer->Add(fhPrimPhi) ;
+    
+    fhPrimAccPhi = new TH1D("hPrimAccPhi","Azimithal of primary pi0 with accepted daughters",180,-0.,360.) ; 
+    outputContainer->Add(fhPrimAccPhi) ;
+  }
+  
+  //Save parameters used for analysis
+  TString parList ; //this will be list of parameters used for this analysis.
+  char onePar[255] ;
+  sprintf(onePar,"--- AliAnaPi0 ---\n") ;
+  parList+=onePar ;	
+  sprintf(onePar,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Depth of event buffer: %d \n",fNmaxMixEv) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of different PID used:  %d \n",fNPID) ;
+  parList+=onePar ;
+  sprintf(onePar,"Cuts: \n") ;
+  parList+=onePar ;
+  sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
+  parList+=onePar ;
+  sprintf(onePar,"Calorimeter: %s \n",fCalorimeter.Data()) ;
+  parList+=onePar ;
+  
+  TObjString *oString= new TObjString(parList) ;
+  outputContainer->Add(oString);
+  
+  return outputContainer;
 }
 
 //_________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::Print(const Option_t * /*opt*/) const
 {
-	//Print some relevant parameters set for the analysis
-	AliAnaPartCorrBaseClass::Print(" ");
-	printf("Class AliAnaPi0 for gamma-gamma inv.mass construction \n") ;
-	printf("Number of bins in Centrality:  %d \n",fNCentrBin) ;
-	printf("Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
-	printf("Number of bins in Reac. Plain: %d \n",fNrpBin) ;
-	printf("Depth of event buffer: %d \n",fNmaxMixEv) ;
-	printf("Number of different PID used:  %d \n",fNPID) ;
-	printf("Cuts: \n") ;
-	printf("Z vertex position: -%2.3f < z < %2.3f \n",fZvtxCut,fZvtxCut) ;
-	printf("------------------------------------------------------\n") ;
+  //Print some relevant parameters set for the analysis
+  AliAnaPartCorrBaseClass::Print(" ");
+  printf("Class AliAnaPi0 for gamma-gamma inv.mass construction \n") ;
+  printf("Number of bins in Centrality:  %d \n",fNCentrBin) ;
+  printf("Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
+  printf("Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+  printf("Depth of event buffer: %d \n",fNmaxMixEv) ;
+  printf("Number of different PID used:  %d \n",fNPID) ;
+  printf("Cuts: \n") ;
+  printf("Z vertex position: -%2.3f < z < %2.3f \n",fZvtxCut,fZvtxCut) ;
+  printf("------------------------------------------------------\n") ;
 } 
 
 
 //____________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::MakeAnalysisFillHistograms() 
 {
-	//Process one event and extract photons from AOD branch 
-	// filled with AliAnaPhoton and fill histos with invariant mass
-	
-	//Apply some cuts on event: vertex position and centrality range  
-	Int_t iRun=(GetReader()->GetInputEvent())->GetRunNumber() ;
-	if(IsBadRun(iRun)) return ;	
-	
-	Double_t vert[]={0,0,0} ; //vertex ;
-	GetReader()->GetVertex(vert);
-	if(vert[2]<-fZvtxCut || vert[2]> fZvtxCut) return ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-
-	//Get Centrality and calculate centrality bin
-	//Does not exist in ESD yet???????
-	Int_t curCentrBin=0 ;
- 
-	//Get Reaction Plain position and calculate RP bin
-	//does not exist in ESD yet????
-	Int_t curRPBin=0 ;	
-	
-	Int_t curZvertBin=(Int_t)(0.5*fNZvertBin*(vert[2]+fZvtxCut)/fZvtxCut) ;
-		
-	fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
-			
-	Int_t nPhot = GetInputAODBranch()->GetEntriesFast() ;
-	if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: photon entries %d\n", nPhot);
-	
-	for(Int_t i1=0; i1<nPhot-1; i1++){
-		AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-		TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
-		for(Int_t i2=i1+1; i2<nPhot; i2++){
-			AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
-			TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
-			Double_t m  = (photon1 + photon2).M() ;
-			Double_t pt = (photon1 + photon2).Pt();
-			Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
-			if(GetDebug() > 2)
-				printf("AliAnaPi0::FillHistos: Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
-						p1->Pt(), p2->Pt(), pt,m,a);
-			for(Int_t ipid=0; ipid<fNPID; ipid++)
-			{
-				if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-					fhRe1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-					if(p1->DistToBad()>0 && p2->DistToBad()>0){
-						fhRe2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-						if(p1->DistToBad()>1 && p2->DistToBad()>1){
-							fhRe3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-						}
-					}
-				}
-			} 
-		}
-	}
-		
-	//Fill mixed
-	
-	TList * evMixList=fEventsList[curCentrBin*fNZvertBin*fNrpBin+curZvertBin*fNrpBin+curRPBin] ;
-	Int_t nMixed = evMixList->GetSize() ;
-	for(Int_t ii=0; ii<nMixed; ii++){  
-		TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
-		Int_t nPhot2=ev2->GetEntriesFast() ;
-		Double_t m = -999;
-		if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: Mixed event %d photon entries %d\n", ii, nPhot);
-		
-		for(Int_t i1=0; i1<nPhot; i1++){
-			AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-			TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
-			for(Int_t i2=0; i2<nPhot2; i2++){
-				AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
-				
-				TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
-				m =           (photon1+photon2).M() ; 
-				Double_t pt = (photon1 + photon2).Pt();
-				Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
-				if(GetDebug() > 2)
-					printf("AliAnaPi0::FillHistos: Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
-							p1->Pt(), p2->Pt(), pt,m,a);			
-				for(Int_t ipid=0; ipid<fNPID; ipid++){ 
-				if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-						fhMi1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-						if(p1->DistToBad()>0 && p2->DistToBad()>0){
-							fhMi2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-							if(p1->DistToBad()>1 && p2->DistToBad()>1){
-								fhMi3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-							}
-							
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
-	//Add current event to buffer and Remove redandant events 
-	if(currentEvent->GetEntriesFast()>0){
-		evMixList->AddFirst(currentEvent) ;
-		currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-		if(evMixList->GetSize()>=fNmaxMixEv)
-		{
-			TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
-			evMixList->RemoveLast() ;
-			delete tmp ;
-		}
+  //Process one event and extract photons from AOD branch 
+  // filled with AliAnaPhoton and fill histos with invariant mass
+  
+  //Apply some cuts on event: vertex position and centrality range  
+  Int_t iRun=(GetReader()->GetInputEvent())->GetRunNumber() ;
+  if(IsBadRun(iRun)) return ;	
+  
+  Double_t vert[]={0,0,0} ; //vertex ;
+  GetReader()->GetVertex(vert);
+  if(vert[2]<-fZvtxCut || vert[2]> fZvtxCut) return ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+  
+  //Get Centrality and calculate centrality bin
+  //Does not exist in ESD yet???????
+  Int_t curCentrBin=0 ;
+  
+  //Get Reaction Plain position and calculate RP bin
+  //does not exist in ESD yet????
+  Int_t curRPBin=0 ;	
+  
+  Int_t curZvertBin=(Int_t)(0.5*fNZvertBin*(vert[2]+fZvtxCut)/fZvtxCut) ;
+  
+  fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
+  
+  Int_t nPhot = GetInputAODBranch()->GetEntriesFast() ;
+  if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: photon entries %d\n", nPhot);
+  
+  for(Int_t i1=0; i1<nPhot-1; i1++){
+    AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+    TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+    for(Int_t i2=i1+1; i2<nPhot; i2++){
+      AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
+      TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+      Double_t m  = (photon1 + photon2).M() ;
+      Double_t pt = (photon1 + photon2).Pt();
+      Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
+      if(GetDebug() > 2)
+	printf("AliAnaPi0::FillHistos: Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+	       p1->Pt(), p2->Pt(), pt,m,a);
+      for(Int_t ipid=0; ipid<fNPID; ipid++)
+	{
+	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
+	    fhRe1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	    if(p1->DistToBad()>0 && p2->DistToBad()>0){
+	      fhRe2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	      if(p1->DistToBad()>1 && p2->DistToBad()>1){
+		fhRe3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	      }
+	    }
+	  }
 	} 
-	else{ //empty event
-		delete currentEvent ;
-		currentEvent=0 ; 
-	}
-		
-	//Acceptance
-	AliStack * stack = GetMCStack();
-	if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
-		for(Int_t i=0 ; i<stack->GetNprimary(); i++){
-			TParticle * prim = stack->Particle(i) ;
-			if(prim->GetPdgCode() == 111){
-				Double_t pi0Pt = prim->Pt() ;
-				//printf("pi0, pt %2.2f\n",pi0Pt);
-				Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
-				Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
-				if(TMath::Abs(pi0Y) < 0.5){
-					fhPrimPt->Fill(pi0Pt) ;
-				}
-				fhPrimY  ->Fill(pi0Y) ;
-				fhPrimPhi->Fill(phi) ;
-				
-				//Check if both photons hit Calorimeter
-				Int_t iphot1=prim->GetFirstDaughter() ;
-				Int_t iphot2=prim->GetLastDaughter() ;
-				if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
-					TParticle * phot1 = stack->Particle(iphot1) ;
-					TParticle * phot2 = stack->Particle(iphot2) ;
-					if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
-						//printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
-						//	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
-						Bool_t inacceptance = kFALSE;
-#ifdef __PHOSGEO__
-						Int_t mod ;
-						Double_t x,z ;
-						if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x) && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x)) 
-							inacceptance = kTRUE;
-						//printf("In REAL PHOS acceptance? %d\n",inacceptance);
-#else
-						TLorentzVector lv1, lv2;
-						phot1->Momentum(lv1);
-						phot2->Momentum(lv2);
-						if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
-							inacceptance = kTRUE ;
-						//printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-#endif							  			 			  
-						if(inacceptance){
-							fhPrimAccPt->Fill(pi0Pt) ;
-							fhPrimAccPhi->Fill(phi) ;
-							fhPrimAccY->Fill(pi0Y) ;
-						}//Accepted
-					}// 2 photons      
-				}//Check daughters exist
-			}// Primary pi0
-		}//loop on primaries	
-	}//stack exists and data is MC
+    }
+  }
+  
+  //Fill mixed
+  
+  TList * evMixList=fEventsList[curCentrBin*fNZvertBin*fNrpBin+curZvertBin*fNrpBin+curRPBin] ;
+  Int_t nMixed = evMixList->GetSize() ;
+  for(Int_t ii=0; ii<nMixed; ii++){  
+    TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
+    Int_t nPhot2=ev2->GetEntriesFast() ;
+    Double_t m = -999;
+    if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: Mixed event %d photon entries %d\n", ii, nPhot);
+    
+    for(Int_t i1=0; i1<nPhot; i1++){
+      AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+      TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+      for(Int_t i2=0; i2<nPhot2; i2++){
+	AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
 	
+	TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+	m =           (photon1+photon2).M() ; 
+	Double_t pt = (photon1 + photon2).Pt();
+	Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
+	if(GetDebug() > 2)
+	  printf("AliAnaPi0::FillHistos: Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+		 p1->Pt(), p2->Pt(), pt,m,a);			
+	for(Int_t ipid=0; ipid<fNPID; ipid++){ 
+	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
+	    fhMi1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	    if(p1->DistToBad()>0 && p2->DistToBad()>0){
+	      fhMi2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	      if(p1->DistToBad()>1 && p2->DistToBad()>1){
+		fhMi3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+	      }
+	      
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
+  TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
+  //Add current event to buffer and Remove redandant events 
+  if(currentEvent->GetEntriesFast()>0){
+    evMixList->AddFirst(currentEvent) ;
+    currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
+    if(evMixList->GetSize()>=fNmaxMixEv)
+      {
+	TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
+	evMixList->RemoveLast() ;
+	delete tmp ;
+      }
+  } 
+  else{ //empty event
+    delete currentEvent ;
+    currentEvent=0 ; 
+  }
+  
+  //Acceptance
+  AliStack * stack = GetMCStack();
+  if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
+    for(Int_t i=0 ; i<stack->GetNprimary(); i++){
+      TParticle * prim = stack->Particle(i) ;
+      if(prim->GetPdgCode() == 111){
+	Double_t pi0Pt = prim->Pt() ;
+	//printf("pi0, pt %2.2f\n",pi0Pt);
+	if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
+	Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+	Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
+	if(TMath::Abs(pi0Y) < 0.5){
+	  fhPrimPt->Fill(pi0Pt) ;
+	}
+	fhPrimY  ->Fill(pi0Y) ;
+	fhPrimPhi->Fill(phi) ;
+	
+	//Check if both photons hit Calorimeter
+	Int_t iphot1=prim->GetFirstDaughter() ;
+	Int_t iphot2=prim->GetLastDaughter() ;
+	if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
+	  TParticle * phot1 = stack->Particle(iphot1) ;
+	  TParticle * phot2 = stack->Particle(iphot2) ;
+	  if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
+	    //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
+	    //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
+	    Bool_t inacceptance = kFALSE;
+#ifdef __PHOSGEO__
+	    Int_t mod ;
+	    Double_t x,z ;
+	    if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x) && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x)) 
+	      inacceptance = kTRUE;
+	    //printf("In REAL PHOS acceptance? %d\n",inacceptance);
+#else
+	    TLorentzVector lv1, lv2;
+	    phot1->Momentum(lv1);
+	    phot2->Momentum(lv2);
+	    if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
+	      inacceptance = kTRUE ;
+	    //printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+#endif							  			 			  
+	    if(inacceptance){
+	      fhPrimAccPt->Fill(pi0Pt) ;
+	      fhPrimAccPhi->Fill(phi) ;
+	      fhPrimAccY->Fill(pi0Y) ;
+	    }//Accepted
+	  }// 2 photons      
+	}//Check daughters exist
+      }// Primary pi0
+    }//loop on primaries	
+  }//stack exists and data is MC
+  
 }	
-
-
-
 
 //____________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::Terminate() 
 {
   //Do some calculations and plots from the final histograms.
- 
+  
   printf(" *** %s Terminate:", GetName()) ; 
   
   if (!fhRe1) {

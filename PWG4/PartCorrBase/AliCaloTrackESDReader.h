@@ -17,27 +17,25 @@
 #include "AliCaloTrackReader.h" 
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {
-	
-public: 
-	
-	AliCaloTrackESDReader() ; // ctor
-	AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
-	//AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
-	virtual ~AliCaloTrackESDReader() {;} //virtual dtor
-	
-	void FillInputCTS  () ;
-	void FillInputEMCAL() ;
-	void FillInputPHOS () ;  
-	void FillInputEMCALCells() ;
-	void FillInputPHOSCells() ;
-	
-	void GetVertex(Double_t v[3]) const ;
-	
-	AliVEvent*  GetInputEvent() const {return GetESD();}
-	void SetInputEvent(TObject* esd, TObject* aod, TObject* mc) ; 
-	
-	ClassDef(AliCaloTrackESDReader,1)
-} ;
+  
+  public: 
+  
+  AliCaloTrackESDReader() ; // ctor
+  AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
+  //AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
+  virtual ~AliCaloTrackESDReader() {;} //virtual dtor
+  
+  void FillInputCTS  () ;
+  void FillInputEMCAL() ;
+  void FillInputPHOS () ;  
+  void FillInputEMCALCells() ;
+  void FillInputPHOSCells() ;
+  
+  void GetVertex(Double_t v[3]) const ;
+  void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
+  
+  ClassDef(AliCaloTrackESDReader,1)
+    } ;
 
 
 #endif //ALICALOTRACKESDREADER_H

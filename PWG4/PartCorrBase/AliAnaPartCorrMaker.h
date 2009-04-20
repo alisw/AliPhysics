@@ -24,13 +24,13 @@ class AliCaloTrackReader ;
 
 class AliAnaPartCorrMaker : public TObject {
 
-public: 
+ public: 
   
   AliAnaPartCorrMaker() ; // default ctor
   AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) ; // cpy ctor
   AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & g) ;//cpy assignment
   virtual ~AliAnaPartCorrMaker() ; //virtual dtor
-
+  
   //Setter and getters
   TList * GetAODBranchList() ;
   TList * GetOutputContainer() ;
@@ -49,26 +49,26 @@ public:
   void Terminate();
 
   void AddAnalysis(TObject* ana, Int_t n) {
-	if ( fAnalysisContainer) fAnalysisContainer->AddAt(ana,n); 
-    else { printf("AnalysisContainer not initialized");
-	       abort();}
-	}
-
+    if ( fAnalysisContainer) fAnalysisContainer->AddAt(ana,n); 
+    else { printf("AliAnaPartCorrMaker::AddAnalysis() - AnalysisContainer not initialized\n");
+      abort();}
+  }
+  
   AliCaloTrackReader * GetReader() const {return fReader ; }
   void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
-
+  
   //Others
   void Init();
   void InitParameters();
-
+  
   void Print(const Option_t * opt) const;
-
+  
   Bool_t ProcessEvent(Int_t iEntry) ;
-
+  
  private:
   
   //General Data members
-
+  
   TList * fOutputContainer ; // output histograms container
   TList * fAnalysisContainer ; // List with analysis pointers
   Bool_t  fMakeHisto ; // If true makes final analysis with histograms as output

@@ -18,25 +18,22 @@
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
 // Central Barrel Tracking detectors (CTS).
 // Not all MC particles/tracks/clusters are kept, some kinematical/fidutial restrictions are done.
-// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TClonesArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TClonesArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackAODReader: Fills AOD data in 3 TClonesArrays (PHOS, EMCAL, CTS) 
+// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TRefArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TRefArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackAODReader: Fills AOD data in 3 TRefArrays (PHOS, EMCAL, CTS) 
 //                
 //-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
 
 // --- ROOT system ---
-#include <TMath.h>
-#include <TLorentzVector.h>
-#include <TString.h>
+#include <TRefArray.h>
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackReader.h"
-#include "AliLog.h"
-#include "AliStack.h"  
-#include "AliHeader.h"  
-#include "AliGenEventHeader.h"  
+#include "AliFidutialCut.h"
+#include "AliAODEvent.h"
+#include "AliMCEvent.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -44,11 +41,11 @@ ClassImp(AliCaloTrackReader)
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
     TObject(), fEventNumber(-1), fDataType(0), fDebug(0), 
-	fFidutialCut(0x0),
+    fFidutialCut(0x0),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0),
-    fAODCTS(0x0), fAODEMCAL(0x0), fAODPHOS(0x0),
+    fAODCTS(new TRefArray()), fAODEMCAL(new TRefArray()), fAODPHOS(new TRefArray()),
     fEMCALCells(0x0), fPHOSCells(0x0),
-    fESD(0x0), fAOD(0x0),fMC(0x0),
+    fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0)
 {
@@ -63,12 +60,12 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   TObject(g), fEventNumber(g.fEventNumber), fDataType(g.fDataType), fDebug(g.fDebug),
   fFidutialCut(g.fFidutialCut),
   fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
-  fAODCTS(new TClonesArray(*g.fAODCTS)),  
-  fAODEMCAL(new TClonesArray(*g.fAODEMCAL)),
-  fAODPHOS(new TClonesArray(*g.fAODPHOS)),
+  fAODCTS(new TRefArray(*g.fAODCTS)),  
+  fAODEMCAL(new TRefArray(*g.fAODEMCAL)),
+  fAODPHOS(new TRefArray(*g.fAODPHOS)),
   fEMCALCells(new TNamed(*g.fEMCALCells)),
   fPHOSCells(new TNamed(*g.fPHOSCells)),
-  fESD(g.fESD), fAOD(g.fAOD), fMC(g.fMC),
+  fInputEvent(g.fInputEvent), fOutputEvent(g.fOutputEvent), fMC(g.fMC),
   fFillCTS(g.fFillCTS),fFillEMCAL(g.fFillEMCAL),fFillPHOS(g.fFillPHOS),
   fFillEMCALCells(g.fFillEMCALCells),fFillPHOSCells(g.fFillPHOSCells)
 {
@@ -92,15 +89,15 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fEMCALPtMin = source.fEMCALPtMin ;
   fPHOSPtMin  = source.fPHOSPtMin ; 
   
-  fAODCTS     = new TClonesArray(*source.fAODCTS) ;
-  fAODEMCAL   = new TClonesArray(*source.fAODEMCAL) ;
-  fAODPHOS    = new TClonesArray(*source.fAODPHOS) ;
+  fAODCTS     = new TRefArray(*source.fAODCTS) ;
+  fAODEMCAL   = new TRefArray(*source.fAODEMCAL) ;
+  fAODPHOS    = new TRefArray(*source.fAODPHOS) ;
   fEMCALCells = new TNamed(*source.fEMCALCells) ;
   fPHOSCells  = new TNamed(*source.fPHOSCells) ;
 
-  fESD = source.fESD;
-  fAOD = source.fAOD;
-  fMC  = source.fMC;
+  fInputEvent  = source.fInputEvent;
+  fOutputEvent = source.fOutputEvent;
+  fMC          = source.fMC;
   
   fFillCTS        = source.fFillCTS;
   fFillEMCAL      = source.fFillEMCAL;
@@ -143,10 +140,11 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete fPHOSCells ;
   }
 
-  if(fESD) delete fESD ;
-  if(fAOD) delete fAOD ;
-  if(fMC) delete fMC ;
+  if(fInputEvent)  delete fInputEvent ;
+  if(fOutputEvent) delete fOutputEvent ;
+  if(fMC)          delete fMC ;
 }
+
 
 //____________________________________________________________________________
 AliStack* AliCaloTrackReader::GetStack() const {
@@ -154,7 +152,7 @@ AliStack* AliCaloTrackReader::GetStack() const {
   if(fMC)
     return fMC->Stack();
   else{
-    printf("stack is not available"); 
+    if(fDebug > 1) printf("AliCaloTrackReader::GetStack() - Stack is not available\n"); 
     return 0x0 ;
   }
 }
@@ -165,7 +163,7 @@ AliHeader* AliCaloTrackReader::GetHeader() const {
   if(fMC)
     return fMC->Header();
   else{
-    printf("Header is not available\n"); 
+    printf("AliCaloTrackReader::Header is not available\n"); 
     return 0x0 ;
   }
 }
@@ -175,7 +173,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const {
   if(fMC)
     return fMC->GenEventHeader();
   else{
-    printf("GenEventHeader is not available\n"); 
+    printf("AliCaloTrackReader::GenEventHeader is not available\n"); 
     return 0x0 ;
   }
 }
@@ -228,11 +226,15 @@ void AliCaloTrackReader::FillInputEvent(Int_t iEntry) {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber = iEntry;
-  if(fFillCTS) FillInputCTS();
+  if((fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
+    printf("ABORT: AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader\n");
+    abort();
+  }
+  if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
-  if(fFillPHOS) FillInputPHOS();
+  if(fFillPHOS)  FillInputPHOS();
   if(fFillEMCALCells) FillInputEMCALCells();
-  if(fFillPHOSCells) FillInputPHOSCells();
+  if(fFillPHOSCells)  FillInputPHOSCells();
 
 }
 
@@ -240,10 +242,10 @@ void AliCaloTrackReader::FillInputEvent(Int_t iEntry) {
 void AliCaloTrackReader::ResetLists() {
   //  Reset lists, called by the analysis maker 
 
-  if(fAODCTS) fAODCTS -> Clear();
+  if(fAODCTS)   fAODCTS -> Clear();
   if(fAODEMCAL) fAODEMCAL -> Clear();
-  if(fAODPHOS) fAODPHOS -> Clear();
+  if(fAODPHOS)  fAODPHOS -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
-  if(fPHOSCells) fPHOSCells -> Clear();
+  if(fPHOSCells)  fPHOSCells -> Clear();
 
 }

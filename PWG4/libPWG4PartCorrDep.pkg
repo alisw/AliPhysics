@@ -7,8 +7,9 @@ SRCS = PartCorrDep/AliAnaCaloTrigger.cxx \
        PartCorrDep/AliAnaParticleHadronCorrelation.cxx \
        PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx \
        PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx \
-       PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx
-      
+       PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx  \
+       PartCorrDep/AliAnaPi0EbE.cxx PartCorrDep/AliAnaChargedParticles.cxx 
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 

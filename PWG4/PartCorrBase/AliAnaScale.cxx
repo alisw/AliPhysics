@@ -21,15 +21,13 @@
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TFile.h> 
+//Root system
 #include <TH1.h>
 #include <TH1F.h>
-#include <TH1I.h>
-#include <TCanvas.h> 
+//#include "Riostream.h"
 
+//Analysis system
 #include "AliAnaScale.h" 
-#include "AliAnalysisManager.h"
-#include "Riostream.h"
 
 //______________________________________________________________________________
 AliAnaScale::AliAnaScale() : 

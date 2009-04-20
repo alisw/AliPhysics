@@ -6,7 +6,7 @@ set(SRCS
        PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx 
        PartCorrDep/AliAnaParticleIsolation.cxx PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
        PartCorrDep/AliAnaParticleHadronCorrelation.cxx PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx
-       PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx
+       PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx PartCorrDep/AliAnaChargedParticles.cxx
       
 )
 

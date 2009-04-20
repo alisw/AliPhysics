@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnaPhoton+;
 #pragma link C++ class AliAnaPi0+;
 #pragma link C++ class AliAnaPi0EbE+;
+#pragma link C++ class AliAnaChargedParticles+;
 #pragma link C++ class AliAnaParticleIsolation+;
 #pragma link C++ class AliAnaParticlePartonCorrelation+;
 #pragma link C++ class AliAnaParticleHadronCorrelation+;

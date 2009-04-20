@@ -11,11 +11,16 @@
 //-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
+class TArrayI   ;
+class TParticle ;
 
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
 class AliAODCaloCluster ;
 class AliAODTrack ;
+class AliAODEvent ;
+class AliMCEvent  ;
+class AliVEvent   ;
 
 class AliCaloTrackMCReader : public AliCaloTrackReader {
   
@@ -25,9 +30,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   AliCaloTrackMCReader(const AliCaloTrackMCReader & g) ; // cpy ctor
   AliCaloTrackMCReader & operator = (const AliCaloTrackMCReader & g) ;//cpy assignment
   virtual ~AliCaloTrackMCReader() ;//virtual dtor
-  
-  enum clonesType {kTParticle, kAliAOD};
-  
+    
   void InitParameters();
   
   void Print(const Option_t * opt) const; 
@@ -36,9 +39,6 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   void SwitchOffPi0Decay() { fDecayPi0 = kFALSE ; } 
   Int_t IsPi0DecaySwitchedOn() const { return fDecayPi0 ; } 
   
-  void SetClonesArrayType(Int_t type){fClonesArrayType = type ;} 
-  Bool_t GetClonesArrayType() const {return fClonesArrayType ;} 
-    
   void AddNeutralParticlesArray(TArrayI & array)  
   { fNeutralParticlesArray   = new TArrayI(array) ; }
   TArrayI * GetNeutralParticlesArray() const   {return  fNeutralParticlesArray;}
@@ -60,8 +60,8 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   void GetVertex(Double_t v[3]) const ;
 
   void FillInputEvent(Int_t iEntry) ;
-  AliVEvent*  GetInputEvent() const {return GetMC();}
-  void SetInputEvent(TObject* esd, TObject* aod, TObject* mc) ;
+  AliVEvent*  GetInputEvent() const {return (AliVEvent *) GetMC();}
+  void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
   void SetCaloClusterPID(const Int_t pdgCode, AliAODCaloCluster *calo) const ;
   void SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const ;
@@ -79,22 +79,21 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
   void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum,   
-			Int_t &indexPHOS, Int_t &indexEMCAL) ;
+			Int_t &naod) ;
   
   private:
-  Bool_t      fDecayPi0; //If not decayed, decay pi0 by hand
-  TArrayI * fNeutralParticlesArray ; //Do not keep neutral particles of this list in calorimeter.
-  TArrayI * fChargedParticlesArray ; //Keep charged particles of this list in calorimeter.
-  TArrayI * fStatusArray ; //Keep particles with status of the list.
-  Bool_t fKeepAllStatus ; //Do or do not select particles depending on their status code.
-  Int_t fClonesArrayType; //Analysis with TParticles or AliAODCaloCluster/Track?
-  Bool_t fCheckOverlap; //Check of overlapped photons from pi0 enter the calorimeter
-  Float_t fEMCALOverlapAngle; //Aperture angle of photons from decay that is not resolved by EMCAL, in radians
-  Float_t fPHOSOverlapAngle; //Aperture angle of photons from decay that is not resolved by PHOS, in radians
-  Int_t fIndex2ndPhoton; //Check overlap of first decay photon already done, internal use.
+  Bool_t    fDecayPi0 ;              // If not decayed, decay pi0 by hand
+  TArrayI * fNeutralParticlesArray ; // Do not keep neutral particles of this list in calorimeter.
+  TArrayI * fChargedParticlesArray ; // Keep charged particles of this list in calorimeter.
+  TArrayI * fStatusArray ;           // Keep particles with status of the list.
+  Bool_t    fKeepAllStatus ;         // Do or do not select particles depending on their status code.
+  Bool_t    fCheckOverlap;           // Check of overlapped photons from pi0 enter the calorimeter
+  Float_t   fEMCALOverlapAngle;      // Aperture angle of photons from decay that is not resolved by EMCAL, in radians
+  Float_t   fPHOSOverlapAngle;       // Aperture angle of photons from decay that is not resolved by PHOS, in radians
+  Int_t     fIndex2ndPhoton;         // Check overlap of first decay photon already done, internal use.
 
-  ClassDef(AliCaloTrackMCReader,2)
-    } ;
+  ClassDef(AliCaloTrackMCReader,3)
+} ;
 
 
 #endif //ALICALOTRACKMCREADER_H

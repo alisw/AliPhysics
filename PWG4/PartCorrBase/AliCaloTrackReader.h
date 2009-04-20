@@ -8,33 +8,33 @@
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
 // Central Barrel Tracking detectors.
 // Not all MC particles/tracks/clusters are kept, some kinematical restrictions are done.
-// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TClonesArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TClonesArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackAODReader: Fills AOD data in 3 TClonesArrays (PHOS, EMCAL, CTS) 
+// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TRefArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TRefArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackAODReader: Fills AOD data in 3 TRefArrays (PHOS, EMCAL, CTS) 
 //                          
 // -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
 #include "TObject.h" 
-class TClonesArray ; 
+class TRefArray ; 
 class TLorentzVector ;
 class TString ;
-#include "TArrayF.h"  
+class TRefArray;
+class TArrayF;  
 
 //--- ANALYSIS system ---
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
-#include "AliESDEvent.h" 
-#include "AliAODEvent.h" 
-#include "AliMCEvent.h" 
-class AliLog ;
-#include "AliFidutialCut.h"
+class AliVEvent;
+class AliAODEvent;  
+class AliMCEvent;
+class AliFidutialCut;
 
 class AliCaloTrackReader : public TObject {
 
-public: 
-
+ public: 
+  
   AliCaloTrackReader() ; // ctor
   AliCaloTrackReader(const AliCaloTrackReader & g) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ;//cpy assignment
@@ -90,50 +90,49 @@ public:
   virtual void FillInputEMCALCells() {;}
   virtual void FillInputPHOSCells()  {;}
 
-  virtual TClonesArray* GetAODCTS()   const {return fAODCTS ;}
-  virtual TClonesArray* GetAODEMCAL() const {return fAODEMCAL ;}
-  virtual TClonesArray* GetAODPHOS()  const {return fAODPHOS ;}
-  virtual TNamed* GetEMCALCells()     const {return fEMCALCells ;}
-  virtual TNamed* GetPHOSCells()      const {return fPHOSCells ;}
+  virtual TRefArray* GetAODCTS()   const {return fAODCTS ;}
+  virtual TRefArray* GetAODEMCAL() const {return fAODEMCAL ;}
+  virtual TRefArray* GetAODPHOS()  const {return fAODPHOS ;}
+  virtual TNamed* GetEMCALCells()  const {return fEMCALCells ;}
+  virtual TNamed* GetPHOSCells()   const {return fPHOSCells ;}
 
-  virtual AliStack*          GetStack()  const ;
-  virtual AliHeader*         GetHeader() const ;
+  virtual AliStack*    GetStack()      const ;
+  virtual AliHeader*   GetHeader()     const ;
   virtual AliGenEventHeader* GetGenEventHeader() const ;
-  virtual AliESDEvent* GetESD() const {return fESD;}
-  virtual AliAODEvent* GetAOD() const {return fAOD;}
-  virtual AliMCEvent*  GetMC()  const {return fMC;}
-  virtual AliVEvent*   GetInputEvent()        const {return (new AliESDEvent());}
+  virtual AliVEvent*   GetInputEvent()  const {return fInputEvent;}
+  virtual AliAODEvent* GetOutputEvent() const {return fOutputEvent;}
+  virtual AliMCEvent*  GetMC()          const {return fMC;}
   virtual void         GetVertex(Double_t * ) const {;}
 
-  virtual void SetESD( AliESDEvent* esd) {fESD = esd;}
-  virtual void SetAOD(AliAODEvent* aod)  {fAOD = aod;}
-  virtual void SetMC(AliMCEvent* mc)     {fMC  = mc;}
+  virtual void SetInputEvent(AliVEvent* input)  {fInputEvent  = input;}
+  virtual void SetOutputEvent(AliAODEvent* aod) {fOutputEvent = aod;}
+  virtual void SetMC(AliMCEvent* mc)            {fMC  = mc;}
 
   virtual void ResetLists();
 
   virtual AliFidutialCut * GetFidutialCut() const {return  fFidutialCut ;}
   virtual void SetFidutialCut(AliFidutialCut * fc) { fFidutialCut = fc ;}
 
-  virtual void SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* /*mc*/) {;}
+  virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 
  protected:
-  Int_t			   fEventNumber; // Event number
+  Int_t	           fEventNumber; // Event number
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFidutialCut * fFidutialCut; // Acceptance cuts
 		
-  Float_t        fCTSPtMin;      // pT  Threshold on charged particles 
+  Float_t        fCTSPtMin;      // pT Threshold on charged particles 
   Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
-  Float_t        fPHOSPtMin;     // pT  Threshold on phos clusters
+  Float_t        fPHOSPtMin;     // pT Threshold on phos clusters
 
-  TClonesArray * fAODCTS ;        //! temporal array with tracks
-  TClonesArray * fAODEMCAL ;      //! temporal array with EMCAL CaloClusters
-  TClonesArray * fAODPHOS ;       //! temporal array with PHOS CaloClusters
+  TRefArray *    fAODCTS ;        //! temporal referenced array with tracks
+  TRefArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
+  TRefArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
   TNamed *       fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
   TNamed *       fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
 
-  AliESDEvent *  fESD;            //! pointer to esd
-  AliAODEvent *  fAOD;            //! pointer to aod
+  AliVEvent   *  fInputEvent;     //! pointer to esd or aod input
+  AliAODEvent *  fOutputEvent;    //! pointer to aod output
   AliMCEvent  *  fMC;             //! Monte Carlo Event Handler  
 
   Bool_t         fFillCTS;        // use data from CTS
@@ -142,7 +141,7 @@ public:
   Bool_t         fFillEMCALCells; // use data from EMCAL
   Bool_t         fFillPHOSCells;  // use data from PHOS
 
-  ClassDef(AliCaloTrackReader,1)
+  ClassDef(AliCaloTrackReader,3)
 } ;
 
 

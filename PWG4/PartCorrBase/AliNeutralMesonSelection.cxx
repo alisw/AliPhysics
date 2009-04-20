@@ -24,11 +24,9 @@
 #include <TLorentzVector.h>
 #include <TH2.h>
 #include <TList.h>
-#include <TArrayD.h>
  
 //---- AliRoot system ----
 #include "AliNeutralMesonSelection.h" 
-#include "AliLog.h"
 
 ClassImp(AliNeutralMesonSelection)
   
@@ -42,10 +40,11 @@ ClassImp(AliNeutralMesonSelection)
     fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), 
     fhInvMassPairAllCut(0),
-	fHistoNEBins(0),   fHistoEMax(0.),   fHistoEMin(0.),
-	fHistoNPtBins(0),  fHistoPtMax(0.),  fHistoPtMin(0.),
-	fHistoNAngleBins(0), fHistoAngleMax(0.), fHistoAngleMin(0.),
-	fHistoNIMBins(0), fHistoIMMax(0.), fHistoIMMin(0.){
+    fHistoNEBins(0),   fHistoEMax(0.),   fHistoEMin(0.),
+    fHistoNPtBins(0),  fHistoPtMax(0.),  fHistoPtMin(0.),
+    fHistoNAngleBins(0), fHistoAngleMax(0.), fHistoAngleMin(0.),
+    fHistoNIMBins(0), fHistoIMMax(0.), fHistoIMMin(0.)
+{
   //Default Ctor
   
   //Initialize parameters
@@ -130,72 +129,71 @@ AliNeutralMesonSelection::~AliNeutralMesonSelection()
 //________________________________________________________________________
 TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
 {  
-	
-	// Create histograms to be saved in output file and 
-	// store them in outputContainer of the analysis class that calls this class.
-	
-	TList * outputContainer = new TList() ; 
-	outputContainer->SetName("MesonDecayHistos") ; 
-			  
-	fhAnglePairNoCut  = new TH2F
+  // Create histograms to be saved in output file and 
+  // store them in outputContainer of the analysis class that calls this class.
+  
+  TList * outputContainer = new TList() ; 
+  outputContainer->SetName("MesonDecayHistos") ; 
+  
+  fhAnglePairNoCut  = new TH2F
     ("AnglePairNoCut",
      "Angle between all #gamma pair vs E_{#pi^{0}}",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-	fhAnglePairNoCut->SetYTitle("Angle (rad)");
-	fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-	
-	fhAnglePairOpeningAngleCut  = new TH2F
+  fhAnglePairNoCut->SetYTitle("Angle (rad)");
+  fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+  
+  fhAnglePairOpeningAngleCut  = new TH2F
     ("AnglePairOpeningAngleCut",
      "Angle between all #gamma pair (opening angle + azimuth cut) vs E_{#pi^{0}}"
      ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-	fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
-	fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-	
-	fhAnglePairAllCut  = new TH2F
+  fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
+  fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+  
+  fhAnglePairAllCut  = new TH2F
     ("AnglePairAllCut",
      "Angle between all #gamma pair (opening angle + inv mass cut+azimuth) vs E_{#pi^{0}}"
      ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-	fhAnglePairAllCut->SetYTitle("Angle (rad)");
-	fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV)");    
-	
-	//
-	fhInvMassPairNoCut  = new TH2F
+  fhAnglePairAllCut->SetYTitle("Angle (rad)");
+  fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV)");    
+  
+  //
+  fhInvMassPairNoCut  = new TH2F
     ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs E_{#pi^{0}}",
      fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-	fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-	fhInvMassPairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-	
-	fhInvMassPairOpeningAngleCut  = new TH2F
+  fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+  fhInvMassPairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+  
+  fhInvMassPairOpeningAngleCut  = new TH2F
     ("InvMassPairOpeningAngleCut",
      "Invariant Mass of #gamma pair (angle cut) vs E_{#pi^{0}}",
      fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-	fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-	fhInvMassPairOpeningAngleCut->SetXTitle(" E_{#pi^{0}}(GeV)");
-	
-	fhInvMassPairAllCut  = new TH2F
+  fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+  fhInvMassPairOpeningAngleCut->SetXTitle(" E_{#pi^{0}}(GeV)");
+  
+  fhInvMassPairAllCut  = new TH2F
     ("InvMassPairAllCut",
      "Invariant Mass of #gamma pair (opening angle+invmass cut) vs E_{#pi^{0}}",
      fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-	fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-	fhInvMassPairAllCut->SetXTitle("E_{#pi^{0}}(GeV)");
-	
-	outputContainer->Add(fhAnglePairNoCut) ; 
-	outputContainer->Add(fhAnglePairOpeningAngleCut) ;
-	outputContainer->Add(fhAnglePairAllCut) ; 
-	
-	outputContainer->Add(fhInvMassPairNoCut) ; 
-	outputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
-	outputContainer->Add(fhInvMassPairAllCut) ; 
-	
-	return outputContainer;
+  fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+  fhInvMassPairAllCut->SetXTitle("E_{#pi^{0}}(GeV)");
+  
+  outputContainer->Add(fhAnglePairNoCut) ; 
+  outputContainer->Add(fhAnglePairOpeningAngleCut) ;
+  outputContainer->Add(fhAnglePairAllCut) ; 
+  
+  outputContainer->Add(fhInvMassPairNoCut) ; 
+  outputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
+  outputContainer->Add(fhInvMassPairAllCut) ; 
+  
+  return outputContainer;
 }
 
- //____________________________________________________________________________
+//____________________________________________________________________________
 void AliNeutralMesonSelection::InitParameters()
 {
- 
+  
   //Initialize the parameters of the analysis.
   fKeepNeutralMesonHistos = kFALSE ;
-
+  
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.AddAt(0.4,0);//={0.4,-0.25,0.025,-2e-4};
   fAngleMaxParam.AddAt(-0.25,1) ;
@@ -251,7 +249,7 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   //Search for the neutral pion within selection cuts
   Bool_t goodpair = kFALSE ;
   
-  Double_t pt  = (gammai+gammaj).Pt();
+//  Double_t pt  = (gammai+gammaj).Pt();
   Double_t phi = (gammai+gammaj).Phi();
   if(phi < 0)
     phi+=TMath::TwoPi();
@@ -267,14 +265,14 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   if(IsAngleInWindow(angle,e)){
     fhAnglePairOpeningAngleCut     ->Fill(e,angle);
     fhInvMassPairOpeningAngleCut->Fill(e,invmass);
-    AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
+    //AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
     
     //Cut on the invariant mass of the pair
     if((invmass>fInvMassMinCut) && (invmass<fInvMassMaxCut)){ 
       fhInvMassPairAllCut  ->Fill(e,invmass);
       fhAnglePairAllCut       ->Fill(e,angle);
       goodpair = kTRUE;
-      AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+      //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
     }//(invmass>0.125) && (invmass<0.145)
   }//Opening angle cut
   
@@ -303,11 +301,11 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
   
   if(fKeepNeutralMesonHistos){
-	printf("Histograms: %3.1f < E  < %3.1f,  Nbin = %d\n", fHistoEMin,  fHistoEMax,  fHistoNEBins);
-  	printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
-	printf("Histograms: %3.1f < angle < %3.1f, Nbin = %d\n", fHistoAngleMin, fHistoAngleMax, fHistoNAngleBins);
-	printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n", fHistoIMMin, fHistoIMMax, fHistoNIMBins);
-  
+    printf("Histograms: %3.1f < E  < %3.1f,  Nbin = %d\n", fHistoEMin,  fHistoEMax,  fHistoNEBins);
+    printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
+    printf("Histograms: %3.1f < angle < %3.1f, Nbin = %d\n", fHistoAngleMin, fHistoAngleMax, fHistoNAngleBins);
+    printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n", fHistoIMMin, fHistoIMMax, fHistoNIMBins);
+    
   }
-
+  
 } 

@@ -27,7 +27,6 @@
 
 //---- ANALYSIS system ----
 #include "AliAnaParticlePartonCorrelation.h" 
-#include "AliLog.h"
 #include "AliStack.h"  
 #include "AliAODPWG4ParticleCorrelation.h"
 
@@ -86,8 +85,6 @@ AliAnaParticlePartonCorrelation & AliAnaParticlePartonCorrelation::operator = (c
 TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file 
-
-  AliDebug(1,"Init parton histograms");
 
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticlePartonHistos") ; 
@@ -177,9 +174,10 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   //Add partons to the reference list of the trigger particle
   //Partons are considered those in the first eight possitions in the stack
   //being 0, and 1 the 2 protons, and 6 and 7 the outgoing final partons.
-  if(!GetInputAODBranch())
-	AliFatal(Form("ParticlePartonCorrelation::FillAOD: No input particles in AOD with name branch < %s > \n",GetInputAODName().Data()));	
-  
+  if(!GetInputAODBranch()){
+    printf("ParticlePartonCorrelation::FillAOD: No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
+    abort();	
+  }
   if(GetDebug() > 1){
     printf("Begin parton correlation analysis, fill AODs \n");
     printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
@@ -191,8 +189,10 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     AliStack * stack =  GetMCStack() ;
-    if(!stack) AliFatal("No Stack available, STOP");
-    
+    if(!stack){ 
+      printf("No Stack available, STOP");
+      abort();
+    }
     if(stack->GetNtrack() < 8) {
       printf("*** small number of particles, not a PYTHIA simulation? ***:  n tracks %d \n", stack->GetNprimary());
       continue ;
@@ -200,37 +200,46 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     
     //Fill AOD reference only with partons
     TParticle * parton = new TParticle ;
-    
+    Bool_t first = kTRUE;
     for(Int_t ipr = 0;ipr < 8; ipr ++ ){
       parton = stack->Particle(ipr) ;
+
+      if(first) {
+	new (particle->GetRefTracks()) TRefArray(TProcessID::GetProcessWithUID(parton)); 
+	first = kFALSE;
+      }
+
       particle->AddTrack(parton);
-      //parton->Print();
     }
-
+    
   }//Aod branch loop
-
- if(GetDebug() > 1) printf("End parton correlation analysis, fill AODs \n");
+  
+  if(GetDebug() > 1) printf("End parton correlation analysis, fill AODs \n");
 }
  
 //__________________________________________________________________
 void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()  
 {
   //Particle-Parton Correlation Analysis, fill histograms
-  if(!GetInputAODBranch())
-	AliFatal(Form("ParticlePartonCorrelation::FillHistos: No input particles in AOD with name branch < %s > \n",GetInputAODName().Data()));	
-  
+  if(!GetInputAODBranch()){
+    printf("ParticlePartonCorrelation::FillHistos: No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
+    abort();	
+  }
   if(GetDebug() > 1){
     printf("Begin parton correlation analysis, fill histograms \n");
     printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
   }
-
+  
   AliStack * stack =  GetMCStack() ;
-  if(!stack) AliFatal("No Stack available, STOP");
-
+  if(!stack) {
+    printf("ParticlePartonCorrelation::FillHistos - No Stack available, STOP");
+    abort();
+  }
+ 
   //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   TParticle *  mom =new TParticle ;
-
+  
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
@@ -240,9 +249,11 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     Int_t imom = particle->GetLabel();
     Int_t iparent  = 2000;
     Int_t iawayparent = -1;
-
-    if(!(particle->GetRefTracks()) || (particle->GetRefTracks())->GetEntriesFast() < 7) AliFatal("Reference list with partons not filled, STOP analysis");
-
+    
+    if(!(particle->GetRefTracks()) || (particle->GetRefTracks())->GetEntriesFast() < 7) {
+      printf("ParticlePartonCorrelation::FillHistos - Reference list with partons not filled, STOP analysis");
+      abort();
+    }
     //Check and get indeces of mother and parton    
     if(imom < 8 ) iparent = imom ;   //mother is already a parton
     else if (imom <  stack->GetNtrack()) {
@@ -258,7 +269,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
     
     if(GetDebug() > 1) printf("N reference partons %d; labels:  mother %d, parent %d \n", (particle->GetRefTracks())->GetEntriesFast(), imom, iparent);
-
+    
     
     if(iparent < 0 || iparent > 8) { 
       if(GetDebug() > 0 ) printf("Failed to find appropriate parton, index %d", iparent);

@@ -29,7 +29,6 @@
 //#include <TArrayF.h>
   
 //---- ANALYSIS system ----
-#include "AliLog.h"
 #include "AliFidutialCut.h"
 
 ClassImp(AliFidutialCut)
@@ -144,8 +143,8 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fCTSFidCutMaxEta->GetSize();
     nphiregions =  fCTSFidCutMaxPhi->GetSize();
     if(netaregions !=  fCTSFidCutMinEta->GetSize() || nphiregions !=  fCTSFidCutMinPhi->GetSize())
-      AliFatal(Form("Wrong number of CTS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
-		    netaregions, fCTSFidCutMinEta->GetSize(),  nphiregions, fCTSFidCutMinPhi->GetSize()));
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of CTS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+		    netaregions, fCTSFidCutMinEta->GetSize(),  nphiregions, fCTSFidCutMinPhi->GetSize());
     
     maxeta = fCTSFidCutMaxEta->GetArray();
     maxphi = fCTSFidCutMaxPhi->GetArray();
@@ -157,8 +156,8 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fEMCALFidCutMaxEta->GetSize();
     nphiregions =  fEMCALFidCutMaxPhi->GetSize();
     if(netaregions !=  fEMCALFidCutMinEta->GetSize() || nphiregions !=  fEMCALFidCutMinPhi->GetSize())
-      AliFatal(Form("Wrong number of EMCAL fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
-		    netaregions, fEMCALFidCutMinEta->GetSize(),  nphiregions, fEMCALFidCutMinPhi->GetSize()));
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of EMCAL fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+		    netaregions, fEMCALFidCutMinEta->GetSize(),  nphiregions, fEMCALFidCutMinPhi->GetSize());
     
     maxeta = fEMCALFidCutMaxEta->GetArray();
     maxphi = fEMCALFidCutMaxPhi->GetArray();
@@ -170,8 +169,8 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fPHOSFidCutMaxEta->GetSize();
     nphiregions =  fPHOSFidCutMaxPhi->GetSize();
     if(netaregions !=  fPHOSFidCutMinEta->GetSize() || nphiregions !=  fPHOSFidCutMinPhi->GetSize())
-      AliFatal(Form("Wrong number of PHOS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
-		    netaregions, fPHOSFidCutMinEta->GetSize(),  nphiregions, fPHOSFidCutMinPhi->GetSize()));
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of PHOS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+		    netaregions, fPHOSFidCutMinEta->GetSize(),  nphiregions, fPHOSFidCutMinPhi->GetSize());
     
     maxeta = fPHOSFidCutMaxEta->GetArray();
     maxphi = fPHOSFidCutMaxPhi->GetArray();
@@ -180,7 +179,7 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     selection =  fPHOSFidutialCut ; 
   }
   else
-    AliFatal(Form("Wrong detector name = %s", det.Data()));
+    printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s", det.Data());
 
   //printf("IsInFidutialCut::nphiregions = %d, netaregions = %d\n",nphiregions, netaregions);
 

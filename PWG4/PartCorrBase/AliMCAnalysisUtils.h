@@ -19,10 +19,7 @@ class TString ;
 class TList ;
 
 //--- AliRoot system ---
-class AliLog ;
-//#include "AliStack.h"
 class AliStack ;
-//#include "AliGenPythiaEventHeader.h"
 class AliGenEventHeader ;
 
 class AliMCAnalysisUtils : public TObject {

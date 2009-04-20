@@ -9,9 +9,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliAnalysisTask.h"  
-
-class TH1D ; 
-class TH1I ; 
 class TH1F ; 
 
 class AliAnaScale : public AliAnalysisTask {
@@ -38,7 +35,7 @@ private:
 
 
   // input and output
-  Int_t          fDebug ;         // Debug flag
+  Int_t     fDebug ;         // Debug flag
   // task parameters
   Float_t   fScale ;  // Scaling factor 
 
