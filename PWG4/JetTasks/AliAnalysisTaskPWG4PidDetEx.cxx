@@ -112,11 +112,8 @@ AliAnalysisTaskPWG4PidDetEx::AliAnalysisTaskPWG4PidDetEx(const char *name):
   fdNdPtProton(0), fMassProton(0), fdEdxTPCProton(0), fbgTPCProton(0),
   fdNdPtMC(0), fdNdPtMCPion(0), fdNdPtMCKaon(0), fdNdPtMCProton(0) 
 {
-  // Normal constructor
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 
 }
 
@@ -132,44 +129,40 @@ AliAnalysisTaskPWG4PidDetEx::~AliAnalysisTaskPWG4PidDetEx()
   }
 }
 
-//______________________________________________________________________________
-void AliAnalysisTaskPWG4PidDetEx::ConnectInputData(Option_t *)
-{
-  // Connect AOD here
-  // Called once
-  if (fDebug > 1)  AliInfo("ConnectInputData() \n");
+// //______________________________________________________________________________
+// void AliAnalysisTaskPWG4PidDetEx::ConnectInputData(Option_t *)
+// {
+//   // Connect AOD here
+//   // Called once
+//   if (fDebug > 1)  AliInfo("ConnectInputData() \n");
   
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } 
-  else {
-    if(fAnalysisType == "ESD") {
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());    
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } else
-	fESD = esdH->GetEvent();
-    }
-    else if(fAnalysisType == "AOD") {
-      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      if (!aodH) {
-	Printf("ERROR: Could not get AODInputHandler");
-      } else
-	fAOD = aodH->GetEvent();
-    }
-  }
+//   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
+//   if (!tree) {
+//     Printf("ERROR: Could not read chain from input slot 0");
+//   } 
+//   else {
+//     if(fAnalysisType == "ESD") {
+//       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());    
+//       if (!esdH) {
+// 	Printf("ERROR: Could not get ESDInputHandler");
+//       } else
+// 	fESD = esdH->GetEvent();
+//     }
+//     else if(fAnalysisType == "AOD") {
+//       AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+//       if (!aodH) {
+// 	Printf("ERROR: Could not get AODInputHandler");
+//       } else
+// 	fAOD = aodH->GetEvent();
+//     }
+//   }
 
-}
+// }
 
 //______________________________________________________________________________
-void AliAnalysisTaskPWG4PidDetEx::CreateOutputObjects()
+void AliAnalysisTaskPWG4PidDetEx::UserCreateOutputObjects()
 { 
-  // Create histograms
-  // Called once
-  if (fDebug > 1) AliInfo("CreateOutPutData() \n");
-
-  OpenFile(0);
+  OpenFile(1);
   fListOfHists = new TList();
 
   fEvents = new TH1I("fEvents","Number of analyzed events; Events; Counts", 1, 0, 1);
@@ -270,8 +263,33 @@ void AliAnalysisTaskPWG4PidDetEx::CreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskPWG4PidDetEx::Exec(Option_t *) 
+void AliAnalysisTaskPWG4PidDetEx::UserExec(Option_t *) 
 {
+
+  // Create histograms
+  // Called once
+  if (fAnalysisType == "AOD") {
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD){
+      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+      return;
+    }
+    else{
+      //  assume that the AOD is in the general output...
+      //  fAOD  = AODEvent();
+      //  if(!fAOD){
+      //	Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
+    }
+  }
+  else if  (fAnalysisType == "ESD"){
+    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if(!fESD){
+      Printf("%s:%d ESDEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+      this->Dump();
+      return;
+    }
+  }
+
   // Main loop
   // Called for each event
   if (fDebug > 1) AliInfo("Exec() \n" );
@@ -299,7 +317,7 @@ void AliAnalysisTaskPWG4PidDetEx::Exec(Option_t *)
   }//AOD analysis  
 
   // Post output data.
-  PostData(0, fListOfHists);
+  PostData(1, fListOfHists);
 }
 
 //________________________________________________________________________

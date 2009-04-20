@@ -19,9 +19,8 @@ class AliAnalysisTaskPWG4PidDetEx : public AliAnalysisTaskSE {
   AliAnalysisTaskPWG4PidDetEx(const char *name);
   virtual ~AliAnalysisTaskPWG4PidDetEx();
 
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *); 
 
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
