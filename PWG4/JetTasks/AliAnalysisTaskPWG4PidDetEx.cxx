@@ -61,9 +61,14 @@ using namespace std;
 ClassImp(AliAnalysisTaskPWG4PidDetEx)
 
 const Double_t AliAnalysisTaskPWG4PidDetEx::fgkCtau = 370;                //  distance for kaon decay
-const Double_t AliAnalysisTaskPWG4PidDetEx::fgkPionMass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-const Double_t AliAnalysisTaskPWG4PidDetEx::fgkKaonMass = TDatabasePDG::Instance()->GetParticle(321)->Mass();
-const Double_t AliAnalysisTaskPWG4PidDetEx::fgkProtonMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+const Double_t AliAnalysisTaskPWG4PidDetEx::fgkPionMass = 1.39570000000000000e-01;
+const Double_t AliAnalysisTaskPWG4PidDetEx::fgkKaonMass = 4.93599999999999983e-01; 
+const Double_t AliAnalysisTaskPWG4PidDetEx::fgkProtonMass = 9.38270000000000048e-01;
+const Double_t AliAnalysisTaskPWG4PidDetEx::fgkC = 2.99792458e-2;
+
+
+
+
 
 //_____________________________________________________________________________
 AliAnalysisTaskPWG4PidDetEx::AliAnalysisTaskPWG4PidDetEx():
@@ -576,7 +581,7 @@ Double_t AliAnalysisTaskPWG4PidDetEx::IntegratedLength(AliVTrack* track) const
   AliAODTrack* trackAOD = (AliAODTrack*)track;
   trackAOD->GetDetPid()->GetIntegratedTimes(intTime);
   timeElectron = intTime[0];
-  intLength = TMath::C()*timeElectron;
+  intLength = fgkC*timeElectron;
 
   return intLength;
 }
@@ -588,13 +593,13 @@ Double_t AliAnalysisTaskPWG4PidDetEx::MassSquared(AliVTrack* track) const
 
   if(fAnalysisType == "ESD"){
     AliESDtrack* trackESD = (AliESDtrack*)track;
-    beta = trackESD->GetIntegratedLength()/trackESD->GetTOFsignal()/TMath::C();
+    beta = trackESD->GetIntegratedLength()/trackESD->GetTOFsignal()/fgkC;
     mass = trackESD->P()*trackESD->P()*(1./(beta*beta) - 1.0);
   }
 
   if(fAnalysisType == "AOD"){
     AliAODTrack* trackAOD = (AliAODTrack*)track;
-    beta =IntegratedLength(trackAOD)/trackAOD->GetDetPid()->GetTOFsignal()/TMath::C();
+    beta =IntegratedLength(trackAOD)/trackAOD->GetDetPid()->GetTOFsignal()/fgkC;
     mass = trackAOD->P()*trackAOD->P()*(1./(beta*beta) - 1.0);
   }
   
