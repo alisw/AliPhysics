@@ -150,16 +150,18 @@ void AliGenPileup::Generate()
   Int_t *nIntBC = new Int_t[3*AliTriggerBCMask::kNBits];
   Int_t *indexBC = new Int_t[3*AliTriggerBCMask::kNBits];
   Int_t nTotBC = 0;
-  for(Int_t iBC = 0; iBC <  AliTriggerBCMask::kNBits; iBC++) {
+  while (nTotBC == 0) {
+    for(Int_t iBC = 0; iBC <  AliTriggerBCMask::kNBits; iBC++) {
 
-    if (!fBCMask.GetMask(iBC)) continue;
+      if (!fBCMask.GetMask(iBC)) continue;
 
-    Int_t nInteractions = gRandom->Poisson(rate);
-    if (nInteractions == 0) continue;
+      Int_t nInteractions = gRandom->Poisson(rate);
+      if (nInteractions == 0) continue;
 
-    nIntBC[nTotBC] = nInteractions;
-    indexBC[nTotBC] = iBC;
-    nTotBC++;
+      nIntBC[nTotBC] = nInteractions;
+      indexBC[nTotBC] = iBC;
+      nTotBC++;
+    }
   }
 
   // Select the bunch crossing for triggered event
