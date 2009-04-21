@@ -23,6 +23,7 @@
 // -- Author: Gustavo Conesa (INFN-LNF)
 
 
+#include <cstdlib>
 // root
 #include <TROOT.h>
 #include <TInterpreter.h>
