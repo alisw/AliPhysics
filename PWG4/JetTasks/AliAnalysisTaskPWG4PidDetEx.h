@@ -47,6 +47,7 @@ class AliAnalysisTaskPWG4PidDetEx : public AliAnalysisTaskSE {
   static const Double_t fgkPionMass;            //  pion mass
   static const Double_t fgkKaonMass;            //  kaon mass
   static const Double_t fgkProtonMass;          //  proton mass
+  static const Double_t fgkC;                  //  peed of light
 
 
   AliESDEvent* fESD;                //! ESD object
