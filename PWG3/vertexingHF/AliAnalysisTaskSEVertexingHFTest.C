@@ -19,7 +19,7 @@ void AliAnalysisTaskSEVertexingHFTest()
     TString treeName,fileName;
     if(inputAOD) {
       treeName="aodTree"; 
-      fileName="AliAOD.root";
+      fileName="AliAODs.root";
     } else {
       treeName="esdTree"; 
       fileName="AliESDs.root";
@@ -77,26 +77,10 @@ void AliAnalysisTaskSEVertexingHFTest()
   mgr->SetOutputEventHandler(aodHandler);
   
   // Vertexing analysis task    
-  AliAnalysisTaskSEVertexingHF *hfTask = new AliAnalysisTaskSEVertexingHF("VertexingHFAnalysis");
-  hfTask->SetDebugLevel(2);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
+  AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF();
   
-  mgr->AddTask(hfTask);
   
-  //
-  // Create containers for input/output
-  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(hfTask,0,mgr->GetCommonOutputContainer());
-  /* 
-  // before v4-17-Release
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-							   AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-							    AliAnalysisManager::kOutputContainer, 
-							    "default"); 
-  mgr->ConnectInput(hfTask,0,cinput1);
-  mgr->ConnectOutput(hfTask,0,coutput1);
-  */
-
   //
   // Run the analysis
   //    
@@ -105,7 +89,11 @@ void AliAnalysisTaskSEVertexingHFTest()
 
   mgr->PrintStatus();
 
+  TStopwatch watch;
+  watch.Start();
   mgr->StartAnalysis(mode.Data(),chain);
+  watch.Stop();
+  watch.Print();
 
   return;
 }
