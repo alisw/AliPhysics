@@ -31,7 +31,17 @@
 #include <assert.h>
 #endif
 
-#if defined(__MMX__) || defined(__SSE__)
+#if (defined(__MMX__) || defined(__SSE__))
+#if defined(__GNUC__)
+#if __GNUC__ > 3
+#define USE_MM_MALLOC
+#endif
+#else // not gcc, assume it can use _mm_malloc since it supports MMX/SSE
+#define USE_MM_MALLOC
+#endif
+#endif
+
+#ifdef USE_MM_MALLOC
 #include <mm_malloc.h>
 #else
 #include <cstdlib>
@@ -103,7 +113,7 @@ namespace AliHLTInternal
   {
     protected:
       virtual inline ~Allocator() {}
-#if defined(__MMX__) || defined(__SSE__)
+#ifdef USE_MM_MALLOC
       static inline T *Alloc( int s ) { T *p = reinterpret_cast<T *>( _mm_malloc( s * sizeof( T ), alignment ) ); return new( p ) T[s]; }
       static inline void Free( const T *const p ) { /** p->~T(); */ _mm_free( p ); } // XXX: doesn't call dtor because it's an array
 #else
@@ -585,5 +595,6 @@ inline void AliHLTResizableArray<T, Dim, alignment>::Resize( int x, int y, int z
 }
 
 #undef BOUNDS_CHECK
+#undef USE_MM_MALLOC
 
 #endif // ALIHLTARRAY_H
