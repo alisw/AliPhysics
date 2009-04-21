@@ -13,15 +13,48 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//--------------------------------------------------------------------//
-//                                                                    //
-// AliCFUnfolding Class                                               //
-// Class to handle general unfolding procedure                        // 
-// For the moment only bayesian unfolding is supported                //
-// The next steps are to add chi2 minimisation and weighting methods  //
-//                                                                    //
-// Author : renaud.vernet@cern.ch                                     //
-//--------------------------------------------------------------------//
+//---------------------------------------------------------------------//
+//                                                                     //
+// AliCFUnfolding Class                                                //
+// Class to handle general unfolding procedure                         // 
+// For the moment only bayesian unfolding is supported                 //
+// The next steps are to add chi2 minimisation and weighting methods   //
+//                                                                     //
+//                                                                     //
+//                                                                     //
+// Use :                                                               //
+// -------                                                             //
+// The Bayesian unfolding consists of several iterations.              //
+// At each iteration, an inverse response matrix is calculated, given  //
+// the measured spectrum, the a priori (guessed) spectrum,             //
+// the efficiency spectrum and the response matrix.                    //
+// For each iteration, the unfolded spectrum is calculated using       //
+// the inverse response : the goal is to get an unfolded spectrum      //
+// similar (according to some criterion) to the a priori one.          //
+// If the difference is too big, another iteration is performed :      //
+// the a priori spectrum is updated to the unfolded one from the       //
+// previous iteration, and so on so forth, until the maximum number    //
+// of iterations or the similarity criterion is reached.               //
+//                                                                     //
+// Currently the similarity criterion is the Chi2 between the a priori //
+// and the unfolded spectrum.                                          //
+//                                                                     //
+// Currently the user has to define the max. number of iterations      //
+// (::SetMaxNumberOfIterations)                                        //
+// and the chi2 below which the procedure will stop                    //
+// (::SetMaxChi2 or ::SetMaxChi2PerDOF)                                //
+//                                                                     //
+// An optional possibility is to smooth the unfolded spectrum at the   //
+// end of each iteration, either using a fit function                  //
+// (only if #dimensions <=3)                                           //
+// or a simple averaging using the neighbouring bins values.           //
+// This is possible calling the function ::UseSmoothing                //
+// If no argument is passed to this function, then the second option   //
+// is used.                                                            //
+//                                                                     //
+//---------------------------------------------------------------------//
+// Author : renaud.vernet@cern.ch                                      //
+//---------------------------------------------------------------------//
 
 
 #include "AliCFUnfolding.h"
@@ -229,17 +262,17 @@ void AliCFUnfolding::Init() {
 void AliCFUnfolding::CreateEstMeasured() {
   //
   // This function creates a estimate (M) of the reconstructed spectrum 
-  // given the a priori distribution (T) and the conditional matrix (COND)
+  // given the a priori distribution (T), the efficiency (E) and the conditional matrix (COND)
   //
   // --> P(M) = SUM   { P(M|T)    * P(T) }
-  // --> M(i) = SUM_k { COND(i,k) * T(k) }
+  // --> M(i) = SUM_k { COND(i,k) * T(k) * E (k)}
   //
   // This is needed to calculate the inverse response matrix
   //
 
 
   // clean the measured estimate spectrum
-  for (Long64_t i=0; i<fMeasuredEstimate->GetNbins(); i++) {
+  for (Long_t i=0; i<fMeasuredEstimate->GetNbins(); i++) {
     fMeasuredEstimate->GetBinContent(i,fCoordinatesN_M);
     fMeasuredEstimate->SetBinContent(fCoordinatesN_M,0.);
     fMeasuredEstimate->SetBinError  (fCoordinatesN_M,0.);
@@ -249,7 +282,7 @@ void AliCFUnfolding::CreateEstMeasured() {
   priorTimesEff->Multiply(fEfficiency);
 
   // fill it
-  for (Int_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
+  for (Long_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
     Double_t conditionalValue = fConditional->GetBinContent(iBin,fCoordinates2N);
     Double_t conditionalError = fConditional->GetBinError  (iBin);
     GetCoordinates();
@@ -284,7 +317,7 @@ void AliCFUnfolding::CreateInvResponse() {
   THnSparse* priorTimesEff = (THnSparse*) fPrior->Clone();
   priorTimesEff->Multiply(fEfficiency);
 
-  for (Int_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
+  for (Long_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
     Double_t conditionalValue = fConditional->GetBinContent(iBin,fCoordinates2N);
     Double_t conditionalError = fConditional->GetBinError  (iBin);
     GetCoordinates();
@@ -326,6 +359,7 @@ void AliCFUnfolding::Unfold() {
     CreateInvResponse();
     CreateUnfolded();
     chi2 = GetChi2();
+    AliDebug(1,Form("Chi2 at iteration %d is %e",iIterBayes,chi2));
     if (fMaxChi2>0. && chi2<fMaxChi2) {
       break;
     }
@@ -333,6 +367,7 @@ void AliCFUnfolding::Unfold() {
     if (fUseSmoothing) {
       if (Smooth()) {
 	AliError("Couldn't smooth the unfolded spectrum!!");
+	AliInfo(Form("\n\n=======================\nFinished at iteration %d : Chi2 is %e and you required it to be < %e\n=======================\n\n",iIterBayes,chi2,fMaxChi2));
 	return;
       }
     }
@@ -352,13 +387,13 @@ void AliCFUnfolding::CreateUnfolded() {
 
 
   // clear the unfolded spectrum
-  for (Long64_t i=0; i<fUnfolded->GetNbins(); i++) {
+  for (Long_t i=0; i<fUnfolded->GetNbins(); i++) {
     fUnfolded->GetBinContent(i,fCoordinatesN_T);
     fUnfolded->SetBinContent(fCoordinatesN_T,0.);
     fUnfolded->SetBinError  (fCoordinatesN_T,0.);
   }
   
-  for (Int_t iBin=0; iBin<fInverseResponse->GetNbins(); iBin++) {
+  for (Long_t iBin=0; iBin<fInverseResponse->GetNbins(); iBin++) {
     Double_t invResponseValue = fInverseResponse->GetBinContent(iBin,fCoordinates2N);
     Double_t invResponseError = fInverseResponse->GetBinError  (iBin);
     GetCoordinates();
@@ -412,7 +447,7 @@ void AliCFUnfolding::CreateConditional() {
   delete [] dim; 
   
   // fill the conditional probability matrix
-  for (Int_t iBin=0; iBin<fResponse->GetNbins(); iBin++) {
+  for (Long_t iBin=0; iBin<fResponse->GetNbins(); iBin++) {
     Double_t responseValue = fResponse->GetBinContent(iBin,fCoordinates2N);
     Double_t responseError = fResponse->GetBinError  (iBin);
     GetCoordinates();
@@ -439,9 +474,10 @@ Double_t AliCFUnfolding::GetChi2() {
   //
 
   Double_t chi2 = 0. ;
-  for (Int_t iBin=0; iBin<fPrior->GetNbins(); iBin++) {
+  for (Long_t iBin=0; iBin<fPrior->GetNbins(); iBin++) {
     Double_t priorValue = fPrior->GetBinContent(iBin);
-    chi2 += (priorValue>0. ? TMath::Power(fUnfolded->GetBinContent(iBin) - priorValue,2) / priorValue : 0.) ;
+//     chi2 += (priorValue>0. ? TMath::Power(fUnfolded->GetBinContent(iBin) - priorValue,2) / priorValue : 0.) ;
+    chi2 += (fUnfolded->GetBinError(iBin)>0. ? TMath::Power((fUnfolded->GetBinContent(iBin) - priorValue)/fUnfolded->GetBinError(iBin),2) / priorValue : 0.) ;
   }
   return chi2;
 }
@@ -472,7 +508,7 @@ Short_t AliCFUnfolding::Smooth() {
   //
   
   if (fSmoothFunction) {
-    AliInfo(Form("Smoothing spectrum with fit function %p",fSmoothFunction));
+    AliDebug(2,Form("Smoothing spectrum with fit function %p",fSmoothFunction));
     return SmoothUsingFunction();
   }
   else return SmoothUsingNeighbours();
@@ -491,9 +527,9 @@ Short_t AliCFUnfolding::SmoothUsingNeighbours() {
   //need a copy because fUnfolded will be updated during the loop, and this creates problems
   THnSparse* copy = (THnSparse*)fUnfolded->Clone();
 
-  for (Int_t iBin=0; iBin<copy->GetNbins(); iBin++) { //loop on non-empty bins
+  for (Long_t iBin=0; iBin<copy->GetNbins(); iBin++) { //loop on non-empty bins
     Double_t content = copy->GetBinContent(iBin,fCoordinatesN_T);
-    Double_t error2  = TMath::Power(copy->GetBinContent(iBin),2);
+    Double_t error2  = TMath::Power(copy->GetBinError(iBin),2);
 
     // skip the under/overflow bins...
     Bool_t isOutside = kFALSE ;
@@ -539,15 +575,22 @@ Short_t AliCFUnfolding::SmoothUsingFunction() {
   // Fits the unfolded spectrum using the function fSmoothFunction
   //
 
-  AliInfo(Form("Smooth function is a %s with option \"%s\" and has %d parameters : ",fSmoothFunction->ClassName(),fSmoothOption,fSmoothFunction->GetNpar()));
+  AliDebug(0,Form("Smooth function is a %s with option \"%s\" and has %d parameters : ",fSmoothFunction->ClassName(),fSmoothOption,fSmoothFunction->GetNpar()));
 
-  for (Int_t iPar=0; iPar<fSmoothFunction->GetNpar(); iPar++) AliInfo(Form("par[%d]=%e",iPar,fSmoothFunction->GetParameter(iPar)));
+  for (Int_t iPar=0; iPar<fSmoothFunction->GetNpar(); iPar++) AliDebug(0,Form("par[%d]=%e",iPar,fSmoothFunction->GetParameter(iPar)));
+
+  Int_t fitResult = 0;
 
   switch (fNVariables) {
-  case 1 : fUnfolded->Projection(0)    ->Fit(fSmoothFunction,fSmoothOption); break;
-  case 2 : fUnfolded->Projection(1,0)  ->Fit(fSmoothFunction,fSmoothOption); break; // (1,0) instead of (0,1) -> TAxis issue
-  case 3 : fUnfolded->Projection(0,1,2)->Fit(fSmoothFunction,fSmoothOption); break;
-  default: AliError(Form("Cannot handle such fit in %d dimensions",fNVariables)) ; return 1;
+  case 1 : fitResult = fUnfolded->Projection(0)    ->Fit(fSmoothFunction,fSmoothOption); break;
+  case 2 : fitResult = fUnfolded->Projection(1,0)  ->Fit(fSmoothFunction,fSmoothOption); break; // (1,0) instead of (0,1) -> TAxis issue
+  case 3 : fitResult = fUnfolded->Projection(0,1,2)->Fit(fSmoothFunction,fSmoothOption); break;
+  default: AliFatal(Form("Cannot handle such fit in %d dimensions",fNVariables)) ; return 1;
+  }
+
+  if (fitResult != 0) {
+    AliWarning(Form("Fit failed with status %d, stopping the loop",fitResult));
+    return 1;
   }
 
   Int_t nDim = fNVariables;

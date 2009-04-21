@@ -119,6 +119,7 @@ Bool_t AliCFTaskForUnfolding()
     correlation->SetBinEdges(k,binEdges[k]);
     correlation->SetBinEdges(k+nvar,binEdges[k]);
   }
+  correlation->Sumw2();
   task->SetCorrelationMatrix(correlation);
   //---
 
