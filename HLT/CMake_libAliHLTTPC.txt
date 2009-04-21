@@ -93,7 +93,6 @@ TPCLib/tracking-ca/AliHLTTPCCATrackerComponent.cxx
 TPCLib/tracking-ca/AliHLTTPCCANeighboursFinder.cxx
 TPCLib/tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
 TPCLib/tracking-ca/AliHLTTPCCAStartHitsFinder.cxx
-TPCLib/tracking-ca/AliHLTTPCCAUsedHitsInitialiser.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrackletConstructor.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrackletSelector.cxx
 TPCLib/tracking-ca/AliHLTTPCCADisplay.cxx
@@ -101,6 +100,9 @@ TPCLib/tracking-ca/AliHLTTPCCAMCTrack.cxx
 TPCLib/tracking-ca/AliHLTTPCCAPerformance.cxx
 TPCLib/tracking-ca/AliHLTTPCCAMerger.cxx
 TPCLib/tracking-ca/AliHLTTPCCAGlobalMergerComponent.cxx
+TPCLib/tracking-ca/AliHLTTPCCAClusterData.cxx
+TPCLib/tracking-ca/AliHLTTPCCASliceData.cxx
+TPCLib/tracking-ca/AliHLTTPCCASliceOutput.cxx
 TPCLib/tracking-ca/AliTPCtrackerCA.cxx 
 )
 

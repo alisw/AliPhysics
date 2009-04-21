@@ -95,13 +95,15 @@
 #pragma link C++ class  AliHLTTPCCANeighboursFinder+;
 #pragma link C++ class  AliHLTTPCCANeighboursCleaner+;
 #pragma link C++ class  AliHLTTPCCAStartHitsFinder+;
-#pragma link C++ class  AliHLTTPCCAUsedHitsInitialiser+;
 #pragma link C++ class  AliHLTTPCCATrackletConstructor+;
 #pragma link C++ class  AliHLTTPCCATrackletSelector+;
 #pragma link C++ class  AliHLTTPCCADisplay+;
 #pragma link C++ class  AliHLTTPCCAMCTrack+;
 #pragma link C++ class  AliHLTTPCCAPerformance+;
 #pragma link C++ class  AliHLTTPCCAGlobalMergerComponent+;
+#pragma link C++ class  AliHLTTPCCAClusterData+;
+#pragma link C++ class  AliHLTTPCCASliceData+;
+#pragma link C++ class  AliHLTTPCCASliceOutput+;
 #pragma link C++ class  AliTPCtrackerCA+; 
 
 #endif
