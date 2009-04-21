@@ -188,9 +188,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
 void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
-  fIsPileup=kFALSE;
-  fNTrpuv=-2;     
-  fZpuv=-99999.;
+  ResetVertex();
+
+  if(!GetDetTypeRec())AliFatal("DetTypeRec pointer has not been set");
 
   TTree *tR = itsClusterTree;
   fDetTypeRec->SetTreeAddressR(tR);
@@ -379,16 +379,27 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: Z");
+  fNoVertices=1;
   points.Clear();
   if(ncontr>fMinTrackletsForPilup){ 
     Float_t secPeakPos;
     Int_t ncontr2=FindSecondPeak(fZCombc,binmin,binmax,secPeakPos);
     if(ncontr2>=fMinTrackletsForPilup){ 
       fIsPileup=kTRUE;
+      fNoVertices=2;
       fZpuv=secPeakPos;
       fNTrpuv=ncontr2;
+      AliESDVertex secondVert(secPeakPos,0.1,ncontr2);
+      fVertArray = new AliESDVertex[2];
+      fVertArray[0]=(*fCurrentVertex);
+      fVertArray[1]=secondVert;
     }
   }
+  if(fNoVertices==1){
+    fVertArray = new AliESDVertex[1];
+    fVertArray[0]=(*fCurrentVertex);	  
+  }
+  
   ResetHistograms();
   return;
 }

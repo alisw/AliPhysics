@@ -27,6 +27,8 @@ fMinTrackletsForPilup(0),
 fIsPileup(0),
 fNTrpuv(-2),
 fZpuv(-9999999.),
+fNoVertices(0),
+fVertArray(NULL),
 fFirstEvent(0),
 fLastEvent(-1)
 {
@@ -39,9 +41,27 @@ fLastEvent(-1)
 //______________________________________________________________________
 AliITSVertexer::~AliITSVertexer() {
   // Destructor
- if(fLadders) delete [] fLadders;
+  if(fLadders) delete [] fLadders;
+  if (fNoVertices > 0){
+    delete []fVertArray;
+    fVertArray = NULL;
+    fNoVertices = 0;
+  }
 }
 
+//______________________________________________________________________
+void AliITSVertexer::ResetVertex(){
+  // Resets vertex related data members
+  if(fNoVertices > 0){
+    if(fVertArray) delete []fVertArray;
+    fVertArray = NULL;
+    fNoVertices = 0;
+  }
+  fIsPileup=kFALSE;
+  fNTrpuv=-2;
+  fZpuv=-99999.;
+
+}
 //______________________________________________________________________
 void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   // Invokes AliITSMultReconstructor to determine the

@@ -68,10 +68,6 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   ITSloader->LoadRecPoints("read");
 
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,kTRUE);
-  if(optdebug) printf("MagneticField=%f\n",AliTracker::GetBz());
-  
   Int_t totev=runLoader->GetNumberOfEvents();
   if(optdebug)  printf("Number of events= %d\n",totev);
 
@@ -83,6 +79,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   AliITSVertexer3D *vert3d = new AliITSVertexer3D();
   vert3d->Init("default");
   vert3d->SetWideFiducialRegion(40.,1.);
+  vert3d->SetPileupAlgo(1);
   vert3d->PrintStatus();
   vertz->SetDetTypeRec(detTypeRec);
   vert3d->SetDetTypeRec(detTypeRec);
@@ -137,9 +134,6 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
       ntrklets=alimult->GetNumberOfTracklets() ;
       nrecp1=ntrklets+alimult->GetNumberOfSingleClusters();
     }
-    TString tit=vtx3d->GetTitle();
-    Bool_t is3d=kFALSE;
-    if(tit.Contains("3D")) is3d=kTRUE;
        
 
 
@@ -174,8 +168,9 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     Double_t zdiff3d = 0.;
 
     Int_t ntrk3d = 0;
+    Bool_t is3d=kFALSE;
     if(vtx3d){
-
+      if(vtx3d->IsFromVertexer3D()) is3d=kTRUE;
       ntrk3d = vtx3d->GetNContributors();
       if(is3d && ntrk3d>0)good3d++;
       x3d = vtx3d->GetXv();

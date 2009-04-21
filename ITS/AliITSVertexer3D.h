@@ -23,8 +23,11 @@ class AliITSVertexer3D : public AliITSVertexer {
   AliITSVertexer3D();
   virtual ~AliITSVertexer3D();
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
+  void FindVertex3DIterative();
+  void FindVertex3D(TTree *itsClusterTree);
   AliESDVertex GetVertex3D() const {return fVert3D;}
   virtual void PrintStatus() const;
+  static Bool_t DistBetweenVertices(AliESDVertex &a, AliESDVertex &b, Double_t test, Double_t &dist);
   void SetWideFiducialRegion(Float_t dz = 20.0, Float_t dr=2.5){
     SetCoarseMaxRCut(dr);
     SetZCutDiamond(dz);
@@ -38,6 +41,8 @@ class AliITSVertexer3D : public AliITSVertexer {
     SetDiffPhiMax(dphitight);
   }
   void SetCoarseDiffPhiCut(Float_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
+  void SetFineDiffPhiCut(Float_t dphi = 0.05){fFineDiffPhiCut=dphi;}
+  void SetCutOnPairs(Float_t cp = 0.1){fCutOnPairs = cp;}
   void SetCoarseMaxRCut(Float_t rad = 2.5){fCoarseMaxRCut=rad;}
   void SetMaxRCut(Float_t rad = 0.5){fMaxRCut=rad;}
   void SetZCutDiamond(Float_t zcut = 20.0){fZCutDiamond=zcut;}
@@ -66,7 +71,9 @@ protected:
 
   TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
-  Float_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching 
+  Float_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching
+  Float_t fFineDiffPhiCut; // tight value of DeltaPhi for RP matching (2nd method) 
+  Float_t fCutOnPairs; //cut on distance between pairs of tracklets 
   Float_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
   Float_t fMaxRCut; // cut on tracklet DCA to beam axis
   Float_t fZCutDiamond;   // cut on +-Z of the diamond
@@ -82,7 +89,7 @@ protected:
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
 
-  ClassDef(AliITSVertexer3D,7);
+  ClassDef(AliITSVertexer3D,8);
 
 };
 

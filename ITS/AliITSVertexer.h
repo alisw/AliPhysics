@@ -23,6 +23,7 @@ class AliITSVertexer : public AliVertexer {
     virtual AliESDVertex *FindVertexForCurrentEvent(TTree *itsClusterTree)=0;
     virtual void PrintStatus() const = 0;
 
+    virtual void ResetVertex();
     void FindMultiplicity(TTree *itsClusterTree);
     void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
     void SetLastEvent(Int_t ev){fLastEvent = ev;}
@@ -35,6 +36,8 @@ class AliITSVertexer : public AliVertexer {
       if(imod>=0 && imod<kNSPDMod) return fUseModule[imod];
       else return 0;
     }
+
+    virtual AliESDVertex* GetAllVertices(Int_t &novertices) const {novertices = fNoVertices; return fVertArray; }
 
     AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
     virtual void SetDetTypeRec(AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
@@ -67,6 +70,8 @@ class AliITSVertexer : public AliVertexer {
     Bool_t fIsPileup;             // flag for pileup
     Int_t fNTrpuv;             // tracklets in pile-up vertex
     Float_t fZpuv;             // Z of second pile-up vertex
+    Int_t fNoVertices;         //! number of vertices found 
+    AliESDVertex* fVertArray;    //! vertices (main+pileupped)
 
  private:
     // copy constructor (NO copy allowed: the constructor is protected
@@ -78,7 +83,7 @@ class AliITSVertexer : public AliVertexer {
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices
 
-  ClassDef(AliITSVertexer,9);
+  ClassDef(AliITSVertexer,10);
 };
 
 #endif
