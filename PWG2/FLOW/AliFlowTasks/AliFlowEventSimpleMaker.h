@@ -43,13 +43,27 @@ class AliFlowEventSimpleMaker {
   //AliAODEvent
   AliFlowEventSimple* FillTracks(AliAODEvent* anInput); //use own cuts
   AliFlowEventSimple* FillTracks(AliAODEvent* anInput, AliCFManager* rpCFManager, AliCFManager* poiCFManager);  //use CF(2x)
-    
+  
+  void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
+  Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
+  
+  void SetEllipticFlowValue(Double_t elfv) {this->fEllipticFlowValue = elfv;}
+  Double_t GetEllipticFlowValue() const {return this->fEllipticFlowValue;} 
+  
+  void SetMultiplicityOfEvent(Int_t multevnt) {this->fMultiplicityOfEvent = multevnt;}
+  Int_t GetMultiplicityOfEvent() const {return this->fMultiplicityOfEvent;} 
+  
+  
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
   Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
   Int_t     fCount;   // counter for the number of events processed
-       
+
+  Int_t     fNoOfLoops; // number of times to use the same particle (nonflow) 
+  Double_t  fEllipticFlowValue; // Add Flow. Must be in range [0,1].
+  Int_t     fMultiplicityOfEvent; // Set maximal multiplicity.
+      
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };
  

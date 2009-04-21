@@ -927,9 +927,9 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 		if (fHist2POI[theta]) {
 		  fHist2POI[theta]->Fill(dEta,dPt,cNumerPOI); }
 	      }
-	      else {
-		cout << "fHist2 pointer mising" <<endl;
-	      }
+	      //	      else {
+	      //		cout << "fHist2 pointer mising" <<endl;
+	      //	      }
 	    } //if track
 	    else {cerr << "no particle!!!"<<endl;}
 	  } //loop over tracks
