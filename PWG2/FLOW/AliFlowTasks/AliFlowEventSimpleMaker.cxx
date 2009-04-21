@@ -45,7 +45,10 @@ ClassImp(AliFlowEventSimpleMaker)
 //----------------------------------------------------------------------- 
 AliFlowEventSimpleMaker::AliFlowEventSimpleMaker() :
   fMCReactionPlaneAngle(0.),
-  fCount(0)
+  fCount(0),
+  fNoOfLoops(1),
+  fEllipticFlowValue(0.),
+  fMultiplicityOfEvent(1000000000)
 {
   //constructor
 }
@@ -62,7 +65,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   //fills the event from a TTree of kinematic.root files
   
   // number of times to use the same particle (trick to introduce nonflow)
-  Int_t iLoops = 1;
+  //  Int_t iLoops = 1;
   
   //flags for particles passing int. and diff. flow cuts
   Bool_t bPassedRPFlowCuts  = kFALSE;
@@ -92,10 +95,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   //  AliFlowEventSimple* pEvent = new AliFlowEventSimple(iNumberOfInputTracks);
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
   
-  Int_t iN = iNumberOfInputTracks; // additional variable to artificially fix the number of tracks
-  //  Int_t iN = 576; //multiplicity for chi=1.5
-  //  Int_t iN = 256; //multiplicity for chi=1
-  //  Int_t iN = 164; //multiplicity for chi=0.8
+  //  Int_t fMultiplicityOfEvent = 576; //multiplicity for chi=1.5
+  //  Int_t fMultiplicityOfEvent = 256; //multiplicity for chi=1
+  //  Int_t fMultiplicityOfEvent = 164; //multiplicity for chi=0.8
   
   Int_t iGoodTracks = 0;
   Int_t itrkN = 0;
@@ -122,19 +124,19 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
       }
     }
     if (bPassedRPFlowCuts || bPassedPOIFlowCuts) {
-      for(Int_t d=0;d<iLoops;d++) {
+      for(Int_t d=0;d<fNoOfLoops;d++) {
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt());
 	pTrack->SetEta(pParticle->Eta());
-	pTrack->SetPhi(pParticle->Phi());
+	pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle)));
 	
 	//marking the particles used for int. flow:
-	if(bPassedRPFlowCuts && iSelParticlesRP < iN*iLoops) {  
+	if(bPassedRPFlowCuts && iSelParticlesRP < fMultiplicityOfEvent) {  
 	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
 	}
 	//marking the particles used for diff. flow:
-	if(bPassedPOIFlowCuts) {
+	if(bPassedPOIFlowCuts && iGoodTracks%fNoOfLoops==0) {
 	  pTrack->SetForPOISelection(kTRUE);
 	  iSelParticlesPOI++;
 	}
