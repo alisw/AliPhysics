@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDtrackingEfficiency.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDefficiency.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -38,14 +38,14 @@
 #include "AliAnalysisManager.h"
 
 #include "Cal/AliTRDCalPID.h"
-#include "AliTRDtrackingEfficiency.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "AliTRDefficiency.h"
+#include "info/AliTRDtrackInfo.h"
 
-ClassImp(AliTRDtrackingEfficiency)
+ClassImp(AliTRDefficiency)
 
 //____________________________________________________________________
-AliTRDtrackingEfficiency::AliTRDtrackingEfficiency()
-  :AliTRDrecoTask("TrackingEff", "Barrel Tracking Efficiency")
+AliTRDefficiency::AliTRDefficiency()
+  :AliTRDrecoTask("Efficiency", "Barrel Tracking Efficiency")
   ,fMissed(0x0)
 {
   //
@@ -54,7 +54,7 @@ AliTRDtrackingEfficiency::AliTRDtrackingEfficiency()
 }
 
 //____________________________________________________________________
-AliTRDtrackingEfficiency::~AliTRDtrackingEfficiency()
+AliTRDefficiency::~AliTRDefficiency()
 {
   if(fMissed){
     fMissed->Delete();
@@ -63,7 +63,7 @@ AliTRDtrackingEfficiency::~AliTRDtrackingEfficiency()
 }
 
 //____________________________________________________________________
-void  AliTRDtrackingEfficiency::CreateOutputObjects()
+void  AliTRDefficiency::CreateOutputObjects()
 {
   //
   // Create output objects
@@ -86,7 +86,7 @@ void  AliTRDtrackingEfficiency::CreateOutputObjects()
 } 
 
 //____________________________________________________________________
-void AliTRDtrackingEfficiency::Exec(Option_t *)
+void AliTRDefficiency::Exec(Option_t *)
 {
   //
   // Do it
@@ -253,7 +253,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
 }
 
 //____________________________________________________________________
-void AliTRDtrackingEfficiency::Terminate(Option_t *)
+void AliTRDefficiency::Terminate(Option_t *)
 {
   //
   // Terminate
@@ -276,7 +276,7 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
 
 
 //____________________________________________________________________
-Bool_t AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
+Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
   TProfile *h = 0x0;
@@ -308,7 +308,7 @@ Bool_t AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
 
 
 //____________________________________________________________________
-Bool_t AliTRDtrackingEfficiency::PostProcess()
+Bool_t AliTRDefficiency::PostProcess()
 {
   fNRefFigures = HasMCdata() ? 2 : 1; 
   return kTRUE;

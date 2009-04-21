@@ -7,31 +7,33 @@
 #define CLRBIT(n,i) ((n) &= ~BIT(i))
 
 #define NQATASKS 6
-#define NCALIBTASKS 5
+#define NCALIBTASKS 6
 const Int_t NTRDTASKS = NQATASKS+NCALIBTASKS;
 
 enum AliTRDrecoTasks{
-   kInfoGen = 0
-  ,kCheckDetector = 1
-  ,kTrackingEff = 2
-  ,kTrackingEffMC = 3
-  ,kResolution = 4
-  ,kPIDChecker = 5
-  ,kCalibration = 6
-  ,kAlignment = 7
-  ,kPIDRefMaker = 8
-  ,kClErrParam = 9
-  ,kMultiplicity = 10
+   kCheckESD      = 0
+  ,kInfoGen       = 1
+  ,kCheckDetector = 2
+  ,kEfficiency    = 3
+  ,kResolution    = 4
+  ,kPID           = 5
+  ,kCalibration   = 6
+  ,kEfficiencyMC  = 7
+  ,kAlignment     = 8
+  ,kPIDRefMaker   = 9
+  ,kClErrParam    =10
+  ,kMultiplicity  =11
 };
 
 const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
-  "AliTRDtrackInfoGen"
+  "AliTRDcheckESD"
+  ,"AliTRDinfoGen"
   ,"AliTRDcheckDetector"
-  ,"AliTRDtrackingEfficiency"
-  ,"AliTRDtrackingEfficiencyCombined"
+  ,"AliTRDefficiency"
   ,"AliTRDresolution"
   ,"AliTRDpidChecker"
   ,"AliTRDcalibration"
+  ,"AliTRDefficiencyMC"
   ,"AliTRDalignmentTask"
   ,"AliTRDpidRefMaker"
   ,"AliTRDclusterResolution"
@@ -39,7 +41,8 @@ const Char_t* fgkTRDtaskClassName[NQATASKS+NCALIBTASKS] = {
 };
 
 const Char_t *fgkTRDtaskOpt[NQATASKS+NCALIBTASKS+1] = {
-  "GEN"
+  ""
+  ,"GEN"
   ,"DET"
   ,"EFF"
   ,"EFFC"

@@ -1,9 +1,9 @@
-#ifndef ALITRDTRACKINFOGEN_H
-#define ALITRDTRACKINFOGEN_H
+#ifndef ALITRDINFOGEN_H
+#define ALITRDINFOGEN_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDtrackInfoGen.h 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDinfoGen.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -22,11 +22,11 @@ class AliTRDtrackInfo;
 class AliTRDeventInfo;
 class TObjArray;
 class TTreeSRedirector;
-class AliTRDtrackInfoGen : public AliTRDrecoTask{
+class AliTRDinfoGen : public AliTRDrecoTask{
 public:
 
-  AliTRDtrackInfoGen();
-  virtual ~AliTRDtrackInfoGen();
+  AliTRDinfoGen();
+  virtual ~AliTRDinfoGen();
   
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
@@ -37,8 +37,8 @@ public:
   static const Float_t xTOF;
 
 private:
-  AliTRDtrackInfoGen(const AliTRDtrackInfoGen&);
-  AliTRDtrackInfoGen& operator=(const AliTRDtrackInfoGen&);
+  AliTRDinfoGen(const AliTRDinfoGen&);
+  AliTRDinfoGen& operator=(const AliTRDinfoGen&);
 
   AliESDEvent      *fESD;                  // ESD event
   AliMCEvent       *fMC;                   // MC event
@@ -46,6 +46,6 @@ private:
   AliTRDtrackInfo  *fTrackInfo;            // Track info
   AliTRDeventInfo  *fEventInfo;		   // Event info
 
-  ClassDef(AliTRDtrackInfoGen, 1)          // entry to TRD analysis
+  ClassDef(AliTRDinfoGen, 1)          // entry to TRD analysis
 };
 #endif

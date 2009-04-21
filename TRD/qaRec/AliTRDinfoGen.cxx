@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id: AliTRDtrackInfoGen.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDinfoGen.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -57,17 +57,17 @@
 #include <cstring>
 #include <iostream>
 
-#include "AliTRDtrackInfoGen.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
-#include "AliTRDtrackInfo/AliTRDeventInfo.h"
+#include "AliTRDinfoGen.h"
+#include "info/AliTRDtrackInfo.h"
+#include "info/AliTRDeventInfo.h"
 
-ClassImp(AliTRDtrackInfoGen)
+ClassImp(AliTRDinfoGen)
 
-const Float_t AliTRDtrackInfoGen::xTPC = 290.;
-const Float_t AliTRDtrackInfoGen::xTOF = 365.;
+const Float_t AliTRDinfoGen::xTPC = 290.;
+const Float_t AliTRDinfoGen::xTOF = 365.;
 
 //____________________________________________________________________
-AliTRDtrackInfoGen::AliTRDtrackInfoGen():
+AliTRDinfoGen::AliTRDinfoGen():
   AliTRDrecoTask("InfoGen", "Track List Generator")
   ,fESD(0x0)
   ,fMC(0x0)
@@ -86,7 +86,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
 }
 
 //____________________________________________________________________
-AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
+AliTRDinfoGen::~AliTRDinfoGen()
 {
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = 0x0;
   if(fEventInfo) delete fEventInfo; fEventInfo = 0x0;
@@ -97,7 +97,7 @@ AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 }
 
 //____________________________________________________________________
-void AliTRDtrackInfoGen::ConnectInputData(Option_t *)
+void AliTRDinfoGen::ConnectInputData(Option_t *)
 {
   //
   // Link the Input Data
@@ -133,7 +133,7 @@ void AliTRDtrackInfoGen::ConnectInputData(Option_t *)
 }
 
 //____________________________________________________________________
-void AliTRDtrackInfoGen::CreateOutputObjects()
+void AliTRDinfoGen::CreateOutputObjects()
 {	
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
@@ -150,7 +150,7 @@ void AliTRDtrackInfoGen::CreateOutputObjects()
 }
 
 //____________________________________________________________________
-void AliTRDtrackInfoGen::Exec(Option_t *){
+void AliTRDinfoGen::Exec(Option_t *){
   //
   // Run the Analysis
   //
@@ -350,7 +350,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
 
 
 //____________________________________________________________________
-void AliTRDtrackInfoGen::Terminate(Option_t *)
+void AliTRDinfoGen::Terminate(Option_t *)
 {
   //
   // Stays empty because we are only interested in the tree

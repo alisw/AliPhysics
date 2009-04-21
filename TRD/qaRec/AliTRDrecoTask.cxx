@@ -37,6 +37,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
 //_______________________________________________________
 AliTRDrecoTask::~AliTRDrecoTask() 
 {
+  printf(" %s (%s)\n", GetName(), GetTitle());
   if(fDebugStream){ 
     delete fDebugStream;
     fDebugStream = 0x0;

@@ -33,8 +33,8 @@
 #include "AliTracker.h"
 #include "TTreeStream.h"
 
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
-#include "AliTRDtrackInfo/AliTRDeventInfo.h"
+#include "info/AliTRDtrackInfo.h"
+#include "info/AliTRDeventInfo.h"
 #include "AliTRDcheckDetector.h"
 
 #include <cstdio>

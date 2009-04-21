@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id: AliTRDtrackingEfficiencyCombined.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDefficiencyMC.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -43,15 +43,15 @@
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
 #include "Cal/AliTRDCalPID.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
-#include "AliTRDtrackInfoGen.h"
-#include "AliTRDtrackingEfficiencyCombined.h"
+#include "info/AliTRDtrackInfo.h"
+#include "AliTRDinfoGen.h"
+#include "AliTRDefficiencyMC.h"
 
-ClassImp(AliTRDtrackingEfficiencyCombined)
+ClassImp(AliTRDefficiencyMC)
 
 //_____________________________________________________________________________
-AliTRDtrackingEfficiencyCombined::AliTRDtrackingEfficiencyCombined()
-  :AliTRDrecoTask("TrackingEffMC", "Combined Tracking Efficiency")
+AliTRDefficiencyMC::AliTRDefficiencyMC()
+  :AliTRDrecoTask("EfficiencyMC", "Combined Tracking Efficiency")
 {
   //
   // Default constructor
@@ -60,7 +60,7 @@ AliTRDtrackingEfficiencyCombined::AliTRDtrackingEfficiencyCombined()
 
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::CreateOutputObjects(){
+void AliTRDefficiencyMC::CreateOutputObjects(){
   //
   // Create output objects
   //
@@ -71,7 +71,7 @@ void AliTRDtrackingEfficiencyCombined::CreateOutputObjects(){
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
+void AliTRDefficiencyMC::Exec(Option_t *){
   //
   // Execute the task:
   //
@@ -158,7 +158,7 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::Terminate(Option_t *)
+void AliTRDefficiencyMC::Terminate(Option_t *)
 {
   //
   // Termination
@@ -178,7 +178,7 @@ void AliTRDtrackingEfficiencyCombined::Terminate(Option_t *)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackingEfficiencyCombined::PostProcess()
+Bool_t AliTRDefficiencyMC::PostProcess()
 {
   //
   // Post Process 
@@ -229,7 +229,7 @@ Bool_t AliTRDtrackingEfficiencyCombined::PostProcess()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackingEfficiencyCombined::GetRefFigure(Int_t ifig){
+Bool_t AliTRDefficiencyMC::GetRefFigure(Int_t ifig){
   //
   // Plot the histograms
   //
@@ -260,7 +260,7 @@ Bool_t AliTRDtrackingEfficiencyCombined::GetRefFigure(Int_t ifig){
 }
 
 //_____________________________________________________________________________
-TObjArray *AliTRDtrackingEfficiencyCombined::Histos(){
+TObjArray *AliTRDefficiencyMC::Histos(){
   //
   // Create the histograms
   //
@@ -285,7 +285,7 @@ TObjArray *AliTRDtrackingEfficiencyCombined::Histos(){
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackingEfficiencyCombined::IsFindable(AliTRDtrackInfo *trkInf){
+Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo *trkInf){
   //
   // Apply Cuts on the Monte Carlo track references
   // return whether track is findable or not
@@ -308,7 +308,7 @@ Bool_t AliTRDtrackingEfficiencyCombined::IsFindable(AliTRDtrackInfo *trkInf){
     x = trackRef->LocalX(); 
         
     // Be Sure that we are inside TRD
-    if(x < AliTRDtrackInfoGen::xTPC || x > AliTRDtrackInfoGen::xTOF) continue;	
+    if(x < AliTRDinfoGen::xTPC || x > AliTRDinfoGen::xTOF) continue;	
     sector[itr] = Int_t(trackRef->Alpha()/kAlpha);
     if(x < xmin){
       xmin = trackRef->LocalX();
@@ -363,7 +363,7 @@ Bool_t AliTRDtrackingEfficiencyCombined::IsFindable(AliTRDtrackInfo *trkInf){
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::FillHistograms(Int_t nTracks, Int_t *indices, FillingMode_t mode){
+void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, FillingMode_t mode){
   //
   // Fill Histograms in three different modes:
   // 1st tracks which are found and accepted
@@ -425,7 +425,7 @@ void AliTRDtrackingEfficiencyCombined::FillHistograms(Int_t nTracks, Int_t *indi
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
+void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
   // fill debug stream
   // we want to know:
   //  1. The event number
@@ -502,7 +502,7 @@ void AliTRDtrackingEfficiencyCombined::FillStreamTrackWOMC(AliTRDtrackInfo *trkI
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackingEfficiencyCombined::IsRegistered(AliTRDtrackInfo *trkInf, Int_t *indices, Int_t nTracks){
+Bool_t AliTRDefficiencyMC::IsRegistered(AliTRDtrackInfo *trkInf, Int_t *indices, Int_t nTracks){
   //
   // Checks if track is registered in a given mode
   //

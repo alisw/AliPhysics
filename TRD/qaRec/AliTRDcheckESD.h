@@ -17,6 +17,7 @@
 
 class AliESDEvent;
 class AliMCEvent;
+class TH1;
 class TObjArray;
 class TGraphErrors;
 class AliTRDcheckESD : public AliAnalysisTask {

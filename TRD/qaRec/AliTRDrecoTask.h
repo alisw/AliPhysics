@@ -9,7 +9,7 @@
 #endif
 
 #ifndef ALITRDTRACKINFO_H
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "info/AliTRDtrackInfo.h"
 #endif
 
 class TH1;

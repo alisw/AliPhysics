@@ -30,7 +30,7 @@
 #include "AliTRDpidUtil.h"
 
 #include "AliTRDpidChecker.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "info/AliTRDtrackInfo.h"
 
 // calculate pion efficiency at 90% electron efficiency for 11 momentum bins
 // this task should be used with simulated data only

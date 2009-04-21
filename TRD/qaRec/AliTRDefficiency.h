@@ -1,9 +1,9 @@
-#ifndef ALITRDTRACKINGEFFICIENCY_H
-#define ALITRDTRACKINGEFFICIENCY_H
+#ifndef ALITRDEFFICIENCY_H
+#define ALITRDEFFICIENCY_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDtrackingEfficiency.h 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDefficiency.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -19,11 +19,11 @@ class TObjArray;
 class TList;
 class TClonesArray;
 class TTreeSRedirector;
-class AliTRDtrackingEfficiency : public AliTRDrecoTask
+class AliTRDefficiency : public AliTRDrecoTask
 {
 public:
-  AliTRDtrackingEfficiency();
-  virtual ~AliTRDtrackingEfficiency();
+  AliTRDefficiency();
+  virtual ~AliTRDefficiency();
   void    CreateOutputObjects();
   void    Exec(Option_t *);
   Bool_t  GetRefFigure(Int_t ifig);
@@ -31,13 +31,13 @@ public:
   void    Terminate(Option_t *);
 
 private:
-  AliTRDtrackingEfficiency(const AliTRDtrackingEfficiency&);
-  AliTRDtrackingEfficiency& operator=(const AliTRDtrackingEfficiency&);
+  AliTRDefficiency(const AliTRDefficiency&);
+  AliTRDefficiency& operator=(const AliTRDefficiency&);
 
 private:
   TClonesArray     *fMissed;            // Missed ?
 
-  ClassDef(AliTRDtrackingEfficiency, 1) // TRD tracking efficiency
+  ClassDef(AliTRDefficiency, 1) // TRD tracking efficiency
 };
 
 #endif

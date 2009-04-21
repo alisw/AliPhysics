@@ -1,9 +1,9 @@
-#ifndef ALITRDTRACKINGEFFICIENCYCOMBINED_H
-#define ALITRDTRACKINGEFFICIENCYCOMBINED_H
+#ifndef ALITRDEFFICIENCYMC_H
+#define ALITRDEFFICIENCYMC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDtrackingEfficiencyCombined.h 27496 2008-07-22 08:35:45Z cblume $ */
+/* $Id: AliTRDefficiencyMC.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -15,10 +15,10 @@
 #include "AliTRDrecoTask.h"
 #endif
 
-class AliTRDtrackingEfficiencyCombined : public AliTRDrecoTask{
+class AliTRDefficiencyMC : public AliTRDrecoTask{
 public:
-  AliTRDtrackingEfficiencyCombined();
-  virtual ~AliTRDtrackingEfficiencyCombined(){;}
+  AliTRDefficiencyMC();
+  virtual ~AliTRDefficiencyMC(){;}
   
   void        CreateOutputObjects();
   void        Exec(Option_t *);
@@ -42,8 +42,8 @@ private:
     kRejected = 1,
     kContamination = 2
   } FillingMode_t;
-  AliTRDtrackingEfficiencyCombined(const AliTRDtrackingEfficiencyCombined &);
-  AliTRDtrackingEfficiencyCombined& operator=(const AliTRDtrackingEfficiencyCombined &);
+  AliTRDefficiencyMC(const AliTRDefficiencyMC &);
+  AliTRDefficiencyMC& operator=(const AliTRDefficiencyMC &);
   
   void    FillHistograms(Int_t ntracks, Int_t *indices, FillingMode_t mode);
   void    FillStreamTrackWOMC(AliTRDtrackInfo *trkInf);
@@ -51,7 +51,7 @@ private:
   Bool_t  IsFindable(AliTRDtrackInfo *trkInf);
   Bool_t  IsRegistered(AliTRDtrackInfo *trkInf, Int_t *indices, Int_t nTracks);
     
-  ClassDef(AliTRDtrackingEfficiencyCombined, 1); // Combined tracking efficiency
+  ClassDef(AliTRDefficiencyMC, 1); // Combined tracking efficiency
 };
     
 #endif

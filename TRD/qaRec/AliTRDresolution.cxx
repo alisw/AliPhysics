@@ -83,8 +83,8 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 
-#include "AliTRDtrackInfo/AliTRDclusterInfo.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "info/AliTRDclusterInfo.h"
+#include "info/AliTRDtrackInfo.h"
 #include "AliTRDresolution.h"
 
 ClassImp(AliTRDresolution)
@@ -538,7 +538,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
       ((TH2I*)fContainer->At(kMCtrackletY))->Fill(dydx0, dy);
       if(tt.GetS2Y()>0.) ((TH2I*)fContainer->At(kMCtrackletYPull))->Fill(dydx0, dy/TMath::Sqrt(tt.GetS2Y()));
-      ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx0, dphi*TMath::RadToDeg());
+      ((TH2I*)fContainer->At(kMCtrackletPhi))->Fill(dydx0, dphi);
     } else {
       // add tracklet residuals for z
       dz = zt-z;
@@ -620,7 +620,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 {
   Float_t y[2] = {0., 0.};
-  TBox *b = 0x0;
+  TBox *b = new TBox();
+  b->SetFillStyle(3002);b->SetFillColor(kBlue);b->SetLineColor(0); ;
   TAxis *ax = 0x0;
   TGraphErrors *g = 0x0;
   switch(ifig){
@@ -635,9 +636,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kGreen);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kTracklet:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -649,9 +648,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kGreen);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kTrackletPhi:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -663,9 +660,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ax->SetTitle("tg(#phi)");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kGreen);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kMCcluster:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -679,9 +674,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kBlue);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kMCtrackletY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -695,9 +688,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kBlue);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kMCtrackletZ:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -715,12 +706,13 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ax = g->GetHistogram()->GetYaxis();
     y[0] = -10.; y[1] = 50.;
     ax->SetRangeUser(y[0], y[1]);
-    ax->SetTitle("#Phi_{tracklet} #sigma/#mu [deg]");
+    ax->SetTitle("#Phi_{tracklet} #sigma/#mu [mrad]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kMCtrackY:
     if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
@@ -734,9 +726,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     g->Draw("apl");
     if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
-    b = new TBox(-.15, y[0], .15, y[1]);
-    b->SetFillStyle(3002);b->SetFillColor(kBlue);
-    b->SetLineColor(0); b->Draw();
+    b->DrawBox(-.15, y[0], .15, y[1]);
     return kTRUE;
   case kMCtrackZIn:
   case kMCtrackZOut:
@@ -846,7 +836,7 @@ Bool_t AliTRDresolution::PostProcess()
   // tracklet resolution
   Process(kMCtrackletY, &f, 1.e4); // y
   Process(kMCtrackletZ, &f, 1.e4); // z
-  Process(kMCtrackletPhi, &f); // phi
+  Process(kMCtrackletPhi, &f, 1.e3); // phi
 
   // tracklet pulls
   Process(kMCtrackletYPull, &f); // y
@@ -1091,7 +1081,7 @@ TObjArray* AliTRDresolution::Histos()
 
   // Kalman track Pt resolution
   if(!(h = (TH2I*)gROOT->FindObject("hMCtrkPt"))){
-    h = new TH2I("hMCtrkPt", "Kalman Track Resolution (Pt)", 40, 0., 2., 150, -1.5, 4.);
+    h = new TH2I("hMCtrkPt", "Kalman Track Resolution (Pt)", 40, 0., 2., 150, -.5, 1.);
     h->GetXaxis()->SetTitle("1/p_{t}");
     h->GetYaxis()->SetTitle("#Delta p_{t} [GeV/c]");
     h->GetZaxis()->SetTitle("entries");

@@ -62,11 +62,11 @@
 
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
-#include "TRD/qaRec/AliTRDtrackInfo/AliTRDeventInfo.h"
+#include "TRD/qaRec/info/AliTRDeventInfo.h"
 #include "TRD/qaRec/AliTRDcheckESD.h"
-#include "TRD/qaRec/AliTRDtrackInfoGen.h"
-#include "TRD/qaRec/AliTRDtrackingEfficiency.h"
-#include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
+#include "TRD/qaRec/AliTRDinfoGen.h"
+#include "TRD/qaRec/AliTRDefficiency.h"
+#include "TRD/qaRec/AliTRDefficiencyMC.h"
 #include "TRD/qaRec/AliTRDresolution.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
 #include "TRD/qaRec/AliTRDalignmentTask.h"
@@ -79,6 +79,10 @@
 
 #include "PWG1/AliPerformanceTask.h"
 #include "PWG1/AliPerformanceEff.h"
+#include "PWG1/AliPerformanceDEdx.h"
+#include "PWG1/AliPerformanceTPC.h"
+#include "PWG1/AliPerformanceDCA.h"
+#include "PWG1/AliPerformanceRes.h"
 #include "PWG1/AliMCInfoCuts.h"
 #include "PWG1/AliRecInfoCuts.h"
 #endif
@@ -104,15 +108,19 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
     mem = new TMemStat("new, gnubuildin");
     mem->AddStamp("Start");
   }
-
   TStopwatch timer;
   timer.Start();
 
+
+
+  // VERY GENERAL SETTINGS
   AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
-  if(gSystem->Load("libTRDqaRec.so")<0) return;
+  if(gSystem->Load("libANALYSISalice.so")<0) return;
+
+
   
-  // DB INITIALIZATION
+  // INITIALIZATION OF RUNNING ENVIRONMENT
   //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
   // initialize OCDB manager
   AliCDBManager *cdbManager = AliCDBManager::Instance();
@@ -130,9 +138,6 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
   AliGeomManager::LoadGeometry();
 
-  // Parse TRD options
-  Int_t fSteerTRD = ParseTRD(trd);
-  Int_t fSteerTPC = ParseTPC(tpc);
 
 
 
@@ -154,7 +159,8 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   printf("\n ----> CHAIN HAS %d ENTRIES <----\n\n", (Int_t)chain->GetEntries());
   
 
-  // Make the analysis manager
+
+  // BUILD ANALYSIS MANAGER
   AliAnalysisManager *mgr = new AliAnalysisManager("Post Reconstruction Calibration/QA");
   AliVEventHandler *esdH = 0x0, *mcH = 0x0;
   mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
@@ -162,189 +168,52 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   //mgr->SetDebugLevel(10);
 
 
+
 ///////////////////////////////////////////////////////////
 ///////////////         TRD                     ///////////
 ///////////////////////////////////////////////////////////
-  // define task list pointers for TRD
-  AliTRDrecoTask *taskTRD[NTRDTASKS], *task = 0x0;
-  memset(taskTRD, 0, NTRDTASKS*sizeof(AliTRDrecoTask*));
+  // TRD specific library
+  if(gSystem->Load("libTRDqaRec.so")<0) return;
+  // Parse TRD options
+  Int_t fSteerTRD = ParseTRD(trd);
+  // TRD data containers
+  AliAnalysisDataContainer *ci[] = {0x0, 0x0};
+  AliAnalysisDataContainer *co[] = {0x0, 0x0, 0x0, 0x0};
 
-  //____________________________________________
-  // TRD check ESD
-  AliTRDcheckESD *checkESD = new AliTRDcheckESD();
-  checkESD->SetMC(fHasMCdata);
-  mgr->AddTask(checkESD);
-  mgr->ConnectInput(checkESD, 0, mgr->GetCommonInputContainer());  mgr->ConnectOutput(checkESD, 0, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", checkESD->GetName())));
+  // plug (set of) TRD wagons in the train
+  for(Int_t it=0; it<NQATASKS; it++){
+    if(!(TSTBIT(fSteerTRD, it))) continue;
+    if(gROOT->LoadMacro(Form("$ALICE_ROOT/TRD/qaRec/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
+      Error("run.C", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
+      return;
+    } 
 
-  //____________________________________________
-  // TRD track summary generator
-  AliAnalysisDataContainer *coutput1 = 0x0, *coutput1a = 0x0;
-	if(TSTBIT(fSteerTRD, kInfoGen)){
-    mgr->AddTask(task = new AliTRDtrackInfoGen());
-    taskTRD[(Int_t)kInfoGen] = task;
-    task->SetDebugLevel(0);
-    task->SetMCdata(fHasMCdata);
-    mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
-    coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(task, 0, coutput1);
-    mgr->ConnectOutput(task, 1, coutput1a);
-  }
-
-  //____________________________________________
-  // TRD detector checker
-	if(TSTBIT(fSteerTRD, kCheckDetector)){
-    mgr->AddTask(task = new AliTRDcheckDetector());
-    taskTRD[(Int_t)kCheckDetector] = task;
-    task->SetDebugLevel(0);
-    task->SetMCdata(fHasMCdata);
-    
-    // Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectInput( task, 1, coutput1a);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-  }
-
-  //____________________________________________
-  // TRD barrel tracking efficiency
-  if(fHasMCdata && TSTBIT(fSteerTRD, kTrackingEff)){
-    mgr->AddTask(task = new AliTRDtrackingEfficiency());
-    taskTRD[(Int_t)kTrackingEff] = task;
-    task->SetDebugLevel(0);
-
-    //Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-    
-    // TRD single track selection
-    if(TSTBIT(fSteerTRD, kMultiplicity)){
-      mgr->AddTask(task = new AliTRDmultiplicity());
-      taskTRD[(Int_t)kMultiplicity] = task;
-      task->SetDebugLevel(0);
-      // Create containers for input/output
-      mgr->ConnectInput( task, 0, coutput1);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+    switch(it){
+    case kCheckESD:
+      AddTRDcheckESD(mgr); break;
+    case kInfoGen:
+      AddTRDinfoGen(mgr, 0x0, ci); break;
+    case kCheckDetector:
+      AddTRDcheckDetector(mgr, ci, co, fSteerTRD); break;
+    case kEfficiency:
+      AddTRDefficiency(mgr, ci, co, fSteerTRD); break;
+    case kResolution:
+      AddTRDresolution(mgr, ci, co, fSteerTRD); break;
+    case kPID:
+      AddTRDpidChecker(mgr, ci, co, fSteerTRD); break;
+    default:
+      Warning("run.C", Form("No performance task registered at slot %d.", it)); 
     }
   }
 
-  //____________________________________________
-  // TRD combined tracking efficiency
-  if(fHasMCdata && TSTBIT(fSteerTRD, kTrackingEffMC)){
-    mgr->AddTask(task = new AliTRDtrackingEfficiencyCombined());
-    taskTRD[(Int_t)kTrackingEffMC] = task;
-    task->SetDebugLevel(0);
 
-    // Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-  }
-
-  //____________________________________________
-  // TRD tracking resolution
-  if(TSTBIT(fSteerTRD, kResolution)){
-    mgr->AddTask(task = new AliTRDresolution());
-    taskTRD[(Int_t)kResolution] = task;
-    task->SetMCdata(fHasMCdata);
-    task->SetPostProcess(kFALSE);
-    task->SetDebugLevel(0);
-    
-    // Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-
-    // Create output containers for calibration tasks
-    const Int_t nc = 4;
-    const Char_t *cn[nc] = {"Cl", "Trklt", "MC_Cl", "MC_Trklt"}; 
-    AliAnalysisDataContainer *co[nc]; 
-    for(Int_t ic = 0; ic<nc; ic++){
-      co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-      mgr->ConnectOutput(task, 1+ic, co[ic]);
-    }
-    
-    // Cluster Error Parameterization
-    if(TSTBIT(fSteerTRD, kClErrParam)){
-      mgr->AddTask(task = new AliTRDclusterResolution());
-      taskTRD[(Int_t)kClErrParam] = task;
-      ((AliTRDclusterResolution*)task)->SetExB();
-      mgr->ConnectInput(task, 0, co[0]);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-  
-      mgr->AddTask(task = new AliTRDclusterResolution("ClErrParamMC"));
-      taskTRD[(Int_t)kClErrParam+1] = task;
-      ((AliTRDclusterResolution*)task)->SetExB();
-      mgr->ConnectInput(task, 0, co[2]);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-    }
-
-    // TRD alignment
-    if(TSTBIT(fSteerTRD, kAlignment)){
-      mgr->AddTask(task = new AliTRDalignmentTask());
-      taskTRD[(Int_t)kAlignment] = task;
-      task->SetDebugLevel(0);
-  
-      // Create containers for input/output
-      mgr->ConnectInput(task, 0, coutput1);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("h%s", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
-  
-      mgr->ConnectOutput(task, 1, mgr->CreateContainer(task->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-    }
-  }
-
-  //____________________________________________
-  // TRD calibration
-  if(TSTBIT(fSteerTRD, kCalibration)){
-    mgr->AddTask(task = new AliTRDcalibration());
-    taskTRD[(Int_t)kCalibration] = task;
-    ((AliTRDcalibration*)task)->SetLow(0);
-    ((AliTRDcalibration*)task)->SetHigh(30);
-    ((AliTRDcalibration*)task)->SetFillZero(kFALSE);
-    task->SetDebugLevel(0);
-
-    // Create containers for input/output
-    mgr->ConnectInput(task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-  }
-  
-  
-  // TRD PID
-  if(TSTBIT(fSteerTRD, kPIDChecker)){
-    mgr->AddTask(task = new AliTRDpidChecker());
-    taskTRD[(Int_t)kPIDChecker] = task;
-    task->SetDebugLevel(0);
-    task->SetMCdata(fHasMCdata);
-    
-    // Create containers for input/output
-    mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-
-    // TRD pid reference 
-    if(TSTBIT(fSteerTRD, kPIDRefMaker)){
-      mgr->AddTask(task = new AliTRDpidRefMaker());
-      taskTRD[(Int_t)kPIDRefMaker] = task;
-      task->SetDebugLevel(0);
-      task->SetMCdata(fHasMCdata);
-      
-      // Create containers for input/output
-      mgr->ConnectInput( task, 0, coutput1);
-      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
-      mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("%sNN", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sNN.root", task->GetName())));
-      mgr->ConnectOutput(task, 2, mgr->CreateContainer(Form("%sLQ", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sLQ.root", task->GetName())));
-    }
-  }
-  printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  for(Int_t itask = 1; itask < NTRDTASKS; itask++){
-    if(TSTBIT(fSteerTRD, itask)) printf("\t   %s [%s]\n",  taskTRD[itask]->GetName(), taskTRD[itask]->GetTitle());
-  }
-
-
-/////////////////////////////////////////////////////////
-/////////////////     TPC PERFORMANCE      //////////////
-/////////////////////////////////////////////////////////
-  if(gSystem->Load("libANALYSISalice.so")<0) return;
+///////////////////////////////////////////////////////////
+///////////////         TPC                     ///////////
+///////////////////////////////////////////////////////////
   if(gSystem->Load("libPWG1.so")<0) return;
-
-
-  // Create ESD track reconstruction cuts
+  // Parse TPC options
+  Int_t fSteerTPC = ParseTPC(tpc);
+  // Create TPC-ESD track reconstruction cuts
   AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
   pRecInfoCuts->SetPtRange(0.20,200.0);
   //pRecInfoCuts->SetEtaRange(-0.9,0.9);
@@ -354,8 +223,7 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   pRecInfoCuts->SetMinNClustersITS(2);
   pRecInfoCuts->SetMinTPCsignalN(50);
   pRecInfoCuts->SetHistogramsOn(kFALSE); 
-
-  // Create MC track reconstruction cuts
+  // Create TPC-MC track reconstruction cuts
   AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
   pMCInfoCuts->SetMinRowsWithDigits(50);
   pMCInfoCuts->SetMaxR(0.025); // from diamond xy size (pp@10TeV) 
@@ -363,38 +231,31 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   pMCInfoCuts->SetRangeTPCSignal(0.5,1.4); 
   pMCInfoCuts->SetMinTrackLength(70);
   
-  AliPerformanceObject *taskTPC[NTPCTASKS]; 
-  memset(taskTPC, 0, NTPCTASKS*sizeof(AliPerformanceObject*));
+  // BUILD STEERING TASK FOR TPC
+  if(fSteerTPC){
+    if(gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddPerformanceTask.C+")) {
+      Error("run.C", "Error loading AliPerformanceTask task.");
+      return;
+    } 
+    AliPerformanceTask *TPC = AddPerformanceTask(mgr);
 
-  // Create TPC steering task
-  AliPerformanceTask *TPC = 0x0;
-  if(TSTBIT(fSteerTPC, 0)){
-    TPC = new AliPerformanceTask("Performance");
-    TPC->SetUseMCInfo(fHasMCdata);
-    mgr->AddTask(TPC);
-    mgr->ConnectInput(TPC, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(TPC, 0, mgr->CreateContainer("coutput", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", TPC->GetName())));
+    // plug (set of) TPC wagons in the train
+    TClass ctask; AliPerformanceObject *perf = 0x0;
+    for(Int_t icomp=1; icomp<NTPCTASKS; icomp++){
+      if(!(TSTBIT(fSteerTPC, icomp))) continue;
+      new(&ctask) TClass(fgkTPCtaskClassName[icomp]);
+      TPC->AddPerformanceObject((perf = (AliPerformanceObject*)ctask.New()));
+      perf->SetAnalysisMode(kTPCmode);
+      perf->SetHptGenerator(kTPChpt);
+      perf->SetAliRecInfoCuts(pRecInfoCuts);
+      perf->SetAliMCInfoCuts(pMCInfoCuts);
+    }
   }
-
-  TClass *ctask = 0x0;
-  for(Int_t icomp=1; icomp<NTPCTASKS; icomp++){
-    if(!TSTBIT(fSteerTPC, icomp)) continue;
-    if(!ctask) ctask = new TClass;
-    new(ctask) TClass(fgkTPCtaskClassName[icomp]);
-    taskTPC[icomp] = (AliPerformanceObject*)ctask->New();
-    taskTPC[icomp]->SetAnalysisMode(kTPCmode);
-    taskTPC[icomp]->SetHptGenerator(kTPChpt);
-    taskTPC[icomp]->SetAliRecInfoCuts(pRecInfoCuts);
-    taskTPC[icomp]->SetAliMCInfoCuts(pMCInfoCuts);
-    TPC->AddPerformanceObject(taskTPC[icomp]);
-  }
-  // verbosity 
-  for(Int_t ic = 0; ic < NTPCTASKS; ic++){
-    if(taskTPC[ic]) printf("\t   %s [%s]\n",  taskTPC[ic]->GetName(), taskTPC[ic]->GetTitle());
-  }
-
 
   if (!mgr->InitAnalysis()) return;
+  // verbosity
+  printf("\n\tRUNNING TRAIN FOR TASKS:\n");
+  mgr->GetTasks()->ls();
   //mgr->PrintStatus();
 
   mgr->StartAnalysis("local", chain, nev, first);
@@ -405,19 +266,15 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   cal->Terminate();
   TGeoGlobalMagField::Instance()->SetField(NULL);
   delete cdbManager;
-  for(Int_t it=NTRDTASKS; it--; ){ 
-    if(!taskTRD[it]) continue;
-    printf("Cleaning %s [%s] ...\n", fgkTRDtaskClassName[it], taskTRD[it]->GetTitle());
-    delete taskTRD[it];
-  }
-  delete checkESD;
 
-  for(Int_t it=NTPCTASKS; it--; ){ 
-    if(!taskTPC[it]) continue;
-    printf("Cleaning %s [%s] ...\n", fgkTPCtaskClassName[it], taskTPC[it]->GetTitle());
-    delete taskTPC[it];
-  }
-  if(TPC) delete TPC;
+  // verbosity
+  printf("\n\tCLEANING UP TRAIN:\n");
+  mgr->GetTasks()->Delete();
+//   for(Int_t it=tt->GetEntriesFast(); it--;){
+//     if(!(task = (AliAnalysisTask*)tt->At(it))) continue;
+//     printf("Cleaning up %s [%s] ...\n", task->GetName(), task->GetTitle());
+//     delete task;
+//   }
 
   if(mcH) delete mcH;
   delete esdH;
@@ -490,7 +347,7 @@ TChain* MakeChainXML(const char* xmlfile)
 //____________________________________________
 Int_t ParseTRD(Char_t *trd)
 {
-  Int_t fSteerTask = 0;
+  Int_t fSteerTask = 1;
   TObjArray *tasksArray = TString(trd).Tokenize(" ");
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
@@ -513,9 +370,11 @@ Int_t ParseTRD(Char_t *trd)
     }
   }
   // extra rules for calibration tasks
+  if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDetector);
+  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
+  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
   if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
   if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kTrackingEff);
   if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kPIDChecker);
 
   return fSteerTask;

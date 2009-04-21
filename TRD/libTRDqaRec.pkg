@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
 ORGSRCS  := $(wildcard TRD/qaRec/*.cxx)
-ORGSRCS  += $(wildcard TRD/qaRec/AliTRDtrackInfo/*.cxx)
+ORGSRCS  += $(wildcard TRD/qaRec/info/*.cxx)
 SRCS     := $(patsubst TRD/%, %, ${ORGSRCS})
 
 HDRS= $(SRCS:.cxx=.h)

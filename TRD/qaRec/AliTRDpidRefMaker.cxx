@@ -24,7 +24,7 @@
 #include "AliTRDpidUtil.h"
 
 #include "AliTRDpidRefMaker.h"
-#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "info/AliTRDtrackInfo.h"
 
 // builds the reference tree for the training of neural networks
 

@@ -168,7 +168,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDclusterResolution.h"
-#include "AliTRDtrackInfo/AliTRDclusterInfo.h"
+#include "info/AliTRDclusterInfo.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
