@@ -7,20 +7,25 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include "AliEveCascadeListEditor.h"
-#include "AliEveCascade.h"
 
-#include "TEveGValuators.h"
 
 #include "TVirtualPad.h"
 #include "TColor.h"
 
-// Cleanup these includes:
 #include "TGLabel.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
+#include "TEveGValuators.h"
+
+// Cleanup these includes:
+
+//#include "TGButton.h"
+//#include "TGNumberEntry.h"
+//#include "TGColorSelect.h"
 #include "TGDoubleSlider.h"
+#include <TGComboBox.h>
+
+#include "AliEveCascadeListEditor.h"
+#include "AliEveCascade.h"
+
 
 
 //______________________________________________________________________________
@@ -34,9 +39,11 @@ AliEveCascadeListEditor::AliEveCascadeListEditor(const TGWindow *p, Int_t width,
              UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
+  fCascadeSpecies(0),
   fMinMaxRCut(0),
   fMinMaxDaughterDCA(0),
-  fMinMaxPt(0)
+  fMinMaxPt(0),
+  fMinMaxInvariantMass(0)
 {
   // Constructor.
 
@@ -73,6 +80,31 @@ AliEveCascadeListEditor::AliEveCascadeListEditor(const TGWindow *p, Int_t width,
    fMinMaxPt->SetLimits(0, 20, TGNumberFormat::kNESRealOne);
    fMinMaxPt->Connect("ValueSet()", "AliEveCascadeListEditor", this, "DoMinMaxPt()");
    AddFrame(fMinMaxPt, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+   
+   
+   TGHorizontalFrame* fCascadeFrame = new TGHorizontalFrame(this);
+   TGLabel* labPos = new TGLabel(fCascadeFrame, "Cascade:");
+   fCascadeFrame->AddFrame(labPos, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 1, 1, 1));
+   fCascadeSpecies = new TGComboBox(fCascadeFrame);
+   fCascadeSpecies->AddEntry("Xi",     kXiMinus);
+   fCascadeSpecies->AddEntry("Omega",  kOmegaMinus);
+   TGListBox* lbPos = fCascadeSpecies->GetListBox();
+   lbPos->Resize(lbPos->GetWidth(), 2*18);
+   fCascadeSpecies->Resize(45, 20);
+   fCascadeSpecies->Connect("Selected(Int_t)", "AliEveCascadeListEditor", this, "DoSelectInvMassHyp(Int_t)");
+   fCascadeFrame->AddFrame(fCascadeSpecies, new TGLayoutHints(kLHintsTop, 3, 1, 1, 1));
+   AddFrame(fCascadeFrame);
+   
+   
+   fMinMaxInvariantMass = new TEveGDoubleValuator(this,"Inv. Mass:", 130, 0);
+   fMinMaxInvariantMass->SetNELength(5);
+   fMinMaxInvariantMass->SetLabelWidth(74);
+   fMinMaxInvariantMass->Build();
+   fMinMaxInvariantMass->GetSlider()->SetWidth(200);
+   fMinMaxInvariantMass->SetLimits(1, 6, TGNumberFormat::kNESRealThree);
+   fMinMaxInvariantMass->Connect("ValueSet()", "AliEveCascadeListEditor", this, "DoMinMaxInvariantMass()");
+   AddFrame(fMinMaxInvariantMass, new TGLayoutHints(kLHintsBottom, 1, 1, 1, 1));
+   
 }
 
 /******************************************************************************/
@@ -90,6 +122,7 @@ void AliEveCascadeListEditor::SetModel(TObject* obj)
   fMinMaxRCut->SetValues(fM->fMinRCut, fM->fMaxRCut);
   fMinMaxDaughterDCA->SetValues(fM->fMinDaughterDCA, fM->fMaxDaughterDCA);
   fMinMaxPt->SetValues(fM->fMinPt, fM->fMaxPt);
+  fMinMaxInvariantMass->SetValues(fM->fMinInvariantMass,fM->fMaxInvariantMass);
 }
 
 /******************************************************************************/
@@ -107,15 +140,44 @@ void AliEveCascadeListEditor::SetModel(TObject* obj)
 
 void AliEveCascadeListEditor::DoMinMaxRCut()
 {
+  // Filter cascade candidates by transverse radius	
+	
   fM->FilterByRadius(fMinMaxRCut->GetMin(), fMinMaxRCut->GetMax());
 }
 
 void AliEveCascadeListEditor::DoMinMaxDaughterDCA()
 {
+  // Filter cascade candidates by DCA to primary vertex	
+	
   fM->FilterByDaughterDCA(fMinMaxDaughterDCA->GetMin(), fMinMaxDaughterDCA->GetMax());
 }
 
 void AliEveCascadeListEditor::DoMinMaxPt()
 {
+   // Filter cascade candidates by transverse momentum
+	
   fM->FilterByPt(fMinMaxPt->GetMin(), fMinMaxPt->GetMax());
 }
+
+
+
+void AliEveCascadeListEditor::DoSelectInvMassHyp(Int_t rInvMassHyp)
+{
+   // Apply the invariant mass hypothesis according the choice made by user
+	
+	fM->SetInvMassHyp(rInvMassHyp);
+	Update();
+}
+
+void AliEveCascadeListEditor::DoMinMaxInvariantMass()
+{
+    // Filter cascade candidates by invariant mass (under mass hypothesis made by user)
+	
+	Int_t rInvMassHyp = fM->GetInvMassHyp();
+	if(rInvMassHyp)
+	fM->FilterByInvariantMass(fMinMaxInvariantMass->GetMin(), fMinMaxInvariantMass->GetMax(), rInvMassHyp);
+	else 
+	fM->FilterByInvariantMass(fMinMaxInvariantMass->GetMin(), fMinMaxInvariantMass->GetMax(), kXiMinus);
+	
+}
+

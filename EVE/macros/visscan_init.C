@@ -102,7 +102,9 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
     a->SetLabelFont(102);
     gRPhiGeomScene->AddElement(a);
   }
+  gRPhiMgr->SetCurrentDepth(-10);
   gRPhiMgr->ImportElements(gGeomGentleRPhi, gRPhiGeomScene);
+  gRPhiMgr->SetCurrentDepth(0);
   if (gShowTRD)      gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
   if (gShowMUONRPhi) gRPhiMgr->ImportElements(gGeomGentleMUON, gRPhiGeomScene);
 
@@ -119,7 +121,9 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
     a->SetLabelFont(102);
     gRhoZGeomScene->AddElement(a);
   }
+  gRhoZMgr->SetCurrentDepth(-10);
   gRhoZMgr->ImportElements(gGeomGentleRhoZ, gRhoZGeomScene);
+  gRhoZMgr->SetCurrentDepth(0);
   if (gShowTRD)      gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
   if (gShowMUONRhoZ) gRhoZMgr->ImportElements(gGeomGentleMUON, gRhoZGeomScene);
 

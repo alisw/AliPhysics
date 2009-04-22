@@ -31,7 +31,7 @@ TEvePointSet* esd_cascade_points()
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerStyle(4);
   points->SetMarkerSize(1.5);
-  points->SetMarkerColor(kGray);
+  points->SetMarkerColor(kMagenta-9);
 
   gEve->AddElement(points);
   gEve->Redraw3D();
