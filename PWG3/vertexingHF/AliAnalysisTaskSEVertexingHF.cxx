@@ -45,7 +45,8 @@ fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
 fDstarTClArr(0),
-fLikeSignTClArr(0)
+fLikeSign2ProngTClArr(0),
+fLikeSign3ProngTClArr(0)
 {
   // Default constructor
 }
@@ -60,7 +61,8 @@ fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
 fDstarTClArr(0),
-fLikeSignTClArr(0)
+fLikeSign2ProngTClArr(0),
+fLikeSign3ProngTClArr(0)
 {
   // Default constructor
 }
@@ -79,7 +81,10 @@ void AliAnalysisTaskSEVertexingHF::Init()
 
   if(fDebug > 1) printf("AnalysisTaskSEVertexingHF::Init() \n");
 
-  gROOT->LoadMacro("ConfigVertexingHF.C");
+  if(gROOT->LoadMacro("ConfigVertexingHF.C")) {
+    printf("AnalysisTaskSEVertexingHF::Init() \n Using $ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C\n");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C");
+  }
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   fVHF->PrintStatus();
@@ -134,9 +139,15 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
   }
 
   if(fVHF->GetLikeSign()) {                      
-    fLikeSignTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
-    fLikeSignTClArr->SetName("LikeSign2Prong");
-    AddAODBranch("TClonesArray", &fLikeSignTClArr);
+    fLikeSign2ProngTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
+    fLikeSign2ProngTClArr->SetName("LikeSign2Prong");
+    AddAODBranch("TClonesArray", &fLikeSign2ProngTClArr);
+  }
+
+  if(fVHF->GetLikeSign() && fVHF->Get3Prong()) {                      
+    fLikeSign3ProngTClArr = new TClonesArray("AliAODRecoDecayHF3Prong", 0);
+    fLikeSign3ProngTClArr->SetName("LikeSign3Prong");
+    AddAODBranch("TClonesArray", &fLikeSign3ProngTClArr);
   }
 
   return;
@@ -158,7 +169,8 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
 		       fCharm3ProngTClArr,
 		       fCharm4ProngTClArr,
 		       fDstarTClArr,
-                       fLikeSignTClArr);
+                       fLikeSign2ProngTClArr,
+                       fLikeSign3ProngTClArr);
   
   return;
 }
