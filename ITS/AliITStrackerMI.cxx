@@ -1004,7 +1004,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
-	vtrack->SetClIndex(ilayer,0);
+	vtrack->SetClIndex(ilayer,-1);
 	modstatus = (skip==1 ? 3 : 4); // skipped : out in z
 	if(LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc)) { // local module coords
 	  vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
@@ -1079,7 +1079,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  (noClusters && 
 	   AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad())) {
 	AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
-	updatetrack->SetClIndex(ilayer,0);
+	updatetrack->SetClIndex(ilayer,-1);
 	if (dead==0) {
 	  modstatus = 5; // no cls in road
 	} else if (dead==1) {
@@ -1164,7 +1164,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  if (cl->GetQ()==0) deadzoneSPD=kTRUE; // only 1 prolongation with virtual cluster	  
 	  if (ntracks[ilayer]>=100) continue;
 	  AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
-	  updatetrack->SetClIndex(ilayer,0);
+	  updatetrack->SetClIndex(ilayer,-1);
 	  if (changedet) new (&currenttrack2) AliITStrackMI(backuptrack);
 
 	  if (cl->GetQ()!=0) { // real cluster
@@ -1218,7 +1218,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
-	vtrack->SetClIndex(ilayer,0);
+	vtrack->SetClIndex(ilayer,-1);
 	modstatus = 3; // skipped 
 	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
@@ -1231,7 +1231,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
-	vtrack->SetClIndex(ilayer,0);
+	vtrack->SetClIndex(ilayer,-1);
 	modstatus = 3; // skipped
 	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
@@ -2352,7 +2352,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
   Float_t *ny = GetNy(fCurrentEsdTrack), *nz = GetNz(fCurrentEsdTrack); 
   if (mode<100){
     for (Int_t i = 0;i<6;i++){
-      if (track->GetClIndex(i)>0){
+      if (track->GetClIndex(i)>=0){
 	Float_t cerry, cerrz;
 	if (ny[i]>0) {cerry = erry[i]; cerrz=errz[i];}
 	else 
@@ -2384,7 +2384,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
   }
   else{
     for (Int_t i = 0;i<4;i++){
-      if (track->GetClIndex(i)>0){
+      if (track->GetClIndex(i)>=0){
 	Float_t cerry, cerrz;
 	if (ny[i]>0) {cerry = erry[i]; cerrz=errz[i];}
 	else { cerry= track->GetSigmaY(i); cerrz = track->GetSigmaZ(i);}
@@ -2396,7 +2396,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
       }
     }
     for (Int_t i = 4;i<6;i++){
-      if (track->GetClIndex(i)>0){	
+      if (track->GetClIndex(i)>=0){	
 	Float_t cerry, cerrz;
 	if (ny[i]>0) {cerry = erry[i]; cerrz=errz[i];}
 	else { cerry= track->GetSigmaY(i); cerrz = track->GetSigmaZ(i);}
@@ -3107,7 +3107,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   Float_t *erry = GetErrY(esdindex), *errz = GetErrZ(esdindex);
   Float_t *ny = GetNy(esdindex), *nz = GetNz(esdindex);
   for (Int_t j=0;j<6;j++) {
-    if (besttrack->GetClIndex(j)>0){
+    if (besttrack->GetClIndex(j)>=0){
       erry[j] = besttrack->GetSigmaY(j); erry[j+6] = besttrack->GetSigmaY(j+6);
       errz[j] = besttrack->GetSigmaZ(j); errz[j+6] = besttrack->GetSigmaZ(j+6);
       ny[j]   = besttrack->GetNy(j);
@@ -3138,7 +3138,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   besttrack = (AliITStrackMI*)array->At(index[0]);
   if (besttrack&&besttrack->GetChi2MIP(0)<AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(0)){
     for (Int_t j=0;j<6;j++){
-      if (besttrack->GetClIndex(j)>0){
+      if (besttrack->GetClIndex(j)>=0){
 	erry[j] = besttrack->GetSigmaY(j); erry[j+6] = besttrack->GetSigmaY(j+6);
 	errz[j] = besttrack->GetSigmaZ(j); erry[j+6] = besttrack->GetSigmaY(j+6);
 	ny[j]   = besttrack->GetNy(j);
@@ -3409,7 +3409,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     Float_t *ny = GetNy(esdindex), *nz = GetNz(esdindex);
     for (Int_t i=0;i<6;i++){
       Int_t index = besttrack->GetClIndex(i);
-      if (index<=0) continue; 
+      if (index<0) continue; 
       Int_t ilayer =  (index & 0xf0000000) >> 28;
       if (besttrack->GetSigmaY(ilayer)<0.00000000001) continue;
       AliITSRecPoint *c = (AliITSRecPoint*)GetCluster(index);     
@@ -3426,7 +3426,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
 	AliITStrackMI * track = (AliITStrackMI*)array->At(i);   
 	if (!track) continue;
 	if (track->GetChi2MIP(0)>besttrack->GetChi2MIP(0)+2.*shared+1.) break;
-	if ( (track->GetClIndex(ilayer)>0) && (track->GetClIndex(ilayer)!=besttrack->GetClIndex(ilayer))){
+	if ( (track->GetClIndex(ilayer)>=0) && (track->GetClIndex(ilayer)!=besttrack->GetClIndex(ilayer))){
 	  cansign = kFALSE;
 	  break;
 	}
@@ -3847,7 +3847,7 @@ void AliITStrackerMI::UpdateTPCV0(const AliESDEvent *event){
       //
       if (trackp){
 	for (Int_t ilayer=0;ilayer<clayer;ilayer++){
-	  if (trackp->GetClIndex(ilayer)>0){
+	  if (trackp->GetClIndex(ilayer)>=0){
 	    chi2p+=trackp->GetDy(ilayer)*trackp->GetDy(ilayer)/(trackp->GetSigmaY(ilayer)*trackp->GetSigmaY(ilayer))+
 	      trackp->GetDz(ilayer)*trackp->GetDz(ilayer)/(trackp->GetSigmaZ(ilayer)*trackp->GetSigmaZ(ilayer));
 	  }
@@ -3861,7 +3861,7 @@ void AliITStrackerMI::UpdateTPCV0(const AliESDEvent *event){
       //
       if (trackm){
 	for (Int_t ilayer=0;ilayer<clayer;ilayer++){
-	  if (trackm->GetClIndex(ilayer)>0){
+	  if (trackm->GetClIndex(ilayer)>=0){
 	    chi2m+=trackm->GetDy(ilayer)*trackm->GetDy(ilayer)/(trackm->GetSigmaY(ilayer)*trackm->GetSigmaY(ilayer))+
 	      trackm->GetDz(ilayer)*trackm->GetDz(ilayer)/(trackm->GetSigmaZ(ilayer)*trackm->GetSigmaZ(ilayer));
 	  }
@@ -3881,7 +3881,7 @@ void AliITStrackerMI::UpdateTPCV0(const AliESDEvent *event){
       //
       if (trackp&&TMath::Abs(trackp->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
-	  if (trackp->GetClIndex(ilayer)>0){
+	  if (trackp->GetClIndex(ilayer)>=0){
 	    chi2p+=trackp->GetDy(ilayer)*trackp->GetDy(ilayer)/(trackp->GetSigmaY(ilayer)*trackp->GetSigmaY(ilayer))+
 	      trackp->GetDz(ilayer)*trackp->GetDz(ilayer)/(trackp->GetSigmaZ(ilayer)*trackp->GetSigmaZ(ilayer));
 	  }
@@ -3895,7 +3895,7 @@ void AliITStrackerMI::UpdateTPCV0(const AliESDEvent *event){
       //
       if (trackm&&TMath::Abs(trackm->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
-	  if (trackm->GetClIndex(ilayer)>0){
+	  if (trackm->GetClIndex(ilayer)>=0){
 	    chi2m+=trackm->GetDy(ilayer)*trackm->GetDy(ilayer)/(trackm->GetSigmaY(ilayer)*trackm->GetSigmaY(ilayer))+
 	      trackm->GetDz(ilayer)*trackm->GetDz(ilayer)/(trackm->GetSigmaZ(ilayer)*trackm->GetSigmaZ(ilayer));
 	  }
@@ -4104,8 +4104,8 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
     if (bestConst){
       if (bestLong->GetNumberOfClusters()<4       && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>4.5)               forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<3 && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>5.5)               forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<2 && bestConst->GetClIndex(0)>0 && bestConst->GetClIndex(1)>0 ) forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<1 && bestConst->GetClIndex(0)>0)                              forbidden[itsindex]=kTRUE;
+      if (normdist[itsindex]<2 && bestConst->GetClIndex(0)>=0 && bestConst->GetClIndex(1)>=0 ) forbidden[itsindex]=kTRUE;
+      if (normdist[itsindex]<1 && bestConst->GetClIndex(0)>=0)                              forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<4 && bestConst->GetNormChi2(0)<2)                             forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<5 && bestConst->GetNormChi2(0)<1)                             forbidden[itsindex]=kTRUE;      
       if (bestConst->GetNormChi2(0)<2.5) {
@@ -4307,7 +4307,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
 	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;	      
-	      if (!btrack->GetClIndex(ilayer)){
+	      if (btrack->GetClIndex(ilayer)<0){
 		sumchi2+=25;
 		continue;
 	      }else{
@@ -4351,7 +4351,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
 	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;
-	      if (!btrack->GetClIndex(ilayer)){
+	      if (btrack->GetClIndex(ilayer)<0){
 		sumchi2+=30;
 		continue;
 	      }else{
@@ -5260,11 +5260,11 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) {
     AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-    if (tmp.GetClIndex(lay)>0) ncl++;
+    if (tmp.GetClIndex(lay)>=0) ncl++;
   }
   Bool_t nextout = kFALSE;
   if(ilayer==AliITSgeomTGeo::kNLayers-1) nextout=kTRUE; // you are already on the outermost layer
-  else nextout = ((tmp.GetClIndex(ilayer+1)>0)? kTRUE : kFALSE );
+  else nextout = ((tmp.GetClIndex(ilayer+1)>=0)? kTRUE : kFALSE );
   Bool_t nextin = kFALSE;
   if(ilayer==0) nextin=kTRUE; // you are already on the innermost layer
   else nextin = ((index[ilayer-1]>=0)? kTRUE : kFALSE );

@@ -94,7 +94,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
       //
       if (trackp){
 	for (Int_t ilayer=0;ilayer<clayer;ilayer++){
-	  if (trackp->GetClIndex(ilayer)>0){
+	  if (trackp->GetClIndex(ilayer)>=0){
 	    chi2p+=trackp->GetDy(ilayer)*trackp->GetDy(ilayer)/(trackp->GetSigmaY(ilayer)*trackp->GetSigmaY(ilayer))+
 	      trackp->GetDz(ilayer)*trackp->GetDz(ilayer)/(trackp->GetSigmaZ(ilayer)*trackp->GetSigmaZ(ilayer));
 	  }
@@ -108,7 +108,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
       //
       if (trackm){
 	for (Int_t ilayer=0;ilayer<clayer;ilayer++){
-	  if (trackm->GetClIndex(ilayer)>0){
+	  if (trackm->GetClIndex(ilayer)>=0){
 	    chi2m+=trackm->GetDy(ilayer)*trackm->GetDy(ilayer)/(trackm->GetSigmaY(ilayer)*trackm->GetSigmaY(ilayer))+
 	      trackm->GetDz(ilayer)*trackm->GetDz(ilayer)/(trackm->GetSigmaZ(ilayer)*trackm->GetSigmaZ(ilayer));
 	  }
@@ -128,7 +128,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
       //
       if (trackp&&TMath::Abs(trackp->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
-	  if (trackp->GetClIndex(ilayer)>0){
+	  if (trackp->GetClIndex(ilayer)>=0){
 	    chi2p+=trackp->GetDy(ilayer)*trackp->GetDy(ilayer)/(trackp->GetSigmaY(ilayer)*trackp->GetSigmaY(ilayer))+
 	      trackp->GetDz(ilayer)*trackp->GetDz(ilayer)/(trackp->GetSigmaZ(ilayer)*trackp->GetSigmaZ(ilayer));
 	  }
@@ -142,7 +142,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
       //
       if (trackm&&TMath::Abs(trackm->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
-	  if (trackm->GetClIndex(ilayer)>0){
+	  if (trackm->GetClIndex(ilayer)>=0){
 	    chi2m+=trackm->GetDy(ilayer)*trackm->GetDy(ilayer)/(trackm->GetSigmaY(ilayer)*trackm->GetSigmaY(ilayer))+
 	      trackm->GetDz(ilayer)*trackm->GetDz(ilayer)/(trackm->GetSigmaZ(ilayer)*trackm->GetSigmaZ(ilayer));
 	  }
@@ -355,8 +355,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     if (bestConst){
       if (bestLong->GetNumberOfClusters()<4       && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>4.5)               forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<3 && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>5.5)               forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<2 && bestConst->GetClIndex(0)>0 && bestConst->GetClIndex(1)>0 ) forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<1 && bestConst->GetClIndex(0)>0)                              forbidden[itsindex]=kTRUE;
+      if (normdist[itsindex]<2 && bestConst->GetClIndex(0)>=0 && bestConst->GetClIndex(1)>=0 ) forbidden[itsindex]=kTRUE;
+      if (normdist[itsindex]<1 && bestConst->GetClIndex(0)>=0)                              forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<4 && bestConst->GetNormChi2(0)<2)                             forbidden[itsindex]=kTRUE;
       if (normdist[itsindex]<5 && bestConst->GetNormChi2(0)<1)                             forbidden[itsindex]=kTRUE;      
       if (bestConst->GetNormChi2(0)<2.5) {
@@ -558,7 +558,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;	      
-	      if (!btrack->GetClIndex(ilayer)){
+	      if (btrack->GetClIndex(ilayer)<0){
 		sumchi2+=25;
 		continue;
 	      }else{
@@ -603,7 +603,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;
-	      if (!btrack->GetClIndex(ilayer)){
+	      if (btrack->GetClIndex(ilayer)<0){
 		sumchi2+=30;
 		continue;
 	      }else{
