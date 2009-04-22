@@ -198,7 +198,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iESDfilter && !iAODanalysis) {
       gROOT->LoadMacro("AddTaskESDfilter.C");
       AliAnalysisTaskESDfilter *esdfilter = 0;
-      if(bOLD)esdfilter = AddTaskESDfilter(mgr,cinput);
+      if(bOLD)esdfilter = AddTaskESDfilter(mgr,cinput,cout_aod);
       else esdfilter = AddTaskESDfilter();
     }   
     // Jet analysis from the AOD

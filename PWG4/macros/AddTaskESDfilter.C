@@ -1,7 +1,4 @@
 AliESDtrackCuts *CreateCuts(Int_t iCut = 0); // create the standard cuts
-AliAnalysisTaskESDfilter *AddTaskESDfilter();
-AliAnalysisTaskESDfilter *AddTaskESDfilter(AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput);
-
 AliAnalysisTaskESDfilter *AddTaskESDfilter()
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
@@ -39,7 +36,7 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter()
    return esdfilter;
 }
 
-AliAnalysisTaskESDfilter *AddTaskESDfilter(AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput)
+AliAnalysisTaskESDfilter *AddTaskESDfilter(AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput, AliAnalysisDataContainer *cout_aod)
 {
   // This is only for running on PROOF with the old root version 5-22-00 
   // and the older version of the AF
@@ -69,11 +66,9 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter(AliAnalysisManager* mgr,AliAnalysisDa
    esdfilter->SetTrackFilter(trackFilter);
    mgr->AddTask(esdfilter);
 
-   AliAnalysisDataContainer *c_aod_filter = mgr->CreateContainer("cAODfilter", TTree::Class(),
-								AliAnalysisManager::kExchangeContainer);
    // Connect to data containers
    mgr->ConnectInput  (esdfilter,  0, cinput  );
-   mgr->ConnectOutput (esdfilter,  0, c_aod_filter );
+   mgr->ConnectOutput (esdfilter,  0, cout_aod );
 
    return esdfilter;
 
