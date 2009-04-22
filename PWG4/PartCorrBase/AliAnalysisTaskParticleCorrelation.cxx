@@ -22,14 +22,14 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
-
 #include <cstdlib>
-// root
+
+// --- Root ---
 #include <TROOT.h>
 #include <TInterpreter.h>
 //#include <Riostream.h>
 
-// analysis
+// --- Analysis ---
 #include "AliAnalysisTaskParticleCorrelation.h"
 #include "AliAnaPartCorrMaker.h"
 #include "AliCaloTrackReader.h"
@@ -38,12 +38,11 @@
 ClassImp(AliAnalysisTaskParticleCorrelation)
 
 ////////////////////////////////////////////////////////////////////////
-
-  AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation():
-    AliAnalysisTaskSE(),
-    fAna(0x0),
-    fOutputContainer(0x0),
-    fConfigName(0)
+AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation():
+  AliAnalysisTaskSE(),
+  fAna(0x0),
+  fOutputContainer(0x0),
+  fConfigName(0)
 {
   // Default constructor
 }
@@ -77,7 +76,7 @@ AliAnalysisTaskParticleCorrelation::~AliAnalysisTaskParticleCorrelation()
 void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
 {
   // Create the output container
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::CreateOutputData() - Begin \n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - Begin\n");
   
   //Get list of aod arrays, add each aod array to analysis frame 
   TClonesArray * array = 0;
@@ -90,27 +89,27 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   //Histograms container
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::CreateOutputData() - End \n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - End\n");
 }
 
 //_____________________________________________________
 void AliAnalysisTaskParticleCorrelation::Init()
 {
   // Initialization
-  
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - Begin \n");
+ 
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - Begin\n");
   
   // Call configuration file if specified
   
   if (fConfigName.Length()) {
-    printf("AliAnalysisTaskParticleCorrelation::Init() - ### Configuration file is %s.C ###", fConfigName.Data());
+    printf("AliAnalysisTaskParticleCorrelation::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
 	gROOT->LoadMacro(fConfigName+".C");
 	fAna = (AliAnaPartCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   }
   
-  if(!fAna){
-    printf("AliAnalysisTaskParticleCorrelation::Init() Analysis maker pointer not initialized, no analysis specified, abort analysis!\n");
-    abort();
+  if(!fAna) {
+	printf("AliAnalysisTaskParticleCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP!\n");
+	abort();
   }
   
   // Add different generator particles to PDG Data Base 
@@ -120,7 +119,7 @@ void AliAnalysisTaskParticleCorrelation::Init()
   // Initialise analysis
   fAna->Init();
   
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - End \n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - End\n");
   
 }
 
@@ -130,21 +129,22 @@ void AliAnalysisTaskParticleCorrelation::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   //
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::Exec() - Begin \n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - Begin\n");
 
-  //Get the type of data, check if type is correct
+   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
      datatype != AliCaloTrackReader::kMC){
-    printf("AliAnalysisTaskParticleCorrelation::Exec() - Wrong type of data\n");
+    printf("AliAnalysisTaskParticleCorrelation::UserExec() - Wrong type of data\n");
     return ;
   }
+  
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
 
   //Process event
   fAna->ProcessEvent((Int_t) Entry());
   
-  if (fDebug > 1) printf("AliAnalysisTaskParticleCorrelation::Exec() - End \n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - End\n");
   
   PostData(1, fOutputContainer);
   

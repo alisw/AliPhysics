@@ -143,7 +143,7 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fCTSFidCutMaxEta->GetSize();
     nphiregions =  fCTSFidCutMaxPhi->GetSize();
     if(netaregions !=  fCTSFidCutMinEta->GetSize() || nphiregions !=  fCTSFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of CTS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of CTS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
 		    netaregions, fCTSFidCutMinEta->GetSize(),  nphiregions, fCTSFidCutMinPhi->GetSize());
     
     maxeta = fCTSFidCutMaxEta->GetArray();
@@ -156,7 +156,7 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fEMCALFidCutMaxEta->GetSize();
     nphiregions =  fEMCALFidCutMaxPhi->GetSize();
     if(netaregions !=  fEMCALFidCutMinEta->GetSize() || nphiregions !=  fEMCALFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of EMCAL fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of EMCAL fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
 		    netaregions, fEMCALFidCutMinEta->GetSize(),  nphiregions, fEMCALFidCutMinPhi->GetSize());
     
     maxeta = fEMCALFidCutMaxEta->GetArray();
@@ -169,7 +169,7 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     netaregions =  fPHOSFidCutMaxEta->GetSize();
     nphiregions =  fPHOSFidCutMaxPhi->GetSize();
     if(netaregions !=  fPHOSFidCutMinEta->GetSize() || nphiregions !=  fPHOSFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of PHOS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d",
+      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of PHOS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
 		    netaregions, fPHOSFidCutMinEta->GetSize(),  nphiregions, fPHOSFidCutMinPhi->GetSize());
     
     maxeta = fPHOSFidCutMaxEta->GetArray();

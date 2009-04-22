@@ -47,6 +47,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(Char_t * analysis, TString d
    //===========================================================================
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (analysis);
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);				
   mgr->AddTask(task);
   

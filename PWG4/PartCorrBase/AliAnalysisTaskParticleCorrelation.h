@@ -11,12 +11,15 @@
 // Input of this task is a configuration file that contains all the settings of the analyis
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
- 
+
+//--- Root ---
+class TList;
+
+//--- AliRoot ---
 #include "AliAnalysisTaskSE.h"
 class AliAnaPartCorrMaker;
 class AliESDEvent;
 class AliAODEvent;
-class TList;
 
 class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
 {
