@@ -18,7 +18,6 @@
 #define ALIHLTTPCCACLUSTERDATA_H
 
 #include <vector>
-#include "AliHLTTPCCAGBHit.h"
 #include "AliHLTArray.h"
 
 class AliHLTTPCSpacePointData;
@@ -45,13 +44,22 @@ class AliHLTTPCCAClusterData
     void readEvent( const AliHLTArray<AliHLTTPCSpacePointData *> &clusters,
                     int numberOfClusters, double ClusterZCut );
 
+    /**
+     * prepare for the reading of event
+     */
     void StartReading( int sliceIndex, int guessForNumberOfClusters = 256 );
 
+    /**
+     *  read next cluster
+     */
     void ReadCluster( int id, int iRow, float X, float Y, float Z, float Amp ) {
       Data d = { id, iRow, X, Y, Z, Amp};
       fData.push_back( d );
     }
 
+    /**
+     * finish the reading of event
+     */
     void FinishReading();
 
 
