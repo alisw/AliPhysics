@@ -17,6 +17,7 @@ AliT0hit.cxx
 AliT0RawReader.cxx
 AliT0RawData.cxx
 AliT0Digitizer.cxx
+AliT0MisAligner.cxx 
 )
 
 # fill list of header files from list of source files
