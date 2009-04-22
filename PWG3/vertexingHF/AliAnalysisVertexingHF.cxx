@@ -159,7 +159,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 					    TClonesArray *aodCharm3ProngTClArr,
 					    TClonesArray *aodCharm4ProngTClArr,
 					    TClonesArray *aodDstarTClArr,
-					    TClonesArray *aodLikeSignTClArr)
+					    TClonesArray *aodLikeSign2ProngTClArr,
+					    TClonesArray *aodLikeSign3ProngTClArr)
 {
   // Find heavy-flavour vertex candidates
   // Input:  ESD or AOD
@@ -193,13 +194,17 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     printf("ERROR: no aodDstarTClArr");
     return;
   }
-  if(fLikeSign && !aodLikeSignTClArr) {
-    printf("ERROR: no aodLikeSignTClArr");
+  if(fLikeSign && !aodLikeSign2ProngTClArr) {
+    printf("ERROR: no aodLikeSign2ProngTClArr");
+    return;
+  }
+  if(fLikeSign && f3Prong && !aodLikeSign3ProngTClArr) {
+    printf("ERROR: no aodLikeSign2ProngTClArr");
     return;
   }
 
   // delete candidates from previous event and create references
-  Int_t iVerticesHF=0,iD0toKpi=0,iJPSItoEle=0,i3Prong=0,i4Prong=0,iDstar=0,iLikeSign=0;
+  Int_t iVerticesHF=0,iD0toKpi=0,iJPSItoEle=0,i3Prong=0,i4Prong=0,iDstar=0,iLikeSign2Prong=0,iLikeSign3Prong=0;
   aodVerticesHFTClArr->Delete();
   iVerticesHF = aodVerticesHFTClArr->GetEntriesFast();
   TClonesArray &verticesHFRef = *aodVerticesHFTClArr;
@@ -223,16 +228,22 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     aodDstarTClArr->Delete();
     iDstar = aodDstarTClArr->GetEntriesFast();
   }
-  if(fLikeSign)   {                                
-    aodLikeSignTClArr->Delete();                     
-    iLikeSign = aodLikeSignTClArr->GetEntriesFast(); 
+  if(fLikeSign) {                                
+    aodLikeSign2ProngTClArr->Delete();                     
+    iLikeSign2Prong = aodLikeSign2ProngTClArr->GetEntriesFast(); 
   }  
-  TClonesArray &aodD0toKpiRef      = *aodD0toKpiTClArr;
-  TClonesArray &aodJPSItoEleRef    = *aodJPSItoEleTClArr;
-  TClonesArray &aodCharm3ProngRef  = *aodCharm3ProngTClArr;
-  TClonesArray &aodCharm4ProngRef  = *aodCharm4ProngTClArr;
-  TClonesArray &aodDstarRef        = *aodDstarTClArr;
-  TClonesArray &aodLikeSignRef     = *aodLikeSignTClArr;
+  if(fLikeSign && f3Prong) {                                
+    aodLikeSign3ProngTClArr->Delete();                     
+    iLikeSign3Prong = aodLikeSign3ProngTClArr->GetEntriesFast(); 
+  }  
+
+  TClonesArray &aodD0toKpiRef        = *aodD0toKpiTClArr;
+  TClonesArray &aodJPSItoEleRef      = *aodJPSItoEleTClArr;
+  TClonesArray &aodCharm3ProngRef    = *aodCharm3ProngTClArr;
+  TClonesArray &aodCharm4ProngRef    = *aodCharm4ProngTClArr;
+  TClonesArray &aodDstarRef          = *aodDstarTClArr;
+  TClonesArray &aodLikeSign2ProngRef = *aodLikeSign2ProngTClArr;
+  TClonesArray &aodLikeSign3ProngRef = *aodLikeSign3ProngTClArr;
 
 
   AliAODRecoDecayHF2Prong *io2Prong  = 0;
@@ -296,7 +307,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   TObjArray *fourTrackArray    = new TObjArray(4);
   
   Double_t dispersion;
-  Bool_t isLikeSignPair=kFALSE;
+  Bool_t isLikeSign2Prong=kFALSE,isLikeSign3Prong=kFALSE;
 
   AliAODRecoDecayHF   *rd = 0;
   AliAODRecoCascadeHF *rc = 0;
@@ -328,17 +339,18 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       if(!TESTBIT(seleFlags[iTrkN1],kBitDispl)) continue;
 
       if(postrack1->Charge()==negtrack1->Charge()) { // like-sign 
-	isLikeSignPair=kTRUE;
+	isLikeSign2Prong=kTRUE;
 	if(!fLikeSign)    continue;
 	if(iTrkN1<iTrkP1) continue; // this is needed to avoid double-counting of like-sign
       } else { // unlike-sign
-	isLikeSignPair=kFALSE;
+	isLikeSign2Prong=kFALSE;
 	if(postrack1->Charge()<0 || negtrack1->Charge()>0) continue;  // this is needed to avoid double-counting of unlike-sign
       }
 
       // back to primary vertex
       postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
       negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+      //printf("********** %d %d\n",postrack1->GetID(),negtrack1->GetID());
 
       // DCA between the two tracks
       dcap1n1 = postrack1->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
@@ -359,11 +371,11 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       
 	io2Prong = Make2Prong(twoTrackArray1,event,vertexp1n1,dcap1n1,okD0,okJPSI,okD0fromDstar);
       
-	if((fD0toKpi && okD0) || (fJPSItoEle && okJPSI) || (isLikeSignPair && (okD0 || okJPSI))) {
+	if((fD0toKpi && okD0) || (fJPSItoEle && okJPSI) || (isLikeSign2Prong && (okD0 || okJPSI))) {
 	  // add the vertex and the decay to the AOD
 	  AliAODVertex *v2Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexp1n1);
 	  if(fInputAOD) AddDaughterRefs(v2Prong,event,twoTrackArray1);
-	  if(!isLikeSignPair) {
+	  if(!isLikeSign2Prong) {
 	    if(okD0) {  
 	      rd = new(aodD0toKpiRef[iD0toKpi++])AliAODRecoDecayHF2Prong(*io2Prong);
 	      rd->SetSecondaryVtx(v2Prong);
@@ -374,14 +386,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rd->SetSecondaryVtx(v2Prong);
 	      if(!okD0) v2Prong->SetParent(rd); // it cannot have two mothers ...
 	    }
-	  } else { // isLikeSignPair
-	    rd = new(aodLikeSignRef[iLikeSign++])AliAODRecoDecayHF2Prong(*io2Prong);
+	  } else { // isLikeSign2Prong
+	    rd = new(aodLikeSign2ProngRef[iLikeSign2Prong++])AliAODRecoDecayHF2Prong(*io2Prong);
 	    rd->SetSecondaryVtx(v2Prong);
 	    v2Prong->SetParent(rd);
 	  }
 	}
 	// D* candidates
-	if(fDstar && okD0fromDstar && !isLikeSignPair) {
+	if(fDstar && okD0fromDstar && !isLikeSign2Prong) {
 	  // write references in io2Prong
 	  if(fInputAOD) {
 	    AddDaughterRefs(vertexp1n1,event,twoTrackArray1);
@@ -471,7 +483,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       }      
 
       twoTrackArray1->Clear(); 
-      if((!f3Prong && !f4Prong) || isLikeSignPair)  { 
+      if( (!f3Prong && !f4Prong) || 
+	  (isLikeSign2Prong && !f3Prong) ) { 
 	negtrack1=0; 
 	delete vertexp1n1; 
 	continue; 
@@ -492,6 +505,16 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(!TESTBIT(seleFlags[iTrkP2],kBitDispl)) continue;
 
+	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
+	  if(postrack1->Charge()>0) { // ok: like-sign triplet (+++)
+	    isLikeSign3Prong=kTRUE;
+	  } else { // not ok
+	    continue;
+	  }
+	} else { // normal triplet (+-+)
+	  isLikeSign3Prong=kFALSE; 
+	}
+
 	// back to primary vertex
 	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -510,31 +533,44 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	if(!vertexp2n1) { 
 	  twoTrackArray2->Clear();
 	  postrack2=0; 
-	  continue; 
+	  continue;
 	}
 
 	// 3 prong candidates
 	if(f3Prong) { 
-
-	  threeTrackArray->AddAt(postrack1,0);
-	  threeTrackArray->AddAt(negtrack1,1);
-	  threeTrackArray->AddAt(postrack2,2);
+	  if(postrack2->Charge()>0) {
+	    threeTrackArray->AddAt(postrack1,0);
+	    threeTrackArray->AddAt(negtrack1,1);
+	    threeTrackArray->AddAt(postrack2,2);
+	  } else {
+	    threeTrackArray->AddAt(negtrack1,0);
+	    threeTrackArray->AddAt(postrack1,1);
+	    threeTrackArray->AddAt(postrack2,2);
+	  }
 
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
 	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
 	    if(fInputAOD) AddDaughterRefs(v3Prong,event,threeTrackArray);
-	    rd = new(aodCharm3ProngRef[i3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
-	    rd->SetSecondaryVtx(v3Prong);
-	    v3Prong->SetParent(rd);
+	    if(!isLikeSign3Prong) {
+	      rd = new(aodCharm3ProngRef[i3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+	      rd->SetSecondaryVtx(v3Prong);
+	      v3Prong->SetParent(rd);
+	    } else { // isLikeSign3Prong
+	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+	      rd->SetSecondaryVtx(v3Prong);
+	      v3Prong->SetParent(rd);
+	    }
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
 	  if(secVert3PrAOD) {delete secVert3PrAOD; secVert3PrAOD=NULL;} 
 	}
 
 	// 4 prong candidates
-	if(f4Prong
+	if(f4Prong 
+	   // don't make 4 prong with like-sign pairs and triplets
+	   && !isLikeSign2Prong && !isLikeSign3Prong
 	   // track-to-track dca cuts already now
 	   && dcap1n1 < fD0to4ProngsCuts[1]
 	   && dcap2n1 < fD0to4ProngsCuts[1]) {
@@ -608,7 +644,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
       twoTrackArray2->Clear();
       
-      // 2nd LOOP  ON  NEGATIVE  TRACKS (for 3 prong +--)
+      // 2nd LOOP  ON  NEGATIVE  TRACKS (for 3 prong -+-)
       for(iTrkN2=iTrkN1+1; iTrkN2<nSeleTrks; iTrkN2++) {
 
 	if(iTrkN2==iTrkP1 || iTrkN2==iTrkP2 || iTrkN2==iTrkN1) continue;
@@ -621,6 +657,16 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	if(negtrack2->Charge()>0) continue;
 
 	if(!TESTBIT(seleFlags[iTrkN2],kBitDispl)) continue;
+
+	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
+	  if(postrack1->Charge()<0) { // ok: like-sign triplet (---)
+	    isLikeSign3Prong=kTRUE;
+	  } else { // not ok
+	    continue;
+	  }
+	} else { // normal triplet (-+-)
+	  isLikeSign3Prong=kFALSE; 
+	}
 
 	// back to primary vertex
 	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -653,9 +699,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
 	    if(fInputAOD) AddDaughterRefs(v3Prong,event,threeTrackArray);
-	    rd = new(aodCharm3ProngRef[i3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
-	    rd->SetSecondaryVtx(v3Prong);
-	    v3Prong->SetParent(rd);
+	    if(!isLikeSign3Prong) {
+	      rd = new(aodCharm3ProngRef[i3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+	      rd->SetSecondaryVtx(v3Prong);
+	      v3Prong->SetParent(rd);
+	    } else { // isLikeSign3Prong
+	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+	      rd->SetSecondaryVtx(v3Prong);
+	      v3Prong->SetParent(rd);
+	    }
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
 	  if(secVert3PrAOD) {delete secVert3PrAOD; secVert3PrAOD=NULL;}
@@ -665,6 +717,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	delete vertexp1n2;
 
       } // end 2nd loop on negative tracks
+      
       twoTrackArray2->Clear();
       
       negtrack1 = 0;
@@ -698,8 +751,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 		    (Int_t)aodDstarTClArr->GetEntriesFast()));
   }
   if(fLikeSign) {
-    AliDebug(1,Form(" Like-sign pairs in event = %d;\n",
-		    (Int_t)aodLikeSignTClArr->GetEntriesFast()));
+    AliDebug(1,Form(" Like-sign 2Prong in event = %d;\n",
+		    (Int_t)aodLikeSign2ProngTClArr->GetEntriesFast()));
+  }
+  if(fLikeSign && f3Prong) {
+    AliDebug(1,Form(" Like-sign 3Prong in event = %d;\n",
+		    (Int_t)aodLikeSign3ProngTClArr->GetEntriesFast()));
   }
     
 

@@ -40,7 +40,8 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodCharm3ProngTClArr,
 		      TClonesArray *aodCharm4ProngTClArr,
 		      TClonesArray *aodDstarTClArr,
-		      TClonesArray *aodLikeSignTClArr);
+		      TClonesArray *aodLikeSign2ProngTClArr,
+		      TClonesArray *aodLikeSign3ProngTClArr);
 
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
