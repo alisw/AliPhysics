@@ -82,8 +82,8 @@ void runDataReconstruction(const char* input = "/Users/laurent/Alice/Data/Raw/09
   muonRecoParam->SetCalibrationMode(caliboption.Data());
   
   // cut on (non)bending slopes
-  muonRecoParam->SetMaxNonBendingSlope(0.6);
-  muonRecoParam->SetMaxBendingSlope(0.6);
+  muonRecoParam->SetMaxNonBendingSlope(0.4);
+  muonRecoParam->SetMaxBendingSlope(0.5);
   
   // tracking algorithm
   muonRecoParam->MakeMoreTrackCandidates(kTRUE);

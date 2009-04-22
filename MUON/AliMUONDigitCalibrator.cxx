@@ -357,7 +357,7 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
   {
     Int_t saturation(3000);
   
-    if ( gain )
+    if ( gain && ( fApplyGains != fgkNoGain ) )
     {
       saturation = gain->ValueAsInt(manuChannel,4);
     }

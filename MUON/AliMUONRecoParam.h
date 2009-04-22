@@ -61,6 +61,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     SetMaxBendingMomentum(Double_t val) {fMaxBendingMomentum = val;}
   /// return the maximum value (GeV/c) of momentum in bending plane
   Double_t GetMaxBendingMomentum() const {return fMaxBendingMomentum;}
+  
   /// set the maximum value of the non bending slope
   void     SetMaxNonBendingSlope(Double_t val) {fMaxNonBendingSlope = val;}
   /// return the maximum value of the non bending slope
@@ -69,6 +70,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     SetMaxBendingSlope(Double_t val) {fMaxBendingSlope = val;}
   /// return the maximum value of the bending slope
   Double_t GetMaxBendingSlope() const {return fMaxBendingSlope;}
+  
+  /// switch on/off the track selection according to their slope (instead of their impact parameter)
+  void     SelectOnTrackSlope(Bool_t flag) {fSelectTrackOnSlope = flag;}
+  /// return kTRUE/kFALSE if tracks are selected according to their slope/impact parameter
+  Bool_t   SelectOnTrackSlope() const {return fSelectTrackOnSlope;}
   
   /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
   void     SetNonBendingVertexDispersion(Double_t val) {fNonBendingVertexDispersion = val;} 
@@ -347,13 +353,15 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Int_t      fMaxTriggerTracks; ///< maximum number of trigger tracks above which the tracking is cancelled
   Int_t      fMaxTrackCandidates; ///< maximum number of track candidates above which the tracking abort
   
+  Bool_t     fSelectTrackOnSlope; ///< select track candidates according to their slope (instead of their impact parameter)
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,12) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,13) // MUON reco parameters
 };
 
 #endif

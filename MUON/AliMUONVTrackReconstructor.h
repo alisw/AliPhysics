@@ -64,6 +64,8 @@ class AliMUONVTrackReconstructor : public TObject {
 
   const AliMUONRecoParam* fkRecoParam; ///< reference to reco parameters
   
+  Double_t fMaxMCSAngle2; ///< maximum angle dispersion due to MCS
+  
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator
@@ -82,6 +84,8 @@ class AliMUONVTrackReconstructor : public TObject {
   void Finalize();
   /// Finalize the given track
   virtual void FinalizeTrack(AliMUONTrack &track) = 0;
+  
+  Bool_t IsAcceptable(AliMUONTrackParam &trackParam);
   
   TClonesArray* MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2);
 

@@ -71,7 +71,7 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   
   if (bendingMomentum == 0.) return 1.e10;
   
-  const Double_t kCorrectionFactor = 0.9; // impact parameter is 10% overestimated
+  const Double_t kCorrectionFactor = 1.1; // impact parameter is 10% underestimated
   
   return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / bendingMomentum);
 }
@@ -315,6 +315,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   TMatrixD jacob(5,5);
   jacob.Zero();
   TMatrixD dParam(5,1);
+  Double_t direction[5] = {-1.,-1.,1.,1.,-1.};
   for (Int_t i=0; i<5; i++) {
     // Skip jacobian calculation for parameters with no associated error
     if (kParamCov(i,i) <= 0.) continue;
@@ -323,7 +324,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
     for (Int_t j=0; j<5; j++) {
       if (j==i) {
         dParam(j,0) = TMath::Sqrt(kParamCov(i,i));
-	dParam(j,0) *= TMath::Sign(1.,paramSave(j,0)); // variation always in the same direction
+	dParam(j,0) *= TMath::Sign(1.,direction[j]*paramSave(j,0)); // variation always in the same direction
       } else dParam(j,0) = 0.;
     }
     

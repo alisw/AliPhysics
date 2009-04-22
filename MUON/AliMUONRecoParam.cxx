@@ -71,7 +71,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fChargeSigmaCut(4.0),
   fRemoveConnectedTracksInSt12(kFALSE),
   fMaxTriggerTracks(0),
-  fMaxTrackCandidates(0)
+  fMaxTrackCandidates(0),
+  fSelectTrackOnSlope(kFALSE)
 {
   /// Constructor
   
@@ -154,8 +155,9 @@ void AliMUONRecoParam::SetLowFluxParam()
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
   fMaxBendingSlope = 0.4;
-  fNonBendingVertexDispersion = 10.;
-  fBendingVertexDispersion = 10.;
+  fSelectTrackOnSlope = kFALSE;
+  fNonBendingVertexDispersion = 70.;
+  fBendingVertexDispersion = 70.;
   fMaxNonBendingDistanceToTrack = 1.;
   fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 6.;
@@ -196,8 +198,9 @@ void AliMUONRecoParam::SetHighFluxParam()
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
   fMaxBendingSlope = 0.4;
-  fNonBendingVertexDispersion = 10.;
-  fBendingVertexDispersion = 10.;
+  fSelectTrackOnSlope = kFALSE;
+  fNonBendingVertexDispersion = 70.;
+  fBendingVertexDispersion = 70.;
   fMaxNonBendingDistanceToTrack = 1.;
   fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 6.;
@@ -236,12 +239,13 @@ void AliMUONRecoParam::SetCosmicParam()
   SetEventSpecie(AliRecoParam::kCosmic);
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 10000000.;
-  fMaxNonBendingSlope = 0.3;
-  fMaxBendingSlope = 0.4;
-  fNonBendingVertexDispersion = 10.;
-  fBendingVertexDispersion = 10.;
-  fMaxNonBendingDistanceToTrack = 10.;
-  fMaxBendingDistanceToTrack = 10.;
+  fMaxNonBendingSlope = 0.4;
+  fMaxBendingSlope = 0.5;
+  fSelectTrackOnSlope = kTRUE;
+  fNonBendingVertexDispersion = 200.;
+  fBendingVertexDispersion = 200.;
+  fMaxNonBendingDistanceToTrack = 1.;
+  fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 7.;
   fSigmaCutForImprovement = 7.;
   fSigmaCutForTrigger = 8.;
@@ -325,16 +329,14 @@ void AliMUONRecoParam::Print(Option_t *option) const
   if (fSaveFullClusterInESD) cout<<Form("Save all cluster info in ESD for %5.2f %% of events",fPercentOfFullClusterInESD)<<endl;
   else cout<<"Save partial cluster info in ESD"<<endl;
     
-  cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
+  cout<<"Selection of track candidates:"<<endl;
+  if (fSelectTrackOnSlope) cout<<Form("\t- Non-bending slope < %5.2f",fMaxNonBendingSlope)<<endl;
+  else cout<<"\t- Impact parameter < 3 * vertex dispersion in the non-bending direction"<<endl;
+  cout<<Form("\t- if B!=0: Bending momentum > %5.2f",fMinBendingMomentum)<<endl;
+  if (fSelectTrackOnSlope) cout<<Form("\t  if B==0: Bending slope < %5.2f",fMaxBendingSlope)<<endl;
+  else cout<<"\t  if B==0: Impact parameter < 3 * vertex dispersion in the bending direction"<<endl;
   
-  cout<<Form("Maximum non bending slope = %5.2f",fMaxNonBendingSlope)<<endl;
-  
-  cout<<Form("Maximum bending slope (used only if B=0) = %5.2f",fMaxBendingSlope)<<endl;
-  
-  if (strstr(fTrackingMode,"ORIGINAL"))
-    cout<<Form("Vertex dispertion = (%5.2f,%5.2f)",fNonBendingVertexDispersion,fBendingVertexDispersion)<<endl;
-  else if (strstr(option,"FULL"))
-    cout<<Form("Vertex dispertion (used for original tracking only) = (%5.2f,%5.2f)",fNonBendingVertexDispersion,fBendingVertexDispersion)<<endl;
+  cout<<Form("Vertex dispersion (used to estimate initial bending momentum resolution) = (%5.2f,%5.2f)",fNonBendingVertexDispersion,fBendingVertexDispersion)<<endl;
   
   cout<<Form("Maximum distance to track = (%5.2f,%5.2f)",fMaxNonBendingDistanceToTrack,fMaxBendingDistanceToTrack)<<endl;
   

@@ -116,13 +116,21 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
       
       // Remove track if no cluster found on a requested station
       // or abort tracking if there are too many candidates
-      if (!clusterFound && GetRecoParam()->RequestStation(7-istat)) {
-	fRecTracksPtr->Remove(track);
-	fNRecTracks--;
-      } else if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
-	AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
-	delete segments;
-	return kFALSE;
+      if (GetRecoParam()->RequestStation(7-istat)) {
+	if (!clusterFound) {
+	  fRecTracksPtr->Remove(track);
+	  fNRecTracks--;
+	} else if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	  delete segments;
+	  return kFALSE;
+	}
+      } else {
+	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
+	  delete segments;
+	  return kFALSE;
+	}
       }
       
     }
@@ -145,21 +153,17 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
     // retrace tracks using Kalman filter
     RetraceTrack(*track,kTRUE);
     
-    // remove tracks with absolute bending momentum out of limits
-    if (GetRecoParam()->MakeTrackCandidatesFast() && AliMUONTrackExtrap::IsFieldON()) {
-      AliMUONTrackParam *trackParam = (AliMUONTrackParam*)track->GetTrackParamAtCluster()->First();
-      Double_t bendingMomentum = TMath::Abs(1. / trackParam->GetInverseBendingMomentum());
-      if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() || bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) {
-	fRecTracksPtr->Remove(track);
-	fNRecTracks--;
-      }
+    // remove tracks out of limits
+    if (!IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
     }
     
   }
   
   // Keep only the best tracks if required
   if (!GetRecoParam()->TrackAllTracks()) RemoveDoubleTracks();
-  else if (GetRecoParam()->MakeTrackCandidatesFast() && AliMUONTrackExtrap::IsFieldON()) fRecTracksPtr->Compress();
+  else if (AliMUONTrackExtrap::IsFieldON()) fRecTracksPtr->Compress();
   
   AliDebug(1,Form("Number of good candidates = %d",fNRecTracks));
   
@@ -223,8 +227,8 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
 	}
 	
 	// abort tracking if there are too many candidates
-	if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
 	  delete segments;
 	  return kFALSE;
 	}
@@ -248,13 +252,9 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
     RetraceTrack(*track,kTRUE);
     
     // remove tracks with absolute bending momentum out of limits
-    if (AliMUONTrackExtrap::IsFieldON()) {
-      AliMUONTrackParam *trackParam = (AliMUONTrackParam*)track->GetTrackParamAtCluster()->First();
-      Double_t bendingMomentum = TMath::Abs(1. / trackParam->GetInverseBendingMomentum());
-      if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() || bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) {
-	fRecTracksPtr->Remove(track);
-	fNRecTracks--;
-      }
+    if (!IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
     }
     
   }
@@ -471,9 +471,16 @@ Bool_t AliMUONTrackReconstructorK::FollowTracks(AliMUONVClusterStore& clusterSto
       }
       
       // abort tracking if there are too many candidates
-      if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
-	AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
-	return kFALSE;
+      if (GetRecoParam()->RequestStation(station)) {
+	if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	  return kFALSE;
+	}
+      } else {
+	if ((fNRecTracks + currentNRecTracks - iRecTrack - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
+	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + currentNRecTracks - iRecTrack - 1));
+	  return kFALSE;
+	}
       }
       
     }
@@ -501,7 +508,6 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInChamber(AliMUONTrack &trackCandi
   /// return kTRUE if new cluster(s) have been found (otherwise return kFALSE)
   AliDebug(1,Form("Enter FollowTrackInChamber(1..) %d", nextChamber+1));
   
-  Double_t bendingMomentum;
   Double_t chi2OfCluster;
   Double_t maxChi2OfCluster = 2. * GetRecoParam()->GetSigmaCutForTracking() *
 				   GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
@@ -591,12 +597,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInChamber(AliMUONTrack &trackCandi
       // Compute new track parameters including new cluster using kalman filter
       addChi2TrackAtCluster = RunKalmanFilter(extrapTrackParamAtCluster);
       
-      // skip track with absolute bending momentum out of limits
-      if (AliMUONTrackExtrap::IsFieldON()) {
-        bendingMomentum = TMath::Abs(1. / extrapTrackParamAtCluster.GetInverseBendingMomentum());
-        if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	    bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) continue;
-      }
+      // skip track out of limits
+      if (!IsAcceptable(extrapTrackParamAtCluster)) continue;
       
       // remember a cluster was found
       foundOneCluster = kTRUE;
@@ -679,7 +681,6 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     ch2 = 2*nextStation+1;
   }
   
-  Double_t bendingMomentum;
   Double_t chi2OfCluster;
   Double_t maxChi2OfCluster = 2. * GetRecoParam()->GetSigmaCutForTracking() *
 				   GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
@@ -782,12 +783,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
       // Compute new track parameters including "clusterCh2" using kalman filter
       addChi2TrackAtCluster2 = RunKalmanFilter(extrapTrackParamAtCluster2);
       
-      // skip track with absolute bending momentum out of limits
-      if (AliMUONTrackExtrap::IsFieldON()) {
-	bendingMomentum = TMath::Abs(1. / extrapTrackParamAtCluster2.GetInverseBendingMomentum());
-	if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	    bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) continue;
-      }
+      // skip track out of limits
+      if (!IsAcceptable(extrapTrackParamAtCluster2)) continue;
       
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -840,12 +837,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
           // Compute new track parameters including "clusterCh1" using kalman filter
           addChi2TrackAtCluster1 = RunKalmanFilter(extrapTrackParamAtCluster1);
           
-	  // skip track with absolute bending momentum out of limits
-	  if (AliMUONTrackExtrap::IsFieldON()) {
-	    bendingMomentum = TMath::Abs(1. / extrapTrackParamAtCluster1.GetInverseBendingMomentum());
-	    if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-		bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) continue;
-	  }
+	  // skip track out of limits
+	  if (!IsAcceptable(extrapTrackParamAtCluster1)) continue;
 	  
 	  // remember a second cluster was found
 	  foundSecondCluster = kTRUE;
@@ -970,12 +963,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
         // Compute new track parameters including "clusterCh1" using kalman filter
         addChi2TrackAtCluster1 = RunKalmanFilter(extrapTrackParamAtCluster1);
         
-	// skip track with absolute bending momentum out of limits
-	if (AliMUONTrackExtrap::IsFieldON()) {
-	  bendingMomentum = TMath::Abs(1. / extrapTrackParamAtCluster1.GetInverseBendingMomentum());
-	  if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	      bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) continue;
-	}
+	// skip track out of limits
+	if (!IsAcceptable(extrapTrackParamAtCluster1)) continue;
 	
 	// remember a cluster was found
 	foundOneCluster = kTRUE;
@@ -1232,12 +1221,8 @@ Bool_t AliMUONTrackReconstructorK::RecoverTrack(AliMUONTrack &trackCandidate, Al
   // Re-calculate track parameters at the (new) first cluster
   RetracePartialTrack(trackCandidate,(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->UncheckedAt(1));
   
-  // skip track with absolute bending momentum out of limits
-  if (AliMUONTrackExtrap::IsFieldON()) {
-    Double_t bendingMomentum = TMath::Abs(1. / ((AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First())->GetInverseBendingMomentum());
-    if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) return kFALSE;
-  }
+  // skip track out of limits
+  if (!IsAcceptable(*((AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First()))) return kFALSE;
   
   // Look for new cluster(s) in next station
   return FollowTrackInStation(trackCandidate, clusterStore, nextStation);

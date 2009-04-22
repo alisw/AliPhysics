@@ -52,6 +52,7 @@ AliMUONTrackParam::AliMUONTrackParam()
     fLocalChi2(0.)
 {
   /// Constructor
+  fParameters.Zero();
 }
 
   //_________________________________________________________________________

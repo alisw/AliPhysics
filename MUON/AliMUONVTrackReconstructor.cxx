@@ -100,7 +100,8 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(const AliMUONRecoParam* r
 fRecTracksPtr(0x0),
 fNRecTracks(0),
 fClusterServer(clusterServer),
-fkRecoParam(recoParam)
+fkRecoParam(recoParam),
+fMaxMCSAngle2(0.)
 {
   /// Constructor for class AliMUONVTrackReconstructor
   /// WARNING: if clusterServer=0x0, no clusterization will be possible at this level
@@ -110,6 +111,13 @@ fkRecoParam(recoParam)
   
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField();
+  
+  // set the maximum MCS angle in chamber from the minimum acceptable momentum
+  AliMUONTrackParam param;
+  Double_t inverseBendingP = (GetRecoParam()->GetMinBendingMomentum() > 0.) ? 1./GetRecoParam()->GetMinBendingMomentum() : 1.;
+  param.SetInverseBendingMomentum(inverseBendingP);
+  fMaxMCSAngle2 = AliMUONTrackExtrap::GetMCSAngle2(param, AliMUONConstants::ChamberThicknessInX0(), 1.);
+  
 }
 
   //__________________________________________________________________________
@@ -176,17 +184,93 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   }
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
+Bool_t AliMUONVTrackReconstructor::IsAcceptable(AliMUONTrackParam &trackParam)
+{
+  /// Return kTRUE if the track is within given limits on momentum/angle/origin
+  
+  const TMatrixD& kParamCov = trackParam.GetCovariances();
+  Int_t chamber = trackParam.GetClusterPtr()->GetChamberId();
+  Double_t z = trackParam.GetZ();
+  Double_t sigmaCut = GetRecoParam()->GetSigmaCutForTracking();
+  
+  // MCS dipersion
+  Double_t angleMCS2 = 0.;
+  if (AliMUONTrackExtrap::IsFieldON() && chamber < 6)
+    angleMCS2 = AliMUONTrackExtrap::GetMCSAngle2(trackParam, AliMUONConstants::ChamberThicknessInX0(), 1.);
+  else angleMCS2 = fMaxMCSAngle2;
+  Double_t impactMCS2 = 0.;
+  if (!GetRecoParam()->SelectOnTrackSlope()) for (Int_t iCh=0; iCh<=chamber; iCh++)
+    impactMCS2 += AliMUONConstants::DefaultChamberZ(chamber) * AliMUONConstants::DefaultChamberZ(chamber) * angleMCS2;
+  
+  // ------ track selection in non bending direction ------
+  if (GetRecoParam()->SelectOnTrackSlope()) {
+    
+    // check if non bending slope is within tolerances
+    Double_t nonBendingSlopeErr = TMath::Sqrt(kParamCov(1,1) + (chamber + 1.) * angleMCS2);
+    if ((TMath::Abs(trackParam.GetNonBendingSlope()) - sigmaCut * nonBendingSlopeErr) > GetRecoParam()->GetMaxNonBendingSlope()) return kFALSE;
+    
+  } else {
+    
+    // or check if non bending impact parameter is within tolerances
+    Double_t nonBendingImpactParam = TMath::Abs(trackParam.GetNonBendingCoor() - z * trackParam.GetNonBendingSlope());
+    Double_t nonBendingImpactParamErr = TMath::Sqrt(kParamCov(0,0) + z * z * kParamCov(1,1) - 2. * z * kParamCov(0,1) + impactMCS2);
+    if ((nonBendingImpactParam - sigmaCut * nonBendingImpactParamErr) > (3. * GetRecoParam()->GetNonBendingVertexDispersion())) return kFALSE;
+    
+  }
+  
+  // ------ track selection in bending direction ------
+  if (AliMUONTrackExtrap::IsFieldON()) { // depending whether the field is ON or OFF
+    
+    // check if bending momentum is within tolerances
+    Double_t bendingMomentum = TMath::Abs(1. / trackParam.GetInverseBendingMomentum());
+    Double_t bendingMomentumErr = TMath::Sqrt(kParamCov(4,4)) * bendingMomentum * bendingMomentum;
+    if (chamber < 6 && (bendingMomentum + sigmaCut * bendingMomentumErr) < GetRecoParam()->GetMinBendingMomentum()) return kFALSE;
+    else if ((bendingMomentum + 3. * bendingMomentumErr) < GetRecoParam()->GetMinBendingMomentum()) return kFALSE;
+    
+  } else {
+    
+    if (GetRecoParam()->SelectOnTrackSlope()) {
+      
+      // check if bending slope is within tolerances
+      Double_t bendingSlopeErr = TMath::Sqrt(kParamCov(3,3) + (chamber + 1.) * angleMCS2);
+      if ((TMath::Abs(trackParam.GetBendingSlope()) - sigmaCut * bendingSlopeErr) > GetRecoParam()->GetMaxBendingSlope()) return kFALSE;
+      
+    } else {
+      
+      // or check if bending impact parameter is within tolerances
+      Double_t bendingImpactParam = TMath::Abs(trackParam.GetBendingCoor() - z * trackParam.GetBendingSlope());
+      Double_t bendingImpactParamErr = TMath::Sqrt(kParamCov(2,2) + z * z * kParamCov(3,3) - 2. * z * kParamCov(2,3) + impactMCS2);
+      if ((bendingImpactParam - sigmaCut * bendingImpactParamErr) > (3. * GetRecoParam()->GetBendingVertexDispersion())) return kFALSE;
+      
+    }
+    
+  }
+  
+  return kTRUE;
+  
+}
+
+//__________________________________________________________________________
 TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2)
 {
   /// To make the list of segments from the list of clusters in the 2 given chambers.
   /// Return a new TClonesArray of segments.
   /// It is the responsibility of the user to delete it afterward.
   AliDebug(1,Form("Enter MakeSegmentsBetweenChambers (1..) %d-%d", ch1+1, ch2+1));
+  AliCodeTimerAuto("");
   
   AliMUONVCluster *cluster1, *cluster2;
   AliMUONObjectPair *segment;
-  Double_t nonBendingSlope = 0, bendingSlope = 0, impactParam = 0., bendingMomentum = 0.; // to avoid compilation warning
+  Double_t z1 = 0., z2 = 0., dZ = 0.;
+  Double_t nonBendingSlope = 0., nonBendingSlopeErr = 0., nonBendingImpactParam = 0., nonBendingImpactParamErr = 0.;
+  Double_t bendingSlope = 0., bendingSlopeErr = 0., bendingImpactParam = 0., bendingImpactParamErr = 0., bendingImpactParamErr2 = 0.;
+  Double_t bendingMomentum = 0., bendingMomentumErr = 0.;
+  Double_t bendingVertexDispersion2 = GetRecoParam()->GetBendingVertexDispersion() * GetRecoParam()->GetBendingVertexDispersion();
+  Double_t impactMCS2 = 0; // maximum impact parameter dispersion**2 due to MCS in chamber
+  if (!GetRecoParam()->SelectOnTrackSlope() || AliMUONTrackExtrap::IsFieldON()) for (Int_t iCh=0; iCh<=ch1; iCh++)
+    impactMCS2 += AliMUONConstants::DefaultChamberZ(iCh) * AliMUONConstants::DefaultChamberZ(iCh) * fMaxMCSAngle2;
+  Double_t sigmaCut = GetRecoParam()->GetSigmaCutForTracking();
   
   // Create iterators to loop over clusters in both chambers
   TIter nextInCh1(clusterStore.CreateChamberIterator(ch1,ch1));
@@ -197,41 +281,64 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
   
   // Loop over clusters in the first chamber of the station
   while ( ( cluster1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {
+    z1 = cluster1->GetZ();
     
     // reset cluster iterator of chamber 2
     nextInCh2.Reset();
     
     // Loop over clusters in the second chamber of the station
     while ( ( cluster2 = static_cast<AliMUONVCluster*>(nextInCh2()) ) ) {
+      z2 = cluster2->GetZ();
+      dZ = z1 - z2;
       
-      // non bending slope
-      nonBendingSlope = (cluster1->GetX() - cluster2->GetX()) / (cluster1->GetZ() - cluster2->GetZ());
-      
-      // check if non bending slope is within tolerances
-      if (TMath::Abs(nonBendingSlope) > GetRecoParam()->GetMaxNonBendingSlope()) continue;
-      
-      // bending slope
-      bendingSlope = (cluster1->GetY() - cluster2->GetY()) / (cluster1->GetZ() - cluster2->GetZ());
-      
-      // check the bending momentum of the bending slope depending if the field is ON or OFF
-      if (AliMUONTrackExtrap::IsFieldON()) {
+      // ------ track selection in non bending direction ------
+      nonBendingSlope = (cluster1->GetX() - cluster2->GetX()) / dZ;
+      if (GetRecoParam()->SelectOnTrackSlope()) {
 	
-	// impact parameter
-	impactParam = cluster1->GetY() - cluster1->GetZ() * bendingSlope;
-	
-	// absolute value of bending momentum
-	bendingMomentum = TMath::Abs(AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(impactParam));
-	
-	// check if bending momentum is within tolerances
-	if (bendingMomentum < GetRecoParam()->GetMinBendingMomentum() ||
-	    bendingMomentum > GetRecoParam()->GetMaxBendingMomentum()) continue;
+	// check if non bending slope is within tolerances
+	nonBendingSlopeErr = TMath::Sqrt((cluster1->GetErrX2() + cluster2->GetErrX2()) / dZ / dZ + (ch1 + 1.) * fMaxMCSAngle2);
+	if ((TMath::Abs(nonBendingSlope) - sigmaCut * nonBendingSlopeErr) > GetRecoParam()->GetMaxNonBendingSlope()) continue;
 	
       } else {
 	
-	// check if non bending slope is within tolerances
-	if (TMath::Abs(bendingSlope) > GetRecoParam()->GetMaxBendingSlope()) continue;
-      
+	// or check if non bending impact parameter is within tolerances
+	nonBendingImpactParam = TMath::Abs(cluster1->GetX() - cluster1->GetZ() * nonBendingSlope);
+	nonBendingImpactParamErr = TMath::Sqrt((z1 * z1 * cluster2->GetErrX2() + z2 * z2 * cluster1->GetErrX2()) / dZ / dZ + impactMCS2);
+	if ((nonBendingImpactParam - sigmaCut * nonBendingImpactParamErr) > (3. * GetRecoParam()->GetNonBendingVertexDispersion())) continue;
+	
       }
+      
+      // ------ track selection in bending direction ------
+      bendingSlope = (cluster1->GetY() - cluster2->GetY()) / dZ;
+      if (AliMUONTrackExtrap::IsFieldON()) { // depending whether the field is ON or OFF
+	
+	// check if bending momentum is within tolerances
+	bendingImpactParam = cluster1->GetY() - cluster1->GetZ() * bendingSlope;
+	bendingImpactParamErr2 = (z1 * z1 * cluster2->GetErrY2() + z2 * z2 * cluster1->GetErrY2()) / dZ / dZ + impactMCS2;
+	bendingMomentum = TMath::Abs(AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpactParam));
+	bendingMomentumErr = TMath::Sqrt((bendingVertexDispersion2 + bendingImpactParamErr2) /
+					 bendingImpactParam / bendingImpactParam + 0.01) * bendingMomentum;
+	if ((bendingMomentum + 3. * bendingMomentumErr) < GetRecoParam()->GetMinBendingMomentum()) continue;
+	
+      } else {
+	
+	if (GetRecoParam()->SelectOnTrackSlope()) {
+	  
+	  // check if bending slope is within tolerances
+	  bendingSlopeErr = TMath::Sqrt((cluster1->GetErrY2() + cluster2->GetErrY2()) / dZ / dZ + (ch1 + 1.) * fMaxMCSAngle2);
+	  if ((TMath::Abs(bendingSlope) - sigmaCut * bendingSlopeErr) > GetRecoParam()->GetMaxBendingSlope()) continue;
+	  
+	} else {
+	  
+	  // or check if bending impact parameter is within tolerances
+	  bendingImpactParam = TMath::Abs(cluster1->GetY() - cluster1->GetZ() * bendingSlope);
+	  bendingImpactParamErr = TMath::Sqrt((z1 * z1 * cluster2->GetErrY2() + z2 * z2 * cluster1->GetErrY2()) / dZ / dZ + impactMCS2);
+	  if ((bendingImpactParam - sigmaCut * bendingImpactParamErr) > (3. * GetRecoParam()->GetBendingVertexDispersion())) continue;
+	  
+	}
+	
+      }
+      
       // make new segment
       segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(cluster1, cluster2, kFALSE, kFALSE);
       
@@ -469,16 +576,18 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   AliMUONTrackParam extrapTrackParam(trackParam);
   AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(chamber));
   
-  // build the searching area using the track resolution and the maximum-distance-to-track value
+  // build the searching area using the track and chamber resolutions and the maximum-distance-to-track value
   const TMatrixD& kParamCov = extrapTrackParam.GetCovariances();
-  Double_t errX2 = kParamCov(0,0) + kMaxDZ * kMaxDZ * kParamCov(1,1) + 2. * kMaxDZ * TMath::Abs(kParamCov(0,1));
-  Double_t errY2 = kParamCov(2,2) + kMaxDZ * kMaxDZ * kParamCov(3,3) + 2. * kMaxDZ * TMath::Abs(kParamCov(2,3));
+  Double_t errX2 = kParamCov(0,0) + kMaxDZ * kMaxDZ * kParamCov(1,1) + 2. * kMaxDZ * TMath::Abs(kParamCov(0,1)) +
+                   GetRecoParam()->GetDefaultNonBendingReso(chamber) * GetRecoParam()->GetDefaultNonBendingReso(chamber);
+  Double_t errY2 = kParamCov(2,2) + kMaxDZ * kMaxDZ * kParamCov(3,3) + 2. * kMaxDZ * TMath::Abs(kParamCov(2,3)) +
+		   GetRecoParam()->GetDefaultBendingReso(chamber) * GetRecoParam()->GetDefaultBendingReso(chamber);
   Double_t dX = TMath::Abs(trackParam.GetNonBendingSlope()) * kMaxDZ +
 		GetRecoParam()->GetMaxNonBendingDistanceToTrack() +
-		GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errX2);
+		GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(2. * errX2);
   Double_t dY = TMath::Abs(trackParam.GetBendingSlope()) * kMaxDZ +
 		GetRecoParam()->GetMaxBendingDistanceToTrack() +
-		GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2);
+		GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(2. * errY2);
   AliMpArea area(extrapTrackParam.GetNonBendingCoor(), 
                  extrapTrackParam.GetBendingCoor(),
                  dX, dY);
@@ -521,9 +630,12 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
   const TMatrixD& kParamCov = trackParamAtCluster.GetCovariances();
   Double_t sigmaX2 = kParamCov(0,0) + cluster->GetErrX2();
   Double_t sigmaY2 = kParamCov(2,2) + cluster->GetErrY2();
+  Double_t covXY   = kParamCov(0,2);
+  Double_t det     = sigmaX2 * sigmaY2 - covXY * covXY;
   
   // Compute chi2
-  return dX * dX / sigmaX2 + dY * dY / sigmaY2;
+  if (det == 0.) return 1.e10;
+  return (dX * dX * sigmaY2 + dY * dY * sigmaX2 - 2. * dX * dY * covXY) / det;
   
 }
 
@@ -531,7 +643,7 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
 Bool_t AliMUONVTrackReconstructor::TryOneClusterFast(const AliMUONTrackParam &trackParam, const AliMUONVCluster* cluster)
 {
 /// Test the compatibility between the track and the cluster
-/// given the track resolution + the maximum-distance-to-track value
+/// given the track and cluster resolutions + the maximum-distance-to-track value
 /// and assuming linear propagation of the track:
 /// return kTRUE if they are compatibles
   
@@ -539,12 +651,12 @@ Bool_t AliMUONVTrackReconstructor::TryOneClusterFast(const AliMUONTrackParam &tr
   Double_t dX = cluster->GetX() - (trackParam.GetNonBendingCoor() + trackParam.GetNonBendingSlope() * dZ);
   Double_t dY = cluster->GetY() - (trackParam.GetBendingCoor() + trackParam.GetBendingSlope() * dZ);
   const TMatrixD& kParamCov = trackParam.GetCovariances();
-  Double_t errX2 = kParamCov(0,0) + dZ * dZ * kParamCov(1,1) + 2. * dZ * kParamCov(0,1);
-  Double_t errY2 = kParamCov(2,2) + dZ * dZ * kParamCov(3,3) + 2. * dZ * kParamCov(2,3);
+  Double_t errX2 = kParamCov(0,0) + dZ * dZ * kParamCov(1,1) + 2. * dZ * kParamCov(0,1) + cluster->GetErrX2();
+  Double_t errY2 = kParamCov(2,2) + dZ * dZ * kParamCov(3,3) + 2. * dZ * kParamCov(2,3) + cluster->GetErrY2();
 
-  Double_t dXmax = GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errX2) +
+  Double_t dXmax = GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(2. * errX2) +
                    GetRecoParam()->GetMaxNonBendingDistanceToTrack();
-  Double_t dYmax = GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2) +
+  Double_t dYmax = GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(2. * errY2) +
 		   GetRecoParam()->GetMaxBendingDistanceToTrack();
   
   if (TMath::Abs(dX) > dXmax || TMath::Abs(dY) > dYmax) return kFALSE;
