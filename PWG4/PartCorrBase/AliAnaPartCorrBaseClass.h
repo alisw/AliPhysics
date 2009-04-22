@@ -8,6 +8,8 @@
 // Base class for analysis algorithms
 //-- Author: Gustavo Conesa (INFN-LNF)
 
+#include <cstdlib>
+
 //ROOT
 class TClonesArray ;
 class TRefArray ;

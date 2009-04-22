@@ -23,6 +23,8 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
+#include <cstdlib>
+
 // --- ROOT system ---
 #include "TClonesArray.h"
 class TString ;

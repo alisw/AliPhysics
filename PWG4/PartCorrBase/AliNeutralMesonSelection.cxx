@@ -293,10 +293,10 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   printf("mass : %f  \n", fM );
   printf("Invariant mass limits : %f < m < %f \n", fInvMassMinCut , fInvMassMinCut );
   printf("Angle selection param: \n");
-  printf("p0 :     %f", fAngleMaxParam.At(0));
-  printf("p1 :     %f", fAngleMaxParam.At(1));
-  printf("p2 :     %f", fAngleMaxParam.At(2));
-  printf("p3 :     %f", fAngleMaxParam.At(3));
+  printf("p0 :     %f\n", fAngleMaxParam.At(0));
+  printf("p1 :     %f\n", fAngleMaxParam.At(1));
+  printf("p2 :     %f\n", fAngleMaxParam.At(2));
+  printf("p3 :     %f\n", fAngleMaxParam.At(3));
 
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
   

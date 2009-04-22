@@ -42,6 +42,7 @@
 #include "TParticle.h"
 #include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
+#include "AliLog.h"
 
 #ifdef __PHOSGEO__
 	#include "AliPHOSGeoUtils.h"
@@ -482,7 +483,7 @@ void AliAnaPi0::Terminate()
 {
   //Do some calculations and plots from the final histograms.
   
-  printf(" *** %s Terminate:", GetName()) ; 
+  printf(" *** %s Terminate:\n", GetName()) ; 
   
   if (!fhRe1) {
      Error("Terminate", "Remote output histograms not imported in AliAnaPi0 object");
@@ -571,7 +572,7 @@ void AliAnaPi0::Terminate()
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
-  printf("!! All the eps files are in %s.tar.gz !!!", GetName());
+  printf("!! All the eps files are in %s.tar.gz !!!\n", GetName());
 
 }
 

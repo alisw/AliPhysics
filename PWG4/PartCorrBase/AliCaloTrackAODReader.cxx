@@ -223,7 +223,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
     SetOutputEvent(aod);
   }
   else{ 
-    printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - ABORT::Unknown data format: %s",input->GetName());
+    printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - ABORT::Unknown data format: %s\n",input->GetName());
     abort();
   }
   
