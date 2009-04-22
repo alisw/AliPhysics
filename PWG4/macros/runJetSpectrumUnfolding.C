@@ -337,6 +337,7 @@ void FillSpecFromFiles(const char* fileNameReal = "histos_pwg4spec.root",const c
        Int_t binz = jetSpec->GetGenSpectrum()->GetYaxis()->FindBin(z);
        Float_t cont = jetSpec->GetGenSpectrum()->GetBinContent(bine,binz);
        Float_t err  = jetSpec->GetGenSpectrum()->GetBinError(bine,binz);
+       // merging of bins happens here!
        jetSpec->GetGenSpectrum()->SetBinContent(bine, binz, cont + fhEGenZGen->GetBinContent(te, tz));
        jetSpec->GetGenSpectrum()->SetBinError(bine, binz, err + fhEGenZGen->GetBinError(te, tz));
     }
@@ -359,6 +360,7 @@ void FillSpecFromFiles(const char* fileNameReal = "histos_pwg4spec.root",const c
     bin[3] = jetSpec->GetCorrelation()->GetAxis(3)->FindBin(var[3]);        
     Float_t cont = jetSpec->GetCorrelation()->GetBinContent(bin);
     Float_t err  = jetSpec->GetCorrelation()->GetBinError(bin);
+    // merging of bins happens here!
     jetSpec->GetCorrelation()->SetBinContent(bin, cont + fhCorrelation->GetBinContent(idx));
     jetSpec->GetCorrelation()->SetBinError(bin, err + fhCorrelation->GetBinError(idx));
   }
@@ -434,10 +436,10 @@ void correct(){
   loadlibs();
   // rec and gen
   //  FillSpecFromFiles("pwg4spec_15-50_all.root","pwg4spec_allpt.root");
-  FillSpecFromFiles("pwg4spec_allpt.root","pwg4spec_allpt.root");
+  FillSpecFromFiles("pwg4spec_allpt_16.root","pwg4spec_allpt_16.root");
 
   char name[100];
-  sprintf(name, "unfolded_pwg4spec.root");
+  sprintf(name, "unfolded_pwg4spec_16.root");
 
   unfold("gen_pwg4spec.root", "unfolding", "rec_pwg4spec.root", name);
   //draw(name, "unfolding", 1); 
