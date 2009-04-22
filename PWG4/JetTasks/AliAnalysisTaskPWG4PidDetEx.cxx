@@ -126,12 +126,6 @@ AliAnalysisTaskPWG4PidDetEx::AliAnalysisTaskPWG4PidDetEx(const char *name):
 AliAnalysisTaskPWG4PidDetEx::~AliAnalysisTaskPWG4PidDetEx()
 {
   // Destructor
-  // histograms are in the output list and deleted when the output
-  // list is deleted by the TSelector dtor
-  if (fListOfHists) {
-    delete fListOfHists;
-    fListOfHists = 0;
-  }
 }
 
 // //______________________________________________________________________________

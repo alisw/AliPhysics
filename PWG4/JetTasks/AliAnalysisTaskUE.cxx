@@ -132,7 +132,7 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
   
   // We need AOD with tracks and jets.
   // Since AOD can be either connected to the InputEventHandler (input chain fron AOD files)
-  // or to the OutputEventHandler ( AOD is created by a previus task in the train )
+  // or to the OutputEventHandler ( AOD is create by a previus task in the train )
   // we need to check where it is and get the pointer to AODEvent in the right way
   
   if (fDebug > 1) AliInfo("ConnectInputData() \n");
@@ -177,9 +177,12 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
   if (fDebug > 1) AliInfo("CreateOutPutData()");
   //
   //  Histograms
+
+  OpenFile(0);
   CreateHistos();
-  fListOfHistos->SetOwner(kTRUE);  
-  //  OpenFile(0);
+  //  fListOfHistos->SetOwner(kTRUE);  
+
+  
 }
 
 
@@ -790,7 +793,24 @@ void  AliAnalysisTaskUE::CreateHistos()
   fhRegionMaxPartPtMaxVsEt->Sumw2();
   fListOfHistos->Add( fhRegionMaxPartPtMaxVsEt );    // At(20)
   
+  
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
+  fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
+  fSettingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
+  fSettingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
+  fSettingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
+  fSettingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
+  fSettingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  fSettingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
+  fSettingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
+  fSettingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
+  fSettingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
+  fSettingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
+  fSettingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
+  fSettingsTree->Fill();
+
+  
   fListOfHistos->Add( fSettingsTree );    // At(21)
   
   /*   
@@ -810,7 +830,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
   //
   
   //Save Analysis Settings
-  WriteSettings();
+  //  WriteSettings();
   
   // Normalize histos to region area TODO: 
   // Normalization done at Analysis, taking into account 
@@ -963,23 +983,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
 }
 
 void  AliAnalysisTaskUE::WriteSettings()
-{
-  
-  fSettingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
-  fSettingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
-  fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
-  fSettingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
-  fSettingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
-  fSettingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
-  fSettingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
-  fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
-  fSettingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
-  fSettingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
-  fSettingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
-  fSettingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
-  fSettingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
-  fSettingsTree->Fill();
-  
+{ 
   if (fDebug>5){
     AliInfo(" All Analysis Settings in Saved Tree");
     fSettingsTree->Scan();

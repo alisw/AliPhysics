@@ -20,7 +20,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     AliAnalysisTaskUE(const char* name="AliAnalysisTaskUE");
     virtual           ~AliAnalysisTaskUE() {;}
     
-    // Implementation of interface methods
+    // Implementation of interace methods
     virtual     void   ConnectInputData(Option_t *);
     virtual     void   CreateOutputObjects();
     virtual     void   Exec(Option_t *option);
