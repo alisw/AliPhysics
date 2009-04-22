@@ -13,7 +13,7 @@ Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kFALSE; //does not work yet 24/12/08
+Bool_t MCEP  = kTRUE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -48,8 +48,6 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 //mLocalPAR: Analyze data on your computer using root + PAR files
 //mLocalSource: Analyze data on your computer using root + source files
 
-
-
 Int_t offset = 0;
                                           
 int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
@@ -73,6 +71,12 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   if (mode == mLocal || mode == mLocalPAR) {
     // AliFlow event in aliroot or with pars
     AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
+    //    fEventMaker->SetNoOfLoops(2);
+    //    fEventMaker->SetEllipticFlowValue(0.05);
+    //    fEventMaker->SetSigmaFlow(0.005);
+    //    fEventMaker->SetMultiplicityOfEvent(250);
+    //    fEventMaker->SetSigmaMult(10.);
+    //    fEventMaker->UseRandomRP();
   }
   else if (mode == mLocalSource) {
     // flow event in source mode
