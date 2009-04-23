@@ -2,7 +2,7 @@
 Executable = "aliroot_new";
 Jobtag={"comment:jet-jet pp, PYTHIA, no quenching"};
 
-Packages={"VO_ALICE@AliRoot::v4-16-Rev-07","VO_ALICE@GEANT3::v1-10","VO_ALICE@ROOT::v5-23-02","VO_ALICE@APISCONFIG::V2.4"};
+Packages={"VO_ALICE@AliRoot::v4-16-Rev-09","VO_ALICE@GEANT3::v1-10","VO_ALICE@ROOT::v5-23-02","VO_ALICE@APISCONFIG::V2.4"};
 
 TTL = "72000";
 Price = 1;
