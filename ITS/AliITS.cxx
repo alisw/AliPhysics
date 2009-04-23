@@ -882,6 +882,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     mod      = (AliITSmodule *)fITSmodules->At(module);
     sim->CreateFastRecPoints(mod,module,gRandom,ptarray);
     lTR->Fill();
+    ptarray->Clear();
   } // end for module
 
   ClearModules();
