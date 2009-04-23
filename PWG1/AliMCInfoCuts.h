@@ -22,6 +22,7 @@ public:
   void SetMaxR(const Float_t max=1e99)         {fMaxR = max;}
   void SetMaxVz(const Float_t max=1e99)        {fMaxVz = max;}
   void SetRangeTPCSignal(const Float_t min=0, const Float_t max=1e99)  {fMinTPCSignal = min; fMaxTPCSignal = max;}
+  void SetMinTrackLength(const Int_t min=0)    {fMinTrackLength = min;}
 
   // getters 
   Int_t GetMinRowsWithDigits() const {return fMinRowsWithDigits;}
@@ -29,6 +30,7 @@ public:
   Float_t GetMaxVz()           const {return fMaxVz;}
   Float_t GetMinTPCSignal()    const {return fMinTPCSignal;}
   Float_t GetMaxTPCSignal()    const {return fMaxTPCSignal;}
+  Float_t GetMinTrackLength()    const {return fMinTrackLength;}
 
   Float_t GetEP()  const       {return ep;}
   Float_t GetEM()  const       {return em;}
@@ -66,6 +68,7 @@ private:
   Float_t fMaxVz;           // max. Z distance from MC vertex
   Float_t fMinTPCSignal;    // min. TPC Signal calculated from Bethe Bloch formula
   Float_t fMaxTPCSignal;    // max. TPC Signal calculated from Bethe Bloch formula
+  Float_t fMinTrackLength;  // min. TPC minimum track length
  
   TArrayI* aTrackParticles; // array of tracked particles 
 

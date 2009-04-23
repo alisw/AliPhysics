@@ -33,4 +33,12 @@
 #pragma link C++ class AliTPCtaskPID+;
 #pragma link C++ class AliTPCtaskQA+;
 
+#pragma link C++ class AliPerformanceTask+;
+#pragma link C++ class AliPerformanceObject+;
+#pragma link C++ class AliPerformanceRes+;
+#pragma link C++ class AliPerformanceEff+;
+#pragma link C++ class AliPerformanceDEdx+;
+#pragma link C++ class AliPerformanceDCA+;
+#pragma link C++ class AliPerformanceTPC+;
+
 #endif

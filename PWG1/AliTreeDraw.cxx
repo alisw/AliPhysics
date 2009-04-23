@@ -453,6 +453,109 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
   return hRes;
 }
 
+TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bool_t drawBinFits, Int_t cut)
+{
+  TVirtualPad* currentPad = gPad;
+  TAxis* axis = hRes2->GetXaxis();
+  Int_t nBins = axis->GetNbins();
+  Bool_t overflowBinFits = kFALSE;
+  TH1F* hRes, *hMean;
+  if (axis->GetXbins()->GetSize()){
+    hRes = new TH1F("hRes", "", nBins, axis->GetXbins()->GetArray());
+    hMean = new TH1F("hMean", "", nBins, axis->GetXbins()->GetArray());
+  }
+  else{
+    hRes = new TH1F("hRes", "", nBins, axis->GetXmin(), axis->GetXmax());
+    hMean = new TH1F("hMean", "", nBins, axis->GetXmin(), axis->GetXmax());
+
+  }
+  hRes->SetStats(false);
+  hRes->SetOption("E");
+  hRes->SetMinimum(0.);
+  //
+  hMean->SetStats(false);
+  hMean->SetOption("E");
+ 
+  // create the fit function
+  TF1 * fitFunc = new TF1("G","[0]*exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",-3,3);
+  
+  fitFunc->SetLineWidth(2);
+  fitFunc->SetFillStyle(0);
+  // create canvas for fits
+  TCanvas* canBinFits = NULL;
+  Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  Int_t nx = Int_t(sqrt(nPads-1.));// + 1;
+  Int_t ny = (nPads-1) / nx + 1;
+  if (drawBinFits) {
+    canBinFits = (TCanvas*)gROOT->FindObject("canBinFits");
+    if (canBinFits) delete canBinFits;
+    canBinFits = new TCanvas("canBinFits", "fits of bins", 200, 100, 500, 700);
+    canBinFits->Divide(nx, ny);
+  }
+
+  // loop over x bins and fit projection
+  Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  for (Int_t bin = 1-dBin; bin <= nBins+dBin; bin++) {
+    if (drawBinFits) canBinFits->cd(bin + dBin);
+    Int_t bin0=TMath::Max(bin-integ,0);
+    Int_t bin1=TMath::Min(bin+integ,nBins);
+    TH1D* hBin = hRes2->ProjectionY("hBin", bin0, bin1);
+    //    
+    if (hBin->GetEntries() > cut) {
+      fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
+      hBin->Fit(fitFunc,"s");
+      Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));
+
+      if (sigma > 0.){
+	hRes->SetBinContent(bin, TMath::Abs(fitFunc->GetParameter(2)));
+	hMean->SetBinContent(bin, fitFunc->GetParameter(1));	
+      }
+      else{
+	hRes->SetBinContent(bin, 0.);
+	hMean->SetBinContent(bin,0);
+      }
+      hRes->SetBinError(bin, fitFunc->GetParError(2));
+      hMean->SetBinError(bin, fitFunc->GetParError(1));
+      
+      //
+      //
+
+    } else {
+      hRes->SetBinContent(bin, 0.);
+      hRes->SetBinError(bin, 0.);
+      hMean->SetBinContent(bin, 0.);
+      hMean->SetBinError(bin, 0.);
+    }
+    
+
+    if (drawBinFits) {
+      char name[256];
+      if (bin == 0) {
+	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+      } else if (bin == nBins+1) {
+	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+      } else {
+	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+		axis->GetTitle(), axis->GetBinUpEdge(bin));
+      }
+      canBinFits->cd(bin + dBin);
+      hBin->SetTitle(name);
+      hBin->SetStats(kTRUE);
+      hBin->DrawCopy("E");
+      canBinFits->Update();
+      canBinFits->Modified();
+      canBinFits->Update();
+    }
+    
+    delete hBin;
+  }
+
+  delete fitFunc;
+  currentPad->cd();
+  *phMean = hMean;
+  return hRes;
+}
+
 
 
 
