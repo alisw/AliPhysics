@@ -12,5 +12,6 @@
 #pragma link C++ class  AliVZEROPreprocessor+;
 #pragma link C++ class  AliVZERODataDCS+;
 #pragma link C++ class  AliVZEROQAChecker+;
+#pragma link C++ class  AliVZEROMisAligner+;
 
 #endif
