@@ -30,8 +30,6 @@
 #include "AliFlowTrackSimple.h"
 #include "TTree.h"
 #include "TParticle.h"
-#include "TRandom.h"
-#include "TDatime.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliESDEvent.h"
@@ -50,23 +48,15 @@ AliFlowEventSimpleMaker::AliFlowEventSimpleMaker() :
   fCount(0),
   fNoOfLoops(1),
   fEllipticFlowValue(0.),
-  fMultiplicityOfEvent(1000000000),
-  fRandom(NULL),
-  fUseRandomRP(kFALSE),
-  fSigmaMult(0.),
-  fSigmaFlow(0.)
+  fMultiplicityOfEvent(1000000000)
 {
   //constructor
-  TDatime fTime;
-  fRandom = new TRandom(fTime.GetTime());
 }
 
 //-----------------------------------------------------------------------   
 AliFlowEventSimpleMaker::~AliFlowEventSimpleMaker()
 {
   //destructor
-
-  delete fRandom;
 }
 
 //-----------------------------------------------------------------------   
@@ -75,7 +65,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   //fills the event from a TTree of kinematic.root files
   
   // number of times to use the same particle (trick to introduce nonflow)
-  //  Int_t iLoops = 1;
   
   //flags for particles passing int. and diff. flow cuts
   Bool_t bPassedRPFlowCuts  = kFALSE;
@@ -108,23 +97,12 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
   //  Int_t fMultiplicityOfEvent = 576; //multiplicity for chi=1.5
   //  Int_t fMultiplicityOfEvent = 256; //multiplicity for chi=1
   //  Int_t fMultiplicityOfEvent = 164; //multiplicity for chi=0.8
-
-  Int_t fNewMultOfEvent = fRandom->Gaus(fMultiplicityOfEvent,fSigmaMult);
-  //  cout << "new multiplicity: " << fNewMultOfEvent << endl;
-  
-  Double_t fNewFlowValue = fRandom->Gaus(fEllipticFlowValue,fSigmaFlow);
-  //  cout << "new flow value: " << fNewFlowValue << endl;
   
   Int_t iGoodTracks = 0;
   Int_t itrkN = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
   
-  // generate some random numbers
-  if (fUseRandomRP) {
-    fMCReactionPlaneAngle = 2.*TMath::Pi()*fRandom->Uniform(1.);
-  }
-
   while (itrkN < iNumberOfInputTracks) {
     anInput->GetEntry(itrkN);   //get input particle
     if (pParticle->IsPrimary()) {
@@ -148,10 +126,10 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowT
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt());
 	pTrack->SetEta(pParticle->Eta());
-	pTrack->SetPhi(pParticle->Phi()-fNewFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle)));
+	pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle)));
 	
 	//marking the particles used for int. flow:
-	if(bPassedRPFlowCuts && iSelParticlesRP < fNewMultOfEvent) {  
+	if(bPassedRPFlowCuts && iSelParticlesRP < fMultiplicityOfEvent) {  
 	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
 	}
