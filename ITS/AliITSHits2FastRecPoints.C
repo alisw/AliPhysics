@@ -118,8 +118,8 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
 
   cout << "Creating fast reconstructed points from hits for the ITS..." << endl;
   AliITSDetTypeSim* dettyp = new AliITSDetTypeSim();
-  dettyp->SetITSgeom(geom);
   dettyp->SetLoader(gime);
+  dettyp->SetITSgeom(geom);
   ITS->SetDetTypeSim(dettyp);
   for (Int_t i=0;i<3;i++) {
     ITS->SetSimulationModel(i,new AliITSsimulationFastPoints());
